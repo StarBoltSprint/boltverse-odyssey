@@ -3,6 +3,20 @@
 You are wiring a **living-film** room, not a game with UI.
 Repo: `https://github.com/StarBoltSprint/citadel-room`
 
+Auth OFF. Database OFF. No 3D, no canvas, no WebGL, no Play / Forge / Hang / Keep.
+
+## If they ask for stills / a citadel style
+
+This is the default. Read [CHAR.md](CHAR.md) then [COOK.md](COOK.md).
+
+1. They pick a **citadel style**. Bolt is locked.
+2. Cook **3 stills** in that style: spawn → atA → atB (order in COOK.md). Same Bolt, same camera, teal left / gold right.
+3. Show the 3. Wait for ok.
+4. Cook the 7 films from those stills (COOK.md). Hang the graph (this file).
+5. Open = breath-spawn looping. Chrome dégage.
+
+Never `text_to_image` a new dog. Never a 3D dungeon.
+
 ## Product
 
 The preview link IS the hall. Opening it plays **breath-spawn** immediately.
@@ -40,9 +54,11 @@ Join: `stillEnd(from) == stillStart(to)` → cut 0ms, else dissolve ≤ 280ms. D
 
 Stills = **first frame of that pose's breath** (not a last-frame grab that can come back empty).
 
+DOM only: one `<img>` + two `<video>`. No WebGL.
+
 ## If they give 7 videos
 
-Map by motion, not by filename:
+Map by motion, not by filename. Skip still-cook.
 
 - Bolt idle center, both doors, loopable → `breath-spawn`
 - Walk from center to teal → `walk-spawn-A`

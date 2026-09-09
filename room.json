@@ -1,13 +1,30 @@
 {
   "id": "citadel",
   "title": "Citadel",
-  "pack": "u8",
+  "pack": "u9",
   "open": "breath-spawn",
   "camera": "lock-off",
   "aspect": "9:16",
   "plate": "720x1280",
   "morph": false,
   "chrome": "none",
+  "auth": false,
+  "database": false,
+  "stillsFirst": true,
+  "playerVariable": "citadel style",
+  "lock": {
+    "bolt": "lock/bolt-back.jpg",
+    "char": "CHAR.md",
+    "compose": {
+      "spawn": "lock/example-spawn.jpg",
+      "atA": "lock/example-at-a.jpg",
+      "atB": "lock/example-at-b.jpg"
+    },
+    "doors": {
+      "A": { "id": "m1", "name": "teal", "side": "left" },
+      "B": { "id": "m2", "name": "gold", "side": "right" }
+    }
+  },
   "doors": {
     "A": { "id": "m1", "name": "teal", "side": "left" },
     "B": { "id": "m2", "name": "gold", "side": "right" }
@@ -17,7 +34,8 @@
     "spawn": "stills/spawn.jpg",
     "atA": "stills/at-a.jpg",
     "atB": "stills/at-b.jpg",
-    "source": "first-frame of that pose's breath"
+    "source": "first-frame of that pose's breath",
+    "cook": "COOK.md — 3 stills in player style, Bolt locked, then films"
   },
   "clips": {
     "breath-spawn": {
@@ -110,7 +128,7 @@
     "cutIf": "stillEnd(from) == stillStart(to)",
     "else": "dissolve<=280ms",
     "walkEnded": "breath(arrive) at t=0",
-    "never": ["walk->walk", "black-hole", "morph", "play-once-then-freeze breath", "paint-paused-video", "unmute-before-play"]
+    "never": ["walk->walk", "black-hole", "morph", "play-once-then-freeze breath", "paint-paused-video", "unmute-before-play", "text-to-image-new-bolt", "3d-dungeon"]
   },
   "hits": {
     "layout": "video-contain-9:16",
@@ -129,13 +147,18 @@
     "pauseOutgoing": true,
     "ignoreTapsWhileWalking": true,
     "sameDoor": "stay",
-    "openIsTheRoom": true
+    "openIsTheRoom": true,
+    "domOnly": "img+2video"
   },
   "cook": {
+    "stillsFirst": true,
     "plate": "720x1280",
     "cropNon916": true,
+    "spawn": "reference_to_image(bolt-back, example-spawn) + player style",
+    "atA": "image_to_image(spawn) Bolt to teal",
+    "atB": "image_to_image(spawn) Bolt to gold",
     "breath": "first=last=pose still; seamless loop; feet glued",
-    "walk": "first=start still; last=arrive still; interpolate; no loop",
+    "walk": "first=start still; last=arrive still; interpolate; no loop; back-to-camera whole clip; no 3/4",
     "still": "first frame of that pose's breath — last-frame grab can be empty"
   }
 }
