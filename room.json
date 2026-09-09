@@ -1,0 +1,121 @@
+{
+  "id": "citadel",
+  "title": "Citadel",
+  "open": "breath-spawn",
+  "camera": "lock-off",
+  "aspect": "9:16",
+  "morph": false,
+  "doors": {
+    "A": { "id": "m1", "name": "teal", "side": "left" },
+    "B": { "id": "m2", "name": "gold", "side": "right" }
+  },
+  "poses": ["spawn", "atA", "atB"],
+  "stills": {
+    "spawn": "stills/spawn.jpg",
+    "atA": "stills/at-a.jpg",
+    "atB": "stills/at-b.jpg"
+  },
+  "clips": {
+    "breath-spawn": {
+      "file": "films/breath-spawn.mp4",
+      "act": "breath",
+      "loop": true,
+      "duration": 6,
+      "stillStart": "spawn",
+      "stillEnd": "spawn",
+      "poseStart": "spawn",
+      "poseEnd": "spawn",
+      "required": true
+    },
+    "breath-A": {
+      "file": "films/breath-a.mp4",
+      "act": "breath",
+      "loop": true,
+      "duration": 6,
+      "stillStart": "atA",
+      "stillEnd": "atA",
+      "poseStart": "atA",
+      "poseEnd": "atA",
+      "required": true
+    },
+    "breath-B": {
+      "file": "films/breath-b.mp4",
+      "act": "breath",
+      "loop": true,
+      "duration": 6,
+      "stillStart": "atB",
+      "stillEnd": "atB",
+      "poseStart": "atB",
+      "poseEnd": "atB",
+      "required": true
+    },
+    "walk-spawn-A": {
+      "file": "films/walk-spawn-a.mp4",
+      "act": "walk",
+      "loop": false,
+      "duration": 10,
+      "stillStart": "spawn",
+      "stillEnd": "atA",
+      "poseStart": "spawn",
+      "poseEnd": "atA",
+      "required": true
+    },
+    "walk-spawn-B": {
+      "file": "films/walk-spawn-b.mp4",
+      "act": "walk",
+      "loop": false,
+      "duration": 10,
+      "stillStart": "spawn",
+      "stillEnd": "atB",
+      "poseStart": "spawn",
+      "poseEnd": "atB",
+      "required": true
+    },
+    "walk-A-B": {
+      "file": "films/walk-a-b.mp4",
+      "act": "walk",
+      "loop": false,
+      "duration": 10,
+      "stillStart": "atA",
+      "stillEnd": "atB",
+      "poseStart": "atA",
+      "poseEnd": "atB",
+      "required": false
+    },
+    "walk-B-A": {
+      "file": "films/walk-b-a.mp4",
+      "act": "walk",
+      "loop": false,
+      "duration": 10,
+      "stillStart": "atB",
+      "stillEnd": "atA",
+      "poseStart": "atB",
+      "poseEnd": "atA",
+      "required": false
+    }
+  },
+  "edges": [
+    { "from": "spawn", "tap": "A", "clip": "walk-spawn-A", "arrive": "breath-A" },
+    { "from": "spawn", "tap": "B", "clip": "walk-spawn-B", "arrive": "breath-B" },
+    { "from": "atA", "tap": "B", "clip": "walk-A-B", "arrive": "breath-B" },
+    { "from": "atB", "tap": "A", "clip": "walk-B-A", "arrive": "breath-A" },
+    { "from": "atA", "tap": "A", "clip": null, "arrive": "breath-A", "act": "stay" },
+    { "from": "atB", "tap": "B", "clip": null, "arrive": "breath-B", "act": "stay" }
+  ],
+  "join": {
+    "cutIf": "stillEnd(from) == stillStart(to)",
+    "else": "dissolve<=280ms",
+    "walkEnded": "breath(arrive) at t=0",
+    "never": ["walk→walk", "black-hole", "morph", "play-once-then-freeze breath"]
+  },
+  "hits": {
+    "layout": "video-contain-9:16",
+    "A": { "x": 0, "w": 0.4 },
+    "center": { "x": 0.4, "w": 0.2 },
+    "B": { "x": 0.6, "w": 0.4 }
+  },
+  "cook": {
+    "breath": "first=last=pose still; seamless loop",
+    "walk": "first=start still; last=arrive still; interpolate; no loop"
+  }
+}
