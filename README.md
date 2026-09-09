@@ -1,10 +1,5 @@
-# citadel-room
+# citadel-room — Bolt Engine living film
 
-Pack d'une room Bolt Engine. Tu ouvres le lien → tu es dans le hall. Rien d'autre.
+StarBoltSprint. Open the preview → you are in the hall. No Play. No Forge. No Hang. No Keep.
 
-1. Lis [`ROOM.md`](ROOM.md) — lois + couture des clips.
-2. Remplis les fichiers listés dans [`room.json`](room.json).
-3. Drop tes mp4 dans `films/` et tes stills dans `stills/`.
-
-**Minimum playable :** breath-spawn, breath-A, breath-B, walk-spawn-A, walk-spawn-B.
-Optionnel : walk-A-B, walk-B-A.
+Read ROOM.md then room.json. Those are the law.
