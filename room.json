@@ -1,10 +1,13 @@
 {
   "id": "citadel",
   "title": "Citadel",
+  "pack": "u8",
   "open": "breath-spawn",
   "camera": "lock-off",
   "aspect": "9:16",
+  "plate": "720x1280",
   "morph": false,
+  "chrome": "none",
   "doors": {
     "A": { "id": "m1", "name": "teal", "side": "left" },
     "B": { "id": "m2", "name": "gold", "side": "right" }
@@ -13,7 +16,8 @@
   "stills": {
     "spawn": "stills/spawn.jpg",
     "atA": "stills/at-a.jpg",
-    "atB": "stills/at-b.jpg"
+    "atB": "stills/at-b.jpg",
+    "source": "first-frame of that pose's breath"
   },
   "clips": {
     "breath-spawn": {
@@ -31,7 +35,7 @@
       "file": "films/breath-a.mp4",
       "act": "breath",
       "loop": true,
-      "duration": 6,
+      "duration": 10,
       "stillStart": "atA",
       "stillEnd": "atA",
       "poseStart": "atA",
@@ -42,7 +46,7 @@
       "file": "films/breath-b.mp4",
       "act": "breath",
       "loop": true,
-      "duration": 6,
+      "duration": 10,
       "stillStart": "atB",
       "stillEnd": "atB",
       "poseStart": "atB",
@@ -106,16 +110,32 @@
     "cutIf": "stillEnd(from) == stillStart(to)",
     "else": "dissolve<=280ms",
     "walkEnded": "breath(arrive) at t=0",
-    "never": ["walk→walk", "black-hole", "morph", "play-once-then-freeze breath"]
+    "never": ["walk->walk", "black-hole", "morph", "play-once-then-freeze breath", "paint-paused-video", "unmute-before-play"]
   },
   "hits": {
     "layout": "video-contain-9:16",
+    "on": "picture-not-letterbox",
     "A": { "x": 0, "w": 0.4 },
     "center": { "x": 0.4, "w": 0.2 },
     "B": { "x": 0.6, "w": 0.4 }
   },
+  "player": {
+    "stillUnderlayer": true,
+    "dualVideo": true,
+    "hideUntilPlaying": true,
+    "playMuted": true,
+    "paintOnlyIfPlaying": true,
+    "setWalkingOnlyAfterPlay": true,
+    "pauseOutgoing": true,
+    "ignoreTapsWhileWalking": true,
+    "sameDoor": "stay",
+    "openIsTheRoom": true
+  },
   "cook": {
-    "breath": "first=last=pose still; seamless loop",
-    "walk": "first=start still; last=arrive still; interpolate; no loop"
+    "plate": "720x1280",
+    "cropNon916": true,
+    "breath": "first=last=pose still; seamless loop; feet glued",
+    "walk": "first=start still; last=arrive still; interpolate; no loop",
+    "still": "first frame of that pose's breath — last-frame grab can be empty"
   }
 }
