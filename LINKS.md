@@ -48,6 +48,8 @@ In the **from** pack `room.json`:
 
 Not this repo’s `films/walk-*.mp4`.
 
+Sprint play grammar: [PLAY.md](PLAY.md) (cues, `m`, bone 60s). Hall player does not grow that stack.
+
 Sprint stock lives with the biome table ([starboltsprint-forest](https://github.com/StarBoltSprint/starboltsprint-forest)): Lane clip + identity thumb + decay. The citadel player **hands off** after the curtain: last frame of enter = first frame of the Lane (or 500ms engine crossfade). Picture-clock continues. No WASD.
 
 Footage for the sprint cooks on confirm (ticket), not on the walk toward the door.
