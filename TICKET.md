@@ -51,7 +51,7 @@ FAIL → no URL, stay. [FAIL.md](FAIL.md) [SAS.md](SAS.md)
 | knob | default |
 |---|---|
 | gift / player / day | **1** still-spawn |
-| weekly cooks | **40** (your 20 %) |
+| weekly cooks | **50** total (everyone) |
 | plate | still-spawn only |
 | provider | **X** |
 
@@ -67,3 +67,6 @@ Ban / allowlist = keeper. Spam tickets → drop that `user_id`.
 ## One line
 
 Play is a folder. The gift is one still, one X, one time, on the keeper’s week — never on the plate.
+
+
+Hard week: **50 Imagine stills** for the whole pool. Same paint already cooked → reuse, 0 spend.
