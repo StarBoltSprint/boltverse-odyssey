@@ -1,3 +1,5 @@
+**`to` comes from [adjacency.json](adjacency.json).** Not free text. Not biomes.json.
+
 # ENTER — room 1 → room 2 (threshold)
 
 Walks stay in **one** hall. **Enter** is the only clip that changes room.
