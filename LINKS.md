@@ -6,7 +6,7 @@ The player hangs a **target** on a door the same way for both.
 2nd tap on rift A  →  ENTER[this].A.to
 ```
 
-`to` is either another **citadel hall** (he still stands) or a **sprint biome** (he **exits** and runs).
+`to` is either another **citadel hall** ([CATALOG.md](CATALOG.md)) or a **sprint biome** ([BIOMES.md](BIOMES.md)) (he still stands) or a **sprint biome** (he **exits** and runs).
 
 Not a new site. Same player. Other disc.
 
