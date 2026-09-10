@@ -146,3 +146,5 @@ Land in `packs/<id>/`. If you must recook a walk/enter: **Law 0**. Run validate-
 Sprint / Lane: [PLAY.md](PLAY.md) — not the hall player. Door `kind: sprint` hands off.
 
 Biome kits (sprint, offline): [BIOMES.md](BIOMES.md). Do not replace paints. `rome` → ember. `mars` → asteroid.
+
+Clip into films/: [CLIP.md](CLIP.md). Stills PASS first. One clip. Three gates. FAIL never writes.
