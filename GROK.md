@@ -42,6 +42,8 @@ Breath is the only legal `first = last`.
 
 **Walk last 2s:** ONE dog on the arrive sill. A second Bolt at spawn/center = FAIL `clone.two_dogs`. Recook that walk. Do not hang. [CLIP.md](CLIP.md).
 
+**Walk is one trip.** Spawn → sill. A snap back to spawn mid-clip (Frost walk-B t=11s) = FAIL `graph.walk_return`. Recook. Never loop a walk.
+
 ## Law 1 — floors ([FLOORS.md](FLOORS.md))
 
 Default cook = **floor 1**: 3 stills + 5 films, one room, no Enter.
