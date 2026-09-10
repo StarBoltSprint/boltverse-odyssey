@@ -18,6 +18,8 @@ Every new conversation. Do not wait to be asked. Details: [COOK.md](COOK.md).
 
 Never `image_to_video` a walk or enter on a single still. That invents the journey and clones the dog. Breath is the only legal `first = last`.
 
+**Law 1 — floors.** Default cook = one room, 5 films, no Enter. [FLOORS.md](FLOORS.md). `/` is stock (floor 0). `/r/citadel` is the 3-room demo (floor 3), not the default.
+
 ```
 Player (any conversation): "citadel moss"
         ↓
