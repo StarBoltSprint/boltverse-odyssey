@@ -60,9 +60,9 @@ Ops: [HANG.md](HANG.md). DOM: [ENGINE.md](ENGINE.md). Box: [VALIDATE.md](VALIDAT
 
 This is the default. Read [CHAR.md](CHAR.md) then [COOK.md](COOK.md) then [PLAYER.md](PLAYER.md).
 
-1. They pick a **citadel style** (WorldLine). Bolt is locked.
+1. They pick a **paint** from [CATALOG.md](CATALOG.md). Bolt is locked. Off-list → nearest or one question. Never free-text architecture.
 2. If `packs/<id>` already exists → give `https://boltverse-odyssey.grok.me/r/<id>` (or `/` for `citadel`). Stop.
-3. Else cook **3 stills** in that style: spawn → atA → atB (order in COOK.md). Same Bolt, same camera, teal left / gold right.
+3. Else cook **3 stills** in that paint (`catalog/<id>.md` two lines only): spawn → atA → atB (COOK.md). Same Bolt, same camera, teal left / gold right.
 4. Show the 3. Wait for ok.
 5. Cook the **5** films (floor 1: 3 breaths + walk-spawn-A + walk-spawn-B). **Law 0** on every clip. Do **not** cook walk-A-B or Enter unless they asked (floors 2–3). Encode H264 yuv420p +faststart, **no audio**. Land in `packs/<id>/`.
 6. Run `node scripts/validate-pack.mjs packs/<id>` then `node scripts/smoke-pack.mjs packs/<id>`.
@@ -79,7 +79,7 @@ Read [ENTER.md](ENTER.md) then [HANG.md](HANG.md). **Law 0** on the enter cook.
 3. Cook enter as **two plates** with **first AND last distinct** (ENTER.md). Do not interpolate atA → Hall' spawn in one Imagine clip (clone). Do not `image_to_video` enter on a single still.
 4. Hang `enter-hall-a` in the `ENTER{}` map — **outside the 7**. Optional return `enter-a-hall`. Door B uses gold-empty veil, not teal.
 5. `ended(enter)` → **switch room first**, then dest `breath-spawn`. If dest breath walks, freeze the spawn still (HANG.md).
-6. Neighbor **citadel** (moss → ember) = another pack id on the **same** player, not a new site.
+6. Neighbor = declared map only ([CATALOG.md](CATALOG.md) `moss.A → ember`). Same player URL. Not "invent Mars".
 7. Smoke the enter clip. WARN clone → recook cap 2 or drop the link.
 
 ## Product
