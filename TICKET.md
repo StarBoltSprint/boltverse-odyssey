@@ -12,12 +12,16 @@ xAI does not slice a weekly SuperGrok %. You pick a number:
 
 `weeklyCookCap` ≈ 20 % of *your* week (edit `src/game/ticket.ts`).
 
+## Cadence
+
+**1 still / day / X account.** Not 3 stills (that is a hall). Come back tomorrow. Week cap = keeper 20%.
+
 ## Who may claim
 
 - **X account** (Grok / X Premium preferred). Not Google. Not 50 free throwaway Xs if you can help it.
 - SuperGrok **paid** / X Premium = the anti-cheat. Free X farms drain the pool.
 - Grok, in chat, can see SuperGrok. The web ledger cannot. Honor SuperGrok **when cooking**. Web = 1 / `userId` + weekly cap.
-- **1 plate / player**. Ever (welcome). Not 1 / day.
+- **1 plate / player / UTC day**. Weekly cap still holds.
 
 ## What the gift is
 
@@ -46,7 +50,7 @@ FAIL → no URL, stay. [FAIL.md](FAIL.md) [SAS.md](SAS.md)
 
 | knob | default |
 |---|---|
-| gift / player | **1** |
+| gift / player / day | **1** still-spawn |
 | weekly cooks | **40** (your 20 %) |
 | plate | still-spawn only |
 | provider | **X** |
