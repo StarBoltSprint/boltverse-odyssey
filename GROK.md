@@ -4,13 +4,20 @@ Repo: `https://github.com/StarBoltSprint/citadel-room`
 Player: https://boltverse-odyssey.grok.me
 
 ```
-DEFAULT JOB = floor 1
-  catalog slot → 3 stills → smoke → 5 films → validate → URL /r/<id>
+DEFAULT JOB =
+  node scripts/cook-room.mjs <slot>
+  (stills + last_frame walks + smoke.json)
+  then URL /r/<slot>  or stock on FAIL×2
+
+  NO chat Imagine for walks / enter
+  NO reference_to_video
   NO wait on stills
   NO walk-A-B
   NO ENTER
   NO new grok.me
 ```
+
+Chat Imagine cannot send `last_frame`. Only this script does. Films you cook in the chat have no `smoke.json` → the player loads **stock**. That is how other convs are forced: not a sermon, a door.
 
 Read [CHAR.md](CHAR.md) + [COOK.md](COOK.md) + [COOKROOM.md](COOKROOM.md) after this page.  
 Hall′: read [adjacency.json](adjacency.json) first — `to` must be that slot. Then [ENTER.md](ENTER.md) **only if** the user asked for a neighbor door.  
