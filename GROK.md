@@ -24,6 +24,18 @@ Every new conversation. Do not wait to be asked. The stills **are** the frames. 
 Never `image_to_video` a walk or enter on a single still. That invents the journey / clones the dog.
 Breath is the only legal `first = last`.
 
+## Fridge
+
+Cook **one plate**, then smoke **that plate**, then write `films/`.
+
+```
+node scripts/smoke-pack.mjs packs/<id>/films/walk-spawn-a.mp4 --kind walk
+```
+
+A+B = machine (rule codes). C = Grok vision on `.smoke/<clip>/{first,mid,last}.jpg` with [scripts/smoke-identity.md](scripts/smoke-identity.md).
+FAIL → recook **this** plate, cap 2. atA FAIL does not recook spawn. [SMOKE.md](SMOKE.md).
+
+
 Ops: [HANG.md](HANG.md). DOM: [ENGINE.md](ENGINE.md). Box: [VALIDATE.md](VALIDATE.md). Content: [SMOKE.md](SMOKE.md).
 
 ## If they ask for stills / a citadel style
