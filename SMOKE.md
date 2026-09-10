@@ -1,37 +1,115 @@
-# SMOKE — content lint (not a sermon)
+# SMOKE — fridge door (not a sermon)
 
-After [VALIDATE.md](VALIDATE.md) (the box), before the URL:
+`#704` is the list. The machine is `smoke(file, kind, refs) → PASS | FAIL + a rule`.
+
+Nobody "judges" a plate. The function says no, and `films/` gets nothing.
+
+## Signature
+
+```
+smoke(file, kind, refs) →
+  { ok: true }
+  { ok: false, rule: "identity.face", at: "t=last", note: "muzzle" }
+```
+
+- `kind`: `still-spawn` | `still-atA` | `still-atB` | `breath` | `walk` | `enter`
+- `refs`: official PASS stills (`spawn.jpg`, `at-a.jpg`, `at-b.jpg`) + lock examples
 
 ```
 node scripts/smoke-pack.mjs packs/<id>
+node scripts/smoke-pack.mjs packs/<id>/films/walk-spawn-a.mp4 --kind walk
 ```
 
-Exit `0` = SMOKE PASS. Exit `1` = recook **that clip**, cap **2**, then ship the last PASS. Do not hang a FAIL required clip.
+Call it **before** writing `films/` or bumping PACK. FAIL = recook **this** plate (cap 2) or keep the last good plate.
 
-This is a machine. It does not explain CHAR.md.
+Log line, not a decree:
 
-## FAIL table
+```
+walk-spawn-A FAIL graph.last_not_official (last ≠ at-a.jpg)
+breath-A PASS
+atB FAIL identity.face @ still
+```
 
-| Clip | FAIL if |
+## Three layers (not one AI)
+
+### A. File (free, immediate)
+
+- image/video decodes
+- after crop: **720x1280**
+- mp4: H264, `yuv420p`, **no audio**
+- duration ≈ 6s breath-spawn / ≈10s breath-A/B and walks / ≈ 6s enter
+
+Does not say it is Bolt. Says the player can play it.
+
+Rules: `file.decode` `file.size` `file.codec` `file.pix_fmt` `file.audio` `file.duration`
+
+### B. Graph (pixels, no opinion)
+
+Compare **first** and **last** frame to the official still (aHash, ham < 12 ≈ same):
+
+| kind | rule |
 |---|---|
-| walk | first frame ≈ last (aHash ham < 12) — it looped, it did not walk |
-| walk | first closer to **end** still than start still |
-| walk | last closer to **start** still than end still |
-| breath | first far from last (ham > 28) — dest breath walked |
-| enter | first ≈ last |
-| enter | last ≈ dest Hall' spawn (clone bait: two positions in one cook) |
-| any film | a sampled frame has **2+** white-dog blobs (clone / ghost) |
+| breath | first ≈ last ≈ pose still |
+| walk-spawn-A | first ≈ spawn, last ≈ atA |
+| walk-A-B | first ≈ atA, last ≈ atB |
+| enter | first ≈ at-still, last ≈ fill veil, **not** Hall' spawn |
 
-Required: breath-spawn, breath-A, breath-B, walk-spawn-A, walk-spawn-B.
-Optional (walk-A-B, walk-B-A, enter): FAIL → recook or **drop**. Do not block the hall. Printed as WARN.
+Rules: `graph.first_eq_last` `graph.first_not_official` `graph.last_not_official` `graph.last_is_dest_spawn` `clone.two_dogs`
 
-Needs `ffmpeg`. Clone scan = desaturated bright blobs in the lower 70%.
+Drift of last frame → `graph.last_not_official`. Dissolve does not fix it.
+
+### C. Identity + hall (vision, 3 frames)
+
+Video: t = 0, mid, last (script writes `.smoke/<clip>/{first,mid,last}.jpg`). Still: the photo.
+
+Grok vision. Prompt: [scripts/smoke-identity.md](scripts/smoke-identity.md). You are not kind to a profile wolf.
+
+Hard FAIL, one rule code, no paragraph:
+
+- `identity.face` `identity.muzzle` `identity.look` `identity.profile` `identity.three_quarter`
+- `clone.two_dogs` `clone.ghost`
+- `identity.black_silhouette`
+- `identity.cape` / size morph
+- `identity.text` / UI / third door
+- `identity.door_cut` (except last second of **enter**)
+- `identity.orbit` (paws sliding down, ceiling falling)
+- `lock.lens_mismatch` (atA not the same focal as spawn)
+
+Output: `PASS` or `FAIL identity.face @ t=last`.
+
+Glow in the tap window = later. V1 can skip it.
+
+## Where it plugs
+
+```
+cook plate
+    → smoke (A + B machine, then C vision on extracted frames)
+        PASS → write stills/ or films/ → next plate
+        FAIL → recook THIS plate (max 2)
+                 still FAIL → do not Hang; keep last good / stock
+```
+
+atA FAIL does not recook spawn. Walk FAIL does not touch stills.
+Enter only enters this pipe if Enter was asked.
+
+`films/` = PASS only. That is "keepers stop being editors".
+
+## What the machine does not do
+
+- It does not improve a clip. No creative crop to hide a muzzle.
+- It does not say "almost". Wrong side / face = FAIL.
+- It does not launch Hall' to "save" a walk.
+- It does not replace the lock.
 
 ## Recook cap 2
 
-1. FAIL line names the file. Recook **only that file**.
-2. Smoke again.
-3. Second FAIL → keep the last PASS encode if any; else freeze the pose still for breath, drop optional walks/enter.
-4. Never a third Imagine cook. Never a sermon in the player chat.
+1. The FAIL line names the file + `rule`.
+2. Recook **only that file**.
+3. Smoke again.
+4. Second FAIL → last PASS encode if any; else freeze still for breath, drop optional walk/enter.
+5. Never a third Imagine cook. Never a sermon in player chat.
 
-Box = [VALIDATE.md](VALIDATE.md). Identity / clone / first-last = this file.
+Required plates: 3 stills + breath-spawn, breath-A, breath-B, walk-spawn-A, walk-spawn-B.
+Optional (walk-A-B, walk-B-A, enter): FAIL = recook or drop — do not block the hall.
+
+A+B = `scripts/smoke-pack.mjs` (ffmpeg). C = Grok + `scripts/smoke-identity.md` on `.smoke/` frames. Hang needs both.
