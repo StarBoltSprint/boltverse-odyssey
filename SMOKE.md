@@ -77,7 +77,9 @@ Hard FAIL, one rule code, no paragraph:
 
 Output: `PASS` or `FAIL identity.face @ t=last`.
 
-Glow in the tap window = later. V1 can skip it.
+Glow in the tap window = later.
+
+**C is required** on stills, walks, breaths. Optional on enter. After A+B PASS, Grok opens `.smoke/MANIFEST.json` and the jpgs. One line per plate. Skip C = do not Hang.
 
 ## Where it plugs
 
