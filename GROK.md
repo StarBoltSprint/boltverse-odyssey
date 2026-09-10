@@ -142,3 +142,5 @@ Map by motion, not by filename. Skip still-cook.
 - Walk gold → teal → `walk-B-A`
 
 Land in `packs/<id>/`. If you must recook a walk/enter: **Law 0**. Run validate-pack then smoke-pack. Give the player URL. No chrome.
+
+Sprint / Lane: [PLAY.md](PLAY.md) — not the hall player. Door `kind: sprint` hands off.
