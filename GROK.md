@@ -150,3 +150,5 @@ Biome kits (sprint, offline): [BIOMES.md](BIOMES.md). Do not replace paints. `ro
 Clip into films/: [CLIP.md](CLIP.md). Stills PASS first. One clip. Three gates. FAIL never writes.
 
 Humans see [START.md](START.md) only. Do not paste ENGINE / Smoke codes into player chat. Recook or serve stock. Give a URL.
+
+Silent fail: [FAIL.md](FAIL.md). Missing pack → stock. Missing edge → stay. Recook cap 2 then freeze/drop/stock. Player chat: one line after, or nothing.
