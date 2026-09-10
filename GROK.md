@@ -40,6 +40,8 @@ Every new conversation. Do not wait to be asked. The stills **are** the frames. 
 Never `image_to_video` a walk or enter on a single still. That invents the journey / clones the dog.
 Breath is the only legal `first = last`.
 
+**Walk last 2s:** ONE dog on the arrive sill. A second Bolt at spawn/center = FAIL `clone.two_dogs`. Recook that walk. Do not hang. [CLIP.md](CLIP.md).
+
 ## Law 1 — floors ([FLOORS.md](FLOORS.md))
 
 Default cook = **floor 1**: 3 stills + 5 films, one room, no Enter.
