@@ -87,3 +87,13 @@ If not, it is another engine. Do not slip it into `citadel + paint`.
 ## One line
 
 Do not generate on tap, do not move the camera, do not show the kitchen, do not shove the door, do not open Mars. Real help is a PASS pack and a tap that always does the same thing.
+
+## 6. Chat `reference_to_video` as a walk
+
+Looks like the tweet (first + last). The tool text says the images are **not** frames.
+
+- first still ≈ start: luck
+- last still: Imagine keeps walking into the oval
+- splice pop, `gate.size`, player as Smoke
+
+Walks = `POST /v1/videos/generations` with `last_frame`. That is `scripts/imagine-hooks.mjs`. Chat refs = illegal for walks/enter.
