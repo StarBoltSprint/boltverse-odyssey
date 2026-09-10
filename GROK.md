@@ -54,6 +54,8 @@ Do not jump to Hall' / walk-A-B because it would be "cooler". Visitor = floor 0 
 
 Cook **one plate**, then smoke **that plate**, then write `films/`. Hash first. Vision second. Hang last.
 
+**Never write `PASS` yourself.** Only `node scripts/smoke-pack.mjs` (exit 0). A preview you like is not a gate. Lock-off whole-frame hash can say ham 6 while the dog pops — that is FAIL `gate.size`, not PASS. [SMOKE.md](SMOKE.md).
+
 ```
 node scripts/smoke-pack.mjs packs/<id>
 ```
