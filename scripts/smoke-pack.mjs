@@ -140,6 +140,18 @@ function cloneScan(file, d, kind) {
   }
   return max;
 }
+
+function walkReturnScan(file, d, firstHash) {
+  const t0 = d * 0.4;
+  const t1 = d * 0.92;
+  for (let t = t0; t < t1; t += 0.7) {
+    try {
+      if (hamming(frameP(file, t), firstHash) <= SAME) return t;
+    } catch {
+      /* skip */
+    }
+  }
+  return null;
 }
 
 function inferKind(file) {
@@ -287,6 +299,16 @@ function smokeFile(file, kind, refs, required, smokeDir) {
 
     if (kind === "walk" || kind === "enter") {
       if (hamFL <= SAME) return fail("graph.first_eq_last", "t=last", `loop pHash ham ${hamFL}`);
+    }
+
+    if (kind === "walk") {
+      const back = walkReturnScan(file, d, first);
+      if (back != null)
+        return fail(
+          "graph.walk_return",
+          `t=${back.toFixed(1)}`,
+          "mid-clip frame ≈ spawn — one trip only, no teleport home",
+        );
     }
 
     if (kind === "walk") {
