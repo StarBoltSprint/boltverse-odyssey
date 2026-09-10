@@ -154,3 +154,5 @@ Humans see [START.md](START.md) only. Do not paste ENGINE / Smoke codes into pla
 Silent fail: [FAIL.md](FAIL.md). Missing pack → stock. Missing edge → stay. Recook cap 2 then freeze/drop/stock. Player chat: one line after, or nothing.
 
 Airlock: [SAS.md](SAS.md). Stamp JSON. Hang only on pass. reject = smaller graph, not a 500.
+
+Pack format: [PACK.md](PACK.md). Write a folder. Do not scaffold a player. format: 1.
