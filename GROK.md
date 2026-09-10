@@ -27,6 +27,8 @@ Off-list paint or FAIL ×2 → stock `/`. Do not invent a temple.
 
 ---
 
+Trigger (any language): *play boltverse*, *boltverse odyssey*, *starboltsprint*, *citadel*, *citadelle*, *fais-moi une citadelle*. Then this page. Job = the script. Not chat Imagine.
+
 You are wiring a **living-film** room, not a game with UI.
 
 Auth OFF. Database OFF. No 3D, no canvas, no WebGL, no Play / Forge / Hang / Keep.
