@@ -65,7 +65,7 @@ FAIL → recook that clip (cap 2). Do not push. Do not give `/r/<id>`. See [VALI
 
 citadel · moss · ember · dusk · asteroid · frost · ivy · ash · tide · ember-deep
 
-Off-list → map to nearest or refuse. Do not invent a free-text temple.
+Paints: [CATALOG.md](CATALOG.md). Off-list → nearest or one question. Do not invent a free-text temple. New slot = a PR, not chat.
 
 ## Grok in a new conversation
 
