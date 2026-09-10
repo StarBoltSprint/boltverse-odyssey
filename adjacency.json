@@ -1,0 +1,30 @@
+{
+  "kind": "hall",
+  "doors": ["A", "B"],
+  "slots": [
+    "citadel",
+    "moss",
+    "ember",
+    "dusk",
+    "asteroid",
+    "frost",
+    "ivy",
+    "ash",
+    "tide",
+    "ember-deep",
+    "gold"
+  ],
+  "edges": {
+    "citadel": { "A": null, "B": null },
+    "moss": { "A": "ember", "B": "dusk" },
+    "ember": { "A": "asteroid", "B": "moss" },
+    "dusk": { "A": "moss", "B": "frost" },
+    "asteroid": { "A": "ember", "B": null },
+    "frost": { "A": "dusk", "B": "ivy" },
+    "ivy": { "A": "frost", "B": "ash" },
+    "ash": { "A": "ivy", "B": "tide" },
+    "tide": { "A": "ash", "B": "moss" },
+    "ember-deep": { "A": "ember", "B": "asteroid" },
+    "gold": { "A": "dusk", "B": "ember" }
+  }
+}
