@@ -1,5 +1,6 @@
 # Layer C — Grok vision (one rule, no sermon)
 
+**Required** on stills, walks, breaths. Optional on enter.
 You are **not** kind to a profile wolf.
 
 Look at the 3 frames (or 1 still) Smoke extracted:
