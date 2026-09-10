@@ -1,4 +1,13 @@
-# citadel-room — Bolt Engine living film
+# citadel-room
+
+**Play:** [START.md](START.md) — three stills, one tap, one catalog word.  
+**Play now:** https://boltverse-odyssey.grok.me
+
+Grok / keepers: recipe below. Humans: stop here.
+
+---
+
+# citadel-room — Bolt Engine living film (Grok / kitchen)
 
 **StarBoltSprint.** A player asks Grok for **3 stills** in a citadel style. Grok cooks them with the **same Bolt**. Then the 7 films. **Give the player URL — do not scaffold a new app.**
 
