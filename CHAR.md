@@ -18,9 +18,17 @@ File: [`lock/bolt-back.jpg`](lock/bolt-back.jpg)
 - A different breed, a black dog, a puppy, two Bolts
 - Sitting / lying on a breath or a walk (feet glued, standing)
 
-## Scale
+## Scale (hard lock)
 
-Bolt occupies roughly the lower third, never a giant, never a speck. Same size on spawn / atA / atB.
+Measure = `bboxH / frameH` of the dog mask. Same lens / height / distance on every plate. The dog moves, not the rig. [STILL-PAIR.md](STILL-PAIR.md)
+
+| Pose | `h = bboxH/H` |
+|---|---|
+| Spawn / mid-hall | **0.22 – 0.32** (withers ≈ 1/4 frame H) |
+| Door sill (atA / atB) | **0.35 – 0.40** (soft approach, same lens) |
+| Forbidden | **~0.70** / fills-door (punch-in / dolly) |
+
+Breath: size frozen (Δh/H < 0.08). Walk: spawn-band → sill-band, no dolly. Dissolve does not fix a size jump.
 
 ## How Grok uses this
 
