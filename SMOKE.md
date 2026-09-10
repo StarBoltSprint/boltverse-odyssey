@@ -121,3 +121,5 @@ Optional (walk-A-B, walk-B-A, enter): FAIL = recook or drop — do not block the
 A+B = `scripts/smoke-pack.mjs` (ffmpeg). C = Grok + `scripts/smoke-identity.md` on `.smoke/` frames. Hang needs both.
 
 Per-clip queue (file → graph → identity): [CLIP.md](CLIP.md).
+
+Gate 2 hash: [PHASH.md](PHASH.md) + [`smoke.json`](smoke.json). Last frame = −40ms. Face is still gate 3.
