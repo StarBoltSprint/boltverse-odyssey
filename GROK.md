@@ -24,6 +24,12 @@ Every new conversation. Do not wait to be asked. The stills **are** the frames. 
 Never `image_to_video` a walk or enter on a single still. That invents the journey / clones the dog.
 Breath is the only legal `first = last`.
 
+## Law 1 — floors ([FLOORS.md](FLOORS.md))
+
+Default cook = **floor 1**: 3 stills + 5 films, one room, no Enter.
+Do not jump to Hall' / walk-A-B because it would be "cooler". Visitor = floor 0 (stock). "salle mousse" = floor 1. Enter = only if they ask, catalog neighbor.
+
+
 ## Fridge
 
 Cook **one plate**, then smoke **that plate**, then write `films/`. Hash first. Vision second. Hang last.
@@ -58,7 +64,7 @@ This is the default. Read [CHAR.md](CHAR.md) then [COOK.md](COOK.md) then [PLAYE
 2. If `packs/<id>` already exists → give `https://boltverse-odyssey.grok.me/r/<id>` (or `/` for `citadel`). Stop.
 3. Else cook **3 stills** in that style: spawn → atA → atB (order in COOK.md). Same Bolt, same camera, teal left / gold right.
 4. Show the 3. Wait for ok.
-5. Cook the 7 films from those stills — **Law 0 on every clip**. Encode H264 yuv420p +faststart, **no audio**. Land in `packs/<id>/`.
+5. Cook the **5** films (floor 1: 3 breaths + walk-spawn-A + walk-spawn-B). **Law 0** on every clip. Do **not** cook walk-A-B or Enter unless they asked (floors 2–3). Encode H264 yuv420p +faststart, **no audio**. Land in `packs/<id>/`.
 6. Run `node scripts/validate-pack.mjs packs/<id>` then `node scripts/smoke-pack.mjs packs/<id>`.
 7. FAIL a required clip → recook **that file only**, cap **2**, smoke again. Then give `https://boltverse-odyssey.grok.me/r/<id>`. Never a new preview. Optional FAIL = WARN — recook or drop, do not block the hall.
 
