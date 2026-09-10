@@ -15,11 +15,17 @@ Every new conversation. Do not wait to be asked.
 
 | kind | Imagine call | first | last |
 |---|---|---|---|
-| **walks** | first AND last (`reference_to_video` / `image` + `last_frame`) | start still | arrive still — **distinct** |
+| **walks** | API `image` + **`last_frame`** (hooks / `videos/generations`) | start still | arrive still — **distinct** |
 | **enter** | same | at-still | fill veil — **never** dest spawn |
 | **breath** | `image_to_video` on **one** still | pose still | **same** still |
 
+**`reference_to_video` is not first/last.** The images are *references*, not frames. Imagine *inspires* a walk. It does **not** paste the gold still as the last picture. Walk-B then overshoots into the oval → size pop. **Illegal for walks and enter.**
+
+Chat Grok has no `last_frame` tool. Walks go through `scripts/imagine-hooks.mjs` / `cook-room.mjs`, not chat Imagine.
+
 Never `image_to_video` a walk or enter on a single still. That invents the journey / clones the dog. Breath is the only legal `first = last`.
+
+After the clip: extract last.jpg. If last ≠ arrive still (`gate.size` / `graph.last_not_official`) → recook the walk, cap 2. **Do not** replace a small official still with a fat last frame to “fix” the splice. If last PASSES size, you may copy last → still so the player swap is hash 0. If last FAILS size, recook.
 
 ## Law 1 — floors ([FLOORS.md](FLOORS.md))
 
