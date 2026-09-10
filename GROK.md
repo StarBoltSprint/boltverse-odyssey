@@ -14,6 +14,7 @@ Someone asks for a citadel → give the player URL. Cook writes into `packs/<id>
 Ops (folders, PACK, encode, first+last, freeze, veil color): [HANG.md](HANG.md).
 DOM clock: [ENGINE.md](ENGINE.md).
 Box check: [VALIDATE.md](VALIDATE.md).
+Content lint: [SMOKE.md](SMOKE.md).
 
 ## If they ask for stills / a citadel style
 
@@ -24,8 +25,8 @@ This is the default. Read [CHAR.md](CHAR.md) then [COOK.md](COOK.md) then [PLAYE
 3. Else cook **3 stills** in that style: spawn → atA → atB (order in COOK.md). Same Bolt, same camera, teal left / gold right.
 4. Show the 3. Wait for ok.
 5. Cook the 7 films from those stills (COOK.md). Encode H264 yuv420p +faststart, **no audio**. Land in `packs/<id>/`.
-6. Run `node scripts/validate-pack.mjs packs/<id>`. FAIL → recook, do not push, do not give the URL.
-7. PASS → give `https://boltverse-odyssey.grok.me/r/<id>`. Never a new preview.
+6. Run `node scripts/validate-pack.mjs packs/<id>` then `node scripts/smoke-pack.mjs packs/<id>`.
+7. FAIL a required clip → recook **that file only**, cap **2**, smoke again. Then give `https://boltverse-odyssey.grok.me/r/<id>`. Never a new preview. Optional FAIL = WARN — recook or drop, do not block the hall.
 
 Never `text_to_image` a new dog. Never a 3D dungeon.
 
@@ -39,6 +40,7 @@ Read [ENTER.md](ENTER.md) then [HANG.md](HANG.md).
 4. Hang `enter-hall-a` in the `ENTER{}` map — **outside the 7**. Optional return `enter-a-hall`. Door B uses gold-empty veil, not teal.
 5. `ended(enter)` → **switch room first**, then dest `breath-spawn`. If dest breath walks, freeze the spawn still (HANG.md).
 6. Neighbor **citadel** (moss → ember) = another pack id on the **same** player, not a new site.
+7. Smoke the enter clip. WARN clone → recook cap 2 or drop the link.
 
 ## Product
 
@@ -99,4 +101,4 @@ Map by motion, not by filename. Skip still-cook.
 - Walk teal → gold → `walk-A-B`
 - Walk gold → teal → `walk-B-A`
 
-Land in `packs/<id>/`. Run validate-pack. Give the player URL. No chrome.
+Land in `packs/<id>/`. Run validate-pack then smoke-pack. Give the player URL. No chrome.
