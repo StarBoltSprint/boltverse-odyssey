@@ -43,7 +43,7 @@ Off-list → nearest, or ask "did you mean ember?". Never "describe any temple".
 
 | lock | value |
 |---|---|
-| Bolt | [CHAR.md](CHAR.md) · [`lock/bolt-back.jpg`](lock/bolt-back.jpg) |
+| Bolt | [CHAR.md](CHAR.md) — **full white, ZERO black, no saddle** · [`lock/bolt-back.jpg`](lock/bolt-back.jpg) |
 | Camera | lock-off, 9:16, plate 720×1280 |
 | Doors | **energy rifts** — A left cyan-teal, B right gold-orange. Jambs+sill+gap, RECT fill, never wood. [DOORS.md](DOORS.md) |
 | Spawn | both doors in frame, Bolt center, back to camera |
@@ -80,7 +80,7 @@ Without `stills/a/` Grok writes over hall and the citadel dies.
 
 Prompt slot:
 
-> Same dog as the first image — cream German Shepherd, teal collar, back to camera, standing. Same camera and door layout as the second image: cyan-teal energy rift left, gold-orange energy rift right, both full RECT holes with jambs and sills, lock-off. Never wood doors. Hall restyled with ONLY these materials (from catalog/<id>.md): **{two lines}**. Photoreal 9:16. No face, no UI, no 3/4. No extra door.
+> Same dog as the first image — FULL-white German Shepherd, ZERO black on the coat, no saddle, no mask, no black ears, teal collar, back to camera, standing, large (spawn size band). Same camera and door layout as the second image: cyan-teal energy rift left, gold-orange energy rift right, both full RECT holes with jambs and sills, lock-off. Never wood doors. Hall restyled with ONLY these materials (from catalog/<id>.md): **{two lines}**. Photoreal 9:16. No face, no UI, no 3/4. No extra door.
 
 Save → `stills/spawn.jpg` (or `stills/a/spawn.jpg`). Scale 720×1280.
 
@@ -88,7 +88,7 @@ Save → `stills/spawn.jpg` (or `stills/a/spawn.jpg`). Scale 720×1280.
 
 `image_to_image` · source = the spawn you just made
 
-> Same hall, same camera, same light, same doors. Only the dog walks to the teal portal on the left and stops, still back to camera. Gold portal stays in frame. Feet on the floor.
+> Same hall, same camera, same light, same doors. Only the dog walks to the teal portal on the left and stops, still back to camera. Gold portal stays in frame. Feet on the floor. Coat stays full white — no saddle.
 
 Save → `stills/at-a.jpg` (or `stills/a/at-a.jpg`).
 
@@ -96,7 +96,7 @@ Save → `stills/at-a.jpg` (or `stills/a/at-a.jpg`).
 
 `image_to_image` · source = **spawn** (not atA)
 
-> Same hall, same camera, same light, same doors. Only the dog walks to the gold portal on the right and stops, still back to camera. Teal portal stays in frame. Feet on the floor.
+> Same hall, same camera, same light, same doors. Only the dog walks to the gold portal on the right and stops, still back to camera. Teal portal stays in frame. Feet on the floor. Coat stays full white — no saddle.
 
 Save → `stills/at-b.jpg` (or `stills/a/at-b.jpg`).
 
@@ -107,6 +107,7 @@ If any FAIL below, recook from spawn. Do not invent a fourth still. Do not cook 
 ## Stills FAIL (recook)
 
 - Bolt face / 3/4 / profile / different dog
+- grey / silver coat, black saddle, black mask, black ears (`identity.coat` / `identity.saddle`)
 - Doors swapped or missing (spawn must show **both**)
 - Wood leaves / ajar timber / flat teal paint / third door / RECT morphing to a circle ([DOORS.md](DOORS.md))
 - Camera moved / zoomed / tilted
@@ -127,14 +128,14 @@ Floor 1 films → `films/` (the 5). Floor 2 = walk-A-B / B-A if asked. Floor 3 =
 | breath-spawn | image_to_video on spawn | spawn | spawn | 6s | in-room: loop, feet glued |
 | breath-A | image_to_video on atA | atA | atA | 10s | in-room: loop, feet glued |
 | breath-B | image_to_video on atB | atB | atB | 10s | in-room: loop, feet glued |
-| walk-spawn-A | reference_to_video spawn+atA | spawn | atA | 10s | back-to-camera the **whole** clip |
-| walk-spawn-B | reference_to_video spawn+atB | spawn | atB | 10s | idem |
-| walk-A-B | reference_to_video atA+atB | atA | atB | 10s | **floor 2** — only if asked |
-| walk-B-A | reference_to_video atB+atA | atB | atA | 10s | **floor 2** — only if asked |
+| walk-spawn-A | API last_frame spawn→atA | spawn | atA | 10s | back-to-camera the **whole** clip |
+| walk-spawn-B | API last_frame spawn→atB | spawn | atB | 10s | idem |
+| walk-A-B | API last_frame atA→atB | atA | atB | 10s | **floor 2** — only if asked |
+| walk-B-A | API last_frame atB→atA | atB | atA | 10s | **floor 2** — only if asked |
 
 Walk prompt slot (every walk):
 
-> Lock-off camera. Same hall. The cream German Shepherd with the teal collar walks slowly from the first frame pose to the last frame pose, always back to camera, never turning a 3/4 or a profile. Feet on the floor. Both portals stay in the hall. No face, no UI, no morph. 10 seconds.
+> Lock-off camera. Same hall. The FULL-white German Shepherd with the teal collar (ZERO black on the coat, no saddle) walks slowly from the first frame pose to the last frame pose, always back to camera, never turning a 3/4 or a profile. Feet on the floor. Both portals stay in the hall. No face, no UI, no morph. 10 seconds.
 
 ### Breath — two laws
 
@@ -170,9 +171,11 @@ Hang: [GROK.md](GROK.md) + [ENGINE.md](ENGINE.md). Open = breath-spawn. No chrom
 
 - 3/4, profile, fashion-walk, face
 - Bolt morph (coat, collar, extra limb)
+- grey / saddle / black ears (`identity.coat` / `identity.saddle`)
 - Hall morph, door color swap
 - First frame ≠ start still / last frame ≠ arrive still (dissolve will not fix this)
 - Cooked as `image_to_video` on one still (violates Law 0)
+- Cooked as chat `reference_to_video` (not last_frame)
 
 ## Enter — second room on a door (after both packs exist)
 
