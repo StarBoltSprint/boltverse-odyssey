@@ -35,7 +35,7 @@ Off-list → nearest, or ask "did you mean ember?". Never "describe any temple".
 |---|---|
 | Bolt | [CHAR.md](CHAR.md) · [`lock/bolt-back.jpg`](lock/bolt-back.jpg) |
 | Camera | lock-off, 9:16, plate 720×1280 |
-| Doors | **A = teal, left** · **B = gold, right** |
+| Doors | **energy rifts** — A left cyan-teal, B right gold-orange. Jambs+sill+gap, RECT fill, never wood. [DOORS.md](DOORS.md) |
 | Spawn | both doors in frame, Bolt center, back to camera |
 | atA | Bolt at teal; gold still visible |
 | atB | Bolt at gold; teal still visible |
@@ -69,7 +69,7 @@ Without `stills/a/` Grok writes over hall and the citadel dies.
 
 Prompt slot:
 
-> Same dog as the first image — cream German Shepherd, teal collar, back to camera, standing. Same camera and door layout as the second image: teal portal left, gold portal right, both fully visible, lock-off. Hall restyled with ONLY these materials (from catalog/<id>.md): **{two lines}**. Photoreal 9:16. No face, no UI, no 3/4. No extra door.
+> Same dog as the first image — cream German Shepherd, teal collar, back to camera, standing. Same camera and door layout as the second image: cyan-teal energy rift left, gold-orange energy rift right, both full RECT holes with jambs and sills, lock-off. Never wood doors. Hall restyled with ONLY these materials (from catalog/<id>.md): **{two lines}**. Photoreal 9:16. No face, no UI, no 3/4. No extra door.
 
 Save → `stills/spawn.jpg` (or `stills/a/spawn.jpg`). Scale 720×1280.
 
@@ -97,6 +97,7 @@ If any FAIL below, recook from spawn. Do not invent a fourth still. Do not cook 
 
 - Bolt face / 3/4 / profile / different dog
 - Doors swapped or missing (spawn must show **both**)
+- Wood leaves / ajar timber / flat teal paint / third door / RECT morphing to a circle ([DOORS.md](DOORS.md))
 - Camera moved / zoomed / tilted
 - Hall architecture morphs between spawn and atA/atB
 - Plate not 9:16
