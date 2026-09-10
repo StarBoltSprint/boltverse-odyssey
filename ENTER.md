@@ -3,7 +3,7 @@
 # ENTER — room 1 → room 2 (threshold)
 
 Walks stay in **one** hall. **Enter** is the only clip that changes room.
-Repo: `https://github.com/StarBoltSprint/citadel-room`
+Repo: `https://github.com/StarBoltSprint/boltverse-odyssey`
 
 Walk A ended → **breath-A**. Stay. The player chooses: tap A again = enter, or tap B = walk A→B.
 **Never auto-enter** when a walk ends.

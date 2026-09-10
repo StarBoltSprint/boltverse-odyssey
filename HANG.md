@@ -5,7 +5,7 @@ Only after Smoke **pass** ([SAS.md](SAS.md)). FAIL never writes `films/`.
 This GitHub repo is the **recipe**, not the running hall.
 `stills/` and `films/` at root are empty (`.gitkeep`). Hung discs live in `packs/<id>/`. Grok cooks there and the player at https://boltverse-odyssey.grok.me fetches them.
 
-Repo: `https://github.com/StarBoltSprint/citadel-room`
+Repo: `https://github.com/StarBoltSprint/boltverse-odyssey`
 
 ## Validate the box
 

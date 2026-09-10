@@ -1,6 +1,6 @@
 # GROK — floor 1 (the only default job)
 
-Repo: `https://github.com/StarBoltSprint/citadel-room`  
+Repo: `https://github.com/StarBoltSprint/boltverse-odyssey`  
 Player: https://boltverse-odyssey.grok.me
 
 ```

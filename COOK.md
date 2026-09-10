@@ -2,7 +2,7 @@
 
 This is the product. The player does **not** pick films first. They ask Grok for **3 stills** in a citadel style. Grok supplies them with the **same Bolt** ([CHAR.md](CHAR.md)). **Do not wait.** Stills → smoke → films. Order: [COOKROOM.md](COOKROOM.md). Wait only if COOK_DEBUG=1.
 
-Repo: `https://github.com/StarBoltSprint/citadel-room`
+Repo: `https://github.com/StarBoltSprint/boltverse-odyssey`
 Ops / folders / encode / PACK: [HANG.md](HANG.md).
 
 ## Clip queue

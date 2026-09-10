@@ -1,7 +1,7 @@
 # ENGINE — graphic conditions for the enter transition
 
 The engine **cooks nothing**. It **chains plates**.
-Repo: `https://github.com/StarBoltSprint/citadel-room`
+Repo: `https://github.com/StarBoltSprint/boltverse-odyssey`
 
 Cook laws: [ENTER.md](ENTER.md). Ops: [HANG.md](HANG.md). This file is the player clock + DOM.
 

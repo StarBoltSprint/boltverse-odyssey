@@ -10,7 +10,7 @@ packs/<id>/films/
 
 **Stock (golden hall)** is not in `main` (too heavy). It is a Release:
 
-https://github.com/StarBoltSprint/citadel-room/releases/tag/citadel-stock-v1
+https://github.com/StarBoltSprint/boltverse-odyssey/releases/tag/citadel-stock-v1
 
 Download `citadel-stock-v1.zip`, unzip into `packs/citadel/`, then:
 
