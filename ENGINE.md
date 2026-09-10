@@ -3,9 +3,42 @@
 The engine **cooks nothing**. It **chains plates**.
 Repo: `https://github.com/StarBoltSprint/citadel-room`
 
-Cook laws: [ENTER.md](ENTER.md). This file is the player clock.
+Cook laws: [ENTER.md](ENTER.md). This file is the player clock + DOM.
 
 Constants: `DISSOLVE_MS = 280` (walks). `CURTAIN_MS = 500` (exit of enter only).
+
+## What DOM means
+
+**DOM** = *Document Object Model*. The HTML tree of the page. Each tag (`<div>`, `<img>`, `<video>`) is a node.
+
+This engine is **not** 3D, not a canvas, not WebGL. The hall is **four stacked nodes**. The only compositor is CSS `opacity`. The browser paints them. No `z-index` — **HTML order is z-order**.
+
+```
+stage  <div>   h-dvh w-full overflow-hidden bg-void  (#07060a)
+ └─ still  <img>     photo of the current pose     [back]
+ └─ video A
+ └─ video B          vis / hid, only one opaque
+ └─ veil   <img>     empty cyan shutter            [front]
+```
+
+Pointer is on the **stage**. The four plates are `pointer-events-none`. No chrome, no tap rings, no Play.
+
+All four plates share the same class:
+
+```
+absolute inset-0 m-auto h-full w-full object-contain
+```
+
+They lock onto the **same 9:16 photo**. Letterbox = void. Hits are on that picture rectangle (`containPlate`), not on the stage.
+
+| layer | role | opacity default |
+|---|---|---|
+| **still** | pose photo. Anti black-hole | 1 (0 during enter) |
+| **video A / B** | vis / hid | 0 at boot |
+| **veil** | empty cyan curtain | 0 except exit of enter |
+
+Still **under** videos: if `play()` fails, you still see the pose.
+Veil **on top**: it can hide enter **and** dest for 500 ms without mixing two dogs.
 
 ## 1. Graph — when enter fires
 
@@ -23,17 +56,39 @@ atA    tap B  →  walk-A-B                      still room 1
 
 Without this graph the seuil clip never plays — or it plays too soon.
 
-## 2. DOM — 4 layers, fixed order
+## 2. vis / hid + genRef — never one `<video>`
+
+Two slots. Load and `play()` in the **hidden** slot. Swap **only** if `paused === false`.
 
 ```
-[back]  still <img>     spawn / atA / atB of the current room
-        video A
-        video B         vis/hid, only one opaque
-[front] veil <img>      empty cyan, opacity 0 except during curtain
+kick:
+  hid.muted = true          // before play — unmute-before-play freezes the walk at t=0
+  hid.currentTime = 0
+  hid.play()
+    .then → if actually playing (paused === false):
+              paint(hid, fade)
+              hide(vis, fade)
+              vis.pause()     // two films fighting pauses the new one
+              visRef = the other slot
 ```
 
-All: `absolute inset-0`, `object-contain`, plate **720×1280** 9:16.
-Hits on the **picture**, not the letterbox (A = left 40%, B = right 40%, center miss).
+If you paint **before** `play()`, you overlay a black frame on the still = dead plate.
+
+`genRef` increments on every new kick. Any callback from a previous load is ignored (tap during a load).
+Failed `play()` → `walkingRef = false`, keep the still, taps still live.
+
+Fade is **CSS opacity only**:
+
+```
+fade = 0     same clip
+     = 0     entering an enter
+     = 0     leaving an enter     ← curtain ≠ dissolve
+     = 280   otherwise (walks)
+```
+
+`el.style.transition = ms ? opacity ${ms}ms linear : none`
+
+**Law:** never animate opacity between two frames that have a dog in two places.
 
 ## 3. Clock of the enter
 
@@ -49,22 +104,79 @@ Hits on the **picture**, not the letterbox (A = left 40%, B = right 40%, center 
 
 Forbidden: 500 ms fade of **enter video** (dog left) × **dest breath** (dog center) → two ghosts.
 
-## 4. Still — picture-clock
+At `ended`, what you see = **empty cyan veil**. Under it: spawn₂ already. The enter dog is gone **before** the fade. No clone.
 
-- Always a still under the videos. Never a black hole.
-- **During enter: still opacity 0.** Else still atA (dog left) + enter video = engine clone, even if the cook is clean.
-- On ended: still = `spawn` of **room 2** *before* the veil drops. Hall′ is already behind the curtain.
-- Dest breath = loop of that **same** still (posed, not a walk).
+### Double rAF before the curtain
 
-## 5. Dual video (vis / hid)
+```
+veil.style.transition = none
+veil.style.opacity = 1
+requestAnimationFrame(() => {
+  requestAnimationFrame(() => {
+    veil.style.transition = opacity 500ms linear
+    veil.style.opacity = 0
+  })
+})
+```
+
+One `rAF` is not enough: the browser can skip the `opacity = 1` paint and start the transition from 0 → 0. **No curtain.**
+Double `rAF` = paint veil at 1 **then** start 1 → 0.
+
+Hide enter at **0 ms** (before the rAF). Paint dest at **0 ms** under the veil. Dest is already Hall′. Veil lifts onto a posed dog.
+
+## 4. Still.src / opacity by state
+
+`showStill(pose, room)` only changes `src` if it moved.
+
+| state | still.src | still.opacity | veil | vis |
+|---|---|---|---|---|
+| boot / breath-spawn hall | spawn₁ | **1** | 0 | breath-spawn |
+| walk | start then arrive still | **1** | 0 | walk (dissolve 280 over it) |
+| breath-A | atA | **1** | 0 | breath-A |
+| **enter** | (atA, but invisible) | **0** | 0 | enter |
+| enter ended (first paint) | **spawn₂** | **1** | **1** | dest breath under veil |
+| after 500 ms | spawn₂ | **1** | 0 | dest breath |
+| play() failed | current pose | **1** | 0 | hidden |
+
+**During enter: still opacity 0.** Else still atA (dog left) + enter video = engine clone, even if the cook is clean.
+On ended: still = `spawn` of **room 2** *before* the veil drops. Hall′ is already behind the curtain.
+Dest breath = loop of that **same** still (posed, not a walk).
+Always a still under the videos. Never a black hole — except enter, which hides it on purpose.
+
+## 5. Hits — containPlate 40 / 20 / 40
+
+Not a canvas. No rings.
+
+```
+pointerdown on stage
+  if walkingRef → return
+  plate = containPlate(stage width, height)   // 9:16 box inside the dvh
+  plate.x += stage.left; plate.y += stage.top
+  nx = (clientX - plate.x) / plate.w
+  ny = (clientY - plate.y) / plate.h
+  outside 0..1 → miss          // letterbox = void, not a door
+  nx < 0.4 → A                 // teal, left 40%
+  nx > 0.6 → B                 // gold, right 40%
+  else     → miss              // center 20%
+  edgeFor(pose, hit)           → walk
+  else enterFor(room, pose, hit) → enter
+```
+
+`containPlate` = letterbox 9:16 (`object-contain` math). Hits on the **picture**, never the black bars.
+
+`spawn` has no enter. `atA` tap A = enter if `ENTER[hall].A` exists, else stay.
+
+## 6. Dual video laws (do not recook these bugs)
 
 - Swap **only** if `play()` succeeded (`paused === false`).
 - `muted=true` **before** `play()`.
 - Pause the outgoing **after** the swap.
 - Enter: `loop=false`. Dest breath: `loop=true`, `currentTime=0`.
 - Paint dest at **0 ms** (under the veil). No 280 dissolve on this join.
+- Both videos **hidden** until the first clip actually plays.
+- Preload every clip + still + enter in `useEffect` (off-DOM `<video>` / `Image`) so the first tap is not a black hole.
 
-## 6. Assets the engine **requires**
+## 7. Assets the engine **requires**
 
 | file | role | condition |
 |---|---|---|
@@ -79,12 +191,12 @@ If last(enter) reveals Hall′ → Imagine already cloned; the engine cannot rep
 If the veil has a dog → ghost for 500 ms.
 If dest breath **walks** → he re-crosses Hall′ after the curtain.
 
-## 7. One plate
+## 8. One plate
 
 Every mp4 / jpg: **720×1280**, `object-contain`.
 A 784×1168 clip = lock-off dead (the frame jumps). Center-crop 9:16 then scale.
 
-## 8. What the engine **cannot** save
+## 9. What the engine **cannot** save
 
 - Clone baked in the enter (first left + last center)
 - Depth spawn₂ ≠ spawn₁ (fake travelling)
@@ -93,6 +205,13 @@ A 784×1168 clip = lock-off dead (the frame jumps). Center-crop 9:16 then scale.
 
 That is the plate. The player does not interpolate.
 
+## What the DOM **does** guarantee
+
+- never a black hole (still always there, except enter off on purpose)
+- never two videos fighting (pause outgoing)
+- never enter from spawn
+- curtain without overlaying two dogs (hide enter 0 + empty veil + dest under)
+
 ## One line
 
-Cut 0 into enter, still off, 1 dog until teal. Hide enter 0. Empty cyan veil 500 ms over a spawn₂ **already posed**. Never two dogs on screen at the same time.
+Cut 0 into enter, still off, 1 dog until teal. Hide enter 0. Empty cyan veil 500 ms (double rAF) over a spawn₂ **already posed**. Never two dogs on screen at the same time.
