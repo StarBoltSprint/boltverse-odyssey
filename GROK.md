@@ -144,3 +144,5 @@ Map by motion, not by filename. Skip still-cook.
 Land in `packs/<id>/`. If you must recook a walk/enter: **Law 0**. Run validate-pack then smoke-pack. Give the player URL. No chrome.
 
 Sprint / Lane: [PLAY.md](PLAY.md) — not the hall player. Door `kind: sprint` hands off.
+
+Biome kits (sprint, offline): [BIOMES.md](BIOMES.md). Do not replace paints. `rome` → ember. `mars` → asteroid.
