@@ -129,3 +129,15 @@ He ends already at the arrive still. No walk-back to center.
 ```
 
 Still FAIL → drop the edge (tap = stay). Never write the clone into `films/`.
+
+## Walk is one trip (hard)
+
+Frost walk-B (2026-09-10): spawn → gold 0–10s PASS. **t=11s SNAP back to spawn**, then gold again. FAIL `graph.walk_return`.
+
+A walk never returns home. One body, spawn → sill, stop. No loop inside the mp4. No teleport.
+
+```
+mid-clip (t > 40%) ≈ spawn still → FAIL graph.walk_return
+duration > ~13s on a walk → probably a loop. Recook shorter.
+loop=false. ended → breath-arrive, never replay the walk.
+```
