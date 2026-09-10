@@ -17,6 +17,8 @@ Every new conversation. Do not wait to be asked.
 
 Never `image_to_video` a walk or enter on a single still. That invents the journey / clones the dog. Breath is the only legal `first = last`.
 
+After **each** plate: `smoke(file, kind, refs)` ([SMOKE.md](SMOKE.md)). PASS writes `films/`. FAIL recooks **this** plate, cap 2.
+
 ## What the player may change
 
 **Citadel style only.** Stone, crystal, neon, moss, gold temple, flooded ruin, anything — as long as it stays a hall with two doors.
