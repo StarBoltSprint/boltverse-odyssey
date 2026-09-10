@@ -1,13 +1,22 @@
 # HANG — how the pack lands in the player
 
 This GitHub repo is the **recipe**, not the running hall.
-`stills/` and `films/` here are empty (`.gitkeep`). Grok cooks into the **preview app** and wires [ENGINE.md](ENGINE.md).
+`stills/` and `films/` at root are empty (`.gitkeep`). Hung discs live in `packs/<id>/`. Grok cooks there and the player at https://boltverse-odyssey.grok.me fetches them.
 
 Repo: `https://github.com/StarBoltSprint/citadel-room`
 
+## Validate the box
+
+```
+node scripts/validate-pack.mjs packs/<id>
+```
+
+FAIL → do not hang, do not give the URL. [VALIDATE.md](VALIDATE.md).
+This is shape (json + stills + films + encode). Not Smoke (Bolt / clone / first-last).
+
 ## Multi-room folders (do not overwrite room 1)
 
-Room 1 = hall (root). Room 2 = folder `a`. Seuil stills = `seuil/`.
+Room 1 = hall (root of the pack). Room 2 = folder `a`. Seuil stills = `seuil/`.
 
 ```
 stills/spawn.jpg
@@ -55,7 +64,7 @@ ffmpeg -i in.mp4 -map 0:v:0 \
 ## Imagine — first AND last must be distinct (walks + enter)
 
 Walks: `first = start still`, `last = arrive still`. Different images.
-Enter: `first = atA`, `last = same-slot teal-full` (or gold-full). Different images. **Never** `last = Hall′ spawn`.
+Enter: `first = atA`, `last = same-slot teal-full` (or gold-full). Different images. **Never** `last = Hall' spawn`.
 
 Breath: `first = last = pose still` (the one legal loop).
 
@@ -67,7 +76,7 @@ If enter is cooked as `image_to_video` on a single still, Imagine invents a jour
 
 Law: dest breath after enter is **posed**. Feet glued. Hall frozen.
 
-If `image_to_video` on spawn₂ still walks / turns / leaves spawn → **do not hang it**. Replace with a still loop:
+If `image_to_video` on spawn2 still walks / turns / leaves spawn → **do not hang it**. Replace with a still loop:
 
 ```
 ffmpeg -loop 1 -i stills/a/spawn.jpg -t 6 \
@@ -76,7 +85,7 @@ ffmpeg -loop 1 -i stills/a/spawn.jpg -t 6 \
   films/a/breath-spawn.mp4
 ```
 
-Better a freeze than a second walk across Hall′ after the curtain.
+Better a freeze than a second walk across Hall' after the curtain.
 
 ## Enter is outside the 7
 
@@ -109,7 +118,7 @@ Preload enter clips **separately** — they are not in `Object.values(room.clips
 | **A** (teal, left) | `stills/seuil/teal-fill.jpg` | `stills/seuil/teal-empty.jpg` |
 | **B** (gold, right) | `stills/seuil/gold-fill.jpg` | `stills/seuil/gold-empty.jpg` |
 
-Hardcoding `TEAL_VEIL` on a gold enter = cyan shutter on an gold threshold. FAIL.
+Hardcoding `TEAL_VEIL` on a gold enter = cyan shutter on a gold threshold. FAIL.
 `veilRef.src` = empty still of **that** door before opacity 1.
 
 ## Play flags (iOS)
@@ -128,4 +137,4 @@ Without `playsInline`, iOS goes fullscreen and kills the hall.
 
 ## One line
 
-Room 2 in `a/`. Seuil in `seuil/`. Bump PACK. First ≠ last on enter. Freeze dest breath if it walks. Veil color = the door. Enter lives in `ENTER{}`, switch room, then breath dest.
+Room 2 in `a/`. Seuil in `seuil/`. Bump PACK. First ≠ last on enter. Freeze dest breath if it walks. Veil color = the door. Enter lives in `ENTER{}`, switch room, then breath dest. Validate before hang.
