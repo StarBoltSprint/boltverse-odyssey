@@ -23,3 +23,5 @@ This is the **box**. It does not look at Bolt, clones, or first/last frames. Tha
 Needs `ffprobe` or `ffmpeg`. Walk-A-B, walk-B-A, enter clips are optional here.
 
 FAIL = Grok recooks that file (cap 2, see SMOKE.md). Never push a FAIL pack. The player will ignore a dead still and fall back to the golden hall — do not rely on that.
+
+The pack contract: [PACK.md](PACK.md). This script is the box. Smoke is the eye, before write.
