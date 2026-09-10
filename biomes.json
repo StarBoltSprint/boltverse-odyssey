@@ -1,0 +1,37 @@
+{
+  "railsVersion": "lockoff-back-v1",
+  "ids": ["forest", "moss", "dusk", "ember", "asteroid"],
+  "alias": {
+    "forest": "forest",
+    "ice": "forest",
+    "crystal": "forest",
+    "jungle": "moss",
+    "moss": "moss",
+    "dusk": "dusk",
+    "night": "dusk",
+    "ember": "ember",
+    "fire": "ember",
+    "rome": "ember",
+    "roman": "ember",
+    "forum": "ember",
+    "asteroid": "asteroid",
+    "mars": "asteroid",
+    "space": "asteroid",
+    "void": "asteroid",
+    "cosmos": "asteroid"
+  },
+  "neighbors": {
+    "forest": ["moss", "dusk"],
+    "moss": ["forest", "dusk"],
+    "dusk": ["forest", "ember"],
+    "ember": ["dusk", "asteroid"],
+    "asteroid": ["ember"]
+  },
+  "feel": {
+    "forest": "crystal-ice",
+    "moss": "wet green",
+    "dusk": "purple quiet",
+    "ember": "bronze warmth",
+    "asteroid": "void-stone"
+  }
+}
