@@ -54,9 +54,11 @@ Compare **first** and **last** frame to the official still (aHash, ham < 12 ≈ 
 | walk-A-B | first ≈ atA, last ≈ atB |
 | enter | first ≈ at-still, last ≈ fill veil, **not** Hall' spawn |
 
-Rules: `graph.first_eq_last` `graph.first_not_official` `graph.last_not_official` `graph.last_is_dest_spawn` `clone.two_dogs`
+Rules: `graph.first_eq_last` `graph.first_not_official` `graph.last_not_official` `graph.last_is_dest_spawn` `clone.two_dogs` plus **still-pair** `gate.rig` `gate.size` `gate.yaw` `gate.place` `gate.ncc` ([STILL-PAIR.md](STILL-PAIR.md))
 
 Drift of last frame → `graph.last_not_official`. Dissolve does not fix it.
+
+Still-pair: SSIM the hall, PCA/NCC the back. One far signal = illegal edge. [STILL-PAIR.md](STILL-PAIR.md).
 
 ### C. Identity + hall (vision, 3 frames)
 
