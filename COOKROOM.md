@@ -8,9 +8,12 @@ Tap never cooks. [DONT.md](DONT.md).
 ## Command
 
 ```
-citadel dusk
-# or: node scripts/cook-room.mjs dusk
+node scripts/cook-room.mjs moss --dry-run
+COOK_DEBUG=1 node scripts/cook-room.mjs dusk
+node scripts/cook-room.mjs moss          # once Imagine hooks are wired
 ```
+
+`imagineStill` / `imagineClip` throw until wired. Until then: **--dry-run** only.
 
 `slot` ∈ [CATALOG.md](CATALOG.md). Off-list → print stock URL, exit 1. No Imagine.
 
