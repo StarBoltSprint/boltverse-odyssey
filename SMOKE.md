@@ -1,3 +1,7 @@
+# SMOKE — fridge door
+
+Architecture of the lock: [SAS.md](SAS.md). Three gates: [CLIP.md](CLIP.md). Hash: [PHASH.md](PHASH.md). Silent: [FAIL.md](FAIL.md).
+
 # SMOKE — fridge door (not a sermon)
 
 `#704` is the list. The machine is `smoke(file, kind, refs) → PASS | FAIL + a rule`.
