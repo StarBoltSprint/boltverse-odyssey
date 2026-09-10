@@ -13,7 +13,7 @@ DEFAULT JOB = floor 1
 ```
 
 Read [CHAR.md](CHAR.md) + [COOK.md](COOK.md) + [COOKROOM.md](COOKROOM.md) after this page.  
-Read [ENTER.md](ENTER.md) **only if** the user asked for a neighbor door.  
+Hall′: read [adjacency.json](adjacency.json) first — `to` must be that slot. Then [ENTER.md](ENTER.md) **only if** the user asked for a neighbor door.  
 Read [ENGINE.md](ENGINE.md) **only if** you are patching the player (you are not).
 
 Off-list paint or FAIL ×2 → stock `/`. Do not invent a temple.
