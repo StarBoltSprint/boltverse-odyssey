@@ -51,7 +51,8 @@ Composition examples (camera + door layout, not the player's hall):
 - "citadelle mousse" / "citadel moss" → floor 1, `cookRoom("moss")`
 - "braise" / "ember" → `ember`
 - off-list ("temple martien") → ask nearest paint, do not cook
-- "branche room 2 sur la porte A" → floor 3, neighbor on the catalog map only ([FLOORS.md](FLOORS.md) [CATALOG.md](CATALOG.md))
+- "branche room 2 sur la porte A" → floor 3, `kind: hall` ([LINKS.md](LINKS.md))
+- "colle le sprint forest sur la porte B" → `kind: sprint`, biome Lane, Bolt exits ([LINKS.md](LINKS.md))
 
 If they give **no** paint, do not cook — send `/` (stock). If they give **7 videos**, skip still-cook — map and hang ([GROK.md](GROK.md)).
 
