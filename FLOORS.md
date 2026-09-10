@@ -18,8 +18,8 @@ Nobody asked for a hall. The site still works.
 
 ### Floor 1 — One style (default cook)
 
-"Citadel moss."  
-Same graph as stock. Same Bolt, same camera. Only the **materials** change.  
+"Citadel moss." One id from [CATALOG.md](CATALOG.md).  
+Same graph as stock. Same Bolt, same camera. Only the **materials** change. Not a novel.  
 Still **one** room. Still **no** Enter.  
 Out = `/r/moss`. Second tap = stay.
 
