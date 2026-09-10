@@ -79,3 +79,5 @@ After the player code changes (this Grok Build), the keeper **republishes** grok
 After a **pack** is pushed here, no republish — the player fetches `packs/<id>`.
 
 `stills/` and `films/` at repo root stay empty. Packs live under `packs/`.
+
+One reader. The world is a folder: [PACK.md](PACK.md). Do not fork ENGINE for a new hall.
