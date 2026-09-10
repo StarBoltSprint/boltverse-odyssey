@@ -1,0 +1,53 @@
+# STILL-PAIR — lock gate before Hang
+
+Before Hang, two stills `I_a = stillEnd(A)` and `I_b = stillStart(B)` must match the **lock**, not "same artwork". Paint (ivy, ember) may drift a little. Rig / size / yaw / place may not.
+
+`matchPose(a,b,edge) → { ok, why[] }` in [scripts/still-pair.mjs](scripts/still-pair.mjs). Wired into [SMOKE.md](SMOKE.md) layer B.
+
+One far signal = illegal edge. Recook. Do not Hang.
+
+## 4 signals
+
+| Signal | = |
+|---|---|
+| **Rig** | doors / horizon / pillar X stable (hall SSIM, upper ~55%) |
+| **Size** | `bboxH / H` of the white-dog mask |
+| **Yaw** | back vs profile vs ¾ (PCA axis of the mask) |
+| **Place** | paws / centroid XY in 9:16 |
+
+## Pipeline (cheap → network last)
+
+0. Survey from lock stills (doors, pawsY). v1 compares A vs B; lock family = spawn still of the pack.
+1. **Hall SSIM** — upper ~55% (doors+ribs), light blur. High + dog change = OK walk. Low hall = new cam/room → FAIL except `enter`.
+2. **Dog mask** — white lower-third. bbox (size+place), centroid, **PCA yaw** (back ≈ vertical; profile ≈ horizontal).
+3. **NCC back-thumb** — withers→paws crop slid on lower ~45%. Peak = where / score = is it the back-GSD. 2 far peaks → `gate.clone`.
+4. **Withers hist** — high luma / low sat = white fur; near-black = void/cape.
+5. Network (layer C) only if dispute. Never SMPL / rotate-profile-into-back.
+
+Start thresholds:
+
+```
+|Δ(h/H)| < 0.08          // walk: < 0.12
+|Δaxis|  < ~32°
+|Δcx/W|  < 0.08        // walk-A: drift LEFT OK
+```
+
+Breath→breath = tight. Walk-spawn-A = Δcx toward the door + slight Δh OK.
+
+## Tolerances by edge
+
+| Edge | Hall | Size | Yaw | Place |
+|---|---|---|---|---|
+| breath loop / breath→walk same | high | tight | tight | tight |
+| walk→breath dest | high | grow OK | back | destward OK |
+| enter | **low OK** | similar | back | reset spawn |
+
+Video frame vs jpeg still: hall SSIM is noisy (encode). **Yaw / size / NCC still FAIL.** Hall-only on that pair = WARN (`warnHall`), recook if you can.
+
+## Anti
+
+Optical flow "he turned = OK". Face landmarks. Match per-frame at play. 3D pose for sit/stand. Warp at runtime.
+
+## One line
+
+SSIM the hall, PCA/NCC the back — not a skeleton. Tight on breath, place looser on walk. If it has to turn to fit, **FAIL**.
