@@ -26,14 +26,26 @@ Breath is the only legal `first = last`.
 
 ## Fridge
 
-Cook **one plate**, then smoke **that plate**, then write `films/`.
+Cook **one plate**, then smoke **that plate**, then write `films/`. Hash first. Vision second. Hang last.
 
 ```
-node scripts/smoke-pack.mjs packs/<id>/films/walk-spawn-a.mp4 --kind walk
+node scripts/smoke-pack.mjs packs/<id>
 ```
 
-A+B = machine (rule codes). C = Grok vision on `.smoke/<clip>/{first,mid,last}.jpg` with [scripts/smoke-identity.md](scripts/smoke-identity.md).
-FAIL → recook **this** plate, cap 2. atA FAIL does not recook spawn. [SMOKE.md](SMOKE.md).
+**A+B** = machine (rule codes).
+
+**C = Grok vision. Required on stills, walks, breaths.** You have eyes. Use them. Do not skip because A+B passed. A hash does not see a muzzle.
+
+1. Open `.smoke/MANIFEST.json`.
+2. Read [scripts/smoke-identity.md](scripts/smoke-identity.md).
+3. For each required job: **open the jpg paths** (they are pictures). Still = 1 photo. Walk/breath = first + mid + last.
+4. Print **one line** per id: `PASS` or `FAIL identity.profile @ t=mid (head sideways)`.
+5. FAIL → recook **this** plate, cap 2. atA FAIL does not recook spawn.
+6. Enter / walk-A-B = optional C.
+
+If you cannot see the images, `FAIL file.decode` — do not Hang.
+
+[SMOKE.md](SMOKE.md).
 
 
 Ops: [HANG.md](HANG.md). DOM: [ENGINE.md](ENGINE.md). Box: [VALIDATE.md](VALIDATE.md). Content: [SMOKE.md](SMOKE.md).
