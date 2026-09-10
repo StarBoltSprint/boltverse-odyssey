@@ -160,3 +160,5 @@ Pack format: [PACK.md](PACK.md). Write a folder. Do not scaffold a player. forma
 Gift: [TICKET.md](TICKET.md). 1 still **photo**/day/X. 50 Imagine/week all players. XAI_API_KEY server-only. Same paint = reuse. Walk/breath never spend. Never generating on Bolt.
 
 False help: [DONT.md](DONT.md). No live Imagine on tap, no WASD, no kitchen on the plate, no auto-enter, no free-text Hall′.
+
+Corridor: [COOKROOM.md](COOKROOM.md). `citadel dusk` → floor 1 without asking ok. Off-list or FAIL ×2 → stock URL.
