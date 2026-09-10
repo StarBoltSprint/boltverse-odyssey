@@ -5,6 +5,10 @@ This is the product. The player does **not** pick films first. They ask Grok for
 Repo: `https://github.com/StarBoltSprint/citadel-room`
 Ops / folders / encode / PACK: [HANG.md](HANG.md).
 
+## Clip queue
+
+Stills PASS, then **one** film at a time through [CLIP.md](CLIP.md). Never five Imagines in parallel. Never a FAIL in `films/`.
+
 ## Law 0 — Imagine first + last (automatic)
 
 Every new conversation. Do not wait to be asked.
