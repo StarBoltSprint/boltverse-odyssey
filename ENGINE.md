@@ -230,7 +230,7 @@ That is the plate. The player does not interpolate.
 
 ## What the DOM **does** guarantee
 
-- never a black hole (still always there, except enter off on purpose)
+- never a black hole (still always there, except enter off on purpose) — [HOLD.md](HOLD.md): `stillEnd` same frame at `ended`, dissolve ≤ 280ms, preload breath before walk ends
 - never two videos fighting (pause outgoing)
 - never enter from spawn
 - curtain without overlaying two dogs (hide enter 0 + empty veil + dest under)
