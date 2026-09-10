@@ -1,0 +1,110 @@
+# CLIP — does this film have the right to enter `films/`?
+
+Not “is it pretty.” Three gates, in order. The first **no** stops everything.
+
+After Imagine (or ffmpeg), **before** Hang / PACK. Breath, walk, enter: same machine, slightly different rules.
+
+```
+raw file  →  encode  →  smoke clip  →  PASS : write films/<id>.mp4
+                              FAIL : recook (max 2) or freeze the still
+```
+
+The official still for the pose already exists. The clip is judged **against** it.
+
+## Gate 1 — The file
+
+`ffprobe` + crop. Layer A ([SMOKE.md](SMOKE.md) [VALIDATE.md](VALIDATE.md)).
+
+- 720×1280 after `scale+crop`
+- H264, `yuv420p`, **no audio**
+- `+faststart`
+- duration in window:
+
+| kind | window |
+|---|---|
+| breath-spawn | ~6s |
+| breath-at | ~10s |
+| walk | ~10s |
+| enter | ~6s |
+
+Off-plate = the player jumps at swap. FAIL `plate.size` / `plate.audio` / `plate.duration`. Do **not** call vision.
+
+## Gate 2 — The graph (first / last)
+
+Extract **first** and **last** frames. Compare to official stills (perceptual hash + [STILL-PAIR.md](STILL-PAIR.md)).
+
+| Clip | first ≈ | last ≈ |
+|---|---|---|
+| breath-spawn | spawn | spawn (same picture) |
+| breath-A | atA | atA |
+| walk-spawn-A | spawn | atA |
+| walk-A-B | atA | atB |
+| enter-A | atA | teal-fill (same slot, **not** Hall′ spawn) |
+
+Dry rules:
+
+- breath: `first ≈ last`, else a walk in disguise → `graph.breath_drift`
+- walk / enter: `first ≠ last` (two files). `first == last` → Imagine invented the trip → FAIL
+- walk last ≠ official at-still → `graph.last_not_official`
+- enter last ≈ neighbor spawn → clone, `graph.enter_reveals_hall`
+
+Player dissolve does not fix this. Recook the clip, do not “fade longer.”
+
+## Gate 3 — Identity + hall (3 pictures)
+
+Frames: **t=0, mid, last**. Vision (Grok + [SMOKE.md](SMOKE.md) C). Output = a **code**, not a poem.
+
+Immediate FAIL:
+
+- face, muzzle, ¾, profile at spawn
+- 2nd dog / ghost
+- black silhouette
+- text / UI / 3rd door
+- teal or gold cropped (except last 1–2s of **enter**, where the oval may eat the frame)
+- paws sliding down, ceiling falling (dolly / tilt)
+- breath: a step, the hall advancing
+- enter: Hall′ appearing *inside* the 6s, dog walking to center
+
+Typical PASS: back, 4 paws, readable white, 2 doors (walk/breath), lock identical to sibling stills.
+
+Do **not** lint tap-glow in v1. That is [PLAY.md](PLAY.md), not the hall.
+
+## After the verdict
+
+```
+walk-spawn-A PASS
+breath-A FAIL graph.breath_drift
+enter-hall-a FAIL identity.clone @ t=mid
+```
+
+- **PASS** → `films/` and **only then** the next clip
+- **FAIL** → do not touch the stills. Recook **this** clip from the same first/last. Counter 2
+- Still FAIL:
+  - breath → ffmpeg loop of the still (a freeze beats a step)
+  - walk → do not Hang that edge (tap = stay)
+  - enter → no edge; hall 1 stays playable
+
+Never write a FAIL into `films/`. Never a spinner on Bolt while waiting: stock or last good. [HOLD.md](HOLD.md)
+
+## Cook order (floor 1)
+
+Do not smoke 5 films in parallel before the stills.
+
+1. stills PASS (else no refs → no gate 2)
+2. breath-spawn
+3. walks spawn→A / spawn→B (need last = at-stills)
+4. breath-A / breath-B
+
+A↔B only if both at-stills **and** both walks-to-sill PASS (floor 2).  
+Enter is off this queue (floor 3).
+
+## What this is not
+
+- not a human saying “almost”
+- not a crop to hide a muzzle
+- not “we’ll see at playtest”
+- not validating tap glow in v1
+
+## One line
+
+Measure the file, glue first/last to the official stills, refuse the face. What exits may be an edge. The rest does not exist for the player.
