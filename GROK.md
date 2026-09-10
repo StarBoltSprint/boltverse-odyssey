@@ -157,4 +157,4 @@ Airlock: [SAS.md](SAS.md). Stamp JSON. Hang only on pass. reject = smaller graph
 
 Pack format: [PACK.md](PACK.md). Write a folder. Do not scaffold a player. format: 1.
 
-Gift cook (keeper pool): [TICKET.md](TICKET.md). Only if the user is **SuperGrok or X Premium**. One still-spawn, catalog paint, one time. Walk/breath never spend. If ticket already armed or week cap hit → stock, no cook. Cook off-plate. Never generating on Bolt.
+Gift: [TICKET.md](TICKET.md). 1 still **photo**/day/X. 50 Imagine/week all players. XAI_API_KEY server-only. Same paint = reuse. Walk/breath never spend. Never generating on Bolt.
