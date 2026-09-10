@@ -141,6 +141,52 @@ function dogMask(buf, w, h) {
   };
 }
 
+/** Cream connected blob for bboxH/H. White-only mask misses legs. */
+export function creamHeight(buf, w, h) {
+  const vis = new Uint8Array(w * h);
+  const y0 = Math.floor(h * 0.12);
+  for (let y = y0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const i = y * w + x;
+      const r = buf[i * 3], g = buf[i * 3 + 1], b = buf[i * 3 + 2];
+      const luma = (r * 3 + g * 4 + b) >> 3;
+      const sat = Math.max(r, g, b) - Math.min(r, g, b);
+      vis[i] = luma > 105 && r >= g - 8 && r >= b - 8 && sat < 100 ? 1 : 0;
+    }
+  }
+  const seen = new Uint8Array(w * h);
+  let best = { n: 0, h: 0 };
+  const flood = (sx, sy) => {
+    const st = [[sx, sy]];
+    let minX = w, minY = h, maxX = 0, maxY = 0, n = 0;
+    while (st.length) {
+      const [x, y] = st.pop();
+      if (x < 0 || y < y0 || x >= w || y >= h) continue;
+      const i = y * w + x;
+      if (seen[i] || !vis[i]) continue;
+      seen[i] = 1;
+      n++;
+      if (x < minX) minX = x;
+      if (y < minY) minY = y;
+      if (x > maxX) maxX = x;
+      if (y > maxY) maxY = y;
+      st.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
+    }
+    return { n, minX, minY, maxX, maxY, h: (maxY - minY + 1) / h, w: (maxX - minX + 1) / w };
+  };
+  for (let y = y0; y < h; y++)
+    for (let x = 0; x < w; x++)
+      if (vis[y * w + x] && !seen[y * w + x]) {
+        const b = flood(x, y);
+        if (b.n > 80 && b.w < 0.62 && b.h > 0.12 && b.n > best.n) best = b;
+      }
+  return best.n ? best.h : 0;
+}
+
+export const SPAWN_BAND = [0.22, 0.32];
+export const SILL_BAND = [0.35, 0.4];
+export const PUNCH = 0.55;
+
 function cropGray(g, w, x0, y0, cw, ch) {
   const o = new Float64Array(cw * ch);
   for (let y = 0; y < ch; y++) {
@@ -243,6 +289,23 @@ function edgeKind(edge) {
   return "breath";
 }
 
+function posesOf(edge) {
+  const e = String(edge || "");
+  if (/breath-a|breath-b|still-at/i.test(e)) return ["sill", "sill"];
+  if (/walk-a-b|walk-b-a/i.test(e)) return ["sill", "sill"];
+  if (/walk-spawn|walk-a|walk-b/i.test(e)) return ["spawn", "sill"];
+  if (e === "enter") return ["sill", "spawn"];
+  return ["spawn", "spawn"];
+}
+
+function bandCheck(h, pose, why, warns) {
+  if (!h) return;
+  if (h >= PUNCH) why.push(`gate.size punch-in ${h.toFixed(2)}`);
+  else if (pose === "spawn" && (h < 0.18 || h > 0.36)) why.push(`gate.size spawn-band ${h.toFixed(2)}`);
+  else if (pose === "sill" && h < 0.28) warns.push(`gate.size sill-band ${h.toFixed(2)} want 0.35-0.40`);
+  else if (pose === "sill" && h > 0.45) why.push(`gate.size sill-band ${h.toFixed(2)}`);
+}
+
 const T = {
   breath: { hall: 0.55, dh: 0.08, yaw: 32, dcx: 0.08, ncc: 0.38 },
   walk: { hall: 0.45, dh: 0.12, yaw: 32, dcx: 0.22, ncc: 0.34 },
@@ -268,6 +331,12 @@ export function matchPose(a, b, edge, dims = { w: GW, h: GH }) {
     if (dims.warnHall) warns.push(msg);
     else why.push(msg);
   }
+
+  const [poseA, poseB] = posesOf(edge);
+  const ha = creamHeight(a, w, h);
+  const hb = creamHeight(b, w, h);
+  bandCheck(ha, poseA, why, warns);
+  bandCheck(hb, poseB, why, warns);
 
   const da = dogMask(a, w, h);
   const db = dogMask(b, w, h);
