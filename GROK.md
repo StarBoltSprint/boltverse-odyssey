@@ -79,7 +79,7 @@ Read [ENTER.md](ENTER.md) then [HANG.md](HANG.md). **Law 0** on the enter cook.
 3. Cook enter as **two plates** with **first AND last distinct** (ENTER.md). Do not interpolate atA → Hall' spawn in one Imagine clip (clone). Do not `image_to_video` enter on a single still.
 4. Hang `enter-hall-a` in the `ENTER{}` map — **outside the 7**. Optional return `enter-a-hall`. Door B uses gold-empty veil, not teal.
 5. `ended(enter)` → **switch room first**, then dest `breath-spawn`. If dest breath walks, freeze the spawn still (HANG.md).
-6. Neighbor = declared map only ([CATALOG.md](CATALOG.md) `moss.A → ember`). Same player URL. Not "invent Mars".
+6. Door link = hall **or** sprint ([LINKS.md](LINKS.md)). Same tap. Hall `to` = paint. Sprint `to` = biome (forest/asteroid…). Same player URL. Not a new site.
 7. Smoke the enter clip. WARN clone → recook cap 2 or drop the link.
 
 ## Product
