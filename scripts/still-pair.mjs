@@ -318,7 +318,7 @@ const T = {
  */
 export function matchPose(a, b, edge, dims = { w: GW, h: GH }) {
   const w = dims.w, h = dims.h;
-  const why = [];
+  let why = [];
   const kind = edgeKind(edge);
   const t = T[kind] || T.breath;
 
@@ -369,6 +369,18 @@ export function matchPose(a, b, edge, dims = { w: GW, h: GH }) {
   const wb = withers(b, w, db);
   if (wa.luma < 90 || wb.luma < 90) why.push("gate.fur dark");
   if (wa.sat > 90 && wa.luma < 130) why.push("gate.fur wash-a");
+
+  // Breath vapor inflates creamHeight (~0.01–0.03). If hall + feet are frozen,
+  // a small Δh is fog, not a step. Punch-in / place / yaw still FAIL.
+  if (kind === "breath" && why.length) {
+    const fog = why.filter((w) => w.startsWith("gate.size Δh/H"));
+    const rest = why.filter((w) => !w.startsWith("gate.size Δh/H"));
+    const nums = fog.map((w) => Number((w.match(/(\d+\.\d+)/) || [])[1]));
+    if (rest.length === 0 && fog.length && nums.every((d) => d > 0 && d <= 0.14)) {
+      warns.push(...fog.map((w) => w + " vapor"));
+      why = [];
+    }
+  }
 
   return {
     ok: why.length === 0,

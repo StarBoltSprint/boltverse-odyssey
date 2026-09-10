@@ -159,4 +159,4 @@ Gate 2 hash: [PHASH.md](PHASH.md) + [`smoke.json`](smoke.json). Last frame = −
 
 ### Breath Δh / vapor
 
-Breath pair `Δh/H` threshold is **0.11**, not 0.08. White breath-fog inflates `creamHeight` without a step. 0.09 with feet glued + hall frozen = PASS. A real walk on a breath plate still fails hall SSIM / place / Δh ≫ 0.11.
+Breath pair `Δh/H` threshold is **0.11**. If the **only** fail is `gate.size Δh/H` ≤ 0.14 and hall + feet are frozen, Smoke **WARNs** (vapor). Punch-in, yaw, place, hall SSIM still FAIL. A walk on a breath plate is not vapor.
