@@ -31,6 +31,7 @@ Composition examples (camera + door layout, not the player's hall):
 - "je veux un hall en pierre verte, style citadel"
 - "StarBoltSprint citadel, stills, temple d'or"
 - "create a citadel room" / "Bolt Engine living film" with a style
+- "branche room 2 sur la porte A" → after both packs exist, [ENTER.md](ENTER.md)
 
 If they give **no** style, cook the example hall (lock/example-*). If they give **7 videos**, skip still-cook — map and hang ([GROK.md](GROK.md)).
 
@@ -109,3 +110,18 @@ Hang: [GROK.md](GROK.md). Open = breath-spawn. Chrome dégage.
 - Bolt morph (coat, collar, extra limb)
 - Hall morph, door color swap
 - First frame ≠ start still / last frame ≠ arrive still (dissolve will not fix this)
+
+## Enter — second room on a door (after both packs exist)
+
+Do **not** cook enter until:
+
+1. Room 1 stills + 7 films hang and play.
+2. Room 2 stills + 7 films exist (this file, other style).
+3. Player asks to **branch** door A (or B) onto room 2.
+
+Then read [ENTER.md](ENTER.md). Short version:
+
+- **Two plates.** Imagine: atA → teal full (dog **stays left**, same slot). Engine: 500ms empty-teal veil → spawn of room 2.
+- Never `first=atA` and `last=room2 spawn` in one clip — that clones Bolt.
+- Prompt and QC: ENTER.md.
+- Wire: walk to the door first, **stay**. Second tap on that door = enter. Walk ended **never** auto-enters.

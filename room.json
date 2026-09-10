@@ -1,7 +1,7 @@
 {
   "id": "citadel",
   "title": "Citadel",
-  "pack": "u9",
+  "pack": "u10",
   "open": "breath-spawn",
   "camera": "lock-off",
   "aspect": "9:16",
@@ -30,12 +30,17 @@
     "B": { "id": "m2", "name": "gold", "side": "right" }
   },
   "poses": ["spawn", "atA", "atB"],
+  "acts": ["breath", "walk", "enter"],
   "stills": {
     "spawn": "stills/spawn.jpg",
     "atA": "stills/at-a.jpg",
     "atB": "stills/at-b.jpg",
     "source": "first-frame of that pose's breath",
-    "cook": "COOK.md — 3 stills in player style, Bolt locked, then films"
+    "cook": "COOK.md — 3 stills in player style, Bolt locked, then films",
+    "seuil": {
+      "tealFill": "stills/seuil/teal-fill.jpg",
+      "tealEmpty": "stills/seuil/teal-empty.jpg"
+    }
   },
   "clips": {
     "breath-spawn": {
@@ -114,6 +119,19 @@
       "poseStart": "atB",
       "poseEnd": "atA",
       "required": false
+    },
+    "enter-hall-a": {
+      "file": "films/enter-hall-a.mp4",
+      "act": "enter",
+      "loop": false,
+      "duration": 6,
+      "stillStart": "atA",
+      "stillEnd": "teal-fill",
+      "poseStart": "atA",
+      "poseEnd": "spawn",
+      "to": "a",
+      "required": false,
+      "cook": "ENTER.md — two plates, never first=atA and last=Hall-prime in one clip"
     }
   },
   "edges": [
@@ -121,14 +139,37 @@
     { "from": "spawn", "tap": "B", "clip": "walk-spawn-B", "arrive": "breath-B" },
     { "from": "atA", "tap": "B", "clip": "walk-A-B", "arrive": "breath-B" },
     { "from": "atB", "tap": "A", "clip": "walk-B-A", "arrive": "breath-A" },
-    { "from": "atA", "tap": "A", "clip": null, "arrive": "breath-A", "act": "stay" },
-    { "from": "atB", "tap": "B", "clip": null, "arrive": "breath-B", "act": "stay" }
+    { "from": "atA", "tap": "A", "clip": null, "arrive": "breath-A", "act": "stay", "or": "enter if link" },
+    { "from": "atB", "tap": "B", "clip": null, "arrive": "breath-B", "act": "stay", "or": "enter if link" }
+  ],
+  "links": [
+    {
+      "from": { "room": "hall", "pose": "atA", "door": "A" },
+      "to": { "room": "a", "pose": "spawn" },
+      "clip": "enter-hall-a",
+      "curtain": "teal-empty 500ms"
+    }
   ],
   "join": {
     "cutIf": "stillEnd(from) == stillStart(to)",
     "else": "dissolve<=280ms",
-    "walkEnded": "breath(arrive) at t=0",
-    "never": ["walk->walk", "black-hole", "morph", "play-once-then-freeze breath", "paint-paused-video", "unmute-before-play", "text-to-image-new-bolt", "3d-dungeon"]
+    "enter": "hide enter 0ms + empty-teal veil 500ms → dest breath-spawn",
+    "walkEnded": "breath(arrive) at t=0 — never auto-enter",
+    "enterEnded": "switch room → breath-spawn dest",
+    "never": [
+      "walk->walk",
+      "black-hole",
+      "morph",
+      "play-once-then-freeze breath",
+      "paint-paused-video",
+      "unmute-before-play",
+      "text-to-image-new-bolt",
+      "3d-dungeon",
+      "first-atA-and-last-Hall-prime-in-one-clip",
+      "crossfade-two-dogs-different-slots",
+      "auto-enter-on-walk-ended",
+      "enter-from-spawn"
+    ]
   },
   "hits": {
     "layout": "video-contain-9:16",
@@ -139,6 +180,7 @@
   },
   "player": {
     "stillUnderlayer": true,
+    "stillHiddenDuringEnter": true,
     "dualVideo": true,
     "hideUntilPlaying": true,
     "playMuted": true,
@@ -146,9 +188,12 @@
     "setWalkingOnlyAfterPlay": true,
     "pauseOutgoing": true,
     "ignoreTapsWhileWalking": true,
-    "sameDoor": "stay",
+    "sameDoorAtSpawn": "walk",
+    "sameDoorAtDoor": "enter-if-link-else-stay",
     "openIsTheRoom": true,
-    "domOnly": "img+2video"
+    "domOnly": "img+2video+veil",
+    "curtainMs": 500,
+    "curtainStill": "stills/seuil/teal-empty.jpg"
   },
   "cook": {
     "stillsFirst": true,
@@ -159,6 +204,7 @@
     "atB": "image_to_image(spawn) Bolt to gold",
     "breath": "first=last=pose still; seamless loop; feet glued",
     "walk": "first=start still; last=arrive still; interpolate; no loop; back-to-camera whole clip; no 3/4",
+    "enter": "ENTER.md — two plates; first=atA last=same-slot teal-full; never last=Hall-prime; 6s; one dog; engine veil 500ms",
     "still": "first frame of that pose's breath — last-frame grab can be empty"
   }
 }
