@@ -34,7 +34,7 @@ Same door again = stay, unless a neighbor is hung there. One line. That is all.
 
 ## If it fails
 
-You get a link to the last good hall, or stock. Not a FAIL code.
+You get a link to the last good hall, or stock. Not a FAIL code. Kitchen: [FAIL.md](FAIL.md).
 
 ## Technical door
 
