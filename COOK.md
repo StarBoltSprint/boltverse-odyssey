@@ -26,7 +26,8 @@ After **each** plate: `smoke(file, kind, refs)` ([SMOKE.md](SMOKE.md)). PASS wri
 
 ## What the player may change
 
-**Citadel style only.** Stone, crystal, neon, moss, gold temple, flooded ruin, anything — as long as it stays a hall with two doors.
+**A catalog paint only.** One id from [CATALOG.md](CATALOG.md): moss · ember · dusk · asteroid · frost · ivy · ash · tide · ember-deep · gold.
+Off-list → nearest, or ask "did you mean ember?". Never "describe any temple". Paste the two lines from `catalog/<id>.md` into Imagine. Do not dream an architecture.
 
 ## What is locked (pack)
 
@@ -47,13 +48,12 @@ Composition examples (camera + door layout, not the player's hall):
 
 ## Player phrases (treat as this flow)
 
-- "3 stills, citadel de cristal noir"
-- "je veux un hall en pierre verte, style citadel"
-- "StarBoltSprint citadel, stills, temple d'or"
-- "create a citadel room" / "Bolt Engine living film" with a style
-- "branche room 2 sur la porte A" → after both packs exist, [ENTER.md](ENTER.md) + [HANG.md](HANG.md)
+- "citadelle mousse" / "citadel moss" → floor 1, `cookRoom("moss")`
+- "braise" / "ember" → `ember`
+- off-list ("temple martien") → ask nearest paint, do not cook
+- "branche room 2 sur la porte A" → floor 3, neighbor on the catalog map only ([FLOORS.md](FLOORS.md) [CATALOG.md](CATALOG.md))
 
-If they give **no** style, cook the example hall (lock/example-*). If they give **7 videos**, skip still-cook — map and hang ([GROK.md](GROK.md)).
+If they give **no** paint, do not cook — send `/` (stock). If they give **7 videos**, skip still-cook — map and hang ([GROK.md](GROK.md)).
 
 ## Stills — order is law
 
@@ -69,7 +69,7 @@ Without `stills/a/` Grok writes over hall and the citadel dies.
 
 Prompt slot:
 
-> Same dog as the first image — cream German Shepherd, teal collar, back to camera, standing. Same camera and door layout as the second image: teal portal left, gold portal right, both fully visible, lock-off. Hall restyled as: **{player style}**. Photoreal 9:16. No face, no UI, no 3/4.
+> Same dog as the first image — cream German Shepherd, teal collar, back to camera, standing. Same camera and door layout as the second image: teal portal left, gold portal right, both fully visible, lock-off. Hall restyled with ONLY these materials (from catalog/<id>.md): **{two lines}**. Photoreal 9:16. No face, no UI, no 3/4. No extra door.
 
 Save → `stills/spawn.jpg` (or `stills/a/spawn.jpg`). Scale 720×1280.
 
