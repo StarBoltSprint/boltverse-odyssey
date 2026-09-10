@@ -145,3 +145,5 @@ mid-clip (t > 40%) ≈ spawn still → FAIL graph.walk_return
 duration > ~13s on a walk → probably a loop. Recook shorter.
 loop=false. ended → breath-arrive, never replay the walk.
 ```
+
+Walk cook = API `last_frame`, not chat `reference_to_video`. If last overshoots the still, recook. Do not replace the still with the fat frame.
