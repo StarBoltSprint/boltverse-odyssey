@@ -9,6 +9,7 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { execFileSync, spawnSync } from "node:child_process";
+import { matchPose, GW, GH } from "./still-pair.mjs";
 
 const SAME = 12;
 const LOOP = 28;
@@ -298,6 +299,50 @@ function smokeFile(file, kind, refs, required, smokeDir) {
 
     const dogs = cloneScan(file, d);
     if (dogs >= 2) return fail("clone.two_dogs", "clip", `${dogs} dogs`);
+
+    try {
+      const fa = rawFrame(file, 0, GW, GH);
+      const fb = rawFrame(file, lastT, GW, GH);
+      const edge =
+        kind === "enter"
+          ? "enter"
+          : kind === "walk"
+            ? basename(file).replace(/\.mp4$/i, "")
+            : "breath";
+      const g = matchPose(fa, fb, edge, { w: GW, h: GH });
+      if (!g.ok) return fail(g.why[0].split(" ")[0], "pair", g.why.join("; "));
+
+      if (kind === "breath") {
+        const pose =
+          /breath-a/i.test(file) ? refs.atA : /breath-b/i.test(file) ? refs.atB : refs.spawn;
+        if (pose && existsSync(pose)) {
+          const ps = rawFrame(pose, 0, GW, GH);
+          const gp = matchPose(fa, ps, "breath", { w: GW, h: GH });
+          if (!gp.ok) return fail(gp.why[0].split(" ")[0], "t=0", gp.why.join("; "));
+        }
+      }
+      if (kind === "walk") {
+        const [start, end] = walkRefs(file, refs);
+        if (start && existsSync(start)) {
+          const gs = matchPose(fa, rawFrame(start, 0, GW, GH), edge, { w: GW, h: GH, warnHall: true });
+          if (!gs.ok) return fail(gs.why[0].split(" ")[0], "t=0", gs.why.join("; "));
+          if (gs.warn?.length) {
+            emit({ id, kind, ok: false, warn: true, required: false, rule: "gate.rig", note: gs.warn.join("; ") });
+            warns++;
+          }
+        }
+        if (end && existsSync(end)) {
+          const ge = matchPose(fb, rawFrame(end, 0, GW, GH), edge, { w: GW, h: GH, warnHall: true });
+          if (!ge.ok) return fail(ge.why[0].split(" ")[0], "t=last", ge.why.join("; "));
+          if (ge.warn?.length) {
+            emit({ id, kind, ok: false, warn: true, required: false, rule: "gate.rig", note: ge.warn.join("; ") });
+            warns++;
+          }
+        }
+      }
+    } catch {
+      /* still-pair is extra; A+B hashes already ran */
+    }
   } catch (e) {
     return fail("file.decode", "frame", e.message);
   }
@@ -384,6 +429,24 @@ if (isPackDir(target) && !kindFlag) {
           ? refs.spawn
           : refs.dest;
     run(file, kind, { ...refs, dest }, required, target);
+  }
+  for (const [label, a, b, edge] of [
+    ["stills spawn→at-a", refs.spawn, refs.atA, "walk-spawn-A"],
+    ["stills spawn→at-b", refs.spawn, refs.atB, "walk-spawn-B"],
+  ]) {
+    if (!existsSync(a) || !existsSync(b)) continue;
+    try {
+      const g = matchPose(rawFrame(a, 0, GW, GH), rawFrame(b, 0, GW, GH), edge, { w: GW, h: GH });
+      if (!g.ok) {
+        emit({ id: label, kind: "still-pair", ok: false, required: true, rule: g.why[0].split(" ")[0], note: g.why.join("; ") });
+        fails++;
+      } else {
+        emit({ id: label, kind: "still-pair", ok: true, required: true });
+      }
+    } catch (e) {
+      emit({ id: label, kind: "still-pair", ok: false, required: true, rule: "file.decode", note: e.message });
+      fails++;
+    }
   }
 } else {
   const file = target;
