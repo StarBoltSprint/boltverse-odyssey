@@ -50,6 +50,10 @@ Dry rules:
 
 Player dissolve does not fix this. Recook the clip, do not “fade longer.”
 
+**Lock-off hash trap:** spawn vs at-B whole-frame ham 6 can still be a size pop. Last vs official still uses `gate.size` (`bboxH/H`). You do not type PASS because the hall looks locked.
+
+**Barrier:** `node scripts/smoke-pack.mjs <file> --kind walk` — exit 1 = do not write `films/`. Eyes on the Grok preview are not Smoke.
+
 ## Gate 3 — Identity + hall (3 pictures)
 
 Frames: **t=0, mid, last**. Vision (Grok + [SMOKE.md](SMOKE.md) C). Output = a **code**, not a poem.
