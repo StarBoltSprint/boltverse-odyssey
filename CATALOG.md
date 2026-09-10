@@ -58,7 +58,7 @@ Aliases: mousse→moss, braise→ember, crépuscule→dusk, astéroïde→astero
 Off-list → nearest, or one question: "did you mean ember?"  
 Never the default path: "describe any temple".
 
-## Hall' = neighbor on the same list
+## Hall' = neighbor hall. A door may instead hang a **sprint biome** ([LINKS.md](LINKS.md))
 
 Enter does not say "invent the sequel". It says: `moss` door A → `ember`.
 
