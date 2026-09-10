@@ -31,6 +31,19 @@ FILMS = [
 
 jp = os.path.join(d, "room.json")
 room = None
+sj = os.path.join(d, "smoke.json")
+if not os.path.isfile(sj):
+    fail("smoke.json missing — run node scripts/smoke-pack.mjs, do not hang")
+else:
+    try:
+        smoke = json.load(open(sj, encoding="utf-8"))
+        if smoke.get("ok") is True and smoke.get("script") == "scripts/smoke-pack.mjs":
+            pass_("smoke.json")
+        else:
+            fail("smoke.json not ok — script must write it")
+    except Exception:
+        fail("smoke.json not JSON")
+
 if not os.path.isfile(jp):
     fail("room.json missing")
 else:
