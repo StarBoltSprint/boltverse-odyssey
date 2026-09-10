@@ -26,6 +26,26 @@ node scripts/smoke-pack.mjs packs/<id>/films/walk-spawn-a.mp4 --kind walk
 
 Call it **before** writing `films/` or bumping PACK. FAIL = recook **this** plate (cap 2) or keep the last good plate.
 
+## Barrier, not a stamp
+
+You do **not** write `PASS`. Eyes on a preview are not Smoke.
+
+```
+node scripts/smoke-pack.mjs packs/<id>/films/walk-spawn-b.mp4 --kind walk
+echo $?    # 0 hang this file. 1 recook. Never type PASS.
+```
+
+A Grok that ships then waits for the player's recording is **the player acting as Smoke**. Illegal. FAIL before `films/`. Cap 2. Then stock.
+
+### Lock-off hash trap
+
+Whole-frame pHash on a lock-off hall is ~90% stone. Spawn and at-B can hash **ham 6** while the dog **pops** (tiny still vs giant last). That is not PASS.
+
+Walk last vs arrive still = **size** (`bboxH/H`, [SIZE.md](SIZE.md)) + pair. `gate.size` FAIL even if pHash says same. Hamming 0 on the dog, not on the vault.
+
+Solid: last frame of the walk **is** the arrive still. If last ≠ still, recook the walk. Do not "fix" by replacing the still with the fat frame.
+
+
 Log line, not a decree:
 
 ```
