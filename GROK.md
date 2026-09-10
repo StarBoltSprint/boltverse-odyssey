@@ -1,10 +1,26 @@
-# GROK — build a citadel room from this pack
+# GROK — floor 1 (the only default job)
+
+Repo: `https://github.com/StarBoltSprint/citadel-room`  
+Player: https://boltverse-odyssey.grok.me
+
+```
+DEFAULT JOB = floor 1
+  catalog slot → 3 stills → smoke → 5 films → validate → URL /r/<id>
+  NO wait on stills
+  NO walk-A-B
+  NO ENTER
+  NO new grok.me
+```
+
+Read [CHAR.md](CHAR.md) + [COOK.md](COOK.md) + [COOKROOM.md](COOKROOM.md) after this page.  
+Read [ENTER.md](ENTER.md) **only if** the user asked for a neighbor door.  
+Read [ENGINE.md](ENGINE.md) **only if** you are patching the player (you are not).
+
+Off-list paint or FAIL ×2 → stock `/`. Do not invent a temple.
+
+---
 
 You are wiring a **living-film** room, not a game with UI.
-Repo: `https://github.com/StarBoltSprint/citadel-room`
-
-**Player (the salon):** https://boltverse-odyssey.grok.me  
-**Packs:** `packs/<id>/` in this repo. See [PLAYER.md](PLAYER.md).
 
 Auth OFF. Database OFF. No 3D, no canvas, no WebGL, no Play / Forge / Hang / Keep.
 
@@ -15,11 +31,11 @@ Someone asks for a citadel → give the player URL. Cook writes into `packs/<id>
 
 Every new conversation. Do not wait to be asked. The stills **are** the frames. [COOK.md](COOK.md).
 
-| kind | Imagine call | first | last |
-|---|---|---|---|
-| **walks** | first AND last (`reference_to_video` / `image` + `last_frame`) | start still | arrive still — **distinct** |
-| **enter** | same | at-still | fill veil — **never** dest Hall' spawn |
-| **breath** | `image_to_video` on **one** still | pose still | **same** still |
+| kind | Imagine call | first | last | floor 1 |
+|---|---|---|---|---|
+| **walks** | first AND last (`image` + `last_frame`) | start still | arrive still — **distinct** | yes |
+| **breath** | `image_to_video` on **one** still | pose still | **same** still | yes |
+| **enter** | first AND last | at-still | fill veil — **never** dest spawn | **no** unless they asked |
 
 Never `image_to_video` a walk or enter on a single still. That invents the journey / clones the dog.
 Breath is the only legal `first = last`.
