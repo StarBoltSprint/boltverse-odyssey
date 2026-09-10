@@ -2,6 +2,7 @@
   "id": "citadel",
   "title": "Citadel",
   "pack": "u10",
+  "packBump": "after every mp4/still replace — src is file?${PACK}",
   "open": "breath-spawn",
   "camera": "lock-off",
   "aspect": "9:16",
@@ -12,6 +13,21 @@
   "database": false,
   "stillsFirst": true,
   "playerVariable": "citadel style",
+  "docs": ["CHAR.md", "COOK.md", "GROK.md", "ROOM.md", "ENTER.md", "ENGINE.md", "HANG.md"],
+  "layout": {
+    "hall": { "stills": "stills/", "films": "films/" },
+    "a": { "stills": "stills/a/", "films": "films/a/" },
+    "seuil": "stills/seuil/",
+    "enter": "films/enter-hall-a.mp4",
+    "note": "this GitHub repo is the recipe; stills/films here are empty"
+  },
+  "encode": {
+    "vf": "scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280",
+    "vcodec": "libx264",
+    "pix_fmt": "yuv420p",
+    "audio": false,
+    "movflags": "+faststart"
+  },
   "lock": {
     "bolt": "lock/bolt-back.jpg",
     "char": "CHAR.md",
@@ -26,8 +42,8 @@
     }
   },
   "doors": {
-    "A": { "id": "m1", "name": "teal", "side": "left" },
-    "B": { "id": "m2", "name": "gold", "side": "right" }
+    "A": { "id": "m1", "name": "teal", "side": "left", "veil": "stills/seuil/teal-empty.jpg", "fill": "stills/seuil/teal-fill.jpg" },
+    "B": { "id": "m2", "name": "gold", "side": "right", "veil": "stills/seuil/gold-empty.jpg", "fill": "stills/seuil/gold-fill.jpg" }
   },
   "poses": ["spawn", "atA", "atB"],
   "acts": ["breath", "walk", "enter"],
@@ -37,9 +53,12 @@
     "atB": "stills/at-b.jpg",
     "source": "first-frame of that pose's breath",
     "cook": "COOK.md — 3 stills in player style, Bolt locked, then films",
+    "room2": "stills/a/ — do not overwrite hall",
     "seuil": {
       "tealFill": "stills/seuil/teal-fill.jpg",
-      "tealEmpty": "stills/seuil/teal-empty.jpg"
+      "tealEmpty": "stills/seuil/teal-empty.jpg",
+      "goldFill": "stills/seuil/gold-fill.jpg",
+      "goldEmpty": "stills/seuil/gold-empty.jpg"
     }
   },
   "clips": {
@@ -119,19 +138,29 @@
       "poseStart": "atB",
       "poseEnd": "atA",
       "required": false
-    },
-    "enter-hall-a": {
-      "file": "films/enter-hall-a.mp4",
-      "act": "enter",
-      "loop": false,
-      "duration": 6,
-      "stillStart": "atA",
-      "stillEnd": "teal-fill",
-      "poseStart": "atA",
-      "poseEnd": "spawn",
-      "to": "a",
-      "required": false,
-      "cook": "ENTER.md — two plates, never first=atA and last=Hall-prime in one clip"
+    }
+  },
+  "enter": {
+    "outsideThe7": true,
+    "map": "ENTER[room][door]",
+    "firstAndLastDistinct": true,
+    "neverLastHallPrime": true,
+    "onEnded": "switch room first, then dest breath-spawn",
+    "clips": {
+      "enter-hall-a": {
+        "file": "films/enter-hall-a.mp4",
+        "act": "enter",
+        "loop": false,
+        "duration": 6,
+        "stillStart": "atA",
+        "stillEnd": "teal-fill",
+        "poseStart": "atA",
+        "poseEnd": "spawn",
+        "to": "a",
+        "veil": "stills/seuil/teal-empty.jpg",
+        "required": false,
+        "cook": "ENTER.md + HANG.md — two plates, first+last distinct"
+      }
     }
   },
   "edges": [
@@ -153,9 +182,9 @@
   "join": {
     "cutIf": "stillEnd(from) == stillStart(to)",
     "else": "dissolve<=280ms",
-    "enter": "hide enter 0ms + empty-teal veil 500ms → dest breath-spawn",
+    "enter": "hide enter 0ms + empty veil of THAT door 500ms (double rAF) → dest breath-spawn",
     "walkEnded": "breath(arrive) at t=0 — never auto-enter",
-    "enterEnded": "switch room → breath-spawn dest",
+    "enterEnded": "switch room FIRST → breath-spawn dest",
     "never": [
       "walk->walk",
       "black-hole",
@@ -163,12 +192,17 @@
       "play-once-then-freeze breath",
       "paint-paused-video",
       "unmute-before-play",
+      "missing-playsInline",
       "text-to-image-new-bolt",
       "3d-dungeon",
       "first-atA-and-last-Hall-prime-in-one-clip",
+      "enter-as-image-to-video-one-still",
       "crossfade-two-dogs-different-slots",
       "auto-enter-on-walk-ended",
-      "enter-from-spawn"
+      "enter-from-spawn",
+      "gold-enter-with-teal-veil",
+      "overwrite-hall-stills-with-room2",
+      "skip-PACK-bump"
     ]
   },
   "hits": {
@@ -184,6 +218,7 @@
     "dualVideo": true,
     "hideUntilPlaying": true,
     "playMuted": true,
+    "playsInline": true,
     "paintOnlyIfPlaying": true,
     "setWalkingOnlyAfterPlay": true,
     "pauseOutgoing": true,
@@ -193,18 +228,23 @@
     "openIsTheRoom": true,
     "domOnly": "img+2video+veil",
     "curtainMs": 500,
-    "curtainStill": "stills/seuil/teal-empty.jpg"
+    "curtainStillByDoor": {
+      "A": "stills/seuil/teal-empty.jpg",
+      "B": "stills/seuil/gold-empty.jpg"
+    },
+    "doubleRafVeil": true
   },
   "cook": {
     "stillsFirst": true,
     "plate": "720x1280",
     "cropNon916": true,
+    "firstAndLastDistinct": "walks + enter. Breath is the only first=last loop.",
     "spawn": "reference_to_image(bolt-back, example-spawn) + player style",
     "atA": "image_to_image(spawn) Bolt to teal",
     "atB": "image_to_image(spawn) Bolt to gold",
-    "breath": "first=last=pose still; seamless loop; feet glued",
+    "breath": "first=last=pose still; seamless loop; feet glued; freeze still if dest breath walks",
     "walk": "first=start still; last=arrive still; interpolate; no loop; back-to-camera whole clip; no 3/4",
-    "enter": "ENTER.md — two plates; first=atA last=same-slot teal-full; never last=Hall-prime; 6s; one dog; engine veil 500ms",
+    "enter": "HANG.md + ENTER.md — two plates; first=atA last=same-slot fill; never last=Hall-prime; 6s; one dog; engine veil 500ms of THAT door",
     "still": "first frame of that pose's breath — last-frame grab can be empty"
   }
 }
