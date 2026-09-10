@@ -13,6 +13,7 @@ Someone asks for a citadel → give the player URL. Cook writes into `packs/<id>
 
 Ops (folders, PACK, encode, first+last, freeze, veil color): [HANG.md](HANG.md).
 DOM clock: [ENGINE.md](ENGINE.md).
+Box check: [VALIDATE.md](VALIDATE.md).
 
 ## If they ask for stills / a citadel style
 
@@ -23,7 +24,8 @@ This is the default. Read [CHAR.md](CHAR.md) then [COOK.md](COOK.md) then [PLAYE
 3. Else cook **3 stills** in that style: spawn → atA → atB (order in COOK.md). Same Bolt, same camera, teal left / gold right.
 4. Show the 3. Wait for ok.
 5. Cook the 7 films from those stills (COOK.md). Encode H264 yuv420p +faststart, **no audio**. Land in `packs/<id>/`.
-6. Give `https://boltverse-odyssey.grok.me/r/<id>`. Never a new preview.
+6. Run `node scripts/validate-pack.mjs packs/<id>`. FAIL → recook, do not push, do not give the URL.
+7. PASS → give `https://boltverse-odyssey.grok.me/r/<id>`. Never a new preview.
 
 Never `text_to_image` a new dog. Never a 3D dungeon.
 
@@ -33,7 +35,7 @@ Read [ENTER.md](ENTER.md) then [HANG.md](HANG.md).
 
 1. Room 1 already hangs. Cook room 2 as a **full pack** into `stills/a/` + `films/a/` **inside that pack** (stills then 7 films, COOK.md). Same Bolt. **Same depth.** Do not overwrite hall stills.
 2. Walk A ended → breath-A. **Stay.** Player taps A again to enter, or B to walk. Never auto-enter.
-3. Cook enter as **two plates** with **first AND last distinct** (ENTER.md). Do not interpolate atA → Hall′ spawn in one Imagine clip (clone). Do not `image_to_video` enter on a single still.
+3. Cook enter as **two plates** with **first AND last distinct** (ENTER.md). Do not interpolate atA → Hall' spawn in one Imagine clip (clone). Do not `image_to_video` enter on a single still.
 4. Hang `enter-hall-a` in the `ENTER{}` map — **outside the 7**. Optional return `enter-a-hall`. Door B uses gold-empty veil, not teal.
 5. `ended(enter)` → **switch room first**, then dest `breath-spawn`. If dest breath walks, freeze the spawn still (HANG.md).
 6. Neighbor **citadel** (moss → ember) = another pack id on the **same** player, not a new site.
@@ -97,4 +99,4 @@ Map by motion, not by filename. Skip still-cook.
 - Walk teal → gold → `walk-A-B`
 - Walk gold → teal → `walk-B-A`
 
-Land in `packs/<id>/`. Give the player URL. Chrome dégage.
+Land in `packs/<id>/`. Run validate-pack. Give the player URL. No chrome.
