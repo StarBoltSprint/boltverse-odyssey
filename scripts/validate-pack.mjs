@@ -72,14 +72,49 @@ if (room && typeof room === "object") {
   if (room.PACK == null && room.pack == null) fail("PACK missing");
   else pass("PACK " + (room.PACK ?? room.pack));
 
+  const cam = room.camera ?? "lock-off";
+  if (cam !== "lock-off") fail("camera " + cam);
+  else pass("camera lock-off");
+
   const files = new Set();
   const clips = room.clips || {};
-  for (const c of Object.values(clips)) {
+  for (const [id, c] of Object.entries(clips)) {
     const f = c && c.file;
     if (!f) continue;
     if (/^(https?:|file:|\/)/i.test(f) && !String(f).startsWith("stills/") && !String(f).startsWith("films/"))
       fail("clip file must be relative: " + f);
-    files.add(String(f).replace(/^\.\//, ""));
+    const rel = String(f).replace(/^\.\//, "");
+    files.add(rel);
+    if (c.required === true && !existsSync(join(dir, rel))) fail(id + " required missing " + rel);
+  }
+
+  const edges = Array.isArray(room.edges) ? room.edges : [];
+  const has = (from, tap) =>
+    edges.some((e) => e && e.from === from && (e.tap === tap || e.door === tap));
+  has("spawn", "A") ? pass("edge spawn+A") : fail("edge spawn+A missing");
+  has("spawn", "B") ? pass("edge spawn+B") : fail("edge spawn+B missing");
+
+  for (const id of ["walk-A-B", "walk-B-A", "walk-a-b", "walk-b-a"]) {
+    const c = clips[id];
+    if (!c) continue;
+    const rel = String(c.file || "").replace(/^\.\//, "");
+    if (c.required === true) {
+      existsSync(join(dir, rel)) ? pass(id) : fail(id + " required missing");
+    }
+  }
+
+  const enter = room.ENTER || room.enter || {};
+  const enterClips = enter.clips && typeof enter.clips === "object" ? enter.clips : {};
+  for (const [id, c] of Object.entries(enterClips)) {
+    if (!c || typeof c !== "object") continue;
+    if (!c.to) fail("ENTER " + id + " missing to");
+    else pass("ENTER " + id + " to " + c.to);
+    const rel = String(c.file || "").replace(/^\.\//, "");
+    if (c.required === true) {
+      existsSync(join(dir, rel)) ? pass("ENTER " + id) : fail("ENTER " + id + " missing " + rel);
+    } else if (rel) {
+      pass("ENTER " + id + " optional");
+    }
   }
 }
 
