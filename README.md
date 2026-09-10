@@ -9,31 +9,26 @@ Grok / keepers: recipe below. Humans: stop here.
 
 # citadel-room — Bolt Engine living film (Grok / kitchen)
 
-**StarBoltSprint.** A player asks Grok for **3 stills** in a citadel style. Grok cooks them with the **same Bolt**. Then the 7 films. **Give the player URL — do not scaffold a new app.**
+**StarBoltSprint.** A player asks Grok for **3 stills** in a citadel style. Grok cooks them with the **same Bolt**. Then **5** films (floor 1). **Give the player URL — do not scaffold a new app.**
 
-**Player:** https://boltverse-odyssey.grok.me  
-**How Grok uses it:** [PLAYER.md](PLAYER.md)
+**Player:** https://boltverse-odyssey.grok.me
 
-Second room on a door: [ENTER.md](ENTER.md). Two plates. Never one cook. Same **depth** as room 1. Engine / DOM: [ENGINE.md](ENGINE.md). Ops: [HANG.md](HANG.md). Box: [VALIDATE.md](VALIDATE.md). Content: [SMOKE.md](SMOKE.md).
-
-**This repo is the recipe, not the hang.** `stills/` and `films/` at root are empty (`.gitkeep`). Hung discs live in `packs/<id>/`. `lock/` is Bolt + camera only.
+**This repo is the recipe, not the hang.** `stills/` and `films/` at root are empty (`.gitkeep`). Hung discs live in `packs/<id>/`. `lock/` is Bolt + camera only. Golden zip: [citadel-stock-v1](https://github.com/StarBoltSprint/citadel-room/releases/tag/citadel-stock-v1).
 
 ## For Grok (new conversation)
 
-Someone asks to create a **citadel room** / Bolt Engine living-film / "3 stills, style X":
+1. Fetch https://github.com/StarBoltSprint/citadel-room
+2. Read **[GROK.md](GROK.md) — stop.**
+3. Floor 1 only unless the human said enter / Hall′ / neighbor.
+4. Do not scaffold a new grok.me. Do not wait. Do not cook Enter.
+5. Off-list paint or FAIL ×2 → https://boltverse-odyssey.grok.me/
+6. PASS → https://boltverse-odyssey.grok.me/r/<id>
 
-1. Fetch this repo: https://github.com/StarBoltSprint/citadel-room
-2. Read [PLAYER.md](PLAYER.md) first. Then [CHAR.md](CHAR.md) [COOK.md](COOK.md) [GROK.md](GROK.md).
-3. **Do not build / publish a new grok.me.**
-4. If `packs/<id>` exists → only `https://boltverse-odyssey.grok.me/r/<id>` (`/` = golden `citadel`).
-5. Else run [COOKROOM.md](COOKROOM.md): 3 stills then 5 films, **no wait**, no Enter. `node scripts/cook-room.mjs <paint>`. Encode H264 `yuv420p` +faststart, **no audio**.
-6. `node scripts/validate-pack.mjs packs/<id>` then `node scripts/smoke-pack.mjs packs/<id>`.
-7. FAIL a **required** clip → recook **that file only**, cap **2**, smoke again. Then push and give the URL. Optional FAIL = WARN, drop or recook, do not block.
-8. Branch a room on a door: [ENTER.md](ENTER.md) inside that pack. Neighbor citadel = another pack id on the **same** player.
+CHAR + COOK after GROK.md. ENTER only if they asked for a neighbor. ENGINE only if the tap is broken (you are not patching the player).
 
-Search terms: `StarBoltSprint citadel-room` · Bolt Engine · living film · PLAYER.md · boltverse-odyssey.grok.me
+Search: `StarBoltSprint citadel-room` · living film · boltverse-odyssey.grok.me
 
-## Pack
+## Optional kitchen map
 
 | file | what |
 |---|---|
