@@ -62,7 +62,7 @@ This is the default. Read [CHAR.md](CHAR.md) then [COOK.md](COOK.md) then [PLAYE
 
 1. They pick a **paint** from [CATALOG.md](CATALOG.md). Bolt is locked. Off-list → nearest or one question. Never free-text architecture.
 2. If `packs/<id>` already exists → give `https://boltverse-odyssey.grok.me/r/<id>` (or `/` for `citadel`). Stop.
-3. Else cook **3 stills** in that paint (`catalog/<id>.md` two lines only): spawn → atA → atB (COOK.md). Same Bolt, same camera, teal left / gold right.
+3. Else cook **3 stills** in that paint (`catalog/<id>.md` two lines only): spawn → atA → atB (COOK.md). Same Bolt, same camera, **energy rifts** teal left / gold right ([DOORS.md](DOORS.md)). Never wood doors.
 4. Show the 3. Wait for ok.
 5. Cook the **5** films (floor 1: 3 breaths + walk-spawn-A + walk-spawn-B). **Law 0** on every clip. Do **not** cook walk-A-B or Enter unless they asked (floors 2–3). Encode H264 yuv420p +faststart, **no audio**. Land in `packs/<id>/`.
 6. Run `node scripts/validate-pack.mjs packs/<id>` then `node scripts/smoke-pack.mjs packs/<id>`.
