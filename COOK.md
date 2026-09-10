@@ -17,6 +17,11 @@ Every new conversation. Do not wait to be asked.
 
 Never `image_to_video` a walk or enter on a single still. That invents the journey / clones the dog. Breath is the only legal `first = last`.
 
+## Law 1 — floors ([FLOORS.md](FLOORS.md))
+
+Default = **floor 1**. 3 stills + **5** films. One room. No Enter. No walk-A-B unless they ask.
+
+
 After **each** plate: `smoke(file, kind, refs)` ([SMOKE.md](SMOKE.md)). PASS writes `films/`. FAIL recooks **this** plate, cap 2.
 
 ## What the player may change
@@ -103,7 +108,7 @@ Stills **are** first and last frames. Do not re-imagine a new hall. **Law 0.**
 
 **Walks and enter: first AND last must be distinct images.** Breath is the only legal `first = last` loop. Enter is **not** `image_to_video` on one still — `last = first` invents a journey / clone. See [HANG.md](HANG.md).
 
-Room 1 films → `films/`. Room 2 films → `films/a/`.
+Floor 1 films → `films/` (the 5). Floor 2 = walk-A-B / B-A if asked. Floor 3 = `films/a/` + enter, only if asked. [FLOORS.md](FLOORS.md).
 
 | clip | tool | first | last | dur | law |
 |---|---|---|---|---|---|
@@ -112,8 +117,8 @@ Room 1 films → `films/`. Room 2 films → `films/a/`.
 | breath-B | image_to_video on atB | atB | atB | 10s | in-room: loop, feet glued |
 | walk-spawn-A | reference_to_video spawn+atA | spawn | atA | 10s | back-to-camera the **whole** clip |
 | walk-spawn-B | reference_to_video spawn+atB | spawn | atB | 10s | idem |
-| walk-A-B | reference_to_video atA+atB | atA | atB | 10s | idem |
-| walk-B-A | reference_to_video atB+atA | atB | atA | 10s | idem |
+| walk-A-B | reference_to_video atA+atB | atA | atB | 10s | **floor 2** — only if asked |
+| walk-B-A | reference_to_video atB+atA | atB | atA | 10s | **floor 2** — only if asked |
 
 Walk prompt slot (every walk):
 
