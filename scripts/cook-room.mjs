@@ -1,7 +1,10 @@
 #!/usr/bin/env node
-// Floor-1 corridor. Imagine still lives in Grok chat; this file is the order + exit.
-// usage: node scripts/cook-room.mjs dusk
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+// Timer, not Imagine. Floor 1 only.
+//   node scripts/cook-room.mjs moss --dry-run
+//   COOK_DEBUG=1 node scripts/cook-room.mjs dusk
+// imagineStill / imagineClip throw until wired. Until then: --dry-run only.
+
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
@@ -20,25 +23,47 @@ const SLOTS = [
 ];
 const STOCK = "https://boltverse-odyssey.grok.me/";
 const PLAYER = "https://boltverse-odyssey.grok.me/r/";
+const STILLS = ["stills/spawn.jpg", "stills/at-a.jpg", "stills/at-b.jpg"];
+const FILMS = [
+  "films/breath-spawn.mp4",
+  "films/breath-a.mp4",
+  "films/breath-b.mp4",
+  "films/walk-spawn-a.mp4",
+  "films/walk-spawn-b.mp4",
+];
 
-const slot = String(process.argv[2] || "")
+const argv = process.argv.slice(2);
+const dry = argv.includes("--dry-run");
+const debug = process.env.COOK_DEBUG === "1";
+const slot = String(argv.find((a) => !a.startsWith("--")) || "")
   .toLowerCase()
   .trim();
-if (!SLOTS.includes(slot)) {
-  console.log("FAIL not in catalog");
-  console.log(STOCK);
+
+function out(line) {
+  console.log(line);
+}
+
+function fail(rule) {
+  if (rule) out("FAIL " + rule);
+  out(STOCK);
   process.exit(1);
 }
 
-const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const dir = join(root, "packs", slot);
-mkdirSync(join(dir, "stills"), { recursive: true });
-mkdirSync(join(dir, "films"), { recursive: true });
+function run(bin, args) {
+  return spawnSync(bin, args, { encoding: "utf8" });
+}
 
-const jsonPath = join(dir, "room.json");
-if (!existsSync(jsonPath)) {
-  const skeleton = {
-    id: slot,
+/** Wire to Imagine. Walks: first AND last distinct. Breath: first = last. */
+async function imagineStill(_args) {
+  throw new Error("imagineStill not wired — use --dry-run");
+}
+async function imagineClip(_args) {
+  throw new Error("imagineClip not wired — use --dry-run");
+}
+
+function skeleton(id) {
+  return {
+    id,
     format: 1,
     open: "breath-spawn",
     plate: "720x1280",
@@ -48,17 +73,13 @@ if (!existsSync(jsonPath)) {
     auth: false,
     database: false,
     PACK: 1,
-    stills: {
-      spawn: "stills/spawn.jpg",
-      atA: "stills/at-a.jpg",
-      atB: "stills/at-b.jpg",
-    },
+    stills: { spawn: STILLS[0], atA: STILLS[1], atB: STILLS[2] },
     clips: {
-      "breath-spawn": { file: "films/breath-spawn.mp4", act: "breath", loop: true, required: true },
-      "breath-A": { file: "films/breath-a.mp4", act: "breath", loop: true, required: true },
-      "breath-B": { file: "films/breath-b.mp4", act: "breath", loop: true, required: true },
-      "walk-spawn-A": { file: "films/walk-spawn-a.mp4", act: "walk", loop: false, required: true },
-      "walk-spawn-B": { file: "films/walk-spawn-b.mp4", act: "walk", loop: false, required: true },
+      "breath-spawn": { file: FILMS[0], act: "breath", loop: true, required: true },
+      "breath-A": { file: FILMS[1], act: "breath", loop: true, required: true },
+      "breath-B": { file: FILMS[2], act: "breath", loop: true, required: true },
+      "walk-spawn-A": { file: FILMS[3], act: "walk", loop: false, required: true },
+      "walk-spawn-B": { file: FILMS[4], act: "walk", loop: false, required: true },
     },
     edges: [
       { from: "spawn", tap: "A", clip: "walk-spawn-A" },
@@ -68,38 +89,94 @@ if (!existsSync(jsonPath)) {
     ],
     ENTER: {},
   };
-  writeFileSync(jsonPath, JSON.stringify(skeleton, null, 2) + "\n");
 }
 
-const stills = ["stills/spawn.jpg", "stills/at-a.jpg", "stills/at-b.jpg"];
-const films = [
-  "films/breath-spawn.mp4",
-  "films/breath-a.mp4",
-  "films/breath-b.mp4",
-  "films/walk-spawn-a.mp4",
-  "films/walk-spawn-b.mp4",
-];
-const missing = [...stills, ...films].filter((f) => !existsSync(join(dir, f)));
+function queue(slot) {
+  return [
+    "1 slot " + slot + " in catalog",
+    "2 packs/" + slot + "/ + room.json (ENTER empty)",
+    "3 spawn still → smoke (cap 2)",
+    "4 atA atB from that spawn → smoke (cap 2)",
+    "5 five films one by one → smoke",
+    "6 breath FAIL×2 → ffmpeg loop still",
+    "7 walk FAIL×2 → stock",
+    "8 validate-pack + smoke-pack",
+    "9 stdout " + PLAYER + slot + " or stock",
+    "no A↔B, no Enter, no wait",
+  ];
+}
+
+if (!SLOTS.includes(slot)) fail("not in catalog");
+
+const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+const dir = join(root, "packs", slot);
+const scripts = join(root, "scripts");
+
+if (dry) {
+  out("COOK " + slot + " dry-run");
+  for (const line of queue(slot)) out(line);
+  process.exit(0);
+}
+
+mkdirSync(join(dir, "stills"), { recursive: true });
+mkdirSync(join(dir, "films"), { recursive: true });
+writeFileSync(join(dir, "room.json"), JSON.stringify(skeleton(slot), null, 2) + "\n");
+if (debug) out("stills dir ready (no stdin wait)");
+
+function smokeFile(rel, kind) {
+  const file = join(dir, rel);
+  const r = run("node", [join(scripts, "smoke-pack.mjs"), file, "--kind", kind]);
+  process.stdout.write(r.stdout || "");
+  return r.status === 0;
+}
+
+function validate() {
+  const py = join(scripts, "validate-pack.py");
+  const a = run("python3", [py, dir]);
+  process.stdout.write(a.stdout || "");
+  const b = run("node", [join(scripts, "smoke-pack.mjs"), dir]);
+  process.stdout.write(b.stdout || "");
+  return a.status === 0 && b.status === 0;
+}
+
+function ffmpegLoop(stillRel, destRel) {
+  const still = join(dir, stillRel);
+  const dest = join(dir, destRel);
+  const r = run("ffmpeg", [
+    "-y",
+    "-loop",
+    "1",
+    "-i",
+    still,
+    "-t",
+    "6",
+    "-vf",
+    "scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280",
+    "-c:v",
+    "libx264",
+    "-pix_fmt",
+    "yuv420p",
+    "-an",
+    "-movflags",
+    "+faststart",
+    dest,
+  ]);
+  return r.status === 0 && existsSync(dest);
+}
+
+const missing = [...STILLS, ...FILMS].filter((f) => !existsSync(join(dir, f)));
 if (missing.length) {
-  console.log("COOK " + slot + " — Grok: fill in order, no wait, no Enter. Cap 2.");
-  console.log("1 spawn still → smoke");
-  console.log("2 atA atB from spawn → smoke");
-  console.log("3 five films one by one → smoke");
-  console.log("4 encode mute 720x1280");
-  console.log("5 node scripts/validate-pack.mjs packs/" + slot);
-  console.log("missing: " + missing.join(", "));
-  console.log(STOCK);
-  process.exit(2);
+  try {
+    await imagineStill({ slot, pose: "spawn" });
+  } catch (e) {
+    out("COOK " + slot);
+    for (const line of queue(slot)) out(line);
+    out(String(e.message || e));
+    out("missing: " + missing.join(", "));
+    fail("hooks not wired");
+  }
 }
 
-const py = join(root, "scripts", "validate-pack.py");
-const r = spawnSync("python3", [py, dir], { encoding: "utf8" });
-process.stdout.write(r.stdout || "");
-process.stderr.write(r.stderr || "");
-if (r.status !== 0) {
-  console.log("FAIL validate");
-  console.log(STOCK);
-  process.exit(1);
-}
-console.log("PASS " + PLAYER + slot);
+if (!validate()) fail("validate");
+out("PASS " + PLAYER + slot);
 process.exit(0);
