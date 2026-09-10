@@ -119,10 +119,17 @@ function whiteBlobs(buf, w, h) {
   return blobs;
 }
 
-function cloneScan(file, d) {
+function cloneScan(file, d, kind) {
+  const times = [];
   const step = d > 8 ? 1.2 : 0.8;
+  for (let t = 0; t < d; t += step) times.push(t);
+  if (kind === "walk" || kind === "enter") {
+    for (const t of [Math.max(0, d - 2), Math.max(0, d - 1), Math.max(0, d - 0.15)]) {
+      times.push(t);
+    }
+  }
   let max = 0;
-  for (let t = 0; t < d; t += step) {
+  for (const t of times) {
     try {
       const n = whiteBlobs(rawFrame(file, t, 90, 160), 90, 160);
       if (n > max) max = n;
@@ -132,6 +139,7 @@ function cloneScan(file, d) {
     }
   }
   return max;
+}
 }
 
 function inferKind(file) {
@@ -312,8 +320,13 @@ function smokeFile(file, kind, refs, required, smokeDir) {
         return fail("graph.enter_reveals_hall", "t=last", "last = Hall' spawn");
     }
 
-    const dogs = cloneScan(file, d);
-    if (dogs >= 2) return fail("clone.two_dogs", "clip", `${dogs} dogs`);
+    const dogs = cloneScan(file, d, kind);
+    if (dogs >= 2)
+      return fail(
+        "clone.two_dogs",
+        kind === "walk" ? "t=last" : "clip",
+        `${dogs} dogs — walk last 2s must be ONE body`,
+      );
 
     try {
       const fa = rawFrame(file, 0, GW, GH);
