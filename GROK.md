@@ -11,10 +11,20 @@ Auth OFF. Database OFF. No 3D, no canvas, no WebGL, no Play / Forge / Hang / Kee
 **Do not scaffold a new app. Do not publish a new grok.me.**
 Someone asks for a citadel → give the player URL. Cook writes into `packs/<id>/`.
 
-Ops (folders, PACK, encode, first+last, freeze, veil color): [HANG.md](HANG.md).
-DOM clock: [ENGINE.md](ENGINE.md).
-Box check: [VALIDATE.md](VALIDATE.md).
-Content lint: [SMOKE.md](SMOKE.md).
+## Law 0 — Imagine first + last (automatic)
+
+Every new conversation. Do not wait to be asked. The stills **are** the frames. [COOK.md](COOK.md).
+
+| kind | Imagine call | first | last |
+|---|---|---|---|
+| **walks** | first AND last (`reference_to_video` / `image` + `last_frame`) | start still | arrive still — **distinct** |
+| **enter** | same | at-still | fill veil — **never** dest Hall' spawn |
+| **breath** | `image_to_video` on **one** still | pose still | **same** still |
+
+Never `image_to_video` a walk or enter on a single still. That invents the journey / clones the dog.
+Breath is the only legal `first = last`.
+
+Ops: [HANG.md](HANG.md). DOM: [ENGINE.md](ENGINE.md). Box: [VALIDATE.md](VALIDATE.md). Content: [SMOKE.md](SMOKE.md).
 
 ## If they ask for stills / a citadel style
 
@@ -24,7 +34,7 @@ This is the default. Read [CHAR.md](CHAR.md) then [COOK.md](COOK.md) then [PLAYE
 2. If `packs/<id>` already exists → give `https://boltverse-odyssey.grok.me/r/<id>` (or `/` for `citadel`). Stop.
 3. Else cook **3 stills** in that style: spawn → atA → atB (order in COOK.md). Same Bolt, same camera, teal left / gold right.
 4. Show the 3. Wait for ok.
-5. Cook the 7 films from those stills (COOK.md). Encode H264 yuv420p +faststart, **no audio**. Land in `packs/<id>/`.
+5. Cook the 7 films from those stills — **Law 0 on every clip**. Encode H264 yuv420p +faststart, **no audio**. Land in `packs/<id>/`.
 6. Run `node scripts/validate-pack.mjs packs/<id>` then `node scripts/smoke-pack.mjs packs/<id>`.
 7. FAIL a required clip → recook **that file only**, cap **2**, smoke again. Then give `https://boltverse-odyssey.grok.me/r/<id>`. Never a new preview. Optional FAIL = WARN — recook or drop, do not block the hall.
 
@@ -32,7 +42,7 @@ Never `text_to_image` a new dog. Never a 3D dungeon.
 
 ## If they ask to branch a room on a door
 
-Read [ENTER.md](ENTER.md) then [HANG.md](HANG.md).
+Read [ENTER.md](ENTER.md) then [HANG.md](HANG.md). **Law 0** on the enter cook.
 
 1. Room 1 already hangs. Cook room 2 as a **full pack** into `stills/a/` + `films/a/` **inside that pack** (stills then 7 films, COOK.md). Same Bolt. **Same depth.** Do not overwrite hall stills.
 2. Walk A ended → breath-A. **Stay.** Player taps A again to enter, or B to walk. Never auto-enter.
@@ -101,4 +111,4 @@ Map by motion, not by filename. Skip still-cook.
 - Walk teal → gold → `walk-A-B`
 - Walk gold → teal → `walk-B-A`
 
-Land in `packs/<id>/`. Run validate-pack then smoke-pack. Give the player URL. No chrome.
+Land in `packs/<id>/`. If you must recook a walk/enter: **Law 0**. Run validate-pack then smoke-pack. Give the player URL. No chrome.
