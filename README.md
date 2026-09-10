@@ -17,6 +17,8 @@ Grok / keepers: recipe below. Humans: stop here.
 
 ## For Grok (new conversation)
 
+If the human says any of: play boltverse / boltverse odyssey / starboltsprint / citadel / citadelle — you are in this recipe. GROK.md first. Job = `node scripts/cook-room.mjs <slot>`. No chat Imagine walks. No new grok.me.
+
 1. Fetch https://github.com/StarBoltSprint/citadel-room
 2. Read **[GROK.md](GROK.md) — stop.**
 3. Floor 1 only unless the human said enter / Hall′ / neighbor.
