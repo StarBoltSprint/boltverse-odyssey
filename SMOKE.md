@@ -141,6 +141,13 @@ Enter only enters this pipe if Enter was asked.
 
 A photo loop with no vapor / no chest is a **gel**. Do not call it a living breath. Hard-refresh after a real PASS breath.
 
+### Still = dog size, not just 720×1280
+
+`spawn.jpg --kind still-spawn` used to PASS on file shape alone. `creamHeight` / punch-in lived only in **still-pair** (spawn→atA, walk last). A 0.60 spawn hung in silence until breath compared two frames.
+
+Now the still itself: `creamHeight` → `gate.size punch-in` if h ≥ 0.55, `gate.size spawn-band` if spawn ∉ 0.18–0.36. COOK smokes spawn **before** films. 0.60 dies at the still. 0.19 lives.
+
+
 Required plates: 3 stills + breath-spawn, breath-A, breath-B, walk-spawn-A, walk-spawn-B.
 Optional (walk-A-B, walk-B-A, enter): FAIL = recook or drop — do not block the hall.
 
