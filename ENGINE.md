@@ -230,6 +230,7 @@ That is the plate. The player does not interpolate.
 
 ## What the DOM **does** guarantee
 
+- never a black hole ([FAIL.md](FAIL.md): no file = no kick, graph shrinks)
 - never a black hole (still always there, except enter off on purpose) — [HOLD.md](HOLD.md): `stillEnd` same frame at `ended`, dissolve ≤ 280ms, preload breath before walk ends
 - never two videos fighting (pause outgoing)
 - never enter from spawn
