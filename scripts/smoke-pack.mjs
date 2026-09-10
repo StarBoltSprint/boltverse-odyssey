@@ -6,7 +6,7 @@
 // Layers A+B here. Layer C = Grok + scripts/smoke-identity.md on .smoke/ frames.
 // See SMOKE.md. Recook THIS plate, cap 2.
 
-import { existsSync, mkdirSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { execFileSync, spawnSync } from "node:child_process";
 
@@ -245,7 +245,16 @@ function smokeFile(file, kind, refs, required, smokeDir) {
   }
 
   if (still) {
-    if (existsSync(smokeDir)) console.log(`VISION  ${smokeDir}/still.jpg  (layer C)`);
+    if (existsSync(smokeDir)) {
+      console.log(`VISION  ${smokeDir}/still.jpg  (layer C)`);
+      if (needsC(kind, required))
+        cJobs.push({
+          id,
+          kind,
+          required: true,
+          files: [join(smokeDir, "still.jpg")],
+        });
+    }
     return row();
   }
 
@@ -293,7 +302,20 @@ function smokeFile(file, kind, refs, required, smokeDir) {
     return fail("file.decode", "frame", e.message);
   }
 
-  if (existsSync(smokeDir)) console.log(`VISION  ${smokeDir}/{first,mid,last}.jpg  (layer C)`);
+  if (existsSync(smokeDir)) {
+    console.log(`VISION  ${smokeDir}/{first,mid,last}.jpg  (layer C)`);
+    if (needsC(kind, required))
+      cJobs.push({
+        id,
+        kind,
+        required: true,
+        files: [
+          join(smokeDir, "first.jpg"),
+          join(smokeDir, "mid.jpg"),
+          join(smokeDir, "last.jpg"),
+        ],
+      });
+  }
   return row();
 }
 
@@ -329,6 +351,12 @@ const jobsPack = [
 
 let fails = 0;
 let warns = 0;
+const cJobs = [];
+
+function needsC(kind, required) {
+  if (!required) return false;
+  return kind.startsWith("still") || kind === "breath" || kind === "walk";
+}
 
 function run(file, kind, refs, required, packRoot) {
   const clip = basename(file, file.match(/\.[^.]+$/)?.[0] || "");
@@ -367,8 +395,25 @@ if (isPackDir(target) && !kindFlag) {
 
 if (fails) {
   console.log(`SMOKE FAIL  ${fails} required  recook that plate, cap 2`);
-  process.exit(1);
+  process.exitCode = 1;
+} else if (warns) {
+  console.log(`SMOKE PASS  (${warns} optional WARN — recook or drop)`);
+} else {
+  console.log("SMOKE PASS");
 }
-if (warns) console.log(`SMOKE PASS  (${warns} optional WARN — recook or drop)`);
-else console.log("SMOKE PASS");
-console.log("LAYER C  read scripts/smoke-identity.md on .smoke/<clip> frames before Hang");
+
+const packRoot = isPackDir(target) ? target : null;
+if (cJobs.length && packRoot) {
+  const man = join(packRoot, ".smoke/MANIFEST.json");
+  mkdirSync(join(packRoot, ".smoke"), { recursive: true });
+  writeFileSync(man, JSON.stringify({ prompt: "scripts/smoke-identity.md", jobs: cJobs }, null, 2));
+  console.log(`LAYER C REQUIRED  ${cJobs.length} plates (stills + walks + breaths)`);
+  console.log(`  1. Read scripts/smoke-identity.md`);
+  console.log(`  2. Open each image in ${man}`);
+  console.log(`  3. One line per id: PASS  or  FAIL identity.face @ t=last`);
+  console.log(`  4. FAIL → recook THIS plate, cap 2. Do not Hang.`);
+  for (const j of cJobs) console.log(`  C  ${j.id}  ${j.files.join(" ")}`);
+} else {
+  console.log("LAYER C  stills/walks/breaths only — read scripts/smoke-identity.md");
+}
+if (fails) process.exit(1);
