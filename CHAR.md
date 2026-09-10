@@ -39,7 +39,7 @@ Measure = `bboxH / frameH` of the dog mask. Same lens / height / distance on eve
 | Door sill (atA / atB) | **0.35 – 0.40** (soft approach, same lens) |
 | Forbidden | **~0.70** / fills-door (punch-in / dolly) |
 
-Breath: size frozen (Δh/H < 0.08). Walk: spawn-band → sill-band, no dolly. Dissolve does not fix a size jump.
+Breath: size frozen (Δh/H < **0.11**). Vapor / chest can add ~0.01–0.03 to the cream mask — that is not a step. 0.08 was a false positive. Walk remains 0.12. Walk: spawn-band → sill-band, no dolly. Dissolve does not fix a size jump.
 
 **One line:** all white, large, back only — **no** black on the dog.
 

@@ -307,7 +307,7 @@ function bandCheck(h, pose, why, warns) {
 }
 
 const T = {
-  breath: { hall: 0.55, dh: 0.08, yaw: 32, dcx: 0.08, ncc: 0.38 },
+  breath: { hall: 0.55, dh: 0.11, yaw: 32, dcx: 0.08, ncc: 0.38 },
   walk: { hall: 0.45, dh: 0.12, yaw: 32, dcx: 0.22, ncc: 0.34 },
   enter: { hall: 0.12, dh: 0.14, yaw: 32, dcx: 0.35, ncc: 0.3 },
 };
