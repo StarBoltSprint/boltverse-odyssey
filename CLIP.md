@@ -108,3 +108,24 @@ Enter is off this queue (floor 3).
 ## One line
 
 Measure the file, glue first/last to the official stills, refuse the face. What exits may be an edge. The rest does not exist for the player.
+
+
+## Walk last frame — clone.two_dogs (hard)
+
+Frost walk-A (2026-09-10): 0–12s ONE dog to teal = PASS. **t=13s** a second Bolt pops at spawn/center. FAIL. Do not hang.
+
+Imagine interpolates spawn (center) and atA (sill) → it **draws both** at the end.
+
+```
+last 2s of a walk = ONE dog, on the arrive still, back to camera.
+A second body at spawn / mid-hall / ghost = FAIL clone.two_dogs @ t=last
+```
+
+Recook **this** walk only, cap 2. Same first + last stills. Prompt hard:
+
+```
+ONE white GSD only. Never a second dog. Never a ghost. Never a spawn dog plus a door dog.
+He ends already at the arrive still. No walk-back to center.
+```
+
+Still FAIL → drop the edge (tap = stay). Never write the clone into `films/`.
