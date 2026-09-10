@@ -31,7 +31,7 @@ Off-plate = the player jumps at swap. FAIL `plate.size` / `plate.audio` / `plate
 
 ## Gate 2 — The graph (first / last)
 
-Extract **first** and **last** frames. Compare to official stills (perceptual hash + [STILL-PAIR.md](STILL-PAIR.md)).
+Extract **first** and **last** frames. Compare to official stills (perceptual hash ([PHASH.md](PHASH.md)) + [STILL-PAIR.md](STILL-PAIR.md)).
 
 | Clip | first ≈ | last ≈ |
 |---|---|---|
