@@ -66,7 +66,7 @@ It **refuses** contradictions: `chrome != none`, `auth: true`, 16:9, 3rd door.
 | Human | sends the folder / a zip / an id |
 
 Not: event JSON, websocket, login, “room record in Neon”.  
-Hang = copy the folder to `packs/<id>/` + bump PACK.
+Hang = copy the folder to `packs/<id>/` + bump PACK + **`smoke.json` from `node scripts/smoke-pack.mjs`** (`ok: true`). No smoke.json → not a pack. The player loads stock. Do not write this file by hand.
 
 Two different cooks (Grok vs script) are compatible as soon as the **filenames** match. Crowding = **fork the pack, not the engine**.
 
