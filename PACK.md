@@ -138,3 +138,5 @@ If they had to patch the player, the format failed — you reopened the engine.
 ## One line
 
 The world is a folder that looks like this. The game is one reader. Whoever writes the folder does not touch the reader. Whoever touches the reader broke the contract.
+
+Golden disc (floor 1 zip): [citadel-stock-v1](https://github.com/StarBoltSprint/citadel-room/releases/tag/citadel-stock-v1). Not in `main`. Unzip → `packs/citadel/`.
