@@ -442,6 +442,10 @@ if (isPackDir(target) && !kindFlag) {
         fails++;
       } else {
         emit({ id: label, kind: "still-pair", ok: true, required: true });
+        if (g.warn?.length) {
+          emit({ id: label, kind: "still-pair", ok: false, warn: true, required: false, rule: "gate.size", note: g.warn.join("; ") });
+          warns++;
+        }
       }
     } catch (e) {
       emit({ id: label, kind: "still-pair", ok: false, required: true, rule: "file.decode", note: e.message });
