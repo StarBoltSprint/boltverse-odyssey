@@ -5,7 +5,7 @@
 **Player:** https://boltverse-odyssey.grok.me  
 **How Grok uses it:** [PLAYER.md](PLAYER.md)
 
-Second room on a door: [ENTER.md](ENTER.md). Two plates. Never one cook. Same **depth** as room 1. Engine / DOM: [ENGINE.md](ENGINE.md). Ops: [HANG.md](HANG.md). Box check: [VALIDATE.md](VALIDATE.md).
+Second room on a door: [ENTER.md](ENTER.md). Two plates. Never one cook. Same **depth** as room 1. Engine / DOM: [ENGINE.md](ENGINE.md). Ops: [HANG.md](HANG.md). Box: [VALIDATE.md](VALIDATE.md). Content: [SMOKE.md](SMOKE.md).
 
 **This repo is the recipe, not the hang.** `stills/` and `films/` at root are empty (`.gitkeep`). Hung discs live in `packs/<id>/`. `lock/` is Bolt + camera only.
 
@@ -18,8 +18,8 @@ Someone asks to create a **citadel room** / Bolt Engine living-film / "3 stills,
 3. **Do not build / publish a new grok.me.**
 4. If `packs/<id>` exists → only `https://boltverse-odyssey.grok.me/r/<id>` (`/` = golden `citadel`).
 5. Else cook 3 stills (Bolt from [`lock/bolt-back.jpg`](lock/bolt-back.jpg)), wait, cook the 7 films into `packs/<id>/`. Encode H264 `yuv420p` +faststart, **no audio**.
-6. Run `node scripts/validate-pack.mjs packs/<id>`. FAIL → recook, do not push, do not give the URL.
-7. PASS → push `packs/<id>/` → give the same URL.
+6. `node scripts/validate-pack.mjs packs/<id>` then `node scripts/smoke-pack.mjs packs/<id>`.
+7. FAIL a **required** clip → recook **that file only**, cap **2**, smoke again. Then push and give the URL. Optional FAIL = WARN, drop or recook, do not block.
 8. Branch a room on a door: [ENTER.md](ENTER.md) inside that pack. Neighbor citadel = another pack id on the **same** player.
 
 Search terms: `StarBoltSprint citadel-room` · Bolt Engine · living film · PLAYER.md · boltverse-odyssey.grok.me
@@ -30,15 +30,17 @@ Search terms: `StarBoltSprint citadel-room` · Bolt Engine · living film · PLA
 |---|---|
 | [PLAYER.md](PLAYER.md) | salon URL — do not scaffold |
 | [VALIDATE.md](VALIDATE.md) | box check before hang |
+| [SMOKE.md](SMOKE.md) | clone / first-last / recook cap 2 |
 | [CHAR.md](CHAR.md) | Bolt lock — the dog never changes |
 | [COOK.md](COOK.md) | stills-first cook, then films |
 | [GROK.md](GROK.md) | how to rebuild the hall |
 | [ROOM.md](ROOM.md) | skeleton — encode flags, playsInline, ENTER map, player bugs |
 | [ENTER.md](ENTER.md) | room 1 → room 2 — two plates, stills vs room 1, same depth |
 | [ENGINE.md](ENGINE.md) | DOM player — 4 nodes, vis/hid+genRef, double rAF, containPlate |
-| [HANG.md](HANG.md) | ops — folders, PACK, encode, first+last, freeze, gold veil |
+| [HANG.md](HANG.md) | ops — folders, PACK, encode, first/last, freeze, gold veil |
 | [room.json](room.json) | graph machine-readable |
 | `scripts/validate-pack.mjs` | room.json + 3 stills + 5 films, H264, no audio |
+| `scripts/smoke-pack.mjs` | one dog, first≠last on walks, breath loops |
 | `lock/bolt-back.jpg` | Bolt identity (back to camera) |
 | `lock/example-*.jpg` | camera + door layout (spawn / atA / atB) |
 | `packs/<id>/` | hung discs — Grok writes here |
