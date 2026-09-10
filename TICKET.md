@@ -1,72 +1,52 @@
 # TICKET — keeper gift (not play)
 
-Play is free. Stock, walks, breath: **0**.  
-This file is **one welcome plate** so a new player can taste the forge. It is not the hall.
+Play is free. Stock, walks, breath: **0**. Auth stays **off** on the 9:16.
 
-Auth stays **off** on the 9:16. The id exists only here.
+This page is extra: **one still per day** — a locked **photo**, not a video.
 
 ## Who pays
 
-Keeper (you). Your Imagine key lives **on the server**. The player never sees SuperGrok.  
-xAI does not slice a weekly SuperGrok %. You pick a number:
-
-`weeklyCookCap` ≈ 20 % of *your* week (edit `src/game/ticket.ts`).
+Keeper (SmiR). Imagine runs with **`XAI_API_KEY` on the server** (injected, never in GitHub, never `VITE_`, never the phone).  
+The player never sees SuperGrok. The builder never prints the key.
 
 ## Cadence
 
-**1 still / day / X account.** Not 3 stills (that is a hall). Come back tomorrow. Week cap = keeper 20%.
+| knob | value |
+|---|---|
+| per player | **1 photo / UTC day** |
+| everyone together | **50 Imagine stills / week** hard stop |
+| what | still-spawn only (image) |
+| login | **X** (not Google) |
+| Premium | X Premium / SuperGrok — if X says not premium, refuse. If we cannot read it, the **50** still holds |
 
-## Who may claim
-
-- **X account** (Grok / X Premium preferred). Not Google. Not 50 free throwaway Xs if you can help it.
-- SuperGrok **paid** / X Premium = the anti-cheat. Free X farms drain the pool.
-- Grok, in chat, can see SuperGrok. The web ledger cannot. Honor SuperGrok **when cooking**. Web = 1 / `userId` + weekly cap.
-- **1 plate / player / UTC day**. Weekly cap still holds.
-
-## What the gift is
-
-**One still-spawn** in a catalog paint. Not a whole floor-1 hall (~8 cooks).
-
-Same paint + same lock already hung → **0** (serve the pack). Do not spend.
-
-Walk / breath / A↔B / already-hung enter → **0**.
+Same paint already cooked → **reuse, 0 spend** (does not count against 50).  
+Walk / breath / hung enter → **0**.
 
 ## Flow
 
 ```
-play  = anonymous hall (stock)
-gift  = /gift  →  Continue with X
-        →  pick moss|ember|dusk|…
-        →  quota[player] == 0 and week < cap ?
-             yes → ticket armed, cook 1 spawn still with keeper key
-             no  → stay on stock, “already used” / “week is full”
+play   = anonymous hall
+/gift  = Continue with X
+       → 1 ticket today?
+       → week spent < 50?
+           yes → cook 1 spawn still with keeper key (or reuse)
+           no  → hall, come back tomorrow / next week
 ```
 
-Hall **never** shows Forge, %, generating. Cook off-plate. PASS → Hang pack, give `/r/<paint>` if that still is enough to see, else they still play stock and the still is a postcard.
+Hall never shows generating. Cook is the gift page, then the photo.
 
-FAIL → no URL, stay. [FAIL.md](FAIL.md) [SAS.md](SAS.md)
+## X login
 
-## Caps (keeper)
-
-| knob | default |
-|---|---|
-| gift / player / day | **1** still-spawn |
-| weekly cooks | **50** total (everyone) |
-| plate | still-spawn only |
-| provider | **X** |
-
-Ban / allowlist = keeper. Spam tickets → drop that `user_id`.
+Password stays on X / the Grok broker. This site never sees it.  
+A stolen Citadel session can claim **today’s photo**, not the X account.
 
 ## Not this
 
-- Login to **tap**
-- Key in the client / shared Grok session
-- “generating…” on Bolt
-- 3 stills + 5 films as the welcome gift
+- Login to tap
+- Key in the client
+- 3 stills + 5 films as the gift
+- “20% SuperGrok” — not a real xAI slice. The number is **50**.
 
 ## One line
 
-Play is a folder. The gift is one still, one X, one time, on the keeper’s week — never on the plate.
-
-
-Hard week: **50 Imagine stills** for the whole pool. Same paint already cooked → reuse, 0 spend.
+Play is a folder. The gift is one photo a day, on the keeper’s key, 50 a week for the whole pool — never on the plate.
