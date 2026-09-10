@@ -33,12 +33,14 @@ Every new conversation. Do not wait to be asked. The stills **are** the frames. 
 
 | kind | Imagine call | first | last | floor 1 |
 |---|---|---|---|---|
-| **walks** | first AND last (`image` + `last_frame`) | start still | arrive still — **distinct** | yes |
+| **walks** | API `image` + `last_frame` — **not** chat `reference_to_video` | start still | arrive still — **distinct** | yes |
 | **breath** | `image_to_video` on **one** still | pose still | **same** still | yes |
 | **enter** | first AND last | at-still | fill veil — **never** dest spawn | **no** unless they asked |
 
 Never `image_to_video` a walk or enter on a single still. That invents the journey / clones the dog.
 Breath is the only legal `first = last`.
+
+Chat `reference_to_video` does **not** lock last. Imagine uses the stills as style. Last frame will not be the gold still. Walks only via `imagine-hooks` (`last_frame`). Then smoke last vs still — FAIL = recook, do not rewrite the still fatter.
 
 **Walk last 2s:** ONE dog on the arrive sill. A second Bolt at spawn/center = FAIL `clone.two_dogs`. Recook that walk. Do not hang. [CLIP.md](CLIP.md).
 
