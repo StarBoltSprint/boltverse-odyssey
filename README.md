@@ -26,7 +26,7 @@ Someone asks to create a **citadel room** / Bolt Engine living-film / "3 stills,
 2. Read [PLAYER.md](PLAYER.md) first. Then [CHAR.md](CHAR.md) [COOK.md](COOK.md) [GROK.md](GROK.md).
 3. **Do not build / publish a new grok.me.**
 4. If `packs/<id>` exists → only `https://boltverse-odyssey.grok.me/r/<id>` (`/` = golden `citadel`).
-5. Else cook 3 stills (Bolt from [`lock/bolt-back.jpg`](lock/bolt-back.jpg)), wait, cook the 7 films into `packs/<id>/`. Encode H264 `yuv420p` +faststart, **no audio**.
+5. Else run [COOKROOM.md](COOKROOM.md): 3 stills then 5 films, **no wait**, no Enter. `node scripts/cook-room.mjs <paint>`. Encode H264 `yuv420p` +faststart, **no audio**.
 6. `node scripts/validate-pack.mjs packs/<id>` then `node scripts/smoke-pack.mjs packs/<id>`.
 7. FAIL a **required** clip → recook **that file only**, cap **2**, smoke again. Then push and give the URL. Optional FAIL = WARN, drop or recook, do not block.
 8. Branch a room on a door: [ENTER.md](ENTER.md) inside that pack. Neighbor citadel = another pack id on the **same** player.
