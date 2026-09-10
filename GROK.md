@@ -156,3 +156,5 @@ Silent fail: [FAIL.md](FAIL.md). Missing pack → stock. Missing edge → stay. 
 Airlock: [SAS.md](SAS.md). Stamp JSON. Hang only on pass. reject = smaller graph, not a 500.
 
 Pack format: [PACK.md](PACK.md). Write a folder. Do not scaffold a player. format: 1.
+
+Gift cook (keeper pool): [TICKET.md](TICKET.md). Only if the user is **SuperGrok or X Premium**. One still-spawn, catalog paint, one time. Walk/breath never spend. If ticket already armed or week cap hit → stock, no cook. Cook off-plate. Never generating on Bolt.
