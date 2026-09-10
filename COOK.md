@@ -5,6 +5,18 @@ This is the product. The player does **not** pick films first. They ask Grok for
 Repo: `https://github.com/StarBoltSprint/citadel-room`
 Ops / folders / encode / PACK: [HANG.md](HANG.md).
 
+## Law 0 — Imagine first + last (automatic)
+
+Every new conversation. Do not wait to be asked.
+
+| kind | Imagine call | first | last |
+|---|---|---|---|
+| **walks** | first AND last (`reference_to_video` / `image` + `last_frame`) | start still | arrive still — **distinct** |
+| **enter** | same | at-still | fill veil — **never** dest spawn |
+| **breath** | `image_to_video` on **one** still | pose still | **same** still |
+
+Never `image_to_video` a walk or enter on a single still. That invents the journey / clones the dog. Breath is the only legal `first = last`.
+
 ## What the player may change
 
 **Citadel style only.** Stone, crystal, neon, moss, gold temple, flooded ruin, anything — as long as it stays a hall with two doors.
@@ -85,7 +97,7 @@ If any FAIL below, recook from spawn. Do not invent a fourth still. Do not cook 
 
 ## Films — only after the player oks the 3 stills
 
-Stills **are** first and last frames. Do not re-imagine a new hall.
+Stills **are** first and last frames. Do not re-imagine a new hall. **Law 0.**
 
 **Walks and enter: first AND last must be distinct images.** Breath is the only legal `first = last` loop. Enter is **not** `image_to_video` on one still — `last = first` invents a journey / clone. See [HANG.md](HANG.md).
 
@@ -120,7 +132,7 @@ ffmpeg -loop 1 -i stills/a/spawn.jpg -t 6 \
   films/a/breath-spawn.mp4
 ```
 
-Better a freeze than a second walk across Hall′ after the curtain. QC dest: feet glued the whole 6s or replace with the loop.
+Better a freeze than a second walk across Hall' after the curtain. QC dest: feet glued the whole 6s or replace with the loop.
 
 ### Encode (every mp4)
 
@@ -133,7 +145,7 @@ ffmpeg -i in.mp4 -map 0:v:0 \
 No audio. `yuv420p` + `faststart`. A 784×1168 clip gets center-crop 9:16 then scale — otherwise lock-off dies.
 Then bump `PACK` (`?uN`). No bump = browser replays the old mp4.
 
-Hang: [GROK.md](GROK.md) + [ENGINE.md](ENGINE.md). Open = breath-spawn. Chrome dégage.
+Hang: [GROK.md](GROK.md) + [ENGINE.md](ENGINE.md). Open = breath-spawn. No chrome.
 
 ## Walk FAIL (recook that clip, don't hang it)
 
@@ -141,6 +153,7 @@ Hang: [GROK.md](GROK.md) + [ENGINE.md](ENGINE.md). Open = breath-spawn. Chrome d
 - Bolt morph (coat, collar, extra limb)
 - Hall morph, door color swap
 - First frame ≠ start still / last frame ≠ arrive still (dissolve will not fix this)
+- Cooked as `image_to_video` on one still (violates Law 0)
 
 ## Enter — second room on a door (after both packs exist)
 
@@ -152,7 +165,7 @@ Do **not** cook enter until:
 
 Then read [ENTER.md](ENTER.md) and [HANG.md](HANG.md). Short version:
 
-- **Two plates.** Imagine first+last **distinct**: atA → teal-fill (dog **stays left**). Never `image_to_video` on one still. Never `last = Hall′ spawn`.
+- **Two plates.** Imagine first+last **distinct** (Law 0): atA → teal-fill (dog **stays left**). Never `image_to_video` on one still. Never `last = Hall' spawn`.
 - Engine: 500ms empty veil of **that door** → spawn of room 2. Door A = teal-empty. Door B = **gold-empty**. Do not hardcode teal on a gold enter.
 - Dest breath = freeze if i2v walks.
 - Enter is **outside the 7** (`ENTER{}` map). `ended` → switch room **then** dest breath-spawn.
