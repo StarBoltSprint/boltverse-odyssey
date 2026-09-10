@@ -51,5 +51,6 @@ FAIL <rule> @ <t=0|t=mid|t=last|still> (<note>)
 | `identity.door_cut` | gold or teal rift cropped (illegal except last second of **enter**) |
 | `identity.orbit` | dolly / tilt: paws sliding down, ceiling falling |
 | `lock.lens_mismatch` | atA/atB not the same focal / distance as spawn |
+| `encode.fade_black` | last frames go black / empty hall |
 
 Wrong side / face = FAIL. Do not crop to hide it. Do not suggest Hall'.
