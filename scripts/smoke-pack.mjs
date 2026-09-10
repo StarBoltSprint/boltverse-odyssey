@@ -520,6 +520,24 @@ if (fails) {
 }
 
 const packRoot = isPackDir(target) ? target : null;
+if (packRoot) {
+  writeFileSync(
+    join(packRoot, "smoke.json"),
+    JSON.stringify(
+      {
+        ok: fails === 0,
+        script: "scripts/smoke-pack.mjs",
+        fails,
+        warns,
+      },
+      null,
+      2,
+    ) + "\n",
+  );
+  if (fails)
+    console.log("HANG BLOCKED  smoke.json ok=false — player must not mount this pack");
+  else console.log("HANG OK  smoke.json written by the script (not by Grok)");
+}
 if (cJobs.length && packRoot) {
   const man = join(packRoot, ".smoke/MANIFEST.json");
   mkdirSync(join(packRoot, ".smoke"), { recursive: true });
