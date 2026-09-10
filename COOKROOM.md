@@ -56,3 +56,5 @@ Not the player. Not Smoke (it *calls* smoke). Not Forge UI. Not live Imagine on 
 ## One line
 
 Smoke tastes. cookRoom runs the recipe. Grok does not invent the list of pans.
+
+Hooks: [scripts/imagine-hooks.mjs](scripts/imagine-hooks.mjs). `export XAI_API_KEY` then `node scripts/cook-room.mjs moss`. Stills = `/v1/images/edits` (bolt-back + example). Walks = video `image` + `last_frame`. Breath = `image` only. No key → throw / --dry-run.
