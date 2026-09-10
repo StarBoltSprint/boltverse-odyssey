@@ -3,6 +3,7 @@
 After cooking a pack, **before** push and **before** giving the player URL:
 
 ```
+python3 scripts/validate-pack.py packs/<id>
 node scripts/validate-pack.mjs packs/<id>
 node scripts/smoke-pack.mjs packs/<id>
 ```
@@ -33,3 +34,5 @@ Also the graph (still not Smoke):
 - A↔B / ENTER: if `required: true`, the file and `to` must be there; else ignore
 
 Still no pHash, no face. Box only.
+
+`validate-pack.py` = folder only (no ffprobe). `.mjs` = same + H264/mute if ffprobe is there.
