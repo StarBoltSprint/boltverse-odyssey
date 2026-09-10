@@ -1,0 +1,6 @@
+{
+  "lastOffsetSec": 0.04,
+  "pHash": { "same": 8, "gray": 16, "fail": 17 },
+  "dHash": { "breath_drift": 18 },
+  "note": "Calibrate on golden pack: spawn vs breath-spawn first must be 0–8. spawn vs atA must be >> 16. If spawn vs atA is ~6, stills are too close (dog not at the sill)."
+}
