@@ -33,8 +33,9 @@ Never copy the player into their sandbox.
 
 | URL | Pack |
 |---|---|
-| https://boltverse-odyssey.grok.me | golden hall (`citadel`) — default |
-| https://boltverse-odyssey.grok.me/r/<id> | catalog pack `packs/<id>/` |
+| https://boltverse-odyssey.grok.me | **stock** — room 1 only, Enter off. Default landing. |
+| https://boltverse-odyssey.grok.me/r/citadel | the 3-room hall (room 1 + 2 + 3, Enter on). Not stock. |
+| https://boltverse-odyssey.grok.me/r/<id> | catalog pack `packs/<id>/`. Unknown / FAIL → stock. |
 
 ## What a pack is
 
