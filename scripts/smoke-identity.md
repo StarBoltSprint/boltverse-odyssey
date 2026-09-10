@@ -4,6 +4,8 @@
 
 **Walk is one trip.** Mid-clip snap back to spawn (Frost walk-B t=11s) = `FAIL graph.walk_return`. Recook. Do not hang.
 
+**Coat:** FULL white. Zero black on the dog. Saddle / mask / black ears / grey = `FAIL identity.coat` or `identity.saddle`. [CHAR.md](../CHAR.md).
+
 **Required** on stills, walks, breaths. Optional on enter.
 You are **not** kind to a profile wolf.
 
@@ -43,6 +45,8 @@ FAIL <rule> @ <t=0|t=mid|t=last|still> (<note>)
 | `identity.three_quarter` | 3/4 body or head |
 | `clone.two_dogs` | second dog / ghost |
 | `clone.ghost` | transparent second body |
+| `identity.coat` | silver / grey / not full white |
+| `identity.saddle` | black saddle, mask, black ears |
 | `identity.black_silhouette` | black dog, unread fur |
 | `identity.cape` | cape, armor, size morph |
 | `identity.text` | text, UI, watermark |
