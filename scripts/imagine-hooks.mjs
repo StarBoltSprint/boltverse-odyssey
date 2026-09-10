@@ -142,7 +142,7 @@ export async function imagineClip({ root, slot, kind, first, last, dest, seconds
     catalogLines(root, slot),
     kind === "breath"
       ? "Micro breath only. Same pose. Locked-off. Loop. Do not walk. Do not turn."
-      : "He walks two steps. Locked-off camera. ONE dog. Interpolate first to last. No tunnel. No clone.",
+      : "He walks two steps. Locked-off. ONE white GSD only. Never a second dog. Never a ghost. Never a spawn dog plus a door dog. Last frame is the arrive still, one body. No tunnel.",
   ].join(" ");
   const body = {
     model: VIDEO_MODEL,
