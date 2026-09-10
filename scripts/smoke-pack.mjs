@@ -6,15 +6,21 @@
 // Layers A+B here. Layer C = Grok + scripts/smoke-identity.md on .smoke/ frames.
 // See SMOKE.md. Recook THIS plate, cap 2.
 
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { execFileSync, spawnSync } from "node:child_process";
 import { matchPose, GW, GH } from "./still-pair.mjs";
+import { pHash, dHash, hamming } from "./phash.mjs";
 
-const SAME = 12;
-const LOOP = 28;
-const HW = 16;
-const HH = 16;
+const TH = JSON.parse(
+  readFileSync(new URL("../smoke.json", import.meta.url), "utf8"),
+);
+const SAME = TH.pHash.same;
+const GRAY = TH.pHash.gray;
+const FAILH = TH.pHash.fail;
+const LAST_OFF = TH.lastOffsetSec;
+const DH_DRIFT = TH.dHash.breath_drift;
+const PH = 32;
 
 const args = process.argv.slice(2).filter((a) => !a.startsWith("--"));
 const flags = new Set(process.argv.filter((a) => a.startsWith("--")));
@@ -60,7 +66,8 @@ function probe(file) {
 function rawFrame(file, ss, w, h) {
   const a = [];
   if (ss != null && ss > 0) a.push("-ss", ss.toFixed(3));
-  a.push("-i", file, "-frames:v", "1", "-vf", `scale=${w}:${h}`, "-f", "rawvideo", "-pix_fmt", "rgb24", "pipe:1");
+  const vf = `scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280,scale=${w}:${h}`;
+  a.push("-i", file, "-frames:v", "1", "-vf", vf, "-f", "rawvideo", "-pix_fmt", "rgb24", "pipe:1");
   const buf = ffmpegBuf(a);
   if (!buf || buf.length < w * h * 3) throw new Error("short frame");
   return buf.subarray(0, w * h * 3);
@@ -73,33 +80,12 @@ function writeJpg(file, ss, out) {
   execFileSync("ffmpeg", ["-v", "error", ...a]);
 }
 
-function aHash(buf, w = HW, h = HH) {
-  const n = w * h;
-  const lum = new Uint8Array(n);
-  let sum = 0;
-  for (let i = 0; i < n; i++) {
-    const v = (buf[i * 3] * 3 + buf[i * 3 + 1] * 4 + buf[i * 3 + 2]) >> 3;
-    lum[i] = v;
-    sum += v;
-  }
-  const avg = sum / n;
-  let bits = 0n;
-  for (let i = 0; i < n; i++) if (lum[i] >= avg) bits |= 1n << BigInt(i);
-  return bits;
+function frameP(file, ss) {
+  return pHash(rawFrame(file, ss, PH, PH), PH);
 }
 
-function hamming(a, b) {
-  let x = a ^ b;
-  let n = 0;
-  while (x) {
-    n += Number(x & 1n);
-    x >>= 1n;
-  }
-  return n;
-}
-
-function frameHash(file, ss) {
-  return aHash(rawFrame(file, ss, HW, HH));
+function frameD(file, ss) {
+  return dHash(rawFrame(file, ss, 9, 8), 9, 8);
 }
 
 function whiteBlobs(buf, w, h) {
@@ -227,7 +213,7 @@ function smokeFile(file, kind, refs, required, smokeDir) {
   }
 
   const d = info.duration || 0;
-  const lastT = d > 0.2 ? d - 0.08 : 0;
+  const lastT = d > LAST_OFF * 2 ? d - LAST_OFF : 0;
   const midT = d > 0.4 ? d / 2 : 0;
 
   if (smokeDir) {
@@ -260,41 +246,70 @@ function smokeFile(file, kind, refs, required, smokeDir) {
   }
 
   try {
-    const first = frameHash(file, 0);
-    const last = frameHash(file, lastT);
+    const first = frameP(file, 0);
+    const last = frameP(file, lastT);
     const hamFL = hamming(first, last);
 
     if (kind === "breath") {
-      if (hamFL > LOOP) return fail("graph.first_eq_last", "t=last", `walked ham ${hamFL}`);
+      if (hamFL >= FAILH) return fail("graph.breath_drift", "t=last", `pHash ham ${hamFL}`);
+      if (hamFL > SAME) {
+        const dh = hamming(frameD(file, 0), frameD(file, lastT));
+        if (dh >= DH_DRIFT)
+          return fail("graph.breath_drift", "t=last", `dHash ${dh} (paws/cam slid)`);
+        emit({
+          id,
+          kind,
+          ok: false,
+          warn: true,
+          required: false,
+          rule: "graph.breath_gray",
+          note: `pHash ham ${hamFL}`,
+        });
+        warns++;
+      }
       const pose =
         /breath-a/i.test(file) ? refs.atA : /breath-b/i.test(file) ? refs.atB : refs.spawn;
       if (pose && existsSync(pose)) {
-        const s = frameHash(pose, 0);
-        if (hamming(first, s) > LOOP)
-          return fail("graph.first_not_official", "t=0", "first ≠ pose still");
+        const s = frameP(pose, 0);
+        const hs = hamming(first, s);
+        if (hs >= FAILH)
+          return fail("graph.first_not_official", "t=0", `first ≠ pose still ham ${hs}`);
       }
     }
 
     if (kind === "walk" || kind === "enter") {
-      if (hamFL < SAME) return fail("graph.first_eq_last", "t=last", `loop ham ${hamFL}`);
+      if (hamFL <= SAME) return fail("graph.first_eq_last", "t=last", `loop pHash ham ${hamFL}`);
     }
 
     if (kind === "walk") {
       const [start, end] = walkRefs(file, refs);
       if (start && end && existsSync(start) && existsSync(end)) {
-        const s = frameHash(start, 0);
-        const e = frameHash(end, 0);
-        if (hamming(first, s) > hamming(first, e) + 8)
-          return fail("graph.first_not_official", "t=0", "first ≠ start still");
-        if (hamming(last, e) > hamming(last, s) + 8)
-          return fail("graph.last_not_official", "t=last", "last ≠ arrive still");
+        const s = frameP(start, 0);
+        const e = frameP(end, 0);
+        const hs = hamming(first, s);
+        const he = hamming(last, e);
+        if (hs >= FAILH)
+          return fail("graph.first_not_official", "t=0", `first ≠ start still ham ${hs}`);
+        if (he >= FAILH)
+          return fail("graph.last_not_official", "t=last", `last ≠ arrive still ham ${he}`);
+        if (he > SAME && he < FAILH)
+          emit({
+            id,
+            kind,
+            ok: false,
+            warn: true,
+            required: false,
+            rule: "graph.last_gray",
+            note: `pHash ham ${he}`,
+          }),
+            (warns++);
       }
     }
 
     if (kind === "enter" && refs.dest && existsSync(refs.dest)) {
-      const dest = frameHash(refs.dest, 0);
-      if (hamming(last, dest) < SAME)
-        return fail("graph.last_is_dest_spawn", "t=last", "last = Hall' spawn");
+      const dest = frameP(refs.dest, 0);
+      if (hamming(last, dest) <= SAME)
+        return fail("graph.enter_reveals_hall", "t=last", "last = Hall' spawn");
     }
 
     const dogs = cloneScan(file, d);
