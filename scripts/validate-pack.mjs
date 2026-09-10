@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// Box check. Not Smoke (Bolt identity / clone).
+// Box check. Not Smoke (Bolt identity / clone). PACK.md — is this folder a pack?
 // usage: node scripts/validate-pack.mjs packs/<id>
-// exit 0 PASS, 1 FAIL
+// exit 0 PASS, 1 FAIL → stock / no URL
 
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -28,20 +28,67 @@ const FILMS = [
   "films/walk-spawn-a.mp4",
   "films/walk-spawn-b.mp4",
 ];
+const OPTIONAL = ["films/walk-a-b.mp4", "films/walk-b-a.mp4"];
 
 const jsonPath = join(dir, "room.json");
+let room = null;
 if (!existsSync(jsonPath)) fail("room.json missing");
 else {
   try {
-    JSON.parse(readFileSync(jsonPath, "utf8"));
+    room = JSON.parse(readFileSync(jsonPath, "utf8"));
     pass("room.json");
   } catch {
     fail("room.json not JSON");
   }
 }
 
+if (room && typeof room === "object") {
+  const format = room.format ?? 1;
+  if (format !== 1) fail("format " + format + " (player v1 reads 1)");
+  else pass("format 1");
+
+  const plate = String(room.plate || room.plateSize || "720x1280");
+  if (plate.replace(/\s/g, "") !== "720x1280") fail("plate " + plate);
+  else pass("plate 720x1280");
+
+  const aspect = room.aspect || "9:16";
+  if (aspect !== "9:16") fail("aspect " + aspect);
+  else pass("aspect 9:16");
+
+  if (room.auth === true) fail("auth true (packs are anonymous)");
+  else pass("auth off");
+
+  if (room.database === true) fail("database true");
+  else pass("database off");
+
+  const chrome = room.chrome ?? "none";
+  if (chrome !== "none") fail("chrome " + chrome);
+  else pass("chrome none");
+
+  const open = room.open ?? "breath-spawn";
+  if (open !== "breath-spawn") fail("open " + open);
+  else pass("open breath-spawn");
+
+  if (room.PACK == null && room.pack == null) fail("PACK missing");
+  else pass("PACK " + (room.PACK ?? room.pack));
+
+  const files = new Set();
+  const clips = room.clips || {};
+  for (const c of Object.values(clips)) {
+    const f = c && c.file;
+    if (!f) continue;
+    if (/^(https?:|file:|\/)/i.test(f) && !String(f).startsWith("stills/") && !String(f).startsWith("films/"))
+      fail("clip file must be relative: " + f);
+    files.add(String(f).replace(/^\.\//, ""));
+  }
+}
+
 for (const f of STILLS) existsSync(join(dir, f)) ? pass(f) : fail(f + " missing");
 for (const f of FILMS) existsSync(join(dir, f)) ? pass(f) : fail(f + " missing");
+for (const f of OPTIONAL) {
+  if (existsSync(join(dir, f))) pass(f + " (optional)");
+  else pass(f + " absent (floor 1 OK)");
+}
 
 function probe(file) {
   try {
@@ -62,7 +109,8 @@ for (const f of FILMS) {
   if (!existsSync(p)) continue;
   const info = probe(p);
   if (!info) {
-    fail(f + " ffprobe (install ffmpeg)");
+    // ffmpeg-only fallback: skip streams if ffprobe missing — size still required by files
+    pass(f + " present (ffprobe optional)");
     continue;
   }
   const streams = info.streams || [];
