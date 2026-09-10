@@ -3,6 +3,7 @@
 This is the product. The player does **not** pick films first. They ask Grok for **3 stills** in a citadel style. Grok supplies them with the **same Bolt** ([CHAR.md](CHAR.md)). Films come after the player oks the stills.
 
 Repo: `https://github.com/StarBoltSprint/citadel-room`
+Ops / folders / encode / PACK: [HANG.md](HANG.md).
 
 ## What the player may change
 
@@ -31,13 +32,16 @@ Composition examples (camera + door layout, not the player's hall):
 - "je veux un hall en pierre verte, style citadel"
 - "StarBoltSprint citadel, stills, temple d'or"
 - "create a citadel room" / "Bolt Engine living film" with a style
-- "branche room 2 sur la porte A" → after both packs exist, [ENTER.md](ENTER.md)
+- "branche room 2 sur la porte A" → after both packs exist, [ENTER.md](ENTER.md) + [HANG.md](HANG.md)
 
 If they give **no** style, cook the example hall (lock/example-*). If they give **7 videos**, skip still-cook — map and hang ([GROK.md](GROK.md)).
 
 ## Stills — order is law
 
 Do **not** roll 3 separate text-to-image. One spawn. Two moves.
+
+Room 1 → `stills/spawn.jpg` `stills/at-a.jpg` `stills/at-b.jpg`.
+Room 2 → `stills/a/spawn.jpg` `stills/a/at-a.jpg` `stills/a/at-b.jpg`. **Do not overwrite room 1.**
 
 ### 1. spawn
 
@@ -47,7 +51,7 @@ Prompt slot:
 
 > Same dog as the first image — cream German Shepherd, teal collar, back to camera, standing. Same camera and door layout as the second image: teal portal left, gold portal right, both fully visible, lock-off. Hall restyled as: **{player style}**. Photoreal 9:16. No face, no UI, no 3/4.
 
-Save → `stills/spawn.jpg` (scale 720×1280).
+Save → `stills/spawn.jpg` (or `stills/a/spawn.jpg`). Scale 720×1280.
 
 ### 2. atA — from spawn, not from text
 
@@ -55,7 +59,7 @@ Save → `stills/spawn.jpg` (scale 720×1280).
 
 > Same hall, same camera, same light, same doors. Only the dog walks to the teal portal on the left and stops, still back to camera. Gold portal stays in frame. Feet on the floor.
 
-Save → `stills/at-a.jpg`.
+Save → `stills/at-a.jpg` (or `stills/a/at-a.jpg`).
 
 ### 3. atB — from the same spawn
 
@@ -63,7 +67,7 @@ Save → `stills/at-a.jpg`.
 
 > Same hall, same camera, same light, same doors. Only the dog walks to the gold portal on the right and stops, still back to camera. Teal portal stays in frame. Feet on the floor.
 
-Save → `stills/at-b.jpg`.
+Save → `stills/at-b.jpg` (or `stills/a/at-b.jpg`).
 
 ### 4. Show the 3. Wait.
 
@@ -81,6 +85,8 @@ If any FAIL below, recook from spawn. Do not invent a fourth still. Do not cook 
 ## Films — only after the player oks the 3 stills
 
 Stills **are** first and last frames. Do not re-imagine a new hall.
+
+**Walks and enter: first AND last must be distinct images.** Breath is the only legal `first = last` loop. Enter is **not** `image_to_video` on one still — that invents a journey. See [HANG.md](HANG.md).
 
 | clip | tool | first | last | dur | law |
 |---|---|---|---|---|---|
@@ -100,9 +106,20 @@ Breath prompt slot:
 
 > Lock-off. Same still. The dog breathes, micro head, feet glued to the floor. Hall frozen. Seamless loop. No walk, no turn, no face.
 
-Then plate every mp4 to **720×1280** H264, strip audio. A 784×1168 clip gets center-crop 9:16 then scale — otherwise lock-off dies.
+If dest breath **walks** after an enter, replace with a still loop of spawn (HANG.md). Better a freeze than a second crossing.
 
-Hang: [GROK.md](GROK.md). Open = breath-spawn. Chrome dégage.
+### Encode (every mp4)
+
+```
+ffmpeg -i in.mp4 -map 0:v:0 \
+  -vf "scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280" \
+  -c:v libx264 -pix_fmt yuv420p -an -movflags +faststart out.mp4
+```
+
+No audio. `yuv420p` + `faststart`. A 784×1168 clip gets center-crop 9:16 then scale — otherwise lock-off dies.
+Room 2 films → `films/a/`. Then bump `PACK` ([HANG.md](HANG.md)).
+
+Hang: [GROK.md](GROK.md) + [ENGINE.md](ENGINE.md). Open = breath-spawn. Chrome dégage.
 
 ## Walk FAIL (recook that clip, don't hang it)
 
@@ -116,12 +133,14 @@ Hang: [GROK.md](GROK.md). Open = breath-spawn. Chrome dégage.
 Do **not** cook enter until:
 
 1. Room 1 stills + 7 films hang and play.
-2. Room 2 stills + 7 films exist (this file, other style).
+2. Room 2 stills + 7 films exist in `stills/a/` + `films/a/` (this file, other style, **same depth**).
 3. Player asks to **branch** door A (or B) onto room 2.
 
-Then read [ENTER.md](ENTER.md). Short version:
+Then read [ENTER.md](ENTER.md) and [HANG.md](HANG.md). Short version:
 
-- **Two plates.** Imagine: atA → teal full (dog **stays left**, same slot). Engine: 500ms empty-teal veil → spawn of room 2.
+- **Two plates.** Imagine first+last **distinct**: atA → teal full (dog **stays left**, same slot). Engine: 500ms empty veil of **that door** → spawn of room 2.
 - Never `first=atA` and `last=room2 spawn` in one clip — that clones Bolt.
-- Prompt and QC: ENTER.md.
+- Enter is **outside the 7** (`ENTER{}` map). `ended` → switch room **then** dest breath-spawn.
+- Door A veil = teal-empty. Door B veil = gold-empty. Do not hardcode teal on a gold enter.
 - Wire: walk to the door first, **stay**. Second tap on that door = enter. Walk ended **never** auto-enters.
+- Bump `PACK` after hanging the new mp4.
