@@ -36,6 +36,8 @@ Same door again = stay, unless a neighbor is hung there. One line. That is all.
 
 You get a link to the last good hall, or stock. Not a FAIL code.
 
+Optional welcome still (X / SuperGrok, once): the gift page on the player — not required to tap.
+
 ## Technical door
 
 [README.md](README.md) “For Grok”. Optional.
