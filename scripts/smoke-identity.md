@@ -1,5 +1,7 @@
 # Layer C — Grok vision (one rule, no sermon)
 
+**Walk last 2 seconds = ONE dog.** A second Bolt at spawn/center (Frost walk-A, 2026-09-10 t=13s) = `FAIL clone.two_dogs @ t=last`. Recook that walk. Do not hang.
+
 **Required** on stills, walks, breaths. Optional on enter.
 You are **not** kind to a profile wolf.
 
