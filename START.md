@@ -4,35 +4,42 @@ The laws are so Grok does not lie. You only need a hall and one catalog word.
 
 Do **not** read ENGINE, ENTER, Smoke, or the decrees to play. That is the kitchen.
 
-## The card
+## This is a room
 
-1. **Three stills** — center, teal left, gold right. That is a room.
-2. **One 8s clip** — tap left, the dog walks, he breathes at the sill. No HUD lesson.
-3. **One sentence:** `ask Grok: citadel room, dusk`  
-   (or any paint in [CATALOG.md](CATALOG.md): moss, ember, gold…)
+<p align="center">
+<img src="lock/example-spawn.jpg" width="180" alt="center">
+<img src="lock/example-at-a.jpg" width="180" alt="teal left">
+<img src="lock/example-at-b.jpg" width="180" alt="gold right">
+</p>
 
-Then open:
+Center. Teal left. Gold right.
 
-**https://boltverse-odyssey.grok.me**
+## This is a tap
 
-It should already be breathing at spawn. Tap left / right. The picture is the control.
+<p align="center">
+<img src="lock/tap.gif" width="240" alt="tap left, he walks">
+</p>
 
-Same door again = stay, unless a neighbor hall is hung on that door. One line. That is all.
+Tap left. He walks. He breathes at the sill. No HUD.
 
-## Catalog words (paints)
+## This is the sentence
 
-moss · ember · dusk · asteroid · frost · ivy · ash · tide · ember-deep · gold
+`ask Grok: citadel room, dusk`
 
-Off-list → Grok picks the nearest paint. It does not invent a temple.
+(or moss · ember · gold — [CATALOG.md](CATALOG.md))
 
-## If something fails
+Then open **[the hall](https://boltverse-odyssey.grok.me)** — already breathing.
 
-You get a link to the last good hall, or the stock room. Not a FAIL code. Not “muzzle”. The kitchen recooks or serves stock.
+Same door again = stay, unless a neighbor is hung there. One line. That is all.
+
+## If it fails
+
+You get a link to the last good hall, or stock. Not a FAIL code.
 
 ## Technical door
 
-Curious? [README.md](README.md) “For Grok” and [GROK.md](GROK.md). Optional. Not the arrival tunnel.
+[README.md](README.md) “For Grok”. Optional.
 
 ## One line
 
-A room and a word. Everything else is cooking. We do not invite people to eat in the kitchen.
+A room and a word. Everything else is cooking.
