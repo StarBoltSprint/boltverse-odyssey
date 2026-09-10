@@ -119,3 +119,5 @@ Required plates: 3 stills + breath-spawn, breath-A, breath-B, walk-spawn-A, walk
 Optional (walk-A-B, walk-B-A, enter): FAIL = recook or drop — do not block the hall.
 
 A+B = `scripts/smoke-pack.mjs` (ffmpeg). C = Grok + `scripts/smoke-identity.md` on `.smoke/` frames. Hang needs both.
+
+Per-clip queue (file → graph → identity): [CLIP.md](CLIP.md).
