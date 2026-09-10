@@ -44,6 +44,21 @@ Breath→breath = tight. Walk-spawn-A = Δcx toward the door + slight Δh OK.
 
 Video frame vs jpeg still: hall SSIM is noisy (encode). **Yaw / size / NCC still FAIL.** Hall-only on that pair = WARN (`warnHall`), recook if you can.
 
+
+## Absolute size bands
+
+Measure = `bboxH / frameH` of the cream-dog blob. Same lens on every plate.
+
+| Pose | `h = bboxH/H` |
+|---|---|
+| Spawn / mid-hall | **0.22 – 0.32** |
+| Door sill (atA / atB) | **0.35 – 0.40** |
+| Forbidden | **≥ 0.55** punch-in / fills-door |
+
+Deltas: breath \|Δh\|/H < 0.08. Walk edge < 0.12 (grow spawn-band → sill-band OK). stillEnd ↔ next stillStart = same size.
+
+Punch-in = FAIL. Sill still at spawn-scale = WARN `gate.size sill-band` (recook; stock hall is under-sill today).
+
 ## Anti
 
 Optical flow "he turned = OK". Face landmarks. Match per-frame at play. 3D pose for sit/stand. Warp at runtime.
