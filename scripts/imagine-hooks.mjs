@@ -10,7 +10,7 @@ const VIDEO_MODEL = process.env.IMAGINE_VIDEO_MODEL || "grok-imagine-video-1.5";
 
 const LAW = [
   "Photoreal still or clip, vertical 9:16, 720x1280.",
-  "ONE white German Shepherd, BACK to camera, lower third, locked-off camera.",
+  "ONE FULL-white German Shepherd, ZERO black on the dog (no saddle, no mask, no black ears), teal collar, BACK to camera, lower third, locked-off camera.",
   "Gothic citadel hall, two tall oval energy portals: cyan-teal LEFT, gold-orange RIGHT.",
   "No text, no UI, no second dog, no face to camera, no third door, no dolly.",
 ].join(" ");
@@ -142,7 +142,7 @@ export async function imagineClip({ root, slot, kind, first, last, dest, seconds
     catalogLines(root, slot),
     kind === "breath"
       ? "Micro breath only. Same pose. Locked-off. Loop. Do not walk. Do not turn."
-      : "He walks two steps. Locked-off. ONE white GSD only. Never a second dog. Never a ghost. Never a spawn dog plus a door dog. Last frame is the arrive still, one body. No tunnel.",
+      : "He walks two steps. Locked-off. ONE full-white GSD only. Never a second dog. Never a ghost. Never a black saddle. Last frame is the arrive still, one body. No tunnel.",
   ].join(" ");
   const body = {
     model: VIDEO_MODEL,
