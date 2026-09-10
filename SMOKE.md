@@ -74,6 +74,7 @@ Hard FAIL, one rule code, no paragraph:
 - `identity.cape` / size morph
 - `identity.text` / UI / third door
 - `identity.door_wood` `identity.door_morph` `identity.door_flat` `identity.door_void` `identity.door_chrome` ([DOORS.md](DOORS.md))
+- `encode.fade_black` — last frames empty ([HOLD.md](HOLD.md))
 - `identity.door_cut` (except last second of **enter**)
 - `identity.orbit` (paws sliding down, ceiling falling)
 - `lock.lens_mismatch` (atA not the same focal as spawn)
