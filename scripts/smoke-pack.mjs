@@ -9,7 +9,7 @@
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { execFileSync, spawnSync } from "node:child_process";
-import { matchPose, GW, GH } from "./still-pair.mjs";
+import { matchPose, GW, GH, creamHeight, PUNCH } from "./still-pair.mjs";
 import { pHash, dHash, hamming } from "./phash.mjs";
 
 const TH = JSON.parse(
@@ -252,6 +252,15 @@ function smokeFile(file, kind, refs, required, smokeDir) {
   }
 
   if (still) {
+    try {
+      const fa = rawFrame(file, 0, GW, GH);
+      const hh = creamHeight(fa, GW, GH);
+      if (hh >= PUNCH) return fail("gate.size", "still", `punch-in ${hh.toFixed(2)}`);
+      if (kind === "still-spawn" && (hh < 0.18 || hh > 0.36))
+        return fail("gate.size", "still", `spawn-band ${hh.toFixed(2)}`);
+    } catch (e) {
+      return fail("file.decode", "still", e.message);
+    }
     if (existsSync(smokeDir)) {
       console.log(`VISION  ${smokeDir}/still.jpg  (layer C)`);
       if (needsC(kind, required))

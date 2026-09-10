@@ -25,8 +25,8 @@ node scripts/cook-room.mjs moss          # once Imagine hooks are wired
 4. atA / atB = image-to-image **from that spawn**
 5. smoke those stills — FAIL ×2 on one at → stop (no films)
 6. 5 films, **one by one**, smoke after each  
-   breath FAIL ×2 → ffmpeg loop the still  
-   both walks FAIL → not a playable pack → stock
+   breath FAIL ×2 → ffmpeg **gel** of the still **only if that still already PASS size**, then smoke the loop. Gel ≠ PASS. Loop FAIL / punch-in → **stock**, do not hang “so they can see”.  
+   both walks FAIL → stock
 7. encode 720×1280, mute, faststart
 8. `validate-pack` then `smoke-pack`
 9. PASS → `https://boltverse-odyssey.grok.me/r/<id>`

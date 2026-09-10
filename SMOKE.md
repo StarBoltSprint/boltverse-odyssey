@@ -136,8 +136,10 @@ Enter only enters this pipe if Enter was asked.
 1. The FAIL line names the file + `rule`.
 2. Recook **only that file**.
 3. Smoke again.
-4. Second FAIL → last PASS encode if any; else freeze still for breath, drop optional walk/enter.
-5. Never a third Imagine cook. Never a sermon in player chat.
+4. Second FAIL → last PASS encode if any. Breath: freeze still **only if the still PASS `gate.size`**. A punch-in still is **not** a legal gel. Then smoke the loop. Loop FAIL → stock. Gel is decay, not PASS.
+5. Never hang a `gate.size punch-in` breath “so the player can see it”. Never a third Imagine cook. Never a sermon in player chat.
+
+A photo loop with no vapor / no chest is a **gel**. Do not call it a living breath. Hard-refresh after a real PASS breath.
 
 Required plates: 3 stills + breath-spawn, breath-A, breath-B, walk-spawn-A, walk-spawn-B.
 Optional (walk-A-B, walk-B-A, enter): FAIL = recook or drop — do not block the hall.

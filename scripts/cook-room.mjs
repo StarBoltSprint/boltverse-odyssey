@@ -86,7 +86,7 @@ function queue() {
     "3 spawn still → smoke cap 2",
     "4 atA atB from spawn → smoke cap 2",
     "5 five films one by one",
-    "6 breath FAIL×2 → ffmpeg loop",
+    "6 breath FAIL×2 → loop still ONLY if still PASS size, then smoke the loop; loop FAIL → stock",
     "7 walk FAIL×2 → stock",
     "8 validate-pack + smoke-pack",
     "9 " + PLAYER + slot,
@@ -164,14 +164,17 @@ const atB = join(dir, "stills/at-b.jpg");
 
 await cap2("spawn", async () => {
   await imagineStill({ root, slot, pose: "spawn", dest: spawnStill });
+  if (!smoke("stills/spawn.jpg", "still-spawn")) throw new Error("smoke spawn size");
 });
 if (debug) out("stills written spawn");
 
 await cap2("atA", async () => {
   await imagineStill({ root, slot, pose: "atA", dest: atA, spawnPath: spawnStill });
+  if (!smoke("stills/at-a.jpg", "still-atA")) throw new Error("smoke atA");
 });
 await cap2("atB", async () => {
   await imagineStill({ root, slot, pose: "atB", dest: atB, spawnPath: spawnStill });
+  if (!smoke("stills/at-b.jpg", "still-atB")) throw new Error("smoke atB");
 });
 if (debug) out("stills written");
 
@@ -193,8 +196,10 @@ for (const [rel, still, stillRel] of breaths) {
     }
   }
   if (!ok) {
+    // Gel = decay, not PASS. Only if the still already passed size.
     if (!ffmpegLoop(stillRel, rel)) fail("breath " + rel);
-    out("breath loop " + rel);
+    if (!smoke(rel, "breath")) fail("breath loop smoke " + rel);
+    out("breath gel " + rel + " (decay — not a living breath PASS)");
   }
 }
 
