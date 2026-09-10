@@ -148,3 +148,5 @@ Sprint / Lane: [PLAY.md](PLAY.md) — not the hall player. Door `kind: sprint` h
 Biome kits (sprint, offline): [BIOMES.md](BIOMES.md). Do not replace paints. `rome` → ember. `mars` → asteroid.
 
 Clip into films/: [CLIP.md](CLIP.md). Stills PASS first. One clip. Three gates. FAIL never writes.
+
+Humans see [START.md](START.md) only. Do not paste ENGINE / Smoke codes into player chat. Recook or serve stock. Give a URL.
