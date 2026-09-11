@@ -5,6 +5,7 @@
  *   node scripts/smoke-biome.mjs biomes/forest
  *
  * Per plate: metal → validate-cues → smokeL (if samples) → extract 3 frames for identity C.
+ * Hung path: from/to stations + JOINT last(n) vs first(n+1).
  * FAIL a required plate (decay) → kit stays coming. Do not Hang the door.
  */
 
@@ -45,6 +46,7 @@ const ORDER = ["calm", "lean", "peak", "decay"];
 const plates = ORDER.flatMap((tier) =>
   (pal.drawers?.[tier] || []).map((p) => ({ ...p, tier })),
 );
+const byId = Object.fromEntries(plates.map((p) => [p.id, p]));
 
 function probe(file) {
   const r = spawnSync("ffmpeg", ["-hide_banner", "-i", file], { encoding: "utf8" });
@@ -173,12 +175,50 @@ for (const p of plates) {
   console.log("VISION  " + smokeDir + "/{first,mid,last}.jpg  identity C — back, ONE white GSD, no TAP");
 }
 
+const hung = pal.hung || [];
+for (let i = 0; i < hung.length - 1; i++) {
+  const a = byId[hung[i]];
+  const b = byId[hung[i + 1]];
+  if (!a || !b) {
+    console.log("FAIL  hung " + hung[i] + "→" + hung[i + 1] + " missing plate");
+    fails++;
+    coming = true;
+    continue;
+  }
+  if ((a.to || "C") !== (b.from || "C")) {
+    console.log(
+      "FAIL  " +
+        a.id +
+        "→" +
+        b.id +
+        " lane.station to=" +
+        (a.to || "?") +
+        " from=" +
+        (b.from || "?"),
+    );
+    fails++;
+    coming = true;
+  }
+  const lastA = join(kit, ".smoke", a.id, "last.jpg");
+  const firstB = join(kit, ".smoke", b.id, "first.jpg");
+  if (existsSync(lastA) && existsSync(firstB)) {
+    console.log(
+      "JOINT  " +
+        a.id +
+        " last vs " +
+        b.id +
+        " first — must be the same photo, same crystals, world advanced. Recook if teleport.",
+    );
+    console.log("VISION  " + lastA + "  " + firstB + "  lane.joint");
+  }
+}
+
 if (fails) {
   console.log("FAIL biome " + id + " coming");
   process.exit(1);
 }
 if (coming) {
-  console.log("PASS metal " + id + " — coming until L 3/3 + identity C");
+  console.log("PASS metal " + id + " — coming until L 3/3 + identity C + joints");
   process.exit(0);
 }
 console.log("PASS biome " + id);
