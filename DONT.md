@@ -78,6 +78,17 @@ Playtest too hot → recook a bigger, earlier glow. Do **not** add chrome. [PLAY
 Early is **ignore**, not a reward. Tapping before `on` to stack `m` = farm.  
 Imagine on maybe-enter or walk-toward = SuperGrok on a guess. Prefetch stock. Ticket on confirm.
 
+## 9. Four parallel leans from bolt-back
+
+Looks faster. It is four music videos of the same shot.
+
+- `last(n) ≠ first(n+1)` → teleport at the 0 ms cut  
+- crystals reset → not a run  
+- prompt “keep running straight” → wobble, nothing to tap  
+- hung `L1` then `R1` (both from C) → station jump
+
+Cook a **chain**. Copy the last frame. One plate = one fork he **keeps**. [COOKLANE.md](COOKLANE.md)
+
 ## Why they travel together
 
 Each puts **invention** where the system needs **boring joints**.
@@ -92,6 +103,7 @@ Each puts **invention** where the system needs **boring joints**.
 | Chat last_frame | pop at the sill | walks without a seal |
 | TAP / NOW bar | nobody watches the film | a QTE wearing a clip |
 | Farm Early | m from noise | chart means nothing |
+| Parallel leans | 4 teleports | `lane.joint` |
 
 You did not lower the barrier. You reopened the 3D dungeon and the sermon.
 
@@ -104,9 +116,10 @@ Does it keep:
 3. Smoke before Hang  
 4. stock / decay if it fails  
 5. on a Lane: glow in the picture, no when-bar  
+6. on a Lane: last(n) is first(n+1)
 
 If not, it is another engine. Do not slip it into `citadel + paint` or `biome forest`.
 
 ## One line
 
-Do not generate on tap, do not move the camera, do not show the kitchen, do not shove the door, do not open Mars, do not stamp TAP on the film. Resonance = how much. Glow = when. Real help is a PASS pack and a tap that always does the same thing.
+Do not generate on tap, do not move the camera, do not show the kitchen, do not shove the door, do not open Mars, do not stamp TAP on the film, do not cook 4 forests from one lock still. Resonance = how much. Glow = when. Real help is a PASS pack and a tap that always does the same thing.
