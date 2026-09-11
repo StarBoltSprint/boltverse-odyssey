@@ -10,7 +10,7 @@ const VIDEO_MODEL = process.env.IMAGINE_VIDEO_MODEL || "grok-imagine-video-1.5";
 
 const LAW = [
   "Photoreal still or clip, vertical 9:16, 720x1280.",
-  "ONE FULL-white German Shepherd, ZERO black on the dog (no saddle, no mask, no black ears), teal collar, BACK to camera, lower third, locked-off camera.",
+  "ONE FULL-white German Shepherd, ZERO black on the dog (no saddle, no mask, no black ears), teal collar, BACK to camera, locked-off camera.",
   "Gothic citadel hall, two tall oval energy portals: cyan-teal LEFT, gold-orange RIGHT.",
   "No text, no UI, no second dog, no face to camera, no third door, no dolly.",
 ].join(" ");
@@ -103,6 +103,30 @@ function catalogLines(root, slot) {
     .join(" ");
 }
 
+function breathLine(pose) {
+  if (pose === "atA") {
+    return [
+      "ONE dog only. He is ALREADY at the teal LEFT sill.",
+      "NEVER a dog at center. NEVER a dog at gold. NEVER a second Bolt.",
+      "Do not complete the hall toward spawn. Do not walk. Do not turn.",
+      "Micro breath. Feet glued. 6 seconds. Loop. Locked-off.",
+    ].join(" ");
+  }
+  if (pose === "atB") {
+    return [
+      "ONE dog only. He is ALREADY at the gold RIGHT sill.",
+      "NEVER a dog at center. NEVER a dog at teal. NEVER a second Bolt.",
+      "Do not complete the hall toward spawn. Do not walk. Do not turn.",
+      "Micro breath. Feet glued. 6 seconds. Loop. Locked-off.",
+    ].join(" ");
+  }
+  return [
+    "ONE dog only. He is ALREADY at center spawn.",
+    "NEVER a second dog at either door. NEVER a ghost at a sill.",
+    "Do not walk to a portal. Micro breath. Feet glued. 6 seconds. Loop. Locked-off.",
+  ].join(" ");
+}
+
 export async function imagineStill({ root, slot, pose, dest, spawnPath }) {
   const lock = join(root, "lock");
   const example =
@@ -136,12 +160,12 @@ export async function imagineStill({ root, slot, pose, dest, spawnPath }) {
   return dest;
 }
 
-export async function imagineClip({ root, slot, kind, first, last, dest, seconds = 6 }) {
+export async function imagineClip({ root, slot, kind, first, last, dest, seconds = 6, pose }) {
   const prompt = [
     LAW,
     catalogLines(root, slot),
     kind === "breath"
-      ? "Micro breath only. Same pose. Locked-off. Loop. Do not walk. Do not turn."
+      ? breathLine(pose)
       : "10 seconds. He LEAVES spawn in the first second. Continuous even walk. Never freeze mid-hall. Walks the whole clip. Arrives ~8s, then HOLDS 1–2s. No leftover empty time. No linger-then-warp. No sudden sprint, no last-second warp. Do not walk back to spawn. Do not invent a floor ice disc. Locked-off. ONE full-white GSD. Last frame is the arrive still. No tunnel.",
   ].join(" ");
   const body = {
@@ -158,9 +182,8 @@ export async function imagineClip({ root, slot, kind, first, last, dest, seconds
     body.last_frame = { url: dataUri(last) };
   }
   if (kind === "breath") {
-    // first = last = the pose still. Same file twice so Imagine HOLDS.
-    const pose = last || first;
-    body.last_frame = { url: dataUri(pose) };
+    const hold = last || first;
+    body.last_frame = { url: dataUri(hold) };
   }
   const j = await api("/videos/generations", body);
   let url = j.url || j.video?.url || j.data?.[0]?.url;
