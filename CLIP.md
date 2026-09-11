@@ -174,3 +174,7 @@ Prompt: slow even walk, arrive ~5s on an 8s clip, hold. No dash to last_frame.
 Frost rec 2026-09-11: 0–6s still mid-hall, **6→7s sprint** to teal. `last_frame` yanks him.
 
 Even gait. FAIL `graph.walk_dash` if |Δcx| / Δt > 0.22 (hall-width in <1s). Recook 8s: walk the whole time, arrive ~5s, hold. Do not hang the dash.
+
+## Linger then warp
+
+Same crime as `walk_sprint`. Parked at spawn at t≈3s = `graph.walk_linger`. The later dash is the consequence. Recook: leave in the first second. Cap 2 → no walk.

@@ -141,6 +141,19 @@ function cloneScan(file, d, kind) {
   return max;
 }
 
+function walkLingerScan(file, d, firstHash) {
+  // Still parked at spawn at ~3s → later last_frame must yank. Same sin as dash.
+  const t1 = Math.min(3.4, d * 0.42);
+  for (let t = 2.2; t <= t1; t += 0.5) {
+    try {
+      if (hamming(frameP(file, t), firstHash) <= SAME) return t;
+    } catch {
+      /* skip */
+    }
+  }
+  return null;
+}
+
 function walkSprintScan(file, d) {
   let prev = null;
   for (let t = 0; t < d - 0.3; t += 0.7) {
@@ -340,6 +353,13 @@ function smokeFile(file, kind, refs, required, smokeDir) {
           "graph.walk_return",
           `t=${back.toFixed(1)}`,
           "mid-clip frame ≈ spawn — one trip only, no teleport home",
+        );
+      const linger = walkLingerScan(file, d, first);
+      if (linger != null)
+        return fail(
+          "graph.walk_linger",
+          `t=${linger.toFixed(1)}`,
+          "still at spawn ~3s — he must leave in the first second, or last_frame will warp",
         );
       const dash = walkSprintScan(file, d);
       if (dash)
