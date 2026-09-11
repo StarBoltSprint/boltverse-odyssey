@@ -1,7 +1,7 @@
 /**
  * Lane reel picker. Cue clock: ./cue-coyote.mjs. DOM: ./dom-swap.mjs.
- * m = if you still follow the dog. t_run = age of the storm. Peak = both.
- * playbackRate is always 1. Speed = which plate is next, already on disk.
+ * m = follow the dog. t_run = integrator of frames *actually played* on sprint reels.
+ * Never += file duration. Never Date.now / performance.now.
  */
 
 import {
@@ -34,12 +34,17 @@ export const LANE = {
   lean_s: 20,
   build_s: 45,
   close_s: 70,
+  seek_ignore_s: 0.5,
 };
+
+const SPRINT_KIND = new Set(["sprint", "calm", "lean", "peak"]);
 
 export function emptyState() {
   return {
     m: LANE.m_boot,
     t_run: 0,
+    lastT: null,
+    kind: "sprint",
     peakBan: false,
     missStreak: 0,
     hitStreak: 0,
@@ -49,15 +54,10 @@ export function emptyState() {
   };
 }
 
-/** Hall → Lane handoff: new minute. */
 export function handoffLane() {
   return emptyState();
 }
 
-/**
- * Bone + m. Peak is a permission, not a forced clip.
- * Quiet [0,8): calm even if m is already high.
- */
 export function wantOf(t_run, m, peakBan) {
   const t = t_run || 0;
   if (t < LANE.quiet_s) return "calm";
@@ -93,13 +93,28 @@ export function applyVerdict(state, verdict) {
   return s;
 }
 
-/** Picture-time idle (no cue / Howl). HOLD does not tick. */
 export function tickIdle(state, dt) {
   const s = { ...state, idleAcc: (state.idleAcc || 0) + dt };
   while (s.idleAcc >= LANE.idle_tick_s) {
     s.idleAcc -= LANE.idle_tick_s;
     s.m = Math.max(LANE.m_floor, s.m - LANE.idle_decay);
   }
+  return s;
+}
+
+/**
+ * Integrator. Call on timeupdate with picture-time t.
+ * HOLD / seek / decay / hall breath: lastT tracks, t_run does not +=.
+ */
+export function tickRun(state, t, { kind, held } = {}) {
+  const k = kind ?? state.kind ?? "sprint";
+  const s = { ...state, kind: k };
+  const last = s.lastT;
+  s.lastT = t;
+  if (held || last == null) return s;
+  const d = t - last;
+  if (d < 0 || d > LANE.seek_ignore_s) return s;
+  if (SPRINT_KIND.has(k)) s.t_run = (s.t_run || 0) + d;
   return s;
 }
 
@@ -119,12 +134,15 @@ export function pickNext(palette, state, currentId) {
   return { kind: "plate", plate, tier: want };
 }
 
-/** After pickNext. Sprint plates add duration to t_run. PeakBan clears (one penance plate already picked). */
-export function afterJoin(state, { addRun = 0, terminal = false } = {}) {
-  const s = { ...state, peakBan: false, idleAcc: 0 };
-  if (!terminal) s.t_run = (s.t_run || 0) + addRun;
-  if (terminal) s.t_run = s.t_run || 0;
-  return s;
+/** After pickNext. Does NOT add file duration. PeakBan clears (penance already picked). */
+export function afterJoin(state, { kind = "sprint" } = {}) {
+  return {
+    ...state,
+    kind,
+    peakBan: false,
+    idleAcc: 0,
+    lastT: 0,
+  };
 }
 
 export function planSwap({ next, hidReady }) {
