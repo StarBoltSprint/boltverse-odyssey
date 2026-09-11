@@ -184,6 +184,49 @@ export function creamHeight(buf, w, h) {
   return best.n ? best.h : 0;
 }
 
+export function creamPlace(buf, w, h) {
+  const vis = new Uint8Array(w * h);
+  const y0 = Math.floor(h * 0.12);
+  const y1 = Math.floor(h * 0.88);
+  for (let y = y0; y < y1; y++) {
+    for (let x = 0; x < w; x++) {
+      const i = y * w + x;
+      const r = buf[i * 3], g = buf[i * 3 + 1], b = buf[i * 3 + 2];
+      const luma = (r * 3 + g * 4 + b) >> 3;
+      const sat = Math.max(r, g, b) - Math.min(r, g, b);
+      vis[i] = luma > 105 && r >= g - 8 && r >= b - 8 && sat < 100 ? 1 : 0;
+    }
+  }
+  const seen = new Uint8Array(w * h);
+  let best = { n: 0, h: 0, cx: 0.5 };
+  const flood = (sx, sy) => {
+    const st = [[sx, sy]];
+    let minX = w, minY = h, maxX = 0, maxY = 0, n = 0;
+    while (st.length) {
+      const [x, y] = st.pop();
+      if (x < 0 || y < y0 || x >= w || y >= y1) continue;
+      const i = y * w + x;
+      if (seen[i] || !vis[i]) continue;
+      seen[i] = 1;
+      n++;
+      if (x < minX) minX = x;
+      if (y < minY) minY = y;
+      if (x > maxX) maxX = x;
+      if (y > maxY) maxY = y;
+      st.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
+    }
+    return { n, h: (maxY - minY + 1) / h, w: (maxX - minX + 1) / w, cx: (minX + maxX) / 2 / w };
+  };
+  for (let y = y0; y < y1; y++)
+    for (let x = 0; x < w; x++)
+      if (vis[y * w + x] && !seen[y * w + x]) {
+        const b = flood(x, y);
+        if (b.n > 80 && b.w < 0.45 && b.h > 0.12 && b.h < 0.55 && b.n > best.n) best = b;
+      }
+  return best.n ? { h: best.h, cx: best.cx } : { h: 0, cx: 0.5 };
+}
+
+
 /** Center x of cream blob, 0..1. null if no dog. */
 export function creamPlace(buf, w, h) {
   const vis = new Uint8Array(w * h);

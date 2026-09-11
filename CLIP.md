@@ -168,3 +168,9 @@ Recook at-A in **0.35–0.40** with a dark floor, then 6s walk. Cap 2 → tap st
 He idles mid-hall 0–6s, then **warps** to teal at t=7. Even gait FAIL. `graph.walk_sprint` if |Δcx| / Δt > **0.20** frame-widths per second.
 
 Prompt: slow even walk, arrive ~5s on an 8s clip, hold. No dash to last_frame.
+
+## Walk dash (hard)
+
+Frost rec 2026-09-11: 0–6s still mid-hall, **6→7s sprint** to teal. `last_frame` yanks him.
+
+Even gait. FAIL `graph.walk_dash` if |Δcx| / Δt > 0.22 (hall-width in <1s). Recook 8s: walk the whole time, arrive ~5s, hold. Do not hang the dash.
