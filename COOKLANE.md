@@ -17,6 +17,8 @@ Row / ids = [BIOMES.md](BIOMES.md). Play disc = [PLAY.md](PLAY.md).
 
 Hall recollage **only at the edges**: enter from a citadel door (`kind: sprint`), exit to a hall, Recall / death / fail → `decay`.
 
+Player **read** (same 40/20/40, glow says which/when, first plate continues the door-hand): [PLAY.md](PLAY.md). Do not stamp TAP. If both sides glow, recook.
+
 ## Sprint law (Grok)
 
 1. It **starts calm**. `m` low.
@@ -87,7 +89,9 @@ Prompt one plate: **one** dominant gesture + worldLine.
 
 > Bolt sprints, leans left, luminous path pulls left, no text, lock-off, back to camera.
 
-Then list cues. If the model did not lean, you do **not** invent `lean-L` in the JSON.
+Then list cues. If the model did not lean, you do **not** invent `lean-L` in the JSON. If both sides glow, recook — one gesture, one direction.
+
+Hall → Lane: first plate may **continue the door-hand** he entered with (left 40 % after teal). No tutorial screen.
 
 ## `m` = wake, not a combo HUD
 
@@ -134,7 +138,8 @@ Cap 2. Gel ≠ PASS. Glow missing ×2 → no cues, no hall door.
 - 60 s as **one** clip
 - cooking walk-A and calling it a Lane
 - inventing lean-L when the clip runs straight
+- both sides glowing the same
 
 ## One line
 
-**Pose, left, right, fork — that is all the back gives.** Each tap marries one of those four. `m` chains livelier plates. It does not add buttons.
+**Pose, left, right, fork — that is all the back gives.** Each tap marries one of those four. `m` chains livelier plates. It does not add buttons. The finger goes where the dog goes.
