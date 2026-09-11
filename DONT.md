@@ -54,9 +54,9 @@ Looks like the tweet (first + last). The tool text says the images are **not** f
 
 Walks = `POST /v1/videos/generations` with `last_frame`. That is `scripts/imagine-hooks.mjs`. Chat refs = illegal for walks/enter.
 
-## 7. TAP overlay / timing bar on a sprint
+## 7. TAP overlay / timing bar / drawbox on a sprint
 
-“A TAP above the door — everyone succeeds.”
+“A TAP above the door — everyone succeeds.” Same crime: ffmpeg `drawbox` cyan rectangle + HIT text baked in the film.
 
 That kills the living film. You have a QTE with a clip behind it. Nobody *reads* the dog.
 
@@ -66,8 +66,9 @@ Forbidden on the 9:16:
 - Guitar Hero icon lane that says **when**
 - fill-bars whose job is the metronome
 - a bar **on the dog**
+- a cyan `drawbox` wash “so they see the cue”
 
-The cue is **glow in the encode** on `[on, off]`. Tap L only if Bolt turns L in that frame. Straight run = no L/R cue. Random chart = FAIL.
+The cue is **glow in the encode** on `[on, off]`. Tap if Bolt is on that vein. Straight run = no L/R cue. Random chart = FAIL.
 
 **Resonance = how much. Glow = when.** Never both as timing.
 
@@ -87,7 +88,25 @@ Looks faster. It is four music videos of the same shot.
 - prompt “keep running straight” → wobble, nothing to tap  
 - hung `L1` then `R1` (both from C) → station jump
 
-Cook a **chain**. Copy the last frame. One plate = one fork he **keeps**. [COOKLANE.md](COOKLANE.md)
+Cook a **chain**. Copy the last **running** frame. One plate = one fork he **keeps**. [COOKLANE.md](COOKLANE.md)
+
+## 10. Standing `last_frame` on a gallop plate
+
+“Walk from still A to station-L (standing).” Imagine **brakes** to match the hold. Sit / poop / profile in the middle. Playtest: “pure shit.”
+
+Lean/peak = I2V from a running first. **No standing last.** Last frame of the mp4 must still gallop. [COOKLANE.md](COOKLANE.md)
+
+## 11. Swipe-only when the player taps
+
+“Swipe is more skill.” They tap. Taps ignored → auto-miss → F. Year-0 `kind: tap`. Contact in the window = HIT. [CUES.md](CUES.md)
+
+## 12. Keyframe QC (`-ss` before `-i`)
+
+Gallop keyframes hide sits. You hang a lemon. Accurate: `-i` THEN `-ss`, every 0.5 s. Sit anywhere = `lane.sit`.
+
+## 13. Recook to the same mp4 path
+
+Phones cache `/films/forest-lean-L1.mp4` and ignore `?u55`. They keep the sitting film. **Rename** (`forest-run.mp4`) and bump PACK.
 
 ## Why they travel together
 
@@ -101,9 +120,13 @@ Each puts **invention** where the system needs **boring joints**.
 | Auto-enter / peak-door | no clear sentence | forced curtain |
 | Free text | unreadable halls | Smoke on fire |
 | Chat last_frame | pop at the sill | walks without a seal |
-| TAP / NOW bar | nobody watches the film | a QTE wearing a clip |
+| TAP / NOW / drawbox | nobody watches the film | a QTE wearing a clip |
 | Farm Early | m from noise | chart means nothing |
 | Parallel leans | 4 teleports | `lane.joint` |
+| Standing last_frame | he sits | `lane.sit` / `lane.slow` |
+| Swipe-only | F on every tap | judge dead |
+| Keyframe QC | hang a sit | playtest rage |
+| Same mp4 path | ghost sitting film | debug the wrong file |
 
 You did not lower the barrier. You reopened the 3D dungeon and the sermon.
 
@@ -115,11 +138,12 @@ Does it keep:
 2. 1 player  
 3. Smoke before Hang  
 4. stock / decay if it fails  
-5. on a Lane: glow in the picture, no when-bar  
-6. on a Lane: last(n) is first(n+1)
+5. on a Lane: glow in the picture, no when-bar, no drawbox  
+6. on a Lane: last(n) is first(n+1), last is still running  
+7. tap in the window counts
 
 If not, it is another engine. Do not slip it into `citadel + paint` or `biome forest`.
 
 ## One line
 
-Do not generate on tap, do not move the camera, do not show the kitchen, do not shove the door, do not open Mars, do not stamp TAP on the film, do not cook 4 forests from one lock still. Resonance = how much. Glow = when. Real help is a PASS pack and a tap that always does the same thing.
+Do not generate on tap, do not move the camera, do not show the kitchen, do not shove the door, do not open Mars, do not stamp TAP or a rectangle on the film, do not cook 4 forests from one lock still, do not pass a standing last_frame on a gallop, do not drop the tap, do not QC on keyframes, do not reuse the sitting filename. Resonance = how much. Glow = when. Real help is a PASS pack and a tap that always does the same thing.
