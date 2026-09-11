@@ -47,28 +47,50 @@ right  40 %   →  B / lean R / fork R
 
 Teal / gold doors in the hall = the **same hands** on the Lane. No new grid.
 
-**Side** — not “TAP LEFT”:
+**Side** — not “TAP LEFT”: path pulls left → tap left. Bolt leans right → tap right. Fork: two glows, pick the arm. Pose → tap the path, **not** a 4th Action button.
 
-- path pulls left → tap left
-- Bolt leans right → tap right
-- fork: two glows, you pick the arm you follow
-- pose (paw strike, path still center) → tap the path / the dog’s lower third, **not** a 4th Action button
+If both sides glow the same, recook. One gesture = one dominant direction.
 
-If both sides glow the same, the plate is bad. Recook. One gesture = one dominant direction.
+**When** — glow lights = window open. Dies / gesture done = too late (coyote still a bit). First plate slow enough that “light left = finger left” needs no tutorial.
 
-**When** — the glow **lights** in the film = window open. It dies / the gesture is done = too late (coyote still a bit).
+**Finger (year-0):** one **tap**, not a swipe, not a hold. Hold / swipe = another `railsVersion`.
 
-Calm (`m` low): one glow, slow. Wake: more often, clearer — still **read**, never announced. First plate: slow enough that “light left = finger left” needs no tutorial.
+**Do not put on the 9:16:** rings, L/R buttons, TAP, arrows over Bolt, the `m` bar pulsing to the beat. [DONT.md](DONT.md) §7.
 
-**Finger (year-0):** one **tap**, not a swipe, not a hold. One finger, glow’s side, while it is on. Hold / swipe = another `railsVersion`. Not the calm kit.
+**Net:** recook bigger / earlier glow, **one** cue on first clips. Still unreadable → decay / stock, never “tap here”.
 
-**Do not put on the 9:16:** rings, L/R buttons, the word TAP, arrows over Bolt, the `m` bar pulsing to the beat. [DONT.md](DONT.md) §7.
+**Hall → Lane:** first sprint plate may **continue the door-hand**. No welcome screen.
 
-Optional later: two lanes at the **very bottom**, **with** the Resonance bar, never on the dog — only if playtest proves 40/20/40 + glow is not enough. That is not the default.
+## Cue window (on the gesture, then tighten)
 
-**Net if nobody gets it:** not a HUD. Recook: bigger glow, earlier, **one** cue on the first clips, coyote 180–280 ms. Still unreadable → decay / stock, never “tap here”.
+You do **not** set `on: 3.0` then ask Imagine to match. Clip PASS first. Then scrub. Then playtest. If you must *widen* too much, recook the **glow / dog**, not the law. Numbers: [COOKLANE.md](COOKLANE.md).
 
-**Hall → Lane:** he left through a **left or right** door. The first sprint plate may **continue that side** — same hand, same 40 %. No “Welcome tap left” screen.
+```
+         Early ignore        Hit              Coyote
+    |------------------|-------------|----------|
+                  on              off        off+c
+```
+
+- **`on`** = first frame the gesture *reads* (path pull, paw strike, weight left). Not the start of the shot.
+- **`off`** = last frame it is still *this* gesture (weak glow OK). Not “he finished running”. Not end of mp4.
+- **Coyote** = grace **after** `off` (180–280 ms). The brain is late, not the film. Cuts at the next `on`.
+- **Early** = tap before `on − 80 ms` → ignore (no farm).
+- **Hit pre-`on`** = only those **80 ms** just before `on`.
+
+Two cues packed tight = coyote dies + Early/Hit mush → too many cues.
+
+| Plate | Gesture window |
+|---|---|
+| calm | **350–550 ms** |
+| lean | **280–400 ms** |
+| peak | **220–320 ms** |
+| < 180 ms | almost never — mash |
+
+Glow in the film 1.2 s, net gesture 0.4 s → `[on, off]` = the **gesture**, not the whole glow. Else Hit farm.
+
+Playtest 5 taps: all Early → `on` too late. All Late → `off` too soon / coyote short. Hits without looking → window too wide. Nobody finds the side → recook the lean, not the ms. Nudge `on/off` **2–4 frames**, not 0.5 s.
+
+`m` does **not** change coyote or the 80 ms. `m` picks a plate already timed tighter.
 
 ## Four nested clocks (one tap at a time)
 
@@ -81,9 +103,7 @@ Optional later: two lanes at the **very bottom**, **with** the Resonance bar, ne
 
 ## Picture-time
 
-`video.currentTime` while playing. A cue at 4.2 s is 4.2 s of the **mp4**. Time cues **after** the clip, on the real glow. Hesitate 300 ms → recook, do not widen.
-
-Hit ≤80 ms pre-`on` through `off`. Coyote 180–280 ms. Early ignore. Miss never zeros `m`. Dead tap if no gesture.
+`video.currentTime` while playing. A cue at 4.2 s is 4.2 s of the **mp4**.
 
 `m` picks the next cooked plate (calm / lean / peak / decay). Imagine is not on the tap.
 
@@ -95,7 +115,8 @@ Hit ≤80 ms pre-`on` through `off`. Coyote 180–280 ms. Early ignore. Miss nev
 - Do not cook walk-A and call it a Lane.
 - Hall poses do not run the middle of the minute.
 - First Lane plate continues the door-hand he entered with.
+- Do not widen `[on, off]` to “make it playable” — recook the dog.
 
 ## One line
 
-**Same screen as the hall: left / right on the picture. The film says which and when — by where Bolt leans and where it shines.** The finger goes where the dog goes. If you have to write “here”, the clip is not cooked.
+**`on` = I see the gesture, `off` = it is done, +0.2 s grace, −80 ms anticipation.** If you have to open wider for it to play, recook the dog. You do not relax the law. The finger goes where the dog goes.
