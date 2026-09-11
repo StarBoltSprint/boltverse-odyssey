@@ -58,6 +58,9 @@ Without this graph the seuil clip never plays — or it plays too soon.
 
 ## 2. vis / hid + genRef — never one `<video>`
 
+The living player **is** two `<video>` nodes. One `src=` on the visible slot blanks the picture on Samsung (spawn still × door dog). Load and `play()` in **hid**. Swap only if `paused === false`. Hide vis **first**, then paint hid. Walk last-frame stays up until dest breath is actually playing.
+
+
 Two slots. Load and `play()` in the **hidden** slot. Swap **only** if `paused === false`.
 
 ```
