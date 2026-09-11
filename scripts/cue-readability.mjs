@@ -1,15 +1,18 @@
 /**
- * Lane cue readability L. Laws: COOKLANE.md (L bands) · PLAY.md.
- * Does not see the film. Year-0 fills samples[] (eye / vision).
+ * Lane cue readability L. Laws: COOKLANE.md · PLAY.md.
+ * Year-0: 3 samples. Possible L = 0, 1/3, 2/3, 1. Not a lab metric.
  *
- *   L_i ≈ n_yes / 3     (on, mid, off)
- *   L   = Σ (L_i × width_i) / Σ width_i
+ *   PASS = 3/3          (L_PASS 1.0 — 0.75 meant the same)
+ *   GRAY = 2/3          (nudge the window, maybe keep the mp4)
+ *   FAIL = 0 or 1/3     (recook)
  *
- * Ambiguous L/R → L_i = 0. Zero cues → L.na (not a FAIL).
+ * Do not lower PASS to ship a pack. Do not tie L to m.
+ * Do not grow coyote to hide a hole.
  */
 
-export const L_PASS = 0.75;
-export const L_GRAY = 0.55;
+export const SAMPLES = 3;
+export const L_PASS = 1;
+export const L_GRAY = 0.5;
 export const RHO_GLOW_MAX = 0.45;
 
 export function sampleTimes(cue) {
@@ -36,7 +39,6 @@ export function Lof(cue) {
   if (samples.length === 0) return null;
   let yes = 0;
   for (const s of samples) {
-    if (cue.ambiguous) return 0;
     if (sampleYes(s)) yes += 1;
   }
   return yes / samples.length;
@@ -52,7 +54,7 @@ export function rhoGlow(duration, cues) {
 
 export function smokeL({ duration, cues = [] } = {}) {
   if (!cues.length) {
-    return { ok: true, code: "L.na", L: null, rho_glow: 0 };
+    return { ok: true, code: "L.na", L: null, rho_glow: 0, yes: null };
   }
 
   const rho = rhoGlow(duration, cues);
@@ -66,7 +68,13 @@ export function smokeL({ duration, cues = [] } = {}) {
     const Li = Lof(c);
     const w = width(c);
     if (Li == null) {
-      return { ok: false, code: "cue.honesty_unscored", L: null, cue: c.id, rho_glow: rho };
+      return {
+        ok: false,
+        code: "cue.honesty_unscored",
+        L: null,
+        cue: c.id,
+        rho_glow: rho,
+      };
     }
     num += Li * w;
     den += w;
@@ -74,10 +82,16 @@ export function smokeL({ duration, cues = [] } = {}) {
   const L = den > 0 ? num / den : 0;
 
   if (L < L_GRAY) {
-    return { ok: false, code: "cue.honesty", L, rho_glow: rho };
+    return { ok: false, code: "cue.honesty", L, rho_glow: rho, note: "1/3 or 0 — recook" };
   }
   if (L < L_PASS) {
-    return { ok: true, code: "L.gray", L, rho_glow: rho, note: "nudge on/off 2–4 frames" };
+    return {
+      ok: true,
+      code: "L.gray",
+      L,
+      rho_glow: rho,
+      note: "2/3 — nudge on/off 2–4 frames",
+    };
   }
-  return { ok: true, code: "L.pass", L, rho_glow: rho };
+  return { ok: true, code: "L.pass", L, rho_glow: rho, note: "3/3" };
 }
