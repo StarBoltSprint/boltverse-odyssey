@@ -15,76 +15,55 @@ A minute is a **handful of reels**. 6–15 s, `playbackRate = 1`, join cut 0.
 | 10 s | **6** |
 | 8 s | **7–8** |
 
-Aim **6 played** + **1 decay** in the fridge. `t_run` 45–70 with 10 s plates → peak around the **5th** (if Hits).
+Aim **6 played** + **1 decay** in the fridge.
 
-The file **changes** with `m`. Cook **more** than 6 so the picker has a drawer:
+Cook **more** than 6 so the picker has a drawer:
 
-| Tier | On disk | Duration | Cues |
-|---|---|---|---|
-| calm | **3** | 10–15 s | 1 |
-| lean | **4** | 8–12 s | 1–2 |
-| peak | **2** | 8–10 s | 2–3 |
-| decay | **1** | 8–12 s | 0–1 |
+| Tier | On disk | Duration | Cues | ρ ≈ cues/s |
+|---|---|---|---|---|
+| calm | **3** | 10–15 s | 1 | **0.08** |
+| lean | **4** | 8–12 s | 1–2 | **0.20** |
+| peak | **2** | 8–10 s | 2–3 | **0.33** |
+| decay | **1** | 8–12 s | 0–1 | **0–0.10** |
 
-**Cook ≈ 10 clips** for a year-0 row. A run **plays** ~6 (re-picks calm on Miss).
+`ρ = (hittable cues) / duration_s`. Smoke: peak at 1 cue / 12 s = still calm. Calm at 4 cues = mash.
 
-Without 3 calms: at 30 s you only recycle, and it shows.
+**Cook ≈ 10 clips.** A run **plays** ~6. Without 3 calms: at 30 s you only recycle.
 
-Clean file: `0–8 calm · 8–20 lean · 20–45 lean, lean · 45–60 peak`. **4–5 joins.** Miss: `calm → calm → decay → calm …` Same ~1 min, sleepier drawer — you do not add plates, you change **tier**.
+Clean file: `0–8 calm · 8–20 lean · 20–45 lean · 45–60 peak`. **4–5 joins.** Miss changes **drawer**, not plate count.
 
-Do **not:** 1×60 s (no `m` steps) · 20×3 s (flipbook, joints explode) · 1+1+1 (2nd run already seen).
+Do **not:** 1×60 s · 20×3 s · 1+1+1 · `playbackRate = lerp(m)` (even ±5 % desyncs glow vs finger).
 
-## Two layers (do not mix)
+## Two layers
 
-| | Hall | Lane (center) |
-|---|---|---|
-| Clock | poses | plates 6–15 s, bone `t_run` ~60 s |
-| Brick | breath / walk / still | clip + **glow** + cues |
-| Graph | spawn · atA · atB | **none** |
-| Next | `room.json` | `m` + `t_run` pick a **palette** |
-| Speed | — | **next plate**, never `playbackRate` |
+Hall = poses at the **door**. Lane center = plates + glow. Speed = **next plate**, never the HTML rate.
 
 ## Sprint law
 
-**`m` = if you follow the dog. `t_run` = age of the storm. Peak = both.** Quiet [0,8s] = calm even if `m` is high.  
-Year-0: **pose, L, R, fork**. Tap only if it is already in the shot. `playbackRate = 1` always.
-
-| Gesture | Tap |
-|---|---|
-| Pose | path / lower-center |
-| Lean L / R | left / right 40 % |
-| Fork | one side; other = Miss |
-| Peak | **no** peak tap — earned state |
-
-6–15 s: **1 to 3** cues. Time `[on, off]` **after** the clip. Glow **in** the encode.
+**The mp4 rate = 1. The sprint rate = ρ of the next reel.**  
+`m` = follow the dog. `t_run` = age of the storm. Peak = both. Quiet [0,8s] = calm even if `m` is high. Year-0: pose, L, R, fork.
 
 ```
 early_grace_s 0.08 · coyote 0.18–0.28 (default 0.22)
-Hit m += 0.1 · Miss m *= 0.7 floor 0.05 + peakBan · Late peakBan
+Hit m += 0.1 · Miss m *= 0.7 floor 0.05 + peakBan
+prepVideo / kick / joinEnded: playbackRate = 1   // no rate =
 ```
 
-## Law 0 (per plate)
-
-Same API as the hall ([COOK.md](COOK.md)). Prompt = worldLine + pathLine + CHAR + **one** gesture. Invert first/last → clone.
+Time `[on, off]` **after** the clip. Glow **in** the encode. Law 0: first/last per [COOK.md](COOK.md).
 
 ## File Grok
 
 ```
-identity Bolt (back / rails)
-palette: calm×3, lean×4, peak×2, decay×1   ← ~10 clips
-each plate 6–15 s, 1–3 of {pose, L, R, fork}, cues after the fact
+palette: calm×3, lean×4, peak×2, decay×1   ← ~10 clips, ρ per row above
 m + t_run pick the next   (scripts/sprint-transition.mjs)
 ```
 
-Cap 2. Gel ≠ PASS. Glow missing ×2 → no cues, no hall door.
-
 ## Refuse
 
-- TAP bar · live Imagine as `m` rises · peak as a tap / teleport
-- 60 s as **one** clip · 20×3 s flipbook · 1+1+1 palette
-- cook walk-A and call it a Lane · invent lean-L on a straight run
-- `playbackRate ≠ 1` · write `on` before the clip exists
+- TAP bar · live Imagine · peak as a tap
+- 60 s one clip · flipbook · 1+1+1
+- walk-A as a Lane · `playbackRate ≠ 1` · `rate = f(m)`
 
 ## One line
 
-**A dozen clips in the oven, six on the plate.** 10–12 s each. Decay always there. Faster = the lean/peak drawer, not 30 cuts.
+**A dozen in the oven, six on the plate.** Faster = denser ρ on the next reel, not a stretched cassette.
