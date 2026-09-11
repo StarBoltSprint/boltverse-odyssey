@@ -7,7 +7,7 @@ films/forest-calm-2.mp4
 films/forest-calm-2.cues.json
 ```
 
-`cook-biome` leaves `cues: []`. After scrub: sidecar + `node scripts/validate-cues.mjs` + `node scripts/smoke-biome.mjs forest`.
+`cook-biome` leaves `cues: []`. After scrub: sidecar + `validate-cues` + `smoke-biome` + [PLAYTEST.md](PLAYTEST.md) (5 blind taps).
 
 ## Schema
 
@@ -23,7 +23,7 @@ films/forest-calm-2.cues.json
 }
 ```
 
-`duration` = ffprobe of the hung mp4. 0 cue = legal → `L.na`. Grade reads **`side` + time**. `kind` is Smoke/Grok only.
+`duration` = ffprobe of the hung mp4. 0 cue = legal → `L.na`. Grade reads **`side` + time**.
 
 ## Machine
 
@@ -34,8 +34,8 @@ on[i+1] − on[i] ≥ 0.80   (hard min 0.60)
 N ≤ 3  ·  ρ_glow ≤ 0.45  ·  no overlap
 ```
 
-FAIL → do not Hang. Identity C = the 3 jpgs `smoke-biome` writes under `.smoke/<id>/`.
+FAIL → do not Hang. Identity C = `.smoke/<id>/`. Human gate = 5 taps.
 
 ## One line
 
-**The chart is a JSON written after the scrub.** `smoke-biome` grades the mp4. `smoke-pack` never does.
+**The chart is a JSON after the scrub.** `L` is not Hang. The thumb is.
