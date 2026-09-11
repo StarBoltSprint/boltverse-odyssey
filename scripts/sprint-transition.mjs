@@ -2,13 +2,15 @@
  * Lane reel picker + tap judge. Not Imagine. Not the hall teal/gold graph.
  * Laws: PLAY.md · COOKLANE.md · ENGINE.md (DOM swap).
  *
- * Loop (player owns DOM):
- *   timeupdate(currentTime) → gradeTap → applyVerdict
- *   ended(plate)            → pickNext → planSwap
- *   ENGINE: still first, hid.src, muted, playsInline, play(),
- *           paint hid only if paused === false, then hide vis.
- *   One src= on vis = the Samsung clone. Same as hall. Don't.
- *   playbackRate is always 1. Speed = which plate is next, already on disk.
+ * Coyote is a Late *tail after off*, not a second Hit.
+ *   Hit  = [on − 0.08, off]
+ *   Late = (off, off + C]
+ *   Miss = tap after off+C, or no tap when t > off+C
+ *   Early = tap < on − 0.08 (ignore, cue stays open)
+ * C = clamp(0.18, 0.28, 0.22) then min(C, next.on − off).
+ * One verdict per cue. Close i (coyote) before reading Early of i+1.
+ *
+ * playbackRate is always 1. Speed = which plate is next, already on disk.
  */
 
 export const LANE = {
@@ -43,43 +45,17 @@ export function tierOf(m, peakBan) {
   return "peak";
 }
 
-/**
- * x = 0..1 on containPlate (not letterbox). Letterbox tap never arrives here.
- * side: L < 0.4 · center 0.4–0.6 · R > 0.6  (same 40/20/40 as hall)
- * cue.side = "L" | "R" | "pose"
- */
-export function gradeTap({ t, x, cues = [], lastCue = -1 }) {
-  if (!cues.length) return { verdict: "idle", cue: -1 };
+/** Base C then cut by the next on so grace never overlaps the next Hit. */
+export function coyoteOf(cue, next) {
+  let C = cue.coyote ?? LANE.coyote_s;
+  C = Math.min(LANE.coyote_max_s, Math.max(LANE.coyote_min_s, C));
+  if (next) C = Math.min(C, Math.max(0, next.on - cue.off));
+  return C;
+}
 
-  let i = -1;
-  for (let n = 0; n < cues.length; n++) {
-    const c = cues[n];
-    const on = c.on;
-    const off = c.off;
-    const coy = off + (c.coyote ?? LANE.coyote_s);
-    if (t >= on - LANE.early_grace_s && t <= coy) {
-      i = n;
-      break;
-    }
-  }
-  if (i < 0) return { verdict: "idle", cue: -1 };
-  if (i === lastCue) return { verdict: "idle", cue: i };
-
-  const c = cues[i];
-  const on = c.on;
-  const off = c.off;
-  const coy = off + (c.coyote ?? LANE.coyote_s);
-
-  if (t < on - LANE.early_grace_s) return { verdict: "early", cue: i };
-  if (t < on) {
-    /* 80 ms pre-on = Hit anticipation */
-  } else if (t > coy) {
-    return { verdict: "miss", cue: i };
-  } else if (t > off) {
-    return sideOk(x, c.side) ? { verdict: "late", cue: i } : { verdict: "miss", cue: i };
-  }
-
-  return sideOk(x, c.side) ? { verdict: "hit", cue: i } : { verdict: "miss", cue: i };
+function openIndex(cues, lastCue) {
+  const i = lastCue + 1;
+  return i >= 0 && i < cues.length ? i : -1;
 }
 
 function sideOk(x, side) {
@@ -87,6 +63,49 @@ function sideOk(x, side) {
   if (side === "L") return x < 0.4;
   if (side === "R") return x > 0.6;
   return false;
+}
+
+function close(verdict, i) {
+  return { verdict, cue: i, close: verdict !== "early" && verdict !== "idle" };
+}
+
+/**
+ * Tap on containPlate (x 0..1). Letterbox never arrives here.
+ * Close cue i first. Do not Hit at off−10ms then Late in the tail.
+ */
+export function gradeTap({ t, x, cues = [], lastCue = -1 }) {
+  if (!cues.length) return close("idle", -1);
+  const i = openIndex(cues, lastCue);
+  if (i < 0) return close("idle", lastCue);
+
+  const c = cues[i];
+  const next = cues[i + 1];
+  const C = coyoteOf(c, next);
+  const on = c.on;
+  const off = c.off;
+
+  if (t < on - LANE.early_grace_s) return close("early", i);
+  if (t <= off) {
+    return close(sideOk(x, c.side) ? "hit" : "miss", i);
+  }
+  if (t <= off + C) {
+    return close(sideOk(x, c.side) ? "late" : "miss", i);
+  }
+  return close("miss", i);
+}
+
+/**
+ * No tap this frame. If the open cue's coyote has passed → Miss.
+ * Picture-time only: if currentTime jumps past off+C, that is Miss (hard, honest).
+ */
+export function gradeClock({ t, cues = [], lastCue = -1 }) {
+  if (!cues.length) return close("idle", -1);
+  const i = openIndex(cues, lastCue);
+  if (i < 0) return close("idle", lastCue);
+  const c = cues[i];
+  const C = coyoteOf(c, cues[i + 1]);
+  if (t > c.off + C) return close("miss", i);
+  return close("idle", i);
 }
 
 export function applyVerdict(state, verdict) {
@@ -104,14 +123,9 @@ export function applyVerdict(state, verdict) {
     s.peakBan = true;
     s.hitStreak = 0;
   }
-  /* early / idle: m unchanged, no farm */
   return s;
 }
 
-/**
- * Same tier, other id if possible; else calm; else decay; else hold.
- * Repeated miss → exit the minute (hall), not a Game Over screen.
- */
 export function pickNext(palette, state, currentId) {
   if (state.missStreak >= LANE.miss_exit) {
     return { kind: "exit", to: "hall" };
@@ -128,10 +142,6 @@ export function pickNext(palette, state, currentId) {
   return { kind: "plate", plate, tier: want };
 }
 
-/**
- * Intent only. Player paints with ENGINE dual-video.
- * hid not ready → hold / decay, taps live, never a black hole, never a spinner.
- */
 export function planSwap({ next, hidReady }) {
   if (!next || next.kind === "hold") {
     return { action: "hold", playbackRate: 1 };
