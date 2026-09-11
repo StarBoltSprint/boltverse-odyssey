@@ -60,6 +60,7 @@ Without this graph the seuil clip never plays — or it plays too soon.
 
 The living player **is** two `<video>` nodes. One `src=` on the visible slot blanks the picture on Samsung (spawn still × door dog). Load and `play()` in **hid**. Swap only if `paused === false`. Hide vis **first**, then paint hid. Walk last-frame stays up until dest breath is actually playing.
 
+Never `src=` on the layer the player is looking at.
 
 Two slots. Load and `play()` in the **hidden** slot. Swap **only** if `paused === false`.
 
@@ -107,10 +108,27 @@ Walk ended: **cut 0 ms**. Order is the whole law:
 
 Frost rec 15s: walk last (teal) × spawn still (center) = **two Bolts**. Cause = still never left spawn during the walk, then 280 / hole. Arrive still first. Breath-A first = last = at-A, **one** dog. If breath-A is spawn, Smoke `graph.breath_is_spawn` / `clone.two_dogs` — do not hang.
 
+### Tap chain (walk — not recook)
+
+Still **changes during the walk**, not at `ended`.
+
+```
+tap A @ spawn
+  hid.load(walk) hid.play()
+  if playing → paint hid, hide vis
+  still spawn → at-A DURING the walk (underlayer)
+ended(walk)
+  still at-A already painted and opaque
+  hide walk (0 ms)
+  kick breath-A in hid (loop, first=last=at-A)
+```
+
+A hole in this order = the clone you filmed (Frost / Samsung). Not “recook prettier”. It is the DOM stack.
+
 ## 3. Clock of the enter
 
 | beat | fade | still | veil | vis |
-|---|---|---|---|---|
+|---|---|---|
 | breath-A → enter | **0 ms** | opacity **0** | 0 | enter |
 | enter plays (~6s) | — | **0** (hidden) | 0 | enter |
 | enter ended | hide enter **0 ms** | spawn₂ opacity 1 | **1** immediate | dest breath-spawn **under** the veil |
@@ -151,7 +169,7 @@ Set `veil.src` **before** opacity 1. Door A → `stills/seuil/teal-empty.jpg`. D
 | state | still.src | still.opacity | veil | vis |
 |---|---|---|---|---|
 | boot / breath-spawn hall | spawn₁ | **1** | 0 | breath-spawn |
-| walk | start then arrive still | **1** | 0 | walk (dissolve 280 over it) |
+| walk | **spawn → at-A DURING the clip** | **1** | 0 | walk |
 | breath-A | atA | **1** | 0 | breath-A |
 | **enter** | (atA, but invisible) | **0** | 0 | enter |
 | enter ended (first paint) | **spawn₂** | **1** | **1** | dest breath under veil |
@@ -188,6 +206,7 @@ pointerdown on stage
 
 ## 6. Dual video laws (do not recook these bugs)
 
+- Never `src=` on the **visible** slot.
 - Swap **only** if `play()` succeeded (`paused === false`).
 - `muted=true` **and** `playsInline=true` **before** `play()`.
 - Pause the outgoing **after** the swap.
@@ -234,7 +253,9 @@ After hanging a new mp4/still, bump `PACK` (`u26` → `u27`) or the browser keep
 
 ## 10. What the engine **cannot** save
 
-- Clone baked in the enter (first left + last center)
+- Clone baked **in** the mp4 (first left + last center)
+- Spawn still that never left center during the walk (`showStill` forgotten)
+- A single `<video>` “to simplify”
 - Depth spawn₂ ≠ spawn₁ (fake travelling)
 - Black silhouette, face, 3/4 in the cook
 - Hall′ leak inside the 6s Imagine
@@ -252,4 +273,4 @@ That is the plate. The player does not interpolate.
 
 ## One line
 
-Cut 0 into enter, still off, 1 dog until teal. Hide enter 0. Empty veil of **that door** 500 ms (double rAF) over a spawn₂ **already posed**. Switch room, then dest breath. Never two dogs on screen at the same time.
+Two slots, load in the shadow, still spawn→at-A **during** the walk, hide walk after, cut 0, breath pinned both ends. A `src=` on the visible or a hide too early = two dogs — even with a PASS pack. Enter: cut 0, still off, empty veil of **that door** 500 ms (double rAF) over spawn₂ already posed.
