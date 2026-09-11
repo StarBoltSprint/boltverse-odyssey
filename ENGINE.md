@@ -84,14 +84,19 @@ Fade is **CSS opacity only**:
 
 ```
 fade = 0     same clip
+     = 0     walk ended → dest breath (poseEnd === poseStart)
      = 0     entering an enter
      = 0     leaving an enter     ← curtain ≠ dissolve
-     = 280   otherwise (walks)
+     = 280   otherwise (walks tap only, same still under)
 ```
 
 `el.style.transition = ms ? opacity ${ms}ms linear : none`
 
 **Law:** never animate opacity between two frames that have a dog in two places.
+
+Walk ended: **cut 0 ms**. Still = arrive (at-A) **under the last walk frames** (swap still ~0.8s before `ended`). Hide the walk video. Then dest breath of **that** pose. `joinMs` = 0 when `poseEnd === poseStart`.
+
+Frost rec 15s: walk last (teal) × spawn still (center) = **two Bolts**. Cause = still never left spawn during the walk, then 280 / hole. Arrive still first. Breath-A first = last = at-A, **one** dog. If breath-A is spawn, Smoke `graph.breath_is_spawn` / `clone.two_dogs` — do not hang.
 
 ## 3. Clock of the enter
 

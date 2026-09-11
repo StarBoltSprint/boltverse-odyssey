@@ -120,10 +120,10 @@ function whiteBlobs(buf, w, h) {
 }
 
 function cloneScan(file, d, kind) {
-  const times = [];
-  const step = d > 8 ? 1.2 : 0.8;
+  const times = [0, 0.3, 0.8, 1.5];
+  const step = d > 8 ? 1.0 : 0.6;
   for (let t = 0; t < d; t += step) times.push(t);
-  if (kind === "walk" || kind === "enter") {
+  if (kind === "walk" || kind === "enter" || kind === "breath") {
     for (const t of [Math.max(0, d - 2), Math.max(0, d - 1), Math.max(0, d - 0.15)]) {
       times.push(t);
     }
@@ -452,6 +452,22 @@ function smokeFile(file, kind, refs, required, smokeDir) {
       if (!g.ok) return fail(g.why[0].split(" ")[0], "pair", g.why.join("; "));
 
       if (kind === "breath") {
+        const doorStill = /breath-a/i.test(file) ? refs.atA : /breath-b/i.test(file) ? refs.atB : null;
+        if (doorStill && refs.spawn && existsSync(doorStill) && existsSync(refs.spawn)) {
+          const p0 = creamPlace(fa, GW, GH);
+          const ps = creamPlace(rawFrame(refs.spawn, 0, GW, GH), GW, GH);
+          const pd = creamPlace(rawFrame(doorStill, 0, GW, GH), GW, GH);
+          if (dogOk(p0) && dogOk(ps) && dogOk(pd)) {
+            const toSpawn = Math.abs(p0.cx - ps.cx);
+            const toDoor = Math.abs(p0.cx - pd.cx);
+            if (toSpawn + 0.06 < toDoor)
+              return fail(
+                "graph.breath_is_spawn",
+                "t=0",
+                "breath-A/B first frame is spawn — dest after walk must be the door still, or the splice clones",
+              );
+          }
+        }
         const pose =
           /breath-a/i.test(file) ? refs.atA : /breath-b/i.test(file) ? refs.atB : refs.spawn;
         if (pose && existsSync(pose)) {

@@ -190,3 +190,15 @@ FAIL `graph.walk_plant` if cx barely moves 2s→4.5s. Yaw 44° on recook = `gate
 ## Walk first-frame yaw (ice PCA)
 
 Do not FAIL a walk because t=0 is 37° when the spawn still is 28° and hall SSIM ≈ 1. Encode ice, not a muzzle. Threshold 40°. ¾ / profile ~44°+ still FAIL.
+
+## Walk → breath splice clone
+
+Frost rec 2026-09-11: 0–3s living spawn breath PASS. 4–14s walk-A even gait, hold at teal PASS. **15–16s TWO dogs** (door + spawn).
+
+That is not a walk dash. Dest breath-A showed a spawn body on top of the arrive still / last walk frame.
+
+- Walk still must flip to **arrive** before `ended`
+- `joinMs(walk, breath-A) = 0`
+- Hide walk video, then breath
+- breath-A `first = last = at-A` — if t=0 is spawn, `graph.breath_is_spawn`
+- `clone.two_dogs` on breath t=0 — do not hang
