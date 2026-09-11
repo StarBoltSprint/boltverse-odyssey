@@ -1,10 +1,7 @@
 /**
- * Lane reel picker + tap judge. Cue clock lives in ./cue-coyote.mjs.
- * Laws: PLAY.md · COOKLANE.md · ENGINE.md (DOM swap).
- *
- *   timeupdate: sheet.t = currentTime; sheet.tap = lastTap; resolveFrame
- *   ended:      flushOpen(sheet, duration)  — last cue must not stay wait
- *   pickNext → planSwap → ENGINE hid (playbackRate = 1 always)
+ * Lane reel picker. Cue clock: ./cue-coyote.mjs. DOM: ./dom-swap.mjs.
+ * m = if you still follow the dog. t_run = age of the storm. Peak = both.
+ * playbackRate is always 1. Speed = which plate is next, already on disk.
  */
 
 import {
@@ -25,31 +22,53 @@ export const LANE = {
   hit_m: 0.1,
   miss_mul: 0.7,
   m_floor: 0.05,
+  m_boot: 0.12,
+  m_decay: 0.18,
   m_calm: 0.3,
-  m_lean: 0.7,
+  m_peak: 0.7,
+  idle_tick_s: 1,
+  idle_decay: 0.015,
   miss_exit: 3,
   playbackRate: 1,
+  quiet_s: 8,
+  lean_s: 20,
+  build_s: 45,
+  close_s: 70,
 };
 
 export function emptyState() {
   return {
-    m: 0.12,
+    m: LANE.m_boot,
+    t_run: 0,
     peakBan: false,
     missStreak: 0,
     hitStreak: 0,
+    idleAcc: 0,
     currentId: null,
     sheet: makeSheet([]),
   };
 }
 
-export function tierOf(m, peakBan) {
-  if (m < LANE.m_calm) return "calm";
-  if (m < LANE.m_lean) return "lean";
-  if (peakBan) return "lean";
-  return "peak";
+/** Hall → Lane handoff: new minute. */
+export function handoffLane() {
+  return emptyState();
 }
 
-/** containPlate x 0..1 → hall token. Letterbox never arrives here. */
+/**
+ * Bone + m. Peak is a permission, not a forced clip.
+ * Quiet [0,8): calm even if m is already high.
+ */
+export function wantOf(t_run, m, peakBan) {
+  const t = t_run || 0;
+  if (t < LANE.quiet_s) return "calm";
+  if (t < LANE.lean_s && m < LANE.m_calm) return "calm";
+  if (t < LANE.lean_s) return "lean";
+  if (t < LANE.build_s) return "lean";
+  if (t <= LANE.close_s && m >= LANE.m_peak && !peakBan) return "peak";
+  if (m < LANE.m_decay) return "decay";
+  return "lean";
+}
+
 export function tapFromX(x) {
   if (x < 0.4) return "A";
   if (x > 0.6) return "B";
@@ -74,11 +93,21 @@ export function applyVerdict(state, verdict) {
   return s;
 }
 
+/** Picture-time idle (no cue / Howl). HOLD does not tick. */
+export function tickIdle(state, dt) {
+  const s = { ...state, idleAcc: (state.idleAcc || 0) + dt };
+  while (s.idleAcc >= LANE.idle_tick_s) {
+    s.idleAcc -= LANE.idle_tick_s;
+    s.m = Math.max(LANE.m_floor, s.m - LANE.idle_decay);
+  }
+  return s;
+}
+
 export function pickNext(palette, state, currentId) {
   if (state.missStreak >= LANE.miss_exit) {
     return { kind: "exit", to: "hall" };
   }
-  const want = tierOf(state.m, state.peakBan);
+  const want = wantOf(state.t_run, state.m, state.peakBan);
   const take = (tier) => {
     const list = palette?.[tier] || [];
     if (!list.length) return null;
@@ -88,6 +117,14 @@ export function pickNext(palette, state, currentId) {
   const plate = take(want) || take("calm") || take("decay");
   if (!plate) return { kind: "hold" };
   return { kind: "plate", plate, tier: want };
+}
+
+/** After pickNext. Sprint plates add duration to t_run. PeakBan clears (one penance plate already picked). */
+export function afterJoin(state, { addRun = 0, terminal = false } = {}) {
+  const s = { ...state, peakBan: false, idleAcc: 0 };
+  if (!terminal) s.t_run = (s.t_run || 0) + addRun;
+  if (terminal) s.t_run = s.t_run || 0;
+  return s;
 }
 
 export function planSwap({ next, hidReady }) {
