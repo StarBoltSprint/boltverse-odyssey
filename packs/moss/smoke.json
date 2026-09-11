@@ -1,0 +1,6 @@
+{
+  "ok": true,
+  "script": "scripts/smoke-pack.mjs",
+  "fails": 0,
+  "warns": 0
+}

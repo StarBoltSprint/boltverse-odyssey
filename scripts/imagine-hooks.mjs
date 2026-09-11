@@ -112,7 +112,7 @@ function breathLine(pose) {
       "ONE dog only. He is ALREADY at the teal LEFT sill.",
       "NEVER a dog at center. NEVER a dog at gold. NEVER a second Bolt.",
       "Do not complete the hall toward spawn. Do not walk. Do not turn.",
-      "Micro breath. Feet glued. 6 seconds. Loop. Locked-off.",
+      "Micro breath. Feet glued. Seamless loop. Locked-off.",
     ].join(" ");
   }
   if (pose === "atB") {
@@ -120,7 +120,7 @@ function breathLine(pose) {
       "ONE dog only. He is ALREADY at the gold RIGHT sill.",
       "NEVER a dog at center. NEVER a dog at teal. NEVER a second Bolt.",
       "Do not complete the hall toward spawn. Do not walk. Do not turn.",
-      "Micro breath. Feet glued. 6 seconds. Loop. Locked-off.",
+      "Micro breath. Feet glued. Seamless loop. Locked-off.",
     ].join(" ");
   }
   return [
@@ -180,9 +180,15 @@ export async function imagineStill({ root, slot, pose, dest, spawnPath, lane }) 
     : [
         LAW,
         catalogLines(root, slot),
-        pose === "spawn" ? "Bolt center, both portals readable." : "",
-        pose === "atA" ? "Bolt at the teal LEFT portal. Gold still visible on the right." : "",
-        pose === "atB" ? "Bolt at the gold RIGHT portal. Teal still visible on the left." : "",
+        pose === "spawn"
+          ? "Bolt center, lower third. BOTH portals fully visible left and right. Dog bbox height is 0.22–0.32 of the frame — same scale as the layout reference. Small in the hall. NOT a close-up. NOT filling the plate."
+          : "",
+        pose === "atA"
+          ? "Bolt at the teal LEFT portal, still back to camera. Gold still visible on the right. Dog bbox height 0.35–0.40 of the frame. Same lens as spawn."
+          : "",
+        pose === "atB"
+          ? "Bolt at the gold RIGHT portal, still back to camera. Teal still visible on the left. Dog bbox height 0.35–0.40 of the frame. Same lens as spawn."
+          : "",
       ]
         .filter(Boolean)
         .join(" ");
@@ -210,7 +216,7 @@ export async function imagineClip({ root, slot, kind, first, last, dest, seconds
         catalogLines(root, slot),
         kind === "breath"
           ? breathLine(pose)
-          : "10 seconds. He LEAVES spawn in the first second. Continuous even walk. Never freeze mid-hall. Walks the whole clip. Arrives ~8s, then HOLDS 1–2s. No leftover empty time. No linger-then-warp. No sudden sprint, no last-second warp. Do not walk back to spawn. Do not invent a floor ice disc. Locked-off. ONE full-white GSD. Last frame is the arrive still. No tunnel.",
+          : "10 seconds. ONE dog only. He LEAVES spawn in the first second. Continuous even walk on FOUR STANDING PAWS. NEVER sit. NEVER lie. NEVER a second Bolt at center or the other door. Never freeze mid-hall. Arrives ~8s, then HOLDS STANDING 1–2s at the sill, still back to camera. No leftover empty time. No linger-then-warp. No sudden sprint. Do not walk back to spawn. Do not invent a floor ice disc. Locked-off. ONE full-white GSD. Last frame is the arrive still. No tunnel.",
       ].join(" ");
   const body = {
     model: VIDEO_MODEL,

@@ -88,7 +88,7 @@ function dogMask(buf, w, h) {
     const pts = [];
     while (st.length) {
       const [x, y] = st.pop();
-      if (x < 0 || y < y0 || x >= w || y >= y1) continue;
+      if (x < 0 || y < y0 || x >= w || y >= h) continue;
       const i = y * w + x;
       if (seen[i] || !vis[i]) continue;
       seen[i] = 1;
@@ -424,6 +424,15 @@ export function matchPose(a, b, edge, dims = { w: GW, h: GH }) {
     if (rest.length === 0 && fog.length && nums.every((d) => d > 0 && d <= 0.14)) {
       warns.push(...fog.map((w) => w + " vapor"));
       why = [];
+    }
+    // Freeze gel of a PASS still: hall frozen, thumb self-NCC can sit 0.01 under
+    // 0.38 on moss cream. Identical first/last must not block decay.
+    if (why.length && hall > 0.98) {
+      const onlyNcc = why.every((w) => w.startsWith("gate.ncc"));
+      if (onlyNcc) {
+        warns.push(...why.map((w) => w + " gel"));
+        why = [];
+      }
     }
   }
 
