@@ -135,8 +135,43 @@ A friend who has not read ENTER.md:
 If the tap works, the format holds.  
 If they had to patch the player, the format failed — you reopened the engine.
 
+## Golden disc (stock)
+
+Amorcé = the disc **exists**, not on `main`. It is a **Release**.
+
+Tag: [`citadel-stock-v1`](https://github.com/StarBoltSprint/boltverse-odyssey/releases/tag/citadel-stock-v1)  
+Unzip `citadel-stock-v1.zip` → `packs/citadel/`.
+
+```
+python3 scripts/validate-pack.py packs/citadel
+```
+
+`packs/` in git stays empty. Recipe in `main`. Playable witness = the tag.
+
+### Chain of truth (three places, one pack)
+
+```
+tag citadel-stock-v1   = reference disc
+player /               = MUST play THIS disc
+cook FAIL              = stock URL = this same disc
+adjacency.citadel      = A/B null
+```
+
+If the player has an old cut and the zip a new one, Smoke calibrates on the wrong witness.  
+**Bump the tag** (`citadel-stock-v2`) when the 5 films change. Do not silently rewrite the zip.
+
+Floor 0 test: unzip = **3 jpg + 5 mp4 + `room.json`**, `ENTER` empty, `open: breath-spawn`.  
+If the zip has 7 films or a hung Enter, it is **not** floor 0 anymore.
+
+### vs `lock/`
+
+`lock/` = frame (bolt-back, examples, gif).  
+The zip = graph (cooked official stills + PASS films).
+
+Do **not** smoke a walk against `lock/example-at-a.jpg`.  
+Smoke against `packs/citadel/stills/at-a.jpg` **from the zip**.
+
 ## One line
 
-The world is a folder that looks like this. The game is one reader. Whoever writes the folder does not touch the reader. Whoever touches the reader broke the contract.
-
-Golden disc (floor 1 zip): [citadel-stock-v1](https://github.com/StarBoltSprint/boltverse-odyssey/releases/tag/citadel-stock-v1). Not in `main`. Unzip → `packs/citadel/`.
+The world is a folder that looks like this. The game is one reader.  
+**`main` describes. The release *is* the origin hall. `/` and that zip must be the same disc.**
