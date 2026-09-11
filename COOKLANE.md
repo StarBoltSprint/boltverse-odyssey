@@ -15,21 +15,79 @@ Row / ids = [BIOMES.md](BIOMES.md). Play disc = [PLAY.md](PLAY.md).
 | Tap | walk to a door | **gesture already in the frame** |
 | Next clip | edge in `room.json` | `m` picks from a **palette** |
 
-Hall recollage **only at the edges**: enter from a citadel door (`kind: sprint`), exit to a hall, Recall / death / fail → `decay`. Not “spawn then walk-B” in the middle of the run.
-
-If he breathes 2 s between two sprints, that is a buffer / decay / hold. Do **not** name it `breath-A`.
+Hall recollage **only at the edges**: enter from a citadel door (`kind: sprint`), exit to a hall, Recall / death / fail → `decay`.
 
 ## Sprint law (Grok)
 
-1. It **starts calm**. `m` low: even gait, world still asleep (little glow, short path).
-2. **Hits** → `m` up → next plates livelier: faster gait, longer luminous path, the world **wakes**.
-3. Miss / Late → `m` down (never 0): back toward calm / decay. No chrome game-over.
-4. A tap with **no** Bolt motion in that window = dead tap. Do not count it. Do not invent an overlay action.
+1. It **starts calm**. `m` low.
+2. Hits → `m` up → next plates livelier.
+3. Miss / Late → `m` down (never 0).
+4. A tap with **no** Bolt motion in that window = dead tap.
 
-The player does not steer Bolt with a stick. He **matches** his tap to what Bolt *already does*.
+**`m` wakes the world. The tap exists only if it matches a real Bolt gesture already in the shot.**
 
-**`m` wakes the world. The tap exists only if it matches a real Bolt gesture already in the shot.**  
-Calm first. Success = faster, brighter. Miss = it falls asleep. Never a button without the dog.
+## Year-0 gestures (back, 9:16)
+
+Lock-off, back to camera: you do **not** have 20 readable verbs. The eye sees rump, back, paws, path, two L/R masses. Each legal tap = one of these, **already** in the shot.
+
+| Gesture | In the film | Tap | `m` |
+|---|---|---|---|
+| **Pose** (paw strike) | paw plants, push | 1 tap path / lower-center | rhythm |
+| **Lean L** | weight / shoulder / path pulls left | left 40 % | lean-L |
+| **Lean R** | same, right | right 40 % | lean-R |
+| **Fork** | ground splits, two glows | one side; other = Miss | choice |
+| Threshold | oval/arch opens | 2nd tap after a lean Hit | enter arm — **floor 3** |
+| Hold | gait crushes, chest low | hold or no tap (Idle) | calm / decay — later |
+| Peak | longest path, world lit | **no** “peak” tap | earned **state** |
+
+Year-0 cook: **pose, L, R, fork**. That is all the back gives.
+
+Does **not** read (not a cue):
+
+- face / gaze (we are back)
+- a tiny “jump” with no hind-paw plant then leave — Imagine misses it, the eye too
+- 40° yaw (profile = FAIL lock)
+- fire / spell with no light **on the ground or paws**
+- a double-tap combo the clip does not have
+
+A jump exists only if the hindquarters **sink then leave**, glow on that window. Else it is a word in the prompt, not a gesture.
+
+### One plate = few gestures
+
+6–15 s: **1 to 3** cues, not a piano score.
+
+- *calm* — 1 pose every ~2 s, same path side
+- *lean* — 1 lean L **or** R, maybe a pose before
+- *fork* — 1 L/R choice, short coyote
+- *decay* — 0 cue (Idle) or 1 weak pose
+
+More than 3 glows in 10 s: the player mashes, Bolt is no longer read.
+
+### Time the cue **after** the clip
+
+1. Watch the mp4.
+2. Frame where the gesture **starts to show** → `on`.
+3. Frame where it is **done** → `off`.
+4. Glow must be on **inside** `[on, off]`.
+5. If you hesitate 300 ms, the gesture is not sharp enough → recook, do **not** widen the cue.
+
+Hit = ≤80 ms before `on` through `off`. Coyote 180–280 ms after.
+
+### `m` does not rename verbs
+
+Gestures keep the same **names**. Density and amplitude change:
+
+- calm: sparse poses, short path
+- wake: closer poses, clearer lean, fork later in the bone
+- peak: max path — still pose / L / R, just faster
+
+No “super jump” unlocked by `m`. `m` picks the **next plate** (livelier), not a combo overlay.
+
+Prompt one plate: **one** dominant gesture + worldLine.
+
+> Bolt sprints, leans left, luminous path pulls left, no text, lock-off, back to camera.
+
+Then list cues. If the model did not lean, you do **not** invent `lean-L` in the JSON.
 
 ## `m` = wake, not a combo HUD
 
@@ -40,63 +98,43 @@ Calm first. Success = faster, brighter. Miss = it falls asleep. Never a button w
 | high | peak **earned** | dense — still **not** a 5th door |
 | falling | decay | sleeps again |
 
-Plates 6–15 s chain ~1 min. The bone reads `m` to pick the **next** plate from **already cooked** stock (calm / lean / peak / decay). Imagine is not on the tap.
-
-Grok does not cook “a walk-A”. He cooks a **palette** of plates tagged by intensity.
-
-## Tap = a real action in the film
-
-Glow is not a floating metronome. It is Bolt who: plants (or speeds up), leans L/R, crosses / jumps / ducks.
-
-- `on` = the gesture **starts to read**
-- `off` = the gesture has passed
-- Hit = you tapped **with** that gesture
-
-If Imagine did not put the gesture, you may not add a “jump” button. Recook the plate. Cue honesty: you see the action with no text. [DONT.md](DONT.md) §7.
-
-Wrong side while Bolt leans left = Miss.  
-Tap on a breath with no gesture = Idle / ignore.
+Plates 6–15 s chain ~1 min. Imagine is not on the tap.
 
 ## Law 0 (per plate)
 
 Same API as the hall ([COOK.md](COOK.md)). Invert first/last → clone.
 
-Each plate: `image` + `last_frame` of **that** plate’s stills (not spawn/atA unless this plate *is* a hall-edge enter).
+Prompt = `worldLine` + `pathLine` + [CHAR.md](CHAR.md) + **one** gesture. No Hall′. No TAP stamp. Back, lock-off.
 
-Prompt = `worldLine` + `pathLine` + [CHAR.md](CHAR.md) + the **gesture**. No Hall′. No TAP stamp.
+Write `[on, off]` **after** the clip, on the real glow. Glow **in** the hung file.
 
-Gait: feet on the floor, lock-off, even speed, **back** (`lockoff-back-v1`). Sprint is the disc, not an excuse for ¾. [CHAR.md](CHAR.md).
-
-Write `[on, off]` **after** the clip, on the real glow. Glow **in** the hung file, never an engine overlay.
-
-## File Grok (do not recollate the hall)
+## File Grok
 
 ```
 identity Bolt (back / rails)
 palette: calm × n, lean × n, peak, decay
-each plate: 1–3 visible gestures + cues timed after the fact
-m picks the next plate from the palette
+each plate: 1–3 of {pose, L, R, fork} + cues timed after the fact
+m picks the next plate
 Enter citadel = other job, 2nd tap, ticket
 ```
 
 Not: spawn / atA / breath-A in the middle of the minute.
 
-**Race min** (play the minute offline): enough plates for ~60 s + `decay` + cues/glow + identity thumb.
+**Race min:** enough plates for ~60 s + `decay` + cues/glow + identity.  
+**Bridge:** hall names in [BIOMES.md](BIOMES.md) — pont, not the minute.
 
-**Bridge** (optional, door handoff): the 5 hall names in [BIOMES.md](BIOMES.md). Pont. Not the design of the minute.
-
-Cap 2 per plate. Gel ≠ PASS. Both intensity bands empty → row stays `coming`. Glow missing ×2 → do not wire cues, do not hang a hall door.
+Cap 2. Gel ≠ PASS. Glow missing ×2 → no cues, no hall door.
 
 ## Refuse
 
-- a “universal” tap that scores even if Bolt does nothing
+- a tap that scores if Bolt does nothing
 - a bar that says *when*
-- live Imagine to “go faster” as `m` rises
-- peak = teleport biome
-- 60 s as **one** clip (no `m` steps)
-- cooking `walk-spawn-A` and calling it a Lane
+- live Imagine as `m` rises
+- peak = teleport / a tap named peak
+- 60 s as **one** clip
+- cooking walk-A and calling it a Lane
+- inventing lean-L when the clip runs straight
 
 ## One line
 
-**`m` wakes the world. The tap exists only if it matches a real Bolt gesture already in the shot.**  
-The hall is before / after the door. Inside the minute: plates + bone. Not a little citadel.
+**Pose, left, right, fork — that is all the back gives.** Each tap marries one of those four. `m` chains livelier plates. It does not add buttons.
