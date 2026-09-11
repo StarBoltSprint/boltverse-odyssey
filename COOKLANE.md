@@ -1,14 +1,25 @@
 # COOKLANE — the sprint minute, not a tiny citadel
 
-Hall cook = [COOKROOM.md](COOKROOM.md). Row = [BIOMES.md](BIOMES.md). Play = [PLAY.md](PLAY.md).  
-Runner = [scripts/sprint-transition.mjs](scripts/sprint-transition.mjs).  
-`L` = [scripts/cue-readability.mjs](scripts/cue-readability.mjs) — `smokeL` / `actionL`. Does not see the film.
+Hall cook = [COOKROOM.md](COOKROOM.md) → `node scripts/cook-room.mjs moss`  
+Lane cook = **this page** → `node scripts/cook-biome.mjs forest`  
+Palette = [palettes/forest-palette.json](palettes/forest-palette.json). Runner = [scripts/sprint-transition.mjs](scripts/sprint-transition.mjs).  
+`L` = [scripts/cue-readability.mjs](scripts/cue-readability.mjs).
+
+```
+cook-room moss      → 3 stills hall + 5 films graphe
+cook-biome forest   → 10 bobines d’os, 0 atA
+```
+
+Same dog, same lock, **other job**. If Grok runs the first for « sprint forest », the discs are glued again.
+
+`--dry-run` prints the queue. Live = `imagine-hooks.mjs` + `XAI_API_KEY`.  
+Cues stay `[]` until scrub + `smokeL`. Then `coming: false`. FAIL cap 2 on **decay** → whole kit `coming`, no citadel door `kind: sprint`.
 
 **Do not cook walk-A as the sprint.** The minute = plates + `m` + `t_run`.
 
-## Count — not 60 plates
+## Count — 10 cooked, ~6 played
 
-6–15 s, `playbackRate = 1`. Cook ≈ **10 clips** (calm×3, lean×4, peak×2, decay×1). A run plays ~6.
+calm ×3 · lean ×4 (`L1/R1/L2/R2`) · peak ×2 · decay ×1. Grok **reads** the ids. He does not invent `calm-2`.
 
 ## Density ρ
 
@@ -24,28 +35,12 @@ Runner = [scripts/sprint-transition.mjs](scripts/sprint-transition.mjs).
 | peak | 2–3 | 8–10 s | **0.22–0.35** | **≥ 0.8 s** |
 | decay | 0–1 | 8–12 s | **0–0.10** | — |
 
-FAIL: N≥4 / ≤10 s · two `on` < 0.6 s · overlap · peak N=1 >12 s · `ρ_glow > 0.45`.
+Law 0: calm/decay **first = last** (same still). Lean/peak first → last hold.
 
-## Readability `L` — a vote, not a mean
+## Readability `L`
 
-3 samples → `L ∈ {0, ⅓, ⅔, 1}`. One bad sample **jumps a tier**. Prefer **false negative**. Doubt = not readable. Never average 10 visions until PASS (that *creates* FP).
-
-```
-3/3               Hang
-mid NON           recook — the gesture is not there
-only off NON      nudge off −2–4 frames   (keep the mp4)
-only on NON       nudge on  +2–4
-ambiguous L/R     recook side
-```
-
-**Gray ≠ Imagine recook.** Gray spends **no** cap-2. Recook only if **mid** is no, or ambiguous. `off` is the noisy edge — often the window, not the clip.
-
-Do **not:** lower PASS to ship forest · tie `L` to `m` · grow coyote / `ρ_glow` to hide a hole.
-
-## Sprint law
-
-Mp4 rate = 1. Sprint rate = ρ of the next reel. Year-0: pose, L, R, fork. Time `[on, off]` **after** the clip.
+3/3 Hang · mid NON recook · only `off` NON nudge −2–4 frames · gray ≠ Imagine. Doubt = no.
 
 ## One line
 
-**The middle counts, the edges lie, doubt is no.** Recale the window first. Do not lower 3/3 to calm the classifier.
+**`cook-room` is the hall. `cook-biome` is the minute.** Ten reels in the oven, six on the plate, cues after the mp4.
