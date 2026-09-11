@@ -11,11 +11,14 @@ citadel / paint / salle mousse / fais-moi une citadelle
 
 biome / sprint / lane / colle forest sur la porte
   → [BIOMES.md] then [COOKLANE.md] [PLAY.md]. NOT cook-room.
-    Palette of plates + m. NOT a tiny citadel. NOT walk-A.
+    Palette of plates + m. Year-0 verbs: pose, L, R, fork.
+    NOT a tiny citadel. NOT walk-A.
     Hall graph (spawn / atA / breath-A) only at the door.
 ```
 
-**Sprint law:** `m` wakes the world. The tap exists only if it matches a real Bolt gesture already in the shot. Calm first. Hit = faster, brighter. Miss = it falls asleep. Never a button without the dog.
+**Sprint law:** `m` wakes the world.  
+Year-0: **pose, left, right, fork** — that is all the back gives ([COOKLANE.md](COOKLANE.md)).  
+The tap exists only if it matches one of those **already in the shot**. Calm first. Hit = faster, brighter. Miss = it falls asleep. Never a button without the dog. Peak is a state, not a tap.
 
 **“citadel moss” ≠ “biome moss”.** They share a word, not a recipe.
 
@@ -45,7 +48,7 @@ Off-list paint or FAIL ×2 → stock `/`. Do not invent a temple.
 
 Trigger (any language): *play boltverse*, *boltverse odyssey*, *starboltsprint*, *citadel*, *citadelle*, *fais-moi une citadelle*. Then this page. Job = the script. Not chat Imagine.
 
-If they said *biome* / *sprint* / *lane* / *colle forest* — **stop.** [BIOMES.md](BIOMES.md) then [COOKLANE.md](COOKLANE.md). Do not run cook-room. Do not cook walk-A as the sprint.
+If they said *biome* / *sprint* / *lane* / *colle forest* — **stop.** [BIOMES.md](BIOMES.md) then [COOKLANE.md](COOKLANE.md). Do not run cook-room. Do not cook walk-A as the sprint. Do not invent a jump / lean-L the clip does not show.
 
 You are wiring a **living-film** room, not a game with UI.
 
@@ -196,7 +199,7 @@ Map by motion, not by filename. Skip still-cook.
 
 Land in `packs/<id>/`. If you must recook a walk/enter: **Law 0**. Run validate-pack then smoke-pack. Give the player URL. No chrome.
 
-Sprint / Lane: first word was biome/sprint → [BIOMES.md](BIOMES.md) [COOKLANE.md](COOKLANE.md) [PLAY.md](PLAY.md). Palette + `m`. Not walk-A. Door `kind: sprint` hands off ([LINKS.md](LINKS.md)).
+Sprint / Lane: first word was biome/sprint → [BIOMES.md](BIOMES.md) [COOKLANE.md](COOKLANE.md) [PLAY.md](PLAY.md). Palette + `m`. Year-0: pose, L, R, fork. Not walk-A. Door `kind: sprint` hands off ([LINKS.md](LINKS.md)).
 
 Biome kits: [BIOMES.md](BIOMES.md). Race cook: [COOKLANE.md](COOKLANE.md). `rome` → ember. `mars` → asteroid.
 
