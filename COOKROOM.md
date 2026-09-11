@@ -9,6 +9,8 @@ Grok does not paste Imagine prompts in chat when the script can run.
 
 Tap never cooks. [DONT.md](DONT.md).
 
+Lane / biome cook is **not** this page. That is [COOKLANE.md](COOKLANE.md). `citadel moss` → here. `biome forest` → there.
+
 ## Command
 
 ```
@@ -55,7 +57,7 @@ The rest in `packs/<id>/smoke.log`.
 
 ## What this is not
 
-Not the player. Not Smoke (it *calls* smoke). Not Forge UI. Not live Imagine on tap.
+Not the player. Not Smoke (it *calls* smoke). Not Forge UI. Not live Imagine on tap. Not a biome / Lane kit ([COOKLANE.md](COOKLANE.md)).
 
 ## One line
 
