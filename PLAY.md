@@ -16,11 +16,11 @@ Runner: [scripts/sprint-transition.mjs](scripts/sprint-transition.mjs) — reel 
 
 **`m` wakes the world. The tap exists only if it matches a real Bolt gesture already in the shot.**
 
-**Speed is the next film, not the knob of the current one.** `playbackRate = 1` on a hung plate. Always. Else every `on/off` slides.
+**Speed is the next film, not the knob of the current one.** `playbackRate = 1` always.
 
 ## Year-0 verbs (back, 9:16)
 
-Pose, left, right, fork. That is all the back gives. Alphabet: [COOKLANE.md](COOKLANE.md).
+Pose, left, right, fork. Alphabet: [COOKLANE.md](COOKLANE.md).
 
 | Gesture | Tap |
 |---|---|
@@ -32,72 +32,76 @@ Pose, left, right, fork. That is all the back gives. Alphabet: [COOKLANE.md](COO
 Peak = earned **state**, not a tap. Decay = 0 cue. Threshold = floor 3.  
 1–3 cues per 6–15 s plate. More than 3 glows in 10 s = mash, FAIL honesty.
 
-No jump / spell / combo unless it is in the paws and the glow. Yaw 40° = FAIL lock. Straight run → no L/R cue. Do not invent `lean-L` in JSON if the clip did not lean.
-
-`m` changes **density**, not the verb names. No super-jump unlocked by `m`.
+Straight run → no L/R cue. Do not invent `lean-L` if the clip did not lean. `m` changes **density**, not the verb names.
 
 ## How the player knows (no second map)
 
-He does **not** learn a button. He reads it like the hall: **the picture + the same 40 / 20 / 40**.
+Same **40 / 20 / 40** as the hall on `containPlate`. Letterbox = void. First Lane plate may continue the door-hand. No TAP stamp. [DONT.md](DONT.md) §7.
 
-Hits are on `containPlate` — the 9:16 rectangle, not the letterbox. Letterbox tap = void.
+## Cue window + coyote
 
-```
-left   40 %   →  A / lean L / fork L
-center 20 %   →  miss (except pose / path dead-center)
-right  40 %   →  B / lean R / fork R
-```
-
-Teal / gold doors in the hall = the **same hands** on the Lane. No new grid.
-
-**Side** — path pulls left → tap left. Bolt leans right → tap right. Fork: pick the arm. Pose → tap the path, **not** a 4th Action button. Both sides glow → recook.
-
-**When** — glow lights = window open. **Finger (year-0):** one **tap**, not a swipe, not a hold.
-
-**Do not put on the 9:16:** rings, L/R buttons, TAP, arrows over Bolt, the `m` bar pulsing to the beat. [DONT.md](DONT.md) §7.
-
-**Hall → Lane:** first sprint plate may **continue the door-hand**. No welcome screen.
-
-## Cue window (on the gesture, then tighten)
-
-You do **not** set `on: 3.0` then ask Imagine to match. Clip PASS first. Then scrub. Then playtest. If you must *widen* too much, recook the **glow / dog**, not the law. Numbers: [COOKLANE.md](COOKLANE.md).
+You do **not** set `on: 3.0` then ask Imagine to match. Clip PASS → scrub → playtest. Widen too much → recook the **dog**, not the law.
 
 ```
-         Early ignore        Hit              Coyote
+         Early ignore        Hit              Late (coyote)
     |------------------|-------------|----------|
-                  on              off        off+c
+                  on              off        off+C
 ```
 
-- **`on`** = first frame the gesture *reads*. Not the start of the shot.
-- **`off`** = last frame it is still *this* gesture. Not end of mp4.
-- **Coyote** = grace **after** `off` (180–280 ms). The brain is late, not the film. Cuts at the next `on`.
-- **Early** = tap before `on − 80 ms` → ignore (no farm).
-- **Hit pre-`on`** = only those **80 ms** just before `on`.
+```
+Hit     = [on − 0.08 , off]
+Late    = (off , off + C]
+Miss    = tap after off+C  OR  no tap when t > off+C
+Early   = tap < on − 0.08   (ignore, cue stays open)
+```
 
-| Plate | Gesture window |
+**Coyote is a tail of grace after `off`.** The gesture is dead in the film; the finger may still arrive a bit late. It is **Late**, not a second Hit (`m` unchanged, peakBan). If you push `off` 220 ms later, you still score **Hit** on a dead gesture — farm. The tail is rhythm, not a longer glow.
+
+`C` = media seconds (`currentTime`), not wall clock.
+
+```
+C = clamp(0.18, 0.28, 0.22)          // default 220 ms
+C = min(C, next.on − off)            // next on cuts the grace
+```
+
+One constant per `railsVersion`, not per plate. `m` does **not** widen it.
+
+Two cues 120 ms apart = tiny coyote. Too tight: recook / fewer cues. Do **not** raise `C` to 400 ms.
+
+Resolve **in order**: close cue `i` (coyote) **then** read a tap as Early of `i+1`. One verdict **once**. Not Hit at `off−10ms` then Late in the tail.
+
+| ms | ~frames @ 24fps |
+|---|---|
+| 80 (early grace) | ~2 |
+| 180 | ~4 |
+| 220 | ~5 |
+| 280 | ~7 |
+
+Under 4 frames, Late almost never exists (everyone Miss). Over 7, Late *feels* like Hit — `m` would lie if Late added `m`.
+
+**Playtest:** too many Late, few Hit → `off` too soon — nudge `off` **2 frames**, not `C`. Too many “I tapped” Miss → `C` to 0.26 or plate too short. Hits while looking away → `off` too late, not the coyote.
+
+What does **not** compute `C`: ping / frame drop (picture-time only; a jump past `off+C` = Miss, hard, honest). `playbackRate ≠ 1` (forbidden). Difficulty `m` (next plate is tighter **in the image**, same `C`).
+
+| Plate | Gesture window `[on, off]` |
 |---|---|
 | calm | **350–550 ms** |
 | lean | **280–400 ms** |
 | peak | **220–320 ms** |
 | < 180 ms | almost never — mash |
 
-Glow 1.2 s, net gesture 0.4 s → `[on, off]` = the **gesture**. `m` does **not** change coyote or the 80 ms.
+Glow 1.2 s, net gesture 0.4 s → window = the **gesture**.
 
 ## Reel (not the cassette knob)
 
-You do **not** speed up the mp4 in play like a tape. You change **which plate comes next**, and how awake it already is.
-
 ```
 timeupdate (currentTime)
-  gradeTap → hit / late / miss / early / idle
+  gradeTap / gradeClock → hit / late / miss / early / idle
   applyVerdict → m, tier, peakBan
 ended(plate)
-  pickNext(palette, state)
-  planSwap → kick hid (ENGINE), fade 0, still first
-  hid not ready → hold / decay, taps live, no black hole
+  pickNext → planSwap → ENGINE hid (playbackRate = 1)
+  hid not ready → hold / decay
 ```
-
-Palette **already cooked**: calm × n, lean × n, peak, decay.
 
 | Verdict | `m` | Next |
 |---|---|---|
@@ -106,60 +110,20 @@ Palette **already cooked**: calm × n, lean × n, peak, decay.
 | Late | unchanged, `peakBan` | no peak |
 | Early / idle | unchanged | same |
 
-Tiers: `0–0.3` calm · `0.3–0.7` lean · `≥0.7` peak (if not banned).
+Tiers: `0–0.3` calm · `0.3–0.7` lean · `≥0.7` peak (if not banned).  
+Repeated miss → **exit** the minute (hall), not Game Over.
 
-“Faster” in the picture = **gestures more often** + a brighter world. Not `playbackRate = 1.4` on the same shot.
-
-| `m` | Next plate |
-|---|---|
-| low | longer shots, 1 pose, weak glow |
-| mid | stride already bigger, cue ~1 s, clear lean |
-| high | shorter clips (still 6–15 s), 2–3 cues, long path |
-| falling | decay: less glow, gait crushes, 0–1 cue |
-
-**Do not:** `playbackRate` as a reward, recook the next plate on tap, seek to the “fast end”, one 60 s band whose speed you change.
-
-`pickNext`: same tier, other id if possible; else calm; else decay; else hold.  
-3 Hits in a row → you **see** the next tier. 2 Miss → you drop. Repeated miss → **exit** the minute (hall), not a Game Over screen.
-
-### Joints
-
-- last still / last frame of A ≈ first of B (same rails, same back)
-- cut 0 or short dissolve **if** the dog did not jump place
-- dual-video: load B in hid **during** A (stock, not cook)
-- B not ready → decay, clock hold, never a spinner
-- one `src=` on vis = the Samsung clone — same as hall, **don't**
-- `planSwap` does **not** touch the DOM. ENGINE paints: still → hid `play()` → paint if `paused === false` → hide vis
-- `m` high does **not** allow a black hole “generating faster world”
-
-Slowing is not elegant slow-mo. It is decay / calm, fewer cues, path pulling back. Bolt still runs, less awake.
-
-## Four nested clocks (one tap at a time)
-
-| # | Layer | Where |
-|---|---|---|
-| 1 | Plate 6–15s | Lane **center** |
-| 2 | Hall poses | Hall, Lane **edges** only |
-| 3 | Bone ~60s (`m`) | Lane **center** — peak ≠ a 5th door |
-| 4 | Citadel enter | edge |
-
-## Picture-time
-
-`video.currentTime` while playing. A cue at 4.2 s is 4.2 s of the **mp4**. `playbackRate = 1`.
-
-Imagine is not on the tap. Runner: [scripts/sprint-transition.mjs](scripts/sprint-transition.mjs).
+Joints: last A ≈ first B. Dual-video load B **during** A. One `src=` on vis = Samsung clone — don't. `planSwap` does not touch the DOM.
 
 ## Hard fences
 
-- No TAP bar. Recook glow, not UI. [DONT.md](DONT.md) §7.
-- Same 40/20/40 as the hall. Letterbox = void.
+- No TAP bar. Recook glow, not UI.
+- Same 40/20/40 as the hall.
 - Peak is not a door and not a tap.
+- Never `playbackRate ≠ 1`. Never live Imagine as `m` rises.
+- Do not widen `[on, off]` or `C` to “make it playable” — recook the dog.
 - Do not cook walk-A and call it a Lane.
-- Hall poses do not run the middle of the minute.
-- First Lane plate continues the door-hand he entered with.
-- Do not widen `[on, off]` to “make it playable” — recook the dog.
-- **Never** `playbackRate ≠ 1`. Never live Imagine as `m` rises.
 
 ## One line
 
-**Speed is the next film, not the knob of the current one.** Hit → an already livelier plate. Miss → an already sleepier one. Bolt is never time-stretched; the world changes reels.
+**Hit while the gesture lives; 0.22 s after, it is Late; then Miss; the next `on` cuts the grace.** The coyote catches the finger, not the clip. Speed is the next film.
