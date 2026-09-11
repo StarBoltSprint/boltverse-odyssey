@@ -5,7 +5,8 @@
   "identity": "lock/bolt-back.jpg",
   "railsVersion": "lockoff-back-v1",
   "worldLine": "crystal-ice forest, pale stone, frozen moss, lock-off back",
-  "pathLine": "one glow path on the ice, never a HUD",
+  "pathLine": "the ice FORKS; he TAKES a vein and STAYS; glow on that vein; never a HUD; never a wobble back to center in the same plate",
+  "hung": ["forest-lean-L1", "forest-lean-L2"],
   "drawers": {
     "calm": [
       {
@@ -13,7 +14,9 @@
         "file": "films/forest-calm-1.mp4",
         "still": "stills/forest-calm-1.jpg",
         "stillEnd": "stills/forest-calm-1.jpg",
-        "duration": 13,
+        "from": "C",
+        "to": "C",
+        "duration": 8,
         "gesture": "pose",
         "cues": []
       },
@@ -22,6 +25,8 @@
         "file": "films/forest-calm-2.mp4",
         "still": "stills/forest-calm-2.jpg",
         "stillEnd": "stills/forest-calm-2.jpg",
+        "from": "C",
+        "to": "C",
         "duration": 12,
         "gesture": "pose",
         "cues": []
@@ -31,6 +36,8 @@
         "file": "films/forest-calm-3.mp4",
         "still": "stills/forest-calm-3.jpg",
         "stillEnd": "stills/forest-calm-3.jpg",
+        "from": "C",
+        "to": "C",
         "duration": 14,
         "gesture": "pose",
         "cues": []
@@ -41,7 +48,9 @@
         "id": "forest-lean-L1",
         "file": "films/forest-lean-L1.mp4",
         "still": "stills/forest-lean-L1.jpg",
-        "stillEnd": "stills/forest-lean-L1-hold.jpg",
+        "stillEnd": "stills/station-L.jpg",
+        "from": "C",
+        "to": "L",
         "duration": 10,
         "gesture": "lean-L",
         "cues": []
@@ -50,7 +59,9 @@
         "id": "forest-lean-R1",
         "file": "films/forest-lean-R1.mp4",
         "still": "stills/forest-lean-R1.jpg",
-        "stillEnd": "stills/forest-lean-R1-hold.jpg",
+        "stillEnd": "stills/station-R.jpg",
+        "from": "C",
+        "to": "R",
         "duration": 10,
         "gesture": "lean-R",
         "cues": []
@@ -58,8 +69,10 @@
       {
         "id": "forest-lean-L2",
         "file": "films/forest-lean-L2.mp4",
-        "still": "stills/forest-lean-L2.jpg",
-        "stillEnd": "stills/forest-lean-L2-hold.jpg",
+        "still": "stills/station-L.jpg",
+        "stillEnd": "stills/station-L-deep.jpg",
+        "from": "L",
+        "to": "L",
         "duration": 10,
         "gesture": "lean-L",
         "cues": []
@@ -67,8 +80,10 @@
       {
         "id": "forest-lean-R2",
         "file": "films/forest-lean-R2.mp4",
-        "still": "stills/forest-lean-R2.jpg",
-        "stillEnd": "stills/forest-lean-R2-hold.jpg",
+        "still": "stills/station-R.jpg",
+        "stillEnd": "stills/station-R-deep.jpg",
+        "from": "R",
+        "to": "R",
         "duration": 10,
         "gesture": "lean-R",
         "cues": []
@@ -78,8 +93,10 @@
       {
         "id": "forest-peak-1",
         "file": "films/forest-peak-1.mp4",
-        "still": "stills/forest-peak-1.jpg",
-        "stillEnd": "stills/forest-peak-1-hold.jpg",
+        "still": "stills/station-L-deep.jpg",
+        "stillEnd": "stills/station-R.jpg",
+        "from": "L",
+        "to": "R",
         "duration": 9,
         "gesture": "fork",
         "cues": []
@@ -87,8 +104,10 @@
       {
         "id": "forest-peak-2",
         "file": "films/forest-peak-2.mp4",
-        "still": "stills/forest-peak-2.jpg",
-        "stillEnd": "stills/forest-peak-2-hold.jpg",
+        "still": "stills/station-R-deep.jpg",
+        "stillEnd": "stills/station-L.jpg",
+        "from": "R",
+        "to": "L",
         "duration": 9,
         "gesture": "fork",
         "cues": []
@@ -100,6 +119,8 @@
         "file": "films/forest-decay.mp4",
         "still": "stills/forest-decay.jpg",
         "stillEnd": "stills/forest-decay.jpg",
+        "from": "C",
+        "to": "C",
         "duration": 10,
         "gesture": "pose",
         "required": true,
