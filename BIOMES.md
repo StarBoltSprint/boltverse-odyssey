@@ -12,6 +12,10 @@ This does **not** replace [CATALOG.md](CATALOG.md) paints.
 Paints = `worldLine` matter. A row **owns** a paint + stock + who it may touch.  
 Citadel door `kind: sprint` → `to` is a `BiomeId` ([LINKS.md](LINKS.md)). Play disc = [PLAY.md](PLAY.md).
 
+Making a biome is **not** “describe a forest”. Fill a row until it plays **offline**, then (optional) hang it on a hall door.
+
+Two jobs: the **kit** and the **hook**. Do not invert.
+
 ## Two layers, one word
 
 - **A — names:** closed `BiomeId` + voice aliases (`rome` → `ember`, not a row)
@@ -62,6 +66,28 @@ Optional: A↔B (else Recall → spawn → walk-spawn-B).
 
 Empty stock → this biome’s `decay`, not a mystery cook.
 
+No Hang if stock is incomplete (`"coming"`). No citadel door on a coming row.
+
+## Fill order (kit before hook)
+
+```
+1. id + worldLine + pathLine + neighbors + railsVersion
+2. spawn still + identity (lock)
+3. 3 breaths + 2 walks + decay
+4. Smoke hall (dog, first/last, plate)
+5. cues + glow → Smoke PLAY (cue honesty). Tap = Bolt's gesture in that frame.
+6. Hang row (no longer "coming")
+7. only then enter edges / citadel door kind:sprint
+```
+
+Invert 7 and 3 = tap into the void or live Imagine ([DONT.md](DONT.md)).
+
+Day 1 does **not** need A↔B, forest→dusk enter, a moss-hall hook, or 60s WFC.
+
+Hall = a graph of photos.  
+Biome = the same graph + a chart **in** the film + a decay net.  
+No decay and no glow = a painting that runs — not a playable biome.
+
 ## Laws
 
 - `worldLine` / `pathLine` frozen; voice ≤12 words **after**, never instead
@@ -69,6 +95,8 @@ Empty stock → this biome’s `decay`, not a mystery cook.
 - identity thumb may be shared (`lock/bolt-back.jpg`)
 - bump `railsVersion` if camera / body law changes
 - Smoke [SMOKE.md](SMOKE.md) + cue honesty [PLAY.md](PLAY.md) before Hang
+- no free-text biome (“jungle under the sea”) → new `BiomeId` = PR, not chat
+- do not `cookRoom` a paint and call it a biome
 
 ## Lookups
 
@@ -81,10 +109,20 @@ legalEnter = catalog.get(from).neighbors.includes(to)
 
 Footage: [starboltsprint-forest](https://github.com/StarBoltSprint/starboltsprint-forest) (`asteroid.mp4`, `cook-forest`, `cook-rome`…). Missing files = `"coming"`.
 
+Citadel hook (after step 6):
+
+```json
+"ENTER": {
+  "B": { "kind": "sprint", "to": "forest", "clip": "films/enter-b.mp4" }
+}
+```
+
+`to` ∈ `biomes.ids`, **not** [adjacency.json](adjacency.json) (that is hall→hall).
+
 ## Table tests
 
 Each id has min stock + spawn + identity · neighbors exist · aliases resolve · no two ids share spawn · `worldLine` has no ban stems (cape, text, orbit…).
 
 ## One line
 
-Five complete kits + who they may touch. Rome / Mars are nicknames. Paints stay the short material list.
+Fill the row until it plays offline, then (optional) hang it on a door. Kit before hook. Glow in the film. Decay is not optional.
