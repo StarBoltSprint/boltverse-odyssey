@@ -53,25 +53,46 @@ Plate 2+ is animated **from that last frame** (morph). A standing restart at the
 
 Smoke: `lane.joint` if last(n) is not first(n+1). Do not Hang.
 
-## Pace — success never decelerates
+## Pace — the actual formula
 
-`playbackRate` = **1**. Speed is **cooked**, not faked in the player.
+`playbackRate` = **1**. Nothing in the player multiplies speed.  
+`r` is relative stride vs plate 0 (L1). Cooked into the film. Not 2/3/4 labels.
 
 ```
-0  stand     calm / decay (fridge)
-2  canter    first lean (L1 / R1) — already moving, he commits
-3  gallop    second lean (L2 / R2) — longer stride than the plate before
-4  stretch   peak — maximum stride
+r(k, t) = min( r_max,  r0 · q^k · (1 + γ · t/T) )
 ```
 
-Hung path: `pace[n+1] >= pace[n]`.
+| symbol | value | meaning |
+|---|---|---|
+| `k` | 0, 1, 2, … | hung index on a **clean** run |
+| `t` | 0 → T | time inside the plate |
+| `T` | 10 s | plate length |
+| `r0` | **1.00** | L1 = the reference |
+| `q` | **1.20** | each next plate starts 20 % faster |
+| `γ` | **0.10** | +10 % inside a plate |
+| `r_max` | **1.80** | cap — no smear |
 
-If the player hit every tap, plate 3 **must not** be slower than plate 1.  
-A standing start on plate n+1, or a shorter stride than last(n), is `lane.slow` FAIL.
+Join without a dump needs `q ≥ 1+γ`. 1.20 > 1.10, so the cut **steps up**, never down.
 
-Decay is the only legal slow-down — and only after misses / end of minute. Not on a clean run.
+Year-0 hung (what door B plays):
 
-Join: last(n) **morphs** into first(n+1) — same stride family or faster, never a freeze.
+| plate | k | t=0 | t=T | gait |
+|---|---|---|---|---|
+| L1 | 0 | **1.00** | **1.10** | canter → already running |
+| L2 | 1 | **1.20** | **1.32** | gallop, longer stride |
+| peak (later) | 2 | **1.44** | **1.58** | stretch |
+| next | 3 | **1.73** | **1.80** | cap |
+
+L1 → L2 cut: **1.10 → 1.20**. Morph, already running, slightly faster. Never 1.10 → 0 (stand).
+
+Fail `lane.slow` if:
+- first frame of k+1 is a stand (`r ≈ 0`)
+- stride of k+1 at t=0 is shorter than last frame of k
+- a later hung plate is slower while the player is still on the clean path
+
+Decay is the only legal slow-down, and only after misses. Not on a clean run.
+
+Old plates were not cooked against this. Labels 2/3/4 on the palette were names, not `r`. Recook from L1 with this table, in order, or the files stay random Imagine jogs.
 
 ## Fork — one plate, one act
 
@@ -95,7 +116,7 @@ back, two ears, yaw < 40 degrees
 
 One plate = **one act**. Return to center = **another** plate, another tap.
 
-Peak = the hard cut (L to R or a fallen crystal). Same chain law. Same back. Faster than the leans.
+Peak = the hard cut (L to R or a fallen crystal). Same chain law. Same back. Faster than the leans (`k=2`).
 
 ## Stations
 
@@ -105,7 +126,7 @@ Every plate has `from` to `to`.
 `pickNext` may only pick a plate whose `from` = current `to`.  
 Hung year-0 is a **path of stations**, not a drawer shuffle (`L1` then `R1` from C = illegal).
 
-Example hung: `lean-L1 C to L` then `lean-L2 L to L` (deeper left, world advanced, **faster**).  
+Example hung: `lean-L1 C to L` then `lean-L2 L to L` (deeper left, world advanced, **r 1.00 → 1.20**).  
 `lean-R1 C to R` is an **other first** lean, not a follow-up of L1.
 
 Smoke: `lane.station` if hung[n+1].from != hung[n].to.
@@ -119,4 +140,4 @@ Handoff still kisses first hung still ([HANDOFF.md](HANDOFF.md)).
 ## One line
 
 **`smoke-biome` grades the file. Five fingers grade the chart.** Hang only when both say yes.  
-A lean is a **fork he keeps**. A join is a **copied last frame**. Pace only goes up on a clean run. Never 4 forests from one lock still.
+A lean is a **fork he keeps**. A join is a **copied last frame**. `r` only goes up on a clean run. Never 4 forests from one lock still.
