@@ -88,7 +88,7 @@ function dogMask(buf, w, h) {
     const pts = [];
     while (st.length) {
       const [x, y] = st.pop();
-      if (x < 0 || y < y0 || x >= w || y >= h) continue;
+      if (x < 0 || y < y0 || x >= w || y >= y1) continue;
       const i = y * w + x;
       if (seen[i] || !vis[i]) continue;
       seen[i] = 1;
@@ -145,7 +145,8 @@ function dogMask(buf, w, h) {
 export function creamHeight(buf, w, h) {
   const vis = new Uint8Array(w * h);
   const y0 = Math.floor(h * 0.12);
-  for (let y = y0; y < h; y++) {
+  const y1 = Math.floor(h * 0.88); // floor ice/path is cream — not the dog
+  for (let y = y0; y < y1; y++) {
     for (let x = 0; x < w; x++) {
       const i = y * w + x;
       const r = buf[i * 3], g = buf[i * 3 + 1], b = buf[i * 3 + 2];
@@ -178,7 +179,7 @@ export function creamHeight(buf, w, h) {
     for (let x = 0; x < w; x++)
       if (vis[y * w + x] && !seen[y * w + x]) {
         const b = flood(x, y);
-        if (b.n > 80 && b.w < 0.62 && b.h > 0.12 && b.n > best.n) best = b;
+        if (b.n > 80 && b.w < 0.45 && b.h > 0.12 && b.h < 0.55 && b.n > best.n) best = b;
       }
   return best.n ? best.h : 0;
 }

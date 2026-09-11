@@ -154,3 +154,11 @@ Walk cook = API `last_frame`, not chat `reference_to_video`. If last overshoots 
 
 - at-A / at-B still **must** be sill-band **0.35–0.40** (FAIL < 0.28 or > 0.45). 0.15 is a spawn-scale dog standing at the door — recook the **still**.
 - Walk last must match that still. 0.52 vs 0.15 = `gate.size` + `graph.last_not_official`. Recook the walk (6s) or the still. **Do not** replace the small still with the fat last.
+
+## Why last_frame “sometimes” misses
+
+Imagine treats `last_frame` as a **target**, not a paste. If spawn is 0.19 and at-A is 0.50, the jump is too far: it keeps the start. Last = spawn. `graph.last_not_official`. Not a stamp.
+
+`walk_return @ t=2.4` on a **6s** clip is the outbound step (40% = still leaving spawn). Real return is **after** ~3.2s. Ice/cream floor also inflates sill `creamHeight` (0.50) — floor is not the dog.
+
+Recook at-A in **0.35–0.40** with a dark floor, then 6s walk. Cap 2 → tap stays spawn. Correct.

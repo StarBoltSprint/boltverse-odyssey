@@ -142,9 +142,12 @@ function cloneScan(file, d, kind) {
 }
 
 function walkReturnScan(file, d, firstHash) {
-  const t0 = d * 0.4;
+  // 6s walk: arrive ~2s. t=0.4d (2.4s) is still the outbound step — not a return.
+  // Scan only after he should already be at the door.
+  const t0 = Math.max(3.2, d * 0.58);
   const t1 = d * 0.92;
-  for (let t = t0; t < t1; t += 0.7) {
+  if (t0 >= t1) return null;
+  for (let t = t0; t < t1; t += 0.5) {
     try {
       if (hamming(frameP(file, t), firstHash) <= SAME) return t;
     } catch {
