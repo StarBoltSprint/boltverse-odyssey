@@ -154,7 +154,13 @@ export async function imagineClip({ root, slot, kind, first, last, dest, seconds
   };
   if (kind === "walk") {
     if (!last) throw new Error("walk needs last_frame");
+    if (last === first) throw new Error("walk last_frame must be distinct");
     body.last_frame = { url: dataUri(last) };
+  }
+  if (kind === "breath") {
+    // first = last = the pose still. Same file twice so Imagine HOLDS.
+    const pose = last || first;
+    body.last_frame = { url: dataUri(pose) };
   }
   const j = await api("/videos/generations", body);
   let url = j.url || j.video?.url || j.data?.[0]?.url;

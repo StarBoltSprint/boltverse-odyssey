@@ -17,7 +17,7 @@ Every new conversation. Do not wait to be asked.
 |---|---|---|---|
 | **walks** | API `image` + **`last_frame`** (hooks / `videos/generations`) | start still | arrive still — **distinct** |
 | **enter** | same | at-still | fill veil — **never** dest spawn |
-| **breath** | `image_to_video` on **one** still | pose still | **same** still |
+| **breath** | API `image` + **`last_frame` = the same still** | pose still | **same** still (spawn/spawn, atA/atA, atB/atB) |
 
 **`last_frame` is an aim, not a paste.** The API sends the arrive still. Imagine *steers*. If spawn is 0.19 and at-A is 0.45, the jump is too far — it keeps the start. Last picture = spawn. `graph.last_not_official`. Not an unplugged cable.
 
@@ -140,6 +140,16 @@ Floor 1 films → `films/` (the 5). Floor 2 = walk-A-B / B-A if asked. Floor 3 =
 Walk prompt slot (every walk):
 
 > Lock-off. 10 seconds. He walks to the door (~5s) and HOLDS (~3s). Do not walk back to spawn. last_frame locks the last picture, not the path — leftover seconds = round trip = FAIL. FULL-white GSD, teal collar, back the whole clip. No 3/4, no morph.
+
+### Breath — first AND last are the **same** still
+
+| clip | first | last |
+|---|---|---|
+| breath-spawn | `stills/spawn.jpg` | `stills/spawn.jpg` |
+| breath-A | `stills/at-a.jpg` | `stills/at-a.jpg` |
+| breath-B | `stills/at-b.jpg` | `stills/at-b.jpg` |
+
+Hooks **must** send `last_frame` = that still (same file twice). Image-only breath walks / turns / gels. Walk is the opposite: last **≠** first.
 
 ### Breath — two laws
 

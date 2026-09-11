@@ -187,7 +187,7 @@ for (const [rel, still, stillRel] of breaths) {
   let ok = false;
   for (let i = 0; i < 2; i++) {
     try {
-      await imagineClip({ root, slot, kind: "breath", first: still, dest: join(dir, rel) });
+      await imagineClip({ root, slot, kind: "breath", first: still, last: still, dest: join(dir, rel) });
       if (!smoke(rel, "breath")) throw new Error("smoke breath");
       ok = true;
       break;
