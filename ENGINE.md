@@ -4,7 +4,9 @@ The engine **cooks nothing**. It **chains plates**.
 Repo: `https://github.com/StarBoltSprint/boltverse-odyssey`
 
 Cook laws: [ENTER.md](ENTER.md). Ops: [HANG.md](HANG.md). This file is the player clock + DOM.
-Lane machines: [PLAY.md](PLAY.md) (DOM / HOLD / partition). Hold flags: [scripts/video-hold.mjs](scripts/video-hold.mjs).
+Lane machines: [PLAY.md](PLAY.md) (DOM / HOLD / partition).  
+Swap: [scripts/dom-swap.mjs](scripts/dom-swap.mjs) — `kick` / `joinEnded` / `failSafe` / `liftVeil`. Does not grade.  
+Hold: [scripts/video-hold.mjs](scripts/video-hold.mjs).
 
 Constants: `DISSOLVE_MS = 280` (walks). `CURTAIN_MS = 500` (exit of enter only).
 
@@ -55,6 +57,8 @@ This is **who is opaque**. Not `playingWalkA`.
 
 Never `src=` on the opaque. Swap only if `paused === false`.
 
+Code: [scripts/dom-swap.mjs](scripts/dom-swap.mjs). `joinEnded` = still first → hide vis → hid.play() → swap iff `paused === false` → `gen++`. Sprint fade **0**. `failSafe` = still only, videos 0. `liftVeil` (double rAF) = hall Enter **only**. Finger during swap = HOLD tap gate, not this file.
+
 HOLD (booleans, several at once): `running` = video playing **and** `!held`. `pause` ≠ `ended`. `stall` ≠ `play-fail`. Peak does **not** raise this veil.
 
 Debug keeper: `dom: boot | vis | swap | fail` — never `walk-spawn-A-playing`.
@@ -77,9 +81,9 @@ Without this graph the seuil clip never plays — or it plays too soon.
 
 ## 2. vis / hid + genRef — never one `<video>`
 
-The living player **is** two `<video>` nodes. One `src=` on the visible slot blanks the picture on Samsung (spawn still × door dog). Load and `play()` in **hid**. Swap only if `paused === false`. Hide vis **first**, then paint hid. Walk last-frame stays up until dest breath is actually playing.
+The living player **is** two `<video>` nodes. One `src=` on the visible slot blanks the picture on Samsung (spawn still × door dog). Load and `play()` in **hid**. Swap only if `paused === false`. Hide vis **after** the arrive still. Walk last-frame stays up until dest breath is actually playing.
 
-Never `src=` on the layer the player is looking at.
+Never `src=` on the layer the player is looking at. `kick` / `joinEnded` in [scripts/dom-swap.mjs](scripts/dom-swap.mjs).
 
 Two slots. Load and `play()` in the **hidden** slot. Swap **only** if `paused === false`.
 
@@ -101,19 +105,14 @@ kick:
 If you paint **before** `play()`, you overlay a black frame on the still = dead plate.
 
 `genRef` increments on every new kick. Any callback from a previous load is ignored (tap during a load).
-Failed `play()` → `walkingRef = false`, keep the still, taps still live.
+Failed `play()` → `failSafe`: still opaque, videos 0, taps still live.
 
 Fade is **CSS opacity only**:
 
 ```
-fade = 0     same clip
-     = 0     walk ended → dest breath (poseEnd === poseStart)
-     = 0     entering an enter
-     = 0     leaving an enter     ← curtain ≠ dissolve
-     = 280   otherwise (walks tap only, same still under)
+fade = 0     same clip / sprint joinEnded / enter in or out
+     = 280   hall walk tap only, same still under
 ```
-
-`el.style.transition = ms ? opacity ${ms}ms linear : none`
 
 **Law:** never animate opacity between two frames that have a dog in two places.
 
@@ -123,9 +122,7 @@ Walk ended: **cut 0 ms**. Order is the whole law:
 2. **Then** hide the walk video
 3. Then dest breath
 
-`paintVid(false)` while still is still spawn = the Frost 15s clone. The repo said “swap still” but the player hid the video first. Hide **after** the still, never before.
-
-Frost rec 15s: walk last (teal) × spawn still (center) = **two Bolts**. Cause = still never left spawn during the walk, then 280 / hole. Arrive still first. Breath-A first = last = at-A, **one** dog. If breath-A is spawn, Smoke `graph.breath_is_spawn` / `clone.two_dogs` — do not hang.
+`paintVid(false)` while still is still spawn = the Frost 15s clone. Hide **after** the still, never before.
 
 ### Tap chain (walk — not recook)
 
@@ -153,33 +150,11 @@ A hole in this order = the clone you filmed (Frost / Samsung). Not “recook pre
 | enter ended | hide enter **0 ms** | spawn₂ opacity 1 | **1** immediate | dest breath-spawn **under** the veil |
 | curtain | veil **500 ms → 0** | spawn₂ stays | shutter lifts | dest breath already there |
 
-`DISSOLVE_MS` is for walks. **Not** enter.
-`CURTAIN_MS` is **exit** of enter only.
+`DISSOLVE_MS` is for walks. **Not** enter. `liftVeil` = hall Enter **only** (double rAF).
 
 Forbidden: 500 ms fade of **enter video** (dog left) × **dest breath** (dog center) → two ghosts.
 
-At `ended`, what you see = **empty veil of that door**. Under it: spawn₂ already. The enter dog is gone **before** the fade. No clone.
-
-### Double rAF before the curtain
-
-```
-veil.src = empty still of THAT door   // teal-empty or gold-empty
-veil.style.transition = none
-veil.style.opacity = 1
-requestAnimationFrame(() => {
-  requestAnimationFrame(() => {
-    veil.style.transition = opacity 500ms linear
-    veil.style.opacity = 0
-  })
-})
-```
-
-One `rAF` is not enough: the browser can skip the `opacity = 1` paint and start the transition from 0 → 0. **No curtain.**
-Double `rAF` = paint veil at 1 **then** start 1 → 0.
-
-Hide enter at **0 ms** (before the rAF). Paint dest at **0 ms** under the veil. Dest is already Hall′. Veil lifts onto a posed dog.
-
-Set `veil.src` **before** opacity 1. Door A → `stills/seuil/teal-empty.jpg`. Door B → `stills/seuil/gold-empty.jpg`. Hardcoding teal on a gold enter = FAIL.
+Set `veil.src` **before** opacity 1. Door A → `stills/seuil/teal-empty.jpg`. Door B → `stills/seuil/gold-empty.jpg`.
 
 ## 4. Still.src / opacity by state
 
@@ -195,31 +170,11 @@ Set `veil.src` **before** opacity 1. Door A → `stills/seuil/teal-empty.jpg`. D
 | after 500 ms | spawn₂ | **1** | 0 | dest breath |
 | play() failed | current pose | **1** | 0 | hidden |
 
-**During enter: still opacity 0.** Else still atA (dog left) + enter video = engine clone, even if the cook is clean.
-On ended: still = `spawn` of **room 2** *before* the veil drops. Hall′ is already behind the curtain.
-Dest breath = loop of that **same** still (posed, not a walk). If i2v walks, freeze the still ([HANG.md](HANG.md)).
-Always a still under the videos. Never a black hole — except enter, which hides it on purpose.
+**During enter: still opacity 0.** Always a still under the videos. Never a black hole — except enter, which hides it on purpose.
 
 ## 5. Hits — containPlate 40 / 20 / 40
 
-Not a canvas. No rings.
-
-```
-pointerdown on stage
-  if walkingRef → return
-  plate = containPlate(stage width, height)   // 9:16 box inside the dvh
-  plate.x += stage.left; plate.y += stage.top
-  nx = (clientX - plate.x) / plate.w
-  ny = (clientY - plate.y) / plate.h
-  outside 0..1 → miss          // letterbox = void, not a door
-  nx < 0.4 → A                 // teal, left 40%
-  nx > 0.6 → B                 // gold, right 40%
-  else     → miss              // center 20%
-  edgeFor(pose, hit)           → walk
-  else enterFor(room, pose, hit) → enter
-```
-
-`containPlate` = letterbox 9:16 (`object-contain` math). Hits on the **picture**, never the black bars.
+Not a canvas. No rings. Letterbox = void. `nx < 0.4` → A. `nx > 0.6` → B. Else miss.
 
 `spawn` has no enter. `atA` tap A = enter if `ENTER[hall].A` exists, else stay.
 
@@ -229,11 +184,9 @@ pointerdown on stage
 - Swap **only** if `play()` succeeded (`paused === false`).
 - `muted=true` **and** `playsInline=true` **before** `play()`.
 - Pause the outgoing **after** the swap.
-- Enter: `loop=false`. Dest breath: `loop=true`, `currentTime=0`.
-- Paint dest at **0 ms** (under the veil). No 280 dissolve on this join.
-- Both videos **hidden** until the first clip actually plays.
-- Preload every clip + still + **enter** in `useEffect` (off-DOM `<video>` / `Image`). Enter is not in `Object.values(room.clips)` — preload it from `ENTER{}`.
-- Hide vis **after** the arrive still (Frost). One `flushOpen` per plate if Lane (PLAY).
+- Sprint `joinEnded`: fade **0**.
+- Hide vis **after** the arrive still (Frost).
+- One `flushOpen` per plate if Lane ([PLAY.md](PLAY.md)).
 
 ## 7. Assets the engine **requires**
 
@@ -242,55 +195,16 @@ pointerdown on stage
 | `films/enter-hall-a.mp4` | plate A | 720×1280, H264 yuv420p +faststart, **no audio**, first = atA, last = full teal, 1 dog, ~6s |
 | `stills/at-a.jpg` (room 1) | first / atA underlayer | **same pixels** as first of enter |
 | `stills/a/spawn.jpg` | plate B / dest still | **same depth** as spawn₁, dog center, 2 doors |
-| `films/a/breath-spawn.mp4` | dest idle | first = last = spawn₂, loop, feet glued (freeze if it walks) |
-| `stills/seuil/teal-empty.jpg` | veil A | **0 dogs**, same oval as last(enter A) |
+| `films/a/breath-spawn.mp4` | dest idle | first = last = spawn₂, loop, feet glued |
+| `stills/seuil/teal-empty.jpg` | veil A | **0 dogs** |
 | `stills/seuil/gold-empty.jpg` | veil B | **0 dogs**, only if door B branches |
 
-If first(enter) ≠ still atA → pop on tap.
-If last(enter) reveals Hall′ → Imagine already cloned; the engine cannot repair it.
-If the veil has a dog → ghost for 500 ms.
-If dest breath **walks** → he re-crosses Hall′ after the curtain.
 All srcs: `file?${PACK}`. Bump PACK after every replace.
 
-## 8. One plate
+## 8–10. Pack, graph, cannot save
 
-Every mp4 / jpg: **720×1280**, `object-contain`.
-A 784×1168 clip = lock-off dead (the frame jumps). Center-crop 9:16 then scale.
-Encode: [HANG.md](HANG.md).
-
-## 9. PACK + ENTER map
-
-```
-ENTER[hall].A = { to: "a", clip: enter-hall-a }   // not in room.clips
-onEnterEnded:
-  roomRef = played.to     // FIRST
-  poseRef = "spawn"
-  startBreath("spawn")    // pack() now = dest
-```
-
-If breath runs before the switch, hall spawn plays under the veil.
-After hanging a new mp4/still, bump `PACK` (`u26` → `u27`) or the browser keeps the old clip.
-
-## 10. What the engine **cannot** save
-
-- Clone baked **in** the mp4 (first left + last center)
-- Spawn still that never left center during the walk (`showStill` forgotten)
-- A single `<video>` “to simplify”
-- Depth spawn₂ ≠ spawn₁ (fake travelling)
-- Black silhouette, face, 3/4 in the cook
-- Hall′ leak inside the 6s Imagine
-- Gold enter with a teal veil
-
-That is the plate. The player does not interpolate.
-
-## What the DOM **does** guarantee
-
-- never a black hole ([FAIL.md](FAIL.md): no file = no kick, graph shrinks)
-- never a black hole (still always there, except enter off on purpose) — [HOLD.md](HOLD.md): `stillEnd` same frame at `ended`, dissolve ≤ 280ms, preload breath before walk ends
-- never two videos fighting (pause outgoing)
-- never enter from spawn
-- curtain without overlaying two dogs (hide enter 0 + empty veil + dest under)
+Enter is not in `room.clips`. `ended(enter)` switches `roomRef` **first**. A clone baked in the mp4, a single `<video>`, depth spawn₂ ≠ spawn₁ — the player does not interpolate.
 
 ## One line
 
-Two slots, load in the shadow, still spawn→at-A **during** the walk, hide walk after, cut 0, breath pinned both ends. A `src=` on the visible or a hide too early = two dogs — even with a PASS pack. Enter: cut 0, still off, empty veil of **that door** 500 ms (double rAF) over spawn₂ already posed. **DOM = who is opaque. HOLD = if we judge. Partition = which reel.**
+Two slots, load in the shadow, still first, hide vis after, cut 0. `dom-swap` chains plates. It does not grade. A `src=` on the visible or a hide too early = two dogs.
