@@ -12,15 +12,11 @@ Runner = [scripts/sprint-transition.mjs](scripts/sprint-transition.mjs).
 ## Density ρ — finger load, not stride speed
 
 ```
-ρ      = N_cues / duration_s          // how often it asks
-ρ_glow = sum(off − on) / duration_s  // how long the path is lit
+ρ      = N_cues / duration_s
+ρ_glow = sum(off − on) / duration_s   // aim 0.15–0.35; ≈1 = farm
 ```
 
-A calm where he already runs hard with **1** glow = ρ low, film alive. OK. `m` wakes by **more taps**, not a blurrier dog.
-
-If `ρ_glow ≈ 1` the plate is one continuous glow → Hit farm. Aim `ρ_glow` **0.15–0.35**.
-
-Windows must be **disjoint** after coyote cut. Two cues overlapping → ρ lies → Smoke FAIL.
+Windows **disjoint**. Two cues overlapping → Smoke FAIL.
 
 | Palier | N | Durée | ρ | min `on→on` |
 |---|---|---|---|---|
@@ -29,39 +25,54 @@ Windows must be **disjoint** after coyote cut. Two cues overlapping → ρ lies 
 | peak | 2–3 | 8–10 s | **0.22–0.35** | **≥ 0.8 s** |
 | decay | 0–1 | 8–12 s | **0–0.10** | — |
 
-Mechanical floor: `on_{i+1} − on_i` ≥ coyote + 0.05 (~0.25 s). In practice **0.8 s+** or the eye cannot chain two leans.
+`ρ > 0.40` = tapping. `ρ < 0.05` except decay = not a sprint. Quiet cannot serve peak ρ. Clean minute ≈ **8–9 cues**.
 
-`ρ > 0.40` on lock-off back = tapping, not reading Bolt.  
-`ρ < 0.05` except decay = they forget it is a sprint.
-
-Allowed density follows the **bone**. Served density = `min(os, m)`. Quiet 0–8 s cannot serve peak ρ even if `m` is high.
-
-Clean ~60 s ≈ **8–9 cues / minute**, not 40 notes.
-
-### Playtest (calibrate ρ, not C)
-
-- Hits without looking → `ρ_glow` too high or windows too wide
-- Miss « I didn’t see » → ρ OK, glow weak / gesture not back-readable
-- Early streak → plates too dense, `on` too soon after the last
-- Calm boredom → **lengthen** the clip, do not add a 2nd cue
-
-### Smoke density (chart honesty, not Hamming)
+### Smoke density
 
 ```
 FAIL  N ≥ 4 on ≤ 10 s
 FAIL  two on < 0.6 s
-FAIL  sum(off−on) > 0.45 * duration     // plate « lit »
-FAIL  overlapping windows after coyote
-FAIL  peak plate with N=1 and duration > 12 s
+FAIL  sum(off−on) > 0.45 * duration
+FAIL  overlapping windows
+FAIL  peak with N=1 and duration > 12 s
 ```
+
+## Readability `L` — the cue must still be the film
+
+Not « pretty clip ». **Does gesture + glow occupy the window we declared.**
+
+```
+L_i = T_readable / (off − on)
+L   = Σ T_readable / Σ (off − on)
+```
+
+`T_readable` = time in `[on, off]` where **both**: (1) the gesture classifies in a blink, back visible (pose / L / R / fork) (2) glow on the **right side**, large enough, not under the dog, not dust.
+
+Lisibility ≠ density. Dense + `L` rotten = glows everywhere, zero gesture.
+
+Kills `L`: glow 1 s / lean 4 frames · glow late · yaw 40 · both sides shine (`L = 0`) · glow glued to the 3–4 % bar · path center vs tap left.
+
+| `L` | Verdict |
+|---|---|
+| ≥ **0.75** | PASS honesty |
+| 0.55–0.75 | gray: nudge `on/off` 2–4 frames, then recook |
+| < **0.55** | FAIL `cue.honesty` — do not Hang |
+| L/R ambiguous | FAIL now, `L` forced 0 |
+
+Year-0: **3 frames** in `[on, off]` (start, mid, end). Gesture + glow side yes/no. `T_readable ≈ (n_yes / 3) × (off − on)`. No classifier.
+
+Coyote is **outside** `L` (gesture dead, finger grace). Decay 0 cue: `L` N/A, not an honesty FAIL.
+
+ρ high + `L` low = tapping. ρ low + `L` high = perfect calm. Late mass but `L` high to `off` → coyote. `L` dies before `off` → wrong `off`.
+
+**No ring if `L` is low.** Recook or nudge. Chrome is not in the numerator.
 
 ## Sprint law
 
-**The mp4 rate = 1. The sprint rate = ρ of the next reel.**  
-`m` = follow the dog. `t_run` = age of the storm. Peak = both. Year-0: pose, L, R, fork.
+**The mp4 rate = 1. The sprint rate = ρ of the next reel.** `L` says the chart is real. Year-0: pose, L, R, fork.
 
 ```
-early_grace_s 0.08 · coyote 0.18–0.28 (default 0.22)
+early_grace_s 0.08 · coyote 0.18–0.28
 Hit m += 0.1 · Miss m *= 0.7 floor 0.05 + peakBan
 kick / joinEnded: playbackRate = 1
 ```
@@ -70,8 +81,8 @@ Time `[on, off]` **after** the clip. Glow **in** the encode. Law 0: [COOK.md](CO
 
 ## Refuse
 
-TAP bar · live Imagine · peak as a tap · `rate = f(m)` · walk-A as a Lane · two cues at once.
+TAP bar · live Imagine · peak as a tap · `rate = f(m)` · walk-A as a Lane · two cues at once · Hang a plate with `L < 0.55`.
 
 ## One line
 
-**ρ calm ≈ one gesture / 12 s; peak ≈ one / 3 s; never two at once.** Past that it is tap-tap. Below (except decay) it is not a sprint.
+**`L` = fraction of the window where you still see the gesture and the right glow.** Above ~0.75 you have a chart. Below you have timestamps on a mute film.
