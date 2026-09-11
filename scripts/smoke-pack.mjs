@@ -173,7 +173,7 @@ function expectDur(kind, file) {
   const b = basename(file).toLowerCase();
   if (kind === "enter") return [4, 8];
   if (kind === "breath") return b.includes("spawn") ? [4, 8] : [7, 13];
-  if (kind === "walk") return [5, 8];
+  if (kind === "walk") return [6, 9];
   return null;
 }
 

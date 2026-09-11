@@ -219,7 +219,7 @@ for (const [rel, first, last] of walks) {
         first,
         last,
         dest: join(dir, rel),
-        seconds: 6,
+        seconds: 8,
       });
       if (!smoke(rel, "walk")) throw new Error("smoke walk");
       ok = true;

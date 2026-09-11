@@ -21,7 +21,7 @@ Every new conversation. Do not wait to be asked.
 
 **`last_frame` is an aim, not a paste.** The API sends the arrive still. Imagine *steers*. If spawn is 0.19 and at-A is 0.45, the jump is too far — it keeps the start. Last picture = spawn. `graph.last_not_official`. Not an unplugged cable.
 
-Keep the size step small: spawn **0.22–0.32**, sill **0.35–0.40**, **Δh/H < 0.12**. Then 6s. If last still = spawn after cap 2 → stock, tap stays.
+Keep the size step small: spawn **0.22–0.32**, sill **0.35–0.40**, **Δh/H < 0.12**. Then 8s. If last still = spawn after cap 2 → stock, tap stays.
 
 **`reference_to_video` is not first/last.** The images are *references*, not frames. Imagine *inspires* a walk. It does **not** paste the gold still as the last picture. Walk-B then overshoots into the oval → size pop. **Illegal for walks and enter.**
 
@@ -132,14 +132,14 @@ Floor 1 films → `films/` (the 5). Floor 2 = walk-A-B / B-A if asked. Floor 3 =
 | breath-spawn | image_to_video on spawn | spawn | spawn | 6s | in-room: loop, feet glued |
 | breath-A | image_to_video on atA | atA | atA | 10s | in-room: loop, feet glued |
 | breath-B | image_to_video on atB | atB | atB | 10s | in-room: loop, feet glued |
-| walk-spawn-A | API last_frame spawn→atA | spawn | atA | **6s** | arrive ~2s then HOLD. No round trip |
-| walk-spawn-B | API last_frame spawn→atB | spawn | atB | **6s** | idem |
-| walk-A-B | API last_frame atA→atB | atA | atB | **6s** | **floor 2** — only if asked |
-| walk-B-A | API last_frame atB→atA | atB | atA | **6s** | **floor 2** — only if asked |
+| walk-spawn-A | API last_frame spawn→atA | spawn | atA | **8s** | arrive ~2s then HOLD. No round trip |
+| walk-spawn-B | API last_frame spawn→atB | spawn | atB | **8s** | idem |
+| walk-A-B | API last_frame atA→atB | atA | atB | **8s** | **floor 2** — only if asked |
+| walk-B-A | API last_frame atB→atA | atB | atA | **8s** | **floor 2** — only if asked |
 
 Walk prompt slot (every walk):
 
-> Lock-off. 6 seconds. He walks two steps to the door (~2s) and HOLDS. Do not walk back to spawn. last_frame locks the last picture, not the path — leftover seconds = round trip = FAIL. FULL-white GSD, teal collar, back the whole clip. No 3/4, no morph.
+> Lock-off. 8 seconds. He walks to the door (~5s) and HOLDS (~3s). Do not walk back to spawn. last_frame locks the last picture, not the path — leftover seconds = round trip = FAIL. FULL-white GSD, teal collar, back the whole clip. No 3/4, no morph.
 
 ### Breath — two laws
 
@@ -180,7 +180,7 @@ Hang: [GROK.md](GROK.md) + [ENGINE.md](ENGINE.md). Open = breath-spawn. No chrom
 - First frame ≠ start still / last frame ≠ arrive still (dissolve will not fix this)
 - Cooked as `image_to_video` on one still (violates Law 0)
 - Cooked as chat `reference_to_video` (not last_frame)
-- 10s walk that arrives then returns to spawn (`graph.walk_return`) — recook **6s**, do not hang a trim of the loop
+- 10s walk that arrives then returns to spawn (`graph.walk_return`) — recook **8s**, do not hang a trim of the loop
 
 ## Enter — second room on a door (after both packs exist)
 

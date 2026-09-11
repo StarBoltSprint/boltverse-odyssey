@@ -24,7 +24,7 @@ The official still for the pose already exists. The clip is judged **against** i
 |---|---|
 | breath-spawn | ~6s |
 | breath-at | ~10s |
-| walk | **6s** (5–8). 10s = leftover → round trip |
+| walk | **8s** (6–9). 6s = still mid-hall. 10s = leftover → round trip |
 | enter | ~6s |
 
 Off-plate = the player jumps at swap. FAIL `plate.size` / `plate.audio` / `plate.duration`. Do **not** call vision.
@@ -142,7 +142,7 @@ A walk never returns home. One body, spawn → sill, stop. No loop inside the mp
 
 ```
 mid-clip (t > 40%) ≈ spawn still → FAIL graph.walk_return
-`last_frame` sticks the **last picture**, not the journey. 10s: arrive at 2s, empty 8s → he walks home then last_frame yanks him back. Mid ≈ spawn = `graph.walk_return` (true, not vapor). Recook **6s**. Hold at the door. Do not hang a 10s loop and trim.
+`last_frame` sticks the **last picture**, not the journey. 10s: arrive at 2s, empty 8s → he walks home then last_frame yanks him back. Mid ≈ spawn = `graph.walk_return` (true, not vapor). Recook **8s**. Arrive ~5s, hold. Hold at the door. Do not hang a 10s loop and trim.
 loop=false. ended → breath-arrive, never replay the walk.
 ```
 
