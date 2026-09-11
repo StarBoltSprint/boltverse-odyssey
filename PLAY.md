@@ -6,84 +6,57 @@ Distinct from **(2)** — citadel hall: menu-picture, lock-off, zero chrome. Thi
 
 A door with `kind: sprint` ([LINKS.md](LINKS.md)) **hands off** to this disc. Cook: [COOKLANE.md](COOKLANE.md).
 
-**The Lane is not a tiny citadel.** Center of the minute = plates + bone. Hall poses (spawn / atA / breath-A) live **only at the edges** (enter / exit / Recall → decay).
+**The Lane is not a tiny citadel.** Center of the minute = plates + bone. Hall poses live **only at the edges**.
 
 ## Core
 
-- **Imagine-video-first** — the picture is the clock. Tap / dodge what Bolt *does* in the encode.
-- **Momentum chaining** — `m` wakes the world *in* the image (not XP). Sparse → dense.
-- **Resonance** = how much (`m`). **Glow** = when. Crystal bar, bottom ~3–4%. **Never** when-to-tap.
-- Luminous path in front of the paws (grows with `m`). Corridor of gestures.
+- Picture is the clock. Tap what Bolt *does* in the encode.
+- `m` wakes the world (not XP). Glow = when. Resonance bar never says when-to-tap.
 
 **`m` wakes the world. The tap exists only if it matches a real Bolt gesture already in the shot.**
 
+## Year-0 verbs (back, 9:16)
+
+Pose, left, right, fork. That is all the back gives. Alphabet: [COOKLANE.md](COOKLANE.md).
+
+| Gesture | Tap |
+|---|---|
+| paw strike / pose | lower-center |
+| lean L | left 40 % |
+| lean R | right 40 % |
+| fork (ground splits) | one side; other = Miss |
+
+Peak = earned **state**, not a tap. Decay = 0 cue. Threshold = floor 3.  
+1–3 cues per 6–15 s plate. More than 3 glows in 10 s = mash, FAIL honesty.
+
+No jump / spell / combo unless it is in the paws and the glow. Yaw 40° = FAIL lock. Straight run → no L/R cue. Do not invent `lean-L` in JSON if the clip did not lean.
+
+`m` changes **density**, not the verb names. No super-jump unlocked by `m`.
+
 ## Four nested clocks (one tap at a time)
 
-| # | Layer | = | Where |
-|---|---|---|---|
-| 1 | **Plate** 6–15s | clip + cues on `currentTime` | **Lane center** |
-| 2 | **Room poses** | breath ↔ walk A/B | **Hall**, and Lane **edges** only |
-| 3 | **Bone ~60s** | calm → lean → peak via `m` (peak ≠ a 5th door) | **Lane center** |
-| 4 | **Citadel enter** | rare / paid → always breath-spawn Hall′ | edge |
-
-Mixing layers → loader / cutscene. One layer per tap. Inside the minute you chain **plates**, not atA.
+| # | Layer | Where |
+|---|---|---|
+| 1 | Plate 6–15s | Lane **center** |
+| 2 | Hall poses | Hall, Lane **edges** only |
+| 3 | Bone ~60s (`m`) | Lane **center** — peak ≠ a 5th door |
+| 4 | Citadel enter | edge |
 
 ## Picture-time
 
-Master clock = `video.currentTime` **while the video is playing**.
+`video.currentTime` while playing. A cue at 4.2 s is 4.2 s of the **mp4**. Time cues **after** the clip, on the real glow. Hesitate 300 ms → recook, do not widen.
 
-Not `Date.now`. Not the cook wall clock. Not rAF alone — rAF **paints**; it does not **count** the beat.
+Hit ≤80 ms pre-`on` through `off`. Coyote 180–280 ms. Early ignore. Miss never zeros `m`. Dead tap if no gesture.
 
-Phase = `f(pictureTime)`: cues `on/off`, coyote, glow. Not a second “gameplay” timer.
-
-A cue at 4.2 s is at **4.2 s of the mp4**, not “4.2 s after the tap”.
-
-**Hold** (clock frozen, picture may stay): Pause, tab hidden, `waitingOnCook` (never on the 9:16), `play()` fail.
-
-## Cue sheet + grade
-
-`Plate = clip + duration + cues[] + stillStart/End`  
-Cue `on/off` = media seconds. Glow **in the encode** = the chart.
-
-Cook the **gesture first**, then write `cues[]`. Bolt turns right → tap right. Straight run → **no** L/R cue. A random chart on a straight clip = FAIL.
-
-A tap with no Bolt motion in that window = **dead** — do not count, do not overlay an action.
-
-Exactly **one** verdict per cue: Early | Hit | Late | Miss | Idle
-
-- wrong side = Miss
-- coyote ~**180–280ms** after `off`
-- ≤80ms pre-`on` = Hit
-- Hit ↑ `m` ; Late = no peak / no enter-arm ; Miss λ`m` (never 0) + peak ban ; Early ignore (no farm)
-- Idle = no-gesture buffer / decay only
-
-`m` picks the **next** plate from a cooked palette (calm / lean / peak / decay). Imagine is not on the tap.
-
-## UI / gestures
-
-Default: **zero words**. **No fill-bars. No Guitar Hero. No NOW.**  
-Playtest too hot → **recook the glow**. [DONT.md](DONT.md) §7.
-
-## PCG film-strip (anti-3D)
-
-**role-WFC** 1D ~60s: calm · lean-L/R · fork · peak · decay.  
-Not 60 s as **one** clip (no `m` steps).
-
-Prefetch = **stock only**. Never SuperGrok on maybe-enter or as `m` rises.
-
-## Ship gate
-
-Smoke PASS/FAIL before Hang. Sprint plates: **cue honesty** (glow readable; gesture matches the tap). FAIL → decay. `railsVersion` on PASS.
+`m` picks the next cooked plate (calm / lean / peak / decay). Imagine is not on the tap.
 
 ## Hard fences
 
-- If the bar tells you **when** to tap, Smoke failed the plate.
-- A cue with no matching gesture = FAIL. Dead tap.
-- Peak is earned. Peak is not a door.
-- Metronome = Bolt. `m` = how much. Glow = when.
-- Do not cook walk-A and call it a Lane ([COOKLANE.md](COOKLANE.md)).
-- Hall poses do **not** run the middle of the minute.
+- No TAP bar. Recook glow, not UI. [DONT.md](DONT.md) §7.
+- Peak is not a door and not a tap.
+- Do not cook walk-A and call it a Lane.
+- Hall poses do not run the middle of the minute.
 
 ## One line
 
-**`m` wakes the world. The tap exists only if it matches a real Bolt gesture already in the shot.** Calm first. Success = faster, brighter. Miss = it falls asleep. Never a button without the dog.
+**Pose, left, right, fork — that is all the back gives.** `m` chains livelier plates. It does not add buttons.
