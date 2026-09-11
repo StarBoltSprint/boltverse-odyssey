@@ -71,6 +71,8 @@ The stills **are** the frames. [COOK.md](COOK.md).
 
 Never `image_to_video` a walk or enter on a single still. Breath / calm / decay = the only legal `first = last`.
 
+Lane lean/peak is a **chain**, not 4 photos from `lock/bolt-back`. `last(n)` file **is** `first(n+1)`. Never 4 independent leans. Wobble (center → side → center) = FAIL. Hung path: next `from` = current `to`. Opening calms = fridge. [COOKLANE.md](COOKLANE.md)
+
 ## Law 1 — floors
 
 Hall default = floor 1: 3 stills + 5 films, no Enter. Lane default = 10 reels + decay, cues after scrub. Visitor = stock `/`.
