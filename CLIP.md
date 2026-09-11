@@ -22,8 +22,7 @@ The official still for the pose already exists. The clip is judged **against** i
 
 | kind | window |
 |---|---|
-| breath-spawn | ~6s |
-| breath-at | ~10s |
+| breath (all) | **~6s** |
 | walk | **10s** (8–12). Walk the whole time, arrive ~8s, hold. Empty leftover = round trip |
 | enter | ~6s |
 
@@ -61,12 +60,12 @@ Frames: **t=0, mid, last**. Vision (Grok + [SMOKE.md](SMOKE.md) C). Output = a *
 Immediate FAIL:
 
 - face, muzzle, ¾, profile at spawn
-- 2nd dog / ghost
+- 2nd dog / ghost (`clone.two_dogs`) — **including breath-A/B at t=0**
 - black silhouette
 - text / UI / 3rd door
 - teal or gold cropped (except last 1–2s of **enter**, where the oval may eat the frame)
 - paws sliding down, ceiling falling (dolly / tilt)
-- breath: a step, the hall advancing
+- breath: a step, the hall advancing, a spawn dog next to the sill dog
 - enter: Hall′ appearing *inside* the 6s, dog walking to center
 
 Typical PASS: back, 4 paws, readable white, 2 doors (walk/breath), lock identical to sibling stills.
@@ -133,6 +132,24 @@ He ends already at the arrive still. No walk-back to center.
 ```
 
 Still FAIL → drop the edge (tap = stay). Never write the clone into `films/`.
+
+## Breath clone.two_dogs (in the mp4)
+
+Not the splice. Imagine draws **spawn + door** inside breath-A.
+
+t=0, mid, last: teal dog + center dog. Hash A+B often **PASS** (lock-off hall). Layer **C** = `FAIL clone.two_dogs`.
+
+Cause: LAW = two portals + lower-third (**spawn** grammar) + still at-A (dog left). `last_frame` does not paste. It **completes** the hall.
+
+Hooks `breathLine(pose)` must pin:
+
+```
+ONE dog. Already at THIS sill. NEVER a dog at center.
+Do not complete the hall toward spawn. 6s. Feet glued.
+```
+
+No spawn still in the breath call. No 10s empty time.
+Cap 2 → ffmpeg loop of the at-still (decay, **not** a living PASS).
 
 ## Walk is one trip (hard)
 
@@ -201,4 +218,4 @@ That is not a walk dash. Dest breath-A showed a spawn body on top of the arrive 
 - `joinMs(walk, breath-A) = 0`
 - Hide walk video, then breath
 - breath-A `first = last = at-A` — if t=0 is spawn, `graph.breath_is_spawn`
-- `clone.two_dogs` on breath t=0 — do not hang
+- `clone.two_dogs` on breath t=0 — do not hang. If the clone is **in** the mp4 (t=0 and mid), that is the cook, not ENGINE — recook or gel the still.
