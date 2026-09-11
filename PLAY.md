@@ -26,6 +26,16 @@ Idle-decay not during an open cue. Quiet: 6 Hits before 8 s still serve **calm**
 
 `pickNext` may only pick a plate whose `from` = current `to`. Hung year-0 is a **path of stations**, not a drawer shuffle. L1 then R1 (both from C) is illegal. [COOKLANE.md](COOKLANE.md)
 
+## Judge — tap counts, clock of THIS plate
+
+Year-0 `kind: tap`. Pointer down in the window = HIT. Swipe left = HIT. Early before `at − win` = **ignore**, not miss. Auto-miss only after `at + win`.
+
+**Arm:** do not judge until this plate `currentTime < 1.2`. Enter leftover time → MISS at 0 s = `judge.stale`.
+
+Swipe-only with a tapper = every run F. Do not do that.
+
+Pop: HIT / LATE / MISS. Never TAP / NOW. Never a fill-bar. Never a cyan rectangle in the encode.
+
 ## Join — 0 ms only if last = first
 
 Sprint fade = **0**. That cut is legal **only** if `last(n)` is the same photo as `first(n+1)`.
@@ -37,12 +47,14 @@ Files do not kiss → do not Hang. Recook the chain. Smoke: `lane.joint`.
 
 Wobble (center → side → center in one plate) is not a join bug. It is `lane.wobble`. One plate = one act he **keeps**.
 
+Last frame of n must still be a **gallop**. A standing last is `lane.slow` at the join.
+
 ## Pace — baked, not `playbackRate`
 
 Hung success path **accelerates**. `pace[n+1] >= pace[n]`.  
 A standing restart, or a shorter stride than the plate before, while the player hit every tap = `lane.slow`. Recook that plate faster. Do **not** pitch the mp4.
 
-Decay is the only legal slow-down.
+Decay is the only legal slow-down. Sitting decay = fridge. Miss → hall.
 
 ## Sound — two buses, film stays mute
 
@@ -58,4 +70,4 @@ Early / idle = silence. HOLD mutes both. Do not pitch with `m`. Missing ogg → 
 
 ## One line
 
-**Enter poses the dog; first hung plate makes him run; `m` and `t_run` are born at zero when hid plays.** Join 0 ms only if last = first. Clean run only goes faster. The film stays mute.
+**Enter poses the dog; first hung plate makes him run; `m` and `t_run` are born at zero when hid plays.** Join 0 ms only if last = first and last is still running. Clean run only goes faster. Tap in the window counts. The film stays mute.
