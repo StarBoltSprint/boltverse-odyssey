@@ -15,6 +15,12 @@ const LAW = [
   "No text, no UI, no second dog, no face to camera, no third door, no dolly.",
 ].join(" ");
 
+const LANE_LAW = [
+  "Photoreal still or clip, vertical 9:16, 720x1280.",
+  "ONE FULL-white German Shepherd, ZERO black on the dog, teal collar, BACK to camera, two ears visible, locked-off camera.",
+  "Crystal-ice forest path. NO citadel. NO portals. NO HUD. NO text. NO second dog. NO face. NO dolly.",
+].join(" ");
+
 function key() {
   const k = process.env.XAI_API_KEY;
   if (!k) throw new Error("XAI_API_KEY missing — use --dry-run");
@@ -66,10 +72,7 @@ async function download(url, dest) {
 }
 
 function encodePlate(src, dest) {
-  const vf =
-    extname(dest) === ".mp4"
-      ? "scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280"
-      : "scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280";
+  const vf = "scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280";
   const args =
     extname(dest) === ".mp4"
       ? ["-y", "-i", src, "-vf", vf, "-c:v", "libx264", "-pix_fmt", "yuv420p", "-an", "-movflags", "+faststart", dest]
@@ -127,23 +130,55 @@ function breathLine(pose) {
   ].join(" ");
 }
 
-export async function imagineStill({ root, slot, pose, dest, spawnPath }) {
+function laneClipLine(pose) {
+  const p = String(pose || "");
+  const side = /L/i.test(p) ? "LEFT" : /R/i.test(p) ? "RIGHT" : "fork";
+  const act = p.startsWith("lean")
+    ? "ONE act: the ice FORKS. He TAKES the " +
+      side +
+      " vein and STAYS. cx moves and HOLDS. Glow on that vein. NEVER wobble back to center. NEVER keep running straight down the middle."
+    : p === "fork"
+      ? "ONE act: he CUTS from one vein to the other. Still back. Glow on the chosen vein."
+      : "Gallop forward on the ice. Standing or running four paws. NEVER sit. NEVER howl.";
+  return [
+    LANE_LAW,
+    "He GALLOPS the whole clip. NEVER sits. NEVER howls. NEVER jumps. NEVER profile. NEVER a second dog.",
+    act,
+    "Last frame is last_frame. World advanced: crystals he passed are gone.",
+  ].join(" ");
+}
+
+function isLanePose(pose) {
+  const p = String(pose || "");
+  return p.startsWith("lean") || p === "fork";
+}
+
+export async function imagineStill({ root, slot, pose, dest, spawnPath, lane }) {
   const lock = join(root, "lock");
   const example =
     pose === "atA" ? "example-at-a.jpg" : pose === "atB" ? "example-at-b.jpg" : "example-spawn.jpg";
-  const refs = [imgRef(join(lock, "bolt-back.jpg")), imgRef(join(lock, example))];
-  if ((pose === "atA" || pose === "atB") && spawnPath && existsSync(spawnPath)) {
-    refs.push(imgRef(spawnPath));
-  }
-  const prompt = [
-    LAW,
-    catalogLines(root, slot),
-    pose === "spawn" ? "Bolt center, both portals readable." : "",
-    pose === "atA" ? "Bolt at the teal LEFT portal. Gold still visible on the right." : "",
-    pose === "atB" ? "Bolt at the gold RIGHT portal. Teal still visible on the left." : "",
-  ]
-    .filter(Boolean)
-    .join(" ");
+  const refs = [imgRef(join(lock, "bolt-back.jpg"))];
+  if (!lane) refs.push(imgRef(join(lock, example)));
+  if (spawnPath && existsSync(spawnPath)) refs.push(imgRef(spawnPath));
+  const prompt = lane
+    ? [
+        LANE_LAW,
+        catalogLines(root, slot),
+        spawnPath
+          ? "Same forest as the reference still. World ADVANCED — crystals already passed are gone. Same dog, same lock. He is on the path at the destination station."
+          : "Bolt on the center ice path, lower third, both sides of the forest readable.",
+      ]
+        .filter(Boolean)
+        .join(" ")
+    : [
+        LAW,
+        catalogLines(root, slot),
+        pose === "spawn" ? "Bolt center, both portals readable." : "",
+        pose === "atA" ? "Bolt at the teal LEFT portal. Gold still visible on the right." : "",
+        pose === "atB" ? "Bolt at the gold RIGHT portal. Teal still visible on the left." : "",
+      ]
+        .filter(Boolean)
+        .join(" ");
   const body = {
     model: IMAGE_MODEL,
     prompt,
@@ -161,13 +196,15 @@ export async function imagineStill({ root, slot, pose, dest, spawnPath }) {
 }
 
 export async function imagineClip({ root, slot, kind, first, last, dest, seconds = 6, pose }) {
-  const prompt = [
-    LAW,
-    catalogLines(root, slot),
-    kind === "breath"
-      ? breathLine(pose)
-      : "10 seconds. He LEAVES spawn in the first second. Continuous even walk. Never freeze mid-hall. Walks the whole clip. Arrives ~8s, then HOLDS 1–2s. No leftover empty time. No linger-then-warp. No sudden sprint, no last-second warp. Do not walk back to spawn. Do not invent a floor ice disc. Locked-off. ONE full-white GSD. Last frame is the arrive still. No tunnel.",
-  ].join(" ");
+  const prompt = isLanePose(pose)
+    ? laneClipLine(pose)
+    : [
+        LAW,
+        catalogLines(root, slot),
+        kind === "breath"
+          ? breathLine(pose)
+          : "10 seconds. He LEAVES spawn in the first second. Continuous even walk. Never freeze mid-hall. Walks the whole clip. Arrives ~8s, then HOLDS 1–2s. No leftover empty time. No linger-then-warp. No sudden sprint, no last-second warp. Do not walk back to spawn. Do not invent a floor ice disc. Locked-off. ONE full-white GSD. Last frame is the arrive still. No tunnel.",
+      ].join(" ");
   const body = {
     model: VIDEO_MODEL,
     prompt,
@@ -187,8 +224,8 @@ export async function imagineClip({ root, slot, kind, first, last, dest, seconds
   }
   const j = await api("/videos/generations", body);
   let url = j.url || j.video?.url || j.data?.[0]?.url;
-  const id = j.request_id || j.id;
-  if (!url && id) url = await pollVideo(id);
+  const vid = j.request_id || j.id;
+  if (!url && vid) url = await pollVideo(vid);
   if (!url) throw new Error("no video url");
   const raw = dest + ".raw.mp4";
   await download(url, raw);
