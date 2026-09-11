@@ -10,7 +10,7 @@ citadel / paint / salle mousse / fais-moi une citadelle
   → THIS page. Job = node scripts/cook-room.mjs <slot>
 
 biome / sprint / lane / colle forest sur la porte
-  → [BIOMES.md] then [PLAY.md] [LINKS.md]. NOT cook-room.
+  → [BIOMES.md] then [COOKLANE.md] [PLAY.md]. NOT cook-room.
     Fill the row (order 1–7). kind:sprint only after Hang.
 ```
 
@@ -43,7 +43,7 @@ Off-list paint or FAIL ×2 → stock `/`. Do not invent a temple.
 
 Trigger (any language): *play boltverse*, *boltverse odyssey*, *starboltsprint*, *citadel*, *citadelle*, *fais-moi une citadelle*. Then this page. Job = the script. Not chat Imagine.
 
-If they said *biome* / *sprint* / *lane* / *colle forest* — **stop.** [BIOMES.md](BIOMES.md). Do not run cook-room.
+If they said *biome* / *sprint* / *lane* / *colle forest* — **stop.** [BIOMES.md](BIOMES.md) then [COOKLANE.md](COOKLANE.md). Do not run cook-room.
 
 You are wiring a **living-film** room, not a game with UI.
 
@@ -147,8 +147,8 @@ Acts: **breath** (loop, feet glued) | **walk** (one-shot, pose advances at `ende
 | id | act | loop | dur | start → end |
 |---|---|---|---|---|
 | breath-spawn | breath | yes | 6s | spawn → spawn |
-| breath-A | breath | yes | 10s | atA → atA |
-| breath-B | breath | yes | 10s | atB → atB |
+| breath-A | breath | yes | 6s | atA → atA |
+| breath-B | breath | yes | 6s | atB → atB |
 | walk-spawn-A | walk | no | 10s | spawn → atA |
 | walk-spawn-B | walk | no | 10s | spawn → atB |
 | walk-A-B | walk | no | 10s | atA → atB |
@@ -194,9 +194,9 @@ Map by motion, not by filename. Skip still-cook.
 
 Land in `packs/<id>/`. If you must recook a walk/enter: **Law 0**. Run validate-pack then smoke-pack. Give the player URL. No chrome.
 
-Sprint / Lane: first word was biome/sprint → [BIOMES.md](BIOMES.md) [PLAY.md](PLAY.md), not this cook. Door `kind: sprint` hands off ([LINKS.md](LINKS.md)).
+Sprint / Lane: first word was biome/sprint → [BIOMES.md](BIOMES.md) [COOKLANE.md](COOKLANE.md) [PLAY.md](PLAY.md), not this cook. Door `kind: sprint` hands off ([LINKS.md](LINKS.md)).
 
-Biome kits (sprint, offline): [BIOMES.md](BIOMES.md). Do not replace paints. `rome` → ember. `mars` → asteroid.
+Biome kits (sprint, offline): [BIOMES.md](BIOMES.md). Cook: [COOKLANE.md](COOKLANE.md). Do not replace paints. `rome` → ember. `mars` → asteroid.
 
 Clip into films/: [CLIP.md](CLIP.md). Stills PASS first. One clip. Three gates. FAIL never writes.
 
@@ -212,4 +212,4 @@ Gift: [TICKET.md](TICKET.md). 1 still **photo**/day/X. 50 Imagine/week all playe
 
 False help: [DONT.md](DONT.md). No live Imagine on tap, no WASD, no kitchen on the plate, no auto-enter, no TAP bar, no free-text Hall′.
 
-Corridor: [COOKROOM.md](COOKROOM.md). `citadel dusk` → floor 1 without asking ok. Off-list or FAIL ×2 → stock URL.
+Corridor: [COOKROOM.md](COOKROOM.md). `citadel dusk` → floor 1 without asking ok. Off-list or FAIL ×2 → stock URL. Lane: [COOKLANE.md](COOKLANE.md).
