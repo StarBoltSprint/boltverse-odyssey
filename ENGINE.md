@@ -94,7 +94,13 @@ fade = 0     same clip
 
 **Law:** never animate opacity between two frames that have a dog in two places.
 
-Walk ended: **cut 0 ms**. Still = arrive (at-A) **under the last walk frames** (swap still ~0.8s before `ended`). Hide the walk video. Then dest breath of **that** pose. `joinMs` = 0 when `poseEnd === poseStart`.
+Walk ended: **cut 0 ms**. Order is the whole law:
+
+1. Arrive still painted (`at-A` src, complete, opacity 1) **while the walk last-frame still covers it**
+2. **Then** hide the walk video
+3. Then dest breath
+
+`paintVid(false)` while still is still spawn = the Frost 15s clone. The repo said “swap still” but the player hid the video first. Hide **after** the still, never before.
 
 Frost rec 15s: walk last (teal) × spawn still (center) = **two Bolts**. Cause = still never left spawn during the walk, then 280 / hole. Arrive still first. Breath-A first = last = at-A, **one** dog. If breath-A is spawn, Smoke `graph.breath_is_spawn` / `clone.two_dogs` — do not hang.
 
