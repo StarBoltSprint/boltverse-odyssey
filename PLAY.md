@@ -5,7 +5,7 @@ This is engine grammar **(1)**: you *play* Bolt **inside** an Imagine film.
 Distinct from **(2)** — citadel hall. Player: [ENGINE.md](ENGINE.md). Cook: [COOKLANE.md](COOKLANE.md).  
 Hall → Lane joint: [HANDOFF.md](HANDOFF.md).
 
-Clock: [cue-coyote.mjs](scripts/cue-coyote.mjs) · Hold: [video-hold.mjs](scripts/video-hold.mjs) · Reel: [sprint-transition.mjs](scripts/sprint-transition.mjs) (`onLaneTime`) · DOM: [dom-swap.mjs](scripts/dom-swap.mjs).
+Clock: [cue-coyote.mjs](scripts/cue-coyote.mjs) · Hold: [video-hold.mjs](scripts/video-hold.mjs) · Reel: [sprint-transition.mjs](scripts/sprint-transition.mjs) (`onLaneTime`) · DOM: [scripts/dom-swap.mjs](scripts/dom-swap.mjs).
 
 ## Five states
 
@@ -37,6 +37,13 @@ Files do not kiss → do not Hang. Recook the chain. Smoke: `lane.joint`.
 
 Wobble (center → side → center in one plate) is not a join bug. It is `lane.wobble`. One plate = one act he **keeps**.
 
+## Pace — baked, not `playbackRate`
+
+Hung success path **accelerates**. `pace[n+1] >= pace[n]`.  
+A standing restart, or a shorter stride than the plate before, while the player hit every tap = `lane.slow`. Recook that plate faster. Do **not** pitch the mp4.
+
+Decay is the only legal slow-down.
+
 ## Sound — two buses, film stays mute
 
 Hung mp4 is **`-an`**. Two `<audio>` tags beside it. Never the `<video>` track.
@@ -51,4 +58,4 @@ Early / idle = silence. HOLD mutes both. Do not pitch with `m`. Missing ogg → 
 
 ## One line
 
-**Enter poses the dog; first hung plate makes him run; `m` and `t_run` are born at zero when hid plays.** Join 0 ms only if last = first. The film stays mute.
+**Enter poses the dog; first hung plate makes him run; `m` and `t_run` are born at zero when hid plays.** Join 0 ms only if last = first. Clean run only goes faster. The film stays mute.
