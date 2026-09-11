@@ -142,7 +142,7 @@ export async function imagineClip({ root, slot, kind, first, last, dest, seconds
     catalogLines(root, slot),
     kind === "breath"
       ? "Micro breath only. Same pose. Locked-off. Loop. Do not walk. Do not turn."
-      : "8 seconds. He LEAVES spawn in the first second. Continuous even walk. Never freeze mid-hall. Arrives ~5s, then HOLDS. No linger-then-warp. No sudden sprint, no last-second warp. Do not walk back to spawn. Do not invent a floor ice disc. Locked-off. ONE full-white GSD. Last frame is the arrive still. No tunnel.",
+      : "10 seconds. He LEAVES spawn in the first second. Continuous even walk. Never freeze mid-hall. Walks the whole clip. Arrives ~8s, then HOLDS 1–2s. No leftover empty time. No linger-then-warp. No sudden sprint, no last-second warp. Do not walk back to spawn. Do not invent a floor ice disc. Locked-off. ONE full-white GSD. Last frame is the arrive still. No tunnel.",
   ].join(" ");
   const body = {
     model: VIDEO_MODEL,

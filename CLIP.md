@@ -24,7 +24,7 @@ The official still for the pose already exists. The clip is judged **against** i
 |---|---|
 | breath-spawn | ~6s |
 | breath-at | ~10s |
-| walk | **8s** (6–9). 6s = still mid-hall. 10s = leftover → round trip |
+| walk | **10s** (8–12). Walk the whole time, arrive ~8s, hold. Empty leftover = round trip |
 | enter | ~6s |
 
 Off-plate = the player jumps at swap. FAIL `plate.size` / `plate.audio` / `plate.duration`. Do **not** call vision.
