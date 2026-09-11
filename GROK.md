@@ -11,11 +11,13 @@ citadel / paint / salle mousse / fais-moi une citadelle
 
 biome / sprint / lane / colle forest sur la porte
   → [BIOMES.md] then [COOKLANE.md] [PLAY.md]. NOT cook-room.
-    Fill the row (order 1–7). kind:sprint only after Hang.
+    Palette of plates + m. NOT a tiny citadel. NOT walk-A.
+    Hall graph (spawn / atA / breath-A) only at the door.
 ```
 
-**“citadel moss” ≠ “biome moss”.** They share a word, not a recipe.  
-Do not put a hall walk in a Lane. Do not put QTE cues on a hall breath.
+**Sprint law:** `m` wakes the world. The tap exists only if it matches a real Bolt gesture already in the shot. Calm first. Hit = faster, brighter. Miss = it falls asleep. Never a button without the dog.
+
+**“citadel moss” ≠ “biome moss”.** They share a word, not a recipe.
 
 ```
 DEFAULT JOB (hall) =
@@ -43,7 +45,7 @@ Off-list paint or FAIL ×2 → stock `/`. Do not invent a temple.
 
 Trigger (any language): *play boltverse*, *boltverse odyssey*, *starboltsprint*, *citadel*, *citadelle*, *fais-moi une citadelle*. Then this page. Job = the script. Not chat Imagine.
 
-If they said *biome* / *sprint* / *lane* / *colle forest* — **stop.** [BIOMES.md](BIOMES.md) then [COOKLANE.md](COOKLANE.md). Do not run cook-room.
+If they said *biome* / *sprint* / *lane* / *colle forest* — **stop.** [BIOMES.md](BIOMES.md) then [COOKLANE.md](COOKLANE.md). Do not run cook-room. Do not cook walk-A as the sprint.
 
 You are wiring a **living-film** room, not a game with UI.
 
@@ -194,9 +196,9 @@ Map by motion, not by filename. Skip still-cook.
 
 Land in `packs/<id>/`. If you must recook a walk/enter: **Law 0**. Run validate-pack then smoke-pack. Give the player URL. No chrome.
 
-Sprint / Lane: first word was biome/sprint → [BIOMES.md](BIOMES.md) [COOKLANE.md](COOKLANE.md) [PLAY.md](PLAY.md), not this cook. Door `kind: sprint` hands off ([LINKS.md](LINKS.md)).
+Sprint / Lane: first word was biome/sprint → [BIOMES.md](BIOMES.md) [COOKLANE.md](COOKLANE.md) [PLAY.md](PLAY.md). Palette + `m`. Not walk-A. Door `kind: sprint` hands off ([LINKS.md](LINKS.md)).
 
-Biome kits (sprint, offline): [BIOMES.md](BIOMES.md). Cook: [COOKLANE.md](COOKLANE.md). Do not replace paints. `rome` → ember. `mars` → asteroid.
+Biome kits: [BIOMES.md](BIOMES.md). Race cook: [COOKLANE.md](COOKLANE.md). `rome` → ember. `mars` → asteroid.
 
 Clip into films/: [CLIP.md](CLIP.md). Stills PASS first. One clip. Three gates. FAIL never writes.
 
