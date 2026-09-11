@@ -34,6 +34,8 @@ Phase = `f(pictureTime)` — **never** `Date.now`.
 `Plate = clip + duration + cues[] + stillStart/End`  
 Cue `on/off` = media seconds. Glow **in the encode** = the chart. Hitboxes only `on` … `off` + coyote.
 
+Cook the **gesture first**, then write `cues[]`. Bolt turns right → tap right. Straight run → **no** L/R cue. A random chart on a straight clip = FAIL.
+
 Exactly **one** verdict per cue: Early | Hit | Late | Miss | Idle
 
 - wrong side = Miss
@@ -45,11 +47,15 @@ Exactly **one** verdict per cue: Early | Hit | Late | Miss | Idle
 
 Resolve: coyote-of-prev **before** Early-on-next.
 
+What helps **without** saying “now”: glow big in the encode on `[on, off]`; coyote so you are not a robot; Early ignored; Miss never zeros `m`; breath has no cue. Decay / stock if the plate is unreadable — do not “fix” it with chrome.
+
 ## UI / gestures
 
 Default: **zero words**. The picture suggests tap / swipe / hold.  
-Lane option: L/R at the bottom with Resonance, never on Bolt.  
-Biome QTE: small vertical bars in-picture on the turn (fill → tap). Jump = 1 bar.
+Lane option: L/R hits with Resonance, never a TAP stamp on Bolt.  
+**No fill-bars. No Guitar Hero lane. No NOW.** Jump = glow in the film, one tap center.
+
+Playtest too hot → **recook the glow** (earlier, bigger). Same reflex as Smoke: the defect is the plate, not the UI. [DONT.md](DONT.md) §7.
 
 ## Audio (2 buses)
 
@@ -72,14 +78,17 @@ Prefetch = **stock only**. Imagine paid only on confirm / ticket. Never SuperGro
 
 Smoke PASS/FAIL before Keep / Hang (lint: 9:16, lock, white GSD, 2 doors, no chrome, path, cue honesty, continuity). FAIL → decay stock. `railsVersion` on PASS.
 
-Hall Smoke ([SMOKE.md](SMOKE.md)) still runs on citadel plates. Sprint plates add **cue honesty** (glow readable in `[on, off]`).
+Hall Smoke ([SMOKE.md](SMOKE.md)) still runs on citadel plates. Sprint plates add **cue honesty** (glow readable in `[on, off]`; gesture in the frame matches the tap).
 
 ## Hard fences
 
 - If the bar tells you **when** to tap, Smoke failed the plate.
+- Too hot at playtest → recook the glow. Never a timing bar.
+- A cue with no matching gesture in the film = FAIL.
 - Peak is earned. Peak is not a door.
+- Metronome = Bolt. Resonance never says when.
 - Citadel hall (2) does **not** grow this stack. A door hangs it ([LINKS.md](LINKS.md)).
 
 ## One line
 
-Film = chart. `m` = Resonance. Picture-time = truth. Peak earned. Chrome = the bar only.
+Film = chart. Glow in the picture. Recook glow, not UI. `m` = Resonance. Picture-time = truth. Peak earned. The metronome is Bolt.
