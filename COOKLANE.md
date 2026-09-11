@@ -47,9 +47,31 @@ If the vanishing point resets, it still reads as 10 s + 10 s even when the pose 
 
 After the mp4 exists, **overwrite** `stillEnd` with the extracted last frame (hall walk lock). Next `first` is that file. Imagine's hoped still is not the joint.
 
+Plate 2+ is animated **from that last frame** (morph). A standing restart at the join is a speed dump.
+
 `cook-biome` does this in **order**. It does not `imagineStill` from bolt-back for plate 2+.
 
 Smoke: `lane.joint` if last(n) is not first(n+1). Do not Hang.
+
+## Pace — success never decelerates
+
+`playbackRate` = **1**. Speed is **cooked**, not faked in the player.
+
+```
+0  stand     calm / decay (fridge)
+2  canter    first lean (L1 / R1) — already moving, he commits
+3  gallop    second lean (L2 / R2) — longer stride than the plate before
+4  stretch   peak — maximum stride
+```
+
+Hung path: `pace[n+1] >= pace[n]`.
+
+If the player hit every tap, plate 3 **must not** be slower than plate 1.  
+A standing start on plate n+1, or a shorter stride than last(n), is `lane.slow` FAIL.
+
+Decay is the only legal slow-down — and only after misses / end of minute. Not on a clean run.
+
+Join: last(n) **morphs** into first(n+1) — same stride family or faster, never a freeze.
 
 ## Fork — one plate, one act
 
@@ -73,7 +95,7 @@ back, two ears, yaw < 40 degrees
 
 One plate = **one act**. Return to center = **another** plate, another tap.
 
-Peak = the hard cut (L to R or a fallen crystal). Same chain law. Same back.
+Peak = the hard cut (L to R or a fallen crystal). Same chain law. Same back. Faster than the leans.
 
 ## Stations
 
@@ -83,7 +105,7 @@ Every plate has `from` to `to`.
 `pickNext` may only pick a plate whose `from` = current `to`.  
 Hung year-0 is a **path of stations**, not a drawer shuffle (`L1` then `R1` from C = illegal).
 
-Example hung: `lean-L1 C to L` then `lean-L2 L to L` (deeper left, world advanced).  
+Example hung: `lean-L1 C to L` then `lean-L2 L to L` (deeper left, world advanced, **faster**).  
 `lean-R1 C to R` is an **other first** lean, not a follow-up of L1.
 
 Smoke: `lane.station` if hung[n+1].from != hung[n].to.
@@ -97,4 +119,4 @@ Handoff still kisses first hung still ([HANDOFF.md](HANDOFF.md)).
 ## One line
 
 **`smoke-biome` grades the file. Five fingers grade the chart.** Hang only when both say yes.  
-A lean is a **fork he keeps**. A join is a **copied last frame**. Never 4 forests from one lock still.
+A lean is a **fork he keeps**. A join is a **copied last frame**. Pace only goes up on a clean run. Never 4 forests from one lock still.
