@@ -47,6 +47,8 @@ Every src is `file?${PACK}` (`u26`, `u27`, …).
 
 After you replace **any** mp4 or still: bump `PACK` in the player (`room.ts` / `room.json`). One integer. If you do not bump, the browser keeps the old clip and you debug a ghost.
 
+**Phones often ignore `?uXX` on mp4.** Same path after recook = sitting ghost in playtest. **Rename** the hung file (`forest-lean-L1.mp4` → `forest-run.mp4`) **and** bump PACK. Query string is not enough.
+
 Enter clips too: `/films/enter-hall-a.mp4?${PACK}`.
 Veil too: `/stills/seuil/teal-empty.jpg?${PACK}`.
 
@@ -62,6 +64,15 @@ ffmpeg -i in.mp4 -map 0:v:0 \
 - **No audio** (`-an`). Audio = autoplay dead.
 - `yuv420p` + `+faststart` — Safari / Chrome.
 - Stills: same scale/crop, jpeg.
+- **No drawbox.** Glow lives in the picture.
+
+## QC before Hang (Lane)
+
+Accurate seek: `ffmpeg -i plate.mp4 -ss T -frames:v 1` every **0.5 s**.  
+Sit / poop / profile / howl anywhere = `lane.sit`. Do not Hang.  
+Keyframe seek (`-ss` before `-i`) lies. Playtest then looks like shit.
+
+Year-0 hung = **one** gallop plate until L2 passes that QC **and** is faster.
 
 ## Imagine — first AND last must be distinct (walks + enter)
 
@@ -69,6 +80,8 @@ Walks: `first = start still`, `last = arrive still`. Different images.
 Enter: `first = atA`, `last = same-slot teal-full` (or gold-full). Different images. **Never** `last = Hall' spawn`.
 
 Breath: `first = last = pose still` (the one legal loop).
+
+Lane **lean/peak**: I2V from a **running** first. **No standing last_frame.** Last of the mp4 must still gallop.
 
 If enter is cooked as `image_to_video` on a single still, Imagine invents a journey (morph / tunnel / clone). Enter **requires** the first+last-frame call (`image` + `last_frame`), 6s, 9:16.
 
@@ -139,4 +152,4 @@ Without `playsInline`, iOS goes fullscreen and kills the hall.
 
 ## One line
 
-Room 2 in `a/`. Seuil in `seuil/`. Bump PACK. First ≠ last on enter. Freeze dest breath if it walks. Veil color = the door. Enter lives in `ENTER{}`, switch room, then breath dest. Validate before hang.
+Room 2 in `a/`. Seuil in `seuil/`. Bump PACK. Rename the mp4 if phones cached a sit. First ≠ last on enter. Lean = no standing last_frame. Freeze dest breath if it walks. Veil color = the door. Enter lives in `ENTER{}`, switch room, then breath dest. Validate before hang.
