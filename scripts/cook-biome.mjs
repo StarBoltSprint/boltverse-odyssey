@@ -4,13 +4,17 @@
  *   node scripts/cook-biome.mjs forest --dry-run
  *   export XAI_API_KEY=... && node scripts/cook-biome.mjs forest
  *
+ * CHAIN (COOKLANE.md): last(n) file IS first(n+1).
+ * Do not imagineStill from bolt-back for plate 2+.
+ * After each clip: extract last frame → stillEnd. Next from-station copies that file.
  * Cues stay []. After this script: scrub on/off, smokeL, then coming: false.
  * FAIL cap 2 on a required plate (decay) → whole kit stays coming. No kind:sprint door.
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync, copyFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { spawnSync } from "node:child_process";
 import { imagineStill, imagineClip } from "./imagine-hooks.mjs";
 
 const IDS = ["forest", "moss", "dusk", "ember", "asteroid"];
@@ -43,20 +47,54 @@ const pal = JSON.parse(readFileSync(palPath, "utf8"));
 const plates = ORDER.flatMap((tier) =>
   (pal.drawers?.[tier] || []).map((p) => ({ ...p, tier })),
 );
+const byId = Object.fromEntries(plates.map((p) => [p.id, p]));
 
 function loopSame(tier) {
   return tier === "calm" || tier === "decay";
 }
 
+function extractLast(mp4, dest) {
+  const r = spawnSync(
+    "ffmpeg",
+    [
+      "-y",
+      "-sseof",
+      "-0.12",
+      "-i",
+      mp4,
+      "-frames:v",
+      "1",
+      "-vf",
+      "scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280",
+      dest,
+    ],
+    { encoding: "utf8" },
+  );
+  if (r.status !== 0) throw new Error("extract last failed");
+}
+
 function queue() {
   const lines = [
     "cook-biome " + id + " — NOT cook-room, 0 atA",
-    pal.identity + " (shared lock, not cooked)",
+    pal.identity + " (shared lock, first station only — never 4 parallel leans)",
+    "CHAIN last(n) = first(n+1). Fork he KEEPS. No wobble.",
   ];
+  const hung = pal.hung || [];
+  if (hung.length) {
+    lines.push("hung path " + hung.join(" → "));
+    for (let i = 0; i < hung.length - 1; i++) {
+      const a = byId[hung[i]];
+      const b = byId[hung[i + 1]];
+      if (!a || !b) continue;
+      if ((a.to || "C") !== (b.from || "C")) {
+        lines.push("FAIL lane.station " + a.id + " to=" + a.to + " vs " + b.id + " from=" + b.from);
+      }
+    }
+  }
   for (const p of plates) {
     const law = loopSame(p.tier)
       ? "Law 0 first=last " + p.still
-      : "Law 0 first " + p.still + " → last " + p.stillEnd;
+      : "Law 0 first " + p.still + " → last " + p.stillEnd + "  " + (p.from || "?") + "→" + (p.to || "?");
     lines.push(
       p.tier +
         " " +
@@ -100,23 +138,47 @@ async function cap2(label, fn) {
   return false;
 }
 
+const hung = pal.hung || [];
+for (let i = 0; i < hung.length - 1; i++) {
+  const a = byId[hung[i]];
+  const b = byId[hung[i + 1]];
+  if (a && b && (a.to || "C") !== (b.from || "C")) {
+    fail("lane.station " + a.id + "→" + b.id);
+  }
+}
+
+/** Station still path. First visit cooks from lock. Later visits COPY the last frame. */
+const station = Object.create(null);
+
 for (const p of plates) {
   const stillA = join(dir, p.still);
   const stillB = join(dir, p.stillEnd);
   const dest = join(dir, p.file);
+  const from = p.from || "C";
+  const to = p.to || from;
   const ok = await cap2(p.id, async () => {
-    await imagineStill({
-      root,
-      slot: id,
-      pose: "spawn",
-      dest: stillA,
-    });
-    if (!loopSame(p.tier) && p.stillEnd !== p.still) {
+    if (station[from] && existsSync(station[from])) {
+      mkdirSync(dirname(stillA), { recursive: true });
+      copyFileSync(station[from], stillA);
+      out("CHAIN copy station " + from + " → " + p.still + " (not bolt-back)");
+    } else {
+      await imagineStill({
+        root,
+        slot: id,
+        pose: "spawn",
+        dest: stillA,
+      });
+      station[from] = stillA;
+    }
+    if (loopSame(p.tier)) {
+      if (stillB !== stillA) copyFileSync(stillA, stillB);
+    } else {
       await imagineStill({
         root,
         slot: id,
         pose: "spawn",
         dest: stillB,
+        spawnPath: stillA,
       });
     }
     await imagineClip({
@@ -129,6 +191,9 @@ for (const p of plates) {
       seconds: p.duration,
       pose: p.gesture,
     });
+    extractLast(dest, stillB);
+    station[to] = stillB;
+    out("CHAIN lock last frame → " + p.stillEnd + " station " + to);
   });
   if (!ok) {
     pal.coming = true;
