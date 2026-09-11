@@ -3,7 +3,7 @@
 Hall cook = [COOKROOM.md](COOKROOM.md) → `node scripts/cook-room.mjs moss`  
 Lane cook = **this page** → `node scripts/cook-biome.mjs forest`  
 Palette = [palettes/forest-palette.json](palettes/forest-palette.json). Runner = [scripts/sprint-transition.mjs](scripts/sprint-transition.mjs).  
-`L` = [scripts/cue-readability.mjs](scripts/cue-readability.mjs).
+`L` = [scripts/cue-readability.mjs](scripts/cue-readability.mjs). Sound = [PLAY.md](PLAY.md) (beside the film).
 
 ```
 cook-room moss      → 3 stills hall + 5 films graphe
@@ -14,6 +14,8 @@ Same dog, same lock, **other job**. If Grok runs the first for « sprint forest 
 
 `--dry-run` prints the queue. Live = `imagine-hooks.mjs` + `XAI_API_KEY`.  
 Cues stay `[]` until scrub + `smokeL`. Then `coming: false`. FAIL cap 2 on **decay** → whole kit `coming`, no citadel door `kind: sprint`.
+
+Encode **H264 `-an`**. Do not bake wind into the clip. Year-0 audio = grade oneshots beside the player, or silence.
 
 **Do not cook walk-A as the sprint.** The minute = plates + `m` + `t_run`.
 
@@ -43,4 +45,4 @@ Law 0: calm/decay **first = last** (same still). Lean/peak first → last hold.
 
 ## One line
 
-**`cook-room` is the hall. `cook-biome` is the minute.** Ten reels in the oven, six on the plate, cues after the mp4.
+**`cook-room` is the hall. `cook-biome` is the minute.** The film stays mute. Wind is a join, not a track in the plate.
