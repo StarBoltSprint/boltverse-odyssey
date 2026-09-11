@@ -19,6 +19,10 @@ Every new conversation. Do not wait to be asked.
 | **enter** | same | at-still | fill veil — **never** dest spawn |
 | **breath** | `image_to_video` on **one** still | pose still | **same** still |
 
+**`last_frame` is an aim, not a paste.** The API sends the arrive still. Imagine *steers*. If spawn is 0.19 and at-A is 0.45, the jump is too far — it keeps the start. Last picture = spawn. `graph.last_not_official`. Not an unplugged cable.
+
+Keep the size step small: spawn **0.22–0.32**, sill **0.35–0.40**, **Δh/H < 0.12**. Then 6s. If last still = spawn after cap 2 → stock, tap stays.
+
 **`reference_to_video` is not first/last.** The images are *references*, not frames. Imagine *inspires* a walk. It does **not** paste the gold still as the last picture. Walk-B then overshoots into the oval → size pop. **Illegal for walks and enter.**
 
 Chat Grok has no `last_frame` tool. Walks go through `scripts/imagine-hooks.mjs` / `cook-room.mjs`, not chat Imagine.
