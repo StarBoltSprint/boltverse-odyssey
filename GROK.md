@@ -1,219 +1,114 @@
-# GROK — floor 1 (the only default *citadel* job)
+# GROK — two default jobs (hall vs Lane)
 
 Repo: `https://github.com/StarBoltSprint/boltverse-odyssey`  
 Player: https://boltverse-odyssey.grok.me
 
-**First word picks the disc.** Same player. Not the same recipe.
+**First word picks the disc.** Same player. Not the same recipe.  
+The **verb** chooses (`salle` vs `sprint`). The noun `moss` does not.
 
 ```
-citadel / paint / salle mousse / fais-moi une citadelle
-  → THIS page. Job = node scripts/cook-room.mjs <slot>
+HALL JOB =
+  node scripts/cook-room.mjs <slot>
+  3 stills + 5 films + smoke-pack
+  URL /r/<slot>  or stock on FAIL×2
+  NO chat Imagine for walks / enter
+  NO walk-A-B · NO ENTER unless they asked
+  NO new grok.me
 
-biome / sprint / lane / colle forest sur la porte
-  → [BIOMES.md] then [COOKLANE.md] [PLAY.md]. NOT cook-room.
-    Palette of plates + m + t_run. Year-0 verbs: pose, L, R, fork.
-    NOT a tiny citadel. NOT walk-A.
-    Hall graph (spawn / atA / breath-A) only at the door.
+LANE JOB =
+  first word biome | sprint | lane | course | colle <id> sur la porte
+  → [BIOMES.md] → palettes/<id>-palette.json
+  → node scripts/cook-biome.mjs <id>
+  10 plates, cues [] until scrub
+  m + t_run · pose / L / R / fork only
+  coming until L + [PLAYTEST.md](PLAYTEST.md) 5 taps PASS
+  smoke = smoke-biome.mjs   NOT smoke-pack
+  NOT cook-room
+  NOT spawn / atA / walk-spawn-A
+  NOT peak-as-door
+  handoff = ENTER.kind sprint  ([HANDOFF.md](HANDOFF.md))
 ```
 
-**Sprint law:** `m` = if you follow the dog. `t_run` = age of the storm. Peak = both.  
-The film only changes speed by changing reels. Quiet [0, 8s] = calm even if `m` is already high.  
-Year-0: **pose, left, right, fork** — that is all the back gives ([COOKLANE.md](COOKLANE.md) [PLAY.md](PLAY.md)).  
-The tap exists only if it matches one of those **already in the shot**. Never a button without the dog. Peak is a permission, not a tap.
+If `cook-biome.mjs` cannot run: `--dry-run` + palette. Do **not** invent walk-A.
 
 **“citadel moss” ≠ “biome moss”.** They share a word, not a recipe.
 
-```
-DEFAULT JOB (hall) =
-  node scripts/cook-room.mjs <slot>
-  (stills + last_frame walks + smoke.json)
-  then URL /r/<slot>  or stock on FAIL×2
+## Cold conv (if the first answer lists `walk-spawn-A` after « biome forest », the fork lost)
 
-  NO chat Imagine for walks / enter
-  NO reference_to_video
-  NO wait on stills
-  NO walk-A-B
-  NO ENTER
-  NO new grok.me
-```
+| Phrase | Job |
+|---|---|
+| `citadel moss` | `cook-room moss` |
+| `biome forest` / `sprint forest` | `cook-biome forest` |
+| `colle forest sur la porte A` | hall already there + [LINKS.md](LINKS.md) `kind: sprint` — **do not** recook moss |
+| `moss` alone | **one question**: paint or Lane? Verb run/sprint/1 min → Lane |
+| `starboltsprint` alone | [START.md](START.md) / player URL — **no** cook |
 
-Chat Imagine cannot send `last_frame`. Only this script does. Films you cook in the chat have no `smoke.json` → the player loads **stock**. That is how other convs are forced: not a sermon, a door.
+Sprint law: `m` = follow the dog. `t_run` = age of the storm. Peak = both. Quiet [0, 8s] = calm even if `m` is high. Year-0 verbs: **pose, left, right, fork**. The tap exists only if that gesture is **already in the shot**. [COOKLANE.md](COOKLANE.md) [PLAY.md](PLAY.md).
 
-Read [CHAR.md](CHAR.md) + [COOK.md](COOK.md) + [COOKROOM.md](COOKROOM.md) after this page.  
-Hall′: read [adjacency.json](adjacency.json) first — `to` must be that slot. Then [ENTER.md](ENTER.md) **only if** the user asked for a neighbor door.  
-Read [ENGINE.md](ENGINE.md) **only if** you are patching the player (you are not).
-
-Off-list paint or FAIL ×2 → stock `/`. Do not invent a temple.
+Chat Imagine cannot send `last_frame`. Hall walks: `imagine-hooks` only. Lane plates: same hooks, **other** job (`cook-biome`). Films cooked in chat have no smoke → player loads **stock**.
 
 ---
 
-Trigger (any language): *play boltverse*, *boltverse odyssey*, *starboltsprint*, *citadel*, *citadelle*, *fais-moi une citadelle*. Then this page. Job = the script. Not chat Imagine.
+Trigger hall (any language): *citadel*, *citadelle*, *salle mousse*, *fais-moi une citadelle* — **and not** biome/sprint/lane. Then HALL JOB.
 
-If they said *biome* / *sprint* / *lane* / *colle forest* — **stop.** [BIOMES.md](BIOMES.md) then [COOKLANE.md](COOKLANE.md) [PLAY.md](PLAY.md). Do not run cook-room. Do not cook walk-A as the sprint. Do not invent a jump / lean-L the clip does not show.
+Trigger Lane: *biome*, *sprint*, *lane*, *course*, *colle forest*. Then **stop.** LANE JOB. Do not run cook-room.
 
-You are wiring a **living-film** room, not a game with UI.
+*`starboltsprint` / `boltverse` alone* → player URL, not a cook. Both words in one sentence (`starboltsprint forest sprint`) → **Lane wins** (the verb `sprint` / `forest` as biome). Do not take the first hall trigger on the page.
 
-Auth OFF. Database OFF. No 3D, no canvas, no WebGL, no Play / Forge / Hang / Keep.
-
-**Do not scaffold a new app. Do not publish a new grok.me.**
-Someone asks for a citadel → give the player URL. Cook writes into `packs/<id>/`.
+You are wiring a **living-film**. Auth OFF. Database OFF. No 3D, no canvas, no WebGL. **Do not scaffold a new app. Do not publish a new grok.me.**
 
 ## Law 0 — Imagine first + last (automatic)
 
-Every new conversation. Do not wait to be asked. The stills **are** the frames. [COOK.md](COOK.md).
+The stills **are** the frames. [COOK.md](COOK.md).
 
-| kind | Imagine call | first | last | floor 1 |
-|---|---|---|---|---|
-| **walks** | API `image` + `last_frame` — **not** chat `reference_to_video` | start still | arrive still — **distinct** | yes |
-| **breath** | `image_to_video` on **one** still | pose still | **same** still | yes |
-| **enter** | first AND last | at-still | fill veil — **never** dest spawn | **no** unless they asked |
+| kind | Imagine call | first | last |
+|---|---|---|---|
+| **hall walk** | API `image` + `last_frame` | start still | arrive still — **distinct** |
+| **hall breath** | one still twice | pose | **same** |
+| **Lane calm/decay** | one still twice | plate still | **same** |
+| **Lane lean/peak** | `image` + `last_frame` | start | hold — **distinct** |
+| **enter / return** | first AND last | at-sill / Lane last | fill veil — **never** dest spawn |
 
-Never `image_to_video` a walk or enter on a single still. That invents the journey / clones the dog.
-Breath is the only legal `first = last`.
+Never `image_to_video` a walk or enter on a single still. Breath / calm / decay = the only legal `first = last`.
 
-Chat `reference_to_video` does **not** lock last. Imagine uses the stills as style. Last frame will not be the gold still. Walks only via `imagine-hooks` (`last_frame`). Then smoke last vs still — FAIL = recook, do not rewrite the still fatter.
+## Law 1 — floors
 
-**Walk last 2s:** ONE dog on the arrive sill. A second Bolt at spawn/center = FAIL `clone.two_dogs`. Recook that walk. Do not hang. [CLIP.md](CLIP.md).
-
-**Walk is one trip.** Spawn → sill. A snap back to spawn mid-clip (Frost walk-B t=11s) = FAIL `graph.walk_return`. Recook. Never loop a walk.
-
-## Law 1 — floors ([FLOORS.md](FLOORS.md))
-
-Default cook = **floor 1**: 3 stills + 5 films, one room, no Enter.
-Do not jump to Hall' / walk-A-B because it would be "cooler". Visitor = floor 0 (stock). "salle mousse" = floor 1. Enter = only if they ask, catalog neighbor.
+Hall default = floor 1: 3 stills + 5 films, no Enter. Lane default = 10 reels + decay, cues after scrub. Visitor = stock `/`.
 
 ## Fridge
 
-Cook **one plate**, then smoke **that plate**, then write `films/`. Hash first. Vision second. Hang last.
-
-**Never write `PASS` yourself.** Only `node scripts/smoke-pack.mjs` (exit 0). A preview you like is not a gate. Lock-off whole-frame hash can say ham 6 while the dog pops — that is FAIL `gate.size`, not PASS. [SMOKE.md](SMOKE.md).
-
-**Hang = `smoke.json` written by the script** (`ok: true`, `script: scripts/smoke-pack.mjs`). No file / Grok-typed JSON / `ok: false` → the player loads **stock**, not this pack. Other convs cannot skip Smoke: the hall will not mount their films.
-
-```
-node scripts/smoke-pack.mjs packs/<id>
-```
-
-**A+B** = machine (rule codes).
-
-**C = Grok vision. Required on stills, walks, breaths.** You have eyes. Use them. Do not skip because A+B passed. A hash does not see a muzzle.
-
-1. Open `.smoke/MANIFEST.json`.
-2. Read [scripts/smoke-identity.md](scripts/smoke-identity.md).
-3. For each required job: **open the jpg paths** (they are pictures). Still = 1 photo. Walk/breath = first + mid + last.
-4. Print **one line** per id: `PASS` or `FAIL identity.profile @ t=mid (head sideways)`.
-5. FAIL → recook **this** plate, cap 2. atA FAIL does not recook spawn.
-6. Enter / walk-A-B = optional C.
-
-If you cannot see the images, `FAIL file.decode` — do not Hang.
-
-[SMOKE.md](SMOKE.md).
-
-Ops: [HANG.md](HANG.md). DOM: [ENGINE.md](ENGINE.md). Box: [VALIDATE.md](VALIDATE.md). Content: [SMOKE.md](SMOKE.md).
+Cook **one plate**, smoke **that plate**, then write.  
+Hall: `node scripts/smoke-pack.mjs packs/<id>`  
+Lane: `node scripts/smoke-biome.mjs <id>`  
+**Never write `PASS` yourself.** Identity C: [scripts/smoke-identity.md](scripts/smoke-identity.md) (gait gray on Lane mid).
 
 ## If they ask for stills / a citadel style
 
-This is the default. Read [CHAR.md](CHAR.md) then [COOK.md](COOK.md) then [PLAYER.md](PLAYER.md).
+Only if the first word was **not** biome/sprint/lane. Else LANE JOB.
 
-1. They pick a **paint** from [CATALOG.md](CATALOG.md). Bolt is locked. Off-list → nearest or one question. Never free-text architecture.
-2. If `packs/<id>` already exists → give `https://boltverse-odyssey.grok.me/r/<id>` (or `/` for `citadel`). Stop.
-3. Else cook **3 stills** in that paint (`catalog/<id>.md` two lines only): spawn → atA → atB (COOK.md). Same Bolt, same camera, **energy rifts** teal left / gold right ([DOORS.md](DOORS.md)). Never wood doors.
-4. Show the 3. Wait for ok.
-5. Cook the **5** films (floor 1: 3 breaths + walk-spawn-A + walk-spawn-B). **Law 0** on every clip. Do **not** cook walk-A-B or Enter unless they asked (floors 2–3). Encode H264 yuv420p +faststart, **no audio**. Land in `packs/<id>/`.
-6. Run `node scripts/validate-pack.mjs packs/<id>` then `node scripts/smoke-pack.mjs packs/<id>`.
-7. FAIL a required clip → recook **that file only**, cap **2**, smoke again. Then give `https://boltverse-odyssey.grok.me/r/<id>`. Never a new preview. Optional FAIL = WARN — recook or drop, do not block the hall.
+1. Paint from [CATALOG.md](CATALOG.md). Off-list → nearest or one question.
+2. Pack exists → URL `/r/<id>`. Stop.
+3. Else HALL JOB (`cook-room.mjs`). Show 3 stills. 5 films. Law 0. smoke-pack. URL.
 
-Never `text_to_image` a new dog. Never a 3D dungeon.
+Never `text_to_image` a new dog.
 
-## If they ask to branch a room on a door
+## If they ask for a biome / sprint / « colle forest »
 
-Read [ENTER.md](ENTER.md) then [HANG.md](HANG.md). **Law 0** on the enter cook.
+LANE JOB. [BIOMES.md](BIOMES.md) [COOKLANE.md](COOKLANE.md) [CUES.md](CUES.md) [HANDOFF.md](HANDOFF.md).  
+Do not list `walk-spawn-A`. Do not recook the hall because they named `moss`.
 
-1. Room 1 already hangs. Cook room 2 as a **full pack** into `stills/a/` + `films/a/` **inside that pack** (stills then 7 films, COOK.md). Same Bolt. **Same depth.** Do not overwrite hall stills.
-2. Walk A ended → breath-A. **Stay.** Player taps A again to enter, or B to walk. Never auto-enter.
-3. Cook enter as **two plates** with **first AND last distinct** (ENTER.md). Do not interpolate atA → Hall' spawn in one Imagine clip (clone). Do not `image_to_video` enter on a single still.
-4. Hang `enter-hall-a` in the `ENTER{}` map — **outside the 7**. Optional return `enter-a-hall`. Door B uses gold-empty veil, not teal.
-5. `ended(enter)` → **switch room first**, then dest `breath-spawn`. If dest breath walks, freeze the spawn still (HANG.md).
-6. Door link = hall **or** sprint ([LINKS.md](LINKS.md)). Same tap. Hall `to` = paint. Sprint `to` = biome (forest/asteroid…). Same player URL. Not a new site.
-7. Smoke the enter clip. WARN clone → recook cap 2 or drop the link.
+## If they ask to branch a door
+
+[ENTER.md](ENTER.md) [LINKS.md](LINKS.md). Hall `to` = paint. Sprint `to` = biome. Same player. Never auto-enter. Return = 2nd tap + hung clip, or stay in the forest.
 
 ## Product
 
-The player URL IS the hall. Opening it plays **breath-spawn** immediately.
-No Play button. No Forge. No Hang. No Keep. No menus. No canvas overlay. No tap rings.
+The player URL IS the hall. Opening it plays **breath-spawn**. No Play / Forge / Hang chrome. Lane after `kind: sprint` + hid playing ([HANDOFF.md](HANDOFF.md)).
 
-## Graph
+Humans see [START.md](START.md) only. Recook or stock. Give a URL.
 
-Poses: `spawn` | `atA` | `atB`
-Doors: **A = teal, left** · **B = gold, right**. Both always in frame at spawn.
-Acts: **breath** (loop, feet glued) | **walk** (one-shot, pose advances at `ended`) | **enter** (one-shot, room advances at `ended` — [ENTER.md](ENTER.md)).
+Gift: [TICKET.md](TICKET.md). False help: [DONT.md](DONT.md). Corridor hall: [COOKROOM.md](COOKROOM.md). Lane: [COOKLANE.md](COOKLANE.md).
 
-| id | act | loop | dur | start → end |
-|---|---|---|---|---|
-| breath-spawn | breath | yes | 6s | spawn → spawn |
-| breath-A | breath | yes | 6s | atA → atA |
-| breath-B | breath | yes | 6s | atB → atB |
-| walk-spawn-A | walk | no | 10s | spawn → atA |
-| walk-spawn-B | walk | no | 10s | spawn → atB |
-| walk-A-B | walk | no | 10s | atA → atB |
-| walk-B-A | walk | no | 10s | atB → atA |
-| enter-hall-a | enter | no | 6s | atA(hall) → spawn(room 2) |
+## One line
 
-Enter is **not** in `room.clips`. It lives in `ENTER[room][door]`.
-
-Same door at **spawn** = walk to that door (never enter from spawn).
-Same door at **atA / atB** = enter if a link exists, else stay.
-During walk / enter = ignore taps. Never walk→walk. `ended(walk)` always → `breath(arrive)` at t=0. `ended(enter)` always → dest `breath-spawn` after 500ms empty veil of **that door**.
-
-## Player (non-negotiable — these froze the hall before)
-
-1. **Still underlayer always.** The still of the current pose sits under the videos. Never a black hole. **Except during enter:** still opacity 0 (else atA still + enter video = two dogs).
-2. **Dual `<video>` slots** (vis / hid). Swap only after the hid slot is **actually playing** (`paused === false`). Empty vis video over the still = black plate. Start **both hidden** until the first clip plays.
-3. **Play muted + playsInline.** Always `muted=true` and `playsInline=true` before `play()`. Unmuting across an async load kills autoplay: walk stays at t=0, `walking` lock eats every later tap. Without `playsInline`, iOS goes fullscreen. Unmute only the already-visible film, on a real pointer.
-4. **Do not set `walking` / do not paint** until play is confirmed. Failed play → keep the still, keep accepting taps.
-5. **Pause the outgoing** clip after the swap. Two films fighting pauses the new one.
-6. Hits are on the **9:16 picture** (`object-fit: contain`), not the letterbox. A = left 40%, B = right 40%, center 20% miss.
-7. Plate **720×1280**. If a clip is not 9:16, crop to 9:16 (center) then scale. Same plate on every clip. Camera lock-off. Hall / Bolt / doors never morph. Encode: H264 yuv420p +faststart, **no audio**.
-8. **Enter curtain:** hide enter 0ms, empty veil of **that door** on top, dest breath under, veil 500ms → 0 (double rAF). Never crossfade two frames that both have a dog in different places.
-9. **PACK.** After replacing any mp4/still, bump `?uN` or the browser plays the old clip.
-10. **Enter preload** is separate — enter is not in `Object.values(room.clips)`.
-
-Join: `stillEnd(from) == stillStart(to)` → cut 0ms, else dissolve ≤ 280ms. Enter → dest spawn uses the **veil**, not dissolve. Dissolve does not fix a bad encode.
-
-Stills = **first frame of that pose's breath** (not a last-frame grab that can come back empty).
-
-DOM: one `<img>` still + two `<video>` + one `<img>` veil. No WebGL. Details: [ENGINE.md](ENGINE.md).
-
-## If they give 7 videos
-
-Map by motion, not by filename. Skip still-cook.
-
-- Bolt idle center, both doors, loopable → `breath-spawn`
-- Walk from center to teal → `walk-spawn-A`
-- Walk from center to gold → `walk-spawn-B`
-- Idle at teal, loopable → `breath-A`
-- Idle at gold, loopable → `breath-B`
-- Walk teal → gold → `walk-A-B`
-- Walk gold → teal → `walk-B-A`
-
-Land in `packs/<id>/`. If you must recook a walk/enter: **Law 0**. Run validate-pack then smoke-pack. Give the player URL. No chrome.
-
-Sprint / Lane: first word was biome/sprint → [BIOMES.md](BIOMES.md) [COOKLANE.md](COOKLANE.md) [PLAY.md](PLAY.md). Palette + `m` + `t_run`. Year-0: pose, L, R, fork. Not walk-A. Door `kind: sprint` hands off ([LINKS.md](LINKS.md)).
-
-Biome kits: [BIOMES.md](BIOMES.md). Race cook: [COOKLANE.md](COOKLANE.md). `rome` → ember. `mars` → asteroid.
-
-Clip into films/: [CLIP.md](CLIP.md). Stills PASS first. One clip. Three gates. FAIL never writes.
-
-Humans see [START.md](START.md) only. Do not paste ENGINE / Smoke codes into player chat. Recook or serve stock. Give a URL.
-
-Silent fail: [FAIL.md](FAIL.md). Missing pack → stock. Missing edge → stay. Recook cap 2 then freeze/drop/stock. Player chat: one line after, or nothing.
-
-Airlock: [SAS.md](SAS.md). Stamp JSON. Hang only on pass. reject = smaller graph, not a 500.
-
-Pack format: [PACK.md](PACK.md). Write a folder. Do not scaffold a player. format: 1.
-
-Gift: [TICKET.md](TICKET.md). 1 still **photo**/day/X. 50 Imagine/week all players. XAI_API_KEY server-only. Same paint = reuse. Walk/breath never spend. Never generating on Bolt.
-
-False help: [DONT.md](DONT.md). No live Imagine on tap, no WASD, no kitchen on the plate, no auto-enter, no TAP bar, no free-text Hall′.
-
-Corridor: [COOKROOM.md](COOKROOM.md). `citadel dusk` → floor 1 without asking ok. Off-list or FAIL ×2 → stock URL. Lane: [COOKLANE.md](COOKLANE.md).
+**GROK.md Lane = a twin DEFAULT JOB, not a footnote.** `moss` does not pick the disc. `salle` vs `sprint` does.
