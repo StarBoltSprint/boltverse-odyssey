@@ -1,7 +1,7 @@
 /**
- * Lane reel picker. Cue clock: ./cue-coyote.mjs. DOM: ./dom-swap.mjs.
- * m = follow the dog. t_run = integrator of frames *actually played* on sprint reels.
- * Never += file duration. Never Date.now / performance.now.
+ * Lane reel picker. Cue clock: ./cue-coyote.mjs.
+ * t_run counts race frames. Idle-decay gnaws m only if the picture runs and you are not playing.
+ * Call onLaneTime from the player. If you forget, t_run stays 0 and you fall back to m alone.
  */
 
 import {
@@ -58,16 +58,18 @@ export function handoffLane() {
   return emptyState();
 }
 
+/** Bone + m. Quiet forbids peak even if m is high. */
 export function wantOf(t_run, m, peakBan) {
+  if (m < LANE.m_decay) return "decay";
   const t = t_run || 0;
   if (t < LANE.quiet_s) return "calm";
-  if (t < LANE.lean_s && m < LANE.m_calm) return "calm";
-  if (t < LANE.lean_s) return "lean";
+  if (t < LANE.lean_s) return m >= LANE.m_calm ? "lean" : "calm";
   if (t < LANE.build_s) return "lean";
   if (t <= LANE.close_s && m >= LANE.m_peak && !peakBan) return "peak";
-  if (m < LANE.m_decay) return "decay";
   return "lean";
 }
+
+export const selectTier = wantOf;
 
 export function tapFromX(x) {
   if (x < 0.4) return "A";
@@ -102,10 +104,8 @@ export function tickIdle(state, dt) {
   return s;
 }
 
-/**
- * Integrator. Call on timeupdate with picture-time t.
- * HOLD / seek / decay / hall breath: lastT tracks, t_run does not +=.
- */
+export const tickIdleDecay = tickIdle;
+
 export function tickRun(state, t, { kind, held } = {}) {
   const k = kind ?? state.kind ?? "sprint";
   const s = { ...state, kind: k };
@@ -118,11 +118,41 @@ export function tickRun(state, t, { kind, held } = {}) {
   return s;
 }
 
+function cueOpen(sheet, t) {
+  const cue = sheet?.cues?.[sheet.i];
+  if (!cue) return false;
+  const C = coyoteAfter(cue, sheet.cues[sheet.i + 1]);
+  return t <= cue.off + C;
+}
+
+/**
+ * Player clock. HOLD: lastT tracks, no ticks, no grade.
+ * Idle-decay only if the plate has no open cue (decay / silent calm).
+ */
+export function onLaneTime(state, t, { held, kind, idlePlate, tap } = {}) {
+  if (held) {
+    const s = { ...state, lastT: t };
+    return { state: s, sheet: s.sheet, verdict: null };
+  }
+  const last = state.lastT;
+  let s = tickRun(state, t, { kind, held: false });
+  const d = last == null ? 0 : t - last;
+  const dt = d >= 0 && d <= LANE.seek_ignore_s ? d : 0;
+  const idle = idlePlate || !(s.sheet?.cues && s.sheet.cues.length);
+  if (dt > 0 && idle && !cueOpen(s.sheet, t)) s = tickIdle(s, dt);
+
+  const sheet = resolveFrame({ ...s.sheet, t, tap: tap ?? null });
+  s = { ...s, sheet };
+  const v = sheet.verdict;
+  if (v && v !== "wait" && v !== "early") s = applyVerdict(s, v);
+  return { state: s, sheet, verdict: v };
+}
+
 export function pickNext(palette, state, currentId) {
   if (state.missStreak >= LANE.miss_exit) {
     return { kind: "exit", to: "hall" };
   }
-  const want = wantOf(state.t_run, state.m, state.peakBan);
+  const want = selectTier(state.t_run, state.m, state.peakBan);
   const take = (tier) => {
     const list = palette?.[tier] || [];
     if (!list.length) return null;
@@ -134,15 +164,9 @@ export function pickNext(palette, state, currentId) {
   return { kind: "plate", plate, tier: want };
 }
 
-/** After pickNext. Does NOT add file duration. PeakBan clears (penance already picked). */
+/** After pickNext (penance already chosen). Does not += duration. */
 export function afterJoin(state, { kind = "sprint" } = {}) {
-  return {
-    ...state,
-    kind,
-    peakBan: false,
-    idleAcc: 0,
-    lastT: 0,
-  };
+  return { ...state, kind, peakBan: false, idleAcc: 0, lastT: 0 };
 }
 
 export function planSwap({ next, hidReady }) {
