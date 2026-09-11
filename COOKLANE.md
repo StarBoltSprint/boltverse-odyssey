@@ -1,7 +1,8 @@
 # COOKLANE — the sprint minute, not a tiny citadel
 
 Hall cook = [COOKROOM.md](COOKROOM.md). Row = [BIOMES.md](BIOMES.md). Play = [PLAY.md](PLAY.md).  
-Runner = [scripts/sprint-transition.mjs](scripts/sprint-transition.mjs).
+Runner = [scripts/sprint-transition.mjs](scripts/sprint-transition.mjs).  
+`L` = [scripts/cue-readability.mjs](scripts/cue-readability.mjs) — `smokeL`. Does not see the film.
 
 **Do not cook walk-A as the sprint.** The minute = plates + `m` + `t_run`.
 
@@ -42,30 +43,19 @@ FAIL  peak with N=1 and duration > 12 s
 Not « pretty clip ». **Does gesture + glow occupy the window we declared.**
 
 ```
-L_i = T_readable / (off − on)
-L   = Σ T_readable / Σ (off − on)
+L_i ≈ n_yes / 3          // samples at on, mid, off
+L   = Σ (L_i × width_i) / Σ width_i
 ```
 
-`T_readable` = time in `[on, off]` where **both**: (1) the gesture classifies in a blink, back visible (pose / L / R / fork) (2) glow on the **right side**, large enough, not under the dog, not dust.
-
-Lisibility ≠ density. Dense + `L` rotten = glows everywhere, zero gesture.
-
-Kills `L`: glow 1 s / lean 4 frames · glow late · yaw 40 · both sides shine (`L = 0`) · glow glued to the 3–4 % bar · path center vs tap left.
+Code: `smokeL({ duration, cues })` in [scripts/cue-readability.mjs](scripts/cue-readability.mjs). Year-0 fills `gestureOk / glowOk / sideOk`. Ambiguous L/R → `L_i = 0`. 0 cue → `L.na`, not a FAIL. `ρ_glow > 0.45` → `cue.farm_glow`.
 
 | `L` | Verdict |
 |---|---|
-| ≥ **0.75** | PASS honesty |
-| 0.55–0.75 | gray: nudge `on/off` 2–4 frames, then recook |
+| ≥ **0.75** | `L.pass` |
+| 0.55–0.75 | `L.gray` — nudge 2–4 frames |
 | < **0.55** | FAIL `cue.honesty` — do not Hang |
-| L/R ambiguous | FAIL now, `L` forced 0 |
 
-Year-0: **3 frames** in `[on, off]` (start, mid, end). Gesture + glow side yes/no. `T_readable ≈ (n_yes / 3) × (off − on)`. No classifier.
-
-Coyote is **outside** `L` (gesture dead, finger grace). Decay 0 cue: `L` N/A, not an honesty FAIL.
-
-ρ high + `L` low = tapping. ρ low + `L` high = perfect calm. Late mass but `L` high to `off` → coyote. `L` dies before `off` → wrong `off`.
-
-**No ring if `L` is low.** Recook or nudge. Chrome is not in the numerator.
+Coyote is **outside** `L`. **No ring if `L` is low.** Chrome is not in the numerator.
 
 ## Sprint law
 
