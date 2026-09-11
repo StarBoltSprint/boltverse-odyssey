@@ -23,15 +23,20 @@ Only `running` may `resolveFrame` / bump `m` / tick `t_run`. Peak does **not** r
 
 **`m` must not:** change `playbackRate` · move coyote · pulse the bar · skip a plate · recook Imagine · advance during HOLD. Acts at the **JOIN**.
 
+**The mp4 rate is constantly 1.** `video.playbackRate = 1` on HOLD, Hit, Miss, peak. No `rate = f(m)`. Even ±5 % desyncs glow vs finger. 1.25 would age `t_run` in 36 s wall for 45 s of bone.
+
+The rate the player **feels** is density on the next reel ([COOKLANE.md](COOKLANE.md)):
+
+```
+ρ = hittable cues / duration_s
+calm ≈ 0.08 /s · lean ≈ 0.20 /s · peak ≈ 0.33 /s · decay ≈ 0–0.10 /s
+```
+
+`m` + `t_run` pick the drawer → ρ jumps at **join**. Not a cassette stretch.
+
 ### `t_run` is an integrator of frames **really played**
 
-Picture-time. Not wall clock. Not `Date.now`. Not the sum of file durations.
-
-```
-t_run += Δ currentTime
-  only if clock = running
-  AND plate.kind = sprint   (calm | lean | peak)
-```
+Picture-time. Not wall clock. Not `Date.now`. Not file durations.
 
 ```
 onTime(t):
@@ -43,20 +48,9 @@ onTime(t):
   resolveFrame(...)
 ```
 
-`Δ > 0.5` or `Δ < 0` = seek / jump — **ignore**. A seek must not age the bone 8 s.
+`Δ > 0.5` or `< 0` = seek — ignore. HOLD / hall breath / `kind: decay` do not +=. Idle on a playing sprint plate **does** age `t_run`. Cut 8 s of 12 → += ~8.
 
-| Does **not** += |
-|---|
-| HOLD (pause, hidden, stall, swap, play-fail, seek) |
-| hall breath (spawn / atA) |
-| decay `kind: "decay"` (terminal net) |
-| cook wait |
-
-Idle on a **playing** sprint plate: `t_run` **does** age. Idle-decay hits `m`, it does not freeze the bone. Cut a 12 s plate at 8 s → `t_run` took ~8 s **seen**.
-
-`t_run` **allows**. `m` **qualifies**. Neither skips the bone.
-
-Boot / hall→Lane / end of Lane: `t_run = 0`. Howl / Recall hall: `t_run` unchanged (you left the bone). No shared `t_run` across two minutes.
+Boot / hall→Lane / end of Lane: `t_run = 0`.
 
 ### Verdict (once per cue)
 
@@ -67,40 +61,26 @@ Boot / hall→Lane / end of Lane: `t_run = 0`. Howl / Recall hall: `t_run` uncha
 | Miss / wrong side | `max(0.05, m × 0.70)` | `peakBan` |
 | Early | unchanged | same cue |
 
-Idle-decay: each 1.0 s picture-time idle → `m − 0.015` (floor 0.05). Pause does not tick. `peakBan` clears at **join** (one penance plate already picked). Boot `m = 0.12`.
+Idle-decay: each 1.0 s idle → `m − 0.015` (floor 0.05). `peakBan` clears at join. Boot `m = 0.12`.
 
 ### Bone permission
 
 ```
-[0, 8)     Quiet   — calm only (even if m is already high)
+[0, 8)     Quiet   — calm only
 [8, 20)    Lean    — calm or lean by m
-[20, 45)   Build   — lean (peak still closed)
-[45, 70]   Peak ok — peak IF m≥0.70 AND !peakBan
-> 70       Close   — no peak; lean or decay
+[20, 45)   Build   — lean (peak closed)
+[45, 70]   Peak ok — IF m≥0.70 AND !peakBan
+> 70       Close   — no peak
 ```
 
-Peak = **permission**, not a forced clip.
-
-```
-want =
-  t_run < 8                          → calm
-  t_run < 20 && m < 0.30             → calm
-  t_run < 45                         → lean
-  t_run in [45,70] && m≥0.70 && !ban → peak
-  m < 0.18                           → decay
-  else                               → lean
-```
-
-Bar: ~3–4 % of 9:16, fill ∝ `m`, no flash. Bus 2 oneshot only if `!HOLD`.
+Bar: ~3–4 % of 9:16, fill ∝ `m`, no flash. Bus 2 only if `!HOLD`.
 
 ### Tests
 
 - 6 Hits before 8 s → still calm
-- Cut 8 s of a 12 s plate → `t_run` += ~8, not 12
-- Seek / `performance.now()` must not age the bone
-- Hidden 10 s → `t_run` and `m` frozen
-- Decay net must not farm toward 45 s
-- `playbackRate` never ≠ 1
+- Cut 8/12 → `t_run` += ~8
+- Hidden 10 s → frozen
+- `playbackRate` never ≠ 1 · never `rate = lerp(m)`
 
 ## Cue + HOLD
 
@@ -114,4 +94,4 @@ Hit `[on−0.08, off]` · Late `(off, off+C]` · `C = min(0.22, next.on−off)`.
 
 ## One line
 
-**`t_run` is the age of frames you actually saw on sprint reels.** `m` says if you were following. Peak needs both.
+**The mp4 rate = 1. The sprint rate = ρ of the next reel.** `t_run` is frames you actually saw. Peak needs `m` too.
