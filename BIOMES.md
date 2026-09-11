@@ -179,14 +179,14 @@ Grok / voice: picker or “not yet”. When 7+2 exist **and** Smoke + cue honest
 
 Hook before that = 2nd tap into the void or live cook ([DONT.md](DONT.md)).
 
-The row comes **first**. mp4s come **after** — not before.
+The row comes **first**. mp4s come **after** — not before. Cook the films with [COOKLANE.md](COOKLANE.md), not `cook-room.mjs`.
 
 ## Fill order (kit before hook)
 
 ```
 1. id + worldLine + pathLine + neighbors + railsVersion
 2. spawn still + identity (lock)
-3. 3 breaths + 2 walks + decay
+3. films — COOKLANE.md (not cook-room): breath-spawn → walks → breaths at → decay
 4. Smoke hall (dog, first/last, plate)
 5. cues + glow → Smoke PLAY (cue honesty). Tap = Bolt's gesture in that frame.
 6. Hang row (no longer "coming")
@@ -209,7 +209,7 @@ No decay and no glow = a painting that runs — not a playable biome.
 - bump `railsVersion` only for camera / body — then recook min stock
 - Smoke [SMOKE.md](SMOKE.md) + cue honesty [PLAY.md](PLAY.md) before Hang
 - no free-text biome → new `BiomeId` = PR, not chat
-- do not `cookRoom` a paint and call it a biome
+- do not `cookRoom` a paint and call it a biome — cook is [COOKLANE.md](COOKLANE.md)
 - aliases do not cook
 - decay is not optional; citadel stock is not Lane decay
 
