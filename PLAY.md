@@ -10,7 +10,7 @@ Valley / sprint / QTE = **(1)** + hall poses as a state machine. A door with `ki
 
 - **Imagine-video-first** — the picture is the clock. Tap / dodge what Bolt *does* in the encode.
 - **Momentum chaining** — the sprint wakes the world *in* the image (not XP). Sparse → dense.
-- **Resonance** = the only persistent chrome: crystal bar, bottom ~3–4%, reports `m`. **Never** when-to-tap.
+- **Resonance** = how much (`m`). **Glow** = when. Crystal bar, bottom ~3–4%. **Never** when-to-tap.
 - Luminous path in front of the paws (grows with `m`). Corridor of gestures.
 
 ## Four nested clocks (one tap at a time)
@@ -22,12 +22,29 @@ Valley / sprint / QTE = **(1)** + hall poses as a state machine. A door with `ki
 | 3 | **Bone ~60s** | quiet → lean → peak via `m` / WFC / CA (peak ≠ a 5th door) |
 | 4 | **Citadel enter** | rare / paid → always breath-spawn Hall′ |
 
-Mixing layers → loader / cutscene. Felt: breath / sprint / threshold / bone.
+Mixing layers → loader / cutscene. One layer per tap. Felt: breath / sprint / threshold / bone.
 
 ## Picture-time
 
-Master clock = `video.currentTime` **while playing**. Pause / hidden / `waitingOnCook` = hold (audio too).  
-Phase = `f(pictureTime)` — **never** `Date.now`.
+Master clock = `video.currentTime` **while the video is playing**.
+
+Not `Date.now`. Not the cook wall clock. Not rAF alone — rAF **paints**; it does not **count** the beat.
+
+Phase = `f(pictureTime)`: cues `on/off`, coyote, glow. Hall already uses this (breath/walk). Lane adds cues **on the same clock**. Not a second “gameplay” timer.
+
+A cue at 4.2 s is at **4.2 s of the mp4**, not “4.2 s after the tap”.  
+Seek / reload / dual-video swap: the beat follows the **frame**, not a JS timer that drifted.
+
+**Hold** (clock frozen, picture may stay):
+
+- player Pause
+- tab hidden
+- `waitingOnCook` (never on the 9:16 — stock already there)
+- `play()` fail
+
+Diegetic audio freezes with it. Grade oneshots only if the clock is advancing.
+
+Prefetch is fine. Generating while `currentTime` advances = two clocks = [DONT.md](DONT.md).
 
 ## Cue sheet + grade
 
@@ -86,9 +103,10 @@ Hall Smoke ([SMOKE.md](SMOKE.md)) still runs on citadel plates. Sprint plates ad
 - Too hot at playtest → recook the glow. Never a timing bar.
 - A cue with no matching gesture in the film = FAIL.
 - Peak is earned. Peak is not a door.
-- Metronome = Bolt. Resonance never says when.
+- Metronome = Bolt. Resonance = how much. Glow = when.
 - Citadel hall (2) does **not** grow this stack. A door hangs it ([LINKS.md](LINKS.md)).
+- Lane cues live on `currentTime`. No second JS clock.
 
 ## One line
 
-Film = chart. Glow in the picture. Recook glow, not UI. `m` = Resonance. Picture-time = truth. Peak earned. The metronome is Bolt.
+Film = chart. Glow in the picture (when). `m` = Resonance (how much). Recook glow, not UI. Picture-time = truth. Peak earned. The metronome is Bolt.
