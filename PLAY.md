@@ -9,24 +9,31 @@ Clock: [cue-coyote.mjs](scripts/cue-coyote.mjs) · Hold: [video-hold.mjs](script
 ## Three machines
 
 DOM = visible. HOLD = if we judge. Partition = which reel (`m`, `t_run`).  
-Only `running` ticks. Player **must** call `onLaneTime` — else `t_run` stays 0 and you fall back to `m` alone.
+Player **must** call `onLaneTime` — else `t_run` stays 0.
 
-```
-if (!held):
-  tickRun
-  if !cue_open && idle_plate: tickIdle   // −0.015 / s picture-time
-  resolveFrame
-  applyVerdict
-```
+Idle-decay not during an open cue. HOLD: lastT tracks, no leak. Quiet: 6 Hits before 8 s still serve **calm**.
 
-Do **not** idle-decay during an open cue (that is wait / Hit / Miss). HOLD: lastT tracks, no leak.
+Mp4 rate = **1**. Sprint rate = ρ of the next reel. `L` 3/3.
 
-8 s idle: `m` −0.12. Quiet: 6 Hits before 8 s still serve **calm**. `m < 0.18` → decay drawer.
+## Sound — two buses, film stays mute
 
-Mp4 rate = **1**. Sprint rate = ρ of the next reel. `L` 3/3 ([COOKLANE.md](COOKLANE.md)).
+The hung mp4 is **`-an`**. All sound is **beside** it, on picture-time + HOLD. Two `<audio>` tags. Never the `<video>` track (Safari + dual-video kills `play()`).
 
-Bone: Quiet [0,8) · Lean [8,20) · Build [20,45) · Peak [45,70] if `m≥0.70` && !ban.
+| Bus | What | When |
+|---|---|---|
+| **1 lit** | world loop (`audio/<id>-lit-calm.ogg` … peak / decay) | fade **at join** 100–200 ms, never on a cue |
+| **2 grade** | `audio/grade-hit.ogg` / late / miss  (< 200 ms) | oneshot iff `!HOLD` |
+
+Early / idle = **silence**. If the lit **says the beat**, mute bus 1 (same crime as a TAP bar).
+
+HOLD → both buses pause/mute. Resume does **not** unmute the mp4. `video.muted = true` always. Do not pitch the lit with `m` (same lie as `playbackRate`).
+
+Switch lit = `pickNext` / `afterJoin`, not `timeupdate`.
+
+Missing ogg → that bus silent, **sprint continues**. Never block a run for audio.
+
+**Year-0:** ship **bus 2 only** (Hit/Miss) + bus 1 mute. Wind can wait. Do **not** bake sound into Imagine « to feel alive ».
 
 ## One line
 
-**`t_run` counts race frames. Idle-decay gnaws `m` only if the picture runs and you are not playing.**
+**Lit = file per tier, cut at join, freeze on HOLD. Grade = a dry click if the clock is running. The film stays mute.**
