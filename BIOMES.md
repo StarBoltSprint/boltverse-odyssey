@@ -1,6 +1,6 @@
 # BIOMES — engine table (offline kit)
 
-One table. Forge / voice / WFC / Keep / Smoke **index** rows. They do not invent.
+One table. Forge / voice / Hang **index** this row. They do not invent.
 
 This does **not** replace [CATALOG.md](CATALOG.md) paints.
 
@@ -44,29 +44,84 @@ type BiomeRow = {
 }
 ```
 
+Machine source: [biomes.json](biomes.json). Prose here must match that file.
+
 ## Year-0 rows
 
 | id | feel | voice aliases | neighbors |
 |---|---|---|---|
-| `forest` | crystal-ice | forest, ice, crystal, jungle… | moss, dusk |
-| `moss` | wet green | moss, jungle | forest, dusk |
+| `forest` | crystal-ice | forest, ice, crystal | moss, dusk |
+| `moss` | wet green | moss, **jungle** | forest, dusk |
 | `dusk` | purple quiet | dusk, night | forest, ember |
 | `ember` | bronze warmth | ember, fire, rome, roman, forum | dusk, asteroid |
 | `asteroid` | void-stone | asteroid, mars, space, void, cosmos | ember |
 
-Off-alias → picker, no cook. New world = **new row** (stills + stock + neighbors), not a chat sentence.
+**Alias is voice only.** No `packs/rome/`. No cook “rome”. The id is the key — folders, clips, `kind: sprint` `to:` always the id.
 
-`moss` the **paint** (citadel ivy) and `moss` the **biome** (wet-green Lane) share a name. Door `kind` disambiguates: hall vs sprint.
+One alias, **one** target. `jungle` → `moss` (json). Not forest. Off-alias → picker of the 5, no Imagine.
+
+Phantom row = an id in a prompt that is not in `ids[]`. Forbidden. New land = new line (stills + stock + neighbors), PR, bump the table.
+
+`moss` the **paint** (citadel ivy) and `moss` the **biome** (wet-green Lane) share a name. Door `kind` disambiguates.
+
+## worldLine / pathLine
+
+Two **frozen** strings per row. That is all Imagine may see.
+
+- `worldLine` — matter / sky / light (1–2 sentences)
+- `pathLine` — floor and fork. Not a 3rd door. Not HUD.
+
+Voice ≤ 12 words **after**, never instead. “a bit more violet” OK. “and a temple under the sea” = new world = refuse.
+
+Ban stems (same as the hall): cape, text, UI, orbit, dolly, face, 3rd portal, fashion stage, “camera follows”. If they sit in `worldLine`, the row is already bad — Smoke does not need an eye.
+
+**Change a worldLine = recook the whole kit, or do not touch it.** Old stock + new line = two biomes wearing one id.
+
+## neighbors
+
+Closed list of ids **that exist**. Means: you *may* cook an Enter edge. Not: the edge is hung.
+
+- `from === to` forbidden (forest→forest is not a neighbor)
+- no auto-mirror: `forest.neighbors` contains dusk does **not** imply the reverse — write both sides if you want both
+- neighbor outside `ids[]` = broken row
+- empty list = cul-de-sac, OK (`asteroid` only has ember)
+
+Hall [adjacency.json](adjacency.json) does **not** apply. Crossing the two tables in one cook = `to: ember` as hall paint vs Lane ember. [LINKS.md](LINKS.md).
+
+## railsVersion
+
+Label of the **body + camera contract**. Now: `lockoff-back-v1`.
+
+Bump when: dog no longer back / FOV changes / door or pathLine grammar changes / dual-video plate breaks.
+
+Do **not** bump for “more moss on the walls” (that is worldLine + recook).
+
+One kit = one version. Forest stock in `v1` mixed with a new clip in `v2` = first/last and lock incoherent. Recook min stock if you bump.
+
+## Identity vs spawn
+
+Two photos, two jobs.
+
+| | `identity` | `spawn` |
+|---|---|---|
+| What | Bolt back, thumb, often lock | **this** biome’s hall/Lane, dog center / fork |
+| Share | **yes** — `lock/bolt-back.jpg` for all 5 | **no** — one spawn per id |
+| Serves | CHAR, i2i “same dog” | first/last, underlayer, decay |
+
+Sharing spawn across forest and moss = same pixels, different worldLine → biome invisible or Imagine clones a corridor.
+
+Identity ≠ spawn: using spawn as the thumb nails the décor into CHAR and you lose the dog lock.
 
 ## Min stock (play offline)
 
 Required: 3 breaths + 2 walks spawn→A/B + `decay` + spawn still + identity thumb.  
 Optional: A↔B (else Recall → spawn → walk-spawn-B).  
-**Enter is not** min stock — clip per *edge* (`forest→dusk/enter-A`) only if `to ∈ neighbors`.
+**Enter is not** min stock — clip per *edge* only if `to ∈ neighbors`.
 
 Empty stock → this biome’s `decay`, not a mystery cook.
-
 No Hang if stock is incomplete (`"coming"`). No citadel door on a coming row.
+
+The row comes **first**. mp4s come **after** — not before.
 
 ## Fill order (kit before hook)
 
@@ -93,21 +148,25 @@ No decay and no glow = a painting that runs — not a playable biome.
 - `worldLine` / `pathLine` frozen; voice ≤12 words **after**, never instead
 - identity ≠ spawn (do not share spawn stills across biomes)
 - identity thumb may be shared (`lock/bolt-back.jpg`)
-- bump `railsVersion` if camera / body law changes
+- bump `railsVersion` only for camera / body — then recook min stock
 - Smoke [SMOKE.md](SMOKE.md) + cue honesty [PLAY.md](PLAY.md) before Hang
-- no free-text biome (“jungle under the sea”) → new `BiomeId` = PR, not chat
+- no free-text biome → new `BiomeId` = PR, not chat
 - do not `cookRoom` a paint and call it a biome
+- aliases do not cook
 
 ## Lookups
 
 ```
-biome = catalog.get("forest")
-clip  = biome.stock["walk-spawn-A"]
-legalEnter = catalog.get(from).neighbors.includes(to)
-"mars" → ALIAS → "asteroid"
+voix "rome" → alias → ember
+ember.worldLine     → Imagine matter
+ember.spawn         → ember graph only
+ember.identity      → same Bolt as forest
+ember.neighbors     → dusk, asteroid (Enter legal)
+ember.railsVersion  → this stock is v1
+ember.stock         → files, after the row
 ```
 
-Footage: [starboltsprint-forest](https://github.com/StarBoltSprint/starboltsprint-forest) (`asteroid.mp4`, `cook-forest`, `cook-rome`…). Missing files = `"coming"`.
+Footage: [starboltsprint-forest](https://github.com/StarBoltSprint/starboltsprint-forest). Missing files = `"coming"`.
 
 Citadel hook (after step 6):
 
@@ -117,12 +176,12 @@ Citadel hook (after step 6):
 }
 ```
 
-`to` ∈ `biomes.ids`, **not** [adjacency.json](adjacency.json) (that is hall→hall).
+`to` ∈ `biomes.ids`, **not** adjacency.json.
 
 ## Table tests
 
-Each id has min stock + spawn + identity · neighbors exist · aliases resolve · no two ids share spawn · `worldLine` has no ban stems (cape, text, orbit…).
+Each id has min stock + spawn + identity · neighbors exist · `from !== to` · aliases resolve to **one** id · no two ids share spawn · `worldLine` has no ban stems · json aliases match this page.
 
 ## One line
 
-Fill the row until it plays offline, then (optional) hang it on a door. Kit before hook. Glow in the film. Decay is not optional.
+Five keys, nicknames that do not cook, two frozen sentences, neighbors written by hand, one rails version, two photos that are not the same. The kit starts there. The mp4s come after.
