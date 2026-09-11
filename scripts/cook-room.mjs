@@ -179,15 +179,24 @@ await cap2("atB", async () => {
 if (debug) out("stills written");
 
 const breaths = [
-  ["films/breath-spawn.mp4", spawnStill, "stills/spawn.jpg"],
-  ["films/breath-a.mp4", atA, "stills/at-a.jpg"],
-  ["films/breath-b.mp4", atB, "stills/at-b.jpg"],
+  ["films/breath-spawn.mp4", spawnStill, "stills/spawn.jpg", "spawn"],
+  ["films/breath-a.mp4", atA, "stills/at-a.jpg", "atA"],
+  ["films/breath-b.mp4", atB, "stills/at-b.jpg", "atB"],
 ];
-for (const [rel, still, stillRel] of breaths) {
+for (const [rel, still, stillRel, pose] of breaths) {
   let ok = false;
   for (let i = 0; i < 2; i++) {
     try {
-      await imagineClip({ root, slot, kind: "breath", first: still, last: still, dest: join(dir, rel) });
+      await imagineClip({
+        root,
+        slot,
+        kind: "breath",
+        first: still,
+        last: still,
+        dest: join(dir, rel),
+        seconds: 6,
+        pose,
+      });
       if (!smoke(rel, "breath")) throw new Error("smoke breath");
       ok = true;
       break;
@@ -196,7 +205,6 @@ for (const [rel, still, stillRel] of breaths) {
     }
   }
   if (!ok) {
-    // Gel = decay, not PASS. Only if the still already passed size.
     if (!ffmpegLoop(stillRel, rel)) fail("breath " + rel);
     if (!smoke(rel, "breath")) fail("breath loop smoke " + rel);
     out("breath gel " + rel + " (decay — not a living breath PASS)");
