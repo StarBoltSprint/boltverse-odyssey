@@ -47,7 +47,7 @@ Year-0 cook: **pose, L, R, fork**. That is all the back gives.
 Does **not** read (not a cue):
 
 - face / gaze (we are back)
-- a tiny “jump” with no hind-paw plant then leave — Imagine misses it, the eye too
+- a tiny “jump” with no hind-paw plant then leave
 - 40° yaw (profile = FAIL lock)
 - fire / spell with no light **on the ground or paws**
 - a double-tap combo the clip does not have
@@ -67,31 +67,68 @@ More than 3 glows in 10 s: the player mashes, Bolt is no longer read.
 
 ### Time the cue **after** the clip
 
-1. Watch the mp4.
-2. Frame where the gesture **starts to show** → `on`.
-3. Frame where it is **done** → `off`.
-4. Glow must be on **inside** `[on, off]`.
-5. If you hesitate 300 ms, the gesture is not sharp enough → recook, do **not** widen the cue.
+Never write `on: 3.0` then ask Imagine to match.
 
-Hit = ≤80 ms before `on` through `off`. Coyote 180–280 ms after.
+```
+1. Clip PASS (lock, back, plate)
+2. Scrub frame by frame
+3. Mark times
+4. Playtest 5 taps
+5. Recook the glow if you would have to widen too much
+```
+
+```
+t_see   = first frame “I see L or the pose”
+t_end   = last frame “it is still that”
+on      = t_see
+off     = t_end
+hit_pre = on - 0.08
+coyote  = clamp(0.18 … 0.28)
+```
+
+`on` = first readable frame of the **gesture**, not start of shot.  
+`off` = last frame of **this** gesture, not “he finished running”, not end of mp4.  
+Glow 1.2 s / net gesture 0.4 s → window = the **gesture**. Else Hit farm.
+
+| Plate | `[on, off]` |
+|---|---|
+| calm | **350–550 ms** |
+| lean | **280–400 ms** |
+| peak | **220–320 ms** |
+| < 180 ms | almost never |
+
+Playtest: all Early → `on` too late. All Late → `off` too soon. Hits without looking → too wide. Nobody finds the side → recook the lean. Nudge **2–4 frames**, not 0.5 s.
+
+If you hesitate 300 ms, recook. Do **not** widen the cue.
+
+### Frozen (smoke.json Lane)
+
+```
+early_grace_s:     0.08
+coyote_min_s:      0.18
+coyote_max_s:      0.28
+cue_min_s:         0.22
+cue_max_s:         0.55
+min_gap_on_to_on:  coyote + 0.05
+```
+
+Calm may sit at max. Peak at min. `cue_max > 0.55` = honesty FAIL (player mashes the glow).
+
+`m` does **not** change coyote or the 80 ms. `m` picks a plate already timed tighter. A calm plate is a **slower gesture in the picture**, so `t_end - t_see` is already larger.
+
+Traps: time to audio (there is none / bus 2 is after). Copy times from another clip. `off` = end of mp4 “just in case”. Four cues 0.3 s apart (no clean coyote).
 
 ### `m` does not rename verbs
 
-Gestures keep the same **names**. Density and amplitude change:
-
-- calm: sparse poses, short path
-- wake: closer poses, clearer lean, fork later in the bone
-- peak: max path — still pose / L / R, just faster
-
-No “super jump” unlocked by `m`. `m` picks the **next plate** (livelier), not a combo overlay.
+Gestures keep the same **names**. Density and amplitude change. No “super jump” unlocked by `m`.
 
 Prompt one plate: **one** dominant gesture + worldLine.
 
 > Bolt sprints, leans left, luminous path pulls left, no text, lock-off, back to camera.
 
-Then list cues. If the model did not lean, you do **not** invent `lean-L` in the JSON. If both sides glow, recook — one gesture, one direction.
+Then list cues. If the model did not lean, you do **not** invent `lean-L` in the JSON. If both sides glow, recook.
 
-Hall → Lane: first plate may **continue the door-hand** he entered with (left 40 % after teal). No tutorial screen.
+Hall → Lane: first plate may **continue the door-hand**. No tutorial screen.
 
 ## `m` = wake, not a combo HUD
 
@@ -139,7 +176,9 @@ Cap 2. Gel ≠ PASS. Glow missing ×2 → no cues, no hall door.
 - cooking walk-A and calling it a Lane
 - inventing lean-L when the clip runs straight
 - both sides glowing the same
+- writing `on` before the clip exists
+- widening `[on, off]` past `cue_max_s` to “make it playable”
 
 ## One line
 
-**Pose, left, right, fork — that is all the back gives.** Each tap marries one of those four. `m` chains livelier plates. It does not add buttons. The finger goes where the dog goes.
+**`on` = I see the gesture, `off` = it is done, +0.2 s grace, −80 ms anticipation.** If you have to open wider for it to play, recook the dog. You do not relax the law.
