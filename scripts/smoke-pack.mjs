@@ -9,7 +9,7 @@
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { execFileSync, spawnSync } from "node:child_process";
-import { matchPose, GW, GH, creamHeight, PUNCH } from "./still-pair.mjs";
+import { matchPose, GW, GH, creamHeight, creamPlace, PUNCH } from "./still-pair.mjs";
 import { pHash, dHash, hamming } from "./phash.mjs";
 
 const TH = JSON.parse(
@@ -139,6 +139,24 @@ function cloneScan(file, d, kind) {
     }
   }
   return max;
+}
+
+function walkSprintScan(file, d) {
+  let prev = null;
+  for (let t = 0; t < d - 0.3; t += 0.7) {
+    try {
+      const p = creamPlace(rawFrame(file, t, GW, GH), GW, GH);
+      if (p && prev) {
+        const dt = t - prev.t;
+        const v = Math.abs(p.cx - prev.cx) / dt;
+        if (dt > 0.4 && v > 0.2) return { t, v };
+      }
+      if (p) prev = { ...p, t };
+    } catch {
+      /* skip */
+    }
+  }
+  return null;
 }
 
 function walkReturnScan(file, d, firstHash) {
@@ -322,6 +340,13 @@ function smokeFile(file, kind, refs, required, smokeDir) {
           "graph.walk_return",
           `t=${back.toFixed(1)}`,
           "mid-clip frame ≈ spawn — one trip only, no teleport home",
+        );
+      const dash = walkSprintScan(file, d);
+      if (dash)
+        return fail(
+          "graph.walk_sprint",
+          `t=${dash.t.toFixed(1)}`,
+          `dash ${dash.v.toFixed(2)} W/s — even pace, no last-second warp to the door`,
         );
     }
 
