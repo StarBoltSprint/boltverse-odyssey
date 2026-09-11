@@ -5,7 +5,8 @@ This is engine grammar **(1)**: you *play* Bolt **inside** an Imagine film.
 Distinct from **(2)** — citadel hall: menu-picture, lock-off, zero chrome. This repo’s player is **(2)** ([ENGINE.md](ENGINE.md)).
 
 A door with `kind: sprint` ([LINKS.md](LINKS.md)) **hands off** to this disc. Cook: [COOKLANE.md](COOKLANE.md).  
-Runner: [scripts/sprint-transition.mjs](scripts/sprint-transition.mjs) — reel picker + tap judge. Not Imagine.
+Clock: [scripts/cue-coyote.mjs](scripts/cue-coyote.mjs) — `makeSheet` / `resolveFrame` / `flushOpen`.  
+Reel: [scripts/sprint-transition.mjs](scripts/sprint-transition.mjs) — `m` + `pickNext`. Not Imagine.
 
 **The Lane is not a tiny citadel.** Center of the minute = plates + bone. Hall poses live **only at the edges**.
 
@@ -36,7 +37,7 @@ Straight run → no L/R cue. Do not invent `lean-L` if the clip did not lean. `m
 
 ## How the player knows (no second map)
 
-Same **40 / 20 / 40** as the hall on `containPlate`. Letterbox = void. First Lane plate may continue the door-hand. No TAP stamp. [DONT.md](DONT.md) §7.
+Same **40 / 20 / 40** as the hall on `containPlate`. Letterbox = void. First Lane plate may continue the door-hand. No TAP stamp. [DONT.md](DONT.md) §7. Tap token: `A` | `B` | `pose`.
 
 ## Cue window + coyote
 
@@ -52,55 +53,41 @@ You do **not** set `on: 3.0` then ask Imagine to match. Clip PASS → scrub → 
 Hit     = [on − 0.08 , off]
 Late    = (off , off + C]
 Miss    = tap after off+C  OR  no tap when t > off+C
-Early   = tap < on − 0.08   (ignore, cue stays open)
+Early   = tap < on − 0.08   (ignore, SAME cue)
+wait    = still in Hit or coyote, no tap
 ```
 
-**Coyote is a tail of grace after `off`.** The gesture is dead in the film; the finger may still arrive a bit late. It is **Late**, not a second Hit (`m` unchanged, peakBan). If you push `off` 220 ms later, you still score **Hit** on a dead gesture — farm. The tail is rhythm, not a longer glow.
-
-`C` = media seconds (`currentTime`), not wall clock.
+**Coyote is a tail of grace after `off`.** Late, not a second Hit (`m` unchanged, peakBan). `C` = media seconds.
 
 ```
-C = clamp(0.18, 0.28, 0.22)          // default 220 ms
-C = min(C, next.on − off)            // next on cuts the grace
+C = clamp(0.18, 0.28, 0.22)
+C = min(C, next.on − off)
 ```
 
-One constant per `railsVersion`, not per plate. `m` does **not** widen it.
+`m` does **not** widen `C`. Two cues 120 ms apart = recook, do not raise `C` to 400 ms.
 
-Two cues 120 ms apart = tiny coyote. Too tight: recook / fewer cues. Do **not** raise `C` to 400 ms.
+One verdict **once**. Close `i` then Early of `i+1`.
 
-Resolve **in order**: close cue `i` (coyote) **then** read a tap as Early of `i+1`. One verdict **once**. Not Hit at `off−10ms` then Late in the tail.
+**ended:** `flushOpen(sheet, duration)` — a cue still open is **Miss**, not eternal wait. That is why the clock is its own file.
 
-| ms | ~frames @ 24fps |
-|---|---|
-| 80 (early grace) | ~2 |
-| 180 | ~4 |
-| 220 | ~5 |
-| 280 | ~7 |
+**Playtest:** too many Late → nudge `off` 2 frames, not `C`.
 
-Under 4 frames, Late almost never exists (everyone Miss). Over 7, Late *feels* like Hit — `m` would lie if Late added `m`.
-
-**Playtest:** too many Late, few Hit → `off` too soon — nudge `off` **2 frames**, not `C`. Too many “I tapped” Miss → `C` to 0.26 or plate too short. Hits while looking away → `off` too late, not the coyote.
-
-What does **not** compute `C`: ping / frame drop (picture-time only; a jump past `off+C` = Miss, hard, honest). `playbackRate ≠ 1` (forbidden). Difficulty `m` (next plate is tighter **in the image**, same `C`).
-
-| Plate | Gesture window `[on, off]` |
+| Plate | `[on, off]` |
 |---|---|
 | calm | **350–550 ms** |
 | lean | **280–400 ms** |
 | peak | **220–320 ms** |
-| < 180 ms | almost never — mash |
-
-Glow 1.2 s, net gesture 0.4 s → window = the **gesture**.
 
 ## Reel (not the cassette knob)
 
 ```
-timeupdate (currentTime)
-  gradeTap / gradeClock → hit / late / miss / early / idle
-  applyVerdict → m, tier, peakBan
-ended(plate)
+timeupdate
+  sheet.t = currentTime; sheet.tap = lastTap; lastTap = null
+  sheet = resolveFrame(sheet)
+  if (verdict && verdict !== "wait" && verdict !== "early") applyVerdict
+ended
+  sheet = flushOpen(sheet, duration)
   pickNext → planSwap → ENGINE hid (playbackRate = 1)
-  hid not ready → hold / decay
 ```
 
 | Verdict | `m` | Next |
@@ -108,22 +95,18 @@ ended(plate)
 | Hit | `+= 0.1` | higher tier |
 | Miss | `× 0.7`, floor `0.05`, `peakBan` | lower / decay |
 | Late | unchanged, `peakBan` | no peak |
-| Early / idle | unchanged | same |
+| Early / wait | unchanged | same cue / same |
 
-Tiers: `0–0.3` calm · `0.3–0.7` lean · `≥0.7` peak (if not banned).  
 Repeated miss → **exit** the minute (hall), not Game Over.
-
-Joints: last A ≈ first B. Dual-video load B **during** A. One `src=` on vis = Samsung clone — don't. `planSwap` does not touch the DOM.
 
 ## Hard fences
 
 - No TAP bar. Recook glow, not UI.
-- Same 40/20/40 as the hall.
-- Peak is not a door and not a tap.
 - Never `playbackRate ≠ 1`. Never live Imagine as `m` rises.
 - Do not widen `[on, off]` or `C` to “make it playable” — recook the dog.
 - Do not cook walk-A and call it a Lane.
+- Do not skip `flushOpen` on `ended`.
 
 ## One line
 
-**Hit while the gesture lives; 0.22 s after, it is Late; then Miss; the next `on` cuts the grace.** The coyote catches the finger, not the clip. Speed is the next film.
+**Hit while the gesture lives; 0.22 s after, it is Late; then Miss; the next `on` cuts the grace.** `ended` flushes. The coyote catches the finger, not the clip.
