@@ -128,14 +128,14 @@ Floor 1 films → `films/` (the 5). Floor 2 = walk-A-B / B-A if asked. Floor 3 =
 | breath-spawn | image_to_video on spawn | spawn | spawn | 6s | in-room: loop, feet glued |
 | breath-A | image_to_video on atA | atA | atA | 10s | in-room: loop, feet glued |
 | breath-B | image_to_video on atB | atB | atB | 10s | in-room: loop, feet glued |
-| walk-spawn-A | API last_frame spawn→atA | spawn | atA | 10s | back-to-camera the **whole** clip |
-| walk-spawn-B | API last_frame spawn→atB | spawn | atB | 10s | idem |
-| walk-A-B | API last_frame atA→atB | atA | atB | 10s | **floor 2** — only if asked |
-| walk-B-A | API last_frame atB→atA | atB | atA | 10s | **floor 2** — only if asked |
+| walk-spawn-A | API last_frame spawn→atA | spawn | atA | **6s** | arrive ~2s then HOLD. No round trip |
+| walk-spawn-B | API last_frame spawn→atB | spawn | atB | **6s** | idem |
+| walk-A-B | API last_frame atA→atB | atA | atB | **6s** | **floor 2** — only if asked |
+| walk-B-A | API last_frame atB→atA | atB | atA | **6s** | **floor 2** — only if asked |
 
 Walk prompt slot (every walk):
 
-> Lock-off camera. Same hall. The FULL-white German Shepherd with the teal collar (ZERO black on the coat, no saddle) walks slowly from the first frame pose to the last frame pose, always back to camera, never turning a 3/4 or a profile. Feet on the floor. Both portals stay in the hall. No face, no UI, no morph. 10 seconds.
+> Lock-off. 6 seconds. He walks two steps to the door (~2s) and HOLDS. Do not walk back to spawn. last_frame locks the last picture, not the path — leftover seconds = round trip = FAIL. FULL-white GSD, teal collar, back the whole clip. No 3/4, no morph.
 
 ### Breath — two laws
 
@@ -176,6 +176,7 @@ Hang: [GROK.md](GROK.md) + [ENGINE.md](ENGINE.md). Open = breath-spawn. No chrom
 - First frame ≠ start still / last frame ≠ arrive still (dissolve will not fix this)
 - Cooked as `image_to_video` on one still (violates Law 0)
 - Cooked as chat `reference_to_video` (not last_frame)
+- 10s walk that arrives then returns to spawn (`graph.walk_return`) — recook **6s**, do not hang a trim of the loop
 
 ## Enter — second room on a door (after both packs exist)
 
