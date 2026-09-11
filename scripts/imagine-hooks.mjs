@@ -130,8 +130,15 @@ function breathLine(pose) {
   ].join(" ");
 }
 
-function laneClipLine(pose) {
+function laneClipLine(pose, kind) {
   const p = String(pose || "");
+  if (kind === "breath" || p === "pose") {
+    return [
+      LANE_LAW,
+      "ONE dog. He STANDS on four paws, micro breath, feet glued.",
+      "NEVER sit. NEVER howl. NEVER jump. NEVER profile. NEVER a second dog. Loop. Locked-off.",
+    ].join(" ");
+  }
   const side = /L/i.test(p) ? "LEFT" : /R/i.test(p) ? "RIGHT" : "fork";
   const act = p.startsWith("lean")
     ? "ONE act: the ice FORKS. He TAKES the " +
@@ -195,9 +202,9 @@ export async function imagineStill({ root, slot, pose, dest, spawnPath, lane }) 
   return dest;
 }
 
-export async function imagineClip({ root, slot, kind, first, last, dest, seconds = 6, pose }) {
-  const prompt = isLanePose(pose)
-    ? laneClipLine(pose)
+export async function imagineClip({ root, slot, kind, first, last, dest, seconds = 6, pose, lane }) {
+  const prompt = lane || isLanePose(pose)
+    ? laneClipLine(pose, kind)
     : [
         LAW,
         catalogLines(root, slot),
