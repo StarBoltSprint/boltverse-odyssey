@@ -176,7 +176,7 @@ Hang: [GROK.md](GROK.md) + [ENGINE.md](ENGINE.md). Open = breath-spawn. No chrom
 He parks mid-hall, then `last_frame` yanks him to at-A. Last picture can be correct. The **path** is illegal.
 
 Cook: leave spawn in **1s**, even gait, arrive ~5s of 8s, hold. Spawn→sill **Δh/H < 0.12**.
-Smoke: `graph.walk_linger` (still at spawn ~3s) or `graph.walk_sprint` (warp). Cap 2 → drop the walk, tap = stay. Do not hang the dash.
+Smoke: `graph.walk_linger` (still at spawn ~3s), `graph.walk_plant` (frozen **mid-hall**, not spawn — linger misses this), or `graph.walk_sprint` (warp). last_frame can PASS (last = at-A) while the path FAILs. Cap 2 → drop the walk, tap = stay. Do not hang the dash.
 
 ## Walk FAIL (recook that clip, don't hang it)
 

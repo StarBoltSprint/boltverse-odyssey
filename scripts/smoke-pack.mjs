@@ -141,6 +141,18 @@ function cloneScan(file, d, kind) {
   return max;
 }
 
+function walkPlantScan(file, d) {
+  // Frozen mid-hall (not spawn) — linger hash misses this. Frost try1: 2–5s planted, then warp.
+  try {
+    const a = creamPlace(rawFrame(file, 2.0, GW, GH), GW, GH);
+    const b = creamPlace(rawFrame(file, Math.min(4.6, d * 0.58), GW, GH), GW, GH);
+    if (a && b && Math.abs(b.cx - a.cx) < 0.05) return 4.5;
+  } catch {
+    /* skip */
+  }
+  return null;
+}
+
 function walkLingerScan(file, d, firstHash) {
   // Still parked at spawn at ~3s → later last_frame must yank. Same sin as dash.
   const t1 = Math.min(3.4, d * 0.42);
@@ -360,6 +372,13 @@ function smokeFile(file, kind, refs, required, smokeDir) {
           "graph.walk_linger",
           `t=${linger.toFixed(1)}`,
           "still at spawn ~3s — he must leave in the first second, or last_frame will warp",
+        );
+      const plant = walkPlantScan(file, d);
+      if (plant != null)
+        return fail(
+          "graph.walk_plant",
+          `t=${plant.toFixed(1)}`,
+          "frozen mid-hall — last_frame will warp; even gait from t=0",
         );
       const dash = walkSprintScan(file, d);
       if (dash)

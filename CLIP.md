@@ -178,3 +178,11 @@ Even gait. FAIL `graph.walk_dash` if |Δcx| / Δt > 0.22 (hall-width in <1s). Re
 ## Linger then warp
 
 Same crime as `walk_sprint`. Parked at spawn at t≈3s = `graph.walk_linger`. The later dash is the consequence. Recook: leave in the first second. Cap 2 → no walk.
+
+## Mid-hall plant (hard)
+
+`last_frame` worked. The walk did not.
+
+Try: last = at-A. 0–1s he moves. **2–5s planted mid-hall** (not spawn → `walk_linger` silent). ~5s warp teal (`walk_sprint`).
+
+FAIL `graph.walk_plant` if cx barely moves 2s→4.5s. Yaw 44° on recook = `gate.yaw` / profile — also FAIL. Cap 2 → no walk. Not a last_frame cable bug.
