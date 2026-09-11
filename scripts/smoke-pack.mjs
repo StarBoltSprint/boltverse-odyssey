@@ -146,7 +146,7 @@ function walkPlantScan(file, d) {
   try {
     const a = creamPlace(rawFrame(file, 2.0, GW, GH), GW, GH);
     const b = creamPlace(rawFrame(file, Math.min(4.6, d * 0.58), GW, GH), GW, GH);
-    if (a && b && Math.abs(b.cx - a.cx) < 0.05) return 4.5;
+    if (dogOk(a) && dogOk(b) && Math.abs(b.cx - a.cx) < 0.05) return 4.5;
   } catch {
     /* skip */
   }
@@ -166,19 +166,30 @@ function walkLingerScan(file, d, firstHash) {
   return null;
 }
 
+function dogOk(p) {
+  // Ice / vapor: creamPlace snaps to a floor blob or returns empty.
+  // Lost dog must NOT become cx=0.50 at hall center.
+  return p && p.h >= 0.16 && p.h <= 0.48 && (p.w == null || p.w < 0.5);
+}
+
 function walkSprintScan(file, d) {
   let prev = null;
   for (let t = 0; t < d - 0.3; t += 0.7) {
     try {
       const p = creamPlace(rawFrame(file, t, GW, GH), GW, GH);
-      if (p && prev) {
+      if (!dogOk(p)) {
+        prev = null; // drop track — frost vapor, same family as breath Δh
+        continue;
+      }
+      if (prev) {
         const dt = t - prev.t;
         const v = Math.abs(p.cx - prev.cx) / dt;
-        if (dt > 0.4 && v > 0.2) return { t, v };
+        // Consecutive samples only. A gap after lost-dog is not a warp.
+        if (dt >= 0.4 && dt <= 1.05 && v > 0.35) return { t, v };
       }
-      if (p) prev = { ...p, t };
+      prev = { ...p, t };
     } catch {
-      /* skip */
+      prev = null;
     }
   }
   return null;

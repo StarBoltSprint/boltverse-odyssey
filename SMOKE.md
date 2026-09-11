@@ -160,3 +160,9 @@ Gate 2 hash: [PHASH.md](PHASH.md) + [`smoke.json`](smoke.json). Last frame = −
 ### Breath Δh / vapor
 
 Breath pair `Δh/H` threshold is **0.11**. If the **only** fail is `gate.size Δh/H` ≤ 0.14 and hall + feet are frozen, Smoke **WARNs** (vapor). Punch-in, yaw, place, hall SSIM still FAIL. A walk on a breath plate is not vapor.
+
+### Walk sprint vs ice (false positive)
+
+`creamPlace` on frost vapor / ice floor can lose Bolt (`h=0`) or snap `cx` to hall center. Next frame he is at teal → `walk_sprint` 0.28. Eyes: he was walking.
+
+Lost dog = drop track, do not use `cx=0.50`. Only consecutive samples (dt ≤ 1.05s) with `h` in 0.16–0.48. Threshold **0.35** W/s (real warp was 0.43). 0.28 after a hole = PASS. Same family as breath vapor.
