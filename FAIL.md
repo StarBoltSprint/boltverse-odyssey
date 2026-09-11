@@ -36,6 +36,7 @@ The player may **not** see: Forge, % bar, black plate, “generating…” on th
 | Lane `last(n) ≠ first(n+1)` | do not Hang that kit | `lane.joint` — recook as a chain |
 | Lane wobble (center→side→center) | do not Hang that plate | `lane.wobble` — one act, stay |
 | Hung `from` ≠ previous `to` | do not Hang | `lane.station` |
+| Lane plate n+1 slower than n on a clean run | do not Hang | `lane.slow` — standing start / shorter stride |
 
 None of this opens a modal.
 
@@ -67,7 +68,7 @@ Same for Enter: `ENTER[moss].A = null` → stay. The player does not fetch the m
 
 The noisy fail is: try the clip, 404, flash black. So: **test the edge before kick**. No file = no kick.
 
-A Lane kit whose hung path teleports (`lane.joint`) or wobbles (`lane.wobble`) is the same: **coming**, no `kind:sprint` door. Stay in the hall. [COOKLANE.md](COOKLANE.md)
+A Lane kit whose hung path teleports (`lane.joint`), wobbles (`lane.wobble`), or decelerates on a clean run (`lane.slow`) is the same: **coming**, no `kind:sprint` door. Stay in the hall. [COOKLANE.md](COOKLANE.md)
 
 ## Recook: silent for the player, capped for the forge
 
@@ -95,6 +96,7 @@ Product silent-fail **leans** on that. The job must not serve a pack the player 
 - Video 404 with empty poster. Preload + missing edge = stay
 - Half-cooked Hall′: better no edge than curtain + clone. Silent = **no Enter**, not “almost Enter”
 - Four parallel leans from bolt-back: looks done, plays as 4 teleports. Silent = **coming**, not “hang the wobble”
+- playbackRate 1.1 to “fix” a slow plate: fakes the film. Recook faster. Silent = `lane.slow`
 
 ## Test
 
