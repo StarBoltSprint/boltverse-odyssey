@@ -7,6 +7,7 @@
  * CHAIN (COOKLANE.md): last(n) file IS first(n+1).
  * Do not imagineStill from bolt-back for plate 2+.
  * After each clip: extract last frame → stillEnd. Next from-station copies that file.
+ * imagineStill / imagineClip always pass lane:true (LANE_LAW, no portals).
  * Cues stay []. After this script: scrub on/off, smokeL, then coming: false.
  * FAIL cap 2 on a required plate (decay) → whole kit stays coming. No kind:sprint door.
  */
@@ -77,7 +78,7 @@ function queue() {
   const lines = [
     "cook-biome " + id + " — NOT cook-room, 0 atA",
     pal.identity + " (shared lock, first station only — never 4 parallel leans)",
-    "CHAIN last(n) = first(n+1). Fork he KEEPS. No wobble.",
+    "CHAIN last(n) = first(n+1). Fork he KEEPS. No wobble. lane:true (no portals).",
   ];
   const hung = pal.hung || [];
   if (hung.length) {
@@ -167,6 +168,7 @@ for (const p of plates) {
         slot: id,
         pose: "spawn",
         dest: stillA,
+        lane: true,
       });
       station[from] = stillA;
     }
@@ -179,6 +181,7 @@ for (const p of plates) {
         pose: "spawn",
         dest: stillB,
         spawnPath: stillA,
+        lane: true,
       });
     }
     await imagineClip({
@@ -190,6 +193,7 @@ for (const p of plates) {
       dest,
       seconds: p.duration,
       pose: p.gesture,
+      lane: true,
     });
     extractLast(dest, stillB);
     station[to] = stillB;
