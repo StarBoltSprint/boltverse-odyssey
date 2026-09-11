@@ -1,10 +1,24 @@
-# GROK — floor 1 (the only default job)
+# GROK — floor 1 (the only default *citadel* job)
 
 Repo: `https://github.com/StarBoltSprint/boltverse-odyssey`  
 Player: https://boltverse-odyssey.grok.me
 
+**First word picks the disc.** Same player. Not the same recipe.
+
 ```
-DEFAULT JOB =
+citadel / paint / salle mousse / fais-moi une citadelle
+  → THIS page. Job = node scripts/cook-room.mjs <slot>
+
+biome / sprint / lane / colle forest sur la porte
+  → [BIOMES.md] then [PLAY.md] [LINKS.md]. NOT cook-room.
+    Fill the row (order 1–7). kind:sprint only after Hang.
+```
+
+**“citadel moss” ≠ “biome moss”.** They share a word, not a recipe.  
+Do not put a hall walk in a Lane. Do not put QTE cues on a hall breath.
+
+```
+DEFAULT JOB (hall) =
   node scripts/cook-room.mjs <slot>
   (stills + last_frame walks + smoke.json)
   then URL /r/<slot>  or stock on FAIL×2
@@ -28,6 +42,8 @@ Off-list paint or FAIL ×2 → stock `/`. Do not invent a temple.
 ---
 
 Trigger (any language): *play boltverse*, *boltverse odyssey*, *starboltsprint*, *citadel*, *citadelle*, *fais-moi une citadelle*. Then this page. Job = the script. Not chat Imagine.
+
+If they said *biome* / *sprint* / *lane* / *colle forest* — **stop.** [BIOMES.md](BIOMES.md). Do not run cook-room.
 
 You are wiring a **living-film** room, not a game with UI.
 
@@ -178,7 +194,7 @@ Map by motion, not by filename. Skip still-cook.
 
 Land in `packs/<id>/`. If you must recook a walk/enter: **Law 0**. Run validate-pack then smoke-pack. Give the player URL. No chrome.
 
-Sprint / Lane: [PLAY.md](PLAY.md) — not the hall player. Door `kind: sprint` hands off.
+Sprint / Lane: first word was biome/sprint → [BIOMES.md](BIOMES.md) [PLAY.md](PLAY.md), not this cook. Door `kind: sprint` hands off ([LINKS.md](LINKS.md)).
 
 Biome kits (sprint, offline): [BIOMES.md](BIOMES.md). Do not replace paints. `rome` → ember. `mars` → asteroid.
 
@@ -194,6 +210,6 @@ Pack format: [PACK.md](PACK.md). Write a folder. Do not scaffold a player. forma
 
 Gift: [TICKET.md](TICKET.md). 1 still **photo**/day/X. 50 Imagine/week all players. XAI_API_KEY server-only. Same paint = reuse. Walk/breath never spend. Never generating on Bolt.
 
-False help: [DONT.md](DONT.md). No live Imagine on tap, no WASD, no kitchen on the plate, no auto-enter, no free-text Hall′.
+False help: [DONT.md](DONT.md). No live Imagine on tap, no WASD, no kitchen on the plate, no auto-enter, no TAP bar, no free-text Hall′.
 
 Corridor: [COOKROOM.md](COOKROOM.md). `citadel dusk` → floor 1 without asking ok. Off-list or FAIL ×2 → stock URL.
