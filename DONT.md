@@ -1,4 +1,4 @@
-# DONT — five false helps
+# DONT — false helps
 
 These look like help. They break both barriers at once: the player no longer knows the law, the keeper stacks FAIL.
 
@@ -59,7 +59,35 @@ Default prompt: **one catalog slot**.
 Hall′: **a neighbor on the list**, floor 3, another job.  
 “Describe any temple” is a clone factory.
 
-## Why the five travel together
+## 6. Chat `reference_to_video` as a walk
+
+Looks like the tweet (first + last). The tool text says the images are **not** frames.
+
+- first still ≈ start: luck
+- last still: Imagine keeps walking into the oval
+- splice pop, `gate.size`, player as Smoke
+
+Walks = `POST /v1/videos/generations` with `last_frame`. That is `scripts/imagine-hooks.mjs`. Chat refs = illegal for walks/enter.
+
+## 7. TAP overlay / timing bar on a sprint
+
+“A TAP above the door — everyone succeeds.”
+
+That kills the living film. You have a QTE with a clip behind it. Nobody *reads* the dog.
+
+Forbidden on the 9:16:
+
+- the word TAP / NOW
+- Guitar Hero icon lane that says **when**
+- fill-bars whose job is the metronome
+
+The cue is **glow in the encode** on `[on, off]`. Tap L only if Bolt turns L in that frame. Straight run = no L/R cue. Random chart = FAIL.
+
+Playtest too hot → recook a bigger, earlier glow. Do **not** add chrome. The defect is the plate, not the UI. [PLAY.md](PLAY.md).
+
+Resonance at the bottom is the world's score, not the clock. **The metronome is Bolt.**
+
+## Why they travel together
 
 Each puts **invention** where the system needs **boring joints**.
 
@@ -70,6 +98,8 @@ Each puts **invention** where the system needs **boring joints**.
 | Visible forge | is this a game? | stays an editor |
 | Auto-enter | no clear sentence | forced curtain, clones |
 | Free text | unreadable halls | Smoke on fire |
+| Chat last_frame | pop at the sill | walks without a seal |
+| TAP / NOW bar | nobody watches the film | a QTE wearing a clip |
 
 You did not lower the barrier. You reopened the 3D dungeon and the sermon.
 
@@ -81,19 +111,10 @@ Does it keep:
 2. 1 player  
 3. Smoke before Hang  
 4. stock if it fails  
+5. on a Lane: glow in the picture, no when-bar  
 
-If not, it is another engine. Do not slip it into `citadel + paint`.
+If not, it is another engine. Do not slip it into `citadel + paint` or `biome forest`.
 
 ## One line
 
-Do not generate on tap, do not move the camera, do not show the kitchen, do not shove the door, do not open Mars. Real help is a PASS pack and a tap that always does the same thing.
-
-## 6. Chat `reference_to_video` as a walk
-
-Looks like the tweet (first + last). The tool text says the images are **not** frames.
-
-- first still ≈ start: luck
-- last still: Imagine keeps walking into the oval
-- splice pop, `gate.size`, player as Smoke
-
-Walks = `POST /v1/videos/generations` with `last_frame`. That is `scripts/imagine-hooks.mjs`. Chat refs = illegal for walks/enter.
+Do not generate on tap, do not move the camera, do not show the kitchen, do not shove the door, do not open Mars, do not stamp TAP on the film. Real help is a PASS pack and a tap that always does the same thing.
