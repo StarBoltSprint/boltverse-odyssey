@@ -2,19 +2,19 @@
 
 Hall cook = [COOKROOM.md](COOKROOM.md). Row = [BIOMES.md](BIOMES.md). Play = [PLAY.md](PLAY.md).  
 Runner = [scripts/sprint-transition.mjs](scripts/sprint-transition.mjs).  
-`L` = [scripts/cue-readability.mjs](scripts/cue-readability.mjs) — `smokeL`. Does not see the film.
+`L` = [scripts/cue-readability.mjs](scripts/cue-readability.mjs) — `smokeL` / `actionL`. Does not see the film.
 
 **Do not cook walk-A as the sprint.** The minute = plates + `m` + `t_run`.
 
 ## Count — not 60 plates
 
-6–15 s, `playbackRate = 1`, join cut 0. Aim **6 played** + **1 decay**. Cook ≈ **10 clips** (calm×3, lean×4, peak×2, decay×1). A run plays ~6.
+6–15 s, `playbackRate = 1`. Cook ≈ **10 clips** (calm×3, lean×4, peak×2, decay×1). A run plays ~6.
 
 ## Density ρ
 
 ```
 ρ      = N_cues / duration_s
-ρ_glow = sum(off − on) / duration_s   // year-0 cap 0.45; later 0.30 peak / 0.20 calm
+ρ_glow = sum(off − on) / duration_s   // year-0 cap 0.45
 ```
 
 | Palier | N | Durée | ρ | min `on→on` |
@@ -26,28 +26,26 @@ Runner = [scripts/sprint-transition.mjs](scripts/sprint-transition.mjs).
 
 FAIL: N≥4 / ≤10 s · two `on` < 0.6 s · overlap · peak N=1 >12 s · `ρ_glow > 0.45`.
 
-## Readability `L` — year-0 guard, not a lab
+## Readability `L` — a vote, not a mean
 
-3 samples → `L` can only be **0, 1/3, 2/3, 1**. `0.75` meant **3/3**. Write that.
+3 samples → `L ∈ {0, ⅓, ⅔, 1}`. One bad sample **jumps a tier**. Prefer **false negative**. Doubt = not readable. Never average 10 visions until PASS (that *creates* FP).
 
 ```
-L_PASS = 3/3     Hang honesty
-L_GRAY = 2/3     nudge on/off 2–4 frames (gesture is there, window is wrong)
-FAIL   = 0 or 1/3  recook — even the middle of the cue does not read
+3/3               Hang
+mid NON           recook — the gesture is not there
+only off NON      nudge off −2–4 frames   (keep the mp4)
+only on NON       nudge on  +2–4
+ambiguous L/R     recook side
 ```
 
-Code: `smokeL` (`L_PASS = 1`, `L_GRAY = 0.5`). Ambiguous L/R → 0. Decay 0 cue → `L.na`.
+**Gray ≠ Imagine recook.** Gray spends **no** cap-2. Recook only if **mid** is no, or ambiguous. `off` is the noisy edge — often the window, not the clip.
 
-Do **not:** lower PASS to 0.50 to ship forest · tie `L` to `m` · grow coyote to hide a hole.
-
-Coyote is **outside** `L`. **No ring if `L` is low.**
+Do **not:** lower PASS to ship forest · tie `L` to `m` · grow coyote / `ρ_glow` to hide a hole.
 
 ## Sprint law
 
-Mp4 rate = 1. Sprint rate = ρ of the next reel. Year-0: pose, L, R, fork.  
-`Hit m += 0.1` · `Miss × 0.7` floor 0.05. Time `[on, off]` **after** the clip.
+Mp4 rate = 1. Sprint rate = ρ of the next reel. Year-0: pose, L, R, fork. Time `[on, off]` **after** the clip.
 
 ## One line
 
-**With 3 photos, readable = all three. Two = move the window. One = recook.**  
-0.75 is not science. It is « no hole in the chart ».
+**The middle counts, the edges lie, doubt is no.** Recale the window first. Do not lower 3/3 to calm the classifier.
