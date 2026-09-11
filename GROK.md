@@ -65,17 +65,20 @@ The stills **are** the frames. [COOK.md](COOK.md).
 |---|---|---|---|
 | **hall walk** | API `image` + `last_frame` | start still | arrive still — **distinct** |
 | **hall breath** | one still twice | pose | **same** |
-| **Lane calm/decay** | one still twice | plate still | **same** |
-| **Lane lean/peak** | `image` + `last_frame` | start | hold — **distinct** |
+| **Lane calm** | one still twice | plate still | **same** |
+| **Lane lean/peak** | I2V from a **running** first. **NO standing last_frame** | gallop still | extracted last **gallop** frame |
+| **Lane decay** | I2V slower walk, 4 paws | running or walk | walk — never sit |
 | **enter / return** | first AND last | at-sill / Lane last | fill veil — **never** dest spawn |
 
-Never `image_to_video` a walk or enter on a single still. Breath / calm / decay = the only legal `first = last`.
+Never `image_to_video` a **hall walk or enter** on a single still. Breath / calm = the only legal `first = last`.
 
-Lane lean/peak is a **chain**, not 4 photos from `lock/bolt-back`. `last(n)` file **is** `first(n+1)`. Never 4 independent leans. Wobble (center → side → center) = FAIL. Hung path: next `from` = current `to`. Opening calms = fridge. [COOKLANE.md](COOKLANE.md)
+A standing `last_frame` on a lean **brakes** him. Sit / poop. Cap 2 recooks. QC every 0.5 s with `ffmpeg -i` THEN `-ss`. Sit anywhere = do not Hang. Year-0 hung = one gallop file (`forest-run`). Tap counts. [COOKLANE.md](COOKLANE.md) [CUES.md](CUES.md)
+
+Lane lean/peak is a **chain**, not 4 photos from `lock/bolt-back`. `last(n)` file **is** `first(n+1)` and that file is still running. Never 4 independent leans. Wobble (center → side → center) = FAIL. Hung path: next `from` = current `to`. Opening calms = fridge.
 
 ## Law 1 — floors
 
-Hall default = floor 1: 3 stills + 5 films, no Enter. Lane default = 10 reels + decay, cues after scrub. Visitor = stock `/`.
+Hall default = floor 1: 3 stills + 5 films, no Enter. Lane default = hung gallop until L2 QC-passes, cues after scrub. Visitor = stock `/`.
 
 ## Fridge
 
