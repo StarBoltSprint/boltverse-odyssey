@@ -172,3 +172,11 @@ Lost dog = drop track, do not use `cx=0.50`. Only consecutive samples (dt ≤ 1.
 Spawn still **28°** PASS. First frame of the mp4 **37°** FAIL at 32°. Last vs at-A **6°**. Hall first≈spawn **0.998**. Eyes: back. PCA of ice on the encoded jpeg, not a profile.
 
 Walk yaw threshold is **40°**. 37° = PASS. Real turn (44° ¾) still FAIL. Same family as breath vapor / lost ice-dog.
+
+### Breath gel vs ice yaw
+
+Walk yaw is 40°. Breath was still **32°**. Frost breath-spawn 36–40° ice PCA → FAIL → COOK ffmpeg **gel** (photo loop). The dog was breathing. Same family as walk first-frame 37°.
+
+Breath yaw is **40°**. 36–40° = PASS living breath. Do not loop a still for ice yaw.
+
+breath-A: if he **walked**, still FAIL (`breath_drift` / place). Ice height **0.46** on a sill breath is the floor blob (sill FAIL now **> 0.48**). 0.52 punch still dies.

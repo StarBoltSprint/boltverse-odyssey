@@ -348,11 +348,11 @@ function bandCheck(h, pose, why, warns) {
   if (h >= PUNCH) why.push(`gate.size punch-in ${h.toFixed(2)}`);
   else if (pose === "spawn" && (h < 0.18 || h > 0.36)) why.push(`gate.size spawn-band ${h.toFixed(2)}`);
   else if (pose === "sill" && h < 0.28) warns.push(`gate.size sill-band ${h.toFixed(2)} want 0.35-0.40`);
-  else if (pose === "sill" && h > 0.45) why.push(`gate.size sill-band ${h.toFixed(2)}`);
+  else if (pose === "sill" && h > 0.48) why.push(`gate.size sill-band ${h.toFixed(2)}`);
 }
 
 const T = {
-  breath: { hall: 0.55, dh: 0.11, yaw: 32, dcx: 0.08, ncc: 0.38 },
+  breath: { hall: 0.55, dh: 0.11, yaw: 40, dcx: 0.08, ncc: 0.38 },
   walk: { hall: 0.45, dh: 0.12, yaw: 40, dcx: 0.22, ncc: 0.34 },
   enter: { hall: 0.12, dh: 0.14, yaw: 32, dcx: 0.35, ncc: 0.3 },
 };
