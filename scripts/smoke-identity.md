@@ -1,15 +1,12 @@
 # Layer C — Grok vision (one rule, no sermon)
 
-**Walk last 2 seconds = ONE dog.** A second Bolt at spawn/center (Frost walk-A, 2026-09-10 t=13s) = `FAIL clone.two_dogs @ t=last`.
+**Walk last 2 seconds = ONE dog.** A second Bolt at spawn/center = `FAIL clone.two_dogs @ t=last`.
 
-**Walk is one trip.** Mid-clip snap back to spawn (Frost walk-B t=11s) = `FAIL graph.walk_return`. Recook. Do not hang.
+**Walk is one trip.** Mid-clip snap back to spawn = `FAIL graph.walk_return`.
 
-**Coat:** FULL white. Zero black on the dog. Saddle / mask / black ears / grey = `FAIL identity.coat` or `identity.saddle`. [CHAR.md](../CHAR.md).
+**Coat:** FULL white. Zero black. [CHAR.md](../CHAR.md).
 
-**Required** on stills, walks, breaths. Optional on enter.
-You are **not** kind to a profile wolf.
-
-Look at the 3 frames (or 1 still) Smoke extracted:
+Look at the 3 frames Smoke extracted:
 
 ```
 .smoke/<clip>/first.jpg
@@ -17,48 +14,49 @@ Look at the 3 frames (or 1 still) Smoke extracted:
 .smoke/<clip>/last.jpg
 ```
 
-Official refs: `stills/spawn.jpg` `stills/at-a.jpg` `stills/at-b.jpg` + `lock/example-*.jpg` + `lock/bolt-back.jpg`.
-Rifts: [DOORS.md](../DOORS.md) — L cyan RECT, R gold RECT, jambs+sill, never wood.
+Hall refs: stills + `lock/bolt-back.jpg`. Lane refs: **same thumb** (pose, not freeze-paws). Return **one line**: `PASS` or `FAIL <rule> @ t=0|t=mid|t=last`.
 
-Return **exactly one line**:
-
-```
-PASS
-```
-
-or
-
-```
-FAIL <rule> @ <t=0|t=mid|t=last|still> (<note>)
-```
-
-`<note>` ≤ 4 words. No paragraph. No "almost".
-
-## FAIL rules (copy, refuse dry)
+## FAIL rules (hall + Lane)
 
 | rule | if you see |
 |---|---|
-| `identity.face` | face / eyes to camera |
-| `identity.muzzle` | snout toward camera |
-| `identity.look` | looking at camera |
-| `identity.profile` | head in profile (spawn especially) |
-| `identity.three_quarter` | 3/4 body or head |
-| `clone.two_dogs` | second dog / ghost |
-| `clone.ghost` | transparent second body |
-| `identity.coat` | silver / grey / not full white |
-| `identity.saddle` | black saddle, mask, black ears |
-| `identity.black_silhouette` | black dog, unread fur |
-| `identity.cape` | cape, armor, size morph |
-| `identity.text` | text, UI, watermark |
-| `identity.third_door` | a third portal |
-| `identity.door_wood` | wood leaf / ajar timber |
-| `identity.door_flat` | painted panel, no jambs/sill |
-| `identity.door_morph` | RECT rift becomes a circle mid-walk |
-| `identity.door_void` | black hole, no energy fill |
-| `identity.door_chrome` | orb / UI overlay as the door |
-| `identity.door_cut` | gold or teal rift cropped (illegal except last second of **enter**) |
-| `identity.orbit` | dolly / tilt: paws sliding down, ceiling falling |
-| `lock.lens_mismatch` | atA/atB not the same focal / distance as spawn |
-| `encode.fade_black` | last frames go black / empty hall |
+| `identity.face` / `muzzle` / `look` / `profile` / `three_quarter` | face, snout, 3/4, profile |
+| `clone.two_dogs` / `clone.ghost` | second body |
+| `identity.coat` / `saddle` / `black_silhouette` / `cape` | not full white |
+| `identity.text` | TAP, UI, watermark |
+| `identity.orbit` | dolly / tilt |
+| `gait.muzzle` | sprint mid but head turned |
+| `gait.paws_first` / `gait.paws_last` | first or last with only 2 pegs |
+| `gait.float` | belly, 0 paws, melting into the path |
 
-Wrong side / face = FAIL. Do not crop to hide it. Do not suggest Hall'.
+## Lane gait (not a second identity)
+
+Thumb = **back, 4 paws on the floor**. Sprint = **he runs**. A stride *hides* paws. Demand 4 crisp hooves on every frame = you cannot cook a Lane. Let everything through = 3/4 and melt pass too.
+
+**Never moves (even peak):** back / withers to camera · 4 limbs (not 3, not a werewolf) · white, size stable, lock-off. Thumb is the **pose** ref, not « freeze paws the whole plate ».
+
+Honest occlusion — a few frames, still reads as a quadruped from behind:
+
+| OK | Not OK |
+|---|---|
+| Rear passing behind the other (trot / gallop) | Paw melted into the path |
+| Foreleg up, pad off floor 2–4 frames | Both fores gone a long time (sit / heroic rear) |
+| Tail / flank hiding a hock | Belly + 0 paw = float |
+| Snow / glow eating a foot 1–2 frames | Glow replacing the dog |
+
+Count paws on **first / mid / last**, not every lift frame. Reuse the 3 `L` samples:
+
+```
+first  : paws >= 3  AND back
+mid    : paws >= 2  AND back  AND not profile
+last   : paws >= 3  AND back
+no sample in muzzle / 3/4
+```
+
+Calm / decay ≈ still — 4 paws most of the time. Lean / peak: gray is **mid**. First/last at 2 paws = FAIL (monster at the join).
+
+Mid profile even with 4 paws = `identity.profile` (yaw), not a gait issue.
+
+Do **not**: allow 3/4 « to sell speed » · ffmpeg-loop a 1-paw mid to save `L` · a second thumb `bolt-run.jpg`. Profile = other `railsVersion`, recook the **whole** kit. Year-0: no.
+
+If he turns anyway → recook, do not loosen Hamming.
