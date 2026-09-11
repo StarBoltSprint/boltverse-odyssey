@@ -112,14 +112,72 @@ Sharing spawn across forest and moss = same pixels, different worldLine → biom
 
 Identity ≠ spawn: using spawn as the thumb nails the décor into CHAR and you lose the dog lock.
 
-## Min stock (play offline)
+## Min stock (play offline, no Imagine)
 
-Required: 3 breaths + 2 walks spawn→A/B + `decay` + spawn still + identity thumb.  
-Optional: A↔B (else Recall → spawn → walk-spawn-B).  
-**Enter is not** min stock — clip per *edge* only if `to ∈ neighbors`.
+If one file is missing, it is not a kit. It is `"coming"`. Do not “complete live”.
 
-Empty stock → this biome’s `decay`, not a mystery cook.
-No Hang if stock is incomplete (`"coming"`). No citadel door on a coming row.
+```
+stills/spawn.jpg
+stills/identity.jpg          // or pointer lock/bolt-back.jpg
+films/breath-spawn.mp4
+films/breath-atA.mp4
+films/breath-atB.mp4
+films/walk-spawn-A.mp4
+films/walk-spawn-B.mp4
+films/decay.mp4
+```
+
+Seven clips + two photos. No Enter. No A↔B.
+
+Same graph as hall floor 1, **plus decay**.  
+Breath = first = last = that pose still.  
+Walk = first spawn, last at-sill.
+
+### decay — the Lane floor
+
+Required. Not an easter egg.
+
+The player puts this plate if: walk/breath 404, `play()` fail, cue unreadable / Smoke reject after the fact, Imagine refuses a recook.
+
+Never mystery cook at the tap. Empty stock → **this** decay, this biome, not another id.
+
+**The two nets do not replace each other.** A forest walk must **not** fall onto `packs/citadel` because “it’s the golden”. Wrong rails, wrong worldLine. Hall floor-1 decay = citadel stock (other disc). Lane decay lives **in** the row.
+
+Decay must pass metal (plate, mute) and show no 2nd dog / no face. A **safe** PASS, not a pretty one. Often: spawn loop or a very calm breath. Honest gel > invented sprint.
+
+Without decay, silent fail has no floor on the Lane.
+
+### A↔B optional
+
+`walk-A-B` / `walk-B-A` = comfort, not min. Do not cook them “to look rich” before the 5 + decay pass Smoke.
+
+If missing:
+
+```
+atA + tap B  →  back to spawn (breath or cut) then walk-spawn-B
+```
+
+Longer, readable, **zero** ghost clip. `required: true` without a file = FAIL. Absent / `required: false` = valid kit.
+
+### Encode (same player, one handoff)
+
+720×1280 after `scale=...:increase,crop=720:1280`. H264 `yuv420p` `+faststart`. **No audio.** JPEG same frame. 784×1168 = lock jump at hall→Lane swap.
+
+### `"coming"`
+
+State of the row, not a clip.
+
+```
+stock incomplete  →  coming
+coming            →  no Hang
+                  →  no ENTER.kind sprint on a hall door
+                  →  no public Lane URL
+                  →  no Imagine “in the meantime”
+```
+
+Grok / voice: picker or “not yet”. When 7+2 exist **and** Smoke + cue honesty: drop `coming`, then Hang.
+
+Hook before that = 2nd tap into the void or live cook ([DONT.md](DONT.md)).
 
 The row comes **first**. mp4s come **after** — not before.
 
@@ -153,6 +211,7 @@ No decay and no glow = a painting that runs — not a playable biome.
 - no free-text biome → new `BiomeId` = PR, not chat
 - do not `cookRoom` a paint and call it a biome
 - aliases do not cook
+- decay is not optional; citadel stock is not Lane decay
 
 ## Lookups
 
@@ -180,8 +239,8 @@ Citadel hook (after step 6):
 
 ## Table tests
 
-Each id has min stock + spawn + identity · neighbors exist · `from !== to` · aliases resolve to **one** id · no two ids share spawn · `worldLine` has no ban stems · json aliases match this page.
+Each id has min stock + spawn + identity + **decay** · neighbors exist · `from !== to` · aliases resolve to **one** id · no two ids share spawn · `worldLine` has no ban stems · json aliases match this page · coming rows have no public URL and no hall hook.
 
 ## One line
 
-Five keys, nicknames that do not cook, two frozen sentences, neighbors written by hand, one rails version, two photos that are not the same. The kit starts there. The mp4s come after.
+Seven films including a net, two photos, same plate as the hall, A↔B later, coming = no door. Until decay exists you do not have a biome — you have a demo that dies when a clip misses.
