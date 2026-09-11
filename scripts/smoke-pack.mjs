@@ -258,6 +258,8 @@ function smokeFile(file, kind, refs, required, smokeDir) {
       if (hh >= PUNCH) return fail("gate.size", "still", `punch-in ${hh.toFixed(2)}`);
       if (kind === "still-spawn" && (hh < 0.18 || hh > 0.36))
         return fail("gate.size", "still", `spawn-band ${hh.toFixed(2)}`);
+      if ((kind === "still-atA" || kind === "still-atB") && (hh < 0.28 || hh > 0.45))
+        return fail("gate.size", "still", `sill-band ${hh.toFixed(2)} want 0.35-0.40`);
     } catch (e) {
       return fail("file.decode", "still", e.message);
     }

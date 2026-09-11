@@ -147,3 +147,10 @@ loop=false. ended → breath-arrive, never replay the walk.
 ```
 
 Walk cook = API `last_frame`, not chat `reference_to_video`. If last overshoots the still, recook. Do not replace the still with the fat frame.
+
+## Walk last vs at-still (size)
+
+`last_frame` can still miss. Gel at t=end = fat dog at teal (**0.52**) while official at-A is tiny (**0.15**). `graph.last_gray` ham 14 = not the same picture.
+
+- at-A / at-B still **must** be sill-band **0.35–0.40** (FAIL < 0.28 or > 0.45). 0.15 is a spawn-scale dog standing at the door — recook the **still**.
+- Walk last must match that still. 0.52 vs 0.15 = `gate.size` + `graph.last_not_official`. Recook the walk (6s) or the still. **Do not** replace the small still with the fat last.
