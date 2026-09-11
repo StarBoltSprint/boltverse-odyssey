@@ -5,7 +5,7 @@
   "identity": "lock/bolt-back.jpg",
   "railsVersion": "lockoff-back-v1",
   "worldLine": "crystal-ice forest, pale stone, frozen moss, lock-off back",
-  "pathLine": "the ice FORKS; he TAKES a vein and STAYS; glow on that vein; never a HUD; never a wobble back to center in the same plate",
+  "pathLine": "the ice FORKS; he TAKES a vein and STAYS; glow on that vein; never a HUD; never a wobble back to center in the same plate; hung path ACCELERATES; never a standing restart",
   "hung": ["forest-lean-L1", "forest-lean-L2"],
   "drawers": {
     "calm": [
@@ -17,6 +17,7 @@
         "from": "C",
         "to": "C",
         "duration": 8,
+        "pace": 0,
         "gesture": "pose",
         "cues": []
       },
@@ -28,6 +29,7 @@
         "from": "C",
         "to": "C",
         "duration": 12,
+        "pace": 0,
         "gesture": "pose",
         "cues": []
       },
@@ -39,6 +41,7 @@
         "from": "C",
         "to": "C",
         "duration": 14,
+        "pace": 0,
         "gesture": "pose",
         "cues": []
       }
@@ -52,6 +55,7 @@
         "from": "C",
         "to": "L",
         "duration": 10,
+        "pace": 2,
         "gesture": "lean-L",
         "cues": []
       },
@@ -63,6 +67,7 @@
         "from": "C",
         "to": "R",
         "duration": 10,
+        "pace": 2,
         "gesture": "lean-R",
         "cues": []
       },
@@ -74,6 +79,7 @@
         "from": "L",
         "to": "L",
         "duration": 10,
+        "pace": 3,
         "gesture": "lean-L",
         "cues": []
       },
@@ -85,6 +91,7 @@
         "from": "R",
         "to": "R",
         "duration": 10,
+        "pace": 3,
         "gesture": "lean-R",
         "cues": []
       }
@@ -98,6 +105,7 @@
         "from": "L",
         "to": "R",
         "duration": 9,
+        "pace": 4,
         "gesture": "fork",
         "cues": []
       },
@@ -109,6 +117,7 @@
         "from": "R",
         "to": "L",
         "duration": 9,
+        "pace": 4,
         "gesture": "fork",
         "cues": []
       }
@@ -122,6 +131,7 @@
         "from": "C",
         "to": "C",
         "duration": 10,
+        "pace": 0,
         "gesture": "pose",
         "required": true,
         "cues": []
