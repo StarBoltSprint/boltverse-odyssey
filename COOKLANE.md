@@ -1,7 +1,8 @@
 # COOKLANE — the sprint minute, not a tiny citadel
 
 Hall cook = [COOKROOM.md](COOKROOM.md).  
-Row / ids = [BIOMES.md](BIOMES.md). Play disc = [PLAY.md](PLAY.md).
+Row / ids = [BIOMES.md](BIOMES.md). Play disc = [PLAY.md](PLAY.md).  
+Runner = [scripts/sprint-transition.mjs](scripts/sprint-transition.mjs) — judge + reel. Not Imagine.
 
 **Do not cook walk-A as the sprint.** The hall graph (spawn / atA / breath-A) is a **bridge** at the door. The minute itself is plates + `m`.
 
@@ -14,6 +15,7 @@ Row / ids = [BIOMES.md](BIOMES.md). Play disc = [PLAY.md](PLAY.md).
 | Graph | spawn · atA · atB | **none** — no teal/gold fork required |
 | Tap | walk to a door | **gesture already in the frame** |
 | Next clip | edge in `room.json` | `m` picks from a **palette** |
+| Speed | — | **next plate**, never `playbackRate` |
 
 Hall recollage **only at the edges**: enter from a citadel door (`kind: sprint`), exit to a hall, Recall / death / fail → `decay`.
 
@@ -26,7 +28,8 @@ Player **read** (same 40/20/40, glow says which/when, first plate continues the 
 3. Miss / Late → `m` down (never 0).
 4. A tap with **no** Bolt motion in that window = dead tap.
 
-**`m` wakes the world. The tap exists only if it matches a real Bolt gesture already in the shot.**
+**`m` wakes the world. The tap exists only if it matches a real Bolt gesture already in the shot.**  
+**Speed is the next film, not the knob of the current one.** `playbackRate = 1` always.
 
 ## Year-0 gestures (back, 9:16)
 
@@ -44,26 +47,11 @@ Lock-off, back to camera: you do **not** have 20 readable verbs. The eye sees ru
 
 Year-0 cook: **pose, L, R, fork**. That is all the back gives.
 
-Does **not** read (not a cue):
-
-- face / gaze (we are back)
-- a tiny “jump” with no hind-paw plant then leave
-- 40° yaw (profile = FAIL lock)
-- fire / spell with no light **on the ground or paws**
-- a double-tap combo the clip does not have
-
-A jump exists only if the hindquarters **sink then leave**, glow on that window. Else it is a word in the prompt, not a gesture.
+Does **not** read (not a cue): face / gaze, a tiny “jump” with no hind-paw plant then leave, 40° yaw, fire with no light on ground or paws, a combo the clip does not have.
 
 ### One plate = few gestures
 
-6–15 s: **1 to 3** cues, not a piano score.
-
-- *calm* — 1 pose every ~2 s, same path side
-- *lean* — 1 lean L **or** R, maybe a pose before
-- *fork* — 1 L/R choice, short coyote
-- *decay* — 0 cue (Idle) or 1 weak pose
-
-More than 3 glows in 10 s: the player mashes, Bolt is no longer read.
+6–15 s: **1 to 3** cues. *calm* 1 pose / ~2 s. *lean* 1 L **or** R. *fork* 1 choice. *decay* 0–1. More than 3 glows in 10 s = mash.
 
 ### Time the cue **after** the clip
 
@@ -77,18 +65,7 @@ Never write `on: 3.0` then ask Imagine to match.
 5. Recook the glow if you would have to widen too much
 ```
 
-```
-t_see   = first frame “I see L or the pose”
-t_end   = last frame “it is still that”
-on      = t_see
-off     = t_end
-hit_pre = on - 0.08
-coyote  = clamp(0.18 … 0.28)
-```
-
-`on` = first readable frame of the **gesture**, not start of shot.  
-`off` = last frame of **this** gesture, not “he finished running”, not end of mp4.  
-Glow 1.2 s / net gesture 0.4 s → window = the **gesture**. Else Hit farm.
+`on` = first readable frame of the **gesture**. `off` = last frame of **this** gesture. Glow 1.2 s / net 0.4 s → window = the **gesture**.
 
 | Plate | `[on, off]` |
 |---|---|
@@ -97,11 +74,9 @@ Glow 1.2 s / net gesture 0.4 s → window = the **gesture**. Else Hit farm.
 | peak | **220–320 ms** |
 | < 180 ms | almost never |
 
-Playtest: all Early → `on` too late. All Late → `off` too soon. Hits without looking → too wide. Nobody finds the side → recook the lean. Nudge **2–4 frames**, not 0.5 s.
+Nudge **2–4 frames**, not 0.5 s. Hesitate 300 ms → recook, do **not** widen.
 
-If you hesitate 300 ms, recook. Do **not** widen the cue.
-
-### Frozen (smoke.json Lane)
+### Frozen (smoke.json Lane + runner)
 
 ```
 early_grace_s:     0.08
@@ -110,36 +85,37 @@ coyote_max_s:      0.28
 cue_min_s:         0.22
 cue_max_s:         0.55
 min_gap_on_to_on:  coyote + 0.05
+playbackRate:      1
+
+m 0–0.3            tier calm
+m 0.3–0.7          tier lean
+m ≥ 0.7            tier peak (if not peakBan)
+Hit                m += 0.1
+Miss               m *= 0.7   floor 0.05  + peakBan
+Late               m unchanged, peakBan
+miss_exit          3  → leave the minute (hall), no Game Over
 ```
 
-Calm may sit at max. Peak at min. `cue_max > 0.55` = honesty FAIL (player mashes the glow).
+Calm may sit at cue max. Peak at min. `cue_max > 0.55` = honesty FAIL.
 
-`m` does **not** change coyote or the 80 ms. `m` picks a plate already timed tighter. A calm plate is a **slower gesture in the picture**, so `t_end - t_see` is already larger.
-
-Traps: time to audio (there is none / bus 2 is after). Copy times from another clip. `off` = end of mp4 “just in case”. Four cues 0.3 s apart (no clean coyote).
+`m` does **not** change coyote or the 80 ms. `m` picks a plate already timed tighter.
 
 ### `m` does not rename verbs
 
-Gestures keep the same **names**. Density and amplitude change. No “super jump” unlocked by `m`.
+Prompt one plate: **one** dominant gesture + worldLine. If the model did not lean, do **not** invent `lean-L`. If both sides glow, recook.
 
-Prompt one plate: **one** dominant gesture + worldLine.
+Hall → Lane: first plate may **continue the door-hand**.
 
-> Bolt sprints, leans left, luminous path pulls left, no text, lock-off, back to camera.
+## Palette (cook this, runner only picks)
 
-Then list cues. If the model did not lean, you do **not** invent `lean-L` in the JSON. If both sides glow, recook.
+```
+calm × n     slow, 1 cue, short path
+lean × n     denser, L or R
+peak         max wake
+decay        net, world falling asleep, 0 cue
+```
 
-Hall → Lane: first plate may **continue the door-hand**. No tutorial screen.
-
-## `m` = wake, not a combo HUD
-
-| `m` | Film | World |
-|---|---|---|
-| low | calm, few cues, weak glow | asleep |
-| rising | lean, denser gait, more `[on, off]` | path grows |
-| high | peak **earned** | dense — still **not** a 5th door |
-| falling | decay | sleeps again |
-
-Plates 6–15 s chain ~1 min. Imagine is not on the tap.
+Imagine cooks these **before**. The Lane runner is `next = palette[tier(m)]`. Not a cook at the tap. Not `playbackRate`.
 
 ## Law 0 (per plate)
 
@@ -155,7 +131,7 @@ Write `[on, off]` **after** the clip, on the real glow. Glow **in** the hung fil
 identity Bolt (back / rails)
 palette: calm × n, lean × n, peak, decay
 each plate: 1–3 of {pose, L, R, fork} + cues timed after the fact
-m picks the next plate
+m picks the next plate  (scripts/sprint-transition.mjs)
 Enter citadel = other job, 2nd tap, ticket
 ```
 
@@ -172,13 +148,15 @@ Cap 2. Gel ≠ PASS. Glow missing ×2 → no cues, no hall door.
 - a bar that says *when*
 - live Imagine as `m` rises
 - peak = teleport / a tap named peak
-- 60 s as **one** clip
+- 60 s as **one** clip (no `m` steps)
 - cooking walk-A and calling it a Lane
 - inventing lean-L when the clip runs straight
 - both sides glowing the same
 - writing `on` before the clip exists
-- widening `[on, off]` past `cue_max_s` to “make it playable”
+- widening `[on, off]` past `cue_max_s`
+- `video.playbackRate ≠ 1` to “reward” a Hit
+- seek to the “fast end” of the same clip
 
 ## One line
 
-**`on` = I see the gesture, `off` = it is done, +0.2 s grace, −80 ms anticipation.** If you have to open wider for it to play, recook the dog. You do not relax the law.
+**Speed is the next film, not the knob of the current one.** Hit → an already livelier plate. Miss → an already sleepier one. Bolt is never time-stretched.
