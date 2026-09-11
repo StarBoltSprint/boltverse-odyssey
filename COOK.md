@@ -14,7 +14,7 @@ Stills PASS, then **one** film at a time through [CLIP.md](CLIP.md). Never five 
 Every new conversation. Do not wait to be asked.
 
 | kind | Imagine call | first | last |
-|---|---|---|---|
+|---|---|---|
 | **walks** | API `image` + **`last_frame`** (hooks / `videos/generations`) | start still | arrive still — **distinct** |
 | **enter** | same | at-still | fill veil — **never** dest spawn |
 | **breath** | API `image` + **`last_frame` = the same still** | pose still | **same** still (spawn/spawn, atA/atA, atB/atB) |
@@ -129,10 +129,10 @@ Floor 1 films → `films/` (the 5). Floor 2 = walk-A-B / B-A if asked. Floor 3 =
 
 | clip | tool | first | last | dur | law |
 |---|---|---|---|---|---|
-| breath-spawn | image_to_video on spawn | spawn | spawn | 6s | in-room: loop, feet glued |
-| breath-A | image_to_video on atA | atA | atA | 10s | in-room: loop, feet glued |
-| breath-B | image_to_video on atB | atB | atB | 10s | in-room: loop, feet glued |
-| walk-spawn-A | API last_frame spawn→atA | spawn | atA | **10s** | arrive ~2s then HOLD. No round trip |
+| breath-spawn | image + last_frame = spawn | spawn | spawn | **6s** | loop, feet glued, ONE dog center |
+| breath-A | image + last_frame = atA | atA | atA | **6s** | loop, ONE dog at teal, never a center dog |
+| breath-B | image + last_frame = atB | atB | atB | **6s** | loop, ONE dog at gold, never a center dog |
+| walk-spawn-A | API last_frame spawn→atA | spawn | atA | **10s** | arrive ~8s then HOLD. No round trip |
 | walk-spawn-B | API last_frame spawn→atB | spawn | atB | **10s** | idem |
 | walk-A-B | API last_frame atA→atB | atA | atB | **10s** | **floor 2** — only if asked |
 | walk-B-A | API last_frame atB→atA | atB | atA | **10s** | **floor 2** — only if asked |
@@ -149,13 +149,23 @@ Walk prompt slot (every walk):
 | breath-A | `stills/at-a.jpg` | `stills/at-a.jpg` |
 | breath-B | `stills/at-b.jpg` | `stills/at-b.jpg` |
 
-Hooks **must** send `last_frame` = that still (same file twice). Image-only breath walks / turns / gels. Walk is the opposite: last **≠** first.
+Hooks **must** send `last_frame` = that still (same file twice). Image-only breath walks / turns / gels. Walk is the opposite: last **≠** first. Pass `pose` so `breathLine` pins the sill. **No spawn still in a door-breath call.**
+
+### Breath clone — LAW vs pose
+
+LAW says two portals + lower-third (**spawn** grammar). Door still = dog at the sill. Imagine **completes** the hall → two dogs at t=0. FAIL `clone.two_dogs`. Hash A+B often PASS. Layer C required. [CLIP.md](CLIP.md).
+
+Prompt (`scripts/imagine-hooks.mjs` `breathLine`):
+
+> ONE dog. Already at THIS sill. NEVER a dog at center. Do not complete the hall toward spawn. 6s. Feet glued.
+
+Cap 2 → ffmpeg loop of the at-still (decay, **not** a living PASS).
 
 ### Breath — two laws
 
-**In-room** (the 7 of the hall you are already in). Micro head is allowed:
+**In-room** (the 5 of the hall you are already in). Micro head is allowed:
 
-> Lock-off. Same still. The dog breathes, micro head, feet glued to the floor. Hall frozen. Seamless loop. No walk, no turn, no face.
+> Lock-off. Same still. ONE dog. Already at THIS pose. NEVER a second dog at center or the other door. Do not complete the hall. The dog breathes, feet glued. Hall frozen. Seamless loop. 6s. No walk, no turn, no face.
 
 **Dest after enter** (`films/a/breath-spawn.mp4`). Must be **posed**. If `image_to_video` walks / turns / leaves spawn → **do not hang it**. Freeze the still:
 
