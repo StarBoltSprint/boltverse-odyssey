@@ -4,7 +4,7 @@ This is engine grammar **(1)**: you *play* Bolt **inside** an Imagine film.
 
 Distinct from **(2)** — citadel hall. Player: [ENGINE.md](ENGINE.md). Cook: [COOKLANE.md](COOKLANE.md).
 
-Clock: [cue-coyote.mjs](scripts/cue-coyote.mjs) · Hold: [video-hold.mjs](scripts/video-hold.mjs) · Reel: [sprint-transition.mjs](scripts/sprint-transition.mjs) · DOM: [dom-swap.mjs](scripts/dom-swap.mjs).
+Clock: [cue-coyote.mjs](scripts/cue-coyote.mjs) · Hold: [video-hold.mjs](scripts/video-hold.mjs) · Reel: [sprint-transition.mjs](scripts/sprint-transition.mjs) · DOM: [dom-swap.mjs](scripts/dom-swap.mjs) · `L`: [cue-readability.mjs](scripts/cue-readability.mjs).
 
 ## Three machines
 
@@ -18,23 +18,15 @@ Only `running` may `resolveFrame` / bump `m` / tick `t_run`. Peak does **not** r
 
 ## `m` + bone (`t_run`)
 
-`m` = follow the dog. `t_run` = age of the storm. Peak = both. Mp4 rate = **1**. No `rate = f(m)`.
+`m` = follow the dog. `t_run` = age of the storm. Peak = both. Mp4 rate = **1**.
 
-Sprint rate = density of the next reel. Chart must also be **readable** (`L` ≥ 0.75, [COOKLANE.md](COOKLANE.md)). A ring does not fix low `L`.
+Sprint rate = ρ of the next reel. Chart readable = **`L` 3/3** ([COOKLANE.md](COOKLANE.md)). 2/3 = nudge the window. 1/3 = recook. A ring does not fix it.
 
-```
-ρ      = N_cues / duration_s
-ρ_glow = sum(off−on) / duration_s    // aim 0.15–0.35
-L      = T_readable / (off − on)     // 3 frames in the window, year-0
-calm 0.07–0.10 · lean 0.12–0.22 · peak 0.22–0.35
-never two cues at once
-```
-
-Quiet cannot serve peak ρ. Clean minute ≈ **8–9 cues**.
+Quiet cannot serve peak ρ. Clean minute ≈ **8–9 cues**. Never two cues at once.
 
 ### `t_run` integrator
 
-`Δ = currentTime − lastT` if sprint && !held && `0 ≤ Δ ≤ 0.5`. Seek / HOLD / decay: no +=. Boot `t_run = 0`.
+`Δ = currentTime − lastT` if sprint && !held && `0 ≤ Δ ≤ 0.5`. Boot `t_run = 0`.
 
 ### Verdict
 
@@ -42,14 +34,10 @@ Hit `m += 0.10` · Miss `× 0.70` floor 0.05 + peakBan · Late peakBan · Early 
 
 Bone: Quiet [0,8) · Lean [8,20) · Build [20,45) peak closed · Peak [45,70] if `m≥0.70` && !ban.
 
-## Cue + HOLD
-
-Hit `[on−0.08, off]` · Late `(off, off+C]` · `C = min(0.22, next.on−off)`. Year-0: pose, L, R, fork. 40/20/40.
-
 ## Hard fences
 
-Never two cues at once. Never Hang `L < 0.55`. Never peak before `t_run ≥ 45`. One `flushOpen` per plate.
+Never Hang 1/3. Never peak before `t_run ≥ 45`. One `flushOpen` per plate. Never grow coyote to hide a hole in `L`.
 
 ## One line
 
-**`L` = fraction of the window where you still see the gesture and the right glow.** ρ counts taps. `L` says they are real.
+**With 3 photos, readable = all three. Two = move the window. One = recook.**
