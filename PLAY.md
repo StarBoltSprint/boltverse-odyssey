@@ -14,28 +14,49 @@ Clock: [cue-coyote.mjs](scripts/cue-coyote.mjs) · Hold: [video-hold.mjs](script
 | **HOLD** | [video-hold.mjs](scripts/video-hold.mjs) | whether we **judge** |
 | **Partition** | coyote + reel | **which reel** (`m`, `t_run`, palette) |
 
-Only `running` (playing **and** `!held`) may `resolveFrame` / bump `m` / tick `t_run`. Peak does **not** raise the veil. `pickNext` only in `ended-wait`.
-
-Races: Samsung `src=` on vis · Frost hide-before-still · coyote `Date.now` · double `flushOpen` · swap+tap · peek peak. One flush per plate.
+Only `running` may `resolveFrame` / bump `m` / tick `t_run`. Peak does **not** raise the veil. `pickNext` only in `ended-wait`.
 
 ## `m` + bone (`t_run`)
 
-`m ∈ [0.05, 1]` — fitness / storm. Chrome name: Resonance (bar only). **One Lane minute.** Not Pack rank. Not a token.
+`m ∈ [0.05, 1]` — one Lane minute. Chrome: Resonance (bar only).  
+`m` = *are you still following Bolt?* `t_run` = *age of the storm*. Peak = both.
 
-It says *are you still following Bolt?* It does **not** say where we are in the film. That is `t_run`.
+**`m` must not:** change `playbackRate` · move coyote · pulse the bar · skip a plate · recook Imagine · advance during HOLD. Acts at the **JOIN**.
 
-**`m` must not:** change `playbackRate` · move `on/off` / coyote · pulse the bar on the beat · skip a plate · open Hall′ / a peak-door · recook Imagine · advance during HOLD.
+### `t_run` is an integrator of frames **really played**
 
-The current clip plays to the end. `m` acts at the **JOIN**.
+Picture-time. Not wall clock. Not `Date.now`. Not the sum of file durations.
 
-### Two clocks
+```
+t_run += Δ currentTime
+  only if clock = running
+  AND plate.kind = sprint   (calm | lean | peak)
+```
 
-| | Advances when | Hold |
-|---|---|---|
-| `t_clip` | `currentTime` of the plate | HOLD |
-| `t_run` | sum of **sprint** plate `t_clip` (not hall breath, not terminal decay) | HOLD + idle breath |
+```
+onTime(t):
+  if held: lastT = t; return
+  Δ = t − lastT
+  lastT = t
+  if kind == sprint and 0 ≤ Δ ≤ 0.5:
+    t_run += Δ
+  resolveFrame(...)
+```
 
-`t_run` ∈ ~0–70 s. That is the bone.
+`Δ > 0.5` or `Δ < 0` = seek / jump — **ignore**. A seek must not age the bone 8 s.
+
+| Does **not** += |
+|---|
+| HOLD (pause, hidden, stall, swap, play-fail, seek) |
+| hall breath (spawn / atA) |
+| decay `kind: "decay"` (terminal net) |
+| cook wait |
+
+Idle on a **playing** sprint plate: `t_run` **does** age. Idle-decay hits `m`, it does not freeze the bone. Cut a 12 s plate at 8 s → `t_run` took ~8 s **seen**.
+
+`t_run` **allows**. `m` **qualifies**. Neither skips the bone.
+
+Boot / hall→Lane / end of Lane: `t_run = 0`. Howl / Recall hall: `t_run` unchanged (you left the bone). No shared `t_run` across two minutes.
 
 ### Verdict (once per cue)
 
@@ -46,9 +67,7 @@ The current clip plays to the end. `m` acts at the **JOIN**.
 | Miss / wrong side | `max(0.05, m × 0.70)` | `peakBan` |
 | Early | unchanged | same cue |
 
-Idle-decay (no cue / Howl): each **1.0 s** picture-time idle → `m = max(0.05, m − 0.015)`. Pause does not tick.
-
-Boot / hall→Lane: `m = 0.12`, `t_run = 0`. End of Lane / terminal decay / hall exit = reset. `peakBan` clears at **join** of the next plate (one penance plate already picked).
+Idle-decay: each 1.0 s picture-time idle → `m − 0.015` (floor 0.05). Pause does not tick. `peakBan` clears at **join** (one penance plate already picked). Boot `m = 0.12`.
 
 ### Bone permission
 
@@ -72,38 +91,27 @@ want =
   else                               → lean
 ```
 
-Then `pickNext(palette[want])`: other id if possible → calm → decay → hold still.
-
-Density **in** the cooked plate: calm 1 cue · lean 1–2 · peak 2–3 · decay 0–1.
-
-### Bar
-
-Bottom, ~3–4 % of the 9:16, crystal. Fill ∝ `m`. **No** flash / beat / TAP. Peak permission may look denser (more facets), not an alarm. May hide for a nuder year-0 — the decree wants the bar.
-
-Hits → denser **next** plates. Miss → world falls asleep. Never time-stretch Bolt.
-
-Bus 1: one bed per tier, switch at join. Bus 2: Hit/Late/Miss oneshot only if `!HOLD`. Early = silence.
+Bar: ~3–4 % of 9:16, fill ∝ `m`, no flash. Bus 2 oneshot only if `!HOLD`.
 
 ### Tests
 
-- 6 Hits before 8 s → still calm plates
-- Clean Hits to 50 s + `m≥0.7` → peak allowed
-- Miss at 48 s → no peak this plate
+- 6 Hits before 8 s → still calm
+- Cut 8 s of a 12 s plate → `t_run` += ~8, not 12
+- Seek / `performance.now()` must not age the bone
 - Hidden 10 s → `t_run` and `m` frozen
-- Breath 8 s → `m` barely moved (~0.12)
+- Decay net must not farm toward 45 s
 - `playbackRate` never ≠ 1
 
 ## Cue + HOLD
 
-Hit `[on−0.08, off]` · Late `(off, off+C]` · `C = min(0.22, next.on−off)` clamp 0.18–0.28.  
-Same 40/20/40 as the hall. Year-0: pose, L, R, fork.
+Hit `[on−0.08, off]` · Late `(off, off+C]` · `C = min(0.22, next.on−off)`. Year-0: pose, L, R, fork. Same 40/20/40.
 
 ## Hard fences
 
-- No TAP bar. Never `playbackRate ≠ 1`. Never live Imagine as `m` rises.
-- Do not peak before `t_run ≥ 45`. Do not pickNext outside `ended-wait`.
+- Never `+= duration` of the file. Never `Date.now`.
+- Never `playbackRate ≠ 1`. Never peak before `t_run ≥ 45`.
 - One `flushOpen` per plate. `joinEnded` still first.
 
 ## One line
 
-**`m` = if you follow the dog. `t_run` = age of the storm. Peak = both.** The film only changes speed by changing reels.
+**`t_run` is the age of frames you actually saw on sprint reels.** `m` says if you were following. Peak needs both.
