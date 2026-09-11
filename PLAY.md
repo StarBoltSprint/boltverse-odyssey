@@ -18,45 +18,29 @@ Only `running` may `resolveFrame` / bump `m` / tick `t_run`. Peak does **not** r
 
 ## `m` + bone (`t_run`)
 
-`m ∈ [0.05, 1]` — one Lane minute. `m` = follow the dog. `t_run` = age of the storm. Peak = both.
+`m` = follow the dog. `t_run` = age of the storm. Peak = both. Mp4 rate = **1**. No `rate = f(m)`.
 
-**`m` must not:** change `playbackRate` · move coyote · recook Imagine · advance during HOLD. Acts at the **JOIN**.
-
-**The mp4 rate is constantly 1.** No `rate = f(m)`.
-
-Sprint rate = density of the next reel ([COOKLANE.md](COOKLANE.md)):
+Sprint rate = density of the next reel. Chart must also be **readable** (`L` ≥ 0.75, [COOKLANE.md](COOKLANE.md)). A ring does not fix low `L`.
 
 ```
 ρ      = N_cues / duration_s
-ρ_glow = sum(off−on) / duration_s    // aim 0.15–0.35; ≈1 = farm
+ρ_glow = sum(off−on) / duration_s    // aim 0.15–0.35
+L      = T_readable / (off − on)     // 3 frames in the window, year-0
 calm 0.07–0.10 · lean 0.12–0.22 · peak 0.22–0.35
 never two cues at once
 ```
 
-Quiet cannot serve peak ρ even if `m` is high. Clean minute ≈ **8–9 cues**, not 40 notes.
+Quiet cannot serve peak ρ. Clean minute ≈ **8–9 cues**.
 
 ### `t_run` integrator
 
-```
-onTime(t):
-  if held: lastT = t; return
-  Δ = t − lastT; lastT = t
-  if kind == sprint and 0 ≤ Δ ≤ 0.5: t_run += Δ
-  resolveFrame(...)
-```
+`Δ = currentTime − lastT` if sprint && !held && `0 ≤ Δ ≤ 0.5`. Seek / HOLD / decay: no +=. Boot `t_run = 0`.
 
-Seek / HOLD / hall breath / decay: no +=. Cut 8/12 → += ~8. Boot `t_run = 0`.
+### Verdict
 
-### Verdict (once per cue)
+Hit `m += 0.10` · Miss `× 0.70` floor 0.05 + peakBan · Late peakBan · Early same cue. Coyote is **outside** `L`. Boot `m = 0.12`.
 
-Hit `m += 0.10` · Miss `× 0.70` floor 0.05 + peakBan · Late peakBan · Early same cue.  
-Idle-decay: −0.015 / s. `peakBan` clears at join. Boot `m = 0.12`.
-
-Bone: Quiet [0,8) calm only · Lean [8,20) · Build [20,45) peak closed · Peak [45,70] if `m≥0.70` && !ban.
-
-### Tests
-
-6 Hits before 8 s → still calm. Hidden 10 s → frozen. `playbackRate` never ≠ 1.
+Bone: Quiet [0,8) · Lean [8,20) · Build [20,45) peak closed · Peak [45,70] if `m≥0.70` && !ban.
 
 ## Cue + HOLD
 
@@ -64,8 +48,8 @@ Hit `[on−0.08, off]` · Late `(off, off+C]` · `C = min(0.22, next.on−off)`.
 
 ## Hard fences
 
-Never two cues at once. Never peak before `t_run ≥ 45`. One `flushOpen` per plate. `joinEnded` still first.
+Never two cues at once. Never Hang `L < 0.55`. Never peak before `t_run ≥ 45`. One `flushOpen` per plate.
 
 ## One line
 
-**ρ calm ≈ one gesture / 12 s; peak ≈ one / 3 s; never two at once.** Mp4 rate stays 1.
+**`L` = fraction of the window where you still see the gesture and the right glow.** ρ counts taps. `L` says they are real.
