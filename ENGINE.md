@@ -4,6 +4,7 @@ The engine **cooks nothing**. It **chains plates**.
 Repo: `https://github.com/StarBoltSprint/boltverse-odyssey`
 
 Cook laws: [ENTER.md](ENTER.md). Ops: [HANG.md](HANG.md). This file is the player clock + DOM.
+Lane machines: [PLAY.md](PLAY.md) (DOM / HOLD / partition). Hold flags: [scripts/video-hold.mjs](scripts/video-hold.mjs).
 
 Constants: `DISSOLVE_MS = 280` (walks). `CURTAIN_MS = 500` (exit of enter only).
 
@@ -39,6 +40,24 @@ They lock onto the **same 9:16 photo**. Letterbox = void. Hits are on that pictu
 
 Still **under** videos: if `play()` fails, you still see the pose.
 Veil **on top**: it can hide enter **and** dest for 500 ms without mixing two dogs.
+
+## Who is visible (not sprint vs hall)
+
+This is **who is opaque**. Not `playingWalkA`.
+
+| Visual | still | vis | hid | veil |
+|---|---|---|---|---|
+| boot | pose 1 | 0 | 0 | 0 |
+| playing | pose (under) | clip | load next | 0 |
+| swap | **arrive pose already painted** | hide **after** still | play + opaque | 0 |
+| play-fail | pose 1 | hidden | — | 0 |
+| enter (hall only) | 0 | enter | dest under | 1→0 |
+
+Never `src=` on the opaque. Swap only if `paused === false`.
+
+HOLD (booleans, several at once): `running` = video playing **and** `!held`. `pause` ≠ `ended`. `stall` ≠ `play-fail`. Peak does **not** raise this veil.
+
+Debug keeper: `dom: boot | vis | swap | fail` — never `walk-spawn-A-playing`.
 
 ## 1. Graph — when enter fires
 
@@ -214,6 +233,7 @@ pointerdown on stage
 - Paint dest at **0 ms** (under the veil). No 280 dissolve on this join.
 - Both videos **hidden** until the first clip actually plays.
 - Preload every clip + still + **enter** in `useEffect` (off-DOM `<video>` / `Image`). Enter is not in `Object.values(room.clips)` — preload it from `ENTER{}`.
+- Hide vis **after** the arrive still (Frost). One `flushOpen` per plate if Lane (PLAY).
 
 ## 7. Assets the engine **requires**
 
@@ -273,4 +293,4 @@ That is the plate. The player does not interpolate.
 
 ## One line
 
-Two slots, load in the shadow, still spawn→at-A **during** the walk, hide walk after, cut 0, breath pinned both ends. A `src=` on the visible or a hide too early = two dogs — even with a PASS pack. Enter: cut 0, still off, empty veil of **that door** 500 ms (double rAF) over spawn₂ already posed.
+Two slots, load in the shadow, still spawn→at-A **during** the walk, hide walk after, cut 0, breath pinned both ends. A `src=` on the visible or a hide too early = two dogs — even with a PASS pack. Enter: cut 0, still off, empty veil of **that door** 500 ms (double rAF) over spawn₂ already posed. **DOM = who is opaque. HOLD = if we judge. Partition = which reel.**
