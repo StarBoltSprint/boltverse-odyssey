@@ -8,16 +8,14 @@ Runner = [scripts/sprint-transition.mjs](scripts/sprint-transition.mjs).
 
 ## Count — not 60 plates
 
-6–15 s, `playbackRate = 1`, join cut 0. Aim **6 played** + **1 decay**. Cook ≈ **10 clips** (calm×3, lean×4, peak×2, decay×1). A run plays ~6. 1×60 s / 20×3 s / 1+1+1 = refuse.
+6–15 s, `playbackRate = 1`, join cut 0. Aim **6 played** + **1 decay**. Cook ≈ **10 clips** (calm×3, lean×4, peak×2, decay×1). A run plays ~6.
 
-## Density ρ — finger load, not stride speed
+## Density ρ
 
 ```
 ρ      = N_cues / duration_s
-ρ_glow = sum(off − on) / duration_s   // aim 0.15–0.35; ≈1 = farm
+ρ_glow = sum(off − on) / duration_s   // year-0 cap 0.45; later 0.30 peak / 0.20 calm
 ```
-
-Windows **disjoint**. Two cues overlapping → Smoke FAIL.
 
 | Palier | N | Durée | ρ | min `on→on` |
 |---|---|---|---|---|
@@ -26,53 +24,30 @@ Windows **disjoint**. Two cues overlapping → Smoke FAIL.
 | peak | 2–3 | 8–10 s | **0.22–0.35** | **≥ 0.8 s** |
 | decay | 0–1 | 8–12 s | **0–0.10** | — |
 
-`ρ > 0.40` = tapping. `ρ < 0.05` except decay = not a sprint. Quiet cannot serve peak ρ. Clean minute ≈ **8–9 cues**.
+FAIL: N≥4 / ≤10 s · two `on` < 0.6 s · overlap · peak N=1 >12 s · `ρ_glow > 0.45`.
 
-### Smoke density
+## Readability `L` — year-0 guard, not a lab
 
-```
-FAIL  N ≥ 4 on ≤ 10 s
-FAIL  two on < 0.6 s
-FAIL  sum(off−on) > 0.45 * duration
-FAIL  overlapping windows
-FAIL  peak with N=1 and duration > 12 s
-```
-
-## Readability `L` — the cue must still be the film
-
-Not « pretty clip ». **Does gesture + glow occupy the window we declared.**
+3 samples → `L` can only be **0, 1/3, 2/3, 1**. `0.75` meant **3/3**. Write that.
 
 ```
-L_i ≈ n_yes / 3          // samples at on, mid, off
-L   = Σ (L_i × width_i) / Σ width_i
+L_PASS = 3/3     Hang honesty
+L_GRAY = 2/3     nudge on/off 2–4 frames (gesture is there, window is wrong)
+FAIL   = 0 or 1/3  recook — even the middle of the cue does not read
 ```
 
-Code: `smokeL({ duration, cues })` in [scripts/cue-readability.mjs](scripts/cue-readability.mjs). Year-0 fills `gestureOk / glowOk / sideOk`. Ambiguous L/R → `L_i = 0`. 0 cue → `L.na`, not a FAIL. `ρ_glow > 0.45` → `cue.farm_glow`.
+Code: `smokeL` (`L_PASS = 1`, `L_GRAY = 0.5`). Ambiguous L/R → 0. Decay 0 cue → `L.na`.
 
-| `L` | Verdict |
-|---|---|
-| ≥ **0.75** | `L.pass` |
-| 0.55–0.75 | `L.gray` — nudge 2–4 frames |
-| < **0.55** | FAIL `cue.honesty` — do not Hang |
+Do **not:** lower PASS to 0.50 to ship forest · tie `L` to `m` · grow coyote to hide a hole.
 
-Coyote is **outside** `L`. **No ring if `L` is low.** Chrome is not in the numerator.
+Coyote is **outside** `L`. **No ring if `L` is low.**
 
 ## Sprint law
 
-**The mp4 rate = 1. The sprint rate = ρ of the next reel.** `L` says the chart is real. Year-0: pose, L, R, fork.
-
-```
-early_grace_s 0.08 · coyote 0.18–0.28
-Hit m += 0.1 · Miss m *= 0.7 floor 0.05 + peakBan
-kick / joinEnded: playbackRate = 1
-```
-
-Time `[on, off]` **after** the clip. Glow **in** the encode. Law 0: [COOK.md](COOK.md).
-
-## Refuse
-
-TAP bar · live Imagine · peak as a tap · `rate = f(m)` · walk-A as a Lane · two cues at once · Hang a plate with `L < 0.55`.
+Mp4 rate = 1. Sprint rate = ρ of the next reel. Year-0: pose, L, R, fork.  
+`Hit m += 0.1` · `Miss × 0.7` floor 0.05. Time `[on, off]` **after** the clip.
 
 ## One line
 
-**`L` = fraction of the window where you still see the gesture and the right glow.** Above ~0.75 you have a chart. Below you have timestamps on a mute film.
+**With 3 photos, readable = all three. Two = move the window. One = recook.**  
+0.75 is not science. It is « no hole in the chart ».
