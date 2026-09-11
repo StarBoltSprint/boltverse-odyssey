@@ -1,7 +1,11 @@
 # COOKROOM — the corridor (floor 1)
 
-Validate and Smoke judge a **full** folder. This file **fills** it.  
-Grok in chat is the runner until Imagine is a script.
+Validate and Smoke judge a **full** folder. This file **fills** it.
+
+Imagine is [scripts/imagine-hooks.mjs](scripts/imagine-hooks.mjs).  
+Need `XAI_API_KEY` for a live cook.  
+No key or `--dry-run` → print the queue, no forge.  
+Grok does not paste Imagine prompts in chat when the script can run.
 
 Tap never cooks. [DONT.md](DONT.md).
 
@@ -10,10 +14,10 @@ Tap never cooks. [DONT.md](DONT.md).
 ```
 node scripts/cook-room.mjs moss --dry-run
 COOK_DEBUG=1 node scripts/cook-room.mjs dusk
-node scripts/cook-room.mjs moss          # once Imagine hooks are wired
+export XAI_API_KEY=... && node scripts/cook-room.mjs moss
 ```
 
-`imagineStill` / `imagineClip` throw until wired. Until then: **--dry-run** only.
+`--dry-run` = queue only. Live = key. No throw « until wired ».
 
 `slot` ∈ [CATALOG.md](CATALOG.md). Off-list → print stock URL, exit 1. No Imagine.
 
@@ -55,6 +59,7 @@ Not the player. Not Smoke (it *calls* smoke). Not Forge UI. Not live Imagine on 
 
 ## One line
 
+**dry-run = no key. Live = key. Plus de throw « until wired ».**  
 Smoke tastes. cookRoom runs the recipe. Grok does not invent the list of pans.
 
-Hooks: [scripts/imagine-hooks.mjs](scripts/imagine-hooks.mjs). `export XAI_API_KEY` then `node scripts/cook-room.mjs moss`. Stills = `/v1/images/edits` (bolt-back + example). Walks = video `image` + `last_frame`. Breath = `image` only. No key → throw / --dry-run.
+Hooks: [scripts/imagine-hooks.mjs](scripts/imagine-hooks.mjs). `export XAI_API_KEY` then `node scripts/cook-room.mjs moss`. Stills = `/v1/images/edits` (bolt-back + example). Walks = video `image` + `last_frame`. Breath = same still twice (`image` + `last_frame` = that pose). No key → throw / `--dry-run`.
