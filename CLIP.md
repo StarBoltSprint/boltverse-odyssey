@@ -186,3 +186,7 @@ Same crime as `walk_sprint`. Parked at spawn at t≈3s = `graph.walk_linger`. Th
 Try: last = at-A. 0–1s he moves. **2–5s planted mid-hall** (not spawn → `walk_linger` silent). ~5s warp teal (`walk_sprint`).
 
 FAIL `graph.walk_plant` if cx barely moves 2s→4.5s. Yaw 44° on recook = `gate.yaw` / profile — also FAIL. Cap 2 → no walk. Not a last_frame cable bug.
+
+## Walk first-frame yaw (ice PCA)
+
+Do not FAIL a walk because t=0 is 37° when the spawn still is 28° and hall SSIM ≈ 1. Encode ice, not a muzzle. Threshold 40°. ¾ / profile ~44°+ still FAIL.

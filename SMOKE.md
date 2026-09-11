@@ -166,3 +166,9 @@ Breath pair `Δh/H` threshold is **0.11**. If the **only** fail is `gate.size Δ
 `creamPlace` on frost vapor / ice floor can lose Bolt (`h=0`) or snap `cx` to hall center. Next frame he is at teal → `walk_sprint` 0.28. Eyes: he was walking.
 
 Lost dog = drop track, do not use `cx=0.50`. Only consecutive samples (dt ≤ 1.05s) with `h` in 0.16–0.48. Threshold **0.35** W/s (real warp was 0.43). 0.28 after a hole = PASS. Same family as breath vapor.
+
+### Walk yaw vs ice (false positive)
+
+Spawn still **28°** PASS. First frame of the mp4 **37°** FAIL at 32°. Last vs at-A **6°**. Hall first≈spawn **0.998**. Eyes: back. PCA of ice on the encoded jpeg, not a profile.
+
+Walk yaw threshold is **40°**. 37° = PASS. Real turn (44° ¾) still FAIL. Same family as breath vapor / lost ice-dog.
