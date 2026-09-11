@@ -6,6 +6,7 @@ Distinct from **(2)** — citadel hall: menu-picture, lock-off, zero chrome. Thi
 
 A door with `kind: sprint` ([LINKS.md](LINKS.md)) **hands off** to this disc. Cook: [COOKLANE.md](COOKLANE.md).  
 Clock: [scripts/cue-coyote.mjs](scripts/cue-coyote.mjs) — `makeSheet` / `resolveFrame` / `flushOpen`.  
+Hold: [scripts/video-hold.mjs](scripts/video-hold.mjs) — judge sleeps if the picture is not running.  
 Reel: [scripts/sprint-transition.mjs](scripts/sprint-transition.mjs) — `m` + `pickNext`. Not Imagine.
 
 **The Lane is not a tiny citadel.** Center of the minute = plates + bone. Hall poses live **only at the edges**.
@@ -44,12 +45,6 @@ Same **40 / 20 / 40** as the hall on `containPlate`. Letterbox = void. First Lan
 You do **not** set `on: 3.0` then ask Imagine to match. Clip PASS → scrub → playtest. Widen too much → recook the **dog**, not the law.
 
 ```
-         Early ignore        Hit              Late (coyote)
-    |------------------|-------------|----------|
-                  on              off        off+C
-```
-
-```
 Hit     = [on − 0.08 , off]
 Late    = (off , off + C]
 Miss    = tap after off+C  OR  no tap when t > off+C
@@ -57,45 +52,45 @@ Early   = tap < on − 0.08   (ignore, SAME cue)
 wait    = still in Hit or coyote, no tap
 ```
 
-**Coyote is a tail of grace after `off`.** Late, not a second Hit (`m` unchanged, peakBan). `C` = media seconds.
+`C = clamp(0.18, 0.28, 0.22)` then `min(C, next.on − off)`. Late, not a second Hit.  
+`ended` → `flushOpen`. One verdict once.
+
+## HOLD (judge sleeps)
+
+If the picture is not running, **do not** call `resolveFrame`. Still stays. No spinner.
+
+Reasons — any one → `isHeld`: `pause` · `hidden` (tab) · `stall` · `play-fail` · `swap` · `cook` (must not happen on tap) · `seek` · `ended-wait` (between plates).
 
 ```
-C = clamp(0.18, 0.28, 0.22)
-C = min(C, next.on − off)
+attachHold(vis, { onHold, onTime })
+timeupdate → onTime only if !held
+tap while held → gate queues ONE finger
+resume → flush against *this* currentTime
+         (not “he tapped 2 s of wall clock ago”)
 ```
 
-`m` does **not** widen `C`. Two cues 120 ms apart = recook, do not raise `C` to 400 ms.
+`play()` fail → `play-fail`, still opaque, taps live again. Swap: HOLD until `hid.paused === false`. Hide vis **after** the still. `ended` → `ended-wait` until `pickNext` + kick. Hid not ready → decay, not Imagine.
 
-One verdict **once**. Close `i` then Early of `i+1`.
-
-**ended:** `flushOpen(sheet, duration)` — a cue still open is **Miss**, not eternal wait. That is why the clock is its own file.
-
-**Playtest:** too many Late → nudge `off` 2 frames, not `C`.
-
-| Plate | `[on, off]` |
-|---|---|
-| calm | **350–550 ms** |
-| lean | **280–400 ms** |
-| peak | **220–320 ms** |
+Bus 1 (weather) freezes with HOLD. Bus 2 (Hit/Late) only if `!held` at the verdict.
 
 ## Reel (not the cassette knob)
 
 ```
 timeupdate
-  sheet.t = currentTime; sheet.tap = lastTap; lastTap = null
+  if (held) return
+  sheet.t = currentTime; sheet.tap = gate.flush()
   sheet = resolveFrame(sheet)
-  if (verdict && verdict !== "wait" && verdict !== "early") applyVerdict
 ended
-  sheet = flushOpen(sheet, duration)
-  pickNext → planSwap → ENGINE hid (playbackRate = 1)
+  flushOpen → ended-wait → pickNext → beginSwap
+  hid.play() → endSwapIfPlaying(hid)  (playbackRate = 1)
 ```
 
-| Verdict | `m` | Next |
-|---|---|---|
-| Hit | `+= 0.1` | higher tier |
-| Miss | `× 0.7`, floor `0.05`, `peakBan` | lower / decay |
-| Late | unchanged, `peakBan` | no peak |
-| Early / wait | unchanged | same cue / same |
+| Verdict | `m` |
+|---|---|
+| Hit | `+= 0.1` |
+| Miss | `× 0.7`, floor `0.05`, `peakBan` |
+| Late | unchanged, `peakBan` |
+| Early / wait | unchanged |
 
 Repeated miss → **exit** the minute (hall), not Game Over.
 
@@ -103,10 +98,10 @@ Repeated miss → **exit** the minute (hall), not Game Over.
 
 - No TAP bar. Recook glow, not UI.
 - Never `playbackRate ≠ 1`. Never live Imagine as `m` rises.
-- Do not widen `[on, off]` or `C` to “make it playable” — recook the dog.
-- Do not cook walk-A and call it a Lane.
+- Do not call `resolveFrame` while held.
 - Do not skip `flushOpen` on `ended`.
+- Do not cook walk-A and call it a Lane.
 
 ## One line
 
-**Hit while the gesture lives; 0.22 s after, it is Late; then Miss; the next `on` cuts the grace.** `ended` flushes. The coyote catches the finger, not the clip.
+**If the picture is not running, the judge sleeps.** Resume rereads `currentTime`. It does not catch the coyote with a wall clock.
