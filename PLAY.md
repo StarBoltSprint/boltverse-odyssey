@@ -2,38 +2,29 @@
 
 This is engine grammar **(1)**: you *play* Bolt **inside** an Imagine film.
 
-Distinct from **(2)** — citadel hall. Player: [ENGINE.md](ENGINE.md). Cook: [COOKLANE.md](COOKLANE.md).
+Distinct from **(2)** — citadel hall. Player: [ENGINE.md](ENGINE.md). Cook: [COOKLANE.md](COOKLANE.md).  
+Hall → Lane joint: [HANDOFF.md](HANDOFF.md).
 
 Clock: [cue-coyote.mjs](scripts/cue-coyote.mjs) · Hold: [video-hold.mjs](scripts/video-hold.mjs) · Reel: [sprint-transition.mjs](scripts/sprint-transition.mjs) (`onLaneTime`) · DOM: [dom-swap.mjs](scripts/dom-swap.mjs).
 
-## Three machines
+## Five states (handoff is not a 6th engine)
 
-DOM = visible. HOLD = if we judge. Partition = which reel (`m`, `t_run`).  
-Player **must** call `onLaneTime` — else `t_run` stays 0.
+```
+hall-breath → hall-walk → hall-enter → handoff → lane-running
+```
 
-Idle-decay not during an open cue. HOLD: lastT tracks, no leak. Quiet: 6 Hits before 8 s still serve **calm**.
+`ended(enter)` → `handoff` (HOLD, veil, `m = 0.12`, `t_run = 0`).  
+`t_run` starts only when hid `paused === false`. First calm cue opens only in `lane-running`.  
+2nd tap without `coming: false` + `calm-1` on disk = **stay**. No loader. No live Imagine.
 
-Mp4 rate = **1**. Sprint rate = ρ of the next reel. `L` 3/3.
+Tapping hall doors well ≠ start in lean. Do not carry hall `m`.
 
-## Sound — two buses, film stays mute
+## Three machines (once lane-running)
 
-The hung mp4 is **`-an`**. All sound is **beside** it, on picture-time + HOLD. Two `<audio>` tags. Never the `<video>` track (Safari + dual-video kills `play()`).
+DOM = visible. HOLD = if we judge. Partition = which reel. Call `onLaneTime`.
 
-| Bus | What | When |
-|---|---|---|
-| **1 lit** | world loop (`audio/<id>-lit-calm.ogg` … peak / decay) | fade **at join** 100–200 ms, never on a cue |
-| **2 grade** | `audio/grade-hit.ogg` / late / miss  (< 200 ms) | oneshot iff `!HOLD` |
-
-Early / idle = **silence**. If the lit **says the beat**, mute bus 1 (same crime as a TAP bar).
-
-HOLD → both buses pause/mute. Resume does **not** unmute the mp4. `video.muted = true` always. Do not pitch the lit with `m` (same lie as `playbackRate`).
-
-Switch lit = `pickNext` / `afterJoin`, not `timeupdate`.
-
-Missing ogg → that bus silent, **sprint continues**. Never block a run for audio.
-
-**Year-0:** ship **bus 2 only** (Hit/Miss) + bus 1 mute. Wind can wait. Do **not** bake sound into Imagine « to feel alive ».
+Mp4 rate = **1**. Film `-an`. Sound = two buses beside it (year-0: grade only).
 
 ## One line
 
-**Lit = file per tier, cut at join, freeze on HOLD. Grade = a dry click if the clock is running. The film stays mute.**
+**Enter poses the dog; calm-1 makes him run; `m` and `t_run` are born at zero when hid plays.**
