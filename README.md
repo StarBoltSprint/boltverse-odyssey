@@ -63,8 +63,8 @@ Search: `StarBoltSprint citadel-room` · living film · boltverse-odyssey.grok.m
 | `scripts/imagine-hooks.mjs` | API stills + `last_frame` films — not chat Imagine |
 | `scripts/validate-pack.mjs` | room.json + 3 stills + 5 films, H264, no audio |
 | `scripts/smoke-pack.mjs` | one dog, first≠last on walks, breath loops |
-| `lock/bolt-back.jpg` | Bolt identity (back to camera) |
-| `lock/example-*.jpg` | camera + door layout (spawn / atA / atB) |
+| `lock/bolt-back.jpg` | Bolt identity (back / coat) — not scale |
+| `lock/example-*.jpg` | camera + which side (atA/atB oval+tiny — do not copy scale) |
 | `packs/<id>/` | hung discs — Grok writes here |
 | `stills/` `films/` | **empty on GitHub** — do not hang at root |
 

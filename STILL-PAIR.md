@@ -59,6 +59,8 @@ Deltas: breath \|Δh\|/H < 0.08. Walk edge / spawn↔sill stills **&lt; 0.12** (
 
 Punch-in = FAIL. Sill still at spawn-scale (0.28–0.34) = WARN `gate.size sill-band` (hung moss is here; new cooks aim 0.34–0.38). Sit / 3/4 = FAIL on the still itself. Face = layer C.
 
+Cook: feet on the **hall floor in front of** the rift, not inside the fill. `example-at-b` is side-only (oval + ~0.18 — do not copy). `bolt-back` is coat-only (~0.53 close-up — do not copy). atA/atB `image` = the spawn still. Do not relax these numbers to pass a climb.
+
 ## Anti
 
 Optical flow "he turned = OK". Face landmarks. Match per-frame at play. 3D pose for sit/stand. Warp at runtime.

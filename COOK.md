@@ -68,9 +68,8 @@ Off-list → nearest, or ask "did you mean ember?". Never "describe any temple".
 
 Composition examples (camera + door layout, not the player's hall):
 
-- [`lock/example-spawn.jpg`](lock/example-spawn.jpg)
-- [`lock/example-at-a.jpg`](lock/example-at-a.jpg)
-- [`lock/example-at-b.jpg`](lock/example-at-b.jpg)
+- [`lock/example-spawn.jpg`](lock/example-spawn.jpg) — camera + two-door lock (scale OK)
+- [`lock/example-at-a.jpg`](lock/example-at-a.jpg) / [`lock/example-at-b.jpg`](lock/example-at-b.jpg) — **which SIDE** only. Oval + tiny (~0.18). Do **not** copy scale or door shape. RECT + 0.35–0.40 come from the prompt + the spawn still.
 
 ## Player phrases (treat as this flow)
 
@@ -106,17 +105,17 @@ Save → `stills/spawn.jpg` (or `stills/a/spawn.jpg`). Scale 720×1280.
 
 ### 2. atA — from spawn, not from text
 
-`imagineStill({ pose: "atA", spawnPath })` · source = the spawn just made
+`imagineStill({ pose: "atA", spawnPath })` · **`image` = spawn** (not bolt-back). bolt-back = coat only. `example-at-a` = LEFT side only (ignore oval / 0.18).
 
-> Same hall, same camera, same light, same RECT rifts. Only the dog walks to the teal rift on the left and stops, STANDING, still back to camera. Never sit / face / 3/4. Gold rift stays in frame. Feet on the sill. Coat stays full white — no saddle. Size one step closer than spawn (0.34–0.38, Δh/H < 0.12).
+> Same hall, same camera, same RECT rifts as spawn. He is ALREADY at the teal LEFT, STANDING, BACK, crown to camera. Feet on the **stone floor in front of** the sill — never inside the rift, never climbing the teal (punch-sill if dog top < 0.46). Gold stays in frame. Never sit / face / 3/4. bboxH/H **0.35–0.40**. Δh/H < 0.12. Do not copy bolt-back crop (~0.53).
 
 Save → `stills/at-a.jpg` (or `stills/a/at-a.jpg`).
 
 ### 3. atB — from the same spawn
 
-`imagineStill({ pose: "atB", spawnPath })` · source = **spawn** (not atA)
+`imagineStill({ pose: "atB", spawnPath })` · **`image` = spawn** (not atA, not bolt-back). bolt-back = coat only. `example-at-b` = RIGHT side only (ignore oval / 0.18).
 
-> Same hall, same camera, same light, same RECT rifts. Only the dog walks to the gold rift on the right and stops, STANDING, still back to camera. Never sit / face / 3/4. Teal rift stays in frame. Feet on the sill. Coat stays full white — no saddle. Size one step closer than spawn (0.34–0.38, Δh/H < 0.12).
+> Same hall, same camera, same RECT rifts as spawn. He is ALREADY at the gold RIGHT, STANDING, BACK, crown to camera. Feet on the **stone floor in front of** the sill — never inside the rift, never climbing the gold (punch-sill if dog top < 0.46). Teal stays in frame. Never sit / face / 3/4. bboxH/H **0.35–0.40**. Δh/H < 0.12. Do not copy bolt-back crop (~0.53).
 
 Save → `stills/at-b.jpg` (or `stills/a/at-b.jpg`).
 
@@ -126,6 +125,7 @@ If any FAIL below, recook from spawn. Do not invent a fourth still. Do not cook 
 
 - Cooked in chat Imagine UI (not `imagineStill` via `cook-room`)
 - Bolt face / 3/4 / profile / sit / lie / different dog
+- Dog climbing the rift / punch-sill (top < 0.46) / bboxH/H > 0.45 / bolt-back close-up scale
 - grey / silver coat, black saddle, black mask, black ears (`identity.coat` / `identity.saddle`)
 - Doors swapped or missing (spawn must show **both**)
 - Wood leaves / ajar timber / flat teal paint / third door / RECT morphing to a circle ([DOORS.md](DOORS.md))
