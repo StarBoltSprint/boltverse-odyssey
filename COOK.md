@@ -2,7 +2,7 @@
 
 This is the product. The player does **not** pick films first. They ask Grok for **3 stills** in a citadel style. Grok supplies them with the **same Bolt** ([CHAR.md](CHAR.md)). **Do not wait.** Stills → smoke → films. Order: [COOKROOM.md](COOKROOM.md). Wait only if COOK_DEBUG=1.
 
-**STOP — EVERY cook (new Grok Build conversation, restyle, Walk A, Walk B, breath, any still) MUST go through Imagine Agent. Obligatoire. Systematically. Never Chat Imagine without Agent. Not optional. Not invent outside Agent.**
+**STOP — HARD SPLIT (SmiR 2026-09-12, supersedes PR #11).** Imagine Agent is obligatoire / MUST / systematically for STYLE stills when restyling. NEVER for Walk A, Walk B, breath, or any video. Walks / breaths / films = imagine-hooks / cook-room first-frame + last-frame. Chat Imagine UI without real first+last is banned. Soft KEEP banned. Smoke still gates.
 
 **Identity base:** Bolt is ALWAYS a full-white German Shepherd (white coat forever). That base never changes to grey / silver / black.
 
@@ -10,13 +10,13 @@ This is the product. The player does **not** pick films first. They ask Grok for
 
 **Restyle:** completely new hall décor OK. **Doors may adapt** (shape / scale to décor). Cyan L + gold R energy portals may adapt shape / scale to décor (oval|RECT energy; never wood; never chrome UI). Bolt may be selected, repositioned, resized to sill for a nickel plate. Bolt reposition OK.
 
-**[Grok Imagine Agent](https://grok.com/imagine/agent) is the PRIMARY cook path for BOTH stills AND walk/breath films (first+last frames).** Not a stills-only restyle footnote.
+**[Grok Imagine Agent](https://grok.com/imagine/agent) = ONLY hall STYLES / stills / décor restyles** (freeze dog+portals, swap décor, skins on white coat). **NEVER** walks, breaths, or any video.
 
-**HARD:** ALL hall stills + walks + breaths go through Imagine Agent. Walks: user stills as exact first frame AND last frame, then interpolate video. Breaths: same still twice. Director or human drives Agent in the browser until Build has an Agent tool/hook. Default: seal stills, restyle halls, cook walks with start+end stills, breaths same still twice. **Smoke still gates.** Soft KEEP banned.
+Walks / breaths / films = Imagine first-frame + last-frame via [scripts/imagine-hooks.mjs](scripts/imagine-hooks.mjs) / [scripts/cook-room.mjs](scripts/cook-room.mjs). Walks: start still ≠ arrive still. Breaths: same still twice. Agent is **not** required or recommended for video cook. Do **not** instruct Build to open Imagine Agent for Walk A, Walk B, or breath. **Smoke still gates.** Soft KEEP banned.
 
-Chat Imagine UI **without** Agent is **banned** (no `last_frame`) — stills, walks, breaths, enter. Do not cook films there. Grok Build must not use chat `imagine_*` without Agent. Instruct to open Imagine Agent with the plate refs.
+Chat Imagine UI **without real first+last** is **banned** (no `last_frame`) — walks, breaths, enter. Do not cook films there. For STYLE restyle: instruct to open Imagine Agent with the plate refs.
 
-`scripts/cook-room.mjs` + [scripts/imagine-hooks.mjs](scripts/imagine-hooks.mjs) = **secondary / CLI only** — **not** the human happy path.
+`scripts/cook-room.mjs` + [scripts/imagine-hooks.mjs](scripts/imagine-hooks.mjs) = **video cook** (walks / breaths / films) and CLI first-seal / batch stills. Agent is **not** the film path.
 
 ```
 # secondary CLI / batch only
@@ -27,15 +27,15 @@ export XAI_API_KEY=... && node scripts/cook-room.mjs <catalog-slot>
 `--dry-run` first (no key, prints skip vs cook). Live needs `XAI_API_KEY` only for plates the CLI Imagines.  
 `slot` ∈ [CATALOG.md](CATALOG.md). Off-list → stock, exit 1.
 
-Hung pack with PASS stills/films = **reuse**. CLI only Imagines missing or smoke-FAIL plates. `--force` / `COOK_FORCE=1` overwrites and recooks. Never silently wipe `packs/moss` or any hung PASS still. **Sealed skip stays.** Imagine Agent produced the ice-hall **KEEP seals** (`lock/SEAL-spawn.jpg` + `lock/SEAL-at-a.jpg` + `lock/SEAL-at-b.jpg`). Frozen pose+décor for this ice hall until SmiR reseals. Agent remains the primary cook path for future styles. When those SEAL files exist, `cook-room` **SKIPS** `imagineStill` for spawn / at-A / at-B (copy the seal if the pack still is missing). **Smoke still gates.** Soft KEEP banned.
+Hung pack with PASS stills/films = **reuse**. CLI only Imagines missing or smoke-FAIL plates. `--force` / `COOK_FORCE=1` overwrites and recooks. Never silently wipe `packs/moss` or any hung PASS still. **Sealed skip stays.** Imagine Agent produced the ice-hall **KEEP seals** (`lock/SEAL-spawn.jpg` + `lock/SEAL-at-a.jpg` + `lock/SEAL-at-b.jpg`). Frozen pose+décor for this ice hall until SmiR reseals. Agent remains the STYLE stills path for future styles (never video). When those SEAL files exist, `cook-room` **SKIPS** `imagineStill` for spawn / at-A / at-B (copy the seal if the pack still is missing). **Smoke still gates.** Soft KEEP banned.
 
-**Imagine Agent is MANDATORY for cross-style hall stills (not optional).** Agent is **REQUIRED** for décor variants. Imagine Agent is the **hall-restyle** tool for sealed stills **and** the primary film cook. One **SEALED** sill still (dog already AT the teal or gold threshold) → Agent restyles: completely new hall décor OK; cyan L + gold R energy portals may adapt shape / scale to décor; Bolt may be selected, repositioned, resized to sill for a nickel plate (white coat forever; décor-matching skin ON TOP OK). `cook-room` `imagineStill` = first seal secondary CLI. **BANNED for restyle.** Do **not** invent a new dog each style.
+**Imagine Agent is MANDATORY for cross-style hall stills (not optional).** Agent is **REQUIRED** for décor variants. Imagine Agent is the **hall-restyle** tool for sealed stills. One **SEALED** sill still (dog already AT the teal or gold threshold) → Agent restyles: completely new hall décor OK; cyan L + gold R energy portals may adapt shape / scale to décor; Bolt may be selected, repositioned, resized to sill for a nickel plate (white coat forever; décor-matching skin ON TOP OK). First seal stills = Imagine Agent. `cook-room` `imagineStill` = CLI first-seal / batch. **BANNED for restyle.** Do **not** invent a new dog each style.
 
-**Grok Build chat Imagine tools are NOT the same as Imagine Agent.** Cross-style sealed stills = Imagine Agent at `https://grok.com/imagine/agent`. Build must not rely on chat `imagine_*` tools for hall restyle identity lock.
+**Grok Build chat Imagine tools are NOT the same as Imagine Agent.** Cross-style sealed stills = Imagine Agent at `https://grok.com/imagine/agent`. For STYLE restyle: instruct to open Imagine Agent with the plate refs. Do **not** instruct Agent for walks/breaths. Build must not rely on chat `imagine_*` tools for hall restyle identity lock.
 
 Smoke FAIL stills/films are copied to `packs/<id>/.kitchen/fail/<kind>-<n>.jpg|mp4` for debug, then **deleted** from `stills/` and `films/`. **Never Hang FAIL.** Soft KEEP banned. `--dry-run` prints `fail-save` + `enlarge`.
 
-Secondary CLI stills and films go through [scripts/imagine-hooks.mjs](scripts/imagine-hooks.mjs) (`imagineStill` / `imagineClip`) **via** [scripts/cook-room.mjs](scripts/cook-room.mjs) — **not** the human happy path. Chat Grok Imagine UI does not honor first/last — do not cook hall stills or films there.
+Films go through [scripts/imagine-hooks.mjs](scripts/imagine-hooks.mjs) (`imagineClip`) **via** [scripts/cook-room.mjs](scripts/cook-room.mjs). CLI first-seal stills use `imagineStill`. Chat Grok Imagine UI does not honor first/last — do not cook hall films there. Never Imagine Agent video.
 
 Repo: `https://github.com/StarBoltSprint/boltverse-odyssey`
 Ops / folders / encode / PACK: [HANG.md](HANG.md).
@@ -50,9 +50,9 @@ Every new conversation. Do not wait to be asked.
 
 | kind | Imagine call | first | last |
 |---|---|---|
-| **walks** | Imagine Agent PRIMARY: start+end stills. Secondary CLI: API `image` + **`last_frame`** | start still | arrive still — **distinct** |
+| **walks** | hooks / cook-room API `image` + **`last_frame`**. Never Imagine Agent. | start still | arrive still — **distinct** |
 | **enter** | same (first AND last distinct) | at-still | fill veil — **never** dest spawn |
-| **breath** | Imagine Agent PRIMARY: same still twice. Secondary CLI: `last_frame` = the same still | pose still | **same** still (spawn/spawn, atA/atA, atB/atB) |
+| **breath** | hooks / cook-room: `last_frame` = the same still. Never Imagine Agent. | pose still | **same** still (spawn/spawn, atA/atA, atB/atB) |
 
 **`last_frame` is an aim, not a paste.** The API sends the arrive still. Imagine *steers*. If spawn is 0.19 and at-A is 0.45, the jump is too far — it keeps the start. Last picture = spawn. `graph.last_not_official`. Not an unplugged cable.
 
@@ -60,7 +60,7 @@ Keep the size step small: spawn **0.22–0.32**, sill **0.35–0.40**, **Δh/H <
 
 **`reference_to_video` is not first/last.** The images are *references*, not frames. Imagine *inspires* a walk. It does **not** paste the gold still as the last picture. Walk-B then overshoots into the rift → size pop. **Illegal for walks and enter.**
 
-Chat Imagine UI without Agent has no `last_frame` tool — **banned** for walks, breaths, stills. Walks PRIMARY = Imagine Agent (user stills as exact first frame AND last frame, then interpolate). Breaths: same still twice. Secondary CLI only = `scripts/imagine-hooks.mjs` / `cook-room.mjs`. Décor variants = **Imagine Agent REQUIRED**. `imagineStill` **BANNED for restyle**. First seal stills = Imagine Agent. Instruct to open Imagine Agent with the plate refs.
+Chat Imagine UI without real first+last has no `last_frame` tool — **banned** for walks, breaths. Walks / breaths = `scripts/imagine-hooks.mjs` / `cook-room.mjs` (`image` + `last_frame`). Never Imagine Agent video. Décor variants = **Imagine Agent REQUIRED**. `imagineStill` **BANNED for restyle**. First seal stills = Imagine Agent. For STYLE restyle: instruct to open Imagine Agent with the plate refs. Do **not** instruct Agent for walks/breaths.
 
 Never `image_to_video` a walk or enter on a single still. That invents the journey / clones the dog. Breath is the only legal `first = last`.
 
@@ -76,7 +76,7 @@ After **each** plate: `smoke(file, kind, refs)` ([SMOKE.md](SMOKE.md)). PASS wri
 ## What the player may change
 
 **A catalog paint only.** One id from [CATALOG.md](CATALOG.md): moss · ember · dusk · asteroid · frost · ivy · ash · tide · ember-deep · gold.
-Off-list → nearest, or ask "did you mean ember?". Never "describe any temple". `cook-room` reads the two lines from `catalog/<id>.md`. Do not paste them into Chat Imagine UI without Agent. Imagine Agent restyle of a **SEALED** sill: completely new hall décor OK; cyan L + gold R energy portals may adapt shape / scale to décor; Bolt may be selected, repositioned, resized to sill; white coat forever; décor-matching skin ON TOP of the white base OK. Do not invent a different dog.
+Off-list → nearest, or ask "did you mean ember?". Never "describe any temple". `cook-room` reads the two lines from `catalog/<id>.md`. Do not paste them into Chat Imagine UI without real first+last. Imagine Agent restyle of a **SEALED** sill: completely new hall décor OK; cyan L + gold R energy portals may adapt shape / scale to décor; Bolt may be selected, repositioned, resized to sill; white coat forever; décor-matching skin ON TOP of the white base OK. Do not invent a different dog.
 
 ## What is locked (pack)
 
@@ -92,7 +92,7 @@ Off-list → nearest, or ask "did you mean ember?". Never "describe any temple".
 Composition examples (how Imagine learns seuil):
 
 - [`lock/example-spawn.jpg`](lock/example-spawn.jpg) — camera + two-door lock (scale OK). Ice SPAWN KEEP = [`lock/SEAL-spawn.jpg`](lock/SEAL-spawn.jpg) (drop [`hall-stills/seal/spawn-ice.jpg`](hall-stills/seal/spawn-ice.jpg)) — mid-hall, dead-center BEHIND white GSD, back/withers only, cyan L / gold R ahead.
-- **spawn / at-A / at-B KEEP seals** — [`lock/SEAL-spawn.jpg`](lock/SEAL-spawn.jpg) / [`lock/SEAL-at-a.jpg`](lock/SEAL-at-a.jpg) / [`lock/SEAL-at-b.jpg`](lock/SEAL-at-b.jpg). Imagine Agent ice-cathedral KEEP (drops [`hall-stills/seal/spawn-ice.jpg`](hall-stills/seal/spawn-ice.jpg) + [`at-a-ice.jpg`](hall-stills/seal/at-a-ice.jpg) + [`at-b-ice.jpg`](hall-stills/seal/at-b-ice.jpg)). Frozen pose+décor until SmiR reseals. Agent remains primary for future styles. `cook-room` **SKIPS** `imagineStill` when these exist. Smoke still gates. Soft KEEP banned.
+- **spawn / at-A / at-B KEEP seals** — [`lock/SEAL-spawn.jpg`](lock/SEAL-spawn.jpg) / [`lock/SEAL-at-a.jpg`](lock/SEAL-at-a.jpg) / [`lock/SEAL-at-b.jpg`](lock/SEAL-at-b.jpg). Imagine Agent ice-cathedral KEEP (drops [`hall-stills/seal/spawn-ice.jpg`](hall-stills/seal/spawn-ice.jpg) + [`at-a-ice.jpg`](hall-stills/seal/at-a-ice.jpg) + [`at-b-ice.jpg`](hall-stills/seal/at-b-ice.jpg)). Frozen pose+décor until SmiR reseals. Agent remains the STYLE stills path for future styles (never video). `cook-room` **SKIPS** `imagineStill` when these exist. Smoke still gates. Soft KEEP banned.
 - **at-A lock teacher** — [`lock/example-at-a.jpg`](lock/example-at-a.jpg) (or the SEAL file if present). SmiR / Imagine Agent: standing **BACK toward teal L**, gold visible. Oval|RECT energy OK (PR #6). Unsealed `imagineStill` atA **prefers this lock example** as the side ref (not hung moss). **copy PLACE+POSE from example; FORCE taille 0.35–0.40; FORCE STANDING; never shrink to 0.18; hall materials from spawn/catalog only — ignore example décor.** Live ember at-A FAIL×2 was sill-band 0.19+sit+face and 0.16+sit — teacher alone is not enough.
 - **at-B teacher** — [`lock/example-at-b.jpg`](lock/example-at-b.jpg) / [`lock/sill-at-b.jpg`](lock/sill-at-b.jpg) / SEAL-at-b, else hung moss PASS.
 - **IGNORE a tiny ~0.18 crop** the same way Imagine **IGNORE**s bolt-back ~0.53. Live after #4: at-A FAIL×2 sill-band 0.19/0.21; at-B FAIL×2 0.20/0.21+sit. Archived anti-teachers: [`lock/example-at-a-tiny.jpg`](lock/example-at-a-tiny.jpg) / [`example-at-b-tiny.jpg`](lock/example-at-b-tiny.jpg) — **never send**.
@@ -105,7 +105,7 @@ SmiR’s teacher is installed:
 2. `node scripts/install-lock-ata.mjs` wrote [`lock/example-at-a.jpg`](lock/example-at-a.jpg) (720×1280).
 3. Direct `lock/example-at-a-tiny.jpg` is still refused. An owner drop at `hall-stills/` is allowed even if the pixels match that archive — prompts **FORCE taille 0.35–0.40 + STANDING** and **never shrink to 0.18**.
 
-Live ember at-A FAIL×2 (0.19+sit+face / 0.16+sit) means teacher pixels alone are not enough. After #4: at-A 0.19/0.21; at-B 0.20/0.21+sit. **Two-step sill:** if at-A/at-B FAILs under-size (sill-band ~0.16–0.21) and place is usable — **or even if sit** — the second cook is enlarge-only: `imagineStill({ enlargeFrom: FAIL jpg })`. `image` = that FAIL. ONLY grow the dog to 0.35–0.40 STANDING at the same sill (same camera/hall). Do not send the teacher (teacher is the shrink). Cap: **1 fresh + 1 enlarge** (or **2 enlarge** if the disk plate is already that FAIL). Mid-hall / `gate.place` = fresh, not enlarge. FAIL jpg stays in `.kitchen/fail/` — never `stills/`. Cross-style from a **SEALED** sill = **Imagine Agent REQUIRED** (new décor OK; portals may adapt; Bolt may be selected / repositioned / resized to sill). `imagineStill` **BANNED for restyle.** First seal stills = Imagine Agent (CLI `imagineStill` only if Agent unavailable). Chat Imagine UI without Agent is **banned**. No new grok.me.
+Live ember at-A FAIL×2 (0.19+sit+face / 0.16+sit) means teacher pixels alone are not enough. After #4: at-A 0.19/0.21; at-B 0.20/0.21+sit. **Two-step sill:** if at-A/at-B FAILs under-size (sill-band ~0.16–0.21) and place is usable — **or even if sit** — the second cook is enlarge-only: `imagineStill({ enlargeFrom: FAIL jpg })`. `image` = that FAIL. ONLY grow the dog to 0.35–0.40 STANDING at the same sill (same camera/hall). Do not send the teacher (teacher is the shrink). Cap: **1 fresh + 1 enlarge** (or **2 enlarge** if the disk plate is already that FAIL). Mid-hall / `gate.place` = fresh, not enlarge. FAIL jpg stays in `.kitchen/fail/` — never `stills/`. Cross-style from a **SEALED** sill = **Imagine Agent REQUIRED** (new décor OK; portals may adapt; Bolt may be selected / repositioned / resized to sill). `imagineStill` **BANNED for restyle.** First seal stills = Imagine Agent (CLI `imagineStill` only if Agent unavailable). Chat Imagine UI without real first+last is **banned**. No new grok.me.
 
 ## Player phrases (treat as this flow)
 
@@ -117,11 +117,11 @@ Live ember at-A FAIL×2 (0.19+sit+face / 0.16+sit) means teacher pixels alone ar
 
 If they give **no** paint, do not cook — send `/` (stock). If they give **7 videos**, skip still-cook — map and hang ([GROK.md](GROK.md)).
 
-## Stills — Imagine Agent PRIMARY (first seal + restyle)
+## Stills — Imagine Agent (first seal + restyle; never films)
 
-Do **not** roll 3 separate text-to-image in chat. Chat Imagine UI **without** Agent is **banned**.
+Do **not** roll 3 separate text-to-image in chat. Chat Imagine UI **without real first+last** is **banned**.
 
-Human first seal = **Imagine Agent**. `cook-room` `imagineStill()` (`POST /v1/images/edits`) = secondary CLI / batch / Agent unavailable. **BANNED for restyle.** One spawn. Two moves from that spawn. Hung PASS = skip.
+Human first seal = **Imagine Agent**. `cook-room` `imagineStill()` (`POST /v1/images/edits`) = CLI first-seal / batch. **BANNED for restyle.** One spawn. Two moves from that spawn. Hung PASS = skip.
 
 **Already SEALED at-A / at-B** (dog at the sill, smoke PASS): do **not** invent a new dog. **Imagine Agent is MANDATORY** (not optional). Agent is **REQUIRED** for décor variants. One sealed sill still → **[Imagine Agent](https://grok.com/imagine/agent)** restyles: completely new hall décor OK; cyan L + gold R energy portals may adapt shape / scale to décor; Bolt may be selected, repositioned, resized to sill for a nickel plate; white coat forever; décor-matching skin ON TOP OK. `imagineStill` is **BANNED for restyle.** Then drop the restyle into `packs/<id>/stills/` and smoke. Sealed skip stays. **Smoke still gates.**
 
@@ -178,7 +178,7 @@ Place can be at the door. Size is illegal. Sit does **not** block the second ste
 
 ## Stills FAIL (recook)
 
-- Cooked in Chat Imagine UI without Agent (not first-seal `imagineStill`, not **Imagine Agent** restyle of a SEALED sill)
+- Cooked in Chat Imagine UI without real first+last (not first-seal `imagineStill`, not **Imagine Agent** restyle of a SEALED sill)
 - Décor variant cooked via `cook-room` `imagineStill` (`imagineStill` **BANNED for restyle**; Agent **REQUIRED**)
 - Bolt face / 3/4 / profile / sit / lie / different dog
 - Dog climbing the rift / punch-sill (top < 0.46) / bboxH/H > 0.45 / bolt-back close-up scale
@@ -191,11 +191,11 @@ Place can be at the door. Size is illegal. Sit does **not** block the second ste
 - Plate not 9:16
 - UI, text, watermark, chrome
 
-## Films — only after stills PASS (Imagine Agent PRIMARY; `imagineClip` secondary)
+## Films — only after stills PASS (`imagineClip` first+last; never Agent)
 
 Stills **are** first and last frames. Do not re-imagine a new hall. **Law 0.**
 
-PRIMARY films = Imagine Agent (walks = start+end stills; breaths = same still twice). Secondary CLI: `cook-room` calls `imagineClip()` with API `image` + `last_frame`. Never chat `reference_to_video`. Never `image_to_video` on one still for a walk. Chat Imagine UI without Agent is banned for walks (no `last_frame`). Hooks = secondary.
+Films = `cook-room` → `imagineClip()` with API `image` + `last_frame`. Walks: start still ≠ arrive still. Breaths: same still twice. Never Imagine Agent video. Never chat `reference_to_video`. Never `image_to_video` on one still for a walk. Chat Imagine UI without real first+last is banned for walks (no `last_frame`).
 
 **Walks and enter: first AND last must be distinct images.** Breath is the only legal `first = last` loop. Enter is **not** `image_to_video` on one still — `last = first` invents a journey / clone. See [HANG.md](HANG.md).
 

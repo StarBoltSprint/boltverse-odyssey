@@ -17,12 +17,13 @@ Grok / keepers: recipe below. Humans: stop here.
 
 ## For Grok (new conversation)
 
-If the human says any of: play boltverse / boltverse odyssey / starboltsprint / citadel / citadelle — you are in this recipe. **[AGENTS.md](AGENTS.md)** then **[GROK.md](GROK.md) — stop.** **No chat Imagine** — not stills, not walks, not breaths, not enter. Hook only. No new grok.me.
+If the human says any of: play boltverse / boltverse odyssey / starboltsprint / citadel / citadelle — you are in this recipe. **[AGENTS.md](AGENTS.md)** then **[GROK.md](GROK.md) — stop.** STYLE stills / restyle = Imagine Agent. Walks / breaths = hooks first+last. **No chat Imagine** without real first+last. No new grok.me.
 
 **One happy path:**
 
 ```
 git clone https://github.com/StarBoltSprint/boltverse-odyssey
+# STYLE stills / restyle → grok.com/imagine/agent (never video)
 node scripts/cook-room.mjs <catalog-slot> --dry-run
 export XAI_API_KEY=... && node scripts/cook-room.mjs <catalog-slot>
 ```
@@ -50,9 +51,9 @@ Search: `StarBoltSprint citadel-room` · living film · boltverse-odyssey.grok.m
 | [VALIDATE.md](VALIDATE.md) | box check before hang |
 | [SMOKE.md](SMOKE.md) | clone / first-last / recook cap 2 |
 | [CHAR.md](CHAR.md) | Bolt lock — the dog never changes |
-| [COOK.md](COOK.md) | stills-first cook, then films — hooks only |
-| [COOKROOM.md](COOKROOM.md) | hall cook — `node scripts/cook-room.mjs <slot>` |
-| [AGENTS.md](AGENTS.md) | cold-start: clone → dry-run → cook-room; chat Imagine ban |
+| [COOK.md](COOK.md) | stills-first cook (Agent restyle), then films via hooks first+last |
+| [COOKROOM.md](COOKROOM.md) | hall films — `node scripts/cook-room.mjs <slot>` (`image` + `last_frame`) |
+| [AGENTS.md](AGENTS.md) | cold-start HARD SPLIT: Agent = STYLE stills; video = hooks first+last |
 | [GROK.md](GROK.md) | how to rebuild the hall |
 | [ROOM.md](ROOM.md) | skeleton — encode flags, playsInline, ENTER map, player bugs |
 | [ENTER.md](ENTER.md) | room 1 → room 2 — two plates, stills vs room 1, same depth |

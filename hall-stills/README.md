@@ -8,7 +8,7 @@ This folder is the **drop slot** for SmiR’s KEEP stills. It is not a pack. It 
 - `hall-stills/seal/at-a-ice.jpg` — standing BACK at cyan LEFT sill
 - `hall-stills/seal/at-b-ice.jpg` — standing BACK at gold RIGHT sill
 
-See [`hall-stills/seal/README.md`](seal/README.md). Agent remains the primary cook path for future styles. These three are frozen pose+décor for this ice hall.
+See [`hall-stills/seal/README.md`](seal/README.md). Agent remains the STYLE stills path for future styles (never video). These three are frozen pose+décor for this ice hall.
 
 **Legacy at-A teacher:** `hall-stills/smir-ata-teacher.jpeg`
 

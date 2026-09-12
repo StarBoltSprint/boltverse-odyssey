@@ -5,7 +5,7 @@
 //   → lock/SEAL-spawn.jpg + lock/SEAL-at-a.jpg + lock/SEAL-at-b.jpg
 // Frozen pose+décor for this ice hall until SmiR reseals.
 // cook-room SKIPS imagineStill for spawn / at-A / at-B when those SEAL files exist.
-// Smoke still runs. Soft KEEP banned. Agent remains primary for future styles.
+// Smoke still runs. Soft KEEP banned. Agent remains the STYLE stills path for future styles (never video).
 //
 // Legacy at-A teacher drop (first hit wins unless argv given):
 //   hall-stills/seal/at-a-ice.jpg
@@ -103,7 +103,7 @@ export function lockAtaStatus(repo) {
         ICE_A_REL +
         " + " +
         ICE_B_REL +
-        " then node scripts/install-lock-ata.mjs. Frozen pose+décor until SmiR reseals. Agent remains primary for future styles. Oval|RECT energy OK.";
+        " then node scripts/install-lock-ata.mjs. Frozen pose+décor until SmiR reseals. Agent remains the STYLE stills path for future styles (never video). Oval|RECT energy OK.";
   return {
     dropRel: drop ? relative(repo, drop) : null,
     destRel: DEST_REL,

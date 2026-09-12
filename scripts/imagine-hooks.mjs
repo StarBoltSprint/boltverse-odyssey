@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// xAI Imagine API. Not the Grok chat. Needs XAI_API_KEY.
+// xAI Imagine API. Hall films = image + last_frame (walks / breaths). Not Imagine Agent. Not Grok chat.
+// Needs XAI_API_KEY.
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, extname, join } from "node:path";
 import { spawnSync } from "node:child_process";
