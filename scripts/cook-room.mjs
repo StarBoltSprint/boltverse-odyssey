@@ -517,12 +517,12 @@ for (const [rel, still, stillRel, pose] of breaths) {
 }
 
 const walks = [
-  ["films/walk-spawn-a.mp4", spawnStill, atA],
-  ["films/walk-spawn-b.mp4", spawnStill, atB],
+  ["films/walk-spawn-a.mp4", spawnStill, atA, "spawnA"],
+  ["films/walk-spawn-b.mp4", spawnStill, atB, "spawnB"],
 ];
 let walkOk = 0;
 let walkNeeded = 0;
-for (const [rel, first, last] of walks) {
+for (const [rel, first, last, pose] of walks) {
   if (reuse(rel, "walk")) {
     out("skip " + rel + " (exists + smoke PASS)");
     walkOk++;
@@ -545,6 +545,7 @@ for (const [rel, first, last] of walks) {
         last,
         dest: join(dir, rel),
         seconds: 10,
+        pose,
       });
       const s = smokeReport(rel, "walk");
       if (!s.ok) {

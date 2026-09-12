@@ -111,28 +111,30 @@ function catalogLines(root, slot) {
 
 function breathLine(pose) {
   const live = [
-    "6 seconds. Same still first AND last.",
-    "Bolt NEVER walks. NEVER changes position. Feet stay planted.",
-    "He MAY breathe. He MAY move the head a little. He MAY move the tail a little. The image MAY be slightly animated (light / energy / air).",
-    "NO morph. Camera is LOCKED OFF and NEVER moves — no dolly, no pan, no zoom.",
-    "ONE dog only. NEVER a second dog. NEVER a clone. NEVER anything else appearing on screen.",
-    "Seamless loop.",
+    "6 seconds. Seamless loop. First frame and last frame are the same still (already pinned — do not re-describe them).",
+    "The dog remains COMPLETELY STATIONARY in place. NEVER walking. NEVER stepping. NEVER shifting position.",
+    "He only breathes gently and naturally: chest and flanks rise and fall softly. The bushy tail may sway and flick lightly. A small head motion is OK.",
+    "NO morphing of the dog's form, fur, or body.",
+    "The two portals may pulse and animate subtly (slow swirling energy, soft light ripples). Distant hall lights may shimmer. Soft reflections may shift slowly on the floor.",
+    "Camera stays COMPLETELY LOCKED and fixed on the exact composition — never pan, tilt, zoom, or dolly.",
+    "ONE dog only. NEVER a second dog. NEVER any other animal. NEVER anything else appearing on screen.",
+    "No speech. No HUD. Silent plate.",
   ].join(" ");
   if (pose === "atA") {
     return [
       live,
-      "He is ALREADY at the teal LEFT sill. NEVER a dog at center. NEVER a dog at gold.",
+      "He is ALREADY at the teal LEFT sill, BACK, standing. NEVER a dog at center. NEVER a dog at gold.",
     ].join(" ");
   }
   if (pose === "atB") {
     return [
       live,
-      "He is ALREADY at the gold RIGHT sill. NEVER a dog at center. NEVER a dog at teal.",
+      "He is ALREADY at the gold RIGHT sill, BACK, standing. NEVER a dog at center. NEVER a dog at teal.",
     ].join(" ");
   }
   return [
     live,
-    "He is ALREADY at center spawn. NEVER a second dog at either door. NEVER a ghost at a sill.",
+    "He is ALREADY at center spawn, BACK, standing. Both portals stay fully visible. NEVER a second dog at either door. NEVER a ghost at a sill.",
   ].join(" ");
 }
 
@@ -361,16 +363,39 @@ export function spawnStillLine() {
   ].join(" ");
 }
 
-export function walkClipLine() {
-  return [
-    "The dog STARTS WALKING on the very first frame — no freeze, no pause, no linger at spawn.",
+export function walkClipLine(edge) {
+  const live = [
+    "The dog STARTS WALKING on the very first frame — no freeze, no pause, no linger.",
     "He walks at a STEADY even pace on FOUR STANDING PAWS from the first frame all the way to the last frame (about 9 seconds of continuous walking).",
     "NO morph. The dog stays ONE full-white German Shepherd the whole clip.",
     "Camera is LOCKED OFF and NEVER moves — no dolly, no pan, no zoom, no drift.",
-    "ONE dog only. NEVER two dogs. NEVER a second Bolt. NEVER a clone at spawn or the other door. NEVER anything else appearing on screen.",
+    "ONE dog only. NEVER two dogs. NEVER a second Bolt. NEVER a clone. NEVER anything else appearing on screen.",
     "NEVER sit. NEVER lie. NEVER face. NEVER 3/4.",
     "Energy portals stay oval or RECT (never wood, never chrome UI). Do not morph into a blob.",
     "Do not walk back. Do not invent leftover empty time. Last frame is the arrive still — he is already there when the clip ends. No tunnel.",
+  ].join(" ");
+  const e = String(edge || "");
+  if (e === "spawnB" || e === "atB" || e === "B") {
+    return [
+      live,
+      "He STARTS at center spawn, BACK. He walks toward the gold-orange RIGHT portal. Arrive standing BACK at the gold RIGHT sill.",
+    ].join(" ");
+  }
+  if (e === "AB" || e === "a-b") {
+    return [
+      live,
+      "He STARTS standing BACK at the teal LEFT sill. He walks across the hall to the gold-orange RIGHT sill. Arrive standing BACK at gold.",
+    ].join(" ");
+  }
+  if (e === "BA" || e === "b-a") {
+    return [
+      live,
+      "He STARTS standing BACK at the gold RIGHT sill. He walks across the hall to the cyan-teal LEFT sill. Arrive standing BACK at teal.",
+    ].join(" ");
+  }
+  return [
+    live,
+    "He STARTS at center spawn, BACK. He walks toward the cyan-teal LEFT portal. Arrive standing BACK at the teal LEFT sill.",
   ].join(" ");
 }
 
@@ -456,7 +481,7 @@ export async function imagineClip({ root, slot, kind, first, last, dest, seconds
         catalogLines(root, slot),
         kind === "breath"
           ? breathLine(pose)
-          : walkClipLine(),
+          : walkClipLine(pose),
       ].join(" ");
   const body = {
     model: VIDEO_MODEL,
