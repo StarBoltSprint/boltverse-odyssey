@@ -55,7 +55,7 @@ export function lockAtaStatus(repo) {
   const destIsTiny = hasDest && existsSync(tiny) && sha1(dest) === sha1(tiny);
   const note = hasDrop
     ? "COOK/LOCK  drop present — node scripts/install-lock-ata.mjs → " + DEST_REL
-    : "COOK/LOCK  drop missing — put SmiR at-A teacher (standing BACK toward teal L, gold visible) at hall-stills/smir-ata-teacher.jpeg then node scripts/install-lock-ata.mjs. imagineStill atA already prefers lock/example-at-a.jpg as side ref. Oval|RECT energy OK. copy PLACE+POSE+taille from example; hall materials from spawn/catalog only — ignore example décor.";
+    : "COOK/LOCK  drop missing — put SmiR at-A teacher (standing BACK toward teal L, gold visible) at hall-stills/smir-ata-teacher.jpeg then node scripts/install-lock-ata.mjs. imagineStill atA already prefers lock/example-at-a.jpg as side ref. Oval|RECT energy OK. copy PLACE+POSE from example; FORCE taille 0.35–0.40; FORCE STANDING; never shrink to 0.18; hall materials from spawn/catalog only — ignore example décor.";
   return {
     dropRel: drop ? relative(repo, drop) : null,
     destRel: DEST_REL,

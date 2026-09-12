@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 // Fixture: at-sill prompts name no-punch floor placement; spawn/lane stay off that stack.
 // at-A prefers lock/example-at-a.jpg (SmiR lock teacher). at-B prefers hung moss PASS.
-// copy PLACE+POSE+taille from example; hall materials from spawn/catalog only.
+// copy PLACE+POSE from example; FORCE taille 0.35–0.40; FORCE STANDING; never shrink to 0.18.
 // IGNORE tiny ~0.18 crop like bolt-back 0.53. Never send example-at-*-tiny.
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  ATA_FORCE_STANDING,
+  ATA_FORCE_TAILLE,
   ATA_LOCK_COPY,
   HALL_LAW,
   sillStillLine,
@@ -58,9 +60,15 @@ must(stillRefOrder("atB", true, root).join(",") === "spawn,bolt-back.jpg,packs/m
 must(stillRefOrder("atA", true, root).join(",") === "spawn,bolt-back.jpg,lock/example-at-a.jpg", "atA+spawn edits spawn then lock/example-at-a");
 must(stillRefOrder("atB", true).join(",") === "spawn,bolt-back.jpg,lock/example-at-b.jpg", "atB lock fallback is swapped example-at-b");
 must(stillRefOrder("atA", true).join(",") === "spawn,bolt-back.jpg,lock/example-at-a.jpg", "atA lock fallback is lock/example-at-a");
-must(atA.includes(ATA_LOCK_COPY), "atA prompt: copy PLACE+POSE+taille from example; hall materials from spawn/catalog only — ignore example décor");
+must(atA.includes(ATA_LOCK_COPY), "atA prompt: copy PLACE+POSE from example; FORCE taille 0.35–0.40; FORCE STANDING; never shrink to 0.18");
+must(atA.includes(ATA_FORCE_TAILLE), "atA FORCE taille 0.35–0.40 never shrink to 0.18");
+must(atA.includes(ATA_FORCE_STANDING), "atA FORCE STANDING when using teacher");
+must(/never shrink to 0\.18/.test(atA), "atA never shrink to 0.18");
+must(/FORCE taille 0\.35–0\.40/.test(atA) && /FORCE STANDING/.test(atA), "atA FORCE taille + standing");
+must(/0\.16/.test(atA) && /0\.19/.test(atA), "atA names live ember FAIL bands 0.16/0.19");
 must(/ignore example décor/.test(atA) && /hall materials from spawn\/catalog only/.test(atA), "atA cross-style: example pose, spawn décor");
 must(/standing BACK toward teal L/.test(atA), "atA names SmiR teacher pose");
+must(atB.includes(ATA_FORCE_TAILLE) && atB.includes(ATA_FORCE_STANDING), "atB also FORCE taille + standing");
 must(DEST_REL === "lock/example-at-a.jpg", "install dest is lock/example-at-a.jpg");
 must(DROP_RELS[0] === "hall-stills/smir-ata-teacher.jpeg", "drop slot hall-stills/smir-ata-teacher.jpeg");
 must(/COOK\/LOCK/.test(lockAtaStatus(root).note), "COOK/LOCK note when drop missing");

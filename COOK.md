@@ -69,7 +69,7 @@ Off-list → nearest, or ask "did you mean ember?". Never "describe any temple".
 Composition examples (how Imagine learns seuil):
 
 - [`lock/example-spawn.jpg`](lock/example-spawn.jpg) — camera + two-door lock (scale OK)
-- **at-A lock teacher** — [`lock/example-at-a.jpg`](lock/example-at-a.jpg). SmiR hand still: standing **BACK toward teal L**, gold visible. Oval|RECT energy OK (PR #6). `imagineStill` atA **prefers this lock example** as the side ref (not hung moss). **copy PLACE+POSE+taille from example; hall materials from spawn/catalog only — ignore example décor.**
+- **at-A lock teacher** — [`lock/example-at-a.jpg`](lock/example-at-a.jpg). SmiR hand still: standing **BACK toward teal L**, gold visible. Oval|RECT energy OK (PR #6). `imagineStill` atA **prefers this lock example** as the side ref (not hung moss). **copy PLACE+POSE from example; FORCE taille 0.35–0.40; FORCE STANDING; never shrink to 0.18; hall materials from spawn/catalog only — ignore example décor.** Live ember at-A FAIL×2 was sill-band 0.19+sit+face and 0.16+sit — teacher alone is not enough.
 - **at-B teacher** — [`lock/example-at-b.jpg`](lock/example-at-b.jpg) / [`lock/sill-at-b.jpg`](lock/sill-at-b.jpg), swapped from hung moss PASS. Cook still prefers [`packs/moss/stills/at-b.jpg`](packs/moss/stills/at-b.jpg) as the at-B side ref.
 - **IGNORE a tiny ~0.18 crop** the same way Imagine **IGNORE**s bolt-back ~0.53. Live after #4: at-A FAIL×2 sill-band 0.19/0.21; at-B FAIL×2 0.20/0.21+sit. Archived anti-teachers: [`lock/example-at-a-tiny.jpg`](lock/example-at-a-tiny.jpg) / [`example-at-b-tiny.jpg`](lock/example-at-b-tiny.jpg) — **never send**.
 
@@ -81,7 +81,7 @@ Cloud checkouts often lack the attachment. Path expectation:
 2. `node scripts/install-lock-ata.mjs --dry-run` then `node scripts/install-lock-ata.mjs`
 3. That overwrites `lock/example-at-a.jpg` (720×1280). Refuses the archived tiny hash.
 
-Until the drop lands, `lock/example-at-a.jpg` may still be the swapped moss PASS still — the **prefer-lock + cross-style prompt** still holds. No chat Imagine. No new grok.me.
+Until the drop lands, `lock/example-at-a.jpg` may still be the swapped moss PASS still — the **prefer-lock + FORCE taille/standing** prompt still holds. Live ember at-A FAIL×2 (0.19+sit+face / 0.16+sit) means teacher pixels alone are not enough. No chat Imagine. No new grok.me.
 
 ## Player phrases (treat as this flow)
 
@@ -119,7 +119,7 @@ Save → `stills/spawn.jpg` (or `stills/a/spawn.jpg`). Scale 720×1280.
 
 `imagineStill({ pose: "atA", spawnPath })` · **`image` = spawn** (not bolt-back). bolt-back = coat only (IGNORE ~0.53). Side ref = **`lock/example-at-a.jpg`** (SmiR lock teacher; not hung moss). IGNORE tiny ~0.18 crop like bolt-back 0.53. Never `example-at-a-tiny`.
 
-> Same camera / light / energy rifts as spawn (oval or RECT). **copy PLACE+POSE+taille from example; hall materials from spawn/catalog only — ignore example décor.** He is ALREADY at the teal LEFT **sill** (paws on that lip, body in the LEFT third) — NEVER mid-hall / spawn / center / fork. STANDING, BACK, crown to camera. Feet on the **stone floor in front of** the sill — never inside the rift, never climbing the teal (punch-sill if dog top < 0.46). Gold stays in frame. Never sit / face / 3/4. bboxH/H **0.35–0.40**. Δh/H < 0.12. Do not grow him in place. IGNORE bolt-back crop (~0.53). IGNORE a tiny ~0.18 crop the same way.
+> Same camera / light / energy rifts as spawn (oval or RECT). **copy PLACE+POSE from example; FORCE taille 0.35–0.40; FORCE STANDING; never shrink to 0.18; hall materials from spawn/catalog only — ignore example décor.** He is ALREADY at the teal LEFT **sill** (paws on that lip, body in the LEFT third) — NEVER mid-hall / spawn / center / fork. STANDING, BACK, crown to camera. Feet on the **stone floor in front of** the sill — never inside the rift, never climbing the teal (punch-sill if dog top < 0.46). Gold stays in frame. Never sit / face / 3/4. bboxH/H **FORCE 0.35–0.40**. Do not shrink him to the teacher (~0.18 / 0.16 / 0.19 = FAIL). Δh/H < 0.12. Do not grow him in place at center. IGNORE bolt-back crop (~0.53). IGNORE a tiny ~0.18 crop the same way.
 
 Save → `stills/at-a.jpg` (or `stills/a/at-a.jpg`).
 
