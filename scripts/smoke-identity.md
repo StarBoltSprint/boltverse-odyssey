@@ -22,9 +22,9 @@ Spawn / at-A / at-B / first+last of a hall film: **STANDING**, back, two ears, f
 
 | if you see | rule |
 |---|---|
-| sitting, haunches down, poop | `FAIL identity.sit` (also machine `gate.sit`) |
-| face, snout toward camera | `FAIL identity.face` |
-| 3/4 or profile | `FAIL identity.three_quarter` / `identity.profile` |
+| sitting, haunches down, poop | `FAIL identity.sit` (machine `gate.sit` even if bboxH/H is 0.35–0.40) |
+| face, snout toward camera | `FAIL identity.face` (machine: dark muzzle in the upper-center) |
+| 3/4 or profile | `FAIL identity.three_quarter` / `identity.profile` (machine `gate.yaw` &gt; 28° on stills) |
 | oval / blob / wood leaf instead of RECT teal/gold rifts | `FAIL identity.door_morph` / `identity.door_wood` |
 
 A cute sit is still FAIL. Soft KEEP of a sitting at-A is illegal.

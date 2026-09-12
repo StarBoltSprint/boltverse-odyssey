@@ -192,21 +192,22 @@ export async function imagineStill({ root, slot, pose, dest, spawnPath, lane }) 
           : "",
         pose === "atA"
           ? [
-              "Bolt at the teal LEFT RECT energy rift, BACK to camera, TWO ears, STANDING four paws, legs long, haunches UP, weight on the floor.",
-              "NEVER sit. NEVER a loaf. NEVER lie. NEVER 3/4. NEVER face. NEVER muzzle. NEVER punch-in to fill the rift.",
-              "Same lock as spawn: only the dog moved left. Gold RECT rift still visible on the right. Same camera — no dolly, same rift sizes.",
+              "Bolt at the teal LEFT RECT energy rift, BACK to camera, TWO ears on TOP of the skull, crown to camera, muzzle HIDDEN.",
+              "STANDING four paws, legs LONG, haunches UP, weight on the floor. Same lock as the spawn still — only he moved left.",
+              "NEVER sit. NEVER a loaf. NEVER haunches down. NEVER lie. NEVER 3/4. NEVER cheek. NEVER face. NEVER muzzle. NEVER punch-in to fill the teal.",
+              "He is NOT seated facing the teal. He is NOT looking at the rift. Gold RECT rift still visible on the right. Same camera — no dolly.",
               "Dog bbox height one step closer than spawn: 0.34–0.38 (want 0.35–0.40). Δh/H from spawn MUST be under 0.12.",
-              "If spawn is 0.26, you are ~0.36. Size in band is not enough if he sits or turns. Same lens as spawn.",
+              "If spawn is 0.26, you are ~0.36. Size in band is not enough if he sits, turns, or shows a face. Same lens as spawn.",
             ].join(" ")
           : "",
         pose === "atB"
           ? [
-              "Bolt at the gold RIGHT RECT energy rift, BACK to camera, TWO ears, STANDING four paws, legs long, haunches UP, weight on the floor.",
-              "NEVER sit. NEVER a loaf. NEVER lie. NEVER 3/4. NEVER face. NEVER muzzle. NEVER punch-in to fill the rift.",
-              "Same lock as spawn: only the dog moved right. Teal RECT rift still visible on the left. Same camera — no dolly, same rift sizes.",
-              "He is NOT seated facing the gold. He is the spawn dog, still BACK, now at the gold sill.",
+              "Bolt at the gold RIGHT RECT energy rift, BACK to camera, TWO ears on TOP of the skull, crown to camera, muzzle HIDDEN.",
+              "STANDING four paws, legs LONG, haunches UP, weight on the floor. Same lock as the spawn still — only he moved right.",
+              "NEVER sit. NEVER a loaf. NEVER haunches down. NEVER lie. NEVER 3/4. NEVER cheek. NEVER face. NEVER muzzle. NEVER punch-in to fill the gold.",
+              "He is NOT seated facing the gold. He is NOT looking at the rift. Teal RECT rift still visible on the left. Same camera — no dolly.",
               "Dog bbox height one step closer than spawn: 0.34–0.38 (want 0.35–0.40). Δh/H from spawn MUST be under 0.12.",
-              "If spawn is 0.26, you are ~0.36. Size in band is not enough if he sits or turns. Same lens as spawn.",
+              "If spawn is 0.26, you are ~0.36. Size in band is not enough if he sits, turns, or shows a face. Same lens as spawn.",
             ].join(" ")
           : "",
       ]

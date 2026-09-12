@@ -233,8 +233,12 @@ export const SILL_BAND = [0.35, 0.4];
 export const SILL_FAIL = [0.28, 0.45];
 export const PUNCH = 0.55;
 export const YAW_FAIL = 40;
-export const STILL_YAW = 32;
+export const STILL_YAW = 28;
 export const SIT_ASPECT = 2.2;
+export const MUZZLE_DARK = 12;
+export const LOAF_TURN_ASPECT = 2.48;
+export const LOAF_TURN_YAW = 20;
+export const SILL_PUNCH_TOP = 0.46;
 
 function cropGray(g, w, x0, y0, cw, ch) {
   const o = new Float64Array(cw * ch);
@@ -314,6 +318,47 @@ function slideNcc(thumb, g, w, h) {
   return { peak, peaks, x: px };
 }
 
+/** Upper-third of the dog: back = bright skull; face = dark muzzle in the center. */
+function lookHint(buf, w, dog) {
+  if (!dog) return { centerDark: 0, darkFrac: 0 };
+  const y0 = dog.minY;
+  const y1 = dog.minY + Math.max(3, Math.floor(dog.h * 0.38));
+  const x0 = dog.minX;
+  const x1 = dog.maxX;
+  const mid0 = x0 + Math.floor((x1 - x0) * 0.33);
+  const mid1 = x0 + Math.floor((x1 - x0) * 0.67);
+  let L = 0,
+    nL = 0,
+    C = 0,
+    nC = 0,
+    R = 0,
+    nR = 0,
+    dark = 0,
+    n = 0;
+  for (let y = y0; y < y1; y++) {
+    for (let x = x0; x <= x1; x++) {
+      const i = y * w + x;
+      const v = (buf[i * 3] * 3 + buf[i * 3 + 1] * 4 + buf[i * 3 + 2]) >> 3;
+      n++;
+      if (v < 95) dark++;
+      if (x < mid0) {
+        L += v;
+        nL++;
+      } else if (x > mid1) {
+        R += v;
+        nR++;
+      } else {
+        C += v;
+        nC++;
+      }
+    }
+  }
+  const l = nL ? L / nL : 0;
+  const c = nC ? C / nC : 0;
+  const r = nR ? R / nR : 0;
+  return { centerDark: (l + r) / 2 - c, darkFrac: n ? dark / n : 0 };
+}
+
 function withers(buf, w, dog) {
   if (!dog) return { luma: 0, sat: 255 };
   let luma = 0, sat = 0, n = 0;
@@ -361,29 +406,37 @@ function bandCheck(h, pose, why, warns) {
     why.push(`gate.size sill-band ${h.toFixed(2)} want ${SILL_BAND[0]}-${SILL_BAND[1]}`);
 }
 
-/** Layer-B still veto: sit / 3/4-yaw / illegal size. Face-on is layer C plus yaw. */
+/** Layer-B still veto: sit / 3/4 / face even when bboxH/H is in band. */
 export function stillReasons(buf, kind, w = GW, h = GH) {
   const why = [];
   const hh = creamHeight(buf, w, h);
   const place = creamPlace(buf, w, h);
+  const sill = kind === "still-atA" || kind === "still-atB";
   if (hh >= PUNCH) why.push(`gate.size punch-in ${hh.toFixed(2)}`);
   if (kind === "still-spawn" && (hh < SPAWN_BAND[0] || hh > SPAWN_BAND[1]))
     why.push(`gate.size spawn-band ${hh.toFixed(2)} want ${SPAWN_BAND[0]}-${SPAWN_BAND[1]}`);
-  if ((kind === "still-atA" || kind === "still-atB") && (hh < SILL_FAIL[0] || hh > SILL_FAIL[1]))
+  if (sill && (hh < SILL_FAIL[0] || hh > SILL_FAIL[1]))
     why.push(`gate.size sill-band ${hh.toFixed(2)} want ${SILL_BAND[0]}-${SILL_BAND[1]} (FAIL <${SILL_FAIL[0]} or >${SILL_FAIL[1]})`);
   const dog = dogMask(buf, w, h);
+  const look = lookHint(buf, w, dog);
   if (!dog) why.push("gate.place no-dog");
   else {
-    if (dog.axisFromVert > STILL_YAW)
-      why.push(`gate.yaw ${dog.axisFromVert.toFixed(0)}°`);
     const aspect = dog.h / Math.max(1, dog.w);
+    const yaw = dog.axisFromVert;
+    if (yaw > STILL_YAW) why.push(`gate.yaw ${yaw.toFixed(0)}°`);
     if (aspect < SIT_ASPECT) why.push(`gate.sit aspect ${aspect.toFixed(2)}`);
+    if (aspect < LOAF_TURN_ASPECT && yaw >= LOAF_TURN_YAW)
+      why.push(`gate.sit loaf-turn aspect ${aspect.toFixed(2)} yaw ${yaw.toFixed(0)}`);
+    if (look.centerDark > MUZZLE_DARK)
+      why.push(`identity.face muzzle ${look.centerDark.toFixed(0)}`);
+    if (sill && dog.minY / h < SILL_PUNCH_TOP && hh >= 0.33)
+      why.push(`gate.size punch-sill top ${(dog.minY / h).toFixed(2)}`);
   }
-  if ((kind === "still-atA" || kind === "still-atB") && place && place.h > 0) {
+  if (sill && place && place.h > 0) {
     const wide = place.w / place.h;
     if (wide > 0.82) why.push(`gate.sit wide ${wide.toFixed(2)}`);
   }
-  return { why, hh, dog, place };
+  return { why, hh, dog, place, look };
 }
 
 const T = {
@@ -431,6 +484,18 @@ export function matchPose(a, b, edge, dims = { w: GW, h: GH }) {
     const aspectB = db.h / Math.max(1, db.w);
     if (aspectA < SIT_ASPECT) why.push(`gate.sit a aspect ${aspectA.toFixed(2)}`);
     if (aspectB < SIT_ASPECT) why.push(`gate.sit b aspect ${aspectB.toFixed(2)}`);
+    if (poseA === "sill") {
+      const la = lookHint(a, w, da);
+      if (la.centerDark > MUZZLE_DARK) why.push(`identity.face a muzzle ${la.centerDark.toFixed(0)}`);
+      if (aspectA < LOAF_TURN_ASPECT && da.axisFromVert >= LOAF_TURN_YAW)
+        why.push(`gate.sit a loaf-turn`);
+    }
+    if (poseB === "sill") {
+      const lb = lookHint(b, w, db);
+      if (lb.centerDark > MUZZLE_DARK) why.push(`identity.face b muzzle ${lb.centerDark.toFixed(0)}`);
+      if (aspectB < LOAF_TURN_ASPECT && db.axisFromVert >= LOAF_TURN_YAW)
+        why.push(`gate.sit b loaf-turn`);
+    }
     const dh = Math.abs(da.h / h - db.h / h);
     if (dh > t.dh) why.push(`gate.size Δh/H ${dh.toFixed(2)}`);
     if (da.axisFromVert > t.yaw) why.push(`gate.yaw a ${da.axisFromVert.toFixed(0)}°`);
