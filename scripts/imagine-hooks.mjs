@@ -221,7 +221,9 @@ export function stillRefOrder(pose, hasSpawn, root, opts) {
     const side = sillTeacherRel(root, pose);
     return hasSpawn ? ["spawn", "bolt-back.jpg", side] : [side, "bolt-back.jpg"];
   }
-  return hasSpawn ? ["bolt-back.jpg", exampleName(pose), "spawn"] : ["bolt-back.jpg", exampleName(pose)];
+  const spawnSeal = "lock/SEAL-spawn.jpg";
+  const spawnTeacher = root && existsSync(join(root, spawnSeal)) ? spawnSeal : exampleName(pose);
+  return hasSpawn ? ["bolt-back.jpg", spawnTeacher, "spawn"] : ["bolt-back.jpg", spawnTeacher];
 }
 
 /** Second sill cook: FAIL jpg is the image. ONLY grow the dog. Same camera/hall. No teacher. */

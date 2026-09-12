@@ -282,13 +282,13 @@ must(/do \*\*not\*\* FAIL oval shape alone/.test(smokeId), "smoke-identity: oval
 must(!/oval \/ blob \/ wood leaf instead of RECT/.test(smokeId), "smoke-identity: oval-as-RECT-FAIL row gone");
 must(/white base forever/.test(smokeId) && /SKINS ON TOP/.test(smokeId), "smoke-identity: white base + skins ON TOP");
 
-must(/KEEP seals/.test(agents) && /SEAL-at-a/.test(agents) && /SEAL-at-b/.test(agents), "AGENTS.md: ice-hall KEEP seals");
+must(/KEEP seals/.test(agents) && /SEAL-spawn/.test(agents) && /SEAL-at-a/.test(agents) && /SEAL-at-b/.test(agents), "AGENTS.md: ice-hall KEEP seals");
 must(/until SmiR reseals/.test(agents) && /SKIPS/.test(agents) && /imagineStill/.test(agents), "AGENTS.md: sealed skip imagineStill until reseal");
-must(/KEEP seals/.test(cook) && /SEAL-at-a/.test(cook) && /until SmiR reseals/.test(cook), "COOK.md: ice-hall KEEP seals");
+must(/KEEP seals/.test(cook) && /SEAL-spawn/.test(cook) && /SEAL-at-a/.test(cook) && /until SmiR reseals/.test(cook), "COOK.md: ice-hall KEEP seals");
 must(/SKIPS/.test(cook) && /imagineStill/.test(cook), "COOK.md: sealed skip imagineStill");
-must(/KEEP seals/.test(stop) && /SEAL-at-a/.test(stop) && /until SmiR reseals/.test(stop), "GROK.md STOP: ice-hall KEEP seals");
-must(/KEEP seals/.test(customize) && /SEAL-at-a/.test(customize) && /until SmiR reseals/.test(customize), "GROK.md Customize: ice-hall KEEP seals");
-must(/KEEP seals/.test(rules) && /SEAL-at-a/.test(rules) && /until SmiR reseals/.test(rules), ".cursorrules: ice-hall KEEP seals");
-must(/KEEP seals/.test(cookroom) && /SEAL-at-a/.test(cookroom) && /until SmiR reseals/.test(cookroom), "COOKROOM.md: ice-hall KEEP seals");
+must(/KEEP seals/.test(stop) && /SEAL-spawn/.test(stop) && /SEAL-at-a/.test(stop) && /until SmiR reseals/.test(stop), "GROK.md STOP: ice-hall KEEP seals");
+must(/KEEP seals/.test(customize) && /SEAL-spawn/.test(customize) && /SEAL-at-a/.test(customize) && /until SmiR reseals/.test(customize), "GROK.md Customize: ice-hall KEEP seals");
+must(/KEEP seals/.test(rules) && /SEAL-spawn/.test(rules) && /SEAL-at-a/.test(rules) && /until SmiR reseals/.test(rules), ".cursorrules: ice-hall KEEP seals");
+must(/KEEP seals/.test(cookroom) && /SEAL-spawn/.test(cookroom) && /SEAL-at-a/.test(cookroom) && /until SmiR reseals/.test(cookroom), "COOKROOM.md: ice-hall KEEP seals");
 
 console.log("COLD-START PASS");

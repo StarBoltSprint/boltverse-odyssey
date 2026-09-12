@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 // COOK/LOCK — SmiR KEEP seals + at-A teacher drop.
-// Ice-cathedral KEEP (Imagine Agent): hall-stills/seal/at-a-ice.jpg + at-b-ice.jpg
-//   → lock/SEAL-at-a.jpg + lock/SEAL-at-b.jpg (and example-at-a / example-at-b).
+// Ice-cathedral KEEP (Imagine Agent):
+//   hall-stills/seal/spawn-ice.jpg + at-a-ice.jpg + at-b-ice.jpg
+//   → lock/SEAL-spawn.jpg + lock/SEAL-at-a.jpg + lock/SEAL-at-b.jpg
 // Frozen pose+décor for this ice hall until SmiR reseals.
-// cook-room SKIPS imagineStill for at-A/at-B when those SEAL files exist.
+// cook-room SKIPS imagineStill for spawn / at-A / at-B when those SEAL files exist.
 // Smoke still runs. Soft KEEP banned. Agent remains primary for future styles.
 //
 // Legacy at-A teacher drop (first hit wins unless argv given):
@@ -30,10 +31,13 @@ export const DEST_B_REL = "lock/example-at-b.jpg";
 export const SEAL_REL = "lock/SEAL-at-a.jpg";
 export const SEAL_A_REL = "lock/SEAL-at-a.jpg";
 export const SEAL_B_REL = "lock/SEAL-at-b.jpg";
+export const SEAL_SPAWN_REL = "lock/SEAL-spawn.jpg";
+export const DEST_SPAWN_REL = "lock/example-spawn.jpg";
 export const TINY_REL = "lock/example-at-a-tiny.jpg";
 export const TINY_B_REL = "lock/example-at-b-tiny.jpg";
 export const ICE_A_REL = "hall-stills/seal/at-a-ice.jpg";
 export const ICE_B_REL = "hall-stills/seal/at-b-ice.jpg";
+export const ICE_SPAWN_REL = "hall-stills/seal/spawn-ice.jpg";
 export const DROP_RELS = [
   ICE_A_REL,
   "hall-stills/smir-ata-teacher.jpeg",
@@ -41,6 +45,7 @@ export const DROP_RELS = [
   "lock/incoming/smir-ata-teacher.jpeg",
 ];
 export const DROP_B_RELS = [ICE_B_REL];
+export const DROP_SPAWN_RELS = [ICE_SPAWN_REL];
 
 const here = dirname(fileURLToPath(import.meta.url));
 const defaultRoot = join(here, "..");
@@ -75,7 +80,16 @@ export function lockAtaStatus(repo) {
   const destIsTiny = hasDest && existsSync(tiny) && sha1(dest) === sha1(tiny);
   const iceA = existsSync(join(repo, ICE_A_REL));
   const iceB = existsSync(join(repo, ICE_B_REL));
-  const note = iceA && iceB
+  const iceSpawn = existsSync(join(repo, ICE_SPAWN_REL));
+  const note = iceA && iceB && iceSpawn
+    ? "COOK/LOCK  Imagine Agent KEEP ice seals present — node scripts/install-lock-ata.mjs → " +
+      SEAL_SPAWN_REL +
+      " + " +
+      SEAL_A_REL +
+      " + " +
+      SEAL_B_REL +
+      " (frozen pose+décor until SmiR reseals)"
+    : iceA && iceB
     ? "COOK/LOCK  Imagine Agent KEEP ice seals present — node scripts/install-lock-ata.mjs → " +
       SEAL_A_REL +
       " + " +
@@ -84,6 +98,8 @@ export function lockAtaStatus(repo) {
     : hasDrop
       ? "COOK/LOCK  drop present — node scripts/install-lock-ata.mjs → " + DEST_REL + " + " + SEAL_A_REL
       : "COOK/LOCK  drop missing — put Imagine Agent KEEP ice stills at " +
+        ICE_SPAWN_REL +
+        " + " +
         ICE_A_REL +
         " + " +
         ICE_B_REL +
@@ -93,11 +109,13 @@ export function lockAtaStatus(repo) {
     destRel: DEST_REL,
     sealRel: SEAL_A_REL,
     sealBRel: SEAL_B_REL,
+    sealSpawnRel: SEAL_SPAWN_REL,
     hasDrop,
     hasDest,
     destIsTiny,
     iceA,
     iceB,
+    iceSpawn,
     note,
   };
 }
@@ -148,6 +166,38 @@ export function sealAtbStatus(repo, env = process.env) {
   return sealSillStatus(repo, "atB", env);
 }
 
+/** Owner freeze: SEAL=1 / SEAL_SPAWN=1 or lock/SEAL-spawn.jpg. Skip imagineStill. */
+export function sealSpawnStatus(repo, env = process.env) {
+  const sealRel = SEAL_SPAWN_REL;
+  const iceRel = ICE_SPAWN_REL;
+  const sealPath = join(repo, sealRel);
+  const icePath = join(repo, iceRel);
+  const envOn = String(env.SEAL || "") === "1" || String(env.SEAL_SPAWN || "") === "1";
+  const hasSealFile = existsSync(sealPath);
+  const sealed = envOn || hasSealFile;
+  let srcRel = null;
+  if (hasSealFile) srcRel = sealRel;
+  else if (existsSync(icePath)) srcRel = iceRel;
+  const note = sealed
+    ? "SEALED spawn = frozen KEEP; do not Imagine new spawn pose. cook-room copies " +
+      (srcRel || sealRel) +
+      " → packs/<slot>/stills/spawn.jpg. No imagineStill. Smoke still runs. Soft KEEP banned."
+    : "spawn unsealed — imagineStill may cook pose. SEAL=1 / SEAL_SPAWN=1 or " +
+      sealRel +
+      " freezes the owner KEEP.";
+  return {
+    sealed,
+    srcRel,
+    hasSealFile,
+    envOn,
+    sealRel,
+    destRel: DEST_SPAWN_REL,
+    iceRel,
+    note,
+    pose: "spawn",
+  };
+}
+
 export function encodePlate(src, dest) {
   mkdirSync(dirname(dest), { recursive: true });
   const vf = "scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280";
@@ -163,7 +213,7 @@ export function encodePlate(src, dest) {
 
 /** Copy sealed KEEP onto a pack still (720×1280). Never Imagine. */
 export function copySealedSill(repo, destAbs, srcRel) {
-  if (!srcRel) throw new Error("SEALED sill source missing — need lock/SEAL-at-*.jpg");
+  if (!srcRel) throw new Error("SEALED still source missing — need lock/SEAL-*.jpg");
   const src = join(repo, srcRel);
   if (!existsSync(src)) throw new Error("SEALED sill source missing: " + srcRel);
   encodePlate(src, destAbs);
@@ -179,7 +229,7 @@ export function copySealedAta(repo, destAbs, srcRel) {
 export function isOwnerDrop(repo, srcPath) {
   if (!srcPath) return false;
   const abs = resolve(srcPath);
-  const rels = [...DROP_RELS, ...DROP_B_RELS];
+  const rels = [...DROP_RELS, ...DROP_B_RELS, ...DROP_SPAWN_RELS];
   return rels.some((rel) => resolve(join(repo, rel)) === abs);
 }
 
@@ -224,11 +274,23 @@ export function installLockAtb(repo, srcPath) {
   return dest;
 }
 
-/** Install both ice KEEP seals when hall-stills/seal/at-*-ice.jpg exist. */
+/** Install ice SPAWN KEEP → lock/SEAL-spawn.jpg only. Never overwrite example-spawn. */
+export function installLockSpawn(repo, srcPath) {
+  const dest = join(repo, SEAL_SPAWN_REL);
+  if (!srcPath || !existsSync(srcPath)) {
+    throw new Error("COOK/LOCK  no drop file — expected " + ICE_SPAWN_REL);
+  }
+  encodePlate(srcPath, dest);
+  return dest;
+}
+
+/** Install ice KEEP seals when hall-stills/seal/*-ice.jpg exist. Spawn → SEAL-spawn only. */
 export function installIceSeals(repo) {
+  const spawn = findDrop(repo, null, DROP_SPAWN_RELS);
   const a = findDrop(repo, null, [ICE_A_REL]);
   const b = findDrop(repo, null, [ICE_B_REL]);
-  const out = { atA: null, atB: null };
+  const out = { spawn: null, atA: null, atB: null };
+  if (spawn) out.spawn = installLockSpawn(repo, spawn);
   if (a) out.atA = installLockAta(repo, a);
   if (b) out.atB = installLockAtb(repo, b);
   return out;
@@ -241,17 +303,26 @@ function main() {
   const st = lockAtaStatus(defaultRoot);
   console.log(st.note);
   console.log("COOK/LOCK  dest " + DEST_REL + (st.hasDest ? " present" : " MISSING"));
+  console.log("COOK/LOCK  seal " + SEAL_SPAWN_REL + (existsSync(join(defaultRoot, SEAL_SPAWN_REL)) ? " present" : " MISSING"));
   console.log("COOK/LOCK  seal " + SEAL_A_REL + (existsSync(join(defaultRoot, SEAL_A_REL)) ? " present" : " MISSING"));
   console.log("COOK/LOCK  seal " + SEAL_B_REL + (existsSync(join(defaultRoot, SEAL_B_REL)) ? " present" : " MISSING"));
   if (st.destIsTiny) console.log("COOK/LOCK  dest currently equals archived tiny — do not send it");
-  console.log("COOK/LOCK  drop slots: " + DROP_RELS.join(" | ") + " | " + DROP_B_RELS.join(" | "));
+  console.log(
+    "COOK/LOCK  drop slots: " +
+      DROP_SPAWN_RELS.join(" | ") +
+      " | " +
+      DROP_RELS.join(" | ") +
+      " | " +
+      DROP_B_RELS.join(" | "),
+  );
+  console.log(sealSpawnStatus(defaultRoot).note);
   console.log(sealAtaStatus(defaultRoot).note);
   console.log(sealAtbStatus(defaultRoot).note);
   if (dry) {
-    const ice = st.iceA || st.iceB;
+    const ice = st.iceSpawn || st.iceA || st.iceB;
     console.log(
       ice
-        ? "COOK/LOCK  would install ice KEEP → " + SEAL_A_REL + " + " + SEAL_B_REL
+        ? "COOK/LOCK  would install ice KEEP → " + SEAL_SPAWN_REL + " + " + SEAL_A_REL + " + " + SEAL_B_REL
         : st.hasDrop
           ? "COOK/LOCK  would install " + st.dropRel + " → " + DEST_REL + " + " + SEAL_A_REL
           : "COOK/LOCK  nothing to install",
@@ -260,7 +331,8 @@ function main() {
   }
   try {
     const ice = installIceSeals(defaultRoot);
-    if (ice.atA || ice.atB) {
+    if (ice.spawn || ice.atA || ice.atB) {
+      if (ice.spawn) console.log("COOK/LOCK  sealed " + SEAL_SPAWN_REL);
       if (ice.atA) console.log("COOK/LOCK  sealed " + SEAL_A_REL);
       if (ice.atB) console.log("COOK/LOCK  sealed " + SEAL_B_REL);
       process.exit(0);

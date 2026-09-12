@@ -48,16 +48,24 @@ mustPass("packs/moss/stills/at-b.jpg", "still-atB");
 mustPass("lock/sill-at-a.jpg", "still-atA");
 mustPass("lock/sill-at-b.jpg", "still-atB");
 mustPass("lock/example-at-b.jpg", "still-atB");
-if (!existsSync(join(root, "lock/SEAL-at-a.jpg")) || !existsSync(join(root, "lock/SEAL-at-b.jpg"))) {
-  console.error("FAIL  ice KEEP seals missing lock/SEAL-at-a.jpg + lock/SEAL-at-b.jpg");
+if (
+  !existsSync(join(root, "lock/SEAL-spawn.jpg")) ||
+  !existsSync(join(root, "lock/SEAL-at-a.jpg")) ||
+  !existsSync(join(root, "lock/SEAL-at-b.jpg"))
+) {
+  console.error("FAIL  ice KEEP seals missing lock/SEAL-spawn.jpg + lock/SEAL-at-a.jpg + lock/SEAL-at-b.jpg");
   process.exit(1);
 }
-console.log("PASS  lock/SEAL-at-a.jpg + lock/SEAL-at-b.jpg present");
-if (!existsSync(join(root, "hall-stills/seal/at-a-ice.jpg")) || !existsSync(join(root, "hall-stills/seal/at-b-ice.jpg"))) {
-  console.error("FAIL  ice KEEP drops missing hall-stills/seal/at-*-ice.jpg");
+console.log("PASS  lock/SEAL-spawn.jpg + lock/SEAL-at-a.jpg + lock/SEAL-at-b.jpg present");
+if (
+  !existsSync(join(root, "hall-stills/seal/spawn-ice.jpg")) ||
+  !existsSync(join(root, "hall-stills/seal/at-a-ice.jpg")) ||
+  !existsSync(join(root, "hall-stills/seal/at-b-ice.jpg"))
+) {
+  console.error("FAIL  ice KEEP drops missing hall-stills/seal/*-ice.jpg");
   process.exit(1);
 }
-console.log("PASS  hall-stills/seal/at-a-ice.jpg + at-b-ice.jpg present");
+console.log("PASS  hall-stills/seal/spawn-ice.jpg + at-a-ice.jpg + at-b-ice.jpg present");
 
 function placeOk(r, kind) {
   if (!r.dog) return false;

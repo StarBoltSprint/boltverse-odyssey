@@ -5,15 +5,15 @@
 //   export XAI_API_KEY=... && node scripts/cook-room.mjs moss
 //   node scripts/cook-room.mjs moss --force
 // Hung PASS stills/films are reused. --force / COOK_FORCE=1 recooks.
-// SEAL=1 / lock/SEAL-at-a.jpg + lock/SEAL-at-b.jpg: skip imagineStill for at-A/at-B.
-// Smoke still runs. Soft KEEP banned.
+// SEAL=1 / lock/SEAL-spawn.jpg + lock/SEAL-at-a.jpg + lock/SEAL-at-b.jpg:
+// skip imagineStill for spawn / at-A / at-B. Smoke still runs. Soft KEEP banned.
 
 import { existsSync, mkdirSync, writeFileSync, unlinkSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { imagineStill, imagineClip } from "./imagine-hooks.mjs";
-import { copySealedSill, lockAtaStatus, sealAtbStatus, sealAtaStatus } from "./install-lock-ata.mjs";
+import { copySealedSill, lockAtaStatus, sealAtbStatus, sealAtaStatus, sealSpawnStatus } from "./install-lock-ata.mjs";
 import { dropHungPlate, nextSillAttempt, saveFailPlate } from "./kitchen-fail.mjs";
 
 const SLOTS = [
@@ -42,6 +42,7 @@ const slot = String(argv.find((a) => !a.startsWith("--")) || "")
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const dir = join(root, "packs", slot);
 const scripts = join(root, "scripts");
+const sealSpawn = sealSpawnStatus(root);
 const sealA = sealAtaStatus(root);
 const sealB = sealAtbStatus(root);
 
@@ -166,6 +167,7 @@ function seedExistingFail(rel, kind) {
 }
 
 function sealFor(kind) {
+  if (kind === "still-spawn") return sealSpawn;
   if (kind === "still-atA") return sealA;
   if (kind === "still-atB") return sealB;
   return null;
@@ -189,7 +191,7 @@ function plan(rel, kind) {
 
 function applySealedStill(rel, destAbs, kind, se) {
   if (!se.srcRel) {
-    fail("SEALED " + rel + " — " + (se.sealRel || "lock/SEAL-at-*.jpg") + " missing. No imagineStill fallback.");
+    fail("SEALED " + rel + " — " + (se.sealRel || "lock/SEAL-*.jpg") + " missing. No imagineStill fallback.");
   }
   if (has(rel) && smoke(rel, kind)) {
     out("skip " + rel + " (exists + smoke PASS; SEALED — no imagineStill)");
@@ -270,13 +272,14 @@ if (dry) {
   out("fail-save: Smoke FAIL → packs/" + slot + "/.kitchen/fail/<kind>-<n>.jpg|mp4 — debug only. NEVER stills/ or films/. Never Hang FAIL.");
   out("enlarge: at-A/at-B under-size (sill-band ~0.16–0.21) → 1 fresh + 1 enlarge (or 2 enlarge). FAIL jpg = image; ONLY grow dog to 0.35–0.40 standing at sill. Sit does not block enlarge. gate.place / mid-hall = fresh, not enlarge.");
   out(lockAtaStatus(root).note);
+  out(sealSpawn.note);
   out(sealA.note);
   out(sealB.note);
   out("atA side ref = lock/example-at-a.jpg — copy PLACE+POSE from example; FORCE taille 0.35–0.40; FORCE STANDING; never shrink to 0.18; hall materials from spawn/catalog only — ignore example décor.");
-  if (sealA.sealed || sealB.sealed) {
-    out("SEALED at-A/at-B = frozen KEEP (Imagine Agent ice hall); do not Imagine new sill pose. Smoke still runs. Soft KEEP banned.");
+  if (sealSpawn.sealed || sealA.sealed || sealB.sealed) {
+    out("SEALED spawn/at-A/at-B = frozen KEEP (Imagine Agent ice hall); do not Imagine new spawn/sill pose. Smoke still runs. Soft KEEP banned.");
   }
-  out(force ? "--force: recook even if hung PASS (sealed at-A/at-B still skip imagineStill)" : "default: reuse hung PASS stills + films");
+  out(force ? "--force: recook even if hung PASS (sealed spawn/at-A/at-B still skip imagineStill)" : "default: reuse hung PASS stills + films");
   out(has("room.json") ? "keep room.json" : "write skeleton room.json");
   let skipStills = 0;
   let skipFilms = 0;
@@ -407,7 +410,9 @@ async function cookSillStill(label, pose, destAbs, rel, kind) {
 }
 
 let stillCooked = 0;
-if (reuse("stills/spawn.jpg", "still-spawn")) {
+if (sealSpawn.sealed) {
+  if (applySealedStill("stills/spawn.jpg", spawnStill, "still-spawn", sealSpawn)) stillCooked++;
+} else if (reuse("stills/spawn.jpg", "still-spawn")) {
   out("skip stills/spawn.jpg (exists + smoke PASS)");
 } else {
   const spawnSeed = seedExistingFail("stills/spawn.jpg", "still-spawn");
