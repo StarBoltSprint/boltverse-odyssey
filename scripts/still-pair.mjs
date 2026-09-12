@@ -230,7 +230,10 @@ export function creamPlace(buf, w, h) {
 
 export const SPAWN_BAND = [0.22, 0.32];
 export const SILL_BAND = [0.35, 0.4];
+export const SILL_FAIL = [0.28, 0.45];
 export const PUNCH = 0.55;
+export const YAW_FAIL = 40;
+export const SIT_ASPECT = 1.75;
 
 function cropGray(g, w, x0, y0, cw, ch) {
   const o = new Float64Array(cw * ch);
@@ -346,9 +349,34 @@ function posesOf(edge) {
 function bandCheck(h, pose, why, warns) {
   if (!h) return;
   if (h >= PUNCH) why.push(`gate.size punch-in ${h.toFixed(2)}`);
-  else if (pose === "spawn" && (h < 0.18 || h > 0.36)) why.push(`gate.size spawn-band ${h.toFixed(2)}`);
-  else if (pose === "sill" && h < 0.28) warns.push(`gate.size sill-band ${h.toFixed(2)} want 0.35-0.40`);
-  else if (pose === "sill" && h > 0.48) why.push(`gate.size sill-band ${h.toFixed(2)}`);
+  else if (pose === "spawn" && (h < SPAWN_BAND[0] || h > SPAWN_BAND[1]))
+    why.push(`gate.size spawn-band ${h.toFixed(2)} want ${SPAWN_BAND[0]}-${SPAWN_BAND[1]}`);
+  else if (pose === "sill" && h < SILL_FAIL[0])
+    why.push(`gate.size sill-band ${h.toFixed(2)} want ${SILL_BAND[0]}-${SILL_BAND[1]}`);
+  else if (pose === "sill" && h < SILL_BAND[0])
+    warns.push(`gate.size sill-band ${h.toFixed(2)} want ${SILL_BAND[0]}-${SILL_BAND[1]}`);
+  else if (pose === "sill" && h > SILL_FAIL[1])
+    why.push(`gate.size sill-band ${h.toFixed(2)} want ${SILL_BAND[0]}-${SILL_BAND[1]}`);
+}
+
+/** Layer-B still veto: sit / 3/4-yaw / illegal size. Face is layer C. */
+export function stillReasons(buf, kind, w = GW, h = GH) {
+  const why = [];
+  const hh = creamHeight(buf, w, h);
+  if (hh >= PUNCH) why.push(`gate.size punch-in ${hh.toFixed(2)}`);
+  if (kind === "still-spawn" && (hh < SPAWN_BAND[0] || hh > SPAWN_BAND[1]))
+    why.push(`gate.size spawn-band ${hh.toFixed(2)} want ${SPAWN_BAND[0]}-${SPAWN_BAND[1]}`);
+  if ((kind === "still-atA" || kind === "still-atB") && (hh < SILL_FAIL[0] || hh > SILL_FAIL[1]))
+    why.push(`gate.size sill-band ${hh.toFixed(2)} want ${SILL_BAND[0]}-${SILL_BAND[1]} (FAIL <${SILL_FAIL[0]} or >${SILL_FAIL[1]})`);
+  const dog = dogMask(buf, w, h);
+  if (!dog) why.push("gate.place no-dog");
+  else {
+    if (dog.axisFromVert > YAW_FAIL)
+      why.push(`gate.yaw ${dog.axisFromVert.toFixed(0)}°`);
+    const aspect = dog.h / Math.max(1, dog.w);
+    if (aspect < SIT_ASPECT) why.push(`gate.sit aspect ${aspect.toFixed(2)}`);
+  }
+  return { why, hh, dog };
 }
 
 const T = {
@@ -382,12 +410,20 @@ export function matchPose(a, b, edge, dims = { w: GW, h: GH }) {
   const hb = creamHeight(b, w, h);
   bandCheck(ha, poseA, why, warns);
   bandCheck(hb, poseB, why, warns);
+  if (kind === "walk" && ha && hb) {
+    const dCream = Math.abs(ha - hb);
+    if (dCream > 0.12) why.push(`gate.size Δh/H ${dCream.toFixed(2)} (spawn↔sill must be <0.12 for last_frame)`);
+  }
 
   const da = dogMask(a, w, h);
   const db = dogMask(b, w, h);
   if (!da) why.push("gate.place no-dog-a");
   if (!db) why.push("gate.place no-dog-b");
   if (da && db) {
+    const aspectA = da.h / Math.max(1, da.w);
+    const aspectB = db.h / Math.max(1, db.w);
+    if (aspectA < SIT_ASPECT) why.push(`gate.sit a aspect ${aspectA.toFixed(2)}`);
+    if (aspectB < SIT_ASPECT) why.push(`gate.sit b aspect ${aspectB.toFixed(2)}`);
     const dh = Math.abs(da.h / h - db.h / h);
     if (dh > t.dh) why.push(`gate.size Δh/H ${dh.toFixed(2)}`);
     if (da.axisFromVert > t.yaw) why.push(`gate.yaw a ${da.axisFromVert.toFixed(0)}°`);

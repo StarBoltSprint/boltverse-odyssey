@@ -27,7 +27,7 @@ The player may **not** see: Forge, % bar, black plate, “generating…” on th
 | Spawn still FAIL ×2 | stock, no `/r/mousse` | `spawn identity.face` |
 | atA FAIL, spawn PASS | no films; stock link + reason | recook atA abandoned |
 | Walk-A FAIL, stills PASS | hall playable **without** that edge: tap A from spawn = **stay** | `walk-spawn-A graph.last_not_official` |
-| Breath-A FAIL | ffmpeg **loop of still** atA (freeze) | `breath freeze-fallback` |
+| Breath-A FAIL | stock (still under the video if a last good hall exists) | `breath.gel` — freeze may live in `.kitchen/` only; **not** Hang-ready |
 | Enter FAIL / not hung | 2nd tap = **stay** (floor 1) | no edge |
 | `play()` iOS / autoplay | still under the video, taps live | `play.rejected` — walkingRef = false |
 | Swap too early (black frame) | do not paint; still stays | [ENGINE.md](ENGINE.md) |

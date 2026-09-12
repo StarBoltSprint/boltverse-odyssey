@@ -35,7 +35,7 @@ Prompt: `full gallop, back to camera, lock-off, legs alternate naturally, no pro
 - silver / grey / saddle / cape / silhouette
 - Face, muzzle, 3/4, profile
 - Bipedal, clothes, two Bolts, puppy
-- Sit / lie on a **hall** breath or walk (feet glued). Sprint mid may lift a paw — not sit.
+- Sit / lie on a **hall** still, breath, or walk (feet glued). Sprint mid may lift a paw — not sit.
 
 ## Scale
 

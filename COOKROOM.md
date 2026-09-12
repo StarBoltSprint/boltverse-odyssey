@@ -11,7 +11,7 @@ node scripts/cook-room.mjs <catalog-slot> --force
 
 Hung pack with PASS stills/films = **reuse**. Only missing / smoke-FAIL plates go through Imagine. `--force` / `COOK_FORCE=1` recooks. Never wipe a hung `room.json` or a PASS still.
 
-That script is the **only** hall cook. Stills + films go through [scripts/imagine-hooks.mjs](scripts/imagine-hooks.mjs) (`imagineStill` / `imagineClip`). Never chat Grok Imagine UI.
+That script is the **only** hall cook. Stills + films go through [scripts/imagine-hooks.mjs](scripts/imagine-hooks.mjs) (`imagineStill` / `imagineClip`). Never chat Grok Imagine UI. No `XAI_API_KEY` when a plate must Imagine → refuse (stock). No chat fallback.
 
 Validate and Smoke judge a **full** folder. This file **fills** it.
 
@@ -43,8 +43,8 @@ node scripts/cook-room.mjs moss --force
 4. atA / atB = `imagineStill` **from that spawn** — skip each if hung PASS
 5. smoke those stills — FAIL ×2 on one at → stop (no films)
 6. 5 films, **one by one**, smoke after each (skip each hung PASS film)  
-   breath FAIL ×2 → ffmpeg **gel** of the still **only if that still already PASS size**, then smoke the loop. Gel ≠ PASS. Loop FAIL / punch-in → **stock**, do not hang “so they can see”.  
-   both walks FAIL → stock
+   breath FAIL ×2 → **do not** write ffmpeg gel into `films/`. Optional decay jpeg-loop may land in `packs/<id>/.kitchen/` for the keeper. Gel ≠ PASS. **HANG BLOCKED** + stock. Do not hang “so they can see”.  
+   walk FAIL → delete that mp4 from `films/`, print `KEEP REFUSED` + the smoke rule, stock. Soft KEEP of a FAIL walk is illegal.
 7. encode 720×1280, mute, faststart
 8. `validate-pack` then `smoke-pack`
 9. PASS → `https://boltverse-odyssey.grok.me/r/<id>`
@@ -62,7 +62,9 @@ Wait only if `COOK_DEBUG=1`.
 ```
 PASS https://boltverse-odyssey.grok.me/r/dusk
 FAIL atA identity.face
+HANG BLOCKED
      https://boltverse-odyssey.grok.me/
+KEEP REFUSED  films/walk-spawn-a.mp4  FAIL  walk-spawn-a.mp4 graph.last_not_official
 ```
 
 The rest in `packs/<id>/smoke.log`.

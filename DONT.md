@@ -55,6 +55,10 @@ Looks like the tweet (first + last). Chat tools have **no `last_frame`**. Chat s
 Hall stills + films = `node scripts/cook-room.mjs <slot>` → `scripts/imagine-hooks.mjs`.  
 Walks = `POST /v1/videos/generations` with `last_frame`. Chat refs / chat stills = illegal for hall floor-1.
 
+Cannot run node / no `XAI_API_KEY` for a live plate → **refuse**, stock. That is not permission to chat-Imagine.
+
+Soft KEEP of a Smoke-FAIL walk or a gel-breath “so they can see” is the same crime. `KEEP REFUSED` / `HANG BLOCKED`.
+
 ## 7. TAP overlay / timing bar / drawbox on a sprint
 
 “A TAP above the door — everyone succeeds.” Same crime: ffmpeg `drawbox` cyan rectangle + HIT text baked in the film.

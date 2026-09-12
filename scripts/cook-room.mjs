@@ -6,7 +6,7 @@
 //   node scripts/cook-room.mjs moss --force
 // Hung PASS stills/films are reused. --force / COOK_FORCE=1 recooks.
 
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync, unlinkSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
@@ -44,8 +44,27 @@ function out(s) {
 }
 function fail(rule) {
   if (rule) out("FAIL " + rule);
+  out("HANG BLOCKED");
   out(STOCK);
   process.exit(1);
+}
+
+function failLine(stdout) {
+  const lines = String(stdout || "").split("\n");
+  return (
+    lines.find((l) => l.startsWith("FAIL")) ||
+    lines.find((l) => /SMOKE FAIL/.test(l)) ||
+    null
+  );
+}
+
+function dropPlate(rel) {
+  const p = join(dir, rel);
+  if (existsSync(p)) unlinkSync(p);
+}
+
+function refuseKeep(rel, reason) {
+  out("KEEP REFUSED  " + rel + "  " + (reason || "smoke FAIL"));
 }
 
 function skeleton(id) {
@@ -86,10 +105,30 @@ function runNode(file, args) {
   return spawnSync("node", [join(scripts, file), ...args], { encoding: "utf8" });
 }
 
-function smoke(rel, kind) {
+function smokeReport(rel, kind) {
   const r = runNode("smoke-pack.mjs", [join(dir, rel), "--kind", kind]);
-  if (debug) process.stdout.write(r.stdout || "");
-  return r.status === 0;
+  const stdout = r.stdout || "";
+  if (debug || r.status !== 0) process.stdout.write(stdout);
+  return {
+    ok: r.status === 0,
+    stdout,
+    rule: failLine(stdout) || (r.status === 0 ? null : "smoke " + rel),
+  };
+}
+
+function smoke(rel, kind) {
+  return smokeReport(rel, kind).ok;
+}
+
+function smokeStills() {
+  const r = runNode("smoke-pack.mjs", [dir, "--stills-only"]);
+  const stdout = r.stdout || "";
+  process.stdout.write(stdout);
+  return {
+    ok: r.status === 0,
+    stdout,
+    rule: failLine(stdout) || (r.status === 0 ? null : "still-pair"),
+  };
 }
 
 function has(rel) {
@@ -99,14 +138,17 @@ function has(rel) {
 function reuse(rel, kind) {
   if (force) return false;
   if (!has(rel)) return false;
-  return smoke(rel, kind);
+  const s = smokeReport(rel, kind);
+  if (!s.ok) refuseKeep(rel, s.rule);
+  return s.ok;
 }
 
 function plan(rel, kind) {
   if (force) return "cook " + rel + " (--force)";
   if (!has(rel)) return "cook " + rel + " (missing)";
-  if (smoke(rel, kind)) return "skip " + rel + " (exists + smoke PASS)";
-  return "cook " + rel + " (exists + smoke FAIL)";
+  const s = smokeReport(rel, kind);
+  if (s.ok) return "skip " + rel + " (exists + smoke PASS)";
+  return "cook " + rel + " (exists + smoke FAIL — KEEP refused)";
 }
 
 function ffmpegLoop(stillRel, destRel) {
@@ -148,7 +190,7 @@ async function cap2(label, fn) {
     }
   }
   out(String(err && err.message ? err.message : err));
-  fail(label);
+  fail((err && err.message ? err.message : label) + " — cap 2. No chat Imagine fallback.");
 }
 
 const stillJobs = [
@@ -169,28 +211,51 @@ if (!SLOTS.includes(slot)) fail("not in catalog");
 if (dry) {
   out("COOK " + slot + " dry-run");
   out("hooks only — no chat Imagine UI");
+  out("RECT energy rifts — never oval. STANDING — sit / face / 3/4 cannot PASS.");
   out(force ? "--force: recook even if hung PASS" : "default: reuse hung PASS stills + films");
   out(has("room.json") ? "keep room.json" : "write skeleton room.json");
   let skipStills = 0;
   let skipFilms = 0;
+  let needLive = false;
   for (const [rel, kind] of stillJobs) {
     const line = plan(rel, kind);
     if (line.startsWith("skip ")) skipStills++;
+    else needLive = true;
     out(line);
   }
   if (!force && skipStills === stillJobs.length) out("skip still phase — 3 hung stills PASS");
+  if (has("stills/spawn.jpg") && (has("stills/at-a.jpg") || has("stills/at-b.jpg"))) {
+    const pair = smokeStills();
+    out(pair.ok ? "skip still-pair (spawn↔sill Δh/H + sit/yaw PASS)" : "cook stills (still-pair FAIL — KEEP refused)");
+    if (!pair.ok) needLive = true;
+  }
   for (const [rel, kind] of filmJobs) {
     const line = plan(rel, kind);
     if (line.startsWith("skip ")) skipFilms++;
+    else needLive = true;
     out(line);
   }
   if (!force && skipFilms === filmJobs.length) out("skip film phase — 5 hung films PASS");
+  if (needLive) {
+    out("LIVE NEEDS XAI_API_KEY — refuse cook without it. No chat Imagine fallback.");
+    out("gel-breath / FAIL walk = HANG BLOCKED, not a preview KEEP.");
+  }
   out("then validate-pack + smoke-pack → " + PLAYER + slot);
   process.exit(0);
 }
 
+const needLive = [...stillJobs, ...filmJobs].some(([rel, kind]) => {
+  if (force) return true;
+  if (!has(rel)) return true;
+  return !smoke(rel, kind);
+});
+if (needLive && !process.env.XAI_API_KEY) {
+  fail("XAI_API_KEY missing — refuse cook. No chat Imagine fallback.");
+}
+
 mkdirSync(join(dir, "stills"), { recursive: true });
 mkdirSync(join(dir, "films"), { recursive: true });
+mkdirSync(join(dir, ".kitchen"), { recursive: true });
 const roomPath = join(dir, "room.json");
 if (!existsSync(roomPath)) {
   writeFileSync(roomPath, JSON.stringify(skeleton(slot), null, 2) + "\n");
@@ -209,7 +274,11 @@ if (reuse("stills/spawn.jpg", "still-spawn")) {
 } else {
   await cap2("spawn", async () => {
     await imagineStill({ root, slot, pose: "spawn", dest: spawnStill });
-    if (!smoke("stills/spawn.jpg", "still-spawn")) throw new Error("smoke spawn size");
+    const s = smokeReport("stills/spawn.jpg", "still-spawn");
+    if (!s.ok) {
+      refuseKeep("stills/spawn.jpg", s.rule);
+      throw new Error(s.rule || "smoke spawn");
+    }
   });
   stillCooked++;
 }
@@ -220,7 +289,16 @@ if (reuse("stills/at-a.jpg", "still-atA")) {
 } else {
   await cap2("atA", async () => {
     await imagineStill({ root, slot, pose: "atA", dest: atA, spawnPath: spawnStill });
-    if (!smoke("stills/at-a.jpg", "still-atA")) throw new Error("smoke atA");
+    const s = smokeReport("stills/at-a.jpg", "still-atA");
+    if (!s.ok) {
+      refuseKeep("stills/at-a.jpg", s.rule);
+      throw new Error(s.rule || "smoke atA");
+    }
+    const pair = smokeStills();
+    if (!pair.ok) {
+      refuseKeep("stills/at-a.jpg", pair.rule);
+      throw new Error(pair.rule || "still-pair atA");
+    }
   });
   stillCooked++;
 }
@@ -229,11 +307,22 @@ if (reuse("stills/at-b.jpg", "still-atB")) {
 } else {
   await cap2("atB", async () => {
     await imagineStill({ root, slot, pose: "atB", dest: atB, spawnPath: spawnStill });
-    if (!smoke("stills/at-b.jpg", "still-atB")) throw new Error("smoke atB");
+    const s = smokeReport("stills/at-b.jpg", "still-atB");
+    if (!s.ok) {
+      refuseKeep("stills/at-b.jpg", s.rule);
+      throw new Error(s.rule || "smoke atB");
+    }
+    const pair = smokeStills();
+    if (!pair.ok) {
+      refuseKeep("stills/at-b.jpg", pair.rule);
+      throw new Error(pair.rule || "still-pair atB");
+    }
   });
   stillCooked++;
 }
 if (stillCooked === 0) out("skip still phase — 3 hung stills PASS");
+const stillGate = smokeStills();
+if (!stillGate.ok) fail(stillGate.rule || "still-pair — sit / yaw / Δh/H. Do not Hang.");
 if (debug) out("stills written");
 
 const breaths = [
@@ -249,6 +338,7 @@ for (const [rel, still, stillRel, pose] of breaths) {
   }
   filmCooked++;
   let ok = false;
+  let lastRule = "smoke breath";
   for (let i = 0; i < 2; i++) {
     try {
       await imagineClip({
@@ -261,17 +351,33 @@ for (const [rel, still, stillRel, pose] of breaths) {
         seconds: 6,
         pose,
       });
-      if (!smoke(rel, "breath")) throw new Error("smoke breath");
+      const s = smokeReport(rel, "breath");
+      if (!s.ok) {
+        lastRule = s.rule || "smoke breath";
+        refuseKeep(rel, lastRule);
+        dropPlate(rel);
+        throw new Error(lastRule);
+      }
       ok = true;
       break;
     } catch (e) {
-      if (debug) out(rel + " " + e.message);
+      lastRule = e && e.message ? e.message : lastRule;
+      if (debug) out(rel + " " + lastRule);
     }
   }
   if (!ok) {
-    if (!ffmpegLoop(stillRel, rel)) fail("breath " + rel);
-    if (!smoke(rel, "breath")) fail("breath loop smoke " + rel);
-    out("breath gel " + rel + " (decay — not a living breath PASS)");
+    dropPlate(rel);
+    const gelRel = join(".kitchen", rel.replace(/^films\//, "gel-"));
+    mkdirSync(join(dir, ".kitchen"), { recursive: true });
+    ffmpegLoop(stillRel, gelRel);
+    refuseKeep(rel, lastRule + " → breath.gel");
+    fail(
+      "breath.gel " +
+        rel +
+        " — " +
+        lastRule +
+        ". Living breath FAIL×2. Gel is decay in .kitchen/, not Hang-ready. No chat Imagine fallback.",
+    );
   }
 }
 
@@ -290,6 +396,7 @@ for (const [rel, first, last] of walks) {
   walkNeeded++;
   filmCooked++;
   let ok = false;
+  let lastRule = "smoke walk";
   for (let i = 0; i < 2; i++) {
     try {
       await imagineClip({
@@ -301,24 +408,39 @@ for (const [rel, first, last] of walks) {
         dest: join(dir, rel),
         seconds: 10,
       });
-      if (!smoke(rel, "walk")) throw new Error("smoke walk");
+      const s = smokeReport(rel, "walk");
+      if (!s.ok) {
+        lastRule = s.rule || "smoke walk";
+        refuseKeep(rel, lastRule);
+        dropPlate(rel);
+        throw new Error(lastRule);
+      }
       ok = true;
       break;
     } catch (e) {
-      if (debug) out(rel + " " + e.message);
+      lastRule = e && e.message ? e.message : lastRule;
+      if (debug) out(rel + " " + lastRule);
     }
   }
   if (ok) walkOk++;
+  else {
+    dropPlate(rel);
+    refuseKeep(rel, lastRule);
+    fail(
+      lastRule +
+        " — walk FAIL×2. FAIL walk is not a preview KEEP. Tap stays. No chat Imagine fallback.",
+    );
+  }
 }
-if (walkNeeded > 0 && walkOk < 2) fail("walk");
+if (walkNeeded > 0 && walkOk < 2) fail("walk — both edges required. No soft KEEP.");
 if (filmCooked === 0) out("skip film phase — 5 hung films PASS");
 
 const v = spawnSync("python3", [join(scripts, "validate-pack.py"), dir], { encoding: "utf8" });
 process.stdout.write(v.stdout || "");
-if (v.status !== 0) fail("validate");
+if (v.status !== 0) fail(failLine(v.stdout) || "validate");
 const s = runNode("smoke-pack.mjs", [dir]);
 process.stdout.write(s.stdout || "");
-if (s.status !== 0) fail("smoke-pack");
+if (s.status !== 0) fail(failLine(s.stdout) || "smoke-pack — not Hang-ready");
 
 out("PASS " + PLAYER + slot);
 process.exit(0);

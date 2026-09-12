@@ -2,6 +2,7 @@
 // smoke(file, kind, refs) → { ok, rule, at, note }
 // usage:
 //   node scripts/smoke-pack.mjs packs/<id>
+//   node scripts/smoke-pack.mjs packs/<id> --stills-only
 //   node scripts/smoke-pack.mjs packs/<id>/films/walk-spawn-a.mp4 --kind walk
 // Layers A+B here. Layer C = Grok + scripts/smoke-identity.md on .smoke/ frames.
 // See SMOKE.md. Recook THIS plate, cap 2.
@@ -9,7 +10,7 @@
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { execFileSync, spawnSync } from "node:child_process";
-import { matchPose, GW, GH, creamHeight, creamPlace, PUNCH } from "./still-pair.mjs";
+import { matchPose, GW, GH, creamPlace, stillReasons } from "./still-pair.mjs";
 import { pHash, dHash, hamming } from "./phash.mjs";
 
 const TH = JSON.parse(
@@ -24,6 +25,7 @@ const PH = 32;
 
 const args = process.argv.slice(2).filter((a) => !a.startsWith("--"));
 const flags = new Set(process.argv.filter((a) => a.startsWith("--")));
+const stillsOnly = flags.has("--stills-only");
 const kindFlag = (() => {
   const i = process.argv.indexOf("--kind");
   return i >= 0 ? process.argv[i + 1] : null;
@@ -311,12 +313,11 @@ function smokeFile(file, kind, refs, required, smokeDir) {
   if (still) {
     try {
       const fa = rawFrame(file, 0, GW, GH);
-      const hh = creamHeight(fa, GW, GH);
-      if (hh >= PUNCH) return fail("gate.size", "still", `punch-in ${hh.toFixed(2)}`);
-      if (kind === "still-spawn" && (hh < 0.18 || hh > 0.36))
-        return fail("gate.size", "still", `spawn-band ${hh.toFixed(2)}`);
-      if ((kind === "still-atA" || kind === "still-atB") && (hh < 0.28 || hh > 0.48))
-        return fail("gate.size", "still", `sill-band ${hh.toFixed(2)} want 0.35-0.40 (FAIL >0.48 ice)`);
+      const pose = stillReasons(fa, kind, GW, GH);
+      if (pose.why.length) {
+        const rule = pose.why[0].split(" ")[0];
+        return fail(rule, "still", pose.why.join("; "));
+      }
     } catch (e) {
       return fail("file.decode", "still", e.message);
     }
@@ -568,7 +569,8 @@ function run(file, kind, refs, required, packRoot) {
 
 if (isPackDir(target) && !kindFlag) {
   const refs = refsOf(target);
-  for (const [rel, kind, required] of jobsPack) {
+  const jobs = stillsOnly ? jobsPack.filter((j) => String(j[1]).startsWith("still")) : jobsPack;
+  for (const [rel, kind, required] of jobs) {
     const file = join(target, rel);
     if (!existsSync(file)) {
       if (required) {
@@ -624,7 +626,7 @@ if (fails) {
   console.log("SMOKE PASS");
 }
 
-const packRoot = isPackDir(target) ? target : null;
+const packRoot = isPackDir(target) && !stillsOnly ? target : null;
 if (packRoot) {
   writeFileSync(
     join(packRoot, "smoke.json"),

@@ -51,13 +51,13 @@ Measure = `bboxH / frameH` of the cream-dog blob. Same lens on every plate.
 
 | Pose | `h = bboxH/H` |
 |---|---|
-| Spawn / mid-hall | **0.22 – 0.32** |
-| Door sill (atA / atB) | **0.35 – 0.40** |
-| Forbidden | **≥ 0.55** punch-in / fills-door |
+| Spawn / mid-hall | **0.22 – 0.32** (0.19 tiny = FAIL) |
+| Door sill (atA / atB) | **0.35 – 0.40** aim; FAIL &lt; 0.28 or &gt; 0.45 |
+| Forbidden | **≥ 0.55** punch-in / fills-door · sit (mask aspect &lt; 1.75) · yaw &gt; 40° |
 
-Deltas: breath \|Δh\|/H < 0.08. Walk edge < 0.12 (grow spawn-band → sill-band OK). stillEnd ↔ next stillStart = same size.
+Deltas: breath \|Δh\|/H < 0.08. Walk edge / spawn↔sill stills **&lt; 0.12** (grow spawn-band → sill-band OK). stillEnd ↔ next stillStart = same size. No mid-hall still — recook the sill closer.
 
-Punch-in = FAIL. Sill still at spawn-scale = WARN `gate.size sill-band` (recook; stock hall is under-sill today).
+Punch-in = FAIL. Sill still at spawn-scale (0.28–0.34) = WARN `gate.size sill-band` (hung moss is here; new cooks aim 0.34–0.38). Sit / 3/4 = FAIL on the still itself. Face = layer C.
 
 ## Anti
 
