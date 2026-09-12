@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Fixture: at-sill prompts name no-punch floor placement; spawn/lane stay off that stack.
-// Side refs prefer hung moss PASS sill stills — never lock/example-at-* (oval + tiny + sit).
+// Side refs prefer hung moss PASS sill stills. example-at-* are swapped moss copies.
+// IGNORE tiny ~0.18 crop like bolt-back 0.53. Never send example-at-*-tiny.
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { sillStillLine, stillRefLine, stillRefOrder, sillTeacherRel } from "./imagine-hooks.mjs";
@@ -29,7 +30,8 @@ for (const [name, p] of [
   must(/0\.35–0\.40|0\.35-0\.40/.test(p), name + " sill band 0.35–0.40");
   must(/top < 0\.46/.test(p), name + " crown below mid-frame");
   must(/official SEUIL teacher/.test(p), name + " official SEUIL teacher");
-  must(/NEVER copy lock\/example-at/.test(p), name + " never send oval+tiny example-at-*");
+  must(/IGNORE a tiny ~0\.18 crop/.test(p) && /IGNORE bolt-back ~0\.53/.test(p), name + " ignore tiny 0.18 like bolt-back 0.53");
+  must(/example-at-\*-tiny/.test(p), name + " never copy archived tinies");
   must(/0\.53 is illegal/.test(p), name + " ignore bolt-back crop");
   must(/NEVER sit/.test(p) && /NEVER 3\/4/.test(p) && /muzzle HIDDEN/.test(p), name + " sit/yaw/face still banned");
   must(/NEVER mid-hall/.test(p) && /NEVER spawn/.test(p) && /NEVER center/.test(p), name + " mid-hall/spawn-cx banned");
@@ -43,10 +45,10 @@ must(teacherA === "packs/moss/stills/at-a.jpg", "prefer hung moss PASS at-A as s
 must(teacherB === "packs/moss/stills/at-b.jpg", "prefer hung moss PASS at-B as side ref");
 must(stillRefOrder("atB", true, root).join(",") === "spawn,bolt-back.jpg,packs/moss/stills/at-b.jpg", "atB+spawn edits spawn then moss PASS sill");
 must(stillRefOrder("atA", true, root).join(",") === "spawn,bolt-back.jpg,packs/moss/stills/at-a.jpg", "atA+spawn edits spawn then moss PASS sill");
-must(stillRefOrder("atB", true).join(",") === "spawn,bolt-back.jpg,lock/sill-at-b.jpg", "atB lock official fallback");
-must(stillRefOrder("atA", true).join(",") === "spawn,bolt-back.jpg,lock/sill-at-a.jpg", "atA lock official fallback");
-must(!stillRefOrder("atA", true, root).includes("example-at-a.jpg"), "live atA does not send example-at-a");
-must(!stillRefOrder("atB", true, root).includes("example-at-b.jpg"), "live atB does not send example-at-b");
+must(stillRefOrder("atB", true).join(",") === "spawn,bolt-back.jpg,lock/example-at-b.jpg", "atB lock fallback is swapped example-at-b");
+must(stillRefOrder("atA", true).join(",") === "spawn,bolt-back.jpg,lock/example-at-a.jpg", "atA lock fallback is swapped example-at-a");
+must(!String(stillRefOrder("atA", true, root)).includes("tiny"), "live atA does not send archived tiny");
+must(!String(stillRefOrder("atB", true, root)).includes("tiny"), "live atB does not send archived tiny");
 must(stillRefOrder("spawn", false).join(",") === "bolt-back.jpg,example-spawn.jpg", "spawn ref order unchanged");
 must(stillRefLine("spawn", true) === "", "spawn has no sill ref lecture");
 

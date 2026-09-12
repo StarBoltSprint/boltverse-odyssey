@@ -173,17 +173,19 @@ function mossSillRel(pose) {
 }
 
 /**
- * Side ref for at-A / at-B. Prefer hung moss PASS sill stills (they already
- * teach seuil: standing BACK, cx left/right). Official copies live in lock/.
- * Never send lock/example-at-* — oval + ~0.18 tiny + sit (place can still PASS).
+ * Side ref for at-A / at-B. Prefer hung moss PASS sill stills.
+ * lock/example-at-* are swapped copies of those (not the old oval+0.18 tinies).
+ * lock/sill-at-* = same pixels. Tiny archives are example-at-*-tiny.jpg — never send.
  */
 export function sillTeacherRel(root, pose) {
   if (pose !== "atA" && pose !== "atB") return join("lock", exampleName(pose));
   const moss = mossSillRel(pose);
   const official = officialSillRel(pose);
+  const swapped = join("lock", exampleName(pose));
   if (root && existsSync(join(root, moss))) return moss;
   if (root && existsSync(join(root, official))) return official;
-  return official;
+  if (root && existsSync(join(root, swapped))) return swapped;
+  return swapped;
 }
 
 /** bolt-back is 0.53 close-up. Unlabeled edit of the close-up = punch-sill. */
@@ -212,6 +214,7 @@ export function sillStillLine(side) {
     "Ear tips / crown stay in the LOWER HALF of the plate (dog top ≥ 0.50 of frame H). punch-sill FAIL if the head enters the rift (top < 0.46).",
     "NEVER sit. NEVER a loaf. NEVER haunches down. NEVER lie. NEVER 3/4. NEVER cheek. NEVER face. NEVER muzzle.",
     "NEVER punch-in. NEVER fill the " + fill + ". NEVER copy bolt-back close-up scale (~0.53 is illegal).",
+    "IGNORE a tiny ~0.18 crop the same way you IGNORE bolt-back ~0.53 — both scales are illegal. Live FAIL was sill-band 0.19–0.21. NEVER copy example-at-*-tiny.",
     "He is NOT seated facing the " + fill + ". He is NOT looking at the rift. " + other + ". Same camera — no dolly.",
     "Dog bbox height 0.35–0.40 (aim 0.36). One step closer than spawn (0.34–0.38). Δh/H from spawn MUST be under 0.12.",
     "If spawn is 0.26, you are ~0.36. Size in band is not enough if he is still mid-hall / spawn-cx, sits, turns, shows a face, or climbs the rift. Same lens as spawn.",
@@ -226,11 +229,13 @@ export function stillRefLine(pose, hasSpawn, teacherRel) {
     return [
       "First image = the spawn still: SAME hall, SAME camera, SAME light, SAME RECT rifts. ONLY the dog MOVES to the " + side + " sill (paws on that lip, body in that third). Do not leave him at center spawn. Do not grow him in place. Do not zoom. Do not recrop.",
       "Second image = bolt-back.jpg: coat / back / collar IDENTITY only. IGNORE its close-up crop (bbox ~0.53 is illegal).",
-      "Third image = " + teacher + ": official SEUIL teacher. Copy PLACE and POSE — dog already AT the " + side + " sill (seuil), standing BACK, feet on the stone floor, taille ~0.30–0.40 (aim 0.35–0.40). RECT rifts come from the spawn still. If this teacher still shows ovals (moss at-A), do not copy door shape — moss at-B is the RECT grammar. NEVER copy lock/example-at-* (oval + ~0.18 tiny + sit; place can PASS while sit/size FAIL).",
+      "Third image = " + teacher + ": official SEUIL teacher (hung moss PASS / swapped lock/example-at-*). Copy PLACE and POSE — dog already AT the " + side + " sill (seuil), standing BACK, feet on the stone floor, taille ~0.30–0.40 (aim 0.35–0.40).",
+      "IGNORE a tiny ~0.18 crop the same way you IGNORE bolt-back ~0.53 — both scales are illegal. NEVER copy lock/example-at-*-tiny (oval + sit; live FAIL sill-band 0.19–0.21).",
+      "RECT rifts come from the spawn still. If this teacher still shows ovals (moss at-A), do not copy door shape — moss at-B is the RECT grammar.",
     ].join(" ");
   }
   return [
-    "First image = " + teacher + ": official SEUIL teacher. Copy PLACE and POSE (" + side + " sill, standing BACK, not mid-hall). RECT from prompt. NEVER copy lock/example-at-* (oval + ~0.18 tiny + sit).",
+    "First image = " + teacher + ": official SEUIL teacher. Copy PLACE and POSE (" + side + " sill, standing BACK, not mid-hall). IGNORE a tiny ~0.18 crop the same way you IGNORE bolt-back ~0.53.",
     "Second image = bolt-back.jpg: coat / back / collar only. IGNORE close-up crop (~0.53).",
   ].join(" ");
 }
