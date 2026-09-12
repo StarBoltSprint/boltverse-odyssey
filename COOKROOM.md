@@ -15,6 +15,8 @@ That script is the hall cook for **first-seal** stills and for **all films**. Fi
 
 **Cross-style at-A / at-B:** do **not** invent a new dog via `imagineStill`. Start from a **SEALED** sill still (dog already AT the teal or gold threshold). Then **[Imagine Agent](https://grok.com/imagine/agent)** — keep the exact same dog pose / size / place and the same cyan/gold portals; change hall materials only (ice / ember / catalog). Imagine Agent is the **hall-restyle** tool for sealed stills.
 
+**Grok Build chat Imagine tools are NOT the same as Imagine Agent.** Cross-style sealed stills = Imagine Agent at `https://grok.com/imagine/agent`. Build must not rely on chat `imagine_*` tools for hall restyle identity lock.
+
 Validate and Smoke judge a **full** folder. This file **fills** it.
 
 Need `XAI_API_KEY` for a live cook.  

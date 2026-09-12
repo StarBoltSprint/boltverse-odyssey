@@ -30,6 +30,8 @@ Do **not** invent a new dog via `cook-room` `imagineStill` each style.
 
 Preferred path: start from a **SEALED** at-A / at-B (dog already AT the teal or gold sill). Then **[Grok Imagine Agent](https://grok.com/imagine/agent)** — keep the exact same dog pose / size / place and the same cyan/gold portals; change hall materials only (ice / ember / catalog slot).
 
+**Grok Build chat Imagine tools are NOT the same as Imagine Agent.** Cross-style sealed stills = Imagine Agent at `https://grok.com/imagine/agent`. Build must not rely on chat `imagine_*` tools for hall restyle identity lock.
+
 - Imagine Agent = the **hall-restyle** tool for sealed stills.
 - `cook-room` `imagineStill` from scratch = **first seal** only.
 - Hung PASS / sealed skip stays. `--force` recooks.
@@ -71,5 +73,6 @@ Official film path: `scripts/cook-room.mjs` → `scripts/imagine-hooks.mjs`
 - Rewrite `packs/moss` media unless smoke on that plate FAILs
 - Invent a fourth still or a mid-hall plate (tighten spawn↔sill Δh/H instead)
 - Invent a new dog via `cook-room` `imagineStill` when a **SEALED** at-A/at-B exists — restyle with **Imagine Agent**
+- Treat Grok Build chat `imagine_*` tools as Imagine Agent (they are **not**; no identity lock)
 - Paste walk prompts into Chat Imagine UI without Agent (no `last_frame`)
 - Treat Customize-paste as optional after clone — this file + GROK.md are enough

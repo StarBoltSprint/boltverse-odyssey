@@ -13,6 +13,7 @@ imagine_image_to_video, imagine_reference_to_video, imagine_image_to_image
 (no last_frame → do not Hang)
 
 Cross-style sealed at-A/at-B: Imagine Agent (grok.com/imagine/agent) — keep exact same dog pose/size/place + same cyan/gold portals; change hall materials only. cook-room imagineStill = first seal. Sealed skip stays. Films = hooks.
+Grok Build chat Imagine tools are NOT the same as Imagine Agent. Cross-style sealed stills = Imagine Agent at grok.com/imagine/agent. Build must not rely on chat imagine_* tools for hall restyle identity lock.
 Hooks: scripts/cook-room.mjs → scripts/imagine-hooks.mjs
 Hung PASS = reuse. --force recooks. Gel-breath / FAIL walk = HANG BLOCKED, not KEEP.
 Doors = oval|RECT energy rifts (oval preferred-ok; never wood; never chrome UI). Sit / face / 3/4 / punch-sill (climbing the rift) / mid-hall spawn-cx as at-A/at-B cannot PASS.

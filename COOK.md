@@ -16,6 +16,8 @@ Hung pack with PASS stills/films = **reuse**. `cook-room` only Imagines missing 
 
 **Cross-style at-A / at-B:** start from a **SEALED** sill still (dog already AT the teal or gold threshold). Use **[Imagine Agent](https://grok.com/imagine/agent)** — keep the exact same dog pose / size / place and the same cyan/gold portals; change hall materials only (ice / ember / catalog). Imagine Agent is the **hall-restyle** tool for sealed stills. Do **not** invent a new dog via `cook-room` `imagineStill` each style.
 
+**Grok Build chat Imagine tools are NOT the same as Imagine Agent.** Cross-style sealed stills = Imagine Agent at `https://grok.com/imagine/agent`. Build must not rely on chat `imagine_*` tools for hall restyle identity lock.
+
 Chat Imagine UI **without** Agent has no `last_frame` — still **banned for walks**. Do not cook films there.
 
 Repo: `https://github.com/StarBoltSprint/boltverse-odyssey`
