@@ -1,0 +1,13 @@
+PAINT the player's décor in the BLACK void only.
+
+Do NOT move Bolt. Do NOT turn Bolt. Do NOT sit Bolt. Do NOT resize Bolt.
+Do NOT move the two energy portals. Do NOT change their spacing.
+Do NOT move the luminous floor paths (Y-fork).
+Do NOT zoom. Do NOT recrop. Do NOT change camera. Do NOT change depth.
+The new architecture lines up on THESE portals — same size in the frame, same Z.
+ONE full-white German Shepherd, BACK, standing, teal collar. NEVER a second dog.
+Cyan-teal LEFT portal, gold-orange RIGHT portal. Oval or RECT energy. Never wood. Never chrome UI.
+
+{PAINT}
+
+No text. No HUD.

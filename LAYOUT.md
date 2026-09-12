@@ -11,6 +11,26 @@ Ice stills stay (frost play + full example). **Restyle teachers = the three blac
 
 Drops: `hall-stills/rig/spawn.jpg` · `at-a.jpg` · `at-b.jpg`.
 
+## Grok Build — what to use (do not invent)
+
+When a player asks for a room (any décor):
+
+1. **Files** (one plate per still, never a finished room as 2nd image):
+   - spawn → `lock/RIG-spawn.jpg`
+   - at-A → `lock/RIG-at-a.jpg`
+   - at-B → `lock/RIG-at-b.jpg`
+2. **Tool:** chat `imagine_image_to_image` on that plate. `aspect_ratio` 9:16.
+3. **Prompt:** paste [`lock/RIG-PROMPT.txt`](lock/RIG-PROMPT.txt). Replace `{PAINT}` with the player's world (one or two lines). Do not rewrite the lock lines.
+4. Show the three stills. Then films = [FILMS.md](FILMS.md) First+Last.
+
+Do **not** attach frost / Mars / ember as a second ref. That dog pose wins and Bolt snaps to spawn.
+
+`{PAINT}` examples:
+
+- `Futuristic Mars sci-fi citadel, Unreal Engine, red canyon, hab-modules, metal floor, ochre sky.`
+- `Hot metal, banked embers, soot stone, amber light. Catalog ember.`
+- `Pale ice, rime, aurora. Catalog frost.` (only if they want ice back)
+
 ## Frozen (never change, any paint)
 
 Depth is **already in the plate** (door size in frame, Bolt size, door gap, Z). Do not zoom. Do not push doors farther/nearer.

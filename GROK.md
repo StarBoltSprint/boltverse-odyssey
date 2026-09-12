@@ -36,7 +36,9 @@ Also read [AGENTS.md](AGENTS.md) (same refuse). Customize below is paste-once fo
 **Legal cook, every new conversation, automatic:**
 
 ```
-read LAYOUT.md    # black RIG plates = paint décor here; ice stills stay as example
+read LAYOUT.md + lock/RIG-PROMPT.txt
+  spawn/at-A/at-B = image_to_image on lock/RIG-*.jpg
+  swap {PAINT} only — never move Bolt/doors/paths
 read FILMS.md     # walk + breath prompts (adapt décor only)
 https://grok.com/imagine/agent
   stills ONLY: restyle the 3 ice seals — décor may change, rig must not

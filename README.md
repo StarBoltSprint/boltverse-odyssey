@@ -67,7 +67,7 @@ Search: `StarBoltSprint citadel-room` · living film · boltverse-odyssey.grok.m
 | `scripts/smoke-pack.mjs` | one dog, first≠last on walks, breath loops |
 | `lock/bolt-back.jpg` | Bolt identity (back / coat) — not scale |
 | `lock/example-at-a.jpg` | SmiR at-A lock teacher (BACK toward teal L, gold visible). Drop: `hall-stills/seal/at-a-ice.jpg` or `hall-stills/smir-ata-teacher.jpeg` → `node scripts/install-lock-ata.mjs` |
-| `lock/RIG-spawn.jpg` `lock/RIG-at-a.jpg` `lock/RIG-at-b.jpg` | black RIG — Bolt + doors + paths. Paint décor here. |
+| `lock/RIG-PROMPT.txt` | paste this; swap `{PAINT}` only |
 | `lock/SEAL-spawn.jpg` `lock/SEAL-at-a.jpg` `lock/SEAL-at-b.jpg` | ice KEEP seals — frost play / full example. Frozen until SmiR reseals. |
 | `lock/example-*.jpg` | camera + which side (oval\|RECT energy OK; atA = lock example / SEAL, atB = SEAL or moss PASS swap) |
 | `packs/<id>/` | hung discs — Grok writes here |

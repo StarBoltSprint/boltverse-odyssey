@@ -25,10 +25,10 @@ Read **[GROK.md](GROK.md)** next (STOP banner). Same law as this file. Stills co
 Walks / breaths / films = Imagine first-frame + last-frame via `scripts/imagine-hooks.mjs` / `scripts/cook-room.mjs` (the API path Grok Build already uses). Chat Imagine UI without real first+last remains **banned** for videos. Agent is **not** required or recommended for video cook. Do **not** instruct Build to open Imagine Agent for Walk A, Walk B, or breath.
 
 1. Clone this repo. Read this file + GROK.md. Stop.
-2. STYLE stills = Imagine Agent at `https://grok.com/imagine/agent` when restyling:
-   - **Read [LAYOUT.md](LAYOUT.md) first.** Restyle teachers = black RIG plates (`lock/RIG-spawn.jpg` / `RIG-at-a.jpg` / `RIG-at-b.jpg`). Ice stills stay as frost play. Paint décor in the black — never move Bolt / doors / paths / depth.
-   - **seal stills** (spawn / at-A / at-B)
-   - **restyle halls** from a SEALED sill (completely new hall décor OK; cyan L + gold R energy portals may adapt **shape** only — not spacing / depth; Bolt may be selected, repositioned, resized to sill for a nickel plate; white coat forever; décor-matching skin ON TOP OK)
+2. STYLE stills = black RIG plates + [`lock/RIG-PROMPT.txt`](lock/RIG-PROMPT.txt):
+   - **Read [LAYOUT.md](LAYOUT.md).** `imagine_image_to_image` on `lock/RIG-spawn.jpg` / `RIG-at-a.jpg` / `RIG-at-b.jpg` (9:16). Paste RIG-PROMPT. Swap `{PAINT}` only.
+   - Ice stills stay as frost play (`packs/frost/stills/`, `lock/SEAL-*.jpg`). Do not delete them.
+   - Never attach a finished room as a second image. Never move Bolt / doors / paths / depth.
 3. Walks / breaths = `cook-room` → `imagineClip` (`image` + `last_frame`). **Read [FILMS.md](FILMS.md) first** — those prompts are the base for every player / every décor. Adapt hall paint from the player's stills + `catalog/<slot>.md` only. Never rewrite motion / camera / one-dog / duration. **walks** = start still + end still. **breaths** = same still twice. Never Agent video.
 4. Drop plates into `packs/<slot>/`. **Smoke still gates.** Soft KEEP banned.
 5. Script prints `PASS https://boltverse-odyssey.grok.me/r/<slot>` or `FAIL <rule>` + `HANG BLOCKED` + stock `/`. That line is the answer.
