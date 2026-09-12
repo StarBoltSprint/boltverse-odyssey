@@ -1,6 +1,20 @@
 # AGENTS — cold-start hall cook
 
-**STOP — HARD SPLIT (SmiR 2026-09-12, supersedes PR #11).** Imagine Agent is obligatoire / MUST / systematically for STYLE stills when restyling. NEVER for Walk A, Walk B, breath, or any video. Walks / breaths / films = imagine-hooks / cook-room first-frame + last-frame. Chat Imagine UI without real first+last is banned. Soft KEEP banned. Smoke still gates.
+**STOP 0 — STYLES FIRST (SmiR 2026-09-12). Miss this = the whole room is dead.**
+
+Before films, before Agent, before cook-room: the three **black RIG plates** + [`lock/RIG-PROMPT.txt`](lock/RIG-PROMPT.txt).
+
+| pose | file |
+|---|---|
+| spawn | [`lock/RIG-spawn.jpg`](lock/RIG-spawn.jpg) |
+| at-A | [`lock/RIG-at-a.jpg`](lock/RIG-at-a.jpg) |
+| at-B | [`lock/RIG-at-b.jpg`](lock/RIG-at-b.jpg) |
+
+Grok Build: `imagine_image_to_image` on **that** plate, 9:16. Paste RIG-PROMPT. Swap `{PAINT}` only. Never move Bolt / doors / paths / camera / depth. One plate per still. Never a finished room as 2nd image. Bad stills → **STOP**. Do not cook films.
+
+Ice KEEP (`packs/frost/stills/`, `lock/SEAL-*.jpg`) = play example. Do not delete. Restyle teachers = RIG. Law: [LAYOUT.md](LAYOUT.md).
+
+**STOP 1 — HARD SPLIT.** NEVER Agent / chat Imagine for Walk A, Walk B, breath, or any video. Walks / breaths / films = imagine-hooks / cook-room first-frame + last-frame. Chat Imagine UI without real first+last is banned for **video**. Soft KEEP banned. Smoke still gates.
 
 This repo is a **recipe**, not an app. Do not scaffold a player. Do not publish a new grok.me.
 
@@ -12,11 +26,11 @@ This repo is a **recipe**, not an app. Do not scaffold a player. Do not publish 
 
 **Identity base:** Bolt is ALWAYS a full-white German Shepherd (white coat forever). That base never changes to grey / silver / black.
 
-**SKINS:** Imagine Agent MAY apply a décor-matching skin ON TOP of the white base — ember skin (embers / glow / ash accents), ice skin, etc. Stylish adaptation. Not a different dog.
+**SKINS:** décor-matching skin ON TOP of the white base OK (ember / ice). Not a different dog.
 
-**Restyle:** completely new hall décor OK. **Doors may adapt** (shape / scale to décor). Cyan L + gold R energy portals may adapt shape / scale to décor (oval|RECT energy; never wood; never chrome UI). Bolt may be selected, repositioned, resized to sill for a nickel plate. Bolt reposition OK.
+**Restyle:** paint into the RIG black void. Doors may adapt **shape** (oval\|RECT). Never spacing. Never depth. **Never move Bolt.**
 
-Read **[GROK.md](GROK.md)** next (STOP banner). Same law as this file. Stills composition = **[LAYOUT.md](LAYOUT.md)** (ice rig: depth / door spacing / Bolt distance / Y-fork). Films = **[FILMS.md](FILMS.md)**.
+Read **[GROK.md](GROK.md)** next. Stills = **[LAYOUT.md](LAYOUT.md)** + RIG-PROMPT. Films = **[FILMS.md](FILMS.md)**.
 
 ## One happy path (brand-new Grok / Grok Build convo)
 

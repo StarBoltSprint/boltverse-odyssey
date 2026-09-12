@@ -3,9 +3,15 @@
 Repo: `https://github.com/StarBoltSprint/boltverse-odyssey`  
 Player: https://boltverse-odyssey.grok.me
 
-## STOP — HARD SPLIT (SmiR 2026-09-12, supersedes PR #11)
+## STOP 0 — STYLES FIRST (SmiR 2026-09-12). Miss this = the room is dead.
 
-**Imagine Agent is obligatoire / MUST / systematically for STYLE stills when restyling. NEVER for Walk A, Walk B, breath, or any video.** Walks / breaths / films = imagine-hooks / cook-room first-frame + last-frame. Chat Imagine UI without real first+last is banned. Soft KEEP banned. Smoke still gates.
+**Black RIG plates + [`lock/RIG-PROMPT.txt`](lock/RIG-PROMPT.txt) before anything else.**
+
+`imagine_image_to_image` on `lock/RIG-spawn.jpg` / `RIG-at-a.jpg` / `RIG-at-b.jpg`. Paste the prompt. Swap `{PAINT}` only. Never move Bolt / doors / paths / depth. Bad stills → STOP. Do not cook films. Ice stills stay as frost play. Law: [`LAYOUT.md`](LAYOUT.md).
+
+## STOP 1 — HARD SPLIT
+
+**NEVER Agent / chat Imagine for Walk A, Walk B, breath, or any video.** Walks / breaths / films = imagine-hooks / cook-room first-frame + last-frame. Chat Imagine UI without real first+last is banned for **video**. Soft KEEP banned. Smoke still gates.
 
 **sill ≠ spawn.** at-A = already AT the teal LEFT sill (seuil / threshold). at-B = already AT the gold RIGHT sill. Spawn = CENTER only (both doors + fork). Mid-hall at-A/at-B = **FAIL**. Soft KEEP banned.
 
@@ -13,21 +19,15 @@ Player: https://boltverse-odyssey.grok.me
 
 **SKINS:** Imagine Agent MAY apply a décor-matching skin ON TOP of the white base — ember skin (embers / glow / ash accents), ice skin, etc. Stylish adaptation. Not a different dog.
 
-**Restyle:** completely new hall décor OK. **Doors may adapt** (shape / scale to décor). Cyan L + gold R energy portals may adapt shape / scale to décor (oval|RECT energy; never wood; never chrome UI). Bolt may be selected, repositioned, resized to sill for a nickel plate. Bolt reposition OK. Still AT the teal / gold threshold — mid-hall = FAIL.
-
-**LAYOUT lock = ice stills.** [`LAYOUT.md`](LAYOUT.md). `packs/frost/stills/` + `lock/SEAL-*.jpg`. Same **depth**, same **door spacing**, same **Bolt-to-door distance**, **Y-fork** on the floor — every style. Décor + door *shape* may change. Never the hall geometry.
-
-**[Grok Imagine Agent](https://grok.com/imagine/agent) = ONLY hall STYLES / stills / décor restyles** (freeze dog+layout+portals, swap décor, skins on white coat). **NEVER** walks, breaths, or any video. Default STYLE cook: seal stills, restyle halls. **Smoke still gates.** Soft KEEP banned.
+**Restyle:** paint into the black RIG void. Door **shape** may adapt (oval|RECT). Never spacing. Never depth. **Never move Bolt.**
 
 Walks / breaths / films = Imagine first-frame + last-frame via `scripts/imagine-hooks.mjs` / `scripts/cook-room.mjs`. **Prompts = [FILMS.md](FILMS.md)** — every Grok, every player, every décor. Adapt hall paint only. Walks: start still ≠ arrive still. Breaths: same still twice. Agent is **not** required or recommended for video cook. Do **not** instruct Build to open Imagine Agent for Walk A, Walk B, or breath.
 
-Chat Imagine UI **without real first+last** is **banned for walks**, breaths, enter. If `imagine_image_to_video` / `imagine_reference_to_video` / `imagine_image_to_image` are in your tool list: **do not call them**. They have **no `last_frame`**. Chat refs are not frames. A film cooked in chat has no smoke → do not Hang it. A Smoke-FAIL walk attached as KEEP is **illegal**.
-
-**Imagine Agent is MANDATORY for cross-style hall stills (not optional).** Agent is **REQUIRED** for décor variants. Imagine Agent is the **hall-restyle** tool for sealed stills. One **SEALED** sill still (dog already AT the teal or gold threshold) → Agent restyles: completely new hall décor OK; cyan L + gold R energy portals may adapt; Bolt may be selected / repositioned / resized to sill (white coat forever; décor-matching skin ON TOP OK). First seal stills = Imagine Agent. `cook-room` `imagineStill` = CLI first-seal / batch. **BANNED for restyle.** Do **not** invent a new dog. Sealed skip stays.
+Chat Imagine UI **without real first+last** is **banned for walks**, breaths, enter. If `imagine_image_to_video` / `imagine_reference_to_video` are in your tool list: **do not call them** for films. `imagine_image_to_image` is **ALLOWED only on `lock/RIG-*.jpg`** (styles). A film cooked in chat has no smoke → do not Hang it.
 
 **KEEP seals (this ice hall):** Imagine Agent produced `lock/SEAL-spawn.jpg` + `lock/SEAL-at-a.jpg` + `lock/SEAL-at-b.jpg` (drops `hall-stills/seal/spawn-ice.jpg` + `at-a-ice.jpg` + `at-b-ice.jpg`). Frozen pose+décor until SmiR reseals. Agent remains the STYLE stills path for future styles (never video). `cook-room` **SKIPS** `imagineStill` for spawn / at-A / at-B when those seals exist. Smoke still gates. Soft KEEP banned.
 
-**Grok Build chat Imagine tools are NOT the same as Imagine Agent.** Cross-style sealed stills = Imagine Agent at `https://grok.com/imagine/agent`. For STYLE restyle: instruct to open Imagine Agent with the plate refs. Do **not** instruct Agent for walks/breaths. Build must not rely on chat `imagine_*` tools for hall restyle identity lock.
+**Grok Build styles = RIG plates**, not Agent. `imagine_image_to_image` on `lock/RIG-*.jpg` + RIG-PROMPT. Agent may paint the same plates. Do **not** instruct Agent for walks/breaths.
 
 `scripts/cook-room.mjs` + `scripts/imagine-hooks.mjs` = **video cook** (walks / breaths / films) and CLI first-seal / batch stills. Agent is **not** the film path. If hooks cannot run (`node` + `XAI_API_KEY`): **REFUSE**. Stock URL. Do **not** fall back to chat `imagine_*` or Agent video.
 
@@ -36,13 +36,11 @@ Also read [AGENTS.md](AGENTS.md) (same refuse). Customize below is paste-once fo
 **Legal cook, every new conversation, automatic:**
 
 ```
-read LAYOUT.md + lock/RIG-PROMPT.txt
+STOP 0: read LAYOUT.md + lock/RIG-PROMPT.txt
   spawn/at-A/at-B = image_to_image on lock/RIG-*.jpg
   swap {PAINT} only — never move Bolt/doors/paths
-read FILMS.md     # walk + breath prompts (adapt décor only)
-https://grok.com/imagine/agent
-  stills ONLY: restyle the 3 ice seals — décor may change, rig must not
-  NEVER walks / breaths / video
+  bad stills → STOP (no films)
+then read FILMS.md
 then node scripts/cook-room.mjs <slot>   # walks + breaths = image + last_frame
 then node scripts/smoke-pack.mjs packs/<slot>
 ```
