@@ -1,7 +1,7 @@
 # boltverse-odyssey
 
-**Play:** [START.md](START.md) — three stills, one tap, one catalog word.  
-**Play now:** https://boltverse-odyssey.grok.me
+**Play:** [START.md](START.md) — frost (ice) is the hung default hall.  
+**Play now:** https://boltverse-odyssey.grok.me/r/frost
 
 Grok / keepers: recipe below. Humans: stop here.
 
@@ -28,7 +28,7 @@ node scripts/cook-room.mjs <catalog-slot> --dry-run
 export XAI_API_KEY=... && node scripts/cook-room.mjs <catalog-slot>
 ```
 
-`npm run dry-run` / `npm run cook` / `npm run smoke` = moss. Hung PASS stills/films = reuse. `--force` recooks.
+`npm run dry-run` / `npm run cook` = moss (cook). `npm run smoke` / `validate` = **frost** (hung ice default). Hung PASS stills/films = reuse. `--force` recooks.
 
 Cannot run node, or live cook needs a key you do not have → **REFUSE**. Do not use chat Imagine as fallback. Stock URL.
 

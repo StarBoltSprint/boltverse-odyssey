@@ -1,0 +1,39 @@
+{
+  "id": "frost",
+  "format": 1,
+  "open": "breath-spawn",
+  "plate": "720x1280",
+  "aspect": "9:16",
+  "camera": "lock-off",
+  "chrome": "none",
+  "auth": false,
+  "database": false,
+  "PACK": 1,
+  "worldLine": "frost",
+  "style": "frost",
+  "stills": {
+    "spawn": "stills/spawn.jpg",
+    "atA": "stills/at-a.jpg",
+    "atB": "stills/at-b.jpg"
+  },
+  "clips": {
+    "breath-spawn": { "file": "films/breath-spawn.mp4", "act": "breath", "loop": true, "required": true },
+    "breath-A": { "file": "films/breath-a.mp4", "act": "breath", "loop": true, "required": true },
+    "breath-B": { "file": "films/breath-b.mp4", "act": "breath", "loop": true, "required": true },
+    "walk-spawn-A": { "file": "films/walk-spawn-a.mp4", "act": "walk", "loop": false, "required": true },
+    "walk-spawn-B": { "file": "films/walk-spawn-b.mp4", "act": "walk", "loop": false, "required": true },
+    "walk-A-B": { "file": "films/walk-a-b.mp4", "act": "walk", "loop": false, "required": false },
+    "walk-B-A": { "file": "films/walk-b-a.mp4", "act": "walk", "loop": false, "required": false }
+  },
+  "edges": [
+    { "from": "spawn", "tap": "A", "clip": "walk-spawn-A" },
+    { "from": "spawn", "tap": "B", "clip": "walk-spawn-B" },
+    { "from": "atA", "tap": "B", "clip": "walk-A-B" },
+    { "from": "atB", "tap": "A", "clip": "walk-B-A" },
+    { "from": "atA", "tap": "A", "clip": null, "act": "stay" },
+    { "from": "atB", "tap": "B", "clip": null, "act": "stay" }
+  ],
+  "hits": { "A": 40, "mid": 20, "B": 40 },
+  "player": { "dualVideo": true, "stillUnderlayer": true },
+  "ENTER": {}
+}

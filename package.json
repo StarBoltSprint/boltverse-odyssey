@@ -10,9 +10,9 @@
     "lock:ata:dry": "node scripts/install-lock-ata.mjs --dry-run",
     "lock:seal": "node scripts/install-lock-ata.mjs",
     "lock:seal:dry": "node scripts/install-lock-ata.mjs --dry-run",
-    "smoke": "node scripts/smoke-pack.mjs packs/moss",
-    "smoke:stills": "node scripts/smoke-pack.mjs packs/moss --stills-only",
-    "validate": "node scripts/validate-pack.mjs packs/moss",
+    "smoke": "node scripts/smoke-pack.mjs packs/frost",
+    "smoke:stills": "node scripts/smoke-pack.mjs packs/frost --stills-only",
+    "validate": "node scripts/validate-pack.mjs packs/frost",
     "test": "node scripts/still-reasons-selftest.mjs && node scripts/imagine-hooks-selftest.mjs && node scripts/cold-start-selftest.mjs && node scripts/kitchen-fail-selftest.mjs && node scripts/install-lock-ata.mjs --dry-run"
   }
 }
