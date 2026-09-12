@@ -7,11 +7,11 @@ Player: https://boltverse-odyssey.grok.me
 
 **sill ≠ spawn.** at-A = already AT the teal LEFT sill (seuil / threshold). at-B = already AT the gold RIGHT sill. Spawn = CENTER only (both doors + fork). Mid-hall at-A/at-B = **FAIL**. Soft KEEP banned.
 
-If `imagine_image_to_video` / `imagine_reference_to_video` / `imagine_image_to_image` are in your tool list: **do not call them** for this recipe. Not for stills. Not for walks. Not for breaths. Not as a “preview”.
+If `imagine_image_to_video` / `imagine_reference_to_video` / `imagine_image_to_image` are in your tool list: **do not call them** for walks, breaths, or enter. Chat Imagine UI **without** Agent has **no `last_frame`**. Chat refs are not frames. A film cooked in chat has no smoke → do not Hang it. A Smoke-FAIL walk attached as KEEP is **illegal**.
 
-Those tools have **no `last_frame`**. Chat refs are not frames. Chat stills skip the edits lock. A film cooked in chat has no smoke → do not Hang it. A Smoke-FAIL walk attached as KEEP is **illegal**.
+**Cross-style at-A / at-B:** do **not** invent a new dog via `cook-room` `imagineStill`. Start from a **SEALED** sill still (dog already AT the teal or gold threshold). Then **[Imagine Agent](https://grok.com/imagine/agent)** — keep the exact same dog pose / size / place and the same cyan/gold portals; change hall materials only (ice / ember / catalog). Imagine Agent is the **hall-restyle** tool for sealed stills. First seal stills still go through `cook-room` `imagineStill`. Sealed skip stays.
 
-**If you cannot run Node, or a plate will Imagine and you have no `XAI_API_KEY`: REFUSE the cook.** Say what is missing. Do **not** fall back to chat Imagine. Stock URL is the honest answer.
+**If you cannot run Node, or a plate will Imagine and you have no `XAI_API_KEY`: REFUSE the cook.** Say what is missing. Do **not** fall back to Chat Imagine UI without Agent for walks. Stock URL is the honest answer.
 
 Also read [AGENTS.md](AGENTS.md) (same refuse). Customize below is paste-once for *before* clone. After clone, this file + AGENTS.md are enough — a new convo that “ignores Customize” still follows this STOP.
 
@@ -26,9 +26,10 @@ export XAI_API_KEY=... && node scripts/cook-room.mjs <slot>
 
 Gel-breath (ffmpeg still-loop) and FAIL walks are **HANG BLOCKED** — decay in `.kitchen/` or deleted, never a preview KEEP.
 
-That script is the only hall cook. It calls `scripts/imagine-hooks.mjs`:
+That script is the hall cook for **first-seal** stills and for **all films**. It calls `scripts/imagine-hooks.mjs`:
 
-- stills → `imagineStill()` → `POST /v1/images/edits`
+- first-seal stills → `imagineStill()` → `POST /v1/images/edits`
+- sealed cross-style stills → **Imagine Agent** (`https://grok.com/imagine/agent`) — freeze dog + cyan/gold portals; restyle hall only
 - walks → `imagineClip()` → `image` + **`last_frame`** (start still ≠ arrive still)
 - breaths → `imagineClip()` → same still twice (`image` + `last_frame`)
 
@@ -46,17 +47,18 @@ Then `node scripts/smoke-pack.mjs <file> --kind walk`. FAIL = do not Hang.
 
 ### Custom instructions (paste once in Grok → Customize)
 
-This is the only text that loads in a **brand-new** convo **before** the repo is cloned. Paste it. A convo that never got this paste must still **clone then read GROK.md + AGENTS.md** — same refuse. Without clone, Grok only has chat Imagine, which is **not** a hall cook.
+This is the only text that loads in a **brand-new** convo **before** the repo is cloned. Paste it. A convo that never got this paste must still **clone then read GROK.md + AGENTS.md** — same refuse. Without clone, Grok only has Chat Imagine UI without Agent, which is **not** a hall cook (no `last_frame` on walks). Sealed still restyle = Imagine Agent.
 
 ```
 Boltverse / StarBoltSprint / citadel / salle mousse:
 1. Clone https://github.com/StarBoltSprint/boltverse-odyssey
 2. Read AGENTS.md then GROK.md (STOP). Do not cook before that.
-3. NEVER call imagine_image_to_video, imagine_reference_to_video, or imagine_image_to_image for hall stills, walks, breaths, or enter. They have no last_frame.
+3. NEVER call imagine_image_to_video, imagine_reference_to_video, or imagine_image_to_image for walks, breaths, or enter. Chat Imagine UI without Agent has no last_frame.
 4. Happy path: node scripts/cook-room.mjs <slot> --dry-run
    then export XAI_API_KEY=... && node scripts/cook-room.mjs <slot>
    (npm run dry-run / npm run cook = moss). Hung PASS = reuse. --force recooks.
-5. If you cannot run node, or a plate will cook and XAI_API_KEY is missing: REFUSE. Do not chat-Imagine. Give stock https://boltverse-odyssey.grok.me/
+   First seal stills = cook-room imagineStill. Cross-style sealed at-A/at-B = Imagine Agent (grok.com/imagine/agent): keep exact same dog pose/size/place and same cyan/gold portals; change hall materials only.
+5. If you cannot run node, or a plate will cook and XAI_API_KEY is missing: REFUSE walks in chat. Give stock https://boltverse-odyssey.grok.me/
 6. Gel-breath / FAIL walk = HANG BLOCKED, not a preview KEEP. Soft KEEP banned. Sit / face / 3/4 cannot PASS. Oval|RECT energy portals OK (never wood, never chrome UI).
 7. sill ≠ spawn. at-A = already AT the teal LEFT sill (seuil). at-B = already AT the gold RIGHT sill. Spawn = CENTER only. Mid-hall at-A/at-B = FAIL.
 8. Lane = node scripts/cook-biome.mjs <id>. No new grok.me.
@@ -74,7 +76,10 @@ HALL JOB =
   hung PASS stills/films = reuse; --force recooks
   3 stills + 5 films + smoke-pack
   URL /r/<slot>  or stock on FAIL×2
-  NO chat Imagine — not for stills, not for walks, not for enter
+  first-seal stills = cook-room imagineStill
+  sealed cross-style at-A/at-B = Imagine Agent (grok.com/imagine/agent)
+    keep dog pose/size/place + cyan/gold portals; restyle hall only
+  films = hooks (image + last_frame). Chat Imagine UI without Agent banned for walks
   NO walk-A-B · NO ENTER unless they asked
   NO new grok.me
 
@@ -108,7 +113,7 @@ If `cook-biome.mjs` cannot run: `--dry-run` + palette. Do **not** invent walk-A.
 
 Sprint law: `m` = follow the dog. `t_run` = age of the storm. Peak = both. Quiet [0, 8s] = calm even if `m` is high. Year-0 verbs: **pose, left, right, fork**. The tap exists only if that gesture is **already in the shot**. [COOKLANE.md](COOKLANE.md) [PLAY.md](PLAY.md).
 
-Chat Imagine cannot send `last_frame`. Hall stills + films: `imagine-hooks` only. Lane plates: same hooks, **other** job (`cook-biome`). Films cooked in chat have no smoke → player loads **stock**.
+Chat Imagine UI without Agent cannot send `last_frame` — **banned for walks**. Hall films: `imagine-hooks` only. Sealed still restyle: **Imagine Agent**. First-seal stills: `cook-room` `imagineStill`. Lane plates: same hooks, **other** job (`cook-biome`). Films cooked in chat have no smoke → player loads **stock**.
 
 ---
 
@@ -156,9 +161,9 @@ Only if the first word was **not** biome/sprint/lane. Else LANE JOB.
 
 1. Paint from [CATALOG.md](CATALOG.md). Off-list → nearest or one question.
 2. Pack exists → URL `/r/<id>`. Stop.
-3. Else HALL JOB (`cook-room.mjs`). Stills → smoke → films. Wait only if `COOK_DEBUG=1`. Law 0. smoke-pack. URL.
+3. Else HALL JOB. **First seal** stills → `cook-room` `imagineStill` → smoke → films. **Cross-style** at-A/at-B from a SEALED sill → **Imagine Agent** (keep dog + portals; restyle hall). Wait only if `COOK_DEBUG=1`. Law 0. smoke-pack. URL.
 
-Never `text_to_image` a new dog.
+Never `text_to_image` a new dog. Never invent a new dog via `imagineStill` when a sealed sill exists.
 
 ## If they ask for a biome / sprint / « colle forest »
 
