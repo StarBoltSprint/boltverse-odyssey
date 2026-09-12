@@ -7,15 +7,15 @@ Player: https://boltverse-odyssey.grok.me
 
 **sill ≠ spawn.** at-A = already AT the teal LEFT sill (seuil / threshold). at-B = already AT the gold RIGHT sill. Spawn = CENTER only (both doors + fork). Mid-hall at-A/at-B = **FAIL**. Soft KEEP banned.
 
-**[Grok Imagine Agent](https://grok.com/imagine/agent) is the PRIMARY cook path for BOTH stills AND walk/breath films (first+last frames).** Not a stills-only restyle footnote. Default: seal stills, restyle halls, cook walks with start+end stills, breaths same still twice. **Smoke still gates.** Soft KEEP banned.
+**[Grok Imagine Agent](https://grok.com/imagine/agent) is the PRIMARY cook path for BOTH stills AND walk/breath films (first+last frames).** Not a stills-only restyle footnote. **HARD:** ALL hall stills + walks + breaths go through Imagine Agent. Walks: user stills as exact first frame AND last frame, then interpolate video. Breaths: same still twice. Director or human drives Agent in the browser until Build has an Agent tool/hook. Default: seal stills, restyle halls, cook walks with start+end stills, breaths same still twice. **Smoke still gates.** Soft KEEP banned.
 
 Chat Imagine UI **without Agent** is **banned** — stills, walks, breaths, enter. If `imagine_image_to_video` / `imagine_reference_to_video` / `imagine_image_to_image` are in your tool list: **do not call them**. Chat Imagine UI without Agent has **no `last_frame`**. Chat refs are not frames. A film cooked in chat has no smoke → do not Hang it. A Smoke-FAIL walk attached as KEEP is **illegal**.
 
 **Imagine Agent is MANDATORY for cross-style hall stills (not optional).** Agent is **REQUIRED** for décor variants. Imagine Agent is the **hall-restyle** tool for sealed stills **and** the primary film cook. One **SEALED** sill still (dog already AT the teal or gold threshold) → Agent restyles hall only — keep the exact same dog pose / size / place and the same cyan/gold portals; change hall materials only (ice / ember / catalog). `cook-room` `imagineStill` = secondary CLI. **BANNED for restyle.** First seal stills = Imagine Agent (CLI `imagineStill` only if Agent unavailable). Do **not** invent a new dog. Sealed skip stays.
 
-**Grok Build chat Imagine tools are NOT the same as Imagine Agent.** Cross-style sealed stills = Imagine Agent at `https://grok.com/imagine/agent`. Build must not rely on chat `imagine_*` tools for hall restyle identity lock.
+**Grok Build chat Imagine tools are NOT the same as Imagine Agent.** Cross-style sealed stills = Imagine Agent at `https://grok.com/imagine/agent`. Build must not use chat `imagine_*` without Agent. Instruct to open Imagine Agent with the plate refs. Build must not rely on chat `imagine_*` tools for hall restyle identity lock.
 
-`scripts/cook-room.mjs` + `scripts/imagine-hooks.mjs` = **secondary / CLI / when Agent unavailable or for automated batch** — **not** the human happy path. If Agent is down and you cannot run Node + `XAI_API_KEY`: **REFUSE**. Stock URL. Do **not** fall back to chat `imagine_*`.
+`scripts/cook-room.mjs` + `scripts/imagine-hooks.mjs` = **secondary / CLI only** — **not** the human happy path. If Agent is down and you cannot run Node + `XAI_API_KEY`: **REFUSE**. Stock URL. Do **not** fall back to chat `imagine_*`.
 
 Also read [AGENTS.md](AGENTS.md) (same refuse). Customize below is paste-once for *before* clone. After clone, this file + AGENTS.md are enough — a new convo that “ignores Customize” still follows this STOP.
 
@@ -61,11 +61,13 @@ Boltverse / StarBoltSprint / citadel / salle mousse:
 2. Read AGENTS.md then GROK.md (STOP). Do not cook before that.
 3. NEVER call imagine_image_to_video, imagine_reference_to_video, or imagine_image_to_image. Chat Imagine UI without Agent has no last_frame. Chat Imagine UI without Agent is banned.
 4. Happy path = Imagine Agent (grok.com/imagine/agent) PRIMARY for BOTH stills AND walk/breath films.
-   Seal stills. Restyle halls. Walks = start still + end still. Breaths = same still twice. Smoke still gates. Soft KEEP banned.
+   Seal stills. Restyle halls.    ALL hall stills + walks + breaths go through Imagine Agent. Walks: user stills as exact first frame AND last frame, then interpolate video. Breaths: same still twice.
+   Walks = start still + end still. Breaths = same still twice. Smoke still gates. Soft KEEP banned.
+   Director or human drives Agent in the browser until Build has an Agent tool/hook.
    Imagine Agent is MANDATORY for cross-style hall stills (not optional). Agent REQUIRED for décor variants. One sealed sill still → Agent restyles hall only: keep exact same dog pose/size/place and same cyan/gold portals; change hall materials only.
-   First seal stills = Imagine Agent. cook-room imagineStill = secondary CLI / BANNED for restyle.
-   Grok Build chat Imagine tools are NOT the same as Imagine Agent. Build must not rely on chat imagine_* tools for hall restyle identity lock.
-   cook-room + imagine-hooks = secondary / CLI / when Agent unavailable or automated batch — not the human happy path.
+   First seal stills = Imagine Agent. cook-room imagineStill = secondary CLI only / BANNED for restyle.
+   Grok Build chat Imagine tools are NOT the same as Imagine Agent. Build must not use chat imagine_* without Agent. Instruct to open Imagine Agent with the plate refs. Build must not rely on chat imagine_* tools for hall restyle identity lock.
+   cook-room + imagine-hooks = secondary / CLI only — not the human happy path.
 5. If Agent is down and you cannot run node + XAI_API_KEY: REFUSE. Give stock https://boltverse-odyssey.grok.me/
 6. Gel-breath / FAIL walk = HANG BLOCKED, not a preview KEEP. Soft KEEP banned. Sit / face / 3/4 cannot PASS. Oval|RECT energy portals OK (never wood, never chrome UI).
 7. sill ≠ spawn. at-A = already AT the teal LEFT sill (seuil). at-B = already AT the gold RIGHT sill. Spawn = CENTER only. Mid-hall at-A/at-B = FAIL.
@@ -93,7 +95,12 @@ HALL JOB =
   Grok Build chat Imagine tools are NOT the same as Imagine Agent
   Chat Imagine UI without Agent is banned
   Build must not rely on chat imagine_* tools for hall restyle identity lock
-  cook-room + imagine-hooks = secondary CLI / batch / Agent unavailable
+  ALL hall stills + walks + breaths go through Imagine Agent
+  Walks: user stills as exact first frame AND last frame, then interpolate
+  Breaths: same still twice
+  Director or human drives Agent in the browser until Build has an Agent tool/hook
+  Instruct to open Imagine Agent with the plate refs
+  cook-room + imagine-hooks = secondary / CLI only
     not the human happy path
   NO walk-A-B · NO ENTER unless they asked
   NO new grok.me

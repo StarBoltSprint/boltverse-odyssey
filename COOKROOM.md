@@ -11,13 +11,13 @@ node scripts/cook-room.mjs <catalog-slot> --force
 
 Hung pack with PASS stills/films = **reuse**. Only missing / smoke-FAIL plates go through Imagine. `--force` / `COOK_FORCE=1` recooks. Never wipe a hung `room.json` or a PASS still. **Sealed skip stays.**
 
-**This script is secondary / CLI / batch / when Agent unavailable — not the human happy path.** [Grok Imagine Agent](https://grok.com/imagine/agent) is the PRIMARY cook path for BOTH stills AND walk/breath films (first+last frames). Default: seal stills, restyle halls, cook walks with start+end stills, breaths same still twice. **Smoke still gates.** Soft KEEP banned.
+**This script is secondary / CLI only — not the human happy path.** [Grok Imagine Agent](https://grok.com/imagine/agent) is the PRIMARY cook path for BOTH stills AND walk/breath films (first+last frames). **HARD:** ALL hall stills + walks + breaths go through Imagine Agent. Walks: user stills as exact first frame AND last frame, then interpolate video. Breaths: same still twice. Director or human drives Agent in the browser until Build has an Agent tool/hook. Default: seal stills, restyle halls, cook walks with start+end stills, breaths same still twice. **Smoke still gates.** Soft KEEP banned. Instruct to open Imagine Agent with the plate refs.
 
 CLI films go through [scripts/imagine-hooks.mjs](scripts/imagine-hooks.mjs) (`imagineClip` + `last_frame`). CLI first-seal stills go through `imagineStill`. No `XAI_API_KEY` when a CLI plate must Imagine → refuse (stock). Chat Imagine UI **without** Agent is **banned**.
 
 **Imagine Agent is MANDATORY for cross-style hall stills (not optional).** Agent is **REQUIRED** for décor variants. Imagine Agent is the **hall-restyle** tool for sealed stills **and** the primary film cook. One **SEALED** sill still (dog already AT the teal or gold threshold) → Agent restyles hall only — keep the exact same dog pose / size / place and the same cyan/gold portals; change hall materials only (ice / ember / catalog). `cook-room` `imagineStill` = first seal secondary CLI. **BANNED for restyle.** Do **not** invent a new dog.
 
-**Grok Build chat Imagine tools are NOT the same as Imagine Agent.** Cross-style sealed stills = Imagine Agent at `https://grok.com/imagine/agent`. Build must not rely on chat `imagine_*` tools for hall restyle identity lock.
+**Grok Build chat Imagine tools are NOT the same as Imagine Agent.** Cross-style sealed stills = Imagine Agent at `https://grok.com/imagine/agent`. Build must not use chat `imagine_*` without Agent. Instruct to open Imagine Agent with the plate refs. Build must not rely on chat `imagine_*` tools for hall restyle identity lock.
 
 Validate and Smoke judge a **full** folder. This file **fills** it.
 

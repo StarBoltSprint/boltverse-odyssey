@@ -2,11 +2,13 @@
 
 This is the product. The player does **not** pick films first. They ask Grok for **3 stills** in a citadel style. Grok supplies them with the **same Bolt** ([CHAR.md](CHAR.md)). **Do not wait.** Stills → smoke → films. Order: [COOKROOM.md](COOKROOM.md). Wait only if COOK_DEBUG=1.
 
-**[Grok Imagine Agent](https://grok.com/imagine/agent) is the PRIMARY cook path for BOTH stills AND walk/breath films (first+last frames).** Not a stills-only restyle footnote. Default: seal stills, restyle halls, cook walks with start+end stills, breaths same still twice. **Smoke still gates.** Soft KEEP banned.
+**[Grok Imagine Agent](https://grok.com/imagine/agent) is the PRIMARY cook path for BOTH stills AND walk/breath films (first+last frames).** Not a stills-only restyle footnote.
 
-Chat Imagine UI **without** Agent is **banned** (no `last_frame`) — stills, walks, breaths, enter. Do not cook films there.
+**HARD:** ALL hall stills + walks + breaths go through Imagine Agent. Walks: user stills as exact first frame AND last frame, then interpolate video. Breaths: same still twice. Director or human drives Agent in the browser until Build has an Agent tool/hook. Default: seal stills, restyle halls, cook walks with start+end stills, breaths same still twice. **Smoke still gates.** Soft KEEP banned.
 
-`scripts/cook-room.mjs` + [scripts/imagine-hooks.mjs](scripts/imagine-hooks.mjs) = **secondary / CLI / when Agent unavailable or for automated batch** — **not** the human happy path.
+Chat Imagine UI **without** Agent is **banned** (no `last_frame`) — stills, walks, breaths, enter. Do not cook films there. Grok Build must not use chat `imagine_*` without Agent. Instruct to open Imagine Agent with the plate refs.
+
+`scripts/cook-room.mjs` + [scripts/imagine-hooks.mjs](scripts/imagine-hooks.mjs) = **secondary / CLI only** — **not** the human happy path.
 
 ```
 # secondary CLI / batch only
@@ -46,7 +48,7 @@ Keep the size step small: spawn **0.22–0.32**, sill **0.35–0.40**, **Δh/H <
 
 **`reference_to_video` is not first/last.** The images are *references*, not frames. Imagine *inspires* a walk. It does **not** paste the gold still as the last picture. Walk-B then overshoots into the rift → size pop. **Illegal for walks and enter.**
 
-Chat Imagine UI without Agent has no `last_frame` tool — **banned** for walks, breaths, stills. Walks PRIMARY = Imagine Agent (start+end stills). Secondary CLI = `scripts/imagine-hooks.mjs` / `cook-room.mjs`. Décor variants = **Imagine Agent REQUIRED**. `imagineStill` **BANNED for restyle**. First seal stills = Imagine Agent.
+Chat Imagine UI without Agent has no `last_frame` tool — **banned** for walks, breaths, stills. Walks PRIMARY = Imagine Agent (user stills as exact first frame AND last frame, then interpolate). Breaths: same still twice. Secondary CLI only = `scripts/imagine-hooks.mjs` / `cook-room.mjs`. Décor variants = **Imagine Agent REQUIRED**. `imagineStill` **BANNED for restyle**. First seal stills = Imagine Agent. Instruct to open Imagine Agent with the plate refs.
 
 Never `image_to_video` a walk or enter on a single still. That invents the journey / clones the dog. Breath is the only legal `first = last`.
 

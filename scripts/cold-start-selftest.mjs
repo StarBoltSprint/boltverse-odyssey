@@ -58,6 +58,11 @@ must(/PRIMARY cook path for BOTH stills AND/.test(stop), "GROK.md STOP: Agent PR
 must(/walks with start\+end stills/.test(stop) && /breaths same still twice/.test(stop), "GROK.md STOP: Agent walks start+end, breaths twice");
 must(/secondary \/ CLI/.test(stop) && /not.*human happy path/.test(stop), "GROK.md STOP: cook-room secondary not human happy path");
 must(/Smoke still gates/.test(stop), "GROK.md STOP: Smoke still gates");
+must(/ALL hall stills \+ walks \+ breaths go through Imagine Agent/.test(stop), "GROK.md STOP: ALL hall plates through Agent");
+must(/exact first frame AND last frame/.test(stop) && /interpolate/.test(stop), "GROK.md STOP: user stills exact first+last then interpolate");
+must(/Director or human drives Agent in the browser/.test(stop) && /until Build has an Agent tool\/hook/.test(stop), "GROK.md STOP: director/human drives Agent in browser");
+must(/open Imagine Agent with the plate refs/.test(stop), "GROK.md STOP: instruct open Agent with plate refs");
+must(/secondary \/ CLI only/.test(stop), "GROK.md STOP: cook-room secondary CLI only");
 
 const customize = grok.slice(grok.indexOf("```\nBoltverse"), grok.indexOf("```\n\n---"));
 must(/sill ≠ spawn/.test(customize), "GROK.md Customize: sill ≠ spawn");
@@ -82,6 +87,11 @@ must(/PRIMARY for BOTH stills AND walk\/breath films/.test(customize), "GROK.md 
 must(/Walks = start still \+ end still/.test(customize) && /Breaths = same still twice/.test(customize), "GROK.md Customize: walks start+end, breaths twice");
 must(/secondary \/ CLI/.test(customize) && /not the human happy path/.test(customize), "GROK.md Customize: cook-room secondary");
 must(/Smoke still gates/.test(customize), "GROK.md Customize: Smoke still gates");
+must(/ALL hall stills \+ walks \+ breaths go through Imagine Agent/.test(customize), "GROK.md Customize: ALL hall plates through Agent");
+must(/exact first frame AND last frame/.test(customize) && /interpolate/.test(customize), "GROK.md Customize: user stills exact first+last then interpolate");
+must(/Director or human drives Agent in the browser/.test(customize) && /until Build has an Agent tool\/hook/.test(customize), "GROK.md Customize: director/human drives Agent in browser");
+must(/open Imagine Agent with the plate refs/.test(customize), "GROK.md Customize: instruct open Agent with plate refs");
+must(/secondary \/ CLI only/.test(customize), "GROK.md Customize: cook-room secondary CLI only");
 
 const agents = body("AGENTS.md");
 must(/Oval\|RECT energy portals OK/.test(agents), "AGENTS.md: oval|RECT energy OK");
@@ -102,6 +112,11 @@ must(/PRIMARY cook path for BOTH stills AND/.test(agents), "AGENTS.md: Agent PRI
 must(/walks\*\* = start still \+ end still/.test(agents) && /breaths\*\* = same still twice/.test(agents), "AGENTS.md: Agent walks start+end, breaths twice");
 must(/secondary \/ CLI/.test(agents) && /not.*human happy path/.test(agents), "AGENTS.md: cook-room secondary not human happy path");
 must(/Smoke still gates/.test(agents), "AGENTS.md: Smoke still gates");
+must(/ALL hall stills \+ walks \+ breaths go through Imagine Agent/.test(agents), "AGENTS.md: ALL hall plates through Agent");
+must(/exact first frame AND last frame/.test(agents) && /interpolate/.test(agents), "AGENTS.md: user stills exact first+last then interpolate");
+must(/Director or human drives Agent in the browser/.test(agents) && /until Build has an Agent tool\/hook/.test(agents), "AGENTS.md: director/human drives Agent in browser");
+must(/open Imagine Agent with the plate refs/.test(agents), "AGENTS.md: instruct open Agent with plate refs");
+must(/secondary \/ CLI only/.test(agents), "AGENTS.md: cook-room secondary CLI only");
 
 const rules = body(".cursorrules");
 must(/oval\|RECT energy rifts/.test(rules), ".cursorrules: oval|RECT energy");
@@ -120,6 +135,11 @@ must(/PRIMARY for BOTH stills AND/.test(rules), ".cursorrules: Agent PRIMARY for
 must(/Walks = start\+end stills/.test(rules) && /Breaths = same still twice/.test(rules), ".cursorrules: walks start+end, breaths twice");
 must(/secondary \/ CLI/.test(rules) && /not the human happy path/.test(rules), ".cursorrules: cook-room secondary");
 must(/Smoke still gates/.test(rules), ".cursorrules: Smoke still gates");
+must(/ALL hall stills \+ walks \+ breaths go through Imagine Agent/.test(rules), ".cursorrules: ALL hall plates through Agent");
+must(/exact first frame AND last frame/.test(rules) && /interpolate/.test(rules), ".cursorrules: user stills exact first+last then interpolate");
+must(/Director or human drives Agent in the browser/.test(rules) && /until Build has an Agent tool\/hook/.test(rules), ".cursorrules: director/human drives Agent in browser");
+must(/open Imagine Agent with the plate refs/.test(rules), ".cursorrules: instruct open Agent with plate refs");
+must(/secondary \/ CLI only/.test(rules), ".cursorrules: cook-room secondary CLI only");
 
 const cook = body("COOK.md");
 must(/Imagine Agent/.test(cook) && /hall-restyle/.test(cook), "COOK.md: Imagine Agent is the hall-restyle tool");
@@ -137,6 +157,11 @@ must(/PRIMARY cook path for BOTH stills AND/.test(cook), "COOK.md: Agent PRIMARY
 must(/walks with start\+end stills/.test(cook) && /breaths same still twice/.test(cook), "COOK.md: Agent walks start+end, breaths twice");
 must(/secondary \/ CLI/.test(cook) && /not.*human happy path/.test(cook), "COOK.md: cook-room secondary not human happy path");
 must(/Smoke still gates/.test(cook), "COOK.md: Smoke still gates");
+must(/ALL hall stills \+ walks \+ breaths go through Imagine Agent/.test(cook), "COOK.md: ALL hall plates through Agent");
+must(/exact first frame AND last frame/.test(cook) && /interpolate/.test(cook), "COOK.md: user stills exact first+last then interpolate");
+must(/Director or human drives Agent in the browser/.test(cook) && /until Build has an Agent tool\/hook/.test(cook), "COOK.md: director/human drives Agent in browser");
+must(/open Imagine Agent with the plate refs/.test(cook), "COOK.md: instruct open Agent with plate refs");
+must(/secondary \/ CLI only/.test(cook), "COOK.md: cook-room secondary CLI only");
 
 const cookroom = body("COOKROOM.md");
 must(/Imagine Agent/.test(cookroom) && /hall-restyle/.test(cookroom), "COOKROOM.md: Imagine Agent is the hall-restyle tool");
@@ -154,6 +179,11 @@ must(/PRIMARY cook path for BOTH stills AND/.test(cookroom), "COOKROOM.md: Agent
 must(/walks with start\+end stills/.test(cookroom) && /breaths same still twice/.test(cookroom), "COOKROOM.md: Agent walks start+end, breaths twice");
 must(/secondary \/ CLI/.test(cookroom) && /not the human happy path/.test(cookroom), "COOKROOM.md: cook-room secondary");
 must(/Smoke still gates/.test(cookroom), "COOKROOM.md: Smoke still gates");
+must(/ALL hall stills \+ walks \+ breaths go through Imagine Agent/.test(cookroom), "COOKROOM.md: ALL hall plates through Agent");
+must(/exact first frame AND last frame/.test(cookroom) && /interpolate/.test(cookroom), "COOKROOM.md: user stills exact first+last then interpolate");
+must(/Director or human drives Agent in the browser/.test(cookroom) && /until Build has an Agent tool\/hook/.test(cookroom), "COOKROOM.md: director/human drives Agent in browser");
+must(/open Imagine Agent with the plate refs/.test(cookroom), "COOKROOM.md: instruct open Agent with plate refs");
+must(/secondary \/ CLI only/.test(cookroom), "COOKROOM.md: cook-room secondary CLI only");
 
 const doors = body("DOORS.md");
 must(/oval or RECT/.test(doors) && /preferred-ok/.test(doors), "DOORS.md: oval|RECT preferred-ok");
