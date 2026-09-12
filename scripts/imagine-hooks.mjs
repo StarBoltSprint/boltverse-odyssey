@@ -112,8 +112,8 @@ function catalogLines(root, slot) {
 function breathLine(pose) {
   const live = [
     "6 seconds. Seamless loop. First frame and last frame are the same still (already pinned — do not re-describe them).",
-    "The dog remains COMPLETELY STATIONARY in place. NEVER walking. NEVER stepping. NEVER shifting position.",
-    "He remains STANDING on FOUR PAWS the whole clip. NEVER sit. NEVER lie. NEVER crouch. NEVER drop to the haunches.",
+    "The dog remains COMPLETELY STATIONARY in place. NEVER walking. NEVER stepping. NEVER shifting position. PAWS stay planted — they do not lift, slide, or step.",
+    "VISIBLE breath: chest and BELLY rise and fall clearly with each breath. The bushy tail sways and flicks. The head may turn or nod a little. NEVER sit. NEVER lie. NEVER crouch. STANDING on FOUR PAWS the whole clip.",
     "NO morphing of the dog's form, fur, or body.",
     "The two portals may pulse and animate subtly (slow swirling energy, soft light ripples). Distant hall lights may shimmer. Soft reflections may shift slowly on the floor.",
     "Camera stays COMPLETELY LOCKED and fixed on the exact composition — never pan, tilt, zoom, or dolly.",

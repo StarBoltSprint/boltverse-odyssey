@@ -30,7 +30,7 @@
 
 ## Breaths — 6s (same still twice)
 
-He **never walks**. He **never changes place**. He **NEVER sits** — standing on four paws the whole breath. Chest/flanks breathe. Tail may sway. Head a little OK. Portals/lights may pulse. Seamless loop.
+He **never walks**. He **never changes place**. **Paws stay planted** (no lift, no step). He **NEVER sits** — standing on four paws. **VISIBLE breath:** chest and belly rise and fall. Tail sways. Head may nod a little. Portals/lights may pulse. Seamless loop.
 
 **Spawn:** already center, BACK, both portals visible. Never a ghost at a sill.
 
@@ -40,7 +40,7 @@ He **never walks**. He **never changes place**. He **NEVER sits** — standing o
 
 Paste-base (then name the pose + paint from the player's stills):
 
-> 6 seconds. Seamless loop. The dog remains COMPLETELY STATIONARY. NEVER walking, NEVER stepping, NEVER shifting position. STANDING on FOUR PAWS the whole clip. NEVER sit. NEVER lie. NEVER crouch. He only breathes gently (chest and flanks). Tail may sway. NO morph. Portals may pulse. Distant lights may shimmer. Camera COMPLETELY LOCKED. ONE dog only. NEVER a second dog. NEVER any other animal.
+> 6 seconds. Seamless loop. The dog remains COMPLETELY STATIONARY. NEVER walking, NEVER stepping, NEVER shifting position. PAWS stay planted. STANDING on FOUR PAWS the whole clip. NEVER sit. NEVER lie. NEVER crouch. VISIBLE breath: chest and BELLY rise and fall clearly. Tail sways and flicks. Head may nod a little. NO morph. Portals may pulse. Distant lights may shimmer. Camera COMPLETELY LOCKED. ONE dog only. NEVER a second dog. NEVER any other animal.
 
 ## Walks — 10s (distinct stills)
 
