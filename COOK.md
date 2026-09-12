@@ -83,11 +83,11 @@ Off-list → nearest, or ask "did you mean ember?". Never "describe any temple".
 | lock | value |
 |---|---|
 | Bolt | [CHAR.md](CHAR.md) — **full white, ZERO black, no saddle** · [`lock/bolt-back.jpg`](lock/bolt-back.jpg) |
-| Camera | lock-off, 9:16, plate 720×1280 |
-| Doors | **energy rifts** — A left cyan-teal, B right gold-orange. Jambs+sill+gap+depth, oval\|RECT fill (oval preferred-ok), never wood, never chrome UI. [DOORS.md](DOORS.md) |
-| Spawn | both doors in frame, Bolt center, back to camera |
-| atA | Bolt at teal LEFT **sill** (`cx` ≤ 0.38); gold still visible. Mid-hall / spawn-cx = FAIL |
-| atB | Bolt at gold RIGHT **sill** (`cx` ≥ 0.62); teal still visible. Mid-hall / spawn-cx = FAIL |
+| Camera | lock-off, 9:16, plate 720×1280 — **same depth as ice seals. NEVER a new lens.** |
+| Doors | **energy rifts** — A left cyan-teal, B right gold-orange. Shape oval\|RECT may adapt. **Spacing = ice.** Never wood, never chrome UI. [DOORS.md](DOORS.md) [LAYOUT.md](LAYOUT.md) |
+| Spawn | both doors in frame, Bolt center, back to camera. **Y-fork** (two luminous paths paws → both sills) every style |
+| atA | Bolt at teal LEFT **sill** (`cx` ≤ 0.38); gold still visible. Same Bolt↔door distance as ice. Mid-hall / spawn-cx = FAIL |
+| atB | Bolt at gold RIGHT **sill** (`cx` ≥ 0.62); teal still visible. Same Bolt↔door distance as ice. Mid-hall / spawn-cx = FAIL |
 
 Composition examples (how Imagine learns seuil):
 

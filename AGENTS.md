@@ -16,7 +16,7 @@ This repo is a **recipe**, not an app. Do not scaffold a player. Do not publish 
 
 **Restyle:** completely new hall décor OK. **Doors may adapt** (shape / scale to décor). Cyan L + gold R energy portals may adapt shape / scale to décor (oval|RECT energy; never wood; never chrome UI). Bolt may be selected, repositioned, resized to sill for a nickel plate. Bolt reposition OK.
 
-Read **[GROK.md](GROK.md)** next (STOP banner). Same law as this file.
+Read **[GROK.md](GROK.md)** next (STOP banner). Same law as this file. Stills composition = **[LAYOUT.md](LAYOUT.md)** (ice rig: depth / door spacing / Bolt distance / Y-fork). Films = **[FILMS.md](FILMS.md)**.
 
 ## One happy path (brand-new Grok / Grok Build convo)
 
