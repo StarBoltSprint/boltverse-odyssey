@@ -57,7 +57,7 @@ Boltverse / StarBoltSprint / citadel / salle mousse:
    then export XAI_API_KEY=... && node scripts/cook-room.mjs <slot>
    (npm run dry-run / npm run cook = moss). Hung PASS = reuse. --force recooks.
 5. If you cannot run node, or a plate will cook and XAI_API_KEY is missing: REFUSE. Do not chat-Imagine. Give stock https://boltverse-odyssey.grok.me/
-6. Gel-breath / FAIL walk = HANG BLOCKED, not a preview KEEP. Soft KEEP banned. Sit / face / 3/4 / oval doors cannot PASS.
+6. Gel-breath / FAIL walk = HANG BLOCKED, not a preview KEEP. Soft KEEP banned. Sit / face / 3/4 cannot PASS. Oval|RECT energy portals OK (never wood, never chrome UI).
 7. sill ≠ spawn. at-A = already AT the teal LEFT sill (seuil). at-B = already AT the gold RIGHT sill. Spawn = CENTER only. Mid-hall at-A/at-B = FAIL.
 8. Lane = node scripts/cook-biome.mjs <id>. No new grok.me.
 ```

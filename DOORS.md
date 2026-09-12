@@ -30,17 +30,18 @@ Illegal:
 | **A LEFT** | cyan-teal energy fill |
 | **B RIGHT** | gold-orange energy fill |
 
-These are **teleport energy portals** filling the opening (stable **RECTs**).
+These are **teleport energy portals** filling the opening (stable **oval or RECT**). Oval is allowed and **preferred-ok**. RECT is also OK. Do **not** FAIL oval shape alone.
 
 Not:
 
 - open wood doors / wood painted teal-gold
 - a cave backdrop behind a swinging leaf
-- a morphing blob
+- a morphing blob / spinning puddle
+- chrome UI rectangles / orbs / hitbox overlays
 
 Fill = a closed threshold of readable energy, not a spinning puddle.
 
-Room2 may be a crystal vault. **The doors still copy these rifts.** Same RECT, same colors, same sill.
+Room2 may be a crystal vault. **The doors still copy these rifts.** Same oval|RECT energy, same colors, same sill.
 
 ## Path (cue in the world)
 
@@ -55,15 +56,15 @@ Layer C ([scripts/smoke-identity.md](scripts/smoke-identity.md)):
 - `identity.third_door` — a third portal
 - `identity.door_wood` — wood leaf / ajar timber
 - `identity.door_flat` — painted panel, no jambs/sill
-- `identity.door_morph` — RECT → circle mid-walk
+- `identity.door_morph` — morphing blob / spinning puddle / unstable fill mid-walk — **not** oval-vs-RECT
 - `identity.door_void` — black hole, no energy fill
 - `identity.door_chrome` — orb / UI overlay as the door
 - `identity.door_cut` — a rift cropped (illegal except last second of enter)
 
-Two rifts RECT, L cyan / R gold, gap, sills. Overlay may only **trace**; color is already in the encode.
+Two rifts oval|RECT, L cyan / R gold, gap, sills. Overlay may only **trace**; color is already in the encode. Oval energy is PASS.
 
 Wood ajar = FAIL even if the hall craft looks nice. Keep veto.
 
 ## One line
 
-Two **energy rifts** (L cyan / R gold) with jambs + sill + gap — architecture, not UI, **never** open wood.
+Two **energy rifts** (L cyan / R gold), oval|RECT, jambs + sill + gap — architecture, not UI, **never** open wood, **never** chrome UI.
