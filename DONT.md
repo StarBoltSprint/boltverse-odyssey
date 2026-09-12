@@ -48,11 +48,12 @@ Law: `ended(walk) → breath(arrive)` on the hall **and** on the Lane while you 
 
 Off `BiomeId` / off aliases → picker or refuse. New row = stills + stock + neighbors, not a sentence. [BIOMES.md](BIOMES.md).
 
-## 6. Chat `reference_to_video` as a walk
+## 6. Chat Imagine UI as a hall cook
 
-Looks like the tweet (first + last). The tool text says the images are **not** frames.
+Looks like the tweet (first + last). Chat tools have **no `last_frame`**. Chat stills skip the edits lock.
 
-Walks = `POST /v1/videos/generations` with `last_frame`. That is `scripts/imagine-hooks.mjs`. Chat refs = illegal for walks/enter.
+Hall stills + films = `node scripts/cook-room.mjs <slot>` → `scripts/imagine-hooks.mjs`.  
+Walks = `POST /v1/videos/generations` with `last_frame`. Chat refs / chat stills = illegal for hall floor-1.
 
 ## 7. TAP overlay / timing bar / drawbox on a sprint
 

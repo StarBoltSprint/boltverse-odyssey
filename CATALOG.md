@@ -83,7 +83,7 @@ Not an infinite graph. A small map of 10 halls.
 
 ## What Grok may write
 
-In the Imagine prompt, **after** CHAR/COOK laws, paste the two lines from `catalog/<id>.md`.
+`cook-room` / `imagineStill` read the two lines from `catalog/<id>.md`. Do **not** paste them into chat Imagine.
 
 - yes: "bioclast moss: ivy on pillars, wet stone"
 - no: "a unique original temple you design"

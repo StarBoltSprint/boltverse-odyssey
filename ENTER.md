@@ -43,6 +43,8 @@ First dog LEFT + last dog CENTER = **clone** (two Bolts). Proven.
 
 ## Imagine — first AND last distinct
 
+Enter films go through `imagineClip` (`image` + `last_frame`), not chat Imagine UI.
+
 Enter is **not** `image_to_video` on one still.
 
 ```

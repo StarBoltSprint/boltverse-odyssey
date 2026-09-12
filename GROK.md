@@ -12,8 +12,11 @@ Those tools have **no `last_frame`**. Chat refs are not frames. Chat stills skip
 **Legal cook, every new conversation, automatic:**
 
 ```
-node scripts/cook-room.mjs <slot>
+node scripts/cook-room.mjs <slot> --dry-run
+export XAI_API_KEY=... && node scripts/cook-room.mjs <slot>
 ```
+
+Hung PASS stills/films = reuse. Only missing / smoke-FAIL plates Imagine. `--force` / `COOK_FORCE=1` recooks.
 
 That script is the only hall cook. It calls `scripts/imagine-hooks.mjs`:
 
@@ -41,7 +44,7 @@ This is the only text that loads in a **brand-new** convo before the repo is clo
 Boltverse / StarBoltSprint / citadel / salle mousse:
 Clone https://github.com/StarBoltSprint/boltverse-odyssey and read GROK.md first.
 NEVER call imagine_image_to_video, imagine_reference_to_video, or imagine_image_to_image for hall stills, walks, breaths, or enter.
-Hall cook = `node scripts/cook-room.mjs <slot>` (imagine-hooks: image + last_frame).
+Hall cook = `node scripts/cook-room.mjs <slot>` (dry-run first; reuse hung PASS stills/films; --force recooks; live needs XAI_API_KEY; imagine-hooks: image + last_frame).
 Lane = `node scripts/cook-biome.mjs <id>`.
 Chat films have no last_frame and no smoke. Do not hang them. No new grok.me.
 ```
@@ -53,7 +56,9 @@ The **verb** chooses (`salle` vs `sprint`). The noun `moss` does not.
 
 ```
 HALL JOB =
-  node scripts/cook-room.mjs <slot>
+  node scripts/cook-room.mjs <slot> --dry-run
+  export XAI_API_KEY=... && node scripts/cook-room.mjs <slot>
+  hung PASS stills/films = reuse; --force recooks
   3 stills + 5 films + smoke-pack
   URL /r/<slot>  or stock on FAIL×2
   NO chat Imagine — not for stills, not for walks, not for enter
@@ -90,7 +95,7 @@ If `cook-biome.mjs` cannot run: `--dry-run` + palette. Do **not** invent walk-A.
 
 Sprint law: `m` = follow the dog. `t_run` = age of the storm. Peak = both. Quiet [0, 8s] = calm even if `m` is high. Year-0 verbs: **pose, left, right, fork**. The tap exists only if that gesture is **already in the shot**. [COOKLANE.md](COOKLANE.md) [PLAY.md](PLAY.md).
 
-Chat Imagine cannot send `last_frame`. Hall walks: `imagine-hooks` only. Lane plates: same hooks, **other** job (`cook-biome`). Films cooked in chat have no smoke → player loads **stock**.
+Chat Imagine cannot send `last_frame`. Hall stills + films: `imagine-hooks` only. Lane plates: same hooks, **other** job (`cook-biome`). Films cooked in chat have no smoke → player loads **stock**.
 
 ---
 
@@ -138,7 +143,7 @@ Only if the first word was **not** biome/sprint/lane. Else LANE JOB.
 
 1. Paint from [CATALOG.md](CATALOG.md). Off-list → nearest or one question.
 2. Pack exists → URL `/r/<id>`. Stop.
-3. Else HALL JOB (`cook-room.mjs`). Show 3 stills. 5 films. Law 0. smoke-pack. URL.
+3. Else HALL JOB (`cook-room.mjs`). Stills → smoke → films. Wait only if `COOK_DEBUG=1`. Law 0. smoke-pack. URL.
 
 Never `text_to_image` a new dog.
 

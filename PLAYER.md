@@ -10,8 +10,10 @@ Do **not** scaffold a new Vite / a new grok.me. Give the player URL. Cook writes
 Read **[GROK.md](GROK.md) — stop.** This page is the salon map, not the job.
 
 ```
-Job = node scripts/cook-room.mjs <slot>
+node scripts/cook-room.mjs <slot> --dry-run
+export XAI_API_KEY=... && node scripts/cook-room.mjs <slot>
 Floor 1 = 3 stills + 5 films. No Enter. No wait.
+Hung PASS stills/films = reuse. --force recooks.
 No chat Imagine — not stills, not walks, not enter. Hook only.
 PASS → /r/<id>
 Off-list / FAIL ×2 → /

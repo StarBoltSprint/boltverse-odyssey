@@ -239,11 +239,11 @@
     "plate": "720x1280",
     "cropNon916": true,
     "firstAndLastDistinct": "walks + enter. Breath is the only first=last loop.",
-    "spawn": "reference_to_image(bolt-back, example-spawn) + player style",
-    "atA": "image_to_image(spawn) Bolt to teal",
-    "atB": "image_to_image(spawn) Bolt to gold",
-    "breath": "first=last=pose still; seamless loop; feet glued; freeze still if dest breath walks",
-    "walk": "first=start still; last=arrive still; interpolate; no loop; back-to-camera whole clip; no 3/4",
+    "spawn": "imagineStill pose=spawn via cook-room (bolt-back + example-spawn + catalog lines)",
+    "atA": "imagineStill pose=atA from spawn via cook-room — never chat Imagine",
+    "atB": "imagineStill pose=atB from spawn via cook-room — never chat Imagine",
+    "breath": "imagineClip first=last=pose still; seamless loop; feet glued; freeze still if dest breath walks",
+    "walk": "imagineClip image+last_frame start→arrive; no chat reference_to_video; no loop; back-to-camera; no 3/4",
     "enter": "HANG.md + ENTER.md — two plates; first=atA last=same-slot fill; never last=Hall-prime; 6s; one dog; engine veil 500ms of THAT door",
     "still": "first frame of that pose's breath — last-frame grab can be empty"
   }
