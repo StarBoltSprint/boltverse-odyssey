@@ -231,15 +231,15 @@ LAW says two portals + lower-third (**spawn** grammar). Door still = dog at the 
 
 Prompt (`scripts/imagine-hooks.mjs` `breathLine`):
 
-> ONE dog. Already at THIS sill. NEVER a dog at center. Do not complete the hall toward spawn. 6s. Feet glued.
+> 6s. Same still first AND last. Bolt NEVER walks, NEVER changes position. He MAY breathe, MAY move head and tail a little; the image MAY be slightly animated. NO morph. Camera lock-off, never moves. ONE dog only — never two, never anything else on screen.
 
 Cap 2 → **do not Hang**. ffmpeg loop of the at-still may be written to `.kitchen/` (decay, **not** a living PASS, **not** `films/`). Stock URL. Soft KEEP of a gel or FAIL walk is illegal.
 
 ### Breath — two laws
 
-**In-room** (the 5 of the hall you are already in). Micro head is allowed:
+**In-room** (the 5 of the hall you are already in). Breath + small head/tail OK. Walk / position change = FAIL:
 
-> Lock-off. Same still. ONE dog. Already at THIS pose. NEVER a second dog at center or the other door. Do not complete the hall. The dog breathes, feet glued. Hall frozen. Seamless loop. 6s. No walk, no turn, no face.
+> Lock-off. Same still. 6s. ONE dog. Already at THIS pose. NEVER a second dog. NEVER anything else on screen. NO morph. He breathes, maybe head and tail. Feet planted. No walk. No new place.
 
 **Dest after enter** (`films/a/breath-spawn.mp4`). Must be **posed**. If `image_to_video` walks / turns / leaves spawn → **do not hang it**. Freeze the still:
 

@@ -110,26 +110,29 @@ function catalogLines(root, slot) {
 }
 
 function breathLine(pose) {
+  const live = [
+    "6 seconds. Same still first AND last.",
+    "Bolt NEVER walks. NEVER changes position. Feet stay planted.",
+    "He MAY breathe. He MAY move the head a little. He MAY move the tail a little. The image MAY be slightly animated (light / energy / air).",
+    "NO morph. Camera is LOCKED OFF and NEVER moves — no dolly, no pan, no zoom.",
+    "ONE dog only. NEVER a second dog. NEVER a clone. NEVER anything else appearing on screen.",
+    "Seamless loop.",
+  ].join(" ");
   if (pose === "atA") {
     return [
-      "ONE dog only. He is ALREADY at the teal LEFT sill.",
-      "NEVER a dog at center. NEVER a dog at gold. NEVER a second Bolt.",
-      "Do not complete the hall toward spawn. Do not walk. Do not turn.",
-      "Micro breath. Feet glued. Seamless loop. Locked-off.",
+      live,
+      "He is ALREADY at the teal LEFT sill. NEVER a dog at center. NEVER a dog at gold.",
     ].join(" ");
   }
   if (pose === "atB") {
     return [
-      "ONE dog only. He is ALREADY at the gold RIGHT sill.",
-      "NEVER a dog at center. NEVER a dog at teal. NEVER a second Bolt.",
-      "Do not complete the hall toward spawn. Do not walk. Do not turn.",
-      "Micro breath. Feet glued. Seamless loop. Locked-off.",
+      live,
+      "He is ALREADY at the gold RIGHT sill. NEVER a dog at center. NEVER a dog at teal.",
     ].join(" ");
   }
   return [
-    "ONE dog only. He is ALREADY at center spawn.",
-    "NEVER a second dog at either door. NEVER a ghost at a sill.",
-    "Do not walk to a portal. Micro breath. Feet glued. 6 seconds. Loop. Locked-off.",
+    live,
+    "He is ALREADY at center spawn. NEVER a second dog at either door. NEVER a ghost at a sill.",
   ].join(" ");
 }
 
