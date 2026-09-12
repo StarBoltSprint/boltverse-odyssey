@@ -23,4 +23,4 @@ Teacher alone is not enough. Live ember at-A FAIL×2 was sill-band 0.19+sit+face
 
 Do **not** drop `lock/example-at-a-tiny.jpg` here. The install script refuses that hash.
 
-If this file is missing in a cloud checkout: leave `lock/example-at-a.jpg` as-is (currently the swapped moss PASS still) and keep the prompt / prefer-lock wiring. No new grok.me. No chat Imagine.
+This checkout has the drop. `node scripts/install-lock-ata.mjs` writes `lock/example-at-a.jpg`. No new grok.me. No chat Imagine.

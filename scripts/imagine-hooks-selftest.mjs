@@ -71,7 +71,8 @@ must(/standing BACK toward teal L/.test(atA), "atA names SmiR teacher pose");
 must(atB.includes(ATA_FORCE_TAILLE) && atB.includes(ATA_FORCE_STANDING), "atB also FORCE taille + standing");
 must(DEST_REL === "lock/example-at-a.jpg", "install dest is lock/example-at-a.jpg");
 must(DROP_RELS[0] === "hall-stills/smir-ata-teacher.jpeg", "drop slot hall-stills/smir-ata-teacher.jpeg");
-must(/COOK\/LOCK/.test(lockAtaStatus(root).note), "COOK/LOCK note when drop missing");
+must(/COOK\/LOCK/.test(lockAtaStatus(root).note), "COOK/LOCK note present");
+must(lockAtaStatus(root).hasDrop === true, "owner drop hall-stills/smir-ata-teacher.jpeg present");
 try {
   installLockAta(root, join(root, "lock/example-at-a-tiny.jpg"));
   must(false, "tiny install must refuse");

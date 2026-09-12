@@ -79,17 +79,25 @@ function encodePlate(src, dest) {
   unlinkSync(tmp);
 }
 
+export function isOwnerDrop(repo, srcPath) {
+  if (!srcPath) return false;
+  const abs = resolve(srcPath);
+  return DROP_RELS.some((rel) => resolve(join(repo, rel)) === abs);
+}
+
 export function installLockAta(repo, srcPath) {
   const dest = join(repo, DEST_REL);
   const tiny = join(repo, TINY_REL);
   if (!srcPath || !existsSync(srcPath)) {
     throw new Error("COOK/LOCK  no drop file — expected hall-stills/smir-ata-teacher.jpeg");
   }
-  if (existsSync(tiny) && sha1(srcPath) === sha1(tiny)) {
+  const ownerDrop = isOwnerDrop(repo, srcPath);
+  const matchesTiny = existsSync(tiny) && sha1(srcPath) === sha1(tiny);
+  if (matchesTiny && !ownerDrop) {
     throw new Error("COOK/LOCK REFUSED  source is lock/example-at-a-tiny.jpg (anti-teacher ~0.18). Will not overwrite.");
   }
   encodePlate(srcPath, dest);
-  if (existsSync(tiny) && sha1(dest) === sha1(tiny)) {
+  if (existsSync(tiny) && sha1(dest) === sha1(tiny) && !ownerDrop) {
     throw new Error("COOK/LOCK REFUSED  encoded dest matches archived tiny — not installed");
   }
   return dest;

@@ -75,13 +75,13 @@ Composition examples (how Imagine learns seuil):
 
 ### COOK / LOCK — drop SmiR at-A if the binary is missing
 
-Cloud checkouts often lack the attachment. Path expectation:
+SmiR’s teacher is installed:
 
-1. Put SmiR’s teacher at [`hall-stills/smir-ata-teacher.jpeg`](hall-stills/smir-ata-teacher.jpeg) (standing BACK toward teal L, gold visible).
-2. `node scripts/install-lock-ata.mjs --dry-run` then `node scripts/install-lock-ata.mjs`
-3. That overwrites `lock/example-at-a.jpg` (720×1280). Refuses the archived tiny hash.
+1. Source: [`hall-stills/smir-ata-teacher.jpeg`](hall-stills/smir-ata-teacher.jpeg) (standing BACK toward teal L, gold visible).
+2. `node scripts/install-lock-ata.mjs` wrote [`lock/example-at-a.jpg`](lock/example-at-a.jpg) (720×1280).
+3. Direct `lock/example-at-a-tiny.jpg` is still refused. An owner drop at `hall-stills/` is allowed even if the pixels match that archive — prompts **FORCE taille 0.35–0.40 + STANDING** and **never shrink to 0.18**.
 
-Until the drop lands, `lock/example-at-a.jpg` may still be the swapped moss PASS still — the **prefer-lock + FORCE taille/standing** prompt still holds. Live ember at-A FAIL×2 (0.19+sit+face / 0.16+sit) means teacher pixels alone are not enough. No chat Imagine. No new grok.me.
+Live ember at-A FAIL×2 (0.19+sit+face / 0.16+sit) means teacher pixels alone are not enough. No chat Imagine. No new grok.me.
 
 ## Player phrases (treat as this flow)
 
