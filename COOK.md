@@ -63,8 +63,8 @@ Off-list → nearest, or ask "did you mean ember?". Never "describe any temple".
 | Camera | lock-off, 9:16, plate 720×1280 |
 | Doors | **energy rifts** — A left cyan-teal, B right gold-orange. Jambs+sill+gap, RECT fill, never wood. [DOORS.md](DOORS.md) |
 | Spawn | both doors in frame, Bolt center, back to camera |
-| atA | Bolt at teal; gold still visible |
-| atB | Bolt at gold; teal still visible |
+| atA | Bolt at teal LEFT **sill** (`cx` ≤ 0.38); gold still visible. Mid-hall / spawn-cx = FAIL |
+| atB | Bolt at gold RIGHT **sill** (`cx` ≥ 0.62); teal still visible. Mid-hall / spawn-cx = FAIL |
 
 Composition examples (camera + door layout, not the player's hall):
 
@@ -107,7 +107,7 @@ Save → `stills/spawn.jpg` (or `stills/a/spawn.jpg`). Scale 720×1280.
 
 `imagineStill({ pose: "atA", spawnPath })` · **`image` = spawn** (not bolt-back). bolt-back = coat only. `example-at-a` = LEFT side only (ignore oval / 0.18).
 
-> Same hall, same camera, same RECT rifts as spawn. He is ALREADY at the teal LEFT, STANDING, BACK, crown to camera. Feet on the **stone floor in front of** the sill — never inside the rift, never climbing the teal (punch-sill if dog top < 0.46). Gold stays in frame. Never sit / face / 3/4. bboxH/H **0.35–0.40**. Δh/H < 0.12. Do not copy bolt-back crop (~0.53).
+> Same hall, same camera, same RECT rifts as spawn. He is ALREADY at the teal LEFT **sill** (paws on that lip, body in the LEFT third) — NEVER mid-hall / spawn / center / fork. STANDING, BACK, crown to camera. Feet on the **stone floor in front of** the sill — never inside the rift, never climbing the teal (punch-sill if dog top < 0.46). Gold stays in frame. Never sit / face / 3/4. bboxH/H **0.35–0.40**. Δh/H < 0.12. Do not grow him in place. Do not copy bolt-back crop (~0.53).
 
 Save → `stills/at-a.jpg` (or `stills/a/at-a.jpg`).
 
@@ -115,7 +115,7 @@ Save → `stills/at-a.jpg` (or `stills/a/at-a.jpg`).
 
 `imagineStill({ pose: "atB", spawnPath })` · **`image` = spawn** (not atA, not bolt-back). bolt-back = coat only. `example-at-b` = RIGHT side only (ignore oval / 0.18).
 
-> Same hall, same camera, same RECT rifts as spawn. He is ALREADY at the gold RIGHT, STANDING, BACK, crown to camera. Feet on the **stone floor in front of** the sill — never inside the rift, never climbing the gold (punch-sill if dog top < 0.46). Teal stays in frame. Never sit / face / 3/4. bboxH/H **0.35–0.40**. Δh/H < 0.12. Do not copy bolt-back crop (~0.53).
+> Same hall, same camera, same RECT rifts as spawn. He is ALREADY at the gold RIGHT **sill** (paws on that lip, body in the RIGHT third) — NEVER mid-hall / spawn / center / fork. STANDING, BACK, crown to camera. Feet on the **stone floor in front of** the sill — never inside the rift, never climbing the gold (punch-sill if dog top < 0.46). Teal stays in frame. Never sit / face / 3/4. bboxH/H **0.35–0.40**. Δh/H < 0.12. Do not grow him in place. Do not copy bolt-back crop (~0.53).
 
 Save → `stills/at-b.jpg` (or `stills/a/at-b.jpg`).
 
@@ -126,6 +126,7 @@ If any FAIL below, recook from spawn. Do not invent a fourth still. Do not cook 
 - Cooked in chat Imagine UI (not `imagineStill` via `cook-room`)
 - Bolt face / 3/4 / profile / sit / lie / different dog
 - Dog climbing the rift / punch-sill (top < 0.46) / bboxH/H > 0.45 / bolt-back close-up scale
+- Mid-hall / spawn-cx dog sold as at-A or at-B (`gate.place` — atA cx ≤ 0.38, atB cx ≥ 0.62)
 - grey / silver coat, black saddle, black mask, black ears (`identity.coat` / `identity.saddle`)
 - Doors swapped or missing (spawn must show **both**)
 - Wood leaves / ajar timber / flat teal paint / third door / RECT morphing to a circle ([DOORS.md](DOORS.md))

@@ -179,17 +179,20 @@ export function sillStillLine(side) {
   const other = side === "A" ? "Gold RECT rift still visible on the right" : "Teal RECT rift still visible on the left";
   const fill = side === "A" ? "teal" : "gold";
   const walk = side === "A" ? "left" : "right";
+  const third = side === "A" ? "LEFT third" : "RIGHT third";
   return [
-    "He is ALREADY at the " + here + " RECT energy rift — not mid-hall, not climbing into the fill.",
+    "He is ALREADY at the " + here + " RECT energy rift THRESHOLD — paws ON that sill lip, body in the " + third + " of the plate.",
+    "NEVER mid-hall. NEVER spawn. NEVER center. NEVER the fork. NEVER a grown spawn dog standing between the two rifts.",
+    "Spawn = center + both doors + fork. This plate is the " + here + " sill only. Huge empty stone on the other side.",
     "BACK to camera, TWO ears on TOP of the skull, crown to camera, muzzle HIDDEN.",
-    "STANDING four paws on the STONE FLOOR in FRONT of that sill. Legs LONG, haunches UP. Same lock as the spawn still — only he moved " + walk + ".",
+    "STANDING four paws on the STONE FLOOR in FRONT of that sill. Legs LONG, haunches UP. Same lock as the spawn still — only he moved " + walk + " to the door. Do not grow him in place.",
     "Feet stay on the hall floor. NEVER inside the rift. NEVER on the jamb. NEVER climbing the " + fill + " fill. The RECT DWARFS him.",
     "Ear tips / crown stay in the LOWER HALF of the plate (dog top ≥ 0.50 of frame H). punch-sill FAIL if the head enters the rift (top < 0.46).",
     "NEVER sit. NEVER a loaf. NEVER haunches down. NEVER lie. NEVER 3/4. NEVER cheek. NEVER face. NEVER muzzle.",
     "NEVER punch-in. NEVER fill the " + fill + ". NEVER copy bolt-back close-up scale (~0.53 is illegal).",
     "He is NOT seated facing the " + fill + ". He is NOT looking at the rift. " + other + ". Same camera — no dolly.",
     "Dog bbox height 0.35–0.40 (aim 0.36). One step closer than spawn (0.34–0.38). Δh/H from spawn MUST be under 0.12.",
-    "If spawn is 0.26, you are ~0.36. Size in band is not enough if he sits, turns, shows a face, or climbs the rift. Same lens as spawn.",
+    "If spawn is 0.26, you are ~0.36. Size in band is not enough if he is still mid-hall / spawn-cx, sits, turns, shows a face, or climbs the rift. Same lens as spawn.",
   ].join(" ");
 }
 
@@ -199,13 +202,13 @@ export function stillRefLine(pose, hasSpawn) {
   const side = pose === "atA" ? "LEFT teal" : "RIGHT gold";
   if (hasSpawn) {
     return [
-      "First image = the spawn still: SAME hall, SAME camera, SAME light, SAME RECT rifts. ONLY the dog is now at the " + side + ". Do not zoom. Do not recrop.",
+      "First image = the spawn still: SAME hall, SAME camera, SAME light, SAME RECT rifts. ONLY the dog MOVES to the " + side + " sill (paws on that lip, body in that third). Do not leave him at center spawn. Do not grow him in place. Do not zoom. Do not recrop.",
       "Second image = bolt-back.jpg: coat / back / collar IDENTITY only. IGNORE its close-up crop (bbox ~0.53 is illegal).",
-      "Third image = lock/" + ex + ": which SIDE he stands on (" + side + ", other rift still visible). IGNORE its oval doors and its tiny dog (~0.18). Doors stay RECT. Dog size is 0.35–0.40, feet on the floor, crown below mid-frame — no punch-sill.",
+      "Third image = lock/" + ex + ": which SIDE he stands on (" + side + ", other rift still visible). IGNORE its oval doors and its tiny dog (~0.18). Doors stay RECT. Dog size is 0.35–0.40, feet on THAT sill — not mid-hall, crown below mid-frame — no punch-sill.",
     ].join(" ");
   }
   return [
-    "First image = lock/" + ex + ": SIDE and floor placement only (" + side + "). IGNORE oval doors and tiny scale (~0.18).",
+    "First image = lock/" + ex + ": SIDE and floor placement only (" + side + " sill, not mid-hall). IGNORE oval doors and tiny scale (~0.18).",
     "Second image = bolt-back.jpg: coat / back / collar only. IGNORE close-up crop (~0.53).",
   ].join(" ");
 }

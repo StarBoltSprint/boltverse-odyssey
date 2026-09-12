@@ -39,7 +39,7 @@ Prompt: `full gallop, back to camera, lock-off, legs alternate naturally, no pro
 
 ## Scale
 
-`bboxH / frameH`. Same lens. Spawn **0.22–0.32**. Sill **0.35–0.40**, feet on the floor, crown in the lower half (punch-sill if top < 0.46). Forbidden ~0.70 / climbing the rift. [STILL-PAIR.md](STILL-PAIR.md).
+`bboxH / frameH`. Same lens. Spawn **0.22–0.32**, center (`cx` 0.42–0.58). Sill **0.35–0.40**, at-A `cx` ≤ 0.38 / at-B `cx` ≥ 0.62, feet on the floor, crown in the lower half (punch-sill if top < 0.46). Forbidden ~0.70 / climbing the rift / mid-hall sold as a sill. [STILL-PAIR.md](STILL-PAIR.md).
 
 ## One line
 

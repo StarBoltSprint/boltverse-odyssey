@@ -24,6 +24,9 @@ for (const [name, p] of [
   must(/IGNORE its oval/.test(p), name + " ignore example oval + tiny scale");
   must(/0\.53 is illegal/.test(p), name + " ignore bolt-back crop");
   must(/NEVER sit/.test(p) && /NEVER 3\/4/.test(p) && /muzzle HIDDEN/.test(p), name + " sit/yaw/face still banned");
+  must(/NEVER mid-hall/.test(p) && /NEVER spawn/.test(p) && /NEVER center/.test(p), name + " mid-hall/spawn-cx banned");
+  must(/THRESHOLD/.test(p) && /sill lip/.test(p), name + " paws on sill lip");
+  must(/Do not leave him at center spawn/.test(p) && /Do not grow him in place/.test(p), name + " edit is a move, not a grow");
 }
 
 must(stillRefOrder("atB", true).join(",") === "spawn,bolt-back.jpg,example-at-b.jpg", "atB+spawn edits spawn first");
