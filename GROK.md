@@ -17,7 +17,7 @@ Player: https://boltverse-odyssey.grok.me
 
 **[Grok Imagine Agent](https://grok.com/imagine/agent) = ONLY hall STYLES / stills / décor restyles** (freeze dog+portals, swap décor, skins on white coat). **NEVER** walks, breaths, or any video. Default STYLE cook: seal stills, restyle halls. **Smoke still gates.** Soft KEEP banned.
 
-Walks / breaths / films = Imagine first-frame + last-frame via `scripts/imagine-hooks.mjs` / `scripts/cook-room.mjs` (the API path Grok Build already uses). Walks: start still ≠ arrive still. Breaths: same still twice. Agent is **not** required or recommended for video cook. Do **not** instruct Build to open Imagine Agent for Walk A, Walk B, or breath.
+Walks / breaths / films = Imagine first-frame + last-frame via `scripts/imagine-hooks.mjs` / `scripts/cook-room.mjs`. **Prompts = [FILMS.md](FILMS.md)** — every Grok, every player, every décor. Adapt hall paint only. Walks: start still ≠ arrive still. Breaths: same still twice. Agent is **not** required or recommended for video cook. Do **not** instruct Build to open Imagine Agent for Walk A, Walk B, or breath.
 
 Chat Imagine UI **without real first+last** is **banned for walks**, breaths, enter. If `imagine_image_to_video` / `imagine_reference_to_video` / `imagine_image_to_image` are in your tool list: **do not call them**. They have **no `last_frame`**. Chat refs are not frames. A film cooked in chat has no smoke → do not Hang it. A Smoke-FAIL walk attached as KEEP is **illegal**.
 
@@ -37,6 +37,7 @@ Also read [AGENTS.md](AGENTS.md) (same refuse). Customize below is paste-once fo
 https://grok.com/imagine/agent
   stills ONLY: seal / restyle
   NEVER walks / breaths / video
+then read FILMS.md                    # owner walk + breath prompts (adapt décor only)
 then node scripts/cook-room.mjs <slot>   # walks + breaths = image + last_frame
 then node scripts/smoke-pack.mjs packs/<slot>
 ```

@@ -28,7 +28,7 @@ Walks / breaths / films = Imagine first-frame + last-frame via `scripts/imagine-
 2. STYLE stills = Imagine Agent at `https://grok.com/imagine/agent` when restyling:
    - **seal stills** (spawn / at-A / at-B)
    - **restyle halls** from a SEALED sill (completely new hall décor OK; cyan L + gold R energy portals may adapt shape / scale to décor; Bolt may be selected, repositioned, resized to sill for a nickel plate; white coat forever; décor-matching skin ON TOP OK)
-3. Walks / breaths = `cook-room` → `imagineClip` (`image` + `last_frame`). **walks** = start still + end still. **breaths** = same still twice. Never Agent video.
+3. Walks / breaths = `cook-room` → `imagineClip` (`image` + `last_frame`). **Read [FILMS.md](FILMS.md) first** — those prompts are the base for every player / every décor. Adapt hall paint from the player's stills + `catalog/<slot>.md` only. Never rewrite motion / camera / one-dog / duration. **walks** = start still + end still. **breaths** = same still twice. Never Agent video.
 4. Drop plates into `packs/<slot>/`. **Smoke still gates.** Soft KEEP banned.
 5. Script prints `PASS https://boltverse-odyssey.grok.me/r/<slot>` or `FAIL <rule>` + `HANG BLOCKED` + stock `/`. That line is the answer.
 
@@ -49,6 +49,8 @@ Lane / biome is **another job**: `node scripts/cook-biome.mjs <id>`. Not cook-ro
 - **Grok Build chat Imagine tools are NOT the same as Imagine Agent.** Chat Imagine UI without real first+last is banned for walks, breaths, enter (no `last_frame`). For STYLE restyle: instruct to open Imagine Agent with the plate refs. Do **not** instruct Agent for walks/breaths. Build must not rely on chat `imagine_*` tools for hall restyle identity lock.
 
 ## Films — hooks first+last (never Agent)
+
+**[FILMS.md](FILMS.md)** = owner walk + breath prompts. Every new Grok reads that file. Use those texts as the base. Adapt **décor only** (player stills + catalog paint). Do not invent a new walk.
 
 Walks / breaths / films = `imagineClip` via `scripts/imagine-hooks.mjs` / `scripts/cook-room.mjs`:
 
