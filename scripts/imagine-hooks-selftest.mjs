@@ -70,10 +70,10 @@ for (const [name, p] of [
   must(/Do not leave him at center spawn/.test(p) && /Do not grow him in place/.test(p), name + " edit is a move, not a grow");
 }
 
-must(teacherA === "lock/example-at-a.jpg", "atA prefers SmiR lock/example-at-a as side ref");
-must(teacherB === "packs/moss/stills/at-b.jpg", "prefer hung moss PASS at-B as side ref");
-must(stillRefOrder("atB", true, root).join(",") === "spawn,bolt-back.jpg,packs/moss/stills/at-b.jpg", "atB+spawn edits spawn then moss PASS sill");
-must(stillRefOrder("atA", true, root).join(",") === "spawn,bolt-back.jpg,lock/example-at-a.jpg", "atA+spawn edits spawn then lock/example-at-a");
+must(teacherA === "lock/SEAL-at-a.jpg", "atA prefers ice KEEP lock/SEAL-at-a as side ref");
+must(teacherB === "lock/SEAL-at-b.jpg", "atB prefers ice KEEP lock/SEAL-at-b as side ref");
+must(stillRefOrder("atB", true, root).join(",") === "spawn,bolt-back.jpg,lock/SEAL-at-b.jpg", "atB+spawn edits spawn then SEAL-at-b");
+must(stillRefOrder("atA", true, root).join(",") === "spawn,bolt-back.jpg,lock/SEAL-at-a.jpg", "atA+spawn edits spawn then SEAL-at-a");
 must(stillRefOrder("atB", true).join(",") === "spawn,bolt-back.jpg,lock/example-at-b.jpg", "atB lock fallback is swapped example-at-b");
 must(stillRefOrder("atA", true).join(",") === "spawn,bolt-back.jpg,lock/example-at-a.jpg", "atA lock fallback is lock/example-at-a");
 must(atA.includes(ATA_LOCK_COPY), "atA prompt: copy PLACE+POSE from example; FORCE taille 0.35–0.40; FORCE STANDING; never shrink to 0.18");
@@ -141,7 +141,7 @@ must(/same camera|Same camera/.test(enlargeA), "enlarge same camera/hall");
 must(!/copy PLACE\+POSE from example/.test(enlargeA), "enlarge does not copy teacher PLACE+POSE");
 must(stillRefOrder("atA", true, root, { enlarge: true }).join(",") === "fail,bolt-back.jpg,spawn", "enlarge refs: FAIL jpg first, no teacher");
 must(!String(stillRefOrder("atA", true, root, { enlarge: true })).includes("example-at-a"), "enlarge does not send lock teacher");
-must(stillRefOrder("atA", true, root).join(",") === "spawn,bolt-back.jpg,lock/example-at-a.jpg", "fresh atA refs unchanged");
+must(stillRefOrder("atA", true, root).join(",") === "spawn,bolt-back.jpg,lock/SEAL-at-a.jpg", "fresh atA refs use SEAL KEEP");
 energyOk(enlargeA, "enlargeA");
 energyOk(enlargeB, "enlargeB");
 

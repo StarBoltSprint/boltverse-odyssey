@@ -3,6 +3,7 @@
 // SmiR lock/example-at-a + archived tinies: place can PASS, sit/size still FAIL.
 // Prompts FORCE taille 0.35–0.40 + standing — do not copy teacher scale.
 import { execFileSync, spawnSync } from "node:child_process";
+import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { stillReasons, hardPoseFails, ATA_CX_MAX, ATB_CX_MIN, SPAWN_CX, GW, GH } from "./still-pair.mjs";
@@ -47,6 +48,16 @@ mustPass("packs/moss/stills/at-b.jpg", "still-atB");
 mustPass("lock/sill-at-a.jpg", "still-atA");
 mustPass("lock/sill-at-b.jpg", "still-atB");
 mustPass("lock/example-at-b.jpg", "still-atB");
+if (!existsSync(join(root, "lock/SEAL-at-a.jpg")) || !existsSync(join(root, "lock/SEAL-at-b.jpg"))) {
+  console.error("FAIL  ice KEEP seals missing lock/SEAL-at-a.jpg + lock/SEAL-at-b.jpg");
+  process.exit(1);
+}
+console.log("PASS  lock/SEAL-at-a.jpg + lock/SEAL-at-b.jpg present");
+if (!existsSync(join(root, "hall-stills/seal/at-a-ice.jpg")) || !existsSync(join(root, "hall-stills/seal/at-b-ice.jpg"))) {
+  console.error("FAIL  ice KEEP drops missing hall-stills/seal/at-*-ice.jpg");
+  process.exit(1);
+}
+console.log("PASS  hall-stills/seal/at-a-ice.jpg + at-b-ice.jpg present");
 
 function placeOk(r, kind) {
   if (!r.dog) return false;
