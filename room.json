@@ -34,7 +34,10 @@
     "compose": {
       "spawn": "lock/example-spawn.jpg",
       "atA": "lock/example-at-a.jpg",
-      "atB": "lock/example-at-b.jpg"
+      "atB": "lock/example-at-b.jpg",
+      "sealSpawn": "lock/SEAL-spawn.jpg",
+      "sealA": "lock/SEAL-at-a.jpg",
+      "sealB": "lock/SEAL-at-b.jpg"
     },
     "doors": {
       "A": { "id": "m1", "name": "teal", "side": "left" },
@@ -239,7 +242,7 @@
     "plate": "720x1280",
     "cropNon916": true,
     "firstAndLastDistinct": "walks + enter. Breath is the only first=last loop.",
-    "spawn": "imagineStill pose=spawn via cook-room (bolt-back + example-spawn + catalog lines)",
+    "spawn": "sealed: copy lock/SEAL-spawn.jpg (skip imagineStill). else imagineStill pose=spawn via cook-room (bolt-back + example-spawn + catalog lines)",
     "atA": "imagineStill pose=atA from spawn via cook-room — never chat Imagine",
     "atB": "imagineStill pose=atB from spawn via cook-room — never chat Imagine",
     "breath": "imagineClip first=last=pose still; seamless loop; feet glued; freeze still if dest breath walks",

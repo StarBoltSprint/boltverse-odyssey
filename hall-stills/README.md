@@ -1,10 +1,18 @@
-# COOK / LOCK — SmiR at-A teacher drop
+# COOK / LOCK — SmiR KEEP / at-A teacher drop
 
-This folder is the **drop slot** for SmiR’s hand still. It is not a pack. It is not hung.
+This folder is the **drop slot** for SmiR’s KEEP stills. It is not a pack. It is not hung.
 
-**Expected file:** `hall-stills/smir-ata-teacher.jpeg`
+**Ice-hall KEEP (Imagine Agent, frozen until SmiR reseals):**
 
-Teacher must show Bolt **standing BACK toward the teal LEFT** energy rift, **gold still visible**. Oval energy is OK (PR #6). RECT energy is OK. Never wood. Never chrome UI.
+- `hall-stills/seal/spawn-ice.jpg` — mid-hall, dead-center BEHIND white GSD, back/withers only
+- `hall-stills/seal/at-a-ice.jpg` — standing BACK at cyan LEFT sill
+- `hall-stills/seal/at-b-ice.jpg` — standing BACK at gold RIGHT sill
+
+See [`hall-stills/seal/README.md`](seal/README.md). Agent remains the primary cook path for future styles. These three are frozen pose+décor for this ice hall.
+
+**Legacy at-A teacher:** `hall-stills/smir-ata-teacher.jpeg`
+
+Teacher / KEEP must show Bolt **standing BACK** at the teal LEFT or gold RIGHT energy rift. Oval energy is OK (PR #6). RECT energy is OK. Never wood. Never chrome UI.
 
 Then:
 
@@ -13,14 +21,14 @@ node scripts/install-lock-ata.mjs --dry-run
 node scripts/install-lock-ata.mjs
 ```
 
-That writes `lock/example-at-a.jpg` (720×1280). `imagineStill` at-A **prefers this lock example** as the side ref (not hung moss décor).
+That writes `lock/example-at-a.jpg` (720×1280) **and** `lock/SEAL-spawn.jpg` / `lock/SEAL-at-a.jpg` / `lock/SEAL-at-b.jpg` when the ice drops are present. Spawn seal does not overwrite `lock/example-spawn.jpg`.
 
-Prompt law (hooks already send this):
+**Packs may copy** the SEAL files to `packs/<slot>/stills/spawn.jpg` / `at-a.jpg` / `at-b.jpg` when the pack still is missing. Hung PASS is kept. `cook-room` **SKIPS** `imagineStill` for spawn / at-A / at-B when seals exist. **Smoke still gates.** Soft KEEP banned.
+
+Unsealed first-seal CLI still prefers the lock example as the at-A side ref (not hung moss décor):
 
 > copy PLACE+POSE from example; FORCE taille 0.35–0.40; FORCE STANDING; never shrink to 0.18; hall materials from spawn/catalog only — ignore example décor.
 
-Teacher alone is not enough. Live ember at-A FAIL×2 was sill-band 0.19+sit+face and 0.16+sit. Do not copy a tiny teacher scale. `cook-room` then **enlarges** that FAIL jpg (same camera/hall) toward 0.35–0.40 standing — it does not recook from the teacher. FAIL stays in `.kitchen/fail/`. Never Hang.
+Do **not** drop `lock/example-at-a-tiny.jpg` here as a non-owner path. The install script refuses that hash unless the file is an owner drop.
 
-Do **not** drop `lock/example-at-a-tiny.jpg` here. The install script refuses that hash.
-
-This checkout has the drop. `node scripts/install-lock-ata.mjs` writes `lock/example-at-a.jpg`. No new grok.me. No chat Imagine.
+No new grok.me. No chat Imagine.
