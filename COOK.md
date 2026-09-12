@@ -2,7 +2,9 @@
 
 This is the product. The player does **not** pick films first. They ask Grok for **3 stills** in a citadel style. Grok supplies them with the **same Bolt** ([CHAR.md](CHAR.md)). **Do not wait.** Stills → smoke → films. Order: [COOKROOM.md](COOKROOM.md). Wait only if COOK_DEBUG=1.
 
-**STOP — HARD SPLIT (SmiR 2026-09-12, supersedes PR #11).** Imagine Agent is obligatoire / MUST / systematically for STYLE stills when restyling. NEVER for Walk A, Walk B, breath, or any video. Walks / breaths / films = imagine-hooks / cook-room first-frame + last-frame. Chat Imagine UI without real first+last is banned. Soft KEEP banned. Smoke still gates.
+**STOP 0 — STYLES = [RIG.md](RIG.md).** Black plates + RIG-PROMPT. Spawn first, then at-A/at-B from that spawn. ONE dog. Two Bolts = FAIL. Then films.
+
+**STOP 1 — HARD SPLIT (SmiR 2026-09-12).** NEVER Agent / chat Imagine for Walk A, Walk B, breath, or any video. Walks / breaths / films = imagine-hooks / cook-room first-frame + last-frame. Chat Imagine UI without real first+last is banned for **video**. Soft KEEP banned. Smoke still gates.
 
 **Identity base:** Bolt is ALWAYS a full-white German Shepherd (white coat forever). That base never changes to grey / silver / black.
 
@@ -83,11 +85,11 @@ Off-list → nearest, or ask "did you mean ember?". Never "describe any temple".
 | lock | value |
 |---|---|
 | Bolt | [CHAR.md](CHAR.md) — **full white, ZERO black, no saddle** · [`lock/bolt-back.jpg`](lock/bolt-back.jpg) |
-| Camera | lock-off, 9:16, plate 720×1280 |
-| Doors | **energy rifts** — A left cyan-teal, B right gold-orange. Jambs+sill+gap+depth, oval\|RECT fill (oval preferred-ok), never wood, never chrome UI. [DOORS.md](DOORS.md) |
-| Spawn | both doors in frame, Bolt center, back to camera |
-| atA | Bolt at teal LEFT **sill** (`cx` ≤ 0.38); gold still visible. Mid-hall / spawn-cx = FAIL |
-| atB | Bolt at gold RIGHT **sill** (`cx` ≥ 0.62); teal still visible. Mid-hall / spawn-cx = FAIL |
+| Camera | lock-off, 9:16, plate 720×1280 — **same depth as ice seals. NEVER a new lens.** |
+| Doors | **energy rifts** — A left cyan-teal, B right gold-orange. Shape oval\|RECT may adapt. **Spacing = ice.** Never wood, never chrome UI. [DOORS.md](DOORS.md) [LAYOUT.md](LAYOUT.md) |
+| Spawn | both doors in frame, Bolt center, back to camera. **Y-fork** (two luminous paths paws → both sills) every style |
+| atA | Bolt at teal LEFT **sill** (`cx` ≤ 0.38); gold still visible. Same Bolt↔door distance as ice. Mid-hall / spawn-cx = FAIL |
+| atB | Bolt at gold RIGHT **sill** (`cx` ≥ 0.62); teal still visible. Same Bolt↔door distance as ice. Mid-hall / spawn-cx = FAIL |
 
 Composition examples (how Imagine learns seuil):
 
@@ -213,7 +215,7 @@ Floor 1 films → `films/` (the 5). Floor 2 = walk-A-B / B-A if asked. Floor 3 =
 
 Walk prompt (hooks send this via `imagineClip`; do not paste into chat Imagine):
 
-> Lock-off. 10 seconds. He walks to the door (~5s) and HOLDS (~3s). Do not walk back to spawn. last_frame locks the last picture, not the path — leftover seconds = round trip = FAIL. FULL-white GSD, teal collar, back the whole clip. No 3/4, no morph.
+> Lock-off. Camera NEVER moves. He STARTS walking on frame 1 and walks at a STEADY pace all the way to last_frame (~9s). NO morph. ONE dog only — never two. No leftover hold (leftover seconds = round trip = FAIL). FULL-white GSD, teal collar, back the whole clip. No 3/4.
 
 ### Breath — first AND last are the **same** still
 
@@ -231,15 +233,15 @@ LAW says two portals + lower-third (**spawn** grammar). Door still = dog at the 
 
 Prompt (`scripts/imagine-hooks.mjs` `breathLine`):
 
-> ONE dog. Already at THIS sill. NEVER a dog at center. Do not complete the hall toward spawn. 6s. Feet glued.
+> 6s loop. Same still first AND last (API pins — not prompt refs). Completely stationary: NEVER walks or shifts. Gentle breath (chest/flanks) + light tail sway. Portals/lights may pulse. NO morph. Camera lock-off. ONE dog only — never two.
 
 Cap 2 → **do not Hang**. ffmpeg loop of the at-still may be written to `.kitchen/` (decay, **not** a living PASS, **not** `films/`). Stock URL. Soft KEEP of a gel or FAIL walk is illegal.
 
 ### Breath — two laws
 
-**In-room** (the 5 of the hall you are already in). Micro head is allowed:
+**In-room** (the 5 of the hall you are already in). Breath + small head/tail OK. Walk / position change = FAIL:
 
-> Lock-off. Same still. ONE dog. Already at THIS pose. NEVER a second dog at center or the other door. Do not complete the hall. The dog breathes, feet glued. Hall frozen. Seamless loop. 6s. No walk, no turn, no face.
+> Lock-off. Same still. 6s. Completely stationary. Gentle breath + tail. Portals may pulse. NO morph. ONE dog. Already at THIS pose. NEVER a second dog. NEVER anything else on screen. No walk. No new place.
 
 **Dest after enter** (`films/a/breath-spawn.mp4`). Must be **posed**. If `image_to_video` walks / turns / leaves spawn → **do not hang it**. Freeze the still:
 

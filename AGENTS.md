@@ -1,6 +1,14 @@
 # AGENTS — cold-start hall cook
 
-**STOP — HARD SPLIT (SmiR 2026-09-12, supersedes PR #11).** Imagine Agent is obligatoire / MUST / systematically for STYLE stills when restyling. NEVER for Walk A, Walk B, breath, or any video. Walks / breaths / films = imagine-hooks / cook-room first-frame + last-frame. Chat Imagine UI without real first+last is banned. Soft KEEP banned. Smoke still gates.
+**STOP 0 — STYLES FIRST (SmiR 2026-09-12). Miss this = the whole room is dead.**
+
+Read **[RIG.md](RIG.md)** + [`lock/RIG-PROMPT.txt`](lock/RIG-PROMPT.txt) before anything else.
+
+Spawn FIRST (`imagine_image_to_image` on `lock/RIG-spawn.jpg`). Then at-A / at-B (`imagine_reference_to_image` IMAGE_0 = RIG pose, IMAGE_1 = **that spawn**, ignore its dog). Same hall. **ONE dog.** Two Bolts = FAIL → recook, delete the center clone. Bad stills → **STOP**. No films.
+
+Ice KEEP (`packs/frost/stills/`, `lock/SEAL-*.jpg`) = play example. Do not delete. Restyle teachers = RIG. Law: [LAYOUT.md](LAYOUT.md).
+
+**STOP 1 — HARD SPLIT.** NEVER Agent / chat Imagine for Walk A, Walk B, breath, or any video. Walks / breaths / films = imagine-hooks / cook-room first-frame + last-frame. Chat Imagine UI without real first+last is banned for **video**. Soft KEEP banned. Smoke still gates.
 
 This repo is a **recipe**, not an app. Do not scaffold a player. Do not publish a new grok.me.
 
@@ -12,23 +20,21 @@ This repo is a **recipe**, not an app. Do not scaffold a player. Do not publish 
 
 **Identity base:** Bolt is ALWAYS a full-white German Shepherd (white coat forever). That base never changes to grey / silver / black.
 
-**SKINS:** Imagine Agent MAY apply a décor-matching skin ON TOP of the white base — ember skin (embers / glow / ash accents), ice skin, etc. Stylish adaptation. Not a different dog.
+**SKINS:** décor-matching skin ON TOP of the white base OK (ember / ice). Not a different dog.
 
-**Restyle:** completely new hall décor OK. **Doors may adapt** (shape / scale to décor). Cyan L + gold R energy portals may adapt shape / scale to décor (oval|RECT energy; never wood; never chrome UI). Bolt may be selected, repositioned, resized to sill for a nickel plate. Bolt reposition OK.
+**Restyle:** paint into the RIG black void. Doors may adapt **shape** (oval\|RECT). Never spacing. Never depth. **Never move Bolt.**
 
-Read **[GROK.md](GROK.md)** next (STOP banner). Same law as this file.
+Read **[GROK.md](GROK.md)** next. Stills = **[LAYOUT.md](LAYOUT.md)** + RIG-PROMPT. Films = **[FILMS.md](FILMS.md)**.
 
 ## One happy path (brand-new Grok / Grok Build convo)
 
-**HARD SPLIT.** [Grok Imagine Agent](https://grok.com/imagine/agent) = ONLY hall STYLES / stills / décor restyles (freeze dog+portals, swap décor, skins on white coat). **NEVER** walks, breaths, or any video.
+**HARD SPLIT for VIDEO.** NEVER Agent / chat Imagine for Walk A, Walk B, breath, or any video.
 
 Walks / breaths / films = Imagine first-frame + last-frame via `scripts/imagine-hooks.mjs` / `scripts/cook-room.mjs` (the API path Grok Build already uses). Chat Imagine UI without real first+last remains **banned** for videos. Agent is **not** required or recommended for video cook. Do **not** instruct Build to open Imagine Agent for Walk A, Walk B, or breath.
 
 1. Clone this repo. Read this file + GROK.md. Stop.
-2. STYLE stills = Imagine Agent at `https://grok.com/imagine/agent` when restyling:
-   - **seal stills** (spawn / at-A / at-B)
-   - **restyle halls** from a SEALED sill (completely new hall décor OK; cyan L + gold R energy portals may adapt shape / scale to décor; Bolt may be selected, repositioned, resized to sill for a nickel plate; white coat forever; décor-matching skin ON TOP OK)
-3. Walks / breaths = `cook-room` → `imagineClip` (`image` + `last_frame`). **walks** = start still + end still. **breaths** = same still twice. Never Agent video.
+2. STYLE stills = **[RIG.md](RIG.md)** + [`lock/RIG-PROMPT.txt`](lock/RIG-PROMPT.txt). Spawn first, then at-A/at-B from that spawn. **ONE dog.** Two Bolts = FAIL (delete the clone). Ice stills stay as frost play. Never move Bolt / doors / paths / depth.
+3. Walks / breaths = `cook-room` → `imagineClip` (`image` + `last_frame`). **Read [FILMS.md](FILMS.md) first** — those prompts are the base for every player / every décor. Adapt hall paint from the player's stills + `catalog/<slot>.md` only. Never rewrite motion / camera / one-dog / duration. **walks** = start still + end still. **breaths** = same still twice. Never Agent video.
 4. Drop plates into `packs/<slot>/`. **Smoke still gates.** Soft KEEP banned.
 5. Script prints `PASS https://boltverse-odyssey.grok.me/r/<slot>` or `FAIL <rule>` + `HANG BLOCKED` + stock `/`. That line is the answer.
 
@@ -49,6 +55,8 @@ Lane / biome is **another job**: `node scripts/cook-biome.mjs <id>`. Not cook-ro
 - **Grok Build chat Imagine tools are NOT the same as Imagine Agent.** Chat Imagine UI without real first+last is banned for walks, breaths, enter (no `last_frame`). For STYLE restyle: instruct to open Imagine Agent with the plate refs. Do **not** instruct Agent for walks/breaths. Build must not rely on chat `imagine_*` tools for hall restyle identity lock.
 
 ## Films — hooks first+last (never Agent)
+
+**[FILMS.md](FILMS.md)** = owner walk + breath prompts. Every new Grok reads that file. Use those texts as the base. Adapt **décor only** (player stills + catalog paint). Do not invent a new walk.
 
 Walks / breaths / films = `imagineClip` via `scripts/imagine-hooks.mjs` / `scripts/cook-room.mjs`:
 

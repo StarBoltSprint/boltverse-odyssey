@@ -51,6 +51,7 @@ Search: `StarBoltSprint citadel-room` · living film · boltverse-odyssey.grok.m
 | [VALIDATE.md](VALIDATE.md) | box check before hang |
 | [SMOKE.md](SMOKE.md) | clone / first-last / recook cap 2 |
 | [CHAR.md](CHAR.md) | Bolt lock — the dog never changes |
+| [RIG.md](RIG.md) | **styles first** — black plates + one hall, three poses, never two Bolts |
 | [COOK.md](COOK.md) | stills-first cook (Agent restyle), then films via hooks first+last |
 | [COOKROOM.md](COOKROOM.md) | hall films — `node scripts/cook-room.mjs <slot>` (`image` + `last_frame`) |
 | [AGENTS.md](AGENTS.md) | cold-start HARD SPLIT: Agent = STYLE stills; video = hooks first+last |
@@ -66,7 +67,8 @@ Search: `StarBoltSprint citadel-room` · living film · boltverse-odyssey.grok.m
 | `scripts/smoke-pack.mjs` | one dog, first≠last on walks, breath loops |
 | `lock/bolt-back.jpg` | Bolt identity (back / coat) — not scale |
 | `lock/example-at-a.jpg` | SmiR at-A lock teacher (BACK toward teal L, gold visible). Drop: `hall-stills/seal/at-a-ice.jpg` or `hall-stills/smir-ata-teacher.jpeg` → `node scripts/install-lock-ata.mjs` |
-| `lock/SEAL-spawn.jpg` `lock/SEAL-at-a.jpg` `lock/SEAL-at-b.jpg` | Imagine Agent ice-hall KEEP seals — frozen pose+décor until SmiR reseals. `cook-room` skips `imagineStill` when present. Smoke still gates. Soft KEEP banned. |
+| `lock/RIG-PROMPT.txt` | paste this; swap `{PAINT}` only |
+| `lock/SEAL-spawn.jpg` `lock/SEAL-at-a.jpg` `lock/SEAL-at-b.jpg` | ice KEEP seals — frost play / full example. Frozen until SmiR reseals. |
 | `lock/example-*.jpg` | camera + which side (oval\|RECT energy OK; atA = lock example / SEAL, atB = SEAL or moss PASS swap) |
 | `packs/<id>/` | hung discs — Grok writes here |
 | `stills/` `films/` | **empty on GitHub** — do not hang at root |

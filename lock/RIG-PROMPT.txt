@@ -1,0 +1,33 @@
+# SPAWN (first — this still is the hall master)
+
+PAINT the player's décor in the BLACK void only.
+
+Do NOT move Bolt. Do NOT turn Bolt. Do NOT sit Bolt. Do NOT resize Bolt.
+Do NOT move the two energy portals. Do NOT change their spacing.
+Do NOT move the luminous floor paths (Y-fork).
+Do NOT zoom. Do NOT recrop. Do NOT change camera. Do NOT change depth.
+The new architecture lines up on THESE portals — same size in the frame, same Z.
+ONE full-white German Shepherd, BACK, standing, teal collar, CENTER. NEVER a second dog.
+Cyan-teal LEFT portal, gold-orange RIGHT portal. Oval or RECT energy. Never wood. Never chrome UI.
+
+{PAINT}
+
+No text. No HUD.
+
+# AT-A / AT-B (after spawn exists — same hall, millimeter)
+
+Tool: imagine_reference_to_image. Two images, 9:16.
+  IMAGE_0 = lock/RIG-at-a.jpg  OR  lock/RIG-at-b.jpg   (POSE LOCK)
+  IMAGE_1 = the spawn still you just painted             (HALL MASTER)
+
+<IMAGE_0> is the LOCK. Copy Bolt EXACTLY: BACK, standing, same size, same place
+(at-A = teal LEFT sill / at-B = gold RIGHT sill). Do NOT move him to center.
+Do NOT turn. Do NOT 3/4. Do NOT sit. Do NOT zoom. Doors + Y-fork stay as IMAGE_0.
+
+<IMAGE_1> is the HALL ONLY. Copy that décor EXACTLY — same rocks, modules, sky,
+floor, lighting, millimeter. IGNORE IMAGE_1's dog (he is at spawn center — do not copy him).
+
+Result = IMAGE_1's room with IMAGE_0's Bolt. Same citadel. Different pose.
+ONE dog only. NEVER two Bolts. NEVER copy IMAGE_1's dog into the frame. at-A/at-B center must be EMPTY.
+If TWO dogs → FAIL. Recook: image_to_image on that FAIL, DELETE the center/spawn dog, keep only the sill dog, same hall.
+If Bolt is in the center (and not at the sill) → FAIL. If the canyon/sky/modules differ from spawn → FAIL.
