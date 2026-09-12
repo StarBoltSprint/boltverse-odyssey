@@ -54,6 +54,10 @@ must(/REQUIRED.*décor variants/.test(stop), "GROK.md STOP: Agent REQUIRED for d
 must(/BANNED for restyle/.test(stop), "GROK.md STOP: imagineStill BANNED for restyle");
 must(/One \*\*SEALED\*\* sill still/.test(stop) && /restyles hall only/.test(stop), "GROK.md STOP: one sealed sill → Agent restyles hall only");
 must(!/Preferred path/.test(stop), "GROK.md STOP: no Preferred path soften");
+must(/PRIMARY cook path for BOTH stills AND/.test(stop), "GROK.md STOP: Agent PRIMARY for stills AND films");
+must(/walks with start\+end stills/.test(stop) && /breaths same still twice/.test(stop), "GROK.md STOP: Agent walks start+end, breaths twice");
+must(/secondary \/ CLI/.test(stop) && /not.*human happy path/.test(stop), "GROK.md STOP: cook-room secondary not human happy path");
+must(/Smoke still gates/.test(stop), "GROK.md STOP: Smoke still gates");
 
 const customize = grok.slice(grok.indexOf("```\nBoltverse"), grok.indexOf("```\n\n---"));
 must(/sill ≠ spawn/.test(customize), "GROK.md Customize: sill ≠ spawn");
@@ -74,6 +78,10 @@ must(/Imagine Agent is MANDATORY for cross-style hall stills/.test(customize), "
 must(/Agent REQUIRED for décor variants/.test(customize), "GROK.md Customize: Agent REQUIRED for décor variants");
 must(/BANNED for restyle/.test(customize), "GROK.md Customize: imagineStill BANNED for restyle");
 must(/One sealed sill still → Agent restyles hall only/.test(customize), "GROK.md Customize: one sealed sill → Agent restyles hall only");
+must(/PRIMARY for BOTH stills AND walk\/breath films/.test(customize), "GROK.md Customize: Agent PRIMARY for stills AND films");
+must(/Walks = start still \+ end still/.test(customize) && /Breaths = same still twice/.test(customize), "GROK.md Customize: walks start+end, breaths twice");
+must(/secondary \/ CLI/.test(customize) && /not the human happy path/.test(customize), "GROK.md Customize: cook-room secondary");
+must(/Smoke still gates/.test(customize), "GROK.md Customize: Smoke still gates");
 
 const agents = body("AGENTS.md");
 must(/Oval\|RECT energy portals OK/.test(agents), "AGENTS.md: oval|RECT energy OK");
@@ -90,6 +98,10 @@ must(/REQUIRED.*décor variants/.test(agents), "AGENTS.md: Agent REQUIRED for d�
 must(/BANNED for restyle/.test(agents), "AGENTS.md: imagineStill BANNED for restyle");
 must(/One \*\*SEALED\*\* sill still/.test(agents) && /restyles hall only/.test(agents), "AGENTS.md: one sealed sill → Agent restyles hall only");
 must(!/Preferred path/.test(agents), "AGENTS.md: no Preferred path soften");
+must(/PRIMARY cook path for BOTH stills AND/.test(agents), "AGENTS.md: Agent PRIMARY for stills AND films");
+must(/walks\*\* = start still \+ end still/.test(agents) && /breaths\*\* = same still twice/.test(agents), "AGENTS.md: Agent walks start+end, breaths twice");
+must(/secondary \/ CLI/.test(agents) && /not.*human happy path/.test(agents), "AGENTS.md: cook-room secondary not human happy path");
+must(/Smoke still gates/.test(agents), "AGENTS.md: Smoke still gates");
 
 const rules = body(".cursorrules");
 must(/oval\|RECT energy rifts/.test(rules), ".cursorrules: oval|RECT energy");
@@ -104,6 +116,10 @@ must(/Imagine Agent is MANDATORY for cross-style hall stills/.test(rules), ".cur
 must(/Agent REQUIRED for décor variants/.test(rules), ".cursorrules: Agent REQUIRED for décor variants");
 must(/BANNED for restyle/.test(rules), ".cursorrules: imagineStill BANNED for restyle");
 must(/One sealed sill still → Agent restyles hall only/.test(rules), ".cursorrules: one sealed sill → Agent restyles hall only");
+must(/PRIMARY for BOTH stills AND/.test(rules), ".cursorrules: Agent PRIMARY for stills AND films");
+must(/Walks = start\+end stills/.test(rules) && /Breaths = same still twice/.test(rules), ".cursorrules: walks start+end, breaths twice");
+must(/secondary \/ CLI/.test(rules) && /not the human happy path/.test(rules), ".cursorrules: cook-room secondary");
+must(/Smoke still gates/.test(rules), ".cursorrules: Smoke still gates");
 
 const cook = body("COOK.md");
 must(/Imagine Agent/.test(cook) && /hall-restyle/.test(cook), "COOK.md: Imagine Agent is the hall-restyle tool");
@@ -117,6 +133,10 @@ must(/REQUIRED.*décor variants/.test(cook), "COOK.md: Agent REQUIRED for décor
 must(/BANNED for restyle/.test(cook), "COOK.md: imagineStill BANNED for restyle");
 must(/One \*\*SEALED\*\* sill still/.test(cook) && /restyles hall only/.test(cook), "COOK.md: one sealed sill → Agent restyles hall only");
 must(!/Preferred path/.test(cook), "COOK.md: no Preferred path soften");
+must(/PRIMARY cook path for BOTH stills AND/.test(cook), "COOK.md: Agent PRIMARY for stills AND films");
+must(/walks with start\+end stills/.test(cook) && /breaths same still twice/.test(cook), "COOK.md: Agent walks start+end, breaths twice");
+must(/secondary \/ CLI/.test(cook) && /not.*human happy path/.test(cook), "COOK.md: cook-room secondary not human happy path");
+must(/Smoke still gates/.test(cook), "COOK.md: Smoke still gates");
 
 const cookroom = body("COOKROOM.md");
 must(/Imagine Agent/.test(cookroom) && /hall-restyle/.test(cookroom), "COOKROOM.md: Imagine Agent is the hall-restyle tool");
@@ -130,6 +150,10 @@ must(/REQUIRED.*décor variants/.test(cookroom), "COOKROOM.md: Agent REQUIRED fo
 must(/BANNED for restyle/.test(cookroom), "COOKROOM.md: imagineStill BANNED for restyle");
 must(/One \*\*SEALED\*\* sill still/.test(cookroom) && /restyles hall only/.test(cookroom), "COOKROOM.md: one sealed sill → Agent restyles hall only");
 must(!/Preferred path/.test(cookroom), "COOKROOM.md: no Preferred path soften");
+must(/PRIMARY cook path for BOTH stills AND/.test(cookroom), "COOKROOM.md: Agent PRIMARY for stills AND films");
+must(/walks with start\+end stills/.test(cookroom) && /breaths same still twice/.test(cookroom), "COOKROOM.md: Agent walks start+end, breaths twice");
+must(/secondary \/ CLI/.test(cookroom) && /not the human happy path/.test(cookroom), "COOKROOM.md: cook-room secondary");
+must(/Smoke still gates/.test(cookroom), "COOKROOM.md: Smoke still gates");
 
 const doors = body("DOORS.md");
 must(/oval or RECT/.test(doors) && /preferred-ok/.test(doors), "DOORS.md: oval|RECT preferred-ok");
