@@ -2,7 +2,7 @@
 
 Architecture (every hall) + energy look (Room1 grammar, Room2 **same rifts** even if the vault is crystal).
 
-The catalog paints the **stone**. It does not redesign the doors. [CATALOG.md](CATALOG.md)
+The catalog paints the **stone**. **Doors may adapt** shape / scale to décor. They stay cyan-L + gold-R **energy** rifts (oval|RECT). Never wood. Never chrome UI. [CATALOG.md](CATALOG.md)
 
 ## Architecture (not UI)
 

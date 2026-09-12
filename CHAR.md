@@ -4,13 +4,15 @@ Bolt is **one** dog. Every still, every breath, every walk, every Lane plate. St
 
 ## Coat lock (hard)
 
-Bolt = **FULL white German Shepherd**. Forced in cook / Smoke.
+Bolt = **FULL white German Shepherd**. White coat forever. That **base** never changes to grey / silver / black.
 
-- **All white** — dense white / cream
-- **ZERO black** — no saddle, mask, black ears, cape
+- **All white base** — dense white / cream
+- **ZERO black as the dog** — no saddle, mask, black ears, cape
 - **blanc+gros** — size band, not a small grey wolf
 - Identity = **back** still ([`lock/bolt-back.jpg`](lock/bolt-back.jpg)) — never face
 - **Teal collar** — always
+
+**SKINS:** Imagine Agent MAY apply a décor-matching skin **ON TOP** of the white base — ember skin (embers / glow / ash accents), ice skin, etc. Stylish adaptation. Not a different dog. Do **not** FAIL a white GSD with ember/ice accents as `identity.coat`.
 
 Hall stills / first / last of a plate: four legs, standing, weight on the floor, **strictly from behind**.
 
@@ -32,7 +34,7 @@ Prompt: `full gallop, back to camera, lock-off, legs alternate naturally, no pro
 
 ## Never (FAIL — recook)
 
-- silver / grey / saddle / cape / silhouette
+- silver / grey / saddle / cape / silhouette **as the coat base** (décor-matching skin ON TOP of white is OK)
 - Face, muzzle, 3/4, profile
 - Bipedal, clothes, two Bolts, puppy
 - Sit / lie on a **hall** still, breath, or walk (feet glued). Sprint mid may lift a paw — not sit.
@@ -43,4 +45,4 @@ Prompt: `full gallop, back to camera, lock-off, legs alternate naturally, no pro
 
 ## One line
 
-**All white, large, back only.** The stride may steal 1–2 paws in the middle. Never the snout, never first/last on two sticks.
+**White coat forever, large, back only.** Décor SKINS (ember/ice) ON TOP of that base OK. The stride may steal 1–2 paws in the middle. Never the snout, never first/last on two sticks.
