@@ -107,4 +107,50 @@ if (back.why.some((w) => w.startsWith("identity.face") || w.startsWith("gate.sit
   process.exit(1);
 }
 console.log("PASS  synthetic back-in-band");
+
+function paintStandingAt(x0f, x1f) {
+  const buf = Buffer.alloc(GW * GH * 3, 40);
+  const y0 = Math.floor(GH * 0.5);
+  const y1 = Math.floor(GH * 0.87);
+  const x0 = Math.floor(GW * x0f);
+  const x1 = Math.floor(GW * x1f);
+  for (let y = y0; y < y1; y++) {
+    for (let x = x0; x < x1; x++) {
+      const i = (y * GW + x) * 3;
+      buf[i] = 210;
+      buf[i + 1] = 205;
+      buf[i + 2] = 198;
+    }
+  }
+  return buf;
+}
+
+const midHall = paintStandingAt(0.44, 0.56);
+for (const kind of ["still-atA", "still-atB"]) {
+  const mid = stillReasons(midHall, kind);
+  if (!mid.why.some((w) => w.startsWith("gate.place"))) {
+    console.error("FAIL  synthetic mid-hall should gate.place on " + kind + "  " + JSON.stringify(mid.why));
+    process.exit(1);
+  }
+  if (mid.why.some((w) => w.startsWith("gate.sit") || w.startsWith("gate.yaw") || w.startsWith("identity.face"))) {
+    console.error("FAIL  synthetic mid-hall must not loosen sit/yaw/face  " + JSON.stringify(mid.why));
+    process.exit(1);
+  }
+  console.log("PASS  synthetic mid-hall " + kind + "  " + mid.why.join("; "));
+}
+
+const leftSill = stillReasons(paintStandingAt(0.14, 0.28), "still-atA");
+if (leftSill.why.some((w) => w.startsWith("gate.place") || w.startsWith("gate.sit") || w.startsWith("gate.yaw") || w.startsWith("identity.face"))) {
+  console.error("FAIL  synthetic left-sill should pass place/sit/yaw/face  " + JSON.stringify(leftSill.why));
+  process.exit(1);
+}
+console.log("PASS  synthetic left-sill still-atA");
+
+const leftAsB = stillReasons(paintStandingAt(0.14, 0.28), "still-atB");
+if (!leftAsB.why.some((w) => w.startsWith("gate.place"))) {
+  console.error("FAIL  synthetic left-sill as still-atB should gate.place  " + JSON.stringify(leftAsB.why));
+  process.exit(1);
+}
+console.log("PASS  synthetic left-sill as still-atB  " + leftAsB.why.join("; "));
+
 console.log("STILL-REASONS PASS");

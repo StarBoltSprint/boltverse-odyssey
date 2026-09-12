@@ -239,6 +239,10 @@ export const MUZZLE_DARK = 12;
 export const LOAF_TURN_ASPECT = 2.48;
 export const LOAF_TURN_YAW = 20;
 export const SILL_PUNCH_TOP = 0.46;
+/** dogMask cx/W. Spawn / mid-hall ≈ 0.50. Hung moss at-A ≈ 0.26, at-B ≈ 0.76. */
+export const SPAWN_CX = [0.42, 0.58];
+export const ATA_CX_MAX = 0.38;
+export const ATB_CX_MIN = 0.62;
 
 function cropGray(g, w, x0, y0, cw, ch) {
   const o = new Float64Array(cw * ch);
@@ -406,7 +410,7 @@ function bandCheck(h, pose, why, warns) {
     why.push(`gate.size sill-band ${h.toFixed(2)} want ${SILL_BAND[0]}-${SILL_BAND[1]}`);
 }
 
-/** Layer-B still veto: sit / 3/4 / face even when bboxH/H is in band. */
+/** Layer-B still veto: sit / 3/4 / face / spawn-cx even when bboxH/H is in band. */
 export function stillReasons(buf, kind, w = GW, h = GH) {
   const why = [];
   const hh = creamHeight(buf, w, h);
@@ -431,6 +435,18 @@ export function stillReasons(buf, kind, w = GW, h = GH) {
       why.push(`identity.face muzzle ${look.centerDark.toFixed(0)}`);
     if (sill && dog.minY / h < SILL_PUNCH_TOP && hh >= 0.33)
       why.push(`gate.size punch-sill top ${(dog.minY / h).toFixed(2)}`);
+    if (sill) {
+      // dogMask cx — creamPlace can snap to a cream door/floor blob (lock examples).
+      const cx = dog.cx / w;
+      if (cx >= SPAWN_CX[0] && cx <= SPAWN_CX[1])
+        why.push(
+          `gate.place spawn-cx ${cx.toFixed(2)} (mid-hall ≠ seuil; atA ≤${ATA_CX_MAX} / atB ≥${ATB_CX_MIN})`,
+        );
+      else if (kind === "still-atA" && cx > ATA_CX_MAX)
+        why.push(`gate.place cx ${cx.toFixed(2)} want ≤${ATA_CX_MAX} (teal LEFT sill / seuil)`);
+      else if (kind === "still-atB" && cx < ATB_CX_MIN)
+        why.push(`gate.place cx ${cx.toFixed(2)} want ≥${ATB_CX_MIN} (gold RIGHT sill / seuil)`);
+    }
   }
   if (sill && place && place.h > 0) {
     const wide = place.w / place.h;

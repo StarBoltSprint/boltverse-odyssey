@@ -26,6 +26,7 @@ Spawn / at-A / at-B / first+last of a hall film: **STANDING**, back, two ears, f
 | face, snout toward camera | `FAIL identity.face` (machine: dark muzzle in the upper-center) |
 | 3/4 or profile | `FAIL identity.three_quarter` / `identity.profile` (machine `gate.yaw` &gt; 28° on stills) |
 | oval / blob / wood leaf instead of RECT teal/gold rifts | `FAIL identity.door_morph` / `identity.door_wood` |
+| at-A / at-B still is mid-hall / spawn (center + both doors + fork) | `FAIL gate.place` (machine: atA cx ≤ 0.38, atB cx ≥ 0.62; spawn-cx 0.42–0.58 dies) |
 
 A cute sit is still FAIL. Soft KEEP of a sitting at-A is illegal.
 

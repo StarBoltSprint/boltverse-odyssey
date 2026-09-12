@@ -49,15 +49,16 @@ Video frame vs jpeg still: hall SSIM is noisy (encode). **Yaw / size / NCC still
 
 Measure = `bboxH / frameH` of the cream-dog blob. Same lens on every plate.
 
-| Pose | `h = bboxH/H` |
-|---|---|
-| Spawn / mid-hall | **0.22 – 0.32** (0.19 tiny = FAIL) |
-| Door sill (atA / atB) | **0.35 – 0.40** aim; FAIL &lt; 0.28 or &gt; 0.45 |
-| Forbidden | **≥ 0.55** punch-in · sit (mask aspect &lt; 2.2, loaf-turn, or sill cream w/h &gt; 0.82) · still yaw &gt; 28° · `identity.face` (dark muzzle) · sill top &lt; 0.46 |
+| Pose | `h = bboxH/H` | `cx = dogMask.cx / W` |
+|---|---|---|
+| Spawn / mid-hall | **0.22 – 0.32** (0.19 tiny = FAIL) | **0.42 – 0.58** (center + fork) |
+| Door sill atA | **0.35 – 0.40** aim; FAIL &lt; 0.28 or &gt; 0.45 | **≤ 0.38** (teal LEFT; gold still visible) |
+| Door sill atB | same height band | **≥ 0.62** (gold RIGHT; teal still visible) |
+| Forbidden | **≥ 0.55** punch-in · sit (mask aspect &lt; 2.2, loaf-turn, or sill cream w/h &gt; 0.82) · still yaw &gt; 28° · `identity.face` (dark muzzle) · sill top &lt; 0.46 · sill still with spawn-cx |
 
 Deltas: breath \|Δh\|/H < 0.08. Walk edge / spawn↔sill stills **&lt; 0.12** (grow spawn-band → sill-band OK). stillEnd ↔ next stillStart = same size. No mid-hall still — recook the sill closer.
 
-Punch-in = FAIL. Sill still at spawn-scale (0.28–0.34) = WARN `gate.size sill-band` (hung moss is here; new cooks aim 0.34–0.38). Sit / 3/4 = FAIL on the still itself. Face = layer C.
+Punch-in = FAIL. Sill still at spawn-scale (0.28–0.34) = WARN `gate.size sill-band` (hung moss is here; new cooks aim 0.34–0.38). Sit / 3/4 = FAIL on the still itself. Face = layer C. Mid-hall / spawn-cx on a sill still = FAIL `gate.place` (do not Hang a grown spawn as at-A/at-B).
 
 Cook: feet on the **hall floor in front of** the rift, not inside the fill. `example-at-b` is side-only (oval + ~0.18 — do not copy). `bolt-back` is coat-only (~0.53 close-up — do not copy). atA/atB `image` = the spawn still. Do not relax these numbers to pass a climb.
 

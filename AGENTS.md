@@ -6,6 +6,8 @@ This repo is a **recipe**, not an app. Do not scaffold a player. Do not publish 
 **Player (already hung):** https://boltverse-odyssey.grok.me  
 **Clone:** https://github.com/StarBoltSprint/boltverse-odyssey
 
+**sill ≠ spawn.** at-A = already AT the teal LEFT sill (seuil / threshold). at-B = already AT the gold RIGHT sill. Spawn = CENTER only (both doors + fork). Mid-hall at-A/at-B = **FAIL**. Soft KEEP banned.
+
 Read **[GROK.md](GROK.md)** next (STOP banner). Same law as this file.
 
 ## One happy path (brand-new Grok / Grok Build convo)
@@ -48,7 +50,7 @@ Official path: `scripts/cook-room.mjs` → `scripts/imagine-hooks.mjs`
 - `KEEP REFUSED` / `HANG BLOCKED` = stock URL. Not a soft KEEP.
 - ffmpeg gel-breath is decay in `packs/<id>/.kitchen/` — **not** Hang-ready. Do not copy it into `films/`.
 - FAIL walk is deleted from `films/`. Tap = stay. Do not ship it as a preview.
-- Sit / face / 3/4 / RECT→oval / punch-sill (dog climbing the rift) cannot PASS. Recook that plate, cap 2, then stock.
+- Sit / face / 3/4 / RECT→oval / punch-sill (dog climbing the rift) / mid-hall spawn-cx sold as at-A or at-B cannot PASS. Recook that plate, cap 2, then stock.
 
 ## Do not
 

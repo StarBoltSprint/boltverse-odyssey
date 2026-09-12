@@ -2,6 +2,8 @@
 
 Recipe repo. Not an app. Player is already https://boltverse-odyssey.grok.me
 
+sill ≠ spawn. at-A = already AT the teal LEFT sill (seuil). at-B = already AT the gold RIGHT sill. Spawn = CENTER only. Mid-hall at-A/at-B = FAIL. Soft KEEP banned.
+
 Happy path: clone → read AGENTS.md + GROK.md → `node scripts/cook-room.mjs <slot> --dry-run` → `export XAI_API_KEY=... && node scripts/cook-room.mjs <slot>`
 
 If you cannot run node + (live) XAI_API_KEY: REFUSE cook. No chat Imagine fallback.
@@ -12,5 +14,5 @@ imagine_image_to_video, imagine_reference_to_video, imagine_image_to_image
 
 Hooks only: scripts/cook-room.mjs → scripts/imagine-hooks.mjs
 Hung PASS = reuse. --force recooks. Gel-breath / FAIL walk = HANG BLOCKED, not KEEP.
-Doors = RECT energy rifts (never oval). Sit / face / 3/4 / punch-sill (climbing the rift) cannot PASS.
+Doors = RECT energy rifts (never oval). Sit / face / 3/4 / punch-sill (climbing the rift) / mid-hall spawn-cx as at-A/at-B cannot PASS.
 No new grok.me. Catalog slots only.
