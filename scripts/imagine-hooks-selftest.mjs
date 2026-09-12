@@ -25,6 +25,8 @@ for (const [name, p] of [
   must(/0\.53 is illegal/.test(p), name + " ignore bolt-back crop");
   must(/NEVER sit/.test(p) && /NEVER 3\/4/.test(p) && /muzzle HIDDEN/.test(p), name + " sit/yaw/face still banned");
   must(/NEVER mid-hall/.test(p) && /NEVER spawn/.test(p) && /NEVER center/.test(p), name + " mid-hall/spawn-cx banned");
+  must(/already AT the sill\/threshold/.test(p), name + " already AT the sill/threshold");
+  must(/NOT mid-hall/.test(p) && /NOT spawn center/.test(p), name + " NOT mid-hall, NOT spawn center");
   must(/THRESHOLD/.test(p) && /sill lip/.test(p), name + " paws on sill lip");
   must(/Do not leave him at center spawn/.test(p) && /Do not grow him in place/.test(p), name + " edit is a move, not a grow");
 }

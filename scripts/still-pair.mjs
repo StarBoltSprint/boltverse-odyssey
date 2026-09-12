@@ -440,12 +440,12 @@ export function stillReasons(buf, kind, w = GW, h = GH) {
       const cx = dog.cx / w;
       if (cx >= SPAWN_CX[0] && cx <= SPAWN_CX[1])
         why.push(
-          `gate.place spawn-cx ${cx.toFixed(2)} (mid-hall; atA ≤${ATA_CX_MAX} / atB ≥${ATB_CX_MIN})`,
+          `gate.place spawn-cx ${cx.toFixed(2)} (mid-hall ≠ seuil; atA ≤${ATA_CX_MAX} / atB ≥${ATB_CX_MIN})`,
         );
       else if (kind === "still-atA" && cx > ATA_CX_MAX)
-        why.push(`gate.place cx ${cx.toFixed(2)} want ≤${ATA_CX_MAX} (teal LEFT sill)`);
+        why.push(`gate.place cx ${cx.toFixed(2)} want ≤${ATA_CX_MAX} (teal LEFT sill / seuil)`);
       else if (kind === "still-atB" && cx < ATB_CX_MIN)
-        why.push(`gate.place cx ${cx.toFixed(2)} want ≥${ATB_CX_MIN} (gold RIGHT sill)`);
+        why.push(`gate.place cx ${cx.toFixed(2)} want ≥${ATB_CX_MIN} (gold RIGHT sill / seuil)`);
     }
   }
   if (sill && place && place.h > 0) {

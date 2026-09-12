@@ -181,6 +181,7 @@ export function sillStillLine(side) {
   const walk = side === "A" ? "left" : "right";
   const third = side === "A" ? "LEFT third" : "RIGHT third";
   return [
+    "He is already AT the sill/threshold (seuil), NOT mid-hall, NOT spawn center.",
     "He is ALREADY at the " + here + " RECT energy rift THRESHOLD — paws ON that sill lip, body in the " + third + " of the plate.",
     "NEVER mid-hall. NEVER spawn. NEVER center. NEVER the fork. NEVER a grown spawn dog standing between the two rifts.",
     "Spawn = center + both doors + fork. This plate is the " + here + " sill only. Huge empty stone on the other side.",
