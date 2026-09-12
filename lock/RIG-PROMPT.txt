@@ -28,4 +28,6 @@ Do NOT turn. Do NOT 3/4. Do NOT sit. Do NOT zoom. Doors + Y-fork stay as IMAGE_0
 floor, lighting, millimeter. IGNORE IMAGE_1's dog (he is at spawn center — do not copy him).
 
 Result = IMAGE_1's room with IMAGE_0's Bolt. Same citadel. Different pose.
-If Bolt is in the center → FAIL. If the canyon/sky/modules differ from spawn → FAIL.
+ONE dog only. NEVER two Bolts. NEVER copy IMAGE_1's dog into the frame. at-A/at-B center must be EMPTY.
+If TWO dogs → FAIL. Recook: image_to_image on that FAIL, DELETE the center/spawn dog, keep only the sill dog, same hall.
+If Bolt is in the center (and not at the sill) → FAIL. If the canyon/sky/modules differ from spawn → FAIL.
