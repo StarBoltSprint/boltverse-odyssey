@@ -14,7 +14,7 @@ This repo is a **recipe**, not an app. Do not scaffold a player. Do not publish 
 
 **SKINS:** Imagine Agent MAY apply a décor-matching skin ON TOP of the white base — ember skin (embers / glow / ash accents), ice skin, etc. Stylish adaptation. Not a different dog.
 
-**Restyle:** completely new hall décor OK. Cyan L + gold R energy portals may adapt shape / scale to décor. Bolt may be selected, repositioned, resized to sill for a nickel plate.
+**Restyle:** completely new hall décor OK. **Doors may adapt** (shape / scale to décor). Cyan L + gold R energy portals may adapt shape / scale to décor (oval|RECT energy; never wood; never chrome UI). Bolt may be selected, repositioned, resized to sill for a nickel plate. Bolt reposition OK.
 
 Read **[GROK.md](GROK.md)** next (STOP banner). Same law as this file.
 

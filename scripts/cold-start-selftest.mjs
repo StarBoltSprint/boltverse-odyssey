@@ -75,6 +75,7 @@ must(/ember skin/.test(stop) && /ice skin/.test(stop), "GROK.md STOP: ember skin
 must(/Stylish adaptation/.test(stop) && /Not a different dog/.test(stop), "GROK.md STOP: skin is not a different dog");
 must(/completely new hall décor OK/.test(stop), "GROK.md STOP: completely new hall décor OK");
 must(/Cyan L \+ gold R energy portals may adapt/.test(stop), "GROK.md STOP: portals may adapt");
+must(/Doors may adapt/.test(stop), "GROK.md STOP: Doors may adapt");
 must(/selected, repositioned, resized to sill/.test(stop) && /nickel plate/.test(stop), "GROK.md STOP: Bolt selected/repositioned/resized to sill");
 must(/\.kitchen\/fail/.test(stop), "GROK.md STOP: FAIL save → .kitchen/fail");
 must(/enlarge/.test(stop), "GROK.md STOP: enlarge-only sill step");
@@ -117,6 +118,8 @@ must(/SKINS/.test(customize) && /décor-matching skin ON TOP/.test(customize), "
 must(/ember skin/.test(customize) && /ice skin/.test(customize), "GROK.md Customize: ember + ice skins");
 must(/completely new hall décor OK/.test(customize), "GROK.md Customize: completely new hall décor OK");
 must(/Cyan L \+ gold R energy portals may adapt/.test(customize), "GROK.md Customize: portals may adapt");
+must(/Doors may adapt/.test(customize), "GROK.md Customize: Doors may adapt");
+must(/Bolt reposition OK/.test(customize), "GROK.md Customize: Bolt reposition OK");
 must(/selected, repositioned, resized to sill/.test(customize) && /nickel plate/.test(customize), "GROK.md Customize: Bolt selected/repositioned/resized");
 must(/First seal stills/.test(customize) && /cook-room imagineStill/.test(customize), "GROK.md Customize: first seal = cook-room");
 must(/without Agent has no last_frame/.test(customize), "GROK.md Customize: Chat Imagine UI without Agent banned for walks");
@@ -148,6 +151,8 @@ must(/full-white German Shepherd/.test(agents) && /white coat forever/.test(agen
 must(/SKINS/.test(agents) && /décor-matching skin ON TOP/.test(agents), "AGENTS.md: décor-matching skin ON TOP");
 must(/completely new hall décor OK/.test(agents), "AGENTS.md: completely new hall décor OK");
 must(/Cyan L \+ gold R energy portals may adapt/.test(agents), "AGENTS.md: portals may adapt");
+must(/Doors may adapt/.test(agents), "AGENTS.md: Doors may adapt");
+must(/Bolt reposition OK/.test(agents), "AGENTS.md: Bolt reposition OK");
 must(/selected, repositioned, resized to sill/.test(agents) && /nickel plate/.test(agents), "AGENTS.md: Bolt selected/repositioned/resized");
 must(/Imagine Agent/.test(agents) && /hall-restyle/.test(agents), "AGENTS.md: Imagine Agent is the hall-restyle tool");
 must(/SEALED/.test(agents), "AGENTS.md: sealed still restyle");
@@ -180,6 +185,8 @@ must(/full-white German Shepherd/.test(rules) && /white coat forever/.test(rules
 must(/SKINS/.test(rules) && /décor-matching skin ON TOP/.test(rules), ".cursorrules: décor-matching skin ON TOP");
 must(/completely new hall décor OK/.test(rules), ".cursorrules: completely new hall décor OK");
 must(/Cyan L \+ gold R energy portals may adapt/.test(rules), ".cursorrules: portals may adapt");
+must(/Doors may adapt/.test(rules), ".cursorrules: Doors may adapt");
+must(/Bolt reposition OK/.test(rules), ".cursorrules: Bolt reposition OK");
 must(/selected, repositioned, resized to sill/.test(rules) && /nickel plate/.test(rules), ".cursorrules: Bolt selected/repositioned/resized");
 must(/Imagine Agent/.test(rules), ".cursorrules: Imagine Agent restyles sealed stills");
 must(/first seal/.test(rules) && /Sealed skip stays/.test(rules), ".cursorrules: first seal + sealed skip");
@@ -227,6 +234,8 @@ must(/full-white German Shepherd/.test(cook) && /white coat forever/.test(cook),
 must(/SKINS/.test(cook) && /décor-matching skin ON TOP/.test(cook), "COOK.md: décor-matching skin ON TOP");
 must(/completely new hall décor OK/.test(cook), "COOK.md: completely new hall décor OK");
 must(/Cyan L \+ gold R energy portals may adapt/.test(cook), "COOK.md: portals may adapt");
+must(/Doors may adapt/.test(cook), "COOK.md: Doors may adapt");
+must(/Bolt reposition OK/.test(cook), "COOK.md: Bolt reposition OK");
 must(/selected, repositioned, resized to sill/.test(cook) && /nickel plate/.test(cook), "COOK.md: Bolt selected/repositioned/resized");
 assertAgentStop("COOK.md", cook);
 
@@ -254,14 +263,23 @@ must(/secondary \/ CLI only/.test(cookroom), "COOKROOM.md: cook-room secondary C
 must(/completely new hall décor OK/.test(cookroom), "COOKROOM.md: completely new hall décor OK");
 must(/white coat forever/.test(cookroom), "COOKROOM.md: white coat forever");
 must(/décor-matching skin ON TOP/.test(cookroom), "COOKROOM.md: décor-matching skin ON TOP");
+must(/Doors may adapt/.test(cookroom), "COOKROOM.md: Doors may adapt");
+must(/Bolt reposition OK/.test(cookroom), "COOKROOM.md: Bolt reposition OK");
 
 const doors = body("DOORS.md");
 must(/oval or RECT/.test(doors) && /preferred-ok/.test(doors), "DOORS.md: oval|RECT preferred-ok");
 must(/not\*\* oval-vs-RECT|not oval-vs-RECT/.test(doors), "DOORS.md: door_morph is not oval-vs-RECT");
 must(/never\*\* open wood|never\*\* chrome UI|never.*open wood/.test(doors), "DOORS.md: never wood");
+must(/Doors may adapt/.test(doors), "DOORS.md: Doors may adapt");
+
+const char = body("CHAR.md");
+must(/white coat forever/i.test(char), "CHAR.md: white coat forever");
+must(/SKINS/.test(char) && /ON TOP/.test(char), "CHAR.md: décor SKINS ON TOP of white base");
+must(/ember skin/.test(char) && /ice skin/.test(char), "CHAR.md: ember + ice skins");
 
 const smokeId = body("scripts/smoke-identity.md");
 must(/do \*\*not\*\* FAIL oval shape alone/.test(smokeId), "smoke-identity: oval shape alone is not FAIL");
 must(!/oval \/ blob \/ wood leaf instead of RECT/.test(smokeId), "smoke-identity: oval-as-RECT-FAIL row gone");
+must(/white base forever/.test(smokeId) && /SKINS ON TOP/.test(smokeId), "smoke-identity: white base + skins ON TOP");
 
 console.log("COLD-START PASS");

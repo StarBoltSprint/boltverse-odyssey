@@ -4,7 +4,7 @@
 
 **Walk is one trip.** Mid-clip snap back to spawn = `FAIL graph.walk_return`.
 
-**Coat:** FULL white. Zero black. [CHAR.md](../CHAR.md).
+**Coat:** white base forever (FULL white German Shepherd). That base never changes to grey / silver / black. Décor-matching **SKINS ON TOP** of the white base (ember glow/ash, ice) are OK — stylish adaptation, not a different dog. [CHAR.md](../CHAR.md).
 
 Look at the 3 frames Smoke extracted:
 
@@ -39,7 +39,7 @@ A cute sit is still FAIL. Soft KEEP of a sitting at-A is illegal.
 |---|---|
 | `identity.face` / `muzzle` / `look` / `profile` / `three_quarter` | face, snout, 3/4, profile |
 | `clone.two_dogs` / `clone.ghost` | second body |
-| `identity.coat` / `saddle` / `black_silhouette` / `cape` | not full white |
+| `identity.coat` / `saddle` / `black_silhouette` / `cape` | grey/silver/black **base** (not a white GSD). Ember/ice skin ON TOP of white ≠ this FAIL |
 | `identity.text` | TAP, UI, watermark |
 | `identity.orbit` | dolly / tilt |
 | `gait.muzzle` | sprint mid but head turned |

@@ -13,7 +13,7 @@ Player: https://boltverse-odyssey.grok.me
 
 **SKINS:** Imagine Agent MAY apply a décor-matching skin ON TOP of the white base — ember skin (embers / glow / ash accents), ice skin, etc. Stylish adaptation. Not a different dog.
 
-**Restyle:** completely new hall décor OK. Cyan L + gold R energy portals may adapt shape / scale to décor. Bolt may be selected, repositioned, resized to sill for a nickel plate. Still AT the teal / gold threshold — mid-hall = FAIL.
+**Restyle:** completely new hall décor OK. **Doors may adapt** (shape / scale to décor). Cyan L + gold R energy portals may adapt shape / scale to décor (oval|RECT energy; never wood; never chrome UI). Bolt may be selected, repositioned, resized to sill for a nickel plate. Bolt reposition OK. Still AT the teal / gold threshold — mid-hall = FAIL.
 
 **[Grok Imagine Agent](https://grok.com/imagine/agent) is the PRIMARY cook path for BOTH stills AND walk/breath films (first+last frames).** Not a stills-only restyle footnote. **HARD:** ALL hall stills + Walk A + Walk B + breaths go through Imagine Agent. Walks: user stills as exact first frame AND last frame, then interpolate video. Breaths: same still twice. Director or human drives Agent in the browser until Build has an Agent tool/hook. Default: seal stills, restyle halls, cook walks with start+end stills, breaths same still twice. **Smoke still gates.** Soft KEEP banned.
 
@@ -79,7 +79,7 @@ STOP: EVERY cook (new Grok Build conversation, restyle, Walk A, Walk B, breath, 
    Director or human drives Agent in the browser until Build has an Agent tool/hook.
    Identity base: Bolt is ALWAYS a full-white German Shepherd (white coat forever). That base never changes to grey/silver/black.
    SKINS: Imagine Agent MAY apply a décor-matching skin ON TOP of the white base — ember skin (embers/glow/ash accents), ice skin, etc. Stylish adaptation. Not a different dog.
-   Restyle: completely new hall décor OK. Cyan L + gold R energy portals may adapt shape/scale to décor. Bolt may be selected, repositioned, resized to sill for a nickel plate.
+   Restyle: completely new hall décor OK. Doors may adapt (shape/scale to décor). Cyan L + gold R energy portals may adapt shape/scale to décor (oval|RECT energy; never wood; never chrome UI). Bolt may be selected, repositioned, resized to sill for a nickel plate. Bolt reposition OK.
    Imagine Agent is MANDATORY for cross-style hall stills (not optional). Agent REQUIRED for décor variants. One sealed sill still → Agent restyles (new décor OK; portals may adapt; Bolt may move/resize at sill).
    First seal stills = Imagine Agent. cook-room imagineStill = secondary CLI only / BANNED for restyle.
    Grok Build chat Imagine tools are NOT the same as Imagine Agent. Build must not use chat imagine_* without Agent. Instruct to open Imagine Agent with the plate refs. Build must not rely on chat imagine_* tools for hall restyle identity lock.
@@ -105,8 +105,10 @@ HALL JOB =
   Identity base: full-white German Shepherd (white coat forever)
   SKINS: décor-matching skin ON TOP of the white base OK (ember/ice). Not a different dog.
   Restyle: completely new hall décor OK
+  Doors may adapt (shape/scale to décor)
   Cyan L + gold R energy portals may adapt shape/scale to décor
   Bolt may be selected, repositioned, resized to sill for a nickel plate
+  Bolt reposition OK
   Smoke still gates. Soft KEEP banned.
   hung PASS stills/films = reuse
   3 stills + 5 films + smoke-pack

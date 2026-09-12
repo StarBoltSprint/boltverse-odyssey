@@ -8,7 +8,7 @@ sill ≠ spawn. at-A = already AT the teal LEFT sill (seuil). at-B = already AT 
 
 Identity base: Bolt is ALWAYS a full-white German Shepherd (white coat forever). That base never changes to grey/silver/black.
 SKINS: Imagine Agent MAY apply a décor-matching skin ON TOP of the white base — ember skin (embers/glow/ash accents), ice skin, etc. Stylish adaptation. Not a different dog.
-Restyle: completely new hall décor OK. Cyan L + gold R energy portals may adapt shape/scale to décor. Bolt may be selected, repositioned, resized to sill for a nickel plate.
+Restyle: completely new hall décor OK. Doors may adapt (shape/scale to décor). Cyan L + gold R energy portals may adapt shape/scale to décor (oval|RECT energy; never wood; never chrome UI). Bolt may be selected, repositioned, resized to sill for a nickel plate. Bolt reposition OK.
 
 Happy path: clone → read AGENTS.md + GROK.md → Imagine Agent (grok.com/imagine/agent) PRIMARY for BOTH stills AND walk/breath films. ALL hall stills + walks + breaths go through Imagine Agent. Walks = start+end stills (user stills as exact first frame AND last frame, then interpolate). Breaths = same still twice. Director or human drives Agent in the browser until Build has an Agent tool/hook. Smoke still gates.
 
@@ -23,5 +23,5 @@ Grok Build chat Imagine tools are NOT the same as Imagine Agent. Cross-style sea
 cook-room + imagine-hooks = secondary / CLI only — not the human happy path.
 Hung PASS = reuse. --force recooks. Gel-breath / FAIL walk = HANG BLOCKED, not KEEP. Soft KEEP banned. Smoke still gates.
 FAIL → packs/<slot>/.kitchen/fail/ (debug). Never stills/films/Hang. at-A/at-B under-size (~0.16–0.21): enlarge-only second step (FAIL jpg = image). Cap 1 fresh + 1 enlarge (or 2 enlarge).
-Doors = oval|RECT energy rifts (oval preferred-ok; never wood; never chrome UI). Sit / face / 3/4 / punch-sill (climbing the rift) / mid-hall spawn-cx as at-A/at-B cannot PASS.
+Doors may adapt. Doors = oval|RECT energy rifts (oval preferred-ok; never wood; never chrome UI). Sit / face / 3/4 / punch-sill (climbing the rift) / mid-hall spawn-cx as at-A/at-B cannot PASS.
 No new grok.me. Catalog slots only.

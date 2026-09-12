@@ -2,7 +2,7 @@
 
 **STOP — EVERY cook (new Grok Build conversation, restyle, Walk A, Walk B, breath, any still) MUST go through Imagine Agent. Obligatoire. Systematically. Never Chat Imagine without Agent. Not optional. Not invent outside Agent.**
 
-**Identity base:** Bolt is ALWAYS a full-white German Shepherd (white coat forever). That base never changes to grey / silver / black. **SKINS:** décor-matching skin ON TOP of the white base OK (ember / ice). Not a different dog. **Restyle:** completely new hall décor OK. Cyan L + gold R energy portals may adapt. Bolt may be selected, repositioned, resized to sill for a nickel plate.
+**Identity base:** Bolt is ALWAYS a full-white German Shepherd (white coat forever). That base never changes to grey / silver / black. **SKINS:** décor-matching skin ON TOP of the white base OK (ember / ice). Not a different dog. **Restyle:** completely new hall décor OK. **Doors may adapt.** Cyan L + gold R energy portals may adapt. Bolt may be selected, repositioned, resized to sill for a nickel plate. Bolt reposition OK.
 
 ```
 node scripts/cook-room.mjs <catalog-slot> --dry-run
