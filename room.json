@@ -34,7 +34,9 @@
     "compose": {
       "spawn": "lock/example-spawn.jpg",
       "atA": "lock/example-at-a.jpg",
-      "atB": "lock/example-at-b.jpg"
+      "atB": "lock/example-at-b.jpg",
+      "sealA": "lock/SEAL-at-a.jpg",
+      "sealB": "lock/SEAL-at-b.jpg"
     },
     "doors": {
       "A": { "id": "m1", "name": "teal", "side": "left" },

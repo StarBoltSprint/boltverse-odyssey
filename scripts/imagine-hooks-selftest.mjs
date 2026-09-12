@@ -3,8 +3,10 @@
 // at-A prefers lock/example-at-a.jpg (SmiR lock teacher). at-B prefers hung moss PASS.
 // copy PLACE+POSE from example; FORCE taille 0.35–0.40; FORCE STANDING; never shrink to 0.18.
 // IGNORE tiny ~0.18 crop like bolt-back 0.53. Never send example-at-*-tiny.
+import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { spawnSync } from "node:child_process";
 import {
   ATA_FORCE_STANDING,
   ATA_FORCE_TAILLE,
@@ -19,7 +21,19 @@ import {
   spawnStillLine,
   walkClipLine,
 } from "./imagine-hooks.mjs";
-import { DEST_REL, DROP_RELS, installLockAta, lockAtaStatus } from "./install-lock-ata.mjs";
+import {
+  DEST_REL,
+  DROP_RELS,
+  ICE_A_REL,
+  ICE_B_REL,
+  SEAL_A_REL,
+  SEAL_B_REL,
+  SEAL_REL,
+  installLockAta,
+  lockAtaStatus,
+  sealAtaStatus,
+  sealAtbStatus,
+} from "./install-lock-ata.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -72,9 +86,21 @@ must(/ignore example décor/.test(atA) && /hall materials from spawn\/catalog on
 must(/standing BACK toward teal L/.test(atA), "atA names SmiR teacher pose");
 must(atB.includes(ATA_FORCE_TAILLE) && atB.includes(ATA_FORCE_STANDING), "atB also FORCE taille + standing");
 must(DEST_REL === "lock/example-at-a.jpg", "install dest is lock/example-at-a.jpg");
-must(DROP_RELS[0] === "hall-stills/smir-ata-teacher.jpeg", "drop slot hall-stills/smir-ata-teacher.jpeg");
+must(SEAL_REL === "lock/SEAL-at-a.jpg" && SEAL_A_REL === "lock/SEAL-at-a.jpg", "seal dest is lock/SEAL-at-a.jpg");
+must(SEAL_B_REL === "lock/SEAL-at-b.jpg", "seal dest is lock/SEAL-at-b.jpg");
+must(ICE_A_REL === "hall-stills/seal/at-a-ice.jpg", "ice KEEP drop hall-stills/seal/at-a-ice.jpg");
+must(ICE_B_REL === "hall-stills/seal/at-b-ice.jpg", "ice KEEP drop hall-stills/seal/at-b-ice.jpg");
+must(DROP_RELS[0] === ICE_A_REL, "first drop slot is ice KEEP at-a");
 must(/COOK\/LOCK/.test(lockAtaStatus(root).note), "COOK/LOCK note present");
-must(lockAtaStatus(root).hasDrop === true, "owner drop hall-stills/smir-ata-teacher.jpeg present");
+must(lockAtaStatus(root).hasDrop === true, "owner drop present (ice KEEP or smir-ata-teacher)");
+must(sealAtaStatus(root, {}).sealed === existsSync(join(root, SEAL_A_REL)), "SEAL file (not env) gates at-A");
+must(sealAtaStatus(root, { SEAL_ATA: "1" }).sealed === true, "SEAL_ATA=1 seals at-A");
+must(sealAtbStatus(root, { SEAL_ATB: "1" }).sealed === true, "SEAL_ATB=1 seals at-B");
+must(sealAtaStatus(root, { SEAL: "1" }).sealed === true && sealAtbStatus(root, { SEAL: "1" }).sealed === true, "SEAL=1 seals both");
+must(sealAtaStatus("/tmp/boltverse-no-seal-ata", {}).sealed === false, "no file + no env → unsealed at-A");
+must(sealAtbStatus("/tmp/boltverse-no-seal-atb", {}).sealed === false, "no file + no env → unsealed at-B");
+must(/frozen/.test(sealAtaStatus(root, { SEAL_ATA: "1" }).note), "seal note says frozen");
+must(/Soft KEEP banned/.test(sealAtaStatus(root, { SEAL_ATA: "1" }).note), "seal note: Soft KEEP banned");
 try {
   installLockAta(root, join(root, "lock/example-at-a-tiny.jpg"));
   must(false, "tiny install must refuse");
@@ -118,5 +144,15 @@ must(!String(stillRefOrder("atA", true, root, { enlarge: true })).includes("exam
 must(stillRefOrder("atA", true, root).join(",") === "spawn,bolt-back.jpg,lock/example-at-a.jpg", "fresh atA refs unchanged");
 energyOk(enlargeA, "enlargeA");
 energyOk(enlargeB, "enlargeB");
+
+const dry = spawnSync("node", [join(root, "scripts/cook-room.mjs"), "moss", "--dry-run"], {
+  encoding: "utf8",
+  env: { ...process.env, SEAL_ATA: "1", SEAL_ATB: "1" },
+});
+must(dry.status === 0, "cook-room moss --dry-run SEAL_ATA+SEAL_ATB exits 0");
+must(/SEALED at-A\/at-B = frozen KEEP/.test(dry.stdout || ""), "dry-run prints sealed at-A/at-B KEEP one-liner");
+must(/no imagineStill/.test(dry.stdout || ""), "dry-run sealed skip names no imagineStill");
+must(!/^cook stills\/at-a\.jpg/m.test(dry.stdout || ""), "dry-run does not Imagine at-A when sealed or hung PASS");
+must(!/^cook stills\/at-b\.jpg/m.test(dry.stdout || ""), "dry-run does not Imagine at-B when sealed or hung PASS");
 
 console.log("IMAGINE-HOOKS PASS");

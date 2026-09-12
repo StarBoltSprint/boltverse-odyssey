@@ -48,7 +48,7 @@ Lane / biome is **another job**: `node scripts/cook-biome.mjs <id>`. Not cook-ro
 - Imagine Agent is the **hall-restyle** tool for sealed stills **and** the primary film cook.
 - **Imagine Agent is MANDATORY for cross-style hall stills (not optional).** Agent is **REQUIRED** for décor variants. One **SEALED** sill still → Agent restyles: completely new hall décor OK. Cyan L + gold R energy portals may adapt. Bolt may be selected, repositioned, resized to sill. White coat forever. Décor-matching skin ON TOP of the white base OK (ember / ice). Not a different dog.
 - `cook-room` `imagineStill` is **BANNED for restyle** (invents a new dog). CLI first-seal / batch only.
-- Hung PASS / sealed skip stays. `--force` recooks.
+- Hung PASS / sealed skip stays. `--force` recooks. Imagine Agent produced the ice-hall **KEEP seals** (`lock/SEAL-at-a.jpg` + `lock/SEAL-at-b.jpg`, drop `hall-stills/seal/at-a-ice.jpg` + `at-b-ice.jpg`). Frozen pose+décor for this ice hall until SmiR reseals. Agent remains the primary cook path for future styles. `cook-room` **SKIPS** `imagineStill` for at-A/at-B when those seals exist. **Smoke still gates.** Soft KEEP banned.
 - **Grok Build chat Imagine tools are NOT the same as Imagine Agent.** Chat Imagine UI without Agent is banned for walks, breaths, stills, enter (no `last_frame`). Build must not use chat `imagine_*` without Agent. Instruct to open Imagine Agent with the plate refs. Build must not rely on chat `imagine_*` tools for hall restyle identity lock.
 
 ## Hard refuse (no chat fallback)

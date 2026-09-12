@@ -8,6 +8,8 @@
     "cook": "node scripts/cook-room.mjs moss",
     "lock:ata": "node scripts/install-lock-ata.mjs",
     "lock:ata:dry": "node scripts/install-lock-ata.mjs --dry-run",
+    "lock:seal": "node scripts/install-lock-ata.mjs",
+    "lock:seal:dry": "node scripts/install-lock-ata.mjs --dry-run",
     "smoke": "node scripts/smoke-pack.mjs packs/moss",
     "smoke:stills": "node scripts/smoke-pack.mjs packs/moss --stills-only",
     "validate": "node scripts/validate-pack.mjs packs/moss",

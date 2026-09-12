@@ -64,8 +64,9 @@ Search: `StarBoltSprint citadel-room` · living film · boltverse-odyssey.grok.m
 | `scripts/validate-pack.mjs` | room.json + 3 stills + 5 films, H264, no audio |
 | `scripts/smoke-pack.mjs` | one dog, first≠last on walks, breath loops |
 | `lock/bolt-back.jpg` | Bolt identity (back / coat) — not scale |
-| `lock/example-at-a.jpg` | SmiR at-A lock teacher (BACK toward teal L, gold visible). Drop: `hall-stills/smir-ata-teacher.jpeg` → `node scripts/install-lock-ata.mjs` |
-| `lock/example-*.jpg` | camera + which side (oval\|RECT energy OK; atA = lock example, atB = moss PASS swap) |
+| `lock/example-at-a.jpg` | SmiR at-A lock teacher (BACK toward teal L, gold visible). Drop: `hall-stills/seal/at-a-ice.jpg` or `hall-stills/smir-ata-teacher.jpeg` → `node scripts/install-lock-ata.mjs` |
+| `lock/SEAL-at-a.jpg` `lock/SEAL-at-b.jpg` | Imagine Agent ice-hall KEEP seals — frozen pose+décor until SmiR reseals. `cook-room` skips `imagineStill` when present. Smoke still gates. Soft KEEP banned. |
+| `lock/example-*.jpg` | camera + which side (oval\|RECT energy OK; atA = lock example / SEAL, atB = SEAL or moss PASS swap) |
 | `packs/<id>/` | hung discs — Grok writes here |
 | `stills/` `films/` | **empty on GitHub** — do not hang at root |
 

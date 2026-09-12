@@ -13,7 +13,7 @@ node scripts/cook-room.mjs <catalog-slot> --force
 `--dry-run` first (no key, prints skip vs cook). Live needs `XAI_API_KEY` only for plates it Imagines.  
 `slot` ∈ [CATALOG.md](CATALOG.md). Off-list → stock URL, exit 1.
 
-Hung pack with PASS stills/films = **reuse**. Only missing / smoke-FAIL plates go through Imagine. `--force` / `COOK_FORCE=1` recooks. Never wipe a hung `room.json` or a PASS still. **Sealed skip stays.**
+Hung pack with PASS stills/films = **reuse**. Only missing / smoke-FAIL plates go through Imagine. `--force` / `COOK_FORCE=1` recooks. Never wipe a hung `room.json` or a PASS still. **Sealed skip stays.** Imagine Agent produced the ice-hall **KEEP seals** (`lock/SEAL-at-a.jpg` + `lock/SEAL-at-b.jpg`, drop `hall-stills/seal/at-*-ice.jpg`). Frozen pose+décor until SmiR reseals. Agent remains primary for future styles. `cook-room` **SKIPS** `imagineStill` for at-A/at-B when those seals exist. **Smoke still gates.** Soft KEEP banned.
 
 **This script is secondary / CLI only — not the human happy path.** [Grok Imagine Agent](https://grok.com/imagine/agent) is the PRIMARY cook path for BOTH stills AND walk/breath films (first+last frames). **HARD:** ALL hall stills + walks + breaths go through Imagine Agent. Walks: user stills as exact first frame AND last frame, then interpolate video. Breaths: same still twice. Director or human drives Agent in the browser until Build has an Agent tool/hook. Default: seal stills, restyle halls, cook walks with start+end stills, breaths same still twice. **Smoke still gates.** Soft KEEP banned. Instruct to open Imagine Agent with the plate refs.
 

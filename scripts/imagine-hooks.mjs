@@ -196,12 +196,15 @@ export function sillTeacherRel(root, pose) {
   const moss = mossSillRel(pose);
   const official = officialSillRel(pose);
   const swapped = join("lock", exampleName(pose));
+  const sealRel = pose === "atA" ? "lock/SEAL-at-a.jpg" : "lock/SEAL-at-b.jpg";
   if (pose === "atA") {
+    if (root && existsSync(join(root, sealRel))) return sealRel;
     if (root && existsSync(join(root, swapped))) return swapped;
     if (root && existsSync(join(root, official))) return official;
     if (root && existsSync(join(root, moss))) return moss;
     return swapped;
   }
+  if (root && existsSync(join(root, sealRel))) return sealRel;
   if (root && existsSync(join(root, moss))) return moss;
   if (root && existsSync(join(root, official))) return official;
   if (root && existsSync(join(root, swapped))) return swapped;

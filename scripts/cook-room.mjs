@@ -5,13 +5,15 @@
 //   export XAI_API_KEY=... && node scripts/cook-room.mjs moss
 //   node scripts/cook-room.mjs moss --force
 // Hung PASS stills/films are reused. --force / COOK_FORCE=1 recooks.
+// SEAL=1 / lock/SEAL-at-a.jpg + lock/SEAL-at-b.jpg: skip imagineStill for at-A/at-B.
+// Smoke still runs. Soft KEEP banned.
 
 import { existsSync, mkdirSync, writeFileSync, unlinkSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { imagineStill, imagineClip } from "./imagine-hooks.mjs";
-import { lockAtaStatus } from "./install-lock-ata.mjs";
+import { copySealedSill, lockAtaStatus, sealAtbStatus, sealAtaStatus } from "./install-lock-ata.mjs";
 import { dropHungPlate, nextSillAttempt, saveFailPlate } from "./kitchen-fail.mjs";
 
 const SLOTS = [
@@ -40,6 +42,8 @@ const slot = String(argv.find((a) => !a.startsWith("--")) || "")
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const dir = join(root, "packs", slot);
 const scripts = join(root, "scripts");
+const sealA = sealAtaStatus(root);
+const sealB = sealAtbStatus(root);
 
 function out(s) {
   console.log(s);
@@ -161,12 +165,45 @@ function seedExistingFail(rel, kind) {
   return { n: 1, rule: s.rule, failAbs: saved ? join(dir, saved) : null };
 }
 
+function sealFor(kind) {
+  if (kind === "still-atA") return sealA;
+  if (kind === "still-atB") return sealB;
+  return null;
+}
+
 function plan(rel, kind) {
+  const se = sealFor(kind);
+  if (se && se.sealed) {
+    if (has(rel) && smokeReport(rel, kind).ok) {
+      return "skip " + rel + " (exists + smoke PASS; SEALED — no imagineStill)";
+    }
+    if (has(rel)) return "skip " + rel + " (SEALED — no imagineStill; smoke still runs)";
+    return "copy " + (se.srcRel || se.sealRel) + " → " + rel + " (SEALED, no imagineStill)";
+  }
   if (force) return "cook " + rel + " (--force)";
   if (!has(rel)) return "cook " + rel + " (missing)";
   const s = smokeReport(rel, kind);
   if (s.ok) return "skip " + rel + " (exists + smoke PASS)";
   return "cook " + rel + " (exists + smoke FAIL — KEEP refused)";
+}
+
+function applySealedStill(rel, destAbs, kind, se) {
+  if (!se.srcRel) {
+    fail("SEALED " + rel + " — " + (se.sealRel || "lock/SEAL-at-*.jpg") + " missing. No imagineStill fallback.");
+  }
+  if (has(rel) && smoke(rel, kind)) {
+    out("skip " + rel + " (exists + smoke PASS; SEALED — no imagineStill)");
+    return false;
+  }
+  copySealedSill(root, destAbs, se.srcRel);
+  out("SEALED " + rel + " ← " + se.srcRel + " (frozen KEEP, no imagineStill)");
+  const s = smokeReport(rel, kind);
+  process.stdout.write(s.stdout || "");
+  if (!s.ok) {
+    refuseAndSave(rel, kind, 1, s.rule);
+    fail((s.rule || "smoke " + rel) + " — SEALED still smoke FAIL. Soft KEEP banned. No imagineStill.");
+  }
+  return true;
 }
 
 function ffmpegLoop(stillRel, destRel) {
@@ -233,18 +270,23 @@ if (dry) {
   out("fail-save: Smoke FAIL → packs/" + slot + "/.kitchen/fail/<kind>-<n>.jpg|mp4 — debug only. NEVER stills/ or films/. Never Hang FAIL.");
   out("enlarge: at-A/at-B under-size (sill-band ~0.16–0.21) → 1 fresh + 1 enlarge (or 2 enlarge). FAIL jpg = image; ONLY grow dog to 0.35–0.40 standing at sill. Sit does not block enlarge. gate.place / mid-hall = fresh, not enlarge.");
   out(lockAtaStatus(root).note);
+  out(sealA.note);
+  out(sealB.note);
   out("atA side ref = lock/example-at-a.jpg — copy PLACE+POSE from example; FORCE taille 0.35–0.40; FORCE STANDING; never shrink to 0.18; hall materials from spawn/catalog only — ignore example décor.");
-  out(force ? "--force: recook even if hung PASS" : "default: reuse hung PASS stills + films");
+  if (sealA.sealed || sealB.sealed) {
+    out("SEALED at-A/at-B = frozen KEEP (Imagine Agent ice hall); do not Imagine new sill pose. Smoke still runs. Soft KEEP banned.");
+  }
+  out(force ? "--force: recook even if hung PASS (sealed at-A/at-B still skip imagineStill)" : "default: reuse hung PASS stills + films");
   out(has("room.json") ? "keep room.json" : "write skeleton room.json");
   let skipStills = 0;
   let skipFilms = 0;
   let needLive = false;
   for (const [rel, kind] of stillJobs) {
     const line = plan(rel, kind);
-    if (line.startsWith("skip ")) skipStills++;
+    if (line.startsWith("skip ") || line.startsWith("copy ")) skipStills++;
     else needLive = true;
     out(line);
-    if (!line.startsWith("skip ") && (kind === "still-atA" || kind === "still-atB")) {
+    if (!line.startsWith("skip ") && !line.startsWith("copy ") && (kind === "still-atA" || kind === "still-atB")) {
       out("  → sill two-step: fresh then enlarge-if-undersize (cap 1 fresh + 1 enlarge / 2 enlarge). fail-save → .kitchen/fail/");
     }
   }
@@ -270,6 +312,8 @@ if (dry) {
 }
 
 const needLive = [...stillJobs, ...filmJobs].some(([rel, kind]) => {
+  const se = sealFor(kind);
+  if (se && se.sealed) return false;
   if (force) return true;
   if (!has(rel)) return true;
   return !smoke(rel, kind);
@@ -381,13 +425,17 @@ if (reuse("stills/spawn.jpg", "still-spawn")) {
 }
 if (debug) out("stills written spawn");
 
-if (reuse("stills/at-a.jpg", "still-atA")) {
+if (sealA.sealed) {
+  if (applySealedStill("stills/at-a.jpg", atA, "still-atA", sealA)) stillCooked++;
+} else if (reuse("stills/at-a.jpg", "still-atA")) {
   out("skip stills/at-a.jpg (exists + smoke PASS)");
 } else {
   await cookSillStill("atA", "atA", atA, "stills/at-a.jpg", "still-atA");
   stillCooked++;
 }
-if (reuse("stills/at-b.jpg", "still-atB")) {
+if (sealB.sealed) {
+  if (applySealedStill("stills/at-b.jpg", atB, "still-atB", sealB)) stillCooked++;
+} else if (reuse("stills/at-b.jpg", "still-atB")) {
   out("skip stills/at-b.jpg (exists + smoke PASS)");
 } else {
   await cookSillStill("atB", "atB", atB, "stills/at-b.jpg", "still-atB");

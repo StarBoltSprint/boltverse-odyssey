@@ -1,7 +1,13 @@
 #!/usr/bin/env node
-// COOK/LOCK — drop SmiR's at-A teacher into lock/example-at-a.jpg
+// COOK/LOCK — SmiR KEEP seals + at-A teacher drop.
+// Ice-cathedral KEEP (Imagine Agent): hall-stills/seal/at-a-ice.jpg + at-b-ice.jpg
+//   → lock/SEAL-at-a.jpg + lock/SEAL-at-b.jpg (and example-at-a / example-at-b).
+// Frozen pose+décor for this ice hall until SmiR reseals.
+// cook-room SKIPS imagineStill for at-A/at-B when those SEAL files exist.
+// Smoke still runs. Soft KEEP banned. Agent remains primary for future styles.
 //
-// Expected attachment / drop path (first hit wins unless argv given):
+// Legacy at-A teacher drop (first hit wins unless argv given):
+//   hall-stills/seal/at-a-ice.jpg
 //   hall-stills/smir-ata-teacher.jpeg
 //   hall-stills/smir-ata-teacher.jpg
 //   lock/incoming/smir-ata-teacher.jpeg
@@ -9,9 +15,9 @@
 //   node scripts/install-lock-ata.mjs --dry-run
 //   node scripts/install-lock-ata.mjs [path]
 //
-// Teacher must be standing BACK toward teal L, gold visible.
-// Oval|RECT energy OK (PR #6). Never install the archived tiny anti-teacher.
-// Does not cook. Does not hang. No new grok.me.
+// Teacher / KEEP must be standing BACK at the teal L or gold R sill.
+// Oval|RECT energy OK (PR #6). Never install the archived tiny anti-teacher
+// from a non-owner path. Does not cook. Does not hang. No new grok.me.
 
 import { createHash } from "node:crypto";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, unlinkSync } from "node:fs";
@@ -20,12 +26,21 @@ import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
 export const DEST_REL = "lock/example-at-a.jpg";
+export const DEST_B_REL = "lock/example-at-b.jpg";
+export const SEAL_REL = "lock/SEAL-at-a.jpg";
+export const SEAL_A_REL = "lock/SEAL-at-a.jpg";
+export const SEAL_B_REL = "lock/SEAL-at-b.jpg";
 export const TINY_REL = "lock/example-at-a-tiny.jpg";
+export const TINY_B_REL = "lock/example-at-b-tiny.jpg";
+export const ICE_A_REL = "hall-stills/seal/at-a-ice.jpg";
+export const ICE_B_REL = "hall-stills/seal/at-b-ice.jpg";
 export const DROP_RELS = [
+  ICE_A_REL,
   "hall-stills/smir-ata-teacher.jpeg",
   "hall-stills/smir-ata-teacher.jpg",
   "lock/incoming/smir-ata-teacher.jpeg",
 ];
+export const DROP_B_RELS = [ICE_B_REL];
 
 const here = dirname(fileURLToPath(import.meta.url));
 const defaultRoot = join(here, "..");
@@ -34,16 +49,21 @@ function sha1(p) {
   return createHash("sha1").update(readFileSync(p)).digest("hex");
 }
 
-export function findDrop(repo, override) {
+export function findDrop(repo, override, rels = DROP_RELS) {
   if (override) {
     const abs = override.startsWith("/") ? override : join(repo, override);
     return existsSync(abs) ? abs : null;
   }
-  for (const rel of DROP_RELS) {
+  for (const rel of rels) {
     const abs = join(repo, rel);
     if (existsSync(abs)) return abs;
   }
   return null;
+}
+
+function tinyRelForDest(destRel) {
+  if (destRel === DEST_B_REL || destRel === SEAL_B_REL) return TINY_B_REL;
+  return TINY_REL;
 }
 
 export function lockAtaStatus(repo) {
@@ -53,20 +73,82 @@ export function lockAtaStatus(repo) {
   const hasDrop = Boolean(drop);
   const hasDest = existsSync(dest);
   const destIsTiny = hasDest && existsSync(tiny) && sha1(dest) === sha1(tiny);
-  const note = hasDrop
-    ? "COOK/LOCK  drop present — node scripts/install-lock-ata.mjs → " + DEST_REL
-    : "COOK/LOCK  drop missing — put SmiR at-A teacher (standing BACK toward teal L, gold visible) at hall-stills/smir-ata-teacher.jpeg then node scripts/install-lock-ata.mjs. imagineStill atA already prefers lock/example-at-a.jpg as side ref. Oval|RECT energy OK. copy PLACE+POSE from example; FORCE taille 0.35–0.40; FORCE STANDING; never shrink to 0.18; hall materials from spawn/catalog only — ignore example décor.";
+  const iceA = existsSync(join(repo, ICE_A_REL));
+  const iceB = existsSync(join(repo, ICE_B_REL));
+  const note = iceA && iceB
+    ? "COOK/LOCK  Imagine Agent KEEP ice seals present — node scripts/install-lock-ata.mjs → " +
+      SEAL_A_REL +
+      " + " +
+      SEAL_B_REL +
+      " (frozen pose+décor until SmiR reseals)"
+    : hasDrop
+      ? "COOK/LOCK  drop present — node scripts/install-lock-ata.mjs → " + DEST_REL + " + " + SEAL_A_REL
+      : "COOK/LOCK  drop missing — put Imagine Agent KEEP ice stills at " +
+        ICE_A_REL +
+        " + " +
+        ICE_B_REL +
+        " then node scripts/install-lock-ata.mjs. Frozen pose+décor until SmiR reseals. Agent remains primary for future styles. Oval|RECT energy OK.";
   return {
     dropRel: drop ? relative(repo, drop) : null,
     destRel: DEST_REL,
+    sealRel: SEAL_A_REL,
+    sealBRel: SEAL_B_REL,
     hasDrop,
     hasDest,
     destIsTiny,
+    iceA,
+    iceB,
     note,
   };
 }
 
-function encodePlate(src, dest) {
+/** Owner freeze: SEAL=1 / SEAL_ATA=1 / SEAL_ATB=1 or lock/SEAL-at-*.jpg. Skip imagineStill. */
+export function sealSillStatus(repo, pose, env = process.env) {
+  const isA = pose === "atA" || pose === "A" || pose === "still-atA";
+  const sealRel = isA ? SEAL_A_REL : SEAL_B_REL;
+  const destRel = isA ? DEST_REL : DEST_B_REL;
+  const iceRel = isA ? ICE_A_REL : ICE_B_REL;
+  const sealPath = join(repo, sealRel);
+  const destPath = join(repo, destRel);
+  const icePath = join(repo, iceRel);
+  const envAll = String(env.SEAL || "") === "1";
+  const envOne = isA ? String(env.SEAL_ATA || "") === "1" : String(env.SEAL_ATB || "") === "1";
+  const envOn = envAll || envOne;
+  const hasSealFile = existsSync(sealPath);
+  const sealed = envOn || hasSealFile;
+  let srcRel = null;
+  if (hasSealFile) srcRel = sealRel;
+  else if (existsSync(icePath)) srcRel = iceRel;
+  else if (envOn && existsSync(destPath)) srcRel = destRel;
+  const side = isA ? "at-A" : "at-B";
+  const note = sealed
+    ? "SEALED " +
+      side +
+      " = frozen KEEP; do not Imagine new " +
+      side +
+      " pose. cook-room copies " +
+      (srcRel || sealRel) +
+      " → packs/<slot>/stills/" +
+      (isA ? "at-a" : "at-b") +
+      ".jpg after spawn PASS. No imagineStill. Smoke still runs. Soft KEEP banned."
+    : side +
+      " unsealed — imagineStill may cook pose/taille. SEAL=1 / SEAL_AT" +
+      (isA ? "A" : "B") +
+      "=1 or " +
+      sealRel +
+      " freezes the owner KEEP.";
+  return { sealed, srcRel, hasSealFile, envOn, sealRel, destRel, iceRel, note, pose: isA ? "atA" : "atB" };
+}
+
+export function sealAtaStatus(repo, env = process.env) {
+  return sealSillStatus(repo, "atA", env);
+}
+
+export function sealAtbStatus(repo, env = process.env) {
+  return sealSillStatus(repo, "atB", env);
+}
+
+export function encodePlate(src, dest) {
   mkdirSync(dirname(dest), { recursive: true });
   const vf = "scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280";
   const tmp = dest + ".ata-tmp.jpg";
@@ -79,28 +161,77 @@ function encodePlate(src, dest) {
   unlinkSync(tmp);
 }
 
+/** Copy sealed KEEP onto a pack still (720×1280). Never Imagine. */
+export function copySealedSill(repo, destAbs, srcRel) {
+  if (!srcRel) throw new Error("SEALED sill source missing — need lock/SEAL-at-*.jpg");
+  const src = join(repo, srcRel);
+  if (!existsSync(src)) throw new Error("SEALED sill source missing: " + srcRel);
+  encodePlate(src, destAbs);
+  return destAbs;
+}
+
+export function copySealedAta(repo, destAbs, srcRel) {
+  const rel = srcRel || sealAtaStatus(repo).srcRel;
+  if (!rel) throw new Error("SEALED at-A source missing — need " + SEAL_A_REL + " or " + DEST_REL);
+  return copySealedSill(repo, destAbs, rel);
+}
+
 export function isOwnerDrop(repo, srcPath) {
   if (!srcPath) return false;
   const abs = resolve(srcPath);
-  return DROP_RELS.some((rel) => resolve(join(repo, rel)) === abs);
+  const rels = [...DROP_RELS, ...DROP_B_RELS];
+  return rels.some((rel) => resolve(join(repo, rel)) === abs);
+}
+
+function refuseTiny(repo, srcPath, destRel) {
+  const tiny = join(repo, tinyRelForDest(destRel));
+  if (!srcPath || !existsSync(srcPath)) return;
+  const ownerDrop = isOwnerDrop(repo, srcPath);
+  const matchesTiny = existsSync(tiny) && sha1(srcPath) === sha1(tiny);
+  if (matchesTiny && !ownerDrop) {
+    throw new Error("COOK/LOCK REFUSED  source is " + tinyRelForDest(destRel) + " (anti-teacher ~0.18). Will not overwrite.");
+  }
 }
 
 export function installLockAta(repo, srcPath) {
   const dest = join(repo, DEST_REL);
   const tiny = join(repo, TINY_REL);
   if (!srcPath || !existsSync(srcPath)) {
-    throw new Error("COOK/LOCK  no drop file — expected hall-stills/smir-ata-teacher.jpeg");
+    throw new Error("COOK/LOCK  no drop file — expected " + ICE_A_REL + " or hall-stills/smir-ata-teacher.jpeg");
   }
-  const ownerDrop = isOwnerDrop(repo, srcPath);
-  const matchesTiny = existsSync(tiny) && sha1(srcPath) === sha1(tiny);
-  if (matchesTiny && !ownerDrop) {
-    throw new Error("COOK/LOCK REFUSED  source is lock/example-at-a-tiny.jpg (anti-teacher ~0.18). Will not overwrite.");
-  }
+  refuseTiny(repo, srcPath, DEST_REL);
   encodePlate(srcPath, dest);
-  if (existsSync(tiny) && sha1(dest) === sha1(tiny) && !ownerDrop) {
+  if (existsSync(tiny) && sha1(dest) === sha1(tiny) && !isOwnerDrop(repo, srcPath)) {
     throw new Error("COOK/LOCK REFUSED  encoded dest matches archived tiny — not installed");
   }
+  const seal = join(repo, SEAL_A_REL);
+  copyFileSync(dest, seal);
   return dest;
+}
+
+export function installLockAtb(repo, srcPath) {
+  const dest = join(repo, DEST_B_REL);
+  const tiny = join(repo, TINY_B_REL);
+  if (!srcPath || !existsSync(srcPath)) {
+    throw new Error("COOK/LOCK  no drop file — expected " + ICE_B_REL);
+  }
+  refuseTiny(repo, srcPath, DEST_B_REL);
+  encodePlate(srcPath, dest);
+  if (existsSync(tiny) && sha1(dest) === sha1(tiny) && !isOwnerDrop(repo, srcPath)) {
+    throw new Error("COOK/LOCK REFUSED  encoded dest matches archived tiny — not installed");
+  }
+  copyFileSync(dest, join(repo, SEAL_B_REL));
+  return dest;
+}
+
+/** Install both ice KEEP seals when hall-stills/seal/at-*-ice.jpg exist. */
+export function installIceSeals(repo) {
+  const a = findDrop(repo, null, [ICE_A_REL]);
+  const b = findDrop(repo, null, [ICE_B_REL]);
+  const out = { atA: null, atB: null };
+  if (a) out.atA = installLockAta(repo, a);
+  if (b) out.atB = installLockAtb(repo, b);
+  return out;
 }
 
 function main() {
@@ -110,16 +241,34 @@ function main() {
   const st = lockAtaStatus(defaultRoot);
   console.log(st.note);
   console.log("COOK/LOCK  dest " + DEST_REL + (st.hasDest ? " present" : " MISSING"));
+  console.log("COOK/LOCK  seal " + SEAL_A_REL + (existsSync(join(defaultRoot, SEAL_A_REL)) ? " present" : " MISSING"));
+  console.log("COOK/LOCK  seal " + SEAL_B_REL + (existsSync(join(defaultRoot, SEAL_B_REL)) ? " present" : " MISSING"));
   if (st.destIsTiny) console.log("COOK/LOCK  dest currently equals archived tiny — do not send it");
-  console.log("COOK/LOCK  drop slots: " + DROP_RELS.join(" | "));
+  console.log("COOK/LOCK  drop slots: " + DROP_RELS.join(" | ") + " | " + DROP_B_RELS.join(" | "));
+  console.log(sealAtaStatus(defaultRoot).note);
+  console.log(sealAtbStatus(defaultRoot).note);
   if (dry) {
-    console.log(st.hasDrop ? "COOK/LOCK  would install " + st.dropRel : "COOK/LOCK  nothing to install");
+    const ice = st.iceA || st.iceB;
+    console.log(
+      ice
+        ? "COOK/LOCK  would install ice KEEP → " + SEAL_A_REL + " + " + SEAL_B_REL
+        : st.hasDrop
+          ? "COOK/LOCK  would install " + st.dropRel + " → " + DEST_REL + " + " + SEAL_A_REL
+          : "COOK/LOCK  nothing to install",
+    );
     process.exit(0);
   }
-  const src = findDrop(defaultRoot, given);
   try {
+    const ice = installIceSeals(defaultRoot);
+    if (ice.atA || ice.atB) {
+      if (ice.atA) console.log("COOK/LOCK  sealed " + SEAL_A_REL);
+      if (ice.atB) console.log("COOK/LOCK  sealed " + SEAL_B_REL);
+      process.exit(0);
+    }
+    const src = findDrop(defaultRoot, given);
     const dest = installLockAta(defaultRoot, src);
     console.log("COOK/LOCK  installed " + relative(defaultRoot, dest));
+    console.log("COOK/LOCK  sealed " + SEAL_A_REL);
   } catch (err) {
     console.error(String(err.message || err));
     process.exit(1);
