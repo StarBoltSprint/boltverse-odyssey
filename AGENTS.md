@@ -10,7 +10,7 @@ Before films, before Agent, before cook-room: the three **black RIG plates** + [
 | at-A | [`lock/RIG-at-a.jpg`](lock/RIG-at-a.jpg) |
 | at-B | [`lock/RIG-at-b.jpg`](lock/RIG-at-b.jpg) |
 
-Grok Build: `imagine_image_to_image` on **that** plate, 9:16. Paste RIG-PROMPT. Swap `{PAINT}` only. Never move Bolt / doors / paths / camera / depth. One plate per still. Never a finished room as 2nd image. Bad stills → **STOP**. Do not cook films.
+Grok Build: spawn FIRST = `imagine_image_to_image` on `lock/RIG-spawn.jpg` + SPAWN block of RIG-PROMPT (`{PAINT}` only). Then at-A / at-B = `imagine_reference_to_image` IMAGE_0 = that pose's RIG, IMAGE_1 = **this spawn** (ignore its dog). Same hall, millimeter. Never three separate i2i. Bad stills → **STOP**. Do not cook films.
 
 Ice KEEP (`packs/frost/stills/`, `lock/SEAL-*.jpg`) = play example. Do not delete. Restyle teachers = RIG. Law: [LAYOUT.md](LAYOUT.md).
 
@@ -40,7 +40,7 @@ Walks / breaths / films = Imagine first-frame + last-frame via `scripts/imagine-
 
 1. Clone this repo. Read this file + GROK.md. Stop.
 2. STYLE stills = black RIG plates + [`lock/RIG-PROMPT.txt`](lock/RIG-PROMPT.txt):
-   - **Read [LAYOUT.md](LAYOUT.md).** `imagine_image_to_image` on `lock/RIG-spawn.jpg` / `RIG-at-a.jpg` / `RIG-at-b.jpg` (9:16). Paste RIG-PROMPT. Swap `{PAINT}` only.
+   - **Read [LAYOUT.md](LAYOUT.md).** Spawn first: `imagine_image_to_image` on `lock/RIG-spawn.jpg`. Then at-A/at-B: `imagine_reference_to_image` IMAGE_0=RIG pose, IMAGE_1=**that spawn** (ignore dog). Same hall. Paste RIG-PROMPT. `{PAINT}` on spawn only.
    - Ice stills stay as frost play (`packs/frost/stills/`, `lock/SEAL-*.jpg`). Do not delete them.
    - Never attach a finished room as a second image. Never move Bolt / doors / paths / depth.
 3. Walks / breaths = `cook-room` → `imagineClip` (`image` + `last_frame`). **Read [FILMS.md](FILMS.md) first** — those prompts are the base for every player / every décor. Adapt hall paint from the player's stills + `catalog/<slot>.md` only. Never rewrite motion / camera / one-dog / duration. **walks** = start still + end still. **breaths** = same still twice. Never Agent video.

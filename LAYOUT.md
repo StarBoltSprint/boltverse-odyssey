@@ -13,23 +13,20 @@ Drops: `hall-stills/rig/spawn.jpg` · `at-a.jpg` · `at-b.jpg`.
 
 ## Grok Build — what to use (do not invent)
 
-When a player asks for a room (any décor):
+**One hall. Three poses.** Never three separate worlds.
 
-1. **Files** (one plate per still, never a finished room as 2nd image):
-   - spawn → `lock/RIG-spawn.jpg`
-   - at-A → `lock/RIG-at-a.jpg`
-   - at-B → `lock/RIG-at-b.jpg`
-2. **Tool:** chat `imagine_image_to_image` on that plate. `aspect_ratio` 9:16.
-3. **Prompt:** paste [`lock/RIG-PROMPT.txt`](lock/RIG-PROMPT.txt). Replace `{PAINT}` with the player's world (one or two lines). Do not rewrite the lock lines.
-4. Show the three stills. Then films = [FILMS.md](FILMS.md) First+Last.
+1. **Spawn FIRST** — `imagine_image_to_image` on `lock/RIG-spawn.jpg`, 9:16. Paste the **SPAWN** block of [`lock/RIG-PROMPT.txt`](lock/RIG-PROMPT.txt). Swap `{PAINT}` only. This still is the **hall master**.
+2. **at-A** — `imagine_reference_to_image` 9:16:
+   - `IMAGE_0` = `lock/RIG-at-a.jpg` (Bolt at teal sill — do not move)
+   - `IMAGE_1` = the spawn you just made (décor only — **ignore its dog**)
+   - Paste the **AT-A / AT-B** block of RIG-PROMPT.
+3. **at-B** — same, `IMAGE_0` = `lock/RIG-at-b.jpg`, `IMAGE_1` = **that same spawn**.
 
-Do **not** attach frost / Mars / ember as a second ref. That dog pose wins and Bolt snaps to spawn.
+Do **not** run three independent `image_to_image` with the same `{PAINT}` text. Imagine invents a new planet each call. at-A/at-B must copy **pixels** from spawn, not the sentence.
 
-`{PAINT}` examples:
+FAIL: Bolt at center on at-A/at-B (spawn dog leaked). FAIL: different canyon/sky/modules than spawn. Recook that plate. Bad stills → no films.
 
-- `Futuristic Mars sci-fi citadel, Unreal Engine, red canyon, hab-modules, metal floor, ochre sky.`
-- `Hot metal, banked embers, soot stone, amber light. Catalog ember.`
-- `Pale ice, rime, aurora. Catalog frost.` (only if they want ice back)
+Ice / frost / a random Mars as IMAGE_1 is wrong unless that file **is** the spawn you just painted for this room.
 
 ## Frozen (never change, any paint)
 

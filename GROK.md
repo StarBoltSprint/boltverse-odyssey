@@ -7,7 +7,7 @@ Player: https://boltverse-odyssey.grok.me
 
 **Black RIG plates + [`lock/RIG-PROMPT.txt`](lock/RIG-PROMPT.txt) before anything else.**
 
-`imagine_image_to_image` on `lock/RIG-spawn.jpg` / `RIG-at-a.jpg` / `RIG-at-b.jpg`. Paste the prompt. Swap `{PAINT}` only. Never move Bolt / doors / paths / depth. Bad stills → STOP. Do not cook films. Ice stills stay as frost play. Law: [`LAYOUT.md`](LAYOUT.md).
+`imagine_image_to_image` on `lock/RIG-spawn.jpg` FIRST. Then at-A/at-B = `imagine_reference_to_image` IMAGE_0 = RIG pose, IMAGE_1 = **that spawn** (ignore its dog). Same hall, millimeter. Never three separate i2i. Paste RIG-PROMPT. `{PAINT}` on spawn only. Never move Bolt / doors / paths / depth. Bad stills → STOP. Do not cook films. Ice stills stay as frost play. Law: [`LAYOUT.md`](LAYOUT.md).
 
 ## STOP 1 — HARD SPLIT
 
@@ -37,8 +37,9 @@ Also read [AGENTS.md](AGENTS.md) (same refuse). Customize below is paste-once fo
 
 ```
 STOP 0: read LAYOUT.md + lock/RIG-PROMPT.txt
-  spawn/at-A/at-B = image_to_image on lock/RIG-*.jpg
-  swap {PAINT} only — never move Bolt/doors/paths
+  spawn FIRST = image_to_image on lock/RIG-spawn.jpg ({PAINT})
+  at-A/at-B = reference_to_image IMAGE_0=RIG pose, IMAGE_1=that spawn (ignore dog)
+  same hall millimeter — never three separate i2i
   bad stills → STOP (no films)
 then read FILMS.md
 then node scripts/cook-room.mjs <slot>   # walks + breaths = image + last_frame

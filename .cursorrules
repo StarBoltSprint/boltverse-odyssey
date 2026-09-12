@@ -2,7 +2,8 @@
 
 STOP 0 — STYLES FIRST. Miss this = the room is dead.
 Before films: lock/RIG-spawn.jpg + RIG-at-a.jpg + RIG-at-b.jpg + lock/RIG-PROMPT.txt
-imagine_image_to_image on that plate, 9:16. Paste RIG-PROMPT. Swap {PAINT} only.
+imagine_image_to_image on RIG-spawn FIRST + SPAWN block of RIG-PROMPT. Swap {PAINT} only.
+Then at-A/at-B: imagine_reference_to_image IMAGE_0=RIG-at-a/b, IMAGE_1=that spawn (ignore its dog). Same hall millimeter. Never three separate i2i.
 Never move Bolt / doors / paths / camera / depth. One plate per still. Never a finished room as 2nd image.
 Bad stills → STOP. Do not cook films. LAYOUT.md. Ice SEAL/frost stills stay as play example.
 
