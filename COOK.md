@@ -2,7 +2,9 @@
 
 This is the product. The player does **not** pick films first. They ask Grok for **3 stills** in a citadel style. Grok supplies them with the **same Bolt** ([CHAR.md](CHAR.md)). **Do not wait.** Stills → smoke → films. Order: [COOKROOM.md](COOKROOM.md). Wait only if COOK_DEBUG=1.
 
-**STOP — HARD SPLIT (SmiR 2026-09-12, supersedes PR #11).** Imagine Agent is obligatoire / MUST / systematically for STYLE stills when restyling. NEVER for Walk A, Walk B, breath, or any video. Walks / breaths / films = imagine-hooks / cook-room first-frame + last-frame. Chat Imagine UI without real first+last is banned. Soft KEEP banned. Smoke still gates.
+**STOP 0 — STYLES = [RIG.md](RIG.md).** Black plates + RIG-PROMPT. Spawn first, then at-A/at-B from that spawn. ONE dog. Two Bolts = FAIL. Then films.
+
+**STOP 1 — HARD SPLIT (SmiR 2026-09-12).** NEVER Agent / chat Imagine for Walk A, Walk B, breath, or any video. Walks / breaths / films = imagine-hooks / cook-room first-frame + last-frame. Chat Imagine UI without real first+last is banned for **video**. Soft KEEP banned. Smoke still gates.
 
 **Identity base:** Bolt is ALWAYS a full-white German Shepherd (white coat forever). That base never changes to grey / silver / black.
 

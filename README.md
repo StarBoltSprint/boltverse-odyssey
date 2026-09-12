@@ -51,7 +51,7 @@ Search: `StarBoltSprint citadel-room` · living film · boltverse-odyssey.grok.m
 | [VALIDATE.md](VALIDATE.md) | box check before hang |
 | [SMOKE.md](SMOKE.md) | clone / first-last / recook cap 2 |
 | [CHAR.md](CHAR.md) | Bolt lock — the dog never changes |
-| [LAYOUT.md](LAYOUT.md) | black RIG plates = paint décor; ice stills kept as example |
+| [RIG.md](RIG.md) | **styles first** — black plates + one hall, three poses, never two Bolts |
 | [COOK.md](COOK.md) | stills-first cook (Agent restyle), then films via hooks first+last |
 | [COOKROOM.md](COOKROOM.md) | hall films — `node scripts/cook-room.mjs <slot>` (`image` + `last_frame`) |
 | [AGENTS.md](AGENTS.md) | cold-start HARD SPLIT: Agent = STYLE stills; video = hooks first+last |

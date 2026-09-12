@@ -5,7 +5,7 @@ Player: https://boltverse-odyssey.grok.me
 
 ## STOP 0 — STYLES FIRST (SmiR 2026-09-12). Miss this = the room is dead.
 
-**Black RIG plates + [`lock/RIG-PROMPT.txt`](lock/RIG-PROMPT.txt) before anything else.**
+Read **[RIG.md](RIG.md)** + [`lock/RIG-PROMPT.txt`](lock/RIG-PROMPT.txt) before anything else.
 
 `imagine_image_to_image` on `lock/RIG-spawn.jpg` FIRST. Then at-A/at-B = `imagine_reference_to_image` IMAGE_0 = RIG pose, IMAGE_1 = **that spawn** (ignore its dog). Same hall, millimeter. Never three separate i2i. Paste RIG-PROMPT. `{PAINT}` on spawn only. Never move Bolt / doors / paths / depth. Bad stills → STOP. Do not cook films. Ice stills stay as frost play. Law: [`LAYOUT.md`](LAYOUT.md).
 

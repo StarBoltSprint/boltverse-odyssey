@@ -1,6 +1,6 @@
 # boltverse-odyssey — Grok Build / Cursor
 
-STOP 0 — STYLES FIRST. Miss this = the room is dead.
+STOP 0 — STYLES FIRST. Read RIG.md. Miss this = the room is dead.
 Before films: lock/RIG-spawn.jpg + RIG-at-a.jpg + RIG-at-b.jpg + lock/RIG-PROMPT.txt
 imagine_image_to_image on RIG-spawn FIRST + SPAWN block of RIG-PROMPT. Swap {PAINT} only.
 Then at-A/at-B: imagine_reference_to_image IMAGE_0=RIG-at-a/b, IMAGE_1=that spawn (ignore its dog). Same hall millimeter. Never three separate i2i.

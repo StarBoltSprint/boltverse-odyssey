@@ -24,9 +24,9 @@ Drops: `hall-stills/rig/spawn.jpg` · `at-a.jpg` · `at-b.jpg`.
 
 Do **not** run three independent `image_to_image` with the same `{PAINT}` text. Imagine invents a new planet each call. at-A/at-B must copy **pixels** from spawn, not the sentence.
 
-FAIL: Bolt at center on at-A/at-B (spawn dog leaked). FAIL: different canyon/sky/modules than spawn. Recook that plate. Bad stills → no films.
+FAIL: **two dogs** (spawn clone leaked onto at-A/at-B) → recook, delete the center dog, keep the sill dog. FAIL: Bolt at center on at-A/at-B. FAIL: different canyon/sky/modules than spawn. Recook that plate. Bad stills → no films.
 
-Ice / frost / a random Mars as IMAGE_1 is wrong unless that file **is** the spawn you just painted for this room.
+The only legal second image is **this room's spawn** as IMAGE_1 on at-A/at-B (décor only, ignore its dog). Ice / a random Mars is wrong.
 
 ## Frozen (never change, any paint)
 
@@ -47,11 +47,7 @@ Depth is **already in the plate** (door size in frame, Bolt size, door gap, Z). 
 
 ## Restyle path (Grok Build chat OK)
 
-`image_to_image` on the **RIG** plate (not on a full ice still):
-
-> Paint the player's world in the black. Do NOT move Bolt. Do NOT move the doors. Do NOT move the light paths. Do NOT zoom. Same depth as this plate. New architecture lines up on THESE portals.
-
-Do **not** attach a finished room (spawn Mars, frost, …) as a second ref — its dog pose wins and Bolt snaps to spawn. One plate per pose. Spawn RIG → spawn still. At-A RIG → at-A still. At-B RIG → at-B still.
+Follow **[RIG.md](RIG.md)**. Spawn = `image_to_image` on the RIG. at-A/at-B = `reference_to_image` IMAGE_0=RIG pose, IMAGE_1=**that spawn** (ignore dog). **ONE dog.** Two Bolts = FAIL.
 
 Imagine Agent may use the same RIG plates. `imagineStill` still **BANNED for restyle**.
 
