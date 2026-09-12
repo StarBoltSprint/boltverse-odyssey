@@ -65,6 +65,8 @@ If Agent is unavailable: secondary CLI `node scripts/cook-room.mjs <slot> --dry-
 
 Secondary CLI (not the human happy path): `scripts/cook-room.mjs` → `scripts/imagine-hooks.mjs`
 
+FAIL stills/films → `packs/<slot>/.kitchen/fail/` (debug). Never Hang FAIL. at-A/at-B under-size (~0.16–0.21): **enlarge**-only second step (FAIL jpg = image). Cap 1 fresh + 1 enlarge.
+
 - stills → `POST /v1/images/edits` (`imagineStill`) — first seal / batch only. **BANNED for restyle.**
 - walks → video `image` + **`last_frame`** (start still ≠ arrive still)
 - breaths → same still twice (`image` + `last_frame`)
