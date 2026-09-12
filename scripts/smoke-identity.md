@@ -16,6 +16,19 @@ Look at the 3 frames Smoke extracted:
 
 Hall refs: stills + `lock/bolt-back.jpg`. Lane refs: **same thumb** (pose, not freeze-paws). Return **one line**: `PASS` or `FAIL <rule> @ t=0|t=mid|t=last`.
 
+## Hall stills (hard — do not Hang)
+
+Spawn / at-A / at-B / first+last of a hall film: **STANDING**, back, two ears, four paws on the floor.
+
+| if you see | rule |
+|---|---|
+| sitting, haunches down, poop | `FAIL identity.sit` (machine `gate.sit` even if bboxH/H is 0.35–0.40) |
+| face, snout toward camera | `FAIL identity.face` (machine: dark muzzle in the upper-center) |
+| 3/4 or profile | `FAIL identity.three_quarter` / `identity.profile` (machine `gate.yaw` &gt; 28° on stills) |
+| oval / blob / wood leaf instead of RECT teal/gold rifts | `FAIL identity.door_morph` / `identity.door_wood` |
+
+A cute sit is still FAIL. Soft KEEP of a sitting at-A is illegal.
+
 ## FAIL rules (hall + Lane)
 
 | rule | if you see |

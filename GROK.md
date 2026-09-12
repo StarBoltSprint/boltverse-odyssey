@@ -5,9 +5,13 @@ Player: https://boltverse-odyssey.grok.me
 
 ## STOP — films = hook, never chat Imagine
 
-If `imagine_image_to_video` / `imagine_reference_to_video` / `imagine_image_to_image` are in your tool list: **do not call them** for this recipe.
+If `imagine_image_to_video` / `imagine_reference_to_video` / `imagine_image_to_image` are in your tool list: **do not call them** for this recipe. Not for stills. Not for walks. Not for breaths. Not as a “preview”.
 
-Those tools have **no `last_frame`**. Chat refs are not frames. Chat stills skip the edits lock. A film cooked in chat has no smoke → do not Hang it.
+Those tools have **no `last_frame`**. Chat refs are not frames. Chat stills skip the edits lock. A film cooked in chat has no smoke → do not Hang it. A Smoke-FAIL walk attached as KEEP is **illegal**.
+
+**If you cannot run Node, or a plate will Imagine and you have no `XAI_API_KEY`: REFUSE the cook.** Say what is missing. Do **not** fall back to chat Imagine. Stock URL is the honest answer.
+
+Also read [AGENTS.md](AGENTS.md) (same refuse). Customize below is paste-once for *before* clone. After clone, this file + AGENTS.md are enough — a new convo that “ignores Customize” still follows this STOP.
 
 **Legal cook, every new conversation, automatic:**
 
@@ -16,7 +20,9 @@ node scripts/cook-room.mjs <slot> --dry-run
 export XAI_API_KEY=... && node scripts/cook-room.mjs <slot>
 ```
 
-Hung PASS stills/films = reuse. Only missing / smoke-FAIL plates Imagine. `--force` / `COOK_FORCE=1` recooks.
+`npm run dry-run` / `npm run cook` = moss. Hung PASS stills/films = reuse. Only missing / smoke-FAIL plates Imagine. `--force` / `COOK_FORCE=1` recooks.
+
+Gel-breath (ffmpeg still-loop) and FAIL walks are **HANG BLOCKED** — decay in `.kitchen/` or deleted, never a preview KEEP.
 
 That script is the only hall cook. It calls `scripts/imagine-hooks.mjs`:
 
@@ -38,15 +44,19 @@ Then `node scripts/smoke-pack.mjs <file> --kind walk`. FAIL = do not Hang.
 
 ### Custom instructions (paste once in Grok → Customize)
 
-This is the only text that loads in a **brand-new** convo before the repo is cloned. Paste it. Without it, Grok only has chat Imagine.
+This is the only text that loads in a **brand-new** convo **before** the repo is cloned. Paste it. A convo that never got this paste must still **clone then read GROK.md + AGENTS.md** — same refuse. Without clone, Grok only has chat Imagine, which is **not** a hall cook.
 
 ```
 Boltverse / StarBoltSprint / citadel / salle mousse:
-Clone https://github.com/StarBoltSprint/boltverse-odyssey and read GROK.md first.
-NEVER call imagine_image_to_video, imagine_reference_to_video, or imagine_image_to_image for hall stills, walks, breaths, or enter.
-Hall cook = `node scripts/cook-room.mjs <slot>` (dry-run first; reuse hung PASS stills/films; --force recooks; live needs XAI_API_KEY; imagine-hooks: image + last_frame).
-Lane = `node scripts/cook-biome.mjs <id>`.
-Chat films have no last_frame and no smoke. Do not hang them. No new grok.me.
+1. Clone https://github.com/StarBoltSprint/boltverse-odyssey
+2. Read AGENTS.md then GROK.md (STOP). Do not cook before that.
+3. NEVER call imagine_image_to_video, imagine_reference_to_video, or imagine_image_to_image for hall stills, walks, breaths, or enter. They have no last_frame.
+4. Happy path: node scripts/cook-room.mjs <slot> --dry-run
+   then export XAI_API_KEY=... && node scripts/cook-room.mjs <slot>
+   (npm run dry-run / npm run cook = moss). Hung PASS = reuse. --force recooks.
+5. If you cannot run node, or a plate will cook and XAI_API_KEY is missing: REFUSE. Do not chat-Imagine. Give stock https://boltverse-odyssey.grok.me/
+6. Gel-breath / FAIL walk = HANG BLOCKED, not a preview KEEP. Sit / face / 3/4 / oval doors cannot PASS.
+7. Lane = node scripts/cook-biome.mjs <id>. No new grok.me.
 ```
 
 ---

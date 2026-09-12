@@ -149,7 +149,7 @@ Do not complete the hall toward spawn. 6s. Feet glued.
 ```
 
 No spawn still in the breath call. No 10s empty time.
-Cap 2 → ffmpeg loop of the at-still (decay, **not** a living PASS).
+Cap 2 → **HANG BLOCKED**. ffmpeg loop of the at-still may go to `.kitchen/` (decay, **not** a living PASS, **not** `films/`).
 
 ## Walk is one trip (hard)
 

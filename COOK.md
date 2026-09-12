@@ -35,7 +35,7 @@ Every new conversation. Do not wait to be asked.
 
 Keep the size step small: spawn **0.22–0.32**, sill **0.35–0.40**, **Δh/H < 0.12**. Then 10s. If last still = spawn after cap 2 → stock, tap stays.
 
-**`reference_to_video` is not first/last.** The images are *references*, not frames. Imagine *inspires* a walk. It does **not** paste the gold still as the last picture. Walk-B then overshoots into the oval → size pop. **Illegal for walks and enter.**
+**`reference_to_video` is not first/last.** The images are *references*, not frames. Imagine *inspires* a walk. It does **not** paste the gold still as the last picture. Walk-B then overshoots into the rift → size pop. **Illegal for walks and enter.**
 
 Chat Grok has no `last_frame` tool. Stills and walks go through `scripts/imagine-hooks.mjs` / `cook-room.mjs`, not chat Imagine.
 
@@ -100,7 +100,7 @@ Refs: `lock/bolt-back.jpg` + `lock/example-spawn.jpg` · aspect `9:16`
 
 Hooks send:
 
-> Same dog as the first image — FULL-white German Shepherd, ZERO black on the coat, no saddle, no mask, no black ears, teal collar, back to camera, standing, large (spawn size band). Same camera and door layout as the second image: cyan-teal energy rift left, gold-orange energy rift right, both full RECT holes with jambs and sills, lock-off. Never wood doors. Hall restyled with ONLY these materials (from catalog/<id>.md): **{two lines}**. Photoreal 9:16. No face, no UI, no 3/4. No extra door.
+> Same dog as the first image — FULL-white German Shepherd, ZERO black on the coat, no saddle, no mask, no black ears, teal collar, back to camera, STANDING four paws (never sit / 3/4 / face). Same camera and door layout as the second image: cyan-teal energy rift left, gold-orange energy rift right, both full RECT holes with jambs and sills, lock-off. Never oval. Never wood. A luminous teal-gold fork from his paws to BOTH sills (glow in the stone, not chrome). He is small — bboxH/H **0.22–0.32** (aim 0.24–0.28). Hall restyled with ONLY these materials (from catalog/<id>.md): **{two lines}**. Photoreal 9:16. No UI. No extra door.
 
 Save → `stills/spawn.jpg` (or `stills/a/spawn.jpg`). Scale 720×1280.
 
@@ -108,7 +108,7 @@ Save → `stills/spawn.jpg` (or `stills/a/spawn.jpg`). Scale 720×1280.
 
 `imagineStill({ pose: "atA", spawnPath })` · source = the spawn just made
 
-> Same hall, same camera, same light, same doors. Only the dog walks to the teal portal on the left and stops, still back to camera. Gold portal stays in frame. Feet on the floor. Coat stays full white — no saddle.
+> Same hall, same camera, same light, same RECT rifts. Only the dog walks to the teal rift on the left and stops, STANDING, still back to camera. Never sit / face / 3/4. Gold rift stays in frame. Feet on the sill. Coat stays full white — no saddle. Size one step closer than spawn (0.34–0.38, Δh/H < 0.12).
 
 Save → `stills/at-a.jpg` (or `stills/a/at-a.jpg`).
 
@@ -116,7 +116,7 @@ Save → `stills/at-a.jpg` (or `stills/a/at-a.jpg`).
 
 `imagineStill({ pose: "atB", spawnPath })` · source = **spawn** (not atA)
 
-> Same hall, same camera, same light, same doors. Only the dog walks to the gold portal on the right and stops, still back to camera. Teal portal stays in frame. Feet on the floor. Coat stays full white — no saddle.
+> Same hall, same camera, same light, same RECT rifts. Only the dog walks to the gold rift on the right and stops, STANDING, still back to camera. Never sit / face / 3/4. Teal rift stays in frame. Feet on the sill. Coat stays full white — no saddle. Size one step closer than spawn (0.34–0.38, Δh/H < 0.12).
 
 Save → `stills/at-b.jpg` (or `stills/a/at-b.jpg`).
 
@@ -125,7 +125,7 @@ If any FAIL below, recook from spawn. Do not invent a fourth still. Do not cook 
 ## Stills FAIL (recook)
 
 - Cooked in chat Imagine UI (not `imagineStill` via `cook-room`)
-- Bolt face / 3/4 / profile / different dog
+- Bolt face / 3/4 / profile / sit / lie / different dog
 - grey / silver coat, black saddle, black mask, black ears (`identity.coat` / `identity.saddle`)
 - Doors swapped or missing (spawn must show **both**)
 - Wood leaves / ajar timber / flat teal paint / third door / RECT morphing to a circle ([DOORS.md](DOORS.md))
@@ -176,7 +176,7 @@ Prompt (`scripts/imagine-hooks.mjs` `breathLine`):
 
 > ONE dog. Already at THIS sill. NEVER a dog at center. Do not complete the hall toward spawn. 6s. Feet glued.
 
-Cap 2 → ffmpeg loop of the at-still (decay, **not** a living PASS).
+Cap 2 → **do not Hang**. ffmpeg loop of the at-still may be written to `.kitchen/` (decay, **not** a living PASS, **not** `films/`). Stock URL. Soft KEEP of a gel or FAIL walk is illegal.
 
 ### Breath — two laws
 

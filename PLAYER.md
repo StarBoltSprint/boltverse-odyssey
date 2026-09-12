@@ -14,7 +14,8 @@ node scripts/cook-room.mjs <slot> --dry-run
 export XAI_API_KEY=... && node scripts/cook-room.mjs <slot>
 Floor 1 = 3 stills + 5 films. No Enter. No wait.
 Hung PASS stills/films = reuse. --force recooks.
-No chat Imagine — not stills, not walks, not enter. Hook only.
+No chat Imagine — not stills, not walks, not breaths, not enter. Hook only.
+Cannot run node + XAI_API_KEY for a live plate → refuse (stock). No chat fallback.
 PASS → /r/<id>
 Off-list / FAIL ×2 → /
 ```

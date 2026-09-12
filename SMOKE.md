@@ -136,8 +136,8 @@ Enter only enters this pipe if Enter was asked.
 1. The FAIL line names the file + `rule`.
 2. Recook **only that file**.
 3. Smoke again.
-4. Second FAIL → last PASS encode if any. Breath: freeze still **only if the still PASS `gate.size`**. A punch-in still is **not** a legal gel. Then smoke the loop. Loop FAIL → stock. Gel is decay, not PASS.
-5. Never hang a `gate.size punch-in` breath “so the player can see it”. Never a third Imagine cook. Never a sermon in player chat.
+4. Second FAIL → last PASS encode if any. Breath: **do not** write a freeze into `films/`. Optional jpeg-loop may land in `.kitchen/` if the still PASS `gate.size`. A punch-in still is **not** a legal gel. Gel is decay, not PASS, not Hang-ready. → stock.
+5. Never hang a gel-breath or a FAIL walk “so the player can see it”. Never a third Imagine cook. Never a sermon in player chat. `KEEP REFUSED`.
 
 A photo loop with no vapor / no chest is a **gel**. Do not call it a living breath. Hard-refresh after a real PASS breath.
 
@@ -145,7 +145,7 @@ A photo loop with no vapor / no chest is a **gel**. Do not call it a living brea
 
 `spawn.jpg --kind still-spawn` used to PASS on file shape alone. `creamHeight` / punch-in lived only in **still-pair** (spawn→atA, walk last). A 0.60 spawn hung in silence until breath compared two frames.
 
-Now the still itself: `creamHeight` → `gate.size punch-in` if h ≥ 0.55, `gate.size spawn-band` if spawn ∉ 0.18–0.36. COOK smokes spawn **before** films. 0.60 dies at the still. 0.19 lives.
+Now the still itself: `creamHeight` → `gate.size punch-in` if h ≥ 0.55, `gate.size spawn-band` if spawn ∉ **0.22–0.32** (0.19 tiny FAILs). Sill FAIL if h < 0.28 or h > 0.45. **Size in band is not enough:** sit (dog-mask aspect < 2.2, loaf-turn, or sill cream w/h > 0.82) = `gate.sit`. Still yaw > 28° = `gate.yaw` (3/4 / profile). Dark muzzle in the upper-center = `identity.face` (back skull is bright). Sill dog top above 0.46 of frame = `gate.size punch-sill`. COOK smokes spawn **and** spawn↔sill Δh/H < 0.12 **before** films. A seated 0.37 at-B dies. A face-on 0.37 at-B dies. 0.19 dies at the still.
 
 
 Required plates: 3 stills + breath-spawn, breath-A, breath-B, walk-spawn-A, walk-spawn-B.

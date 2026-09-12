@@ -11,8 +11,8 @@ const VIDEO_MODEL = process.env.IMAGINE_VIDEO_MODEL || "grok-imagine-video-1.5";
 const LAW = [
   "Photoreal still or clip, vertical 9:16, 720x1280.",
   "ONE FULL-white German Shepherd, ZERO black on the dog (no saddle, no mask, no black ears), teal collar, BACK to camera, locked-off camera.",
-  "Gothic citadel hall, two tall oval energy portals: cyan-teal LEFT, gold-orange RIGHT.",
-  "No text, no UI, no second dog, no face to camera, no third door, no dolly.",
+  "Gothic citadel hall, two tall RECT energy rifts (not ovals, not wood): cyan-teal LEFT, gold-orange RIGHT. Jambs + sill + gap. Stable RECT fill.",
+  "No text, no UI, no second dog, no face to camera, no 3/4, no sit, no lie, no third door, no dolly.",
 ].join(" ");
 
 const LANE_LAW = [
@@ -181,13 +181,34 @@ export async function imagineStill({ root, slot, pose, dest, spawnPath, lane }) 
         LAW,
         catalogLines(root, slot),
         pose === "spawn"
-          ? "Bolt center, lower third, BACK to camera, TWO ears, STANDING four paws. NEVER sit. NEVER 3/4. NEVER muzzle. BOTH portals fully visible left and right. He is SMALL in the hall — dog bbox height 0.24 of the frame (band 0.22–0.32). Same scale as the layout reference. The two portals DWARF him. NOT a close-up. NOT filling the plate. Locked-off camera."
+          ? [
+              "Bolt center, lower third, BACK to camera, TWO ears, STANDING four paws, weight on the floor.",
+              "NEVER sit. NEVER lie. NEVER 3/4. NEVER face. NEVER muzzle.",
+              "BOTH RECT energy rifts fully visible: cyan-teal LEFT, gold-orange RIGHT. Jambs + sill. Never oval. Never wood.",
+              "A luminous teal-gold fork on the floor from his paws to BOTH sills (path 5–15% of frame H, glow in the stone, not chrome UI).",
+              "He is SMALL in the hall — dog bbox height 0.24–0.28 of the frame (band 0.22–0.32). Same scale as the layout reference.",
+              "The two rifts DWARF him. NOT a close-up. NOT filling the plate. Locked-off camera.",
+            ].join(" ")
           : "",
         pose === "atA"
-          ? "Bolt at the teal LEFT portal, BACK to camera, TWO ears, STANDING four paws. NEVER sit. NEVER lie. NEVER 3/4. NEVER muzzle. Gold still visible on the right. Same camera as spawn — no dolly, same portal sizes. Dog bbox height 0.35–0.40 of the frame. Same lens as spawn."
+          ? [
+              "Bolt at the teal LEFT RECT energy rift, BACK to camera, TWO ears on TOP of the skull, crown to camera, muzzle HIDDEN.",
+              "STANDING four paws, legs LONG, haunches UP, weight on the floor. Same lock as the spawn still — only he moved left.",
+              "NEVER sit. NEVER a loaf. NEVER haunches down. NEVER lie. NEVER 3/4. NEVER cheek. NEVER face. NEVER muzzle. NEVER punch-in to fill the teal.",
+              "He is NOT seated facing the teal. He is NOT looking at the rift. Gold RECT rift still visible on the right. Same camera — no dolly.",
+              "Dog bbox height one step closer than spawn: 0.34–0.38 (want 0.35–0.40). Δh/H from spawn MUST be under 0.12.",
+              "If spawn is 0.26, you are ~0.36. Size in band is not enough if he sits, turns, or shows a face. Same lens as spawn.",
+            ].join(" ")
           : "",
         pose === "atB"
-          ? "Bolt at the gold RIGHT portal, BACK to camera, TWO ears, STANDING four paws. NEVER sit. NEVER lie. NEVER 3/4. NEVER muzzle. Teal still visible on the left. Same camera as spawn — no dolly, same portal sizes. Dog bbox height 0.35–0.40 of the frame. Same lens as spawn."
+          ? [
+              "Bolt at the gold RIGHT RECT energy rift, BACK to camera, TWO ears on TOP of the skull, crown to camera, muzzle HIDDEN.",
+              "STANDING four paws, legs LONG, haunches UP, weight on the floor. Same lock as the spawn still — only he moved right.",
+              "NEVER sit. NEVER a loaf. NEVER haunches down. NEVER lie. NEVER 3/4. NEVER cheek. NEVER face. NEVER muzzle. NEVER punch-in to fill the gold.",
+              "He is NOT seated facing the gold. He is NOT looking at the rift. Teal RECT rift still visible on the left. Same camera — no dolly.",
+              "Dog bbox height one step closer than spawn: 0.34–0.38 (want 0.35–0.40). Δh/H from spawn MUST be under 0.12.",
+              "If spawn is 0.26, you are ~0.36. Size in band is not enough if he sits, turns, or shows a face. Same lens as spawn.",
+            ].join(" ")
           : "",
       ]
         .filter(Boolean)
@@ -216,7 +237,7 @@ export async function imagineClip({ root, slot, kind, first, last, dest, seconds
         catalogLines(root, slot),
         kind === "breath"
           ? breathLine(pose)
-          : "10 seconds. ONE dog only. He LEAVES spawn in the first second. Continuous even walk on FOUR STANDING PAWS. NEVER sit. NEVER lie. NEVER a second Bolt at center or the other door. Never freeze mid-hall. Arrives ~8s, then HOLDS STANDING 1–2s at the sill, still back to camera. No leftover empty time. No linger-then-warp. No sudden sprint. Do not walk back to spawn. Do not invent a floor ice disc. Locked-off. ONE full-white GSD. Last frame is the arrive still. No tunnel.",
+          : "10 seconds. ONE dog only. He LEAVES spawn in the first second. Continuous even walk on FOUR STANDING PAWS. NEVER sit. NEVER lie. NEVER face. NEVER 3/4. NEVER a second Bolt at center or the other door. RECT energy rifts stay RECT (never oval). Never freeze mid-hall. Arrives ~8s, then HOLDS STANDING 1–2s at the sill, still back to camera. No leftover empty time. No linger-then-warp. No sudden sprint. Do not walk back to spawn. Do not invent a floor ice disc. Locked-off. ONE full-white GSD. Last frame is the arrive still. No tunnel.",
       ].join(" ");
   const body = {
     model: VIDEO_MODEL,

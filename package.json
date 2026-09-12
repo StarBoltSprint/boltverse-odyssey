@@ -1,0 +1,14 @@
+{
+  "name": "boltverse-odyssey",
+  "private": true,
+  "type": "module",
+  "description": "Hall recipe — cook via scripts/cook-room.mjs. Not an app.",
+  "scripts": {
+    "dry-run": "node scripts/cook-room.mjs moss --dry-run",
+    "cook": "node scripts/cook-room.mjs moss",
+    "smoke": "node scripts/smoke-pack.mjs packs/moss",
+    "smoke:stills": "node scripts/smoke-pack.mjs packs/moss --stills-only",
+    "validate": "node scripts/validate-pack.mjs packs/moss",
+    "test": "node scripts/still-reasons-selftest.mjs"
+  }
+}
