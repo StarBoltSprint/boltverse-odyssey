@@ -3,6 +3,7 @@
 Recipe repo. Not an app. Player is already https://boltverse-odyssey.grok.me
 
 sill ≠ spawn. at-A = already AT the teal LEFT sill (seuil). at-B = already AT the gold RIGHT sill. Spawn = CENTER only. Mid-hall at-A/at-B = FAIL. Soft KEEP banned.
+sealed at-A = frozen; do not Imagine new at-A pose.
 
 Happy path: clone → read AGENTS.md + GROK.md → `node scripts/cook-room.mjs <slot> --dry-run` → `export XAI_API_KEY=... && node scripts/cook-room.mjs <slot>`
 

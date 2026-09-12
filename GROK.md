@@ -7,6 +7,8 @@ Player: https://boltverse-odyssey.grok.me
 
 **sill ≠ spawn.** at-A = already AT the teal LEFT sill (seuil / threshold). at-B = already AT the gold RIGHT sill. Spawn = CENTER only (both doors + fork). Mid-hall at-A/at-B = **FAIL**. Soft KEEP banned.
 
+**sealed at-A = frozen; do not Imagine new at-A pose.** `SEAL_ATA=1` or `lock/SEAL-at-a.jpg` → skip `imagineStill` at-A. Spawn cook restyles the hall. Copy the sealed pose dog, or keep the sealed still when the hall is the same.
+
 If `imagine_image_to_video` / `imagine_reference_to_video` / `imagine_image_to_image` are in your tool list: **do not call them** for this recipe. Not for stills. Not for walks. Not for breaths. Not as a “preview”.
 
 Those tools have **no `last_frame`**. Chat refs are not frames. Chat stills skip the edits lock. A film cooked in chat has no smoke → do not Hang it. A Smoke-FAIL walk attached as KEEP is **illegal**.
@@ -59,7 +61,8 @@ Boltverse / StarBoltSprint / citadel / salle mousse:
 5. If you cannot run node, or a plate will cook and XAI_API_KEY is missing: REFUSE. Do not chat-Imagine. Give stock https://boltverse-odyssey.grok.me/
 6. Gel-breath / FAIL walk = HANG BLOCKED, not a preview KEEP. Soft KEEP banned. Sit / face / 3/4 cannot PASS. Oval|RECT energy portals OK (never wood, never chrome UI).
 7. sill ≠ spawn. at-A = already AT the teal LEFT sill (seuil). at-B = already AT the gold RIGHT sill. Spawn = CENTER only. Mid-hall at-A/at-B = FAIL.
-8. Lane = node scripts/cook-biome.mjs <id>. No new grok.me.
+8. sealed at-A = frozen; do not Imagine new at-A pose. SEAL_ATA=1 or lock/SEAL-at-a.jpg → skip imagineStill at-A; copy sealed still after spawn PASS.
+9. Lane = node scripts/cook-biome.mjs <id>. No new grok.me.
 ```
 
 ---

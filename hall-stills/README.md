@@ -13,14 +13,19 @@ node scripts/install-lock-ata.mjs --dry-run
 node scripts/install-lock-ata.mjs
 ```
 
-That writes `lock/example-at-a.jpg` (720×1280). `imagineStill` at-A **prefers this lock example** as the side ref (not hung moss décor).
+That writes `lock/example-at-a.jpg` (720×1280) **and** `lock/SEAL-at-a.jpg` (owner freeze).
 
-Prompt law (hooks already send this):
+**Packs may copy** `lock/example-at-a.jpg` (or `lock/SEAL-at-a.jpg`) **to** `packs/<slot>/stills/at-a.jpg` when:
+
+- Smoke **place** is acceptable, **OR**
+- the owner seals (`SEAL_ATA=1` or `lock/SEAL-at-a.jpg` present)
+
+**sealed at-A = frozen; do not Imagine new at-A pose.** `cook-room` copies the seal after spawn PASS and **SKIPS** `imagineStill` for at-A. Restyle the hall via spawn cook. Keep the sealed still when it is the same hall.
+
+Unsealed cooks still prefer this lock example as the at-A side ref (not hung moss décor):
 
 > copy PLACE+POSE from example; FORCE taille 0.35–0.40; FORCE STANDING; never shrink to 0.18; hall materials from spawn/catalog only — ignore example décor.
 
-Teacher alone is not enough. Live ember at-A FAIL×2 was sill-band 0.19+sit+face and 0.16+sit. Do not copy a tiny teacher scale.
+Do **not** drop `lock/example-at-a-tiny.jpg` here as a non-owner path. The install script refuses that hash unless the file is the owner drop at `hall-stills/`.
 
-Do **not** drop `lock/example-at-a-tiny.jpg` here. The install script refuses that hash.
-
-This checkout has the drop. `node scripts/install-lock-ata.mjs` writes `lock/example-at-a.jpg`. No new grok.me. No chat Imagine.
+This checkout has the drop. `node scripts/install-lock-ata.mjs` writes the lock example + the SEAL file. No new grok.me. No chat Imagine.

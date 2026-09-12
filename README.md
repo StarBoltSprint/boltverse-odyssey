@@ -64,7 +64,8 @@ Search: `StarBoltSprint citadel-room` · living film · boltverse-odyssey.grok.m
 | `scripts/validate-pack.mjs` | room.json + 3 stills + 5 films, H264, no audio |
 | `scripts/smoke-pack.mjs` | one dog, first≠last on walks, breath loops |
 | `lock/bolt-back.jpg` | Bolt identity (back / coat) — not scale |
-| `lock/example-at-a.jpg` | SmiR at-A lock teacher (BACK toward teal L, gold visible). Drop: `hall-stills/smir-ata-teacher.jpeg` → `node scripts/install-lock-ata.mjs` |
+| `lock/example-at-a.jpg` | SmiR at-A lock teacher (BACK toward teal L, gold visible). Drop: `hall-stills/smir-ata-teacher.jpeg` → `node scripts/install-lock-ata.mjs`. Packs may copy to `stills/at-a.jpg` when Smoke place is OK **or** owner seals. |
+| `lock/SEAL-at-a.jpg` | Owner freeze. `SEAL_ATA=1` or this file → sealed at-A = frozen; do not Imagine new at-A pose. |
 | `lock/example-*.jpg` | camera + which side (oval\|RECT energy OK; atA = lock example, atB = moss PASS swap) |
 | `packs/<id>/` | hung discs — Grok writes here |
 | `stills/` `films/` | **empty on GitHub** — do not hang at root |

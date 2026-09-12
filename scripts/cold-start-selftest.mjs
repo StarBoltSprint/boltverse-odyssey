@@ -28,6 +28,7 @@ must(/already AT the teal LEFT sill/.test(agentsHead) && /already AT the gold RI
 must(/Spawn = CENTER only/.test(agentsHead), "AGENTS.md head: spawn = center only");
 must(/Mid-hall at-A\/at-B = \*\*FAIL\*\*/.test(agentsHead), "AGENTS.md head: mid-hall FAIL");
 must(/Soft KEEP banned/.test(agentsHead), "AGENTS.md head: Soft KEEP banned");
+must(/sealed at-A = frozen; do not Imagine new at-A pose/.test(agentsHead), "AGENTS.md head: sealed at-A frozen");
 
 const rulesHead = head(".cursorrules", 12);
 must(/sill ≠ spawn/.test(rulesHead), ".cursorrules head: sill ≠ spawn");
@@ -35,6 +36,7 @@ must(/already AT the teal LEFT sill/.test(rulesHead) && /already AT the gold RIG
 must(/Spawn = CENTER only/.test(rulesHead), ".cursorrules head: spawn = center only");
 must(/Mid-hall at-A\/at-B = FAIL/.test(rulesHead), ".cursorrules head: mid-hall FAIL");
 must(/Soft KEEP banned/.test(rulesHead), ".cursorrules head: Soft KEEP banned");
+must(/sealed at-A = frozen; do not Imagine new at-A pose/.test(rulesHead), ".cursorrules head: sealed at-A frozen");
 
 const grok = body("GROK.md");
 const stop = grok.slice(0, grok.indexOf("### Custom instructions"));
@@ -43,6 +45,7 @@ must(/already AT the teal LEFT sill/.test(stop) && /already AT the gold RIGHT si
 must(/Spawn = CENTER only/.test(stop), "GROK.md STOP: spawn = center only");
 must(/Mid-hall at-A\/at-B = \*\*FAIL\*\*/.test(stop), "GROK.md STOP: mid-hall FAIL");
 must(/Soft KEEP banned/.test(stop), "GROK.md STOP: Soft KEEP banned");
+must(/sealed at-A = frozen; do not Imagine new at-A pose/.test(stop), "GROK.md STOP: sealed at-A frozen");
 
 const customize = grok.slice(grok.indexOf("```\nBoltverse"), grok.indexOf("```\n\n---"));
 must(/sill ≠ spawn/.test(customize), "GROK.md Customize: sill ≠ spawn");
@@ -54,6 +57,7 @@ must(!/oval doors cannot PASS/.test(customize), "GROK.md Customize: oval doors n
 must(/Oval\|RECT energy portals OK/.test(customize), "GROK.md Customize: oval|RECT energy OK");
 must(/never wood/.test(customize) && /never chrome UI/.test(customize), "GROK.md Customize: never wood / chrome UI");
 must(/Sit \/ face \/ 3\/4 cannot PASS/.test(customize), "GROK.md Customize: sit/face/3/4 still banned");
+must(/sealed at-A = frozen; do not Imagine new at-A pose/.test(customize), "GROK.md Customize: sealed at-A frozen");
 
 const agents = body("AGENTS.md");
 must(/Oval\|RECT energy portals OK/.test(agents), "AGENTS.md: oval|RECT energy OK");

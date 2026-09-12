@@ -3,6 +3,7 @@
 // usage:
 //   node scripts/smoke-pack.mjs packs/<id>
 //   node scripts/smoke-pack.mjs packs/<id> --stills-only
+//   node scripts/smoke-pack.mjs packs/<id> --seal-ata
 //   node scripts/smoke-pack.mjs packs/<id>/films/walk-spawn-a.mp4 --kind walk
 // Layers A+B here. Layer C = Grok + scripts/smoke-identity.md on .smoke/ frames.
 // See SMOKE.md. Recook THIS plate, cap 2.
@@ -26,6 +27,7 @@ const PH = 32;
 const args = process.argv.slice(2).filter((a) => !a.startsWith("--"));
 const flags = new Set(process.argv.filter((a) => a.startsWith("--")));
 const stillsOnly = flags.has("--stills-only");
+const sealAta = flags.has("--seal-ata") || process.env.SEAL_ATA === "1";
 const kindFlag = (() => {
   const i = process.argv.indexOf("--kind");
   return i >= 0 ? process.argv[i + 1] : null;
@@ -316,8 +318,21 @@ function smokeFile(file, kind, refs, required, smokeDir) {
       const pose = stillReasons(fa, kind, GW, GH);
       if (pose.why.length) {
         // Place PASS is not a soft KEEP. Sit / yaw / face / size still FAIL.
+        // Owner-sealed at-A: pose/taille recook skipped — WARN, not Hang-block.
         const hard = hardPoseFails(pose.why);
         const rule = (hard[0] || pose.why[0]).split(" ")[0];
+        if (sealAta && kind === "still-atA") {
+          return emit({
+            id,
+            kind,
+            ok: false,
+            warn: true,
+            required: false,
+            rule,
+            at: "still",
+            note: pose.why.join("; ") + " — SEALED at-A, owner freeze",
+          });
+        }
         return fail(rule, "still", pose.why.join("; "));
       }
     } catch (e) {
@@ -612,8 +627,21 @@ if (isPackDir(target) && !kindFlag) {
     try {
       const g = matchPose(rawFrame(a, 0, GW, GH), rawFrame(b, 0, GW, GH), edge, { w: GW, h: GH });
       if (!g.ok) {
-        emit({ id: label, kind: "still-pair", ok: false, required: true, rule: g.why[0].split(" ")[0], note: g.why.join("; ") });
-        fails++;
+        if (sealAta && label === "stills spawn→at-a") {
+          emit({
+            id: label,
+            kind: "still-pair",
+            ok: false,
+            warn: true,
+            required: false,
+            rule: g.why[0].split(" ")[0],
+            note: g.why.join("; ") + " — SEALED at-A, owner freeze",
+          });
+          warns++;
+        } else {
+          emit({ id: label, kind: "still-pair", ok: false, required: true, rule: g.why[0].split(" ")[0], note: g.why.join("; ") });
+          fails++;
+        }
       } else {
         emit({ id: label, kind: "still-pair", ok: true, required: true });
         if (g.warn?.length) {

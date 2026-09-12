@@ -3,6 +3,7 @@
 // at-A prefers lock/example-at-a.jpg (SmiR lock teacher). at-B prefers hung moss PASS.
 // copy PLACE+POSE from example; FORCE taille 0.35–0.40; FORCE STANDING; never shrink to 0.18.
 // IGNORE tiny ~0.18 crop like bolt-back 0.53. Never send example-at-*-tiny.
+import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -17,7 +18,7 @@ import {
   spawnStillLine,
   walkClipLine,
 } from "./imagine-hooks.mjs";
-import { DEST_REL, DROP_RELS, installLockAta, lockAtaStatus } from "./install-lock-ata.mjs";
+import { DEST_REL, DROP_RELS, SEAL_REL, installLockAta, lockAtaStatus, sealAtaStatus } from "./install-lock-ata.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -70,9 +71,16 @@ must(/ignore example décor/.test(atA) && /hall materials from spawn\/catalog on
 must(/standing BACK toward teal L/.test(atA), "atA names SmiR teacher pose");
 must(atB.includes(ATA_FORCE_TAILLE) && atB.includes(ATA_FORCE_STANDING), "atB also FORCE taille + standing");
 must(DEST_REL === "lock/example-at-a.jpg", "install dest is lock/example-at-a.jpg");
+must(SEAL_REL === "lock/SEAL-at-a.jpg", "seal dest is lock/SEAL-at-a.jpg");
 must(DROP_RELS[0] === "hall-stills/smir-ata-teacher.jpeg", "drop slot hall-stills/smir-ata-teacher.jpeg");
 must(/COOK\/LOCK/.test(lockAtaStatus(root).note), "COOK/LOCK note present");
 must(lockAtaStatus(root).hasDrop === true, "owner drop hall-stills/smir-ata-teacher.jpeg present");
+must(sealAtaStatus(root).hasSealFile === true, "owner seal file lock/SEAL-at-a.jpg present");
+must(sealAtaStatus(root, {}).sealed === true, "SEAL file freezes at-A without env");
+must(sealAtaStatus(root, { SEAL_ATA: "1" }).sealed === true, "SEAL_ATA=1 seals at-A");
+must(sealAtaStatus(root).srcRel === SEAL_REL, "seal copy source is lock/SEAL-at-a.jpg");
+must(sealAtaStatus("/tmp/boltverse-no-seal-ata", {}).sealed === false, "no file + no env → unsealed");
+must(/frozen/.test(sealAtaStatus(root).note), "seal note says frozen");
 try {
   installLockAta(root, join(root, "lock/example-at-a-tiny.jpg"));
   must(false, "tiny install must refuse");
@@ -101,5 +109,10 @@ energyOk(atA, "atA");
 energyOk(atB, "atB");
 must(/Do not FAIL oval shape/.test(atA) && /Do not FAIL oval shape/.test(atB), "sill refs: do not FAIL oval shape");
 must(/preferred-ok/.test(HALL_LAW) && /preferred-ok/.test(spawnStillLine()), "oval preferred-ok");
+
+const dry = spawnSync("node", [join(root, "scripts/cook-room.mjs"), "moss", "--dry-run"], { encoding: "utf8" });
+must(dry.status === 0, "cook-room moss --dry-run exits 0");
+must(/SEALED at-A = frozen; do not Imagine new at-A pose/.test(dry.stdout || ""), "dry-run prints sealed at-A one-liner");
+must(!/^cook stills\/at-a\.jpg/m.test(dry.stdout || ""), "dry-run does not Imagine at-A when sealed or hung PASS");
 
 console.log("IMAGINE-HOOKS PASS");

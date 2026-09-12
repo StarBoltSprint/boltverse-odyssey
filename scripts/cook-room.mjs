@@ -4,14 +4,16 @@
 //   COOK_DEBUG=1 node scripts/cook-room.mjs dusk
 //   export XAI_API_KEY=... && node scripts/cook-room.mjs moss
 //   node scripts/cook-room.mjs moss --force
+//   SEAL_ATA=1 node scripts/cook-room.mjs moss
 // Hung PASS stills/films are reused. --force / COOK_FORCE=1 recooks.
+// SEAL_ATA=1 or lock/SEAL-at-a.jpg: sealed at-A = frozen; do not Imagine new at-A pose.
 
 import { existsSync, mkdirSync, writeFileSync, unlinkSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { imagineStill, imagineClip } from "./imagine-hooks.mjs";
-import { lockAtaStatus } from "./install-lock-ata.mjs";
+import { copySealedAta, lockAtaStatus, sealAtaStatus } from "./install-lock-ata.mjs";
 
 const SLOTS = [
   "moss",
@@ -39,6 +41,7 @@ const slot = String(argv.find((a) => !a.startsWith("--")) || "")
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const dir = join(root, "packs", slot);
 const scripts = join(root, "scripts");
+const seal = sealAtaStatus(root);
 
 function out(s) {
   console.log(s);
@@ -106,8 +109,8 @@ function runNode(file, args) {
   return spawnSync("node", [join(scripts, file), ...args], { encoding: "utf8" });
 }
 
-function smokeReport(rel, kind) {
-  const r = runNode("smoke-pack.mjs", [join(dir, rel), "--kind", kind]);
+function smokeReport(rel, kind, extra = []) {
+  const r = runNode("smoke-pack.mjs", [join(dir, rel), "--kind", kind, ...extra]);
   const stdout = r.stdout || "";
   if (debug || r.status !== 0) process.stdout.write(stdout);
   return {
@@ -117,12 +120,12 @@ function smokeReport(rel, kind) {
   };
 }
 
-function smoke(rel, kind) {
-  return smokeReport(rel, kind).ok;
+function smoke(rel, kind, extra = []) {
+  return smokeReport(rel, kind, extra).ok;
 }
 
-function smokeStills() {
-  const r = runNode("smoke-pack.mjs", [dir, "--stills-only"]);
+function smokeStills(extra = []) {
+  const r = runNode("smoke-pack.mjs", [dir, "--stills-only", ...extra]);
   const stdout = r.stdout || "";
   process.stdout.write(stdout);
   return {
@@ -145,6 +148,11 @@ function reuse(rel, kind) {
 }
 
 function plan(rel, kind) {
+  if (rel === "stills/at-a.jpg" && seal.sealed) {
+    if (has(rel) && smoke(rel, kind)) return "skip " + rel + " (exists + smoke PASS; SEALED — no imagineStill)";
+    if (has(rel)) return "copy " + (seal.srcRel || "lock/SEAL-at-a.jpg") + " → " + rel + " (SEALED, no imagineStill)";
+    return "copy " + (seal.srcRel || "lock/SEAL-at-a.jpg") + " → " + rel + " (SEALED, missing, no imagineStill)";
+  }
   if (force) return "cook " + rel + " (--force)";
   if (!has(rel)) return "cook " + rel + " (missing)";
   const s = smokeReport(rel, kind);
@@ -214,15 +222,17 @@ if (dry) {
   out("hooks only — no chat Imagine UI");
   out("oval|RECT energy rifts — never wood, never chrome UI. STANDING — sit / face / 3/4 / punch-sill cannot PASS.");
   out(lockAtaStatus(root).note);
+  out(seal.note);
   out("atA side ref = lock/example-at-a.jpg — copy PLACE+POSE from example; FORCE taille 0.35–0.40; FORCE STANDING; never shrink to 0.18; hall materials from spawn/catalog only — ignore example décor.");
-  out(force ? "--force: recook even if hung PASS" : "default: reuse hung PASS stills + films");
+  if (seal.sealed) out("SEALED at-A = frozen; do not Imagine new at-A pose.");
+  out(force ? "--force: recook even if hung PASS (sealed at-A still skips imagineStill)" : "default: reuse hung PASS stills + films");
   out(has("room.json") ? "keep room.json" : "write skeleton room.json");
   let skipStills = 0;
   let skipFilms = 0;
   let needLive = false;
   for (const [rel, kind] of stillJobs) {
     const line = plan(rel, kind);
-    if (line.startsWith("skip ")) skipStills++;
+    if (line.startsWith("skip ") || line.startsWith("copy ")) skipStills++;
     else needLive = true;
     out(line);
   }
@@ -248,6 +258,7 @@ if (dry) {
 }
 
 const needLive = [...stillJobs, ...filmJobs].some(([rel, kind]) => {
+  if (seal.sealed && rel === "stills/at-a.jpg") return false;
   if (force) return true;
   if (!has(rel)) return true;
   return !smoke(rel, kind);
@@ -287,7 +298,16 @@ if (reuse("stills/spawn.jpg", "still-spawn")) {
 }
 if (debug) out("stills written spawn");
 
-if (reuse("stills/at-a.jpg", "still-atA")) {
+if (seal.sealed) {
+  if (!seal.srcRel) fail("SEALED at-A — lock/SEAL-at-a.jpg or lock/example-at-a.jpg missing. No imagineStill fallback.");
+  if (has("stills/at-a.jpg") && smoke("stills/at-a.jpg", "still-atA")) {
+    out("skip stills/at-a.jpg (exists + smoke PASS; SEALED — no imagineStill)");
+  } else {
+    copySealedAta(root, atA, seal.srcRel);
+    out("SEALED stills/at-a.jpg ← " + seal.srcRel + " (frozen owner pose, no imagineStill)");
+    stillCooked++;
+  }
+} else if (reuse("stills/at-a.jpg", "still-atA")) {
   out("skip stills/at-a.jpg (exists + smoke PASS)");
 } else {
   await cap2("atA", async () => {
@@ -324,7 +344,7 @@ if (reuse("stills/at-b.jpg", "still-atB")) {
   stillCooked++;
 }
 if (stillCooked === 0) out("skip still phase — 3 hung stills PASS");
-const stillGate = smokeStills();
+const stillGate = smokeStills(seal.sealed ? ["--seal-ata"] : []);
 if (!stillGate.ok) fail(stillGate.rule || "still-pair — sit / yaw / Δh/H. Do not Hang.");
 if (debug) out("stills written");
 
@@ -441,7 +461,7 @@ if (filmCooked === 0) out("skip film phase — 5 hung films PASS");
 const v = spawnSync("python3", [join(scripts, "validate-pack.py"), dir], { encoding: "utf8" });
 process.stdout.write(v.stdout || "");
 if (v.status !== 0) fail(failLine(v.stdout) || "validate");
-const s = runNode("smoke-pack.mjs", [dir]);
+const s = runNode("smoke-pack.mjs", seal.sealed ? [dir, "--seal-ata"] : [dir]);
 process.stdout.write(s.stdout || "");
 if (s.status !== 0) fail(failLine(s.stdout) || "smoke-pack — not Hang-ready");
 

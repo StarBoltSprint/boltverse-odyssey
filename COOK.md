@@ -69,7 +69,7 @@ Off-list → nearest, or ask "did you mean ember?". Never "describe any temple".
 Composition examples (how Imagine learns seuil):
 
 - [`lock/example-spawn.jpg`](lock/example-spawn.jpg) — camera + two-door lock (scale OK)
-- **at-A lock teacher** — [`lock/example-at-a.jpg`](lock/example-at-a.jpg). SmiR hand still: standing **BACK toward teal L**, gold visible. Oval|RECT energy OK (PR #6). `imagineStill` atA **prefers this lock example** as the side ref (not hung moss). **copy PLACE+POSE from example; FORCE taille 0.35–0.40; FORCE STANDING; never shrink to 0.18; hall materials from spawn/catalog only — ignore example décor.** Live ember at-A FAIL×2 was sill-band 0.19+sit+face and 0.16+sit — teacher alone is not enough.
+- **at-A lock teacher** — [`lock/example-at-a.jpg`](lock/example-at-a.jpg). SmiR hand still: standing **BACK toward teal L**, gold visible. Oval|RECT energy OK (PR #6). Packs may copy this file to `stills/at-a.jpg` when Smoke place is acceptable **OR** when the owner seals. Owner freeze: [`lock/SEAL-at-a.jpg`](lock/SEAL-at-a.jpg) or `SEAL_ATA=1` → cook-room **SKIPS** `imagineStill` at-A (copy after spawn PASS; never regenerate pose/taille from scratch). Unsealed: `imagineStill` atA **prefers this lock example** as the side ref (not hung moss). **copy PLACE+POSE from example; FORCE taille 0.35–0.40; FORCE STANDING; never shrink to 0.18; hall materials from spawn/catalog only — ignore example décor.** Live ember at-A FAIL×2 was sill-band 0.19+sit+face and 0.16+sit — teacher alone is not enough unless sealed.
 - **at-B teacher** — [`lock/example-at-b.jpg`](lock/example-at-b.jpg) / [`lock/sill-at-b.jpg`](lock/sill-at-b.jpg), swapped from hung moss PASS. Cook still prefers [`packs/moss/stills/at-b.jpg`](packs/moss/stills/at-b.jpg) as the at-B side ref.
 - **IGNORE a tiny ~0.18 crop** the same way Imagine **IGNORE**s bolt-back ~0.53. Live after #4: at-A FAIL×2 sill-band 0.19/0.21; at-B FAIL×2 0.20/0.21+sit. Archived anti-teachers: [`lock/example-at-a-tiny.jpg`](lock/example-at-a-tiny.jpg) / [`example-at-b-tiny.jpg`](lock/example-at-b-tiny.jpg) — **never send**.
 
@@ -78,8 +78,8 @@ Composition examples (how Imagine learns seuil):
 SmiR’s teacher is installed:
 
 1. Source: [`hall-stills/smir-ata-teacher.jpeg`](hall-stills/smir-ata-teacher.jpeg) (standing BACK toward teal L, gold visible).
-2. `node scripts/install-lock-ata.mjs` wrote [`lock/example-at-a.jpg`](lock/example-at-a.jpg) (720×1280).
-3. Direct `lock/example-at-a-tiny.jpg` is still refused. An owner drop at `hall-stills/` is allowed even if the pixels match that archive — prompts **FORCE taille 0.35–0.40 + STANDING** and **never shrink to 0.18**.
+2. `node scripts/install-lock-ata.mjs` wrote [`lock/example-at-a.jpg`](lock/example-at-a.jpg) (720×1280) and [`lock/SEAL-at-a.jpg`](lock/SEAL-at-a.jpg) (owner freeze).
+3. Direct `lock/example-at-a-tiny.jpg` is still refused. An owner drop at `hall-stills/` is allowed even if the pixels match that archive. **sealed at-A = frozen; do not Imagine new at-A pose.** Unsealed prompts still **FORCE taille 0.35–0.40 + STANDING** and **never shrink to 0.18**.
 
 Live ember at-A FAIL×2 (0.19+sit+face / 0.16+sit) means teacher pixels alone are not enough. No chat Imagine. No new grok.me.
 
@@ -117,7 +117,9 @@ Save → `stills/spawn.jpg` (or `stills/a/spawn.jpg`). Scale 720×1280.
 
 ### 2. atA — from spawn, not from text
 
-`imagineStill({ pose: "atA", spawnPath })` · **`image` = spawn** (not bolt-back). bolt-back = coat only (IGNORE ~0.53). Side ref = **`lock/example-at-a.jpg`** (SmiR lock teacher; not hung moss). IGNORE tiny ~0.18 crop like bolt-back 0.53. Never `example-at-a-tiny`.
+If `SEAL_ATA=1` or `lock/SEAL-at-a.jpg` is present: **do not call `imagineStill` for at-A.** Copy the sealed still to `stills/at-a.jpg` after spawn PASS (keep a hung PASS at-A; same hall keeps the sealed pose). Hall restyle = spawn cook only.
+
+Unsealed: `imagineStill({ pose: "atA", spawnPath })` · **`image` = spawn** (not bolt-back). bolt-back = coat only (IGNORE ~0.53). Side ref = **`lock/example-at-a.jpg`** (SmiR lock teacher; not hung moss). IGNORE tiny ~0.18 crop like bolt-back 0.53. Never `example-at-a-tiny`.
 
 > Same camera / light / energy rifts as spawn (oval or RECT). **copy PLACE+POSE from example; FORCE taille 0.35–0.40; FORCE STANDING; never shrink to 0.18; hall materials from spawn/catalog only — ignore example décor.** He is ALREADY at the teal LEFT **sill** (paws on that lip, body in the LEFT third) — NEVER mid-hall / spawn / center / fork. STANDING, BACK, crown to camera. Feet on the **stone floor in front of** the sill — never inside the rift, never climbing the teal (punch-sill if dog top < 0.46). Gold stays in frame. Never sit / face / 3/4. bboxH/H **FORCE 0.35–0.40**. Do not shrink him to the teacher (~0.18 / 0.16 / 0.19 = FAIL). Δh/H < 0.12. Do not grow him in place at center. IGNORE bolt-back crop (~0.53). IGNORE a tiny ~0.18 crop the same way.
 
