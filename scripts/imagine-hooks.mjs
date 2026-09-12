@@ -113,7 +113,7 @@ function breathLine(pose) {
   const live = [
     "6 seconds. Seamless loop. First frame and last frame are the same still (already pinned — do not re-describe them).",
     "The dog remains COMPLETELY STATIONARY in place. NEVER walking. NEVER stepping. NEVER shifting position.",
-    "He only breathes gently and naturally: chest and flanks rise and fall softly. The bushy tail may sway and flick lightly. A small head motion is OK.",
+    "He remains STANDING on FOUR PAWS the whole clip. NEVER sit. NEVER lie. NEVER crouch. NEVER drop to the haunches.",
     "NO morphing of the dog's form, fur, or body.",
     "The two portals may pulse and animate subtly (slow swirling energy, soft light ripples). Distant hall lights may shimmer. Soft reflections may shift slowly on the floor.",
     "Camera stays COMPLETELY LOCKED and fixed on the exact composition — never pan, tilt, zoom, or dolly.",
@@ -370,7 +370,7 @@ export function walkClipLine(edge) {
     "NO morph. The dog stays ONE full-white German Shepherd the whole clip.",
     "Camera is LOCKED OFF and NEVER moves — no dolly, no pan, no zoom, no drift.",
     "ONE dog only. NEVER two dogs. NEVER a second Bolt. NEVER a clone. NEVER anything else appearing on screen.",
-    "NEVER sit. NEVER lie. NEVER face. NEVER 3/4.",
+    "NEVER sit. NEVER lie. NEVER crouch. NEVER drop to the haunches. He stays STANDING on FOUR PAWS the whole walk.",
     "Energy portals stay oval or RECT (never wood, never chrome UI). Do not morph into a blob.",
     "He ONLY walks FORWARD toward the arrive portal. NEVER recede. NEVER reverse. NEVER walk back toward spawn. Distance to the arrive door ONLY decreases, every frame. NEVER sit at the start.",
     "Do not invent leftover empty time. Last frame is the arrive still — he is already there when the clip ends. No tunnel.",
