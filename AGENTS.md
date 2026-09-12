@@ -17,7 +17,7 @@ Read **[GROK.md](GROK.md)** next (STOP banner). Same law as this file.
    or `npm run dry-run` (moss).
 3. Dry-run prints skip vs cook. Hung PASS stills/films = reuse. `--force` recooks.
 4. If any plate will cook: `export XAI_API_KEY=... && node scripts/cook-room.mjs <slot>`  
-   (`npm run cook` = moss live). That script is the hall cook for **first-seal** stills and **all films**. Cross-style sealed at-A/at-B = **Imagine Agent** (below).
+   (`npm run cook` = moss live). That script is the hall cook for **first-seal** stills and **all films**. Cross-style / décor variants = **Imagine Agent REQUIRED** (below). `imagineStill` is **BANNED for restyle**.
 5. Script prints `PASS https://boltverse-odyssey.grok.me/r/<slot>` or `FAIL <rule>` + `HANG BLOCKED` + stock `/`. That line is the answer.
 
 Catalog slots only: moss · ember · dusk · asteroid · frost · ivy · ash · tide · ember-deep · gold.
@@ -26,14 +26,14 @@ Lane / biome is **another job**: `node scripts/cook-biome.mjs <id>`. Not cook-ro
 
 ## Cross-style sill stills — Imagine Agent (hall-restyle)
 
-Do **not** invent a new dog via `cook-room` `imagineStill` each style.
+**Imagine Agent is MANDATORY for cross-style hall stills (not optional).** Agent is **REQUIRED** for décor variants. Do **not** invent a new dog via `cook-room` `imagineStill` each style.
 
-Preferred path: start from a **SEALED** at-A / at-B (dog already AT the teal or gold sill). Then **[Grok Imagine Agent](https://grok.com/imagine/agent)** — keep the exact same dog pose / size / place and the same cyan/gold portals; change hall materials only (ice / ember / catalog slot).
+One **SEALED** sill still (dog already AT the teal or gold threshold) → **[Imagine Agent](https://grok.com/imagine/agent)** restyles hall only. Keep the exact same dog pose / size / place and the same cyan/gold portals; change hall materials only (ice / ember / catalog slot).
 
 **Grok Build chat Imagine tools are NOT the same as Imagine Agent.** Cross-style sealed stills = Imagine Agent at `https://grok.com/imagine/agent`. Build must not rely on chat `imagine_*` tools for hall restyle identity lock.
 
-- Imagine Agent = the **hall-restyle** tool for sealed stills.
-- `cook-room` `imagineStill` from scratch = **first seal** only.
+- Imagine Agent = the **hall-restyle** tool for sealed stills. **REQUIRED** for décor variants.
+- `cook-room` `imagineStill` from scratch = **first seal** only. **BANNED for restyle.**
 - Hung PASS / sealed skip stays. `--force` recooks.
 - Films stay on hooks (`imagineClip` + `last_frame`). Chat Imagine UI **without** Agent is still **banned for walks** (no `last_frame`).
 
@@ -54,7 +54,7 @@ They have **no `last_frame`**. Chat refs are not frames. A chat film has no smok
 Official film path: `scripts/cook-room.mjs` → `scripts/imagine-hooks.mjs`
 
 - first-seal stills → `POST /v1/images/edits` (`imagineStill`)
-- sealed cross-style stills → **Imagine Agent** (freeze dog + portals; restyle hall only)
+- sealed cross-style stills → **Imagine Agent REQUIRED** (freeze dog + portals; restyle hall only). `imagineStill` **BANNED for restyle**
 - walks → video `image` + **`last_frame`** (start still ≠ arrive still)
 - breaths → same still twice (`image` + `last_frame`)
 
@@ -72,7 +72,7 @@ Official film path: `scripts/cook-room.mjs` → `scripts/imagine-hooks.mjs`
 - New grok.me / Vite / Connect Wallet / API keys in a client
 - Rewrite `packs/moss` media unless smoke on that plate FAILs
 - Invent a fourth still or a mid-hall plate (tighten spawn↔sill Δh/H instead)
-- Invent a new dog via `cook-room` `imagineStill` when a **SEALED** at-A/at-B exists — restyle with **Imagine Agent**
+- Invent a new dog via `cook-room` `imagineStill` when a **SEALED** at-A/at-B exists — `imagineStill` is **BANNED for restyle**; Agent is **REQUIRED** for décor variants
 - Treat Grok Build chat `imagine_*` tools as Imagine Agent (they are **not**; no identity lock)
 - Paste walk prompts into Chat Imagine UI without Agent (no `last_frame`)
 - Treat Customize-paste as optional after clone — this file + GROK.md are enough

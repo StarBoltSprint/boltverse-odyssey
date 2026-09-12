@@ -14,7 +14,7 @@ Hung pack with PASS stills/films = **reuse**. `cook-room` only Imagines missing 
 
 **First-seal stills** and **all films** go through [scripts/imagine-hooks.mjs](scripts/imagine-hooks.mjs) (`imagineStill` / `imagineClip`) **via** [scripts/cook-room.mjs](scripts/cook-room.mjs).
 
-**Cross-style at-A / at-B:** start from a **SEALED** sill still (dog already AT the teal or gold threshold). Use **[Imagine Agent](https://grok.com/imagine/agent)** — keep the exact same dog pose / size / place and the same cyan/gold portals; change hall materials only (ice / ember / catalog). Imagine Agent is the **hall-restyle** tool for sealed stills. Do **not** invent a new dog via `cook-room` `imagineStill` each style.
+**Imagine Agent is MANDATORY for cross-style hall stills (not optional).** Agent is **REQUIRED** for décor variants. Imagine Agent is the **hall-restyle** tool for sealed stills. One **SEALED** sill still (dog already AT the teal or gold threshold) → **[Imagine Agent](https://grok.com/imagine/agent)** restyles hall only — keep the exact same dog pose / size / place and the same cyan/gold portals; change hall materials only (ice / ember / catalog). `cook-room` `imagineStill` = **first seal** only. **BANNED for restyle.** Do **not** invent a new dog each style.
 
 **Grok Build chat Imagine tools are NOT the same as Imagine Agent.** Cross-style sealed stills = Imagine Agent at `https://grok.com/imagine/agent`. Build must not rely on chat `imagine_*` tools for hall restyle identity lock.
 
@@ -43,7 +43,7 @@ Keep the size step small: spawn **0.22–0.32**, sill **0.35–0.40**, **Δh/H <
 
 **`reference_to_video` is not first/last.** The images are *references*, not frames. Imagine *inspires* a walk. It does **not** paste the gold still as the last picture. Walk-B then overshoots into the rift → size pop. **Illegal for walks and enter.**
 
-Chat Imagine UI without Agent has no `last_frame` tool — **banned for walks**. Walks go through `scripts/imagine-hooks.mjs` / `cook-room.mjs`. Sealed still restyle = **Imagine Agent**. First-seal stills = `imagineStill`.
+Chat Imagine UI without Agent has no `last_frame` tool — **banned for walks**. Walks go through `scripts/imagine-hooks.mjs` / `cook-room.mjs`. Décor variants = **Imagine Agent REQUIRED**. `imagineStill` **BANNED for restyle**. First-seal stills = `imagineStill`.
 
 Never `image_to_video` a walk or enter on a single still. That invents the journey / clones the dog. Breath is the only legal `first = last`.
 
@@ -87,7 +87,7 @@ SmiR’s teacher is installed:
 2. `node scripts/install-lock-ata.mjs` wrote [`lock/example-at-a.jpg`](lock/example-at-a.jpg) (720×1280).
 3. Direct `lock/example-at-a-tiny.jpg` is still refused. An owner drop at `hall-stills/` is allowed even if the pixels match that archive — prompts **FORCE taille 0.35–0.40 + STANDING** and **never shrink to 0.18**.
 
-Live ember at-A FAIL×2 (0.19+sit+face / 0.16+sit) means teacher pixels alone are not enough. Cross-style from a **SEALED** sill = **Imagine Agent** (keep dog + portals; restyle hall). First seal = `cook-room` `imagineStill`. No Chat Imagine UI without Agent for walks. No new grok.me.
+Live ember at-A FAIL×2 (0.19+sit+face / 0.16+sit) means teacher pixels alone are not enough. Cross-style from a **SEALED** sill = **Imagine Agent REQUIRED** (keep dog + portals; restyle hall). `imagineStill` **BANNED for restyle.** First seal = `cook-room` `imagineStill`. No Chat Imagine UI without Agent for walks. No new grok.me.
 
 ## Player phrases (treat as this flow)
 
@@ -103,9 +103,9 @@ If they give **no** paint, do not cook — send `/` (stock). If they give **7 vi
 
 Do **not** roll 3 separate text-to-image in chat. Do **not** paste these prompts into Chat Imagine UI without Agent.
 
-`cook-room` `imagineStill()` (`POST /v1/images/edits`) = **first seal** only. One spawn. Two moves from that spawn. Hung PASS = skip.
+`cook-room` `imagineStill()` (`POST /v1/images/edits`) = **first seal** only. **BANNED for restyle.** One spawn. Two moves from that spawn. Hung PASS = skip.
 
-**Already SEALED at-A / at-B** (dog at the sill, smoke PASS): do **not** invent a new dog. Preferred path = **[Imagine Agent](https://grok.com/imagine/agent)**. Start from that sealed still. Instruction: keep the exact same dog pose / size / place and the same cyan/gold portals; change hall materials only. Then drop the restyle into `packs/<id>/stills/` and smoke. Sealed skip stays.
+**Already SEALED at-A / at-B** (dog at the sill, smoke PASS): do **not** invent a new dog. **Imagine Agent is MANDATORY** (not optional). Agent is **REQUIRED** for décor variants. One sealed sill still → **[Imagine Agent](https://grok.com/imagine/agent)** restyles hall only. `imagineStill` is **BANNED for restyle.** Instruction: keep the exact same dog pose / size / place and the same cyan/gold portals; change hall materials only. Then drop the restyle into `packs/<id>/stills/` and smoke. Sealed skip stays.
 
 Room 1 → `packs/<id>/stills/spawn.jpg` `at-a.jpg` `at-b.jpg`.
 Room 2 → `stills/a/spawn.jpg` `stills/a/at-a.jpg` `stills/a/at-b.jpg`. **Do not overwrite room 1.**
@@ -144,6 +144,7 @@ If any FAIL below, recook from spawn. Do not invent a fourth still. Do not cook 
 ## Stills FAIL (recook)
 
 - Cooked in Chat Imagine UI without Agent (not first-seal `imagineStill`, not **Imagine Agent** restyle of a SEALED sill)
+- Décor variant cooked via `cook-room` `imagineStill` (`imagineStill` **BANNED for restyle**; Agent **REQUIRED**)
 - Bolt face / 3/4 / profile / sit / lie / different dog
 - Dog climbing the rift / punch-sill (top < 0.46) / bboxH/H > 0.45 / bolt-back close-up scale
 - Mid-hall / spawn-cx dog sold as at-A or at-B (`gate.place` — atA cx ≤ 0.38, atB cx ≥ 0.62)

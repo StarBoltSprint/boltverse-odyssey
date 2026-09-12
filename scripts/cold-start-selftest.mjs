@@ -49,6 +49,11 @@ must(/First seal stills/.test(stop) && /imagineStill/.test(stop), "GROK.md STOP:
 must(/without Agent/.test(stop) && /no `last_frame`/.test(stop), "GROK.md STOP: Chat Imagine UI without Agent banned for walks");
 must(/Grok Build chat Imagine tools are NOT the same as Imagine Agent/.test(stop), "GROK.md STOP: Build chat Imagine ≠ Imagine Agent");
 must(/must not rely on chat `imagine_\*` tools for hall restyle identity lock/.test(stop), "GROK.md STOP: Build must not rely on chat imagine_* for identity lock");
+must(/Imagine Agent is MANDATORY for cross-style hall stills/.test(stop), "GROK.md STOP: Imagine Agent MANDATORY for cross-style");
+must(/REQUIRED.*décor variants/.test(stop), "GROK.md STOP: Agent REQUIRED for décor variants");
+must(/BANNED for restyle/.test(stop), "GROK.md STOP: imagineStill BANNED for restyle");
+must(/One \*\*SEALED\*\* sill still/.test(stop) && /restyles hall only/.test(stop), "GROK.md STOP: one sealed sill → Agent restyles hall only");
+must(!/Preferred path/.test(stop), "GROK.md STOP: no Preferred path soften");
 
 const customize = grok.slice(grok.indexOf("```\nBoltverse"), grok.indexOf("```\n\n---"));
 must(/sill ≠ spawn/.test(customize), "GROK.md Customize: sill ≠ spawn");
@@ -65,6 +70,10 @@ must(/First seal stills/.test(customize) && /cook-room imagineStill/.test(custom
 must(/without Agent has no last_frame/.test(customize), "GROK.md Customize: Chat Imagine UI without Agent banned for walks");
 must(/Grok Build chat Imagine tools are NOT the same as Imagine Agent/.test(customize), "GROK.md Customize: Build chat Imagine ≠ Imagine Agent");
 must(/must not rely on chat imagine_\* tools for hall restyle identity lock/.test(customize), "GROK.md Customize: Build must not rely on chat imagine_* for identity lock");
+must(/Imagine Agent is MANDATORY for cross-style hall stills/.test(customize), "GROK.md Customize: Imagine Agent MANDATORY for cross-style");
+must(/Agent REQUIRED for décor variants/.test(customize), "GROK.md Customize: Agent REQUIRED for décor variants");
+must(/BANNED for restyle/.test(customize), "GROK.md Customize: imagineStill BANNED for restyle");
+must(/One sealed sill still → Agent restyles hall only/.test(customize), "GROK.md Customize: one sealed sill → Agent restyles hall only");
 
 const agents = body("AGENTS.md");
 must(/Oval\|RECT energy portals OK/.test(agents), "AGENTS.md: oval|RECT energy OK");
@@ -76,6 +85,11 @@ must(/first seal/.test(agents), "AGENTS.md: cook-room imagineStill = first seal"
 must(/banned for walks/.test(agents) && /no `last_frame`/.test(agents), "AGENTS.md: Chat Imagine UI without Agent banned for walks");
 must(/Grok Build chat Imagine tools are NOT the same as Imagine Agent/.test(agents), "AGENTS.md: Build chat Imagine ≠ Imagine Agent");
 must(/must not rely on chat `imagine_\*` tools for hall restyle identity lock/.test(agents), "AGENTS.md: Build must not rely on chat imagine_* for identity lock");
+must(/Imagine Agent is MANDATORY for cross-style hall stills/.test(agents), "AGENTS.md: Imagine Agent MANDATORY for cross-style");
+must(/REQUIRED.*décor variants/.test(agents), "AGENTS.md: Agent REQUIRED for décor variants");
+must(/BANNED for restyle/.test(agents), "AGENTS.md: imagineStill BANNED for restyle");
+must(/One \*\*SEALED\*\* sill still/.test(agents) && /restyles hall only/.test(agents), "AGENTS.md: one sealed sill → Agent restyles hall only");
+must(!/Preferred path/.test(agents), "AGENTS.md: no Preferred path soften");
 
 const rules = body(".cursorrules");
 must(/oval\|RECT energy rifts/.test(rules), ".cursorrules: oval|RECT energy");
@@ -86,6 +100,10 @@ must(/first seal/.test(rules) && /Sealed skip stays/.test(rules), ".cursorrules:
 must(/banned for walks/i.test(rules), ".cursorrules: Chat Imagine UI without Agent banned for walks");
 must(/Grok Build chat Imagine tools are NOT the same as Imagine Agent/.test(rules), ".cursorrules: Build chat Imagine ≠ Imagine Agent");
 must(/must not rely on chat imagine_\* tools for hall restyle identity lock/.test(rules), ".cursorrules: Build must not rely on chat imagine_* for identity lock");
+must(/Imagine Agent is MANDATORY for cross-style hall stills/.test(rules), ".cursorrules: Imagine Agent MANDATORY for cross-style");
+must(/Agent REQUIRED for décor variants/.test(rules), ".cursorrules: Agent REQUIRED for décor variants");
+must(/BANNED for restyle/.test(rules), ".cursorrules: imagineStill BANNED for restyle");
+must(/One sealed sill still → Agent restyles hall only/.test(rules), ".cursorrules: one sealed sill → Agent restyles hall only");
 
 const cook = body("COOK.md");
 must(/Imagine Agent/.test(cook) && /hall-restyle/.test(cook), "COOK.md: Imagine Agent is the hall-restyle tool");
@@ -94,6 +112,11 @@ must(/first seal/.test(cook) && /Sealed skip stays/.test(cook), "COOK.md: first 
 must(/banned for walks/.test(cook) && /no `last_frame`/.test(cook), "COOK.md: Chat Imagine UI without Agent banned for walks");
 must(/Grok Build chat Imagine tools are NOT the same as Imagine Agent/.test(cook), "COOK.md: Build chat Imagine ≠ Imagine Agent");
 must(/must not rely on chat `imagine_\*` tools for hall restyle identity lock/.test(cook), "COOK.md: Build must not rely on chat imagine_* for identity lock");
+must(/Imagine Agent is MANDATORY for cross-style hall stills/.test(cook), "COOK.md: Imagine Agent MANDATORY for cross-style");
+must(/REQUIRED.*décor variants/.test(cook), "COOK.md: Agent REQUIRED for décor variants");
+must(/BANNED for restyle/.test(cook), "COOK.md: imagineStill BANNED for restyle");
+must(/One \*\*SEALED\*\* sill still/.test(cook) && /restyles hall only/.test(cook), "COOK.md: one sealed sill → Agent restyles hall only");
+must(!/Preferred path/.test(cook), "COOK.md: no Preferred path soften");
 
 const cookroom = body("COOKROOM.md");
 must(/Imagine Agent/.test(cookroom) && /hall-restyle/.test(cookroom), "COOKROOM.md: Imagine Agent is the hall-restyle tool");
@@ -102,6 +125,11 @@ must(/First seal/.test(cookroom) && /Sealed skip stays/.test(cookroom), "COOKROO
 must(/banned for walks/.test(cookroom), "COOKROOM.md: Chat Imagine UI without Agent banned for walks");
 must(/Grok Build chat Imagine tools are NOT the same as Imagine Agent/.test(cookroom), "COOKROOM.md: Build chat Imagine ≠ Imagine Agent");
 must(/must not rely on chat `imagine_\*` tools for hall restyle identity lock/.test(cookroom), "COOKROOM.md: Build must not rely on chat imagine_* for identity lock");
+must(/Imagine Agent is MANDATORY for cross-style hall stills/.test(cookroom), "COOKROOM.md: Imagine Agent MANDATORY for cross-style");
+must(/REQUIRED.*décor variants/.test(cookroom), "COOKROOM.md: Agent REQUIRED for décor variants");
+must(/BANNED for restyle/.test(cookroom), "COOKROOM.md: imagineStill BANNED for restyle");
+must(/One \*\*SEALED\*\* sill still/.test(cookroom) && /restyles hall only/.test(cookroom), "COOKROOM.md: one sealed sill → Agent restyles hall only");
+must(!/Preferred path/.test(cookroom), "COOKROOM.md: no Preferred path soften");
 
 const doors = body("DOORS.md");
 must(/oval or RECT/.test(doors) && /preferred-ok/.test(doors), "DOORS.md: oval|RECT preferred-ok");
