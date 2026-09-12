@@ -169,7 +169,7 @@ If the zip has 7 films or a hung Enter, it is **not** floor 0 anymore.
 The zip = graph (cooked official stills + PASS films).
 
 Do **not** smoke a walk against `lock/example-at-a-tiny.jpg` (archived anti-teacher).  
-Official sill teachers are swapped `lock/example-at-*` / `lock/sill-at-*` / hung moss PASS stills.  
+at-A lock teacher = `lock/example-at-a.jpg` (SmiR; drop via `hall-stills/smir-ata-teacher.jpeg`). at-B = swapped `lock/example-at-b` / hung moss PASS.  
 Smoke walks against `packs/<id>/stills/at-a.jpg`.
 
 ## One line

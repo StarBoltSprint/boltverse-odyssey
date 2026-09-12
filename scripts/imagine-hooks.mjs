@@ -174,16 +174,34 @@ function mossSillRel(pose) {
   return pose === "atA" ? "packs/moss/stills/at-a.jpg" : "packs/moss/stills/at-b.jpg";
 }
 
+/** at-A lecture — PLACE+POSE from the lock example; taille is FORCED (live ember FAIL×2 was 0.19/0.16+sit). */
+export const ATA_LOCK_COPY =
+  "copy PLACE+POSE from example; FORCE taille 0.35–0.40; FORCE STANDING; never shrink to 0.18; hall materials from spawn/catalog only — ignore example décor.";
+
+export const ATA_FORCE_TAILLE =
+  "FORCE taille 0.35–0.40 (aim 0.36). NEVER shrink to 0.18. NEVER 0.16. NEVER 0.19. Live ember at-A FAIL×2 was sill-band 0.19+sit+face and 0.16+sit. Teacher is PLACE+POSE only — do NOT copy a tiny teacher scale.";
+
+export const ATA_FORCE_STANDING =
+  "FORCE STANDING when using the teacher: four paws on the stone, legs LONG, haunches UP. NEVER sit. NEVER loaf. NEVER face. NEVER muzzle. A sitting tiny dog is FAIL even if place is left.";
+
 /**
- * Side ref for at-A / at-B. Prefer hung moss PASS sill stills.
- * lock/example-at-* are swapped copies of those (not the old ~0.18 tinies).
- * lock/sill-at-* = same pixels. Tiny archives are example-at-*-tiny.jpg — never send.
+ * Side ref for at-A / at-B.
+ * at-A prefers lock/example-at-a.jpg (SmiR lock teacher: standing BACK toward teal L, gold visible).
+ * Do not prefer hung moss for at-A — moss décor leaks into ember/dusk/etc.
+ * at-B still prefers hung moss PASS, then lock/example-at-b / lock/sill-at-b.
+ * Tiny archives are example-at-*-tiny.jpg — never send.
  */
 export function sillTeacherRel(root, pose) {
   if (pose !== "atA" && pose !== "atB") return join("lock", exampleName(pose));
   const moss = mossSillRel(pose);
   const official = officialSillRel(pose);
   const swapped = join("lock", exampleName(pose));
+  if (pose === "atA") {
+    if (root && existsSync(join(root, swapped))) return swapped;
+    if (root && existsSync(join(root, official))) return official;
+    if (root && existsSync(join(root, moss))) return moss;
+    return swapped;
+  }
   if (root && existsSync(join(root, moss))) return moss;
   if (root && existsSync(join(root, official))) return official;
   if (root && existsSync(join(root, swapped))) return swapped;
@@ -216,30 +234,89 @@ export function sillStillLine(side) {
     "Ear tips / crown stay in the LOWER HALF of the plate (dog top ≥ 0.50 of frame H). punch-sill FAIL if the head enters the rift (top < 0.46).",
     "NEVER sit. NEVER a loaf. NEVER haunches down. NEVER lie. NEVER 3/4. NEVER cheek. NEVER face. NEVER muzzle.",
     "NEVER punch-in. NEVER fill the " + fill + ". NEVER copy bolt-back close-up scale (~0.53 is illegal).",
-    "IGNORE a tiny ~0.18 crop the same way you IGNORE bolt-back ~0.53 — both scales are illegal. Live FAIL was sill-band 0.19–0.21. NEVER copy example-at-*-tiny.",
+    ATA_FORCE_TAILLE,
+    ATA_FORCE_STANDING,
+    "IGNORE a tiny ~0.18 crop the same way you IGNORE bolt-back ~0.53 — both scales are illegal. NEVER copy example-at-*-tiny.",
     "He is NOT seated facing the " + fill + ". He is NOT looking at the rift. " + other + ". Same camera — no dolly.",
-    "Dog bbox height 0.35–0.40 (aim 0.36). One step closer than spawn (0.34–0.38). Δh/H from spawn MUST be under 0.12.",
-    "If spawn is 0.26, you are ~0.36. Size in band is not enough if he is still mid-hall / spawn-cx, sits, turns, shows a face, or climbs the rift. Same lens as spawn.",
+    "Growing from spawn ~0.26 to sill 0.36 is required. Growing in place at center is illegal — MOVE him to the sill AND set taille 0.35–0.40. Do not shrink him to the teacher.",
+    "Δh/H from spawn MUST be under 0.12. Size in band is not enough if he is still mid-hall / spawn-cx, sits, turns, shows a face, or climbs the rift. Same lens as spawn.",
   ].join(" ");
 }
 
 export function stillRefLine(pose, hasSpawn, teacherRel) {
   if (pose !== "atA" && pose !== "atB") return "";
-  const teacher = teacherRel || officialSillRel(pose);
+  const teacher = teacherRel || (pose === "atA" ? join("lock", exampleName(pose)) : officialSillRel(pose));
   const side = pose === "atA" ? "LEFT teal" : "RIGHT gold";
+  const energy =
+    "Oval or RECT energy portals are both OK (oval preferred-ok). Copy jambs + sill + energy fill. NEVER wood. NEVER chrome UI rectangles. Do not FAIL oval shape.";
   if (hasSpawn) {
+    if (pose === "atA") {
+      return [
+        "First image = the spawn still: hall materials from spawn/catalog only. SAME camera, SAME light, SAME energy rifts (oval or RECT). ONLY the dog MOVES to the " +
+          side +
+          " sill (paws on that lip, body in that third). Do not leave him at center spawn. Do not grow him in place. Do not shrink him to the teacher. Do not zoom. Do not recrop.",
+        "Second image = bolt-back.jpg: coat / back / collar IDENTITY only. IGNORE its close-up crop (bbox ~0.53 is illegal).",
+        "Third image = " +
+          teacher +
+          ": official SEUIL teacher (SmiR lock/example-at-a — standing BACK toward teal L, gold visible). " +
+          ATA_LOCK_COPY +
+          " " +
+          ATA_FORCE_TAILLE +
+          " " +
+          ATA_FORCE_STANDING +
+          " Dog already AT the " +
+          side +
+          " sill (seuil), standing BACK, feet on the stone floor.",
+        "IGNORE example décor (vines / star-dome / moss paint). IGNORE a tiny ~0.18 crop the same way you IGNORE bolt-back ~0.53 — both scales are illegal. NEVER copy lock/example-at-*-tiny (sit + ~0.18).",
+        energy,
+      ].join(" ");
+    }
     return [
-      "First image = the spawn still: SAME hall, SAME camera, SAME light, SAME energy rifts (oval or RECT). ONLY the dog MOVES to the " + side + " sill (paws on that lip, body in that third). Do not leave him at center spawn. Do not grow him in place. Do not zoom. Do not recrop.",
+      "First image = the spawn still: SAME hall, SAME camera, SAME light, SAME energy rifts (oval or RECT). Hall materials from spawn/catalog only — ignore example décor. ONLY the dog MOVES to the " +
+        side +
+        " sill (paws on that lip, body in that third). Do not leave him at center spawn. Do not grow him in place. Do not zoom. Do not recrop.",
       "Second image = bolt-back.jpg: coat / back / collar IDENTITY only. IGNORE its close-up crop (bbox ~0.53 is illegal).",
-      "Third image = " + teacher + ": official SEUIL teacher (hung moss PASS / swapped lock/example-at-*). Copy PLACE and POSE — dog already AT the " + side + " sill (seuil), standing BACK, feet on the stone floor, taille ~0.30–0.40 (aim 0.35–0.40).",
+      "Third image = " +
+        teacher +
+        ": official SEUIL teacher (hung moss PASS / swapped lock/example-at-*). Copy PLACE and POSE — dog already AT the " +
+        side +
+        " sill (seuil), standing BACK, feet on the stone floor. " +
+        ATA_FORCE_TAILLE +
+        " " +
+        ATA_FORCE_STANDING,
       "IGNORE a tiny ~0.18 crop the same way you IGNORE bolt-back ~0.53 — both scales are illegal. NEVER copy lock/example-at-*-tiny (sit + ~0.18; live FAIL sill-band 0.19–0.21).",
-      "Oval or RECT energy portals are both OK (oval preferred-ok). Copy jambs + sill + energy fill. NEVER wood. NEVER chrome UI rectangles. Do not FAIL oval shape.",
+      energy,
+    ].join(" ");
+  }
+  if (pose === "atA") {
+    return [
+      "First image = " +
+        teacher +
+        ": official SEUIL teacher (SmiR lock/example-at-a). " +
+        ATA_LOCK_COPY +
+        " " +
+        ATA_FORCE_TAILLE +
+        " " +
+        ATA_FORCE_STANDING +
+        " (" +
+        side +
+        " sill, standing BACK, not mid-hall). IGNORE a tiny ~0.18 crop the same way you IGNORE bolt-back ~0.53.",
+      "Second image = bolt-back.jpg: coat / back / collar only. IGNORE close-up crop (~0.53).",
+      energy,
     ].join(" ");
   }
   return [
-    "First image = " + teacher + ": official SEUIL teacher. Copy PLACE and POSE (" + side + " sill, standing BACK, not mid-hall). IGNORE a tiny ~0.18 crop the same way you IGNORE bolt-back ~0.53.",
+    "First image = " +
+      teacher +
+      ": official SEUIL teacher. Copy PLACE and POSE (" +
+      side +
+      " sill, standing BACK, not mid-hall). " +
+      ATA_FORCE_TAILLE +
+      " " +
+      ATA_FORCE_STANDING +
+      " Hall materials from spawn/catalog only — ignore example décor. IGNORE a tiny ~0.18 crop the same way you IGNORE bolt-back ~0.53.",
     "Second image = bolt-back.jpg: coat / back / collar only. IGNORE close-up crop (~0.53).",
-    "Oval or RECT energy portals are both OK (oval preferred-ok). NEVER wood. NEVER chrome UI rectangles.",
+    energy,
   ].join(" ");
 }
 

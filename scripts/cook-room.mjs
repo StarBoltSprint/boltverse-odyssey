@@ -11,6 +11,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { imagineStill, imagineClip } from "./imagine-hooks.mjs";
+import { lockAtaStatus } from "./install-lock-ata.mjs";
 
 const SLOTS = [
   "moss",
@@ -212,6 +213,8 @@ if (dry) {
   out("COOK " + slot + " dry-run");
   out("hooks only — no chat Imagine UI");
   out("oval|RECT energy rifts — never wood, never chrome UI. STANDING — sit / face / 3/4 / punch-sill cannot PASS.");
+  out(lockAtaStatus(root).note);
+  out("atA side ref = lock/example-at-a.jpg — copy PLACE+POSE from example; FORCE taille 0.35–0.40; FORCE STANDING; never shrink to 0.18; hall materials from spawn/catalog only — ignore example décor.");
   out(force ? "--force: recook even if hung PASS" : "default: reuse hung PASS stills + films");
   out(has("room.json") ? "keep room.json" : "write skeleton room.json");
   let skipStills = 0;

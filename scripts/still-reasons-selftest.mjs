@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-// Fixture: hung moss / swapped example-at-* / lock sill teachers PASS sit/yaw/place.
-// Archived example-at-*-tiny: place can PASS, sit/size still FAIL (no soft KEEP).
+// Fixture: hung moss / lock sill / example-at-b PASS sit/yaw/place.
+// SmiR lock/example-at-a + archived tinies: place can PASS, sit/size still FAIL.
+// Prompts FORCE taille 0.35–0.40 + standing — do not copy teacher scale.
 import { execFileSync, spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -45,7 +46,6 @@ mustPass("packs/moss/stills/at-a.jpg", "still-atA");
 mustPass("packs/moss/stills/at-b.jpg", "still-atB");
 mustPass("lock/sill-at-a.jpg", "still-atA");
 mustPass("lock/sill-at-b.jpg", "still-atB");
-mustPass("lock/example-at-a.jpg", "still-atA");
 mustPass("lock/example-at-b.jpg", "still-atB");
 
 function placeOk(r, kind) {
@@ -72,6 +72,7 @@ function mustFailPoseEvenIfPlaceOk(rel, kind) {
   console.log("PASS  " + rel + "  place OK + hard FAIL  " + hard.join("; "));
 }
 
+mustFailPoseEvenIfPlaceOk("lock/example-at-a.jpg", "still-atA");
 mustFailPoseEvenIfPlaceOk("lock/example-at-a-tiny.jpg", "still-atA");
 mustFailPoseEvenIfPlaceOk("lock/example-at-b-tiny.jpg", "still-atB");
 
