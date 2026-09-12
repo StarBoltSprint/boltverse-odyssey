@@ -2,7 +2,7 @@
 
 This folder is the **drop slot** for SmiR’s ice-cathedral KEEP stills. It is not a pack. It is not hung.
 
-Imagine Agent produced these three KEEP seals. Frozen **pose + décor** for this ice hall until SmiR reseals. Agent remains the primary cook path for future styles.
+Imagine Agent produced these three KEEP seals. Frozen **pose + décor** for this ice hall until SmiR reseals. Agent remains the STYLE stills path for future styles (never video). Walks / breaths = hooks first+last.
 
 **Expected files:**
 

@@ -1,5 +1,7 @@
 #!/usr/bin/env node
-// Official hall cook. Stills + films = imagine-hooks only. Not chat Imagine UI.
+// Official hall cook. Films = imagine-hooks first+last (never Imagine Agent video).
+// Style stills / restyle = Imagine Agent. CLI imagineStill = first-seal / batch only; BANNED for restyle.
+// Not chat Imagine UI (no last_frame).
 //   node scripts/cook-room.mjs moss --dry-run
 //   COOK_DEBUG=1 node scripts/cook-room.mjs dusk
 //   export XAI_API_KEY=... && node scripts/cook-room.mjs moss

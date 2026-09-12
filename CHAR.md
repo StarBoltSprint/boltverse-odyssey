@@ -12,7 +12,7 @@ Bolt = **FULL white German Shepherd**. White coat forever. That **base** never c
 - Identity = **back** still ([`lock/bolt-back.jpg`](lock/bolt-back.jpg)) — never face
 - **Teal collar** — always
 
-**SKINS:** Imagine Agent MAY apply a décor-matching skin **ON TOP** of the white base — ember skin (embers / glow / ash accents), ice skin, etc. Stylish adaptation. Not a different dog. Do **not** FAIL a white GSD with ember/ice accents as `identity.coat`.
+**SKINS:** Imagine Agent MAY apply a décor-matching skin **ON TOP** of the white base — ember skin (embers / glow / ash accents), ice skin, etc. Stylish adaptation. Not a different dog. Do **not** FAIL a white GSD with ember/ice accents as `identity.coat`. Agent skins are STYLE stills only. Walks / breaths use those stills as first+last via imagine-hooks / cook-room — never Agent video.
 
 Hall stills / first / last of a plate: four legs, standing, weight on the floor, **strictly from behind**.
 

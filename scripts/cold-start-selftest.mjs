@@ -1,5 +1,7 @@
 #!/usr/bin/env node
-// Fixture: brand-new Grok reads these first. Imagine Agent MUST / obligatoire / systematically.
+// Fixture: brand-new Grok reads these first.
+// HARD SPLIT (SmiR 2026-09-12): Agent obligatoire for STYLE stills when restyling.
+// Video cook stays imagine-hooks / cook-room first+last. Never Agent for walks/breaths.
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -30,15 +32,56 @@ function firstStop(text) {
 function assertAgentStop(label, text) {
   const stop = firstStop(text);
   must(/STOP/.test(stop), label + ": has STOP");
+  must(/HARD SPLIT/.test(stop), label + ": first STOP HARD SPLIT");
   must(/obligatoire/i.test(stop), label + ": first STOP has obligatoire");
   must(/\bMUST\b/.test(stop), label + ": first STOP has MUST");
   must(/systematically/i.test(stop), label + ": first STOP has systematically");
   must(/Imagine Agent/.test(stop), label + ": first STOP names Imagine Agent");
-  must(/EVERY cook/.test(stop), label + ": first STOP EVERY cook");
+  must(/STYLE stills/.test(stop), label + ": first STOP STYLE stills");
+  must(/restyl/.test(stop), label + ": first STOP restyling");
+  must(/NEVER/.test(stop), label + ": first STOP NEVER (no Agent video)");
   must(/Walk A/.test(stop) && /Walk B/.test(stop), label + ": first STOP Walk A + Walk B");
   must(/breath/.test(stop), label + ": first STOP breath");
-  must(/still/.test(stop), label + ": first STOP still");
-  must(/Never Chat Imagine without Agent|Never Chat Imagine/.test(stop), label + ": first STOP never Chat Imagine without Agent");
+  must(/video/.test(stop), label + ": first STOP video");
+  must(/imagine-hooks/.test(stop) && /cook-room/.test(stop), label + ": first STOP hooks + cook-room");
+  must(/first-frame \+ last-frame/.test(stop), label + ": first STOP first-frame + last-frame");
+  must(/Soft KEEP banned/.test(stop), label + ": first STOP Soft KEEP banned");
+  must(/Smoke still gates/.test(stop), label + ": first STOP Smoke still gates");
+  must(!/EVERY cook \(new Grok Build conversation, restyle, Walk A/.test(stop), label + ": first STOP no PR #11 every-cook-through-Agent");
+}
+
+function forbidAgentVideo(label, text) {
+  must(!/PRIMARY cook path for BOTH stills AND/.test(text), label + ": no Agent PRIMARY for films");
+  must(!/PRIMARY for BOTH stills AND walk\/breath/.test(text), label + ": no Agent PRIMARY walk/breath films");
+  must(!/ALL hall stills \+ Walk A \+ Walk B \+ breaths go through Imagine Agent/.test(text), label + ": no ALL plates through Agent");
+  must(!/ALL hall stills \+ walks \+ breaths go through Imagine Agent/.test(text), label + ": no walks+breaths through Agent");
+  must(!/PRIMARY films = Imagine Agent/.test(text), label + ": no PRIMARY films = Agent");
+  must(!/Walks PRIMARY = Imagine Agent/.test(text), label + ": no Walks PRIMARY = Agent");
+  must(!/Director or human drives Agent in the browser/.test(text), label + ": no director drives Agent for films");
+  must(!/until Build has an Agent tool\/hook/.test(text), label + ": no Agent tool/hook as video path");
+  must(/Do not instruct Agent for walks\/breaths|NEVER for Walk A|Never Agent video|NEVER walks, breaths/.test(text), label + ": forbids Agent for walks/breaths");
+}
+
+function assertSplit(label, text) {
+  forbidAgentVideo(label, text);
+  must(/Imagine Agent/.test(text) && /hall-restyle/.test(text), label + ": Imagine Agent is the hall-restyle tool");
+  must(/SEALED|sealed sill/.test(text), label + ": sealed still restyle");
+  must(/first seal/i.test(text), label + ": first seal");
+  must(/Sealed skip stays/.test(text) || /sealed skip stays/.test(text), label + ": sealed skip stays");
+  must(/banned for walks/i.test(text) && /last_frame/.test(text), label + ": Chat Imagine UI without real first+last banned for walks");
+  must(/Grok Build chat Imagine tools are NOT the same as Imagine Agent/.test(text), label + ": Build chat Imagine ≠ Imagine Agent");
+  must(/must not rely on chat `imagine_\*` tools for hall restyle identity lock|must not rely on chat imagine_\* tools for hall restyle identity lock/.test(text), label + ": Build must not rely on chat imagine_* for identity lock");
+  must(/Imagine Agent is MANDATORY for cross-style hall stills/.test(text), label + ": Imagine Agent MANDATORY for cross-style");
+  must(/REQUIRED.*décor variants/.test(text), label + ": Agent REQUIRED for décor variants");
+  must(/BANNED for restyle/.test(text), label + ": imagineStill BANNED for restyle");
+  must(/One \*\*SEALED\*\* sill still|One sealed sill still → Agent restyles/.test(text), label + ": one sealed sill → Agent restyles");
+  must(!/Preferred path/.test(text), label + ": no Preferred path soften");
+  must(/STYLE stills/.test(text) && /restyl/.test(text), label + ": Agent obligatoire for STYLE stills when restyling");
+  must(/imagine-hooks/.test(text) && /cook-room/.test(text), label + ": video cook = hooks / cook-room");
+  must(/first-frame \+ last-frame|image` \+ `last_frame`|image \+ last_frame/.test(text), label + ": films = first+last");
+  must(/not required or recommended for video|Never Agent video|NEVER.*video/.test(text), label + ": Agent not required for video");
+  must(/Smoke still gates/.test(text), label + ": Smoke still gates");
+  must(/Soft KEEP banned/.test(text), label + ": Soft KEEP banned");
 }
 
 const agentsHead = head("AGENTS.md", 22);
@@ -79,26 +122,9 @@ must(/Doors may adapt/.test(stop), "GROK.md STOP: Doors may adapt");
 must(/selected, repositioned, resized to sill/.test(stop) && /nickel plate/.test(stop), "GROK.md STOP: Bolt selected/repositioned/resized to sill");
 must(/\.kitchen\/fail/.test(stop), "GROK.md STOP: FAIL save → .kitchen/fail");
 must(/enlarge/.test(stop), "GROK.md STOP: enlarge-only sill step");
-must(/Imagine Agent/.test(stop) && /hall-restyle/.test(stop), "GROK.md STOP: Imagine Agent is the hall-restyle tool");
-must(/SEALED/.test(stop), "GROK.md STOP: SEALED sill restyle");
-must(/First seal stills/.test(stop) && /imagineStill/.test(stop), "GROK.md STOP: first seal = cook-room imagineStill");
-must(/without Agent/.test(stop) && /no `last_frame`/.test(stop), "GROK.md STOP: Chat Imagine UI without Agent banned for walks");
-must(/Grok Build chat Imagine tools are NOT the same as Imagine Agent/.test(stop), "GROK.md STOP: Build chat Imagine ≠ Imagine Agent");
-must(/must not rely on chat `imagine_\*` tools for hall restyle identity lock/.test(stop), "GROK.md STOP: Build must not rely on chat imagine_* for identity lock");
-must(/Imagine Agent is MANDATORY for cross-style hall stills/.test(stop), "GROK.md STOP: Imagine Agent MANDATORY for cross-style");
-must(/REQUIRED.*décor variants/.test(stop), "GROK.md STOP: Agent REQUIRED for décor variants");
-must(/BANNED for restyle/.test(stop), "GROK.md STOP: imagineStill BANNED for restyle");
-must(/One \*\*SEALED\*\* sill still/.test(stop), "GROK.md STOP: one sealed sill → Agent restyles");
-must(!/Preferred path/.test(stop), "GROK.md STOP: no Preferred path soften");
-must(/PRIMARY cook path for BOTH stills AND/.test(stop), "GROK.md STOP: Agent PRIMARY for stills AND films");
-must(/walks with start\+end stills/.test(stop) && /breaths same still twice/.test(stop), "GROK.md STOP: Agent walks start+end, breaths twice");
-must(/secondary \/ CLI/.test(stop) && /not.*human happy path/.test(stop), "GROK.md STOP: cook-room secondary not human happy path");
-must(/Smoke still gates/.test(stop), "GROK.md STOP: Smoke still gates");
-must(/ALL hall stills \+ Walk A \+ Walk B \+ breaths go through Imagine Agent|ALL hall stills \+ walks \+ breaths go through Imagine Agent/.test(stop), "GROK.md STOP: ALL hall plates through Agent");
-must(/exact first frame AND last frame/.test(stop) && /interpolate/.test(stop), "GROK.md STOP: user stills exact first+last then interpolate");
-must(/Director or human drives Agent in the browser/.test(stop) && /until Build has an Agent tool\/hook/.test(stop), "GROK.md STOP: director/human drives Agent in browser");
-must(/open Imagine Agent with the plate refs/.test(stop), "GROK.md STOP: instruct open Agent with plate refs");
-must(/secondary \/ CLI only/.test(stop), "GROK.md STOP: cook-room secondary CLI only");
+must(/First seal stills/.test(stop) && /imagineStill/.test(stop), "GROK.md STOP: first seal = Imagine Agent; imagineStill CLI");
+must(/without real first\+last/.test(stop) && /no `last_frame`/.test(stop), "GROK.md STOP: Chat Imagine UI without real first+last banned for walks");
+assertSplit("GROK.md STOP", stop);
 must(!/same dog pose/.test(stop), "GROK.md STOP: no frozen same-dog-pose restyle");
 
 const customize = grok.slice(grok.indexOf("```\nBoltverse"), grok.indexOf("```\n\n---"));
@@ -122,22 +148,9 @@ must(/Doors may adapt/.test(customize), "GROK.md Customize: Doors may adapt");
 must(/Bolt reposition OK/.test(customize), "GROK.md Customize: Bolt reposition OK");
 must(/selected, repositioned, resized to sill/.test(customize) && /nickel plate/.test(customize), "GROK.md Customize: Bolt selected/repositioned/resized");
 must(/First seal stills/.test(customize) && /cook-room imagineStill/.test(customize), "GROK.md Customize: first seal = cook-room");
-must(/without Agent has no last_frame/.test(customize), "GROK.md Customize: Chat Imagine UI without Agent banned for walks");
-must(/Grok Build chat Imagine tools are NOT the same as Imagine Agent/.test(customize), "GROK.md Customize: Build chat Imagine ≠ Imagine Agent");
-must(/must not rely on chat imagine_\* tools for hall restyle identity lock/.test(customize), "GROK.md Customize: Build must not rely on chat imagine_* for identity lock");
-must(/Imagine Agent is MANDATORY for cross-style hall stills/.test(customize), "GROK.md Customize: Imagine Agent MANDATORY for cross-style");
-must(/Agent REQUIRED for décor variants/.test(customize), "GROK.md Customize: Agent REQUIRED for décor variants");
-must(/BANNED for restyle/.test(customize), "GROK.md Customize: imagineStill BANNED for restyle");
-must(/One sealed sill still → Agent restyles/.test(customize), "GROK.md Customize: one sealed sill → Agent restyles");
-must(/PRIMARY for BOTH stills AND walk\/breath films/.test(customize), "GROK.md Customize: Agent PRIMARY for stills AND films");
-must(/Walks = start still \+ end still/.test(customize) && /Breaths = same still twice/.test(customize), "GROK.md Customize: walks start+end, breaths twice");
-must(/secondary \/ CLI/.test(customize) && /not the human happy path/.test(customize), "GROK.md Customize: cook-room secondary");
-must(/Smoke still gates/.test(customize), "GROK.md Customize: Smoke still gates");
-must(/ALL hall stills \+ Walk A \+ Walk B \+ breaths go through Imagine Agent/.test(customize), "GROK.md Customize: ALL hall plates through Agent");
-must(/exact first frame AND last frame/.test(customize) && /interpolate/.test(customize), "GROK.md Customize: user stills exact first+last then interpolate");
-must(/Director or human drives Agent in the browser/.test(customize) && /until Build has an Agent tool\/hook/.test(customize), "GROK.md Customize: director/human drives Agent in browser");
-must(/open Imagine Agent with the plate refs/.test(customize), "GROK.md Customize: instruct open Agent with plate refs");
-must(/secondary \/ CLI only/.test(customize), "GROK.md Customize: cook-room secondary CLI only");
+must(/without real first\+last has no last_frame/.test(customize), "GROK.md Customize: Chat Imagine UI without real first+last banned for walks");
+assertSplit("GROK.md Customize", customize);
+must(/Walks = start still \+ end still/.test(customize) && /Breaths = same still twice/.test(customize), "GROK.md Customize: walks start+end, breaths twice (hooks)");
 must(/\.kitchen\/fail/.test(customize) || /fail-save/.test(customize), "GROK.md Customize: FAIL → .kitchen/fail");
 must(/enlarge/.test(customize), "GROK.md Customize: enlarge-only second step");
 
@@ -154,26 +167,8 @@ must(/Cyan L \+ gold R energy portals may adapt/.test(agents), "AGENTS.md: porta
 must(/Doors may adapt/.test(agents), "AGENTS.md: Doors may adapt");
 must(/Bolt reposition OK/.test(agents), "AGENTS.md: Bolt reposition OK");
 must(/selected, repositioned, resized to sill/.test(agents) && /nickel plate/.test(agents), "AGENTS.md: Bolt selected/repositioned/resized");
-must(/Imagine Agent/.test(agents) && /hall-restyle/.test(agents), "AGENTS.md: Imagine Agent is the hall-restyle tool");
-must(/SEALED/.test(agents), "AGENTS.md: sealed still restyle");
-must(/first seal/.test(agents), "AGENTS.md: cook-room imagineStill = first seal");
-must(/banned for walks/.test(agents) && /no `last_frame`/.test(agents), "AGENTS.md: Chat Imagine UI without Agent banned for walks");
-must(/Grok Build chat Imagine tools are NOT the same as Imagine Agent/.test(agents), "AGENTS.md: Build chat Imagine ≠ Imagine Agent");
-must(/must not rely on chat `imagine_\*` tools for hall restyle identity lock/.test(agents), "AGENTS.md: Build must not rely on chat imagine_* for identity lock");
-must(/Imagine Agent is MANDATORY for cross-style hall stills/.test(agents), "AGENTS.md: Imagine Agent MANDATORY for cross-style");
-must(/REQUIRED.*décor variants/.test(agents), "AGENTS.md: Agent REQUIRED for décor variants");
-must(/BANNED for restyle/.test(agents), "AGENTS.md: imagineStill BANNED for restyle");
-must(/One \*\*SEALED\*\* sill still/.test(agents), "AGENTS.md: one sealed sill → Agent restyles");
-must(!/Preferred path/.test(agents), "AGENTS.md: no Preferred path soften");
-must(/PRIMARY cook path for BOTH stills AND/.test(agents), "AGENTS.md: Agent PRIMARY for stills AND films");
-must(/walks\*\* = start still \+ end still/.test(agents) && /breaths\*\* = same still twice/.test(agents), "AGENTS.md: Agent walks start+end, breaths twice");
-must(/secondary \/ CLI/.test(agents) && /not.*human happy path/.test(agents), "AGENTS.md: cook-room secondary not human happy path");
-must(/Smoke still gates/.test(agents), "AGENTS.md: Smoke still gates");
-must(/ALL hall stills \+ walks \+ breaths go through Imagine Agent/.test(agents), "AGENTS.md: ALL hall plates through Agent");
-must(/exact first frame AND last frame/.test(agents) && /interpolate/.test(agents), "AGENTS.md: user stills exact first+last then interpolate");
-must(/Director or human drives Agent in the browser/.test(agents) && /until Build has an Agent tool\/hook/.test(agents), "AGENTS.md: director/human drives Agent in browser");
-must(/open Imagine Agent with the plate refs/.test(agents), "AGENTS.md: instruct open Agent with plate refs");
-must(/secondary \/ CLI only/.test(agents), "AGENTS.md: cook-room secondary CLI only");
+assertSplit("AGENTS.md", agents);
+must(/walks\*\* = start still \+ end still/.test(agents) && /breaths\*\* = same still twice/.test(agents), "AGENTS.md: walks start+end, breaths twice (hooks)");
 
 const rules = body(".cursorrules");
 must(/oval\|RECT energy rifts/.test(rules), ".cursorrules: oval|RECT energy");
@@ -188,46 +183,12 @@ must(/Cyan L \+ gold R energy portals may adapt/.test(rules), ".cursorrules: por
 must(/Doors may adapt/.test(rules), ".cursorrules: Doors may adapt");
 must(/Bolt reposition OK/.test(rules), ".cursorrules: Bolt reposition OK");
 must(/selected, repositioned, resized to sill/.test(rules) && /nickel plate/.test(rules), ".cursorrules: Bolt selected/repositioned/resized");
-must(/Imagine Agent/.test(rules), ".cursorrules: Imagine Agent restyles sealed stills");
-must(/first seal/.test(rules) && /Sealed skip stays/.test(rules), ".cursorrules: first seal + sealed skip");
-must(/banned for walks/i.test(rules), ".cursorrules: Chat Imagine UI without Agent banned for walks");
-must(/Grok Build chat Imagine tools are NOT the same as Imagine Agent/.test(rules), ".cursorrules: Build chat Imagine ≠ Imagine Agent");
-must(/must not rely on chat imagine_\* tools for hall restyle identity lock/.test(rules), ".cursorrules: Build must not rely on chat imagine_* for identity lock");
-must(/Imagine Agent is MANDATORY for cross-style hall stills/.test(rules), ".cursorrules: Imagine Agent MANDATORY for cross-style");
-must(/Agent REQUIRED for décor variants/.test(rules), ".cursorrules: Agent REQUIRED for décor variants");
-must(/BANNED for restyle/.test(rules), ".cursorrules: imagineStill BANNED for restyle");
-must(/One sealed sill still → Agent restyles/.test(rules), ".cursorrules: one sealed sill → Agent restyles");
-must(/PRIMARY for BOTH stills AND/.test(rules), ".cursorrules: Agent PRIMARY for stills AND films");
-must(/Walks = start\+end stills/.test(rules) && /Breaths = same still twice/.test(rules), ".cursorrules: walks start+end, breaths twice");
-must(/secondary \/ CLI/.test(rules) && /not the human happy path/.test(rules), ".cursorrules: cook-room secondary");
-must(/Smoke still gates/.test(rules), ".cursorrules: Smoke still gates");
-must(/ALL hall stills \+ walks \+ breaths go through Imagine Agent/.test(rules), ".cursorrules: ALL hall plates through Agent");
-must(/exact first frame AND last frame/.test(rules) && /interpolate/.test(rules), ".cursorrules: user stills exact first+last then interpolate");
-must(/Director or human drives Agent in the browser/.test(rules) && /until Build has an Agent tool\/hook/.test(rules), ".cursorrules: director/human drives Agent in browser");
-must(/open Imagine Agent with the plate refs/.test(rules), ".cursorrules: instruct open Agent with plate refs");
-must(/secondary \/ CLI only/.test(rules), ".cursorrules: cook-room secondary CLI only");
+assertSplit(".cursorrules", rules);
+must(/Walks = start\+end stills/.test(rules) && /Breaths = same still twice/.test(rules), ".cursorrules: walks start+end, breaths twice (hooks)");
 
 const cook = body("COOK.md");
-must(/Imagine Agent/.test(cook) && /hall-restyle/.test(cook), "COOK.md: Imagine Agent is the hall-restyle tool");
-must(/SEALED/.test(cook), "COOK.md: sealed still restyle");
-must(/first seal/.test(cook) && /Sealed skip stays/.test(cook), "COOK.md: first seal + sealed skip");
-must(/banned for walks/.test(cook) && /no `last_frame`/.test(cook), "COOK.md: Chat Imagine UI without Agent banned for walks");
-must(/Grok Build chat Imagine tools are NOT the same as Imagine Agent/.test(cook), "COOK.md: Build chat Imagine ≠ Imagine Agent");
-must(/must not rely on chat `imagine_\*` tools for hall restyle identity lock/.test(cook), "COOK.md: Build must not rely on chat imagine_* for identity lock");
-must(/Imagine Agent is MANDATORY for cross-style hall stills/.test(cook), "COOK.md: Imagine Agent MANDATORY for cross-style");
-must(/REQUIRED.*décor variants/.test(cook), "COOK.md: Agent REQUIRED for décor variants");
-must(/BANNED for restyle/.test(cook), "COOK.md: imagineStill BANNED for restyle");
-must(/One \*\*SEALED\*\* sill still/.test(cook), "COOK.md: one sealed sill → Agent restyles");
-must(!/Preferred path/.test(cook), "COOK.md: no Preferred path soften");
-must(/PRIMARY cook path for BOTH stills AND/.test(cook), "COOK.md: Agent PRIMARY for stills AND films");
-must(/walks with start\+end stills/.test(cook) && /breaths same still twice/.test(cook), "COOK.md: Agent walks start+end, breaths twice");
-must(/secondary \/ CLI/.test(cook) && /not.*human happy path/.test(cook), "COOK.md: cook-room secondary not human happy path");
-must(/Smoke still gates/.test(cook), "COOK.md: Smoke still gates");
-must(/ALL hall stills \+ walks \+ breaths go through Imagine Agent/.test(cook), "COOK.md: ALL hall plates through Agent");
-must(/exact first frame AND last frame/.test(cook) && /interpolate/.test(cook), "COOK.md: user stills exact first+last then interpolate");
-must(/Director or human drives Agent in the browser/.test(cook) && /until Build has an Agent tool\/hook/.test(cook), "COOK.md: director/human drives Agent in browser");
-must(/open Imagine Agent with the plate refs/.test(cook), "COOK.md: instruct open Agent with plate refs");
-must(/secondary \/ CLI only/.test(cook), "COOK.md: cook-room secondary CLI only");
+assertSplit("COOK.md", cook);
+must(/walks: start still ≠ arrive still|Walks: start still ≠ arrive still|start still ≠ arrive still/.test(cook) && /same still twice/.test(cook), "COOK.md: walks start+end, breaths twice (hooks)");
 must(/enlarge/.test(cook) && /\.kitchen\/fail/.test(cook), "COOK.md: two-step enlarge + fail-save");
 must(/0\.19\+sit\+face/.test(cook) && /0\.16\+sit/.test(cook), "COOK.md: ember FAIL×2 shrink evidence");
 must(/full-white German Shepherd/.test(cook) && /white coat forever/.test(cook), "COOK.md: white coat forever");
@@ -240,26 +201,7 @@ must(/selected, repositioned, resized to sill/.test(cook) && /nickel plate/.test
 assertAgentStop("COOK.md", cook);
 
 const cookroom = body("COOKROOM.md");
-must(/Imagine Agent/.test(cookroom) && /hall-restyle/.test(cookroom), "COOKROOM.md: Imagine Agent is the hall-restyle tool");
-must(/SEALED/.test(cookroom), "COOKROOM.md: sealed still restyle");
-must(/First seal/.test(cookroom) && /Sealed skip stays/.test(cookroom), "COOKROOM.md: first seal + sealed skip");
-must(/banned for walks/.test(cookroom), "COOKROOM.md: Chat Imagine UI without Agent banned for walks");
-must(/Grok Build chat Imagine tools are NOT the same as Imagine Agent/.test(cookroom), "COOKROOM.md: Build chat Imagine ≠ Imagine Agent");
-must(/must not rely on chat `imagine_\*` tools for hall restyle identity lock/.test(cookroom), "COOKROOM.md: Build must not rely on chat imagine_* for identity lock");
-must(/Imagine Agent is MANDATORY for cross-style hall stills/.test(cookroom), "COOKROOM.md: Imagine Agent MANDATORY for cross-style");
-must(/REQUIRED.*décor variants/.test(cookroom), "COOKROOM.md: Agent REQUIRED for décor variants");
-must(/BANNED for restyle/.test(cookroom), "COOKROOM.md: imagineStill BANNED for restyle");
-must(/One \*\*SEALED\*\* sill still/.test(cookroom), "COOKROOM.md: one sealed sill → Agent restyles");
-must(!/Preferred path/.test(cookroom), "COOKROOM.md: no Preferred path soften");
-must(/PRIMARY cook path for BOTH stills AND/.test(cookroom), "COOKROOM.md: Agent PRIMARY for stills AND films");
-must(/walks with start\+end stills/.test(cookroom) && /breaths same still twice/.test(cookroom), "COOKROOM.md: Agent walks start+end, breaths twice");
-must(/secondary \/ CLI/.test(cookroom) && /not the human happy path/.test(cookroom), "COOKROOM.md: cook-room secondary");
-must(/Smoke still gates/.test(cookroom), "COOKROOM.md: Smoke still gates");
-must(/ALL hall stills \+ walks \+ breaths go through Imagine Agent/.test(cookroom), "COOKROOM.md: ALL hall plates through Agent");
-must(/exact first frame AND last frame/.test(cookroom) && /interpolate/.test(cookroom), "COOKROOM.md: user stills exact first+last then interpolate");
-must(/Director or human drives Agent in the browser/.test(cookroom) && /until Build has an Agent tool\/hook/.test(cookroom), "COOKROOM.md: director/human drives Agent in browser");
-must(/open Imagine Agent with the plate refs/.test(cookroom), "COOKROOM.md: instruct open Agent with plate refs");
-must(/secondary \/ CLI only/.test(cookroom), "COOKROOM.md: cook-room secondary CLI only");
+assertSplit("COOKROOM.md", cookroom);
 must(/completely new hall décor OK/.test(cookroom), "COOKROOM.md: completely new hall décor OK");
 must(/white coat forever/.test(cookroom), "COOKROOM.md: white coat forever");
 must(/décor-matching skin ON TOP/.test(cookroom), "COOKROOM.md: décor-matching skin ON TOP");
@@ -276,6 +218,7 @@ const char = body("CHAR.md");
 must(/white coat forever/i.test(char), "CHAR.md: white coat forever");
 must(/SKINS/.test(char) && /ON TOP/.test(char), "CHAR.md: décor SKINS ON TOP of white base");
 must(/ember skin/.test(char) && /ice skin/.test(char), "CHAR.md: ember + ice skins");
+must(/never Agent video/.test(char), "CHAR.md: Agent skins are stills; never Agent video");
 
 const smokeId = body("scripts/smoke-identity.md");
 must(/do \*\*not\*\* FAIL oval shape alone/.test(smokeId), "smoke-identity: oval shape alone is not FAIL");
@@ -290,5 +233,12 @@ must(/KEEP seals/.test(stop) && /SEAL-spawn/.test(stop) && /SEAL-at-a/.test(stop
 must(/KEEP seals/.test(customize) && /SEAL-spawn/.test(customize) && /SEAL-at-a/.test(customize) && /until SmiR reseals/.test(customize), "GROK.md Customize: ice-hall KEEP seals");
 must(/KEEP seals/.test(rules) && /SEAL-spawn/.test(rules) && /SEAL-at-a/.test(rules) && /until SmiR reseals/.test(rules), ".cursorrules: ice-hall KEEP seals");
 must(/KEEP seals/.test(cookroom) && /SEAL-spawn/.test(cookroom) && /SEAL-at-a/.test(cookroom) && /until SmiR reseals/.test(cookroom), "COOKROOM.md: ice-hall KEEP seals");
+
+const hooks = body("scripts/imagine-hooks.mjs");
+must(/Not Imagine Agent/.test(hooks) && /last_frame/.test(hooks), "imagine-hooks: films = first+last, not Agent");
+
+const cookRoomJs = body("scripts/cook-room.mjs");
+must(/never Imagine Agent video/.test(cookRoomJs), "cook-room.mjs: never Imagine Agent video");
+must(/BANNED for restyle/.test(cookRoomJs), "cook-room.mjs: imagineStill BANNED for restyle");
 
 console.log("COLD-START PASS");
