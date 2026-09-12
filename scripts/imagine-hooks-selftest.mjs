@@ -9,7 +9,9 @@ import {
   ATA_FORCE_STANDING,
   ATA_FORCE_TAILLE,
   ATA_LOCK_COPY,
+  ENLARGE_SILL_COPY,
   HALL_LAW,
+  enlargeStillLine,
   sillStillLine,
   stillRefLine,
   stillRefOrder,
@@ -101,5 +103,20 @@ energyOk(atA, "atA");
 energyOk(atB, "atB");
 must(/Do not FAIL oval shape/.test(atA) && /Do not FAIL oval shape/.test(atB), "sill refs: do not FAIL oval shape");
 must(/preferred-ok/.test(HALL_LAW) && /preferred-ok/.test(spawnStillLine()), "oval preferred-ok");
+
+const enlargeA = enlargeStillLine("A");
+const enlargeB = enlargeStillLine("B");
+must(enlargeA.includes(ENLARGE_SILL_COPY), "enlarge A uses ENLARGE_SILL_COPY");
+must(/ENLARGE ONLY/.test(enlargeA) && /ENLARGE ONLY/.test(enlargeB), "enlarge: ENLARGE ONLY");
+must(/0\.35–0\.40|0\.35-0\.40/.test(enlargeA), "enlarge A taille 0.35–0.40");
+must(/STANDING/.test(enlargeA) && /NEVER sit/.test(enlargeA), "enlarge A FORCE standing");
+must(/0\.16/.test(enlargeA) && /0\.19/.test(enlargeA), "enlarge names ember FAIL 0.16/0.19");
+must(/same camera|Same camera/.test(enlargeA), "enlarge same camera/hall");
+must(!/copy PLACE\+POSE from example/.test(enlargeA), "enlarge does not copy teacher PLACE+POSE");
+must(stillRefOrder("atA", true, root, { enlarge: true }).join(",") === "fail,bolt-back.jpg,spawn", "enlarge refs: FAIL jpg first, no teacher");
+must(!String(stillRefOrder("atA", true, root, { enlarge: true })).includes("example-at-a"), "enlarge does not send lock teacher");
+must(stillRefOrder("atA", true, root).join(",") === "spawn,bolt-back.jpg,lock/example-at-a.jpg", "fresh atA refs unchanged");
+energyOk(enlargeA, "enlargeA");
+energyOk(enlargeB, "enlargeB");
 
 console.log("IMAGINE-HOOKS PASS");

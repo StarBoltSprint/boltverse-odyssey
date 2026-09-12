@@ -48,6 +48,8 @@ Official path: `scripts/cook-room.mjs` → `scripts/imagine-hooks.mjs`
 
 - Smoke PASS (A+B script, then layer C on `.smoke/` frames) = Hang.
 - `KEEP REFUSED` / `HANG BLOCKED` = stock URL. Not a soft KEEP.
+- Smoke FAIL still/film → copy to `packs/<id>/.kitchen/fail/<kind>-<n>` then delete from `stills/`/`films/`. Never Hang FAIL.
+- at-A/at-B under-size (~0.16–0.21): second cook is **enlarge-only** (FAIL jpg as `image`, grow to 0.35–0.40 standing at sill). Sit does not block enlarge. Mid-hall / `gate.place` = fresh. Cap 1 fresh + 1 enlarge (or 2 enlarge).
 - ffmpeg gel-breath is decay in `packs/<id>/.kitchen/` — **not** Hang-ready. Do not copy it into `films/`.
 - FAIL walk is deleted from `films/`. Tap = stay. Do not ship it as a preview.
 - Sit / face / 3/4 / punch-sill (dog climbing the rift) / mid-hall spawn-cx sold as at-A or at-B cannot PASS. Recook that plate, cap 2, then stock.

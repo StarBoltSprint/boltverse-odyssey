@@ -1,6 +1,6 @@
 # HANG — how the pack lands in the player
 
-Only after Smoke **pass** ([SAS.md](SAS.md)). FAIL never writes `films/`.
+Only after Smoke **pass** ([SAS.md](SAS.md)). FAIL never writes `stills/` or `films/` — debug copies live in `packs/<id>/.kitchen/fail/`. Never Hang FAIL.
 
 This GitHub repo is the **recipe**, not the running hall.
 `stills/` and `films/` at root are empty (`.gitkeep`). Hung discs live in `packs/<id>/`. Grok cooks there and the player at https://boltverse-odyssey.grok.me fetches them.
