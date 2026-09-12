@@ -24,8 +24,8 @@ The player may **not** see: Forge, % bar, black plate, “generating…” on th
 |---|---|---|
 | Unknown id / missing pack | `/` → **stock** | `pack.missing` |
 | Cook in flight | stock (or previous pack) | job running |
-| Spawn still FAIL ×2 | stock, no `/r/mousse` | `spawn identity.face` |
-| atA FAIL, spawn PASS | no films; stock link + reason | recook atA abandoned |
+| Spawn still FAIL ×2 | stock, no `/r/mousse` | `spawn identity.face` + `.kitchen/fail/still-spawn-n.jpg` |
+| atA FAIL, spawn PASS | no films; stock link + reason | recook atA abandoned; FAIL jpg in `.kitchen/fail/` (never `stills/`). Under-size ~0.16–0.21 → enlarge-only second step |
 | Walk-A FAIL, stills PASS | hall playable **without** that edge: tap A from spawn = **stay** | `walk-spawn-A graph.last_not_official` |
 | Breath-A FAIL | stock (still under the video if a last good hall exists) | `breath.gel` — freeze may live in `.kitchen/` only; **not** Hang-ready |
 | Enter FAIL / not hung | 2nd tap = **stay** (floor 1) | no edge |

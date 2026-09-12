@@ -63,6 +63,8 @@ must(/exact first frame AND last frame/.test(stop) && /interpolate/.test(stop), 
 must(/Director or human drives Agent in the browser/.test(stop) && /until Build has an Agent tool\/hook/.test(stop), "GROK.md STOP: director/human drives Agent in browser");
 must(/open Imagine Agent with the plate refs/.test(stop), "GROK.md STOP: instruct open Agent with plate refs");
 must(/secondary \/ CLI only/.test(stop), "GROK.md STOP: cook-room secondary CLI only");
+must(/\.kitchen\/fail/.test(stop), "GROK.md STOP: FAIL save → .kitchen/fail");
+must(/enlarge/.test(stop), "GROK.md STOP: enlarge-only sill step");
 
 const customize = grok.slice(grok.indexOf("```\nBoltverse"), grok.indexOf("```\n\n---"));
 must(/sill ≠ spawn/.test(customize), "GROK.md Customize: sill ≠ spawn");
@@ -92,6 +94,8 @@ must(/exact first frame AND last frame/.test(customize) && /interpolate/.test(cu
 must(/Director or human drives Agent in the browser/.test(customize) && /until Build has an Agent tool\/hook/.test(customize), "GROK.md Customize: director/human drives Agent in browser");
 must(/open Imagine Agent with the plate refs/.test(customize), "GROK.md Customize: instruct open Agent with plate refs");
 must(/secondary \/ CLI only/.test(customize), "GROK.md Customize: cook-room secondary CLI only");
+must(/\.kitchen\/fail/.test(customize) || /fail-save/.test(customize), "GROK.md Customize: FAIL → .kitchen/fail");
+must(/enlarge/.test(customize), "GROK.md Customize: enlarge-only second step");
 
 const agents = body("AGENTS.md");
 must(/Oval\|RECT energy portals OK/.test(agents), "AGENTS.md: oval|RECT energy OK");
@@ -117,6 +121,8 @@ must(/exact first frame AND last frame/.test(agents) && /interpolate/.test(agent
 must(/Director or human drives Agent in the browser/.test(agents) && /until Build has an Agent tool\/hook/.test(agents), "AGENTS.md: director/human drives Agent in browser");
 must(/open Imagine Agent with the plate refs/.test(agents), "AGENTS.md: instruct open Agent with plate refs");
 must(/secondary \/ CLI only/.test(agents), "AGENTS.md: cook-room secondary CLI only");
+must(/\.kitchen\/fail/.test(agents), "AGENTS.md: FAIL save → .kitchen/fail");
+must(/enlarge/.test(agents), "AGENTS.md: enlarge-only sill step");
 
 const rules = body(".cursorrules");
 must(/oval\|RECT energy rifts/.test(rules), ".cursorrules: oval|RECT energy");
@@ -142,6 +148,8 @@ must(/open Imagine Agent with the plate refs/.test(rules), ".cursorrules: instru
 must(/secondary \/ CLI only/.test(rules), ".cursorrules: cook-room secondary CLI only");
 
 const cook = body("COOK.md");
+must(/enlarge/.test(cook) && /\.kitchen\/fail/.test(cook), "COOK.md: two-step enlarge + fail-save");
+must(/0\.19\+sit\+face/.test(cook) && /0\.16\+sit/.test(cook), "COOK.md: ember FAIL×2 shrink evidence");
 must(/Imagine Agent/.test(cook) && /hall-restyle/.test(cook), "COOK.md: Imagine Agent is the hall-restyle tool");
 must(/SEALED/.test(cook) && /same dog pose/.test(cook) && /same cyan\/gold portals/.test(cook), "COOK.md: sealed still — keep dog + portals");
 must(/first seal/.test(cook) && /Sealed skip stays/.test(cook), "COOK.md: first seal + sealed skip");

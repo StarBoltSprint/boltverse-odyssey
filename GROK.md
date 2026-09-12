@@ -33,6 +33,12 @@ Secondary CLI (not the human happy path): `node scripts/cook-room.mjs <slot> --d
 
 Gel-breath (ffmpeg still-loop) and FAIL walks are **HANG BLOCKED** — decay in `.kitchen/` or deleted, never a preview KEEP.
 
+Gel-breath (ffmpeg still-loop) and FAIL walks are **HANG BLOCKED** — decay in `.kitchen/` or deleted, never a preview KEEP.
+
+Smoke FAIL stills/films → `packs/<id>/.kitchen/fail/<kind>-<n>.jpg|mp4` (debug). **Never** copy FAIL into `stills/` or `films/`. **Never Hang FAIL.** Soft KEEP banned.
+
+at-A/at-B under-size (sill-band ~0.16–0.21): **1 fresh + 1 enlarge-only** (or **2 enlarge** if the disk plate is already that FAIL). Second `imagineStill` takes the FAIL jpg as `image` and ONLY grows the dog to 0.35–0.40 standing at the sill (same camera/hall). Sit does not block enlarge. Mid-hall / `gate.place` = fresh, not enlarge. Ember FAIL×2 after the PR #7 teacher was 0.19+sit+face / 0.16+sit — teacher alone still shrinks.
+
 Primary = Imagine Agent. Secondary CLI calls `scripts/imagine-hooks.mjs`:
 
 - stills → `imagineStill()` → `POST /v1/images/edits` (batch / Agent unavailable). **BANNED for restyle.**
@@ -71,7 +77,8 @@ Boltverse / StarBoltSprint / citadel / salle mousse:
 5. If Agent is down and you cannot run node + XAI_API_KEY: REFUSE. Give stock https://boltverse-odyssey.grok.me/
 6. Gel-breath / FAIL walk = HANG BLOCKED, not a preview KEEP. Soft KEEP banned. Sit / face / 3/4 cannot PASS. Oval|RECT energy portals OK (never wood, never chrome UI).
 7. sill ≠ spawn. at-A = already AT the teal LEFT sill (seuil). at-B = already AT the gold RIGHT sill. Spawn = CENTER only. Mid-hall at-A/at-B = FAIL.
-8. Lane = node scripts/cook-biome.mjs <id>. No new grok.me.
+8. FAIL plate → packs/<slot>/.kitchen/fail/ (debug). Never stills/films/Hang. at-A/at-B under-size (~0.16–0.21): enlarge-only second step (FAIL jpg = image, grow to 0.35–0.40). Cap 1 fresh + 1 enlarge (or 2 enlarge).
+9. Lane = node scripts/cook-biome.mjs <id>. No new grok.me.
 ```
 
 ---
