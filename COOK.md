@@ -66,10 +66,12 @@ Off-list → nearest, or ask "did you mean ember?". Never "describe any temple".
 | atA | Bolt at teal LEFT **sill** (`cx` ≤ 0.38); gold still visible. Mid-hall / spawn-cx = FAIL |
 | atB | Bolt at gold RIGHT **sill** (`cx` ≥ 0.62); teal still visible. Mid-hall / spawn-cx = FAIL |
 
-Composition examples (camera + door layout, not the player's hall):
+Composition examples (how Imagine learns seuil):
 
 - [`lock/example-spawn.jpg`](lock/example-spawn.jpg) — camera + two-door lock (scale OK)
-- [`lock/example-at-a.jpg`](lock/example-at-a.jpg) / [`lock/example-at-b.jpg`](lock/example-at-b.jpg) — **which SIDE** only. Oval + tiny (~0.18). Do **not** copy scale or door shape. RECT + 0.35–0.40 come from the prompt + the spawn still.
+- **Official at-A / at-B teachers** — [`lock/sill-at-a.jpg`](lock/sill-at-a.jpg) / [`lock/sill-at-b.jpg`](lock/sill-at-b.jpg), copied from hung moss PASS stills. Dog **AT the sill** (cx ≈ 0.26 / 0.76), standing BACK, taille ~0.30–0.33 (aim 0.35–0.40). moss at-B = RECT rifts. moss at-A still has ovals — copy **place + pose** only; RECT comes from the spawn still + prompt.
+- Cook **prefers hung** [`packs/moss/stills/at-a.jpg`](packs/moss/stills/at-a.jpg) / [`at-b.jpg`](packs/moss/stills/at-b.jpg) as side refs when those plates smoke-PASS. Same pixels as `lock/sill-at-*`.
+- [`lock/example-at-a.jpg`](lock/example-at-a.jpg) / [`lock/example-at-b.jpg`](lock/example-at-b.jpg) — **anti-teachers**. Oval + tiny (~0.18). `gate.place` can PASS (cx at the door) while sit/size FAIL. **Never send them** to Imagine.
 
 ## Player phrases (treat as this flow)
 
@@ -105,7 +107,7 @@ Save → `stills/spawn.jpg` (or `stills/a/spawn.jpg`). Scale 720×1280.
 
 ### 2. atA — from spawn, not from text
 
-`imagineStill({ pose: "atA", spawnPath })` · **`image` = spawn** (not bolt-back). bolt-back = coat only. `example-at-a` = LEFT side only (ignore oval / 0.18).
+`imagineStill({ pose: "atA", spawnPath })` · **`image` = spawn** (not bolt-back). bolt-back = coat only. Side ref = hung moss PASS `at-a.jpg` (else `lock/sill-at-a.jpg`). Never `example-at-a`.
 
 > Same hall, same camera, same RECT rifts as spawn. He is ALREADY at the teal LEFT **sill** (paws on that lip, body in the LEFT third) — NEVER mid-hall / spawn / center / fork. STANDING, BACK, crown to camera. Feet on the **stone floor in front of** the sill — never inside the rift, never climbing the teal (punch-sill if dog top < 0.46). Gold stays in frame. Never sit / face / 3/4. bboxH/H **0.35–0.40**. Δh/H < 0.12. Do not grow him in place. Do not copy bolt-back crop (~0.53).
 
@@ -113,7 +115,7 @@ Save → `stills/at-a.jpg` (or `stills/a/at-a.jpg`).
 
 ### 3. atB — from the same spawn
 
-`imagineStill({ pose: "atB", spawnPath })` · **`image` = spawn** (not atA, not bolt-back). bolt-back = coat only. `example-at-b` = RIGHT side only (ignore oval / 0.18).
+`imagineStill({ pose: "atB", spawnPath })` · **`image` = spawn** (not atA, not bolt-back). bolt-back = coat only. Side ref = hung moss PASS `at-b.jpg` (else `lock/sill-at-b.jpg`). Never `example-at-b`.
 
 > Same hall, same camera, same RECT rifts as spawn. He is ALREADY at the gold RIGHT **sill** (paws on that lip, body in the RIGHT third) — NEVER mid-hall / spawn / center / fork. STANDING, BACK, crown to camera. Feet on the **stone floor in front of** the sill — never inside the rift, never climbing the gold (punch-sill if dog top < 0.46). Teal stays in frame. Never sit / face / 3/4. bboxH/H **0.35–0.40**. Δh/H < 0.12. Do not grow him in place. Do not copy bolt-back crop (~0.53).
 

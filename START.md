@@ -8,8 +8,8 @@ Do **not** read ENGINE, ENTER, Smoke, or the decrees to play. That is the kitche
 
 <p align="center">
 <img src="lock/example-spawn.jpg" width="180" alt="center">
-<img src="lock/example-at-a.jpg" width="180" alt="teal left">
-<img src="lock/example-at-b.jpg" width="180" alt="gold right">
+<img src="lock/sill-at-a.jpg" width="180" alt="teal left sill">
+<img src="lock/sill-at-b.jpg" width="180" alt="gold right sill">
 </p>
 
 Center. Teal left. Gold right.
