@@ -208,13 +208,34 @@ export function sillTeacherRel(root, pose) {
   return swapped;
 }
 
-/** bolt-back is 0.53 close-up. Unlabeled edit of the close-up = punch-sill. */
-export function stillRefOrder(pose, hasSpawn, root) {
+/** bolt-back is 0.53 close-up. Unlabeled edit of the close-up = punch-sill. Enlarge never sends the teacher (shrink). */
+export function stillRefOrder(pose, hasSpawn, root, opts) {
+  const enlarge = opts === true || (opts && opts.enlarge);
+  if (enlarge && (pose === "atA" || pose === "atB")) {
+    return hasSpawn ? ["fail", "bolt-back.jpg", "spawn"] : ["fail", "bolt-back.jpg"];
+  }
   if (pose === "atA" || pose === "atB") {
     const side = sillTeacherRel(root, pose);
     return hasSpawn ? ["spawn", "bolt-back.jpg", side] : [side, "bolt-back.jpg"];
   }
   return hasSpawn ? ["bolt-back.jpg", exampleName(pose), "spawn"] : ["bolt-back.jpg", exampleName(pose)];
+}
+
+/** Second sill cook: FAIL jpg is the image. ONLY grow the dog. Same camera/hall. No teacher. */
+export const ENLARGE_SILL_COPY =
+  "ENLARGE ONLY. Same camera, same hall, same energy rifts (oval or RECT). The first image IS this FAIL plate — he is already AT this sill. ONLY enlarge the dog toward bboxH/H 0.35–0.40 (aim 0.36) STANDING. Do not re-compose. Do not recrop. Do not zoom the hall. Do not move him to center. Do not copy a tiny teacher scale. NEVER shrink to 0.16 / 0.18 / 0.19 / 0.21.";
+
+export function enlargeStillLine(side) {
+  const here = side === "A" ? "teal LEFT" : "gold RIGHT";
+  return [
+    ENLARGE_SILL_COPY,
+    "He stays AT the " + here + " sill (paws on that lip). STANDING four paws, BACK, crown to camera, legs LONG, haunches UP.",
+    "NEVER sit. NEVER loaf. NEVER face. NEVER 3/4. NEVER mid-hall. NEVER punch-sill.",
+    "Live ember at-A FAIL×2 was sill-band 0.19+sit+face and 0.16+sit (after #4: 0.19/0.21 and at-B 0.20/0.21+sit). This edit GROWS that FAIL. It does not start over from the teacher.",
+    "IGNORE bolt-back crop (~0.53). IGNORE example-at-*-tiny. Hall materials stay as they are. Oval or RECT energy OK (never wood, never chrome UI).",
+    ATA_FORCE_TAILLE,
+    ATA_FORCE_STANDING,
+  ].join(" ");
 }
 
 export function sillStillLine(side) {
@@ -355,15 +376,21 @@ function hallStillPrompt(slotLines, pose, hasSpawn, teacherRel) {
     .join(" ");
 }
 
-export async function imagineStill({ root, slot, pose, dest, spawnPath, lane }) {
+export async function imagineStill({ root, slot, pose, dest, spawnPath, lane, enlargeFrom }) {
   const lock = join(root, "lock");
   const hasSpawn = Boolean(spawnPath && existsSync(spawnPath));
   const bolt = join(lock, "bolt-back.jpg");
   const teacherRel = pose === "atA" || pose === "atB" ? sillTeacherRel(root, pose) : join("lock", exampleName(pose));
   const teacher = join(root, teacherRel);
+  const failSrc = enlargeFrom && existsSync(enlargeFrom) ? enlargeFrom : null;
+  const enlarge = Boolean(failSrc && (pose === "atA" || pose === "atB"));
   const refs = [];
   if (lane) {
     refs.push(imgRef(bolt));
+    if (hasSpawn) refs.push(imgRef(spawnPath));
+  } else if (enlarge) {
+    refs.push(imgRef(failSrc));
+    if (existsSync(bolt)) refs.push(imgRef(bolt));
     if (hasSpawn) refs.push(imgRef(spawnPath));
   } else if ((pose === "atA" || pose === "atB") && hasSpawn) {
     refs.push(imgRef(spawnPath), imgRef(bolt), imgRef(teacher));
@@ -382,7 +409,18 @@ export async function imagineStill({ root, slot, pose, dest, spawnPath, lane }) 
       ]
         .filter(Boolean)
         .join(" ")
-    : hallStillPrompt(catalogLines(root, slot), pose, hasSpawn, teacherRel);
+    : enlarge
+      ? [
+          LAW,
+          catalogLines(root, slot),
+          enlargeStillLine(pose === "atA" ? "A" : "B"),
+          "First image = the FAIL jpg: enlarge ONLY. Same camera / hall. Do not send / copy the teacher.",
+          hasSpawn ? "Spawn still = hall materials lock only. Do not move him back to center spawn." : "",
+          "Second image (if present) = bolt-back.jpg: coat / back / collar IDENTITY only. IGNORE its close-up crop (bbox ~0.53 is illegal).",
+        ]
+          .filter(Boolean)
+          .join(" ")
+      : hallStillPrompt(catalogLines(root, slot), pose, hasSpawn, teacherRel);
   const body = {
     model: IMAGE_MODEL,
     prompt,

@@ -12,6 +12,7 @@ import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { imagineStill, imagineClip } from "./imagine-hooks.mjs";
 import { lockAtaStatus } from "./install-lock-ata.mjs";
+import { dropHungPlate, nextSillAttempt, saveFailPlate } from "./kitchen-fail.mjs";
 
 const SLOTS = [
   "moss",
@@ -60,12 +61,22 @@ function failLine(stdout) {
 }
 
 function dropPlate(rel) {
+  dropHungPlate(dir, rel);
   const p = join(dir, rel);
   if (existsSync(p)) unlinkSync(p);
 }
 
 function refuseKeep(rel, reason) {
   out("KEEP REFUSED  " + rel + "  " + (reason || "smoke FAIL"));
+}
+
+/** Copy FAIL to .kitchen/fail/, drop hung dest. Never stills/films. Never Hang. */
+function refuseAndSave(rel, kind, n, reason) {
+  const saved = saveFailPlate(dir, rel, kind, n);
+  if (saved) out("FAIL SAVE  " + saved + "  (debug — never Hang, never stills/films)");
+  refuseKeep(rel, reason);
+  dropPlate(rel);
+  return saved;
 }
 
 function skeleton(id) {
@@ -139,9 +150,15 @@ function has(rel) {
 function reuse(rel, kind) {
   if (force) return false;
   if (!has(rel)) return false;
+  return smokeReport(rel, kind).ok;
+}
+
+function seedExistingFail(rel, kind) {
+  if (!has(rel)) return { n: 0, rule: null, failAbs: null };
   const s = smokeReport(rel, kind);
-  if (!s.ok) refuseKeep(rel, s.rule);
-  return s.ok;
+  if (s.ok) return { n: 0, rule: null, failAbs: null };
+  const saved = refuseAndSave(rel, kind, 1, s.rule);
+  return { n: 1, rule: s.rule, failAbs: saved ? join(dir, saved) : null };
 }
 
 function plan(rel, kind) {
@@ -213,6 +230,8 @@ if (dry) {
   out("COOK " + slot + " dry-run");
   out("hooks only — no chat Imagine UI");
   out("oval|RECT energy rifts — never wood, never chrome UI. STANDING — sit / face / 3/4 / punch-sill cannot PASS.");
+  out("fail-save: Smoke FAIL → packs/" + slot + "/.kitchen/fail/<kind>-<n>.jpg|mp4 — debug only. NEVER stills/ or films/. Never Hang FAIL.");
+  out("enlarge: at-A/at-B under-size (sill-band ~0.16–0.21) → 1 fresh + 1 enlarge (or 2 enlarge). FAIL jpg = image; ONLY grow dog to 0.35–0.40 standing at sill. Sit does not block enlarge. gate.place / mid-hall = fresh, not enlarge.");
   out(lockAtaStatus(root).note);
   out("atA side ref = lock/example-at-a.jpg — copy PLACE+POSE from example; FORCE taille 0.35–0.40; FORCE STANDING; never shrink to 0.18; hall materials from spawn/catalog only — ignore example décor.");
   out(force ? "--force: recook even if hung PASS" : "default: reuse hung PASS stills + films");
@@ -225,6 +244,9 @@ if (dry) {
     if (line.startsWith("skip ")) skipStills++;
     else needLive = true;
     out(line);
+    if (!line.startsWith("skip ") && (kind === "still-atA" || kind === "still-atB")) {
+      out("  → sill two-step: fresh then enlarge-if-undersize (cap 1 fresh + 1 enlarge / 2 enlarge). fail-save → .kitchen/fail/");
+    }
   }
   if (!force && skipStills === stillJobs.length) out("skip still phase — 3 hung stills PASS");
   if (has("stills/spawn.jpg") && (has("stills/at-a.jpg") || has("stills/at-b.jpg"))) {
@@ -259,6 +281,7 @@ if (needLive && !process.env.XAI_API_KEY) {
 mkdirSync(join(dir, "stills"), { recursive: true });
 mkdirSync(join(dir, "films"), { recursive: true });
 mkdirSync(join(dir, ".kitchen"), { recursive: true });
+mkdirSync(join(dir, ".kitchen", "fail"), { recursive: true });
 const roomPath = join(dir, "room.json");
 if (!existsSync(roomPath)) {
   writeFileSync(roomPath, JSON.stringify(skeleton(slot), null, 2) + "\n");
@@ -271,15 +294,86 @@ const spawnStill = join(dir, "stills/spawn.jpg");
 const atA = join(dir, "stills/at-a.jpg");
 const atB = join(dir, "stills/at-b.jpg");
 
+async function cookSillStill(label, pose, destAbs, rel, kind) {
+  let fresh = 0;
+  let enlarge = 0;
+  const seed = seedExistingFail(rel, kind);
+  let n = seed.n;
+  let lastRule = seed.rule;
+  let lastFailAbs = seed.failAbs;
+  let lastErr;
+  while (fresh + enlarge < 2) {
+    const step = nextSillAttempt({ fresh, enlarge, lastRule });
+    if (step === "stop") break;
+    try {
+      if (step === "enlarge" && lastFailAbs && existsSync(lastFailAbs)) {
+        out(
+          "enlarge " +
+            rel +
+            " from " +
+            lastFailAbs +
+            " (under-size → 0.35–0.40 standing at sill, same camera/hall)",
+        );
+        await imagineStill({
+          root,
+          slot,
+          pose,
+          dest: destAbs,
+          spawnPath: spawnStill,
+          enlargeFrom: lastFailAbs,
+        });
+      } else {
+        out("fresh " + rel);
+        await imagineStill({ root, slot, pose, dest: destAbs, spawnPath: spawnStill });
+      }
+    } catch (e) {
+      lastErr = e;
+      if (debug) out(label + " " + (e && e.message ? e.message : e));
+    }
+    if (step === "enlarge") enlarge++;
+    else fresh++;
+    if (!has(rel)) {
+      lastRule = (lastErr && lastErr.message) || lastRule || "imagine " + label;
+      continue;
+    }
+    const s = smokeReport(rel, kind);
+    if (!s.ok) {
+      n++;
+      const saved = refuseAndSave(rel, kind, n, s.rule);
+      lastRule = s.rule;
+      lastFailAbs = saved ? join(dir, saved) : destAbs;
+      lastErr = new Error(s.rule || "smoke " + label);
+      continue;
+    }
+    const pair = smokeStills();
+    if (!pair.ok) {
+      n++;
+      const saved = refuseAndSave(rel, kind, n, pair.rule);
+      lastRule = pair.rule;
+      lastFailAbs = saved ? join(dir, saved) : destAbs;
+      lastErr = new Error(pair.rule || "still-pair " + label);
+      continue;
+    }
+    return true;
+  }
+  fail(
+    (lastErr && lastErr.message ? lastErr.message : lastRule || label) +
+      " — cap 1 fresh + 1 enlarge (or 2 enlarge). No chat Imagine fallback.",
+  );
+}
+
 let stillCooked = 0;
 if (reuse("stills/spawn.jpg", "still-spawn")) {
   out("skip stills/spawn.jpg (exists + smoke PASS)");
 } else {
+  const spawnSeed = seedExistingFail("stills/spawn.jpg", "still-spawn");
+  let spawnN = spawnSeed.n;
   await cap2("spawn", async () => {
     await imagineStill({ root, slot, pose: "spawn", dest: spawnStill });
     const s = smokeReport("stills/spawn.jpg", "still-spawn");
     if (!s.ok) {
-      refuseKeep("stills/spawn.jpg", s.rule);
+      spawnN++;
+      refuseAndSave("stills/spawn.jpg", "still-spawn", spawnN, s.rule);
       throw new Error(s.rule || "smoke spawn");
     }
   });
@@ -290,37 +384,13 @@ if (debug) out("stills written spawn");
 if (reuse("stills/at-a.jpg", "still-atA")) {
   out("skip stills/at-a.jpg (exists + smoke PASS)");
 } else {
-  await cap2("atA", async () => {
-    await imagineStill({ root, slot, pose: "atA", dest: atA, spawnPath: spawnStill });
-    const s = smokeReport("stills/at-a.jpg", "still-atA");
-    if (!s.ok) {
-      refuseKeep("stills/at-a.jpg", s.rule);
-      throw new Error(s.rule || "smoke atA");
-    }
-    const pair = smokeStills();
-    if (!pair.ok) {
-      refuseKeep("stills/at-a.jpg", pair.rule);
-      throw new Error(pair.rule || "still-pair atA");
-    }
-  });
+  await cookSillStill("atA", "atA", atA, "stills/at-a.jpg", "still-atA");
   stillCooked++;
 }
 if (reuse("stills/at-b.jpg", "still-atB")) {
   out("skip stills/at-b.jpg (exists + smoke PASS)");
 } else {
-  await cap2("atB", async () => {
-    await imagineStill({ root, slot, pose: "atB", dest: atB, spawnPath: spawnStill });
-    const s = smokeReport("stills/at-b.jpg", "still-atB");
-    if (!s.ok) {
-      refuseKeep("stills/at-b.jpg", s.rule);
-      throw new Error(s.rule || "smoke atB");
-    }
-    const pair = smokeStills();
-    if (!pair.ok) {
-      refuseKeep("stills/at-b.jpg", pair.rule);
-      throw new Error(pair.rule || "still-pair atB");
-    }
-  });
+  await cookSillStill("atB", "atB", atB, "stills/at-b.jpg", "still-atB");
   stillCooked++;
 }
 if (stillCooked === 0) out("skip still phase — 3 hung stills PASS");
@@ -342,6 +412,9 @@ for (const [rel, still, stillRel, pose] of breaths) {
   filmCooked++;
   let ok = false;
   let lastRule = "smoke breath";
+  const breathSeed = seedExistingFail(rel, "breath");
+  let failN = breathSeed.n;
+  lastRule = breathSeed.rule || lastRule;
   for (let i = 0; i < 2; i++) {
     try {
       await imagineClip({
@@ -357,14 +430,18 @@ for (const [rel, still, stillRel, pose] of breaths) {
       const s = smokeReport(rel, "breath");
       if (!s.ok) {
         lastRule = s.rule || "smoke breath";
-        refuseKeep(rel, lastRule);
-        dropPlate(rel);
+        failN++;
+        refuseAndSave(rel, "breath", failN, lastRule);
         throw new Error(lastRule);
       }
       ok = true;
       break;
     } catch (e) {
       lastRule = e && e.message ? e.message : lastRule;
+      if (has(rel)) {
+        failN++;
+        refuseAndSave(rel, "breath", failN, lastRule);
+      }
       if (debug) out(rel + " " + lastRule);
     }
   }
@@ -400,6 +477,9 @@ for (const [rel, first, last] of walks) {
   filmCooked++;
   let ok = false;
   let lastRule = "smoke walk";
+  const walkSeed = seedExistingFail(rel, "walk");
+  let failN = walkSeed.n;
+  lastRule = walkSeed.rule || lastRule;
   for (let i = 0; i < 2; i++) {
     try {
       await imagineClip({
@@ -414,14 +494,18 @@ for (const [rel, first, last] of walks) {
       const s = smokeReport(rel, "walk");
       if (!s.ok) {
         lastRule = s.rule || "smoke walk";
-        refuseKeep(rel, lastRule);
-        dropPlate(rel);
+        failN++;
+        refuseAndSave(rel, "walk", failN, lastRule);
         throw new Error(lastRule);
       }
       ok = true;
       break;
     } catch (e) {
       lastRule = e && e.message ? e.message : lastRule;
+      if (has(rel)) {
+        failN++;
+        refuseAndSave(rel, "walk", failN, lastRule);
+      }
       if (debug) out(rel + " " + lastRule);
     }
   }
