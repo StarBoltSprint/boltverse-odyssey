@@ -410,7 +410,12 @@ function bandCheck(h, pose, why, warns) {
     why.push(`gate.size sill-band ${h.toFixed(2)} want ${SILL_BAND[0]}-${SILL_BAND[1]}`);
 }
 
-/** Layer-B still veto: sit / 3/4 / face / spawn-cx even when bboxH/H is in band. */
+/** Sit / yaw / face / size — hard even when gate.place PASSes (dog already at sill). */
+export function hardPoseFails(why) {
+  return (why || []).filter((w) => /^(gate\.sit|gate\.yaw|identity\.face|gate\.size)/.test(w));
+}
+
+/** Layer-B still veto: sit / 3/4 / face / size / punch even when gate.place PASSes. Place PASS is not a soft KEEP. */
 export function stillReasons(buf, kind, w = GW, h = GH) {
   const why = [];
   const hh = creamHeight(buf, w, h);

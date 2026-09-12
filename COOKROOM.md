@@ -40,7 +40,7 @@ node scripts/cook-room.mjs moss --force
 1. `packs/<id>/` + skeleton `room.json` **only if missing** (never overwrite a hung graph)
 2. spawn still = lock + example-spawn + `catalog/<slot>.md` — skip if hung PASS
 3. smoke still-spawn — FAIL ×2 → **stop**, print stock
-4. atA / atB = `imagineStill` **edits that spawn** (bolt-back = coat; example-at-* = side only) — skip each if hung PASS
+4. atA / atB = `imagineStill` **edits that spawn** (bolt-back = coat, IGNORE ~0.53; side ref = hung moss PASS sill still, else swapped `lock/example-at-*`) — skip each if hung PASS. IGNORE tiny ~0.18 crop like bolt-back 0.53. Never `example-at-*-tiny`.
 5. smoke those stills — FAIL ×2 on one at → stop (no films)
 6. 5 films, **one by one**, smoke after each (skip each hung PASS film)  
    breath FAIL ×2 → **do not** write ffmpeg gel into `films/`. Optional decay jpeg-loop may land in `packs/<id>/.kitchen/` for the keeper. Gel ≠ PASS. **HANG BLOCKED** + stock. Do not hang “so they can see”.  
@@ -78,4 +78,4 @@ Not the player. Not Smoke (it *calls* smoke). Not Forge UI. Not chat Imagine UI.
 **Hung PASS = reuse. Missing / FAIL = Imagine. `--force` recooks.**  
 Smoke tastes. cookRoom runs the recipe. Grok does not invent the list of pans.
 
-Hooks: [scripts/imagine-hooks.mjs](scripts/imagine-hooks.mjs). `export XAI_API_KEY` then `node scripts/cook-room.mjs moss`. Spawn still = `/v1/images/edits` (bolt-back + example-spawn). atA/atB = **edit the spawn** (bolt-back = coat only; example-at-* = side only — ignore oval / 0.18). Walks = video `image` + `last_frame`. Breath = same still twice (`image` + `last_frame` = that pose). No key if every plate is hung PASS. `--dry-run` prints skip vs cook.
+Hooks: [scripts/imagine-hooks.mjs](scripts/imagine-hooks.mjs). `export XAI_API_KEY` then `node scripts/cook-room.mjs moss`. Spawn still = `/v1/images/edits` (bolt-back + example-spawn). atA/atB = **edit the spawn** (bolt-back = coat only, IGNORE ~0.53; side ref = hung moss PASS / swapped `lock/example-at-*`). IGNORE a tiny ~0.18 crop the same way. Never send `lock/example-at-*-tiny`. Walks = video `image` + `last_frame`. Breath = same still twice (`image` + `last_frame` = that pose). No key if every plate is hung PASS. `--dry-run` prints skip vs cook.

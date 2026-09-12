@@ -10,7 +10,7 @@
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { execFileSync, spawnSync } from "node:child_process";
-import { matchPose, GW, GH, creamPlace, stillReasons } from "./still-pair.mjs";
+import { matchPose, GW, GH, creamPlace, stillReasons, hardPoseFails } from "./still-pair.mjs";
 import { pHash, dHash, hamming } from "./phash.mjs";
 
 const TH = JSON.parse(
@@ -315,7 +315,9 @@ function smokeFile(file, kind, refs, required, smokeDir) {
       const fa = rawFrame(file, 0, GW, GH);
       const pose = stillReasons(fa, kind, GW, GH);
       if (pose.why.length) {
-        const rule = pose.why[0].split(" ")[0];
+        // Place PASS is not a soft KEEP. Sit / yaw / face / size still FAIL.
+        const hard = hardPoseFails(pose.why);
+        const rule = (hard[0] || pose.why[0]).split(" ")[0];
         return fail(rule, "still", pose.why.join("; "));
       }
     } catch (e) {

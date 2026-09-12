@@ -1,9 +1,10 @@
 #!/usr/bin/env node
-// Fixture: hung moss stills PASS sit/yaw; a size-in-band loaf FAILs gate.sit.
-import { execFileSync } from "node:child_process";
+// Fixture: hung moss / swapped example-at-* / lock sill teachers PASS sit/yaw/place.
+// Archived example-at-*-tiny: place can PASS, sit/size still FAIL (no soft KEEP).
+import { execFileSync, spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { stillReasons, GW, GH } from "./still-pair.mjs";
+import { stillReasons, hardPoseFails, ATA_CX_MAX, ATB_CX_MIN, SPAWN_CX, GW, GH } from "./still-pair.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -42,6 +43,37 @@ function mustPass(rel, kind) {
 mustPass("packs/moss/stills/spawn.jpg", "still-spawn");
 mustPass("packs/moss/stills/at-a.jpg", "still-atA");
 mustPass("packs/moss/stills/at-b.jpg", "still-atB");
+mustPass("lock/sill-at-a.jpg", "still-atA");
+mustPass("lock/sill-at-b.jpg", "still-atB");
+mustPass("lock/example-at-a.jpg", "still-atA");
+mustPass("lock/example-at-b.jpg", "still-atB");
+
+function placeOk(r, kind) {
+  if (!r.dog) return false;
+  const cx = r.dog.cx / GW;
+  if (cx >= SPAWN_CX[0] && cx <= SPAWN_CX[1]) return false;
+  if (kind === "still-atA") return cx <= ATA_CX_MAX;
+  if (kind === "still-atB") return cx >= ATB_CX_MIN;
+  return true;
+}
+
+function mustFailPoseEvenIfPlaceOk(rel, kind) {
+  const r = stillReasons(raw(join(root, rel)), kind);
+  const placeBad = r.why.some((w) => w.startsWith("gate.place"));
+  const hard = hardPoseFails(r.why);
+  if (!placeOk(r, kind) || placeBad) {
+    console.error("FAIL  " + rel + "  expected gate.place PASS (cx at sill)  " + JSON.stringify({ why: r.why, cx: r.dog && r.dog.cx / GW }));
+    process.exit(1);
+  }
+  if (!hard.length) {
+    console.error("FAIL  " + rel + "  place PASS must still FAIL sit/yaw/size  " + JSON.stringify(r.why));
+    process.exit(1);
+  }
+  console.log("PASS  " + rel + "  place OK + hard FAIL  " + hard.join("; "));
+}
+
+mustFailPoseEvenIfPlaceOk("lock/example-at-a-tiny.jpg", "still-atA");
+mustFailPoseEvenIfPlaceOk("lock/example-at-b-tiny.jpg", "still-atB");
 
 const sit = Buffer.alloc(GW * GH * 3, 40);
 const y0 = Math.floor(GH * 0.52);
@@ -152,5 +184,34 @@ if (!leftAsB.why.some((w) => w.startsWith("gate.place"))) {
   process.exit(1);
 }
 console.log("PASS  synthetic left-sill as still-atB  " + leftAsB.why.join("; "));
+
+const sitAtLeft = stillReasons(sit, "still-atA");
+if (sitAtLeft.why.some((w) => w.startsWith("gate.place"))) {
+  console.error("FAIL  synthetic sit-at-left should place-PASS as still-atA  " + JSON.stringify(sitAtLeft));
+  process.exit(1);
+}
+if (!hardPoseFails(sitAtLeft.why).some((w) => w.startsWith("gate.sit"))) {
+  console.error("FAIL  synthetic sit-at-left place-PASS must still gate.sit  " + JSON.stringify(sitAtLeft.why));
+  process.exit(1);
+}
+console.log("PASS  synthetic sit-at-left place-PASS + gate.sit  " + sitAtLeft.why.join("; "));
+
+function smokeMustFail(rel, kind) {
+  const r = spawnSync("node", [join(root, "scripts/smoke-pack.mjs"), join(root, rel), "--kind", kind], {
+    encoding: "utf8",
+  });
+  if (r.status === 0) {
+    console.error("FAIL  smoke " + rel + " must not PASS\n" + r.stdout);
+    process.exit(1);
+  }
+  if (!/gate\.sit|gate\.size|gate\.yaw/.test(r.stdout || "")) {
+    console.error("FAIL  smoke " + rel + " should FAIL sit/size/yaw, not a place-only soft path\n" + r.stdout);
+    process.exit(1);
+  }
+  console.log("PASS  smoke FAIL " + rel + "  " + (r.stdout || "").split("\n")[0]);
+}
+
+smokeMustFail("lock/example-at-a-tiny.jpg", "still-atA");
+smokeMustFail("lock/example-at-b-tiny.jpg", "still-atB");
 
 console.log("STILL-REASONS PASS");

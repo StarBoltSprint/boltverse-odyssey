@@ -164,12 +164,35 @@ function exampleName(pose) {
   return pose === "atA" ? "example-at-a.jpg" : pose === "atB" ? "example-at-b.jpg" : "example-spawn.jpg";
 }
 
-/** bolt-back is 0.53 close-up; example-at-* is oval + ~0.18. Unlabeled edit of the close-up = punch-sill. */
-export function stillRefOrder(pose, hasSpawn) {
+function officialSillRel(pose) {
+  return pose === "atA" ? "lock/sill-at-a.jpg" : "lock/sill-at-b.jpg";
+}
+
+function mossSillRel(pose) {
+  return pose === "atA" ? "packs/moss/stills/at-a.jpg" : "packs/moss/stills/at-b.jpg";
+}
+
+/**
+ * Side ref for at-A / at-B. Prefer hung moss PASS sill stills.
+ * lock/example-at-* are swapped copies of those (not the old oval+0.18 tinies).
+ * lock/sill-at-* = same pixels. Tiny archives are example-at-*-tiny.jpg — never send.
+ */
+export function sillTeacherRel(root, pose) {
+  if (pose !== "atA" && pose !== "atB") return join("lock", exampleName(pose));
+  const moss = mossSillRel(pose);
+  const official = officialSillRel(pose);
+  const swapped = join("lock", exampleName(pose));
+  if (root && existsSync(join(root, moss))) return moss;
+  if (root && existsSync(join(root, official))) return official;
+  if (root && existsSync(join(root, swapped))) return swapped;
+  return swapped;
+}
+
+/** bolt-back is 0.53 close-up. Unlabeled edit of the close-up = punch-sill. */
+export function stillRefOrder(pose, hasSpawn, root) {
   if (pose === "atA" || pose === "atB") {
-    return hasSpawn
-      ? ["spawn", "bolt-back.jpg", exampleName(pose)]
-      : [exampleName(pose), "bolt-back.jpg"];
+    const side = sillTeacherRel(root, pose);
+    return hasSpawn ? ["spawn", "bolt-back.jpg", side] : [side, "bolt-back.jpg"];
   }
   return hasSpawn ? ["bolt-back.jpg", exampleName(pose), "spawn"] : ["bolt-back.jpg", exampleName(pose)];
 }
@@ -191,34 +214,37 @@ export function sillStillLine(side) {
     "Ear tips / crown stay in the LOWER HALF of the plate (dog top ≥ 0.50 of frame H). punch-sill FAIL if the head enters the rift (top < 0.46).",
     "NEVER sit. NEVER a loaf. NEVER haunches down. NEVER lie. NEVER 3/4. NEVER cheek. NEVER face. NEVER muzzle.",
     "NEVER punch-in. NEVER fill the " + fill + ". NEVER copy bolt-back close-up scale (~0.53 is illegal).",
+    "IGNORE a tiny ~0.18 crop the same way you IGNORE bolt-back ~0.53 — both scales are illegal. Live FAIL was sill-band 0.19–0.21. NEVER copy example-at-*-tiny.",
     "He is NOT seated facing the " + fill + ". He is NOT looking at the rift. " + other + ". Same camera — no dolly.",
     "Dog bbox height 0.35–0.40 (aim 0.36). One step closer than spawn (0.34–0.38). Δh/H from spawn MUST be under 0.12.",
     "If spawn is 0.26, you are ~0.36. Size in band is not enough if he is still mid-hall / spawn-cx, sits, turns, shows a face, or climbs the rift. Same lens as spawn.",
   ].join(" ");
 }
 
-export function stillRefLine(pose, hasSpawn) {
+export function stillRefLine(pose, hasSpawn, teacherRel) {
   if (pose !== "atA" && pose !== "atB") return "";
-  const ex = exampleName(pose);
+  const teacher = teacherRel || officialSillRel(pose);
   const side = pose === "atA" ? "LEFT teal" : "RIGHT gold";
   if (hasSpawn) {
     return [
       "First image = the spawn still: SAME hall, SAME camera, SAME light, SAME RECT rifts. ONLY the dog MOVES to the " + side + " sill (paws on that lip, body in that third). Do not leave him at center spawn. Do not grow him in place. Do not zoom. Do not recrop.",
       "Second image = bolt-back.jpg: coat / back / collar IDENTITY only. IGNORE its close-up crop (bbox ~0.53 is illegal).",
-      "Third image = lock/" + ex + ": which SIDE he stands on (" + side + ", other rift still visible). IGNORE its oval doors and its tiny dog (~0.18). Doors stay RECT. Dog size is 0.35–0.40, feet on THAT sill — not mid-hall, crown below mid-frame — no punch-sill.",
+      "Third image = " + teacher + ": official SEUIL teacher (hung moss PASS / swapped lock/example-at-*). Copy PLACE and POSE — dog already AT the " + side + " sill (seuil), standing BACK, feet on the stone floor, taille ~0.30–0.40 (aim 0.35–0.40).",
+      "IGNORE a tiny ~0.18 crop the same way you IGNORE bolt-back ~0.53 — both scales are illegal. NEVER copy lock/example-at-*-tiny (oval + sit; live FAIL sill-band 0.19–0.21).",
+      "RECT rifts come from the spawn still. If this teacher still shows ovals (moss at-A), do not copy door shape — moss at-B is the RECT grammar.",
     ].join(" ");
   }
   return [
-    "First image = lock/" + ex + ": SIDE and floor placement only (" + side + " sill, not mid-hall). IGNORE oval doors and tiny scale (~0.18).",
+    "First image = " + teacher + ": official SEUIL teacher. Copy PLACE and POSE (" + side + " sill, standing BACK, not mid-hall). IGNORE a tiny ~0.18 crop the same way you IGNORE bolt-back ~0.53.",
     "Second image = bolt-back.jpg: coat / back / collar only. IGNORE close-up crop (~0.53).",
   ].join(" ");
 }
 
-function hallStillPrompt(slotLines, pose, hasSpawn) {
+function hallStillPrompt(slotLines, pose, hasSpawn, teacherRel) {
   return [
     LAW,
     slotLines,
-    stillRefLine(pose, hasSpawn),
+    stillRefLine(pose, hasSpawn, teacherRel),
     pose === "spawn"
       ? [
           "Bolt center, lower third, BACK to camera, TWO ears, STANDING four paws, weight on the floor.",
@@ -240,16 +266,17 @@ export async function imagineStill({ root, slot, pose, dest, spawnPath, lane }) 
   const lock = join(root, "lock");
   const hasSpawn = Boolean(spawnPath && existsSync(spawnPath));
   const bolt = join(lock, "bolt-back.jpg");
-  const ex = join(lock, exampleName(pose));
+  const teacherRel = pose === "atA" || pose === "atB" ? sillTeacherRel(root, pose) : join("lock", exampleName(pose));
+  const teacher = join(root, teacherRel);
   const refs = [];
   if (lane) {
     refs.push(imgRef(bolt));
     if (hasSpawn) refs.push(imgRef(spawnPath));
   } else if ((pose === "atA" || pose === "atB") && hasSpawn) {
-    refs.push(imgRef(spawnPath), imgRef(bolt), imgRef(ex));
+    refs.push(imgRef(spawnPath), imgRef(bolt), imgRef(teacher));
   } else {
     refs.push(imgRef(bolt));
-    refs.push(imgRef(ex));
+    refs.push(imgRef(existsSync(teacher) ? teacher : join(lock, exampleName(pose))));
     if (hasSpawn) refs.push(imgRef(spawnPath));
   }
   const prompt = lane
@@ -262,7 +289,7 @@ export async function imagineStill({ root, slot, pose, dest, spawnPath, lane }) 
       ]
         .filter(Boolean)
         .join(" ")
-    : hallStillPrompt(catalogLines(root, slot), pose, hasSpawn);
+    : hallStillPrompt(catalogLines(root, slot), pose, hasSpawn, teacherRel);
   const body = {
     model: IMAGE_MODEL,
     prompt,
