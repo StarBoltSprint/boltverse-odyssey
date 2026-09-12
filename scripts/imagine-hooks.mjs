@@ -112,8 +112,8 @@ function catalogLines(root, slot) {
 function breathLine(pose) {
   const live = [
     "6 seconds. Seamless loop. First frame and last frame are the same still (already pinned — do not re-describe them).",
-    "The dog remains COMPLETELY STATIONARY in place. NEVER walking. NEVER stepping. NEVER shifting position.",
-    "He only breathes gently and naturally: chest and flanks rise and fall softly. The bushy tail may sway and flick lightly. A small head motion is OK.",
+    "The dog remains COMPLETELY STATIONARY in place. NEVER walking. NEVER stepping. NEVER shifting position. PAWS stay planted — they do not lift, slide, or step.",
+    "VISIBLE breath: chest and BELLY rise and fall clearly with each breath. The bushy tail sways and flicks. The head may turn or nod a little. NEVER sit. NEVER lie. NEVER crouch. STANDING on FOUR PAWS the whole clip.",
     "NO morphing of the dog's form, fur, or body.",
     "The two portals may pulse and animate subtly (slow swirling energy, soft light ripples). Distant hall lights may shimmer. Soft reflections may shift slowly on the floor.",
     "Camera stays COMPLETELY LOCKED and fixed on the exact composition — never pan, tilt, zoom, or dolly.",
@@ -370,15 +370,16 @@ export function walkClipLine(edge) {
     "NO morph. The dog stays ONE full-white German Shepherd the whole clip.",
     "Camera is LOCKED OFF and NEVER moves — no dolly, no pan, no zoom, no drift.",
     "ONE dog only. NEVER two dogs. NEVER a second Bolt. NEVER a clone. NEVER anything else appearing on screen.",
-    "NEVER sit. NEVER lie. NEVER face. NEVER 3/4.",
+    "NEVER sit. NEVER lie. NEVER crouch. NEVER drop to the haunches. He stays STANDING on FOUR PAWS the whole walk.",
     "Energy portals stay oval or RECT (never wood, never chrome UI). Do not morph into a blob.",
-    "Do not walk back. Do not invent leftover empty time. Last frame is the arrive still — he is already there when the clip ends. No tunnel.",
+    "He ONLY walks FORWARD toward the arrive portal. NEVER recede. NEVER reverse. NEVER walk back toward spawn. Distance to the arrive door ONLY decreases, every frame. NEVER sit at the start.",
+    "Do not invent leftover empty time. Last frame is the arrive still — he is already there when the clip ends. No tunnel.",
   ].join(" ");
   const e = String(edge || "");
   if (e === "spawnB" || e === "atB" || e === "B") {
     return [
       live,
-      "He STARTS at center spawn, BACK. He walks toward the gold-orange RIGHT portal. Arrive standing BACK at the gold RIGHT sill.",
+      "He STARTS at center spawn, BACK. He walks FORWARD along the gold path toward the gold-orange RIGHT portal. Every frame he is closer to that door. Arrive standing BACK at the gold RIGHT sill. NEVER reverse.",
     ].join(" ");
   }
   if (e === "AB" || e === "a-b") {
