@@ -213,7 +213,7 @@ Floor 1 films → `films/` (the 5). Floor 2 = walk-A-B / B-A if asked. Floor 3 =
 
 Walk prompt (hooks send this via `imagineClip`; do not paste into chat Imagine):
 
-> Lock-off. 10 seconds. He walks to the door (~5s) and HOLDS (~3s). Do not walk back to spawn. last_frame locks the last picture, not the path — leftover seconds = round trip = FAIL. FULL-white GSD, teal collar, back the whole clip. No 3/4, no morph.
+> Lock-off. Camera NEVER moves. He STARTS walking on frame 1 and walks at a STEADY pace all the way to last_frame (~9s). NO morph. ONE dog only — never two. No leftover hold (leftover seconds = round trip = FAIL). FULL-white GSD, teal collar, back the whole clip. No 3/4.
 
 ### Breath — first AND last are the **same** still
 

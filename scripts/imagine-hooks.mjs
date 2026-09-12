@@ -360,12 +360,14 @@ export function spawnStillLine() {
 
 export function walkClipLine() {
   return [
-    "10 seconds. ONE dog only. He LEAVES spawn in the first second. Continuous even walk on FOUR STANDING PAWS.",
-    "NEVER sit. NEVER lie. NEVER face. NEVER 3/4. NEVER a second Bolt at center or the other door.",
+    "The dog STARTS WALKING on the very first frame — no freeze, no pause, no linger at spawn.",
+    "He walks at a STEADY even pace on FOUR STANDING PAWS from the first frame all the way to the last frame (about 9 seconds of continuous walking).",
+    "NO morph. The dog stays ONE full-white German Shepherd the whole clip.",
+    "Camera is LOCKED OFF and NEVER moves — no dolly, no pan, no zoom, no drift.",
+    "ONE dog only. NEVER two dogs. NEVER a second Bolt. NEVER a clone at spawn or the other door. NEVER anything else appearing on screen.",
+    "NEVER sit. NEVER lie. NEVER face. NEVER 3/4.",
     "Energy portals stay oval or RECT (never wood, never chrome UI). Do not morph into a blob.",
-    "Never freeze mid-hall. Arrives ~8s, then HOLDS STANDING 1–2s at the sill, still back to camera.",
-    "No leftover empty time. No linger-then-warp. No sudden sprint. Do not walk back to spawn.",
-    "Do not invent a floor ice disc. Locked-off. ONE full-white GSD. Last frame is the arrive still. No tunnel.",
+    "Do not walk back. Do not invent leftover empty time. Last frame is the arrive still — he is already there when the clip ends. No tunnel.",
   ].join(" ");
 }
 
