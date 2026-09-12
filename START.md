@@ -6,10 +6,12 @@ Do **not** read ENGINE, ENTER, Smoke, or the decrees to play. That is the kitche
 
 ## This is a room
 
+Default hung hall = **frost (ice)**.
+
 <p align="center">
-<img src="lock/example-spawn.jpg" width="180" alt="center">
-<img src="lock/example-at-a.jpg" width="180" alt="teal left sill">
-<img src="lock/example-at-b.jpg" width="180" alt="gold right sill">
+<img src="packs/frost/stills/spawn.jpg" width="180" alt="center spawn">
+<img src="packs/frost/stills/at-a.jpg" width="180" alt="teal left sill">
+<img src="packs/frost/stills/at-b.jpg" width="180" alt="gold right sill">
 </p>
 
 Center. Teal left. Gold right.
@@ -22,19 +24,21 @@ Center. Teal left. Gold right.
 
 Tap left. He walks. He breathes at the sill. No HUD.
 
-## This is the sentence
+## Play this hall
+
+Open **[frost / ice](https://boltverse-odyssey.grok.me/r/frost)** — already breathing.
+
+Same door again = stay. Other door from a sill = walk across. One line. That is all.
+
+## This is the sentence (cook another paint)
 
 `ask Grok: citadel room, dusk`
 
 (or moss · ember · gold — [CATALOG.md](CATALOG.md))
 
-Then open **[the hall](https://boltverse-odyssey.grok.me)** — already breathing.
-
-Same door again = stay, unless a neighbor is hung there. One line. That is all.
-
 ## If it fails
 
-You get a link to the last good hall, or stock. Not a FAIL code.
+You get a link to the last good hall (frost), or stock. Not a FAIL code.
 
 Optional welcome still (X / SuperGrok, once): the gift page on the player — not required to tap.
 

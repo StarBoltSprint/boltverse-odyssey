@@ -17,7 +17,7 @@ Hung PASS stills/films = reuse. --force recooks.
 STYLE stills / restyle = Imagine Agent. Walks / breaths = hooks first+last. No chat Imagine without real first+last.
 Cannot run node + XAI_API_KEY for a live plate → refuse (stock). No chat fallback.
 PASS → /r/<id>
-Off-list / FAIL ×2 → /
+Off-list / FAIL ×2 → /r/frost
 ```
 
 CHAR + COOK after GROK.md.  
@@ -28,8 +28,9 @@ ENGINE only if the tap is broken.
 
 | URL | Pack |
 |---|---|
-| https://boltverse-odyssey.grok.me | **stock** — floor 0, Enter off. Fail / off-list land here. |
-| https://boltverse-odyssey.grok.me/r/<id> | catalog pack `packs/<id>/`. Unknown / FAIL → stock. |
+| https://boltverse-odyssey.grok.me | **frost (ice)** — default play, floor 1 + A↔B. Fail / off-list land here. |
+| https://boltverse-odyssey.grok.me/r/frost | same hung ice disc (`packs/frost/`). |
+| https://boltverse-odyssey.grok.me/r/<id> | catalog pack `packs/<id>/`. Unknown / FAIL → frost. |
 | https://boltverse-odyssey.grok.me/r/citadel | 3-room **demo** (floor 3). Not the default cook. |
 
 Their chat is the ticket office. This grok.me is the hall. Never copy the player into their sandbox.
