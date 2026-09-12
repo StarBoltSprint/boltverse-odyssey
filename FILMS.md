@@ -55,7 +55,7 @@ He **starts walking on frame 1**. Steady four-paw pace **all the way** to last_f
 
 Paste-base (then swap the door line + décor from the player's stills):
 
-> The dog STARTS WALKING on the very first frame. STEADY even pace on four standing paws from first frame to last frame (~9 seconds). NO morph. Camera LOCKED OFF, never moves. ONE dog only. NEVER two dogs. NEVER sit / face / 3/4. Do not walk back. Last frame is the arrive still.
+> The dog STARTS WALKING on the very first frame. STEADY even pace on four standing paws from first frame to last frame (~9 seconds). NO morph. Camera LOCKED OFF, never moves. ONE dog only. NEVER two dogs. NEVER sit / face / 3/4. He ONLY walks FORWARD toward the arrive door. NEVER recede. NEVER reverse. NEVER walk back toward spawn. Distance to the door ONLY decreases. Last frame is the arrive still.
 
 **Do not** copy the ice walk onto ember. Same motion. New hall paint from the stills the player gave.
 

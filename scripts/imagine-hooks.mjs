@@ -372,13 +372,14 @@ export function walkClipLine(edge) {
     "ONE dog only. NEVER two dogs. NEVER a second Bolt. NEVER a clone. NEVER anything else appearing on screen.",
     "NEVER sit. NEVER lie. NEVER face. NEVER 3/4.",
     "Energy portals stay oval or RECT (never wood, never chrome UI). Do not morph into a blob.",
-    "Do not walk back. Do not invent leftover empty time. Last frame is the arrive still — he is already there when the clip ends. No tunnel.",
+    "He ONLY walks FORWARD toward the arrive portal. NEVER recede. NEVER reverse. NEVER walk back toward spawn. Distance to the arrive door ONLY decreases, every frame. NEVER sit at the start.",
+    "Do not invent leftover empty time. Last frame is the arrive still — he is already there when the clip ends. No tunnel.",
   ].join(" ");
   const e = String(edge || "");
   if (e === "spawnB" || e === "atB" || e === "B") {
     return [
       live,
-      "He STARTS at center spawn, BACK. He walks toward the gold-orange RIGHT portal. Arrive standing BACK at the gold RIGHT sill.",
+      "He STARTS at center spawn, BACK. He walks FORWARD along the gold path toward the gold-orange RIGHT portal. Every frame he is closer to that door. Arrive standing BACK at the gold RIGHT sill. NEVER reverse.",
     ].join(" ");
   }
   if (e === "AB" || e === "a-b") {
