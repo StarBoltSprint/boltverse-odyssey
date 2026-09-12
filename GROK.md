@@ -15,7 +15,9 @@ Player: https://boltverse-odyssey.grok.me
 
 **Restyle:** completely new hall décor OK. **Doors may adapt** (shape / scale to décor). Cyan L + gold R energy portals may adapt shape / scale to décor (oval|RECT energy; never wood; never chrome UI). Bolt may be selected, repositioned, resized to sill for a nickel plate. Bolt reposition OK. Still AT the teal / gold threshold — mid-hall = FAIL.
 
-**[Grok Imagine Agent](https://grok.com/imagine/agent) = ONLY hall STYLES / stills / décor restyles** (freeze dog+portals, swap décor, skins on white coat). **NEVER** walks, breaths, or any video. Default STYLE cook: seal stills, restyle halls. **Smoke still gates.** Soft KEEP banned.
+**LAYOUT lock = ice stills.** [`LAYOUT.md`](LAYOUT.md). `packs/frost/stills/` + `lock/SEAL-*.jpg`. Same **depth**, same **door spacing**, same **Bolt-to-door distance**, **Y-fork** on the floor — every style. Décor + door *shape* may change. Never the hall geometry.
+
+**[Grok Imagine Agent](https://grok.com/imagine/agent) = ONLY hall STYLES / stills / décor restyles** (freeze dog+layout+portals, swap décor, skins on white coat). **NEVER** walks, breaths, or any video. Default STYLE cook: seal stills, restyle halls. **Smoke still gates.** Soft KEEP banned.
 
 Walks / breaths / films = Imagine first-frame + last-frame via `scripts/imagine-hooks.mjs` / `scripts/cook-room.mjs`. **Prompts = [FILMS.md](FILMS.md)** — every Grok, every player, every décor. Adapt hall paint only. Walks: start still ≠ arrive still. Breaths: same still twice. Agent is **not** required or recommended for video cook. Do **not** instruct Build to open Imagine Agent for Walk A, Walk B, or breath.
 

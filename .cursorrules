@@ -10,7 +10,7 @@ Identity base: Bolt is ALWAYS a full-white German Shepherd (white coat forever).
 SKINS: Imagine Agent MAY apply a décor-matching skin ON TOP of the white base — ember skin (embers/glow/ash accents), ice skin, etc. Stylish adaptation. Not a different dog.
 Restyle: completely new hall décor OK. Doors may adapt (shape/scale to décor). Cyan L + gold R energy portals may adapt shape/scale to décor (oval|RECT energy; never wood; never chrome UI). Bolt may be selected, repositioned, resized to sill for a nickel plate. Bolt reposition OK.
 
-Happy path: clone → read AGENTS.md + GROK.md → STYLE stills via Imagine Agent (grok.com/imagine/agent) ONLY. Walks / breaths / films = imagine-hooks / cook-room image + last_frame. Agent NEVER for video. Smoke still gates.
+Happy path: clone → read AGENTS.md + GROK.md + LAYOUT.md + FILMS.md → STYLE stills via Imagine Agent (grok.com/imagine/agent) ONLY. Ice stills = layout lock (depth, door spacing, Bolt distance, Y-fork). Décor + door shape may change. Walks / breaths / films = imagine-hooks / cook-room image + last_frame. Agent NEVER for video. Smoke still gates.
 
 Chat Imagine UI without real first+last is banned for walks / breaths / enter:
 imagine_image_to_video, imagine_reference_to_video, imagine_image_to_image

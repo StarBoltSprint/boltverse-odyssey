@@ -51,6 +51,7 @@ Search: `StarBoltSprint citadel-room` · living film · boltverse-odyssey.grok.m
 | [VALIDATE.md](VALIDATE.md) | box check before hang |
 | [SMOKE.md](SMOKE.md) | clone / first-last / recook cap 2 |
 | [CHAR.md](CHAR.md) | Bolt lock — the dog never changes |
+| [LAYOUT.md](LAYOUT.md) | ice stills = depth / door gap / Bolt distance lock — décor only changes |
 | [FILMS.md](FILMS.md) | owner walk + breath prompts — every Grok, adapt décor only |
 | [COOK.md](COOK.md) | stills-first cook (Agent restyle), then films via hooks first+last |
 | [COOKROOM.md](COOKROOM.md) | hall films — `node scripts/cook-room.mjs <slot>` (`image` + `last_frame`) |
