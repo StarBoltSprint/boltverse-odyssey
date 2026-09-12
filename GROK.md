@@ -36,7 +36,7 @@ Also read [AGENTS.md](AGENTS.md) (same refuse). Customize below is paste-once fo
 **Legal cook, every new conversation, automatic:**
 
 ```
-read LAYOUT.md    # ice stills = rig (depth / door spacing / Bolt distance / Y-fork)
+read LAYOUT.md    # black RIG plates = paint décor here; ice stills stay as example
 read FILMS.md     # walk + breath prompts (adapt décor only)
 https://grok.com/imagine/agent
   stills ONLY: restyle the 3 ice seals — décor may change, rig must not

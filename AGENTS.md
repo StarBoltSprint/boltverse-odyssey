@@ -26,7 +26,7 @@ Walks / breaths / films = Imagine first-frame + last-frame via `scripts/imagine-
 
 1. Clone this repo. Read this file + GROK.md. Stop.
 2. STYLE stills = Imagine Agent at `https://grok.com/imagine/agent` when restyling:
-   - **Read [LAYOUT.md](LAYOUT.md) first.** Ice stills (`packs/frost/stills/` + `lock/SEAL-*.jpg`) = layout lock. Same depth, same door spacing, same Bolt-to-door distance, Y-fork on the floor. Décor + door *shape* may change. Never the hall geometry.
+   - **Read [LAYOUT.md](LAYOUT.md) first.** Restyle teachers = black RIG plates (`lock/RIG-spawn.jpg` / `RIG-at-a.jpg` / `RIG-at-b.jpg`). Ice stills stay as frost play. Paint décor in the black — never move Bolt / doors / paths / depth.
    - **seal stills** (spawn / at-A / at-B)
    - **restyle halls** from a SEALED sill (completely new hall décor OK; cyan L + gold R energy portals may adapt **shape** only — not spacing / depth; Bolt may be selected, repositioned, resized to sill for a nickel plate; white coat forever; décor-matching skin ON TOP OK)
 3. Walks / breaths = `cook-room` → `imagineClip` (`image` + `last_frame`). **Read [FILMS.md](FILMS.md) first** — those prompts are the base for every player / every décor. Adapt hall paint from the player's stills + `catalog/<slot>.md` only. Never rewrite motion / camera / one-dog / duration. **walks** = start still + end still. **breaths** = same still twice. Never Agent video.
