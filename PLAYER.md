@@ -12,7 +12,7 @@ Read **[GROK.md](GROK.md) — stop.** This page is the salon map, not the job.
 ```
 Job = node scripts/cook-room.mjs <slot>
 Floor 1 = 3 stills + 5 films. No Enter. No wait.
-No chat Imagine for walks.
+No chat Imagine — not stills, not walks, not enter. Hook only.
 PASS → /r/<id>
 Off-list / FAIL ×2 → /
 ```

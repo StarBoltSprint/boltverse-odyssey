@@ -3,6 +3,51 @@
 Repo: `https://github.com/StarBoltSprint/boltverse-odyssey`  
 Player: https://boltverse-odyssey.grok.me
 
+## STOP — films = hook, never chat Imagine
+
+If `imagine_image_to_video` / `imagine_reference_to_video` / `imagine_image_to_image` are in your tool list: **do not call them** for this recipe.
+
+Those tools have **no `last_frame`**. Chat refs are not frames. Chat stills skip the edits lock. A film cooked in chat has no smoke → do not Hang it.
+
+**Legal cook, every new conversation, automatic:**
+
+```
+node scripts/cook-room.mjs <slot>
+```
+
+That script is the only hall cook. It calls `scripts/imagine-hooks.mjs`:
+
+- stills → `imagineStill()` → `POST /v1/images/edits`
+- walks → `imagineClip()` → `image` + **`last_frame`** (start still ≠ arrive still)
+- breaths → `imagineClip()` → same still twice (`image` + `last_frame`)
+
+Then `smoke-pack.mjs`. PASS → `packs/<id>/`. FAIL ×2 → stock. Never a chat mp4 in `films/`.
+
+Lane: `node scripts/cook-biome.mjs <id>` (same hooks, other job). Not `cook-room`.
+
+One-shot walk if the room already exists:
+
+```
+node --input-type=module -e 'import { imagineClip } from "./scripts/imagine-hooks.mjs"; await imagineClip({ root: process.cwd(), slot: "moss", kind: "walk", first: "packs/moss/stills/spawn.jpg", last: "packs/moss/stills/at-a.jpg", dest: "packs/moss/.kitchen/walk.mp4", seconds: 10 })'
+```
+
+Then `node scripts/smoke-pack.mjs <file> --kind walk`. FAIL = do not Hang.
+
+### Custom instructions (paste once in Grok → Customize)
+
+This is the only text that loads in a **brand-new** convo before the repo is cloned. Paste it. Without it, Grok only has chat Imagine.
+
+```
+Boltverse / StarBoltSprint / citadel / salle mousse:
+Clone https://github.com/StarBoltSprint/boltverse-odyssey and read GROK.md first.
+NEVER call imagine_image_to_video, imagine_reference_to_video, or imagine_image_to_image for hall stills, walks, breaths, or enter.
+Hall cook = `node scripts/cook-room.mjs <slot>` (imagine-hooks: image + last_frame).
+Lane = `node scripts/cook-biome.mjs <id>`.
+Chat films have no last_frame and no smoke. Do not hang them. No new grok.me.
+```
+
+---
+
 **First word picks the disc.** Same player. Not the same recipe.  
 The **verb** chooses (`salle` vs `sprint`). The noun `moss` does not.
 
@@ -11,7 +56,7 @@ HALL JOB =
   node scripts/cook-room.mjs <slot>
   3 stills + 5 films + smoke-pack
   URL /r/<slot>  or stock on FAIL×2
-  NO chat Imagine for walks / enter
+  NO chat Imagine — not for stills, not for walks, not for enter
   NO walk-A-B · NO ENTER unless they asked
   NO new grok.me
 

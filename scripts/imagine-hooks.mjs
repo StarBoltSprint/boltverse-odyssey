@@ -181,13 +181,13 @@ export async function imagineStill({ root, slot, pose, dest, spawnPath, lane }) 
         LAW,
         catalogLines(root, slot),
         pose === "spawn"
-          ? "Bolt center, lower third. BOTH portals fully visible left and right. Dog bbox height is 0.22–0.32 of the frame — same scale as the layout reference. Small in the hall. NOT a close-up. NOT filling the plate."
+          ? "Bolt center, lower third, BACK to camera, TWO ears, STANDING four paws. NEVER sit. NEVER 3/4. NEVER muzzle. BOTH portals fully visible left and right. He is SMALL in the hall — dog bbox height 0.24 of the frame (band 0.22–0.32). Same scale as the layout reference. The two portals DWARF him. NOT a close-up. NOT filling the plate. Locked-off camera."
           : "",
         pose === "atA"
-          ? "Bolt at the teal LEFT portal, still back to camera. Gold still visible on the right. Dog bbox height 0.35–0.40 of the frame. Same lens as spawn."
+          ? "Bolt at the teal LEFT portal, BACK to camera, TWO ears, STANDING four paws. NEVER sit. NEVER lie. NEVER 3/4. NEVER muzzle. Gold still visible on the right. Same camera as spawn — no dolly, same portal sizes. Dog bbox height 0.35–0.40 of the frame. Same lens as spawn."
           : "",
         pose === "atB"
-          ? "Bolt at the gold RIGHT portal, still back to camera. Teal still visible on the left. Dog bbox height 0.35–0.40 of the frame. Same lens as spawn."
+          ? "Bolt at the gold RIGHT portal, BACK to camera, TWO ears, STANDING four paws. NEVER sit. NEVER lie. NEVER 3/4. NEVER muzzle. Teal still visible on the left. Same camera as spawn — no dolly, same portal sizes. Dog bbox height 0.35–0.40 of the frame. Same lens as spawn."
           : "",
       ]
         .filter(Boolean)
