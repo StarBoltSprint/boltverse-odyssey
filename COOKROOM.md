@@ -41,10 +41,10 @@ node scripts/cook-room.mjs moss --force
 2. spawn still = lock + example-spawn + `catalog/<slot>.md` — skip if hung PASS
 3. smoke still-spawn — FAIL ×2 → **stop**, print stock
 4. atA / atB = `imagineStill` **edits that spawn** (bolt-back = coat, IGNORE ~0.53; atA side ref = `lock/example-at-a.jpg` SmiR lock teacher; atB side ref = hung moss PASS / swapped `lock/example-at-b`) — skip each if hung PASS. atA: copy PLACE+POSE from example; **FORCE taille 0.35–0.40; FORCE STANDING; never shrink to 0.18**; hall materials from spawn/catalog only — ignore example décor. IGNORE tiny ~0.18 crop like bolt-back 0.53. Never `example-at-*-tiny`. Drop missing? [`hall-stills/README.md`](hall-stills/README.md) + `node scripts/install-lock-ata.mjs`.
-5. smoke those stills — FAIL ×2 on one at → stop (no films)
+5. smoke those stills. FAIL → `FAIL SAVE` into `packs/<id>/.kitchen/fail/<kind>-<n>` and **drop** the hung dest (never leave FAIL in `stills/`). Under-size sill (~0.16–0.21, even if sit): second step is **enlarge-only** (`image` = FAIL jpg, grow to 0.35–0.40, same camera). Cap 1 fresh + 1 enlarge (or 2 enlarge). `gate.place` / mid-hall = fresh. FAIL ×2 on one at → stop (no films). Never Hang FAIL.
 6. 5 films, **one by one**, smoke after each (skip each hung PASS film)  
-   breath FAIL ×2 → **do not** write ffmpeg gel into `films/`. Optional decay jpeg-loop may land in `packs/<id>/.kitchen/` for the keeper. Gel ≠ PASS. **HANG BLOCKED** + stock. Do not hang “so they can see”.  
-   walk FAIL → delete that mp4 from `films/`, print `KEEP REFUSED` + the smoke rule, stock. Soft KEEP of a FAIL walk is illegal.
+   breath FAIL ×2 → **do not** write ffmpeg gel into `films/`. FAIL mp4 → `.kitchen/fail/`. Optional decay jpeg-loop may land in `packs/<id>/.kitchen/` for the keeper. Gel ≠ PASS. **HANG BLOCKED** + stock. Do not hang “so they can see”.  
+   walk FAIL → copy to `.kitchen/fail/`, delete that mp4 from `films/`, print `KEEP REFUSED` + the smoke rule, stock. Soft KEEP of a FAIL walk is illegal.
 7. encode 720×1280, mute, faststart
 8. `validate-pack` then `smoke-pack`
 9. PASS → `https://boltverse-odyssey.grok.me/r/<id>`

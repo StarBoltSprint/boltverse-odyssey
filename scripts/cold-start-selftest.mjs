@@ -43,6 +43,8 @@ must(/already AT the teal LEFT sill/.test(stop) && /already AT the gold RIGHT si
 must(/Spawn = CENTER only/.test(stop), "GROK.md STOP: spawn = center only");
 must(/Mid-hall at-A\/at-B = \*\*FAIL\*\*/.test(stop), "GROK.md STOP: mid-hall FAIL");
 must(/Soft KEEP banned/.test(stop), "GROK.md STOP: Soft KEEP banned");
+must(/\.kitchen\/fail/.test(stop), "GROK.md STOP: FAIL save → .kitchen/fail");
+must(/enlarge/.test(stop), "GROK.md STOP: enlarge-only sill step");
 
 const customize = grok.slice(grok.indexOf("```\nBoltverse"), grok.indexOf("```\n\n---"));
 must(/sill ≠ spawn/.test(customize), "GROK.md Customize: sill ≠ spawn");
@@ -54,11 +56,19 @@ must(!/oval doors cannot PASS/.test(customize), "GROK.md Customize: oval doors n
 must(/Oval\|RECT energy portals OK/.test(customize), "GROK.md Customize: oval|RECT energy OK");
 must(/never wood/.test(customize) && /never chrome UI/.test(customize), "GROK.md Customize: never wood / chrome UI");
 must(/Sit \/ face \/ 3\/4 cannot PASS/.test(customize), "GROK.md Customize: sit/face/3/4 still banned");
+must(/\.kitchen\/fail/.test(customize) || /fail-save/.test(customize), "GROK.md Customize: FAIL → .kitchen/fail");
+must(/enlarge/.test(customize), "GROK.md Customize: enlarge-only second step");
 
 const agents = body("AGENTS.md");
 must(/Oval\|RECT energy portals OK/.test(agents), "AGENTS.md: oval|RECT energy OK");
 must(/Do not FAIL oval shape alone/.test(agents), "AGENTS.md: do not FAIL oval shape alone");
 must(!/RECT→oval/.test(agents), "AGENTS.md: RECT→oval ban removed");
+must(/\.kitchen\/fail/.test(agents), "AGENTS.md: FAIL save → .kitchen/fail");
+must(/enlarge/.test(agents), "AGENTS.md: enlarge-only sill step");
+
+const cook = body("COOK.md");
+must(/enlarge/.test(cook) && /\.kitchen\/fail/.test(cook), "COOK.md: two-step enlarge + fail-save");
+must(/0\.19\+sit\+face/.test(cook) && /0\.16\+sit/.test(cook), "COOK.md: ember FAIL×2 shrink evidence");
 
 const rules = body(".cursorrules");
 must(/oval\|RECT energy rifts/.test(rules), ".cursorrules: oval|RECT energy");

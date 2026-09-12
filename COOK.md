@@ -12,6 +12,8 @@ export XAI_API_KEY=... && node scripts/cook-room.mjs <catalog-slot>
 
 Hung pack with PASS stills/films = **reuse**. `cook-room` only Imagines missing or smoke-FAIL plates. `--force` / `COOK_FORCE=1` overwrites and recooks. Never silently wipe `packs/moss` or any hung PASS still.
 
+Smoke FAIL stills/films are copied to `packs/<id>/.kitchen/fail/<kind>-<n>.jpg|mp4` for debug, then **deleted** from `stills/` and `films/`. **Never Hang FAIL.** Soft KEEP banned. `--dry-run` prints `fail-save` + `enlarge`.
+
 **Stills and films go only through** [scripts/imagine-hooks.mjs](scripts/imagine-hooks.mjs) (`imagineStill` / `imagineClip`) **via** [scripts/cook-room.mjs](scripts/cook-room.mjs). Chat Grok Imagine UI does not honor first/last — do not cook hall stills or films there.
 
 Repo: `https://github.com/StarBoltSprint/boltverse-odyssey`
@@ -81,7 +83,7 @@ SmiR’s teacher is installed:
 2. `node scripts/install-lock-ata.mjs` wrote [`lock/example-at-a.jpg`](lock/example-at-a.jpg) (720×1280).
 3. Direct `lock/example-at-a-tiny.jpg` is still refused. An owner drop at `hall-stills/` is allowed even if the pixels match that archive — prompts **FORCE taille 0.35–0.40 + STANDING** and **never shrink to 0.18**.
 
-Live ember at-A FAIL×2 (0.19+sit+face / 0.16+sit) means teacher pixels alone are not enough. No chat Imagine. No new grok.me.
+Live ember at-A FAIL×2 (0.19+sit+face / 0.16+sit) means teacher pixels alone are not enough. After #4: at-A 0.19/0.21; at-B 0.20/0.21+sit. **Two-step sill:** if at-A/at-B FAILs under-size (sill-band ~0.16–0.21) and place is usable — **or even if sit** — the second cook is enlarge-only: `imagineStill({ enlargeFrom: FAIL jpg })`. `image` = that FAIL. ONLY grow the dog to 0.35–0.40 STANDING at the same sill (same camera/hall). Do not send the teacher (teacher is the shrink). Cap: **1 fresh + 1 enlarge** (or **2 enlarge** if the disk plate is already that FAIL). Mid-hall / `gate.place` = fresh, not enlarge. FAIL jpg stays in `.kitchen/fail/` — never `stills/`. No chat Imagine. No new grok.me.
 
 ## Player phrases (treat as this flow)
 
@@ -131,7 +133,24 @@ Save → `stills/at-a.jpg` (or `stills/a/at-a.jpg`).
 
 Save → `stills/at-b.jpg` (or `stills/a/at-b.jpg`).
 
-If any FAIL below, recook from spawn. Do not invent a fourth still. Do not cook films until stills PASS.
+If any FAIL below, recook from spawn **unless** it is an under-size sill (see two-step enlarge). Do not invent a fourth still. Do not cook films until stills PASS. FAIL plates land in `.kitchen/fail/` only.
+
+### Two-step sill (enlarge-only)
+
+Fresh `imagineStill` from spawn still shrinks to the teacher (~0.18). Ember evidence (PR #7 lock teacher, live after #4):
+
+| try | at-A | at-B |
+|---|---|---|
+| 1 | sill-band **0.19** + sit + face | **0.20** + sit |
+| 2 | sill-band **0.16** + sit | **0.21** + sit |
+
+Place can be at the door. Size is illegal. Sit does **not** block the second step.
+
+1. Fresh edit from spawn (teacher = PLACE+POSE only).
+2. If Smoke FAILs `gate.size sill-band` ~0.16–0.21 (hard < 0.28) and not `gate.place` / punch-sill: save FAIL → `.kitchen/fail/still-atA-1.jpg`, drop `stills/at-a.jpg`, then `imagineStill({ enlargeFrom })` — FAIL jpg is `image`. Prompt = **ENLARGE ONLY**. Aim 0.35–0.40 standing. Same camera/hall. No teacher.
+3. Cap **1 fresh + 1 enlarge**, or **2 enlarge** when the plate on disk is already an under-size FAIL.
+4. Mid-hall / `gate.place` = another fresh (cap 2). Never enlarge a center dog.
+5. Either step FAIL → stay in `.kitchen/fail/`. Never Hang.
 
 ## Stills FAIL (recook)
 
