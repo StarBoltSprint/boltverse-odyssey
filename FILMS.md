@@ -40,7 +40,7 @@ He **never walks**. He **never changes place**. **Paws stay planted** (no lift, 
 
 Paste-base (then name the pose + paint from the player's stills):
 
-> 6 seconds. Seamless loop. The dog remains COMPLETELY STATIONARY. NEVER walking, NEVER stepping, NEVER shifting position. PAWS stay planted. STANDING on FOUR PAWS the whole clip. NEVER sit. NEVER lie. NEVER crouch. VISIBLE breath: chest and BELLY rise and fall clearly. Tail sways and flicks. Head may nod a little. NO morph. Portals may pulse. Distant lights may shimmer. Camera COMPLETELY LOCKED. ONE dog only. NEVER a second dog. NEVER any other animal.
+> 6 seconds. Seamless loop. The dog remains COMPLETELY STATIONARY. NEVER walking, NEVER stepping, NEVER shifting position. PAWS stay planted. STANDING on FOUR PAWS the whole clip. NEVER sit. NEVER lie. NEVER crouch. NOT a freeze-frame. Motion is SMOOTH and FLUID. VISIBLE breath: chest and BELLY MUST rise and fall clearly. Tail MUST sway and flick. Head MUST nod a little. NO morph. Portals may pulse. Distant lights may shimmer. Camera COMPLETELY LOCKED. ONE dog only. NEVER a second dog. NEVER any other animal.
 
 ## Walks — 10s (distinct stills)
 

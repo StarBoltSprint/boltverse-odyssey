@@ -113,7 +113,7 @@ function breathLine(pose) {
   const live = [
     "6 seconds. Seamless loop. First frame and last frame are the same still (already pinned — do not re-describe them).",
     "The dog remains COMPLETELY STATIONARY in place. NEVER walking. NEVER stepping. NEVER shifting position. PAWS stay planted — they do not lift, slide, or step.",
-    "VISIBLE breath: chest and BELLY rise and fall clearly with each breath. The bushy tail sways and flicks. The head may turn or nod a little. NEVER sit. NEVER lie. NEVER crouch. STANDING on FOUR PAWS the whole clip.",
+    "VISIBLE breath — this is NOT a freeze-frame. Motion is SMOOTH and FLUID, never jerky, never a still photo. Chest and BELLY MUST rise and fall clearly every breath. The bushy tail MUST sway and flick. The head MUST nod or turn a little. NEVER sit. NEVER lie. NEVER crouch. STANDING on FOUR PAWS the whole clip.",
     "NO morphing of the dog's form, fur, or body.",
     "The two portals may pulse and animate subtly (slow swirling energy, soft light ripples). Distant hall lights may shimmer. Soft reflections may shift slowly on the floor.",
     "Camera stays COMPLETELY LOCKED and fixed on the exact composition — never pan, tilt, zoom, or dolly.",
@@ -123,7 +123,7 @@ function breathLine(pose) {
   if (pose === "atA") {
     return [
       live,
-      "He is ALREADY at the teal LEFT sill, BACK, standing. NEVER a dog at center. NEVER a dog at gold.",
+      "He is ALREADY at the teal LEFT sill, BACK, standing. NEVER a dog at center. NEVER a dog at gold. His chest/belly/tail/head MUST keep moving fluidly — do not freeze him.",
     ].join(" ");
   }
   if (pose === "atB") {
