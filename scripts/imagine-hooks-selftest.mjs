@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 // Fixture: at-sill prompts name no-punch floor placement; spawn/lane stay off that stack.
-// Side refs prefer hung moss PASS sill stills. example-at-* are swapped moss copies.
+// at-A prefers lock/example-at-a.jpg (SmiR lock teacher). at-B prefers hung moss PASS.
+// copy PLACE+POSE+taille from example; hall materials from spawn/catalog only.
 // IGNORE tiny ~0.18 crop like bolt-back 0.53. Never send example-at-*-tiny.
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  ATA_LOCK_COPY,
   HALL_LAW,
   sillStillLine,
   stillRefLine,
@@ -13,6 +15,7 @@ import {
   spawnStillLine,
   walkClipLine,
 } from "./imagine-hooks.mjs";
+import { DEST_REL, DROP_RELS, installLockAta, lockAtaStatus } from "./install-lock-ata.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -49,12 +52,24 @@ for (const [name, p] of [
   must(/Do not leave him at center spawn/.test(p) && /Do not grow him in place/.test(p), name + " edit is a move, not a grow");
 }
 
-must(teacherA === "packs/moss/stills/at-a.jpg", "prefer hung moss PASS at-A as side ref");
+must(teacherA === "lock/example-at-a.jpg", "atA prefers SmiR lock/example-at-a as side ref");
 must(teacherB === "packs/moss/stills/at-b.jpg", "prefer hung moss PASS at-B as side ref");
 must(stillRefOrder("atB", true, root).join(",") === "spawn,bolt-back.jpg,packs/moss/stills/at-b.jpg", "atB+spawn edits spawn then moss PASS sill");
-must(stillRefOrder("atA", true, root).join(",") === "spawn,bolt-back.jpg,packs/moss/stills/at-a.jpg", "atA+spawn edits spawn then moss PASS sill");
+must(stillRefOrder("atA", true, root).join(",") === "spawn,bolt-back.jpg,lock/example-at-a.jpg", "atA+spawn edits spawn then lock/example-at-a");
 must(stillRefOrder("atB", true).join(",") === "spawn,bolt-back.jpg,lock/example-at-b.jpg", "atB lock fallback is swapped example-at-b");
-must(stillRefOrder("atA", true).join(",") === "spawn,bolt-back.jpg,lock/example-at-a.jpg", "atA lock fallback is swapped example-at-a");
+must(stillRefOrder("atA", true).join(",") === "spawn,bolt-back.jpg,lock/example-at-a.jpg", "atA lock fallback is lock/example-at-a");
+must(atA.includes(ATA_LOCK_COPY), "atA prompt: copy PLACE+POSE+taille from example; hall materials from spawn/catalog only — ignore example décor");
+must(/ignore example décor/.test(atA) && /hall materials from spawn\/catalog only/.test(atA), "atA cross-style: example pose, spawn décor");
+must(/standing BACK toward teal L/.test(atA), "atA names SmiR teacher pose");
+must(DEST_REL === "lock/example-at-a.jpg", "install dest is lock/example-at-a.jpg");
+must(DROP_RELS[0] === "hall-stills/smir-ata-teacher.jpeg", "drop slot hall-stills/smir-ata-teacher.jpeg");
+must(/COOK\/LOCK/.test(lockAtaStatus(root).note), "COOK/LOCK note when drop missing");
+try {
+  installLockAta(root, join(root, "lock/example-at-a-tiny.jpg"));
+  must(false, "tiny install must refuse");
+} catch (err) {
+  must(/COOK\/LOCK REFUSED/.test(String(err.message || err)), "install refuses archived tiny");
+}
 must(!String(stillRefOrder("atA", true, root)).includes("tiny"), "live atA does not send archived tiny");
 must(!String(stillRefOrder("atB", true, root)).includes("tiny"), "live atB does not send archived tiny");
 must(stillRefOrder("spawn", false).join(",") === "bolt-back.jpg,example-spawn.jpg", "spawn ref order unchanged");

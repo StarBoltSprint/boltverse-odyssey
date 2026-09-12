@@ -174,16 +174,28 @@ function mossSillRel(pose) {
   return pose === "atA" ? "packs/moss/stills/at-a.jpg" : "packs/moss/stills/at-b.jpg";
 }
 
+/** Exact at-A lecture — copy pose from the lock example, décor from spawn/catalog. */
+export const ATA_LOCK_COPY =
+  "copy PLACE+POSE+taille from example; hall materials from spawn/catalog only — ignore example décor.";
+
 /**
- * Side ref for at-A / at-B. Prefer hung moss PASS sill stills.
- * lock/example-at-* are swapped copies of those (not the old ~0.18 tinies).
- * lock/sill-at-* = same pixels. Tiny archives are example-at-*-tiny.jpg — never send.
+ * Side ref for at-A / at-B.
+ * at-A prefers lock/example-at-a.jpg (SmiR lock teacher: standing BACK toward teal L, gold visible).
+ * Do not prefer hung moss for at-A — moss décor leaks into ember/dusk/etc.
+ * at-B still prefers hung moss PASS, then lock/example-at-b / lock/sill-at-b.
+ * Tiny archives are example-at-*-tiny.jpg — never send.
  */
 export function sillTeacherRel(root, pose) {
   if (pose !== "atA" && pose !== "atB") return join("lock", exampleName(pose));
   const moss = mossSillRel(pose);
   const official = officialSillRel(pose);
   const swapped = join("lock", exampleName(pose));
+  if (pose === "atA") {
+    if (root && existsSync(join(root, swapped))) return swapped;
+    if (root && existsSync(join(root, official))) return official;
+    if (root && existsSync(join(root, moss))) return moss;
+    return swapped;
+  }
   if (root && existsSync(join(root, moss))) return moss;
   if (root && existsSync(join(root, official))) return official;
   if (root && existsSync(join(root, swapped))) return swapped;
@@ -225,21 +237,63 @@ export function sillStillLine(side) {
 
 export function stillRefLine(pose, hasSpawn, teacherRel) {
   if (pose !== "atA" && pose !== "atB") return "";
-  const teacher = teacherRel || officialSillRel(pose);
+  const teacher = teacherRel || (pose === "atA" ? join("lock", exampleName(pose)) : officialSillRel(pose));
   const side = pose === "atA" ? "LEFT teal" : "RIGHT gold";
+  const energy =
+    "Oval or RECT energy portals are both OK (oval preferred-ok). Copy jambs + sill + energy fill. NEVER wood. NEVER chrome UI rectangles. Do not FAIL oval shape.";
   if (hasSpawn) {
+    if (pose === "atA") {
+      return [
+        "First image = the spawn still: hall materials from spawn/catalog only. SAME camera, SAME light, SAME energy rifts (oval or RECT). ONLY the dog MOVES to the " +
+          side +
+          " sill (paws on that lip, body in that third). Do not leave him at center spawn. Do not grow him in place. Do not zoom. Do not recrop.",
+        "Second image = bolt-back.jpg: coat / back / collar IDENTITY only. IGNORE its close-up crop (bbox ~0.53 is illegal).",
+        "Third image = " +
+          teacher +
+          ": official SEUIL teacher (SmiR lock/example-at-a — standing BACK toward teal L, gold visible). " +
+          ATA_LOCK_COPY +
+          " Dog already AT the " +
+          side +
+          " sill (seuil), standing BACK, feet on the stone floor, taille ~0.30–0.40 (aim 0.35–0.40).",
+        "IGNORE example décor (vines / star-dome / moss paint). IGNORE a tiny ~0.18 crop the same way you IGNORE bolt-back ~0.53 — both scales are illegal. NEVER copy lock/example-at-*-tiny (sit + ~0.18; live FAIL sill-band 0.19–0.21).",
+        energy,
+      ].join(" ");
+    }
     return [
-      "First image = the spawn still: SAME hall, SAME camera, SAME light, SAME energy rifts (oval or RECT). ONLY the dog MOVES to the " + side + " sill (paws on that lip, body in that third). Do not leave him at center spawn. Do not grow him in place. Do not zoom. Do not recrop.",
+      "First image = the spawn still: SAME hall, SAME camera, SAME light, SAME energy rifts (oval or RECT). Hall materials from spawn/catalog only — ignore example décor. ONLY the dog MOVES to the " +
+        side +
+        " sill (paws on that lip, body in that third). Do not leave him at center spawn. Do not grow him in place. Do not zoom. Do not recrop.",
       "Second image = bolt-back.jpg: coat / back / collar IDENTITY only. IGNORE its close-up crop (bbox ~0.53 is illegal).",
-      "Third image = " + teacher + ": official SEUIL teacher (hung moss PASS / swapped lock/example-at-*). Copy PLACE and POSE — dog already AT the " + side + " sill (seuil), standing BACK, feet on the stone floor, taille ~0.30–0.40 (aim 0.35–0.40).",
+      "Third image = " +
+        teacher +
+        ": official SEUIL teacher (hung moss PASS / swapped lock/example-at-*). Copy PLACE and POSE — dog already AT the " +
+        side +
+        " sill (seuil), standing BACK, feet on the stone floor, taille ~0.30–0.40 (aim 0.35–0.40).",
       "IGNORE a tiny ~0.18 crop the same way you IGNORE bolt-back ~0.53 — both scales are illegal. NEVER copy lock/example-at-*-tiny (sit + ~0.18; live FAIL sill-band 0.19–0.21).",
-      "Oval or RECT energy portals are both OK (oval preferred-ok). Copy jambs + sill + energy fill. NEVER wood. NEVER chrome UI rectangles. Do not FAIL oval shape.",
+      energy,
+    ].join(" ");
+  }
+  if (pose === "atA") {
+    return [
+      "First image = " +
+        teacher +
+        ": official SEUIL teacher (SmiR lock/example-at-a). " +
+        ATA_LOCK_COPY +
+        " (" +
+        side +
+        " sill, standing BACK, not mid-hall). IGNORE a tiny ~0.18 crop the same way you IGNORE bolt-back ~0.53.",
+      "Second image = bolt-back.jpg: coat / back / collar only. IGNORE close-up crop (~0.53).",
+      energy,
     ].join(" ");
   }
   return [
-    "First image = " + teacher + ": official SEUIL teacher. Copy PLACE and POSE (" + side + " sill, standing BACK, not mid-hall). IGNORE a tiny ~0.18 crop the same way you IGNORE bolt-back ~0.53.",
+    "First image = " +
+      teacher +
+      ": official SEUIL teacher. Copy PLACE and POSE (" +
+      side +
+      " sill, standing BACK, not mid-hall). Hall materials from spawn/catalog only — ignore example décor. IGNORE a tiny ~0.18 crop the same way you IGNORE bolt-back ~0.53.",
     "Second image = bolt-back.jpg: coat / back / collar only. IGNORE close-up crop (~0.53).",
-    "Oval or RECT energy portals are both OK (oval preferred-ok). NEVER wood. NEVER chrome UI rectangles.",
+    energy,
   ].join(" ");
 }
 

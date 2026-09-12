@@ -1,0 +1,24 @@
+# COOK / LOCK — SmiR at-A teacher drop
+
+This folder is the **drop slot** for SmiR’s hand still. It is not a pack. It is not hung.
+
+**Expected file:** `hall-stills/smir-ata-teacher.jpeg`
+
+Teacher must show Bolt **standing BACK toward the teal LEFT** energy rift, **gold still visible**. Oval energy is OK (PR #6). RECT energy is OK. Never wood. Never chrome UI.
+
+Then:
+
+```
+node scripts/install-lock-ata.mjs --dry-run
+node scripts/install-lock-ata.mjs
+```
+
+That writes `lock/example-at-a.jpg` (720×1280). `imagineStill` at-A **prefers this lock example** as the side ref (not hung moss décor).
+
+Prompt law (hooks already send this):
+
+> copy PLACE+POSE+taille from example; hall materials from spawn/catalog only — ignore example décor.
+
+Do **not** drop `lock/example-at-a-tiny.jpg` here. The install script refuses that hash.
+
+If this file is missing in a cloud checkout: leave `lock/example-at-a.jpg` as-is (currently the swapped moss PASS still) and keep the prompt / prefer-lock wiring. No new grok.me. No chat Imagine.
