@@ -12,5 +12,5 @@ imagine_image_to_video, imagine_reference_to_video, imagine_image_to_image
 
 Hooks only: scripts/cook-room.mjs → scripts/imagine-hooks.mjs
 Hung PASS = reuse. --force recooks. Gel-breath / FAIL walk = HANG BLOCKED, not KEEP.
-Doors = RECT energy rifts (never oval). Sit / face / 3/4 cannot PASS.
+Doors = RECT energy rifts (never oval). Sit / face / 3/4 / punch-sill (climbing the rift) cannot PASS.
 No new grok.me. Catalog slots only.

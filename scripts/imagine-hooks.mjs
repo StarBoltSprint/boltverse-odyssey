@@ -160,13 +160,94 @@ function isLanePose(pose) {
   return p.startsWith("lean") || p === "fork";
 }
 
+function exampleName(pose) {
+  return pose === "atA" ? "example-at-a.jpg" : pose === "atB" ? "example-at-b.jpg" : "example-spawn.jpg";
+}
+
+/** bolt-back is 0.53 close-up; example-at-* is oval + ~0.18. Unlabeled edit of the close-up = punch-sill. */
+export function stillRefOrder(pose, hasSpawn) {
+  if (pose === "atA" || pose === "atB") {
+    return hasSpawn
+      ? ["spawn", "bolt-back.jpg", exampleName(pose)]
+      : [exampleName(pose), "bolt-back.jpg"];
+  }
+  return hasSpawn ? ["bolt-back.jpg", exampleName(pose), "spawn"] : ["bolt-back.jpg", exampleName(pose)];
+}
+
+export function sillStillLine(side) {
+  const here = side === "A" ? "teal LEFT" : "gold RIGHT";
+  const other = side === "A" ? "Gold RECT rift still visible on the right" : "Teal RECT rift still visible on the left";
+  const fill = side === "A" ? "teal" : "gold";
+  const walk = side === "A" ? "left" : "right";
+  return [
+    "He is ALREADY at the " + here + " RECT energy rift — not mid-hall, not climbing into the fill.",
+    "BACK to camera, TWO ears on TOP of the skull, crown to camera, muzzle HIDDEN.",
+    "STANDING four paws on the STONE FLOOR in FRONT of that sill. Legs LONG, haunches UP. Same lock as the spawn still — only he moved " + walk + ".",
+    "Feet stay on the hall floor. NEVER inside the rift. NEVER on the jamb. NEVER climbing the " + fill + " fill. The RECT DWARFS him.",
+    "Ear tips / crown stay in the LOWER HALF of the plate (dog top ≥ 0.50 of frame H). punch-sill FAIL if the head enters the rift (top < 0.46).",
+    "NEVER sit. NEVER a loaf. NEVER haunches down. NEVER lie. NEVER 3/4. NEVER cheek. NEVER face. NEVER muzzle.",
+    "NEVER punch-in. NEVER fill the " + fill + ". NEVER copy bolt-back close-up scale (~0.53 is illegal).",
+    "He is NOT seated facing the " + fill + ". He is NOT looking at the rift. " + other + ". Same camera — no dolly.",
+    "Dog bbox height 0.35–0.40 (aim 0.36). One step closer than spawn (0.34–0.38). Δh/H from spawn MUST be under 0.12.",
+    "If spawn is 0.26, you are ~0.36. Size in band is not enough if he sits, turns, shows a face, or climbs the rift. Same lens as spawn.",
+  ].join(" ");
+}
+
+export function stillRefLine(pose, hasSpawn) {
+  if (pose !== "atA" && pose !== "atB") return "";
+  const ex = exampleName(pose);
+  const side = pose === "atA" ? "LEFT teal" : "RIGHT gold";
+  if (hasSpawn) {
+    return [
+      "First image = the spawn still: SAME hall, SAME camera, SAME light, SAME RECT rifts. ONLY the dog is now at the " + side + ". Do not zoom. Do not recrop.",
+      "Second image = bolt-back.jpg: coat / back / collar IDENTITY only. IGNORE its close-up crop (bbox ~0.53 is illegal).",
+      "Third image = lock/" + ex + ": which SIDE he stands on (" + side + ", other rift still visible). IGNORE its oval doors and its tiny dog (~0.18). Doors stay RECT. Dog size is 0.35–0.40, feet on the floor, crown below mid-frame — no punch-sill.",
+    ].join(" ");
+  }
+  return [
+    "First image = lock/" + ex + ": SIDE and floor placement only (" + side + "). IGNORE oval doors and tiny scale (~0.18).",
+    "Second image = bolt-back.jpg: coat / back / collar only. IGNORE close-up crop (~0.53).",
+  ].join(" ");
+}
+
+function hallStillPrompt(slotLines, pose, hasSpawn) {
+  return [
+    LAW,
+    slotLines,
+    stillRefLine(pose, hasSpawn),
+    pose === "spawn"
+      ? [
+          "Bolt center, lower third, BACK to camera, TWO ears, STANDING four paws, weight on the floor.",
+          "NEVER sit. NEVER lie. NEVER 3/4. NEVER face. NEVER muzzle.",
+          "BOTH RECT energy rifts fully visible: cyan-teal LEFT, gold-orange RIGHT. Jambs + sill. Never oval. Never wood.",
+          "A luminous teal-gold fork on the floor from his paws to BOTH sills (path 5–15% of frame H, glow in the stone, not chrome UI).",
+          "He is SMALL in the hall — dog bbox height 0.24–0.28 of the frame (band 0.22–0.32). Same scale as the layout reference.",
+          "The two rifts DWARF him. NOT a close-up. NOT filling the plate. Locked-off camera.",
+        ].join(" ")
+      : "",
+    pose === "atA" ? sillStillLine("A") : "",
+    pose === "atB" ? sillStillLine("B") : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
 export async function imagineStill({ root, slot, pose, dest, spawnPath, lane }) {
   const lock = join(root, "lock");
-  const example =
-    pose === "atA" ? "example-at-a.jpg" : pose === "atB" ? "example-at-b.jpg" : "example-spawn.jpg";
-  const refs = [imgRef(join(lock, "bolt-back.jpg"))];
-  if (!lane) refs.push(imgRef(join(lock, example)));
-  if (spawnPath && existsSync(spawnPath)) refs.push(imgRef(spawnPath));
+  const hasSpawn = Boolean(spawnPath && existsSync(spawnPath));
+  const bolt = join(lock, "bolt-back.jpg");
+  const ex = join(lock, exampleName(pose));
+  const refs = [];
+  if (lane) {
+    refs.push(imgRef(bolt));
+    if (hasSpawn) refs.push(imgRef(spawnPath));
+  } else if ((pose === "atA" || pose === "atB") && hasSpawn) {
+    refs.push(imgRef(spawnPath), imgRef(bolt), imgRef(ex));
+  } else {
+    refs.push(imgRef(bolt));
+    refs.push(imgRef(ex));
+    if (hasSpawn) refs.push(imgRef(spawnPath));
+  }
   const prompt = lane
     ? [
         LANE_LAW,
@@ -177,42 +258,7 @@ export async function imagineStill({ root, slot, pose, dest, spawnPath, lane }) 
       ]
         .filter(Boolean)
         .join(" ")
-    : [
-        LAW,
-        catalogLines(root, slot),
-        pose === "spawn"
-          ? [
-              "Bolt center, lower third, BACK to camera, TWO ears, STANDING four paws, weight on the floor.",
-              "NEVER sit. NEVER lie. NEVER 3/4. NEVER face. NEVER muzzle.",
-              "BOTH RECT energy rifts fully visible: cyan-teal LEFT, gold-orange RIGHT. Jambs + sill. Never oval. Never wood.",
-              "A luminous teal-gold fork on the floor from his paws to BOTH sills (path 5–15% of frame H, glow in the stone, not chrome UI).",
-              "He is SMALL in the hall — dog bbox height 0.24–0.28 of the frame (band 0.22–0.32). Same scale as the layout reference.",
-              "The two rifts DWARF him. NOT a close-up. NOT filling the plate. Locked-off camera.",
-            ].join(" ")
-          : "",
-        pose === "atA"
-          ? [
-              "Bolt at the teal LEFT RECT energy rift, BACK to camera, TWO ears on TOP of the skull, crown to camera, muzzle HIDDEN.",
-              "STANDING four paws, legs LONG, haunches UP, weight on the floor. Same lock as the spawn still — only he moved left.",
-              "NEVER sit. NEVER a loaf. NEVER haunches down. NEVER lie. NEVER 3/4. NEVER cheek. NEVER face. NEVER muzzle. NEVER punch-in to fill the teal.",
-              "He is NOT seated facing the teal. He is NOT looking at the rift. Gold RECT rift still visible on the right. Same camera — no dolly.",
-              "Dog bbox height one step closer than spawn: 0.34–0.38 (want 0.35–0.40). Δh/H from spawn MUST be under 0.12.",
-              "If spawn is 0.26, you are ~0.36. Size in band is not enough if he sits, turns, or shows a face. Same lens as spawn.",
-            ].join(" ")
-          : "",
-        pose === "atB"
-          ? [
-              "Bolt at the gold RIGHT RECT energy rift, BACK to camera, TWO ears on TOP of the skull, crown to camera, muzzle HIDDEN.",
-              "STANDING four paws, legs LONG, haunches UP, weight on the floor. Same lock as the spawn still — only he moved right.",
-              "NEVER sit. NEVER a loaf. NEVER haunches down. NEVER lie. NEVER 3/4. NEVER cheek. NEVER face. NEVER muzzle. NEVER punch-in to fill the gold.",
-              "He is NOT seated facing the gold. He is NOT looking at the rift. Teal RECT rift still visible on the left. Same camera — no dolly.",
-              "Dog bbox height one step closer than spawn: 0.34–0.38 (want 0.35–0.40). Δh/H from spawn MUST be under 0.12.",
-              "If spawn is 0.26, you are ~0.36. Size in band is not enough if he sits, turns, or shows a face. Same lens as spawn.",
-            ].join(" ")
-          : "",
-      ]
-        .filter(Boolean)
-        .join(" ");
+    : hallStillPrompt(catalogLines(root, slot), pose, hasSpawn);
   const body = {
     model: IMAGE_MODEL,
     prompt,

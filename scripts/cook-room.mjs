@@ -211,7 +211,7 @@ if (!SLOTS.includes(slot)) fail("not in catalog");
 if (dry) {
   out("COOK " + slot + " dry-run");
   out("hooks only — no chat Imagine UI");
-  out("RECT energy rifts — never oval. STANDING — sit / face / 3/4 cannot PASS.");
+  out("RECT energy rifts — never oval. STANDING — sit / face / 3/4 / punch-sill cannot PASS.");
   out(force ? "--force: recook even if hung PASS" : "default: reuse hung PASS stills + films");
   out(has("room.json") ? "keep room.json" : "write skeleton room.json");
   let skipStills = 0;
