@@ -233,7 +233,8 @@ export const SILL_BAND = [0.35, 0.4];
 export const SILL_FAIL = [0.28, 0.45];
 export const PUNCH = 0.55;
 export const YAW_FAIL = 40;
-export const SIT_ASPECT = 1.75;
+export const STILL_YAW = 32;
+export const SIT_ASPECT = 2.2;
 
 function cropGray(g, w, x0, y0, cw, ch) {
   const o = new Float64Array(cw * ch);
@@ -343,6 +344,7 @@ function posesOf(edge) {
   if (/walk-a-b|walk-b-a/i.test(e)) return ["sill", "sill"];
   if (/walk-spawn|walk-a|walk-b/i.test(e)) return ["spawn", "sill"];
   if (e === "enter") return ["sill", "spawn"];
+  if (/still-spawn|breath-spawn/i.test(e)) return ["spawn", "spawn"];
   return ["spawn", "spawn"];
 }
 
@@ -359,10 +361,11 @@ function bandCheck(h, pose, why, warns) {
     why.push(`gate.size sill-band ${h.toFixed(2)} want ${SILL_BAND[0]}-${SILL_BAND[1]}`);
 }
 
-/** Layer-B still veto: sit / 3/4-yaw / illegal size. Face is layer C. */
+/** Layer-B still veto: sit / 3/4-yaw / illegal size. Face-on is layer C plus yaw. */
 export function stillReasons(buf, kind, w = GW, h = GH) {
   const why = [];
   const hh = creamHeight(buf, w, h);
+  const place = creamPlace(buf, w, h);
   if (hh >= PUNCH) why.push(`gate.size punch-in ${hh.toFixed(2)}`);
   if (kind === "still-spawn" && (hh < SPAWN_BAND[0] || hh > SPAWN_BAND[1]))
     why.push(`gate.size spawn-band ${hh.toFixed(2)} want ${SPAWN_BAND[0]}-${SPAWN_BAND[1]}`);
@@ -371,12 +374,16 @@ export function stillReasons(buf, kind, w = GW, h = GH) {
   const dog = dogMask(buf, w, h);
   if (!dog) why.push("gate.place no-dog");
   else {
-    if (dog.axisFromVert > YAW_FAIL)
+    if (dog.axisFromVert > STILL_YAW)
       why.push(`gate.yaw ${dog.axisFromVert.toFixed(0)}°`);
     const aspect = dog.h / Math.max(1, dog.w);
     if (aspect < SIT_ASPECT) why.push(`gate.sit aspect ${aspect.toFixed(2)}`);
   }
-  return { why, hh, dog };
+  if ((kind === "still-atA" || kind === "still-atB") && place && place.h > 0) {
+    const wide = place.w / place.h;
+    if (wide > 0.82) why.push(`gate.sit wide ${wide.toFixed(2)}`);
+  }
+  return { why, hh, dog, place };
 }
 
 const T = {

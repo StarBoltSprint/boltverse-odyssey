@@ -443,13 +443,13 @@ function smokeFile(file, kind, refs, required, smokeDir) {
     try {
       const fa = rawFrame(file, 0, GW, GH);
       const fb = rawFrame(file, lastT, GW, GH);
-      const edge =
+      const clipEdge =
         kind === "enter"
           ? "enter"
-          : kind === "walk"
+          : kind === "walk" || kind === "breath"
             ? basename(file).replace(/\.mp4$/i, "")
             : "breath";
-      const g = matchPose(fa, fb, edge, { w: GW, h: GH });
+      const g = matchPose(fa, fb, clipEdge, { w: GW, h: GH });
       if (!g.ok) return fail(g.why[0].split(" ")[0], "pair", g.why.join("; "));
 
       if (kind === "breath") {
@@ -471,16 +471,25 @@ function smokeFile(file, kind, refs, required, smokeDir) {
         }
         const pose =
           /breath-a/i.test(file) ? refs.atA : /breath-b/i.test(file) ? refs.atB : refs.spawn;
+        const poseEdge = /breath-a/i.test(file)
+          ? "still-atA"
+          : /breath-b/i.test(file)
+            ? "still-atB"
+            : "still-spawn";
         if (pose && existsSync(pose)) {
           const ps = rawFrame(pose, 0, GW, GH);
-          const gp = matchPose(fa, ps, "breath", { w: GW, h: GH });
+          const gp = matchPose(fa, ps, poseEdge, { w: GW, h: GH });
           if (!gp.ok) return fail(gp.why[0].split(" ")[0], "t=0", gp.why.join("; "));
         }
       }
       if (kind === "walk") {
         const [start, end] = walkRefs(file, refs);
         if (start && existsSync(start)) {
-          const gs = matchPose(fa, rawFrame(start, 0, GW, GH), edge, { w: GW, h: GH, warnHall: true });
+          const gs = matchPose(fa, rawFrame(start, 0, GW, GH), "still-spawn", {
+            w: GW,
+            h: GH,
+            warnHall: true,
+          });
           if (!gs.ok) return fail(gs.why[0].split(" ")[0], "t=0", gs.why.join("; "));
           if (gs.warn?.length) {
             emit({ id, kind, ok: false, warn: true, required: false, rule: "gate.rig", note: gs.warn.join("; ") });
@@ -488,7 +497,13 @@ function smokeFile(file, kind, refs, required, smokeDir) {
           }
         }
         if (end && existsSync(end)) {
-          const ge = matchPose(fb, rawFrame(end, 0, GW, GH), edge, { w: GW, h: GH, warnHall: true });
+          const b = basename(file).toLowerCase();
+          const arrive = /spawn-b|a-b|a_b/.test(b) ? "still-atB" : "still-atA";
+          const ge = matchPose(fb, rawFrame(end, 0, GW, GH), arrive, {
+            w: GW,
+            h: GH,
+            warnHall: true,
+          });
           if (!ge.ok) return fail(ge.why[0].split(" ")[0], "t=last", ge.why.join("; "));
           if (ge.warn?.length) {
             emit({ id, kind, ok: false, warn: true, required: false, rule: "gate.rig", note: ge.warn.join("; ") });

@@ -53,7 +53,7 @@ Measure = `bboxH / frameH` of the cream-dog blob. Same lens on every plate.
 |---|---|
 | Spawn / mid-hall | **0.22 – 0.32** (0.19 tiny = FAIL) |
 | Door sill (atA / atB) | **0.35 – 0.40** aim; FAIL &lt; 0.28 or &gt; 0.45 |
-| Forbidden | **≥ 0.55** punch-in / fills-door · sit (mask aspect &lt; 1.75) · yaw &gt; 40° |
+| Forbidden | **≥ 0.55** punch-in · sit (mask aspect &lt; 2.2 or sill cream w/h &gt; 0.82) · still yaw &gt; 32° |
 
 Deltas: breath \|Δh\|/H < 0.08. Walk edge / spawn↔sill stills **&lt; 0.12** (grow spawn-band → sill-band OK). stillEnd ↔ next stillStart = same size. No mid-hall still — recook the sill closer.
 

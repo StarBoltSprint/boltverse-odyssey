@@ -145,7 +145,7 @@ A photo loop with no vapor / no chest is a **gel**. Do not call it a living brea
 
 `spawn.jpg --kind still-spawn` used to PASS on file shape alone. `creamHeight` / punch-in lived only in **still-pair** (spawn→atA, walk last). A 0.60 spawn hung in silence until breath compared two frames.
 
-Now the still itself: `creamHeight` → `gate.size punch-in` if h ≥ 0.55, `gate.size spawn-band` if spawn ∉ **0.22–0.32** (0.19 tiny FAILs). Sill FAIL if h < 0.28 or h > 0.45. Sit (dog-mask aspect < 1.75) = `gate.sit`. Yaw > 40° = `gate.yaw` (3/4 / profile). Face-to-camera is layer C (`identity.face`). COOK smokes spawn **and** spawn↔sill Δh/H < 0.12 **before** films. 0.60 dies at the still. 0.19 dies at the still.
+Now the still itself: `creamHeight` → `gate.size punch-in` if h ≥ 0.55, `gate.size spawn-band` if spawn ∉ **0.22–0.32** (0.19 tiny FAILs). Sill FAIL if h < 0.28 or h > 0.45. **Size in band is not enough:** sit (dog-mask aspect < 2.2 or sill cream w/h > 0.82) = `gate.sit`. Still yaw > 32° = `gate.yaw` (3/4 / profile). Face-to-camera is layer C (`identity.face`) plus yaw. COOK smokes spawn **and** spawn↔sill Δh/H < 0.12 **before** films. A seated 0.37 at-B dies. 0.19 dies at the still.
 
 
 Required plates: 3 stills + breath-spawn, breath-A, breath-B, walk-spawn-A, walk-spawn-B.
