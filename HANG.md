@@ -76,6 +76,8 @@ Year-0 hung = **one** gallop plate until L2 passes that QC **and** is faster.
 
 ## Imagine — first AND last must be distinct (walks + enter)
 
+Hall floor-1 cook is `node scripts/cook-room.mjs <slot>` / `imagine-hooks` (`image` + `last_frame`). Not chat Imagine UI.
+
 Walks: `first = start still`, `last = arrive still`. Different images.
 Enter: `first = atA`, `last = same-slot teal-full` (or gold-full). Different images. **Never** `last = Hall' spawn`.
 

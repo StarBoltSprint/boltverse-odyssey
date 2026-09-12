@@ -2,6 +2,16 @@
 
 This is the product. The player does **not** pick films first. They ask Grok for **3 stills** in a citadel style. Grok supplies them with the **same Bolt** ([CHAR.md](CHAR.md)). **Do not wait.** Stills → smoke → films. Order: [COOKROOM.md](COOKROOM.md). Wait only if COOK_DEBUG=1.
 
+```
+node scripts/cook-room.mjs <catalog-slot> --dry-run
+export XAI_API_KEY=... && node scripts/cook-room.mjs <catalog-slot>
+```
+
+`--dry-run` first (no key, prints the queue). Live needs `XAI_API_KEY`.  
+`slot` ∈ [CATALOG.md](CATALOG.md). Off-list → stock, exit 1.
+
+**Stills and films go only through** [scripts/imagine-hooks.mjs](scripts/imagine-hooks.mjs) (`imagineStill` / `imagineClip`) **via** [scripts/cook-room.mjs](scripts/cook-room.mjs). Chat Grok Imagine UI does not honor first/last — do not cook hall stills or films there.
+
 Repo: `https://github.com/StarBoltSprint/boltverse-odyssey`
 Ops / folders / encode / PACK: [HANG.md](HANG.md).
 
@@ -25,7 +35,7 @@ Keep the size step small: spawn **0.22–0.32**, sill **0.35–0.40**, **Δh/H <
 
 **`reference_to_video` is not first/last.** The images are *references*, not frames. Imagine *inspires* a walk. It does **not** paste the gold still as the last picture. Walk-B then overshoots into the oval → size pop. **Illegal for walks and enter.**
 
-Chat Grok has no `last_frame` tool. Walks go through `scripts/imagine-hooks.mjs` / `cook-room.mjs`, not chat Imagine.
+Chat Grok has no `last_frame` tool. Stills and walks go through `scripts/imagine-hooks.mjs` / `cook-room.mjs`, not chat Imagine.
 
 Never `image_to_video` a walk or enter on a single still. That invents the journey / clones the dog. Breath is the only legal `first = last`.
 
@@ -41,7 +51,7 @@ After **each** plate: `smoke(file, kind, refs)` ([SMOKE.md](SMOKE.md)). PASS wri
 ## What the player may change
 
 **A catalog paint only.** One id from [CATALOG.md](CATALOG.md): moss · ember · dusk · asteroid · frost · ivy · ash · tide · ember-deep · gold.
-Off-list → nearest, or ask "did you mean ember?". Never "describe any temple". Paste the two lines from `catalog/<id>.md` into Imagine. Do not dream an architecture.
+Off-list → nearest, or ask "did you mean ember?". Never "describe any temple". `cook-room` reads the two lines from `catalog/<id>.md`. Do not paste them into chat Imagine. Do not dream an architecture.
 
 ## What is locked (pack)
 
@@ -70,19 +80,23 @@ Composition examples (camera + door layout, not the player's hall):
 
 If they give **no** paint, do not cook — send `/` (stock). If they give **7 videos**, skip still-cook — map and hang ([GROK.md](GROK.md)).
 
-## Stills — order is law
+## Stills — order is law (hooks, not chat)
 
-Do **not** roll 3 separate text-to-image. One spawn. Two moves.
+Do **not** roll 3 separate text-to-image in chat. Do **not** paste these prompts into Grok Imagine UI.
 
-Room 1 → `stills/spawn.jpg` `stills/at-a.jpg` `stills/at-b.jpg`.
+`cook-room` calls `imagineStill()` (`POST /v1/images/edits`). One spawn. Two moves from that spawn.
+
+Room 1 → `packs/<id>/stills/spawn.jpg` `at-a.jpg` `at-b.jpg`.
 Room 2 → `stills/a/spawn.jpg` `stills/a/at-a.jpg` `stills/a/at-b.jpg`. **Do not overwrite room 1.**
 Without `stills/a/` Grok writes over hall and the citadel dies.
 
-### 1. spawn
+Wait only if `COOK_DEBUG=1`. Default: stills → smoke → films. No “show the 3, wait.”
 
-`reference_to_image` · images: `lock/bolt-back.jpg` + `lock/example-spawn.jpg` · aspect `9:16`
+### 1. spawn — `imagineStill({ pose: "spawn" })`
 
-Prompt slot:
+Refs: `lock/bolt-back.jpg` + `lock/example-spawn.jpg` · aspect `9:16`
+
+Hooks send:
 
 > Same dog as the first image — FULL-white German Shepherd, ZERO black on the coat, no saddle, no mask, no black ears, teal collar, back to camera, standing, large (spawn size band). Same camera and door layout as the second image: cyan-teal energy rift left, gold-orange energy rift right, both full RECT holes with jambs and sills, lock-off. Never wood doors. Hall restyled with ONLY these materials (from catalog/<id>.md): **{two lines}**. Photoreal 9:16. No face, no UI, no 3/4. No extra door.
 
@@ -90,7 +104,7 @@ Save → `stills/spawn.jpg` (or `stills/a/spawn.jpg`). Scale 720×1280.
 
 ### 2. atA — from spawn, not from text
 
-`image_to_image` · source = the spawn you just made
+`imagineStill({ pose: "atA", spawnPath })` · source = the spawn just made
 
 > Same hall, same camera, same light, same doors. Only the dog walks to the teal portal on the left and stops, still back to camera. Gold portal stays in frame. Feet on the floor. Coat stays full white — no saddle.
 
@@ -98,18 +112,17 @@ Save → `stills/at-a.jpg` (or `stills/a/at-a.jpg`).
 
 ### 3. atB — from the same spawn
 
-`image_to_image` · source = **spawn** (not atA)
+`imagineStill({ pose: "atB", spawnPath })` · source = **spawn** (not atA)
 
 > Same hall, same camera, same light, same doors. Only the dog walks to the gold portal on the right and stops, still back to camera. Teal portal stays in frame. Feet on the floor. Coat stays full white — no saddle.
 
 Save → `stills/at-b.jpg` (or `stills/a/at-b.jpg`).
 
-### 4. Show the 3. Wait.
-
-If any FAIL below, recook from spawn. Do not invent a fourth still. Do not cook films yet.
+If any FAIL below, recook from spawn. Do not invent a fourth still. Do not cook films until stills PASS.
 
 ## Stills FAIL (recook)
 
+- Cooked in chat Imagine UI (not `imagineStill` via `cook-room`)
 - Bolt face / 3/4 / profile / different dog
 - grey / silver coat, black saddle, black mask, black ears (`identity.coat` / `identity.saddle`)
 - Doors swapped or missing (spawn must show **both**)
@@ -119,9 +132,11 @@ If any FAIL below, recook from spawn. Do not invent a fourth still. Do not cook 
 - Plate not 9:16
 - UI, text, watermark, chrome
 
-## Films — only after the player oks the 3 stills
+## Films — only after stills PASS (`imagineClip`, not chat)
 
 Stills **are** first and last frames. Do not re-imagine a new hall. **Law 0.**
+
+`cook-room` calls `imagineClip()` with API `image` + `last_frame`. Never chat `reference_to_video`. Never `image_to_video` on one still for a walk.
 
 **Walks and enter: first AND last must be distinct images.** Breath is the only legal `first = last` loop. Enter is **not** `image_to_video` on one still — `last = first` invents a journey / clone. See [HANG.md](HANG.md).
 
@@ -137,7 +152,7 @@ Floor 1 films → `films/` (the 5). Floor 2 = walk-A-B / B-A if asked. Floor 3 =
 | walk-A-B | API last_frame atA→atB | atA | atB | **10s** | **floor 2** — only if asked |
 | walk-B-A | API last_frame atB→atA | atB | atA | **10s** | **floor 2** — only if asked |
 
-Walk prompt slot (every walk):
+Walk prompt (hooks send this via `imagineClip`; do not paste into chat Imagine):
 
 > Lock-off. 10 seconds. He walks to the door (~5s) and HOLDS (~3s). Do not walk back to spawn. last_frame locks the last picture, not the path — leftover seconds = round trip = FAIL. FULL-white GSD, teal collar, back the whole clip. No 3/4, no morph.
 
@@ -219,7 +234,7 @@ Do **not** cook enter until:
 
 Then read [ENTER.md](ENTER.md) and [HANG.md](HANG.md). Short version:
 
-- **Two plates.** Imagine first+last **distinct** (Law 0): atA → teal-fill (dog **stays left**). Never `image_to_video` on one still. Never `last = Hall' spawn`.
+- **Two plates.** `imagineClip` first+last **distinct** (Law 0): atA → teal-fill (dog **stays left**). Never chat Imagine. Never `image_to_video` on one still. Never `last = Hall' spawn`.
 - Engine: 500ms empty veil of **that door** → spawn of room 2. Door A = teal-empty. Door B = **gold-empty**. Do not hardcode teal on a gold enter.
 - Dest breath = freeze if i2v walks.
 - Enter is **outside the 7** (`ENTER{}` map). `ended` → switch room **then** dest breath-spawn.

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Timer + xAI hooks. Floor 1. Tap never cooks.
+// Official hall cook. Stills + films = imagine-hooks only. Not chat Imagine UI.
 //   node scripts/cook-room.mjs moss --dry-run
 //   COOK_DEBUG=1 node scripts/cook-room.mjs dusk
 //   export XAI_API_KEY=... && node scripts/cook-room.mjs moss
@@ -149,6 +149,7 @@ if (!SLOTS.includes(slot)) fail("not in catalog");
 
 if (dry) {
   out("COOK " + slot + " dry-run");
+  out("hooks only — no chat Imagine UI");
   for (const l of queue()) out(l);
   process.exit(0);
 }

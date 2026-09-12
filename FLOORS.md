@@ -23,7 +23,7 @@ Same graph as stock. Same Bolt, same camera. Only the **materials** change. Not 
 Still **one** room. Still **no** Enter.  
 Out = `/r/moss`. Second tap = stay.
 
-This is `cookRoom(style)`:
+This is `node scripts/cook-room.mjs <slot>` (`cookRoom(style)`). Dry-run first. Live needs `XAI_API_KEY`. Never chat Imagine:
 
 - 3 stills (spawn, atA, atB)
 - 5 films: breath-spawn, breath-A, breath-B, walk-spawn-A, walk-spawn-B
