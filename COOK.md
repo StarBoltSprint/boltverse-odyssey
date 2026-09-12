@@ -7,8 +7,10 @@ node scripts/cook-room.mjs <catalog-slot> --dry-run
 export XAI_API_KEY=... && node scripts/cook-room.mjs <catalog-slot>
 ```
 
-`--dry-run` first (no key, prints the queue). Live needs `XAI_API_KEY`.  
+`--dry-run` first (no key, prints skip vs cook). Live needs `XAI_API_KEY` only for plates it Imagines.  
 `slot` ∈ [CATALOG.md](CATALOG.md). Off-list → stock, exit 1.
+
+Hung pack with PASS stills/films = **reuse**. `cook-room` only Imagines missing or smoke-FAIL plates. `--force` / `COOK_FORCE=1` overwrites and recooks. Never silently wipe `packs/moss` or any hung PASS still.
 
 **Stills and films go only through** [scripts/imagine-hooks.mjs](scripts/imagine-hooks.mjs) (`imagineStill` / `imagineClip`) **via** [scripts/cook-room.mjs](scripts/cook-room.mjs). Chat Grok Imagine UI does not honor first/last — do not cook hall stills or films there.
 

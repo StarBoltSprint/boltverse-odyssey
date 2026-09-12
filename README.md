@@ -24,6 +24,8 @@ node scripts/cook-room.mjs <catalog-slot> --dry-run
 export XAI_API_KEY=... && node scripts/cook-room.mjs <catalog-slot>
 ```
 
+Hung PASS stills/films = reuse. `--force` recooks.
+
 1. Fetch https://github.com/StarBoltSprint/boltverse-odyssey
 2. Read **[GROK.md](GROK.md) — stop.**
 3. Floor 1 only unless the human said enter / Hall′ / neighbor.

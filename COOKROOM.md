@@ -3,10 +3,13 @@
 ```
 node scripts/cook-room.mjs <catalog-slot> --dry-run
 export XAI_API_KEY=... && node scripts/cook-room.mjs <catalog-slot>
+node scripts/cook-room.mjs <catalog-slot> --force
 ```
 
-`--dry-run` first (no key, prints the queue). Live needs `XAI_API_KEY`.  
+`--dry-run` first (no key, prints skip vs cook). Live needs `XAI_API_KEY` only for plates it Imagines.  
 `slot` ∈ [CATALOG.md](CATALOG.md). Off-list → stock URL, exit 1.
+
+Hung pack with PASS stills/films = **reuse**. Only missing / smoke-FAIL plates go through Imagine. `--force` / `COOK_FORCE=1` recooks. Never wipe a hung `room.json` or a PASS still.
 
 That script is the **only** hall cook. Stills + films go through [scripts/imagine-hooks.mjs](scripts/imagine-hooks.mjs) (`imagineStill` / `imagineClip`). Never chat Grok Imagine UI.
 
@@ -26,18 +29,20 @@ Lane / biome cook is **not** this page. That is [COOKLANE.md](COOKLANE.md). `cit
 node scripts/cook-room.mjs moss --dry-run
 COOK_DEBUG=1 node scripts/cook-room.mjs dusk
 export XAI_API_KEY=... && node scripts/cook-room.mjs moss
+node scripts/cook-room.mjs moss --force
 ```
 
-`--dry-run` = queue only. Live = key. No throw « until wired ». No chat Imagine stills or films.
+`--dry-run` = skip vs cook (smokes existing files, no Imagine). Live = key only if a plate will cook. `--force` recooks PASS plates too. No chat Imagine stills or films.
 
-## Order (do not skip, do not wait)
+## Order (do not wait)
 
-1. `packs/<id>/` + skeleton `room.json` (auth off, open breath-spawn, edges spawn A/B, ENTER empty)
-2. spawn still = lock + example-spawn + `catalog/<slot>.md`
+0. Each dest still/film: exists + smoke PASS → **skip Imagine** (reuse). `--force` ignores this.
+1. `packs/<id>/` + skeleton `room.json` **only if missing** (never overwrite a hung graph)
+2. spawn still = lock + example-spawn + `catalog/<slot>.md` — skip if hung PASS
 3. smoke still-spawn — FAIL ×2 → **stop**, print stock
-4. atA / atB = `imagineStill` **from that spawn**
+4. atA / atB = `imagineStill` **from that spawn** — skip each if hung PASS
 5. smoke those stills — FAIL ×2 on one at → stop (no films)
-6. 5 films, **one by one**, smoke after each  
+6. 5 films, **one by one**, smoke after each (skip each hung PASS film)  
    breath FAIL ×2 → ffmpeg **gel** of the still **only if that still already PASS size**, then smoke the loop. Gel ≠ PASS. Loop FAIL / punch-in → **stock**, do not hang “so they can see”.  
    both walks FAIL → stock
 7. encode 720×1280, mute, faststart
@@ -68,7 +73,7 @@ Not the player. Not Smoke (it *calls* smoke). Not Forge UI. Not chat Imagine UI.
 
 ## One line
 
-**dry-run = no key. Live = key. Plus de throw « until wired ».**  
+**Hung PASS = reuse. Missing / FAIL = Imagine. `--force` recooks.**  
 Smoke tastes. cookRoom runs the recipe. Grok does not invent the list of pans.
 
-Hooks: [scripts/imagine-hooks.mjs](scripts/imagine-hooks.mjs). `export XAI_API_KEY` then `node scripts/cook-room.mjs moss`. Stills = `/v1/images/edits` (bolt-back + example). Walks = video `image` + `last_frame`. Breath = same still twice (`image` + `last_frame` = that pose). No key → throw / `--dry-run`.
+Hooks: [scripts/imagine-hooks.mjs](scripts/imagine-hooks.mjs). `export XAI_API_KEY` then `node scripts/cook-room.mjs moss`. Stills = `/v1/images/edits` (bolt-back + example). Walks = video `image` + `last_frame`. Breath = same still twice (`image` + `last_frame` = that pose). No key if every plate is hung PASS. `--dry-run` prints skip vs cook.

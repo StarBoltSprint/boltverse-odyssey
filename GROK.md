@@ -16,6 +16,8 @@ node scripts/cook-room.mjs <slot> --dry-run
 export XAI_API_KEY=... && node scripts/cook-room.mjs <slot>
 ```
 
+Hung PASS stills/films = reuse. Only missing / smoke-FAIL plates Imagine. `--force` / `COOK_FORCE=1` recooks.
+
 That script is the only hall cook. It calls `scripts/imagine-hooks.mjs`:
 
 - stills → `imagineStill()` → `POST /v1/images/edits`
@@ -42,7 +44,7 @@ This is the only text that loads in a **brand-new** convo before the repo is clo
 Boltverse / StarBoltSprint / citadel / salle mousse:
 Clone https://github.com/StarBoltSprint/boltverse-odyssey and read GROK.md first.
 NEVER call imagine_image_to_video, imagine_reference_to_video, or imagine_image_to_image for hall stills, walks, breaths, or enter.
-Hall cook = `node scripts/cook-room.mjs <slot>` (dry-run first; live needs XAI_API_KEY; imagine-hooks: image + last_frame).
+Hall cook = `node scripts/cook-room.mjs <slot>` (dry-run first; reuse hung PASS stills/films; --force recooks; live needs XAI_API_KEY; imagine-hooks: image + last_frame).
 Lane = `node scripts/cook-biome.mjs <id>`.
 Chat films have no last_frame and no smoke. Do not hang them. No new grok.me.
 ```
@@ -56,6 +58,7 @@ The **verb** chooses (`salle` vs `sprint`). The noun `moss` does not.
 HALL JOB =
   node scripts/cook-room.mjs <slot> --dry-run
   export XAI_API_KEY=... && node scripts/cook-room.mjs <slot>
+  hung PASS stills/films = reuse; --force recooks
   3 stills + 5 films + smoke-pack
   URL /r/<slot>  or stock on FAIL×2
   NO chat Imagine — not for stills, not for walks, not for enter

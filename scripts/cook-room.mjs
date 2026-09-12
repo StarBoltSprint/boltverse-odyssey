@@ -3,6 +3,8 @@
 //   node scripts/cook-room.mjs moss --dry-run
 //   COOK_DEBUG=1 node scripts/cook-room.mjs dusk
 //   export XAI_API_KEY=... && node scripts/cook-room.mjs moss
+//   node scripts/cook-room.mjs moss --force
+// Hung PASS stills/films are reused. --force / COOK_FORCE=1 recooks.
 
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -27,6 +29,7 @@ const PLAYER = "https://boltverse-odyssey.grok.me/r/";
 
 const argv = process.argv.slice(2);
 const dry = argv.includes("--dry-run");
+const force = argv.includes("--force") || process.env.COOK_FORCE === "1";
 const debug = process.env.COOK_DEBUG === "1";
 const slot = String(argv.find((a) => !a.startsWith("--")) || "")
   .toLowerCase()
@@ -79,20 +82,6 @@ function skeleton(id) {
   };
 }
 
-function queue() {
-  return [
-    "1 slot " + slot,
-    "2 packs/" + slot + " room.json ENTER empty",
-    "3 spawn still → smoke cap 2",
-    "4 atA atB from spawn → smoke cap 2",
-    "5 five films one by one",
-    "6 breath FAIL×2 → loop still ONLY if still PASS size, then smoke the loop; loop FAIL → stock",
-    "7 walk FAIL×2 → stock",
-    "8 validate-pack + smoke-pack",
-    "9 " + PLAYER + slot,
-  ];
-}
-
 function runNode(file, args) {
   return spawnSync("node", [join(scripts, file), ...args], { encoding: "utf8" });
 }
@@ -101,6 +90,23 @@ function smoke(rel, kind) {
   const r = runNode("smoke-pack.mjs", [join(dir, rel), "--kind", kind]);
   if (debug) process.stdout.write(r.stdout || "");
   return r.status === 0;
+}
+
+function has(rel) {
+  return existsSync(join(dir, rel));
+}
+
+function reuse(rel, kind) {
+  if (force) return false;
+  if (!has(rel)) return false;
+  return smoke(rel, kind);
+}
+
+function plan(rel, kind) {
+  if (force) return "cook " + rel + " (--force)";
+  if (!has(rel)) return "cook " + rel + " (missing)";
+  if (smoke(rel, kind)) return "skip " + rel + " (exists + smoke PASS)";
+  return "cook " + rel + " (exists + smoke FAIL)";
 }
 
 function ffmpegLoop(stillRel, destRel) {
@@ -145,38 +151,89 @@ async function cap2(label, fn) {
   fail(label);
 }
 
+const stillJobs = [
+  ["stills/spawn.jpg", "still-spawn"],
+  ["stills/at-a.jpg", "still-atA"],
+  ["stills/at-b.jpg", "still-atB"],
+];
+const filmJobs = [
+  ["films/breath-spawn.mp4", "breath"],
+  ["films/breath-a.mp4", "breath"],
+  ["films/breath-b.mp4", "breath"],
+  ["films/walk-spawn-a.mp4", "walk"],
+  ["films/walk-spawn-b.mp4", "walk"],
+];
+
 if (!SLOTS.includes(slot)) fail("not in catalog");
 
 if (dry) {
   out("COOK " + slot + " dry-run");
   out("hooks only — no chat Imagine UI");
-  for (const l of queue()) out(l);
+  out(force ? "--force: recook even if hung PASS" : "default: reuse hung PASS stills + films");
+  out(has("room.json") ? "keep room.json" : "write skeleton room.json");
+  let skipStills = 0;
+  let skipFilms = 0;
+  for (const [rel, kind] of stillJobs) {
+    const line = plan(rel, kind);
+    if (line.startsWith("skip ")) skipStills++;
+    out(line);
+  }
+  if (!force && skipStills === stillJobs.length) out("skip still phase — 3 hung stills PASS");
+  for (const [rel, kind] of filmJobs) {
+    const line = plan(rel, kind);
+    if (line.startsWith("skip ")) skipFilms++;
+    out(line);
+  }
+  if (!force && skipFilms === filmJobs.length) out("skip film phase — 5 hung films PASS");
+  out("then validate-pack + smoke-pack → " + PLAYER + slot);
   process.exit(0);
 }
 
 mkdirSync(join(dir, "stills"), { recursive: true });
 mkdirSync(join(dir, "films"), { recursive: true });
-writeFileSync(join(dir, "room.json"), JSON.stringify(skeleton(slot), null, 2) + "\n");
+const roomPath = join(dir, "room.json");
+if (!existsSync(roomPath)) {
+  writeFileSync(roomPath, JSON.stringify(skeleton(slot), null, 2) + "\n");
+} else if (debug) {
+  out("keep room.json");
+}
 if (debug) out("stills written — no wait");
 
 const spawnStill = join(dir, "stills/spawn.jpg");
 const atA = join(dir, "stills/at-a.jpg");
 const atB = join(dir, "stills/at-b.jpg");
 
-await cap2("spawn", async () => {
-  await imagineStill({ root, slot, pose: "spawn", dest: spawnStill });
-  if (!smoke("stills/spawn.jpg", "still-spawn")) throw new Error("smoke spawn size");
-});
+let stillCooked = 0;
+if (reuse("stills/spawn.jpg", "still-spawn")) {
+  out("skip stills/spawn.jpg (exists + smoke PASS)");
+} else {
+  await cap2("spawn", async () => {
+    await imagineStill({ root, slot, pose: "spawn", dest: spawnStill });
+    if (!smoke("stills/spawn.jpg", "still-spawn")) throw new Error("smoke spawn size");
+  });
+  stillCooked++;
+}
 if (debug) out("stills written spawn");
 
-await cap2("atA", async () => {
-  await imagineStill({ root, slot, pose: "atA", dest: atA, spawnPath: spawnStill });
-  if (!smoke("stills/at-a.jpg", "still-atA")) throw new Error("smoke atA");
-});
-await cap2("atB", async () => {
-  await imagineStill({ root, slot, pose: "atB", dest: atB, spawnPath: spawnStill });
-  if (!smoke("stills/at-b.jpg", "still-atB")) throw new Error("smoke atB");
-});
+if (reuse("stills/at-a.jpg", "still-atA")) {
+  out("skip stills/at-a.jpg (exists + smoke PASS)");
+} else {
+  await cap2("atA", async () => {
+    await imagineStill({ root, slot, pose: "atA", dest: atA, spawnPath: spawnStill });
+    if (!smoke("stills/at-a.jpg", "still-atA")) throw new Error("smoke atA");
+  });
+  stillCooked++;
+}
+if (reuse("stills/at-b.jpg", "still-atB")) {
+  out("skip stills/at-b.jpg (exists + smoke PASS)");
+} else {
+  await cap2("atB", async () => {
+    await imagineStill({ root, slot, pose: "atB", dest: atB, spawnPath: spawnStill });
+    if (!smoke("stills/at-b.jpg", "still-atB")) throw new Error("smoke atB");
+  });
+  stillCooked++;
+}
+if (stillCooked === 0) out("skip still phase — 3 hung stills PASS");
 if (debug) out("stills written");
 
 const breaths = [
@@ -184,7 +241,13 @@ const breaths = [
   ["films/breath-a.mp4", atA, "stills/at-a.jpg", "atA"],
   ["films/breath-b.mp4", atB, "stills/at-b.jpg", "atB"],
 ];
+let filmCooked = 0;
 for (const [rel, still, stillRel, pose] of breaths) {
+  if (reuse(rel, "breath")) {
+    out("skip " + rel + " (exists + smoke PASS)");
+    continue;
+  }
+  filmCooked++;
   let ok = false;
   for (let i = 0; i < 2; i++) {
     try {
@@ -217,7 +280,15 @@ const walks = [
   ["films/walk-spawn-b.mp4", spawnStill, atB],
 ];
 let walkOk = 0;
+let walkNeeded = 0;
 for (const [rel, first, last] of walks) {
+  if (reuse(rel, "walk")) {
+    out("skip " + rel + " (exists + smoke PASS)");
+    walkOk++;
+    continue;
+  }
+  walkNeeded++;
+  filmCooked++;
   let ok = false;
   for (let i = 0; i < 2; i++) {
     try {
@@ -239,7 +310,8 @@ for (const [rel, first, last] of walks) {
   }
   if (ok) walkOk++;
 }
-if (walkOk < 2) fail("walk");
+if (walkNeeded > 0 && walkOk < 2) fail("walk");
+if (filmCooked === 0) out("skip film phase — 5 hung films PASS");
 
 const v = spawnSync("python3", [join(scripts, "validate-pack.py"), dir], { encoding: "utf8" });
 process.stdout.write(v.stdout || "");
