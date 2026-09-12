@@ -4,7 +4,15 @@
 // IGNORE tiny ~0.18 crop like bolt-back 0.53. Never send example-at-*-tiny.
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { sillStillLine, stillRefLine, stillRefOrder, sillTeacherRel } from "./imagine-hooks.mjs";
+import {
+  HALL_LAW,
+  sillStillLine,
+  stillRefLine,
+  stillRefOrder,
+  sillTeacherRel,
+  spawnStillLine,
+  walkClipLine,
+} from "./imagine-hooks.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -51,5 +59,23 @@ must(!String(stillRefOrder("atA", true, root)).includes("tiny"), "live atA does 
 must(!String(stillRefOrder("atB", true, root)).includes("tiny"), "live atB does not send archived tiny");
 must(stillRefOrder("spawn", false).join(",") === "bolt-back.jpg,example-spawn.jpg", "spawn ref order unchanged");
 must(stillRefLine("spawn", true) === "", "spawn has no sill ref lecture");
+
+function energyOk(p, name) {
+  must(/oval OR RECT|oval or RECT|Oval or RECT/.test(p), name + " oval|RECT energy OK");
+  must(/never wood|Never wood|NEVER wood/.test(p), name + " never wood");
+  must(/chrome UI/.test(p), name + " never chrome UI");
+  must(
+    !/Never oval|never oval|not ovals|stay RECT \(never oval\)|do not copy door shape|RECT grammar/.test(p),
+    name + " does not ban oval shape",
+  );
+}
+
+energyOk(HALL_LAW, "HALL_LAW");
+energyOk(spawnStillLine(), "spawnStillLine");
+energyOk(walkClipLine(), "walkClipLine");
+energyOk(atA, "atA");
+energyOk(atB, "atB");
+must(/Do not FAIL oval shape/.test(atA) && /Do not FAIL oval shape/.test(atB), "sill refs: do not FAIL oval shape");
+must(/preferred-ok/.test(HALL_LAW) && /preferred-ok/.test(spawnStillLine()), "oval preferred-ok");
 
 console.log("IMAGINE-HOOKS PASS");

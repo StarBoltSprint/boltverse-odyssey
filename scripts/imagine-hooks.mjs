@@ -11,9 +11,11 @@ const VIDEO_MODEL = process.env.IMAGINE_VIDEO_MODEL || "grok-imagine-video-1.5";
 const LAW = [
   "Photoreal still or clip, vertical 9:16, 720x1280.",
   "ONE FULL-white German Shepherd, ZERO black on the dog (no saddle, no mask, no black ears), teal collar, BACK to camera, locked-off camera.",
-  "Gothic citadel hall, two tall RECT energy rifts (not ovals, not wood): cyan-teal LEFT, gold-orange RIGHT. Jambs + sill + gap. Stable RECT fill.",
+  "Gothic citadel hall, two tall oval OR RECT energy portals (oval preferred-ok, never wood, never chrome UI rectangles): cyan-teal LEFT, gold-orange RIGHT. Jambs + sill + gap + depth. Stable energy fill.",
   "No text, no UI, no second dog, no face to camera, no 3/4, no sit, no lie, no third door, no dolly.",
 ].join(" ");
+
+export const HALL_LAW = LAW;
 
 const LANE_LAW = [
   "Photoreal still or clip, vertical 9:16, 720x1280.",
@@ -174,7 +176,7 @@ function mossSillRel(pose) {
 
 /**
  * Side ref for at-A / at-B. Prefer hung moss PASS sill stills.
- * lock/example-at-* are swapped copies of those (not the old oval+0.18 tinies).
+ * lock/example-at-* are swapped copies of those (not the old ~0.18 tinies).
  * lock/sill-at-* = same pixels. Tiny archives are example-at-*-tiny.jpg — never send.
  */
 export function sillTeacherRel(root, pose) {
@@ -199,18 +201,18 @@ export function stillRefOrder(pose, hasSpawn, root) {
 
 export function sillStillLine(side) {
   const here = side === "A" ? "teal LEFT" : "gold RIGHT";
-  const other = side === "A" ? "Gold RECT rift still visible on the right" : "Teal RECT rift still visible on the left";
+  const other = side === "A" ? "Gold energy rift still visible on the right" : "Teal energy rift still visible on the left";
   const fill = side === "A" ? "teal" : "gold";
   const walk = side === "A" ? "left" : "right";
   const third = side === "A" ? "LEFT third" : "RIGHT third";
   return [
     "He is already AT the sill/threshold (seuil), NOT mid-hall, NOT spawn center.",
-    "He is ALREADY at the " + here + " RECT energy rift THRESHOLD — paws ON that sill lip, body in the " + third + " of the plate.",
+    "He is ALREADY at the " + here + " energy rift THRESHOLD (oval or RECT) — paws ON that sill lip, body in the " + third + " of the plate.",
     "NEVER mid-hall. NEVER spawn. NEVER center. NEVER the fork. NEVER a grown spawn dog standing between the two rifts.",
     "Spawn = center + both doors + fork. This plate is the " + here + " sill only. Huge empty stone on the other side.",
     "BACK to camera, TWO ears on TOP of the skull, crown to camera, muzzle HIDDEN.",
     "STANDING four paws on the STONE FLOOR in FRONT of that sill. Legs LONG, haunches UP. Same lock as the spawn still — only he moved " + walk + " to the door. Do not grow him in place.",
-    "Feet stay on the hall floor. NEVER inside the rift. NEVER on the jamb. NEVER climbing the " + fill + " fill. The RECT DWARFS him.",
+    "Feet stay on the hall floor. NEVER inside the rift. NEVER on the jamb. NEVER climbing the " + fill + " fill. The portal DWARFS him.",
     "Ear tips / crown stay in the LOWER HALF of the plate (dog top ≥ 0.50 of frame H). punch-sill FAIL if the head enters the rift (top < 0.46).",
     "NEVER sit. NEVER a loaf. NEVER haunches down. NEVER lie. NEVER 3/4. NEVER cheek. NEVER face. NEVER muzzle.",
     "NEVER punch-in. NEVER fill the " + fill + ". NEVER copy bolt-back close-up scale (~0.53 is illegal).",
@@ -227,16 +229,39 @@ export function stillRefLine(pose, hasSpawn, teacherRel) {
   const side = pose === "atA" ? "LEFT teal" : "RIGHT gold";
   if (hasSpawn) {
     return [
-      "First image = the spawn still: SAME hall, SAME camera, SAME light, SAME RECT rifts. ONLY the dog MOVES to the " + side + " sill (paws on that lip, body in that third). Do not leave him at center spawn. Do not grow him in place. Do not zoom. Do not recrop.",
+      "First image = the spawn still: SAME hall, SAME camera, SAME light, SAME energy rifts (oval or RECT). ONLY the dog MOVES to the " + side + " sill (paws on that lip, body in that third). Do not leave him at center spawn. Do not grow him in place. Do not zoom. Do not recrop.",
       "Second image = bolt-back.jpg: coat / back / collar IDENTITY only. IGNORE its close-up crop (bbox ~0.53 is illegal).",
       "Third image = " + teacher + ": official SEUIL teacher (hung moss PASS / swapped lock/example-at-*). Copy PLACE and POSE — dog already AT the " + side + " sill (seuil), standing BACK, feet on the stone floor, taille ~0.30–0.40 (aim 0.35–0.40).",
-      "IGNORE a tiny ~0.18 crop the same way you IGNORE bolt-back ~0.53 — both scales are illegal. NEVER copy lock/example-at-*-tiny (oval + sit; live FAIL sill-band 0.19–0.21).",
-      "RECT rifts come from the spawn still. If this teacher still shows ovals (moss at-A), do not copy door shape — moss at-B is the RECT grammar.",
+      "IGNORE a tiny ~0.18 crop the same way you IGNORE bolt-back ~0.53 — both scales are illegal. NEVER copy lock/example-at-*-tiny (sit + ~0.18; live FAIL sill-band 0.19–0.21).",
+      "Oval or RECT energy portals are both OK (oval preferred-ok). Copy jambs + sill + energy fill. NEVER wood. NEVER chrome UI rectangles. Do not FAIL oval shape.",
     ].join(" ");
   }
   return [
     "First image = " + teacher + ": official SEUIL teacher. Copy PLACE and POSE (" + side + " sill, standing BACK, not mid-hall). IGNORE a tiny ~0.18 crop the same way you IGNORE bolt-back ~0.53.",
     "Second image = bolt-back.jpg: coat / back / collar only. IGNORE close-up crop (~0.53).",
+    "Oval or RECT energy portals are both OK (oval preferred-ok). NEVER wood. NEVER chrome UI rectangles.",
+  ].join(" ");
+}
+
+export function spawnStillLine() {
+  return [
+    "Bolt center, lower third, BACK to camera, TWO ears, STANDING four paws, weight on the floor.",
+    "NEVER sit. NEVER lie. NEVER 3/4. NEVER face. NEVER muzzle.",
+    "BOTH oval OR RECT energy portals fully visible: cyan-teal LEFT, gold-orange RIGHT. Jambs + sill + depth. Oval preferred-ok. Never wood. Never chrome UI rectangles.",
+    "A luminous teal-gold fork on the floor from his paws to BOTH sills (path 5–15% of frame H, glow in the stone, not chrome UI).",
+    "He is SMALL in the hall — dog bbox height 0.24–0.28 of the frame (band 0.22–0.32). Same scale as the layout reference.",
+    "The two rifts DWARF him. NOT a close-up. NOT filling the plate. Locked-off camera.",
+  ].join(" ");
+}
+
+export function walkClipLine() {
+  return [
+    "10 seconds. ONE dog only. He LEAVES spawn in the first second. Continuous even walk on FOUR STANDING PAWS.",
+    "NEVER sit. NEVER lie. NEVER face. NEVER 3/4. NEVER a second Bolt at center or the other door.",
+    "Energy portals stay oval or RECT (never wood, never chrome UI). Do not morph into a blob.",
+    "Never freeze mid-hall. Arrives ~8s, then HOLDS STANDING 1–2s at the sill, still back to camera.",
+    "No leftover empty time. No linger-then-warp. No sudden sprint. Do not walk back to spawn.",
+    "Do not invent a floor ice disc. Locked-off. ONE full-white GSD. Last frame is the arrive still. No tunnel.",
   ].join(" ");
 }
 
@@ -245,16 +270,7 @@ function hallStillPrompt(slotLines, pose, hasSpawn, teacherRel) {
     LAW,
     slotLines,
     stillRefLine(pose, hasSpawn, teacherRel),
-    pose === "spawn"
-      ? [
-          "Bolt center, lower third, BACK to camera, TWO ears, STANDING four paws, weight on the floor.",
-          "NEVER sit. NEVER lie. NEVER 3/4. NEVER face. NEVER muzzle.",
-          "BOTH RECT energy rifts fully visible: cyan-teal LEFT, gold-orange RIGHT. Jambs + sill. Never oval. Never wood.",
-          "A luminous teal-gold fork on the floor from his paws to BOTH sills (path 5–15% of frame H, glow in the stone, not chrome UI).",
-          "He is SMALL in the hall — dog bbox height 0.24–0.28 of the frame (band 0.22–0.32). Same scale as the layout reference.",
-          "The two rifts DWARF him. NOT a close-up. NOT filling the plate. Locked-off camera.",
-        ].join(" ")
-      : "",
+    pose === "spawn" ? spawnStillLine() : "",
     pose === "atA" ? sillStillLine("A") : "",
     pose === "atB" ? sillStillLine("B") : "",
   ]
@@ -314,7 +330,7 @@ export async function imagineClip({ root, slot, kind, first, last, dest, seconds
         catalogLines(root, slot),
         kind === "breath"
           ? breathLine(pose)
-          : "10 seconds. ONE dog only. He LEAVES spawn in the first second. Continuous even walk on FOUR STANDING PAWS. NEVER sit. NEVER lie. NEVER face. NEVER 3/4. NEVER a second Bolt at center or the other door. RECT energy rifts stay RECT (never oval). Never freeze mid-hall. Arrives ~8s, then HOLDS STANDING 1–2s at the sill, still back to camera. No leftover empty time. No linger-then-warp. No sudden sprint. Do not walk back to spawn. Do not invent a floor ice disc. Locked-off. ONE full-white GSD. Last frame is the arrive still. No tunnel.",
+          : walkClipLine(),
       ].join(" ");
   const body = {
     model: VIDEO_MODEL,

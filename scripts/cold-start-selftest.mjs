@@ -50,5 +50,28 @@ must(/already AT the teal LEFT sill/.test(customize) && /already AT the gold RIG
 must(/Spawn = CENTER only/.test(customize), "GROK.md Customize: spawn = center only");
 must(/Mid-hall at-A\/at-B = FAIL/.test(customize), "GROK.md Customize: mid-hall FAIL");
 must(/Soft KEEP banned/.test(customize), "GROK.md Customize: Soft KEEP banned");
+must(!/oval doors cannot PASS/.test(customize), "GROK.md Customize: oval doors not banned");
+must(/Oval\|RECT energy portals OK/.test(customize), "GROK.md Customize: oval|RECT energy OK");
+must(/never wood/.test(customize) && /never chrome UI/.test(customize), "GROK.md Customize: never wood / chrome UI");
+must(/Sit \/ face \/ 3\/4 cannot PASS/.test(customize), "GROK.md Customize: sit/face/3/4 still banned");
+
+const agents = body("AGENTS.md");
+must(/Oval\|RECT energy portals OK/.test(agents), "AGENTS.md: oval|RECT energy OK");
+must(/Do not FAIL oval shape alone/.test(agents), "AGENTS.md: do not FAIL oval shape alone");
+must(!/RECT→oval/.test(agents), "AGENTS.md: RECT→oval ban removed");
+
+const rules = body(".cursorrules");
+must(/oval\|RECT energy rifts/.test(rules), ".cursorrules: oval|RECT energy");
+must(/never wood/.test(rules) && /never chrome UI/.test(rules), ".cursorrules: never wood / chrome UI");
+must(!/never oval/.test(rules), ".cursorrules: oval ban removed");
+
+const doors = body("DOORS.md");
+must(/oval or RECT/.test(doors) && /preferred-ok/.test(doors), "DOORS.md: oval|RECT preferred-ok");
+must(/not\*\* oval-vs-RECT|not oval-vs-RECT/.test(doors), "DOORS.md: door_morph is not oval-vs-RECT");
+must(/never\*\* open wood|never\*\* chrome UI|never.*open wood/.test(doors), "DOORS.md: never wood");
+
+const smokeId = body("scripts/smoke-identity.md");
+must(/do \*\*not\*\* FAIL oval shape alone/.test(smokeId), "smoke-identity: oval shape alone is not FAIL");
+must(!/oval \/ blob \/ wood leaf instead of RECT/.test(smokeId), "smoke-identity: oval-as-RECT-FAIL row gone");
 
 console.log("COLD-START PASS");

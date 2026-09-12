@@ -97,7 +97,7 @@ Hard FAIL, one rule code, no paragraph:
 - `identity.black_silhouette`
 - `identity.cape` / size morph
 - `identity.text` / UI / third door
-- `identity.door_wood` `identity.door_morph` `identity.door_flat` `identity.door_void` `identity.door_chrome` ([DOORS.md](DOORS.md))
+- `identity.door_wood` `identity.door_morph` `identity.door_flat` `identity.door_void` `identity.door_chrome` ([DOORS.md](DOORS.md)) — oval energy ≠ `door_morph`; do not FAIL oval shape alone
 - `encode.fade_black` — last frames empty ([HOLD.md](HOLD.md))
 - `identity.door_cut` (except last second of **enter**)
 - `identity.orbit` (paws sliding down, ceiling falling)

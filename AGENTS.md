@@ -50,7 +50,8 @@ Official path: `scripts/cook-room.mjs` → `scripts/imagine-hooks.mjs`
 - `KEEP REFUSED` / `HANG BLOCKED` = stock URL. Not a soft KEEP.
 - ffmpeg gel-breath is decay in `packs/<id>/.kitchen/` — **not** Hang-ready. Do not copy it into `films/`.
 - FAIL walk is deleted from `films/`. Tap = stay. Do not ship it as a preview.
-- Sit / face / 3/4 / RECT→oval / punch-sill (dog climbing the rift) / mid-hall spawn-cx sold as at-A or at-B cannot PASS. Recook that plate, cap 2, then stock.
+- Sit / face / 3/4 / punch-sill (dog climbing the rift) / mid-hall spawn-cx sold as at-A or at-B cannot PASS. Recook that plate, cap 2, then stock.
+- Oval|RECT energy portals OK (oval preferred-ok). Do not FAIL oval shape alone. Never wood. Never chrome UI rectangles.
 
 ## Do not
 
