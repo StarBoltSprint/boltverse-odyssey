@@ -5,7 +5,9 @@
  *   export XAI_API_KEY=... && node scripts/cook-biome-25d.mjs <style>
  *
  * Style = any décor word. Rails = COOK-BIOME-25D.md (9:16, 8–12s, lock-off,
- * travel baked, ZERO path, ZERO Bolt, last(n) = first(n+1), playbackRate 1.0–1.2).
+ * travel baked, ZERO path, ZERO Bolt, last(n) = first(n+1), SAME SPEED 1..N,
+ * playbackRate corrector 1.0–1.6 / typical 1.3–1.5, never 2×+).
+ * Plate 3+ L/M/R later — do not cook plate 3 here.
  * Hall stays separate. Do not Hang on boltverse-odyssey.grok.me.
  */
 import { existsSync, mkdirSync, copyFileSync } from "node:fs";
@@ -13,6 +15,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { imagineEmptyStill, imagineClip } from "./imagine-hooks.mjs";
+import { matchDir } from "./biome-25d-speed.mjs";
 
 const argv = process.argv.slice(2);
 const dry = argv.includes("--dry-run");
@@ -69,12 +72,14 @@ function extractLast(mp4, dest) {
 function queue() {
   return [
     "cook-biome-25d " + id + " — NOT cook-room, NOT cook-biome (no Bolt in plate)",
-    "rails 9:16 · " + SECONDS + "s · lock-off · travel baked · ZERO path · ZERO Bolt · playbackRate 1.0–1.2",
+    "rails 9:16 · " + SECONDS + "s · lock-off · travel baked · ZERO path · ZERO Bolt · SAME SPEED 1..N",
+    "playbackRate corrector 1.0–1.6 (typical 1.3–1.5) — never 2×+; >1.6 recook travelling",
     "Law 0 plate 1 first+last distinct (emptyPlate imagineClip last_frame)",
     "CHAIN last(1) file IS first(2) — extract last frame, do not recut",
     "plate 2 = same speed + city from haze + CLEAR center",
-    "PathGen HOLD (no neon CSS). Obstacles later (t, lane).",
-    "drop films → bolt-hybrid play/public/biomes/" + id + "/films/  (not packs/)",
+    "plate 3+ L/M/R later — not this cook",
+    "auto tint ~4×/s light wrap (white coat forever). PathGen HOLD (no neon CSS).",
+    "drop films + playlist.json → bolt-hybrid play/public/biomes/" + id + "/  (not packs/)",
   ];
 }
 
@@ -168,7 +173,20 @@ else {
   if (!ok) fail("plate-2");
 }
 
+if (existsSync(film1) && existsSync(film2)) {
+  try {
+    const playlist = matchDir(dir, id);
+    if (!playlist.ok) fail(playlist.reason || "speed.recook");
+    out("PLAYLIST " + join(dir, "playlist.json") + " — SAME SPEED, rates 1.0–1.6");
+    for (const p of playlist.plates) {
+      out(p.id + " rate " + p.playbackRate);
+    }
+  } catch (e) {
+    fail("speed.match " + (e && e.message ? e.message : e));
+  }
+}
+
 out("PLATES " + id + " 2 empty clips");
-out("drop → bolt-hybrid play/public/biomes/" + id + "/films/");
-out("PathGen HOLD · playbackRate 1.0–1.2 only · hall stays separate");
+out("drop → bolt-hybrid play/public/biomes/" + id + "/  (films + playlist.json)");
+out("PathGen HOLD · tint light wrap · plate 3+ later · hall stays separate");
 process.exit(0);

@@ -18,10 +18,12 @@ const LAW = [
 
 export const HALL_LAW = LAW;
 
-/** Empty 2.5D biome plate — ZERO Bolt, ZERO path. See COOK-BIOME-25D.md. */
+/** Empty 2.5D biome plate — ZERO Bolt, ZERO path. See COOK-BIOME-25D.md.
+ *  Bake travelling here. SAME SPEED as plate-1 KEEP. playbackRate is post-cook only (1.0–1.6). */
 const EMPTY_PLATE_LAW = [
   "Photoreal vertical 9:16, 720x1280.",
   "Locked-off camera. Sprint travelling is ALREADY in the clip (the world rushes toward camera).",
+  "Same felt sprint speed as the KEEP plate-1 reference. NEVER slow down. NEVER a still. NEVER a 2x smash.",
   "NEVER pan, tilt, zoom, or dolly.",
   "ZERO dogs. ZERO German Shepherds. ZERO animals. ZERO people.",
   "ZERO luminous floor paths. ZERO Y-fork. ZERO portals. ZERO HUD. ZERO text.",
@@ -190,7 +192,7 @@ export function emptyPlateClipLine(paint, plate) {
           "A futuristic city begins to emerge from haze in the distance: distant domes, spires, neon.",
           "Keep a CLEAR empty center corridor. The city stays far. NEVER fill the playable lane.",
         ].join(" ")
-      : "Same sprint travelling the whole clip. World ADVANCED toward the last_frame. NEVER a still. NEVER a slow-down.";
+      : "Same sprint travelling the whole clip as the KEEP plate-1 reference. World ADVANCED toward the last_frame. NEVER a still. NEVER a slow-down. NEVER a 2x smash.";
   return [
     EMPTY_PLATE_LAW,
     String(paint || "").trim(),

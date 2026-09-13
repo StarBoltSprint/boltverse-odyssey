@@ -165,6 +165,7 @@ const dry = spawnSync("node", [join(root, "scripts/cook-room.mjs"), "moss", "--d
   env: { ...process.env, SEAL: "1", SEAL_SPAWN: "1", SEAL_ATA: "1", SEAL_ATB: "1" },
 });
 must(/ZERO dogs/.test(EMPTY_PLATE) && /ZERO luminous floor paths/.test(EMPTY_PLATE), "EMPTY_PLATE: ZERO dog + ZERO path");
+must(/KEEP plate-1/.test(EMPTY_PLATE) && /2x smash/.test(EMPTY_PLATE), "EMPTY_PLATE: SAME SPEED as plate-1 KEEP");
 must(/9:16/.test(EMPTY_PLATE) && /Locked-off/.test(EMPTY_PLATE), "EMPTY_PLATE: 9:16 lock-off");
 must(/CLEAR empty center/.test(EMPTY_PLATE), "EMPTY_PLATE: CLEAR center");
 must(!/German Shepherd, ZERO black/.test(EMPTY_PLATE), "EMPTY_PLATE: does not bake hall Bolt law");
@@ -181,7 +182,10 @@ must(dry25.status === 0, "cook-biome-25d asteroid --dry-run exits 0");
 must(/NOT cook-room/.test(dry25.stdout || "") && /NOT cook-biome/.test(dry25.stdout || ""), "25d dry-run: not hall / not living-film lane");
 must(/ZERO path/.test(dry25.stdout || "") && /ZERO Bolt/.test(dry25.stdout || ""), "25d dry-run: ZERO path + ZERO Bolt");
 must(/last_frame/.test(dry25.stdout || "") && /city from haze/.test(dry25.stdout || ""), "25d dry-run: last_frame + plate 2 city");
-must(/playbackRate 1\.0–1\.2/.test(dry25.stdout || ""), "25d dry-run: playbackRate cap");
+must(/playbackRate corrector 1\.0–1\.6/.test(dry25.stdout || "") && /1\.3–1\.5/.test(dry25.stdout || ""), "25d dry-run: playbackRate 1.0–1.6 / typical 1.3–1.5");
+must(/SAME SPEED/.test(dry25.stdout || "") && /recook travelling/.test(dry25.stdout || ""), "25d dry-run: SAME SPEED + recook >1.6");
+must(/plate 3\+/.test(dry25.stdout || "") && /not this cook/.test(dry25.stdout || ""), "25d dry-run: no plate-3 cook");
+must(/light wrap/.test(dry25.stdout || "") && /PathGen HOLD/.test(dry25.stdout || ""), "25d dry-run: tint wrap + PathGen HOLD");
 
 must(dry.status === 0, "cook-room moss --dry-run SEAL spawn+at-A+at-B exits 0");
 must(/SEALED spawn\/at-A\/at-B = frozen KEEP/.test(dry.stdout || ""), "dry-run prints sealed spawn/at-A/at-B KEEP one-liner");

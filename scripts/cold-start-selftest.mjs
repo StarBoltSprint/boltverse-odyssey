@@ -246,8 +246,16 @@ must(/futuristic city/.test(biome25) && /haze/.test(biome25) && /CLEAR/.test(bio
 must(/any style|Any style/.test(biome25), "COOK-BIOME-25D.md: any style décor free");
 must(/bolt-hybrid/.test(biome25) && /play\//.test(biome25), "COOK-BIOME-25D.md: points to bolt-hybrid play/");
 must(/Chat Imagine UI/.test(biome25) && /banned/.test(biome25), "COOK-BIOME-25D.md: chat Imagine banned");
+must(/1\.0–1\.6/.test(biome25) && /1\.3–1\.5/.test(biome25), "COOK-BIOME-25D.md: speed band 1.0–1.6 typical 1.3–1.5");
+must(/optical-flow|ground-parallax/.test(biome25) && /clamp/.test(biome25), "COOK-BIOME-25D.md: auto speed match");
+must(/recook travelling/.test(biome25) && /Never 2/.test(biome25), "COOK-BIOME-25D.md: >1.6 recook, never 2×+");
+must(/pictureTime/.test(biome25) && /never speed legs|Never speed legs/.test(biome25), "COOK-BIOME-25D.md: gait follows pictureTime");
+must(/ambient tint|Ambient tint|AMBIENT TINT/.test(biome25) && /light wrap/.test(biome25), "COOK-BIOME-25D.md: ambient tint light wrap");
+must(/white coat forever/.test(biome25) && /grey/.test(biome25), "COOK-BIOME-25D.md: tint is not a grey morph");
+must(/Plate 3|plate 3/.test(biome25) && /Do not implement plate-3|do not implement plate 3|not this cook/.test(biome25), "COOK-BIOME-25D.md: no plate-3 cook now");
 must(/COOK-BIOME-25D\.md/.test(body("COOK.md")), "COOK.md: points at 2.5D recipe");
 must(/COOK-BIOME-25D\.md/.test(body("README.md")), "README.md: points at 2.5D recipe");
+must(/same-speed|Same-speed/.test(body("COOK.md")), "COOK.md: same-speed pointer");
 
 const hooks = body("scripts/imagine-hooks.mjs");
 must(/Not Imagine Agent/.test(hooks) && /last_frame/.test(hooks), "imagine-hooks: films = first+last, not Agent");

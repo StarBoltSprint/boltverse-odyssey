@@ -66,9 +66,10 @@ Engine = **Imagine gamified**: full-frame plates + playable Bolt card + (later) 
 | Path | **ZERO** luminous path in the plate |
 | Cast | **ZERO** Bolt / dog in the plate |
 | Stitch | plate N+1 **first frame = plate N last frame** |
-| Rate | `playbackRate` **~1.0–1.2 only** after a fast cook |
+| Speed | **SAME** felt sprint travelling plate 1..N (KEEP plate-1 is the reference) |
+| Rate | `playbackRate` **post-cook corrector only** — safe band **1.0–1.6** (typical **1.3–1.5**). **Never 2×+.** |
 
-Travel is cooked. Do not fake a pan on a still. Do not run `playbackRate` 2×+ to fake speed.
+Travel is **baked in the cook**. Do not fake a pan on a still. `playbackRate` only corrects a cooked plate toward plate-1 KEEP. If the needed rate is **> 1.6** → **recook travelling**. Do not smash `playbackRate`.
 
 ---
 
@@ -108,6 +109,77 @@ ffmpeg -i in.mp4 -map 0:v:0 \
 ```
 
 No audio. `yuv420p` + `faststart`.
+
+---
+
+## SAME SPEED — plate 1..N (biome law)
+
+Felt sprint travelling on plate 2..N **must match** the KEEP **plate-1** reference. One speed. No dump at the joint.
+
+| Lock | Law |
+|---|---|
+| Bake | Prefer travelling **in the cook** (world rushes at plate-1 pace) |
+| Corrector | `playbackRate` **after** cook only — never the way you invent speed |
+| Safe band | **1.0–1.6** · typical corrector **1.3–1.5** |
+| Hard cap | **Never 2×+**. Need **> 1.6** → recook that plate’s travelling |
+| Gait | Bolt stride follows **`pictureTime`** (currentTime accounting for rate). **Never speed legs alone.** |
+
+`pictureTime` = the plate clock the paws run on.
+
+- If bolt-hybrid `play/` sets `<video>.playbackRate = plate.playbackRate`: `pictureTime = currentTime` (the element already walks the file). Do **not** also multiply stride by rate.
+- If rate is applied outside the element: `pictureTime = currentTime * plate.playbackRate`.
+- Speeding the card’s legs while the plate stays slow = FAIL (skating + wrong storm).
+
+Joint: felt speed at the end of N must meet felt speed at the start of N+1. Playlist uses the **stored per-plate rate**. Do not reset to 1.0 at the cut.
+
+---
+
+## AUTO SPEED MATCH (post-cook)
+
+Plate 1 KEEP = **optical-flow / ground-parallax** reference. Every later plate is measured with the **same metric**, then:
+
+```
+playbackRate(n) = clamp( refTravel / travel(n) , 1.0 , 1.6 )
+```
+
+- `travel` = ground-parallax proxy: lower-third ground band, mean abs frame-delta (see [`scripts/biome-25d-speed.mjs`](scripts/biome-25d-speed.mjs)).
+- Plate 1 rate is **1.0** (it *is* the reference).
+- Later plate faster than KEEP → clamp to **1.0** (never slow the storm).
+- Later plate so slow that `ref/measured > 1.6` → **`speed.recook`**. Recook travelling. Do not write 1.8 / 2.0.
+
+Store per-plate rate in `biomes-25d/<style>/playlist.json`. The playlist **uses** those rates. Drop the json next to the films when you copy into bolt-hybrid `play/public/biomes/<style>/`.
+
+```
+node scripts/biome-25d-speed.mjs biomes-25d/<style>
+```
+
+`cook-biome-25d` runs this after plate 2. Player remains bolt-hybrid `play/` — **do not** invent a new grok.me. Stub comments for the play loop live in the speed script (set `video.playbackRate`, `pictureTime`, no double gait).
+
+---
+
+## AUTO BOLT AMBIENT TINT (play, not the plate)
+
+Even when ground / décor goes white / frost / city-cool: the card must not sit in a different weather.
+
+| Lock | Law |
+|---|---|
+| Sample | Plate pixels **near Bolt** — lower-third **ground + haze** |
+| Rate | ~**4×/s** (every ~250 ms) |
+| Grade | Soft **Multiply** / color-grade the 2.5D card toward that ambience |
+| Identity | **Full-white coat forever.** Tint is **light wrap only** |
+
+**NOT** a grey / silver / black morph. **NOT** a new dog. Décor-matching skin ON TOP of the white base is still OK (ember glow, ice kiss). A frost plate that turns the coat charcoal = FAIL.
+
+Player stub (bolt-hybrid `play/`, not this repo):
+
+```
+every ~250ms:
+  rgb = sample(plate, band = lower-third ground + haze)
+  card = softMultiply(card, rgb, amount ≤ 0.45)
+  luma(coat) stays high — pull back if the wrap would read grey/black
+```
+
+`scripts/biome-25d-speed.mjs` exports `softMultiply` + `identityGuard` for that wrap. Do not bake the dog into the plate to “match” the grade.
 
 ---
 
@@ -176,13 +248,23 @@ Continues from **plate 1 last frame** (`image` + `last_frame`). Same sprint spee
 | Keep | Drop |
 |---|---|
 | Stitch from plate 1 last frame | New establishing shot / cut |
-| Sprint travelling at plate 1 speed | Slow-down, still, or 2×+ `playbackRate` |
+| Sprint travelling at plate 1 KEEP speed | Slow-down, still, or `playbackRate` 2×+ / >1.6 smash |
 | City as far haze (domes / spires / neon) | City filling the corridor |
 | CLEAR center | Luminous path, Bolt, clutter in the lane |
 
-`{PAINT}` on plate 2 may name the city + this style's grade. Rails do not move.
+`{PAINT}` on plate 2 may name the city + this style's grade. Rails do not move. Same speed as plate 1 (bake first, then [AUTO SPEED MATCH](#auto-speed-match-post-cook)).
 
-After plate 2: extract last frame → that file is plate 3 first, if you cook further.
+---
+
+## Plate plan (example only — not a mandatory cook list)
+
+| Plate | Paint | Cook now? |
+|---|---|---|
+| 1 | KEEP empty sprint. Travel baked. ZERO path, ZERO Bolt. | **yes** |
+| 2 | Cities emerge from haze. **Same speed.** CLEAR center. | **yes** (example) |
+| 3+ | Lane **L / M / R** chart can bake later | **NO.** Do not implement plate-3 cook now. |
+
+Extract plate 2 last frame if a later convo cooks 3+. This script stops at 2.
 
 ---
 
@@ -202,8 +284,9 @@ The dog is **not** in the mp4. He is a 2.5D Imagine card composited in front.
 
 - Pivot at paws / `groundY`
 - Strafe **X only**
-- Stride from `pictureTime` (plate clock, not a free gait clock)
+- Stride from `pictureTime` (plate clock, currentTime accounting for rate — not a free gait clock, not legs-only speedup)
 - Soft contact shadow under the paws
+- Ambient tint ~4×/s — light wrap only ([AUTO BOLT AMBIENT TINT](#auto-bolt-ambient-tint-play-not-the-plate))
 
 **Skating** = the card is not planted. That is a plant bug. It is not “Imagine bad paws.”
 
@@ -237,11 +320,12 @@ When they land:
 
 One thing at a time.
 
-1. **KEEP** one fast empty plate (rails PASS)
-2. Erase any neon PathGen overlay
-3. Cook plate 2 from plate 1 last frame + stitch — city from haze, sprint speed, CLEAR center, zero path, zero Bolt
-4. Plant the Bolt card (`groundY`, `pictureTime`, contact shadow)
-5. Later: Imagine PathGen tiles, then obstacles `(t, lane)`
+1. **KEEP** one fast empty plate (rails PASS) — this is the speed reference
+2. Erase any neon PathGen overlay (**HOLD** — do not resurrect a sticker)
+3. Cook plate 2 from plate 1 last frame + stitch — city from haze, **same speed**, CLEAR center, zero path, zero Bolt
+4. Auto speed-match → `playlist.json` (band 1.0–1.6; >1.6 recook)
+5. Plant the Bolt card (`groundY`, `pictureTime`, contact shadow) + ambient tint ~4×/s
+6. Later (not this cook): plate 3+ L/M/R chart, then Imagine PathGen tiles, then obstacles `(t, lane)`
 
 ---
 
@@ -275,7 +359,11 @@ Hall player stays https://boltverse-odyssey.grok.me — **do not** publish a new
 - `cook-room` / hall portals in the plate
 - Camera move / pan / tilt / zoom / dolly
 - Plate not 9:16 / not 8–12 s
-- `playbackRate` 2×+ to fake sprint
+- `playbackRate` 2×+ or **> 1.6** smash instead of recook travelling
+- Felt speed dump at the joint (playlist forgot the per-plate rate)
+- Bolt legs sped without `pictureTime` / plate clock
+- Ambient tint that greys / blacks the coat (not light wrap)
+- Plate-3 cook / L/M/R chart implemented in this script
 - Plate N+1 first ≠ plate N last (file)
 - New establishing cut instead of stitch
 - City filling the center corridor
