@@ -64,7 +64,7 @@ Search: `StarBoltSprint citadel-room` · living film · boltverse-odyssey.grok.m
 | [room.json](room.json) | graph machine-readable |
 | `scripts/cook-room.mjs` | official floor-1 cook (catalog slot only) |
 | `scripts/cook-biome-25d.mjs` | Imagine-only 2.5D empty plates — [COOK-BIOME-25D.md](COOK-BIOME-25D.md) |
-| `scripts/biome-25d-speed.mjs` | post-cook SAME SPEED match + tint helpers (band 1.0–1.6) |
+| `scripts/biome-25d-speed.mjs` | post-cook SAME SPEED `rate(t)` + tint helpers (band 1.0–1.6) |
 | `scripts/imagine-hooks.mjs` | API stills + `last_frame` films — not chat Imagine |
 | `scripts/validate-pack.mjs` | room.json + 3 stills + 5 films, H264, no audio |
 | `scripts/smoke-pack.mjs` | one dog, first≠last on walks, breath loops |

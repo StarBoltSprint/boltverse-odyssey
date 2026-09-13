@@ -248,7 +248,11 @@ must(/bolt-hybrid/.test(biome25) && /play\//.test(biome25), "COOK-BIOME-25D.md: 
 must(/Chat Imagine UI/.test(biome25) && /banned/.test(biome25), "COOK-BIOME-25D.md: chat Imagine banned");
 must(/1\.0–1\.6/.test(biome25) && /1\.3–1\.5/.test(biome25), "COOK-BIOME-25D.md: speed band 1.0–1.6 typical 1.3–1.5");
 must(/optical-flow|ground-parallax/.test(biome25) && /clamp/.test(biome25), "COOK-BIOME-25D.md: auto speed match");
+must(/rate\(t\)/.test(biome25) && /not.*constant per-plate/.test(biome25), "COOK-BIOME-25D.md: rate(t) not a constant");
+must(/0\.25–0\.5|0.25-0.5/.test(biome25) && /smooth/.test(biome25), "COOK-BIOME-25D.md: sample 0.25–0.5s + smooth");
+must(/live/.test(biome25) && /playbackRate/.test(biome25), "COOK-BIOME-25D.md: player updates playbackRate live");
 must(/recook travelling/.test(biome25) && /Never 2/.test(biome25), "COOK-BIOME-25D.md: >1.6 recook, never 2×+");
+must(/Long stretches|long stretch/.test(biome25), "COOK-BIOME-25D.md: long stretch >1.6 recook");
 must(/pictureTime/.test(biome25) && /never speed legs|Never speed legs/.test(biome25), "COOK-BIOME-25D.md: gait follows pictureTime");
 must(/ambient tint|Ambient tint|AMBIENT TINT/.test(biome25) && /light wrap/.test(biome25), "COOK-BIOME-25D.md: ambient tint light wrap");
 must(/white coat forever/.test(biome25) && /grey/.test(biome25), "COOK-BIOME-25D.md: tint is not a grey morph");

@@ -184,6 +184,7 @@ must(/ZERO path/.test(dry25.stdout || "") && /ZERO Bolt/.test(dry25.stdout || ""
 must(/last_frame/.test(dry25.stdout || "") && /city from haze/.test(dry25.stdout || ""), "25d dry-run: last_frame + plate 2 city");
 must(/playbackRate corrector 1\.0–1\.6/.test(dry25.stdout || "") && /1\.3–1\.5/.test(dry25.stdout || ""), "25d dry-run: playbackRate 1.0–1.6 / typical 1.3–1.5");
 must(/SAME SPEED/.test(dry25.stdout || "") && /recook travelling/.test(dry25.stdout || ""), "25d dry-run: SAME SPEED + recook >1.6");
+must(/rate\(t\) live/.test(dry25.stdout || "") && /long stretch/.test(dry25.stdout || ""), "25d dry-run: rate(t) live, not a constant");
 must(/plate 3\+/.test(dry25.stdout || "") && /not this cook/.test(dry25.stdout || ""), "25d dry-run: no plate-3 cook");
 must(/light wrap/.test(dry25.stdout || "") && /PathGen HOLD/.test(dry25.stdout || ""), "25d dry-run: tint wrap + PathGen HOLD");
 

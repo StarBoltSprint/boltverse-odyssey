@@ -67,9 +67,9 @@ Engine = **Imagine gamified**: full-frame plates + playable Bolt card + (later) 
 | Cast | **ZERO** Bolt / dog in the plate |
 | Stitch | plate N+1 **first frame = plate N last frame** |
 | Speed | **SAME** felt sprint travelling plate 1..N (KEEP plate-1 is the reference) |
-| Rate | `playbackRate` **post-cook corrector only** — safe band **1.0–1.6** (typical **1.3–1.5**). **Never 2×+.** |
+| Rate | Live **`rate(t)`** corrector — **not** a constant per-plate `playbackRate`. Band **1.0–1.6** (typical **1.3–1.5**). **Never 2×+.** |
 
-Travel is **baked in the cook**. Do not fake a pan on a still. `playbackRate` only corrects a cooked plate toward plate-1 KEEP. If the needed rate is **> 1.6** → **recook travelling**. Do not smash `playbackRate`.
+Travel is **baked in the cook**. Do not fake a pan on a still. Imagine can **slow or speed mid-clip** — match plate-1 KEEP **continuously**. Long stretches needing **> 1.6** → **recook travelling**. Do not smash `playbackRate`.
 
 ---
 
@@ -114,46 +114,65 @@ No audio. `yuv420p` + `faststart`.
 
 ## SAME SPEED — plate 1..N (biome law)
 
-Felt sprint travelling on plate 2..N **must match** the KEEP **plate-1** reference. One speed. No dump at the joint.
+Felt sprint travelling on plate 2..N **must match** the KEEP **plate-1** reference — **the whole clip**, not one average.
+
+Imagine travel can **slow or speed mid-plate**. A single `playbackRate` per file **cannot** hold the KEEP. The law is a **smoothed `rate(t)` curve**.
 
 | Lock | Law |
 |---|---|
 | Bake | Prefer travelling **in the cook** (world rushes at plate-1 pace) |
-| Corrector | `playbackRate` **after** cook only — never the way you invent speed |
-| Safe band | **1.0–1.6** · typical corrector **1.3–1.5** |
-| Hard cap | **Never 2×+**. Need **> 1.6** → recook that plate’s travelling |
-| Gait | Bolt stride follows **`pictureTime`** (currentTime accounting for rate). **Never speed legs alone.** |
+| Corrector | Live **`rate(t)`** after cook — never the way you invent speed |
+| Not | A constant per-plate `playbackRate` (that is only a summary) |
+| Sample | Optical flow / ground-parallax **every ~0.25–0.5 s** on plate 1 (ref) and plate N (meas) |
+| Curve | `rate(t) = clamp(ref(t)/meas(t), 1.0, 1.6)`, then **smooth** |
+| Safe band | **1.0–1.6** · typical **1.3–1.5** |
+| Hard cap | **Never 2×+**. **Long stretches** needing **> 1.6** → recook travelling |
+| Player | Updates `video.playbackRate` **live** from `pictureTime` |
+| Gait | Bolt stride follows **`pictureTime` + live rate**. **Never speed legs alone.** |
 
-`pictureTime` = the plate clock the paws run on.
+`pictureTime` = the plate clock (frame on screen = `video.currentTime`).
 
-- If bolt-hybrid `play/` sets `<video>.playbackRate = plate.playbackRate`: `pictureTime = currentTime` (the element already walks the file). Do **not** also multiply stride by rate.
-- If rate is applied outside the element: `pictureTime = currentTime * plate.playbackRate`.
-- Speeding the card’s legs while the plate stays slow = FAIL (skating + wrong storm).
+```
+each frame / ~250ms:
+  pictureTime = video.currentTime
+  rate = rateAt(plate.rateCurve, pictureTime)   // lerp, already smoothed
+  video.playbackRate = rate                     // live — not plate.playbackRate once
+  stride(pictureTime, rate)                     // gait follows both
+```
 
-Joint: felt speed at the end of N must meet felt speed at the start of N+1. Playlist uses the **stored per-plate rate**. Do not reset to 1.0 at the cut.
+Do **not** set one rate at `play()` and forget it. Do **not** multiply stride by rate *again* on top of a second clock. Speeding the card’s legs while the plate stays slow = FAIL.
+
+Joint: felt speed at the end of N (`travel(T)*rate(T)`) must meet felt speed at the start of N+1. Playlist stores the **curve**. Do not reset to 1.0 at the cut.
 
 ---
 
-## AUTO SPEED MATCH (post-cook)
+## AUTO SPEED MATCH (post-cook) — `rate(t)`, not a constant
 
-Plate 1 KEEP = **optical-flow / ground-parallax** reference. Every later plate is measured with the **same metric**, then:
+Plate 1 KEEP = **optical-flow / ground-parallax reference series**. Plate N is measured with the **same metric**, **same cadence**.
 
 ```
-playbackRate(n) = clamp( refTravel / travel(n) , 1.0 , 1.6 )
+every dt ∈ [0.25s, 0.5s]:
+  ref(t)  = travel_proxy(plate1, t)      // KEEP
+  meas(t) = travel_proxy(plateN, t)      // this cook
+  raw(t)  = ref(t) / meas(t)
+  rate(t) = clamp(raw(t), 1.0, 1.6)      // never slow the storm below 1.0
+  rate(t) = smooth(rate)                 // no step-jumps
+
+if a long stretch of raw(t) > 1.6:
+  FAIL speed.recook — recook travelling. Never write 1.8 / 2.0 / 2×.
 ```
 
-- `travel` = ground-parallax proxy: lower-third ground band, mean abs frame-delta (see [`scripts/biome-25d-speed.mjs`](scripts/biome-25d-speed.mjs)).
-- Plate 1 rate is **1.0** (it *is* the reference).
-- Later plate faster than KEEP → clamp to **1.0** (never slow the storm).
-- Later plate so slow that `ref/measured > 1.6` → **`speed.recook`**. Recook travelling. Do not write 1.8 / 2.0.
-
-Store per-plate rate in `biomes-25d/<style>/playlist.json`. The playlist **uses** those rates. Drop the json next to the films when you copy into bolt-hybrid `play/public/biomes/<style>/`.
+- `travel_proxy` = lower-third ground band, mean abs frame-delta ([`scripts/biome-25d-speed.mjs`](scripts/biome-25d-speed.mjs)). Same crop on every plate. Full dense CV is **not** required — this proxy + the curve math *is* the law.
+- Align series by **normalized time** `t/T` so 8 s vs 10 s plates still compare.
+- A **short** spike above 1.6 may clamp (smooth will eat it). A **long stretch** (~≥ 1.5 s) above 1.6 = recook.
+- Plate 1 curve is **1.0** everywhere (it *is* the reference).
+- `playlist.json` → `plates[].rateCurve: [{ t, rate }, …]`. `playbackRate` on the plate row is a **mean summary only**. The player **must** drive live `rate(t)`.
 
 ```
 node scripts/biome-25d-speed.mjs biomes-25d/<style>
 ```
 
-`cook-biome-25d` runs this after plate 2. Player remains bolt-hybrid `play/` — **do not** invent a new grok.me. Stub comments for the play loop live in the speed script (set `video.playbackRate`, `pictureTime`, no double gait).
+`cook-biome-25d` runs this after plate 2. Player remains bolt-hybrid `play/` — **do not** invent a new grok.me. Stub: `rateAt` + `applyLiveRate` in the speed script.
 
 ---
 
@@ -284,7 +303,7 @@ The dog is **not** in the mp4. He is a 2.5D Imagine card composited in front.
 
 - Pivot at paws / `groundY`
 - Strafe **X only**
-- Stride from `pictureTime` (plate clock, currentTime accounting for rate — not a free gait clock, not legs-only speedup)
+- Stride from `pictureTime` + **live `rate(t)`** (not a free gait clock, not legs-only speedup, not a single plate rate)
 - Soft contact shadow under the paws
 - Ambient tint ~4×/s — light wrap only ([AUTO BOLT AMBIENT TINT](#auto-bolt-ambient-tint-play-not-the-plate))
 
@@ -323,8 +342,8 @@ One thing at a time.
 1. **KEEP** one fast empty plate (rails PASS) — this is the speed reference
 2. Erase any neon PathGen overlay (**HOLD** — do not resurrect a sticker)
 3. Cook plate 2 from plate 1 last frame + stitch — city from haze, **same speed**, CLEAR center, zero path, zero Bolt
-4. Auto speed-match → `playlist.json` (band 1.0–1.6; >1.6 recook)
-5. Plant the Bolt card (`groundY`, `pictureTime`, contact shadow) + ambient tint ~4×/s
+4. Auto speed-match → `playlist.json` **`rateCurve`** (live `rate(t)`, band 1.0–1.6; long stretch >1.6 recook)
+5. Plant the Bolt card (`groundY`, `pictureTime` + live rate, contact shadow) + ambient tint ~4×/s
 6. Later (not this cook): plate 3+ L/M/R chart, then Imagine PathGen tiles, then obstacles `(t, lane)`
 
 ---
@@ -359,9 +378,10 @@ Hall player stays https://boltverse-odyssey.grok.me — **do not** publish a new
 - `cook-room` / hall portals in the plate
 - Camera move / pan / tilt / zoom / dolly
 - Plate not 9:16 / not 8–12 s
-- `playbackRate` 2×+ or **> 1.6** smash instead of recook travelling
-- Felt speed dump at the joint (playlist forgot the per-plate rate)
-- Bolt legs sped without `pictureTime` / plate clock
+- Constant per-plate `playbackRate` sold as the match (law is **`rate(t)`**)
+- `playbackRate` 2×+ or a **long stretch > 1.6** smashed instead of recook travelling
+- Felt speed dump at the joint (playlist forgot the curve / reset to 1.0)
+- Bolt legs sped without `pictureTime` + live rate
 - Ambient tint that greys / blacks the coat (not light wrap)
 - Plate-3 cook / L/M/R chart implemented in this script
 - Plate N+1 first ≠ plate N last (file)

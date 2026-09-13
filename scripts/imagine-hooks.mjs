@@ -19,7 +19,7 @@ const LAW = [
 export const HALL_LAW = LAW;
 
 /** Empty 2.5D biome plate — ZERO Bolt, ZERO path. See COOK-BIOME-25D.md.
- *  Bake travelling here. SAME SPEED as plate-1 KEEP. playbackRate is post-cook only (1.0–1.6). */
+ *  Bake travelling here. SAME SPEED as plate-1 KEEP via live rate(t), not a constant playbackRate. */
 const EMPTY_PLATE_LAW = [
   "Photoreal vertical 9:16, 720x1280.",
   "Locked-off camera. Sprint travelling is ALREADY in the clip (the world rushes toward camera).",
