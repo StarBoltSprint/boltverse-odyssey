@@ -3,7 +3,8 @@
 One table. Forge / voice / Hang **index** this row. They do not invent.
 
 Lane cook = `node scripts/cook-biome.mjs <id>` — reads [palettes/forest-palette.json](palettes/forest-palette.json).  
-**Not** `cook-room.mjs`. 10 reels, 0 atA. [COOKLANE.md](COOKLANE.md).
+**Not** `cook-room.mjs`. 10 reels, 0 atA. [COOKLANE.md](COOKLANE.md).  
+Imagine-only 2.5D empty plates + card (any style) = [COOK-BIOME-25D.md](COOK-BIOME-25D.md). Not `cook-biome`. Hall stays separate.
 
 This does **not** replace [CATALOG.md](CATALOG.md) paints.
 

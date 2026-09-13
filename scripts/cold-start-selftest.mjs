@@ -234,6 +234,33 @@ must(/KEEP seals/.test(customize) && /SEAL-spawn/.test(customize) && /SEAL-at-a/
 must(/KEEP seals/.test(rules) && /SEAL-spawn/.test(rules) && /SEAL-at-a/.test(rules) && /until SmiR reseals/.test(rules), ".cursorrules: ice-hall KEEP seals");
 must(/KEEP seals/.test(cookroom) && /SEAL-spawn/.test(cookroom) && /SEAL-at-a/.test(cookroom) && /until SmiR reseals/.test(cookroom), "COOKROOM.md: ice-hall KEEP seals");
 
+const biome25 = body("COOK-BIOME-25D.md");
+must(/Imagine-only/.test(biome25) && /2\.5D/.test(biome25), "COOK-BIOME-25D.md: Imagine-only 2.5D");
+must(/9:16/.test(biome25) && /8–12/.test(biome25), "COOK-BIOME-25D.md: 9:16 + 8–12s");
+must(/lock-off/.test(biome25) && /ZERO/.test(biome25), "COOK-BIOME-25D.md: lock-off + ZERO path/Bolt");
+must(/last_frame/.test(biome25) && /imagine-hooks/.test(biome25), "COOK-BIOME-25D.md: first+last hooks");
+must(/groundY/.test(biome25) && /pictureTime/.test(biome25) && /Skating/.test(biome25), "COOK-BIOME-25D.md: Bolt card plant");
+must(/HOLD/.test(biome25) && /neon/.test(biome25), "COOK-BIOME-25D.md: PathGen HOLD, no neon sticker");
+must(/\(t, lane\)/.test(biome25), "COOK-BIOME-25D.md: obstacles time-rail");
+must(/futuristic city/.test(biome25) && /haze/.test(biome25) && /CLEAR/.test(biome25), "COOK-BIOME-25D.md: plate 2 city from haze");
+must(/any style|Any style/.test(biome25), "COOK-BIOME-25D.md: any style décor free");
+must(/bolt-hybrid/.test(biome25) && /play\//.test(biome25), "COOK-BIOME-25D.md: points to bolt-hybrid play/");
+must(/Chat Imagine UI/.test(biome25) && /banned/.test(biome25), "COOK-BIOME-25D.md: chat Imagine banned");
+must(/1\.0–1\.6/.test(biome25) && /1\.3–1\.5/.test(biome25), "COOK-BIOME-25D.md: speed band 1.0–1.6 typical 1.3–1.5");
+must(/optical-flow|ground-parallax/.test(biome25) && /clamp/.test(biome25), "COOK-BIOME-25D.md: auto speed match");
+must(/rate\(t\)/.test(biome25) && /not.*constant per-plate/.test(biome25), "COOK-BIOME-25D.md: rate(t) not a constant");
+must(/0\.25–0\.5|0.25-0.5/.test(biome25) && /smooth/.test(biome25), "COOK-BIOME-25D.md: sample 0.25–0.5s + smooth");
+must(/live/.test(biome25) && /playbackRate/.test(biome25), "COOK-BIOME-25D.md: player updates playbackRate live");
+must(/recook travelling/.test(biome25) && /Never 2/.test(biome25), "COOK-BIOME-25D.md: >1.6 recook, never 2×+");
+must(/Long stretches|long stretch/.test(biome25), "COOK-BIOME-25D.md: long stretch >1.6 recook");
+must(/pictureTime/.test(biome25) && /never speed legs|Never speed legs/.test(biome25), "COOK-BIOME-25D.md: gait follows pictureTime");
+must(/ambient tint|Ambient tint|AMBIENT TINT/.test(biome25) && /light wrap/.test(biome25), "COOK-BIOME-25D.md: ambient tint light wrap");
+must(/white coat forever/.test(biome25) && /grey/.test(biome25), "COOK-BIOME-25D.md: tint is not a grey morph");
+must(/Plate 3|plate 3/.test(biome25) && /Do not implement plate-3|do not implement plate 3|not this cook/.test(biome25), "COOK-BIOME-25D.md: no plate-3 cook now");
+must(/COOK-BIOME-25D\.md/.test(body("COOK.md")), "COOK.md: points at 2.5D recipe");
+must(/COOK-BIOME-25D\.md/.test(body("README.md")), "README.md: points at 2.5D recipe");
+must(/same-speed|Same-speed/.test(body("COOK.md")), "COOK.md: same-speed pointer");
+
 const hooks = body("scripts/imagine-hooks.mjs");
 must(/Not Imagine Agent/.test(hooks) && /last_frame/.test(hooks), "imagine-hooks: films = first+last, not Agent");
 

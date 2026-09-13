@@ -18,6 +18,20 @@ const LAW = [
 
 export const HALL_LAW = LAW;
 
+/** Empty 2.5D biome plate — ZERO Bolt, ZERO path. See COOK-BIOME-25D.md.
+ *  Bake travelling here. SAME SPEED as plate-1 KEEP via live rate(t), not a constant playbackRate. */
+const EMPTY_PLATE_LAW = [
+  "Photoreal vertical 9:16, 720x1280.",
+  "Locked-off camera. Sprint travelling is ALREADY in the clip (the world rushes toward camera).",
+  "Same felt sprint speed as the KEEP plate-1 reference. NEVER slow down. NEVER a still. NEVER a 2x smash.",
+  "NEVER pan, tilt, zoom, or dolly.",
+  "ZERO dogs. ZERO German Shepherds. ZERO animals. ZERO people.",
+  "ZERO luminous floor paths. ZERO Y-fork. ZERO portals. ZERO HUD. ZERO text.",
+  "CLEAR empty center corridor — the playable lane stays empty.",
+].join(" ");
+
+export const EMPTY_PLATE = EMPTY_PLATE_LAW;
+
 const LANE_LAW = [
   "Photoreal still or clip, vertical 9:16, 720x1280.",
   "ONE FULL-white German Shepherd, ZERO black on the dog, teal collar, BACK to camera, two ears visible, locked-off camera.",
@@ -166,6 +180,38 @@ function laneClipLine(pose, kind) {
 function isLanePose(pose) {
   const p = String(pose || "");
   return p.startsWith("lean") || p === "fork";
+}
+
+/** Empty-plate clip (2.5D). Never HALL_LAW / LANE_LAW — those bake Bolt. */
+export function emptyPlateClipLine(paint, plate) {
+  const p = String(plate || "1");
+  const city =
+    p === "2" || p === 2
+      ? [
+          "Same sprint speed as the first frame. World ADVANCED from that last frame — do not cut to a new establishing shot.",
+          "A futuristic city begins to emerge from haze in the distance: distant domes, spires, neon.",
+          "Keep a CLEAR empty center corridor. The city stays far. NEVER fill the playable lane.",
+        ].join(" ")
+      : "Same sprint travelling the whole clip as the KEEP plate-1 reference. World ADVANCED toward the last_frame. NEVER a still. NEVER a slow-down. NEVER a 2x smash.";
+  return [
+    EMPTY_PLATE_LAW,
+    String(paint || "").trim(),
+    city,
+    "Last frame is last_frame. ZERO dogs. ZERO luminous paths.",
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+export function emptyPlateStillLine(paint, plate) {
+  const p = String(plate || "1");
+  const city =
+    p === "2" || p === 2
+      ? "Futuristic city emerging from haze — distant domes / spires / neon. CLEAR empty center corridor. City stays far."
+      : "Empty sprint corridor. CLEAR empty center. Haze ok. No destination clutter in the lane.";
+  return [EMPTY_PLATE_LAW, String(paint || "").trim(), city, "Still only. ZERO dogs. ZERO luminous paths."]
+    .filter(Boolean)
+    .join(" ");
 }
 
 function exampleName(pose) {
@@ -412,7 +458,10 @@ function hallStillPrompt(slotLines, pose, hasSpawn, teacherRel) {
     .join(" ");
 }
 
-export async function imagineStill({ root, slot, pose, dest, spawnPath, lane, enlargeFrom }) {
+export async function imagineStill({ root, slot, pose, dest, spawnPath, lane, enlargeFrom, emptyPlate, paint }) {
+  if (emptyPlate) {
+    return imagineEmptyStill({ dest, paint, plate: pose, fromPath: spawnPath });
+  }
   const lock = join(root, "lock");
   const hasSpawn = Boolean(spawnPath && existsSync(spawnPath));
   const bolt = join(lock, "bolt-back.jpg");
@@ -473,16 +522,38 @@ export async function imagineStill({ root, slot, pose, dest, spawnPath, lane, en
   return dest;
 }
 
-export async function imagineClip({ root, slot, kind, first, last, dest, seconds = 6, pose, lane }) {
-  const prompt = lane || isLanePose(pose)
-    ? laneClipLine(pose, kind)
-    : [
-        LAW,
-        catalogLines(root, slot),
-        kind === "breath"
-          ? breathLine(pose)
-          : walkClipLine(pose),
-      ].join(" ");
+export async function imagineEmptyStill({ dest, paint, plate, fromPath }) {
+  const prompt = emptyPlateStillLine(paint, plate);
+  const body = {
+    model: IMAGE_MODEL,
+    prompt,
+    aspect_ratio: "9:16",
+  };
+  let j;
+  if (fromPath && existsSync(fromPath)) {
+    body.image = imgRef(fromPath);
+    j = await api("/images/edits", body);
+  } else {
+    j = await api("/images/generations", body);
+  }
+  const url = j.url || j.data?.[0]?.url;
+  if (!url) throw new Error("no still url");
+  const raw = dest + ".raw";
+  await download(url, raw);
+  encodePlate(raw, dest);
+  return dest;
+}
+
+export async function imagineClip({ root, slot, kind, first, last, dest, seconds = 6, pose, lane, emptyPlate, paint }) {
+  const prompt = emptyPlate
+    ? emptyPlateClipLine(paint, pose)
+    : lane || isLanePose(pose)
+      ? laneClipLine(pose, kind)
+      : [
+          LAW,
+          catalogLines(root, slot),
+          kind === "breath" ? breathLine(pose) : walkClipLine(pose),
+        ].join(" ");
   const body = {
     model: VIDEO_MODEL,
     prompt,
@@ -491,12 +562,12 @@ export async function imagineClip({ root, slot, kind, first, last, dest, seconds
     resolution: "720p",
     image: { url: dataUri(first) },
   };
-  if (kind === "walk") {
-    if (!last) throw new Error("walk needs last_frame");
-    if (last === first) throw new Error("walk last_frame must be distinct");
+  if (emptyPlate || kind === "walk") {
+    if (!last) throw new Error((emptyPlate ? "empty plate" : "walk") + " needs last_frame");
+    if (last === first) throw new Error((emptyPlate ? "empty plate" : "walk") + " last_frame must be distinct");
     body.last_frame = { url: dataUri(last) };
   }
-  if (kind === "breath") {
+  if (!emptyPlate && kind === "breath") {
     const hold = last || first;
     body.last_frame = { url: dataUri(hold) };
   }

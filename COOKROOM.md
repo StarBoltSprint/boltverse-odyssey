@@ -31,7 +31,8 @@ Grok does not paste Imagine prompts in chat when the script can run.
 
 Tap never cooks. [DONT.md](DONT.md).
 
-Lane / biome cook is **not** this page. That is [COOKLANE.md](COOKLANE.md). `citadel moss` → here. `biome forest` → there.
+Lane / biome cook is **not** this page. That is [COOKLANE.md](COOKLANE.md). `citadel moss` → here. `biome forest` → there.  
+Imagine-only 2.5D empty plates + card = [COOK-BIOME-25D.md](COOK-BIOME-25D.md). Not `cook-biome.mjs`.
 
 ## Command
 

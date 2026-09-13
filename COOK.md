@@ -301,3 +301,7 @@ Then read [ENTER.md](ENTER.md) and [HANG.md](HANG.md). Short version:
 - Enter is **outside the 7** (`ENTER{}` map). `ended` → switch room **then** dest breath-spawn.
 - Wire: walk to the door first, **stay**. Second tap = enter. Walk ended **never** auto-enters.
 - Bump `PACK` after hanging the new mp4.
+
+## Other job — Imagine-only 2.5D biome
+
+Empty plates + playable Bolt **card**. Same-speed + ambient tint. Not this page. Not `cook-biome.mjs` (that bakes Bolt into the reel). [COOK-BIOME-25D.md](COOK-BIOME-25D.md).
