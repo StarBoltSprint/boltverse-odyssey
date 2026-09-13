@@ -1,7 +1,7 @@
 # boltverse-odyssey
 
-**Play:** [START.md](START.md) — three stills, one tap, one catalog word.  
-**Play now:** https://boltverse-odyssey.grok.me
+**Play:** [START.md](START.md) — frost (ice) is the hung default hall.  
+**Play now:** https://boltverse-odyssey.grok.me/r/frost
 
 Grok / keepers: recipe below. Humans: stop here.
 
@@ -17,17 +17,18 @@ Grok / keepers: recipe below. Humans: stop here.
 
 ## For Grok (new conversation)
 
-If the human says any of: play boltverse / boltverse odyssey / starboltsprint / citadel / citadelle — you are in this recipe. **[AGENTS.md](AGENTS.md)** then **[GROK.md](GROK.md) — stop.** **No chat Imagine** — not stills, not walks, not breaths, not enter. Hook only. No new grok.me.
+If the human says any of: play boltverse / boltverse odyssey / starboltsprint / citadel / citadelle — you are in this recipe. **[AGENTS.md](AGENTS.md)** then **[GROK.md](GROK.md) — stop.** STYLE stills / restyle = Imagine Agent. Walks / breaths = hooks first+last. **No chat Imagine** without real first+last. No new grok.me.
 
 **One happy path:**
 
 ```
 git clone https://github.com/StarBoltSprint/boltverse-odyssey
+# STYLE stills / restyle → grok.com/imagine/agent (never video)
 node scripts/cook-room.mjs <catalog-slot> --dry-run
 export XAI_API_KEY=... && node scripts/cook-room.mjs <catalog-slot>
 ```
 
-`npm run dry-run` / `npm run cook` / `npm run smoke` = moss. Hung PASS stills/films = reuse. `--force` recooks.
+`npm run dry-run` / `npm run cook` = moss (cook). `npm run smoke` / `validate` = **frost** (hung ice default). Hung PASS stills/films = reuse. `--force` recooks.
 
 Cannot run node, or live cook needs a key you do not have → **REFUSE**. Do not use chat Imagine as fallback. Stock URL.
 
@@ -50,9 +51,11 @@ Search: `StarBoltSprint citadel-room` · living film · boltverse-odyssey.grok.m
 | [VALIDATE.md](VALIDATE.md) | box check before hang |
 | [SMOKE.md](SMOKE.md) | clone / first-last / recook cap 2 |
 | [CHAR.md](CHAR.md) | Bolt lock — the dog never changes |
-| [COOK.md](COOK.md) | stills-first cook, then films — hooks only |
-| [COOKROOM.md](COOKROOM.md) | hall cook — `node scripts/cook-room.mjs <slot>` |
-| [AGENTS.md](AGENTS.md) | cold-start: clone → dry-run → cook-room; chat Imagine ban |
+| [RIG.md](RIG.md) | **styles first** — black plates + one hall, three poses, never two Bolts |
+| [COOK.md](COOK.md) | stills-first cook (Agent restyle), then films via hooks first+last |
+| [COOK-BIOME-25D.md](COOK-BIOME-25D.md) | Imagine-only 2.5D biome — empty plates + Bolt card; same-speed + tint. Not hall. |
+| [COOKROOM.md](COOKROOM.md) | hall films — `node scripts/cook-room.mjs <slot>` (`image` + `last_frame`) |
+| [AGENTS.md](AGENTS.md) | cold-start HARD SPLIT: Agent = STYLE stills; video = hooks first+last |
 | [GROK.md](GROK.md) | how to rebuild the hall |
 | [ROOM.md](ROOM.md) | skeleton — encode flags, playsInline, ENTER map, player bugs |
 | [ENTER.md](ENTER.md) | room 1 → room 2 — two plates, stills vs room 1, same depth |
@@ -60,13 +63,16 @@ Search: `StarBoltSprint citadel-room` · living film · boltverse-odyssey.grok.m
 | [HANG.md](HANG.md) | ops — folders, PACK, encode, first/last, freeze, gold veil |
 | [room.json](room.json) | graph machine-readable |
 | `scripts/cook-room.mjs` | official floor-1 cook (catalog slot only) |
+| `scripts/cook-biome-25d.mjs` | Imagine-only 2.5D empty plates — [COOK-BIOME-25D.md](COOK-BIOME-25D.md) |
+| `scripts/biome-25d-speed.mjs` | post-cook SAME SPEED `rate(t)` + tint helpers (band 1.0–1.6) |
 | `scripts/imagine-hooks.mjs` | API stills + `last_frame` films — not chat Imagine |
 | `scripts/validate-pack.mjs` | room.json + 3 stills + 5 films, H264, no audio |
 | `scripts/smoke-pack.mjs` | one dog, first≠last on walks, breath loops |
 | `lock/bolt-back.jpg` | Bolt identity (back / coat) — not scale |
-| `lock/example-at-a.jpg` | SmiR at-A lock teacher (BACK toward teal L, gold visible). Drop: `hall-stills/smir-ata-teacher.jpeg` → `node scripts/install-lock-ata.mjs`. Packs may copy to `stills/at-a.jpg` when Smoke place is OK **or** owner seals. |
-| `lock/SEAL-at-a.jpg` | Owner freeze. `SEAL_ATA=1` or this file → sealed at-A = frozen; do not Imagine new at-A pose. |
-| `lock/example-*.jpg` | camera + which side (oval\|RECT energy OK; atA = lock example, atB = moss PASS swap) |
+| `lock/example-at-a.jpg` | SmiR at-A lock teacher (BACK toward teal L, gold visible). Drop: `hall-stills/seal/at-a-ice.jpg` or `hall-stills/smir-ata-teacher.jpeg` → `node scripts/install-lock-ata.mjs` |
+| `lock/RIG-PROMPT.txt` | paste this; swap `{PAINT}` only |
+| `lock/SEAL-spawn.jpg` `lock/SEAL-at-a.jpg` `lock/SEAL-at-b.jpg` | ice KEEP seals — frost play / full example. Frozen until SmiR reseals. |
+| `lock/example-*.jpg` | camera + which side (oval\|RECT energy OK; atA = lock example / SEAL, atB = SEAL or moss PASS swap) |
 | `packs/<id>/` | hung discs — Grok writes here |
 | `stills/` `films/` | **empty on GitHub** — do not hang at root |
 

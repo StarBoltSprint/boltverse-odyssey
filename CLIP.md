@@ -22,8 +22,8 @@ The official still for the pose already exists. The clip is judged **against** i
 
 | kind | window |
 |---|---|
-| breath (all) | **~6s** |
-| walk | **10s** (8–12). Walk the whole time, arrive ~8s, hold. Empty leftover = round trip |
+| breath (all) | **~6s**. He breathes / head / tail OK. Never walks. Never changes place. |
+| walk | **10s** (8–12). Walk the whole time from first frame to last_frame at a steady pace (~9s). No leftover hold (empty leftover = round trip) |
 | enter | ~6s |
 
 Off-plate = the player jumps at swap. FAIL `plate.size` / `plate.audio` / `plate.duration`. Do **not** call vision.

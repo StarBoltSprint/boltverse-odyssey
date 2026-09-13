@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// xAI Imagine API. Not the Grok chat. Needs XAI_API_KEY.
+// xAI Imagine API. Hall films = image + last_frame (walks / breaths). Not Imagine Agent. Not Grok chat.
+// Needs XAI_API_KEY.
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, extname, join } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -16,6 +17,20 @@ const LAW = [
 ].join(" ");
 
 export const HALL_LAW = LAW;
+
+/** Empty 2.5D biome plate — ZERO Bolt, ZERO path. See COOK-BIOME-25D.md.
+ *  Bake travelling here. SAME SPEED as plate-1 KEEP via live rate(t), not a constant playbackRate. */
+const EMPTY_PLATE_LAW = [
+  "Photoreal vertical 9:16, 720x1280.",
+  "Locked-off camera. Sprint travelling is ALREADY in the clip (the world rushes toward camera).",
+  "Same felt sprint speed as the KEEP plate-1 reference. NEVER slow down. NEVER a still. NEVER a 2x smash.",
+  "NEVER pan, tilt, zoom, or dolly.",
+  "ZERO dogs. ZERO German Shepherds. ZERO animals. ZERO people.",
+  "ZERO luminous floor paths. ZERO Y-fork. ZERO portals. ZERO HUD. ZERO text.",
+  "CLEAR empty center corridor — the playable lane stays empty.",
+].join(" ");
+
+export const EMPTY_PLATE = EMPTY_PLATE_LAW;
 
 const LANE_LAW = [
   "Photoreal still or clip, vertical 9:16, 720x1280.",
@@ -109,26 +124,31 @@ function catalogLines(root, slot) {
 }
 
 function breathLine(pose) {
+  const live = [
+    "6 seconds. Seamless loop. First frame and last frame are the same still (already pinned — do not re-describe them).",
+    "The dog remains COMPLETELY STATIONARY in place. NEVER walking. NEVER stepping. NEVER shifting position. PAWS stay planted — they do not lift, slide, or step.",
+    "VISIBLE breath — this is NOT a freeze-frame. Motion is SMOOTH and FLUID, never jerky, never a still photo. Chest and BELLY MUST rise and fall clearly every breath. The bushy tail MUST sway and flick. The head MUST nod or turn a little. NEVER sit. NEVER lie. NEVER crouch. STANDING on FOUR PAWS the whole clip.",
+    "NO morphing of the dog's form, fur, or body.",
+    "The two portals may pulse and animate subtly (slow swirling energy, soft light ripples). Distant hall lights may shimmer. Soft reflections may shift slowly on the floor.",
+    "Camera stays COMPLETELY LOCKED and fixed on the exact composition — never pan, tilt, zoom, or dolly.",
+    "ONE dog only. NEVER a second dog. NEVER any other animal. NEVER anything else appearing on screen.",
+    "No speech. No HUD. Silent plate.",
+  ].join(" ");
   if (pose === "atA") {
     return [
-      "ONE dog only. He is ALREADY at the teal LEFT sill.",
-      "NEVER a dog at center. NEVER a dog at gold. NEVER a second Bolt.",
-      "Do not complete the hall toward spawn. Do not walk. Do not turn.",
-      "Micro breath. Feet glued. Seamless loop. Locked-off.",
+      live,
+      "He is ALREADY at the teal LEFT sill, BACK, standing. NEVER a dog at center. NEVER a dog at gold. His chest/belly/tail/head MUST keep moving fluidly — do not freeze him.",
     ].join(" ");
   }
   if (pose === "atB") {
     return [
-      "ONE dog only. He is ALREADY at the gold RIGHT sill.",
-      "NEVER a dog at center. NEVER a dog at teal. NEVER a second Bolt.",
-      "Do not complete the hall toward spawn. Do not walk. Do not turn.",
-      "Micro breath. Feet glued. Seamless loop. Locked-off.",
+      live,
+      "He is ALREADY at the gold RIGHT sill, BACK, standing. NEVER a dog at center. NEVER a dog at teal.",
     ].join(" ");
   }
   return [
-    "ONE dog only. He is ALREADY at center spawn.",
-    "NEVER a second dog at either door. NEVER a ghost at a sill.",
-    "Do not walk to a portal. Micro breath. Feet glued. 6 seconds. Loop. Locked-off.",
+    live,
+    "He is ALREADY at center spawn, BACK, standing. Both portals stay fully visible. NEVER a second dog at either door. NEVER a ghost at a sill.",
   ].join(" ");
 }
 
@@ -160,6 +180,38 @@ function laneClipLine(pose, kind) {
 function isLanePose(pose) {
   const p = String(pose || "");
   return p.startsWith("lean") || p === "fork";
+}
+
+/** Empty-plate clip (2.5D). Never HALL_LAW / LANE_LAW — those bake Bolt. */
+export function emptyPlateClipLine(paint, plate) {
+  const p = String(plate || "1");
+  const city =
+    p === "2" || p === 2
+      ? [
+          "Same sprint speed as the first frame. World ADVANCED from that last frame — do not cut to a new establishing shot.",
+          "A futuristic city begins to emerge from haze in the distance: distant domes, spires, neon.",
+          "Keep a CLEAR empty center corridor. The city stays far. NEVER fill the playable lane.",
+        ].join(" ")
+      : "Same sprint travelling the whole clip as the KEEP plate-1 reference. World ADVANCED toward the last_frame. NEVER a still. NEVER a slow-down. NEVER a 2x smash.";
+  return [
+    EMPTY_PLATE_LAW,
+    String(paint || "").trim(),
+    city,
+    "Last frame is last_frame. ZERO dogs. ZERO luminous paths.",
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+export function emptyPlateStillLine(paint, plate) {
+  const p = String(plate || "1");
+  const city =
+    p === "2" || p === 2
+      ? "Futuristic city emerging from haze — distant domes / spires / neon. CLEAR empty center corridor. City stays far."
+      : "Empty sprint corridor. CLEAR empty center. Haze ok. No destination clutter in the lane.";
+  return [EMPTY_PLATE_LAW, String(paint || "").trim(), city, "Still only. ZERO dogs. ZERO luminous paths."]
+    .filter(Boolean)
+    .join(" ");
 }
 
 function exampleName(pose) {
@@ -196,25 +248,51 @@ export function sillTeacherRel(root, pose) {
   const moss = mossSillRel(pose);
   const official = officialSillRel(pose);
   const swapped = join("lock", exampleName(pose));
+  const sealRel = pose === "atA" ? "lock/SEAL-at-a.jpg" : "lock/SEAL-at-b.jpg";
   if (pose === "atA") {
+    if (root && existsSync(join(root, sealRel))) return sealRel;
     if (root && existsSync(join(root, swapped))) return swapped;
     if (root && existsSync(join(root, official))) return official;
     if (root && existsSync(join(root, moss))) return moss;
     return swapped;
   }
+  if (root && existsSync(join(root, sealRel))) return sealRel;
   if (root && existsSync(join(root, moss))) return moss;
   if (root && existsSync(join(root, official))) return official;
   if (root && existsSync(join(root, swapped))) return swapped;
   return swapped;
 }
 
-/** bolt-back is 0.53 close-up. Unlabeled edit of the close-up = punch-sill. */
-export function stillRefOrder(pose, hasSpawn, root) {
+/** bolt-back is 0.53 close-up. Unlabeled edit of the close-up = punch-sill. Enlarge never sends the teacher (shrink). */
+export function stillRefOrder(pose, hasSpawn, root, opts) {
+  const enlarge = opts === true || (opts && opts.enlarge);
+  if (enlarge && (pose === "atA" || pose === "atB")) {
+    return hasSpawn ? ["fail", "bolt-back.jpg", "spawn"] : ["fail", "bolt-back.jpg"];
+  }
   if (pose === "atA" || pose === "atB") {
     const side = sillTeacherRel(root, pose);
     return hasSpawn ? ["spawn", "bolt-back.jpg", side] : [side, "bolt-back.jpg"];
   }
-  return hasSpawn ? ["bolt-back.jpg", exampleName(pose), "spawn"] : ["bolt-back.jpg", exampleName(pose)];
+  const spawnSeal = "lock/SEAL-spawn.jpg";
+  const spawnTeacher = root && existsSync(join(root, spawnSeal)) ? spawnSeal : exampleName(pose);
+  return hasSpawn ? ["bolt-back.jpg", spawnTeacher, "spawn"] : ["bolt-back.jpg", spawnTeacher];
+}
+
+/** Second sill cook: FAIL jpg is the image. ONLY grow the dog. Same camera/hall. No teacher. */
+export const ENLARGE_SILL_COPY =
+  "ENLARGE ONLY. Same camera, same hall, same energy rifts (oval or RECT). The first image IS this FAIL plate — he is already AT this sill. ONLY enlarge the dog toward bboxH/H 0.35–0.40 (aim 0.36) STANDING. Do not re-compose. Do not recrop. Do not zoom the hall. Do not move him to center. Do not copy a tiny teacher scale. NEVER shrink to 0.16 / 0.18 / 0.19 / 0.21.";
+
+export function enlargeStillLine(side) {
+  const here = side === "A" ? "teal LEFT" : "gold RIGHT";
+  return [
+    ENLARGE_SILL_COPY,
+    "He stays AT the " + here + " sill (paws on that lip). STANDING four paws, BACK, crown to camera, legs LONG, haunches UP.",
+    "NEVER sit. NEVER loaf. NEVER face. NEVER 3/4. NEVER mid-hall. NEVER punch-sill.",
+    "Live ember at-A FAIL×2 was sill-band 0.19+sit+face and 0.16+sit (after #4: 0.19/0.21 and at-B 0.20/0.21+sit). This edit GROWS that FAIL. It does not start over from the teacher.",
+    "IGNORE bolt-back crop (~0.53). IGNORE example-at-*-tiny. Hall materials stay as they are. Oval or RECT energy OK (never wood, never chrome UI).",
+    ATA_FORCE_TAILLE,
+    ATA_FORCE_STANDING,
+  ].join(" ");
 }
 
 export function sillStillLine(side) {
@@ -331,14 +409,40 @@ export function spawnStillLine() {
   ].join(" ");
 }
 
-export function walkClipLine() {
-  return [
-    "10 seconds. ONE dog only. He LEAVES spawn in the first second. Continuous even walk on FOUR STANDING PAWS.",
-    "NEVER sit. NEVER lie. NEVER face. NEVER 3/4. NEVER a second Bolt at center or the other door.",
+export function walkClipLine(edge) {
+  const live = [
+    "The dog STARTS WALKING on the very first frame — no freeze, no pause, no linger.",
+    "He walks at a STEADY even pace on FOUR STANDING PAWS from the first frame all the way to the last frame (about 9 seconds of continuous walking).",
+    "NO morph. The dog stays ONE full-white German Shepherd the whole clip.",
+    "Camera is LOCKED OFF and NEVER moves — no dolly, no pan, no zoom, no drift.",
+    "ONE dog only. NEVER two dogs. NEVER a second Bolt. NEVER a clone. NEVER anything else appearing on screen.",
+    "NEVER sit. NEVER lie. NEVER crouch. NEVER drop to the haunches. He stays STANDING on FOUR PAWS the whole walk.",
     "Energy portals stay oval or RECT (never wood, never chrome UI). Do not morph into a blob.",
-    "Never freeze mid-hall. Arrives ~8s, then HOLDS STANDING 1–2s at the sill, still back to camera.",
-    "No leftover empty time. No linger-then-warp. No sudden sprint. Do not walk back to spawn.",
-    "Do not invent a floor ice disc. Locked-off. ONE full-white GSD. Last frame is the arrive still. No tunnel.",
+    "He ONLY walks FORWARD toward the arrive portal. NEVER recede. NEVER reverse. NEVER walk back toward spawn. Distance to the arrive door ONLY decreases, every frame. NEVER sit at the start.",
+    "Do not invent leftover empty time. Last frame is the arrive still — he is already there when the clip ends. No tunnel.",
+  ].join(" ");
+  const e = String(edge || "");
+  if (e === "spawnB" || e === "atB" || e === "B") {
+    return [
+      live,
+      "He STARTS at center spawn, BACK. He walks FORWARD along the gold path toward the gold-orange RIGHT portal. Every frame he is closer to that door. Arrive standing BACK at the gold RIGHT sill. NEVER reverse.",
+    ].join(" ");
+  }
+  if (e === "AB" || e === "a-b") {
+    return [
+      live,
+      "He STARTS standing BACK at the teal LEFT sill. He walks across the hall to the gold-orange RIGHT sill. Arrive standing BACK at gold.",
+    ].join(" ");
+  }
+  if (e === "BA" || e === "b-a") {
+    return [
+      live,
+      "He STARTS standing BACK at the gold RIGHT sill. He walks across the hall to the cyan-teal LEFT sill. Arrive standing BACK at teal.",
+    ].join(" ");
+  }
+  return [
+    live,
+    "He STARTS at center spawn, BACK. He walks toward the cyan-teal LEFT portal. Arrive standing BACK at the teal LEFT sill.",
   ].join(" ");
 }
 
@@ -355,15 +459,24 @@ function hallStillPrompt(slotLines, pose, hasSpawn, teacherRel) {
     .join(" ");
 }
 
-export async function imagineStill({ root, slot, pose, dest, spawnPath, lane }) {
+export async function imagineStill({ root, slot, pose, dest, spawnPath, lane, enlargeFrom, emptyPlate, paint }) {
+  if (emptyPlate) {
+    return imagineEmptyStill({ dest, paint, plate: pose, fromPath: spawnPath });
+  }
   const lock = join(root, "lock");
   const hasSpawn = Boolean(spawnPath && existsSync(spawnPath));
   const bolt = join(lock, "bolt-back.jpg");
   const teacherRel = pose === "atA" || pose === "atB" ? sillTeacherRel(root, pose) : join("lock", exampleName(pose));
   const teacher = join(root, teacherRel);
+  const failSrc = enlargeFrom && existsSync(enlargeFrom) ? enlargeFrom : null;
+  const enlarge = Boolean(failSrc && (pose === "atA" || pose === "atB"));
   const refs = [];
   if (lane) {
     refs.push(imgRef(bolt));
+    if (hasSpawn) refs.push(imgRef(spawnPath));
+  } else if (enlarge) {
+    refs.push(imgRef(failSrc));
+    if (existsSync(bolt)) refs.push(imgRef(bolt));
     if (hasSpawn) refs.push(imgRef(spawnPath));
   } else if ((pose === "atA" || pose === "atB") && hasSpawn) {
     refs.push(imgRef(spawnPath), imgRef(bolt), imgRef(teacher));
@@ -382,7 +495,18 @@ export async function imagineStill({ root, slot, pose, dest, spawnPath, lane }) 
       ]
         .filter(Boolean)
         .join(" ")
-    : hallStillPrompt(catalogLines(root, slot), pose, hasSpawn, teacherRel);
+    : enlarge
+      ? [
+          LAW,
+          catalogLines(root, slot),
+          enlargeStillLine(pose === "atA" ? "A" : "B"),
+          "First image = the FAIL jpg: enlarge ONLY. Same camera / hall. Do not send / copy the teacher.",
+          hasSpawn ? "Spawn still = hall materials lock only. Do not move him back to center spawn." : "",
+          "Second image (if present) = bolt-back.jpg: coat / back / collar IDENTITY only. IGNORE its close-up crop (bbox ~0.53 is illegal).",
+        ]
+          .filter(Boolean)
+          .join(" ")
+      : hallStillPrompt(catalogLines(root, slot), pose, hasSpawn, teacherRel);
   const body = {
     model: IMAGE_MODEL,
     prompt,
@@ -399,16 +523,38 @@ export async function imagineStill({ root, slot, pose, dest, spawnPath, lane }) 
   return dest;
 }
 
-export async function imagineClip({ root, slot, kind, first, last, dest, seconds = 6, pose, lane }) {
-  const prompt = lane || isLanePose(pose)
-    ? laneClipLine(pose, kind)
-    : [
-        LAW,
-        catalogLines(root, slot),
-        kind === "breath"
-          ? breathLine(pose)
-          : walkClipLine(),
-      ].join(" ");
+export async function imagineEmptyStill({ dest, paint, plate, fromPath }) {
+  const prompt = emptyPlateStillLine(paint, plate);
+  const body = {
+    model: IMAGE_MODEL,
+    prompt,
+    aspect_ratio: "9:16",
+  };
+  let j;
+  if (fromPath && existsSync(fromPath)) {
+    body.image = imgRef(fromPath);
+    j = await api("/images/edits", body);
+  } else {
+    j = await api("/images/generations", body);
+  }
+  const url = j.url || j.data?.[0]?.url;
+  if (!url) throw new Error("no still url");
+  const raw = dest + ".raw";
+  await download(url, raw);
+  encodePlate(raw, dest);
+  return dest;
+}
+
+export async function imagineClip({ root, slot, kind, first, last, dest, seconds = 6, pose, lane, emptyPlate, paint }) {
+  const prompt = emptyPlate
+    ? emptyPlateClipLine(paint, pose)
+    : lane || isLanePose(pose)
+      ? laneClipLine(pose, kind)
+      : [
+          LAW,
+          catalogLines(root, slot),
+          kind === "breath" ? breathLine(pose) : walkClipLine(pose),
+        ].join(" ");
   const body = {
     model: VIDEO_MODEL,
     prompt,
@@ -417,12 +563,12 @@ export async function imagineClip({ root, slot, kind, first, last, dest, seconds
     resolution: "720p",
     image: { url: dataUri(first) },
   };
-  if (kind === "walk") {
-    if (!last) throw new Error("walk needs last_frame");
-    if (last === first) throw new Error("walk last_frame must be distinct");
+  if (emptyPlate || kind === "walk") {
+    if (!last) throw new Error((emptyPlate ? "empty plate" : "walk") + " needs last_frame");
+    if (last === first) throw new Error((emptyPlate ? "empty plate" : "walk") + " last_frame must be distinct");
     body.last_frame = { url: dataUri(last) };
   }
-  if (kind === "breath") {
+  if (!emptyPlate && kind === "breath") {
     const hold = last || first;
     body.last_frame = { url: dataUri(hold) };
   }

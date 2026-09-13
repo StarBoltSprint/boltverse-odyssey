@@ -2,7 +2,8 @@
 
 Hall cook = `node scripts/cook-room.mjs moss`  
 Lane cook = `node scripts/cook-biome.mjs forest`  
-Smoke Lane = `node scripts/smoke-biome.mjs forest` — **not** smoke-pack.
+Smoke Lane = `node scripts/smoke-biome.mjs forest` — **not** smoke-pack.  
+Imagine-only 2.5D (empty plate + Bolt **card**) = [COOK-BIOME-25D.md](COOK-BIOME-25D.md). Not this page. Do not bake Bolt into those plates.
 
 Palette = [palettes/forest-palette.json](palettes/forest-palette.json). Chart = [CUES.md](CUES.md).  
 `L` = [scripts/cue-readability.mjs](scripts/cue-readability.mjs). Proto = [PLAYTEST.md](PLAYTEST.md).

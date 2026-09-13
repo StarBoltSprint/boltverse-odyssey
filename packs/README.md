@@ -8,7 +8,9 @@ packs/<id>/stills/
 packs/<id>/films/
 ```
 
-**Stock (golden hall)** is not in `main` (too heavy). It is a Release:
+**Default hung hall on `main` = `packs/frost/` (ice).** Play: https://boltverse-odyssey.grok.me/r/frost
+
+**Stock (golden hall)** is also a Release:
 
 https://github.com/StarBoltSprint/boltverse-odyssey/releases/tag/citadel-stock-v1
 

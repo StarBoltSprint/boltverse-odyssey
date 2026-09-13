@@ -1,5 +1,7 @@
 #!/usr/bin/env node
-// Fixture: brand-new Grok reads these first. sill ≠ spawn must be instant.
+// Fixture: brand-new Grok reads these first.
+// HARD SPLIT (SmiR 2026-09-12): Agent obligatoire for STYLE stills when restyling.
+// Video cook stays imagine-hooks / cook-room first+last. Never Agent for walks/breaths.
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -22,21 +24,83 @@ function body(rel) {
   return readFileSync(join(root, rel), "utf8");
 }
 
-const agentsHead = head("AGENTS.md", 16);
+function firstStop(text) {
+  const idx = text.search(/STOP/);
+  return idx < 0 ? "" : text.slice(idx, idx + 500);
+}
+
+function assertAgentStop(label, text) {
+  const stop = firstStop(text);
+  must(/STOP/.test(stop), label + ": has STOP");
+  must(/HARD SPLIT/.test(stop), label + ": first STOP HARD SPLIT");
+  must(/obligatoire/i.test(stop), label + ": first STOP has obligatoire");
+  must(/\bMUST\b/.test(stop), label + ": first STOP has MUST");
+  must(/systematically/i.test(stop), label + ": first STOP has systematically");
+  must(/Imagine Agent/.test(stop), label + ": first STOP names Imagine Agent");
+  must(/STYLE stills/.test(stop), label + ": first STOP STYLE stills");
+  must(/restyl/.test(stop), label + ": first STOP restyling");
+  must(/NEVER/.test(stop), label + ": first STOP NEVER (no Agent video)");
+  must(/Walk A/.test(stop) && /Walk B/.test(stop), label + ": first STOP Walk A + Walk B");
+  must(/breath/.test(stop), label + ": first STOP breath");
+  must(/video/.test(stop), label + ": first STOP video");
+  must(/imagine-hooks/.test(stop) && /cook-room/.test(stop), label + ": first STOP hooks + cook-room");
+  must(/first-frame \+ last-frame/.test(stop), label + ": first STOP first-frame + last-frame");
+  must(/Soft KEEP banned/.test(stop), label + ": first STOP Soft KEEP banned");
+  must(/Smoke still gates/.test(stop), label + ": first STOP Smoke still gates");
+  must(!/EVERY cook \(new Grok Build conversation, restyle, Walk A/.test(stop), label + ": first STOP no PR #11 every-cook-through-Agent");
+}
+
+function forbidAgentVideo(label, text) {
+  must(!/PRIMARY cook path for BOTH stills AND/.test(text), label + ": no Agent PRIMARY for films");
+  must(!/PRIMARY for BOTH stills AND walk\/breath/.test(text), label + ": no Agent PRIMARY walk/breath films");
+  must(!/ALL hall stills \+ Walk A \+ Walk B \+ breaths go through Imagine Agent/.test(text), label + ": no ALL plates through Agent");
+  must(!/ALL hall stills \+ walks \+ breaths go through Imagine Agent/.test(text), label + ": no walks+breaths through Agent");
+  must(!/PRIMARY films = Imagine Agent/.test(text), label + ": no PRIMARY films = Agent");
+  must(!/Walks PRIMARY = Imagine Agent/.test(text), label + ": no Walks PRIMARY = Agent");
+  must(!/Director or human drives Agent in the browser/.test(text), label + ": no director drives Agent for films");
+  must(!/until Build has an Agent tool\/hook/.test(text), label + ": no Agent tool/hook as video path");
+  must(/Do not instruct Agent for walks\/breaths|NEVER for Walk A|Never Agent video|NEVER walks, breaths/.test(text), label + ": forbids Agent for walks/breaths");
+}
+
+function assertSplit(label, text) {
+  forbidAgentVideo(label, text);
+  must(/Imagine Agent/.test(text) && /hall-restyle/.test(text), label + ": Imagine Agent is the hall-restyle tool");
+  must(/SEALED|sealed sill/.test(text), label + ": sealed still restyle");
+  must(/first seal/i.test(text), label + ": first seal");
+  must(/Sealed skip stays/.test(text) || /sealed skip stays/.test(text), label + ": sealed skip stays");
+  must(/banned for walks/i.test(text) && /last_frame/.test(text), label + ": Chat Imagine UI without real first+last banned for walks");
+  must(/Grok Build chat Imagine tools are NOT the same as Imagine Agent/.test(text), label + ": Build chat Imagine ≠ Imagine Agent");
+  must(/must not rely on chat `imagine_\*` tools for hall restyle identity lock|must not rely on chat imagine_\* tools for hall restyle identity lock/.test(text), label + ": Build must not rely on chat imagine_* for identity lock");
+  must(/Imagine Agent is MANDATORY for cross-style hall stills/.test(text), label + ": Imagine Agent MANDATORY for cross-style");
+  must(/REQUIRED.*décor variants/.test(text), label + ": Agent REQUIRED for décor variants");
+  must(/BANNED for restyle/.test(text), label + ": imagineStill BANNED for restyle");
+  must(/One \*\*SEALED\*\* sill still|One sealed sill still → Agent restyles/.test(text), label + ": one sealed sill → Agent restyles");
+  must(!/Preferred path/.test(text), label + ": no Preferred path soften");
+  must(/STYLE stills/.test(text) && /restyl/.test(text), label + ": Agent obligatoire for STYLE stills when restyling");
+  must(/imagine-hooks/.test(text) && /cook-room/.test(text), label + ": video cook = hooks / cook-room");
+  must(/first-frame \+ last-frame|image` \+ `last_frame`|image \+ last_frame/.test(text), label + ": films = first+last");
+  must(/not required or recommended for video|Never Agent video|NEVER.*video/.test(text), label + ": Agent not required for video");
+  must(/Smoke still gates/.test(text), label + ": Smoke still gates");
+  must(/Soft KEEP banned/.test(text), label + ": Soft KEEP banned");
+}
+
+const agentsHead = head("AGENTS.md", 22);
 must(/sill ≠ spawn/.test(agentsHead), "AGENTS.md head: sill ≠ spawn");
 must(/already AT the teal LEFT sill/.test(agentsHead) && /already AT the gold RIGHT sill/.test(agentsHead), "AGENTS.md head: at-A/at-B = AT the sill");
 must(/Spawn = CENTER only/.test(agentsHead), "AGENTS.md head: spawn = center only");
 must(/Mid-hall at-A\/at-B = \*\*FAIL\*\*/.test(agentsHead), "AGENTS.md head: mid-hall FAIL");
 must(/Soft KEEP banned/.test(agentsHead), "AGENTS.md head: Soft KEEP banned");
-must(/sealed at-A = frozen; do not Imagine new at-A pose/.test(agentsHead), "AGENTS.md head: sealed at-A frozen");
+assertAgentStop("AGENTS.md head", agentsHead);
+must(body("AGENTS.md").search(/STOP/) < body("AGENTS.md").search(/sill ≠ spawn/), "AGENTS.md: STOP before sill ≠ spawn");
 
-const rulesHead = head(".cursorrules", 12);
+const rulesHead = head(".cursorrules", 16);
 must(/sill ≠ spawn/.test(rulesHead), ".cursorrules head: sill ≠ spawn");
 must(/already AT the teal LEFT sill/.test(rulesHead) && /already AT the gold RIGHT sill/.test(rulesHead), ".cursorrules head: at-A/at-B = AT the sill");
 must(/Spawn = CENTER only/.test(rulesHead), ".cursorrules head: spawn = center only");
 must(/Mid-hall at-A\/at-B = FAIL/.test(rulesHead), ".cursorrules head: mid-hall FAIL");
 must(/Soft KEEP banned/.test(rulesHead), ".cursorrules head: Soft KEEP banned");
-must(/sealed at-A = frozen; do not Imagine new at-A pose/.test(rulesHead), ".cursorrules head: sealed at-A frozen");
+assertAgentStop(".cursorrules head", rulesHead);
+must(body(".cursorrules").search(/STOP/) < body(".cursorrules").search(/sill ≠ spawn/), ".cursorrules: STOP before sill ≠ spawn");
 
 const grok = body("GROK.md");
 const stop = grok.slice(0, grok.indexOf("### Custom instructions"));
@@ -45,7 +109,23 @@ must(/already AT the teal LEFT sill/.test(stop) && /already AT the gold RIGHT si
 must(/Spawn = CENTER only/.test(stop), "GROK.md STOP: spawn = center only");
 must(/Mid-hall at-A\/at-B = \*\*FAIL\*\*/.test(stop), "GROK.md STOP: mid-hall FAIL");
 must(/Soft KEEP banned/.test(stop), "GROK.md STOP: Soft KEEP banned");
-must(/sealed at-A = frozen; do not Imagine new at-A pose/.test(stop), "GROK.md STOP: sealed at-A frozen");
+assertAgentStop("GROK.md STOP", stop);
+must(stop.search(/STOP/) < stop.search(/sill ≠ spawn/), "GROK.md: STOP before sill ≠ spawn");
+must(/full-white German Shepherd/.test(stop) && /white coat forever/.test(stop), "GROK.md STOP: white coat forever");
+must(/never changes to grey/.test(stop) && /silver/.test(stop) && /black/.test(stop), "GROK.md STOP: base never grey/silver/black");
+must(/SKINS/.test(stop) && /décor-matching skin ON TOP/.test(stop), "GROK.md STOP: décor-matching skin ON TOP");
+must(/ember skin/.test(stop) && /ice skin/.test(stop), "GROK.md STOP: ember skin + ice skin");
+must(/Stylish adaptation/.test(stop) && /Not a different dog/.test(stop), "GROK.md STOP: skin is not a different dog");
+must(/completely new hall décor OK/.test(stop), "GROK.md STOP: completely new hall décor OK");
+must(/Cyan L \+ gold R energy portals may adapt/.test(stop), "GROK.md STOP: portals may adapt");
+must(/Doors may adapt/.test(stop), "GROK.md STOP: Doors may adapt");
+must(/selected, repositioned, resized to sill/.test(stop) && /nickel plate/.test(stop), "GROK.md STOP: Bolt selected/repositioned/resized to sill");
+must(/\.kitchen\/fail/.test(stop), "GROK.md STOP: FAIL save → .kitchen/fail");
+must(/enlarge/.test(stop), "GROK.md STOP: enlarge-only sill step");
+must(/First seal stills/.test(stop) && /imagineStill/.test(stop), "GROK.md STOP: first seal = Imagine Agent; imagineStill CLI");
+must(/without real first\+last/.test(stop) && /no `last_frame`/.test(stop), "GROK.md STOP: Chat Imagine UI without real first+last banned for walks");
+assertSplit("GROK.md STOP", stop);
+must(!/same dog pose/.test(stop), "GROK.md STOP: no frozen same-dog-pose restyle");
 
 const customize = grok.slice(grok.indexOf("```\nBoltverse"), grok.indexOf("```\n\n---"));
 must(/sill ≠ spawn/.test(customize), "GROK.md Customize: sill ≠ spawn");
@@ -53,29 +133,139 @@ must(/already AT the teal LEFT sill/.test(customize) && /already AT the gold RIG
 must(/Spawn = CENTER only/.test(customize), "GROK.md Customize: spawn = center only");
 must(/Mid-hall at-A\/at-B = FAIL/.test(customize), "GROK.md Customize: mid-hall FAIL");
 must(/Soft KEEP banned/.test(customize), "GROK.md Customize: Soft KEEP banned");
+assertAgentStop("GROK.md Customize", customize);
+must(customize.search(/STOP/) < customize.search(/Clone/), "GROK.md Customize: STOP before clone steps");
 must(!/oval doors cannot PASS/.test(customize), "GROK.md Customize: oval doors not banned");
 must(/Oval\|RECT energy portals OK/.test(customize), "GROK.md Customize: oval|RECT energy OK");
 must(/never wood/.test(customize) && /never chrome UI/.test(customize), "GROK.md Customize: never wood / chrome UI");
 must(/Sit \/ face \/ 3\/4 cannot PASS/.test(customize), "GROK.md Customize: sit/face/3/4 still banned");
-must(/sealed at-A = frozen; do not Imagine new at-A pose/.test(customize), "GROK.md Customize: sealed at-A frozen");
+must(/full-white German Shepherd/.test(customize) && /white coat forever/.test(customize), "GROK.md Customize: white coat forever");
+must(/SKINS/.test(customize) && /décor-matching skin ON TOP/.test(customize), "GROK.md Customize: décor-matching skin ON TOP");
+must(/ember skin/.test(customize) && /ice skin/.test(customize), "GROK.md Customize: ember + ice skins");
+must(/completely new hall décor OK/.test(customize), "GROK.md Customize: completely new hall décor OK");
+must(/Cyan L \+ gold R energy portals may adapt/.test(customize), "GROK.md Customize: portals may adapt");
+must(/Doors may adapt/.test(customize), "GROK.md Customize: Doors may adapt");
+must(/Bolt reposition OK/.test(customize), "GROK.md Customize: Bolt reposition OK");
+must(/selected, repositioned, resized to sill/.test(customize) && /nickel plate/.test(customize), "GROK.md Customize: Bolt selected/repositioned/resized");
+must(/First seal stills/.test(customize) && /cook-room imagineStill/.test(customize), "GROK.md Customize: first seal = cook-room");
+must(/without real first\+last has no last_frame/.test(customize), "GROK.md Customize: Chat Imagine UI without real first+last banned for walks");
+assertSplit("GROK.md Customize", customize);
+must(/Walks = start still \+ end still/.test(customize) && /Breaths = same still twice/.test(customize), "GROK.md Customize: walks start+end, breaths twice (hooks)");
+must(/\.kitchen\/fail/.test(customize) || /fail-save/.test(customize), "GROK.md Customize: FAIL → .kitchen/fail");
+must(/enlarge/.test(customize), "GROK.md Customize: enlarge-only second step");
 
 const agents = body("AGENTS.md");
 must(/Oval\|RECT energy portals OK/.test(agents), "AGENTS.md: oval|RECT energy OK");
 must(/Do not FAIL oval shape alone/.test(agents), "AGENTS.md: do not FAIL oval shape alone");
 must(!/RECT→oval/.test(agents), "AGENTS.md: RECT→oval ban removed");
+must(/\.kitchen\/fail/.test(agents), "AGENTS.md: FAIL save → .kitchen/fail");
+must(/enlarge/.test(agents), "AGENTS.md: enlarge-only sill step");
+must(/full-white German Shepherd/.test(agents) && /white coat forever/.test(agents), "AGENTS.md: white coat forever");
+must(/SKINS/.test(agents) && /décor-matching skin ON TOP/.test(agents), "AGENTS.md: décor-matching skin ON TOP");
+must(/completely new hall décor OK/.test(agents), "AGENTS.md: completely new hall décor OK");
+must(/Cyan L \+ gold R energy portals may adapt/.test(agents), "AGENTS.md: portals may adapt");
+must(/Doors may adapt/.test(agents), "AGENTS.md: Doors may adapt");
+must(/Bolt reposition OK/.test(agents), "AGENTS.md: Bolt reposition OK");
+must(/selected, repositioned, resized to sill/.test(agents) && /nickel plate/.test(agents), "AGENTS.md: Bolt selected/repositioned/resized");
+assertSplit("AGENTS.md", agents);
+must(/walks\*\* = start still \+ end still/.test(agents) && /breaths\*\* = same still twice/.test(agents), "AGENTS.md: walks start+end, breaths twice (hooks)");
 
 const rules = body(".cursorrules");
 must(/oval\|RECT energy rifts/.test(rules), ".cursorrules: oval|RECT energy");
 must(/never wood/.test(rules) && /never chrome UI/.test(rules), ".cursorrules: never wood / chrome UI");
 must(!/never oval/.test(rules), ".cursorrules: oval ban removed");
+must(/\.kitchen\/fail/.test(rules), ".cursorrules: FAIL save → .kitchen/fail");
+must(/enlarge/.test(rules), ".cursorrules: enlarge-only sill step");
+must(/full-white German Shepherd/.test(rules) && /white coat forever/.test(rules), ".cursorrules: white coat forever");
+must(/SKINS/.test(rules) && /décor-matching skin ON TOP/.test(rules), ".cursorrules: décor-matching skin ON TOP");
+must(/completely new hall décor OK/.test(rules), ".cursorrules: completely new hall décor OK");
+must(/Cyan L \+ gold R energy portals may adapt/.test(rules), ".cursorrules: portals may adapt");
+must(/Doors may adapt/.test(rules), ".cursorrules: Doors may adapt");
+must(/Bolt reposition OK/.test(rules), ".cursorrules: Bolt reposition OK");
+must(/selected, repositioned, resized to sill/.test(rules) && /nickel plate/.test(rules), ".cursorrules: Bolt selected/repositioned/resized");
+assertSplit(".cursorrules", rules);
+must(/Walks = start\+end stills/.test(rules) && /Breaths = same still twice/.test(rules), ".cursorrules: walks start+end, breaths twice (hooks)");
+
+const cook = body("COOK.md");
+assertSplit("COOK.md", cook);
+must(/walks: start still ≠ arrive still|Walks: start still ≠ arrive still|start still ≠ arrive still/.test(cook) && /same still twice/.test(cook), "COOK.md: walks start+end, breaths twice (hooks)");
+must(/enlarge/.test(cook) && /\.kitchen\/fail/.test(cook), "COOK.md: two-step enlarge + fail-save");
+must(/0\.19\+sit\+face/.test(cook) && /0\.16\+sit/.test(cook), "COOK.md: ember FAIL×2 shrink evidence");
+must(/full-white German Shepherd/.test(cook) && /white coat forever/.test(cook), "COOK.md: white coat forever");
+must(/SKINS/.test(cook) && /décor-matching skin ON TOP/.test(cook), "COOK.md: décor-matching skin ON TOP");
+must(/completely new hall décor OK/.test(cook), "COOK.md: completely new hall décor OK");
+must(/Cyan L \+ gold R energy portals may adapt/.test(cook), "COOK.md: portals may adapt");
+must(/Doors may adapt/.test(cook), "COOK.md: Doors may adapt");
+must(/Bolt reposition OK/.test(cook), "COOK.md: Bolt reposition OK");
+must(/selected, repositioned, resized to sill/.test(cook) && /nickel plate/.test(cook), "COOK.md: Bolt selected/repositioned/resized");
+assertAgentStop("COOK.md", cook);
+
+const cookroom = body("COOKROOM.md");
+assertSplit("COOKROOM.md", cookroom);
+must(/completely new hall décor OK/.test(cookroom), "COOKROOM.md: completely new hall décor OK");
+must(/white coat forever/.test(cookroom), "COOKROOM.md: white coat forever");
+must(/décor-matching skin ON TOP/.test(cookroom), "COOKROOM.md: décor-matching skin ON TOP");
+must(/Doors may adapt/.test(cookroom), "COOKROOM.md: Doors may adapt");
+must(/Bolt reposition OK/.test(cookroom), "COOKROOM.md: Bolt reposition OK");
 
 const doors = body("DOORS.md");
 must(/oval or RECT/.test(doors) && /preferred-ok/.test(doors), "DOORS.md: oval|RECT preferred-ok");
 must(/not\*\* oval-vs-RECT|not oval-vs-RECT/.test(doors), "DOORS.md: door_morph is not oval-vs-RECT");
 must(/never\*\* open wood|never\*\* chrome UI|never.*open wood/.test(doors), "DOORS.md: never wood");
+must(/Doors may adapt/.test(doors), "DOORS.md: Doors may adapt");
+
+const char = body("CHAR.md");
+must(/white coat forever/i.test(char), "CHAR.md: white coat forever");
+must(/SKINS/.test(char) && /ON TOP/.test(char), "CHAR.md: décor SKINS ON TOP of white base");
+must(/ember skin/.test(char) && /ice skin/.test(char), "CHAR.md: ember + ice skins");
+must(/never Agent video/.test(char), "CHAR.md: Agent skins are stills; never Agent video");
 
 const smokeId = body("scripts/smoke-identity.md");
 must(/do \*\*not\*\* FAIL oval shape alone/.test(smokeId), "smoke-identity: oval shape alone is not FAIL");
 must(!/oval \/ blob \/ wood leaf instead of RECT/.test(smokeId), "smoke-identity: oval-as-RECT-FAIL row gone");
+must(/white base forever/.test(smokeId) && /SKINS ON TOP/.test(smokeId), "smoke-identity: white base + skins ON TOP");
+
+must(/KEEP seals/.test(agents) && /SEAL-spawn/.test(agents) && /SEAL-at-a/.test(agents) && /SEAL-at-b/.test(agents), "AGENTS.md: ice-hall KEEP seals");
+must(/until SmiR reseals/.test(agents) && /SKIPS/.test(agents) && /imagineStill/.test(agents), "AGENTS.md: sealed skip imagineStill until reseal");
+must(/KEEP seals/.test(cook) && /SEAL-spawn/.test(cook) && /SEAL-at-a/.test(cook) && /until SmiR reseals/.test(cook), "COOK.md: ice-hall KEEP seals");
+must(/SKIPS/.test(cook) && /imagineStill/.test(cook), "COOK.md: sealed skip imagineStill");
+must(/KEEP seals/.test(stop) && /SEAL-spawn/.test(stop) && /SEAL-at-a/.test(stop) && /until SmiR reseals/.test(stop), "GROK.md STOP: ice-hall KEEP seals");
+must(/KEEP seals/.test(customize) && /SEAL-spawn/.test(customize) && /SEAL-at-a/.test(customize) && /until SmiR reseals/.test(customize), "GROK.md Customize: ice-hall KEEP seals");
+must(/KEEP seals/.test(rules) && /SEAL-spawn/.test(rules) && /SEAL-at-a/.test(rules) && /until SmiR reseals/.test(rules), ".cursorrules: ice-hall KEEP seals");
+must(/KEEP seals/.test(cookroom) && /SEAL-spawn/.test(cookroom) && /SEAL-at-a/.test(cookroom) && /until SmiR reseals/.test(cookroom), "COOKROOM.md: ice-hall KEEP seals");
+
+const biome25 = body("COOK-BIOME-25D.md");
+must(/Imagine-only/.test(biome25) && /2\.5D/.test(biome25), "COOK-BIOME-25D.md: Imagine-only 2.5D");
+must(/9:16/.test(biome25) && /8–12/.test(biome25), "COOK-BIOME-25D.md: 9:16 + 8–12s");
+must(/lock-off/.test(biome25) && /ZERO/.test(biome25), "COOK-BIOME-25D.md: lock-off + ZERO path/Bolt");
+must(/last_frame/.test(biome25) && /imagine-hooks/.test(biome25), "COOK-BIOME-25D.md: first+last hooks");
+must(/groundY/.test(biome25) && /pictureTime/.test(biome25) && /Skating/.test(biome25), "COOK-BIOME-25D.md: Bolt card plant");
+must(/HOLD/.test(biome25) && /neon/.test(biome25), "COOK-BIOME-25D.md: PathGen HOLD, no neon sticker");
+must(/\(t, lane\)/.test(biome25), "COOK-BIOME-25D.md: obstacles time-rail");
+must(/futuristic city/.test(biome25) && /haze/.test(biome25) && /CLEAR/.test(biome25), "COOK-BIOME-25D.md: plate 2 city from haze");
+must(/any style|Any style/.test(biome25), "COOK-BIOME-25D.md: any style décor free");
+must(/bolt-hybrid/.test(biome25) && /play\//.test(biome25), "COOK-BIOME-25D.md: points to bolt-hybrid play/");
+must(/Chat Imagine UI/.test(biome25) && /banned/.test(biome25), "COOK-BIOME-25D.md: chat Imagine banned");
+must(/1\.0–1\.6/.test(biome25) && /1\.3–1\.5/.test(biome25), "COOK-BIOME-25D.md: speed band 1.0–1.6 typical 1.3–1.5");
+must(/optical-flow|ground-parallax/.test(biome25) && /clamp/.test(biome25), "COOK-BIOME-25D.md: auto speed match");
+must(/rate\(t\)/.test(biome25) && /not.*constant per-plate/.test(biome25), "COOK-BIOME-25D.md: rate(t) not a constant");
+must(/0\.25–0\.5|0.25-0.5/.test(biome25) && /smooth/.test(biome25), "COOK-BIOME-25D.md: sample 0.25–0.5s + smooth");
+must(/live/.test(biome25) && /playbackRate/.test(biome25), "COOK-BIOME-25D.md: player updates playbackRate live");
+must(/recook travelling/.test(biome25) && /Never 2/.test(biome25), "COOK-BIOME-25D.md: >1.6 recook, never 2×+");
+must(/Long stretches|long stretch/.test(biome25), "COOK-BIOME-25D.md: long stretch >1.6 recook");
+must(/pictureTime/.test(biome25) && /never speed legs|Never speed legs/.test(biome25), "COOK-BIOME-25D.md: gait follows pictureTime");
+must(/ambient tint|Ambient tint|AMBIENT TINT/.test(biome25) && /light wrap/.test(biome25), "COOK-BIOME-25D.md: ambient tint light wrap");
+must(/white coat forever/.test(biome25) && /grey/.test(biome25), "COOK-BIOME-25D.md: tint is not a grey morph");
+must(/Plate 3|plate 3/.test(biome25) && /Do not implement plate-3|do not implement plate 3|not this cook/.test(biome25), "COOK-BIOME-25D.md: no plate-3 cook now");
+must(/COOK-BIOME-25D\.md/.test(body("COOK.md")), "COOK.md: points at 2.5D recipe");
+must(/COOK-BIOME-25D\.md/.test(body("README.md")), "README.md: points at 2.5D recipe");
+must(/same-speed|Same-speed/.test(body("COOK.md")), "COOK.md: same-speed pointer");
+
+const hooks = body("scripts/imagine-hooks.mjs");
+must(/Not Imagine Agent/.test(hooks) && /last_frame/.test(hooks), "imagine-hooks: films = first+last, not Agent");
+
+const cookRoomJs = body("scripts/cook-room.mjs");
+must(/never Imagine Agent video/.test(cookRoomJs), "cook-room.mjs: never Imagine Agent video");
+must(/BANNED for restyle/.test(cookRoomJs), "cook-room.mjs: imagineStill BANNED for restyle");
 
 console.log("COLD-START PASS");

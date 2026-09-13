@@ -3,14 +3,20 @@
 // at-A prefers lock/example-at-a.jpg (SmiR lock teacher). at-B prefers hung moss PASS.
 // copy PLACE+POSE from example; FORCE taille 0.35–0.40; FORCE STANDING; never shrink to 0.18.
 // IGNORE tiny ~0.18 crop like bolt-back 0.53. Never send example-at-*-tiny.
-import { spawnSync } from "node:child_process";
+import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { spawnSync } from "node:child_process";
 import {
   ATA_FORCE_STANDING,
   ATA_FORCE_TAILLE,
   ATA_LOCK_COPY,
+  ENLARGE_SILL_COPY,
+  EMPTY_PLATE,
   HALL_LAW,
+  emptyPlateClipLine,
+  emptyPlateStillLine,
+  enlargeStillLine,
   sillStillLine,
   stillRefLine,
   stillRefOrder,
@@ -18,7 +24,22 @@ import {
   spawnStillLine,
   walkClipLine,
 } from "./imagine-hooks.mjs";
-import { DEST_REL, DROP_RELS, SEAL_REL, installLockAta, lockAtaStatus, sealAtaStatus } from "./install-lock-ata.mjs";
+import {
+  DEST_REL,
+  DROP_RELS,
+  ICE_A_REL,
+  ICE_B_REL,
+  ICE_SPAWN_REL,
+  SEAL_A_REL,
+  SEAL_B_REL,
+  SEAL_REL,
+  SEAL_SPAWN_REL,
+  installLockAta,
+  lockAtaStatus,
+  sealAtaStatus,
+  sealAtbStatus,
+  sealSpawnStatus,
+} from "./install-lock-ata.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -55,10 +76,10 @@ for (const [name, p] of [
   must(/Do not leave him at center spawn/.test(p) && /Do not grow him in place/.test(p), name + " edit is a move, not a grow");
 }
 
-must(teacherA === "lock/example-at-a.jpg", "atA prefers SmiR lock/example-at-a as side ref");
-must(teacherB === "packs/moss/stills/at-b.jpg", "prefer hung moss PASS at-B as side ref");
-must(stillRefOrder("atB", true, root).join(",") === "spawn,bolt-back.jpg,packs/moss/stills/at-b.jpg", "atB+spawn edits spawn then moss PASS sill");
-must(stillRefOrder("atA", true, root).join(",") === "spawn,bolt-back.jpg,lock/example-at-a.jpg", "atA+spawn edits spawn then lock/example-at-a");
+must(teacherA === "lock/SEAL-at-a.jpg", "atA prefers ice KEEP lock/SEAL-at-a as side ref");
+must(teacherB === "lock/SEAL-at-b.jpg", "atB prefers ice KEEP lock/SEAL-at-b as side ref");
+must(stillRefOrder("atB", true, root).join(",") === "spawn,bolt-back.jpg,lock/SEAL-at-b.jpg", "atB+spawn edits spawn then SEAL-at-b");
+must(stillRefOrder("atA", true, root).join(",") === "spawn,bolt-back.jpg,lock/SEAL-at-a.jpg", "atA+spawn edits spawn then SEAL-at-a");
 must(stillRefOrder("atB", true).join(",") === "spawn,bolt-back.jpg,lock/example-at-b.jpg", "atB lock fallback is swapped example-at-b");
 must(stillRefOrder("atA", true).join(",") === "spawn,bolt-back.jpg,lock/example-at-a.jpg", "atA lock fallback is lock/example-at-a");
 must(atA.includes(ATA_LOCK_COPY), "atA prompt: copy PLACE+POSE from example; FORCE taille 0.35–0.40; FORCE STANDING; never shrink to 0.18");
@@ -71,16 +92,29 @@ must(/ignore example décor/.test(atA) && /hall materials from spawn\/catalog on
 must(/standing BACK toward teal L/.test(atA), "atA names SmiR teacher pose");
 must(atB.includes(ATA_FORCE_TAILLE) && atB.includes(ATA_FORCE_STANDING), "atB also FORCE taille + standing");
 must(DEST_REL === "lock/example-at-a.jpg", "install dest is lock/example-at-a.jpg");
-must(SEAL_REL === "lock/SEAL-at-a.jpg", "seal dest is lock/SEAL-at-a.jpg");
-must(DROP_RELS[0] === "hall-stills/smir-ata-teacher.jpeg", "drop slot hall-stills/smir-ata-teacher.jpeg");
+must(SEAL_REL === "lock/SEAL-at-a.jpg" && SEAL_A_REL === "lock/SEAL-at-a.jpg", "seal dest is lock/SEAL-at-a.jpg");
+must(SEAL_B_REL === "lock/SEAL-at-b.jpg", "seal dest is lock/SEAL-at-b.jpg");
+must(SEAL_SPAWN_REL === "lock/SEAL-spawn.jpg", "seal dest is lock/SEAL-spawn.jpg");
+must(ICE_A_REL === "hall-stills/seal/at-a-ice.jpg", "ice KEEP drop hall-stills/seal/at-a-ice.jpg");
+must(ICE_B_REL === "hall-stills/seal/at-b-ice.jpg", "ice KEEP drop hall-stills/seal/at-b-ice.jpg");
+must(ICE_SPAWN_REL === "hall-stills/seal/spawn-ice.jpg", "ice KEEP drop hall-stills/seal/spawn-ice.jpg");
+must(DROP_RELS[0] === ICE_A_REL, "first drop slot is ice KEEP at-a");
 must(/COOK\/LOCK/.test(lockAtaStatus(root).note), "COOK/LOCK note present");
-must(lockAtaStatus(root).hasDrop === true, "owner drop hall-stills/smir-ata-teacher.jpeg present");
-must(sealAtaStatus(root).hasSealFile === true, "owner seal file lock/SEAL-at-a.jpg present");
-must(sealAtaStatus(root, {}).sealed === true, "SEAL file freezes at-A without env");
+must(lockAtaStatus(root).hasDrop === true, "owner drop present (ice KEEP or smir-ata-teacher)");
+must(sealAtaStatus(root, {}).sealed === existsSync(join(root, SEAL_A_REL)), "SEAL file (not env) gates at-A");
 must(sealAtaStatus(root, { SEAL_ATA: "1" }).sealed === true, "SEAL_ATA=1 seals at-A");
-must(sealAtaStatus(root).srcRel === SEAL_REL, "seal copy source is lock/SEAL-at-a.jpg");
-must(sealAtaStatus("/tmp/boltverse-no-seal-ata", {}).sealed === false, "no file + no env → unsealed");
-must(/frozen/.test(sealAtaStatus(root).note), "seal note says frozen");
+must(sealAtbStatus(root, { SEAL_ATB: "1" }).sealed === true, "SEAL_ATB=1 seals at-B");
+must(sealAtaStatus(root, { SEAL: "1" }).sealed === true && sealAtbStatus(root, { SEAL: "1" }).sealed === true, "SEAL=1 seals both");
+must(sealSpawnStatus(root, {}).sealed === existsSync(join(root, SEAL_SPAWN_REL)), "SEAL file (not env) gates spawn");
+must(sealSpawnStatus(root, { SEAL_SPAWN: "1" }).sealed === true, "SEAL_SPAWN=1 seals spawn");
+must(sealSpawnStatus(root, { SEAL: "1" }).sealed === true, "SEAL=1 seals spawn");
+must(sealAtaStatus("/tmp/boltverse-no-seal-ata", {}).sealed === false, "no file + no env → unsealed at-A");
+must(sealAtbStatus("/tmp/boltverse-no-seal-atb", {}).sealed === false, "no file + no env → unsealed at-B");
+must(sealSpawnStatus("/tmp/boltverse-no-seal-spawn", {}).sealed === false, "no file + no env → unsealed spawn");
+must(/frozen/.test(sealAtaStatus(root, { SEAL_ATA: "1" }).note), "seal note says frozen");
+must(/Soft KEEP banned/.test(sealAtaStatus(root, { SEAL_ATA: "1" }).note), "seal note: Soft KEEP banned");
+must(/frozen/.test(sealSpawnStatus(root, { SEAL_SPAWN: "1" }).note), "spawn seal note says frozen");
+must(/Soft KEEP banned/.test(sealSpawnStatus(root, { SEAL_SPAWN: "1" }).note), "spawn seal note: Soft KEEP banned");
 try {
   installLockAta(root, join(root, "lock/example-at-a-tiny.jpg"));
   must(false, "tiny install must refuse");
@@ -90,6 +124,7 @@ try {
 must(!String(stillRefOrder("atA", true, root)).includes("tiny"), "live atA does not send archived tiny");
 must(!String(stillRefOrder("atB", true, root)).includes("tiny"), "live atB does not send archived tiny");
 must(stillRefOrder("spawn", false).join(",") === "bolt-back.jpg,example-spawn.jpg", "spawn ref order unchanged");
+must(stillRefOrder("spawn", false, root).join(",") === "bolt-back.jpg,lock/SEAL-spawn.jpg", "spawn prefers ice KEEP lock/SEAL-spawn");
 must(stillRefLine("spawn", true) === "", "spawn has no sill ref lecture");
 
 function energyOk(p, name) {
@@ -110,9 +145,54 @@ energyOk(atB, "atB");
 must(/Do not FAIL oval shape/.test(atA) && /Do not FAIL oval shape/.test(atB), "sill refs: do not FAIL oval shape");
 must(/preferred-ok/.test(HALL_LAW) && /preferred-ok/.test(spawnStillLine()), "oval preferred-ok");
 
-const dry = spawnSync("node", [join(root, "scripts/cook-room.mjs"), "moss", "--dry-run"], { encoding: "utf8" });
-must(dry.status === 0, "cook-room moss --dry-run exits 0");
-must(/SEALED at-A = frozen; do not Imagine new at-A pose/.test(dry.stdout || ""), "dry-run prints sealed at-A one-liner");
+const enlargeA = enlargeStillLine("A");
+const enlargeB = enlargeStillLine("B");
+must(enlargeA.includes(ENLARGE_SILL_COPY), "enlarge A uses ENLARGE_SILL_COPY");
+must(/ENLARGE ONLY/.test(enlargeA) && /ENLARGE ONLY/.test(enlargeB), "enlarge: ENLARGE ONLY");
+must(/0\.35–0\.40|0\.35-0\.40/.test(enlargeA), "enlarge A taille 0.35–0.40");
+must(/STANDING/.test(enlargeA) && /NEVER sit/.test(enlargeA), "enlarge A FORCE standing");
+must(/0\.16/.test(enlargeA) && /0\.19/.test(enlargeA), "enlarge names ember FAIL 0.16/0.19");
+must(/same camera|Same camera/.test(enlargeA), "enlarge same camera/hall");
+must(!/copy PLACE\+POSE from example/.test(enlargeA), "enlarge does not copy teacher PLACE+POSE");
+must(stillRefOrder("atA", true, root, { enlarge: true }).join(",") === "fail,bolt-back.jpg,spawn", "enlarge refs: FAIL jpg first, no teacher");
+must(!String(stillRefOrder("atA", true, root, { enlarge: true })).includes("example-at-a"), "enlarge does not send lock teacher");
+must(stillRefOrder("atA", true, root).join(",") === "spawn,bolt-back.jpg,lock/SEAL-at-a.jpg", "fresh atA refs use SEAL KEEP");
+energyOk(enlargeA, "enlargeA");
+energyOk(enlargeB, "enlargeB");
+
+const dry = spawnSync("node", [join(root, "scripts/cook-room.mjs"), "moss", "--dry-run"], {
+  encoding: "utf8",
+  env: { ...process.env, SEAL: "1", SEAL_SPAWN: "1", SEAL_ATA: "1", SEAL_ATB: "1" },
+});
+must(/ZERO dogs/.test(EMPTY_PLATE) && /ZERO luminous floor paths/.test(EMPTY_PLATE), "EMPTY_PLATE: ZERO dog + ZERO path");
+must(/KEEP plate-1/.test(EMPTY_PLATE) && /2x smash/.test(EMPTY_PLATE), "EMPTY_PLATE: SAME SPEED as plate-1 KEEP");
+must(/9:16/.test(EMPTY_PLATE) && /Locked-off/.test(EMPTY_PLATE), "EMPTY_PLATE: 9:16 lock-off");
+must(/CLEAR empty center/.test(EMPTY_PLATE), "EMPTY_PLATE: CLEAR center");
+must(!/German Shepherd, ZERO black/.test(EMPTY_PLATE), "EMPTY_PLATE: does not bake hall Bolt law");
+const empty1 = emptyPlateClipLine("asteroid haze", "1");
+const empty2 = emptyPlateClipLine("asteroid haze", "2");
+must(/last_frame/.test(empty1) && /ZERO dogs/.test(empty1), "empty plate 1 clip: last_frame + ZERO dogs");
+must(/futuristic city/.test(empty2) && /haze/.test(empty2) && /CLEAR empty center/.test(empty2), "empty plate 2 clip: city from haze + CLEAR center");
+must(/do not cut to a new establishing shot/.test(empty2), "empty plate 2 clip: stitch, no new establish");
+must(/ZERO dogs/.test(emptyPlateStillLine("ember", "1")), "empty still: ZERO dogs");
+const dry25 = spawnSync("node", [join(root, "scripts/cook-biome-25d.mjs"), "asteroid", "--dry-run"], {
+  encoding: "utf8",
+});
+must(dry25.status === 0, "cook-biome-25d asteroid --dry-run exits 0");
+must(/NOT cook-room/.test(dry25.stdout || "") && /NOT cook-biome/.test(dry25.stdout || ""), "25d dry-run: not hall / not living-film lane");
+must(/ZERO path/.test(dry25.stdout || "") && /ZERO Bolt/.test(dry25.stdout || ""), "25d dry-run: ZERO path + ZERO Bolt");
+must(/last_frame/.test(dry25.stdout || "") && /city from haze/.test(dry25.stdout || ""), "25d dry-run: last_frame + plate 2 city");
+must(/playbackRate corrector 1\.0–1\.6/.test(dry25.stdout || "") && /1\.3–1\.5/.test(dry25.stdout || ""), "25d dry-run: playbackRate 1.0–1.6 / typical 1.3–1.5");
+must(/SAME SPEED/.test(dry25.stdout || "") && /recook travelling/.test(dry25.stdout || ""), "25d dry-run: SAME SPEED + recook >1.6");
+must(/rate\(t\) live/.test(dry25.stdout || "") && /long stretch/.test(dry25.stdout || ""), "25d dry-run: rate(t) live, not a constant");
+must(/plate 3\+/.test(dry25.stdout || "") && /not this cook/.test(dry25.stdout || ""), "25d dry-run: no plate-3 cook");
+must(/light wrap/.test(dry25.stdout || "") && /PathGen HOLD/.test(dry25.stdout || ""), "25d dry-run: tint wrap + PathGen HOLD");
+
+must(dry.status === 0, "cook-room moss --dry-run SEAL spawn+at-A+at-B exits 0");
+must(/SEALED spawn\/at-A\/at-B = frozen KEEP/.test(dry.stdout || ""), "dry-run prints sealed spawn/at-A/at-B KEEP one-liner");
+must(/no imagineStill/.test(dry.stdout || ""), "dry-run sealed skip names no imagineStill");
+must(!/^cook stills\/spawn\.jpg/m.test(dry.stdout || ""), "dry-run does not Imagine spawn when sealed or hung PASS");
 must(!/^cook stills\/at-a\.jpg/m.test(dry.stdout || ""), "dry-run does not Imagine at-A when sealed or hung PASS");
+must(!/^cook stills\/at-b\.jpg/m.test(dry.stdout || ""), "dry-run does not Imagine at-B when sealed or hung PASS");
 
 console.log("IMAGINE-HOOKS PASS");

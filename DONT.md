@@ -52,7 +52,7 @@ Off `BiomeId` / off aliases → picker or refuse. New row = stills + stock + nei
 
 Looks like the tweet (first + last). Chat tools have **no `last_frame`**. Chat stills skip the edits lock.
 
-Hall stills + films = `node scripts/cook-room.mjs <slot>` → `scripts/imagine-hooks.mjs`.  
+STYLE stills / restyle = Imagine Agent. Walks / breaths / films = `node scripts/cook-room.mjs <slot>` → `scripts/imagine-hooks.mjs` (`image` + `last_frame`). Never Imagine Agent video.  
 Walks = `POST /v1/videos/generations` with `last_frame`. Chat refs / chat stills = illegal for hall floor-1.
 
 Cannot run node / no `XAI_API_KEY` for a live plate → **refuse**, stock. That is not permission to chat-Imagine.
