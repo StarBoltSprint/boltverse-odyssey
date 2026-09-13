@@ -234,6 +234,21 @@ must(/KEEP seals/.test(customize) && /SEAL-spawn/.test(customize) && /SEAL-at-a/
 must(/KEEP seals/.test(rules) && /SEAL-spawn/.test(rules) && /SEAL-at-a/.test(rules) && /until SmiR reseals/.test(rules), ".cursorrules: ice-hall KEEP seals");
 must(/KEEP seals/.test(cookroom) && /SEAL-spawn/.test(cookroom) && /SEAL-at-a/.test(cookroom) && /until SmiR reseals/.test(cookroom), "COOKROOM.md: ice-hall KEEP seals");
 
+const biome25 = body("COOK-BIOME-25D.md");
+must(/Imagine-only/.test(biome25) && /2\.5D/.test(biome25), "COOK-BIOME-25D.md: Imagine-only 2.5D");
+must(/9:16/.test(biome25) && /8–12/.test(biome25), "COOK-BIOME-25D.md: 9:16 + 8–12s");
+must(/lock-off/.test(biome25) && /ZERO/.test(biome25), "COOK-BIOME-25D.md: lock-off + ZERO path/Bolt");
+must(/last_frame/.test(biome25) && /imagine-hooks/.test(biome25), "COOK-BIOME-25D.md: first+last hooks");
+must(/groundY/.test(biome25) && /pictureTime/.test(biome25) && /Skating/.test(biome25), "COOK-BIOME-25D.md: Bolt card plant");
+must(/HOLD/.test(biome25) && /neon/.test(biome25), "COOK-BIOME-25D.md: PathGen HOLD, no neon sticker");
+must(/\(t, lane\)/.test(biome25), "COOK-BIOME-25D.md: obstacles time-rail");
+must(/futuristic city/.test(biome25) && /haze/.test(biome25) && /CLEAR/.test(biome25), "COOK-BIOME-25D.md: plate 2 city from haze");
+must(/any style|Any style/.test(biome25), "COOK-BIOME-25D.md: any style décor free");
+must(/bolt-hybrid/.test(biome25) && /play\//.test(biome25), "COOK-BIOME-25D.md: points to bolt-hybrid play/");
+must(/Chat Imagine UI/.test(biome25) && /banned/.test(biome25), "COOK-BIOME-25D.md: chat Imagine banned");
+must(/COOK-BIOME-25D\.md/.test(body("COOK.md")), "COOK.md: points at 2.5D recipe");
+must(/COOK-BIOME-25D\.md/.test(body("README.md")), "README.md: points at 2.5D recipe");
+
 const hooks = body("scripts/imagine-hooks.mjs");
 must(/Not Imagine Agent/.test(hooks) && /last_frame/.test(hooks), "imagine-hooks: films = first+last, not Agent");
 
