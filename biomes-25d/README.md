@@ -4,4 +4,7 @@ Cook: [COOK-BIOME-25D.md](../COOK-BIOME-25D.md).
 `node scripts/cook-biome-25d.mjs <style> --dry-run`  
 Speed: `node scripts/biome-25d-speed.mjs biomes-25d/<style>` → `playlist.json` (`rateCurve`, live `rate(t)`)
 
-Not `packs/`. Not hall `/r/<slot>`. Drop films + playlist into bolt-hybrid `play/public/biomes/<style>/`.
+**SPEED REF** (Imagine-side): [COOK-BIOME-25D.md — SPEED REF — plate-1 KEEP Imagine prompt](../COOK-BIOME-25D.md#speed-ref--plate-1-keep-imagine-prompt).  
+Binary KEEP = `plate-empty-keep.mp4` (optical-flow). Prompt KEEP = that verbatim recook (Much FASTER / world rushes hard). `rate(t)` 1.0–1.6 is the post-cook filet only.
+
+Not `packs/`. Not hall `/r/<slot>`. Hall `catalog/asteroid.md` is citadel paint — not this sprint. Drop films + playlist into bolt-hybrid `play/public/biomes/<style>/`.

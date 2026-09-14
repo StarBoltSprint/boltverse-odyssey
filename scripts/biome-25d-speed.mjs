@@ -7,6 +7,8 @@
  *   node scripts/biome-25d-speed.mjs --selftest
  *
  * NOT a constant per-plate playbackRate.
+ * Imagine-side target = COOK-BIOME-25D.md SPEED REF (plate-1 KEEP prompt + plate-empty-keep.mp4).
+ * This file is the post-cook filet only — do not invent speed here.
  * Imagine can slow/speed mid-clip. Match plate-1 KEEP with a smoothed rate(t):
  *   sample ground-parallax every 0.25–0.5s on plate1 (ref) and plate N (meas)
  *   rate(t) = clamp(ref/meas, 1.0, 1.6) then smooth

@@ -19,15 +19,34 @@ const LAW = [
 export const HALL_LAW = LAW;
 
 /** Empty 2.5D biome plate — ZERO Bolt, ZERO path. See COOK-BIOME-25D.md.
- *  Bake travelling here. SAME SPEED as plate-1 KEEP via live rate(t), not a constant playbackRate. */
+ *  SPEED REF (Imagine-side plate-1 KEEP): COOK-BIOME-25D.md § SPEED REF — plate-1 KEEP Imagine prompt.
+ *  Binary KEEP = plate-empty-keep.mp4. Prompt KEEP = that verbatim recook (Much FASTER / world rushes hard).
+ *  Bake travelling here. SAME SPEED as plate-1 KEEP via live rate(t), not a constant playbackRate.
+ *  playbackRate ~1.0–1.2 is the cook-time play lock; rate(t) 1.0–1.6 is the post-cook filet. */
+export const SPEED_REF_PROMPT = [
+  "RECOOK one plate ONLY. Much FASTER. Replace current empty plate.",
+  "",
+  "HARD:",
+  "- 9:16, 8–12s, lock-off",
+  "- Sprint travelling baked in cook — world rushes hard (last cook = crawl FAIL)",
+  "- ZERO path/lightning on ground",
+  "- ZERO dog/Bolt",
+  "- Canyon/Mars OK, CLEAR center",
+  "- playbackRate ~1.0–1.2 only",
+  "- Wire play to THIS plate only",
+  "",
+  "No PathGen, no obstacles this pass. Ship mp4 + play URL.",
+].join("\n");
+
 const EMPTY_PLATE_LAW = [
   "Photoreal vertical 9:16, 720x1280.",
-  "Locked-off camera. Sprint travelling is ALREADY in the clip (the world rushes toward camera).",
-  "Same felt sprint speed as the KEEP plate-1 reference. NEVER slow down. NEVER a still. NEVER a 2x smash.",
+  "Locked-off camera. MAX forward travelling — world rushes HARD at the camera. Sprint feel baked IN the clip (not slow pan/zoom on a still).",
+  "Much FASTER than a crawl. Speed must come from the cook; playbackRate ~1.0–1.2 only.",
+  "Same felt sprint speed as the KEEP plate-1 reference (SPEED REF / plate-empty-keep.mp4). NEVER slow down. NEVER a still. NEVER a 2x smash.",
   "NEVER pan, tilt, zoom, or dolly.",
   "ZERO dogs. ZERO German Shepherds. ZERO animals. ZERO people.",
-  "ZERO luminous floor paths. ZERO Y-fork. ZERO portals. ZERO HUD. ZERO text.",
-  "CLEAR empty center corridor — the playable lane stays empty.",
+  "ZERO luminous floor paths. ZERO lightning on ground. ZERO Y-fork. ZERO portals. ZERO HUD. ZERO text.",
+  "CLEAR empty center corridor — the playable lane stays empty. Canyon/Mars OK.",
 ].join(" ");
 
 export const EMPTY_PLATE = EMPTY_PLATE_LAW;
@@ -188,11 +207,11 @@ export function emptyPlateClipLine(paint, plate) {
   const city =
     p === "2" || p === 2
       ? [
-          "Same sprint speed as the first frame. World ADVANCED from that last frame — do not cut to a new establishing shot.",
+          "Match KEEP plate-1 SPEED REF travelling (world rushes hard). Same sprint speed as the first frame. World ADVANCED from that last frame — do not cut to a new establishing shot.",
           "A futuristic city begins to emerge from haze in the distance: distant domes, spires, neon.",
           "Keep a CLEAR empty center corridor. The city stays far. NEVER fill the playable lane.",
         ].join(" ")
-      : "Same sprint travelling the whole clip as the KEEP plate-1 reference. World ADVANCED toward the last_frame. NEVER a still. NEVER a slow-down. NEVER a 2x smash.";
+      : "Same sprint travelling the whole clip as the KEEP plate-1 SPEED REF (world rushes hard / Much FASTER). World ADVANCED toward the last_frame. NEVER a still. NEVER a slow-down. NEVER a crawl. NEVER a 2x smash.";
   return [
     EMPTY_PLATE_LAW,
     String(paint || "").trim(),

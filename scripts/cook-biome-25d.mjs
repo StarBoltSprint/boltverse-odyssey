@@ -7,6 +7,9 @@
  * Style = any décor word. Rails = COOK-BIOME-25D.md (9:16, 8–12s, lock-off,
  * travel baked, ZERO path, ZERO Bolt, last(n) = first(n+1), SAME SPEED 1..N,
  * live rate(t) corrector 1.0–1.6 / typical 1.3–1.5, never 2×+; not a constant).
+ * SPEED REF = COOK-BIOME-25D.md § SPEED REF — plate-1 KEEP Imagine prompt
+ * (verbatim recook: Much FASTER / world rushes hard). Binary KEEP = plate-empty-keep.mp4.
+ * Imagine-side target; this script's rate(t) remains the post-cook filet.
  * Plate 3+ L/M/R later — do not cook plate 3 here.
  * Hall stays separate. Do not Hang on boltverse-odyssey.grok.me.
  */
@@ -73,6 +76,7 @@ function queue() {
   return [
     "cook-biome-25d " + id + " — NOT cook-room, NOT cook-biome (no Bolt in plate)",
     "rails 9:16 · " + SECONDS + "s · lock-off · travel baked · ZERO path · ZERO Bolt · SAME SPEED 1..N",
+    "SPEED REF plate-1 KEEP — Much FASTER / world rushes hard — COOK-BIOME-25D.md (Imagine target; plate-empty-keep.mp4 binary)",
     "rate(t) live — playbackRate corrector 1.0–1.6 (typical 1.3–1.5) — never 2×+; long stretch >1.6 recook travelling",
     "Law 0 plate 1 first+last distinct (emptyPlate imagineClip last_frame)",
     "CHAIN last(1) file IS first(2) — extract last frame, do not recut",
