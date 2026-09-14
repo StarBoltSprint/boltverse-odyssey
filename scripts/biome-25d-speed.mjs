@@ -950,8 +950,16 @@ function selftest() {
   const health = tintHealth(tintSamples);
   must(health.ok && Math.abs(health.hz - 10) < 1.5, "tint health ~10Hz identity OK");
   must(health.pulled === 0 && health.minLuma >= TINT_LUMA_FLOOR, "tint health does not grey the coat");
-  const dark = tintHealth([{ t: 0, r: 10, g: 10, b: 10 }, { t: 0.1, r: 8, g: 8, b: 8 }]);
-  must(dark.pulled >= 1 && dark.minLuma >= TINT_LUMA_FLOOR, "dark haze → identityGuard pull, luma stays high");
+  const pulledTint = applyLiveTint({ r: 250, g: 250, b: 250 }, { r: 0, g: 0, b: 0 }, 0.45);
+  must(pulledTint.pulled && luma(pulledTint) >= TINT_LUMA_FLOOR, "strong dark wrap → identityGuard pull, luma stays high");
+  const darkHealth = tintHealth(
+    [
+      { t: 0, r: 0, g: 0, b: 0 },
+      { t: 0.1, r: 0, g: 0, b: 0 },
+    ],
+    { r: 200, g: 200, b: 200 },
+  );
+  must(darkHealth.pulled >= 1 && darkHealth.minLuma >= TINT_LUMA_FLOOR, "dark haze on dimmer card → pull, luma stays high");
   report.plates[1].tint = health;
   const withTint = formatAnalyze(report);
   must(/tint OK 10Hz/.test(withTint) && /luma=/.test(withTint), "analyze print tint sampling health");
