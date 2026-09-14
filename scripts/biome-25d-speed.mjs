@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
  * 2.5D biome post-cook: SAME SPEED match + ambient-tint helpers.
- * Law: COOK-BIOME-25D.md. Not hall. Not COOKLANE. PathGen HOLD.
+ * Law: COOK-BIOME-25D.md + FILM-STACK.md. Not hall. Not COOKLANE.
+ * PathGen = Imagine ribbon (not a plate bake, not neon CSS). Light bus wraps all video layers.
  *
  *   node scripts/biome-25d-speed.mjs biomes-25d/<style>
  *   node scripts/biome-25d-speed.mjs --analyze biomes-25d/<style>
@@ -20,7 +21,7 @@
  *   rate = rateAt(plate.rateCurve, pictureTime)   // curve sampled every 0.1s
  *   video.playbackRate = rate                     // LIVE ≥10Hz from pictureTime
  *   stride(pictureTime, rate)                     // gait follows both — never legs alone
- *   every ~0.1s (~10Hz): sample lower-third ground+haze → softMultiply card (light wrap)
+ *   every ~0.1s (~10Hz): sample plate under each video layer plant/bbox → light bus (softMultiply, light wrap)
  *   identityGuard: luma stays high — NOT grey/black morph, NOT a new dog
  *
  * Expected paths when Build plates land (asteroid typical first style):

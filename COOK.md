@@ -304,4 +304,4 @@ Then read [ENTER.md](ENTER.md) and [HANG.md](HANG.md). Short version:
 
 ## Other job — Imagine-only 2.5D biome
 
-Empty plates + playable Bolt **card**. Same-speed + ambient tint. Not this page. Not `cook-biome.mjs` (that bakes Bolt into the reel). [COOK-BIOME-25D.md](COOK-BIOME-25D.md).
+Empty plates + playable Bolt **gallop video** (not the old still card). Same-speed + light bus. Not this page. Not `cook-biome.mjs` (that bakes Bolt into the reel). [FILM-STACK.md](FILM-STACK.md) [COOK-BIOME-25D.md](COOK-BIOME-25D.md).
