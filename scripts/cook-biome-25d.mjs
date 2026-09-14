@@ -77,12 +77,12 @@ function queue() {
     "cook-biome-25d " + id + " — NOT cook-room, NOT cook-biome (no Bolt in plate)",
     "rails 9:16 · " + SECONDS + "s · lock-off · travel baked · ZERO path · ZERO Bolt · SAME SPEED 1..N",
     "SPEED REF plate-1 KEEP — Much FASTER / world rushes hard — COOK-BIOME-25D.md (Imagine target; plate-empty-keep.mp4 binary)",
-    "rate(t) live — playbackRate corrector 1.0–1.6 (typical 1.3–1.5) — never 2×+; long stretch >1.6 recook travelling",
+    "rate(t) live SAMPLE_DT=0.1 — playbackRate corrector 1.0–1.6 (typical 1.3–1.5) — never 2×+; long stretch >1.6 recook travelling",
     "Law 0 plate 1 first+last distinct (emptyPlate imagineClip last_frame)",
     "CHAIN last(1) file IS first(2) — extract last frame, do not recut",
     "plate 2 = same speed + city from haze + CLEAR center",
     "plate 3+ L/M/R later — not this cook",
-    "auto tint ~4×/s light wrap (white coat forever). PathGen HOLD (no neon CSS).",
+    "auto tint ~10×/s (every 0.1s) light wrap (white coat forever). PathGen HOLD (no neon CSS).",
     "drop films + playlist.json → bolt-hybrid play/public/biomes/" + id + "/  (not packs/)",
   ];
 }

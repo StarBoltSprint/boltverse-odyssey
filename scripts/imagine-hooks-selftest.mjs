@@ -196,6 +196,7 @@ must(/rate\(t\) live/.test(dry25.stdout || "") && /long stretch/.test(dry25.stdo
 must(/SPEED REF/.test(dry25.stdout || "") && /Much FASTER/.test(dry25.stdout || "") && /world rushes hard/.test(dry25.stdout || ""), "25d dry-run: SPEED REF plate-1 KEEP");
 must(/plate 3\+/.test(dry25.stdout || "") && /not this cook/.test(dry25.stdout || ""), "25d dry-run: no plate-3 cook");
 must(/light wrap/.test(dry25.stdout || "") && /PathGen HOLD/.test(dry25.stdout || ""), "25d dry-run: tint wrap + PathGen HOLD");
+must(/10×\/s|every 0\.1s/.test(dry25.stdout || ""), "25d dry-run: tint ~10Hz / 0.1s");
 
 must(dry.status === 0, "cook-room moss --dry-run SEAL spawn+at-A+at-B exits 0");
 must(/SEALED spawn\/at-A\/at-B = frozen KEEP/.test(dry.stdout || ""), "dry-run prints sealed spawn/at-A/at-B KEEP one-liner");
