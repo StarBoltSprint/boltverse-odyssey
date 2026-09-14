@@ -519,7 +519,7 @@ export function formatAnalyze(report) {
   if (!report) return "ANALYZE FAIL no report";
   if (report.missing) {
     lines.push("ANALYZE no plates yet — asteroid KEEP + later plates not in-repo");
-    lines.push("SAMPLE_DT=" + SAMPLE_DT + " RATE " + RATE_MIN + "–" + RATE_MAX);
+    lines.push("SAMPLE_DT=" + SAMPLE_DT + " RATE " + RATE_MIN.toFixed(1) + "–" + RATE_MAX.toFixed(1));
     lines.push("expected ref:    " + report.expected.keep);
     lines.push("expected plates: " + report.expected.plates.join(" "));
     return lines.join("\n");
@@ -533,9 +533,9 @@ export function formatAnalyze(report) {
       " SAMPLE_DT=" +
       report.sampleDt +
       " RATE " +
-      report.rateMin +
+      Number(report.rateMin).toFixed(1) +
       "–" +
-      report.rateMax +
+      Number(report.rateMax).toFixed(1) +
       " live≥" +
       LIVE_RATE_HZ_MIN +
       "Hz",
@@ -722,6 +722,7 @@ function selftest() {
   };
   const missTxt = formatAnalyze(missing);
   must(/plate-empty-keep\.mp4/.test(missTxt) && /plate-4\.mp4/.test(missTxt), "analyze notes expected KEEP + P1–P4 paths");
+  must(/RATE 1\.0–1\.6/.test(missTxt) && /RATE 1\.0–1\.6/.test(printed), "analyze print RATE 1.0–1.6");
 
   const wrapped = softMultiply({ r: 250, g: 250, b: 250 }, { r: 80, g: 140, b: 200 }, 0.3);
   must(luma(wrapped) > 150, "softMultiply keeps a bright coat");
