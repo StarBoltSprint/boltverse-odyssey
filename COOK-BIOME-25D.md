@@ -164,19 +164,19 @@ Imagine travel can **slow or speed mid-plate**. A single `playbackRate` per file
 | Bake | Prefer travelling **in the cook** (world rushes at plate-1 pace) |
 | Corrector | Live **`rate(t)`** after cook — never the way you invent speed |
 | Not | A constant per-plate `playbackRate` (that is only a summary) |
-| Sample | Optical flow / ground-parallax **every ~0.25–0.5 s** on plate 1 (ref) and plate N (meas) |
+| Sample | Optical flow / ground-parallax **every 0.1 s** (`SAMPLE_DT=0.1`) on plate 1 (ref) and plate N (meas) |
 | Curve | `rate(t) = clamp(ref(t)/meas(t), 1.0, 1.6)`, then **smooth** |
 | Safe band | **1.0–1.6** · typical **1.3–1.5** |
 | Hard cap | **Never 2×+**. **Long stretches** needing **> 1.6** → recook travelling |
-| Player | Updates `video.playbackRate` **live** from `pictureTime` |
+| Player | Updates `video.playbackRate` **live** from `pictureTime` **at least every 0.1 s** (≥10 Hz; 10–15 Hz OK if the curve is dense) |
 | Gait | Bolt stride follows **`pictureTime` + live rate**. **Never speed legs alone.** |
 
 `pictureTime` = the plate clock (frame on screen = `video.currentTime`).
 
 ```
-each frame / ~250ms:
+each frame / ≥10 Hz (~0.1 s):
   pictureTime = video.currentTime
-  rate = rateAt(plate.rateCurve, pictureTime)   // lerp, already smoothed
+  rate = rateAt(plate.rateCurve, pictureTime)   // lerp, curve sampled every 0.1s
   video.playbackRate = rate                     // live — not plate.playbackRate once
   stride(pictureTime, rate)                     // gait follows both
 ```
@@ -192,7 +192,7 @@ Joint: felt speed at the end of N (`travel(T)*rate(T)`) must meet felt speed at 
 Plate 1 KEEP = **optical-flow / ground-parallax reference series**. Plate N is measured with the **same metric**, **same cadence**.
 
 ```
-every dt ∈ [0.25s, 0.5s]:
+every dt = 0.1s:                         // SAMPLE_DT=0.1 — not 0.25–0.5
   ref(t)  = travel_proxy(plate1, t)      // KEEP
   meas(t) = travel_proxy(plateN, t)      // this cook
   raw(t)  = ref(t) / meas(t)
@@ -211,9 +211,17 @@ if a long stretch of raw(t) > 1.6:
 
 ```
 node scripts/biome-25d-speed.mjs biomes-25d/<style>
+node scripts/biome-25d-speed.mjs --analyze biomes-25d/<style>
 ```
 
-`cook-biome-25d` runs this after plate 2. Player remains bolt-hybrid `play/` — **do not** invent a new grok.me. Stub: `rateAt` + `applyLiveRate` in the speed script.
+`--analyze` prints **each** plate: MATCH / RECOOK inside **1.0–1.6**, mean/min/max `rate(t)`, and any recook stretches (`raw>1.6` ≥ 1.5 s). Run it on Build plates once the files exist.
+
+Expected paths (asteroid typical first style; KEEP + P2–P4 may not be in-repo yet):
+
+- ref: `biomes-25d/<style>/films/plate-empty-keep.mp4`
+- plates: `biomes-25d/<style>/films/plate-1.mp4` … `plate-4.mp4`
+
+`cook-biome-25d` runs the match after plate 2. Player remains bolt-hybrid `play/` — **do not** invent a new grok.me. Stub: `rateAt` + `applyLiveRate` at least every **0.1 s** (10–15 Hz OK).
 
 ---
 

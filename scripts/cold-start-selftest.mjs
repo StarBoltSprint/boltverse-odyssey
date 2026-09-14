@@ -253,7 +253,8 @@ must(/MAX forward travelling/.test(biome25) && /playbackRate ~1\.0–1\.2/.test(
 must(/1\.0–1\.6/.test(biome25) && /1\.3–1\.5/.test(biome25), "COOK-BIOME-25D.md: speed band 1.0–1.6 typical 1.3–1.5");
 must(/optical-flow|ground-parallax/.test(biome25) && /clamp/.test(biome25), "COOK-BIOME-25D.md: auto speed match");
 must(/rate\(t\)/.test(biome25) && /not.*constant per-plate/.test(biome25), "COOK-BIOME-25D.md: rate(t) not a constant");
-must(/0\.25–0\.5|0.25-0.5/.test(biome25) && /smooth/.test(biome25), "COOK-BIOME-25D.md: sample 0.25–0.5s + smooth");
+must(/0\.1 s|SAMPLE_DT=0\.1|every 0\.1/.test(biome25) && /smooth/.test(biome25), "COOK-BIOME-25D.md: sample 0.1s + smooth");
+must(/--analyze/.test(biome25), "COOK-BIOME-25D.md: analyze CLI");
 must(/live/.test(biome25) && /playbackRate/.test(biome25), "COOK-BIOME-25D.md: player updates playbackRate live");
 must(/recook travelling/.test(biome25) && /Never 2/.test(biome25), "COOK-BIOME-25D.md: >1.6 recook, never 2×+");
 must(/Long stretches|long stretch/.test(biome25), "COOK-BIOME-25D.md: long stretch >1.6 recook");
