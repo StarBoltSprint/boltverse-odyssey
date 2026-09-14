@@ -246,6 +246,10 @@ must(/futuristic city/.test(biome25) && /haze/.test(biome25) && /CLEAR/.test(bio
 must(/any style|Any style/.test(biome25), "COOK-BIOME-25D.md: any style décor free");
 must(/bolt-hybrid/.test(biome25) && /play\//.test(biome25), "COOK-BIOME-25D.md: points to bolt-hybrid play/");
 must(/Chat Imagine UI/.test(biome25) && /banned/.test(biome25), "COOK-BIOME-25D.md: chat Imagine banned");
+must(/SPEED REF/.test(biome25) && /plate-1 KEEP/.test(biome25), "COOK-BIOME-25D.md: SPEED REF plate-1 KEEP section");
+must(/RECOOK one plate ONLY/.test(biome25) && /Much FASTER/.test(biome25) && /world rushes hard/.test(biome25), "COOK-BIOME-25D.md: SPEED REF KEEP recook verbatim");
+must(/plate-empty-keep\.mp4/.test(biome25), "COOK-BIOME-25D.md: plate-empty-keep.mp4 binary ref");
+must(/MAX forward travelling/.test(biome25) && /playbackRate ~1\.0–1\.2/.test(biome25), "COOK-BIOME-25D.md: first-pass rails stay");
 must(/1\.0–1\.6/.test(biome25) && /1\.3–1\.5/.test(biome25), "COOK-BIOME-25D.md: speed band 1.0–1.6 typical 1.3–1.5");
 must(/optical-flow|ground-parallax/.test(biome25) && /clamp/.test(biome25), "COOK-BIOME-25D.md: auto speed match");
 must(/rate\(t\)/.test(biome25) && /not.*constant per-plate/.test(biome25), "COOK-BIOME-25D.md: rate(t) not a constant");

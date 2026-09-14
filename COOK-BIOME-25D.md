@@ -66,10 +66,51 @@ Engine = **Imagine gamified**: full-frame plates + playable Bolt card + (later) 
 | Path | **ZERO** luminous path in the plate |
 | Cast | **ZERO** Bolt / dog in the plate |
 | Stitch | plate N+1 **first frame = plate N last frame** |
-| Speed | **SAME** felt sprint travelling plate 1..N (KEEP plate-1 is the reference) |
+| Speed | **SAME** felt sprint travelling plate 1..N ([SPEED REF](#speed-ref--plate-1-keep-imagine-prompt) plate-1 KEEP is the Imagine target) |
 | Rate | Live **`rate(t)`** corrector — **not** a constant per-plate `playbackRate`. Band **1.0–1.6** (typical **1.3–1.5**). **Never 2×+.** |
 
 Travel is **baked in the cook**. Do not fake a pan on a still. Imagine can **slow or speed mid-clip** — match plate-1 KEEP **continuously**. Long stretches needing **> 1.6** → **recook travelling**. Do not smash `playbackRate`.
+
+---
+
+## SPEED REF — plate-1 KEEP Imagine prompt
+
+SmiR KEEP'd this **RECOOK** as the fast empty plate. This block is the **Imagine-side** speed target for **plate 1** and the “match this travelling” target for **plate 2..N**. Do not soften **Much FASTER** / **world rushes hard**.
+
+| Ref | What |
+|---|---|
+| **Prompt ref** | the verbatim block below — cook-time speed language |
+| **Binary ref** | `plate-empty-keep.mp4` — optical-flow / ground-parallax KEEP (drop under `biomes-25d/<style>/films/` when you have the file; asteroid is the typical first style) |
+
+Hall `catalog/asteroid.md` is a **different job** (citadel paint). Do not put this sprint prompt there.
+
+Post-cook filet stays [SAME SPEED](#same-speed--plate-1n-biome-law) / [AUTO SPEED MATCH](#auto-speed-match-post-cook) — live `rate(t)` **1.0–1.6**. This prompt is **not** that math. Bake the sprint **in the cook**; the script only filets after.
+
+### KEEP recook (verbatim — plate 1)
+
+```
+RECOOK one plate ONLY. Much FASTER. Replace current empty plate.
+
+HARD:
+- 9:16, 8–12s, lock-off
+- Sprint travelling baked in cook — world rushes hard (last cook = crawl FAIL)
+- ZERO path/lightning on ground
+- ZERO dog/Bolt
+- Canyon/Mars OK, CLEAR center
+- playbackRate ~1.0–1.2 only
+- Wire play to THIS plate only
+
+No PathGen, no obstacles this pass. Ship mp4 + play URL.
+```
+
+### First-pass rails that stay (same travelling)
+
+These rails were already true before the KEEP recook. They stay:
+
+- **MAX forward travelling** — world rushes at camera, sprint feel baked **IN** the clip (not slow pan/zoom on a still)
+- **speed must come from the cook**; `playbackRate` **~1.0–1.2 only**
+
+`{PAINT}` / style word only. Do not rewrite motion for décor.
 
 ---
 
@@ -114,7 +155,7 @@ No audio. `yuv420p` + `faststart`.
 
 ## SAME SPEED — plate 1..N (biome law)
 
-Felt sprint travelling on plate 2..N **must match** the KEEP **plate-1** reference — **the whole clip**, not one average.
+Felt sprint travelling on plate 2..N **must match** the KEEP **plate-1** reference ([SPEED REF](#speed-ref--plate-1-keep-imagine-prompt) Imagine target + `plate-empty-keep.mp4` optical-flow) — **the whole clip**, not one average.
 
 Imagine travel can **slow or speed mid-plate**. A single `playbackRate` per file **cannot** hold the KEEP. The law is a **smoothed `rate(t)` curve**.
 
@@ -244,13 +285,13 @@ await imagineClip({
 
 ## Plate 1 cook
 
-Empty sprint corridor. Travel **baked**. Lock-off. 9:16. 8–12 s.
+Empty sprint corridor. Travel **baked**. Lock-off. 9:16. 8–12 s. Cook-time speed = [SPEED REF](#speed-ref--plate-1-keep-imagine-prompt) (Much FASTER / world rushes hard).
 
 **ZERO** luminous path. **ZERO** Bolt / dog / shepherd / silhouette.
 
 CLEAR center corridor (the playable lane stays empty — the **card** will sit there).
 
-Hooks send `EMPTY_PLATE_LAW` + the style paint. Adapt décor only. Do not rewrite rails.
+Hooks send `EMPTY_PLATE_LAW` + SPEED REF rails + the style paint. Adapt décor only. Do not rewrite rails. Do not soften the sprint.
 
 > Photoreal vertical 9:16, 720x1280. Locked-off camera. Sprint travelling is ALREADY in the clip (the world rushes toward camera). NEVER pan, tilt, zoom, or dolly. ZERO dogs. ZERO German Shepherds. ZERO animals. ZERO people. ZERO luminous floor paths. ZERO Y-fork. ZERO portals. ZERO HUD. ZERO text. CLEAR empty center corridor. {PAINT}
 
@@ -260,7 +301,7 @@ Hooks send `EMPTY_PLATE_LAW` + the style paint. Adapt décor only. Do not rewrit
 
 ## Plate 2 cook (required example)
 
-Continues from **plate 1 last frame** (`image` + `last_frame`). Same sprint speed. Same rails: **ZERO** path, **ZERO** Bolt.
+Continues from **plate 1 last frame** (`image` + `last_frame`). Same sprint speed as [SPEED REF](#speed-ref--plate-1-keep-imagine-prompt) (match that travelling — world rushes hard). Same rails: **ZERO** path, **ZERO** Bolt.
 
 **Reveal:** futuristic city begins to emerge from haze — distant domes / spires / neon. Keep a **CLEAR** center corridor (playable lane stays empty).
 
