@@ -20,13 +20,14 @@
  *   rate = rateAt(plate.rateCurve, pictureTime)   // curve sampled every 0.1s
  *   video.playbackRate = rate                     // LIVE ≥10Hz from pictureTime
  *   stride(pictureTime, rate)                     // gait follows both — never legs alone
- *   every ~250ms: sample lower-third ground+haze → softMultiply card (light wrap)
+ *   every ~0.1s (~10Hz): sample lower-third ground+haze → softMultiply card (light wrap)
  *   identityGuard: luma stays high — NOT grey/black morph, NOT a new dog
  *
  * Expected paths when Build plates land (asteroid typical first style):
  *   biomes-25d/<style>/films/plate-empty-keep.mp4   ← optical-flow KEEP ref
  *   biomes-25d/<style>/films/plate-1.mp4            ← playable KEEP / ref fallback
  *   biomes-25d/<style>/films/plate-2.mp4 … plate-4.mp4
+ * --analyze also accepts loose mp4 paths (P1 KEEP + P2–P4) wherever they live.
  */
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -46,9 +47,14 @@ export const SMOOTH_WIN = 3;
 /** Consecutive seconds of raw>1.6 that force recook (a lone spike may clamp). */
 export const RECOOK_STRETCH_S = 1.5;
 export const KEEP_REL = "films/plate-empty-keep.mp4";
+/** Ambient tint blend cadence — same stack as speed SAMPLE_DT (was ~4Hz / 250ms). */
+export const TINT_DT = 0.1;
+export const TINT_HZ = 10;
+export const TINT_LUMA_FLOOR = 180;
 
 export const TINT_LAW = {
-  hz: 4,
+  hz: TINT_HZ,
+  dt: TINT_DT,
   region: "lower-third ground + haze",
   mode: "soft-multiply",
   identity: "full-white coat forever — light wrap only, never grey/black morph",
@@ -258,7 +264,7 @@ export function luma(rgb) {
   return 0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b;
 }
 
-export function identityGuard(rgb, floor = 180) {
+export function identityGuard(rgb, floor = TINT_LUMA_FLOOR) {
   const y = luma(rgb);
   if (y >= floor) return { ...rgb, pulled: false, luma: y };
   const k = floor / Math.max(1, y);
@@ -268,6 +274,43 @@ export function identityGuard(rgb, floor = 180) {
     b: Math.min(255, rgb.b * k),
     pulled: true,
     luma: floor,
+  };
+}
+
+/** Player stub: soft-multiply + identity guard. Call every TINT_DT (~0.1s / 10Hz). */
+export function applyLiveTint(card, ambient, amount = 0.28) {
+  return identityGuard(softMultiply(card, ambient, amount));
+}
+
+export function tintHealth(series, card = { r: 250, g: 250, b: 250 }) {
+  if (!series?.length) return { ok: false, reason: "no tint samples", n: 0, hz: TINT_HZ, dt: TINT_DT };
+  let pulled = 0;
+  let greyRisk = 0;
+  let lumaSum = 0;
+  let minLuma = 255;
+  for (const s of series) {
+    const ambient = { r: s.r, g: s.g, b: s.b };
+    const rawWrap = softMultiply(card, ambient);
+    if (luma(rawWrap) < TINT_LUMA_FLOOR) greyRisk++;
+    const wrapped = identityGuard(rawWrap);
+    lumaSum += wrapped.luma;
+    if (wrapped.luma < minLuma) minLuma = wrapped.luma;
+    if (wrapped.pulled) pulled++;
+  }
+  const span = series.length > 1 ? series[series.length - 1].t - series[0].t : 0;
+  const dt = span > 0 ? span / (series.length - 1) : TINT_DT;
+  const hz = dt > 0 ? 1 / dt : TINT_HZ;
+  return {
+    ok: minLuma >= TINT_LUMA_FLOOR,
+    reason: minLuma >= TINT_LUMA_FLOOR ? "" : "wrap would read grey/black — identityGuard pulled",
+    n: series.length,
+    hz,
+    dt,
+    meanLuma: lumaSum / series.length,
+    minLuma,
+    pulled,
+    greyRisk,
+    identity: TINT_LAW.identity,
   };
 }
 
@@ -316,6 +359,60 @@ export function measureTravelSeries(mp4, dt = SAMPLE_DT) {
 export function measureTravel(mp4) {
   const series = measureTravelSeries(mp4, SAMPLE_DT);
   return series.reduce((s, p) => s + p.travel, 0) / series.length;
+}
+
+function ffmpegRgb(mp4, fps) {
+  const r = spawnSync(
+    "ffmpeg",
+    [
+      "-v",
+      "error",
+      "-i",
+      mp4,
+      "-vf",
+      `fps=${fps},crop=iw:ih*0.18:0:ih*0.74,scale=${FRAME_W}:${FRAME_H},format=rgb24`,
+      "-f",
+      "rawvideo",
+      "pipe:1",
+    ],
+    { encoding: "buffer", maxBuffer: 48 * 1024 * 1024 },
+  );
+  if (r.status !== 0) throw new Error("ffmpeg tint measure failed");
+  return r.stdout;
+}
+
+/** Lower-third ground+haze mean RGB every dt seconds (law TINT_DT=0.1 / ~10Hz). */
+export function measureTintSeries(mp4, dt = TINT_DT) {
+  if (!mp4 || !existsSync(mp4)) throw new Error("no plate " + (mp4 || ""));
+  const step = Number(dt) > 0 ? Number(dt) : TINT_DT;
+  const buf = ffmpegRgb(mp4, 1 / step);
+  const pix = FRAME_W * FRAME_H;
+  const frame = pix * 3;
+  const n = Math.floor(buf.length / frame);
+  if (n < 1) throw new Error("too few frames to sample tint");
+  const series = [];
+  for (let i = 0; i < n; i++) {
+    let r = 0;
+    let g = 0;
+    let b = 0;
+    const off = i * frame;
+    for (let p = 0; p < pix; p++) {
+      r += buf[off + p * 3];
+      g += buf[off + p * 3 + 1];
+      b += buf[off + p * 3 + 2];
+    }
+    const rgb = { r: r / pix, g: g / pix, b: b / pix };
+    series.push({ t: i * step, ...rgb, luma: luma(rgb) });
+  }
+  return series;
+}
+
+export function safeTintHealth(mp4, dt = TINT_DT) {
+  try {
+    return tintHealth(measureTintSeries(mp4, dt));
+  } catch (e) {
+    return { ok: false, reason: e && e.message ? e.message : "tint skip", n: 0, hz: TINT_HZ, dt: TINT_DT };
+  }
 }
 
 function onesCurve(series, dt = SAMPLE_DT) {
@@ -389,6 +486,8 @@ export function buildPlaylist({ style, files, seriesList, travels, dt = SAMPLE_D
     style,
     sampleDt: step,
     liveRateDt: LIVE_RATE_DT,
+    tintDt: TINT_DT,
+    tintHz: TINT_HZ,
     plates,
     tint: TINT_LAW,
     player: "bolt-hybrid play/ — do not publish a new grok.me",
@@ -465,6 +564,8 @@ export function analyzeSeriesList({ style, files, seriesList, refFile, dt = SAMP
     style,
     sampleDt: step,
     liveRateDt: LIVE_RATE_DT,
+    tintDt: TINT_DT,
+    tintHz: TINT_HZ,
     rateMin: RATE_MIN,
     rateMax: RATE_MAX,
     ref: refFile || (files && files[0]) || KEEP_REL,
@@ -501,6 +602,8 @@ export function analyzePlaylistJson(playlist) {
     style: playlist && playlist.style,
     sampleDt: Number(playlist && playlist.sampleDt) || SAMPLE_DT,
     liveRateDt: LIVE_RATE_DT,
+    tintDt: Number(playlist && playlist.tintDt) || TINT_DT,
+    tintHz: Number(playlist && playlist.tintHz) || TINT_HZ,
     rateMin: RATE_MIN,
     rateMax: RATE_MAX,
     ref: (plates[0] && plates[0].file) || KEEP_REL,
@@ -519,12 +622,26 @@ export function formatAnalyze(report) {
   if (!report) return "ANALYZE FAIL no report";
   if (report.missing) {
     lines.push("ANALYZE no plates yet — asteroid KEEP + later plates not in-repo");
-    lines.push("SAMPLE_DT=" + SAMPLE_DT + " RATE " + RATE_MIN.toFixed(1) + "–" + RATE_MAX.toFixed(1));
+    lines.push(
+      "SAMPLE_DT=" +
+        SAMPLE_DT +
+        " RATE " +
+        RATE_MIN.toFixed(1) +
+        "–" +
+        RATE_MAX.toFixed(1) +
+        " TINT " +
+        TINT_HZ +
+        "Hz/" +
+        TINT_DT +
+        "s",
+    );
     lines.push("expected ref:    " + report.expected.keep);
     lines.push("expected plates: " + report.expected.plates.join(" "));
     return lines.join("\n");
   }
   const tag = report.ok ? "MATCH" : "RECOOK";
+  const tintHz = Number(report.tintHz) || TINT_HZ;
+  const tintDt = Number(report.tintDt) || TINT_DT;
   lines.push(
     "ANALYZE " +
       (report.style || "") +
@@ -538,7 +655,11 @@ export function formatAnalyze(report) {
       Number(report.rateMax).toFixed(1) +
       " live≥" +
       LIVE_RATE_HZ_MIN +
-      "Hz",
+      "Hz TINT " +
+      tintHz +
+      "Hz/" +
+      tintDt +
+      "s",
   );
   lines.push("ref: " + report.ref + (report.source ? " (" + report.source + ")" : ""));
   for (const p of report.plates || []) {
@@ -547,6 +668,17 @@ export function formatAnalyze(report) {
       .join(",");
     const recookBit = p.recook
       ? " recook" + (stretches ? " stretch " + stretches + " raw>1.6" : "")
+      : "";
+    const tint = p.tint;
+    const tintBit = tint
+      ? "  tint " +
+        (tint.ok ? "OK" : "PULL") +
+        " " +
+        Math.round(Number(tint.hz) || tintHz) +
+        "Hz luma=" +
+        fmt(tint.meanLuma) +
+        " pulled=" +
+        (tint.pulled || 0)
       : "";
     lines.push(
       p.id +
@@ -561,10 +693,22 @@ export function formatAnalyze(report) {
         " n=" +
         (p.n || 0) +
         recookBit +
-        (p.keep ? "  KEEP" : ""),
+        (p.keep ? "  KEEP" : "") +
+        tintBit,
     );
   }
   return lines.join("\n");
+}
+
+function attachTint(report, absFiles) {
+  if (!report || !report.plates) return report;
+  report.tintDt = TINT_DT;
+  report.tintHz = TINT_HZ;
+  report.plates.forEach((p, i) => {
+    const abs = absFiles[i] || p.file;
+    if (abs && existsSync(abs)) p.tint = safeTintHealth(abs, TINT_DT);
+  });
+  return report;
 }
 
 export function analyzeDir(dir, style) {
@@ -585,20 +729,86 @@ export function analyzeDir(dir, style) {
       missing: true,
       style,
       sampleDt: SAMPLE_DT,
+      tintDt: TINT_DT,
+      tintHz: TINT_HZ,
       expected: expectedPaths(dir),
     };
   }
   const files = [];
   const seriesList = [];
+  const absFiles = [];
   const refRel = keep || plates[0];
   files.push(refRel);
+  absFiles.push(join(dir, refRel));
   seriesList.push(measureTravelSeries(join(dir, refRel), SAMPLE_DT));
   for (const rel of plates) {
     if (rel === refRel) continue;
     files.push(rel);
+    absFiles.push(join(dir, rel));
     seriesList.push(measureTravelSeries(join(dir, rel), SAMPLE_DT));
   }
-  return analyzeSeriesList({ style, files, seriesList, refFile: refRel, dt: SAMPLE_DT });
+  return attachTint(
+    analyzeSeriesList({ style, files, seriesList, refFile: refRel, dt: SAMPLE_DT }),
+    absFiles,
+  );
+}
+
+export function analyzeFiles(absPaths, { style, keep, dt = SAMPLE_DT } = {}) {
+  const existing = (absPaths || []).filter((p) => p && existsSync(p));
+  const ref = keep && existsSync(keep) ? keep : existing[0];
+  if (!existing.length || !ref) {
+    return {
+      ok: false,
+      missing: true,
+      style: style || "plates",
+      sampleDt: SAMPLE_DT,
+      tintDt: TINT_DT,
+      tintHz: TINT_HZ,
+      expected: {
+        keep: keep || KEEP_REL,
+        plates: absPaths && absPaths.length ? absPaths : [1, 2, 3, 4].map((n) => plateRel(n)),
+      },
+    };
+  }
+  const files = [ref, ...existing.filter((p) => p !== ref)];
+  const seriesList = files.map((f) => measureTravelSeries(f, dt));
+  return attachTint(
+    analyzeSeriesList({ style: style || "plates", files, seriesList, refFile: ref, dt }),
+    files,
+  );
+}
+
+export function isMp4Path(p) {
+  return /\.mp4$/i.test(String(p || ""));
+}
+
+export function parseCli(argv) {
+  const flags = new Set();
+  const positionals = [];
+  let keep = null;
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === "--keep") {
+      keep = argv[++i];
+      continue;
+    }
+    if (a.startsWith("--")) {
+      flags.add(a.slice(2));
+      continue;
+    }
+    positionals.push(a);
+  }
+  return {
+    analyze: flags.has("analyze"),
+    selftest: flags.has("selftest"),
+    keep,
+    positionals,
+  };
+}
+
+export function resolveAbs(rel, root) {
+  if (!rel) return rel;
+  return String(rel).startsWith("/") ? rel : join(root, rel);
 }
 
 export function matchDir(dir, style) {
@@ -723,19 +933,46 @@ function selftest() {
   const missTxt = formatAnalyze(missing);
   must(/plate-empty-keep\.mp4/.test(missTxt) && /plate-4\.mp4/.test(missTxt), "analyze notes expected KEEP + P1–P4 paths");
   must(/RATE 1\.0–1\.6/.test(missTxt) && /RATE 1\.0–1\.6/.test(printed), "analyze print RATE 1.0–1.6");
+  must(/TINT 10Hz\/0\.1s/.test(missTxt) && /TINT 10Hz\/0\.1s/.test(printed), "analyze print TINT 10Hz/0.1s");
 
   const wrapped = softMultiply({ r: 250, g: 250, b: 250 }, { r: 80, g: 140, b: 200 }, 0.3);
   must(luma(wrapped) > 150, "softMultiply keeps a bright coat");
   const guarded = identityGuard({ r: 40, g: 40, b: 40 });
   must(guarded.pulled && luma(guarded) >= 180, "identityGuard pulls grey/black back to white");
-  must(TINT_LAW.hz === 4 && /light wrap/.test(TINT_LAW.identity), "tint law 4×/s light wrap");
+  must(TINT_LAW.hz === 10 && TINT_DT === 0.1 && /light wrap/.test(TINT_LAW.identity), "tint law ~10Hz / 0.1s light wrap");
+  const liveTint = applyLiveTint({ r: 250, g: 250, b: 250 }, { r: 80, g: 140, b: 200 }, 0.3);
+  must(luma(liveTint) >= TINT_LUMA_FLOOR, "applyLiveTint keeps white coat");
+  const tintSamples = [
+    { t: 0, r: 80, g: 140, b: 200 },
+    { t: 0.1, r: 90, g: 150, b: 210 },
+    { t: 0.2, r: 70, g: 130, b: 190 },
+  ];
+  const health = tintHealth(tintSamples);
+  must(health.ok && Math.abs(health.hz - 10) < 1.5, "tint health ~10Hz identity OK");
+  must(health.pulled === 0 && health.minLuma >= TINT_LUMA_FLOOR, "tint health does not grey the coat");
+  const dark = tintHealth([{ t: 0, r: 10, g: 10, b: 10 }, { t: 0.1, r: 8, g: 8, b: 8 }]);
+  must(dark.pulled >= 1 && dark.minLuma >= TINT_LUMA_FLOOR, "dark haze → identityGuard pull, luma stays high");
+  report.plates[1].tint = health;
+  const withTint = formatAnalyze(report);
+  must(/tint OK 10Hz/.test(withTint) && /luma=/.test(withTint), "analyze print tint sampling health");
+
+  const cli = parseCli(["--analyze", "p1.mp4", "p2.mp4", "p3.mp4", "p4.mp4", "--keep", "plate-empty-keep.mp4"]);
+  must(cli.analyze && cli.keep === "plate-empty-keep.mp4" && cli.positionals.length === 4, "CLI accepts loose plate paths + --keep");
+  must(cli.positionals.every(isMp4Path), "CLI plate args are mp4 paths");
+  const missingFiles = analyzeFiles(
+    ["missing-p1.mp4", "missing-p2.mp4"],
+    { style: "asteroid", keep: "missing-keep.mp4" },
+  );
+  must(missingFiles.missing && /missing-keep|plate-empty-keep|missing-p1/.test(formatAnalyze(missingFiles)), "analyze files-missing still notes paths");
   console.log("BIOME-25D-SPEED PASS");
 }
 
 function usage() {
-  console.log("FAIL need biomes-25d/<style>");
+  console.log("FAIL need biomes-25d/<style> or plate mp4 paths");
   console.log("  node scripts/biome-25d-speed.mjs biomes-25d/<style>");
   console.log("  node scripts/biome-25d-speed.mjs --analyze biomes-25d/<style>");
+  console.log("  node scripts/biome-25d-speed.mjs --analyze plate-1.mp4 plate-2.mp4 plate-3.mp4 plate-4.mp4");
+  console.log("  node scripts/biome-25d-speed.mjs --analyze --keep plate-empty-keep.mp4 plate-2.mp4 plate-3.mp4 plate-4.mp4");
   console.log("  node scripts/biome-25d-speed.mjs --selftest");
   console.log("expected: films/plate-empty-keep.mp4 (ref) + films/plate-1.mp4 … plate-4.mp4");
 }
@@ -747,18 +984,22 @@ if (isMain || argv.includes("--selftest")) {
     selftest();
     process.exit(0);
   }
-  const analyze = argv.includes("--analyze");
-  const rel = String(argv.find((a) => !a.startsWith("--")) || "");
+  const cli = parseCli(argv);
+  const rel = String(cli.positionals[0] || "");
   if (!rel) {
     usage();
     process.exit(1);
   }
   const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-  const dir = rel.startsWith("/") ? rel : join(root, rel);
-  const style = rel.replace(/\/$/, "").split("/").pop();
-  if (analyze) {
+  if (cli.analyze) {
     try {
-      const report = analyzeDir(dir, style);
+      const mp4s = cli.positionals.filter(isMp4Path).map((p) => resolveAbs(p, root));
+      const report = mp4s.length
+        ? analyzeFiles(mp4s, {
+            style: "plates",
+            keep: cli.keep ? resolveAbs(cli.keep, root) : undefined,
+          })
+        : analyzeDir(resolveAbs(rel, root), rel.replace(/\/$/, "").split("/").pop());
       console.log(formatAnalyze(report));
       if (report.missing) process.exit(0);
       process.exit(report.ok ? 0 : 1);
@@ -767,6 +1008,8 @@ if (isMain || argv.includes("--selftest")) {
       process.exit(1);
     }
   }
+  const dir = resolveAbs(rel, root);
+  const style = rel.replace(/\/$/, "").split("/").pop();
   if (!existsSync(join(dir, "films", "plate-1.mp4"))) {
     console.log("FAIL no " + join(dir, "films/plate-1.mp4"));
     process.exit(1);

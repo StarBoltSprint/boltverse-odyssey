@@ -260,6 +260,7 @@ must(/recook travelling/.test(biome25) && /Never 2/.test(biome25), "COOK-BIOME-2
 must(/Long stretches|long stretch/.test(biome25), "COOK-BIOME-25D.md: long stretch >1.6 recook");
 must(/pictureTime/.test(biome25) && /never speed legs|Never speed legs/.test(biome25), "COOK-BIOME-25D.md: gait follows pictureTime");
 must(/ambient tint|Ambient tint|AMBIENT TINT/.test(biome25) && /light wrap/.test(biome25), "COOK-BIOME-25D.md: ambient tint light wrap");
+must(/10×\/s|10 Hz|every ~0\.1/.test(biome25) && /0\.1 s/.test(biome25), "COOK-BIOME-25D.md: ambient tint ~10Hz / 0.1s");
 must(/white coat forever/.test(biome25) && /grey/.test(biome25), "COOK-BIOME-25D.md: tint is not a grey morph");
 must(/Plate 3|plate 3/.test(biome25) && /Do not implement plate-3|do not implement plate 3|not this cook/.test(biome25), "COOK-BIOME-25D.md: no plate-3 cook now");
 must(/COOK-BIOME-25D\.md/.test(body("COOK.md")), "COOK.md: points at 2.5D recipe");

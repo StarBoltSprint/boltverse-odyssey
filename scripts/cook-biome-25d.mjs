@@ -82,7 +82,7 @@ function queue() {
     "CHAIN last(1) file IS first(2) — extract last frame, do not recut",
     "plate 2 = same speed + city from haze + CLEAR center",
     "plate 3+ L/M/R later — not this cook",
-    "auto tint ~4×/s light wrap (white coat forever). PathGen HOLD (no neon CSS).",
+    "auto tint ~10×/s (every 0.1s) light wrap (white coat forever). PathGen HOLD (no neon CSS).",
     "drop films + playlist.json → bolt-hybrid play/public/biomes/" + id + "/  (not packs/)",
   ];
 }

@@ -170,6 +170,7 @@ Imagine travel can **slow or speed mid-plate**. A single `playbackRate` per file
 | Hard cap | **Never 2×+**. **Long stretches** needing **> 1.6** → recook travelling |
 | Player | Updates `video.playbackRate` **live** from `pictureTime` **at least every 0.1 s** (≥10 Hz; 10–15 Hz OK if the curve is dense) |
 | Gait | Bolt stride follows **`pictureTime` + live rate**. **Never speed legs alone.** |
+| Tint | Ambient wrap **same stack** — every **0.1 s** (~10 Hz). Soft-multiply / light wrap only. **Full-white coat forever.** |
 
 `pictureTime` = the plate clock (frame on screen = `video.currentTime`).
 
@@ -214,14 +215,19 @@ node scripts/biome-25d-speed.mjs biomes-25d/<style>
 node scripts/biome-25d-speed.mjs --analyze biomes-25d/<style>
 ```
 
-`--analyze` prints **each** plate: MATCH / RECOOK inside **1.0–1.6**, mean/min/max `rate(t)`, and any recook stretches (`raw>1.6` ≥ 1.5 s). Run it on Build plates once the files exist.
+`--analyze` prints **each** plate: MATCH / RECOOK inside **1.0–1.6**, mean/min/max `rate(t)`, recook stretches (`raw>1.6` ≥ 1.5 s), and cheap **tint** sampling health (10 Hz / 0.1 s, luma, identity pull). Run it on Build plates once the files exist — **loose mp4 paths are OK**:
+
+```
+node scripts/biome-25d-speed.mjs --analyze plate-1.mp4 plate-2.mp4 plate-3.mp4 plate-4.mp4
+node scripts/biome-25d-speed.mjs --analyze --keep plate-empty-keep.mp4 plate-2.mp4 plate-3.mp4 plate-4.mp4
+```
 
 Expected paths (asteroid typical first style; KEEP + P2–P4 may not be in-repo yet):
 
 - ref: `biomes-25d/<style>/films/plate-empty-keep.mp4`
 - plates: `biomes-25d/<style>/films/plate-1.mp4` … `plate-4.mp4`
 
-`cook-biome-25d` runs the match after plate 2. Player remains bolt-hybrid `play/` — **do not** invent a new grok.me. Stub: `rateAt` + `applyLiveRate` at least every **0.1 s** (10–15 Hz OK).
+`cook-biome-25d` runs the match after plate 2. Player remains bolt-hybrid `play/` — **do not** invent a new grok.me. Stub: `rateAt` + `applyLiveRate` + `applyLiveTint` at least every **0.1 s** (10–15 Hz OK).
 
 ---
 
@@ -232,7 +238,7 @@ Even when ground / décor goes white / frost / city-cool: the card must not sit 
 | Lock | Law |
 |---|---|
 | Sample | Plate pixels **near Bolt** — lower-third **ground + haze** |
-| Rate | ~**4×/s** (every ~250 ms) |
+| Rate | ~**10×/s** (every **~0.1 s**) — **same stack** as [SAME SPEED](#same-speed--plate-1n-biome-law) `SAMPLE_DT=0.1` |
 | Grade | Soft **Multiply** / color-grade the 2.5D card toward that ambience |
 | Identity | **Full-white coat forever.** Tint is **light wrap only** |
 
@@ -241,13 +247,13 @@ Even when ground / décor goes white / frost / city-cool: the card must not sit 
 Player stub (bolt-hybrid `play/`, not this repo):
 
 ```
-every ~250ms:
+every ~0.1s (~10 Hz):
   rgb = sample(plate, band = lower-third ground + haze)
-  card = softMultiply(card, rgb, amount ≤ 0.45)
+  card = applyLiveTint(card, rgb, amount ≤ 0.45)   // softMultiply + identityGuard
   luma(coat) stays high — pull back if the wrap would read grey/black
 ```
 
-`scripts/biome-25d-speed.mjs` exports `softMultiply` + `identityGuard` for that wrap. Do not bake the dog into the plate to “match” the grade.
+`scripts/biome-25d-speed.mjs` exports `softMultiply` + `identityGuard` + `applyLiveTint` (`TINT_DT=0.1`, `TINT_HZ=10`). Do not bake the dog into the plate to “match” the grade.
 
 ---
 
@@ -354,7 +360,7 @@ The dog is **not** in the mp4. He is a 2.5D Imagine card composited in front.
 - Strafe **X only**
 - Stride from `pictureTime` + **live `rate(t)`** (not a free gait clock, not legs-only speedup, not a single plate rate)
 - Soft contact shadow under the paws
-- Ambient tint ~4×/s — light wrap only ([AUTO BOLT AMBIENT TINT](#auto-bolt-ambient-tint-play-not-the-plate))
+- Ambient tint ~10×/s (every ~0.1 s) — light wrap only ([AUTO BOLT AMBIENT TINT](#auto-bolt-ambient-tint-play-not-the-plate))
 
 **Skating** = the card is not planted. That is a plant bug. It is not “Imagine bad paws.”
 
@@ -392,7 +398,7 @@ One thing at a time.
 2. Erase any neon PathGen overlay (**HOLD** — do not resurrect a sticker)
 3. Cook plate 2 from plate 1 last frame + stitch — city from haze, **same speed**, CLEAR center, zero path, zero Bolt
 4. Auto speed-match → `playlist.json` **`rateCurve`** (live `rate(t)`, band 1.0–1.6; long stretch >1.6 recook)
-5. Plant the Bolt card (`groundY`, `pictureTime` + live rate, contact shadow) + ambient tint ~4×/s
+5. Plant the Bolt card (`groundY`, `pictureTime` + live rate, contact shadow) + ambient tint ~10×/s (every ~0.1 s)
 6. Later (not this cook): plate 3+ L/M/R chart, then Imagine PathGen tiles, then obstacles `(t, lane)`
 
 ---
