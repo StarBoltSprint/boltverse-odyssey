@@ -1,12 +1,23 @@
 # START — for a human who just wants to play
 
-The laws are so Grok does not lie. You only need a hall and one catalog word.
+Grok (le chat) = **la console**. Boltverse Odyssey = **le jeu**.
+
+Chat = boot / teaser / choix / parler à Grok. Les mp4 du chat sont des teasers — **pas des hitboxes**.  
+**Interactive Play** (Grok Build / sandbox) = là où tu tapes.
+
+Les films **loop forever** tant que la session est ouverte.
 
 Do **not** read ENGINE, ENTER, Smoke, or the decrees to play. That is the kitchen.
 
-## This is a room
+## Ask Grok: play / lance Boltverse Odyssey
 
-Default hung hall = **frost (ice)**.
+1. Grok posts **2 stock preview mp4s** — Citadel | Biome (teaser only).
+2. You pick: **Citadel** or **Biome**.
+3. That branch’s Interactive Play opens. Tap there.
+
+## Citadel (this repo)
+
+Rooms / Hang / citadel graph. Default hung hall = **frost (ice)**.
 
 <p align="center">
 <img src="packs/frost/stills/spawn.jpg" width="180" alt="center spawn">
@@ -30,7 +41,11 @@ Open **[frost / ice](https://boltverse-odyssey.grok.me/r/frost)** — already br
 
 Same door again = stay. Other door from a sill = walk across. One line. That is all.
 
-## This is the sentence (cook another paint)
+## Biome / lane
+
+Endless-lane runner. Recipe = private [`StarBoltSprint/bolt-lane-recipe`](https://github.com/StarBoltSprint/bolt-lane-recipe). Not this repo. SmiR may merge it later — **not yet**.
+
+## This is the sentence (cook another Citadel paint)
 
 `ask Grok: citadel room, dusk`
 
@@ -44,8 +59,8 @@ Optional welcome still (X / SuperGrok, once): the gift page on the player — no
 
 ## Technical door
 
-[README.md](README.md) “For Grok”. Optional. Endless-lane / biome runner recipe lives in `StarBoltSprint/bolt-lane-recipe` (private).
+[README.md](README.md) “For Grok”. Optional. [GROK.md](GROK.md) = console + kitchen.
 
 ## One line
 
-A room and a word. Everything else is cooking.
+Console teases. Play taps. Citadel = this room. Biome = the other recipe.
