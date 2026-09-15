@@ -1,6 +1,7 @@
 # AGENTS — cold-start hall cook
 
 **STOP 0 — STYLES FIRST (SmiR 2026-09-12). Miss this = the whole room is dead.**
+**STOP — HARD SPLIT.** Imagine Agent is obligatoire / MUST / systematically for STYLE stills when restyling. NEVER for Walk A, Walk B, breath, or any video. Walks / breaths / films = imagine-hooks / cook-room first-frame + last-frame. Soft KEEP banned. Smoke still gates.
 
 Read **[RIG.md](RIG.md)** + [`lock/RIG-PROMPT.txt`](lock/RIG-PROMPT.txt) before anything else.
 

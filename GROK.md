@@ -4,6 +4,7 @@ Repo: `https://github.com/StarBoltSprint/boltverse-odyssey`
 Player: https://boltverse-odyssey.grok.me
 
 ## STOP 0 — STYLES FIRST (SmiR 2026-09-12). Miss this = the room is dead.
+**STOP — HARD SPLIT.** Imagine Agent is obligatoire / MUST / systematically for STYLE stills when restyling. NEVER for Walk A, Walk B, breath, or any video. Walks / breaths / films = imagine-hooks / cook-room first-frame + last-frame. Soft KEEP banned. Smoke still gates.
 
 Read **[RIG.md](RIG.md)** + [`lock/RIG-PROMPT.txt`](lock/RIG-PROMPT.txt) before anything else.
 
@@ -23,7 +24,7 @@ Read **[RIG.md](RIG.md)** + [`lock/RIG-PROMPT.txt`](lock/RIG-PROMPT.txt) before 
 
 Walks / breaths / films = Imagine first-frame + last-frame via `scripts/imagine-hooks.mjs` / `scripts/cook-room.mjs`. **Prompts = [FILMS.md](FILMS.md)** — every Grok, every player, every décor. Adapt hall paint only. Walks: start still ≠ arrive still. Breaths: same still twice. Agent is **not** required or recommended for video cook. Do **not** instruct Build to open Imagine Agent for Walk A, Walk B, or breath.
 
-Chat Imagine UI **without real first+last** is **banned for walks**, breaths, enter. If `imagine_image_to_video` / `imagine_reference_to_video` are in your tool list: **do not call them** for films. `imagine_image_to_image` is **ALLOWED only on `lock/RIG-*.jpg`** (styles). A film cooked in chat has no smoke → do not Hang it.
+Chat Imagine UI **without real first+last** is **banned for walks**, breaths, enter (no `last_frame`). If `imagine_image_to_video` / `imagine_reference_to_video` are in your tool list: **do not call them** for films. `imagine_image_to_image` is **ALLOWED only on `lock/RIG-*.jpg`** (styles). A film cooked in chat has no smoke → do not Hang it.
 
 **KEEP seals (this ice hall):** Imagine Agent produced `lock/SEAL-spawn.jpg` + `lock/SEAL-at-a.jpg` + `lock/SEAL-at-b.jpg` (drops `hall-stills/seal/spawn-ice.jpg` + `at-a-ice.jpg` + `at-b-ice.jpg`). Frozen pose+décor until SmiR reseals. Agent remains the STYLE stills path for future styles (never video). `cook-room` **SKIPS** `imagineStill` for spawn / at-A / at-B when those seals exist. **Sealed skip stays.** Smoke still gates. Soft KEEP banned.
 

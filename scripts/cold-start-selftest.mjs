@@ -26,7 +26,7 @@ function body(rel) {
 
 function firstStop(text) {
   const idx = text.search(/STOP/);
-  return idx < 0 ? "" : text.slice(idx, idx + 500);
+  return idx < 0 ? "" : text.slice(idx, idx + 2000);
 }
 
 function assertAgentStop(label, text) {
@@ -93,7 +93,7 @@ must(/Soft KEEP banned/.test(agentsHead), "AGENTS.md head: Soft KEEP banned");
 assertAgentStop("AGENTS.md head", agentsHead);
 must(body("AGENTS.md").search(/STOP/) < body("AGENTS.md").search(/sill ≠ spawn/), "AGENTS.md: STOP before sill ≠ spawn");
 
-const rulesHead = head(".cursorrules", 16);
+const rulesHead = head(".cursorrules", 20);
 must(/sill ≠ spawn/.test(rulesHead), ".cursorrules head: sill ≠ spawn");
 must(/already AT the teal LEFT sill/.test(rulesHead) && /already AT the gold RIGHT sill/.test(rulesHead), ".cursorrules head: at-A/at-B = AT the sill");
 must(/Spawn = CENTER only/.test(rulesHead), ".cursorrules head: spawn = center only");
