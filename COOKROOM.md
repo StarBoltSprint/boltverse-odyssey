@@ -31,8 +31,7 @@ Grok does not paste Imagine prompts in chat when the script can run.
 
 Tap never cooks. [DONT.md](DONT.md).
 
-Lane / biome cook is **not** this page. That is [COOKLANE.md](COOKLANE.md). `citadel moss` → here. `biome forest` → there.  
-Imagine-only 2.5D = [FILM-STACK.md](FILM-STACK.md) + [COOK-BIOME-25D.md](COOK-BIOME-25D.md). **PRIMARY runner = 3-take.** Assets stack = empty plates + gallop video. Not `cook-biome.mjs`.
+This script cooks **citadel halls**. Endless-lane / biome runner recipe lives in `StarBoltSprint/bolt-lane-recipe` (private).
 
 ## Command
 
@@ -83,7 +82,7 @@ The rest in `packs/<id>/smoke.log`.
 
 ## What this is not
 
-Not the player. Not Smoke (it *calls* smoke). Not Forge UI. Not Chat Imagine UI without real first+last. Not live Imagine on tap. Not a biome / Lane kit ([COOKLANE.md](COOKLANE.md)). Not Imagine Agent video — Agent = STYLE stills only. Décor variants = **Imagine Agent REQUIRED**. `imagineStill` **BANNED for restyle**.
+Not the player. Not Smoke (it *calls* smoke). Not Forge UI. Not Chat Imagine UI without real first+last. Not live Imagine on tap. Not a biome / lane kit. Not Imagine Agent video — Agent = STYLE stills only. Décor variants = **Imagine Agent REQUIRED**. `imagineStill` **BANNED for restyle**.
 
 ## One line
 

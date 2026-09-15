@@ -4,7 +4,6 @@ The engine **cooks nothing**. It **chains plates**.
 Repo: `https://github.com/StarBoltSprint/boltverse-odyssey`
 
 Cook laws: [ENTER.md](ENTER.md). Ops: [HANG.md](HANG.md). This file is the player clock + DOM.
-Lane machines: [PLAY.md](PLAY.md) (DOM / HOLD / partition).  
 Swap: [scripts/dom-swap.mjs](scripts/dom-swap.mjs) — `kick` / `joinEnded` / `failSafe` / `liftVeil`. Does not grade.  
 Hold: [scripts/video-hold.mjs](scripts/video-hold.mjs).
 
@@ -43,7 +42,7 @@ They lock onto the **same 9:16 photo**. Letterbox = void. Hits are on that pictu
 Still **under** videos: if `play()` fails, you still see the pose.
 Veil **on top**: it can hide enter **and** dest for 500 ms without mixing two dogs.
 
-## Who is visible (not sprint vs hall)
+## Who is visible
 
 This is **who is opaque**. Not `playingWalkA`.
 
@@ -57,7 +56,7 @@ This is **who is opaque**. Not `playingWalkA`.
 
 Never `src=` on the opaque. Swap only if `paused === false`.
 
-Code: [scripts/dom-swap.mjs](scripts/dom-swap.mjs). `joinEnded` = still first → hide vis → hid.play() → swap iff `paused === false` → `gen++`. Sprint fade **0**. `failSafe` = still only, videos 0. `liftVeil` (double rAF) = hall Enter **only**. Finger during swap = HOLD tap gate, not this file.
+Code: [scripts/dom-swap.mjs](scripts/dom-swap.mjs). `joinEnded` = still first → hide vis → hid.play() → swap iff `paused === false` → `gen++`. Fade **0**. `failSafe` = still only, videos 0. `liftVeil` (double rAF) = hall Enter **only**. Finger during swap = HOLD tap gate, not this file.
 
 HOLD (booleans, several at once): `running` = video playing **and** `!held`. `pause` ≠ `ended`. `stall` ≠ `play-fail`. Peak does **not** raise this veil.
 
@@ -110,7 +109,7 @@ Failed `play()` → `failSafe`: still opaque, videos 0, taps still live.
 Fade is **CSS opacity only**:
 
 ```
-fade = 0     same clip / sprint joinEnded / enter in or out
+fade = 0     same clip / joinEnded / enter in or out
      = 280   hall walk tap only, same still under
 ```
 
@@ -184,9 +183,8 @@ Not a canvas. No rings. Letterbox = void. `nx < 0.4` → A. `nx > 0.6` → B. El
 - Swap **only** if `play()` succeeded (`paused === false`).
 - `muted=true` **and** `playsInline=true` **before** `play()`.
 - Pause the outgoing **after** the swap.
-- Sprint `joinEnded`: fade **0**.
+- `joinEnded`: fade **0**.
 - Hide vis **after** the arrive still (Frost).
-- One `flushOpen` per plate if Lane ([PLAY.md](PLAY.md)).
 
 ## 7. Assets the engine **requires**
 

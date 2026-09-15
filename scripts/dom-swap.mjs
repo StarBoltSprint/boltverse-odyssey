@@ -1,6 +1,6 @@
 /**
  * DOM swap. Chains plates. Does not grade cues.
- * Laws: ENGINE.md · PLAY.md (three machines).
+ * Laws: ENGINE.md.
  * Finger during swap = video-hold tap gate, not this file.
  *
  * joinEnded order (anti-clone):
@@ -10,7 +10,7 @@
  *   4 swap only if paused === false
  *   5 gen++ so a stale ended is ignored
  *
- * Fades: sprint join 0 · hall walk tap 280 optional · veil = hall Enter only.
+ * Fades: hall walk tap 280 optional · veil = hall Enter only.
  */
 
 export const DISSOLVE_MS = 280;

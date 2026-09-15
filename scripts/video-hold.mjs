@@ -1,7 +1,7 @@
 /**
  * HOLD: the picture is not running → the coyote judge sleeps.
  * Still stays. No spinner. Resume = reread currentTime, never a 2s wall-clock tap.
- * Laws: PLAY.md · ENGINE.md
+ * Laws: ENGINE.md · HOLD.md
  *
  * Reasons (any one → isHeld):
  *   pause | hidden | stall | play-fail | swap | cook | seek | ended-wait

@@ -10,7 +10,7 @@ Machine: `scripts/phash.mjs` + thresholds in [`smoke.json`](smoke.json). Wired i
 
 Keep **global shape**, throw noise.
 
-1. Grayscale (biome color must not flip the bit; lock must)
+1. Grayscale (paint color must not flip the bit; lock must)
 2. Resize **32×32** (not 720×1280 — too much detail = fragile)
 3. DCT (JPEG-style) → frequencies
 4. Keep the **8×8** low-frequency corner, skip DC (mean brightness)

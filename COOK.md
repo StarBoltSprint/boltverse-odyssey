@@ -3,6 +3,7 @@
 This is the product. The player does **not** pick films first. They ask Grok for **3 stills** in a citadel style. Grok supplies them with the **same Bolt** ([CHAR.md](CHAR.md)). **Do not wait.** Stills → smoke → films. Order: [COOKROOM.md](COOKROOM.md). Wait only if COOK_DEBUG=1.
 
 **STOP 0 — STYLES = [RIG.md](RIG.md).** Black plates + RIG-PROMPT. Spawn first, then at-A/at-B from that spawn. ONE dog. Two Bolts = FAIL. Then films.
+**STOP — HARD SPLIT.** Imagine Agent is obligatoire / MUST / systematically for STYLE stills when restyling. NEVER for Walk A, Walk B, breath, or any video. Walks / breaths / films = imagine-hooks / cook-room first-frame + last-frame. Soft KEEP banned. Smoke still gates.
 
 **STOP 1 — HARD SPLIT (SmiR 2026-09-12).** NEVER Agent / chat Imagine for Walk A, Walk B, breath, or any video. Walks / breaths / films = imagine-hooks / cook-room first-frame + last-frame. Chat Imagine UI without real first+last is banned for **video**. Soft KEEP banned. Smoke still gates.
 
@@ -115,7 +116,6 @@ Live ember at-A FAIL×2 (0.19+sit+face / 0.16+sit) means teacher pixels alone ar
 - "braise" / "ember" → `ember`
 - off-list ("temple martien") → ask nearest paint, do not cook
 - "branche room 2 sur la porte A" → floor 3, `kind: hall` ([LINKS.md](LINKS.md))
-- "colle le sprint forest sur la porte B" → `kind: sprint`, biome Lane, Bolt exits ([LINKS.md](LINKS.md))
 
 If they give **no** paint, do not cook — send `/` (stock). If they give **7 videos**, skip still-cook — map and hang ([GROK.md](GROK.md)).
 
@@ -302,6 +302,4 @@ Then read [ENTER.md](ENTER.md) and [HANG.md](HANG.md). Short version:
 - Wire: walk to the door first, **stay**. Second tap = enter. Walk ended **never** auto-enters.
 - Bump `PACK` after hanging the new mp4.
 
-## Other job — Imagine-only 2.5D biome
-
-Empty plates + playable Bolt **gallop video** (not the old still card). Same-speed + light bus. Not this page. Not `cook-biome.mjs` (that bakes Bolt into the reel). [FILM-STACK.md](FILM-STACK.md) [COOK-BIOME-25D.md](COOK-BIOME-25D.md).
+This page is citadel halls only. Endless-lane / biome runner recipe lives in `StarBoltSprint/bolt-lane-recipe` (private).

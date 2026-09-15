@@ -70,7 +70,7 @@ Immediate FAIL:
 
 Typical PASS: back, 4 paws, readable white, 2 doors (walk/breath), lock identical to sibling stills.
 
-Do **not** lint tap-glow in v1. That is [PLAY.md](PLAY.md), not the hall.
+Do **not** lint tap-glow in v1. That is not the hall.
 
 ## After the verdict
 

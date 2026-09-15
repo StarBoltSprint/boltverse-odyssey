@@ -44,7 +44,7 @@ Optional welcome still (X / SuperGrok, once): the gift page on the player — no
 
 ## Technical door
 
-[README.md](README.md) “For Grok”. Optional.
+[README.md](README.md) “For Grok”. Optional. Endless-lane / biome runner recipe lives in `StarBoltSprint/bolt-lane-recipe` (private).
 
 ## One line
 
