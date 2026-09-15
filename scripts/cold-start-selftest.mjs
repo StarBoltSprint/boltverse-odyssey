@@ -2,7 +2,7 @@
 // Fixture: brand-new Grok reads these first.
 // HARD SPLIT (SmiR 2026-09-12): Agent obligatoire for STYLE stills when restyling.
 // Video cook stays imagine-hooks / cook-room first+last. Never Agent for walks/breaths.
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -276,6 +276,17 @@ must(/keep the split|Keep the split/.test(body("GROK.md")), "GROK.md: keep the s
 must(/keep the split|Keep the split/.test(body("README.md")), "README.md: keep the split until merge");
 must(/Grok chat = console/.test(customize) && /Odyssey = the game/.test(customize), "GROK.md Customize: console / game");
 must(/play \/ lance/.test(customize) && /Interactive Play/.test(customize), "GROK.md Customize: play/lance → Interactive Play");
+must(existsSync(join(root, "stock/citadel/preview-loop.mp4")), "stock/citadel/preview-loop.mp4 present");
+must(existsSync(join(root, "stock/citadel/preview-first.jpg")), "stock/citadel/preview-first.jpg present");
+must(/stock\/citadel\/preview-loop/.test(body("GROK.md")), "GROK.md: Citadel teaser = stock/citadel/preview-loop");
+must(/stock\/citadel\/preview-loop/.test(body("README.md")), "README.md: Citadel teaser = stock/citadel/preview-loop");
+must(/stock\/citadel\/preview-loop/.test(body("START.md")), "START.md: Citadel teaser = stock/citadel/preview-loop");
+must(/stock\/citadel\/preview-loop/.test(agents), "AGENTS.md: Citadel teaser = stock/citadel/preview-loop");
+must(/dusk stock/.test(body("GROK.md")) && /dusk stock/.test(body("README.md")), "GROK.md + README.md: Biome teaser = dusk stock");
+must(/dusk stock/.test(body("START.md")) && /dusk stock/.test(agents), "START.md + AGENTS.md: Biome teaser = dusk stock");
+must(!/Do \*\*not\*\* commit binaries here/.test(body("GROK.md")), "GROK.md: Citadel stock binaries are committed");
+must(!/Do \*\*not\*\* add binaries to this repo/.test(body("README.md")), "README.md: Citadel stock binaries are committed");
+must(!/no binaries in this repo/.test(agents), "AGENTS.md: Citadel stock binaries are committed");
 
 const hooks = body("scripts/imagine-hooks.mjs");
 must(/Not Imagine Agent/.test(hooks) && /last_frame/.test(hooks), "imagine-hooks: films = first+last, not Agent");

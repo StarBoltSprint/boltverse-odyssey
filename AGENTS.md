@@ -30,7 +30,7 @@ Read **[GROK.md](GROK.md)** next. Stills = **[LAYOUT.md](LAYOUT.md)** + RIG-PROM
 **Entry:** humans [START.md](START.md) · console + kitchen [GROK.md](GROK.md) · this file = cook refuse.  
 **Product:** Grok chat = **console**. Odyssey = **the game**. Chat = boot / teaser / choice. Interactive Play (Grok Build / sandbox) = tappable. Chat mp4s are **not** hitboxes.
 
-**On “play / lance Boltverse Odyssey”:** (1) post 2 stock preview mp4s — Citadel | Biome — teaser only, no binaries in this repo (2) ask **Citadel** or **Biome** (3) open that Interactive Play (4) Play videos **loop forever** (`muted playsInline autoPlay loop` + watchdog re-play on pause/ended).
+**On “play / lance Boltverse Odyssey”:** (1) post 2 stock teasers — Citadel preview mp4 = [`stock/citadel/preview-loop.mp4`](stock/citadel/preview-loop.mp4) (poster `stock/citadel/preview-first.jpg`); Biome teaser still = `bolt-lane-recipe` dusk stock (do not commit biome binaries here) — teaser only (2) ask **Citadel** or **Biome** (3) open that Interactive Play (4) Play videos **loop forever** (`muted playsInline autoPlay loop` + watchdog re-play on pause/ended). Loop the Citadel stock in Play; in chat as preview.
 
 **Citadel** = this repo (rooms / Hang / `cook-room`). **Biome / lane** = `StarBoltSprint/bolt-lane-recipe` (private). SmiR may later merge lane-recipe here — until then keep the split. Do **not** cook biomes, lanes, three-takes, or film-stack here.
 
