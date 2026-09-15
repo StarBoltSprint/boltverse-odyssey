@@ -42,7 +42,7 @@ Catalog slots only: moss · ember · dusk · asteroid · frost · ivy · ash · 
 
 Lane / biome living-film is **another job**: `node scripts/cook-biome.mjs <id>`. Not cook-room.
 
-Imagine film-stack biome (empty plates + gallop video layer) is **another job**: [FILM-STACK.md](FILM-STACK.md) + [COOK-BIOME-25D.md](COOK-BIOME-25D.md). Not cook-room. Not `cook-biome.mjs`.
+Imagine film-stack biome is **another job**: [FILM-STACK.md](FILM-STACK.md) + [COOK-BIOME-25D.md](COOK-BIOME-25D.md). **PRIMARY runner = 3-take L/M/R** (path+Bolt in the road). Assets stack = empty plates + gallop video layer (ZERO Bolt/path). Cutout = fallback only. Not cook-room. Not `cook-biome.mjs`.
 
 `scripts/cook-room.mjs` + `scripts/imagine-hooks.mjs` = **video cook** (walks / breaths / films) and CLI first-seal / batch stills. Agent is **not** the film path.
 

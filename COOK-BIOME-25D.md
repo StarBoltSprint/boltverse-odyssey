@@ -2,9 +2,11 @@
 
 **Cold-start.** No chat history required. Hall / citadel is a **different job**.
 
-Engine locks (SmiR 2026-09-14): **[FILM-STACK.md](FILM-STACK.md)** — film-stack, gallop video layer, global light bus, PathGen ribbon, city-enter brief.
+Engine locks (SmiR 2026-09-14 / 2026-09-15): **[FILM-STACK.md](FILM-STACK.md)** — **3-take lane PRIMARY**, assets film-stack, gallop video layer, global light bus, PathGen ribbon (replayability when applicable), city-enter brief, L/R-fail cutout fallback.
 
-Lock: Imagine **film-stack** — empty full-frame plates + movable Imagine **video** assets + generators. Playable Bolt is an Imagine **gallop video loop**, not the old still 2.5D card. Not Unreal. Not a 3D mesh requirement. PathGen = Imagine luminous **ribbon** loops — never CSS neon, never pixel CV.
+**PRIMARY for this runner:** three synced baked takes L / M / R (path + Bolt painted into the road). Not one cutout slid sideways.
+
+**Assets stack (when in use):** empty full-frame plates + movable Imagine **video** assets + generators. Playable Bolt is an Imagine **gallop video loop**, not the old still 2.5D card. Empty plate = **ZERO Bolt, ZERO luminous follow-path.** PathGen = Imagine luminous **ribbon** loops — never CSS neon, never pixel CV. Not Unreal. Not a 3D mesh requirement.
 
 Source lock (SmiR KEEP sprint plate work): [bolt-hybrid `docs/07-imagine-25d-recipe.md`](https://github.com/StarBoltSprint/bolt-hybrid/blob/cursor/imagine-25d-recipe-193f/docs/07-imagine-25d-recipe.md) ([PR](https://github.com/StarBoltSprint/bolt-hybrid/pull/2)).
 
@@ -18,19 +20,67 @@ This repo cooks the plates. The runnable 2.5D **app** is bolt-hybrid `play/` —
 |---|---|---|---|
 | citadel / salle / hall | hall films (Bolt **in** the stills) | [COOK.md](COOK.md) | `cook-room.mjs` |
 | biome / sprint / lane **living-film** | Bolt **baked into** the plate | [COOKLANE.md](COOKLANE.md) | `cook-biome.mjs` |
-| **2.5D** / empty plate / film-stack / Bolt **gallop video** / any-style biome sprint | **this page** + [FILM-STACK.md](FILM-STACK.md) | here | `cook-biome-25d.mjs` |
+| **2.5D** / empty plate / film-stack / Bolt **gallop video** / any-style biome sprint | **this page** (assets stack) + [FILM-STACK.md](FILM-STACK.md) | here | `cook-biome-25d.mjs` |
+| **3-take** / swipe lane / L M R takes | **PRIMARY runner** — three synced baked takes | [FILM-STACK.md](FILM-STACK.md) + here | Imagine first+last (not `cook-biome.mjs`) |
 
-`cook-biome.mjs` **bakes Bolt into the reel** (`lane:true`). Illegal for this stack. Do not call it.
+`cook-biome.mjs` **bakes Bolt into the living-film reel** (`lane:true`). Illegal for the **assets** stack. Do not call it. 3-take bakes path+Bolt **on purpose** — that is [FILM-STACK.md](FILM-STACK.md), not COOKLANE.
 
 Do not `cook-room`. Do not Hang these plates on https://boltverse-odyssey.grok.me. Do not scaffold a player.
 
-**Any style** = décor / biome *look* is free (ice, ember, city, moss, void, whatever). The rails below are **hard locks**. Paint does not unlock a pan, a path, a dog in the plate, or chat Imagine video.
+**Any style** = décor / biome *look* is free (ice, ember, city, moss, void, whatever). The rails below are **hard locks**. Paint does not unlock a pan, chat Imagine video, or (assets stack) a path / dog in the **empty** plate. 3-take **must** paint path+Bolt — that is [3-take](#3-take-lane--primary-runner), not a décor unlock.
 
 ---
 
-## Stack (Imagine-only)
+## 3-take lane — PRIMARY runner
 
-Engine = **Imagine film-stack**: full-frame plates + playable Bolt **gallop video** + PathGen ribbon + (later) obstacles as Imagine video assets. Law: [FILM-STACK.md](FILM-STACK.md).
+Law (once): [FILM-STACK.md — 3-take](FILM-STACK.md#3-take-lane-system-primary-for-this-runner).
+
+Bolt is **NOT** one cutout slid sideways. Cook **three** synced baked takes **L / M / R**: **path + Bolt painted into the road**.
+
+| Lock | Law |
+|---|---|
+| Camera | **Same locked camera.** Same millimeter. **9:16.** No pan / tilt / zoom / dolly |
+| Road | Same **3-lane** futuristic city-style avenue on every take |
+| Void | Pure **BLACK** void **outside** the road |
+| Décor | World décor = **separate later plate** filling the black. **Never** bake canyon / skyline / arrows / décor into the takes |
+| Ribbon | **ONE** luminous ribbon **FOLLOWS Bolt’s lane** (under him on **L**, mid on **M**, right on **R**). Must **NOT** stay stuck on mid when he’s L / R |
+| Identity | Identical Bolt (full-white coat forever; décor-matching skin ON TOP OK). Same **scale**, **gait tempo**, **travelling speed**, **loop length** |
+| Sync | **HARD sync.** Shared `currentTime`. **Mid = master.** L / R must match mid |
+| Reject | Tilted road / smaller Bolt / tunnel / mismatched ribbon → **recook** that take |
+
+Hooks: `imagineClip` `image` + **`last_frame`**. Same [Law 0](#law-0--first--last-last_frame--same-hooks-as-the-hall). Never Agent / chat Imagine video. Cap 2 per take.
+
+`cook-biome-25d.mjs` still cooks **empty** assets-stack plates. Do **not** send 3-take Bolt+path into that empty-plate script.
+
+### Swipe (play)
+
+| Lock | Law |
+|---|---|
+| Step | **One lane per swipe** |
+| Motion | Short **lunge / lean** then **cut-on-action** to the take where he **already stands** |
+| Edge | Edge **bumps** (no fourth lane) |
+| Dots | Dots = **live take** |
+
+**PLAY FIX — L / R must not freeze as stills.** Picture never stops.
+
+On `slideChange`: sync `currentTime` from the mid master (or the outgoing live take), then `.play()` the **visible** take; **pause** the others **OR** keep all three **decoding** under `opacity: 0`.
+
+| Banned | Why |
+|---|---|
+| One-clip **pan / slide** of the whole **mid** video as a lane change | Camera **drifts** |
+| Carousel of **frozen** side stills | L / R become posters |
+
+### Fallback if L / R cooks fail
+
+Keep **mid** as the only live quality clip. Soft-key Bolt **cutout**; mid **path keeps scrolling**; swipe **repositions the cutout** L / M / R with the same lunge. Prefer **matching L / R recooks**. Cutout is **fallback, not default**.
+
+Do not ship cutout while good L / R takes exist. Do not pan the mid clip to fake a missing take.
+
+---
+
+## Stack (Imagine-only) — assets stack
+
+Engine = **Imagine film-stack** **when using the assets stack**: full-frame plates + playable Bolt **gallop video** + PathGen ribbon + (later) obstacles as Imagine video assets. Law: [FILM-STACK.md](FILM-STACK.md). Empty plate = **ZERO Bolt, ZERO path**. PathGen = procedural ribbon for **replayability** when this stack applies.
 
 | Lock | Value |
 |---|---|
@@ -52,9 +102,11 @@ Engine = **Imagine film-stack**: full-frame plates + playable Bolt **gallop vide
 [ props / VFX VIDEO — same light bus ]
 ```
 
+**Assets stack only.** 3-take PRIMARY paints path+Bolt **into** the takes — see [3-take](#3-take-lane--primary-runner). Do not apply ZERO-Bolt to those clips.
+
 1. **Plate behind** — Imagine mp4, full-frame previs. The clip never touches the playable paws. **ZERO** Bolt. **ZERO** luminous follow-path (subtle rails / curbs OK).
 2. **Bolt** — Imagine **gallop video loop** in front (lower third, rear / full-white coat). **Not** the old still 2.5D card. Not a 3D mesh requirement.
-3. **PathGen** — procedural Imagine **ribbon** (one luminous road ahead). Neon CSS sticker is **banned**. Do **not** bake the follow-path into the plate.
+3. **PathGen** — procedural Imagine **ribbon** (one luminous road ahead) for **replayability**. Neon CSS sticker is **banned**. Do **not** bake the follow-path into the **empty** plate.
 4. **Obstacles** — Imagine video props + time-rail hits `(t, lane)`. No CV on pixels. City-enter plates may show 2–3 dodge obstacles **in the picture** without slowing travel.
 
 ---
@@ -67,8 +119,8 @@ Engine = **Imagine film-stack**: full-frame plates + playable Bolt **gallop vide
 | Length | **8–12 s** |
 | Camera | **lock-off** (no pan, tilt, zoom, dolly) |
 | Travel | sprint travelling **baked in the cook** |
-| Path | **ZERO** luminous follow-path in the plate (rails / curbs OK; mandatory route **not** baked) |
-| Cast | **ZERO** Bolt / dog in the plate |
+| Path | **ZERO** luminous follow-path in the **empty** plate (rails / curbs OK; mandatory route **not** baked). 3-take: ribbon **is** in the take and **follows that lane** |
+| Cast | **ZERO** Bolt / dog in the **empty** plate. 3-take: Bolt **is** in each take |
 | Stitch | plate N+1 **first frame = plate N last frame** |
 | Speed | **SAME** felt sprint travelling plate 1..N ([SPEED REF](#speed-ref--plate-1-keep-imagine-prompt) plate-1 KEEP is the Imagine target) |
 | Rate | Live **`rate(t)`** corrector — **not** a constant per-plate `playbackRate`. Band **1.0–1.6** (typical **1.3–1.5**). **Never 2×+.** |
@@ -324,11 +376,11 @@ Hooks send `EMPTY_PLATE_LAW` + SPEED REF rails + the style paint. Adapt décor o
 
 ## City enter — plate 2
 
-Continues from **plate 1 last frame** (`image` + `last_frame`). **Next plate after the canyon.** Cook brief lock (SmiR 2026-09-14): [FILM-STACK.md — City enter](FILM-STACK.md#city-enter-plate-cook-brief).
+Continues from **plate 1 last frame** (`image` + `last_frame`). **Next plate after the canyon.** Cook brief lock (SmiR 2026-09-14 / 2026-09-15): [FILM-STACK.md — City enter](FILM-STACK.md#city-enter-plate-cook-brief).
 
-**Reveal:** denser futuristic **Mars city entry** — ships / hover craft, denser street canyon, glass domes / needle spires, **2–3 dodge obstacles in the picture**. Ultra detailed.
+**Reveal (assets-stack empty plate):** denser futuristic **Mars city entry** — ships / hover craft, denser street canyon, glass domes / needle spires, **2–3 dodge obstacles in the picture**. Ultra detailed. This décor plate may later **fill the black void** behind 3-take roads. **Never** bake canyon / skyline / arrows into the L / M / R takes.
 
-Travelling **FULL SPEED constant** (never-slow exception). Obstacles are **dodge-only** — they **must not** slow this plate. Same sprint speed as [SPEED REF](#speed-ref--plate-1-keep-imagine-prompt) (world rushes hard). Same rails: **ZERO** luminous follow-path, **ZERO** Bolt, **NO UI chrome**, 9:16, lock-off.
+Travelling **FULL SPEED constant** (never-slow exception). Obstacles are **dodge-only** — they **must not** slow this plate. Same sprint speed as [SPEED REF](#speed-ref--plate-1-keep-imagine-prompt) (world rushes hard). Same rails on the **empty** plate: **ZERO** luminous follow-path, **ZERO** Bolt, **NO UI chrome**, 9:16, lock-off.
 
 Haze at the stitch is OK (continuity from the canyon). The city is **in** the street — not a far postcard.
 
@@ -350,7 +402,7 @@ Haze at the stitch is OK (continuity from the canyon). The city is **in** the st
 |---|---|---|
 | 1 | KEEP empty sprint. Travel baked. ZERO path, ZERO Bolt. | **yes** |
 | 2 | **City enter** — denser Mars city, ships, 2–3 dodge obstacles, **never-slow**. ZERO path, ZERO Bolt. | **yes** |
-| 3+ | Lane **L / M / R** chart can bake later | **NO.** Do not implement plate-3 cook now. |
+| 3+ | Lane **L / M / R** **chart** (empty-plate routes) can bake later | **NO.** Do not implement plate-3 cook now. **3-take** L/M/R clips are a **different** job — [3-take](#3-take-lane--primary-runner), not this chart. |
 
 Extract plate 2 last frame if a later convo cooks 3+. This script stops at 2.
 
@@ -388,7 +440,9 @@ Runnable gallop layer + stitch live in bolt-hybrid `play/` (see [Play app](#play
 
 PathGen is the **procedural luminous ribbon** (Imagine alpha / black video loops: `straight` / `curve-L` / `curve-R`). **Not** neon CSS. Full lock: [FILM-STACK.md — PathGen](FILM-STACK.md#pathgen-procedural-ribbon).
 
-**Why procedural:** the same plates must replay with **different L / M / R routes**. Baking the follow-path into the plate = the same road every run = **FAIL for replayability**.
+**Why procedural (assets stack / replayability):** the same **empty** plates must replay with **different L / M / R routes**. Baking the follow-path into an assets-stack plate = the same road every run = **FAIL for replayability**.
+
+**3-take exception:** the ribbon **is** painted into each take and **must follow that take’s lane**. That is not PathGen-on-empty-plate. Do not freeze the 3-take ribbon on mid when Bolt is L / R.
 
 | Lock | Law |
 |---|---|
@@ -415,14 +469,17 @@ The ribbon is a **layer**, not a plate bake. Neon CSS remains **banned** (the ol
 
 ## Play loop order
 
-One thing at a time.
+One thing at a time. **3-take is PRIMARY for this runner** — do not skip it for a cutout or a mid-clip pan.
 
-1. **KEEP** one fast empty plate (rails PASS) — this is the speed reference
+1. **KEEP** one fast empty plate (rails PASS) — this is the speed reference (assets stack / décor later-plate)
 2. Erase any neon PathGen overlay (sticker stays **banned** — do not resurrect CSS)
-3. Cook plate 2 from plate 1 last frame + stitch — **city enter**, never-slow, 2–3 dodge obstacles in picture, zero baked path, zero Bolt
+3. Cook plate 2 from plate 1 last frame + stitch — **city enter**, never-slow, 2–3 dodge obstacles in picture, zero baked path, zero Bolt (**assets-stack** empty plate). Décor that fills 3-take black void = this later plate, not paint inside the takes
 4. Auto speed-match → `playlist.json` **`rateCurve`** (live `rate(t)`, band 1.0–1.6; long stretch >1.6 recook)
-5. Plant the Bolt **gallop video** (`groundY`, `pictureTime` + live rate, contact shadow) + **[light bus](FILM-STACK.md#global-light-bus)** ~10×/s (every ~0.1 s)
-6. PathGen = one Imagine ribbon ahead of the paws (straight / curve-L / curve-R). Plate 3+ L/M/R chart later. Obstacles `(t, lane)` on the time-rail — city-enter dodge-only must not slow the plate
+5. **PRIMARY:** cook three synced L / M / R takes (path+Bolt in the road, ribbon follows his lane, black void outside). HARD sync to mid. Reject tilt / scale / tunnel / stuck-mid ribbon
+6. Plant play: swipe = one lane, lunge, cut-on-action. On `slideChange` sync `currentTime` then `.play()` the visible take (pause others **or** decode under opacity 0). Picture never stops
+7. Assets-stack plant (when that stack is in use): Bolt **gallop video** (`groundY`, `pictureTime` + live rate, contact shadow) + **[light bus](FILM-STACK.md#global-light-bus)** ~10×/s (every ~0.1 s). PathGen = one Imagine ribbon ahead of the paws
+8. If L / R FAIL: mid-only live clip + soft-key **cutout** fallback (path keeps scrolling). Prefer recook L / R. Never ship a mid-clip pan as a lane
+9. Plate 3+ L/M/R **chart** (empty-plate routes) later. Obstacles `(t, lane)` on the time-rail — city-enter dodge-only must not slow the plate
 
 ---
 
@@ -448,9 +505,16 @@ Hall player stays https://boltverse-odyssey.grok.me — **do not** publish a new
 
 ## FAIL (recook that plate, do not ship)
 
-- Bolt / dog / silhouette / second animal in the plate
-- Luminous follow-path baked into the plate / Y-fork / neon sticker / CSS bars sold as PathGen
+- Bolt / dog / silhouette / second animal in the **empty** plate (assets stack)
+- Luminous follow-path baked into the **empty** plate / Y-fork / neon sticker / CSS bars sold as PathGen
 - PathGen as three always-on neon lanes, or a ribbon that does not form ahead of the paws
+- 3-take sold as **one cutout** slid sideways (PRIMARY is three baked takes)
+- 3-take ribbon stuck on **mid** when Bolt is L / R
+- Canyon / skyline / arrows / décor baked **into** a 3-take (void must stay black; décor is a later plate)
+- Tilted road / smaller Bolt / tunnel / mismatched ribbon / desynced gait or loop length (mid is master)
+- Lane change = **pan / slide** of the whole mid clip (camera drifts)
+- Carousel of **frozen** L / R stills — or L / R that do not `.play()` after `slideChange` (picture stops)
+- Cutout shipped as **default** while L / R recooks were not tried (fallback only)
 - Chat Imagine UI without `last_frame`
 - Imagine Agent video
 - `cook-biome.mjs` / `lane:true` (dog baked in)
@@ -480,4 +544,4 @@ Cap 2. FAIL → `biomes-25d/<style>/.kitchen/fail/` then delete from `films/`. N
 
 ## One line
 
-**Hall = dog in the room. COOKLANE = dog in the reel. This page = empty reel + planted gallop video.** Style is free. Rails are not. Light bus + PathGen ribbon: [FILM-STACK.md](FILM-STACK.md).
+**Hall = dog in the room. COOKLANE = living-film dog in the reel. PRIMARY runner = three synced baked takes. Assets stack = empty reel + planted gallop video.** Style is free. Rails are not. 3-take + light bus + PathGen: [FILM-STACK.md](FILM-STACK.md).

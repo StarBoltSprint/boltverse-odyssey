@@ -53,8 +53,8 @@ Search: `StarBoltSprint citadel-room` · living film · boltverse-odyssey.grok.m
 | [CHAR.md](CHAR.md) | Bolt lock — the dog never changes |
 | [RIG.md](RIG.md) | **styles first** — black plates + one hall, three poses, never two Bolts |
 | [COOK.md](COOK.md) | stills-first cook (Agent restyle), then films via hooks first+last |
-| [FILM-STACK.md](FILM-STACK.md) | Imagine film-stack locks (SmiR 2026-09-14) — empty plate + gallop video + light bus + PathGen ribbon. Not hall. |
-| [COOK-BIOME-25D.md](COOK-BIOME-25D.md) | Imagine-only 2.5D biome cook — empty plates + Bolt gallop video; SPEED REF plate-1 KEEP + same-speed + light bus. Not hall. |
+| [FILM-STACK.md](FILM-STACK.md) | Imagine film-stack locks (SmiR 2026-09-14 / 09-15) — **3-take PRIMARY** + assets empty plate + gallop + light bus + PathGen. Not hall. |
+| [COOK-BIOME-25D.md](COOK-BIOME-25D.md) | Imagine-only 2.5D biome cook — 3-take cook/play + empty plates + SPEED REF + same-speed + light bus. Not hall. |
 | [COOKROOM.md](COOKROOM.md) | hall films — `node scripts/cook-room.mjs <slot>` (`image` + `last_frame`) |
 | [AGENTS.md](AGENTS.md) | cold-start HARD SPLIT: Agent = STYLE stills; video = hooks first+last |
 | [GROK.md](GROK.md) | how to rebuild the hall |

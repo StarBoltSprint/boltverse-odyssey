@@ -4,7 +4,7 @@ One table. Forge / voice / Hang **index** this row. They do not invent.
 
 Lane cook = `node scripts/cook-biome.mjs <id>` — reads [palettes/forest-palette.json](palettes/forest-palette.json).  
 **Not** `cook-room.mjs`. 10 reels, 0 atA. [COOKLANE.md](COOKLANE.md).  
-Imagine-only 2.5D empty plates + gallop video (any style) = [FILM-STACK.md](FILM-STACK.md) + [COOK-BIOME-25D.md](COOK-BIOME-25D.md). Not `cook-biome`. Hall stays separate.
+Imagine-only 2.5D (any style) = [FILM-STACK.md](FILM-STACK.md) + [COOK-BIOME-25D.md](COOK-BIOME-25D.md). **PRIMARY runner = 3-take L/M/R.** Assets stack = empty plates + gallop video. Not `cook-biome`. Hall stays separate.
 
 This does **not** replace [CATALOG.md](CATALOG.md) paints.
 
