@@ -32,7 +32,7 @@ Grok does not paste Imagine prompts in chat when the script can run.
 Tap never cooks. [DONT.md](DONT.md).
 
 Lane / biome cook is **not** this page. That is [COOKLANE.md](COOKLANE.md). `citadel moss` → here. `biome forest` → there.  
-Imagine-only 2.5D empty plates + card = [COOK-BIOME-25D.md](COOK-BIOME-25D.md). Not `cook-biome.mjs`.
+Imagine-only 2.5D = [FILM-STACK.md](FILM-STACK.md) + [COOK-BIOME-25D.md](COOK-BIOME-25D.md). **PRIMARY runner = 3-take.** Assets stack = empty plates + gallop video. Not `cook-biome.mjs`.
 
 ## Command
 

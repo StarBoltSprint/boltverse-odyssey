@@ -79,6 +79,10 @@ lane-running + play-fail     → Lane decay, stay
 
 Auto-return at `t_run > 70` · WASD · recook moss on the exit tap · `playbackRate` 1.1.
 
+## Other job — Imagine film-stack biome
+
+**PRIMARY runner = 3-take L/M/R** (path+Bolt baked into three synced takes; swipe = lunge + cut-on-action). Assets stack = empty plates + gallop video layer + PathGen ribbon (replayability). Cutout = L/R-fail fallback only. **Not this curtain.** Hall Enter ↔ living-film Lane stays this page. [FILM-STACK.md](FILM-STACK.md) [COOK-BIOME-25D.md](COOK-BIOME-25D.md).
+
 ## One line
 
 **Enter poses the dog; first hung plate makes him run; return is another threshold.** No clip = you stay in the forest. The storm dies at the join. A join is a copied last frame. Peak does not push the door.

@@ -63,7 +63,7 @@ STYLE stills = Imagine Agent. Video = `scripts/imagine-hooks.mjs`:
 Then `smoke-pack.mjs`. PASS → `packs/<id>/`. FAIL ×2 → stock. Never a chat mp4 in `films/`. **Smoke still gates.**
 
 Lane: `node scripts/cook-biome.mjs <id>` (same hooks, other job). Not `cook-room`.  
-Imagine-only 2.5D (empty plates + card, any style) = [COOK-BIOME-25D.md](COOK-BIOME-25D.md). Not `cook-biome.mjs` (that bakes Bolt).
+Imagine-only 2.5D film-stack = [FILM-STACK.md](FILM-STACK.md) + [COOK-BIOME-25D.md](COOK-BIOME-25D.md). **PRIMARY runner = 3-take L/M/R** (path+Bolt in the road, ribbon follows his lane). Assets stack = empty plates + gallop video layer (ZERO Bolt/path in the plate). Cutout = L/R-fail fallback only. Not `cook-biome.mjs` (that is living-film).
 
 One-shot walk (hooks first+last — never Agent):
 
@@ -237,7 +237,7 @@ The player URL IS the hall. Opening it plays **breath-spawn**. No Play / Forge /
 
 Humans see [START.md](START.md) only. Recook or stock. Give a URL.
 
-Gift: [TICKET.md](TICKET.md). False help: [DONT.md](DONT.md). Corridor hall: [COOKROOM.md](COOKROOM.md). Lane: [COOKLANE.md](COOKLANE.md). Imagine-only 2.5D: [COOK-BIOME-25D.md](COOK-BIOME-25D.md).
+Gift: [TICKET.md](TICKET.md). False help: [DONT.md](DONT.md). Corridor hall: [COOKROOM.md](COOKROOM.md). Lane: [COOKLANE.md](COOKLANE.md). Imagine film-stack 2.5D (3-take PRIMARY + assets stack): [FILM-STACK.md](FILM-STACK.md) + [COOK-BIOME-25D.md](COOK-BIOME-25D.md).
 
 ## One line
 

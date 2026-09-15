@@ -10,6 +10,7 @@
  * SPEED REF = COOK-BIOME-25D.md § SPEED REF — plate-1 KEEP Imagine prompt
  * (verbatim recook: Much FASTER / world rushes hard). Binary KEEP = plate-empty-keep.mp4.
  * Imagine-side target; this script's rate(t) remains the post-cook filet.
+ * Plate 2 = city enter (never-slow). PathGen = Imagine ribbon layer, not a plate bake.
  * Plate 3+ L/M/R later — do not cook plate 3 here.
  * Hall stays separate. Do not Hang on boltverse-odyssey.grok.me.
  */
@@ -50,7 +51,7 @@ const paint1 =
   " biome sprint corridor, atmospheric haze, CLEAR empty center, ZERO luminous path, ZERO dog";
 const paint2 =
   id +
-  " grade — futuristic city emerging from haze, distant domes / spires / neon, CLEAR empty center, ZERO path, ZERO dog";
+  " grade — denser futuristic Mars city ENTRY, ships / hover craft, street canyon, glass domes / needle spires, 2-3 dodge obstacles in picture, NEVER-slow, ZERO luminous path, ZERO dog";
 
 function extractLast(mp4, dest) {
   const r = spawnSync(
@@ -80,9 +81,9 @@ function queue() {
     "rate(t) live SAMPLE_DT=0.1 — playbackRate corrector 1.0–1.6 (typical 1.3–1.5) — never 2×+; long stretch >1.6 recook travelling",
     "Law 0 plate 1 first+last distinct (emptyPlate imagineClip last_frame)",
     "CHAIN last(1) file IS first(2) — extract last frame, do not recut",
-    "plate 2 = same speed + city from haze + CLEAR center",
+    "plate 2 = city enter + never-slow + 2-3 dodge obstacles + ZERO baked path + ZERO Bolt",
     "plate 3+ L/M/R later — not this cook",
-    "auto tint ~10×/s (every 0.1s) light wrap (white coat forever). PathGen HOLD (no neon CSS).",
+    "light bus ~10×/s (every 0.1s) light wrap (white coat forever). PathGen = Imagine ribbon (no neon CSS).",
     "drop films + playlist.json → bolt-hybrid play/public/biomes/" + id + "/  (not packs/)",
   ];
 }
@@ -192,5 +193,5 @@ if (existsSync(film1) && existsSync(film2)) {
 
 out("PLATES " + id + " 2 empty clips");
 out("drop → bolt-hybrid play/public/biomes/" + id + "/  (films + playlist.json)");
-out("PathGen HOLD · tint light wrap · plate 3+ later · hall stays separate");
+out("PathGen ribbon · light bus wrap · plate 3+ later · hall stays separate");
 process.exit(0);

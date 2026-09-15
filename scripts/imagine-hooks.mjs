@@ -46,7 +46,7 @@ const EMPTY_PLATE_LAW = [
   "NEVER pan, tilt, zoom, or dolly.",
   "ZERO dogs. ZERO German Shepherds. ZERO animals. ZERO people.",
   "ZERO luminous floor paths. ZERO lightning on ground. ZERO Y-fork. ZERO portals. ZERO HUD. ZERO text.",
-  "CLEAR empty center corridor — the playable lane stays empty. Canyon/Mars OK.",
+  "ZERO baked follow-path (rails/curbs OK). CLEAR empty center corridor — no painted route. Canyon/Mars OK.",
 ].join(" ");
 
 export const EMPTY_PLATE = EMPTY_PLATE_LAW;
@@ -208,8 +208,8 @@ export function emptyPlateClipLine(paint, plate) {
     p === "2" || p === 2
       ? [
           "Match KEEP plate-1 SPEED REF travelling (world rushes hard). Same sprint speed as the first frame. World ADVANCED from that last frame — do not cut to a new establishing shot.",
-          "A futuristic city begins to emerge from haze in the distance: distant domes, spires, neon.",
-          "Keep a CLEAR empty center corridor. The city stays far. NEVER fill the playable lane.",
+          "Denser futuristic Mars city ENTRY: ships / hover craft, denser street canyon, glass domes / needle spires, 2–3 dodge obstacles in the picture. Ultra detailed.",
+          "Travelling FULL SPEED constant — NEVER slow for obstacles (never-slow city plate). ZERO luminous follow-path. Rails/curbs OK. ZERO Bolt. ZERO UI chrome.",
         ].join(" ")
       : "Same sprint travelling the whole clip as the KEEP plate-1 SPEED REF (world rushes hard / Much FASTER). World ADVANCED toward the last_frame. NEVER a still. NEVER a slow-down. NEVER a crawl. NEVER a 2x smash.";
   return [
@@ -226,7 +226,7 @@ export function emptyPlateStillLine(paint, plate) {
   const p = String(plate || "1");
   const city =
     p === "2" || p === 2
-      ? "Futuristic city emerging from haze — distant domes / spires / neon. CLEAR empty center corridor. City stays far."
+      ? "Denser futuristic Mars city ENTRY — ships / hover craft, denser street canyon, glass domes / needle spires, 2–3 dodge obstacles in picture. NEVER-slow travelling. ZERO luminous follow-path. ZERO Bolt. ZERO UI chrome."
       : "Empty sprint corridor. CLEAR empty center. Haze ok. No destination clutter in the lane.";
   return [EMPTY_PLATE_LAW, String(paint || "").trim(), city, "Still only. ZERO dogs. ZERO luminous paths."]
     .filter(Boolean)

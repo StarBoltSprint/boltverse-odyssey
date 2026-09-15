@@ -239,10 +239,13 @@ must(/Imagine-only/.test(biome25) && /2\.5D/.test(biome25), "COOK-BIOME-25D.md: 
 must(/9:16/.test(biome25) && /8–12/.test(biome25), "COOK-BIOME-25D.md: 9:16 + 8–12s");
 must(/lock-off/.test(biome25) && /ZERO/.test(biome25), "COOK-BIOME-25D.md: lock-off + ZERO path/Bolt");
 must(/last_frame/.test(biome25) && /imagine-hooks/.test(biome25), "COOK-BIOME-25D.md: first+last hooks");
-must(/groundY/.test(biome25) && /pictureTime/.test(biome25) && /Skating/.test(biome25), "COOK-BIOME-25D.md: Bolt card plant");
-must(/HOLD/.test(biome25) && /neon/.test(biome25), "COOK-BIOME-25D.md: PathGen HOLD, no neon sticker");
+must(/groundY/.test(biome25) && /pictureTime/.test(biome25) && /Skating/.test(biome25), "COOK-BIOME-25D.md: Bolt gallop plant");
+must(/gallop video/.test(biome25) && /not the old still|retired/.test(biome25), "COOK-BIOME-25D.md: playable Bolt is gallop video, not a still card");
+must(/ribbon/.test(biome25) && /neon/.test(biome25) && /banned/.test(biome25), "COOK-BIOME-25D.md: PathGen ribbon, neon CSS banned");
+must(/replay/.test(biome25) && /L \/ M \/ R|L \/ M \/ R routes/.test(biome25), "COOK-BIOME-25D.md: PathGen procedural for replayability");
 must(/\(t, lane\)/.test(biome25), "COOK-BIOME-25D.md: obstacles time-rail");
-must(/futuristic city/.test(biome25) && /haze/.test(biome25) && /CLEAR/.test(biome25), "COOK-BIOME-25D.md: plate 2 city from haze");
+must(/city enter|City enter/.test(biome25) && /never-slow/.test(biome25) && /dodge/.test(biome25), "COOK-BIOME-25D.md: plate 2 city enter never-slow");
+must(/FILM-STACK\.md/.test(biome25) && /light bus/.test(biome25), "COOK-BIOME-25D.md: points at FILM-STACK light bus");
 must(/any style|Any style/.test(biome25), "COOK-BIOME-25D.md: any style décor free");
 must(/bolt-hybrid/.test(biome25) && /play\//.test(biome25), "COOK-BIOME-25D.md: points to bolt-hybrid play/");
 must(/Chat Imagine UI/.test(biome25) && /banned/.test(biome25), "COOK-BIOME-25D.md: chat Imagine banned");
@@ -264,8 +267,24 @@ must(/10×\/s|10 Hz|every ~0\.1/.test(biome25) && /0\.1 s/.test(biome25), "COOK-
 must(/white coat forever/.test(biome25) && /grey/.test(biome25), "COOK-BIOME-25D.md: tint is not a grey morph");
 must(/Plate 3|plate 3/.test(biome25) && /Do not implement plate-3|do not implement plate 3|not this cook/.test(biome25), "COOK-BIOME-25D.md: no plate-3 cook now");
 must(/COOK-BIOME-25D\.md/.test(body("COOK.md")), "COOK.md: points at 2.5D recipe");
+must(/FILM-STACK\.md/.test(body("COOK.md")) && /gallop video/.test(body("COOK.md")), "COOK.md: film-stack + gallop video, not card-as-current");
 must(/COOK-BIOME-25D\.md/.test(body("README.md")), "README.md: points at 2.5D recipe");
+must(/FILM-STACK\.md/.test(body("README.md")), "README.md: points at FILM-STACK");
 must(/same-speed|Same-speed/.test(body("COOK.md")), "COOK.md: same-speed pointer");
+must(/FILM-STACK\.md/.test(body("GROK.md")) && /gallop video/.test(body("GROK.md")), "GROK.md: film-stack + gallop video");
+must(/FILM-STACK\.md/.test(body("AGENTS.md")) && /gallop video/.test(body("AGENTS.md")), "AGENTS.md: film-stack as another job");
+must(/FILM-STACK\.md/.test(body("HANDOFF.md")) && /Not this curtain/.test(body("HANDOFF.md")), "HANDOFF.md: film-stack is not hall enter");
+
+const filmStack = body("FILM-STACK.md");
+must(/SmiR 2026-09-14/.test(filmStack) && /Imagine film-stack/.test(filmStack), "FILM-STACK.md: dated Imagine film-stack");
+must(/gallop video/.test(filmStack) && /not the old still|NOT the old still/.test(filmStack), "FILM-STACK.md: Bolt is gallop video, not card");
+must(/Global light bus|light bus/.test(filmStack) && /Do not hand-wrap|Do \*\*not\*\* hand-wrap/.test(filmStack), "FILM-STACK.md: one light bus");
+must(/procedural/.test(filmStack) && /ribbon/.test(filmStack) && /replay/.test(filmStack), "FILM-STACK.md: PathGen procedural ribbon");
+must(/never-slow/.test(filmStack) && /dodge-only/.test(filmStack), "FILM-STACK.md: city never-slow exception");
+must(/ZERO Bolt/.test(filmStack) && /ZERO luminous/.test(filmStack), "FILM-STACK.md: empty plate rails");
+must(/COOK\.md/.test(filmStack) && /different job/.test(filmStack), "FILM-STACK.md: hall is a different job");
+must(/Not Unreal|Not a 3D mesh/.test(filmStack), "FILM-STACK.md: no Unreal/mesh requirement");
+must(/paw dust/.test(filmStack) && /hard-key/.test(filmStack), "FILM-STACK.md: soft key + baked dust");
 
 const hooks = body("scripts/imagine-hooks.mjs");
 must(/Not Imagine Agent/.test(hooks) && /last_frame/.test(hooks), "imagine-hooks: films = first+last, not Agent");
