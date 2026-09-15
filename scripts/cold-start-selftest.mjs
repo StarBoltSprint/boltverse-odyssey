@@ -274,6 +274,13 @@ must(/same-speed|Same-speed/.test(body("COOK.md")), "COOK.md: same-speed pointer
 must(/FILM-STACK\.md/.test(body("GROK.md")) && /gallop video/.test(body("GROK.md")), "GROK.md: film-stack + gallop video");
 must(/FILM-STACK\.md/.test(body("AGENTS.md")) && /gallop video/.test(body("AGENTS.md")), "AGENTS.md: film-stack as another job");
 must(/FILM-STACK\.md/.test(body("HANDOFF.md")) && /Not this curtain/.test(body("HANDOFF.md")), "HANDOFF.md: film-stack is not hall enter");
+must(/THREE-TAKE-PLAY\.md/.test(body("FILM-STACK.md")), "FILM-STACK.md: points at THREE-TAKE-PLAY");
+must(/THREE-TAKE-PLAY\.md/.test(biome25), "COOK-BIOME-25D.md: points at THREE-TAKE-PLAY");
+must(/THREE-TAKE-PLAY\.md/.test(body("GROK.md")), "GROK.md: points at THREE-TAKE-PLAY");
+must(/THREE-TAKE-PLAY\.md/.test(body("AGENTS.md")), "AGENTS.md: points at THREE-TAKE-PLAY");
+must(/THREE-TAKE-PLAY\.md/.test(body("HANDOFF.md")), "HANDOFF.md: points at THREE-TAKE-PLAY");
+must(/THREE-TAKE-PLAY\.md/.test(body("README.md")), "README.md: points at THREE-TAKE-PLAY");
+must(/THREE-TAKE-PLAY\.md/.test(body("biomes-25d/README.md")), "biomes-25d/README.md: points at THREE-TAKE-PLAY");
 
 const filmStack = body("FILM-STACK.md");
 must(/SmiR 2026-09-14/.test(filmStack) && /Imagine film-stack/.test(filmStack), "FILM-STACK.md: dated Imagine film-stack");
@@ -285,6 +292,24 @@ must(/ZERO Bolt/.test(filmStack) && /ZERO luminous/.test(filmStack), "FILM-STACK
 must(/COOK\.md/.test(filmStack) && /different job/.test(filmStack), "FILM-STACK.md: hall is a different job");
 must(/Not Unreal|Not a 3D mesh/.test(filmStack), "FILM-STACK.md: no Unreal/mesh requirement");
 must(/paw dust/.test(filmStack) && /hard-key/.test(filmStack), "FILM-STACK.md: soft key + baked dust");
+must(/THREE-TAKE-PLAY\.md/.test(filmStack) && /kick\(\)/.test(filmStack), "FILM-STACK.md: 3-take PLAY clock is not kick()");
+
+const threeTakePlay = body("THREE-TAKE-PLAY.md");
+must(/3\.50/.test(threeTakePlay) && /already at 3\.50/.test(threeTakePlay), "THREE-TAKE-PLAY.md: 3.50 already on L");
+must(/7\.20/.test(threeTakePlay), "THREE-TAKE-PLAY.md: also test 7.20");
+must(/three living players/.test(threeTakePlay) && /one clock/.test(threeTakePlay), "THREE-TAKE-PLAY.md: three living players, one clock");
+must(/Do \*\*not\*\* extend `kick\(\)`/.test(threeTakePlay) && /currentTime = 0/.test(threeTakePlay), "THREE-TAKE-PLAY.md: do not extend kick()");
+must(/plate-N-L\.mp4/.test(threeTakePlay) && /plate-N-M\.mp4/.test(threeTakePlay) && /plate-N-R\.mp4/.test(threeTakePlay), "THREE-TAKE-PLAY.md: L/M/R files per plate");
+must(/-g 15/.test(threeTakePlay) && /keyint_min 15/.test(threeTakePlay), "THREE-TAKE-PLAY.md: short GOP encode");
+must(/80ms/.test(threeTakePlay), "THREE-TAKE-PLAY.md: duration smoke < 80ms");
+must(/poster/.test(threeTakePlay) && /display:none/.test(threeTakePlay), "THREE-TAKE-PLAY.md: poster + display:none banned");
+must(/clock\(\) = videos\.M\.currentTime/.test(threeTakePlay), "THREE-TAKE-PLAY.md: mid is clock master");
+must(/seekReady/.test(threeTakePlay) && /seeked/.test(threeTakePlay), "THREE-TAKE-PLAY.md: seekReady awaits seeked");
+must(/never\*\* snap mid onto L|never.*snap mid onto L/.test(threeTakePlay), "THREE-TAKE-PLAY.md: never snap mid onto L");
+must(/reused `kick\(\)`/.test(threeTakePlay) && /GOP too long/.test(threeTakePlay), "THREE-TAKE-PLAY.md: fail table");
+must(/identical/.test(threeTakePlay) && /mid copies/.test(threeTakePlay), "THREE-TAKE-PLAY.md: harness on identical mid copies");
+must(/COOK\.md/.test(threeTakePlay) && /different job/.test(threeTakePlay), "THREE-TAKE-PLAY.md: hall is a different job");
+must(!/walk-spawn-A/.test(threeTakePlay), "THREE-TAKE-PLAY.md: no hall walk grammar");
 
 const hooks = body("scripts/imagine-hooks.mjs");
 must(/Not Imagine Agent/.test(hooks) && /last_frame/.test(hooks), "imagine-hooks: films = first+last, not Agent");

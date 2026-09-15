@@ -4,6 +4,8 @@
 
 Engine locks (SmiR 2026-09-14 / 2026-09-15): **[FILM-STACK.md](FILM-STACK.md)** — **3-take lane PRIMARY**, assets film-stack, gallop video layer, global light bus, PathGen ribbon (replayability when applicable), city-enter brief, L/R-fail cutout fallback.
 
+**PLAY clock (once):** [THREE-TAKE-PLAY.md](THREE-TAKE-PLAY.md) — 3.50s / 7.20s swipe, three living `<video>`s, one mid master. `dom-swap` / `kick()` is plate stitch, **not** L/M/R.
+
 **PRIMARY for this runner:** three synced baked takes L / M / R (path + Bolt painted into the road). Not one cutout slid sideways.
 
 **Assets stack (when in use):** empty full-frame plates + movable Imagine **video** assets + generators. Playable Bolt is an Imagine **gallop video loop**, not the old still 2.5D card. Empty plate = **ZERO Bolt, ZERO luminous follow-path.** PathGen = Imagine luminous **ribbon** loops — never CSS neon, never pixel CV. Not Unreal. Not a 3D mesh requirement.
@@ -22,6 +24,7 @@ This repo cooks the plates. The runnable 2.5D **app** is bolt-hybrid `play/` —
 | biome / sprint / lane **living-film** | Bolt **baked into** the plate | [COOKLANE.md](COOKLANE.md) | `cook-biome.mjs` |
 | **2.5D** / empty plate / film-stack / Bolt **gallop video** / any-style biome sprint | **this page** (assets stack) + [FILM-STACK.md](FILM-STACK.md) | here | `cook-biome-25d.mjs` |
 | **3-take** / swipe lane / L M R takes | **PRIMARY runner** — three synced baked takes | [FILM-STACK.md](FILM-STACK.md) + here | Imagine first+last (not `cook-biome.mjs`) |
+| **3-take PLAY** / 3.50 swipe / one clock | three living players, mid master | [THREE-TAKE-PLAY.md](THREE-TAKE-PLAY.md) | bolt-hybrid `play/` (not `kick()`) |
 
 `cook-biome.mjs` **bakes Bolt into the living-film reel** (`lane:true`). Illegal for the **assets** stack. Do not call it. 3-take bakes path+Bolt **on purpose** — that is [FILM-STACK.md](FILM-STACK.md), not COOKLANE.
 
@@ -33,7 +36,7 @@ Do not `cook-room`. Do not Hang these plates on https://boltverse-odyssey.grok.m
 
 ## 3-take lane — PRIMARY runner
 
-Law (once): [FILM-STACK.md — 3-take](FILM-STACK.md#3-take-lane-system-primary-for-this-runner).
+Law (once): [FILM-STACK.md — 3-take](FILM-STACK.md#3-take-lane-system-primary-for-this-runner). Play clock (once): [THREE-TAKE-PLAY.md](THREE-TAKE-PLAY.md).
 
 Bolt is **NOT** one cutout slid sideways. Cook **three** synced baked takes **L / M / R**: **path + Bolt painted into the road**.
 
@@ -63,7 +66,9 @@ Hooks: `imagineClip` `image` + **`last_frame`**. Same [Law 0](#law-0--first--las
 
 **PLAY FIX — L / R must not freeze as stills.** Picture never stops.
 
-On `slideChange`: sync `currentTime` from the mid master (or the outgoing live take), then `.play()` the **visible** take; **pause** the others **OR** keep all three **decoding** under `opacity: 0`.
+**PLAY clock:** [THREE-TAKE-PLAY.md](THREE-TAKE-PLAY.md). Three `<video>`s, mid master, `seekReady`, no `kick()`. At 3.50 s on mid, swipe L → L is **already at 3.50 s**. Encode 3-take with `-g 15`. Without three KEEP takes, ship mid-only.
+
+On `slideChange`: sync `currentTime` from the mid master (or the outgoing live take), then `.play()` the **visible** take; **pause** the others **OR** keep all three **decoding** under `opacity: 0`. Do **not** call `kick()` (it resets `currentTime = 0`).
 
 | Banned | Why |
 |---|---|
@@ -206,6 +211,8 @@ ffmpeg -i in.mp4 -map 0:v:0 \
 ```
 
 No audio. `yuv420p` + `faststart`.
+
+**3-take encode** (L / M / R): same spirit, plus a short GOP so `currentTime = 3.50` does not snap to 3.00. Recipe + smoke before swipe: [THREE-TAKE-PLAY.md — Files per plate](THREE-TAKE-PLAY.md#0-files-per-plate) (`-g 15 -keyint_min 15 -sc_threshold 0`).
 
 ---
 
@@ -476,7 +483,7 @@ One thing at a time. **3-take is PRIMARY for this runner** — do not skip it fo
 3. Cook plate 2 from plate 1 last frame + stitch — **city enter**, never-slow, 2–3 dodge obstacles in picture, zero baked path, zero Bolt (**assets-stack** empty plate). Décor that fills 3-take black void = this later plate, not paint inside the takes
 4. Auto speed-match → `playlist.json` **`rateCurve`** (live `rate(t)`, band 1.0–1.6; long stretch >1.6 recook)
 5. **PRIMARY:** cook three synced L / M / R takes (path+Bolt in the road, ribbon follows his lane, black void outside). HARD sync to mid. Reject tilt / scale / tunnel / stuck-mid ribbon
-6. Plant play: swipe = one lane, lunge, cut-on-action. On `slideChange` sync `currentTime` then `.play()` the visible take (pause others **or** decode under opacity 0). Picture never stops
+6. Plant play: **[THREE-TAKE-PLAY.md](THREE-TAKE-PLAY.md)** — three living `<video>`s, one mid clock, pass 3.50 **AND** 7.20. Swipe = one lane, lunge, cut-on-action. On `slideChange` `seekReady` then `.play()` the visible take (pause others **or** decode under opacity 0). Picture never stops. Never `kick()`.
 7. Assets-stack plant (when that stack is in use): Bolt **gallop video** (`groundY`, `pictureTime` + live rate, contact shadow) + **[light bus](FILM-STACK.md#global-light-bus)** ~10×/s (every ~0.1 s). PathGen = one Imagine ribbon ahead of the paws
 8. If L / R FAIL: mid-only live clip + soft-key **cutout** fallback (path keeps scrolling). Prefer recook L / R. Never ship a mid-clip pan as a lane
 9. Plate 3+ L/M/R **chart** (empty-plate routes) later. Obstacles `(t, lane)` on the time-rail — city-enter dodge-only must not slow the plate
@@ -492,7 +499,7 @@ This repo is the **recipe**. The 2.5D app is **not** here.
 | [bolt-hybrid `play/`](https://github.com/StarBoltSprint/bolt-hybrid/tree/cursor/imagine-25d-recipe-193f/play) | runnable 2.5D Vite app — branch `biome-25d` / recipe branch |
 | `play/public/biomes/<id>/films/` | drop cooked plates |
 | `play/public/hybrid/run/` | Bolt **gallop video** (old still card retired) |
-| `play/src/dom-swap.ts` | vis/hid stitch |
+| `play/src/dom-swap.ts` | vis/hid **plate** stitch — **not** L/M/R. Do not extend `kick()` ([THREE-TAKE-PLAY.md](THREE-TAKE-PLAY.md)) |
 | [bolt-hybrid `game/`](https://github.com/StarBoltSprint/bolt-hybrid/tree/cursor/imagine-25d-recipe-193f/game) | Three.js hybrid proto (mesh + SprintCore) — **different stack**. Do not copy it here. |
 
 ```
@@ -514,6 +521,8 @@ Hall player stays https://boltverse-odyssey.grok.me — **do not** publish a new
 - Tilted road / smaller Bolt / tunnel / mismatched ribbon / desynced gait or loop length (mid is master)
 - Lane change = **pan / slide** of the whole mid clip (camera drifts)
 - Carousel of **frozen** L / R stills — or L / R that do not `.play()` after `slideChange` (picture stops)
+- 3-take swipe via `kick()` / L at 0.00 (plate stitch, not one clock) — [THREE-TAKE-PLAY.md](THREE-TAKE-PLAY.md)
+- 3-take GOP too long / no `seeked` (L snaps to 3.00) or opacity before `seeked` (black flash)
 - Cutout shipped as **default** while L / R recooks were not tried (fallback only)
 - Chat Imagine UI without `last_frame`
 - Imagine Agent video
@@ -544,4 +553,4 @@ Cap 2. FAIL → `biomes-25d/<style>/.kitchen/fail/` then delete from `films/`. N
 
 ## One line
 
-**Hall = dog in the room. COOKLANE = living-film dog in the reel. PRIMARY runner = three synced baked takes. Assets stack = empty reel + planted gallop video.** Style is free. Rails are not. 3-take + light bus + PathGen: [FILM-STACK.md](FILM-STACK.md).
+**Hall = dog in the room. COOKLANE = living-film dog in the reel. PRIMARY runner = three synced baked takes. PLAY clock = [THREE-TAKE-PLAY.md](THREE-TAKE-PLAY.md). Assets stack = empty reel + planted gallop video.** Style is free. Rails are not. 3-take + light bus + PathGen: [FILM-STACK.md](FILM-STACK.md).

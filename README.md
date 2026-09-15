@@ -54,6 +54,7 @@ Search: `StarBoltSprint citadel-room` · living film · boltverse-odyssey.grok.m
 | [RIG.md](RIG.md) | **styles first** — black plates + one hall, three poses, never two Bolts |
 | [COOK.md](COOK.md) | stills-first cook (Agent restyle), then films via hooks first+last |
 | [FILM-STACK.md](FILM-STACK.md) | Imagine film-stack locks (SmiR 2026-09-14 / 09-15) — **3-take PRIMARY** + assets empty plate + gallop + light bus + PathGen. Not hall. |
+| [THREE-TAKE-PLAY.md](THREE-TAKE-PLAY.md) | 3-take **PLAY clock** — 3.50s / 7.20s swipe, three living `<video>`s, one mid master. Not `kick()`. Not hall. |
 | [COOK-BIOME-25D.md](COOK-BIOME-25D.md) | Imagine-only 2.5D biome cook — 3-take cook/play + empty plates + SPEED REF + same-speed + light bus. Not hall. |
 | [COOKROOM.md](COOKROOM.md) | hall films — `node scripts/cook-room.mjs <slot>` (`image` + `last_frame`) |
 | [AGENTS.md](AGENTS.md) | cold-start HARD SPLIT: Agent = STYLE stills; video = hooks first+last |
