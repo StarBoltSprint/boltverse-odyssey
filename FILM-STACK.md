@@ -6,6 +6,8 @@ Hall / citadel is a **different job**: [COOK.md](COOK.md). Do not apply this pag
 
 Cook rails (empty plates, SPEED REF, `rate(t)`, first+last, 3-take cook brief): [COOK-BIOME-25D.md](COOK-BIOME-25D.md).
 
+**PLAY clock (once):** [THREE-TAKE-PLAY.md](THREE-TAKE-PLAY.md) — 3.50s / 7.20s swipe, three living `<video>`s, one mid master. `play/` `dom-swap` / `kick()` is plate stitch, **not** L/M/R. Do **not** extend `kick()` (it resets `currentTime = 0`).
+
 This repo is the **recipe**. Play lives in bolt-hybrid `play/`. Do not scaffold a player. Do not publish a new grok.me.
 
 ---
@@ -43,13 +45,15 @@ Bolt is **NOT** one cutout slid sideways. Three **synced baked takes** L / M / R
 
 **PLAY FIX — L / R must not freeze as stills.** Picture never stops.
 
+Full clock / 3.50 test / encode GOP / ship order: **[THREE-TAKE-PLAY.md](THREE-TAKE-PLAY.md)**. This page does **not** hold that contract.
+
 On `slideChange`:
 
 1. Sync `currentTime` from the **mid master** (or the outgoing live take) onto the incoming take
 2. `.play()` the **visible** take
 3. **Pause** the others **OR** keep all three **decoding** under `opacity: 0`
 
-Either pause-or-decode is legal. Frozen side plates sold as lanes = **FAIL**.
+Either pause-or-decode is legal. Frozen side plates sold as lanes = **FAIL**. `kick()` is **banned** for L/M/R (it seeks 0).
 
 | Banned | Why |
 |---|---|
@@ -192,6 +196,7 @@ Cook text: [COOK-BIOME-25D.md — City enter](COOK-BIOME-25D.md#city-enter--plat
 | biome / sprint / lane **living-film** | Bolt **baked into** the reel | [COOKLANE.md](COOKLANE.md) |
 | **2.5D** / empty plate / film-stack / gallop layer | empty reel + Imagine video layers | **this page** (assets stack) + [COOK-BIOME-25D.md](COOK-BIOME-25D.md) |
 | **3-take** / swipe lane / L M R takes | three synced baked takes (PRIMARY runner) | **this page** + [COOK-BIOME-25D.md](COOK-BIOME-25D.md) |
+| **3-take PLAY** / 3.50 swipe / one clock | three living players, mid master | [THREE-TAKE-PLAY.md](THREE-TAKE-PLAY.md) |
 
 `cook-biome.mjs` bakes Bolt into the living-film reel. Illegal for the **assets** stack. 3-take bakes path+Bolt **on purpose** — that is this page, not COOKLANE.
 
@@ -199,4 +204,4 @@ Cook text: [COOK-BIOME-25D.md — City enter](COOK-BIOME-25D.md#city-enter--plat
 
 ## One line
 
-**PRIMARY runner = three synced baked takes (path+Bolt in the road, ribbon follows his lane). Assets stack = empty plate + layers + PathGen (replayability). Cutout = fallback only. One light bus. Never pan the mid clip. Never freeze L/R as stills.**
+**PRIMARY runner = three synced baked takes (path+Bolt in the road, ribbon follows his lane). PLAY clock = [THREE-TAKE-PLAY.md](THREE-TAKE-PLAY.md) (3.50 already on L, three living players, never `kick()`). Assets stack = empty plate + layers + PathGen (replayability). Cutout = fallback only. One light bus. Never pan the mid clip. Never freeze L/R as stills.**
