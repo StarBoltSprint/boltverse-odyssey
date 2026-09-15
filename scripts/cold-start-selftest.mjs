@@ -246,12 +246,36 @@ function forbidBiomeCook(label, text) {
 forbidBiomeCook("GROK.md", body("GROK.md"));
 forbidBiomeCook("AGENTS.md", agents);
 forbidBiomeCook("README.md", body("README.md"));
+forbidBiomeCook("START.md", body("START.md"));
 forbidBiomeCook("COOK.md", body("COOK.md"));
 forbidBiomeCook("COOKROOM.md", cookroom);
 must(/bolt-lane-recipe/.test(body("GROK.md")), "GROK.md: lane recipe lives elsewhere");
 must(/bolt-lane-recipe/.test(agents), "AGENTS.md: lane recipe lives elsewhere");
 must(/bolt-lane-recipe/.test(body("README.md")), "README.md: lane recipe lives elsewhere");
 must(/citadel/.test(body("README.md")) && /Hang/.test(body("README.md")), "README.md: citadel / Hang recipe");
+
+function assertConsoleFlow(label, text) {
+  must(/console/.test(text), label + ": Grok = console");
+  must(/Interactive Play/.test(text), label + ": Interactive Play");
+  must(/Citadel/.test(text) && /Biome/.test(text), label + ": Citadel or Biome");
+  must(/loop forever/.test(text), label + ": play videos loop forever");
+  must(/preview mp4/.test(text), label + ": stock preview mp4s");
+  must(/not tappable|not.*hitbox|pas des hitboxes/i.test(text), label + ": chat mp4s are not hitboxes");
+  must(/bolt-lane-recipe/.test(text), label + ": biome = bolt-lane-recipe");
+}
+
+assertConsoleFlow("GROK.md", body("GROK.md"));
+assertConsoleFlow("README.md", body("README.md"));
+assertConsoleFlow("START.md", body("START.md"));
+assertConsoleFlow("AGENTS.md", agents);
+must(/muted playsInline autoPlay loop/.test(body("GROK.md")), "GROK.md: muted playsInline autoPlay loop");
+must(/muted playsInline autoPlay loop/.test(agents), "AGENTS.md: muted playsInline autoPlay loop");
+must(/muted playsInline autoPlay loop/.test(body("README.md")), "README.md: muted playsInline autoPlay loop");
+must(/watchdog/.test(body("GROK.md")) && /pause/.test(body("GROK.md")), "GROK.md: watchdog re-play on pause/ended");
+must(/keep the split|Keep the split/.test(body("GROK.md")), "GROK.md: keep the split until merge");
+must(/keep the split|Keep the split/.test(body("README.md")), "README.md: keep the split until merge");
+must(/Grok chat = console/.test(customize) && /Odyssey = the game/.test(customize), "GROK.md Customize: console / game");
+must(/play \/ lance/.test(customize) && /Interactive Play/.test(customize), "GROK.md Customize: play/lance → Interactive Play");
 
 const hooks = body("scripts/imagine-hooks.mjs");
 must(/Not Imagine Agent/.test(hooks) && /last_frame/.test(hooks), "imagine-hooks: films = first+last, not Agent");

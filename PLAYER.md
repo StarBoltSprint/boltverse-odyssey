@@ -33,7 +33,7 @@ ENGINE only if the tap is broken.
 | https://boltverse-odyssey.grok.me/r/<id> | catalog pack `packs/<id>/`. Unknown / FAIL → frost. |
 | https://boltverse-odyssey.grok.me/r/citadel | 3-room **demo** (floor 3). Not the default cook. |
 
-Their chat is the ticket office. This grok.me is the hall. Never copy the player into their sandbox.
+Their chat is the **console** (boot / teaser / choice / talk). Interactive Play (Grok Build / sandbox) is **the game** (tappable). Chat mp4s are not hitboxes. This grok.me is the hung Citadel salon — do not publish a new grok.me. Do not scaffold a Vite app.
 
 ## What a pack is (floor 1)
 

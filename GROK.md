@@ -3,6 +3,31 @@
 Repo: `https://github.com/StarBoltSprint/boltverse-odyssey`  
 Player: https://boltverse-odyssey.grok.me
 
+## Product model — Grok = console, Odyssey = game
+
+**Grok chat app = the console.** Boot / teaser / choice / talk to Grok.  
+**Boltverse Odyssey = the game.** Tappable play lives on the **Interactive Play** surface (Grok Build / sandbox).
+
+Chat mp4s = teaser only. They are **not** tappable hitboxes.
+
+Humans: [START.md](START.md). Kitchen: this file + [AGENTS.md](AGENTS.md).
+
+### On “play / lance Boltverse Odyssey”
+
+1. Post **2 stock preview mp4s** in chat — **Citadel preview** | **Biome preview**. Teaser only. Do **not** commit binaries here. Citadel stock = hung frost hall. Biome stock = `StarBoltSprint/bolt-lane-recipe` (do not cook it here). Chat mp4s are **not** tappable.
+2. Ask the player: **Citadel** or **Biome**?
+3. Open that branch’s **interactive Play** surface (Grok Build / sandbox). Do not scaffold a new grok.me.
+4. Play videos **loop forever** while the session is open: `muted playsInline autoPlay loop` + watchdog re-`play()` on `pause` / `ended`.
+
+### Branches
+
+| Branch | What | Where |
+|---|---|---|
+| **Citadel** | rooms / Hang / citadel graph (`cook-room`) | **this repo** — hung play https://boltverse-odyssey.grok.me/r/frost |
+| **Biome / lane** | endless-lane runner | private recipe [`StarBoltSprint/bolt-lane-recipe`](https://github.com/StarBoltSprint/bolt-lane-recipe) — do **not** re-add biome cook docs here |
+
+Later: SmiR may merge lane-recipe into odyssey. Until then **keep the split**.
+
 ## STOP 0 — STYLES FIRST (SmiR 2026-09-12). Miss this = the room is dead.
 **STOP — HARD SPLIT.** Imagine Agent is obligatoire / MUST / systematically for STYLE stills when restyling. NEVER for Walk A, Walk B, breath, or any video. Walks / breaths / films = imagine-hooks / cook-room first-frame + last-frame. Soft KEEP banned. Smoke still gates.
 
@@ -82,6 +107,7 @@ This is the only text that loads in a **brand-new** convo **before** the repo is
 ```
 Boltverse / StarBoltSprint / citadel / salle mousse:
 STOP — HARD SPLIT (SmiR 2026-09-12). Imagine Agent is obligatoire / MUST / systematically for STYLE stills when restyling. NEVER for Walk A, Walk B, breath, or any video. Walks / breaths / films = imagine-hooks / cook-room first-frame + last-frame. Chat Imagine UI without real first+last is banned. Soft KEEP banned. Smoke still gates.
+Grok chat = console. Odyssey = the game. play / lance Boltverse Odyssey → post 2 stock preview mp4s (Citadel | Biome), ask Citadel or Biome, open that Interactive Play. Chat mp4s = teaser, not tap. Play videos loop forever (muted playsInline autoPlay loop + watchdog). Citadel = this repo. Biome = StarBoltSprint/bolt-lane-recipe (private). Keep the split.
 1. Clone https://github.com/StarBoltSprint/boltverse-odyssey
 2. Read AGENTS.md then GROK.md (STOP). Do not cook before that.
 3. NEVER call imagine_image_to_video, imagine_reference_to_video, or imagine_image_to_image. Chat Imagine UI without real first+last has no last_frame. Chat Imagine UI without real first+last is banned for walks.
@@ -102,7 +128,7 @@ STOP — HARD SPLIT (SmiR 2026-09-12). Imagine Agent is obligatoire / MUST / sys
 6. Gel-breath / FAIL walk = HANG BLOCKED, not a preview KEEP. Soft KEEP banned. Sit / face / 3/4 cannot PASS. Oval|RECT energy portals OK (never wood, never chrome UI).
 7. sill ≠ spawn. at-A = already AT the teal LEFT sill (seuil). at-B = already AT the gold RIGHT sill. Spawn = CENTER only. Mid-hall at-A/at-B = FAIL.
 8. FAIL plate → packs/<slot>/.kitchen/fail/ (debug). Never stills/films/Hang. at-A/at-B under-size (~0.16–0.21): enlarge-only second step (FAIL jpg = image, grow to 0.35–0.40). Cap 1 fresh + 1 enlarge (or 2 enlarge).
-9. No new grok.me. Catalog slots only. This repo is citadel / rooms / Hang only.
+9. No new grok.me. Catalog slots only. This repo is citadel / rooms / Hang only. Biome / lane = StarBoltSprint/bolt-lane-recipe.
 ```
 
 ---
@@ -148,18 +174,20 @@ Endless-lane / biome runner recipe lives in `StarBoltSprint/bolt-lane-recipe` (p
 
 | Phrase | Job |
 |---|---|
+| `play` / `lance Boltverse Odyssey` / `starboltsprint` / `boltverse` alone | **console boot** — 2 stock preview mp4s (Citadel \| Biome), ask, then Interactive Play. **no** cook |
 | `citadel moss` | `cook-room moss` |
 | `moss` / `ember` / catalog paint | hall paint — [CATALOG.md](CATALOG.md) |
-| `starboltsprint` alone | [START.md](START.md) / player URL — **no** cook |
-| biome / sprint / lane / three-take | refuse here — `StarBoltSprint/bolt-lane-recipe` |
+| biome / sprint / lane / three-take | refuse cook here — open Biome Play from `StarBoltSprint/bolt-lane-recipe` |
 
 Chat Imagine UI without real first+last cannot send `last_frame` — **banned**. Hall films = hooks `image` + `last_frame` (start+end stills / same still twice). Never Imagine Agent video. Décor variants: **Imagine Agent REQUIRED**. `imagineStill` **BANNED for restyle**. First seal stills = Imagine Agent. Films cooked in chat have no smoke → player loads **stock**. **Smoke still gates.**
 
 ---
 
-Trigger hall (any language): *citadel*, *citadelle*, *salle mousse*, *fais-moi une citadelle*. Then HALL JOB.
+Trigger **play / lance** (any language): *play*, *lance*, *joue*, *boltverse odyssey* alone — **console boot** first (2 teasers + Citadel or Biome). Not a cook.
 
-*`starboltsprint` / `boltverse` alone* → player URL, not a cook.
+Trigger hall (any language): *citadel*, *citadelle*, *salle mousse*, *fais-moi une citadelle* — after they picked **Citadel**, or they named a catalog paint. Then HALL JOB.
+
+*`starboltsprint` / `boltverse` alone* → console boot (teasers + choice), not a cook.
 
 You are wiring a **living-film** hall. Auth OFF. Database OFF. No 3D, no canvas, no WebGL. **Do not scaffold a new app. Do not publish a new grok.me.**
 
@@ -195,20 +223,25 @@ Never `text_to_image` a new dog. Never invent a new dog via `imagineStill` when 
 
 ## If they ask for a biome / sprint / lane / three-take
 
-Refuse here. Endless-lane / biome runner recipe lives in `StarBoltSprint/bolt-lane-recipe` (private). Do not list `walk-spawn-A`. Do not recook the hall.
+Open **Biome** Interactive Play from `StarBoltSprint/bolt-lane-recipe` (private). Do **not** cook it here. Do not list `walk-spawn-A`. Do not recook the hall. Do not re-add biome cook docs to this repo.
 
 ## If they ask to branch a door
 
 [ENTER.md](ENTER.md) [LINKS.md](LINKS.md). Hall `to` = catalog paint. Same player. Never auto-enter. Missing clip = stay.
 
-## Product
+## Product (console vs Play)
 
-The player URL IS the hall. Opening it plays **breath-spawn**. No Play / Forge / Hang chrome.
+Grok chat = **console** (boot / teaser / choice / talk).  
+Interactive Play = **the game** (tappable). Chat mp4s are not hitboxes.
 
-Humans see [START.md](START.md) only. Recook or stock. Give a URL.
+Citadel Play opens this hall. Opening the hung URL / Play surface plays **breath-spawn**. Films **loop forever** while the session is open (`muted playsInline autoPlay loop` + watchdog). No Forge / Hang chrome on the 9:16.
+
+Biome Play = `StarBoltSprint/bolt-lane-recipe`. SmiR may later merge that recipe here — **not yet**. Keep the split.
+
+Humans see [START.md](START.md). Recook or stock. Give a Play surface / URL — do not scaffold.
 
 Gift: [TICKET.md](TICKET.md). False help: [DONT.md](DONT.md). Corridor hall: [COOKROOM.md](COOKROOM.md).
 
 ## One line
 
-**GROK.md is the citadel / rooms / Hang recipe.** Catalog paint picks the hall. Lane / biome / three-take is another repo.
+**Grok = console. Odyssey = game.** Chat teases; Interactive Play taps. This repo = citadel / rooms / Hang. Biome = `bolt-lane-recipe`.
