@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Fixture: at-sill prompts name no-punch floor placement; spawn/lane stay off that stack.
+// Fixture: at-sill prompts name no-punch floor placement; spawn stays off that stack.
 // at-A prefers lock/example-at-a.jpg (SmiR lock teacher). at-B prefers hung moss PASS.
 // copy PLACE+POSE from example; FORCE taille 0.35–0.40; FORCE STANDING; never shrink to 0.18.
 // IGNORE tiny ~0.18 crop like bolt-back 0.53. Never send example-at-*-tiny.
@@ -12,11 +12,7 @@ import {
   ATA_FORCE_TAILLE,
   ATA_LOCK_COPY,
   ENLARGE_SILL_COPY,
-  EMPTY_PLATE,
   HALL_LAW,
-  SPEED_REF_PROMPT,
-  emptyPlateClipLine,
-  emptyPlateStillLine,
   enlargeStillLine,
   sillStillLine,
   stillRefLine,
@@ -165,40 +161,6 @@ const dry = spawnSync("node", [join(root, "scripts/cook-room.mjs"), "moss", "--d
   encoding: "utf8",
   env: { ...process.env, SEAL: "1", SEAL_SPAWN: "1", SEAL_ATA: "1", SEAL_ATB: "1" },
 });
-must(/ZERO dogs/.test(EMPTY_PLATE) && /ZERO luminous floor paths/.test(EMPTY_PLATE), "EMPTY_PLATE: ZERO dog + ZERO path");
-must(/KEEP plate-1/.test(EMPTY_PLATE) && /2x smash/.test(EMPTY_PLATE), "EMPTY_PLATE: SAME SPEED as plate-1 KEEP");
-must(/9:16/.test(EMPTY_PLATE) && /Locked-off/.test(EMPTY_PLATE), "EMPTY_PLATE: 9:16 lock-off");
-must(/CLEAR empty center/.test(EMPTY_PLATE), "EMPTY_PLATE: CLEAR center");
-must(/world rushes HARD/.test(EMPTY_PLATE) && /Much FASTER/.test(EMPTY_PLATE), "EMPTY_PLATE: SPEED REF Much FASTER / world rushes HARD");
-must(/playbackRate ~1\.0–1\.2/.test(EMPTY_PLATE), "EMPTY_PLATE: cook-time playbackRate ~1.0–1.2");
-must(!/German Shepherd, ZERO black/.test(EMPTY_PLATE), "EMPTY_PLATE: does not bake hall Bolt law");
-must(/RECOOK one plate ONLY/.test(SPEED_REF_PROMPT) && /world rushes hard/.test(SPEED_REF_PROMPT), "SPEED_REF_PROMPT: KEEP recook verbatim");
-must(/Much FASTER/.test(SPEED_REF_PROMPT) && /playbackRate ~1\.0–1\.2 only/.test(SPEED_REF_PROMPT), "SPEED_REF_PROMPT: Much FASTER + 1.0–1.2");
-must(/ZERO path\/lightning/.test(SPEED_REF_PROMPT) && /ZERO dog\/Bolt/.test(SPEED_REF_PROMPT), "SPEED_REF_PROMPT: ZERO path + ZERO dog");
-const empty1 = emptyPlateClipLine("asteroid haze", "1");
-const empty2 = emptyPlateClipLine("asteroid haze", "2");
-must(/last_frame/.test(empty1) && /ZERO dogs/.test(empty1), "empty plate 1 clip: last_frame + ZERO dogs");
-must(/world rushes hard/.test(empty1) && /Much FASTER/.test(empty1), "empty plate 1 clip: SPEED REF travelling");
-must(/futuristic Mars city/.test(empty2) && /never-slow|NEVER slow/.test(empty2) && /dodge/.test(empty2), "empty plate 2 clip: city enter never-slow");
-must(/ZERO luminous follow-path/.test(empty2) && /ZERO UI chrome/.test(empty2), "empty plate 2 clip: no baked path / no chrome");
-must(/do not cut to a new establishing shot/.test(empty2), "empty plate 2 clip: stitch, no new establish");
-must(/Match KEEP plate-1 SPEED REF/.test(empty2) && /world rushes hard/.test(empty2), "empty plate 2 clip: match SPEED REF travelling");
-must(/ZERO dogs/.test(emptyPlateStillLine("ember", "1")), "empty still: ZERO dogs");
-const dry25 = spawnSync("node", [join(root, "scripts/cook-biome-25d.mjs"), "asteroid", "--dry-run"], {
-  encoding: "utf8",
-});
-must(dry25.status === 0, "cook-biome-25d asteroid --dry-run exits 0");
-must(/NOT cook-room/.test(dry25.stdout || "") && /NOT cook-biome/.test(dry25.stdout || ""), "25d dry-run: not hall / not living-film lane");
-must(/ZERO path/.test(dry25.stdout || "") && /ZERO Bolt/.test(dry25.stdout || ""), "25d dry-run: ZERO path + ZERO Bolt");
-must(/last_frame/.test(dry25.stdout || "") && /city enter/.test(dry25.stdout || ""), "25d dry-run: last_frame + plate 2 city enter");
-must(/playbackRate corrector 1\.0–1\.6/.test(dry25.stdout || "") && /1\.3–1\.5/.test(dry25.stdout || ""), "25d dry-run: playbackRate 1.0–1.6 / typical 1.3–1.5");
-must(/SAME SPEED/.test(dry25.stdout || "") && /recook travelling/.test(dry25.stdout || ""), "25d dry-run: SAME SPEED + recook >1.6");
-must(/rate\(t\) live/.test(dry25.stdout || "") && /long stretch/.test(dry25.stdout || ""), "25d dry-run: rate(t) live, not a constant");
-must(/SPEED REF/.test(dry25.stdout || "") && /Much FASTER/.test(dry25.stdout || "") && /world rushes hard/.test(dry25.stdout || ""), "25d dry-run: SPEED REF plate-1 KEEP");
-must(/plate 3\+/.test(dry25.stdout || "") && /not this cook/.test(dry25.stdout || ""), "25d dry-run: no plate-3 cook");
-must(/light wrap/.test(dry25.stdout || "") && /PathGen = Imagine ribbon/.test(dry25.stdout || ""), "25d dry-run: light bus wrap + PathGen ribbon");
-must(/10×\/s|every 0\.1s/.test(dry25.stdout || ""), "25d dry-run: tint ~10Hz / 0.1s");
-
 must(dry.status === 0, "cook-room moss --dry-run SEAL spawn+at-A+at-B exits 0");
 must(/SEALED spawn\/at-A\/at-B = frozen KEEP/.test(dry.stdout || ""), "dry-run prints sealed spawn/at-A/at-B KEEP one-liner");
 must(/no imagineStill/.test(dry.stdout || ""), "dry-run sealed skip names no imagineStill");

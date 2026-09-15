@@ -58,7 +58,7 @@ Aliases: mousse→moss, braise→ember, crépuscule→dusk, astéroïde→astero
 Off-list → nearest, or one question: "did you mean ember?"  
 Never the default path: "describe any temple".
 
-## Hall' = neighbor hall. A door may instead hang a **sprint biome** ([LINKS.md](LINKS.md))
+## Hall' = neighbor hall ([LINKS.md](LINKS.md))
 
 Enter does not say "invent the sequel". It says: `moss` door A → `ember`.
 
@@ -97,4 +97,4 @@ If a paint FAILs Smoke → URL still opens **stock**, plus one line (`atA: face`
 **You pick a paint on the wall. You do not invent the building.**  
 The building is already the citadel. The catalog is the color.
 
-Does not own sprint kits. Those are [BIOMES.md](BIOMES.md) (`BiomeRow`). Paints = matter. Rows = stock + neighbors + identity.
+Paints = matter. Rows = stock + neighbors + identity. Endless-lane / biome runner recipe lives in `StarBoltSprint/bolt-lane-recipe` (private).

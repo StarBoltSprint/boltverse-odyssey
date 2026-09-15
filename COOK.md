@@ -115,7 +115,6 @@ Live ember at-A FAIL×2 (0.19+sit+face / 0.16+sit) means teacher pixels alone ar
 - "braise" / "ember" → `ember`
 - off-list ("temple martien") → ask nearest paint, do not cook
 - "branche room 2 sur la porte A" → floor 3, `kind: hall` ([LINKS.md](LINKS.md))
-- "colle le sprint forest sur la porte B" → `kind: sprint`, biome Lane, Bolt exits ([LINKS.md](LINKS.md))
 
 If they give **no** paint, do not cook — send `/` (stock). If they give **7 videos**, skip still-cook — map and hang ([GROK.md](GROK.md)).
 
@@ -302,6 +301,4 @@ Then read [ENTER.md](ENTER.md) and [HANG.md](HANG.md). Short version:
 - Wire: walk to the door first, **stay**. Second tap = enter. Walk ended **never** auto-enters.
 - Bump `PACK` after hanging the new mp4.
 
-## Other job — Imagine-only 2.5D biome
-
-Empty plates + playable Bolt **gallop video** (not the old still card). Same-speed + light bus. Not this page. Not `cook-biome.mjs` (that bakes Bolt into the reel). [FILM-STACK.md](FILM-STACK.md) [COOK-BIOME-25D.md](COOK-BIOME-25D.md).
+This page is citadel halls only. Endless-lane / biome runner recipe lives in `StarBoltSprint/bolt-lane-recipe` (private).

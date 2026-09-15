@@ -22,7 +22,7 @@ This repo is a **recipe**, not an app. Do not scaffold a player. Do not publish 
 
 **SKINS:** décor-matching skin ON TOP of the white base OK (ember / ice). Not a different dog.
 
-**Restyle:** paint into the RIG black void. Doors may adapt **shape** (oval\|RECT). Never spacing. Never depth. **Never move Bolt.**
+**Restyle:** completely new hall décor OK. Paint into the RIG black void. **Doors may adapt** (shape / scale to décor). Cyan L + gold R energy portals may adapt. Never spacing. Never depth. Bolt may be selected, repositioned, resized to sill for a nickel plate. **Bolt reposition OK.** Pose lock (spawn vs sill) stays.
 
 Read **[GROK.md](GROK.md)** next. Stills = **[LAYOUT.md](LAYOUT.md)** + RIG-PROMPT. Films = **[FILMS.md](FILMS.md)**.
 
@@ -40,9 +40,7 @@ Walks / breaths / films = Imagine first-frame + last-frame via `scripts/imagine-
 
 Catalog slots only: moss · ember · dusk · asteroid · frost · ivy · ash · tide · ember-deep · gold.
 
-Lane / biome living-film is **another job**: `node scripts/cook-biome.mjs <id>`. Not cook-room.
-
-Imagine film-stack biome is **another job**: [FILM-STACK.md](FILM-STACK.md) + [COOK-BIOME-25D.md](COOK-BIOME-25D.md). **PRIMARY runner = 3-take L/M/R** (path+Bolt in the road). **PLAY clock:** [THREE-TAKE-PLAY.md](THREE-TAKE-PLAY.md) (3.50s swipe, three living players, one mid clock — not `kick()`). Assets stack = empty plates + gallop video layer (ZERO Bolt/path). Cutout = fallback only. Not cook-room. Not `cook-biome.mjs`.
+This repo is the citadel / rooms / Hang living-film recipe only. Endless-lane / biome runner recipe lives in `StarBoltSprint/bolt-lane-recipe` (private). Do **not** cook biomes, lanes, three-takes, or film-stack here.
 
 `scripts/cook-room.mjs` + `scripts/imagine-hooks.mjs` = **video cook** (walks / breaths / films) and CLI first-seal / batch stills. Agent is **not** the film path.
 

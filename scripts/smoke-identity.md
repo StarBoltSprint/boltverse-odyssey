@@ -14,7 +14,7 @@ Look at the 3 frames Smoke extracted:
 .smoke/<clip>/last.jpg
 ```
 
-Hall refs: stills + `lock/bolt-back.jpg`. Lane refs: **same thumb** (pose, not freeze-paws). Return **one line**: `PASS` or `FAIL <rule> @ t=0|t=mid|t=last`.
+Hall refs: stills + `lock/bolt-back.jpg`. Return **one line**: `PASS` or `FAIL <rule> @ t=0|t=mid|t=last`.
 
 ## Hall stills (hard — do not Hang)
 
@@ -33,7 +33,7 @@ Spawn / at-A / at-B / first+last of a hall film: **STANDING**, back, two ears, f
 
 A cute sit is still FAIL. Soft KEEP of a sitting at-A is illegal.
 
-## FAIL rules (hall + Lane)
+## FAIL rules (hall)
 
 | rule | if you see |
 |---|---|
@@ -42,38 +42,5 @@ A cute sit is still FAIL. Soft KEEP of a sitting at-A is illegal.
 | `identity.coat` / `saddle` / `black_silhouette` / `cape` | grey/silver/black **base** (not a white GSD). Ember/ice skin ON TOP of white ≠ this FAIL |
 | `identity.text` | TAP, UI, watermark |
 | `identity.orbit` | dolly / tilt |
-| `gait.muzzle` | sprint mid but head turned |
-| `gait.paws_first` / `gait.paws_last` | first or last with only 2 pegs |
-| `gait.float` | belly, 0 paws, melting into the path |
-
-## Lane gait (not a second identity)
-
-Thumb = **back, 4 paws on the floor**. Sprint = **he runs**. A stride *hides* paws. Demand 4 crisp hooves on every frame = you cannot cook a Lane. Let everything through = 3/4 and melt pass too.
-
-**Never moves (even peak):** back / withers to camera · 4 limbs (not 3, not a werewolf) · white, size stable, lock-off. Thumb is the **pose** ref, not « freeze paws the whole plate ».
-
-Honest occlusion — a few frames, still reads as a quadruped from behind:
-
-| OK | Not OK |
-|---|---|
-| Rear passing behind the other (trot / gallop) | Paw melted into the path |
-| Foreleg up, pad off floor 2–4 frames | Both fores gone a long time (sit / heroic rear) |
-| Tail / flank hiding a hock | Belly + 0 paw = float |
-| Snow / glow eating a foot 1–2 frames | Glow replacing the dog |
-
-Count paws on **first / mid / last**, not every lift frame. Reuse the 3 `L` samples:
-
-```
-first  : paws >= 3  AND back
-mid    : paws >= 2  AND back  AND not profile
-last   : paws >= 3  AND back
-no sample in muzzle / 3/4
-```
-
-Calm / decay ≈ still — 4 paws most of the time. Lean / peak: gray is **mid**. First/last at 2 paws = FAIL (monster at the join).
-
-Mid profile even with 4 paws = `identity.profile` (yaw), not a gait issue.
-
-Do **not**: allow 3/4 « to sell speed » · ffmpeg-loop a 1-paw mid to save `L` · a second thumb `bolt-run.jpg`. Profile = other `railsVersion`, recook the **whole** kit. Year-0: no.
 
 If he turns anyway → recook, do not loosen Hamming.

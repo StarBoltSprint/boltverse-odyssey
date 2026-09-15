@@ -1,6 +1,6 @@
 # CHAR — Bolt is not the player's to change
 
-Bolt is **one** dog. Every still, every breath, every walk, every Lane plate. Style may change. Bolt may not.
+Bolt is **one** dog. Every still, every breath, every walk. Style may change. Bolt may not.
 
 ## Coat lock (hard)
 
@@ -18,26 +18,14 @@ Hall stills / first / last of a plate: four legs, standing, weight on the floor,
 
 The old line *“Black saddle faint”* is **void**.
 
-## Lane gait (gray, not another identity)
-
-The thumb is the **pose** ref, not « freeze paws the whole sprint ». He **runs**. A stride may honestly hide 1–2 paws **in the middle**. Never the muzzle. Never first/last as two pegs.
-
-```
-first ≥ 3 paws + back
-mid   ≥ 2 paws + back, no profile
-last  ≥ 3 paws + back
-```
-
-3/4 « to sell speed » = FAIL. No `bolt-run.jpg`. Other `railsVersion` = recook the kit. Layer C: [scripts/smoke-identity.md](scripts/smoke-identity.md).
-
-Prompt: `full gallop, back to camera, lock-off, legs alternate naturally, no profile, first and last: three or four feet readable`.
+Layer C: [scripts/smoke-identity.md](scripts/smoke-identity.md).
 
 ## Never (FAIL — recook)
 
 - silver / grey / saddle / cape / silhouette **as the coat base** (décor-matching skin ON TOP of white is OK)
 - Face, muzzle, 3/4, profile
 - Bipedal, clothes, two Bolts, puppy
-- Sit / lie on a **hall** still, breath, or walk (feet glued). Sprint mid may lift a paw — not sit.
+- Sit / lie on a **hall** still, breath, or walk (feet glued)
 
 ## Scale
 
@@ -45,4 +33,4 @@ Prompt: `full gallop, back to camera, lock-off, legs alternate naturally, no pro
 
 ## One line
 
-**White coat forever, large, back only.** Décor SKINS (ember/ice) ON TOP of that base OK. The stride may steal 1–2 paws in the middle. Never the snout, never first/last on two sticks.
+**White coat forever, large, back only.** Décor SKINS (ember/ice) ON TOP of that base OK. Never the snout.

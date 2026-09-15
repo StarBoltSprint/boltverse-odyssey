@@ -26,7 +26,7 @@ On `ended` / decode gap / plate swap:
 
 - Preload dest breath **before** the walk ends
 - `stillEnd === stillStart` of next → cut 0s
-- Same pose/biome, different stills → dissolve max 0.28s
+- Same pose/paint, different stills → dissolve max 0.28s
 - Enter / decay / first clip → dissolve or hold ~80ms OK
 - Smoke FAIL / missing → decay, **no spinner**
 

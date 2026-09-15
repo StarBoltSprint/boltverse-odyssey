@@ -66,14 +66,6 @@ ffmpeg -i in.mp4 -map 0:v:0 \
 - Stills: same scale/crop, jpeg.
 - **No drawbox.** Glow lives in the picture.
 
-## QC before Hang (Lane)
-
-Accurate seek: `ffmpeg -i plate.mp4 -ss T -frames:v 1` every **0.5 s**.  
-Sit / poop / profile / howl anywhere = `lane.sit`. Do not Hang.  
-Keyframe seek (`-ss` before `-i`) lies. Playtest then looks like shit.
-
-Year-0 hung = **one** gallop plate until L2 passes that QC **and** is faster.
-
 ## Imagine — first AND last must be distinct (walks + enter)
 
 Hall floor-1 cook is `node scripts/cook-room.mjs <slot>` / `imagine-hooks` (`image` + `last_frame`). Not chat Imagine UI.
@@ -82,8 +74,6 @@ Walks: `first = start still`, `last = arrive still`. Different images.
 Enter: `first = atA`, `last = same-slot teal-full` (or gold-full). Different images. **Never** `last = Hall' spawn`.
 
 Breath: `first = last = pose still` (the one legal loop).
-
-Lane **lean/peak**: I2V from a **running** first. **No standing last_frame.** Last of the mp4 must still gallop.
 
 If enter is cooked as `image_to_video` on a single still, Imagine invents a journey (morph / tunnel / clone). Enter **requires** the first+last-frame call (`image` + `last_frame`), 6s, 9:16.
 

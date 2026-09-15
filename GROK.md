@@ -1,4 +1,4 @@
-# GROK — two default jobs (hall vs Lane)
+# GROK — citadel hall / rooms / Hang
 
 Repo: `https://github.com/StarBoltSprint/boltverse-odyssey`  
 Player: https://boltverse-odyssey.grok.me
@@ -19,15 +19,17 @@ Read **[RIG.md](RIG.md)** + [`lock/RIG-PROMPT.txt`](lock/RIG-PROMPT.txt) before 
 
 **SKINS:** Imagine Agent MAY apply a décor-matching skin ON TOP of the white base — ember skin (embers / glow / ash accents), ice skin, etc. Stylish adaptation. Not a different dog.
 
-**Restyle:** paint into the black RIG void. Door **shape** may adapt (oval|RECT). Never spacing. Never depth. **Never move Bolt.**
+**Restyle:** completely new hall décor OK. Paint into the black RIG void. **Doors may adapt** (shape / scale to décor). Cyan L + gold R energy portals may adapt. Never spacing. Never depth. Bolt may be selected, repositioned, resized to sill for a nickel plate. Pose lock (spawn vs sill) stays.
 
 Walks / breaths / films = Imagine first-frame + last-frame via `scripts/imagine-hooks.mjs` / `scripts/cook-room.mjs`. **Prompts = [FILMS.md](FILMS.md)** — every Grok, every player, every décor. Adapt hall paint only. Walks: start still ≠ arrive still. Breaths: same still twice. Agent is **not** required or recommended for video cook. Do **not** instruct Build to open Imagine Agent for Walk A, Walk B, or breath.
 
 Chat Imagine UI **without real first+last** is **banned for walks**, breaths, enter. If `imagine_image_to_video` / `imagine_reference_to_video` are in your tool list: **do not call them** for films. `imagine_image_to_image` is **ALLOWED only on `lock/RIG-*.jpg`** (styles). A film cooked in chat has no smoke → do not Hang it.
 
-**KEEP seals (this ice hall):** Imagine Agent produced `lock/SEAL-spawn.jpg` + `lock/SEAL-at-a.jpg` + `lock/SEAL-at-b.jpg` (drops `hall-stills/seal/spawn-ice.jpg` + `at-a-ice.jpg` + `at-b-ice.jpg`). Frozen pose+décor until SmiR reseals. Agent remains the STYLE stills path for future styles (never video). `cook-room` **SKIPS** `imagineStill` for spawn / at-A / at-B when those seals exist. Smoke still gates. Soft KEEP banned.
+**KEEP seals (this ice hall):** Imagine Agent produced `lock/SEAL-spawn.jpg` + `lock/SEAL-at-a.jpg` + `lock/SEAL-at-b.jpg` (drops `hall-stills/seal/spawn-ice.jpg` + `at-a-ice.jpg` + `at-b-ice.jpg`). Frozen pose+décor until SmiR reseals. Agent remains the STYLE stills path for future styles (never video). `cook-room` **SKIPS** `imagineStill` for spawn / at-A / at-B when those seals exist. **Sealed skip stays.** Smoke still gates. Soft KEEP banned.
 
-**Grok Build styles = RIG plates**, not Agent. `imagine_image_to_image` on `lock/RIG-*.jpg` + RIG-PROMPT. Agent may paint the same plates. Do **not** instruct Agent for walks/breaths.
+**Imagine Agent is the hall-restyle tool.** First seal stills = Imagine Agent. **Imagine Agent is MANDATORY for cross-style hall stills (not optional).** Agent is **REQUIRED** for décor variants. One **SEALED** sill still → Agent restyles (new décor OK; portals may adapt; Bolt may be selected, repositioned, resized to sill). `imagineStill` **BANNED for restyle.** CLI first-seal / batch only.
+
+**Grok Build styles = RIG plates**, not Agent. `imagine_image_to_image` on `lock/RIG-*.jpg` + RIG-PROMPT. Agent may paint the same plates. Do **not** instruct Agent for walks/breaths. **Grok Build chat Imagine tools are NOT the same as Imagine Agent.** Build must not rely on chat `imagine_*` tools for hall restyle identity lock. For STYLE restyle: instruct to open Imagine Agent with the plate refs.
 
 `scripts/cook-room.mjs` + `scripts/imagine-hooks.mjs` = **video cook** (walks / breaths / films) and CLI first-seal / batch stills. Agent is **not** the film path. If hooks cannot run (`node` + `XAI_API_KEY`): **REFUSE**. Stock URL. Do **not** fall back to chat `imagine_*` or Agent video.
 
@@ -62,8 +64,7 @@ STYLE stills = Imagine Agent. Video = `scripts/imagine-hooks.mjs`:
 
 Then `smoke-pack.mjs`. PASS → `packs/<id>/`. FAIL ×2 → stock. Never a chat mp4 in `films/`. **Smoke still gates.**
 
-Lane: `node scripts/cook-biome.mjs <id>` (same hooks, other job). Not `cook-room`.  
-Imagine-only 2.5D film-stack = [FILM-STACK.md](FILM-STACK.md) + [COOK-BIOME-25D.md](COOK-BIOME-25D.md). **PRIMARY runner = 3-take L/M/R** (path+Bolt in the road, ribbon follows his lane). **PLAY clock:** [THREE-TAKE-PLAY.md](THREE-TAKE-PLAY.md) (3.50s swipe, three living players, one mid clock — not `kick()`). Assets stack = empty plates + gallop video layer (ZERO Bolt/path in the plate). Cutout = L/R-fail fallback only. Not `cook-biome.mjs` (that is living-film).
+This repo is the citadel / rooms / Hang living-film recipe only. Endless-lane / biome runner recipe lives in `StarBoltSprint/bolt-lane-recipe` (private). Do **not** cook biomes, lanes, three-takes, or film-stack here.
 
 One-shot walk (hooks first+last — never Agent):
 
@@ -100,13 +101,12 @@ STOP — HARD SPLIT (SmiR 2026-09-12). Imagine Agent is obligatoire / MUST / sys
 6. Gel-breath / FAIL walk = HANG BLOCKED, not a preview KEEP. Soft KEEP banned. Sit / face / 3/4 cannot PASS. Oval|RECT energy portals OK (never wood, never chrome UI).
 7. sill ≠ spawn. at-A = already AT the teal LEFT sill (seuil). at-B = already AT the gold RIGHT sill. Spawn = CENTER only. Mid-hall at-A/at-B = FAIL.
 8. FAIL plate → packs/<slot>/.kitchen/fail/ (debug). Never stills/films/Hang. at-A/at-B under-size (~0.16–0.21): enlarge-only second step (FAIL jpg = image, grow to 0.35–0.40). Cap 1 fresh + 1 enlarge (or 2 enlarge).
-9. Lane = node scripts/cook-biome.mjs <id>. No new grok.me.
+9. No new grok.me. Catalog slots only. This repo is citadel / rooms / Hang only.
 ```
 
 ---
 
-**First word picks the disc.** Same player. Not the same recipe.  
-The **verb** chooses (`salle` vs `sprint`). The noun `moss` does not.
+This repo is **one job**: citadel halls / rooms / Hang.
 
 ```
 HALL JOB =
@@ -139,48 +139,28 @@ HALL JOB =
   cook-room + imagine-hooks = video cook (first+last)
   NO walk-A-B · NO ENTER unless they asked
   NO new grok.me
-
-LANE JOB =
-  first word biome | sprint | lane | course | colle <id> sur la porte
-  → [BIOMES.md] → palettes/<id>-palette.json
-  → node scripts/cook-biome.mjs <id>
-  10 plates, cues [] until scrub
-  m + t_run · pose / L / R / fork only
-  coming until L + [PLAYTEST.md](PLAYTEST.md) 5 taps PASS
-  smoke = smoke-biome.mjs   NOT smoke-pack
-  NOT cook-room
-  NOT spawn / atA / walk-spawn-A
-  NOT peak-as-door
-  handoff = ENTER.kind sprint  ([HANDOFF.md](HANDOFF.md))
 ```
 
-If `cook-biome.mjs` cannot run: `--dry-run` + palette. Do **not** invent walk-A.
+Endless-lane / biome runner recipe lives in `StarBoltSprint/bolt-lane-recipe` (private). If they ask for biome / sprint / lane / course / three-take / film-stack: **do not cook it here.** Point there. Do not invent walk-A. Do not recook the hall.
 
-**“citadel moss” ≠ “biome moss”.** They share a word, not a recipe.
-
-## Cold conv (if the first answer lists `walk-spawn-A` after « biome forest », the fork lost)
+## Cold conv
 
 | Phrase | Job |
 |---|---|
 | `citadel moss` | `cook-room moss` |
-| `biome forest` / `sprint forest` | `cook-biome forest` |
-| `colle forest sur la porte A` | hall already there + [LINKS.md](LINKS.md) `kind: sprint` — **do not** recook moss |
-| `moss` alone | **one question**: paint or Lane? Verb run/sprint/1 min → Lane |
+| `moss` / `ember` / catalog paint | hall paint — [CATALOG.md](CATALOG.md) |
 | `starboltsprint` alone | [START.md](START.md) / player URL — **no** cook |
+| biome / sprint / lane / three-take | refuse here — `StarBoltSprint/bolt-lane-recipe` |
 
-Sprint law: `m` = follow the dog. `t_run` = age of the storm. Peak = both. Quiet [0, 8s] = calm even if `m` is high. Year-0 verbs: **pose, left, right, fork**. The tap exists only if that gesture is **already in the shot**. [COOKLANE.md](COOKLANE.md) [PLAY.md](PLAY.md).
-
-Chat Imagine UI without real first+last cannot send `last_frame` — **banned**. Hall films = hooks `image` + `last_frame` (start+end stills / same still twice). Never Imagine Agent video. Décor variants: **Imagine Agent REQUIRED**. `imagineStill` **BANNED for restyle**. First seal stills = Imagine Agent. Lane plates: same hooks, **other** job (`cook-biome`). Films cooked in chat have no smoke → player loads **stock**. **Smoke still gates.**
+Chat Imagine UI without real first+last cannot send `last_frame` — **banned**. Hall films = hooks `image` + `last_frame` (start+end stills / same still twice). Never Imagine Agent video. Décor variants: **Imagine Agent REQUIRED**. `imagineStill` **BANNED for restyle**. First seal stills = Imagine Agent. Films cooked in chat have no smoke → player loads **stock**. **Smoke still gates.**
 
 ---
 
-Trigger hall (any language): *citadel*, *citadelle*, *salle mousse*, *fais-moi une citadelle* — **and not** biome/sprint/lane. Then HALL JOB.
+Trigger hall (any language): *citadel*, *citadelle*, *salle mousse*, *fais-moi une citadelle*. Then HALL JOB.
 
-Trigger Lane: *biome*, *sprint*, *lane*, *course*, *colle forest*. Then **stop.** LANE JOB. Do not run cook-room.
+*`starboltsprint` / `boltverse` alone* → player URL, not a cook.
 
-*`starboltsprint` / `boltverse` alone* → player URL, not a cook. Both words in one sentence (`starboltsprint forest sprint`) → **Lane wins** (the verb `sprint` / `forest` as biome). Do not take the first hall trigger on the page.
-
-You are wiring a **living-film**. Auth OFF. Database OFF. No 3D, no canvas, no WebGL. **Do not scaffold a new app. Do not publish a new grok.me.**
+You are wiring a **living-film** hall. Auth OFF. Database OFF. No 3D, no canvas, no WebGL. **Do not scaffold a new app. Do not publish a new grok.me.**
 
 ## Law 0 — Imagine first + last (automatic)
 
@@ -190,31 +170,21 @@ The stills **are** the frames. [COOK.md](COOK.md).
 |---|---|---|---|
 | **hall walk** | hooks / cook-room API `image` + `last_frame`. Never Imagine Agent. | start still | arrive still — **distinct** |
 | **hall breath** | hooks / cook-room: one still twice. Never Imagine Agent. | pose | **same** |
-| **Lane calm** | one still twice | plate still | **same** |
-| **Lane lean/peak** | I2V from a **running** first. **NO standing last_frame** | gallop still | extracted last **gallop** frame |
-| **Lane decay** | I2V slower walk, 4 paws | running or walk | walk — never sit |
-| **enter / return** | first AND last | at-sill / Lane last | fill veil — **never** dest spawn |
+| **enter** | first AND last | at-sill | fill veil — **never** dest spawn |
 
-Never `image_to_video` a **hall walk or enter** on a single still. Breath / calm = the only legal `first = last`.
-
-A standing `last_frame` on a lean **brakes** him. Sit / poop. Cap 2 recooks. QC every 0.5 s with `ffmpeg -i` THEN `-ss`. Sit anywhere = do not Hang. Year-0 hung = one gallop file (`forest-run`). Tap counts. [COOKLANE.md](COOKLANE.md) [CUES.md](CUES.md)
-
-Lane lean/peak is a **chain**, not 4 photos from `lock/bolt-back`. `last(n)` file **is** `first(n+1)` and that file is still running. Never 4 independent leans. Wobble (center → side → center) = FAIL. Hung path: next `from` = current `to`. Opening calms = fridge.
+Never `image_to_video` a **hall walk or enter** on a single still. Breath = the only legal `first = last`.
 
 ## Law 1 — floors
 
-Hall default = floor 1: 3 stills + 5 films, no Enter. Lane default = hung gallop until L2 QC-passes, cues after scrub. Visitor = stock `/`.
+Hall default = floor 1: 3 stills + 5 films, no Enter. Visitor = stock `/`.
 
 ## Fridge
 
 Cook **one plate**, smoke **that plate**, then write.  
 Hall: `node scripts/smoke-pack.mjs packs/<id>`  
-Lane: `node scripts/smoke-biome.mjs <id>`  
-**Never write `PASS` yourself.** Identity C: [scripts/smoke-identity.md](scripts/smoke-identity.md) (gait gray on Lane mid).
+**Never write `PASS` yourself.** Identity C: [scripts/smoke-identity.md](scripts/smoke-identity.md).
 
 ## If they ask for stills / a citadel style
-
-Only if the first word was **not** biome/sprint/lane. Else LANE JOB.
 
 1. Paint from [CATALOG.md](CATALOG.md). Off-list → nearest or one question.
 2. Pack exists → URL `/r/<id>`. Stop.
@@ -222,23 +192,22 @@ Only if the first word was **not** biome/sprint/lane. Else LANE JOB.
 
 Never `text_to_image` a new dog. Never invent a new dog via `imagineStill` when a sealed sill exists. Agent is MANDATORY for décor variants. Agent is NEVER the film path.
 
-## If they ask for a biome / sprint / « colle forest »
+## If they ask for a biome / sprint / lane / three-take
 
-LANE JOB. [BIOMES.md](BIOMES.md) [COOKLANE.md](COOKLANE.md) [CUES.md](CUES.md) [HANDOFF.md](HANDOFF.md).  
-Do not list `walk-spawn-A`. Do not recook the hall because they named `moss`.
+Refuse here. Endless-lane / biome runner recipe lives in `StarBoltSprint/bolt-lane-recipe` (private). Do not list `walk-spawn-A`. Do not recook the hall.
 
 ## If they ask to branch a door
 
-[ENTER.md](ENTER.md) [LINKS.md](LINKS.md). Hall `to` = paint. Sprint `to` = biome. Same player. Never auto-enter. Return = 2nd tap + hung clip, or stay in the forest.
+[ENTER.md](ENTER.md) [LINKS.md](LINKS.md). Hall `to` = catalog paint. Same player. Never auto-enter. Missing clip = stay.
 
 ## Product
 
-The player URL IS the hall. Opening it plays **breath-spawn**. No Play / Forge / Hang chrome. Lane after `kind: sprint` + hid playing ([HANDOFF.md](HANDOFF.md)).
+The player URL IS the hall. Opening it plays **breath-spawn**. No Play / Forge / Hang chrome.
 
 Humans see [START.md](START.md) only. Recook or stock. Give a URL.
 
-Gift: [TICKET.md](TICKET.md). False help: [DONT.md](DONT.md). Corridor hall: [COOKROOM.md](COOKROOM.md). Lane: [COOKLANE.md](COOKLANE.md). Imagine film-stack 2.5D (3-take PRIMARY + assets stack): [FILM-STACK.md](FILM-STACK.md) + [COOK-BIOME-25D.md](COOK-BIOME-25D.md). 3-take PLAY clock (3.50s / three living players): [THREE-TAKE-PLAY.md](THREE-TAKE-PLAY.md).
+Gift: [TICKET.md](TICKET.md). False help: [DONT.md](DONT.md). Corridor hall: [COOKROOM.md](COOKROOM.md).
 
 ## One line
 
-**GROK.md Lane = a twin DEFAULT JOB, not a footnote.** `moss` does not pick the disc. `salle` vs `sprint` does.
+**GROK.md is the citadel / rooms / Hang recipe.** Catalog paint picks the hall. Lane / biome / three-take is another repo.

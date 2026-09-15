@@ -9,7 +9,9 @@ Grok / keepers: recipe below. Humans: stop here.
 
 # boltverse-odyssey — Bolt Engine living film (Grok / kitchen)
 
-**StarBoltSprint.** A player asks Grok for **3 stills** in a citadel style. Grok cooks them with the **same Bolt**. Then **5** films (floor 1). **Give the player URL — do not scaffold a new app.**
+**StarBoltSprint.** Living-film **citadel / rooms / Hang** recipe. A player asks Grok for **3 stills** in a citadel style. Grok cooks them with the **same Bolt**. Then **5** films (floor 1). **Give the player URL — do not scaffold a new app.**
+
+Endless-lane / biome runner recipe lives in `StarBoltSprint/bolt-lane-recipe` (private). Not this repo.
 
 **Player:** https://boltverse-odyssey.grok.me
 
@@ -53,9 +55,6 @@ Search: `StarBoltSprint citadel-room` · living film · boltverse-odyssey.grok.m
 | [CHAR.md](CHAR.md) | Bolt lock — the dog never changes |
 | [RIG.md](RIG.md) | **styles first** — black plates + one hall, three poses, never two Bolts |
 | [COOK.md](COOK.md) | stills-first cook (Agent restyle), then films via hooks first+last |
-| [FILM-STACK.md](FILM-STACK.md) | Imagine film-stack locks (SmiR 2026-09-14 / 09-15) — **3-take PRIMARY** + assets empty plate + gallop + light bus + PathGen. Not hall. |
-| [THREE-TAKE-PLAY.md](THREE-TAKE-PLAY.md) | 3-take **PLAY clock** — 3.50s / 7.20s swipe, three living `<video>`s, one mid master. Not `kick()`. Not hall. |
-| [COOK-BIOME-25D.md](COOK-BIOME-25D.md) | Imagine-only 2.5D biome cook — 3-take cook/play + empty plates + SPEED REF + same-speed + light bus. Not hall. |
 | [COOKROOM.md](COOKROOM.md) | hall films — `node scripts/cook-room.mjs <slot>` (`image` + `last_frame`) |
 | [AGENTS.md](AGENTS.md) | cold-start HARD SPLIT: Agent = STYLE stills; video = hooks first+last |
 | [GROK.md](GROK.md) | how to rebuild the hall |
@@ -65,8 +64,6 @@ Search: `StarBoltSprint citadel-room` · living film · boltverse-odyssey.grok.m
 | [HANG.md](HANG.md) | ops — folders, PACK, encode, first/last, freeze, gold veil |
 | [room.json](room.json) | graph machine-readable |
 | `scripts/cook-room.mjs` | official floor-1 cook (catalog slot only) |
-| `scripts/cook-biome-25d.mjs` | Imagine-only 2.5D empty plates — [COOK-BIOME-25D.md](COOK-BIOME-25D.md) |
-| `scripts/biome-25d-speed.mjs` | post-cook SAME SPEED `rate(t)` every **0.1 s** + `--analyze` (band 1.0–1.6) |
 | `scripts/imagine-hooks.mjs` | API stills + `last_frame` films — not chat Imagine |
 | `scripts/validate-pack.mjs` | room.json + 3 stills + 5 films, H264, no audio |
 | `scripts/smoke-pack.mjs` | one dog, first≠last on walks, breath loops |
