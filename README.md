@@ -14,7 +14,7 @@ Grok / keepers: [GROK.md](GROK.md) then recipe below. Humans: stop here.
 
 **StarBoltSprint.** Living-film **citadel / rooms / Hang** recipe. This repo is **Citadel** only.
 
-**Grok chat app = console.** **Odyssey = the game.** On *play / lance Boltverse Odyssey*: post **2 stock preview mp4s** (Citadel | Biome) — teaser only, **not** tappable hitboxes — ask **Citadel** or **Biome**, then open that **Interactive Play**. Play videos **loop forever** (`muted playsInline autoPlay loop` + watchdog on pause/ended). Do **not** add binaries to this repo.
+**Grok chat app = console.** **Odyssey = the game.** On *play / lance Boltverse Odyssey*: post **2 stock teasers** — **Citadel preview mp4** = [`stock/citadel/preview-loop.mp4`](stock/citadel/preview-loop.mp4) (poster [`stock/citadel/preview-first.jpg`](stock/citadel/preview-first.jpg)); **Biome teaser still** = dusk stock in [`bolt-lane-recipe`](https://github.com/StarBoltSprint/bolt-lane-recipe) (do **not** commit biome binaries here) — teaser only, **not** tappable hitboxes — ask **Citadel** or **Biome**, then open that **Interactive Play**. Play videos **loop forever** (`muted playsInline autoPlay loop` + watchdog on pause/ended). Loop the Citadel stock in Play; in chat as preview.
 
 - **Citadel** = this repo (rooms / Hang / `cook-room`). Hung: https://boltverse-odyssey.grok.me/r/frost
 - **Biome / lane** = private [`StarBoltSprint/bolt-lane-recipe`](https://github.com/StarBoltSprint/bolt-lane-recipe). Do not cook biomes here.
@@ -29,7 +29,7 @@ A player who picked Citadel + a catalog paint: **3 stills**, same Bolt, then **5
 
 ## For Grok (new conversation)
 
-If the human says *play / lance / boltverse odyssey / starboltsprint* — **console boot first** ([GROK.md](GROK.md) product model): 2 stock teasers, ask Citadel or Biome, open Interactive Play. Chat mp4s are not taps.
+If the human says *play / lance / boltverse odyssey / starboltsprint* — **console boot first** ([GROK.md](GROK.md) product model): Citadel preview mp4 = [`stock/citadel/preview-loop.mp4`](stock/citadel/preview-loop.mp4), Biome teaser still = `bolt-lane-recipe` dusk stock; ask Citadel or Biome; open Interactive Play. Chat mp4s are not taps.
 
 If they picked **Citadel** (or said citadel / citadelle / a catalog paint): you are in this recipe. **[AGENTS.md](AGENTS.md)** then **[GROK.md](GROK.md) — stop.** STYLE stills / restyle = Imagine Agent. Walks / breaths = hooks first+last. **No chat Imagine** without real first+last. No new grok.me.
 
@@ -71,6 +71,7 @@ Search: `StarBoltSprint citadel-room` · living film · boltverse-odyssey.grok.m
 | [COOK.md](COOK.md) | stills-first cook (Agent restyle), then films via hooks first+last |
 | [COOKROOM.md](COOKROOM.md) | hall films — `node scripts/cook-room.mjs <slot>` (`image` + `last_frame`) |
 | [START.md](START.md) | human play — console vs game, Citadel vs Biome |
+| [`stock/citadel/`](stock/citadel/README.md) | Citadel console teaser — `preview-loop.mp4` + `preview-first.jpg` |
 | [AGENTS.md](AGENTS.md) | cold-start HARD SPLIT: Agent = STYLE stills; video = hooks first+last |
 | [GROK.md](GROK.md) | console flow + how to rebuild the citadel hall |
 | [ROOM.md](ROOM.md) | skeleton — encode flags, playsInline, ENTER map, player bugs |

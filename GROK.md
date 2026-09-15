@@ -14,7 +14,9 @@ Humans: [START.md](START.md). Kitchen: this file + [AGENTS.md](AGENTS.md).
 
 ### On “play / lance Boltverse Odyssey”
 
-1. Post **2 stock preview mp4s** in chat — **Citadel preview** | **Biome preview**. Teaser only. Do **not** commit binaries here. Citadel stock = hung frost hall. Biome stock = `StarBoltSprint/bolt-lane-recipe` (do not cook it here). Chat mp4s are **not** tappable.
+1. Post **2 stock teasers** in chat — **Citadel preview** | **Biome preview**. Teaser only. Chat mp4s are **not** tappable.
+   - **Citadel preview mp4** = [`stock/citadel/preview-loop.mp4`](stock/citadel/preview-loop.mp4) (poster [`stock/citadel/preview-first.jpg`](stock/citadel/preview-first.jpg)). Loop forever in Play; in chat as preview. See [`stock/citadel/README.md`](stock/citadel/README.md).
+   - **Biome teaser still** = dusk stock in `StarBoltSprint/bolt-lane-recipe` (do **not** commit biome binaries here; do not cook it here).
 2. Ask the player: **Citadel** or **Biome**?
 3. Open that branch’s **interactive Play** surface (Grok Build / sandbox). Do not scaffold a new grok.me.
 4. Play videos **loop forever** while the session is open: `muted playsInline autoPlay loop` + watchdog re-`play()` on `pause` / `ended`.
@@ -107,7 +109,7 @@ This is the only text that loads in a **brand-new** convo **before** the repo is
 ```
 Boltverse / StarBoltSprint / citadel / salle mousse:
 STOP — HARD SPLIT (SmiR 2026-09-12). Imagine Agent is obligatoire / MUST / systematically for STYLE stills when restyling. NEVER for Walk A, Walk B, breath, or any video. Walks / breaths / films = imagine-hooks / cook-room first-frame + last-frame. Chat Imagine UI without real first+last is banned. Soft KEEP banned. Smoke still gates.
-Grok chat = console. Odyssey = the game. play / lance Boltverse Odyssey → post 2 stock preview mp4s (Citadel | Biome), ask Citadel or Biome, open that Interactive Play. Chat mp4s = teaser, not tap. Play videos loop forever (muted playsInline autoPlay loop + watchdog). Citadel = this repo. Biome = StarBoltSprint/bolt-lane-recipe (private). Keep the split.
+Grok chat = console. Odyssey = the game. play / lance Boltverse Odyssey → post 2 stock teasers (Citadel preview mp4 = stock/citadel/preview-loop.mp4 | Biome still = bolt-lane-recipe dusk stock), ask Citadel or Biome, open that Interactive Play. Chat mp4s = teaser, not tap. Play videos loop forever (muted playsInline autoPlay loop + watchdog). Citadel = this repo. Biome = StarBoltSprint/bolt-lane-recipe (private). Keep the split.
 1. Clone https://github.com/StarBoltSprint/boltverse-odyssey
 2. Read AGENTS.md then GROK.md (STOP). Do not cook before that.
 3. NEVER call imagine_image_to_video, imagine_reference_to_video, or imagine_image_to_image. Chat Imagine UI without real first+last has no last_frame. Chat Imagine UI without real first+last is banned for walks.
@@ -174,7 +176,7 @@ Endless-lane / biome runner recipe lives in `StarBoltSprint/bolt-lane-recipe` (p
 
 | Phrase | Job |
 |---|---|
-| `play` / `lance Boltverse Odyssey` / `starboltsprint` / `boltverse` alone | **console boot** — 2 stock preview mp4s (Citadel \| Biome), ask, then Interactive Play. **no** cook |
+| `play` / `lance Boltverse Odyssey` / `starboltsprint` / `boltverse` alone | **console boot** — Citadel preview mp4 (`stock/citadel/preview-loop.mp4`) + Biome dusk still (`bolt-lane-recipe`), ask, then Interactive Play. **no** cook |
 | `citadel moss` | `cook-room moss` |
 | `moss` / `ember` / catalog paint | hall paint — [CATALOG.md](CATALOG.md) |
 | biome / sprint / lane / three-take | refuse cook here — open Biome Play from `StarBoltSprint/bolt-lane-recipe` |
