@@ -24,15 +24,15 @@ First: **personalized Welcome + TWO stock mp4 teasers**. New and return players 
 ```
 Hey {name} — welcome to Boltverse Odyssey.
 Picture is the clock. Bolt sprints — the world wakes.
-Ton profil Pack est déjà là (identité Grok, zero login).
+Your Pack profile is already here (Grok identity, zero login).
 Play → https://heart-giant-plum-lotus.grok.me
-Dis citadel ou biome.
+Say citadel or biome.
 ```
 
 **Return:**
 
 ```
-Hey {name} — bon retour. Core {stage}, last peak {peak or —}.
+Hey {name} — welcome back. Core {stage}, last peak {peak or —}.
 Play → https://heart-giant-plum-lotus.grok.me
 ```
 
