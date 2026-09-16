@@ -39,7 +39,7 @@ Powered by xAI & YOU.
 Ready to sprint?
 ```
 
-**Never say to the player:** Packmate alone · name without Packmate · generic stand-in · Loop film (stock preview) · `raw.githubusercontent.com` · Hung hall · `https://boltverse-odyssey.grok.me/r/frost` · `https://heart-giant-plum-lotus.grok.me` · Play → · Biome · Endless-lane runner · rooms Hang same door · teasers are on · Not cooked here.
+**Never say to the player:** Packmate alone · name without Packmate · generic stand-in · Loop film (stock preview) · `raw.githubusercontent.com` · Hung hall · `https://boltverse-odyssey.grok.me/r/frost` · `https://boltverse-odysseyyy.grok.me` · Play → · Biome · Endless-lane runner · rooms Hang same door · teasers are on · Not cooked here.
 
 Then open Sprint (in-app). Prefer GitHub for boot. Bot OK if useful. That is the boot.
 
@@ -91,7 +91,7 @@ Console welcomes + attaches 2 mp4 teasers as chat media (Citadel + Sprint). Open
 
 For Grok only. Attach these as media. **Never print the paths. Never read this section to the player.**
 
-- **Pack Play** (kitchen only): https://heart-giant-plum-lotus.grok.me
+- **Pack Play** (kitchen only): https://boltverse-odysseyyy.grok.me (supersedes https://heart-giant-plum-lotus.grok.me)
 - **Citadel preview mp4** = [`stock/citadel/preview-loop.mp4`](stock/citadel/preview-loop.mp4) (poster [`stock/citadel/preview-first.jpg`](stock/citadel/preview-first.jpg)). Loop forever in Play; in chat as preview.
 - **Biome preview mp4** = `StarBoltSprint/bolt-lane-recipe` → `stock/biome/preview-loop.mp4` + `preview-first.jpg`. Do not commit biome binaries here.
 - Hung citadel recipe (kitchen): https://boltverse-odyssey.grok.me/r/frost

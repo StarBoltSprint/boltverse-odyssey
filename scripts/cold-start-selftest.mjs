@@ -316,7 +316,8 @@ function assertSpokenWelcome(label, text, newHeading, returnHeading) {
   must(/Powered by xAI & YOU\./.test(neu) && /Ready to sprint\?/.test(neu), label + ": Welcome has Powered + Ready to sprint");
   must(/welcome back/.test(ret), label + ": Return EN");
   must(/Powered by xAI & YOU\./.test(ret) && /Ready to sprint\?/.test(ret), label + ": Return has Powered + Ready to sprint");
-  must(!/heart-giant-plum-lotus/.test(neu) && !/heart-giant-plum-lotus/.test(ret), label + ": Welcome/Return have no Play URL");
+  must(!/heart-giant-plum-lotus/.test(neu) && !/heart-giant-plum-lotus/.test(ret), label + ": Welcome/Return have no old Play URL");
+  must(!/boltverse-odysseyyy/.test(neu) && !/boltverse-odysseyyy/.test(ret), label + ": Welcome/Return have no Play URL");
   must(!/Play →/.test(neu) && !/Play →/.test(ret), label + ": Welcome/Return have no Play →");
   must(!/Say citadel or biome/.test(neu) && !/citadel or biome/i.test(neu), label + ": Welcome has no Citadel/Biome choice");
   must(!/teasers are on/.test(neu) && !/teasers are on/.test(ret), label + ": Welcome/Return do not narrate teasers are on");
@@ -335,7 +336,9 @@ function assertPlayerBoot(label, text) {
   must(/open Sprint/i.test(text), label + ": open Sprint direct");
   must(!/\+ ask \*\*Citadel\*\* or \*\*Biome\*\*/.test(text) && !/\+ ask Citadel or Biome/.test(text) && !/\n3\. Ask \*\*Citadel\*\* or \*\*Biome\*\*/.test(text), label + ": no Citadel/Biome choice lecture");
   must(/No Citadel\/Biome choice|Do \*\*not\*\* ask Citadel or Biome|do not ask Citadel or Biome/.test(text), label + ": forbids Citadel/Biome choice lecture");
-  must(/kitchen only|Pack Play URL is kitchen-only|do not read aloud/i.test(text) && /heart-giant-plum-lotus\.grok\.me/.test(text), label + ": Pack Play URL is kitchen-only");
+  must(/kitchen only|Pack Play URL is kitchen-only|do not read aloud/i.test(text) && /boltverse-odysseyyy\.grok\.me/.test(text), label + ": Pack Play URL is kitchen-only");
+  const kitchenPlay = text.replace(/\(supersedes https:\/\/heart-giant-plum-lotus\.grok\.me\)/g, "");
+  must(!/Pack Play[^\n]*https:\/\/heart-giant-plum-lotus\.grok\.me/.test(kitchenPlay), label + ": heart-giant is not the active Pack Play URL");
 }
 
 assertPlayerBoot("START.md", body("START.md"));
@@ -352,10 +355,14 @@ function assertNameLaw(label, text) {
 }
 assertNameLaw("START.md", body("START.md"));
 assertNameLaw("GROK.md", body("GROK.md"));
-must(!/Play → https:\/\/heart-giant-plum-lotus\.grok\.me/.test(body("START.md")), "START.md: no spoken Play → URL form");
-must(!/Play → https:\/\/heart-giant-plum-lotus\.grok\.me/.test(body("GROK.md")), "GROK.md: no spoken Play → URL form");
-must(!/Play → https:\/\/heart-giant-plum-lotus\.grok\.me/.test(body("README.md")), "README.md: no spoken Play → URL form");
-must(!/Play → https:\/\/heart-giant-plum-lotus\.grok\.me/.test(agents), "AGENTS.md: no spoken Play → URL form");
+must(!/Play → https:\/\/heart-giant-plum-lotus\.grok\.me/.test(body("START.md")), "START.md: no spoken Play → old URL form");
+must(!/Play → https:\/\/heart-giant-plum-lotus\.grok\.me/.test(body("GROK.md")), "GROK.md: no spoken Play → old URL form");
+must(!/Play → https:\/\/heart-giant-plum-lotus\.grok\.me/.test(body("README.md")), "README.md: no spoken Play → old URL form");
+must(!/Play → https:\/\/heart-giant-plum-lotus\.grok\.me/.test(agents), "AGENTS.md: no spoken Play → old URL form");
+must(!/Play → https:\/\/boltverse-odysseyyy\.grok\.me/.test(body("START.md")), "START.md: no spoken Play → URL form");
+must(!/Play → https:\/\/boltverse-odysseyyy\.grok\.me/.test(body("GROK.md")), "GROK.md: no spoken Play → URL form");
+must(!/Play → https:\/\/boltverse-odysseyyy\.grok\.me/.test(body("README.md")), "README.md: no spoken Play → URL form");
+must(!/Play → https:\/\/boltverse-odysseyyy\.grok\.me/.test(agents), "AGENTS.md: no spoken Play → URL form");
 must(!/Ton profil Pack/.test(body("START.md")) && !/bon retour/.test(body("START.md")) && !/Dis citadel/.test(body("START.md")), "START.md: no French Welcome");
 must(!/Ton profil Pack/.test(body("GROK.md")) && !/bon retour/.test(body("GROK.md")) && !/Dis citadel/.test(body("GROK.md")), "GROK.md: no French Welcome");
 
