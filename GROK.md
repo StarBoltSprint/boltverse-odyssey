@@ -42,7 +42,7 @@ Powered by xAI & YOU.
 Ready to sprint?
 ```
 
-**Never say to the player:** Packmate alone · name without Packmate · generic stand-in · Loop film (stock preview) · `raw.githubusercontent.com` · Hung hall · `https://boltverse-odyssey.grok.me/r/frost` · `https://heart-giant-plum-lotus.grok.me` · Play → · Biome · Endless-lane runner · rooms Hang same door · teasers are on · Not cooked here.
+**Never say to the player:** Packmate alone · name without Packmate · generic stand-in · Loop film (stock preview) · `raw.githubusercontent.com` · Hung hall · `https://boltverse-odyssey.grok.me/r/frost` · `https://boltverse-odysseyyy.grok.me` · Play → · Biome · Endless-lane runner · rooms Hang same door · teasers are on · Not cooked here.
 
 Then open Sprint (in-app). Prefer GitHub for boot. Bot OK if useful. Do not scaffold a new grok.me.
 
@@ -50,7 +50,7 @@ Then open Sprint (in-app). Prefer GitHub for boot. Bot OK if useful. Do not scaf
 
 For Grok only. Attach these as media. **Never print the paths. Never read this section to the player.**
 
-- **Pack Play** (kitchen only): https://heart-giant-plum-lotus.grok.me
+- **Pack Play** (kitchen only): https://boltverse-odysseyyy.grok.me (supersedes https://heart-giant-plum-lotus.grok.me)
 - **Citadel preview mp4** = [`stock/citadel/preview-loop.mp4`](stock/citadel/preview-loop.mp4) (poster [`stock/citadel/preview-first.jpg`](stock/citadel/preview-first.jpg)). Loop forever in Play; in chat as preview. See [`stock/citadel/README.md`](stock/citadel/README.md).
 - **Biome preview mp4** = `StarBoltSprint/bolt-lane-recipe` → `stock/biome/preview-loop.mp4` + `preview-first.jpg` (do **not** commit biome binaries here).
 - Play videos **loop forever** while the session is open: `muted playsInline autoPlay loop` + watchdog re-`play()` on `pause` / `ended`.
@@ -59,7 +59,7 @@ For Grok only. Attach these as media. **Never print the paths. Never read this s
 
 | Branch | What | Where |
 |---|---|---|
-| **Citadel** | rooms / Hang / citadel graph (`cook-room`) | **this repo** — Pack Play https://heart-giant-plum-lotus.grok.me (frost path on that Live) |
+| **Citadel** | rooms / Hang / citadel graph (`cook-room`) | **this repo** — Pack Play https://boltverse-odysseyyy.grok.me (frost path on that Live) |
 | **Biome / lane** | Pack Play biome path | private recipe [`StarBoltSprint/bolt-lane-recipe`](https://github.com/StarBoltSprint/bolt-lane-recipe) — do **not** re-add biome cook docs here |
 
 Later: SmiR may merge lane-recipe into odyssey. Until then **keep the split**.
@@ -144,7 +144,7 @@ This is the only text that loads in a **brand-new** convo **before** the repo is
 Boltverse / StarBoltSprint / citadel / salle mousse:
 STOP — HARD SPLIT (SmiR 2026-09-12). Imagine Agent is obligatoire / MUST / systematically for STYLE stills when restyling. NEVER for Walk A, Walk B, breath, or any video. Walks / breaths / films = imagine-hooks / cook-room first-frame + last-frame. Chat Imagine UI without real first+last is banned. Soft KEEP banned. Smoke still gates.
 Grok chat = console. Odyssey = the game. play / lance Boltverse Odyssey → player reply ONLY: Welcome/Return EN (`Hey Packmate {name}` — Packmate MUST + real Grok profile displayName; never Packmate alone; never name without Packmate) + attach 2 mp4 teasers as chat media (Citadel + Sprint; no raw URL dump). Do not narrate “teasers are on”. Prefer GitHub for boot. Bot OK if useful. Then open Sprint via native Grok Build game console (in-app). No Play URL in chat. No Citadel/Biome choice lecture. Never say kitchen (no raw.githubusercontent.com, no hung hall, no dusk lane / Endless-lane runner / Not cooked here). Pack Play URL is kitchen-only. Chat mp4s = teaser, not tap. Play videos loop forever (muted playsInline autoPlay loop + watchdog). Interactive Play = taps. Citadel = this repo. Biome = StarBoltSprint/bolt-lane-recipe (private). Keep the split.
-Kitchen (do not read aloud): Pack Play https://heart-giant-plum-lotus.grok.me | Citadel preview mp4 = stock/citadel/preview-loop.mp4 | Biome preview mp4 = bolt-lane-recipe stock/biome/preview-loop.mp4 + preview-first.jpg.
+Kitchen (do not read aloud): Pack Play https://boltverse-odysseyyy.grok.me | Citadel preview mp4 = stock/citadel/preview-loop.mp4 | Biome preview mp4 = bolt-lane-recipe stock/biome/preview-loop.mp4 + preview-first.jpg.
 1. Clone https://github.com/StarBoltSprint/boltverse-odyssey
 2. Read AGENTS.md then GROK.md (STOP). Do not cook before that.
 3. NEVER call imagine_image_to_video, imagine_reference_to_video, or imagine_image_to_image. Chat Imagine UI without real first+last has no last_frame. Chat Imagine UI without real first+last is banned for walks.
@@ -275,7 +275,7 @@ Opening the Play surface plays **breath-spawn**. Films **loop forever** while th
 
 Humans see [START.md](START.md). Recook or stock. Open Sprint in-app — do not scaffold.
 
-Kitchen — do not read aloud: Pack Play https://heart-giant-plum-lotus.grok.me · hung citadel recipe https://boltverse-odyssey.grok.me/r/frost · Biome preview mp4 = `StarBoltSprint/bolt-lane-recipe` `stock/biome/preview-loop.mp4`. Keep the split.
+Kitchen — do not read aloud: Pack Play https://boltverse-odysseyyy.grok.me · hung citadel recipe https://boltverse-odyssey.grok.me/r/frost · Biome preview mp4 = `StarBoltSprint/bolt-lane-recipe` `stock/biome/preview-loop.mp4`. Keep the split.
 
 Gift: [TICKET.md](TICKET.md). False help: [DONT.md](DONT.md). Corridor hall: [COOKROOM.md](COOKROOM.md).
 
