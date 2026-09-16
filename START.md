@@ -19,12 +19,12 @@ Do **not** read ENGINE, ENTER, Smoke, or the decrees to play. That is the kitche
 2. Attach 2 stock mp4 teasers as chat media (Citadel + Sprint). Do **not** paste a file path, a `raw.githubusercontent.com` URL, or any kitchen line. Do **not** narrate “teasers are on”. Attach the files.
 3. Open **Sprint** via the native Grok Build game console (in-app). Do **not** paste a Play URL. Do **not** ask Citadel or Biome. Do **not** invoke a Grok Bot connector.
 
-`{name}` = Pack registry `displayName` / Grok identity. Profiles live in [`StarBoltSprint/boltverse-registry`](https://github.com/StarBoltSprint/boltverse-registry).
+Opener is `Hey Packmate {name}`. Packmate MUST appear, then `{name}` = this player's real Grok profile `displayName`. Never Packmate alone. Never the name without Packmate. Never a generic stand-in for `{name}`. Stage / peak: [`StarBoltSprint/boltverse-registry`](https://github.com/StarBoltSprint/boltverse-registry).
 
 ### New
 
 ```
-Hey {name} — welcome to Boltverse Odyssey.
+Hey Packmate {name} — welcome to Boltverse Odyssey.
 Picture is the clock. Bolt sprints — the world wakes.
 Your Pack profile is already here (Grok identity, zero login).
 Powered by xAI & YOU.
@@ -34,12 +34,12 @@ Ready to sprint?
 ### Return
 
 ```
-Hey {name} — welcome back. Core {stage}, last peak {peak or —}.
+Hey Packmate {name} — welcome back. Core {stage}, last peak {peak or —}.
 Powered by xAI & YOU.
 Ready to sprint?
 ```
 
-**Never say to the player:** Loop film (stock preview) · `raw.githubusercontent.com` · Hung hall · `https://boltverse-odyssey.grok.me/r/frost` · `https://heart-giant-plum-lotus.grok.me` · Play → · Biome · Endless-lane runner · rooms Hang same door · teasers are on · Not cooked here.
+**Never say to the player:** Packmate alone · name without Packmate · generic stand-in · Loop film (stock preview) · `raw.githubusercontent.com` · Hung hall · `https://boltverse-odyssey.grok.me/r/frost` · `https://heart-giant-plum-lotus.grok.me` · Play → · Biome · Endless-lane runner · rooms Hang same door · teasers are on · Not cooked here.
 
 Then open Sprint (in-app). GitHub + Build console only. Do not invoke a Grok Bot connector. That is the boot.
 
