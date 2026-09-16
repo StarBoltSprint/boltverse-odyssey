@@ -284,6 +284,7 @@ must(/Pack Play URL is kitchen-only/.test(customize) && /No Play URL in chat/.te
 must(!/ask Citadel or Biome/.test(customize), "GROK.md Customize: no Citadel/Biome choice lecture");
 must(/Never invoke a Grok Bot connector/.test(customize) && /GitHub \+ Build console only/.test(customize), "GROK.md Customize: never invoke Grok Bot connector; GitHub + Build console only");
 must(/as chat media/.test(customize) && /do not narrate/i.test(customize) && /teasers are on/.test(customize), "GROK.md Customize: attach as chat media; do not narrate teasers are on");
+must(/Hey Packmate \{name\}/.test(customize) && /never Packmate alone/.test(customize) && /never name without Packmate/.test(customize), "GROK.md Customize: Hey Packmate {name}");
 must(existsSync(join(root, "stock/citadel/preview-loop.mp4")), "stock/citadel/preview-loop.mp4 present");
 must(existsSync(join(root, "stock/citadel/preview-first.jpg")), "stock/citadel/preview-first.jpg present");
 must(/stock\/citadel\/preview-loop/.test(body("GROK.md")), "GROK.md: Citadel teaser = stock/citadel/preview-loop");
@@ -307,6 +308,9 @@ function assertSpokenWelcome(label, text, newHeading, returnHeading) {
   const neu = spokenFence(text, newHeading);
   const ret = spokenFence(text, returnHeading);
   must(/welcome to Boltverse Odyssey/.test(neu), label + ": Welcome EN");
+  must(/Hey Packmate \{name\}/.test(neu) && /Hey Packmate \{name\}/.test(ret), label + ": Hey Packmate {name}");
+  must(!/Hey \{name\}/.test(neu) && !/Hey \{name\}/.test(ret), label + ": not name without Packmate");
+  must(!/Hey Packmate —/.test(neu) && !/Hey Packmate —/.test(ret), label + ": not Packmate alone");
   must(/Your Pack profile is already here/.test(neu), label + ": Pack profile EN");
   must(/Powered by xAI & YOU\./.test(neu) && /Ready to sprint\?/.test(neu), label + ": Welcome has Powered + Ready to sprint");
   must(/welcome back/.test(ret), label + ": Return EN");
@@ -339,6 +343,14 @@ assertPlayerBoot("README.md", body("README.md"));
 assertPlayerBoot("AGENTS.md", agents);
 assertSpokenWelcome("START.md", body("START.md"), /### New/, /### Return/);
 assertSpokenWelcome("GROK.md", body("GROK.md"), /\*\*New:\*\*/, /\*\*Return:\*\*/);
+function assertNameLaw(label, text) {
+  must(/Hey Packmate \{name\}/.test(text), label + ": opener is Hey Packmate {name}");
+  must(/real Grok profile/.test(text) && /displayName/.test(text), label + ": {name} = real Grok profile displayName");
+  must(/Never Packmate alone/.test(text) && /Never the name without Packmate/.test(text), label + ": bans Packmate alone and name without Packmate");
+  must(/generic stand-in/.test(text), label + ": bans generic stand-in");
+}
+assertNameLaw("START.md", body("START.md"));
+assertNameLaw("GROK.md", body("GROK.md"));
 must(!/Play → https:\/\/heart-giant-plum-lotus\.grok\.me/.test(body("START.md")), "START.md: no spoken Play → URL form");
 must(!/Play → https:\/\/heart-giant-plum-lotus\.grok\.me/.test(body("GROK.md")), "GROK.md: no spoken Play → URL form");
 must(!/Play → https:\/\/heart-giant-plum-lotus\.grok\.me/.test(body("README.md")), "README.md: no spoken Play → URL form");
