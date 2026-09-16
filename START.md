@@ -93,6 +93,6 @@ For Grok only. Attach these as media. **Never print the paths. Never read this s
 
 - **Pack Play** (kitchen only): https://boltverse-odysseyyy.grok.me (supersedes https://heart-giant-plum-lotus.grok.me)
 - **Citadel preview mp4** = [`stock/citadel/preview-loop.mp4`](stock/citadel/preview-loop.mp4) (poster [`stock/citadel/preview-first.jpg`](stock/citadel/preview-first.jpg)). Loop forever in Play; in chat as preview.
-- **Biome preview mp4** = `StarBoltSprint/bolt-lane-recipe` → `stock/biome/preview-loop.mp4` + `preview-first.jpg`. Do not commit biome binaries here.
+- **Biome preview mp4** = [`stock/biome/preview-loop.mp4`](stock/biome/preview-loop.mp4) + [`preview-first.jpg`](stock/biome/preview-first.jpg).
 - Hung citadel recipe (kitchen): https://boltverse-odyssey.grok.me/r/frost
-- Biome / lane recipe = private [`StarBoltSprint/bolt-lane-recipe`](https://github.com/StarBoltSprint/bolt-lane-recipe). Keep the split.
+- Biome / lane recipe = [`biome/`](biome/README.md) (PLAY · LanePlayer · `/master`). [`bolt-lane-recipe`](https://github.com/StarBoltSprint/bolt-lane-recipe) may remain as archive.

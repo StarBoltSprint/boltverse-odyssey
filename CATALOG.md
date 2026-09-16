@@ -97,4 +97,4 @@ If a paint FAILs Smoke → URL still opens **stock**, plus one line (`atA: face`
 **You pick a paint on the wall. You do not invent the building.**  
 The building is already the citadel. The catalog is the color.
 
-Paints = matter. Rows = stock + neighbors + identity. Endless-lane / biome runner recipe lives in `StarBoltSprint/bolt-lane-recipe` (private).
+Paints = matter. Rows = stock + neighbors + identity. Endless-lane / biome runner recipe lives in [`biome/`](biome/README.md).

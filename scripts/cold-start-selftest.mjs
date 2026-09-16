@@ -249,10 +249,18 @@ forbidBiomeCook("README.md", body("README.md"));
 forbidBiomeCook("START.md", body("START.md"));
 forbidBiomeCook("COOK.md", body("COOK.md"));
 forbidBiomeCook("COOKROOM.md", cookroom);
-must(/bolt-lane-recipe/.test(body("GROK.md")), "GROK.md: lane recipe lives elsewhere");
-must(/bolt-lane-recipe/.test(agents), "AGENTS.md: lane recipe lives elsewhere");
-must(/bolt-lane-recipe/.test(body("README.md")), "README.md: lane recipe lives elsewhere");
+must(/biome\//.test(body("GROK.md")), "GROK.md: lane recipe lives in biome/");
+must(/biome\//.test(agents), "AGENTS.md: lane recipe lives in biome/");
+must(/biome\//.test(body("README.md")), "README.md: lane recipe lives in biome/");
 must(/citadel/.test(body("README.md")) && /Hang/.test(body("README.md")), "README.md: citadel / Hang recipe");
+must(existsSync(join(root, "biome/PLAY.md")), "biome/PLAY.md present");
+must(existsSync(join(root, "biome/reference/LanePlayer.tsx")), "biome/reference/LanePlayer.tsx present");
+const play = body("biome/PLAY.md");
+must(/B stack/.test(play) && /cutout/.test(play), "biome/PLAY.md: B stack + cutout");
+must(/seek-sync/.test(play), "biome/PLAY.md: seek-sync");
+must(/loop forever/.test(play), "biome/PLAY.md: loop forever");
+must(/not default|not the default/.test(play), "biome/PLAY.md: 3-take is not default");
+must(!/C-light/.test(play) || /cancelled/.test(play), "biome/PLAY.md: no invented C-light lock");
 
 function assertConsoleFlow(label, text) {
   must(/console/.test(text), label + ": Grok = console");
@@ -264,7 +272,7 @@ function assertConsoleFlow(label, text) {
   must(/loop forever/.test(text), label + ": play videos loop forever");
   must(/preview mp4/.test(text), label + ": stock preview mp4s");
   must(/not tappable|not.*hitbox|pas des hitboxes/i.test(text), label + ": chat mp4s are not hitboxes");
-  must(/bolt-lane-recipe/.test(text), label + ": biome = bolt-lane-recipe");
+  must(/biome\//.test(text) || /stock\/biome/.test(text), label + ": biome = in-repo biome/ or stock/biome");
 }
 
 assertConsoleFlow("GROK.md", body("GROK.md"));
@@ -275,8 +283,10 @@ must(/muted playsInline autoPlay loop/.test(body("GROK.md")), "GROK.md: muted pl
 must(/muted playsInline autoPlay loop/.test(agents), "AGENTS.md: muted playsInline autoPlay loop");
 must(/muted playsInline autoPlay loop/.test(body("README.md")), "README.md: muted playsInline autoPlay loop");
 must(/watchdog/.test(body("GROK.md")) && /pause/.test(body("GROK.md")), "GROK.md: watchdog re-play on pause/ended");
-must(/keep the split|Keep the split/.test(body("GROK.md")), "GROK.md: keep the split until merge");
-must(/keep the split|Keep the split/.test(body("README.md")), "README.md: keep the split until merge");
+must(!/keep the split|Keep the split/.test(body("GROK.md")), "GROK.md: split merged — biome cooks here");
+must(!/keep the split|Keep the split/.test(body("README.md")), "README.md: split merged — biome cooks here");
+must(!/Do not cook biomes here/.test(body("README.md")), "README.md: no do-not-cook-biomes-here");
+must(!/Do not cook biomes here/.test(agents), "AGENTS.md: no do-not-cook-biomes-here");
 must(/Grok chat = console/.test(customize) && /Odyssey = the game/.test(customize), "GROK.md Customize: console / game");
 must(/play \/ lance/.test(customize) && /Interactive Play/.test(customize), "GROK.md Customize: play/lance → Interactive Play");
 must(/open Sprint via native Grok Build game console/.test(customize) && /in-app/.test(customize), "GROK.md Customize: open Sprint in-app");

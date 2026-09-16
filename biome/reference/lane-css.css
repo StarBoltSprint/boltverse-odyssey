@@ -1,0 +1,40 @@
+/* B-stack 9:16 — recipe CSS. Not a grok.me theme. */
+
+.lane-stage {
+  position: relative;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  background: #07060a;
+  touch-action: pan-y;
+}
+
+.lane-road,
+.lane-bolt {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.lane-road {
+  z-index: 0;
+}
+
+.lane-bolt {
+  z-index: 1;
+  width: min(42vh, 46%);
+  height: auto;
+  top: auto;
+  bottom: 8%;
+  transform: translateX(-50%);
+  mix-blend-mode: screen;
+}
+
+/* mix-blend-mode: screen is a soft-key stand-in for a real alpha cutout.
+   Prefer a keyed mp4 / webm with alpha when the cook has one.
+   Do not add TAP / NOW / fill-bars / hitbox chrome. */

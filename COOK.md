@@ -302,4 +302,4 @@ Then read [ENTER.md](ENTER.md) and [HANG.md](HANG.md). Short version:
 - Wire: walk to the door first, **stay**. Second tap = enter. Walk ended **never** auto-enters.
 - Bump `PACK` after hanging the new mp4.
 
-This page is citadel halls only. Endless-lane / biome runner recipe lives in `StarBoltSprint/bolt-lane-recipe` (private).
+This page is citadel halls only. Endless-lane / biome runner recipe lives in [`biome/`](biome/README.md).

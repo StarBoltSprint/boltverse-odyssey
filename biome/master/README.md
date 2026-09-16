@@ -1,0 +1,20 @@
+# master — hung B-stack (road + cutout)
+
+This folder is the Sprint **`/master` stack** the LanePlayer wires.
+
+| file | role |
+|---|---|
+| `road.mp4` | empty-plate travel — **master clock** |
+| `bolt.mp4` | Bolt cutout / gallop |
+| `road-first.jpg` | first-frame poster for the road |
+| `bolt-first.jpg` | first-frame of the cutout |
+
+Drop PASS encodes here after [../GROK.md](../GROK.md). Encode: 720×1280, H264, `-an`, short GOP, `+faststart`.
+
+## Binaries
+
+If these files are missing from git (LFS / not cooked yet): **do not invent them.** Cook with [../prompts/](../prompts/) + imagine-hooks `image` + `last_frame`, or play stock Sprint in-app.
+
+Console teasers are **not** this stack — they live at [`stock/biome/`](../../stock/biome/README.md).
+
+Do not Hang a dual-dog road. Do not Hang a sitting cutout.
