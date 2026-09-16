@@ -15,7 +15,9 @@ Grok / keepers: [GROK.md](GROK.md) then recipe below. Humans: stop here.
 
 **StarBoltSprint.** Living-film **citadel / rooms / Hang** recipe. This repo is **Citadel** only.
 
-**Grok chat app = console.** **Odyssey = the game.** On *play / lance Boltverse Odyssey*: **personalized Welcome + TWO stock mp4 teasers** (new and return both get the 2 teasers; only the text differs) — **Citadel preview mp4** = [`stock/citadel/preview-loop.mp4`](stock/citadel/preview-loop.mp4) (poster [`stock/citadel/preview-first.jpg`](stock/citadel/preview-first.jpg)); **Biome preview mp4** = [`bolt-lane-recipe`](https://github.com/StarBoltSprint/bolt-lane-recipe) `stock/biome/preview-loop.mp4` + `preview-first.jpg` (do **not** commit biome binaries here) — teaser only, **not** tappable hitboxes — ask **Citadel** or **Biome**, then open **Pack Play** https://heart-giant-plum-lotus.grok.me (frost / biome paths on that Live). Play videos **loop forever** (`muted playsInline autoPlay loop` + watchdog on pause/ended). Loop the Citadel stock in Play; in chat as preview.
+**Grok chat app = console.** **Odyssey = the game.** On *play / lance Boltverse Odyssey*: **player reply ONLY** — Welcome/Return EN + attach 2 stock mp4 teasers as media (no raw URL dump) + ask **Citadel** or **Biome**. Never dump kitchen (no `raw.githubusercontent.com`, no hung hall, no dusk lane / Endless-lane runner / Not cooked here). Then open **Pack Play** https://heart-giant-plum-lotus.grok.me. Chat mp4s = teaser only, **not** tappable hitboxes. Play videos **loop forever** (`muted playsInline autoPlay loop` + watchdog on pause/ended).
+
+Kitchen — do not read aloud: **Citadel preview mp4** = [`stock/citadel/preview-loop.mp4`](stock/citadel/preview-loop.mp4) (poster [`stock/citadel/preview-first.jpg`](stock/citadel/preview-first.jpg)); **Biome preview mp4** = [`bolt-lane-recipe`](https://github.com/StarBoltSprint/bolt-lane-recipe) `stock/biome/preview-loop.mp4` + `preview-first.jpg` (do **not** commit biome binaries here). Loop the Citadel stock in Play; in chat as preview.
 
 - **Citadel** = this repo (rooms / Hang / `cook-room`). Pack Play frost path on https://heart-giant-plum-lotus.grok.me. Hung citadel recipe: https://boltverse-odyssey.grok.me/r/frost
 - **Biome / lane** = private [`StarBoltSprint/bolt-lane-recipe`](https://github.com/StarBoltSprint/bolt-lane-recipe). Do not cook biomes here.
@@ -31,7 +33,9 @@ A player who picked Citadel + a catalog paint: **3 stills**, same Bolt, then **5
 
 ## For Grok (new conversation)
 
-If the human says *play / lance / boltverse odyssey / starboltsprint* — **console boot first** ([GROK.md](GROK.md) product model): personalized Welcome + TWO stock mp4 teasers — Citadel preview mp4 = [`stock/citadel/preview-loop.mp4`](stock/citadel/preview-loop.mp4), Biome preview mp4 = `bolt-lane-recipe` `stock/biome/preview-loop.mp4` + `preview-first.jpg`; ask Citadel or Biome; open Pack Play https://heart-giant-plum-lotus.grok.me. Chat mp4s are not taps. New and return both get the 2 teasers; only the text differs.
+If the human says *play / lance / boltverse odyssey / starboltsprint* — **console boot first** ([GROK.md](GROK.md) product model): **player reply ONLY** Welcome/Return EN + attach 2 stock mp4 teasers as media (no raw URL dump) + ask Citadel or Biome; open Pack Play https://heart-giant-plum-lotus.grok.me. Never dump kitchen (no `raw.githubusercontent.com`, no hung hall). Chat mp4s are not taps. New and return both get the 2 teasers; only the text differs.
+
+Kitchen — do not read aloud: Citadel preview mp4 = [`stock/citadel/preview-loop.mp4`](stock/citadel/preview-loop.mp4); Biome preview mp4 = `bolt-lane-recipe` `stock/biome/preview-loop.mp4` + `preview-first.jpg`.
 
 If they picked **Citadel** (or said citadel / citadelle / a catalog paint): you are in this recipe. **[AGENTS.md](AGENTS.md)** then **[GROK.md](GROK.md) — stop.** STYLE stills / restyle = Imagine Agent. Walks / breaths = hooks first+last. **No chat Imagine** without real first+last. No new grok.me.
 
