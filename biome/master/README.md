@@ -4,10 +4,9 @@ This folder is the Sprint **`/master` stack** the LanePlayer wires.
 
 | file | role |
 |---|---|
-| `road.mp4` | empty-plate travel — **master clock** |
-| `bolt.mp4` | Bolt cutout / gallop |
-| `road-first.jpg` | first-frame poster for the road |
-| `bolt-first.jpg` | first-frame of the cutout |
+| `road.mp4` | empty-plate travel — **master clock** (`?v=r19wide` on Live) |
+| `bolt.mp4` | Bolt luma cutout / gallop (`?v=r19wide`) |
+| `road.jpg` | first-frame poster (Live). `road-first.jpg` is the same job if you cook a new plate. |
 
 Drop PASS encodes here after [../GROK.md](../GROK.md). Encode: 720×1280, H264, `-an`, short GOP, `+faststart`.
 

@@ -36,8 +36,9 @@ Do not mix stacks in one play. Do not slide a whole mid clip sideways and call t
 | Dual dogs | Plate + layer both showing a dog = **FAIL**. Recook the plate empty. |
 | Plant | Pivot at paws / `groundY`. Skating (cutout floats) is a plant bug, not “Imagine bad paws.” |
 | Clock | **Road is master.** `clock() = road.currentTime`. |
-| seek-sync | Every tick: if `\|bolt.currentTime − clock\| > 1 frame`, seek the cutout, await `seeked`. **Never** snap the road onto the cutout. |
-| Rate | Cutout `playbackRate` follows the road. Do not speed legs on a second clock. |
+| seek-sync | r19wide: if `\|bolt.currentTime − clock % bolt.duration\| > 0.08`, seek the cutout. **Never** snap the road onto the cutout. |
+| Key | Bolt uses the `#bolt-luma` SVG hard-key (`is-luma`). Soft `mix-blend-mode: screen` is not the Live stack. |
+| VER | Cache-bust `/master/road.mp4?v=r19wide` + `/master/bolt.mp4?v=r19wide`. |
 | Loop | **loop forever** while the session is open: `muted playsInline autoPlay loop` + watchdog re-`play()` on `pause` / `ended`. |
 | Audio | Films stay **`-an`**. No wallet. No API keys in the client. |
 | Chrome | No TAP / NOW. No fill-bar. No cyan drawbox. No HUD. Hits are on the 9:16 picture. |
@@ -49,13 +50,16 @@ Do not mix stacks in one play. Do not slide a whole mid clip sideways and call t
 
 ## One clock (seek-sync)
 
+r19wide stack (`VER = r19wide` in [reference/LanePlayer.tsx](reference/LanePlayer.tsx)):
+
 ```
 clock     = road.currentTime
-seekReady = if |v.currentTime − t| > 1/30 → v.currentTime = t; await seeked (cap ~180ms)
-tick ≥10Hz:
-  apply road playbackRate to bolt
+target    = finite(bolt.duration) ? clock % bolt.duration : clock
+seekReady = if |bolt.currentTime − target| > 0.08 → bolt.currentTime = target
+tick ~400ms (+ after swipe / visibility):
+  keep both playing (muted playsInline autoPlay loop)
   seekReady(bolt, clock)
-  never seekReady(road, bolt.currentTime)
+  never seek the road onto the cutout
 ```
 
 Player pause → pause **both** at the same `t`.  

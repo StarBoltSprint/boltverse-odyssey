@@ -18,7 +18,7 @@ Kitchen — do not read aloud:
 - Sprint / Biome teaser = [`stock/biome/preview-loop.mp4`](../stock/biome/preview-loop.mp4) (poster `preview-first.jpg`)
 - Loop forever: `muted playsInline autoPlay loop` + watchdog
 
-If the teaser binaries are missing, cook them ([stock/biome/README.md](../stock/biome/README.md)) — do not dump a path in chat.
+Teaser binaries live in [`stock/biome/`](../stock/biome/README.md). Do not dump a path in chat.
 
 ## Cook vs boot
 

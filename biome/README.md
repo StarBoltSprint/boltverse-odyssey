@@ -1,12 +1,10 @@
-# biome — Sprint / lane recipe (in this repo)
+# biome — Sprint / lane recipe (lives under odyssey/biome)
 
-**Odyssey now holds both jobs.** Citadel halls stay at the repo root (`cook-room`, `packs/`, `stock/citadel`). **Biome / Sprint lane cook lives here.**
+**This folder is the lane-recipe tree, living under odyssey/biome.** Citadel halls stay at the repo root (`cook-room`, `packs/`, `stock/citadel`). **Biome / Sprint lane cook lives here.**
 
-[`StarBoltSprint/bolt-lane-recipe`](https://github.com/StarBoltSprint/bolt-lane-recipe) may remain as a private **mirror / archive**. This tree is the place to cook biome too.
+[`StarBoltSprint/bolt-lane-recipe`](https://github.com/StarBoltSprint/bolt-lane-recipe) may remain as a private **mirror / archive**. Odyssey `biome/` is the place to cook biome too.
 
-If that archive is reachable, copy any extra prompts / master binaries / `stock/biome` teasers on top of this layout. This environment could not clone the private repo (404); the tree follows SmiR’s file list + PLAY locks (B stack, seek-sync, loop forever). Cancelled 3-take / C-light are **not** default.
-
-This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play = native Grok Build game console (in-app). Kitchen Live stays https://boltverse-odysseyyy.grok.me
+This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play = native Grok Build game console (in-app). Kitchen Live stays https://boltverse-odysseyyy.grok.me (`VER = r19wide`).
 
 ## Engine lock (read PLAY first)
 
@@ -17,6 +15,7 @@ This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play
 - **loop forever** — `muted playsInline autoPlay loop` + watchdog on `pause` / `ended`.
 - **No wallet / keys** in the player.
 - **No 3-take L / M / R as default.** Do not invent the cancelled C-light lock.
+- **r19wide** — [reference/LanePlayer.tsx](reference/LanePlayer.tsx) is the Live compositor (`#bolt-luma`, plant `translate3d`, `?v=r19wide`).
 
 ## Map
 
@@ -30,7 +29,7 @@ This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play
 | [docs/03-decoupe-swipe.md](docs/03-decoupe-swipe.md) | swipe = découpe the cutout on the road |
 | [docs/04-play.md](docs/04-play.md) | LanePlayer + `/master` stack |
 | [prompts/](prompts/) | Imagine paste blocks (swap `{PAINT}` only) |
-| [reference/LanePlayer.tsx](reference/LanePlayer.tsx) | reference compositor (not a grok.me) |
+| [reference/LanePlayer.tsx](reference/LanePlayer.tsx) | r19wide compositor (not a grok.me) |
 | [reference/lane-css.css](reference/lane-css.css) | 9:16 B-stack CSS |
 | [master/README.md](master/README.md) | hung road + cutout master |
 | [stock/biome/](../stock/biome/README.md) | console Sprint teaser (`preview-loop.mp4`) |

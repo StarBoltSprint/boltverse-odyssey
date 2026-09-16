@@ -11,7 +11,7 @@ B-stack swipe is **not** three baked takes. The **road keeps scrolling**. The fi
 | Lunge | Short lean / lunge, then the cutout **already stands** on the new plant. Not a carousel of posters. |
 | Clock | After the plant, **seek-sync** still owns `currentTime`. Do not `kick()` to 0. |
 | Edge | Edge **bumps** — no fourth plant. |
-| Threshold | ~40 px horizontal, horizontal must win vs vertical. |
+| Threshold | r19wide: **12 px** horizontal; vertical must not win (`|dy| > |dx| * 2.2` is ignored). Edge tap = left 38% / right 38%. |
 | Picture | Never stops. Do not `display:none` the road. Opacity 0 on a helper layer is OK; the master stays in DOM. |
 
 ## Not this
