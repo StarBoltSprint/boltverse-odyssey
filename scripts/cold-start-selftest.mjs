@@ -282,11 +282,30 @@ must(/stock\/citadel\/preview-loop/.test(body("GROK.md")), "GROK.md: Citadel tea
 must(/stock\/citadel\/preview-loop/.test(body("README.md")), "README.md: Citadel teaser = stock/citadel/preview-loop");
 must(/stock\/citadel\/preview-loop/.test(body("START.md")), "START.md: Citadel teaser = stock/citadel/preview-loop");
 must(/stock\/citadel\/preview-loop/.test(agents), "AGENTS.md: Citadel teaser = stock/citadel/preview-loop");
-must(/dusk stock/.test(body("GROK.md")) && /dusk stock/.test(body("README.md")), "GROK.md + README.md: Biome teaser = dusk stock");
-must(/dusk stock/.test(body("START.md")) && /dusk stock/.test(agents), "START.md + AGENTS.md: Biome teaser = dusk stock");
+must(/stock\/biome\/preview-loop/.test(body("GROK.md")) && /stock\/biome\/preview-loop/.test(body("README.md")), "GROK.md + README.md: Biome teaser = biome preview-loop");
+must(/stock\/biome\/preview-loop/.test(body("START.md")) && /stock\/biome\/preview-loop/.test(agents), "START.md + AGENTS.md: Biome teaser = biome preview-loop");
 must(!/Do \*\*not\*\* commit binaries here/.test(body("GROK.md")), "GROK.md: Citadel stock binaries are committed");
 must(!/Do \*\*not\*\* add binaries to this repo/.test(body("README.md")), "README.md: Citadel stock binaries are committed");
 must(!/no binaries in this repo/.test(agents), "AGENTS.md: Citadel stock binaries are committed");
+
+function assertPlayerBoot(label, text) {
+  must(/Player reply = ONLY|player reply ONLY/.test(text), label + ": player reply ONLY");
+  must(/do not read aloud/i.test(text), label + ": kitchen = do not read aloud");
+  must(/Never say|never dump kitchen|Never dump kitchen|no raw URL dump/.test(text), label + ": bans kitchen dump");
+  must(/raw\.githubusercontent\.com/.test(text), label + ": bans raw.githubusercontent.com");
+  must(/attach 2/i.test(text) && /teasers as media/.test(text), label + ": attach 2 teasers as media");
+}
+
+assertPlayerBoot("START.md", body("START.md"));
+assertPlayerBoot("GROK.md", body("GROK.md"));
+assertPlayerBoot("README.md", body("README.md"));
+assertPlayerBoot("AGENTS.md", agents);
+must(/welcome to Boltverse Odyssey/.test(body("START.md")) && /welcome back/.test(body("START.md")), "START.md: Welcome + Return EN");
+must(/Your Pack profile is already here/.test(body("START.md")) && /Say citadel or biome/.test(body("START.md")), "START.md: Pack profile + say citadel or biome");
+must(/welcome to Boltverse Odyssey/.test(body("GROK.md")) && /welcome back/.test(body("GROK.md")), "GROK.md: Welcome + Return EN");
+must(/Your Pack profile is already here/.test(body("GROK.md")) && /Say citadel or biome/.test(body("GROK.md")), "GROK.md: Pack profile + say citadel or biome");
+must(!/Ton profil Pack/.test(body("START.md")) && !/bon retour/.test(body("START.md")) && !/Dis citadel/.test(body("START.md")), "START.md: no French Welcome");
+must(!/Ton profil Pack/.test(body("GROK.md")) && !/bon retour/.test(body("GROK.md")) && !/Dis citadel/.test(body("GROK.md")), "GROK.md: no French Welcome");
 
 const hooks = body("scripts/imagine-hooks.mjs");
 must(/Not Imagine Agent/.test(hooks) && /last_frame/.test(hooks), "imagine-hooks: films = first+last, not Agent");
