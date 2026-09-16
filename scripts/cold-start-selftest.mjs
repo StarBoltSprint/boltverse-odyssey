@@ -306,7 +306,9 @@ function assertSpokenWelcome(label, text, newHeading, returnHeading) {
   const ret = spokenFence(text, returnHeading);
   must(/welcome to Boltverse Odyssey/.test(neu), label + ": Welcome EN");
   must(/Your Pack profile is already here/.test(neu), label + ": Pack profile EN");
+  must(/Powered by xAI & YOU\./.test(neu) && /Ready to sprint\?/.test(neu), label + ": Welcome has Powered + Ready to sprint");
   must(/welcome back/.test(ret), label + ": Return EN");
+  must(/Powered by xAI & YOU\./.test(ret) && /Ready to sprint\?/.test(ret), label + ": Return has Powered + Ready to sprint");
   must(!/heart-giant-plum-lotus/.test(neu) && !/heart-giant-plum-lotus/.test(ret), label + ": Welcome/Return have no Play URL");
   must(!/Play →/.test(neu) && !/Play →/.test(ret), label + ": Welcome/Return have no Play →");
   must(!/Say citadel or biome/.test(neu) && !/citadel or biome/i.test(neu), label + ": Welcome has no Citadel/Biome choice");

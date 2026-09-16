@@ -25,12 +25,16 @@ Do **not** read ENGINE, ENTER, Smoke, or the decrees to play. That is the kitche
 Hey {name} — welcome to Boltverse Odyssey.
 Picture is the clock. Bolt sprints — the world wakes.
 Your Pack profile is already here (Grok identity, zero login).
+Powered by xAI & YOU.
+Ready to sprint?
 ```
 
 ### Return
 
 ```
 Hey {name} — welcome back. Core {stage}, last peak {peak or —}.
+Powered by xAI & YOU.
+Ready to sprint?
 ```
 
 **Never say to the player:** Loop film (stock preview) · `raw.githubusercontent.com` · Hung hall · `https://boltverse-odyssey.grok.me/r/frost` · `https://heart-giant-plum-lotus.grok.me` · Play → · Biome · Endless-lane runner · rooms Hang same door · Not cooked here.
