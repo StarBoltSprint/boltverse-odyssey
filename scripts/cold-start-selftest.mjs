@@ -255,6 +255,10 @@ must(/biome\//.test(body("README.md")), "README.md: lane recipe lives in biome/"
 must(/citadel/.test(body("README.md")) && /Hang/.test(body("README.md")), "README.md: citadel / Hang recipe");
 must(existsSync(join(root, "biome/PLAY.md")), "biome/PLAY.md present");
 must(existsSync(join(root, "biome/reference/LanePlayer.tsx")), "biome/reference/LanePlayer.tsx present");
+must(/r19wide/.test(body("biome/reference/LanePlayer.tsx")), "LanePlayer: r19wide VER");
+must(/bolt-luma/.test(body("biome/reference/LanePlayer.tsx")), "LanePlayer: bolt-luma key");
+must(existsSync(join(root, "stock/biome/preview-loop.mp4")), "stock/biome/preview-loop.mp4 present");
+must(existsSync(join(root, "stock/biome/preview-first.jpg")), "stock/biome/preview-first.jpg present");
 const play = body("biome/PLAY.md");
 must(/B stack/.test(play) && /cutout/.test(play), "biome/PLAY.md: B stack + cutout");
 must(/seek-sync/.test(play), "biome/PLAY.md: seek-sync");
