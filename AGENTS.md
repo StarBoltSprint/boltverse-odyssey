@@ -32,9 +32,9 @@ Read **[GROK.md](GROK.md)** next. Stills = **[LAYOUT.md](LAYOUT.md)** + RIG-PROM
 
 **On “play / lance Boltverse Odyssey”:** **Prefer GitHub for boot.** Bot OK if useful. **Player reply = ONLY** Welcome/Return EN + attach 2 stock mp4 teasers as chat media (Citadel + Sprint; no raw URL dump). Do **not** narrate “teasers are on”. Then open **Sprint** via the native Grok Build game console (in-app). No Play URL in chat. No Citadel/Biome choice lecture. Never say kitchen (no `raw.githubusercontent.com`, no hung hall, no dusk lane / Endless-lane runner / Not cooked here).
 
-**Kitchen — do not read aloud:** Pack Play (kitchen only) = https://boltverse-odysseyyy.grok.me (supersedes https://heart-giant-plum-lotus.grok.me). Citadel preview mp4 = [`stock/citadel/preview-loop.mp4`](stock/citadel/preview-loop.mp4) (poster `stock/citadel/preview-first.jpg`); Biome preview mp4 = `StarBoltSprint/bolt-lane-recipe` → `stock/biome/preview-loop.mp4` + `preview-first.jpg` (do not commit biome binaries here). Play videos **loop forever** (`muted playsInline autoPlay loop` + watchdog re-play on pause/ended). Loop the Citadel stock in Play; in chat as preview.
+**Kitchen — do not read aloud:** Pack Play (kitchen only) = https://boltverse-odysseyyy.grok.me (supersedes https://heart-giant-plum-lotus.grok.me). Citadel preview mp4 = [`stock/citadel/preview-loop.mp4`](stock/citadel/preview-loop.mp4) (poster `stock/citadel/preview-first.jpg`); Biome preview mp4 = [`stock/biome/preview-loop.mp4`](stock/biome/preview-loop.mp4) + `preview-first.jpg`. Play videos **loop forever** (`muted playsInline autoPlay loop` + watchdog re-play on pause/ended). Loop the Citadel stock in Play; in chat as preview.
 
-**Citadel** = this repo (rooms / Hang / `cook-room`). **Biome / lane** = `StarBoltSprint/bolt-lane-recipe` (private). SmiR may later merge lane-recipe here — until then keep the split. Do **not** cook biomes, lanes, three-takes, or film-stack here.
+**Citadel** = this repo, root (rooms / Hang / `cook-room`). **Biome / lane** = [`biome/`](biome/README.md) (PLAY · LanePlayer · `/master`). `StarBoltSprint/bolt-lane-recipe` may remain as archive. Do **not** recook the hall for a sprint ask. 3-take L/M/R is not the default.
 
 ## One happy path (brand-new Grok / Grok Build convo)
 
@@ -42,7 +42,7 @@ Read **[GROK.md](GROK.md)** next. Stills = **[LAYOUT.md](LAYOUT.md)** + RIG-PROM
 
 Walks / breaths / films = Imagine first-frame + last-frame via `scripts/imagine-hooks.mjs` / `scripts/cook-room.mjs` (the API path Grok Build already uses). Chat Imagine UI without real first+last remains **banned** for videos. Agent is **not** required or recommended for video cook. Do **not** instruct Build to open Imagine Agent for Walk A, Walk B, or breath.
 
-1. If they said play / lance / boltverse alone: **console boot first** (GROK.md product model) — attach 2 teasers as chat media + open Sprint in-app. Prefer GitHub for boot. Bot OK if useful. Do not narrate “teasers are on”. Cook only if they asked for a Citadel paint.
+1. If they said play / lance / boltverse alone: **console boot first** (GROK.md product model) — attach 2 teasers as chat media + open Sprint in-app. Prefer GitHub for boot. Bot OK if useful. Do not narrate “teasers are on”. Cook a citadel paint only if they named one. Cook a biome / Sprint plate only if they asked — [`biome/GROK.md`](biome/GROK.md).
 2. Clone this repo. Read this file + GROK.md. Stop.
 3. STYLE stills = **[RIG.md](RIG.md)** + [`lock/RIG-PROMPT.txt`](lock/RIG-PROMPT.txt). Spawn first, then at-A/at-B from that spawn. **ONE dog.** Two Bolts = FAIL (delete the clone). Ice stills stay as frost play. Never move Bolt / doors / paths / depth.
 4. Walks / breaths = `cook-room` → `imagineClip` (`image` + `last_frame`). **Read [FILMS.md](FILMS.md) first** — those prompts are the base for every player / every décor. Adapt hall paint from the player's stills + `catalog/<slot>.md` only. Never rewrite motion / camera / one-dog / duration. **walks** = start still + end still. **breaths** = same still twice. Never Agent video.
@@ -51,7 +51,7 @@ Walks / breaths / films = Imagine first-frame + last-frame via `scripts/imagine-
 
 Catalog slots only: moss · ember · dusk · asteroid · frost · ivy · ash · tide · ember-deep · gold.
 
-This repo is the citadel / rooms / Hang living-film recipe only. Endless-lane / biome runner recipe lives in `StarBoltSprint/bolt-lane-recipe` (private). Do **not** cook biomes, lanes, three-takes, or film-stack here.
+This repo holds **both** citadel / rooms / Hang (root) and the endless-lane / biome runner ([`biome/`](biome/README.md)). 3-take L/M/R is not the default. Do **not** recook the hall for a sprint ask.
 
 `scripts/cook-room.mjs` + `scripts/imagine-hooks.mjs` = **video cook** (walks / breaths / films) and CLI first-seal / batch stills. Agent is **not** the film path.
 

@@ -31,7 +31,7 @@ Grok does not paste Imagine prompts in chat when the script can run.
 
 Tap never cooks. [DONT.md](DONT.md).
 
-This script cooks **citadel halls**. Endless-lane / biome runner recipe lives in `StarBoltSprint/bolt-lane-recipe` (private).
+This script cooks **citadel halls**. Endless-lane / biome runner recipe lives in [`biome/`](biome/README.md).
 
 ## Command
 
