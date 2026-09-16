@@ -282,6 +282,8 @@ must(/play \/ lance/.test(customize) && /Interactive Play/.test(customize), "GRO
 must(/open Sprint via native Grok Build game console/.test(customize) && /in-app/.test(customize), "GROK.md Customize: open Sprint in-app");
 must(/Pack Play URL is kitchen-only/.test(customize) && /No Play URL in chat/.test(customize), "GROK.md Customize: Play URL kitchen-only");
 must(!/ask Citadel or Biome/.test(customize), "GROK.md Customize: no Citadel/Biome choice lecture");
+must(/Never invoke a Grok Bot connector/.test(customize) && /GitHub \+ Build console only/.test(customize), "GROK.md Customize: never invoke Grok Bot connector; GitHub + Build console only");
+must(/as chat media/.test(customize) && /do not narrate/i.test(customize) && /teasers are on/.test(customize), "GROK.md Customize: attach as chat media; do not narrate teasers are on");
 must(existsSync(join(root, "stock/citadel/preview-loop.mp4")), "stock/citadel/preview-loop.mp4 present");
 must(existsSync(join(root, "stock/citadel/preview-first.jpg")), "stock/citadel/preview-first.jpg present");
 must(/stock\/citadel\/preview-loop/.test(body("GROK.md")), "GROK.md: Citadel teaser = stock/citadel/preview-loop");
@@ -312,6 +314,7 @@ function assertSpokenWelcome(label, text, newHeading, returnHeading) {
   must(!/heart-giant-plum-lotus/.test(neu) && !/heart-giant-plum-lotus/.test(ret), label + ": Welcome/Return have no Play URL");
   must(!/Play →/.test(neu) && !/Play →/.test(ret), label + ": Welcome/Return have no Play →");
   must(!/Say citadel or biome/.test(neu) && !/citadel or biome/i.test(neu), label + ": Welcome has no Citadel/Biome choice");
+  must(!/teasers are on/.test(neu) && !/teasers are on/.test(ret), label + ": Welcome/Return do not narrate teasers are on");
 }
 
 function assertPlayerBoot(label, text) {
@@ -319,7 +322,11 @@ function assertPlayerBoot(label, text) {
   must(/do not read aloud/i.test(text), label + ": kitchen = do not read aloud");
   must(/Never say|never dump kitchen|Never dump kitchen|no raw URL dump/.test(text), label + ": bans kitchen dump");
   must(/raw\.githubusercontent\.com/.test(text), label + ": bans raw.githubusercontent.com");
-  must(/attach 2/i.test(text) && /teasers as media/.test(text), label + ": attach 2 teasers as media");
+  must(/attach 2/i.test(text) && /teasers as (chat )?media/.test(text), label + ": attach 2 teasers as media");
+  must(/as chat media/.test(text), label + ": attach teasers as chat media");
+  must(/Never invoke a Grok Bot connector|never invoke a Grok Bot connector/i.test(text), label + ": never invoke Grok Bot connector");
+  must(/GitHub \+ Build console only/.test(text), label + ": GitHub + Build console only");
+  must(/teasers are on/.test(text) && /Do \*\*not\*\* narrate|do not narrate|Never say/.test(text), label + ": bans narrating teasers are on");
   must(/open Sprint/i.test(text), label + ": open Sprint direct");
   must(!/\+ ask \*\*Citadel\*\* or \*\*Biome\*\*/.test(text) && !/\+ ask Citadel or Biome/.test(text) && !/\n3\. Ask \*\*Citadel\*\* or \*\*Biome\*\*/.test(text), label + ": no Citadel/Biome choice lecture");
   must(/No Citadel\/Biome choice|Do \*\*not\*\* ask Citadel or Biome|do not ask Citadel or Biome/.test(text), label + ": forbids Citadel/Biome choice lecture");
