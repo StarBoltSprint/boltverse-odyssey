@@ -10,6 +10,6 @@ SmiR-supplied Citadel room preview. Director looped it.
 **Chat:** post this mp4 as the Citadel teaser (not a tap / not a hitbox).  
 **Play:** loop forever (`muted playsInline autoPlay loop` + watchdog re-`play()` on `pause` / `ended`).
 
-Biome teaser still = dusk stock in private [`StarBoltSprint/bolt-lane-recipe`](https://github.com/StarBoltSprint/bolt-lane-recipe). Do **not** commit biome binaries here. Do not cook biomes here.
+Biome preview mp4 = `stock/biome/preview-loop.mp4` + `preview-first.jpg` in private [`StarBoltSprint/bolt-lane-recipe`](https://github.com/StarBoltSprint/bolt-lane-recipe). Do **not** commit biome binaries here. Do not cook biomes here.
 
 Not a hung pack. Not `cook-room`. Hang / cook laws unchanged.
