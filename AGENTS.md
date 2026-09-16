@@ -14,7 +14,6 @@ Ice KEEP (`packs/frost/stills/`, `lock/SEAL-*.jpg`) = play example. Do not delet
 This repo is a **recipe**, not an app. Do not scaffold a player. Do not publish a new grok.me.
 
 **Owner:** SmiR / StarBoltSprint  
-**Pack Play:** https://heart-giant-plum-lotus.grok.me  
 **Hung citadel recipe:** https://boltverse-odyssey.grok.me  
 **Clone:** https://github.com/StarBoltSprint/boltverse-odyssey
 
@@ -29,11 +28,11 @@ This repo is a **recipe**, not an app. Do not scaffold a player. Do not publish 
 Read **[GROK.md](GROK.md)** next. Stills = **[LAYOUT.md](LAYOUT.md)** + RIG-PROMPT. Films = **[FILMS.md](FILMS.md)**.
 
 **Entry:** humans [START.md](START.md) · console + kitchen [GROK.md](GROK.md) · this file = cook refuse.  
-**Product:** Grok chat = **console**. Odyssey = **the game**. Chat = boot / teaser / choice. Interactive Play (Grok Build / sandbox) = tappable. Chat mp4s are **not** hitboxes.
+**Product:** Grok chat = **console**. Odyssey = **the game**. Chat = boot / teaser. Interactive Play (native Grok Build game console, in-app) = tappable. Chat mp4s are **not** hitboxes. Do **not** paste a Play URL in chat.
 
-**On “play / lance Boltverse Odyssey”:** **Player reply = ONLY** Welcome/Return EN + attach 2 stock mp4 teasers as media (no raw URL dump) + ask **Citadel** or **Biome**. Never say kitchen (no `raw.githubusercontent.com`, no hung hall, no dusk lane / Endless-lane runner / Not cooked here). Then open Pack Play https://heart-giant-plum-lotus.grok.me.
+**On “play / lance Boltverse Odyssey”:** **Player reply = ONLY** Welcome/Return EN + attach 2 stock mp4 teasers as media (Citadel + Sprint; no raw URL dump). Then open **Sprint** via the native Grok Build game console (in-app). No Play URL in chat. No Citadel/Biome choice lecture. Never say kitchen (no `raw.githubusercontent.com`, no hung hall, no dusk lane / Endless-lane runner / Not cooked here).
 
-**Kitchen — do not read aloud:** Citadel preview mp4 = [`stock/citadel/preview-loop.mp4`](stock/citadel/preview-loop.mp4) (poster `stock/citadel/preview-first.jpg`); Biome preview mp4 = `StarBoltSprint/bolt-lane-recipe` → `stock/biome/preview-loop.mp4` + `preview-first.jpg` (do not commit biome binaries here). Play videos **loop forever** (`muted playsInline autoPlay loop` + watchdog re-play on pause/ended). Loop the Citadel stock in Play; in chat as preview.
+**Kitchen — do not read aloud:** Pack Play (kitchen only) = https://heart-giant-plum-lotus.grok.me. Citadel preview mp4 = [`stock/citadel/preview-loop.mp4`](stock/citadel/preview-loop.mp4) (poster `stock/citadel/preview-first.jpg`); Biome preview mp4 = `StarBoltSprint/bolt-lane-recipe` → `stock/biome/preview-loop.mp4` + `preview-first.jpg` (do not commit biome binaries here). Play videos **loop forever** (`muted playsInline autoPlay loop` + watchdog re-play on pause/ended). Loop the Citadel stock in Play; in chat as preview.
 
 **Citadel** = this repo (rooms / Hang / `cook-room`). **Biome / lane** = `StarBoltSprint/bolt-lane-recipe` (private). SmiR may later merge lane-recipe here — until then keep the split. Do **not** cook biomes, lanes, three-takes, or film-stack here.
 
@@ -43,7 +42,7 @@ Read **[GROK.md](GROK.md)** next. Stills = **[LAYOUT.md](LAYOUT.md)** + RIG-PROM
 
 Walks / breaths / films = Imagine first-frame + last-frame via `scripts/imagine-hooks.mjs` / `scripts/cook-room.mjs` (the API path Grok Build already uses). Chat Imagine UI without real first+last remains **banned** for videos. Agent is **not** required or recommended for video cook. Do **not** instruct Build to open Imagine Agent for Walk A, Walk B, or breath.
 
-1. If they said play / lance / boltverse alone: **console boot first** (GROK.md product model) — teasers + Citadel or Biome + Interactive Play. Cook only if they asked for a Citadel paint.
+1. If they said play / lance / boltverse alone: **console boot first** (GROK.md product model) — teasers + open Sprint in-app. Cook only if they asked for a Citadel paint.
 2. Clone this repo. Read this file + GROK.md. Stop.
 3. STYLE stills = **[RIG.md](RIG.md)** + [`lock/RIG-PROMPT.txt`](lock/RIG-PROMPT.txt). Spawn first, then at-A/at-B from that spawn. **ONE dog.** Two Bolts = FAIL (delete the clone). Ice stills stay as frost play. Never move Bolt / doors / paths / depth.
 4. Walks / breaths = `cook-room` → `imagineClip` (`image` + `last_frame`). **Read [FILMS.md](FILMS.md) first** — those prompts are the base for every player / every décor. Adapt hall paint from the player's stills + `catalog/<slot>.md` only. Never rewrite motion / camera / one-dog / duration. **walks** = start still + end still. **breaths** = same still twice. Never Agent video.

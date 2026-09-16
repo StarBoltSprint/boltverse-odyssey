@@ -257,7 +257,10 @@ must(/citadel/.test(body("README.md")) && /Hang/.test(body("README.md")), "READM
 function assertConsoleFlow(label, text) {
   must(/console/.test(text), label + ": Grok = console");
   must(/Interactive Play/.test(text), label + ": Interactive Play");
-  must(/Citadel/.test(text) && /Biome/.test(text), label + ": Citadel or Biome");
+  must(/Sprint/.test(text) && /Citadel/.test(text), label + ": player names Sprint + Citadel");
+  must(/Biome/.test(text), label + ": Biome stays kitchen");
+  must(/native Grok Build game console/.test(text) && /in-app/.test(text), label + ": open Sprint in-app");
+  must(/No Play URL|do not paste a Play URL|Do \*\*not\*\* paste a Play URL/i.test(text), label + ": no Play URL in chat");
   must(/loop forever/.test(text), label + ": play videos loop forever");
   must(/preview mp4/.test(text), label + ": stock preview mp4s");
   must(/not tappable|not.*hitbox|pas des hitboxes/i.test(text), label + ": chat mp4s are not hitboxes");
@@ -276,6 +279,9 @@ must(/keep the split|Keep the split/.test(body("GROK.md")), "GROK.md: keep the s
 must(/keep the split|Keep the split/.test(body("README.md")), "README.md: keep the split until merge");
 must(/Grok chat = console/.test(customize) && /Odyssey = the game/.test(customize), "GROK.md Customize: console / game");
 must(/play \/ lance/.test(customize) && /Interactive Play/.test(customize), "GROK.md Customize: play/lance → Interactive Play");
+must(/open Sprint via native Grok Build game console/.test(customize) && /in-app/.test(customize), "GROK.md Customize: open Sprint in-app");
+must(/Pack Play URL is kitchen-only/.test(customize) && /No Play URL in chat/.test(customize), "GROK.md Customize: Play URL kitchen-only");
+must(!/ask Citadel or Biome/.test(customize), "GROK.md Customize: no Citadel/Biome choice lecture");
 must(existsSync(join(root, "stock/citadel/preview-loop.mp4")), "stock/citadel/preview-loop.mp4 present");
 must(existsSync(join(root, "stock/citadel/preview-first.jpg")), "stock/citadel/preview-first.jpg present");
 must(/stock\/citadel\/preview-loop/.test(body("GROK.md")), "GROK.md: Citadel teaser = stock/citadel/preview-loop");
@@ -288,22 +294,48 @@ must(!/Do \*\*not\*\* commit binaries here/.test(body("GROK.md")), "GROK.md: Cit
 must(!/Do \*\*not\*\* add binaries to this repo/.test(body("README.md")), "README.md: Citadel stock binaries are committed");
 must(!/no binaries in this repo/.test(agents), "AGENTS.md: Citadel stock binaries are committed");
 
+function spokenFence(text, headingRe) {
+  const idx = text.search(headingRe);
+  if (idx < 0) return "";
+  const m = text.slice(idx).match(/```\n([\s\S]*?)```/);
+  return m ? m[1] : "";
+}
+
+function assertSpokenWelcome(label, text, newHeading, returnHeading) {
+  const neu = spokenFence(text, newHeading);
+  const ret = spokenFence(text, returnHeading);
+  must(/welcome to Boltverse Odyssey/.test(neu), label + ": Welcome EN");
+  must(/Your Pack profile is already here/.test(neu), label + ": Pack profile EN");
+  must(/Powered by xAI & YOU\./.test(neu) && /Ready to sprint\?/.test(neu), label + ": Welcome has Powered + Ready to sprint");
+  must(/welcome back/.test(ret), label + ": Return EN");
+  must(/Powered by xAI & YOU\./.test(ret) && /Ready to sprint\?/.test(ret), label + ": Return has Powered + Ready to sprint");
+  must(!/heart-giant-plum-lotus/.test(neu) && !/heart-giant-plum-lotus/.test(ret), label + ": Welcome/Return have no Play URL");
+  must(!/Play →/.test(neu) && !/Play →/.test(ret), label + ": Welcome/Return have no Play →");
+  must(!/Say citadel or biome/.test(neu) && !/citadel or biome/i.test(neu), label + ": Welcome has no Citadel/Biome choice");
+}
+
 function assertPlayerBoot(label, text) {
   must(/Player reply = ONLY|player reply ONLY/.test(text), label + ": player reply ONLY");
   must(/do not read aloud/i.test(text), label + ": kitchen = do not read aloud");
   must(/Never say|never dump kitchen|Never dump kitchen|no raw URL dump/.test(text), label + ": bans kitchen dump");
   must(/raw\.githubusercontent\.com/.test(text), label + ": bans raw.githubusercontent.com");
   must(/attach 2/i.test(text) && /teasers as media/.test(text), label + ": attach 2 teasers as media");
+  must(/open Sprint/i.test(text), label + ": open Sprint direct");
+  must(!/\+ ask \*\*Citadel\*\* or \*\*Biome\*\*/.test(text) && !/\+ ask Citadel or Biome/.test(text) && !/\n3\. Ask \*\*Citadel\*\* or \*\*Biome\*\*/.test(text), label + ": no Citadel/Biome choice lecture");
+  must(/No Citadel\/Biome choice|Do \*\*not\*\* ask Citadel or Biome|do not ask Citadel or Biome/.test(text), label + ": forbids Citadel/Biome choice lecture");
+  must(/kitchen only|Pack Play URL is kitchen-only|do not read aloud/i.test(text) && /heart-giant-plum-lotus\.grok\.me/.test(text), label + ": Pack Play URL is kitchen-only");
 }
 
 assertPlayerBoot("START.md", body("START.md"));
 assertPlayerBoot("GROK.md", body("GROK.md"));
 assertPlayerBoot("README.md", body("README.md"));
 assertPlayerBoot("AGENTS.md", agents);
-must(/welcome to Boltverse Odyssey/.test(body("START.md")) && /welcome back/.test(body("START.md")), "START.md: Welcome + Return EN");
-must(/Your Pack profile is already here/.test(body("START.md")) && /Say citadel or biome/.test(body("START.md")), "START.md: Pack profile + say citadel or biome");
-must(/welcome to Boltverse Odyssey/.test(body("GROK.md")) && /welcome back/.test(body("GROK.md")), "GROK.md: Welcome + Return EN");
-must(/Your Pack profile is already here/.test(body("GROK.md")) && /Say citadel or biome/.test(body("GROK.md")), "GROK.md: Pack profile + say citadel or biome");
+assertSpokenWelcome("START.md", body("START.md"), /### New/, /### Return/);
+assertSpokenWelcome("GROK.md", body("GROK.md"), /\*\*New:\*\*/, /\*\*Return:\*\*/);
+must(!/Play → https:\/\/heart-giant-plum-lotus\.grok\.me/.test(body("START.md")), "START.md: no spoken Play → URL form");
+must(!/Play → https:\/\/heart-giant-plum-lotus\.grok\.me/.test(body("GROK.md")), "GROK.md: no spoken Play → URL form");
+must(!/Play → https:\/\/heart-giant-plum-lotus\.grok\.me/.test(body("README.md")), "README.md: no spoken Play → URL form");
+must(!/Play → https:\/\/heart-giant-plum-lotus\.grok\.me/.test(agents), "AGENTS.md: no spoken Play → URL form");
 must(!/Ton profil Pack/.test(body("START.md")) && !/bon retour/.test(body("START.md")) && !/Dis citadel/.test(body("START.md")), "START.md: no French Welcome");
 must(!/Ton profil Pack/.test(body("GROK.md")) && !/bon retour/.test(body("GROK.md")) && !/Dis citadel/.test(body("GROK.md")), "GROK.md: no French Welcome");
 
