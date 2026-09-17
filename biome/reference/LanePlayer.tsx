@@ -1,318 +1,560 @@
 /**
- * LanePlayer — r19wide B-stack compositor.
- * Recipe only. Do not publish a new grok.me from this file.
+ * LanePlayer — r38 B-stack compositor (recipe).
+ * Dual road hold. Canvas chroma (Vlahos) + crown sat kill. Pure X plant.
+ * Do not publish a new grok.me from this file.
  *
- * VER = r19wide (road empty-plate + Bolt luma cutout).
- * Kitchen Live stack: /master/road.mp4?v=r19wide + /master/bolt.mp4?v=r19wide
- *
- * Locks (biome/PLAY.md):
- *  - road empty-plate + bolt cutout
- *  - seek-sync (road is master clock)
- *  - loop forever + watchdog
- *  - no wallet / keys
- *  - swipe = découpe plant, not 3-take L/M/R
+ * Kitchen: /master/road.mp4?v=r38 + /master/bolt.mp4?v=r38
+ * Law: biome/PLAY.md · biome/docs/05-key.md · biome/docs/03-decoupe-swipe.md
  */
 import { useEffect, useRef, useState } from "react";
 
-export const VER = "r19wide";
+type LaneI = -1 | 0 | 1;
 
+const VER = "r38";
 const ROAD_SRC = `/master/road.mp4?v=${VER}`;
-const BOLT_SRC = `/master/bolt.mp4?v=${VER}`;
-const ROAD_POSTER = "/master/road.jpg";
+const BOLT_MP4 = `/master/bolt.mp4?v=${VER}`;
 
 const SWIPE_PX = 12;
-const SLIDE_MS = 260;
-const PLANT_PCT = 44;
-const SEEK_SLOP = 0.08;
-const SYNC_MS = 400;
-const HINT_MS = 5200;
+const MOVE_MS = 220;
+const SHIFT = 30;
+const WATCHDOG_MS = 400;
 const SHOW_HINT = true;
 
-function clampLane(n: number) {
+function clampLane(n: number): LaneI {
   if (n < -1) return -1;
   if (n > 1) return 1;
-  return n;
+  return n as LaneI;
 }
 
-function easeOutCubic(t: number) {
-  return 1 - (1 - t) ** 3;
+function easeOut(t: number) {
+  return 1 - Math.pow(1 - t, 3);
 }
 
-function armVideo(el: HTMLVideoElement) {
-  el.muted = true;
-  el.defaultMuted = true;
-  el.loop = true;
-  el.playsInline = true;
-  el.autoplay = true;
-  el.setAttribute("playsinline", "");
-  el.setAttribute("webkit-playsinline", "");
-  el.setAttribute("muted", "");
-  el.setAttribute("loop", "");
+function arm(v: HTMLVideoElement) {
+  v.muted = true;
+  v.defaultMuted = true;
+  v.loop = false;
+  v.playsInline = true;
+  v.autoplay = false;
+  v.controls = false;
+  v.disablePictureInPicture = true;
+  v.removeAttribute("controls");
+  v.removeAttribute("loop");
+  v.setAttribute("playsinline", "");
+  v.setAttribute("webkit-playsinline", "");
+  v.setAttribute("muted", "");
+  v.setAttribute("controlslist", "nodownload nofullscreen noremoteplayback");
+  v.setAttribute("disablepictureinpicture", "");
 }
 
-function keepPlaying(el: HTMLVideoElement | null) {
-  if (!el) return;
-  armVideo(el);
-  if (el.ended) {
+function hardPlay(v: HTMLVideoElement | null) {
+  if (!v) return;
+  arm(v);
+  if (v.ended) {
     try {
-      el.currentTime = 0;
+      v.currentTime = 0.001;
     } catch {
-      /* ignore */
+      /* seek can throw mid-teardown */
     }
   }
-  if (el.paused || el.ended) el.play().catch(() => {});
+  if (v.paused || v.ended) {
+    void v.play().catch(() => {});
+  }
 }
 
-type PointerMark = { x: number; y: number; t: number; used: boolean };
-
-declare global {
-  interface Window {
-    __controlsTest?: {
-      getYaw: () => number;
-      getSpeed: () => number;
-      getX: () => number;
-      setKeys: (keys: string[]) => void;
-    };
+function grab(src: HTMLVideoElement, hold: HTMLCanvasElement): boolean {
+  if (src.readyState < 2 || src.seeking || src.videoWidth < 2) return false;
+  const vw = src.videoWidth;
+  const vh = src.videoHeight;
+  if (hold.width !== vw || hold.height !== vh) {
+    hold.width = vw;
+    hold.height = vh;
   }
+  const ctx = hold.getContext("2d");
+  if (!ctx) return false;
+  try {
+    ctx.drawImage(src, 0, 0, vw, vh);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Drop the green packaging. Soft edge. No yellow wash on the fur. */
+function keyGreen(data: Uint8ClampedArray) {
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+    const m = r > b ? r : b;
+    const greenness = g - m;
+    if (greenness > 16 && g > 40) {
+      data[i + 3] = 0;
+    } else if (greenness > 4 && g > 30) {
+      const t = (greenness - 4) / 12;
+      data[i + 3] = Math.max(0, Math.min(255, data[i + 3] * (1 - t)));
+      data[i + 1] = g + (m - g) * t;
+    } else if (g > m) {
+      data[i + 1] = m;
+    }
+  }
+}
+
+/** 1px alpha falloff so the cutout isn't a sticker. */
+function featherAlpha(data: Uint8ClampedArray, w: number, h: number) {
+  const a = new Uint8Array(w * h);
+  for (let p = 0, i = 3; p < a.length; p++, i += 4) a[p] = data[i];
+  for (let y = 1; y < h - 1; y++) {
+    const row = y * w;
+    for (let x = 1; x < w - 1; x++) {
+      const p = row + x;
+      const v = a[p];
+      if (v < 16) continue;
+      let n = 0;
+      if (a[p - 1] < 16) n++;
+      if (a[p + 1] < 16) n++;
+      if (a[p - w] < 16) n++;
+      if (a[p + w] < 16) n++;
+      if (n) data[p * 4 + 3] = (v * (4 - n)) / 4;
+    }
+  }
+}
+
+/** Gold pipe sits ~80px on the skull (sat ~0.55). Fur is ~0.28. Never slice. */
+function killCrown(data: Uint8ClampedArray, w: number, h: number) {
+  let yTop = h;
+  const yMax = (h * 0.75) | 0;
+  for (let y = 0; y < yMax && yTop === h; y += 2) {
+    const base = y * w * 4;
+    for (let x = 0; x < w; x += 2) {
+      if (data[base + x * 4 + 3] > 40) {
+        yTop = y;
+        break;
+      }
+    }
+  }
+  if (yTop >= h) return;
+  const end = yTop + 100 < h ? yTop + 100 : h;
+  for (let y = yTop; y < end; y++) {
+    const base = y * w * 4;
+    for (let x = 0; x < w; x++) {
+      const i = base + x * 4;
+      if (data[i + 3] < 40) continue;
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      const mx = r > g ? r : g;
+      const v = mx > b ? mx : b;
+      const mn = r < g ? (r < b ? r : b) : g < b ? g : b;
+      const sat = v === 0 ? 0 : (v - mn) / v;
+      if (sat > 0.44 && r > b + 16 && r >= g) data[i + 3] = 0;
+    }
+  }
+}
+
+/** Body centroid + paw span. Stride 2 — shape only. */
+function scanBlob(data: Uint8ClampedArray, w: number, h: number) {
+  let sx = 0;
+  let sy = 0;
+  let n = 0;
+  let x0 = w;
+  let x1 = 0;
+  let y0 = h;
+  let y1 = 0;
+  for (let y = 0; y < h; y += 2) {
+    const base = y * w * 4;
+    for (let x = 0; x < w; x += 2) {
+      if (data[base + x * 4 + 3] > 40) {
+        sx += x;
+        sy += y;
+        n++;
+        if (x < x0) x0 = x;
+        if (x > x1) x1 = x;
+        if (y < y0) y0 = y;
+        if (y > y1) y1 = y;
+      }
+    }
+  }
+  if (n < 40) {
+    return { y: (h * 0.86) | 0, x0: (w * 0.4) | 0, x1: (w * 0.6) | 0, cx: w * 0.5, cy: h * 0.7 };
+  }
+  let px0 = w;
+  let px1 = 0;
+  const pawTop = Math.max(y0, y1 - ((h * 0.07) | 0));
+  for (let y = pawTop; y <= y1; y += 2) {
+    const base = y * w * 4;
+    for (let x = x0; x <= x1; x += 2) {
+      if (data[base + x * 4 + 3] > 40) {
+        if (x < px0) px0 = x;
+        if (x > px1) px1 = x;
+      }
+    }
+  }
+  if (px1 <= px0) {
+    px0 = x0;
+    px1 = x1;
+  }
+  return { y: y1, x0: px0, x1: px1, cx: sx / n, cy: sy / n };
 }
 
 export function LanePlayer() {
-  const roadRef = useRef<HTMLVideoElement>(null);
+  const roadARef = useRef<HTMLVideoElement>(null);
+  const roadBRef = useRef<HTMLVideoElement>(null);
   const boltRef = useRef<HTMLVideoElement>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const roadHoldRef = useRef<HTMLCanvasElement | null>(null);
+  const boltHoldRef = useRef<HTMLCanvasElement | null>(null);
+  const offRef = useRef<HTMLCanvasElement | null>(null);
+  const pawsRef = useRef({ y: 0, x0: 0, x1: 0, cx: 360, cy: 800 });
+  const roadIdx = useRef(0);
+  const roadPrimed = useRef(false);
+  const haveRoad = useRef(false);
+  const haveBolt = useRef(false);
   const touchRef = useRef<HTMLDivElement>(null);
-  const laneRef = useRef(0);
+  const laneRef = useRef<LaneI>(0);
   const xRef = useRef(0);
-  const rafRef = useRef(0);
-  const markRef = useRef<PointerMark | null>(null);
-  const nudgeRef = useRef<(dir: number) => void>(() => {});
-  const [lane, setLane] = useState(0);
+  const moveRaf = useRef(0);
+  const drawRaf = useRef(0);
+  const ptr = useRef<{ x: number; y: number; t: number; used: boolean } | null>(null);
+  const goRef = useRef<(dir: -1 | 1) => void>(() => {});
+  const [lane, setLane] = useState<LaneI>(0);
   const [hint, setHint] = useState(SHOW_HINT);
-  const reducedRef = useRef(false);
+  const reduced = useRef(false);
 
   useEffect(() => {
-    reducedRef.current = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    reduced.current = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
   }, []);
 
-  const plantX = (pct: number) => {
-    xRef.current = pct;
-    const wrap = wrapRef.current;
-    if (wrap) wrap.style.transform = `translate3d(${pct}%,0,0)`;
+  const applyX = (x: number) => {
+    xRef.current = x;
   };
 
-  const kickPlay = () => {
-    keepPlaying(roadRef.current);
-    keepPlaying(boltRef.current);
+  const activeRoad = () => (roadIdx.current === 0 ? roadARef.current : roadBRef.current);
+
+  const playPair = () => {
+    hardPlay(activeRoad());
+    hardPlay(boltRef.current);
   };
 
-  const seekSync = () => {
-    const road = roadRef.current;
-    const bolt = boltRef.current;
-    keepPlaying(road);
-    keepPlaying(bolt);
-    if (!road || !bolt || road.readyState < 2 || bolt.readyState < 2) return;
-    const clock = road.currentTime;
-    if (!Number.isFinite(clock)) return;
-    const dur = bolt.duration;
-    const target = Number.isFinite(dur) && dur > 0 ? clock % dur : clock;
-    const now = bolt.currentTime;
-    if (Number.isFinite(now) && Math.abs(now - target) > SEEK_SLOP) {
-      try {
-        bolt.currentTime = target;
-      } catch {
-        /* ignore */
-      }
-    }
-  };
-
-  const restartLoop = () => {
-    const road = roadRef.current;
-    const bolt = boltRef.current;
-    if (road) {
-      armVideo(road);
-      try {
-        road.currentTime = 0;
-      } catch {
-        /* ignore */
-      }
-      road.play().catch(() => {});
-    }
-    if (bolt) {
-      armVideo(bolt);
-      try {
-        bolt.currentTime = 0;
-      } catch {
-        /* ignore */
-      }
-      bolt.play().catch(() => {});
-    }
-  };
-
-  const slideTo = (dest: number, ms: number, wobble: number) => {
-    if (reducedRef.current) {
-      plantX(dest);
+  const tween = (toX: number, ms: number) => {
+    if (reduced.current) {
+      applyX(toX);
       return;
     }
-    cancelAnimationFrame(rafRef.current);
-    const from = xRef.current;
-    const t0 = performance.now();
+    cancelAnimationFrame(moveRaf.current);
+    const fromX = xRef.current;
+    const start = performance.now();
     const tick = (now: number) => {
-      const t = Math.min(1, (now - t0) / ms);
-      const eased = easeOutCubic(t);
-      const wave = Math.sin(Math.PI * t) * wobble;
-      plantX(from + (dest - from) * eased + wave);
-      if (t < 1) rafRef.current = requestAnimationFrame(tick);
+      const u = Math.min(1, (now - start) / ms);
+      applyX(fromX + (toX - fromX) * easeOut(u));
+      if (u < 1) moveRaf.current = requestAnimationFrame(tick);
     };
-    rafRef.current = requestAnimationFrame(tick);
+    moveRaf.current = requestAnimationFrame(tick);
   };
 
-  nudgeRef.current = (dir: number) => {
+  const go = (dir: -1 | 1) => {
     const next = clampLane(laneRef.current + dir);
-    kickPlay();
-    seekSync();
+    playPair();
     setHint(false);
     if (next === laneRef.current) {
-      slideTo(next * PLANT_PCT, 160, dir * 5.5);
+      tween(next * SHIFT, 120);
       return;
     }
     laneRef.current = next;
     setLane(next);
-    slideTo(next * PLANT_PCT, SLIDE_MS, dir * 5);
+    tween(next * SHIFT, MOVE_MS);
   };
+  goRef.current = go;
 
-  const swipeFrom = (x: number, y: number) => {
-    const mark = markRef.current;
-    if (!mark || mark.used) return;
-    const dx = x - mark.x;
-    const dy = y - mark.y;
+  const readSwipe = (x: number, y: number) => {
+    const p = ptr.current;
+    if (!p || p.used) return;
+    const dx = x - p.x;
+    const dy = y - p.y;
     if (Math.abs(dx) < SWIPE_PX || Math.abs(dy) > Math.abs(dx) * 2.2) return;
-    mark.used = true;
-    nudgeRef.current(dx < 0 ? -1 : 1);
+    p.used = true;
+    goRef.current(dx < 0 ? -1 : 1);
   };
 
-  const tapSides = (x: number) => {
-    const mark = markRef.current;
-    if (!mark || mark.used) return;
-    mark.used = true;
+  const finishTap = (x: number) => {
+    const p = ptr.current;
+    if (!p || p.used) return;
+    p.used = true;
     const w = window.innerWidth || 1;
-    if (x < w * 0.38) nudgeRef.current(-1);
-    else if (x > w * 0.62) nudgeRef.current(1);
+    if (x < w * 0.38) goRef.current(-1);
+    else if (x > w * 0.62) goRef.current(1);
   };
 
   useEffect(() => {
     fetch(ROAD_SRC, { credentials: "same-origin" }).catch(() => {});
-    fetch(BOLT_SRC, { credentials: "same-origin" }).catch(() => {});
-    const road = roadRef.current;
-    const bolt = boltRef.current;
-    const touch = touchRef.current;
-    if (road) armVideo(road);
-    if (bolt) armVideo(bolt);
-    kickPlay();
-    seekSync();
+    fetch(BOLT_MP4, { credentials: "same-origin" }).catch(() => {});
 
-    const begin = (x: number, y: number) => {
-      markRef.current = { x, y, t: performance.now(), used: false };
-      kickPlay();
+    const roadA = roadARef.current;
+    const roadB = roadBRef.current;
+    const bolt = boltRef.current;
+    const canvas = canvasRef.current;
+    const touch = touchRef.current;
+    if (roadA) arm(roadA);
+    if (roadB) {
+      arm(roadB);
+      roadB.pause();
+      try {
+        roadB.currentTime = 0;
+      } catch {
+        /* ignore */
+      }
+    }
+    if (bolt) arm(bolt);
+    playPair();
+
+    const paint = () => {
+      const ctx = canvas?.getContext("2d");
+      if (!canvas || !ctx || !bolt) {
+        drawRaf.current = requestAnimationFrame(paint);
+        return;
+      }
+
+      const a = roadIdx.current === 0 ? roadA : roadB;
+      const b = roadIdx.current === 0 ? roadB : roadA;
+      if (a && b) {
+        const d = a.duration;
+        if (d && isFinite(d) && d > 0.4) {
+          if (a.currentTime >= d - 0.22) {
+            if (!roadPrimed.current) {
+              try {
+                b.currentTime = 0.001;
+              } catch {
+                /* ignore */
+              }
+              void b.play().catch(() => {});
+              roadPrimed.current = true;
+            }
+            if (b.readyState >= 2 && !b.seeking && b.currentTime > 0 && b.currentTime < 0.45) {
+              roadIdx.current = 1 - roadIdx.current;
+              roadPrimed.current = false;
+              a.pause();
+              try {
+                a.currentTime = 0;
+              } catch {
+                /* ignore */
+              }
+            }
+          }
+          if (a.currentTime >= d - 0.02 && a.currentTime > 0) {
+            try {
+              a.currentTime = 0.001;
+            } catch {
+              /* ignore */
+            }
+          }
+        }
+      }
+
+      const road = roadIdx.current === 0 ? roadA : roadB;
+      const vw = (road && road.videoWidth) || 720;
+      const vh = (road && road.videoHeight) || 1280;
+      if (vw > 2 && vh > 2 && (canvas.width !== vw || canvas.height !== vh)) {
+        canvas.width = vw;
+        canvas.height = vh;
+      }
+
+      if (!roadHoldRef.current) roadHoldRef.current = document.createElement("canvas");
+      if (!boltHoldRef.current) boltHoldRef.current = document.createElement("canvas");
+      if (!offRef.current) offRef.current = document.createElement("canvas");
+      const roadHold = roadHoldRef.current;
+      const boltHold = boltHoldRef.current;
+      const off = offRef.current;
+
+      if (road && grab(road, roadHold)) haveRoad.current = true;
+
+      if (bolt.readyState >= 2 && !bolt.seeking && bolt.videoWidth > 2) {
+        if (off.width !== vw || off.height !== vh) {
+          off.width = vw;
+          off.height = vh;
+        }
+        const offCtx = off.getContext("2d", { willReadFrequently: true });
+        if (offCtx) {
+          offCtx.drawImage(bolt, 0, 0, vw, vh);
+          const img = offCtx.getImageData(0, 0, vw, vh);
+          keyGreen(img.data);
+          killCrown(img.data, vw, vh);
+          featherAlpha(img.data, vw, vh);
+          pawsRef.current = scanBlob(img.data, vw, vh);
+          offCtx.putImageData(img, 0, 0);
+          if (boltHold.width !== vw || boltHold.height !== vh) {
+            boltHold.width = vw;
+            boltHold.height = vh;
+          }
+          const bh = boltHold.getContext("2d");
+          if (bh) {
+            bh.clearRect(0, 0, vw, vh);
+            bh.drawImage(off, 0, 0, vw, vh);
+            haveBolt.current = true;
+          }
+        }
+      }
+
+      if (bolt.duration && isFinite(bolt.duration) && bolt.currentTime >= bolt.duration - 0.08) {
+        try {
+          bolt.currentTime = 0.001;
+        } catch {
+          /* ignore */
+        }
+      }
+
+      if (haveRoad.current) {
+        ctx.drawImage(roadHold, 0, 0, canvas.width, canvas.height);
+      }
+      if (haveBolt.current) {
+        const dx = (xRef.current / 100) * canvas.width;
+        const cw = canvas.width;
+        const ch = canvas.height;
+        const paws = pawsRef.current;
+        const feet = paws.y || ch * 0.86;
+        const pw = Math.max(48, paws.x1 - paws.x0);
+        const cx = dx + (paws.x0 + paws.x1) / 2;
+        ctx.save();
+        ctx.fillStyle = "rgba(8,6,14,0.2)";
+        ctx.beginPath();
+        ctx.ellipse(cx, feet + 6, pw * 0.62, 8, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "rgba(8,6,14,0.32)";
+        ctx.beginPath();
+        ctx.ellipse(cx, feet + 3, pw * 0.4, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        ctx.drawImage(boltHold, dx, 0, cw, ch);
+      }
+
+      drawRaf.current = requestAnimationFrame(paint);
+    };
+    drawRaf.current = requestAnimationFrame(paint);
+
+    const startAt = (x: number, y: number) => {
+      ptr.current = { x, y, t: performance.now(), used: false };
+      playPair();
     };
 
     const onKey = (e: KeyboardEvent) => {
       if (e.repeat) return;
       if (e.code === "KeyA" || e.code === "ArrowLeft") {
         e.preventDefault();
-        nudgeRef.current(-1);
+        goRef.current(-1);
       } else if (e.code === "KeyD" || e.code === "ArrowRight") {
         e.preventDefault();
-        nudgeRef.current(1);
+        goRef.current(1);
       }
     };
 
     const onVis = () => {
-      if (document.visibilityState === "visible") {
-        kickPlay();
-        seekSync();
-      }
+      if (document.visibilityState === "visible") playPair();
     };
 
-    const onEnded = () => {
-      restartLoop();
+    const onEnded = (e: Event) => {
+      const v = e.target as HTMLVideoElement;
+      const inactive = roadIdx.current === 0 ? roadB : roadA;
+      if (v === inactive) {
+        v.pause();
+        try {
+          v.currentTime = 0;
+        } catch {
+          /* ignore */
+        }
+        return;
+      }
+      try {
+        v.currentTime = 0.001;
+      } catch {
+        /* ignore */
+      }
+      void v.play().catch(() => {});
     };
 
-    const onTouchStart = (e: TouchEvent) => {
-      const t = e.changedTouches[0] || e.touches[0];
-      if (t) begin(t.clientX, t.clientY);
+    const onTs = (e: Event) => {
+      const ev = e as TouchEvent;
+      const t = ev.changedTouches[0] || ev.touches[0];
+      if (!t) return;
+      startAt(t.clientX, t.clientY);
     };
-    const onTouchMove = (e: TouchEvent) => {
-      const t = e.touches[0];
+    const onTm = (e: Event) => {
+      const ev = e as TouchEvent;
+      const t = ev.touches[0];
+      if (!t) return;
+      readSwipe(t.clientX, t.clientY);
+      if (ptr.current?.used) e.preventDefault();
+    };
+    const onTe = (e: Event) => {
+      const t = (e as TouchEvent).changedTouches[0];
       if (t) {
-        swipeFrom(t.clientX, t.clientY);
-        if (markRef.current?.used) e.preventDefault();
+        readSwipe(t.clientX, t.clientY);
+        finishTap(t.clientX);
       }
+      ptr.current = null;
     };
-    const onTouchEnd = (e: TouchEvent) => {
-      const t = e.changedTouches[0];
-      if (t) {
-        swipeFrom(t.clientX, t.clientY);
-        tapSides(t.clientX);
-      }
-      markRef.current = null;
+
+    const onPd = (e: PointerEvent) => {
+      startAt(e.clientX, e.clientY);
     };
-    const onPointerDown = (e: PointerEvent) => begin(e.clientX, e.clientY);
-    const onPointerMove = (e: PointerEvent) => swipeFrom(e.clientX, e.clientY);
-    const onPointerUp = (e: PointerEvent) => {
-      swipeFrom(e.clientX, e.clientY);
-      tapSides(e.clientX);
-      markRef.current = null;
+    const onPm = (e: PointerEvent) => {
+      readSwipe(e.clientX, e.clientY);
+    };
+    const onPu = (e: PointerEvent) => {
+      readSwipe(e.clientX, e.clientY);
+      finishTap(e.clientX);
+      ptr.current = null;
     };
 
     const opts: AddEventListenerOptions = { passive: false, capture: true };
     const host = touch ?? document;
-    host.addEventListener("touchstart", onTouchStart, opts);
-    host.addEventListener("touchmove", onTouchMove, opts);
-    host.addEventListener("touchend", onTouchEnd, opts);
-    host.addEventListener("touchcancel", onTouchEnd, opts);
-    window.addEventListener("pointerdown", onPointerDown, opts);
-    window.addEventListener("pointermove", onPointerMove, opts);
-    window.addEventListener("pointerup", onPointerUp, opts);
-    window.addEventListener("pointercancel", onPointerUp, opts);
+    host.addEventListener("touchstart", onTs, opts);
+    host.addEventListener("touchmove", onTm, opts);
+    host.addEventListener("touchend", onTe, opts);
+    host.addEventListener("touchcancel", onTe, opts);
+    window.addEventListener("pointerdown", onPd, opts);
+    window.addEventListener("pointermove", onPm, opts);
+    window.addEventListener("pointerup", onPu, opts);
+    window.addEventListener("pointercancel", onPu, opts);
     window.addEventListener("keydown", onKey);
     document.addEventListener("visibilitychange", onVis);
-    road?.addEventListener("ended", onEnded);
+    roadA?.addEventListener("ended", onEnded);
+    roadB?.addEventListener("ended", onEnded);
     bolt?.addEventListener("ended", onEnded);
 
     window.__controlsTest = {
       getYaw: () => -laneRef.current * 0.35,
       getSpeed: () => 1,
       getX: () => laneRef.current,
-      setKeys: (keys) => {
-        const set = new Set(keys);
-        if (set.has("KeyA") || set.has("ArrowLeft")) nudgeRef.current(-1);
-        if (set.has("KeyD") || set.has("ArrowRight")) nudgeRef.current(1);
+      setKeys: (codes: string[]) => {
+        const t = new Set(codes);
+        if (t.has("KeyA") || t.has("ArrowLeft")) goRef.current(-1);
+        if (t.has("KeyD") || t.has("ArrowRight")) goRef.current(1);
       },
     };
 
-    const hintTimer = window.setTimeout(() => setHint(false), HINT_MS);
-    const syncTimer = window.setInterval(() => {
-      seekSync();
-    }, SYNC_MS);
+    const hide = window.setTimeout(() => setHint(false), 5200);
+    const beat = window.setInterval(() => playPair(), WATCHDOG_MS);
 
     return () => {
-      host.removeEventListener("touchstart", onTouchStart, opts);
-      host.removeEventListener("touchmove", onTouchMove, opts);
-      host.removeEventListener("touchend", onTouchEnd, opts);
-      host.removeEventListener("touchcancel", onTouchEnd, opts);
-      window.removeEventListener("pointerdown", onPointerDown, opts);
-      window.removeEventListener("pointermove", onPointerMove, opts);
-      window.removeEventListener("pointerup", onPointerUp, opts);
-      window.removeEventListener("pointercancel", onPointerUp, opts);
+      host.removeEventListener("touchstart", onTs, opts);
+      host.removeEventListener("touchmove", onTm, opts);
+      host.removeEventListener("touchend", onTe, opts);
+      host.removeEventListener("touchcancel", onTe, opts);
+      window.removeEventListener("pointerdown", onPd, opts);
+      window.removeEventListener("pointermove", onPm, opts);
+      window.removeEventListener("pointerup", onPu, opts);
+      window.removeEventListener("pointercancel", onPu, opts);
       window.removeEventListener("keydown", onKey);
       document.removeEventListener("visibilitychange", onVis);
-      road?.removeEventListener("ended", onEnded);
+      roadA?.removeEventListener("ended", onEnded);
+      roadB?.removeEventListener("ended", onEnded);
       bolt?.removeEventListener("ended", onEnded);
-      if (hintTimer) window.clearTimeout(hintTimer);
-      window.clearInterval(syncTimer);
-      cancelAnimationFrame(rafRef.current);
+      if (hide) window.clearTimeout(hide);
+      window.clearInterval(beat);
+      cancelAnimationFrame(moveRaf.current);
+      cancelAnimationFrame(drawRaf.current);
       delete window.__controlsTest;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -321,55 +563,56 @@ export function LanePlayer() {
       role="application"
       aria-label="BOLT lane run. Swipe or tap sides to change lanes."
     >
-      <svg width="0" height="0" aria-hidden="true" className="lane-svg-defs">
-        <filter id="bolt-luma" colorInterpolationFilters="sRGB">
-          <feColorMatrix
-            type="matrix"
-            values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  1 -2 1 0 1"
-            result="a"
-          />
-          <feComponentTransfer in="a" result="hard">
-            <feFuncA type="table" tableValues="0 0 0 0.2 0.85 1 1 1 1 1" />
-          </feComponentTransfer>
-          <feComposite in="SourceGraphic" in2="hard" operator="in" />
-        </filter>
-      </svg>
       <div className="lane-stage">
-        <video
-          ref={roadRef}
-          className="is-live road-vid"
-          src={ROAD_SRC}
-          poster={ROAD_POSTER}
-          muted
-          loop
-          playsInline
-          preload="auto"
-          autoPlay
-        />
-        <div ref={wrapRef} className="bolt-wrap">
+        <canvas ref={canvasRef} className="lane-canvas" />
+        <div className="lane-decoders" aria-hidden>
           <video
-            ref={boltRef}
-            className="bolt-vid is-luma"
-            src={BOLT_SRC}
+            ref={roadARef}
+            className="road-vid"
+            src={ROAD_SRC}
             muted
-            loop
             playsInline
             preload="auto"
             autoPlay
+            controls={false}
+            disablePictureInPicture
+            disableRemotePlayback
+            controlsList="nodownload nofullscreen noremoteplayback"
+          />
+          <video
+            ref={roadBRef}
+            className="road-vid"
+            src={ROAD_SRC}
+            muted
+            playsInline
+            preload="auto"
+            controls={false}
+            disablePictureInPicture
+            disableRemotePlayback
+            controlsList="nodownload nofullscreen noremoteplayback"
+          />
+          <video
+            ref={boltRef}
+            className="bolt-vid"
+            src={BOLT_MP4}
+            muted
+            playsInline
+            preload="auto"
+            autoPlay
+            controls={false}
+            disablePictureInPicture
+            disableRemotePlayback
+            controlsList="nodownload nofullscreen noremoteplayback"
           />
         </div>
       </div>
       <div ref={touchRef} className="lane-touch" />
-      <div className="lane-pips" aria-hidden="true">
-        {[-1, 0, 1].map((n) => (
+      <div className="lane-pips" aria-hidden>
+        {([-1, 0, 1] as LaneI[]).map((n) => (
           <span key={n} className={lane === n ? "is-on" : undefined} />
         ))}
       </div>
       {hint ? <p className="lane-hint">swipe or tap sides</p> : null}
     </div>
   );
-}
-
-export default function LaneRoute() {
-  return <LanePlayer />;
 }

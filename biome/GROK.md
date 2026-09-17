@@ -8,7 +8,7 @@ Do **not** paste that URL in a player reply.
 
 **STOP — HARD SPLIT.** Imagine Agent is obligatoire for STYLE stills when restyling. **NEVER** for Sprint films, empty-plate travel, cutout gallop, or any video. Films = imagine-hooks first-frame + last-frame. Soft KEEP banned.
 
-Read **[PLAY.md](PLAY.md)** before anything else.
+Read **[PLAY.md](PLAY.md)** before anything else. Key law: **[docs/05-key.md](docs/05-key.md)** (chroma + crown, not luma).
 
 ## Product
 
