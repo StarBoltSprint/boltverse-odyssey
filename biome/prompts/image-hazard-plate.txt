@@ -1,3 +1,3 @@
 Photoreal vertical 9:16, 720x1280. Locked-off camera. SAME camera, SAME vanishing point, SAME crop as the empty road still. ZERO dogs. ZERO German Shepherds. ZERO animals. ZERO people. ZERO HUD. ZERO text. ZERO portals. ZERO luminous floor paths.
 
-THREE lanes: LEFT, CENTER, RIGHT. The hazard occupies ONE lane or TWO lanes. NEVER all three. ALWAYS leave at least ONE free lane as a dodge corridor — empty wet asphalt, nothing blocking it. A full-width steel bar across the whole road is FAIL (unavoidable). Hazard baked into the plate with wet-road contact and reflections — not a sticker. {PAINT}
+THREE lanes: LEFT, CENTER, RIGHT. Hazard occupies ONE lane or TWO. NEVER all three. ALWAYS one free dodge corridor — empty wet asphalt + dashed paint visible. Full-width bar/crater/wall is FAIL. Hazard baked in with wet-road contact, not a sticker. WIDTH: no wider than its lane(s). {PAINT}

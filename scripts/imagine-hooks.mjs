@@ -469,10 +469,12 @@ export const BIOME_LAW = [
 ].join(" ");
 
 export const BIOME_LANE_LAW = [
-  "THREE lanes: LEFT, CENTER, RIGHT.",
+  "THREE lanes: LEFT, CENTER, RIGHT. White dashed lane lines stay visible.",
   "The hazard occupies ONE lane or TWO lanes. NEVER all three.",
-  "ALWAYS leave at least ONE free lane as a dodge corridor — empty wet asphalt, nothing blocking it.",
-  "A full-width steel bar / wall / arch across LEFT+CENTER+RIGHT is FAIL (unavoidable).",
+  "ALWAYS leave at least ONE free dodge corridor — empty wet asphalt, dashed paint visible, the WHOLE clip including mid-frame.",
+  "WIDTH LAW: the obstacle may approach the camera (taller, closer) but its WIDTH never grows past the lane(s) it started in.",
+  "It never becomes a wall. Never a curb-to-curb bar. Never a gantry. Never a shock-ring across three lanes. Never extra copies.",
+  "At EVERY frame you can still see empty asphalt on the free lane(s). If LEFT+CENTER+RIGHT are all blocked, FAIL.",
 ].join(" ");
 
 export const BIOME_SPEED_LAW = [
@@ -573,7 +575,7 @@ export async function imagineBiomeClip({
   if (promptFile && existsSync(promptFile)) {
     paste = readFileSync(promptFile, "utf8").trim();
   }
-  const prompt = [BIOME_LAW, BIOME_SPEED_LAW, biomePlateLine(kind), paste, paint].filter(Boolean).join(" ");
+  const prompt = [BIOME_LAW, biomePlateLine(kind), paste, paint].filter(Boolean).join(" ");
   const body = {
     model: VIDEO_MODEL,
     prompt,
