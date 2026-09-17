@@ -42,7 +42,7 @@ Paste: [../prompts/video-hazard-plate.txt](../prompts/video-hazard-plate.txt).
 | empty → cousin | last(empty) or lock+hazard | — |
 | cousin → empty | — | **first(empty)** |
 
-`imagineBiomeClip({ kind: "hazard", first, last, dest, seconds: 6 })`.
+`imagineBiomeClip({ kind: "hazard", first, last, dest, seconds: 10 })`.
 
 Then match travel to the empty plate: [08-plate-speed.md](08-plate-speed.md).
 
