@@ -6,7 +6,8 @@ This page is the **Grok identity** wire: `sub` → `profiles/<sub>.json` on [Sta
 Contract: [StarBoltSprint/boltverse-pack](https://github.com/StarBoltSprint/boltverse-pack).  
 **This recipe’s Live is the central API** other `*.grok.me` Lives call.
 
-Kitchen Live (do not paste in player chat): https://boltverse-odysseyyy.grok.me
+Kitchen Live (do not paste in player chat): https://boltverse-odysseyyyy.grok.me
+Never open old three-y `boltverse-odysseyyy.grok.me` as Beat 3 Sprint (superseded — do not open it for boot).
 
 ---
 
@@ -16,6 +17,7 @@ Kitchen Live (do not paste in player chat): https://boltverse-odysseyyy.grok.me
 - No player API keys
 - No xAI keys in the client
 - Unsigned / no JWT → `{ ok:false, github:"skip", reason:"no-sub" }` — **never invent a sub**
+- Old three-y `boltverse-odysseyyy.grok.me` as Beat 3 Sprint (superseded — do not open it for boot)
 
 ## Floor client (every Live)
 

@@ -3,8 +3,8 @@
 Repo: `https://github.com/StarBoltSprint/boltverse-odyssey`  
 **This folder** = Biome / Sprint lane recipe. Citadel halls = repo root.
 
-Hung / Live (kitchen only): https://boltverse-odysseyyy.grok.me  
-Do **not** paste that URL in a player reply.
+Hung / Live (kitchen only): https://boltverse-odysseyyyy.grok.me  
+Do **not** paste that URL in a player reply. Never open old three-y `boltverse-odysseyyy.grok.me` as Beat 3 Sprint (superseded — do not open it for boot).
 
 **STOP — HARD SPLIT.** Imagine Agent is obligatoire for STYLE stills when restyling. **NEVER** for Sprint films, empty-plate travel, cutout gallop, or any video. Films = imagine-hooks first-frame + last-frame. Soft KEEP banned.
 

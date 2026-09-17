@@ -13,7 +13,8 @@ Citadel console copy (Welcome / Return, Packmate law) lives in [../GROK.md](../G
 
 Kitchen — do not read aloud:
 
-- Pack Play (kitchen only) = https://boltverse-odysseyyy.grok.me
+- Pack Play (kitchen only) = https://boltverse-odysseyyyy.grok.me
+- Hard ban: old three-y `boltverse-odysseyyy.grok.me` as Beat 3 Sprint (superseded — do not open it for boot)
 - Citadel teaser = [`stock/citadel/preview-loop.mp4`](../stock/citadel/preview-loop.mp4) — **sole** boot attach
 - Sprint / Biome preview = [`stock/biome/preview-loop.mp4`](../stock/biome/preview-loop.mp4) (poster `preview-first.jpg`) — optional archive, **not attached at boot**
 - Loop forever: `muted playsInline autoPlay loop` + watchdog
