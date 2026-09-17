@@ -75,7 +75,7 @@ Search: `StarBoltSprint citadel-room` · living film · boltverse-odyssey.grok.m
 | [START.md](START.md) | human play — console vs game, Sprint + Citadel |
 | [`stock/citadel/`](stock/citadel/README.md) | **sole** cold-start Welcome teaser — `preview-loop.mp4` + `preview-first.jpg` |
 | [`stock/biome/`](stock/biome/README.md) | optional archive — `preview-loop.mp4` + `preview-first.jpg` (**not attached at boot**) |
-| [`stock/chests/`](stock/chests/README.md) | KEEP Peak crystal run-reward chest — `peak-closed.png` (cosmetics only; not daily login) |
+| [`stock/chests/`](stock/chests/README.md) | KEEP Peak crystal run-reward chest — `peak-closed.png` + `peak-open.jpg` (empty glow slot; cosmetics only; not daily login) |
 | [`biome/`](biome/README.md) | Sprint / lane recipe — B-stack PLAY, `09-recette-biome` checklist, LanePlayer, `/master` |
 | [`biome/docs/06-techniques.md`](biome/docs/06-techniques.md) | **techniques bible** (kitchen) — what worked r38; read after PLAY, before cook |
 | [`biome/docs/09-recette-biome.md`](biome/docs/09-recette-biome.md) | **full cook checklist** (kitchen) — REQUIRED before cook: empty→cousin→speed→dealer→box; SPAWN/WIDTH; road-bar/blast |
