@@ -68,7 +68,7 @@ Play = Vlahos + crown sat kill + feather 1 px + ombre ellipse aux pattes. [05-ke
 
 | Loi | Une phrase |
 |---|---|
-| **LANE** | 1 ou 2 voies. **Jamais les 3.** Un couloir vide + pointillés visibles **à chaque frame**. |
+| **LANE** | 1 ou 2 voies, **n’importe lesquelles** (L, C, R, L+C, C+R, L+R). Varier. **Jamais les 3.** Une voie libre (pas toujours le centre). |
 | **WIDTH** | Peut approcher (plus haut, plus proche). **Jamais plus large** que les voies de départ. Jamais un mur, un gantry, un shock-ring, une copie extra. |
 | **SPAWN** | First frame = obstacle **loin**, petit, vanishing point. Il **approche** et sort par le **bas**. Jamais un pop collé au héros. Close-up t=0 = FAIL. |
 | **SPEED** | VERY FAST, constante de t=0 à la dernière frame. Jamais ralentir — **même au crash / impact / explosion**. L’objet peut approcher ; le rush de l’asphalte ne change pas. |

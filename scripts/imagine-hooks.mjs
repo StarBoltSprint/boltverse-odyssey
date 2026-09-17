@@ -465,7 +465,8 @@ export const BIOME_LAW = [
   "MAX forward travelling — world rushes HARD at the camera. Sprint feel baked IN the clip.",
   "ZERO dogs. ZERO German Shepherds. ZERO animals. ZERO people.",
   "ZERO luminous floor paths. ZERO lightning on ground. ZERO Y-fork. ZERO portals. ZERO HUD. ZERO text.",
-  "CLEAR empty center corridor. NEVER pan, tilt, zoom, or dolly.",
+  "ALWAYS leave at least ONE free dodge corridor (LEFT or CENTER or RIGHT — vary which, do not always keep CENTER empty).",
+  "NEVER pan, tilt, zoom, or dolly.",
 ].join(" ");
 
 export const BIOME_SPAWN_LAW = [
@@ -475,11 +476,11 @@ export const BIOME_SPAWN_LAW = [
 
 export const BIOME_LANE_LAW = [
   "THREE lanes: LEFT, CENTER, RIGHT. White dashed lane lines stay visible.",
-  "The hazard occupies ONE lane or TWO lanes. NEVER all three.",
-  "ALWAYS leave at least ONE free dodge corridor — empty wet asphalt, dashed paint visible, the WHOLE clip including mid-frame.",
+  "The hazard occupies ONE lane or TWO lanes. NEVER all three. It may sit on LEFT, CENTER, RIGHT, LEFT+CENTER, CENTER+RIGHT, or LEFT+RIGHT — vary which. Do not always block the sides and free the center.",
+  "ALWAYS leave at least ONE free dodge corridor — empty wet asphalt, dashed paint visible, the WHOLE clip including mid-frame. The free lane can be any of the three.",
   "WIDTH LAW: the obstacle may approach the camera (taller, closer) but its WIDTH never grows past the lane(s) it started in.",
   "It never becomes a wall. Never a curb-to-curb bar. Never a gantry. Never a shock-ring across three lanes. Never extra copies.",
-  "At EVERY frame you can still see empty asphalt on the free lane(s). If LEFT+CENTER+RIGHT are all blocked, FAIL.",
+  "At EVERY frame you can still see empty asphalt on the free lane(s). If LEFT+CENTER+RIGHT are all blocked, FAIL. NEVER pan, tilt, zoom, or dolly.",
 ].join(" ");
 
 export const BIOME_SPEED_LAW = [

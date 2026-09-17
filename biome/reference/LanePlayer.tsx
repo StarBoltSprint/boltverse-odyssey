@@ -19,7 +19,7 @@ declare global {
   }
 }
 
-const VER = "r35war";
+const VER = "r36mix";
 const PLATES = [
   `/master/road.mp4?v=${VER}`,
   `/master/road-bar.mp4?v=${VER}`,
@@ -70,8 +70,18 @@ const HAZARDS: (Hazard | null)[] = [
   { lanes: [-1], jumpClears: true, t0: 0.62, t1: 0.82, tPass: 0.76 },
 ];
 
-function visualLane(x: number): LaneI {
-  return clampLane(Math.round(x / SHIFT));
+function occKey(i: number): string {
+  const hz = HAZARDS[i];
+  if (!hz) return "";
+  return [...hz.lanes].slice().sort((a, b) => a - b).join(",");
+}
+
+function pickNext(cur: number): number {
+  const others: number[] = [];
+  for (let i = 0; i < PLATES.length; i++) if (i !== cur) others.push(i);
+  const different = others.filter((i) => occKey(i) !== occKey(cur));
+  const pool = different.length ? different : others;
+  return pool[(Math.random() * pool.length) | 0]!;
 }
 
 function isAirborne(jumpAt: number, now: number) {
@@ -299,7 +309,8 @@ export function LanePlayer() {
   const pawsRef = useRef({ y: 1089, x0: 310, x1: 418, cx: 364, cy: 907 });
   const roadIdx = useRef(0);
   const plateRef = useRef(0);
-  const pendingPlate = useRef(1);
+  const pendingPlate = useRef(-1);
+  const armedFrom = useRef(-1);
   const roadPrimed = useRef(false);
   const haveRoad = useRef(false);
   const haveBolt = useRef(false);
@@ -462,9 +473,12 @@ export function LanePlayer() {
       const a = roadIdx.current === 0 ? roadA : roadB;
       const b = roadIdx.current === 0 ? roadB : roadA;
       if (a && b) {
-        const next = (plateRef.current + 1) % PLATES.length;
+        if (armedFrom.current !== plateRef.current || pendingPlate.current < 0) {
+          pendingPlate.current = pickNext(plateRef.current);
+          armedFrom.current = plateRef.current;
+        }
+        const next = pendingPlate.current;
         const nextSrc = PLATES[next]!;
-        pendingPlate.current = next;
         if (!srcIs(b, nextSrc)) {
           armNext(b, nextSrc);
           roadPrimed.current = false;
