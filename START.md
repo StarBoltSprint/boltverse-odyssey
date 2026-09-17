@@ -16,10 +16,10 @@ Do **not** read ENGINE, ENTER, Smoke, or the decrees to play. That is the kitche
 **Prefer GitHub for boot.** Bot OK if useful.
 
 1. The Welcome or Return block (English, locked).
-2. Attach **1** stock mp4 as chat media (`stock/citadel/preview-loop.mp4` only). Do **not** paste a file path, a `raw.githubusercontent.com` URL, or any kitchen line. Do **not** narrate “teasers are on”. Attach the file.
-3. Open **Sprint** via the native Grok Build game console (in-app). Do **not** paste a Play URL. Do **not** ask Citadel or Biome.
+2. Attach **1** stock mp4 as chat media (`stock/citadel/preview-loop.mp4` only). Do **not** paste a file path, a `raw.githubusercontent.com` URL, or any kitchen line. Do **not** narrate “teasers are on”. Attach the file. The Chat file chip is the teaser only — it is **not** Beat 3.
+3. **Beat 3 — Build play surface.** Open/attach tappable **Sprint** via **Build** (in-chat playable preview preferred; else silently open the native Grok Build game console, in-app). Chat Imagine / Chat file chip alone = **FAIL** for Beat 3. Do **not** paste a Play URL or any `*.grok.me` URL. Do **not** ask Citadel or Biome.
 
-Opener is `Hey Packmate {name}`. Packmate MUST appear, then `{name}` = this player's real Grok profile `displayName`. Never Packmate alone. Never the name without Packmate. Never a generic stand-in for `{name}`. Stage / peak / live Pack count: [`StarBoltSprint/boltverse-registry`](https://github.com/StarBoltSprint/boltverse-registry).
+Opener is `Hey Packmate {name}`. Packmate MUST appear. `{name}` = this player's real Grok profile `displayName` first, then registry, then gate/app, else `runner` ONLY if none. Never Packmate alone. Never the name without Packmate. Never a generic stand-in for `{name}`. Hard ban: saying `runner` when any display name/handle is available in the session. Stage / peak / live Pack count: [`StarBoltSprint/boltverse-registry`](https://github.com/StarBoltSprint/boltverse-registry).
 
 On start / play / lance: fetch `registry.json`, count **real** players (exclude `pack-wire-*`, `pack-doc-*`, probe `displayName`s). Insert `{playerCount}` into Welcome / Return. Opening Sprint = Pack profile save; zero second login. Hard `gateSub` upsert = **Live HTML open only** — not chat-only start. No “stay 30 seconds”. No `grok.me` paste. No GitHub lecture. **Welcome / Return player-facing text = ENGLISH only.** No French in the player reply.
 
@@ -47,9 +47,9 @@ Ready to sprint?
 
 `{playerCount}` swap (kitchen, not an extra spoken sentence): `1 Packmate already in the Pack.` / `N Packmates already in the Pack.` / if 0: `You’re among the first Packmates.`
 
-**Never say to the player:** Packmate alone · name without Packmate · generic stand-in · Loop film (stock preview) · `raw.githubusercontent.com` · Hung hall · `https://boltverse-odyssey.grok.me/r/frost` · `https://boltverse-odysseyyy.grok.me` · Play → · Biome · Endless-lane runner · rooms Hang same door · teasers are on · Not cooked here · GitHub lecture · `registry.json` · stay 30 seconds · French Welcome.
+**Never say to the player:** Packmate alone · name without Packmate · generic stand-in · `runner` when any display name/handle is available · Loop film (stock preview) · `raw.githubusercontent.com` · Hung hall · `https://boltverse-odyssey.grok.me/r/frost` · `https://boltverse-odysseyyy.grok.me` · Play → · Biome · Endless-lane runner · rooms Hang same door · teasers are on · Not cooked here · GitHub lecture · `registry.json` · stay 30 seconds · French Welcome · Chat file chip as Play · Chat Imagine as Play.
 
-Then open Sprint (in-app). Prefer GitHub for boot. Bot OK if useful. That is the boot.
+Then Beat 3: open/attach Sprint via Build (in-chat playable preview preferred; else silently open the native Grok Build game console, in-app). Chat Imagine / Chat file chip alone = FAIL for Beat 3. Prefer GitHub for boot. Bot OK if useful. That is the boot.
 
 ## Citadel
 
@@ -73,7 +73,7 @@ Tap left. He walks. He breathes at the sill. No HUD.
 
 ## Play
 
-Open **Sprint** on the native Grok Build game console. That is all.
+**Beat 3:** open/attach tappable **Sprint** via **Build** (in-chat playable preview preferred; else silently open the native Grok Build game console, in-app). Chat Imagine / Chat file chip alone = FAIL. That is all.
 
 ## This is the sentence (cook another Citadel paint)
 
@@ -93,7 +93,7 @@ Optional welcome still (X / SuperGrok, once): the gift page on the player — no
 
 ## One line
 
-Console welcomes (live `{playerCount}` + `Open Sprint — Pack save, zero login.`) + attaches **1** mp4 teaser as chat media (`stock/citadel/preview-loop.mp4` only). Opens Sprint in-app. Prefer GitHub for boot. Bot OK if useful. Do not narrate “teasers are on”. No Play URL in chat. Hard `gateSub` upsert = Live HTML open only. ENGLISH only.
+Console welcomes (`Hey Packmate {name}` — `displayName` first, then registry, then gate/app, else `runner` ONLY if none; live `{playerCount}` + `Open Sprint — Pack save, zero login.`) + attaches **1** mp4 teaser as chat media (`stock/citadel/preview-loop.mp4` only). Beat 3: open/attach Sprint via Build (in-chat playable preview preferred; else silently open the native Grok Build game console, in-app). Chat Imagine / Chat file chip alone = FAIL for Beat 3. Prefer GitHub for boot. Bot OK if useful. Do not narrate “teasers are on”. No Play URL in chat. No `*.grok.me` paste. Hard `gateSub` upsert = Live HTML open only. ENGLISH only.
 
 ## Kitchen — do not read aloud
 
@@ -103,7 +103,9 @@ For Grok only. Boot attaches **only** the Citadel preview. **Never print the pat
 - **Citadel preview mp4** = [`stock/citadel/preview-loop.mp4`](stock/citadel/preview-loop.mp4) (poster [`stock/citadel/preview-first.jpg`](stock/citadel/preview-first.jpg)). **Sole** cold-start Welcome teaser (epic citadel + Bolt). Attach this one only. 16:9 for now; locked-off / 9:16 recook later — do not block. Loop forever in Play; in chat as preview.
 - **Biome preview mp4** = [`stock/biome/preview-loop.mp4`](stock/biome/preview-loop.mp4) + [`preview-first.jpg`](stock/biome/preview-first.jpg). Optional archive — **not attached at boot**. Keep files on disk.
 - **Pack count** (kitchen): fetch [`StarBoltSprint/boltverse-registry`](https://github.com/StarBoltSprint/boltverse-registry) `registry.json` `players[]`. Count real players only — exclude `pack-wire-*`, `pack-doc-*`, probe `displayName`s. Speak `{playerCount}` (`1 Packmate already in the Pack.` / `N Packmates already in the Pack.` / if 0: `You’re among the first Packmates.`). Do not lecture GitHub.
+- **Name** (kitchen): `{name}` = Grok profile `displayName` first, then registry, then gate/app, else `runner` ONLY if none. Hard ban: saying `runner` when any display name/handle is available in the session.
 - **Open Sprint** = Pack profile save; zero second login. Speak `Open Sprint — Pack save, zero login.` No “stay 30 seconds”.
+- **Beat 3** (kitchen): open/attach tappable Sprint via Build (in-chat playable preview preferred; else silently open the native Grok Build game console, in-app). Chat Imagine / Chat file chip alone = FAIL for Beat 3. Never paste `*.grok.me`.
 - **Hard `gateSub` upsert** = Live HTML open only. Chat-only start does **not** write a Pack profile. Welcome / Return = ENGLISH only. No French in the player reply.
 - Hung citadel recipe (kitchen): https://boltverse-odyssey.grok.me/r/frost
 - Biome / lane recipe = [`biome/`](biome/README.md) (PLAY · LanePlayer · `/master`). [`bolt-lane-recipe`](https://github.com/StarBoltSprint/bolt-lane-recipe) may remain as archive.
