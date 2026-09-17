@@ -327,6 +327,14 @@ function assertSpokenWelcome(label, text, newHeading, returnHeading) {
   must(!/Hey \{name\}/.test(neu) && !/Hey \{name\}/.test(ret), label + ": not name without Packmate");
   must(!/Hey Packmate —/.test(neu) && !/Hey Packmate —/.test(ret), label + ": not Packmate alone");
   must(/Your Pack profile is already here/.test(neu), label + ": Pack profile EN");
+  must(/\{playerCount\} Packmates already in the Pack\./.test(neu), label + ": Welcome has live Pack player count");
+  must(/Your Pack profile is already here[\s\S]*\{playerCount\} Packmates already in the Pack\./.test(neu), label + ": count line after profile line");
+  must(/\{playerCount\} Packmates already in the Pack\./.test(ret), label + ": Return has live Pack player count");
+  must(/welcome back[\s\S]*\{playerCount\} Packmates already in the Pack\./.test(ret), label + ": Return count after welcome back");
+  must(!/among the first Packmates/.test(neu) && !/among the first Packmates/.test(ret), label + ": 0-count swap is kitchen, not extra spoken sentence");
+  must(!/pack-wire/.test(neu) && !/pack-doc/.test(neu) && !/registry\.json/.test(neu), label + ": Welcome has no registry kitchen");
+  must(!/pack-wire/.test(ret) && !/pack-doc/.test(ret) && !/registry\.json/.test(ret), label + ": Return has no registry kitchen");
+  must(!/github\.com/.test(neu) && !/github\.com/.test(ret), label + ": Welcome/Return have no GitHub lecture");
   must(/Powered by xAI & YOU\./.test(neu) && /Ready to sprint\?/.test(neu), label + ": Welcome has Powered + Ready to sprint");
   must(/welcome back/.test(ret), label + ": Return EN");
   must(/Powered by xAI & YOU\./.test(ret) && /Ready to sprint\?/.test(ret), label + ": Return has Powered + Ready to sprint");
@@ -353,6 +361,15 @@ function assertPlayerBoot(label, text) {
   must(/kitchen only|Pack Play URL is kitchen-only|do not read aloud/i.test(text) && /boltverse-odysseyyy\.grok\.me/.test(text), label + ": Pack Play URL is kitchen-only");
   const kitchenPlay = text.replace(/\(supersedes https:\/\/heart-giant-plum-lotus\.grok\.me\)/g, "");
   must(!/Pack Play[^\n]*https:\/\/heart-giant-plum-lotus\.grok\.me/.test(kitchenPlay), label + ": heart-giant is not the active Pack Play URL");
+  must(/registry\.json/.test(text), label + ": fetch registry.json for live Pack count");
+  must(/pack-wire-\*/.test(text) && /pack-doc-\*/.test(text), label + ": exclude pack-wire-* and pack-doc-*");
+  must(/probe/.test(text) && /displayName/.test(text), label + ": exclude probe displayNames");
+  must(/\{playerCount\}/.test(text) && /already in the Pack/.test(text), label + ": Welcome insert {playerCount}");
+  must(/among the first Packmates/.test(text), label + ": 0-count line You’re among the first Packmates");
+  must(/1 Packmate already in the Pack/.test(text), label + ": singular Packmate count");
+  must(/gateSub/.test(text) && /Live HTML open/.test(text), label + ": hard gateSub upsert = Live HTML open only");
+  must(/not chat-only start|Chat-only start/.test(text), label + ": chat-only start does not write profile");
+  must(/No GitHub lecture|no GitHub lecture|Do not lecture GitHub/.test(text), label + ": no GitHub lecture");
 }
 
 assertPlayerBoot("START.md", body("START.md"));
