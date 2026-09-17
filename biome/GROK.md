@@ -8,8 +8,13 @@ Do **not** paste that URL in a player reply.
 
 **STOP — HARD SPLIT.** Imagine Agent is obligatoire for STYLE stills when restyling. **NEVER** for Sprint films, empty-plate travel, cutout gallop, or any video. Films = imagine-hooks first-frame + last-frame. Soft KEEP banned.
 
-Read **[PLAY.md](PLAY.md)** before anything else. Key law: **[docs/05-key.md](docs/05-key.md)** (chroma + crown, not luma).  
-Cookbook of what actually worked: **[docs/06-techniques.md](docs/06-techniques.md)**. Pack Live: **[docs/07-pack-live.md](docs/07-pack-live.md)**.
+**MUST read before cooking** (biome / Sprint cook / lane / B-stack / green-screen / chroma):
+1. **[PLAY.md](PLAY.md)** — engine lock
+2. **[docs/06-techniques.md](docs/06-techniques.md)** — what worked r38 (Sprint cook bible)
+3. **[docs/05-key.md](docs/05-key.md)** — chroma + crown, not luma
+4. **[reference/LanePlayer.tsx](reference/LanePlayer.tsx)** — r38 compositor
+
+Pack Live: **[docs/07-pack-live.md](docs/07-pack-live.md)**. Never dump this to the player.
 
 ## Product
 

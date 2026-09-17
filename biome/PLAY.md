@@ -2,7 +2,7 @@
 
 **Cold-start.** Hall / citadel is a **different job**: [../COOK.md](../COOK.md). Do not apply hall portals or `cook-room` slots here.
 
-This page is the **Engine lock** for Biome / Sprint. Cook: [GROK.md](GROK.md). Player reference: [reference/LanePlayer.tsx](reference/LanePlayer.tsx). Console: [CONSOLE.md](CONSOLE.md). Key: [docs/05-key.md](docs/05-key.md).
+This page is the **Engine lock** for Biome / Sprint. Cookbook (what worked r38): [docs/06-techniques.md](docs/06-techniques.md). Key: [docs/05-key.md](docs/05-key.md). Player: [reference/LanePlayer.tsx](reference/LanePlayer.tsx). Cook how-to: [GROK.md](GROK.md). Console: [CONSOLE.md](CONSOLE.md).
 
 This repo is the **recipe**. Do **not** scaffold a player. Do **not** publish a new grok.me. Open Sprint on the native Grok Build game console (in-app).
 
