@@ -33,6 +33,10 @@ Or `extractLastFrame(src, dest)` from the hook.
 
 Same camera, same crop. Hazard **baked in** the pixels (wet contact), not a sticker.
 
+**THREE lanes. Hazard = 1 or 2 lanes. NEVER all three.** Always one free dodge corridor. Full-width steel bar = FAIL (cannot dodge).
+
+Paste: [../prompts/video-hazard-plate.txt](../prompts/video-hazard-plate.txt).
+
 | | first | last |
 |---|---|---|
 | empty → cousin | last(empty) or lock+hazard | — |

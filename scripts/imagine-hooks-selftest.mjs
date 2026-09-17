@@ -21,6 +21,7 @@ import {
   spawnStillLine,
   walkClipLine,
   BIOME_LAW,
+  BIOME_LANE_LAW,
   biomePlateLine,
 } from "./imagine-hooks.mjs";
 import {
@@ -166,6 +167,11 @@ must(/ZERO hazard/.test(biomePlateLine("empty")), "empty plate is not a hazard")
 must(/ONE hazard baked/.test(biomePlateLine("bar")), "bar plate bakes one hazard");
 must(/SAME camera/.test(biomePlateLine("hazard")), "cousin plate same camera");
 must(/ZERO dog/.test(biomePlateLine("bar")), "hazard plate still zero dog");
+must(biomePlateLine("bar").includes(BIOME_LANE_LAW), "bar plate includes BIOME_LANE_LAW");
+must(/NEVER all three/.test(BIOME_LANE_LAW), "lane law: never all three");
+must(/ONE lane or TWO/.test(BIOME_LANE_LAW), "lane law: one or two lanes");
+must(/free lane/.test(BIOME_LANE_LAW), "lane law: one free dodge corridor");
+must(/unavoidable/.test(BIOME_LANE_LAW), "full-width bar is FAIL");
 
 const dry = spawnSync("node", [join(root, "scripts/cook-room.mjs"), "moss", "--dry-run"], {
   encoding: "utf8",

@@ -468,6 +468,13 @@ export const BIOME_LAW = [
   "CLEAR empty center corridor. NEVER pan, tilt, zoom, or dolly.",
 ].join(" ");
 
+export const BIOME_LANE_LAW = [
+  "THREE lanes: LEFT, CENTER, RIGHT.",
+  "The hazard occupies ONE lane or TWO lanes. NEVER all three.",
+  "ALWAYS leave at least ONE free lane as a dodge corridor — empty wet asphalt, nothing blocking it.",
+  "A full-width steel bar / wall / arch across LEFT+CENTER+RIGHT is FAIL (unavoidable).",
+].join(" ");
+
 export function biomePlateLine(kind) {
   const travel = [
     "First frame is the start still. Last frame is last_frame — DISTINCT, world ADVANCED.",
@@ -480,6 +487,7 @@ export function biomePlateLine(kind) {
       "SAME camera, SAME vanishing point, SAME crop as the empty road.",
       "ONE hazard baked into the plate (steel barrier / arch / puddle) — not a sticker overlay.",
       "Hazard has wet-road contact and reflections. ZERO dog.",
+      BIOME_LANE_LAW,
     ].join(" ");
   }
   return travel + " Empty road. ZERO hazard unless this is a cousin plate.";

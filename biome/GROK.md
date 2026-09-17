@@ -64,6 +64,8 @@ ffmpeg -y -sseof -0.12 -i road-N.mp4 -frames:v 1 \
 
 Cousin / hazard plate (bar, arch, puddle):
 
+**THREE lanes. Occupies 1 or 2. NEVER all three.** One free corridor to dodge. Full-width bar = FAIL.
+
 | swap | first | last |
 |---|---|---|
 | empty → cousin | last(empty) **or** lock still + hazard | — |
@@ -131,3 +133,4 @@ Every Live drops [../client/pack.js](../client/pack.js). This Live is the centra
 - Chat Imagine without real first+last
 - Imagine Agent video
 - Recook to hide a key bug
+- Full-width hazard on LEFT+CENTER+RIGHT (nowhere to dodge)
