@@ -1,3 +1,5 @@
 SPAWN LAW: first frame the hazard is FAR AHEAD (small, vanishing point). It approaches and exits the BOTTOM. Never a pop-in on the hero. Never a first-frame close-up.
 
-WIDTH LAW (all 10 seconds): hazard stays in the SAME one or two lanes as the first frame. It may get closer (taller) but NEVER wider. Never a wall, never curb-to-curb, never a gantry, never a shock-ring, never extra copies. LEFT and/or RIGHT dashed paint stays visible at t=0, mid, and last. If all three lanes are blocked at any frame, FAIL. {PAINT}
+SPEED LAW: VERY FAST, ULTRA CONSTANT from t=0 to last frame. NEVER slow down — not for a crash, impact, explosion, debris, or obstacle. The world keeps rushing HARD the whole clip. The hazard may get closer; travel speed never changes.
+
+WIDTH LAW: hazard stays in the SAME one or two lanes as the first frame. It may get closer (taller) but NEVER wider. Never a wall, never curb-to-curb, never a gantry, never a shock-ring, never extra copies. LEFT and/or RIGHT dashed paint stays visible at t=0, mid, and last. If all three lanes are blocked at any frame, FAIL. {PAINT}

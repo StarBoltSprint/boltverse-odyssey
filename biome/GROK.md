@@ -86,7 +86,7 @@ RECOOK one plate ONLY. 10 seconds. VERY FAST. CONSTANT rush. Replace current emp
 HARD:
 - 9:16, **10s**, lock-off
 - Sprint travelling baked in cook — world rushes HARD (crawl FAIL)
-- Speed ULTRA CONSTANT first→last. NEVER slow down. NEVER accelerate. NEVER ease-in/out. NEVER a ramp
+- Speed ULTRA CONSTANT first→last. NEVER slow down. NEVER accelerate. NEVER ease-in/out. NEVER a ramp. NEVER slow for a crash / impact / obstacle — the world keeps rushing HARD.
 - ZERO path/lightning on ground
 - ZERO dog/Bolt
 - Canyon/Mars OK, CLEAR center

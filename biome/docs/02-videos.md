@@ -11,7 +11,7 @@ Chat `imagine_image_to_video` / `imagine_reference_to_video` have **no** `last_f
 
 ## Road (empty plate)
 
-**10 s.** Lock-off. Travel **baked** — world rushes HARD the whole clip. Speed **ULTRA CONSTANT** first→last: NEVER slow down, NEVER accelerate, NEVER ease-in/out. `playbackRate` later is ~1.0–1.2 only. (SPEED REF in [../GROK.md](../GROK.md)).
+**Lock-off.** Travel **baked** — world rushes HARD the whole clip. Speed **ULTRA CONSTANT** t=0→last: NEVER slow down (not for a crash, impact, or obstacle), NEVER accelerate, NEVER ease-in/out. (SPEED REF in [../GROK.md](../GROK.md)).
 
 First still ≠ last still. World advanced: what he passed is gone.
 

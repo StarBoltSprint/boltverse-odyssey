@@ -483,11 +483,11 @@ export const BIOME_LANE_LAW = [
 ].join(" ");
 
 export const BIOME_SPEED_LAW = [
-  "10 seconds. VERY FAST travelling — sprint, not a crawl, not a pan of a still.",
-  "Speed is ULTRA CONSTANT from first frame to last_frame.",
-  "NEVER slow down. NEVER accelerate. NEVER ease-in. NEVER ease-out. NEVER a ramp. NEVER a 2x smash then crawl.",
-  "Same rush at t=0, mid, and last. The asphalt speed does not change.",
-  "playbackRate later is ~1.0–1.2 only — do not bake a ramp for the player to fix.",
+  "VERY FAST travelling — sprint rush, not a crawl, not a pan of a still.",
+  "Speed is ULTRA CONSTANT from t=0.00 to the LAST frame. Same asphalt rush at first, mid, crash, and last.",
+  "NEVER slow down. NEVER accelerate. NEVER ease-in. NEVER ease-out. NEVER a ramp.",
+  "NEVER slow for an obstacle, crash, explosion, impact, debris, ship, or car. The world keeps rushing HARD the whole clip even while a wreck hits the road.",
+  "The hazard may APPROACH (get closer) but the CAMERA/TRAVEL speed does not change.",
 ].join(" ");
 
 export function biomePlateLine(kind) {
@@ -530,8 +530,10 @@ export function extractLastFrame(src, dest) {
   return dest;
 }
 
-function encodeBiomeMp4(src, dest) {
-  const vf = "scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280";
+function encodeBiomeMp4(src, dest, height = 1280) {
+  const w = height === 1920 ? 1080 : 720;
+  const h = height === 1920 ? 1920 : 1280;
+  const vf = `scale=${w}:${h}:force_original_aspect_ratio=increase,crop=${w}:${h}`;
   const r = spawnSync(
     "ffmpeg",
     [
@@ -574,6 +576,8 @@ export async function imagineBiomeClip({
   kind = "empty",
   paint = "",
   promptFile,
+  refs = [],
+  resolution = "720p",
 }) {
   if (!first || !last) throw new Error("biome plate needs first + last_frame");
   if (last === first) throw new Error("biome last_frame must be distinct");
@@ -582,15 +586,17 @@ export async function imagineBiomeClip({
     paste = readFileSync(promptFile, "utf8").trim();
   }
   const prompt = [BIOME_LAW, biomePlateLine(kind), paste, paint].filter(Boolean).join(" ");
+  const extra = (refs || []).filter((p) => p && p !== first && p !== last && existsSync(p)).slice(0, 10);
   const body = {
     model: VIDEO_MODEL,
     prompt,
     duration: seconds,
     aspect_ratio: "9:16",
-    resolution: "720p",
+    resolution,
     image: { url: dataUri(first) },
     last_frame: { url: dataUri(last) },
   };
+  if (extra.length) body.image_urls = extra.map((p) => imgRef(p));
   const j = await api("/videos/generations", body);
   let url = j.url || j.video?.url || j.data?.[0]?.url;
   const vid = j.request_id || j.id;
@@ -598,7 +604,7 @@ export async function imagineBiomeClip({
   if (!url) throw new Error("no video url");
   const raw = dest + ".raw.mp4";
   await download(url, raw);
-  encodeBiomeMp4(raw, dest);
+  encodeBiomeMp4(raw, dest, resolution === "1080p" ? 1920 : 1280);
   return dest;
 }
 
