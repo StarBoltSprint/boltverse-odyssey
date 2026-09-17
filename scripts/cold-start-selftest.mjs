@@ -331,6 +331,12 @@ function assertSpokenWelcome(label, text, newHeading, returnHeading) {
   must(/Your Pack profile is already here[\s\S]*\{playerCount\} Packmates already in the Pack\./.test(neu), label + ": count line after profile line");
   must(/\{playerCount\} Packmates already in the Pack\./.test(ret), label + ": Return has live Pack player count");
   must(/welcome back[\s\S]*\{playerCount\} Packmates already in the Pack\./.test(ret), label + ": Return count after welcome back");
+  must(/Open Sprint — Pack save, zero login\./.test(neu), label + ": Welcome has Open Sprint Pack save line");
+  must(/Open Sprint — Pack save, zero login\./.test(ret), label + ": Return has Open Sprint Pack save line");
+  must(/\{playerCount\} Packmates already in the Pack\.[\s\S]*Open Sprint — Pack save, zero login\./.test(neu), label + ": Welcome save line after count");
+  must(/\{playerCount\} Packmates already in the Pack\.[\s\S]*Open Sprint — Pack save, zero login\./.test(ret), label + ": Return save line after count");
+  must(!/stay 30 seconds/.test(neu) && !/stay 30 seconds/.test(ret), label + ": Welcome/Return have no stay 30 seconds");
+  must(!/Ton profil|bon retour|Dis citadel|Bienvenue|déjà|Packmates déjà/.test(neu + ret), label + ": Welcome/Return spoken EN only");
   must(!/among the first Packmates/.test(neu) && !/among the first Packmates/.test(ret), label + ": 0-count swap is kitchen, not extra spoken sentence");
   must(!/pack-wire/.test(neu) && !/pack-doc/.test(neu) && !/registry\.json/.test(neu), label + ": Welcome has no registry kitchen");
   must(!/pack-wire/.test(ret) && !/pack-doc/.test(ret) && !/registry\.json/.test(ret), label + ": Return has no registry kitchen");
@@ -370,6 +376,10 @@ function assertPlayerBoot(label, text) {
   must(/gateSub/.test(text) && /Live HTML open/.test(text), label + ": hard gateSub upsert = Live HTML open only");
   must(/not chat-only start|Chat-only start/.test(text), label + ": chat-only start does not write profile");
   must(/No GitHub lecture|no GitHub lecture|Do not lecture GitHub/.test(text), label + ": no GitHub lecture");
+  must(/Open Sprint — Pack save, zero login\./.test(text), label + ": Open Sprint — Pack save, zero login.");
+  must(/Opening Sprint = Pack profile save|Pack profile save/.test(text) && /zero second login/.test(text), label + ": Opening Sprint = Pack profile save; zero second login");
+  must(/stay 30 seconds/.test(text) && /No “stay 30 seconds”|No stay 30 seconds|no stay 30 seconds/.test(text), label + ": bans stay 30 seconds");
+  must(/ENGLISH only/.test(text) && /No French in the player reply/.test(text), label + ": Welcome/Return ENGLISH only; no French in player reply");
 }
 
 assertPlayerBoot("START.md", body("START.md"));
@@ -396,6 +406,8 @@ must(!/Play → https:\/\/boltverse-odysseyyy\.grok\.me/.test(body("README.md"))
 must(!/Play → https:\/\/boltverse-odysseyyy\.grok\.me/.test(agents), "AGENTS.md: no spoken Play → URL form");
 must(!/Ton profil Pack/.test(body("START.md")) && !/bon retour/.test(body("START.md")) && !/Dis citadel/.test(body("START.md")), "START.md: no French Welcome");
 must(!/Ton profil Pack/.test(body("GROK.md")) && !/bon retour/.test(body("GROK.md")) && !/Dis citadel/.test(body("GROK.md")), "GROK.md: no French Welcome");
+must(!/Ton profil Pack/.test(body("README.md")) && !/bon retour/.test(body("README.md")), "README.md: no French Welcome");
+must(!/Ton profil Pack/.test(agents) && !/bon retour/.test(agents), "AGENTS.md: no French Welcome");
 
 const hooks = body("scripts/imagine-hooks.mjs");
 must(/Not Imagine Agent/.test(hooks) && /last_frame/.test(hooks), "imagine-hooks: films = first+last, not Agent");
