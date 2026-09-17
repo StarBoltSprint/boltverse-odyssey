@@ -468,6 +468,11 @@ export const BIOME_LAW = [
   "CLEAR empty center corridor. NEVER pan, tilt, zoom, or dolly.",
 ].join(" ");
 
+export const BIOME_SPAWN_LAW = [
+  "SPAWN LAW: first frame the hazard is FAR AHEAD — small, near the vanishing point, not in the foreground.",
+  "It APPROACHES the camera over the clip and exits the BOTTOM. Never already under the camera. Never a pop-in on the hero. A first-frame close-up is FAIL.",
+].join(" ");
+
 export const BIOME_LANE_LAW = [
   "THREE lanes: LEFT, CENTER, RIGHT. White dashed lane lines stay visible.",
   "The hazard occupies ONE lane or TWO lanes. NEVER all three.",
@@ -497,6 +502,7 @@ export function biomePlateLine(kind) {
       "SAME camera, SAME vanishing point, SAME crop as the empty road.",
       "ONE hazard baked into the plate (steel barrier / arch / puddle) — not a sticker overlay.",
       "Hazard has wet-road contact and reflections. ZERO dog.",
+      BIOME_SPAWN_LAW,
       BIOME_LANE_LAW,
     ].join(" ");
   }
