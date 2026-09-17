@@ -255,14 +255,14 @@ must(/biome\//.test(body("README.md")), "README.md: lane recipe lives in biome/"
 must(/citadel/.test(body("README.md")) && /Hang/.test(body("README.md")), "README.md: citadel / Hang recipe");
 must(existsSync(join(root, "biome/PLAY.md")), "biome/PLAY.md present");
 must(existsSync(join(root, "biome/reference/LanePlayer.tsx")), "biome/reference/LanePlayer.tsx present");
-must(/r19wide/.test(body("biome/reference/LanePlayer.tsx")), "LanePlayer: r19wide VER");
-must(/bolt-luma/.test(body("biome/reference/LanePlayer.tsx")), "LanePlayer: bolt-luma key");
+must(/r38/.test(body("biome/reference/LanePlayer.tsx")), "LanePlayer: r38 VER");
+must(/chroma/.test(body("biome/reference/LanePlayer.tsx")) && /Vlahos/.test(body("biome/reference/LanePlayer.tsx")), "LanePlayer: Vlahos chroma key");
 must(existsSync(join(root, "stock/biome/preview-loop.mp4")), "stock/biome/preview-loop.mp4 present");
 must(existsSync(join(root, "stock/biome/preview-first.jpg")), "stock/biome/preview-first.jpg present");
 const play = body("biome/PLAY.md");
 must(/B stack/.test(play) && /cutout/.test(play), "biome/PLAY.md: B stack + cutout");
-must(/seek-sync/.test(play), "biome/PLAY.md: seek-sync");
-must(/loop forever/.test(play), "biome/PLAY.md: loop forever");
+must(/dual road/.test(play) && /watchdog/.test(play), "biome/PLAY.md: dual road + watchdog loop");
+must(/Loop forever/.test(play), "biome/PLAY.md: Loop forever");
 must(/not default|not the default/.test(play), "biome/PLAY.md: 3-take is not default");
 must(!/C-light/.test(play) || /cancelled/.test(play), "biome/PLAY.md: no invented C-light lock");
 
@@ -300,6 +300,11 @@ must(/Prefer GitHub for boot/.test(customize) && /Bot OK if useful/.test(customi
 must(!/Never invoke a Grok Bot connector/i.test(customize) && !/GitHub \+ Build console only/.test(customize), "GROK.md Customize: no Bot-connector ban");
 must(/as chat media/.test(customize) && /do not narrate/i.test(customize) && /teasers are on/.test(customize), "GROK.md Customize: attach as chat media; do not narrate teasers are on");
 must(/Hey Packmate \{name\}/.test(customize) && /never Packmate alone/.test(customize) && /never name without Packmate/.test(customize), "GROK.md Customize: Hey Packmate {name}");
+must(/displayName`? first/.test(customize) && /then registry/.test(customize) && /then gate\/app/.test(customize) && /runner`? ONLY if none/.test(customize), "GROK.md Customize: {name} = displayName first, then registry, then gate/app, else runner ONLY if none");
+must(/Hard ban/.test(customize) && /runner/.test(customize) && /display name\/handle/.test(customize), "GROK.md Customize: hard ban runner when display name/handle exists");
+must(/Beat 3/.test(customize) && /in-chat playable preview preferred/.test(customize) && /silently open/.test(customize), "GROK.md Customize: Beat 3 Build play surface");
+must(/Chat Imagine/.test(customize) && /Chat file chip alone/.test(customize) && /FAIL for Beat 3/.test(customize), "GROK.md Customize: Chat Imagine / Chat file chip alone = FAIL for Beat 3");
+must(!/file chip is enough|file-chip success|Chat file chip.*PASS/i.test(customize), "GROK.md Customize: no Chat-only file-chip success path");
 must(existsSync(join(root, "stock/citadel/preview-loop.mp4")), "stock/citadel/preview-loop.mp4 present");
 must(existsSync(join(root, "stock/citadel/preview-first.jpg")), "stock/citadel/preview-first.jpg present");
 must(/stock\/citadel\/preview-loop/.test(body("GROK.md")), "GROK.md: Citadel teaser = stock/citadel/preview-loop");
@@ -369,6 +374,12 @@ function assertPlayerBoot(label, text) {
   must(!/Never invoke a Grok Bot connector/i.test(text) && !/do not invoke a Grok Bot connector/i.test(text) && !/GitHub \+ Build console only/.test(text), label + ": no Bot-connector ban");
   must(/teasers are on/.test(text) && /Do \*\*not\*\* narrate|do not narrate|Never say/.test(text), label + ": bans narrating teasers are on");
   must(/open Sprint/i.test(text), label + ": open Sprint direct");
+  must(/Beat 3/.test(text), label + ": names Beat 3");
+  must(/in-chat playable preview preferred/.test(text), label + ": in-chat playable preview preferred");
+  must(/silently open/.test(text) && /native (Grok )?Build game console/.test(text), label + ": else silently open native Build game console");
+  must(/Chat Imagine/.test(text) && /Chat file chip alone/.test(text) && /FAIL/.test(text), label + ": Chat Imagine / Chat file chip alone = FAIL for Beat 3");
+  must(!/file chip is enough|file-chip success|Chat file chip.*PASS/i.test(text), label + ": no Chat-only file-chip success path");
+  must(/\*\.grok\.me|No `grok\.me` paste|no `grok\.me` paste/.test(text), label + ": no pasted *.grok.me in player reply");
   must(!/\+ ask \*\*Citadel\*\* or \*\*Biome\*\*/.test(text) && !/\+ ask Citadel or Biome/.test(text) && !/\n3\. Ask \*\*Citadel\*\* or \*\*Biome\*\*/.test(text), label + ": no Citadel/Biome choice lecture");
   must(/No Citadel\/Biome choice|Do \*\*not\*\* ask Citadel or Biome|do not ask Citadel or Biome/.test(text), label + ": forbids Citadel/Biome choice lecture");
   must(/kitchen only|Pack Play URL is kitchen-only|do not read aloud/i.test(text) && /boltverse-odysseyyy\.grok\.me/.test(text), label + ": Pack Play URL is kitchen-only");
@@ -398,11 +409,16 @@ assertSpokenWelcome("GROK.md", body("GROK.md"), /\*\*New:\*\*/, /\*\*Return:\*\*
 function assertNameLaw(label, text) {
   must(/Hey Packmate \{name\}/.test(text), label + ": opener is Hey Packmate {name}");
   must(/real Grok profile/.test(text) && /displayName/.test(text), label + ": {name} = real Grok profile displayName");
+  must(/displayName`? first/.test(text) && /then registry/.test(text) && /then gate\/app/.test(text), label + ": {name} = displayName first, then registry, then gate/app");
+  must(/runner`? ONLY if none/.test(text), label + ": runner ONLY if none");
+  must(/Hard ban/.test(text) && /runner/.test(text) && /display name\/handle/.test(text), label + ": hard ban runner when display name/handle exists");
   must(/Never Packmate alone/.test(text) && /Never the name without Packmate/.test(text), label + ": bans Packmate alone and name without Packmate");
   must(/generic stand-in/.test(text), label + ": bans generic stand-in");
 }
 assertNameLaw("START.md", body("START.md"));
 assertNameLaw("GROK.md", body("GROK.md"));
+assertNameLaw("README.md", body("README.md"));
+assertNameLaw("AGENTS.md", agents);
 must(!/Play → https:\/\/heart-giant-plum-lotus\.grok\.me/.test(body("START.md")), "START.md: no spoken Play → old URL form");
 must(!/Play → https:\/\/heart-giant-plum-lotus\.grok\.me/.test(body("GROK.md")), "GROK.md: no spoken Play → old URL form");
 must(!/Play → https:\/\/heart-giant-plum-lotus\.grok\.me/.test(body("README.md")), "README.md: no spoken Play → old URL form");

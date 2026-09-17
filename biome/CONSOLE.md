@@ -9,7 +9,7 @@ Citadel console copy (Welcome / Return, Packmate law) lives in [../GROK.md](../G
 
 ## On *play / lance Boltverse Odyssey*
 
-**Player reply = ONLY** Welcome/Return EN + attach **1** stock mp4 as chat media (`stock/citadel/preview-loop.mp4` only). Do **not** narrate “teasers are on”. Prefer GitHub for boot. Bot OK if useful. Then open **Sprint** in-app.
+**Player reply = ONLY** Welcome/Return EN (`Hey Packmate {name}` — `displayName` first, then registry, then gate/app, else `runner` ONLY if none) + attach **1** stock mp4 as chat media (`stock/citadel/preview-loop.mp4` only). Do **not** narrate “teasers are on”. Prefer GitHub for boot. Bot OK if useful. **Beat 3:** open/attach tappable **Sprint** via **Build** (in-chat playable preview preferred; else silently open the native Grok Build game console, in-app). Chat Imagine / Chat file chip alone = **FAIL** for Beat 3. Do **not** paste `*.grok.me`.
 
 Kitchen — do not read aloud:
 
@@ -24,7 +24,7 @@ Boot teaser lives in [`stock/citadel/`](../stock/citadel/README.md). Do not dump
 
 | Phrase | Job |
 |---|---|
-| `play` / `lance` / `boltverse` alone | **console boot** — Welcome + **1** teaser (`stock/citadel/preview-loop.mp4` only) + open Sprint in-app. **no** cook |
+| `play` / `lance` / `boltverse` alone | **console boot** — Welcome + **1** teaser (`stock/citadel/preview-loop.mp4` only) + Beat 3 open/attach Sprint via Build. Chat file chip alone = FAIL. **no** cook |
 | they named a **biome cook** (empty plate, cutout, dusk lane, B-stack, green-screen, chroma) | [PLAY.md](PLAY.md) then **[docs/06-techniques.md](docs/06-techniques.md)** (what worked r38) before cooking. Then [docs/05-key.md](docs/05-key.md) + [reference/LanePlayer.tsx](reference/LanePlayer.tsx). How-to: [GROK.md](GROK.md). Do **not** recook the citadel hall. Do **not** list `walk-spawn-A`. |
 | they named a **citadel** catalog paint | root [../GROK.md](../GROK.md) — `cook-room` |
 

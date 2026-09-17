@@ -19,7 +19,7 @@ Pack Live: **[docs/07-pack-live.md](docs/07-pack-live.md)**. Never dump this to 
 ## Product
 
 Grok chat = **console** ([CONSOLE.md](CONSOLE.md)). Odyssey = **the game**.  
-*play / lance* alone → Welcome + **1** teaser (`stock/citadel/preview-loop.mp4` only) + open Sprint in-app. **Not a cook.**
+*play / lance* alone → Welcome + **1** teaser (`stock/citadel/preview-loop.mp4` only) + Beat 3: open/attach Sprint via Build (in-chat playable preview preferred; else silently open the native Grok Build game console, in-app). Chat Imagine / Chat file chip alone = FAIL. **Not a cook.**
 
 They asked to **cook** a biome / lane / sprint plate → this file. Do not run `scripts/cook-room.mjs`. Do not invent hall `walk-spawn-A`.
 
