@@ -6,9 +6,14 @@ These **are** the r38 B-stack masters:
 
 | file | role |
 |---|---|
-| `road.mp4` | empty road plate — **master clock** (`?v=r38`) |
-| `bolt.mp4` | Bolt green-screen cutout / gallop (`?v=r38`) |
+| `road.mp4` | empty road plate — **master clock** |
+| `road-bar.mp4` | cousin — center jersey (1 lane, approaches, last = empty) |
+| `road-blast.mp4` | cousin — center meteor (starts FAR, approaches, last = empty) |
+| `bolt.mp4` | Bolt green-screen cutout / gallop |
 | `road.jpg` | road still / first-frame poster |
+
+Dealer: empty → bar → blast. Cook + Hang: [../docs/09-recette-biome.md](../docs/09-recette-biome.md).
+
 
 Drop a later PASS encode here after [../GROK.md](../GROK.md). Encode: 720×1280, H264, `-an`, short GOP, `+faststart`.
 

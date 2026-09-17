@@ -1,24 +1,64 @@
 /**
- * LanePlayer — r38 B-stack compositor (recipe).
+ * LanePlayer — r38 B-stack compositor.
  * Dual road hold. Canvas chroma (Vlahos) + crown sat kill. Pure X plant.
- * Do not publish a new grok.me from this file.
- *
- * Kitchen: /master/road.mp4?v=r38 + /master/bolt.mp4?v=r38
- * Law: biome/PLAY.md · biome/docs/05-key.md · biome/docs/03-decoupe-swipe.md
  */
 import { useEffect, useRef, useState } from "react";
 
 type LaneI = -1 | 0 | 1;
 
-const VER = "r38";
-const ROAD_SRC = `/master/road.mp4?v=${VER}`;
+export type ControlsProbe = {
+  getYaw: () => number;
+  getSpeed: () => number;
+  getX: () => number;
+  setKeys: (codes: string[]) => void;
+};
+
+declare global {
+  interface Window {
+    __controlsTest?: ControlsProbe;
+  }
+}
+
+const VER = "r25spawn";
+const PLATES = [
+  `/master/road.mp4?v=${VER}`,
+  `/master/road-bar.mp4?v=${VER}`,
+  `/master/road-blast.mp4?v=${VER}`,
+];
+const ROAD_SRC = PLATES[0]!;
 const BOLT_MP4 = `/master/bolt.mp4?v=${VER}`;
+const ROAD_POSTER = `/master/road.jpg?v=${VER}`;
 
 const SWIPE_PX = 12;
 const MOVE_MS = 220;
 const SHIFT = 30;
+const JUMP_MS = 520;
+const JUMP_PEAK = 0.2;
 const WATCHDOG_MS = 400;
 const SHOW_HINT = true;
+
+type Hazard = {
+  lanes: readonly LaneI[];
+  jumpClears: boolean;
+  t0: number;
+  t1: number;
+};
+
+const HAZARDS: (Hazard | null)[] = [
+  null,
+  { lanes: [0], jumpClears: true, t0: 0.5, t1: 0.74 },
+  { lanes: [0], jumpClears: true, t0: 0.8, t1: 0.95 },
+];
+
+function visualLane(x: number): LaneI {
+  return clampLane(Math.round(x / SHIFT));
+}
+
+function isAirborne(jumpAt: number, now: number) {
+  if (!jumpAt) return false;
+  const t = now - jumpAt;
+  return t >= 0 && t < JUMP_MS * 0.82;
+}
 
 function clampLane(n: number): LaneI {
   if (n < -1) return -1;
@@ -45,6 +85,30 @@ function arm(v: HTMLVideoElement) {
   v.setAttribute("muted", "");
   v.setAttribute("controlslist", "nodownload nofullscreen noremoteplayback");
   v.setAttribute("disablepictureinpicture", "");
+}
+
+function platePath(src: string) {
+  return src.split("?")[0] || src;
+}
+
+function srcIs(v: HTMLVideoElement, plate: string) {
+  const p = platePath(plate);
+  const cur = v.currentSrc || "";
+  const raw = v.getAttribute("src") || v.src || "";
+  return cur.includes(p) || raw.includes(p);
+}
+
+function armNext(v: HTMLVideoElement, plate: string) {
+  if (!srcIs(v, plate)) {
+    v.preload = "auto";
+    v.src = plate;
+  }
+  v.pause();
+  try {
+    if (v.readyState >= 1 && v.currentTime > 0.05) v.currentTime = 0;
+  } catch {
+    /* ignore */
+  }
 }
 
 function hardPlay(v: HTMLVideoElement | null) {
@@ -83,16 +147,16 @@ function grab(src: HTMLVideoElement, hold: HTMLCanvasElement): boolean {
 /** Drop the green packaging. Soft edge. No yellow wash on the fur. */
 function keyGreen(data: Uint8ClampedArray) {
   for (let i = 0; i < data.length; i += 4) {
-    const r = data[i];
-    const g = data[i + 1];
-    const b = data[i + 2];
+    const r = data[i]!;
+    const g = data[i + 1]!;
+    const b = data[i + 2]!;
     const m = r > b ? r : b;
     const greenness = g - m;
     if (greenness > 16 && g > 40) {
       data[i + 3] = 0;
     } else if (greenness > 4 && g > 30) {
       const t = (greenness - 4) / 12;
-      data[i + 3] = Math.max(0, Math.min(255, data[i + 3] * (1 - t)));
+      data[i + 3] = Math.max(0, Math.min(255, data[i + 3]! * (1 - t)));
       data[i + 1] = g + (m - g) * t;
     } else if (g > m) {
       data[i + 1] = m;
@@ -103,18 +167,18 @@ function keyGreen(data: Uint8ClampedArray) {
 /** 1px alpha falloff so the cutout isn't a sticker. */
 function featherAlpha(data: Uint8ClampedArray, w: number, h: number) {
   const a = new Uint8Array(w * h);
-  for (let p = 0, i = 3; p < a.length; p++, i += 4) a[p] = data[i];
+  for (let p = 0, i = 3; p < a.length; p++, i += 4) a[p] = data[i]!;
   for (let y = 1; y < h - 1; y++) {
     const row = y * w;
     for (let x = 1; x < w - 1; x++) {
       const p = row + x;
-      const v = a[p];
+      const v = a[p]!;
       if (v < 16) continue;
       let n = 0;
-      if (a[p - 1] < 16) n++;
-      if (a[p + 1] < 16) n++;
-      if (a[p - w] < 16) n++;
-      if (a[p + w] < 16) n++;
+      if (a[p - 1]! < 16) n++;
+      if (a[p + 1]! < 16) n++;
+      if (a[p - w]! < 16) n++;
+      if (a[p + w]! < 16) n++;
       if (n) data[p * 4 + 3] = (v * (4 - n)) / 4;
     }
   }
@@ -127,7 +191,7 @@ function killCrown(data: Uint8ClampedArray, w: number, h: number) {
   for (let y = 0; y < yMax && yTop === h; y += 2) {
     const base = y * w * 4;
     for (let x = 0; x < w; x += 2) {
-      if (data[base + x * 4 + 3] > 40) {
+      if (data[base + x * 4 + 3]! > 40) {
         yTop = y;
         break;
       }
@@ -139,10 +203,10 @@ function killCrown(data: Uint8ClampedArray, w: number, h: number) {
     const base = y * w * 4;
     for (let x = 0; x < w; x++) {
       const i = base + x * 4;
-      if (data[i + 3] < 40) continue;
-      const r = data[i];
-      const g = data[i + 1];
-      const b = data[i + 2];
+      if (data[i + 3]! < 40) continue;
+      const r = data[i]!;
+      const g = data[i + 1]!;
+      const b = data[i + 2]!;
       const mx = r > g ? r : g;
       const v = mx > b ? mx : b;
       const mn = r < g ? (r < b ? r : b) : g < b ? g : b;
@@ -164,7 +228,7 @@ function scanBlob(data: Uint8ClampedArray, w: number, h: number) {
   for (let y = 0; y < h; y += 2) {
     const base = y * w * 4;
     for (let x = 0; x < w; x += 2) {
-      if (data[base + x * 4 + 3] > 40) {
+      if (data[base + x * 4 + 3]! > 40) {
         sx += x;
         sy += y;
         n++;
@@ -184,7 +248,7 @@ function scanBlob(data: Uint8ClampedArray, w: number, h: number) {
   for (let y = pawTop; y <= y1; y += 2) {
     const base = y * w * 4;
     for (let x = x0; x <= x1; x += 2) {
-      if (data[base + x * 4 + 3] > 40) {
+      if (data[base + x * 4 + 3]! > 40) {
         if (x < px0) px0 = x;
         if (x > px1) px1 = x;
       }
@@ -197,6 +261,13 @@ function scanBlob(data: Uint8ClampedArray, w: number, h: number) {
   return { y: y1, x0: px0, x1: px1, cx: sx / n, cy: sy / n };
 }
 
+function bootImage(src: string) {
+  const im = new Image();
+  im.decoding = "async";
+  im.src = src;
+  return im;
+}
+
 export function LanePlayer() {
   const roadARef = useRef<HTMLVideoElement>(null);
   const roadBRef = useRef<HTMLVideoElement>(null);
@@ -205,11 +276,16 @@ export function LanePlayer() {
   const roadHoldRef = useRef<HTMLCanvasElement | null>(null);
   const boltHoldRef = useRef<HTMLCanvasElement | null>(null);
   const offRef = useRef<HTMLCanvasElement | null>(null);
-  const pawsRef = useRef({ y: 0, x0: 0, x1: 0, cx: 360, cy: 800 });
+  const pawsRef = useRef({ y: 1089, x0: 310, x1: 418, cx: 364, cy: 907 });
   const roadIdx = useRef(0);
+  const plateRef = useRef(0);
+  const pendingPlate = useRef(1);
   const roadPrimed = useRef(false);
   const haveRoad = useRef(false);
   const haveBolt = useRef(false);
+  const boltFrame = useRef(-1);
+  const posterRef = useRef<HTMLImageElement | null>(null);
+  const [booted, setBooted] = useState(false);
   const touchRef = useRef<HTMLDivElement>(null);
   const laneRef = useRef<LaneI>(0);
   const xRef = useRef(0);
@@ -217,6 +293,11 @@ export function LanePlayer() {
   const drawRaf = useRef(0);
   const ptr = useRef<{ x: number; y: number; t: number; used: boolean } | null>(null);
   const goRef = useRef<(dir: -1 | 1) => void>(() => {});
+  const jumpRef = useRef<() => void>(() => {});
+  const jumpAt = useRef(0);
+  const trauma = useRef(0);
+  const hitFlash = useRef(0);
+  const blocked = useRef(false);
   const [lane, setLane] = useState<LaneI>(0);
   const [hint, setHint] = useState(SHOW_HINT);
   const reduced = useRef(false);
@@ -232,8 +313,31 @@ export function LanePlayer() {
   const activeRoad = () => (roadIdx.current === 0 ? roadARef.current : roadBRef.current);
 
   const playPair = () => {
+    if (blocked.current) return;
     hardPlay(activeRoad());
     hardPlay(boltRef.current);
+  };
+
+  const setBlocked = (on: boolean) => {
+    if (blocked.current === on) return;
+    blocked.current = on;
+    const a = activeRoad();
+    const bolt = boltRef.current;
+    if (on) {
+      a?.pause();
+      bolt?.pause();
+      hitFlash.current = performance.now();
+      if (!reduced.current) trauma.current = 1;
+      return;
+    }
+    if (a) {
+      a.playbackRate = 1;
+      hardPlay(a);
+    }
+    if (bolt) {
+      bolt.playbackRate = 1;
+      hardPlay(bolt);
+    }
   };
 
   const tween = (toX: number, ms: number) => {
@@ -266,11 +370,26 @@ export function LanePlayer() {
   };
   goRef.current = go;
 
+  const jump = () => {
+    playPair();
+    setHint(false);
+    const now = performance.now();
+    if (jumpAt.current && now - jumpAt.current < JUMP_MS) return;
+    jumpAt.current = now;
+  };
+  jumpRef.current = jump;
+
   const readSwipe = (x: number, y: number) => {
     const p = ptr.current;
     if (!p || p.used) return;
     const dx = x - p.x;
     const dy = y - p.y;
+    if (Math.abs(dx) < SWIPE_PX && Math.abs(dy) < SWIPE_PX) return;
+    if (Math.abs(dy) >= Math.abs(dx) && dy < -SWIPE_PX) {
+      p.used = true;
+      jumpRef.current();
+      return;
+    }
     if (Math.abs(dx) < SWIPE_PX || Math.abs(dy) > Math.abs(dx) * 2.2) return;
     p.used = true;
     goRef.current(dx < 0 ? -1 : 1);
@@ -286,8 +405,10 @@ export function LanePlayer() {
   };
 
   useEffect(() => {
-    fetch(ROAD_SRC, { credentials: "same-origin" }).catch(() => {});
-    fetch(BOLT_MP4, { credentials: "same-origin" }).catch(() => {});
+    posterRef.current = bootImage(ROAD_POSTER);
+    const mark = () => setBooted(true);
+    posterRef.current.decode?.().then(mark).catch(mark);
+    posterRef.current.onload = mark;
 
     const roadA = roadARef.current;
     const roadB = roadBRef.current;
@@ -297,6 +418,7 @@ export function LanePlayer() {
     if (roadA) arm(roadA);
     if (roadB) {
       arm(roadB);
+      roadB.preload = "none";
       roadB.pause();
       try {
         roadB.currentTime = 0;
@@ -317,32 +439,42 @@ export function LanePlayer() {
       const a = roadIdx.current === 0 ? roadA : roadB;
       const b = roadIdx.current === 0 ? roadB : roadA;
       if (a && b) {
+        const next = (plateRef.current + 1) % PLATES.length;
+        const nextSrc = PLATES[next]!;
+        pendingPlate.current = next;
+        if (!srcIs(b, nextSrc)) {
+          armNext(b, nextSrc);
+          roadPrimed.current = false;
+        }
         const d = a.duration;
         if (d && isFinite(d) && d > 0.4) {
-          if (a.currentTime >= d - 0.22) {
-            if (!roadPrimed.current) {
+          const tail = a.currentTime >= d - 0.28;
+          const nextReady =
+            srcIs(b, nextSrc) &&
+            b.readyState >= 2 &&
+            !b.seeking &&
+            b.videoWidth > 2;
+          if (tail && nextReady) {
+            if (b.currentTime >= 0.12) {
               try {
                 b.currentTime = 0.001;
               } catch {
                 /* ignore */
               }
-              void b.play().catch(() => {});
-              roadPrimed.current = true;
             }
-            if (b.readyState >= 2 && !b.seeking && b.currentTime > 0 && b.currentTime < 0.45) {
-              roadIdx.current = 1 - roadIdx.current;
-              roadPrimed.current = false;
-              a.pause();
-              try {
-                a.currentTime = 0;
-              } catch {
-                /* ignore */
-              }
-            }
-          }
-          if (a.currentTime >= d - 0.02 && a.currentTime > 0) {
+            roadIdx.current = 1 - roadIdx.current;
+            plateRef.current = next;
+            roadPrimed.current = false;
+            a.pause();
             try {
-              a.currentTime = 0.001;
+              a.currentTime = 0;
+            } catch {
+              /* ignore */
+            }
+            hardPlay(b);
+          } else if (tail && !nextReady && a.currentTime >= d - 0.02) {
+            try {
+              a.currentTime = Math.max(0.001, d - 0.4);
             } catch {
               /* ignore */
             }
@@ -368,28 +500,33 @@ export function LanePlayer() {
       if (road && grab(road, roadHold)) haveRoad.current = true;
 
       if (bolt.readyState >= 2 && !bolt.seeking && bolt.videoWidth > 2) {
-        if (off.width !== vw || off.height !== vh) {
-          off.width = vw;
-          off.height = vh;
-        }
-        const offCtx = off.getContext("2d", { willReadFrequently: true });
-        if (offCtx) {
-          offCtx.drawImage(bolt, 0, 0, vw, vh);
-          const img = offCtx.getImageData(0, 0, vw, vh);
-          keyGreen(img.data);
-          killCrown(img.data, vw, vh);
-          featherAlpha(img.data, vw, vh);
-          pawsRef.current = scanBlob(img.data, vw, vh);
-          offCtx.putImageData(img, 0, 0);
-          if (boltHold.width !== vw || boltHold.height !== vh) {
-            boltHold.width = vw;
-            boltHold.height = vh;
+        const frame = (bolt.currentTime * 24 + 0.02) | 0;
+        const needKey = frame !== boltFrame.current || !haveBolt.current;
+        if (needKey) {
+          boltFrame.current = frame;
+          if (off.width !== vw || off.height !== vh) {
+            off.width = vw;
+            off.height = vh;
           }
-          const bh = boltHold.getContext("2d");
-          if (bh) {
-            bh.clearRect(0, 0, vw, vh);
-            bh.drawImage(off, 0, 0, vw, vh);
-            haveBolt.current = true;
+          const offCtx = off.getContext("2d", { willReadFrequently: true });
+          if (offCtx) {
+            offCtx.drawImage(bolt, 0, 0, vw, vh);
+            const img = offCtx.getImageData(0, 0, vw, vh);
+            keyGreen(img.data);
+            killCrown(img.data, vw, vh);
+            featherAlpha(img.data, vw, vh);
+            pawsRef.current = scanBlob(img.data, vw, vh);
+            offCtx.putImageData(img, 0, 0);
+            if (boltHold.width !== vw || boltHold.height !== vh) {
+              boltHold.width = vw;
+              boltHold.height = vh;
+            }
+            const bh = boltHold.getContext("2d");
+            if (bh) {
+              bh.clearRect(0, 0, vw, vh);
+              bh.drawImage(off, 0, 0, vw, vh);
+              haveBolt.current = true;
+            }
           }
         }
       }
@@ -403,7 +540,39 @@ export function LanePlayer() {
       }
 
       if (haveRoad.current) {
+        const now = performance.now();
+        const hz = HAZARDS[plateRef.current] ?? null;
+        let onBox = false;
+        if (hz && road && road.duration > 0.4) {
+          const u = road.currentTime / road.duration;
+          const inWin = u >= hz.t0 && u <= hz.t1;
+          const lane = visualLane(xRef.current);
+          const onIt = hz.lanes.includes(lane);
+          const cleared = hz.jumpClears && isAirborne(jumpAt.current, now);
+          onBox = inWin && onIt && !cleared;
+        }
+        setBlocked(onBox);
+      }
+
+      ctx.save();
+      if (trauma.current > 0.02 && !reduced.current) {
+        const s = trauma.current * trauma.current;
+        ctx.translate((Math.random() - 0.5) * 18 * s, (Math.random() - 0.5) * 12 * s);
+        trauma.current *= 0.88;
+      } else {
+        trauma.current = 0;
+      }
+      if (haveRoad.current) {
         ctx.drawImage(roadHold, 0, 0, canvas.width, canvas.height);
+      } else {
+        const poster = posterRef.current;
+        if (poster && poster.naturalWidth > 2) {
+          if (canvas.width !== 720 || canvas.height !== 1280) {
+            canvas.width = 720;
+            canvas.height = 1280;
+          }
+          ctx.drawImage(poster, 0, 0, canvas.width, canvas.height);
+        }
       }
       if (haveBolt.current) {
         const dx = (xRef.current / 100) * canvas.width;
@@ -413,17 +582,35 @@ export function LanePlayer() {
         const feet = paws.y || ch * 0.86;
         const pw = Math.max(48, paws.x1 - paws.x0);
         const cx = dx + (paws.x0 + paws.x1) / 2;
-        ctx.save();
+        let jy = 0;
+        if (jumpAt.current) {
+          const t = (performance.now() - jumpAt.current) / JUMP_MS;
+          if (t >= 1) jumpAt.current = 0;
+          else jy = Math.sin(Math.min(1, t) * Math.PI) * ch * JUMP_PEAK;
+        }
         ctx.fillStyle = "rgba(8,6,14,0.2)";
         ctx.beginPath();
-        ctx.ellipse(cx, feet + 6, pw * 0.62, 8, 0, 0, Math.PI * 2);
+        ctx.ellipse(cx, feet + 6, pw * 0.62 * (jy ? 0.7 : 1), 8, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.fillStyle = "rgba(8,6,14,0.32)";
         ctx.beginPath();
-        ctx.ellipse(cx, feet + 3, pw * 0.4, 4, 0, 0, Math.PI * 2);
+        ctx.ellipse(cx, feet + 3, pw * 0.4 * (jy ? 0.7 : 1), 4, 0, 0, Math.PI * 2);
         ctx.fill();
-        ctx.restore();
-        ctx.drawImage(boltHold, dx, 0, cw, ch);
+        ctx.drawImage(boltHold, dx, -jy, cw, ch);
+      }
+      ctx.restore();
+
+      if (blocked.current) {
+        ctx.fillStyle = "rgba(190,28,48,0.14)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+      if (hitFlash.current) {
+        const k = 1 - (performance.now() - hitFlash.current) / 220;
+        if (k <= 0) hitFlash.current = 0;
+        else {
+          ctx.fillStyle = `rgba(190,28,48,${0.32 * k})`;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
       }
 
       drawRaf.current = requestAnimationFrame(paint);
@@ -443,6 +630,9 @@ export function LanePlayer() {
       } else if (e.code === "KeyD" || e.code === "ArrowRight") {
         e.preventDefault();
         goRef.current(1);
+      } else if (e.code === "KeyW" || e.code === "ArrowUp" || e.code === "Space") {
+        e.preventDefault();
+        jumpRef.current();
       }
     };
 
@@ -505,7 +695,7 @@ export function LanePlayer() {
     };
 
     const opts: AddEventListenerOptions = { passive: false, capture: true };
-    const host = touch ?? document;
+    const host: EventTarget = touch ?? document;
     host.addEventListener("touchstart", onTs, opts);
     host.addEventListener("touchmove", onTm, opts);
     host.addEventListener("touchend", onTe, opts);
@@ -528,10 +718,17 @@ export function LanePlayer() {
         const t = new Set(codes);
         if (t.has("KeyA") || t.has("ArrowLeft")) goRef.current(-1);
         if (t.has("KeyD") || t.has("ArrowRight")) goRef.current(1);
+        if (t.has("KeyW") || t.has("ArrowUp") || t.has("Space")) jumpRef.current();
       },
     };
 
     const hide = window.setTimeout(() => setHint(false), 5200);
+    const warm = window.setTimeout(() => {
+      if (roadB && !roadB.currentSrc) {
+        roadB.src = PLATES[1]!;
+        roadB.preload = "auto";
+      }
+    }, 900);
     const beat = window.setInterval(() => playPair(), WATCHDOG_MS);
 
     return () => {
@@ -548,7 +745,8 @@ export function LanePlayer() {
       roadA?.removeEventListener("ended", onEnded);
       roadB?.removeEventListener("ended", onEnded);
       bolt?.removeEventListener("ended", onEnded);
-      if (hide) window.clearTimeout(hide);
+      window.clearTimeout(hide);
+      window.clearTimeout(warm);
       window.clearInterval(beat);
       cancelAnimationFrame(moveRaf.current);
       cancelAnimationFrame(drawRaf.current);
@@ -561,11 +759,25 @@ export function LanePlayer() {
     <div
       className="master-player lane-player"
       role="application"
-      aria-label="BOLT lane run. Swipe or tap sides to change lanes."
+      aria-label="BOLT lane run. Swipe or tap sides to change lanes. Swipe up to jump."
     >
       <div className="lane-stage">
-        <canvas ref={canvasRef} className="lane-canvas" />
+        <canvas ref={canvasRef} className={booted ? "lane-canvas" : "lane-canvas is-wait"} />
         <div className="lane-decoders" aria-hidden>
+          <video
+            ref={boltRef}
+            className="bolt-vid"
+            src={BOLT_MP4}
+            muted
+            playsInline
+            preload="auto"
+            autoPlay
+            // @ts-expect-error React 19 fetchPriority
+            fetchPriority="high"
+            controls={false}
+            disablePictureInPicture
+            controlsList="nodownload nofullscreen noremoteplayback"
+          />
           <video
             ref={roadARef}
             className="road-vid"
@@ -576,32 +788,16 @@ export function LanePlayer() {
             autoPlay
             controls={false}
             disablePictureInPicture
-            disableRemotePlayback
             controlsList="nodownload nofullscreen noremoteplayback"
           />
           <video
             ref={roadBRef}
             className="road-vid"
-            src={ROAD_SRC}
             muted
             playsInline
-            preload="auto"
+            preload="none"
             controls={false}
             disablePictureInPicture
-            disableRemotePlayback
-            controlsList="nodownload nofullscreen noremoteplayback"
-          />
-          <video
-            ref={boltRef}
-            className="bolt-vid"
-            src={BOLT_MP4}
-            muted
-            playsInline
-            preload="auto"
-            autoPlay
-            controls={false}
-            disablePictureInPicture
-            disableRemotePlayback
             controlsList="nodownload nofullscreen noremoteplayback"
           />
         </div>
@@ -612,7 +808,7 @@ export function LanePlayer() {
           <span key={n} className={lane === n ? "is-on" : undefined} />
         ))}
       </div>
-      {hint ? <p className="lane-hint">swipe or tap sides</p> : null}
+      {hint ? <p className="lane-hint">swipe sides · swipe up to jump</p> : null}
     </div>
   );
 }

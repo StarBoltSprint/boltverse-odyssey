@@ -66,6 +66,11 @@ Cousin / hazard plate (bar, arch, puddle):
 
 **THREE lanes. Occupies 1 or 2. NEVER all three.** One free corridor to dodge. Full-width bar = FAIL.
 
+**SPAWN:** first frame FAR AHEAD (small). Approaches, exits the bottom. Never a pop-in.
+
+**OBJECT:** jersey / rock / crate. Not “explosion/crater” — Imagine will fill three lanes. Composite a distant speck onto `last(empty)` if needed. Full order: [docs/09-recette-biome.md](docs/09-recette-biome.md).
+
+
 | swap | first | last |
 |---|---|---|
 | empty → cousin | last(empty) **or** lock still + hazard | — |

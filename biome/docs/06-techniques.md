@@ -65,6 +65,15 @@ Scan α>40 stride-2 → centroid + paw span. Two `source-over` ellipses at the p
 
 `muted playsInline autoPlay`. Re-`play()` on `pause` / `ended` / `visibilitychange`. Bolt loops on its own clock. Road is master for the picture, not a seek-sync of the dog.
 
+### 8. Dual road as **dealer** (cousin plates)
+
+Empty is the clock. Bar / meteor are cousin mp4s with the **same** first/last stills. Two decoders, pre-arm next, swap in the last 0.28 s. `last(cousin)` must be `first(empty)`.
+
+### 9. Jump + solid box (not a flash)
+
+Swipe up clears low hazards. Collision = occupied **lane** × time window (`t0`–`t1` of that plate). While overlapping: **pause** road + gallop until sidestep. Meteor `t0` is late (~0.80) — freeze ON the rock, not 20 m early. Full cook: [09-recette-biome.md](09-recette-biome.md).
+
+
 ---
 
 ## Tried and killed
@@ -82,6 +91,11 @@ Scan α>40 stride-2 → centroid + paw span. Two `source-over` ellipses at the p
 | `multiply` / CSS `filter` shadow | skipped on Samsung |
 | One decoder, seek to 0 | black flash |
 | Recook as the fix for a key bug | you are painting around a compositor bug |
+| “Explosion/crater” prompt for a 1-lane hazard | Imagine fills all three lanes |
+| First-frame close-up of the hazard | pops on Bolt at dealer swap |
+| `--match` SAD on a blooming plate | false-fast px/s → plate is slowed |
+| Hit window t0 ≈ 0.5 on a distant meteor | freeze meters before contact |
+| Stun / lock lanes on hit | player cannot sidestep the box |
 
 ---
 
