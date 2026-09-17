@@ -35,7 +35,7 @@ This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play
 | [prompts/](prompts/) | Imagine paste blocks (swap `{PAINT}` only) |
 | [reference/LanePlayer.tsx](reference/LanePlayer.tsx) | r38 compositor (not a grok.me) |
 | [reference/lane-css.css](reference/lane-css.css) | 9:16 B-stack CSS |
-| [master/README.md](master/README.md) | hung road + cutout master |
+| [master/](master/README.md) | in-repo r38 KEEP stack (`road.mp4` + `bolt.mp4` + `road.jpg`) served at `/master/` |
 | [../client/pack.js](../client/pack.js) | Pack client floor (boot + 30s heartbeat) |
 | [stock/biome/](../stock/biome/README.md) | console Sprint teaser (`preview-loop.mp4`) |
 
@@ -52,7 +52,7 @@ Kitchen — do not read aloud. biome / Sprint cook / lane / B-stack / green-scre
 # 4. biome/reference/LanePlayer.tsx
 # then biome/GROK.md
 # stills + films = imagine-hooks first+last (never Imagine Agent video)
-# drop masters into biome/master/
+# drop KEEP masters into biome/master/ (r38 stack; do not substitute stock/biome teasers)
 ```
 
 Cannot run `node` + `XAI_API_KEY` → **REFUSE**. Stock Sprint in-app. Do **not** fall back to chat Imagine.

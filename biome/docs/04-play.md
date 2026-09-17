@@ -20,7 +20,7 @@ No wallet. No keys. No Forge chrome. Films **loop forever**.
 
 ## `/master` stack
 
-Hung B-stack files: [../master/README.md](../master/README.md). Live r38 names:
+Hung B-stack files are in-repo under [../master/](../master/README.md) (r38 KEEP). Live r38 names:
 
 | file | role |
 |---|---|
@@ -30,7 +30,7 @@ Hung B-stack files: [../master/README.md](../master/README.md). Live r38 names:
 
 Kitchen Live may point at these paths the same way citadel Play points at `packs/<id>/`. Do **not** paste the Live URL in chat.
 
-Console teaser (chat media, not a tap) is **not** the master stack: [`stock/biome/preview-loop.mp4`](../../stock/biome/preview-loop.mp4).
+Console teaser (chat media, not a tap) is **not** the master stack: [`stock/biome/preview-loop.mp4`](../../stock/biome/preview-loop.mp4). Do **not** substitute those teasers for `/master/`.
 
 ## Wire
 
