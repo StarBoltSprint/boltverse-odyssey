@@ -24,6 +24,14 @@ python3 scripts/plate-speed.py --match --ref biome/master/road.mp4 biome/master/
 
 `--match` plays the plate faster (`setpts`). Duration **shrinks**. Same 48 fps, same 720×1280, short GOP.
 
+A hazard (blast, bar bloom) can **fool SAD** — patches jump, px/s looks fast, `--match` then **slows** a plate that actually crawls. Then use duration:
+
+```
+python3 scripts/plate-speed.py --duration-match --ref biome/master/road.mp4 biome/master/road-blast.mp4 -o biome/master/road-blast.mp4
+python3 scripts/plate-speed.py --factor 1.75 plate.mp4 -o plate.mp4
+```
+
+
 This does **not** replace first+last. A slow cousin that ends under a bar still **cuts** back to empty if `last(cousin) ≠ first(empty)`. Recook with `imagineBiomeClip` + `last_frame` for the chain. Use this script for rush only.
 
 ## Order

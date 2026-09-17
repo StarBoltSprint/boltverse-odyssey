@@ -150,22 +150,47 @@ def main() -> None:
     ap.add_argument("plate")
     ap.add_argument("--ref", help="reference plate (first empty road)")
     ap.add_argument("--match", action="store_true", help="time-warp plate to --ref speed")
-    ap.add_argument("-o", "--out", help="output path for --match")
+    ap.add_argument(
+        "--duration-match",
+        action="store_true",
+        help="time-warp so duration matches --ref (use when a hazard fools SAD px/s)",
+    )
+    ap.add_argument(
+        "--factor",
+        type=float,
+        help="force time-warp (e.g. 1.75 = 1.75× faster, shorter). Implies write.",
+    )
+    ap.add_argument("-o", "--out", help="output path for --match / --factor / --duration-match")
     args = ap.parse_args()
     plate = measure(args.plate)
     out: dict = {"plate": plate}
+    factor = args.factor
     if args.ref:
         ref = measure(args.ref)
         out["ref"] = ref
-        factor = (ref["px_s"] / plate["px_s"]) if plate["px_s"] > 1 else 1.0
-        factor = max(0.45, min(2.4, factor))
+        if factor is None and args.duration_match:
+            pd, rd = plate["duration"] or 0.0, ref["duration"] or 0.0
+            factor = (pd / rd) if rd and pd else 1.0
+            out["mode"] = "duration"
+        elif factor is None:
+            factor = (ref["px_s"] / plate["px_s"]) if plate["px_s"] > 1 else 1.0
+            out["mode"] = "px_s"
+        factor = max(0.45, min(2.4, float(factor)))
         out["factor"] = round(factor, 4)
         out["note"] = "factor>1 speeds the plate up (shorter). This is travel, not FPS."
-        if args.match:
-            dest = args.out or args.plate
-            match_file(args.plate, factor, dest)
-            out["written"] = dest
-            out["after"] = measure(dest)
+    elif factor is not None:
+        factor = max(0.45, min(2.4, float(factor)))
+        out["factor"] = round(factor, 4)
+        out["mode"] = "forced"
+        out["note"] = "factor>1 speeds the plate up (shorter). This is travel, not FPS."
+    write = args.match or args.duration_match or args.factor is not None
+    if write:
+        if factor is None:
+            raise SystemExit("--match needs --ref or pass --factor")
+        dest = args.out or args.plate
+        match_file(args.plate, factor, dest)
+        out["written"] = dest
+        out["after"] = measure(dest)
     print(json.dumps(out, indent=2))
 
 
