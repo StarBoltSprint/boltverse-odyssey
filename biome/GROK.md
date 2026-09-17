@@ -19,7 +19,7 @@ Pack Live: **[docs/07-pack-live.md](docs/07-pack-live.md)**. Never dump this to 
 ## Product
 
 Grok chat = **console** ([CONSOLE.md](CONSOLE.md)). Odyssey = **the game**.  
-*play / lance* alone → Welcome + 2 teasers + open Sprint in-app. **Not a cook.**
+*play / lance* alone → Welcome + **1** teaser (`stock/citadel/preview-loop.mp4` only) + open Sprint in-app. **Not a cook.**
 
 They asked to **cook** a biome / lane / sprint plate → this file. Do not run `scripts/cook-room.mjs`. Do not invent hall `walk-spawn-A`.
 
@@ -91,7 +91,7 @@ No audio. Short GOP so seek-sync does not snap to the previous keyframe.
 
 ## Hang
 
-Drop PASS files into [master/](master/README.md). Teaser loop for console: [../stock/biome/](../stock/biome/README.md).
+Drop PASS files into [master/](master/README.md). Optional biome preview (archive — **not attached at boot**): [../stock/biome/](../stock/biome/README.md). Boot teaser: [../stock/citadel/](../stock/citadel/README.md).
 
 FAIL → keep debug next to the cook (do not Hang). Dual dogs, sit, face, baked path, crawl = FAIL.
 

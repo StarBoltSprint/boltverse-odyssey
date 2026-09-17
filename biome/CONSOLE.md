@@ -9,22 +9,22 @@ Citadel console copy (Welcome / Return, Packmate law) lives in [../GROK.md](../G
 
 ## On *play / lance Boltverse Odyssey*
 
-**Player reply = ONLY** Welcome/Return EN + attach **2** stock mp4 teasers as chat media (Citadel + Sprint). Do **not** narrate “teasers are on”. Prefer GitHub for boot. Bot OK if useful. Then open **Sprint** in-app.
+**Player reply = ONLY** Welcome/Return EN + attach **1** stock mp4 as chat media (`stock/citadel/preview-loop.mp4` only). Do **not** narrate “teasers are on”. Prefer GitHub for boot. Bot OK if useful. Then open **Sprint** in-app.
 
 Kitchen — do not read aloud:
 
 - Pack Play (kitchen only) = https://boltverse-odysseyyy.grok.me
-- Citadel teaser = [`stock/citadel/preview-loop.mp4`](../stock/citadel/preview-loop.mp4)
-- Sprint / Biome teaser = [`stock/biome/preview-loop.mp4`](../stock/biome/preview-loop.mp4) (poster `preview-first.jpg`)
+- Citadel teaser = [`stock/citadel/preview-loop.mp4`](../stock/citadel/preview-loop.mp4) — **sole** boot attach
+- Sprint / Biome preview = [`stock/biome/preview-loop.mp4`](../stock/biome/preview-loop.mp4) (poster `preview-first.jpg`) — optional archive, **not attached at boot**
 - Loop forever: `muted playsInline autoPlay loop` + watchdog
 
-Teaser binaries live in [`stock/biome/`](../stock/biome/README.md). Do not dump a path in chat.
+Boot teaser lives in [`stock/citadel/`](../stock/citadel/README.md). Do not dump a path in chat.
 
 ## Cook vs boot
 
 | Phrase | Job |
 |---|---|
-| `play` / `lance` / `boltverse` alone | **console boot** — Welcome + 2 teasers + open Sprint in-app. **no** cook |
+| `play` / `lance` / `boltverse` alone | **console boot** — Welcome + **1** teaser (`stock/citadel/preview-loop.mp4` only) + open Sprint in-app. **no** cook |
 | they named a **biome cook** (empty plate, cutout, dusk lane, B-stack, green-screen, chroma) | [PLAY.md](PLAY.md) then **[docs/06-techniques.md](docs/06-techniques.md)** (what worked r38) before cooking. Then [docs/05-key.md](docs/05-key.md) + [reference/LanePlayer.tsx](reference/LanePlayer.tsx). How-to: [GROK.md](GROK.md). Do **not** recook the citadel hall. Do **not** list `walk-spawn-A`. |
 | they named a **citadel** catalog paint | root [../GROK.md](../GROK.md) — `cook-room` |
 

@@ -30,7 +30,7 @@ Hung B-stack files: [../master/README.md](../master/README.md). Live r38 names:
 
 Kitchen Live may point at these paths the same way citadel Play points at `packs/<id>/`. Do **not** paste the Live URL in chat.
 
-Console teaser (chat media, not a tap) is **not** the master stack: [`stock/biome/preview-loop.mp4`](../../stock/biome/preview-loop.mp4).
+Optional biome preview (archive — **not attached at boot**) is **not** the master stack: [`stock/biome/preview-loop.mp4`](../../stock/biome/preview-loop.mp4). Boot attaches [`stock/citadel/preview-loop.mp4`](../../stock/citadel/preview-loop.mp4) only.
 
 ## Wire
 

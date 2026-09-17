@@ -1,15 +1,15 @@
-# stock/biome — Odyssey console Sprint teaser
+# stock/biome — optional archive (not attached at boot)
 
-Sprint / Biome preview for *play / lance Boltverse Odyssey* (chat media + Play loop). **Not** the hung `/master` stack ([`biome/master/`](../../biome/master/README.md)).
+Sprint / Biome preview kept on disk. **Boot does not attach this file.** Cold-start Welcome attaches **only** [`stock/citadel/preview-loop.mp4`](../citadel/preview-loop.mp4).
 
 | file | what |
 |---|---|
-| `preview-loop.mp4` | seamless 9:16 loop (H264, no audio) — Sprint teaser (~4.3MB) |
+| `preview-loop.mp4` | optional archive (H264) — **not** the Welcome teaser |
 | `preview-first.jpg` | first-frame poster |
 
-**Chat:** attach this mp4 as the Sprint teaser (not a tap / not a hitbox).  
-**Play:** loop forever (`muted playsInline autoPlay loop` + watchdog re-`play()` on `pause` / `ended`).
+**Chat:** do **not** attach this at *play / lance* boot.  
+**Kitchen:** may list this path as optional archive. Keep the files. Do **not** delete.
 
-Binaries are in this tree (same files as Kitchen Live `/stock/biome/`). Do **not** dump the path in a player reply.
+Binaries stay in this tree. Do **not** dump the path in a player reply.
 
-Citadel teaser stays [`stock/citadel/`](../citadel/README.md).
+Sole boot teaser: [`stock/citadel/`](../citadel/README.md).
