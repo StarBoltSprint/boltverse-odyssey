@@ -8,7 +8,8 @@ Do **not** paste that URL in a player reply.
 
 **STOP — HARD SPLIT.** Imagine Agent is obligatoire for STYLE stills when restyling. **NEVER** for Sprint films, empty-plate travel, cutout gallop, or any video. Films = imagine-hooks first-frame + last-frame. Soft KEEP banned.
 
-Read **[PLAY.md](PLAY.md)** before anything else. Key law: **[docs/05-key.md](docs/05-key.md)** (chroma + crown, not luma).
+Read **[PLAY.md](PLAY.md)** before anything else. Key law: **[docs/05-key.md](docs/05-key.md)** (chroma + crown, not luma).  
+Cookbook of what actually worked: **[docs/06-techniques.md](docs/06-techniques.md)**. Pack Live: **[docs/07-pack-live.md](docs/07-pack-live.md)**.
 
 ## Product
 
@@ -89,6 +90,12 @@ Drop PASS files into [master/](master/README.md). Teaser loop for console: [../s
 
 FAIL → keep debug next to the cook (do not Hang). Dual dogs, sit, face, baked path, crawl = FAIL.
 
+A **key** bug (holes, gold pipe, sliced skull, black flash, sticker edge) is a compositor bug — fix [docs/06-techniques.md](docs/06-techniques.md), do **not** recook the dog.
+
+## Pack floor
+
+Every Live drops [../client/pack.js](../client/pack.js). This Live is the central Pack API. [docs/07-pack-live.md](docs/07-pack-live.md). No wallet.
+
 ## Do not
 
 - New grok.me / Vite / wallet / client keys
@@ -97,3 +104,4 @@ FAIL → keep debug next to the cook (do not Hang). Dual dogs, sit, face, baked 
 - Recook citadel `packs/<slot>` because someone said sprint
 - Chat Imagine without real first+last
 - Imagine Agent video
+- Recook to hide a key bug
