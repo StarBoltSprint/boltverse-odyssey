@@ -31,14 +31,14 @@ Two Imagine jobs. Never one mp4 with Bolt painted into the road.
 
 | Layer | Stills | Film |
 |---|---|---|
-| **Road** (master) | empty-plate first + last — **ZERO dog** | `imagineClip` `image` + `last_frame` (distinct) |
+| **Road** (master) | empty-plate first + last — **ZERO dog** | `imagineBiomeClip` `image` + `last_frame` (distinct) |
 | **Bolt cutout** | Bolt mid still (back, lower-third, black/alpha) | gallop loop: first + last of the **same cycle** or a short running pair |
 
 Prompts: [prompts/](prompts/). Law: [docs/01-images.md](docs/01-images.md) · [docs/02-videos.md](docs/02-videos.md).
 
 ```
 # dry thought-queue only — no new grok.me
-# live cook needs XAI_API_KEY + node scripts/imagine-hooks.mjs imagineClip
+# live cook needs XAI_API_KEY + imagineBiomeClip (biome) / imagineClip (hall)
 # drop PASS masters into biome/master/ (see master/README.md)
 ```
 
@@ -61,6 +61,15 @@ ffmpeg -y -sseof -0.12 -i road-N.mp4 -frames:v 1 \
 ```
 
 `last(n)` **file IS** `first(n+1)` for the road chain.
+
+Cousin / hazard plate (bar, arch, puddle):
+
+| swap | first | last |
+|---|---|---|
+| empty → cousin | last(empty) **or** lock still + hazard | — |
+| cousin → empty | — | **first(empty)** so the cut is the same picture |
+
+Chat Imagine has no `last_frame`. Use `imagineBiomeClip` in [../scripts/imagine-hooks.mjs](../scripts/imagine-hooks.mjs).
 
 ## SPEED REF (road — do not soften)
 
@@ -88,6 +97,18 @@ ffmpeg -i in.mp4 -map 0:v:0 \
 ```
 
 No audio. Short GOP so seek-sync does not snap to the previous keyframe.
+
+## Plate speed (travel, not FPS)
+
+FPS = smoothness. Travel = how hard the asphalt rushes. After a cook, measure vs the hung empty plate and time-warp if needed:
+
+```
+python3 scripts/plate-speed.py biome/master/road.mp4
+python3 scripts/plate-speed.py --ref biome/master/road.mp4 biome/master/road-bar.mp4
+python3 scripts/plate-speed.py --match --ref biome/master/road.mp4 biome/master/road-bar.mp4 -o biome/master/road-bar.mp4
+```
+
+`--match` speeds a slow plate up (duration shrinks). It does **not** replace first+last. See [docs/08-plate-speed.md](docs/08-plate-speed.md).
 
 ## Hang
 

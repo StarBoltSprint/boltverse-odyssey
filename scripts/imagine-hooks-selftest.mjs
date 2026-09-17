@@ -20,6 +20,8 @@ import {
   sillTeacherRel,
   spawnStillLine,
   walkClipLine,
+  BIOME_LAW,
+  biomePlateLine,
 } from "./imagine-hooks.mjs";
 import {
   DEST_REL,
@@ -156,6 +158,14 @@ must(!String(stillRefOrder("atA", true, root, { enlarge: true })).includes("exam
 must(stillRefOrder("atA", true, root).join(",") === "spawn,bolt-back.jpg,lock/SEAL-at-a.jpg", "fresh atA refs use SEAL KEEP");
 energyOk(enlargeA, "enlargeA");
 energyOk(enlargeB, "enlargeB");
+
+must(/ZERO dogs/.test(BIOME_LAW) && /ZERO portals/.test(BIOME_LAW), "BIOME_LAW: zero dog, zero portals");
+must(!/German Shepherd, ZERO black/.test(BIOME_LAW), "BIOME_LAW is not HALL_LAW");
+must(/last_frame/.test(biomePlateLine("empty")) && /DISTINCT/.test(biomePlateLine("empty")), "empty plate names distinct last_frame");
+must(/ZERO hazard/.test(biomePlateLine("empty")), "empty plate is not a hazard");
+must(/ONE hazard baked/.test(biomePlateLine("bar")), "bar plate bakes one hazard");
+must(/SAME camera/.test(biomePlateLine("hazard")), "cousin plate same camera");
+must(/ZERO dog/.test(biomePlateLine("bar")), "hazard plate still zero dog");
 
 const dry = spawnSync("node", [join(root, "scripts/cook-room.mjs"), "moss", "--dry-run"], {
   encoding: "utf8",

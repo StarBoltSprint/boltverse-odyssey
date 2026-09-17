@@ -2,7 +2,12 @@
 
 **STOP — HARD SPLIT.** NEVER Imagine Agent / chat Imagine for these clips.
 
-Walks / travel / gallop = `scripts/imagine-hooks.mjs` `imagineClip`: `image` + **`last_frame`**. Chat `imagine_image_to_video` / `imagine_reference_to_video` have **no** `last_frame` — banned.
+Walks / travel / gallop / **cousin plates** = `scripts/imagine-hooks.mjs`:
+
+- Hall: `imagineClip` — `image` + **`last_frame`**
+- Biome road: `imagineBiomeClip` — `image` + **`last_frame`** (distinct, ZERO dog)
+
+Chat `imagine_image_to_video` / `imagine_reference_to_video` have **no** `last_frame` — banned.
 
 ## Road (empty plate)
 
@@ -15,6 +20,27 @@ First still ≠ last still. World advanced: what he passed is gone.
 Paste: [../prompts/video-empty-plate.txt](../prompts/video-empty-plate.txt).
 
 Chain: extract last frame → that file **is** `image` of the next road.
+
+```
+ffmpeg -y -sseof -0.12 -i road-N.mp4 -frames:v 1 \
+  -vf "scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280" \
+  road-N-last.jpg
+```
+
+Or `extractLastFrame(src, dest)` from the hook.
+
+## Cousin plate (bar / arch / puddle)
+
+Same camera, same crop. Hazard **baked in** the pixels (wet contact), not a sticker.
+
+| | first | last |
+|---|---|---|
+| empty → cousin | last(empty) or lock+hazard | — |
+| cousin → empty | — | **first(empty)** |
+
+`imagineBiomeClip({ kind: "hazard", first, last, dest, seconds: 6 })`.
+
+Then match travel to the empty plate: [08-plate-speed.md](08-plate-speed.md).
 
 ## Bolt cutout (gallop)
 

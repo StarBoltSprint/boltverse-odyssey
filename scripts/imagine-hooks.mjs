@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// xAI Imagine API. Hall films = image + last_frame (walks / breaths). Not Imagine Agent. Not Grok chat.
-// Needs XAI_API_KEY.
+// xAI Imagine API. Hall films AND biome plates = image + last_frame.
+// Not Imagine Agent. Not Grok chat. Needs XAI_API_KEY.
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, extname, join } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -458,3 +458,123 @@ export async function imagineClip({ root, slot, kind, first, last, dest, seconds
   encodePlate(raw, dest);
   return dest;
 }
+
+/** Biome / Sprint empty-plate + cousin plates. ZERO dog. Distinct last_frame. */
+export const BIOME_LAW = [
+  "Photoreal vertical 9:16, 720x1280. Locked-off camera.",
+  "MAX forward travelling — world rushes HARD at the camera. Sprint feel baked IN the clip.",
+  "ZERO dogs. ZERO German Shepherds. ZERO animals. ZERO people.",
+  "ZERO luminous floor paths. ZERO lightning on ground. ZERO Y-fork. ZERO portals. ZERO HUD. ZERO text.",
+  "CLEAR empty center corridor. NEVER pan, tilt, zoom, or dolly.",
+].join(" ");
+
+export function biomePlateLine(kind) {
+  const travel = [
+    "First frame is the start still. Last frame is last_frame — DISTINCT, world ADVANCED.",
+    "What the camera passed is gone. NEVER a still. NEVER a crawl.",
+    "Speed must come from the cook; playbackRate later is ~1.0–1.2 only.",
+  ].join(" ");
+  if (kind === "hazard" || kind === "bar") {
+    return [
+      travel,
+      "SAME camera, SAME vanishing point, SAME crop as the empty road.",
+      "ONE hazard baked into the plate (steel barrier / arch / puddle) — not a sticker overlay.",
+      "Hazard has wet-road contact and reflections. ZERO dog.",
+    ].join(" ");
+  }
+  return travel + " Empty road. ZERO hazard unless this is a cousin plate.";
+}
+
+export function extractLastFrame(src, dest) {
+  const r = spawnSync(
+    "ffmpeg",
+    [
+      "-y",
+      "-sseof",
+      "-0.12",
+      "-i",
+      src,
+      "-frames:v",
+      "1",
+      "-vf",
+      "scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280",
+      dest,
+    ],
+    { encoding: "utf8" },
+  );
+  if (r.status !== 0) throw new Error("extract last frame failed");
+  return dest;
+}
+
+function encodeBiomeMp4(src, dest) {
+  const vf = "scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280";
+  const r = spawnSync(
+    "ffmpeg",
+    [
+      "-y",
+      "-i",
+      src,
+      "-vf",
+      vf,
+      "-c:v",
+      "libx264",
+      "-pix_fmt",
+      "yuv420p",
+      "-g",
+      "15",
+      "-keyint_min",
+      "15",
+      "-sc_threshold",
+      "0",
+      "-an",
+      "-movflags",
+      "+faststart",
+      dest,
+    ],
+    { encoding: "utf8" },
+  );
+  if (r.status !== 0) throw new Error("ffmpeg biome plate failed");
+}
+
+/**
+ * Sprint / biome plate. Chat Imagine is banned — this is the last_frame cable.
+ *
+ * empty: first = lock still, last = world-advanced still (distinct).
+ * cousin/hazard: first = last(empty) or lock+hazard, last = first(empty) so the swap back is seamless.
+ */
+export async function imagineBiomeClip({
+  first,
+  last,
+  dest,
+  seconds = 6,
+  kind = "empty",
+  paint = "",
+  promptFile,
+}) {
+  if (!first || !last) throw new Error("biome plate needs first + last_frame");
+  if (last === first) throw new Error("biome last_frame must be distinct");
+  let paste = "";
+  if (promptFile && existsSync(promptFile)) {
+    paste = readFileSync(promptFile, "utf8").trim();
+  }
+  const prompt = [BIOME_LAW, biomePlateLine(kind), paste, paint].filter(Boolean).join(" ");
+  const body = {
+    model: VIDEO_MODEL,
+    prompt,
+    duration: seconds,
+    aspect_ratio: "9:16",
+    resolution: "720p",
+    image: { url: dataUri(first) },
+    last_frame: { url: dataUri(last) },
+  };
+  const j = await api("/videos/generations", body);
+  let url = j.url || j.video?.url || j.data?.[0]?.url;
+  const vid = j.request_id || j.id;
+  if (!url && vid) url = await pollVideo(vid);
+  if (!url) throw new Error("no video url");
+  const raw = dest + ".raw.mp4";
+  await download(url, raw);
+  encodeBiomeMp4(raw, dest);
+  return dest;
+}
+
