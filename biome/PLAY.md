@@ -39,6 +39,7 @@ Do not mix stacks in one play. Do not slide a whole mid clip sideways and call t
 | Clock | **Road is master.** Cutout runs on its own loop; do not `kick()` to 0 on swipe. |
 | Key | Canvas: Vlahos `greenness = G − max(R,B)` + despill + 1px feather + **crown sat kill** (pipe). `#bolt-luma` SVG is **retired**. [docs/05-key.md](docs/05-key.md). |
 | VER | Cache-bust `/master/road.mp4?v=r38` + `/master/bolt.mp4?v=r38`. |
+| Masters | In-repo under [master/](master/README.md) — r38 KEEP `road.mp4` + `bolt.mp4` + `road.jpg`. Do **not** substitute [`stock/biome/`](../stock/biome/README.md) teasers. |
 | Loop | Dual road + watchdog re-`play()`. Never `clearRect` the plate. |
 | Audio | Films stay **`-an`**. No wallet. No API keys in the client. |
 | Chrome | No TAP / NOW. No fill-bar. No cyan drawbox. No HUD. Hits are on the 9:16 picture. |
