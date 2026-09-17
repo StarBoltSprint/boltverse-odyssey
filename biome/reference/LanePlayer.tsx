@@ -19,11 +19,20 @@ declare global {
   }
 }
 
-const VER = "r25spawn";
+const VER = "r35war";
 const PLATES = [
   `/master/road.mp4?v=${VER}`,
   `/master/road-bar.mp4?v=${VER}`,
   `/master/road-blast.mp4?v=${VER}`,
+  `/master/road-car.mp4?v=${VER}`,
+  `/master/road-gap.mp4?v=${VER}`,
+  `/master/road-show.mp4?v=${VER}`,
+  `/master/road-duel.mp4?v=${VER}`,
+  `/master/road-gate.mp4?v=${VER}`,
+  `/master/road-night.mp4?v=${VER}`,
+  `/master/road-war1.mp4?v=${VER}`,
+  `/master/road-war2.mp4?v=${VER}`,
+  `/master/road-war3.mp4?v=${VER}`,
 ];
 const ROAD_SRC = PLATES[0]!;
 const BOLT_MP4 = `/master/bolt.mp4?v=${VER}`;
@@ -31,23 +40,34 @@ const ROAD_POSTER = `/master/road.jpg?v=${VER}`;
 
 const SWIPE_PX = 12;
 const MOVE_MS = 220;
-const SHIFT = 30;
+const SHIFT = 42;
 const JUMP_MS = 520;
 const JUMP_PEAK = 0.2;
 const WATCHDOG_MS = 400;
 const SHOW_HINT = true;
+const BOLT_SCALE = [1, 1, 1, 0.97, 0.96, 0.9, 0.92, 0.9, 0.9, 0.9, 0.9, 0.9];
 
 type Hazard = {
   lanes: readonly LaneI[];
   jumpClears: boolean;
   t0: number;
   t1: number;
+  tPass: number;
 };
 
 const HAZARDS: (Hazard | null)[] = [
   null,
-  { lanes: [0], jumpClears: true, t0: 0.5, t1: 0.74 },
-  { lanes: [0], jumpClears: true, t0: 0.8, t1: 0.95 },
+  { lanes: [0], jumpClears: true, t0: 0.4, t1: 0.56, tPass: 0.52 },
+  { lanes: [0], jumpClears: true, t0: 0.78, t1: 0.93, tPass: 0.88 },
+  { lanes: [-1, 0], jumpClears: true, t0: 0.74, t1: 0.88, tPass: 0.84 },
+  { lanes: [-1, 1], jumpClears: true, t0: 0.62, t1: 0.8, tPass: 0.76 },
+  { lanes: [-1, 1], jumpClears: true, t0: 0.56, t1: 0.82, tPass: 0.78 },
+  { lanes: [-1, 0], jumpClears: true, t0: 0.76, t1: 0.92, tPass: 0.86 },
+  null,
+  { lanes: [-1, 1], jumpClears: true, t0: 0.56, t1: 0.84, tPass: 0.8 },
+  null,
+  null,
+  { lanes: [-1], jumpClears: true, t0: 0.62, t1: 0.82, tPass: 0.76 },
 ];
 
 function visualLane(x: number): LaneI {
@@ -298,6 +318,9 @@ export function LanePlayer() {
   const trauma = useRef(0);
   const hitFlash = useRef(0);
   const blocked = useRef(false);
+  const passed = useRef(false);
+  const hitPlate = useRef(-1);
+  const scaleRef = useRef(1);
   const [lane, setLane] = useState<LaneI>(0);
   const [hint, setHint] = useState(SHOW_HINT);
   const reduced = useRef(false);
@@ -544,12 +567,18 @@ export function LanePlayer() {
         const hz = HAZARDS[plateRef.current] ?? null;
         let onBox = false;
         if (hz && road && road.duration > 0.4) {
+          if (hitPlate.current !== plateRef.current) {
+            hitPlate.current = plateRef.current;
+            passed.current = false;
+          }
           const u = road.currentTime / road.duration;
           const inWin = u >= hz.t0 && u <= hz.t1;
           const lane = visualLane(xRef.current);
           const onIt = hz.lanes.includes(lane);
           const cleared = hz.jumpClears && isAirborne(jumpAt.current, now);
-          onBox = inWin && onIt && !cleared;
+          if (u >= hz.tPass && !onIt) passed.current = true;
+          if (blocked.current && !onIt) passed.current = true;
+          onBox = inWin && onIt && !cleared && !passed.current;
         }
         setBlocked(onBox);
       }
@@ -579,15 +608,23 @@ export function LanePlayer() {
         const cw = canvas.width;
         const ch = canvas.height;
         const paws = pawsRef.current;
-        const feet = paws.y || ch * 0.86;
-        const pw = Math.max(48, paws.x1 - paws.x0);
-        const cx = dx + (paws.x0 + paws.x1) / 2;
+        const want = BOLT_SCALE[plateRef.current] ?? 1;
+        scaleRef.current += (want - scaleRef.current) * 0.14;
+        const s = scaleRef.current;
+        const dw = cw * s;
+        const dh = ch * s;
+        const destX = dx + (cw - dw) / 2;
+        const pawY = paws.y || ch * 0.86;
         let jy = 0;
         if (jumpAt.current) {
           const t = (performance.now() - jumpAt.current) / JUMP_MS;
           if (t >= 1) jumpAt.current = 0;
           else jy = Math.sin(Math.min(1, t) * Math.PI) * ch * JUMP_PEAK;
         }
+        const destY = pawY * (1 - s) - jy;
+        const feet = destY + pawY * s;
+        const pw = Math.max(48, (paws.x1 - paws.x0) * s);
+        const cx = destX + ((paws.x0 + paws.x1) / 2) * s;
         ctx.fillStyle = "rgba(8,6,14,0.2)";
         ctx.beginPath();
         ctx.ellipse(cx, feet + 6, pw * 0.62 * (jy ? 0.7 : 1), 8, 0, 0, Math.PI * 2);
@@ -596,7 +633,7 @@ export function LanePlayer() {
         ctx.beginPath();
         ctx.ellipse(cx, feet + 3, pw * 0.4 * (jy ? 0.7 : 1), 4, 0, 0, Math.PI * 2);
         ctx.fill();
-        ctx.drawImage(boltHold, dx, -jy, cw, ch);
+        ctx.drawImage(boltHold, destX, destY, dw, dh);
       }
       ctx.restore();
 

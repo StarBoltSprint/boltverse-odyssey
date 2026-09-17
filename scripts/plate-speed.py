@@ -175,11 +175,11 @@ def main() -> None:
         elif factor is None:
             factor = (ref["px_s"] / plate["px_s"]) if plate["px_s"] > 1 else 1.0
             out["mode"] = "px_s"
-        factor = max(0.45, min(2.4, float(factor)))
+        factor = max(0.45, min(3.2, float(factor)))
         out["factor"] = round(factor, 4)
         out["note"] = "factor>1 speeds the plate up (shorter). This is travel, not FPS."
     elif factor is not None:
-        factor = max(0.45, min(2.4, float(factor)))
+        factor = max(0.45, min(3.2, float(factor)))
         out["factor"] = round(factor, 4)
         out["mode"] = "forced"
         out["note"] = "factor>1 speeds the plate up (shorter). This is travel, not FPS."

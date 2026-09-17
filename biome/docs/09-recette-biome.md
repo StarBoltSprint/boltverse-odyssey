@@ -212,6 +212,18 @@ Cuire **une** plaque cousin à la fois. Pas le tas spray + barre + cratère d’
 
 ---
 
+## 15 s déjà rapides, puis horloge
+
+Cuire **15 s** avec SPEED LAW (rush CONSTANT, jamais de ralenti au crash).  
+Si Imagine a déjà le bon px/s → `--match` léger, la plaque **dure**.  
+Si elle est plus lente que empty → `--duration-match` sur l’horloge (5.75 s). Ne pas laisser un cousin à 12 s à côté d’un empty à 5.75 s.
+
+Transition de biome : `first` = last du biome A, `last` = still du biome B. Dealer : A → gate → B. Ciel / vaisseaux = **pas** de hitbox sol.
+
+Hitbox = **voie + fenêtre courte au contact des pattes**. Loin / ciel / déjà passé = pas de freeze.
+
+---
+
 ## Ce qui a foiré (ne pas refaire)
 
 | Tentative | Pourquoi ça meurt |
@@ -236,8 +248,15 @@ Cuire **une** plaque cousin à la fois. Pas le tas spray + barre + cratère d’
 | `biome/prompts/video-empty-plate.txt` | rush 10 s constant |
 | `biome/prompts/video-hazard-plate.txt` | SPAWN + WIDTH (court) |
 | `biome/prompts/image-hazard-plate.txt` | still 1–2 voies |
-| `biome/master/road.mp4` | horloge |
+| `biome/master/road.mp4` | horloge dusk |
 | `biome/master/road-bar.mp4` | jersey centre |
 | `biome/master/road-blast.mp4` | météore qui **approche** |
+| `biome/master/road-car.mp4` | voiture gauche |
+| `biome/master/road-gap.mp4` | L+R, centre libre |
+| `biome/master/road-show.mp4` | spectacle dusk |
+| `biome/master/road-duel.mp4` | duel + crash L+C |
+| `biome/master/road-gate.mp4` | dusk → nuit (décor ciel) |
+| `biome/master/road-night.mp4` | action nuit |
+| `biome/master/road-war1.mp4` … `road-war3.mp4` | biome guerre |
 | `biome/master/bolt.mp4` | cutout |
-| `biome/reference/LanePlayer.tsx` | B-stack + jump + boîte |
+| `biome/reference/LanePlayer.tsx` | B-stack + jump + boîte + scale lissée |
