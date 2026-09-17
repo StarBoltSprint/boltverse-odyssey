@@ -306,8 +306,12 @@ must(/stock\/citadel\/preview-loop/.test(body("GROK.md")), "GROK.md: Citadel tea
 must(/stock\/citadel\/preview-loop/.test(body("README.md")), "README.md: Citadel teaser = stock/citadel/preview-loop");
 must(/stock\/citadel\/preview-loop/.test(body("START.md")), "START.md: Citadel teaser = stock/citadel/preview-loop");
 must(/stock\/citadel\/preview-loop/.test(agents), "AGENTS.md: Citadel teaser = stock/citadel/preview-loop");
-must(/stock\/biome\/preview-loop/.test(body("GROK.md")) && /stock\/biome\/preview-loop/.test(body("README.md")), "GROK.md + README.md: Biome teaser = biome preview-loop");
-must(/stock\/biome\/preview-loop/.test(body("START.md")) && /stock\/biome\/preview-loop/.test(agents), "START.md + AGENTS.md: Biome teaser = biome preview-loop");
+must(/stock\/biome\/preview-loop/.test(body("GROK.md")) && /stock\/biome\/preview-loop/.test(body("README.md")), "GROK.md + README.md: biome preview stays listed (optional archive)");
+must(/stock\/biome\/preview-loop/.test(body("START.md")) && /stock\/biome\/preview-loop/.test(agents), "START.md + AGENTS.md: biome preview stays listed (optional archive)");
+must(/not attached at boot/.test(body("GROK.md")) && /not attached at boot/.test(body("README.md")), "GROK.md + README.md: biome preview not attached at boot");
+must(/not attached at boot/.test(body("START.md")) && /not attached at boot/.test(agents), "START.md + AGENTS.md: biome preview not attached at boot");
+must(/sole/.test(body("stock/citadel/README.md")) && /cold-start/.test(body("stock/citadel/README.md")), "stock/citadel README: sole cold-start teaser");
+must(/not attached at boot/.test(body("stock/biome/README.md")), "stock/biome README: not attached at boot");
 must(!/Do \*\*not\*\* commit binaries here/.test(body("GROK.md")), "GROK.md: Citadel stock binaries are committed");
 must(!/Do \*\*not\*\* add binaries to this repo/.test(body("README.md")), "README.md: Citadel stock binaries are committed");
 must(!/no binaries in this repo/.test(agents), "AGENTS.md: Citadel stock binaries are committed");
@@ -356,8 +360,11 @@ function assertPlayerBoot(label, text) {
   must(/do not read aloud/i.test(text), label + ": kitchen = do not read aloud");
   must(/Never say|never dump kitchen|Never dump kitchen|no raw URL dump/.test(text), label + ": bans kitchen dump");
   must(/raw\.githubusercontent\.com/.test(text), label + ": bans raw.githubusercontent.com");
-  must(/attach 2/i.test(text) && /teasers as (chat )?media/.test(text), label + ": attach 2 teasers as media");
-  must(/as chat media/.test(text), label + ": attach teasers as chat media");
+  must(/attach \*\*1\*\*|attach 1 /i.test(text) && /as (chat )?media/.test(text), label + ": attach 1 teaser as media");
+  must(/stock\/citadel\/preview-loop/.test(text), label + ": boot teaser is stock/citadel/preview-loop");
+  must(!/attach 2/i.test(text) && !/2 teasers/.test(text) && !/2 stock/.test(text) && !/2 mp4 teasers/.test(text), label + ": no 2-teaser boot");
+  must(!/Citadel \+ Sprint/.test(text), label + ": no Citadel + Sprint pair");
+  must(/as chat media/.test(text), label + ": attach teaser as chat media");
   must(/Prefer GitHub for boot/.test(text) && /Bot OK if useful/.test(text), label + ": prefer GitHub for boot; Bot OK if useful");
   must(!/Never invoke a Grok Bot connector/i.test(text) && !/do not invoke a Grok Bot connector/i.test(text) && !/GitHub \+ Build console only/.test(text), label + ": no Bot-connector ban");
   must(/teasers are on/.test(text) && /Do \*\*not\*\* narrate|do not narrate|Never say/.test(text), label + ": bans narrating teasers are on");

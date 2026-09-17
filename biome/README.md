@@ -37,7 +37,7 @@ This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play
 | [reference/lane-css.css](reference/lane-css.css) | 9:16 B-stack CSS |
 | [master/README.md](master/README.md) | hung road + cutout master |
 | [../client/pack.js](../client/pack.js) | Pack client floor (boot + 30s heartbeat) |
-| [stock/biome/](../stock/biome/README.md) | console Sprint teaser (`preview-loop.mp4`) |
+| [stock/biome/](../stock/biome/README.md) | optional archive (`preview-loop.mp4`) — **not attached at boot** |
 
 Citadel cook is unchanged: [../COOKROOM.md](../COOKROOM.md) · [../AGENTS.md](../AGENTS.md).
 

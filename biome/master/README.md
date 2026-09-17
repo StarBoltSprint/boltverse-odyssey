@@ -14,6 +14,6 @@ Drop PASS encodes here after [../GROK.md](../GROK.md). Encode: 720×1280, H264, 
 
 If these files are missing from git (LFS / not cooked yet): **do not invent them.** Cook with [../prompts/](../prompts/) + imagine-hooks `image` + `last_frame`, or play stock Sprint in-app.
 
-Console teasers are **not** this stack — they live at [`stock/biome/`](../../stock/biome/README.md).
+The optional biome preview (archive — **not attached at boot**) is **not** this stack — it lives at [`stock/biome/`](../../stock/biome/README.md). Boot teaser = [`stock/citadel/`](../../stock/citadel/README.md).
 
 Do not Hang a dual-dog road. Do not Hang a sitting cutout.
