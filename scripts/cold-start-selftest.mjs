@@ -304,14 +304,17 @@ must(/displayName`? first/.test(customize) && /then registry/.test(customize) &&
 must(/Hard ban/.test(customize) && /runner/.test(customize) && /display name\/handle/.test(customize), "GROK.md Customize: hard ban runner when display name/handle exists");
 must(/Beat 3/.test(customize) && /in-chat playable preview preferred/.test(customize) && /silently open/.test(customize), "GROK.md Customize: Beat 3 Build play surface");
 must(/Chat Imagine/.test(customize) && /Chat file chip alone/.test(customize) && /FAIL for Beat 3/.test(customize), "GROK.md Customize: Chat Imagine / Chat file chip alone = FAIL for Beat 3");
-must(/Beat 3 kitchen identity/.test(customize) && /boltverse-odysseyyy\.grok\.me/.test(customize), "GROK.md Customize: Beat 3 kitchen identity is odysseyyy Live");
+must(/Beat 3 kitchen identity/.test(customize) && /boltverse-odysseyyyy\.grok\.me/.test(customize), "GROK.md Customize: Beat 3 kitchen identity is odysseyyyy Live");
 must(/that Live/.test(customize), "GROK.md Customize: attach/open that Live");
 must(/when attach works/.test(customize), "GROK.md Customize: no URL paste when attach works");
 must(/Hard bans at boot/.test(customize), "GROK.md Customize: Hard bans at boot");
 must(/\*\.hades-www\.grok-sandbox\.com/.test(customize), "GROK.md Customize: bans *.hades-www.grok-sandbox.com");
 must(/random sandbox host/.test(customize), "GROK.md Customize: bans any random sandbox host");
 must(/houla/.test(customize) && /olive/.test(customize) && /frost-only/.test(customize), "GROK.md Customize: bans houla / olive / frost-only as Sprint Beat 3");
-must(/remix/.test(customize) && /odysseyyy already exists/.test(customize), "GROK.md Customize: bans remix when odysseyyy exists");
+must(/remix/.test(customize) && /odysseyyyy already exists/.test(customize), "GROK.md Customize: bans remix when odysseyyyy exists");
+must(/old three-y/.test(customize) && /boltverse-odysseyyy\.grok\.me/.test(customize) && /superseded/.test(customize) && /do not open it for boot/.test(customize), "GROK.md Customize: bans old three-y odysseyyy as Beat 3 Sprint");
+must(/https:\/\/boltverse-odysseyyyy\.grok\.me/.test(customize), "GROK.md Customize: Pack Play / Beat 3 Live is odysseyyyy (4y)");
+must(!/https:\/\/boltverse-odysseyyy\.grok\.me/.test(customize), "GROK.md Customize: no 3y Pack Play URL");
 must(!/file chip is enough|file-chip success|Chat file chip.*PASS/i.test(customize), "GROK.md Customize: no Chat-only file-chip success path");
 must(existsSync(join(root, "stock/citadel/preview-loop.mp4")), "stock/citadel/preview-loop.mp4 present");
 must(existsSync(join(root, "stock/citadel/preview-first.jpg")), "stock/citadel/preview-first.jpg present");
@@ -362,7 +365,8 @@ function assertSpokenWelcome(label, text, newHeading, returnHeading) {
   must(/welcome back/.test(ret), label + ": Return EN");
   must(/Powered by xAI & YOU\./.test(ret) && /Ready to sprint\?/.test(ret), label + ": Return has Powered + Ready to sprint");
   must(!/heart-giant-plum-lotus/.test(neu) && !/heart-giant-plum-lotus/.test(ret), label + ": Welcome/Return have no old Play URL");
-  must(!/boltverse-odysseyyy/.test(neu) && !/boltverse-odysseyyy/.test(ret), label + ": Welcome/Return have no Play URL");
+  must(!/boltverse-odysseyyyy/.test(neu) && !/boltverse-odysseyyyy/.test(ret), label + ": Welcome/Return have no Play URL");
+  must(!/boltverse-odysseyyy\.grok\.me/.test(neu) && !/boltverse-odysseyyy\.grok\.me/.test(ret), label + ": Welcome/Return have no old 3y Play URL");
   must(!/Play →/.test(neu) && !/Play →/.test(ret), label + ": Welcome/Return have no Play →");
   must(!/Say citadel or biome/.test(neu) && !/citadel or biome/i.test(neu), label + ": Welcome has no Citadel/Biome choice");
   must(!/teasers are on/.test(neu) && !/teasers are on/.test(ret), label + ": Welcome/Return do not narrate teasers are on");
@@ -396,7 +400,10 @@ function assertPlayerBoot(label, text) {
   must(/random sandbox host/.test(text), label + ": bans any random sandbox host");
   must(/heart-giant/.test(text) && /houla/.test(text) && /olive/.test(text) && /frost-only/.test(text), label + ": bans heart-giant / houla / olive / frost-only as Sprint Beat 3");
   must(/as Sprint Beat 3/.test(text), label + ": those aliases are not Sprint Beat 3");
-  must(/scaffold/.test(text) && /remix/.test(text) && /odysseyyy already exists/.test(text), label + ": bans scaffold/remix when odysseyyy exists");
+  must(/scaffold/.test(text) && /remix/.test(text) && /odysseyyyy already exists/.test(text), label + ": bans scaffold/remix when odysseyyyy exists");
+  must(/old three-y/.test(text) && /boltverse-odysseyyy\.grok\.me/.test(text) && /superseded/.test(text) && /do not open it for boot/.test(text), label + ": bans old three-y odysseyyy as Beat 3 Sprint");
+  must(/https:\/\/boltverse-odysseyyyy\.grok\.me/.test(text), label + ": Pack Play / Beat 3 Live is odysseyyyy (4y)");
+  must(!/https:\/\/boltverse-odysseyyy\.grok\.me/.test(text), label + ": no 3y Pack Play URL");
   must(!/any sandbox slug/i.test(text), label + ": kitchen boot does not allow any sandbox slug");
   must(!/le-wild/i.test(text), label + ": kitchen boot does not name le-wild carousel host");
   const sandboxSlugs = [...text.matchAll(/\b([a-z0-9][a-z0-9-]*)\.hades-www\.grok-sandbox\.com\b/gi)].map((m) => m[1].toLowerCase());
@@ -404,7 +411,7 @@ function assertPlayerBoot(label, text) {
   must(/\*\.grok\.me|No `grok\.me` paste|no `grok\.me` paste/.test(text), label + ": no pasted *.grok.me in player reply");
   must(!/\+ ask \*\*Citadel\*\* or \*\*Biome\*\*/.test(text) && !/\+ ask Citadel or Biome/.test(text) && !/\n3\. Ask \*\*Citadel\*\* or \*\*Biome\*\*/.test(text), label + ": no Citadel/Biome choice lecture");
   must(/No Citadel\/Biome choice|Do \*\*not\*\* ask Citadel or Biome|do not ask Citadel or Biome/.test(text), label + ": forbids Citadel/Biome choice lecture");
-  must(/kitchen only|Pack Play URL is kitchen-only|do not read aloud/i.test(text) && /boltverse-odysseyyy\.grok\.me/.test(text), label + ": Pack Play URL is kitchen-only");
+  must(/kitchen only|Pack Play URL is kitchen-only|do not read aloud/i.test(text) && /boltverse-odysseyyyy\.grok\.me/.test(text), label + ": Pack Play URL is kitchen-only");
   const kitchenPlay = text.replace(/\(supersedes https:\/\/heart-giant-plum-lotus\.grok\.me\)/g, "");
   must(!/Pack Play[^\n]*https:\/\/heart-giant-plum-lotus\.grok\.me/.test(kitchenPlay), label + ": heart-giant is not the active Pack Play URL");
   must(/registry\.json/.test(text), label + ": fetch registry.json for live Pack count");
@@ -445,10 +452,14 @@ must(!/Play → https:\/\/heart-giant-plum-lotus\.grok\.me/.test(body("START.md"
 must(!/Play → https:\/\/heart-giant-plum-lotus\.grok\.me/.test(body("GROK.md")), "GROK.md: no spoken Play → old URL form");
 must(!/Play → https:\/\/heart-giant-plum-lotus\.grok\.me/.test(body("README.md")), "README.md: no spoken Play → old URL form");
 must(!/Play → https:\/\/heart-giant-plum-lotus\.grok\.me/.test(agents), "AGENTS.md: no spoken Play → old URL form");
-must(!/Play → https:\/\/boltverse-odysseyyy\.grok\.me/.test(body("START.md")), "START.md: no spoken Play → URL form");
-must(!/Play → https:\/\/boltverse-odysseyyy\.grok\.me/.test(body("GROK.md")), "GROK.md: no spoken Play → URL form");
-must(!/Play → https:\/\/boltverse-odysseyyy\.grok\.me/.test(body("README.md")), "README.md: no spoken Play → URL form");
-must(!/Play → https:\/\/boltverse-odysseyyy\.grok\.me/.test(agents), "AGENTS.md: no spoken Play → URL form");
+must(!/Play → https:\/\/boltverse-odysseyyyy\.grok\.me/.test(body("START.md")), "START.md: no spoken Play → URL form");
+must(!/Play → https:\/\/boltverse-odysseyyyy\.grok\.me/.test(body("GROK.md")), "GROK.md: no spoken Play → URL form");
+must(!/Play → https:\/\/boltverse-odysseyyyy\.grok\.me/.test(body("README.md")), "README.md: no spoken Play → URL form");
+must(!/Play → https:\/\/boltverse-odysseyyyy\.grok\.me/.test(agents), "AGENTS.md: no spoken Play → URL form");
+must(!/Play → https:\/\/boltverse-odysseyyy\.grok\.me/.test(body("START.md")), "START.md: no spoken Play → old 3y URL form");
+must(!/Play → https:\/\/boltverse-odysseyyy\.grok\.me/.test(body("GROK.md")), "GROK.md: no spoken Play → old 3y URL form");
+must(!/Play → https:\/\/boltverse-odysseyyy\.grok\.me/.test(body("README.md")), "README.md: no spoken Play → old 3y URL form");
+must(!/Play → https:\/\/boltverse-odysseyyy\.grok\.me/.test(agents), "AGENTS.md: no spoken Play → old 3y URL form");
 must(!/Ton profil Pack/.test(body("START.md")) && !/bon retour/.test(body("START.md")) && !/Dis citadel/.test(body("START.md")), "START.md: no French Welcome");
 must(!/Ton profil Pack/.test(body("GROK.md")) && !/bon retour/.test(body("GROK.md")) && !/Dis citadel/.test(body("GROK.md")), "GROK.md: no French Welcome");
 must(!/Ton profil Pack/.test(body("README.md")) && !/bon retour/.test(body("README.md")), "README.md: no French Welcome");
@@ -460,5 +471,24 @@ must(/Not Imagine Agent/.test(hooks) && /last_frame/.test(hooks), "imagine-hooks
 const cookRoomJs = body("scripts/cook-room.mjs");
 must(/never Imagine Agent video/.test(cookRoomJs), "cook-room.mjs: never Imagine Agent video");
 must(/BANNED for restyle/.test(cookRoomJs), "cook-room.mjs: imagineStill BANNED for restyle");
+
+const biomeKitchen = [
+  "biome/CONSOLE.md",
+  "biome/GROK.md",
+  "biome/README.md",
+  "biome/docs/07-pack-live.md",
+];
+for (const rel of biomeKitchen) {
+  const text = body(rel);
+  must(/https:\/\/boltverse-odysseyyyy\.grok\.me/.test(text), rel + ": Pack Play / Live is odysseyyyy (4y)");
+  must(!/https:\/\/boltverse-odysseyyy\.grok\.me/.test(text), rel + ": no 3y Pack Play URL");
+  must(/old three-y/.test(text) && /boltverse-odysseyyy\.grok\.me/.test(text) && /superseded/.test(text) && /do not open it for boot/.test(text), rel + ": bans old three-y odysseyyy as Beat 3 Sprint");
+}
+
+const kitchenDocs = ["README.md", "START.md", "GROK.md", "AGENTS.md", ...biomeKitchen];
+for (const rel of kitchenDocs) {
+  must(!/https:\/\/boltverse-odysseyyy\.grok\.me/.test(body(rel)), rel + ": zero 3y Pack Play https URL");
+  must(/https:\/\/boltverse-odysseyyyy\.grok\.me/.test(body(rel)), rel + ": Beat 3 / Pack Play https is 4y");
+}
 
 console.log("COLD-START PASS");

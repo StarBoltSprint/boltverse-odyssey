@@ -4,7 +4,7 @@
 
 [`StarBoltSprint/bolt-lane-recipe`](https://github.com/StarBoltSprint/bolt-lane-recipe) may remain as a private **mirror / archive**. Cook biome **here**.
 
-This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play = native Grok Build game console (in-app). Kitchen Live stays https://boltverse-odysseyyy.grok.me (`VER = r38`).
+This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play = native Grok Build game console (in-app). Kitchen Live stays https://boltverse-odysseyyyy.grok.me (`VER = r38`). Never open old three-y `boltverse-odysseyyy.grok.me` as Beat 3 Sprint (superseded — do not open it for boot).
 
 ## Engine lock (read PLAY first)
 
