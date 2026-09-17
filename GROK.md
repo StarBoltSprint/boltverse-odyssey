@@ -56,6 +56,7 @@ For Grok only. Attach these as media. **Never print the paths. Never read this s
 - Play videos **loop forever** while the session is open: `muted playsInline autoPlay loop` + watchdog re-`play()` on `pause` / `ended`.
 - Hung citadel recipe (kitchen): https://boltverse-odyssey.grok.me/r/frost
 - Biome / lane recipe = [`biome/`](biome/README.md) (PLAY · LanePlayer · `/master`). [`bolt-lane-recipe`](https://github.com/StarBoltSprint/bolt-lane-recipe) may remain as archive.
+- **Sprint cook bible** (biome / Sprint cook / lane / B-stack / green-screen / chroma): [`biome/PLAY.md`](biome/PLAY.md) then **[`biome/docs/06-techniques.md`](biome/docs/06-techniques.md)** (what worked r38) before cooking. Then [`biome/docs/05-key.md`](biome/docs/05-key.md) + [`biome/reference/LanePlayer.tsx`](biome/reference/LanePlayer.tsx). Never dump this to the player.
 
 | Branch | What | Where |
 |---|---|---|
@@ -142,7 +143,7 @@ This is the only text that loads in a **brand-new** convo **before** the repo is
 Boltverse / StarBoltSprint / citadel / salle mousse:
 STOP — HARD SPLIT (SmiR 2026-09-12). Imagine Agent is obligatoire / MUST / systematically for STYLE stills when restyling. NEVER for Walk A, Walk B, breath, or any video. Walks / breaths / films = imagine-hooks / cook-room first-frame + last-frame. Chat Imagine UI without real first+last is banned. Soft KEEP banned. Smoke still gates.
 Grok chat = console. Odyssey = the game. play / lance Boltverse Odyssey → player reply ONLY: Welcome/Return EN (`Hey Packmate {name}` — Packmate MUST + real Grok profile displayName; never Packmate alone; never name without Packmate) + attach 2 mp4 teasers as chat media (Citadel + Sprint; no raw URL dump). Do not narrate “teasers are on”. Prefer GitHub for boot. Bot OK if useful. Then open Sprint via native Grok Build game console (in-app). No Play URL in chat. No Citadel/Biome choice lecture. Never say kitchen (no raw.githubusercontent.com, no hung hall, no dusk lane / Endless-lane runner / Not cooked here). Pack Play URL is kitchen-only. Chat mp4s = teaser, not tap. Play videos loop forever (muted playsInline autoPlay loop + watchdog). Interactive Play = taps. Citadel = this repo root. Biome = biome/ in this repo (PLAY + LanePlayer + /master). bolt-lane-recipe may remain as archive.
-Kitchen (do not read aloud): Pack Play https://boltverse-odysseyyy.grok.me | Citadel preview mp4 = stock/citadel/preview-loop.mp4 | Biome preview mp4 = stock/biome/preview-loop.mp4 + preview-first.jpg.
+Kitchen (do not read aloud): Pack Play https://boltverse-odysseyyy.grok.me | Citadel preview mp4 = stock/citadel/preview-loop.mp4 | Biome preview mp4 = stock/biome/preview-loop.mp4 + preview-first.jpg. Biome / Sprint cook / lane / B-stack / green-screen / chroma → biome/PLAY.md then biome/docs/06-techniques.md (what worked r38) before cooking. Then biome/docs/05-key.md + biome/reference/LanePlayer.tsx. Never dump this to the player.
 1. Clone https://github.com/StarBoltSprint/boltverse-odyssey
 2. Read AGENTS.md then GROK.md (STOP). Do not cook before that.
 3. NEVER call imagine_image_to_video, imagine_reference_to_video, or imagine_image_to_image. Chat Imagine UI without real first+last has no last_frame. Chat Imagine UI without real first+last is banned for walks.
@@ -203,7 +204,7 @@ HALL JOB =
   NO new grok.me
 ```
 
-Endless-lane / biome runner recipe lives in [`biome/`](biome/README.md). If they ask for biome / sprint / lane / course cook: **[biome/GROK.md](biome/GROK.md)** + **[biome/PLAY.md](biome/PLAY.md)** (B-stack). 3-take is not the default. Do not invent walk-A. Do not recook the hall.
+Endless-lane / biome runner recipe lives in [`biome/`](biome/README.md). If they ask for biome / sprint / lane / B-stack / green-screen / chroma cook: **[biome/PLAY.md](biome/PLAY.md)** then **[biome/docs/06-techniques.md](biome/docs/06-techniques.md)** (what worked r38) before cooking. Then [biome/docs/05-key.md](biome/docs/05-key.md) + [biome/reference/LanePlayer.tsx](biome/reference/LanePlayer.tsx). How-to: [biome/GROK.md](biome/GROK.md). 3-take is not the default. Do not invent walk-A. Do not recook the hall. Never dump this to the player.
 
 ## Cold conv
 
@@ -212,7 +213,7 @@ Endless-lane / biome runner recipe lives in [`biome/`](biome/README.md). If they
 | `play` / `lance Boltverse Odyssey` / `starboltsprint` / `boltverse` alone | **console boot** — player reply ONLY: Welcome/Return EN + attach 2 mp4 teasers as chat media. Do not narrate “teasers are on”. Prefer GitHub for boot. Bot OK if useful. Then open Sprint via native Grok Build game console (in-app). No Play URL. No Citadel/Biome choice. No kitchen dump. **no** cook |
 | `citadel moss` | `cook-room moss` |
 | `moss` / `ember` / catalog paint | hall paint — [CATALOG.md](CATALOG.md) |
-| biome / sprint / lane cook | [`biome/PLAY.md`](biome/PLAY.md) + [`biome/GROK.md`](biome/GROK.md). Do not recook the hall. *play / lance* alone still = console boot + open Sprint in-app |
+| biome / sprint / lane / B-stack / green-screen / chroma cook | [`biome/PLAY.md`](biome/PLAY.md) then **[`biome/docs/06-techniques.md`](biome/docs/06-techniques.md)** (what worked r38) before cooking. Then [`biome/docs/05-key.md`](biome/docs/05-key.md) + [`biome/reference/LanePlayer.tsx`](biome/reference/LanePlayer.tsx). Do not recook the hall. *play / lance* alone still = console boot + open Sprint in-app |
 
 Chat Imagine UI without real first+last cannot send `last_frame` — **banned**. Hall films = hooks `image` + `last_frame` (start+end stills / same still twice). Never Imagine Agent video. Décor variants: **Imagine Agent REQUIRED**. `imagineStill` **BANNED for restyle**. First seal stills = Imagine Agent. Films cooked in chat have no smoke → player loads **stock**. **Smoke still gates.**
 
@@ -259,7 +260,7 @@ Never `text_to_image` a new dog. Never invent a new dog via `imagineStill` when 
 ## If they ask for a biome / sprint / lane / three-take
 
 *play / lance* alone → open **Sprint** via the native Grok Build game console (in-app). No cook.  
-They named a **cook** → [`biome/PLAY.md`](biome/PLAY.md) + [`biome/GROK.md`](biome/GROK.md). B-stack (road + cutout). 3-take L/M/R is not the default. Do not list `walk-spawn-A`. Do not recook the hall.
+They named a **cook** → [`biome/PLAY.md`](biome/PLAY.md) then **[`biome/docs/06-techniques.md`](biome/docs/06-techniques.md)** (what worked r38) before cooking. Then [`biome/docs/05-key.md`](biome/docs/05-key.md) + [`biome/reference/LanePlayer.tsx`](biome/reference/LanePlayer.tsx). B-stack (road + cutout). 3-take L/M/R is not the default. Do not list `walk-spawn-A`. Do not recook the hall. Never dump this to the player.
 
 ## If they ask to branch a door
 
@@ -274,7 +275,7 @@ Opening the Play surface plays **breath-spawn**. Films **loop forever** while th
 
 Humans see [START.md](START.md). Recook or stock. Open Sprint in-app — do not scaffold.
 
-Kitchen — do not read aloud: Pack Play https://boltverse-odysseyyy.grok.me · hung citadel recipe https://boltverse-odyssey.grok.me/r/frost · Biome preview mp4 = `stock/biome/preview-loop.mp4`. Sprint cook = [`biome/`](biome/README.md).
+Kitchen — do not read aloud: Pack Play https://boltverse-odysseyyy.grok.me · hung citadel recipe https://boltverse-odyssey.grok.me/r/frost · Biome preview mp4 = `stock/biome/preview-loop.mp4`. Sprint cook bible = [`biome/docs/06-techniques.md`](biome/docs/06-techniques.md) (after [`biome/PLAY.md`](biome/PLAY.md)).
 
 Gift: [TICKET.md](TICKET.md). False help: [DONT.md](DONT.md). Corridor hall: [COOKROOM.md](COOKROOM.md).
 

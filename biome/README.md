@@ -43,10 +43,15 @@ Citadel cook is unchanged: [../COOKROOM.md](../COOKROOM.md) · [../AGENTS.md](..
 
 ## Happy path (biome cook)
 
+Kitchen — do not read aloud. biome / Sprint cook / lane / B-stack / green-screen / chroma → **MUST read this order before cooking:**
+
 ```
-# read biome/PLAY.md then biome/GROK.md
+# 1. biome/PLAY.md
+# 2. biome/docs/06-techniques.md   ← what worked r38 (Sprint cook bible)
+# 3. biome/docs/05-key.md
+# 4. biome/reference/LanePlayer.tsx
+# then biome/GROK.md
 # stills + films = imagine-hooks first+last (never Imagine Agent video)
-# compositor law = biome/docs/06-techniques.md
 # drop masters into biome/master/
 ```
 

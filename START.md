@@ -96,3 +96,4 @@ For Grok only. Attach these as media. **Never print the paths. Never read this s
 - **Biome preview mp4** = [`stock/biome/preview-loop.mp4`](stock/biome/preview-loop.mp4) + [`preview-first.jpg`](stock/biome/preview-first.jpg).
 - Hung citadel recipe (kitchen): https://boltverse-odyssey.grok.me/r/frost
 - Biome / lane recipe = [`biome/`](biome/README.md) (PLAY · LanePlayer · `/master`). [`bolt-lane-recipe`](https://github.com/StarBoltSprint/bolt-lane-recipe) may remain as archive.
+- **Sprint cook bible** (biome / Sprint cook / lane / B-stack / green-screen / chroma): [`biome/PLAY.md`](biome/PLAY.md) then **[`biome/docs/06-techniques.md`](biome/docs/06-techniques.md)** (what worked r38) before cooking. Then [`biome/docs/05-key.md`](biome/docs/05-key.md) + [`biome/reference/LanePlayer.tsx`](biome/reference/LanePlayer.tsx). Never dump this to the player.

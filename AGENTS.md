@@ -36,13 +36,15 @@ Read **[GROK.md](GROK.md)** next. Stills = **[LAYOUT.md](LAYOUT.md)** + RIG-PROM
 
 **Citadel** = this repo, root (rooms / Hang / `cook-room`). **Biome / lane** = [`biome/`](biome/README.md) (PLAY · LanePlayer · `/master`). `StarBoltSprint/bolt-lane-recipe` may remain as archive. Do **not** recook the hall for a sprint ask. 3-take L/M/R is not the default.
 
+**Sprint cook bible** (biome / Sprint cook / lane / B-stack / green-screen / chroma): [`biome/PLAY.md`](biome/PLAY.md) then **[`biome/docs/06-techniques.md`](biome/docs/06-techniques.md)** (what worked r38) before cooking. Then [`biome/docs/05-key.md`](biome/docs/05-key.md) + [`biome/reference/LanePlayer.tsx`](biome/reference/LanePlayer.tsx). Never dump this to the player.
+
 ## One happy path (brand-new Grok / Grok Build convo)
 
 **HARD SPLIT for VIDEO.** NEVER Agent / chat Imagine for Walk A, Walk B, breath, or any video.
 
 Walks / breaths / films = Imagine first-frame + last-frame via `scripts/imagine-hooks.mjs` / `scripts/cook-room.mjs` (the API path Grok Build already uses). Chat Imagine UI without real first+last remains **banned** for videos. Agent is **not** required or recommended for video cook. Do **not** instruct Build to open Imagine Agent for Walk A, Walk B, or breath.
 
-1. If they said play / lance / boltverse alone: **console boot first** (GROK.md product model) — attach 2 teasers as chat media + open Sprint in-app. Prefer GitHub for boot. Bot OK if useful. Do not narrate “teasers are on”. Cook a citadel paint only if they named one. Cook a biome / Sprint plate only if they asked — [`biome/GROK.md`](biome/GROK.md).
+1. If they said play / lance / boltverse alone: **console boot first** (GROK.md product model) — attach 2 teasers as chat media + open Sprint in-app. Prefer GitHub for boot. Bot OK if useful. Do not narrate “teasers are on”. Cook a citadel paint only if they named one. Cook a biome / Sprint / lane / B-stack / green-screen / chroma plate only if they asked — [`biome/PLAY.md`](biome/PLAY.md) then **[`biome/docs/06-techniques.md`](biome/docs/06-techniques.md)** (what worked r38) before cooking.
 2. Clone this repo. Read this file + GROK.md. Stop.
 3. STYLE stills = **[RIG.md](RIG.md)** + [`lock/RIG-PROMPT.txt`](lock/RIG-PROMPT.txt). Spawn first, then at-A/at-B from that spawn. **ONE dog.** Two Bolts = FAIL (delete the clone). Ice stills stay as frost play. Never move Bolt / doors / paths / depth.
 4. Walks / breaths = `cook-room` → `imagineClip` (`image` + `last_frame`). **Read [FILMS.md](FILMS.md) first** — those prompts are the base for every player / every décor. Adapt hall paint from the player's stills + `catalog/<slot>.md` only. Never rewrite motion / camera / one-dog / duration. **walks** = start still + end still. **breaths** = same still twice. Never Agent video.

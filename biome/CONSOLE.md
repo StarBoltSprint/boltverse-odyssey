@@ -25,7 +25,7 @@ Teaser binaries live in [`stock/biome/`](../stock/biome/README.md). Do not dump 
 | Phrase | Job |
 |---|---|
 | `play` / `lance` / `boltverse` alone | **console boot** — Welcome + 2 teasers + open Sprint in-app. **no** cook |
-| they named a **biome cook** (empty plate, cutout, dusk lane paint) | this tree: [PLAY.md](PLAY.md) + [GROK.md](GROK.md). Do **not** recook the citadel hall. Do **not** list `walk-spawn-A`. |
+| they named a **biome cook** (empty plate, cutout, dusk lane, B-stack, green-screen, chroma) | [PLAY.md](PLAY.md) then **[docs/06-techniques.md](docs/06-techniques.md)** (what worked r38) before cooking. Then [docs/05-key.md](docs/05-key.md) + [reference/LanePlayer.tsx](reference/LanePlayer.tsx). How-to: [GROK.md](GROK.md). Do **not** recook the citadel hall. Do **not** list `walk-spawn-A`. |
 | they named a **citadel** catalog paint | root [../GROK.md](../GROK.md) — `cook-room` |
 
 Never say to the player: Biome · Endless-lane runner · kitchen URLs · `raw.githubusercontent.com` · Not cooked here.
