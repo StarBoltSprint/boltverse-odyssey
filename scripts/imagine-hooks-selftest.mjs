@@ -22,6 +22,7 @@ import {
   walkClipLine,
   BIOME_LAW,
   BIOME_LANE_LAW,
+  BIOME_SPEED_LAW,
   biomePlateLine,
 } from "./imagine-hooks.mjs";
 import {
@@ -172,6 +173,12 @@ must(/NEVER all three/.test(BIOME_LANE_LAW), "lane law: never all three");
 must(/ONE lane or TWO/.test(BIOME_LANE_LAW), "lane law: one or two lanes");
 must(/free lane/.test(BIOME_LANE_LAW), "lane law: one free dodge corridor");
 must(/unavoidable/.test(BIOME_LANE_LAW), "full-width bar is FAIL");
+must(/10 seconds/.test(BIOME_SPEED_LAW), "speed law is 10 seconds");
+must(/ULTRA CONSTANT/.test(BIOME_SPEED_LAW), "speed law: ultra constant");
+must(/NEVER slow down/.test(BIOME_SPEED_LAW) && /NEVER accelerate/.test(BIOME_SPEED_LAW), "speed law: never slow, never accelerate");
+must(/ease-in/.test(BIOME_SPEED_LAW) && /ease-out/.test(BIOME_SPEED_LAW), "speed law: no ease in/out");
+must(biomePlateLine("empty").includes(BIOME_SPEED_LAW), "empty plate includes BIOME_SPEED_LAW");
+must(biomePlateLine("bar").includes(BIOME_SPEED_LAW), "bar plate includes BIOME_SPEED_LAW");
 
 const dry = spawnSync("node", [join(root, "scripts/cook-room.mjs"), "moss", "--dry-run"], {
   encoding: "utf8",

@@ -475,11 +475,19 @@ export const BIOME_LANE_LAW = [
   "A full-width steel bar / wall / arch across LEFT+CENTER+RIGHT is FAIL (unavoidable).",
 ].join(" ");
 
+export const BIOME_SPEED_LAW = [
+  "10 seconds. VERY FAST travelling — sprint, not a crawl, not a pan of a still.",
+  "Speed is ULTRA CONSTANT from first frame to last_frame.",
+  "NEVER slow down. NEVER accelerate. NEVER ease-in. NEVER ease-out. NEVER a ramp. NEVER a 2x smash then crawl.",
+  "Same rush at t=0, mid, and last. The asphalt speed does not change.",
+  "playbackRate later is ~1.0–1.2 only — do not bake a ramp for the player to fix.",
+].join(" ");
+
 export function biomePlateLine(kind) {
   const travel = [
     "First frame is the start still. Last frame is last_frame — DISTINCT, world ADVANCED.",
     "What the camera passed is gone. NEVER a still. NEVER a crawl.",
-    "Speed must come from the cook; playbackRate later is ~1.0–1.2 only.",
+    BIOME_SPEED_LAW,
   ].join(" ");
   if (kind === "hazard" || kind === "bar") {
     return [
@@ -554,7 +562,7 @@ export async function imagineBiomeClip({
   first,
   last,
   dest,
-  seconds = 6,
+  seconds = 10,
   kind = "empty",
   paint = "",
   promptFile,
@@ -565,7 +573,7 @@ export async function imagineBiomeClip({
   if (promptFile && existsSync(promptFile)) {
     paste = readFileSync(promptFile, "utf8").trim();
   }
-  const prompt = [BIOME_LAW, biomePlateLine(kind), paste, paint].filter(Boolean).join(" ");
+  const prompt = [BIOME_LAW, BIOME_SPEED_LAW, biomePlateLine(kind), paste, paint].filter(Boolean).join(" ");
   const body = {
     model: VIDEO_MODEL,
     prompt,

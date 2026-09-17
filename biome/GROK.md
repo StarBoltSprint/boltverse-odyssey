@@ -76,11 +76,12 @@ Chat Imagine has no `last_frame`. Use `imagineBiomeClip` in [../scripts/imagine-
 ## SPEED REF (road — do not soften)
 
 ```
-RECOOK one plate ONLY. Much FASTER. Replace current empty plate.
+RECOOK one plate ONLY. 10 seconds. VERY FAST. CONSTANT rush. Replace current empty plate.
 
 HARD:
-- 9:16, 8–12s, lock-off
-- Sprint travelling baked in cook — world rushes hard (last cook = crawl FAIL)
+- 9:16, **10s**, lock-off
+- Sprint travelling baked in cook — world rushes HARD (crawl FAIL)
+- Speed ULTRA CONSTANT first→last. NEVER slow down. NEVER accelerate. NEVER ease-in/out. NEVER a ramp
 - ZERO path/lightning on ground
 - ZERO dog/Bolt
 - Canyon/Mars OK, CLEAR center

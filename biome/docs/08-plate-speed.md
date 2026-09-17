@@ -3,7 +3,7 @@
 FPS = how many pictures per second (smoothness).  
 Travel = how hard the **asphalt rushes** toward the camera.
 
-Two cooks at 48 fps can still crawl vs sprint. Measure travel, then time-warp.
+Cook must already be **very fast** and **constant** (BIOME_SPEED_LAW: 10s, never slow, never accelerate). This script only matches **mean** rush between plates. A ramp inside the mp4 is a recook, not `--match`.
 
 ## Measure
 
