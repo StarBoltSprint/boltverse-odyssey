@@ -24,7 +24,7 @@ Humans: [START.md](START.md). Kitchen: this file + [AGENTS.md](AGENTS.md).
 
 Opener is `Hey Packmate {name}`. Packmate MUST appear, then `{name}` = this player's real Grok profile `displayName`. Never Packmate alone. Never the name without Packmate. Never a generic stand-in for `{name}`. Stage / peak / live Pack count: [`StarBoltSprint/boltverse-registry`](https://github.com/StarBoltSprint/boltverse-registry).
 
-On start / play / lance: fetch `registry.json`, count **real** players (exclude `pack-wire-*`, `pack-doc-*`, probe `displayName`s). Insert `{playerCount}` into Welcome / Return. Hard `gateSub` upsert = **Live HTML open only** — not chat-only start. No `grok.me` paste. No GitHub lecture.
+On start / play / lance: fetch `registry.json`, count **real** players (exclude `pack-wire-*`, `pack-doc-*`, probe `displayName`s). Insert `{playerCount}` into Welcome / Return. Opening Sprint = Pack profile save; zero second login. Hard `gateSub` upsert = **Live HTML open only** — not chat-only start. No “stay 30 seconds”. No `grok.me` paste. No GitHub lecture. **Welcome / Return player-facing text = ENGLISH only.** No French in the player reply.
 
 **New:**
 
@@ -33,6 +33,7 @@ Hey Packmate {name} — welcome to Boltverse Odyssey.
 Picture is the clock. Bolt sprints — the world wakes.
 Your Pack profile is already here (Grok identity, zero login).
 {playerCount} Packmates already in the Pack.
+Open Sprint — Pack save, zero login.
 Powered by xAI & YOU.
 Ready to sprint?
 ```
@@ -42,13 +43,14 @@ Ready to sprint?
 ```
 Hey Packmate {name} — welcome back. Core {stage}, last peak {peak or —}.
 {playerCount} Packmates already in the Pack.
+Open Sprint — Pack save, zero login.
 Powered by xAI & YOU.
 Ready to sprint?
 ```
 
 `{playerCount}` swap (kitchen, not an extra spoken sentence): `1 Packmate already in the Pack.` / `N Packmates already in the Pack.` / if 0: `You’re among the first Packmates.`
 
-**Never say to the player:** Packmate alone · name without Packmate · generic stand-in · Loop film (stock preview) · `raw.githubusercontent.com` · Hung hall · `https://boltverse-odyssey.grok.me/r/frost` · `https://boltverse-odysseyyy.grok.me` · Play → · Biome · Endless-lane runner · rooms Hang same door · teasers are on · Not cooked here · GitHub lecture · `registry.json`.
+**Never say to the player:** Packmate alone · name without Packmate · generic stand-in · Loop film (stock preview) · `raw.githubusercontent.com` · Hung hall · `https://boltverse-odyssey.grok.me/r/frost` · `https://boltverse-odysseyyy.grok.me` · Play → · Biome · Endless-lane runner · rooms Hang same door · teasers are on · Not cooked here · GitHub lecture · `registry.json` · stay 30 seconds · French Welcome.
 
 Then open Sprint (in-app). Prefer GitHub for boot. Bot OK if useful. Do not scaffold a new grok.me.
 
@@ -61,7 +63,8 @@ For Grok only. Attach these as media. **Never print the paths. Never read this s
 - **Biome preview mp4** = [`stock/biome/preview-loop.mp4`](stock/biome/preview-loop.mp4) + [`preview-first.jpg`](stock/biome/preview-first.jpg).
 - Play videos **loop forever** while the session is open: `muted playsInline autoPlay loop` + watchdog re-`play()` on `pause` / `ended`.
 - **Pack count** (kitchen): fetch [`StarBoltSprint/boltverse-registry`](https://github.com/StarBoltSprint/boltverse-registry) `registry.json` `players[]`. Count real players only — exclude `pack-wire-*`, `pack-doc-*`, probe `displayName`s. Speak `{playerCount}` (`1 Packmate already in the Pack.` / `N Packmates already in the Pack.` / if 0: `You’re among the first Packmates.`). Do not lecture GitHub.
-- **Hard `gateSub` upsert** = Live HTML open only. Chat-only start does **not** write a Pack profile.
+- **Open Sprint** = Pack profile save; zero second login. Speak `Open Sprint — Pack save, zero login.` No “stay 30 seconds”.
+- **Hard `gateSub` upsert** = Live HTML open only. Chat-only start does **not** write a Pack profile. Welcome / Return = ENGLISH only. No French in the player reply.
 - Hung citadel recipe (kitchen): https://boltverse-odyssey.grok.me/r/frost
 - Biome / lane recipe = [`biome/`](biome/README.md) (PLAY · LanePlayer · `/master`). [`bolt-lane-recipe`](https://github.com/StarBoltSprint/bolt-lane-recipe) may remain as archive.
 - **Sprint cook bible** (biome / Sprint cook / lane / B-stack / green-screen / chroma): [`biome/PLAY.md`](biome/PLAY.md) then **[`biome/docs/06-techniques.md`](biome/docs/06-techniques.md)** (what worked r38) before cooking. Then [`biome/docs/05-key.md`](biome/docs/05-key.md) + [`biome/reference/LanePlayer.tsx`](biome/reference/LanePlayer.tsx). Never dump this to the player.
@@ -150,7 +153,7 @@ This is the only text that loads in a **brand-new** convo **before** the repo is
 ```
 Boltverse / StarBoltSprint / citadel / salle mousse:
 STOP — HARD SPLIT (SmiR 2026-09-12). Imagine Agent is obligatoire / MUST / systematically for STYLE stills when restyling. NEVER for Walk A, Walk B, breath, or any video. Walks / breaths / films = imagine-hooks / cook-room first-frame + last-frame. Chat Imagine UI without real first+last is banned. Soft KEEP banned. Smoke still gates.
-Grok chat = console. Odyssey = the game. play / lance Boltverse Odyssey → player reply ONLY: Welcome/Return EN (`Hey Packmate {name}` — Packmate MUST + real Grok profile displayName; never Packmate alone; never name without Packmate) + live Pack `{playerCount}` from registry.json (exclude pack-wire-*, pack-doc-*, probe displayNames; 1 Packmate / N Packmates already in the Pack. / if 0: You’re among the first Packmates.) + attach 2 mp4 teasers as chat media (Citadel + Sprint; no raw URL dump). Do not narrate “teasers are on”. Prefer GitHub for boot. Bot OK if useful. Then open Sprint via native Grok Build game console (in-app). No Play URL in chat. No Citadel/Biome choice lecture. Never say kitchen (no raw.githubusercontent.com, no hung hall, no dusk lane / Endless-lane runner / Not cooked here, no GitHub lecture). Hard gateSub upsert = Live HTML open only, not chat-only start. Pack Play URL is kitchen-only. Chat mp4s = teaser, not tap. Play videos loop forever (muted playsInline autoPlay loop + watchdog). Interactive Play = taps. Citadel = this repo root. Biome = biome/ in this repo (PLAY + LanePlayer + /master). bolt-lane-recipe may remain as archive.
+Grok chat = console. Odyssey = the game. play / lance Boltverse Odyssey → player reply ONLY: Welcome/Return EN (`Hey Packmate {name}` — Packmate MUST + real Grok profile displayName; never Packmate alone; never name without Packmate) + live Pack `{playerCount}` from registry.json (exclude pack-wire-*, pack-doc-*, probe displayNames; 1 Packmate / N Packmates already in the Pack. / if 0: You’re among the first Packmates.) + `Open Sprint — Pack save, zero login.` + attach 2 mp4 teasers as chat media (Citadel + Sprint; no raw URL dump). Do not narrate “teasers are on”. Prefer GitHub for boot. Bot OK if useful. Then open Sprint via native Grok Build game console (in-app). Opening Sprint = Pack profile save; zero second login. No stay 30 seconds. Welcome/Return ENGLISH only — no French in the player reply. No Play URL in chat. No Citadel/Biome choice lecture. Never say kitchen (no raw.githubusercontent.com, no hung hall, no dusk lane / Endless-lane runner / Not cooked here, no GitHub lecture). Hard gateSub upsert = Live HTML open only, not chat-only start. Pack Play URL is kitchen-only. Chat mp4s = teaser, not tap. Play videos loop forever (muted playsInline autoPlay loop + watchdog). Interactive Play = taps. Citadel = this repo root. Biome = biome/ in this repo (PLAY + LanePlayer + /master). bolt-lane-recipe may remain as archive.
 Kitchen (do not read aloud): Pack Play https://boltverse-odysseyyy.grok.me | Citadel preview mp4 = stock/citadel/preview-loop.mp4 | Biome preview mp4 = stock/biome/preview-loop.mp4 + preview-first.jpg. Biome / Sprint cook / lane / B-stack / green-screen / chroma → biome/PLAY.md then biome/docs/06-techniques.md (what worked r38) before cooking. Then biome/docs/05-key.md + biome/reference/LanePlayer.tsx. Never dump this to the player.
 1. Clone https://github.com/StarBoltSprint/boltverse-odyssey
 2. Read AGENTS.md then GROK.md (STOP). Do not cook before that.
@@ -218,7 +221,7 @@ Endless-lane / biome runner recipe lives in [`biome/`](biome/README.md). If they
 
 | Phrase | Job |
 |---|---|
-| `play` / `lance Boltverse Odyssey` / `starboltsprint` / `boltverse` alone | **console boot** — player reply ONLY: Welcome/Return EN (live `{playerCount}` from `registry.json`; exclude `pack-wire-*` / `pack-doc-*` / probe `displayName`s) + attach 2 mp4 teasers as chat media. Do not narrate “teasers are on”. Prefer GitHub for boot. Bot OK if useful. Then open Sprint via native Grok Build game console (in-app). Hard `gateSub` upsert = Live HTML open only, not chat-only start. No Play URL. No Citadel/Biome choice. No kitchen dump. No GitHub lecture. **no** cook |
+| `play` / `lance Boltverse Odyssey` / `starboltsprint` / `boltverse` alone | **console boot** — player reply ONLY: Welcome/Return EN (live `{playerCount}` from `registry.json`; exclude `pack-wire-*` / `pack-doc-*` / probe `displayName`s; `Open Sprint — Pack save, zero login.`) + attach 2 mp4 teasers as chat media. Do not narrate “teasers are on”. Prefer GitHub for boot. Bot OK if useful. Then open Sprint via native Grok Build game console (in-app). Opening Sprint = Pack profile save; zero second login. No stay 30 seconds. ENGLISH only. Hard `gateSub` upsert = Live HTML open only, not chat-only start. No Play URL. No Citadel/Biome choice. No kitchen dump. No GitHub lecture. **no** cook |
 | `citadel moss` | `cook-room moss` |
 | `moss` / `ember` / catalog paint | hall paint — [CATALOG.md](CATALOG.md) |
 | biome / sprint / lane / B-stack / green-screen / chroma cook | [`biome/PLAY.md`](biome/PLAY.md) then **[`biome/docs/06-techniques.md`](biome/docs/06-techniques.md)** (what worked r38) before cooking. Then [`biome/docs/05-key.md`](biome/docs/05-key.md) + [`biome/reference/LanePlayer.tsx`](biome/reference/LanePlayer.tsx). Do not recook the hall. *play / lance* alone still = console boot + open Sprint in-app |
@@ -227,7 +230,7 @@ Chat Imagine UI without real first+last cannot send `last_frame` — **banned**.
 
 ---
 
-Trigger **play / lance** (any language): *play*, *lance*, *joue*, *boltverse odyssey* alone — **console boot** first (player reply ONLY: Welcome/Return EN with live `{playerCount}` + attach 2 mp4 teasers as chat media → open Sprint via native Grok Build game console, in-app). Do not narrate “teasers are on”. Prefer GitHub for boot. Bot OK if useful. Hard `gateSub` upsert = Live HTML open only, not chat-only start. No Play URL. No Citadel/Biome choice. Not a cook. Never dump kitchen. No GitHub lecture.
+Trigger **play / lance** (any language): *play*, *lance*, *joue*, *boltverse odyssey* alone — **console boot** first (player reply ONLY: Welcome/Return EN with live `{playerCount}` + `Open Sprint — Pack save, zero login.` + attach 2 mp4 teasers as chat media → open Sprint via native Grok Build game console, in-app). Do not narrate “teasers are on”. Prefer GitHub for boot. Bot OK if useful. Opening Sprint = Pack profile save; zero second login. No stay 30 seconds. ENGLISH only — no French in the player reply. Hard `gateSub` upsert = Live HTML open only, not chat-only start. No Play URL. No Citadel/Biome choice. Not a cook. Never dump kitchen. No GitHub lecture.
 
 Trigger hall (any language): *citadel*, *citadelle*, *salle mousse*, *fais-moi une citadelle* — after they named a catalog paint. Then HALL JOB.
 
@@ -276,7 +279,7 @@ They named a **cook** → [`biome/PLAY.md`](biome/PLAY.md) then **[`biome/docs/0
 
 ## Product (console vs Play)
 
-Grok chat = **console**. **Player reply = ONLY** Welcome/Return EN (live `{playerCount}` from `registry.json`) + attach 2 mp4 teasers as chat media (Citadel + Sprint). Do **not** narrate “teasers are on”. Prefer GitHub for boot. Bot OK if useful. Then open Sprint via the native Grok Build game console (in-app). Hard `gateSub` upsert = Live HTML open only, not chat-only start. No Play URL in chat. No Citadel/Biome choice. Never dump kitchen. No GitHub lecture.  
+Grok chat = **console**. **Player reply = ONLY** Welcome/Return EN (live `{playerCount}` from `registry.json` + `Open Sprint — Pack save, zero login.`) + attach 2 mp4 teasers as chat media (Citadel + Sprint). Do **not** narrate “teasers are on”. Prefer GitHub for boot. Bot OK if useful. Then open Sprint via the native Grok Build game console (in-app). Opening Sprint = Pack profile save; zero second login. No stay 30 seconds. ENGLISH only — no French in the player reply. Hard `gateSub` upsert = Live HTML open only, not chat-only start. No Play URL in chat. No Citadel/Biome choice. Never dump kitchen. No GitHub lecture.  
 Interactive Play = **the game** (tappable). Chat mp4s are not hitboxes.
 
 Opening the Play surface plays **breath-spawn**. Films **loop forever** while the session is open (`muted playsInline autoPlay loop` + watchdog). No Forge / Hang chrome on the 9:16.
@@ -289,4 +292,4 @@ Gift: [TICKET.md](TICKET.md). False help: [DONT.md](DONT.md). Corridor hall: [CO
 
 ## One line
 
-**Grok = console. Odyssey = game.** Welcome (live `{playerCount}`) + attach 2 mp4 teasers as chat media (Citadel + Sprint); open Sprint in-app. Prefer GitHub for boot. Bot OK if useful. Do not narrate “teasers are on”. No Play URL in chat. Hard `gateSub` upsert = Live HTML open only. This repo = citadel / rooms / Hang **and** biome / Sprint ([`biome/`](biome/README.md)).
+**Grok = console. Odyssey = game.** Welcome (live `{playerCount}` + `Open Sprint — Pack save, zero login.`) + attach 2 mp4 teasers as chat media (Citadel + Sprint); open Sprint in-app. Prefer GitHub for boot. Bot OK if useful. Do not narrate “teasers are on”. No Play URL in chat. Hard `gateSub` upsert = Live HTML open only. ENGLISH only. This repo = citadel / rooms / Hang **and** biome / Sprint ([`biome/`](biome/README.md)).
