@@ -10,6 +10,8 @@ This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play
 
 **HARD LOCK — Hang ≠ wipe.** New biome = ADD `road-<biome>*.mp4` + plates-index / dealer entries. KEEP canyon→cars→duel→night→war. NEVER `rm` hung masters. Law: [docs/09-recette-biome.md](docs/09-recette-biome.md).
 
+**HARD LOCK — Chat biome catalog (on ask).** **what biomes** / **which runs** / **what can I play** → hung chapters only (never invent). `play canyon` / `only Tide`. Never on Welcome. No chrome picker. Hang grows the list; wipe shrinks it = FAIL.
+
 ## Engine lock (read PLAY first)
 
 **[PLAY.md](PLAY.md)** is the law:

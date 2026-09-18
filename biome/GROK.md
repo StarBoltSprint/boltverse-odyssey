@@ -19,6 +19,8 @@ Do **not** paste that URL in a player reply. Never open old three-y `boltverse-o
 
 **HARD LOCK — Hang ≠ wipe.** New biome = ADD `road-<biome>*.mp4` + plates-index / dealer entries. KEEP hung canyon→cars→duel→night→war. NEVER `rm` masters. Recook Bolt = `bolt.mp4` only. Law: [docs/09-recette-biome.md](docs/09-recette-biome.md).
 
+**HARD LOCK — Chat biome catalog (on ask).** **what biomes** / **which runs** / **what can I play** → English Pack voice, hung chapters only (never invent). How to pick: `play canyon` / `play Tide` / `only Tide`. Never on Welcome. No chrome picker. Hang grows the list; wipe shrinks it = FAIL.
+
 Pack Live: **[docs/07-pack-live.md](docs/07-pack-live.md)**. Never dump this to the player.
 
 ## Product
@@ -153,3 +155,4 @@ Every Live drops [../client/pack.js](../client/pack.js) with `BOLTVERSE_PACK_ORI
 - Full-width hazard on LEFT+CENTER+RIGHT (nowhere to dodge)
 - Wipe hung `biome/master` / `public/master` to “make room” for a new biome (Hang ≠ wipe — Tide cook FAIL)
 - Playlist = new-biome-only unless SmiR / player explicitly says replace the default Beat
+- Dump the chat biome catalog on Welcome, or invent unhung biome names (on ask; hung chapters only)

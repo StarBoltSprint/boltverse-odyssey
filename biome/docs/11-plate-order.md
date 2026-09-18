@@ -61,6 +61,16 @@ Do **not** delete canyon / cars / duel / night / war files. Do **not** replace `
 
 ---
 
+## HARD LOCK — Chat biome catalog (on ask)
+
+Player asks **what biomes** / **playable biomes** / **list biomes** / **which runs** / **what can I play** → English Pack voice, **hung chapters only** from this playlist / `plates-index` / `master` (never invent). Now: canyon · cars · duel · night · war.
+
+Each line: name + optional short flavor. No kitchen paths. How to pick: `play canyon` / `play Tide` / `only Tide` — then start that run or paste the Live + filter dealer. **On ask only** — never on Welcome. No chrome picker in the Live UI. Chat list + spoken pick is v1.
+
+Hang grows this list. Wipe shrinks it = FAIL. Full law: [09-recette-biome.md](09-recette-biome.md).
+
+---
+
 ## Dealer law
 
 ```

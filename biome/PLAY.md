@@ -10,6 +10,8 @@ This repo is the **recipe**. Do **not** scaffold a player. Do **not** publish a 
 
 **HARD LOCK — Hang ≠ wipe.** New biome = ADD plates + dealer / `plates-index` entries. KEEP canyon→cars→duel→night→war. NEVER wipe `/master`. Law: [docs/09-recette-biome.md](docs/09-recette-biome.md).
 
+**HARD LOCK — Chat biome catalog (on ask).** **what biomes** / **which runs** → hung chapters only. `play canyon` / `only Tide`. Never on Welcome. No chrome picker in Live. Chat list + spoken pick is v1.
+
 ---
 
 ## Which stack (read this first)
@@ -85,6 +87,7 @@ Bolt is **ALWAYS** a full-white German Shepherd (white coat forever). That base 
 | New grok.me | recipe only |
 | Shuffled / random plate deck | `r36mix` `pickNext` — story plays out of order. Lock: [docs/11-plate-order.md](docs/11-plate-order.md) |
 | Wipe `/master` for a new biome | Hang ≠ wipe. KEEP hung plates. Tide-only playlist = FAIL. |
+| Biome catalog on Welcome | On ask only. Chat list + spoken pick is v1. No chrome picker. |
 | Improvised boot prose | Grok invents “world is rolling / swipe A/D / plant a lane”. Player reply = locked Welcome/Return only ([../START.md](../START.md)). This page is kitchen. |
 
 ---

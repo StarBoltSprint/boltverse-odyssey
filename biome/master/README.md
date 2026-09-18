@@ -6,6 +6,8 @@ This folder is the Sprint **`/master` stack** the LanePlayer wires.
 
 **HARD LOCK — Hang ≠ wipe.** New biome = ADD `road-<biome>*.mp4` here. KEEP every file in this table. NEVER `rm` canyon / war to “make room”. Recook Bolt may replace `bolt.mp4` only.
 
+**HARD LOCK — Chat biome catalog (on ask).** Player list = hung **chapters** from this table (canyon · cars · duel · night · war). Never invent. Hang grows the list; wipe shrinks it = FAIL.
+
 | file | role | chapter |
 |---|---|---|
 | `road.mp4` | empty dusk road — **master clock** (5.75 s) | canyon |

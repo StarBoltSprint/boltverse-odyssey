@@ -82,7 +82,7 @@ Alias: `POST /api/pack` = boot.
 
 ## Dealer assetId stats (AUTOMATIC)
 
-Sprint dealer reports cassette stats on the plate’s Pack `assetId` (path → id from [`../master/plates-index.json`](../master/plates-index.json) / registry `assets/plates-index.json`). Fields: `stats.views` / `stats.playTimeSec` / `stats.players` — **real or `0`**. Never invent. Heartbeat / dealer events upsert. Playlist lock stays canyon → cars → duel → night → war. **HARD LOCK — Hang ≠ wipe:** new biome = new `plates-index` entries + keep this playlist unless SmiR explicitly says replace the default Beat.
+Sprint dealer reports cassette stats on the plate’s Pack `assetId` (path → id from [`../master/plates-index.json`](../master/plates-index.json) / registry `assets/plates-index.json`). Fields: `stats.views` / `stats.playTimeSec` / `stats.players` — **real or `0`**. Never invent. Heartbeat / dealer events upsert. Playlist lock stays canyon → cars → duel → night → war. **HARD LOCK — Hang ≠ wipe:** new biome = new `plates-index` entries + keep this playlist unless SmiR explicitly says replace the default Beat. **Chat biome catalog (on ask):** hung chapters only — never invent; never dump on Welcome.
 
 ## Pack host (Vercel) — not this recipe
 

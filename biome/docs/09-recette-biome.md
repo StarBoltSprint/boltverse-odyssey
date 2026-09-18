@@ -47,6 +47,21 @@ Playlist / index law: [11-plate-order.md](11-plate-order.md).
 
 ---
 
+## HARD LOCK — Chat biome catalog (on ask)
+
+When a player asks Grok (any close alias): **what biomes** / **playable biomes** / **list biomes** / **which runs** / **what can I play**:
+
+1. English Pack voice. Short list of **hung** biomes only (from `plates-index` / biome catalog / `master` files that still exist). **Never invent.**
+2. Each line: biome name + optional one-short flavor. No kitchen paths. No GitHub. No API jargon.
+3. How to pick: `play Tide` / `play canyon` / `only Tide` — then start that run (or paste the Live + filter dealer to that biome). `only X` = they explicitly asked to replace the default Beat.
+4. **On ask only.** Do **not** dump this list on Welcome / cold-start. Plate-deck lists at boot stay banned.
+5. Hang grows this catalog. Wipe shrinks it — another reason wipe is FAIL.
+6. No chrome biome picker in the Live UI. Chat list + spoken pick is v1.
+
+Hung chapters **now** (do not invent extra names): canyon · cars · duel · night · war. Tide is **not** in this list until it is hung. If they pick a name that is not hung: say it is not hung yet. Do not fake the run. Do not wipe the catalog to pretend.
+
+---
+
 ## Floor — Pack wire + dealer assetId stats (every Hang / publish)
 
 **AUTOMATIC.** Pack wire + plate stats are in the game recipe. When Grok creates or publishes a **biome**, **citadel**, or **Sprint** Live, it **MUST** include [`client/pack.js`](../../client/pack.js) with `BOLTVERSE_PACK_ORIGIN` = `https://boltverse-pack.vercel.app` (TEMPORARY — Lives freeze; not the forever home. Long-term: Pack stays inside the Grok sandbox) **and** dealer `assetId` stats — **without the player asking**.
@@ -329,6 +344,7 @@ Hitbox = **voie + fenêtre courte au contact des pattes**. Loin / ciel / déjà 
 | `r36mix` / `pickNext` random deck | Story plates play out of order. Lock: [11-plate-order.md](11-plate-order.md) |
 | Wipe `biome/master` / `public/master` to “make room” for Tide | **Hang ≠ wipe.** Canyon/war gone = FAIL. Tide cook. Banned forever. |
 | Playlist = new-biome-only | Keep hung order unless SmiR / player **explicitly** says replace the default Beat. |
+| Biome catalog on Welcome / invent Tide before Hang | Catalog = **on ask**. Hung chapters only. Wipe shrinks the list = FAIL. |
 
 ---
 

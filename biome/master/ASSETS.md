@@ -13,4 +13,6 @@ Every hung plate here already has a Pack `assetId` on registry `main`. Format `a
 
 **HARD LOCK — Hang ≠ wipe.** New biome = new path → `assetId` entries + keep this `_playlist` unless SmiR explicitly says replace the default Beat. Never drop hung ids / files to “make room”.
 
+**HARD LOCK — Chat biome catalog (on ask).** Player list = hung chapters from this index (never invent). Hang grows the list; wipe shrinks it = FAIL.
+
 Chests, Hang, forge, and Engine **reference** these ids. They do not remint. Do not touch the hung mp4/jpg binaries for this pointer.
