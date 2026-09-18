@@ -625,4 +625,23 @@ for (const rel of kitchenDocs) {
   must(/https:\/\/boltverse-odysseyyyy\.grok\.me/.test(body(rel)), rel + ": Beat 3 / Pack Play https is 4y");
 }
 
+function assertPackWireFloor(label, text) {
+  must(/pack\.js/.test(text), label + ": names pack.js");
+  must(/BOLTVERSE_PACK_ORIGIN/.test(text) && /boltverse-odysseyyyy\.grok\.me/.test(text), label + ": central origin odysseyyyy");
+  must(/assetId/.test(text) && /stats/.test(text), label + ": dealer assetId stats");
+  must(/AUTOMATIC/.test(text), label + ": Pack wire is AUTOMATIC");
+  must(/please install wire/.test(text), label + ": names please install wire so it can ban it");
+  must(/Ban/.test(text) || /BAN/.test(text) || /\*\*Ban\*\*/.test(text), label + ": bans please install wire");
+}
+
+assertPackWireFloor("AGENTS.md", agents);
+assertPackWireFloor("GROK.md", body("GROK.md"));
+assertPackWireFloor("biome/docs/07-pack-live.md", body("biome/docs/07-pack-live.md"));
+assertPackWireFloor("biome/docs/09-recette-biome.md", body("biome/docs/09-recette-biome.md"));
+must(/Welcome = Pack register/.test(agents) && /PRIORITY 0/.test(agents), "AGENTS.md: keeps Welcome register + PRIORITY 0");
+must(/Welcome = Pack register/.test(body("GROK.md")) && /PRIORITY 0/.test(body("GROK.md")), "GROK.md: keeps Welcome register + PRIORITY 0");
+must(/Welcome = Pack register/.test(body("biome/docs/07-pack-live.md")) && /PRIORITY 0/.test(body("biome/docs/07-pack-live.md")), "07-pack-live: keeps Welcome register + PRIORITY 0");
+must(/Welcome = Pack register/.test(body("biome/docs/09-recette-biome.md")) && /PRIORITY 0/.test(body("biome/docs/09-recette-biome.md")), "09-recette-biome: keeps Welcome register + PRIORITY 0");
+must(/pack\.js/.test(customize) && /BOLTVERSE_PACK_ORIGIN/.test(customize) && /please install wire/.test(customize), "GROK.md Customize: Pack wire floor AUTOMATIC");
+
 console.log("COLD-START PASS");

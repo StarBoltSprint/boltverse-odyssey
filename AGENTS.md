@@ -49,6 +49,8 @@ Read **[GROK.md](GROK.md)** next. Stills = **[LAYOUT.md](LAYOUT.md)** + RIG-PROM
 6. [`biome/docs/10-bolt-cutout-law.md`](biome/docs/10-bolt-cutout-law.md) — HARD Bolt cutout (strict rear, `#00FF00`, in-place gallop)
 Never dump this to the player.
 
+**Pack wire floor (every cook / publish):** AUTOMATIC. When Grok creates or publishes a biome, citadel, or Sprint Live, it **MUST** include [`client/pack.js`](client/pack.js) with `BOLTVERSE_PACK_ORIGIN` = `https://boltverse-odysseyyyy.grok.me` **and** dealer `assetId` stats (`plates-index` path → `assetId`; cassette `stats.views` / `playTimeSec` / `players` — real or `0`). Do not wait for the player to ask. **Ban** « please install wire » as the normal path. Law: [`biome/docs/07-pack-live.md`](biome/docs/07-pack-live.md). Not a cold-start job — **PRIORITY 0** first reply stays Welcome + teaser + paste. **Welcome = Pack register** stays.
+
 ## One happy path (brand-new Grok / Grok Build convo)
 
 **HARD SPLIT for VIDEO.** NEVER Agent / chat Imagine for Walk A, Walk B, breath, or any video.
@@ -131,3 +133,5 @@ FAIL stills/films → `packs/<slot>/.kitchen/fail/` (debug). Never Hang FAIL. at
 - Treat Grok Build chat `imagine_*` tools as Imagine Agent (they are **not**; no identity lock)
 - Use chat `imagine_*` without real first+last for videos
 - Treat Customize-paste as optional after clone — this file + GROK.md are enough
+- Ship a biome / citadel / Sprint Live without `pack.js` (central origin odysseyyyy) + dealer `assetId` stats
+- Treat « please install wire » as the normal path — Pack wire + plate stats are AUTOMATIC on every cook / publish

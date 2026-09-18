@@ -11,6 +11,14 @@ Never open old three-y `boltverse-odysseyyy.grok.me` as Beat 3 Sprint (supersede
 
 ---
 
+## HARD — AUTOMATIC on every cook / publish
+
+Pack wire + plate stats are **in the game recipe**. When Grok creates or publishes a **biome**, **citadel**, or **Sprint** Live, it **MUST** ship both — **without the player asking**.
+
+**Ban** « please install wire » / « drop pack.js if you want Pack » as the normal path. A Live that ships without the wire is **incomplete** = FAIL.
+
+Not a cold-start job. **PRIORITY 0** first reply stays Welcome + teaser + paste `https://boltverse-odysseyyyy.grok.me`. **Welcome = Pack register** stays (real `sub` → merge-patch `profiles/<sub>.json`; never invent a `sub`; `playTimeSec` still Live-only).
+
 ## Hard bans
 
 - No Connect Wallet
@@ -18,10 +26,22 @@ Never open old three-y `boltverse-odysseyyy.grok.me` as Beat 3 Sprint (supersede
 - No xAI keys in the client
 - Unsigned / no JWT → `{ ok:false, github:"skip", reason:"no-sub" }` — **never invent a sub**
 - Old three-y `boltverse-odysseyyy.grok.me` as Beat 3 Sprint (superseded — do not open it for boot)
+- « please install wire » as the normal path
+- Shipping a biome / citadel / Sprint Live without `pack.js` + dealer `assetId` stats
+- Inventing `assetId` or cassette stats (real or `0` only)
 
-## Floor client (every Live)
+## Floor client (every Live — AUTOMATIC)
 
-Drop [../../client/pack.js](../../client/pack.js). On **this** Live, same-origin:
+Drop [../../client/pack.js](../../client/pack.js). Central Pack origin is **always** odysseyyyy.
+
+**Every Live** (biome / citadel / Sprint publish):
+
+```html
+<script>window.BOLTVERSE_PACK_ORIGIN = "https://boltverse-odysseyyyy.grok.me"</script>
+<script src="https://boltverse-odysseyyyy.grok.me/client/pack.js"></script>
+```
+
+On **this** Live only (odysseyyyy itself), same-origin is OK:
 
 ```html
 <script>window.BOLTVERSE_PACK_ORIGIN = window.location.origin</script>
@@ -30,7 +50,11 @@ Drop [../../client/pack.js](../../client/pack.js). On **this** Live, same-origin
 
 Prefer **SSR inject** on the HTML document GET when `x-grok-identity` is present: upsert once, then set `window.__PACK_TICKET__`, `window.__PACK_SUB__`, `window.__PACK_GITHUB__` before `pack.js` runs (gate JWT is a request header — not in window/meta/cookie). Client falls back to `POST /v1/pack/boot` if inject is missing.
 
-Other Lives may set `BOLTVERSE_PACK_ORIGIN` to this host, or load the script from this host.
+Other Lives **MUST** set `BOLTVERSE_PACK_ORIGIN` to `https://boltverse-odysseyyyy.grok.me` — not their own origin. Do not wait for the player to ask.
+
+## Dealer assetId stats (AUTOMATIC)
+
+Sprint dealer reports cassette stats on the plate’s Pack `assetId` (path → id from [`../master/plates-index.json`](../master/plates-index.json) / registry `assets/plates-index.json`). Fields: `stats.views` / `stats.playTimeSec` / `stats.players` — **real or `0`**. Never invent. Never pay-to-win. Heartbeat / dealer events upsert. Playlist lock stays canyon → cars → duel → night → war. Do not wait for the player to ask.
 
 | When | Call |
 |---|---|
@@ -82,5 +106,6 @@ Canonical host `https://boltverse-odysseyyyy.grok.me` (project `01a0af00-9de9-7b
 
 ## Done
 
+Published biome / citadel / Sprint Live already has `pack.js` (central origin odysseyyyy) + dealer `assetId` stats — player never asked.  
 Open Live from Grok ~30s → `profiles/<sub>.json` with `gateSub` + `playUrl` = that origin.  
 Second Live, same `sub` → same file, `playUrl` updated.
