@@ -383,6 +383,17 @@ function assertSpokenWelcome(label, text, newHeading, returnHeading) {
   must(!/First Spark/.test(neu + ret) && !/Neon Drift/.test(neu + ret), label + ": Welcome/Return have no invented cassette names");
   must(!/canyon→cars→duel→night→war/.test(neu + ret), label + ": Welcome/Return have no plate deck list");
   must(!/WASD|swipe left|jump to dodge|controls lecture/i.test(neu + ret), label + ": Welcome/Return have no controls lecture");
+  must(!/world is rolling/.test(neu + ret), label + ": Welcome/Return have no world-is-rolling essay");
+  must(!/already on the road/.test(neu + ret), label + ": Welcome/Return have no already-on-the-road");
+  must(!/plant a lane/.test(neu + ret), label + ": Welcome/Return have no plant-a-lane");
+  must(!/stays in place/.test(neu + ret), label + ": Welcome/Return have no stays-in-place");
+  must(!/Swipe or tap/.test(neu + ret) && !/\bA\/D\b/.test(neu + ret), label + ": Welcome/Return have no control tutorial");
+}
+
+function assertNoImprovisedBoot(label, text) {
+  must(/HARD BAN/.test(text) && /improvised boot prose/.test(text), label + ": HARD BAN improvised boot prose");
+  must(/world is rolling/.test(text) && /plant a lane/.test(text), label + ": bans world is rolling / plant a lane");
+  must(/film-keeps-moving/.test(text) || /control tutorials/.test(text), label + ": bans control / film-keeps-moving essays");
 }
 
 function assertPlayerBoot(label, text) {
@@ -458,6 +469,14 @@ assertPlayerBoot("README.md", body("README.md"));
 assertPlayerBoot("AGENTS.md", agents);
 assertSpokenWelcome("START.md", body("START.md"), /### New/, /### Return/);
 assertSpokenWelcome("GROK.md", body("GROK.md"), /\*\*New:\*\*/, /\*\*Return:\*\*/);
+assertNoImprovisedBoot("START.md", body("START.md"));
+assertNoImprovisedBoot("GROK.md", body("GROK.md"));
+assertNoImprovisedBoot("AGENTS.md", agents);
+assertNoImprovisedBoot("biome/CONSOLE.md", body("biome/CONSOLE.md"));
+assertNoImprovisedBoot("biome/GROK.md", body("biome/GROK.md"));
+assertNoImprovisedBoot("biome/PLAY.md", body("biome/PLAY.md"));
+assertNoImprovisedBoot("biome/docs/11-plate-order.md", body("biome/docs/11-plate-order.md"));
+assertNoImprovisedBoot("biome/README.md", body("biome/README.md"));
 function assertNameLaw(label, text) {
   must(/Hey Packmate \{name\}/.test(text), label + ": opener is Hey Packmate {name}");
   must(/real Grok profile/.test(text) && /displayName/.test(text), label + ": {name} = real Grok profile displayName");

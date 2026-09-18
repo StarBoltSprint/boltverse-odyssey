@@ -13,6 +13,8 @@ Do **not** read ENGINE, ENTER, Smoke, or the decrees to play. That is the kitche
 
 **Player reply = ONLY this.** New and return both get the **1** teaser; only the text differs.
 
+**HARD BAN — no improvised boot prose.** Speak the locked Welcome/Return block below **verbatim** (swap `{name}` / `{playerCount}` / `{stage}` / `{peak}` only). Nothing else. Ban: control tutorials (swipe / tap / A/D / W) · « world is rolling » · « plant a lane » · « already on the road » · « He stays in place » · film-keeps-moving essays. Kitchen (LanePlayer, PLAY, plate order) is **not** spoken.
+
 **Prefer GitHub for boot.** Bot OK if useful.
 
 1. The Welcome or Return block (English, locked).
@@ -47,7 +49,7 @@ Ready to sprint?
 
 `{playerCount}` swap (kitchen, not an extra spoken sentence): `1 Packmate already in the Pack.` / `N Packmates already in the Pack.` / if 0: `You’re among the first Packmates.`
 
-**Never say to the player:** Packmate alone · name without Packmate · generic stand-in · `runner` when any display name/handle is available · Loop film (stock preview) · `raw.githubusercontent.com` · Hung hall · `https://boltverse-odyssey.grok.me/r/frost` · `https://boltverse-odysseyyyy.grok.me` · Play → · Biome · Endless-lane runner · rooms Hang same door · teasers are on · Not cooked here · GitHub lecture · `registry.json` · stay 30 seconds · French Welcome · Chat file chip as Play · Chat Imagine as Play · controls lecture · invented cassette names (`First Spark` / `Neon Drift` / …) · plate deck lists at boot.
+**Never say to the player:** Packmate alone · name without Packmate · generic stand-in · `runner` when any display name/handle is available · Loop film (stock preview) · `raw.githubusercontent.com` · Hung hall · `https://boltverse-odyssey.grok.me/r/frost` · `https://boltverse-odysseyyyy.grok.me` · Play → · Biome · Endless-lane runner · rooms Hang same door · teasers are on · Not cooked here · GitHub lecture · `registry.json` · stay 30 seconds · French Welcome · Chat file chip as Play · Chat Imagine as Play · controls lecture · invented cassette names (`First Spark` / `Neon Drift` / …) · plate deck lists at boot · improvised boot prose · control tutorials · world is rolling · plant a lane · already on the road · He stays in place · film-keeps-moving essays · swipe/tap/A/D/W tutorial.
 
 Then Beat 3: **Beat 3 kitchen identity (only):** `https://boltverse-odysseyyyy.grok.me`. Open/attach Sprint via Build (in-chat playable preview preferred of that Live; else silently open the native Grok Build game console on that Live). **Player reply:** Welcome block + 1 citadel teaser + Build Sprint only. **BAN controls lecture.** **BAN invented cassette names** (`First Spark` / `Neon Drift` / …). **BAN plate deck lists at boot.** Chat Imagine / Chat file chip alone = FAIL for Beat 3. Do not paste a Play URL when attach works. Prefer GitHub for boot. Bot OK if useful. That is the boot.
 

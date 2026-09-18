@@ -7,11 +7,11 @@ Play lives on the **native Grok Build game console** (in-app). This repo ships a
 [../reference/LanePlayer.tsx](../reference/LanePlayer.tsx) + [../reference/lane-css.css](../reference/lane-css.css):
 
 ```
-master-player.lane-player          VER = r38
+master-player.lane-player          VER = r38lock
  └─ lane-stage
      └─ canvas.lane-canvas         the picture
      └─ lane-decoders (hidden)
-         └─ roadA + roadB          empty plate, dual hold
+         └─ roadA + roadB          locked playlist, dual hold
          └─ bolt.vid               green-screen gallop
  └─ lane-touch / lane-pips / hint
 ```
@@ -20,7 +20,7 @@ No wallet. No keys. No Forge chrome. Films **loop forever**.
 
 ## `/master` stack
 
-Hung B-stack files: [../master/README.md](../master/README.md). Live r38 names:
+Hung B-stack files: [../master/README.md](../master/README.md). Dealer playlist is **locked** (canyon → cars → duel → night → war) — [11-plate-order.md](11-plate-order.md). Live `r38lock` names:
 
 | file | role |
 |---|---|

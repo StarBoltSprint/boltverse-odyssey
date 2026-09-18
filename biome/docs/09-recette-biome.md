@@ -17,7 +17,7 @@ Deux films, un canvas. **Jamais** un seul mp4 avec Bolt peint dans la route.
 | Cousin hazard | `master/road-bar.mp4`, `master/road-blast.mp4` | Même caméra, un obstacle **cuit dans les pixels**. |
 | Bolt | `master/bolt.mp4` | Gallop fond vert. Planté en **X only**. |
 
-Le dealer enchaîne empty → bar → blast → empty. Dual decoder, swap dans les 0.28 s de queue. `last(cousin)` **est** `first(empty)` sinon ça coupe.
+Le dealer enchaîne le **playlist lock** (jamais un random deck) : canyon → cars/spectacle → duel → night → war, puis wrap. Dual decoder, swap dans les 0.28 s de queue. `last(cousin)` **est** `first(empty)` sinon ça coupe. Ordre : [11-plate-order.md](11-plate-order.md).
 
 Imagine Agent / chat `imagine_*_video` = **interdit** (pas de `last_frame`). Films = `imagineBiomeClip`.
 
@@ -168,15 +168,38 @@ Détail : [08-plate-speed.md](08-plate-speed.md).
 
 ---
 
-## Étape 5 — Dealer (3 plaques)
+## Étape 5 — Dealer (playlist lock)
+
+**HARD LOCK.** Story order, not a shuffle. Law: [11-plate-order.md](11-plate-order.md).
 
 ```
-PLATES = [road.mp4, road-bar.mp4, road-blast.mp4]
+canyon → cars / spectacle → duel → night → war (war1 → war2 → war3)
 ```
 
-- Deux `<video>` route. Pre-arm la suivante (`srcIs`, `readyState >= 2`).
+```
+PLATES = [
+  road.mp4,        // canyon empty
+  road-bar.mp4,    // canyon
+  road-blast.mp4,  // canyon
+  road-car.mp4,    // cars
+  road-gap.mp4,    // cars
+  road-show.mp4,   // spectacle
+  road-duel.mp4,   // duel
+  road-gate.mp4,   // dusk → night
+  road-night.mp4,  // night
+  road-war1.mp4,   // war
+  road-war2.mp4,
+  road-war3.mp4,
+]
+next = (cur + 1) % PLATES.length   // wrap war3 → canyon. NEVER Math.random.
+```
+
+- Boot = index 0 (`road.mp4`). Always.
+- Deux `<video>` route. Pre-arm **l’index suivant** (`srcIs`, `readyState >= 2`). Pas un sibling au hasard.
 - Swap `currentTime >= duration - 0.28` si next ready, sinon recule à `d - 0.4` (pas de freeze queue).
 - `last(cousin) === first(empty)` visuellement.
+- Voies L/C/R : varient **dans** une plaque (`HAZARDS[].lanes`). Ça n’autorise pas un deck mélangé.
+- `r36mix` / `pickNext` occupancy shuffle = **killed**. Live must republish from this repo (Build recreate is not SoT).
 
 ---
 
@@ -258,6 +281,7 @@ Hitbox = **voie + fenêtre courte au contact des pattes**. Loin / ciel / déjà 
 | Chat Imagine / hall `imagineClip` for Bolt | No same-still in-place cable → yaw |
 | ¾ rear still or photoreal VFX Bolt | Crab-walk + wrong Pack style. Throw. No I2V |
 | Set / road / gold pipe in the Bolt still | I2V thinks scene → orbits |
+| `r36mix` / `pickNext` random deck | Story plates play out of order. Lock: [11-plate-order.md](11-plate-order.md) |
 
 ---
 
@@ -267,6 +291,7 @@ Hitbox = **voie + fenêtre courte au contact des pattes**. Loin / ciel / déjà 
 |---|---|
 | `scripts/imagine-hooks.mjs` | `imagineBiomeClip`, `imagineBoltClip`, `BIOME_*_LAW`, `BOLT_CUTOUT_LAW`, `extractLastFrame` |
 | `biome/docs/10-bolt-cutout-law.md` | HARD Bolt cutout — strict rear, `#00FF00`, in-place |
+| `biome/docs/11-plate-order.md` | HARD LOCK dealer playlist — canyon → cars → duel → night → war |
 | `scripts/plate-speed.py` | mesure px/s, `--match`, `--duration-match`, `--factor` |
 | `biome/prompts/video-empty-plate.txt` | rush 10 s constant |
 | `biome/prompts/video-hazard-plate.txt` | SPAWN + WIDTH (court) |
