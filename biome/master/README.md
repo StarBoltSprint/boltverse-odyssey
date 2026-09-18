@@ -23,4 +23,6 @@ All cousins hung at **the empty clock** (`--duration-match` → 5.75 s). Cook: [
 
 Hung binaries above are **present** on `main`. Do not invent extra mp4s. `biome/assets/` is an empty pointer — not this stack. Films stay `-an` (no SFX baked in).
 
+Pack `assetId`s (14 files, format `a_smir9_*`): [ASSETS.md](ASSETS.md) + [plates-index.json](plates-index.json). Law SoT stays on registry. Do not invent local ids.
+
 Encode: 720×1280, H264, `-an`, short GOP, `+faststart`.

@@ -39,6 +39,7 @@ This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play
 | [reference/LanePlayer.tsx](reference/LanePlayer.tsx) | r38 compositor (not a grok.me) |
 | [reference/lane-css.css](reference/lane-css.css) | 9:16 B-stack CSS |
 | [master/README.md](master/README.md) | hung road + cutout master |
+| [master/ASSETS.md](master/ASSETS.md) | Pack `assetId` pointer — law SoT on registry; do not invent local ids |
 | [../client/pack.js](../client/pack.js) | Pack client floor (boot + 30s heartbeat) |
 | [stock/biome/](../stock/biome/README.md) | optional archive (`preview-loop.mp4`) — **not attached at boot** |
 
