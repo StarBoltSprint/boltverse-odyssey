@@ -2,6 +2,8 @@
 
 Source of truth: **this repo**. Kitchen Live `https://boltverse-odysseyyyy.grok.me` must **republish** after a playlist change. Build « recreate » may ship a wrong / shuffled deck — ignore it; lock lives here.
 
+This page is **kitchen**. Never dump it as chat boot. Player-facing start = locked Welcome/Return only ([../../START.md](../../START.md)). **HARD BAN** improvised boot prose (control tutorials · « world is rolling » · « plant a lane » · film-keeps-moving essays).
+
 Dealer code: [`../reference/LanePlayer.tsx`](../reference/LanePlayer.tsx) (`PLATES` + `nextPlate`).  
 Hung files: [`../master/README.md`](../master/README.md) · [`../master/plates-index.json`](../master/plates-index.json).
 

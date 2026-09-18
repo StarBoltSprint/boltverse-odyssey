@@ -22,7 +22,9 @@ Pack Live: **[docs/07-pack-live.md](docs/07-pack-live.md)**. Never dump this to 
 ## Product
 
 Grok chat = **console** ([CONSOLE.md](CONSOLE.md)). Odyssey = **the game**.  
-*play / lance* alone → Welcome + **1** teaser (`stock/citadel/preview-loop.mp4` only) + Beat 3: open/attach Sprint via Build (in-chat playable preview preferred; else silently open the native Grok Build game console, in-app). Chat Imagine / Chat file chip alone = FAIL. **Not a cook.**
+*play / lance* alone → **exactly** the locked Welcome/Return block from [../START.md](../START.md) / [../GROK.md](../GROK.md) (COLD_START) + **1** teaser (`stock/citadel/preview-loop.mp4` only) + Beat 3: open/attach Sprint via Build (in-chat playable preview preferred; else silently open the native Grok Build game console, in-app). Chat Imagine / Chat file chip alone = FAIL. **Not a cook.**
+
+**HARD BAN — no improvised boot prose.** Do not invent Sprint tutorials. Ban: control tutorials (swipe / tap / A/D / W) · « world is rolling » · « plant a lane » · « already on the road » · « He stays in place » · film-keeps-moving essays. This cook file is kitchen — never dump it.
 
 They asked to **cook** a biome / lane / sprint plate → this file. Do not run `scripts/cook-room.mjs`. Do not invent hall `walk-spawn-A`.
 

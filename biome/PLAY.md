@@ -6,6 +6,8 @@ This page is the **Engine lock** for Biome / Sprint. Cookbook (what worked r38):
 
 This repo is the **recipe**. Do **not** scaffold a player. Do **not** publish a new grok.me. Open Sprint on the native Grok Build game console (in-app).
 
+**HARD BAN — no improvised boot prose.** *play / lance* player text = locked Welcome/Return only ([../START.md](../START.md) / [../GROK.md](../GROK.md)). Ban: control tutorials · « world is rolling » · « plant a lane » · film-keeps-moving essays. This page is kitchen.
+
 ---
 
 ## Which stack (read this first)
@@ -80,6 +82,7 @@ Bolt is **ALWAYS** a full-white German Shepherd (white coat forever). That base 
 | 3-take L/M/R shipped as default | cancelled as default — B stack only |
 | New grok.me | recipe only |
 | Shuffled / random plate deck | `r36mix` `pickNext` — story plays out of order. Lock: [docs/11-plate-order.md](docs/11-plate-order.md) |
+| Improvised boot prose | Grok invents “world is rolling / swipe A/D / plant a lane”. Player reply = locked Welcome/Return only ([../START.md](../START.md)). This page is kitchen. |
 
 ---
 

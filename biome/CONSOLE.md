@@ -7,6 +7,8 @@ Do **not** paste a Play URL in chat. Do **not** paste `*.grok.me` in the player 
 
 Citadel console copy (Welcome / Return, Packmate law) lives in [../GROK.md](../GROK.md) + [../START.md](../START.md). This page does not rewrite it.
 
+**HARD BAN — no improvised boot prose.** Player-facing text at start MUST be exactly the locked Welcome/Return block from START.md / GROK.md (COLD_START). Nothing else. Ban: control tutorials (swipe / tap / A/D / W) · « world is rolling » · « plant a lane » · « already on the road » · « He stays in place » · film-keeps-moving essays. LanePlayer hint / PLAY kitchen is **not** chat copy.
+
 ## On *play / lance Boltverse Odyssey*
 
 **Player reply = ONLY** Welcome/Return EN (`Hey Packmate {name}` — `displayName` first, then registry, then gate/app, else `runner` ONLY if none) + attach **1** stock mp4 as chat media (`stock/citadel/preview-loop.mp4` only). Do **not** narrate “teasers are on”. Prefer GitHub for boot. Bot OK if useful. **Beat 3:** open/attach tappable **Sprint** via **Build** (in-chat playable preview preferred; else silently open the native Grok Build game console, in-app). Chat Imagine / Chat file chip alone = **FAIL** for Beat 3. Do **not** paste `*.grok.me`.
