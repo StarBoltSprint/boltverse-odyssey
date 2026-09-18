@@ -25,8 +25,10 @@ Drop [../../client/pack.js](../../client/pack.js). On **this** Live, same-origin
 
 ```html
 <script>window.BOLTVERSE_PACK_ORIGIN = window.location.origin</script>
-<script src="/client/pack.js"></script>
+<script src="/client/pack.js?v=doc1"></script>
 ```
+
+Prefer **SSR inject** on the HTML document GET when `x-grok-identity` is present: upsert once, then set `window.__PACK_TICKET__`, `window.__PACK_SUB__`, `window.__PACK_GITHUB__` before `pack.js` runs (gate JWT is a request header — not in window/meta/cookie). Client falls back to `POST /v1/pack/boot` if inject is missing.
 
 Other Lives may set `BOLTVERSE_PACK_ORIGIN` to this host, or load the script from this host.
 
@@ -63,9 +65,20 @@ Always set `playUrl`, `lastSeenAt`, `updatedAt`.
 | Name | Role |
 |---|---|
 | `PACK_GITHUB_TOKEN` | PAT, `contents:write` on the registry. Skip writes if missing. |
-| `TICKET_SECRET` | optional; falls back to project id |
+| `TICKET_SECRET` | **required** for ticket issue (boot 500 `server-misconfigured` if missing) |
 
 No `.env` in this recipe. No secrets in git.
+
+## Live restore (kitchen — 4y Pack Play)
+
+Canonical host `https://boltverse-odysseyyyy.grok.me` (project `01a0af00-9de9-7b10-bb82-ecaa290ce066`) must serve the Pack API + client. Superseded three-y `boltverse-odysseyyy.grok.me` may still have a working copy — **port from there or from [boltverse-pack](https://github.com/StarBoltSprint/boltverse-pack), do not point Beat 3 at three-y.**
+
+1. On the **existing** 4y Grok Live project only — no new slug, no Built-with-Grok card, no auto top-up.
+2. Add routes: `POST /v1/pack/boot`, `POST /v1/pack/heartbeat`, `GET /v1/pack/me`, alias `POST /api/pack` (handlers in boltverse-pack `lib/handlers.ts`).
+3. Serve `/client/pack.js` + head scripts above. Prefer SSR `__PACK_TICKET__` inject on gated HTML GET.
+4. Set Live env `PACK_GITHUB_TOKEN` + `TICKET_SECRET`. Publish same 4y URL.
+5. Probe (no JWT): `POST /v1/pack/boot` → `200 {"ok":false,"github":"skip","reason":"no-sub","source":"none"}` (not SPA 404 HTML).
+6. Open 4y from Grok app ~30s → `profiles/<sub>.json` `lastSeenAt` / `playTimeSec` move.
 
 ## Done
 
