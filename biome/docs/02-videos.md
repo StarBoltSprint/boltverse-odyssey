@@ -73,4 +73,4 @@ See [../GROK.md](../GROK.md). H264, `yuv420p`, `-an`, `+faststart`, short GOP (`
 
 ## Hang
 
-PASS pair → [../master/](../master/README.md). FAIL crawl / sit / baked dog → do not Hang.
+PASS pair → [../master/](../master/README.md) as an **ADD**. FAIL crawl / sit / baked dog → do not Hang. **HARD LOCK — Hang ≠ wipe:** never `rm` hung `road.mp4` / war / night to land a new biome. Law: [09-recette-biome.md](09-recette-biome.md).

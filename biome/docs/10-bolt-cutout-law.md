@@ -80,7 +80,7 @@ Soft black / magenta / gradient / studio floor = FAIL for this cook. Recette “
 
 | Lock | Law |
 |---|---|
-| Layers | Bolt is **NOT** in the road plate. Plate = empty road. Bolt = keyed layer. |
+| Layers | Bolt is **NOT** in the road plate. Plate = empty road. Bolt = keyed layer. Recook Bolt = replace **`bolt.mp4` only**. That is OK. Do **NOT** delete road plates (`road.mp4` / war / night / …). Hang ≠ wipe: [09-recette-biome.md](09-recette-biome.md). |
 | Light | **BAKED in fur** from **one** plate frame (warm dusk rim on back / ear tips; darker belly). |
 | Never | JS reflection. Puddle shadow. |
 | Identity | Same Pack Bolt across biomes. **Only light changes.** |
@@ -165,6 +165,8 @@ Already on `main` — do not re-upload:
 | Pack pointer | [07-pack-live.md](07-pack-live.md) · [`client/pack.js`](../../client/pack.js) |
 
 Hung plates **present** under [`biome/master/`](../master/README.md): `road.mp4`, `road-bar.mp4`, `road-blast.mp4`, `road-car.mp4`, `road-gap.mp4`, `road-show.mp4`, `road-duel.mp4`, `road-gate.mp4`, `road-night.mp4`, `road-war1.mp4` … `road-war3.mp4`, `bolt.mp4`, `road.jpg`.
+
+**HARD LOCK — Hang ≠ wipe.** These road plates stay. A new biome ADDs `road-<biome>*.mp4` beside them. Recooking this layer may overwrite `bolt.mp4` only. Never `rm` the road library to “make room”.
 
 **Absent (do not invent binaries):**
 

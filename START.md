@@ -58,7 +58,7 @@ Ready to sprint?
 
 `{playerCount}` swap (kitchen, not an extra spoken sentence): `1 Packmate already in the Pack.` / `N Packmates already in the Pack.` / if 0: `You’re among the first Packmates.`
 
-**Never say to the player (Welcome fence):** Packmate alone · name without Packmate · generic stand-in · `runner` when any display name/handle is available · Loop film (stock preview) · `raw.githubusercontent.com` · Hung hall · `https://boltverse-odyssey.grok.me/r/frost` · Play → · Biome · Endless-lane runner · rooms Hang same door · teasers are on · Not cooked here · GitHub lecture · `registry.json` · stay 30 seconds · French Welcome · Chat file chip as Play · Chat Imagine as Play · controls lecture · invented cassette names (`First Spark` / `Neon Drift` / …) · plate deck lists at boot · improvised boot prose · control tutorials · world is rolling · plant a lane · already on the road · He stays in place · film-keeps-moving essays · swipe/tap/A/D/W tutorial · Pack Den URL on Welcome unless they asked. First reply PASTE written URL `https://boltverse-odysseyyyy.grok.me` in chat. Supercedes « never paste grok.me » for the first reply.
+**Never say to the player (Welcome fence):** Packmate alone · name without Packmate · generic stand-in · `runner` when any display name/handle is available · Loop film (stock preview) · `raw.githubusercontent.com` · Hung hall · `https://boltverse-odyssey.grok.me/r/frost` · Play → · Biome · Endless-lane runner · rooms Hang same door · teasers are on · Not cooked here · GitHub lecture · `registry.json` · stay 30 seconds · French Welcome · Chat file chip as Play · Chat Imagine as Play · controls lecture · invented cassette names (`First Spark` / `Neon Drift` / …) · plate deck lists at boot · improvised boot prose · control tutorials · world is rolling · plant a lane · already on the road · He stays in place · film-keeps-moving essays · swipe/tap/A/D/W tutorial · Pack Den URL on Welcome unless they asked · biome catalog / playable-runs list on Welcome unless they asked. First reply PASTE written URL `https://boltverse-odysseyyyy.grok.me` in chat. Supercedes « never paste grok.me » for the first reply.
 
 **First chat reply:** PASTE written URL `https://boltverse-odysseyyyy.grok.me` in chat (same turn as the video; player taps). Prefer open in Grok app. Supercedes « never paste grok.me » for the first reply. No yes-gate. **BAN Build rebuild / Built-with-Grok scaffold.** **Welcome = Pack register** via registry GitHub Action `pack-welcome` (chat) — not Live. After a real Grok `sub`, merge-patch `profiles/<sub>.json`. Never invent a `sub`. **playTime / boot / heartbeat** = `BOLTVERSE_PACK_ORIGIN` → StarBoltSprint/boltverse-pack on Vercel (TEMPORARY `https://boltverse-pack.vercel.app`). **HARD BAN:** treating `https://boltverse-odysseyyyy.grok.me` as the Pack API host for registry writes (game play URL stays odysseyyyy; Pack API does not). Old « playTimeSec Live-only » / « chat start does not upsert » are **SUPERSEDED**. **Never rebuild from GitHub.**
 
@@ -80,6 +80,29 @@ https://x.com/i/chat/group_join/g2028659912277180482/M364z39064
 ```
 
 Full Pack law: [`StarBoltSprint/boltverse-registry` PACK.md](https://github.com/StarBoltSprint/boltverse-registry/blob/main/PACK.md). Odyssey still carries the URL so this repo alone is enough.
+
+## HARD — Chat biome catalog (on ask)
+
+If the player asks **what biomes** / **playable biomes** / **list biomes** / **which runs** / **what can I play** (any close alias): English Pack voice + a **short list of hung biomes only** (from hung `master` / `plates-index` — never invent). **On ask only.** Do **not** dump this on Welcome / cold-start.
+
+Each line: biome name + optional one-short flavor. No kitchen paths. No GitHub. No API jargon. Then how to pick: `play canyon` / `play Tide` / `only Tide` — start that run (or paste the Live + filter dealer). Unhung name → not hung yet.
+
+No chrome biome picker in the Live UI. Chat list + spoken pick is v1. Hang grows this catalog; wipe shrinks it = FAIL. Kitchen: [`biome/docs/09-recette-biome.md`](biome/docs/09-recette-biome.md).
+
+Hung chapters **now** (do not invent extra names): canyon · cars · duel · night · war.
+
+Player voice (example — swap only if the hung set changed):
+
+```
+Hung runs:
+Canyon — dusk road
+Cars
+Duel
+Night
+War
+
+Say play canyon — or only war for that run alone.
+```
 
 ## Citadel
 
@@ -150,3 +173,7 @@ For Grok only. Boot attaches **only** the Citadel preview. **Never print the pat
 5. [`biome/docs/05-key.md`](biome/docs/05-key.md) + [`biome/reference/LanePlayer.tsx`](biome/reference/LanePlayer.tsx)
 6. [`biome/docs/10-bolt-cutout-law.md`](biome/docs/10-bolt-cutout-law.md) — HARD Bolt cutout (strict rear, `#00FF00`, in-place gallop)
 Never dump this to the player.
+
+**HARD LOCK — Hang ≠ wipe.** New biome = ADD plates + `plates-index` / dealer entries. KEEP canyon→cars→duel→night→war. NEVER wipe masters. Tide-only playlist = FAIL. Law: [`biome/docs/09-recette-biome.md`](biome/docs/09-recette-biome.md).
+
+**HARD LOCK — Chat biome catalog (on ask).** **what biomes** / **which runs** / **what can I play** → hung chapters only (never invent). `play canyon` / `only Tide`. Never on Welcome. Hang grows the list; wipe shrinks it = FAIL.

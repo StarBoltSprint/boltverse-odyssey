@@ -19,6 +19,8 @@ One picture. Two films. Canvas does the rest. **Do not redraw the dog.**
 
 Not three films. Not a luma SVG. Not a pan of the road.
 
+**HARD LOCK — Hang ≠ wipe.** New biome ADDs plates beside this hung `/master` stack. KEEP `road.mp4` + war/night. NEVER wipe to Tide-only. Law: [09-recette-biome.md](09-recette-biome.md).
+
 ---
 
 ## Keep — in paint order

@@ -39,4 +39,4 @@ This does **not** replace first+last. A slow cousin that ends under a bar still 
 1. `imagineBiomeClip` (first + last_frame)
 2. encode (already in the hook)
 3. `plate-speed.py --ref empty --match` if px/s is off
-4. Hang PASS into `biome/master/`
+4. Hang PASS into `biome/master/` — **ADD** the new file. Never `rm` hung `road.mp4` / war / night to “make room”. Hang ≠ wipe: [09-recette-biome.md](09-recette-biome.md).
