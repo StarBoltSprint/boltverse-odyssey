@@ -23,7 +23,9 @@ Do **not** paste that URL in a player reply. Never open old three-y `boltverse-o
 
 **HARD LOCK — make / add a biome.** Décor scrolls (rush); Bolt sprints **IN PLACE** (treadmill). Mid-lane. **48fps**. Teacher = `lock/bolt-back.jpg`. Pipeline (do not invert): empty plaque ZERO dog → Video A `imagineBiomeClip` first+last → Video B gait (same décor + Bolt mid-lane IN PLACE; kitchen, not Hung) → extract cycle → repose `#00FF00` → `imagineBoltClip` first+last = cycle bookends on green → chroma key onto A. L/M/R = code X shift of **one** Bolt layer. **Never** chat Imagine alone. **Never** hall `imagineClip`. **Never** a single baked final film. **Never** a 3-Bolt mask. No `XAI_API_KEY` → REFUSE / stock. Law: [docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md) · [docs/09-recette-biome.md](docs/09-recette-biome.md).
 
-**HARD LOCK — Chat biome catalog (on ask).** **what biomes** / **which runs** / **what can I play** → English Pack voice, hung chapters only (never invent). How to pick: `play canyon` / `play Tide` / `only Tide`. Never on Welcome. No chrome picker. Hang grows the list; wipe shrinks it = FAIL.
+**HARD LOCK — new biome cook (SmiR 2026-09-18 FAIL).** Make/add a **new biome** (any name — Tide, Frost, Ember, invented): **Hang only** the new plates beside existing masters. Do **NOT** rebuild canyon→cars→duel→night→war first. Do **NOT** require Beat 3 recook as a gate. Old Beat stays playable without recook. Bolt = always `@ref` [`lock/bolt-back.jpg`](../lock/bolt-back.jpg). **BAN** copying hung `biome/master/bolt.mp4` / canyon Bolt as identity. Light bake from the **new** empty plaque OK; identity = teacher. Name + décor `{PAINT}` allowed / encouraged. Tide is one example. Never refuse “I can only do Tide.” Pipeline + hooks first/last still apply. Chat catalog lists **hung** biomes only; a biome in cook is not hung until hung.
+
+**HARD LOCK — Chat biome catalog (on ask).** **what biomes** / **which runs** / **what can I play** → English Pack voice, hung chapters only (never invent). How to pick: `play canyon` / `play Tide` / `only Tide`. Never on Welcome. No chrome picker. Hang grows the list; wipe shrinks it = FAIL. A biome in cook is not hung until hung.
 
 Pack Live: **[docs/07-pack-live.md](docs/07-pack-live.md)**. Never dump this to the player.
 
@@ -135,7 +137,7 @@ python3 scripts/plate-speed.py --match --ref biome/master/road.mp4 biome/master/
 
 ## Hang
 
-**HARD LOCK — Hang ≠ wipe.** Drop PASS **new** files into [master/](master/README.md) **alongside** hung plates. ADD `road-<biome>*.mp4`. KEEP `road.mp4` / war / night. NEVER `rm` the stack. NEVER set playlist to new-biome-only unless the player explicitly asks to replace the default Beat. Recook Bolt may replace `bolt.mp4` only.
+**HARD LOCK — Hang ≠ wipe.** Drop PASS **new** files into [master/](master/README.md) **alongside** hung plates. ADD `road-<biome>*.mp4`. KEEP `road.mp4` / war / night. NEVER `rm` the stack. NEVER set playlist to new-biome-only unless the player explicitly asks to replace the default Beat. Recook Bolt may replace `bolt.mp4` only after `@ref` `lock/bolt-back.jpg` — **BAN** copying hung canyon Bolt. Do **NOT** rebuild canyon→war first.
 
 Drop PASS files into [master/](master/README.md). Optional biome preview (archive — **not attached at boot**): [../stock/biome/](../stock/biome/README.md). Boot teaser: [../stock/citadel/](../stock/citadel/README.md).
 
@@ -161,5 +163,8 @@ Every Live drops [../client/pack.js](../client/pack.js) with `BOLTVERSE_PACK_ORI
 - Recook to hide a key bug
 - Full-width hazard on LEFT+CENTER+RIGHT (nowhere to dodge)
 - Wipe hung `biome/master` / `public/master` to “make room” for a new biome (Hang ≠ wipe — Tide cook FAIL)
+- Rebuild canyon→cars→duel→night→war first, or require Beat 3 recook as a gate, before hanging a new biome
+- Copy hung `biome/master/bolt.mp4` / canyon Bolt as the new-biome identity (always `@ref` `lock/bolt-back.jpg`)
+- Refuse a new biome name / “I can only do Tide” (name + `{PAINT}` allowed; Tide is one example)
 - Playlist = new-biome-only unless SmiR / player explicitly says replace the default Beat
-- Dump the chat biome catalog on Welcome, or invent unhung biome names (on ask; hung chapters only)
+- Dump the chat biome catalog on Welcome, or invent unhung biome names (on ask; hung chapters only; a biome in cook is not hung until hung)

@@ -7,6 +7,8 @@ Read with [09-recette-biome.md](09-recette-biome.md) · [05-key.md](05-key.md) �
 
 **Product method (make / add a biome):** décor scrolls (rush); Bolt sprints **IN PLACE** (treadmill). Mid-lane for the gait cook. **48fps** on cooked plates. Style teacher = [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) (`@ref`). Hang ≠ wipe.
 
+**HARD LOCK — new biome Bolt (SmiR 2026-09-18 FAIL).** New biome (any name — Tide, Frost, Ember, invented): **always** `@ref` [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg). **BAN** copying hung `biome/master/bolt.mp4` / canyon Bolt as the identity. Light bake from the **new** empty plaque is OK; identity = teacher. Hang **only** the new plates beside existing masters. Do **NOT** rebuild canyon→war first. Do **NOT** require Beat 3 recook as a gate. Name + décor `{PAINT}` allowed / encouraged. Tide is one example. Never refuse “I can only do Tide.” Pipeline below + hooks first/last still apply. Catalog lists **hung** biomes only; a biome in cook is not hung until hung.
+
 **HARD — hooks first + last.** Road / empty rush = [`imagineBiomeClip`](../../scripts/imagine-hooks.mjs) (`image` + distinct `last_frame`). Bolt cutout = [`imagineBoltClip`](../../scripts/imagine-hooks.mjs) (`first` + `last` = cycle bookends on green). Chat Imagine UI alone = **banned**. Imagine Agent video without first+last = **banned**. Hall `imagineClip` = **banned** for this layer. If hooks / `XAI_API_KEY` unavailable → **REFUSE** / stock. Do **not** fall back to chat I2V.
 
 **Word “rear” alone is not enough.** I2V ignores “never yaw” unless the still is already **100% strict rear** AND the clip is **IN PLACE / treadmill**. Green-only I2V from a single still invents a walk — that is why Video B exists.
@@ -95,10 +97,10 @@ Video B (gait source) is the **one** kitchen exception: same décor rush as Vide
 
 | Lock | Law |
 |---|---|
-| Layers | Bolt is **NOT** in the hung road plate. Plate = empty road (Video A). Bolt = keyed layer. Recook Bolt = replace **`bolt.mp4` only**. That is OK. Do **NOT** delete road plates (`road.mp4` / war / night / …). Hang ≠ wipe: [09-recette-biome.md](09-recette-biome.md). |
-| Light | **BAKED in fur** from **one** A/B road frame (warm dusk rim on back / ear tips; darker belly). Light only. |
-| Never | JS reflection. Puddle shadow. Baking Bolt into a **single final film** with no cutout stack. |
-| Identity | Same Pack Bolt across biomes. **Only light changes.** |
+| Layers | Bolt is **NOT** in the hung road plate. Plate = empty road (Video A). Bolt = keyed layer. Recook Bolt = replace **`bolt.mp4` only** after a **teacher-ref** cook (`@ref` `lock/bolt-back.jpg`). That is OK. **BAN** copying hung `biome/master/bolt.mp4` / canyon Bolt as the new-biome identity. Do **NOT** delete road plates (`road.mp4` / war / night / …). Hang ≠ wipe: [09-recette-biome.md](09-recette-biome.md). |
+| Light | **BAKED in fur** from **one** A/B road frame of **this** biome’s empty plaque (warm dusk rim on back / ear tips; darker belly). Light only. |
+| Never | JS reflection. Puddle shadow. Baking Bolt into a **single final film** with no cutout stack. Copying hung canyon `bolt.mp4` as identity. |
+| Identity | Same Pack Bolt across biomes via the **teacher**, not a file copy. **Only light changes.** |
 | Plant | Paws already glued in the film. Game plants on the **bottom of the blob**. |
 | Lanes | L/M/R = code **X shift of one Bolt layer**. Never three Bolts. Never a 3-lane mask. |
 
@@ -218,7 +220,7 @@ Already on `main` — do not re-upload:
 
 Hung plates **present** under [`biome/master/`](../master/README.md): `road.mp4`, `road-bar.mp4`, `road-blast.mp4`, `road-car.mp4`, `road-gap.mp4`, `road-show.mp4`, `road-duel.mp4`, `road-gate.mp4`, `road-night.mp4`, `road-war1.mp4` … `road-war3.mp4`, `bolt.mp4`, `road.jpg`.
 
-**HARD LOCK — Hang ≠ wipe.** These road plates stay. A new biome ADDs `road-<biome>*.mp4` beside them. Recooking this layer may overwrite `bolt.mp4` only. Never `rm` the road library to “make room”.
+**HARD LOCK — Hang ≠ wipe.** These road plates stay. A new biome ADDs `road-<biome>*.mp4` beside them. Recooking this layer may overwrite `bolt.mp4` only **after** a teacher-ref cook (`@ref` `lock/bolt-back.jpg`). **BAN** copying hung `bolt.mp4` / canyon Bolt as the new-biome identity. Never `rm` the road library to “make room”. Do **NOT** rebuild canyon→war first.
 
 **Absent (do not invent binaries):**
 
