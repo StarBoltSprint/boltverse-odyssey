@@ -652,4 +652,20 @@ must(/boltverse-pack\.vercel\.app/.test(body("client/pack.js")) && /TEMPORARY/.t
 must(!/your-pack\.vercel\.app/.test(body("client/pack.js")), "client/pack.js: no YOUR-PACK placeholder");
 must(/auto-register/.test(body("biome/docs/07-pack-live.md")), "07-pack-live: first gated Live open auto-registers");
 
+function assertHardLockEmbed(label, text) {
+  must(/HARD LOCK/.test(text), label + ": HARD LOCK");
+  must(/auto-embed Pack/.test(text), label + ": auto-embed Pack");
+  must(/Naked Live without Pack/.test(text), label + ": Naked Live without Pack = FAIL");
+  must(/boltverse-registry/.test(text), label + ": auto-registers on central boltverse-registry");
+  must(/no Build at start/.test(text), label + ": cold-start no Build at start");
+  must(/This lock is for when a Live is actually created\/published/.test(text), label + ": lock is for when a Live is created/published");
+  must(/TEMPORARY vercel/.test(text), label + ": TEMPORARY vercel");
+}
+
+assertHardLockEmbed("biome/docs/07-pack-live.md", body("biome/docs/07-pack-live.md"));
+assertHardLockEmbed("START.md", body("START.md"));
+assertHardLockEmbed("GROK.md", body("GROK.md"));
+assertHardLockEmbed("GROK.md Customize", customize);
+must(/HARD LOCK/.test(agents) && /auto-embed Pack/.test(agents) && /Naked Live without Pack/.test(agents), "AGENTS.md: HARD LOCK auto-embed Pack");
+
 console.log("COLD-START PASS");
