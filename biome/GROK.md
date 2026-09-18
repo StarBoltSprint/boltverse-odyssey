@@ -19,6 +19,8 @@ Do **not** paste that URL in a player reply. Never open old three-y `boltverse-o
 
 **HARD LOCK — Hang ≠ wipe.** New biome = ADD `road-<biome>*.mp4` + plates-index / dealer entries. KEEP hung canyon→cars→duel→night→war. NEVER `rm` masters. Recook Bolt = `bolt.mp4` only. Law: [docs/09-recette-biome.md](docs/09-recette-biome.md).
 
+**HARD — Bolt style teacher (make / add a biome).** Use [`lock/bolt-back.jpg`](../lock/bolt-back.jpg) as the Bolt style ref for the cutout layer (coat + silhouette + strict rear). @ref / Imagine reference that file for every Bolt still/clip. Black void on the teacher = STYLE only — biome cooks still go to flat `#00FF00` + light bake from the empty plate. Hang ≠ wipe still holds. Never dump this on Welcome.
+
 **HARD LOCK — Chat biome catalog (on ask).** **what biomes** / **which runs** / **what can I play** → English Pack voice, hung chapters only (never invent). How to pick: `play canyon` / `play Tide` / `only Tide`. Never on Welcome. No chrome picker. Hang grows the list; wipe shrinks it = FAIL.
 
 Pack Live: **[docs/07-pack-live.md](docs/07-pack-live.md)**. Never dump this to the player.
@@ -41,7 +43,7 @@ Two Imagine jobs. Never one mp4 with Bolt painted into the road.
 | Layer | Stills | Film |
 |---|---|---|
 | **Road** (master) | empty-plate first + last — **ZERO dog** | `imagineBiomeClip` `image` + `last_frame` (distinct) |
-| **Bolt cutout** | Bolt mid still — **strict rear**, already sprinting, flat `#00FF00` ([docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md)) | `imagineBoltClip` gallop: first + last = **the same still** (in place, 6 s) |
+| **Bolt cutout** | Bolt mid still — **strict rear**, already sprinting, flat `#00FF00` — style ref [`lock/bolt-back.jpg`](../lock/bolt-back.jpg) ([docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md)) | `imagineBoltClip` gallop: first + last = **the same still** (in place, 6 s) |
 
 Prompts: [prompts/](prompts/). Law: [docs/01-images.md](docs/01-images.md) · [docs/02-videos.md](docs/02-videos.md) · [docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md).
 

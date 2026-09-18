@@ -28,13 +28,13 @@ Paste: [../prompts/image-hazard-plate.txt](../prompts/image-hazard-plate.txt).
 
 ONE full-white German Shepherd. White coat forever. Teal **fabric** collar from behind (not chrome). **100% STRICT REAR** (tail center, back of ears; muzzle hidden). Lower third. **ALREADY in sprint** — one rear leg extended. **Never** standing still, sit, face, ¾, cheek, flank.
 
-STYLE: stylized heroic 3D game shepherd (chunky clean fur, bold silhouette). **NOT** photoreal.
+STYLE: match [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) — fluffy white GSD rear, coat + silhouette + strict rear. Not a different dog. **NOT** photoreal.
 
 Background: **flat `#00FF00` ONLY**. No road, city, gold pipe, ring, puddle, floor, drawn shadow, halo, set. Soft black / magenta = FAIL for this cook.
 
 Paste: [../prompts/image-bolt-mid.txt](../prompts/image-bolt-mid.txt).
 
-Identity teacher for the coat: [../../lock/bolt-back.jpg](../../lock/bolt-back.jpg) — coat only, not hall scale. Copy **this** camera if the teacher is already strict rear.
+Identity teacher = [../../lock/bolt-back.jpg](../../lock/bolt-back.jpg) — **this still**. Coat + silhouette + strict rear. **@ref / Imagine reference** it for every Bolt still/clip. Black void teacher = STYLE only; biome cooks still go to flat `#00FF00` + light bake from the empty plate. Copy **this** camera (already strict rear).
 
 ## Banned
 
