@@ -19,6 +19,8 @@ This folder is the Sprint **`/master` stack** the LanePlayer wires.
 | `bolt.mp4` | Bolt green-screen gallop |
 | `road.jpg` | poster |
 
-All cousins hung at **the empty clock** (`--duration-match` → 5.75 s). Cook: [../docs/09-recette-biome.md](../docs/09-recette-biome.md).
+All cousins hung at **the empty clock** (`--duration-match` → 5.75 s). Cook: [../docs/09-recette-biome.md](../docs/09-recette-biome.md). Bolt cutout: [../docs/10-bolt-cutout-law.md](../docs/10-bolt-cutout-law.md).
+
+Hung binaries above are **present** on `main`. Do not invent extra mp4s. `biome/assets/` is an empty pointer — not this stack. Films stay `-an` (no SFX baked in).
 
 Encode: 720×1280, H264, `-an`, short GOP, `+faststart`.

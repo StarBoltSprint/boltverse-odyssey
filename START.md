@@ -109,11 +109,12 @@ For Grok only. Boot attaches **only** the Citadel preview. **Never print the pat
 - **Open Sprint** = Pack profile save; zero second login. Speak `Open Sprint — Pack save, zero login.` No “stay 30 seconds”.
 - **Hard `gateSub` upsert** = Live HTML open only. Chat-only start does **not** write a Pack profile. Welcome / Return = ENGLISH only. No French in the player reply.
 - Hung citadel recipe (kitchen): https://boltverse-odyssey.grok.me/r/frost
-- Biome / lane recipe = [`biome/`](biome/README.md) (PLAY · `06-techniques` · `09-recette-biome` · LanePlayer · `/master`). [`bolt-lane-recipe`](https://github.com/StarBoltSprint/bolt-lane-recipe) may remain as archive.
+- Biome / lane recipe = [`biome/`](biome/README.md) (PLAY · `06-techniques` · `09-recette-biome` · `10-bolt-cutout-law` · LanePlayer · `/master`). [`bolt-lane-recipe`](https://github.com/StarBoltSprint/bolt-lane-recipe) may remain as archive.
 - **MUST read before cooking** (biome / Sprint cook / lane / B-stack / green-screen / chroma):
   1. [`biome/PLAY.md`](biome/PLAY.md)
   2. [`biome/docs/06-techniques.md`](biome/docs/06-techniques.md) (r38 techniques bible)
   3. **[`biome/docs/09-recette-biome.md`](biome/docs/09-recette-biome.md)** — REQUIRED full checklist (empty→cousin→speed→dealer→box; SPAWN/WIDTH; road-bar/blast)
-  4. [`biome/docs/08-plate-speed.md`](biome/docs/08-plate-speed.md) when matching cousin rush
-  5. [`biome/docs/05-key.md`](biome/docs/05-key.md) + [`biome/reference/LanePlayer.tsx`](biome/reference/LanePlayer.tsx)
-  Never dump this to the player.
+4. [`biome/docs/08-plate-speed.md`](biome/docs/08-plate-speed.md) when matching cousin rush
+5. [`biome/docs/05-key.md`](biome/docs/05-key.md) + [`biome/reference/LanePlayer.tsx`](biome/reference/LanePlayer.tsx)
+6. [`biome/docs/10-bolt-cutout-law.md`](biome/docs/10-bolt-cutout-law.md) — HARD Bolt cutout (strict rear, `#00FF00`, in-place gallop)
+Never dump this to the player.
