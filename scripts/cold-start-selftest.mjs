@@ -668,12 +668,12 @@ function assertTeacherGate(label, text) {
   must(/PRIORITY 0 TEACHER GATE/.test(text), label + ": PRIORITY 0 TEACHER GATE");
   must(/Attach \/ show that exact image/.test(text), label + ": attach/show teacher in Build chat");
   must(/lock\/bolt-back\.jpg/.test(text) && /biome\/lock\/bolt-back\.jpg/.test(text), label + ": both teacher paths");
-  must(/teacher not shown/.test(text) && /STOP\. No cook\. FAIL/.test(text), label + ": no teacher → STOP. No cook. FAIL");
+  must(/teacher(?: is)? not shown/.test(text) && /STOP\. No cook\. FAIL/.test(text), label + ": no teacher → STOP. No cook. FAIL");
   must(/Soft KEEP banned without teacher/.test(text), label + ": Soft KEEP banned without teacher proof");
   must(/biome\/master\/bolt\.mp4/.test(text) && /OUTPUT only/.test(text) && /never @ref as style teacher/.test(text), label + ": ban hung bolt as teacher");
   must(/bolt-back-prev/.test(text) && /archive only/.test(text), label + ": ban bolt-back-prev as teacher");
   must(/lock\/RIG-\*/.test(text) && /lock\/SEAL-\*/.test(text) && /lock\/example-\*/.test(text) && /lock\/sill-\*/.test(text), label + ": ban hall locks as biome teacher");
-  must(/NOT Sprint biome Bolt teacher/.test(text), label + ": hall locks are NOT Sprint biome Bolt teacher");
+  must(/NOT(?:\*\*)? Sprint biome Bolt teacher/.test(text), label + ": hall locks are NOT Sprint biome Bolt teacher");
   must(/bolt-rear-\*\.jpg/.test(text), label + ": ban invented bolt-rear-*.jpg");
 }
 

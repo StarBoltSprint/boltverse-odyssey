@@ -220,7 +220,7 @@ must(createHash("md5").update(readFileSync(join(root, "lock/bolt-back.jpg"))).di
 must(/PRIORITY 0 TEACHER GATE/.test(boltLaw), "10-law: PRIORITY 0 TEACHER GATE");
 must(/never @ref as style teacher/.test(boltLaw) && /biome\/master\/bolt\.mp4/.test(boltLaw), "10-law: ban hung bolt as teacher");
 must(/bolt-back-prev/.test(boltLaw) && /archive only/.test(boltLaw), "10-law: ban bolt-back-prev");
-must(/NOT Sprint biome Bolt teacher/.test(boltLaw), "10-law: hall locks are not biome teacher");
+must(/NOT(?:\*\*)? Sprint biome Bolt teacher/.test(boltLaw), "10-law: hall locks are not biome teacher");
 must(/IN PLACE/.test(boltClipPaste) && /treadmill/.test(boltClipPaste) && /NEVER yaw/.test(boltClipPaste), "video-bolt-mid: in place, never yaw");
 must(/48fps/.test(boltClipPaste) && /cycle end on green/.test(boltClipPaste), "video-bolt-mid: 48fps + cycle bookends");
 must(/lock\/bolt-back\.jpg/.test(boltStillPaste), "image-bolt-mid: style teacher lock/bolt-back.jpg");
