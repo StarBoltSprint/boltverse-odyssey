@@ -19,7 +19,7 @@ Deux films, un canvas. **Jamais** un seul mp4 avec Bolt peint dans la route.
 
 Le dealer enchaîne le **playlist lock** (jamais un random deck) : canyon → cars/spectacle → duel → night → war, puis wrap. Dual decoder, swap dans les 0.28 s de queue. `last(cousin)` **est** `first(empty)` sinon ça coupe. Ordre : [11-plate-order.md](11-plate-order.md).
 
-Imagine Agent / chat `imagine_*_video` = **interdit** (pas de `last_frame`). Films = `imagineBiomeClip`.
+Imagine Agent / chat `imagine_*_video` = **interdit** (pas de `last_frame`). Road = `imagineBiomeClip`. Bolt = `imagineBoltClip` (cycle bookends on green). **48fps**. Pipeline: [10-bolt-cutout-law.md](10-bolt-cutout-law.md).
 
 ---
 
@@ -44,6 +44,24 @@ Tide cook FAIL: Grok deleted canyon / war masters and left only Tide. Do not rep
 - NEVER set the playlist to new-biome-only unless the player **explicitly** asks to replace the default Beat. SmiR must say replace default Beat — otherwise keep the hung order.
 
 Playlist / index law: [11-plate-order.md](11-plate-order.md).
+
+---
+
+## HARD LOCK — make / add a biome (SmiR 2026-09-18)
+
+When a player asks **make a biome** / **add a biome** / cook a new sprint run: décor scrolls (rush); Bolt sprints **IN PLACE** (treadmill). Mid-lane for the gait cook. **48fps** on cooked plates. Style teacher = [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) (`@ref`) — fluffy white GSD rear; **this still IS Bolt**. Black void on the teacher = STYLE only; cooks go to flat `#00FF00`. Hang ≠ wipe.
+
+**Do not invert.** Full law: [10-bolt-cutout-law.md](10-bolt-cutout-law.md).
+
+1. Empty plaque still — ZERO dog (`image-empty-plate.txt` + `{PAINT}`). Camera locked (not too far / not too close).
+2. Video A empty rush — `imagineBiomeClip` real `image` + distinct `last_frame`. **48fps**. ZERO dog.
+3. Video B gait source — SAME décor + Bolt mid-lane IN PLACE, `@ref` `lock/bolt-back.jpg`. **48fps**. Kitchen only — do **not** Hang. Green-only I2V invents walk.
+4. Extract one gallop cycle from B (start, 2–3 mids chronological, end ≈ start).
+5. Repose cycle onto flat `#00FF00`. Light bake from one A/B road frame OK (light only).
+6. `imagineBoltClip` — `first` / `last` = cycle bookends on green. `promptFile` `biome/prompts/video-bolt-mid.txt`. **48fps**. IN PLACE.
+7. Chroma key ([05-key.md](05-key.md)) → plant on Video A. Match rates (no skate). L/M/R = code X shift of **one** Bolt layer.
+
+**HARD BAN — chat Imagine alone.** Hooks first+last. Hall `imagineClip` banned here. Baking Bolt into a single final film = FAIL. 3-Bolt multi-lane mask = FAIL. No `XAI_API_KEY` → **REFUSE** / stock — do not fall back to chat I2V.
 
 ---
 
@@ -114,18 +132,20 @@ Hang **seulement** si le travelling est un rush, pas un pan de still.
 
 ## Étape 2 — Bolt (une fois, ne pas recuire sans raison)
 
-**HARD law:** [10-bolt-cutout-law.md](10-bolt-cutout-law.md). Do not skip.
+**HARD law:** [10-bolt-cutout-law.md](10-bolt-cutout-law.md). Do not skip. B→cycle→green→key. **48fps**.
 
-Still = **100% strict rear**, already in sprint (one rear leg extended), teal **fabric** collar, flat **`#00FF00` only**.  
-STYLE teacher = [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) — fluffy white GSD rear; **@ref** that still. Black void = STYLE only; cook dest stays `#00FF00`. **Not** photoreal. ¾ rear = THROW (crab-walk). Any set in the still → I2V orbits.
+Still (after Video B cycle extract) = **100% strict rear**, already in sprint (one rear leg extended), teal **fabric** collar, flat **`#00FF00` only**.  
+STYLE teacher = [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) — fluffy white GSD rear; **@ref** that still. Black void = STYLE only; cook dest stays `#00FF00`. **Not** photoreal. ¾ rear = THROW (crab-walk). Any set in the **green** still → I2V orbits.
 
-Film = `imagineBoltClip` (`image` + `last_frame` = **same still**, 6 s, IN PLACE / treadmill).  
+Video B (gait source) = SAME décor rush as Video A + Bolt mid-lane IN PLACE. Kitchen — **not** Hung. Green-only I2V invents walk.
+
+Film = `imagineBoltClip` (`first` + `last` = **cycle bookends on green**, 6 s, **48fps**, IN PLACE / treadmill).  
 **Not** hall `imagineClip`. **Not** chat Imagine. Word “rear” alone is not enough.
 
 ```js
 await imagineBoltClip({
-  first: "bolt-rear.jpg",
-  last: "bolt-rear.jpg",
+  first: "bolt-cycle-start.jpg",
+  last: "bolt-cycle-end.jpg",   // ≈ start — in place
   dest: "biome/master/bolt.mp4",
   seconds: 6,
   promptFile: "biome/prompts/video-bolt-mid.txt",
@@ -133,8 +153,8 @@ await imagineBoltClip({
 ```
 
 QC frames 0 / 2 / 4 / 5.8 — one yaw frame = throw the clip.  
-Play = Vlahos + crown sat kill + feather 1 px + ombre ellipse aux pattes. [05-key.md](05-key.md).  
-**Ne pas** redessiner le chien. **Ne pas** le recuire si le key est déjà bon.
+Play = Vlahos + crown sat kill + feather 1 px + ombre ellipse aux pattes. [05-key.md](05-key.md). L/M/R = X shift of **one** Bolt layer.  
+**Ne pas** redessiner le chien. **Ne pas** le recuire si le key est déjà bon. **Ne pas** cuire Bolt dans un seul film final.
 
 ---
 
@@ -297,9 +317,10 @@ Chaque cousin a **sa** fenêtre : un speck au vanishing point n’est pas encore
 ## Ordre de cuisine (ne pas inverser)
 
 ```
-1. empty stills + imagineBiomeClip 10s          → road.mp4
+1. empty stills + imagineBiomeClip 10s 48fps    → Video A / road.mp4   (ZERO dog)
 2. extract empty-first / empty-last
-2b. Bolt rear still + imagineBoltClip 6s SAME still → bolt.mp4 (law 10)
+2b. Video B gait (same décor + Bolt mid-lane IN PLACE, 48fps) — kitchen, not Hung
+2c. extract ONE cycle → repose on #00FF00 → imagineBoltClip first+last bookends 48fps → bolt.mp4 (law 10)
 3. dress still cousin (objet loin, 1–2 voies)   → QC still
 4. imagineBiomeClip first+last, kind=hazard 10s → cousin.mp4
 5. QC 5 frames (spawn + lanes + last=empty)
@@ -338,7 +359,10 @@ Hitbox = **voie + fenêtre courte au contact des pattes**. Loin / ciel / déjà 
 | Stun lanes après hit | Empêche de **contourner** la boîte |
 | Overlay sticker sur route vide | Désaligne le monde (sauf si tu assumes le sticker) |
 | Recuire Bolt pour « améliorer » | Casse le key / le gallop déjà bon |
-| Chat Imagine / hall `imagineClip` for Bolt | No same-still in-place cable → yaw |
+| Chat Imagine / hall `imagineClip` for Bolt | No first+last in-place cable → yaw / walk. Hooks only. |
+| Green-only I2V from one still (skip Video B) | Invents walk. Extract cycle from B, repose on green. |
+| Bake Bolt into one final road film | No cutout stack. FAIL. |
+| 3-Bolt multi-lane mask | L/M/R = code X shift of **one** Bolt layer. |
 | ¾ rear still or photoreal VFX Bolt | Crab-walk + wrong Pack style. Throw. No I2V |
 | Set / road / gold pipe in the Bolt still | I2V thinks scene → orbits |
 | `r36mix` / `pickNext` random deck | Story plates play out of order. Lock: [11-plate-order.md](11-plate-order.md) |
@@ -353,7 +377,7 @@ Hitbox = **voie + fenêtre courte au contact des pattes**. Loin / ciel / déjà 
 | Path | Rôle |
 |---|---|
 | `scripts/imagine-hooks.mjs` | `imagineBiomeClip`, `imagineBoltClip`, `BIOME_*_LAW`, `BOLT_CUTOUT_LAW`, `extractLastFrame` |
-| `biome/docs/10-bolt-cutout-law.md` | HARD Bolt cutout — strict rear, `#00FF00`, in-place |
+| `biome/docs/10-bolt-cutout-law.md` | HARD Bolt cutout — B→cycle→green→key, 48fps, hooks first+last |
 | `biome/docs/11-plate-order.md` | HARD LOCK dealer playlist — canyon → cars → duel → night → war. New biome = new entries. Hang ≠ wipe. |
 | `scripts/plate-speed.py` | mesure px/s, `--match`, `--duration-match`, `--factor` |
 | `biome/prompts/video-empty-plate.txt` | rush 10 s constant |

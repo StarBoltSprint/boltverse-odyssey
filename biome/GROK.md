@@ -12,7 +12,7 @@ Do **not** paste that URL in a player reply. Never open old three-y `boltverse-o
 1. **[PLAY.md](PLAY.md)** — engine lock
 2. **[docs/06-techniques.md](docs/06-techniques.md)** — what worked r38 (Sprint cook bible)
 3. **[docs/09-recette-biome.md](docs/09-recette-biome.md)** — empty → cousin → speed → dealer → box
-4. **[docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md)** — HARD Bolt cutout (strict rear, `#00FF00`, in-place gallop)
+4. **[docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md)** — HARD Bolt cutout (B→cycle→green→key, 48fps, hooks first+last)
 5. **[docs/11-plate-order.md](docs/11-plate-order.md)** — HARD LOCK dealer playlist (canyon → cars → duel → night → war)
 6. **[docs/05-key.md](docs/05-key.md)** — chroma + crown, not luma
 7. **[reference/LanePlayer.tsx](reference/LanePlayer.tsx)** — r38 compositor
@@ -20,6 +20,8 @@ Do **not** paste that URL in a player reply. Never open old three-y `boltverse-o
 **HARD LOCK — Hang ≠ wipe.** New biome = ADD `road-<biome>*.mp4` + plates-index / dealer entries. KEEP hung canyon→cars→duel→night→war. NEVER `rm` masters. Recook Bolt = `bolt.mp4` only. Law: [docs/09-recette-biome.md](docs/09-recette-biome.md).
 
 **HARD — Bolt style teacher (make / add a biome).** Use [`lock/bolt-back.jpg`](../lock/bolt-back.jpg) as the Bolt style ref for the cutout layer (coat + silhouette + strict rear). @ref / Imagine reference that file for every Bolt still/clip. Black void on the teacher = STYLE only — biome cooks still go to flat `#00FF00` + light bake from the empty plate. Hang ≠ wipe still holds. Never dump this on Welcome.
+
+**HARD LOCK — make / add a biome.** Décor scrolls (rush); Bolt sprints **IN PLACE** (treadmill). Mid-lane. **48fps**. Teacher = `lock/bolt-back.jpg`. Pipeline (do not invert): empty plaque ZERO dog → Video A `imagineBiomeClip` first+last → Video B gait (same décor + Bolt mid-lane IN PLACE; kitchen, not Hung) → extract cycle → repose `#00FF00` → `imagineBoltClip` first+last = cycle bookends on green → chroma key onto A. L/M/R = code X shift of **one** Bolt layer. **Never** chat Imagine alone. **Never** hall `imagineClip`. **Never** a single baked final film. **Never** a 3-Bolt mask. No `XAI_API_KEY` → REFUSE / stock. Law: [docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md) · [docs/09-recette-biome.md](docs/09-recette-biome.md).
 
 **HARD LOCK — Chat biome catalog (on ask).** **what biomes** / **which runs** / **what can I play** → English Pack voice, hung chapters only (never invent). How to pick: `play canyon` / `play Tide` / `only Tide`. Never on Welcome. No chrome picker. Hang grows the list; wipe shrinks it = FAIL.
 
@@ -42,8 +44,8 @@ Two Imagine jobs. Never one mp4 with Bolt painted into the road.
 
 | Layer | Stills | Film |
 |---|---|---|
-| **Road** (master) | empty-plate first + last — **ZERO dog** | `imagineBiomeClip` `image` + `last_frame` (distinct) |
-| **Bolt cutout** | Bolt mid still — **strict rear**, already sprinting, flat `#00FF00` — style ref [`lock/bolt-back.jpg`](../lock/bolt-back.jpg) ([docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md)) | `imagineBoltClip` gallop: first + last = **the same still** (in place, 6 s) |
+| **Road** (master) | empty-plate first + last — **ZERO dog** | `imagineBiomeClip` `image` + `last_frame` (distinct, **48fps**) |
+| **Bolt cutout** | Cycle bookends on `#00FF00` after Video B extract — **strict rear**, already sprinting — style ref [`lock/bolt-back.jpg`](../lock/bolt-back.jpg) ([docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md)) | `imagineBoltClip` gallop: first + last = **cycle bookends on green** (in place, 6 s, **48fps**) |
 
 Prompts: [prompts/](prompts/). Law: [docs/01-images.md](docs/01-images.md) · [docs/02-videos.md](docs/02-videos.md) · [docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md).
 
@@ -63,7 +65,7 @@ Same contract as the hall films, **different paint**:
 |---|---|---|
 | empty-plate travel | start of this road | end of this road — **distinct**, world advanced |
 | next road plate | **extracted last frame** of the previous road | new end still |
-| cutout gallop | running Bolt (strict rear, already sprinting) | **same still** (`imagineBoltClip`) |
+| cutout gallop | cycle start on green (strict rear, already sprinting) | cycle end on green ≈ start (`imagineBoltClip`) |
 
 ```
 ffmpeg -y -sseof -0.12 -i road-N.mp4 -frames:v 1 \
@@ -113,7 +115,7 @@ This SPEED REF is **one hung plate recook**. It is **not** a license to wipe the
 ```
 ffmpeg -i in.mp4 -map 0:v:0 \
   -vf "scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280" \
-  -c:v libx264 -pix_fmt yuv420p -g 15 -keyint_min 15 -sc_threshold 0 \
+  -c:v libx264 -pix_fmt yuv420p -r 48 -g 15 -keyint_min 15 -sc_threshold 0 \
   -an -movflags +faststart out.mp4
 ```
 
@@ -149,6 +151,9 @@ Every Live drops [../client/pack.js](../client/pack.js) with `BOLTVERSE_PACK_ORI
 
 - New grok.me / Vite / wallet / client keys
 - 3-take L / M / R as the default cook
+- 3-Bolt multi-lane mask (L/M/R = one Bolt layer, X shift)
+- Bake Bolt into a single final road film (no cutout stack)
+- Chat Imagine alone for Video A / Video B / Bolt (hooks first+last only)
 - Invent C-light as a required lock
 - Recook citadel `packs/<slot>` because someone said sprint
 - Chat Imagine without real first+last

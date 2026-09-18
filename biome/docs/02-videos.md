@@ -2,12 +2,15 @@
 
 **STOP — HARD SPLIT.** NEVER Imagine Agent / chat Imagine for these clips.
 
-Walks / travel / gallop / **cousin plates** = `scripts/imagine-hooks.mjs`:
+Walks / travel / gallop / **cousin plates** = `scripts/imagine-hooks.mjs` with real **first + last**:
 
-- Hall: `imagineClip` — `image` + **`last_frame`**
-- Biome road: `imagineBiomeClip` — `image` + **`last_frame`** (distinct, ZERO dog)
+- Hall: `imagineClip` — `image` + **`last_frame`** (citadel only — **banned** for biome Bolt)
+- Biome road / Video A: `imagineBiomeClip` — `image` + **`last_frame`** (distinct, ZERO dog, **48fps**)
+- Bolt cutout: `imagineBoltClip` — `first` + `last` = **cycle bookends on green** (**48fps**, IN PLACE)
 
-Chat `imagine_image_to_video` / `imagine_reference_to_video` have **no** `last_frame` — banned.
+Chat `imagine_image_to_video` / `imagine_reference_to_video` have **no** `last_frame` — banned. If hooks / `XAI_API_KEY` unavailable → **REFUSE** / stock. Do **not** fall back to chat I2V.
+
+**Make biome:** décor scrolls; Bolt sprints **IN PLACE**. Pipeline: [10-bolt-cutout-law.md](10-bolt-cutout-law.md). Never bake Bolt into a single final film. Never a 3-Bolt multi-lane mask.
 
 ## Road (empty plate)
 
@@ -15,7 +18,7 @@ Chat `imagine_image_to_video` / `imagine_reference_to_video` have **no** `last_f
 
 First still ≠ last still. World advanced: what he passed is gone.
 
-**ZERO** Bolt in the mp4. Dual dogs = FAIL.
+**ZERO** Bolt in the mp4. Dual dogs = FAIL. **48fps**. This is **Video A**.
 
 Paste: [../prompts/video-empty-plate.txt](../prompts/video-empty-plate.txt).
 
@@ -53,15 +56,21 @@ Paste: [../prompts/video-hazard-plate.txt](../prompts/video-hazard-plate.txt). S
 Then match travel to the empty plate: [08-plate-speed.md](08-plate-speed.md). Explosions fool SAD → `--duration-match`, not `--match`.
 
 
+## Video B — gait source (kitchen, not Hung)
+
+SAME décor rush as Video A + Bolt mid-lane **IN PLACE**, natural rotary gallop, `@ref` [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg). Camera locked. **48fps**.
+
+Green-only I2V invents a walk — B exists so gait is natural. Extract **one** cycle (start, 2–3 mids chronological, end ≈ start). Repose onto `#00FF00`. **Do not Hang B.** API / Build hooks with real `image` + distinct `last_frame`. Not hall `imagineClip`. Not `imagineBiomeClip` (ZERO dog). Not chat Imagine.
+
 ## Bolt cutout (gallop)
 
 **HARD law:** [10-bolt-cutout-law.md](10-bolt-cutout-law.md).
 
-`imagineBoltClip` — `image` + `last_frame` = **the same still**. 6 s. **IN PLACE / treadmill.** Never hall `imagineClip`. Never chat Imagine. Word “rear” alone is not enough.
+`imagineBoltClip` — `first` + `last` = **cycle bookends on green** (end ≈ start for loop). Optional mid frames as Imagine `@ref` chronological. 6 s. **48fps.** **IN PLACE / treadmill.** Never hall `imagineClip`. Never chat Imagine. Word “rear” alone is not enough.
 
-He **rotary-gallops** the whole clip (stretch then gather; hind legs fully back). NEVER stands, trots, pauses, sits, howls. NEVER a second dog. NEVER ¾ / profile / face / yaw / look-back. NEVER a road or set in the plate (I2V invents travelling → he turns).
+He **rotary-gallops** the whole clip (stretch then gather; hind legs fully back). NEVER stands, trots, pauses, sits, howls. NEVER a second dog. NEVER ¾ / profile / face / yaw / look-back. NEVER a road or set in the **green** plate (I2V invents travelling → he turns).
 
-Background stays **flat `#00FF00`**. Key later: [05-key.md](05-key.md). No JS reflection. No puddle shadow.
+Background stays **flat `#00FF00`**. Key later onto Video A: [05-key.md](05-key.md). Match rates (no skate). L/M/R = code X shift of **one** Bolt layer. No JS reflection. No puddle shadow. Never a 3-Bolt mask. Never one baked final film.
 
 Plant in play: lower third, paws already glued; game plants on the bottom of the blob. [../PLAY.md](../PLAY.md).
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // xAI Imagine API. Hall films AND biome plates = image + last_frame.
-// Bolt cutout = image + last_frame SAME still (in-place). See biome/docs/10-bolt-cutout-law.md.
+// Bolt cutout = image + last_frame cycle bookends on green (in-place). See biome/docs/10-bolt-cutout-law.md.
 // Not Imagine Agent. Not Grok chat. Needs XAI_API_KEY.
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, extname, join } from "node:path";
@@ -548,6 +548,8 @@ function encodeBiomeMp4(src, dest, height = 1280) {
       "libx264",
       "-pix_fmt",
       "yuv420p",
+      "-r",
+      "48",
       "-g",
       "15",
       "-keyint_min",
@@ -620,7 +622,7 @@ export const BOLT_STILL_LAW = [
   "Background FLAT #00FF00 ONLY. ZERO road. ZERO city. ZERO gold pipe. ZERO ring. ZERO puddle. ZERO floor. ZERO drawn shadow. ZERO halo. ZERO set.",
 ].join(" ");
 
-/** Pack Bolt gallop. IN PLACE / treadmill. Same still twice. Word “rear” alone is not enough. */
+/** Pack Bolt gallop. IN PLACE / treadmill. Cycle bookends on green. Word “rear” alone is not enough. */
 export const BOLT_CUTOUT_LAW = [
   BOLT_STILL_LAW,
   "CAMERA: he moves AWAY from the camera (stuck in his back). NEVER pan. NEVER orbit. NEVER yaw. NEVER chase.",
@@ -637,7 +639,7 @@ export function boltStillLine() {
 export function boltClipLine() {
   return [
     BOLT_CUTOUT_LAW,
-    "First frame is the start still. Last frame is last_frame — the SAME still. In place.",
+    "First frame is the cycle start on green. Last frame is last_frame — cycle end on green (≈ start for loop). In place. 48fps. Mid cycle frames as @ref OK chronological.",
     "NEVER three-quarter. NEVER cinematic orbit. NEVER camera follows.",
     "NEVER wet road. NEVER reflection. NEVER contact shadow. NEVER chrome collar. NEVER gold pipe.",
     "NEVER stands still then starts running.",
@@ -646,7 +648,8 @@ export function boltClipLine() {
 
 /**
  * Sprint / biome Bolt cutout. Chat Imagine is banned — this is the last_frame cable.
- * last_frame MUST be the same still (in-place / treadmill). Distinct last = travelling = yaw = FAIL.
+ * first + last = cycle bookends on green (end ≈ start for loop). IN PLACE / treadmill.
+ * A road-travel pair here is FAIL (yaw). Same still twice remains legal.
  */
 export async function imagineBoltClip({
   first,
@@ -659,9 +662,6 @@ export async function imagineBoltClip({
 }) {
   if (!first) throw new Error("bolt cutout needs image + last_frame");
   const hold = last || first;
-  if (last && last !== first) {
-    throw new Error("bolt last_frame must be the same still (in-place). Distinct last = travelling = yaw");
-  }
   let paste = "";
   if (promptFile && existsSync(promptFile)) {
     paste = readFileSync(promptFile, "utf8").trim();
