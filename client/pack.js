@@ -4,7 +4,9 @@
  *
  * REQUIRED: window.BOLTVERSE_PACK_ORIGIN = Pack API host
  *   StarBoltSprint/boltverse-pack on Vercel
- *   placeholder until real URL: "https://YOUR-PACK.vercel.app"
+ *   TEMPORARY (Lives freeze; not the forever home): "https://boltverse-pack.vercel.app"
+ *   Long-term: Pack stays inside the Grok sandbox.
+ *   Do not put this URL in player-facing Welcome / COLD_START copy.
  *
  * HARD BAN: do not point this at https://boltverse-odysseyyyy.grok.me
  *   (game play URL stays odysseyyyy; Pack API does not).

@@ -23,18 +23,18 @@ Imagine Agent / chat `imagine_*_video` = **interdit** (pas de `last_frame`). Fil
 
 ## Floor — Pack wire + dealer assetId stats (every Hang / publish)
 
-**AUTOMATIC.** Pack wire + plate stats are in the game recipe. When Grok creates or publishes a **biome**, **citadel**, or **Sprint** Live, it **MUST** include [`client/pack.js`](../../client/pack.js) with `BOLTVERSE_PACK_ORIGIN` = `https://YOUR-PACK.vercel.app` (StarBoltSprint/boltverse-pack on Vercel) **and** dealer `assetId` stats — **without the player asking**.
+**AUTOMATIC.** Pack wire + plate stats are in the game recipe. When Grok creates or publishes a **biome**, **citadel**, or **Sprint** Live, it **MUST** include [`client/pack.js`](../../client/pack.js) with `BOLTVERSE_PACK_ORIGIN` = `https://boltverse-pack.vercel.app` (TEMPORARY — Lives freeze; not the forever home. Long-term: Pack stays inside the Grok sandbox) **and** dealer `assetId` stats — **without the player asking**.
 
 ```html
-<script>window.BOLTVERSE_PACK_ORIGIN = "https://YOUR-PACK.vercel.app"</script>
-<script src="https://YOUR-PACK.vercel.app/client/pack.js"></script>
+<script>window.BOLTVERSE_PACK_ORIGIN = "https://boltverse-pack.vercel.app"</script>
+<script src="https://boltverse-pack.vercel.app/client/pack.js"></script>
 ```
 
 Or ship the local client and POST there. **HARD BAN:** treating `https://boltverse-odysseyyyy.grok.me` as the Pack API host (game play URL stays odysseyyyy; Pack API does not). Fail soft if Pack is down — Sprint still plays. Never invent a `sub`. Never player API keys.
 
 Dealer playlist stays canyon → cars → duel → night → war. Each hung plate maps to a Pack `assetId` (`plates-index.json`). Cassette `stats.views` / `stats.playTimeSec` / `stats.players` = real or `0` — never invent.
 
-**Ban** « please install wire » as the normal path. A Live that ships without the wire is **incomplete**. Law: [07-pack-live.md](07-pack-live.md).
+**Ban** « please install wire » / « install Pack » / « wire profiles » as the normal path. Creating a **naked Live** without Pack = **FAIL** / incomplete recipe. Law: [07-pack-live.md](07-pack-live.md).
 
 Not a cold-start job. **PRIORITY 0** first reply stays Welcome + teaser + paste. **Welcome = Pack register** via `pack-welcome` (chat) — not Live.
 
@@ -265,7 +265,7 @@ Chaque cousin a **sa** fenêtre : un speck au vanishing point n’est pas encore
 7. Hang biome/master/ + bump VER
 8. HAZARDS[].t0/t1 = contact aux pattes, pas au fond
 9. play : dodge / jump / freeze-on-box
-10. publish Live : pack.js (`BOLTVERSE_PACK_ORIGIN` = `https://YOUR-PACK.vercel.app`) + dealer assetId stats — AUTOMATIC, never « please install wire »
+10. publish Live : pack.js (`BOLTVERSE_PACK_ORIGIN` = `https://boltverse-pack.vercel.app`) + dealer assetId stats — AUTOMATIC, never « please install wire »
 ```
 
 Cuire **une** plaque cousin à la fois. Pas le tas spray + barre + cratère d’un coup.
