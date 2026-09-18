@@ -302,6 +302,16 @@ must(/as chat media/.test(customize) && /do not narrate/i.test(customize) && /te
 must(/Hey Packmate \{name\}/.test(customize) && /never Packmate alone/.test(customize) && /never name without Packmate/.test(customize), "GROK.md Customize: Hey Packmate {name}");
 must(/displayName`? first/.test(customize) && /then registry/.test(customize) && /then gate\/app/.test(customize) && /runner`? ONLY if none/.test(customize), "GROK.md Customize: {name} = displayName first, then registry, then gate/app, else runner ONLY if none");
 must(/Hard ban/.test(customize) && /runner/.test(customize) && /display name\/handle/.test(customize), "GROK.md Customize: hard ban runner when display name/handle exists");
+must(/never runner when any displayName visible/.test(customize), "GROK.md Customize: never runner when any displayName visible");
+must(/ONLY odysseyyyy Live via Build attach/.test(customize), "GROK.md Customize: ONLY odysseyyyy Live via Build attach");
+must(/BAN scaffold\/recreate\/remix/.test(customize), "GROK.md Customize: BAN scaffold/recreate/remix");
+must(/BAN intro\/landing splash requiring Open Sprint \/ Start before play/.test(customize), "GROK.md Customize: BAN intro/landing splash");
+must(/land IN Sprint/.test(customize), "GROK.md Customize: land IN Sprint");
+must(/Welcome block \+ 1 citadel teaser \+ Build Sprint only/.test(customize), "GROK.md Customize: Welcome + teaser + Build Sprint only");
+must(/BAN controls lecture/.test(customize), "GROK.md Customize: BAN controls lecture");
+must(/First Spark/.test(customize) && /Neon Drift/.test(customize) && /invented cassette names/.test(customize), "GROK.md Customize: BAN invented cassette names");
+must(/BAN plate deck lists at boot/.test(customize), "GROK.md Customize: BAN plate deck lists at boot");
+must(/canyon→cars→duel→night→war/.test(customize) && /plates-index/.test(customize) && /biome dealer/.test(customize), "GROK.md Customize: plate order canyon→cars→duel→night→war");
 must(/Beat 3/.test(customize) && /in-chat playable preview preferred/.test(customize) && /silently open/.test(customize), "GROK.md Customize: Beat 3 Build play surface");
 must(/Chat Imagine/.test(customize) && /Chat file chip alone/.test(customize) && /FAIL for Beat 3/.test(customize), "GROK.md Customize: Chat Imagine / Chat file chip alone = FAIL for Beat 3");
 must(/Beat 3 kitchen identity/.test(customize) && /boltverse-odysseyyyy\.grok\.me/.test(customize), "GROK.md Customize: Beat 3 kitchen identity is odysseyyyy Live");
@@ -370,6 +380,9 @@ function assertSpokenWelcome(label, text, newHeading, returnHeading) {
   must(!/Play →/.test(neu) && !/Play →/.test(ret), label + ": Welcome/Return have no Play →");
   must(!/Say citadel or biome/.test(neu) && !/citadel or biome/i.test(neu), label + ": Welcome has no Citadel/Biome choice");
   must(!/teasers are on/.test(neu) && !/teasers are on/.test(ret), label + ": Welcome/Return do not narrate teasers are on");
+  must(!/First Spark/.test(neu + ret) && !/Neon Drift/.test(neu + ret), label + ": Welcome/Return have no invented cassette names");
+  must(!/canyon→cars→duel→night→war/.test(neu + ret), label + ": Welcome/Return have no plate deck list");
+  must(!/WASD|swipe left|jump to dodge|controls lecture/i.test(neu + ret), label + ": Welcome/Return have no controls lecture");
 }
 
 function assertPlayerBoot(label, text) {
@@ -401,6 +414,16 @@ function assertPlayerBoot(label, text) {
   must(/heart-giant/.test(text) && /houla/.test(text) && /olive/.test(text) && /frost-only/.test(text), label + ": bans heart-giant / houla / olive / frost-only as Sprint Beat 3");
   must(/as Sprint Beat 3/.test(text), label + ": those aliases are not Sprint Beat 3");
   must(/scaffold/.test(text) && /remix/.test(text) && /odysseyyyy already exists/.test(text), label + ": bans scaffold/remix when odysseyyyy exists");
+  must(/BAN scaffold\/recreate\/remix/.test(text), label + ": BAN scaffold/recreate/remix");
+  must(/BAN intro\/landing splash requiring Open Sprint \/ Start before play/.test(text), label + ": BAN intro/landing splash requiring Open Sprint / Start before play");
+  must(/land IN Sprint/.test(text), label + ": land IN Sprint");
+  must(/ONLY odysseyyyy Live via Build attach/.test(text), label + ": ONLY odysseyyyy Live via Build attach");
+  must(/Welcome block \+ 1 citadel teaser \+ Build Sprint only/.test(text), label + ": Welcome block + 1 citadel teaser + Build Sprint only");
+  must(/BAN controls lecture/.test(text), label + ": BAN controls lecture");
+  must(/invented cassette names/.test(text) && /First Spark/.test(text) && /Neon Drift/.test(text), label + ": BAN invented cassette names First Spark/Neon Drift");
+  must(/BAN plate deck lists at boot/.test(text), label + ": BAN plate deck lists at boot");
+  must(/canyon→cars→duel→night→war/.test(text), label + ": plate order canyon→cars→duel→night→war");
+  must(/biome dealer/.test(text) && /plates-index/.test(text), label + ": plate order from biome dealer / plates-index");
   must(/old three-y/.test(text) && /boltverse-odysseyyy\.grok\.me/.test(text) && /superseded/.test(text) && /do not open it for boot/.test(text), label + ": bans old three-y odysseyyy as Beat 3 Sprint");
   must(/https:\/\/boltverse-odysseyyyy\.grok\.me/.test(text), label + ": Pack Play / Beat 3 Live is odysseyyyy (4y)");
   must(!/https:\/\/boltverse-odysseyyy\.grok\.me/.test(text), label + ": no 3y Pack Play URL");
@@ -441,6 +464,7 @@ function assertNameLaw(label, text) {
   must(/displayName`? first/.test(text) && /then registry/.test(text) && /then gate\/app/.test(text), label + ": {name} = displayName first, then registry, then gate/app");
   must(/runner`? ONLY if none/.test(text), label + ": runner ONLY if none");
   must(/Hard ban/.test(text) && /runner/.test(text) && /display name\/handle/.test(text), label + ": hard ban runner when display name/handle exists");
+  must(/never runner when any displayName visible/.test(text), label + ": never runner when any displayName visible");
   must(/Never Packmate alone/.test(text) && /Never the name without Packmate/.test(text), label + ": bans Packmate alone and name without Packmate");
   must(/generic stand-in/.test(text), label + ": bans generic stand-in");
 }
