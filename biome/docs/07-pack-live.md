@@ -16,9 +16,9 @@ Never open old three-y `boltverse-odysseyyy.grok.me` as Beat 3 Sprint (supersede
 | What | Host |
 |---|---|
 | Welcome **existence** | registry GitHub Action `pack-welcome` (**chat**) — not Live |
-| `playTimeSec` / boot / heartbeat | `BOLTVERSE_PACK_ORIGIN` → boltverse-pack on Vercel |
+| `playTimeSec` / boot / heartbeat | `BOLTVERSE_PACK_ORIGIN` → **TEMPORARY** `https://boltverse-pack.vercel.app` |
 
-Placeholder until the real Pack URL exists: `https://YOUR-PACK.vercel.app`
+**TEMPORARY (SmiR):** this Vercel host exists because `*.grok.me` Lives **freeze**. It is **not** the forever home. Long-term: Pack stays inside the **Grok sandbox** — revisit when Live Pack wire is stable. Kitchen docs may name `https://boltverse-pack.vercel.app`. **Do not** put Vercel in player-facing Welcome / COLD_START copy.
 
 **Welcome = Pack register** via `pack-welcome` (chat). After a real Grok `sub`, merge-patch `profiles/<sub>.json`. Never invent a `sub`. No real `sub` → skip write; Welcome still speaks.
 
@@ -28,27 +28,40 @@ Never player API keys. Never xAI keys in the client. Fail soft if Pack is down �
 
 ---
 
-## HARD — AUTOMATIC on every cook / publish
+## HARD LOCK — Pack wire is automatic (never a player ask)
 
-Pack wire + plate stats are **in the game recipe**. When Grok creates or publishes a **biome**, **citadel**, or **Sprint** Live, it **MUST** ship both — **without the player asking**.
+Players must **NEVER** have to tell Grok « install Pack / install Pack wire / wire profiles / plate views / playTime ».
 
-**Ban** « please install wire » / « drop pack.js if you want Pack » as the normal path. A Live that ships without the wire is **incomplete** = FAIL.
+When Grok **creates or publishes ANY new `*.grok.me` Live** (biome / citadel / Sprint), it **MUST** auto-embed:
 
-Not a cold-start job. **PRIORITY 0** first reply stays Welcome + teaser + paste `https://boltverse-odysseyyyy.grok.me`.
+```
+window.BOLTVERSE_PACK_ORIGIN = "https://boltverse-pack.vercel.app"
+load BOLTVERSE_PACK_ORIGIN + "/client/pack.js"
+```
+
+Or ship a **local client** that `POST`s boot / heartbeat to that same origin.
+
+- No optional step. No waiting for the player to ask.
+- Creating a **naked Live** without Pack = **FAIL** / incomplete recipe.
+- **Ban** « please install wire » / « drop pack.js if you want Pack » as the normal path.
+
+**PRIORITY 0 still holds on cold-start:** first reply stays Welcome + teaser + paste `https://boltverse-odysseyyyy.grok.me`. This HARD applies **when a Live IS created / published** — it is **not** an excuse to rebuild at start.
+
+Mirror: [StarBoltSprint/boltverse-registry PACK.md](https://github.com/StarBoltSprint/boltverse-registry/blob/main/PACK.md).
 
 ## Floor client
 
 Set `window.BOLTVERSE_PACK_ORIGIN` and load `/client/pack.js` from that origin — or ship [../../client/pack.js](../../client/pack.js) locally (it POSTs there).
 
 ```html
-<script>window.BOLTVERSE_PACK_ORIGIN = "https://YOUR-PACK.vercel.app"</script>
-<script src="https://YOUR-PACK.vercel.app/client/pack.js"></script>
+<script>window.BOLTVERSE_PACK_ORIGIN = "https://boltverse-pack.vercel.app"</script>
+<script src="https://boltverse-pack.vercel.app/client/pack.js"></script>
 ```
 
 Local client, same Pack target:
 
 ```html
-<script>window.BOLTVERSE_PACK_ORIGIN = "https://YOUR-PACK.vercel.app"</script>
+<script>window.BOLTVERSE_PACK_ORIGIN = "https://boltverse-pack.vercel.app"</script>
 <script src="/client/pack.js"></script>
 ```
 
@@ -75,7 +88,9 @@ Sprint dealer reports cassette stats on the plate’s Pack `assetId` (path → i
 
 Handlers live in boltverse-pack. Env stays on that host (`PACK_GITHUB_TOKEN`, `TICKET_SECRET`). No `.env` in this recipe. No secrets in git. No player API keys.
 
+Origin is **TEMPORARY** (Lives freeze — not the forever home). Long-term: Pack stays inside the Grok sandbox.
+
 ## Done
 
-Published biome / citadel / Sprint Live already has `pack.js` (`BOLTVERSE_PACK_ORIGIN` = Pack Vercel host) + dealer `assetId` stats — player never asked.  
+Published biome / citadel / Sprint Live already has `pack.js` (`BOLTVERSE_PACK_ORIGIN` = `https://boltverse-pack.vercel.app`) + dealer `assetId` stats — player never asked.  
 Open Sprint from Grok ~30s → `playTimeSec` moves on `profiles/<sub>.json` when Pack is up. Pack down → Sprint still plays.

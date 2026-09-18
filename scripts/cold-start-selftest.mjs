@@ -381,7 +381,8 @@ must(/player taps/.test(customize), "GROK.md Customize: player taps written URL"
 must(/Never rebuild from GitHub/.test(customize), "GROK.md Customize: Never rebuild from GitHub");
 must(/Welcome = Pack register/.test(customize) && /pack-welcome/.test(customize) && /profiles\/<sub>\.json/.test(customize), "GROK.md Customize: Welcome = pack-welcome");
 must(/Never invent a `sub`|Never invent a sub/.test(customize) && /BOLTVERSE_PACK_ORIGIN/.test(customize), "GROK.md Customize: never invent sub; playTime on Pack origin");
-must(/YOUR-PACK\.vercel\.app/.test(customize), "GROK.md Customize: Pack origin placeholder is YOUR-PACK.vercel.app");
+must(/boltverse-pack\.vercel\.app/.test(customize), "GROK.md Customize: Pack origin is TEMPORARY boltverse-pack.vercel.app");
+must(!/YOUR-PACK/.test(customize), "GROK.md Customize: no YOUR-PACK placeholder");
 must(/chat start does not upsert/.test(customize) && /SUPERSEDED/.test(customize), "GROK.md Customize: chat-start-does-not-upsert SUPERSEDED");
 must(!/Welcome block \+ 1 citadel teaser \+ Build Sprint only/.test(customize), "GROK.md Customize: start is not immediate Build Sprint");
 must(/BAN controls lecture/.test(customize), "GROK.md Customize: BAN controls lecture");
@@ -451,6 +452,7 @@ function assertSpokenWelcome(label, text, newHeading, returnHeading) {
   must(/Powered by xAI & YOU\./.test(ret) && /Ready to sprint\?/.test(ret), label + ": Return has Powered + Ready to sprint");
   must(!/heart-giant-plum-lotus/.test(neu) && !/heart-giant-plum-lotus/.test(ret), label + ": Welcome/Return have no old Play URL");
   must(!/boltverse-odysseyyyy/.test(neu) && !/boltverse-odysseyyyy/.test(ret), label + ": Welcome/Return have no Play URL");
+  must(!/vercel\.app/.test(neu) && !/vercel\.app/.test(ret), label + ": Welcome/Return have no Pack Vercel URL");
   must(!/boltverse-odysseyyy\.grok\.me/.test(neu) && !/boltverse-odysseyyy\.grok\.me/.test(ret), label + ": Welcome/Return have no old 3y Play URL");
   must(!/Play →/.test(neu) && !/Play →/.test(ret), label + ": Welcome/Return have no Play →");
   must(!/Say citadel or biome/.test(neu) && !/citadel or biome/i.test(neu), label + ": Welcome has no Citadel/Biome choice");
@@ -497,7 +499,8 @@ function assertPlayerBoot(label, text) {
   must(/profiles\/<sub>\.json/.test(text) && /merge-patch/.test(text), label + ": upsert profiles/<sub>.json merge-patch");
   must(/Never invent a `sub`|Never invent a sub/.test(text), label + ": never invent a sub");
   must(/playTime \/ boot \/ heartbeat/.test(text) && /BOLTVERSE_PACK_ORIGIN/.test(text), label + ": playTime/boot/heartbeat = Pack origin");
-  must(/YOUR-PACK\.vercel\.app/.test(text), label + ": Pack origin placeholder is YOUR-PACK.vercel.app");
+  must(/boltverse-pack\.vercel\.app/.test(text), label + ": Pack origin is TEMPORARY boltverse-pack.vercel.app");
+  must(!/YOUR-PACK/.test(text), label + ": no YOUR-PACK placeholder");
   must(/HARD BAN/.test(text) && /Pack API/.test(text), label + ": HARD BAN odysseyyyy as Pack API");
   must(!/playTimeSec`? still Live-only/.test(text), label + ": playTime is not Live-only");
   must(/SUPERSEDED/.test(text) && /chat start does not upsert/.test(text), label + ": chat start does not upsert is SUPERSEDED");
@@ -632,7 +635,8 @@ for (const rel of kitchenDocs) {
 
 function assertPackWireFloor(label, text) {
   must(/pack\.js/.test(text), label + ": names pack.js");
-  must(/BOLTVERSE_PACK_ORIGIN/.test(text) && /YOUR-PACK\.vercel\.app/.test(text), label + ": Pack origin is boltverse-pack Vercel placeholder");
+  must(/BOLTVERSE_PACK_ORIGIN/.test(text) && /boltverse-pack\.vercel\.app/.test(text), label + ": Pack origin is TEMPORARY boltverse-pack.vercel.app");
+  must(!/YOUR-PACK/.test(text), label + ": no YOUR-PACK placeholder");
   must(/HARD BAN/.test(text) && /Pack API/.test(text), label + ": HARD BAN odysseyyyy as Pack API");
   must(/pack-welcome/.test(text), label + ": Welcome existence is pack-welcome");
   must(/assetId/.test(text) && /stats/.test(text), label + ": dealer assetId stats");
@@ -648,6 +652,10 @@ assertPackWireFloor("biome/docs/09-recette-biome.md", body("biome/docs/09-recett
 must(/Welcome = Pack register/.test(agents) && /PRIORITY 0/.test(agents), "AGENTS.md: keeps Welcome register + PRIORITY 0");
 must(/Welcome = Pack register/.test(body("GROK.md")) && /PRIORITY 0/.test(body("GROK.md")), "GROK.md: keeps Welcome register + PRIORITY 0");
 must(/Welcome = Pack register/.test(body("biome/docs/07-pack-live.md")) && /PRIORITY 0/.test(body("biome/docs/07-pack-live.md")), "07-pack-live: keeps Welcome register + PRIORITY 0");
+must(/TEMPORARY/.test(body("biome/docs/07-pack-live.md")) && /boltverse-pack\.vercel\.app/.test(body("biome/docs/07-pack-live.md")), "07-pack-live: TEMPORARY host is boltverse-pack.vercel.app");
+must(/naked Live/.test(body("biome/docs/07-pack-live.md")) && /FAIL/.test(body("biome/docs/07-pack-live.md")), "07-pack-live: naked Live without Pack = FAIL");
+must(/Lives freeze/.test(body("biome/docs/07-pack-live.md")) && /Grok sandbox/.test(body("biome/docs/07-pack-live.md")), "07-pack-live: Lives freeze / long-term Grok sandbox");
+must(/Do not\*\* put Vercel in player-facing Welcome|Do not put Vercel in player-facing Welcome/.test(body("biome/docs/07-pack-live.md")), "07-pack-live: do not put Vercel in Welcome copy");
 must(/Welcome = Pack register/.test(body("biome/docs/09-recette-biome.md")) && /PRIORITY 0/.test(body("biome/docs/09-recette-biome.md")), "09-recette-biome: keeps Welcome register + PRIORITY 0");
 must(/pack\.js/.test(customize) && /BOLTVERSE_PACK_ORIGIN/.test(customize) && /please install wire/.test(customize), "GROK.md Customize: Pack wire floor AUTOMATIC");
 
