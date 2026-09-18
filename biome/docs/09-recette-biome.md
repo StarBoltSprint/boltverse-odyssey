@@ -21,6 +21,21 @@ Le dealer enchaîne le **playlist lock** (jamais un random deck) : canyon → ca
 
 Imagine Agent / chat `imagine_*_video` = **interdit** (pas de `last_frame`). Films = `imagineBiomeClip`.
 
+## Floor — Pack wire + dealer assetId stats (every Hang / publish)
+
+**AUTOMATIC.** Pack wire + plate stats are in the game recipe. When Grok creates or publishes a **biome**, **citadel**, or **Sprint** Live, it **MUST** include [`client/pack.js`](../../client/pack.js) with central origin `https://boltverse-odysseyyyy.grok.me` (`BOLTVERSE_PACK_ORIGIN`) **and** dealer `assetId` stats — **without the player asking**.
+
+```html
+<script>window.BOLTVERSE_PACK_ORIGIN = "https://boltverse-odysseyyyy.grok.me"</script>
+<script src="https://boltverse-odysseyyyy.grok.me/client/pack.js"></script>
+```
+
+Dealer playlist stays canyon → cars → duel → night → war. Each hung plate maps to a Pack `assetId` (`plates-index.json`). Cassette `stats.views` / `stats.playTimeSec` / `stats.players` = real or `0` — never invent.
+
+**Ban** « please install wire » as the normal path. A Live that ships without the wire is **incomplete**. Law: [07-pack-live.md](07-pack-live.md).
+
+Not a cold-start job. **PRIORITY 0** first reply stays Welcome + teaser + paste. **Welcome = Pack register** stays.
+
 ---
 
 ## Étape 1 — Plaque vide (horloge)
@@ -248,6 +263,7 @@ Chaque cousin a **sa** fenêtre : un speck au vanishing point n’est pas encore
 7. Hang biome/master/ + bump VER
 8. HAZARDS[].t0/t1 = contact aux pattes, pas au fond
 9. play : dodge / jump / freeze-on-box
+10. publish Live : pack.js (origin odysseyyyy) + dealer assetId stats — AUTOMATIC, never « please install wire »
 ```
 
 Cuire **une** plaque cousin à la fois. Pas le tas spray + barre + cratère d’un coup.

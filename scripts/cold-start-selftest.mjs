@@ -379,7 +379,9 @@ must(/BAN Build\/rebuild\/Live attach\/controls\/improv/.test(customize), "GROK.
 must(!/yes\/go\/sprint/.test(customize), "GROK.md Customize: no yes/go/sprint gate");
 must(/player taps/.test(customize), "GROK.md Customize: player taps written URL");
 must(/Never rebuild from GitHub/.test(customize), "GROK.md Customize: Never rebuild from GitHub");
-must(/Pack save still on Live HTML open \+ identity/.test(customize), "GROK.md Customize: Pack save still on Live HTML open + identity");
+must(/Welcome = Pack register/.test(customize) && /profiles\/<sub>\.json/.test(customize), "GROK.md Customize: Welcome = Pack register");
+must(/Never invent a `sub`|Never invent a sub/.test(customize) && /playTimeSec`? still Live-only/.test(customize), "GROK.md Customize: never invent sub; playTime Live-only");
+must(/chat start does not upsert/.test(customize) && /SUPERSEDED/.test(customize), "GROK.md Customize: chat-start-does-not-upsert SUPERSEDED");
 must(!/Welcome block \+ 1 citadel teaser \+ Build Sprint only/.test(customize), "GROK.md Customize: start is not immediate Build Sprint");
 must(/BAN controls lecture/.test(customize), "GROK.md Customize: BAN controls lecture");
 must(/First Spark/.test(customize) && /Neon Drift/.test(customize) && /invented cassette names/.test(customize), "GROK.md Customize: BAN invented cassette names");
@@ -489,7 +491,13 @@ function assertPlayerBoot(label, text) {
   must(/player taps/.test(text), label + ": player taps written URL");
   must(/BAN Build rebuild \/ Built-with-Grok scaffold/.test(text), label + ": BAN Build rebuild / Built-with-Grok scaffold");
   must(/Supercedes « never paste grok\.me » for the first reply/.test(text), label + ": Supercedes never paste grok.me for the first reply");
-  must(/Pack save still on Live HTML open \+ identity/.test(text), label + ": Pack save still on Live HTML open + identity");
+  must(/Welcome = Pack register/.test(text), label + ": Welcome = Pack register");
+  must(/profiles\/<sub>\.json/.test(text) && /merge-patch/.test(text), label + ": upsert profiles/<sub>.json merge-patch");
+  must(/Never invent a `sub`|Never invent a sub/.test(text), label + ": never invent a sub");
+  must(/playTimeSec`? still Live-only/.test(text), label + ": playTime still Live-only");
+  must(/SUPERSEDED/.test(text) && /chat start does not upsert/.test(text), label + ": chat start does not upsert is SUPERSEDED");
+  must(!/Live HTML open only/.test(text), label + ": no Live-HTML-open-only upsert");
+  must(!/does \*\*not\*\* write a Pack profile/.test(text) && !/Chat-only start does/.test(text), label + ": no chat-only-start-does-not-write");
   must(!/when attach works/.test(text), label + ": first reply is paste, not attach");
   must(!/in-chat playable preview preferred/.test(text), label + ": no Build playable-preview attach");
   must(/Chat Imagine/.test(text) && /Chat file chip alone/.test(text) && /FAIL/.test(text), label + ": Chat Imagine / Chat file chip alone = FAIL for Beat 3");
@@ -539,8 +547,6 @@ function assertPlayerBoot(label, text) {
   must(/\{playerCount\}/.test(text) && /already in the Pack/.test(text), label + ": Welcome insert {playerCount}");
   must(/among the first Packmates/.test(text), label + ": 0-count line You’re among the first Packmates");
   must(/1 Packmate already in the Pack/.test(text), label + ": singular Packmate count");
-  must(/gateSub/.test(text) && /Live HTML open/.test(text), label + ": hard gateSub upsert = Live HTML open only");
-  must(/not chat-only start|Chat-only start/.test(text), label + ": chat-only start does not write profile");
   must(/No GitHub lecture|no GitHub lecture|Do not lecture GitHub/.test(text), label + ": no GitHub lecture");
   must(/Open Sprint — Pack save, zero login\./.test(text), label + ": Open Sprint — Pack save, zero login.");
   must(/Opening Sprint = Pack profile save|Pack profile save/.test(text) && /zero second login/.test(text), label + ": Opening Sprint = Pack profile save; zero second login");
@@ -618,5 +624,24 @@ for (const rel of kitchenDocs) {
   must(!/https:\/\/boltverse-odysseyyy\.grok\.me/.test(body(rel)), rel + ": zero 3y Pack Play https URL");
   must(/https:\/\/boltverse-odysseyyyy\.grok\.me/.test(body(rel)), rel + ": Beat 3 / Pack Play https is 4y");
 }
+
+function assertPackWireFloor(label, text) {
+  must(/pack\.js/.test(text), label + ": names pack.js");
+  must(/BOLTVERSE_PACK_ORIGIN/.test(text) && /boltverse-odysseyyyy\.grok\.me/.test(text), label + ": central origin odysseyyyy");
+  must(/assetId/.test(text) && /stats/.test(text), label + ": dealer assetId stats");
+  must(/AUTOMATIC/.test(text), label + ": Pack wire is AUTOMATIC");
+  must(/please install wire/.test(text), label + ": names please install wire so it can ban it");
+  must(/Ban/.test(text) || /BAN/.test(text) || /\*\*Ban\*\*/.test(text), label + ": bans please install wire");
+}
+
+assertPackWireFloor("AGENTS.md", agents);
+assertPackWireFloor("GROK.md", body("GROK.md"));
+assertPackWireFloor("biome/docs/07-pack-live.md", body("biome/docs/07-pack-live.md"));
+assertPackWireFloor("biome/docs/09-recette-biome.md", body("biome/docs/09-recette-biome.md"));
+must(/Welcome = Pack register/.test(agents) && /PRIORITY 0/.test(agents), "AGENTS.md: keeps Welcome register + PRIORITY 0");
+must(/Welcome = Pack register/.test(body("GROK.md")) && /PRIORITY 0/.test(body("GROK.md")), "GROK.md: keeps Welcome register + PRIORITY 0");
+must(/Welcome = Pack register/.test(body("biome/docs/07-pack-live.md")) && /PRIORITY 0/.test(body("biome/docs/07-pack-live.md")), "07-pack-live: keeps Welcome register + PRIORITY 0");
+must(/Welcome = Pack register/.test(body("biome/docs/09-recette-biome.md")) && /PRIORITY 0/.test(body("biome/docs/09-recette-biome.md")), "09-recette-biome: keeps Welcome register + PRIORITY 0");
+must(/pack\.js/.test(customize) && /BOLTVERSE_PACK_ORIGIN/.test(customize) && /please install wire/.test(customize), "GROK.md Customize: Pack wire floor AUTOMATIC");
 
 console.log("COLD-START PASS");
