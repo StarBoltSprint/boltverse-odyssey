@@ -184,6 +184,7 @@ must(biomePlateLine("empty").includes(BIOME_SPEED_LAW), "empty plate includes BI
 must(biomePlateLine("bar").includes(BIOME_SPEED_LAW), "bar plate includes BIOME_SPEED_LAW");
 
 must(/stylized heroic 3D/.test(BOLT_STILL_LAW) && /NOT photoreal/.test(BOLT_STILL_LAW), "bolt still: stylized, not photoreal");
+must(/lock\/bolt-back\.jpg/.test(BOLT_STILL_LAW), "bolt still: match bolt-back teacher");
 must(/STRICT REAR/.test(BOLT_STILL_LAW) && /#00FF00/.test(BOLT_STILL_LAW), "bolt still: strict rear + flat green");
 must(/teal FABRIC/i.test(BOLT_STILL_LAW) && /not chrome/.test(BOLT_STILL_LAW), "bolt still: teal fabric collar");
 must(/one rear leg EXTENDED/.test(BOLT_STILL_LAW) && /NEVER standing still/.test(BOLT_STILL_LAW), "bolt still: already in sprint");
@@ -197,6 +198,8 @@ const boltStillPaste = readFileSync(join(root, "biome/prompts/image-bolt-mid.txt
 const boltClipPaste = readFileSync(join(root, "biome/prompts/video-bolt-mid.txt"), "utf8");
 must(/STRICT REAR/.test(boltStillPaste) && /#00FF00/.test(boltStillPaste), "image-bolt-mid: strict rear + flat green");
 must(/NOT photoreal/.test(boltStillPaste) && /ALREADY in sprint/.test(boltStillPaste), "image-bolt-mid: stylized + already sprinting");
+must(/lock\/bolt-back\.jpg/.test(boltStillPaste) && /fluffy white GSD rear/.test(boltStillPaste), "image-bolt-mid: match bolt-back teacher");
+must(existsSync(join(root, "lock/bolt-back.jpg")), "lock/bolt-back.jpg teacher exists");
 must(/IN PLACE/.test(boltClipPaste) && /treadmill/.test(boltClipPaste) && /NEVER yaw/.test(boltClipPaste), "video-bolt-mid: in place, never yaw");
 must(/SAME still/.test(boltClipPaste), "video-bolt-mid: last_frame is the same still");
 

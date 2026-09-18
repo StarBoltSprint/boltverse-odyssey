@@ -12,11 +12,17 @@ Hooks: [`imagineBoltClip`](../../scripts/imagine-hooks.mjs) — `image` + `last_
 
 ## STYLE (SmiR eye — lock this first)
 
-Pack Bolt = **stylized heroic 3D game shepherd**. Chunky clean fur. Bold silhouette.
+Identity teacher = [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg). **This still IS Bolt** for biome videos.
+
+Coat + silhouette + **strict rear**. Fluffy white GSD. Rim light. Not a different dog.
+
+**@ref / Imagine reference** `lock/bolt-back.jpg` for **every** Bolt still / clip.
+
+Black void on the teacher = **STYLE only**. Biome cooks still go to flat `#00FF00` + light bake from the empty plate. Do **not** copy the void into the keyed layer.
 
 **NOT** photoreal VFX. **NOT** a real-dog photo.
 
-Current FAIL example: clean key, but **¾ rear** → crab-walk + too photoreal. Throw. Recook the still. Do not I2V a ¾ plate.
+Current FAIL example: clean key, but **¾ rear** → crab-walk. Throw. Recook the still. Do not I2V a ¾ plate.
 
 Identity **base** stays a full-white German Shepherd (white coat forever). Décor-matching skin ON TOP of that white base is OK (ember / ice / dusk rim). Not a different dog.
 

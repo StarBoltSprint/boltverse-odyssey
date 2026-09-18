@@ -117,7 +117,7 @@ Hang **seulement** si le travelling est un rush, pas un pan de still.
 **HARD law:** [10-bolt-cutout-law.md](10-bolt-cutout-law.md). Do not skip.
 
 Still = **100% strict rear**, already in sprint (one rear leg extended), teal **fabric** collar, flat **`#00FF00` only**.  
-STYLE = stylized heroic 3D game shepherd — **not** photoreal. ¾ rear = THROW (crab-walk). Any set in the still → I2V orbits.
+STYLE teacher = [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) — fluffy white GSD rear; **@ref** that still. Black void = STYLE only; cook dest stays `#00FF00`. **Not** photoreal. ¾ rear = THROW (crab-walk). Any set in the still → I2V orbits.
 
 Film = `imagineBoltClip` (`image` + `last_frame` = **same still**, 6 s, IN PLACE / treadmill).  
 **Not** hall `imagineClip`. **Not** chat Imagine. Word “rear” alone is not enough.

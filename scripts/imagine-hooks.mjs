@@ -612,7 +612,7 @@ export async function imagineBiomeClip({
 
 /** Pack Bolt cutout still. Strict rear + flat green. Not HALL_LAW. Not BIOME_LAW. */
 export const BOLT_STILL_LAW = [
-  "STYLE: stylized heroic 3D game German Shepherd — chunky clean fur, bold silhouette. NOT photoreal VFX. NOT a real-dog photo.",
+  "STYLE: match lock/bolt-back.jpg (fluffy white GSD rear, not a different dog). stylized heroic 3D game German Shepherd — chunky clean fur, bold silhouette. NOT photoreal VFX. NOT a real-dog photo.",
   "ONE FULL-white German Shepherd. Teal FABRIC collar from behind (not chrome, not a tube).",
   "100% STRICT REAR. Tail CENTER. Back of ears. Muzzle HIDDEN. NEVER cheek. NEVER flank. NEVER three-quarter. NEVER side. NEVER profile.",
   "Locked-off camera. X only. Paws lower third. ALREADY in sprint — one rear leg EXTENDED. NEVER standing still. NEVER sit. NEVER face. NEVER a second dog.",
