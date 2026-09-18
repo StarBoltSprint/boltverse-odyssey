@@ -33,7 +33,7 @@ This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play
 | [docs/04-play.md](docs/04-play.md) | LanePlayer + `/master` stack |
 | [docs/05-key.md](docs/05-key.md) | chroma + crown (not luma) |
 | [docs/06-techniques.md](docs/06-techniques.md) | **what actually worked** (and what we killed) |
-| [docs/07-pack-live.md](docs/07-pack-live.md) | gate `sub` → registry (this Live = Pack API) |
+| [docs/07-pack-live.md](docs/07-pack-live.md) | gate `sub` → registry (Pack API = boltverse-pack on Vercel, not `*.grok.me`) |
 | [docs/08-plate-speed.md](docs/08-plate-speed.md) | measure + warp cousin rush to the empty clock |
 | [docs/09-recette-biome.md](docs/09-recette-biome.md) | **full biome cook** — empty → cousin → speed → dealer → box |
 | [docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md) | **HARD Bolt cutout** — strict rear, `#00FF00`, in-place gallop |

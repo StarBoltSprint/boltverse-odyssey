@@ -379,8 +379,9 @@ must(/BAN Build\/rebuild\/Live attach\/controls\/improv/.test(customize), "GROK.
 must(!/yes\/go\/sprint/.test(customize), "GROK.md Customize: no yes/go/sprint gate");
 must(/player taps/.test(customize), "GROK.md Customize: player taps written URL");
 must(/Never rebuild from GitHub/.test(customize), "GROK.md Customize: Never rebuild from GitHub");
-must(/Welcome = Pack register/.test(customize) && /profiles\/<sub>\.json/.test(customize), "GROK.md Customize: Welcome = Pack register");
-must(/Never invent a `sub`|Never invent a sub/.test(customize) && /playTimeSec`? still Live-only/.test(customize), "GROK.md Customize: never invent sub; playTime Live-only");
+must(/Welcome = Pack register/.test(customize) && /pack-welcome/.test(customize) && /profiles\/<sub>\.json/.test(customize), "GROK.md Customize: Welcome = pack-welcome");
+must(/Never invent a `sub`|Never invent a sub/.test(customize) && /BOLTVERSE_PACK_ORIGIN/.test(customize), "GROK.md Customize: never invent sub; playTime on Pack origin");
+must(/YOUR-PACK\.vercel\.app/.test(customize), "GROK.md Customize: Pack origin placeholder is YOUR-PACK.vercel.app");
 must(/chat start does not upsert/.test(customize) && /SUPERSEDED/.test(customize), "GROK.md Customize: chat-start-does-not-upsert SUPERSEDED");
 must(!/Welcome block \+ 1 citadel teaser \+ Build Sprint only/.test(customize), "GROK.md Customize: start is not immediate Build Sprint");
 must(/BAN controls lecture/.test(customize), "GROK.md Customize: BAN controls lecture");
@@ -492,9 +493,13 @@ function assertPlayerBoot(label, text) {
   must(/BAN Build rebuild \/ Built-with-Grok scaffold/.test(text), label + ": BAN Build rebuild / Built-with-Grok scaffold");
   must(/Supercedes « never paste grok\.me » for the first reply/.test(text), label + ": Supercedes never paste grok.me for the first reply");
   must(/Welcome = Pack register/.test(text), label + ": Welcome = Pack register");
+  must(/pack-welcome/.test(text), label + ": Welcome existence is pack-welcome");
   must(/profiles\/<sub>\.json/.test(text) && /merge-patch/.test(text), label + ": upsert profiles/<sub>.json merge-patch");
   must(/Never invent a `sub`|Never invent a sub/.test(text), label + ": never invent a sub");
-  must(/playTimeSec`? still Live-only/.test(text), label + ": playTime still Live-only");
+  must(/playTime \/ boot \/ heartbeat/.test(text) && /BOLTVERSE_PACK_ORIGIN/.test(text), label + ": playTime/boot/heartbeat = Pack origin");
+  must(/YOUR-PACK\.vercel\.app/.test(text), label + ": Pack origin placeholder is YOUR-PACK.vercel.app");
+  must(/HARD BAN/.test(text) && /Pack API/.test(text), label + ": HARD BAN odysseyyyy as Pack API");
+  must(!/playTimeSec`? still Live-only/.test(text), label + ": playTime is not Live-only");
   must(/SUPERSEDED/.test(text) && /chat start does not upsert/.test(text), label + ": chat start does not upsert is SUPERSEDED");
   must(!/Live HTML open only/.test(text), label + ": no Live-HTML-open-only upsert");
   must(!/does \*\*not\*\* write a Pack profile/.test(text) && !/Chat-only start does/.test(text), label + ": no chat-only-start-does-not-write");
@@ -627,7 +632,9 @@ for (const rel of kitchenDocs) {
 
 function assertPackWireFloor(label, text) {
   must(/pack\.js/.test(text), label + ": names pack.js");
-  must(/BOLTVERSE_PACK_ORIGIN/.test(text) && /boltverse-odysseyyyy\.grok\.me/.test(text), label + ": central origin odysseyyyy");
+  must(/BOLTVERSE_PACK_ORIGIN/.test(text) && /YOUR-PACK\.vercel\.app/.test(text), label + ": Pack origin is boltverse-pack Vercel placeholder");
+  must(/HARD BAN/.test(text) && /Pack API/.test(text), label + ": HARD BAN odysseyyyy as Pack API");
+  must(/pack-welcome/.test(text), label + ": Welcome existence is pack-welcome");
   must(/assetId/.test(text) && /stats/.test(text), label + ": dealer assetId stats");
   must(/AUTOMATIC/.test(text), label + ": Pack wire is AUTOMATIC");
   must(/please install wire/.test(text), label + ": names please install wire so it can ban it");
