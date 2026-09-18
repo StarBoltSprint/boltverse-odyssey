@@ -5,7 +5,7 @@ Kitchen SoT. English OK. Keep Pack terms. SmiR 2026-09-18.
 This page is **the** Bolt still + gallop law for every biome. Road plates stay empty. Bolt is a **keyed layer**.  
 Read with [09-recette-biome.md](09-recette-biome.md) · [05-key.md](05-key.md) · [01-images.md](01-images.md) · [02-videos.md](02-videos.md).
 
-**Product method (make / add a biome):** décor scrolls (rush); Bolt sprints **IN PLACE** (treadmill). Mid-lane for the gait cook. **48fps** on cooked plates. Style teacher = [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) (`@ref`). Hang ≠ wipe.
+**Product method (make / add a biome):** décor scrolls (rush); Bolt sprints **IN PLACE** (treadmill). Mid-lane for the gait cook. **48fps** on cooked plates. Style teacher = [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) **or** [`biome/lock/bolt-back.jpg`](../lock/bolt-back.jpg) (same bytes; `@ref`). **PRIORITY 0 TEACHER GATE:** attach / show the teacher in the Build chat first. Hang ≠ wipe.
 
 **HARD LOCK — new biome Bolt (SmiR 2026-09-18 FAIL).** New biome (any name — Tide, Frost, Ember, invented): **always** `@ref` [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg). **BAN** copying hung `biome/master/bolt.mp4` / canyon Bolt as the identity. Light bake from the **new** empty plaque is OK; identity = teacher. Hang **only** the new plates beside existing masters. Do **NOT** rebuild canyon→war first. Do **NOT** require Beat 3 recook as a gate. Name + décor `{PAINT}` allowed / encouraged. Tide is one example. Never refuse “I can only do Tide.” Pipeline below + hooks first/last still apply. Catalog lists **hung** biomes only; a biome in cook is not hung until hung.
 
@@ -17,11 +17,26 @@ Read with [09-recette-biome.md](09-recette-biome.md) · [05-key.md](05-key.md) �
 
 ## STYLE (SmiR eye — lock this first)
 
-Identity teacher = [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg). **This still IS Bolt** for biome videos.
+**PRIORITY 0 TEACHER GATE** — before ANY Bolt still / clip / cook for a biome:
+1. Open [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) **or** [`biome/lock/bolt-back.jpg`](../lock/bolt-back.jpg) (same bytes — either path OK).
+2. **Attach / show that exact image in the Build chat** so the session has the pixels.
+3. Then **@ref** it on every Bolt Imagine call.
+4. If the teacher is not shown → **STOP. No cook. FAIL.**
+5. Soft KEEP banned without teacher proof.
+
+`STEP 0: attach lock/bolt-back.jpg (or biome/lock/bolt-back.jpg) in chat before cooking Bolt.`
+
+**HARD BAN as identity sources** (never @ref as Sprint biome Bolt teacher):
+- `biome/master/bolt.mp4` / hung bolt — OUTPUT only, never @ref as style teacher
+- `lock/bolt-back-prev.jpg` — archive only, never @ref
+- `lock/RIG-*`, `lock/SEAL-*`, `lock/example-*`, `lock/sill-*` — Citadel hall locks, **NOT** Sprint biome Bolt teacher
+- Any local `bolt-rear-*.jpg` invented in a Build sandbox
+
+Identity teacher = [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) **or** [`biome/lock/bolt-back.jpg`](../lock/bolt-back.jpg). **This still IS Bolt** for biome videos.
 
 Coat + silhouette + **strict rear**. Fluffy white GSD. Rim light. Not a different dog.
 
-**@ref / Imagine reference** `lock/bolt-back.jpg` for **every** Bolt still / clip.
+**@ref / Imagine reference** `lock/bolt-back.jpg` or `biome/lock/bolt-back.jpg` for **every** Bolt still / clip.
 
 Black void on the teacher = **STYLE only**. Biome cooks still go to flat `#00FF00` + light bake from the empty plate. Do **not** copy the void into the keyed layer.
 
@@ -56,7 +71,7 @@ If he “runs on a road”, Imagine invents travelling → he **turns**.
 | Lock | Law |
 |---|---|
 | Coat | Full-white GSD. White coat forever. Skin ON TOP OK. |
-| Teacher | [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) — coat / rear camera. Not hall scale. |
+| Teacher | [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) **or** [`biome/lock/bolt-back.jpg`](../lock/bolt-back.jpg) — coat / rear camera. Not hall scale. Never hung `bolt.mp4`. |
 | Collar | **Teal fabric** collar from behind. Not chrome. Not a tube. |
 | Ears | **Two pointed GSD ears EVERY frame.** |
 | Count | **One** subject. **Never** a 3-Bolt multi-lane mask. |

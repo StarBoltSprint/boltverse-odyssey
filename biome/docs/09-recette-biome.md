@@ -49,7 +49,7 @@ Playlist / index law: [11-plate-order.md](11-plate-order.md).
 
 ## HARD LOCK — make / add a biome (SmiR 2026-09-18)
 
-When a player asks **make a biome** / **add a biome** / cook a new sprint run: décor scrolls (rush); Bolt sprints **IN PLACE** (treadmill). Mid-lane for the gait cook. **48fps** on cooked plates. Style teacher = [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) (`@ref`) — fluffy white GSD rear; **this still IS Bolt**. Black void on the teacher = STYLE only; cooks go to flat `#00FF00`. Hang ≠ wipe.
+When a player asks **make a biome** / **add a biome** / cook a new sprint run: décor scrolls (rush); Bolt sprints **IN PLACE** (treadmill). Mid-lane for the gait cook. **48fps** on cooked plates. Style teacher = [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) **or** [`biome/lock/bolt-back.jpg`](../lock/bolt-back.jpg) (same bytes; `@ref`) — fluffy white GSD rear; **this still IS Bolt**. **PRIORITY 0 TEACHER GATE:** attach / show that exact image in the Build chat first. If teacher not shown → **STOP. No cook. FAIL.** Black void on the teacher = STYLE only; cooks go to flat `#00FF00`. Hang ≠ wipe.
 
 **Do not invert.** Full law: [10-bolt-cutout-law.md](10-bolt-cutout-law.md).
 
@@ -150,7 +150,7 @@ Hang **seulement** si le travelling est un rush, pas un pan de still.
 **HARD law:** [10-bolt-cutout-law.md](10-bolt-cutout-law.md). Do not skip. B→cycle→green→key. **48fps**.
 
 Still (after Video B cycle extract) = **100% strict rear**, already in sprint (one rear leg extended), teal **fabric** collar, flat **`#00FF00` only**.  
-STYLE teacher = [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) — fluffy white GSD rear; **@ref** that still. Black void = STYLE only; cook dest stays `#00FF00`. **Not** photoreal. ¾ rear = THROW (crab-walk). Any set in the **green** still → I2V orbits.
+STYLE teacher = [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) **or** [`biome/lock/bolt-back.jpg`](../lock/bolt-back.jpg) (same bytes) — fluffy white GSD rear; **@ref** that still after attaching it in the Build chat (PRIORITY 0 TEACHER GATE). Hung `biome/master/bolt.mp4` is OUTPUT only — never @ref as style teacher. Black void = STYLE only; cook dest stays `#00FF00`. **Not** photoreal. ¾ rear = THROW (crab-walk). Any set in the **green** still → I2V orbits.
 
 Video B (gait source) = SAME décor rush as Video A + Bolt mid-lane IN PLACE. Kitchen — **not** Hung. Green-only I2V invents walk.
 

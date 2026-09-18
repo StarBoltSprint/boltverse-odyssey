@@ -58,7 +58,7 @@ Then match travel to the empty plate: [08-plate-speed.md](08-plate-speed.md). Ex
 
 ## Video B — gait source (kitchen, not Hung)
 
-SAME décor rush as Video A + Bolt mid-lane **IN PLACE**, natural rotary gallop, `@ref` [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg). Camera locked. **48fps**.
+SAME décor rush as Video A + Bolt mid-lane **IN PLACE**, natural rotary gallop, `@ref` [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) **or** [`biome/lock/bolt-back.jpg`](../lock/bolt-back.jpg) (same bytes; attach in chat first). Camera locked. **48fps**.
 
 Green-only I2V invents a walk — B exists so gait is natural. Extract **one** cycle (start, 2–3 mids chronological, end ≈ start). Repose onto `#00FF00`. **Do not Hang B.** API / Build hooks with real `image` + distinct `last_frame`. Not hall `imagineClip`. Not `imagineBiomeClip` (ZERO dog). Not chat Imagine.
 
