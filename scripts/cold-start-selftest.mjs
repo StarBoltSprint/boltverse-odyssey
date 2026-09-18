@@ -25,7 +25,8 @@ function body(rel) {
 }
 
 function firstStop(text) {
-  const idx = text.search(/STOP/);
+  const hard = text.search(/STOP(?: 0)? — HARD SPLIT|STOP 0 — STYLES FIRST/);
+  const idx = hard >= 0 ? hard : text.search(/STOP/);
   return idx < 0 ? "" : text.slice(idx, idx + 2000);
 }
 
@@ -272,13 +273,64 @@ function assertConsoleFlow(label, text) {
   must(/Sprint/.test(text) && /Citadel/.test(text), label + ": player names Sprint + Citadel");
   must(/Biome/.test(text), label + ": Biome stays kitchen");
   must(/native Grok Build game console/.test(text) && /in-app/.test(text), label + ": open Sprint in-app");
-  must(/No Play URL|do not paste a Play URL|Do \*\*not\*\* paste a Play URL/i.test(text), label + ": no Play URL in chat");
+  must(/PASTE written URL/.test(text) && /boltverse-odysseyyyy\.grok\.me/.test(text), label + ": first reply PASTE written URL");
   must(/loop forever/.test(text), label + ": play videos loop forever");
   must(/preview mp4/.test(text), label + ": stock preview mp4s");
   must(/not tappable|not.*hitbox|pas des hitboxes/i.test(text), label + ": chat mp4s are not hitboxes");
   must(/biome\//.test(text) || /stock\/biome/.test(text), label + ": biome = in-repo biome/ or stock/biome");
 }
 
+function assertPriority0Head(label, rel) {
+  const top = head(rel, 20);
+  must(/PRIORITY 0/.test(top), label + ": PRIORITY 0 at top");
+  must(!/STOP/.test(top.match(/PRIORITY 0[^\n]*/)?.[0] || "STOP"), label + ": PRIORITY 0 first line has no STOP");
+  must(/MUST NOT Build/.test(top), label + ": MUST NOT Build at top");
+  must(/Even if the user is on the Build tab/.test(top), label + ": even on Build tab at top");
+  must(/chat only/.test(top), label + ": reply in chat only at top");
+  must(/Welcome EN/.test(top) && /citadel teaser/.test(top), label + ": Welcome EN + citadel teaser at top");
+  must(/Zero Build \/ scaffold \/ Built-with-Grok/.test(top), label + ": Zero Build / scaffold / Built-with-Grok at top");
+  must(/same turn/.test(top) && /No yes-gate/.test(top), label + ": same turn + no yes-gate at top");
+  must(/boltverse-odysseyyyy\.grok\.me/.test(top), label + ": first reply paste odysseyyyy at top");
+  must(/Implementing Sprint/.test(top), label + ": bans Implementing Sprint at top");
+  must(/LanePlayer at boot/.test(top), label + ": bans LanePlayer at boot at top");
+  must(/Copying game assets/.test(top), label + ": bans Copying game assets at top");
+  must(/Configuring the build/.test(top), label + ": bans Configuring the build at top");
+  must(/Build work for start = FAIL/.test(top), label + ": Build work for start = FAIL at top");
+  must(/STOP\. Idle/.test(top) && /No follow-up Build agent/.test(top), label + ": STOP. Idle. No follow-up Build agent at top");
+}
+
+function assertFirstReplyNoBuildAttach(label, text) {
+  must(/first chat reply/i.test(text), label + ": has first chat reply");
+  must(/same turn as the video/.test(text), label + ": URL in same turn as the video");
+  must(/No yes-gate/.test(text), label + ": no yes-gate");
+  must(/Even if the user is on the Build tab/.test(text), label + ": even on Build tab");
+  must(/chat only/.test(text), label + ": reply in chat only");
+  must(/Implementing Sprint/.test(text), label + ": forbids Implementing Sprint");
+  must(/LanePlayer at boot/.test(text), label + ": forbids LanePlayer at boot");
+  must(/Copying game assets/.test(text), label + ": forbids Copying game assets");
+  must(/Configuring the build/.test(text), label + ": forbids Configuring the build");
+  must(/Build work for start = FAIL/.test(text), label + ": Build work for start = FAIL");
+  must(/Prefer switching attention to Chat/.test(text), label + ": prefer Chat for boot");
+  must(/STOP\. Idle/.test(text) && /No follow-up Build agent/.test(text), label + ": STOP. Idle. No follow-up Build agent");
+  must(!/Ready to sprint — say yes/.test(text), label + ": no yes-gate wait");
+  must(!/only after player yes/.test(text) && !/yes\/go\/sprint/.test(text), label + ": no yes/go/sprint gate");
+  must(!/After yes = paste/.test(text), label + ": no After yes = paste");
+  must(!/Phase 1/.test(text) && !/Phase 2/.test(text), label + ": no Phase 1 / Phase 2 yes-gate");
+  must(!/Build attach/i.test(text), label + ": no Build attach");
+  must(!/via Build attach/i.test(text), label + ": no via Build attach");
+  must(!/open\/attach Sprint via Build/i.test(text), label + ": no open/attach Sprint via Build");
+  must(!/in-chat playable preview/i.test(text), label + ": no in-chat playable preview");
+  must(!/Build play surface/i.test(text), label + ": no Build play surface");
+  must(!/silently open/i.test(text), label + ": no silently open");
+}
+
+assertPriority0Head("START.md", "START.md");
+assertPriority0Head("GROK.md", "GROK.md");
+assertFirstReplyNoBuildAttach("START.md", body("START.md"));
+assertFirstReplyNoBuildAttach("GROK.md", body("GROK.md"));
+assertFirstReplyNoBuildAttach("README.md", body("README.md"));
+assertFirstReplyNoBuildAttach("AGENTS.md", agents);
+assertFirstReplyNoBuildAttach("GROK.md Customize", customize);
 assertConsoleFlow("GROK.md", body("GROK.md"));
 assertConsoleFlow("README.md", body("README.md"));
 assertConsoleFlow("START.md", body("START.md"));
@@ -291,10 +343,21 @@ must(!/keep the split|Keep the split/.test(body("GROK.md")), "GROK.md: split mer
 must(!/keep the split|Keep the split/.test(body("README.md")), "README.md: split merged — biome cooks here");
 must(!/Do not cook biomes here/.test(body("README.md")), "README.md: no do-not-cook-biomes-here");
 must(!/Do not cook biomes here/.test(agents), "AGENTS.md: no do-not-cook-biomes-here");
+must(/PRIORITY 0/.test(customize), "GROK.md Customize: PRIORITY 0");
+must(/MUST NOT Build/.test(customize), "GROK.md Customize: MUST NOT Build");
+must(/first chat reply/i.test(customize) && /Welcome EN/.test(customize) && /citadel teaser/.test(customize), "GROK.md Customize: first reply Welcome EN + citadel teaser");
+must(/Zero Build \/ scaffold \/ Built-with-Grok/.test(customize), "GROK.md Customize: Zero Build / scaffold / Built-with-Grok");
+must(/Even if the user is on the Build tab/.test(customize), "GROK.md Customize: even on Build tab");
+must(/Implementing Sprint/.test(customize) && /LanePlayer at boot/.test(customize), "GROK.md Customize: forbids Implementing Sprint + LanePlayer at boot");
+must(/Copying game assets/.test(customize) && /Configuring the build/.test(customize), "GROK.md Customize: forbids Copying game assets + Configuring the build");
+must(/Build work for start = FAIL/.test(customize), "GROK.md Customize: Build work for start = FAIL");
+must(/STOP\. Idle/.test(customize) && /No follow-up Build agent/.test(customize), "GROK.md Customize: STOP. Idle. No follow-up Build agent");
+must(/same turn/.test(customize) && /No yes-gate/.test(customize), "GROK.md Customize: same turn + no yes-gate");
+must(/boltverse-odysseyyyy\.grok\.me/.test(customize), "GROK.md Customize: first reply paste odysseyyyy");
 must(/Grok chat = console/.test(customize) && /Odyssey = the game/.test(customize), "GROK.md Customize: console / game");
 must(/play \/ lance/.test(customize) && /Interactive Play/.test(customize), "GROK.md Customize: play/lance → Interactive Play");
-must(/open Sprint via native Grok Build game console/.test(customize) && /in-app/.test(customize), "GROK.md Customize: open Sprint in-app");
-must(/Pack Play URL is kitchen-only/.test(customize) && /No Play URL in chat/.test(customize), "GROK.md Customize: Play URL kitchen-only");
+must(/Prefer open in Grok app/.test(customize), "GROK.md Customize: Prefer open in Grok app");
+must(/Supercedes « never paste grok\.me » for the first reply/.test(customize), "GROK.md Customize: Supercedes never paste grok.me for the first reply");
 must(!/ask Citadel or Biome/.test(customize), "GROK.md Customize: no Citadel/Biome choice lecture");
 must(/Prefer GitHub for boot/.test(customize) && /Bot OK if useful/.test(customize), "GROK.md Customize: prefer GitHub for boot; Bot OK if useful");
 must(!/Never invoke a Grok Bot connector/i.test(customize) && !/GitHub \+ Build console only/.test(customize), "GROK.md Customize: no Bot-connector ban");
@@ -303,20 +366,29 @@ must(/Hey Packmate \{name\}/.test(customize) && /never Packmate alone/.test(cust
 must(/displayName`? first/.test(customize) && /then registry/.test(customize) && /then gate\/app/.test(customize) && /runner`? ONLY if none/.test(customize), "GROK.md Customize: {name} = displayName first, then registry, then gate/app, else runner ONLY if none");
 must(/Hard ban/.test(customize) && /runner/.test(customize) && /display name\/handle/.test(customize), "GROK.md Customize: hard ban runner when display name/handle exists");
 must(/never runner when any displayName visible/.test(customize), "GROK.md Customize: never runner when any displayName visible");
-must(/ONLY odysseyyyy Live via Build attach/.test(customize), "GROK.md Customize: ONLY odysseyyyy Live via Build attach");
+must(/PASTE written URL/.test(customize) && /boltverse-odysseyyyy\.grok\.me/.test(customize), "GROK.md Customize: first reply PASTE written odysseyyyy URL");
+must(/BAN Build rebuild \/ Built-with-Grok scaffold/.test(customize), "GROK.md Customize: BAN Build rebuild / Built-with-Grok scaffold");
 must(/BAN scaffold\/recreate\/remix/.test(customize), "GROK.md Customize: BAN scaffold/recreate/remix");
 must(/BAN intro\/landing splash requiring Open Sprint \/ Start before play/.test(customize), "GROK.md Customize: BAN intro/landing splash");
 must(/land IN Sprint/.test(customize), "GROK.md Customize: land IN Sprint");
-must(/Welcome block \+ 1 citadel teaser \+ Build Sprint only/.test(customize), "GROK.md Customize: Welcome + teaser + Build Sprint only");
+must(/start ≠ Build/.test(customize), "GROK.md Customize: start ≠ Build");
+must(/first reply = Welcome EN \+ citadel teaser \+ paste odysseyyyy/.test(customize), "GROK.md Customize: first reply Welcome + teaser + paste");
+must(!/Phase 1/.test(customize) && !/Phase 2/.test(customize), "GROK.md Customize: no Phase 1 / Phase 2 yes-gate");
+must(!/Ready to sprint — say yes/.test(customize), "GROK.md Customize: no yes-gate wait");
+must(/BAN Build\/rebuild\/Live attach\/controls\/improv/.test(customize), "GROK.md Customize: BAN Build/rebuild/Live attach/controls/improv");
+must(!/yes\/go\/sprint/.test(customize), "GROK.md Customize: no yes/go/sprint gate");
+must(/player taps/.test(customize), "GROK.md Customize: player taps written URL");
+must(/Never rebuild from GitHub/.test(customize), "GROK.md Customize: Never rebuild from GitHub");
+must(/Pack save still on Live HTML open \+ identity/.test(customize), "GROK.md Customize: Pack save still on Live HTML open + identity");
+must(!/Welcome block \+ 1 citadel teaser \+ Build Sprint only/.test(customize), "GROK.md Customize: start is not immediate Build Sprint");
 must(/BAN controls lecture/.test(customize), "GROK.md Customize: BAN controls lecture");
 must(/First Spark/.test(customize) && /Neon Drift/.test(customize) && /invented cassette names/.test(customize), "GROK.md Customize: BAN invented cassette names");
 must(/BAN plate deck lists at boot/.test(customize), "GROK.md Customize: BAN plate deck lists at boot");
 must(/canyon→cars→duel→night→war/.test(customize) && /plates-index/.test(customize) && /biome dealer/.test(customize), "GROK.md Customize: plate order canyon→cars→duel→night→war");
-must(/Beat 3/.test(customize) && /in-chat playable preview preferred/.test(customize) && /silently open/.test(customize), "GROK.md Customize: Beat 3 Build play surface");
+must(/Beat 3/.test(customize) && /Prefer open in Grok app/.test(customize), "GROK.md Customize: Beat 3 prefer open in Grok app");
 must(/Chat Imagine/.test(customize) && /Chat file chip alone/.test(customize) && /FAIL for Beat 3/.test(customize), "GROK.md Customize: Chat Imagine / Chat file chip alone = FAIL for Beat 3");
 must(/Beat 3 kitchen identity/.test(customize) && /boltverse-odysseyyyy\.grok\.me/.test(customize), "GROK.md Customize: Beat 3 kitchen identity is odysseyyyy Live");
-must(/that Live/.test(customize), "GROK.md Customize: attach/open that Live");
-must(/when attach works/.test(customize), "GROK.md Customize: no URL paste when attach works");
+must(!/when attach works/.test(customize), "GROK.md Customize: first reply is paste, not attach");
 must(/Hard bans at boot/.test(customize), "GROK.md Customize: Hard bans at boot");
 must(/\*\.hades-www\.grok-sandbox\.com/.test(customize), "GROK.md Customize: bans *.hades-www.grok-sandbox.com");
 must(/random sandbox host/.test(customize), "GROK.md Customize: bans any random sandbox host");
@@ -412,10 +484,14 @@ function assertPlayerBoot(label, text) {
   must(/open Sprint/i.test(text), label + ": open Sprint direct");
   must(/Beat 3/.test(text), label + ": names Beat 3");
   must(/Beat 3 kitchen identity/.test(text), label + ": names Beat 3 kitchen identity");
-  must(/in-chat playable preview preferred/.test(text), label + ": in-chat playable preview preferred");
-  must(/that Live/.test(text), label + ": attach/open that Live");
-  must(/silently open/.test(text) && /native (Grok )?Build game console/.test(text), label + ": else silently open native Build game console");
-  must(/when attach works/.test(text), label + ": no URL paste in player reply when attach works");
+  must(/PASTE written URL/.test(text) && /boltverse-odysseyyyy\.grok\.me/.test(text), label + ": first reply PASTE written odysseyyyy URL");
+  must(/Prefer open in Grok app/.test(text), label + ": Prefer open in Grok app");
+  must(/player taps/.test(text), label + ": player taps written URL");
+  must(/BAN Build rebuild \/ Built-with-Grok scaffold/.test(text), label + ": BAN Build rebuild / Built-with-Grok scaffold");
+  must(/Supercedes « never paste grok\.me » for the first reply/.test(text), label + ": Supercedes never paste grok.me for the first reply");
+  must(/Pack save still on Live HTML open \+ identity/.test(text), label + ": Pack save still on Live HTML open + identity");
+  must(!/when attach works/.test(text), label + ": first reply is paste, not attach");
+  must(!/in-chat playable preview preferred/.test(text), label + ": no Build playable-preview attach");
   must(/Chat Imagine/.test(text) && /Chat file chip alone/.test(text) && /FAIL/.test(text), label + ": Chat Imagine / Chat file chip alone = FAIL for Beat 3");
   must(!/file chip is enough|file-chip success|Chat file chip.*PASS/i.test(text), label + ": no Chat-only file-chip success path");
   must(/Hard bans at boot/.test(text), label + ": Hard bans at boot");
@@ -428,8 +504,17 @@ function assertPlayerBoot(label, text) {
   must(/BAN scaffold\/recreate\/remix/.test(text), label + ": BAN scaffold/recreate/remix");
   must(/BAN intro\/landing splash requiring Open Sprint \/ Start before play/.test(text), label + ": BAN intro/landing splash requiring Open Sprint / Start before play");
   must(/land IN Sprint/.test(text), label + ": land IN Sprint");
-  must(/ONLY odysseyyyy Live via Build attach/.test(text), label + ": ONLY odysseyyyy Live via Build attach");
-  must(/Welcome block \+ 1 citadel teaser \+ Build Sprint only/.test(text), label + ": Welcome block + 1 citadel teaser + Build Sprint only");
+  must(/ONLY PASTE written URL|PASTE written URL/.test(text), label + ": ONLY PASTE written odysseyyyy URL");
+  must(/start ≠ Build/.test(text), label + ": start ≠ Build");
+  must(/first chat reply/i.test(text) && /Welcome EN/.test(text) && /citadel teaser/.test(text), label + ": first reply Welcome EN + citadel teaser");
+  must(/same turn as the video/.test(text), label + ": URL in same turn as the video");
+  must(/No yes-gate/.test(text), label + ": no yes-gate");
+  must(!/Ready to sprint — say yes/.test(text), label + ": no yes-gate wait");
+  must(!/Phase 1/.test(text) && !/Phase 2/.test(text), label + ": no Phase 1 / Phase 2 yes-gate");
+  must(/BAN Build\/rebuild\/Live attach\/controls\/improv/.test(text), label + ": BAN Build/rebuild/Live attach/controls/improv");
+  must(!/yes\/go\/sprint/.test(text), label + ": no yes/go/sprint gate");
+  must(/Never rebuild from GitHub/.test(text), label + ": Never rebuild from GitHub");
+  must(!/Welcome block \+ 1 citadel teaser \+ Build Sprint only/.test(text), label + ": start is not immediate Build Sprint");
   must(/BAN controls lecture/.test(text), label + ": BAN controls lecture");
   must(/invented cassette names/.test(text) && /First Spark/.test(text) && /Neon Drift/.test(text), label + ": BAN invented cassette names First Spark/Neon Drift");
   must(/BAN plate deck lists at boot/.test(text), label + ": BAN plate deck lists at boot");
@@ -442,7 +527,7 @@ function assertPlayerBoot(label, text) {
   must(!/le-wild/i.test(text), label + ": kitchen boot does not name le-wild carousel host");
   const sandboxSlugs = [...text.matchAll(/\b([a-z0-9][a-z0-9-]*)\.hades-www\.grok-sandbox\.com\b/gi)].map((m) => m[1].toLowerCase());
   must(sandboxSlugs.length === 0, label + ": kitchen boot does not allow arbitrary sandbox slug" + (sandboxSlugs.length ? " (" + sandboxSlugs.join(",") + ")" : ""));
-  must(/\*\.grok\.me|No `grok\.me` paste|no `grok\.me` paste/.test(text), label + ": no pasted *.grok.me in player reply");
+  must(/PASTE written URL/.test(text) && /same turn as the video/.test(text), label + ": first reply PASTE URL in same turn as video");
   must(!/\+ ask \*\*Citadel\*\* or \*\*Biome\*\*/.test(text) && !/\+ ask Citadel or Biome/.test(text) && !/\n3\. Ask \*\*Citadel\*\* or \*\*Biome\*\*/.test(text), label + ": no Citadel/Biome choice lecture");
   must(/No Citadel\/Biome choice|Do \*\*not\*\* ask Citadel or Biome|do not ask Citadel or Biome/.test(text), label + ": forbids Citadel/Biome choice lecture");
   must(/kitchen only|Pack Play URL is kitchen-only|do not read aloud/i.test(text) && /boltverse-odysseyyyy\.grok\.me/.test(text), label + ": Pack Play URL is kitchen-only");
