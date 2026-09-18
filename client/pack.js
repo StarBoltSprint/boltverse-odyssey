@@ -1,11 +1,16 @@
 /**
- * Odyssey recipe floor — drop into any *.grok.me Live.
- * Boot + 30s heartbeat + visibility flush. Fail soft. No wallet / keys.
+ * Odyssey recipe floor — drop into any Sprint / biome / citadel Live.
+ * Boot + 30s heartbeat + visibility flush. Fail soft. No wallet / player keys.
  *
- * Server injects window.__PACK_TICKET__ on the HTML document request
- * (x-grok-identity is a request header, not in window/meta/cookie).
+ * REQUIRED: window.BOLTVERSE_PACK_ORIGIN = Pack API host
+ *   StarBoltSprint/boltverse-pack on Vercel
+ *   placeholder until real URL: "https://YOUR-PACK.vercel.app"
  *
- * Optional: window.BOLTVERSE_PACK_ORIGIN = "https://your-pack.vercel.app"
+ * HARD BAN: do not point this at https://boltverse-odysseyyyy.grok.me
+ *   (game play URL stays odysseyyyy; Pack API does not).
+ *
+ * Load /client/pack.js from that origin, or ship this local file and POST there.
+ * Never invent a sub. Never player API keys.
  */
 (function packClient(global) {
   if (!global || global.__BOLTVERSE_PACK__) return;
@@ -21,14 +26,26 @@
   var inflight = false;
   var retriedTicket = false;
 
+  function normalizeOrigin(raw) {
+    if (!raw) return "";
+    var origin = String(raw).replace(/\/$/, "");
+    try {
+      var host = new URL(origin).hostname.toLowerCase();
+    } catch (e) {
+      return "";
+    }
+    if (host === "grok.me" || /\.grok\.me$/.test(host)) return "";
+    return origin;
+  }
+
   function apiOrigin() {
     if (global.BOLTVERSE_PACK_ORIGIN) {
-      return String(global.BOLTVERSE_PACK_ORIGIN).replace(/\/$/, "");
+      return normalizeOrigin(global.BOLTVERSE_PACK_ORIGIN);
     }
     var el = document.currentScript;
     if (el && el.src) {
       try {
-        return new URL(el.src).origin;
+        return normalizeOrigin(new URL(el.src).origin);
       } catch (e) {}
     }
     return "";
@@ -79,6 +96,7 @@
   }
 
   function send(path, keepalive) {
+    if (!apiOrigin()) return Promise.resolve(null);
     return fetch(endpoint(path), {
       method: "POST",
       mode: "cors",
@@ -128,6 +146,10 @@
   }
 
   function boot() {
+    if (!apiOrigin()) {
+      console.info(LOG, "fail soft");
+      return Promise.resolve();
+    }
     if (useInjectedTicket()) return Promise.resolve();
     // Ticket is injected into <head> during the document GET. If pack.js ran
     // before that inline script, retry once on the next turn.

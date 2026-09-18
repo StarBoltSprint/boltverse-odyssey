@@ -133,7 +133,7 @@ A **key** bug (holes, gold pipe, sliced skull, black flash, sticker edge) is a c
 
 ## Pack floor
 
-Every Live drops [../client/pack.js](../client/pack.js). This Live is the central Pack API. [docs/07-pack-live.md](docs/07-pack-live.md). No wallet.
+Every Live drops [../client/pack.js](../client/pack.js) with `BOLTVERSE_PACK_ORIGIN` = `https://YOUR-PACK.vercel.app` (StarBoltSprint/boltverse-pack on Vercel). **HARD BAN:** odysseyyyy is the game play URL, not the Pack API. Fail soft if Pack is down. [docs/07-pack-live.md](docs/07-pack-live.md). No wallet. No player API keys.
 
 ## Do not
 
