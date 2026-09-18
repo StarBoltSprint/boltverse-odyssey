@@ -3,6 +3,7 @@
 // at-A prefers lock/example-at-a.jpg (SmiR lock teacher). at-B prefers hung moss PASS.
 // copy PLACE+POSE from example; FORCE taille 0.35–0.40; FORCE STANDING; never shrink to 0.18.
 // IGNORE tiny ~0.18 crop like bolt-back 0.53. Never send example-at-*-tiny.
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -213,6 +214,13 @@ must(/STRICT REAR/.test(boltStillPaste) && /#00FF00/.test(boltStillPaste), "imag
 must(/NOT photoreal/.test(boltStillPaste) && /ALREADY in sprint/.test(boltStillPaste), "image-bolt-mid: stylized + already sprinting");
 must(/lock\/bolt-back\.jpg/.test(boltStillPaste) && /fluffy white GSD rear/.test(boltStillPaste), "image-bolt-mid: match bolt-back teacher");
 must(existsSync(join(root, "lock/bolt-back.jpg")), "lock/bolt-back.jpg teacher exists");
+must(existsSync(join(root, "biome/lock/bolt-back.jpg")), "biome/lock/bolt-back.jpg teacher copy exists");
+must(existsSync(join(root, "lock/bolt-back-prev.jpg")), "lock/bolt-back-prev.jpg archive kept");
+must(createHash("md5").update(readFileSync(join(root, "lock/bolt-back.jpg"))).digest("hex") === createHash("md5").update(readFileSync(join(root, "biome/lock/bolt-back.jpg"))).digest("hex"), "teacher copies identical");
+must(/PRIORITY 0 TEACHER GATE/.test(boltLaw), "10-law: PRIORITY 0 TEACHER GATE");
+must(/never @ref as style teacher/.test(boltLaw) && /biome\/master\/bolt\.mp4/.test(boltLaw), "10-law: ban hung bolt as teacher");
+must(/bolt-back-prev/.test(boltLaw) && /archive only/.test(boltLaw), "10-law: ban bolt-back-prev");
+must(/NOT(?:\*\*)? Sprint biome Bolt teacher/.test(boltLaw), "10-law: hall locks are not biome teacher");
 must(/IN PLACE/.test(boltClipPaste) && /treadmill/.test(boltClipPaste) && /NEVER yaw/.test(boltClipPaste), "video-bolt-mid: in place, never yaw");
 must(/48fps/.test(boltClipPaste) && /cycle end on green/.test(boltClipPaste), "video-bolt-mid: 48fps + cycle bookends");
 must(/lock\/bolt-back\.jpg/.test(boltStillPaste), "image-bolt-mid: style teacher lock/bolt-back.jpg");

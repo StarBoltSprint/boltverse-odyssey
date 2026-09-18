@@ -2,6 +2,7 @@
 // Fixture: brand-new Grok reads these first.
 // HARD SPLIT (SmiR 2026-09-12): Agent obligatoire for STYLE stills when restyling.
 // Video cook stays imagine-hooks / cook-room first+last. Never Agent for walks/breaths.
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -85,7 +86,7 @@ function assertSplit(label, text) {
   must(/Soft KEEP banned/.test(text), label + ": Soft KEEP banned");
 }
 
-const agentsHead = head("AGENTS.md", 22);
+const agentsHead = head("AGENTS.md", 50);
 must(/sill ≠ spawn/.test(agentsHead), "AGENTS.md head: sill ≠ spawn");
 must(/already AT the teal LEFT sill/.test(agentsHead) && /already AT the gold RIGHT sill/.test(agentsHead), "AGENTS.md head: at-A/at-B = AT the sill");
 must(/Spawn = CENTER only/.test(agentsHead), "AGENTS.md head: spawn = center only");
@@ -658,5 +659,43 @@ must(/Lives freeze/.test(body("biome/docs/07-pack-live.md")) && /Grok sandbox/.t
 must(/Do not\*\* put Vercel in player-facing Welcome|Do not put Vercel in player-facing Welcome/.test(body("biome/docs/07-pack-live.md")), "07-pack-live: do not put Vercel in Welcome copy");
 must(/Welcome = Pack register/.test(body("biome/docs/09-recette-biome.md")) && /PRIORITY 0/.test(body("biome/docs/09-recette-biome.md")), "09-recette-biome: keeps Welcome register + PRIORITY 0");
 must(/pack\.js/.test(customize) && /BOLTVERSE_PACK_ORIGIN/.test(customize) && /please install wire/.test(customize), "GROK.md Customize: Pack wire floor AUTOMATIC");
+
+function md5(rel) {
+  return createHash("md5").update(readFileSync(join(root, rel))).digest("hex");
+}
+
+function assertTeacherGate(label, text) {
+  must(/PRIORITY 0 TEACHER GATE/.test(text), label + ": PRIORITY 0 TEACHER GATE");
+  must(/Attach \/ show that exact image/.test(text), label + ": attach/show teacher in Build chat");
+  must(/lock\/bolt-back\.jpg/.test(text) && /biome\/lock\/bolt-back\.jpg/.test(text), label + ": both teacher paths");
+  must(/teacher(?: is)? not shown/.test(text) && /STOP\. No cook\. FAIL/.test(text), label + ": no teacher → STOP. No cook. FAIL");
+  must(/Soft KEEP banned without teacher/.test(text), label + ": Soft KEEP banned without teacher proof");
+  must(/biome\/master\/bolt\.mp4/.test(text) && /OUTPUT only/.test(text) && /never @ref as style teacher/.test(text), label + ": ban hung bolt as teacher");
+  must(/bolt-back-prev/.test(text) && /archive only/.test(text), label + ": ban bolt-back-prev as teacher");
+  must(/lock\/RIG-\*/.test(text) && /lock\/SEAL-\*/.test(text) && /lock\/example-\*/.test(text) && /lock\/sill-\*/.test(text), label + ": ban hall locks as biome teacher");
+  must(/NOT(?:\*\*)? Sprint biome Bolt teacher/.test(text), label + ": hall locks are NOT Sprint biome Bolt teacher");
+  must(/bolt-rear-\*\.jpg/.test(text), label + ": ban invented bolt-rear-*.jpg");
+}
+
+must(existsSync(join(root, "lock/bolt-back.jpg")), "lock/bolt-back.jpg teacher exists");
+must(existsSync(join(root, "biome/lock/bolt-back.jpg")), "biome/lock/bolt-back.jpg teacher copy exists");
+must(existsSync(join(root, "lock/bolt-back-prev.jpg")), "lock/bolt-back-prev.jpg archive kept");
+must(md5("lock/bolt-back.jpg") === md5("biome/lock/bolt-back.jpg"), "teacher copies identical");
+must(md5("lock/bolt-back.jpg") !== md5("lock/bolt-back-prev.jpg"), "prev is archive, not the teacher");
+
+assertTeacherGate("AGENTS.md", agents);
+assertTeacherGate("GROK.md", body("GROK.md"));
+assertTeacherGate("GROK.md Customize", customize);
+assertTeacherGate("biome/GROK.md", body("biome/GROK.md"));
+assertTeacherGate("START.md biome", body("START.md"));
+assertTeacherGate("10-bolt-cutout-law STYLE", body("biome/docs/10-bolt-cutout-law.md"));
+
+must(/STEP 0: attach lock\/bolt-back\.jpg \(or biome\/lock\/bolt-back\.jpg\) in chat before cooking Bolt\./.test(customize), "GROK.md Customize: STEP 0 teacher one-liner");
+must(body("AGENTS.md").search(/PRIORITY 0 TEACHER GATE/) < body("AGENTS.md").search(/sill ≠ spawn/), "AGENTS.md: teacher gate before sill ≠ spawn");
+must(body("biome/GROK.md").search(/PRIORITY 0 TEACHER GATE/) < body("biome/GROK.md").search(/MUST read before cooking/), "biome/GROK.md: teacher gate before MUST read");
+must(customize.search(/PRIORITY 0 TEACHER GATE/) < customize.search(/Clone/), "GROK.md Customize: teacher gate before clone");
+must(body("START.md").search(/PRIORITY 0 TEACHER GATE/) < body("START.md").search(/HARD — Bolt style teacher/), "START.md: teacher gate at biome teacher");
+const boltLawStyle = body("biome/docs/10-bolt-cutout-law.md");
+must(boltLawStyle.search(/## STYLE/) >= 0 && boltLawStyle.slice(boltLawStyle.indexOf("## STYLE")).search(/PRIORITY 0 TEACHER GATE/) < 400, "10-law: teacher gate at top of STYLE");
 
 console.log("COLD-START PASS");

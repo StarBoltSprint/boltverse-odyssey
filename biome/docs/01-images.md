@@ -30,13 +30,13 @@ Paste: [../prompts/image-hazard-plate.txt](../prompts/image-hazard-plate.txt).
 
 ONE full-white German Shepherd. White coat forever. Teal **fabric** collar from behind (not chrome). **100% STRICT REAR** (tail center, back of ears; muzzle hidden). Lower third. **ALREADY in sprint** — one rear leg extended. **Never** standing still, sit, face, ¾, cheek, flank. Mid-lane. **IN PLACE / treadmill.**
 
-STYLE: match [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) — fluffy white GSD rear, coat + silhouette + strict rear. Not a different dog. **NOT** photoreal.
+STYLE: match [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) **or** [`biome/lock/bolt-back.jpg`](../lock/bolt-back.jpg) (same bytes) — fluffy white GSD rear, coat + silhouette + strict rear. Not a different dog. **NOT** photoreal. **PRIORITY 0 TEACHER GATE:** attach / show that exact image in the Build chat first.
 
 Background: **flat `#00FF00` ONLY** (green cycle frames). No road, city, gold pipe, ring, puddle, floor, drawn shadow, halo, set. Soft black / magenta = FAIL for this cook. Cycle repose from Video B onto this green. Light bake from one A/B road frame OK (light only). Cycle refs OK (start, 2–3 mids chronological, end ≈ start).
 
 Paste: [../prompts/image-bolt-mid.txt](../prompts/image-bolt-mid.txt).
 
-Identity teacher = [../../lock/bolt-back.jpg](../../lock/bolt-back.jpg) — **this still**. Coat + silhouette + strict rear. **@ref / Imagine reference** it for every Bolt still/clip. Black void teacher = STYLE only; biome cooks still go to flat `#00FF00` + light bake from the empty plate. Copy **this** camera (already strict rear).
+Identity teacher = [../../lock/bolt-back.jpg](../../lock/bolt-back.jpg) **or** [../lock/bolt-back.jpg](../lock/bolt-back.jpg) — **this still**. Coat + silhouette + strict rear. **@ref / Imagine reference** it for every Bolt still/clip. If teacher not shown → **STOP. No cook. FAIL.** Hung `biome/master/bolt.mp4` is OUTPUT only. Black void teacher = STYLE only; biome cooks still go to flat `#00FF00` + light bake from the empty plate. Copy **this** camera (already strict rear).
 
 
 ## Banned
