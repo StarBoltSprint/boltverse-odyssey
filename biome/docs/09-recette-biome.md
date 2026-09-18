@@ -39,7 +39,7 @@ Tide cook FAIL: Grok deleted canyon / war masters and left only Tide. Do not rep
 - ADD `road-<biome>*.mp4` (+ hazards) under `biome/master/` (and `public/master` if that Live copies there). New dest. Do **not** overwrite hung `road.mp4`.
 - ADD to `plates-index` / dealer as an **additional** run or selectable biome.
 - KEEP existing `road.mp4` / war / night / cars / duel.
-- MAY replace only `bolt.mp4` if recooking the Bolt layer (identity lock). Never delete the road library.
+- MAY replace only `bolt.mp4` if recooking the Bolt layer from `@ref` [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg). **BAN** copying hung `biome/master/bolt.mp4` / canyon Bolt as identity. Never delete the road library.
 - NEVER `rm` the previous stack to “make room”.
 - NEVER set the playlist to new-biome-only unless the player **explicitly** asks to replace the default Beat. SmiR must say replace default Beat — otherwise keep the hung order.
 
@@ -65,6 +65,21 @@ When a player asks **make a biome** / **add a biome** / cook a new sprint run: d
 
 ---
 
+## HARD LOCK — new biome cook (SmiR 2026-09-18 FAIL)
+
+When the player says **make / add a new biome** (any name — Tide, Frost, Ember, invented):
+
+| | Law |
+|---|---|
+| **Hang only** | ADD the new biome plates + `plates-index` / dealer entries **beside** existing masters. Do **NOT** rebuild canyon→cars→duel→night→war first. Do **NOT** require Beat 3 recook as a gate. |
+| **Old Beat** | canyon→war stays as-is (Hang ≠ wipe). Player can play the old Beat **without** recook. |
+| **Bolt** | **Always** `@ref` [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg). **BAN** copying hung `biome/master/bolt.mp4` / canyon Bolt as the identity. Light bake from the **new** empty plaque is OK; identity = teacher. |
+| **Name + `{PAINT}`** | Allowed / encouraged. Tide is **one** example, not the only biome. Never refuse “I can only do Tide.” |
+| **Pipeline** | B→cycle→green→key + hooks first/last still apply. [10-bolt-cutout-law.md](10-bolt-cutout-law.md). |
+| **Catalog** | Chat lists **hung** biomes only. A biome in cook is **not** hung until hung. |
+
+---
+
 ## HARD LOCK — Chat biome catalog (on ask)
 
 When a player asks Grok (any close alias): **what biomes** / **playable biomes** / **list biomes** / **which runs** / **what can I play**:
@@ -76,7 +91,7 @@ When a player asks Grok (any close alias): **what biomes** / **playable biomes**
 5. Hang grows this catalog. Wipe shrinks it — another reason wipe is FAIL.
 6. No chrome biome picker in the Live UI. Chat list + spoken pick is v1.
 
-Hung chapters **now** (do not invent extra names): canyon · cars · duel · night · war. Tide is **not** in this list until it is hung. If they pick a name that is not hung: say it is not hung yet. Do not fake the run. Do not wipe the catalog to pretend.
+Hung chapters **now** (do not invent extra names): canyon · cars · duel · night · war. Tide is **not** in this list until it is hung. A biome **in cook** is not hung until hung. Cook any name + `{PAINT}` — catalog still lists hung only. If they pick a name that is not hung: say it is not hung yet. Do not fake the run. Do not wipe the catalog to pretend. Never refuse the cook because the name is new.
 
 ---
 
@@ -367,8 +382,11 @@ Hitbox = **voie + fenêtre courte au contact des pattes**. Loin / ciel / déjà 
 | Set / road / gold pipe in the Bolt still | I2V thinks scene → orbits |
 | `r36mix` / `pickNext` random deck | Story plates play out of order. Lock: [11-plate-order.md](11-plate-order.md) |
 | Wipe `biome/master` / `public/master` to “make room” for Tide | **Hang ≠ wipe.** Canyon/war gone = FAIL. Tide cook. Banned forever. |
+| Rebuild canyon→cars→duel→night→war **first** before a new biome | Hang **only** the new plates. Old Beat stays. No Beat 3 recook gate. |
+| Copy hung `biome/master/bolt.mp4` / canyon Bolt as new-biome identity | Always `@ref` `lock/bolt-back.jpg`. Light bake from the **new** empty plaque OK. |
+| Refuse invented biome / “I can only do Tide” | Name + `{PAINT}` allowed. Tide is one example. |
 | Playlist = new-biome-only | Keep hung order unless SmiR / player **explicitly** says replace the default Beat. |
-| Biome catalog on Welcome / invent Tide before Hang | Catalog = **on ask**. Hung chapters only. Wipe shrinks the list = FAIL. |
+| Biome catalog on Welcome / invent Tide before Hang | Catalog = **on ask**. Hung chapters only. A biome in cook is not hung until hung. Wipe shrinks the list = FAIL. |
 
 ---
 

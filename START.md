@@ -85,7 +85,7 @@ Full Pack law: [`StarBoltSprint/boltverse-registry` PACK.md](https://github.com/
 
 If the player asks **what biomes** / **playable biomes** / **list biomes** / **which runs** / **what can I play** (any close alias): English Pack voice + a **short list of hung biomes only** (from hung `master` / `plates-index` — never invent). **On ask only.** Do **not** dump this on Welcome / cold-start.
 
-Each line: biome name + optional one-short flavor. No kitchen paths. No GitHub. No API jargon. Then how to pick: `play canyon` / `play Tide` / `only Tide` — start that run (or paste the Live + filter dealer). Unhung name → not hung yet.
+Each line: biome name + optional one-short flavor. No kitchen paths. No GitHub. No API jargon. Then how to pick: `play canyon` / `play Tide` / `only Tide` — start that run (or paste the Live + filter dealer). Unhung name → not hung yet. A biome in cook is not hung until hung. New name + `{PAINT}` may still be cooked — catalog stays hung-only.
 
 No chrome biome picker in the Live UI. Chat list + spoken pick is v1. Hang grows this catalog; wipe shrinks it = FAIL. Kitchen: [`biome/docs/09-recette-biome.md`](biome/docs/09-recette-biome.md).
 
@@ -180,4 +180,6 @@ Never dump this to the player.
 
 **HARD LOCK — make / add a biome.** Décor scrolls (rush); Bolt sprints **IN PLACE** (treadmill). Mid-lane. **48fps**. Teacher = `lock/bolt-back.jpg`. Pipeline (do not invert): empty plaque ZERO dog → Video A `imagineBiomeClip` first+last → Video B gait (same décor + Bolt mid-lane IN PLACE; kitchen, not Hung) → extract cycle → repose `#00FF00` → `imagineBoltClip` first+last = cycle bookends on green → chroma key onto A. L/M/R = code X shift of **one** Bolt layer. **Never** chat Imagine alone. **Never** hall `imagineClip`. **Never** a single baked final film. **Never** a 3-Bolt mask. No `XAI_API_KEY` → REFUSE / stock. Law: [`biome/docs/10-bolt-cutout-law.md`](biome/docs/10-bolt-cutout-law.md) · [`biome/docs/09-recette-biome.md`](biome/docs/09-recette-biome.md).
 
-**HARD LOCK — Chat biome catalog (on ask).** **what biomes** / **which runs** / **what can I play** → hung chapters only (never invent). `play canyon` / `only Tide`. Never on Welcome. Hang grows the list; wipe shrinks it = FAIL.
+**HARD LOCK — new biome cook (SmiR 2026-09-18 FAIL).** Make/add a **new biome** (any name — Tide, Frost, Ember, invented): **Hang only** the new plates beside existing masters. Do **NOT** rebuild canyon→cars→duel→night→war first. Do **NOT** require Beat 3 recook as a gate. Old Beat stays playable without recook. Bolt = always `@ref` [`lock/bolt-back.jpg`](lock/bolt-back.jpg). **BAN** copying hung `biome/master/bolt.mp4` / canyon Bolt as identity. Light bake from the **new** empty plaque OK; identity = teacher. Name + décor `{PAINT}` allowed / encouraged. Tide is one example. Never refuse “I can only do Tide.” Pipeline + hooks first/last still apply. Chat catalog lists **hung** biomes only; a biome in cook is not hung until hung.
+
+**HARD LOCK — Chat biome catalog (on ask).** **what biomes** / **which runs** / **what can I play** → hung chapters only (never invent). `play canyon` / `only Tide`. Never on Welcome. Hang grows the list; wipe shrinks it = FAIL. A biome in cook is not hung until hung.
