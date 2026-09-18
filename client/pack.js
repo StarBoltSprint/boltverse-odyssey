@@ -5,7 +5,9 @@
  * Server injects window.__PACK_TICKET__ on the HTML document request
  * (x-grok-identity is a request header, not in window/meta/cookie).
  *
- * Optional: window.BOLTVERSE_PACK_ORIGIN = "https://your-pack.vercel.app"
+ * TEMPORARY: window.BOLTVERSE_PACK_ORIGIN = "https://boltverse-pack.vercel.app"
+ * (external host — long-term back to Grok sandbox when Live wire is stable).
+ * Play URL stays https://boltverse-odysseyyyy.grok.me (game only, not Pack API).
  */
 (function packClient(global) {
   if (!global || global.__BOLTVERSE_PACK__) return;
@@ -13,6 +15,7 @@
 
   var LOG = "[pack]";
   var INTERVAL_MS = 30000;
+  var DEFAULT_PACK_ORIGIN = "https://boltverse-pack.vercel.app";
   var ticket = null;
   var sub = null;
   var startedAt = new Date().toISOString();
@@ -25,13 +28,7 @@
     if (global.BOLTVERSE_PACK_ORIGIN) {
       return String(global.BOLTVERSE_PACK_ORIGIN).replace(/\/$/, "");
     }
-    var el = document.currentScript;
-    if (el && el.src) {
-      try {
-        return new URL(el.src).origin;
-      } catch (e) {}
-    }
-    return "";
+    return DEFAULT_PACK_ORIGIN;
   }
 
   function endpoint(path) {

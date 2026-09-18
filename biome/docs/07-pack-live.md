@@ -3,11 +3,15 @@
 Not [PACK.md](../../PACK.md) (citadel hall **folder**).  
 This page is the **Grok identity** wire: `sub` → `profiles/<sub>.json` on [StarBoltSprint/boltverse-registry](https://github.com/StarBoltSprint/boltverse-registry).
 
-Contract: [StarBoltSprint/boltverse-pack](https://github.com/StarBoltSprint/boltverse-pack).  
-**This recipe’s Live is the central API** other `*.grok.me` Lives call.
+Contract: [StarBoltSprint/boltverse-pack](https://github.com/StarBoltSprint/boltverse-pack).
 
-Kitchen Live (do not paste in player chat): https://boltverse-odysseyyyy.grok.me
+**TEMPORARY external host.** Pack API = `https://boltverse-pack.vercel.app` (`BOLTVERSE_PACK_ORIGIN`). Long-term: back to the Grok sandbox when Live wire is stable. Do not treat this Vercel host as the forever Pack API.
+
+**Play URL** (game only, not Pack API): https://boltverse-odysseyyyy.grok.me  
+Kitchen Live / Beat 3 (do not paste in player chat): https://boltverse-odysseyyyy.grok.me  
 Never open old three-y `boltverse-odysseyyy.grok.me` as Beat 3 Sprint (superseded — do not open it for boot).
+
+First gated Live open **auto-registers** via this Pack origin (`POST /v1/pack/boot` → merge-patch `profiles/<sub>.json`). `playUrl` = the game Live (`https://boltverse-odysseyyyy.grok.me`), not the Pack API host.
 
 ---
 
@@ -29,28 +33,25 @@ Not a cold-start job. **PRIORITY 0** first reply stays Welcome + teaser + paste 
 - « please install wire » as the normal path
 - Shipping a biome / citadel / Sprint Live without `pack.js` + dealer `assetId` stats
 - Inventing `assetId` or cassette stats (real or `0` only)
+- Pointing `BOLTVERSE_PACK_ORIGIN` at the Play URL while this TEMPORARY split is in force
+- Treating `https://boltverse-pack.vercel.app` as the Play / Beat 3 URL
 
 ## Floor client (every Live — AUTOMATIC)
 
-Drop [../../client/pack.js](../../client/pack.js). Central Pack origin is **always** odysseyyyy.
+Drop [../../client/pack.js](../../client/pack.js). Pack origin is **TEMPORARY** `https://boltverse-pack.vercel.app` — not the Play URL.
 
-**Every Live** (biome / citadel / Sprint publish):
-
-```html
-<script>window.BOLTVERSE_PACK_ORIGIN = "https://boltverse-odysseyyyy.grok.me"</script>
-<script src="https://boltverse-odysseyyyy.grok.me/client/pack.js"></script>
-```
-
-On **this** Live only (odysseyyyy itself), same-origin is OK:
+**Every Live** (biome / citadel / Sprint publish), including the odysseyyyy game host:
 
 ```html
-<script>window.BOLTVERSE_PACK_ORIGIN = window.location.origin</script>
-<script src="/client/pack.js?v=doc1"></script>
+<script>window.BOLTVERSE_PACK_ORIGIN = "https://boltverse-pack.vercel.app"</script>
+<script src="https://boltverse-pack.vercel.app/client/pack.js"></script>
 ```
+
+Same-origin on the Play host is **not** OK while this TEMPORARY split is in force — odysseyyyy is the game, not the Pack API. `client/pack.js` defaults to the Vercel Pack origin when `BOLTVERSE_PACK_ORIGIN` is unset, so the first gated Live open still auto-registers.
 
 Prefer **SSR inject** on the HTML document GET when `x-grok-identity` is present: upsert once, then set `window.__PACK_TICKET__`, `window.__PACK_SUB__`, `window.__PACK_GITHUB__` before `pack.js` runs (gate JWT is a request header — not in window/meta/cookie). Client falls back to `POST /v1/pack/boot` if inject is missing.
 
-Other Lives **MUST** set `BOLTVERSE_PACK_ORIGIN` to `https://boltverse-odysseyyyy.grok.me` — not their own origin. Do not wait for the player to ask.
+Other Lives **MUST** set `BOLTVERSE_PACK_ORIGIN` to `https://boltverse-pack.vercel.app` — not their own origin, not the Play URL. Do not wait for the player to ask.
 
 ## Dealer assetId stats (AUTOMATIC)
 
@@ -93,19 +94,21 @@ Always set `playUrl`, `lastSeenAt`, `updatedAt`.
 
 No `.env` in this recipe. No secrets in git.
 
-## Live restore (kitchen — 4y Pack Play)
+## Live restore (kitchen — 4y Play + TEMPORARY Pack API)
 
-Canonical host `https://boltverse-odysseyyyy.grok.me` (project `01a0af00-9de9-7b10-bb82-ecaa290ce066`) must serve the Pack API + client. Superseded three-y `boltverse-odysseyyy.grok.me` may still have a working copy — **port from there or from [boltverse-pack](https://github.com/StarBoltSprint/boltverse-pack), do not point Beat 3 at three-y.**
+**Now:** Pack API is the TEMPORARY external host `https://boltverse-pack.vercel.app`. Play / Beat 3 stays `https://boltverse-odysseyyyy.grok.me` (game only). First gated Live open auto-registers via that Pack origin.
 
-1. On the **existing** 4y Grok Live project only — no new slug, no Built-with-Grok card, no auto top-up.
-2. Add routes: `POST /v1/pack/boot`, `POST /v1/pack/heartbeat`, `GET /v1/pack/me`, alias `POST /api/pack` (handlers in boltverse-pack `lib/handlers.ts`).
-3. Serve `/client/pack.js` + head scripts above. Prefer SSR `__PACK_TICKET__` inject on gated HTML GET.
-4. Set Live env `PACK_GITHUB_TOKEN` + `TICKET_SECRET`. Publish same 4y URL.
-5. Probe (no JWT): `POST /v1/pack/boot` → `200 {"ok":false,"github":"skip","reason":"no-sub","source":"none"}` (not SPA 404 HTML).
-6. Open 4y from Grok app ~30s → `profiles/<sub>.json` `lastSeenAt` / `playTimeSec` move.
+**Long-term:** when Live wire is stable, move Pack API back onto the Grok sandbox — canonical host `https://boltverse-odysseyyyy.grok.me` (project `01a0af00-9de9-7b10-bb82-ecaa290ce066`). Superseded three-y `boltverse-odysseyyy.grok.me` may still have a working copy — **port from there or from [boltverse-pack](https://github.com/StarBoltSprint/boltverse-pack), do not point Beat 3 at three-y.**
+
+1. On the **existing** 4y Grok Live project only — no new slug, no Built-with-Grok card, no auto top-up. That host stays the **game**.
+2. TEMPORARY Pack routes live on Vercel: `POST /v1/pack/boot`, `POST /v1/pack/heartbeat`, `GET /v1/pack/me`, alias `POST /api/pack` (handlers in boltverse-pack `lib/handlers.ts`).
+3. Game Live ships `/client/pack.js` + `BOLTVERSE_PACK_ORIGIN=https://boltverse-pack.vercel.app`. Prefer SSR `__PACK_TICKET__` inject on gated HTML GET (or client boot to the Pack origin).
+4. Set Pack-host env `PACK_GITHUB_TOKEN` + `TICKET_SECRET`. Do not retarget Beat 3 / Play at Vercel.
+5. Probe (no JWT): `POST https://boltverse-pack.vercel.app/v1/pack/boot` → `200 {"ok":false,"github":"skip","reason":"no-sub","source":"none"}` (not SPA 404 HTML).
+6. First gated open of 4y from Grok app → auto-register `profiles/<sub>.json` (`gateSub` + `playUrl` = the game origin). Heartbeat ~30s moves `lastSeenAt` / `playTimeSec`.
 
 ## Done
 
-Published biome / citadel / Sprint Live already has `pack.js` (central origin odysseyyyy) + dealer `assetId` stats — player never asked.  
-Open Live from Grok ~30s → `profiles/<sub>.json` with `gateSub` + `playUrl` = that origin.  
+Published biome / citadel / Sprint Live already has `pack.js` (TEMPORARY Pack origin `https://boltverse-pack.vercel.app`) + dealer `assetId` stats — player never asked.  
+First gated Live open auto-registers via this Pack origin → `profiles/<sub>.json` with `gateSub` + `playUrl` = the game Live (odysseyyyy), not the Pack API host.  
 Second Live, same `sub` → same file, `playUrl` updated.

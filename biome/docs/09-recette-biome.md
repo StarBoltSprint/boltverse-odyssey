@@ -23,11 +23,11 @@ Imagine Agent / chat `imagine_*_video` = **interdit** (pas de `last_frame`). Fil
 
 ## Floor — Pack wire + dealer assetId stats (every Hang / publish)
 
-**AUTOMATIC.** Pack wire + plate stats are in the game recipe. When Grok creates or publishes a **biome**, **citadel**, or **Sprint** Live, it **MUST** include [`client/pack.js`](../../client/pack.js) with central origin `https://boltverse-odysseyyyy.grok.me` (`BOLTVERSE_PACK_ORIGIN`) **and** dealer `assetId` stats — **without the player asking**.
+**AUTOMATIC.** Pack wire + plate stats are in the game recipe. When Grok creates or publishes a **biome**, **citadel**, or **Sprint** Live, it **MUST** include [`client/pack.js`](../../client/pack.js) with TEMPORARY Pack origin `https://boltverse-pack.vercel.app` (`BOLTVERSE_PACK_ORIGIN`) **and** dealer `assetId` stats — **without the player asking**. Play URL stays `https://boltverse-odysseyyyy.grok.me` (game only, not Pack API). First gated Live open auto-registers via this Pack origin. Long-term: back to Grok sandbox when Live wire is stable.
 
 ```html
-<script>window.BOLTVERSE_PACK_ORIGIN = "https://boltverse-odysseyyyy.grok.me"</script>
-<script src="https://boltverse-odysseyyyy.grok.me/client/pack.js"></script>
+<script>window.BOLTVERSE_PACK_ORIGIN = "https://boltverse-pack.vercel.app"</script>
+<script src="https://boltverse-pack.vercel.app/client/pack.js"></script>
 ```
 
 Dealer playlist stays canyon → cars → duel → night → war. Each hung plate maps to a Pack `assetId` (`plates-index.json`). Cassette `stats.views` / `stats.playTimeSec` / `stats.players` = real or `0` — never invent.
@@ -263,7 +263,7 @@ Chaque cousin a **sa** fenêtre : un speck au vanishing point n’est pas encore
 7. Hang biome/master/ + bump VER
 8. HAZARDS[].t0/t1 = contact aux pattes, pas au fond
 9. play : dodge / jump / freeze-on-box
-10. publish Live : pack.js (origin odysseyyyy) + dealer assetId stats — AUTOMATIC, never « please install wire »
+10. publish Live : pack.js (TEMPORARY origin https://boltverse-pack.vercel.app; Play URL stays odysseyyyy, game only) + dealer assetId stats — AUTOMATIC, never « please install wire »
 ```
 
 Cuire **une** plaque cousin à la fois. Pas le tas spray + barre + cratère d’un coup.

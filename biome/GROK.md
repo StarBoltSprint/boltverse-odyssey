@@ -133,7 +133,7 @@ A **key** bug (holes, gold pipe, sliced skull, black flash, sticker edge) is a c
 
 ## Pack floor
 
-Every Live drops [../client/pack.js](../client/pack.js). This Live is the central Pack API. [docs/07-pack-live.md](docs/07-pack-live.md). No wallet.
+Every Live drops [../client/pack.js](../client/pack.js) with `BOLTVERSE_PACK_ORIGIN` = `https://boltverse-pack.vercel.app` (**TEMPORARY** external host — long-term back to Grok sandbox when Live wire is stable). Play URL stays https://boltverse-odysseyyyy.grok.me (game only, not Pack API). First gated Live open auto-registers via this Pack origin. [docs/07-pack-live.md](docs/07-pack-live.md). No wallet.
 
 ## Do not
 

@@ -15,7 +15,8 @@ Citadel console copy (Welcome / Return, Packmate law) lives in [../GROK.md](../G
 
 Kitchen — do not read aloud:
 
-- Pack Play (kitchen only) = https://boltverse-odysseyyyy.grok.me
+- Pack Play (kitchen only) = https://boltverse-odysseyyyy.grok.me — game only, not Pack API
+- Pack origin (TEMPORARY external host) = `BOLTVERSE_PACK_ORIGIN` = `https://boltverse-pack.vercel.app`. Long-term back to Grok sandbox when Live wire is stable. First gated Live open auto-registers via this Pack origin.
 - Hard ban: old three-y `boltverse-odysseyyy.grok.me` as Beat 3 Sprint (superseded — do not open it for boot)
 - Citadel teaser = [`stock/citadel/preview-loop.mp4`](../stock/citadel/preview-loop.mp4) — **sole** boot attach
 - Sprint / Biome preview = [`stock/biome/preview-loop.mp4`](../stock/biome/preview-loop.mp4) (poster `preview-first.jpg`) — optional archive, **not attached at boot**

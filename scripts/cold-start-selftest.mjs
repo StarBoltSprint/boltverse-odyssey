@@ -627,7 +627,10 @@ for (const rel of kitchenDocs) {
 
 function assertPackWireFloor(label, text) {
   must(/pack\.js/.test(text), label + ": names pack.js");
-  must(/BOLTVERSE_PACK_ORIGIN/.test(text) && /boltverse-odysseyyyy\.grok\.me/.test(text), label + ": central origin odysseyyyy");
+  must(/BOLTVERSE_PACK_ORIGIN/.test(text) && /boltverse-pack\.vercel\.app/.test(text), label + ": TEMPORARY Pack origin vercel");
+  must(/TEMPORARY/.test(text), label + ": marks Pack origin TEMPORARY");
+  must(/boltverse-odysseyyyy\.grok\.me/.test(text), label + ": Play URL stays odysseyyyy");
+  must(/game only/.test(text) && /not Pack API/.test(text), label + ": Play URL is game only, not Pack API");
   must(/assetId/.test(text) && /stats/.test(text), label + ": dealer assetId stats");
   must(/AUTOMATIC/.test(text), label + ": Pack wire is AUTOMATIC");
   must(/please install wire/.test(text), label + ": names please install wire so it can ban it");
@@ -643,5 +646,10 @@ must(/Welcome = Pack register/.test(body("GROK.md")) && /PRIORITY 0/.test(body("
 must(/Welcome = Pack register/.test(body("biome/docs/07-pack-live.md")) && /PRIORITY 0/.test(body("biome/docs/07-pack-live.md")), "07-pack-live: keeps Welcome register + PRIORITY 0");
 must(/Welcome = Pack register/.test(body("biome/docs/09-recette-biome.md")) && /PRIORITY 0/.test(body("biome/docs/09-recette-biome.md")), "09-recette-biome: keeps Welcome register + PRIORITY 0");
 must(/pack\.js/.test(customize) && /BOLTVERSE_PACK_ORIGIN/.test(customize) && /please install wire/.test(customize), "GROK.md Customize: Pack wire floor AUTOMATIC");
+must(/boltverse-pack\.vercel\.app/.test(customize) && /TEMPORARY/.test(customize), "GROK.md Customize: TEMPORARY Pack origin vercel");
+must(/BOLTVERSE_PACK_ORIGIN/.test(body("START.md")) && /boltverse-pack\.vercel\.app/.test(body("START.md")), "START.md: TEMPORARY Pack origin vercel");
+must(/boltverse-pack\.vercel\.app/.test(body("client/pack.js")) && /TEMPORARY/.test(body("client/pack.js")), "client/pack.js: TEMPORARY Pack origin vercel");
+must(!/your-pack\.vercel\.app/.test(body("client/pack.js")), "client/pack.js: no YOUR-PACK placeholder");
+must(/auto-register/.test(body("biome/docs/07-pack-live.md")), "07-pack-live: first gated Live open auto-registers");
 
 console.log("COLD-START PASS");
