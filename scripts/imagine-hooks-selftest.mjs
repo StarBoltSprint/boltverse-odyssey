@@ -191,9 +191,22 @@ must(/one rear leg EXTENDED/.test(BOLT_STILL_LAW) && /NEVER standing still/.test
 must(boltStillLine() === BOLT_STILL_LAW, "boltStillLine is BOLT_STILL_LAW");
 must(/IN PLACE/.test(BOLT_CUTOUT_LAW) && /treadmill/.test(BOLT_CUTOUT_LAW), "bolt clip: in place / treadmill");
 must(/NEVER yaw/.test(BOLT_CUTOUT_LAW) && /rotary gallop/.test(BOLT_CUTOUT_LAW), "bolt clip: no yaw + rotary gallop");
-must(/SAME still/.test(boltClipLine()), "bolt clip last_frame is the same still");
+must(/cycle end on green/.test(boltClipLine()) && /48fps/.test(boltClipLine()), "bolt clip last_frame is cycle bookends on green, 48fps");
 must(!/Gothic citadel/.test(BOLT_CUTOUT_LAW) && !/ZERO dogs/.test(BOLT_CUTOUT_LAW), "bolt law is not HALL_LAW or BIOME_LAW");
 must(existsSync(join(root, "biome/docs/10-bolt-cutout-law.md")), "10-bolt-cutout-law.md exists");
+const boltLaw = readFileSync(join(root, "biome/docs/10-bolt-cutout-law.md"), "utf8");
+must(/Video B/.test(boltLaw) && /cycle bookends/.test(boltLaw) && /48fps/.test(boltLaw), "10-law: B→cycle→green, 48fps");
+must(/imagineBiomeClip/.test(boltLaw) && /imagineBoltClip/.test(boltLaw), "10-law: hooks first+last");
+must(/chat Imagine UI alone/.test(boltLaw) && /3-Bolt/.test(boltLaw), "10-law: ban chat alone + 3-Bolt");
+must(/lock\/bolt-back\.jpg/.test(boltLaw) && /IN PLACE/.test(boltLaw), "10-law: teacher + in place");
+const recette = readFileSync(join(root, "biome/docs/09-recette-biome.md"), "utf8");
+must(/HARD LOCK — make \/ add a biome/.test(recette), "09-recette: make-biome HARD LOCK");
+const grok = readFileSync(join(root, "GROK.md"), "utf8");
+const agents = readFileSync(join(root, "AGENTS.md"), "utf8");
+const biomeGrok = readFileSync(join(root, "biome/GROK.md"), "utf8");
+must(/HARD LOCK — make \/ add a biome/.test(grok) && /HARD LOCK — make \/ add a biome/.test(agents) && /HARD LOCK — make \/ add a biome/.test(biomeGrok), "console files: make-biome HARD LOCK");
+must(/HARD — Bolt style teacher/.test(grok) && /HARD — Bolt style teacher/.test(agents) && /HARD — Bolt style teacher/.test(biomeGrok), "console files: bolt-back style teacher HARD");
+must(/This still IS Bolt/.test(boltLaw) && /Black void on the teacher/.test(boltLaw), "10-law: bolt-back teacher is Bolt + void is STYLE only");
 const boltStillPaste = readFileSync(join(root, "biome/prompts/image-bolt-mid.txt"), "utf8");
 const boltClipPaste = readFileSync(join(root, "biome/prompts/video-bolt-mid.txt"), "utf8");
 must(/STRICT REAR/.test(boltStillPaste) && /#00FF00/.test(boltStillPaste), "image-bolt-mid: strict rear + flat green");
@@ -201,7 +214,8 @@ must(/NOT photoreal/.test(boltStillPaste) && /ALREADY in sprint/.test(boltStillP
 must(/lock\/bolt-back\.jpg/.test(boltStillPaste) && /fluffy white GSD rear/.test(boltStillPaste), "image-bolt-mid: match bolt-back teacher");
 must(existsSync(join(root, "lock/bolt-back.jpg")), "lock/bolt-back.jpg teacher exists");
 must(/IN PLACE/.test(boltClipPaste) && /treadmill/.test(boltClipPaste) && /NEVER yaw/.test(boltClipPaste), "video-bolt-mid: in place, never yaw");
-must(/SAME still/.test(boltClipPaste), "video-bolt-mid: last_frame is the same still");
+must(/48fps/.test(boltClipPaste) && /cycle end on green/.test(boltClipPaste), "video-bolt-mid: 48fps + cycle bookends");
+must(/lock\/bolt-back\.jpg/.test(boltStillPaste), "image-bolt-mid: style teacher lock/bolt-back.jpg");
 
 const dry = spawnSync("node", [join(root, "scripts/cook-room.mjs"), "moss", "--dry-run"], {
   encoding: "utf8",
