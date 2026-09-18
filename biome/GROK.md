@@ -13,8 +13,9 @@ Do **not** paste that URL in a player reply. Never open old three-y `boltverse-o
 2. **[docs/06-techniques.md](docs/06-techniques.md)** — what worked r38 (Sprint cook bible)
 3. **[docs/09-recette-biome.md](docs/09-recette-biome.md)** — empty → cousin → speed → dealer → box
 4. **[docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md)** — HARD Bolt cutout (strict rear, `#00FF00`, in-place gallop)
-5. **[docs/05-key.md](docs/05-key.md)** — chroma + crown, not luma
-6. **[reference/LanePlayer.tsx](reference/LanePlayer.tsx)** — r38 compositor
+5. **[docs/11-plate-order.md](docs/11-plate-order.md)** — HARD LOCK dealer playlist (canyon → cars → duel → night → war)
+6. **[docs/05-key.md](docs/05-key.md)** — chroma + crown, not luma
+7. **[reference/LanePlayer.tsx](reference/LanePlayer.tsx)** — r38 compositor
 
 Pack Live: **[docs/07-pack-live.md](docs/07-pack-live.md)**. Never dump this to the player.
 

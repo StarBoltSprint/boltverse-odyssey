@@ -19,18 +19,24 @@ declare global {
   }
 }
 
-const VER = "r36mix";
+const VER = "r38lock";
+/**
+ * HARD LOCK Sprint dealer playlist. Never shuffle. Never random at boot.
+ * Story: canyon → cars/spectacle → duel → night → war.
+ * After war3 wrap to canyon (same order). Lane mix may vary WITHIN a plate.
+ * Law: biome/docs/11-plate-order.md
+ */
 const PLATES = [
-  `/master/road.mp4?v=${VER}`,
-  `/master/road-bar.mp4?v=${VER}`,
-  `/master/road-blast.mp4?v=${VER}`,
-  `/master/road-car.mp4?v=${VER}`,
-  `/master/road-gap.mp4?v=${VER}`,
-  `/master/road-show.mp4?v=${VER}`,
-  `/master/road-duel.mp4?v=${VER}`,
-  `/master/road-gate.mp4?v=${VER}`,
-  `/master/road-night.mp4?v=${VER}`,
-  `/master/road-war1.mp4?v=${VER}`,
+  `/master/road.mp4?v=${VER}`, // canyon empty
+  `/master/road-bar.mp4?v=${VER}`, // canyon jersey
+  `/master/road-blast.mp4?v=${VER}`, // canyon meteor
+  `/master/road-car.mp4?v=${VER}`, // cars
+  `/master/road-gap.mp4?v=${VER}`, // cars
+  `/master/road-show.mp4?v=${VER}`, // spectacle
+  `/master/road-duel.mp4?v=${VER}`, // duel
+  `/master/road-gate.mp4?v=${VER}`, // dusk → night
+  `/master/road-night.mp4?v=${VER}`, // night
+  `/master/road-war1.mp4?v=${VER}`, // war
   `/master/road-war2.mp4?v=${VER}`,
   `/master/road-war3.mp4?v=${VER}`,
 ];
@@ -70,18 +76,13 @@ const HAZARDS: (Hazard | null)[] = [
   { lanes: [-1], jumpClears: true, t0: 0.62, t1: 0.82, tPass: 0.76 },
 ];
 
-function occKey(i: number): string {
-  const hz = HAZARDS[i];
-  if (!hz) return "";
-  return [...hz.lanes].slice().sort((a, b) => a - b).join(",");
+function visualLane(x: number): LaneI {
+  return clampLane(Math.round(x / SHIFT));
 }
 
-function pickNext(cur: number): number {
-  const others: number[] = [];
-  for (let i = 0; i < PLATES.length; i++) if (i !== cur) others.push(i);
-  const different = others.filter((i) => occKey(i) !== occKey(cur));
-  const pool = different.length ? different : others;
-  return pool[(Math.random() * pool.length) | 0]!;
+/** Next file in the locked playlist. No random. No occupancy shuffle. */
+function nextPlate(cur: number): number {
+  return (cur + 1) % PLATES.length;
 }
 
 function isAirborne(jumpAt: number, now: number) {
@@ -474,7 +475,7 @@ export function LanePlayer() {
       const b = roadIdx.current === 0 ? roadB : roadA;
       if (a && b) {
         if (armedFrom.current !== plateRef.current || pendingPlate.current < 0) {
-          pendingPlate.current = pickNext(plateRef.current);
+          pendingPlate.current = nextPlate(plateRef.current);
           armedFrom.current = plateRef.current;
         }
         const next = pendingPlate.current;

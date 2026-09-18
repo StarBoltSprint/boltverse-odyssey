@@ -67,7 +67,9 @@ Scan α>40 stride-2 → centroid + paw span. Two `source-over` ellipses at the p
 
 ### 8. Dual road as **dealer** (cousin plates)
 
-Empty is the clock. Bar / meteor are cousin mp4s with the **same** first/last stills. Two decoders, pre-arm next, swap in the last 0.28 s. `last(cousin)` must be `first(empty)`.
+Empty is the clock. Cousin mp4s share the **same** first/last stills. Two decoders, pre-arm **the next index**, swap in the last 0.28 s. `last(cousin)` must be `first(empty)`.
+
+**Playlist is locked** — canyon → cars/spectacle → duel → night → war. `next = (cur + 1) % N`. Never shuffle / random deck. Lane mix may vary **within** a plate. Law: [11-plate-order.md](11-plate-order.md).
 
 ### 9. Jump + solid box (not a flash)
 

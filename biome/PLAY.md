@@ -79,6 +79,7 @@ Bolt is **ALWAYS** a full-white German Shepherd (white coat forever). That base 
 | Wallet / Connect / client key | not this product |
 | 3-take L/M/R shipped as default | cancelled as default — B stack only |
 | New grok.me | recipe only |
+| Shuffled / random plate deck | `r36mix` `pickNext` — story plays out of order. Lock: [docs/11-plate-order.md](docs/11-plate-order.md) |
 
 ---
 
