@@ -2,6 +2,9 @@
  * Odyssey recipe floor — drop into any *.grok.me Live.
  * Boot + 30s heartbeat + visibility flush. Fail soft. No wallet / keys.
  *
+ * Server injects window.__PACK_TICKET__ on the HTML document request
+ * (x-grok-identity is a request header, not in window/meta/cookie).
+ *
  * Optional: window.BOLTVERSE_PACK_ORIGIN = "https://your-pack.vercel.app"
  */
 (function packClient(global) {
@@ -16,6 +19,7 @@
   var startedMs = Date.now();
   var timer = null;
   var inflight = false;
+  var retriedTicket = false;
 
   function apiOrigin() {
     if (global.BOLTVERSE_PACK_ORIGIN) {
@@ -101,7 +105,37 @@
       });
   }
 
+  function startHeartbeat() {
+    if (ticket && !timer) {
+      timer = global.setInterval(function () {
+        heartbeat(false);
+      }, INTERVAL_MS);
+    }
+  }
+
+  function useInjectedTicket() {
+    if (!global.__PACK_TICKET__) return false;
+    ticket = global.__PACK_TICKET__;
+    sub = global.__PACK_SUB__ || null;
+    console.info(
+      LOG,
+      sub,
+      "github write",
+      global.__PACK_GITHUB__ === "ok" ? "ok" : global.__PACK_GITHUB__ || "skip",
+    );
+    startHeartbeat();
+    return true;
+  }
+
   function boot() {
+    if (useInjectedTicket()) return Promise.resolve();
+    // Ticket is injected into <head> during the document GET. If pack.js ran
+    // before that inline script, retry once on the next turn.
+    if (!retriedTicket) {
+      retriedTicket = true;
+      global.setTimeout(boot, 0);
+      return Promise.resolve();
+    }
     return send("/v1/pack/boot", false)
       .then(function (data) {
         if (!data || !data.ok) {
@@ -116,11 +150,7 @@
           "github write",
           data.github === "ok" ? "ok" : data.github || "skip",
         );
-        if (ticket && !timer) {
-          timer = global.setInterval(function () {
-            heartbeat(false);
-          }, INTERVAL_MS);
-        }
+        startHeartbeat();
       })
       .catch(function () {
         console.info(LOG, "fail soft");
