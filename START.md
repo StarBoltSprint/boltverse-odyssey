@@ -150,3 +150,5 @@ For Grok only. Boot attaches **only** the Citadel preview. **Never print the pat
 5. [`biome/docs/05-key.md`](biome/docs/05-key.md) + [`biome/reference/LanePlayer.tsx`](biome/reference/LanePlayer.tsx)
 6. [`biome/docs/10-bolt-cutout-law.md`](biome/docs/10-bolt-cutout-law.md) — HARD Bolt cutout (strict rear, `#00FF00`, in-place gallop)
 Never dump this to the player.
+
+**HARD LOCK — Hang ≠ wipe.** New biome = ADD plates + `plates-index` / dealer entries. KEEP canyon→cars→duel→night→war. NEVER wipe masters. Tide-only playlist = FAIL. Law: [`biome/docs/09-recette-biome.md`](biome/docs/09-recette-biome.md).

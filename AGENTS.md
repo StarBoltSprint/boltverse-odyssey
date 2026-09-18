@@ -51,6 +51,8 @@ Read **[GROK.md](GROK.md)** next. Stills = **[LAYOUT.md](LAYOUT.md)** + RIG-PROM
 6. [`biome/docs/10-bolt-cutout-law.md`](biome/docs/10-bolt-cutout-law.md) — HARD Bolt cutout (strict rear, `#00FF00`, in-place gallop)
 Never dump this to the player.
 
+**HARD LOCK — Hang ≠ wipe.** New biome / sprint run = ADD `road-<biome>*.mp4` + plates-index / dealer entries. KEEP canyon→cars→duel→night→war. NEVER `rm` `biome/master` / `public/master`. NEVER Tide-only playlist unless SmiR / player explicitly says replace the default Beat. Recook Bolt may replace `bolt.mp4` only. Law: [`biome/docs/09-recette-biome.md`](biome/docs/09-recette-biome.md).
+
 **Pack wire floor (every cook / publish):** AUTOMATIC. When Grok creates or publishes a biome, citadel, or Sprint Live, it **MUST** set `window.BOLTVERSE_PACK_ORIGIN` = `https://boltverse-pack.vercel.app` (StarBoltSprint/boltverse-pack on Vercel) and load `/client/pack.js` from that origin, or ship [`client/pack.js`](client/pack.js) locally (it POSTs there) **and** dealer `assetId` stats (`plates-index` path → `assetId`; cassette `stats.views` / `playTimeSec` / `players` — real or `0`). **HARD BAN:** treating `https://boltverse-odysseyyyy.grok.me` as the Pack API host (game play URL stays odysseyyyy; Pack API does not). Fail soft if Pack is down. Never invent a `sub`. Never player API keys. Do not wait for the player to ask. **Ban** « please install wire » as the normal path. Law: [`biome/docs/07-pack-live.md`](biome/docs/07-pack-live.md). Not a cold-start job — **PRIORITY 0** first reply stays Welcome + teaser + paste. **Welcome = Pack register** via `pack-welcome` (chat) — not Live.
 
 ## One happy path (brand-new Grok / Grok Build convo)
@@ -137,3 +139,4 @@ FAIL stills/films → `packs/<slot>/.kitchen/fail/` (debug). Never Hang FAIL. at
 - Treat Customize-paste as optional after clone — this file + GROK.md are enough
 - Ship a biome / citadel / Sprint Live without `pack.js` (`BOLTVERSE_PACK_ORIGIN` = `https://boltverse-pack.vercel.app`) + dealer `assetId` stats
 - Treat « please install wire » as the normal path — Pack wire + plate stats are AUTOMATIC on every cook / publish
+- Wipe hung `biome/master` / `public/master` or replace the Sprint playlist with new-biome-only (Hang ≠ wipe — Tide cook FAIL)

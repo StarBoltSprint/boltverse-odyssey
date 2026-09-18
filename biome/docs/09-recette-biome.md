@@ -21,6 +21,32 @@ Le dealer enchaîne le **playlist lock** (jamais un random deck) : canyon → ca
 
 Imagine Agent / chat `imagine_*_video` = **interdit** (pas de `last_frame`). Films = `imagineBiomeClip`.
 
+---
+
+## HARD LOCK — Hang ≠ wipe (SmiR 2026-09-18)
+
+When a player asks Grok to add a **NEW biome / sprint run** (« make a new sprint biome » / « add Tide » / any new biome): **HANG it. Never WIPE existing biomes.**
+
+| | Law |
+|---|---|
+| **Hang** | ADD new plates + dealer / `plates-index` entries **alongside** existing masters. Keep canyon → cars → duel → night → war (or whatever is already hung). |
+| **Wipe** | Delete / replace old `public/master` / `biome/master` plates, or replace the whole playlist with **only** the new biome. **FAIL.** Banned forever. |
+
+Tide cook FAIL: Grok deleted canyon / war masters and left only Tide. Do not repeat.
+
+**When they ask for a new biome:**
+
+- ADD `road-<biome>*.mp4` (+ hazards) under `biome/master/` (and `public/master` if that Live copies there). New dest. Do **not** overwrite hung `road.mp4`.
+- ADD to `plates-index` / dealer as an **additional** run or selectable biome.
+- KEEP existing `road.mp4` / war / night / cars / duel.
+- MAY replace only `bolt.mp4` if recooking the Bolt layer (identity lock). Never delete the road library.
+- NEVER `rm` the previous stack to “make room”.
+- NEVER set the playlist to new-biome-only unless the player **explicitly** asks to replace the default Beat. SmiR must say replace default Beat — otherwise keep the hung order.
+
+Playlist / index law: [11-plate-order.md](11-plate-order.md).
+
+---
+
 ## Floor — Pack wire + dealer assetId stats (every Hang / publish)
 
 **AUTOMATIC.** Pack wire + plate stats are in the game recipe. When Grok creates or publishes a **biome**, **citadel**, or **Sprint** Live, it **MUST** include [`client/pack.js`](../../client/pack.js) with `BOLTVERSE_PACK_ORIGIN` = `https://boltverse-pack.vercel.app` (TEMPORARY — Lives freeze; not the forever home. Long-term: Pack stays inside the Grok sandbox) **and** dealer `assetId` stats — **without the player asking**.
@@ -32,7 +58,7 @@ Imagine Agent / chat `imagine_*_video` = **interdit** (pas de `last_frame`). Fil
 
 Or ship the local client and POST there. **HARD BAN:** treating `https://boltverse-odysseyyyy.grok.me` as the Pack API host (game play URL stays odysseyyyy; Pack API does not). Fail soft if Pack is down — Sprint still plays. Never invent a `sub`. Never player API keys.
 
-Dealer playlist stays canyon → cars → duel → night → war. Each hung plate maps to a Pack `assetId` (`plates-index.json`). Cassette `stats.views` / `stats.playTimeSec` / `stats.players` = real or `0` — never invent.
+Dealer playlist stays canyon → cars → duel → night → war unless SmiR explicitly says replace the default Beat. A new biome **appends** plates + `plates-index` entries — it does **not** replace this list. Each hung plate maps to a Pack `assetId` (`plates-index.json`). Cassette `stats.views` / `stats.playTimeSec` / `stats.players` = real or `0` — never invent.
 
 **Ban** « please install wire » / « install Pack » / « wire profiles » as the normal path. Creating a **naked Live** without Pack = **FAIL** / incomplete recipe. Law: [07-pack-live.md](07-pack-live.md).
 
@@ -187,7 +213,8 @@ Détail : [08-plate-speed.md](08-plate-speed.md).
 
 ## Étape 5 — Dealer (playlist lock)
 
-**HARD LOCK.** Story order, not a shuffle. Law: [11-plate-order.md](11-plate-order.md).
+**HARD LOCK.** Story order, not a shuffle. Law: [11-plate-order.md](11-plate-order.md).  
+**HARD LOCK — Hang ≠ wipe.** New biome = new `_playlist` / dealer entries **after** this lock (or as a selectable extra run). Keep this order. Do not swap the whole deck to Tide-only.
 
 ```
 canyon → cars / spectacle → duel → night → war (war1 → war2 → war3)
@@ -262,7 +289,7 @@ Chaque cousin a **sa** fenêtre : un speck au vanishing point n’est pas encore
 4. imagineBiomeClip first+last, kind=hazard 10s → cousin.mp4
 5. QC 5 frames (spawn + lanes + last=empty)
 6. plate-speed --duration-match (ou --match)    → même clock que empty
-7. Hang biome/master/ + bump VER
+7. Hang biome/master/ + bump VER   ← ADD new files. NEVER rm canyon/war. NEVER overwrite road.mp4 for a new biome.
 8. HAZARDS[].t0/t1 = contact aux pattes, pas au fond
 9. play : dodge / jump / freeze-on-box
 10. publish Live : pack.js (`BOLTVERSE_PACK_ORIGIN` = `https://boltverse-pack.vercel.app`) + dealer assetId stats — AUTOMATIC, never « please install wire »
@@ -300,6 +327,8 @@ Hitbox = **voie + fenêtre courte au contact des pattes**. Loin / ciel / déjà 
 | ¾ rear still or photoreal VFX Bolt | Crab-walk + wrong Pack style. Throw. No I2V |
 | Set / road / gold pipe in the Bolt still | I2V thinks scene → orbits |
 | `r36mix` / `pickNext` random deck | Story plates play out of order. Lock: [11-plate-order.md](11-plate-order.md) |
+| Wipe `biome/master` / `public/master` to “make room” for Tide | **Hang ≠ wipe.** Canyon/war gone = FAIL. Tide cook. Banned forever. |
+| Playlist = new-biome-only | Keep hung order unless SmiR / player **explicitly** says replace the default Beat. |
 
 ---
 
@@ -309,7 +338,7 @@ Hitbox = **voie + fenêtre courte au contact des pattes**. Loin / ciel / déjà 
 |---|---|
 | `scripts/imagine-hooks.mjs` | `imagineBiomeClip`, `imagineBoltClip`, `BIOME_*_LAW`, `BOLT_CUTOUT_LAW`, `extractLastFrame` |
 | `biome/docs/10-bolt-cutout-law.md` | HARD Bolt cutout — strict rear, `#00FF00`, in-place |
-| `biome/docs/11-plate-order.md` | HARD LOCK dealer playlist — canyon → cars → duel → night → war |
+| `biome/docs/11-plate-order.md` | HARD LOCK dealer playlist — canyon → cars → duel → night → war. New biome = new entries. Hang ≠ wipe. |
 | `scripts/plate-speed.py` | mesure px/s, `--match`, `--duration-match`, `--factor` |
 | `biome/prompts/video-empty-plate.txt` | rush 10 s constant |
 | `biome/prompts/video-hazard-plate.txt` | SPAWN + WIDTH (court) |

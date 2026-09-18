@@ -4,6 +4,8 @@ This folder is the Sprint **`/master` stack** the LanePlayer wires.
 
 **Dealer playlist is locked** (table order = play order). Canyon → cars/spectacle → duel → night → war. Never shuffle. Law: [../docs/11-plate-order.md](../docs/11-plate-order.md).
 
+**HARD LOCK — Hang ≠ wipe.** New biome = ADD `road-<biome>*.mp4` here. KEEP every file in this table. NEVER `rm` canyon / war to “make room”. Recook Bolt may replace `bolt.mp4` only.
+
 | file | role | chapter |
 |---|---|---|
 | `road.mp4` | empty dusk road — **master clock** (5.75 s) | canyon |

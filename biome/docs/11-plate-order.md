@@ -53,6 +53,14 @@ Index order **is** the dealer order. After `war3` wrap to canyon empty (same sto
 
 ---
 
+## HARD LOCK — Hang ≠ wipe (new biome)
+
+New biome = **new** `plates-index` / dealer entries **plus** keep this playlist order. ADD `road-<biome>*.mp4` (+ hazards) under `biome/master/`. ADD path → `assetId` (mint on registry — do not remint hung ids). APPEND to `_playlist` **or** expose as a selectable extra run.
+
+Do **not** delete canyon / cars / duel / night / war files. Do **not** replace `_playlist` with new-biome-only unless **SmiR explicitly says replace the default Beat** (or the player explicitly asks to replace the default run). Tide-only wipe = FAIL forever. Law: [09-recette-biome.md](09-recette-biome.md).
+
+---
+
 ## Dealer law
 
 ```

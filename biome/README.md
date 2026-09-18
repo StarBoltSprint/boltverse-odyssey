@@ -8,6 +8,8 @@ This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play
 
 **HARD BAN — no improvised boot prose.** *play / lance* player text = locked Welcome/Return only ([../START.md](../START.md) / [../GROK.md](../GROK.md)). Ban: control tutorials · « world is rolling » · « plant a lane » · film-keeps-moving essays. This folder is kitchen.
 
+**HARD LOCK — Hang ≠ wipe.** New biome = ADD `road-<biome>*.mp4` + plates-index / dealer entries. KEEP canyon→cars→duel→night→war. NEVER `rm` hung masters. Law: [docs/09-recette-biome.md](docs/09-recette-biome.md).
+
 ## Engine lock (read PLAY first)
 
 **[PLAY.md](PLAY.md)** is the law:
@@ -37,7 +39,7 @@ This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play
 | [docs/08-plate-speed.md](docs/08-plate-speed.md) | measure + warp cousin rush to the empty clock |
 | [docs/09-recette-biome.md](docs/09-recette-biome.md) | **full biome cook** — empty → cousin → speed → dealer → box |
 | [docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md) | **HARD Bolt cutout** — strict rear, `#00FF00`, in-place gallop |
-| [docs/11-plate-order.md](docs/11-plate-order.md) | **HARD LOCK dealer playlist** — canyon → cars → duel → night → war |
+| [docs/11-plate-order.md](docs/11-plate-order.md) | **HARD LOCK dealer playlist** — canyon → cars → duel → night → war. New biome = new entries. Hang ≠ wipe. |
 | [prompts/](prompts/) | Imagine paste blocks (swap `{PAINT}` only) |
 | [reference/LanePlayer.tsx](reference/LanePlayer.tsx) | r38 compositor (not a grok.me) |
 | [reference/lane-css.css](reference/lane-css.css) | 9:16 B-stack CSS |
@@ -63,7 +65,7 @@ Kitchen — do not read aloud. biome / Sprint cook / lane / B-stack / green-scre
 # then biome/GROK.md
 
 # stills + films = imagine-hooks first+last (never Imagine Agent video)
-# drop masters into biome/master/
+# drop masters into biome/master/   ← ADD. NEVER wipe hung canyon/war. Hang ≠ wipe.
 ```
 
 Cannot run `node` + `XAI_API_KEY` → **REFUSE**. Stock Sprint in-app. Do **not** fall back to chat Imagine.
