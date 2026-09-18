@@ -11,8 +11,10 @@ Do **not** paste that URL in a player reply. Never open old three-y `boltverse-o
 **MUST read before cooking** (biome / Sprint cook / lane / B-stack / green-screen / chroma):
 1. **[PLAY.md](PLAY.md)** — engine lock
 2. **[docs/06-techniques.md](docs/06-techniques.md)** — what worked r38 (Sprint cook bible)
-3. **[docs/05-key.md](docs/05-key.md)** — chroma + crown, not luma
-4. **[reference/LanePlayer.tsx](reference/LanePlayer.tsx)** — r38 compositor
+3. **[docs/09-recette-biome.md](docs/09-recette-biome.md)** — empty → cousin → speed → dealer → box
+4. **[docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md)** — HARD Bolt cutout (strict rear, `#00FF00`, in-place gallop)
+5. **[docs/05-key.md](docs/05-key.md)** — chroma + crown, not luma
+6. **[reference/LanePlayer.tsx](reference/LanePlayer.tsx)** — r38 compositor
 
 Pack Live: **[docs/07-pack-live.md](docs/07-pack-live.md)**. Never dump this to the player.
 
@@ -32,13 +34,13 @@ Two Imagine jobs. Never one mp4 with Bolt painted into the road.
 | Layer | Stills | Film |
 |---|---|---|
 | **Road** (master) | empty-plate first + last — **ZERO dog** | `imagineBiomeClip` `image` + `last_frame` (distinct) |
-| **Bolt cutout** | Bolt mid still (back, lower-third, black/alpha) | gallop loop: first + last of the **same cycle** or a short running pair |
+| **Bolt cutout** | Bolt mid still — **strict rear**, already sprinting, flat `#00FF00` ([docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md)) | `imagineBoltClip` gallop: first + last = **the same still** (in place, 6 s) |
 
-Prompts: [prompts/](prompts/). Law: [docs/01-images.md](docs/01-images.md) · [docs/02-videos.md](docs/02-videos.md).
+Prompts: [prompts/](prompts/). Law: [docs/01-images.md](docs/01-images.md) · [docs/02-videos.md](docs/02-videos.md) · [docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md).
 
 ```
 # dry thought-queue only — no new grok.me
-# live cook needs XAI_API_KEY + imagineBiomeClip (biome) / imagineClip (hall)
+# live cook needs XAI_API_KEY + imagineBiomeClip (road) / imagineBoltClip (cutout) / imagineClip (hall)
 # drop PASS masters into biome/master/ (see master/README.md)
 ```
 
@@ -52,7 +54,7 @@ Same contract as the hall films, **different paint**:
 |---|---|---|
 | empty-plate travel | start of this road | end of this road — **distinct**, world advanced |
 | next road plate | **extracted last frame** of the previous road | new end still |
-| cutout gallop | running Bolt | running Bolt (cycle may match) |
+| cutout gallop | running Bolt (strict rear, already sprinting) | **same still** (`imagineBoltClip`) |
 
 ```
 ffmpeg -y -sseof -0.12 -i road-N.mp4 -frames:v 1 \

@@ -33,7 +33,7 @@ Do not mix stacks in one play. Do not slide a whole mid clip sideways and call t
 | Lock | Law |
 |---|---|
 | Road | Full-frame empty plate. **ZERO** dog. **ZERO** luminous follow-path. Rails / curbs OK. Lock-off camera. Travel **baked in** the clip. Dual decoders + hold — no black flash at the loop. |
-| Bolt | Separate Imagine **gallop / cutout** video. Full-white German Shepherd, back to camera, teal collar. Green packaging OK — canvas keys it. |
+| Bolt | Separate Imagine **gallop / cutout** video. Full-white German Shepherd, **100% strict rear**, teal fabric collar, flat `#00FF00`. In-place / treadmill — [docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md). Canvas keys it. |
 | Dual dogs | Plate + layer both showing a dog = **FAIL**. Recook the plate empty. |
 | Plant | Pivot at paws. Skating (cutout floats) is a plant bug. Shadow = paws ellipse `source-over`. |
 | Clock | **Road is master.** Cutout runs on its own loop; do not `kick()` to 0 on swipe. |

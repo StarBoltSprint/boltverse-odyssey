@@ -24,18 +24,23 @@ Paste: [../prompts/image-hazard-plate.txt](../prompts/image-hazard-plate.txt).
 
 ## Bolt mid (cutout)
 
-ONE full-white German Shepherd. White coat forever. Teal collar. **BACK** to camera (crown / withers; muzzle hidden). Lower third. Four paws. Standing or already in a gallop plant — **never sit, never face, never 3/4**.
+**HARD law:** [10-bolt-cutout-law.md](10-bolt-cutout-law.md).
 
-Background: **soft black** (keyable). No second dog. No hall portals. No HUD.
+ONE full-white German Shepherd. White coat forever. Teal **fabric** collar from behind (not chrome). **100% STRICT REAR** (tail center, back of ears; muzzle hidden). Lower third. **ALREADY in sprint** — one rear leg extended. **Never** standing still, sit, face, ¾, cheek, flank.
+
+STYLE: stylized heroic 3D game shepherd (chunky clean fur, bold silhouette). **NOT** photoreal.
+
+Background: **flat `#00FF00` ONLY**. No road, city, gold pipe, ring, puddle, floor, drawn shadow, halo, set. Soft black / magenta = FAIL for this cook.
 
 Paste: [../prompts/image-bolt-mid.txt](../prompts/image-bolt-mid.txt).
 
-Identity teacher for the coat: [../../lock/bolt-back.jpg](../../lock/bolt-back.jpg) — coat only, not hall scale.
+Identity teacher for the coat: [../../lock/bolt-back.jpg](../../lock/bolt-back.jpg) — coat only, not hall scale. Copy **this** camera if the teacher is already strict rear.
 
 ## Banned
 
 - Dog in the empty plate
 - Grey / silver / black **as the coat base** (skin ON TOP of white OK)
-- Face / muzzle / sit on the cutout still
+- Face / muzzle / sit / ¾ / standing-still on the cutout still
+- Soft black / magenta / road / gold pipe behind the cutout (flat `#00FF00` only)
 - Chrome UI rectangles, TAP stamps, path lightning
 - Full-width hazard on all three lanes

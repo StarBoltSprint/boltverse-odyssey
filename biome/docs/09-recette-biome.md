@@ -2,8 +2,8 @@
 
 Cuisine. Pas de théorie. C’est **la** checklist pour refaire un biome lane-runner comme le dusk canyon (empty + barre jersey + météore).
 
-Lire avant : [PLAY.md](../PLAY.md) · [06-techniques.md](06-techniques.md) · [05-key.md](05-key.md).  
-Code : [imagine-hooks.mjs](../../scripts/imagine-hooks.mjs) · [plate-speed.py](../../scripts/plate-speed.py) · [LanePlayer.tsx](../reference/LanePlayer.tsx).
+Lire avant : [PLAY.md](../PLAY.md) · [06-techniques.md](06-techniques.md) · [10-bolt-cutout-law.md](10-bolt-cutout-law.md) · [05-key.md](05-key.md).  
+Code : [imagine-hooks.mjs](../../scripts/imagine-hooks.mjs) (`imagineBiomeClip` + **`imagineBoltClip`**) · [plate-speed.py](../../scripts/plate-speed.py) · [LanePlayer.tsx](../reference/LanePlayer.tsx).
 
 ---
 
@@ -56,7 +56,25 @@ Hang **seulement** si le travelling est un rush, pas un pan de still.
 
 ## Étape 2 — Bolt (une fois, ne pas recuire sans raison)
 
-Still dos, collier teal, fond magenta/vert. Film gallop `imagineClip` / `video-bolt-mid.txt`.  
+**HARD law:** [10-bolt-cutout-law.md](10-bolt-cutout-law.md). Do not skip.
+
+Still = **100% strict rear**, already in sprint (one rear leg extended), teal **fabric** collar, flat **`#00FF00` only**.  
+STYLE = stylized heroic 3D game shepherd — **not** photoreal. ¾ rear = THROW (crab-walk). Any set in the still → I2V orbits.
+
+Film = `imagineBoltClip` (`image` + `last_frame` = **same still**, 6 s, IN PLACE / treadmill).  
+**Not** hall `imagineClip`. **Not** chat Imagine. Word “rear” alone is not enough.
+
+```js
+await imagineBoltClip({
+  first: "bolt-rear.jpg",
+  last: "bolt-rear.jpg",
+  dest: "biome/master/bolt.mp4",
+  seconds: 6,
+  promptFile: "biome/prompts/video-bolt-mid.txt",
+});
+```
+
+QC frames 0 / 2 / 4 / 5.8 — one yaw frame = throw the clip.  
 Play = Vlahos + crown sat kill + feather 1 px + ombre ellipse aux pattes. [05-key.md](05-key.md).  
 **Ne pas** redessiner le chien. **Ne pas** le recuire si le key est déjà bon.
 
@@ -199,6 +217,7 @@ Chaque cousin a **sa** fenêtre : un speck au vanishing point n’est pas encore
 ```
 1. empty stills + imagineBiomeClip 10s          → road.mp4
 2. extract empty-first / empty-last
+2b. Bolt rear still + imagineBoltClip 6s SAME still → bolt.mp4 (law 10)
 3. dress still cousin (objet loin, 1–2 voies)   → QC still
 4. imagineBiomeClip first+last, kind=hazard 10s → cousin.mp4
 5. QC 5 frames (spawn + lanes + last=empty)
@@ -236,6 +255,9 @@ Hitbox = **voie + fenêtre courte au contact des pattes**. Loin / ciel / déjà 
 | Stun lanes après hit | Empêche de **contourner** la boîte |
 | Overlay sticker sur route vide | Désaligne le monde (sauf si tu assumes le sticker) |
 | Recuire Bolt pour « améliorer » | Casse le key / le gallop déjà bon |
+| Chat Imagine / hall `imagineClip` for Bolt | No same-still in-place cable → yaw |
+| ¾ rear still or photoreal VFX Bolt | Crab-walk + wrong Pack style. Throw. No I2V |
+| Set / road / gold pipe in the Bolt still | I2V thinks scene → orbits |
 
 ---
 
@@ -243,7 +265,8 @@ Hitbox = **voie + fenêtre courte au contact des pattes**. Loin / ciel / déjà 
 
 | Path | Rôle |
 |---|---|
-| `scripts/imagine-hooks.mjs` | `imagineBiomeClip`, `BIOME_*_LAW`, `extractLastFrame` |
+| `scripts/imagine-hooks.mjs` | `imagineBiomeClip`, `imagineBoltClip`, `BIOME_*_LAW`, `BOLT_CUTOUT_LAW`, `extractLastFrame` |
+| `biome/docs/10-bolt-cutout-law.md` | HARD Bolt cutout — strict rear, `#00FF00`, in-place |
 | `scripts/plate-speed.py` | mesure px/s, `--match`, `--duration-match`, `--factor` |
 | `biome/prompts/video-empty-plate.txt` | rush 10 s constant |
 | `biome/prompts/video-hazard-plate.txt` | SPAWN + WIDTH (court) |

@@ -12,7 +12,7 @@ One picture. Two films. Canvas does the rest. **Do not redraw the dog.**
 | Piece | What |
 |---|---|
 | Road | One empty-plate mp4. **ZERO dog.** Dual `<video>` + hold canvas. |
-| Bolt | One green-screen gallop mp4. White GSD, back, teal collar. |
+| Bolt | One green-screen gallop mp4. White GSD, **strict rear**, teal fabric collar, `#00FF00`. Law: [10-bolt-cutout-law.md](10-bolt-cutout-law.md). |
 | Picture | One `<canvas>`. Decoders hidden (0×0, opacity 0). |
 | Plant | `drawImage(boltHold, dx, 0)`. `dx = (SHIFT/100)*width`. `SHIFT = 30`. **X only.** |
 | VER | `/master/road.mp4?v=r38` + `/master/bolt.mp4?v=r38`. |

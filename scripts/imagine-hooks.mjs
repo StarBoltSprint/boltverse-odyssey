@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 // xAI Imagine API. Hall films AND biome plates = image + last_frame.
+// Bolt cutout = image + last_frame SAME still (in-place). See biome/docs/10-bolt-cutout-law.md.
 // Not Imagine Agent. Not Grok chat. Needs XAI_API_KEY.
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, extname, join } from "node:path";
@@ -598,6 +599,83 @@ export async function imagineBiomeClip({
     last_frame: { url: dataUri(last) },
   };
   if (extra.length) body.image_urls = extra.map((p) => imgRef(p));
+  const j = await api("/videos/generations", body);
+  let url = j.url || j.video?.url || j.data?.[0]?.url;
+  const vid = j.request_id || j.id;
+  if (!url && vid) url = await pollVideo(vid);
+  if (!url) throw new Error("no video url");
+  const raw = dest + ".raw.mp4";
+  await download(url, raw);
+  encodeBiomeMp4(raw, dest, resolution === "1080p" ? 1920 : 1280);
+  return dest;
+}
+
+/** Pack Bolt cutout still. Strict rear + flat green. Not HALL_LAW. Not BIOME_LAW. */
+export const BOLT_STILL_LAW = [
+  "STYLE: stylized heroic 3D game German Shepherd — chunky clean fur, bold silhouette. NOT photoreal VFX. NOT a real-dog photo.",
+  "ONE FULL-white German Shepherd. Teal FABRIC collar from behind (not chrome, not a tube).",
+  "100% STRICT REAR. Tail CENTER. Back of ears. Muzzle HIDDEN. NEVER cheek. NEVER flank. NEVER three-quarter. NEVER side. NEVER profile.",
+  "Locked-off camera. X only. Paws lower third. ALREADY in sprint — one rear leg EXTENDED. NEVER standing still. NEVER sit. NEVER face. NEVER a second dog.",
+  "Two pointed GSD ears. Constant size. White coat forever; décor-matching skin ON TOP of white OK.",
+  "Background FLAT #00FF00 ONLY. ZERO road. ZERO city. ZERO gold pipe. ZERO ring. ZERO puddle. ZERO floor. ZERO drawn shadow. ZERO halo. ZERO set.",
+].join(" ");
+
+/** Pack Bolt gallop. IN PLACE / treadmill. Same still twice. Word “rear” alone is not enough. */
+export const BOLT_CUTOUT_LAW = [
+  BOLT_STILL_LAW,
+  "CAMERA: he moves AWAY from the camera (stuck in his back). NEVER pan. NEVER orbit. NEVER yaw. NEVER chase.",
+  "IN PLACE / treadmill. NEVER runs on a road. NEVER runs down a set. NEVER city behind. A road in the still makes Imagine invent travelling → he turns.",
+  "MOTION: rotary gallop the WHOLE clip. Body stretches then gathers. Hind legs drive FULLY back. NEVER 4 paws under the belly. NEVER stand. NEVER trot. NEVER pause.",
+  "6 seconds. 4 to 5 cycles. First frame ≈ last frame. Constant speed from t=0.00 to 6s.",
+  "Two pointed GSD ears EVERY frame.",
+].join(" ");
+
+export function boltStillLine() {
+  return BOLT_STILL_LAW;
+}
+
+export function boltClipLine() {
+  return [
+    BOLT_CUTOUT_LAW,
+    "First frame is the start still. Last frame is last_frame — the SAME still. In place.",
+    "NEVER three-quarter. NEVER cinematic orbit. NEVER camera follows.",
+    "NEVER wet road. NEVER reflection. NEVER contact shadow. NEVER chrome collar. NEVER gold pipe.",
+    "NEVER stands still then starts running.",
+  ].join(" ");
+}
+
+/**
+ * Sprint / biome Bolt cutout. Chat Imagine is banned — this is the last_frame cable.
+ * last_frame MUST be the same still (in-place / treadmill). Distinct last = travelling = yaw = FAIL.
+ */
+export async function imagineBoltClip({
+  first,
+  last,
+  dest,
+  seconds = 6,
+  paint = "",
+  promptFile,
+  resolution = "720p",
+}) {
+  if (!first) throw new Error("bolt cutout needs image + last_frame");
+  const hold = last || first;
+  if (last && last !== first) {
+    throw new Error("bolt last_frame must be the same still (in-place). Distinct last = travelling = yaw");
+  }
+  let paste = "";
+  if (promptFile && existsSync(promptFile)) {
+    paste = readFileSync(promptFile, "utf8").trim();
+  }
+  const prompt = [boltClipLine(), paste, paint].filter(Boolean).join(" ");
+  const body = {
+    model: VIDEO_MODEL,
+    prompt,
+    duration: seconds,
+    aspect_ratio: "9:16",
+    resolution,
+    image: { url: dataUri(first) },
+    last_frame: { url: dataUri(hold) },
+  };
   const j = await api("/videos/generations", body);
   let url = j.url || j.video?.url || j.data?.[0]?.url;
   const vid = j.request_id || j.id;

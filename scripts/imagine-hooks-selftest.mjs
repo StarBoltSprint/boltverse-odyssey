@@ -3,7 +3,7 @@
 // at-A prefers lock/example-at-a.jpg (SmiR lock teacher). at-B prefers hung moss PASS.
 // copy PLACE+POSE from example; FORCE taille 0.35–0.40; FORCE STANDING; never shrink to 0.18.
 // IGNORE tiny ~0.18 crop like bolt-back 0.53. Never send example-at-*-tiny.
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
@@ -24,6 +24,10 @@ import {
   BIOME_LANE_LAW,
   BIOME_SPEED_LAW,
   biomePlateLine,
+  BOLT_STILL_LAW,
+  BOLT_CUTOUT_LAW,
+  boltStillLine,
+  boltClipLine,
 } from "./imagine-hooks.mjs";
 import {
   DEST_REL,
@@ -172,13 +176,29 @@ must(biomePlateLine("bar").includes(BIOME_LANE_LAW), "bar plate includes BIOME_L
 must(/NEVER all three/.test(BIOME_LANE_LAW), "lane law: never all three");
 must(/ONE lane or TWO/.test(BIOME_LANE_LAW), "lane law: one or two lanes");
 must(/free lane/.test(BIOME_LANE_LAW), "lane law: one free dodge corridor");
-must(/unavoidable/.test(BIOME_LANE_LAW), "full-width bar is FAIL");
-must(/10 seconds/.test(BIOME_SPEED_LAW), "speed law is 10 seconds");
+must(/curb-to-curb bar/.test(BIOME_LANE_LAW) && /all blocked, FAIL/.test(BIOME_LANE_LAW), "full-width bar is FAIL");
 must(/ULTRA CONSTANT/.test(BIOME_SPEED_LAW), "speed law: ultra constant");
 must(/NEVER slow down/.test(BIOME_SPEED_LAW) && /NEVER accelerate/.test(BIOME_SPEED_LAW), "speed law: never slow, never accelerate");
 must(/ease-in/.test(BIOME_SPEED_LAW) && /ease-out/.test(BIOME_SPEED_LAW), "speed law: no ease in/out");
 must(biomePlateLine("empty").includes(BIOME_SPEED_LAW), "empty plate includes BIOME_SPEED_LAW");
 must(biomePlateLine("bar").includes(BIOME_SPEED_LAW), "bar plate includes BIOME_SPEED_LAW");
+
+must(/stylized heroic 3D/.test(BOLT_STILL_LAW) && /NOT photoreal/.test(BOLT_STILL_LAW), "bolt still: stylized, not photoreal");
+must(/STRICT REAR/.test(BOLT_STILL_LAW) && /#00FF00/.test(BOLT_STILL_LAW), "bolt still: strict rear + flat green");
+must(/teal FABRIC/i.test(BOLT_STILL_LAW) && /not chrome/.test(BOLT_STILL_LAW), "bolt still: teal fabric collar");
+must(/one rear leg EXTENDED/.test(BOLT_STILL_LAW) && /NEVER standing still/.test(BOLT_STILL_LAW), "bolt still: already in sprint");
+must(boltStillLine() === BOLT_STILL_LAW, "boltStillLine is BOLT_STILL_LAW");
+must(/IN PLACE/.test(BOLT_CUTOUT_LAW) && /treadmill/.test(BOLT_CUTOUT_LAW), "bolt clip: in place / treadmill");
+must(/NEVER yaw/.test(BOLT_CUTOUT_LAW) && /rotary gallop/.test(BOLT_CUTOUT_LAW), "bolt clip: no yaw + rotary gallop");
+must(/SAME still/.test(boltClipLine()), "bolt clip last_frame is the same still");
+must(!/Gothic citadel/.test(BOLT_CUTOUT_LAW) && !/ZERO dogs/.test(BOLT_CUTOUT_LAW), "bolt law is not HALL_LAW or BIOME_LAW");
+must(existsSync(join(root, "biome/docs/10-bolt-cutout-law.md")), "10-bolt-cutout-law.md exists");
+const boltStillPaste = readFileSync(join(root, "biome/prompts/image-bolt-mid.txt"), "utf8");
+const boltClipPaste = readFileSync(join(root, "biome/prompts/video-bolt-mid.txt"), "utf8");
+must(/STRICT REAR/.test(boltStillPaste) && /#00FF00/.test(boltStillPaste), "image-bolt-mid: strict rear + flat green");
+must(/NOT photoreal/.test(boltStillPaste) && /ALREADY in sprint/.test(boltStillPaste), "image-bolt-mid: stylized + already sprinting");
+must(/IN PLACE/.test(boltClipPaste) && /treadmill/.test(boltClipPaste) && /NEVER yaw/.test(boltClipPaste), "video-bolt-mid: in place, never yaw");
+must(/SAME still/.test(boltClipPaste), "video-bolt-mid: last_frame is the same still");
 
 const dry = spawnSync("node", [join(root, "scripts/cook-room.mjs"), "moss", "--dry-run"], {
   encoding: "utf8",

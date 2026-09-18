@@ -34,6 +34,7 @@ This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play
 | [docs/07-pack-live.md](docs/07-pack-live.md) | gate `sub` → registry (this Live = Pack API) |
 | [docs/08-plate-speed.md](docs/08-plate-speed.md) | measure + warp cousin rush to the empty clock |
 | [docs/09-recette-biome.md](docs/09-recette-biome.md) | **full biome cook** — empty → cousin → speed → dealer → box |
+| [docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md) | **HARD Bolt cutout** — strict rear, `#00FF00`, in-place gallop |
 | [prompts/](prompts/) | Imagine paste blocks (swap `{PAINT}` only) |
 | [reference/LanePlayer.tsx](reference/LanePlayer.tsx) | r38 compositor (not a grok.me) |
 | [reference/lane-css.css](reference/lane-css.css) | 9:16 B-stack CSS |
@@ -51,8 +52,9 @@ Kitchen — do not read aloud. biome / Sprint cook / lane / B-stack / green-scre
 # 1. biome/PLAY.md
 # 2. biome/docs/06-techniques.md   ← what worked r38 (Sprint cook bible)
 # 3. biome/docs/09-recette-biome.md ← empty + cousin + speed + box (do this)
-# 4. biome/docs/05-key.md
-# 5. biome/reference/LanePlayer.tsx
+# 4. biome/docs/10-bolt-cutout-law.md ← HARD Bolt cutout (strict rear, #00FF00, in-place)
+# 5. biome/docs/05-key.md
+# 6. biome/reference/LanePlayer.tsx
 # then biome/GROK.md
 
 # stills + films = imagine-hooks first+last (never Imagine Agent video)

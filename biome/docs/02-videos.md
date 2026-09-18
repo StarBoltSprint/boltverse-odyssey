@@ -55,13 +55,17 @@ Then match travel to the empty plate: [08-plate-speed.md](08-plate-speed.md). Ex
 
 ## Bolt cutout (gallop)
 
-Imagine **gallop video loop**. Soft black / alpha. Preserve fine paw dust — do not hard-key wipe low-alpha. No code/CSS fake splash.
+**HARD law:** [10-bolt-cutout-law.md](10-bolt-cutout-law.md).
 
-He **GALLOPS** the whole clip. NEVER sits. NEVER howls. NEVER a second dog. NEVER profile / face.
+`imagineBoltClip` — `image` + `last_frame` = **the same still**. 6 s. **IN PLACE / treadmill.** Never hall `imagineClip`. Never chat Imagine. Word “rear” alone is not enough.
 
-Plant in play: lower third, paws on `groundY`. [../PLAY.md](../PLAY.md) seek-sync.
+He **rotary-gallops** the whole clip (stretch then gather; hind legs fully back). NEVER stands, trots, pauses, sits, howls. NEVER a second dog. NEVER ¾ / profile / face / yaw / look-back. NEVER a road or set in the plate (I2V invents travelling → he turns).
 
-Paste: [../prompts/video-bolt-mid.txt](../prompts/video-bolt-mid.txt).
+Background stays **flat `#00FF00`**. Key later: [05-key.md](05-key.md). No JS reflection. No puddle shadow.
+
+Plant in play: lower third, paws already glued; game plants on the bottom of the blob. [../PLAY.md](../PLAY.md).
+
+Paste: [../prompts/video-bolt-mid.txt](../prompts/video-bolt-mid.txt). QC frames 0 / 2 / 4 / 5.8 — one yaw frame = throw.
 
 ## Encode
 
