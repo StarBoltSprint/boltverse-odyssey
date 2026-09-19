@@ -1,0 +1,212 @@
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Outfit:wght@400;500;600&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #05060c;
+  --color-surface: #101218;
+  --color-fg: #e8eef8;
+  --color-muted: #8b93a7;
+  --color-subtle: #5c6473;
+  --color-accent: #c8ccd4;
+  --color-accent-fg: #05060c;
+  --color-border: rgb(232 238 248 / 0.14);
+
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Cormorant Garamond", "Times New Roman", serif;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  --motion-micro: 80ms;
+  --motion-quick: 150ms;
+  --motion-fast: 250ms;
+  --motion-slow: 400ms;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: var(--color-bg);
+    color: var(--color-fg);
+  }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    overflow: hidden;
+    background: var(--color-bg);
+    font-family: var(--font-sans);
+    overscroll-behavior: none;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+}
+
+.nebula-wash {
+  will-change: transform;
+}
+
+.nebula-far {
+  background:
+    radial-gradient(ellipse 70% 45% at 28% 22%, rgb(48 58 96 / 0.22), transparent 62%),
+    radial-gradient(ellipse 40% 30% at 50% 50%, rgb(90 70 40 / 0.08), transparent 70%);
+}
+
+.nebula-near {
+  background:
+    radial-gradient(ellipse 55% 40% at 78% 78%, rgb(58 36 24 / 0.16), transparent 64%),
+    radial-gradient(ellipse 36% 28% at 62% 18%, rgb(70 88 130 / 0.1), transparent 68%);
+}
+
+.dust-field {
+  z-index: 3;
+  mix-blend-mode: screen;
+}
+
+.impostor-layer {
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+}
+
+.has-impostor .node-media {
+  opacity: 0 !important;
+}
+
+.has-impostor .node-glow {
+  opacity: 0;
+}
+
+.has-impostor .node-orb {
+  clip-path: none;
+  border-radius: 0;
+  overflow: visible;
+}
+
+.node-orb {
+  position: absolute;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: 50%;
+  clip-path: circle(31% at 50% 50%);
+  transform-origin: 50% 50%;
+  transition: clip-path 0.5s var(--ease-out);
+}
+
+.node-orb.is-immersed {
+  clip-path: circle(58% at 50% 50%);
+}
+
+.node-spin {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 50%;
+}
+
+.node-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+}
+
+.node-video {
+  z-index: 1;
+  opacity: 0;
+}
+
+.node-video.is-live {
+  opacity: 1;
+}
+
+.world-layer {
+  z-index: 1;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.hud-layer,
+.gate-layer {
+  z-index: 40;
+  transform: translateZ(0);
+}
+
+.node-glow {
+  position: absolute;
+  inset: 18%;
+  border-radius: 50%;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle,
+    rgb(var(--node-glow) / 0.42) 0%,
+    rgb(var(--node-glow) / 0.12) 42%,
+    transparent 70%
+  );
+  filter: blur(18px);
+}
+
+[data-node="core"] {
+  --node-glow: 255 214 150;
+}
+[data-node="tide"] {
+  --node-glow: 120 198 214;
+}
+[data-node="canyon"] {
+  --node-glow: 210 140 88;
+}
+[data-node="crystal"] {
+  --node-glow: 186 214 230;
+}
+[data-node="hollow"] {
+  --node-glow: 140 150 170;
+}
+[data-node="drift"] {
+  --node-glow: 176 184 192;
+}
+
+.thread {
+  fill: none;
+  stroke: color-mix(in oklab, var(--color-accent) 32%, transparent);
+  stroke-width: 1.15;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 3 14;
+  animation: thread-drift 14s linear infinite;
+}
+
+.thread-outer {
+  stroke: color-mix(in oklab, var(--color-accent) 18%, transparent);
+}
+
+@keyframes thread-drift {
+  to {
+    stroke-dashoffset: -34;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thread {
+    animation: none;
+  }
+}
