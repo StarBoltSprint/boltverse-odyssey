@@ -22,7 +22,7 @@ Kitchen — do not read aloud: **Pack Play** (kitchen only) = https://boltverse-
 
 - **Citadel** = this repo, root (`cook-room` / `packs/` / Hang). Hung citadel recipe: https://boltverse-odyssey.grok.me/r/frost
 - **Biome / lane** = this repo, [`biome/`](biome/README.md) (PLAY · `06-techniques` · `09-recette-biome` · LanePlayer · `/master`). [`bolt-lane-recipe`](https://github.com/StarBoltSprint/bolt-lane-recipe) may remain as archive.
-- **Constellation / Star Map** = [`constellation/`](constellation/README.md) — SPACE LOD KEEP (void + Imagine orbs). Sibling hang. Hang ≠ wipe. Not `biome/master`. Does not replace Sprint.
+- **Constellation / Star Map** = [`constellation/`](constellation/README.md) — SPACE LOD KEEP (void + Imagine orbs, Canyon LOD1–3). Sibling hang. Hang ≠ wipe. Not `biome/master`. Does not replace Sprint.
 
 A player who named a Citadel catalog paint: **3 stills**, same Bolt, then **5** films (floor 1). **First chat reply:** PASTE written URL `https://boltverse-odysseyyyy.grok.me` in chat (same turn as the video; player taps). Prefer open in Grok app. Supercedes « never paste grok.me » for the first reply. No yes-gate. **BAN Build rebuild / Built-with-Grok scaffold.** **Welcome = Pack register** via registry GitHub Action `pack-welcome` (chat) — not Live. After a real Grok `sub`, merge-patch `profiles/<sub>.json`. Never invent a `sub`. **playTime / boot / heartbeat** = `BOLTVERSE_PACK_ORIGIN` → StarBoltSprint/boltverse-pack on Vercel (TEMPORARY `https://boltverse-pack.vercel.app`). **HARD BAN:** treating `https://boltverse-odysseyyyy.grok.me` as the Pack API host for registry writes (game play URL stays odysseyyyy; Pack API does not). Old « playTimeSec Live-only » / « chat start does not upsert » are **SUPERSEDED**. **Never rebuild from GitHub.** **Beat 3 kitchen identity (only):** `https://boltverse-odysseyyyy.grok.me`. PASTE written URL `https://boltverse-odysseyyyy.grok.me` (player taps). Prefer open in Grok app. **BAN Build rebuild / Built-with-Grok scaffold.** Do not scaffold / remix a fresh project when odysseyyyy already exists. Chat Imagine / Chat file chip alone = FAIL.
 
@@ -84,7 +84,7 @@ Search: `StarBoltSprint citadel-room` · living film · boltverse-odyssey.grok.m
 | [`stock/biome/`](stock/biome/README.md) | optional archive — `preview-loop.mp4` + `preview-first.jpg` (**not attached at boot**) |
 | [`stock/chests/`](stock/chests/README.md) | KEEP Peak crystal run-reward chest — `peak-closed.png` + `peak-open.jpg` (last-frame ref) + `peak-open.mp4` (KEEP player open clip; engine then shows `assetId`). Cosmetics only; not daily login. Creators do not bake into biomes. |
 | [`biome/`](biome/README.md) | Sprint / lane recipe — B-stack PLAY, `09-recette-biome` checklist, LanePlayer, `/master` |
-| [`constellation/`](constellation/README.md) | SPACE LOD KEEP — Star Map (void + Imagine orbs). Sibling hang. Not Sprint. |
+| [`constellation/`](constellation/README.md) | SPACE LOD KEEP — Star Map (void + Imagine orbs, Canyon LOD1–3). Sibling hang. Not Sprint. |
 | [`biome/docs/06-techniques.md`](biome/docs/06-techniques.md) | **techniques bible** (kitchen) — what worked r38; read after PLAY, before cook |
 | [`biome/docs/09-recette-biome.md`](biome/docs/09-recette-biome.md) | **full cook checklist** (kitchen) — REQUIRED before cook: empty→cousin→speed→dealer→box; SPAWN/WIDTH; road-bar/blast |
 | [`biome/docs/10-bolt-cutout-law.md`](biome/docs/10-bolt-cutout-law.md) | **HARD Bolt cutout** (kitchen) — B→cycle→green→key, 48fps, hooks first+last |

@@ -8,22 +8,34 @@ import {
   projectPersp,
   rotateYawPitch,
   screenToWorld,
+  tameZoomFactor,
   worldTransform,
   zoomAt,
   type Cam,
 } from "@/lib/constellation/camera";
 import {
   LINKS,
+  LOD1,
+  LOD2,
+  LOD3,
   NODES,
   NODE_BY_ID,
-  ORB_HIT_RADIUS,
+  globeU,
+  lod0Alpha,
+  lod1Alpha,
+  lod1Id,
+  lod2Alpha,
+  lod2Id,
+  lod3Alpha,
+  lod3Id,
   panLimit,
   VIDEO_SIZE,
+  plateSize,
   zoomLimits,
   type NodeId,
   type WorldNode,
 } from "@/lib/constellation/world";
-import { createImpostorLayer, IMPOSTOR } from "@/lib/constellation/impostor";
+import { createImpostorLayer, IMPOSTOR, LOD1_IMPOSTOR, type ImpostorSprite } from "@/lib/constellation/impostor";
 import { Starfield, type SkyMotion } from "./Starfield";
 import { Button } from "@/components/ui/button";
 
@@ -71,7 +83,7 @@ function nearestNode(
   let any = false;
   for (const n of NODES) {
     const p = proj[n.id] ?? n;
-    const vis = IMPOSTOR[n.id].source * VIDEO_SIZE * (p.s ?? 1);
+    const vis = IMPOSTOR[n.id].source * plateSize(n.id) * (p.s ?? 1);
     const dx = Math.abs(p.x - cam.x);
     const dy = Math.abs(p.y - cam.y);
     if (dx > halfW + vis || dy > halfH + vis) continue;
@@ -103,7 +115,7 @@ function hitNode(
     if (nodeOpacity(n, zoom, minZ, maxZ) < 0.35) continue;
     const p = proj[n.id] ?? n;
     const d = dist(p.x, p.y, wx, wy);
-    const radius = ORB_HIT_RADIUS * (p.s ?? 1);
+    const radius = plateSize(n.id) * 0.28 * (p.s ?? 1);
     if (d < radius && d < bestD) {
       bestD = d;
       best = n;
@@ -112,14 +124,29 @@ function hitNode(
   return best;
 }
 
+function viewSize(el: HTMLElement | null) {
+  if (el) {
+    const w = el.clientWidth;
+    const h = el.clientHeight;
+    if (w > 8 && h > 8) return { vw: w, vh: h };
+  }
+  if (typeof window === "undefined") return { vw: 390, vh: 844 };
+  const vv = window.visualViewport;
+  if (vv && vv.width > 8 && vv.height > 8) return { vw: vv.width, vh: vhFromViewport(vv) };
+  return { vw: window.innerWidth, vh: window.innerHeight };
+}
+
+function vhFromViewport(vv: VisualViewport) {
+  return vv.height;
+}
+
 function bootLimits() {
   if (typeof window === "undefined") {
-    return { minZ: 0.12, maxZ: 1, vw: 390, vh: 844 };
+    return { minZ: 0.12, maxZ: 1, maxZMap: 1, maxZSurface: 2.4, vw: 390, vh: 844 };
   }
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  const { minZ, maxZ } = zoomLimits(vw, vh);
-  return { minZ, maxZ, vw, vh };
+  const { vw, vh } = viewSize(null);
+  const { minZ, maxZ, maxZSurface } = zoomLimits(vw, vh);
+  return { minZ, maxZ, maxZMap: maxZ, maxZSurface, vw, vh };
 }
 
 function nodeOpacity(node: WorldNode, zoom: number, minZ: number, maxZ: number) {
@@ -160,13 +187,21 @@ export function ConstellationMap() {
     angle: number;
   } | null>(null);
   const pointersRef = useRef<Map<number, { x: number; y: number }>>(new Map());
-  const playingRef = useRef(false);
+  const playingRef = useRef(true);
   const immersedIdRef = useRef<string | null>("core");
   const nameRef = useRef<HTMLParagraphElement>(null);
   const epithetRef = useRef<HTMLParagraphElement>(null);
   const hintRef = useRef<HTMLParagraphElement>(null);
   const lastFocusRef = useRef<NodeId>("core");
   const liveIdRef = useRef<string | null>(null);
+  const lodMixRef = useRef<{ id: NodeId | null; a0: number; a1: number; a2: number; a3: number; u: number }>({
+    id: null,
+    a0: 1,
+    a1: 0,
+    a2: 0,
+    a3: 0,
+    u: 0,
+  });
   const touchModeRef = useRef(false);
   const yawRef = useRef(0);
   const pitchRef = useRef(0);
@@ -189,8 +224,6 @@ export function ConstellationMap() {
     flatten: 1,
   });
 
-  const [playing, setPlaying] = useState(false);
-
   const hideHint = useCallback(() => {
     if (hintRef.current) hintRef.current.style.opacity = "0";
   }, []);
@@ -199,7 +232,19 @@ export function ConstellationMap() {
     if (liveIdRef.current === id) return;
     const prev = liveIdRef.current;
     liveIdRef.current = id;
-    if (prev) {
+    const play = (vid: HTMLVideoElement | null) => {
+      if (!vid) return;
+      vid.muted = true;
+      vid.defaultMuted = true;
+      vid.playsInline = true;
+      vid.setAttribute("playsinline", "");
+      vid.setAttribute("webkit-playsinline", "");
+      const p = vid.play();
+      if (p) void p.catch(() => {});
+    };
+    // Core keeps breathing even when you're on another world.
+    play(videoRefs.current.core);
+    if (prev && prev !== "core") {
       const old = videoRefs.current[prev];
       if (old) {
         old.classList.remove("is-live");
@@ -207,25 +252,23 @@ export function ConstellationMap() {
       }
     }
     if (!id || !playingRef.current) return;
+    if (id !== "core") play(videoRefs.current[id]);
     const v = videoRefs.current[id];
-    if (!v) return;
-    v.muted = true;
-    v.defaultMuted = true;
-    v.playsInline = true;
-    v.classList.add("is-live");
-    const play = v.play();
-    if (play) void play.catch(() => {});
+    if (v) v.classList.add("is-live");
   }, []);
 
   const apply = useCallback(() => {
     const world = worldRef.current;
-    const { vw, vh, minZ, maxZ } = limitsRef.current;
+    const box = viewSize(rootRef.current);
+    limitsRef.current.vw = box.vw;
+    limitsRef.current.vh = box.vh;
+    const { vw, vh, minZ, maxZMap } = limitsRef.current;
     const cam = camRef.current;
     if (world) {
       world.style.transform = worldTransform(cam, vw, vh);
     }
 
-    const range = Math.max(maxZ - minZ, 0.001);
+    const range = Math.max(maxZMap - minZ, 0.001);
     const t = clamp((cam.zoom - minZ) / range, 0, 1);
     const flatten = clamp((t - 0.48) / 0.4, 0, 1);
     const yaw = yawRef.current * (1 - flatten);
@@ -233,7 +276,18 @@ export function ConstellationMap() {
     const proj = projectNodes(yaw, pitch);
     projRef.current = proj;
 
-    const focus = nearestNode(cam, proj, lastFocusRef.current, vw, vh);
+    const focus0 = nearestNode(cam, proj, lastFocusRef.current, vw, vh);
+    let focus = focus0;
+    const stuck = NODE_BY_ID[lastFocusRef.current];
+    if (stuck && LOD1[stuck.id] && cam.zoom > maxZMap * 1.02) {
+      focus = stuck;
+    } else if (stuck && LOD1[stuck.id]) {
+      const lp = proj[stuck.id];
+      if (lp) {
+        const uStuck = globeU(plateSize(stuck.id) * cam.zoom * (lp.s ?? 1), IMPOSTOR[stuck.id].source, vw, vh);
+        if (uStuck > 0.7) focus = stuck;
+      }
+    }
     if (lastFocusRef.current !== focus.id) {
       lastFocusRef.current = focus.id;
       if (nameRef.current) nameRef.current.textContent = focus.name;
@@ -252,6 +306,33 @@ export function ConstellationMap() {
     }
     immersedIdRef.current = immersed;
 
+    const fpSize = plateSize(focus.id) * cam.zoom * (fp.s ?? 1);
+    const focusU = globeU(fpSize, IMPOSTOR[focus.id].source, vw, vh);
+    const canLod = Boolean(LOD1[focus.id]);
+    const canLod2 = Boolean(LOD2[focus.id]);
+    const canLod3 = Boolean(LOD3[focus.id]);
+    const prev = lodMixRef.current;
+    const u = prev.id === focus.id ? prev.u + (focusU - prev.u) * 0.28 : focusU;
+    let a1 = canLod ? lod1Alpha(u) : 0;
+    let a0 = canLod ? lod0Alpha(u) : 1;
+    let a2 = canLod2 ? lod2Alpha(u) : 0;
+    let a3 = canLod3 ? lod3Alpha(u) : 0;
+    if (prev.id === focus.id) {
+      a2 = a2 >= prev.a2 ? a2 : Math.max(a2, prev.a2 - 0.045);
+      a3 = a3 >= prev.a3 ? a3 : Math.max(a3, prev.a3 - 0.045);
+    }
+    a0 = canLod ? Math.max(a0, 1 - a2) : 1;
+    limitsRef.current.maxZ = canLod
+      ? limitsRef.current.maxZSurface
+      : maxZMap;
+    lodMixRef.current = { id: canLod ? focus.id : null, a0, a1, a2, a3, u };
+
+    if (canLod && u > 0.55) {
+      const k = pinchRef.current ? 0.22 : 0.14 * Math.max(a1, 0.4) * (1 - a2 * 0.85);
+      cam.x += (fp.x - cam.x) * k;
+      cam.y += (fp.y - cam.y) * k;
+    }
+
     const originX = spanRef.current.minX;
     const originY = spanRef.current.minY;
 
@@ -259,10 +340,11 @@ export function ConstellationMap() {
       const el = nodeRefs.current[n.id];
       if (!el) continue;
       const p = proj[n.id]!;
-      const o = nodeOpacity(n, cam.zoom, minZ, maxZ);
+      const o = nodeOpacity(n, cam.zoom, minZ, maxZMap);
+      const sz = plateSize(n.id);
       el.style.opacity = o < 0.03 ? "0" : String(o);
-      el.style.left = `${p.x - VIDEO_SIZE / 2}px`;
-      el.style.top = `${p.y - VIDEO_SIZE / 2}px`;
+      el.style.left = `${p.x - sz / 2}px`;
+      el.style.top = `${p.y - sz / 2}px`;
       el.style.transform = `scale(${p.s})`;
       el.style.zIndex = String(Math.round(1800 - p.z));
       el.classList.toggle("is-immersed", n.id === immersed);
@@ -288,10 +370,21 @@ export function ConstellationMap() {
       if (!line) continue;
       const pa = proj[a]!;
       const pb = proj[b]!;
-      line.setAttribute("x1", String(pa.x - originX));
-      line.setAttribute("y1", String(pa.y - originY));
-      line.setAttribute("x2", String(pb.x - originX));
-      line.setAttribute("y2", String(pb.y - originY));
+      const x1 = String(pa.x - originX);
+      const y1 = String(pa.y - originY);
+      const x2 = String(pb.x - originX);
+      const y2 = String(pb.y - originY);
+      line.setAttribute("x1", x1);
+      line.setAttribute("y1", y1);
+      line.setAttribute("x2", x2);
+      line.setAttribute("y2", y2);
+      const glow = line.previousElementSibling;
+      if (glow) {
+        glow.setAttribute("x1", x1);
+        glow.setAttribute("y1", y1);
+        glow.setAttribute("x2", x2);
+        glow.setAttribute("y2", y2);
+      }
     }
 
     if (threadRefs.current) {
@@ -315,6 +408,46 @@ export function ConstellationMap() {
 
     if (playingRef.current) setLive(focus.id);
 
+    for (const id of Object.keys(LOD1) as NodeId[]) {
+      const vid = videoRefs.current[lod1Id(id)];
+      if (!vid) continue;
+      const on = id === focus.id && a1 > 0.04 && a2 < 0.92;
+      if (on) {
+        vid.muted = true;
+        vid.playsInline = true;
+        void vid.play()?.catch(() => {});
+      } else {
+        vid.pause();
+      }
+    }
+    for (const id of Object.keys(LOD2) as NodeId[]) {
+      const vid = videoRefs.current[lod2Id(id)];
+      if (!vid) continue;
+      const on = id === focus.id && a2 > 0.04 && a3 < 0.92;
+      if (on) {
+        vid.muted = true;
+        vid.playsInline = true;
+        void vid.play()?.catch(() => {});
+      } else {
+        vid.pause();
+      }
+    }
+    for (const id of Object.keys(LOD3) as NodeId[]) {
+      const vid = videoRefs.current[lod3Id(id)];
+      if (!vid) continue;
+      const on = id === focus.id && a3 > 0.04;
+      if (on) {
+        vid.muted = true;
+        vid.playsInline = true;
+        void vid.play()?.catch(() => {});
+      } else {
+        vid.pause();
+      }
+    }
+
+    const root = rootRef.current;
+    if (root && root.dataset.sky !== focus.id) root.dataset.sky = focus.id;
+
     const api = impostorRef.current;
     if (api) {
       api.draw(
@@ -322,21 +455,77 @@ export function ConstellationMap() {
           vw,
           vh,
           liveId: liveIdRef.current,
-          sprites: NODES.map((n) => {
+          sprites: NODES.flatMap((n) => {
             const p = proj[n.id]!;
             const d = dist(p.x, p.y, cam.x, cam.y);
-            const close = clamp(1 - d / (VIDEO_SIZE * 0.48), 0, 1);
-            return {
+            const close = clamp(1 - d / (plateSize(n.id) * 0.48), 0, 1);
+            const size = plateSize(n.id) * cam.zoom * p.s;
+            const base = {
               id: n.id,
               x: vw / 2 + (p.x - cam.x) * cam.zoom,
               y: vh / 2 + (p.y - cam.y) * cam.zoom,
               z: p.z,
-              size: VIDEO_SIZE * cam.zoom * p.s,
-              opacity: nodeOpacity(n, cam.zoom, minZ, maxZ),
               yaw,
               pitch,
               lod: close * t,
             };
+            const fade = n.id === focus.id && a1 > 0.02;
+            if (n.id !== focus.id && canLod && a1 > 0.22) return [];
+            const src = IMPOSTOR[n.id].source;
+            const maxPlate = Math.min(vw, vh) * 0.86 / Math.max(2 * src, 0.01);
+            const globeSize = Math.min(size, maxPlate);
+            const sprites: ImpostorSprite[] = [
+              {
+                ...base,
+                size: globeSize,
+                opacity: nodeOpacity(n, cam.zoom, minZ, maxZMap) * (fade ? a0 * (1 - a2) : 1),
+                para: fade ? 1 - a1 : 1,
+              },
+            ];
+            if (fade && a1 > 0.02) {
+              const lodCfg = LOD1_IMPOSTOR[n.id] ?? IMPOSTOR[n.id];
+              const match = IMPOSTOR[n.id].source / Math.max(lodCfg.source, 0.01);
+              const enter = 0.96 + 0.04 * a1;
+              sprites.push({
+                ...base,
+                tex: lod1Id(n.id),
+                size: Math.min(globeSize * match * enter, maxPlate),
+                opacity: nodeOpacity(n, cam.zoom, minZ, maxZMap) * a1 * (1 - a2),
+                para: 0,
+                z: p.z - 1,
+              });
+            }
+            if (n.id === focus.id && a2 > 0.02) {
+              const cover = Math.max(vw, vh) * 1.72;
+              sprites.push({
+                ...base,
+                x: base.x * (1 - a2) + (vw / 2) * a2,
+                y: base.y * (1 - a2) + (vh / 2) * a2,
+                tex: lod2Id(n.id),
+                size: cover,
+                opacity: a2 * (1 - 0.78 * a3),
+                para: 0,
+                flat: true,
+                z: p.z - 2,
+                lod: 1,
+              });
+            }
+            if (n.id === focus.id && a3 > 0.02) {
+              const cover = Math.max(vw, vh) * 1.72;
+              sprites.push({
+                ...base,
+                x: vw / 2,
+                y: vh / 2,
+                tex: lod3Id(n.id),
+                size: cover,
+                opacity: a3,
+                para: 0,
+                flat: true,
+                z: p.z - 3,
+                lod: 1,
+              });
+            }
+            return sprites;
           }),
         },
         videoRefs.current,
@@ -345,17 +534,23 @@ export function ConstellationMap() {
   }, [setLive]);
 
   const resize = useCallback(() => {
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const { minZ, maxZ } = zoomLimits(vw, vh);
-    limitsRef.current = { minZ, maxZ, vw, vh };
-    camRef.current.zoom = clamp(camRef.current.zoom, minZ, maxZ);
+    const { vw, vh } = viewSize(rootRef.current);
+    const { minZ, maxZ, maxZSurface } = zoomLimits(vw, vh);
+    limitsRef.current.minZ = minZ;
+    limitsRef.current.maxZMap = maxZ;
+    limitsRef.current.maxZSurface = maxZSurface;
+    limitsRef.current.vw = vw;
+    limitsRef.current.vh = vh;
+    camRef.current.zoom = clamp(camRef.current.zoom, minZ, maxZSurface);
     apply();
   }, [apply]);
 
   useEffect(() => {
     resize();
     window.addEventListener("resize", resize);
+    const vv = window.visualViewport;
+    vv?.addEventListener("resize", resize);
+    vv?.addEventListener("scroll", resize);
 
     let last = performance.now();
     let raf = 0;
@@ -405,14 +600,45 @@ export function ConstellationMap() {
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
+      vv?.removeEventListener("resize", resize);
+      vv?.removeEventListener("scroll", resize);
     };
   }, [apply, resize]);
+
+  const nudgeZoom = useCallback((raw: number, cx: number, cy: number) => {
+    const { vw, vh, minZ, maxZ } = limitsRef.current;
+    const cam = camRef.current;
+    const factor = tameZoomFactor(raw, cam.zoom, minZ, maxZ);
+    const mix = lodMixRef.current;
+    let sx = cx;
+    let sy = cy;
+    if (mix.id && mix.u > 0.5) {
+      const p = projRef.current[mix.id];
+      if (p) {
+        sx = vw / 2 + (p.x - cam.x) * cam.zoom;
+        sy = vh / 2 + (p.y - cam.y) * cam.zoom;
+      }
+    }
+    camRef.current = clampCam(zoomAt(cam, sx, sy, factor, vw, vh, minZ, maxZ), panLimit());
+  }, []);
 
   const startVideos = useCallback(() => {
     const { vw, vh } = limitsRef.current;
     playingRef.current = true;
+    const core = videoRefs.current.core;
+    if (core) {
+      core.muted = true;
+      core.playsInline = true;
+      void core.play()?.catch(() => {});
+    }
     setLive(nearestNode(camRef.current, projRef.current, lastFocusRef.current, vw, vh).id);
   }, [setLive]);
+
+  useEffect(() => {
+    startVideos();
+    const t = window.setTimeout(hideHint, 5200);
+    return () => window.clearTimeout(t);
+  }, [startVideos, hideHint]);
 
   useEffect(() => {
     const onVis = () => {
@@ -489,7 +715,6 @@ export function ConstellationMap() {
     if (!playingRef.current) return;
     if (!pointersRef.current.has(e.pointerId)) return;
     pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    const { vw, vh, minZ, maxZ } = limitsRef.current;
 
     if (pointersRef.current.size >= 2 && pinchRef.current) {
       const pts = [...pointersRef.current.values()];
@@ -500,16 +725,15 @@ export function ConstellationMap() {
       const cy = (a.y + b.y) / 2;
       const angle = fingerAngle(a.x, a.y, b.x, b.y);
       const factor = d / Math.max(pinchRef.current.d, 1);
-      camRef.current = clampCam(
-        zoomAt(camRef.current, cx, cy, factor, vw, vh, minZ, maxZ),
-        panLimit(),
-      );
-      const dYaw = wrapDelta(angle - pinchRef.current.angle);
-      yawRef.current += dYaw;
-      yawVelRef.current = dYaw / 0.016;
-      const dPitch = (cy - pinchRef.current.cy) * 0.0034;
-      pitchRef.current = clamp(pitchRef.current + dPitch, -PITCH_MAX, PITCH_MAX);
-      pitchVelRef.current = dPitch / 0.016;
+      nudgeZoom(factor, cx, cy);
+      if (lodMixRef.current.u < 0.55) {
+        const dYaw = wrapDelta(angle - pinchRef.current.angle);
+        yawRef.current += dYaw;
+        yawVelRef.current = dYaw / 0.016;
+        const dPitch = (cy - pinchRef.current.cy) * 0.0034;
+        pitchRef.current = clamp(pitchRef.current + dPitch, -PITCH_MAX, PITCH_MAX);
+        pitchVelRef.current = dPitch / 0.016;
+      }
       pinchRef.current = { d, cx, cy, angle };
       hideHint();
       return;
@@ -532,13 +756,14 @@ export function ConstellationMap() {
       return;
     }
     const z = camRef.current.zoom;
-    camRef.current.x -= dx / z;
-    camRef.current.y -= dy / z;
-    velRef.current.x = -dx / z / 0.016;
-    velRef.current.y = -dy / z / 0.016;
+    const pan = lodMixRef.current.u > 0.7 ? 0.18 : 1;
+    camRef.current.x -= (dx / z) * pan;
+    camRef.current.y -= (dy / z) * pan;
+    velRef.current.x = -(dx / z) * pan / 0.016;
+    velRef.current.y = -(dy / z) * pan / 0.016;
     drag.x = e.clientX;
     drag.y = e.clientY;
-  }, [hideHint]);
+  }, [hideHint, nudgeZoom]);
 
   const endPointer = useCallback(
     (e: React.PointerEvent) => {
@@ -556,11 +781,11 @@ export function ConstellationMap() {
       if (pointersRef.current.size === 0) dragRef.current = null;
 
       if (wasTap) {
-        const { vw, vh, minZ, maxZ } = limitsRef.current;
+        const { vw, vh, minZ, maxZMap } = limitsRef.current;
         const world = screenToWorld(camRef.current, e.clientX, e.clientY, vw, vh);
-        const node = hitNode(world.x, world.y, camRef.current.zoom, minZ, maxZ, projRef.current);
+        const node = hitNode(world.x, world.y, camRef.current.zoom, minZ, maxZMap, projRef.current);
         if (node) {
-          flyTo(node.x, node.y, maxZ);
+          flyTo(node.x, node.y, maxZMap);
           hideHint();
         }
       }
@@ -574,7 +799,6 @@ export function ConstellationMap() {
     const onWheel = (e: WheelEvent) => {
       if (!playingRef.current) return;
       e.preventDefault();
-      const { vw, vh, minZ, maxZ } = limitsRef.current;
       const delta = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
       if (e.altKey) {
         yawRef.current += delta * 0.0032;
@@ -584,16 +808,13 @@ export function ConstellationMap() {
         return;
       }
       const factor = Math.exp(-delta * 0.0016);
-      camRef.current = clampCam(
-        zoomAt(camRef.current, e.clientX, e.clientY, factor, vw, vh, minZ, maxZ),
-        panLimit(),
-      );
+      nudgeZoom(factor, e.clientX, e.clientY);
       flyRef.current = null;
       hideHint();
     };
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
-  }, [hideHint]);
+  }, [hideHint, nudgeZoom]);
 
   useEffect(() => {
     const el = rootRef.current;
@@ -645,17 +866,15 @@ export function ConstellationMap() {
         const prev = pinchRef.current;
         const base = prev ?? { d, cx, cy, angle };
         const factor = d / Math.max(base.d, 1);
-        const { vw, vh, minZ, maxZ } = limitsRef.current;
-        camRef.current = clampCam(
-          zoomAt(camRef.current, cx, cy, factor, vw, vh, minZ, maxZ),
-          panLimit(),
-        );
-        const dYaw = wrapDelta(angle - base.angle);
-        yawRef.current += dYaw;
-        yawVelRef.current = dYaw / 0.016;
-        const dPitch = (cy - base.cy) * 0.0034;
-        pitchRef.current = clamp(pitchRef.current + dPitch, -PITCH_MAX, PITCH_MAX);
-        pitchVelRef.current = dPitch / 0.016;
+        nudgeZoom(factor, cx, cy);
+        if (lodMixRef.current.u < 0.55) {
+          const dYaw = wrapDelta(angle - base.angle);
+          yawRef.current += dYaw;
+          yawVelRef.current = dYaw / 0.016;
+          const dPitch = (cy - base.cy) * 0.0034;
+          pitchRef.current = clamp(pitchRef.current + dPitch, -PITCH_MAX, PITCH_MAX);
+          pitchVelRef.current = dPitch / 0.016;
+        }
         pinchRef.current = { d, cx, cy, angle };
         hideHint();
         return;
@@ -668,10 +887,11 @@ export function ConstellationMap() {
       const dy = t.clientY - drag.y;
       if (Math.hypot(dx, dy) > 6) drag.moved = true;
       const z = camRef.current.zoom;
-      camRef.current.x -= dx / z;
-      camRef.current.y -= dy / z;
-      velRef.current.x = -dx / z / 0.016;
-      velRef.current.y = -dy / z / 0.016;
+      const pan = lodMixRef.current.u > 0.7 ? 0.18 : 1;
+      camRef.current.x -= (dx / z) * pan;
+      camRef.current.y -= (dy / z) * pan;
+      velRef.current.x = -(dx / z) * pan / 0.016;
+      velRef.current.y = -(dy / z) * pan / 0.016;
       drag.x = t.clientX;
       drag.y = t.clientY;
     };
@@ -718,11 +938,11 @@ export function ConstellationMap() {
       }
 
       if (wasTap && ended) {
-        const { vw, vh, minZ, maxZ } = limitsRef.current;
+        const { vw, vh, minZ, maxZMap } = limitsRef.current;
         const world = screenToWorld(camRef.current, ended.clientX, ended.clientY, vw, vh);
-        const node = hitNode(world.x, world.y, camRef.current.zoom, minZ, maxZ, projRef.current);
+        const node = hitNode(world.x, world.y, camRef.current.zoom, minZ, maxZMap, projRef.current);
         if (node) {
-          flyTo(node.x, node.y, maxZ);
+          flyTo(node.x, node.y, maxZMap);
           hideHint();
         }
       }
@@ -738,7 +958,7 @@ export function ConstellationMap() {
       el.removeEventListener("touchend", onEnd);
       el.removeEventListener("touchcancel", onEnd);
     };
-  }, [flyTo, hideHint]);
+  }, [flyTo, hideHint, nudgeZoom]);
 
   useEffect(() => {
     const canvas = impostorCanvasRef.current;
@@ -751,14 +971,8 @@ export function ConstellationMap() {
     };
   }, []);
 
-  const onPlay = () => {
-    setPlaying(true);
-    startVideos();
-    window.setTimeout(hideHint, 5200);
-  };
-
   const span = useMemo(() => {
-    const reach = 2200;
+    const reach = Math.ceil(panLimit() + VIDEO_SIZE * 0.35);
     spanRef.current = { minX: -reach, minY: -reach };
     return { minX: -reach, minY: -reach, w: reach * 2, h: reach * 2 };
   }, []);
@@ -766,7 +980,9 @@ export function ConstellationMap() {
   return (
     <div
       ref={rootRef}
+      data-sky="core"
       className={`relative h-dvh w-full overflow-hidden bg-bg text-fg touch-none select-none${hasImpostor ? " has-impostor" : ""}`}
+      data-rev="lod3e"
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={endPointer}
@@ -780,6 +996,7 @@ export function ConstellationMap() {
         ref={nebulaNearRef}
         className="nebula-wash nebula-near pointer-events-none absolute inset-0"
       />
+      <div className="sky-tint pointer-events-none absolute inset-0" aria-hidden="true" />
       <Starfield motion={motionRef} />
       <canvas
         ref={impostorCanvasRef}
@@ -803,18 +1020,30 @@ export function ConstellationMap() {
               const na = NODE_BY_ID[a];
               const nb = NODE_BY_ID[b];
               const outer = na.ring === "outer" || nb.ring === "outer";
+              const x1 = na.x - span.minX;
+              const y1 = na.y - span.minY;
+              const x2 = nb.x - span.minX;
+              const y2 = nb.y - span.minY;
               return (
-                <line
-                  key={`${a}-${b}`}
-                  ref={(el) => {
-                    lineRefs.current[`${a}-${b}`] = el;
-                  }}
-                  x1={na.x - span.minX}
-                  y1={na.y - span.minY}
-                  x2={nb.x - span.minX}
-                  y2={nb.y - span.minY}
-                  className={outer ? "thread thread-outer" : "thread"}
-                />
+                <g key={`${a}-${b}`}>
+                  <line
+                    x1={x1}
+                    y1={y1}
+                    x2={x2}
+                    y2={y2}
+                    className={outer ? "thread-glow thread-outer" : "thread-glow"}
+                  />
+                  <line
+                    ref={(el) => {
+                      lineRefs.current[`${a}-${b}`] = el;
+                    }}
+                    x1={x1}
+                    y1={y1}
+                    x2={x2}
+                    y2={y2}
+                    className={outer ? "thread thread-outer" : "thread"}
+                  />
+                </g>
               );
             })}
           </g>
@@ -829,10 +1058,10 @@ export function ConstellationMap() {
             data-node={n.id}
             className={n.id === "core" ? "node-orb is-immersed" : "node-orb"}
             style={{
-              width: VIDEO_SIZE,
-              height: VIDEO_SIZE,
-              left: n.x - VIDEO_SIZE / 2,
-              top: n.y - VIDEO_SIZE / 2,
+              width: plateSize(n.id),
+              height: plateSize(n.id),
+              left: n.x - plateSize(n.id) / 2,
+              top: n.y - plateSize(n.id) / 2,
             }}
           >
             <div
@@ -841,30 +1070,110 @@ export function ConstellationMap() {
                 spinRefs.current[n.id] = el;
               }}
             >
-            <div className="node-glow" />
-            <img src={n.poster} alt="" draggable={false} className="node-media" />
-            <video
-              ref={(el) => {
-                videoRefs.current[n.id] = el;
-              }}
-              src={n.video}
-              poster={n.poster}
-              muted
-              loop
-              playsInline
-              preload={n.id === "core" ? "auto" : "metadata"}
-              disablePictureInPicture
-              controls={false}
-              className="node-media node-video"
-            />
+            {!hasImpostor ? (
+              <img
+                src={n.poster}
+                alt=""
+                draggable={false}
+                className={`node-media plate-${n.id}`}
+              />
+            ) : null}
             </div>
           </div>
         ))}
       </div>
 
-      {playing ? (
-        <div className="hud-layer pointer-events-none absolute inset-0 flex flex-col justify-between p-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-[max(1.25rem,env(safe-area-inset-bottom))]">
-          <header className="flex flex-col items-center gap-1 text-center">
+      <div className="tex-farm" aria-hidden="true">
+        {NODES.map((n) => (
+          <video
+            key={n.id}
+            ref={(el) => {
+              videoRefs.current[n.id] = el;
+            }}
+            src={n.video}
+            muted
+            loop
+            playsInline
+            webkit-playsinline="true"
+            preload={n.id === "core" ? "auto" : "metadata"}
+            disablePictureInPicture
+            controls={false}
+          />
+        ))}
+        {(Object.keys(LOD1) as NodeId[]).map((id) => {
+          const extra = LOD1[id]!;
+          const key = lod1Id(id);
+          return (
+            <video
+              key={key}
+              ref={(el) => {
+                videoRefs.current[key] = el;
+              }}
+              src={extra.video}
+              muted
+              loop
+              playsInline
+              webkit-playsinline="true"
+              preload="metadata"
+              disablePictureInPicture
+              controls={false}
+            />
+          );
+        })}
+        {(Object.keys(LOD2) as NodeId[]).map((id) => {
+          const extra = LOD2[id]!;
+          const key = lod2Id(id);
+          return (
+            <video
+              key={key}
+              ref={(el) => {
+                videoRefs.current[key] = el;
+              }}
+              src={extra.video}
+              muted
+              loop
+              playsInline
+              webkit-playsinline="true"
+              preload="metadata"
+              disablePictureInPicture
+              controls={false}
+            />
+          );
+        })}
+        {(Object.keys(LOD3) as NodeId[]).map((id) => {
+          const extra = LOD3[id]!;
+          const key = lod3Id(id);
+          return (
+            <video
+              key={key}
+              ref={(el) => {
+                videoRefs.current[key] = el;
+              }}
+              src={extra.video}
+              muted
+              loop
+              playsInline
+              webkit-playsinline="true"
+              preload="metadata"
+              disablePictureInPicture
+              controls={false}
+            />
+          );
+        })}
+      </div>
+
+      <div className="hud-layer pointer-events-none absolute inset-0 flex flex-col justify-between p-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+          <header className="flex flex-col items-center gap-2 text-center">
+            <svg
+              className="hud-mark"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                fill="currentColor"
+                d="M12 1.8 12.85 11.15 22.2 12 12.85 12.85 12 22.2 11.15 12.85 1.8 12 11.15 11.15Z"
+              />
+            </svg>
             <p
               ref={nameRef}
               className="font-display text-xl font-medium tracking-[0.28em] text-fg uppercase text-balance sm:text-2xl"
@@ -877,18 +1186,19 @@ export function ConstellationMap() {
             >
               heart of the universe
             </p>
+            <span className="hud-rule mt-1" aria-hidden="true" />
           </header>
 
           <div className="flex items-end justify-between gap-3">
             <Button
               type="button"
-              variant="ghost"
+              variant="line"
               size="default"
-              className="pointer-events-auto h-11 px-4 tracking-[0.16em] text-muted hover:text-fg"
+              className="pointer-events-auto h-11 px-5 tracking-[0.16em] text-muted hover:text-fg"
               onPointerDown={(e) => e.stopPropagation()}
               onClick={() => {
-                const { maxZ } = limitsRef.current;
-                flyTo(0, 0, maxZ);
+                const { maxZMap } = limitsRef.current;
+                flyTo(0, 0, maxZMap);
               }}
             >
               Core
@@ -901,9 +1211,9 @@ export function ConstellationMap() {
             </p>
             <Button
               type="button"
-              variant="ghost"
+              variant="line"
               size="default"
-              className="pointer-events-auto h-11 px-4 tracking-[0.16em] text-muted hover:text-fg"
+              className="pointer-events-auto h-11 px-5 tracking-[0.16em] text-muted hover:text-fg"
               onPointerDown={(e) => e.stopPropagation()}
               onClick={() => {
                 const { minZ } = limitsRef.current;
@@ -914,25 +1224,7 @@ export function ConstellationMap() {
             </Button>
           </div>
         </div>
-      ) : (
-        <div className="gate-layer absolute inset-0 flex flex-col items-center justify-end bg-bg/40 px-6 pb-[max(4.5rem,calc(env(safe-area-inset-bottom)+3.5rem))]">
-          <div className="flex w-full max-w-sm flex-col items-center gap-5 text-center">
-            <p className="text-[11px] tracking-[0.38em] text-muted uppercase">
-              Living map
-            </p>
-            <h1 className="font-display text-5xl font-medium leading-tight tracking-[0.18em] text-fg uppercase text-balance sm:text-6xl">
-              Constellation
-            </h1>
-            <p className="max-w-[16rem] text-sm leading-relaxed text-muted text-pretty">
-              Star Core at the center. Worlds hung in the void. Pinch out, twist
-              to orbit.
-            </p>
-            <Button type="button" size="lg" className="mt-2 min-w-40" onClick={onPlay}>
-              Play
-            </Button>
-          </div>
-        </div>
-      )}
+      <div className="vignette absolute inset-0" aria-hidden="true" />
     </div>
   );
 }

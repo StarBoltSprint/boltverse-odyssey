@@ -14,4 +14,4 @@ dist/
 .node_modules.lock
 .nitro/
 coverage/
-*.tsbuildinfo
+public/videos/_spin/
