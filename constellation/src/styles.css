@@ -65,14 +65,59 @@
 
 .nebula-far {
   background:
-    radial-gradient(ellipse 70% 45% at 28% 22%, rgb(48 58 96 / 0.22), transparent 62%),
-    radial-gradient(ellipse 40% 30% at 50% 50%, rgb(90 70 40 / 0.08), transparent 70%);
+    radial-gradient(ellipse 70% 48% at 50% 46%, rgb(255 214 150 / 0.07), transparent 62%),
+    radial-gradient(ellipse 90% 70% at 12% 8%, rgb(38 48 96 / 0.42), transparent 70%),
+    radial-gradient(ellipse 72% 58% at 88% 86%, rgb(58 28 48 / 0.28), transparent 72%),
+    radial-gradient(ellipse 50% 40% at 70% 18%, rgb(24 58 72 / 0.22), transparent 68%);
 }
 
 .nebula-near {
   background:
-    radial-gradient(ellipse 55% 40% at 78% 78%, rgb(58 36 24 / 0.16), transparent 64%),
-    radial-gradient(ellipse 36% 28% at 62% 18%, rgb(70 88 130 / 0.1), transparent 68%);
+    radial-gradient(ellipse 46% 36% at 78% 72%, rgb(86 48 32 / 0.18), transparent 66%),
+    radial-gradient(ellipse 40% 32% at 14% 64%, rgb(32 72 88 / 0.16), transparent 68%),
+    radial-gradient(ellipse 28% 22% at 42% 12%, rgb(64 56 96 / 0.1), transparent 70%);
+  animation: nebula-breathe 26s ease-in-out infinite;
+}
+
+.sky-tint {
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 52% 44% at 50% 46%,
+    rgb(var(--sky-glow, 232 238 248) / 0.16),
+    transparent 72%
+  );
+  mix-blend-mode: screen;
+  transition: opacity var(--motion-slow) var(--ease-out);
+}
+
+[data-sky="core"] {
+  --sky-glow: 210 228 255;
+}
+[data-sky="tide"] {
+  --sky-glow: 120 198 214;
+}
+[data-sky="canyon"] {
+  --sky-glow: 210 140 88;
+}
+[data-sky="crystal"] {
+  --sky-glow: 186 214 230;
+}
+[data-sky="hollow"] {
+  --sky-glow: 140 150 170;
+}
+[data-sky="drift"] {
+  --sky-glow: 176 184 192;
+}
+
+.vignette {
+  z-index: 30;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 72% 64% at 50% 46%,
+    transparent 42%,
+    rgb(5 6 12 / 0.58) 100%
+  );
 }
 
 .dust-field {
@@ -82,36 +127,60 @@
 
 .impostor-layer {
   z-index: 2;
+  display: block;
   width: 100%;
   height: 100%;
 }
 
-.has-impostor .node-media {
-  opacity: 0 !important;
+.tex-farm {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 96px;
+  height: 96px;
+  overflow: hidden;
+  opacity: 0.04;
+  pointer-events: none;
+  z-index: 0;
 }
 
-.has-impostor .node-glow {
-  opacity: 0;
+.tex-farm video {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+}
+
+.has-impostor .node-media {
+  display: none !important;
+}
+
+.has-impostor .node-glow,
+.node-glow {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 .has-impostor .node-orb {
   clip-path: none;
   border-radius: 0;
   overflow: visible;
+  background: transparent;
 }
 
 .node-orb {
   position: absolute;
-  overflow: hidden;
+  overflow: visible;
   pointer-events: none;
-  border-radius: 50%;
-  clip-path: circle(31% at 50% 50%);
+  border-radius: 0;
+  clip-path: none;
+  background: transparent;
   transform-origin: 50% 50%;
-  transition: clip-path 0.5s var(--ease-out);
 }
 
 .node-orb.is-immersed {
-  clip-path: circle(58% at 50% 50%);
+  clip-path: none;
 }
 
 .node-spin {
@@ -128,15 +197,39 @@
   object-fit: cover;
   display: block;
   pointer-events: none;
+  background: transparent;
 }
 
-.node-video {
-  z-index: 1;
-  opacity: 0;
+.plate-tide {
+  -webkit-mask-image: url("/videos/tide-mask.png?v=noleak");
+  mask-image: url("/videos/tide-mask.png?v=noleak");
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
 }
 
-.node-video.is-live {
-  opacity: 1;
+.plate-canyon {
+  -webkit-mask-image: radial-gradient(circle, #fff 31.2%, transparent 31.8%);
+  mask-image: radial-gradient(circle, #fff 31.2%, transparent 31.8%);
+}
+
+.plate-core {
+  -webkit-mask-image: radial-gradient(circle, #fff 12%, transparent 14%);
+  mask-image: radial-gradient(circle, #fff 12%, transparent 14%);
+}
+
+.plate-crystal {
+  -webkit-mask-image: radial-gradient(circle, #fff 13%, transparent 15%);
+  mask-image: radial-gradient(circle, #fff 13%, transparent 15%);
+}
+
+.plate-hollow {
+  -webkit-mask-image: radial-gradient(circle, #fff 17%, transparent 19%);
+  mask-image: radial-gradient(circle, #fff 17%, transparent 19%);
+}
+
+.plate-drift {
+  -webkit-mask-image: radial-gradient(circle, #fff 9%, transparent 11%);
+  mask-image: radial-gradient(circle, #fff 9%, transparent 11%);
 }
 
 .world-layer {
@@ -151,62 +244,109 @@
   transform: translateZ(0);
 }
 
-.node-glow {
-  position: absolute;
-  inset: 18%;
-  border-radius: 50%;
-  z-index: 0;
-  pointer-events: none;
-  background: radial-gradient(
-    circle,
-    rgb(var(--node-glow) / 0.42) 0%,
-    rgb(var(--node-glow) / 0.12) 42%,
-    transparent 70%
+.gate-layer {
+  background: linear-gradient(
+    to top,
+    rgb(5 6 12 / 0.88) 0%,
+    rgb(5 6 12 / 0.28) 42%,
+    transparent 72%
   );
-  filter: blur(18px);
 }
 
-[data-node="core"] {
-  --node-glow: 255 214 150;
+.hud-mark {
+  width: 0.7rem;
+  height: 0.7rem;
+  color: var(--color-muted);
+  opacity: 0.85;
 }
-[data-node="tide"] {
-  --node-glow: 120 198 214;
+
+.hud-rule {
+  width: 2.75rem;
+  height: 1px;
+  background: color-mix(in oklab, var(--color-fg) 28%, transparent);
 }
-[data-node="canyon"] {
-  --node-glow: 210 140 88;
+
+.gate-enter > * {
+  animation: gate-rise var(--motion-slow) var(--ease-out) both;
 }
-[data-node="crystal"] {
-  --node-glow: 186 214 230;
+
+.gate-enter > *:nth-child(1) {
+  animation-delay: 40ms;
 }
-[data-node="hollow"] {
-  --node-glow: 140 150 170;
+.gate-enter > *:nth-child(2) {
+  animation-delay: 120ms;
 }
-[data-node="drift"] {
-  --node-glow: 176 184 192;
+.gate-enter > *:nth-child(3) {
+  animation-delay: 200ms;
+}
+.gate-enter > *:nth-child(4) {
+  animation-delay: 280ms;
+}
+.gate-enter > *:nth-child(5) {
+  animation-delay: 360ms;
+}
+
+
+.thread-glow {
+  fill: none;
+  stroke: rgb(232 238 248 / 0.1);
+  stroke-width: 6;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
 }
 
 .thread {
   fill: none;
-  stroke: color-mix(in oklab, var(--color-accent) 32%, transparent);
-  stroke-width: 1.15;
+  stroke: color-mix(in oklab, var(--color-accent) 38%, transparent);
+  stroke-width: 1.05;
   stroke-linecap: round;
   vector-effect: non-scaling-stroke;
-  stroke-dasharray: 3 14;
-  animation: thread-drift 14s linear infinite;
+  stroke-dasharray: 2 16;
+  animation: thread-drift 18s linear infinite;
 }
 
 .thread-outer {
-  stroke: color-mix(in oklab, var(--color-accent) 18%, transparent);
+  stroke: color-mix(in oklab, var(--color-accent) 20%, transparent);
+}
+
+.thread-glow.thread-outer {
+  stroke: rgb(232 238 248 / 0.05);
 }
 
 @keyframes thread-drift {
   to {
-    stroke-dashoffset: -34;
+    stroke-dashoffset: -36;
+  }
+}
+
+@keyframes nebula-breathe {
+  0%,
+  100% {
+    opacity: 0.82;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes gate-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .thread {
+  .thread,
+  .nebula-near,
+  .gate-enter > * {
     animation: none;
   }
 }
+

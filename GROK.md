@@ -163,7 +163,7 @@ Never dump this to the player.
 |---|---|---|
 | **Citadel** | rooms / Hang / citadel graph (`cook-room`) | **this repo, root** — Pack Play https://boltverse-odysseyyyy.grok.me (frost path on that Live) |
 | **Biome / lane** | B-stack Sprint (road + cutout, seek-sync) | **this repo**, [`biome/`](biome/README.md) |
-| **Constellation** | SPACE LOD KEEP Star Map (void + Imagine orbs) | [`constellation/`](constellation/README.md) — hang-only sibling. Not `biome/master`. Does not replace Sprint. |
+| **Constellation** | SPACE LOD KEEP Star Map (void + Imagine orbs, Canyon LOD1–3) | [`constellation/`](constellation/README.md) — hang-only sibling. Not `biome/master`. Does not replace Sprint. |
 
 ## STOP 0 — STYLES FIRST (SmiR 2026-09-12). Miss this = the room is dead.
 **STOP — HARD SPLIT.** Imagine Agent is obligatoire / MUST / systematically for STYLE stills when restyling. NEVER for Walk A, Walk B, breath, or any video. Walks / breaths / films = imagine-hooks / cook-room first-frame + last-frame. Soft KEEP banned. Smoke still gates.

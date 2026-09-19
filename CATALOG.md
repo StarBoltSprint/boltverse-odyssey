@@ -99,4 +99,4 @@ The building is already the citadel. The catalog is the color.
 
 Paints = matter. Rows = stock + neighbors + identity. Endless-lane / biome runner recipe lives in [`biome/`](biome/README.md).
 
-Star Map KEEP (not a catalog paint): [`constellation/`](constellation/README.md). Hang ≠ wipe. Not `biome/master`. Does not replace Sprint.
+Star Map KEEP (not a catalog paint): [`constellation/`](constellation/README.md). Hang ≠ wipe. Not `biome/master`. Does not replace Sprint. Canyon LOD1–3 + cook scripts live there.

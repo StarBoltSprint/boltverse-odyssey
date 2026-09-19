@@ -29,6 +29,14 @@ export function screenToWorld(
   };
 }
 
+export function tameZoomFactor(raw: number, zoom: number, minZ: number, maxZ: number) {
+  const capped = clamp(raw, 0.78, 1.28);
+  const span = Math.log(Math.max(maxZ, minZ * 1.02)) - Math.log(Math.max(minZ, 1e-4));
+  const t = clamp((Math.log(Math.max(zoom, minZ)) - Math.log(Math.max(minZ, 1e-4))) / Math.max(span, 1e-4), 0, 1);
+  const gain = lerp(1, 0.62, t * t);
+  return 1 + (capped - 1) * gain;
+}
+
 export function zoomAt(
   cam: Cam,
   sx: number,
