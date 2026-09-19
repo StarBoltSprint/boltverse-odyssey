@@ -1,0 +1,17 @@
+node_modules/
+.vercel/
+.tanstack/
+.grok/
+screenshots/
+attachments/
+artifacts/
+dist/
+.DS_Store
+*.log
+.env
+.env.local
+.project_id
+.node_modules.lock
+.nitro/
+coverage/
+*.tsbuildinfo
