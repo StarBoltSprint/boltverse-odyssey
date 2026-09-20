@@ -17,6 +17,16 @@ Sealed cycle REUSE still FAIL when the cutout is pasted at Imagine’s native si
 3. **`withersMin` is soft** — do not grow Bolt into the lane just to hit 0.22. Pass `hardWithersMin` only when SmiR wants that fight (then assert may FAIL if lane cannot hold it).  
 4. Measure `boltWithersPx` at the **shoulders**, not ear tips (ear bbox inflates height → wrong scale).
 
+## Wide road (law 20 default — any biome)
+
+Default empty stills start from [20-default-plate-proportions.md](20-default-plate-proportions.md): 3-lane **~0.75–0.82** of frame. Frost aurora KEEP is the worked example ([20b](20b-frost-aurora-proportions.md)).
+
+On that wide chase road, PATH is often still Beat-calibrated (~0.65). `laneFracMax=0.55` vs PATH already yields `withersFrac ~0.10`. That is **KEEP**: a dog on a highway, not a sticker filling the lane.
+
+**FAIL:** widen PATH to the visual neon then re-run 13d (Bolt +22 % → truck). **FAIL:** grow Bolt to hit 0.22 withers on a wide plate. `withersMin` stays soft.
+
+If you retune the ribbon so dodge sits on the visual lanes, **cap scale at the old PATH lane** — lanes move, dog size does not.
+
 ## Formula
 
 Prefer withers target, then HARD-clamp stance to the lane band:

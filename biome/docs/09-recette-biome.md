@@ -2,7 +2,7 @@
 
 Cuisine. Pas de théorie. C’est **la** checklist pour refaire un biome lane-runner comme le dusk canyon (empty + barre jersey + météore).
 
-Lire avant : [PLAY.md](../PLAY.md) · [00-PRIORITY0-any-biome.md](00-PRIORITY0-any-biome.md) (Frost-parity, **any** biome) · [06-techniques.md](06-techniques.md) · [10-bolt-cutout-law.md](10-bolt-cutout-law.md) · [05-key.md](05-key.md) · [12-lane-path-ribbon.md](12-lane-path-ribbon.md) (living-film Lane control — not SprintCore) · [16-biome-ground-fx.md](16-biome-ground-fx.md) (paw prints / splash / dust) · cook paste [COLD_START-any-biome.md](COLD_START-any-biome.md).  
+Lire avant : [PLAY.md](../PLAY.md) · [00-PRIORITY0-any-biome.md](00-PRIORITY0-any-biome.md) (Frost-parity, **any** biome) · [20-default-plate-proportions.md](20-default-plate-proportions.md) (empty still defaults; Frost KEEP = [20b](20b-frost-aurora-proportions.md)) · [06-techniques.md](06-techniques.md) · [10-bolt-cutout-law.md](10-bolt-cutout-law.md) · [05-key.md](05-key.md) · [12-lane-path-ribbon.md](12-lane-path-ribbon.md) (living-film Lane control — not SprintCore) · [16-biome-ground-fx.md](16-biome-ground-fx.md) (paw prints / splash / dust) · cook paste [COLD_START-any-biome.md](COLD_START-any-biome.md).  
 Code : [imagine-hooks.mjs](../../scripts/imagine-hooks.mjs) (`imagineBiomeClip` for Video A; **`imagineBoltClip` = SmiR only** to replace the lock) · [plate-speed.py](../../scripts/plate-speed.py) · [LanePlayer.tsx](../reference/LanePlayer.tsx).
 
 **PRIORITY 0 — Bolt sprint for new biomes = REUSE, not invent.**
