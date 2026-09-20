@@ -48,11 +48,11 @@ Player state is only \((s,\lambda)\). Tap → invert nearest segment to \(\lambd
 The Bézier / mask spline you draw uses author \(t\). Play must **never** see raw \(t\).
 
 1. Author: centripetal Catmull–Rom (\(\alpha=1/2\)) or mask-tool Bézier.  
-2. Fine grid: ~16 samples/span (or denser on turns).  
-3. Accumulate chord lengths in **plate UV**.  
-4. Emit **N = 32–64** points at equal arc length. Store those. Drop the fine grid.
+2. Fine grid: ~16 samples/span (candidates).  
+3. Accumulate chord lengths in **plate UV**. Clock = \(\ell\).  
+4. Place shipped **N = 32–64** by **adaptive curvature** (straights cheap, hairpins dense — not raw \(\kappa\), not click-density), then write \(s=\ell/L\). Cook: [12b-adaptive-curvature.md](12b-adaptive-curvature.md). Drop the fine grid.
 
-If \(s\) is not arc-length, Bolt surges on straights and crawls in bends — players read “I am not in control.”
+If \(s\) is not arc-length, Bolt surges on straights and crawls in bends — players read “I am not in control.” Adaptation does **not** rewrite the clock; it only places the table so \(N(s)\) and tap hit-tests stay honest in a bend.
 
 Normals in 2D plate space: \(T=\mathrm{normalize}(C_{i+1}-C_{i-1})\), \(N=(-T_y,T_x)\), flip-guard `if N·N_prev < 0: N = -N`. No 3D Frenet.
 
@@ -104,6 +104,7 @@ If you cannot draw the centerline Bézier on frame 0 of empty road **in ~2 minut
 
 - Cutout / gallop / teacher: `10-bolt-cutout-law.md` + `lock/bolt-back.jpg` (PRIORITY 0 show in chat before Bolt cook)  
 - Full biome recipe: `09-recette-biome.md`  
+- Cook-time table placement: [12b-adaptive-curvature.md](12b-adaptive-curvature.md) (centripetal draw · arc-length clock · curvature keeps)  
 - Hang ≠ wipe: never delete existing master biomes when adding Tide / next  
 - Open-world SprintCore / Nebula editor Joy XP: **flavor only** — not this stack  
 

@@ -403,6 +403,7 @@ Hitbox = **voie + fenêtre courte au contact des pattes**. Loin / ciel / déjà 
 | `biome/docs/10-bolt-cutout-law.md` | HARD Bolt cutout — B→cycle→green→key, 48fps, hooks first+last |
 | `biome/docs/11-plate-order.md` | HARD LOCK dealer playlist — canyon → cars → duel → night → war. New biome = new entries. Hang ≠ wipe. |
 | `biome/docs/12-lane-path-ribbon.md` | Living-film Lane path — ribbon + arc-length `path.json`. Without = film. With = steerable game. Not SprintCore. |
+| `biome/docs/12b-adaptive-curvature.md` | Cook-time adaptive curvature — place the table (straights cheap, hairpins dense). Clock still \(\ell\). |
 | `scripts/plate-speed.py` | mesure px/s, `--match`, `--duration-match`, `--factor` |
 | `biome/prompts/video-empty-plate.txt` | rush 10 s constant |
 | `biome/prompts/video-hazard-plate.txt` | SPAWN + WIDTH (court) |
