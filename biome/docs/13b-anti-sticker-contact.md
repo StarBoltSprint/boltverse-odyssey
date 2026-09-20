@@ -3,10 +3,10 @@
 HARD LOCK companion to `13-make-bolt-lane.md`.  
 Bolt stays a **cutout**. Fix the **seam**, do not bake him into the mp4.
 
-Companion: `10-bolt-cutout-law.md`, `12-lane-path-ribbon.md`, `13-make-bolt-lane.md`.  
-After key, despill before grade (`13c-green-despill.md`).
+Companion: `10-bolt-cutout-law.md`, `12-lane-path-ribbon.md`, `13-make-bolt-lane.md`, [13d-auto-scale.md](13d-auto-scale.md) (`computeScale` / `assertScale`).  
+After key, despill before grade (`13c-green-despill.md`). After despill, MUST run `computeScale` / `assertScale` before KEEP ([13d](13d-auto-scale.md) + [`biome/scripts/bolt-scale/`](../scripts/bolt-scale/)).
 
-**PRIORITY 0 COMPOSITE GATE** — when compositing the **sealed** cycle (`lock/bolt-gallop-cycle.mp4` keyed onto Video A), **light + contact are HARD — not optional polish.** Before KEEP / Hang: grade the cutout from **this** empty plate family + small paw contact shadow multiply on the *road*. Missing either = **FAIL** (warm/neutral sticker on frost / dog floats). Scale = [13](13-make-bolt-lane.md) (lane-width fill = FAIL). Order: key → despill (`13c`) → plate grade → contact → shared grain. **FAIL** if Grok keys the cycle and hangs without scale + light + contact proof.
+**PRIORITY 0 COMPOSITE GATE** — when compositing the **sealed** cycle (`lock/bolt-gallop-cycle.mp4` keyed onto Video A), **light + contact are HARD — not optional polish.** Before KEEP / Hang: grade the cutout from **this** empty plate family + small paw contact shadow multiply on the *road*. Missing either = **FAIL** (warm/neutral sticker on frost / dog floats). Scale = [13](13-make-bolt-lane.md) + [13d](13d-auto-scale.md) (lane-width fill = FAIL; Grok must not pick size by eye). Order: key → despill (`13c`) → **`computeScale` / `assertScale`** (`13d`) → plate grade → contact → shared grain. **FAIL** if Grok keys the cycle and hangs without scale + light + contact proof.
 
 ## What makes him look like a sticker
 
@@ -73,7 +73,7 @@ Sticker edge = binary alpha. Film edge = dirty.
 
 ### Scale and lean
 
-Base scale is HARD ([13](13-make-bolt-lane.md)): withers ~0.22–0.32 of frame; paws lower third; Bolt must **NOT** fill lane width. Fixed “0.28 of frame” is a sticker if the road is a vanishing trench — then:
+Base scale is HARD ([13](13-make-bolt-lane.md) / [13d](13d-auto-scale.md)): withers ~0.22–0.32 of frame; paws lower third; Bolt must **NOT** fill lane width. `computeScale` / `assertScale` from the road — Grok must not pick size by eye. Fixed “0.28 of frame” is a sticker if the road is a vanishing trench — then:
 
 \[
 \text{scale} \propto \frac{w(s)}{w_{\mathrm{ref}}}

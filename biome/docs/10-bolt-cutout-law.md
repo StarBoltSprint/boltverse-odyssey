@@ -3,7 +3,7 @@
 Kitchen SoT. English OK. Keep Pack terms. SmiR 2026-09-18.
 
 This page is **the** Bolt still + gallop law for every biome. Road plates stay empty. Bolt is a **keyed layer**.  
-Read with [09-recette-biome.md](09-recette-biome.md) · [05-key.md](05-key.md) · [01-images.md](01-images.md) · [02-videos.md](02-videos.md) · [13-make-bolt-lane.md](13-make-bolt-lane.md) (Make Bolt Lane brief) · [13b-anti-sticker-contact.md](13b-anti-sticker-contact.md) (compositor anti-sticker + contact shadow) · [13c-green-despill.md](13c-green-despill.md) (green key + despill factory) · [14-rotary-gallop.md](14-rotary-gallop.md) (rotary cycle / plate-time cadence).
+Read with [09-recette-biome.md](09-recette-biome.md) · [05-key.md](05-key.md) · [01-images.md](01-images.md) · [02-videos.md](02-videos.md) · [13-make-bolt-lane.md](13-make-bolt-lane.md) (Make Bolt Lane brief) · [13b-anti-sticker-contact.md](13b-anti-sticker-contact.md) (compositor anti-sticker + contact shadow) · [13c-green-despill.md](13c-green-despill.md) (green key + despill factory) · [13d-auto-scale.md](13d-auto-scale.md) (auto-scale from the road — `computeScale` / `assertScale`) · [14-rotary-gallop.md](14-rotary-gallop.md) (rotary cycle / plate-time cadence).
 
 **PRIORITY 0 — Bolt sprint for new biomes = REUSE, not invent.**
 A fresh Grok in a new Build convo must **NOT** cook a new Bolt gallop from scratch (no new Imagine dog sprint). Pipeline is:
@@ -12,7 +12,7 @@ A fresh Grok in a new Build convo must **NOT** cook a new Bolt gallop from scrat
 3. Key + despill cutout from that cycle.
 4. Composite cutout onto the scrolling empty plate (AFF stack). Speed/scroll = plate; gait = locked cycle.
 
-**PRIORITY 0 COMPOSITE GATE** — after key, [13](13-make-bolt-lane.md) / [13b](13b-anti-sticker-contact.md) is **mandatory** before KEEP / Hang: **SCALE** + plate **LIGHT** + paw **CONTACT**. Order: key → despill ([13c](13c-green-despill.md)) → plate grade → contact → shared grain. **FAIL** if Grok keys the cycle and hangs without scale + light + contact proof (before/after stills or smoke).
+**PRIORITY 0 COMPOSITE GATE** — after key, [13](13-make-bolt-lane.md) / [13b](13b-anti-sticker-contact.md) / [13d](13d-auto-scale.md) is **mandatory** before KEEP / Hang: **SCALE** + plate **LIGHT** + paw **CONTACT**. After key, MUST run `computeScale` / `assertScale` ([`biome/scripts/bolt-scale/`](../scripts/bolt-scale/)) before KEEP. Grok must not pick size by eye. Order: key → despill ([13c](13c-green-despill.md)) → **`computeScale` / `assertScale`** ([13d](13d-auto-scale.md)) → plate grade → contact → shared grain. **FAIL** if Grok keys the cycle and hangs without scale + light + contact proof (before/after stills or smoke).
 
 **FAIL** if Grok invents a new Bolt sprint clip for a biome cook. Only SmiR can authorize a new cycle cook to replace the lock.
 Style teacher [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) still applies if any still / repose is needed; motion teacher = the sealed cycle mp4.
@@ -38,7 +38,7 @@ Style teacher [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) still applies if 
 
 `STEP 0: attach lock/bolt-back.jpg (or biome/lock/bolt-back.jpg) in chat before cooking Bolt.`
 
-**PRIORITY 0 — REUSE the sealed cycle.** [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) **is** the Bolt motion asset (**96 fps** KEEP, densified from the sealed 24fps hard-cut; same duration/cadence, already rear / green / rotary). Key + despill it. Composite onto Video A. Then **PRIORITY 0 COMPOSITE GATE** (13 / 13b / 13c): scale + plate-grade + paw contact **BEFORE** KEEP. Do **not** Imagine a new dog sprint. **FAIL** if Grok invents a new Bolt sprint clip. Only SmiR can authorize a new cycle cook to replace the lock. [`lock/bolt-gallop-cycle-first.jpg`](../../lock/bolt-gallop-cycle-first.jpg) = first frame of that 96 fps cycle (repose / still only). [`lock/bolt-gallop-cycle-12s-preview.mp4`](../../lock/bolt-gallop-cycle-12s-preview.mp4) = preview only. Loop seam = **hard cut** — never optical-flow morph last→first.
+**PRIORITY 0 — REUSE the sealed cycle.** [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) **is** the Bolt motion asset (**96 fps** KEEP, densified from the sealed 24fps hard-cut; same duration/cadence, already rear / green / rotary). Key + despill it. Composite onto Video A. Then **PRIORITY 0 COMPOSITE GATE** (13 / 13b / 13c / 13d): scale + plate-grade + paw contact **BEFORE** KEEP. After key, MUST run `computeScale` / `assertScale`. Do **not** Imagine a new dog sprint. **FAIL** if Grok invents a new Bolt sprint clip. Only SmiR can authorize a new cycle cook to replace the lock. [`lock/bolt-gallop-cycle-first.jpg`](../../lock/bolt-gallop-cycle-first.jpg) = first frame of that 96 fps cycle (repose / still only). [`lock/bolt-gallop-cycle-12s-preview.mp4`](../../lock/bolt-gallop-cycle-12s-preview.mp4) = preview only. Loop seam = **hard cut** — never optical-flow morph last→first.
 
 This hang does **not** wipe `biome/master/bolt.mp4`. Hang ≠ wipe. Law: [14-rotary-gallop.md](14-rotary-gallop.md) · [`lock/README.md`](../../lock/README.md).
 
@@ -148,7 +148,7 @@ Make / add a biome **always** this order. Soft KEEP banned.
 3. **REUSE sealed cycle** — take [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) as the Bolt motion asset (already rear / green / rotary). Do **not** Imagine a new dog sprint. Do **not** run Video B / `imagineBoltClip` for a biome cook.
 4. **Key + despill** — chroma key ([05-key.md](05-key.md)) + despill ([13c-green-despill.md](13c-green-despill.md)) from **that** cycle.
 5. **Composite** — plant cutout on Video A (AFF stack). Speed/scroll = plate; gait = locked cycle. Match rates (no skate). L/M/R = code X shift of **one** Bolt layer.
-6. **PRIORITY 0 COMPOSITE GATE** — after key, 13 / 13b is **mandatory** before KEEP / Hang: **SCALE** (withers ~0.22–0.32 of frame; paws lower third; Bolt must **NOT** fill lane width) + plate **LIGHT** (grade FROM this empty plate family) + paw **CONTACT** (multiply on the *road*). Order: key → despill (13c) → plate grade → contact → shared grain. **FAIL** if Grok keys the cycle and hangs without that proof.
+6. **PRIORITY 0 COMPOSITE GATE** — after key, 13 / 13b / 13d is **mandatory** before KEEP / Hang: **SCALE** (withers ~0.22–0.32 of frame; paws lower third; Bolt must **NOT** fill lane width; MUST `computeScale` / `assertScale` — [13d](13d-auto-scale.md)) + plate **LIGHT** (grade FROM this empty plate family) + paw **CONTACT** (multiply on the *road*). Order: key → despill (13c) → **`computeScale` / `assertScale`** (13d) → plate grade → contact → shared grain. **FAIL** if Grok keys the cycle and hangs without that proof.
 
 QC the **reused** cycle — rear, two ears, flat `#00FF00`, sprint pose. If **¾** or **gold pipe** → **THROW** (that would be a bad lock — do not invent a replacement). Then green key + `killCrown` (gold **pipe sat**, NOT cream fur).
 
@@ -167,7 +167,7 @@ Grok **MUST** cook Video A with API / Build hooks (`image` + `last_frame`). Bolt
 | Job | Hook / asset | Cable |
 |---|---|---|
 | Road / empty rush (Video A) | `imagineBiomeClip` | `image` + distinct `last_frame` (world advanced). ZERO dog. 48fps. |
-| Bolt cutout (green) | **REUSE** [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) | Key + despill + composite onto A. Then COMPOSITE GATE (13/13b/13c) before KEEP. No new Imagine dog sprint. |
+| Bolt cutout (green) | **REUSE** [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) | Key + despill + composite onto A. Then COMPOSITE GATE (13/13b/13c/13d) before KEEP. No new Imagine dog sprint. |
 
 **BANNED:**
 
@@ -211,7 +211,7 @@ A ¾-rear still with a clean key still crab-walks. Photoreal + ¾ = double FAIL.
 
 Hall `imagineClip` injects citadel HALL_LAW. `imagineBiomeClip` is **ZERO dog** + distinct `last_frame` (road travel — Video A only). Both are **wrong** as a Bolt sprint cook.
 
-**New biome Bolt = REUSE** [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4). Key + despill ([13c](13c-green-despill.md)) → composite onto Video A → **COMPOSITE GATE** scale + plate-grade + paw contact ([13](13-make-bolt-lane.md) / [13b](13b-anti-sticker-contact.md)) **BEFORE** KEEP. Do **not** call `imagineBoltClip`.
+**New biome Bolt = REUSE** [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4). Key + despill ([13c](13c-green-despill.md)) → `computeScale` / `assertScale` ([13d](13d-auto-scale.md)) → composite onto Video A → **COMPOSITE GATE** scale + plate-grade + paw contact ([13](13-make-bolt-lane.md) / [13b](13b-anti-sticker-contact.md) / [13d](13d-auto-scale.md)) **BEFORE** KEEP. Do **not** call `imagineBoltClip`.
 
 `imagineBoltClip` / Video B = **SmiR only**, to replace the lock. A fresh Grok must not run it.
 
