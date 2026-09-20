@@ -3,7 +3,8 @@
 HARD LOCK companion to `13-make-bolt-lane.md` + composite gate.  
 **Grok must not choose Bolt size by eye.** A cook script sets scale from the road.
 
-Tool: [`biome/scripts/bolt-scale/`](../scripts/bolt-scale/).
+Tool: [`biome/scripts/bolt-scale/`](../scripts/bolt-scale/).  
+After REUSE cycle + `bolt-scale`, MUST sync gallop via [`gallop-clock`](../scripts/gallop-clock/) ([14c](14c-gallop-clock.md)): native 96 fps (no 1-of-N), phase from `plate_time`, `strideHz≈4`, road `ds` from `dsPerFrame`. `assertGallopClock` **FAIL** if dogFps ≪ plateFps.
 
 ## Why
 
@@ -42,7 +43,7 @@ Play:
 
 1. Empty plate + `path.json`  
 2. Key sealed `lock/bolt-gallop-cycle.mp4`  
-3. Despill → **`computeScale` + `assertScale`** → plate grade → contact → grain  
+3. Despill → **`computeScale` + `assertScale`** → **`gallop-clock` / `assertGallopClock`** ([14c](14c-gallop-clock.md)) → plate grade → contact → grain  
 4. Hang only if assert PASS  
 
 **FAIL:** `laneFrac > 0.55` (dog≈truck) or `laneFrac < 0.30`. withersMin alone is not KEEP-block unless `hardWithersMin`. No KEEP on truck.

@@ -3,10 +3,10 @@
 HARD LOCK companion to `13-make-bolt-lane.md`.  
 Bolt stays a **cutout**. Fix the **seam**, do not bake him into the mp4.
 
-Companion: `10-bolt-cutout-law.md`, `12-lane-path-ribbon.md`, `13-make-bolt-lane.md`, [13d-auto-scale.md](13d-auto-scale.md) (`computeScale` / `assertScale`).  
-After key, despill before grade (`13c-green-despill.md`). After despill, MUST run `computeScale` / `assertScale` before KEEP ([13d](13d-auto-scale.md) + [`biome/scripts/bolt-scale/`](../scripts/bolt-scale/)).
+Companion: `10-bolt-cutout-law.md`, `12-lane-path-ribbon.md`, `13-make-bolt-lane.md`, [13d-auto-scale.md](13d-auto-scale.md) (`computeScale` / `assertScale`), [14c-gallop-clock.md](14c-gallop-clock.md) (`assertGallopClock`).  
+After key, despill before grade (`13c-green-despill.md`). After despill, MUST run `computeScale` / `assertScale` ([13d](13d-auto-scale.md) + [`biome/scripts/bolt-scale/`](../scripts/bolt-scale/)) then `gallop-clock` / `assertGallopClock` ([14c](14c-gallop-clock.md) + [`biome/scripts/gallop-clock/`](../scripts/gallop-clock/)) before KEEP.
 
-**PRIORITY 0 COMPOSITE GATE** — when compositing the **sealed** cycle (`lock/bolt-gallop-cycle.mp4` keyed onto Video A), **light + contact are HARD — not optional polish.** Before KEEP / Hang: grade the cutout from **this** empty plate family + small paw contact shadow multiply on the *road*. Missing either = **FAIL** (warm/neutral sticker on frost / dog floats). Scale = [13](13-make-bolt-lane.md) + [13d](13d-auto-scale.md) (lane-width fill = FAIL; Grok must not pick size by eye). Order: key → despill (`13c`) → **`computeScale` / `assertScale`** (`13d`) → plate grade → contact → shared grain. **FAIL** if Grok keys the cycle and hangs without scale + light + contact proof.
+**PRIORITY 0 COMPOSITE GATE** — when compositing the **sealed** cycle (`lock/bolt-gallop-cycle.mp4` keyed onto Video A), **light + contact are HARD — not optional polish.** Before KEEP / Hang: grade the cutout from **this** empty plate family + small paw contact shadow multiply on the *road*. Missing either = **FAIL** (warm/neutral sticker on frost / dog floats). Scale = [13](13-make-bolt-lane.md) + [13d](13d-auto-scale.md) (lane-width fill = FAIL; Grok must not pick size by eye). After scale, MUST `gallop-clock` / `assertGallopClock` ([14c](14c-gallop-clock.md)). Order: key → despill (`13c`) → **`computeScale` / `assertScale`** (`13d`) → **`gallop-clock` / `assertGallopClock`** (`14c`) → plate grade → contact → shared grain. **FAIL** if Grok keys the cycle and hangs without scale + gallop-clock + light + contact proof.
 
 ## What makes him look like a sticker
 

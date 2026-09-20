@@ -1,7 +1,7 @@
 # 14 — Rotary gallop + turn on the ribbon
 
 HARD LOCK for Bolt’s cutout loop on a living-film Lane.  
-Companion: `10-bolt-cutout-law.md` (**REUSE** sealed cycle → key → composite), `12` / `12b` (path table), `13` / `13b` / `13c` (make, anti-sticker, green/despill).
+Companion: `10-bolt-cutout-law.md` (**REUSE** sealed cycle → key → composite), `12` / `12b` (path table), `13` / `13b` / `13c` / `13d` (make, anti-sticker, green/despill, auto-scale), [14c-gallop-clock.md](14c-gallop-clock.md) (anti-saccadé cook/play clock).
 
 **One line:** Bolt is a **lumbar spring** — rear pack, closed flight, front pack, open flight — locked to plate time. Turns live in ribbon curvature; the dog only adds lead, a tiny lean, and a hind offset.
 
@@ -11,6 +11,8 @@ A fresh Grok in a new Build convo must **NOT** cook a new Bolt gallop from scrat
 2. Take sealed [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) as the Bolt motion asset (already rear / green / rotary).
 3. Key + despill cutout from that cycle.
 4. Composite cutout onto the scrolling empty plate (AFF stack). Speed/scroll = plate; gait = locked cycle.
+
+**PRIORITY 0 — after REUSE + `bolt-scale`, MUST sync gallop via [`gallop-clock`](../scripts/gallop-clock/)** ([14c](14c-gallop-clock.md)): native **96 fps** (no 1-of-N stepping); phase from `plate_time` (`strideHz≈4`); road `ds` from `dsPerFrame` (anti-skate). `assertGallopClock` **FAIL** if dogFps ≪ plateFps. Frost FAIL = dog ~5–10fps while road is fluid + skating.
 
 **FAIL** if Grok invents a new Bolt sprint clip for a biome cook. Only SmiR can authorize a new cycle cook to replace the lock.
 Style teacher [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) still applies if any still / repose is needed; motion teacher = the sealed cycle mp4.
@@ -68,11 +70,13 @@ Front ≈ weight + brake / aim. Rear ≈ push. Trunk **closes then opens** the s
 
 ### Cadence
 
-Sprint: ~**3.5–4.5 strides / s**. Clock:
+Sprint: ~**3.5–4.5 strides / s**. Clock = [`gallop-clock`](../scripts/gallop-clock/) (`strideHz≈4`):
 
 ```text
-phase = (plate_time * strides_per_sec) % 1
+phase = (plate_time * strideHz / stridesPerCycle) % 1
 ```
+
+Play the sealed cycle at **native 96 fps** — never step 1-of-N. Road `ds` from `dsPerFrame` (anti-skate). `assertGallopClock` **FAIL** if dogFps ≪ plateFps.
 
 **\(m\) does not speed the loop.** Higher \(m\) = slightly longer stride along \(s\) (supports slide farther on the ribbon). Speeding the cycle = cartoon.
 
@@ -107,6 +111,7 @@ Do **not** let Imagine invent the gallop **inside** the road plate **or** as a n
 - Chest-anchored sprite
 - Inventing a new Bolt sprint clip for a biome cook (only SmiR may reseal [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4))
 - Optical-flow / morph last→first (seam must be a **hard cut** on the closed period)
+- Stepping the sealed cycle 1-of-N / independent rAF / `playbackRate` that drops frames (dog ~5–10fps while road is fluid = saccadé + skate). `assertGallopClock` **FAIL**. Law: [14c](14c-gallop-clock.md).
 
 ---
 
