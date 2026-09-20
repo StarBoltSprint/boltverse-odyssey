@@ -82,4 +82,4 @@ Ban: FPS free-cam mid-sprint · inventing side plates for every yaw · baking pl
 
 ## Related
 
-[18](18-room-starmap-lena.md) · [19](19-luminous-path-climb.md) · [20](20-default-plate-proportions.md) · constellation LAW (Space LOD) · [17](17-live-compositor.md)
+[18](18-room-starmap-lena.md) · [19](19-luminous-path-climb.md) · [20](20-default-plate-proportions.md) · constellation LAW (Space LOD) · [17](17-live-compositor.md) · [22-m-densify-snowball.md](22-m-densify-snowball.md)

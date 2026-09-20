@@ -68,4 +68,4 @@ Wire with GPU compositor ([15](15-gpu-compositor.md) · [17](17-live-compositor.
 
 ## Related
 
-[13b](13b-anti-sticker-contact.md) · [13](13-make-bolt-lane.md) · [14](14-rotary-gallop.md) · [14c](14c-gallop-clock.md) · [15](15-gpu-compositor.md) · [17](17-live-compositor.md) · [22](22-gpu24-frost-keep.md) · [00-PRIORITY0-any-biome.md](00-PRIORITY0-any-biome.md)
+[13b](13b-anti-sticker-contact.md) · [13](13-make-bolt-lane.md) · [14](14-rotary-gallop.md) · [14c](14c-gallop-clock.md) · [15](15-gpu-compositor.md) · [17](17-live-compositor.md) · [22](22-gpu24-frost-keep.md) · [00-PRIORITY0-any-biome.md](00-PRIORITY0-any-biome.md) · [22-m-densify-snowball.md](22-m-densify-snowball.md)
