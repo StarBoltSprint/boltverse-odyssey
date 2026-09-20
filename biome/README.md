@@ -63,6 +63,8 @@ This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play
 | [docs/20-default-plate-proportions.md](docs/20-default-plate-proportions.md) | **Default empty-still skeleton** — full measure set (frame + scale + GPU start), any biome. φ audit only. Player may override. |
 | [docs/20b-frost-aurora-proportions.md](docs/20b-frost-aurora-proportions.md) | Frost aurora KEEP numbers (worked example of law 20). |
 | [docs/COLD_START-frost-aurora.md](docs/COLD_START-frost-aurora.md) | Kitchen paste — hang Frost aurora beside Beat (read 20 then 20b). |
+| [docs/21-paw-to-galaxy.md](docs/21-paw-to-galaxy.md) | **Paw-to-Galaxy climb** — incline degrees, duration, space look-around, camera bans. |
+| [docs/COLD_START-paw-to-galaxy.md](docs/COLD_START-paw-to-galaxy.md) | Kitchen paste — Paw-to-Galaxy climb (read 21 first). |
 | [scripts/curvature-sample/](scripts/curvature-sample/) | Cook-time adaptive resample — `node demo.js`; `resamplePath` → write `path.json`. Not play LanePlayer. |
 | [scripts/chroma-despill/](scripts/chroma-despill/) | Cook-time vector despill — `node demo.js`; `vectorDespill` after key, before grade. Not play LanePlayer. |
 | [scripts/bolt-scale/](scripts/bolt-scale/) | Cook-time Bolt auto-scale — `node demo.js`; `computeScale` / `assertScale` from lane width. |
@@ -108,6 +110,8 @@ Kitchen — do not read aloud. biome / Sprint cook / lane / B-stack / green-scre
 #    biome/docs/COLD_START-luminous-path.md ← kitchen paste for the climb path
 #    biome/docs/20-default-plate-proportions.md ← empty still defaults (ANY biome)
 #    biome/docs/20b-frost-aurora-proportions.md ← Frost aurora KEEP numbers
+#    biome/docs/21-paw-to-galaxy.md ← Paw-to-Galaxy incline / duration / space look
+#    biome/docs/COLD_START-paw-to-galaxy.md ← kitchen paste for law 21
 # then biome/GROK.md
 
 # stills + films = imagine-hooks first+last (never Imagine Agent video)
