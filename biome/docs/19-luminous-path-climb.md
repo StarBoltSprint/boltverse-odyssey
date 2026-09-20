@@ -32,3 +32,5 @@ FX:      prints optional on path albedo; ice/ember row from law 16 still applies
 ## Related
 
 [18-room-starmap-lena.md](18-room-starmap-lena.md) · [12-lane-path-ribbon.md](12-lane-path-ribbon.md) · [00-PRIORITY0-any-biome.md](00-PRIORITY0-any-biome.md) · [17-live-compositor.md](17-live-compositor.md)
+
+Pitch ladder / duration / space look → see [21](21-paw-to-galaxy.md).

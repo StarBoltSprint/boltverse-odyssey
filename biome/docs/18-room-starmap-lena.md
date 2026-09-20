@@ -143,6 +143,7 @@ No second wallet. No Connect Wallet. Picture + taps only. No “paste this URL�
 - [00-PRIORITY0-any-biome.md](00-PRIORITY0-any-biome.md) — any biome Frost-parity  
 - [17-live-compositor.md](17-live-compositor.md) — GPU Bolt  
 - [19-luminous-path-climb.md](19-luminous-path-climb.md) — Lena climb = luminous 3-lane path (not float). Paste: [COLD_START-luminous-path.md](COLD_START-luminous-path.md)  
+- [21-paw-to-galaxy.md](21-paw-to-galaxy.md) — Paw-to-Galaxy climb (incline, duration, space look). Paste: [COLD_START-paw-to-galaxy.md](COLD_START-paw-to-galaxy.md)  
 - Citadel door / hall docs in repo root (`DOORS.md`, `ROOM.md`, `ENTER.md`)  
 - Dr Lena — Paw-to-Galaxy / meaningful sprint (lore; picture densifies with flow)
 
