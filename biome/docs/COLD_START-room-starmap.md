@@ -6,6 +6,8 @@ Flow: **ROOM** (2 doors + center star map) → tap map → **CONSTELLATION** →
 
 Map = destination. Door = depart. Seal sticky. Bolt = REUSE 6s + GPU 17. Hang ≠ wipe.
 
+Lena climb = **3-lane luminous path** under Bolt, not float. Law: `biome/docs/19-luminous-path-climb.md`. Paste: `biome/docs/COLD_START-luminous-path.md`.
+
 ## HARD — Federate URL
 
 Room Live and constellation Live are **different** grok.me / sandbox URLs. Tap map **is** URL federation. **HARD LOCK default = SmiR’s official Star Map** (KEEP — not a random player map). Player stays in-game. Same-frame `location.replace`. Not a new-tab lecture. No invented grok.me.
