@@ -1,12 +1,18 @@
 # Wire GPU compositor (new Live / new Grok)
 
-1. REUSE `lock/bolt-gallop-cycle.mp4` from Odyssey GitHub (6s / 534 / 96fps). Remux to `public/master/bolt.mp4` `-an` +faststart. Do **not** invent a gallop.
-2. Copy `bolt-key-gl.ts` → `src/game/bolt-key-gl.ts` (adapt imports).
-3. In player (`lane-player.tsx` or equivalent):
-   - `const comp = makeCompositor(canvas)` **before** any `getContext("2d")` on that canvas.
-   - If `comp.kind === "none"` → one-time CPU fallback; else GPU only.
-   - Each rAF: update bolt video `currentTime` via gallop-clock / native loop 1×; `comp.draw({...})`.
-4. Ban: `getImageData` / `putImageData` every frame; `*24` dog gate; 534-canvas harvest.
-5. Scale via 13d (`bolt-scale`); shadow/grade in shader (13b / 13).
+**Law 17 is the Live file.** Do **not** resurrect the scissor / IGN-fract sketch (`bolt-key-gl-scissor-prev.ts`).
 
-See `biome/docs/15-gpu-compositor.md`, `biome/docs/00-PRIORITY0-any-biome.md`, and cook paste `biome/docs/COLD_START-any-biome.md` (supersedes COLD_START-gpu-6s for any biome). FX table (16) is drawn in the GPU family.
+1. REUSE `lock/bolt-gallop-cycle.mp4` (6s / 534 / 96fps). Remux → `public/master/bolt.mp4` `-an` +faststart. Never invent a gallop. Never play the 0.93s archive.
+2. Copy **both**:
+   - `bolt-key-gl.ts` → `src/game/bolt-key-gl.ts`
+   - `wet-fx.ts` → `src/game/wet-fx.ts` (or inline next to the player)
+3. `const gpu = makeCompositor(canvas)` **before** any `getContext("2d")` on that canvas.
+4. Canvas `key={GPU_VER}`. On version bump, `destroy()` old compositor then remake.
+5. Play: `bolt.loop = true`, `playbackRate = 1`. **Never** `currentTime =` every rAF. rVFC = **stamp only** (which frame is new). Do **not** harvest 534 canvases.
+6. `gpu.frame({ road, bolt, dest, shadow, prints, drops, chap, ... })`
+   - `dest` = 13d plant rect (quad, not scissor)
+   - `chap` selects `uniformsFor` (frost ≠ ember ≠ tide)
+   - `prints` / `drops` = `packWet` from `wet-fx.ts`, spawn on plant
+7. Ban: `getImageData` / `putImageData` hot path · `*24` on the dog · fade `py>0.90` · SPH / Box2D · IGN `fract(dot)` grain.
+
+See `biome/docs/17-live-compositor.md` (what actually worked) · `15` · `16` · `00-PRIORITY0-any-biome.md` · paste `COLD_START-any-biome.md`.

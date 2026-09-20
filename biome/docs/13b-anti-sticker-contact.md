@@ -3,8 +3,10 @@
 HARD LOCK companion to `13-make-bolt-lane.md`.  
 Bolt stays a **cutout**. Fix the **seam**, do not bake him into the mp4.
 
-Companion: `10-bolt-cutout-law.md`, `12-lane-path-ribbon.md`, `13-make-bolt-lane.md`, [13d-auto-scale.md](13d-auto-scale.md) (`computeScale` / `assertScale`), [14c-gallop-clock.md](14c-gallop-clock.md) (`assertGallopClock`), [16-biome-ground-fx.md](16-biome-ground-fx.md) (biome-adaptive prints / splash / dust — GPU family, law 15).  
+Companion: `10-bolt-cutout-law.md`, `12-lane-path-ribbon.md`, `13-make-bolt-lane.md`, [13d-auto-scale.md](13d-auto-scale.md) (`computeScale` / `assertScale`), [14c-gallop-clock.md](14c-gallop-clock.md) (`assertGallopClock`), [16-biome-ground-fx.md](16-biome-ground-fx.md) (biome-adaptive prints / splash / dust — GPU family, law 15) · [17-live-compositor.md](17-live-compositor.md) (Live GPU: plate bounce, luma protect, sin grain).  
 After key, despill before grade (`13c-green-despill.md`). After despill, MUST run `computeScale` / `assertScale` ([13d](13d-auto-scale.md) + [`biome/scripts/bolt-scale/`](../scripts/bolt-scale/)) then `gallop-clock` / `assertGallopClock` ([14c](14c-gallop-clock.md) + [`biome/scripts/gallop-clock/`](../scripts/gallop-clock/)) before KEEP. Ground FX row for **this** `{PAINT}`: [16](16-biome-ground-fx.md). Any-biome cook: [00-PRIORITY0-any-biome.md](00-PRIORITY0-any-biome.md).
+
+**Live compositor (law 17) — HARD.** Sticker is killed in the GPU shader, not by baking Bolt into the road mp4. After key: sample the road behind the dog (`uPlate` / `vScreen`). `c *= mix(1, plate/luma, 0.32); mix(c, plate, 0.10)`. Rim ×0.35. Edge `smoothstep(0.05, 0.78, a)`. Grain = `fract(sin(dot(gl_FragCoord.xy, vec2(12.9898,78.233))) * 43758.5453)` — **FAIL** = IGN `fract(dot)` (vertical bars). Luma protect `<0.14` keeps dark paws. **No** sprite fade `py>0.90` (eats hind legs). Contact shadow is **on the road**. Copy [`bolt-key-gl.ts`](../scripts/bolt-key-gl/bolt-key-gl.ts) + [`wet-fx.ts`](../scripts/bolt-key-gl/wet-fx.ts). **FAIL** if Grok copies `bolt-key-gl-scissor-prev.ts`. Law: [17](17-live-compositor.md).
 
 **PRIORITY 0 COMPOSITE GATE** — when compositing the **sealed** cycle (`lock/bolt-gallop-cycle.mp4` keyed onto Video A), **light + contact are HARD — not optional polish.** Before KEEP / Hang: grade the cutout from **this** empty plate family + small paw contact shadow multiply on the *road*. Missing either = **FAIL** (warm/neutral sticker on frost / dog floats). Scale = [13](13-make-bolt-lane.md) + [13d](13d-auto-scale.md) (lane-width fill = FAIL; Grok must not pick size by eye). After scale, MUST `gallop-clock` / `assertGallopClock` ([14c](14c-gallop-clock.md)). Order: key → despill (`13c`) → **`computeScale` / `assertScale`** (`13d`) → **`gallop-clock` / `assertGallopClock`** (`14c`) → plate grade → contact → **ground FX row (16)** → shared grain. **FAIL** if Grok keys the cycle and hangs without scale + gallop-clock + light + contact + FX-row proof.
 
@@ -17,6 +19,9 @@ After key, despill before grade (`13c-green-despill.md`). After despill, MUST ru
 - Scale that never changes when the road recedes  
 - Rim that does not match the plate sun  
 - Dissolve that pops the outline  
+- Cutout that ignores THIS plate’s light (studio grade, bounce missing)  
+- IGN `fract(dot)` grain (vertical bars)  
+- Sprite bottom fade that eats hind paws  
 
 Fix those and he stays steerable *and* reads as in the shot.
 
@@ -56,6 +61,18 @@ Do not ship one lit green-screen turnaround forever. Grade the cutout **FROM** t
 - saturation clamped to biome (ember warm, frost pulled)
 
 Bake as a 3-parameter LUT per catalog paint — not a new Imagine dog. Optional cheat: sample 3 plate pixels (shoulder-L, shoulder-R, zenith) and soft-multiply. Further = Citadel relight, not Lane.
+
+**Plate bounce (Live, law 17) — HARD, not optional cheat.** Sample the road texel behind the dog every frame:
+
+```
+bounce = plateRGB / max(plateLuma, 0.07)
+c *= mix(vec3(1.0), bounce, 0.32)
+c  = mix(c, plate, 0.10)
+rim *= 0.35
+3 vertical taps (dy≈0.0055) to pick up plate shutter
+```
+
+`uniformsFor(chap)` only tints after bounce (frost ≠ ember). A 3-parameter LUT without sampling THIS plate still reads sticker. Code: [`bolt-key-gl.ts`](../scripts/bolt-key-gl/bolt-key-gl.ts).
 
 ### Edge that belongs to the film
 
@@ -194,4 +211,4 @@ Reuse `inverseRibbon` from glow hit-tests.
 
 **Rule:** contact = function on the ribbon, multiplied into the plate, softer than the dog, timed to the stride.
 
-Sealed 2026-09-20 — anti-sticker + contact shadow.
+Sealed 2026-09-20 — anti-sticker + contact shadow + Live plate bounce (law 17).
