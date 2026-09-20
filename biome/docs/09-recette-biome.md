@@ -2,7 +2,7 @@
 
 Cuisine. Pas de théorie. C’est **la** checklist pour refaire un biome lane-runner comme le dusk canyon (empty + barre jersey + météore).
 
-Lire avant : [PLAY.md](../PLAY.md) · [06-techniques.md](06-techniques.md) · [10-bolt-cutout-law.md](10-bolt-cutout-law.md) · [05-key.md](05-key.md).  
+Lire avant : [PLAY.md](../PLAY.md) · [06-techniques.md](06-techniques.md) · [10-bolt-cutout-law.md](10-bolt-cutout-law.md) · [05-key.md](05-key.md) · [12-lane-path-ribbon.md](12-lane-path-ribbon.md) (living-film Lane control — not SprintCore).  
 Code : [imagine-hooks.mjs](../../scripts/imagine-hooks.mjs) (`imagineBiomeClip` + **`imagineBoltClip`**) · [plate-speed.py](../../scripts/plate-speed.py) · [LanePlayer.tsx](../reference/LanePlayer.tsx).
 
 ---
@@ -171,6 +171,8 @@ QC frames 0 / 2 / 4 / 5.8 — one yaw frame = throw the clip.
 Play = Vlahos + crown sat kill + feather 1 px + ombre ellipse aux pattes. [05-key.md](05-key.md). L/M/R = X shift of **one** Bolt layer.  
 **Ne pas** redessiner le chien. **Ne pas** le recuire si le key est déjà bon. **Ne pas** cuire Bolt dans un seul film final.
 
+After empty + cutout KEEP: author `path.json` on empty road plate A. Law: [12-lane-path-ribbon.md](12-lane-path-ribbon.md). Without `path.json` = film only. With `path.json` = steerable game. Not SprintCore / Nebula editor.
+
 ---
 
 ## Étape 3 — Cousin hazard (la plaque 2, 3, …)
@@ -306,6 +308,8 @@ next = (cur + 1) % PLATES.length   // wrap war3 → canyon. NEVER Math.random.
 
 Pas de 3 takes L/M/R. Un cutout, planté.
 
+Living-film Lane (ribbon + arc-length): after empty+cutout KEEP, author `path.json` per [12-lane-path-ribbon.md](12-lane-path-ribbon.md). Without the sidecar = pretty film. With it = game. Play state is \((s,\lambda)\), not WASD / yaw.
+
 ---
 
 ## Étape 7 — Collision = boîte, pas un flash
@@ -341,8 +345,9 @@ Chaque cousin a **sa** fenêtre : un speck au vanishing point n’est pas encore
 5. QC 5 frames (spawn + lanes + last=empty)
 6. plate-speed --duration-match (ou --match)    → même clock que empty
 7. Hang biome/master/ + bump VER   ← ADD new files. NEVER rm canyon/war. NEVER overwrite road.mp4 for a new biome.
+7b. After empty+cutout KEEP: author path.json (ribbon + arc-length) — [12-lane-path-ribbon.md](12-lane-path-ribbon.md)
 8. HAZARDS[].t0/t1 = contact aux pattes, pas au fond
-9. play : dodge / jump / freeze-on-box
+9. play : dodge / jump / freeze-on-box (with path.json = steerable; without = film only)
 10. publish Live : pack.js (`BOLTVERSE_PACK_ORIGIN` = `https://boltverse-pack.vercel.app`) + dealer assetId stats — AUTOMATIC, never « please install wire »
 ```
 
@@ -397,6 +402,8 @@ Hitbox = **voie + fenêtre courte au contact des pattes**. Loin / ciel / déjà 
 | `scripts/imagine-hooks.mjs` | `imagineBiomeClip`, `imagineBoltClip`, `BIOME_*_LAW`, `BOLT_CUTOUT_LAW`, `extractLastFrame` |
 | `biome/docs/10-bolt-cutout-law.md` | HARD Bolt cutout — B→cycle→green→key, 48fps, hooks first+last |
 | `biome/docs/11-plate-order.md` | HARD LOCK dealer playlist — canyon → cars → duel → night → war. New biome = new entries. Hang ≠ wipe. |
+| `biome/docs/12-lane-path-ribbon.md` | Living-film Lane path — ribbon + arc-length `path.json`. Without = film. With = steerable game. Not SprintCore. |
+| `biome/docs/12b-adaptive-curvature.md` | Cook-time adaptive curvature — place the table (straights cheap, hairpins dense). Clock still \(\ell\). |
 | `scripts/plate-speed.py` | mesure px/s, `--match`, `--duration-match`, `--factor` |
 | `biome/prompts/video-empty-plate.txt` | rush 10 s constant |
 | `biome/prompts/video-hazard-plate.txt` | SPAWN + WIDTH (court) |

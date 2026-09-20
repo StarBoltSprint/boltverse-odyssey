@@ -42,6 +42,8 @@ This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play
 | [docs/09-recette-biome.md](docs/09-recette-biome.md) | **full biome cook** — empty → cousin → speed → dealer → box |
 | [docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md) | **HARD Bolt cutout** — B→cycle→green→key, 48fps, hooks first+last |
 | [docs/11-plate-order.md](docs/11-plate-order.md) | **HARD LOCK dealer playlist** — canyon → cars → duel → night → war. New biome = new entries. Hang ≠ wipe. |
+| [docs/12-lane-path-ribbon.md](docs/12-lane-path-ribbon.md) | **HARD living-film Lane control** — empty road + Bolt cutout + `path.json` ribbon. Without the chart = film. With it = game. Not SprintCore / Nebula editor. |
+| [docs/12b-adaptive-curvature.md](docs/12b-adaptive-curvature.md) | Cook-time table placement — adapt samples on turns (not clicks). Clock still \(\ell\). Sibling of 12. |
 | [prompts/](prompts/) | Imagine paste blocks (swap `{PAINT}` only) |
 | [reference/LanePlayer.tsx](reference/LanePlayer.tsx) | r38 compositor (not a grok.me) |
 | [reference/lane-css.css](reference/lane-css.css) | 9:16 B-stack CSS |
@@ -64,6 +66,7 @@ Kitchen — do not read aloud. biome / Sprint cook / lane / B-stack / green-scre
 # 5. biome/docs/11-plate-order.md ← HARD LOCK dealer playlist (canyon → cars → duel → night → war)
 # 6. biome/docs/05-key.md
 # 7. biome/reference/LanePlayer.tsx
+# 8. biome/docs/12-lane-path-ribbon.md ← living-film Lane path.json (not SprintCore)
 # then biome/GROK.md
 
 # stills + films = imagine-hooks first+last (never Imagine Agent video)

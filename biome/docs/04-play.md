@@ -36,7 +36,7 @@ Optional biome preview (archive — **not attached at boot**) is **not** the mas
 
 1. Load dual road + bolt (`muted playsInline autoPlay`, `?v=r38`).
 2. RAF: grab road → hold. Grab bolt → `keyGreen` → `killCrown` → `featherAlpha` → stamp on canvas at `dx`.
-3. Swipe = plant on X (`SHIFT = 30`) — [03-decoupe-swipe.md](03-decoupe-swipe.md).
+3. Swipe = plant on X (`SHIFT = 30`) — [03-decoupe-swipe.md](03-decoupe-swipe.md). Living-film Lane `path.json` (ribbon + arc-length, not SprintCore): [12-lane-path-ribbon.md](12-lane-path-ribbon.md).
 4. Key law — [05-key.md](05-key.md).
 5. Watchdog on `pause` / `ended` / `visibilitychange`. Dual road swap before the loop point.
 
