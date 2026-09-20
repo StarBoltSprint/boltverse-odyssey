@@ -133,6 +133,7 @@ For Grok only. Boot attaches **only** the Citadel preview. **Never print the pat
 5. [`biome/docs/05-key.md`](biome/docs/05-key.md) + [`biome/reference/LanePlayer.tsx`](biome/reference/LanePlayer.tsx)
 6. [`biome/docs/10-bolt-cutout-law.md`](biome/docs/10-bolt-cutout-law.md) — HARD Bolt cutout (B→cycle→green→key, 48fps, hooks first+last)
 **HARD — living-film Lane control** (not SprintCore, not Nebula editor stats): [`biome/docs/12-lane-path-ribbon.md`](biome/docs/12-lane-path-ribbon.md). After empty+cutout KEEP, author `path.json`. Without = film only. With = steerable game.
+**HARD — make controllable Bolt on a Lane:** [`biome/docs/13-make-bolt-lane.md`](biome/docs/13-make-bolt-lane.md) — product brief / order of work.
 Never dump this to the player.
 
 **HARD LOCK — Hang ≠ wipe.** New biome = ADD plates + `plates-index` / dealer entries. KEEP canyon→cars→duel→night→war. NEVER wipe `biome/master` / `public/master`. Tide-only playlist = FAIL. Law: [`biome/docs/09-recette-biome.md`](biome/docs/09-recette-biome.md).

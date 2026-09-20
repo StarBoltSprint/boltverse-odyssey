@@ -3,7 +3,7 @@
 Kitchen SoT. English OK. Keep Pack terms. SmiR 2026-09-18.
 
 This page is **the** Bolt still + gallop law for every biome. Road plates stay empty. Bolt is a **keyed layer**.  
-Read with [09-recette-biome.md](09-recette-biome.md) · [05-key.md](05-key.md) · [01-images.md](01-images.md) · [02-videos.md](02-videos.md).
+Read with [09-recette-biome.md](09-recette-biome.md) · [05-key.md](05-key.md) · [01-images.md](01-images.md) · [02-videos.md](02-videos.md) · [13-make-bolt-lane.md](13-make-bolt-lane.md) (Make Bolt Lane brief).
 
 **Product method (make / add a biome):** décor scrolls (rush); Bolt sprints **IN PLACE** (treadmill). Mid-lane for the gait cook. **48fps** on cooked plates. Style teacher = [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) **or** [`biome/lock/bolt-back.jpg`](../lock/bolt-back.jpg) (same bytes; `@ref`). **PRIORITY 0 TEACHER GATE:** attach / show the teacher in the Build chat first. Hang ≠ wipe.
 

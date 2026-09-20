@@ -34,6 +34,8 @@ Do **not** paste that URL in a player reply. Never open old three-y `boltverse-o
 
 **HARD — living-film Lane control** (not SprintCore, not Nebula editor stats): after empty road + Bolt cutout KEEP, author `path.json` per **[docs/12-lane-path-ribbon.md](docs/12-lane-path-ribbon.md)**. Without `path.json` = film only. With `path.json` = steerable game (`s`,`λ` ribbon).
 
+**HARD — make controllable Bolt on a Lane:** [docs/13-make-bolt-lane.md](docs/13-make-bolt-lane.md) — product brief / order of work.
+
 **HARD LOCK — Hang ≠ wipe.** New biome = ADD `road-<biome>*.mp4` + plates-index / dealer entries. KEEP hung canyon→cars→duel→night→war. NEVER `rm` masters. Recook Bolt = `bolt.mp4` only. Law: [docs/09-recette-biome.md](docs/09-recette-biome.md).
 
 **HARD — Bolt style teacher (make / add a biome).** Use [`lock/bolt-back.jpg`](../lock/bolt-back.jpg) **or** [`biome/lock/bolt-back.jpg`](lock/bolt-back.jpg) (same bytes — either path OK) as the Bolt style ref for the cutout layer (coat + silhouette + strict rear). **Attach / show that exact image in the Build chat first** (PRIORITY 0 TEACHER GATE), then @ref / Imagine reference it for every Bolt still/clip. If teacher not shown → **STOP. No cook. FAIL.** Soft KEEP banned without teacher proof. Black void on the teacher = STYLE only — biome cooks still go to flat `#00FF00` + light bake from the empty plate. Hang ≠ wipe still holds. Never dump this on Welcome.

@@ -171,7 +171,8 @@ QC frames 0 / 2 / 4 / 5.8 — one yaw frame = throw the clip.
 Play = Vlahos + crown sat kill + feather 1 px + ombre ellipse aux pattes. [05-key.md](05-key.md). L/M/R = X shift of **one** Bolt layer.  
 **Ne pas** redessiner le chien. **Ne pas** le recuire si le key est déjà bon. **Ne pas** cuire Bolt dans un seul film final.
 
-After empty + cutout KEEP: author `path.json` on empty road plate A. Law: [12-lane-path-ribbon.md](12-lane-path-ribbon.md). Without `path.json` = film only. With `path.json` = steerable game. Not SprintCore / Nebula editor.
+After empty + cutout KEEP: author `path.json` on empty road plate A. Law: [12-lane-path-ribbon.md](12-lane-path-ribbon.md). Without `path.json` = film only. With `path.json` = steerable game. Not SprintCore / Nebula editor.  
+After empty+cutout, see [13-make-bolt-lane.md](13-make-bolt-lane.md) for steerable make order.
 
 ---
 
