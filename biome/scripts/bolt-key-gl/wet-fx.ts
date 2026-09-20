@@ -1,6 +1,7 @@
-/** Ground FX — law 16. Euler droplets + road-sliding prints. Not SPH. Not Box2D.
+/** Ground FX — law 16 + 22. Euler droplets + road-sliding prints. Not SPH. Not Box2D.
  * Port into Live (lane-player) next to makeCompositor. Spawn on plant / STRIDE_HZ.
  * Chase cam: prints slide DOWN the screen (toward camera) with the plate.
+ * KEEP frost: MAX_PRINTS 10, MAX_DROPS 28, fade 0.52/s, emit 7 crystals.
  */
 
 export type Wet = {
@@ -14,8 +15,8 @@ export type Wet = {
   bounces: number;
 };
 
-export const MAX_PRINTS = 6;
-export const MAX_DROPS = 16;
+export const MAX_PRINTS = 10;
+export const MAX_DROPS = 28;
 export const G_PX = 1680;
 export const ROAD_DRAG = 48;
 
@@ -122,7 +123,7 @@ export function stepPrints(prints: Wet[], dt: number, ch: number) {
   for (const m of prints) {
     m.y += m.vy * dt;
     m.r += m.vr * dt;
-    m.a -= dt * 1.7;
+    m.a -= dt * 0.52;
   }
   let w = 0;
   for (let i = 0; i < prints.length; i++) {

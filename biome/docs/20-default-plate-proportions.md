@@ -39,23 +39,26 @@ On this wide skeleton, Live KEEP is the **small dog**.
 | `withersFrac` | **~0.10** | target 0.27, band 0.22–0.32 |
 | Dest sprite | ~0.41 of frame H | — |
 
-`withersMin` is **soft** (13d). Hitting 0.22 withers on a wide nationale = dog≈truck. **KEEP ~0.10.** `PAW_PLANT = 0.80` (+ `PAW_SINK=0.05` → paws ~0.85).
+`withersMin` is **soft** (13d). Hitting 0.22 withers on a wide nationale = dog≈truck. **KEEP ~0.10.** `PAW_PLANT = 0.80` (+ `PAW_SINK=0.072` → paws ~0.87).
 
 **FAIL:** grow Bolt 2–3× to fake withersMin 0.22. **FAIL:** widen PATH to the visual lanes then re-run 13d.
 
-## Default GPU start knobs (law 17 — biome-adaptable)
+## Default GPU start knobs (law 17 + **22** — biome-adaptable)
 
-Start every new biome from these knobs. Then `uniformsFor(chap)` may adapt cool / sat / under / rim to **this** `{PAINT}`. Do not ship one studio grade. Do not start from the old 0.32 bounce / 0.34 contact / 0.58 sat.
+Start every new biome from these knobs. Then `uniformsFor(chap)` may adapt cool / sat / under / rim to **this** `{PAINT}`. Do not ship one studio grade. **Do not** `mix(c, plate, 0.10)` raw — that paints neon dashes through the coat ([22](22-gpu24-frost-keep.md)).
 
 ```
-bounce   0.40     // plate light into the coat (old 0.32 under-reads a bright road)
-mix      0.10     // plate
-sat      0.60     // start; 0.76 = studio sticker. uniformsFor may shift
-CONTACT_K 0.20    // start on a readable road (0.34 punches a skateboard-box)
-rim      ×0.35
+bounce    0.42 on bounceSrc   // neon-stripped 3-tap neighborhood (raw plate leaked dashes)
+mix       0.11 bounceSrc      // NOT raw plate
+edge ring 0.34 * edge²
+sat       0.54                // start; 0.76 = studio sticker. uniformsFor may shift
+CONTACT_K 0.34 dual-paw       // TWO gaussians rx=0.36*pw ry=0.20*pw. One ellipse = hoverboard
+print     frost [0.40, 0.50, 0.48]  // <0.3 = hoverboard; 0.66 α0.32 = invisible
+smear     3-tap dy=0.0030 EDGE ONLY, cSharp = k0.rgb straight
+GPU_VER   24
 ```
 
-Cool / under / rim hue still follow the [17](17-live-compositor.md) paint table. Contact shadow stays on the **road**, ellipse flat — not a dark rectangle under the paws. Bounce / sat / contact may move if the player’s paint is darker, wetter, or hotter. **Start here.**
+Cool / under / rim hue still follow the [17](17-live-compositor.md) paint table. Contact shadow stays on the **road**, two paw marks — not a dark rectangle under the body. Bounce / sat / contact may move if the player’s paint is darker, wetter, or hotter. **Start here.** Full KEEP: [22](22-gpu24-frost-keep.md). `21-paw-to-galaxy.md` is a different law.
 
 ## φ — audit only (not the law)
 

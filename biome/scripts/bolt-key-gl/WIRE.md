@@ -15,4 +15,6 @@
    - `prints` / `drops` = `packWet` from `wet-fx.ts`, spawn on plant
 7. Ban: `getImageData` / `putImageData` hot path · `*24` on the dog · fade `py>0.90` · SPH / Box2D · IGN `fract(dot)` grain.
 
-See `biome/docs/17-live-compositor.md` (what actually worked) · `15` · `16` · `00-PRIORITY0-any-biome.md` · paste `COLD_START-any-biome.md`.
+See `biome/docs/17-live-compositor.md` (what actually worked) · `22` (GPU_VER 24 KEEP) · `15` · `16` · `00-PRIORITY0-any-biome.md` · paste `COLD_START-any-biome.md` / `COLD_START-gpu24.md`.
+
+**GPU_VER 24 / law 22.** Copy this file’s sibling `bolt-key-gl.ts` (`export const GPU_VER = 24`). Neon-safe bounce, dual-paw contact, ice Fresnel, plate IBL, edge-only smear, straight-over blend. Doc: [../../docs/22-gpu24-frost-keep.md](../../docs/22-gpu24-frost-keep.md). `21-paw-to-galaxy.md` is a different law.

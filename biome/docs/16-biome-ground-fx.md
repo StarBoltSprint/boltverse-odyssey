@@ -11,7 +11,7 @@
 | Lifetime | Fade in ≤1 stride; fade out 2–4 strides or when plate scrolls them off-screen. |
 | Placement | Ribbon `(s, λ)` under paws — [12](12-lane-path-ribbon.md). |
 | Color | Sampled / graded from **this** empty plate (not pure black studio). |
-| Perf | Prefab sprites or shader blobs — never CPU `getImageData`. Cap active FX (e.g. ≤12). |
+| Perf | Prefab sprites or shader blobs — never CPU `getImageData`. Cap 10 prints / 28 drops (law 22). |
 | Ban | Full-body drop shadow · baked shadow in `bolt.mp4` · FX that ignore biome (same white splash on ember). |
 
 ## Grade from plate (always)
@@ -26,7 +26,7 @@ After key+despill, before Hang:
 
 | Biome family | Grade | Paw print | Splash / kick | Notes |
 |---|---|---|---|---|
-| **Frost / ice / snow** | Cold desat, cyan-blue rim, belly darker | Soft blue-white compress in snow | Fine ice spray / glitter on plant | Shadow cooler; never warm studio |
+| **Frost / ice / snow** | Cold desat, cyan-blue rim, belly darker | Packed snow `[0.40, 0.50, 0.48]` α 0.55, fade 0.52/s | 7 ice crystals / plant, additive glitter | Dual-paw shadow k 0.34; never warm studio; never 0.08 black board |
 | **Tide / wet / rain** | Cool teal, specular lift on coat edges | Dark wet oval on asphalt | Water crown / droplet arc | Stronger specular; mute spray in heavy fog |
 | **Canyon / dusk / dry** | Warm dusk grade, orange rim | Dust stamp / tire-dust puff | Light grit puff | Keep dust opacity low |
 | **Night / neon** | Low sat, neon rim from plate lights | Dark matte print | Minimal sparkle if wet | Don’t invent neon on coat not in plate |
@@ -36,13 +36,13 @@ After key+despill, before Hang:
 
 ## Implementation (Live) — `wet-fx.ts` + mark quads
 
-**Code:** [`biome/scripts/bolt-key-gl/wet-fx.ts`](../scripts/bolt-key-gl/wet-fx.ts) drawn by [`bolt-key-gl.ts`](../scripts/bolt-key-gl/bolt-key-gl.ts) (law 17).
+**Code:** [`biome/scripts/bolt-key-gl/wet-fx.ts`](../scripts/bolt-key-gl/wet-fx.ts) drawn by [`bolt-key-gl.ts`](../scripts/bolt-key-gl/bolt-key-gl.ts) (law 17 + **22**).
 
 - Prints / drops are **tiny quads**, not a fullscreen `exp()` loop (that stalls cheap GPUs).
 - Euler: gravity, Stokes drag (`k≈4.4/r`), bounce 1–2, split, then merge to a print.
 - Chase cam: prints **slide toward the camera** (canvas Y↑) with the plate. Stuck-to-screen = FAIL.
 - Spawn only on plant (`STRIDE_HZ≈4`) and grounded. Jump = no spawn.
-- Cap: 6 prints, 16 drops. Not SPH. Not Box2D.
+- Cap: 10 prints, 28 drops (law 22). Frost spawn α 0.55/0.36, fade 0.52/s, emit 7 ice crystals. Not SPH. Not Box2D.
 
 ```
 kind = fxKindOf(chap)            // water | dust | ash | glitter
@@ -68,4 +68,4 @@ Wire with GPU compositor ([15](15-gpu-compositor.md) · [17](17-live-compositor.
 
 ## Related
 
-[13b](13b-anti-sticker-contact.md) · [13](13-make-bolt-lane.md) · [14](14-rotary-gallop.md) · [14c](14c-gallop-clock.md) · [15](15-gpu-compositor.md) · [17](17-live-compositor.md) · [00-PRIORITY0-any-biome.md](00-PRIORITY0-any-biome.md)
+[13b](13b-anti-sticker-contact.md) · [13](13-make-bolt-lane.md) · [14](14-rotary-gallop.md) · [14c](14c-gallop-clock.md) · [15](15-gpu-compositor.md) · [17](17-live-compositor.md) · [22](22-gpu24-frost-keep.md) · [00-PRIORITY0-any-biome.md](00-PRIORITY0-any-biome.md)
