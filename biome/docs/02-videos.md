@@ -6,7 +6,7 @@ Walks / travel / gallop / **cousin plates** = `scripts/imagine-hooks.mjs` with r
 
 - Hall: `imagineClip` — `image` + **`last_frame`** (citadel only — **banned** for biome Bolt)
 - Biome road / Video A: `imagineBiomeClip` — `image` + **`last_frame`** (distinct, ZERO dog, **48fps**)
-- Bolt cutout: `imagineBoltClip` — `first` + `last` = **cycle bookends on green** (**48fps**, IN PLACE)
+- Bolt cutout: **REUSE** [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) — key + despill + composite. `imagineBoltClip` = **SmiR only** (replace the lock)
 
 Chat `imagine_image_to_video` / `imagine_reference_to_video` have **no** `last_frame` — banned. If hooks / `XAI_API_KEY` unavailable → **REFUSE** / stock. Do **not** fall back to chat I2V.
 
@@ -56,17 +56,15 @@ Paste: [../prompts/video-hazard-plate.txt](../prompts/video-hazard-plate.txt). S
 Then match travel to the empty plate: [08-plate-speed.md](08-plate-speed.md). Explosions fool SAD → `--duration-match`, not `--match`.
 
 
-## Video B — gait source (kitchen, not Hung)
+## Video B — gait source (**SmiR only** — not a new-biome job)
 
-SAME décor rush as Video A + Bolt mid-lane **IN PLACE**, natural rotary gallop, `@ref` [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) **or** [`biome/lock/bolt-back.jpg`](../lock/bolt-back.jpg) (same bytes; attach in chat first). Camera locked. **48fps**.
-
-Green-only I2V invents a walk — B exists so gait is natural. Extract **one** cycle (start, 2–3 mids chronological, end ≈ start). Repose onto `#00FF00`. **Do not Hang B.** API / Build hooks with real `image` + distinct `last_frame`. Not hall `imagineClip`. Not `imagineBiomeClip` (ZERO dog). Not chat Imagine.
+Video B / extract / `imagineBoltClip` is **not** the new-biome path. A fresh Grok **REUSES** [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4). **FAIL** if Grok invents a new Bolt sprint clip. Only SmiR can authorize a new cycle cook to replace the lock.
 
 ## Bolt cutout (gallop)
 
 **HARD law:** [10-bolt-cutout-law.md](10-bolt-cutout-law.md).
 
-`imagineBoltClip` — `first` + `last` = [`lock/bolt-gallop-cycle-first.jpg`](../../lock/bolt-gallop-cycle-first.jpg) (**same file**). Attach motion teacher [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) first. Loop seam = **hard cut** — do **not** optical-flow morph last→first. Optional mid frames as Imagine `@ref` chronological. 6 s. **48fps.** **IN PLACE / treadmill.** Never hall `imagineClip`. **BAN** inventing a new gallop from chat Imagine without this teacher. Word “rear” alone is not enough.
+**PRIORITY 0 — REUSE, not invent.** Take sealed [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) as the Bolt motion asset. Key + despill + composite onto Video A. **FAIL** if Grok invents a new Bolt sprint clip. Only SmiR can authorize `imagineBoltClip` / a new cycle cook to replace the lock. Loop seam = **hard cut** — do **not** optical-flow morph last→first. Never hall `imagineClip`. Word “rear” alone is not enough.
 
 He **rotary-gallops** the whole clip (stretch then gather; hind legs fully back). NEVER stands, trots, pauses, sits, howls. NEVER a second dog. NEVER ¾ / profile / face / yaw / look-back. NEVER a road or set in the **green** plate (I2V invents travelling → he turns).
 
@@ -74,7 +72,7 @@ Background stays **flat `#00FF00`**. Key later onto Video A: [05-key.md](05-key.
 
 Plant in play: lower third, paws already glued; game plants on the bottom of the blob. [../PLAY.md](../PLAY.md).
 
-Paste: [../prompts/video-bolt-mid.txt](../prompts/video-bolt-mid.txt). QC frames 0 / 2 / 4 / 5.8 — one yaw frame = throw.
+Do **not** paste `video-bolt-mid.txt` to cook a new sprint. QC the **reused** sealed cycle — one yaw frame = the lock is bad (SmiR reseal only).
 
 ## Encode
 

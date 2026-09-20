@@ -1,13 +1,20 @@
 # 14 — Rotary gallop + turn on the ribbon
 
 HARD LOCK for Bolt’s cutout loop on a living-film Lane.  
-Companion: `10-bolt-cutout-law.md` (B → green → key), `12` / `12b` (path table), `13` / `13b` / `13c` (make, anti-sticker, green/despill).
+Companion: `10-bolt-cutout-law.md` (**REUSE** sealed cycle → key → composite), `12` / `12b` (path table), `13` / `13b` / `13c` (make, anti-sticker, green/despill).
 
 **One line:** Bolt is a **lumbar spring** — rear pack, closed flight, front pack, open flight — locked to plate time. Turns live in ribbon curvature; the dog only adds lead, a tiny lean, and a hind offset.
 
-**Sealed motion teacher (2026-09-20):** [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) — canonical 1s hard-cut closed rotary-gallop (24fps, 768×1168, flat `#00FF00`, strict rear, ×2 cadence). Bookend still: [`lock/bolt-gallop-cycle-first.jpg`](../../lock/bolt-gallop-cycle-first.jpg). Preview only (not cook source): [`lock/bolt-gallop-cycle-12s-preview.mp4`](../../lock/bolt-gallop-cycle-12s-preview.mp4).
+**PRIORITY 0 — Bolt sprint for new biomes = REUSE, not invent.**
+A fresh Grok in a new Build convo must **NOT** cook a new Bolt gallop from scratch (no new Imagine dog sprint). Pipeline is:
+1. Empty road plate only (Video A) — biome décor, no dog.
+2. Take sealed [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) as the Bolt motion asset (already rear / green / rotary).
+3. Key + despill cutout from that cycle.
+4. Composite cutout onto the scrolling empty plate (AFF stack). Speed/scroll = plate; gait = locked cycle.
 
-**STEP 0 MOTION GATE:** attach / show the cycle (or its first frame) **before** any biome Bolt cook. Green cycle cooks: `first` **and** `last` = `lock/bolt-gallop-cycle-first.jpg`. Loop seam = **hard cut** on the closed period — do **NOT** optical-flow morph last→first. **BAN** inventing a new gallop from chat Imagine without this teacher. Style teacher stays [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg). Hang ≠ wipe (`biome/master/bolt.mp4` stays until a teacher-ref recook).
+**FAIL** if Grok invents a new Bolt sprint clip for a biome cook. Only SmiR can authorize a new cycle cook to replace the lock.
+Style teacher [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) still applies if any still / repose is needed; motion teacher = the sealed cycle mp4.
+Loop seam = **hard cut** on the closed period — do **NOT** optical-flow morph last→first. Preview only: [`lock/bolt-gallop-cycle-12s-preview.mp4`](../../lock/bolt-gallop-cycle-12s-preview.mp4). Hang ≠ wipe.
 
 ## Not “more frames”
 
@@ -82,12 +89,10 @@ Mute the HUD: if you do not feel a **shoulder hit** every quarter cycle, add amp
 
 | Source | Note |
 |---|---|
-| **Sealed cycle** | **Required.** [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) + first=last [`lock/bolt-gallop-cycle-first.jpg`](../../lock/bolt-gallop-cycle-first.jpg). Hard-cut closed period. |
-| 3D rig | Archive / research only unless SmiR reseals. Rotary cycle, cam locked behind shoulder like the plate. PNG strip + alpha, **paw pivot**. |
-| Live / green | Time-warp / grade **this** sealed cycle → despill (`13c`) → ribbon. Do not invent a new stride. |
-| 2D | Do not replace the sealed cycle. Mushy inbetweens = float. |
+| **Sealed cycle** | **Required. REUSE.** [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4). Key + despill + composite. Hard-cut closed period. |
+| 3D / live / 2D | **SmiR only** — to replace the lock. A fresh Grok must not cook a new stride. |
 
-Do **not** let Imagine invent the gallop **inside** the road plate. Pretty for one second, then no control. **BAN** inventing a new gallop from chat Imagine without the sealed teacher.
+Do **not** let Imagine invent the gallop **inside** the road plate **or** as a new green sprint. Pretty for one second, then no control. **FAIL** if Grok invents a new Bolt sprint clip. Only SmiR can reseal the cycle.
 
 ### FAIL (gallop)
 
@@ -98,7 +103,7 @@ Do **not** let Imagine invent the gallop **inside** the road plate. Pretty for o
 - Head to camera + ears up = mascot  
 - Constant contact shadow  
 - Chest-anchored sprite
-- Inventing a new gallop from chat Imagine without [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4)
+- Inventing a new Bolt sprint clip for a biome cook (only SmiR may reseal [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4))
 - Optical-flow / morph last→first (seam must be a **hard cut** on the closed period)
 
 ---
