@@ -16,3 +16,5 @@
 7. Ban: `getImageData` / `putImageData` hot path · `*24` on the dog · fade `py>0.90` · SPH / Box2D · IGN `fract(dot)` grain.
 
 See `biome/docs/17-live-compositor.md` (what actually worked) · `15` · `16` · `00-PRIORITY0-any-biome.md` · paste `COLD_START-any-biome.md`.
+
+**GPU_VER 20 / law 21.** Copy this file’s sibling `bolt-key-gl.ts` (`export const GPU_VER = 20`). Neon-safe bounce, edge-only smear, straight-over blend. Doc: [../../docs/21-neon-premul-anti-sticker.md](../../docs/21-neon-premul-anti-sticker.md).

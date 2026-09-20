@@ -3,10 +3,10 @@
 HARD LOCK companion to `13-make-bolt-lane.md`.  
 Bolt stays a **cutout**. Fix the **seam**, do not bake him into the mp4.
 
-Companion: `10-bolt-cutout-law.md`, `12-lane-path-ribbon.md`, `13-make-bolt-lane.md`, [13d-auto-scale.md](13d-auto-scale.md) (`computeScale` / `assertScale`), [14c-gallop-clock.md](14c-gallop-clock.md) (`assertGallopClock`), [16-biome-ground-fx.md](16-biome-ground-fx.md) (biome-adaptive prints / splash / dust — GPU family, law 15) · [17-live-compositor.md](17-live-compositor.md) (Live GPU: plate bounce, luma protect, sin grain).  
+Companion: `10-bolt-cutout-law.md`, `12-lane-path-ribbon.md`, `13-make-bolt-lane.md`, [13d-auto-scale.md](13d-auto-scale.md) (`computeScale` / `assertScale`), [14c-gallop-clock.md](14c-gallop-clock.md) (`assertGallopClock`), [16-biome-ground-fx.md](16-biome-ground-fx.md) (biome-adaptive prints / splash / dust — GPU family, law 15) · [17-live-compositor.md](17-live-compositor.md) (Live GPU: plate bounce, luma protect, sin grain) · **[21-neon-premul-anti-sticker.md](21-neon-premul-anti-sticker.md) (GPU_VER 20: neon-safe bounce, premul smear, no hoverboard)**.  
 After key, despill before grade (`13c-green-despill.md`). After despill, MUST run `computeScale` / `assertScale` ([13d](13d-auto-scale.md) + [`biome/scripts/bolt-scale/`](../scripts/bolt-scale/)) then `gallop-clock` / `assertGallopClock` ([14c](14c-gallop-clock.md) + [`biome/scripts/gallop-clock/`](../scripts/gallop-clock/)) before KEEP. Ground FX row for **this** `{PAINT}`: [16](16-biome-ground-fx.md). Any-biome cook: [00-PRIORITY0-any-biome.md](00-PRIORITY0-any-biome.md).
 
-**Live compositor (law 17) — HARD.** Sticker is killed in the GPU shader, not by baking Bolt into the road mp4. After key: sample the road behind the dog (`uPlate` / `vScreen`). `c *= mix(1, plate/luma, 0.32); mix(c, plate, 0.10)`. Rim ×0.35. Edge `smoothstep(0.05, 0.78, a)`. Grain = `fract(sin(dot(gl_FragCoord.xy, vec2(12.9898,78.233))) * 43758.5453)` — **FAIL** = IGN `fract(dot)` (vertical bars). Luma protect `<0.14` keeps dark paws. **No** sprite fade `py>0.90` (eats hind legs). Contact shadow is **on the road**. Copy [`bolt-key-gl.ts`](../scripts/bolt-key-gl/bolt-key-gl.ts) + [`wet-fx.ts`](../scripts/bolt-key-gl/wet-fx.ts). **FAIL** if Grok copies `bolt-key-gl-scissor-prev.ts`. Law: [17](17-live-compositor.md).
+**Live compositor (law 17 + **21**) — HARD.** Sticker is killed in the GPU shader, not by baking Bolt into the road mp4. After key: sample the road **neighborhood** behind the dog (`uPlate` / `vScreen` ±0.018), **chroma-kill neon** (`bounceSrc`), then `c *= mix(1, bounce, 0.36); mix(c, bounceSrc, 0.09)`. **Never** `mix(c, plate, 0.10)` raw (green dash through the coat). Rim ×0.55. Edge `smoothstep(0.05, 0.80, a)`, 3-tap smear **edge only** (`dy=0.0030`, `cSharp = k0.rgb` straight). Grain = `fract(sin(dot(gl_FragCoord.xy, vec2(12.9898,78.233))) * 43758.5453)` — **FAIL** = IGN `fract(dot)` (vertical bars). Luma protect `<0.14` keeps dark paws. **No** sprite fade `py>0.90` (eats hind legs). Contact shadow is **on the road**. Copy [`bolt-key-gl.ts`](../scripts/bolt-key-gl/bolt-key-gl.ts) (`GPU_VER = 20`) + [`wet-fx.ts`](../scripts/bolt-key-gl/wet-fx.ts). **FAIL** if Grok copies `bolt-key-gl-scissor-prev.ts`. Law: [17](17-live-compositor.md) · [21](21-neon-premul-anti-sticker.md).
 
 **PRIORITY 0 COMPOSITE GATE** — when compositing the **sealed** cycle (`lock/bolt-gallop-cycle.mp4` keyed onto Video A), **light + contact are HARD — not optional polish.** Before KEEP / Hang: grade the cutout from **this** empty plate family + small paw contact shadow multiply on the *road*. Missing either = **FAIL** (warm/neutral sticker on frost / dog floats). Scale = [13](13-make-bolt-lane.md) + [13d](13d-auto-scale.md) (lane-width fill = FAIL; Grok must not pick size by eye). After scale, MUST `gallop-clock` / `assertGallopClock` ([14c](14c-gallop-clock.md)). Order: key → despill (`13c`) → **`computeScale` / `assertScale`** (`13d`) → **`gallop-clock` / `assertGallopClock`** (`14c`) → plate grade → contact → **ground FX row (16)** → shared grain. **FAIL** if Grok keys the cycle and hangs without scale + gallop-clock + light + contact + FX-row proof.
 
@@ -62,15 +62,22 @@ Do not ship one lit green-screen turnaround forever. Grade the cutout **FROM** t
 
 Bake as a 3-parameter LUT per catalog paint — not a new Imagine dog. Optional cheat: sample 3 plate pixels (shoulder-L, shoulder-R, zenith) and soft-multiply. Further = Citadel relight, not Lane.
 
-**Plate bounce (Live, law 17) — HARD, not optional cheat.** Sample the road texel behind the dog every frame:
+**Plate bounce (Live, law 17 + **21**) — HARD, not optional cheat.** Sample the road behind the dog every frame. **Do not mix raw plate** (neon dash under the torso = green through the coat). GPU_VER 20:
 
 ```
-bounce = plateRGB / max(plateLuma, 0.07)
-c *= mix(vec3(1.0), bounce, 0.32)
-c  = mix(c, plate, 0.10)
-rim *= 0.35
-3 vertical taps (dy≈0.0055) to pick up plate shutter
+p0,p1,p2 = plate at vScreen ± 0.018 x
+plate = (p0+p1+p2)/3
+neonM = smoothstep(0.035, 0.14, G-max(R,B))
+bounceSrc = mix(plate, vec3(luma), neonM)
+bounce = bounceSrc / max(luma(bounceSrc), 0.07)
+c *= mix(vec3(1.0), bounce, 0.36)
+c  = mix(c, bounceSrc, 0.09)                 // NOT raw plate
+c  = mix(c, bounceSrc, 0.22 * edge * edge)
+rim *= 0.55
+3 vertical taps, dy=0.0030, 0.72/0.14/0.14, INTERIOR SHARP (cSharp = k0.rgb straight)
 ```
+
+**FAIL:** `mix(c, plate, 0.10)` raw · 5-tap body smear (`dy=0.0062`) · `cSharp = k0.rgb / k0.a` (double unpremul). Premul is **filter space only**; Bolt over-composite is straight `SRC_ALPHA, ONE_MINUS_SRC_ALPHA`. Law: [21](21-neon-premul-anti-sticker.md).
 
 `uniformsFor(chap)` only tints after bounce (frost ≠ ember). A 3-parameter LUT without sampling THIS plate still reads sticker. Code: [`bolt-key-gl.ts`](../scripts/bolt-key-gl/bolt-key-gl.ts).
 
@@ -205,10 +212,13 @@ Reuse `inverseRibbon` from glow hit-tests.
 
 - Blob center = chest → hovers  
 - \(\sigma_s\) too long → skid mark  
-- \(k\) too high on frost → hole in snow (cap per biome)  
+- \(k\) too high on frost → hole in snow (cap per biome). KEEP frost `CONTACT_K=0.20`, shadow `ry=0.24*pw` (0.38 = skateboard oval)
+- Prints multiply RGB < 0.3 on frost → black board sliding under paws. KEEP print `[0.66, 0.74, 0.70]`
+- 5-tap smear on the whole sprite → Bolt looks out of focus. Interior must stay sharp ([21](21-neon-premul-anti-sticker.md))  
 - Shadow on top of cutout → sticker outline (under, always)  
 - Fixed pixel size while \(w\) changes → wrong weight vs distance  
 
 **Rule:** contact = function on the ribbon, multiplied into the plate, softer than the dog, timed to the stride.
 
 Sealed 2026-09-20 — anti-sticker + contact shadow + Live plate bounce (law 17).
+GPU_VER 20 — neon-safe bounce + premul-edge smear + frost contact/print KEEP ([21](21-neon-premul-anti-sticker.md)).
