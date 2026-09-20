@@ -50,8 +50,11 @@ This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play
 | [docs/13d-auto-scale.md](docs/13d-auto-scale.md) | Auto-scale Bolt from the road — `computeScale` / `assertScale`. Grok must not pick size by eye. |
 | [docs/14-rotary-gallop.md](docs/14-rotary-gallop.md) | Rotary gallop + ribbon turn. Sibling of 13. **REUSE** sealed [`lock/bolt-gallop-cycle.mp4`](../lock/bolt-gallop-cycle.mp4); hard-cut seam. |
 | [docs/14c-gallop-clock.md](docs/14c-gallop-clock.md) | Gallop clock anti-saccadé — native 96 fps, `CYCLE_FRAMES=534`, phase from `plate_time`, `assertGallopClock`. |
-| [docs/15-gpu-compositor.md](docs/15-gpu-compositor.md) | **GPU compositor** — WebGL; hung [`scripts/bolt-key-gl/bolt-key-gl.ts`](scripts/bolt-key-gl/bolt-key-gl.ts); canon 6 s / 534-frame cycle; ban `getImageData` hot path. |
-| [docs/COLD_START-gpu-6s.md](docs/COLD_START-gpu-6s.md) | Kitchen paste — REUSE 6s lock + GPU law 15. |
+| [docs/15-gpu-compositor.md](docs/15-gpu-compositor.md) | **GPU compositor** — WebGL; hung [`scripts/bolt-key-gl/bolt-key-gl.ts`](scripts/bolt-key-gl/bolt-key-gl.ts); canon 6 s / 534-frame cycle; FX table drawn in this family; ban `getImageData` hot path. |
+| [docs/16-biome-ground-fx.md](docs/16-biome-ground-fx.md) | **Biome ground FX + grade** — paw prints / splash / dust per `{PAINT}`. Frost-parity for any biome. |
+| [docs/00-PRIORITY0-any-biome.md](docs/00-PRIORITY0-any-biome.md) | **PRIORITY 0 any biome** — GPU + sealed 6 s + FX table. Frost-parity for a cold Grok / random player. |
+| [docs/COLD_START-any-biome.md](docs/COLD_START-any-biome.md) | Kitchen paste — cook **any** biome (supersedes COLD_START-gpu-6s as the cook paste). |
+| [docs/COLD_START-gpu-6s.md](docs/COLD_START-gpu-6s.md) | Kitchen note — REUSE 6s lock + GPU law 15. Cook paste superseded by [COLD_START-any-biome.md](docs/COLD_START-any-biome.md). |
 | [scripts/curvature-sample/](scripts/curvature-sample/) | Cook-time adaptive resample — `node demo.js`; `resamplePath` → write `path.json`. Not play LanePlayer. |
 | [scripts/chroma-despill/](scripts/chroma-despill/) | Cook-time vector despill — `node demo.js`; `vectorDespill` after key, before grade. Not play LanePlayer. |
 | [scripts/bolt-scale/](scripts/bolt-scale/) | Cook-time Bolt auto-scale — `node demo.js`; `computeScale` / `assertScale` from lane width. |
@@ -87,6 +90,9 @@ Kitchen — do not read aloud. biome / Sprint cook / lane / B-stack / green-scre
 #    biome/docs/14-rotary-gallop.md ← rotary gallop + ribbon turn
 #    biome/docs/14c-gallop-clock.md ← gallop-clock anti-saccadé (assertGallopClock)
 #    biome/docs/15-gpu-compositor.md ← GPU compositor (bolt-key-gl.ts; ban getImageData)
+#    biome/docs/16-biome-ground-fx.md ← biome-adaptive ground FX + grade
+#    biome/docs/00-PRIORITY0-any-biome.md ← Frost-parity for ANY biome (cold Grok)
+#    biome/docs/COLD_START-any-biome.md ← cook paste (supersedes COLD_START-gpu-6s)
 # then biome/GROK.md
 
 # stills + films = imagine-hooks first+last (never Imagine Agent video)

@@ -1,5 +1,7 @@
 # PRIORITY 0 — New Grok / new convo (Frost or any Lane biome)
 
+**Cook paste superseded for any biome.** Use [`COLD_START-any-biome.md`](COLD_START-any-biome.md) as the Build first-message paste (GPU + sealed 6 s + biome-adaptive ground FX). This file stays the GPU + 6 s cycle kitchen note.
+
 **Goal:** same white Bolt gallop as the sealed 6 s green cycle, composited with **GPU** (not CPU key).
 
 ## 1. Cycle (do not invent)

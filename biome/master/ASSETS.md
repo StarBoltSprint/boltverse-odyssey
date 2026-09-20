@@ -15,4 +15,6 @@ Every hung plate here already has a Pack `assetId` on registry `main`. Format `a
 
 **HARD LOCK — Chat biome catalog (on ask).** Player list = hung chapters from this index (never invent). Hang grows the list; wipe shrinks it = FAIL.
 
-Chests, Hang, forge, and Engine **reference** these ids. They do not remint. Do not touch the hung mp4/jpg binaries for this pointer.
+Chests, Hang, forge, and Engine **reference** these ids. They do not remint. Do not invent local ids for `bolt-prev.mp4` (archive only).
+
+**`bolt.mp4` pointer:** same `assetId` path as before. Bytes must match lock 6 s canon (`lock/bolt-gallop-cycle.mp4`). Motion SoT stays `lock/`. Do not remint when remuxing the same cycle onto this path.

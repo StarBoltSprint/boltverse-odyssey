@@ -1,7 +1,7 @@
 **PRIORITY 0 — Bolt sprint for new biomes = REUSE, not invent.**
 A fresh Grok in a new Build convo must **NOT** cook a new Bolt gallop from scratch (no new Imagine dog sprint). Pipeline is:
 1. Empty road plate only (Video A) — biome décor, no dog.
-2. Take sealed [`bolt-gallop-cycle.mp4`](bolt-gallop-cycle.mp4) as the Bolt motion asset (**CANON ~5.56 s / 534 frames / 96 fps** — already rear / green / rotary). Same bytes as [`bolt-gallop-cycle-96fps-loop6s.mp4`](bolt-gallop-cycle-96fps-loop6s.mp4). Play: `loop=true`, rate **1×**. Never seek every frame. Never cache 534 canvases. Old [`bolt-gallop-cycle-0.93s-prev.mp4`](bolt-gallop-cycle-0.93s-prev.mp4) (89-frame) = **ARCHIVE only — FAIL if used as play cycle**. Law: [`15-gpu-compositor`](../biome/docs/15-gpu-compositor.md).
+2. Take sealed [`bolt-gallop-cycle.mp4`](bolt-gallop-cycle.mp4) as the Bolt motion asset (**CANON ~5.56 s / 534 frames / 96 fps** — already rear / green / rotary). Same bytes as [`bolt-gallop-cycle-96fps-loop6s.mp4`](bolt-gallop-cycle-96fps-loop6s.mp4). Play: `loop=true`, rate **1×**. Never seek every frame. Never cache 534 canvases. Old [`bolt-gallop-cycle-0.93s-prev.mp4`](bolt-gallop-cycle-0.93s-prev.mp4) (89-frame) = **ARCHIVE only — FAIL if used as play cycle**. Law: [`15-gpu-compositor`](../biome/docs/15-gpu-compositor.md) · any-biome [`00-PRIORITY0-any-biome`](../biome/docs/00-PRIORITY0-any-biome.md) · FX [`16-biome-ground-fx`](../biome/docs/16-biome-ground-fx.md).
 3. Key + despill cutout from that cycle.
 4. Composite cutout onto the scrolling empty plate (AFF stack). Speed/scroll = plate; gait = locked cycle.
 
@@ -39,7 +39,9 @@ Hang ≠ wipe.
 Canonical cycle = **~5.56 s · 96 fps · 768×1168 · 534 frames** (rear white GSD, flat `#00FF00`).  
 `CYCLE_FPS=96`, `CYCLE_FRAMES=534`, `STRIDES_PER_CYCLE=22`.  
 Play: `loop=true`, rate **1×**. Never seek every frame. Never harvest 534 canvases.  
-Law: [`biome/docs/15-gpu-compositor.md`](../biome/docs/15-gpu-compositor.md) · paste [`biome/docs/COLD_START-gpu-6s.md`](../biome/docs/COLD_START-gpu-6s.md).
+Law: [`biome/docs/15-gpu-compositor.md`](../biome/docs/15-gpu-compositor.md) · any-biome [`00-PRIORITY0-any-biome.md`](../biome/docs/00-PRIORITY0-any-biome.md) · FX [`16-biome-ground-fx.md`](../biome/docs/16-biome-ground-fx.md). Cook paste: [`COLD_START-any-biome.md`](../biome/docs/COLD_START-any-biome.md) (supersedes [`COLD_START-gpu-6s.md`](../biome/docs/COLD_START-gpu-6s.md) for any biome).
+
+`biome/master/bolt.mp4` must match this 6 s canon (same bytes or remux). Old master = `biome/master/bolt-prev.mp4` (archive). SoT stays `lock/`.
 
 Empty-road plates stay **48 fps**. Bolt teacher at 96 is OK (more dog frames). Loop seam = **hard cut** on the closed period. Do **NOT** optical-flow morph last→first.
 
