@@ -18,7 +18,7 @@ A fresh Grok in a new Build convo must **NOT** cook a new Bolt gallop from scrat
 Style teacher [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) still applies if any still / repose is needed; motion teacher = the sealed cycle mp4.
 Loop seam = **hard cut** on the closed period — do **NOT** optical-flow morph last→first. Preview only: [`lock/bolt-gallop-cycle-12s-preview.mp4`](../../lock/bolt-gallop-cycle-12s-preview.mp4). Hang ≠ wipe.
 
-**KEEP 96 fps (SmiR 2026-09-20):** the sealed cycle is densified from the 24fps hard-cut — same duration/cadence, more fluid. Empty-road plates stay **48 fps**. Bolt teacher at 96 is OK (more dog frames). Do not recook 24 / 48 / 240.
+**CANON 6 s / 96 fps (SmiR 2026-09-20):** [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) = **~5.56 s · 534 frames · 96 fps**. `CYCLE_FRAMES=534`, `STRIDES_PER_CYCLE=22`. Play: loop 1×; no per-frame seek. Old 0.93 s / 89-frame lock = archive only — **FAIL** as play cycle. Empty-road plates stay **48 fps**. Law: [15-gpu-compositor.md](15-gpu-compositor.md). Do not recook 24 / 48 / 240.
 
 ## Not “more frames”
 
@@ -70,7 +70,7 @@ Front ≈ weight + brake / aim. Rear ≈ push. Trunk **closes then opens** the s
 
 ### Cadence
 
-Sprint: ~**3.5–4.5 strides / s**. Clock = [`gallop-clock`](../scripts/gallop-clock/) (`strideHz≈4`):
+Sprint: ~**3.5–4.5 strides / s**. Clock = [`gallop-clock`](../scripts/gallop-clock/) (`strideHz≈4`, `STRIDES_PER_CYCLE=22`):
 
 ```text
 phase = (plate_time * strideHz / stridesPerCycle) % 1

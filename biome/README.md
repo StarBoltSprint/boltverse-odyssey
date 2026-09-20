@@ -49,7 +49,9 @@ This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play
 | [docs/13c-green-despill.md](docs/13c-green-despill.md) | Green key + vector despill factory. Sibling of 13 / 13b. Not the road plate. |
 | [docs/13d-auto-scale.md](docs/13d-auto-scale.md) | Auto-scale Bolt from the road — `computeScale` / `assertScale`. Grok must not pick size by eye. |
 | [docs/14-rotary-gallop.md](docs/14-rotary-gallop.md) | Rotary gallop + ribbon turn. Sibling of 13. **REUSE** sealed [`lock/bolt-gallop-cycle.mp4`](../lock/bolt-gallop-cycle.mp4); hard-cut seam. |
-| [docs/14c-gallop-clock.md](docs/14c-gallop-clock.md) | Gallop clock anti-saccadé — native 96 fps, phase from `plate_time`, `assertGallopClock`. |
+| [docs/14c-gallop-clock.md](docs/14c-gallop-clock.md) | Gallop clock anti-saccadé — native 96 fps, `CYCLE_FRAMES=534`, phase from `plate_time`, `assertGallopClock`. |
+| [docs/15-gpu-compositor.md](docs/15-gpu-compositor.md) | **GPU compositor** — WebGL one-pass; canon 6 s / 534-frame cycle; loop 1×; no harvest. |
+| [docs/COLD_START-gpu-6s.md](docs/COLD_START-gpu-6s.md) | Kitchen paste — GPU + 6 s cycle constants. |
 | [scripts/curvature-sample/](scripts/curvature-sample/) | Cook-time adaptive resample — `node demo.js`; `resamplePath` → write `path.json`. Not play LanePlayer. |
 | [scripts/chroma-despill/](scripts/chroma-despill/) | Cook-time vector despill — `node demo.js`; `vectorDespill` after key, before grade. Not play LanePlayer. |
 | [scripts/bolt-scale/](scripts/bolt-scale/) | Cook-time Bolt auto-scale — `node demo.js`; `computeScale` / `assertScale` from lane width. |

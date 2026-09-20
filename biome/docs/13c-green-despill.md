@@ -3,7 +3,7 @@
 HARD LOCK companion to `13-make-bolt-lane.md` + `13b-anti-sticker-contact.md`.  
 **Green is only for making the cutout.** It is not the world. The world stays an empty-road plate. Bolt stays a keyed layer on the ribbon.
 
-Companion: `10-bolt-cutout-law.md` (B → green → key), `12` / `invertRibbon`, cook tool optional `biome/scripts/chroma-despill/` when hung.
+Companion: `10-bolt-cutout-law.md` (B → green → key), `12` / `invertRibbon`, cook tool optional `biome/scripts/chroma-despill/` when hung. Live play compositor: [15-gpu-compositor.md](15-gpu-compositor.md) (WebGL one-pass; `greenness = G - max(R,B)` in shader; no `getImageData` hot path).
 
 ## What the green shot is for
 
@@ -156,5 +156,7 @@ C  compositor: plate + contact + Bolt@P(s,λ) + holdouts + grain
 - Harder key instead of despill (eats white coat)  
 - Premultiply before despill on straight RGB  
 - Skipping contact / paw anchor after a perfect key (still a sticker — see 13b)
+
+Play compositor (after this factory): [15-gpu-compositor.md](15-gpu-compositor.md) — GPU one-pass from the sealed 6 s / 534-frame cycle. Do not harvest 534 canvases.
 
 Sealed 2026-09-20 — green factory + despill for Lane cutouts.
