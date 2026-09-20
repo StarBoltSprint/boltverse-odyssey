@@ -5,6 +5,8 @@
 
 Sealed 2026-09-20 after Frost Live. Hang ≠ wipe.
 
+Frost **picture** KEEP (wide nationale, aurora, neon dashes, φ measures) lives in [20-frost-aurora-proportions.md](20-frost-aurora-proportions.md). This file is the **GPU**. That file is the **plate**. Both required.
+
 ---
 
 ## Do not copy the sketch
@@ -54,6 +56,8 @@ despill: G → max(R,B)
 
 Then `a = smoothstep(0.05, 0.78, a)` — dirty edge, not knife.
 
+Live also 5-tap alpha erode + leftover-G kill on top of this. Do not drop luma protect.
+
 ---
 
 ## Anti-sticker = light from THIS plate (HARD)
@@ -62,7 +66,7 @@ After key:
 
 ```
 bounce = plateRGB / max(plateLuma, 0.07)
-c *= mix(1, bounce, 0.32)
+c *= mix(1, bounce, 0.32)          // frost aurora KEEP: 0.40 (neon road)
 c  = mix(c, plate, 0.10)
 rim *= 0.35
 3 vertical taps (dy≈0.0055) to pick up plate shutter
@@ -72,13 +76,15 @@ Biome knobs (`uniformsFor(chap)`):
 
 | `{PAINT}` | cool | sat | under | rim |
 |---|---|---|---|---|
-| frost / ice / crystal | 0.84, 0.93, 1.12 | 0.58 | 0.74 | 0.04, 0.055, 0.08 |
+| frost / ice / crystal | 0.84, 0.93, 1.12 | **0.60** (was 0.58; 0.76 = studio sticker on neon snow) | 0.74 | 0.04, 0.055, 0.08 |
 | tide / wet | 0.82, 0.95, 1.08 | 0.62 | 0.76 | 0.05, 0.09, 0.12 |
 | night | 0.78, 0.84, 1.14 | 0.68 | 0.70 | 0.07, 0.09, 0.16 |
 | war / ash / ember | 0.96, 0.94, 0.90 | 0.78 | 0.82 | 0.12, 0.10, 0.08 |
 | canyon / dusk / default | 1.06, 0.97, 0.84 | 0.90 | 0.82 | 0.16, 0.09, 0.03 |
 
 Never ship one studio grade on every biome.
+
+Frost contact `k` **0.20** on bright snow (0.34 punches a skateboard-box). Shadow on the **road**, ellipse flat, not a dark rectangle under the paws.
 
 ---
 
@@ -115,7 +121,7 @@ Never `*24` / 1-of-N on the dog. Never 0.93 s / 89-frame archive as play.
 | Grain | film grain | **vertical bars** |
 | Light | coat matches THIS plate | studio sticker |
 | FX | biome-correct, scroll with road | same white splash / stuck to screen |
-| Scale | withers 0.22–0.32 (13d) | lane-width fill |
+| Scale | laneFrac ≤ 0.55 (13d). Wide nationale: withers ~0.10 is KEEP ([20](20-frost-aurora-proportions.md)) | lane-width fill / grow to 0.22 on a wide road |
 | Jump | dog still readable | vanishes into fog |
 
-Related: [15](15-gpu-compositor.md) · [16](16-biome-ground-fx.md) · [13b](13b-anti-sticker-contact.md) · [00](00-PRIORITY0-any-biome.md) · [WIRE](../scripts/bolt-key-gl/WIRE.md)
+Related: [15](15-gpu-compositor.md) · [16](16-biome-ground-fx.md) · [13b](13b-anti-sticker-contact.md) · [20](20-frost-aurora-proportions.md) · [00](00-PRIORITY0-any-biome.md) · [WIRE](../scripts/bolt-key-gl/WIRE.md)
