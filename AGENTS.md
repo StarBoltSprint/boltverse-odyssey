@@ -27,7 +27,7 @@ A fresh Grok in a new Build convo must **NOT** cook a new Bolt gallop from scrat
 3. Key + despill cutout from that cycle.
 4. Composite cutout onto the scrolling empty plate (AFF stack). Speed/scroll = plate; gait = locked cycle.
 
-**PRIORITY 0 COMPOSITE GATE** — after REUSE (key the sealed cycle onto Video A), MUST **scale + plate-grade + paw contact** ([13](biome/docs/13-make-bolt-lane.md) / [13b](biome/docs/13b-anti-sticker-contact.md) / [13c](biome/docs/13c-green-despill.md)) **BEFORE** KEEP / Hang. Key-and-hang without proof = **FAIL**.
+**PRIORITY 0 COMPOSITE GATE** — after REUSE (key the sealed cycle onto Video A), MUST **scale + plate-grade + paw contact** ([13](biome/docs/13-make-bolt-lane.md) / [13b](biome/docs/13b-anti-sticker-contact.md) / [13c](biome/docs/13c-green-despill.md) / [13d](biome/docs/13d-auto-scale.md)) **BEFORE** KEEP / Hang. After key, MUST run `computeScale` / `assertScale` ([`biome/scripts/bolt-scale/`](biome/scripts/bolt-scale/)) before KEEP. Key-and-hang without proof = **FAIL**.
 
 **FAIL** if Grok invents a new Bolt sprint clip for a biome cook. Only SmiR can authorize a new cycle cook to replace the lock.
 Style teacher [`lock/bolt-back.jpg`](lock/bolt-back.jpg) still applies if any still / repose is needed; motion teacher = the sealed cycle mp4.
@@ -78,8 +78,9 @@ Read **[GROK.md](GROK.md)** next. Stills = **[LAYOUT.md](LAYOUT.md)** + RIG-PROM
 3. **[`biome/docs/09-recette-biome.md`](biome/docs/09-recette-biome.md)** — REQUIRED full checklist (empty→cousin→speed→dealer→box; SPAWN/WIDTH; road-bar/blast)
 4. [`biome/docs/08-plate-speed.md`](biome/docs/08-plate-speed.md) when matching cousin rush
 5. [`biome/docs/05-key.md`](biome/docs/05-key.md) + [`biome/reference/LanePlayer.tsx`](biome/reference/LanePlayer.tsx)
-6. [`biome/docs/10-bolt-cutout-law.md`](biome/docs/10-bolt-cutout-law.md) — HARD Bolt cutout (REUSE lock/bolt-gallop-cycle.mp4 → key + composite; then COMPOSITE GATE 13/13b/13c scale+light+contact before KEEP)
+6. [`biome/docs/10-bolt-cutout-law.md`](biome/docs/10-bolt-cutout-law.md) — HARD Bolt cutout (REUSE lock/bolt-gallop-cycle.mp4 → key + composite; then COMPOSITE GATE 13/13b/13c/13d scale+light+contact before KEEP)
 **HARD — living-film Lane control** (not SprintCore, not Nebula editor stats): [`biome/docs/12-lane-path-ribbon.md`](biome/docs/12-lane-path-ribbon.md). After empty+cutout KEEP, author `path.json`. Without = film only. With = steerable game.
+**HARD — Bolt auto-scale:** [`biome/docs/13d-auto-scale.md`](biome/docs/13d-auto-scale.md) — `computeScale` / `assertScale` from the road ([`biome/scripts/bolt-scale/`](biome/scripts/bolt-scale/)). Grok must not pick size by eye.
 Never dump this to the player.
 
 **HARD LOCK — Hang ≠ wipe.** New biome / sprint run = ADD `road-<biome>*.mp4` + plates-index / dealer entries. KEEP canyon→cars→duel→night→war. NEVER `rm` `biome/master` / `public/master`. NEVER Tide-only playlist unless SmiR / player explicitly says replace the default Beat. Recook Bolt may replace `bolt.mp4` only. Law: [`biome/docs/09-recette-biome.md`](biome/docs/09-recette-biome.md).

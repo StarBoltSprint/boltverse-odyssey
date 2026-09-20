@@ -24,7 +24,7 @@ A fresh Grok in a new Build convo must **NOT** cook a new Bolt gallop from scrat
 3. Key + despill cutout from that cycle.
 4. Composite cutout onto the scrolling empty plate (AFF stack). Speed/scroll = plate; gait = locked cycle.
 
-**PRIORITY 0 COMPOSITE GATE** — after REUSE (key the sealed cycle onto Video A), MUST **scale + plate-grade + paw contact** ([13](docs/13-make-bolt-lane.md) / [13b](docs/13b-anti-sticker-contact.md) / [13c](docs/13c-green-despill.md)) **BEFORE** KEEP / Hang. Key-and-hang without proof = **FAIL**.
+**PRIORITY 0 COMPOSITE GATE** — after REUSE (key the sealed cycle onto Video A), MUST **scale + plate-grade + paw contact** ([13](docs/13-make-bolt-lane.md) / [13b](docs/13b-anti-sticker-contact.md) / [13c](docs/13c-green-despill.md) / [13d](docs/13d-auto-scale.md)) **BEFORE** KEEP / Hang. After key, MUST run `computeScale` / `assertScale` ([`scripts/bolt-scale/`](scripts/bolt-scale/)) before KEEP. Key-and-hang without proof = **FAIL**.
 
 **FAIL** if Grok invents a new Bolt sprint clip for a biome cook. Only SmiR can authorize a new cycle cook to replace the lock.
 Style teacher [`lock/bolt-back.jpg`](../lock/bolt-back.jpg) still applies if any still / repose is needed; motion teacher = the sealed cycle mp4.
@@ -40,14 +40,14 @@ Loop seam = **hard cut** on the closed period — do **NOT** optical-flow morph 
 1. **[PLAY.md](PLAY.md)** — engine lock
 2. **[docs/06-techniques.md](docs/06-techniques.md)** — what worked r38 (Sprint cook bible)
 3. **[docs/09-recette-biome.md](docs/09-recette-biome.md)** — empty → cousin → speed → dealer → box
-4. **[docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md)** — HARD Bolt cutout (REUSE lock/bolt-gallop-cycle.mp4 → key + composite; then COMPOSITE GATE 13/13b/13c scale+light+contact before KEEP)
+4. **[docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md)** — HARD Bolt cutout (REUSE lock/bolt-gallop-cycle.mp4 → key + composite; then COMPOSITE GATE 13/13b/13c/13d scale+light+contact before KEEP)
 5. **[docs/11-plate-order.md](docs/11-plate-order.md)** — HARD LOCK dealer playlist (canyon → cars → duel → night → war)
 6. **[docs/05-key.md](docs/05-key.md)** — chroma + crown, not luma
 7. **[reference/LanePlayer.tsx](reference/LanePlayer.tsx)** — r38 compositor
 
 **HARD — living-film Lane control** (not SprintCore, not Nebula editor stats): after empty road + Bolt cutout KEEP, author `path.json` per **[docs/12-lane-path-ribbon.md](docs/12-lane-path-ribbon.md)**. Without `path.json` = film only. With `path.json` = steerable game (`s`,`λ` ribbon).
 
-**HARD — make controllable Bolt on a Lane:** [docs/13-make-bolt-lane.md](docs/13-make-bolt-lane.md) — product brief / order of work. [docs/13b-anti-sticker-contact.md](docs/13b-anti-sticker-contact.md) — compositor anti-sticker + contact shadow. [docs/13c-green-despill.md](docs/13c-green-despill.md) — green key + despill factory. [docs/14-rotary-gallop.md](docs/14-rotary-gallop.md) — rotary gallop + ribbon turn.
+**HARD — make controllable Bolt on a Lane:** [docs/13-make-bolt-lane.md](docs/13-make-bolt-lane.md) — product brief / order of work. [docs/13b-anti-sticker-contact.md](docs/13b-anti-sticker-contact.md) — compositor anti-sticker + contact shadow. [docs/13c-green-despill.md](docs/13c-green-despill.md) — green key + despill factory. [docs/13d-auto-scale.md](docs/13d-auto-scale.md) — auto-scale from the road (`computeScale` / `assertScale`). [docs/14-rotary-gallop.md](docs/14-rotary-gallop.md) — rotary gallop + ribbon turn.
 
 **HARD LOCK — Hang ≠ wipe.** New biome = ADD `road-<biome>*.mp4` + plates-index / dealer entries. KEEP hung canyon→cars→duel→night→war. NEVER `rm` masters. Recook Bolt = `bolt.mp4` only. Law: [docs/09-recette-biome.md](docs/09-recette-biome.md).
 

@@ -1,0 +1,58 @@
+# 13d — Auto-scale Bolt to the plate road
+
+HARD LOCK companion to `13-make-bolt-lane.md` + composite gate.  
+**Grok must not choose Bolt size by eye.** A cook script sets scale from the road.
+
+Tool: [`biome/scripts/bolt-scale/`](../scripts/bolt-scale/).
+
+## Why
+
+Sealed cycle REUSE still FAIL when the cutout is pasted at Imagine’s native size (lane-wide dog). Rules in chat get ignored. **Algo > hope.**
+
+## Priority
+
+1. **HARD — anti-truck** `laneFrac ∈ [0.30, 0.55]` (k ≈ 0.40 preferred). Dog ≈ truck = **FAIL**.  
+2. **withers** target ~0.27 of frame, band 0.22–0.32.  
+3. **`withersMin` is soft** — do not grow Bolt into the lane just to hit 0.22. Pass `hardWithersMin` only when SmiR wants that fight (then assert may FAIL if lane cannot hold it).  
+4. Measure `boltWithersPx` at the **shoulders**, not ear tips (ear bbox inflates height → wrong scale).
+
+## Formula
+
+Prefer withers target, then HARD-clamp stance to the lane band:
+
+\[
+\mathrm{scale}_{0}=\frac{H_{\mathrm{target}}\,H_{\mathrm{frame}}}{H_{\mathrm{shoulders}}}
+\quad\text{then}
+\quad
+\mathrm{laneFrac}=\frac{W_{\mathrm{bolt}}\,\mathrm{scale}}{W_{\mathrm{lane}}}\in[0.30,\,0.55]
+\]
+
+- \(k_{\mathrm{lane}} \approx 0.40\) (stance ≈ 35–45% of lane — not 70%+)  
+- \(W_{\mathrm{lane}}\) from `path.json` `w(s)` at paw plant (or road mask width in px)  
+- \(W_{\mathrm{bolt}}\) from keyed cycle alpha bbox (stance)  
+- \(H_{\mathrm{shoulders}}\) = withers at **shoulders**, not ears  
+
+Play:
+
+\[
+\mathrm{scale}(s)=\mathrm{scale}_0\cdot\mathrm{clamp}\!\left(\frac{w(s)}{w_{\mathrm{ref}}},\,0.85,\,1.15\right)
+\]
+
+## Order (PRIORITY 0)
+
+1. Empty plate + `path.json`  
+2. Key sealed `lock/bolt-gallop-cycle.mp4`  
+3. Despill → **`computeScale` + `assertScale`** → plate grade → contact → grain  
+4. Hang only if assert PASS  
+
+**FAIL:** `laneFrac > 0.55` (dog≈truck) or `laneFrac < 0.30`. withersMin alone is not KEEP-block unless `hardWithersMin`. No KEEP on truck.
+
+## Not this
+
+- Asking Imagine to “draw a smaller dog” (new sprint = banned)  
+- One hardcoded px scale for every biome  
+- Scaling the *plate* to fit Bolt  
+- Measuring withers to the ear tips  
+- Growing the dog past the lane to hit withersMin  
+
+Sealed 2026-09-20 — auto-scale cook gate (anti-truck HARD).
