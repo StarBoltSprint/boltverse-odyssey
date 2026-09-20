@@ -2,6 +2,8 @@
 
 This folder is the **KEEP** of the Star Map, hung inside Odyssey as `constellation/`.
 
+**Room star map tap enters here.** Player journey: [`biome/docs/18-room-starmap-lena.md`](../biome/docs/18-room-starmap-lena.md).
+
 It is **not** biome/master. It is **not** Pack. It does **not** replace Sprint.
 
 Fresh Grok: read [`GROK.md`](GROK.md) then [`METHOD.md`](METHOD.md).

@@ -77,3 +77,9 @@ Bolt identity, gallop file, GPU path, scale, clock, Pack = **identical**.
 Use [COLD_START-any-biome.md](COLD_START-any-biome.md). Do **not** use the old Frost share paste that said “don’t use `lock/bolt-gallop-cycle.mp4`” — on `main` that file **is** the 6 s canon.
 
 Player boot (“start odyssey”) stays [START.md](../../START.md) — Welcome + teaser + play URL. This doc is **cook**, not Welcome.
+
+---
+
+## E. Journey after seal
+
+This biome cook is **after** the player seals a planet on the room star map and taps door A/B. ROOM (2 doors + center star map) → constellation Space LOD → seal planet → return room → door → **this biome sprint** → Dr Lena Paw-to-Galaxy climb → arrive sealed planet. Law: [18-room-starmap-lena.md](18-room-starmap-lena.md). Paste: [COLD_START-room-starmap.md](COLD_START-room-starmap.md). Map = destination. Door = depart. Hang ≠ wipe.

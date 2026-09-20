@@ -116,7 +116,7 @@ Ne jamais fondu **deux images avec un chien à deux places** (clone moteur).
 
 Picture **9:16**, object-fit contain.
 Hits sur **l'image**, pas la letterbox.
-Gauche ~40% = A (teal). Droite ~40% = B (gold). Centre ~20% = miss.
+Gauche ~40% = A (teal). Droite ~40% = B (gold). Centre = **star map** (tap → constellation Space LOD). Map = destination. Door = depart. Law: [biome/docs/18-room-starmap-lena.md](biome/docs/18-room-starmap-lena.md).
 
 ## Player — bugs tués (ne pas les recuire)
 
