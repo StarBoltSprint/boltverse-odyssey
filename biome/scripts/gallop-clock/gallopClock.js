@@ -13,14 +13,14 @@
 
 function defaultOptions(opts = {}) {
   return {
-    /** sealed cycle metadata (KEEP 96fps) */
+    /** sealed cycle metadata (CANON 6s / 534 / 96fps) */
     cycleFps: opts.cycleFps ?? 96,
-    cycleFrames: opts.cycleFrames ?? 89,
-    cycleDuration: opts.cycleDuration ?? 89 / 96,
+    cycleFrames: opts.cycleFrames ?? 534,
+    cycleDuration: opts.cycleDuration ?? 534 / 96,
     /** Lane target cadence (strides / second). 14-rotary: ~3.5–4.5; use 4. */
     strideHz: opts.strideHz ?? 4,
-    /** how many strides packed in one sealed cycle loop (hard-cut 1s ≈ 2 strides after ×2) */
-    stridesPerCycle: opts.stridesPerCycle ?? 2,
+    /** how many strides packed in one sealed cycle loop (~5.56 s ≈ 22 strides @ 4 Hz) */
+    stridesPerCycle: opts.stridesPerCycle ?? 22,
     /** min acceptable dog display fps vs plate (ratio) */
     minFpsRatio: opts.minFpsRatio ?? 0.85,
     ...opts,
@@ -106,19 +106,40 @@ function assertGallopClock({ dogFramesShown, windowSec, plateFps }, opts = {}) {
 /**
  * HTML/video element recipe for Grok Build (string — paste into player).
  */
+/**
+ * FAIL if a cook/play path still points at the archived 0.93s / 89-frame lock.
+ */
+function assertCanonCycle(opts = {}) {
+  const o = defaultOptions(opts);
+  if (o.cycleFrames === 89 || (o.cycleDuration > 0 && o.cycleDuration < 2)) {
+    throw new Error(
+      'assertCanonCycle FAIL: 0.93s/89-frame lock is ARCHIVE — do not play. CANON = 534 frames / ~5.56s / 96fps'
+    );
+  }
+  if (o.cycleFrames !== 534 || o.cycleFps !== 96) {
+    throw new Error(
+      `assertCanonCycle FAIL: expected CYCLE_FRAMES=534 CYCLE_FPS=96, got frames=${o.cycleFrames} fps=${o.cycleFps}`
+    );
+  }
+  return { cycleFrames: o.cycleFrames, cycleFps: o.cycleFps, stridesPerCycle: o.stridesPerCycle };
+}
+
 function videoClockSnippet(opts = {}) {
   const o = defaultOptions(opts);
   return [
-    '// Sealed cycle — native fps, plate_time master',
+    '// Sealed 6s cycle — native 96 fps, loop 1×, no per-frame seek',
     `const CYCLE_FPS = ${o.cycleFps};`,
-    `const STRIDE_HZ = ${o.strideHz};`,
+    `const CYCLE_FRAMES = ${o.cycleFrames};`,
     `const STRIDES_PER_CYCLE = ${o.stridesPerCycle};`,
-    'function syncGallop(videoEl, plateTime) {',
-    '  const loopsPerSec = STRIDE_HZ / STRIDES_PER_CYCLE;',
-    '  const u = (plateTime * loopsPerSec) % 1;',
-    '  videoEl.currentTime = u * (videoEl.duration || 1);',
-    '  // Do NOT: videoEl.playbackRate hacks that drop frames',
-    '  // Do NOT: drawImage every Nth canvas frame only',
+    'function wireGallop(videoEl) {',
+    '  videoEl.loop = true;',
+    '  videoEl.playbackRate = 1;',
+    '  videoEl.muted = true;',
+    '  videoEl.playsInline = true;',
+    '  // Do NOT: seek currentTime every rAF',
+    '  // Do NOT: harvest CYCLE_FRAMES canvases',
+    '  // Do NOT: playbackRate hacks that drop frames',
+    '  // Do NOT: play lock/bolt-gallop-cycle-0.93s-prev.mp4',
     '}',
   ].join('\n');
 }
@@ -130,5 +151,6 @@ module.exports = {
   roadSpeedForCadence,
   dsPerFrame,
   assertGallopClock,
+  assertCanonCycle,
   videoClockSnippet,
 };

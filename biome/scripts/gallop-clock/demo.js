@@ -5,13 +5,23 @@ const {
   roadSpeedForCadence,
   dsPerFrame,
   assertGallopClock,
+  assertCanonCycle,
   videoClockSnippet,
 } = require('./gallopClock');
 
-// 0.5s into plate @ 4Hz, 2 strides/cycle
+assertCanonCycle();
+console.log('assertCanonCycle PASS (534/96/22)');
+
+// 0.5s into plate @ 4Hz, 22 strides/cycle
 const a = frameAtPlateTime(0.5);
 console.log('frame@0.5s', a);
 console.log('phase@0', stridePhase(0), 'phase@0.25', stridePhase(0.25));
+
+try {
+  assertCanonCycle({ cycleFrames: 89, cycleDuration: 89 / 96 });
+} catch (e) {
+  console.log('assertCanonCycle 89-frame FAIL (expected):', e.message.slice(0, 72) + '…');
+}
 
 const speed = roadSpeedForCadence(80); // 80px along s per stride
 console.log('roadSpeed px/s', speed);

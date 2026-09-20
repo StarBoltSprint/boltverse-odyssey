@@ -171,7 +171,8 @@ For Grok only. Boot attaches **only** the Citadel preview. **Never print the pat
   3. **[`biome/docs/09-recette-biome.md`](biome/docs/09-recette-biome.md)** — REQUIRED full checklist (empty→cousin→speed→dealer→box; SPAWN/WIDTH; road-bar/blast)
 4. [`biome/docs/08-plate-speed.md`](biome/docs/08-plate-speed.md) when matching cousin rush
 5. [`biome/docs/05-key.md`](biome/docs/05-key.md) + [`biome/reference/LanePlayer.tsx`](biome/reference/LanePlayer.tsx)
-6. [`biome/docs/10-bolt-cutout-law.md`](biome/docs/10-bolt-cutout-law.md) — HARD Bolt cutout (REUSE lock/bolt-gallop-cycle.mp4 → key + composite; then COMPOSITE GATE 13/13b/13c scale+light+contact before KEEP)
+6. [`biome/docs/10-bolt-cutout-law.md`](biome/docs/10-bolt-cutout-law.md) — HARD Bolt cutout (REUSE lock/bolt-gallop-cycle.mp4 **CANON 6s/534/96fps** → key + composite; then COMPOSITE GATE 13/13b/13c/14c/15 scale+clock+GPU+light+contact before KEEP)
+7. [`biome/docs/15-gpu-compositor.md`](biome/docs/15-gpu-compositor.md) — GPU compositor + 6 s cycle constants. Kitchen paste: [`biome/docs/COLD_START-gpu-6s.md`](biome/docs/COLD_START-gpu-6s.md).
 Never dump this to the player.
 
 **HARD LOCK — Hang ≠ wipe.** New biome = ADD plates + `plates-index` / dealer entries. KEEP canyon→cars→duel→night→war. NEVER wipe masters. Tide-only playlist = FAIL. Law: [`biome/docs/09-recette-biome.md`](biome/docs/09-recette-biome.md).
