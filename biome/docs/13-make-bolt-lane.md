@@ -5,6 +5,8 @@ Product brief: **make a cutout that can be steered**, not bake a dog into Imagin
 
 Companion laws: `10-bolt-cutout-law.md` (identity / gallop / teacher), `12-lane-path-ribbon.md` + `12b-adaptive-curvature.md` (path table), `13b-anti-sticker-contact.md` (compositor anti-sticker + contact shadow), `13c-green-despill.md` (green key + despill factory), [14-rotary-gallop.md](14-rotary-gallop.md) (rotary gallop + ribbon turn), `biome/scripts/curvature-sample/` (`resamplePath`).
 
+**PRIORITY 0 COMPOSITE GATE** — after REUSE (key the sealed cycle onto Video A), **SCALE + plate LIGHT + paw CONTACT** are HARD before KEEP / Hang. This page owns **scale**. Light + contact = [13b](13b-anti-sticker-contact.md). Despill = [13c](13c-green-despill.md). Key-and-hang without proof = **FAIL**.
+
 ## What he is allowed to be
 
 - One white German Shepherd, camera glued behind the shoulders  
@@ -29,10 +31,10 @@ B-stack is the make. C-light / 3-take L-M-R (dog painted in) is how control dies
 1. **Silhouette first.** Behind-camera (strict rear when cook law says so), legs readable against ember *and* frost. If the outline only works on one biome, the dissolve will flash a hole.  
 2. **Paw-anchor.** Registration point at the paws, not the head. Ribbon \(P(s,\lambda)\) is a ground point. Head-anchored sprites lean off the road in hooks.  
 3. **Loop vs film.** An 8–12 frame gallop cycle, time-warped to plate duration, is enough. A second full-body movie only if you need coat flicker; still keyed, still empty of terrain.  
-4. **One scale.** Do not let Imagine resize him every plate. Fixed pixel height relative to plate height (e.g. ~0.28 of frame / withers band from `10`). The road comes to him via \(w(s)\), not the other way around.  
-5. **No ground shadow in the plate.** Shadow is a blob under the cutout, or none. A baked shadow in the mp4 will slide wrong when \(\lambda\) changes.
+4. **One scale (HARD FAIL).** Withers bbox height ~0.22–0.32 of frame; paws in the lower third. Bolt must **NOT** fill lane width. Same scale every play frame. Road perspective via ribbon \(w(s)\), not a giant cutout. Smoke **FAIL** if dog ≈ truck in lane. Do not let Imagine resize him every plate.  
+5. **No ground shadow in the plate.** Contact shadow is compositor multiply on the *road* ([13b](13b-anti-sticker-contact.md) — PRIORITY 0, not polish). A baked shadow in the mp4 will slide wrong when \(\lambda\) changes.
 
-Teacher: show `lock/bolt-back.jpg` in chat before any Bolt cook (PRIORITY 0). Pipeline: B → cycle → green → key (`10`).
+Teacher: show `lock/bolt-back.jpg` in chat before any Bolt cook (PRIORITY 0). Pipeline: **REUSE** sealed cycle → key (`10`) → **COMPOSITE GATE** scale + plate-grade + paw contact (`13` / `13b` / `13c`) **BEFORE** KEEP.
 
 ## How to make him controllable
 
@@ -73,6 +75,9 @@ Fail the two-minute draw → recook the road quieter. Do not add a joystick.
 - Reset \(m\) on every plate  
 - Parks–McClellan / 3D MAT / Coverage Axis as the player path  
 - Chat inventing the next architecture  
+- Giant cutout that fills the lane (dog ≈ truck) — **SCALE FAIL**  
+- One lit green-screen turnaround on every biome — **LIGHT FAIL**  
+- No paw contact shadow on the road — **CONTACT FAIL** (float)  
 
 Those are how he becomes a cutscene.
 

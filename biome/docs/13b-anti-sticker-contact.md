@@ -6,6 +6,8 @@ Bolt stays a **cutout**. Fix the **seam**, do not bake him into the mp4.
 Companion: `10-bolt-cutout-law.md`, `12-lane-path-ribbon.md`, `13-make-bolt-lane.md`.  
 After key, despill before grade (`13c-green-despill.md`).
 
+**PRIORITY 0 COMPOSITE GATE** — when compositing the **sealed** cycle (`lock/bolt-gallop-cycle.mp4` keyed onto Video A), **light + contact are HARD — not optional polish.** Before KEEP / Hang: grade the cutout from **this** empty plate family + small paw contact shadow multiply on the *road*. Missing either = **FAIL** (warm/neutral sticker on frost / dog floats). Scale = [13](13-make-bolt-lane.md) (lane-width fill = FAIL). Order: key → despill (`13c`) → plate grade → contact → shared grain. **FAIL** if Grok keys the cycle and hangs without scale + light + contact proof.
+
 ## What makes him look like a sticker
 
 - Knife-sharp alpha, no ground contact  
@@ -32,7 +34,9 @@ plate (empty road + glow)
 
 ---
 
-## A. Contact, not outline
+## A. Contact, not outline (PRIORITY 0 — HARD)
+
+Missing paw contact = float = **FAIL**. Not polish. Not a later pass.
 
 Anchor at the **paws**. Ribbon point \(P(s,\lambda)\) is dirt, not chest.
 
@@ -43,9 +47,9 @@ Anchor at the **paws**. Ribbon point \(P(s,\lambda)\) is dirt, not chest.
 
 ## B. Light, edge, time, scale
 
-### Light from the plate
+### Light from the plate (PRIORITY 0 — HARD)
 
-Do not ship one lit turnaround forever. Grade the cutout **per plate family** with three knobs only:
+Do not ship one lit green-screen turnaround forever. Grade the cutout **FROM** the empty plate family (rim from plate sun side, frost desat/cool, ember warm, darker under-legs). Warm/neutral cutout on a cold frost plate = **FAIL**. Grade **per plate family** with three knobs only:
 
 - lift / gamma toward plate mid  
 - rim from the same side as the plate’s brightest edge  
@@ -69,7 +73,7 @@ Sticker edge = binary alpha. Film edge = dirty.
 
 ### Scale and lean
 
-Fixed “0.28 of frame” is a sticker if the road is a vanishing trench.
+Base scale is HARD ([13](13-make-bolt-lane.md)): withers ~0.22–0.32 of frame; paws lower third; Bolt must **NOT** fill lane width. Fixed “0.28 of frame” is a sticker if the road is a vanishing trench — then:
 
 \[
 \text{scale} \propto \frac{w(s)}{w_{\mathrm{ref}}}

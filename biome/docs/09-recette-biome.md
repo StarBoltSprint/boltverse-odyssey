@@ -8,6 +8,8 @@ Code : [imagine-hooks.mjs](../../scripts/imagine-hooks.mjs) (`imagineBiomeClip` 
 **PRIORITY 0 — Bolt sprint for new biomes = REUSE, not invent.**
 A fresh Grok must **NOT** cook a new Bolt gallop from scratch (no new Imagine dog sprint). Pipeline: Video A empty road → **REUSE** [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) → key + despill → composite onto A (AFF). Speed/scroll = plate; gait = locked cycle. **FAIL** if Grok invents a new Bolt sprint clip. Only SmiR can authorize a new cycle cook to replace the lock.
 
+**PRIORITY 0 COMPOSITE GATE** — after REUSE, **BEFORE** Hang: **scale** (withers ~0.22–0.32 of frame; paws lower third; Bolt must **NOT** fill lane width) + **light** (grade FROM this empty plate family) + **contact** (paw shadow multiply on the *road*). Order: key → despill ([13c](13c-green-despill.md)) → plate grade → contact → shared grain. Law: [13](13-make-bolt-lane.md) · [13b](13b-anti-sticker-contact.md). **FAIL** if Grok keys the cycle and hangs without that proof.
+
 ---
 
 ## Architecture (ne pas rouvrir)
@@ -61,6 +63,7 @@ When a player asks **make a biome** / **add a biome** / cook a new sprint run: d
 3. **REUSE** [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) as the Bolt motion asset (already rear / green / rotary). No new Imagine dog sprint.
 4. Key + despill cutout from that cycle ([05-key.md](05-key.md) · [13c-green-despill.md](13c-green-despill.md)).
 5. Composite cutout onto Video A (AFF stack). Speed/scroll = plate; gait = locked cycle. L/M/R = code X shift of **one** Bolt layer.
+6. **PRIORITY 0 COMPOSITE GATE** — scale + plate light + paw contact **before Hang**. Proof (before/after stills or smoke). [13](13-make-bolt-lane.md) · [13b](13b-anti-sticker-contact.md). **FAIL** if Grok keys the cycle and hangs without that proof.
 
 **FAIL** if Grok invents a new Bolt sprint clip. Only SmiR can authorize a new cycle cook to replace the lock. Hall `imagineClip` banned here. Baking Bolt into a single final film = FAIL. 3-Bolt multi-lane mask = FAIL. No `XAI_API_KEY` for Video A → **REFUSE** / stock — do not invent a Bolt sprint.
 
@@ -76,7 +79,7 @@ When the player says **make / add a new biome** (any name — Tide, Frost, Ember
 | **Old Beat** | canyon→war stays as-is (Hang ≠ wipe). Player can play the old Beat **without** recook. |
 | **Bolt** | **Always** `@ref` [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg). **BAN** copying hung `biome/master/bolt.mp4` / canyon Bolt as the identity. Light bake from the **new** empty plaque is OK; identity = teacher. |
 | **Name + `{PAINT}`** | Allowed / encouraged. Tide is **one** example, not the only biome. Never refuse “I can only do Tide.” |
-| **Pipeline** | Video A + **REUSE** sealed cycle → key + composite. Do not invent a sprint. [10-bolt-cutout-law.md](10-bolt-cutout-law.md). |
+| **Pipeline** | Video A + **REUSE** sealed cycle → key + composite → **COMPOSITE GATE** scale+light+contact before Hang. Do not invent a sprint. [10-bolt-cutout-law.md](10-bolt-cutout-law.md) · [13](13-make-bolt-lane.md) · [13b](13b-anti-sticker-contact.md). |
 | **Catalog** | Chat lists **hung** biomes only. A biome in cook is **not** hung until hung. |
 
 ---
@@ -150,11 +153,11 @@ Hang **seulement** si le travelling est un rush, pas un pan de still.
 
 **HARD law:** [10-bolt-cutout-law.md](10-bolt-cutout-law.md). **PRIORITY 0 — REUSE, not invent.**
 
-Take sealed [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) (already rear / green / rotary). Key + despill + composite onto Video A. **FAIL** if Grok invents a new Bolt sprint clip. Only SmiR can authorize `imagineBoltClip` / a new cycle cook to replace the lock.
+Take sealed [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) (already rear / green / rotary). Key + despill + composite onto Video A. Then **PRIORITY 0 COMPOSITE GATE**: scale + plate light + paw contact **before Hang**. **FAIL** if Grok invents a new Bolt sprint clip. **FAIL** if Grok keys the cycle and hangs without that proof. Only SmiR can authorize `imagineBoltClip` / a new cycle cook to replace the lock.
 
 STYLE teacher = [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) **or** [`biome/lock/bolt-back.jpg`](../lock/bolt-back.jpg) if a still / repose is needed. Hung `biome/master/bolt.mp4` is OUTPUT only. **Not** hall `imagineClip`. **Not** chat Imagine.
 
-Play = Vlahos + crown sat kill + feather 1 px + ombre ellipse aux pattes. [05-key.md](05-key.md). L/M/R = X shift of **one** Bolt layer.  
+Play = Vlahos + crown sat kill + feather 1 px + ombre ellipse aux pattes. [05-key.md](05-key.md). Then **PRIORITY 0 COMPOSITE GATE** — scale + plate light + paw contact on the *road* ([13](13-make-bolt-lane.md) · [13b](13b-anti-sticker-contact.md)). L/M/R = X shift of **one** Bolt layer.  
 **Ne pas** redessiner le chien. **Ne pas** inventer un nouveau sprint. **Ne pas** cuire Bolt dans un seul film final.
 
 After empty + cutout KEEP: author `path.json` on empty road plate A. Law: [12-lane-path-ribbon.md](12-lane-path-ribbon.md). Without `path.json` = film only. With `path.json` = steerable game. Not SprintCore / Nebula editor.  
@@ -326,6 +329,7 @@ Chaque cousin a **sa** fenêtre : un speck au vanishing point n’est pas encore
 1. empty stills + imagineBiomeClip 10s 48fps    → Video A / road.mp4   (ZERO dog)
 2. extract empty-first / empty-last
 2b. REUSE lock/bolt-gallop-cycle.mp4 (no new Imagine dog sprint) → key + despill → composite on A (law 10)
+2c. COMPOSITE GATE: scale + plate light + paw contact proof BEFORE Hang (13 / 13b / 13c)
 3. dress still cousin (objet loin, 1–2 voies)   → QC still
 4. imagineBiomeClip first+last, kind=hazard 10s → cousin.mp4
 5. QC 5 frames (spawn + lanes + last=empty)
@@ -375,6 +379,7 @@ Hitbox = **voie + fenêtre courte au contact des pattes**. Loin / ciel / déjà 
 | Wipe `biome/master` / `public/master` to “make room” for Tide | **Hang ≠ wipe.** Canyon/war gone = FAIL. Tide cook. Banned forever. |
 | Rebuild canyon→cars→duel→night→war **first** before a new biome | Hang **only** the new plates. Old Beat stays. No Beat 3 recook gate. |
 | Copy hung `biome/master/bolt.mp4` / canyon Bolt as new-biome identity | Always `@ref` `lock/bolt-back.jpg`. Light bake from the **new** empty plaque OK. |
+| Key sealed cycle and Hang without scale + plate light + paw contact | Giant dog / warm sticker on frost / float. PRIORITY 0 COMPOSITE GATE. **FAIL.** |
 | Refuse invented biome / “I can only do Tide” | Name + `{PAINT}` allowed. Tide is one example. |
 | Playlist = new-biome-only | Keep hung order unless SmiR / player **explicitly** says replace the default Beat. |
 | Biome catalog on Welcome / invent Tide before Hang | Catalog = **on ask**. Hung chapters only. A biome in cook is not hung until hung. Wipe shrinks the list = FAIL. |
@@ -386,7 +391,10 @@ Hitbox = **voie + fenêtre courte au contact des pattes**. Loin / ciel / déjà 
 | Path | Rôle |
 |---|---|
 | `scripts/imagine-hooks.mjs` | `imagineBiomeClip`, `imagineBoltClip`, `BIOME_*_LAW`, `BOLT_CUTOUT_LAW`, `extractLastFrame` |
-| `biome/docs/10-bolt-cutout-law.md` | HARD Bolt cutout — REUSE lock/bolt-gallop-cycle.mp4 → key + composite |
+| `biome/docs/10-bolt-cutout-law.md` | HARD Bolt cutout — REUSE lock/bolt-gallop-cycle.mp4 → key + composite → COMPOSITE GATE 13/13b |
+| `biome/docs/13-make-bolt-lane.md` | Make Bolt Lane — **One scale HARD FAIL** (lane-width ban) |
+| `biome/docs/13b-anti-sticker-contact.md` | PRIORITY 0 plate light + paw contact (not polish) |
+| `biome/docs/13c-green-despill.md` | Green key + vector despill (before plate grade) |
 | `biome/docs/11-plate-order.md` | HARD LOCK dealer playlist — canyon → cars → duel → night → war. New biome = new entries. Hang ≠ wipe. |
 | `biome/docs/12-lane-path-ribbon.md` | Living-film Lane path — ribbon + arc-length `path.json`. Without = film. With = steerable game. Not SprintCore. |
 | `biome/docs/12b-adaptive-curvature.md` | Cook-time adaptive curvature — place the table (straights cheap, hairpins dense). Clock still \(\ell\). |
