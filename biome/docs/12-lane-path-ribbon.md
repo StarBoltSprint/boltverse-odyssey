@@ -105,6 +105,7 @@ If you cannot draw the centerline Bézier on frame 0 of empty road **in ~2 minut
 - Cutout / gallop / teacher: `10-bolt-cutout-law.md` + `lock/bolt-back.jpg` (PRIORITY 0 show in chat before Bolt cook)  
 - Full biome recipe: `09-recette-biome.md`  
 - Make Bolt Lane brief (product / order of work): [13-make-bolt-lane.md](13-make-bolt-lane.md)  
+- Turn lean / δ lives on the ribbon: [14-rotary-gallop.md](14-rotary-gallop.md)  
 - Cook-time table placement: [12b-adaptive-curvature.md](12b-adaptive-curvature.md) (centripetal draw · arc-length clock · curvature keeps)  
 - Cook tool: `biome/scripts/curvature-sample/` — `node demo.js`; `resamplePath` → write `path.json`; `invertRibbon` (plate UV → \(s,\lambda\)) for taps / contact  
 - Hang ≠ wipe: never delete existing master biomes when adding Tide / next  
