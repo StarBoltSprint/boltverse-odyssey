@@ -105,6 +105,7 @@ If you cannot draw the centerline Bézier on frame 0 of empty road **in ~2 minut
 - Cutout / gallop / teacher: `10-bolt-cutout-law.md` + `lock/bolt-back.jpg` (PRIORITY 0 show in chat before Bolt cook)  
 - Full biome recipe: `09-recette-biome.md`  
 - Cook-time table placement: [12b-adaptive-curvature.md](12b-adaptive-curvature.md) (centripetal draw · arc-length clock · curvature keeps)  
+- Cook tool: `biome/scripts/curvature-sample/` — `node demo.js`; `resamplePath` → write `path.json`  
 - Hang ≠ wipe: never delete existing master biomes when adding Tide / next  
 - Open-world SprintCore / Nebula editor Joy XP: **flavor only** — not this stack  
 

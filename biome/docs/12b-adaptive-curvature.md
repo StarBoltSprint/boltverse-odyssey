@@ -17,6 +17,8 @@ Hang ≠ wipe: never delete `biome/master/*`. Docs / sidecar only.
 
 Adapt samples where the road **turns**, not where the author clicked. Straights cheap. Hairpins dense.
 
+**Ship / tool:** [`biome/scripts/curvature-sample/`](../scripts/curvature-sample/) — `node demo.js`; `resamplePath` → write `path.json`.
+
 Ribbon map makes the plate steerable. Adaptive stops the map going **blind** in a bend.
 
 | Who | Job |
