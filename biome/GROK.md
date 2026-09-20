@@ -30,6 +30,8 @@ A fresh Grok in a new Build convo must **NOT** cook a new Bolt gallop from scrat
 
 **PRIORITY 0 — Any biome = Frost-parity.** A cold Grok cooking **any** named biome must hit GPU + sealed 6 s + scale + clock + plate grade + contact + **biome-adaptive ground FX** ([16](docs/16-biome-ground-fx.md)). Law: [docs/00-PRIORITY0-any-biome.md](docs/00-PRIORITY0-any-biome.md). Cook paste: [docs/COLD_START-any-biome.md](docs/COLD_START-any-biome.md). Kitchen only — not player Welcome.
 
+**HARD — player journey (SmiR 2026-09-20).** ROOM (2 doors + center star map) → tap map → CONSTELLATION Space LOD → seal planet → return room → door A/B → biome sprint → Lena climb → arrive sealed planet. Law: [docs/18-room-starmap-lena.md](docs/18-room-starmap-lena.md). Paste: [docs/COLD_START-room-starmap.md](docs/COLD_START-room-starmap.md). Map = destination. Door = depart. Journey after seal = this biome cook.
+
 **PRIORITY 0 — Live compositor = law 17.** Port [`scripts/bolt-key-gl/bolt-key-gl.ts`](scripts/bolt-key-gl/bolt-key-gl.ts) + [`wet-fx.ts`](scripts/bolt-key-gl/wet-fx.ts). **FAIL** if Grok copies `bolt-key-gl-scissor-prev.ts` (scissor / IGN-fract = bars + eaten paws + sticker). Quad dest, luma protect, plate bounce, sin grain, rVFC stamp. Law: [docs/17-live-compositor.md](docs/17-live-compositor.md).
 
 **FAIL** if Grok invents a new Bolt sprint clip for a biome cook. Only SmiR can authorize a new cycle cook to replace the lock.
@@ -49,6 +51,7 @@ Loop seam = **hard cut** on the closed period — do **NOT** optical-flow morph 
 3. **[docs/09-recette-biome.md](docs/09-recette-biome.md)** — empty → cousin → speed → dealer → box
 4. **[docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md)** — HARD Bolt cutout (REUSE lock/bolt-gallop-cycle.mp4 **CANON 6s/534/96fps** → key + composite; then COMPOSITE GATE 13/13b/13c/13d/14c/15/16 scale+gallop-clock+GPU+light+contact+FX before KEEP)
 4b. **[docs/00-PRIORITY0-any-biome.md](docs/00-PRIORITY0-any-biome.md)** — Frost-parity for **any** biome. Paste [docs/COLD_START-any-biome.md](docs/COLD_START-any-biome.md). FX [docs/16-biome-ground-fx.md](docs/16-biome-ground-fx.md).
+4c. **[docs/18-room-starmap-lena.md](docs/18-room-starmap-lena.md)** — player journey after seal (room star map → door → this biome → Lena → planet). Paste [docs/COLD_START-room-starmap.md](docs/COLD_START-room-starmap.md).
 5. **[docs/11-plate-order.md](docs/11-plate-order.md)** — HARD LOCK dealer playlist (canyon → cars → duel → night → war)
 6. **[docs/05-key.md](docs/05-key.md)** — chroma + crown, not luma
 7. **[reference/LanePlayer.tsx](reference/LanePlayer.tsx)** — r38 compositor

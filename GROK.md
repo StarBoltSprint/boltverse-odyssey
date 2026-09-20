@@ -133,6 +133,7 @@ For Grok only. Boot attaches **only** the Citadel preview. **Never print the pat
 5. [`biome/docs/05-key.md`](biome/docs/05-key.md) + [`biome/reference/LanePlayer.tsx`](biome/reference/LanePlayer.tsx)
 6. [`biome/docs/10-bolt-cutout-law.md`](biome/docs/10-bolt-cutout-law.md) — HARD Bolt cutout (REUSE lock/bolt-gallop-cycle.mp4 → key + composite; then COMPOSITE GATE 13/13b/13c/13d/14c/15/16 scale+clock+GPU+light+contact+FX before KEEP)
 7. [`biome/docs/00-PRIORITY0-any-biome.md`](biome/docs/00-PRIORITY0-any-biome.md) — Frost-parity for **any** biome. Kitchen paste: [`biome/docs/COLD_START-any-biome.md`](biome/docs/COLD_START-any-biome.md) (supersedes COLD_START-gpu-6s as the cook paste).
+8. [`biome/docs/18-room-starmap-lena.md`](biome/docs/18-room-starmap-lena.md) — player journey (room star map → seal → door → biome → Lena → planet). Paste: [`biome/docs/COLD_START-room-starmap.md`](biome/docs/COLD_START-room-starmap.md).
 **HARD — living-film Lane control** (not SprintCore, not Nebula editor stats): [`biome/docs/12-lane-path-ribbon.md`](biome/docs/12-lane-path-ribbon.md). After empty+cutout KEEP, author `path.json`. Without = film only. With = steerable game.
 **HARD — make controllable Bolt on a Lane:** [`biome/docs/13-make-bolt-lane.md`](biome/docs/13-make-bolt-lane.md) — product brief / order of work. [`biome/docs/13b-anti-sticker-contact.md`](biome/docs/13b-anti-sticker-contact.md) — compositor anti-sticker + contact shadow. [`biome/docs/13c-green-despill.md`](biome/docs/13c-green-despill.md) — green key + despill factory. [`biome/docs/13d-auto-scale.md`](biome/docs/13d-auto-scale.md) — auto-scale from the road (`computeScale` / `assertScale`). [`biome/docs/14-rotary-gallop.md`](biome/docs/14-rotary-gallop.md) — rotary gallop + ribbon turn. [`biome/docs/14c-gallop-clock.md`](biome/docs/14c-gallop-clock.md) — gallop-clock anti-saccadé (`assertGallopClock`). [`biome/docs/15-gpu-compositor.md`](biome/docs/15-gpu-compositor.md) — GPU compositor (FX table drawn in this family). [`biome/docs/16-biome-ground-fx.md`](biome/docs/16-biome-ground-fx.md) — biome-adaptive ground FX + grade.
 Never dump this to the player. Kitchen only — not player Welcome.
@@ -161,6 +162,8 @@ A fresh Grok in a new Build convo must **NOT** cook a new Bolt gallop from scrat
 
 **PRIORITY 0 — Any biome = Frost-parity.** A cold Grok cooking **any** named biome must hit GPU + sealed 6 s + scale + clock + plate grade + contact + **biome-adaptive ground FX** ([16](biome/docs/16-biome-ground-fx.md)). Law: [`biome/docs/00-PRIORITY0-any-biome.md`](biome/docs/00-PRIORITY0-any-biome.md). Cook paste: [`biome/docs/COLD_START-any-biome.md`](biome/docs/COLD_START-any-biome.md). Kitchen only — not player Welcome.
 
+**HARD — player journey (SmiR 2026-09-20).** ROOM (2 doors + center star map) → tap map → CONSTELLATION Space LOD → seal planet → return room → door A/B → biome sprint → Lena climb → arrive sealed planet. Law: [`biome/docs/18-room-starmap-lena.md`](biome/docs/18-room-starmap-lena.md). Paste: [`biome/docs/COLD_START-room-starmap.md`](biome/docs/COLD_START-room-starmap.md). Map = destination. Door = depart.
+
 **FAIL** if Grok invents a new Bolt sprint clip for a biome cook. Only SmiR can authorize a new cycle cook to replace the lock.
 Style teacher [`lock/bolt-back.jpg`](lock/bolt-back.jpg) still applies if any still / repose is needed; motion teacher = the sealed cycle mp4.
 Loop seam = **hard cut** on the closed period — do **NOT** optical-flow morph last→first. Preview only: [`lock/bolt-gallop-cycle-12s-preview.mp4`](lock/bolt-gallop-cycle-12s-preview.mp4). Hang ≠ wipe.
@@ -186,7 +189,7 @@ Loop seam = **hard cut** on the closed period — do **NOT** optical-flow morph 
 |---|---|---|
 | **Citadel** | rooms / Hang / citadel graph (`cook-room`) | **this repo, root** — Pack Play https://boltverse-odysseyyyy.grok.me (frost path on that Live) |
 | **Biome / lane** | B-stack Sprint (road + cutout, seek-sync) | **this repo**, [`biome/`](biome/README.md) |
-| **Constellation** | SPACE LOD KEEP Star Map (void + Imagine orbs, Canyon LOD1–3) | [`constellation/`](constellation/README.md) — hang-only sibling. Not `biome/master`. Does not replace Sprint. |
+| **Constellation** | SPACE LOD KEEP Star Map (void + Imagine orbs, Canyon LOD1–3) | [`constellation/`](constellation/README.md) — hang-only sibling. Room star map tap enters here. Journey: [`biome/docs/18-room-starmap-lena.md`](biome/docs/18-room-starmap-lena.md). Not `biome/master`. Does not replace Sprint. |
 
 ## STOP 0 — STYLES FIRST (SmiR 2026-09-12). Miss this = the room is dead.
 **STOP — HARD SPLIT.** Imagine Agent is obligatoire / MUST / systematically for STYLE stills when restyling. NEVER for Walk A, Walk B, breath, or any video. Walks / breaths / films = imagine-hooks / cook-room first-frame + last-frame. Soft KEEP banned. Smoke still gates.

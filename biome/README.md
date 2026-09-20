@@ -56,6 +56,8 @@ This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play
 | [docs/00-PRIORITY0-any-biome.md](docs/00-PRIORITY0-any-biome.md) | **PRIORITY 0 any biome** — GPU + sealed 6 s + FX table. Frost-parity for a cold Grok / random player. |
 | [docs/COLD_START-any-biome.md](docs/COLD_START-any-biome.md) | Kitchen paste — cook **any** biome (supersedes COLD_START-gpu-6s as the cook paste). |
 | [docs/COLD_START-gpu-6s.md](docs/COLD_START-gpu-6s.md) | Kitchen note — REUSE 6s lock + GPU law 15. Cook paste superseded by [COLD_START-any-biome.md](docs/COLD_START-any-biome.md). |
+| [docs/18-room-starmap-lena.md](docs/18-room-starmap-lena.md) | **Player journey** — room star map → constellation → seal → door → biome → Lena climb → sealed planet. |
+| [docs/COLD_START-room-starmap.md](docs/COLD_START-room-starmap.md) | Kitchen paste — room + star map + Lena climb (read 18 first). |
 | [scripts/curvature-sample/](scripts/curvature-sample/) | Cook-time adaptive resample — `node demo.js`; `resamplePath` → write `path.json`. Not play LanePlayer. |
 | [scripts/chroma-despill/](scripts/chroma-despill/) | Cook-time vector despill — `node demo.js`; `vectorDespill` after key, before grade. Not play LanePlayer. |
 | [scripts/bolt-scale/](scripts/bolt-scale/) | Cook-time Bolt auto-scale — `node demo.js`; `computeScale` / `assertScale` from lane width. |
@@ -95,6 +97,8 @@ Kitchen — do not read aloud. biome / Sprint cook / lane / B-stack / green-scre
 #    biome/docs/17-live-compositor.md ← Live GPU (bounce / protect / sin grain / FX quads)
 #    biome/docs/00-PRIORITY0-any-biome.md ← Frost-parity for ANY biome (cold Grok)
 #    biome/docs/COLD_START-any-biome.md ← cook paste (supersedes COLD_START-gpu-6s)
+#    biome/docs/18-room-starmap-lena.md ← player journey (room star map → seal → door → biome → Lena)
+#    biome/docs/COLD_START-room-starmap.md ← kitchen paste for that journey
 # then biome/GROK.md
 
 # stills + films = imagine-hooks first+last (never Imagine Agent video)
