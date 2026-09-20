@@ -66,7 +66,7 @@ Green-only I2V invents a walk — B exists so gait is natural. Extract **one** c
 
 **HARD law:** [10-bolt-cutout-law.md](10-bolt-cutout-law.md).
 
-`imagineBoltClip` — `first` + `last` = **cycle bookends on green** (end ≈ start for loop). Optional mid frames as Imagine `@ref` chronological. 6 s. **48fps.** **IN PLACE / treadmill.** Never hall `imagineClip`. Never chat Imagine. Word “rear” alone is not enough.
+`imagineBoltClip` — `first` + `last` = [`lock/bolt-gallop-cycle-first.jpg`](../../lock/bolt-gallop-cycle-first.jpg) (**same file**). Attach motion teacher [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) first. Loop seam = **hard cut** — do **not** optical-flow morph last→first. Optional mid frames as Imagine `@ref` chronological. 6 s. **48fps.** **IN PLACE / treadmill.** Never hall `imagineClip`. **BAN** inventing a new gallop from chat Imagine without this teacher. Word “rear” alone is not enough.
 
 He **rotary-gallops** the whole clip (stretch then gather; hind legs fully back). NEVER stands, trots, pauses, sits, howls. NEVER a second dog. NEVER ¾ / profile / face / yaw / look-back. NEVER a road or set in the **green** plate (I2V invents travelling → he turns).
 

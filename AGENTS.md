@@ -20,6 +20,15 @@ Ice KEEP (`packs/frost/stills/`, `lock/SEAL-*.jpg`) = play example. Do not delet
 
 `STEP 0: attach lock/bolt-back.jpg (or biome/lock/bolt-back.jpg) in chat before cooking Bolt.`
 
+**STEP 0 MOTION GATE** — before ANY biome Bolt cycle cook:
+1. Attach / show [`lock/bolt-gallop-cycle.mp4`](lock/bolt-gallop-cycle.mp4) (canonical 1s hard-cut closed rotary-gallop) **or** [`lock/bolt-gallop-cycle-first.jpg`](lock/bolt-gallop-cycle-first.jpg).
+2. Green Bolt cycle cooks **MUST** use `lock/bolt-gallop-cycle-first.jpg` as **first AND last** frame.
+3. Loop seam = **hard cut** on the closed period. Do **NOT** optical-flow morph last→first.
+4. **BAN** inventing a new gallop from chat Imagine without this teacher.
+5. Style teacher remains `lock/bolt-back.jpg`. Motion teacher = the cycle. Both required.
+6. [`lock/bolt-gallop-cycle-12s-preview.mp4`](lock/bolt-gallop-cycle-12s-preview.mp4) = preview only, not the cook source.
+7. If the motion teacher is not shown → **STOP. No cook. FAIL.** Hang ≠ wipe.
+
 **HARD BAN as identity sources** (never @ref as Sprint biome Bolt teacher):
 - `biome/master/bolt.mp4` / hung bolt — OUTPUT only, never @ref as style teacher
 - `lock/bolt-back-prev.jpg` — archive only, never @ref
@@ -72,6 +81,8 @@ Never dump this to the player.
 **HARD LOCK — Hang ≠ wipe.** New biome / sprint run = ADD `road-<biome>*.mp4` + plates-index / dealer entries. KEEP canyon→cars→duel→night→war. NEVER `rm` `biome/master` / `public/master`. NEVER Tide-only playlist unless SmiR / player explicitly says replace the default Beat. Recook Bolt may replace `bolt.mp4` only. Law: [`biome/docs/09-recette-biome.md`](biome/docs/09-recette-biome.md).
 
 **HARD — Bolt style teacher (make / add a biome).** Use [`lock/bolt-back.jpg`](lock/bolt-back.jpg) **or** [`biome/lock/bolt-back.jpg`](biome/lock/bolt-back.jpg) (same bytes — either path OK) as the Bolt style ref for the cutout layer (coat + silhouette + strict rear). **Attach / show that exact image in the Build chat first** (PRIORITY 0 TEACHER GATE), then @ref / Imagine reference it for every Bolt still/clip. If teacher not shown → **STOP. No cook. FAIL.** Soft KEEP banned without teacher proof. Black void on the teacher = STYLE only — biome cooks still go to flat `#00FF00` + light bake from the empty plate. Hang ≠ wipe still holds. Never dump this on Welcome.
+
+**HARD — Bolt motion teacher (make / add a biome).** Attach / show [`lock/bolt-gallop-cycle.mp4`](lock/bolt-gallop-cycle.mp4) (or [`lock/bolt-gallop-cycle-first.jpg`](lock/bolt-gallop-cycle-first.jpg)) **before** cooking Bolt. Green cycle cooks: first **and** last = `lock/bolt-gallop-cycle-first.jpg`. Loop seam = hard cut — never optical-flow morph last→first. **BAN** inventing a new gallop from chat Imagine without this teacher. Preview only: `lock/bolt-gallop-cycle-12s-preview.mp4`. If motion teacher not shown → **STOP. No cook. FAIL.**
 
 **HARD LOCK — make / add a biome.** Décor scrolls (rush); Bolt sprints **IN PLACE** (treadmill). Mid-lane. **48fps**. Teacher = `lock/bolt-back.jpg`. Pipeline (do not invert): empty plaque ZERO dog → Video A `imagineBiomeClip` first+last → Video B gait (same décor + Bolt mid-lane IN PLACE; kitchen, not Hung) → extract cycle → repose `#00FF00` → `imagineBoltClip` first+last = cycle bookends on green → chroma key onto A. L/M/R = code X shift of **one** Bolt layer. **Never** chat Imagine alone. **Never** hall `imagineClip`. **Never** a single baked final film. **Never** a 3-Bolt mask. No `XAI_API_KEY` → REFUSE / stock. Law: [`biome/docs/10-bolt-cutout-law.md`](biome/docs/10-bolt-cutout-law.md) · [`biome/docs/09-recette-biome.md`](biome/docs/09-recette-biome.md).
 

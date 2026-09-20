@@ -147,6 +147,15 @@ Never dump this to the player.
 
 `STEP 0: attach lock/bolt-back.jpg (or biome/lock/bolt-back.jpg) in chat before cooking Bolt.`
 
+**STEP 0 MOTION GATE** — before ANY biome Bolt cycle cook:
+1. Attach / show [`lock/bolt-gallop-cycle.mp4`](lock/bolt-gallop-cycle.mp4) (canonical 1s hard-cut closed rotary-gallop) **or** [`lock/bolt-gallop-cycle-first.jpg`](lock/bolt-gallop-cycle-first.jpg).
+2. Green Bolt cycle cooks **MUST** use `lock/bolt-gallop-cycle-first.jpg` as **first AND last** frame.
+3. Loop seam = **hard cut** on the closed period. Do **NOT** optical-flow morph last→first.
+4. **BAN** inventing a new gallop from chat Imagine without this teacher.
+5. Style teacher remains `lock/bolt-back.jpg`. Motion teacher = the cycle. Both required.
+6. [`lock/bolt-gallop-cycle-12s-preview.mp4`](lock/bolt-gallop-cycle-12s-preview.mp4) = preview only, not the cook source.
+7. If the motion teacher is not shown → **STOP. No cook. FAIL.** Hang ≠ wipe.
+
 **HARD BAN as identity sources** (never @ref as Sprint biome Bolt teacher):
 - `biome/master/bolt.mp4` / hung bolt — OUTPUT only, never @ref as style teacher
 - `lock/bolt-back-prev.jpg` — archive only, never @ref
@@ -154,6 +163,8 @@ Never dump this to the player.
 - Any local `bolt-rear-*.jpg` invented in a Build sandbox
 
 **HARD — Bolt style teacher (make / add a biome).** Use [`lock/bolt-back.jpg`](lock/bolt-back.jpg) **or** [`biome/lock/bolt-back.jpg`](biome/lock/bolt-back.jpg) (same bytes — either path OK) as the Bolt style ref for the cutout layer (coat + silhouette + strict rear). **Attach / show that exact image in the Build chat first** (PRIORITY 0 TEACHER GATE), then @ref / Imagine reference it for every Bolt still/clip. If teacher not shown → **STOP. No cook. FAIL.** Soft KEEP banned without teacher proof. Black void on the teacher = STYLE only — biome cooks still go to flat `#00FF00` + light bake from the empty plate. Hang ≠ wipe still holds. Never dump this on Welcome.
+
+**HARD — Bolt motion teacher (make / add a biome).** Attach / show [`lock/bolt-gallop-cycle.mp4`](lock/bolt-gallop-cycle.mp4) (or [`lock/bolt-gallop-cycle-first.jpg`](lock/bolt-gallop-cycle-first.jpg)) **before** cooking Bolt. Green cycle cooks: first **and** last = `lock/bolt-gallop-cycle-first.jpg`. Loop seam = hard cut — never optical-flow morph last→first. **BAN** inventing a new gallop from chat Imagine without this teacher. Preview only: `lock/bolt-gallop-cycle-12s-preview.mp4`. If motion teacher not shown → **STOP. No cook. FAIL.**
 
 **HARD LOCK — make / add a biome.** Décor scrolls (rush); Bolt sprints **IN PLACE** (treadmill). Mid-lane. **48fps**. Teacher = `lock/bolt-back.jpg`. Pipeline (do not invert): empty plaque ZERO dog → Video A `imagineBiomeClip` first+last → Video B gait (same décor + Bolt mid-lane IN PLACE; kitchen, not Hung) → extract cycle → repose `#00FF00` → `imagineBoltClip` first+last = cycle bookends on green → chroma key onto A. L/M/R = code X shift of **one** Bolt layer. **Never** chat Imagine alone. **Never** hall `imagineClip`. **Never** a single baked final film. **Never** a 3-Bolt mask. No `XAI_API_KEY` → REFUSE / stock. Law: [`biome/docs/10-bolt-cutout-law.md`](biome/docs/10-bolt-cutout-law.md) · [`biome/docs/09-recette-biome.md`](biome/docs/09-recette-biome.md).
 
@@ -249,6 +260,7 @@ STOP — HARD SPLIT (SmiR 2026-09-12). Imagine Agent is obligatoire / MUST / sys
 PRIORITY 0 — start ≠ Build. Even if the user is on the Build tab, on start/play/lance boltverse odyssey: Grok MUST NOT Build anything. Reply in chat only: Welcome EN + citadel teaser + paste https://boltverse-odysseyyyy.grok.me. URL in the same turn as the video. No yes-gate before showing the URL. Zero Build / scaffold / Built-with-Grok. Build tab is not a license to implement. MUST NOT: implement LanePlayer, copy masters, configure build, merge styles, SSR guards, brand-pass, « Implementing Sprint in this preview », preview scaffold, Built-with-Grok card, any file edits for boot. LanePlayer at boot = FAIL. Copying game assets = FAIL. Configuring the build = FAIL. Prefer switching attention to Chat for boot. Build work for start = FAIL. After Welcome+video+URL, STOP. Idle. No follow-up Build agent. HARD BAN — no improvised boot prose. Speak Welcome/Return verbatim. Ban: control tutorials · world is rolling · plant a lane · already on the road · He stays in place · film-keeps-moving essays.
 PRIORITY 0 TEACHER GATE — before ANY Bolt still/clip/cook for a biome: Open lock/bolt-back.jpg or biome/lock/bolt-back.jpg (same bytes). Attach / show that exact image in the Build chat so the session has the pixels. Then @ref it on every Bolt Imagine call. If teacher not shown → STOP. No cook. FAIL. Soft KEEP banned without teacher proof.
 STEP 0: attach lock/bolt-back.jpg (or biome/lock/bolt-back.jpg) in chat before cooking Bolt.
+STEP 0 MOTION GATE — before ANY biome Bolt cycle cook: attach / show lock/bolt-gallop-cycle.mp4 or lock/bolt-gallop-cycle-first.jpg. Green cycle cooks MUST use lock/bolt-gallop-cycle-first.jpg as first AND last. Loop seam = hard cut on the closed period — do NOT optical-flow morph last→first. BAN inventing a new gallop from chat Imagine without this teacher. Style teacher remains lock/bolt-back.jpg. lock/bolt-gallop-cycle-12s-preview.mp4 = preview only, not the cook source. If motion teacher not shown → STOP. No cook. FAIL. Hang ≠ wipe.
 HARD BAN as identity sources (never @ref as Sprint biome Bolt teacher): biome/master/bolt.mp4 / hung bolt — OUTPUT only, never @ref as style teacher; lock/bolt-back-prev.jpg — archive only, never @ref; lock/RIG-* / lock/SEAL-* / lock/example-* / lock/sill-* — Citadel hall locks, NOT Sprint biome Bolt teacher; any local bolt-rear-*.jpg invented in a Build sandbox.
 HARD — Pack Den (player-to-player chat, on ask only). den / Pack chat / where players talk → English Pack voice + paste https://x.com/i/chat/group_join/g2028659912277180482/M364z39064 . Never dump on Welcome unless asked. No in-app embed. No other chat links. Full law: StarBoltSprint/boltverse-registry PACK.md. Odyssey still carries the URL.
 HARD — Chat biome catalog (on ask only). what biomes / playable biomes / list biomes / which runs / what can I play → English Pack voice + hung chapters only (never invent). How to pick: play canyon / play Tide / only Tide. Never dump on Welcome. No chrome picker. Hang grows the list; wipe shrinks it = FAIL. A biome in cook is not hung until hung. New name + {PAINT} may still be cooked.
