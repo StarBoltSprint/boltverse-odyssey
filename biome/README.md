@@ -44,6 +44,7 @@ This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play
 | [docs/11-plate-order.md](docs/11-plate-order.md) | **HARD LOCK dealer playlist** — canyon → cars → duel → night → war. New biome = new entries. Hang ≠ wipe. |
 | [docs/12-lane-path-ribbon.md](docs/12-lane-path-ribbon.md) | **HARD living-film Lane control** — empty road + Bolt cutout + `path.json` ribbon. Without the chart = film. With it = game. Not SprintCore / Nebula editor. |
 | [docs/12b-adaptive-curvature.md](docs/12b-adaptive-curvature.md) | Cook-time table placement — adapt samples on turns (not clicks). Clock still \(\ell\). Sibling of 12. |
+| [scripts/curvature-sample/](scripts/curvature-sample/) | Cook-time adaptive resample — `node demo.js`; `resamplePath` → write `path.json`. Not play LanePlayer. |
 | [prompts/](prompts/) | Imagine paste blocks (swap `{PAINT}` only) |
 | [reference/LanePlayer.tsx](reference/LanePlayer.tsx) | r38 compositor (not a grok.me) |
 | [reference/lane-css.css](reference/lane-css.css) | 9:16 B-stack CSS |
