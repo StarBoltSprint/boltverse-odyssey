@@ -1,6 +1,7 @@
 const {
   resamplePath,
   ribbonPoint,
+  invertRibbon,
   assertTable,
 } = require('./curvatureSample');
 
@@ -65,3 +66,23 @@ const foot = ribbonPoint(table, 0.72, 1);
 const center = ribbonPoint(table, 0.72, 0);
 console.log('\nlane R at s=0.72', foot.map((x) => x.toFixed(3)).join(', '));
 console.log('center  at s=0.72', center.map((x) => x.toFixed(3)).join(', '));
+
+// --- invertRibbon round-trip ---
+function check(label, s, lambda, expectHit = true) {
+  const uv = ribbonPoint(table, s, lambda);
+  const inv = invertRibbon(table, uv, { hintS: s, walk: 4 });
+  const ok = expectHit
+    ? inv.hit && Math.abs(inv.s - s) < 0.02 && Math.abs(inv.lambda - lambda) < 0.05
+    : !inv.hit;
+  console.log(ok ? 'ok ' : 'FAIL', label, 's=' + inv.s.toFixed(3), 'λ=' + inv.lambda.toFixed(3), 'hit=' + inv.hit);
+}
+console.log('\ninvertRibbon:');
+check('window C', 0.12, 0);
+check('window L', 0.12, 1);
+check('window R', 0.12, -1);
+check('hook mid-lane', 0.72, 0.5);
+check('mid center', 0.5, 0);
+{
+  const inv = invertRibbon(table, [0.05, 0.05], { hintS: 0.5 });
+  console.log(!inv.hit ? 'ok ' : 'FAIL', 'off-road miss', 'hit=' + inv.hit);
+}

@@ -359,11 +359,107 @@ function assertTable(table, opts = {}) {
   return issues;
 }
 
+
+/**
+ * Inverse ribbon map: plate UV → (s, λ) or miss.
+ * Prefer hintS (last frame) then ±walk segments; fall back to full scan.
+ *
+ * @param {object} table  from resamplePath
+ * @param {number[]} uv   [u, v] in plate UV
+ * @param {object} [opts]
+ * @param {number} [opts.hintS]     search near this s first
+ * @param {number} [opts.lambdaMax=1.05]  |λ| above = off-road miss
+ * @param {number} [opts.walk=4]    segments either side of hint
+ * @returns {{ hit:boolean, s:number, lambda:number, i:number, dist:number }}
+ */
+function invertRibbon(table, uv, opts = {}) {
+  const lambdaMax = opts.lambdaMax == null ? 1.05 : opts.lambdaMax;
+  const walk = opts.walk == null ? 4 : opts.walk;
+  const pts = table.points;
+  const nSeg = Math.max(0, pts.length - 1);
+  if (nSeg < 1) {
+    return { hit: false, s: 0, lambda: 0, i: 0, dist: Infinity };
+  }
+
+  function projectSeg(i) {
+    const A = pts[i];
+    const B = pts[i + 1];
+    const dx = B[0] - A[0];
+    const dy = B[1] - A[1];
+    const len = Math.hypot(dx, dy);
+    if (len < 1e-12) {
+      const d = dist(uv, A);
+      return { i, u: 0, s: table.s[i], lambda: 0, C: A.slice(), dist: d };
+    }
+    const T = [dx / len, dy / len];
+    const u = clamp(((uv[0] - A[0]) * T[0] + (uv[1] - A[1]) * T[1]) / len, 0, 1);
+    const C = lerp(A, B, u);
+    const N = normalize(lerp(table.normals[i], table.normals[i + 1], u));
+    const w = table.width[i] + (table.width[i + 1] - table.width[i]) * u;
+    const wSafe = Math.max(w, 1e-6);
+    const lambda = ((uv[0] - C[0]) * N[0] + (uv[1] - C[1]) * N[1]) / wSafe;
+    const s = table.s[i] + (table.s[i + 1] - table.s[i]) * u;
+    const d = dist(uv, C);
+    return { i, u, s, lambda, C, dist: d };
+  }
+
+  function bestOf(indices) {
+    let best = null;
+    for (const i of indices) {
+      if (i < 0 || i >= nSeg) continue;
+      const pr = projectSeg(i);
+      if (!best || pr.dist < best.dist) best = pr;
+    }
+    return best;
+  }
+
+  let best = null;
+
+  if (opts.hintS != null && Number.isFinite(opts.hintS)) {
+    let hi = 0;
+    const hs = clamp(opts.hintS, 0, 1);
+    while (hi < nSeg - 1 && table.s[hi + 1] < hs) hi++;
+    const near = [];
+    for (let k = hi - walk; k <= hi + walk; k++) near.push(k);
+    best = bestOf(near);
+  }
+
+  const needFull =
+    !best ||
+    best.dist > Math.max(...table.width) * 1.5 ||
+    Math.abs(best.lambda) > lambdaMax * 2;
+
+  if (needFull) {
+    const all = [];
+    for (let i = 0; i < nSeg; i++) all.push(i);
+    const full = bestOf(all);
+    if (!best || (full && full.dist < best.dist)) best = full;
+  }
+
+  if (!best) {
+    return { hit: false, s: 0, lambda: 0, i: 0, dist: Infinity };
+  }
+
+  const hit = Math.abs(best.lambda) <= lambdaMax;
+  return {
+    hit,
+    s: best.s,
+    lambda: best.lambda,
+    i: best.i,
+    dist: best.dist,
+  };
+}
+
+
 module.exports = {
   resamplePath,
   ribbonPoint,
+  invertRibbon,
   assertTable,
   evaluateFine,
-  discreteKappa,
   defaultOptions,
+  // aliases used in Lane briefs / chat pastes
+  resamplePath: resamplePath,
+  ribbonPoint: ribbonPoint,
+  invertRibbon: invertRibbon,
 };

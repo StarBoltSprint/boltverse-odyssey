@@ -5,7 +5,7 @@ Adaptive curvature resampling for Boltverse living-film ribbons.
 Law: `biome/docs/12-lane-path-ribbon.md` + `biome/docs/12b-adaptive-curvature.md`.
 
 ```js
-const { resamplePath, ribbonPoint } = require('./curvatureSample');
+const { resamplePath, ribbonPoint, invertRibbon } = require('./curvatureSample');
 
 const table = resamplePath(
   { kind: 'catmull', alpha: 0.5, points: [[0.5,0.9],[0.5,0.5],[0.8,0.2]] },
@@ -19,6 +19,7 @@ const table = resamplePath(
 );
 
 const paw = ribbonPoint(table, /* s */ 0.4, /* lambda */ 1);
+const inv = invertRibbon(table, paw, { hintS: 0.4 }); // → { hit, s, lambda, i, dist }
 ```
 
 ## Input
@@ -43,3 +44,14 @@ Output `s` is arc-length in `[0,1]`. Normals are left-perp with a flip guard.
 Cook use: draw centerline on empty road → `resamplePath` → write `path.json` next to the plate. Play only walks `s` and eases `lambda` — never raw Bézier `t`.
 
 Run: `node demo.js`
+
+
+## Inverse map
+
+`invertRibbon(table, [u,v], { hintS, lambdaMax, walk })` projects a plate UV back to `(s, λ)`.
+
+- Tap: if `hit` and `s` is in a choice window → lane bit
+- Contact shadow: same inverse, then Gaussian in `(s, λ)`
+- Keep `hintS` from last paw so you rarely full-scan
+
+Aliases: `resamplePath`, `ribbonPoint`, `invertRibbon` (same functions).
