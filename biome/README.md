@@ -60,7 +60,7 @@ This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play
 | [docs/COLD_START-room-starmap.md](docs/COLD_START-room-starmap.md) | Kitchen paste — room + star map + Lena climb (read 18 first). |
 | [docs/19-luminous-path-climb.md](docs/19-luminous-path-climb.md) | **Lena climb** — luminous 3-lane path under Bolt (not float). Same L/C/R + REUSE 6s. |
 | [docs/COLD_START-luminous-path.md](docs/COLD_START-luminous-path.md) | Kitchen paste — luminous path climb (read 19 first). |
-| [docs/20-default-plate-proportions.md](docs/20-default-plate-proportions.md) | **Default empty-still skeleton** — any biome, not Frost-only. φ audit. Player may override. |
+| [docs/20-default-plate-proportions.md](docs/20-default-plate-proportions.md) | **Default empty-still skeleton** — full measure set (frame + scale + GPU start), any biome. φ audit only. Player may override. |
 | [docs/20b-frost-aurora-proportions.md](docs/20b-frost-aurora-proportions.md) | Frost aurora KEEP numbers (worked example of law 20). |
 | [docs/COLD_START-frost-aurora.md](docs/COLD_START-frost-aurora.md) | Kitchen paste — hang Frost aurora beside Beat (read 20 then 20b). |
 | [scripts/curvature-sample/](scripts/curvature-sample/) | Cook-time adaptive resample — `node demo.js`; `resamplePath` → write `path.json`. Not play LanePlayer. |

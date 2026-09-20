@@ -3,7 +3,7 @@
 You are cooking a **Lane biome** for Boltverse Odyssey for a **random player**. Read GitHub `main` first:
 
 1. `biome/docs/00-PRIORITY0-any-biome.md`
-2. **`biome/docs/20-default-plate-proportions.md`** ← start empty still from law 20 defaults (any biome, not Frost-only). Player may override. Frost aurora KEEP numbers = `20b-frost-aurora-proportions.md`.
+2. **`biome/docs/20-default-plate-proportions.md`** ← start empty still from the **full** law 20 measure set (not φ-only, not Frost-only): 3-lane ~0.75–0.82 · sky ~45% · plant ~0.80 · withersFrac ~0.10 KEEP · GPU start sat 0.60 / bounce 0.40 / contact k 0.20. Player / `{PAINT}` may adapt. Frost aurora worked example = `20b-frost-aurora-proportions.md`.
 3. **`biome/docs/17-live-compositor.md`** ← what actually stuck Bolt to the plate. **FAIL** if you copy the old scissor/IGN sketch.
 
 ## Fixed
@@ -13,15 +13,15 @@ You are cooking a **Lane biome** for Boltverse Odyssey for a **random player**. 
   - Quad at dest 13d — **not** scissor.
   - Key: `greenness=G-max(R,B)` hard 0.157/0.063 + **luma protect <0.14**. **No** `py>0.90` fade.
   - Grain: `fract(sin(dot(...)*43758.54))` — **never** IGN `fract(dot)` (vertical bars).
-  - Plate bounce HARD: sample `uPlate` behind the dog (`*0.32` bounce + `mix 0.10`).
+  - Plate bounce HARD: sample `uPlate` behind the dog. **Law 20 start:** bounce **0.40** + `mix 0.10` + sat **0.60** + contact `k` **0.20**. Then `uniformsFor(chap)` may adapt to this `{PAINT}`. Old 0.32 / 0.34 / 0.58 are not the default.
   - Upload: `texImage2D` from `<video>`. rVFC = stamp, not harvest. Road gated ×24. Native loop 1×.
   - `GPU_VER` remount. `preserveDrawingBuffer:false`.
-- Scale = 13d `bolt-scale`. Clock = 14c `gallop-clock`. Contact shadow = 13b (multiply on **road**).
+- Scale = 13d `bolt-scale`. On the law-20 wide road, **withersFrac ~0.10 is KEEP** — do not grow Bolt to 0.22. Clock = 14c `gallop-clock`. Contact shadow = 13b (multiply on **road**, start `k` 0.20).
 - Ground FX = `wet-fx.ts` + table in `biome/docs/16-biome-ground-fx.md` (**adapt to this biome** — frost splash ≠ ember ash ≠ tide water). Euler quads. Not SPH. Not Box2D. Cap 16. Prints **slide with the road** toward camera.
 - Hang ≠ wipe. Pack auto-embed (`BOLTVERSE_PACK_ORIGIN=https://boltverse-pack.vercel.app` + pack.js).
 
 ## Variable
-- Biome name + `{PAINT}` for empty plate + hazards. Empty still **starts** from law 20 (wide 3-lane, horizon ~0.38, plant ~0.80, Bolt X = 0.50) unless the player asked a different framing.
+- Biome name + `{PAINT}` for empty plate + hazards. Empty still **starts** from the **full** law 20 set (3-lane ~0.75–0.82, sky ~45%, horizon ~0.38, plant ~0.80, Bolt X = 0.50, withersFrac ~0.10, GPU sat/bounce/contact above) unless the player asked a different framing.
 - FX row + `uniformsFor(chap)` from docs 16 / 17 matching the paint.
 - New files `road-<biome>*.mp4` — do not wipe canyon→war.
 

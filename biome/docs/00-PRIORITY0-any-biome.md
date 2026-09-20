@@ -7,7 +7,7 @@ GPU compositor (no CPU `getImageData` hot path) · sealed **6 s** gallop · auto
 
 **Live compositor = [17-live-compositor.md](17-live-compositor.md).** Copying the old scissor / IGN-fract sketch = **FAIL**.
 
-**Empty still defaults = [20-default-plate-proportions.md](20-default-plate-proportions.md).** Start **any** biome empty still / Video A from that skeleton (wide 3-lane, horizon ~0.38, plant ~0.80, Bolt X = 0.50). Player may override. Frost aurora KEEP numbers (worked example) = [20b-frost-aurora-proportions.md](20b-frost-aurora-proportions.md). Ice-hole / Beat-narrow road as silent default / grow Bolt to fake withersMin = **FAIL**.
+**Empty still defaults = [20-default-plate-proportions.md](20-default-plate-proportions.md).** Start **any** biome empty still / Video A from the **full** measure set — not φ-only, not Frost-only: 3-lane **~0.75–0.82** · sky **~45%** · plant **~0.80** · Bolt X **0.50** · withersFrac **~0.10 KEEP** · GPU start sat **0.60** / bounce **0.40** / contact `k` **0.20**. Player / `{PAINT}` may adapt. Frost aurora is the worked example ([20b](20b-frost-aurora-proportions.md)). Ice-hole / Beat-narrow road as silent default / grow Bolt to fake withersMin 0.22 = **FAIL**.
 
 Player may be random. Grok must not ask them to install Pack, invent a dog sprint, or wipe old biomes.
 

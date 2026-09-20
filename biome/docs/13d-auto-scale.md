@@ -19,7 +19,7 @@ Sealed cycle REUSE still FAIL when the cutout is pasted at Imagine’s native si
 
 ## Wide road (law 20 default — any biome)
 
-Default empty stills start from [20-default-plate-proportions.md](20-default-plate-proportions.md): 3-lane **~0.75–0.82** of frame. Frost aurora KEEP is the worked example ([20b](20b-frost-aurora-proportions.md)).
+Default empty stills start from the **full** [20-default-plate-proportions.md](20-default-plate-proportions.md) set: 3-lane **~0.75–0.82**, sky **~45%**, plant **~0.80**, withersFrac **~0.10 KEEP**. Frost aurora KEEP is the worked example ([20b](20b-frost-aurora-proportions.md)).
 
 On that wide chase road, PATH is often still Beat-calibrated (~0.65). `laneFracMax=0.55` vs PATH already yields `withersFrac ~0.10`. That is **KEEP**: a dog on a highway, not a sticker filling the lane.
 

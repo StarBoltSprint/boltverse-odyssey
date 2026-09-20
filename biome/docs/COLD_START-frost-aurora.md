@@ -1,6 +1,6 @@
 # COLD_START — Frost aurora KEEP (paste into Build)
 
-You are hanging **Frost** beside Beat. Hang ≠ wipe. Empty-still skeleton = [20-default-plate-proportions.md](20-default-plate-proportions.md). Frost KEEP numbers = [20b-frost-aurora-proportions.md](20b-frost-aurora-proportions.md). Read both before Imagine.
+You are hanging **Frost** beside Beat. Hang ≠ wipe. Empty-still skeleton = the **full** [20-default-plate-proportions.md](20-default-plate-proportions.md) set (frame + scale + GPU start — not φ-only). Frost **paint** KEEP = [20b-frost-aurora-proportions.md](20b-frost-aurora-proportions.md). Read both before Imagine.
 
 **KEEP picture:** empty 9:16 night ice-canyon highway, vivid green aurora, thin translucent snow (asphalt shows through), **aurora-green neon dashed lanes**, lock-off chase, first ≠ last, **NO dog**, **NO ice hole**.
 
@@ -8,6 +8,6 @@ You are hanging **Frost** beside Beat. Hang ≠ wipe. Empty-still skeleton = [20
 
 **Scale:** 13d `laneFrac` ceiling 0.55 vs PATH. On this WIDE road withersFrac ~0.10 is KEEP — do **not** grow Bolt to 0.22 to “hit 13d”. Do **not** widen PATH to the neon (that grows the dog +22 % → truck).
 
-**φ:** horizon on 0.382, road-takes-frame on 0.618, plant on ~0.80 (`0.5+0.5/φ`). Bolt **X = 0.50**, never 0.618.
+**φ:** audit only (law 20 is the full measure set). Horizon on 0.382, road-takes-frame on 0.618, plant on ~0.80 (`0.5+0.5/φ`). Bolt **X = 0.50**, never 0.618. GPU start = sat 0.60 / bounce 0.40 / contact k 0.20.
 
 **FAIL:** ice crater · Beat-still recook · 2.7× warp · scissor/IGN sketch · SPH · wipe `road.mp4`.
