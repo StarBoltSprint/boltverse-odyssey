@@ -19,7 +19,7 @@ HARD LOCK. Companion to sealed `lock/bolt-gallop-cycle.mp4` + `13d-auto-scale.md
 2. `bolt-scale` assert.  
 3. **`gallop-clock`**: phase from `plate_time`, native fps, `strideHz≈4`.  
 4. Road `ds` from `dsPerFrame(strideLength, plateFps)`.  
-5. Light + contact. GPU compositor: [15](15-gpu-compositor.md).  
+5. Light + contact. GPU compositor: [15](15-gpu-compositor.md) + hung [`bolt-key-gl.ts`](../scripts/bolt-key-gl/bolt-key-gl.ts). Ban CPU `getImageData` hot path.  
 
 Tool: [`biome/scripts/gallop-clock/`](../scripts/gallop-clock/).
 

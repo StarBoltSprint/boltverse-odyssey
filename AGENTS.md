@@ -29,6 +29,8 @@ A fresh Grok in a new Build convo must **NOT** cook a new Bolt gallop from scrat
 
 **PRIORITY 0 COMPOSITE GATE** — after REUSE (key the sealed cycle onto Video A), MUST **scale + gallop-clock + plate-grade + paw contact** ([13](biome/docs/13-make-bolt-lane.md) / [13b](biome/docs/13b-anti-sticker-contact.md) / [13c](biome/docs/13c-green-despill.md) / [13d](biome/docs/13d-auto-scale.md) / [14c](biome/docs/14c-gallop-clock.md) / [15](biome/docs/15-gpu-compositor.md)) **BEFORE** KEEP / Hang. After key, MUST run `computeScale` / `assertScale` ([`biome/scripts/bolt-scale/`](biome/scripts/bolt-scale/)) then **`gallop-clock` / `assertGallopClock`** ([`biome/scripts/gallop-clock/`](biome/scripts/gallop-clock/)) before KEEP. Native 96 fps (no 1-of-N); `CYCLE_FRAMES=534`, `STRIDES_PER_CYCLE=22`; phase from `plate_time` (`strideHz≈4`); road `ds` from `dsPerFrame`. `assertGallopClock` **FAIL** if dogFps ≪ plateFps. Key-and-hang without proof = **FAIL**.
 
+**PRIORITY 0 — REUSE 6s lock + GPU law 15.** Canon IS [`lock/bolt-gallop-cycle.mp4`](lock/bolt-gallop-cycle.mp4) (6s / 534 / 96fps). Compositor = [`biome/scripts/bolt-key-gl/bolt-key-gl.ts`](biome/scripts/bolt-key-gl/bolt-key-gl.ts). Ban CPU `getImageData` hot path.
+
 **FAIL** if Grok invents a new Bolt sprint clip for a biome cook. Only SmiR can authorize a new cycle cook to replace the lock.
 Style teacher [`lock/bolt-back.jpg`](lock/bolt-back.jpg) still applies if any still / repose is needed; motion teacher = the sealed cycle mp4.
 Loop seam = **hard cut** on the closed period — do **NOT** optical-flow morph last→first. Preview only: [`lock/bolt-gallop-cycle-12s-preview.mp4`](lock/bolt-gallop-cycle-12s-preview.mp4). Hang ≠ wipe.
