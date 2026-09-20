@@ -5,6 +5,10 @@ Companion: `10-bolt-cutout-law.md` (B → green → key), `12` / `12b` (path tab
 
 **One line:** Bolt is a **lumbar spring** — rear pack, closed flight, front pack, open flight — locked to plate time. Turns live in ribbon curvature; the dog only adds lead, a tiny lean, and a hind offset.
 
+**Sealed motion teacher (2026-09-20):** [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) — canonical 1s hard-cut closed rotary-gallop (24fps, 768×1168, flat `#00FF00`, strict rear, ×2 cadence). Bookend still: [`lock/bolt-gallop-cycle-first.jpg`](../../lock/bolt-gallop-cycle-first.jpg). Preview only (not cook source): [`lock/bolt-gallop-cycle-12s-preview.mp4`](../../lock/bolt-gallop-cycle-12s-preview.mp4).
+
+**STEP 0 MOTION GATE:** attach / show the cycle (or its first frame) **before** any biome Bolt cook. Green cycle cooks: `first` **and** `last` = `lock/bolt-gallop-cycle-first.jpg`. Loop seam = **hard cut** on the closed period — do **NOT** optical-flow morph last→first. **BAN** inventing a new gallop from chat Imagine without this teacher. Style teacher stays [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg). Hang ≠ wipe (`biome/master/bolt.mp4` stays until a teacher-ref recook).
+
 ## Not “more frames”
 
 A real sprint is **dog mechanics** on plate time, not a GIF swimming over the road. More inbetweens without the stretched suspension = a disguised trot = sticker.
@@ -78,11 +82,12 @@ Mute the HUD: if you do not feel a **shoulder hit** every quarter cycle, add amp
 
 | Source | Note |
 |---|---|
-| 3D rig | Best. Rotary cycle, cam locked behind shoulder like the plate. PNG strip + alpha, **paw pivot**. One loop, biome grades after. |
-| Live / green | One clean stride with visible suspensions, looped, time-warp to ~4 strides/s → despill (`13c`) → ribbon. |
-| 2D | 8–12 keys enough if gathered + stretched exist. Mushy inbetweens = float. |
+| **Sealed cycle** | **Required.** [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) + first=last [`lock/bolt-gallop-cycle-first.jpg`](../../lock/bolt-gallop-cycle-first.jpg). Hard-cut closed period. |
+| 3D rig | Archive / research only unless SmiR reseals. Rotary cycle, cam locked behind shoulder like the plate. PNG strip + alpha, **paw pivot**. |
+| Live / green | Time-warp / grade **this** sealed cycle → despill (`13c`) → ribbon. Do not invent a new stride. |
+| 2D | Do not replace the sealed cycle. Mushy inbetweens = float. |
 
-Do **not** let Imagine invent the gallop **inside** the road plate. Pretty for one second, then no control.
+Do **not** let Imagine invent the gallop **inside** the road plate. Pretty for one second, then no control. **BAN** inventing a new gallop from chat Imagine without the sealed teacher.
 
 ### FAIL (gallop)
 
@@ -92,7 +97,9 @@ Do **not** let Imagine invent the gallop **inside** the road plate. Pretty for o
 - Accel loop with \(m\)  
 - Head to camera + ears up = mascot  
 - Constant contact shadow  
-- Chest-anchored sprite  
+- Chest-anchored sprite
+- Inventing a new gallop from chat Imagine without [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4)
+- Optical-flow / morph last→first (seam must be a **hard cut** on the closed period)
 
 ---
 
@@ -190,8 +197,9 @@ Gallop sheet V = plate time. Ribbon \(s\) only **places**. Contact \(k\) from ph
 
 ## Pointers
 
-- Cutout / teacher / B→green→key: `10`, `13`, `13c`  
+- Cutout / style teacher / B→green→key: `10`, `13`, `13c`
+- Motion teacher / sealed cycle: [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) · [`lock/README.md`](../../lock/README.md)
 - Path / inverse tap: `12`, `12b`, `curvature-sample` (`invertRibbon`)  
 - Anti-sticker contact: `13b`  
 
-Sealed 2026-09-20 — rotary gallop + ribbon turn for Lane Bolt.
+Sealed 2026-09-20 — rotary gallop + ribbon turn for Lane Bolt. Motion cycle sealed the same day: `lock/bolt-gallop-cycle.mp4`.
