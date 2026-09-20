@@ -33,8 +33,8 @@ ARRIVE on sealed PLANET (orbital / surface plate)
 | Step | What the player feels | Kitchen |
 |---|---|---|
 | 1. Room | Nameless picture-menu. Two energy doors (cyan L / gold R). **Star map** tappable in center. Zero chrome words. | Citadel hall grammar — locked camera, Bolt walks in frame |
-| 2. Star map tap | Enter **constellation** — one coherent space map (Space LOD). Zoom in = fullscreen world film; zoom out = planet orbs in void. | `constellation/` · [LAW.md](../../constellation/LAW.md) |
-| 3. Pick + seal | Choosing a planet **locks** destination. No flip-flop mid-run. Return to room with seal held (state, not a HUD essay). | Store `sealedPlanetId` (session / Pack). Ban reopening map to change mid-door-run unless SmiR reopens |
+| 2. Star map tap | Enter **constellation** — one coherent space map (Space LOD). Zoom in = fullscreen world film; zoom out = planet orbs in void. | Federate URL: same-frame replace to `CONSTELLATION_ORIGIN` (already-built Live). `constellation/` · [LAW.md](../../constellation/LAW.md) |
+| 3. Pick + seal | Choosing a planet **locks** destination. No flip-flop mid-run. Return to room with seal held (state, not a HUD essay). | Set `sealedPlanetId` (query / sessionStorage / Pack) → same-frame replace to `ROOM_ORIGIN`. Ban reopening map to change mid-door-run unless SmiR reopens |
 | 4. Door | Door A or B starts the **sprint run** toward the sealed planet. Door = depart, not planet picker. | Graph edge: door → biome enter |
 | 5. Biome sprint | Ground Lane B-stack (empty plate + GPU Bolt). Any biome paint. Frost-parity laws 00 / 15 / 16 / 17. | [00](00-PRIORITY0-any-biome.md) · [17](17-live-compositor.md) |
 | 6. Lena climb | Momentum / picture densifies → world rises to space. Not an XP bar. Sprint **earns** the cosmos reveal (Decrees 504/505/508 — Paw-to-Galaxy). | Quiet sparse → denser void; then space corridor plate(s) |
@@ -49,10 +49,35 @@ ARRIVE on sealed PLANET (orbital / surface plate)
 3. **One seal per run.** Changing planet requires returning to map **between** runs, not mid-sprint.
 4. **Constellation = Space LOD.** No collage of unrelated videos. Black void + coherent orbs. See constellation LAW.
 5. **Doors stay Citadel grammar.** Energy portals cyan L / gold R. No wood doors. No UI chrome boxes. Locked-off camera in hall clips.
-6. **Biome → space is one journey.** Not a separate app. Same engine graph: room node → constellation overlay → biome plates → space plates → planet node.
+6. **Biome → space is one journey.** Not a separate app. Player graph: room → constellation → biome → space → planet. Kitchen: **federate URLs** (room Live ↔ constellation Live), not a constellation rebuild inside the room.
 7. **Bolt REUSE.** Gallop = `lock/bolt-gallop-cycle.mp4` (6 s). GPU compositor (17). Never invent sprint for the climb.
 8. **Pack.** Live auto-embeds Pack. Destination seal may mirror into Pack profile later — never block play on Pack down.
 9. **Hang ≠ wipe.** New planets / biomes append. Don’t delete hung halls or constellation orbs to “make room”.
+10. **Federate URL.** Room Live and constellation Live are **different** grok.me / sandbox URLs. Tap map **lands on** the already-built constellation Live. That **is** the federation. See HARD section below.
+
+---
+
+## HARD — Federate URL
+
+SmiR: room Live ≠ constellation Live. Two hosts. One journey. The player must **not** feel they left the game.
+
+Tap star map in the room → **land on the constellation Live URL** (the already-built `boltverse-constellation` hang). That **is** URL federation: in-game enter another Live.
+
+1. **Room stores `CONSTELLATION_ORIGIN`** (or similar) = **absolute URL** of the constellation Live already hung. Do **not** invent a new grok.me. Do **not** treat the room / Sprint play URL as the constellation host. Tap map → `location.replace` (or same-frame full-screen navigate) to that URL. Prefer same-frame. Ban chrome new-tab lecture.
+2. **Constellation on seal planet** → set `sealedPlanetId` (query and/or `sessionStorage` and/or Pack) → **return to `ROOM_ORIGIN`** (absolute URL of the room Live that sent the player). Same-frame replace. Seal sticky across the hop.
+3. **Room reads the seal and arms doors.** No seal → door FAIL (or send back to map). Door starts biome sprint → Lena climb → arrive sealed planet.
+4. **Ban:** ask the player to paste URLs · Connect Wallet · rebuild constellation inside every room Live. Reuse the hung constellation Live. Pack may carry the seal later — never block play on Pack down.
+5. **Endgame same pattern:** door / enter into **other players’** citadels / biomes = federate to **their** Live URL (`CITADEL_ORIGIN` / biome origin). Same-frame. Same seal/state hop. Not a new app. Not a wallet gate.
+
+Kitchen constants (do not invent hosts — use the Lives already built):
+
+```
+CONSTELLATION_ORIGIN  // absolute constellation Live (boltverse-constellation hang)
+ROOM_ORIGIN           // absolute this-room Live (the hall that opened the map)
+sealedPlanetId        // query | sessionStorage | Pack — set on seal, read on return
+```
+
+Player feel: still in Odyssey. Kitchen: two Lives, one replace.
 
 ---
 
@@ -61,21 +86,23 @@ ARRIVE on sealed PLANET (orbital / surface plate)
 ```
 sealedPlanetId: null | string   // set in constellation, cleared after arrive (or kept as last)
 phase: room | constellation | biome | space | arrive
+CONSTELLATION_ORIGIN: string    // absolute constellation Live URL
+ROOM_ORIGIN: string             // absolute room Live URL (return hop)
 ```
 
-No second wallet. No Connect Wallet. Picture + taps only.
+No second wallet. No Connect Wallet. Picture + taps only. No “paste this URL”.
 
 ---
 
 ## Cook checklist (new Grok)
 
 1. Hall still + breath + any-to-any walks (2 doors + **center star-map** tappable).
-2. Wire tap map → constellation Space LOD (existing `constellation/` or Live hang).
-3. On planet pick: set `sealedPlanetId`, exit to room.
+2. Wire tap map → **federate** `location.replace` to `CONSTELLATION_ORIGIN` (already-built constellation Live). Same-frame. Do not rebuild Space LOD inside the room.
+3. On planet pick: set `sealedPlanetId` (query / sessionStorage / Pack) → `location.replace` back to `ROOM_ORIGIN`.
 4. Door enter: start biome for that journey (paint may match planet family — frost planet → frost-ish ground, etc.).
 5. After biome momentum threshold / plate cue: transition to space sprint plates.
 6. Final plate / enter: arrive planet matching seal.
-7. Smoke: map before door · seal sticky · door starts run · Lena climb readable · arrive = sealed planet.
+7. Smoke: map before door · same-frame hop to constellation Live · seal sticky on return to room Live · door starts run · Lena climb readable · arrive = sealed planet. Ban new-tab / paste-URL / rebuild-constellation-in-room.
 
 ---
 
