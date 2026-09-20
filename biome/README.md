@@ -40,14 +40,14 @@ This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play
 | [docs/07-pack-live.md](docs/07-pack-live.md) | gate `sub` → registry (TEMPORARY Pack API = `https://boltverse-pack.vercel.app`, not `*.grok.me`) |
 | [docs/08-plate-speed.md](docs/08-plate-speed.md) | measure + warp cousin rush to the empty clock |
 | [docs/09-recette-biome.md](docs/09-recette-biome.md) | **full biome cook** — empty → cousin → speed → dealer → box |
-| [docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md) | **HARD Bolt cutout** — B→cycle→green→key, 48fps, hooks first+last. Motion teacher: [`lock/bolt-gallop-cycle.mp4`](../lock/bolt-gallop-cycle.mp4). |
+| [docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md) | **HARD Bolt cutout** — **REUSE** [`lock/bolt-gallop-cycle.mp4`](../lock/bolt-gallop-cycle.mp4); key + despill + composite. Do not invent a sprint. |
 | [docs/11-plate-order.md](docs/11-plate-order.md) | **HARD LOCK dealer playlist** — canyon → cars → duel → night → war. New biome = new entries. Hang ≠ wipe. |
 | [docs/12-lane-path-ribbon.md](docs/12-lane-path-ribbon.md) | **HARD living-film Lane control** — empty road + Bolt cutout + `path.json` ribbon. Without the chart = film. With it = game. Not SprintCore / Nebula editor. |
 | [docs/12b-adaptive-curvature.md](docs/12b-adaptive-curvature.md) | Cook-time table placement — adapt samples on turns (not clicks). Clock still \(\ell\). Sibling of 12. |
 | [docs/13-make-bolt-lane.md](docs/13-make-bolt-lane.md) | **HARD — make controllable Bolt on a Lane** — product brief / order of work. Not the ribbon sampling essay (12 + 12b). |
 | [docs/13b-anti-sticker-contact.md](docs/13b-anti-sticker-contact.md) | Compositor anti-sticker + contact shadow. Sibling of 13. Not Imagine bake. |
 | [docs/13c-green-despill.md](docs/13c-green-despill.md) | Green key + vector despill factory. Sibling of 13 / 13b. Not the road plate. |
-| [docs/14-rotary-gallop.md](docs/14-rotary-gallop.md) | Rotary gallop + ribbon turn. Sibling of 13. Sealed cycle [`lock/bolt-gallop-cycle.mp4`](../lock/bolt-gallop-cycle.mp4); first=last still; hard-cut seam. |
+| [docs/14-rotary-gallop.md](docs/14-rotary-gallop.md) | Rotary gallop + ribbon turn. Sibling of 13. **REUSE** sealed [`lock/bolt-gallop-cycle.mp4`](../lock/bolt-gallop-cycle.mp4); hard-cut seam. |
 | [scripts/curvature-sample/](scripts/curvature-sample/) | Cook-time adaptive resample — `node demo.js`; `resamplePath` → write `path.json`. Not play LanePlayer. |
 | [scripts/chroma-despill/](scripts/chroma-despill/) | Cook-time vector despill — `node demo.js`; `vectorDespill` after key, before grade. Not play LanePlayer. |
 | [prompts/](prompts/) | Imagine paste blocks (swap `{PAINT}` only) |
@@ -68,7 +68,7 @@ Kitchen — do not read aloud. biome / Sprint cook / lane / B-stack / green-scre
 # 1. biome/PLAY.md
 # 2. biome/docs/06-techniques.md   ← what worked r38 (Sprint cook bible)
 # 3. biome/docs/09-recette-biome.md ← empty + cousin + speed + box (do this)
-# 4. biome/docs/10-bolt-cutout-law.md ← HARD Bolt cutout (B→cycle→green→key, 48fps, hooks first+last)
+# 4. biome/docs/10-bolt-cutout-law.md ← HARD Bolt cutout (REUSE lock/bolt-gallop-cycle.mp4 → key + composite)
 # 5. biome/docs/11-plate-order.md ← HARD LOCK dealer playlist (canyon → cars → duel → night → war)
 # 6. biome/docs/05-key.md
 # 7. biome/reference/LanePlayer.tsx

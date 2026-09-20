@@ -17,14 +17,16 @@ Do **not** paste that URL in a player reply. Never open old three-y `boltverse-o
 
 `STEP 0: attach lock/bolt-back.jpg (or biome/lock/bolt-back.jpg) in chat before cooking Bolt.`
 
-**STEP 0 MOTION GATE** — before ANY biome Bolt cycle cook:
-1. Attach / show [`lock/bolt-gallop-cycle.mp4`](../lock/bolt-gallop-cycle.mp4) (canonical 1s hard-cut closed rotary-gallop) **or** [`lock/bolt-gallop-cycle-first.jpg`](../lock/bolt-gallop-cycle-first.jpg).
-2. Green Bolt cycle cooks **MUST** use `lock/bolt-gallop-cycle-first.jpg` as **first AND last** frame.
-3. Loop seam = **hard cut** on the closed period. Do **NOT** optical-flow morph last→first.
-4. **BAN** inventing a new gallop from chat Imagine without this teacher.
-5. Style teacher remains `lock/bolt-back.jpg`. Motion teacher = the cycle. Both required.
-6. [`lock/bolt-gallop-cycle-12s-preview.mp4`](../lock/bolt-gallop-cycle-12s-preview.mp4) = preview only, not the cook source.
-7. If the motion teacher is not shown → **STOP. No cook. FAIL.** Hang ≠ wipe.
+**PRIORITY 0 — Bolt sprint for new biomes = REUSE, not invent.**
+A fresh Grok in a new Build convo must **NOT** cook a new Bolt gallop from scratch (no new Imagine dog sprint). Pipeline is:
+1. Empty road plate only (Video A) — biome décor, no dog.
+2. Take sealed [`lock/bolt-gallop-cycle.mp4`](../lock/bolt-gallop-cycle.mp4) as the Bolt motion asset (already rear / green / rotary).
+3. Key + despill cutout from that cycle.
+4. Composite cutout onto the scrolling empty plate (AFF stack). Speed/scroll = plate; gait = locked cycle.
+
+**FAIL** if Grok invents a new Bolt sprint clip for a biome cook. Only SmiR can authorize a new cycle cook to replace the lock.
+Style teacher [`lock/bolt-back.jpg`](../lock/bolt-back.jpg) still applies if any still / repose is needed; motion teacher = the sealed cycle mp4.
+Loop seam = **hard cut** on the closed period — do **NOT** optical-flow morph last→first. Preview only: [`lock/bolt-gallop-cycle-12s-preview.mp4`](../lock/bolt-gallop-cycle-12s-preview.mp4). Hang ≠ wipe.
 
 **HARD BAN as identity sources** (never @ref as Sprint biome Bolt teacher):
 - `biome/master/bolt.mp4` / hung bolt — OUTPUT only, never @ref as style teacher
@@ -36,7 +38,7 @@ Do **not** paste that URL in a player reply. Never open old three-y `boltverse-o
 1. **[PLAY.md](PLAY.md)** — engine lock
 2. **[docs/06-techniques.md](docs/06-techniques.md)** — what worked r38 (Sprint cook bible)
 3. **[docs/09-recette-biome.md](docs/09-recette-biome.md)** — empty → cousin → speed → dealer → box
-4. **[docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md)** — HARD Bolt cutout (B→cycle→green→key, 48fps, hooks first+last)
+4. **[docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md)** — HARD Bolt cutout (REUSE lock/bolt-gallop-cycle.mp4 → key + composite; do not invent a sprint)
 5. **[docs/11-plate-order.md](docs/11-plate-order.md)** — HARD LOCK dealer playlist (canyon → cars → duel → night → war)
 6. **[docs/05-key.md](docs/05-key.md)** — chroma + crown, not luma
 7. **[reference/LanePlayer.tsx](reference/LanePlayer.tsx)** — r38 compositor
@@ -49,9 +51,9 @@ Do **not** paste that URL in a player reply. Never open old three-y `boltverse-o
 
 **HARD — Bolt style teacher (make / add a biome).** Use [`lock/bolt-back.jpg`](../lock/bolt-back.jpg) **or** [`biome/lock/bolt-back.jpg`](lock/bolt-back.jpg) (same bytes — either path OK) as the Bolt style ref for the cutout layer (coat + silhouette + strict rear). **Attach / show that exact image in the Build chat first** (PRIORITY 0 TEACHER GATE), then @ref / Imagine reference it for every Bolt still/clip. If teacher not shown → **STOP. No cook. FAIL.** Soft KEEP banned without teacher proof. Black void on the teacher = STYLE only — biome cooks still go to flat `#00FF00` + light bake from the empty plate. Hang ≠ wipe still holds. Never dump this on Welcome.
 
-**HARD — Bolt motion teacher (make / add a biome).** Attach / show [`lock/bolt-gallop-cycle.mp4`](../lock/bolt-gallop-cycle.mp4) (or [`lock/bolt-gallop-cycle-first.jpg`](../lock/bolt-gallop-cycle-first.jpg)) **before** cooking Bolt. Green cycle cooks: first **and** last = `lock/bolt-gallop-cycle-first.jpg`. Loop seam = hard cut — never optical-flow morph last→first. **BAN** inventing a new gallop from chat Imagine without this teacher. Preview only: `lock/bolt-gallop-cycle-12s-preview.mp4`. If motion teacher not shown → **STOP. No cook. FAIL.**
+**HARD — Bolt motion = REUSE (make / add a biome).** Take sealed [`lock/bolt-gallop-cycle.mp4`](../lock/bolt-gallop-cycle.mp4) as the Bolt motion asset. Key + despill + composite onto Video A. **FAIL** if Grok invents a new Bolt sprint clip. Only SmiR can authorize a new cycle cook to replace the lock. Style teacher `lock/bolt-back.jpg` if a still / repose is needed. Preview only: `lock/bolt-gallop-cycle-12s-preview.mp4`.
 
-**HARD LOCK — make / add a biome.** Décor scrolls (rush); Bolt sprints **IN PLACE** (treadmill). Mid-lane. **48fps**. Teacher = `lock/bolt-back.jpg`. Pipeline (do not invert): empty plaque ZERO dog → Video A `imagineBiomeClip` first+last → Video B gait (same décor + Bolt mid-lane IN PLACE; kitchen, not Hung) → extract cycle → repose `#00FF00` → `imagineBoltClip` first+last = cycle bookends on green → chroma key onto A. L/M/R = code X shift of **one** Bolt layer. **Never** chat Imagine alone. **Never** hall `imagineClip`. **Never** a single baked final film. **Never** a 3-Bolt mask. No `XAI_API_KEY` → REFUSE / stock. Law: [docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md) · [docs/09-recette-biome.md](docs/09-recette-biome.md).
+**HARD LOCK — make / add a biome.** Décor scrolls (rush); Bolt sprints **IN PLACE** (treadmill). Mid-lane. **48fps**. Style teacher = `lock/bolt-back.jpg`. Pipeline (do not invert): empty plaque ZERO dog → Video A `imagineBiomeClip` first+last → **REUSE** `lock/bolt-gallop-cycle.mp4` (no new Imagine dog sprint) → key + despill → composite cutout onto A (AFF stack). Speed/scroll = plate; gait = locked cycle. L/M/R = code X shift of **one** Bolt layer. **Never** cook a new Bolt sprint for a biome. **Never** chat Imagine alone. **Never** hall `imagineClip`. **Never** a single baked final film. **Never** a 3-Bolt mask. No `XAI_API_KEY` → REFUSE / stock. Law: [docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md) · [docs/09-recette-biome.md](docs/09-recette-biome.md).
 
 **HARD LOCK — new biome cook (SmiR 2026-09-18 FAIL).** Make/add a **new biome** (any name — Tide, Frost, Ember, invented): **Hang only** the new plates beside existing masters. Do **NOT** rebuild canyon→cars→duel→night→war first. Do **NOT** require Beat 3 recook as a gate. Old Beat stays playable without recook. Bolt = always `@ref` [`lock/bolt-back.jpg`](../lock/bolt-back.jpg). **BAN** copying hung `biome/master/bolt.mp4` / canyon Bolt as identity. Light bake from the **new** empty plaque OK; identity = teacher. Name + décor `{PAINT}` allowed / encouraged. Tide is one example. Never refuse “I can only do Tide.” Pipeline + hooks first/last still apply. Chat catalog lists **hung** biomes only; a biome in cook is not hung until hung.
 
@@ -77,13 +79,13 @@ Two Imagine jobs. Never one mp4 with Bolt painted into the road.
 | Layer | Stills | Film |
 |---|---|---|
 | **Road** (master) | empty-plate first + last — **ZERO dog** | `imagineBiomeClip` `image` + `last_frame` (distinct, **48fps**) |
-| **Bolt cutout** | Cycle bookends on `#00FF00` — **strict rear**, already sprinting — style ref [`lock/bolt-back.jpg`](../lock/bolt-back.jpg) · motion teacher [`lock/bolt-gallop-cycle.mp4`](../lock/bolt-gallop-cycle.mp4) · first **=** last [`lock/bolt-gallop-cycle-first.jpg`](../lock/bolt-gallop-cycle-first.jpg) ([docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md) · [docs/14-rotary-gallop.md](docs/14-rotary-gallop.md)) | `imagineBoltClip` gallop: first + last = **same sealed first frame** (hard-cut closed period, in place, 6 s, **48fps**) |
+| **Bolt cutout** | **REUSE** sealed [`lock/bolt-gallop-cycle.mp4`](../lock/bolt-gallop-cycle.mp4) — already rear / green / rotary. Style ref [`lock/bolt-back.jpg`](../lock/bolt-back.jpg) if a still / repose is needed ([docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md) · [docs/14-rotary-gallop.md](docs/14-rotary-gallop.md)) | **No new Imagine dog sprint.** Key + despill that cycle → composite onto Video A (AFF). Speed/scroll = plate; gait = locked cycle. |
 
 Prompts: [prompts/](prompts/). Law: [docs/01-images.md](docs/01-images.md) · [docs/02-videos.md](docs/02-videos.md) · [docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md). After empty+cutout KEEP: author `path.json` — [docs/12-lane-path-ribbon.md](docs/12-lane-path-ribbon.md) (living-film Lane, not SprintCore). Without the chart = film. With it = game.
 
 ```
 # dry thought-queue only — no new grok.me
-# live cook needs XAI_API_KEY + imagineBiomeClip (road) / imagineBoltClip (cutout) / imagineClip (hall)
+# live cook needs XAI_API_KEY + imagineBiomeClip (road). Bolt = REUSE lock/bolt-gallop-cycle.mp4 (imagineBoltClip = SmiR only)
 # drop PASS masters into biome/master/ (see master/README.md)
 ```
 
@@ -97,7 +99,7 @@ Same contract as the hall films, **different paint**:
 |---|---|---|
 | empty-plate travel | start of this road | end of this road — **distinct**, world advanced |
 | next road plate | **extracted last frame** of the previous road | new end still |
-| cutout gallop | [`lock/bolt-gallop-cycle-first.jpg`](../lock/bolt-gallop-cycle-first.jpg) (strict rear, already sprinting) | **same file** — first = last; hard-cut closed period (`imagineBoltClip`). Attach [`lock/bolt-gallop-cycle.mp4`](../lock/bolt-gallop-cycle.mp4). |
+| cutout gallop | **REUSE** [`lock/bolt-gallop-cycle.mp4`](../lock/bolt-gallop-cycle.mp4) (already rear / green / rotary) | **Do not cook a last frame.** Key + despill + composite onto Video A. **FAIL** if Grok invents a new sprint. |
 
 ```
 ffmpeg -y -sseof -0.12 -i road-N.mp4 -frames:v 1 \
