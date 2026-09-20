@@ -4,7 +4,7 @@
 
 **Sealed 2026-09-20 (SmiR phone review).** Hang ≠ wipe. Beat stays hung.
 
-Any-biome empty stills start from **law 20**. This file is the **Frost aurora KEEP** that already hits those defaults (wide 3-lane, horizon ~0.38, plant ~0.80, Bolt X = 0.50). Do not treat these paint / GPU knobs as the default for Tide / canyon / ember.
+Any-biome empty stills start from **law 20** — the **full** measure set (frame + scale + GPU start knobs), not φ-only. This file is the **Frost aurora KEEP** that **proved** those numbers. Frost **paint** (aurora, neon dashes, thin snow, encode, hang path) stays here. Frame / scale / sat·bounce·contact **defaults live in [20](20-default-plate-proportions.md)** and apply to Tide / canyon / ember too.
 
 Audience: a cold Grok who is about to recook Frost because “the last ice plate looked like shit.” Read **law 20** first, then this **before** Imagine. The KEEP is a **wide 3-lane night highway** with aurora + thin snow + aurora-green neon dashes. Bolt is the sealed 6 s overlay (law 17). Never bake the dog into the plate.
 
@@ -40,7 +40,7 @@ This KEEP is a **nationale**: camera further back, 3 lanes drawn by neon, cliffs
 
 ## Visual proportions (measured 2026-09-20, 720×1280, plant `y = 0.80`)
 
-These measures **hit law 20**. Frame UV. `w` in PATH_TABLE = **one-lane half-width**. 3-lane full width = `6w`.
+These measures **are law 20** (copied here as the KEEP that sealed them). Frame UV. `w` in PATH_TABLE = **one-lane half-width**. 3-lane full width = `6w`.
 
 | | Frost aurora KEEP | Beat empty | PATH_TABLE (code) |
 |---|---|---|---|
@@ -67,7 +67,7 @@ Live dpr2 canvas 1440×2560. Stance scan at 384×584 (`withersH≈148`, `stanceW
 | `withersFrac` | **~0.10** | target 0.27, band 0.22–0.32 |
 | Dest sprite `384×584 × scale` | ~0.41 of frame H | — |
 
-`withersMin` is **soft** (13d). On a wide nationale, hitting 0.22 withers = dog≈truck. **KEEP the small dog.** The screenshot SmiR gave as teacher already had this ratio. Same rule is the law 20 default for any wide road.
+`withersMin` is **soft** (13d). On a wide nationale, hitting 0.22 withers = dog≈truck. **KEEP the small dog.** The screenshot SmiR gave as teacher already had this ratio. This **is** the law 20 default for any wide road — not Frost-only.
 
 `PAW_PLANT = 0.80` (+ `PAW_SINK=0.05` → paws ~0.85). Contact `k` frost **0.20** (bright snow — old 0.34 punched a skateboard-box shadow).
 
@@ -112,15 +112,15 @@ rVFC stamp  ·  texSubImage2D  ·  GPU_VER remount
 CLOCK  96 fps / 534 / STRIDE_HZ=4 / playbackRate=1
 ```
 
-Frost knobs (neon KEEP):
+Frost paint knobs (hit law 20 start, then frost cool/rim):
 
 ```
-cool  0.84, 0.93, 1.12
-sat   0.60          // 0.76 was studio-sticker on this plate
+cool  0.84, 0.93, 1.12     // frost paint — other biomes use 17 table
+sat   0.60                 // law 20 start (any biome); 0.76 = studio sticker
 under 0.74
-rim   0.04, 0.055, 0.08
-bounce 0.40         // law 17 wrote 0.32; neon road needs more plate light
-CONTACT_K frost 0.20
+rim   0.04, 0.055, 0.08    // frost paint
+bounce 0.40                // law 20 start (any biome)
+CONTACT_K 0.20             // law 20 start (any biome)
 ```
 
 Road shader may add a **neon bloom** on green dashes (`uNeon`) after the bake. Do not double-wash snow (`uSnow=0` when snow is already in the plate).

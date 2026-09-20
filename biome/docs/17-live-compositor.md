@@ -62,25 +62,25 @@ After key:
 
 ```
 bounce = plateRGB / max(plateLuma, 0.07)
-c *= mix(1, bounce, 0.32)          // frost aurora KEEP: 0.40 (neon road) — [20b](20b-frost-aurora-proportions.md)
+c *= mix(1, bounce, 0.40)          // law 20 start (any biome). Old 0.32 under-reads a bright road
 c  = mix(c, plate, 0.10)
 rim *= 0.35
 3 vertical taps (dy≈0.0055) to pick up plate shutter
 ```
 
-Biome knobs (`uniformsFor(chap)`):
+**Law 20 GPU start** (then adapt): sat **0.60** · bounce **0.40** · contact `k` **0.20**. Old 0.32 / 0.34 / 0.58 are not the default. [20](20-default-plate-proportions.md).
+
+Biome knobs (`uniformsFor(chap)` — start from law 20, then shift to **this** paint):
 
 | `{PAINT}` | cool | sat | under | rim |
 |---|---|---|---|---|
-| frost / ice / crystal | 0.84, 0.93, 1.12 | **0.60** (was 0.58; 0.76 = studio sticker on neon snow) | 0.74 | 0.04, 0.055, 0.08 |
+| frost / ice / crystal | 0.84, 0.93, 1.12 | **0.60** (law 20 start; 0.76 = studio sticker) | 0.74 | 0.04, 0.055, 0.08 |
 | tide / wet | 0.82, 0.95, 1.08 | 0.62 | 0.76 | 0.05, 0.09, 0.12 |
 | night | 0.78, 0.84, 1.14 | 0.68 | 0.70 | 0.07, 0.09, 0.16 |
 | war / ash / ember | 0.96, 0.94, 0.90 | 0.78 | 0.82 | 0.12, 0.10, 0.08 |
 | canyon / dusk / default | 1.06, 0.97, 0.84 | 0.90 | 0.82 | 0.16, 0.09, 0.03 |
 
-Never ship one studio grade on every biome.
-
-Frost contact `k` **0.20** on bright snow (0.34 punches a skateboard-box). Shadow on the **road**, ellipse flat, not a dark rectangle under the paws. Empty-still framing = [20](20-default-plate-proportions.md); Frost KEEP numbers = [20b](20b-frost-aurora-proportions.md).
+Never ship one studio grade on every biome. Contact `k` **starts at 0.20** (0.34 punches a skateboard-box). Shadow on the **road**, ellipse flat, not a dark rectangle under the paws. Empty-still framing + GPU start = [20](20-default-plate-proportions.md). Frost paint KEEP = [20b](20b-frost-aurora-proportions.md).
 
 ---
 
