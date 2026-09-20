@@ -171,7 +171,7 @@ For Grok only. Boot attaches **only** the Citadel preview. **Never print the pat
   3. **[`biome/docs/09-recette-biome.md`](biome/docs/09-recette-biome.md)** — REQUIRED full checklist (empty→cousin→speed→dealer→box; SPAWN/WIDTH; road-bar/blast)
 4. [`biome/docs/08-plate-speed.md`](biome/docs/08-plate-speed.md) when matching cousin rush
 5. [`biome/docs/05-key.md`](biome/docs/05-key.md) + [`biome/reference/LanePlayer.tsx`](biome/reference/LanePlayer.tsx)
-6. [`biome/docs/10-bolt-cutout-law.md`](biome/docs/10-bolt-cutout-law.md) — HARD Bolt cutout (REUSE lock/bolt-gallop-cycle.mp4 → key + composite; do not invent a sprint)
+6. [`biome/docs/10-bolt-cutout-law.md`](biome/docs/10-bolt-cutout-law.md) — HARD Bolt cutout (REUSE lock/bolt-gallop-cycle.mp4 → key + composite; then COMPOSITE GATE 13/13b/13c scale+light+contact before KEEP)
 Never dump this to the player.
 
 **HARD LOCK — Hang ≠ wipe.** New biome = ADD plates + `plates-index` / dealer entries. KEEP canyon→cars→duel→night→war. NEVER wipe masters. Tide-only playlist = FAIL. Law: [`biome/docs/09-recette-biome.md`](biome/docs/09-recette-biome.md).
@@ -185,6 +185,8 @@ Never dump this to the player.
 
 `STEP 0: attach lock/bolt-back.jpg (or biome/lock/bolt-back.jpg) in chat before cooking Bolt.`
 
+**PRIORITY 0 COMPOSITE GATE** — after REUSE (key the sealed cycle onto Video A), MUST **scale + plate-grade + paw contact** ([13](biome/docs/13-make-bolt-lane.md) / [13b](biome/docs/13b-anti-sticker-contact.md) / [13c](biome/docs/13c-green-despill.md)) **BEFORE** KEEP / Hang. Key-and-hang without proof = **FAIL**.
+
 **HARD BAN as identity sources** (never @ref as Sprint biome Bolt teacher):
 - `biome/master/bolt.mp4` / hung bolt — OUTPUT only, never @ref as style teacher
 - `lock/bolt-back-prev.jpg` — archive only, never @ref
@@ -193,7 +195,7 @@ Never dump this to the player.
 
 **HARD — Bolt style teacher (make / add a biome).** Use [`lock/bolt-back.jpg`](lock/bolt-back.jpg) **or** [`biome/lock/bolt-back.jpg`](biome/lock/bolt-back.jpg) (same bytes — either path OK) as the Bolt style ref for the cutout layer (coat + silhouette + strict rear). **Attach / show that exact image in the Build chat first** (PRIORITY 0 TEACHER GATE), then @ref / Imagine reference it for every Bolt still/clip. If teacher not shown → **STOP. No cook. FAIL.** Soft KEEP banned without teacher proof. Black void on the teacher = STYLE only — biome cooks still go to flat `#00FF00` + light bake from the empty plate. Hang ≠ wipe still holds. Never dump this on Welcome.
 
-**HARD LOCK — make / add a biome.** Décor scrolls (rush); Bolt sprints **IN PLACE** (treadmill). Mid-lane. **48fps**. Style teacher = `lock/bolt-back.jpg`. **PRIORITY 0 — REUSE, not invent.** Pipeline (do not invert): empty plaque ZERO dog → Video A `imagineBiomeClip` first+last → **REUSE** `lock/bolt-gallop-cycle.mp4` (no new Imagine dog sprint) → key + despill → composite onto A (AFF). Speed/scroll = plate; gait = locked cycle. L/M/R = code X shift of **one** Bolt layer. **FAIL** if Grok invents a new Bolt sprint clip. Only SmiR can replace the lock. **Never** hall `imagineClip`. **Never** a single baked final film. **Never** a 3-Bolt mask. No `XAI_API_KEY` → REFUSE / stock. Law: [`biome/docs/10-bolt-cutout-law.md`](biome/docs/10-bolt-cutout-law.md) · [`biome/docs/09-recette-biome.md`](biome/docs/09-recette-biome.md).
+**HARD LOCK — make / add a biome.** Décor scrolls (rush); Bolt sprints **IN PLACE** (treadmill). Mid-lane. **48fps**. Style teacher = `lock/bolt-back.jpg`. **PRIORITY 0 — REUSE, not invent.** Pipeline (do not invert): empty plaque ZERO dog → Video A `imagineBiomeClip` first+last → **REUSE** `lock/bolt-gallop-cycle.mp4` (no new Imagine dog sprint) → key + despill → composite onto A (AFF) → **COMPOSITE GATE** scale + plate-grade + paw contact **BEFORE** KEEP. Speed/scroll = plate; gait = locked cycle. L/M/R = code X shift of **one** Bolt layer. **FAIL** if Grok invents a new Bolt sprint clip. Only SmiR can replace the lock. **Never** hall `imagineClip`. **Never** a single baked final film. **Never** a 3-Bolt mask. No `XAI_API_KEY` → REFUSE / stock. Law: [`biome/docs/10-bolt-cutout-law.md`](biome/docs/10-bolt-cutout-law.md) · [`biome/docs/09-recette-biome.md`](biome/docs/09-recette-biome.md).
 
 **HARD LOCK — new biome cook (SmiR 2026-09-18 FAIL).** Make/add a **new biome** (any name — Tide, Frost, Ember, invented): **Hang only** the new plates beside existing masters. Do **NOT** rebuild canyon→cars→duel→night→war first. Do **NOT** require Beat 3 recook as a gate. Old Beat stays playable without recook. Bolt = always `@ref` [`lock/bolt-back.jpg`](lock/bolt-back.jpg). **BAN** copying hung `biome/master/bolt.mp4` / canyon Bolt as identity. Light bake from the **new** empty plaque OK; identity = teacher. Name + décor `{PAINT}` allowed / encouraged. Tide is one example. Never refuse “I can only do Tide.” Pipeline + hooks first/last still apply. Chat catalog lists **hung** biomes only; a biome in cook is not hung until hung.
 

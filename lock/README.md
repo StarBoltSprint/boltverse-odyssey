@@ -5,6 +5,15 @@ A fresh Grok in a new Build convo must **NOT** cook a new Bolt gallop from scrat
 3. Key + despill cutout from that cycle.
 4. Composite cutout onto the scrolling empty plate (AFF stack). Speed/scroll = plate; gait = locked cycle.
 
+**PRIORITY 0 COMPOSITE GATE** — after REUSE (empty plate → key sealed cycle → composite), **BEFORE** any KEEP / Hang:
+
+1. **SCALE (HARD)** — withers bbox height ~0.22–0.32 of frame; paws in the lower third; Bolt must **NOT** fill lane width. Same scale every play frame. Road perspective via ribbon `w(s)`, not a giant cutout. Smoke **FAIL** if dog ≈ truck in lane. Law: [`biome/docs/13-make-bolt-lane.md`](../biome/docs/13-make-bolt-lane.md).
+2. **LIGHT (HARD)** — grade the cutout **FROM** the empty plate family (rim from plate sun side, frost desat/cool, ember warm, darker under-legs). Ban shipping one lit green-screen turnaround forever. Law: [`biome/docs/13b-anti-sticker-contact.md`](../biome/docs/13b-anti-sticker-contact.md).
+3. **CONTACT (HARD)** — small paw contact shadow **multiply on the road** (not a full-body drop shadow, not baked in Imagine). Missing contact = float = **FAIL**. Law: 13b.
+4. Order: key → despill ([`13c`](../biome/docs/13c-green-despill.md)) → plate grade → contact → shared grain.
+
+**FAIL** if Grok keys the cycle and hangs without scale + light + contact proof (before/after stills or smoke).
+
 **FAIL** if Grok invents a new Bolt sprint clip for a biome cook. Only SmiR can authorize a new cycle cook to replace the lock.
 Style teacher [`bolt-back.jpg`](bolt-back.jpg) still applies if any still / repose is needed; motion teacher = the sealed cycle mp4.
 Loop seam on the sealed cycle = **hard cut** on the closed period. Do **NOT** optical-flow morph last→first.
