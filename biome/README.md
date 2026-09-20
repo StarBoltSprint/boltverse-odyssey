@@ -52,6 +52,7 @@ This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play
 | [docs/14c-gallop-clock.md](docs/14c-gallop-clock.md) | Gallop clock anti-saccadé — native 96 fps, `CYCLE_FRAMES=534`, phase from `plate_time`, `assertGallopClock`. |
 | [docs/15-gpu-compositor.md](docs/15-gpu-compositor.md) | **GPU compositor** — WebGL; hung [`scripts/bolt-key-gl/bolt-key-gl.ts`](scripts/bolt-key-gl/bolt-key-gl.ts); canon 6 s / 534-frame cycle; FX table drawn in this family; ban `getImageData` hot path. |
 | [docs/16-biome-ground-fx.md](docs/16-biome-ground-fx.md) | **Biome ground FX + grade** — paw prints / splash / dust per `{PAINT}`. Frost-parity for any biome. |
+| [docs/17-live-compositor.md](docs/17-live-compositor.md) | **Live compositor** — what actually stuck Bolt: quad dest, luma protect, plate bounce, sin grain, rVFC, FX quads. FAIL = old scissor/IGN sketch. |
 | [docs/00-PRIORITY0-any-biome.md](docs/00-PRIORITY0-any-biome.md) | **PRIORITY 0 any biome** — GPU + sealed 6 s + FX table. Frost-parity for a cold Grok / random player. |
 | [docs/COLD_START-any-biome.md](docs/COLD_START-any-biome.md) | Kitchen paste — cook **any** biome (supersedes COLD_START-gpu-6s as the cook paste). |
 | [docs/COLD_START-gpu-6s.md](docs/COLD_START-gpu-6s.md) | Kitchen note — REUSE 6s lock + GPU law 15. Cook paste superseded by [COLD_START-any-biome.md](docs/COLD_START-any-biome.md). |
@@ -59,7 +60,7 @@ This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play
 | [scripts/chroma-despill/](scripts/chroma-despill/) | Cook-time vector despill — `node demo.js`; `vectorDespill` after key, before grade. Not play LanePlayer. |
 | [scripts/bolt-scale/](scripts/bolt-scale/) | Cook-time Bolt auto-scale — `node demo.js`; `computeScale` / `assertScale` from lane width. |
 | [scripts/gallop-clock/](scripts/gallop-clock/) | Cook/play gallop clock — `node demo.js`; native 96 fps, no 1-of-N stepping. |
-| [scripts/bolt-key-gl/](scripts/bolt-key-gl/) | **GPU compositor** — [`bolt-key-gl.ts`](scripts/bolt-key-gl/bolt-key-gl.ts) + [`WIRE.md`](scripts/bolt-key-gl/WIRE.md). Law 15. Ban `getImageData` hot path. |
+| [scripts/bolt-key-gl/](scripts/bolt-key-gl/) | **GPU compositor (law 15+17)** — [`bolt-key-gl.ts`](scripts/bolt-key-gl/bolt-key-gl.ts) + [`wet-fx.ts`](scripts/bolt-key-gl/wet-fx.ts) + [`WIRE.md`](scripts/bolt-key-gl/WIRE.md). Quad dest, bounce, luma protect. **FAIL** = scissor/IGN sketch. |
 | [prompts/](prompts/) | Imagine paste blocks (swap `{PAINT}` only) |
 | [reference/LanePlayer.tsx](reference/LanePlayer.tsx) | r38 compositor (not a grok.me) |
 | [reference/lane-css.css](reference/lane-css.css) | 9:16 B-stack CSS |
@@ -91,6 +92,7 @@ Kitchen — do not read aloud. biome / Sprint cook / lane / B-stack / green-scre
 #    biome/docs/14c-gallop-clock.md ← gallop-clock anti-saccadé (assertGallopClock)
 #    biome/docs/15-gpu-compositor.md ← GPU compositor (bolt-key-gl.ts; ban getImageData)
 #    biome/docs/16-biome-ground-fx.md ← biome-adaptive ground FX + grade
+#    biome/docs/17-live-compositor.md ← Live GPU (bounce / protect / sin grain / FX quads)
 #    biome/docs/00-PRIORITY0-any-biome.md ← Frost-parity for ANY biome (cold Grok)
 #    biome/docs/COLD_START-any-biome.md ← cook paste (supersedes COLD_START-gpu-6s)
 # then biome/GROK.md

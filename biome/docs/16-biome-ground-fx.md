@@ -34,18 +34,27 @@ After key+despill, before Hang:
 | **Crystal / prism** | Cool high-sat rim from plate crystals | Soft luminous print | Tiny prism flecks | Identity stay white GSD |
 | **Default / unknown `{PAINT}`** | Sample plate mid → nearest row above | Generic soft multiply stamp | Soft dust or mist matching plate albedo | Prefer dust over water if unsure |
 
-## Implementation sketch (Live)
+## Implementation (Live) — `wet-fx.ts` + mark quads
+
+**Code:** [`biome/scripts/bolt-key-gl/wet-fx.ts`](../scripts/bolt-key-gl/wet-fx.ts) drawn by [`bolt-key-gl.ts`](../scripts/bolt-key-gl/bolt-key-gl.ts) (law 17).
+
+- Prints / drops are **tiny quads**, not a fullscreen `exp()` loop (that stalls cheap GPUs).
+- Euler: gravity, Stokes drag (`k≈4.4/r`), bounce 1–2, split, then merge to a print.
+- Chase cam: prints **slide toward the camera** (canvas Y↑) with the plate. Stuck-to-screen = FAIL.
+- Spawn only on plant (`STRIDE_HZ≈4`) and grounded. Jump = no spawn.
+- Cap: 6 prints, 16 drops. Not SPH. Not Box2D.
 
 ```
-phase = stridePhase(plate_time)   // 14c
-onPlant = phase near plant windows (doc 14)
-if (onPlant && grounded):
-  spawnFX(biomeRow, ribbonPoint(s, λ_paws), plateGrade)
-shadowK = grounded ? 1 : 0.25
-compositor.draw({ ..., shadowK, fxList })
+kind = fxKindOf(chap)            // water | dust | ash | glitter
+phase = stridePhase(plate_time)  // 14c
+if (strideChanged && grounded):
+  emitSplash(drops, pawX, pawY, side, stanceW, kind)
+  prints.push(wet oval at paws)
+stepDrops / stepPrints
+packWet → gpu.frame({ prints, drops })
 ```
 
-Wire with GPU compositor ([15](15-gpu-compositor.md)). Update FX uniforms when biome/plate changes — one code path, many rows.
+Wire with GPU compositor ([15](15-gpu-compositor.md) · [17](17-live-compositor.md)). Update FX kind when biome/plate changes — one code path, many rows.
 
 ## QC / Smoke
 
@@ -59,4 +68,4 @@ Wire with GPU compositor ([15](15-gpu-compositor.md)). Update FX uniforms when b
 
 ## Related
 
-[13b](13b-anti-sticker-contact.md) · [13](13-make-bolt-lane.md) · [14](14-rotary-gallop.md) · [14c](14c-gallop-clock.md) · [15](15-gpu-compositor.md) · [00-PRIORITY0-any-biome.md](00-PRIORITY0-any-biome.md)
+[13b](13b-anti-sticker-contact.md) · [13](13-make-bolt-lane.md) · [14](14-rotary-gallop.md) · [14c](14c-gallop-clock.md) · [15](15-gpu-compositor.md) · [17](17-live-compositor.md) · [00-PRIORITY0-any-biome.md](00-PRIORITY0-any-biome.md)
