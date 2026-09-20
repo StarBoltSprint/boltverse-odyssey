@@ -7,6 +7,8 @@ GPU compositor (no CPU `getImageData` hot path) · sealed **6 s** gallop · auto
 
 **Live compositor = [17-live-compositor.md](17-live-compositor.md).** Copying the old scissor / IGN-fract sketch = **FAIL**.
 
+**Empty still defaults = [20-default-plate-proportions.md](20-default-plate-proportions.md).** Start **any** biome empty still / Video A from that skeleton (wide 3-lane, horizon ~0.38, plant ~0.80, Bolt X = 0.50). Player may override. Frost aurora KEEP numbers (worked example) = [20b-frost-aurora-proportions.md](20b-frost-aurora-proportions.md). Ice-hole / Beat-narrow road as silent default / grow Bolt to fake withersMin = **FAIL**.
+
 Player may be random. Grok must not ask them to install Pack, invent a dog sprint, or wipe old biomes.
 
 ---
@@ -19,7 +21,7 @@ Player may be random. Grok must not ask them to install Pack, invent a dog sprin
 | Style teacher | `lock/bolt-back.jpg` (show in chat before still/repose) | [10](10-bolt-cutout-law.md) |
 | Architecture | B-stack: empty road Video A + keyed Bolt cutout. Never bake Bolt into one film | [09](09-recette-biome.md) |
 | Compositor | **GPU from frame 0** — copy `bolt-key-gl.ts` **+** `wet-fx.ts`. Quad dest, luma protect, plate bounce, sin grain, rVFC stamp | [17](17-live-compositor.md) · [15](15-gpu-compositor.md) · [WIRE](../scripts/bolt-key-gl/WIRE.md) |
-| Scale | `computeScale` / `assertScale` (13d) after key | [13d](13d-auto-scale.md) |
+| Scale | `computeScale` / `assertScale` (13d) after key. On a **wide** law-20 road, withersFrac ~0.10 is KEEP — do not grow to 0.22 | [13d](13d-auto-scale.md) · [20](20-default-plate-proportions.md) |
 | Clock | `gallop-clock` / `assertGallopClock` (14c) — native fps, `plate_time` | [14c](14c-gallop-clock.md) |
 | Contact | Paw multiply shadow on **road** (13b); weaker in air | [13b](13b-anti-sticker-contact.md) |
 | Light | **Plate bounce HARD** — sample road behind the dog, not a studio LUT | [17](17-live-compositor.md) · [13b](13b-anti-sticker-contact.md) |
@@ -45,10 +47,11 @@ Remux lock → Live `public/master/bolt.mp4` (`-an` +faststart), bump `?v=`. Do 
 
 Only these change per biome:
 
-1. **Empty plate paint** — roads, light, weather (`image-empty-plate.txt` + `{PAINT}`).
+1. **Empty plate paint** — roads, light, weather (`image-empty-plate.txt` + `{PAINT}`). Frame skeleton starts from [20](20-default-plate-proportions.md) unless the player asked a different framing.
 2. **Hazard cousins** — same camera grammar, biome objects.
 3. **Grade / FX row** from [16](16-biome-ground-fx.md) + `uniformsFor(chap)` in [17](17-live-compositor.md).
 4. **File names** — `road-<biome>.mp4`, `road-<biome>-*.mp4`, never overwrite hung `road.mp4` unless SmiR says replace Beat.
+5. **Frost KEEP picture** (if hanging Frost) — aurora + thin snow + green neon dashes. Measures in [20b](20b-frost-aurora-proportions.md). Paste [COLD_START-frost-aurora.md](COLD_START-frost-aurora.md).
 
 Bolt identity, gallop file, GPU path, scale, clock, Pack = **identical**.
 
@@ -57,10 +60,10 @@ Bolt identity, gallop file, GPU path, scale, clock, Pack = **identical**.
 ## C. Ordered cook (copy this)
 
 1. Show `lock/bolt-back.jpg` + `lock/bolt-gallop-cycle.mp4` in chat (teacher gate).
-2. Still empty first + distinct last — ZERO dog.
-3. Video A empty rush — `imagineBiomeClip`, **48 fps**, SPEED LAW.
+2. Still empty first + distinct last — ZERO dog. **Start from law 20 defaults** unless the player overrode framing.
+3. Video A empty rush — `imagineBiomeClip`, **48 fps**, SPEED LAW. Frost: **no** `setpts` 2.7× warp ([20b](20b-frost-aurora-proportions.md)).
 4. REUSE lock cycle → key + despill (13c) — **law 17** GPU even in cook QA.
-5. `computeScale` / `assertScale` (13d).
+5. `computeScale` / `assertScale` (13d). Wide road: do not grow Bolt to hit withersMin.
 6. Wire Live: `makeCompositor` **before** `getContext("2d")` ([17](17-live-compositor.md)).
 7. `gallop-clock` / native loop 1× (14c).
 8. Plate **bounce** + contact shadow + **ground FX row for this biome** (16 / wet-fx).
@@ -68,13 +71,13 @@ Bolt identity, gallop file, GPU path, scale, clock, Pack = **identical**.
 10. Hang ≠ wipe + Pack wire + bump `GPU_VER`.
 11. Smoke: dogFps ≈ min(96, display); hind paws intact; **no vertical bars**; shadow on road; FX visible on plant; coat matches THIS plate; no truck scale.
 
-**FAIL** if: invent sprint · CPU key every rAF · **copy scissor/IGN sketch** · wipe masters · hang without composite gate · skip bounce / FX row · bake Bolt into road mp4 · SPH / Box2D.
+**FAIL** if: invent sprint · CPU key every rAF · **copy scissor/IGN sketch** · wipe masters · hang without composite gate · skip bounce / FX row · bake Bolt into road mp4 · SPH / Box2D · ice-hole / Beat-narrow road as silent default · grow Bolt to fake withersMin on a wide road.
 
 ---
 
 ## D. Cold-start message (kitchen — paste into Build when cooking)
 
-Use [COLD_START-any-biome.md](COLD_START-any-biome.md). Do **not** use the old Frost share paste that said “don’t use `lock/bolt-gallop-cycle.mp4`” — on `main` that file **is** the 6 s canon.
+Use [COLD_START-any-biome.md](COLD_START-any-biome.md) (starts empty stills from [law 20](20-default-plate-proportions.md)). Frost picture KEEP: [COLD_START-frost-aurora.md](COLD_START-frost-aurora.md). Do **not** use the old Frost share paste that said “don’t use `lock/bolt-gallop-cycle.mp4`” — on `main` that file **is** the 6 s canon.
 
 Player boot (“start odyssey”) stays [START.md](../../START.md) — Welcome + teaser + play URL. This doc is **cook**, not Welcome.
 
