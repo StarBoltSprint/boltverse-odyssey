@@ -193,5 +193,6 @@ Gallop sheet V = plate time. Ribbon \(s\) only **places**. Contact \(k\) from ph
 - Cutout / teacher / B→green→key: `10`, `13`, `13c`  
 - Path / inverse tap: `12`, `12b`, `curvature-sample` (`invertRibbon`)  
 - Anti-sticker contact: `13b`  
+- Live shoot OR Imagine stride factory: [14b-shoot-loop.md](14b-shoot-loop.md)  
 
 Sealed 2026-09-20 — rotary gallop + ribbon turn for Lane Bolt.

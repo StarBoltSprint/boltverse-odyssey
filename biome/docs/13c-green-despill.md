@@ -3,7 +3,8 @@
 HARD LOCK companion to `13-make-bolt-lane.md` + `13b-anti-sticker-contact.md`.  
 **Green is only for making the cutout.** It is not the world. The world stays an empty-road plate. Bolt stays a keyed layer on the ribbon.
 
-Companion: `10-bolt-cutout-law.md` (B → green → key), `12` / `invertRibbon`, cook tool optional `biome/scripts/chroma-despill/` when hung.
+Companion: `10-bolt-cutout-law.md` (B → green → key), `12` / `invertRibbon`, cook tool optional `biome/scripts/chroma-despill/` when hung.  
+After loop, despill then ribbon ([14b-shoot-loop.md](14b-shoot-loop.md)).
 
 ## What the green shot is for
 
