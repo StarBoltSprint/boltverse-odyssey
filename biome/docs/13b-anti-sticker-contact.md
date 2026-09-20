@@ -3,7 +3,8 @@
 HARD LOCK companion to `13-make-bolt-lane.md`.  
 Bolt stays a **cutout**. Fix the **seam**, do not bake him into the mp4.
 
-Companion: `10-bolt-cutout-law.md`, `12-lane-path-ribbon.md`, `13-make-bolt-lane.md`.
+Companion: `10-bolt-cutout-law.md`, `12-lane-path-ribbon.md`, `13-make-bolt-lane.md`.  
+After key, despill before grade (`13c-green-despill.md`).
 
 ## What makes him look like a sticker
 

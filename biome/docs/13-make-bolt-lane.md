@@ -3,7 +3,7 @@
 HARD LOCK for fresh Grok / new Build convos.  
 Product brief: **make a cutout that can be steered**, not bake a dog into Imagine pixels. The plate is scenery. Bolt is a second layer with a clock and a ribbon.
 
-Companion laws: `10-bolt-cutout-law.md` (identity / gallop / teacher), `12-lane-path-ribbon.md` + `12b-adaptive-curvature.md` (path table), `13b-anti-sticker-contact.md` (compositor anti-sticker + contact shadow), `biome/scripts/curvature-sample/` (`resamplePath`).
+Companion laws: `10-bolt-cutout-law.md` (identity / gallop / teacher), `12-lane-path-ribbon.md` + `12b-adaptive-curvature.md` (path table), `13b-anti-sticker-contact.md` (compositor anti-sticker + contact shadow), `13c-green-despill.md` (green key + despill factory), `biome/scripts/curvature-sample/` (`resamplePath`).
 
 ## What he is allowed to be
 
