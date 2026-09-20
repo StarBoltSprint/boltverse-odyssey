@@ -45,6 +45,7 @@ This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play
 | [docs/12-lane-path-ribbon.md](docs/12-lane-path-ribbon.md) | **HARD living-film Lane control** — empty road + Bolt cutout + `path.json` ribbon. Without the chart = film. With it = game. Not SprintCore / Nebula editor. |
 | [docs/12b-adaptive-curvature.md](docs/12b-adaptive-curvature.md) | Cook-time table placement — adapt samples on turns (not clicks). Clock still \(\ell\). Sibling of 12. |
 | [docs/13-make-bolt-lane.md](docs/13-make-bolt-lane.md) | **HARD — make controllable Bolt on a Lane** — product brief / order of work. Not the ribbon sampling essay (12 + 12b). |
+| [docs/13b-anti-sticker-contact.md](docs/13b-anti-sticker-contact.md) | Compositor anti-sticker + contact shadow. Sibling of 13. Not Imagine bake. |
 | [scripts/curvature-sample/](scripts/curvature-sample/) | Cook-time adaptive resample — `node demo.js`; `resamplePath` → write `path.json`. Not play LanePlayer. |
 | [prompts/](prompts/) | Imagine paste blocks (swap `{PAINT}` only) |
 | [reference/LanePlayer.tsx](reference/LanePlayer.tsx) | r38 compositor (not a grok.me) |
@@ -70,6 +71,7 @@ Kitchen — do not read aloud. biome / Sprint cook / lane / B-stack / green-scre
 # 7. biome/reference/LanePlayer.tsx
 # 8. biome/docs/12-lane-path-ribbon.md ← living-film Lane path.json (not SprintCore)
 # 9. biome/docs/13-make-bolt-lane.md ← make controllable Bolt on a Lane (product brief)
+#    biome/docs/13b-anti-sticker-contact.md ← compositor anti-sticker + contact shadow
 # then biome/GROK.md
 
 # stills + films = imagine-hooks first+last (never Imagine Agent video)

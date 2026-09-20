@@ -34,7 +34,7 @@ Do **not** paste that URL in a player reply. Never open old three-y `boltverse-o
 
 **HARD — living-film Lane control** (not SprintCore, not Nebula editor stats): after empty road + Bolt cutout KEEP, author `path.json` per **[docs/12-lane-path-ribbon.md](docs/12-lane-path-ribbon.md)**. Without `path.json` = film only. With `path.json` = steerable game (`s`,`λ` ribbon).
 
-**HARD — make controllable Bolt on a Lane:** [docs/13-make-bolt-lane.md](docs/13-make-bolt-lane.md) — product brief / order of work.
+**HARD — make controllable Bolt on a Lane:** [docs/13-make-bolt-lane.md](docs/13-make-bolt-lane.md) — product brief / order of work. [docs/13b-anti-sticker-contact.md](docs/13b-anti-sticker-contact.md) — compositor anti-sticker + contact shadow.
 
 **HARD LOCK — Hang ≠ wipe.** New biome = ADD `road-<biome>*.mp4` + plates-index / dealer entries. KEEP hung canyon→cars→duel→night→war. NEVER `rm` masters. Recook Bolt = `bolt.mp4` only. Law: [docs/09-recette-biome.md](docs/09-recette-biome.md).
 
