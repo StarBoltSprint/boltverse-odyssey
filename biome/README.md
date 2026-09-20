@@ -48,6 +48,7 @@ This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play
 | [docs/13b-anti-sticker-contact.md](docs/13b-anti-sticker-contact.md) | Compositor anti-sticker + contact shadow. Sibling of 13. Not Imagine bake. |
 | [docs/13c-green-despill.md](docs/13c-green-despill.md) | Green key + vector despill factory. Sibling of 13 / 13b. Not the road plate. |
 | [docs/14-rotary-gallop.md](docs/14-rotary-gallop.md) | Rotary gallop + ribbon turn. Sibling of 13. Plate-time cycle; lean/δ on the ribbon. |
+| [docs/14b-shoot-loop.md](docs/14b-shoot-loop.md) | Live shoot OR Imagine stride factory. Sibling of 14. After loop, despill then ribbon. |
 | [scripts/curvature-sample/](scripts/curvature-sample/) | Cook-time adaptive resample — `node demo.js`; `resamplePath` → write `path.json`. Not play LanePlayer. |
 | [scripts/chroma-despill/](scripts/chroma-despill/) | Cook-time vector despill — `node demo.js`; `vectorDespill` after key, before grade. Not play LanePlayer. |
 | [prompts/](prompts/) | Imagine paste blocks (swap `{PAINT}` only) |
@@ -77,6 +78,7 @@ Kitchen — do not read aloud. biome / Sprint cook / lane / B-stack / green-scre
 #    biome/docs/13b-anti-sticker-contact.md ← compositor anti-sticker + contact shadow
 #    biome/docs/13c-green-despill.md ← green key + despill factory
 #    biome/docs/14-rotary-gallop.md ← rotary gallop + ribbon turn
+#    biome/docs/14b-shoot-loop.md ← live shoot OR Imagine stride factory
 # then biome/GROK.md
 
 # stills + films = imagine-hooks first+last (never Imagine Agent video)
