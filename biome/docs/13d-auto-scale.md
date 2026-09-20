@@ -17,6 +17,16 @@ Sealed cycle REUSE still FAIL when the cutout is pasted at Imagine’s native si
 3. **`withersMin` is soft** — do not grow Bolt into the lane just to hit 0.22. Pass `hardWithersMin` only when SmiR wants that fight (then assert may FAIL if lane cannot hold it).  
 4. Measure `boltWithersPx` at the **shoulders**, not ear tips (ear bbox inflates height → wrong scale).
 
+## Wide nationale (Frost aurora KEEP)
+
+Measured 2026-09-20 — [20-frost-aurora-proportions.md](20-frost-aurora-proportions.md).
+
+On the aurora 3-lane, visual road at plant is **~0.75–0.82** of frame (PATH still 0.65). `laneFracMax=0.55` vs PATH already yields `withersFrac ~0.10`. That is **KEEP**: a dog on a highway, not a sticker filling the lane.
+
+**FAIL:** widen PATH to the neon then re-run 13d (Bolt +22 % → truck). **FAIL:** grow Bolt to hit 0.22 withers on this plate. `withersMin` stays soft.
+
+If you retune the ribbon so dodge sits on the neon, **cap scale at the old PATH lane** — lanes move, dog size does not.
+
 ## Formula
 
 Prefer withers target, then HARD-clamp stance to the lane band:
@@ -55,5 +65,6 @@ Play:
 - Scaling the *plate* to fit Bolt  
 - Measuring withers to the ear tips  
 - Growing the dog past the lane to hit withersMin  
+- Widening PATH to visual neon then letting 13d grow Bolt  
 
-Sealed 2026-09-20 — auto-scale cook gate (anti-truck HARD).
+Sealed 2026-09-20 — auto-scale cook gate (anti-truck HARD). Wide-road KEEP added same day (law 20).
