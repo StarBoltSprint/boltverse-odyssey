@@ -48,7 +48,7 @@ Do not mix stacks in one play. Do not slide a whole mid clip sideways and call t
 | Loop | Dual road + watchdog re-`play()`. Never `clearRect` the plate. |
 | Audio | Films stay **`-an`**. No wallet. No API keys in the client. |
 | Chrome | No TAP / NOW. No fill-bar. No cyan drawbox. No HUD. Hits are on the 9:16 picture. |
-| Swipe | [docs/03-decoupe-swipe.md](docs/03-decoupe-swipe.md) — plant the **cutout** on X only (`SHIFT = 30`). Road keeps scrolling. |
+| Swipe | [docs/03-decoupe-swipe.md](docs/03-decoupe-swipe.md) — plant the **cutout** on X only (`SHIFT = 30`). Road keeps scrolling. Living-film Lane ribbon: [docs/12-lane-path-ribbon.md](docs/12-lane-path-ribbon.md) (not SprintCore). |
 
 `kick()` that resets `currentTime = 0` is **banned** for lane change (that is hall plate-stitch).
 

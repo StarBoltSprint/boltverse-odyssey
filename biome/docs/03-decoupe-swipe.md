@@ -22,4 +22,5 @@ B-stack swipe is **not** three baked takes. The **road keeps scrolling**. The fi
 - Hall `dom-swap` `kick()` (resets time)
 - CSS `translate3d` on a luma-filtered `<video>` (retired). Plant is canvas X.
 
-Key / crown: [05-key.md](05-key.md). Reference: [../reference/LanePlayer.tsx](../reference/LanePlayer.tsx).
+Key / crown: [05-key.md](05-key.md). Reference: [../reference/LanePlayer.tsx](../reference/LanePlayer.tsx).  
+Living-film Lane (ribbon + arc-length, not SprintCore): [12-lane-path-ribbon.md](12-lane-path-ribbon.md).
