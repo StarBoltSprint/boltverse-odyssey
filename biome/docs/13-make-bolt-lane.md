@@ -3,9 +3,9 @@
 HARD LOCK for fresh Grok / new Build convos.  
 Product brief: **make a cutout that can be steered**, not bake a dog into Imagine pixels. The plate is scenery. Bolt is a second layer with a clock and a ribbon.
 
-Companion laws: `10-bolt-cutout-law.md` (identity / gallop / teacher), `12-lane-path-ribbon.md` + `12b-adaptive-curvature.md` (path table), `13b-anti-sticker-contact.md` (compositor anti-sticker + contact shadow), `13c-green-despill.md` (green key + despill factory), [13d-auto-scale.md](13d-auto-scale.md) (auto-scale from the road — `computeScale` / `assertScale`), [14-rotary-gallop.md](14-rotary-gallop.md) (rotary gallop + ribbon turn), `biome/scripts/curvature-sample/` (`resamplePath`), `biome/scripts/bolt-scale/` (`computeScale`).
+Companion laws: `10-bolt-cutout-law.md` (identity / gallop / teacher), `12-lane-path-ribbon.md` + `12b-adaptive-curvature.md` (path table), `13b-anti-sticker-contact.md` (compositor anti-sticker + contact shadow), `13c-green-despill.md` (green key + despill factory), [13d-auto-scale.md](13d-auto-scale.md) (auto-scale from the road — `computeScale` / `assertScale`), [14-rotary-gallop.md](14-rotary-gallop.md) (rotary gallop + ribbon turn), [14c-gallop-clock.md](14c-gallop-clock.md) (gallop-clock anti-saccadé — `assertGallopClock`), `biome/scripts/curvature-sample/` (`resamplePath`), `biome/scripts/bolt-scale/` (`computeScale`), `biome/scripts/gallop-clock/` (`frameAtPlateTime`).
 
-**PRIORITY 0 COMPOSITE GATE** — after REUSE (key the sealed cycle onto Video A), **SCALE + plate LIGHT + paw CONTACT** are HARD before KEEP / Hang. This page owns **scale**. After key, MUST run `computeScale` / `assertScale` before KEEP ([13d](13d-auto-scale.md) + [`biome/scripts/bolt-scale/`](../scripts/bolt-scale/)). Grok must not pick size by eye. Light + contact = [13b](13b-anti-sticker-contact.md). Despill = [13c](13c-green-despill.md). Key-and-hang without proof = **FAIL**.
+**PRIORITY 0 COMPOSITE GATE** — after REUSE (key the sealed cycle onto Video A), **SCALE + GALLOP CLOCK + plate LIGHT + paw CONTACT** are HARD before KEEP / Hang. This page owns **scale**. After key, MUST run `computeScale` / `assertScale` before KEEP ([13d](13d-auto-scale.md) + [`biome/scripts/bolt-scale/`](../scripts/bolt-scale/)). After scale, MUST `gallop-clock` / `assertGallopClock` ([14c](14c-gallop-clock.md) + [`biome/scripts/gallop-clock/`](../scripts/gallop-clock/)). Grok must not pick size by eye. Light + contact = [13b](13b-anti-sticker-contact.md). Despill = [13c](13c-green-despill.md). Key-and-hang without proof = **FAIL**.
 
 ## What he is allowed to be
 
@@ -34,7 +34,7 @@ B-stack is the make. C-light / 3-take L-M-R (dog painted in) is how control dies
 4. **One scale (HARD FAIL).** **Anti-truck** `laneFrac` 0.30–0.55 is HARD. Withers ~0.22–0.32 of frame at **shoulders not ears**; `withersMin` is soft unless `hardWithersMin`. Paws in the lower third. Bolt must **NOT** fill lane width. Same scale every play frame. Road perspective via ribbon \(w(s)\), not a giant cutout. Smoke **FAIL** if dog ≈ truck in lane. Size from the road: `computeScale` / `assertScale` ([13d](13d-auto-scale.md) + [`biome/scripts/bolt-scale/`](../scripts/bolt-scale/)). Grok must not pick size by eye. Do not let Imagine resize him every plate.  
 5. **No ground shadow in the plate.** Contact shadow is compositor multiply on the *road* ([13b](13b-anti-sticker-contact.md) — PRIORITY 0, not polish). A baked shadow in the mp4 will slide wrong when \(\lambda\) changes.
 
-Teacher: show `lock/bolt-back.jpg` in chat before any Bolt cook (PRIORITY 0). Pipeline: **REUSE** sealed cycle → key (`10`) → **COMPOSITE GATE** scale + plate-grade + paw contact (`13` / `13b` / `13c` / `13d`) **BEFORE** KEEP.
+Teacher: show `lock/bolt-back.jpg` in chat before any Bolt cook (PRIORITY 0). Pipeline: **REUSE** sealed cycle → key (`10`) → **COMPOSITE GATE** scale + gallop-clock + plate-grade + paw contact (`13` / `13b` / `13c` / `13d` / `14c`) **BEFORE** KEEP.
 
 ## How to make him controllable
 
