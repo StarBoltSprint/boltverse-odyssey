@@ -69,7 +69,7 @@ Live dpr2 canvas 1440×2560. Stance scan at 384×584 (`withersH≈148`, `stanceW
 
 `withersMin` is **soft** (13d). On a wide nationale, hitting 0.22 withers = dog≈truck. **KEEP the small dog.** The screenshot SmiR gave as teacher already had this ratio. This **is** the law 20 default for any wide road — not Frost-only.
 
-`PAW_PLANT = 0.80` (+ `PAW_SINK=0.05` → paws ~0.85). Contact `k` frost **0.20** (bright snow — old 0.34 punched a skateboard-box shadow).
+`PAW_PLANT = 0.80` (+ `PAW_SINK=0.072` → paws ~0.87). Contact `k` frost **0.34** as **two paw** gaussians (one body ellipse = hoverboard). Shadow `ry=0.20*pw`.
 
 ---
 
@@ -98,29 +98,42 @@ Spiral from the paws (bottom) up the neon leading lines into the aurora. That is
 
 Live compositor **is** the GitHub stack (PR 83–86). Confirm before blaming “quality”:
 
+**GPU_VER 24 — law 22 is the KEEP.** Neon through the coat / 5-tap body blur / hoverboard = FAIL. See [22](22-gpu24-frost-keep.md).
+
 ```
-WebGL2 two-pass
+WebGL2 two-pass   GPU_VER = 24
   pass 1  road + multiply contact (on the plate, not a sprite fade)
+          uNeon bloom on dashes; uSnow=0 (snow already in the mp4)
   pass FX Euler prints/drops (Stokes k≈4.4/r) — no SPH / Box2D
+          frost print RGB [0.40, 0.50, 0.48]  (packed snow; 0.08 = skateboard, 0.66 = invisible)
   pass 2  Bolt quad uRect 13d
           hard 0.157/0.063 + luma protect < 0.14
-          leftover-G kill + 5-tap alpha erode + 3-tap smear
-          bounce 0.40 + mix(plate, 0.10)   // neon green into the coat
-          rim × 0.35
+          leftover-G kill + mild erode 0.32
+          3-tap smear dy=0.0030 EDGE ONLY (cSharp = k0.rgb straight)
+          bounce 0.42 on neon-stripped bounceSrc (3-tap neighborhood)
+          mix 0.11 bounceSrc interior — NEVER mix(c, plate) raw
+          hemi IBL sky(0.50,0.78)+walls ±0.14
+          dual-paw shadow + ice Fresnel/streaks/sparkle + Bolt mirror 0.26
           sin grain (not IGN-fract)
+          blend SRC_ALPHA, ONE_MINUS_SRC_ALPHA  (straight over)
 rVFC stamp  ·  texSubImage2D  ·  GPU_VER remount
 CLOCK  96 fps / 534 / STRIDE_HZ=4 / playbackRate=1
 ```
 
-Frost paint knobs (hit law 20 start, then frost cool/rim):
+Frost paint knobs (GPU_VER 24 KEEP):
 
 ```
-cool  0.84, 0.93, 1.12     // frost paint — other biomes use 17 table
-sat   0.60                 // law 20 start (any biome); 0.76 = studio sticker
-under 0.74
-rim   0.04, 0.055, 0.08    // frost paint
-bounce 0.40                // law 20 start (any biome)
-CONTACT_K 0.20             // law 20 start (any biome)
+cool  0.84, 0.93, 1.12
+sat   0.54                 // 0.76 = studio sticker
+under 0.70
+rim   0.05, 0.10, 0.12     // aurora
+bounce 0.42 on bounceSrc   // neonM chroma-kill
+CONTACT_K 0.34             // dual-paw, not one oval
+PAW_SINK 0.072
+shadow two paws rx=0.36*pw ry=0.20*pw
+print  0.40, 0.50, 0.48
+drop   0.48, 0.94, 0.70
+reflectK 0.26 (0 in jump)
 ```
 
 Road shader may add a **neon bloom** on green dashes (`uNeon`) after the bake. Do not double-wash snow (`uSnow=0` when snow is already in the plate).
@@ -135,4 +148,4 @@ Road shader may add a **neon bloom** on green dashes (`uNeon`) after the bake. D
 4. Encode 48 fps 720×1280 CRF 18. **No** `setpts` speed warp.
 5. Hang as `road-frost.mp4`. Overlay sealed bolt. GPU 17. Scale 13d **as-is** (do not grow).
 
-Related: [20](20-default-plate-proportions.md) · [17](17-live-compositor.md) · [13d](13d-auto-scale.md) · [13b](13b-anti-sticker-contact.md) · [12](12-lane-path-ribbon.md) · [08](08-plate-speed.md) · [00](00-PRIORITY0-any-biome.md) · paste [COLD_START-frost-aurora.md](COLD_START-frost-aurora.md)
+Related: [20](20-default-plate-proportions.md) · [22](22-gpu24-frost-keep.md) · [17](17-live-compositor.md) · [13d](13d-auto-scale.md) · [13b](13b-anti-sticker-contact.md) · [12](12-lane-path-ribbon.md) · [08](08-plate-speed.md) · [00](00-PRIORITY0-any-biome.md) · paste [COLD_START-gpu24.md](COLD_START-gpu24.md)
