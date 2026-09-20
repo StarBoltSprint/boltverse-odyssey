@@ -50,12 +50,13 @@ This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play
 | [docs/13d-auto-scale.md](docs/13d-auto-scale.md) | Auto-scale Bolt from the road — `computeScale` / `assertScale`. Grok must not pick size by eye. |
 | [docs/14-rotary-gallop.md](docs/14-rotary-gallop.md) | Rotary gallop + ribbon turn. Sibling of 13. **REUSE** sealed [`lock/bolt-gallop-cycle.mp4`](../lock/bolt-gallop-cycle.mp4); hard-cut seam. |
 | [docs/14c-gallop-clock.md](docs/14c-gallop-clock.md) | Gallop clock anti-saccadé — native 96 fps, `CYCLE_FRAMES=534`, phase from `plate_time`, `assertGallopClock`. |
-| [docs/15-gpu-compositor.md](docs/15-gpu-compositor.md) | **GPU compositor** — WebGL one-pass; canon 6 s / 534-frame cycle; loop 1×; no harvest. |
-| [docs/COLD_START-gpu-6s.md](docs/COLD_START-gpu-6s.md) | Kitchen paste — GPU + 6 s cycle constants. |
+| [docs/15-gpu-compositor.md](docs/15-gpu-compositor.md) | **GPU compositor** — WebGL; hung [`scripts/bolt-key-gl/bolt-key-gl.ts`](scripts/bolt-key-gl/bolt-key-gl.ts); canon 6 s / 534-frame cycle; ban `getImageData` hot path. |
+| [docs/COLD_START-gpu-6s.md](docs/COLD_START-gpu-6s.md) | Kitchen paste — REUSE 6s lock + GPU law 15. |
 | [scripts/curvature-sample/](scripts/curvature-sample/) | Cook-time adaptive resample — `node demo.js`; `resamplePath` → write `path.json`. Not play LanePlayer. |
 | [scripts/chroma-despill/](scripts/chroma-despill/) | Cook-time vector despill — `node demo.js`; `vectorDespill` after key, before grade. Not play LanePlayer. |
 | [scripts/bolt-scale/](scripts/bolt-scale/) | Cook-time Bolt auto-scale — `node demo.js`; `computeScale` / `assertScale` from lane width. |
 | [scripts/gallop-clock/](scripts/gallop-clock/) | Cook/play gallop clock — `node demo.js`; native 96 fps, no 1-of-N stepping. |
+| [scripts/bolt-key-gl/](scripts/bolt-key-gl/) | **GPU compositor** — [`bolt-key-gl.ts`](scripts/bolt-key-gl/bolt-key-gl.ts) + [`WIRE.md`](scripts/bolt-key-gl/WIRE.md). Law 15. Ban `getImageData` hot path. |
 | [prompts/](prompts/) | Imagine paste blocks (swap `{PAINT}` only) |
 | [reference/LanePlayer.tsx](reference/LanePlayer.tsx) | r38 compositor (not a grok.me) |
 | [reference/lane-css.css](reference/lane-css.css) | 9:16 B-stack CSS |
@@ -85,6 +86,7 @@ Kitchen — do not read aloud. biome / Sprint cook / lane / B-stack / green-scre
 #    biome/docs/13d-auto-scale.md ← auto-scale from the road (computeScale / assertScale)
 #    biome/docs/14-rotary-gallop.md ← rotary gallop + ribbon turn
 #    biome/docs/14c-gallop-clock.md ← gallop-clock anti-saccadé (assertGallopClock)
+#    biome/docs/15-gpu-compositor.md ← GPU compositor (bolt-key-gl.ts; ban getImageData)
 # then biome/GROK.md
 
 # stills + films = imagine-hooks first+last (never Imagine Agent video)

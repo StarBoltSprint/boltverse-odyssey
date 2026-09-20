@@ -3,7 +3,7 @@
 HARD LOCK companion to `13-make-bolt-lane.md` + `13b-anti-sticker-contact.md`.  
 **Green is only for making the cutout.** It is not the world. The world stays an empty-road plate. Bolt stays a keyed layer on the ribbon.
 
-Companion: `10-bolt-cutout-law.md` (B → green → key), `12` / `invertRibbon`, cook tool optional `biome/scripts/chroma-despill/` when hung. Live play compositor: [15-gpu-compositor.md](15-gpu-compositor.md) (WebGL one-pass; `greenness = G - max(R,B)` in shader; no `getImageData` hot path).
+Companion: `10-bolt-cutout-law.md` (B → green → key), `12` / `invertRibbon`, cook tool optional `biome/scripts/chroma-despill/` when hung. Live play compositor: [15-gpu-compositor.md](15-gpu-compositor.md) + hung [`bolt-key-gl.ts`](../scripts/bolt-key-gl/bolt-key-gl.ts) (WebGL; `greenness = G - max(R,B)` in shader; no `getImageData` hot path).
 
 ## What the green shot is for
 
