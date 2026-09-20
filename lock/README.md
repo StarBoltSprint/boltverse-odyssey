@@ -1,7 +1,7 @@
 **PRIORITY 0 — Bolt sprint for new biomes = REUSE, not invent.**
 A fresh Grok in a new Build convo must **NOT** cook a new Bolt gallop from scratch (no new Imagine dog sprint). Pipeline is:
 1. Empty road plate only (Video A) — biome décor, no dog.
-2. Take sealed [`bolt-gallop-cycle.mp4`](bolt-gallop-cycle.mp4) as the Bolt motion asset (already rear / green / rotary).
+2. Take sealed [`bolt-gallop-cycle.mp4`](bolt-gallop-cycle.mp4) as the Bolt motion asset (**96 fps** KEEP, already rear / green / rotary).
 3. Key + despill cutout from that cycle.
 4. Composite cutout onto the scrolling empty plate (AFF stack). Speed/scroll = plate; gait = locked cycle.
 
@@ -17,17 +17,23 @@ Hang ≠ wipe.
 **HARD BAN as identity sources** (never `@ref` as Sprint biome Bolt teacher):
 - `biome/master/bolt.mp4` / hung bolt — OUTPUT only
 - `bolt-back-prev.jpg` — previous standing teacher (archive only — keep the file, never `@ref`)
+- `bolt-gallop-cycle-24fps-prev.mp4` — previous 24fps cycle (archive only — keep the file, never `@ref`)
 - `RIG-*` / `SEAL-*` / `example-*` / `sill-*` — Citadel hall locks, **NOT** Sprint biome Bolt teacher
 - Any local `bolt-rear-*.jpg` invented in a Build sandbox
 
 ---
 
-## Rotary-gallop cycle (motion asset — sealed 2026-09-20)
+## Rotary-gallop cycle (motion asset — KEEP 96 fps, 2026-09-20)
+
+Canonical cycle = **96 fps** (densified from the sealed 24fps hard-cut; same duration/cadence, more fluid). SmiR approved 96 over 24 / 48 / 240.
+
+Empty-road plates stay **48 fps**. Bolt teacher at 96 is OK (more dog frames). Loop seam = **hard cut** on the closed period. Do **NOT** optical-flow morph last→first.
 
 | File | Role |
 |---|---|
-| [`bolt-gallop-cycle.mp4`](bolt-gallop-cycle.mp4) | **CANONICAL** 1s hard-cut closed rotary-gallop (24fps, 768×1168, flat `#00FF00`, strict rear, ×2 cadence). **The** Bolt motion asset. REUSE it. Do not cook a new sprint. |
-| [`bolt-gallop-cycle-first.jpg`](bolt-gallop-cycle-first.jpg) | First frame of that cycle. Repose / still only if a still is needed. **Not** a license to I2V a new dog sprint. |
-| [`bolt-gallop-cycle-12s-preview.mp4`](bolt-gallop-cycle-12s-preview.mp4) | Optional 12s looped preview of the same cycle. **Preview only — not the cook source.** |
+| [`bolt-gallop-cycle.mp4`](bolt-gallop-cycle.mp4) | **CANONICAL** ~0.93s hard-cut closed rotary-gallop (**96 fps**, 768×1168, flat `#00FF00`, strict rear). **The** Bolt motion asset. REUSE it. Do not cook a new sprint. |
+| [`bolt-gallop-cycle-first.jpg`](bolt-gallop-cycle-first.jpg) | First frame of that 96 fps cycle. Repose / still only if a still is needed. **Not** a license to I2V a new dog sprint. |
+| [`bolt-gallop-cycle-12s-preview.mp4`](bolt-gallop-cycle-12s-preview.mp4) | Optional 12s looped preview of the same 96 fps cycle. **Preview only — not the cook source.** |
+| [`bolt-gallop-cycle-24fps-prev.mp4`](bolt-gallop-cycle-24fps-prev.mp4) | Archive of the previous 24fps sealed cycle. Keep the file. Never `@ref` as the cook source. |
 
 This hang does **not** wipe `biome/master/bolt.mp4`. Hang ≠ wipe.

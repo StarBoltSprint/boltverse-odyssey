@@ -15,7 +15,7 @@ A fresh Grok in a new Build convo must **NOT** cook a new Bolt gallop from scrat
 **FAIL** if Grok invents a new Bolt sprint clip for a biome cook. Only SmiR can authorize a new cycle cook to replace the lock.
 Style teacher [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) still applies if any still / repose is needed; motion teacher = the sealed cycle mp4.
 
-**Product method (make / add a biome):** décor scrolls (rush); Bolt sprints **IN PLACE** (treadmill) via the **locked cycle**, not a new Imagine dog. Mid-lane. **48fps** on cooked plates. Hang ≠ wipe.
+**Product method (make / add a biome):** décor scrolls (rush); Bolt sprints **IN PLACE** (treadmill) via the **locked cycle**, not a new Imagine dog. Mid-lane. **48fps** on cooked empty-road plates. Bolt teacher cycle is **96 fps** (KEEP — more dog frames). Hang ≠ wipe.
 
 **HARD LOCK — new biome Bolt (SmiR 2026-09-18 FAIL).** New biome (any name — Tide, Frost, Ember, invented): **always** `@ref` [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg). **BAN** copying hung `biome/master/bolt.mp4` / canyon Bolt as the identity. Light bake from the **new** empty plaque is OK; identity = teacher. Hang **only** the new plates beside existing masters. Do **NOT** rebuild canyon→war first. Do **NOT** require Beat 3 recook as a gate. Name + décor `{PAINT}` allowed / encouraged. Tide is one example. Never refuse “I can only do Tide.” Pipeline below + hooks first/last still apply. Catalog lists **hung** biomes only; a biome in cook is not hung until hung.
 
@@ -36,7 +36,7 @@ Style teacher [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) still applies if 
 
 `STEP 0: attach lock/bolt-back.jpg (or biome/lock/bolt-back.jpg) in chat before cooking Bolt.`
 
-**PRIORITY 0 — REUSE the sealed cycle.** [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) **is** the Bolt motion asset (already rear / green / rotary). Key + despill it. Composite onto Video A. Do **not** Imagine a new dog sprint. **FAIL** if Grok invents a new Bolt sprint clip. Only SmiR can authorize a new cycle cook to replace the lock. [`lock/bolt-gallop-cycle-first.jpg`](../../lock/bolt-gallop-cycle-first.jpg) = first frame (repose / still only). [`lock/bolt-gallop-cycle-12s-preview.mp4`](../../lock/bolt-gallop-cycle-12s-preview.mp4) = preview only. Loop seam = **hard cut** — never optical-flow morph last→first.
+**PRIORITY 0 — REUSE the sealed cycle.** [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) **is** the Bolt motion asset (**96 fps** KEEP, densified from the sealed 24fps hard-cut; same duration/cadence, already rear / green / rotary). Key + despill it. Composite onto Video A. Do **not** Imagine a new dog sprint. **FAIL** if Grok invents a new Bolt sprint clip. Only SmiR can authorize a new cycle cook to replace the lock. [`lock/bolt-gallop-cycle-first.jpg`](../../lock/bolt-gallop-cycle-first.jpg) = first frame of that 96 fps cycle (repose / still only). [`lock/bolt-gallop-cycle-12s-preview.mp4`](../../lock/bolt-gallop-cycle-12s-preview.mp4) = preview only. Loop seam = **hard cut** — never optical-flow morph last→first.
 
 This hang does **not** wipe `biome/master/bolt.mp4`. Hang ≠ wipe. Law: [14-rotary-gallop.md](14-rotary-gallop.md) · [`lock/README.md`](../../lock/README.md).
 

@@ -100,7 +100,7 @@ Search: `StarBoltSprint citadel-room` · living film · boltverse-odyssey.grok.m
 | `scripts/validate-pack.mjs` | room.json + 3 stills + 5 films, H264, no audio |
 | `scripts/smoke-pack.mjs` | one dog, first≠last on walks, breath loops |
 | `lock/bolt-back.jpg` | Pack Bolt style SoT for Sprint biomes (back / coat) — not scale |
-| `lock/bolt-gallop-cycle.mp4` | Pack Bolt **motion** SoT — **REUSE**, do not invent a new sprint. First-frame still: `lock/bolt-gallop-cycle-first.jpg`. Preview only: `lock/bolt-gallop-cycle-12s-preview.mp4`. |
+| `lock/bolt-gallop-cycle.mp4` | Pack Bolt **motion** SoT — **96 fps** KEEP (densified from sealed 24fps; same cadence). **REUSE**, do not invent a new sprint. First-frame still: `lock/bolt-gallop-cycle-first.jpg`. Preview only: `lock/bolt-gallop-cycle-12s-preview.mp4`. |
 | `lock/example-at-a.jpg` | SmiR at-A lock teacher (BACK toward teal L, gold visible). Drop: `hall-stills/seal/at-a-ice.jpg` or `hall-stills/smir-ata-teacher.jpeg` → `node scripts/install-lock-ata.mjs` |
 | `lock/RIG-PROMPT.txt` | paste this; swap `{PAINT}` only |
 | `lock/SEAL-spawn.jpg` `lock/SEAL-at-a.jpg` `lock/SEAL-at-b.jpg` | ice KEEP seals — frost play / full example. Frozen until SmiR reseals. |
