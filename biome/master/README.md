@@ -22,10 +22,13 @@ This folder is the Sprint **`/master` stack** the LanePlayer wires.
 | `road-war1.mp4` | war intro, capital ships vs buildings | war |
 | `road-war2.mp4` | war city on fire | war |
 | `road-war3.mp4` | war debris, left lane | war |
-| `bolt.mp4` | Bolt green-screen gallop | (cutout, not a road plate) |
+| `bolt.mp4` | Bolt green-screen gallop — **must match** lock 6 s canon (`lock/bolt-gallop-cycle.mp4`, ~5.56 s / 534 / 96 fps). SoT stays [`lock/`](../../lock/README.md). Remux of the lock, not a new sprint. | (cutout, not a road plate) |
+| `bolt-prev.mp4` | archive of the previous master bolt (8.5 s / 24 fps). **Not** a play cycle. | (archive only) |
 | `road.jpg` | poster | (poster, not a road plate) |
 
-All cousins hung at **the empty clock** (`--duration-match` → 5.75 s). Cook: [../docs/09-recette-biome.md](../docs/09-recette-biome.md). Bolt cutout: [../docs/10-bolt-cutout-law.md](../docs/10-bolt-cutout-law.md).
+All cousins hung at **the empty clock** (`--duration-match` → 5.75 s). Cook: [../docs/09-recette-biome.md](../docs/09-recette-biome.md). Bolt cutout: [../docs/10-bolt-cutout-law.md](../docs/10-bolt-cutout-law.md). Any-biome Frost-parity: [../docs/00-PRIORITY0-any-biome.md](../docs/00-PRIORITY0-any-biome.md) · FX table [../docs/16-biome-ground-fx.md](../docs/16-biome-ground-fx.md).
+
+**`bolt.mp4` law:** source of truth is [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4). This master file must be the same 6 s / 96 fps / 534-frame bytes (or a remux `-an` +faststart of those bytes). Do **not** invent a new gallop. Old master archived as `bolt-prev.mp4`. Roads stay. Hang ≠ wipe.
 
 Hung binaries above are **present** on `main`. Do not invent extra mp4s. `biome/assets/` is an empty pointer — not this stack. Films stay `-an` (no SFX baked in).
 

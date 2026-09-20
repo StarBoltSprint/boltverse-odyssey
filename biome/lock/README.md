@@ -10,7 +10,7 @@
 
 **PRIORITY 0 COMPOSITE GATE** — after REUSE, MUST **scale + gallop-clock + plate-grade + paw contact** ([13](../docs/13-make-bolt-lane.md) / [13b](../docs/13b-anti-sticker-contact.md) / [13c](../docs/13c-green-despill.md) / [13d](../docs/13d-auto-scale.md) / [14c](../docs/14c-gallop-clock.md)) **BEFORE** KEEP / Hang. After key, MUST run `computeScale` / `assertScale` ([`scripts/bolt-scale/`](../scripts/bolt-scale/)) then **`gallop-clock` / `assertGallopClock`** ([`scripts/gallop-clock/`](../scripts/gallop-clock/)) before KEEP. Native 96 fps (no 1-of-N); `assertGallopClock` **FAIL** if dogFps ≪ plateFps. Key-and-hang without proof = **FAIL**.
 
-**PRIORITY 0 — REUSE 6s lock + GPU law 15.** Canon IS [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) (6s / 534 / 96fps). Compositor = [`scripts/bolt-key-gl/bolt-key-gl.ts`](../scripts/bolt-key-gl/bolt-key-gl.ts). Ban CPU `getImageData` hot path.
+**PRIORITY 0 — REUSE 6s lock + GPU law 15.** Canon IS [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) (6s / 534 / 96fps). Compositor = [`scripts/bolt-key-gl/bolt-key-gl.ts`](../scripts/bolt-key-gl/bolt-key-gl.ts). Ban CPU `getImageData` hot path. Any-biome Frost-parity: [00-PRIORITY0-any-biome](../docs/00-PRIORITY0-any-biome.md) · FX [16](../docs/16-biome-ground-fx.md) · paste [COLD_START-any-biome](../docs/COLD_START-any-biome.md). `master/bolt.mp4` must match the 6 s lock.
 
 Hung `biome/master/bolt.mp4` is OUTPUT only — never `@ref` as style teacher.
 `lock/bolt-back-prev.jpg` is archive only — never `@ref`.

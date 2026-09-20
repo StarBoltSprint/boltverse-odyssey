@@ -3,7 +3,8 @@
 Hung compositor: [`bolt-key-gl.ts`](bolt-key-gl.ts)  
 Live wire: [`WIRE.md`](WIRE.md)  
 Law: [`biome/docs/15-gpu-compositor.md`](../../docs/15-gpu-compositor.md)  
-Kitchen paste: [`biome/docs/COLD_START-gpu-6s.md`](../../docs/COLD_START-gpu-6s.md)
+Kitchen paste: [`biome/docs/COLD_START-any-biome.md`](../../docs/COLD_START-any-biome.md) (supersedes [`COLD_START-gpu-6s.md`](../../docs/COLD_START-gpu-6s.md) for any biome)  
+Any-biome: [`00-PRIORITY0-any-biome.md`](../../docs/00-PRIORITY0-any-biome.md) · FX [`16-biome-ground-fx.md`](../../docs/16-biome-ground-fx.md)
 
 This folder is **reference + paste**, not a Live app. Do **not** scaffold `src/game/` / a lane-player tree here. Port `bolt-key-gl.ts` into Live as `src/game/bolt-key-gl.ts` (see WIRE.md).
 

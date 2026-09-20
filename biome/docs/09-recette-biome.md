@@ -2,13 +2,13 @@
 
 Cuisine. Pas de théorie. C’est **la** checklist pour refaire un biome lane-runner comme le dusk canyon (empty + barre jersey + météore).
 
-Lire avant : [PLAY.md](../PLAY.md) · [06-techniques.md](06-techniques.md) · [10-bolt-cutout-law.md](10-bolt-cutout-law.md) · [05-key.md](05-key.md) · [12-lane-path-ribbon.md](12-lane-path-ribbon.md) (living-film Lane control — not SprintCore).  
+Lire avant : [PLAY.md](../PLAY.md) · [00-PRIORITY0-any-biome.md](00-PRIORITY0-any-biome.md) (Frost-parity, **any** biome) · [06-techniques.md](06-techniques.md) · [10-bolt-cutout-law.md](10-bolt-cutout-law.md) · [05-key.md](05-key.md) · [12-lane-path-ribbon.md](12-lane-path-ribbon.md) (living-film Lane control — not SprintCore) · [16-biome-ground-fx.md](16-biome-ground-fx.md) (paw prints / splash / dust) · cook paste [COLD_START-any-biome.md](COLD_START-any-biome.md).  
 Code : [imagine-hooks.mjs](../../scripts/imagine-hooks.mjs) (`imagineBiomeClip` for Video A; **`imagineBoltClip` = SmiR only** to replace the lock) · [plate-speed.py](../../scripts/plate-speed.py) · [LanePlayer.tsx](../reference/LanePlayer.tsx).
 
 **PRIORITY 0 — Bolt sprint for new biomes = REUSE, not invent.**
 A fresh Grok must **NOT** cook a new Bolt gallop from scratch (no new Imagine dog sprint). Pipeline: Video A empty road → **REUSE** [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) → key + despill → composite onto A (AFF). Speed/scroll = plate; gait = locked cycle. **FAIL** if Grok invents a new Bolt sprint clip. Only SmiR can authorize a new cycle cook to replace the lock.
 
-**PRIORITY 0 COMPOSITE GATE** — after REUSE, **BEFORE** Hang: **scale** (withers ~0.22–0.32 of frame; paws lower third; Bolt must **NOT** fill lane width; MUST `computeScale` / `assertScale` — [13d](13d-auto-scale.md) + [`biome/scripts/bolt-scale/`](../scripts/bolt-scale/)) + **gallop-clock** (native 96 fps, no 1-of-N; phase from `plate_time`; `strideHz≈4`; `dsPerFrame` anti-skate; MUST `assertGallopClock` — [14c](14c-gallop-clock.md) + [`biome/scripts/gallop-clock/`](../scripts/gallop-clock/)) + **light** (grade FROM this empty plate family) + **contact** (paw shadow multiply on the *road*). Order: key → despill ([13c](13c-green-despill.md)) → **`computeScale` / `assertScale`** ([13d](13d-auto-scale.md)) → **`gallop-clock` / `assertGallopClock`** ([14c](14c-gallop-clock.md)) → plate grade → contact → shared grain. Law: [13](13-make-bolt-lane.md) · [13b](13b-anti-sticker-contact.md) · [13d](13d-auto-scale.md) · [14c](14c-gallop-clock.md). **FAIL** if Grok keys the cycle and hangs without that proof. **FAIL** if dogFps ≪ plateFps (Frost saccadé).
+**PRIORITY 0 COMPOSITE GATE** — after REUSE, **BEFORE** Hang: **scale** (withers ~0.22–0.32 of frame; paws lower third; Bolt must **NOT** fill lane width; MUST `computeScale` / `assertScale` — [13d](13d-auto-scale.md) + [`biome/scripts/bolt-scale/`](../scripts/bolt-scale/)) + **gallop-clock** (native 96 fps, no 1-of-N; phase from `plate_time`; `strideHz≈4`; `dsPerFrame` anti-skate; MUST `assertGallopClock` — [14c](14c-gallop-clock.md) + [`biome/scripts/gallop-clock/`](../scripts/gallop-clock/)) + **light** (grade FROM this empty plate family) + **contact** (paw shadow multiply on the *road*) + **ground FX row** for this `{PAINT}` ([16](16-biome-ground-fx.md) — prints / splash / dust in the GPU family, [15](15-gpu-compositor.md)). Order: key → despill ([13c](13c-green-despill.md)) → **`computeScale` / `assertScale`** ([13d](13d-auto-scale.md)) → **`gallop-clock` / `assertGallopClock`** ([14c](14c-gallop-clock.md)) → plate grade → contact → FX row → shared grain. Law: [00-PRIORITY0-any-biome.md](00-PRIORITY0-any-biome.md) · [13](13-make-bolt-lane.md) · [13b](13b-anti-sticker-contact.md) · [13d](13d-auto-scale.md) · [14c](14c-gallop-clock.md) · [16](16-biome-ground-fx.md). **FAIL** if Grok keys the cycle and hangs without that proof. **FAIL** if dogFps ≪ plateFps (Frost saccadé). **FAIL** if FX row skipped (same white splash on every biome).
 
 ---
 
@@ -63,7 +63,7 @@ When a player asks **make a biome** / **add a biome** / cook a new sprint run: d
 3. **REUSE** [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) as the Bolt motion asset (already rear / green / rotary). No new Imagine dog sprint.
 4. Key + despill cutout from that cycle ([05-key.md](05-key.md) · [13c-green-despill.md](13c-green-despill.md)).
 5. Composite cutout onto Video A (AFF stack). Speed/scroll = plate; gait = locked cycle. L/M/R = code X shift of **one** Bolt layer.
-6. **PRIORITY 0 COMPOSITE GATE** — scale + gallop-clock + plate light + paw contact **before Hang**. After key, MUST `computeScale` / `assertScale` ([13d](13d-auto-scale.md)) then `gallop-clock` / `assertGallopClock` ([14c](14c-gallop-clock.md)). Proof (before/after stills or smoke). [13](13-make-bolt-lane.md) · [13b](13b-anti-sticker-contact.md) · [13d](13d-auto-scale.md) · [14c](14c-gallop-clock.md). **FAIL** if Grok keys the cycle and hangs without that proof.
+6. **PRIORITY 0 COMPOSITE GATE** — scale + gallop-clock + plate light + paw contact + **FX row (16)** **before Hang**. After key, MUST `computeScale` / `assertScale` ([13d](13d-auto-scale.md)) then `gallop-clock` / `assertGallopClock` ([14c](14c-gallop-clock.md)). Proof (before/after stills or smoke). [13](13-make-bolt-lane.md) · [13b](13b-anti-sticker-contact.md) · [13d](13d-auto-scale.md) · [14c](14c-gallop-clock.md) · [16](16-biome-ground-fx.md). **FAIL** if Grok keys the cycle and hangs without that proof.
 
 **FAIL** if Grok invents a new Bolt sprint clip. Only SmiR can authorize a new cycle cook to replace the lock. Hall `imagineClip` banned here. Baking Bolt into a single final film = FAIL. 3-Bolt multi-lane mask = FAIL. No `XAI_API_KEY` for Video A → **REFUSE** / stock — do not invent a Bolt sprint.
 
@@ -392,7 +392,10 @@ Hitbox = **voie + fenêtre courte au contact des pattes**. Loin / ciel / déjà 
 | Path | Rôle |
 |---|---|
 | `scripts/imagine-hooks.mjs` | `imagineBiomeClip`, `imagineBoltClip`, `BIOME_*_LAW`, `BOLT_CUTOUT_LAW`, `extractLastFrame` |
-| `biome/docs/10-bolt-cutout-law.md` | HARD Bolt cutout — REUSE lock/bolt-gallop-cycle.mp4 → key + composite → COMPOSITE GATE 13/13b/13c/13d/14c |
+| `biome/docs/00-PRIORITY0-any-biome.md` | Frost-parity for **any** biome — GPU + 6 s + FX table. Cook paste: [COLD_START-any-biome.md](COLD_START-any-biome.md) |
+| `biome/docs/16-biome-ground-fx.md` | Biome-adaptive ground FX + grade (prints / splash / dust). GPU family (15) |
+| `biome/docs/15-gpu-compositor.md` | GPU compositor — WebGL; FX table drawn in this family |
+| `biome/docs/10-bolt-cutout-law.md` | HARD Bolt cutout — REUSE lock/bolt-gallop-cycle.mp4 → key + composite → COMPOSITE GATE 13/13b/13c/13d/14c/15/16 |
 | `biome/docs/13-make-bolt-lane.md` | Make Bolt Lane — **One scale HARD FAIL** (lane-width ban) |
 | `biome/docs/13b-anti-sticker-contact.md` | PRIORITY 0 plate light + paw contact (not polish) |
 | `biome/docs/13c-green-despill.md` | Green key + vector despill (before plate grade) |
@@ -417,5 +420,6 @@ Hitbox = **voie + fenêtre courte au contact des pattes**. Loin / ciel / déjà 
 | `biome/master/road-gate.mp4` | dusk → nuit (décor ciel) |
 | `biome/master/road-night.mp4` | action nuit |
 | `biome/master/road-war1.mp4` … `road-war3.mp4` | biome guerre |
-| `biome/master/bolt.mp4` | cutout |
+| `biome/master/bolt.mp4` | cutout — **must match** lock 6 s canon (`lock/bolt-gallop-cycle.mp4`). SoT stays `lock/` |
+| `biome/master/bolt-prev.mp4` | archive of pre-6 s master bolt. Not a play cycle. Not an assetId |
 | `biome/reference/LanePlayer.tsx` | B-stack + jump + boîte + scale lissée |
