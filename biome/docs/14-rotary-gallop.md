@@ -16,9 +16,11 @@ A fresh Grok in a new Build convo must **NOT** cook a new Bolt gallop from scrat
 Style teacher [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) still applies if any still / repose is needed; motion teacher = the sealed cycle mp4.
 Loop seam = **hard cut** on the closed period — do **NOT** optical-flow morph last→first. Preview only: [`lock/bolt-gallop-cycle-12s-preview.mp4`](../../lock/bolt-gallop-cycle-12s-preview.mp4). Hang ≠ wipe.
 
+**KEEP 96 fps (SmiR 2026-09-20):** the sealed cycle is densified from the 24fps hard-cut — same duration/cadence, more fluid. Empty-road plates stay **48 fps**. Bolt teacher at 96 is OK (more dog frames). Do not recook 24 / 48 / 240.
+
 ## Not “more frames”
 
-A real sprint is **dog mechanics** on plate time, not a GIF swimming over the road. More inbetweens without the stretched suspension = a disguised trot = sticker.
+A real sprint is **dog mechanics** on plate time, not a GIF swimming over the road. More inbetweens without the stretched suspension = a disguised trot = sticker. Densifying the **sealed** cycle to 96 fps (KEEP) is not that fail — cadence stays; do not invent new inbetweens from Imagine.
 
 German Shepherd (and most dogs) at speed use a **rotary gallop** (opposite laterality front vs rear). Transverse gallop (same lead both ends) reads horse / jog. Lane Bolt = **rotary**.
 
