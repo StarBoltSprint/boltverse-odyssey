@@ -24,7 +24,7 @@ BIOME SPRINT (Lane B-stack — ground)
     │
     Dr Lena: Paw-to-Galaxy / progressive awakening
     ▼
-SPACE SPRINT (climb / void corridor)
+    SPACE SPRINT (luminous 3-lane path climb — not float)
     │
     ▼
 ARRIVE on sealed PLANET (orbital / surface plate)
@@ -37,7 +37,7 @@ ARRIVE on sealed PLANET (orbital / surface plate)
 | 3. Pick + seal | Choosing a planet **locks** destination. No flip-flop mid-run. Return to room with seal held (state, not a HUD essay). | Set `sealedPlanetId` (query / sessionStorage / Pack) → same-frame replace to `ROOM_ORIGIN`. Ban reopening map to change mid-door-run unless SmiR reopens |
 | 4. Door | Door A or B starts the **sprint run** toward the sealed planet. Door = depart, not planet picker. | Graph edge: door → biome enter |
 | 5. Biome sprint | Ground Lane B-stack (empty plate + GPU Bolt). Any biome paint. Frost-parity laws 00 / 15 / 16 / 17. | [00](00-PRIORITY0-any-biome.md) · [17](17-live-compositor.md) |
-| 6. Lena climb | Momentum / picture densifies → world rises to space. Not an XP bar. Sprint **earns** the cosmos reveal (Decrees 504/505/508 — Paw-to-Galaxy). | Quiet sparse → denser void; then space corridor plate(s) |
+| 6. Lena climb | Momentum / picture densifies → world rises to space. Not an XP bar. Sprint **earns** the cosmos reveal (Decrees 504/505/508 — Paw-to-Galaxy). **Luminous 3-lane path under Bolt** — not float. Same L/C/R dodge. | [19](19-luminous-path-climb.md) · paste [COLD_START-luminous-path.md](COLD_START-luminous-path.md). Path plate A' + REUSE 6s |
 | 7. Arrive | Reach sealed planet — orbital film / surface plate matching constellation node. | Planet asset from constellation cook; hang ≠ wipe |
 
 ---
@@ -50,7 +50,7 @@ ARRIVE on sealed PLANET (orbital / surface plate)
 4. **Constellation = Space LOD.** No collage of unrelated videos. Black void + coherent orbs. See constellation LAW.
 5. **Doors stay Citadel grammar.** Energy portals cyan L / gold R. No wood doors. No UI chrome boxes. Locked-off camera in hall clips.
 6. **Biome → space is one journey.** Not a separate app. Player graph: room → constellation → biome → space → planet. Kitchen: **federate URLs** (room Live ↔ constellation Live), not a constellation rebuild inside the room.
-7. **Bolt REUSE.** Gallop = `lock/bolt-gallop-cycle.mp4` (6 s). GPU compositor (17). Never invent sprint for the climb.
+7. **Bolt REUSE.** Gallop = `lock/bolt-gallop-cycle.mp4` (6 s). GPU compositor (17). Never invent sprint for the climb. Lena climb = **luminous 3-lane path** under the paws (law 19) — not a void float. Same ribbon L/C/R.
 8. **Pack.** Live auto-embeds Pack. Destination seal may mirror into Pack profile later — never block play on Pack down.
 9. **Hang ≠ wipe.** New planets / biomes append. Don’t delete hung halls or constellation orbs to “make room”.
 10. **Federate URL.** Room Live and constellation Live are **different** grok.me / sandbox URLs. **HARD LOCK default star map = SmiR’s official Star Map** (KEEP — not a random player map). Tap map **lands on** that origin. That **is** the federation. See HARD section below.
@@ -131,7 +131,7 @@ No second wallet. No Connect Wallet. Picture + taps only. No “paste this URL�
 2. Wire tap map → **federate** `location.replace` to `CONSTELLATION_ORIGIN`. **HARD LOCK default = SmiR official Star Map** (`StarBoltSprint/boltverse-constellation` / Odyssey `constellation/`). No invented grok.me. Until SmiR pastes a published Live URL: embed/serve hung `constellation/`. Same-frame. Pointer, not pixels. Owner may later hang URL B or `use map X` (hung only).
 3. On planet pick: set `sealedPlanetId` (query / sessionStorage / Pack) → `location.replace` back to `ROOM_ORIGIN`.
 4. Door enter: start biome for that journey (paint may match planet family — frost planet → frost-ish ground, etc.).
-5. After biome momentum threshold / plate cue: transition to space sprint plates.
+5. After biome momentum threshold / plate cue: transition to space sprint — **luminous 3-lane path** plate A' (law 19), not empty-void float.
 6. Final plate / enter: arrive planet matching seal.
 7. Smoke: map before door · **new room default = SmiR official Star Map KEEP** (not a random Packmate map) · no invented grok.me · pointer swap only after owner hang · same-frame hop · seal sticky on return · door starts run · Lena climb readable · arrive = sealed planet. Ban new-tab / paste-URL forms / wallet / rebuild-constellation-in-room.
 
@@ -142,6 +142,7 @@ No second wallet. No Connect Wallet. Picture + taps only. No “paste this URL�
 - [constellation/LAW.md](../../constellation/LAW.md) — SmiR Space LOD KEEP (also [`StarBoltSprint/boltverse-constellation`](https://github.com/StarBoltSprint/boltverse-constellation))  
 - [00-PRIORITY0-any-biome.md](00-PRIORITY0-any-biome.md) — any biome Frost-parity  
 - [17-live-compositor.md](17-live-compositor.md) — GPU Bolt  
+- [19-luminous-path-climb.md](19-luminous-path-climb.md) — Lena climb = luminous 3-lane path (not float). Paste: [COLD_START-luminous-path.md](COLD_START-luminous-path.md)  
 - Citadel door / hall docs in repo root (`DOORS.md`, `ROOM.md`, `ENTER.md`)  
 - Dr Lena — Paw-to-Galaxy / meaningful sprint (lore; picture densifies with flow)
 
