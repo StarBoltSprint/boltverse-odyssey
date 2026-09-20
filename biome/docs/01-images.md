@@ -8,7 +8,7 @@ Photoreal **9:16** `720×1280`. Locked-off camera (**not too far / not too close
 
 CLEAR empty center corridor (the cutout plants there). Subtle rails / curbs OK. Canyon / Mars / named `{PAINT}` décor OK.
 
-**Make biome:** this still is step 1 of the B→cycle→green→key pipeline. Law: [10-bolt-cutout-law.md](10-bolt-cutout-law.md).
+**Make biome:** this still is step 1 of Video A (empty road). Bolt = **REUSE** the sealed cycle. Law: [10-bolt-cutout-law.md](10-bolt-cutout-law.md).
 
 Still only — this is `image` / `last_frame` for the road film, not a hall spawn.
 
@@ -26,7 +26,7 @@ Paste: [../prompts/image-hazard-plate.txt](../prompts/image-hazard-plate.txt).
 
 ## Bolt mid (cutout)
 
-**HARD law:** [10-bolt-cutout-law.md](10-bolt-cutout-law.md). Pipeline: empty plaque → Video A rush → Video B gait → extract cycle → repose on `#00FF00` → `imagineBoltClip` first+last → key onto A.
+**HARD law:** [10-bolt-cutout-law.md](10-bolt-cutout-law.md). Pipeline: empty plaque → Video A rush → **REUSE** [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) → key + despill → composite onto A. **FAIL** if Grok invents a new Bolt sprint. Only SmiR may reseal the cycle.
 
 ONE full-white German Shepherd. White coat forever. Teal **fabric** collar from behind (not chrome). **100% STRICT REAR** (tail center, back of ears; muzzle hidden). Lower third. **ALREADY in sprint** — one rear leg extended. **Never** standing still, sit, face, ¾, cheek, flank. Mid-lane. **IN PLACE / treadmill.**
 

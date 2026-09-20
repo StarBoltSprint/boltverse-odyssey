@@ -6,7 +6,7 @@
 
 `STEP 0: attach lock/bolt-back.jpg (or biome/lock/bolt-back.jpg) in chat before cooking Bolt.`
 
-**STEP 0 MOTION GATE:** attach / show [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) (or [`lock/bolt-gallop-cycle-first.jpg`](../../lock/bolt-gallop-cycle-first.jpg)) **before** cooking Bolt. Green cycle cooks: first **and** last = that first frame. Loop seam = hard cut on the closed period — do **NOT** optical-flow morph last→first. **BAN** inventing a new gallop from chat Imagine without this teacher. Style teacher stays `bolt-back.jpg`. Preview only: [`lock/bolt-gallop-cycle-12s-preview.mp4`](../../lock/bolt-gallop-cycle-12s-preview.mp4) — not the cook source. Files live under repo-root `lock/` (pointer here). Hang ≠ wipe.
+**PRIORITY 0 — Bolt sprint for new biomes = REUSE, not invent.** Take sealed [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) as the Bolt motion asset. Key + despill + composite onto Video A. **FAIL** if Grok invents a new Bolt sprint clip. Only SmiR can authorize a new cycle cook to replace the lock. Style teacher stays `bolt-back.jpg` if a still / repose is needed. Preview only: [`lock/bolt-gallop-cycle-12s-preview.mp4`](../../lock/bolt-gallop-cycle-12s-preview.mp4). Files live under repo-root `lock/` (pointer here). Hang ≠ wipe.
 
 Hung `biome/master/bolt.mp4` is OUTPUT only — never `@ref` as style teacher.
 `lock/bolt-back-prev.jpg` is archive only — never `@ref`.
