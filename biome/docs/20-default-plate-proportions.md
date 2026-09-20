@@ -43,19 +43,22 @@ On this wide skeleton, Live KEEP is the **small dog**.
 
 **FAIL:** grow Bolt 2–3× to fake withersMin 0.22. **FAIL:** widen PATH to the visual lanes then re-run 13d.
 
-## Default GPU start knobs (law 17 — biome-adaptable)
+## Default GPU start knobs (law 17 + **21** — biome-adaptable)
 
-Start every new biome from these knobs. Then `uniformsFor(chap)` may adapt cool / sat / under / rim to **this** `{PAINT}`. Do not ship one studio grade. Do not start from the old 0.32 bounce / 0.34 contact / 0.58 sat.
+Start every new biome from these knobs. Then `uniformsFor(chap)` may adapt cool / sat / under / rim to **this** `{PAINT}`. Do not ship one studio grade. Do not start from the old 0.32 bounce / 0.34 contact / 0.58 sat. **Do not** `mix(c, plate, 0.10)` raw — that paints neon dashes through the coat ([21](21-neon-premul-anti-sticker.md)).
 
 ```
-bounce   0.40     // plate light into the coat (old 0.32 under-reads a bright road)
-mix      0.10     // plate
-sat      0.60     // start; 0.76 = studio sticker. uniformsFor may shift
-CONTACT_K 0.20    // start on a readable road (0.34 punches a skateboard-box)
-rim      ×0.35
+bounce   0.36 on bounceSrc   // neon-stripped 3-tap neighborhood (raw plate leaked dashes)
+mix      0.09 bounceSrc      // NOT raw plate
+sat      0.56                // start; 0.76 = studio sticker. uniformsFor may shift
+CONTACT_K 0.20               // start on a readable road (0.34 punches a skateboard-box)
+rim      ×0.55
+smear    3-tap dy=0.0030 EDGE ONLY, cSharp = k0.rgb straight
+print    frost [0.66, 0.74, 0.70]  // <0.3 = hoverboard
+GPU_VER  20
 ```
 
-Cool / under / rim hue still follow the [17](17-live-compositor.md) paint table. Contact shadow stays on the **road**, ellipse flat — not a dark rectangle under the paws. Bounce / sat / contact may move if the player’s paint is darker, wetter, or hotter. **Start here.**
+Cool / under / rim hue still follow the [17](17-live-compositor.md) paint table. Contact shadow stays on the **road**, ellipse flat (`ry=0.24*pw`) — not a dark rectangle under the paws. Bounce / sat / contact may move if the player’s paint is darker, wetter, or hotter. **Start here.** Full neon / premul / blur FAIL table: [21](21-neon-premul-anti-sticker.md).
 
 ## φ — audit only (not the law)
 

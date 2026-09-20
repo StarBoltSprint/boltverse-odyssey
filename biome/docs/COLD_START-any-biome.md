@@ -3,8 +3,9 @@
 You are cooking a **Lane biome** for Boltverse Odyssey for a **random player**. Read GitHub `main` first:
 
 1. `biome/docs/00-PRIORITY0-any-biome.md`
-2. **`biome/docs/20-default-plate-proportions.md`** ← start empty still from the **full** law 20 measure set (not φ-only, not Frost-only): 3-lane ~0.75–0.82 · sky ~45% · plant ~0.80 · withersFrac ~0.10 KEEP · GPU start sat 0.60 / bounce 0.40 / contact k 0.20. Player / `{PAINT}` may adapt. Frost aurora worked example = `20b-frost-aurora-proportions.md`.
+2. **`biome/docs/20-default-plate-proportions.md`** ← start empty still from the **full** law 20 measure set (not φ-only, not Frost-only): 3-lane ~0.75–0.82 · sky ~45% · plant ~0.80 · withersFrac ~0.10 KEEP · GPU start sat 0.56 / bounce 0.36 bounceSrc (law 21) / contact k 0.20. Player / `{PAINT}` may adapt. Frost aurora worked example = `20b-frost-aurora-proportions.md`.
 3. **`biome/docs/17-live-compositor.md`** ← what actually stuck Bolt to the plate. **FAIL** if you copy the old scissor/IGN sketch.
+4. **`biome/docs/21-neon-premul-anti-sticker.md`** ← GPU_VER 20. Neon-safe bounce, premul filter, interior sharp. **FAIL** if you `mix(c, plate, 0.10)` raw or 5-tap-smear the body.
 
 ## Fixed
 - Bolt motion = REUSE `lock/bolt-gallop-cycle.mp4` (**6 s / 96 fps / 534 frames / green / rear**). Remux → `public/master/bolt.mp4`. Never invent a gallop. Never use `lock/bolt-gallop-cycle-0.93s-prev.mp4` as play.
@@ -13,7 +14,7 @@ You are cooking a **Lane biome** for Boltverse Odyssey for a **random player**. 
   - Quad at dest 13d — **not** scissor.
   - Key: `greenness=G-max(R,B)` hard 0.157/0.063 + **luma protect <0.14**. **No** `py>0.90` fade.
   - Grain: `fract(sin(dot(...)*43758.54))` — **never** IGN `fract(dot)` (vertical bars).
-  - Plate bounce HARD: sample `uPlate` behind the dog. **Law 20 start:** bounce **0.40** + `mix 0.10` + sat **0.60** + contact `k` **0.20**. Then `uniformsFor(chap)` may adapt to this `{PAINT}`. Old 0.32 / 0.34 / 0.58 are not the default.
+  - Plate bounce HARD (law 21): 3-tap neighborhood, **neonM chroma-kill**, bounce **0.36** on `bounceSrc`, interior mix **0.09 bounceSrc** (NOT raw plate). sat frost **0.56**. contact `k` **0.20**. Prints frost `[0.66, 0.74, 0.70]`. Smear 3-tap `dy=0.0030` **edge only** (`cSharp = k0.rgb` straight — never `/ a`). `GPU_VER = 20`. Then `uniformsFor(chap)` may adapt. Old raw `mix(c, plate, 0.10)` / 5-tap body / print RGB 0.08 = FAIL.
   - Upload: `texImage2D` from `<video>`. rVFC = stamp, not harvest. Road gated ×24. Native loop 1×.
   - `GPU_VER` remount. `preserveDrawingBuffer:false`.
 - Scale = 13d `bolt-scale`. On the law-20 wide road, **withersFrac ~0.10 is KEEP** — do not grow Bolt to 0.22. Clock = 14c `gallop-clock`. Contact shadow = 13b (multiply on **road**, start `k` 0.20).
@@ -29,6 +30,6 @@ You are cooking a **Lane biome** for Boltverse Odyssey for a **random player**. 
 Teacher gate → **empty still from law 20 defaults** → empty A 48fps → REUSE cycle → key/despill (luma protect) → scale → GPU wire (law 17) → clock → grade+bounce+shadow+FX row → hazards → hang+Pack → smoke.
 
 ## Smoke
-Sprint looks like Frost-parity on **this** plate: fluid gallop, hind paws intact, no vertical bars, plate light (not studio), paw shadow, biome-correct ground FX, old biomes still hung.
+Sprint looks like Frost-parity on **this** plate: fluid gallop, **sharp interior**, hind paws intact, no vertical bars, **no neon through the coat**, plate light (not studio), paw shadow (no skateboard), biome-correct ground FX, old biomes still hung.
 
-**FAIL** if: invent sprint · CPU key every rAF · copy scissor/IGN sketch · wipe masters · skip bounce · skip FX row · bake Bolt into road mp4 · SPH · ice-hole / Beat-narrow road as silent default · grow Bolt to fake withersMin on a wide road.
+**FAIL** if: invent sprint · CPU key every rAF · copy scissor/IGN sketch · wipe masters · skip bounce · skip FX row · bake Bolt into road mp4 · SPH · ice-hole / Beat-narrow road as silent default · grow Bolt to fake withersMin on a wide road · raw plate mix into coat · 5-tap body smear · dark frost prints.
