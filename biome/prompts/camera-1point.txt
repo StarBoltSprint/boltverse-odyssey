@@ -1,0 +1,17 @@
+CAMERA (HARD — do not rewrite, do not add golden-ratio / 0.618 / UV numbers):
+
+9:16 chase camera LOCKED behind an empty 3-lane highway. Portrait. One-point linear perspective.
+
+ONE vanishing point ahead, in the sky just above the road diamond. Three equal STRAIGHT lanes.
+
+Neon dashes are ruler-straight. They meet at that one point. They do not curve, S-bend, or shear.
+
+Road fills the lower two thirds of the frame. Sky / weather fills the upper third. Wide nationale, not a corridor, not an ice hole.
+
+CONSTANT forward rush. The world scrolls along the lanes toward the BOTTOM of the frame. Camera does not truck, pan, orbit, or dolly.
+
+NEVER reverse. NEVER pull back. NEVER dolly out. Vanishing point stays put. Last frame is CLOSER into the canyon than the first. Same camera.
+
+ZERO dog / wolf / character. ZERO t-shirt / jersey. ZERO golden ratio.
+
+Same camera as the reference still. Copy its vanishing point and lane width. Do not invent a new angle.

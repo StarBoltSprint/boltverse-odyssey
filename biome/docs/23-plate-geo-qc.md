@@ -7,7 +7,8 @@ A cold Grok must **run the script** on every new Video A **before hang**. Feelin
 φ is an **audit** (law 20). The judge is the table + the script.
 
 Script: [`../scripts/plate-geo-qc/plate-geo-qc.py`](../scripts/plate-geo-qc/plate-geo-qc.py)  
-Paste: [`COLD_START-geo-qc.md`](COLD_START-geo-qc.md)
+Paste: [`COLD_START-geo-qc.md`](COLD_START-geo-qc.md)  
+Camera law (what 1-point **is**): [`24-camera-1point.md`](24-camera-1point.md)
 
 ---
 
@@ -61,4 +62,4 @@ Near-field fat tubes put fitted VP.y ~0.62 even when the eye reads vanishing in 
 | `road-frost-d1.mp4` flora | **PASS** | same camera, lanterns pollute tracker but inliers 86 % |
 | `road-frost-d2.mp4` meteor recook | **FAIL** | inliers 55 % · 1pt 0.119 — I2V sheared the pencil |
 
-Related: [20](20-default-plate-proportions.md) · [20b](20b-frost-aurora-proportions.md) · [22-m-densify-snowball.md](22-m-densify-snowball.md) · [00](00-PRIORITY0-any-biome.md) · paste [COLD_START-any-biome.md](COLD_START-any-biome.md)
+Related: [20](20-default-plate-proportions.md) · [20b](20b-frost-aurora-proportions.md) · [24](24-camera-1point.md) · [22-m-densify-snowball.md](22-m-densify-snowball.md) · [00](00-PRIORITY0-any-biome.md) · paste [COLD_START-any-biome.md](COLD_START-any-biome.md)

@@ -37,6 +37,8 @@ A fresh Grok in a new Build convo must **NOT** cook a new Bolt gallop from scrat
 
 **HARD — plate geometric QC.** Before hang of any Video A, run [scripts/plate-geo-qc/plate-geo-qc.py](scripts/plate-geo-qc/plate-geo-qc.py). Exit 1 = recook, do not hang. 1-point VP, lock-off, 3-lane, curvature. Law: [docs/23-plate-geo-qc.md](docs/23-plate-geo-qc.md). Paste: [docs/COLD_START-geo-qc.md](docs/COLD_START-geo-qc.md).
 
+**HARD — sprint camera = conical 1-point lock-off.** Not 2-point (look aside). Not 3-point (plunge / worm's eye). Imagine gets [prompts/camera-1point.txt](prompts/camera-1point.txt) — no φ / 0.618 / UV. Formulas stay in Grok + script 23. Law: [docs/24-camera-1point.md](docs/24-camera-1point.md). Paste: [docs/COLD_START-camera.md](docs/COLD_START-camera.md).
+
 **PRIORITY 0 — Live compositor = law 17 + law 22.** Port [`scripts/bolt-key-gl/bolt-key-gl.ts`](scripts/bolt-key-gl/bolt-key-gl.ts) (`GPU_VER = 24`) + [`wet-fx.ts`](scripts/bolt-key-gl/wet-fx.ts). **FAIL** if Grok copies `bolt-key-gl-scissor-prev.ts` (scissor / IGN-fract = bars + eaten paws + sticker). Quad dest, luma protect, **neon-safe bounce** (never raw `mix(c, plate)`), edge-only 3-tap smear (never 5-tap body blur), dual-paw contact, ice Fresnel, plate IBL, sin grain, rVFC stamp, straight-over blend. Law: [docs/17-live-compositor.md](docs/17-live-compositor.md) · **[docs/22-gpu24-frost-keep.md](docs/22-gpu24-frost-keep.md)**. `21-paw-to-galaxy.md` is a different law.
 
 **FAIL** if Grok invents a new Bolt sprint clip for a biome cook. Only SmiR can authorize a new cycle cook to replace the lock.
@@ -59,6 +61,7 @@ Loop seam = **hard cut** on the closed period — do **NOT** optical-flow morph 
 4c. **[docs/18-room-starmap-lena.md](docs/18-room-starmap-lena.md)** — player journey after seal (room star map → door → this biome → Lena → planet). Paste [docs/COLD_START-room-starmap.md](docs/COLD_START-room-starmap.md). Lena climb = luminous 3-lane path (not float): [docs/19-luminous-path-climb.md](docs/19-luminous-path-climb.md). Paste [docs/COLD_START-luminous-path.md](docs/COLD_START-luminous-path.md). Incline / duration / space look: [docs/21-paw-to-galaxy.md](docs/21-paw-to-galaxy.md). Paste [docs/COLD_START-paw-to-galaxy.md](docs/COLD_START-paw-to-galaxy.md).
 4d. **[docs/22-m-densify-snowball.md](docs/22-m-densify-snowball.md)** — same-biome m densify snowball refs (≤12). Paste [docs/COLD_START-m-densify.md](docs/COLD_START-m-densify.md).
 4e. **[docs/23-plate-geo-qc.md](docs/23-plate-geo-qc.md)** — geometric judge before hang. Paste [docs/COLD_START-geo-qc.md](docs/COLD_START-geo-qc.md). Run `scripts/plate-geo-qc/plate-geo-qc.py`.
+4f. **[docs/24-camera-1point.md](docs/24-camera-1point.md)** — conical 1-point lock-off. Paste [prompts/camera-1point.txt](prompts/camera-1point.txt) into Imagine. [docs/COLD_START-camera.md](docs/COLD_START-camera.md).
 5. **[docs/11-plate-order.md](docs/11-plate-order.md)** — HARD LOCK dealer playlist (canyon → cars → duel → night → war)
 6. **[docs/05-key.md](docs/05-key.md)** — chroma + crown, not luma
 7. **[reference/LanePlayer.tsx](reference/LanePlayer.tsx)** — r38 compositor

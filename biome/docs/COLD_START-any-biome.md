@@ -8,6 +8,7 @@ You are cooking a **Lane biome** for Boltverse Odyssey for a **random player**. 
 4. **`biome/docs/22-gpu24-frost-keep.md`** ← GPU_VER 24 KEEP. Neon-safe bounce, dual-paw contact, ice Fresnel, plate IBL. (`21-paw-to-galaxy.md` is a different law.) **FAIL** if you `mix(c, plate, 0.10)` raw or 5-tap-smear the body or draw one body-ellipse shadow.
 5. `biome/docs/22-m-densify-snowball.md` ← same-biome m densify snowball refs (≤12). Success keeps all prior refs; miss drops one tier. Paste: `biome/docs/COLD_START-m-densify.md`. (`22-gpu24-frost-keep.md` stays GPU KEEP.)
 6. **`biome/docs/23-plate-geo-qc.md`** ← run `python3 biome/scripts/plate-geo-qc/plate-geo-qc.py <plate.mp4>` **before hang**. FAIL = recook. Paste: `biome/docs/COLD_START-geo-qc.md`.
+7. **`biome/docs/24-camera-1point.md`** ← sprint = conical 1-point lock-off. Paste `biome/prompts/camera-1point.txt` into Imagine. Not 2-point / 3-point on Video A. Paste: `biome/docs/COLD_START-camera.md`.
 
 ## Fixed
 - Bolt motion = REUSE `lock/bolt-gallop-cycle.mp4` (**6 s / 96 fps / 534 frames / green / rear**). Remux → `public/master/bolt.mp4`. Never invent a gallop. Never use `lock/bolt-gallop-cycle-0.93s-prev.mp4` as play.

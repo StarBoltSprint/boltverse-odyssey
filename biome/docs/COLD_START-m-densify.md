@@ -6,4 +6,4 @@ Same biome. **Base plate fixed** (first=last loop). Success → +1 décor ref **
 
 Frost: hang ADD `road-frost-d1.mp4`. Never overwrite `road-frost.mp4`. GPU KEEP file is `22-gpu24-frost-keep.md` (same number, different law).
 
-**Before hang densify:** `python3 biome/scripts/plate-geo-qc/plate-geo-qc.py <dN.mp4>` must PASS (law 23). FAIL = recook. Empty KEEP is the camera teacher.
+**Before hang densify:** `python3 biome/scripts/plate-geo-qc/plate-geo-qc.py <dN.mp4>` must PASS (law 23). FAIL = recook. Empty KEEP is the camera teacher. Paste `biome/prompts/camera-1point.txt` (law 24) on the I2V — same 1-point cone as empty.

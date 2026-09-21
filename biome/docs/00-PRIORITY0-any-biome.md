@@ -30,6 +30,7 @@ Player may be random. Grok must not ask them to install Pack, invent a dog sprin
 | Ground FX | **Biome table** — paw trails + splash/dust, Euler quads, phase-locked | [16](16-biome-ground-fx.md) · `wet-fx.ts` |
 | Hang | ADD plates beside masters. Never wipe canyon→war | [09](09-recette-biome.md) |
 | Plate geo | `plate-geo-qc.py` **PASS before hang** (1-point / lock-off / sag) | [23](23-plate-geo-qc.md) |
+| Camera | Sprint = **conical 1-point lock-off**. Paste `camera-1point.txt`. Not 2-pt / 3-pt on Video A | [24](24-camera-1point.md) |
 | Pack | Auto-embed `BOLTVERSE_PACK_ORIGIN=https://boltverse-pack.vercel.app` + `pack.js` | [07](07-pack-live.md) |
 | Play controls | A/D or side swipe = lanes · W / swipe up = jump | [PLAY.md](../PLAY.md) |
 
@@ -65,7 +66,7 @@ Bolt identity, gallop file, GPU path, scale, clock, Pack = **identical**.
 1. Show `lock/bolt-back.jpg` + `lock/bolt-gallop-cycle.mp4` in chat (teacher gate).
 2. Still empty first + distinct last — ZERO dog. **Start from law 20 defaults** unless the player overrode framing.
 3. Video A empty rush — `imagineBiomeClip`, **48 fps**, SPEED LAW. Frost: **no** `setpts` 2.7× warp ([20b](20b-frost-aurora-proportions.md)).
-3b. **Law 23 geo qc PASS** — `python3 biome/scripts/plate-geo-qc/plate-geo-qc.py` the new plate. FAIL = recook, do not hang.
+3b. **Law 23 geo qc PASS** — `python3 biome/scripts/plate-geo-qc/plate-geo-qc.py` the new plate. FAIL = recook, do not hang. Imagine camera block: [camera-1point.txt](../prompts/camera-1point.txt) (law 24).
 4. REUSE lock cycle → key + despill (13c) — **law 17** GPU even in cook QA.
 5. `computeScale` / `assertScale` (13d). Wide road: do not grow Bolt to hit withersMin.
 6. Wire Live: `makeCompositor` **before** `getContext("2d")` ([17](17-live-compositor.md)).
