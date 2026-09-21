@@ -1,71 +1,69 @@
-# 22 — Momentum densify (same biome, snowball refs)
+# 22 — `m` = momentum (snowball refs)
 
-**Sealed 2026-09-20 (SmiR).** Hang ≠ wipe. Picture is the clock. Lena densification for Lane biomes.
+**Sealed 2026-09-21 (SmiR).** Hang ≠ wipe. `m` is **momentum** — what the run *looks like*, not XP chrome.
+
+**Same number, different file as** [`22-gpu24-frost-keep.md`](22-gpu24-frost-keep.md). Point at the **filename**. GPU KEEP is compositor. This file is densify picture.
+
+Paste: [`COLD_START-m-densify.md`](COLD_START-m-densify.md)
+
+---
 
 ## Product
 
-Same biome the whole run. The **base empty road plate** stays fixed (first+last loop). As Bolt succeeds sprints / dodges, the world **wakes**: more beautiful, more animated décor — always in perfect harmony with that biome. Miss = fall back one densify tier.
+Same biome the whole run. Empty KEEP road is **fixed** (first=last loop, law 20 / 23 / 24). As Bolt **succeeds**, the world **wakes**: the **next** plate is cooked with **one more Imagine `@` ref** than the last — richer, more alive, still that biome. As he **misses**, the next plate **loses** the last ref — poorer.
 
-This is what `m` **looks like** in picture (not XP chrome). Hazards stay readable every plate.
+That stack of stills **is** `m`. Picture is the clock.
 
----
+**HARD — every densify plate keeps ≥1 spectacular hazard** (law 25). Décor snowballs. Danger never becomes a cheap barrier / jersey / t-shirt. Cinematic event on the cone (meteor, side-mountain collapse) **and** the extra detail.
 
-## Base plate (HARD)
-
-- One sealed empty-road A (law 20 proportions, biome paint).
-- Cook A as **loop**: first frame = last frame (Imagine hooks). Rush direction constant.
-- Bolt = REUSE sealed 6s gallop + GPU compositor (laws 00 / 15 / 17). Never invent gait.
-- Base A does **not** morph when `m` changes. Only densify layers / cook slots change.
+Empty KEEP may be empty of danger (geometry teacher). From **d1 on**, danger + richness.
 
 ---
 
-## Densify tiers ↔ `m`
+## Player → next plate
 
-Index a small ladder of décor detail stills (Imagine `@` refs), biome-locked.
-
-| Event | Tier | Refs active |
+| Event | `m` | Next cook |
 |---|---|---|
-| Start / low `m` | 0 | base A only (+ hazard if any) |
-| Success (dodge / jump / plate clear) | +1 | **all prior refs + 1 new** |
-| Miss (hit obstacle / fail plate) | −1 | drop newest; keep older |
+| Start | 0 | empty KEEP only |
+| **Success** (dodge / jump / plate clear) | **+1** | **all prior refs + 1 new still** (snowball) |
+| **Miss** (hit / fail plate) | **−1** | drop the newest ref; keep older |
 
-**Snowball (HARD):** on success, **add** a new ref **and keep every unlocked ref**. Never replace the stack with only the newest. Cap **≤ 12** Imagine refs (product limit).
+Cap **≤ 12** Imagine refs. Success **never** replaces the stack with only the new still. Miss drops **one** tier, not wipe-to-zero unless play law drains `m`.
 
-Miss drops **one** tier (lose the last unlocked detail), not wipe to zero unless `m` fully drains per play law.
-
----
-
-## What the new detail is
-
-- One extra décor element adapted to **this** biome (light, material, palette, weather).
-- Makes the plate richer / more alive (parallax props, sky life, edge flora, distant structures, animated weather accents…).
-- **Harmony FAIL** if the detail looks like another biome or collage chrome.
-- **Ban:** detail on Bolt silhouette · detail blocking L/C/R lanes · morphing the road geometry · morphing Bolt identity.
-
-Hazard on each denser plate is still allowed / expected — densify ≠ remove danger. Richer world **plus** readable threats.
+Cook uses those stills as `@` refs so Imagine **copies** the unlocked richness instead of inventing a new biome.
 
 ---
 
-## Cook for Grok (cold)
+## What the +1 still is
 
-1. Seal base empty A (first=last loop). Hang ≠ wipe masters.
-2. Author a **ref pack** for this biome: ordered detail stills `d0…dN` (N≤11 extras + identity locks as needed). Same grammar as A.
-3. At play / cook commit: `tier = f(m)` → attach refs `[d0…d_tier]` **cumulatively** + base A as first/last.
-4. Cook next plate loop with that ref set. Smoke: same road identity, richer edges, lanes clear, Bolt REUSE.
-5. On miss: cook/play previous tier pack (snowball shrinks by one).
+- One extra décor beat **of this biome** (light, material, weather, flora, distant life).
+- Harmony with KEEP + every older ref.
+- Does **not** sit on Bolt, does **not** morph the 1-point cone, does **not** steal L/C/R.
+- **Plus** the spectacular hazard still / prompt ([`hazard-1lane.txt`](../prompts/hazard-1lane.txt)) — not optional.
 
-Spec free early; paid Imagine only on confirm (existing credits law). Speculative prefetch = stock / lower tier only.
+**FAIL décor:** other-biome collage, Bolt silhouette paint, road geometry morph, 3-lane wall, t-shirt, fire on Frost.
+
+---
+
+## Cook (cold)
+
+1. Empty A sealed. Frost = `road-frost.mp4` — **never overwrite**.
+2. Ref pack `d0…dN` (N≤11), same grammar as A, each still = one detail.
+3. `tier = f(m)` → Imagine `@` `[KEEP + d0…d_tier]` **cumulative** + hazard prompt.
+4. Law 23 PASS (camera) then law 25 `--expect 1` (or 2) PASS (danger). Hang **ADD** `road-<biome>-dN.mp4`.
+5. Miss → recook / play previous tier pack.
+
+Frost so far: d1 flora hung (décor). d2 meteor **FAIL** law 25 (3-lane wall) — recook 1-lane cinematic, keep d1 refs. Jersey is **not** the hazard.
 
 ---
 
 ## FAIL
 
-- New plate invents a different biome / morphs base road
-- Success uses only the new ref (forgets prior stack)
+- Next plate forgets prior refs (no snowball)
+- Densify with **no** spectacular hazard
+- Hazard = barrier / jersey / t-shirt / 3-lane crater
+- Morph KEEP road or Bolt
 - >12 refs
-- Décor fights hazard readability or covers Bolt
-- Inventing densify by free chat instead of sealed ref pack
+- Overwrite `road-frost.mp4`
 
-## Related
-
-[00](00-PRIORITY0-any-biome.md) · [16](16-biome-ground-fx.md) · [20](20-default-plate-proportions.md) · [21](21-paw-to-galaxy.md) · Priya slots / Lena densify · Marcus dodge → `m`
+Related: [00](00-PRIORITY0-any-biome.md) · [09](09-recette-biome.md) · [23](23-plate-geo-qc.md) · [24](24-camera-1point.md) · [25](25-hazard-cone.md) · [22-gpu24-frost-keep.md](22-gpu24-frost-keep.md)
