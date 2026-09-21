@@ -4,7 +4,8 @@
 
 **Same number, different file as** [`22-gpu24-frost-keep.md`](22-gpu24-frost-keep.md). Point at the **filename**. GPU KEEP is compositor. This file is densify picture.
 
-Paste: [`COLD_START-m-densify.md`](COLD_START-m-densify.md)
+Paste: [`COLD_START-m-densify.md`](COLD_START-m-densify.md)  
+Stills rails (cook gate): [`28-stills-two-rails.md`](28-stills-two-rails.md)
 
 ---
 
@@ -17,6 +18,8 @@ That stack of stills **is** `m`. Picture is the clock.
 **HARD — every densify plate keeps ≥1 spectacular hazard** (law 25). Décor snowballs. Danger never becomes a cheap barrier / jersey / t-shirt. Cinematic event on the cone (meteor, side-mountain collapse) **and** the extra detail.
 
 Empty KEEP may be empty of danger (geometry teacher). From **d1 on**, danger + richness.
+
+**HARD — two rails ([28](28-stills-two-rails.md)):** décor stills snowball. Event stills **swap** (never stack — they deposit walls). Clip last never `@`. Play: success holds peak (do not wrap to empty KEEP). Miss = `m-1`.
 
 ---
 
@@ -39,7 +42,7 @@ Cook uses those stills as `@` refs so Imagine **copies** the unlocked richness i
 - One extra décor beat **of this biome** (light, material, weather, flora, distant life).
 - Harmony with KEEP + every older ref.
 - Does **not** sit on Bolt, does **not** morph the 1-point cone, does **not** steal L/C/R.
-- **Plus** the spectacular hazard still / prompt ([`hazard-1lane.txt`](../prompts/hazard-1lane.txt)) — not optional.
+- **Plus** the spectacular hazard still / prompt ([`hazard-1lane.txt`](../prompts/hazard-1lane.txt)) — not optional. Hazard is a **separate event rail** ([28](28-stills-two-rails.md)).
 
 **FAIL décor:** other-biome collage, Bolt silhouette paint, road geometry morph, 3-lane wall, t-shirt, fire on Frost.
 
@@ -49,7 +52,7 @@ Cook uses those stills as `@` refs so Imagine **copies** the unlocked richness i
 
 1. Empty A sealed. Frost = `road-frost.mp4` — **never overwrite**.
 2. Ref pack `d0…dN` (N≤11), same grammar as A, each still = one detail.
-3. `tier = f(m)` → Imagine `@` `[KEEP + d0…d_tier]` **cumulative** + hazard prompt.
+3. `tier = f(m)` → Imagine `@` `[KEEP + décor[0…tier] + this event]` **cumulative décor** + swapped event ([30](30-i2i-prompt.md)).
 4. Law 23 PASS (camera) then law 25 `--expect 1` (or 2) PASS (danger). Hang **ADD** `road-<biome>-dN.mp4`.
 5. Miss → recook / play previous tier pack.
 
@@ -66,5 +69,7 @@ Frost so far: d1 flora hung (décor). d2 meteor **FAIL** law 25 (3-lane wall) �
 - >12 refs
 - Overwrite `road-frost.mp4`
 - Densify without a [26](26-biome-sprint-plan.md) sprint plan
+- Event stills stacked into décor (crystal wall / geode-in-lane)
+- Clip last / video `t99` used as `@`
 
-Related: [00](00-PRIORITY0-any-biome.md) · [09](09-recette-biome.md) · [23](23-plate-geo-qc.md) · [24](24-camera-1point.md) · [25](25-hazard-cone.md) · [26](26-biome-sprint-plan.md) · [22-gpu24-frost-keep.md](22-gpu24-frost-keep.md)
+Related: [00](00-PRIORITY0-any-biome.md) · [09](09-recette-biome.md) · [23](23-plate-geo-qc.md) · [24](24-camera-1point.md) · [25](25-hazard-cone.md) · [26](26-biome-sprint-plan.md) · [22-gpu24-frost-keep.md](22-gpu24-frost-keep.md) · [28](28-stills-two-rails.md) · [29](29-imagine-compiler.md) · [30](30-i2i-prompt.md) · [31](31-light-lock.md)
