@@ -2,4 +2,6 @@ Photoreal vertical 9:16, 720x1280. Locked-off camera. SAME camera, SAME vanishin
 
 SPAWN: the hazard is FAR AHEAD, small, near the vanishing point — not in the foreground, not a close-up.
 
-THREE lanes: LEFT, CENTER, RIGHT. Hazard occupies ONE lane or TWO. NEVER all three. ALWAYS one free dodge corridor — empty wet asphalt + dashed paint visible. Full-width bar/crater/wall is FAIL. Hazard is a bounded OBJECT (jersey / rock / crate), baked with wet-road contact, not a sticker, not a crater, not a shock-ring. WIDTH: no wider than its lane(s). {PAINT}
+THREE lanes: LEFT, CENTER, RIGHT. Hazard occupies ONE lane or TWO. NEVER all three. ALWAYS one free dodge corridor — empty wet asphalt + dashed paint visible. Full-width bar/crater/wall is FAIL.
+
+Hazard is a bounded CINEMATIC object in its lane(s): glass star, prism comet, crystal shard, mesa ice falling INTO one lane. It rides the air / the lane ray — NOT a jersey, NOT a crate, NOT a steel barrier, NOT a geode dumped on the asphalt, NOT a crater, NOT a shock-ring. Wet-road contact or a light kiss on the dashes is OK; a pile sitting in the lane is FAIL. WIDTH: no wider than its lane(s). {PAINT}

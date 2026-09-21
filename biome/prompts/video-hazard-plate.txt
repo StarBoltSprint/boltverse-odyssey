@@ -2,4 +2,10 @@ SPAWN LAW: first frame the hazard is FAR AHEAD (small, vanishing point). It appr
 
 SPEED LAW: VERY FAST, ULTRA CONSTANT from t=0 to last frame. NEVER slow down — not for a crash, impact, explosion, debris, or obstacle. The world keeps rushing HARD the whole clip. The hazard may get closer; travel speed never changes.
 
-LANE LAW: occupy ANY one or two of LEFT / CENTER / RIGHT — vary which. Do not always free the center. ALWAYS leave one free corridor. Never all three. WIDTH never grows past those lanes. Never a wall. Dashed paint on the free lane stays visible at t=0, mid, and last. {PAINT}
+LANE LAW: occupy ANY one or two of LEFT / CENTER / RIGHT — vary which. Do not always free the center. ALWAYS leave one free corridor. Never all three. WIDTH never grows past those lanes. Never a wall. Dashed paint on the free lane stays visible at t=0, mid, and last.
+
+HAZARD OBJECT: one cinematic event in its lane(s) — glass star, prism comet, crystal shard, mesa ice falling INTO one lane. It rides the AIR / the lane ray and EXITS the bottom. NEVER a jersey. NEVER a crate. NEVER a steel barrier. NEVER a geode dumped on the asphalt. NEVER a crater. NEVER a 3-lane wall. Older décor (lanterns, mesas, sky) STAYS on the sides. Spectacle = the event. Spectacle ≠ a new camera. Spectacle ≠ filling the frame.
+
+LAST FRAME: hazard GONE (exited bottom). Free lanes empty. Décor kept, closer. Exposure ≤ first frame. Asphalt still dark.
+
+{PAINT}

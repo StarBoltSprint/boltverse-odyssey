@@ -1,0 +1,49 @@
+{
+  "chap": "prismwake",
+  "cap": 12,
+  "idea": "Two rails. Decor snowballs. Events swap and never stack.",
+  "keep": "KEEP.jpg",
+  "keepRole": "geometry teacher — 1-point, 3 lanes, dark asphalt. Always first @ref. Never densified.",
+  "decor": [
+    { "id": "lanterns", "file": "decor/01-lanterns.jpg", "from": 1, "where": "sides", "noun": "quartz lanterns teal flame" },
+    { "id": "flora", "file": "decor/02-flora.jpg", "from": 1, "where": "curbs", "noun": "crystal flora at mesa feet" },
+    { "id": "nebula", "file": "decor/03-nebula.jpg", "from": 3, "where": "sky", "noun": "indigo-magenta ribbons" },
+    { "id": "motes", "file": "decor/04-motes.jpg", "from": 5, "where": "air", "noun": "prism motes weather" },
+    { "id": "runes", "file": "decor/05-runes.jpg", "from": 6, "where": "left wall", "noun": "rune-crystals in left mesa" },
+    { "id": "storm", "file": "decor/06-storm.jpg", "from": 8, "where": "sky", "noun": "nebula storm peak" },
+    { "id": "shrine", "file": "decor/07-shrine.jpg", "from": 9, "where": "off-road", "noun": "distant crystal shrine" }
+  ],
+  "events": {
+    "star": "event/star-far.jpg",
+    "comet": "event/comet-air.jpg",
+    "streak": "event/streak-gone.jpg",
+    "calves": "event/mesa-calves-R.jpg",
+    "twin": "event/twin-C-R.jpg",
+    "shard": "event/shard-center.jpg"
+  },
+  "plates": [
+    { "n": 0, "decor": [], "event": null, "refs": ["KEEP"] },
+    { "n": 1, "decor": ["lanterns", "flora"], "event": "star", "refs": ["KEEP", "lanterns", "flora", "star"] },
+    { "n": 2, "decor": ["lanterns", "flora"], "event": "comet", "refs": ["KEEP", "lanterns", "flora", "comet"] },
+    { "n": 3, "decor": ["lanterns", "flora", "nebula"], "event": "streak", "refs": ["KEEP", "lanterns", "flora", "nebula", "streak"] },
+    { "n": 4, "decor": ["lanterns", "flora", "nebula"], "event": "calves", "refs": ["KEEP", "lanterns", "flora", "nebula", "calves"] },
+    { "n": 5, "decor": ["lanterns", "flora", "nebula", "motes"], "event": "calves", "refs": ["KEEP", "lanterns", "flora", "nebula", "motes", "calves"] },
+    { "n": 6, "decor": ["lanterns", "flora", "nebula", "motes", "runes"], "event": "comet", "refs": ["KEEP", "lanterns", "flora", "nebula", "motes", "runes", "comet"] },
+    { "n": 7, "decor": ["lanterns", "flora", "nebula", "motes", "runes"], "event": "twin", "refs": ["KEEP", "lanterns", "flora", "nebula", "motes", "runes", "twin"] },
+    { "n": 8, "decor": ["lanterns", "flora", "nebula", "motes", "runes", "storm"], "event": "twin", "refs": ["KEEP", "lanterns", "flora", "nebula", "motes", "runes", "storm", "twin"] },
+    { "n": 9, "decor": ["lanterns", "flora", "nebula", "motes", "runes", "storm", "shrine"], "event": "shard", "refs": ["KEEP", "lanterns", "flora", "nebula", "motes", "runes", "storm", "shrine", "shard"] }
+  ],
+  "clipKeys": {
+    "first": "KEEP + decor[0..m]  (world at t=0, event FAR or absent)",
+    "mid": "same + this event in AIR, 1-2 lanes, free corridor",
+    "last": "i2i of first — closer, SAME nouns, event GONE, asphalt still dark"
+  },
+  "bans": [
+    "Do not @ref a video t99 / crystal wall / UUID still",
+    "Do not put Bolt in this stack",
+    "Do not snowball event stills — they deposit",
+    "Do not replace KEEP with a denser plate as geometry teacher",
+    "One new decor noun per still — not a full collage",
+    "Cap 12 Imagine refs"
+  ]
+}

@@ -1,12 +1,13 @@
 # COLD — `m` = momentum (paste when densifying)
 
-Read `biome/docs/22-m-densify-snowball.md`. Sprint order is the **plan** (`26` / `plans/<biome>-sprint.md`) — do not pick the +1 still in chat.
+Read `biome/docs/22-m-densify-snowball.md` + [`28-stills-two-rails.md`](28-stills-two-rails.md). Sprint order is the **plan** (`26` / `plans/<biome>-sprint.md`) — do not pick the +1 still in chat.
 
 `m` is **momentum**. Same biome. Empty KEEP fixed.
 
-- **Success** → next plate = **all old `@` refs + 1 new still** (richer). Cap ≤12. Never drop the stack.
-- **Miss** → next plate loses the last ref (poorer).
+- **Success** → next plate = **all old décor `@` refs + 1 new décor still** (richer). Cap ≤12. Never drop the stack. At peak, **hold** — do not wrap to empty KEEP.
+- **Miss** → next plate loses the last **décor** ref (poorer).
 - **Every densify plate (d1+)** has **≥1 spectacular hazard** on the 1-point cone (meteor / side collapse — not a barrier / jersey / t-shirt). Law 25 `--expect 1`.
+- **Two rails:** décor snowballs. Event stills **swap** (never `@` last frame / `t99`). i2i = one delta ([30](30-i2i-prompt.md)). Light = KEEP bible ([31](31-light-lock.md)).
 
 Cook with those stills. Harmony = this biome. Never morph the road / Bolt. REUSE 6s + GPU.
 
