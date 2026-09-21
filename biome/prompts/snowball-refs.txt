@@ -1,0 +1,11 @@
+SNOWBALL (law 22-m + 28 two rails) — cook with Imagine @ refs, cumulative DÉCOR only:
+
+P0 empty KEEP still is always attached (first @).
+Each later plate attaches KEEP + every prior +1 décor still + THIS plate's event still (events SWAP, they do not stack).
+Success never replaces the stack with only the new still.
+Do not cook Pn from P0 if P1…P(n-1) décor stills exist.
+Last frame of a clip NEVER enters the stack.
+
+The +1 still is décor of THIS biome, OFF the lanes (light, weather, flora, distant life). It does not sit on Bolt. It does not morph the 1-point cone. It does not steal L/C/R.
+
+Hazard is a separate event rail (hazard-1lane.txt). Décor snowballs. Danger may change. Jersey / crate / steel bar / t-shirt / geode-in-lane are FAIL.

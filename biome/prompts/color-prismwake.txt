@@ -1,0 +1,21 @@
+COLOR — Prismwake (cook stills/clips AND live grade). Not Frost. Not canyon dusk.
+
+BLACK POINT: asphalt in the lower third stays the darkest mass. Mean luma ~0.04–0.12. If last-frame asphalt is hotter than first, FAIL.
+
+HIGHLIGHT CEILING: no road-band pixel near white. Sky highlights ≤ ~0.85. Glass star / comet = a SMALL specular, not a fill-light. NEVER a supernova. NEVER a white crystal wall.
+
+WHITE BALANCE: lock to the KEEP still. Indigo-magenta night. Do not drift orange. Do not recast as frost lime-cyan. First and last = SAME WB. Last may be closer, never hotter, never more bloom.
+
+HUE LOCK (say these, mix no other family):
+- asphalt: cool near-black, tiny blue, wet spec
+- dashes: cyan-prism PAINT (high chroma, thin) — not lime ice, not gold
+- sky: indigo → magenta nebula
+- lantern flame: small teal
+- comet / star: white-violet glass
+- mesas: dark quartz, cool rim
+
+CONTRAST: cinematic night. Saturated sky OK. Road stays dark. Sky can glow; it must not bleach the cone.
+
+BOLT (live, law 16): white GSD forever. Décor-matching skin ON TOP of white OK. Cool high-sat rim sampled from this plate's crystals. Soft luminous violet print. Tiny prism flecks. Never a new coat. Never frost ice sheen. Never ember orange.
+
+LIVE crystal row (already): cool 0.86 / 0.90 / 1.16 · sat 0.58 · print 0.42 / 0.38 / 0.62 · drop 0.72 / 0.55 / 1.0 · grade 0.08 S-curve, light. Do not pile a second grade on Imagine.
