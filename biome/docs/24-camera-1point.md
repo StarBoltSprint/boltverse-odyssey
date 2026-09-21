@@ -71,4 +71,4 @@ Hazard objects may be ¾ (2-point locally). The **nationale** under them stays 1
 
 **FAIL if:** 2-point / 3-point sprint plate · φ / 0.618 in the Imagine camera prompt · hang without law-23 PASS · overwrite empty KEEP to fake the cone · treat minimap as 3-point.
 
-Related: [20](20-default-plate-proportions.md) · [20b](20b-frost-aurora-proportions.md) · [23](23-plate-geo-qc.md) · [22-m](22-m-densify-snowball.md) · [00](00-PRIORITY0-any-biome.md)
+Related: [20](20-default-plate-proportions.md) · [20b](20b-frost-aurora-proportions.md) · [23](23-plate-geo-qc.md) · [25](25-hazard-cone.md) · [22-m](22-m-densify-snowball.md) · [00](00-PRIORITY0-any-biome.md)

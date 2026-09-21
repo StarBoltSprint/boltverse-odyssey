@@ -31,6 +31,7 @@ Player may be random. Grok must not ask them to install Pack, invent a dog sprin
 | Hang | ADD plates beside masters. Never wipe canyon→war | [09](09-recette-biome.md) |
 | Plate geo | `plate-geo-qc.py` **PASS before hang** (1-point / lock-off / sag) | [23](23-plate-geo-qc.md) |
 | Camera | Sprint = **conical 1-point lock-off**. Paste `camera-1point.txt`. Not 2-pt / 3-pt on Video A | [24](24-camera-1point.md) |
+| Hazard | 1–2 lanes on the cone. `plate-hazard-qc.py --expect 1` PASS. Never a 3-lane wall | [25](25-hazard-cone.md) |
 | Pack | Auto-embed `BOLTVERSE_PACK_ORIGIN=https://boltverse-pack.vercel.app` + `pack.js` | [07](07-pack-live.md) |
 | Play controls | A/D or side swipe = lanes · W / swipe up = jump | [PLAY.md](../PLAY.md) |
 
@@ -72,7 +73,7 @@ Bolt identity, gallop file, GPU path, scale, clock, Pack = **identical**.
 6. Wire Live: `makeCompositor` **before** `getContext("2d")` ([17](17-live-compositor.md)).
 7. `gallop-clock` / native loop 1× (14c).
 8. Plate **IBL + bounce (law 22)** + **dual-paw** contact + ice FX row (16 / wet-fx). No 5-tap body blur. No skateboard shadow. No dark frost prints.
-9. Hazards (spawn far, 1–2 lanes, plate-speed match).
+9. Hazards (spawn far, 1–2 lanes, plate-speed match). **Law 25** `plate-hazard-qc.py --expect 1` PASS before hang.
 10. Hang ≠ wipe + Pack wire + bump `GPU_VER`.
 11. Smoke: dogFps ≈ min(96, display); hind paws intact; **no vertical bars**; **no neon stripe through torso**; **sharp interior** (not body-blur); shadow on road (no skateboard); FX visible on plant; coat matches THIS plate; no truck scale.
 
