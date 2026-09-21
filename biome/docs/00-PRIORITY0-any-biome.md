@@ -29,6 +29,7 @@ Player may be random. Grok must not ask them to install Pack, invent a dog sprin
 | Light | **Plate IBL HARD** — neon-stripped `bounceSrc` + hemi sky/fill (law 22). Never raw plate mix | [22](22-gpu24-frost-keep.md) · [17](17-live-compositor.md) · [13b](13b-anti-sticker-contact.md) |
 | Ground FX | **Biome table** — paw trails + splash/dust, Euler quads, phase-locked | [16](16-biome-ground-fx.md) · `wet-fx.ts` |
 | Hang | ADD plates beside masters. Never wipe canyon→war | [09](09-recette-biome.md) |
+| Plate geo | `plate-geo-qc.py` **PASS before hang** (1-point / lock-off / sag) | [23](23-plate-geo-qc.md) |
 | Pack | Auto-embed `BOLTVERSE_PACK_ORIGIN=https://boltverse-pack.vercel.app` + `pack.js` | [07](07-pack-live.md) |
 | Play controls | A/D or side swipe = lanes · W / swipe up = jump | [PLAY.md](../PLAY.md) |
 
@@ -64,6 +65,7 @@ Bolt identity, gallop file, GPU path, scale, clock, Pack = **identical**.
 1. Show `lock/bolt-back.jpg` + `lock/bolt-gallop-cycle.mp4` in chat (teacher gate).
 2. Still empty first + distinct last — ZERO dog. **Start from law 20 defaults** unless the player overrode framing.
 3. Video A empty rush — `imagineBiomeClip`, **48 fps**, SPEED LAW. Frost: **no** `setpts` 2.7× warp ([20b](20b-frost-aurora-proportions.md)).
+3b. **Law 23 geo qc PASS** — `python3 biome/scripts/plate-geo-qc/plate-geo-qc.py` the new plate. FAIL = recook, do not hang.
 4. REUSE lock cycle → key + despill (13c) — **law 17** GPU even in cook QA.
 5. `computeScale` / `assertScale` (13d). Wide road: do not grow Bolt to hit withersMin.
 6. Wire Live: `makeCompositor` **before** `getContext("2d")` ([17](17-live-compositor.md)).
@@ -88,5 +90,3 @@ Player boot (“start odyssey”) stays [START.md](../../START.md) — Welcome +
 ## E. Journey after seal
 
 This biome cook is **after** the player seals a planet on the room star map and taps door A/B. ROOM (2 doors + center star map) → constellation Space LOD → seal planet → return room → door → **this biome sprint** → Dr Lena Paw-to-Galaxy climb → arrive sealed planet. Law: [18-room-starmap-lena.md](18-room-starmap-lena.md). Paste: [COLD_START-room-starmap.md](COLD_START-room-starmap.md). Lena climb = **luminous 3-lane path** under Bolt (not float); same L/C/R + REUSE 6s. Law: [19-luminous-path-climb.md](19-luminous-path-climb.md). Paste: [COLD_START-luminous-path.md](COLD_START-luminous-path.md). Incline / duration / space look: [21-paw-to-galaxy.md](21-paw-to-galaxy.md). Paste: [COLD_START-paw-to-galaxy.md](COLD_START-paw-to-galaxy.md). Map = destination. Door = depart. Hang ≠ wipe.
-
-**HARD — m densify snowball.** Same-biome base plate loop + cumulative Imagine `@` refs (≤12). Success adds a detail and keeps prior refs; miss drops one tier. Law: [22-m-densify-snowball.md](22-m-densify-snowball.md). Paste: [COLD_START-m-densify.md](COLD_START-m-densify.md). `22-gpu24-frost-keep.md` is a different law (GPU KEEP).

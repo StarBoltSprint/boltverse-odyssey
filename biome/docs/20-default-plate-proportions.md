@@ -99,7 +99,8 @@ Chat / paint may ask tighter road, lower horizon, more sky, hotter sat, etc. The
 - Baking Bolt into the plate
 - Inventing gallop
 - Treating φ (or φ-X) as the whole law
+- Hanging a plate that `plate-geo-qc.py` FAILed ([23](23-plate-geo-qc.md))
 
 ## Related
 
-[00](00-PRIORITY0-any-biome.md) · [13d](13d-auto-scale.md) · [17](17-live-compositor.md) · [19](19-luminous-path-climb.md) · Frost aurora worked example (paint + KEEP that proved these numbers): [20b-frost-aurora-proportions.md](20b-frost-aurora-proportions.md) · paste [COLD_START-any-biome.md](COLD_START-any-biome.md) · [22-m-densify-snowball.md](22-m-densify-snowball.md)
+[00](00-PRIORITY0-any-biome.md) · [13d](13d-auto-scale.md) · [17](17-live-compositor.md) · [19](19-luminous-path-climb.md) · Frost aurora worked example (paint + KEEP that proved these numbers): [20b-frost-aurora-proportions.md](20b-frost-aurora-proportions.md) · geometric judge: [23-plate-geo-qc.md](23-plate-geo-qc.md) · paste [COLD_START-any-biome.md](COLD_START-any-biome.md)

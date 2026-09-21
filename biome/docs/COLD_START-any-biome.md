@@ -7,6 +7,7 @@ You are cooking a **Lane biome** for Boltverse Odyssey for a **random player**. 
 3. **`biome/docs/17-live-compositor.md`** ← what actually stuck Bolt to the plate. **FAIL** if you copy the old scissor/IGN sketch.
 4. **`biome/docs/22-gpu24-frost-keep.md`** ← GPU_VER 24 KEEP. Neon-safe bounce, dual-paw contact, ice Fresnel, plate IBL. (`21-paw-to-galaxy.md` is a different law.) **FAIL** if you `mix(c, plate, 0.10)` raw or 5-tap-smear the body or draw one body-ellipse shadow.
 5. `biome/docs/22-m-densify-snowball.md` ← same-biome m densify snowball refs (≤12). Success keeps all prior refs; miss drops one tier. Paste: `biome/docs/COLD_START-m-densify.md`. (`22-gpu24-frost-keep.md` stays GPU KEEP.)
+6. **`biome/docs/23-plate-geo-qc.md`** ← run `python3 biome/scripts/plate-geo-qc/plate-geo-qc.py <plate.mp4>` **before hang**. FAIL = recook. Paste: `biome/docs/COLD_START-geo-qc.md`.
 
 ## Fixed
 - Bolt motion = REUSE `lock/bolt-gallop-cycle.mp4` (**6 s / 96 fps / 534 frames / green / rear**). Remux → `public/master/bolt.mp4`. Never invent a gallop. Never use `lock/bolt-gallop-cycle-0.93s-prev.mp4` as play.
@@ -28,9 +29,9 @@ You are cooking a **Lane biome** for Boltverse Odyssey for a **random player**. 
 - New files `road-<biome>*.mp4` — do not wipe canyon→war.
 
 ## Order
-Teacher gate → **empty still from law 20 defaults** → empty A 48fps → REUSE cycle → key/despill (luma protect) → scale → GPU wire (law 17) → clock → grade+bounce+shadow+FX row → hazards → hang+Pack → smoke.
+Teacher gate → **empty still from law 20 defaults** → empty A 48fps → **law 23 geo qc PASS** → REUSE cycle → key/despill (luma protect) → scale → GPU wire (law 17) → clock → grade+bounce+shadow+FX row → hazards → hang+Pack → smoke.
 
 ## Smoke
 Sprint looks like Frost-parity on **this** plate: fluid gallop, **sharp interior**, hind paws intact, no vertical bars, **no neon through the coat**, plate light (not studio), paw shadow (no skateboard), biome-correct ground FX, old biomes still hung.
 
-**FAIL** if: invent sprint · CPU key every rAF · copy scissor/IGN sketch · wipe masters · skip bounce · skip FX row · bake Bolt into road mp4 · SPH · ice-hole / Beat-narrow road as silent default · grow Bolt to fake withersMin on a wide road · raw plate mix into coat · 5-tap body smear · dark frost prints.
+**FAIL** if: invent sprint · CPU key every rAF · copy scissor/IGN sketch · wipe masters · skip bounce · skip FX row · bake Bolt into road mp4 · SPH · ice-hole / Beat-narrow road as silent default · grow Bolt to fake withersMin on a wide road · raw plate mix into coat · 5-tap body smear · dark frost prints · hang a plate the geo qc FAILed.
