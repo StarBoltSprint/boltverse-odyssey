@@ -65,5 +65,6 @@ Frost so far: d1 flora hung (décor). d2 meteor **FAIL** law 25 (3-lane wall) �
 - Morph KEEP road or Bolt
 - >12 refs
 - Overwrite `road-frost.mp4`
+- Densify without a [26](26-biome-sprint-plan.md) sprint plan
 
-Related: [00](00-PRIORITY0-any-biome.md) · [09](09-recette-biome.md) · [23](23-plate-geo-qc.md) · [24](24-camera-1point.md) · [25](25-hazard-cone.md) · [22-gpu24-frost-keep.md](22-gpu24-frost-keep.md)
+Related: [00](00-PRIORITY0-any-biome.md) · [09](09-recette-biome.md) · [23](23-plate-geo-qc.md) · [24](24-camera-1point.md) · [25](25-hazard-cone.md) · [26](26-biome-sprint-plan.md) · [22-gpu24-frost-keep.md](22-gpu24-frost-keep.md)

@@ -41,6 +41,8 @@ A fresh Grok in a new Build convo must **NOT** cook a new Bolt gallop from scrat
 
 **HARD — hazard on the cone.** After camera PASS (23), run [scripts/plate-hazard-qc/plate-hazard-qc.py](scripts/plate-hazard-qc/plate-hazard-qc.py) `--ref` empty KEEP `--expect 1` (one-lane) or `2`. 3-lane wall = FAIL. Speck at VP, grows along one ray, L/R open. Imagine: [prompts/hazard-1lane.txt](prompts/hazard-1lane.txt). Law: [docs/25-hazard-cone.md](docs/25-hazard-cone.md). Paste: [docs/COLD_START-hazard.md](docs/COLD_START-hazard.md).
 
+**HARD — biome sprint plan.** Before d1, write the **10-plate** cinematic plan (spine + per-plate +1 still + spectacular hazard). Cook in that order. Do not invent the next plate in chat. Law: [docs/26-biome-sprint-plan.md](docs/26-biome-sprint-plan.md). Frost: [docs/26b-frost-sprint-plan.md](docs/26b-frost-sprint-plan.md) · [docs/plans/frost-sprint.md](docs/plans/frost-sprint.md). Paste: [docs/COLD_START-sprint-plan.md](docs/COLD_START-sprint-plan.md).
+
 **PRIORITY 0 — Live compositor = law 17 + law 22.** Port [`scripts/bolt-key-gl/bolt-key-gl.ts`](scripts/bolt-key-gl/bolt-key-gl.ts) (`GPU_VER = 24`) + [`wet-fx.ts`](scripts/bolt-key-gl/wet-fx.ts). **FAIL** if Grok copies `bolt-key-gl-scissor-prev.ts` (scissor / IGN-fract = bars + eaten paws + sticker). Quad dest, luma protect, **neon-safe bounce** (never raw `mix(c, plate)`), edge-only 3-tap smear (never 5-tap body blur), dual-paw contact, ice Fresnel, plate IBL, sin grain, rVFC stamp, straight-over blend. Law: [docs/17-live-compositor.md](docs/17-live-compositor.md) · **[docs/22-gpu24-frost-keep.md](docs/22-gpu24-frost-keep.md)**. `21-paw-to-galaxy.md` is a different law.
 
 **FAIL** if Grok invents a new Bolt sprint clip for a biome cook. Only SmiR can authorize a new cycle cook to replace the lock.
@@ -65,6 +67,7 @@ Loop seam = **hard cut** on the closed period — do **NOT** optical-flow morph 
 4e. **[docs/23-plate-geo-qc.md](docs/23-plate-geo-qc.md)** — geometric judge before hang. Paste [docs/COLD_START-geo-qc.md](docs/COLD_START-geo-qc.md). Run `scripts/plate-geo-qc/plate-geo-qc.py`.
 4f. **[docs/24-camera-1point.md](docs/24-camera-1point.md)** — conical 1-point lock-off. Paste [prompts/camera-1point.txt](prompts/camera-1point.txt) into Imagine. [docs/COLD_START-camera.md](docs/COLD_START-camera.md).
 4g. **[docs/25-hazard-cone.md](docs/25-hazard-cone.md)** — hazard 1–2 lanes on the cone. Run `scripts/plate-hazard-qc/plate-hazard-qc.py`. Paste [docs/COLD_START-hazard.md](docs/COLD_START-hazard.md).
+4h. **[docs/26-biome-sprint-plan.md](docs/26-biome-sprint-plan.md)** — 10-plate cinematic plan before d1. Frost [docs/26b-frost-sprint-plan.md](docs/26b-frost-sprint-plan.md). Paste [docs/COLD_START-sprint-plan.md](docs/COLD_START-sprint-plan.md).
 5. **[docs/11-plate-order.md](docs/11-plate-order.md)** — HARD LOCK dealer playlist (canyon → cars → duel → night → war)
 6. **[docs/05-key.md](docs/05-key.md)** — chroma + crown, not luma
 7. **[reference/LanePlayer.tsx](reference/LanePlayer.tsx)** — r38 compositor

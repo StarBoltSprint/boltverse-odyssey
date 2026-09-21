@@ -1,6 +1,6 @@
 # COLD — `m` = momentum (paste when densifying)
 
-Read `biome/docs/22-m-densify-snowball.md`.
+Read `biome/docs/22-m-densify-snowball.md`. Sprint order is the **plan** (`26` / `plans/<biome>-sprint.md`) — do not pick the +1 still in chat.
 
 `m` is **momentum**. Same biome. Empty KEEP fixed.
 

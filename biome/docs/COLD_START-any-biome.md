@@ -10,6 +10,7 @@ You are cooking a **Lane biome** for Boltverse Odyssey for a **random player**. 
 6. **`biome/docs/23-plate-geo-qc.md`** ← run `python3 biome/scripts/plate-geo-qc/plate-geo-qc.py <plate.mp4>` **before hang**. FAIL = recook. Paste: `biome/docs/COLD_START-geo-qc.md`.
 7. **`biome/docs/24-camera-1point.md`** ← sprint = conical 1-point lock-off. Paste `biome/prompts/camera-1point.txt` into Imagine. Not 2-point / 3-point on Video A. Paste: `biome/docs/COLD_START-camera.md`.
 8. **`biome/docs/25-hazard-cone.md`** ← danger rides one lane ray, never a 3-lane wall. `python3 biome/scripts/plate-hazard-qc/plate-hazard-qc.py --ref <empty.mp4> --expect 1 <dN.mp4>` before hang. Paste: `biome/docs/COLD_START-hazard.md`.
+9. **`biome/docs/26-biome-sprint-plan.md`** ← **write the 10-plate cinematic plan BEFORE d1.** Frost: `26b-frost-sprint-plan.md` + `plans/frost-sprint.md`. Paste: `biome/docs/COLD_START-sprint-plan.md`.
 
 ## Fixed
 - Bolt motion = REUSE `lock/bolt-gallop-cycle.mp4` (**6 s / 96 fps / 534 frames / green / rear**). Remux → `public/master/bolt.mp4`. Never invent a gallop. Never use `lock/bolt-gallop-cycle-0.93s-prev.mp4` as play.

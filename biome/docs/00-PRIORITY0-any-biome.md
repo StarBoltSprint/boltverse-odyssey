@@ -33,6 +33,7 @@ Player may be random. Grok must not ask them to install Pack, invent a dog sprin
 | Camera | Sprint = **conical 1-point lock-off**. Paste `camera-1point.txt`. Not 2-pt / 3-pt on Video A | [24](24-camera-1point.md) |
 | Hazard | 1–2 lanes on the cone. `plate-hazard-qc.py --expect 1` PASS. Never a 3-lane wall | [25](25-hazard-cone.md) |
 | Momentum `m` | Success → next plate **+1 `@` ref** (keep stack, richer). Miss → −1. d1+ **≥1 spectacular hazard** | [22-m](22-m-densify-snowball.md) |
+| Sprint plan | **10 plates written before d1.** Spine + per-plate beat / +1 / hazard. Cook in order | [26](26-biome-sprint-plan.md) |
 | Pack | Auto-embed `BOLTVERSE_PACK_ORIGIN=https://boltverse-pack.vercel.app` + `pack.js` | [07](07-pack-live.md) |
 | Play controls | A/D or side swipe = lanes · W / swipe up = jump | [PLAY.md](../PLAY.md) |
 
