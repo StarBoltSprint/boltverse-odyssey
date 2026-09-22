@@ -1,0 +1,12 @@
+SHATTER — Imagine keyed plate for ONE obstacle type. Swap the noun only ({TYPE}).
+
+Flying mille-morceaux shards of that one {TYPE}. Transparent break, shards leaving the impact, each shard a real fragment of the object.
+
+Flat chroma green #00FF00 behind the shards. No wolf. No road. No UI. No howl rings. No laser.
+
+BAN flat 2D rectangular shattered-glass plate.
+BAN black squares, opaque black mats, full-frame black rects around shards.
+BAN a stretched white diamond standing in for debris.
+BAN a second object type in the same plate (quartz shatter is not prism shatter).
+
+Camera locked. Shards move. The key stays green and clean.

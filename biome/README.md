@@ -67,6 +67,31 @@ This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play
 | [docs/COLD_START-paw-to-galaxy.md](docs/COLD_START-paw-to-galaxy.md) | Kitchen paste — Paw-to-Galaxy climb (read 21 first). |
 | [docs/22-m-densify-snowball.md](docs/22-m-densify-snowball.md) | **m densify snowball** — same-biome base plate + cumulative Imagine `@` refs (≤12). Success keeps prior refs; miss drops one tier. |
 | [docs/COLD_START-m-densify.md](docs/COLD_START-m-densify.md) | Kitchen paste — m densify snowball (read 22-m-densify first). |
+| [docs/23-plate-geo-qc.md](docs/23-plate-geo-qc.md) | **Plate geometric QC** — 1-point, lock-off, sag. PASS before hang. |
+| [docs/COLD_START-geo-qc.md](docs/COLD_START-geo-qc.md) | Kitchen paste — law 23. |
+| [docs/24-camera-1point.md](docs/24-camera-1point.md) | **Sprint camera** — conical 1-point lock-off. |
+| [docs/COLD_START-camera.md](docs/COLD_START-camera.md) | Kitchen paste — law 24. |
+| [docs/25-hazard-cone.md](docs/25-hazard-cone.md) | **Hazard on the cone** — rail A dodge events, 1–2 lanes, not destroyable. |
+| [docs/COLD_START-hazard.md](docs/COLD_START-hazard.md) | Kitchen paste — law 25. |
+| [docs/26-biome-sprint-plan.md](docs/26-biome-sprint-plan.md) | **10-plate sprint plan** before d1. Includes GPU Howl target column (law 32). |
+| [docs/26b-frost-sprint-plan.md](docs/26b-frost-sprint-plan.md) | Frost worked example. GPU Howl cells stay —. |
+| [docs/COLD_START-sprint-plan.md](docs/COLD_START-sprint-plan.md) | Kitchen paste — law 26. |
+| [docs/plans/frost-sprint.md](docs/plans/frost-sprint.md) | Frost plan a cold Grok executes. |
+| [docs/plans/prismwake-sprint.md](docs/plans/prismwake-sprint.md) | Prismwake plan. GPU Howl targets named (quartz / prism / storm). |
+| [docs/COLD_START-prismwake.md](docs/COLD_START-prismwake.md) | Kitchen paste — Prismwake. |
+| [docs/27-native-road-slide.md](docs/27-native-road-slide.md) | Optional native road-slide catalog. Not the default cook. |
+| [docs/28-stills-two-rails.md](docs/28-stills-two-rails.md) | **Stills two rails** — décor snowballs, events swap. |
+| [docs/COLD_START-stills-two-rails.md](docs/COLD_START-stills-two-rails.md) | Kitchen paste — laws 28–31. |
+| [docs/29-imagine-compiler.md](docs/29-imagine-compiler.md) | Imagine bakes the world. It does not play it. Seam = law 33. |
+| [docs/30-i2i-prompt.md](docs/30-i2i-prompt.md) | i2i prompt — numbered refs, one delta. |
+| [docs/31-light-lock.md](docs/31-light-lock.md) | **Light lock** — persistent vs event. Seam WB / road luma = law 33. |
+| [docs/32-howl-gpu-targets.md](docs/32-howl-gpu-targets.md) | **Howl GPU targets** — rail A dodge vs rail B keyed destroyables. Shatter per type. Howl = Imagine VIDEO. |
+| [docs/COLD_START-howl-gpu.md](docs/COLD_START-howl-gpu.md) | Kitchen paste — law 32. |
+| [docs/33-plate-mae-qc.md](docs/33-plate-mae-qc.md) | **Plate seam MAE** — last frame N vs first N+1. Exit non-zero = FAIL. |
+| [docs/COLD_START-plate-mae.md](docs/COLD_START-plate-mae.md) | Kitchen paste — law 33. |
+| [scripts/plate-geo-qc/](scripts/plate-geo-qc/) | Law 23 judge — `plate-geo-qc.py`. |
+| [scripts/plate-hazard-qc/](scripts/plate-hazard-qc/) | Law 25 judge — `plate-hazard-qc.py`. |
+| [scripts/plate-mae-qc/](scripts/plate-mae-qc/) | Law 33 judge — `plate-mae-qc.py`. |
 | [scripts/curvature-sample/](scripts/curvature-sample/) | Cook-time adaptive resample — `node demo.js`; `resamplePath` → write `path.json`. Not play LanePlayer. |
 | [scripts/chroma-despill/](scripts/chroma-despill/) | Cook-time vector despill — `node demo.js`; `vectorDespill` after key, before grade. Not play LanePlayer. |
 | [scripts/bolt-scale/](scripts/bolt-scale/) | Cook-time Bolt auto-scale — `node demo.js`; `computeScale` / `assertScale` from lane width. |
@@ -116,6 +141,24 @@ Kitchen — do not read aloud. biome / Sprint cook / lane / B-stack / green-scre
 #    biome/docs/COLD_START-paw-to-galaxy.md ← kitchen paste for law 21
 #    biome/docs/22-m-densify-snowball.md ← same-biome m densify snowball refs (≤12)
 #    biome/docs/COLD_START-m-densify.md ← kitchen paste for m densify
+#    biome/docs/23-plate-geo-qc.md ← geometric judge before hang
+#    biome/docs/COLD_START-geo-qc.md
+#    biome/docs/24-camera-1point.md ← conical 1-point lock-off
+#    biome/docs/COLD_START-camera.md
+#    biome/docs/25-hazard-cone.md ← rail A dodge (not destroyable)
+#    biome/docs/COLD_START-hazard.md
+#    biome/docs/26-biome-sprint-plan.md ← 10-plate plan + GPU Howl column
+#    biome/docs/COLD_START-sprint-plan.md
+#    biome/docs/27-native-road-slide.md ← optional catalog, not the default
+#    biome/docs/28-stills-two-rails.md ← décor snowballs, events swap
+#    biome/docs/COLD_START-stills-two-rails.md
+#    biome/docs/29-imagine-compiler.md
+#    biome/docs/30-i2i-prompt.md
+#    biome/docs/31-light-lock.md
+#    biome/docs/32-howl-gpu-targets.md ← rail B keyed Howl targets + Imagine VIDEO Howl
+#    biome/docs/COLD_START-howl-gpu.md
+#    biome/docs/33-plate-mae-qc.md ← last N vs first N+1, exit non-zero = FAIL
+#    biome/docs/COLD_START-plate-mae.md
 # then biome/GROK.md
 
 # stills + films = imagine-hooks first+last (never Imagine Agent video)

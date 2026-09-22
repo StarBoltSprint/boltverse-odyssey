@@ -23,7 +23,7 @@ Prismwake example: [`plans/prismwake-sprint.md`](plans/prismwake-sprint.md) · [
 1. Write `biome/docs/plans/<biome>-sprint.md` (copy the Frost table). **10 plates.** Spine = 4–6 sentences.
 2. Cook **P0** empty KEEP to law 20/23. Hang. Never overwrite later.
 3. Cook **P1…P9** in table order. Each: snowball `@` all prior **décor** stills + the +1 in the row + **this** event still (events do not stack) + [`hazard-1lane.txt`](../prompts/hazard-1lane.txt) for that beat. Camera = [`camera-1point.txt`](../prompts/camera-1point.txt) always.
-4. Law 23 PASS then law 25 `--expect` from the row. Hang ADD `road-<biome>-dN.mp4`.
+4. Law 23 PASS then law 25 `--expect` from the row. Law 33 seam vs the previous plate (P1+). Hang ADD `road-<biome>-dN.mp4`. GPU Howl targets in the row are **separate** keyed plates (law 32), not baked into that road.
 5. Play: success → next row (richer). Miss → same beat with **one fewer** still (22-m), not a different movie. Peak **holds**.
 
 Do **not** start P2 until the plan file exists. Do **not** skip rows. Do **not** invent a new biome mid-sprint.
@@ -34,8 +34,8 @@ Do **not** start P2 until the plan file exists. Do **not** skip rows. Do **not**
 
 ## Per-plate row (required columns)
 
-| # | file | m | +1 still (décor) | hazard (event, lanes, expect) | beat (one cinematic sentence) |
-|---|---|---|---|---|---|
+| # | file | m | +1 still (décor) | hazard (rail A, lanes, expect) | GPU Howl target (rail B) | beat (one cinematic sentence) |
+|---|---|---|---|---|---|---|
 
 Rules for every row after P0:
 - Camera = conical 1-point lock-off. No 2-pt / 3-pt / reverse.
@@ -43,6 +43,9 @@ Rules for every row after P0:
 - 1 or 2 lanes (`--expect 1` or `2`). Never 3.
 - +1 still is **this biome**, off the lanes, harmony with KEEP.
 - Hazard can change; older décor **stays** (snowball). Event stills **swap**.
+- **GPU Howl target** ([32](32-howl-gpu-targets.md)): a keyed obstacle name + shatter plate, or **—**. Rail A in the hazard column is dodge-only, not destroyable. The same noun is never in both columns. If the row already blocks 2 lanes, the GPU cell is **—**.
+
+Frost’s worked tables keep every GPU cell **—** (dodge rail only). Do not retcon a meteor into a Howl target. Prismwake is the plan that names targets: [`plans/prismwake-sprint.md`](plans/prismwake-sprint.md).
 
 ---
 
@@ -53,5 +56,7 @@ Rules for every row after P0:
 - Cook out of order
 - Change camera grammar mid-sprint
 - Empty KEEP overwritten to “fit” a later beat
+- GPU Howl column missing, or the same noun in both the hazard cell and the GPU cell
+- A rail A meteor marked destroyable
 
-Related: [22-m](22-m-densify-snowball.md) · [23](23-plate-geo-qc.md) · [24](24-camera-1point.md) · [25](25-hazard-cone.md) · [00](00-PRIORITY0-any-biome.md) · [28](28-stills-two-rails.md) · [29](29-imagine-compiler.md)
+Related: [22-m](22-m-densify-snowball.md) · [23](23-plate-geo-qc.md) · [24](24-camera-1point.md) · [25](25-hazard-cone.md) · [32](32-howl-gpu-targets.md) · [33](33-plate-mae-qc.md) · [00](00-PRIORITY0-any-biome.md) · [28](28-stills-two-rails.md) · [29](29-imagine-compiler.md)

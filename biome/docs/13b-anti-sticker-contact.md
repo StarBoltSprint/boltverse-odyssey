@@ -222,3 +222,4 @@ Reuse `inverseRibbon` from glow hit-tests.
 
 Sealed 2026-09-20 — anti-sticker + contact shadow + Live plate bounce (law 17).
 GPU_VER 24 — neon-safe bounce + dual-paw contact + ice Fresnel + plate IBL ([22](22-gpu24-frost-keep.md)).
+Keyed Howl obstacles and shatter plates use this same stack (quad, bounce, contact). The Howl ring plate does not ([32](32-howl-gpu-targets.md)).

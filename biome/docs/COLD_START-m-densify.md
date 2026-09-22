@@ -18,6 +18,7 @@ Frost: hang ADD `road-frost-dN.mp4`. Never overwrite `road-frost.mp4`. GPU KEEP 
 ```
 python3 biome/scripts/plate-geo-qc/plate-geo-qc.py <dN.mp4>
 python3 biome/scripts/plate-hazard-qc/plate-hazard-qc.py --ref road-frost.mp4 --expect 1 <dN.mp4>
+python3 biome/scripts/plate-mae-qc/plate-mae-qc.py <previous.mp4> <dN.mp4>
 ```
 
-Both PASS. FAIL = recook this plate. Paste `biome/prompts/camera-1point.txt` + `biome/prompts/hazard-1lane.txt` on the I2V.
+All three exit 0. FAIL = recook this plate. Paste `biome/prompts/camera-1point.txt` + `biome/prompts/hazard-1lane.txt` on the I2V. Seam law = [33](33-plate-mae-qc.md). Howl targets, if the plan names one, stay off this road ([32](32-howl-gpu-targets.md)).

@@ -22,7 +22,7 @@ stills (m stack)  →  clip 10s (first + mid + last + @refs)  →  GPU (road + k
 - Prompt “world ADVANCED / cinematic / magnificent” on the last frame → crystal pile.
 - Cook Pn from P0 empty if décor stills `1…n-1` exist.
 - Hang without QC on frames 0 / 25 / 50 / 99 %: VP stable, road luma, free corridor, zero dog ([23](23-plate-geo-qc.md)).
-- Seam fail: `last(n)` must match `first(n+1)` as **still identity** (same WB, same cone, décor closer), not “it looks similar”.
+- Seam fail: `last(n)` must match `first(n+1)` as **still identity** (same WB, same cone, décor closer), not “it looks similar”. Measure it: law [33](33-plate-mae-qc.md) `plate-mae-qc.py` before hang. Exit non-zero = do not hang.
 
 ## Native-slide ([27](27-native-road-slide.md))
 
@@ -30,4 +30,4 @@ OPTIONAL catalog. GPU is better for a 10-plate `m` sprint (N+1, jump, dodge, one
 
 ## Related
 
-[00](00-PRIORITY0-any-biome.md) · [10](10-bolt-cutout-law.md) · [22-m](22-m-densify-snowball.md) · [28](28-stills-two-rails.md) · [30](30-i2i-prompt.md)
+[00](00-PRIORITY0-any-biome.md) · [10](10-bolt-cutout-law.md) · [22-m](22-m-densify-snowball.md) · [28](28-stills-two-rails.md) · [30](30-i2i-prompt.md) · [32](32-howl-gpu-targets.md) · [33](33-plate-mae-qc.md)

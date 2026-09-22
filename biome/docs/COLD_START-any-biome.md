@@ -10,7 +10,9 @@ You are cooking a **Lane biome** for Boltverse Odyssey for a **random player**. 
 6. **`biome/docs/23-plate-geo-qc.md`** ← run `python3 biome/scripts/plate-geo-qc/plate-geo-qc.py <plate.mp4>` **before hang**. FAIL = recook. Paste: `biome/docs/COLD_START-geo-qc.md`.
 7. **`biome/docs/24-camera-1point.md`** ← sprint = conical 1-point lock-off. Paste `biome/prompts/camera-1point.txt` into Imagine. Not 2-point / 3-point on Video A. Paste: `biome/docs/COLD_START-camera.md`.
 8. **`biome/docs/25-hazard-cone.md`** ← danger rides one lane ray, never a 3-lane wall. `python3 biome/scripts/plate-hazard-qc/plate-hazard-qc.py --ref <empty.mp4> --expect 1 <dN.mp4>` before hang. Paste: `biome/docs/COLD_START-hazard.md`.
-9. **`biome/docs/26-biome-sprint-plan.md`** ← **write the 10-plate cinematic plan BEFORE d1.** Frost: `26b-frost-sprint-plan.md` + `plans/frost-sprint.md`. Paste: `biome/docs/COLD_START-sprint-plan.md`.
+9. **`biome/docs/26-biome-sprint-plan.md`** ← **write the 10-plate cinematic plan BEFORE d1.** Frost: `26b-frost-sprint-plan.md` + `plans/frost-sprint.md`. Paste: `biome/docs/COLD_START-sprint-plan.md`. GPU Howl column = law 32 (Prismwake names targets; Frost cells stay —).
+10. **`biome/docs/32-howl-gpu-targets.md`** ← rail A dodge (law 25) vs rail B keyed Howl targets. Shatter per type. Howl = Imagine VIDEO, vertical rings, locked cam, black key, no baked shatter. Paste: `biome/docs/COLD_START-howl-gpu.md`.
+11. **`biome/docs/33-plate-mae-qc.md`** ← `python3 biome/scripts/plate-mae-qc/plate-mae-qc.py <N.mp4> <N+1.mp4>` before hang. Exit non-zero = FAIL. Paste: `biome/docs/COLD_START-plate-mae.md`.
 
 ## Fixed
 - Bolt motion = REUSE `lock/bolt-gallop-cycle.mp4` (**6 s / 96 fps / 534 frames / green / rear**). Remux → `public/master/bolt.mp4`. Never invent a gallop. Never use `lock/bolt-gallop-cycle-0.93s-prev.mp4` as play.
@@ -32,9 +34,9 @@ You are cooking a **Lane biome** for Boltverse Odyssey for a **random player**. 
 - New files `road-<biome>*.mp4` — do not wipe canyon→war.
 
 ## Order
-Teacher gate → **empty still from law 20 defaults** → empty A 48fps → **law 23 geo qc PASS** → REUSE cycle → key/despill (luma protect) → scale → GPU wire (law 17) → clock → grade+bounce+shadow+FX row → hazards → hang+Pack → smoke.
+Teacher gate → **empty still from law 20 defaults** → empty A 48fps → **law 23 geo qc PASS** → REUSE cycle → key/despill (luma protect) → scale → GPU wire (law 17) → clock → grade+bounce+shadow+FX row → hazards (law 25, dodge) → Howl targets only if the plan names them (law 32) → **law 33 seam PASS** vs previous plate → hang+Pack → smoke.
 
 ## Smoke
 Sprint looks like Frost-parity on **this** plate: fluid gallop, **sharp interior**, hind paws intact, no vertical bars, **no neon through the coat**, plate light (not studio), paw shadow (no skateboard), biome-correct ground FX, old biomes still hung.
 
-**FAIL** if: invent sprint · CPU key every rAF · copy scissor/IGN sketch · wipe masters · skip bounce · skip FX row · bake Bolt into road mp4 · SPH · ice-hole / Beat-narrow road as silent default · grow Bolt to fake withersMin on a wide road · raw plate mix into coat · 5-tap body smear · dark frost prints · hang a plate the geo qc FAILed.
+**FAIL** if: invent sprint · CPU key every rAF · copy scissor/IGN sketch · wipe masters · skip bounce · skip FX row · bake Bolt into road mp4 · SPH · ice-hole / Beat-narrow road as silent default · grow Bolt to fake withersMin on a wide road · raw plate mix into coat · 5-tap body smear · dark frost prints · hang a plate the geo qc FAILed · shader a Howl · bake shatter into the Howl · hang a seam the MAE qc FAILed.

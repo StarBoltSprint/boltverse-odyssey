@@ -12,18 +12,20 @@ Camera every plate: lock-off chase, dashes straight, VP fixed. Spectacle = the *
 
 ## Table
 
-| # | file | m | +1 still | hazard | expect | beat |
-|---|---|---|---|---|---|---|
-| **P0** | `road-frost.mp4` | 0 | — | none (teacher) | 0 | Empty nationale. Aurora. The cone. |
-| **P1** | `road-frost-d1.mp4` | 1 | ice lanterns + crystal flora on the **sides** | cyan star **speck** at the VP, center ray | 1 | Lanterns wake. A star appears far ahead. |
-| **P2** | `road-frost-d2.mp4` | 2 | (keep lanterns) | ice **meteor** grows in **center** lane only; L/R open | 1 | The star becomes a meteor. Dodge the middle. |
-| **P3** | `road-frost-d3.mp4` | 3 | aurora ribbons denser / more alive | meteor remnant or second streak, still 1-lane | 1 | Sky answers the impact. Same road. |
-| **P4** | `road-frost-d4.mp4` | 4 | — | **right mountain calves** — icefall into **right** lane only | 1 | The cliff sheds. Run left or center. |
-| **P5** | `road-frost-d5.mp4` | 5 | wind / ice motes (weather) | icefall stays 1-lane | 1 | The air fills. The mountain still throws. |
-| **P6** | `road-frost-d6.mp4` | 6 | rune-crystals in the **left** wall | icefall or a small center comet | 1 | The glacier writes on the stone. |
-| **P7** | `road-frost-d7.mp4` | 7 | — | **two** events: center meteor **and** right icefall → **left** is the corridor | 2 | Twin threat. One lane free. |
-| **P8** | `road-frost-d8.mp4` | 8 | aurora storm peak (sky only) | same twin or a single fat center comet (`expect 1`) | 1 or 2 | The sky goes feral. Cone does not move. |
-| **P9** | `road-frost-d9.mp4` | 9 | distant ice shrine on a cliff | last **comet**, center; mountains tremble on the **sides** (décor, not a wall) | 1 | Last dash. Then Lena. |
+| # | file | m | +1 still | hazard (rail A) | expect | GPU Howl target | beat |
+|---|---|---|---|---|---|---|---|
+| **P0** | `road-frost.mp4` | 0 | — | none (teacher) | 0 | — | Empty nationale. Aurora. The cone. |
+| **P1** | `road-frost-d1.mp4` | 1 | ice lanterns + crystal flora on the **sides** | cyan star **speck** at the VP, center ray | 1 | — | Lanterns wake. A star appears far ahead. |
+| **P2** | `road-frost-d2.mp4` | 2 | (keep lanterns) | ice **meteor** grows in **center** lane only; L/R open | 1 | — | The star becomes a meteor. Dodge the middle. |
+| **P3** | `road-frost-d3.mp4` | 3 | aurora ribbons denser / more alive | meteor remnant or second streak, still 1-lane | 1 | — | Sky answers the impact. Same road. |
+| **P4** | `road-frost-d4.mp4` | 4 | — | **right mountain calves** — icefall into **right** lane only | 1 | — | The cliff sheds. Run left or center. |
+| **P5** | `road-frost-d5.mp4` | 5 | wind / ice motes (weather) | icefall stays 1-lane | 1 | — | The air fills. The mountain still throws. |
+| **P6** | `road-frost-d6.mp4` | 6 | rune-crystals in the **left** wall | icefall or a small center comet | 1 | — | The glacier writes on the stone. |
+| **P7** | `road-frost-d7.mp4` | 7 | — | **two** events: center meteor **and** right icefall → **left** is the corridor | 2 | — | Twin threat. One lane free. |
+| **P8** | `road-frost-d8.mp4` | 8 | aurora storm peak (sky only) | same twin or a single fat center comet (`expect 1`) | 1 or 2 | — | The sky goes feral. Cone does not move. |
+| **P9** | `road-frost-d9.mp4` | 9 | distant ice shrine on a cliff | last **comet**, center; mountains tremble on the **sides** (décor, not a wall) | 1 | — | Last dash. Then Lena. |
+
+GPU Howl target (law 32) is **—** on every Frost row. Meteors stay rail A (dodge, not destroyable). Do not retcon them.
 
 P1 hung today is flora/lanterns **without** the speck — recook to match this row when touching d1. P2 hung meteor is **FAIL** law 25 (3-lane wall) — recook to this P2 (1-lane meteor, lanterns kept).
 

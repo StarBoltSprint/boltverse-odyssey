@@ -151,4 +151,4 @@ Never `*24` / 1-of-N on the dog. Never 0.93 s / 89-frame archive as play.
 | Jump | dog still readable | vanishes into fog |
 | Alpha | straight over, premul **only** in the 3-tap filter | double unpremul blown edges |
 
-Related: [22](22-gpu24-frost-keep.md) · [15](15-gpu-compositor.md) · [16](16-biome-ground-fx.md) · [13b](13b-anti-sticker-contact.md) · [20](20-default-plate-proportions.md) · [00](00-PRIORITY0-any-biome.md) · [WIRE](../scripts/bolt-key-gl/WIRE.md)
+Related: [22](22-gpu24-frost-keep.md) · [15](15-gpu-compositor.md) · [16](16-biome-ground-fx.md) · [13b](13b-anti-sticker-contact.md) · [32](32-howl-gpu-targets.md) (keyed obstacles / shatter — same anti-sticker quad; Howl plate is Imagine VIDEO, not a filament shader) · [20](20-default-plate-proportions.md) · [00](00-PRIORITY0-any-biome.md) · [WIRE](../scripts/bolt-key-gl/WIRE.md)
