@@ -86,7 +86,7 @@ Two films share a word. They are not the same cook.
 | Picture | Dog standing, chest and belly rise, paws planted, tail sway | **No dog.** Vertical yellow/blue rings, white core, progressive left → right |
 | Camera | Locked. Same still twice | Locked tripod. Only the rings move |
 | Key | The hall plate | Pure `#000000`. No shatter in this file |
-| Cook | `imagineClip` breath: `image` + `last_frame` = the **same** still ([FILMS.md](../../FILMS.md) `breath-spawn` / `breath-A` / `breath-B`) | Imagine VIDEO from [`prompts/howl-attack.txt`](../prompts/howl-attack.txt). Law [32](32-howl-gpu-targets.md) |
+| Cook | `imagineClip` breath: `image` + `last_frame` = the **same** still ([FILMS.md](../../FILMS.md) `breath-spawn` / `breath-A` / `breath-B`) | **REUSE** [`fx/howl/howl-attack.mp4`](../fx/howl/howl-attack.mp4) (SmiR KEEP). Law [32](32-howl-gpu-targets.md) |
 
 Hall breath is not an attack and not a ring stack. Sprint Howl is not a breath and not a pose on the green cycle. Do not cook the attack by making Bolt howl inside `lock/bolt-gallop-cycle.mp4`. Do not cook the breath as a black-key VFX plate.
 
