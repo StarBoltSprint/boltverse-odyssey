@@ -1,5 +1,7 @@
 # GROK — biome / Sprint cook (kitchen)
 
+**START HERE:** [`scripts/biome-cook/README.md`](scripts/biome-cook/README.md) · paste [`docs/COLD_START-biome-cook.md`](docs/COLD_START-biome-cook.md).
+
 Repo: `https://github.com/StarBoltSprint/boltverse-odyssey`  
 **This folder** = Biome / Sprint lane recipe. Citadel halls = repo root.
 

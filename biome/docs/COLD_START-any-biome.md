@@ -1,3 +1,5 @@
+Prefer [`COLD_START-biome-cook.md`](COLD_START-biome-cook.md) (`biome/scripts/biome-cook/README.md`) for the full ordered kit. This paste stays the any-biome parity brief.
+
 # COLD START — cook any biome (paste as first Build message)
 
 You are cooking a **Lane biome** for Boltverse Odyssey for a **random player**. Read GitHub `main` first:
