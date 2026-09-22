@@ -6,6 +6,8 @@
 
 This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play = native Grok Build game console (in-app). Kitchen Live stays https://boltverse-odysseyyyy.grok.me (`VER = r38`). Never open old three-y `boltverse-odysseyyy.grok.me` as Beat 3 Sprint (superseded — do not open it for boot).
 
+**Play / Live KEEP:** https://boltboltverse-odyssey.grok.me
+
 **HARD BAN — no improvised boot prose.** *play / lance* player text = locked Welcome/Return only ([../START.md](../START.md) / [../GROK.md](../GROK.md)). Ban: control tutorials · « world is rolling » · « plant a lane » · film-keeps-moving essays. This folder is kitchen.
 
 **HARD LOCK — Hang ≠ wipe.** New biome = ADD `road-<biome>*.mp4` + plates-index / dealer entries. KEEP canyon→cars→duel→night→war. NEVER `rm` hung masters. Law: [docs/09-recette-biome.md](docs/09-recette-biome.md).
