@@ -1,5 +1,7 @@
 # PRIORITY 0 — Any biome = Frost-parity (random player, cold Grok)
 
+**START HERE** → [`../scripts/biome-cook/README.md`](../scripts/biome-cook/README.md) in order (steps 1→17). Paste [`COLD_START-biome-cook.md`](COLD_START-biome-cook.md). This file stays the parity law.
+
 **Audience:** a brand-new Grok in a brand-new conversation, cooking **any** named biome (Frost, Tide, Ember, invented `{PAINT}`). Not Frost-only.
 
 **Target parity:** same *feel* as the sealed Frost Live finale —
@@ -90,6 +92,8 @@ Bolt identity, gallop file, GPU path, scale, clock, Pack = **identical**.
 ---
 
 ## D. Cold-start message (kitchen — paste into Build when cooking)
+
+**START HERE:** [`../scripts/biome-cook/README.md`](../scripts/biome-cook/README.md) · paste [`COLD_START-biome-cook.md`](COLD_START-biome-cook.md). Follow that order. The pastes below stay the parity briefs.
 
 Use [COLD_START-any-biome.md](COLD_START-any-biome.md) (starts empty stills from [law 20](20-default-plate-proportions.md)). Frost GPU KEEP paste: [COLD_START-gpu24.md](COLD_START-gpu24.md). Frost picture KEEP: [COLD_START-frost-aurora.md](COLD_START-frost-aurora.md). Do **not** use the old Frost share paste that said “don’t use `lock/bolt-gallop-cycle.mp4`” — on `main` that file **is** the 6 s canon.
 
