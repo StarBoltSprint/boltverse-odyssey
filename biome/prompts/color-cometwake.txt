@@ -1,0 +1,21 @@
+COLOR — Cometwake (cook stills/clips AND live grade). Not Frost. Not Prismwake cyan.
+
+BLACK POINT: asphalt in the lower third stays the darkest mass. Mean luma ~0.04–0.12. If last-frame asphalt is hotter than first, FAIL.
+
+HIGHLIGHT CEILING: no road-band pixel near white. Sky highlights ≤ ~0.85. Comet / star = a SMALL specular, not a fill-light. NEVER a supernova. NEVER a white meteor wall.
+
+WHITE BALANCE: lock to the KEEP still. Indigo-black night with ember practicals. Do not drift frost lime-cyan. Do not recast as prism magenta. First and last = SAME WB. Last may be closer, never hotter, never more bloom.
+
+HUE LOCK (say these, mix no other family):
+- asphalt: cool near-black, tiny blue, wet spec
+- dashes: ember-orange PAINT (high chroma, thin) — not lime ice, not cyan-prism
+- sky: indigo → black with white-gold meteor trails
+- lantern flame: small ember
+- comet / star: white-gold fireglass
+- mesas: dark basalt, warm rim
+
+CONTRAST: cinematic night. Saturated sky OK. Road stays dark. Sky can glow; it must not bleach the cone.
+
+BOLT (live, law 16): white GSD forever. Décor-matching skin ON TOP of white OK. Warm ember rim sampled from this plate's sky. Dark ash print. Ember flecks. Never a new coat. Never frost ice sheen. Never prism cyan.
+
+LIVE ember row: warm rim, sat ~0.54 start (law 22), print dark ash, drop ember flecks. Do not pile a second grade on Imagine.
