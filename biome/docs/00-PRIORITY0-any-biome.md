@@ -99,6 +99,8 @@ Use [COLD_START-any-biome.md](COLD_START-any-biome.md) (starts empty stills from
 
 Player boot (“start odyssey”) stays [START.md](../../START.md) — Welcome + teaser + play URL. This doc is **cook**, not Welcome.
 
+**Play / Live KEEP:** https://boltboltverse-odyssey.grok.me
+
 ---
 
 ## E. Journey after seal
