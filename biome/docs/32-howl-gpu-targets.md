@@ -1,8 +1,6 @@
 # 32 — Howl GPU targets (two rails)
 
-**Sealed 2026-09-22 (SmiR).** Hang ≠ wipe. Recipe, not Live wiring. Howl pixels are the hung KEEP. This file does not shader them.
-
-Dodge events and Howl targets are **different plates**. Law [25](25-hazard-cone.md) does not become destroyable because a Howl exists.
+**Sealed 2026-09-22 (SmiR).** Hang ≠ wipe. Recipe, not Live wiring. Howl pixels are the hung KEEP. This file does not shader them. **Live aim / cut / shatter-swap / wet GPU = [34](34-howl-live-aim.md).**
 
 Paste: [`COLD_START-howl-gpu.md`](COLD_START-howl-gpu.md)  
 **Howl KEEP:** [`../fx/howl/howl-attack.mp4`](../fx/howl/howl-attack.mp4) — SmiR sealed 2026-09-22. REUSE. Do not recook.  
@@ -35,7 +33,7 @@ If the plate already blocks **2** lanes (`--expect 2`), the GPU target is **—*
 
 ## Rail B — keyed obstacle (like Bolt)
 
-Cook one Imagine plate per **type** (quartz, prism, storm, …). Flat `#00FF00`. One object. No road, no dog, no rings, no shatter in that file.
+Cook one Imagine plate per **type** (quartz, prism, storm, iron-stone, ice shard, ember geode, …). Flat `#00FF00`. One object. No road, no dog, no rings, no shatter in that file. The noun is biome-variable. Dogs / wolves / animals = **FAIL**.
 
 GPU places it. The compositor owns position and scale along the cone (same ray math as law 25):
 
@@ -68,8 +66,9 @@ Shatter is **not** inside the Howl video and **not** inside the obstacle video.
 | prism | `obstacle-prism.mp4` | `shatter-prism.mp4` |
 | storm | `obstacle-storm.mp4` | `shatter-storm.mp4` |
 | rune | `obstacle-rune.mp4` | `shatter-rune.mp4` |
+| iron-stone (Eclipta) | `obstacle-rock.mp4` | `shatter-rock.mp4` |
 
-On Howl arrival the GPU **swaps** the obstacle quad for that type’s shatter plate, then both leave. A quartz hit never plays a prism shatter.
+On Howl **contact** (law 34: `howlT >= 1`) the GPU **swaps** the obstacle quad for that type’s shatter plate, then both leave. A quartz hit never plays a prism shatter. Howl itself is **paused** at that frame even if the KEEP mp4 is not finished.
 
 Key = flat `#00FF00`. Flying fragments of that one object.
 
@@ -81,7 +80,7 @@ Key = flat `#00FF00`. Flying fragments of that one object.
 
 **Hung:** [`../fx/howl/howl-attack.mp4`](../fx/howl/howl-attack.mp4). One plate for every biome. Not a shader.
 
-Cold Groks **REUSE** that file. Do not cook a second Howl. Width and speed may tune in Live. The GPU may scale and aim the quad. It may not redraw the rings.
+Cold Groks **REUSE** that file. Do not cook a second Howl. Width and speed may tune in Live (law 34). The GPU may scale and aim the quad. It may not redraw the rings.
 
 The sealed look (do not rewrite; [`howl-attack.txt`](../prompts/howl-attack.txt) is the text of this plate):
 
@@ -92,7 +91,7 @@ The sealed look (do not rewrite; [`howl-attack.txt`](../prompts/howl-attack.txt)
 - Pure `#000000` key. No wolf body. No road. No UI.
 - **No** crystals, shards, explode, debris, impact burst. Shatter stays on its own plates.
 
-GPU plays the hung plate as an FX quad from Bolt toward the current rail B target. It may scale and aim the quad. It may **not** redraw the rings. Width and speed may tune in Live.
+GPU plays the hung plate as an FX trapezoid from Bolt toward the current rail B target ([34](34-howl-live-aim.md)). It may scale and aim the quad. It may **not** redraw the rings. Width and speed may tune in Live. Contact **cuts** the video.
 
 **BAN:** procedural / WebGL / canvas Howl · thin laser · lightning · sine filaments · soft bubble · horizontal pancakes · a Howl painted into the road mp4 · a gallop cycle where Bolt stops and vocalizes (that ban stays on the green dog — [02](02-videos.md)).
 
@@ -104,12 +103,11 @@ Hall breath is not this plate. Breath = citadel, same still twice, chest rise ([
 
 1. Rail A road plates still follow laws 23 → 25 → 33. Howl does not skip them.
 2. **REUSE** [`../fx/howl/howl-attack.mp4`](../fx/howl/howl-attack.mp4) (SmiR KEEP). Do not recook the rings. SmiR reseal only.
-3. Cook each obstacle type from `howl-obstacle.txt` (green key).
+3. Cook each obstacle type from `howl-obstacle.txt` (green key). Swap the noun for the biome.
 4. Cook each shatter type from `howl-shatter.txt` (green key, that noun only).
 5. Composite in the GPU stack above. Do not hang a keyed plate that still shows green, a black mat, or a road.
+6. **Wire Live with [34](34-howl-live-aim.md)** — copy [`../scripts/howl-live/`](../scripts/howl-live/). Aim, `howlFireSec`, cut-on-contact, shatter swap, wet GPU.
 
-Live hitboxes, `uHit`, and player input are **not** this file. Hang the recipe. Wire later.
+**FAIL if:** Howl is a shader · the hung Howl is recooked · shatter is inside the Howl · black rectangles around shards · a meteor is marked destroyable · rail B is baked into the road · the obstacle is a sticker (no bounce, no contact, knife alpha) · one shatter plate serves every type · Howl overshoots the prop or keeps playing after contact (law 34).
 
-**FAIL if:** Howl is a shader · the hung Howl is recooked · shatter is inside the Howl · black rectangles around shards · a meteor is marked destroyable · rail B is baked into the road · the obstacle is a sticker (no bounce, no contact, knife alpha) · one shatter plate serves every type.
-
-Related: [25](25-hazard-cone.md) · [13b](13b-anti-sticker-contact.md) · [15](15-gpu-compositor.md) · [17](17-live-compositor.md) · [02](02-videos.md) · [26](26-biome-sprint-plan.md) · [00](00-PRIORITY0-any-biome.md)
+Related: [34](34-howl-live-aim.md) · [25](25-hazard-cone.md) · [13b](13b-anti-sticker-contact.md) · [15](15-gpu-compositor.md) · [17](17-live-compositor.md) · [02](02-videos.md) · [26](26-biome-sprint-plan.md) · [00](00-PRIORITY0-any-biome.md)

@@ -8,11 +8,15 @@
 
 Imagine post: https://grok.com/imagine/post/fd87eff5-39a5-4cd0-a356-ea2a81262ba5
 
-Law: [`../../docs/32-howl-gpu-targets.md`](../../docs/32-howl-gpu-targets.md)  
-Paste: [`../../docs/COLD_START-howl-gpu.md`](../../docs/COLD_START-howl-gpu.md)  
+Law (plates): [`../../docs/32-howl-gpu-targets.md`](../../docs/32-howl-gpu-targets.md)  
+Law (Live aim / cut / shatter / wet GPU): [`../../docs/34-howl-live-aim.md`](../../docs/34-howl-live-aim.md)  
+Script: [`../../scripts/howl-live/`](../../scripts/howl-live/)  
+Paste: [`../../docs/COLD_START-howl-gpu.md`](../../docs/COLD_START-howl-gpu.md) · [`../../docs/COLD_START-howl-live.md`](../../docs/COLD_START-howl-live.md)  
 Look text: [`../../prompts/howl-attack.txt`](../../prompts/howl-attack.txt)
 
 Cold Groks **REUSE** `howl-attack.mp4`. Do not recook it. SmiR reseal only.
+
+Live maps this plate onto a trapezoid Bolt-mouth → prop (`howlFxBeam`). Tip is inset so rings sit **on** the target. On contact the video **pauses** even if seconds remain, then the obstacle quad swaps to that type’s shatter plate.
 
 ## KEEP law
 
@@ -22,6 +26,6 @@ Cold Groks **REUSE** `howl-attack.mp4`. Do not recook it. SmiR reseal only.
 - Locked static camera. Only the rings move.
 - Pure black key. No wolf body. No road. No UI.
 - **NO shatter** in this plate. Shatter = separate plates per type ([`howl-shatter.txt`](../../prompts/howl-shatter.txt)).
-- Width and speed may tune in Live. The GPU may scale and aim the quad. It may not redraw the rings.
+- Width and speed may tune in Live (law 34). The GPU may scale and aim the quad. It may not redraw the rings.
 
-**FAIL** if a cold Grok invents a new Howl, shaders the rings, or bakes shatter into this mp4.
+**FAIL** if a cold Grok invents a new Howl, shaders the rings, bakes shatter into this mp4, lets Howl overshoot the prop, or keeps playing after contact.

@@ -14,3 +14,6 @@ Pages here are **optional**. They are **not** cook gates. Default Bolt remains e
 | [29-imagine-compiler.md](29-imagine-compiler.md) | Imagine bakes the world. Player plays. Still = truth. |
 | [30-i2i-prompt.md](30-i2i-prompt.md) | Numbered refs. One delta. IGNORE crop. |
 | [31-light-lock.md](31-light-lock.md) | KEEP exposure bible. Practicals vs event flash. |
+| [32-howl-gpu-targets.md](32-howl-gpu-targets.md) | Rail B keyed Howl targets. Shatter per type. REUSE Howl KEEP. |
+| [33-plate-mae-qc.md](33-plate-mae-qc.md) | last(N) vs first(N+1) before hang. |
+| [34-howl-live-aim.md](34-howl-live-aim.md) | Howl distance / cut-on-contact / shatter swap / wet GPU. Copy `scripts/howl-live/`. |

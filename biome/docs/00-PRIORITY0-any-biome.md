@@ -33,6 +33,7 @@ Player may be random. Grok must not ask them to install Pack, invent a dog sprin
 | Camera | Sprint = **conical 1-point lock-off**. Paste `camera-1point.txt`. Not 2-pt / 3-pt on Video A | [24](24-camera-1point.md) |
 | Hazard | 1–2 lanes on the cone. `plate-hazard-qc.py --expect 1` PASS. Never a 3-lane wall. Rail A is **dodge**, not destroyable | [25](25-hazard-cone.md) |
 | Howl targets | Rail B = Imagine keyed obstacles, GPU-placed like Bolt, Howl-destroyable. Shatter = separate plate per type. Howl = **REUSE** [`fx/howl/howl-attack.mp4`](../fx/howl/howl-attack.mp4) (SmiR KEEP). Vertical rings, birth narrow → wider, locked cam, black key, no baked shatter. Not a shader. Width/speed may tune in Live | [32](32-howl-gpu-targets.md) |
+| Howl live | Bolt→target trapezoid, `howlFireSec`, **cut on contact**, shatter swap, wet GPU (bounce + road mix). Copy `scripts/howl-live/` | [34](34-howl-live-aim.md) |
 | Plate seam | `plate-mae-qc.py` last frame N vs first N+1 **before hang**. Exit non-zero = FAIL | [33](33-plate-mae-qc.md) |
 | Momentum `m` | Success → next plate **+1 `@` ref** (keep stack, richer). Miss → −1. d1+ **≥1 spectacular hazard** | [22-m](22-m-densify-snowball.md) |
 | Sprint plan | **10 plates written before d1.** Spine + per-plate beat / +1 / hazard / GPU Howl target. Cook in order | [26](26-biome-sprint-plan.md) |
@@ -79,11 +80,12 @@ Bolt identity, gallop file, GPU path, scale, clock, Pack = **identical**.
 8. Plate **IBL + bounce (law 22)** + **dual-paw** contact + ice FX row (16 / wet-fx). No 5-tap body blur. No skateboard shadow. No dark frost prints.
 9. Hazards (spawn far, 1–2 lanes, plate-speed match). **Law 25** `plate-hazard-qc.py --expect 1` PASS before hang. Rail A stays dodge-only.
 9b. **Law 32** only when the sprint plan names a GPU Howl target. Keyed obstacle + per-type shatter. Howl attack = **REUSE** [`../fx/howl/howl-attack.mp4`](../fx/howl/howl-attack.mp4) (SmiR KEEP — do not recook). Anti-sticker 13b / 15 / 17. Do not bake them into the road. Do not shader the rings.
+9b2. **Law 34** wire: copy `biome/scripts/howl-live/`. Trapezoid Bolt mouth → prop (inset tip). `playbackRate = clipFront/fireSec`. **Pause Howl on contact** even if the mp4 remains. Swap that type’s shatter. Wet GPU (`howlWet.glsl`). Noun is biome-variable; math is not. BAN dogs / laser / overshoot.
 9c. **Law 33** seam PASS — `plate-mae-qc.py` last(N) vs first(N+1) — before hang of any plate after P0. Exit non-zero = recook.
 10. Hang ≠ wipe + Pack wire + bump `GPU_VER`.
 11. Smoke: dogFps ≈ min(96, display); hind paws intact; **no vertical bars**; **no neon stripe through torso**; **sharp interior** (not body-blur); shadow on road (no skateboard); FX visible on plant; coat matches THIS plate; no truck scale.
 
-**FAIL** if: invent sprint · CPU key every rAF · **copy scissor/IGN sketch** · wipe masters · hang without composite gate · skip bounce / FX row · bake Bolt into road mp4 · SPH / Box2D · ice-hole / Beat-narrow road as silent default · grow Bolt to fake withersMin on a wide road · **raw `mix(c, plate)` neon leak** · **5-tap body smear** · **print RGB < 0.3 on frost** · `cSharp = rgb/a` double unpremul · shader a Howl or bake shatter into it (law 32) · hang a seam that law 33 FAILed.
+**FAIL** if: invent sprint · CPU key every rAF · **copy scissor/IGN sketch** · wipe masters · hang without composite gate · skip bounce / FX row · bake Bolt into road mp4 · SPH / Box2D · ice-hole / Beat-narrow road as silent default · grow Bolt to fake withersMin on a wide road · **raw `mix(c, plate)` neon leak** · **5-tap body smear** · **print RGB < 0.3 on frost** · `cSharp = rgb/a` double unpremul · shader a Howl or bake shatter into it (law 32) · Howl overshoots the prop or keeps playing after contact (law 34) · hang a seam that law 33 FAILed.
 
 ---
 
