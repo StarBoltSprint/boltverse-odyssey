@@ -2,6 +2,8 @@
 
 Plan: [plans/cometwake-sprint.md](plans/cometwake-sprint.md).
 
+**Play / Live KEEP:** https://boltboltverse-odyssey.grok.me
+
 `{PAINT}` = `prompts/paint-cometwake.txt` + `color-cometwake.txt` + `last-frame.txt`.
 
 - GPU chap `ember`. FX row ember/ash ([16](16-biome-ground-fx.md) · [31](31-light-lock.md)).

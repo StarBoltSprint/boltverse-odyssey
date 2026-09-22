@@ -2,6 +2,10 @@
 
 Law 26. Hang ≠ wipe. P0 KEEP never overwritten. Cook in this order.
 
+## Play / Live KEEP
+
+**Play / Live KEEP:** https://boltboltverse-odyssey.grok.me
+
 Spine: Bolt runs the iron nationale while the night sky **tears**. First the curb lanterns remember falling stars. A white-hot comet falls. The sky answers in fire. Basalt cliffs begin to shed. Twin threat. Last star-core. 1-point lock-off every plate. d1+ ≥1 cinematic hazard, 1–2 lanes.
 
 Camera every plate: conical 1-point chase, dashes straight, VP fixed. Spectacle = the **event**, not a new angle.
