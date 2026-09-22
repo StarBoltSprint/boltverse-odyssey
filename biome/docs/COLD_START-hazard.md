@@ -9,3 +9,5 @@ python3 biome/scripts/plate-hazard-qc/plate-hazard-qc.py --ref <empty-KEEP.mp4> 
 `--expect 0` décor · `1` one-lane · `2` two-lane. Exit 0 = hang. Exit 1 = recook the hazard, not empty.
 
 Still KEEP = `IMAGE_0`. Composite the speck far on **one** ray. I2V grows it; L/R stay open. Paste `biome/prompts/camera-1point.txt` + `biome/prompts/hazard-1lane.txt`. NEVER a 3-lane crater / t-shirt / reverse cam.
+
+This plate is **rail A** (dodge). It is not a Howl target. Destroyable keyed obstacles, shatter plates, and the attack Howl are law 32 — `biome/docs/COLD_START-howl-gpu.md`.

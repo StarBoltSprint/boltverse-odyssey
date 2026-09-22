@@ -53,7 +53,7 @@ Cook uses those stills as `@` refs so Imagine **copies** the unlocked richness i
 1. Empty A sealed. Frost = `road-frost.mp4` — **never overwrite**.
 2. Ref pack `d0…dN` (N≤11), same grammar as A, each still = one detail.
 3. `tier = f(m)` → Imagine `@` `[KEEP + décor[0…tier] + this event]` **cumulative décor** + swapped event ([30](30-i2i-prompt.md)).
-4. Law 23 PASS (camera) then law 25 `--expect 1` (or 2) PASS (danger). Hang **ADD** `road-<biome>-dN.mp4`.
+4. Law 23 PASS (camera) then law 25 `--expect 1` (or 2) PASS (danger). Law 33 seam (`last` of previous vs `first` of this) PASS when a previous plate exists. Hang **ADD** `road-<biome>-dN.mp4`. Keyed Howl targets are law [32](32-howl-gpu-targets.md), not extra nouns in this road.
 5. Miss → recook / play previous tier pack.
 
 Frost so far: d1 flora hung (décor). d2 meteor **FAIL** law 25 (3-lane wall) — recook 1-lane cinematic, keep d1 refs. Jersey is **not** the hazard.
@@ -72,4 +72,4 @@ Frost so far: d1 flora hung (décor). d2 meteor **FAIL** law 25 (3-lane wall) �
 - Event stills stacked into décor (crystal wall / geode-in-lane)
 - Clip last / video `t99` used as `@`
 
-Related: [00](00-PRIORITY0-any-biome.md) · [09](09-recette-biome.md) · [23](23-plate-geo-qc.md) · [24](24-camera-1point.md) · [25](25-hazard-cone.md) · [26](26-biome-sprint-plan.md) · [22-gpu24-frost-keep.md](22-gpu24-frost-keep.md) · [28](28-stills-two-rails.md) · [29](29-imagine-compiler.md) · [30](30-i2i-prompt.md) · [31](31-light-lock.md)
+Related: [00](00-PRIORITY0-any-biome.md) · [09](09-recette-biome.md) · [23](23-plate-geo-qc.md) · [24](24-camera-1point.md) · [25](25-hazard-cone.md) · [26](26-biome-sprint-plan.md) · [32](32-howl-gpu-targets.md) · [33](33-plate-mae-qc.md) · [22-gpu24-frost-keep.md](22-gpu24-frost-keep.md) · [28](28-stills-two-rails.md) · [29](29-imagine-compiler.md) · [30](30-i2i-prompt.md) · [31](31-light-lock.md)

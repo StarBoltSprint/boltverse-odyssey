@@ -64,6 +64,8 @@ Code windows (`t0 / t1 / tPass / lanes`) stay in `plates.ts`. The script says wh
 | `road-frost-d1.mp4` flora | 0 | **PASS** + wash WARN (lanterns, not a wall) |
 | `road-frost-d2.mp4` meteor | 1 | **FAIL** wall on 2 samples + 2-lane mid — recook 1-lane |
 
-**FAIL if:** hang a 3-lane crater · I2V builds the meteor **and** a new camera · skip 23 · overwrite empty · t-shirt / jersey as the object · fire on Frost.
+**FAIL if:** hang a 3-lane crater · I2V builds the meteor **and** a new camera · skip 23 · overwrite empty · t-shirt / jersey as the object · fire on Frost · treat this meteor as Howl-destroyable.
 
-Related: [09](09-recette-biome.md) · [23](23-plate-geo-qc.md) · [24](24-camera-1point.md) · [22-m](22-m-densify-snowball.md) · [00](00-PRIORITY0-any-biome.md)
+Rail A stops here. A keyed obstacle the player can Howl apart is law [32](32-howl-gpu-targets.md) (own plate, GPU composite, shatter per type). Howl does not delete these baked pixels.
+
+Related: [09](09-recette-biome.md) · [23](23-plate-geo-qc.md) · [24](24-camera-1point.md) · [22-m](22-m-densify-snowball.md) · [32](32-howl-gpu-targets.md) · [00](00-PRIORITY0-any-biome.md)

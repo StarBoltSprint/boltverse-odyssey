@@ -1,0 +1,9 @@
+HOWL TARGET — Imagine keyed obstacle plate (like Bolt, not a road).
+
+ONE object only. Flat chroma green #00FF00 behind it. No road. No wolf. No UI. No howl rings. No shatter. No black mat. No rectangular card.
+
+The object is a single crystal / prism / quartz form floating in the green, readable silhouette, lit as a solid prop. It holds its shape for the whole clip. It does not explode.
+
+Camera locked. No zoom. No orbit. The object may slowly tumble in place. It does not fly at the lens. It does not fill the frame edge to edge.
+
+This plate is GPU-composited later. Do not paint a lane, a meteor, or a dodge event into it.

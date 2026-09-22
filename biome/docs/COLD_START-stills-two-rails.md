@@ -8,3 +8,4 @@ Read [28](28-stills-two-rails.md) · [29](29-imagine-compiler.md) · [30](30-i2i
 4. Clip: first = world; mid = event; last = i2i closer, same nouns, expo ≤ first.
 5. Cap 12 refs. Miss drops newest décor. Success holds peak — do not wrap to empty.
 6. Bolt = empty plate + GPU cycle. Do not native-slide unless the player asked ([27](27-native-road-slide.md)).
+7. Seam `last(n)` vs `first(n+1)` is law [33](33-plate-mae-qc.md), not a feeling. Howl targets are a third plate family ([32](32-howl-gpu-targets.md)), not an event still baked into the road.

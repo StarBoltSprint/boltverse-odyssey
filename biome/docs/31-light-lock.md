@@ -31,7 +31,7 @@ Use: *Same light as the first image. ADD a small practical / sky only. Do not ra
 
 ## Seam + miss
 
-`last(n)` and `first(n+1)`: same WB, same road luma, décor closer. Miss recooks from a stack still (known expo), never from a flashed mid.
+`last(n)` and `first(n+1)`: same WB, same road luma, décor closer. Judge = law [33](33-plate-mae-qc.md) (full-frame MAE, asphalt luma MAE, `|Δ(R−B)|`). Exit non-zero = recook. Miss recooks from a stack still (known expo), never from a flashed mid.
 
 ## Bolt (live)
 
@@ -41,4 +41,4 @@ Crystal GPU row (identity, until live sample exists): cool 0.86 / 0.90 / 1.16 ·
 
 ## Related
 
-[16](16-biome-ground-fx.md) · [28](28-stills-two-rails.md) · [30](30-i2i-prompt.md) · `biome/prompts/color-prismwake.txt`
+[16](16-biome-ground-fx.md) · [28](28-stills-two-rails.md) · [30](30-i2i-prompt.md) · [33](33-plate-mae-qc.md) · `biome/prompts/color-prismwake.txt`

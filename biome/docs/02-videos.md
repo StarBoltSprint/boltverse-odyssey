@@ -68,11 +68,27 @@ Video B / extract / `imagineBoltClip` is **not** the new-biome path. A fresh Gro
 
 He **rotary-gallops** the whole clip (stretch then gather; hind legs fully back). NEVER stands, trots, pauses, sits, howls. NEVER a second dog. NEVER ¾ / profile / face / yaw / look-back. NEVER a road or set in the **green** plate (I2V invents travelling → he turns).
 
+That **howls** is the green cutout only: the dog in the gallop cycle does not stop and vocalize. It is not a ban on the Sprint attack plate. Split below.
+
 Background stays **flat `#00FF00`**. Key later onto Video A: [05-key.md](05-key.md). Match rates (no skate). L/M/R = code X shift of **one** Bolt layer. No JS reflection. No puddle shadow. Never a 3-Bolt mask. Never one baked final film.
 
 Plant in play: lower third, paws already glued; game plants on the bottom of the blob. [../PLAY.md](../PLAY.md).
 
 Do **not** paste `video-bolt-mid.txt` to cook a new sprint. QC the **reused** sealed cycle — one yaw frame = the lock is bad (SmiR reseal only).
+
+## Howl split (hall breath vs Sprint attack)
+
+Two films share a word. They are not the same cook.
+
+| | Hall breath | Sprint attack Howl |
+|---|---|---|
+| Where | Citadel hall | Lane biome |
+| Picture | Dog standing, chest and belly rise, paws planted, tail sway | **No dog.** Vertical yellow/blue rings, white core, progressive left → right |
+| Camera | Locked. Same still twice | Locked tripod. Only the rings move |
+| Key | The hall plate | Pure `#000000`. No shatter in this file |
+| Cook | `imagineClip` breath: `image` + `last_frame` = the **same** still ([FILMS.md](../../FILMS.md) `breath-spawn` / `breath-A` / `breath-B`) | Imagine VIDEO from [`prompts/howl-attack.txt`](../prompts/howl-attack.txt). Law [32](32-howl-gpu-targets.md) |
+
+Hall breath is not an attack and not a ring stack. Sprint Howl is not a breath and not a pose on the green cycle. Do not cook the attack by making Bolt howl inside `lock/bolt-gallop-cycle.mp4`. Do not cook the breath as a black-key VFX plate.
 
 ## Encode
 
