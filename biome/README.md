@@ -87,6 +87,7 @@ This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play
 | [docs/31-light-lock.md](docs/31-light-lock.md) | **Light lock** — persistent vs event. Seam WB / road luma = law 33. |
 | [docs/32-howl-gpu-targets.md](docs/32-howl-gpu-targets.md) | **Howl GPU targets** — rail A dodge vs rail B keyed destroyables. Shatter per type. Howl = Imagine VIDEO. |
 | [docs/COLD_START-howl-gpu.md](docs/COLD_START-howl-gpu.md) | Kitchen paste — law 32. |
+| [fx/howl/howl-attack.mp4](fx/howl/howl-attack.mp4) | **Howl attack KEEP** (SmiR). Vertical rings, birth narrow → wider, locked cam, black key, no shatter. [fx/howl/README.md](fx/howl/README.md). |
 | [docs/33-plate-mae-qc.md](docs/33-plate-mae-qc.md) | **Plate seam MAE** — last frame N vs first N+1. Exit non-zero = FAIL. |
 | [docs/COLD_START-plate-mae.md](docs/COLD_START-plate-mae.md) | Kitchen paste — law 33. |
 | [scripts/plate-geo-qc/](scripts/plate-geo-qc/) | Law 23 judge — `plate-geo-qc.py`. |
@@ -157,6 +158,7 @@ Kitchen — do not read aloud. biome / Sprint cook / lane / B-stack / green-scre
 #    biome/docs/31-light-lock.md
 #    biome/docs/32-howl-gpu-targets.md ← rail B keyed Howl targets + Imagine VIDEO Howl
 #    biome/docs/COLD_START-howl-gpu.md
+#    biome/fx/howl/howl-attack.mp4 ← SmiR KEEP Howl attack (REUSE; do not recook)
 #    biome/docs/33-plate-mae-qc.md ← last N vs first N+1, exit non-zero = FAIL
 #    biome/docs/COLD_START-plate-mae.md
 # then biome/GROK.md

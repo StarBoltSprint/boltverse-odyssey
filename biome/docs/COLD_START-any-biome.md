@@ -11,7 +11,7 @@ You are cooking a **Lane biome** for Boltverse Odyssey for a **random player**. 
 7. **`biome/docs/24-camera-1point.md`** ← sprint = conical 1-point lock-off. Paste `biome/prompts/camera-1point.txt` into Imagine. Not 2-point / 3-point on Video A. Paste: `biome/docs/COLD_START-camera.md`.
 8. **`biome/docs/25-hazard-cone.md`** ← danger rides one lane ray, never a 3-lane wall. `python3 biome/scripts/plate-hazard-qc/plate-hazard-qc.py --ref <empty.mp4> --expect 1 <dN.mp4>` before hang. Paste: `biome/docs/COLD_START-hazard.md`.
 9. **`biome/docs/26-biome-sprint-plan.md`** ← **write the 10-plate cinematic plan BEFORE d1.** Frost: `26b-frost-sprint-plan.md` + `plans/frost-sprint.md`. Paste: `biome/docs/COLD_START-sprint-plan.md`. GPU Howl column = law 32 (Prismwake names targets; Frost cells stay —).
-10. **`biome/docs/32-howl-gpu-targets.md`** ← rail A dodge (law 25) vs rail B keyed Howl targets. Shatter per type. Howl = Imagine VIDEO, vertical rings, locked cam, black key, no baked shatter. Paste: `biome/docs/COLD_START-howl-gpu.md`.
+10. **`biome/docs/32-howl-gpu-targets.md`** ← rail A dodge (law 25) vs rail B keyed Howl targets. Shatter per type. Howl = **REUSE** `biome/fx/howl/howl-attack.mp4` (SmiR KEEP). Vertical rings, birth narrow → wider, locked cam, black key, no baked shatter. Paste: `biome/docs/COLD_START-howl-gpu.md`.
 11. **`biome/docs/33-plate-mae-qc.md`** ← `python3 biome/scripts/plate-mae-qc/plate-mae-qc.py <N.mp4> <N+1.mp4>` before hang. Exit non-zero = FAIL. Paste: `biome/docs/COLD_START-plate-mae.md`.
 
 ## Fixed
