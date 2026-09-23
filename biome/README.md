@@ -167,8 +167,8 @@ Kitchen — do not read aloud. biome / Sprint cook / lane / B-stack / green-scre
 #    biome/docs/COLD_START-plate-mae.md
 # then biome/GROK.md
 
-# stills + films = imagine-hooks first+last (never Imagine Agent video)
+# stills + films = Imagine Video first+last (session primary; optional CLI when XAI_API_KEY is set)
 # drop masters into biome/master/   ← ADD. NEVER wipe hung canyon/war. Hang ≠ wipe.
 ```
 
-Cannot run `node` + `XAI_API_KEY` → **REFUSE**. Stock Sprint in-app. Do **not** fall back to chat Imagine.
+Video A does not wait on `node` or `XAI_API_KEY`. Pin both stills in the SuperGrok session, hang the mp4, run `plate-mae-qc.py`. One-still I2V does not Hang. Missing key is not a stop.

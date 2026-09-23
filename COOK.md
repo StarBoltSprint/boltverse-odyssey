@@ -3,9 +3,9 @@
 This is the product. The player does **not** pick films first. They ask Grok for **3 stills** in a citadel style. Grok supplies them with the **same Bolt** ([CHAR.md](CHAR.md)). **Do not wait.** Stills → smoke → films. Order: [COOKROOM.md](COOKROOM.md). Wait only if COOK_DEBUG=1.
 
 **STOP 0 — STYLES = [RIG.md](RIG.md).** Black plates + RIG-PROMPT. Spawn first, then at-A/at-B from that spawn. ONE dog. Two Bolts = FAIL. Then films.
-**STOP — HARD SPLIT.** Imagine Agent is obligatoire / MUST / systematically for STYLE stills when restyling. NEVER for Walk A, Walk B, breath, or any video. Walks / breaths / films = imagine-hooks / cook-room first-frame + last-frame. Soft KEEP banned. Smoke still gates.
+**STOP — HARD SPLIT.** Imagine Agent is obligatoire / MUST / systematically for STYLE stills when restyling. NEVER for Walk A, Walk B, breath, or any video. Walks / breaths / films = session Imagine Video with both stills pinned (first-frame + last-frame). Optional CLI: imagine-hooks / cook-room when `XAI_API_KEY` is set. One-still I2V is banned for walks. Missing key is not a stop. Soft KEEP banned. Smoke still gates.
 
-**STOP 1 — HARD SPLIT (SmiR 2026-09-12).** NEVER Agent / chat Imagine for Walk A, Walk B, breath, or any video. Walks / breaths / films = imagine-hooks / cook-room first-frame + last-frame. Chat Imagine UI without real first+last is banned for **video**. Soft KEEP banned. Smoke still gates.
+**STOP 1 — HARD SPLIT (SmiR 2026-09-12).** NEVER Agent for Walk A, Walk B, breath, or any video. Walks / breaths / films = session Imagine Video with both stills pinned. Optional CLI imagine-hooks / cook-room when the key is set. One-still I2V is banned for walks. Missing key is not a stop. Soft KEEP banned. Smoke still gates.
 
 **Identity base:** Bolt is ALWAYS a full-white German Shepherd (white coat forever). That base never changes to grey / silver / black.
 
@@ -15,19 +15,19 @@ This is the product. The player does **not** pick films first. They ask Grok for
 
 **[Grok Imagine Agent](https://grok.com/imagine/agent) = ONLY hall STYLES / stills / décor restyles** (freeze dog+portals, swap décor, skins on white coat). **NEVER** walks, breaths, or any video.
 
-Walks / breaths / films = Imagine first-frame + last-frame via [scripts/imagine-hooks.mjs](scripts/imagine-hooks.mjs) / [scripts/cook-room.mjs](scripts/cook-room.mjs). Walks: start still ≠ arrive still. Breaths: same still twice. Agent is **not** required or recommended for video cook. Do **not** instruct Build to open Imagine Agent for Walk A, Walk B, or breath. **Smoke still gates.** Soft KEEP banned.
+Walks / breaths / films = Imagine Video with both stills pinned. Primary = SuperGrok session. Optional CLI = [scripts/imagine-hooks.mjs](scripts/imagine-hooks.mjs) / [scripts/cook-room.mjs](scripts/cook-room.mjs) when `XAI_API_KEY` is set. Walks: start still ≠ arrive still. Breaths: same still twice. Agent is **not** the video cook. Do **not** instruct Build to open Imagine Agent for Walk A, Walk B, or breath. **Smoke still gates.** Soft KEEP banned. Missing key is not a stop.
 
-Chat Imagine UI **without real first+last** is **banned** (no `last_frame`) — walks, breaths, enter. Do not cook films there. For STYLE restyle: instruct to open Imagine Agent with the plate refs.
+One-still I2V is **banned** — walks, breaths, enter. Pin both stills. For STYLE restyle: instruct to open Imagine Agent with the plate refs.
 
-`scripts/cook-room.mjs` + [scripts/imagine-hooks.mjs](scripts/imagine-hooks.mjs) = **video cook** (walks / breaths / films) and CLI first-seal / batch stills. Agent is **not** the film path.
+`scripts/cook-room.mjs` + [scripts/imagine-hooks.mjs](scripts/imagine-hooks.mjs) = **optional CLI** (walks / breaths / films) when `XAI_API_KEY` is set, plus CLI first-seal / batch stills. Agent is **not** the film path.
 
 ```
-# secondary CLI / batch only
+# optional CLI when the key is set
 node scripts/cook-room.mjs <catalog-slot> --dry-run
-export XAI_API_KEY=... && node scripts/cook-room.mjs <catalog-slot>
+# export XAI_API_KEY=... && node scripts/cook-room.mjs <catalog-slot>
 ```
 
-`--dry-run` first (no key, prints skip vs cook). Live needs `XAI_API_KEY` only for plates the CLI Imagines.  
+`--dry-run` plans without a key. The Node CLI calls api.x.ai only when `XAI_API_KEY` is set. Without the key, cook Imagine Video in the SuperGrok session with both stills. Missing key is not a stop.  
 `slot` ∈ [CATALOG.md](CATALOG.md). Off-list → stock, exit 1.
 
 Hung pack with PASS stills/films = **reuse**. CLI only Imagines missing or smoke-FAIL plates. `--force` / `COOK_FORCE=1` overwrites and recooks. Never silently wipe `packs/moss` or any hung PASS still. **Sealed skip stays.** Imagine Agent produced the ice-hall **KEEP seals** (`lock/SEAL-spawn.jpg` + `lock/SEAL-at-a.jpg` + `lock/SEAL-at-b.jpg`). Frozen pose+décor for this ice hall until SmiR reseals. Agent remains the STYLE stills path for future styles (never video). When those SEAL files exist, `cook-room` **SKIPS** `imagineStill` for spawn / at-A / at-B (copy the seal if the pack still is missing). **Smoke still gates.** Soft KEEP banned.
@@ -63,7 +63,7 @@ Keep the size step small: spawn **0.22–0.32**, sill **0.35–0.40**, **Δh/H <
 
 **`reference_to_video` is not first/last.** The images are *references*, not frames. Imagine *inspires* a walk. It does **not** paste the gold still as the last picture. Walk-B then overshoots into the rift → size pop. **Illegal for walks and enter.**
 
-Chat Imagine UI without real first+last has no `last_frame` tool — **banned** for walks, breaths. Walks / breaths = `scripts/imagine-hooks.mjs` / `cook-room.mjs` (`image` + `last_frame`). Never Imagine Agent video. Décor variants = **Imagine Agent REQUIRED**. `imagineStill` **BANNED for restyle**. First seal stills = Imagine Agent. For STYLE restyle: instruct to open Imagine Agent with the plate refs. Do **not** instruct Agent for walks/breaths.
+Session Imagine Video pins both stills. One-still I2V is banned for walks and breaths. Optional CLI: `scripts/imagine-hooks.mjs` / `cook-room.mjs` (`image` + `last_frame`) when `XAI_API_KEY` is set. Missing key is not a stop. Never Imagine Agent video. Décor variants: **Imagine Agent REQUIRED**. `imagineStill` **BANNED for restyle**. First seal stills = Imagine Agent. For STYLE restyle: instruct to open Imagine Agent with the plate refs. Do **not** instruct Agent for walks/breaths.
 
 Never `image_to_video` a walk or enter on a single still. That invents the journey / clones the dog. Breath is the only legal `first = last`.
 
@@ -197,7 +197,7 @@ Place can be at the door. Size is illegal. Sit does **not** block the second ste
 
 Stills **are** first and last frames. Do not re-imagine a new hall. **Law 0.**
 
-Films = `cook-room` → `imagineClip()` with API `image` + `last_frame`. Walks: start still ≠ arrive still. Breaths: same still twice. Never Imagine Agent video. Never chat `reference_to_video`. Never `image_to_video` on one still for a walk. Chat Imagine UI without real first+last is banned for walks (no `last_frame`).
+Films = session Imagine Video with both stills, or `cook-room` → `imagineClip()` (`image` + `last_frame`) when `XAI_API_KEY` is set. Walks: start still ≠ arrive still. Breaths: same still twice. Never Imagine Agent video. Never one-still `image_to_video`. One-still I2V is banned for walks. Missing key is not a stop. Smoke still gates.
 
 **Walks and enter: first AND last must be distinct images.** Breath is the only legal `first = last` loop. Enter is **not** `image_to_video` on one still — `last = first` invents a journey / clone. See [HANG.md](HANG.md).
 

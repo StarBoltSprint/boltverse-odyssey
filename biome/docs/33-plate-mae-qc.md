@@ -48,9 +48,11 @@ Law 23 still owns 720×1280 on a road plate. A matching pair at another size war
 2. After every densify recook that claims to continue the previous plate.
 3. Never overwrite empty KEEP to shrink the error.
 
+The pair is cooked as Imagine Video **first+last**: `first` of N+1 is the extracted last frame of N; `last` is the advanced-world still. Primary = SuperGrok session. Optional CLI = `imagineBiomeClip` when `XAI_API_KEY` is set. Missing key does not skip this measure and is not a cook stop.
+
 Order with the other judges: **23** (this plate’s camera) → **25** (this plate’s lanes) → **33** (seam to the previous plate). P0 has no previous plate — do not invent a pair.
 
-**FAIL if:** hang a chain with no PASS line · one mp4 passed off as a seam · thresholds edited upward in the cook · optical-flow morph used to hide a broken still.
+**FAIL if:** hang a chain with no PASS line · one mp4 passed off as a seam · thresholds edited upward in the cook · optical-flow morph used to hide a broken still · claim MAE PASS without running this script · invent “forcé localement” instead of the two stills.
 
 ---
 

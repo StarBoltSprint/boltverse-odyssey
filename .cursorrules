@@ -1,16 +1,17 @@
 # boltverse-odyssey — Grok Build / Cursor
 
 STOP 0 — STYLES FIRST. Read RIG.md. Miss this = the room is dead.
-STOP — HARD SPLIT. Imagine Agent is obligatoire / MUST / systematically for STYLE stills when restyling. NEVER for Walk A, Walk B, breath, or any video. Walks / breaths / films = imagine-hooks / cook-room first-frame + last-frame. Soft KEEP banned. Smoke still gates.
+STOP — HARD SPLIT. Imagine Agent is obligatoire / MUST / systematically for STYLE stills when restyling. NEVER for Walk A, Walk B, breath, or any video. Walks / breaths / films = session Imagine Video with both stills pinned (first-frame + last-frame). Optional CLI imagine-hooks / cook-room when XAI_API_KEY is set. One-still I2V is banned for walks. Missing key is not a stop. Soft KEEP banned. Smoke still gates.
 Before films: lock/RIG-spawn.jpg + RIG-at-a.jpg + RIG-at-b.jpg + lock/RIG-PROMPT.txt
 imagine_image_to_image on RIG-spawn FIRST + SPAWN block of RIG-PROMPT. Swap {PAINT} only.
 Then at-A/at-B: imagine_reference_to_image IMAGE_0=RIG-at-a/b, IMAGE_1=that spawn (ignore its dog). Same hall millimeter. Never three separate i2i.
 Never move Bolt / doors / paths / camera / depth. One plate per still. Never a finished room as 2nd image.
 Bad stills → STOP. Do not cook films. LAYOUT.md. Ice SEAL/frost stills stay as play example.
 
-STOP 1 — HARD SPLIT. NEVER Agent / chat Imagine for Walk A, Walk B, breath, or any video.
-Walks / breaths / films = imagine-hooks / cook-room first-frame + last-frame.
-Chat Imagine without real first+last is banned for VIDEO: imagine_image_to_video, imagine_reference_to_video.
+STOP 1 — HARD SPLIT. NEVER Agent for Walk A, Walk B, breath, or any video.
+Walks / breaths / films = Imagine Video with both stills pinned (SuperGrok session primary).
+Optional CLI imagine-hooks / cook-room when XAI_API_KEY is set. Missing key is not a stop.
+One-still I2V is banned: imagine_image_to_video, imagine_reference_to_video without a real last still.
 imagine_image_to_image is ALLOWED only on lock/RIG-*.jpg (styles). Soft KEEP banned. Smoke still gates.
 
 Recipe repo. Not an app. Player is already https://boltverse-odyssey.grok.me
@@ -22,17 +23,17 @@ Identity base: Bolt is ALWAYS a full-white German Shepherd (white coat forever).
 SKINS: Imagine Agent MAY apply a décor-matching skin ON TOP of the white base — ember skin (embers/glow/ash accents), ice skin, etc. Stylish adaptation. Not a different dog.
 Restyle: completely new hall décor OK. Paint into lock/RIG-*.jpg black void. Doors may adapt. Cyan L + gold R energy portals may adapt. Bolt may be selected, repositioned, resized to sill for a nickel plate. Bolt reposition OK. Never change depth/spacing.
 
-Happy path: clone → STOP 0 RIG plates + RIG-PROMPT → paint décor → FILMS.md → cook-room first+last. Agent NEVER for video. Smoke still gates.
+Happy path: clone → STOP 0 RIG plates + RIG-PROMPT → paint décor → FILMS.md → session Imagine Video first+last. Agent NEVER for video. Smoke still gates.
 
-Chat Imagine banned for VIDEO: imagine_image_to_video, imagine_reference_to_video (no last_frame → do not Hang)
+One-still I2V is banned for walks (no last_frame → do not Hang). Session Imagine Video with both stills is the cook. Missing XAI_API_KEY is not a stop.
 imagine_image_to_image ALLOWED only on lock/RIG-*.jpg.
 
 Styles = lock/RIG-*.jpg + RIG-PROMPT (Grok Build image_to_image). Agent may use the same plates. NEVER Agent for walks/breaths/video.
 Cross-style sealed at-A/at-B: Imagine Agent (grok.com/imagine/agent) — completely new hall décor OK; Cyan L + gold R energy portals may adapt; Bolt may be selected, repositioned, resized to sill for a nickel plate; white coat forever; décor-matching skin ON TOP OK. Sealed skip stays.
 Imagine Agent produced the ice-hall KEEP seals (lock/SEAL-spawn.jpg + lock/SEAL-at-a.jpg + lock/SEAL-at-b.jpg). Frozen pose+décor until SmiR reseals. Agent remains the STYLE stills path for future styles (never video). cook-room SKIPS imagineStill for spawn / at-A / at-B when those seals exist. Smoke still gates. Soft KEEP banned.
 Imagine Agent is the hall-restyle tool. First seal stills = Imagine Agent. Imagine Agent is MANDATORY for cross-style hall stills (not optional). Agent REQUIRED for décor variants. One sealed sill still → Agent restyles. imagineStill BANNED for restyle. Sealed skip stays.
-Grok Build chat Imagine tools are NOT the same as Imagine Agent. Cross-style sealed stills = Imagine Agent at grok.com/imagine/agent. For STYLE restyle: instruct to open Imagine Agent with the plate refs. Do not instruct Agent for walks/breaths. Build must not rely on chat imagine_* tools for hall restyle identity lock. Chat Imagine UI without real first+last is banned for walks.
-Walks / breaths / films = imagine-hooks / cook-room first+last. Prompts = FILMS.md (base for every player; adapt décor only). Walks = start+end stills. Breaths = same still twice. Chat Imagine UI without real first+last is banned. Agent is not required or recommended for video cook.
+Grok Build chat Imagine tools are NOT the same as Imagine Agent. Cross-style sealed stills = Imagine Agent at grok.com/imagine/agent. For STYLE restyle: instruct to open Imagine Agent with the plate refs. Do not instruct Agent for walks/breaths. Build must not rely on chat imagine_* tools for hall restyle identity lock. One-still I2V is banned for walks. Session Imagine Video with both stills is the film cook. Missing XAI_API_KEY is not a stop.
+Walks / breaths / films = first+last stills. Prompts = FILMS.md (base for every player; adapt décor only). Walks = start+end stills. Breaths = same still twice. Agent is not the video cook.
 Hung PASS = reuse. --force recooks. Gel-breath / FAIL walk = HANG BLOCKED, not KEEP. Soft KEEP banned. Smoke still gates.
 FAIL → packs/<slot>/.kitchen/fail/ (debug). Never stills/films/Hang. at-A/at-B under-size (~0.16–0.21): enlarge-only second step (FAIL jpg = image). Cap 1 fresh + 1 enlarge (or 2 enlarge).
 Doors may adapt. Doors = oval|RECT energy rifts (oval preferred-ok; never wood; never chrome UI). Sit / face / 3/4 / punch-sill (climbing the rift) / mid-hall spawn-cx as at-A/at-B cannot PASS.

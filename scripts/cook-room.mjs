@@ -1,7 +1,9 @@
 #!/usr/bin/env node
-// Official hall cook. Films = imagine-hooks first+last (never Imagine Agent video).
+// Official hall cook. Films = first + last (never Imagine Agent video).
+// Primary: SuperGrok session Imagine Video with both stills pinned. Smoke still gates.
+// Optional CLI rail: this script calls api.x.ai only when XAI_API_KEY is set.
 // Style stills / restyle = Imagine Agent. CLI imagineStill = first-seal / batch only; BANNED for restyle.
-// Not chat Imagine UI (no last_frame).
+// One-still I2V is banned. Missing key is not a cook FAIL.
 //   node scripts/cook-room.mjs moss --dry-run
 //   COOK_DEBUG=1 node scripts/cook-room.mjs dusk
 //   export XAI_API_KEY=... && node scripts/cook-room.mjs moss
@@ -308,10 +310,12 @@ if (dry) {
     out(line);
   }
   if (!force && skipFilms === filmJobs.length) out("skip film phase — 5 hung films PASS");
-  if (needLive) {
-    out("LIVE NEEDS XAI_API_KEY — refuse cook without it. No chat Imagine fallback.");
-    out("gel-breath / FAIL walk = HANG BLOCKED, not a preview KEEP.");
+  if (needLive && !process.env.XAI_API_KEY) {
+    out("CLI optional — XAI_API_KEY unset. Session Imagine Video with both stills is the live path. Missing key is not a stop.");
+  } else if (needLive) {
+    out("CLI rail — XAI_API_KEY is set. This script can Imagine those plates.");
   }
+  if (needLive) out("gel-breath / FAIL walk = HANG BLOCKED, not a preview KEEP. One-still I2V does not Hang.");
   out("then validate-pack + smoke-pack → " + PLAYER + slot);
   process.exit(0);
 }
@@ -324,7 +328,13 @@ const needLive = [...stillJobs, ...filmJobs].some(([rel, kind]) => {
   return !smoke(rel, kind);
 });
 if (needLive && !process.env.XAI_API_KEY) {
-  fail("XAI_API_KEY missing — refuse cook. No chat Imagine fallback.");
+  out("CLI_RAIL_SKIP — XAI_API_KEY unset. This Node cook does not call api.x.ai.");
+  out("Continue in the SuperGrok session: Imagine Video with both stills pinned.");
+  out("Hall walks: start still ≠ end still. Breaths: same still twice. Smoke still gates.");
+  out("Biome plates: first = exact last pixels of the previous plate, last = advanced world, then python3 biome/scripts/plate-mae-qc/plate-mae-qc.py.");
+  out("Do not claim MAE PASS without that script. --dry-run plans without a key.");
+  out("Missing key is not a cook FAIL and not HANG BLOCKED. BAN one-still I2V and “forcé localement”.");
+  process.exit(2);
 }
 
 mkdirSync(join(dir, "stills"), { recursive: true });

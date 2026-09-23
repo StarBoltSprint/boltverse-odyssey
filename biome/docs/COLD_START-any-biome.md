@@ -36,9 +36,9 @@ You are cooking a **Lane biome** for Boltverse Odyssey for a **random player**. 
 - New files `road-<biome>*.mp4` — do not wipe canyon→war.
 
 ## Order
-Teacher gate → **empty still from law 20 defaults** → empty A 48fps → **law 23 geo qc PASS** → REUSE cycle → key/despill (luma protect) → scale → GPU wire (law 17) → clock → grade+bounce+shadow+FX row → hazards (law 25, dodge) → Howl targets only if the plan names them (law 32) → **law 33 seam PASS** vs previous plate → hang+Pack → smoke.
+Teacher gate → **empty still from law 20 defaults** → Video A (extract last frame → cook last still → session Imagine Video first+last, or CLI if `XAI_API_KEY` is set) → **law 23 geo qc PASS** → REUSE cycle → key/despill (luma protect) → scale → GPU wire (law 17) → clock → grade+bounce+shadow+FX row → hazards (law 25, dodge) → Howl targets only if the plan names them (law 32) → **law 33 seam PASS** vs previous plate → hang+Pack → smoke.
 
 ## Smoke
 Sprint looks like Frost-parity on **this** plate: fluid gallop, **sharp interior**, hind paws intact, no vertical bars, **no neon through the coat**, plate light (not studio), paw shadow (no skateboard), biome-correct ground FX, old biomes still hung.
 
-**FAIL** if: invent sprint · CPU key every rAF · copy scissor/IGN sketch · wipe masters · skip bounce · skip FX row · bake Bolt into road mp4 · SPH · ice-hole / Beat-narrow road as silent default · grow Bolt to fake withersMin on a wide road · raw plate mix into coat · 5-tap body smear · dark frost prints · hang a plate the geo qc FAILed · shader a Howl · bake shatter into the Howl · hang a seam the MAE qc FAILed.
+**FAIL** if: invent sprint · CPU key every rAF · copy scissor/IGN sketch · wipe masters · skip bounce · skip FX row · bake Bolt into road mp4 · SPH · ice-hole / Beat-narrow road as silent default · grow Bolt to fake withersMin on a wide road · raw plate mix into coat · 5-tap body smear · dark frost prints · hang a plate the geo qc FAILed · shader a Howl · bake shatter into the Howl · hang a seam the MAE qc FAILed · stop because `XAI_API_KEY` is unset · one-still I2V · “forcé localement” · claim MAE PASS without `plate-mae-qc.py`.
