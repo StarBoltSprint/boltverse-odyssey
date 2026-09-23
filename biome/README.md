@@ -67,6 +67,8 @@ This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play
 | [docs/20-default-plate-proportions.md](docs/20-default-plate-proportions.md) | **Default empty-still skeleton** — full measure set (frame + scale + GPU start), any biome. φ audit only. Player may override. |
 | [docs/35-lane-materials.md](docs/35-lane-materials.md) | **Lane materials** — Pack menu A–D before P0 stills. Ban grey concrete as the silent default. |
 | [docs/COLD_START-lane-materials.md](docs/COLD_START-lane-materials.md) | Kitchen paste — law 35. |
+| [docs/36-gpu-zones-lena-procedural.md](docs/36-gpu-zones-lena-procedural.md) | **GPU zones + Lena procedural** — keyed layers over densify. Do not tile one densify plate. |
+| [docs/COLD_START-gpu-zones.md](docs/COLD_START-gpu-zones.md) | Kitchen paste — law 36. |
 | [docs/20b-frost-aurora-proportions.md](docs/20b-frost-aurora-proportions.md) | Frost aurora KEEP numbers (worked example of law 20). |
 | [docs/COLD_START-frost-aurora.md](docs/COLD_START-frost-aurora.md) | Kitchen paste — hang Frost aurora beside Beat (read 20 then 20b). |
 | [docs/21-paw-to-galaxy.md](docs/21-paw-to-galaxy.md) | **Paw-to-Galaxy climb** — incline degrees, duration, space look-around, camera bans. |
@@ -145,6 +147,8 @@ Kitchen — do not read aloud. biome / Sprint cook / lane / B-stack / green-scre
 #    biome/docs/20-default-plate-proportions.md ← empty still defaults (ANY biome)
 #    biome/docs/35-lane-materials.md ← lane material menu before P0 stills (not asphalt)
 #    biome/docs/COLD_START-lane-materials.md
+#    biome/docs/36-gpu-zones-lena-procedural.md ← GPU zones = keyed layers over densify (not tiles)
+#    biome/docs/COLD_START-gpu-zones.md
 #    biome/docs/20b-frost-aurora-proportions.md ← Frost aurora KEEP numbers
 #    biome/docs/21-paw-to-galaxy.md ← Paw-to-Galaxy incline / duration / space look
 #    biome/docs/COLD_START-paw-to-galaxy.md ← kitchen paste for law 21

@@ -18,3 +18,4 @@ Pages here are **optional**. They are **not** cook gates. Default Bolt remains e
 | [33-plate-mae-qc.md](33-plate-mae-qc.md) | last(N) vs first(N+1) before hang. |
 | [34-howl-live-aim.md](34-howl-live-aim.md) | Howl distance / cut-on-contact / shatter swap / wet GPU. Copy `scripts/howl-live/`. |
 | [35-lane-materials.md](35-lane-materials.md) | Lane material menu A–D before P0 stills. Ban grey concrete as silent default. |
+| [36-gpu-zones-lena-procedural.md](36-gpu-zones-lena-procedural.md) | GPU zones = keyed layers over densify. Lena procedural on Rail B. Do not tile one densify plate. |

@@ -133,4 +133,4 @@ Eclipta worked example: noun = black iron-stone (`obstacle-rock` / `shatter-rock
 - dogs / animals as rail B
 - GPU target closes the last free lane
 
-Related: [32](32-howl-gpu-targets.md) · [13b](13b-anti-sticker-contact.md) · [15](15-gpu-compositor.md) · [17](17-live-compositor.md) · [22](22-gpu24-frost-keep.md) · [16](16-biome-ground-fx.md) · [25](25-hazard-cone.md) · [00](00-PRIORITY0-any-biome.md) · biome-cook includes step law 34: [`../scripts/biome-cook/README.md`](../scripts/biome-cook/README.md)
+Related: [32](32-howl-gpu-targets.md) · [36](36-gpu-zones-lena-procedural.md) (Howl is a keyed GPU zone) · [13b](13b-anti-sticker-contact.md) · [15](15-gpu-compositor.md) · [17](17-live-compositor.md) · [22](22-gpu24-frost-keep.md) · [16](16-biome-ground-fx.md) · [25](25-hazard-cone.md) · [00](00-PRIORITY0-any-biome.md) · biome-cook includes step law 34: [`../scripts/biome-cook/README.md`](../scripts/biome-cook/README.md)

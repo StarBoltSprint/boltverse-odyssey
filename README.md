@@ -91,6 +91,7 @@ Search: `StarBoltSprint citadel-room` · living film · boltverse-odyssey.grok.m
 | [`biome/docs/09-recette-biome.md`](biome/docs/09-recette-biome.md) | **full cook checklist** (kitchen) — REQUIRED before cook: empty→cousin→speed→dealer→box; SPAWN/WIDTH; road-bar/blast |
 | [`biome/docs/10-bolt-cutout-law.md`](biome/docs/10-bolt-cutout-law.md) | **HARD Bolt cutout** (kitchen) — REUSE lock/bolt-gallop-cycle.mp4 → key + composite; do not invent a sprint |
 | [`biome/docs/35-lane-materials.md`](biome/docs/35-lane-materials.md) | **Lane materials** (law 35) — Pack menu A–D before empty P0 stills. Ban grey concrete asphalt as the silent default. |
+| [`biome/docs/36-gpu-zones-lena-procedural.md`](biome/docs/36-gpu-zones-lena-procedural.md) | **GPU zones + Lena procedural** (law 36) — keyed layers over densify. Do not tile one densify plate. |
 | [AGENTS.md](AGENTS.md) | cold-start HARD SPLIT: Agent = STYLE stills; video = hooks first+last |
 | [GROK.md](GROK.md) | console flow + how to rebuild the citadel hall |
 | [ROOM.md](ROOM.md) | skeleton — encode flags, playsInline, ENTER map, player bugs |

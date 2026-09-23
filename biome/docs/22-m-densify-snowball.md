@@ -72,4 +72,4 @@ Frost so far: d1 flora hung (décor). d2 meteor **FAIL** law 25 (3-lane wall) �
 - Event stills stacked into décor (crystal wall / geode-in-lane)
 - Clip last / video `t99` used as `@`
 
-Related: [00](00-PRIORITY0-any-biome.md) · [09](09-recette-biome.md) · [23](23-plate-geo-qc.md) · [24](24-camera-1point.md) · [25](25-hazard-cone.md) · [26](26-biome-sprint-plan.md) · [32](32-howl-gpu-targets.md) · [33](33-plate-mae-qc.md) · [22-gpu24-frost-keep.md](22-gpu24-frost-keep.md) · [28](28-stills-two-rails.md) · [29](29-imagine-compiler.md) · [30](30-i2i-prompt.md) · [31](31-light-lock.md)
+Related: [00](00-PRIORITY0-any-biome.md) · [09](09-recette-biome.md) · [23](23-plate-geo-qc.md) · [24](24-camera-1point.md) · [25](25-hazard-cone.md) · [26](26-biome-sprint-plan.md) · [32](32-howl-gpu-targets.md) · [33](33-plate-mae-qc.md) · [22-gpu24-frost-keep.md](22-gpu24-frost-keep.md) · [28](28-stills-two-rails.md) · [29](29-imagine-compiler.md) · [30](30-i2i-prompt.md) · [31](31-light-lock.md) · [36](36-gpu-zones-lena-procedural.md) (densify stays one plate; GPU layers stack over it)

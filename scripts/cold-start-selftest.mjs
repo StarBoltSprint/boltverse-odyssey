@@ -730,4 +730,13 @@ must(hasLaneMenu(grok) && /35-lane-materials/.test(grok) && /béton/.test(grok) 
 must(hasLaneMenu(agents) && /35-lane-materials/.test(agents) && /béton/.test(agents) && /grey concrete/.test(agents), "AGENTS.md principal: law 35 menu + asphalt BAN");
 must(/35-lane-materials/.test(body("README.md")) && /law 35/.test(body("README.md")), "README.md kitchen map: law 35");
 
+const zonesLaw = body("biome/docs/36-gpu-zones-lena-procedural.md");
+const zonesPaste = body("biome/docs/COLD_START-gpu-zones.md");
+must(existsSync(join(root, "biome/docs/36-gpu-zones-lena-procedural.md")), "law 36 doc exists");
+must(/Rail A/.test(zonesLaw) && /Rail B/.test(zonesLaw) && /spatial GPU tiles/.test(zonesLaw) && /Dr Lena Voss/.test(zonesLaw), "law 36: dual stack, tile ban, Lena");
+must(/36-gpu-zones-lena-procedural/.test(zonesPaste) && /spatial GPU tiles/.test(zonesPaste), "law 36 paste: tile ban");
+must(/36-gpu-zones-lena-procedural/.test(grok) && /36-gpu-zones-lena-procedural/.test(agents), "GROK.md + AGENTS.md point at law 36");
+must(/36-gpu-zones/.test(cookReadme) && /36-gpu-zones/.test(cookPaste) && /36-gpu-zones/.test(cookSh), "biome-cook surfaces law 36");
+must(/36-gpu-zones-lena-procedural/.test(body("biome/scripts/biome-cook/MANIFEST.md")), "MANIFEST lists law 36");
+
 console.log("COLD-START PASS");

@@ -21,7 +21,7 @@ KEEP="$BIOME/fx/howl/howl-attack.mp4"
 
 print_steps() {
   cat <<'EOF'
-biome-cook — steps 1→17 (PRIORITY 0 section C + laws through 35)
+biome-cook — steps 1→17 (PRIORITY 0 section C + laws through 36)
 Hang ≠ wipe. Do not invent QC math. Noun is biome-variable. Math is fixed.
 Read biome/scripts/biome-cook/README.md. Paste biome/docs/COLD_START-biome-cook.md.
 Play URL hang = Live only, never a Build convo, never grok.com/share, never /c/.
@@ -47,6 +47,10 @@ Worked example (play URL only): https://boltboltverse-odyssey.grok.me
          biome/docs/31-light-lock.md
     Prompt: biome/prompts/image-empty-plate.txt  ({LANE_MATERIAL} inside {PAINT})
     Paste: biome/docs/COLD_START-lane-materials.md
+    Law 36 before this still and before Video A: densify stays one plate.
+    GPU zones = keyed layers over densify. BAN spatial GPU tiles.
+    Law: biome/docs/36-gpu-zones-lena-procedural.md
+    Paste: biome/docs/COLD_START-gpu-zones.md
  4  Next plate refs (law 22-m). Success +1 @ ref. Miss drops one.
     Law: biome/docs/22-m-densify-snowball.md
     Prompt: biome/prompts/snowball-refs.txt

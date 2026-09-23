@@ -46,4 +46,4 @@ Spectacle lives at **mid**. Last is travel. World ADVANCED ≠ more objects ≠ 
 
 ## Related
 
-[22-m](22-m-densify-snowball.md) · [25](25-hazard-cone.md) · [26](26-biome-sprint-plan.md) · [29](29-imagine-compiler.md) · [30](30-i2i-prompt.md) · [31](31-light-lock.md) · [COLD_START-stills-two-rails.md](COLD_START-stills-two-rails.md)
+[22-m](22-m-densify-snowball.md) · [25](25-hazard-cone.md) · [26](26-biome-sprint-plan.md) · [29](29-imagine-compiler.md) · [30](30-i2i-prompt.md) · [31](31-light-lock.md) · [36](36-gpu-zones-lena-procedural.md) · [COLD_START-stills-two-rails.md](COLD_START-stills-two-rails.md)

@@ -89,6 +89,7 @@ Every file currently hung under those dirs:
 | 33 | [`biome/docs/33-plate-mae-qc.md`](../../docs/33-plate-mae-qc.md) | [`plate-mae-qc.py`](../plate-mae-qc/plate-mae-qc.py) |
 | 34 | [`biome/docs/34-howl-live-aim.md`](../../docs/34-howl-live-aim.md) | [`howl-live/`](../howl-live/) — step 14 |
 | 35 | [`biome/docs/35-lane-materials.md`](../../docs/35-lane-materials.md) | step 3, before the empty still. Menu A–D. Paste [`COLD_START-lane-materials.md`](../../docs/COLD_START-lane-materials.md). No script. |
+| 36 | [`biome/docs/36-gpu-zones-lena-procedural.md`](../../docs/36-gpu-zones-lena-procedural.md) | before empty stills and Video A. Keyed GPU layers over densify. Paste [`COLD_START-gpu-zones.md`](../../docs/COLD_START-gpu-zones.md). No script. |
 
 ## Howl KEEP
 

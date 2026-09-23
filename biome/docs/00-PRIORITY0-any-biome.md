@@ -74,7 +74,7 @@ Bolt identity, gallop file, GPU path, scale, clock, Pack = **identical**.
 ## C. Ordered cook (copy this)
 
 1. Show `lock/bolt-back.jpg` + `lock/bolt-gallop-cycle.mp4` in chat (teacher gate).
-2. Still empty first + distinct last — ZERO dog. **Lane material first** ([35](35-lane-materials.md)): menu A–D, or the material already inside `{PAINT}`. Then **law 20 frame measures**. Grey concrete asphalt as silent default = FAIL.
+2. Still empty first + distinct last — ZERO dog. **Lane material first** ([35](35-lane-materials.md)): menu A–D, or the material already inside `{PAINT}`. Then **law 20 frame measures**. Grey concrete asphalt as silent default = FAIL. **Law 36 before this still:** densify stays one plate. GPU zones are keyed layers over it ([36](36-gpu-zones-lena-procedural.md)). Do not slice Video A into spatial GPU tiles.
 3. Video A — extract last frame of the previous plate (P0: empty first still) → cook the last still → Imagine Video **first+last** (SuperGrok session, or `imagineBiomeClip` when `XAI_API_KEY` is set). **48 fps**, SPEED LAW. Then `plate-mae-qc.py` (P0 has no seam). Missing key is not a stop. Frost: **no** `setpts` 2.7× warp ([20b](20b-frost-aurora-proportions.md)).
 3b. **Law 23 geo qc PASS** — `python3 biome/scripts/plate-geo-qc/plate-geo-qc.py` the new plate. FAIL = recook, do not hang. Imagine camera block: [camera-1point.txt](../prompts/camera-1point.txt) (law 24).
 4. REUSE lock cycle → key + despill (13c) — **law 17** GPU even in cook QA.
@@ -89,7 +89,7 @@ Bolt identity, gallop file, GPU path, scale, clock, Pack = **identical**.
 10. Hang ≠ wipe + Pack wire + bump `GPU_VER`.
 11. Smoke: dogFps ≈ min(96, display); hind paws intact; **no vertical bars**; **no neon stripe through torso**; **sharp interior** (not body-blur); shadow on road (no skateboard); FX visible on plant; coat matches THIS plate; no truck scale.
 
-**FAIL** if: invent sprint · CPU key every rAF · **copy scissor/IGN sketch** · wipe masters · hang without composite gate · skip bounce / FX row · bake Bolt into road mp4 · SPH / Box2D · grey concrete / béton highway as silent lane default (law 35) · ice-hole / Beat-narrow road as silent default · grow Bolt to fake withersMin on a wide road · **raw `mix(c, plate)` neon leak** · **5-tap body smear** · **print RGB < 0.3 on frost** · `cSharp = rgb/a` double unpremul · shader a Howl or bake shatter into it (law 32) · Howl overshoots the prop or keeps playing after contact (law 34) · hang a seam that law 33 FAILed · stop Video A because `XAI_API_KEY` is unset · one-still I2V · “forcé localement” · claim MAE PASS without `plate-mae-qc.py`.
+**FAIL** if: invent sprint · CPU key every rAF · **copy scissor/IGN sketch** · wipe masters · hang without composite gate · skip bounce / FX row · bake Bolt into road mp4 · SPH / Box2D · grey concrete / béton highway as silent lane default (law 35) · chop one densify plate into spatial GPU tiles (law 36) · ice-hole / Beat-narrow road as silent default · grow Bolt to fake withersMin on a wide road · **raw `mix(c, plate)` neon leak** · **5-tap body smear** · **print RGB < 0.3 on frost** · `cSharp = rgb/a` double unpremul · shader a Howl or bake shatter into it (law 32) · Howl overshoots the prop or keeps playing after contact (law 34) · hang a seam that law 33 FAILed · stop Video A because `XAI_API_KEY` is unset · one-still I2V · “forcé localement” · claim MAE PASS without `plate-mae-qc.py`.
 
 ---
 
