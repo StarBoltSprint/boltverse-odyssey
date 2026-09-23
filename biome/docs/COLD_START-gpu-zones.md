@@ -24,6 +24,8 @@ Read `biome/docs/36-gpu-zones-lena-procedural.md`. Runtime: `biome/scripts/lena-
 
 Marcus = resonance / `m` grade. Priya = quest / why. Elena = Pack / rifts.
 
-**BAN:** densify cut into GPU spatial tiles · destroyables or Howl baked into densify · procedural Howl look · sticker spawn without anti-sticker contact · Build / share conversation URLs.
+**BAN:** densify cut into GPU spatial tiles · destroyables or Howl baked into densify · procedural Howl look · sticker spawn without anti-sticker contact · Build / share conversation URLs. **GPU is REQUIRED.** **FAIL if Build paints the path into Video A** (or a lane target, a generator, or a Lena detail). Those are keyed GPU layers over the clean densify loop.
+
+**Path beat (law 37):** the chemin reveals one lane ~3 s ahead of contact on this same cone. Densify stays the loop above. LOD fills the world; `pathBeatFrame` tells which lane to be in. Read `biome/docs/37-path-beat.md`. Paste `biome/docs/COLD_START-path-beat.md`. Runtime: `biome/scripts/path-beat/pathBeat.js`.
 
 Film-strip (short): one column per plate, Bolt + vault + lane refs in the header, short FRAME prompts, first + last before Video A. Build hangs Live / code after KEEP.

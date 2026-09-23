@@ -110,6 +110,7 @@ If you cannot draw the centerline Bézier on frame 0 of empty road **in ~2 minut
 - Cook tool: `biome/scripts/curvature-sample/` — `node demo.js`; `resamplePath` → write `path.json`; `invertRibbon` (plate UV → \(s,\lambda\)) for taps / contact  
 - Hang ≠ wipe: never delete existing master biomes when adding Tide / next  
 - Lena climb keeps this same L/C/R ribbon on a **luminous path** (not float): [19-luminous-path-climb.md](19-luminous-path-climb.md)  
+- Timed target lane (chemin ~3 s ahead, hit/miss at contact) is law [37](37-path-beat.md) on the Howl cone. It does not replace this ribbon and it does not bake lanes into Video A.  
 - Open-world SprintCore / Nebula editor Joy XP: **flavor only** — not this stack  
 
 Sealed 2026-09-20 — living-film Lane path law.

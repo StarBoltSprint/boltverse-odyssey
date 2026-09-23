@@ -71,6 +71,9 @@ This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play
 | [docs/COLD_START-gpu-zones.md](docs/COLD_START-gpu-zones.md) | Kitchen paste — law 36. |
 | [docs/COLD_START-lena-bib.md](docs/COLD_START-lena-bib.md) | Bib cook — Imagine keyed LODs, then `lenaFrame`. |
 | [scripts/lena-lod/lenaLod.js](scripts/lena-lod/lenaLod.js) | **Lena runtime** — far/mid/near bands, procedural spawn on the Howl cone. |
+| [docs/37-path-beat.md](docs/37-path-beat.md) | **Path beat** — chemin reveals one lane ~3 s ahead of contact. Densify stays one loop. |
+| [docs/COLD_START-path-beat.md](docs/COLD_START-path-beat.md) | Kitchen paste — law 37. |
+| [scripts/path-beat/pathBeat.js](scripts/path-beat/pathBeat.js) | **Path-beat runtime** — `pathBeatFrame` / `pathBeatChart` on the Howl cone. |
 | [docs/20b-frost-aurora-proportions.md](docs/20b-frost-aurora-proportions.md) | Frost aurora KEEP numbers (worked example of law 20). |
 | [docs/COLD_START-frost-aurora.md](docs/COLD_START-frost-aurora.md) | Kitchen paste — hang Frost aurora beside Beat (read 20 then 20b). |
 | [docs/21-paw-to-galaxy.md](docs/21-paw-to-galaxy.md) | **Paw-to-Galaxy climb** — incline degrees, duration, space look-around, camera bans. |
@@ -150,6 +153,7 @@ Kitchen — do not read aloud. biome / Sprint cook / lane / B-stack / green-scre
 #    biome/docs/35-lane-materials.md ← lane material menu before P0 stills (not asphalt)
 #    biome/docs/COLD_START-lane-materials.md
 #    biome/docs/36-gpu-zones-lena-procedural.md ← GPU zones = keyed layers over densify (not tiles)
+#    biome/docs/37-path-beat.md ← chemin reveals one lane ~3s ahead (not baked into densify)
 #    biome/docs/COLD_START-gpu-zones.md
 #    biome/docs/20b-frost-aurora-proportions.md ← Frost aurora KEEP numbers
 #    biome/docs/21-paw-to-galaxy.md ← Paw-to-Galaxy incline / duration / space look

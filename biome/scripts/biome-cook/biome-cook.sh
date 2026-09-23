@@ -18,6 +18,7 @@ CURVE="$BIOME/scripts/curvature-sample"
 GPU="$BIOME/scripts/bolt-key-gl"
 HOWL="$BIOME/scripts/howl-live"
 LENA="$BIOME/scripts/lena-lod"
+PATHBEAT="$BIOME/scripts/path-beat"
 KEEP="$BIOME/fx/howl/howl-attack.mp4"
 
 print_steps() {
@@ -55,6 +56,11 @@ Worked example (play URL only): https://boltboltverse-odyssey.grok.me
     Runtime: biome/scripts/lena-lod/lenaLod.js (lenaFrame)
     Bib: biome/docs/COLD_START-lena-bib.md
     Run: biome-cook.sh lena
+    Law 37 path beat: chemin reveals one lane ~3s ahead. Do not bake it into Video A.
+    Law: biome/docs/37-path-beat.md
+    Paste: biome/docs/COLD_START-path-beat.md
+    Runtime: biome/scripts/path-beat/pathBeat.js (pathBeatFrame)
+    Run: biome-cook.sh path
  4  Next plate refs (law 22-m). Success +1 @ ref. Miss drops one.
     Law: biome/docs/22-m-densify-snowball.md
     Prompt: biome/prompts/snowball-refs.txt
@@ -134,6 +140,7 @@ Usage (wrapper — exit code comes from the real script):
   biome-cook.sh curvature               node biome/scripts/curvature-sample/demo.js
   biome-cook.sh howl                    node biome/scripts/howl-live/demo.js   (law 34)
   biome-cook.sh lena                    node biome/scripts/lena-lod/demo.js    (law 36)
+  biome-cook.sh path                    node biome/scripts/path-beat/demo.js   (law 37)
   biome-cook.sh gpu                     echo copy paths (law 22 / GPU 24). No cook.
 
 Examples copied from the hung READMEs:
@@ -146,6 +153,7 @@ Examples copied from the hung READMEs:
   node biome/scripts/curvature-sample/demo.js
   node biome/scripts/howl-live/demo.js
   node biome/scripts/lena-lod/demo.js
+  node biome/scripts/path-beat/demo.js
 EOF
 }
 
@@ -224,6 +232,11 @@ case "$cmd" in
     echo "law 36 — bib cook biome/docs/COLD_START-lena-bib.md" >&2
     echo "law 36 — densify stays one plate; do not tile Video A" >&2
     run_node_demo "$LENA" "$@"
+    ;;
+  path)
+    echo "law 37 — copy biome/scripts/path-beat/pathBeat.js (pathBeatFrame)" >&2
+    echo "law 37 — lookahead 3s; SIDES then hit/miss; do not tile densify" >&2
+    run_node_demo "$PATHBEAT" "$@"
     ;;
   gpu)
     cat <<EOF

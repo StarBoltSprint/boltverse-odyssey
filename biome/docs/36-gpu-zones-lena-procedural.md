@@ -49,12 +49,14 @@ Procedural **yes** on Rail B, on spawn, and on LOD. Procedural here means **when
 - **Procedural Spawn** in front of the paws. Seed + timing. The asset stays a high-quality Imagine keyed plate. Call `lenaFrame`.
 - **Paw-to-Galaxy LOD** — earth → near space → deep space (`worldLod`). On the cone, far / mid / near pick `generator` / `detail` / `rock`, and `preloadOf` warms the next file before the swap. Journey and path: [18](18-room-starmap-lena.md) · [19](19-luminous-path-climb.md) · [21](21-paw-to-galaxy.md). Bib names: [`COLD_START-lena-bib.md`](COLD_START-lena-bib.md).
 - **Howl targets column** — procedural crystals now. Later: ship / mech. Those targets are destroyable by Howl. Plate-baked events stay dodge-only (Rail A, law [25](25-hazard-cone.md)).
+- **Path beat** — the chemin reveals one lane ~3 s ahead of contact so the player can SIDES. Same cone. Densify stays this plate. Law [37](37-path-beat.md). LOD fills the world; the path beat tells which lane to be in.
 
 Cold Groks, roles so the names stay distinct:
 
 | Name | Owns |
 |---|---|
 | **Dr Lena Voss** | How you move. Spawn, preload, LOD, Rail B placement. |
+| **Path beat** | Which lane, and when. Reveal ~3 s ahead. Hit / miss at contact. Law [37](37-path-beat.md). |
 | **Marcus** | Resonance / `m` grade. |
 | **Priya** | Quest / why. |
 | **Elena** | Pack / rifts. |
@@ -67,6 +69,7 @@ These are **FAIL**:
 
 - Chopping one densify Video A into GPU spatial tiles
 - Baking destroyables or Howl into densify plates
+- **FAIL if Build paints the path into Video A**, or a lane target, a generator, or a Lena detail. Path beat, Lena LOD bibs, Howl, and Bolt are GPU keyed layers composited **OVER** that plate. **GPU is REQUIRED.** Densify stays the clean looping 3-lane film.
 - Procedural invent of the Howl look (rings must be the Imagine KEEP)
 - Sticker spawn with no anti-sticker contact law ([13b](13b-anti-sticker-contact.md))
 - Hanging a Build conversation URL or a share link. A play URL, when one is hung at all, is Live only. This note adds none.
@@ -96,4 +99,4 @@ Film-strip Imagine canvas: one column per plate (P0, P4, …). Pin Bolt + vault 
 - A sky/vault layer that is a cropped densify frame
 - A new play URL, Build `/c/` link, or `grok.com/share` hung from this note
 
-Related: [15](15-gpu-compositor.md) · [17](17-live-compositor.md) · [32](32-howl-gpu-targets.md) · [34](34-howl-live-aim.md) · [18](18-room-starmap-lena.md) · [19](19-luminous-path-climb.md) · [21](21-paw-to-galaxy.md) · [22-m](22-m-densify-snowball.md) · [25](25-hazard-cone.md) · [28](28-stills-two-rails.md) · [33](33-plate-mae-qc.md) · [35](35-lane-materials.md) · runtime [`../scripts/lena-lod/lenaLod.js`](../scripts/lena-lod/lenaLod.js) · paste [`COLD_START-gpu-zones.md`](COLD_START-gpu-zones.md) · bib [`COLD_START-lena-bib.md`](COLD_START-lena-bib.md)
+Related: [15](15-gpu-compositor.md) · [17](17-live-compositor.md) · [32](32-howl-gpu-targets.md) · [34](34-howl-live-aim.md) · [18](18-room-starmap-lena.md) · [19](19-luminous-path-climb.md) · [21](21-paw-to-galaxy.md) · [22-m](22-m-densify-snowball.md) · [25](25-hazard-cone.md) · [28](28-stills-two-rails.md) · [33](33-plate-mae-qc.md) · [35](35-lane-materials.md) · [37](37-path-beat.md) (chemin ~3 s ahead; densify stays this loop) · runtime [`../scripts/lena-lod/lenaLod.js`](../scripts/lena-lod/lenaLod.js) · path beat [`../scripts/path-beat/pathBeat.js`](../scripts/path-beat/pathBeat.js) · paste [`COLD_START-gpu-zones.md`](COLD_START-gpu-zones.md) · bib [`COLD_START-lena-bib.md`](COLD_START-lena-bib.md) · path [`COLD_START-path-beat.md`](COLD_START-path-beat.md)

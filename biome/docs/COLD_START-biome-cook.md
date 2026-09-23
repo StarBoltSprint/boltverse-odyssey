@@ -6,6 +6,8 @@ Open `biome/scripts/biome-cook/README.md` and follow **only** that order (steps 
 
 **Before that still and before Video A (law 36):** densify stays one continuous plate. GPU zones are keyed layers over it. Do not chop one densify plate into spatial GPU tiles. Read `biome/docs/36-gpu-zones-lena-procedural.md`. Paste `biome/docs/COLD_START-gpu-zones.md`. Runtime: `biome/scripts/lena-lod/lenaLod.js` (`lenaFrame`). Bib: `biome/docs/COLD_START-lena-bib.md`.
 
+**Path beat (law 37):** do not bake the target lane into that plate. The chemin reveals one lane ~3 s ahead of contact. SIDES, then hit/miss. Same Howl cone as Lena. Read `biome/docs/37-path-beat.md`. Paste `biome/docs/COLD_START-path-beat.md`. Runtime: `biome/scripts/path-beat/pathBeat.js` (`pathBeatFrame`).
+
 If `{PAINT}` already names the road material, use that. Otherwise propose this menu and do not cook P0 on a silent default:
 
 | Key | Name | Look |
