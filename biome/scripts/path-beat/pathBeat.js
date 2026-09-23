@@ -50,10 +50,21 @@ export const APPROACH = 1 / HOWL.travel;
 /** In-world reveal. Not a screen arrow. */
 const REVEAL_OF = { far: "light", mid: "detail", near: "fill" };
 
+/** Keyed layers. All of them composite on the GPU over densify. None are painted into Video A. */
+export const GPU = {
+  required: true,
+  composite: "over-densify",
+  bakeIntoDensify: false,
+  layers: ["bolt", "lena", "howl", "path-beat"],
+};
+
 export const NATIVE = {
   geometry: "densify-lanes",
   cone: "howlPose",
   lanes: 3,
+  gpu: true,
+  composite: GPU.composite,
+  bakeIntoDensify: false,
   gradeFromPlate: true,
   inWorld: true,
   hud: false,
@@ -72,6 +83,8 @@ export const COOK = {
   bibs: "keyed-same-world",
   bolt: "lock/bolt-back.jpg",
   lanes: 3,
+  gpu: true,
+  bakeIntoDensify: false,
 };
 
 const NAME = { [-1]: "L", 0: "C", 1: "R" };
@@ -166,6 +179,9 @@ export function pathBeatChart(seed, opts = {}) {
     coversPlate: false,
     hud: false,
     inWorld: true,
+    gpu: true,
+    composite: GPU.composite,
+    bakeIntoDensify: false,
     gradeFromPlate: true,
     cone: "howlPose",
     clock: "densify",
@@ -217,6 +233,9 @@ function decorate(beat, now, ctx) {
     space: "world",
     hud: false,
     inWorld: true,
+    gpu: true,
+    composite: GPU.composite,
+    bakeIntoDensify: false,
     gradeFromPlate: true,
     band,
     /** light = lane lights up, detail = detail forms, fill = void fills. */
@@ -238,6 +257,9 @@ export function assertPathNative(frame) {
   if (!frame) return ["missing frame"];
   if (frame.tileDensify !== false) fails.push("densify tiled");
   if (frame.coversPlate !== false) fails.push("covers plate");
+  if (frame.gpu !== true) fails.push("GPU");
+  if (frame.bakeIntoDensify !== false) fails.push("baked into densify");
+  if (frame.composite !== "over-densify") fails.push("composite");
   if (frame.hud !== false) fails.push("HUD");
   if (frame.inWorld !== true) fails.push("not in world");
   if (frame.gradeFromPlate !== true) fails.push("gradeFromPlate");
@@ -249,8 +271,10 @@ export function assertPathNative(frame) {
   if (!frame.cook || frame.cook.vault !== true || frame.cook.calmSides !== true) fails.push("cook sides");
   if (!frame.cook || frame.cook.bibs !== COOK.bibs) fails.push("cook bibs");
   if (!frame.cook || frame.cook.bolt !== COOK.bolt) fails.push("bolt identity");
+  if (!frame.cook || frame.cook.gpu !== true || frame.cook.bakeIntoDensify !== false) fails.push("cook GPU");
   for (const b of frame.beats || []) {
     if (b.hud !== false || b.space !== "world" || b.inWorld !== true) fails.push("beat HUD");
+    if (b.gpu !== true || b.bakeIntoDensify !== false) fails.push("beat baked into densify");
     if (b.gradeFromPlate !== true) fails.push("beat grade");
     if (b.contact === true && b.band !== "near") fails.push("shadow outside near");
     if (b.band === "near" && b.contact !== true) fails.push("near without shadow");
@@ -331,6 +355,9 @@ export function pathBeatFrame(state, dt, ctx) {
     now,
     hud: false,
     inWorld: true,
+    gpu: true,
+    composite: GPU.composite,
+    bakeIntoDensify: false,
     gradeFromPlate: true,
     cone: "howlPose",
     clock: "densify",

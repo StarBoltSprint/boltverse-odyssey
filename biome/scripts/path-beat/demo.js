@@ -114,6 +114,9 @@ for (let i = 0; i < 80; i++) {
 assert("soft LOD crossfade, no pop", sawSoft && warmed && maxJump < 0.35);
 assert("near band fills the lane and takes the shadow", sawNear);
 assert("a HUD frame is a FAIL", assertPathNative({ ...revealed, hud: true }).includes("HUD"));
+assert("GPU over densify, not painted into Video A", revealed.gpu === true && revealed.bakeIntoDensify === false && revealed.composite === "over-densify" && live.gpu === true && live.bakeIntoDensify === false);
+assert("painting the path into densify is a FAIL", assertPathNative({ ...revealed, bakeIntoDensify: true }).includes("baked into densify"));
+assert("skipping the GPU is a FAIL", assertPathNative({ ...revealed, gpu: false }).includes("GPU"));
 
 const hit = pathBeatFrame(revealed.state, 0, { ...ctx, now: first.tContact, playerLane: first.lane });
 assert("contact on the target lane is a hit", hit.resolved.length === 1 && hit.resolved[0].result === "hit" && hit.resolved[0].id === first.id);

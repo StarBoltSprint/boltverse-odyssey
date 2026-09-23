@@ -11,6 +11,8 @@ Imagine = look. Code = when and where.
 
 The reveal is **native to the densify film**. A HUD arrow, a sticker quad, or a second cone is FAIL.
 
+**GPU is REQUIRED.** Path beat, Lena LOD bibs, Howl, and Bolt are GPU keyed layers composited **OVER** densify Video A. Densify stays the clean looping 3-lane plate. **FAIL if Build paints the path into Video A instead of the GPU.** Same FAIL for lane targets, generators, or details baked into that Imagine. `frame.gpu === true`. `frame.bakeIntoDensify === false`. `frame.composite === "over-densify"`.
+
 ---
 
 ## Product
@@ -80,6 +82,7 @@ Densify’s **3 lanes are the truth**. Path beat, Lena, and Howl share `howlPose
 | In world | `hud: false`, `inWorld: true`, `space: "world"`. `reveal` is `light` (lane lights up) → `detail` (detail forms) → `fill` (void fills) | A HUD arrow, a corner icon, an overlay that is not on the road |
 | Cook | `cook.densify` is a clean 3-lane loop, vault on, sides calm. Bibs are keyed and the same world. Bolt is `lock/bolt-back.jpg` | A busy plate, a bib from another biome, a new dog |
 | One film | `tileDensify: false`, `coversPlate: false`, `sameClock: true` | Spatial slices of Video A. A second clock for the beat |
+| GPU required | `gpu: true`, `composite: "over-densify"`, `bakeIntoDensify: false` | Painting the path, a lane target, a generator, or a detail into densify Video A |
 
 Contact shadow is **only** when `band === "near"` (`contact: true`). Far and mid get no shadow. Band edges use Lena’s `warm` / `warmK` so the in-world detail crossfades.
 
@@ -89,6 +92,7 @@ Contact shadow is **only** when `band === "near"` (`contact: true`). Far and mid
 
 ## FAIL
 
+- **Painting the path into densify Video A instead of a GPU keyed layer over that plate.** Same FAIL for a lane target, a generator, or a detail bib baked into the densify Imagine. `gpu` must be true. `bakeIntoDensify` must be false.
 - A HUD arrow, badge, or screen overlay instead of an in-world lane
 - A sticker bib that is not graded from this densify plate (`gradeFromPlate` false)
 - A second cone, or a perspective that is not `howlPose` on densify’s 3 lanes

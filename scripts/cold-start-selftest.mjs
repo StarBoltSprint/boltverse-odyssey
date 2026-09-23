@@ -773,6 +773,8 @@ must(existsSync(join(root, "biome/scripts/path-beat/pathBeat.js")), "path-beat r
 must(/lookahead/.test(pathLaw) && /3/.test(pathLaw) && /SIDES/.test(pathLaw) && /hit/.test(pathLaw), "law 37: lookahead, SIDES, hit");
 must(/gradeFromPlate/.test(pathLaw) && /HUD/.test(pathLaw) && /near/.test(pathLaw) && /tileDensify/.test(pathLaw), "law 37: native locks are FAIL lines");
 must(/assertPathNative/.test(pathPaste) && /gradeFromPlate/.test(pathPaste) && /HUD/.test(pathPaste) && /in the road/.test(pathPaste), "law 37 paste: native to the video");
+must(/\*\*GPU is REQUIRED\.\*\*/.test(pathPaste) && /OVER densify Video A/.test(pathPaste) && /FAIL if Build paints the path into Video A/.test(pathPaste), "law 37 paste: GPU required, do not paint Video A");
+must(/GPU is REQUIRED/.test(pathLaw) && /paints the path into Video A/.test(pathLaw), "law 37: GPU required FAIL");
 must(/37-path-beat/.test(pathPaste) && /pathBeatFrame/.test(pathPaste) && /3/.test(pathPaste), "law 37 paste names the frame API");
 must(/path-beat\/pathBeat\.js/.test(pathLaw) && /pathBeatFrame/.test(pathLaw), "law 37 points at pathBeatFrame");
 must(/37-path-beat/.test(zonesLaw) && /path-beat/.test(zonesLaw), "law 36 points at the path beat");
@@ -826,5 +828,7 @@ must(pathBeat.APPROACH > 0 && revealed.gradeFromPlate === true && revealed.hud =
 must(revealed.inWorld === true && revealed.beats[0].space === "world" && revealed.beats[0].contact === false, "reveal is in world and not yet a near shadow");
 must(pathBeat.assertPathNative(revealed).length === 0, "assertPathNative accepts the live frame");
 must(pathBeat.assertPathNative({ ...revealed, hud: true }).includes("HUD"), "a HUD frame is a FAIL");
+must(revealed.gpu === true && revealed.bakeIntoDensify === false && revealed.composite === "over-densify", "path beat is a GPU layer over densify");
+must(pathBeat.assertPathNative({ ...revealed, bakeIntoDensify: true }).includes("baked into densify"), "painting the path into densify is a FAIL");
 
 console.log("COLD-START PASS");

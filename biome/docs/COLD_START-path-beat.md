@@ -2,7 +2,15 @@
 
 Read `biome/docs/37-path-beat.md`. Runtime: `biome/scripts/path-beat/pathBeat.js`. Run `node biome/scripts/path-beat/demo.js`.
 
-Densify Video A stays a **SuperGrok session** Imagine Video with **first + last** pinned: one continuous 3-lane loop. Build does not drive that session. Missing `XAI_API_KEY` is not a stop. Do not paint L/C/R targets into that plate. Do not tile it.
+## **GPU is REQUIRED.**
+
+Path beat reveal (~3 s ahead, in the road), Lena LOD bibs, Howl, and Bolt are **GPU keyed layers composited OVER densify Video A**.
+
+Densify stays the **clean looping 3-lane plate**. Imagine Video A does not receive the path, lane targets, generators, or detail bibs.
+
+**FAIL if Build paints the path into Video A instead of the GPU.** Same FAIL for a lane target, a generator, or a detail baked into that densify Imagine. `frame.gpu` is `true`. `frame.composite` is `"over-densify"`. `frame.bakeIntoDensify` is `false`. `assertPathNative` returns `"baked into densify"` or `"GPU"` if you break this.
+
+Densify Video A stays a **SuperGrok session** Imagine Video with **first + last** pinned: one continuous 3-lane loop. Build does not drive that session. Missing `XAI_API_KEY` is not a stop. Do not tile it.
 
 The **chemin** is code on the Howl cone. It forms ~**3.0 s** ahead of contact (`PATH_BEAT.lookahead`), on one lane, so the player can SIDES before the paws arrive. The player reads it **in the road**. Imagine, if you cook a look, is one keyed lane segment at `biome/fx/path/chemin.mp4` — same world and materials as the plate, graded from that plate, not a densify crop, not a HUD arrow.
 
@@ -23,10 +31,11 @@ Call `assertPathNative` on the frame you are about to draw. A non-empty list is 
 
 | Piece | Owns |
 |---|---|
-| Densify loop (Rail A) | The 3-lane picture. Continuous. Dodge cinema stays in the plate. |
-| Lena LOD (`lenaFrame`) | World fill. Bibs, far/mid/near, earth → deep space. Same cone. |
-| Path beat (`pathBeatFrame`) | Which lane to be in, and when. Reveal ~3 s ahead. Hit / miss at contact. |
-| Howl (`pickHowlLane`) | Obstacles share taken lanes so one corridor stays free. Path beat aims the player at that corridor. |
+| Densify loop (Rail A) | The clean 3-lane picture. Continuous Imagine film. No path, no generators, no detail bibs painted in. |
+| Bolt | GPU keyed identity lock, composited **over** densify. |
+| Lena LOD (`lenaFrame`) | GPU keyed bibs. World fill. Far/mid/near. Same cone. **Over** densify. |
+| Howl | GPU keyed KEEP rings **over** densify. Obstacles share taken lanes so one corridor stays free. |
+| Path beat (`pathBeatFrame`) | GPU keyed in-world reveal ~3 s ahead. Which lane, and when. Hit / miss at contact. **Over** densify. |
 
 LOD fills the world. The path beat tells which lane to be in. Call both each frame. Do not fold the beat into the bib spawner.
 

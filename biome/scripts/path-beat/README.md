@@ -14,7 +14,7 @@ Lena LOD (world fill, same cone): [`../lena-lod/lenaLod.js`](../lena-lod/lenaLod
 
 ## Wire (Build)
 
-1. Cook densify Video A as one 3-lane loop (first + last). Do not paint the target lane into that plate.
+1. Cook densify Video A as one clean 3-lane loop (first + last). **GPU is REQUIRED** for the path, Lena bibs, Howl, and Bolt: keyed layers composited over that plate. **FAIL** if you paint the path, a lane target, a generator, or a detail into Video A.
 2. Copy `pathBeat.js` into Live next to `howlLive.js`. Call `pathBeatFrame` every frame. Call `lenaFrame` on its own — LOD fills the world; this module names the lane.
 3. While `active` is set, reveal that lane **in the road** (`reveal`: light → detail → fill) on `active.pose` — the same `howlPose` ground as Lena and Howl. Grade from this densify plate (`gradeFromPlate`). Crossfade with `warmK`. Contact shadow only when `contact` is true (near band). Optional look: `biome/fx/path/chemin.mp4`, keyed, same world. Not a HUD arrow. Not a sticker.
 4. Pass densify plate time as `now`. `approach` is `1 / HOWL.travel` (Lena’s z step). Do not run a second clock.
