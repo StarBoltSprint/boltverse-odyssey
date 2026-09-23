@@ -21,6 +21,11 @@ Pages here are **optional**. They are **not** cook gates. Default Bolt remains e
 | [36-gpu-zones-lena-procedural.md](36-gpu-zones-lena-procedural.md) | GPU zones = keyed layers over densify. Runtime `scripts/lena-lod/lenaLod.js`. Bib: [COLD_START-lena-bib.md](COLD_START-lena-bib.md). |
 | [37-path-beat.md](37-path-beat.md) | Path beat. Chemin reveals one lane ~3 s ahead. Runtime `scripts/path-beat/pathBeat.js`. Paste: [COLD_START-path-beat.md](COLD_START-path-beat.md). |
 | [38-gpu-light-openable.md](38-gpu-light-openable.md) | GPU light layers + openables. Light-only plates and closed/open/transition. Runtime `scripts/gpu-light/` · `scripts/gpu-openable/`. Paste: [COLD_START-gpu-light-openable.md](COLD_START-gpu-light-openable.md). |
+
+**Any new biome convo: paste [COLD_START-imagine-engine.md](COLD_START-imagine-engine.md) first** (then biome-specific cold starts).
+
+| Page | Gate |
+|---|---|
 | [39-imagine-live-light.md](39-imagine-live-light.md) | Prop is an Imagine video filmed in the plate light. Clean luma key, no regrade. Tap fires howl. Runtime `scripts/imagine-live/imagineLive.js`. Paste: [COLD_START-imagine-live.md](COLD_START-imagine-live.md). |
 | [40-nebula-cycle.md](40-nebula-cycle.md) | Nebula Lane: nebula → shore → disk → eclipse. 30 s hold + 3.2 s fade. Continue from the last frame. Trim the slow head. Paste: [COLD_START-nebula-lane.md](COLD_START-nebula-lane.md). |
 | [41-eclipse-look.md](41-eclipse-look.md) | Hidden 3D yaw, eclipse only. Videos stay videos. Drag looks, tap changes lane. Planet cards + star sky. Runtime `scripts/eclipse-look/eclipseLook.js`. Paste: [COLD_START-nebula-lane.md](COLD_START-nebula-lane.md). |
