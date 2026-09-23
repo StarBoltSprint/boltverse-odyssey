@@ -17,11 +17,12 @@ DESPILL="$BIOME/scripts/chroma-despill"
 CURVE="$BIOME/scripts/curvature-sample"
 GPU="$BIOME/scripts/bolt-key-gl"
 HOWL="$BIOME/scripts/howl-live"
+LENA="$BIOME/scripts/lena-lod"
 KEEP="$BIOME/fx/howl/howl-attack.mp4"
 
 print_steps() {
   cat <<'EOF'
-biome-cook — steps 1→17 (PRIORITY 0 section C + laws through 35)
+biome-cook — steps 1→17 (PRIORITY 0 section C + laws through 36)
 Hang ≠ wipe. Do not invent QC math. Noun is biome-variable. Math is fixed.
 Read biome/scripts/biome-cook/README.md. Paste biome/docs/COLD_START-biome-cook.md.
 Play URL hang = Live only, never a Build convo, never grok.com/share, never /c/.
@@ -47,6 +48,13 @@ Worked example (play URL only): https://boltboltverse-odyssey.grok.me
          biome/docs/31-light-lock.md
     Prompt: biome/prompts/image-empty-plate.txt  ({LANE_MATERIAL} inside {PAINT})
     Paste: biome/docs/COLD_START-lane-materials.md
+    Law 36 before this still and before Video A: densify stays one plate.
+    GPU zones = keyed layers over densify. BAN spatial GPU tiles.
+    Law: biome/docs/36-gpu-zones-lena-procedural.md
+    Paste: biome/docs/COLD_START-gpu-zones.md
+    Runtime: biome/scripts/lena-lod/lenaLod.js (lenaFrame)
+    Bib: biome/docs/COLD_START-lena-bib.md
+    Run: biome-cook.sh lena
  4  Next plate refs (law 22-m). Success +1 @ ref. Miss drops one.
     Law: biome/docs/22-m-densify-snowball.md
     Prompt: biome/prompts/snowball-refs.txt
@@ -125,6 +133,7 @@ Usage (wrapper — exit code comes from the real script):
   biome-cook.sh despill                 node biome/scripts/chroma-despill/demo.js
   biome-cook.sh curvature               node biome/scripts/curvature-sample/demo.js
   biome-cook.sh howl                    node biome/scripts/howl-live/demo.js   (law 34)
+  biome-cook.sh lena                    node biome/scripts/lena-lod/demo.js    (law 36)
   biome-cook.sh gpu                     echo copy paths (law 22 / GPU 24). No cook.
 
 Examples copied from the hung READMEs:
@@ -136,6 +145,7 @@ Examples copied from the hung READMEs:
   node biome/scripts/chroma-despill/demo.js
   node biome/scripts/curvature-sample/demo.js
   node biome/scripts/howl-live/demo.js
+  node biome/scripts/lena-lod/demo.js
 EOF
 }
 
@@ -208,6 +218,12 @@ case "$cmd" in
     echo "law 34 — copy biome/scripts/howl-live/howlLive.js + howlWet.glsl" >&2
     echo "law 34 — REUSE $KEEP (do not recook)" >&2
     run_node_demo "$HOWL" "$@"
+    ;;
+  lena)
+    echo "law 36 — copy biome/scripts/lena-lod/lenaLod.js (lenaFrame)" >&2
+    echo "law 36 — bib cook biome/docs/COLD_START-lena-bib.md" >&2
+    echo "law 36 — densify stays one plate; do not tile Video A" >&2
+    run_node_demo "$LENA" "$@"
     ;;
   gpu)
     cat <<EOF

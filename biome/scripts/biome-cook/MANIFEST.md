@@ -16,6 +16,7 @@ Inventory only. Hang ≠ wipe. `biome-cook.sh` wraps these entries. It does not 
 | [`biome/scripts/curvature-sample/`](../curvature-sample/) | 12 · 12b | [`curvatureSample.js`](../curvature-sample/curvatureSample.js) · [`demo.js`](../curvature-sample/demo.js) | `resamplePath` → `path.json`. |
 | [`biome/scripts/bolt-key-gl/`](../bolt-key-gl/) | 15 · 17 · 22 | [`bolt-key-gl.ts`](../bolt-key-gl/bolt-key-gl.ts) · [`wet-fx.ts`](../bolt-key-gl/wet-fx.ts) · [`WIRE.md`](../bolt-key-gl/WIRE.md) | GPU compositor. `GPU_VER = 24`. Copy both sources. |
 | [`biome/scripts/howl-live/`](../howl-live/) | **34** | [`howlLive.js`](../howl-live/howlLive.js) · [`howlWet.glsl`](../howl-live/howlWet.glsl) · [`demo.js`](../howl-live/demo.js) | `howlFireSec`, `howlFxBeam`, cut-on-contact, shatter swap, wet GPU. |
+| [`biome/scripts/lena-lod/`](../lena-lod/) | **36** | [`lenaLod.js`](../lena-lod/lenaLod.js) · [`demo.js`](../lena-lod/demo.js) | `lenaFrame`, far/mid/near bands, bib preload. Cone = howlPose. |
 
 `bolt-key-gl-scissor-prev.ts` lives in `bolt-key-gl/` as **ARCHIVE**. Copying it is FAIL (vertical bars, eaten paws). It is not a cook step.
 
@@ -60,6 +61,10 @@ Every file currently hung under those dirs:
 | `biome/scripts/howl-live/howlLive.js` |
 | `biome/scripts/howl-live/howlWet.glsl` |
 | `biome/scripts/howl-live/demo.js` |
+| `biome/scripts/lena-lod/README.md` |
+| `biome/scripts/lena-lod/package.json` |
+| `biome/scripts/lena-lod/lenaLod.js` |
+| `biome/scripts/lena-lod/demo.js` |
 
 ## Laws used for a biome cook
 
@@ -89,6 +94,7 @@ Every file currently hung under those dirs:
 | 33 | [`biome/docs/33-plate-mae-qc.md`](../../docs/33-plate-mae-qc.md) | [`plate-mae-qc.py`](../plate-mae-qc/plate-mae-qc.py) |
 | 34 | [`biome/docs/34-howl-live-aim.md`](../../docs/34-howl-live-aim.md) | [`howl-live/`](../howl-live/) — step 14 |
 | 35 | [`biome/docs/35-lane-materials.md`](../../docs/35-lane-materials.md) | step 3, before the empty still. Menu A–D. Paste [`COLD_START-lane-materials.md`](../../docs/COLD_START-lane-materials.md). No script. |
+| 36 | [`biome/docs/36-gpu-zones-lena-procedural.md`](../../docs/36-gpu-zones-lena-procedural.md) | before empty stills and Video A. Keyed GPU layers over densify. Runtime [`lena-lod/`](../lena-lod/). Paste [`COLD_START-gpu-zones.md`](../../docs/COLD_START-gpu-zones.md) · [`COLD_START-lena-bib.md`](../../docs/COLD_START-lena-bib.md). |
 
 ## Howl KEEP
 

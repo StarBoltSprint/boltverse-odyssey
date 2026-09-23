@@ -146,5 +146,6 @@ No second wallet. No Connect Wallet. Picture + taps only. No “paste this URL�
 - [21-paw-to-galaxy.md](21-paw-to-galaxy.md) — Paw-to-Galaxy climb (incline, duration, space look). Paste: [COLD_START-paw-to-galaxy.md](COLD_START-paw-to-galaxy.md)  
 - Citadel door / hall docs in repo root (`DOORS.md`, `ROOM.md`, `ENTER.md`)  
 - Dr Lena — Paw-to-Galaxy / meaningful sprint (lore; picture densifies with flow)
+- [36-gpu-zones-lena-procedural.md](36-gpu-zones-lena-procedural.md) — Lena procedural on Rail B (spawn / preload / LOD). Densify stays one plate.
 
 **Not this doc:** implementing a full 3D engine. Constellation stays Imagine-video Space LOD unless SmiR reopens.

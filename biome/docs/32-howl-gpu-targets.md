@@ -110,4 +110,4 @@ Hall breath is not this plate. Breath = citadel, same still twice, chest rise ([
 
 **FAIL if:** Howl is a shader · the hung Howl is recooked · shatter is inside the Howl · black rectangles around shards · a meteor is marked destroyable · rail B is baked into the road · the obstacle is a sticker (no bounce, no contact, knife alpha) · one shatter plate serves every type · Howl overshoots the prop or keeps playing after contact (law 34).
 
-Related: [34](34-howl-live-aim.md) · [25](25-hazard-cone.md) · [13b](13b-anti-sticker-contact.md) · [15](15-gpu-compositor.md) · [17](17-live-compositor.md) · [02](02-videos.md) · [26](26-biome-sprint-plan.md) · [00](00-PRIORITY0-any-biome.md)
+Related: [34](34-howl-live-aim.md) · [25](25-hazard-cone.md) · [13b](13b-anti-sticker-contact.md) · [15](15-gpu-compositor.md) · [17](17-live-compositor.md) · [02](02-videos.md) · [26](26-biome-sprint-plan.md) · [00](00-PRIORITY0-any-biome.md) · [36](36-gpu-zones-lena-procedural.md) (Howl is a keyed GPU zone, not a crop of densify)

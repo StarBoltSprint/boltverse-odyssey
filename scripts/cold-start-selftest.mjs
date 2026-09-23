@@ -6,7 +6,7 @@
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -729,5 +729,40 @@ must(/35-lane-materials/.test(body("biome/scripts/biome-cook/MANIFEST.md")), "MA
 must(hasLaneMenu(grok) && /35-lane-materials/.test(grok) && /béton/.test(grok) && /grey concrete/.test(grok), "GROK.md principal: law 35 menu + asphalt BAN");
 must(hasLaneMenu(agents) && /35-lane-materials/.test(agents) && /béton/.test(agents) && /grey concrete/.test(agents), "AGENTS.md principal: law 35 menu + asphalt BAN");
 must(/35-lane-materials/.test(body("README.md")) && /law 35/.test(body("README.md")), "README.md kitchen map: law 35");
+
+const zonesLaw = body("biome/docs/36-gpu-zones-lena-procedural.md");
+const zonesPaste = body("biome/docs/COLD_START-gpu-zones.md");
+must(existsSync(join(root, "biome/docs/36-gpu-zones-lena-procedural.md")), "law 36 doc exists");
+must(/Rail A/.test(zonesLaw) && /Rail B/.test(zonesLaw) && /spatial GPU tiles/.test(zonesLaw) && /Dr Lena Voss/.test(zonesLaw), "law 36: dual stack, tile ban, Lena");
+must(/36-gpu-zones-lena-procedural/.test(zonesPaste) && /spatial GPU tiles/.test(zonesPaste), "law 36 paste: tile ban");
+must(/36-gpu-zones-lena-procedural/.test(grok) && /36-gpu-zones-lena-procedural/.test(agents), "GROK.md + AGENTS.md point at law 36");
+must(/36-gpu-zones/.test(cookReadme) && /36-gpu-zones/.test(cookPaste) && /36-gpu-zones/.test(cookSh), "biome-cook surfaces law 36");
+must(/36-gpu-zones-lena-procedural/.test(body("biome/scripts/biome-cook/MANIFEST.md")), "MANIFEST lists law 36");
+must(/lena-lod\/lenaLod\.js/.test(zonesLaw) && /lenaFrame/.test(zonesLaw) && /COLD_START-lena-bib/.test(zonesLaw), "law 36 points at lenaFrame + bib");
+const bib = body("biome/docs/COLD_START-lena-bib.md");
+must(/generator/.test(bib) && /detail/.test(bib) && /-rock\.mp4/.test(bib), "bib cook names generator / detail / rock");
+must(/SuperGrok session/.test(bib) && /first \+ last/.test(bib), "bib cook: Video A stays session first+last");
+must(/lena-lod\/lenaLod\.js/.test(grok) && /lena-lod\/lenaLod\.js/.test(agents), "GROK + AGENTS name the Lena runtime");
+must(/lena-lod/.test(cookReadme) && /COLD_START-lena-bib/.test(cookPaste), "biome-cook names runtime and bib");
+
+const lena = await import(pathToFileURL(join(root, "biome/scripts/lena-lod/lenaLod.js")).href);
+must(lena.objectBand(0.1) === "far" && lena.objectBand(0.5) === "mid" && lena.objectBand(0.9) === "near", "lena bands resolve");
+must(lena.variantOf("far") === "generator" && lena.variantOf("near") === "rock", "lena variants");
+const pre = lena.preloadOf(0.1);
+must(pre.show === "generator" && pre.warm === "detail", "lena preloads detail from far");
+must(lena.worldLod(0.1) === "earth" && lena.worldLod(0.9) === "deep-space", "lena world lod");
+const frame = lena.lenaFrame(lena.lenaState(3), 0.016, {
+  now: 0,
+  climbT: 0.1,
+  cw: 768,
+  ch: 1168,
+  pawY: 980,
+  destH0: 200,
+  blocked: [],
+  plate: [],
+  nouns: ["quartz"],
+});
+must(frame.tileDensify === false && frame.spawns.length === 1 && frame.spawns[0].band === "far", "lenaFrame spawns far, no tiles");
+must(frame.spawns[0].bib === "biome/fx/lena/earth/quartz-generator.mp4", "lenaFrame bib path");
 
 console.log("COLD-START PASS");

@@ -8,13 +8,13 @@ Worked example (play URL only): https://boltboltverse-odyssey.grok.me
 
 Paste: [`COLD_START-biome-cook.md`](COLD_START-biome-cook.md) · same text [`../../docs/COLD_START-biome-cook.md`](../../docs/COLD_START-biome-cook.md). Inventory: [`MANIFEST.md`](MANIFEST.md). Checklist: `bash biome/scripts/biome-cook/biome-cook.sh`.
 
-Order matches [`../../docs/00-PRIORITY0-any-biome.md`](../../docs/00-PRIORITY0-any-biome.md) section C, plus laws through 35.
+Order matches [`../../docs/00-PRIORITY0-any-biome.md`](../../docs/00-PRIORITY0-any-biome.md) section C, plus laws through 36.
 
 | # | Do | Law | Script |
 |---|---|---|---|
 | 1 | Show `lock/bolt-back.jpg` and `lock/bolt-gallop-cycle.mp4` in chat (teacher gate). REUSE the 6 s / 96 fps / 534-frame cycle. Do not invent a gallop. | [`biome/docs/10-bolt-cutout-law.md`](../../docs/10-bolt-cutout-law.md) · [`biome/docs/00-PRIORITY0-any-biome.md`](../../docs/00-PRIORITY0-any-biome.md) | — |
 | 2 | Write the **10-plate sprint plan before d1**. Spine + beat / +1 / hazard / GPU Howl column. Cook in that order. | [`biome/docs/26-biome-sprint-plan.md`](../../docs/26-biome-sprint-plan.md) · plans: [`frost`](../../docs/plans/frost-sprint.md) · [`prismwake`](../../docs/plans/prismwake-sprint.md) · [`cometwake`](../../docs/plans/cometwake-sprint.md) | — |
-| 3 | **Lane material first** (law 35 menu below), then empty still, first + distinct last, **ZERO dog**. Law 20 measures are the frame, not asphalt. Stills: décor snowballs, events swap (28). Imagine bakes the world (29). i2i = one delta (30). Light lock persistent vs event (31). | [`35`](../../docs/35-lane-materials.md) · [`20`](../../docs/20-default-plate-proportions.md) · [`28`](../../docs/28-stills-two-rails.md) · [`29`](../../docs/29-imagine-compiler.md) · [`30`](../../docs/30-i2i-prompt.md) · [`31`](../../docs/31-light-lock.md) | [`biome/prompts/image-empty-plate.txt`](../../prompts/image-empty-plate.txt) `{LANE_MATERIAL}` · paste [`COLD_START-lane-materials.md`](../../docs/COLD_START-lane-materials.md) |
+| 3 | **Lane material first** (law 35 menu below), then empty still, first + distinct last, **ZERO dog**. Law 20 measures are the frame, not asphalt. **Law 36 before the still:** densify stays one plate; GPU zones are keyed layers over it. Stills: décor snowballs, events swap (28). Imagine bakes the world (29). i2i = one delta (30). Light lock persistent vs event (31). | [`35`](../../docs/35-lane-materials.md) · [`36`](../../docs/36-gpu-zones-lena-procedural.md) · [`20`](../../docs/20-default-plate-proportions.md) · [`28`](../../docs/28-stills-two-rails.md) · [`29`](../../docs/29-imagine-compiler.md) · [`30`](../../docs/30-i2i-prompt.md) · [`31`](../../docs/31-light-lock.md) | [`biome/prompts/image-empty-plate.txt`](../../prompts/image-empty-plate.txt) `{LANE_MATERIAL}` · paste [`COLD_START-lane-materials.md`](../../docs/COLD_START-lane-materials.md) · paste [`COLD_START-gpu-zones.md`](../../docs/COLD_START-gpu-zones.md) |
 | 4 | Next plate: success keeps the `@` stack and adds one ref (≤12). Miss drops one tier. d1+ has ≥1 spectacular hazard. | [`biome/docs/22-m-densify-snowball.md`](../../docs/22-m-densify-snowball.md) | [`biome/prompts/snowball-refs.txt`](../../prompts/snowball-refs.txt) |
 | 5 | Video A. Extract last frame of the previous plate → that file **is** this plate’s `first` (P0: the empty first still). Cook the `last` still (advanced world, same camera). Imagine Video **first+last** — SuperGrok session (primary; no API key) **or** `imagineBiomeClip` when `XAI_API_KEY` is set. **48 fps**. Then `plate-mae-qc.py` on N vs N+1 (P0 has no previous seam). Missing key is not a stop. BAN one-still I2V, “forcé localement”, MAE PASS without the script. Frost: no `setpts` 2.7× warp. | [`biome/docs/02-videos.md`](../../docs/02-videos.md) · [`33`](../../docs/33-plate-mae-qc.md) · [`08`](../../docs/08-plate-speed.md) · [`20b`](../../docs/20b-frost-aurora-proportions.md) | [`biome/prompts/video-empty-plate.txt`](../../prompts/video-empty-plate.txt) · [`plate-mae-qc.py`](../plate-mae-qc/plate-mae-qc.py) |
 | 6 | **Law 23 geo qc PASS** before hang. FAIL = recook. Camera block = conical 1-point lock-off (law 24). | [`23`](../../docs/23-plate-geo-qc.md) · [`24`](../../docs/24-camera-1point.md) | [`biome/scripts/plate-geo-qc/plate-geo-qc.py`](../plate-geo-qc/plate-geo-qc.py) · [`biome/prompts/camera-1point.txt`](../../prompts/camera-1point.txt) |
@@ -47,6 +47,8 @@ If `{PAINT}` already names a road material, use it. Otherwise propose this menu 
 
 Swap `{LANE_MATERIAL}` in [`image-empty-plate.txt`](../../prompts/image-empty-plate.txt) before Imagine. `{PAINT}` includes that lane material. Law: [`35-lane-materials.md`](../../docs/35-lane-materials.md). Paste: [`COLD_START-lane-materials.md`](../../docs/COLD_START-lane-materials.md).
 
+**Law 36 — before this still and before Video A.** Densify (Rail A) is one continuous plate. GPU zones (Rail B) are Imagine keyed layers composited over it, same pattern as GPU Bolt. Do not chop one densify plate into spatial GPU tiles. Lena procedural rides Rail B. Runtime: [`../lena-lod/lenaLod.js`](../lena-lod/lenaLod.js) (`lenaFrame`). Law: [`36-gpu-zones-lena-procedural.md`](../../docs/36-gpu-zones-lena-procedural.md). Paste: [`COLD_START-gpu-zones.md`](../../docs/COLD_START-gpu-zones.md) · bib [`COLD_START-lena-bib.md`](../../docs/COLD_START-lena-bib.md). Check: `bash biome/scripts/biome-cook/biome-cook.sh lena`.
+
 Law 27 ([`27-native-road-slide.md`](../../docs/27-native-road-slide.md)) is an optional catalog. It is not a default step.
 
 ### Step 14 — copy paths (law 34)
@@ -73,6 +75,7 @@ bash biome/scripts/biome-cook/biome-cook.sh clock
 bash biome/scripts/biome-cook/biome-cook.sh despill
 bash biome/scripts/biome-cook/biome-cook.sh curvature
 bash biome/scripts/biome-cook/biome-cook.sh howl
+bash biome/scripts/biome-cook/biome-cook.sh lena
 bash biome/scripts/biome-cook/biome-cook.sh gpu
 ```
 

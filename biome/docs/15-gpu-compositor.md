@@ -46,5 +46,5 @@ Copy `bolt-key-gl.ts` + `wet-fx.ts` → Live `src/game/`. Do **not** scaffold a 
 - Wiping old biomes (hang ≠ wipe)
 
 ## Related
-- 13 / 13b / 13c / 13d / 14 / 14c / 16 / **17** / **22** / **32** (Howl targets + shatter use this quad, not a shader Howl)
+- 13 / 13b / 13c / 13d / 14 / 14c / 16 / **17** / **22** / **32** (Howl targets + shatter use this quad, not a shader Howl) / **36** (zones = keyed layers over densify, not spatial tiles of one plate)
 - Hung code: `bolt-key-gl.ts` + `wet-fx.ts` + `WIRE.md`
