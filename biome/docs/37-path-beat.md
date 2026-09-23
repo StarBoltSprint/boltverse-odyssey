@@ -107,4 +107,4 @@ Contact shadow is **only** when `band === "near"` (`contact: true`). Far and mid
 - Scoring a beat by inventing a new Bolt sprint
 - A play URL, Build `/c/` link, or `grok.com/share` from this note
 
-Related: [36](36-gpu-zones-lena-procedural.md) · [34](34-howl-live-aim.md) · [32](32-howl-gpu-targets.md) · [19](19-luminous-path-climb.md) · [12](12-lane-path-ribbon.md) · [22-m](22-m-densify-snowball.md) · runtime [`../scripts/path-beat/pathBeat.js`](../scripts/path-beat/pathBeat.js) · paste [`COLD_START-path-beat.md`](COLD_START-path-beat.md)
+Related: [36](36-gpu-zones-lena-procedural.md) · [38](38-gpu-light-openable.md) (light layers + openables, same cone, over densify) · [34](34-howl-live-aim.md) · [32](32-howl-gpu-targets.md) · [19](19-luminous-path-climb.md) · [12](12-lane-path-ribbon.md) · [22-m](22-m-densify-snowball.md) · runtime [`../scripts/path-beat/pathBeat.js`](../scripts/path-beat/pathBeat.js) · paste [`COLD_START-path-beat.md`](COLD_START-path-beat.md) · light [`COLD_START-gpu-light-openable.md`](COLD_START-gpu-light-openable.md)

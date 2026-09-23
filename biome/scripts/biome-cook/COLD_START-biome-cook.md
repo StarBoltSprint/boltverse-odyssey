@@ -8,6 +8,8 @@ Open `biome/scripts/biome-cook/README.md` and follow **only** that order (steps 
 
 **Path beat (law 37):** do not bake the target lane into that plate. The chemin reveals one lane ~3 s ahead of contact. SIDES, then hit/miss. Same Howl cone as Lena. Read `biome/docs/37-path-beat.md`. Paste `biome/docs/COLD_START-path-beat.md`. Runtime: `biome/scripts/path-beat/pathBeat.js` (`pathBeatFrame`).
 
+**Light layers + openables (law 38):** do not bake playable lights or open states into that plate. Imagine cooks light-only keyed plates and closed / open / transition bibs. GPU owns intensity, tint, hit, and open/close. Same Howl cone. Not raytracing. Read `biome/docs/38-gpu-light-openable.md`. Paste `biome/docs/COLD_START-gpu-light-openable.md`. Runtime: `biome/scripts/gpu-light/gpuLight.js` (`lightLayerFrame`) · `biome/scripts/gpu-openable/gpuOpenable.js` (`openableFrame`).
+
 If `{PAINT}` already names the road material, use that. Otherwise propose this menu and do not cook P0 on a silent default:
 
 | Key | Name | Look |

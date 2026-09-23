@@ -836,4 +836,73 @@ must(revealed.revealHook.draw === true && revealed.revealHook.hud === false && r
 must(revealed.revealHook.op === "light" || revealed.revealHook.op === "form" || revealed.revealHook.op === "fill", "reveal hook op is light, form, or fill");
 must(pathBeat.pathRevealHook(null).draw === false, "no beat means the hook does not draw");
 
+const lightLaw = body("biome/docs/38-gpu-light-openable.md");
+const lightPaste = body("biome/docs/COLD_START-gpu-light-openable.md");
+must(existsSync(join(root, "biome/docs/38-gpu-light-openable.md")), "law 38 doc exists");
+must(existsSync(join(root, "biome/docs/COLD_START-gpu-light-openable.md")), "law 38 paste exists");
+must(existsSync(join(root, "biome/scripts/gpu-light/gpuLight.js")), "gpu-light runtime exists");
+must(existsSync(join(root, "biome/scripts/gpu-openable/gpuOpenable.js")), "gpu-openable runtime exists");
+must(/lightLayerFrame/.test(lightLaw) && /openableFrame/.test(lightLaw) && /assertLightNative/.test(lightLaw) && /assertOpenableNative/.test(lightLaw), "law 38 names the frame APIs");
+must(/beam/.test(lightLaw) && /glow/.test(lightLaw) && /neon/.test(lightLaw) && /flash/.test(lightLaw), "law 38 light kinds");
+must(/door/.test(lightLaw) && /chest/.test(lightLaw) && /generator/.test(lightLaw) && /hatch/.test(lightLaw), "law 38 openable kinds");
+must(/howlPose/.test(lightLaw) && /gradeFromPlate/.test(lightLaw) && /raytrac/.test(lightLaw) && /closed/.test(lightLaw) && /transition/.test(lightLaw), "law 38: cone, grade, states, no raytrace");
+must(/FAIL if Build paints a beam/.test(lightLaw) && /bakeIntoDensify/.test(lightLaw), "law 38: do not bake into densify");
+must(/\*\*GPU is REQUIRED\.\*\*/.test(lightPaste) && /OVER densify Video A/.test(lightPaste) && /light-only/.test(lightPaste) && /transition/.test(lightPaste), "law 38 paste: GPU required, cook bibs");
+must(/assertLightNative/.test(lightPaste) && /assertOpenableNative/.test(lightPaste) && /hud/.test(lightPaste) && /howlPose/.test(lightPaste), "law 38 paste: native checks");
+must(/38-gpu-light-openable/.test(grok) && /38-gpu-light-openable/.test(agents), "GROK.md + AGENTS.md point at law 38");
+must(/lightLayerFrame/.test(grok) && /lightLayerFrame/.test(agents) && /openableFrame/.test(grok) && /openableFrame/.test(agents), "GROK.md + AGENTS.md name lightLayerFrame and openableFrame");
+must(/38-gpu-light-openable/.test(body("biome/GROK.md")) && /gpu-light/.test(body("README.md")), "biome GROK + README name law 38");
+must(/38-gpu-light-openable/.test(zonesLaw) && /38-gpu-light-openable/.test(pathLaw), "laws 36 and 37 point at law 38");
+must(/38-gpu-light-openable/.test(body("biome/scripts/biome-cook/MANIFEST.md")), "MANIFEST lists law 38");
+must(/38-gpu-light-openable/.test(cookReadme) && /gpu-light/.test(cookSh) && /openableFrame/.test(cookSh), "biome-cook surfaces law 38");
+must(/38-gpu-light-openable/.test(body("biome/docs/COLD_START-any-biome.md")), "any-biome cold start names law 38");
+must(/COLD_START-gpu-light-openable/.test(cookPaste), "COLD_START-biome-cook names the light paste");
+must(/38-gpu-light-openable/.test(body("biome/docs/COLD_START-gpu-zones.md")), "gpu-zones paste points at law 38");
+must(/38-gpu-light-openable/.test(body("biome/docs/00-PRIORITY0-any-biome.md")), "P0 names law 38");
+
+const gpuLight = await import(pathToFileURL(join(root, "biome/scripts/gpu-light/gpuLight.js")).href);
+const gpuOpen = await import(pathToFileURL(join(root, "biome/scripts/gpu-openable/gpuOpenable.js")).href);
+must(gpuLight.KINDS.join(",") === "beam,glow,neon,flash", "light kinds");
+must(gpuLight.lightBib("neon", "lane") === "biome/fx/light/neon/lane.mp4", "light bib path");
+must(gpuLight.GPU.composite === "over-densify" && gpuLight.GPU.bakeIntoDensify === false && gpuLight.GPU.raytrace === false, "light GPU contract");
+const dark = gpuLight.lightLayerFrame(
+  gpuLight.lightLayerState([{ id: "neon-c", kind: "neon", noun: "lane", lane: "C", z: 0.25, on: false }]),
+  0,
+  { cw: 768, ch: 1168, pawY: 980, destH0: 180 },
+);
+must(dark.layers[0].intensity === 0 && dark.gpu === true && dark.hud === false && dark.bakeIntoDensify === false && dark.gradeFromPlate === true && dark.cone === "howlPose", "light starts dark on the cone");
+must(gpuLight.assertLightNative(dark).length === 0, "assertLightNative accepts the dark frame");
+const lit = gpuLight.lightLayerFrame(dark.state, gpuLight.LIGHT.fadeSec, { cw: 768, ch: 1168, pawY: 980, destH0: 180, set: [{ id: "neon-c", on: true, tint: "#22e6ff" }] });
+must(Math.abs(lit.layers[0].intensity - 1) < 1e-9 && lit.layers[0].tint.b === 1 && lit.layers[0].onlyLight === true && lit.layers[0].pose.dest.w < 768, "light fades to 1 and stays one quad");
+must(gpuLight.assertLightNative({ ...lit, bakeIntoDensify: true }).includes("baked into densify"), "painting a beam into densify is a FAIL");
+must(gpuLight.assertLightNative({ ...lit, hud: true }).includes("HUD"), "a HUD light is a FAIL");
+must(gpuLight.assertLightNative({ ...lit, gpu: false }).includes("GPU"), "skipping the light GPU is a FAIL");
+
+must(gpuOpen.KINDS.join(",") === "door,chest,generator,hatch", "openable kinds");
+must(gpuOpen.openableBib("chest", "quartz", "closed").endsWith("/quartz-closed.mp4"), "closed bib");
+must(gpuOpen.openableBib("chest", "quartz", "transition").endsWith("-transition.mp4"), "transition bib");
+const shut = gpuOpen.openableFrame(
+  gpuOpen.openableState([{ id: "chest-1", kind: "chest", noun: "quartz", lane: "C", z: 0.08, content: "shard", lightId: "beam-core" }]),
+  0,
+  { cw: 768, ch: 1168, pawY: 980, destH0: 180 },
+);
+must(shut.objects[0].phase === "closed" && shut.objects[0].hittable === true && shut.tileDensify === false && shut.gpu === true && shut.hud === false && shut.bakeIntoDensify === false, "chest starts closed and hittable");
+must(gpuOpen.openableHit(shut, shut.objects[0].pose.ground.x, shut.objects[0].pose.ground.y) === "chest-1", "hit lands on the chest");
+must(gpuOpen.openableHit(shut, 0, 0) === null, "a miss is null");
+must(gpuOpen.assertOpenableNative(shut).length === 0, "assertOpenableNative accepts the closed frame");
+const opened = gpuOpen.openableFrame(gpuOpen.openableOpen(shut.state, "chest-1"), gpuOpen.OPENABLE.animSec, { cw: 768, ch: 1168, pawY: 980, destH0: 180 });
+must(opened.objects[0].phase === "open" && opened.objects[0].bib.endsWith("-open.mp4") && opened.objects[0].content.bib.endsWith("-content.mp4") && opened.objects[0].content.bakeIntoDensify === false, "open spawns keyed content");
+must(opened.lightCues[0].id === "beam-core" && opened.lightCues[0].intensity === 1, "an open prop can cue a light layer");
+must(opened.paintedOpen === false && opened.cone === "howlPose" && opened.raytrace === false, "opening stays a GPU state on the cone");
+must(gpuOpen.assertOpenableNative(opened).length === 0, "assertOpenableNative accepts the open frame");
+must(gpuOpen.assertOpenableNative({ ...opened, bakeIntoDensify: true }).includes("baked into densify"), "painting the open state into densify is a FAIL");
+must(gpuOpen.assertOpenableNative({ ...opened, hud: true }).includes("HUD"), "a HUD hatch is a FAIL");
+must(gpuOpen.assertOpenableNative({ ...opened, gpu: false }).includes("GPU"), "skipping the openable GPU is a FAIL");
+const farProp = gpuOpen.openableFrame(
+  gpuOpen.openableState([{ id: "door-far", kind: "door", noun: "rift", lane: -1, z: 0.92 }]),
+  0,
+  { cw: 768, ch: 1168, pawY: 980, destH0: 180 },
+);
+must(farProp.objects[0].band === "far" && farProp.objects[0].hittable === false, "far band ties to Lena LOD and is not hittable");
+
 console.log("COLD-START PASS");

@@ -19,11 +19,13 @@ GPU="$BIOME/scripts/bolt-key-gl"
 HOWL="$BIOME/scripts/howl-live"
 LENA="$BIOME/scripts/lena-lod"
 PATHBEAT="$BIOME/scripts/path-beat"
+LIGHT="$BIOME/scripts/gpu-light"
+OPENABLE="$BIOME/scripts/gpu-openable"
 KEEP="$BIOME/fx/howl/howl-attack.mp4"
 
 print_steps() {
   cat <<'EOF'
-biome-cook — steps 1→17 (PRIORITY 0 section C + laws through 36)
+biome-cook — steps 1→17 (PRIORITY 0 section C + laws through 38)
 Hang ≠ wipe. Do not invent QC math. Noun is biome-variable. Math is fixed.
 Read biome/scripts/biome-cook/README.md. Paste biome/docs/COLD_START-biome-cook.md.
 Play URL hang = Live only, never a Build convo, never grok.com/share, never /c/.
@@ -61,6 +63,15 @@ Worked example (play URL only): https://boltboltverse-odyssey.grok.me
     Paste: biome/docs/COLD_START-path-beat.md
     Runtime: biome/scripts/path-beat/pathBeat.js (pathBeatFrame)
     Run: biome-cook.sh path
+    Law 38 light layers + openables: keyed GPU layers over densify.
+    Imagine cooks light-only plates and closed/open/transition bibs.
+    Do not bake a beam or an open door into Video A. Not raytracing.
+    Law: biome/docs/38-gpu-light-openable.md
+    Paste: biome/docs/COLD_START-gpu-light-openable.md
+    Runtime: biome/scripts/gpu-light/gpuLight.js (lightLayerFrame)
+             biome/scripts/gpu-openable/gpuOpenable.js (openableFrame)
+    Run: biome-cook.sh light
+         biome-cook.sh openable
  4  Next plate refs (law 22-m). Success +1 @ ref. Miss drops one.
     Law: biome/docs/22-m-densify-snowball.md
     Prompt: biome/prompts/snowball-refs.txt
@@ -141,6 +152,8 @@ Usage (wrapper — exit code comes from the real script):
   biome-cook.sh howl                    node biome/scripts/howl-live/demo.js   (law 34)
   biome-cook.sh lena                    node biome/scripts/lena-lod/demo.js    (law 36)
   biome-cook.sh path                    node biome/scripts/path-beat/demo.js   (law 37)
+  biome-cook.sh light                   node biome/scripts/gpu-light/demo.js   (law 38)
+  biome-cook.sh openable                node biome/scripts/gpu-openable/demo.js (law 38)
   biome-cook.sh gpu                     echo copy paths (law 22 / GPU 24). No cook.
 
 Examples copied from the hung READMEs:
@@ -154,6 +167,8 @@ Examples copied from the hung READMEs:
   node biome/scripts/howl-live/demo.js
   node biome/scripts/lena-lod/demo.js
   node biome/scripts/path-beat/demo.js
+  node biome/scripts/gpu-light/demo.js
+  node biome/scripts/gpu-openable/demo.js
 EOF
 }
 
@@ -237,6 +252,16 @@ case "$cmd" in
     echo "law 37 — copy biome/scripts/path-beat/pathBeat.js (pathBeatFrame)" >&2
     echo "law 37 — lookahead 3s; SIDES then hit/miss; do not tile densify" >&2
     run_node_demo "$PATHBEAT" "$@"
+    ;;
+  light)
+    echo "law 38 — copy biome/scripts/gpu-light/gpuLight.js (lightLayerFrame)" >&2
+    echo "law 38 — light-only bibs; do not bake beams into densify" >&2
+    run_node_demo "$LIGHT" "$@"
+    ;;
+  openable)
+    echo "law 38 — copy biome/scripts/gpu-openable/gpuOpenable.js (openableFrame)" >&2
+    echo "law 38 — closed/open/transition; do not paint the open state into densify" >&2
+    run_node_demo "$OPENABLE" "$@"
     ;;
   gpu)
     cat <<EOF

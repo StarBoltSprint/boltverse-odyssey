@@ -10,7 +10,8 @@ The chemin reveals one target lane about **3 seconds** before contact. Densify s
 Law: [`../../docs/37-path-beat.md`](../../docs/37-path-beat.md)  
 Brief: [`../../docs/COLD_START-path-beat.md`](../../docs/COLD_START-path-beat.md)  
 Cone: [`../howl-live/howlLive.js`](../howl-live/howlLive.js) (`howlPose`, `pickHowlLane`)  
-Lena LOD (world fill, same cone): [`../lena-lod/lenaLod.js`](../lena-lod/lenaLod.js)
+Lena LOD (world fill, same cone): [`../lena-lod/lenaLod.js`](../lena-lod/lenaLod.js)  
+Lights and openables (same cone, law 38): [`../gpu-light/gpuLight.js`](../gpu-light/gpuLight.js) · [`../gpu-openable/gpuOpenable.js`](../gpu-openable/gpuOpenable.js)
 
 ## Wire (Build)
 
