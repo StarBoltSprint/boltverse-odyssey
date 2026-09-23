@@ -771,6 +771,8 @@ must(existsSync(join(root, "biome/docs/37-path-beat.md")), "law 37 doc exists");
 must(existsSync(join(root, "biome/docs/COLD_START-path-beat.md")), "law 37 paste exists");
 must(existsSync(join(root, "biome/scripts/path-beat/pathBeat.js")), "path-beat runtime exists");
 must(/lookahead/.test(pathLaw) && /3/.test(pathLaw) && /SIDES/.test(pathLaw) && /hit/.test(pathLaw), "law 37: lookahead, SIDES, hit");
+must(/gradeFromPlate/.test(pathLaw) && /HUD/.test(pathLaw) && /near/.test(pathLaw) && /tileDensify/.test(pathLaw), "law 37: native locks are FAIL lines");
+must(/assertPathNative/.test(pathPaste) && /gradeFromPlate/.test(pathPaste) && /HUD/.test(pathPaste) && /in the road/.test(pathPaste), "law 37 paste: native to the video");
 must(/37-path-beat/.test(pathPaste) && /pathBeatFrame/.test(pathPaste) && /3/.test(pathPaste), "law 37 paste names the frame API");
 must(/path-beat\/pathBeat\.js/.test(pathLaw) && /pathBeatFrame/.test(pathLaw), "law 37 points at pathBeatFrame");
 must(/37-path-beat/.test(zonesLaw) && /path-beat/.test(zonesLaw), "law 36 points at the path beat");
@@ -820,5 +822,9 @@ const miss = pathBeat.pathBeatFrame(revealed.state, 0, {
 must(miss.resolved.length === 1 && miss.resolved[0].result === "miss", "contact on another lane misses");
 const corridor = pathBeat.pathBeatChart(2, { count: 4, blocked: [-1, 1] });
 must(corridor.beats.every((b) => b.lane === "C"), "path beat takes the free corridor");
+must(pathBeat.APPROACH > 0 && revealed.gradeFromPlate === true && revealed.hud === false && revealed.clock === "densify", "path beat grades from the plate on the densify clock");
+must(revealed.inWorld === true && revealed.beats[0].space === "world" && revealed.beats[0].contact === false, "reveal is in world and not yet a near shadow");
+must(pathBeat.assertPathNative(revealed).length === 0, "assertPathNative accepts the live frame");
+must(pathBeat.assertPathNative({ ...revealed, hud: true }).includes("HUD"), "a HUD frame is a FAIL");
 
 console.log("COLD-START PASS");

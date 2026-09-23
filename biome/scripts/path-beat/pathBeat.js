@@ -9,13 +9,19 @@
  * pickHowlLane left open (same occupancy, player side).
  * Imagine = the look. Code = when and which lane.
  *
- *   import { pathBeatState, pathBeatFrame, pathBeatChart } from "./pathBeat.js";
+ * Native to the densify film, not a HUD and not a sticker:
+ * one cone (howlPose) on densify's 3 lanes, gradeFromPlate,
+ * approach locked to HOWL.travel (same step as Lena), shadow only
+ * in the near band, soft band crossfade, in-world reveal.
+ *
+ *   import { pathBeatState, pathBeatFrame, pathBeatChart, assertPathNative } from "./pathBeat.js";
  *
  * Copy into Live next to howlLive.js. Each frame call pathBeatFrame.
- * Draw active.pose.dest as one keyed quad (mark / markDest) during the window.
- * At contact, read resolved[].result (hit | miss) against playerLane.
+ * Reveal the target lane IN the road (light / detail / fill) on pose.
+ * Grade that quad from this densify plate. At contact, read resolved[].result.
  */
 import { HOWL, howlPose, mulberry32 } from "../howl-live/howlLive.js";
+import { objectBand, preloadOf } from "../lena-lod/lenaLod.js";
 
 export const PATH_BEAT = {
   /** Seconds the target lane is known before the paws arrive. */
@@ -36,6 +42,36 @@ export const RAIL = {
   zones: "B",
   tileDensify: false,
   coversPlate: false,
+};
+
+/** z units per second toward the paws. Same step lenaFrame uses. */
+export const APPROACH = 1 / HOWL.travel;
+
+/** In-world reveal. Not a screen arrow. */
+const REVEAL_OF = { far: "light", mid: "detail", near: "fill" };
+
+export const NATIVE = {
+  geometry: "densify-lanes",
+  cone: "howlPose",
+  lanes: 3,
+  gradeFromPlate: true,
+  inWorld: true,
+  hud: false,
+  clock: "densify",
+  approach: APPROACH,
+  contactShadow: "near",
+  crossfade: true,
+  tileDensify: false,
+};
+
+/** Cook contract. Densify picture stays a clean loop. Bibs match that world. */
+export const COOK = {
+  densify: "clean-3-lane-loop",
+  vault: true,
+  calmSides: true,
+  bibs: "keyed-same-world",
+  bolt: "lock/bolt-back.jpg",
+  lanes: 3,
 };
 
 const NAME = { [-1]: "L", 0: "C", 1: "R" };
@@ -128,6 +164,14 @@ export function pathBeatChart(seed, opts = {}) {
     densify: RAIL.densify,
     tileDensify: false,
     coversPlate: false,
+    hud: false,
+    inWorld: true,
+    gradeFromPlate: true,
+    cone: "howlPose",
+    clock: "densify",
+    lanes: 3,
+    approach: APPROACH,
+    cook: COOK,
     beats,
   };
 }
@@ -155,8 +199,10 @@ function decorate(beat, now, ctx) {
   const ch = ctx.ch || 1168;
   const pawY = ctx.pawY != null ? ctx.pawY : ch * 0.84;
   const destH0 = ctx.destH0 || 200;
-  const z = secondsLeft / HOWL.travel;
+  const z = secondsLeft * APPROACH;
   const pose = howlPose(beat.laneIndex, z, cw, ch, destH0, pawY);
+  const pre = preloadOf(pose.t);
+  const band = objectBand(pose.t);
   return {
     id: beat.id,
     lane: beat.lane,
@@ -168,14 +214,56 @@ function decorate(beat, now, ctx) {
     ahead: pose.ground.y < pawY,
     pose,
     look: CHEMIN,
+    space: "world",
+    hud: false,
+    inWorld: true,
+    gradeFromPlate: true,
+    band,
+    /** light = lane lights up, detail = detail forms, fill = void fills. */
+    reveal: REVEAL_OF[band],
+    warm: pre.warm,
+    warmK: pre.warmK,
+    contact: band === "near",
+    approach: APPROACH,
     tileDensify: false,
   };
 }
 
 /**
+ * Empty list = the frame is native to the densify film.
+ * Any string in the list is a FAIL (HUD, sticker grade, tiled plate, wrong cone).
+ */
+export function assertPathNative(frame) {
+  const fails = [];
+  if (!frame) return ["missing frame"];
+  if (frame.tileDensify !== false) fails.push("densify tiled");
+  if (frame.coversPlate !== false) fails.push("covers plate");
+  if (frame.hud !== false) fails.push("HUD");
+  if (frame.inWorld !== true) fails.push("not in world");
+  if (frame.gradeFromPlate !== true) fails.push("gradeFromPlate");
+  if (frame.cone !== "howlPose") fails.push("cone");
+  if (frame.clock !== "densify") fails.push("clock");
+  if (frame.lanes !== 3) fails.push("lanes");
+  if (!(Math.abs(frame.approach - APPROACH) < 1e-12)) fails.push("approach");
+  if (!frame.cook || frame.cook.densify !== COOK.densify) fails.push("cook densify");
+  if (!frame.cook || frame.cook.vault !== true || frame.cook.calmSides !== true) fails.push("cook sides");
+  if (!frame.cook || frame.cook.bibs !== COOK.bibs) fails.push("cook bibs");
+  if (!frame.cook || frame.cook.bolt !== COOK.bolt) fails.push("bolt identity");
+  for (const b of frame.beats || []) {
+    if (b.hud !== false || b.space !== "world" || b.inWorld !== true) fails.push("beat HUD");
+    if (b.gradeFromPlate !== true) fails.push("beat grade");
+    if (b.contact === true && b.band !== "near") fails.push("shadow outside near");
+    if (b.band === "near" && b.contact !== true) fails.push("near without shadow");
+    if (b.reveal !== REVEAL_OF[b.band]) fails.push("reveal");
+    if (!(Math.abs(b.approach - APPROACH) < 1e-12)) fails.push("beat approach");
+  }
+  return fails;
+}
+
+/**
  * One Live tick.
  * ctx: { now, cw, ch, pawY, destH0, playerLane, blocked, plate, lookahead }
- * `now` is seconds. If omitted, clock advances by dt.
+ * `now` is densify plate time (the film clock). If omitted, clock advances by dt.
  * Emitted beats are revealed (lane known) and still before contact.
  * `resolved` is this frame's contact hits and misses. Those beats leave the cone.
  */
@@ -241,6 +329,16 @@ export function pathBeatFrame(state, dt, ctx) {
     coversPlate: false,
     lookahead: look,
     now,
+    hud: false,
+    inWorld: true,
+    gradeFromPlate: true,
+    cone: "howlPose",
+    clock: "densify",
+    sameClock: true,
+    lanes: 3,
+    approach: APPROACH,
+    contactShadow: "near",
+    cook: COOK,
     sides: ["L", "C", "R"],
     state: {
       seed,

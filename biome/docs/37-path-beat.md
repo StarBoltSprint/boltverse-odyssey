@@ -9,6 +9,8 @@ World fill on that same cone: [`36`](36-gpu-zones-lena-procedural.md) · [`../sc
 
 Imagine = look. Code = when and where.
 
+The reveal is **native to the densify film**. A HUD arrow, a sticker quad, or a second cone is FAIL.
+
 ---
 
 ## Product
@@ -55,8 +57,10 @@ const frame = pathBeatFrame(state, dt, {
 state = frame.state;
 ```
 
-- `frame.active` — the open window. `active.lane`, `active.secondsLeft` (~3 at reveal), `active.pose` for one quad.
+- `frame.active` — the open window. `active.lane`, `active.secondsLeft` (~3 at reveal), `active.pose` on the densify lane. `active.reveal` is the in-world read (`light` / `detail` / `fill`).
 - `frame.resolved[]` — this tick’s `{ result: "hit" | "miss", lane, playerLane }`.
+- `frame.gradeFromPlate`, `frame.hud === false`, `frame.clock === "densify"`, `frame.approach`.
+- `assertPathNative(frame)` — `[]` or a list of FAIL reasons.
 - `frame.tileDensify` and `frame.coversPlate` are false.
 - `pathBeatChart(seed, { count })` — the same beats without a canvas, for a cold sprint chart.
 
@@ -64,12 +68,37 @@ Optional look file: `biome/fx/path/chemin.mp4` (one keyed lane segment). Pixels 
 
 ---
 
-## BAN
+## Native to the video
 
+Densify’s **3 lanes are the truth**. Path beat, Lena, and Howl share `howlPose` (same cone, same perspective, same ground). `frame.lanes === 3`. `frame.cone === "howlPose"`.
+
+| Lock | Runtime | FAIL |
+|---|---|---|
+| One geometry | `pose` is `howlPose` on densify lanes `-1 / 0 / 1` | A second ribbon, a screen-space lane, a cone of your own |
+| Grade from plate | `gradeFromPlate: true` on the frame and on every beat | A bib whose color, bloom, or mist does not come from this densify plate |
+| Motion lock | `approach === 1 / HOWL.travel` (the Lena z step). `clock === "densify"`. `now` is plate time | A chemin that slides faster or slower than the plate. A shadow on far or mid. A band pop (`warmK` jumps) |
+| In world | `hud: false`, `inWorld: true`, `space: "world"`. `reveal` is `light` (lane lights up) → `detail` (detail forms) → `fill` (void fills) | A HUD arrow, a corner icon, an overlay that is not on the road |
+| Cook | `cook.densify` is a clean 3-lane loop, vault on, sides calm. Bibs are keyed and the same world. Bolt is `lock/bolt-back.jpg` | A busy plate, a bib from another biome, a new dog |
+| One film | `tileDensify: false`, `coversPlate: false`, `sameClock: true` | Spatial slices of Video A. A second clock for the beat |
+
+Contact shadow is **only** when `band === "near"` (`contact: true`). Far and mid get no shadow. Band edges use Lena’s `warm` / `warmK` so the in-world detail crossfades.
+
+`assertPathNative(frame)` returns `[]` when the frame keeps this lock. Any string in that list is a FAIL. Do not Hang a frame that fails it.
+
+---
+
+## FAIL
+
+- A HUD arrow, badge, or screen overlay instead of an in-world lane
+- A sticker bib that is not graded from this densify plate (`gradeFromPlate` false)
+- A second cone, or a perspective that is not `howlPose` on densify’s 3 lanes
+- Approach speed that is not `1 / HOWL.travel` (densify scroll / Lena step)
+- A contact shadow outside the near band, or a hard LOD pop
 - Baking the target lane into densify Video A
-- Lighting the whole plate, or tiling / slicing the densify loop
-- Drawing the chemin under the paws for the length of the plate
-- A second cone, ribbon, or lane index besides Howl / law 12
+- Tiling or slicing the densify loop, or running the beat on its own clock
+- Lighting the whole plate, or drawing the chemin under the paws for the length of the plate
+- A densify that is not a clean 3-lane loop with vault and calm sides
+- Bibs from another world, or a Bolt that is not the white-coat identity lock
 - Scoring a beat by inventing a new Bolt sprint
 - A play URL, Build `/c/` link, or `grok.com/share` from this note
 
