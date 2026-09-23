@@ -6,7 +6,10 @@
  * This module never paints an open door into densify.
  *
  * GPU owns the hit zone, the open/close anim, the Lena LOD band, and
- * the content spawn. Placement is howlPose. Not raytracing.
+ * the content spawn. Placement is howlPose.
+ * Opening cues a light layer. glossOverlay on that layer is the fake
+ * interactive reflect (gradeFromPlate, zero bounces). Not a raytracer.
+ * True RT is the UE rail, HOLD.
  *
  *   import { openableState, openableFrame, openableHit, openableOpen, assertOpenableNative } from "./gpuOpenable.js";
  *
@@ -16,6 +19,7 @@
  */
 import { howlPose } from "../howl-live/howlLive.js";
 import { objectBand } from "../lena-lod/lenaLod.js";
+import { rtFlags, assertRtNative } from "../gpu-light/gpuLight.js";
 
 export const OPENABLE = {
   /** Seconds for progress to travel the full 0→1 (or 1→0). */
@@ -315,7 +319,7 @@ export function openableFrame(state, dt, ctx = {}) {
     clock: "densify",
     sameClock: true,
     lanes: 3,
-    raytrace: false,
+    ...rtFlags(),
     paintedOpen: false,
     now,
     animSec,
@@ -346,7 +350,7 @@ export function assertOpenableNative(frame) {
   if (frame.cone !== "howlPose") fails.push("cone");
   if (frame.clock !== "densify") fails.push("clock");
   if (frame.lanes !== 3) fails.push("lanes");
-  if (frame.raytrace === true) fails.push("raytrace");
+  fails.push(...assertRtNative(frame));
   if (frame.paintedOpen === true) fails.push("painted open");
   for (const obj of frame.objects || []) {
     if (obj.gpu !== true || obj.bakeIntoDensify !== false || obj.composite !== "over-densify") {

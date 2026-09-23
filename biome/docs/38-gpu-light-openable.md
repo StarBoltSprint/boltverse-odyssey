@@ -1,6 +1,6 @@
 # 38 — GPU light layers + openable objects
 
-**Sealed 2026-09-23 (SmiR product lock).** Runtime hang. Hang ≠ wipe. Does not recook hung masters. Does not invent a gallop. Does not change a Live URL. Not raytracing.
+**Sealed 2026-09-23 (SmiR product lock).** Runtime hang. Hang ≠ wipe. Does not recook hung masters. Does not invent a gallop. Does not change a Live URL. Pack RT is a baked look plus a fake interactive overlay. It is not a raytracer.
 
 Light runtime: [`../scripts/gpu-light/gpuLight.js`](../scripts/gpu-light/gpuLight.js) — `lightLayerState` / `lightLayerFrame` / `lightBib` / `assertLightNative`.  
 Openable runtime: [`../scripts/gpu-openable/gpuOpenable.js`](../scripts/gpu-openable/gpuOpenable.js) — `openableState` / `openableFrame` / `openableHit` / `openableOpen` / `assertOpenableNative`.  
@@ -26,7 +26,27 @@ Two GPU jobs. One cone. No second geometry stack.
 | **Light layer** | A still or short clip that is **only** light: beam, glow, neon, or flash. Keyed black or transparent. No road, no dog, no densify décor. | Intensity `0→1`, tint, on/off, cone position (`howlPose`), fade (`LIGHT.fadeSec` 0.35). |
 | **Openable** | Three keyed states per prop: `closed`, `open`, `transition`. Kinds: door, chest, generator, crystal hatch. Optional content bib. | Hit zone, open/close anim (`OPENABLE.animSec` 0.45), Lena LOD band, content spawn when open. |
 
-Not a raytracer. Composite + states, same stack as the path beat and Lena.
+Composite + states, same stack as the path beat and Lena. The Pack RT rule below is that stack. It is not a raytracer.
+
+---
+
+## Pack RT (Imagine × GPU)
+
+Imagine has no real-time raytracing API. This stack does not invent one. Three rows, and only the first two are in play.
+
+| Row | What it is | Where |
+|---|---|---|
+| **Baked RT look** | Densify and light/openable bibs **look** path-traced. Soft GI, reflections, soft contact shadows, baked into the pixels. `rtLook: "baked-imagine"`. | Imagine stills and Video A. The look is already in the file. |
+| **Fake interactive RT** | When a light’s intensity moves, or an openable opens, the GPU composites the keyed light layer and an optional gloss/reflect quad. `glossOverlay`. `gradeFromPlate: true`. `fakeInteractive: true`. `bounces: 0`. | GPU, over densify. It mimics a response. It does not bounce rays. |
+| **True RT** | A real tracer. | Other rail (UE). **HOLD.** Do not cook it here. `trueRt: "ue-hold"`. `raytrace: false`. |
+
+Cook phrases (paste into Imagine):
+
+- Densify: `Path-traced look baked into the pixels: soft global illumination, reflections in the lane, soft contact shadows. Not flat plastic lighting. Not a real-time raytracer.`
+- Light bib: `Only the light, on pure black. Soft falloff, soft bloom, a faint reflected tint. Path-traced look in the pixels. Not flat plastic. No road.`
+- Openable bib: `The prop looks path-traced: soft GI, a soft contact shadow, a reflection in the lane. Keyed. Not flat plastic. Not a real-time raytracer.`
+
+`RT_PHRASE` in `gpuLight.js` is those three lines. Flat plastic lighting on densify or on a bib is FAIL.
 
 A generator may name a `lightId`. `openableFrame` emits `lightCues`. Feed that row to `lightLayerFrame` as `set`. The beam stays a light layer. It is not painted into the generator plate and not painted into densify.
 
@@ -117,7 +137,9 @@ Densify Video A stays a clean 3-lane loop. Session Imagine Video, first + last p
 | Light-only | `onlyLight: true`, `key: "black"`, bib under `biome/fx/light/` | A light plate that contains the road |
 | Open is code | `paintedOpen: false`. Transition bib while progress is between 0 and 1 | An open state baked into densify. Content while still closed |
 | LOD | Far openables are not hittable. Shadow only when `band === "near"` | A far-band hit. A shadow on far or mid |
-| Not a tracer | `raytrace: false` | A raytracer, a second lighting engine |
+| Baked look | `rtLook: "baked-imagine"` | Flat plastic lighting. A plate with no soft GI, no reflection, no soft shadow |
+| Fake interactive | `fakeInteractive: true`. `glossOverlay` graded from the plate. `bounces: 0` | A gloss quad that traces, or a bounce count above 0 |
+| Not a tracer | `raytrace: false`. `trueRt: "ue-hold"` | Claiming real-time raytracing via Imagine. Cooking the UE rail here |
 | One film | `tileDensify: false`, `coversPlate: false`, `clock: "densify"` | Spatial slices of Video A. A private clock |
 | Ambience | `ambience: "densify"` (lights) | A playable light that lifts Video A exposure (law 31) |
 
@@ -130,6 +152,10 @@ Densify Video A stays a clean 3-lane loop. Session Imagine Video, first + last p
 - Painting the transition, or the content spawn, into that plate
 - A HUD lamp, badge, or screen button
 - A light plate that is not light-only on keyed black or transparent
+- Flat plastic lighting on densify or on a light/openable bib (no soft GI, no reflection, no soft shadow)
+- Claiming **real-time raytracing via Imagine**, or setting `raytrace` / `realtimeImagine`
+- Baking interactive lights into densify Video A (the response belongs on the GPU gloss + light layer)
+- Cooking true RT on this stack (UE is HOLD)
 - Skipping the GPU, or turning on raytracing
 - A second cone, or a perspective that is not `howlPose` on densify’s 3 lanes
 - A hittable prop in the far band, or a contact shadow outside near

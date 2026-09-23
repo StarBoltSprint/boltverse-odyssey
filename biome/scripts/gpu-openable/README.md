@@ -19,7 +19,7 @@ Light cue target: [`../gpu-light/gpuLight.js`](../gpu-light/gpuLight.js) (`light
 2. Cook three keyed state bibs per prop (`closed`, `open`, `transition`) at `openableBib`. Optional content at `contentBib`. Same world as the plate. Not a densify crop.
 3. Copy `gpuOpenable.js` into Live next to `howlLive.js`. Call `openableFrame` every frame. `openableHit` then `openableOpen` / `openableClose`.
 4. Draw `bib` on `pose.dest`. Draw `content.bib` when `content.visible`. Far band is not hittable. Shadow only when `contact` (near).
-5. Pass `frame.lightCues` into `lightLayerFrame` as `set` when a generator names `lightId`. The beam stays a light layer.
+5. Pass `frame.lightCues` into `lightLayerFrame` as `set` when a generator names `lightId`. The beam stays a light layer. `glossOverlay` on that light is the fake interactive reflect (graded from the plate, zero bounces). The bibs themselves already look path-traced. True RT is the UE rail, HOLD.
 6. `assertOpenableNative(frame)` must be `[]`. `paintedOpen`, `hud`, and `bakeIntoDensify` stay false. `gpu` stays true.
 
 `bash biome/scripts/biome-cook/biome-cook.sh openable`

@@ -6,7 +6,12 @@
  * into densify. Densify keeps base ambience (law 31).
  *
  * GPU owns intensity 0→1, tint, on/off, cone position, fade.
- * Placement is howlPose. Bands are Lena objectBand. Not raytracing.
+ * Placement is howlPose. Bands are Lena objectBand.
+ *
+ * Pack RT is not a raytracer. Imagine bakes a path-traced LOOK into
+ * densify and bib pixels (rtLook "baked-imagine"). When intensity moves,
+ * glossOverlay is a keyed quad graded from the plate (fakeInteractive).
+ * bounces stay 0. True RT is the UE rail, HOLD. raytrace stays false.
  *
  *   import { lightLayerState, lightLayerFrame, lightBib, assertLightNative } from "./gpuLight.js";
  *
@@ -29,6 +34,31 @@ export const RAIL = {
   zones: "B",
   tileDensify: false,
   coversPlate: false,
+};
+
+/**
+ * Honest Pack RT. Not a raytracing API.
+ * rtLook: Imagine densify and bibs already look path-traced (pixels).
+ * fakeInteractive: light layers + gloss overlays mimic a response. Not bounces.
+ * trueRt: the UE rail. HOLD. Do not cook it here.
+ */
+export const RT = {
+  rtLook: "baked-imagine",
+  fakeInteractive: true,
+  raytrace: false,
+  trueRt: "ue-hold",
+  bounces: 0,
+  gloss: "gradeFromPlate",
+};
+
+/** Cook lines. Paste into Imagine. Flat plastic lighting is FAIL. */
+export const RT_PHRASE = {
+  densify:
+    "Path-traced look baked into the pixels: soft global illumination, reflections in the lane, soft contact shadows. Not flat plastic lighting. Not a real-time raytracer.",
+  light:
+    "Only the light, on pure black. Soft falloff, soft bloom, a faint reflected tint. Path-traced look in the pixels. Not flat plastic. No road.",
+  openable:
+    "The prop looks path-traced: soft GI, a soft contact shadow, a reflection in the lane. Keyed. Not flat plastic. Not a real-time raytracer.",
 };
 
 /** Keyed layers. All of them composite on the GPU over densify. None are painted into Video A. */
@@ -55,7 +85,76 @@ export const NATIVE = {
   onlyLight: true,
   ambience: "densify",
   raytrace: false,
+  rtLook: RT.rtLook,
+  fakeInteractive: true,
+  trueRt: RT.trueRt,
+  bounces: 0,
 };
+
+/** Flags stamped on every light and openable frame. */
+export function rtFlags() {
+  return {
+    rtLook: RT.rtLook,
+    fakeInteractive: RT.fakeInteractive,
+    raytrace: false,
+    trueRt: RT.trueRt,
+    bounces: 0,
+  };
+}
+
+/**
+ * Optional gloss / reflect quad for one light that is drawing.
+ * Same dest as the light. Graded from the plate. Zero bounces.
+ * Dark lights do not draw. This does not trace rays.
+ */
+export function glossOverlay(layer) {
+  const base = {
+    kind: "gloss",
+    gpu: true,
+    composite: GPU.composite,
+    bakeIntoDensify: false,
+    gradeFromPlate: true,
+    hud: false,
+    raytrace: false,
+    fakeInteractive: true,
+    rtLook: RT.rtLook,
+    bounces: 0,
+  };
+  if (!layer || layer.draw !== true || !layer.pose) return { ...base, draw: false };
+  return {
+    ...base,
+    draw: true,
+    id: layer.id,
+    dest: layer.pose.dest,
+    intensity: layer.intensity,
+    tint: layer.tint,
+  };
+}
+
+/**
+ * Pack RT contract on a frame.
+ * "raytrace" and "real-time raytracing" mean someone claimed a tracer.
+ * "flat plastic" means the baked look was dropped.
+ */
+export function assertRtNative(frame) {
+  const fails = [];
+  if (!frame) return ["missing frame"];
+  if (frame.rtLook !== RT.rtLook) fails.push("rt look");
+  if (frame.fakeInteractive !== true) fails.push("fake interactive");
+  if (frame.raytrace === true || frame.realtimeImagine === true) {
+    fails.push("raytrace");
+    fails.push("real-time raytracing");
+  }
+  if (frame.trueRt !== RT.trueRt) fails.push("true RT");
+  if (frame.plastic === true || frame.rtLook === "flat-plastic") fails.push("flat plastic");
+  if (frame.bounces > 0) fails.push("real-time raytracing");
+  for (const gloss of frame.gloss || []) {
+    if (gloss.raytrace === true || gloss.bounces > 0) fails.push("real-time raytracing");
+    if (gloss.bakeIntoDensify === true) fails.push("baked into densify");
+    if (gloss.draw && gloss.gradeFromPlate !== true) fails.push("gradeFromPlate");
+  }
+  return fails;
+}
 
 function slugNoun(noun) {
   const raw = String(noun || "lane");
@@ -224,6 +323,7 @@ export function lightLayerFrame(state, dt, ctx = {}) {
       contact: band === "near" && live > 0.02,
       fadeSec,
       tileDensify: false,
+      ...rtFlags(),
     });
   }
 
@@ -242,10 +342,11 @@ export function lightLayerFrame(state, dt, ctx = {}) {
     clock: "densify",
     sameClock: true,
     lanes: 3,
-    raytrace: false,
     ambience: "densify",
     onlyLight: true,
     key: "black",
+    ...rtFlags(),
+    gloss: layers.map((layer) => glossOverlay(layer)),
     now,
     fadeSec,
     state: { layers: stored, clock: now },
@@ -271,7 +372,7 @@ export function assertLightNative(frame) {
   if (frame.cone !== "howlPose") fails.push("cone");
   if (frame.clock !== "densify") fails.push("clock");
   if (frame.lanes !== 3) fails.push("lanes");
-  if (frame.raytrace === true) fails.push("raytrace");
+  fails.push(...assertRtNative(frame));
   if (frame.ambience !== "densify") fails.push("ambience");
   if (frame.onlyLight !== true || frame.key !== "black") fails.push("not light-only");
   for (const layer of frame.layers || []) {

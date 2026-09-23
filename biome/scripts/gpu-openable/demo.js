@@ -119,6 +119,11 @@ assert("painting the open state into densify is a FAIL", assertOpenableNative({ 
 assert("skipping the GPU is a FAIL", assertOpenableNative({ ...opened, gpu: false }).includes("GPU"));
 assert("a painted-open plate is a FAIL", assertOpenableNative({ ...opened, paintedOpen: true }).includes("painted open"));
 assert("raytrace is a FAIL", assertOpenableNative({ ...opened, raytrace: true }).includes("raytrace"));
+assert(
+  "open stays fake-interactive on the baked look",
+  opened.rtLook === "baked-imagine" && opened.fakeInteractive === true && opened.raytrace === false && opened.trueRt === "ue-hold" && opened.bounces === 0,
+);
+assert("claiming Imagine real-time raytracing is a FAIL", assertOpenableNative({ ...opened, realtimeImagine: true }).includes("real-time raytracing"));
 
 console.log(
   JSON.stringify(

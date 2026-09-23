@@ -846,6 +846,11 @@ must(/lightLayerFrame/.test(lightLaw) && /openableFrame/.test(lightLaw) && /asse
 must(/beam/.test(lightLaw) && /glow/.test(lightLaw) && /neon/.test(lightLaw) && /flash/.test(lightLaw), "law 38 light kinds");
 must(/door/.test(lightLaw) && /chest/.test(lightLaw) && /generator/.test(lightLaw) && /hatch/.test(lightLaw), "law 38 openable kinds");
 must(/howlPose/.test(lightLaw) && /gradeFromPlate/.test(lightLaw) && /raytrac/.test(lightLaw) && /closed/.test(lightLaw) && /transition/.test(lightLaw), "law 38: cone, grade, states, no raytrace");
+must(/baked-imagine/.test(lightLaw) && /soft GI/.test(lightLaw) && /flat plastic/.test(lightLaw), "law 38: baked path-traced look, flat plastic FAIL");
+must(/fakeInteractive/.test(lightLaw) && /glossOverlay/.test(lightLaw) && /bounces/.test(lightLaw), "law 38: fake interactive gloss, no bounces");
+must(/real-time raytracing via Imagine/.test(lightLaw) && /ue-hold/.test(lightLaw) && /HOLD/.test(lightLaw), "law 38: Imagine RT claim and UE HOLD are FAIL lines");
+must(/baked-imagine/.test(lightPaste) && /fakeInteractive/.test(lightPaste) && /flat plastic/.test(lightPaste) && /real-time raytracing via Imagine/.test(lightPaste) && /ue-hold/.test(lightPaste), "law 38 paste: Pack RT cook rule");
+must(/soft global illumination/.test(lightPaste) && /Not flat plastic/.test(lightPaste), "law 38 paste: cook phrases");
 must(/FAIL if Build paints a beam/.test(lightLaw) && /bakeIntoDensify/.test(lightLaw), "law 38: do not bake into densify");
 must(/\*\*GPU is REQUIRED\.\*\*/.test(lightPaste) && /OVER densify Video A/.test(lightPaste) && /light-only/.test(lightPaste) && /transition/.test(lightPaste), "law 38 paste: GPU required, cook bibs");
 must(/assertLightNative/.test(lightPaste) && /assertOpenableNative/.test(lightPaste) && /hud/.test(lightPaste) && /howlPose/.test(lightPaste), "law 38 paste: native checks");
@@ -877,6 +882,14 @@ must(Math.abs(lit.layers[0].intensity - 1) < 1e-9 && lit.layers[0].tint.b === 1 
 must(gpuLight.assertLightNative({ ...lit, bakeIntoDensify: true }).includes("baked into densify"), "painting a beam into densify is a FAIL");
 must(gpuLight.assertLightNative({ ...lit, hud: true }).includes("HUD"), "a HUD light is a FAIL");
 must(gpuLight.assertLightNative({ ...lit, gpu: false }).includes("GPU"), "skipping the light GPU is a FAIL");
+must(gpuLight.RT.rtLook === "baked-imagine" && gpuLight.RT.fakeInteractive === true && gpuLight.RT.raytrace === false && gpuLight.RT.trueRt === "ue-hold" && gpuLight.RT.bounces === 0, "RT contract is baked look plus fake interactive");
+must(lit.rtLook === "baked-imagine" && lit.fakeInteractive === true && lit.bounces === 0 && lit.raytrace === false, "light frame stamps the Pack RT flags");
+const gloss = gpuLight.glossOverlay(lit.layers[0]);
+must(gloss.draw === true && gloss.gradeFromPlate === true && gloss.bounces === 0 && gloss.raytrace === false && gloss.bakeIntoDensify === false && gloss.dest.w === lit.layers[0].pose.dest.w, "gloss overlay mimics a reflect on the light quad");
+must(gpuLight.glossOverlay(dark.layers[0]).draw === false, "a dark light draws no gloss");
+must(gpuLight.assertLightNative({ ...lit, realtimeImagine: true }).includes("real-time raytracing"), "claiming Imagine real-time raytracing is a FAIL");
+must(gpuLight.assertLightNative({ ...lit, plastic: true }).includes("flat plastic"), "flat plastic lighting is a FAIL");
+must(/soft global illumination/.test(gpuLight.RT_PHRASE.densify) && /Not flat plastic/.test(gpuLight.RT_PHRASE.light), "runtime cook phrases match the brief");
 
 must(gpuOpen.KINDS.join(",") === "door,chest,generator,hatch", "openable kinds");
 must(gpuOpen.openableBib("chest", "quartz", "closed").endsWith("/quartz-closed.mp4"), "closed bib");

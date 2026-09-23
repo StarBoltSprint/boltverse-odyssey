@@ -18,7 +18,7 @@ Openables that cue a lamp: [`../gpu-openable/gpuOpenable.js`](../gpu-openable/gp
 1. Cook densify Video A as one clean 3-lane loop (first + last). **GPU is REQUIRED.** **FAIL** if you paint a beam, glow, neon, or flash into Video A. Law 31 ambience stays on that plate.
 2. Cook the light-only Imagine at `lightBib(kind, noun)` — black key, no road, no dog.
 3. Copy `gpuLight.js` into Live next to `howlLive.js`. Call `lightLayerFrame` every frame on the densify clock.
-4. Draw layers with `draw === true` on `pose.dest`. Multiply by `intensity` and `tint`. `gradeFromPlate`. Not a HUD. Not a raytracer.
+4. Draw layers with `draw === true` on `pose.dest`. Multiply by `intensity` and `tint`. Where `glossOverlay` draws, composite that quad on the same dest. `gradeFromPlate`. `bounces` stays 0. Not a HUD. Not a raytracer. `rtLook` is `baked-imagine`. True RT is the UE rail, HOLD.
 5. `assertLightNative(frame)` must be `[]`. `tileDensify` and `hud` stay false. `bakeIntoDensify` stays false. `gpu` stays true.
 
 `bash biome/scripts/biome-cook/biome-cook.sh light`

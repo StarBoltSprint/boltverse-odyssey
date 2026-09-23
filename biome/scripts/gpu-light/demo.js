@@ -10,8 +10,11 @@ import {
   lightBib,
   parseTint,
   fadeIntensity,
+  RT,
+  RT_PHRASE,
   lightLayerState,
   lightLayerFrame,
+  glossOverlay,
   assertLightNative,
 } from "./gpuLight.js";
 
@@ -84,7 +87,20 @@ assert("a HUD frame is a FAIL", assertLightNative({ ...full, hud: true }).includ
 assert("painting the beam into densify is a FAIL", assertLightNative({ ...full, bakeIntoDensify: true }).includes("baked into densify"));
 assert("skipping the GPU is a FAIL", assertLightNative({ ...full, gpu: false }).includes("GPU"));
 assert("raytrace is a FAIL", assertLightNative({ ...full, raytrace: true }).includes("raytrace"));
+assert("claiming Imagine real-time raytracing is a FAIL", assertLightNative({ ...full, realtimeImagine: true }).includes("real-time raytracing"));
+assert("flat plastic lighting is a FAIL", assertLightNative({ ...full, plastic: true }).includes("flat plastic"));
 assert("a graded-off light is a FAIL", assertLightNative({ ...full, gradeFromPlate: false }).includes("gradeFromPlate"));
+assert(
+  "baked look, fake interactive, UE hold",
+  RT.rtLook === "baked-imagine" && RT.fakeInteractive === true && RT.raytrace === false && RT.trueRt === "ue-hold" && RT.bounces === 0 && full.rtLook === "baked-imagine" && full.fakeInteractive === true && full.bounces === 0,
+);
+assert("cook phrases name soft GI and ban flat plastic", /soft global illumination/.test(RT_PHRASE.densify) && /Not flat plastic/.test(RT_PHRASE.light) && /soft GI/.test(RT_PHRASE.openable));
+const gloss = glossOverlay(full.layers[0]);
+assert(
+  "gloss mimics a reflect and does not bounce",
+  gloss.draw === true && gloss.gradeFromPlate === true && gloss.bounces === 0 && gloss.raytrace === false && gloss.dest.w === full.layers[0].pose.dest.w && gloss.bakeIntoDensify === false,
+);
+assert("a dark lamp draws no gloss", glossOverlay(off.layers[0]).draw === false);
 
 console.log(
   JSON.stringify(
