@@ -47,7 +47,7 @@ If `{PAINT}` already names a road material, use it. Otherwise propose this menu 
 
 Swap `{LANE_MATERIAL}` in [`image-empty-plate.txt`](../../prompts/image-empty-plate.txt) before Imagine. `{PAINT}` includes that lane material. Law: [`35-lane-materials.md`](../../docs/35-lane-materials.md). Paste: [`COLD_START-lane-materials.md`](../../docs/COLD_START-lane-materials.md).
 
-**Law 36 — before this still and before Video A.** Densify (Rail A) is one continuous plate. GPU zones (Rail B) are Imagine keyed layers composited over it, same pattern as GPU Bolt. Do not chop one densify plate into spatial GPU tiles. Lena procedural rides Rail B. Law: [`36-gpu-zones-lena-procedural.md`](../../docs/36-gpu-zones-lena-procedural.md). Paste: [`COLD_START-gpu-zones.md`](../../docs/COLD_START-gpu-zones.md).
+**Law 36 — before this still and before Video A.** Densify (Rail A) is one continuous plate. GPU zones (Rail B) are Imagine keyed layers composited over it, same pattern as GPU Bolt. Do not chop one densify plate into spatial GPU tiles. Lena procedural rides Rail B. Runtime: [`../lena-lod/lenaLod.js`](../lena-lod/lenaLod.js) (`lenaFrame`). Law: [`36-gpu-zones-lena-procedural.md`](../../docs/36-gpu-zones-lena-procedural.md). Paste: [`COLD_START-gpu-zones.md`](../../docs/COLD_START-gpu-zones.md) · bib [`COLD_START-lena-bib.md`](../../docs/COLD_START-lena-bib.md). Check: `bash biome/scripts/biome-cook/biome-cook.sh lena`.
 
 Law 27 ([`27-native-road-slide.md`](../../docs/27-native-road-slide.md)) is an optional catalog. It is not a default step.
 
@@ -75,6 +75,7 @@ bash biome/scripts/biome-cook/biome-cook.sh clock
 bash biome/scripts/biome-cook/biome-cook.sh despill
 bash biome/scripts/biome-cook/biome-cook.sh curvature
 bash biome/scripts/biome-cook/biome-cook.sh howl
+bash biome/scripts/biome-cook/biome-cook.sh lena
 bash biome/scripts/biome-cook/biome-cook.sh gpu
 ```
 

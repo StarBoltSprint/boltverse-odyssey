@@ -1,6 +1,6 @@
 # COLD START — GPU zones + Lena procedural (paste before empty stills / Video A)
 
-Read `biome/docs/36-gpu-zones-lena-procedural.md`. Cook / Engine note. Hang ≠ wipe. No new play URL.
+Read `biome/docs/36-gpu-zones-lena-procedural.md`. Runtime: `biome/scripts/lena-lod/lenaLod.js` (`lenaFrame`). Bib cook: `biome/docs/COLD_START-lena-bib.md`. Hang ≠ wipe. No new play URL.
 
 **Rail A densify (film):** one continuous plate, first → last. Dodge cinema (meteors and kin) is baked in the plate and stays dodge-only. Identity lock. Camera lock. MAE between plates. Do not chop that plate into spatial GPU tiles (MAE seams, edge morph, camera lock, sticker look).
 

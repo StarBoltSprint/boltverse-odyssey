@@ -1,9 +1,11 @@
 # 36 — GPU zones + Lena procedural (Engine hang note)
 
-**Sealed 2026-09-23 (SmiR Director lock).** Cook / Engine note. Hang ≠ wipe. Docs + paste only. Does not recook hung masters. Does not invent a gallop. Does not change a Live URL.
+**Sealed 2026-09-23 (SmiR Director lock).** Cook / Engine hang. Hang ≠ wipe. Does not recook hung masters. Does not invent a gallop. Does not change a Live URL.
 
-Paste: [`COLD_START-gpu-zones.md`](COLD_START-gpu-zones.md)  
-Kit: [`../scripts/biome-cook/README.md`](../scripts/biome-cook/README.md) — read this **before** empty stills and Video A.
+Runtime: [`../scripts/lena-lod/lenaLod.js`](../scripts/lena-lod/lenaLod.js) — `lenaFrame` / `lenaResolve` / `bibFile`.  
+Bib cook: [`COLD_START-lena-bib.md`](COLD_START-lena-bib.md)  
+Zone paste: [`COLD_START-gpu-zones.md`](COLD_START-gpu-zones.md)  
+Kit: [`../scripts/biome-cook/README.md`](../scripts/biome-cook/README.md) — read this **before** empty stills and Video A. Cone math is [`../scripts/howl-live/howlLive.js`](../scripts/howl-live/howlLive.js) (`howlPose`, `pickHowlLane`). Draw the quad like Bolt.
 
 GPU already works for Bolt ([15](15-gpu-compositor.md) · [17](17-live-compositor.md)). This law says **where the next layers sit**. Zones are stacked keyed plates over densify. They are not slices of one densify film.
 
@@ -44,8 +46,8 @@ Procedural **yes** on Rail B, on spawn, and on LOD. Procedural here means **when
 
 - **Meaningful Sprint** densifies the world via `m` ([22-m](22-m-densify-snowball.md)). Success adds a detail. Miss drops one tier. Picture is the clock.
 - **Smart Preload** when the sprint climbs. The next plate and the next keyed layer are ready before the paws arrive.
-- **Procedural Spawn** in front of the paws. Seed + timing. The asset stays a high-quality Imagine keyed plate.
-- **Paw-to-Galaxy LOD** — earth → near space → deep space. Journey and path: [18](18-room-starmap-lena.md) · [19](19-luminous-path-climb.md) · [21](21-paw-to-galaxy.md).
+- **Procedural Spawn** in front of the paws. Seed + timing. The asset stays a high-quality Imagine keyed plate. Call `lenaFrame`.
+- **Paw-to-Galaxy LOD** — earth → near space → deep space (`worldLod`). On the cone, far / mid / near pick `generator` / `detail` / `rock`, and `preloadOf` warms the next file before the swap. Journey and path: [18](18-room-starmap-lena.md) · [19](19-luminous-path-climb.md) · [21](21-paw-to-galaxy.md). Bib names: [`COLD_START-lena-bib.md`](COLD_START-lena-bib.md).
 - **Howl targets column** — procedural crystals now. Later: ship / mech. Those targets are destroyable by Howl. Plate-baked events stay dodge-only (Rail A, law [25](25-hazard-cone.md)).
 
 Cold Groks, roles so the names stay distinct:
@@ -81,7 +83,7 @@ Film-strip Imagine canvas: one column per plate (P0, P4, …). Pin Bolt + vault 
 
 1. Read this law **before** the empty still and before Video A.
 2. Cook Rail A as one continuous densify plate. Lane material first ([35](35-lane-materials.md)). Dodge cinema stays in the plate.
-3. Composite Rail B as keyed layers on the GPU rails Bolt already uses. Placement may be procedural. Pixels stay Imagine.
+3. Composite Rail B as keyed layers on the GPU rails Bolt already uses. Placement is `lenaFrame`. Pixels stay Imagine bibs from `bibFile`.
 4. Lena owns spawn / preload / LOD timing. Marcus / Priya / Elena stay on their columns above.
 5. Hang ≠ wipe. ADD plates. Do not wipe masters. Do not invent a gallop. Do not invent a Howl.
 
@@ -94,4 +96,4 @@ Film-strip Imagine canvas: one column per plate (P0, P4, …). Pin Bolt + vault 
 - A sky/vault layer that is a cropped densify frame
 - A new play URL, Build `/c/` link, or `grok.com/share` hung from this note
 
-Related: [15](15-gpu-compositor.md) · [17](17-live-compositor.md) · [32](32-howl-gpu-targets.md) · [34](34-howl-live-aim.md) · [18](18-room-starmap-lena.md) · [19](19-luminous-path-climb.md) · [21](21-paw-to-galaxy.md) · [22-m](22-m-densify-snowball.md) · [25](25-hazard-cone.md) · [28](28-stills-two-rails.md) · [33](33-plate-mae-qc.md) · [35](35-lane-materials.md) · paste [`COLD_START-gpu-zones.md`](COLD_START-gpu-zones.md)
+Related: [15](15-gpu-compositor.md) · [17](17-live-compositor.md) · [32](32-howl-gpu-targets.md) · [34](34-howl-live-aim.md) · [18](18-room-starmap-lena.md) · [19](19-luminous-path-climb.md) · [21](21-paw-to-galaxy.md) · [22-m](22-m-densify-snowball.md) · [25](25-hazard-cone.md) · [28](28-stills-two-rails.md) · [33](33-plate-mae-qc.md) · [35](35-lane-materials.md) · runtime [`../scripts/lena-lod/lenaLod.js`](../scripts/lena-lod/lenaLod.js) · paste [`COLD_START-gpu-zones.md`](COLD_START-gpu-zones.md) · bib [`COLD_START-lena-bib.md`](COLD_START-lena-bib.md)

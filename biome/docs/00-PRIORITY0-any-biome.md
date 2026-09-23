@@ -74,7 +74,7 @@ Bolt identity, gallop file, GPU path, scale, clock, Pack = **identical**.
 ## C. Ordered cook (copy this)
 
 1. Show `lock/bolt-back.jpg` + `lock/bolt-gallop-cycle.mp4` in chat (teacher gate).
-2. Still empty first + distinct last — ZERO dog. **Lane material first** ([35](35-lane-materials.md)): menu A–D, or the material already inside `{PAINT}`. Then **law 20 frame measures**. Grey concrete asphalt as silent default = FAIL. **Law 36 before this still:** densify stays one plate. GPU zones are keyed layers over it ([36](36-gpu-zones-lena-procedural.md)). Do not slice Video A into spatial GPU tiles.
+2. Still empty first + distinct last — ZERO dog. **Lane material first** ([35](35-lane-materials.md)): menu A–D, or the material already inside `{PAINT}`. Then **law 20 frame measures**. Grey concrete asphalt as silent default = FAIL. **Law 36 before this still:** densify stays one plate. GPU zones are keyed layers over it ([36](36-gpu-zones-lena-procedural.md)). Runtime [`../scripts/lena-lod/lenaLod.js`](../scripts/lena-lod/lenaLod.js). Do not slice Video A into spatial GPU tiles.
 3. Video A — extract last frame of the previous plate (P0: empty first still) → cook the last still → Imagine Video **first+last** (SuperGrok session, or `imagineBiomeClip` when `XAI_API_KEY` is set). **48 fps**, SPEED LAW. Then `plate-mae-qc.py` (P0 has no seam). Missing key is not a stop. Frost: **no** `setpts` 2.7× warp ([20b](20b-frost-aurora-proportions.md)).
 3b. **Law 23 geo qc PASS** — `python3 biome/scripts/plate-geo-qc/plate-geo-qc.py` the new plate. FAIL = recook, do not hang. Imagine camera block: [camera-1point.txt](../prompts/camera-1point.txt) (law 24).
 4. REUSE lock cycle → key + despill (13c) — **law 17** GPU even in cook QA.

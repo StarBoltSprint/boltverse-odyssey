@@ -4,7 +4,7 @@ Open `biome/scripts/biome-cook/README.md` and follow **only** that order (steps 
 
 **Before step 3 (empty first/last stills):** choose a lane material. Read `biome/docs/35-lane-materials.md`. Paste `biome/docs/COLD_START-lane-materials.md`.
 
-**Before that still and before Video A (law 36):** densify stays one continuous plate. GPU zones are keyed layers over it. Do not chop one densify plate into spatial GPU tiles. Read `biome/docs/36-gpu-zones-lena-procedural.md`. Paste `biome/docs/COLD_START-gpu-zones.md`.
+**Before that still and before Video A (law 36):** densify stays one continuous plate. GPU zones are keyed layers over it. Do not chop one densify plate into spatial GPU tiles. Read `biome/docs/36-gpu-zones-lena-procedural.md`. Paste `biome/docs/COLD_START-gpu-zones.md`. Runtime: `biome/scripts/lena-lod/lenaLod.js` (`lenaFrame`). Bib: `biome/docs/COLD_START-lena-bib.md`.
 
 If `{PAINT}` already names the road material, use that. Otherwise propose this menu and do not cook P0 on a silent default:
 
