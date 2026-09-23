@@ -50,6 +50,8 @@ Procedural **yes** on Rail B, on spawn, and on LOD. Procedural here means **when
 - **Paw-to-Galaxy LOD** — earth → near space → deep space (`worldLod`). On the cone, far / mid / near pick `generator` / `detail` / `rock`, and `preloadOf` warms the next file before the swap. Journey and path: [18](18-room-starmap-lena.md) · [19](19-luminous-path-climb.md) · [21](21-paw-to-galaxy.md). Bib names: [`COLD_START-lena-bib.md`](COLD_START-lena-bib.md).
 - **Howl targets column** — procedural crystals now. Later: ship / mech. Those targets are destroyable by Howl. Plate-baked events stay dodge-only (Rail A, law [25](25-hazard-cone.md)).
 - **Path beat** — the chemin reveals one lane ~3 s ahead of contact so the player can SIDES. Same cone. Densify stays this plate. Law [37](37-path-beat.md). LOD fills the world; the path beat tells which lane to be in.
+- **Light layers + openables** — playable beams and open/close states are keyed GPU layers on this same cone. Imagine cooks light-only plates and closed/open/transition bibs. GPU owns intensity, tint, hit, and the anim. Law [38](38-gpu-light-openable.md). Do not bake them into Video A.
+- **Plate zones** — `road` | `sideL` | `sideR`. Road lanes hold the path beat, Howl hits, and critical openables. Shoulders (calm void / berms) may hold décor LOD, light layers, openables, and generators. Same `howlPose`, `gradeFromPlate`, GPU over densify. `lenaFrame` defaults to `road`. Pass `plateZone: "sideL"` or `"sideR"` for berm décor; that spawn is not a Howl hit and does not take a gameplay lane. Densify sides stay relatively empty. Side clutter in Video A is FAIL.
 
 Cold Groks, roles so the names stay distinct:
 
@@ -57,6 +59,7 @@ Cold Groks, roles so the names stay distinct:
 |---|---|
 | **Dr Lena Voss** | How you move. Spawn, preload, LOD, Rail B placement. |
 | **Path beat** | Which lane, and when. Reveal ~3 s ahead. Hit / miss at contact. Law [37](37-path-beat.md). |
+| **Light / openable** | Playable lights and doors, chests, generators, hatches. Law [38](38-gpu-light-openable.md). |
 | **Marcus** | Resonance / `m` grade. |
 | **Priya** | Quest / why. |
 | **Elena** | Pack / rifts. |
@@ -99,4 +102,4 @@ Film-strip Imagine canvas: one column per plate (P0, P4, …). Pin Bolt + vault 
 - A sky/vault layer that is a cropped densify frame
 - A new play URL, Build `/c/` link, or `grok.com/share` hung from this note
 
-Related: [15](15-gpu-compositor.md) · [17](17-live-compositor.md) · [32](32-howl-gpu-targets.md) · [34](34-howl-live-aim.md) · [18](18-room-starmap-lena.md) · [19](19-luminous-path-climb.md) · [21](21-paw-to-galaxy.md) · [22-m](22-m-densify-snowball.md) · [25](25-hazard-cone.md) · [28](28-stills-two-rails.md) · [33](33-plate-mae-qc.md) · [35](35-lane-materials.md) · [37](37-path-beat.md) (chemin ~3 s ahead; densify stays this loop) · runtime [`../scripts/lena-lod/lenaLod.js`](../scripts/lena-lod/lenaLod.js) · path beat [`../scripts/path-beat/pathBeat.js`](../scripts/path-beat/pathBeat.js) · paste [`COLD_START-gpu-zones.md`](COLD_START-gpu-zones.md) · bib [`COLD_START-lena-bib.md`](COLD_START-lena-bib.md) · path [`COLD_START-path-beat.md`](COLD_START-path-beat.md)
+Related: [15](15-gpu-compositor.md) · [17](17-live-compositor.md) · [32](32-howl-gpu-targets.md) · [34](34-howl-live-aim.md) · [18](18-room-starmap-lena.md) · [19](19-luminous-path-climb.md) · [21](21-paw-to-galaxy.md) · [22-m](22-m-densify-snowball.md) · [25](25-hazard-cone.md) · [28](28-stills-two-rails.md) · [33](33-plate-mae-qc.md) · [35](35-lane-materials.md) · [37](37-path-beat.md) (chemin ~3 s ahead; densify stays this loop) · [38](38-gpu-light-openable.md) (light layers + openables over densify) · runtime [`../scripts/lena-lod/lenaLod.js`](../scripts/lena-lod/lenaLod.js) · path beat [`../scripts/path-beat/pathBeat.js`](../scripts/path-beat/pathBeat.js) · lights [`../scripts/gpu-light/gpuLight.js`](../scripts/gpu-light/gpuLight.js) · openables [`../scripts/gpu-openable/gpuOpenable.js`](../scripts/gpu-openable/gpuOpenable.js) · paste [`COLD_START-gpu-zones.md`](COLD_START-gpu-zones.md) · bib [`COLD_START-lena-bib.md`](COLD_START-lena-bib.md) · path [`COLD_START-path-beat.md`](COLD_START-path-beat.md) · light [`COLD_START-gpu-light-openable.md`](COLD_START-gpu-light-openable.md)

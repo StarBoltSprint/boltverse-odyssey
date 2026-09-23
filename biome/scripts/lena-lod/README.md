@@ -10,7 +10,7 @@ Procedural placement and LOD for Rail B. The cone is `howlPose`. The lane pick i
 Law: [`../../docs/36-gpu-zones-lena-procedural.md`](../../docs/36-gpu-zones-lena-procedural.md)  
 Bib cook: [`../../docs/COLD_START-lena-bib.md`](../../docs/COLD_START-lena-bib.md)  
 Cone: [`../howl-live/howlLive.js`](../howl-live/howlLive.js)  
-Lane clock on that cone: [`../path-beat/pathBeat.js`](../path-beat/pathBeat.js) (law 37 — which lane, ~3 s ahead). This folder still only places bibs.
+Lane clock on that cone: [`../path-beat/pathBeat.js`](../path-beat/pathBeat.js) (law 37 — which lane, ~3 s ahead). Lights and openables on that cone: [`../gpu-light/gpuLight.js`](../gpu-light/gpuLight.js) · [`../gpu-openable/gpuOpenable.js`](../gpu-openable/gpuOpenable.js) (law 38). This folder still only places bibs. `ctx.plateZone` is `road` (default), `sideL`, or `sideR`. Shoulder spawns are décor: not Howl hits, and they do not take a gameplay lane. Densify sides stay relatively empty so this layer can fill them.
 
 ## Wire (Build)
 

@@ -10,7 +10,9 @@
  * Copy into Live next to howlLive.js. Draw each spawn as a Bolt-style quad
  * (mark / markDest). Howl rings stay biome/fx/howl/howl-attack.mp4.
  */
-import { HOWL, howlPose, pickHowlLane, mulberry32 } from "../howl-live/howlLive.js";
+import { HOWL, howlPose, pickHowlLane, mulberry32, PLATE_ZONES, normalizePlateZone, poseLane } from "../howl-live/howlLive.js";
+
+export { PLATE_ZONES, normalizePlateZone, poseLane };
 
 export const HOWL_KEEP = "biome/fx/howl/howl-attack.mp4";
 
@@ -149,12 +151,17 @@ export function lenaState(seed = 1) {
 }
 
 function resolveSpawn(spawn, ctx, world) {
-  const pose = howlPose(spawn.lane, spawn.z, ctx.cw, ctx.ch, ctx.destH0, ctx.pawY);
+  const plateZone = spawn.plateZone || "road";
+  const poseIndex = spawn.poseLane != null ? spawn.poseLane : spawn.lane;
+  const pose = howlPose(poseIndex, spawn.z, ctx.cw, ctx.ch, ctx.destH0, ctx.pawY);
   const sky = ctx.zone === "sky";
+  const onSide = plateZone !== "road";
   const pre = preloadOf(pose.t);
   return {
     id: spawn.id,
+    plateZone,
     lane: spawn.lane,
+    poseLane: poseIndex,
     z: spawn.z,
     noun: spawn.noun,
     t: pose.t,
@@ -170,13 +177,16 @@ function resolveSpawn(spawn, ctx, world) {
     key: sky ? "black" : "green",
     contact: !sky && pre.band === "near",
     gradeFromPlate: true,
-    howlable: pose.howlable === true,
+    howlable: onSide ? false : pose.howlable === true,
   };
 }
 
 /**
  * Advance Rail B spawns one tick.
- * ctx: { now, climbT, cw, ch, pawY, destH0, blocked, plate, nouns, zone }
+ * ctx: { now, climbT, cw, ch, pawY, destH0, blocked, plate, nouns, zone, plateZone }
+ * plateZone defaults to "road" (gameplay lanes, Howl-eligible).
+ * "sideL" | "sideR" plants décor on the shoulder and does not take a road lane.
+ * Howl hits stay on the road. Densify sides stay empty; this layer fills them.
  * Returns a new state. Densify is not in the return.
  */
 export function lenaFrame(state, dt, ctx) {
@@ -185,29 +195,56 @@ export function lenaFrame(state, dt, ctx) {
   let nextAt = Number(state.nextAt) || 0;
   const now = Number(ctx.now) || 0;
   const step = Math.max(0, Number(dt) || 0);
+  const plateZone = ctx.plateZone == null || ctx.plateZone === "" ? "road" : normalizePlateZone(ctx.plateZone);
+  if (plateZone === null) throw new Error("plate zone");
   const spawns = [];
   for (const s of state.spawns || []) {
     const z = s.z - step / HOWL.travel;
     if (z < HOWL.exitZ) continue;
-    spawns.push({ id: s.id, lane: s.lane, z, noun: s.noun, born: s.born });
+    const keptZone = s.plateZone || "road";
+    spawns.push({
+      id: s.id,
+      plateZone: keptZone,
+      lane: s.lane,
+      poseLane: s.poseLane != null ? s.poseLane : s.lane,
+      z,
+      noun: s.noun,
+      born: s.born,
+    });
   }
   const rng = mulberry32((seed + seq * 101) >>> 0);
   if (now >= nextAt) {
-    const lane = pickHowlLane(ctx.blocked || [], ctx.plate || [], rng());
+    const laneRoll = plateZone === "road" ? rng() : null;
     const gap = LENA.gapMin + rng() * (LENA.gapMax - LENA.gapMin);
     nextAt = now + gap;
-    if (lane !== null && spawns.length < LENA.maxAlive) {
+    const lane = plateZone === "road" ? pickHowlLane(ctx.blocked || [], ctx.plate || [], laneRoll) : null;
+    if (spawns.length < LENA.maxAlive && (plateZone !== "road" || lane !== null)) {
       const nouns = ctx.nouns && ctx.nouns.length ? ctx.nouns : ["quartz"];
       const noun = nouns[Math.min(nouns.length - 1, (rng() * nouns.length) | 0)];
       const z = LENA.spawnZ0 + rng() * (LENA.spawnZ1 - LENA.spawnZ0);
       seq += 1;
-      spawns.push({ id: `${seed}-${seq}`, lane, z, noun, born: now });
+      if (plateZone === "road") {
+        spawns.push({ id: `${seed}-${seq}`, plateZone: "road", lane, poseLane: lane, z, noun, born: now });
+      } else {
+        spawns.push({
+          id: `${seed}-${seq}`,
+          plateZone,
+          lane: null,
+          poseLane: poseLane(plateZone, 0),
+          z,
+          noun,
+          born: now,
+        });
+      }
     }
   }
   const world = worldLod(ctx.climbT);
   return {
     rail: RAIL.zones,
     tileDensify: false,
+    sides: "gpu",
+    sideClutter: false,
+    plateZones: PLATE_ZONES,
     world,
     state: { seed, spawns, nextAt, seq },
     spawns: spawns.map((s) => resolveSpawn(s, ctx, world)),

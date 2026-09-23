@@ -73,7 +73,7 @@ Optional look file: `biome/fx/path/chemin.mp4` (one keyed lane segment). Pixels 
 
 ## Native to the video
 
-Densify’s **3 lanes are the truth**. Path beat, Lena, and Howl share `howlPose` (same cone, same perspective, same ground). `frame.lanes === 3`. `frame.cone === "howlPose"`.
+Densify’s **3 lanes are the truth** for the chemin. Path beat, Lena, and Howl share `howlPose` (same cone, same perspective, same ground). `frame.lanes === 3`. `frame.cone === "howlPose"`. The path beat and Howl hits stay on `plateZone: "road"`. Shoulders (`sideL` / `sideR`) are décor, lights, and openables (law [38](38-gpu-light-openable.md)), not a second lane for the chemin. Densify keeps those sides relatively empty.
 
 | Lock | Runtime | FAIL |
 |---|---|---|
@@ -107,4 +107,4 @@ Contact shadow is **only** when `band === "near"` (`contact: true`). Far and mid
 - Scoring a beat by inventing a new Bolt sprint
 - A play URL, Build `/c/` link, or `grok.com/share` from this note
 
-Related: [36](36-gpu-zones-lena-procedural.md) · [34](34-howl-live-aim.md) · [32](32-howl-gpu-targets.md) · [19](19-luminous-path-climb.md) · [12](12-lane-path-ribbon.md) · [22-m](22-m-densify-snowball.md) · runtime [`../scripts/path-beat/pathBeat.js`](../scripts/path-beat/pathBeat.js) · paste [`COLD_START-path-beat.md`](COLD_START-path-beat.md)
+Related: [36](36-gpu-zones-lena-procedural.md) · [38](38-gpu-light-openable.md) (light layers + openables, same cone, over densify) · [34](34-howl-live-aim.md) · [32](32-howl-gpu-targets.md) · [19](19-luminous-path-climb.md) · [12](12-lane-path-ribbon.md) · [22-m](22-m-densify-snowball.md) · runtime [`../scripts/path-beat/pathBeat.js`](../scripts/path-beat/pathBeat.js) · paste [`COLD_START-path-beat.md`](COLD_START-path-beat.md) · light [`COLD_START-gpu-light-openable.md`](COLD_START-gpu-light-openable.md)

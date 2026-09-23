@@ -18,6 +18,8 @@ Inventory only. Hang ≠ wipe. `biome-cook.sh` wraps these entries. It does not 
 | [`biome/scripts/howl-live/`](../howl-live/) | **34** | [`howlLive.js`](../howl-live/howlLive.js) · [`howlWet.glsl`](../howl-live/howlWet.glsl) · [`demo.js`](../howl-live/demo.js) | `howlFireSec`, `howlFxBeam`, cut-on-contact, shatter swap, wet GPU. |
 | [`biome/scripts/lena-lod/`](../lena-lod/) | **36** | [`lenaLod.js`](../lena-lod/lenaLod.js) · [`demo.js`](../lena-lod/demo.js) | `lenaFrame`, far/mid/near bands, bib preload. Cone = howlPose. |
 | [`biome/scripts/path-beat/`](../path-beat/) | **37** | [`pathBeat.js`](../path-beat/pathBeat.js) · [`demo.js`](../path-beat/demo.js) | `pathBeatFrame`, ~3 s lookahead, L/C/R hit/miss. Cone = howlPose. |
+| [`biome/scripts/gpu-light/`](../gpu-light/) | **38** | [`gpuLight.js`](../gpu-light/gpuLight.js) · [`demo.js`](../gpu-light/demo.js) | `lightLayerFrame`, intensity / tint / on-off. Cone = howlPose. Light-only bibs. |
+| [`biome/scripts/gpu-openable/`](../gpu-openable/) | **38** | [`gpuOpenable.js`](../gpu-openable/gpuOpenable.js) · [`demo.js`](../gpu-openable/demo.js) | `openableFrame` / `openableHit`. Closed / open / transition. Cone = howlPose. |
 
 `bolt-key-gl-scissor-prev.ts` lives in `bolt-key-gl/` as **ARCHIVE**. Copying it is FAIL (vertical bars, eaten paws). It is not a cook step.
 
@@ -70,6 +72,14 @@ Every file currently hung under those dirs:
 | `biome/scripts/path-beat/package.json` |
 | `biome/scripts/path-beat/pathBeat.js` |
 | `biome/scripts/path-beat/demo.js` |
+| `biome/scripts/gpu-light/README.md` |
+| `biome/scripts/gpu-light/package.json` |
+| `biome/scripts/gpu-light/gpuLight.js` |
+| `biome/scripts/gpu-light/demo.js` |
+| `biome/scripts/gpu-openable/README.md` |
+| `biome/scripts/gpu-openable/package.json` |
+| `biome/scripts/gpu-openable/gpuOpenable.js` |
+| `biome/scripts/gpu-openable/demo.js` |
 
 ## Laws used for a biome cook
 
@@ -101,6 +111,7 @@ Every file currently hung under those dirs:
 | 35 | [`biome/docs/35-lane-materials.md`](../../docs/35-lane-materials.md) | step 3, before the empty still. Menu A–D. Paste [`COLD_START-lane-materials.md`](../../docs/COLD_START-lane-materials.md). No script. |
 | 36 | [`biome/docs/36-gpu-zones-lena-procedural.md`](../../docs/36-gpu-zones-lena-procedural.md) | before empty stills and Video A. Keyed GPU layers over densify. Runtime [`lena-lod/`](../lena-lod/). Paste [`COLD_START-gpu-zones.md`](../../docs/COLD_START-gpu-zones.md) · [`COLD_START-lena-bib.md`](../../docs/COLD_START-lena-bib.md). |
 | 37 | [`biome/docs/37-path-beat.md`](../../docs/37-path-beat.md) | chemin reveals one lane ~3 s ahead. Densify stays one loop. Runtime [`path-beat/`](../path-beat/). Paste [`COLD_START-path-beat.md`](../../docs/COLD_START-path-beat.md). |
+| 38 | [`biome/docs/38-gpu-light-openable.md`](../../docs/38-gpu-light-openable.md) | light layers + openables over densify. Runtime [`gpu-light/`](../gpu-light/) · [`gpu-openable/`](../gpu-openable/). Paste [`COLD_START-gpu-light-openable.md`](../../docs/COLD_START-gpu-light-openable.md). |
 
 ## Howl KEEP
 

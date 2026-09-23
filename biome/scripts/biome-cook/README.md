@@ -8,7 +8,7 @@ Worked example (play URL only): https://boltboltverse-odyssey.grok.me
 
 Paste: [`COLD_START-biome-cook.md`](COLD_START-biome-cook.md) · same text [`../../docs/COLD_START-biome-cook.md`](../../docs/COLD_START-biome-cook.md). Inventory: [`MANIFEST.md`](MANIFEST.md). Checklist: `bash biome/scripts/biome-cook/biome-cook.sh`.
 
-Order matches [`../../docs/00-PRIORITY0-any-biome.md`](../../docs/00-PRIORITY0-any-biome.md) section C, plus laws through 36.
+Order matches [`../../docs/00-PRIORITY0-any-biome.md`](../../docs/00-PRIORITY0-any-biome.md) section C, plus laws through 38.
 
 | # | Do | Law | Script |
 |---|---|---|---|
@@ -18,7 +18,7 @@ Order matches [`../../docs/00-PRIORITY0-any-biome.md`](../../docs/00-PRIORITY0-a
 | 4 | Next plate: success keeps the `@` stack and adds one ref (≤12). Miss drops one tier. d1+ has ≥1 spectacular hazard. | [`biome/docs/22-m-densify-snowball.md`](../../docs/22-m-densify-snowball.md) | [`biome/prompts/snowball-refs.txt`](../../prompts/snowball-refs.txt) |
 | 5 | Video A. Extract last frame of the previous plate → that file **is** this plate’s `first` (P0: the empty first still). Cook the `last` still (advanced world, same camera). Imagine Video **first+last** — SuperGrok session (primary; no API key) **or** `imagineBiomeClip` when `XAI_API_KEY` is set. **48 fps**. Then `plate-mae-qc.py` on N vs N+1 (P0 has no previous seam). Missing key is not a stop. BAN one-still I2V, “forcé localement”, MAE PASS without the script. Frost: no `setpts` 2.7× warp. | [`biome/docs/02-videos.md`](../../docs/02-videos.md) · [`33`](../../docs/33-plate-mae-qc.md) · [`08`](../../docs/08-plate-speed.md) · [`20b`](../../docs/20b-frost-aurora-proportions.md) | [`biome/prompts/video-empty-plate.txt`](../../prompts/video-empty-plate.txt) · [`plate-mae-qc.py`](../plate-mae-qc/plate-mae-qc.py) |
 | 6 | **Law 23 geo qc PASS** before hang. FAIL = recook. Camera block = conical 1-point lock-off (law 24). | [`23`](../../docs/23-plate-geo-qc.md) · [`24`](../../docs/24-camera-1point.md) | [`biome/scripts/plate-geo-qc/plate-geo-qc.py`](../plate-geo-qc/plate-geo-qc.py) · [`biome/prompts/camera-1point.txt`](../../prompts/camera-1point.txt) |
-| 7 | REUSE lock cycle → key + vector despill (13c). Law 17 GPU even in cook QA. Steerable lane: `resamplePath` → `path.json` (12). **Law 37** path beat: `pathBeatFrame` reveals one lane ~3 s ahead. Do not bake that lane into Video A. | [`13c`](../../docs/13c-green-despill.md) · [`05`](../../docs/05-key.md) · [`12`](../../docs/12-lane-path-ribbon.md) · [`12b`](../../docs/12b-adaptive-curvature.md) · [`17`](../../docs/17-live-compositor.md) · [`37`](../../docs/37-path-beat.md) | [`biome/scripts/chroma-despill/`](../chroma-despill/) · [`biome/scripts/curvature-sample/`](../curvature-sample/) · [`biome/scripts/path-beat/`](../path-beat/) |
+| 7 | REUSE lock cycle → key + vector despill (13c). Law 17 GPU even in cook QA. Steerable lane: `resamplePath` → `path.json` (12). **Law 37** path beat: `pathBeatFrame` reveals one lane ~3 s ahead. Do not bake that lane into Video A. **Law 38** lights and openables: `lightLayerFrame` / `openableFrame` over densify. Do not bake a beam or an open door into Video A. | [`13c`](../../docs/13c-green-despill.md) · [`05`](../../docs/05-key.md) · [`12`](../../docs/12-lane-path-ribbon.md) · [`12b`](../../docs/12b-adaptive-curvature.md) · [`17`](../../docs/17-live-compositor.md) · [`37`](../../docs/37-path-beat.md) · [`38`](../../docs/38-gpu-light-openable.md) | [`biome/scripts/chroma-despill/`](../chroma-despill/) · [`biome/scripts/curvature-sample/`](../curvature-sample/) · [`biome/scripts/path-beat/`](../path-beat/) · [`biome/scripts/gpu-light/`](../gpu-light/) · [`biome/scripts/gpu-openable/`](../gpu-openable/) |
 | 8 | `computeScale` / `assertScale`. Wide law-20 road: withersFrac ~0.10 is KEEP. Do not grow Bolt to fake 0.22. | [`biome/docs/13d-auto-scale.md`](../../docs/13d-auto-scale.md) | [`biome/scripts/bolt-scale/`](../bolt-scale/) |
 | 9 | Wire Live: copy `bolt-key-gl.ts` **and** `wet-fx.ts`. `makeCompositor` **before** `getContext("2d")`. `GPU_VER = 24`. **FAIL** = `bolt-key-gl-scissor-prev.ts`. | [`15`](../../docs/15-gpu-compositor.md) · [`17`](../../docs/17-live-compositor.md) · [`22`](../../docs/22-gpu24-frost-keep.md) | [`biome/scripts/bolt-key-gl/bolt-key-gl.ts`](../bolt-key-gl/bolt-key-gl.ts) · [`wet-fx.ts`](../bolt-key-gl/wet-fx.ts) · [`WIRE.md`](../bolt-key-gl/WIRE.md) |
 | 10 | `gallop-clock` / `assertGallopClock`. Native 96 fps, loop 1×, phase from `plate_time`. | [`biome/docs/14c-gallop-clock.md`](../../docs/14c-gallop-clock.md) | [`biome/scripts/gallop-clock/`](../gallop-clock/) |
@@ -51,6 +51,8 @@ Swap `{LANE_MATERIAL}` in [`image-empty-plate.txt`](../../prompts/image-empty-pl
 
 **Law 37 — path beat, after the plate exists.** The chemin reveals one lane ~3 s ahead of contact so the player can SIDES. Hit / miss at contact. Same Howl cone as Lena. Do not bake the lane into the densify loop. Runtime: [`../path-beat/pathBeat.js`](../path-beat/pathBeat.js) (`pathBeatFrame`). Law: [`37-path-beat.md`](../../docs/37-path-beat.md). Paste: [`COLD_START-path-beat.md`](../../docs/COLD_START-path-beat.md). Check: `bash biome/scripts/biome-cook/biome-cook.sh path`.
 
+**Law 38 — light layers + openables, same cone.** Imagine cooks light-only keyed plates (beam / glow / neon / flash) and closed / open / transition bibs (door, chest, generator, crystal hatch). GPU owns intensity, tint, on/off, fade, hit, and open/close. Do not bake a beam, an open state, or side clutter into the densify loop. Plate zones are `road` | `sideL` | `sideR` (gameplay on the lanes; décor, lights, and openables may sit on the shoulders). Pack RT: baked path-traced look in the pixels (soft GI, reflections, soft shadows). Fake interactive gloss, zero bounces. FAIL flat plastic. FAIL real-time raytracing via Imagine. True RT is the UE rail, HOLD. Runtime: [`../gpu-light/gpuLight.js`](../gpu-light/gpuLight.js) (`lightLayerFrame`) · [`../gpu-openable/gpuOpenable.js`](../gpu-openable/gpuOpenable.js) (`openableFrame`). Law: [`38-gpu-light-openable.md`](../../docs/38-gpu-light-openable.md). Paste: [`COLD_START-gpu-light-openable.md`](../../docs/COLD_START-gpu-light-openable.md). Check: `bash biome/scripts/biome-cook/biome-cook.sh light` and `bash biome/scripts/biome-cook/biome-cook.sh openable`.
+
 Law 27 ([`27-native-road-slide.md`](../../docs/27-native-road-slide.md)) is an optional catalog. It is not a default step.
 
 ### Step 14 — copy paths (law 34)
@@ -79,6 +81,8 @@ bash biome/scripts/biome-cook/biome-cook.sh curvature
 bash biome/scripts/biome-cook/biome-cook.sh howl
 bash biome/scripts/biome-cook/biome-cook.sh lena
 bash biome/scripts/biome-cook/biome-cook.sh path
+bash biome/scripts/biome-cook/biome-cook.sh light
+bash biome/scripts/biome-cook/biome-cook.sh openable
 bash biome/scripts/biome-cook/biome-cook.sh gpu
 ```
 

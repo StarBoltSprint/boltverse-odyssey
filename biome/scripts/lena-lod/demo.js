@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 /** node biome/scripts/lena-lod/demo.js */
+import { howlPose } from "../howl-live/howlLive.js";
 import {
   LENA,
   RAIL,
+  PLATE_ZONES,
   objectBand,
   variantOf,
   preloadOf,
@@ -91,7 +93,29 @@ const shared = lenaFrame(lenaState(9), 0.016, {
   blocked: [-1, 1],
   plate: [],
 });
-assert("two rail-A lanes stay shared, free corridor stays free", shared.spawns.length === 1 && shared.spawns[0].lane !== 0);
+assert("two rail-A lanes stay shared, free corridor stays free", shared.spawns.length === 1 && shared.spawns[0].lane !== 0 && shared.spawns[0].plateZone === "road");
+
+const side = lenaFrame(lenaState(3), 0.016, { ...ctx, plateZone: "sideL" });
+const sideBorn = side.spawns[0];
+const leftLane = howlPose(-1, sideBorn.z, ctx.cw, ctx.ch, ctx.destH0, ctx.pawY);
+assert("plate zones name the road and both shoulders", PLATE_ZONES.join(",") === "road,sideL,sideR");
+assert(
+  "décor LOD may spawn on the left shoulder",
+  side.sides === "gpu" &&
+    side.sideClutter === false &&
+    sideBorn.plateZone === "sideL" &&
+    sideBorn.lane === null &&
+    sideBorn.howlable === false &&
+    sideBorn.gradeFromPlate === true &&
+    sideBorn.pose.ground.x < leftLane.ground.x,
+);
+let badZone = false;
+try {
+  lenaFrame(lenaState(1), 0.016, { ...ctx, plateZone: "shoulder" });
+} catch {
+  badZone = true;
+}
+assert("an unnamed shoulder is not a zone", badZone);
 
 console.log(
   JSON.stringify(

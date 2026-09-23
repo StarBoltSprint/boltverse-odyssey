@@ -20,3 +20,4 @@ Pages here are **optional**. They are **not** cook gates. Default Bolt remains e
 | [35-lane-materials.md](35-lane-materials.md) | Lane material menu A–D before P0 stills. Ban grey concrete as silent default. |
 | [36-gpu-zones-lena-procedural.md](36-gpu-zones-lena-procedural.md) | GPU zones = keyed layers over densify. Runtime `scripts/lena-lod/lenaLod.js`. Bib: [COLD_START-lena-bib.md](COLD_START-lena-bib.md). |
 | [37-path-beat.md](37-path-beat.md) | Path beat. Chemin reveals one lane ~3 s ahead. Runtime `scripts/path-beat/pathBeat.js`. Paste: [COLD_START-path-beat.md](COLD_START-path-beat.md). |
+| [38-gpu-light-openable.md](38-gpu-light-openable.md) | GPU light layers + openables. Light-only plates and closed/open/transition. Runtime `scripts/gpu-light/` · `scripts/gpu-openable/`. Paste: [COLD_START-gpu-light-openable.md](COLD_START-gpu-light-openable.md). |
