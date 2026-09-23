@@ -29,5 +29,8 @@ Pages here are **optional**. They are **not** cook gates. Default Bolt remains e
 | [39-imagine-live-light.md](39-imagine-live-light.md) | Prop is an Imagine video filmed in the plate light. Clean luma key, no regrade. Tap fires howl. Runtime `scripts/imagine-live/imagineLive.js`. Paste: [COLD_START-imagine-live.md](COLD_START-imagine-live.md). |
 | [40-nebula-cycle.md](40-nebula-cycle.md) | Nebula Lane: nebula → shore → disk → eclipse. 30 s hold + 3.2 s fade. Continue from the last frame. Trim the slow head. Paste: [COLD_START-nebula-lane.md](COLD_START-nebula-lane.md). |
 | [41-eclipse-look.md](41-eclipse-look.md) | Hidden 3D yaw, eclipse only. Videos stay videos. Drag looks, tap changes lane. Planet cards + star sky. Runtime `scripts/eclipse-look/eclipseLook.js`. Paste: [COLD_START-nebula-lane.md](COLD_START-nebula-lane.md). |
+| [42-shoulder-panorama.md](42-shoulder-panorama.md) | Any already-cooked biome. Three videos, not yaw. Flick changes lane, a 150 ms hold looks, the outer flick boards one luminous path. Path scrolls only while boarded. No fog veil, no offline stitch. Runtime `scripts/shoulder-panorama/shoulderPanorama.js`. Paste: [COLD_START-shoulder-panorama.md](COLD_START-shoulder-panorama.md). |
+
+**Look left on a biome you already cooked:** read [COLD_START-shoulder-panorama.md](COLD_START-shoulder-panorama.md).
 
 **Nebula Lane, a new convo:** read [COLD_START-nebula-lane.md](COLD_START-nebula-lane.md) before cooking.

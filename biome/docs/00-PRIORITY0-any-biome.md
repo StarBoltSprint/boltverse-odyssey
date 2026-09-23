@@ -43,6 +43,7 @@ Player may be random. Grok must not ask them to install Pack, invent a dog sprin
 | Sprint plan | **10 plates written before d1.** Spine + per-plate beat / +1 / hazard / GPU Howl target. Cook in order | [26](26-biome-sprint-plan.md) |
 | Pack | Auto-embed `BOLTVERSE_PACK_ORIGIN=https://boltverse-pack.vercel.app` + `pack.js` | [07](07-pack-live.md) |
 | Play controls | A/D or side swipe = lanes · W / swipe up = jump | [PLAY.md](../PLAY.md) |
+| Shoulder look | Only if the player asks, and only on a biome whose road already exists. Three videos, not yaw. Copy `scripts/shoulder-panorama/`. | [42](42-shoulder-panorama.md) |
 
 Constants:
 ```
@@ -91,7 +92,7 @@ Bolt identity, gallop file, GPU path, scale, clock, Pack = **identical**.
 10. Hang ≠ wipe + Pack wire + bump `GPU_VER`.
 11. Smoke: dogFps ≈ min(96, display); hind paws intact; **no vertical bars**; **no neon stripe through torso**; **sharp interior** (not body-blur); shadow on road (no skateboard); FX visible on plant; coat matches THIS plate; no truck scale.
 
-**FAIL** if: invent sprint · CPU key every rAF · **copy scissor/IGN sketch** · wipe masters · hang without composite gate · skip bounce / FX row · bake Bolt into road mp4 · SPH / Box2D · grey concrete / béton highway as silent lane default (law 35) · chop one densify plate into spatial GPU tiles (law 36) · bake the target lane into densify Video A (law 37) · bake a playable light, an open door / chest / generator / hatch, or side clutter into densify Video A (law 38) · ice-hole / Beat-narrow road as silent default · grow Bolt to fake withersMin on a wide road · **raw `mix(c, plate)` neon leak** · **5-tap body smear** · **print RGB < 0.3 on frost** · `cSharp = rgb/a` double unpremul · shader a Howl or bake shatter into it (law 32) · Howl overshoots the prop or keeps playing after contact (law 34) · hang a seam that law 33 FAILed · stop Video A because `XAI_API_KEY` is unset · one-still I2V · “forcé localement” · claim MAE PASS without `plate-mae-qc.py`.
+**FAIL** if: invent sprint · CPU key every rAF · **copy scissor/IGN sketch** · wipe masters · hang without composite gate · skip bounce / FX row · bake Bolt into road mp4 · SPH / Box2D · grey concrete / béton highway as silent lane default (law 35) · chop one densify plate into spatial GPU tiles (law 36) · bake the target lane into densify Video A (law 37) · bake a playable light, an open door / chest / generator / hatch, or side clutter into densify Video A (law 38) · ice-hole / Beat-narrow road as silent default · grow Bolt to fake withersMin on a wide road · **raw `mix(c, plate)` neon leak** · **5-tap body smear** · **print RGB < 0.3 on frost** · `cSharp = rgb/a` double unpremul · shader a Howl or bake shatter into it (law 32) · Howl overshoots the prop or keeps playing after contact (law 34) · hang a seam that law 33 FAILed · stitch a panorama or veil the seam with fog when the player asked to look sideways (law 42) · stop Video A because `XAI_API_KEY` is unset · one-still I2V · “forcé localement” · claim MAE PASS without `plate-mae-qc.py`.
 
 ---
 

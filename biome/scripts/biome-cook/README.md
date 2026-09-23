@@ -8,7 +8,7 @@ Worked example (play URL only): https://boltboltverse-odyssey.grok.me
 
 Paste: [`COLD_START-biome-cook.md`](COLD_START-biome-cook.md) · same text [`../../docs/COLD_START-biome-cook.md`](../../docs/COLD_START-biome-cook.md). Inventory: [`MANIFEST.md`](MANIFEST.md). Checklist: `bash biome/scripts/biome-cook/biome-cook.sh`.
 
-Order matches [`../../docs/00-PRIORITY0-any-biome.md`](../../docs/00-PRIORITY0-any-biome.md) section C, plus laws through 38.
+Order matches [`../../docs/00-PRIORITY0-any-biome.md`](../../docs/00-PRIORITY0-any-biome.md) section C, plus laws through 38. Shoulder look on a biome that already exists is law 42, not a cook step: [`../../docs/42-shoulder-panorama.md`](../../docs/42-shoulder-panorama.md).
 
 | # | Do | Law | Script |
 |---|---|---|---|
@@ -52,6 +52,8 @@ Swap `{LANE_MATERIAL}` in [`image-empty-plate.txt`](../../prompts/image-empty-pl
 **Law 37 — path beat, after the plate exists.** The chemin reveals one lane ~3 s ahead of contact so the player can SIDES. Hit / miss at contact. Same Howl cone as Lena. Do not bake the lane into the densify loop. Runtime: [`../path-beat/pathBeat.js`](../path-beat/pathBeat.js) (`pathBeatFrame`). Law: [`37-path-beat.md`](../../docs/37-path-beat.md). Paste: [`COLD_START-path-beat.md`](../../docs/COLD_START-path-beat.md). Check: `bash biome/scripts/biome-cook/biome-cook.sh path`.
 
 **Law 38 — light layers + openables, same cone.** Imagine cooks light-only keyed plates (beam / glow / neon / flash) and closed / open / transition bibs (door, chest, generator, crystal hatch). GPU owns intensity, tint, on/off, fade, hit, and open/close. Do not bake a beam, an open state, or side clutter into the densify loop. Plate zones are `road` | `sideL` | `sideR` (gameplay on the lanes; décor, lights, and openables may sit on the shoulders). Pack RT: baked path-traced look in the pixels (soft GI, reflections, soft shadows). Fake interactive gloss, zero bounces. FAIL flat plastic. FAIL real-time raytracing via Imagine. True RT is the UE rail, HOLD. Runtime: [`../gpu-light/gpuLight.js`](../gpu-light/gpuLight.js) (`lightLayerFrame`) · [`../gpu-openable/gpuOpenable.js`](../gpu-openable/gpuOpenable.js) (`openableFrame`). Law: [`38-gpu-light-openable.md`](../../docs/38-gpu-light-openable.md). Paste: [`COLD_START-gpu-light-openable.md`](../../docs/COLD_START-gpu-light-openable.md). Check: `bash biome/scripts/biome-cook/biome-cook.sh light` and `bash biome/scripts/biome-cook/biome-cook.sh openable`.
+
+**Law 42 — only when the player asks to look beside an already-cooked road.** Do not recook Bolt or the plate. Two wing videos, same horizon, same light. Flick still changes lane (150 ms and 32 px is look, not a lane). The next flick off the outer lane boards one path. That path scrolls only while boarded, by sampling the live road. No yaw in the same frame. No stitched panorama. No fog veil on the seam. Runtime: [`../shoulder-panorama/shoulderPanorama.js`](../shoulder-panorama/shoulderPanorama.js). Law: [`42-shoulder-panorama.md`](../../docs/42-shoulder-panorama.md). Paste: [`COLD_START-shoulder-panorama.md`](../../docs/COLD_START-shoulder-panorama.md).
 
 Law 27 ([`27-native-road-slide.md`](../../docs/27-native-road-slide.md)) is an optional catalog. It is not a default step.
 
