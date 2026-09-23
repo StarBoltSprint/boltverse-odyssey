@@ -2,6 +2,19 @@
 
 Open `biome/scripts/biome-cook/README.md` and follow **only** that order (steps 1→17). Do not invent a cook. Do not invent QC math. Do not rewrite script bodies. Do not hunt the rest of `biome/docs/` first.
 
+**Before step 3 (empty first/last stills):** choose a lane material. Read `biome/docs/35-lane-materials.md`. Paste `biome/docs/COLD_START-lane-materials.md`.
+
+If `{PAINT}` already names the road material, use that. Otherwise propose this menu and do not cook P0 on a silent default:
+
+| Key | Name | Look |
+|---|---|---|
+| A | Obsidian glass | Black mirror / obsidian road; cyan luminous edges or dashes in the reflection; pale ground beside |
+| B | Crystal quartz | THREE translucent crystal/quartz lane ribbons; light refracts through; soft luminous edges (not painted asphalt dashes); pale ground |
+| C | Luminous ribbon | Road = solidified light / Pack ribbon path (law 12 vibe); not concrete |
+| D | Mix vault | Obsidian or crystal path + volumetric nebula-as-sky (thick 3D gas ceiling lighting the world) — not flat black night, not storm-grey clouds only |
+
+**BAN** as silent default: grey concrete asphalt highway, MS-Paint dashes on béton, boring moderne nationale with no biome paint. Law 20 (width ~0.75–0.82, sky ~45%, plant ~0.80, 1-point, ZERO dog) is the frame, not “must be asphalt”. Swap `{LANE_MATERIAL}` in `biome/prompts/image-empty-plate.txt`. `{PAINT}` includes that lane material.
+
 Hang ≠ wipe. ADD `road-<biome>*.mp4` beside canyon→cars→duel→night→war. Never wipe hung masters.
 
 Pack auto-embed: `window.BOLTVERSE_PACK_ORIGIN=https://boltverse-pack.vercel.app` and load `pack.js` from that origin (or ship `client/pack.js`, which POSTs there). The game play URL is not the Pack API.

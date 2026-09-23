@@ -58,7 +58,7 @@ When a player asks **make a biome** / **add a biome** / cook a new sprint run: d
 
 **Do not invert.** Full law: [10-bolt-cutout-law.md](10-bolt-cutout-law.md).
 
-1. Empty plaque still — ZERO dog (`image-empty-plate.txt` + `{PAINT}`). Camera locked (not too far / not too close).
+1. Empty plaque still — ZERO dog (`image-empty-plate.txt` + `{PAINT}`, lane material from [35](35-lane-materials.md) before the still). Camera locked (not too far / not too close).
 2. Video A empty rush — extract last frame → cook last still → Imagine Video real `image` + distinct `last_frame` (session, or `imagineBiomeClip` when the key is set). **48fps**. ZERO dog. Then `plate-mae-qc.py`.
 3. **REUSE** [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) as the Bolt motion asset (already rear / green / rotary). No new Imagine dog sprint.
 4. Key + despill cutout from that cycle ([05-key.md](05-key.md) · [13c-green-despill.md](13c-green-despill.md)).

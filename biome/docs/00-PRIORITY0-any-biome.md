@@ -13,6 +13,8 @@ GPU compositor (no CPU `getImageData` hot path) · sealed **6 s** gallop · auto
 
 **Empty still defaults = [20-default-plate-proportions.md](20-default-plate-proportions.md).** Start **any** biome empty still / Video A from the **full** measure set — not φ-only, not Frost-only: 3-lane **~0.75–0.82** · sky **~45%** · plant **~0.80** · Bolt X **0.50** · withersFrac **~0.10 KEEP** · GPU start sat **0.54** / bounce **0.42 bounceSrc** / contact `k` **0.34** dual-paw (law 22). Player / `{PAINT}` may adapt. Frost aurora is the worked example ([20b](20b-frost-aurora-proportions.md)). Ice-hole / Beat-narrow road as silent default / grow Bolt to fake withersMin 0.22 = **FAIL**.
 
+**Lane material = [35-lane-materials.md](35-lane-materials.md).** Law 20 does not paint the road. Before P0 stills, propose menu A–D (Obsidian glass, Crystal quartz, Luminous ribbon, Mix vault) unless `{PAINT}` already names a surface. Grey concrete asphalt / MS-Paint dashes on béton / a boring nationale with no biome paint = **FAIL** as the silent default.
+
 Player may be random. Grok must not ask them to install Pack, invent a dog sprint, or wipe old biomes.
 
 ---
@@ -59,7 +61,7 @@ Remux lock → Live `public/master/bolt.mp4` (`-an` +faststart), bump `?v=`. Do 
 
 Only these change per biome:
 
-1. **Empty plate paint** — roads, light, weather (`image-empty-plate.txt` + `{PAINT}`). Frame skeleton starts from [20](20-default-plate-proportions.md) unless the player asked a different framing.
+1. **Empty plate paint** — **lane material**, roads, light, weather (`image-empty-plate.txt` + `{PAINT}`, and `{LANE_MATERIAL}` from [35](35-lane-materials.md)). Frame skeleton starts from [20](20-default-plate-proportions.md) unless the player asked a different framing. Law 20 is width / sky / plant / 1-point. It is not a concrete highway. Before P0 stills, propose menu A–D unless `{PAINT}` already names the road. **BAN** grey concrete asphalt, MS-Paint dashes on béton, and a boring nationale with no biome paint as the silent default.
 2. **Hazard cousins** — same camera grammar, biome objects.
 3. **Grade / FX row** from [16](16-biome-ground-fx.md) + `uniformsFor(chap)` in [17](17-live-compositor.md).
 4. **File names** — `road-<biome>.mp4`, `road-<biome>-*.mp4`, never overwrite hung `road.mp4` unless SmiR says replace Beat.
@@ -72,7 +74,7 @@ Bolt identity, gallop file, GPU path, scale, clock, Pack = **identical**.
 ## C. Ordered cook (copy this)
 
 1. Show `lock/bolt-back.jpg` + `lock/bolt-gallop-cycle.mp4` in chat (teacher gate).
-2. Still empty first + distinct last — ZERO dog. **Start from law 20 defaults** unless the player overrode framing.
+2. Still empty first + distinct last — ZERO dog. **Lane material first** ([35](35-lane-materials.md)): menu A–D, or the material already inside `{PAINT}`. Then **law 20 frame measures**. Grey concrete asphalt as silent default = FAIL.
 3. Video A — extract last frame of the previous plate (P0: empty first still) → cook the last still → Imagine Video **first+last** (SuperGrok session, or `imagineBiomeClip` when `XAI_API_KEY` is set). **48 fps**, SPEED LAW. Then `plate-mae-qc.py` (P0 has no seam). Missing key is not a stop. Frost: **no** `setpts` 2.7× warp ([20b](20b-frost-aurora-proportions.md)).
 3b. **Law 23 geo qc PASS** — `python3 biome/scripts/plate-geo-qc/plate-geo-qc.py` the new plate. FAIL = recook, do not hang. Imagine camera block: [camera-1point.txt](../prompts/camera-1point.txt) (law 24).
 4. REUSE lock cycle → key + despill (13c) — **law 17** GPU even in cook QA.
@@ -87,7 +89,7 @@ Bolt identity, gallop file, GPU path, scale, clock, Pack = **identical**.
 10. Hang ≠ wipe + Pack wire + bump `GPU_VER`.
 11. Smoke: dogFps ≈ min(96, display); hind paws intact; **no vertical bars**; **no neon stripe through torso**; **sharp interior** (not body-blur); shadow on road (no skateboard); FX visible on plant; coat matches THIS plate; no truck scale.
 
-**FAIL** if: invent sprint · CPU key every rAF · **copy scissor/IGN sketch** · wipe masters · hang without composite gate · skip bounce / FX row · bake Bolt into road mp4 · SPH / Box2D · ice-hole / Beat-narrow road as silent default · grow Bolt to fake withersMin on a wide road · **raw `mix(c, plate)` neon leak** · **5-tap body smear** · **print RGB < 0.3 on frost** · `cSharp = rgb/a` double unpremul · shader a Howl or bake shatter into it (law 32) · Howl overshoots the prop or keeps playing after contact (law 34) · hang a seam that law 33 FAILed · stop Video A because `XAI_API_KEY` is unset · one-still I2V · “forcé localement” · claim MAE PASS without `plate-mae-qc.py`.
+**FAIL** if: invent sprint · CPU key every rAF · **copy scissor/IGN sketch** · wipe masters · hang without composite gate · skip bounce / FX row · bake Bolt into road mp4 · SPH / Box2D · grey concrete / béton highway as silent lane default (law 35) · ice-hole / Beat-narrow road as silent default · grow Bolt to fake withersMin on a wide road · **raw `mix(c, plate)` neon leak** · **5-tap body smear** · **print RGB < 0.3 on frost** · `cSharp = rgb/a` double unpremul · shader a Howl or bake shatter into it (law 32) · Howl overshoots the prop or keeps playing after contact (law 34) · hang a seam that law 33 FAILed · stop Video A because `XAI_API_KEY` is unset · one-still I2V · “forcé localement” · claim MAE PASS without `plate-mae-qc.py`.
 
 ---
 

@@ -12,7 +12,7 @@ CLEAR empty center corridor (the cutout plants there). Subtle rails / curbs OK. 
 
 Still only — this is `image` / `last_frame` for the road film, not a hall spawn.
 
-Paste: [../prompts/image-empty-plate.txt](../prompts/image-empty-plate.txt). Swap `{PAINT}` only.
+Paste: [../prompts/image-empty-plate.txt](../prompts/image-empty-plate.txt). Swap `{PAINT}` and `{LANE_MATERIAL}` ([35](35-lane-materials.md)). `{PAINT}` includes the lane material. Grey concrete is not the silent default.
 
 Plate N+1 still = extracted last frame of road N, then a **new** end still (world advanced). Do not cut to a fresh establishing shot.
 
