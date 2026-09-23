@@ -8,6 +8,10 @@ This is the **full measure set** from the Frost aurora KEEP (PR #92 / 20b). Tide
 
 φ is a **composition audit only**. The law is the table + scale + GPU start knobs below.
 
+## Lane material (not this law)
+
+These measures are the **frame**. They are not “must be asphalt”. Before the empty still, pick `{LANE_MATERIAL}` from [35 — Lane materials](35-lane-materials.md). `{PAINT}` includes that choice. Swap it into [`../prompts/image-empty-plate.txt`](../prompts/image-empty-plate.txt). Grey concrete asphalt, MS-Paint dashes on béton, and a boring moderne nationale with no biome paint are **FAIL** as a silent default. Width ~0.75–0.82, sky ~45%, plant ~0.80, 1-point, ZERO dog stay. If `{PAINT}` already names a road, use that.
+
 ## Default frame (9:16, chase cam behind Bolt)
 
 Measured 2026-09-20 on the Frost aurora KEEP (720×1280, plant `y = 0.80`). Frame UV. `w` in PATH_TABLE = **one-lane half-width**. 3-lane full width = `6w`.
@@ -80,7 +84,7 @@ Use as a **composition check**, not a religion. Engine laws 13d / 17 / 19 win on
 
 ## What Grok does on a new convo
 
-1. Empty still: 3 wide lanes, vanishing point, ZERO dog, camera lock. Hit the **full** tables above.
+1. Lane material from [35](35-lane-materials.md) (or the material already in `{PAINT}`). Then empty still: 3 wide lanes, vanishing point, ZERO dog, camera lock. Hit the **full** tables above. The road surface is `{LANE_MATERIAL}`, not unspoken béton.
 2. Video A rush 48fps from that still pair.
 3. REUSE 6s Bolt + GPU 17 — start knobs above, then adapt grade to `{PAINT}`.
 4. Scale 13d **as-is** (withersFrac ~0.10 KEEP). Proportions stay on the **plate**, not by baking Bolt bigger.
@@ -91,6 +95,7 @@ Chat / paint may ask tighter road, lower horizon, more sky, hotter sat, etc. The
 
 ## FAIL (default cook)
 
+- Grey concrete asphalt / béton dashes / boring nationale as the silent lane material ([35](35-lane-materials.md))
 - Ice-hole / Beat-narrow road as silent default
 - Sky ~15 % / corridor walls eating the frame
 - Growing Bolt to fake withersMin 0.22 on a wide road (truck)
@@ -103,4 +108,4 @@ Chat / paint may ask tighter road, lower horizon, more sky, hotter sat, etc. The
 
 ## Related
 
-[00](00-PRIORITY0-any-biome.md) · [13d](13d-auto-scale.md) · [17](17-live-compositor.md) · [19](19-luminous-path-climb.md) · Frost aurora worked example (paint + KEEP that proved these numbers): [20b-frost-aurora-proportions.md](20b-frost-aurora-proportions.md) · geometric judge: [23-plate-geo-qc.md](23-plate-geo-qc.md) · camera 1-point: [24-camera-1point.md](24-camera-1point.md) · paste [COLD_START-any-biome.md](COLD_START-any-biome.md)
+[00](00-PRIORITY0-any-biome.md) · [35](35-lane-materials.md) lane material before the still · [13d](13d-auto-scale.md) · [17](17-live-compositor.md) · [19](19-luminous-path-climb.md) · Frost aurora worked example (paint + KEEP that proved these numbers): [20b-frost-aurora-proportions.md](20b-frost-aurora-proportions.md) · geometric judge: [23-plate-geo-qc.md](23-plate-geo-qc.md) · camera 1-point: [24-camera-1point.md](24-camera-1point.md) · paste [COLD_START-lane-materials.md](COLD_START-lane-materials.md) · paste [COLD_START-any-biome.md](COLD_START-any-biome.md)

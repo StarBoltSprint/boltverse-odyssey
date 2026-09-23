@@ -21,7 +21,7 @@ KEEP="$BIOME/fx/howl/howl-attack.mp4"
 
 print_steps() {
   cat <<'EOF'
-biome-cook — steps 1→17 (PRIORITY 0 section C + laws through 34)
+biome-cook — steps 1→17 (PRIORITY 0 section C + laws through 35)
 Hang ≠ wipe. Do not invent QC math. Noun is biome-variable. Math is fixed.
 Read biome/scripts/biome-cook/README.md. Paste biome/docs/COLD_START-biome-cook.md.
 Play URL hang = Live only, never a Build convo, never grok.com/share, never /c/.
@@ -31,13 +31,22 @@ Worked example (play URL only): https://boltboltverse-odyssey.grok.me
     Law: biome/docs/10-bolt-cutout-law.md
  2  10-plate sprint plan BEFORE d1.
     Law: biome/docs/26-biome-sprint-plan.md
- 3  Empty still, ZERO dog, law 20 measures. Stills 28–31.
-    Law: biome/docs/20-default-plate-proportions.md
+ 3  Lane material FIRST, then empty still, ZERO dog, law 20 frame measures.
+    BAN silent default: grey concrete asphalt highway, MS-Paint dashes on béton,
+    boring moderne nationale with no biome paint.
+    If {PAINT} already names the road, use it. Otherwise propose:
+      A Obsidian glass — black mirror, cyan luminous edges, pale ground beside
+      B Crystal quartz — three translucent quartz ribbons, soft luminous edges
+      C Luminous ribbon — solidified light / Pack ribbon path, not concrete
+      D Mix vault — obsidian or crystal path + volumetric nebula-as-sky
+    Law: biome/docs/35-lane-materials.md
+         biome/docs/20-default-plate-proportions.md
          biome/docs/28-stills-two-rails.md
          biome/docs/29-imagine-compiler.md
          biome/docs/30-i2i-prompt.md
          biome/docs/31-light-lock.md
-    Prompt: biome/prompts/image-empty-plate.txt
+    Prompt: biome/prompts/image-empty-plate.txt  ({LANE_MATERIAL} inside {PAINT})
+    Paste: biome/docs/COLD_START-lane-materials.md
  4  Next plate refs (law 22-m). Success +1 @ ref. Miss drops one.
     Law: biome/docs/22-m-densify-snowball.md
     Prompt: biome/prompts/snowball-refs.txt

@@ -144,7 +144,7 @@ Video B is **SmiR only** (replace the lock). A new biome does **not** cook Video
 
 Make / add a biome **always** this order. Soft KEEP banned.
 
-1. **Empty plaque style** — still ZERO dog. Paste [image-empty-plate.txt](../prompts/image-empty-plate.txt) + biome `{PAINT}`. Camera locked (not too far / not too close; clear center corridor).
+1. **Empty plaque style** — still ZERO dog. Lane material first ([35](35-lane-materials.md)), then paste [image-empty-plate.txt](../prompts/image-empty-plate.txt) + biome `{PAINT}` (includes `{LANE_MATERIAL}`). Camera locked (not too far / not too close; clear center corridor).
 2. **Video A — empty rush** — plaque défile à fond. Extract last frame → cook last still → Imagine Video with real `image` + distinct `last_frame` (session, or [`imagineBiomeClip`](../../scripts/imagine-hooks.mjs) when the key is set). **48fps**. ZERO dog. Then `plate-mae-qc.py`. Paste [video-empty-plate.txt](../prompts/video-empty-plate.txt).
 3. **REUSE sealed cycle** — take [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) as the Bolt motion asset (already rear / green / rotary). Do **not** Imagine a new dog sprint. Do **not** run Video B / `imagineBoltClip` for a biome cook.
 4. **Key + despill** — chroma key ([05-key.md](05-key.md)) + despill ([13c-green-despill.md](13c-green-despill.md)) from **that** cycle.

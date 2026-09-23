@@ -72,7 +72,7 @@ Every file currently hung under those dirs:
 | 15 | [`biome/docs/15-gpu-compositor.md`](../../docs/15-gpu-compositor.md) | [`bolt-key-gl/`](../bolt-key-gl/) |
 | 16 | [`biome/docs/16-biome-ground-fx.md`](../../docs/16-biome-ground-fx.md) | [`wet-fx.ts`](../bolt-key-gl/wet-fx.ts) |
 | 17 | [`biome/docs/17-live-compositor.md`](../../docs/17-live-compositor.md) | [`bolt-key-gl/`](../bolt-key-gl/) · [`WIRE.md`](../bolt-key-gl/WIRE.md) |
-| 20 | [`biome/docs/20-default-plate-proportions.md`](../../docs/20-default-plate-proportions.md) | measures in the doc · [`image-empty-plate.txt`](../../prompts/image-empty-plate.txt) |
+| 20 | [`biome/docs/20-default-plate-proportions.md`](../../docs/20-default-plate-proportions.md) | frame measures · [`image-empty-plate.txt`](../../prompts/image-empty-plate.txt) `{LANE_MATERIAL}` |
 | 20b | [`biome/docs/20b-frost-aurora-proportions.md`](../../docs/20b-frost-aurora-proportions.md) | Frost picture example of law 20. Not the default paint. |
 | 22 | [`biome/docs/22-gpu24-frost-keep.md`](../../docs/22-gpu24-frost-keep.md) | `GPU_VER = 24` in [`bolt-key-gl.ts`](../bolt-key-gl/bolt-key-gl.ts) |
 | 22-m | [`biome/docs/22-m-densify-snowball.md`](../../docs/22-m-densify-snowball.md) | [`snowball-refs.txt`](../../prompts/snowball-refs.txt). Not the GPU-22 file. |
@@ -88,6 +88,7 @@ Every file currently hung under those dirs:
 | 32 | [`biome/docs/32-howl-gpu-targets.md`](../../docs/32-howl-gpu-targets.md) | KEEP below · [`howl-obstacle.txt`](../../prompts/howl-obstacle.txt) · [`howl-shatter.txt`](../../prompts/howl-shatter.txt) |
 | 33 | [`biome/docs/33-plate-mae-qc.md`](../../docs/33-plate-mae-qc.md) | [`plate-mae-qc.py`](../plate-mae-qc/plate-mae-qc.py) |
 | 34 | [`biome/docs/34-howl-live-aim.md`](../../docs/34-howl-live-aim.md) | [`howl-live/`](../howl-live/) — step 14 |
+| 35 | [`biome/docs/35-lane-materials.md`](../../docs/35-lane-materials.md) | step 3, before the empty still. Menu A–D. Paste [`COLD_START-lane-materials.md`](../../docs/COLD_START-lane-materials.md). No script. |
 
 ## Howl KEEP
 

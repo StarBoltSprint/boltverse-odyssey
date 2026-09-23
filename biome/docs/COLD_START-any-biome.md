@@ -6,6 +6,7 @@ You are cooking a **Lane biome** for Boltverse Odyssey for a **random player**. 
 
 1. `biome/docs/00-PRIORITY0-any-biome.md`
 2. **`biome/docs/20-default-plate-proportions.md`** ← start empty still from the **full** law 20 measure set (not φ-only, not Frost-only): 3-lane ~0.75–0.82 · sky ~45% · plant ~0.80 · withersFrac ~0.10 KEEP · GPU start sat 0.54 / bounce 0.42 bounceSrc (law 22) / contact k 0.34 dual-paw. Player / `{PAINT}` may adapt. Frost aurora worked example = `20b-frost-aurora-proportions.md`.
+2b. **`biome/docs/35-lane-materials.md`** ← **before** those stills, pick lane material A–D (Obsidian glass, Crystal quartz, Luminous ribbon, Mix vault) unless `{PAINT}` already names the road. **BAN** grey concrete asphalt / béton dashes / boring nationale as the silent default. Paste: `biome/docs/COLD_START-lane-materials.md`. Swap `{LANE_MATERIAL}`. Law 20 is the frame, not asphalt.
 3. **`biome/docs/17-live-compositor.md`** ← what actually stuck Bolt to the plate. **FAIL** if you copy the old scissor/IGN sketch.
 4. **`biome/docs/22-gpu24-frost-keep.md`** ← GPU_VER 24 KEEP. Neon-safe bounce, dual-paw contact, ice Fresnel, plate IBL. (`21-paw-to-galaxy.md` is a different law.) **FAIL** if you `mix(c, plate, 0.10)` raw or 5-tap-smear the body or draw one body-ellipse shadow.
 5. `biome/docs/22-m-densify-snowball.md` ← **`m` = momentum.** Success → next plate all prior `@` refs + 1 new (richer, ≤12). Miss → −1. **d1+ always ≥1 spectacular hazard** (law 25). Paste: `biome/docs/COLD_START-m-densify.md`. (`22-gpu24-frost-keep.md` stays GPU KEEP.)
@@ -31,12 +32,12 @@ You are cooking a **Lane biome** for Boltverse Odyssey for a **random player**. 
 - Hang ≠ wipe. Pack auto-embed (`BOLTVERSE_PACK_ORIGIN=https://boltverse-pack.vercel.app` + pack.js).
 
 ## Variable
-- Biome name + `{PAINT}` for empty plate + hazards. Empty still **starts** from the **full** law 20 set (3-lane ~0.75–0.82, sky ~45%, horizon ~0.38, plant ~0.80, Bolt X = 0.50, withersFrac ~0.10, GPU sat/bounce/contact above) unless the player asked a different framing.
+- Biome name + `{PAINT}` for empty plate + hazards. `{PAINT}` includes `{LANE_MATERIAL}` from law 35 (menu A–D unless the paint already names a road). Empty still **starts** from the **full** law 20 set (3-lane ~0.75–0.82, sky ~45%, horizon ~0.38, plant ~0.80, Bolt X = 0.50, withersFrac ~0.10, GPU sat/bounce/contact above) unless the player asked a different framing. Grey concrete is not the silent road.
 - FX row + `uniformsFor(chap)` from docs 16 / 17 matching the paint.
 - New files `road-<biome>*.mp4` — do not wipe canyon→war.
 
 ## Order
-Teacher gate → **empty still from law 20 defaults** → Video A (extract last frame → cook last still → session Imagine Video first+last, or CLI if `XAI_API_KEY` is set) → **law 23 geo qc PASS** → REUSE cycle → key/despill (luma protect) → scale → GPU wire (law 17) → clock → grade+bounce+shadow+FX row → hazards (law 25, dodge) → Howl targets only if the plan names them (law 32) → **law 33 seam PASS** vs previous plate → hang+Pack → smoke.
+Teacher gate → **lane material (law 35)** → **empty still from law 20 defaults** → Video A (extract last frame → cook last still → session Imagine Video first+last, or CLI if `XAI_API_KEY` is set) → **law 23 geo qc PASS** → REUSE cycle → key/despill (luma protect) → scale → GPU wire (law 17) → clock → grade+bounce+shadow+FX row → hazards (law 25, dodge) → Howl targets only if the plan names them (law 32) → **law 33 seam PASS** vs previous plate → hang+Pack → smoke.
 
 ## Smoke
 Sprint looks like Frost-parity on **this** plate: fluid gallop, **sharp interior**, hind paws intact, no vertical bars, **no neon through the coat**, plate light (not studio), paw shadow (no skateboard), biome-correct ground FX, old biomes still hung.

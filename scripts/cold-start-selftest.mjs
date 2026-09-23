@@ -699,4 +699,32 @@ must(body("START.md").search(/PRIORITY 0 TEACHER GATE/) < body("START.md").searc
 const boltLawStyle = body("biome/docs/10-bolt-cutout-law.md");
 must(boltLawStyle.search(/## STYLE/) >= 0 && boltLawStyle.slice(boltLawStyle.indexOf("## STYLE")).search(/PRIORITY 0 TEACHER GATE/) < 400, "10-law: teacher gate at top of STYLE");
 
+const laneLaw = body("biome/docs/35-lane-materials.md");
+const lanePaste = body("biome/docs/COLD_START-lane-materials.md");
+const cookReadme = body("biome/scripts/biome-cook/README.md");
+const cookPaste = body("biome/docs/COLD_START-biome-cook.md");
+const cookPasteCopy = body("biome/scripts/biome-cook/COLD_START-biome-cook.md");
+const cookSh = body("biome/scripts/biome-cook/biome-cook.sh");
+const emptyPlate = body("biome/prompts/image-empty-plate.txt");
+const law20 = body("biome/docs/20-default-plate-proportions.md");
+const p0 = body("biome/docs/00-PRIORITY0-any-biome.md");
+const sectionB = p0.slice(p0.indexOf("## B."), p0.indexOf("## C."));
+function hasLaneMenu(text) {
+  return /Obsidian glass/.test(text) && /Crystal quartz/.test(text) && /Luminous ribbon/.test(text) && /Mix vault/.test(text);
+}
+must(existsSync(join(root, "biome/docs/35-lane-materials.md")), "law 35 doc exists");
+must(existsSync(join(root, "biome/docs/COLD_START-lane-materials.md")), "law 35 paste exists");
+must(hasLaneMenu(laneLaw), "law 35: menu A–D names");
+must(/béton/.test(laneLaw) && /grey concrete/.test(laneLaw) && /silent default/.test(laneLaw), "law 35: BAN béton silent default");
+must(/\{LANE_MATERIAL\}/.test(laneLaw) && /\{PAINT\}/.test(laneLaw), "law 35: {LANE_MATERIAL} inside {PAINT}");
+must(hasLaneMenu(lanePaste) && /béton/.test(lanePaste), "lane-materials paste: menu + béton ban");
+must(hasLaneMenu(cookReadme) && /35-lane-materials/.test(cookReadme) && /béton/.test(cookReadme), "biome-cook README step 3: menu + law 35");
+must(cookPaste === cookPasteCopy, "COLD_START-biome-cook copies match");
+must(hasLaneMenu(cookPaste) && /35-lane-materials/.test(cookPaste) && /béton/.test(cookPaste), "COLD_START-biome-cook: menu before P0");
+must(/35-lane-materials/.test(cookSh) && /béton/.test(cookSh) && /Obsidian glass/.test(cookSh) && /Mix vault/.test(cookSh), "biome-cook.sh checklist: law 35 menu");
+must(/\{LANE_MATERIAL\}/.test(emptyPlate) && /\{PAINT\}/.test(emptyPlate), "image-empty-plate: {LANE_MATERIAL} + {PAINT}");
+must(/35-lane-materials/.test(law20) && /\{LANE_MATERIAL\}/.test(law20) && /béton/.test(law20), "law 20 links lane material");
+must(/lane material/i.test(sectionB) && /35-lane-materials/.test(sectionB) && /béton/.test(sectionB), "P0 section B: empty plate paint includes lane material");
+must(/35-lane-materials/.test(body("biome/scripts/biome-cook/MANIFEST.md")), "MANIFEST lists law 35");
+
 console.log("COLD-START PASS");

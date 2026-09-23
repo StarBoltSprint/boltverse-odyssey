@@ -17,3 +17,4 @@ Pages here are **optional**. They are **not** cook gates. Default Bolt remains e
 | [32-howl-gpu-targets.md](32-howl-gpu-targets.md) | Rail B keyed Howl targets. Shatter per type. REUSE Howl KEEP. |
 | [33-plate-mae-qc.md](33-plate-mae-qc.md) | last(N) vs first(N+1) before hang. |
 | [34-howl-live-aim.md](34-howl-live-aim.md) | Howl distance / cut-on-contact / shatter swap / wet GPU. Copy `scripts/howl-live/`. |
+| [35-lane-materials.md](35-lane-materials.md) | Lane material menu A–D before P0 stills. Ban grey concrete as silent default. |

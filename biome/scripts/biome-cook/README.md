@@ -8,13 +8,13 @@ Worked example (play URL only): https://boltboltverse-odyssey.grok.me
 
 Paste: [`COLD_START-biome-cook.md`](COLD_START-biome-cook.md) · same text [`../../docs/COLD_START-biome-cook.md`](../../docs/COLD_START-biome-cook.md). Inventory: [`MANIFEST.md`](MANIFEST.md). Checklist: `bash biome/scripts/biome-cook/biome-cook.sh`.
 
-Order matches [`../../docs/00-PRIORITY0-any-biome.md`](../../docs/00-PRIORITY0-any-biome.md) section C, plus laws through 34.
+Order matches [`../../docs/00-PRIORITY0-any-biome.md`](../../docs/00-PRIORITY0-any-biome.md) section C, plus laws through 35.
 
 | # | Do | Law | Script |
 |---|---|---|---|
 | 1 | Show `lock/bolt-back.jpg` and `lock/bolt-gallop-cycle.mp4` in chat (teacher gate). REUSE the 6 s / 96 fps / 534-frame cycle. Do not invent a gallop. | [`biome/docs/10-bolt-cutout-law.md`](../../docs/10-bolt-cutout-law.md) · [`biome/docs/00-PRIORITY0-any-biome.md`](../../docs/00-PRIORITY0-any-biome.md) | — |
 | 2 | Write the **10-plate sprint plan before d1**. Spine + beat / +1 / hazard / GPU Howl column. Cook in that order. | [`biome/docs/26-biome-sprint-plan.md`](../../docs/26-biome-sprint-plan.md) · plans: [`frost`](../../docs/plans/frost-sprint.md) · [`prismwake`](../../docs/plans/prismwake-sprint.md) · [`cometwake`](../../docs/plans/cometwake-sprint.md) | — |
-| 3 | Empty still, first + distinct last, **ZERO dog**. Start from law 20 measures. Stills: décor snowballs, events swap (28). Imagine bakes the world (29). i2i = one delta (30). Light lock persistent vs event (31). | [`20`](../../docs/20-default-plate-proportions.md) · [`28`](../../docs/28-stills-two-rails.md) · [`29`](../../docs/29-imagine-compiler.md) · [`30`](../../docs/30-i2i-prompt.md) · [`31`](../../docs/31-light-lock.md) | [`biome/prompts/image-empty-plate.txt`](../../prompts/image-empty-plate.txt) |
+| 3 | **Lane material first** (law 35 menu below), then empty still, first + distinct last, **ZERO dog**. Law 20 measures are the frame, not asphalt. Stills: décor snowballs, events swap (28). Imagine bakes the world (29). i2i = one delta (30). Light lock persistent vs event (31). | [`35`](../../docs/35-lane-materials.md) · [`20`](../../docs/20-default-plate-proportions.md) · [`28`](../../docs/28-stills-two-rails.md) · [`29`](../../docs/29-imagine-compiler.md) · [`30`](../../docs/30-i2i-prompt.md) · [`31`](../../docs/31-light-lock.md) | [`biome/prompts/image-empty-plate.txt`](../../prompts/image-empty-plate.txt) `{LANE_MATERIAL}` · paste [`COLD_START-lane-materials.md`](../../docs/COLD_START-lane-materials.md) |
 | 4 | Next plate: success keeps the `@` stack and adds one ref (≤12). Miss drops one tier. d1+ has ≥1 spectacular hazard. | [`biome/docs/22-m-densify-snowball.md`](../../docs/22-m-densify-snowball.md) | [`biome/prompts/snowball-refs.txt`](../../prompts/snowball-refs.txt) |
 | 5 | Video A. Extract last frame of the previous plate → that file **is** this plate’s `first` (P0: the empty first still). Cook the `last` still (advanced world, same camera). Imagine Video **first+last** — SuperGrok session (primary; no API key) **or** `imagineBiomeClip` when `XAI_API_KEY` is set. **48 fps**. Then `plate-mae-qc.py` on N vs N+1 (P0 has no previous seam). Missing key is not a stop. BAN one-still I2V, “forcé localement”, MAE PASS without the script. Frost: no `setpts` 2.7× warp. | [`biome/docs/02-videos.md`](../../docs/02-videos.md) · [`33`](../../docs/33-plate-mae-qc.md) · [`08`](../../docs/08-plate-speed.md) · [`20b`](../../docs/20b-frost-aurora-proportions.md) | [`biome/prompts/video-empty-plate.txt`](../../prompts/video-empty-plate.txt) · [`plate-mae-qc.py`](../plate-mae-qc/plate-mae-qc.py) |
 | 6 | **Law 23 geo qc PASS** before hang. FAIL = recook. Camera block = conical 1-point lock-off (law 24). | [`23`](../../docs/23-plate-geo-qc.md) · [`24`](../../docs/24-camera-1point.md) | [`biome/scripts/plate-geo-qc/plate-geo-qc.py`](../plate-geo-qc/plate-geo-qc.py) · [`biome/prompts/camera-1point.txt`](../../prompts/camera-1point.txt) |
@@ -29,6 +29,23 @@ Order matches [`../../docs/00-PRIORITY0-any-biome.md`](../../docs/00-PRIORITY0-a
 | 15 | **Law 33** seam PASS before hang of any plate after P0. Last frame N vs first frame N+1. Exit non-zero = recook. | [`biome/docs/33-plate-mae-qc.md`](../../docs/33-plate-mae-qc.md) | [`biome/scripts/plate-mae-qc/plate-mae-qc.py`](../plate-mae-qc/plate-mae-qc.py) |
 | 16 | Hang ≠ wipe. ADD `road-<biome>*.mp4` beside canyon→cars→duel→night→war. Pack auto-embed. Bump `GPU_VER`. | [`09`](../../docs/09-recette-biome.md) · [`11`](../../docs/11-plate-order.md) · [`07`](../../docs/07-pack-live.md) | [`client/pack.js`](../../../client/pack.js) · `BOLTVERSE_PACK_ORIGIN=https://boltverse-pack.vercel.app` |
 | 17 | Smoke: dogFps ≈ min(96, display); hind paws intact; no vertical bars; no neon stripe through the torso; sharp interior; shadow on the road; FX on the plant; coat matches THIS plate. | [`biome/docs/00-PRIORITY0-any-biome.md`](../../docs/00-PRIORITY0-any-biome.md) section C | runner prints this list |
+
+### Step 3 — lane material before the empty still (law 35)
+
+Pack grammar stays: 3 lanes, 1-point lock-off, ZERO dog. Law 20 width / sky / plant are frame measures. They are not “must be asphalt”.
+
+If `{PAINT}` already names a road material, use it. Otherwise propose this menu and do not cook P0 on a silent default:
+
+| Key | Name | Look |
+|---|---|---|
+| A | Obsidian glass | Black mirror / obsidian road; cyan luminous edges or dashes in the reflection; pale ground beside |
+| B | Crystal quartz | THREE translucent crystal/quartz lane ribbons; light refracts through; soft luminous edges (not painted asphalt dashes); pale ground |
+| C | Luminous ribbon | Road = solidified light / Pack ribbon path (law 12 vibe); not concrete |
+| D | Mix vault | Obsidian or crystal path + volumetric nebula-as-sky (thick 3D gas ceiling lighting the world) — not flat black night, not storm-grey clouds only |
+
+**BAN** as silent default: grey concrete asphalt highway, MS-Paint dashes on béton, boring moderne nationale with no biome paint.
+
+Swap `{LANE_MATERIAL}` in [`image-empty-plate.txt`](../../prompts/image-empty-plate.txt) before Imagine. `{PAINT}` includes that lane material. Law: [`35-lane-materials.md`](../../docs/35-lane-materials.md). Paste: [`COLD_START-lane-materials.md`](../../docs/COLD_START-lane-materials.md).
 
 Law 27 ([`27-native-road-slide.md`](../../docs/27-native-road-slide.md)) is an optional catalog. It is not a default step.
 
