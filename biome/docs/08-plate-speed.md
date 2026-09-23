@@ -32,11 +32,11 @@ python3 scripts/plate-speed.py --factor 1.75 plate.mp4 -o plate.mp4
 ```
 
 
-This does **not** replace first+last. A slow cousin that ends under a bar still **cuts** back to empty if `last(cousin) ≠ first(empty)`. Recook with `imagineBiomeClip` + `last_frame` for the chain. Use this script for rush only.
+This does **not** replace first+last. A slow cousin that ends under a bar still **cuts** back to empty if `last(cousin) ≠ first(empty)`. Recook with Imagine Video first+last (session, or `imagineBiomeClip` when the key is set) for the chain. Use this script for rush only.
 
 ## Order
 
-1. `imagineBiomeClip` (first + last_frame)
+1. Imagine Video first+last (SuperGrok session, or `imagineBiomeClip` when `XAI_API_KEY` is set)
 2. encode (already in the hook)
 3. `plate-speed.py --ref empty --match` if px/s is off
 4. Hang PASS into `biome/master/` — **ADD** the new file. Never `rm` hung `road.mp4` / war / night to “make room”. Hang ≠ wipe: [09-recette-biome.md](09-recette-biome.md).

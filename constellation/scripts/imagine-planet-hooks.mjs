@@ -58,7 +58,13 @@ const WORLDS = {
 
 function key() {
   const k = process.env.XAI_API_KEY;
-  if (!k) throw new Error("XAI_API_KEY missing");
+  if (!k) {
+    throw new Error(
+      "CLI_RAIL_SKIP: XAI_API_KEY is unset, so this Node call does not reach api.x.ai. " +
+        "Continue in the SuperGrok session: Imagine Video with both stills pinned (first + last). " +
+        "Missing key is not a cook FAIL. BAN one-still I2V and “forcé localement”.",
+    );
+  }
   return k;
 }
 

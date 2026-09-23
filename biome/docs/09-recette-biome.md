@@ -24,7 +24,7 @@ Deux films, un canvas. **Jamais** un seul mp4 avec Bolt peint dans la route.
 
 Le dealer enchaîne le **playlist lock** (jamais un random deck) : canyon → cars/spectacle → duel → night → war, puis wrap. Dual decoder, swap dans les 0.28 s de queue. `last(cousin)` **est** `first(empty)` sinon ça coupe. Ordre : [11-plate-order.md](11-plate-order.md).
 
-Imagine Agent / chat `imagine_*_video` = **interdit**. Road = `imagineBiomeClip`. Bolt = **REUSE** [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) — no new Imagine dog sprint. **48fps** on Video A. Pipeline: [10-bolt-cutout-law.md](10-bolt-cutout-law.md).
+Imagine Agent video = **interdit**. One-still I2V = **interdit**. Road = SuperGrok session Imagine Video first+last (optional CLI `imagineBiomeClip` when `XAI_API_KEY` is set). Bolt = **REUSE** [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) — no new Imagine dog sprint. **48fps** on Video A. Then `plate-mae-qc.py`. Missing key is not a stop. Pipeline: [10-bolt-cutout-law.md](10-bolt-cutout-law.md) · [02-videos.md](02-videos.md).
 
 ---
 
@@ -59,13 +59,13 @@ When a player asks **make a biome** / **add a biome** / cook a new sprint run: d
 **Do not invert.** Full law: [10-bolt-cutout-law.md](10-bolt-cutout-law.md).
 
 1. Empty plaque still — ZERO dog (`image-empty-plate.txt` + `{PAINT}`). Camera locked (not too far / not too close).
-2. Video A empty rush — `imagineBiomeClip` real `image` + distinct `last_frame`. **48fps**. ZERO dog.
+2. Video A empty rush — extract last frame → cook last still → Imagine Video real `image` + distinct `last_frame` (session, or `imagineBiomeClip` when the key is set). **48fps**. ZERO dog. Then `plate-mae-qc.py`.
 3. **REUSE** [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) as the Bolt motion asset (already rear / green / rotary). No new Imagine dog sprint.
 4. Key + despill cutout from that cycle ([05-key.md](05-key.md) · [13c-green-despill.md](13c-green-despill.md)).
 5. Composite cutout onto Video A (AFF stack). Speed/scroll = plate; gait = locked cycle. L/M/R = code X shift of **one** Bolt layer.
 6. **PRIORITY 0 COMPOSITE GATE** — scale + gallop-clock + plate light + paw contact + **FX row (16)** **before Hang**. After key, MUST `computeScale` / `assertScale` ([13d](13d-auto-scale.md)) then `gallop-clock` / `assertGallopClock` ([14c](14c-gallop-clock.md)). Proof (before/after stills or smoke). [13](13-make-bolt-lane.md) · [13b](13b-anti-sticker-contact.md) · [13d](13d-auto-scale.md) · [14c](14c-gallop-clock.md) · [16](16-biome-ground-fx.md). **FAIL** if Grok keys the cycle and hangs without that proof.
 
-**FAIL** if Grok invents a new Bolt sprint clip. Only SmiR can authorize a new cycle cook to replace the lock. Hall `imagineClip` banned here. Baking Bolt into a single final film = FAIL. 3-Bolt multi-lane mask = FAIL. No `XAI_API_KEY` for Video A → **REFUSE** / stock — do not invent a Bolt sprint.
+**FAIL** if Grok invents a new Bolt sprint clip. Only SmiR can authorize a new cycle cook to replace the lock. Hall `imagineClip` banned here. Baking Bolt into a single final film = FAIL. 3-Bolt multi-lane mask = FAIL. Missing `XAI_API_KEY` is not a Video A stop — cook session Imagine Video first+last, then measure. One-still I2V, “forcé localement”, and MAE PASS without `plate-mae-qc.py` = FAIL. Do not invent a Bolt sprint.
 
 ---
 
@@ -326,12 +326,12 @@ Chaque cousin a **sa** fenêtre : un speck au vanishing point n’est pas encore
 ## Ordre de cuisine (ne pas inverser)
 
 ```
-1. empty stills + imagineBiomeClip 10s 48fps    → Video A / road.mp4   (ZERO dog)
+1. empty stills + Imagine Video first+last 10s 48fps (session or imagineBiomeClip) → Video A / road.mp4 (ZERO dog) then plate-mae-qc.py
 2. extract empty-first / empty-last
 2b. REUSE lock/bolt-gallop-cycle.mp4 (no new Imagine dog sprint) → key + despill → composite on A (law 10)
 2c. COMPOSITE GATE: computeScale/assertScale (13d) + gallop-clock/assertGallopClock (14c) + plate light + paw contact proof BEFORE Hang (13 / 13b / 13c / 13d / 14c)
 3. dress still cousin (objet loin, 1–2 voies)   → QC still
-4. imagineBiomeClip first+last, kind=hazard 10s → cousin.mp4
+4. Imagine Video first+last, kind=hazard 10s (session or imagineBiomeClip) → cousin.mp4 then plate-mae-qc.py
 5. QC 5 frames (spawn + lanes + last=empty)
 6. plate-speed --duration-match (ou --match)    → même clock que empty
 7. Hang biome/master/ + bump VER   ← ADD new files. NEVER rm canyon/war. NEVER overwrite road.mp4 for a new biome.
@@ -361,7 +361,7 @@ Hitbox = **voie + fenêtre courte au contact des pattes**. Loin / ciel / déjà 
 
 | Tentative | Pourquoi ça meurt |
 |---|---|
-| Chat Imagine video | Pas de `last_frame` → coupe dealer |
+| One-still chat I2V | No real last still → coupe dealer. Session Imagine Video with both stills is the cook. |
 | Prompt « explosion / crater / synthèse qui explose » | Imagine élargit en mur 3 voies |
 | First frame = cratère close-up | Pop collé à Bolt au swap |
 | `--match` SAD sur une explosion | px/s gonflé → plaque **ralentie** |

@@ -1,7 +1,7 @@
 # AGENTS — cold-start hall cook
 
 **STOP 0 — STYLES FIRST (SmiR 2026-09-12). Miss this = the whole room is dead.**
-**STOP — HARD SPLIT.** Imagine Agent is obligatoire / MUST / systematically for STYLE stills when restyling. NEVER for Walk A, Walk B, breath, or any video. Walks / breaths / films = imagine-hooks / cook-room first-frame + last-frame. Soft KEEP banned. Smoke still gates.
+**STOP — HARD SPLIT.** Imagine Agent is obligatoire / MUST / systematically for STYLE stills when restyling. NEVER for Walk A, Walk B, breath, or any video. Walks / breaths / films = session Imagine Video with both stills pinned (first-frame + last-frame). Optional CLI: imagine-hooks / cook-room when `XAI_API_KEY` is set. One-still I2V is banned for walks. Missing `XAI_API_KEY` is not a stop. Soft KEEP banned. Smoke still gates.
 
 Read **[RIG.md](RIG.md)** + [`lock/RIG-PROMPT.txt`](lock/RIG-PROMPT.txt) before anything else.
 
@@ -9,7 +9,7 @@ Spawn FIRST (`imagine_image_to_image` on `lock/RIG-spawn.jpg`). Then at-A / at-B
 
 Ice KEEP (`packs/frost/stills/`, `lock/SEAL-*.jpg`) = play example. Do not delete. Restyle teachers = RIG. Law: [LAYOUT.md](LAYOUT.md).
 
-**STOP 1 — HARD SPLIT.** NEVER Agent / chat Imagine for Walk A, Walk B, breath, or any video. Walks / breaths / films = imagine-hooks / cook-room first-frame + last-frame. Chat Imagine UI without real first+last is banned for **video**. Soft KEEP banned. Smoke still gates.
+**STOP 1 — HARD SPLIT.** NEVER Agent for Walk A, Walk B, breath, or any video. Walks / breaths / films = Imagine Video with both stills pinned (SuperGrok session primary; optional CLI when `XAI_API_KEY` is set). One-still chat I2V is banned. Missing key is not a stop. Soft KEEP banned. Smoke still gates.
 
 **PRIORITY 0 TEACHER GATE** — before ANY Bolt still / clip / cook for a biome:
 1. Open [`lock/bolt-back.jpg`](lock/bolt-back.jpg) **or** [`biome/lock/bolt-back.jpg`](biome/lock/bolt-back.jpg) (same bytes — either path OK).
@@ -106,7 +106,7 @@ Never dump this to the player.
 
 **HARD — Bolt motion = REUSE (make / add a biome).** Take sealed [`lock/bolt-gallop-cycle.mp4`](lock/bolt-gallop-cycle.mp4) as the Bolt motion asset (**CANON ~5.56 s / 534 / 96 fps**; `CYCLE_FRAMES=534`, `STRIDES_PER_CYCLE=22`). Play: loop 1×; no per-frame seek; no 534-canvas harvest. Old 0.93 s / 89-frame lock = archive only — **FAIL** as play cycle. Key + despill + composite onto Video A. Then **PRIORITY 0 COMPOSITE GATE**: scale + gallop-clock + plate-grade + paw contact **BEFORE** KEEP. After REUSE + `bolt-scale`, MUST `gallop-clock` / `assertGallopClock` ([14c](biome/docs/14c-gallop-clock.md)). GPU law: [15](biome/docs/15-gpu-compositor.md) · Live: [17](biome/docs/17-live-compositor.md). **FAIL** if Grok invents a new Bolt sprint clip. Only SmiR can authorize a new cycle cook to replace the lock. Style teacher `lock/bolt-back.jpg` if a still / repose is needed. Preview only: `lock/bolt-gallop-cycle-12s-preview.mp4`.
 
-**HARD LOCK — make / add a biome.** Décor scrolls (rush); Bolt sprints **IN PLACE** (treadmill). Mid-lane. **48fps**. Style teacher = `lock/bolt-back.jpg`. Pipeline (do not invert): empty plaque ZERO dog → Video A `imagineBiomeClip` first+last → **REUSE** `lock/bolt-gallop-cycle.mp4` (no new Imagine dog sprint) → key + despill → composite cutout onto A (AFF stack) → **COMPOSITE GATE** scale + gallop-clock + plate-grade + paw contact **BEFORE** KEEP. Speed/scroll = plate; gait = locked cycle. L/M/R = code X shift of **one** Bolt layer. **Never** cook a new Bolt sprint for a biome. **Never** chat Imagine alone. **Never** hall `imagineClip`. **Never** a single baked final film. **Never** a 3-Bolt mask. No `XAI_API_KEY` → REFUSE / stock. Law: [`biome/docs/10-bolt-cutout-law.md`](biome/docs/10-bolt-cutout-law.md) · [`biome/docs/09-recette-biome.md`](biome/docs/09-recette-biome.md).
+**HARD LOCK — make / add a biome.** Décor scrolls (rush); Bolt sprints **IN PLACE** (treadmill). Mid-lane. **48fps**. Style teacher = `lock/bolt-back.jpg`. Pipeline (do not invert): empty plaque ZERO dog → Video A `imagineBiomeClip` first+last → **REUSE** `lock/bolt-gallop-cycle.mp4` (no new Imagine dog sprint) → key + despill → composite cutout onto A (AFF stack) → **COMPOSITE GATE** scale + gallop-clock + plate-grade + paw contact **BEFORE** KEEP. Speed/scroll = plate; gait = locked cycle. L/M/R = code X shift of **one** Bolt layer. **Never** cook a new Bolt sprint for a biome. **Never** one-still I2V. **Never** hall `imagineClip`. **Never** a single baked final film. **Never** a 3-Bolt mask. Video A = session Imagine Video first+last (first = previous last pixels, last = advanced world). Missing `XAI_API_KEY` is not a stop. Optional `imagineBiomeClip` when the key is set. Then `plate-mae-qc.py`. BAN one-still I2V and “forcé localement”. Law: [`biome/docs/10-bolt-cutout-law.md`](biome/docs/10-bolt-cutout-law.md) · [`biome/docs/09-recette-biome.md`](biome/docs/09-recette-biome.md).
 
 **HARD LOCK — new biome cook (SmiR 2026-09-18 FAIL).** Make/add a **new biome** (any name — Tide, Frost, Ember, invented): **Hang only** the new plates beside existing masters. Do **NOT** rebuild canyon→cars→duel→night→war first. Do **NOT** require Beat 3 recook as a gate. Old Beat stays playable without recook. Bolt = always `@ref` [`lock/bolt-back.jpg`](lock/bolt-back.jpg). **BAN** copying hung `biome/master/bolt.mp4` / canyon Bolt as identity. Light bake from the **new** empty plaque OK; identity = teacher. Name + décor `{PAINT}` allowed / encouraged. Tide is one example. Never refuse “I can only do Tide.” Pipeline + hooks first/last still apply. Chat catalog lists **hung** biomes only; a biome in cook is not hung until hung.
 
@@ -116,9 +116,9 @@ Never dump this to the player.
 
 ## One happy path (brand-new Grok / Grok Build convo)
 
-**HARD SPLIT for VIDEO.** NEVER Agent / chat Imagine for Walk A, Walk B, breath, or any video.
+**HARD SPLIT for VIDEO.** NEVER Agent for Walk A, Walk B, breath, or any video.
 
-Walks / breaths / films = Imagine first-frame + last-frame via `scripts/imagine-hooks.mjs` / `scripts/cook-room.mjs` (the API path Grok Build already uses). Chat Imagine UI without real first+last remains **banned** for videos. Agent is **not** required or recommended for video cook. Do **not** instruct Build to open Imagine Agent for Walk A, Walk B, or breath.
+Walks / breaths / films = Imagine Video with both stills pinned. Primary = SuperGrok session. Optional CLI = `scripts/imagine-hooks.mjs` / `scripts/cook-room.mjs` when `XAI_API_KEY` is set. One-still I2V remains **banned**. Missing key is not a stop. Agent is **not** the video cook. Do **not** instruct Build to open Imagine Agent for Walk A, Walk B, or breath.
 
 1. If they said play / lance / boltverse alone: **start ≠ Build.** Success = start ≠ Build; first reply = Welcome EN + citadel teaser + paste odysseyyyy. No yes-gate. **First chat reply:** fetch `registry.json` for `{playerCount}`, speak locked Welcome/Return EN only (`Hey Packmate {name}` — `displayName` first, then registry, then gate/app, else `runner` ONLY if none; **never runner when any displayName visible**), attach **1** citadel teaser video only as chat media (`stock/citadel/preview-loop.mp4` only). No yes-gate. PASTE written URL in the same turn as the video. **BAN Build/rebuild/Live attach/controls/improv.** **First chat reply:** PASTE written URL `https://boltverse-odysseyyyy.grok.me` in chat (same turn as the video; player taps). Prefer open in Grok app. Supercedes « never paste grok.me » for the first reply. No yes-gate. **BAN Build rebuild / Built-with-Grok scaffold.** **Welcome = Pack register** via registry GitHub Action `pack-welcome` (chat) — not Live. After a real Grok `sub`, merge-patch `profiles/<sub>.json`. Never invent a `sub`. **playTime / boot / heartbeat** = `BOLTVERSE_PACK_ORIGIN` → StarBoltSprint/boltverse-pack on Vercel (TEMPORARY `https://boltverse-pack.vercel.app`). **HARD BAN:** treating `https://boltverse-odysseyyyy.grok.me` as the Pack API host for registry writes (game play URL stays odysseyyyy; Pack API does not). Old « playTimeSec Live-only » / « chat start does not upsert » are **SUPERSEDED**. **Never rebuild from GitHub.** **Beat 3 kitchen identity (only):** `https://boltverse-odysseyyyy.grok.me`. ONLY PASTE written URL `https://boltverse-odysseyyyy.grok.me`. **BAN Build rebuild / Built-with-Grok scaffold.** BAN scaffold/recreate/remix. BAN intro/landing splash requiring Open Sprint / Start before play — land IN Sprint. PASTE written URL `https://boltverse-odysseyyyy.grok.me` (player taps). Prefer open in Grok app. BAN controls lecture. BAN invented cassette names. BAN plate deck lists at boot. Chat Imagine / Chat file chip alone = FAIL for Beat 3. First reply PASTE written URL. Supercedes « never paste grok.me » for the first reply. Prefer GitHub for boot. Bot OK if useful. Do not narrate “teasers are on”. **Welcome = Pack register** via registry GitHub Action `pack-welcome` (chat) — not Live. After a real Grok `sub`, merge-patch `profiles/<sub>.json`. Never invent a `sub`. **playTime / boot / heartbeat** = `BOLTVERSE_PACK_ORIGIN` → StarBoltSprint/boltverse-pack on Vercel (TEMPORARY `https://boltverse-pack.vercel.app`). **HARD BAN:** treating `https://boltverse-odysseyyyy.grok.me` as the Pack API host for registry writes (game play URL stays odysseyyyy; Pack API does not). Old « playTimeSec Live-only » / « chat start does not upsert » are **SUPERSEDED**. Cook a citadel paint only if they named one. Cook a biome / Sprint / lane / B-stack / green-screen / chroma plate only if they asked — MUST read before cooking: [`biome/PLAY.md`](biome/PLAY.md) then [`biome/docs/06-techniques.md`](biome/docs/06-techniques.md) (r38 techniques bible) then **[`biome/docs/09-recette-biome.md`](biome/docs/09-recette-biome.md)** (REQUIRED full checklist: empty→cousin→speed→dealer→box; SPAWN/WIDTH; road-bar/blast) then [`biome/docs/08-plate-speed.md`](biome/docs/08-plate-speed.md) when matching cousin rush then [`biome/docs/05-key.md`](biome/docs/05-key.md) + [`biome/reference/LanePlayer.tsx`](biome/reference/LanePlayer.tsx) then [`biome/docs/10-bolt-cutout-law.md`](biome/docs/10-bolt-cutout-law.md) (HARD Bolt cutout: REUSE lock/bolt-gallop-cycle.mp4 → key + composite; do not invent a sprint).
 2. Clone this repo. Read this file + GROK.md. Stop.
@@ -141,7 +141,7 @@ This repo holds **both** citadel / rooms / Hang (root) and the endless-lane / bi
 - **Imagine Agent is MANDATORY for cross-style hall stills (not optional).** Agent is **REQUIRED** for décor variants. One **SEALED** sill still → Agent restyles: completely new hall décor OK. Cyan L + gold R energy portals may adapt. Bolt may be selected, repositioned, resized to sill. White coat forever. Décor-matching skin ON TOP of the white base OK (ember / ice). Not a different dog.
 - First seal stills = Imagine Agent. `cook-room` `imagineStill` is **BANNED for restyle** (invents a new dog). CLI first-seal / batch only.
 - Hung PASS / sealed skip stays. `--force` recooks. Imagine Agent produced the ice-hall **KEEP seals** (`lock/SEAL-spawn.jpg` + `lock/SEAL-at-a.jpg` + `lock/SEAL-at-b.jpg`, drop `hall-stills/seal/spawn-ice.jpg` + `at-a-ice.jpg` + `at-b-ice.jpg`). Frozen pose+décor for this ice hall until SmiR reseals. Agent remains the STYLE stills path for future styles (never video). `cook-room` **SKIPS** `imagineStill` for spawn / at-A / at-B when those seals exist. **Smoke still gates.** Soft KEEP banned.
-- **Grok Build chat Imagine tools are NOT the same as Imagine Agent.** Chat Imagine UI without real first+last is banned for walks, breaths, enter (no `last_frame`). For STYLE restyle: instruct to open Imagine Agent with the plate refs. Do **not** instruct Agent for walks/breaths. Build must not rely on chat `imagine_*` tools for hall restyle identity lock.
+- **Grok Build chat Imagine tools are NOT the same as Imagine Agent.** Imagine Video **with both stills pinned** is the film cook. A call **without** a real last still is banned for walks, breaths, enter. For STYLE restyle: instruct to open Imagine Agent with the plate refs. Do **not** instruct Agent for walks/breaths. Build must not rely on chat `imagine_*` tools for hall restyle identity lock.
 
 ## Films — hooks first+last (never Agent)
 
@@ -152,19 +152,18 @@ Walks / breaths / films = `imagineClip` via `scripts/imagine-hooks.mjs` / `scrip
 - walks → video `image` + **`last_frame`** (start still ≠ arrive still)
 - breaths → same still twice (`image` + `last_frame`)
 
-Chat Imagine UI without real first+last is **banned**. Agent must **not** cook video. If you cannot run `node` + `XAI_API_KEY`: **REFUSE**. Stock URL. Do **not** fall back to chat `imagine_*` or Imagine Agent video.
+Imagine Video with both stills pinned is the primary cook (SuperGrok session). One-still I2V is **banned**. Agent must **not** cook video. Missing `XAI_API_KEY` is not a stop. Optional CLI `imagineClip` when the key is set. Smoke still gates. Do **not** use Imagine Agent video.
 
-## Hard refuse (no chat fallback)
+## Hard refuse (one still is not a film)
 
-Chat Imagine UI **without real first+last** is **banned** — walks, breaths, enter (and chat stills for restyle):
+Imagine Video **without both stills** is **banned** — walks, breaths, enter:
 
-- `imagine_image_to_video`
-- `imagine_reference_to_video`
-- `imagine_image_to_image`
+- `imagine_image_to_video` / `imagine_reference_to_video` with only one still
+- `imagine_image_to_image` used as a film (styles stay on `lock/RIG-*.jpg`)
 
-They have **no `last_frame`**. Chat refs are not frames. A chat film has no smoke → do not Hang it. Do not attach a Smoke-FAIL walk as a “preview KEEP”. Soft KEEP banned.
+Pin first and last in the SuperGrok session. A one-still film has no seam and no smoke → do not Hang it. Do not attach a Smoke-FAIL walk as a “preview KEEP”. Soft KEEP banned. Missing `XAI_API_KEY` is not this refuse.
 
-Video cook: `node scripts/cook-room.mjs <slot> --dry-run` then `export XAI_API_KEY=... && node scripts/cook-room.mjs <slot>`. If you cannot run `node` + `XAI_API_KEY`: **REFUSE**. Stock URL. Do **not** fall back to chat `imagine_*` or Agent video.
+Video cook: SuperGrok session Imagine Video with both stills pinned (walks = start ≠ end; breaths = same still twice). Optional CLI: `node scripts/cook-room.mjs <slot> --dry-run` then, when `XAI_API_KEY` is set, `node scripts/cook-room.mjs <slot>`. Missing key is not a stop. One-still I2V does not Hang. Do **not** use Agent video.
 
 FAIL stills/films → `packs/<slot>/.kitchen/fail/` (debug). Never Hang FAIL. at-A/at-B under-size (~0.16–0.21): **enlarge**-only second step (FAIL jpg = image). Cap 1 fresh + 1 enlarge.
 

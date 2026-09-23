@@ -1,14 +1,22 @@
 # 02 — videos (films)
 
-**STOP — HARD SPLIT.** NEVER Imagine Agent / chat Imagine for these clips.
+**STOP — HARD SPLIT.** NEVER Imagine Agent for these clips. NEVER a video with only one still.
 
-Walks / travel / gallop / **cousin plates** = `scripts/imagine-hooks.mjs` with real **first + last**:
+**Primary (Build / SuperGrok session):** Imagine Video with **two stills** pinned. Session credits. No API key is required to know or follow this law.
+
+- `first` = exact last pixels of the previous plate (extract below). P0 uses the empty first still.
+- `last` = the advanced-world still (same camera, world closer, not a new noun pile).
+- Hang the mp4, then run `python3 biome/scripts/plate-mae-qc/plate-mae-qc.py`. Exit 0 = PASS. Do not claim MAE PASS without that run.
+
+**Optional CLI rail:** `scripts/imagine-hooks.mjs` calls `api.x.ai` only when `XAI_API_KEY` is set.
 
 - Hall: `imagineClip` — `image` + **`last_frame`** (citadel only — **banned** for biome Bolt)
 - Biome road / Video A: `imagineBiomeClip` — `image` + **`last_frame`** (distinct, ZERO dog, **48fps**)
 - Bolt cutout: **REUSE** [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) — key + despill + composite. `imagineBoltClip` = **SmiR only** (replace the lock)
 
-Chat `imagine_image_to_video` / `imagine_reference_to_video` have **no** `last_frame` — banned. If hooks / `XAI_API_KEY` unavailable → **REFUSE** / stock. Do **not** fall back to chat I2V.
+Missing `XAI_API_KEY` is not a stop and not a FAIL. `--dry-run` plans without a key.
+
+**BAN:** stopping the biome because the key is absent · inventing “forcé localement” · one-still `imagine_image_to_video` / `imagine_reference_to_video` · claiming MAE PASS without `plate-mae-qc.py` · Imagine Agent video · a new Bolt sprint.
 
 **Make biome:** décor scrolls; Bolt sprints **IN PLACE**. Pipeline: [10-bolt-cutout-law.md](10-bolt-cutout-law.md). Never bake Bolt into a single final film. Never a 3-Bolt multi-lane mask.
 
@@ -32,6 +40,8 @@ ffmpeg -y -sseof -0.12 -i road-N.mp4 -frames:v 1 \
 
 Or `extractLastFrame(src, dest)` from the hook.
 
+**P4 after P3:** extract last frame of P3 → that jpg is P4 `first`. Cook P4 `last` (advanced world). Imagine Video first+last (session, or CLI if the key is set). Run `plate-mae-qc.py` on P3 then P4. Exit non-zero = recook. Do not claim PASS without the script.
+
 ## Cousin plate (bar / arch / meteor)
 
 Same camera, same crop. Hazard **baked in** the pixels (wet contact), not a sticker.
@@ -51,7 +61,7 @@ Paste: [../prompts/video-hazard-plate.txt](../prompts/video-hazard-plate.txt). S
 | empty → cousin | last(empty) **+ hazard FAR and small** | — |
 | cousin → empty | — | **first(empty)** |
 
-`imagineBiomeClip({ kind: "hazard", first, last, dest, seconds: 10 })`.
+Session Imagine Video with those two stills, or `imagineBiomeClip({ kind: "hazard", first, last, dest, seconds: 10 })` when `XAI_API_KEY` is set. Then `plate-mae-qc.py` on the pair.
 
 Then match travel to the empty plate: [08-plate-speed.md](08-plate-speed.md). Explosions fool SAD → `--duration-match`, not `--match`.
 

@@ -1,7 +1,11 @@
 #!/usr/bin/env node
-// xAI Imagine API. Hall films AND biome plates = image + last_frame.
-// Bolt cutout = image + last_frame cycle bookends on green (in-place). See biome/docs/10-bolt-cutout-law.md.
-// Not Imagine Agent. Not Grok chat. Needs XAI_API_KEY.
+// Optional CLI rail for Imagine Video (image + last_frame). Not Imagine Agent.
+// Primary cook on Grok Build: SuperGrok session Imagine Video with both stills pinned.
+// Session credits. No API key is required to follow the law.
+// This file calls https://api.x.ai/v1 only when XAI_API_KEY is set.
+// It does not invent a session HTTP client.
+// Hall films AND biome plates = first + last. Bolt sprint = REUSE the sealed cycle.
+// imagineBoltClip = SmiR only. See biome/docs/02-videos.md and biome/docs/10-bolt-cutout-law.md.
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, extname, join } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -19,9 +23,18 @@ const LAW = [
 
 export const HALL_LAW = LAW;
 
+const CLI_RAIL_SKIP = [
+  "CLI_RAIL_SKIP: XAI_API_KEY is unset, so this Node call does not reach api.x.ai.",
+  "Continue in the SuperGrok session: Imagine Video with both stills pinned",
+  "(first = exact last pixels of the previous plate, last = advanced world).",
+  "Then measure: python3 biome/scripts/plate-mae-qc/plate-mae-qc.py.",
+  "--dry-run plans without a key. Missing key is not a cook FAIL.",
+  "BAN: stop the cook, invent “forcé localement”, one-still I2V, or claim MAE PASS without the script.",
+].join(" ");
+
 function key() {
   const k = process.env.XAI_API_KEY;
-  if (!k) throw new Error("XAI_API_KEY missing — use --dry-run");
+  if (!k) throw new Error(CLI_RAIL_SKIP);
   return k;
 }
 
@@ -567,10 +580,13 @@ function encodeBiomeMp4(src, dest, height = 1280) {
 }
 
 /**
- * Sprint / biome plate. Chat Imagine is banned — this is the last_frame cable.
+ * Optional CLI rail for a sprint / biome plate. Same contract as session Imagine Video.
+ * Primary path: SuperGrok session, both stills pinned. This function runs only when XAI_API_KEY is set.
  *
  * empty: first = lock still, last = world-advanced still (distinct).
+ * next plate: first = exact last pixels of the previous plate, last = advanced world.
  * cousin/hazard: first = last(empty) or lock+hazard, last = first(empty) so the swap back is seamless.
+ * After the mp4: python3 biome/scripts/plate-mae-qc/plate-mae-qc.py. Do not claim MAE PASS without it.
  */
 export async function imagineBiomeClip({
   first,
@@ -647,7 +663,9 @@ export function boltClipLine() {
 }
 
 /**
- * Sprint / biome Bolt cutout. Chat Imagine is banned — this is the last_frame cable.
+ * Sprint / biome Bolt cutout. SmiR only — not a new-biome job.
+ * Optional CLI when XAI_API_KEY is set. A missing key does not authorize a new sprint.
+ * REUSE lock/bolt-gallop-cycle.mp4 for every biome cook.
  * first + last = cycle bookends on green (end ≈ start for loop). IN PLACE / treadmill.
  * A road-travel pair here is FAIL (yaw). Same still twice remains legal.
  */

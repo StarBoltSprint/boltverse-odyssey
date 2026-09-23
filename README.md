@@ -47,13 +47,15 @@ If they want Sprint cook / lane / B-stack / green-screen / chroma: **MUST read b
 ```
 git clone https://github.com/StarBoltSprint/boltverse-odyssey
 # STYLE stills / restyle → grok.com/imagine/agent (never video)
+# films: SuperGrok session Imagine Video with both stills pinned
 node scripts/cook-room.mjs <catalog-slot> --dry-run
-export XAI_API_KEY=... && node scripts/cook-room.mjs <catalog-slot>
+# optional CLI when the key is set:
+# export XAI_API_KEY=... && node scripts/cook-room.mjs <catalog-slot>
 ```
 
 `npm run dry-run` / `npm run cook` = moss (cook). `npm run smoke` / `validate` = **frost** (hung ice default). Hung PASS stills/films = reuse. `--force` recooks.
 
-Cannot run node, or live cook needs a key you do not have → **REFUSE**. Do not use chat Imagine as fallback. Stock URL.
+Missing `XAI_API_KEY` is not a stop. Cook Imagine Video in the session with both stills. One-still I2V does not Hang. Smoke still gates.
 
 1. Fetch https://github.com/StarBoltSprint/boltverse-odyssey
 2. Read **[AGENTS.md](AGENTS.md)** + **[GROK.md](GROK.md) — stop.**

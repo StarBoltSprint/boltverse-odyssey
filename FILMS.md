@@ -7,8 +7,8 @@
 
 1. These prompts are the **base**. Do not rewrite motion, camera, dog count, morph, or duration.
 2. **Adapt décor only** — from the player's 3 stills + two lines in `catalog/<slot>.md` (ice / ember / moss / …). Hall materials change. The walk does not.
-3. First Frame + Last Frame are **slots / API pins** (`image` + `last_frame`). Not prompt `@image` refs. Not `reference_images`.
-4. Chat Imagine without those pins = banned. Imagine Agent = stills only, never video.
+3. First Frame + Last Frame are **slots** (`image` + `last_frame`). Not prompt `@image` refs. Not `reference_images`.
+4. SuperGrok session Imagine Video with those two slots is the primary cook. One still only = banned. Imagine Agent = stills only, never video. Missing `XAI_API_KEY` is not a stop. The Node CLI is optional when the key is set.
 
 | | duration | First | Last |
 |---|---|---|---|
@@ -61,8 +61,12 @@ Paste-base (then swap the door line + décor from the player's stills):
 
 ## Cook
 
+Primary: SuperGrok session Imagine Video. Pin the First and Last stills from the table above. Prompts below. Swap décor only.
+
+Optional CLI when `XAI_API_KEY` is set:
+
 ```
 node scripts/cook-room.mjs <slot>
 ```
 
-That file already injects `catalog/<slot>.md` + these prompts + First/Last pins. A new Grok does not invent a temple. Off-list paint → ask nearest catalog word.
+That file already injects `catalog/<slot>.md` + these prompts + First/Last pins. A new Grok does not invent a temple. Off-list paint → ask nearest catalog word. Missing key is not a stop. One-still I2V does not Hang. Smoke still gates.

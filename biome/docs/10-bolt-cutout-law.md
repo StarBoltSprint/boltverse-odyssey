@@ -21,7 +21,7 @@ Style teacher [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) still applies if 
 
 **HARD LOCK — new biome Bolt (SmiR 2026-09-18 FAIL).** New biome (any name — Tide, Frost, Ember, invented): **always** `@ref` [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg). **BAN** copying hung `biome/master/bolt.mp4` / canyon Bolt as the identity. Light bake from the **new** empty plaque is OK; identity = teacher. Hang **only** the new plates beside existing masters. Do **NOT** rebuild canyon→war first. Do **NOT** require Beat 3 recook as a gate. Name + décor `{PAINT}` allowed / encouraged. Tide is one example. Never refuse “I can only do Tide.” Pipeline below + hooks first/last still apply. Catalog lists **hung** biomes only; a biome in cook is not hung until hung.
 
-**HARD — hooks first + last (Video A only).** Road / empty rush = [`imagineBiomeClip`](../../scripts/imagine-hooks.mjs) (`image` + distinct `last_frame`). Bolt motion for a new biome = **REUSE** [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) — no new Imagine dog sprint. [`imagineBoltClip`](../../scripts/imagine-hooks.mjs) is **SmiR-only** to replace the lock. Chat Imagine UI alone = **banned**. Imagine Agent video = **banned** for this layer. Hall `imagineClip` = **banned** for this layer. If hooks / `XAI_API_KEY` unavailable for Video A → **REFUSE** / stock. Do **not** fall back to chat I2V.
+**HARD — hooks first + last (Video A only).** Road / empty rush = Imagine Video with both stills pinned (`image` + distinct `last_frame`). **Primary:** SuperGrok session (no API key). **Optional CLI:** [`imagineBiomeClip`](../../scripts/imagine-hooks.mjs) when `XAI_API_KEY` is set. `first` = exact last pixels of the previous plate. `last` = advanced world. Then [`plate-mae-qc.py`](../scripts/plate-mae-qc/plate-mae-qc.py). Bolt motion for a new biome = **REUSE** [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) — no new Imagine dog sprint. [`imagineBoltClip`](../../scripts/imagine-hooks.mjs) is **SmiR-only** to replace the lock. One-still I2V = **banned**. Imagine Agent video = **banned** for this layer. Hall `imagineClip` = **banned** for this layer. Missing `XAI_API_KEY` is not a stop. Do **not** invent “forcé localement” or claim MAE PASS without the script.
 
 **Word “rear” alone is not enough.** I2V invents a walk or a new dog. That is why a new biome **REUSES** the sealed cycle instead of cooking a sprint.
 
@@ -145,7 +145,7 @@ Video B is **SmiR only** (replace the lock). A new biome does **not** cook Video
 Make / add a biome **always** this order. Soft KEEP banned.
 
 1. **Empty plaque style** — still ZERO dog. Paste [image-empty-plate.txt](../prompts/image-empty-plate.txt) + biome `{PAINT}`. Camera locked (not too far / not too close; clear center corridor).
-2. **Video A — empty rush** — plaque défile à fond. [`imagineBiomeClip`](../../scripts/imagine-hooks.mjs) with real `image` + distinct `last_frame` (world advanced). **48fps**. ZERO dog. Paste [video-empty-plate.txt](../prompts/video-empty-plate.txt).
+2. **Video A — empty rush** — plaque défile à fond. Extract last frame → cook last still → Imagine Video with real `image` + distinct `last_frame` (session, or [`imagineBiomeClip`](../../scripts/imagine-hooks.mjs) when the key is set). **48fps**. ZERO dog. Then `plate-mae-qc.py`. Paste [video-empty-plate.txt](../prompts/video-empty-plate.txt).
 3. **REUSE sealed cycle** — take [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) as the Bolt motion asset (already rear / green / rotary). Do **not** Imagine a new dog sprint. Do **not** run Video B / `imagineBoltClip` for a biome cook.
 4. **Key + despill** — chroma key ([05-key.md](05-key.md)) + despill ([13c-green-despill.md](13c-green-despill.md)) from **that** cycle.
 5. **Composite** — plant cutout on Video A (AFF stack). Speed/scroll = plate; gait = locked cycle. Match rates (no skate). L/M/R = code X shift of **one** Bolt layer.
@@ -163,17 +163,19 @@ Video B / extract / repose / `imagineBoltClip` is **not** the new-biome path. On
 
 ### HARD BAN — invent a new Bolt sprint
 
-Grok **MUST** cook Video A with API / Build hooks (`image` + `last_frame`). Bolt = **REUSE** the sealed cycle.
+Grok **MUST** cook Video A with both stills pinned (`image` + `last_frame`). Session Imagine Video is primary. `imagineBiomeClip` is the optional CLI when `XAI_API_KEY` is set. Bolt = **REUSE** the sealed cycle.
 
 | Job | Hook / asset | Cable |
 |---|---|---|
-| Road / empty rush (Video A) | `imagineBiomeClip` | `image` + distinct `last_frame` (world advanced). ZERO dog. 48fps. |
+| Road / empty rush (Video A) | Session Imagine Video, or `imagineBiomeClip` if the key is set | `image` + distinct `last_frame` (world advanced). ZERO dog. 48fps. Then `plate-mae-qc.py`. |
 | Bolt cutout (green) | **REUSE** [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) | Key + despill + composite onto A. Then COMPOSITE GATE (13/13b/13c/13d/14c/15/16/17) before KEEP. No new Imagine dog sprint. |
 
 **BANNED:**
 
-- inventing a new Bolt sprint clip for a biome cook (chat Imagine, `imagineBoltClip`, Agent video, or any new dog gallop)
-- chat Imagine UI alone (`imagine_image_to_video` / `imagine_reference_to_video` / chat stills for this cook)
+- inventing a new Bolt sprint clip for a biome cook (`imagineBoltClip`, Agent video, or any new dog gallop)
+- one-still I2V (`imagine_image_to_video` / `imagine_reference_to_video` without a real last still)
+- stopping Video A because `XAI_API_KEY` is unset, or inventing “forcé localement”
+- claiming MAE PASS without `plate-mae-qc.py`
 - Imagine Agent video
 - hall `imagineClip`
 - inventing prompts
@@ -181,7 +183,7 @@ Grok **MUST** cook Video A with API / Build hooks (`image` + `last_frame`). Bolt
 - baking Bolt into a single final film with no cutout stack
 - 3-Bolt multi-lane mask
 
-If hooks / `XAI_API_KEY` unavailable for Video A → **REFUSE** / stock — do not fall back to chat I2V. Do **not** invent a Bolt sprint as a workaround.
+Missing `XAI_API_KEY` is not a stop. Cook the two stills in the SuperGrok session, hang the mp4, measure the seam. Do **not** invent a Bolt sprint as a workaround.
 
 ---
 
@@ -216,7 +218,7 @@ Hall `imagineClip` injects citadel HALL_LAW. `imagineBiomeClip` is **ZERO dog** 
 
 `imagineBoltClip` / Video B = **SmiR only**, to replace the lock. A fresh Grok must not run it.
 
-Cannot run `node` + `XAI_API_KEY` for Video A → **REFUSE**. Stock Sprint. Do **not** fall back to chat `imagine_image_to_video` / `imagine_reference_to_video` / Imagine Agent video. Do **not** invent a Bolt sprint.
+Video A does not wait on `node` or `XAI_API_KEY`. Session Imagine Video with both stills is enough. The CLI runs when the key is set. Do **not** use one-still I2V. Do **not** use Imagine Agent video. Do **not** invent a Bolt sprint.
 
 Paste blocks (Video A / still repose only): [image-empty-plate.txt](../prompts/image-empty-plate.txt) · [video-empty-plate.txt](../prompts/video-empty-plate.txt). Style still if needed: [image-bolt-mid.txt](../prompts/image-bolt-mid.txt) + `@ref` `lock/bolt-back.jpg`.
 

@@ -23,7 +23,7 @@ Same graph as stock. Same Bolt, same camera. Only the **materials** change. Not 
 Still **one** room. Still **no** Enter.  
 Out = `/r/moss`. Second tap = stay.
 
-This is `node scripts/cook-room.mjs <slot>` (`cookRoom(style)`). Dry-run first. Live needs `XAI_API_KEY`. Never chat Imagine:
+This is `node scripts/cook-room.mjs <slot>` (`cookRoom(style)`) when `XAI_API_KEY` is set. Dry-run first. Without the key, cook Imagine Video in the session with both stills. Missing key is not a stop. One-still I2V does not Hang:
 
 - 3 stills (spawn, atA, atB)
 - 5 films: breath-spawn, breath-A, breath-B, walk-spawn-A, walk-spawn-B

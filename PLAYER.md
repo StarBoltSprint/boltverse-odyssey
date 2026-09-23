@@ -11,11 +11,12 @@ Read **[GROK.md](GROK.md) — stop.** This page is the salon map, not the job.
 
 ```
 node scripts/cook-room.mjs <slot> --dry-run
-export XAI_API_KEY=... && node scripts/cook-room.mjs <slot>
+# optional CLI when the key is set:
+# export XAI_API_KEY=... && node scripts/cook-room.mjs <slot>
 Floor 1 = 3 stills + 5 films. No Enter. No wait.
 Hung PASS stills/films = reuse. --force recooks.
-STYLE stills / restyle = Imagine Agent. Walks / breaths = hooks first+last. No chat Imagine without real first+last.
-Cannot run node + XAI_API_KEY for a live plate → refuse (stock). No chat fallback.
+STYLE stills / restyle = Imagine Agent. Walks / breaths = Imagine Video with both stills. One-still I2V is banned.
+Missing XAI_API_KEY is not a stop. Session Imagine Video is the live path. Smoke still gates.
 PASS → /r/<id>
 Off-list / FAIL ×2 → /r/frost
 ```

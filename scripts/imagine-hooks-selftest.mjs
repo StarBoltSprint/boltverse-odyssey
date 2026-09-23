@@ -198,7 +198,7 @@ must(existsSync(join(root, "biome/docs/10-bolt-cutout-law.md")), "10-bolt-cutout
 const boltLaw = readFileSync(join(root, "biome/docs/10-bolt-cutout-law.md"), "utf8");
 must(/Video B/.test(boltLaw) && /cycle bookends/.test(boltLaw) && /48fps/.test(boltLaw), "10-law: B→cycle→green, 48fps");
 must(/imagineBiomeClip/.test(boltLaw) && /imagineBoltClip/.test(boltLaw), "10-law: hooks first+last");
-must(/chat Imagine UI alone/.test(boltLaw) && /3-Bolt/.test(boltLaw), "10-law: ban chat alone + 3-Bolt");
+must(/One-still I2V/.test(boltLaw) && /not a stop/.test(boltLaw) && /3-Bolt/.test(boltLaw), "10-law: one-still banned; missing key is not a stop");
 must(/lock\/bolt-back\.jpg/.test(boltLaw) && /IN PLACE/.test(boltLaw), "10-law: teacher + in place");
 const recette = readFileSync(join(root, "biome/docs/09-recette-biome.md"), "utf8");
 must(/HARD LOCK — make \/ add a biome/.test(recette), "09-recette: make-biome HARD LOCK");

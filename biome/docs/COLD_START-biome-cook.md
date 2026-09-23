@@ -8,6 +8,8 @@ Pack auto-embed: `window.BOLTVERSE_PACK_ORIGIN=https://boltverse-pack.vercel.app
 
 Play URL hang = **Live only**. Never a Build convo. Never `grok.com/share`. Never a `/c/` conversation link.
 
+**Video A (every plate, including P4 after P3):** extract the last frame of the previous plate (that file is this plate’s `first`; P0 uses the empty first still) → cook the `last` still (advanced world, same camera) → Imagine Video with **both** stills pinned. Primary = SuperGrok session (no API key). Optional = `imagineBiomeClip` when `XAI_API_KEY` is set. Then `python3 biome/scripts/plate-mae-qc/plate-mae-qc.py <previous.mp4> <this.mp4>` (P0 has no seam). Exit non-zero = recook. Missing key is not a stop. BAN one-still I2V, “forcé localement”, and MAE PASS without the script.
+
 Worked example (play URL only): https://boltboltverse-odyssey.grok.me
 
 Law 34 is step 14 in that README. Copy `biome/scripts/howl-live/` (`howlLive.js`, `howlWet.glsl`). REUSE `biome/fx/howl/howl-attack.mp4`. Do not recook it. Do not invent a laser or a ring shader. The noun is biome-variable. The math is fixed.

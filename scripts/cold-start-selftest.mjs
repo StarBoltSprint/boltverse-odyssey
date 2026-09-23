@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Fixture: brand-new Grok reads these first.
 // HARD SPLIT (SmiR 2026-09-12): Agent obligatoire for STYLE stills when restyling.
-// Video cook stays imagine-hooks / cook-room first+last. Never Agent for walks/breaths.
+// Video cook = SuperGrok session Imagine Video with both stills. Optional CLI when the key is set.
+// Missing XAI_API_KEY is not a stop. Never Agent for walks/breaths. One-still I2V is banned.
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -86,7 +87,7 @@ function assertSplit(label, text) {
   must(/Soft KEEP banned/.test(text), label + ": Soft KEEP banned");
 }
 
-const agentsHead = head("AGENTS.md", 50);
+const agentsHead = head("AGENTS.md", 70);
 must(/sill ≠ spawn/.test(agentsHead), "AGENTS.md head: sill ≠ spawn");
 must(/already AT the teal LEFT sill/.test(agentsHead) && /already AT the gold RIGHT sill/.test(agentsHead), "AGENTS.md head: at-A/at-B = AT the sill");
 must(/Spawn = CENTER only/.test(agentsHead), "AGENTS.md head: spawn = center only");
@@ -125,7 +126,7 @@ must(/selected, repositioned, resized to sill/.test(stop) && /nickel plate/.test
 must(/\.kitchen\/fail/.test(stop), "GROK.md STOP: FAIL save → .kitchen/fail");
 must(/enlarge/.test(stop), "GROK.md STOP: enlarge-only sill step");
 must(/First seal stills/.test(stop) && /imagineStill/.test(stop), "GROK.md STOP: first seal = Imagine Agent; imagineStill CLI");
-must(/without real first\+last/.test(stop) && /no `last_frame`/.test(stop), "GROK.md STOP: Chat Imagine UI without real first+last banned for walks");
+must(/session Imagine Video/.test(stop) && /not a stop/.test(stop) && /banned for walks/.test(stop), "GROK.md STOP: session first+last; missing key is not a stop");
 assertSplit("GROK.md STOP", stop);
 must(!/same dog pose/.test(stop), "GROK.md STOP: no frozen same-dog-pose restyle");
 
@@ -150,7 +151,7 @@ must(/Doors may adapt/.test(customize), "GROK.md Customize: Doors may adapt");
 must(/Bolt reposition OK/.test(customize), "GROK.md Customize: Bolt reposition OK");
 must(/selected, repositioned, resized to sill/.test(customize) && /nickel plate/.test(customize), "GROK.md Customize: Bolt selected/repositioned/resized");
 must(/First seal stills/.test(customize) && /cook-room imagineStill/.test(customize), "GROK.md Customize: first seal = cook-room");
-must(/without real first\+last has no last_frame/.test(customize), "GROK.md Customize: Chat Imagine UI without real first+last banned for walks");
+must(/banned for walks/.test(customize) && /not a stop/.test(customize) && /last_frame/.test(customize), "GROK.md Customize: both stills; missing key is not a stop");
 assertSplit("GROK.md Customize", customize);
 must(/Walks = start still \+ end still/.test(customize) && /Breaths = same still twice/.test(customize), "GROK.md Customize: walks start+end, breaths twice (hooks)");
 must(/\.kitchen\/fail/.test(customize) || /fail-save/.test(customize), "GROK.md Customize: FAIL → .kitchen/fail");

@@ -41,9 +41,13 @@ Worked example (play URL only): https://boltboltverse-odyssey.grok.me
  4  Next plate refs (law 22-m). Success +1 @ ref. Miss drops one.
     Law: biome/docs/22-m-densify-snowball.md
     Prompt: biome/prompts/snowball-refs.txt
- 5  Video A empty rush, 48 fps. Frost: no setpts 2.7× warp.
-    Law: biome/docs/08-plate-speed.md · biome/docs/02-videos.md
+ 5  Video A. Extract last frame → cook last still → Imagine Video first+last
+    (session OR imagineBiomeClip if XAI_API_KEY is set) → plate-mae-qc.py.
+    48 fps. Missing key is not a stop. P0 has no previous seam.
+    BAN one-still I2V, forcé localement, MAE PASS without the script.
+    Law: biome/docs/02-videos.md · biome/docs/33-plate-mae-qc.md · biome/docs/08-plate-speed.md
     Prompt: biome/prompts/video-empty-plate.txt
+    Run: biome-cook.sh mae <plateN.mp4> <plateN+1.mp4>
  6  Law 23 geo qc PASS before hang. Camera = law 24.
     Law: biome/docs/23-plate-geo-qc.md · biome/docs/24-camera-1point.md
     Script: biome/scripts/plate-geo-qc/plate-geo-qc.py

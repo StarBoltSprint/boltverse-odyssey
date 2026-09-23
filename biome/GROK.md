@@ -93,7 +93,7 @@ Loop seam = **hard cut** on the closed period — do **NOT** optical-flow morph 
 
 **HARD — Bolt motion = REUSE (make / add a biome).** Take sealed [`lock/bolt-gallop-cycle.mp4`](../lock/bolt-gallop-cycle.mp4) as the Bolt motion asset (**CANON ~5.56 s / 534 / 96 fps**; `CYCLE_FRAMES=534`, `STRIDES_PER_CYCLE=22`). Play: loop 1×; no per-frame seek; no 534-canvas harvest. Old 0.93 s / 89-frame lock = archive only — **FAIL** as play cycle. Key + despill + composite onto Video A. Then **PRIORITY 0 COMPOSITE GATE**: scale + gallop-clock + plate-grade + paw contact **BEFORE** KEEP. After REUSE + `bolt-scale`, MUST `gallop-clock` / `assertGallopClock` ([14c](docs/14c-gallop-clock.md)). GPU law: [15](docs/15-gpu-compositor.md) · Live: [17](docs/17-live-compositor.md). **FAIL** if Grok invents a new Bolt sprint clip. Only SmiR can authorize a new cycle cook to replace the lock. Style teacher `lock/bolt-back.jpg` if a still / repose is needed. Preview only: `lock/bolt-gallop-cycle-12s-preview.mp4`.
 
-**HARD LOCK — make / add a biome.** Décor scrolls (rush); Bolt sprints **IN PLACE** (treadmill). Mid-lane. **48fps**. Style teacher = `lock/bolt-back.jpg`. Pipeline (do not invert): empty plaque ZERO dog → Video A `imagineBiomeClip` first+last → **REUSE** `lock/bolt-gallop-cycle.mp4` (no new Imagine dog sprint) → key + despill → composite cutout onto A (AFF stack) → **COMPOSITE GATE** scale + gallop-clock + plate-grade + paw contact **BEFORE** KEEP. Speed/scroll = plate; gait = locked cycle. L/M/R = code X shift of **one** Bolt layer. **Never** cook a new Bolt sprint for a biome. **Never** chat Imagine alone. **Never** hall `imagineClip`. **Never** a single baked final film. **Never** a 3-Bolt mask. No `XAI_API_KEY` → REFUSE / stock. Law: [docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md) · [docs/09-recette-biome.md](docs/09-recette-biome.md).
+**HARD LOCK — make / add a biome.** Décor scrolls (rush); Bolt sprints **IN PLACE** (treadmill). Mid-lane. **48fps**. Style teacher = `lock/bolt-back.jpg`. Pipeline (do not invert): empty plaque ZERO dog → Video A `imagineBiomeClip` first+last → **REUSE** `lock/bolt-gallop-cycle.mp4` (no new Imagine dog sprint) → key + despill → composite cutout onto A (AFF stack) → **COMPOSITE GATE** scale + gallop-clock + plate-grade + paw contact **BEFORE** KEEP. Speed/scroll = plate; gait = locked cycle. L/M/R = code X shift of **one** Bolt layer. **Never** cook a new Bolt sprint for a biome. **Never** one-still I2V. **Never** hall `imagineClip`. **Never** a single baked final film. **Never** a 3-Bolt mask. Video A = session Imagine Video first+last (first = previous last pixels, last = advanced world). Missing `XAI_API_KEY` is not a stop. Optional `imagineBiomeClip` when the key is set. Then `plate-mae-qc.py`. BAN one-still I2V and “forcé localement”. Law: [docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md) · [docs/09-recette-biome.md](docs/09-recette-biome.md).
 
 **HARD LOCK — new biome cook (SmiR 2026-09-18 FAIL).** Make/add a **new biome** (any name — Tide, Frost, Ember, invented): **Hang only** the new plates beside existing masters. Do **NOT** rebuild canyon→cars→duel→night→war first. Do **NOT** require Beat 3 recook as a gate. Old Beat stays playable without recook. Bolt = always `@ref` [`lock/bolt-back.jpg`](../lock/bolt-back.jpg). **BAN** copying hung `biome/master/bolt.mp4` / canyon Bolt as identity. Light bake from the **new** empty plaque OK; identity = teacher. Name + décor `{PAINT}` allowed / encouraged. Tide is one example. Never refuse “I can only do Tide.” Pipeline + hooks first/last still apply. Chat catalog lists **hung** biomes only; a biome in cook is not hung until hung.
 
@@ -118,18 +118,20 @@ Two Imagine jobs. Never one mp4 with Bolt painted into the road.
 
 | Layer | Stills | Film |
 |---|---|---|
-| **Road** (master) | empty-plate first + last — **ZERO dog** | `imagineBiomeClip` `image` + `last_frame` (distinct, **48fps**) |
+| **Road** (master) | empty-plate first + last — **ZERO dog** | Session Imagine Video `image` + `last_frame` (distinct, **48fps**). Optional `imagineBiomeClip` when `XAI_API_KEY` is set. Then `plate-mae-qc.py`. |
 | **Bolt cutout** | **REUSE** sealed [`lock/bolt-gallop-cycle.mp4`](../lock/bolt-gallop-cycle.mp4) — already rear / green / rotary. Style ref [`lock/bolt-back.jpg`](../lock/bolt-back.jpg) if a still / repose is needed ([docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md) · [docs/14-rotary-gallop.md](docs/14-rotary-gallop.md)) | **No new Imagine dog sprint.** Key + despill that cycle → composite onto Video A (AFF). Speed/scroll = plate; gait = locked cycle. |
 
 Prompts: [prompts/](prompts/). Law: [docs/01-images.md](docs/01-images.md) · [docs/02-videos.md](docs/02-videos.md) · [docs/10-bolt-cutout-law.md](docs/10-bolt-cutout-law.md). After empty+cutout KEEP: author `path.json` — [docs/12-lane-path-ribbon.md](docs/12-lane-path-ribbon.md) (living-film Lane, not SprintCore). Without the chart = film. With it = game.
 
 ```
 # dry thought-queue only — no new grok.me
-# live cook needs XAI_API_KEY + imagineBiomeClip (road). Bolt = REUSE lock/bolt-gallop-cycle.mp4 (imagineBoltClip = SmiR only)
+# Video A = session Imagine Video first+last (no API key required).
+# Optional CLI imagineBiomeClip when XAI_API_KEY is set. Bolt = REUSE lock/bolt-gallop-cycle.mp4
+# Then python3 biome/scripts/plate-mae-qc/plate-mae-qc.py. Missing key is not a stop.
 # drop PASS masters into biome/master/ (see master/README.md)
 ```
 
-Cannot run `node` + `XAI_API_KEY` → **REFUSE**. Open stock Sprint in-app. Do **not** use chat `imagine_image_to_video` / `imagine_reference_to_video` (no `last_frame`). Do **not** use Imagine Agent for video.
+Video A does not wait on `node` or `XAI_API_KEY`. Pin both stills in the SuperGrok session (`first` = exact last pixels of the previous plate, `last` = advanced world), hang the mp4, run `plate-mae-qc.py`. The CLI is optional when the key is set. Do **not** use one-still `imagine_image_to_video` / `imagine_reference_to_video`. Do **not** use Imagine Agent for video. Do **not** invent “forcé localement” or claim MAE PASS without the script.
 
 ## Law 0 — first + last
 
@@ -163,7 +165,7 @@ Cousin / hazard plate (bar, arch, puddle):
 | empty → cousin | last(empty) **or** lock still + hazard | — |
 | cousin → empty | — | **first(empty)** so the cut is the same picture |
 
-Chat Imagine has no `last_frame`. Use `imagineBiomeClip` in [../scripts/imagine-hooks.mjs](../scripts/imagine-hooks.mjs).
+Session Imagine Video pins both stills (`first` + `last`). One-still I2V does not. Optional CLI: `imagineBiomeClip` in [../scripts/imagine-hooks.mjs](../scripts/imagine-hooks.mjs) when `XAI_API_KEY` is set. Missing key is not a stop.
 
 ## SPEED REF (road — do not soften)
 
@@ -227,11 +229,12 @@ Every Live drops [../client/pack.js](../client/pack.js) with `BOLTVERSE_PACK_ORI
 - 3-take L / M / R as the default cook
 - 3-Bolt multi-lane mask (L/M/R = one Bolt layer, X shift)
 - Bake Bolt into a single final road film (no cutout stack)
-- Chat Imagine alone for Video A / Video B / Bolt (hooks first+last only)
+- One-still I2V for Video A (both stills required). Missing `XAI_API_KEY` is not a stop
+- Invent “forcé localement” or claim MAE PASS without `plate-mae-qc.py`
+- Imagine Agent video
 - Invent C-light as a required lock
 - Recook citadel `packs/<slot>` because someone said sprint
 - Chat Imagine without real first+last
-- Imagine Agent video
 - Recook to hide a key bug
 - Full-width hazard on LEFT+CENTER+RIGHT (nowhere to dodge)
 - Wipe hung `biome/master` / `public/master` to “make room” for a new biome (Hang ≠ wipe — Tide cook FAIL)

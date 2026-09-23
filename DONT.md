@@ -47,12 +47,10 @@ Off catalog / off aliases → picker or refuse. New row = stills + stock + neigh
 
 ## 6. Chat Imagine UI as a hall cook
 
-Looks like the tweet (first + last). Chat tools have **no `last_frame`**. Chat stills skip the edits lock.
+Looks like the tweet (first + last). A video with only one still has no `last_frame`. Chat stills skip the edits lock.
 
-STYLE stills / restyle = Imagine Agent. Walks / breaths / films = `node scripts/cook-room.mjs <slot>` → `scripts/imagine-hooks.mjs` (`image` + `last_frame`). Never Imagine Agent video.  
-Walks = `POST /v1/videos/generations` with `last_frame`. Chat refs / chat stills = illegal for hall floor-1.
-
-Cannot run node / no `XAI_API_KEY` for a live plate → **refuse**, stock. That is not permission to chat-Imagine.
+STYLE stills / restyle = Imagine Agent. Walks / breaths / films = Imagine Video with both stills pinned (session primary; optional `node scripts/cook-room.mjs <slot>` when `XAI_API_KEY` is set). Never Imagine Agent video.  
+One-still I2V is banned. Missing key is not a stop and is not permission to cook a one-still video. Smoke still gates.
 
 Soft KEEP of a Smoke-FAIL walk or a gel-breath “so they can see” is the same crime. `KEEP REFUSED` / `HANG BLOCKED`.
 
