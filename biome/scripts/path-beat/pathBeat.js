@@ -9,6 +9,7 @@
  * pickHowlLane left open (same occupancy, player side).
  * Imagine = the look. Code = when and which lane.
  *
+ * BAN opaque grey/beige rectangles and shadow cards. Prefer Imagine Live video props (law 39); in-world light/form, or HOLD.
  * Native to the densify film, not a HUD and not a sticker:
  * one cone (howlPose) on densify's 3 lanes, gradeFromPlate,
  * approach locked to HOWL.travel (same step as Lena), shadow only

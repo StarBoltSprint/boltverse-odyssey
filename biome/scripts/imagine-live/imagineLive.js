@@ -3,6 +3,7 @@
  * The prop is an Imagine video filmed in the plate's colors.
  * The GPU keys black and returns the video color. It does not regrade.
  * Copy the thresholds. Regenerate the clip per biome. Do not reuse a nebula crystal on frost.
+ * BAN still / sprite / bib-grade LOD for lane props. Video + uClean, same path as Bolt.
  */
 export const IMAGINE_LIVE = {
   cleanLuma0: 0.04,
