@@ -19,3 +19,4 @@ Pages here are **optional**. They are **not** cook gates. Default Bolt remains e
 | [34-howl-live-aim.md](34-howl-live-aim.md) | Howl distance / cut-on-contact / shatter swap / wet GPU. Copy `scripts/howl-live/`. |
 | [35-lane-materials.md](35-lane-materials.md) | Lane material menu A–D before P0 stills. Ban grey concrete as silent default. |
 | [36-gpu-zones-lena-procedural.md](36-gpu-zones-lena-procedural.md) | GPU zones = keyed layers over densify. Runtime `scripts/lena-lod/lenaLod.js`. Bib: [COLD_START-lena-bib.md](COLD_START-lena-bib.md). |
+| [37-path-beat.md](37-path-beat.md) | Path beat. Chemin reveals one lane ~3 s ahead. Runtime `scripts/path-beat/pathBeat.js`. Paste: [COLD_START-path-beat.md](COLD_START-path-beat.md). |

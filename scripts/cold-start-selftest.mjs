@@ -765,4 +765,60 @@ const frame = lena.lenaFrame(lena.lenaState(3), 0.016, {
 must(frame.tileDensify === false && frame.spawns.length === 1 && frame.spawns[0].band === "far", "lenaFrame spawns far, no tiles");
 must(frame.spawns[0].bib === "biome/fx/lena/earth/quartz-generator.mp4", "lenaFrame bib path");
 
+const pathLaw = body("biome/docs/37-path-beat.md");
+const pathPaste = body("biome/docs/COLD_START-path-beat.md");
+must(existsSync(join(root, "biome/docs/37-path-beat.md")), "law 37 doc exists");
+must(existsSync(join(root, "biome/docs/COLD_START-path-beat.md")), "law 37 paste exists");
+must(existsSync(join(root, "biome/scripts/path-beat/pathBeat.js")), "path-beat runtime exists");
+must(/lookahead/.test(pathLaw) && /3/.test(pathLaw) && /SIDES/.test(pathLaw) && /hit/.test(pathLaw), "law 37: lookahead, SIDES, hit");
+must(/37-path-beat/.test(pathPaste) && /pathBeatFrame/.test(pathPaste) && /3/.test(pathPaste), "law 37 paste names the frame API");
+must(/path-beat\/pathBeat\.js/.test(pathLaw) && /pathBeatFrame/.test(pathLaw), "law 37 points at pathBeatFrame");
+must(/37-path-beat/.test(zonesLaw) && /path-beat/.test(zonesLaw), "law 36 points at the path beat");
+must(/37-path-beat/.test(grok) && /37-path-beat/.test(agents), "GROK.md + AGENTS.md point at law 37");
+must(/pathBeatFrame/.test(grok) && /pathBeatFrame/.test(agents), "GROK.md + AGENTS.md name pathBeatFrame");
+must(/37-path-beat/.test(body("biome/GROK.md")) && /path-beat/.test(body("README.md")), "biome GROK + README name law 37");
+must(/37-path-beat/.test(body("biome/scripts/biome-cook/MANIFEST.md")), "MANIFEST lists law 37");
+must(/37-path-beat/.test(cookReadme) && /path-beat/.test(cookSh), "biome-cook surfaces law 37");
+must(/37-path-beat/.test(body("biome/docs/COLD_START-any-biome.md")), "any-biome cold start names law 37");
+must(/COLD_START-path-beat/.test(cookPaste), "COLD_START-biome-cook names the path-beat paste");
+
+const pathBeat = await import(pathToFileURL(join(root, "biome/scripts/path-beat/pathBeat.js")).href);
+must(pathBeat.PATH_BEAT.lookahead === 3, "path beat lookahead is 3s");
+must(pathBeat.RAIL.tileDensify === false && pathBeat.RAIL.coversPlate === false, "path beat does not tile densify");
+const chart = pathBeat.pathBeatChart(4, { count: 24 });
+must(chart.beats.length === 24 && chart.tileDensify === false, "chart emits a seed of beats");
+must(chart.beats.every((b) => Math.abs(b.tContact - b.tReveal - 3) < 1e-9), "chart lookahead is 3s");
+const chartLanes = new Set(chart.beats.map((b) => b.lane));
+must(chartLanes.has("L") && chartLanes.has("C") && chartLanes.has("R"), "chart emits L/C/R");
+const beat0 = chart.beats[0];
+const revealed = pathBeat.pathBeatFrame(pathBeat.pathBeatState(4), 0, {
+  now: beat0.tReveal,
+  cw: 768,
+  ch: 1168,
+  pawY: 980,
+  destH0: 180,
+  playerLane: "C",
+});
+must(revealed.beats.length === 1 && revealed.beats[0].lane === beat0.lane, "reveal matches the chart");
+must(revealed.beats[0].ahead === true && revealed.beats[0].pose.dest.w < 768, "chemin is ahead, one quad");
+must(revealed.tileDensify === false && revealed.coversPlate === false, "live frame does not tile");
+const hit = pathBeat.pathBeatFrame(revealed.state, 0, {
+  now: beat0.tContact,
+  cw: 768,
+  ch: 1168,
+  pawY: 980,
+  destH0: 180,
+  playerLane: beat0.lane,
+});
+must(hit.resolved.length === 1 && hit.resolved[0].result === "hit", "contact on the target lane hits");
+must(hit.beats.every((b) => b.id !== beat0.id), "resolved beat leaves the cone");
+const missLane = beat0.lane === "L" ? "R" : "L";
+const miss = pathBeat.pathBeatFrame(revealed.state, 0, {
+  now: beat0.tContact,
+  playerLane: missLane,
+});
+must(miss.resolved.length === 1 && miss.resolved[0].result === "miss", "contact on another lane misses");
+const corridor = pathBeat.pathBeatChart(2, { count: 4, blocked: [-1, 1] });
+must(corridor.beats.every((b) => b.lane === "C"), "path beat takes the free corridor");
+
 console.log("COLD-START PASS");

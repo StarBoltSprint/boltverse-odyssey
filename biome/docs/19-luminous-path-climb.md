@@ -8,7 +8,7 @@ When the run rises from ground biome toward space (law 18 Lena climb), Bolt does
 
 | | Law |
 |---|---|
-| Path | Luminous corridor forms **ahead of the paws** (Decree 456 / PathGenerator). Not a pre-painted asphalt forever. |
+| Path | Luminous corridor forms **ahead of the paws** (Decree 456 / PathGenerator). Not a pre-painted asphalt forever. The beat clock is law [37](37-path-beat.md): one lane revealed ~3 s before contact (`pathBeatFrame`). |
 | Lanes | **Still 3 lanes** L / C / R. Same ribbon `(s, λ)`. A/D + jump stay valid on the climb. |
 | Bolt | **REUSE** `lock/bolt-gallop-cycle.mp4`. Same GPU compositor (17). No new “flying gallop” Imagine. |
 | Contact | Paws stay planted on the **path** (shadow on path while grounded on it). `shadowK` follows path surface, not old asphalt. |
@@ -31,6 +31,6 @@ FX:      prints optional on path albedo; ice/ember row from law 16 still applies
 
 ## Related
 
-[18-room-starmap-lena.md](18-room-starmap-lena.md) · [12-lane-path-ribbon.md](12-lane-path-ribbon.md) · [00-PRIORITY0-any-biome.md](00-PRIORITY0-any-biome.md) · [17-live-compositor.md](17-live-compositor.md)
+[18-room-starmap-lena.md](18-room-starmap-lena.md) · [12-lane-path-ribbon.md](12-lane-path-ribbon.md) · [00-PRIORITY0-any-biome.md](00-PRIORITY0-any-biome.md) · [17-live-compositor.md](17-live-compositor.md) · [37-path-beat.md](37-path-beat.md) (lookahead ~3 s; same Howl cone)
 
 Pitch ladder / duration / space look → see [21](21-paw-to-galaxy.md).
