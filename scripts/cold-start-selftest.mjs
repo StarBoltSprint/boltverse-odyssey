@@ -726,5 +726,8 @@ must(/\{LANE_MATERIAL\}/.test(emptyPlate) && /\{PAINT\}/.test(emptyPlate), "imag
 must(/35-lane-materials/.test(law20) && /\{LANE_MATERIAL\}/.test(law20) && /béton/.test(law20), "law 20 links lane material");
 must(/lane material/i.test(sectionB) && /35-lane-materials/.test(sectionB) && /béton/.test(sectionB), "P0 section B: empty plate paint includes lane material");
 must(/35-lane-materials/.test(body("biome/scripts/biome-cook/MANIFEST.md")), "MANIFEST lists law 35");
+must(hasLaneMenu(grok) && /35-lane-materials/.test(grok) && /béton/.test(grok) && /grey concrete/.test(grok), "GROK.md principal: law 35 menu + asphalt BAN");
+must(hasLaneMenu(agents) && /35-lane-materials/.test(agents) && /béton/.test(agents) && /grey concrete/.test(agents), "AGENTS.md principal: law 35 menu + asphalt BAN");
+must(/35-lane-materials/.test(body("README.md")) && /law 35/.test(body("README.md")), "README.md kitchen map: law 35");
 
 console.log("COLD-START PASS");
