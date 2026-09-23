@@ -62,6 +62,7 @@ state = frame.state;
 - `frame.active` — the open window. `active.lane`, `active.secondsLeft` (~3 at reveal), `active.pose` on the densify lane. `active.reveal` is the in-world read (`light` / `detail` / `fill`).
 - `frame.resolved[]` — this tick’s `{ result: "hit" | "miss", lane, playerLane }`.
 - `frame.gradeFromPlate`, `frame.hud === false`, `frame.clock === "densify"`, `frame.approach`.
+- `frame.revealHook` — Live draw. `pathRevealHook(frame.active)`. `op` is `light` (lane lights up), `form` (detail forms), or `fill` (void fills). `dest` is the cone quad. `draw` is false before reveal.
 - `assertPathNative(frame)` — `[]` or a list of FAIL reasons.
 - `frame.tileDensify` and `frame.coversPlate` are false.
 - `pathBeatChart(seed, { count })` — the same beats without a canvas, for a cold sprint chart.

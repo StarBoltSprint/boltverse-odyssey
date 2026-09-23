@@ -69,6 +69,7 @@ These are **FAIL**:
 
 - Chopping one densify Video A into GPU spatial tiles
 - Baking destroyables or Howl into densify plates
+- **FAIL if Build paints the path into Video A**, or a lane target, a generator, or a Lena detail. Path beat, Lena LOD bibs, Howl, and Bolt are GPU keyed layers composited **OVER** that plate. **GPU is REQUIRED.** Densify stays the clean looping 3-lane film.
 - Procedural invent of the Howl look (rings must be the Imagine KEEP)
 - Sticker spawn with no anti-sticker contact law ([13b](13b-anti-sticker-contact.md))
 - Hanging a Build conversation URL or a share link. A play URL, when one is hung at all, is Live only. This note adds none.

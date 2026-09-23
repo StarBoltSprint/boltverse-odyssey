@@ -52,6 +52,35 @@ const chart = pathBeatChart(seed, { count: 8 });
 
 Gaps come from the seed (`gapMin` 4.5 … `gapMax` 7.5). A cold Grok can drive the sprint from this chart. Video A stays empty of those lanes.
 
+## One stack (densify film, then GPU)
+
+Same `now` for every line. Densify is the looping plate. Build does **not** drive that Imagine first+last session. The session stays SuperGrok, first + last pinned. Missing `XAI_API_KEY` is not a stop.
+
+```js
+import { lenaState, lenaFrame } from "../lena-lod/lenaLod.js";
+import { pathBeatState, pathBeatFrame, assertPathNative } from "./pathBeat.js";
+
+// 1. Densify Video A plays. Do not write path, generators, or details into it.
+// 2. GPU keyed layers OVER that plate, one clock:
+const lena = lenaFrame(lenaState, dt, ctx);          // bibs, far/mid/near
+const frame = pathBeatFrame(pathState, dt, ctx);     // which lane, ~3s ahead
+const hook = frame.revealHook;                       // light | form | fill
+if (assertPathNative(frame).length) throw new Error("path native FAIL");
+if (hook.draw) {
+  // GPU quad on hook.dest. gradeFromPlate. op is the in-world read.
+  // light = lane lights up, form = detail forms, fill = void fills.
+  // Bolt and Howl are the other keyed quads on this same cone. Not HUD.
+}
+```
+
+| `hook.op` | In the road | Cone band |
+|---|---|---|
+| `light` | The target lane lights up | far |
+| `form` | Detail forms on that lane | mid |
+| `fill` | The void of that lane fills | near |
+
+`hook.draw` is false before reveal. `hook.dest` is `howlPose` on the densify lane, ahead of the paws. `hook.gpu` is true. `hook.bakeIntoDensify` is false. `hook.hud` is false.
+
 ## Each frame
 
 ```js

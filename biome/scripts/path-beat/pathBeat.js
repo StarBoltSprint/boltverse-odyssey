@@ -47,8 +47,9 @@ export const RAIL = {
 /** z units per second toward the paws. Same step lenaFrame uses. */
 export const APPROACH = 1 / HOWL.travel;
 
-/** In-world reveal. Not a screen arrow. */
+/** In-world reveal. Not a screen arrow. detail on the cone is the Live op "form". */
 const REVEAL_OF = { far: "light", mid: "detail", near: "fill" };
+const OP_OF = { light: "light", detail: "form", fill: "fill" };
 
 /** Keyed layers. All of them composite on the GPU over densify. None are painted into Video A. */
 export const GPU = {
@@ -202,6 +203,41 @@ export function pathBeatState(seed = 1) {
   };
 }
 
+/**
+ * Live draw hook for one revealed beat. GPU quad on the densify cone.
+ * `op` is light (lane lights up), form (detail forms), or fill (void fills).
+ * No beat → draw false. Never a HUD. Never a pixel written into Video A.
+ */
+export function pathRevealHook(beat) {
+  const base = {
+    hook: "path-reveal",
+    gpu: true,
+    composite: GPU.composite,
+    bakeIntoDensify: false,
+    hud: false,
+    space: "world",
+    gradeFromPlate: true,
+  };
+  if (!beat || !beat.pose) return { ...base, draw: false, op: null };
+  const op = OP_OF[beat.reveal] || null;
+  return {
+    ...base,
+    draw: true,
+    inWorld: true,
+    lane: beat.lane,
+    laneIndex: beat.laneIndex,
+    op,
+    reveal: beat.reveal,
+    dest: beat.pose.dest,
+    ground: beat.pose.ground,
+    contact: beat.contact === true,
+    warm: beat.warm,
+    warmK: beat.warmK,
+    secondsLeft: beat.secondsLeft,
+    look: beat.look || CHEMIN,
+  };
+}
+
 /** hit if the player lane is the target. Missing lane is a miss. */
 export function pathBeatResolve(playerLane, beat) {
   if (!beat) return "miss";
@@ -240,6 +276,8 @@ function decorate(beat, now, ctx) {
     band,
     /** light = lane lights up, detail = detail forms, fill = void fills. */
     reveal: REVEAL_OF[band],
+    /** Live verb: light | form | fill. form is the mid-band detail. */
+    op: OP_OF[REVEAL_OF[band]],
     warm: pre.warm,
     warmK: pre.warmK,
     contact: band === "near",
@@ -272,6 +310,14 @@ export function assertPathNative(frame) {
   if (!frame.cook || frame.cook.bibs !== COOK.bibs) fails.push("cook bibs");
   if (!frame.cook || frame.cook.bolt !== COOK.bolt) fails.push("bolt identity");
   if (!frame.cook || frame.cook.gpu !== true || frame.cook.bakeIntoDensify !== false) fails.push("cook GPU");
+  const hook = frame.revealHook;
+  if (hook) {
+    if (hook.hud !== false || hook.gpu !== true || hook.bakeIntoDensify !== false) fails.push("reveal hook");
+    if (hook.draw) {
+      if (hook.op !== "light" && hook.op !== "form" && hook.op !== "fill") fails.push("reveal op");
+      if (!hook.dest || hook.gradeFromPlate !== true || hook.space !== "world") fails.push("reveal hook");
+    }
+  }
   for (const b of frame.beats || []) {
     if (b.hud !== false || b.space !== "world" || b.inWorld !== true) fails.push("beat HUD");
     if (b.gpu !== true || b.bakeIntoDensify !== false) fails.push("beat baked into densify");
@@ -279,6 +325,7 @@ export function assertPathNative(frame) {
     if (b.contact === true && b.band !== "near") fails.push("shadow outside near");
     if (b.band === "near" && b.contact !== true) fails.push("near without shadow");
     if (b.reveal !== REVEAL_OF[b.band]) fails.push("reveal");
+    if (b.op !== OP_OF[b.reveal]) fails.push("reveal op");
     if (!(Math.abs(b.approach - APPROACH) < 1e-12)) fails.push("beat approach");
   }
   return fails;
@@ -346,6 +393,7 @@ export function pathBeatFrame(state, dt, ctx) {
   }
 
   const beats = open.map((b) => decorate(b, now, ctx)).sort((a, b) => a.tContact - b.tContact);
+  const active = beats[0] || null;
   return {
     rail: RAIL.zones,
     densify: RAIL.densify,
@@ -381,7 +429,8 @@ export function pathBeatFrame(state, dt, ctx) {
       })),
     },
     beats,
-    active: beats[0] || null,
+    active,
+    revealHook: pathRevealHook(active),
     resolved,
   };
 }

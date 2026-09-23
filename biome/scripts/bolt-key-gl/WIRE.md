@@ -19,7 +19,7 @@
 
 **Lena LOD (law 36).** Copy [`../lena-lod/lenaLod.js`](../lena-lod/lenaLod.js). Each `lenaFrame` spawn is another keyed quad on `pose.dest` (`mark` / `markDest`). `warmBib` + `warmK` is the far→near crossfade. Contact shadow only when `contact` is true. Densify stays the road video. Bib cook: [../../docs/COLD_START-lena-bib.md](../../docs/COLD_START-lena-bib.md).
 
-**Path beat (law 37).** Copy [`../path-beat/pathBeat.js`](../path-beat/pathBeat.js). Each frame `pathBeatFrame` on the densify clock. Reveal `active` **in the road** on `active.pose` (same cone as Lena / Howl): light → detail → fill. `gradeFromPlate`. Shadow only when `contact` (near band). Crossfade with `warmK`. `assertPathNative` must be `[]`. Not a HUD arrow. `resolved[].result` is hit or miss. Do not tile the road video. Brief: [../../docs/COLD_START-path-beat.md](../../docs/COLD_START-path-beat.md).
+**Path beat (law 37).** Copy [`../path-beat/pathBeat.js`](../path-beat/pathBeat.js). Each frame `pathBeatFrame` on the densify clock. Draw `frame.revealHook` as a keyed GPU quad **over** the road video (`hook.op`: light / form / fill, `hook.dest` on the Howl cone). `gradeFromPlate`. Shadow only when `contact` (near band). Crossfade with `warmK`. `assertPathNative` must be `[]`. Not a HUD arrow. **FAIL** if the path is painted into Video A. `resolved[].result` is hit or miss. Do not tile the road video. Brief: [../../docs/COLD_START-path-beat.md](../../docs/COLD_START-path-beat.md).
 
 See `biome/docs/17-live-compositor.md` (what actually worked) · `22` (GPU_VER 24 KEEP) · `15` · `16` · `00-PRIORITY0-any-biome.md` · paste `COLD_START-any-biome.md` / `COLD_START-gpu24.md` / `COLD_START-howl-live.md`.
 

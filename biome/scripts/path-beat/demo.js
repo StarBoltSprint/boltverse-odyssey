@@ -13,6 +13,7 @@ import {
   pathBeatState,
   pathBeatFrame,
   pathBeatResolve,
+  pathRevealHook,
   assertPathNative,
 } from "./pathBeat.js";
 
@@ -66,6 +67,17 @@ assert("quad is one lane, not the plate", live.pose.dest.w < ctx.cw * 0.5 && liv
 assert("look file is the chemin, not a densify crop", live.look === CHEMIN && !/road-/.test(live.look));
 assert("native to the film", assertPathNative(revealed).length === 0 && assertPathNative(early).length === 0);
 assert("not a HUD arrow", revealed.hud === false && live.hud === false && live.space === "world" && live.inWorld === true);
+assert("before reveal the hook does not draw", early.revealHook.draw === false && early.revealHook.hud === false);
+assert(
+  "Live hook forms the lane on the cone",
+  revealed.revealHook.draw === true &&
+    revealed.revealHook.op === live.op &&
+    (live.op === "light" || live.op === "form" || live.op === "fill") &&
+    revealed.revealHook.dest.w === live.pose.dest.w &&
+    revealed.revealHook.gpu === true &&
+    revealed.revealHook.bakeIntoDensify === false &&
+    pathRevealHook(null).draw === false,
+);
 assert("grade from this densify plate", live.gradeFromPlate === true && revealed.gradeFromPlate === true);
 assert("densify clock and Lena approach", revealed.clock === "densify" && revealed.sameClock === true && Math.abs(live.approach - APPROACH) < 1e-12 && Math.abs(APPROACH - 1 / HOWL.travel) < 1e-12);
 assert("cook is a clean 3-lane loop", revealed.cook.densify === COOK.densify && revealed.cook.vault === true && revealed.cook.calmSides === true && revealed.cook.bibs === "keyed-same-world" && revealed.cook.bolt === "lock/bolt-back.jpg" && revealed.lanes === 3);
@@ -108,8 +120,9 @@ for (let i = 0; i < 80; i++) {
     console.error("FAIL", "shadow outside near");
     process.exit(1);
   }
-  if (b.band === "far" && b.reveal !== "light") process.exit(1);
-  if (b.band === "mid" && b.reveal !== "detail") process.exit(1);
+  if (b.band === "far" && (b.reveal !== "light" || b.op !== "light")) process.exit(1);
+  if (b.band === "mid" && (b.reveal !== "detail" || b.op !== "form")) process.exit(1);
+  if (b.band === "near" && b.op !== "fill") process.exit(1);
 }
 assert("soft LOD crossfade, no pop", sawSoft && warmed && maxJump < 0.35);
 assert("near band fills the lane and takes the shadow", sawNear);

@@ -775,6 +775,8 @@ must(/gradeFromPlate/.test(pathLaw) && /HUD/.test(pathLaw) && /near/.test(pathLa
 must(/assertPathNative/.test(pathPaste) && /gradeFromPlate/.test(pathPaste) && /HUD/.test(pathPaste) && /in the road/.test(pathPaste), "law 37 paste: native to the video");
 must(/\*\*GPU is REQUIRED\.\*\*/.test(pathPaste) && /OVER densify Video A/.test(pathPaste) && /FAIL if Build paints the path into Video A/.test(pathPaste), "law 37 paste: GPU required, do not paint Video A");
 must(/GPU is REQUIRED/.test(pathLaw) && /paints the path into Video A/.test(pathLaw), "law 37: GPU required FAIL");
+must(/pathRevealHook/.test(pathLaw) && /light/.test(pathPaste) && /form/.test(pathPaste) && /fill/.test(pathPaste), "law 37: Live hook light/form/fill");
+must(/GPU is REQUIRED/.test(zonesLaw) && /paints the path/.test(zonesLaw) && /Lena detail/.test(zonesLaw), "law 36: do not paint path or LOD into Video A");
 must(/37-path-beat/.test(pathPaste) && /pathBeatFrame/.test(pathPaste) && /3/.test(pathPaste), "law 37 paste names the frame API");
 must(/path-beat\/pathBeat\.js/.test(pathLaw) && /pathBeatFrame/.test(pathLaw), "law 37 points at pathBeatFrame");
 must(/37-path-beat/.test(zonesLaw) && /path-beat/.test(zonesLaw), "law 36 points at the path beat");
@@ -830,5 +832,8 @@ must(pathBeat.assertPathNative(revealed).length === 0, "assertPathNative accepts
 must(pathBeat.assertPathNative({ ...revealed, hud: true }).includes("HUD"), "a HUD frame is a FAIL");
 must(revealed.gpu === true && revealed.bakeIntoDensify === false && revealed.composite === "over-densify", "path beat is a GPU layer over densify");
 must(pathBeat.assertPathNative({ ...revealed, bakeIntoDensify: true }).includes("baked into densify"), "painting the path into densify is a FAIL");
+must(revealed.revealHook.draw === true && revealed.revealHook.hud === false && revealed.revealHook.bakeIntoDensify === false, "reveal hook draws in world on the GPU");
+must(revealed.revealHook.op === "light" || revealed.revealHook.op === "form" || revealed.revealHook.op === "fill", "reveal hook op is light, form, or fill");
+must(pathBeat.pathRevealHook(null).draw === false, "no beat means the hook does not draw");
 
 console.log("COLD-START PASS");
