@@ -7,6 +7,8 @@ import {
   KINDS,
   RAIL,
   GPU,
+  PLATE_ZONES,
+  SIDES_PHRASE,
   lightBib,
   parseTint,
   fadeIntensity,
@@ -101,6 +103,24 @@ assert(
   gloss.draw === true && gloss.gradeFromPlate === true && gloss.bounces === 0 && gloss.raytrace === false && gloss.dest.w === full.layers[0].pose.dest.w && gloss.bakeIntoDensify === false,
 );
 assert("a dark lamp draws no gloss", glossOverlay(off.layers[0]).draw === false);
+assert("plate zones are road and both shoulders", PLATE_ZONES.join(",") === "road,sideL,sideR");
+assert("densify sides stay empty for the GPU", /side clutter/.test(SIDES_PHRASE) && /sideL/.test(SIDES_PHRASE) && off.sides === "gpu" && off.sideClutter === false);
+const shoulder = lightLayerFrame(
+  lightLayerState([{ id: "glow-l", kind: "glow", noun: "berm", plateZone: "sideL", z: 0.2, on: true }]),
+  0,
+  ctx,
+);
+const roadL = howlPose(-1, shoulder.layers[0].z, ctx.cw, ctx.ch, ctx.destH0, ctx.pawY);
+assert(
+  "a side light sits left of lane L on the same cone",
+  shoulder.layers[0].plateZone === "sideL" &&
+    shoulder.layers[0].lane === null &&
+    shoulder.layers[0].howlable === false &&
+    shoulder.layers[0].gradeFromPlate === true &&
+    shoulder.layers[0].pose.ground.x < roadL.ground.x &&
+    assertLightNative(shoulder).length === 0,
+);
+assert("side clutter baked into the plate is a FAIL", assertLightNative({ ...shoulder, sideClutter: true }).includes("side clutter"));
 
 console.log(
   JSON.stringify(

@@ -890,6 +890,15 @@ must(gpuLight.glossOverlay(dark.layers[0]).draw === false, "a dark light draws n
 must(gpuLight.assertLightNative({ ...lit, realtimeImagine: true }).includes("real-time raytracing"), "claiming Imagine real-time raytracing is a FAIL");
 must(gpuLight.assertLightNative({ ...lit, plastic: true }).includes("flat plastic"), "flat plastic lighting is a FAIL");
 must(/soft global illumination/.test(gpuLight.RT_PHRASE.densify) && /Not flat plastic/.test(gpuLight.RT_PHRASE.light), "runtime cook phrases match the brief");
+must(gpuLight.PLATE_ZONES.join(",") === "road,sideL,sideR", "plate zones are road, sideL, sideR");
+must(/side clutter/.test(gpuLight.SIDES_PHRASE) && /sideL/.test(lightLaw) && /sideR/.test(lightPaste), "law 38: shoulders stay empty, GPU fills sideL and sideR");
+const sideLamp = gpuLight.lightLayerFrame(
+  gpuLight.lightLayerState([{ id: "glow-l", kind: "glow", plateZone: "sideL", z: 0.2, on: true }]),
+  0,
+  { cw: 768, ch: 1168, pawY: 980, destH0: 180 },
+);
+must(sideLamp.layers[0].plateZone === "sideL" && sideLamp.layers[0].howlable === false && sideLamp.sides === "gpu" && gpuLight.assertLightNative(sideLamp).length === 0, "a light may sit on the shoulder");
+must(gpuLight.assertLightNative({ ...sideLamp, sideClutter: true }).includes("side clutter"), "side clutter baked into densify is a FAIL");
 
 must(gpuOpen.KINDS.join(",") === "door,chest,generator,hatch", "openable kinds");
 must(gpuOpen.openableBib("chest", "quartz", "closed").endsWith("/quartz-closed.mp4"), "closed bib");

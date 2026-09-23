@@ -54,9 +54,25 @@ A generator may name a `lightId`. `openableFrame` emits `lightCues`. Feed that r
 
 ## Same cone as Howl / Lena / path beat
 
-Placement is `howlPose` on densify lanes `-1 / 0 / 1` (`L` / `C` / `R`). `objectBand` is the Lena far / mid / near read. Contact shadow only when `band === "near"`.
+Placement is `howlPose`. `objectBand` is the Lena far / mid / near read. Contact shadow only when `band === "near"`.
 
 Far-band openables are visible and **not hittable**. Mid and near take the hit. There is no second ribbon and no screen-space widget.
+
+## Plate zones — road and shoulders
+
+GPU LOD may sit on the **sides** of the densify plate, not only on the three lanes. Same cone. `gradeFromPlate`. Composite **over** densify.
+
+| `plateZone` | Where | What belongs there |
+|---|---|---|
+| `road` | Lanes `-1 / 0 / 1` (`L` / `C` / `R`) | Path beat, Howl hits, **critical** openables. Lights may sit here too. |
+| `sideL` | Left shoulder, calm void, berm | Décor LOD, light layers, openables, generators. Not a Howl target. Not the chemin. |
+| `sideR` | Right shoulder, calm void, berm | Same as `sideL`. |
+
+`PLATE_ZONES` is `road | sideL | sideR`. `shoulderL` / `shoulderR` are aliases. `poseLane` maps a shoulder to one step outside L/R and still calls `howlPose`. A critical openable (`critical: true`) on `sideL` or `sideR` throws. Side props stamp `howlable: false`.
+
+`lenaFrame(state, dt, ctx)` defaults to `plateZone: "road"` so the corridor law stays. Pass `plateZone: "sideL"` or `"sideR"` to plant décor on the berm. That spawn does not take a gameplay lane.
+
+Densify Video A keeps those shoulders **relatively empty**. The GPU fills them. Paste: `Shoulders, calm void, and berms stay relatively empty. Do not bake side clutter into Video A. The GPU fills décor, lights, and openables on sideL and sideR.`
 
 ---
 
@@ -66,7 +82,8 @@ Far-band openables are visible and **not hittable**. Mid and near take the hit. 
 import { lightLayerState, lightLayerFrame, assertLightNative } from "./gpuLight.js";
 
 let state = lightLayerState([
-  { id: "neon-c", kind: "neon", noun: "lane", lane: "C", z: 0.25, on: false, intensity: 1 },
+  { id: "neon-c", kind: "neon", noun: "lane", lane: "C", z: 0.25, on: false, intensity: 1, plateZone: "road" },
+  { id: "glow-l", kind: "glow", noun: "berm", plateZone: "sideL", z: 0.2, on: false },
 ]);
 const frame = lightLayerFrame(state, dt, {
   now, cw, ch, pawY, destH0,
@@ -91,7 +108,8 @@ if (assertLightNative(frame).length) throw new Error("light native FAIL");
 import { openableState, openableFrame, openableHit, openableOpen, assertOpenableNative } from "./gpuOpenable.js";
 
 let state = openableState([
-  { id: "chest-1", kind: "chest", noun: "quartz", lane: "C", z: 0.08, content: "shard" },
+  { id: "chest-1", kind: "chest", noun: "quartz", lane: "C", z: 0.08, content: "shard", critical: true },
+  { id: "gen-side", kind: "generator", noun: "berm", plateZone: "sideR", z: 0.15 },
 ]);
 let frame = openableFrame(state, dt, { now, cw, ch, pawY, destH0 });
 const id = openableHit(frame, x, y);          // null on a miss or a far-band prop
@@ -116,7 +134,7 @@ if (assertOpenableNative(frame).length) throw new Error("openable native FAIL");
 
 ## Cook
 
-Densify Video A stays a clean 3-lane loop. Session Imagine Video, first + last pinned. Build does not drive that session. Missing `XAI_API_KEY` is not a stop.
+Densify Video A stays a clean 3-lane loop with **relatively empty shoulders**. Session Imagine Video, first + last pinned. Build does not drive that session. Missing `XAI_API_KEY` is not a stop. Do not bake side clutter (flora walls, generators, beams, hatches) into the berms. Those are GPU layers.
 
 **Light-only plate.** Pixels are the beam, glow, neon, or flash. Background is pure black or transparent. No road, no Bolt, no vault, no densify crop. Hang it at the `lightBib` path.
 
@@ -130,7 +148,8 @@ Densify Video A stays a clean 3-lane loop. Session Imagine Video, first + last p
 
 | Lock | Runtime | FAIL |
 |---|---|---|
-| One geometry | `pose` is `howlPose`. `cone === "howlPose"`. `lanes === 3` | A second stack, a screen light, a HUD hatch |
+| One geometry | `pose` is `howlPose`. `cone === "howlPose"`. `lanes === 3`. `plateZone` is `road` \| `sideL` \| `sideR` | A second stack, a screen light, a HUD hatch, a private shoulder cone |
+| Sides empty | `sides === "gpu"`. `sideClutter === false`. Shoulder props use `sideL` / `sideR` | Side clutter baked into Video A. A critical openable on a shoulder. A Howl hit on `sideL` or `sideR` |
 | Grade from plate | `gradeFromPlate: true` | A bib whose bloom or mist is not this densify plate |
 | Over densify | `gpu: true`, `composite: "over-densify"`, `bakeIntoDensify: false` | A beam, glow, open door, chest, generator, or hatch painted into Video A |
 | In world | `hud: false`, `inWorld: true` | A corner lamp icon, a button that is not on the cone |
@@ -157,7 +176,10 @@ Densify Video A stays a clean 3-lane loop. Session Imagine Video, first + last p
 - Baking interactive lights into densify Video A (the response belongs on the GPU gloss + light layer)
 - Cooking true RT on this stack (UE is HOLD)
 - Skipping the GPU, or turning on raytracing
-- A second cone, or a perspective that is not `howlPose` on densify’s 3 lanes
+- A second cone, or a perspective that is not `howlPose` (road lanes or `sideL` / `sideR` shoulders)
+- Baking side clutter into densify Video A (shoulders, calm void, and berms stay relatively empty)
+- A critical openable on `sideL` or `sideR` (path-critical props stay on `road`)
+- A Howl hit or a path-beat target placed on the shoulder
 - A hittable prop in the far band, or a contact shadow outside near
 - A bib graded off this densify plate
 - Tiling or slicing the densify loop

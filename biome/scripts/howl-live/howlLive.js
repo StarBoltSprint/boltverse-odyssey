@@ -32,6 +32,40 @@ export const VP = { x: 0.514, y: 0.415 };
 export const LANE_W = 0.19;
 
 /**
+ * Plate zones on the same cone.
+ * road = the 3 gameplay lanes (path beat, Howl hits, critical openables).
+ * sideL / sideR = shoulders, calm void, berms. Décor LOD, lights,
+ * openables, and generators may sit there. Densify does not bake that clutter.
+ */
+export const PLATE_ZONES = ["road", "sideL", "sideR"];
+
+/** One step outside L/R, in lane-widths. Still on the plate. Still howlPose. */
+export const SHOULDER_LANE = 1.7;
+
+/** road | sideL | sideR. shoulderL / shoulderR are aliases. Unknown → null. */
+export function normalizePlateZone(zone) {
+  if (zone == null || zone === "" || zone === "road" || zone === "lane" || zone === "lanes") return "road";
+  if (zone === "sideL" || zone === "shoulderL" || zone === "shoulder-l") return "sideL";
+  if (zone === "sideR" || zone === "shoulderR" || zone === "shoulder-r") return "sideR";
+  return null;
+}
+
+/**
+ * Lane index for howlPose.
+ * road uses -1 | 0 | 1. sideL / sideR ignore the gameplay lane and sit on the shoulder.
+ */
+export function poseLane(plateZone, lane) {
+  const z = normalizePlateZone(plateZone);
+  if (z === "sideL") return -SHOULDER_LANE;
+  if (z === "sideR") return SHOULDER_LANE;
+  if (z !== "road") return null;
+  if (lane === "L" || lane === "l" || lane === -1) return -1;
+  if (lane === "C" || lane === "c" || lane === "M" || lane === "m" || lane === 0) return 0;
+  if (lane === "R" || lane === "r" || lane === 1) return 1;
+  return null;
+}
+
+/**
  * Wall-clock seconds the Howl video is allowed to play, from mouth to rock.
  * Farther rock → slightly longer (capped). Never overshoot: Live cuts at arrive.
  */

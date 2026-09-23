@@ -73,7 +73,7 @@ Optional look file: `biome/fx/path/chemin.mp4` (one keyed lane segment). Pixels 
 
 ## Native to the video
 
-Densify’s **3 lanes are the truth**. Path beat, Lena, and Howl share `howlPose` (same cone, same perspective, same ground). `frame.lanes === 3`. `frame.cone === "howlPose"`.
+Densify’s **3 lanes are the truth** for the chemin. Path beat, Lena, and Howl share `howlPose` (same cone, same perspective, same ground). `frame.lanes === 3`. `frame.cone === "howlPose"`. The path beat and Howl hits stay on `plateZone: "road"`. Shoulders (`sideL` / `sideR`) are décor, lights, and openables (law [38](38-gpu-light-openable.md)), not a second lane for the chemin. Densify keeps those sides relatively empty.
 
 | Lock | Runtime | FAIL |
 |---|---|---|

@@ -12,6 +12,26 @@ Densify stays the **clean looping 3-lane plate**. It keeps base ambience (law 31
 
 This is composite + states. Same cone as Howl, Lena, and the path beat (`howlPose`). No second geometry stack.
 
+## Plate zones — `road` | `sideL` | `sideR`
+
+The three lanes are not the only place a GPU object may stand.
+
+| `plateZone` | Holds |
+|---|---|
+| `road` | Path beat, Howl hits, critical openables (`critical: true`). |
+| `sideL` | Left shoulder / calm void / berm: décor LOD, light layers, openables, generators. |
+| `sideR` | Right shoulder. Same jobs as `sideL`. |
+
+Same `howlPose`. Same `gradeFromPlate`. Still composited **over** densify. `poseLane` steps a shoulder just outside L/R. Side props are not Howl targets (`howlable: false`). A critical openable on a shoulder is FAIL.
+
+`lenaFrame` stays on `road` unless `ctx.plateZone` is `sideL` or `sideR`. A shoulder spawn does not consume a gameplay lane.
+
+Densify cook, paste into Imagine with the plate:
+
+`Shoulders, calm void, and berms stay relatively empty. Do not bake side clutter into Video A. The GPU fills décor, lights, and openables on sideL and sideR.`
+
+**FAIL** if those berms are already full of generators, beams, or hatches. That clutter is a GPU layer.
+
 ## Pack RT — baked look, then a fake interactive overlay
 
 Imagine has no real-time raytracing API. Do not claim one.
@@ -60,7 +80,8 @@ Opening is **not** a frame of Video A. GPU plays `closed` → `transition` → `
 
 `assertLightNative(frame)` and `assertOpenableNative(frame)` must return `[]`.
 
-1. **One geometry.** Densify’s 3 lanes are the truth. Lights, openables, path beat, Lena, and Howl share `howlPose`. `frame.cone` is `"howlPose"`. `frame.lanes` is `3`.
+1. **One geometry.** Densify’s 3 lanes are the gameplay truth (`plateZone: "road"`). Shoulders are `sideL` and `sideR` on that same `howlPose`. `frame.cone` is `"howlPose"`. `frame.lanes` is `3`. `frame.sides` is `"gpu"`.
+1b. **Empty shoulders.** Densify Video A does not bake side clutter. `sideClutter` stays false. Critical openables stay on `road`. Howl hits stay on `road`.
 2. **Grade from plate.** `gradeFromPlate: true` on the frame, on every light, and on every prop. Color, bloom, and mist come from this densify plate.
 3. **Over densify, not inside it.** `gpu: true`. `composite: "over-densify"`. `bakeIntoDensify: false`. `paintedOpen: false` on openables. `onlyLight: true` and `key: "black"` on lights.
 4. **In world, not a HUD.** `hud: false`. The lamp and the hatch sit on the cone. A corner icon is FAIL.
@@ -78,7 +99,8 @@ import { pathBeatFrame, assertPathNative } from "../path-beat/pathBeat.js";
 import { lightLayerState, lightLayerFrame, assertLightNative } from "../gpu-light/gpuLight.js";
 import { openableState, openableFrame, openableHit, openableOpen, assertOpenableNative } from "../gpu-openable/gpuOpenable.js";
 
-// 1. Densify Video A plays. No beams, no open props, no path, no generators painted in.
+// 1. Densify Video A plays. No beams, no open props, no path, no generators, no side clutter painted in.
+//    Shoulders stay relatively empty. GPU may fill sideL / sideR.
 // 2. GPU keyed layers OVER that plate, one clock, one cone:
 const lena = lenaFrame(lenaState, dt, ctx);
 const path = pathBeatFrame(pathState, dt, ctx);

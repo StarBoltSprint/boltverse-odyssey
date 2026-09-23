@@ -51,6 +51,7 @@ Procedural **yes** on Rail B, on spawn, and on LOD. Procedural here means **when
 - **Howl targets column** — procedural crystals now. Later: ship / mech. Those targets are destroyable by Howl. Plate-baked events stay dodge-only (Rail A, law [25](25-hazard-cone.md)).
 - **Path beat** — the chemin reveals one lane ~3 s ahead of contact so the player can SIDES. Same cone. Densify stays this plate. Law [37](37-path-beat.md). LOD fills the world; the path beat tells which lane to be in.
 - **Light layers + openables** — playable beams and open/close states are keyed GPU layers on this same cone. Imagine cooks light-only plates and closed/open/transition bibs. GPU owns intensity, tint, hit, and the anim. Law [38](38-gpu-light-openable.md). Do not bake them into Video A.
+- **Plate zones** — `road` | `sideL` | `sideR`. Road lanes hold the path beat, Howl hits, and critical openables. Shoulders (calm void / berms) may hold décor LOD, light layers, openables, and generators. Same `howlPose`, `gradeFromPlate`, GPU over densify. `lenaFrame` defaults to `road`. Pass `plateZone: "sideL"` or `"sideR"` for berm décor; that spawn is not a Howl hit and does not take a gameplay lane. Densify sides stay relatively empty. Side clutter in Video A is FAIL.
 
 Cold Groks, roles so the names stay distinct:
 

@@ -17,7 +17,7 @@
  * While `content` is set, draw that bib as another keyed quad.
  * A generator `lightCue` is a set-row for lightLayerFrame — the beam stays a light layer.
  */
-import { howlPose } from "../howl-live/howlLive.js";
+import { howlPose, PLATE_ZONES, normalizePlateZone, poseLane } from "../howl-live/howlLive.js";
 import { objectBand } from "../lena-lod/lenaLod.js";
 import { rtFlags, assertRtNative } from "../gpu-light/gpuLight.js";
 
@@ -57,7 +57,12 @@ export const NATIVE = {
   tileDensify: false,
   raytrace: false,
   paintedOpen: false,
+  plateZones: PLATE_ZONES,
+  sides: "gpu",
+  sideClutter: false,
 };
+
+export { PLATE_ZONES, normalizePlateZone, poseLane };
 
 function slugNoun(noun) {
   const raw = String(noun || "prop");
@@ -114,12 +119,24 @@ function inside(rect, x, y) {
   return x >= rect.x && y >= rect.y && x < rect.x + rect.w && y < rect.y + rect.h;
 }
 
+function placeOf(raw, fallback) {
+  const plateZone = raw.plateZone != null ? normalizePlateZone(raw.plateZone) : fallback ? fallback.plateZone : "road";
+  if (plateZone === null) throw new Error("plate zone");
+  const critical = raw.critical != null ? raw.critical === true : fallback ? fallback.critical === true : false;
+  if (critical && plateZone !== "road") throw new Error("critical on side");
+  if (plateZone === "road") {
+    const lane = raw.lane != null ? normalizeLane(raw.lane) : fallback ? fallback.lane : 0;
+    if (lane === null) throw new Error("openable lane");
+    return { plateZone, lane, poseLane: lane, critical };
+  }
+  return { plateZone, lane: null, poseLane: poseLane(plateZone, 0), critical };
+}
+
 function normalizeObject(raw) {
   if (!raw || raw.id == null || raw.id === "") throw new Error("openable id");
   const kind = String(raw.kind || "chest");
   if (!KINDS.includes(kind)) throw new Error("openable kind");
-  const lane = normalizeLane(raw.lane != null ? raw.lane : 0);
-  if (lane === null) throw new Error("openable lane");
+  const placed = placeOf(raw, null);
   const z = Number.isFinite(Number(raw.z)) ? Number(raw.z) : 0.2;
   const want = raw.want === "open" || raw.phase === "open" ? "open" : "closed";
   let progress = raw.progress != null ? clamp01(raw.progress) : want === "open" ? 1 : 0;
@@ -135,7 +152,7 @@ function normalizeObject(raw) {
     id: String(raw.id),
     kind,
     noun: slugNoun(raw.noun || kind),
-    lane,
+    ...placed,
     z,
     want: phase === "open" && raw.want !== "closed" ? "open" : want,
     phase,
@@ -201,7 +218,7 @@ function decorate(obj, ctx, animSec) {
   const ch = ctx.ch || 1168;
   const pawY = ctx.pawY != null ? ctx.pawY : ch * 0.84;
   const destH0 = ctx.destH0 || 200;
-  const pose = howlPose(obj.lane, obj.z, cw, ch, destH0, pawY);
+  const pose = howlPose(obj.poseLane, obj.z, cw, ch, destH0, pawY);
   const band = objectBand(pose.t);
   const sky = ctx.zone === "sky";
   const stateName = bibStateOf(obj.phase);
@@ -227,7 +244,11 @@ function decorate(obj, ctx, animSec) {
     id: obj.id,
     kind: obj.kind,
     noun: obj.noun,
+    plateZone: obj.plateZone,
     lane: obj.lane,
+    poseLane: obj.poseLane,
+    critical: obj.critical === true,
+    howlable: false,
     z: obj.z,
     want: obj.want,
     phase: obj.phase,
@@ -296,10 +317,16 @@ export function openableFrame(state, dt, ctx = {}) {
     objects = objects.map((obj) => {
       const row = move.get(obj.id);
       if (!row) return obj;
-      const lane = row.lane != null ? normalizeLane(row.lane) : obj.lane;
-      if (lane === null) throw new Error("openable lane");
+      const placed = row.plateZone != null || row.lane != null || row.critical != null ? placeOf({ ...obj, ...row }, obj) : obj;
       const z = row.z != null && Number.isFinite(Number(row.z)) ? Number(row.z) : obj.z;
-      return { ...obj, lane, z };
+      return {
+        ...obj,
+        plateZone: placed.plateZone,
+        lane: placed.lane,
+        poseLane: placed.poseLane,
+        critical: placed.critical === true,
+        z,
+      };
     });
   }
   const stepped = objects.map((obj) => stepProgress(obj, step, animSec));
@@ -319,6 +346,9 @@ export function openableFrame(state, dt, ctx = {}) {
     clock: "densify",
     sameClock: true,
     lanes: 3,
+    plateZones: PLATE_ZONES,
+    sides: "gpu",
+    sideClutter: false,
     ...rtFlags(),
     paintedOpen: false,
     now,
@@ -350,6 +380,7 @@ export function assertOpenableNative(frame) {
   if (frame.cone !== "howlPose") fails.push("cone");
   if (frame.clock !== "densify") fails.push("clock");
   if (frame.lanes !== 3) fails.push("lanes");
+  if (frame.sides !== "gpu" || frame.sideClutter === true) fails.push("side clutter");
   fails.push(...assertRtNative(frame));
   if (frame.paintedOpen === true) fails.push("painted open");
   for (const obj of frame.objects || []) {
@@ -359,6 +390,9 @@ export function assertOpenableNative(frame) {
     if (obj.hud !== false) fails.push("HUD");
     if (obj.gradeFromPlate !== true) fails.push("gradeFromPlate");
     if (obj.paintedOpen === true) fails.push("painted open");
+    if (!PLATE_ZONES.includes(obj.plateZone)) fails.push("plate zone");
+    if (obj.critical === true && obj.plateZone !== "road") fails.push("critical on side");
+    if (obj.plateZone !== "road" && obj.howlable === true) fails.push("howl on side");
     if (!KINDS.includes(obj.kind)) fails.push("kind");
     if (!obj.pose || !obj.pose.dest || obj.cone !== "howlPose") fails.push("cone");
     if (!obj.hit) fails.push("hit");

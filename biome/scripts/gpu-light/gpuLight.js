@@ -19,8 +19,10 @@
  * as a keyed quad on pose.dest, multiplied by intensity and tint.
  * gradeFromPlate. Composite OVER densify. Do not bake the beam into Video A.
  */
-import { howlPose } from "../howl-live/howlLive.js";
+import { howlPose, PLATE_ZONES, normalizePlateZone, poseLane } from "../howl-live/howlLive.js";
 import { objectBand } from "../lena-lod/lenaLod.js";
+
+export { PLATE_ZONES, normalizePlateZone, poseLane };
 
 export const LIGHT = {
   /** Seconds for intensity to travel the full 0→1 (or 1→0). */
@@ -50,6 +52,20 @@ export const RT = {
   bounces: 0,
   gloss: "gradeFromPlate",
 };
+
+/**
+ * Densify shoulders stay relatively empty. GPU fills them.
+ * Paste SIDES_PHRASE into the Video A cook. Side clutter in the plate is FAIL.
+ */
+export const SIDES = {
+  zones: PLATE_ZONES,
+  road: "gameplay",
+  shoulder: "decor",
+  densify: "empty",
+};
+
+export const SIDES_PHRASE =
+  "Shoulders, calm void, and berms stay relatively empty. Do not bake side clutter into Video A. The GPU fills décor, lights, and openables on sideL and sideR.";
 
 /** Cook lines. Paste into Imagine. Flat plastic lighting is FAIL. */
 export const RT_PHRASE = {
@@ -89,6 +105,9 @@ export const NATIVE = {
   fakeInteractive: true,
   trueRt: RT.trueRt,
   bounces: 0,
+  plateZones: PLATE_ZONES,
+  sides: "gpu",
+  sideClutter: false,
 };
 
 /** Flags stamped on every light and openable frame. */
@@ -226,12 +245,22 @@ export function fadeIntensity(current, target, dt, fadeSec) {
   return from + Math.sign(delta) * room;
 }
 
+function placeOf(raw, fallback) {
+  const plateZone = raw.plateZone != null ? normalizePlateZone(raw.plateZone) : fallback ? fallback.plateZone : "road";
+  if (plateZone === null) throw new Error("plate zone");
+  if (plateZone === "road") {
+    const lane = raw.lane != null ? normalizeLane(raw.lane) : fallback ? fallback.lane : 0;
+    if (lane === null) throw new Error("light lane");
+    return { plateZone, lane, poseLane: lane };
+  }
+  return { plateZone, lane: null, poseLane: poseLane(plateZone, 0) };
+}
+
 function normalizeLayer(raw) {
   if (!raw || raw.id == null || raw.id === "") throw new Error("light id");
   const kind = String(raw.kind || "glow");
   if (!KINDS.includes(kind)) throw new Error("light kind");
-  const lane = normalizeLane(raw.lane != null ? raw.lane : 0);
-  if (lane === null) throw new Error("light lane");
+  const placed = placeOf(raw, null);
   const z = Number.isFinite(Number(raw.z)) ? Number(raw.z) : 0.55;
   const on = raw.on === true;
   const intensity = clamp01(raw.intensity != null ? raw.intensity : 1);
@@ -241,7 +270,7 @@ function normalizeLayer(raw) {
     id: String(raw.id),
     kind,
     noun: slugNoun(raw.noun || "lane"),
-    lane,
+    ...placed,
     z,
     on,
     intensity,
@@ -263,10 +292,18 @@ function applySet(layer, set) {
   const on = set.on != null ? set.on === true : layer.on;
   const intensity = set.intensity != null ? clamp01(set.intensity) : layer.intensity;
   const tint = set.tint != null ? parseTint(set.tint) : layer.tint;
-  const lane = set.lane != null ? normalizeLane(set.lane) : layer.lane;
-  if (lane === null) throw new Error("light lane");
+  const placed = set.plateZone != null || set.lane != null ? placeOf({ ...layer, ...set }, layer) : layer;
   const z = set.z != null && Number.isFinite(Number(set.z)) ? Number(set.z) : layer.z;
-  return { ...layer, on, intensity, tint, lane, z };
+  return {
+    ...layer,
+    on,
+    intensity,
+    tint,
+    plateZone: placed.plateZone,
+    lane: placed.lane,
+    poseLane: placed.poseLane,
+    z,
+  };
 }
 
 /**
@@ -294,14 +331,17 @@ export function lightLayerFrame(state, dt, ctx = {}) {
     const next = applySet(layer, updates.get(layer.id));
     const target = next.on ? next.intensity : 0;
     const live = fadeIntensity(layer.live, target, step, fadeSec);
-    const pose = howlPose(next.lane, next.z, cw, ch, destH0, pawY);
+    const pose = howlPose(next.poseLane, next.z, cw, ch, destH0, pawY);
     const band = objectBand(pose.t);
     stored.push({ ...next, live });
     layers.push({
       id: next.id,
       kind: next.kind,
       noun: next.noun,
+      plateZone: next.plateZone,
       lane: next.lane,
+      poseLane: next.poseLane,
+      howlable: false,
       z: next.z,
       on: next.on,
       intensityTarget: target,
@@ -342,6 +382,9 @@ export function lightLayerFrame(state, dt, ctx = {}) {
     clock: "densify",
     sameClock: true,
     lanes: 3,
+    plateZones: PLATE_ZONES,
+    sides: "gpu",
+    sideClutter: false,
     ambience: "densify",
     onlyLight: true,
     key: "black",
@@ -372,6 +415,7 @@ export function assertLightNative(frame) {
   if (frame.cone !== "howlPose") fails.push("cone");
   if (frame.clock !== "densify") fails.push("clock");
   if (frame.lanes !== 3) fails.push("lanes");
+  if (frame.sides !== "gpu" || frame.sideClutter === true) fails.push("side clutter");
   fails.push(...assertRtNative(frame));
   if (frame.ambience !== "densify") fails.push("ambience");
   if (frame.onlyLight !== true || frame.key !== "black") fails.push("not light-only");
@@ -382,6 +426,8 @@ export function assertLightNative(frame) {
     if (layer.hud !== false) fails.push("HUD");
     if (layer.gradeFromPlate !== true) fails.push("gradeFromPlate");
     if (layer.onlyLight !== true || layer.key !== "black") fails.push("not light-only");
+    if (!PLATE_ZONES.includes(layer.plateZone)) fails.push("plate zone");
+    if (layer.plateZone !== "road" && layer.howlable === true) fails.push("howl on side");
     if (!KINDS.includes(layer.kind)) fails.push("kind");
     if (!(layer.intensity >= 0 && layer.intensity <= 1)) fails.push("intensity");
     if (!layer.pose || !layer.pose.dest || layer.cone !== "howlPose") fails.push("cone");

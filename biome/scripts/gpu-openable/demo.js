@@ -125,6 +125,30 @@ assert(
 );
 assert("claiming Imagine real-time raytracing is a FAIL", assertOpenableNative({ ...opened, realtimeImagine: true }).includes("real-time raytracing"));
 
+const berm = openableFrame(
+  openableState([{ id: "gen-side", kind: "generator", noun: "berm", plateZone: "sideR", z: 0.15, lightId: "beam-side" }]),
+  0,
+  ctx,
+);
+const roadR = howlPose(1, berm.objects[0].z, ctx.cw, ctx.ch, ctx.destH0, ctx.pawY);
+assert(
+  "a generator may sit on the right shoulder",
+  berm.objects[0].plateZone === "sideR" &&
+    berm.objects[0].howlable === false &&
+    berm.objects[0].critical === false &&
+    berm.objects[0].gradeFromPlate === true &&
+    berm.objects[0].pose.ground.x > roadR.ground.x &&
+    assertOpenableNative(berm).length === 0,
+);
+let criticalThrew = false;
+try {
+  openableState([{ id: "door-side", kind: "door", critical: true, plateZone: "sideL" }]);
+} catch {
+  criticalThrew = true;
+}
+assert("a critical openable stays on the road", criticalThrew);
+assert("side clutter on an openable frame is a FAIL", assertOpenableNative({ ...berm, sides: "baked" }).includes("side clutter"));
+
 console.log(
   JSON.stringify(
     {

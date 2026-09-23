@@ -15,7 +15,7 @@ Openables that cue a lamp: [`../gpu-openable/gpuOpenable.js`](../gpu-openable/gp
 
 ## Wire (Build)
 
-1. Cook densify Video A as one clean 3-lane loop (first + last). **GPU is REQUIRED.** **FAIL** if you paint a beam, glow, neon, or flash into Video A. Law 31 ambience stays on that plate.
+1. Cook densify Video A as one clean 3-lane loop with relatively empty shoulders (first + last). **GPU is REQUIRED.** **FAIL** if you paint a beam, glow, neon, flash, or side clutter into Video A. Law 31 ambience stays on that plate. `plateZone` is `road` | `sideL` | `sideR`. A shoulder light still uses `howlPose` and `gradeFromPlate`.
 2. Cook the light-only Imagine at `lightBib(kind, noun)` — black key, no road, no dog.
 3. Copy `gpuLight.js` into Live next to `howlLive.js`. Call `lightLayerFrame` every frame on the densify clock.
 4. Draw layers with `draw === true` on `pose.dest`. Multiply by `intensity` and `tint`. Where `glossOverlay` draws, composite that quad on the same dest. `gradeFromPlate`. `bounces` stays 0. Not a HUD. Not a raytracer. `rtLook` is `baked-imagine`. True RT is the UE rail, HOLD.
