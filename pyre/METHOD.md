@@ -201,9 +201,10 @@ ffmpeg -i brut.mp4 -vf scale=720:1280 -an -c:v libx264 -crf 20 -pix_fmt yuv420p 
 | `master/citadel-hall.mp4` | Le hall, jusqu'à la salle. Première image = dernière image de l'ouverture. |
 | `master/room-breath.mp4` | La salle, caméra fixe, une seule porte turquoise, anneau au sol. Boucle. |
 | `master/room-holo.mp4` | L'hologramme. Première image = une frame de `room-breath`. |
-| `master/orbit/left-01.jpg` … `left-16.jpg` | Passe de caméra vers la porte gauche. Voir [ORBIT.md](ORBIT.md). |
-| `master/orbit/right-01.jpg` … `right-16.jpg` | Passe de caméra vers la porte droite. |
-| `master/cam-left.mp4` | Source de la suite gauche. |
+| `master/orbit/left-01.jpg` … `left-16.jpg` | Passe de caméra vers la porte gauche. Source `cam-left-orbit.mp4`. `loadOrbit("left", 5)`. Voir [ORBIT.md](ORBIT.md). |
+| `master/orbit/right-01.jpg` … `right-16.jpg` | Passe de caméra vers la porte droite. Source `cam-right-orbit.mp4`. `loadOrbit("right", 4)`. |
+| `master/cam-left-orbit.mp4` | Source jouée de la suite gauche. Le portail sort à droite, la porte bronze entre à gauche. |
+| `master/cam-left.mp4` | Archive. Ancien fondu sur place. Ne plus l’extraire. |
 | `master/cam-right-orbit.mp4` | Source de la suite droite. Pas `cam-right.mp4` (double portail). |
 | `master/bolt-breath.mp4` | Bolt de dos, dans la salle, et pendant le regard. |
 | `master/bolt-turn.mp4` | Deux doigts, il se tourne face caméra. |
@@ -301,6 +302,35 @@ Le site public est une publication de l'app, pas ce dossier git. Tant que cette 
 - Pattes qui montent en ligne droite avec la profondeur. Il flotte dans la porte. Le plan perspective ci-dessus règle ça.
 - Tout doigt dans la salle déplace Bolt, et la zone de l'anneau ne couvre que le haut. Le tap n'ouvre presque jamais la star map.
 - Hologramme en ballon de constellation. L'armillaire, puis l'étoile.
+- Extraire la gauche depuis `cam-left.mp4`. Le portail devient la porte dans la même arche. Le joueur ne va pas plus loin. La passe est `cam-left-orbit.mp4`.
+- À l'ouverture des portes, si la vidéo n'est pas prête (`readyState < 2`), retomber sur `paintRoad()`. Le biome d'avant flashe une seconde au milieu de l'ouverture. Tenir la dernière texture de citadelle. Ne jamais peindre la route tant que `phase` est `citadel`.
+
+## 10. Ouverture des portes — pas de flash du biome
+
+`openTheDoors` passe `doorMode` à `"open"` et joue `citadel-open.mp4`.
+
+Sur téléphone, `video.currentTime = 0` alors que la vidéo est déjà à 0 fait un seek. `readyState` tombe sous 2 pendant environ une seconde. L'ancien dessin faisait :
+
+```
+si la plaque citadelle n'est pas prête → paintRoad()
+```
+
+`paintRoad` est le biome de lave. D'où le flash, puis le retour sur l'ouverture quand la vidéo a une image.
+
+Deux règles :
+
+1. Ne seek `openVid` que si `currentTime > 0.05`. S'il est déjà au début, on joue.
+2. Tant que `phaseRef` est `"citadel"`, on dessine `citadelTex` même si la plaque du moment n'est pas prête. C'est la dernière image déjà décodée (les portes fermées, puis l'ouverture). `paintRoad()` ne sert que hors citadelle.
+
+```
+} else if (plate && plate.readyState >= 2) {
+  dessiner citadelTex
+} else if (phase === "citadel") {
+  dessiner citadelTex   // on tient
+} else if (roadSource) paintRoad()
+```
+
+Ne pas « réparer » en mettant une image du biome dans `citadel-open.mp4`. Le clip est propre. Le flash venait du composite.
 
 ## Pour un nouveau Grok
 
@@ -311,5 +341,6 @@ Le site public est une publication de l'app, pas ce dossier git. Tant que cette 
 5. Un nouvel ennemi = une vidéo fond vert + une entrée dans `FOE_KIND` + un mp4 de mort. Ne pas respawn le boss (`kind` 2) tant qu'on ne le redemande pas.
 6. Une nouvelle pièce = dernière image du clip d'avant en première image du suivant. Image-to-video. Pas de coupe.
 7. Le retour constellation → salle est `/room` (`src/routes/room.tsx`). Ne pas renvoyer vers la racine.
-8. Le regard dans la salle : lire [ORBIT.md](ORBIT.md). JPEG `orbit/left-01..16` et `orbit/right-01..16`. Bolt de dos sur l'anneau. Pas de mur du fond. Pas de shader qui tourne la photo.
+8. Le regard dans la salle : lire [ORBIT.md](ORBIT.md). JPEG `orbit/left-01..16` (`cam-left-orbit.mp4`, `?v=5`) et `orbit/right-01..16` (`cam-right-orbit.mp4`, `?v=4`). Bolt de dos sur l'anneau. Pas de mur du fond. Pas de shader qui tourne la photo. Pas le fondu `cam-left.mp4`.
 9. Compresser avant de committer : `ffmpeg -an -vf scale=480:-2 -c:v libx264 -crf 27 -pix_fmt yuv420p -movflags +faststart`. Rester sous 100 Mo par fichier. Les clips de la citadelle déjà en ligne sont en 720×1280, crf 20.
+10. Ouverture des portes : ne pas seek si le clip est déjà à 0, et ne jamais repeindre le biome tant qu'on est en citadelle. Section 10.

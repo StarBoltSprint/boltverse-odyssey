@@ -514,7 +514,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
         img.src = `/master/orbit/${name}-${String(i + 1).padStart(2, "0")}.jpg?v=${v}`;
         return img;
       });
-    const leftPack = loadOrbit("left");
+    const leftPack = loadOrbit("left", 5);
     const rightPack = loadOrbit("right", 4);
     const take = (pack: HTMLImageElement[], from: number, to: number) => pack.slice(from - 1, to);
     const leftSide = take(leftPack, 1, 16);
@@ -1257,12 +1257,14 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       doorMode = "open";
       doorsLive = false;
       setDoorsReady(false);
-      try {
-        openVid.currentTime = 0;
-      } catch {
-        /* not seekable yet */
-      }
       openVid.loop = false;
+      if (openVid.currentTime > 0.05) {
+        try {
+          openVid.currentTime = 0;
+        } catch {
+          /* not seekable yet */
+        }
+      }
       playSafe(openVid);
     };
 
@@ -1849,6 +1851,16 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
         gl.uniform1f(gl.getUniformLocation(gateProg, "uMask"), 0);
         drawBuffer(FULL);
       } else if (plate && plate.readyState >= 2) {
+        gl.disable(gl.BLEND);
+        gl.useProgram(gateProg);
+        gl.bindTexture(gl.TEXTURE_2D, citadelTex);
+        gl.uniform1i(gl.getUniformLocation(gateProg, "uTex"), 0);
+        gl.uniform1f(gl.getUniformLocation(gateProg, "uAlpha"), 1);
+        gl.uniform1f(gl.getUniformLocation(gateProg, "uV0"), 0);
+        gl.uniform1f(gl.getUniformLocation(gateProg, "uV1"), 1);
+        gl.uniform1f(gl.getUniformLocation(gateProg, "uMask"), 0);
+        drawBuffer(FULL);
+      } else if (phaseRef.current === "citadel") {
         gl.disable(gl.BLEND);
         gl.useProgram(gateProg);
         gl.bindTexture(gl.TEXTURE_2D, citadelTex);

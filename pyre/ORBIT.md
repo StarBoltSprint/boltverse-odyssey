@@ -1,6 +1,6 @@
 # Salle — rotation de caméra autour de l’anneau
 
-Lire ça avant de retoucher le regard dans la salle. Le joueur a validé la gauche. La droite ne marche que si la vidéo est une vraie passe de caméra, pas un fondu entre deux photos.
+Lire ça avant de retoucher le regard dans la salle. Les deux côtés sont de vraies passes de caméra. La gauche a d’abord été un fondu : le portail devenait la porte bronze dans le même cadre, et le joueur ne pouvait pas aller plus loin. On l’a recuite comme la droite.
 
 Bolt n’est pas dans la vidéo de la pièce. On le dessine par-dessus, toujours de dos, toujours au centre, toujours à la même taille.
 
@@ -32,8 +32,10 @@ Après chaque remplacement, incrémenter `?v=` sur le `src` des images. Sinon le
 
 | Suite | Fichiers | Sens | Ce qu’on doit voir |
 |---|---|---|---|
-| Gauche | `master/orbit/left-01.jpg` … `left-16.jpg` | `orbit > 0` | Le portail turquoise devient la porte bronze. L’anneau ne bouge pas. Source : `master/cam-left.mp4`. |
-| Droite | `master/orbit/right-01.jpg` … `right-16.jpg` | `orbit < 0` | Le portail sort par la gauche, la porte à fente rouge entre par la droite. L’anneau reste au centre, même taille. Source : `master/cam-right-orbit.mp4`. |
+| Gauche | `master/orbit/left-01.jpg` … `left-16.jpg` | `orbit > 0` | Le portail sort par la **droite**, la porte bronze entre par la **gauche**, et se cale au centre. L’anneau ne bouge pas. Source : `master/cam-left-orbit.mp4`. Cache `loadOrbit("left", 5)`. |
+| Droite | `master/orbit/right-01.jpg` … `right-16.jpg` | `orbit < 0` | Le portail sort par la gauche, la porte à fente rouge entre par la droite. L’anneau reste au centre, même taille. Source : `master/cam-right-orbit.mp4`. Cache `loadOrbit("right", 4)`. |
+
+Ne pas servir `master/cam-left.mp4` pour la gauche. C’est l’ancien fondu : le portail reste dans la même arche et devient la porte. Le glissé a l’air bloqué. `cam-left.mp4` reste dans le dossier comme archive, il ne joue plus.
 
 Ne pas charger `left-back`, `right-back`, `cam-left-back`, `cam-right-back`. Ce sont les 90° suivants, vers le mur du fond. Le joueur ne les veut pas. Elles font croire qu’une rotation gauche devient une rotation droite.
 
@@ -48,9 +50,11 @@ Prompt qui marche (droite) :
 
 > Start exactly on the first image. End exactly on the second image. One smooth continuous camera orbit 90 degrees to the right around the cyan ring. The ring never moves, never changes size, stays the pivot. The cyan portal drifts off to the left. The dark door with the vertical red ember slit enters from the right and settles in the center. Constant camera distance, level horizon, no tilt, no zoom, no jump cut, no dissolve, no doubled portal. Empty room. No dog, no wolf, no person.
 
-La gauche, même chose, de l’autre côté, dernière image = la porte bronze (`orbit/left-16.jpg`).
+Prompt qui marche (gauche). Image 0 = la même salle de face que la droite (`orbit/right-01.jpg`, un seul portail). Image 1 = la porte bronze déjà cadrée (`orbit/left-16.jpg` de l’ancienne suite, ou `room-left.jpg` si le cadrage de l’anneau est le même).
 
-Contrôle, avant de remplacer les JPEG : extraire une planche. L’anneau reste au centre sur les 16 images. Le portail se décale. La porte entre par le bord. S’il y a deux portails, un saut, un zoom, ou un chien : on jette le clip et on recuit. Ne pas « réparer » en sautant les images du milieu. Sans le milieu, le glissé reste bloqué sur le portail puis coupe.
+> Start exactly on the first image. End exactly on the second image. One smooth continuous camera orbit 90 degrees to the LEFT around the cyan ring. The ring never moves, never changes size, stays the pivot. The cyan portal drifts off to the right edge and leaves the frame. The bronze gothic door enters from the left edge and settles in the center. The side arches of the hall must slide past. Constant camera distance, level horizon, no tilt, no zoom, no jump cut, no dissolve, no doubled portal, no morph of the doorway in place. Empty room. No dog, no wolf, no person.
+
+Contrôle, avant de remplacer les JPEG : extraire une planche (`ffmpeg -vf fps=16/6`). L’anneau reste au centre sur les 16 images. Le portail se décale vers le bord opposé à la porte. La porte entre par l’autre bord. S’il y a deux portails, un saut, un zoom, un chien, ou un fondu dans la même arche : on jette le clip et on recuit. Ne pas « réparer » en sautant les images du milieu. Sans le milieu, le glissé reste bloqué sur le portail puis coupe.
 
 ## Angle
 
@@ -108,7 +112,7 @@ Ces vidéos sont fond vert, Bolt seul, first / mid / last : dos, profil, face. O
 - Scrub d’un mp4 avec `currentTime`. Sur le téléphone, que des images-clés. La pièce saute.
 - Bolt filmé dans la passe de caméra. Il se retourne, grossit, sort du cadre quand il s’assoit.
 - Un shader qui fait tourner la photo de la salle. L’anneau quitte le centre. On voit que c’est l’image qui glisse.
-- Un fondu entre la photo du milieu et la photo de côté. Ce n’est pas une rotation.
+- Un fondu du portail vers la porte dans la même arche (`cam-left.mp4`). Ce n’est pas une rotation. Le joueur dit que la gauche est limitée. Recuire `cam-left-orbit.mp4` et bumper `loadOrbit("left", 5)`.
 - Enlever le milieu d’un clip raté (double portail) pour « nettoyer ». Le glissé ne montre plus rien, puis coupe.
 - Dépasser 90° vers le mur du fond. Une rotation gauche se termine comme une rotation droite.
 - Un gain trop fort, qui traverse zéro. Un petit glissé change de côté.
