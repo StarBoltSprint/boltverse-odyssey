@@ -1,83 +1,178 @@
-# Pyre — méthode Bolt (sprint, armure, aura)
+# Pyre — méthode complète
 
-Bolt n’est pas un sprite dessiné par-dessus la route. C’est **une seule vidéo** : le chien, l’armure et le feu sont dans les mêmes images, donc le feu suit le galop. On découpe le fond vert, puis on pose le résultat sur la route qui défile.
+Ce fichier suffit à refaire Pyre. Ne pas réinventer Bolt, l’aura, la jointure des ailes, ni le hurlement : les essais ratés sont listés en bas.
 
-## Fichiers
+Pyre est un endless runner Diablo. Une route de lave défile. Bolt (berger blanc, vu de dos) sprinte dessus. Le joueur glisse pour changer de voie, regarde à gauche et à droite, et tape un ennemi pour le hurler.
+
+Le code qui joue est `src/pyre-stage.tsx` (dans l’app : `src/game/pyre-stage.tsx`, même fichier). Les vidéos sont dans `master/` et, dans l’app, servies depuis `public/master/`.
+
+## Fichiers à garder
 
 | Fichier | Rôle |
 |---|---|
-| `master/pyre-road.mp4` | La chaussée. Elle joue à 1×, en boucle croisée (deux lecteurs). |
-| `master/bolt-fury.mp4` | Le Bolt de référence : berger blanc de dos, armure noire, cape rouge, fond vert. |
-| `master/bolt-native.mp4` | **Celui qui est dans le jeu.** Sprint + armure + aura, fond vert, marche sans aura coupée, flaque verte sous les pattes enlevée. |
-| `master/bolt-aura.mp4` | Ancienne aura séparée. Ne plus la coller : elle ne suit pas le galop. |
-| `master/bolt-aura-run.mp4` | Essai où le feu était déjà dans l’image, mais ce n’est pas le Bolt retenu. |
-| `master/bolt-gpu.mp4` | Cycle GPU du dépôt (`lock/bolt-gallop-cycle.mp4`). Pas le Bolt de Pyre. |
-| `master/bolt.mp4` | Même cycle GPU. |
-| `master/bolt-armor.mp4` | Essai d’armure générée, pas utilisé. |
-| `master/bolt-pyre.mp4` | Premier essai armure + cape. |
-| `src/pyre-stage.tsx` | Le composite WebGL : route, découpe, taille, vitesse. |
+| `master/pyre-road.mp4` | La chaussée. Joue à 1×. Deux lecteurs se relaient pour que la boucle ne saute pas. |
+| `master/pyre-first.jpg` | Première image de la route. Poster, et source des ailes. |
+| `master/pyre-wing-l.mp4` | Continuité à gauche de la route. Même vitesse que la route. |
+| `master/pyre-wing-r.mp4` | Continuité à droite. |
+| `master/bolt-fury.mp4` | Bolt de référence (celui qu’on garde). Ne pas le remplacer par le cycle GPU. |
+| `master/bolt-native.mp4` | **Bolt joué.** Sprint + armure + aura dans la même vidéo, fond vert, marche coupée, flaque verte enlevée. `playbackRate = 4`. |
+| `master/foe-fallen.mp4` | Démon à capuche, fond vert, cycle de course. |
+| `master/foe-brute.mp4` | Démon-bouc en armure, hache, fond vert. |
+| `master/howl.mp4` | Hurlement : colonne de feu rouge et noire, fond vert, base en bas de l’image, pointe en haut. |
+| `master/ash-fallen.mp4` | Mort du démon à capuche, fond vert. Le burst utile commence vers 0,9 s. |
+| `master/ash-brute.mp4` | Mort du bouc, fond vert. Même timing. |
+| `src/pyre-stage.tsx` | Tout le composite : route, ailes, Bolt, ennemis, hurlement. |
 
-## 1. Générer Bolt en une seule vidéo
+Ne pas utiliser dans le jeu : `bolt-aura.mp4`, `bolt-aura-run.mp4`, `bolt-gpu.mp4`, `bolt.mp4`, `bolt-armor.mp4`, `bolt-pyre.mp4`. Ce sont des essais.
 
-Image de départ : une frame de `bolt-fury.mp4` (le chien qu’on veut garder).
+## Constantes
 
-Image-to-video, caméra verrouillée dans le dos, fond **vert chroma plat** (`#00FF00`), pas de sol, pas de décor :
+```
+SLIDE_AMP = 0.36
+BOLT_H = 0.28
+BOLT_ASPECT = 784 / 1168
+PAW_V = 0.93
+PLANT_Y = 0.80
+BOLT_RATE = 4
+HORIZON = 0.545
+FOE_ASPECT = 480 / 854
+```
+
+Fallen : `h 0.30`, `foot 0.96`, `reach 0.34`, `rate 1.45`, `agility 1.55`.
+Brute : `h 0.40`, `foot 0.97`, `reach 0.48`, `rate 1.05`, `agility 0.70`.
+
+Pattes de Bolt : `y = PLANT_Y - PAW_V * h`. Le quad est centré sur `0.5 + lanePos * SLIDE_AMP - viewShift`.
+
+Un ennemi a un `z` de 0 (horizon) à 1 (frappe). Son pied est `HORIZON + (PLANT_Y - HORIZON) * z`. Sa taille grandit avec `z` (il ne tombe pas du ciel, il arrive déjà assez grand). `z` commence à 0 mais le pied est déjà sur la ligne d’horizon de la route (`HORIZON = 0.545`), pas dans le ciel.
+
+## 1. Bolt, une seule vidéo
+
+Image de départ : une frame de `bolt-fury.mp4`.
+
+Image-to-video. Caméra verrouillée dans le dos. Fond **vert chroma plat** `#00FF00`. Pas de sol, pas de décor.
 
 - le même chien, la même armure, la même cape
 - un galop agressif, grandes foulées
-- une aura rouge et noire **collée au corps** à chaque foulée, avec une traînée courte derrière les pattes arrière
+- une aura rouge et noire **collée au corps** à chaque foulée, traînée courte derrière les pattes arrière
 
-Pourquoi le fond vert : si on le génère déjà sur la route, la découpe mange le feu (le feu et la lave sont tous les deux rouges) et laisse un trou dans la chaussée. Deux plaques du même biome, comme demandé : la plaque du chien (fond vert) et la plaque de la route (`pyre-road.mp4`).
+Pourquoi le fond vert : si on génère Bolt déjà sur la route, la découpe mange le feu (le feu et la lave sont rouges tous les deux) et laisse un trou dans la chaussée. Deux plaques : le chien (vert) et la route (`pyre-road.mp4`).
 
-## 2. Jouer la route et Bolt séparément
+Route à `playbackRate = 1`. Bolt à `playbackRate = 4`. On n’accélère que Bolt.
 
-- Route : `playbackRate = 1`, deux vidéos qui se relaient pour que la boucle ne saute pas.
-- Bolt : `playbackRate = 4`. On accélère **seulement** sa vidéo. La route reste à 1×.
-- Les deux sont dessinées dans un canvas WebGL2. Les éléments `<video>` sont hors écran (`opacity: 0`), `muted`, `playsInline`, `disablePictureInPicture`.
-
-## 3. Découper
-
-`BOLT_FS` dans `src/pyre-stage.tsx` :
+Découpe (`BOLT_FS`) :
 
 ```
 greenness = vert - max(rouge, bleu)
 si greenness > 0.02 → alpha = 0
 ```
 
-On jette le pixel dès qu’il est vert. On ne le « despille » pas vers le jaune : c’est ça qui laissait une flaque jaune-vert sous les pattes. Le feu rouge/orange a le rouge plus fort que le vert, donc il reste.
+On jette le pixel dès qu’il est vert. On ne le despille pas vers le jaune (ça laissait une flaque). Le feu a le rouge plus fort que le vert, il reste.
 
-Les pattes sont plantées sur la route :
-
-- `PAW_V = 0.93` (les pattes sont à 93 % de la hauteur de la vidéo)
-- `PLANT_Y = 0.80` (ligne de contact sur l’écran)
-- `BOLT_H = 0.28`
-- `BOLT_ASPECT = 784 / 1168`
-
-`y = PLANT_Y - PAW_V * h`, puis le quad est centré sur la voie (`lanePos * SLIDE_AMP`).
-
-## 4. Couper la marche sans aura
-
-Les ~0,95 premières secondes de la génération sont un trot sans feu. On les retire :
+Les ~0,95 premières secondes de la génération sont un trot sans feu. On les coupe :
 
 ```
-ffmpeg -ss 0.95 -i bolt-native-brut.mp4 -an -c:v libx264 -pix_fmt yuv420p bolt-native.mp4
+ffmpeg -ss 0.95 -i brut.mp4 -an -c:v libx264 -pix_fmt yuv420p bolt-native.mp4
 ```
 
-Le cycle qui boucle commence déjà en sprint, avec l’aura.
+Flaque jaune-vert sous les pattes, avant l’encode, sur chaque frame :
 
-## 5. Enlever le vert sous les pattes
+1. En bas (`y > 80 %`), tout pixel jaune-vert (vert haut, bleu bas, pas le feu rouge) est repeint en vert chroma.
+2. Les taches brillantes dont le centre est sous 90 % de la hauteur, plus larges que hautes, ou très petites, sont aussi repeintes en vert.
+3. Le feu des cuisses et de l’armure est au-dessus : il reste.
 
-Le modèle peint une flaque jaune-vert sur le fond, sous les pattes. Le key la transformait en tache. Avant l’encode, sur chaque frame :
+C’est déjà dans `bolt-native.mp4`. Le shader ne refait que la découpe.
 
-1. En bas de l’image (`y > 80 %`), tout pixel jaune-vert (vert haut, bleu bas, pas le feu rouge) est repeint en vert chroma pour être découpé.
-2. Les taches brillantes **sous** les pattes (composantes dont le centre est sous 90 % de la hauteur, plus larges que hautes, ou très petites) sont aussi repeintes en vert.
-3. Le feu sur les cuisses et l’armure est au-dessus de cette zone : il reste.
+Les `<video>` sont hors écran (`opacity: 0`), `muted`, `playsInline`, `disablePictureInPicture`.
 
-C’est déjà appliqué dans `master/bolt-native.mp4`. Le shader ne fait plus que la découpe.
+## 2. Gestes
+
+Décidés au `pointerdown`, pas après un délai.
+
+- Le doigt est sur le quad de Bolt (pad 0.05) : glisser change de voie. `lanePos` suit le doigt. Ça ne regarde pas.
+- Le doigt est sur un ennemi, et pas sur Bolt : hurlement vers **cet** ennemi. Pas de glissade.
+- Le doigt est ailleurs : regarder. `glance` va de -1 à 1 selon le déplacement horizontal. Bolt ne tourne pas la tête. Seule la caméra bouge.
+- Clavier : A / D ou flèches pour la voie. Espace ou Entrée pour démarrer. Pas de touche pour le hurlement.
+
+## 3. Regard gauche / droite
+
+Deux vidéos, `pyre-wing-l.mp4` et `pyre-wing-r.mp4`, générées comme la continuité hors du bord de `pyre-first.jpg` (la route sort du cadre). Elles défilent à la même vitesse que la route : `currentTime` calé sur la route qui est affichée, `playbackRate = 1`. Ne pas les `seek` à chaque frame : ça déchire l’image.
+
+Dans `ROAD_FS` :
+
+```
+shift = glance * smoothstep(0.10, 0.48, abs(glance))
+ruvx = screen.x + shift
+```
+
+La route est échantillonnée à `ruvx`. L’aile gauche est le monde en `ruvx + 1`, l’aile droite en `ruvx - 1`.
+
+Jointure. Ne pas répéter la colonne du bord (`clamp` sur tout le fondu) : ça fait une bande verticale déchirée. Pendant le fondu, on échantillonne l’aile **vers l’intérieur** :
+
+```
+intoL = clamp(max(ruvx, 0) / seam, 0, 1)
+sideLU = mix(ruvx + 1, 0.70, intoL)
+intoR = clamp(max(1 - ruvx, 0) / seam, 0, 1)
+sideRU = mix(ruvx - 1, 0.30, intoR)
+```
+
+`seam` vaut 0,14 dans le ciel et 0,32 au sol. `cover = smoothstep(0.02, 0.14, abs(shift))` multiplie le poids des ailes : vu de face, la route reste nette, les ailes ne bavent pas.
+
+Dehors de la plaque route (`ruvx < 0` ou `ruvx > 1`), le poids de l’aile est `cover`. À fond de regard, `cover` vaut 1 : on ne mélange plus le pixel du bord de la route.
+
+Bolt et les ennemis sont décalés du même `shift` (`viewShift`). Leur voie de collision ne change pas. Un ennemi qui est sur l’aile a un `worldX` hors de `[0, 1]`. À l’écran il est en `worldX - shift`, donc il passe d’une plaque à l’autre sans saut.
+
+## 4. Ennemis
+
+Image-to-video, fond vert plat, le personnage seul, en train de courir vers la caméra. Pas de décor.
+
+- `foe-fallen.mp4` : démon cornu, capuche noire, haillons rouges.
+- `foe-brute.mp4` : bouc noir, armure, hache.
+
+Même découpe que Bolt, un peu plus souple (`greenness > 0.05`).
+
+Spawn : au plus 2 en même temps, pas un nouveau tant qu’un est encore loin (`z < 0.55`), attente 2,6 à 4,1 s. Environ 60 % arrivent d’un flanc (on alterne gauche / droite), le reste sur la route. Ils pop sur la route, à l’horizon, déjà assez grands. Un flanc longe l’épaule (`wide` hors de l’écran) puis coupe vers une voie entre `z = 0.46` et `0.80`. Sur la route, un chasseur suit la voie de Bolt jusqu’à `z = 0.68`, puis il s’engage. À `z >= 0.9`, s’il est sur la voie de Bolt, une blessure. Trois blessures : chute.
+
+## 5. Hurlement
+
+Pas de bouton. Pas de recharge. On tape l’ennemi.
+
+Hit-test au pointerdown sur le quad de l’ennemi (pad 0.07). S’il recouvre Bolt, le geste reste une glissade. S’il y en a plusieurs sous le doigt, on prend le plus proche (`z` le plus grand).
+
+`howl.mp4` est un text-to-video : fond vert plat, pas de chien, une colonne de feu rouge et noire (anneaux, tête de loup dans la flamme). La base de la flamme est **en bas** de l’image, la pointe **en haut**. Prompt qui marche : fond `#00FF00` seul, le blast part du bas et monte tout de suite, pas de texte.
+
+On ne dessine pas ce mp4 comme un rectangle vertical. `beam()` construit un quad tourné de la gueule de Bolt jusqu’à la poitrine de l’ennemi tapé. L’UV V suit ce segment. La pointe avance de 0 à 1 en ~0,2–0,48 s selon la distance. À l’impact le quad disparaît (le hurlement s’arrête) et l’ennemi est retiré.
+
+Largeur du quad : `0.045 + 0.02 * p`. Plus large, le hurlement a l’air d’un pilier vertical qui ne vise personne. Le shader ne prend que le milieu de la texture (`u` de 0,34 à 0,66) pour ne pas écraser les marges vertes dans le rayon.
+
+Plusieurs hurlements peuvent voler en même temps. On ne relance pas la vidéo si elle joue déjà (sinon les rayons déjà en l’air sautent). On la met en pause quand plus aucun rayon ne vole.
+
+## 6. Mort
+
+À l’impact, on joue `ash-fallen.mp4` ou `ash-brute.mp4` à la place de l’ennemi, un peu plus grand, ~1,45 s, `playbackRate = 1.7`, en cherchant `currentTime = 0.9` (avant, ils sont encore debout ; le burst est vers 2–3,5 s). Alpha qui tombe sur les dernières 0,3 s. L’ennemi ne peut plus blesser Bolt.
+
+Génération : image-to-video à partir d’une frame du même ennemi, fond vert conservé. Le prompt doit dire que la forme devient des braises et de la cendre. Les mots « explose », « sang », « violent » font rejeter la vidéo par le filtre. Décrire un sort : anneau rouge, la forme se défait en braises, le fond vert ne change pas.
+
+## 7. Boucle de la route
+
+Deux éléments vidéo sur le même mp4. Quand le lecteur actif arrive à ~0,35 s de la fin, l’autre repart de 0. À la fin, on échange. Les ailes prennent `currentTime` du lecteur affiché, modulo leur durée. Ne pas seek les ailes en boucle.
 
 ## Ce qui n’a pas marché
 
-- Une deuxième vidéo d’aura, additionnée par-dessus : elle ne suit pas les foulées, on voit la coupe.
-- Une aura en shader autour de la silhouette : ça suit le contour, mais ça a l’air faux et pauvre.
-- Coller une armure fixe sur le cycle GPU : l’armure ne gallope pas avec le chien, et ce n’est pas le Bolt voulu.
-- Régénérer un autre chien : on perd le Bolt de `bolt-fury.mp4`.
+- Aura dans une deuxième vidéo, additionnée : elle ne suit pas le galop, on voit la coupe.
+- Aura en shader autour de la silhouette : ça suit le contour, ça a l’air faux.
+- Armure fixe collée sur le cycle GPU (`lock/bolt-gallop-cycle.mp4`) : l’armure ne gallope pas, et ce n’est pas ce Bolt.
+- Régénérer un autre chien : on perd `bolt-fury.mp4`.
+- Fondu des ailes en répétant la colonne du bord, ou un flou sur toute la route : bande déchirée, ou la route de face devient floue. Le `cover` et l’échantillon intérieur règlent ça.
+- Seek des ailes à chaque frame : déchirures horizontales.
+- Bouton Hurlement, ou hurlement automatique vers le plus proche : le joueur veut taper l’ennemi, et le rayon doit aller vers celui-là.
+- Quad de hurlement trop large : le feu reste visuellement vertical. Le garder étroit.
+- Mort générée avec un prompt gore : la génération est refusée.
+
+## Pour un nouveau Grok
+
+1. Lire ce fichier avant de toucher au composite.
+2. Copier `src/pyre-stage.tsx` tel quel. Ne pas réécrire les shaders de mémoire.
+3. Servir les mp4 de `master/` sous `/master/…`.
+4. Ne pas changer `BOLT_H`, `PAW_V`, `BOLT_RATE` sans une capture du joueur : la taille et la vitesse ont déjà été calées.
+5. Un nouvel ennemi = une vidéo fond vert + une entrée dans `FOE_KIND` + un mp4 de mort. Même pipeline que fallen / brute.
+6. Compresser avant de committer : `ffmpeg -an -vf scale=480:-2 -c:v libx264 -crf 27 -pix_fmt yuv420p -movflags +faststart`. Rester sous 100 Mo par fichier.

@@ -2,8 +2,24 @@ import { useEffect, useRef, useState } from "react";
 
 type Phase = "cover" | "run" | "fallen";
 
-type Hazard = {
+type Foe = {
+  id: number;
+  kind: 0 | 1;
   lane: number;
+  aim: number | null;
+  z: number;
+  speed: number;
+  struck: boolean;
+  side: -1 | 0 | 1;
+  wide: number;
+};
+
+type Ash = {
+  kind: 0 | 1;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
   t: number;
   life: number;
 };
@@ -15,6 +31,12 @@ const BOLT_ASPECT = 784 / 1168;
 const PAW_V = 0.93;
 const PLANT_Y = 0.8;
 const BOLT_RATE = 4;
+const HORIZON = 0.545;
+const FOE_ASPECT = 480 / 854;
+const FOE_KIND = [
+  { h: 0.3, foot: 0.96, reach: 0.34, rate: 1.45, agility: 1.55 },
+  { h: 0.4, foot: 0.97, reach: 0.48, rate: 1.05, agility: 0.7 },
+] as const;
 
 const ROAD_VS = `
 attribute vec2 aPos;
@@ -28,13 +50,36 @@ void main() {
 const ROAD_FS = `
 precision mediump float;
 varying vec2 vUv;
-uniform sampler2D uTex;
+uniform sampler2D uRoad;
+uniform sampler2D uSideL;
+uniform sampler2D uSideR;
+uniform float uGlance;
+uniform float uWings;
 uniform float uFlash;
 void main() {
-  vec3 c = texture2D(uTex, vUv).rgb;
+  vec2 screen = vUv;
+  float mag = abs(uGlance);
+  float open = smoothstep(0.10, 0.48, mag);
+  float shift = uGlance * open * uWings;
+  float ruvx = screen.x + shift;
+  float sy = clamp(screen.y, 0.001, 0.999);
+  float cover = smoothstep(0.02, 0.14, abs(shift));
+  float floorK = 1.0 - smoothstep(0.35, 0.70, sy);
+  float seam = mix(0.14, 0.32, floorK);
+  float wSideL = ruvx < 0.0 ? cover : (1.0 - smoothstep(0.0, seam, ruvx)) * cover;
+  float wSideR = ruvx > 1.0 ? cover : smoothstep(1.0 - seam, 1.0, ruvx) * cover;
+  vec3 rc = texture2D(uRoad, vec2(clamp(ruvx, 0.001, 0.999), sy)).rgb;
+  float intoL = clamp(max(ruvx, 0.0) / max(seam, 0.001), 0.0, 1.0);
+  float sideLU = clamp(mix(ruvx + 1.0, 0.70, intoL), 0.04, 0.96);
+  float intoR = clamp(max(1.0 - ruvx, 0.0) / max(seam, 0.001), 0.0, 1.0);
+  float sideRU = clamp(mix(ruvx - 1.0, 0.30, intoR), 0.04, 0.96);
+  vec3 lc = texture2D(uSideL, vec2(sideLU, sy)).rgb;
+  vec3 qc = texture2D(uSideR, vec2(sideRU, sy)).rgb;
+  vec3 side = mix(lc, qc, step(wSideL, wSideR));
+  vec3 c = mix(rc, side, clamp(max(wSideL, wSideR), 0.0, 1.0));
   c = pow(max(c, 0.0), vec3(0.92));
   c *= vec3(1.04, 0.9, 0.82);
-  float vig = smoothstep(0.2, 0.95, length(vUv - vec2(0.5, 0.48)));
+  float vig = smoothstep(0.2, 0.95, length(screen - vec2(0.5, 0.48)));
   c *= mix(1.0, 0.62, vig);
   float n = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453);
   c += (n - 0.5) * 0.028;
@@ -70,6 +115,42 @@ void main() {
   c.rgb += vec3(1.0, 0.2, 0.06) * fringe * crack * 0.35;
   c.rgb += vec3(0.9, 0.16, 0.08) * moon * 0.08;
   c.rgb = mix(c.rgb, vec3(0.72, 0.04, 0.06), uFlash * 0.65);
+  gl_FragColor = vec4(c.rgb, a);
+}`;
+
+const ENEMY_FS = `
+precision mediump float;
+varying vec2 vUv;
+uniform sampler2D uTex;
+uniform float uFlash;
+uniform float uThreat;
+uniform float uAlpha;
+void main() {
+  vec4 c = texture2D(uTex, vUv);
+  float m = max(c.r, c.b);
+  float greenness = c.g - m;
+  float a = 1.0;
+  if (greenness > 0.05 && c.g > 0.2) a = 0.0;
+  else if (c.g > m + 0.03) c.g = m;
+  c.rgb = mix(c.rgb, vec3(0.9, 0.12, 0.05), uThreat * 0.28);
+  c.rgb = mix(c.rgb, vec3(0.72, 0.04, 0.06), uFlash * 0.55);
+  gl_FragColor = vec4(c.rgb, a * uAlpha);
+}`;
+
+const HOWL_FS = `
+precision mediump float;
+varying vec2 vUv;
+uniform sampler2D uTex;
+uniform float uReveal;
+void main() {
+  float u = mix(0.34, 0.66, vUv.x);
+  vec4 c = texture2D(uTex, vec2(u, vUv.y * uReveal));
+  float m = max(c.r, c.b);
+  float greenness = c.g - m;
+  if (greenness > 0.04 && c.g > 0.16) discard;
+  if (c.g > m) c.g = m;
+  float a = smoothstep(0.05, 0.28, max(c.r, max(c.g, c.b)));
+  c.rgb += vec3(0.35, 0.04, 0.02) * c.r;
   gl_FragColor = vec4(c.rgb, a);
 }`;
 
@@ -183,6 +264,12 @@ function upload(gl: WebGLRenderingContext, tex: WebGLTexture | null, source: Tex
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
 }
 
+function lookShift(glance: number, wingsReady: boolean) {
+  if (!wingsReady) return 0;
+  const t = Math.min(1, Math.max(0, (Math.abs(glance) - 0.1) / 0.38));
+  return glance * (t * t * (3 - 2 * t));
+}
+
 function quad(x: number, y: number, w: number, h: number) {
   const x0 = x * 2 - 1;
   const x1 = (x + w) * 2 - 1;
@@ -198,6 +285,25 @@ function quad(x: number, y: number, w: number, h: number) {
 
 const FULL = quad(0, 0, 1, 1);
 
+function beam(x0: number, y0: number, x1: number, y1: number, halfW: number) {
+  const dx = x1 - x0;
+  const dy = y1 - y0;
+  const len = Math.hypot(dx, dy) || 0.001;
+  const px = (-dy / len) * halfW;
+  const py = (dx / len) * halfW;
+  const clip = (x: number, y: number) => [x * 2 - 1, 1 - y * 2] as const;
+  const a = clip(x0 + px, y0 + py);
+  const b = clip(x0 - px, y0 - py);
+  const c = clip(x1 + px, y1 + py);
+  const d = clip(x1 - px, y1 - py);
+  return new Float32Array([
+    b[0], b[1], 0, 0,
+    d[0], d[1], 0, 1,
+    a[0], a[1], 1, 0,
+    c[0], c[1], 1, 1,
+  ]);
+}
+
 export function PyreStage() {
   const glRef = useRef<HTMLCanvasElement>(null);
   const fxRef = useRef<HTMLCanvasElement>(null);
@@ -205,6 +311,13 @@ export function PyreStage() {
   const roadARef = useRef<HTMLVideoElement>(null);
   const roadBRef = useRef<HTMLVideoElement>(null);
   const boltRef = useRef<HTMLVideoElement>(null);
+  const fallenRef = useRef<HTMLVideoElement>(null);
+  const bruteRef = useRef<HTMLVideoElement>(null);
+  const wingLRef = useRef<HTMLVideoElement>(null);
+  const wingRRef = useRef<HTMLVideoElement>(null);
+  const howlRef = useRef<HTMLVideoElement>(null);
+  const ashFallenRef = useRef<HTMLVideoElement>(null);
+  const ashBruteRef = useRef<HTMLVideoElement>(null);
   const [phase, setPhase] = useState<Phase>("cover");
   const [peak, setPeak] = useState(0);
   const [lastRun, setLastRun] = useState(0);
@@ -236,8 +349,15 @@ export function PyreStage() {
     const roadA = roadARef.current;
     const roadB = roadBRef.current;
     const bolt = boltRef.current;
+    const fallen = fallenRef.current;
+    const brute = bruteRef.current;
+    const wingL = wingLRef.current;
+    const wingR = wingRRef.current;
+    const howlVid = howlRef.current;
+    const ashFallen = ashFallenRef.current;
+    const ashBrute = ashBruteRef.current;
     const frame = frameRef.current;
-    if (!canvas || !fx || !roadA || !roadB || !bolt || !frame) return;
+    if (!canvas || !fx || !roadA || !roadB || !bolt || !fallen || !brute || !wingL || !wingR || !howlVid || !ashFallen || !ashBrute || !frame) return;
 
     const gl = canvas.getContext("webgl", {
       alpha: false,
@@ -249,29 +369,45 @@ export function PyreStage() {
 
     const roadProg = program(gl, ROAD_FS);
     const boltProg = program(gl, BOLT_FS);
+    const enemyProg = program(gl, ENEMY_FS);
+    const howlProg = program(gl, HOWL_FS);
     const shadowProg = program(gl, SHADOW_FS);
     const buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     const roadTex = makeTex(gl);
+    const wingLTex = makeTex(gl);
+    const wingRTex = makeTex(gl);
     const boltTex = makeTex(gl);
+    const foeTex = [makeTex(gl), makeTex(gl)];
+    const howlTex = makeTex(gl);
+    const ashTex = [makeTex(gl), makeTex(gl)];
     const poster = new Image();
     poster.src = "/master/pyre-first.jpg";
 
     const keys = new Set<string>();
     let steerOverride: number | null = null;
     let lanePos = 0;
-    let drag: { id: number; x: number; lane: number } | null = null;
+    let glance = 0;
+    let glanceTarget = 0;
+    let viewShift = 0;
+    let drag: { id: number; x: number; y: number; lane: number; looking: boolean } | null = null;
     let distance = 0;
     let wounds = 0;
     let invuln = 0;
     let flash = 0;
     let shake = 0;
-    let spawnIn = 1.15;
+    let spawnIn = 2.1;
+    let flankNext: -1 | 1 = -1;
     let activeRoad = 0;
     let best = readPeak();
-    const hazards: Hazard[] = [];
+    const foes: Foe[] = [];
+    const ashes: Ash[] = [];
+    let nextFoe = 1;
+    const shots: { t: number; dur: number; id: number }[] = [];
+    const foeClips = [fallen, brute];
     const trail: { lane: number; age: number }[] = [];
     const roads = [roadA, roadB];
+    const wings = [wingL, wingR];
 
     const arm = (video: HTMLVideoElement) => {
       video.muted = true;
@@ -286,11 +422,34 @@ export function PyreStage() {
     bolt.defaultPlaybackRate = BOLT_RATE;
     bolt.playbackRate = BOLT_RATE;
     bolt.disablePictureInPicture = true;
-
+    for (const clip of foeClips) {
+      clip.muted = true;
+      clip.playsInline = true;
+      clip.loop = true;
+      clip.disablePictureInPicture = true;
+    }
+    fallen.defaultPlaybackRate = FOE_KIND[0].rate;
+    fallen.playbackRate = FOE_KIND[0].rate;
+    brute.defaultPlaybackRate = FOE_KIND[1].rate;
+    brute.playbackRate = FOE_KIND[1].rate;
+    for (const wing of wings) {
+      wing.muted = true;
+      wing.playsInline = true;
+      wing.loop = true;
+      wing.playbackRate = 1;
+      wing.disablePictureInPicture = true;
+    }
+    for (const clip of [howlVid, ashFallen, ashBrute]) {
+      clip.muted = true;
+      clip.playsInline = true;
+      clip.loop = false;
+      clip.disablePictureInPicture = true;
+    }
     const playSafe = (video: HTMLVideoElement) => {
       const pending = video.play();
       if (pending) pending.catch(() => undefined);
     };
+    wings.forEach(playSafe);
 
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -330,6 +489,11 @@ export function PyreStage() {
       }
       roads.forEach((video) => video.pause());
       bolt.pause();
+      foeClips.forEach((video) => video.pause());
+      wings.forEach((video) => video.pause());
+      howlVid.pause();
+      ashFallen.pause();
+      ashBrute.pause();
     };
 
     const begin = () => {
@@ -339,9 +503,13 @@ export function PyreStage() {
       invuln = 0;
       flash = 0;
       lanePos = 0;
-      hazards.length = 0;
+      glance = 0;
+      glanceTarget = 0;
+      foes.length = 0;
+      ashes.length = 0;
+      shots.length = 0;
       trail.length = 0;
-      spawnIn = 1.15;
+      spawnIn = 2.1;
       setPhase("run");
       setLastRun(0);
       paintHud();
@@ -356,6 +524,19 @@ export function PyreStage() {
       activeRoad = 0;
       playSafe(roadA);
       playSafe(bolt);
+      wings.forEach((video) => {
+        video.playbackRate = 1;
+        try {
+          video.currentTime = 0;
+        } catch {
+          /* not seekable yet */
+        }
+        playSafe(video);
+      });
+      foeClips.forEach((video, index) => {
+        video.playbackRate = FOE_KIND[index]!.rate;
+        playSafe(video);
+      });
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (AudioCtx && !audio.ctx) {
         const ac = new AudioCtx();
@@ -420,6 +601,82 @@ export function PyreStage() {
     };
     window.__controlsTest = probe;
 
+    const foeSpot = (foe: Foe) => {
+      const spec = FOE_KIND[foe.kind];
+      const near = Math.min(1, Math.max(0, foe.z));
+      const spread = 0.28 + 0.72 * near;
+      const worldX = foe.side === 0 ? 0.5 + foe.lane * SLIDE_AMP * spread : foe.wide;
+      const footX = worldX - viewShift;
+      const footY = HORIZON + (PLANT_Y - HORIZON) * near;
+      const grow = foe.side === 0 ? 0.42 + 0.58 * near : 0.58 + 0.42 * near;
+      const h = spec.h * grow;
+      const aspect = canvas.width / Math.max(1, canvas.height);
+      const w = (h * FOE_ASPECT) / aspect;
+      return { footX, footY, x: footX - w / 2, y: footY - spec.foot * h, w, h };
+    };
+    const bark = () => {
+      if (!audio.ctx || !audio.master) return;
+      const t = audio.ctx.currentTime;
+      const osc = audio.ctx.createOscillator();
+      const gain = audio.ctx.createGain();
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(190, t);
+      osc.frequency.exponentialRampToValueAtTime(48, t + 0.42);
+      gain.gain.setValueAtTime(0.24, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.48);
+      osc.connect(gain);
+      gain.connect(audio.master);
+      osc.start(t);
+      osc.stop(t + 0.5);
+    };
+    const crack = () => {
+      if (!audio.ctx || !audio.master) return;
+      const t = audio.ctx.currentTime;
+      const osc = audio.ctx.createOscillator();
+      const gain = audio.ctx.createGain();
+      osc.type = "square";
+      osc.frequency.setValueAtTime(140, t);
+      osc.frequency.exponentialRampToValueAtTime(36, t + 0.22);
+      gain.gain.setValueAtTime(0.2, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.24);
+      osc.connect(gain);
+      gain.connect(audio.master);
+      osc.start(t);
+      osc.stop(t + 0.26);
+    };
+    const castHowl = (foe: Foe) => {
+      if (phaseRef.current !== "run") return;
+      if (shots.some((item) => item.id === foe.id)) return;
+      const mouthY = PLANT_Y - PAW_V * BOLT_H + BOLT_H * 0.2;
+      const mouthX = 0.5 + lanePos * SLIDE_AMP - viewShift;
+      const reach = foeSpot(foe);
+      const dist = Math.hypot(reach.footX - mouthX, reach.y + reach.h * 0.42 - mouthY);
+      shots.push({ t: 0, dur: 0.2 + Math.min(0.28, dist * 0.55), id: foe.id });
+      if (howlVid.paused) {
+        try {
+          howlVid.currentTime = 0;
+        } catch {
+          /* not seekable yet */
+        }
+        howlVid.playbackRate = 2.2;
+        playSafe(howlVid);
+      }
+      bark();
+    };
+    const foeUnder = (nx: number, ny: number) => {
+      let hit: Foe | null = null;
+      let bestZ = -1;
+      for (const foe of foes) {
+        const spot = foeSpot(foe);
+        const pad = 0.07;
+        if (nx < spot.x - pad || nx > spot.x + spot.w + pad || ny < spot.y - pad || ny > spot.y + spot.h + pad) continue;
+        if (foe.z > bestZ) {
+          hit = foe;
+          bestZ = foe.z;
+        }
+      }
+      return hit;
+    };
     const onKeyDown = (event: KeyboardEvent) => {
       keys.add(event.code);
       if (event.code === "Space" || event.code === "Enter") {
@@ -437,7 +694,22 @@ export function PyreStage() {
     };
     const onSlideDown = (event: PointerEvent) => {
       if (phaseRef.current !== "run" || event.button !== 0) return;
-      drag = { id: event.pointerId, x: event.clientX, lane: lanePos };
+      const rect = frame.getBoundingClientRect();
+      const nx = (event.clientX - rect.left) / (rect.width || 1);
+      const ny = (event.clientY - rect.top) / (rect.height || 1);
+      const aspect = (rect.width || 1) / (rect.height || 1);
+      const h = BOLT_H;
+      const w = (h * BOLT_ASPECT) / aspect;
+      const x = 0.5 + lanePos * SLIDE_AMP - viewShift - w / 2;
+      const y = PLANT_Y - PAW_V * h;
+      const pad = 0.05;
+      const onBolt = nx >= x - pad && nx <= x + w + pad && ny >= y - pad && ny <= y + h + pad;
+      const tapped = foeUnder(nx, ny);
+      if (tapped && !onBolt) {
+        castHowl(tapped);
+        return;
+      }
+      drag = { id: event.pointerId, x: event.clientX, y: event.clientY, lane: lanePos, looking: !onBolt };
       try {
         frame.setPointerCapture(event.pointerId);
       } catch {
@@ -446,11 +718,18 @@ export function PyreStage() {
     };
     const onSlideMove = (event: PointerEvent) => {
       if (!drag || event.pointerId !== drag.id) return;
+      if (drag.looking) {
+        const width = frame.clientWidth || 1;
+        const dx = event.clientX - drag.x;
+        glanceTarget = Math.max(-1, Math.min(1, dx / (width * 0.42)));
+        return;
+      }
       slideTo(event.clientX, drag.x, drag.lane);
     };
     const onSlideUp = (event: PointerEvent) => {
       if (!drag || event.pointerId !== drag.id) return;
-      slideTo(event.clientX, drag.x, drag.lane);
+      if (drag.looking) glanceTarget = 0;
+      else slideTo(event.clientX, drag.x, drag.lane);
       drag = null;
       try {
         if (frame.hasPointerCapture(event.pointerId)) frame.releasePointerCapture(event.pointerId);
@@ -471,6 +750,9 @@ export function PyreStage() {
       last = now;
       resize();
       const running = phaseRef.current === "run";
+      const glanceEase = drag?.looking ? 14 : 10;
+      glance += (glanceTarget - glance) * (1 - Math.exp(-glanceEase * dt));
+      if (Math.abs(glance) < 0.0008 && glanceTarget === 0) glance = 0;
 
       if (running) {
         if (!drag) {
@@ -491,19 +773,88 @@ export function PyreStage() {
         flash = Math.max(0, flash - dt * 3.2);
         shake = Math.max(0, shake - dt);
         spawnIn -= dt;
-        if (spawnIn <= 0) {
-          const roll = Math.random();
-          const lane = roll < 0.34 ? -1 : roll < 0.67 ? 0 : 1;
-          hazards.push({ lane, t: 0, life: 2.65 });
-          spawnIn = 1.15 + Math.random() * 0.55;
+        const farBusy = foes.some((foe) => foe.z < 0.55);
+        if (spawnIn <= 0 && foes.length < 2 && !farBusy) {
+          const pace = 1 + Math.min(0.55, distance / 220);
+          const kind: 0 | 1 = Math.random() < 0.7 ? 0 : 1;
+          const fromSide = Math.random() < 0.6;
+          const side: -1 | 0 | 1 = fromSide ? flankNext : 0;
+          if (fromSide) flankNext = flankNext === -1 ? 1 : -1;
+          const aimLane = Math.max(-1, Math.min(1, lanePos + (Math.random() - 0.5) * 0.5));
+          const hunter = side === 0 && Math.random() < 0.62;
+          foes.push({
+            id: nextFoe++,
+            kind,
+            lane: side === 0 ? Math.random() * 2.2 - 1.1 : aimLane,
+            aim: hunter ? null : aimLane,
+            z: 0,
+            speed: (kind === 0 ? 0.3 : 0.2) * pace,
+            struck: false,
+            side,
+            wide: side < 0 ? -0.22 : side > 0 ? 1.22 : 0.5,
+          });
+          spawnIn = 2.6 + Math.random() * 1.5;
         }
-        for (let i = hazards.length - 1; i >= 0; i -= 1) {
-          const hazard = hazards[i]!;
-          hazard.t += dt;
-          if (hazard.t >= hazard.life) {
-            if (Math.abs(lanePos - hazard.lane) < 0.42) hit();
-            hazards.splice(i, 1);
+        for (let i = foes.length - 1; i >= 0; i -= 1) {
+          const foe = foes[i]!;
+          const spec = FOE_KIND[foe.kind];
+          const near = Math.min(1, Math.max(0, foe.z));
+          if (foe.side === 0) {
+            const desired = foe.aim ?? lanePos;
+            const commit = foe.z > 0.68 ? 0.18 : 1;
+            const step = Math.max(-1.15, Math.min(1.15, desired - foe.lane));
+            foe.lane = Math.max(-1.25, Math.min(1.25, foe.lane + step * spec.agility * commit * dt));
+          } else {
+            const shoulder = foe.side < 0 ? -0.46 : 1.46;
+            const far = foe.side < 0 ? -0.16 : 1.16;
+            const along = near < 0.46 ? far + (shoulder - far) * (near / 0.46) : shoulder;
+            const aimLane = foe.aim ?? lanePos;
+            const entry = 0.5 + Math.max(-1, Math.min(1, aimLane)) * SLIDE_AMP;
+            const cutT = Math.min(1, Math.max(0, (near - 0.46) / 0.34));
+            const cut = cutT * cutT * (3 - 2 * cutT);
+            foe.wide = along + (entry - along) * cut;
+            foe.lane = (foe.wide - 0.5) / SLIDE_AMP;
           }
+          const linger = foe.side !== 0 && foe.z < 0.48 ? 0.58 : 1;
+          foe.z += foe.speed * dt * (0.72 + foe.z) * linger;
+          if (!foe.struck && foe.z >= 0.9) {
+            foe.struck = true;
+            if (Math.abs(foe.lane) < 1.35 && Math.abs(foe.lane - lanePos) < spec.reach) hit();
+          }
+          if (foe.z > 1.2) foes.splice(i, 1);
+        }
+        for (let i = shots.length - 1; i >= 0; i -= 1) {
+          const boltShot = shots[i]!;
+          boltShot.t += dt;
+          if (boltShot.t < boltShot.dur) continue;
+          const foe = foes.find((item) => item.id === boltShot.id);
+          shots.splice(i, 1);
+          if (!foe) continue;
+          const spot = foeSpot(foe);
+          ashes.push({
+            kind: foe.kind,
+            x: spot.x - spot.w * 0.08,
+            y: spot.y - spot.h * 0.06,
+            w: spot.w * 1.16,
+            h: spot.h * 1.12,
+            t: 0,
+            life: 1.45,
+          });
+          foes.splice(foes.indexOf(foe), 1);
+          const vid = foe.kind === 0 ? ashFallen : ashBrute;
+          try {
+            vid.currentTime = 0.9;
+          } catch {
+            /* not seekable yet */
+          }
+          vid.playbackRate = 1.7;
+          playSafe(vid);
+          crack();
+        }
+        if (!shots.length && !howlVid.paused) howlVid.pause();
+        for (let i = ashes.length - 1; i >= 0; i -= 1) {
+          ashes[i]!.t += dt;
+          if (ashes[i]!.t >= ashes[i]!.life) ashes.splice(i, 1);
         }
         if (Math.floor(distance) !== Math.floor(distance - 14 * dt)) paintHud();
 
@@ -532,8 +883,25 @@ export function PyreStage() {
           activeRoad = 1 - activeRoad;
         }
         if (lead.paused && !lead.ended) playSafe(lead);
+        const shown = roads[activeRoad]!;
+        for (const wing of wings) {
+          if (wing.playbackRate !== 1) wing.playbackRate = 1;
+          if (wing.paused) playSafe(wing);
+          if (shown.readyState >= 2 && wing.readyState >= 2 && wing.duration && shown.currentTime < 0.08 && wing.currentTime > 0.4) {
+            try {
+              wing.currentTime = 0;
+            } catch {
+              /* seek during decode */
+            }
+          }
+        }
         if (bolt.playbackRate !== BOLT_RATE) bolt.playbackRate = BOLT_RATE;
         if (bolt.paused) playSafe(bolt);
+        foeClips.forEach((video, index) => {
+          const rate = FOE_KIND[index]!.rate;
+          if (video.playbackRate !== rate) video.playbackRate = rate;
+          if (video.paused) playSafe(video);
+        });
         for (let i = trail.length - 1; i >= 0; i -= 1) {
           trail[i]!.age += dt;
           if (trail[i]!.age > 0.62) trail.splice(i, 1);
@@ -546,25 +914,78 @@ export function PyreStage() {
       const roadSource = road.readyState >= 2 ? road : poster.complete ? poster : null;
       if (roadSource) upload(gl, roadTex, roadSource);
       if (bolt.readyState >= 2) upload(gl, boltTex, bolt);
+      if (fallen.readyState >= 2) upload(gl, foeTex[0]!, fallen);
+      if (brute.readyState >= 2) upload(gl, foeTex[1]!, brute);
+      if (howlVid.readyState >= 2) upload(gl, howlTex, howlVid);
+      if (ashFallen.readyState >= 2) upload(gl, ashTex[0]!, ashFallen);
+      if (ashBrute.readyState >= 2) upload(gl, ashTex[1]!, ashBrute);
+      if (wingL.readyState >= 2) upload(gl, wingLTex, wingL);
+      if (wingR.readyState >= 2) upload(gl, wingRTex, wingR);
+      const wingsReady = wingL.readyState >= 2 && wingR.readyState >= 2;
+      const shift = lookShift(glance, wingsReady);
+      viewShift = shift;
 
       gl.disable(gl.BLEND);
       gl.useProgram(roadProg);
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, roadTex);
-      gl.uniform1i(gl.getUniformLocation(roadProg, "uTex"), 0);
+      gl.uniform1i(gl.getUniformLocation(roadProg, "uRoad"), 0);
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_2D, wingLTex);
+      gl.uniform1i(gl.getUniformLocation(roadProg, "uSideL"), 1);
+      gl.activeTexture(gl.TEXTURE2);
+      gl.bindTexture(gl.TEXTURE_2D, wingRTex);
+      gl.uniform1i(gl.getUniformLocation(roadProg, "uSideR"), 2);
+      gl.uniform1f(gl.getUniformLocation(roadProg, "uGlance"), glance);
+      gl.uniform1f(gl.getUniformLocation(roadProg, "uWings"), wingsReady ? 1 : 0);
       gl.uniform1f(gl.getUniformLocation(roadProg, "uFlash"), flash);
+      gl.activeTexture(gl.TEXTURE0);
       drawBuffer(FULL);
 
+      const aspect = canvas.width / canvas.height;
+      const placed =
+        phaseRef.current === "cover"
+          ? []
+          : foes
+              .map((foe) => {
+                const spot = foeSpot(foe);
+                const near = Math.min(1, Math.max(0, foe.z));
+                const alpha = foe.z > 1 ? Math.max(0, 1 - (foe.z - 1) / 0.18) : 1;
+                const threat = near > 0.42 && Math.abs(foe.lane - lanePos) < FOE_KIND[foe.kind].reach ? near : 0;
+                return { foe, ...spot, alpha, threat };
+              })
+              .sort((a, b) => a.foe.z - b.foe.z);
+
+      const drawFoes = (inFront: boolean) => {
+        for (const spot of placed) {
+          if ((spot.foe.z >= 0.82) !== inFront) continue;
+          const clip = foeClips[spot.foe.kind];
+          if (!clip || clip.readyState < 2 || spot.alpha < 0.04) continue;
+          gl.useProgram(shadowProg);
+          const shadowW = spot.w * 0.46;
+          const shadowH = Math.max(0.008, spot.h * 0.035);
+          drawBuffer(quad(spot.footX - shadowW / 2, spot.footY - shadowH * 0.25, shadowW, shadowH));
+          gl.useProgram(enemyProg);
+          gl.bindTexture(gl.TEXTURE_2D, foeTex[spot.foe.kind]!);
+          gl.uniform1i(gl.getUniformLocation(enemyProg, "uTex"), 0);
+          gl.uniform1f(gl.getUniformLocation(enemyProg, "uFlash"), flash);
+          gl.uniform1f(gl.getUniformLocation(enemyProg, "uThreat"), spot.threat);
+          gl.uniform1f(gl.getUniformLocation(enemyProg, "uAlpha"), spot.alpha);
+          drawBuffer(quad(spot.x, spot.y, spot.w, spot.h));
+        }
+      };
+
+      gl.enable(gl.BLEND);
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+      drawFoes(false);
+
       if (phaseRef.current !== "cover" && bolt.readyState >= 2) {
-        const aspect = canvas.width / canvas.height;
         const h = BOLT_H;
         const w = (h * BOLT_ASPECT) / aspect;
         const y = PLANT_Y - PAW_V * h;
-        const x = 0.5 + lanePos * SLIDE_AMP - w / 2;
-        gl.enable(gl.BLEND);
-        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        const x = 0.5 + lanePos * SLIDE_AMP - shift - w / 2;
         gl.useProgram(shadowProg);
-        const pawX = 0.5 + lanePos * SLIDE_AMP;
+        const pawX = 0.5 + lanePos * SLIDE_AMP - shift;
         const shadowW = w * 0.34;
         const shadowH = h * 0.045;
         const shadowY = PLANT_Y - shadowH * 0.35;
@@ -578,36 +999,56 @@ export function PyreStage() {
         drawBuffer(quad(x, y, w, h));
       }
 
+      if (shots.length && howlVid.readyState >= 2) {
+        const mouthX = 0.5 + lanePos * SLIDE_AMP - shift;
+        const mouthY = PLANT_Y - PAW_V * BOLT_H + BOLT_H * 0.18;
+        gl.useProgram(howlProg);
+        gl.bindTexture(gl.TEXTURE_2D, howlTex);
+        gl.uniform1i(gl.getUniformLocation(howlProg, "uTex"), 0);
+        for (const boltShot of shots) {
+          const p = Math.min(1, boltShot.t / boltShot.dur);
+          const foe = foes.find((item) => item.id === boltShot.id);
+          if (!foe) continue;
+          const spot = foeSpot(foe);
+          const tipX = spot.footX;
+          const tipY = spot.y + spot.h * 0.45;
+          const hx = mouthX + (tipX - mouthX) * p;
+          const hy = mouthY + (tipY - mouthY) * p;
+          gl.uniform1f(gl.getUniformLocation(howlProg, "uReveal"), Math.max(0.12, p));
+          drawBuffer(beam(mouthX, mouthY, hx, hy, 0.045 + 0.02 * p));
+        }
+      }
+
+      if (ashes.length) {
+        gl.useProgram(enemyProg);
+        for (const ash of ashes) {
+          const vid = ash.kind === 0 ? ashFallen : ashBrute;
+          if (vid.readyState < 2) continue;
+          const fade = ash.t > ash.life - 0.3 ? Math.max(0, (ash.life - ash.t) / 0.3) : 1;
+          gl.bindTexture(gl.TEXTURE_2D, ashTex[ash.kind]!);
+          gl.uniform1i(gl.getUniformLocation(enemyProg, "uTex"), 0);
+          gl.uniform1f(gl.getUniformLocation(enemyProg, "uFlash"), flash);
+          gl.uniform1f(gl.getUniformLocation(enemyProg, "uThreat"), 0);
+          gl.uniform1f(gl.getUniformLocation(enemyProg, "uAlpha"), fade);
+          drawBuffer(quad(ash.x, ash.y, ash.w, ash.h));
+        }
+      }
+
+      drawFoes(true);
+
       ctx.clearRect(0, 0, fx.width, fx.height);
       if (running) {
-        for (const hazard of hazards) {
-          const p = hazard.t / hazard.life;
-          const x = (0.5 + hazard.lane * SLIDE_AMP) * fx.width;
-          const y = (0.4 + p * 0.4) * fx.height;
-          const s = (0.35 + p * 0.9) * fx.width * 0.045;
-          ctx.save();
-          ctx.translate(x, y);
-          ctx.globalAlpha = 0.28 + p * 0.72;
-          ctx.strokeStyle = "rgba(154, 36, 51, 0.85)";
-          ctx.lineWidth = Math.max(2, fx.width * 0.008);
+        for (const spot of placed) {
+          if (spot.threat <= 0 || spot.foe.z > 1) continue;
+          ctx.globalAlpha = 0.22 * spot.threat;
+          ctx.strokeStyle = "#c4313c";
+          ctx.lineWidth = Math.max(1, fx.width * 0.004);
           ctx.beginPath();
-          ctx.moveTo(0, -fx.height * 0.18 * (1 - p));
-          ctx.lineTo(0, -s);
+          ctx.moveTo(spot.footX * fx.width, HORIZON * fx.height);
+          ctx.lineTo(spot.footX * fx.width, spot.footY * fx.height);
           ctx.stroke();
-          ctx.fillStyle = "#efe6d6";
-          ctx.beginPath();
-          ctx.moveTo(0, -s * 1.8);
-          ctx.lineTo(s * 0.42, s * 0.15);
-          ctx.lineTo(0, s * 0.45);
-          ctx.lineTo(-s * 0.42, s * 0.15);
-          ctx.closePath();
-          ctx.fill();
-          ctx.fillStyle = "#9a2433";
-          ctx.beginPath();
-          ctx.ellipse(0, s * 0.35, s * 0.7, s * 0.22, 0, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.restore();
         }
+        ctx.globalAlpha = 1;
       }
 
       raf = requestAnimationFrame(tick);
@@ -670,6 +1111,69 @@ export function PyreStage() {
           disablePictureInPicture
           preload="auto"
         />
+        <video
+          ref={fallenRef}
+          className="pyre-video"
+          src="/master/foe-fallen.mp4"
+          muted
+          playsInline
+          disablePictureInPicture
+          preload="auto"
+        />
+        <video
+          ref={bruteRef}
+          className="pyre-video"
+          src="/master/foe-brute.mp4"
+          muted
+          playsInline
+          disablePictureInPicture
+          preload="auto"
+        />
+        <video
+          ref={wingLRef}
+          className="pyre-video"
+          src="/master/pyre-wing-l.mp4"
+          muted
+          playsInline
+          disablePictureInPicture
+          preload="auto"
+        />
+        <video
+          ref={wingRRef}
+          className="pyre-video"
+          src="/master/pyre-wing-r.mp4"
+          muted
+          playsInline
+          disablePictureInPicture
+          preload="auto"
+        />
+        <video
+          ref={howlRef}
+          className="pyre-video"
+          src="/master/howl.mp4"
+          muted
+          playsInline
+          disablePictureInPicture
+          preload="auto"
+        />
+        <video
+          ref={ashFallenRef}
+          className="pyre-video"
+          src="/master/ash-fallen.mp4"
+          muted
+          playsInline
+          disablePictureInPicture
+          preload="auto"
+        />
+        <video
+          ref={ashBruteRef}
+          className="pyre-video"
+          src="/master/ash-brute.mp4"
+          muted
+          playsInline
+          disablePictureInPicture
+          preload="auto"
+        />
         <div className="pyre-hud" hidden={phase === "cover"}>
           <div>
             <p className="pyre-paces">
@@ -689,13 +1193,13 @@ export function PyreStage() {
             <h1 className="pyre-title">Pyre</h1>
             <p className="pyre-deck">
               {phase === "fallen"
-                ? `${lastRun} paces before the spikes closed. Best ${peak}.`
-                : "A gothic causeway under a blood moon. The shepherd sprints. The stone comes at you."}
+                ? `${lastRun} paces before the horde closed. Best ${peak}.`
+                : "A gothic causeway under a blood moon. The damned hunt your lane."}
             </p>
             <button type="button" className="pyre-start" onClick={start}>
               Start
             </button>
-            <p className="pyre-note">Slide across the causeway. Stay off the bone spikes.</p>
+            <p className="pyre-note">Tap a foe and Bolt howls straight at him. Slide on Bolt to change lane. Slide beside him to look.</p>
           </div>
         )}
       </div>
