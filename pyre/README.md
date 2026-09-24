@@ -13,3 +13,5 @@ Le regard gauche / droite est `master/pyre-wing-l.mp4` et `master/pyre-wing-r.mp
 La méthode pour tout refaire est dans [METHOD.md](METHOD.md).
 
 Le composite est `src/pyre-stage.tsx`.
+
+Le regard dans la salle est [ORBIT.md](ORBIT.md) : un doigt sur le sol, la pièce tourne autour de l’anneau, Bolt reste de dos au centre.

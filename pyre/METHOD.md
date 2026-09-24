@@ -1,6 +1,6 @@
 # Pyre — méthode complète
 
-Ce fichier suffit à refaire Pyre. Ne pas réinventer Bolt, l’aura, la jointure des ailes, ni le hurlement : les essais ratés sont listés en bas.
+Ce fichier suffit à refaire Pyre. Ne pas réinventer Bolt, l’aura, la jointure des ailes, ni le hurlement : les essais ratés sont listés en bas. Le regard dans la salle est [ORBIT.md](ORBIT.md) — ne pas le réinventer non plus.
 
 Pyre est un endless runner Diablo. Une route de lave défile. Bolt (berger blanc, vu de dos) sprinte dessus. Le joueur glisse pour changer de voie, regarde à gauche et à droite, et tape un ennemi pour le hurler.
 
@@ -201,6 +201,12 @@ ffmpeg -i brut.mp4 -vf scale=720:1280 -an -c:v libx264 -crf 20 -pix_fmt yuv420p 
 | `master/citadel-hall.mp4` | Le hall, jusqu'à la salle. Première image = dernière image de l'ouverture. |
 | `master/room-breath.mp4` | La salle, caméra fixe, une seule porte turquoise, anneau au sol. Boucle. |
 | `master/room-holo.mp4` | L'hologramme. Première image = une frame de `room-breath`. |
+| `master/orbit/left-01.jpg` … `left-16.jpg` | Passe de caméra vers la porte gauche. Voir [ORBIT.md](ORBIT.md). |
+| `master/orbit/right-01.jpg` … `right-16.jpg` | Passe de caméra vers la porte droite. |
+| `master/cam-left.mp4` | Source de la suite gauche. |
+| `master/cam-right-orbit.mp4` | Source de la suite droite. Pas `cam-right.mp4` (double portail). |
+| `master/bolt-breath.mp4` | Bolt de dos, dans la salle, et pendant le regard. |
+| `master/bolt-turn.mp4` | Deux doigts, il se tourne face caméra. |
 
 `doorMode` : `ride` (arrivée) → `open` → `hall` → `room` → `map`.
 
@@ -305,4 +311,5 @@ Le site public est une publication de l'app, pas ce dossier git. Tant que cette 
 5. Un nouvel ennemi = une vidéo fond vert + une entrée dans `FOE_KIND` + un mp4 de mort. Ne pas respawn le boss (`kind` 2) tant qu'on ne le redemande pas.
 6. Une nouvelle pièce = dernière image du clip d'avant en première image du suivant. Image-to-video. Pas de coupe.
 7. Le retour constellation → salle est `/room` (`src/routes/room.tsx`). Ne pas renvoyer vers la racine.
-8. Compresser avant de committer : `ffmpeg -an -vf scale=480:-2 -c:v libx264 -crf 27 -pix_fmt yuv420p -movflags +faststart`. Rester sous 100 Mo par fichier. Les clips de la citadelle déjà en ligne sont en 720×1280, crf 20.
+8. Le regard dans la salle : lire [ORBIT.md](ORBIT.md). JPEG `orbit/left-01..16` et `orbit/right-01..16`. Bolt de dos sur l'anneau. Pas de mur du fond. Pas de shader qui tourne la photo.
+9. Compresser avant de committer : `ffmpeg -an -vf scale=480:-2 -c:v libx264 -crf 27 -pix_fmt yuv420p -movflags +faststart`. Rester sous 100 Mo par fichier. Les clips de la citadelle déjà en ligne sont en 720×1280, crf 20.
