@@ -168,11 +168,116 @@ Deux éléments vidéo sur le même mp4. Quand le lecteur actif arrive à ~0,35 
 - Quad de hurlement trop large : le feu reste visuellement vertical. Le garder étroit.
 - Mort générée avec un prompt gore : la génération est refusée.
 
+## 8. Boss, citadelle, star map
+
+On reste sur le biome 1 (la route Pyre) jusqu'au boss. Pas de coupe violente vers un deuxième biome.
+
+À `distance >= PYRE_PACES` (600), les petits ennemis s'arrêtent. Un boss (`kind: 2`) pop sur la route, `z` à 0.16 (déjà assez grand, pas une poussière à l'horizon), `speed` 0.08, `hp` 6. Il avance et attaque comme les autres. Six hurlements. Au sixième, on joue `boss-ash.mp4` (`currentTime` 0.4, `playbackRate` 1.15) et on passe en phase `citadel`.
+
+`GOD = true` : Bolt ne meurt pas. C'est voulu, pour tester. Ne pas le remettre à false sans qu'on le demande.
+
+Constantes en plus :
+
+```
+PYRE_PACES = 600
+BOSS_AT = 600
+BOSS_HITS = 6
+GOD = true
+STAR_MAP = https://boltversee-odyssey-star-map.grok.me
+ROOM_VANISH = 0.50
+ROOM_STEP = 0.67
+```
+
+Boss dans `FOE_KIND` : `h 1.05`, `foot 0.98`, `reach 0.70`, `rate 1.15`, `agility 0.15`. Sa taille suit `near` tout de suite (`grow = near`), pas le coefficient des petits démons.
+
+### Vidéos, dans l'ordre
+
+Chaque clip commence sur la dernière image du clip d'avant. Image-to-video, 9:16, 10 s. On encode ensuite :
+
+```
+ffmpeg -i brut.mp4 -vf scale=720:1280 -an -c:v libx264 -crf 20 -pix_fmt yuv420p -movflags +faststart
+```
+
+| Fichier | Rôle |
+|---|---|
+| `master/boss.mp4` | Le seigneur de la porte, fond vert, il bouge et frappe. Pas une image figée. |
+| `master/boss-ash.mp4` | Sa mort, fond vert. |
+| `master/citadel-arrive.mp4` | La route entre dans les portes. Joue une fois après le boss. |
+| `master/citadel-open.mp4` | Les portes s'ouvrent. Déclenché par un tap. |
+| `master/citadel-hall.mp4` | Le hall, jusqu'à la salle. Première image = dernière image de l'ouverture. |
+| `master/room-breath.mp4` | La salle, caméra fixe, une seule porte turquoise, anneau au sol. Boucle. |
+| `master/room-holo.mp4` | L'hologramme. Première image = une frame de `room-breath`. |
+
+`doorMode` : `ride` (arrivée) → `open` → `hall` → `room` → `map`.
+
+On ne reprend pas `citadel-arrive` s'il est en pause et que `doorsLive` est déjà vrai. Sinon le raccourci du menu se fait réécraser.
+
+### Menu
+
+Deux boutons, sur la couverture et après une chute.
+
+- **Start** appelle `begin()`. La route, depuis zéro.
+- **The gates** appelle `openGates(true)`. Phase `citadel`, `distance = 600`, `doorsLive` tout de suite, la vidéo d'arrivée est seekée à `duration - 0.08` puis mise en pause. Le hint « Tap the gates » est là. Ça n'écrit pas le record.
+
+### Contact au sol dans la salle
+
+Un déplacement linéaire en Y fait flotter Bolt dans la porte. Les pattes suivent le plan du marbre. `depth` va de 0 (près) à 1 (la marche, pas l'intérieur de la lumière).
+
+```
+nearSpan = PLANT_Y - ROOM_VANISH
+farSpan = ROOM_STEP - ROOM_VANISH
+persp = 1 + depth * (nearSpan / farSpan - 1)
+footY = ROOM_VANISH + nearSpan / persp
+scale = (footY - ROOM_VANISH) / nearSpan
+h = BOLT_H * scale
+y = footY - PAW_V * h
+```
+
+`y` est le haut du quad. Les pattes, à `PAW_V` dans la texture, tombent sur `footY`. L'ombre est sur `footY`, pas sous le bas du quad (il y a du transparent sous les pattes). La voie se resserre avec le même `scale`. Hors de la salle, `depth` vaut 0 : on retombe sur `y = PLANT_Y - PAW_V * h`.
+
+`ROOM_STEP = 0.67` est le haut de la marche, mesuré sur la frame de la salle (la porte turquoise finit vers 0.66). Ne pas viser 0.59 : c'est dans la lumière.
+
+### Gestes dans la salle
+
+Décidés au pointerdown.
+
+- Le doigt part sur Bolt : glisser change la voie et `depthTarget`. Lui seul.
+- Le doigt part ailleurs : Bolt ne bouge pas, même si le doigt dérive. Au relâchement, si le déplacement est sous 40 px :
+  - porte : `nx` 0.34–0.66 et `ny` 0.28–0.58 → `depthTarget = 1`
+  - anneau : `nx` 0.16–0.84 et `ny` 0.55–0.92 → `openMap()`
+- Ne pas appeler `slideTo` au pointerup si le geste n'était pas sur Bolt. L'ancienne zone de l'anneau s'arrêtait à `ny` 0.70 et ratait les grands cercles du bas.
+
+`depthTarget` est rejoint à 0.42 par seconde. Le galop est à 1.7 tant qu'il marche, 1.15 quand il est arrivé. Ne pas le ramener à un trot : le joueur a déjà dit que c'était trop lent.
+
+### Hologramme
+
+`openMap` joue `room-holo.mp4` une fois, puis `location.replace(STAR_MAP)` à `duration - 0.4`.
+
+La génération qui marche, image-to-video depuis une frame de `room-breath` :
+
+- la salle ne change pas au départ
+- un faisceau fin monte de l'anneau
+- une sphère armillaire : quelques anneaux d'or et de turquoise, fins, trois petites planètes
+- la caméra traverse les anneaux
+- on finit sur une étoile blanche et or, couronne de filaments, deux planètes
+
+À ne pas demander : un ballon, une bulle de points, un mesh qui gonfle. C'est ce que le joueur a rejeté. Incrémenter `?v=` sur le `src` après chaque remplacement du mp4, sinon le navigateur garde l'ancien.
+
+## Ce qui n'a pas marché (citadelle)
+
+- Couper sec vers un deuxième biome à 600 pas. Rester sur Pyre, le boss, puis la route qui entre dans la citadelle.
+- Boss en image collée, ou avec une flaque rouge sous les pieds, ou rendu transparent par le chroma. Il doit bouger dans sa propre vidéo, fond vert, comme les autres démons.
+- Ralentir Bolt presque à l'arrêt devant la porte. Le caler sur la plaque, pas en dessous.
+- Pattes qui montent en ligne droite avec la profondeur. Il flotte dans la porte. Le plan perspective ci-dessus règle ça.
+- Tout doigt dans la salle déplace Bolt, et la zone de l'anneau ne couvre que le haut. Le tap n'ouvre presque jamais la star map.
+- Hologramme en ballon de constellation. L'armillaire, puis l'étoile.
+
 ## Pour un nouveau Grok
 
 1. Lire ce fichier avant de toucher au composite.
 2. Copier `src/pyre-stage.tsx` tel quel. Ne pas réécrire les shaders de mémoire.
-3. Servir les mp4 de `master/` sous `/master/…`.
-4. Ne pas changer `BOLT_H`, `PAW_V`, `BOLT_RATE` sans une capture du joueur : la taille et la vitesse ont déjà été calées.
-5. Un nouvel ennemi = une vidéo fond vert + une entrée dans `FOE_KIND` + un mp4 de mort. Même pipeline que fallen / brute.
-6. Compresser avant de committer : `ffmpeg -an -vf scale=480:-2 -c:v libx264 -crf 27 -pix_fmt yuv420p -movflags +faststart`. Rester sous 100 Mo par fichier.
+3. Servir les mp4 de `master/` sous `/master/…`. Le CSS des classes `pyre-*` est `src/pyre.css`.
+4. Ne pas changer `BOLT_H`, `PAW_V`, `BOLT_RATE`, `ROOM_STEP` sans une capture du joueur.
+5. Un nouvel ennemi = une vidéo fond vert + une entrée dans `FOE_KIND` + un mp4 de mort. Même pipeline que fallen / brute. Le boss est `kind` 2, six coups.
+6. Une nouvelle pièce = dernière image du clip d'avant en première image du suivant. Image-to-video. Pas de coupe.
+7. Compresser avant de committer : `ffmpeg -an -vf scale=480:-2 -c:v libx264 -crf 27 -pix_fmt yuv420p -movflags +faststart`. Rester sous 100 Mo par fichier. Les clips de la citadelle déjà en ligne sont en 720×1280, crf 20.

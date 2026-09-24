@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 
-type Phase = "cover" | "run" | "fallen";
+type Phase = "cover" | "run" | "fallen" | "citadel";
 
 type Foe = {
   id: number;
-  kind: 0 | 1;
+  kind: 0 | 1 | 2;
   lane: number;
   aim: number | null;
   z: number;
@@ -12,10 +12,12 @@ type Foe = {
   struck: boolean;
   side: -1 | 0 | 1;
   wide: number;
+  hp: number;
+  hurt: number;
 };
 
 type Ash = {
-  kind: 0 | 1;
+  kind: 0 | 1 | 2;
   x: number;
   y: number;
   w: number;
@@ -31,11 +33,19 @@ const BOLT_ASPECT = 784 / 1168;
 const PAW_V = 0.93;
 const PLANT_Y = 0.8;
 const BOLT_RATE = 4;
+const STAR_MAP = "https://boltversee-odyssey-star-map.grok.me";
 const HORIZON = 0.545;
+const ROOM_VANISH = 0.5;
+const ROOM_STEP = 0.67;
+const PYRE_PACES = 600;
+const GOD = true;
+const BOSS_HITS = 6;
+const BOSS_AT = PYRE_PACES;
 const FOE_ASPECT = 480 / 854;
 const FOE_KIND = [
   { h: 0.3, foot: 0.96, reach: 0.34, rate: 1.45, agility: 1.55 },
   { h: 0.4, foot: 0.97, reach: 0.48, rate: 1.05, agility: 0.7 },
+  { h: 1.05, foot: 0.98, reach: 0.7, rate: 1.15, agility: 0.15 },
 ] as const;
 
 const ROAD_VS = `
@@ -56,6 +66,8 @@ uniform sampler2D uSideR;
 uniform float uGlance;
 uniform float uWings;
 uniform float uFlash;
+uniform float uAlpha;
+uniform float uApproach;
 void main() {
   vec2 screen = vUv;
   float mag = abs(uGlance);
@@ -81,10 +93,11 @@ void main() {
   c *= vec3(1.04, 0.9, 0.82);
   float vig = smoothstep(0.2, 0.95, length(screen - vec2(0.5, 0.48)));
   c *= mix(1.0, 0.62, vig);
+  c = mix(c, c * vec3(0.74, 0.82, 1.12) + vec3(0.03, 0.02, 0.07), clamp(uApproach, 0.0, 1.0) * 0.7);
   float n = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453);
   c += (n - 0.5) * 0.028;
   c = mix(c, vec3(0.55, 0.05, 0.08), uFlash * 0.55);
-  gl_FragColor = vec4(c, 1.0);
+  gl_FragColor = vec4(c, uAlpha);
 }`;
 
 const BOLT_FS = `
@@ -186,14 +199,22 @@ void main() {
   gl_FragColor = vec4(col, 1.0);
 }`;
 
-const PLATE_FS = `
+const GATE_FS = `
 precision mediump float;
 varying vec2 vUv;
 uniform sampler2D uTex;
+uniform float uAlpha;
+uniform float uV0;
+uniform float uV1;
+uniform float uMask;
 void main() {
-  vec3 c = texture2D(uTex, vUv).rgb;
-  float hot = smoothstep(0.05, 0.42, c.r);
-  gl_FragColor = vec4(vec3(c.r * 1.5, c.r * 0.28, c.r * 0.05) * hot, 1.0);
+  vec2 uv = vec2(vUv.x, mix(uV0, uV1, vUv.y));
+  vec3 rgb = texture2D(uTex, uv).rgb;
+  float side = smoothstep(0.0, 0.32, vUv.x) * smoothstep(1.0, 0.68, vUv.x);
+  float intoRoad = smoothstep(0.0, 0.58, vUv.y);
+  float intoSky = smoothstep(1.0, 0.86, vUv.y);
+  float mask = mix(1.0, side * intoRoad * intoSky, uMask);
+  gl_FragColor = vec4(rgb, uAlpha * mask);
 }`;
 
 function readPeak() {
@@ -313,8 +334,19 @@ export function PyreStage() {
   const boltRef = useRef<HTMLVideoElement>(null);
   const fallenRef = useRef<HTMLVideoElement>(null);
   const bruteRef = useRef<HTMLVideoElement>(null);
+  const bossRef = useRef<HTMLVideoElement>(null);
+  const bossAshRef = useRef<HTMLVideoElement>(null);
   const wingLRef = useRef<HTMLVideoElement>(null);
   const wingRRef = useRef<HTMLVideoElement>(null);
+  const gateARef = useRef<HTMLVideoElement>(null);
+  const gateBRef = useRef<HTMLVideoElement>(null);
+  const gateWingLRef = useRef<HTMLVideoElement>(null);
+  const gateWingRRef = useRef<HTMLVideoElement>(null);
+  const citadelRef = useRef<HTMLVideoElement>(null);
+  const openRef = useRef<HTMLVideoElement>(null);
+  const hallRef = useRef<HTMLVideoElement>(null);
+  const breathRef = useRef<HTMLVideoElement>(null);
+  const holoRef = useRef<HTMLVideoElement>(null);
   const howlRef = useRef<HTMLVideoElement>(null);
   const ashFallenRef = useRef<HTMLVideoElement>(null);
   const ashBruteRef = useRef<HTMLVideoElement>(null);
@@ -323,6 +355,10 @@ export function PyreStage() {
   const [lastRun, setLastRun] = useState(0);
   const [paces, setPaces] = useState(0);
   const [wounds, setWounds] = useState(0);
+  const [bossHp, setBossHp] = useState(0);
+  const [gatesOpen, setGatesOpen] = useState(false);
+  const [doorsReady, setDoorsReady] = useState(false);
+  const [roomLive, setRoomLive] = useState(false);
   const phaseRef = useRef<Phase>("cover");
   const hudRef = useRef<(paces: number, wounds: number) => void>(() => undefined);
 
@@ -351,13 +387,28 @@ export function PyreStage() {
     const bolt = boltRef.current;
     const fallen = fallenRef.current;
     const brute = bruteRef.current;
+    const boss = bossRef.current;
+    const bossAsh = bossAshRef.current;
     const wingL = wingLRef.current;
     const wingR = wingRRef.current;
+    const gateA = gateARef.current;
+    const gateB = gateBRef.current;
+    const gateWingL = gateWingLRef.current;
+    const gateWingR = gateWingRRef.current;
+    const citadel = citadelRef.current;
+    const openVid = openRef.current;
+    const hall = hallRef.current;
+    const breath = breathRef.current;
+    const holo = holoRef.current;
     const howlVid = howlRef.current;
     const ashFallen = ashFallenRef.current;
     const ashBrute = ashBruteRef.current;
     const frame = frameRef.current;
-    if (!canvas || !fx || !roadA || !roadB || !bolt || !fallen || !brute || !wingL || !wingR || !howlVid || !ashFallen || !ashBrute || !frame) return;
+    if (
+      !canvas || !fx || !roadA || !roadB || !bolt || !fallen || !brute || !boss || !bossAsh ||
+      !wingL || !wingR || !howlVid || !ashFallen || !ashBrute || !gateA || !gateB ||
+      !gateWingL || !gateWingR || !citadel || !openVid || !hall || !breath || !holo || !frame
+    ) return;
 
     const gl = canvas.getContext("webgl", {
       alpha: false,
@@ -371,18 +422,26 @@ export function PyreStage() {
     const boltProg = program(gl, BOLT_FS);
     const enemyProg = program(gl, ENEMY_FS);
     const howlProg = program(gl, HOWL_FS);
+    const gateProg = program(gl, GATE_FS);
     const shadowProg = program(gl, SHADOW_FS);
     const buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     const roadTex = makeTex(gl);
     const wingLTex = makeTex(gl);
     const wingRTex = makeTex(gl);
+    const gateRoadTex = makeTex(gl);
+    const gateWingLTex = makeTex(gl);
+    const gateWingRTex = makeTex(gl);
+    const citadelTex = makeTex(gl);
     const boltTex = makeTex(gl);
-    const foeTex = [makeTex(gl), makeTex(gl)];
+    const foeTex = [makeTex(gl), makeTex(gl), makeTex(gl)];
     const howlTex = makeTex(gl);
-    const ashTex = [makeTex(gl), makeTex(gl)];
+    const ashTex = [makeTex(gl), makeTex(gl), makeTex(gl)];
+    const farTex = makeTex(gl);
     const poster = new Image();
     poster.src = "/master/pyre-first.jpg";
+    const far = new Image();
+    far.src = "/master/citadel-far.jpg";
 
     const keys = new Set<string>();
     let steerOverride: number | null = null;
@@ -390,7 +449,7 @@ export function PyreStage() {
     let glance = 0;
     let glanceTarget = 0;
     let viewShift = 0;
-    let drag: { id: number; x: number; y: number; lane: number; looking: boolean } | null = null;
+    let drag: { id: number; x: number; y: number; lane: number; depth: number; looking: boolean; ny: number; onBolt: boolean } | null = null;
     let distance = 0;
     let wounds = 0;
     let invuln = 0;
@@ -399,15 +458,26 @@ export function PyreStage() {
     let spawnIn = 2.1;
     let flankNext: -1 | 1 = -1;
     let activeRoad = 0;
+    let activeGate = 0;
+    let arriveAge = 0;
+    let bossSpawned = false;
+    let cardShown = false;
+    let doorsLive = false;
+    let doorMode: "ride" | "open" | "hall" | "room" | "map" = "ride";
+    let roomDepth = 0;
+    let depthTarget = 0;
+    let mapHop = false;
     let best = readPeak();
     const foes: Foe[] = [];
     const ashes: Ash[] = [];
     let nextFoe = 1;
     const shots: { t: number; dur: number; id: number }[] = [];
-    const foeClips = [fallen, brute];
+    const foeClips = [fallen, brute, boss];
     const trail: { lane: number; age: number }[] = [];
     const roads = [roadA, roadB];
     const wings = [wingL, wingR];
+    const gateRoads = [gateA, gateB];
+    const gateWings = [gateWingL, gateWingR];
 
     const arm = (video: HTMLVideoElement) => {
       video.muted = true;
@@ -432,12 +502,18 @@ export function PyreStage() {
     fallen.playbackRate = FOE_KIND[0].rate;
     brute.defaultPlaybackRate = FOE_KIND[1].rate;
     brute.playbackRate = FOE_KIND[1].rate;
-    for (const wing of wings) {
+    for (const wing of [...wings, ...gateWings]) {
       wing.muted = true;
       wing.playsInline = true;
       wing.loop = true;
       wing.playbackRate = 1;
       wing.disablePictureInPicture = true;
+    }
+    for (const clip of [gateA, gateB, citadel, openVid, hall, breath, holo]) {
+      clip.muted = true;
+      clip.playsInline = true;
+      clip.loop = clip === breath || clip === gateA || clip === gateB;
+      clip.disablePictureInPicture = true;
     }
     for (const clip of [howlVid, ashFallen, ashBrute]) {
       clip.muted = true;
@@ -491,6 +567,13 @@ export function PyreStage() {
       bolt.pause();
       foeClips.forEach((video) => video.pause());
       wings.forEach((video) => video.pause());
+      gateRoads.forEach((video) => video.pause());
+      gateWings.forEach((video) => video.pause());
+      citadel.pause();
+      openVid.pause();
+      hall.pause();
+      breath.pause();
+      holo.pause();
       howlVid.pause();
       ashFallen.pause();
       ashBrute.pause();
@@ -510,6 +593,19 @@ export function PyreStage() {
       shots.length = 0;
       trail.length = 0;
       spawnIn = 2.1;
+      arriveAge = 0;
+      activeGate = 0;
+      bossSpawned = false;
+      cardShown = false;
+      doorsLive = false;
+      doorMode = "ride";
+      roomDepth = 0;
+      depthTarget = 0;
+      mapHop = false;
+      setBossHp(0);
+      setGatesOpen(false);
+      setDoorsReady(false);
+      setRoomLive(false);
       setPhase("run");
       setLastRun(0);
       paintHud();
@@ -564,7 +660,7 @@ export function PyreStage() {
     const audio: { ctx?: AudioContext; master?: GainNode } = {};
 
     const hit = () => {
-      if (invuln > 0) return;
+      if (GOD || invuln > 0) return;
       wounds += 1;
       invuln = 0.85;
       flash = 1;
@@ -608,7 +704,7 @@ export function PyreStage() {
       const worldX = foe.side === 0 ? 0.5 + foe.lane * SLIDE_AMP * spread : foe.wide;
       const footX = worldX - viewShift;
       const footY = HORIZON + (PLANT_Y - HORIZON) * near;
-      const grow = foe.side === 0 ? 0.42 + 0.58 * near : 0.58 + 0.42 * near;
+      const grow = foe.kind === 2 ? near : foe.side === 0 ? 0.42 + 0.58 * near : 0.58 + 0.42 * near;
       const h = spec.h * grow;
       const aspect = canvas.width / Math.max(1, canvas.height);
       const w = (h * FOE_ASPECT) / aspect;
@@ -693,23 +789,29 @@ export function PyreStage() {
       lanePos = Math.max(-1, Math.min(1, originLane + (clientX - originX) / width / 0.22));
     };
     const onSlideDown = (event: PointerEvent) => {
-      if (phaseRef.current !== "run" || event.button !== 0) return;
+      const riding = phaseRef.current === "run" || (phaseRef.current === "citadel" && doorMode !== "map");
+      if (!riding || event.button !== 0) return;
       const rect = frame.getBoundingClientRect();
       const nx = (event.clientX - rect.left) / (rect.width || 1);
       const ny = (event.clientY - rect.top) / (rect.height || 1);
-      const aspect = (rect.width || 1) / (rect.height || 1);
-      const h = BOLT_H;
-      const w = (h * BOLT_ASPECT) / aspect;
-      const x = 0.5 + lanePos * SLIDE_AMP - viewShift - w / 2;
-      const y = PLANT_Y - PAW_V * h;
+      const box = boltBox();
       const pad = 0.05;
-      const onBolt = nx >= x - pad && nx <= x + w + pad && ny >= y - pad && ny <= y + h + pad;
-      const tapped = foeUnder(nx, ny);
+      const onBolt = nx >= box.x - pad && nx <= box.x + box.w + pad && ny >= box.y - pad && ny <= box.y + box.h + pad;
+      const tapped = phaseRef.current === "run" ? foeUnder(nx, ny) : null;
       if (tapped && !onBolt) {
         castHowl(tapped);
         return;
       }
-      drag = { id: event.pointerId, x: event.clientX, y: event.clientY, lane: lanePos, looking: !onBolt };
+      drag = {
+        id: event.pointerId,
+        x: event.clientX,
+        y: event.clientY,
+        lane: lanePos,
+        depth: depthTarget,
+        looking: phaseRef.current === "run" && !onBolt,
+        ny,
+        onBolt,
+      };
       try {
         frame.setPointerCapture(event.pointerId);
       } catch {
@@ -718,6 +820,14 @@ export function PyreStage() {
     };
     const onSlideMove = (event: PointerEvent) => {
       if (!drag || event.pointerId !== drag.id) return;
+      if (phaseRef.current === "citadel" && doorMode === "room") {
+        if (!drag.onBolt) return;
+        slideTo(event.clientX, drag.x, drag.lane);
+        const height = frame.clientHeight || 1;
+        const dy = event.clientY - drag.y;
+        depthTarget = Math.max(0, Math.min(1, drag.depth - dy / (height * 0.42)));
+        return;
+      }
       if (drag.looking) {
         const width = frame.clientWidth || 1;
         const dx = event.clientX - drag.x;
@@ -728,8 +838,21 @@ export function PyreStage() {
     };
     const onSlideUp = (event: PointerEvent) => {
       if (!drag || event.pointerId !== drag.id) return;
+      const moved = Math.hypot(event.clientX - drag.x, event.clientY - drag.y);
+      const inRoom = phaseRef.current === "citadel" && doorMode === "room";
       if (drag.looking) glanceTarget = 0;
-      else slideTo(event.clientX, drag.x, drag.lane);
+      else if (!inRoom || drag.onBolt) slideTo(event.clientX, drag.x, drag.lane);
+      const rect = frame.getBoundingClientRect();
+      const nx = (event.clientX - rect.left) / (rect.width || 1);
+      if (phaseRef.current === "citadel" && moved < 40) {
+        if (doorMode === "ride" && doorsLive && drag.ny < 0.72) openTheDoors();
+        else if (inRoom && !drag.onBolt) {
+          const onDoor = nx > 0.34 && nx < 0.66 && drag.ny > 0.28 && drag.ny < 0.58;
+          const onRing = nx > 0.16 && nx < 0.84 && drag.ny > 0.55 && drag.ny < 0.92;
+          if (onDoor) depthTarget = 1;
+          else if (onRing) openMap();
+        }
+      }
       drag = null;
       try {
         if (frame.hasPointerCapture(event.pointerId)) frame.releasePointerCapture(event.pointerId);
@@ -744,6 +867,106 @@ export function PyreStage() {
 
     let raf = 0;
     let last = performance.now();
+
+    const openTheDoors = () => {
+      if (doorMode !== "ride" || !doorsLive) return;
+      doorMode = "open";
+      doorsLive = false;
+      setDoorsReady(false);
+      try {
+        openVid.currentTime = 0;
+      } catch {
+        /* not seekable yet */
+      }
+      openVid.loop = false;
+      playSafe(openVid);
+    };
+
+    const openMap = () => {
+      if (doorMode !== "room" || mapHop) return;
+      doorMode = "map";
+      setRoomLive(false);
+      try {
+        holo.currentTime = 0;
+      } catch {
+        /* not seekable yet */
+      }
+      holo.loop = false;
+      playSafe(holo);
+    };
+
+    const boltBox = () => {
+      const aspect = (frame.clientWidth || 1) / (frame.clientHeight || 1);
+      const depth = phaseRef.current === "citadel" && doorMode === "room" ? roomDepth : 0;
+      const nearSpan = PLANT_Y - ROOM_VANISH;
+      const farSpan = Math.max(0.04, ROOM_STEP - ROOM_VANISH);
+      const persp = 1 + depth * (nearSpan / farSpan - 1);
+      const footY = ROOM_VANISH + nearSpan / persp;
+      const scale = (footY - ROOM_VANISH) / nearSpan;
+      const h = BOLT_H * scale;
+      const w = (h * BOLT_ASPECT) / aspect;
+      const y = footY - PAW_V * h;
+      const amp = SLIDE_AMP * scale;
+      const x = 0.5 + lanePos * amp - viewShift - w / 2;
+      return { x, y, w, h, footY };
+    };
+
+    const openGates = (atDoors = false) => {
+      if (!atDoors && phaseRef.current !== "run") return;
+      phaseRef.current = "citadel";
+      arriveAge = 0;
+      foes.length = 0;
+      ashes.length = 0;
+      shots.length = 0;
+      glance = 0;
+      glanceTarget = 0;
+      lanePos = 0;
+      doorMode = "ride";
+      doorsLive = atDoors;
+      cardShown = false;
+      roomDepth = 0;
+      depthTarget = 0;
+      mapHop = false;
+      setPhase("citadel");
+      setRoomLive(false);
+      setBossHp(0);
+      setDoorsReady(atDoors);
+      setGatesOpen(false);
+      if (!atDoors && distance > best) {
+        best = distance;
+        writePeak(best);
+        setPeak(Math.floor(best));
+      }
+      if (atDoors) distance = PYRE_PACES;
+      setLastRun(Math.floor(distance));
+      paintHud();
+      const park = () => {
+        const end = Math.max(0, (citadel.duration || 0) - 0.08);
+        try {
+          citadel.currentTime = end;
+        } catch {
+          /* not seekable yet */
+        }
+      };
+      citadel.loop = false;
+      if (atDoors) {
+        if (citadel.readyState >= 1 && citadel.duration) park();
+        else citadel.addEventListener("loadedmetadata", park, { once: true });
+        citadel.pause();
+      } else {
+        try {
+          citadel.currentTime = 0;
+        } catch {
+          /* not seekable yet */
+        }
+        playSafe(citadel);
+      }
+      playSafe(bolt);
+      openVid.pause();
+      hall.pause();
+      breath.pause();
+      holo.pause();
+    };
 
     const tick = (now: number) => {
       const dt = Math.min(0.1, (now - last) / 1000);
@@ -774,7 +997,25 @@ export function PyreStage() {
         shake = Math.max(0, shake - dt);
         spawnIn -= dt;
         const farBusy = foes.some((foe) => foe.z < 0.55);
-        if (spawnIn <= 0 && foes.length < 2 && !farBusy) {
+        if (!bossSpawned && distance >= BOSS_AT && foes.every((foe) => foe.kind !== 2)) {
+          bossSpawned = true;
+          for (let i = foes.length - 1; i >= 0; i -= 1) foes.splice(i, 1);
+          foes.push({
+            id: nextFoe++,
+            kind: 2,
+            lane: 0,
+            aim: 0,
+            z: 0.16,
+            speed: 0.08,
+            struck: false,
+            side: 0,
+            wide: 0.5,
+            hp: BOSS_HITS,
+            hurt: 0,
+          });
+          setBossHp(BOSS_HITS);
+        }
+        if (spawnIn <= 0 && foes.length < 2 && !farBusy && !bossSpawned && distance < PYRE_PACES - 40) {
           const pace = 1 + Math.min(0.55, distance / 220);
           const kind: 0 | 1 = Math.random() < 0.7 ? 0 : 1;
           const fromSide = Math.random() < 0.6;
@@ -792,11 +1033,19 @@ export function PyreStage() {
             struck: false,
             side,
             wide: side < 0 ? -0.22 : side > 0 ? 1.22 : 0.5,
+            hp: 1,
+            hurt: 0,
           });
           spawnIn = 2.6 + Math.random() * 1.5;
         }
         for (let i = foes.length - 1; i >= 0; i -= 1) {
           const foe = foes[i]!;
+          foe.hurt = Math.max(0, foe.hurt - dt);
+          if (foe.kind === 2) {
+            foe.z = Math.min(0.52, foe.z + foe.speed * dt);
+            foe.lane += (0 - foe.lane) * Math.min(1, dt * 1.4);
+            continue;
+          }
           const spec = FOE_KIND[foe.kind];
           const near = Math.min(1, Math.max(0, foe.z));
           if (foe.side === 0) {
@@ -830,6 +1079,13 @@ export function PyreStage() {
           const foe = foes.find((item) => item.id === boltShot.id);
           shots.splice(i, 1);
           if (!foe) continue;
+          foe.hp -= 1;
+          foe.hurt = 0.35;
+          if (foe.kind === 2) setBossHp(Math.max(0, foe.hp));
+          if (foe.hp > 0) {
+            crack();
+            continue;
+          }
           const spot = foeSpot(foe);
           ashes.push({
             kind: foe.kind,
@@ -838,18 +1094,19 @@ export function PyreStage() {
             w: spot.w * 1.16,
             h: spot.h * 1.12,
             t: 0,
-            life: 1.45,
+            life: foe.kind === 2 ? 2.1 : 1.45,
           });
           foes.splice(foes.indexOf(foe), 1);
-          const vid = foe.kind === 0 ? ashFallen : ashBrute;
+          const vid = foe.kind === 0 ? ashFallen : foe.kind === 1 ? ashBrute : bossAsh;
           try {
-            vid.currentTime = 0.9;
+            vid.currentTime = foe.kind === 2 ? 0.4 : 0.9;
           } catch {
             /* not seekable yet */
           }
-          vid.playbackRate = 1.7;
+          vid.playbackRate = foe.kind === 2 ? 1.15 : 1.7;
           playSafe(vid);
           crack();
+          if (foe.kind === 2) openGates();
         }
         if (!shots.length && !howlVid.paused) howlVid.pause();
         for (let i = ashes.length - 1; i >= 0; i -= 1) {
@@ -860,6 +1117,8 @@ export function PyreStage() {
 
         const lead = roads[activeRoad]!;
         const next = roads[1 - activeRoad]!;
+        const roadRate = 1;
+        if (lead.playbackRate !== roadRate) lead.playbackRate = roadRate;
         if (lead.duration && lead.currentTime > lead.duration - 0.35 && next.paused) {
           try {
             next.currentTime = 0;
@@ -885,7 +1144,7 @@ export function PyreStage() {
         if (lead.paused && !lead.ended) playSafe(lead);
         const shown = roads[activeRoad]!;
         for (const wing of wings) {
-          if (wing.playbackRate !== 1) wing.playbackRate = 1;
+          if (wing.playbackRate !== roadRate) wing.playbackRate = roadRate;
           if (wing.paused) playSafe(wing);
           if (shown.readyState >= 2 && wing.readyState >= 2 && wing.duration && shown.currentTime < 0.08 && wing.currentTime > 0.4) {
             try {
@@ -909,6 +1168,97 @@ export function PyreStage() {
         const lastMark = trail[trail.length - 1];
         if (!lastMark || lastMark.age > 0.028) trail.push({ lane: lanePos, age: 0 });
       }
+      if (phaseRef.current === "citadel") {
+        if (doorMode !== "map" && !drag) {
+          let steer = steerOverride ?? 0;
+          if (steerOverride == null) {
+            if (keys.has("KeyA") || keys.has("ArrowLeft")) steer += 1;
+            if (keys.has("KeyD") || keys.has("ArrowRight")) steer -= 1;
+          }
+          steer = Math.max(-1, Math.min(1, steer));
+          lanePos = Math.max(-1, Math.min(1, lanePos - steer * 3.4 * dt));
+          if (doorMode === "room") {
+            if (keys.has("KeyW") || keys.has("ArrowUp")) depthTarget = Math.min(1, depthTarget + dt * 0.55);
+            if (keys.has("KeyS") || keys.has("ArrowDown")) depthTarget = Math.max(0, depthTarget - dt * 0.55);
+          }
+        }
+        const clipT = (video: HTMLVideoElement) => {
+          const span = video.duration || 10;
+          if (video.ended) return 1;
+          return Math.min(1, Math.max(0, video.currentTime / span));
+        };
+        const ease = (a: number, b: number, x: number) => {
+          const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
+          return t * t * (3 - 2 * t);
+        };
+        let gait = BOLT_RATE;
+        if (doorMode === "ride") {
+          const t = clipT(citadel);
+          const k = Math.pow(1 - t, 1.05);
+          gait = 2.35 + (BOLT_RATE - 2.35) * k;
+        } else if (doorMode === "open") {
+          const t = clipT(openVid);
+          const surge = ease(0.2, 0.45, t) * (1 - ease(0.7, 0.92, t));
+          gait = 2.45 + surge * 0.75;
+        } else if (doorMode === "hall") {
+          const t = clipT(hall);
+          gait = 1.85 + (2.5 - 1.85) * Math.pow(1 - t, 1.05);
+        } else if (doorMode === "room") {
+          gait = Math.abs(depthTarget - roomDepth) > 0.03 ? 1.7 : 1.15;
+        } else {
+          gait = 1.15;
+        }
+        if (doorMode !== "map") {
+          if (Math.abs(bolt.playbackRate - gait) > 0.04) bolt.playbackRate = gait;
+          if (bolt.paused) playSafe(bolt);
+        }
+        if (doorMode === "ride") {
+          if (!doorsLive && citadel.paused && !citadel.ended) playSafe(citadel);
+          if (!doorsLive && (citadel.ended || (citadel.duration > 0 && citadel.currentTime > citadel.duration - 0.4))) {
+            doorsLive = true;
+            setDoorsReady(true);
+          }
+        } else if (doorMode === "open") {
+          if (openVid.paused && !openVid.ended) playSafe(openVid);
+          if (!cardShown && (openVid.ended || (openVid.duration > 0 && openVid.currentTime > openVid.duration - 0.45))) {
+            cardShown = true;
+            doorMode = "hall";
+            roomDepth = 0;
+            depthTarget = 0;
+            try {
+              hall.currentTime = 0;
+            } catch {
+              /* not seekable yet */
+            }
+            hall.loop = false;
+            playSafe(hall);
+          }
+        } else if (doorMode === "hall") {
+          if (hall.paused && !hall.ended) playSafe(hall);
+          if (hall.ended || (hall.duration > 0 && hall.currentTime > hall.duration - 0.35)) {
+            doorMode = "room";
+            setRoomLive(true);
+            try {
+              breath.currentTime = 0;
+            } catch {
+              /* not seekable yet */
+            }
+            breath.loop = true;
+            playSafe(breath);
+          }
+        } else if (doorMode === "room") {
+          if (breath.paused) playSafe(breath);
+          const step = 0.42 * dt;
+          if (roomDepth < depthTarget) roomDepth = Math.min(depthTarget, roomDepth + step);
+          else roomDepth = Math.max(depthTarget, roomDepth - step);
+        } else if (!mapHop) {
+          if (holo.paused && !holo.ended) playSafe(holo);
+          if (holo.ended || (holo.duration > 0 && holo.currentTime > holo.duration - 0.4)) {
+            mapHop = true;
+            window.location.replace(STAR_MAP);
+          }
+        }
+      }
 
       const road = roads[activeRoad]!;
       const roadSource = road.readyState >= 2 ? road : poster.complete ? poster : null;
@@ -916,31 +1266,68 @@ export function PyreStage() {
       if (bolt.readyState >= 2) upload(gl, boltTex, bolt);
       if (fallen.readyState >= 2) upload(gl, foeTex[0]!, fallen);
       if (brute.readyState >= 2) upload(gl, foeTex[1]!, brute);
+      if (boss.readyState >= 2) upload(gl, foeTex[2]!, boss);
       if (howlVid.readyState >= 2) upload(gl, howlTex, howlVid);
       if (ashFallen.readyState >= 2) upload(gl, ashTex[0]!, ashFallen);
       if (ashBrute.readyState >= 2) upload(gl, ashTex[1]!, ashBrute);
+      if (bossAsh.readyState >= 2) upload(gl, ashTex[2]!, bossAsh);
       if (wingL.readyState >= 2) upload(gl, wingLTex, wingL);
       if (wingR.readyState >= 2) upload(gl, wingRTex, wingR);
+      const plate =
+        phaseRef.current !== "citadel"
+          ? null
+          : doorMode === "ride"
+            ? citadel
+            : doorMode === "open"
+              ? openVid
+              : doorMode === "hall"
+                ? hall.readyState >= 2
+                  ? hall
+                  : openVid
+                : doorMode === "map"
+                  ? holo.readyState >= 2
+                    ? holo
+                    : breath
+                  : breath.readyState >= 2
+                    ? breath
+                    : hall;
+      if (plate && plate.readyState >= 2) upload(gl, citadelTex, plate);
+      if (far.complete) upload(gl, farTex, far);
       const wingsReady = wingL.readyState >= 2 && wingR.readyState >= 2;
       const shift = lookShift(glance, wingsReady);
       viewShift = shift;
 
-      gl.disable(gl.BLEND);
-      gl.useProgram(roadProg);
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, roadTex);
-      gl.uniform1i(gl.getUniformLocation(roadProg, "uRoad"), 0);
-      gl.activeTexture(gl.TEXTURE1);
-      gl.bindTexture(gl.TEXTURE_2D, wingLTex);
-      gl.uniform1i(gl.getUniformLocation(roadProg, "uSideL"), 1);
-      gl.activeTexture(gl.TEXTURE2);
-      gl.bindTexture(gl.TEXTURE_2D, wingRTex);
-      gl.uniform1i(gl.getUniformLocation(roadProg, "uSideR"), 2);
-      gl.uniform1f(gl.getUniformLocation(roadProg, "uGlance"), glance);
-      gl.uniform1f(gl.getUniformLocation(roadProg, "uWings"), wingsReady ? 1 : 0);
-      gl.uniform1f(gl.getUniformLocation(roadProg, "uFlash"), flash);
-      gl.activeTexture(gl.TEXTURE0);
-      drawBuffer(FULL);
+      const paintRoad = () => {
+        gl.disable(gl.BLEND);
+        gl.useProgram(roadProg);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, roadTex);
+        gl.uniform1i(gl.getUniformLocation(roadProg, "uRoad"), 0);
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, wingLTex);
+        gl.uniform1i(gl.getUniformLocation(roadProg, "uSideL"), 1);
+        gl.activeTexture(gl.TEXTURE2);
+        gl.bindTexture(gl.TEXTURE_2D, wingRTex);
+        gl.uniform1i(gl.getUniformLocation(roadProg, "uSideR"), 2);
+        gl.uniform1f(gl.getUniformLocation(roadProg, "uGlance"), glance);
+        gl.uniform1f(gl.getUniformLocation(roadProg, "uWings"), wingsReady ? 1 : 0);
+        gl.uniform1f(gl.getUniformLocation(roadProg, "uFlash"), flash);
+        gl.uniform1f(gl.getUniformLocation(roadProg, "uAlpha"), 1);
+        gl.uniform1f(gl.getUniformLocation(roadProg, "uApproach"), 0);
+        gl.activeTexture(gl.TEXTURE0);
+        drawBuffer(FULL);
+      };
+      if (plate && plate.readyState >= 2) {
+        gl.disable(gl.BLEND);
+        gl.useProgram(gateProg);
+        gl.bindTexture(gl.TEXTURE_2D, citadelTex);
+        gl.uniform1i(gl.getUniformLocation(gateProg, "uTex"), 0);
+        gl.uniform1f(gl.getUniformLocation(gateProg, "uAlpha"), 1);
+        gl.uniform1f(gl.getUniformLocation(gateProg, "uV0"), 0);
+        gl.uniform1f(gl.getUniformLocation(gateProg, "uV1"), 1);
+        gl.uniform1f(gl.getUniformLocation(gateProg, "uMask"), 0);
+        drawBuffer(FULL);
+      } else if (roadSource) paintRoad();
 
       const aspect = canvas.width / canvas.height;
       const placed =
@@ -968,8 +1355,8 @@ export function PyreStage() {
           gl.useProgram(enemyProg);
           gl.bindTexture(gl.TEXTURE_2D, foeTex[spot.foe.kind]!);
           gl.uniform1i(gl.getUniformLocation(enemyProg, "uTex"), 0);
-          gl.uniform1f(gl.getUniformLocation(enemyProg, "uFlash"), flash);
-          gl.uniform1f(gl.getUniformLocation(enemyProg, "uThreat"), spot.threat);
+          gl.uniform1f(gl.getUniformLocation(enemyProg, "uFlash"), flash + (spot.foe.kind === 2 ? spot.foe.hurt * 0.35 : 0));
+          gl.uniform1f(gl.getUniformLocation(enemyProg, "uThreat"), spot.foe.kind === 2 ? 0 : spot.threat);
           gl.uniform1f(gl.getUniformLocation(enemyProg, "uAlpha"), spot.alpha);
           drawBuffer(quad(spot.x, spot.y, spot.w, spot.h));
         }
@@ -979,16 +1366,13 @@ export function PyreStage() {
       gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
       drawFoes(false);
 
-      if (phaseRef.current !== "cover" && bolt.readyState >= 2) {
-        const h = BOLT_H;
-        const w = (h * BOLT_ASPECT) / aspect;
-        const y = PLANT_Y - PAW_V * h;
-        const x = 0.5 + lanePos * SLIDE_AMP - shift - w / 2;
+      if (phaseRef.current !== "cover" && doorMode !== "map" && bolt.readyState >= 2) {
+        const box = boltBox();
         gl.useProgram(shadowProg);
-        const pawX = 0.5 + lanePos * SLIDE_AMP - shift;
-        const shadowW = w * 0.34;
-        const shadowH = h * 0.045;
-        const shadowY = PLANT_Y - shadowH * 0.35;
+        const pawX = box.x + box.w / 2;
+        const shadowW = box.w * 0.34;
+        const shadowH = box.h * 0.045;
+        const shadowY = box.footY - shadowH * 0.35;
         drawBuffer(quad(pawX - shadowW / 2, shadowY, shadowW, shadowH));
         gl.useProgram(boltProg);
         gl.activeTexture(gl.TEXTURE0);
@@ -996,7 +1380,7 @@ export function PyreStage() {
         gl.uniform1i(gl.getUniformLocation(boltProg, "uTex"), 0);
         gl.uniform1f(gl.getUniformLocation(boltProg, "uFlash"), flash);
         gl.uniform1f(gl.getUniformLocation(boltProg, "uTime"), now * 0.001);
-        drawBuffer(quad(x, y, w, h));
+        drawBuffer(quad(box.x, box.y, box.w, box.h));
       }
 
       if (shots.length && howlVid.readyState >= 2) {
@@ -1022,7 +1406,7 @@ export function PyreStage() {
       if (ashes.length) {
         gl.useProgram(enemyProg);
         for (const ash of ashes) {
-          const vid = ash.kind === 0 ? ashFallen : ashBrute;
+          const vid = ash.kind === 0 ? ashFallen : ash.kind === 1 ? ashBrute : bossAsh;
           if (vid.readyState < 2) continue;
           const fade = ash.t > ash.life - 0.3 ? Math.max(0, (ash.life - ash.t) / 0.3) : 1;
           gl.bindTexture(gl.TEXTURE_2D, ashTex[ash.kind]!);
@@ -1057,9 +1441,9 @@ export function PyreStage() {
     raf = requestAnimationFrame(tick);
     paintHud();
 
-    const api = { begin };
+    const api = { begin, atGates: () => openGates(true) };
     frame.dataset.ready = "1";
-    (frame as HTMLDivElement & { __pyre?: { begin: () => void } }).__pyre = api;
+    (frame as HTMLDivElement & { __pyre?: { begin: () => void; atGates: () => void } }).__pyre = api;
 
     return () => {
       cancelAnimationFrame(raf);
@@ -1075,9 +1459,15 @@ export function PyreStage() {
     };
   }, []);
 
+  const pyreApi = () =>
+    frameRef.current as (HTMLDivElement & { __pyre?: { begin: () => void; atGates: () => void } }) | null;
+
   const start = () => {
-    const frame = frameRef.current as (HTMLDivElement & { __pyre?: { begin: () => void } }) | null;
-    frame?.__pyre?.begin();
+    pyreApi()?.__pyre?.begin();
+  };
+
+  const atGates = () => {
+    pyreApi()?.__pyre?.atGates();
   };
 
   return (
@@ -1130,6 +1520,24 @@ export function PyreStage() {
           preload="auto"
         />
         <video
+          ref={bossRef}
+          className="pyre-video"
+          src="/master/boss.mp4?v=atk"
+          muted
+          playsInline
+          disablePictureInPicture
+          preload="auto"
+        />
+        <video
+          ref={bossAshRef}
+          className="pyre-video"
+          src="/master/boss-ash.mp4"
+          muted
+          playsInline
+          disablePictureInPicture
+          preload="auto"
+        />
+        <video
           ref={wingLRef}
           className="pyre-video"
           src="/master/pyre-wing-l.mp4"
@@ -1174,11 +1582,91 @@ export function PyreStage() {
           disablePictureInPicture
           preload="auto"
         />
+        <video
+          ref={gateARef}
+          className="pyre-video"
+          src="/master/citadel-road.mp4"
+          muted
+          playsInline
+          preload="auto"
+        />
+        <video
+          ref={gateBRef}
+          className="pyre-video"
+          src="/master/citadel-road.mp4"
+          muted
+          playsInline
+          preload="auto"
+        />
+        <video
+          ref={gateWingLRef}
+          className="pyre-video"
+          src="/master/citadel-wing-l.mp4"
+          muted
+          playsInline
+          disablePictureInPicture
+          preload="auto"
+        />
+        <video
+          ref={gateWingRRef}
+          className="pyre-video"
+          src="/master/citadel-wing-r.mp4"
+          muted
+          playsInline
+          disablePictureInPicture
+          preload="auto"
+        />
+        <video
+          ref={citadelRef}
+          className="pyre-video"
+          src="/master/citadel-arrive.mp4?v=1"
+          muted
+          playsInline
+          disablePictureInPicture
+          preload="auto"
+        />
+        <video
+          ref={openRef}
+          className="pyre-video"
+          src="/master/citadel-open.mp4?v=1"
+          muted
+          playsInline
+          disablePictureInPicture
+          preload="auto"
+        />
+        <video
+          ref={hallRef}
+          className="pyre-video"
+          src="/master/citadel-hall.mp4?v=1"
+          muted
+          playsInline
+          disablePictureInPicture
+          preload="auto"
+        />
+        <video
+          ref={breathRef}
+          className="pyre-video"
+          src="/master/room-breath.mp4?v=1"
+          muted
+          playsInline
+          loop
+          disablePictureInPicture
+          preload="auto"
+        />
+        <video
+          ref={holoRef}
+          className="pyre-video"
+          src="/master/room-holo.mp4?v=2"
+          muted
+          playsInline
+          disablePictureInPicture
+          preload="auto"
+        />
         <div className="pyre-hud" hidden={phase === "cover"}>
           <div>
             <p className="pyre-paces">
               <span>{paces}</span>
-              <small>paces · best {peak}</small>
+              <small>paces · best {peak}{bossHp > 0 ? ` · ${bossHp} howls` : ""}</small>
             </p>
           </div>
           <div className="pyre-wounds" aria-label="Wounds left">
@@ -1187,7 +1675,9 @@ export function PyreStage() {
             ))}
           </div>
         </div>
-        {phase !== "run" && (
+        {phase === "citadel" && doorsReady && <p className="pyre-tap">Tap the gates</p>}
+        {phase === "citadel" && roomLive && <p className="pyre-tap is-low">Tap the ring · drag Bolt to the door</p>}
+        {phase !== "run" && phase !== "citadel" && (
           <div className="pyre-cover">
             <p className="pyre-kicker">{phase === "fallen" ? "The ash kept you" : "Blood-moon causeway"}</p>
             <h1 className="pyre-title">Pyre</h1>
@@ -1196,10 +1686,15 @@ export function PyreStage() {
                 ? `${lastRun} paces before the horde closed. Best ${peak}.`
                 : "A gothic causeway under a blood moon. The damned hunt your lane."}
             </p>
-            <button type="button" className="pyre-start" onClick={start}>
-              Start
-            </button>
-            <p className="pyre-note">Tap a foe and Bolt howls straight at him. Slide on Bolt to change lane. Slide beside him to look.</p>
+            <div className="pyre-menu">
+              <button type="button" className="pyre-start" onClick={start}>
+                Start
+              </button>
+              <button type="button" className="pyre-start is-ghost" onClick={atGates}>
+                The gates
+              </button>
+            </div>
+            <p className="pyre-note">Stay on the pyre road. At 600 paces the gate lord attacks. Six howls, then the road runs into the citadel.</p>
           </div>
         )}
       </div>
