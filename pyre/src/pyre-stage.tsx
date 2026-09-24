@@ -69,10 +69,12 @@ const FOE_KIND = [
 const ROAD_VS = `
 attribute vec2 aPos;
 attribute vec2 aUv;
+uniform float uZoom;
+uniform vec2 uFocus;
 varying vec2 vUv;
 void main() {
   vUv = aUv;
-  gl_Position = vec4(aPos, 0.0, 1.0);
+  gl_Position = vec4(uFocus + (aPos - uFocus) * uZoom, 0.0, 1.0);
 }`;
 
 const ROAD_FS = `
@@ -401,6 +403,16 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
   const boltTurnLeftBackRef = useRef<HTMLVideoElement>(null);
   const boltThunderRef = useRef<HTMLVideoElement>(null);
   const boltThunderRiseRef = useRef<HTMLVideoElement>(null);
+  const boltThunderRightRef = useRef<HTMLVideoElement>(null);
+  const boltThunderRightBackRef = useRef<HTMLVideoElement>(null);
+  const boltThunderLeftRef = useRef<HTMLVideoElement>(null);
+  const boltThunderLeftBackRef = useRef<HTMLVideoElement>(null);
+  const boltThunderRightIdleRef = useRef<HTMLVideoElement>(null);
+  const boltThunderLeftIdleRef = useRef<HTMLVideoElement>(null);
+  const boltThunderRunRef = useRef<HTMLVideoElement>(null);
+  const boltThunderBackstepRef = useRef<HTMLVideoElement>(null);
+  const boltThunderFaceRef = useRef<HTMLVideoElement>(null);
+  const plainRef = useRef<HTMLVideoElement>(null);
   const fallenRef = useRef<HTMLVideoElement>(null);
   const bruteRef = useRef<HTMLVideoElement>(null);
   const bossRef = useRef<HTMLVideoElement>(null);
@@ -434,6 +446,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
   const [doorsReady, setDoorsReady] = useState(false);
   const [roomLive, setRoomLive] = useState(startInRoom);
   const [portalReady, setPortalReady] = useState(false);
+  const [plainLive, setPlainLive] = useState(false);
   const phaseRef = useRef<Phase>(startInRoom ? "citadel" : "cover");
   const startInRoomRef = useRef(startInRoom);
   const hudRef = useRef<(paces: number, wounds: number) => void>(() => undefined);
@@ -469,6 +482,16 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     const boltTurnLeftBack = boltTurnLeftBackRef.current;
     const boltThunder = boltThunderRef.current;
     const boltThunderRise = boltThunderRiseRef.current;
+    const boltThunderRight = boltThunderRightRef.current;
+    const boltThunderRightBack = boltThunderRightBackRef.current;
+    const boltThunderLeft = boltThunderLeftRef.current;
+    const boltThunderLeftBack = boltThunderLeftBackRef.current;
+    const boltThunderRightIdle = boltThunderRightIdleRef.current;
+    const boltThunderLeftIdle = boltThunderLeftIdleRef.current;
+    const boltThunderRun = boltThunderRunRef.current;
+    const boltThunderBackstep = boltThunderBackstepRef.current;
+    const boltThunderFace = boltThunderFaceRef.current;
+    const plainVid = plainRef.current;
     const fallen = fallenRef.current;
     const brute = bruteRef.current;
     const boss = bossRef.current;
@@ -494,7 +517,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     const ashBrute = ashBruteRef.current;
     const frame = frameRef.current;
     if (
-      !canvas || !fx || !roadA || !roadB || !bolt || !boltIdle || !boltFace || !boltTurn || !boltTurnBack || !boltTurnLeft || !boltTurnLeftBack || !boltThunder || !boltThunderRise || !fallen || !brute || !boss || !bossAsh ||
+      !canvas || !fx || !roadA || !roadB || !bolt || !boltIdle || !boltFace || !boltTurn || !boltTurnBack || !boltTurnLeft || !boltTurnLeftBack || !boltThunder || !boltThunderRise || !boltThunderRight || !boltThunderRightBack || !boltThunderLeft || !boltThunderLeftBack || !boltThunderRightIdle || !boltThunderLeftIdle || !boltThunderRun || !boltThunderBackstep || !boltThunderFace || !plainVid || !fallen || !brute || !boss || !bossAsh ||
       !wingL || !wingR || !howlVid || !ashFallen || !ashBrute || !gateA || !gateB ||
       !gateWingL || !gateWingR || !citadel || !openVid || !hall || !breath || !camLeft || !camRight || !camLeftBack || !camRightBack || !holo || !exitVid || !frame
     ) return;
@@ -581,6 +604,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       sweep: number;
       lastAng: number | null;
       arc: boolean;
+      at: number;
     } | null = null;
     let distance = 0;
     let wounds = 0;
@@ -603,8 +627,16 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     let outArrived = false;
     let thunderOn = false;
     let thunderArmed = false;
+    let thunderFace: "back" | "face" = "back";
+    let thunderTurn: HTMLVideoElement | null = null;
+    let thunderTurnTo: "back" | "face" = "back";
+    let plainPush: "run" | "back" | null = null;
+    let zoom = 1;
+    let zoomTarget = 1;
+    let pinch: { dist: number; zoom: number } | null = null;
     let vistaHold = false;
     let portalHint = false;
+    let plainNoted = false;
     let breathMix = startInRoomRef.current ? 1 : 0;
     let idleOn = breathMix > 0.5;
     let yaw: "back" | "face" = "back";
@@ -646,7 +678,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     boltIdle.loop = true;
     boltIdle.playbackRate = 1;
     boltIdle.disablePictureInPicture = true;
-    for (const clip of [boltFace, boltTurn, boltTurnBack, boltTurnLeft, boltTurnLeftBack, boltThunder, boltThunderRise]) {
+    for (const clip of [boltFace, boltTurn, boltTurnBack, boltTurnLeft, boltTurnLeftBack, boltThunder, boltThunderRise, boltThunderRight, boltThunderRightBack, boltThunderLeft, boltThunderLeftBack, boltThunderRightIdle, boltThunderLeftIdle, boltThunderRun, boltThunderBackstep, boltThunderFace]) {
       clip.muted = true;
       clip.playsInline = true;
       clip.disablePictureInPicture = true;
@@ -654,7 +686,17 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     }
     boltFace.loop = true;
     boltThunder.loop = true;
+    boltThunderRightIdle.loop = true;
+    boltThunderLeftIdle.loop = true;
+    boltThunderRun.loop = true;
+    boltThunderBackstep.loop = true;
+    boltThunderFace.loop = true;
+    boltThunderRun.playbackRate = 1.25;
     boltThunderRise.loop = false;
+    boltThunderRight.loop = false;
+    boltThunderRightBack.loop = false;
+    boltThunderLeft.loop = false;
+    boltThunderLeftBack.loop = false;
     boltTurn.loop = false;
     boltTurnBack.loop = false;
     boltTurnLeft.loop = false;
@@ -676,10 +718,10 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       wing.playbackRate = 1;
       wing.disablePictureInPicture = true;
     }
-    for (const clip of [gateA, gateB, citadel, openVid, hall, breath, holo, exitVid]) {
+    for (const clip of [gateA, gateB, citadel, openVid, hall, breath, holo, exitVid, plainVid]) {
       clip.muted = true;
       clip.playsInline = true;
-      clip.loop = clip === breath || clip === gateA || clip === gateB;
+      clip.loop = clip === breath || clip === gateA || clip === gateB || clip === plainVid;
       clip.disablePictureInPicture = true;
     }
     for (const clip of [howlVid, ashFallen, ashBrute]) {
@@ -755,6 +797,11 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     };
 
     const drawBuffer = (data: Float32Array) => {
+      const prog = gl.getParameter(gl.CURRENT_PROGRAM) as WebGLProgram | null;
+      if (prog) {
+        gl.uniform1f(gl.getUniformLocation(prog, "uZoom"), doorMode === "out" ? zoom : 1);
+        gl.uniform2f(gl.getUniformLocation(prog, "uFocus"), 0, 0);
+      }
       gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
       gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
       gl.enableVertexAttribArray(0);
@@ -826,6 +873,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       setGatesOpen(false);
       setDoorsReady(false);
       setRoomLive(false);
+      setPlainLive(false);
       setPhase("run");
       setLastRun(0);
       paintHud();
@@ -1030,6 +1078,11 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       if (pts.length < 2) return 0;
       return Math.atan2(pts[1].y - pts[0].y, pts[1].x - pts[0].x);
     };
+    const fingerDist = () => {
+      const pts = [...hands.values()];
+      if (pts.length < 2) return 0;
+      return Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
+    };
     const wrapAng = (angle: number) => {
       let next = angle;
       while (next > Math.PI) next -= Math.PI * 2;
@@ -1072,6 +1125,12 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       } catch {
         /* synthetic events */
       }
+      if (phaseRef.current === "citadel" && doorMode === "out" && hands.size >= 2) {
+        pinch = { dist: Math.max(28, fingerDist()), zoom: zoomTarget };
+        plainPush = null;
+        drag = null;
+        return;
+      }
       if (inRoomNow() && hands.size >= 2) {
         const center = handCenter();
         if (center) pair = { x: center.x, y: center.y, ang: fingerAngle(), fired: false };
@@ -1089,7 +1148,17 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       const ny = (event.clientY - rect.top) / (rect.height || 1);
       const box = boltBox();
       const pad = 0.05;
-      const onBolt = nx >= box.x - pad && nx <= box.x + box.w + pad && ny >= box.y - pad && ny <= box.y + box.h + pad;
+      let hitX = box.x;
+      let hitY = box.y;
+      let hitW = box.w;
+      let hitH = box.h;
+      if (doorMode === "out" && thunderOn) {
+        hitW = box.w * THUNDER_FIT;
+        hitH = box.h * THUNDER_FIT;
+        hitX = box.x + box.w / 2 - hitW / 2;
+        hitY = box.footY - 0.97 * hitH;
+      }
+      const onBolt = nx >= hitX - pad && nx <= hitX + hitW + pad && ny >= hitY - pad && ny <= hitY + hitH + pad;
       const tapped = phaseRef.current === "run" ? foeUnder(nx, ny) : null;
       if (tapped && !onBolt) {
         hands.delete(event.pointerId);
@@ -1109,10 +1178,16 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
         sweep: 0,
         lastAng: null,
         arc: false,
+        at: performance.now(),
       };
     };
     const onSlideMove = (event: PointerEvent) => {
       if (hands.has(event.pointerId)) hands.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (phaseRef.current === "citadel" && doorMode === "out" && hands.size >= 2 && pinch) {
+        const dist = fingerDist();
+        if (dist > 16) zoomTarget = Math.max(0.62, Math.min(2.35, pinch.zoom * (dist / pinch.dist)));
+        return;
+      }
       if (inRoomNow() && hands.size >= 2 && pair) {
         const center = handCenter();
         if (!center) return;
@@ -1141,6 +1216,20 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
         return;
       }
       if (!drag || event.pointerId !== drag.id) return;
+      if (phaseRef.current === "citadel" && doorMode === "out") {
+        const height = frame.clientHeight || 1;
+        const dx = event.clientX - drag.x;
+        const dy = event.clientY - drag.y;
+        if (drag.onBolt) slideTo(event.clientX, drag.x, drag.lane);
+        if (drag.onBolt || Math.abs(dy) > Math.abs(dx) + 8) {
+          const next = Math.max(0, Math.min(0.78, drag.depth + (drag.y - event.clientY) / (height * 0.46)));
+          depthTarget = next;
+          roomDepth = next;
+          if (next > drag.depth + 0.03) plainPush = "run";
+          else if (next < drag.depth - 0.03) plainPush = "back";
+        }
+        return;
+      }
       if (phaseRef.current === "citadel" && doorMode === "room") {
         const width = frame.clientWidth || 1;
         const height = frame.clientHeight || 1;
@@ -1196,6 +1285,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       const dir = spinTo;
       hands.delete(event.pointerId);
       if (hands.size < 2) {
+        pinch = null;
         if (drag && hands.has(drag.id)) {
           const stay = hands.get(drag.id)!;
           drag.x = stay.x;
@@ -1228,6 +1318,29 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
         return;
       }
       if (!drag || event.pointerId !== drag.id) {
+        try {
+          if (frame.hasPointerCapture(event.pointerId)) frame.releasePointerCapture(event.pointerId);
+        } catch {
+          /* already released */
+        }
+        return;
+      }
+      if (doorMode === "out") {
+        const dx = event.clientX - drag.x;
+        const dy = event.clientY - drag.y;
+        const elapsed = performance.now() - drag.at;
+        const horizontal = Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.12;
+        const flick = elapsed < 380 && horizontal;
+        if (flick || (!drag.onBolt && horizontal)) {
+          lanePos = drag.lane;
+          depthTarget = drag.depth;
+          roomDepth = drag.depth;
+          plainPush = null;
+          beginThunderTurn(dx > 0 ? "right" : "left");
+        } else plainPush = null;
+        drag = null;
+        runHold = false;
+        orbitDrag = false;
         try {
           if (frame.hasPointerCapture(event.pointerId)) frame.releasePointerCapture(event.pointerId);
         } catch {
@@ -1268,6 +1381,12 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     frame.addEventListener("pointermove", onSlideMove);
     frame.addEventListener("pointerup", onSlideUp);
     frame.addEventListener("pointercancel", onSlideUp);
+    const onWheel = (event: WheelEvent) => {
+      if (phaseRef.current !== "citadel" || doorMode !== "out") return;
+      event.preventDefault();
+      zoomTarget = Math.max(0.62, Math.min(2.35, zoomTarget * Math.exp(-event.deltaY * 0.0014)));
+    };
+    frame.addEventListener("wheel", onWheel, { passive: false });
 
     let raf = 0;
     let last = performance.now();
@@ -1296,6 +1415,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       portalHint = false;
       setPortalReady(false);
       setRoomLive(false);
+      setPlainLive(false);
       lanePos = 0;
       glance = 0;
       glanceTarget = 0;
@@ -1304,7 +1424,12 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       yaw = "back";
       turnTo = null;
       thunderArmed = false;
+      thunderFace = "back";
+      thunderTurn = null;
       vistaHold = false;
+      plainNoted = false;
+      zoom = 1;
+      zoomTarget = 1;
       depthTarget = 1;
       exitVid.loop = false;
       try {
@@ -1315,10 +1440,41 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       playSafe(exitVid);
     };
 
+    const beginThunderTurn = (side: "left" | "right") => {
+      if (doorMode !== "out" || !thunderOn) return;
+      const riseDone =
+        vistaHold ||
+        (boltThunderRise.readyState >= 2 &&
+          boltThunderRise.duration > 0 &&
+          (boltThunderRise.ended || boltThunderRise.currentTime > boltThunderRise.duration - 0.12));
+      if (!riseDone && thunderFace === "back" && !thunderTurn) return;
+      const from = thunderTurn ? thunderTurnTo : thunderFace;
+      const toFace = from !== "face";
+      const clip = toFace
+        ? side === "right"
+          ? boltThunderRight
+          : boltThunderLeft
+        : side === "right"
+          ? boltThunderRightBack
+          : boltThunderLeftBack;
+      const to: "back" | "face" = toFace ? "face" : "back";
+      if (thunderTurn) thunderTurn.pause();
+      thunderTurn = clip;
+      thunderTurnTo = to;
+      clip.loop = false;
+      try {
+        clip.currentTime = 0;
+      } catch {
+        /* not seekable yet */
+      }
+      playSafe(clip);
+    };
+
     const openMap = () => {
       if (doorMode !== "room" || mapHop) return;
       doorMode = "map";
       setRoomLive(false);
+      setPlainLive(false);
       try {
         holo.currentTime = 0;
       } catch {
@@ -1365,6 +1521,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       vistaHold = false;
       setPhase("citadel");
       setRoomLive(false);
+      setPlainLive(false);
       setBossHp(0);
       setDoorsReady(atDoors);
       setGatesOpen(false);
@@ -1464,6 +1621,10 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       vistaHold = true;
       thunderArmed = true;
       thunderOn = true;
+      thunderFace = "back";
+      thunderTurn = null;
+      zoom = 1;
+      zoomTarget = 1;
       outHide = false;
       outArrived = true;
       roomDepth = 0.06;
@@ -1482,7 +1643,9 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       shots.length = 0;
       setPhase("citadel");
       setRoomLive(false);
+      setPlainLive(false);
       setPortalReady(false);
+      setPlainLive(true);
       setDoorsReady(false);
       setGatesOpen(false);
       setBossHp(0);
@@ -1511,6 +1674,9 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       const startThunder = () => playSafe(boltThunder);
       if (boltThunder.readyState >= 2) startThunder();
       else boltThunder.addEventListener("loadeddata", startThunder, { once: true });
+      const startPlain = () => playSafe(plainVid);
+      if (plainVid.readyState >= 2) startPlain();
+      else plainVid.addEventListener("loadeddata", startPlain, { once: true });
       playSafe(bolt);
       breathMix = 1;
       idleOn = true;
@@ -1519,6 +1685,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     const tick = (now: number) => {
       const dt = Math.min(0.1, (now - last) / 1000);
       last = now;
+      zoom += (zoomTarget - zoom) * (1 - Math.exp(-dt * 12));
       outHide = false;
       thunderOn = false;
       resize();
@@ -1814,6 +1981,20 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           outArrived = vistaHold || exitVid.ended || t > 0.84;
           outHide = !vistaHold && !outArrived && t > 0.4 && t < 0.64;
           thunderOn = t >= 0.64;
+          if ((vistaHold || outArrived) && plainVid.paused) playSafe(plainVid);
+          const settled = vistaHold || outArrived;
+          if (settled) {
+            if (!plainNoted) {
+              plainNoted = true;
+              setPlainLive(true);
+              if (!drag) {
+                depthTarget = 0.06;
+                roomDepth = 0.06;
+              }
+            }
+          } else {
+            depthTarget = t < 0.64 ? 1 : 0.06;
+          }
           if (thunderOn && !thunderArmed && !vistaHold) {
             thunderArmed = true;
             boltThunderRise.loop = false;
@@ -1824,11 +2005,12 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
             }
             playSafe(boltThunderRise);
           }
-          depthTarget = t < 0.64 ? 1 : 0.06;
-          if (vistaHold) roomDepth = 0.06;
-          const step = 2.4 * dt;
-          if (roomDepth < depthTarget) roomDepth = Math.min(depthTarget, roomDepth + step);
-          else roomDepth = Math.max(depthTarget, roomDepth - step);
+          depthTarget = settled ? depthTarget : t < 0.64 ? 1 : 0.06;
+          if (!(settled && drag)) {
+            const step = settled ? 1.8 * dt : 2.4 * dt;
+            if (roomDepth < depthTarget) roomDepth = Math.min(depthTarget, roomDepth + step);
+            else roomDepth = Math.max(depthTarget, roomDepth - step);
+          }
           if (outArrived && breath.paused) playSafe(breath);
         } else if (!mapHop) {
           if (holo.paused && !holo.ended) playSafe(holo);
@@ -1903,12 +2085,25 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       if (runHold) breathMix = 0;
       if (orbitHold) breathMix = 1;
       if (thunderOn) {
+        if (
+          thunderTurn &&
+          thunderTurn.duration > 0 &&
+          (thunderTurn.ended || thunderTurn.currentTime > thunderTurn.duration - 0.08)
+        ) {
+          thunderFace = thunderTurnTo;
+          thunderTurn.pause();
+          thunderTurn = null;
+        }
         const riseDone =
           vistaHold ||
           (boltThunderRise.readyState >= 2 &&
             boltThunderRise.duration > 0 &&
             (boltThunderRise.ended || boltThunderRise.currentTime > boltThunderRise.duration - 0.12));
-        if (!riseDone && boltThunderRise.readyState >= 2) pose = boltThunderRise;
+        if (thunderTurn && thunderTurn.readyState >= 2) pose = thunderTurn;
+        else if (plainPush === "run" && thunderFace === "back" && boltThunderRun.readyState >= 2) pose = boltThunderRun;
+        else if (plainPush === "back" && thunderFace === "back" && boltThunderBackstep.readyState >= 2) pose = boltThunderBackstep;
+        else if (thunderFace === "face" && boltThunderFace.readyState >= 2) pose = boltThunderFace;
+        else if (!riseDone && boltThunderRise.readyState >= 2) pose = boltThunderRise;
         else if (boltThunder.readyState >= 2) pose = boltThunder;
         breathMix = 1;
         yaw = "back";
@@ -1959,11 +2154,13 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
                     ? holo
                     : breath
                   : doorMode === "out"
-                    ? exitVid.readyState >= 2 && (!vistaHold || exitVid.currentTime > (exitVid.duration || 10) * 0.85)
-                      ? exitVid
-                      : vistaHold
-                        ? null
-                        : breath
+                    ? (vistaHold || outArrived) && plainVid.readyState >= 2
+                      ? plainVid
+                      : exitVid.readyState >= 2 && (!vistaHold || exitVid.currentTime > (exitVid.duration || 10) * 0.85)
+                        ? exitVid
+                        : vistaHold
+                          ? null
+                          : breath
                     : breath.readyState >= 2
                       ? breath
                       : hall;
@@ -2072,7 +2269,18 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
 
       if (!outHide && phaseRef.current !== "cover" && doorMode !== "map" && (bolt.readyState >= 2 || boltIdle.readyState >= 2)) {
         const box = boltBox();
-        const thunderPlate = pose === boltThunder || pose === boltThunderRise;
+        const thunderPlate =
+          pose === boltThunder ||
+          pose === boltThunderRise ||
+          pose === boltThunderRight ||
+          pose === boltThunderRightBack ||
+          pose === boltThunderLeft ||
+          pose === boltThunderLeftBack ||
+          pose === boltThunderRightIdle ||
+          pose === boltThunderLeftIdle ||
+          pose === boltThunderRun ||
+          pose === boltThunderBackstep ||
+          pose === boltThunderFace;
         const turningPlate =
           pose === boltTurn || pose === boltTurnBack || pose === boltTurnLeft || pose === boltTurnLeftBack;
         const fit = thunderPlate ? THUNDER_FIT : turningPlate && pose.readyState >= 2 ? TURN_FIT : 1;
@@ -2173,6 +2381,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       frame.removeEventListener("pointermove", onSlideMove);
       frame.removeEventListener("pointerup", onSlideUp);
       frame.removeEventListener("pointercancel", onSlideUp);
+      frame.removeEventListener("wheel", onWheel);
       if (window.__controlsTest === probe) delete window.__controlsTest;
       audio.ctx?.close().catch(() => undefined);
     };
@@ -2299,6 +2508,15 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           disablePictureInPicture
           preload="auto"
         />
+        <video ref={boltThunderRightRef} className="pyre-video" src="/master/bolt-thunder-to-face-r.mp4?v=2" muted playsInline disablePictureInPicture preload="auto" />
+        <video ref={boltThunderRightBackRef} className="pyre-video" src="/master/bolt-thunder-to-back-r.mp4?v=2" muted playsInline disablePictureInPicture preload="auto" />
+        <video ref={boltThunderLeftRef} className="pyre-video" src="/master/bolt-thunder-to-face-l.mp4?v=2" muted playsInline disablePictureInPicture preload="auto" />
+        <video ref={boltThunderLeftBackRef} className="pyre-video" src="/master/bolt-thunder-to-back-l.mp4?v=2" muted playsInline disablePictureInPicture preload="auto" />
+        <video ref={boltThunderRightIdleRef} className="pyre-video" src="/master/bolt-thunder-right-idle.mp4?v=1" muted loop playsInline disablePictureInPicture preload="auto" />
+        <video ref={boltThunderLeftIdleRef} className="pyre-video" src="/master/bolt-thunder-left-idle.mp4?v=1" muted loop playsInline disablePictureInPicture preload="auto" />
+        <video ref={boltThunderRunRef} className="pyre-video" src="/master/bolt-thunder-run.mp4?v=1" muted loop playsInline disablePictureInPicture preload="auto" />
+        <video ref={boltThunderBackstepRef} className="pyre-video" src="/master/bolt-thunder-backstep.mp4?v=1" muted loop playsInline disablePictureInPicture preload="auto" />
+        <video ref={boltThunderFaceRef} className="pyre-video" src="/master/bolt-thunder-face.mp4?v=1" muted loop playsInline disablePictureInPicture preload="auto" />
         <video
           ref={fallenRef}
           className="pyre-video"
@@ -2473,6 +2691,16 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           disablePictureInPicture
           preload="auto"
         />
+        <video
+          ref={plainRef}
+          className="pyre-video"
+          src="/master/citadel-plain.mp4?v=1"
+          muted
+          loop
+          playsInline
+          disablePictureInPicture
+          preload="auto"
+        />
         <div className="pyre-hud" hidden={phase === "cover"}>
           <div>
             <p className="pyre-paces">
@@ -2489,6 +2717,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
         {phase === "citadel" && doorsReady && <p className="pyre-tap">Tap the gates</p>}
         {phase === "citadel" && roomLive && portalReady && <p className="pyre-tap is-low">Tap the door</p>}
         {phase === "citadel" && roomLive && !portalReady && <p className="pyre-tap is-low">Drag Bolt · swipe the floor, he turns and the room turns with him</p>}
+        {phase === "citadel" && plainLive && <p className="pyre-tap is-low">Swipe to turn him toward you · drag to move · pinch to zoom</p>}
         {phase !== "run" && phase !== "citadel" && (
           <div className="pyre-cover">
             <p className="pyre-kicker">{phase === "fallen" ? "The ash kept you" : "Blood-moon causeway"}</p>

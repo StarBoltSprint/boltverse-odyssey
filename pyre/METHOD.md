@@ -367,6 +367,62 @@ Le menu **The plain** appelle `enterVista()`. `vistaHold = true` : on cale `cita
 
 `vistaHold` est remis à false dans `begin`, `openGates`, `enterRoom` et `leaveThrough`.
 
+## 12. Sur la plaine — lune, face caméra, déplacement, zoom
+
+Une fois arrivé (`outArrived` ou `vistaHold`), la plaque n'est plus la dernière image figée de `citadel-exit.mp4`. C'est `master/citadel-plain.mp4`, en boucle.
+
+La lune :
+
+1. Dernière frame de `citadel-exit.mp4` (plaine, lune rouge, flèches, lave). Pas de chien.
+2. Image-to-video, 10 s, 9:16, 720p. Caméra **verrouillée**. Pas de travelling, pas de zoom. Pierres, flèches et rivières ne bougent pas. Seule la lune fait un tour complet sur elle-même et revient au même endroit, pour que la boucle se ferme. Un pouls léger de la lave est toléré.
+3. Encode `scale=720:1280`, crf 20, faststart, sans audio.
+
+Tant que la sortie n'est pas finie, on joue `citadel-exit`. Après, `plainVid`. `vistaHold` joue la lune tout de suite. Ne pas retomber sur `room-breath`.
+
+### Rotations — il finit face à la caméra
+
+Un swipe horizontal rapide (`elapsed < 380 ms`, `|dx| > 40`, plus horizontal que vertical), **même sur le Thunderwolf**, lance la rotation et annule le déplacement de ce geste. Un glissement lent sur lui le déplace. Avant, seul le sol tournait : `THUNDER_FIT` couvre presque l'écran, donc ça ratait.
+
+Il ne s'arrête plus de profil. Droite ou gauche, il finit **face caméra**, puis il respire. Un nouveau swipe le ramène de dos, dans le sens du swipe.
+
+| Fichier | Rôle |
+|---|---|
+| `bolt-thunder-to-face-r.mp4` | Une fois. De dos, tourne à droite, finit face caméra. |
+| `bolt-thunder-to-face-l.mp4` | Une fois. De dos, tourne à gauche, finit face caméra. |
+| `bolt-thunder-face.mp4` | Boucle. Respiration de face, agressive, pieds en bas. |
+| `bolt-thunder-to-back-r.mp4` | Une fois. De face, continue à droite, finit de dos. |
+| `bolt-thunder-to-back-l.mp4` | Une fois. De face, continue à gauche, finit de dos. |
+
+Still de face : image-to-image depuis une frame de `bolt-thunder.mp4`. Même chien, même armure, même cape, même aura, fond vert `#00FF00`, plein cadre, il regarde la caméra, pattes en bas, pas de sol. Puis reference-to-video 6 s, 2:3 : première image = dos, dernière = face (ou l'inverse pour le retour). La respiration de face est un image-to-video 6 s sur cette still, caméra verrouillée, il ne se retourne pas.
+
+`thunderFace` et `thunderTurnTo` valent `"back"` ou `"face"`. À la fin du clip, la pose devient `bolt-thunder-face.mp4` ou `bolt-thunder.mp4`.
+
+Ne pas rejouer les clips de profil (`bolt-thunder-right.mp4`, `*-idle.mp4`). Le joueur veut finir face caméra, pas de trois-quarts.
+
+### Se déplacer
+
+Sur lui, ou un geste vertical sur le sol :
+
+- doigt vers le haut : `depthTarget` monte (plafond 0.78), il s'éloigne sur la lave. De dos, il joue `bolt-thunder-run.mp4` à `playbackRate = 1.25`.
+- doigt vers le bas : il se rapproche. De dos, `bolt-thunder-backstep.mp4`.
+- gauche / droite sur lui : `lanePos`, le même `slideTo` que la salle.
+
+Les deux clips sont image-to-video 6 s sur la still de dos, fond vert, caméra verrouillée, il reste centré. Run = sprint bipède. Backstep = il recule. Boucle. On ne les joue que si `thunderFace === "back"`. De face, il glisse en gardant `bolt-thunder-face.mp4`.
+
+Une fois la plaine tenue, le tick ne force plus `roomDepth = 0.06` à chaque frame. On ne le pose là qu'à l'arrivée. Sinon chaque frame le ramène au premier plan.
+
+### Zoom
+
+Deux doigts sur la plaine. Dans `ROAD_VS` :
+
+```
+gl_Position = vec4(uFocus + (aPos - uFocus) * uZoom, 0.0, 1.0);
+```
+
+`drawBuffer` pose `uZoom` sur le programme courant. Hors `doorMode === "out"`, le zoom vaut 1 : la salle et le run ne zooment pas. Plage 0.62–2.35. La molette fait la même chose. Le pincement annule le drag. `leaveThrough` et `enterVista` remettent le zoom à 1.
+
+On zoome les sommets, pas les UV. La plaque n'a rien hors cadre. Lune et Thunderwolf grossissent ensemble, autour du centre. En dessous de 1, la scène rétrécit.
+
 ## Pour un nouveau Grok
 
 1. Lire ce fichier avant de toucher au composite.
@@ -380,3 +436,4 @@ Le menu **The plain** appelle `enterVista()`. `vistaHold = true` : on cale `cita
 9. Compresser avant de committer : `ffmpeg -an -vf scale=480:-2 -c:v libx264 -crf 27 -pix_fmt yuv420p -movflags +faststart`. Rester sous 100 Mo par fichier. Les clips de la citadelle déjà en ligne sont en 720×1280, crf 20.
 10. Ouverture des portes : ne pas seek si le clip est déjà à 0, et ne jamais repeindre le biome tant qu'on est en citadelle. Section 10.
 11. Porte du milieu : `citadel-exit.mp4` (salle → plaine, Bolt absent de la plaque). Thunderwolf : `bolt-thunder-rise.mp4` une fois, puis `bolt-thunder.mp4` en boucle, fond vert, `THUNDER_FIT = 1.62`. Le bouton **The plain** est `enterVista()` / `vistaHold`. Section 11.
+12. Sur la plaine : `citadel-plain.mp4` (caméra fixe, la lune tourne). Swipe rapide = rotation qui finit face caméra (`bolt-thunder-to-face-r/l.mp4`, puis `bolt-thunder-face.mp4`). Swipe encore = retour de dos (`bolt-thunder-to-back-r/l.mp4`). Glisser = courir (`bolt-thunder-run.mp4`), reculer (`bolt-thunder-backstep.mp4`), ou se décaler. Pincement = `uZoom` dans `ROAD_VS`, seulement en `doorMode === "out"`. Section 12. Ne pas remettre les clips de profil.
