@@ -332,6 +332,41 @@ Deux règles :
 
 Ne pas « réparer » en mettant une image du biome dans `citadel-open.mp4`. Le clip est propre. Le flash venait du composite.
 
+## 11. La porte du milieu — la plaine, et le Thunderwolf
+
+Dans la salle, face au portail du milieu (`abs(orbit) < 0.22`) et assez près (`roomDepth > 0.68`), un tap sur la porte appelle `leaveThrough()`. Loin, le même tap ne fait qu'avancer (`depthTarget = 1`). Les portes de côté ne sortent pas.
+
+`doorMode` passe à `"out"`. La plaque est `master/citadel-exit.mp4` (`?v=1`), 10 s, 9:16, vide de Bolt.
+
+Comment le clip est fait :
+
+1. Première image : une frame de `room-breath.mp4` (la salle, un seul portail cyan, l'anneau).
+2. Dernière image : une still 9:16 générée à part. On est **derrière** la citadelle. Les flèches noires encadrent à gauche et à droite, un filet cyan sort de la porte qu'on vient de quitter. Devant : une plaine immense, pas la route étroite du run. Pierre noire craquelée, rivières de lave, lune rouge, une ligne de flèches à l'horizon. Pas de chien.
+3. Reference-to-video, 10 s, 9:16, 720p. La caméra avance dans le portail, traverse la lumière, et finit exactement sur la plaine. Pas de deuxième portail, pas de fondu, pas de Bolt dans la plaque.
+
+On encode `scale=720:1280`, crf 20, faststart, sans audio.
+
+Bolt est composite par-dessus, comme toujours :
+
+- `t < 0.40` : il court vers la porte (`depthTarget = 1`).
+- `0.40–0.64` : on ne le dessine pas (`outHide`). Il est dans la lumière.
+- `t >= 0.64` : il réapparaît sur la plaine et se transforme.
+
+La transformation est deux clips fond vert `#00FF00`, même armure, même cape, même aura que `bolt-breath.mp4` :
+
+| Fichier | Rôle |
+|---|---|
+| `master/bolt-thunder-rise.mp4` | Une fois. Il se dresse. Les pattes avant deviennent des bras. |
+| `master/bolt-thunder.mp4` | Boucle. Respiration agressive, debout, pattes arrière plantées. |
+
+Image de départ du rise : une frame de `bolt-breath.mp4`. Image d'arrivée : still 2:3, le même chien vu de dos, bipède, massif, bras griffus, pattes en bas du cadre, fond vert plat, pas de sol. Reference-to-video 6 s. Puis image-to-video 6 s sur cette still pour la respiration (poitrine, cape, feu, griffes ; il ne marche pas, il ne se retourne pas).
+
+`THUNDER_FIT = 1.62`. Pattes à `0.97` au lieu de `PAW_V` (il remplit le cadre). `breathMix = 1` pendant qu'il est le Thunderwolf, pour ne pas mélanger le galop à quatre pattes avec le corps debout.
+
+Le menu **The plain** appelle `enterVista()`. `vistaHold = true` : on cale `citadel-exit.mp4` sur sa dernière image et on ne la rejoue pas. On saute le rise (`vistaHold` force `riseDone`). Il est déjà le Thunderwolf, en respiration, `roomDepth = 0.06`. Tant que le seek n'a pas passé 85 % du clip, on n'uploade pas la plaque (sinon la salle flashe). On ne retombe pas sur `room-breath`.
+
+`vistaHold` est remis à false dans `begin`, `openGates`, `enterRoom` et `leaveThrough`.
+
 ## Pour un nouveau Grok
 
 1. Lire ce fichier avant de toucher au composite.
@@ -344,3 +379,4 @@ Ne pas « réparer » en mettant une image du biome dans `citadel-open.mp4`. Le 
 8. Le regard dans la salle : lire [ORBIT.md](ORBIT.md). JPEG `orbit/left-01..16` (`cam-left-orbit.mp4`, `?v=5`) et `orbit/right-01..16` (`cam-right-orbit.mp4`, `?v=4`). Bolt de dos sur l'anneau. Pas de mur du fond. Pas de shader qui tourne la photo. Pas le fondu `cam-left.mp4`.
 9. Compresser avant de committer : `ffmpeg -an -vf scale=480:-2 -c:v libx264 -crf 27 -pix_fmt yuv420p -movflags +faststart`. Rester sous 100 Mo par fichier. Les clips de la citadelle déjà en ligne sont en 720×1280, crf 20.
 10. Ouverture des portes : ne pas seek si le clip est déjà à 0, et ne jamais repeindre le biome tant qu'on est en citadelle. Section 10.
+11. Porte du milieu : `citadel-exit.mp4` (salle → plaine, Bolt absent de la plaque). Thunderwolf : `bolt-thunder-rise.mp4` une fois, puis `bolt-thunder.mp4` en boucle, fond vert, `THUNDER_FIT = 1.62`. Le bouton **The plain** est `enterVista()` / `vistaHold`. Section 11.
