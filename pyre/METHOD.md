@@ -168,27 +168,21 @@ Deux éléments vidéo sur le même mp4. Quand le lecteur actif arrive à ~0,35 
 - Quad de hurlement trop large : le feu reste visuellement vertical. Le garder étroit.
 - Mort générée avec un prompt gore : la génération est refusée.
 
-## 8. Boss, citadelle, star map
+## 8. Citadelle, star map
 
-On reste sur le biome 1 (la route Pyre) jusqu'au boss. Pas de coupe violente vers un deuxième biome.
+On reste sur le biome 1. Pas de coupe vers un deuxième biome. Le boss est en pause : on ne le fait pas pop.
 
-À `distance >= PYRE_PACES` (600), les petits ennemis s'arrêtent. Un boss (`kind: 2`) pop sur la route, `z` à 0.16 (déjà assez grand, pas une poussière à l'horizon), `speed` 0.08, `hp` 6. Il avance et attaque comme les autres. Six hurlements. Au sixième, on joue `boss-ash.mp4` (`currentTime` 0.4, `playbackRate` 1.15) et on passe en phase `citadel`.
+À `distance >= PYRE_PACES` (600), `citadelCalled` passe à vrai, les ennemis et les hurlements en vol sont vidés, et `openGates()` joue `citadel-arrive.mp4` depuis le début. Les spawns s'arrêtent déjà 40 pas plus tôt. Ne pas remettre un `kind: 2` ici tant que le joueur ne le redemande pas. Les mp4 `boss.mp4` et `boss-ash.mp4` restent dans `master/`, inutilisés.
 
 `GOD = true` : Bolt ne meurt pas. C'est voulu, pour tester. Ne pas le remettre à false sans qu'on le demande.
 
-Constantes en plus :
-
 ```
 PYRE_PACES = 600
-BOSS_AT = 600
-BOSS_HITS = 6
 GOD = true
 STAR_MAP = https://boltversee-odyssey-star-map.grok.me
 ROOM_VANISH = 0.50
 ROOM_STEP = 0.67
 ```
-
-Boss dans `FOE_KIND` : `h 1.05`, `foot 0.98`, `reach 0.70`, `rate 1.15`, `agility 0.15`. Sa taille suit `near` tout de suite (`grow = near`), pas le coefficient des petits démons.
 
 ### Vidéos, dans l'ordre
 
@@ -200,9 +194,9 @@ ffmpeg -i brut.mp4 -vf scale=720:1280 -an -c:v libx264 -crf 20 -pix_fmt yuv420p 
 
 | Fichier | Rôle |
 |---|---|
-| `master/boss.mp4` | Le seigneur de la porte, fond vert, il bouge et frappe. Pas une image figée. |
-| `master/boss-ash.mp4` | Sa mort, fond vert. |
-| `master/citadel-arrive.mp4` | La route entre dans les portes. Joue une fois après le boss. |
+| `master/boss.mp4` | Gardé, pas joué. Le boss est en pause. |
+| `master/boss-ash.mp4` | Gardé, pas joué. |
+| `master/citadel-arrive.mp4` | La route entre dans les portes. Joue une fois à 600 pas. |
 | `master/citadel-open.mp4` | Les portes s'ouvrent. Déclenché par un tap. |
 | `master/citadel-hall.mp4` | Le hall, jusqu'à la salle. Première image = dernière image de l'ouverture. |
 | `master/room-breath.mp4` | La salle, caméra fixe, une seule porte turquoise, anneau au sol. Boucle. |
@@ -263,10 +257,40 @@ La génération qui marche, image-to-video depuis une frame de `room-breath` :
 
 À ne pas demander : un ballon, une bulle de points, un mesh qui gonfle. C'est ce que le joueur a rejeté. Incrémenter `?v=` sur le `src` après chaque remplacement du mp4, sinon le navigateur garde l'ancien.
 
+## 9. Revenir de la star map dans la salle
+
+Le bouton de la constellation doit ouvrir la salle, pas le menu Start.
+
+`PyreStage` prend `startInRoom`. Vrai : l'état initial est déjà `citadel` / `doorMode = "room"`, donc le HTML servi n'affiche pas la couverture. `enterRoom()` au montage : `room-breath.mp4` en boucle, Bolt à `depth` 0.42 (sur l'anneau), `distance = 600`, hint « Tap the ring ».
+
+Deux entrées, les deux passent `startInRoom` :
+
+- `src/routes/room.tsx` — route `/room`. C'est l'adresse du bouton : `https://boltversee-odyssey.grok.me/room`
+- `src/routes/index.tsx` — `validateSearch` lit `?at=room` ou `?at=map`
+
+`backToRoom()` attrape aussi le hash `#room` et un `document.referrer` qui contient `boltversee-odyssey-star-map`. Le referrer ne sert qu'au montage client. L'état initial, lui, ne dépend que de `startInRoom`, pour que le serveur et le navigateur rendent la même page.
+
+En partant vers la constellation, l'URL emporte le retour :
+
+```
+const back = new URL(window.location.href);
+back.hash = "";
+back.search = "";
+back.searchParams.set("at", "room");
+const dest = new URL(STAR_MAP);
+dest.searchParams.set("return", back.toString());
+window.location.replace(dest.toString());
+```
+
+Le site public est une publication de l'app, pas ce dossier git. Tant que cette version n'est pas publiée, `/room` répond 404 et `?at=room` retombe sur l'ancien menu.
+
 ## Ce qui n'a pas marché (citadelle)
 
-- Couper sec vers un deuxième biome à 600 pas. Rester sur Pyre, le boss, puis la route qui entre dans la citadelle.
-- Boss en image collée, ou avec une flaque rouge sous les pieds, ou rendu transparent par le chroma. Il doit bouger dans sa propre vidéo, fond vert, comme les autres démons.
+- Couper sec vers un deuxième biome à 600 pas. Rester sur Pyre, puis `citadel-arrive.mp4`.
+- Faire pop le boss avant que le joueur le redemande. Les mp4 sont là, le spawn ne l'est plus.
+- Coller le boss en image, ou avec une flaque rouge, ou le rendre transparent. S'il revient : sa propre vidéo, fond vert, il bouge.
+- Ouvrir `boltversee-odyssey.grok.me` tout court depuis la constellation : c'est le menu. Le chemin est `/room`.
+- Compter sur `?at=room` seul dans une publication trop vieille : l'ancien bundle ignore le paramètre. Il faut publier le code qui lit `startInRoom`.
 - Ralentir Bolt presque à l'arrêt devant la porte. Le caler sur la plaque, pas en dessous.
 - Pattes qui montent en ligne droite avec la profondeur. Il flotte dans la porte. Le plan perspective ci-dessus règle ça.
 - Tout doigt dans la salle déplace Bolt, et la zone de l'anneau ne couvre que le haut. Le tap n'ouvre presque jamais la star map.
@@ -278,6 +302,7 @@ La génération qui marche, image-to-video depuis une frame de `room-breath` :
 2. Copier `src/pyre-stage.tsx` tel quel. Ne pas réécrire les shaders de mémoire.
 3. Servir les mp4 de `master/` sous `/master/…`. Le CSS des classes `pyre-*` est `src/pyre.css`.
 4. Ne pas changer `BOLT_H`, `PAW_V`, `BOLT_RATE`, `ROOM_STEP` sans une capture du joueur.
-5. Un nouvel ennemi = une vidéo fond vert + une entrée dans `FOE_KIND` + un mp4 de mort. Même pipeline que fallen / brute. Le boss est `kind` 2, six coups.
+5. Un nouvel ennemi = une vidéo fond vert + une entrée dans `FOE_KIND` + un mp4 de mort. Ne pas respawn le boss (`kind` 2) tant qu'on ne le redemande pas.
 6. Une nouvelle pièce = dernière image du clip d'avant en première image du suivant. Image-to-video. Pas de coupe.
-7. Compresser avant de committer : `ffmpeg -an -vf scale=480:-2 -c:v libx264 -crf 27 -pix_fmt yuv420p -movflags +faststart`. Rester sous 100 Mo par fichier. Les clips de la citadelle déjà en ligne sont en 720×1280, crf 20.
+7. Le retour constellation → salle est `/room` (`src/routes/room.tsx`). Ne pas renvoyer vers la racine.
+8. Compresser avant de committer : `ffmpeg -an -vf scale=480:-2 -c:v libx264 -crf 27 -pix_fmt yuv420p -movflags +faststart`. Rester sous 100 Mo par fichier. Les clips de la citadelle déjà en ligne sont en 720×1280, crf 20.

@@ -34,13 +34,28 @@ const PAW_V = 0.93;
 const PLANT_Y = 0.8;
 const BOLT_RATE = 4;
 const STAR_MAP = "https://boltversee-odyssey-star-map.grok.me";
+
+const backToRoom = () => {
+  if (typeof window === "undefined") return false;
+  const q = new URLSearchParams(window.location.search);
+  const at = (q.get("at") || q.get("return") || "").toLowerCase();
+  if (at === "room" || at === "map") return true;
+  if (window.location.hash === "#room") return true;
+  return document.referrer.includes("boltversee-odyssey-star-map");
+};
+
+const roomReturnUrl = () => {
+  const back = new URL(window.location.href);
+  back.hash = "";
+  back.search = "";
+  back.searchParams.set("at", "room");
+  return back.toString();
+};
 const HORIZON = 0.545;
 const ROOM_VANISH = 0.5;
 const ROOM_STEP = 0.67;
 const PYRE_PACES = 600;
 const GOD = true;
-const BOSS_HITS = 6;
-const BOSS_AT = PYRE_PACES;
 const FOE_ASPECT = 480 / 854;
 const FOE_KIND = [
   { h: 0.3, foot: 0.96, reach: 0.34, rate: 1.45, agility: 1.55 },
@@ -325,7 +340,7 @@ function beam(x0: number, y0: number, x1: number, y1: number, halfW: number) {
   ]);
 }
 
-export function PyreStage() {
+export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
   const glRef = useRef<HTMLCanvasElement>(null);
   const fxRef = useRef<HTMLCanvasElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
@@ -350,7 +365,7 @@ export function PyreStage() {
   const howlRef = useRef<HTMLVideoElement>(null);
   const ashFallenRef = useRef<HTMLVideoElement>(null);
   const ashBruteRef = useRef<HTMLVideoElement>(null);
-  const [phase, setPhase] = useState<Phase>("cover");
+  const [phase, setPhase] = useState<Phase>(startInRoom ? "citadel" : "cover");
   const [peak, setPeak] = useState(0);
   const [lastRun, setLastRun] = useState(0);
   const [paces, setPaces] = useState(0);
@@ -358,8 +373,9 @@ export function PyreStage() {
   const [bossHp, setBossHp] = useState(0);
   const [gatesOpen, setGatesOpen] = useState(false);
   const [doorsReady, setDoorsReady] = useState(false);
-  const [roomLive, setRoomLive] = useState(false);
-  const phaseRef = useRef<Phase>("cover");
+  const [roomLive, setRoomLive] = useState(startInRoom);
+  const phaseRef = useRef<Phase>(startInRoom ? "citadel" : "cover");
+  const startInRoomRef = useRef(startInRoom);
   const hudRef = useRef<(paces: number, wounds: number) => void>(() => undefined);
 
   useEffect(() => {
@@ -460,7 +476,7 @@ export function PyreStage() {
     let activeRoad = 0;
     let activeGate = 0;
     let arriveAge = 0;
-    let bossSpawned = false;
+    let citadelCalled = false;
     let cardShown = false;
     let doorsLive = false;
     let doorMode: "ride" | "open" | "hall" | "room" | "map" = "ride";
@@ -595,7 +611,7 @@ export function PyreStage() {
       spawnIn = 2.1;
       arriveAge = 0;
       activeGate = 0;
-      bossSpawned = false;
+      citadelCalled = false;
       cardShown = false;
       doorsLive = false;
       doorMode = "ride";
@@ -968,6 +984,48 @@ export function PyreStage() {
       holo.pause();
     };
 
+    const enterRoom = () => {
+      phaseRef.current = "citadel";
+      doorMode = "room";
+      doorsLive = false;
+      cardShown = true;
+      roomDepth = 0.42;
+      depthTarget = 0.42;
+      mapHop = false;
+      distance = PYRE_PACES;
+      lanePos = 0;
+      glance = 0;
+      glanceTarget = 0;
+      foes.length = 0;
+      ashes.length = 0;
+      shots.length = 0;
+      setPhase("citadel");
+      setRoomLive(true);
+      setDoorsReady(false);
+      setGatesOpen(false);
+      setBossHp(0);
+      setLastRun(PYRE_PACES);
+      setPaces(PYRE_PACES);
+      paintHud();
+      roads.forEach((video) => video.pause());
+      citadel.pause();
+      openVid.pause();
+      hall.pause();
+      holo.pause();
+      const startBreath = () => {
+        breath.loop = true;
+        try {
+          breath.currentTime = 0;
+        } catch {
+          /* not seekable yet */
+        }
+        playSafe(breath);
+      };
+      if (breath.readyState >= 2) startBreath();
+      else breath.addEventListener("loadeddata", startBreath, { once: true });
+      playSafe(bolt);
+    };
+
     const tick = (now: number) => {
       const dt = Math.min(0.1, (now - last) / 1000);
       last = now;
@@ -997,25 +1055,14 @@ export function PyreStage() {
         shake = Math.max(0, shake - dt);
         spawnIn -= dt;
         const farBusy = foes.some((foe) => foe.z < 0.55);
-        if (!bossSpawned && distance >= BOSS_AT && foes.every((foe) => foe.kind !== 2)) {
-          bossSpawned = true;
-          for (let i = foes.length - 1; i >= 0; i -= 1) foes.splice(i, 1);
-          foes.push({
-            id: nextFoe++,
-            kind: 2,
-            lane: 0,
-            aim: 0,
-            z: 0.16,
-            speed: 0.08,
-            struck: false,
-            side: 0,
-            wide: 0.5,
-            hp: BOSS_HITS,
-            hurt: 0,
-          });
-          setBossHp(BOSS_HITS);
+        if (!citadelCalled && distance >= PYRE_PACES) {
+          citadelCalled = true;
+          foes.length = 0;
+          ashes.length = 0;
+          shots.length = 0;
+          openGates();
         }
-        if (spawnIn <= 0 && foes.length < 2 && !farBusy && !bossSpawned && distance < PYRE_PACES - 40) {
+        if (spawnIn <= 0 && foes.length < 2 && !farBusy && !citadelCalled && distance < PYRE_PACES - 40) {
           const pace = 1 + Math.min(0.55, distance / 220);
           const kind: 0 | 1 = Math.random() < 0.7 ? 0 : 1;
           const fromSide = Math.random() < 0.6;
@@ -1255,7 +1302,9 @@ export function PyreStage() {
           if (holo.paused && !holo.ended) playSafe(holo);
           if (holo.ended || (holo.duration > 0 && holo.currentTime > holo.duration - 0.4)) {
             mapHop = true;
-            window.location.replace(STAR_MAP);
+            const dest = new URL(STAR_MAP);
+            dest.searchParams.set("return", roomReturnUrl());
+            window.location.replace(dest.toString());
           }
         }
       }
@@ -1440,6 +1489,7 @@ export function PyreStage() {
 
     raf = requestAnimationFrame(tick);
     paintHud();
+    if (startInRoomRef.current || backToRoom()) enterRoom();
 
     const api = { begin, atGates: () => openGates(true) };
     frame.dataset.ready = "1";
@@ -1694,7 +1744,7 @@ export function PyreStage() {
                 The gates
               </button>
             </div>
-            <p className="pyre-note">Stay on the pyre road. At 600 paces the gate lord attacks. Six howls, then the road runs into the citadel.</p>
+            <p className="pyre-note">Stay on the pyre road. At 600 paces the road runs into the citadel.</p>
           </div>
         )}
       </div>
