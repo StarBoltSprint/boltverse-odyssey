@@ -1,0 +1,15 @@
+{
+  "hang": "add",
+  "keep": ["canyon", "cars", "duel", "night", "war"],
+  "biome": "pyre",
+  "paint": "gothic blood-moon causeway",
+  "laneMaterial": "A",
+  "laneMaterialWords": "cracked black flagstone glazed like a dark mirror, blood-ember seams in the cracks, ash shoulders, volumetric blood-ash sky",
+  "road": "/master/pyre-road.mp4",
+  "first": "/master/pyre-first.jpg",
+  "last": "/master/pyre-last.jpg",
+  "bolt": "/master/bolt.mp4",
+  "boltMotion": "REUSE lock/bolt-gallop-cycle.mp4",
+  "assetId": "pyre-road",
+  "stats": { "views": 0, "playTimeSec": 0, "players": 0 }
+}
