@@ -1,5 +1,7 @@
 # PLAIN — Thunderwolf vista, one native ground
 
+The nine-cell grid below is retired. The plain the player is on now is `VISTA.md`: one lava video, four sky videos, profile runs, `selfAng` for heading and `orbit` for the camera. Do not rebuild the grid.
+
 Kitchen only. Do not read this to the player.
 Repo: `StarBoltSprint/boltverse-odyssey`. Play lives in the Build preview, source `src/game/pyre-stage.tsx`.
 

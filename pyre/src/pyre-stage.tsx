@@ -183,24 +183,63 @@ void main() {
   gl_FragColor = vec4(c.rgb, a * uAlpha);
 }`;
 
+const TAU = Math.PI * 2;
+
+// Film cards. The finger only writes yaw (orbit) and speed (plateV).
+// Sky, ground and the run clip are derived from these. Do not retune the shader.
+const SKY = {
+  faces: 4,
+  span: 0.7,
+  fadeDeg: 74,
+  moonBottom: 0.35,
+  lead: 0.55,
+  band: 0.76,
+  v1: 0.9,
+};
+const GROUND = {
+  tileMeters: 1 / 4.6,
+  detail: 1.673,
+};
+const RUN = {
+  idleRate: 0.55,
+  strideSeconds: 1,
+  strideMeters: 1.8 / 1.05,
+};
+
+const skyFov = (SKY.span / SKY.faces) * TAU;
+const groundXMul = 2 * Math.tan(skyFov / 2) * GROUND.detail;
+const groundHorizon = SKY.moonBottom + 0.01;
+const groundFade0 = SKY.moonBottom - 0.09;
+const groundFade1 = SKY.moonBottom;
+
+const BOLT_FOOT_Y = 0.16;
+const boltPivot = 0.72 / Math.max(0.02, groundHorizon - BOLT_FOOT_Y);
+const gaitFor = (speed: number) => RUN.idleRate + Math.abs(speed) * (RUN.strideSeconds / RUN.strideMeters);
+
 const PLATE_FS = `
 #extension GL_OES_standard_derivatives : enable
 precision mediump float;
 varying vec2 vUv;
 uniform sampler2D uPath;
-uniform float uScroll;
 uniform float uYaw;
+uniform float uXMul;
+uniform float uHorizon;
+uniform float uFade0;
+uniform float uFade1;
+uniform float uPivot;
+uniform float uWorldX;
+uniform float uWorldZ;
 void main() {
-  float horizon = 0.36;
+  float horizon = uHorizon;
   if (vUv.y > horizon) discard;
   float dy = max(0.02, horizon - vUv.y);
   float depth = 0.72 / dy;
-  float x = (vUv.x - 0.5) * depth * 1.2;
+  float x = (vUv.x - 0.5) * depth * uXMul;
   float c = cos(uYaw);
   float s = sin(uYaw);
-  float ahead = depth + uScroll * 2.0;
-  float wx = x * c - ahead * s;
-  float wz = x * s + ahead * c;
+  float relZ = depth - uPivot;
+  float wx = x * c - relZ * s + uWorldX;
+  float wz = x * s + relZ * c + uPivot + uWorldZ;
   vec2 p = vec2(wx, wz) * 0.18;
   vec2 f = fract(p);
   vec3 a = texture2D(uPath, f).rgb;
@@ -210,7 +249,7 @@ void main() {
   vec3 stone = mix(a, b, seam);
   float stretch = max(length(dFdx(p)), length(dFdy(p)));
   float sharp = 1.0 - smoothstep(0.02, 0.055, stretch);
-  float intoSky = 1.0 - smoothstep(0.26, 0.35, vUv.y);
+  float intoSky = 1.0 - smoothstep(uFade0, uFade1, vUv.y);
   gl_FragColor = vec4(stone, sharp * intoSky);
 }`;
 
@@ -505,6 +544,8 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
   const boltThunderRightIdleRef = useRef<HTMLVideoElement>(null);
   const boltThunderLeftIdleRef = useRef<HTMLVideoElement>(null);
   const boltThunderRunRef = useRef<HTMLVideoElement>(null);
+  const boltThunderRunLeftRef = useRef<HTMLVideoElement>(null);
+  const boltThunderRunRightRef = useRef<HTMLVideoElement>(null);
   const boltThunderBackstepRef = useRef<HTMLVideoElement>(null);
   const boltThunderFaceRef = useRef<HTMLVideoElement>(null);
   const plainRef = useRef<HTMLVideoElement>(null);
@@ -587,6 +628,8 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     const boltThunderRightIdle = boltThunderRightIdleRef.current;
     const boltThunderLeftIdle = boltThunderLeftIdleRef.current;
     const boltThunderRun = boltThunderRunRef.current;
+    const boltThunderRunLeft = boltThunderRunLeftRef.current;
+    const boltThunderRunRight = boltThunderRunRightRef.current;
     const boltThunderBackstep = boltThunderBackstepRef.current;
     const boltThunderFace = boltThunderFaceRef.current;
     const plainVid = plainRef.current;
@@ -617,7 +660,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     const ashBrute = ashBruteRef.current;
     const frame = frameRef.current;
     if (
-      !canvas || !fx || !roadA || !roadB || !bolt || !boltIdle || !boltFace || !boltTurn || !boltTurnBack || !boltTurnLeft || !boltTurnLeftBack || !boltThunder || !boltThunderRise || !boltThunderRight || !boltThunderRightBack || !boltThunderLeft || !boltThunderLeftBack || !boltThunderRightIdle || !boltThunderLeftIdle || !boltThunderRun || !boltThunderBackstep || !boltThunderFace || !plainVid || !plainLeftLive || !plainRightLive || !fallen || !brute || !boss || !bossAsh ||
+      !canvas || !fx || !roadA || !roadB || !bolt || !boltIdle || !boltFace || !boltTurn || !boltTurnBack || !boltTurnLeft || !boltTurnLeftBack || !boltThunder || !boltThunderRise || !boltThunderRight || !boltThunderRightBack || !boltThunderLeft || !boltThunderLeftBack || !boltThunderRightIdle || !boltThunderLeftIdle || !boltThunderRun || !boltThunderRunLeft || !boltThunderRunRight || !boltThunderBackstep || !boltThunderFace || !plainVid || !plainLeftLive || !plainRightLive || !fallen || !brute || !boss || !bossAsh ||
       !wingL || !wingR || !howlVid || !ashFallen || !ashBrute || !gateA || !gateB ||
       !gateWingL || !gateWingR || !citadel || !openVid || !hall || !breath || !camLeft || !camRight || !camLeftBack || !camRightBack || !holo || !exitVid || !frame
     ) return;
@@ -799,8 +842,14 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     let glanceTarget = 0;
     let orbit = 0;
     let orbitTarget = 0;
+    let selfAng = 0;
     let orbitHold = false;
     let orbitDrag = false;
+    let chase = false;
+    let profileGo = false;
+    let profileAge = 0;
+    let worldX = 0;
+    let worldZ = 0;
     let viewShift = 0;
     let drag: {
       id: number;
@@ -812,6 +861,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       ny: number;
       onBolt: boolean;
       orbit: number;
+      self: number;
       sweep: number;
       lastAng: number | null;
       arc: boolean;
@@ -899,7 +949,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     boltIdle.loop = true;
     boltIdle.playbackRate = 1;
     boltIdle.disablePictureInPicture = true;
-    for (const clip of [boltFace, boltTurn, boltTurnBack, boltTurnLeft, boltTurnLeftBack, boltThunder, boltThunderRise, boltThunderRight, boltThunderRightBack, boltThunderLeft, boltThunderLeftBack, boltThunderRightIdle, boltThunderLeftIdle, boltThunderRun, boltThunderBackstep, boltThunderFace]) {
+    for (const clip of [boltFace, boltTurn, boltTurnBack, boltTurnLeft, boltTurnLeftBack, boltThunder, boltThunderRise, boltThunderRight, boltThunderRightBack, boltThunderLeft, boltThunderLeftBack, boltThunderRightIdle, boltThunderLeftIdle, boltThunderRun, boltThunderRunLeft, boltThunderRunRight, boltThunderBackstep, boltThunderFace]) {
       clip.muted = true;
       clip.playsInline = true;
       clip.disablePictureInPicture = true;
@@ -910,6 +960,8 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     boltThunderRightIdle.loop = true;
     boltThunderLeftIdle.loop = true;
     boltThunderRun.loop = true;
+    boltThunderRunLeft.loop = true;
+    boltThunderRunRight.loop = true;
     boltThunderBackstep.loop = true;
     boltThunderFace.loop = true;
     boltThunderRun.playbackRate = 1.25;
@@ -1074,9 +1126,11 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       glance = 0;
       glanceTarget = 0;
       orbit = 0;
+      selfAng = 0;
       orbitTarget = 0;
       orbitHold = false;
       orbitDrag = false;
+      chase = false;
       foes.length = 0;
       ashes.length = 0;
       shots.length = 0;
@@ -1437,6 +1491,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
         ny,
         onBolt,
         orbit: orbitTarget,
+        self: selfAng,
         sweep: 0,
         lastAng: null,
         arc: false,
@@ -1499,12 +1554,31 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           bow = Math.max(bow, Math.abs(spanX * (p.y - origin.y) - spanY * (p.x - origin.x)) / span);
         }
         const flat = Math.abs(dx) > 16 && Math.abs(dx) > Math.abs(dy) * 1.2 && bow < 34 && bow < span * 0.22;
-        if (orbitDrag || (!drag.arc && flat && !drag.onBolt && (vistaHold || outArrived))) {
-          const gain = (Math.PI * 2) / 0.85;
-          orbitTarget = drag.orbit + (-dx / width) * gain;
-          orbit = orbitTarget;
-          orbitDrag = true;
-          plainPush = null;
+        const horizontal = Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 0.8;
+        if ((orbitDrag || chase || (!drag.arc && (flat || horizontal))) && (vistaHold || outArrived)) {
+          selfAng = drag.self + (-dx / width) * (Math.PI * 2);
+          const turned = Math.abs(wrapAng(selfAng - drag.orbit));
+          const side = turned > 0.7 && turned < 2.5;
+          if (side && Math.abs(dx) > width * 0.16) {
+            profileGo = true;
+            plateWish = 1.25;
+            plainPush = "run";
+            if (!chase) {
+              orbit = drag.orbit;
+              orbitTarget = drag.orbit;
+              orbitDrag = true;
+            } else {
+              orbitDrag = false;
+              orbitTarget = selfAng;
+            }
+          } else if (!chase) {
+            profileGo = false;
+            orbit = drag.orbit;
+            orbitTarget = drag.orbit;
+            orbitDrag = true;
+            plateWish = 0;
+            plainPush = null;
+          }
           return;
         }
         const curl = arcOf(drag.pts);
@@ -1518,16 +1592,14 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           gy = drag.gy;
           plainPush = null;
           plateWish = 0;
-          if (!drag.arc) beginThunderTurn(curl);
+          const finger = Math.atan2(event.clientY - drag.y, event.clientX - drag.x);
+          if (drag.lastAng == null) drag.lastAng = finger;
+          else {
+            selfAng += wrapAng(finger - drag.lastAng);
+            drag.lastAng = finger;
+          }
           drag.arc = true;
-          return;
-        }
-        const horizontal = Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.05;
-        if (!drag.onBolt && horizontal && (vistaHold || outArrived)) {
-          const gain = (Math.PI * 2) / 0.85;
-          orbitTarget = drag.orbit + (-dx / width) * gain;
-          orbit = orbitTarget;
-          orbitDrag = true;
+          chase = false;
           return;
         }
         if (!drag.axis && (Math.abs(dx) > 12 || Math.abs(dy) > 12)) {
@@ -1625,6 +1697,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           drag = null;
           runHold = false;
           orbitDrag = false;
+          chase = false;
         }
         spinTo = null;
         try {
@@ -1654,10 +1727,22 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           gy = drag.gy;
           plainPush = null;
           if (!drag.arc) beginThunderTurn(curl);
-        } else if (orbitDrag) {
+        } else if (orbitDrag && !chase) {
           orbitTarget = orbit;
           plainPush = null;
-        } else plainPush = null;
+          profileGo = false;
+        } else if (!chase) {
+          plainPush = null;
+          profileGo = false;
+        }
+        if (profileGo || Math.abs(wrapAng(selfAng - orbit)) > 0.7) {
+          chase = true;
+          orbitDrag = false;
+          orbitTarget = selfAng;
+          profileGo = false;
+          plainPush = null;
+          plateWish = 0;
+        }
         drag = null;
         runHold = false;
         orbitDrag = false;
@@ -1685,12 +1770,13 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           } else if (onRing) openMap();
         }
       }
-      if (orbitDrag) {
+      if (orbitDrag && doorMode !== "out") {
         orbitTarget = Math.max(-SIDE, Math.min(SIDE, Math.round(orbit / SIDE) * SIDE));
       }
       drag = null;
       runHold = false;
       orbitDrag = false;
+      chase = false;
       try {
         if (frame.hasPointerCapture(event.pointerId)) frame.releasePointerCapture(event.pointerId);
       } catch {
@@ -1740,6 +1826,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       glance = 0;
       glanceTarget = 0;
       orbit = 0;
+      selfAng = 0;
       orbitTarget = 0;
       gx = 1;
       gy = 0;
@@ -1839,6 +1926,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       glance = 0;
       glanceTarget = 0;
       orbit = 0;
+      selfAng = 0;
       orbitTarget = 0;
       lanePos = 0;
       doorMode = "ride";
@@ -1907,6 +1995,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       glance = 0;
       glanceTarget = 0;
       orbit = 0;
+      selfAng = 0;
       orbitTarget = 0;
       foes.length = 0;
       ashes.length = 0;
@@ -1964,6 +2053,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       glance = 0;
       glanceTarget = 0;
       orbit = 0;
+      selfAng = 0;
       orbitTarget = 0;
       gx = 1;
       gy = 0;
@@ -2345,22 +2435,41 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
             else roomDepth = Math.max(depthTarget, roomDepth - step);
           }
           if (outArrived && breath.paused) playSafe(breath);
-          const follow = 1 - Math.exp(-dt * 6);
+          const follow = 1 - Math.exp(-dt * (chase ? 4.5 : 6));
+          const gap = Math.abs(wrapAng(selfAng - orbit));
+          if (profileGo && !chase) profileAge += dt;
+          else if (!profileGo && !chase) profileAge = 0;
+          if (profileGo && profileAge > 0.7) {
+            chase = true;
+            orbitDrag = false;
+            orbitTarget = selfAng;
+          }
           if (orbitDrag) orbit = orbitTarget;
-          else orbit += (orbitTarget - orbit) * follow;
+          else orbit += wrapAng((chase || gap > 0.08 ? selfAng : orbitTarget) - orbit) * follow;
           if (settled && !orbitDrag) {
-            const wish = drag && drag.axis === "ns" && !drag.arc ? plateWish : 0;
+            if (profileGo) {
+              plateWish = 1.25;
+              plainPush = "run";
+            }
+            const wish = (drag && drag.axis === "ns" && !drag.arc) || profileGo ? plateWish : 0;
             plateV += (wish - plateV) * (1 - Math.exp(-dt * 5));
             if (Math.abs(plateV) < 0.02 && wish === 0) plateV = 0;
             plateOffset += plateV * dt;
-            if (!orbitDrag) {
+            const scrolled = (plateV * dt) / GROUND.tileMeters;
+            worldX += -Math.sin(selfAng) * scrolled;
+            worldZ += Math.cos(selfAng) * scrolled;
+            if (!orbitDrag && !profileGo && gap <= 0.08) {
               const tau = Math.PI * 2;
-              orbit = ((orbit % tau) + tau) % tau;
-              if (orbit > Math.PI) orbit -= tau;
+              let folded = ((orbit % tau) + tau) % tau;
+              if (folded > Math.PI) folded -= tau;
+              selfAng += folded - orbit;
+              orbit = folded;
               orbitTarget = orbit;
+              if (!drag) chase = false;
             }
-            if (!drag || drag.axis !== "ns") {
-              plainPush = plateV > 0.12 ? "run" : plateV < -0.12 ? "back" : null;
+            if (!(drag && drag.axis === "ns")) {
+              if (profileGo) plainPush = "run";
+              else plainPush = plateV > 0.08 ? "run" : plateV < -0.12 ? "back" : null;
             }
           } else if (!drag) {
             plateV = 0;
@@ -2411,6 +2520,8 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       const liveTurn = turnTo;
       const turnLive = liveTurn !== null && turnClip(liveTurn, turnSide).readyState >= 2;
       let pose = turnLive && liveTurn ? turnClip(liveTurn, turnSide) : yaw === "face" && doorMode === "room" ? boltFace : boltIdle;
+      let orbitMate: HTMLVideoElement | null = null;
+      let orbitMix = 1;
       orbitHold = doorMode === "room" && Math.abs(orbit) > 0.04;
       if (orbitHold) {
         pose = boltIdle;
@@ -2485,10 +2596,45 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
                       : null;
         if (nextPose) thunderHold = nextPose;
         if (thunderHold) pose = thunderHold;
-        if (pose === boltThunderRun || pose === boltThunderBackstep) {
-          const sprint = Math.min(1, Math.abs(plateV) / 1.8);
-          const gait = 0.55 + sprint * 1.05;
+        if (pose === boltThunderRun || pose === boltThunderRunLeft || pose === boltThunderRunRight || pose === boltThunderBackstep) {
+          const gait = gaitFor(plateV);
           if (Math.abs(pose.playbackRate - gait) > 0.04) pose.playbackRate = gait;
+        }
+        const plainNow = doorMode === "out" && (vistaHold || outArrived);
+        if (plainNow && !thunderTurn) {
+          const ang = (((selfAng - orbit) % TAU) + TAU) % TAU;
+          const views = [boltThunder, boltThunderLeftIdle, boltThunderFace, boltThunderRightIdle];
+          const step = TAU / 4;
+          const u = ang / step;
+          const i = Math.floor(u) % 4;
+          const f = u - Math.floor(u);
+          const moving = profileGo || plainPush === "run" || Math.abs(plateV) > 0.08;
+          if (moving && boltThunderRun.readyState >= 2) {
+            const dBack = Math.min(ang, TAU - ang);
+            const dLeft = Math.abs(ang - Math.PI / 2);
+            const dRight = Math.abs(ang - Math.PI * 1.5);
+            pose =
+              dLeft <= dBack && dLeft <= dRight && boltThunderRunLeft.readyState >= 2
+                ? boltThunderRunLeft
+                : dRight < dBack && boltThunderRunRight.readyState >= 2
+                  ? boltThunderRunRight
+                  : boltThunderRun;
+            thunderHold = pose;
+            orbitMate = null;
+            orbitMix = 1;
+          } else if ((ang < 0.55 || ang > TAU - 0.55) && plainPush === "back" && boltThunderBackstep.readyState >= 2) {
+            pose = boltThunderBackstep;
+            thunderHold = pose;
+          } else if (views[i]!.readyState >= 2) {
+            const blend = 0.32;
+            const t = f > 1 - blend ? (f - (1 - blend)) / blend : 0;
+            const eased = t * t * (3 - 2 * t);
+            const next = views[(i + 1) % 4]!;
+            pose = views[i]!;
+            thunderHold = pose;
+            orbitMate = eased > 0.02 && next.readyState >= 2 ? next : null;
+            orbitMix = orbitMate ? eased : 0;
+          }
         }
         breathMix = 1;
         yaw = "back";
@@ -2505,6 +2651,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
         const atSpinEnd = pose.ended || pose.currentTime < 0.08 || (dur > 0 && pose.currentTime > dur - 0.12);
         if (!spin || (!atSpinEnd && pose.currentTime > 0.08)) playSafe(pose);
       }
+      if (orbitMate && orbitMate.paused) playSafe(orbitMate);
       const onPlain = doorMode === "out" && (vistaHold || outArrived);
       if (onPlain) {
         for (const clip of [plainVid, plainLeftLive, plainRightLive, roadA, roadB, wingL, wingR, fallen, brute, boss, bolt, breath, exitVid, howlVid]) {
@@ -2513,9 +2660,9 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
         idleRefs.current.forEach((clip) => {
           if (clip && !clip.paused) clip.pause();
         });
-        const thunderClips = [boltThunder, boltThunderRise, boltThunderRun, boltThunderBackstep, boltThunderFace, boltThunderRight, boltThunderRightBack, boltThunderLeft, boltThunderLeftBack, boltThunderRightIdle, boltThunderLeftIdle];
+        const thunderClips = [boltThunder, boltThunderRise, boltThunderRun, boltThunderRunLeft, boltThunderRunRight, boltThunderBackstep, boltThunderFace, boltThunderRight, boltThunderRightBack, boltThunderLeft, boltThunderLeftBack, boltThunderRightIdle, boltThunderLeftIdle];
         for (const clip of thunderClips) {
-          if (clip !== pose && !clip.paused) clip.pause();
+          if (clip !== pose && clip !== orbitMate && !clip.paused) clip.pause();
         }
         if (groundVid.paused) playSafe(groundVid);
       }
@@ -2526,7 +2673,9 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       }
       if (!onPlain && bolt.readyState >= 2) uploadVideo(gl, boltTex, bolt);
       if (thunderOn) {
-        if (thunderHold && thunderHold.readyState >= 2) uploadVideo(gl, boltIdleTex, thunderHold);
+        if (orbitMix < 1 && pose.readyState >= 2) uploadVideo(gl, boltTex, pose);
+        const mate = orbitMate ?? thunderHold;
+        if (mate && mate.readyState >= 2) uploadVideo(gl, boltIdleTex, mate);
       } else if (!onPlain && pose.readyState >= 2) uploadVideo(gl, boltIdleTex, pose);
       else if (!onPlain && boltIdle.readyState >= 2) uploadVideo(gl, boltIdleTex, boltIdle);
       if (!onPlain) {
@@ -2674,35 +2823,33 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
         gl.clearColor(0, 0, 0, 1);
         gl.clear(gl.COLOR_BUFFER_BIT);
         if (skyVids[0].readyState >= 2) {
-          const band = 0.76;
+          const band = SKY.band;
           const bandAspect = canvas.width / Math.max(1, canvas.height) / band;
           const vidAspect = skyVids[0].videoWidth > 0 ? skyVids[0].videoWidth / skyVids[0].videoHeight : 9 / 16;
-          const span = 0.7;
+          const span = SKY.span;
           const vSpan = Math.min(0.9, (vidAspect * span) / Math.max(0.2, bandAspect));
-          const v1 = 0.9;
+          const v1 = SKY.v1;
           const v0 = Math.max(0, v1 - vSpan);
-          const ang = (((0.125 - orbit / (Math.PI * 2)) % 1) + 1) % 1;
-          const slice = ang * 4;
-          const faceA = Math.floor(slice) % 4;
+          const ang = (((0.125 - orbit / TAU) % 1) + 1) % 1;
+          const slice = ang * SKY.faces;
+          const faceA = Math.floor(slice) % SKY.faces;
           const f = slice - Math.floor(slice);
           const u0 = (1 - span) * f;
+          const fadeStart = 1 - SKY.fadeDeg / (360 / SKY.faces);
           let faceB = faceA;
           let u1 = u0;
           let mixB = 0;
-          if (f > 0.55) {
-            faceB = (faceA + 1) % 4;
-            u1 = 0;
-            const t = (f - 0.55) / 0.45;
+          if (f > fadeStart) {
+            faceB = (faceA + 1) % SKY.faces;
+            const t = (f - fadeStart) / (1 - fadeStart);
             mixB = t * t * (3 - 2 * t);
+            u1 = (1 - span) * (1 - f) * SKY.lead;
           }
           for (let i = 0; i < 4; i += 1) {
             const vid = skyVids[i]!;
-            const live = i === faceA || i === faceB;
-            if (live) {
-              if (vid.paused) playSafe(vid);
-            } else if (!vid.paused) vid.pause();
+            if (vid.paused) playSafe(vid);
             gl.activeTexture(gl.TEXTURE0 + i);
-            if (live && vid.readyState >= 2) uploadVideo(gl, skyTex[i]!, vid);
+            if (vid.readyState >= 2) uploadVideo(gl, skyTex[i]!, vid);
             else gl.bindTexture(gl.TEXTURE_2D, skyTex[i]!);
           }
           gl.disable(gl.BLEND);
@@ -2730,8 +2877,14 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
         gl.useProgram(rockProg);
         gl.bindTexture(gl.TEXTURE_2D, pathTex);
         gl.uniform1i(gl.getUniformLocation(rockProg, "uPath"), 0);
-        gl.uniform1f(gl.getUniformLocation(rockProg, "uScroll"), plateOffset);
+        gl.uniform1f(gl.getUniformLocation(rockProg, "uWorldX"), worldX);
+        gl.uniform1f(gl.getUniformLocation(rockProg, "uWorldZ"), worldZ);
         gl.uniform1f(gl.getUniformLocation(rockProg, "uYaw"), orbit);
+        gl.uniform1f(gl.getUniformLocation(rockProg, "uXMul"), groundXMul);
+        gl.uniform1f(gl.getUniformLocation(rockProg, "uHorizon"), groundHorizon);
+        gl.uniform1f(gl.getUniformLocation(rockProg, "uFade0"), groundFade0);
+        gl.uniform1f(gl.getUniformLocation(rockProg, "uFade1"), groundFade1);
+        gl.uniform1f(gl.getUniformLocation(rockProg, "uPivot"), boltPivot);
         drawBuffer(FULL);
       } else if (camFrame && doorMode === "room") {
         gl.disable(gl.BLEND);
@@ -2816,6 +2969,8 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           pose === boltThunderRightIdle ||
           pose === boltThunderLeftIdle ||
           pose === boltThunderRun ||
+          pose === boltThunderRunLeft ||
+          pose === boltThunderRunRight ||
           pose === boltThunderBackstep ||
           pose === boltThunderFace;
         const turningPlate =
@@ -2836,7 +2991,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
         gl.uniform1i(gl.getUniformLocation(boltProg, "uTexB"), 1);
         gl.uniform1f(gl.getUniformLocation(boltProg, "uFlash"), flash);
         gl.uniform1f(gl.getUniformLocation(boltProg, "uTime"), now * 0.001);
-        gl.uniform1f(gl.getUniformLocation(boltProg, "uBreath"), thunderOn ? 1 : boltIdle.readyState >= 2 ? breathMix : 0);
+        gl.uniform1f(gl.getUniformLocation(boltProg, "uBreath"), thunderOn ? orbitMix : boltIdle.readyState >= 2 ? breathMix : 0);
         gl.activeTexture(gl.TEXTURE0);
         const paw = thunderPlate ? 0.97 : PAW_V;
         const dw = box.w * fit;
@@ -3058,6 +3213,8 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
         <video ref={boltThunderRightIdleRef} className="pyre-video" src="/master/bolt-thunder-right-idle.mp4?v=1" muted loop playsInline disablePictureInPicture preload="auto" />
         <video ref={boltThunderLeftIdleRef} className="pyre-video" src="/master/bolt-thunder-left-idle.mp4?v=1" muted loop playsInline disablePictureInPicture preload="auto" />
         <video ref={boltThunderRunRef} className="pyre-video" src="/master/bolt-thunder-run.mp4?v=3" muted loop playsInline disablePictureInPicture preload="auto" />
+        <video ref={boltThunderRunLeftRef} className="pyre-video" src="/master/bolt-thunder-run-left.mp4?v=1" muted loop playsInline disablePictureInPicture preload="auto" />
+        <video ref={boltThunderRunRightRef} className="pyre-video" src="/master/bolt-thunder-run-right.mp4?v=1" muted loop playsInline disablePictureInPicture preload="auto" />
         <video ref={boltThunderBackstepRef} className="pyre-video" src="/master/bolt-thunder-backstep.mp4?v=1" muted loop playsInline disablePictureInPicture preload="auto" />
         <video ref={boltThunderFaceRef} className="pyre-video" src="/master/bolt-thunder-face.mp4?v=1" muted loop playsInline disablePictureInPicture preload="auto" />
         <video
