@@ -184,25 +184,34 @@ void main() {
 }`;
 
 const PLATE_FS = `
+#extension GL_OES_standard_derivatives : enable
 precision mediump float;
 varying vec2 vUv;
 uniform sampler2D uPath;
 uniform float uScroll;
 uniform float uYaw;
 void main() {
-  if (vUv.y > 0.47) discard;
-  float y = clamp(vUv.y / 0.47, 0.0, 1.0);
-  float persp = y * y;
-  float depth = mix(7.0, 0.08, persp);
-  float x = (vUv.x - 0.5) * mix(2.4, 0.12, persp);
+  float horizon = 0.36;
+  if (vUv.y > horizon) discard;
+  float dy = max(0.02, horizon - vUv.y);
+  float depth = 0.72 / dy;
+  float x = (vUv.x - 0.5) * depth * 1.2;
   float c = cos(uYaw);
   float s = sin(uYaw);
-  float wx = x * c - depth * s;
-  float wz = x * s + depth * c + uScroll;
-  vec3 stone = texture2D(uPath, vec2(fract(wx * 0.16), fract(wz * 0.16))).rgb;
-  float fog = smoothstep(0.0, 0.8, 1.0 - y);
-  stone *= 0.22 + 0.78 * fog;
-  gl_FragColor = vec4(stone, 1.0);
+  float ahead = depth + uScroll * 2.0;
+  float wx = x * c - ahead * s;
+  float wz = x * s + ahead * c;
+  vec2 p = vec2(wx, wz) * 0.18;
+  vec2 f = fract(p);
+  vec3 a = texture2D(uPath, f).rgb;
+  vec3 b = texture2D(uPath, fract(p + 0.5)).rgb;
+  float edge = max(abs(f.x - 0.5), abs(f.y - 0.5)) * 2.0;
+  float seam = smoothstep(0.92, 1.0, edge);
+  vec3 stone = mix(a, b, seam);
+  float stretch = max(length(dFdx(p)), length(dFdy(p)));
+  float sharp = 1.0 - smoothstep(0.02, 0.055, stretch);
+  float intoSky = 1.0 - smoothstep(0.26, 0.35, vUv.y);
+  gl_FragColor = vec4(stone, sharp * intoSky);
 }`;
 
 const PROP_FS = `
@@ -217,6 +226,34 @@ void main() {
   if (greenness > 0.14) discard;
   if (c.g > m + 0.03) c.g = m;
   gl_FragColor = vec4(c.rgb, uAlpha);
+}`;
+
+const SKY_FS = `
+precision mediump float;
+varying vec2 vUv;
+uniform sampler2D u0;
+uniform sampler2D u1;
+uniform sampler2D u2;
+uniform sampler2D u3;
+uniform float uA;
+uniform float uB;
+uniform float uMix;
+uniform float uU0;
+uniform float uU1;
+uniform float uSpan;
+uniform float uV0;
+uniform float uV1;
+vec3 face(float i, vec2 uv) {
+  if (i < 0.5) return texture2D(u0, uv).rgb;
+  if (i < 1.5) return texture2D(u1, uv).rgb;
+  if (i < 2.5) return texture2D(u2, uv).rgb;
+  return texture2D(u3, uv).rgb;
+}
+void main() {
+  float v = mix(uV0, uV1, vUv.y);
+  vec3 a = face(uA, vec2(uU0 + vUv.x * uSpan, v));
+  vec3 b = face(uB, vec2(uU1 + vUv.x * uSpan, v));
+  gl_FragColor = vec4(mix(a, b, uMix), 1.0);
 }`;
 
 const HOWL_FS = `
@@ -391,6 +428,19 @@ function upload(gl: WebGLRenderingContext, tex: WebGLTexture | null, source: Tex
   gl.bindTexture(gl.TEXTURE_2D, tex);
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
+}
+
+const frameStamp = new WeakMap<HTMLVideoElement, number>();
+function uploadVideo(gl: WebGLRenderingContext, tex: WebGLTexture | null, video: HTMLVideoElement) {
+  gl.bindTexture(gl.TEXTURE_2D, tex);
+  if (video.readyState < 2) return;
+  const frames = video.getVideoPlaybackQuality?.().totalVideoFrames ?? 0;
+  if (frames > 0) {
+    if (frameStamp.get(video) === frames) return;
+    frameStamp.set(video, frames);
+  }
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
 }
 
 function lookShift(glance: number, wingsReady: boolean) {
@@ -579,12 +629,14 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     });
     const ctx = fx.getContext("2d");
     if (!gl || !ctx) return;
+    gl.getExtension("OES_standard_derivatives");
 
     const roadProg = program(gl, ROAD_FS);
     const boltProg = program(gl, BOLT_FS);
     const enemyProg = program(gl, ENEMY_FS);
     const rockProg = program(gl, PLATE_FS);
     const propProg = program(gl, PROP_FS);
+    const skyProg = program(gl, SKY_FS);
     const howlProg = program(gl, HOWL_FS);
     const gateProg = program(gl, GATE_FS);
     const orbitProg = program(gl, ORBIT_FS);
@@ -683,30 +735,43 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     const roomLeftTex = makeTex(gl);
     const roomRightTex = makeTex(gl);
     const roomBackTex = makeTex(gl);
-    const skyTex = makeTex(gl);
+    const skyTex = [makeTex(gl), makeTex(gl), makeTex(gl), makeTex(gl)];
     const pathTex = makeTex(gl);
     const rockPropTex = makeTex(gl);
     const spireTex = makeTex(gl);
     const cityTex = makeTex(gl);
-    const skyVid = document.createElement("video");
-    skyVid.src = "/master/decor/sky.mp4?v=2";
-    skyVid.muted = true;
-    skyVid.loop = true;
-    skyVid.playsInline = true;
-    skyVid.preload = "auto";
-    skyVid.setAttribute("playsinline", "");
-    frame.appendChild(skyVid);
-    const playSky = () => {
-      const pending = skyVid.play();
-      if (pending) pending.catch(() => undefined);
-    };
-    if (skyVid.readyState >= 2) playSky();
-    else skyVid.addEventListener("loadeddata", playSky, { once: true });
     const decorImg = (src: string) => {
       const img = new Image();
       img.src = src;
       return img;
     };
+    const skyVids = [0, 1, 2, 3].map((i) => {
+      const video = document.createElement("video");
+      video.src = `/master/decor/sky-${i}.mp4?v=1`;
+      video.muted = true;
+      video.loop = true;
+      video.playsInline = true;
+      video.preload = "auto";
+      video.setAttribute("playsinline", "");
+      frame.appendChild(video);
+      if (i === 0) {
+        const play = () => {
+          const pending = video.play();
+          if (pending) pending.catch(() => undefined);
+        };
+        if (video.readyState >= 2) play();
+        else video.addEventListener("loadeddata", play, { once: true });
+      }
+      return video;
+    });
+    const groundVid = document.createElement("video");
+    groundVid.src = "/master/decor/ground.mp4?v=2";
+    groundVid.muted = true;
+    groundVid.loop = true;
+    groundVid.playsInline = true;
+    groundVid.preload = "auto";
+    groundVid.setAttribute("playsinline", "");
+    frame.appendChild(groundVid);
     const pathImg = decorImg("/master/decor/path.jpg");
     const rockImg = decorImg("/master/decor/rock.jpg");
     const spireImg = decorImg("/master/decor/spire.jpg");
@@ -2249,8 +2314,8 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           outArrived = vistaHold || exitVid.ended || t > 0.84;
           outHide = !vistaHold && !outArrived && t > 0.4 && t < 0.64;
           thunderOn = t >= 0.64;
-          if ((vistaHold || outArrived) && plainVid.paused) playSafe(plainVid);
           const settled = vistaHold || outArrived;
+          if (settled && !plainVid.paused) plainVid.pause();
           if (settled) {
             if (!plainNoted) {
               plainNoted = true;
@@ -2314,7 +2379,6 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
 
       const road = roads[activeRoad]!;
       const roadSource = road.readyState >= 2 ? road : poster.complete ? poster : null;
-      if (roadSource) upload(gl, roadTex, roadSource);
       const roomWalking = doorMode === "room" && Math.abs(depthTarget - roomDepth) > 0.03 && yaw === "back" && !turnTo && !runHold;
       const wantIdle =
         !runHold &&
@@ -2421,6 +2485,11 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
                       : null;
         if (nextPose) thunderHold = nextPose;
         if (thunderHold) pose = thunderHold;
+        if (pose === boltThunderRun || pose === boltThunderBackstep) {
+          const sprint = Math.min(1, Math.abs(plateV) / 1.8);
+          const gait = 0.55 + sprint * 1.05;
+          if (Math.abs(pose.playbackRate - gait) > 0.04) pose.playbackRate = gait;
+        }
         breathMix = 1;
         yaw = "back";
       } else thunderHold = null;
@@ -2436,23 +2505,44 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
         const atSpinEnd = pose.ended || pose.currentTime < 0.08 || (dur > 0 && pose.currentTime > dur - 0.12);
         if (!spin || (!atSpinEnd && pose.currentTime > 0.08)) playSafe(pose);
       }
-      if (bolt.readyState >= 2) upload(gl, boltTex, bolt);
+      const onPlain = doorMode === "out" && (vistaHold || outArrived);
+      if (onPlain) {
+        for (const clip of [plainVid, plainLeftLive, plainRightLive, roadA, roadB, wingL, wingR, fallen, brute, boss, bolt, breath, exitVid, howlVid]) {
+          if (!clip.paused) clip.pause();
+        }
+        idleRefs.current.forEach((clip) => {
+          if (clip && !clip.paused) clip.pause();
+        });
+        const thunderClips = [boltThunder, boltThunderRise, boltThunderRun, boltThunderBackstep, boltThunderFace, boltThunderRight, boltThunderRightBack, boltThunderLeft, boltThunderLeftBack, boltThunderRightIdle, boltThunderLeftIdle];
+        for (const clip of thunderClips) {
+          if (clip !== pose && !clip.paused) clip.pause();
+        }
+        if (groundVid.paused) playSafe(groundVid);
+      }
+      if (!onPlain && !groundVid.paused) groundVid.pause();
+      if (!onPlain && roadSource) {
+        if (roadSource instanceof HTMLVideoElement) uploadVideo(gl, roadTex, roadSource);
+        else upload(gl, roadTex, roadSource);
+      }
+      if (!onPlain && bolt.readyState >= 2) uploadVideo(gl, boltTex, bolt);
       if (thunderOn) {
-        if (thunderHold && thunderHold.readyState >= 2) upload(gl, boltIdleTex, thunderHold);
-      } else if (pose.readyState >= 2) upload(gl, boltIdleTex, pose);
-      else if (boltIdle.readyState >= 2) upload(gl, boltIdleTex, boltIdle);
-      if (fallen.readyState >= 2) upload(gl, foeTex[0]!, fallen);
-      if (brute.readyState >= 2) upload(gl, foeTex[1]!, brute);
-      if (boss.readyState >= 2) upload(gl, foeTex[2]!, boss);
-      if (howlVid.readyState >= 2) upload(gl, howlTex, howlVid);
-      if (ashFallen.readyState >= 2) upload(gl, ashTex[0]!, ashFallen);
-      if (ashBrute.readyState >= 2) upload(gl, ashTex[1]!, ashBrute);
-      if (bossAsh.readyState >= 2) upload(gl, ashTex[2]!, bossAsh);
-      if (wingL.readyState >= 2) upload(gl, wingLTex, wingL);
-      if (wingR.readyState >= 2) upload(gl, wingRTex, wingR);
+        if (thunderHold && thunderHold.readyState >= 2) uploadVideo(gl, boltIdleTex, thunderHold);
+      } else if (!onPlain && pose.readyState >= 2) uploadVideo(gl, boltIdleTex, pose);
+      else if (!onPlain && boltIdle.readyState >= 2) uploadVideo(gl, boltIdleTex, boltIdle);
+      if (!onPlain) {
+        if (fallen.readyState >= 2) uploadVideo(gl, foeTex[0]!, fallen);
+        if (brute.readyState >= 2) uploadVideo(gl, foeTex[1]!, brute);
+        if (boss.readyState >= 2) uploadVideo(gl, foeTex[2]!, boss);
+        if (howlVid.readyState >= 2) uploadVideo(gl, howlTex, howlVid);
+        if (ashFallen.readyState >= 2) uploadVideo(gl, ashTex[0]!, ashFallen);
+        if (ashBrute.readyState >= 2) uploadVideo(gl, ashTex[1]!, ashBrute);
+        if (bossAsh.readyState >= 2) uploadVideo(gl, ashTex[2]!, bossAsh);
+        if (wingL.readyState >= 2) uploadVideo(gl, wingLTex, wingL);
+        if (wingR.readyState >= 2) uploadVideo(gl, wingRTex, wingR);
+      }
       let camFrame: HTMLImageElement | null = null;
       let sideLive: HTMLVideoElement | null = null;
-      const lookingOut = doorMode === "out" && (vistaHold || outArrived) && Math.abs(orbit) > 0.05;
+      const lookingOut = !onPlain && doorMode === "out" && (vistaHold || outArrived) && Math.abs(orbit) > 0.05;
       if (lookingOut) {
         const parked = !orbitDrag && Math.abs(Math.abs(orbit) - SIDE) < 0.16;
         const live = orbit >= 0 ? plainLeftLive : plainRightLive;
@@ -2465,10 +2555,10 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           if (shot) camFrame = shot;
         }
       }
-      const walked = lookingOut ? null : gridFrame();
+      const walked = onPlain || lookingOut ? null : gridFrame();
       if (!camFrame && !sideLive && walked) camFrame = walked;
       let pathLive: HTMLVideoElement | null = null;
-      if (!drag && !lookingOut && !sideLive && doorMode === "out" && (vistaHold || outArrived) && Math.abs(gx - 1) < 0.28 && gy > 0.08) {
+      if (!onPlain && !drag && !lookingOut && !sideLive && doorMode === "out" && (vistaHold || outArrived) && Math.abs(gx - 1) < 0.28 && gy > 0.08) {
         let best = 0;
         let bestDist = 1e9;
         IDLE_LIVE.forEach((spot, index) => {
@@ -2496,7 +2586,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
             ? leftSide
             : rightSide
           : null;
-      if (!lookingOut && !walked && doorMode === "out" && (vistaHold || outArrived) && Math.abs(orbit) > SIDE * 0.62) {
+      if (!onPlain && !lookingOut && !walked && doorMode === "out" && (vistaHold || outArrived) && Math.abs(orbit) > SIDE * 0.62) {
         const along = shotAt(orbit > 0 ? plainGoL : plainGoR, roomDepth);
         if (along) camFrame = along;
       }
@@ -2540,17 +2630,17 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
                       ? breath
                       : hall;
       const shown = plate;
-      if (camFrame) upload(gl, citadelTex, camFrame);
-      else if (sideLive && sideLive.readyState >= 2) upload(gl, citadelTex, sideLive);
-      else if (pathLive && pathLive.readyState >= 2) upload(gl, citadelTex, pathLive);
-      else if (shown && shown.readyState >= 2) upload(gl, citadelTex, shown);
+      if (!onPlain && camFrame) upload(gl, citadelTex, camFrame);
+      else if (!onPlain && sideLive && sideLive.readyState >= 2) uploadVideo(gl, citadelTex, sideLive);
+      else if (!onPlain && pathLive && pathLive.readyState >= 2) uploadVideo(gl, citadelTex, pathLive);
+      else if (!onPlain && shown && shown.readyState >= 2) uploadVideo(gl, citadelTex, shown);
       if (!roomPlates && roomLeft.complete && roomRight.complete && roomBack.complete && roomLeft.naturalWidth > 0) {
         upload(gl, roomLeftTex, roomLeft);
         upload(gl, roomRightTex, roomRight);
         upload(gl, roomBackTex, roomBack);
         roomPlates = true;
       }
-      if (far.complete) upload(gl, farTex, far);
+      if (!onPlain && far.complete && far.naturalWidth > 0) upload(gl, farTex, far);
       const wingsReady = wingL.readyState >= 2 && wingR.readyState >= 2;
       const shift = lookShift(glance, wingsReady);
       viewShift = shift;
@@ -2583,101 +2673,66 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       if (onBlack) {
         gl.clearColor(0, 0, 0, 1);
         gl.clear(gl.COLOR_BUFFER_BIT);
-        if (skyVid.paused && skyVid.readyState >= 2) playSky();
-        if (skyVid.readyState >= 2) {
-          upload(gl, skyTex, skyVid);
+        if (skyVids[0].readyState >= 2) {
+          const band = 0.76;
+          const bandAspect = canvas.width / Math.max(1, canvas.height) / band;
+          const vidAspect = skyVids[0].videoWidth > 0 ? skyVids[0].videoWidth / skyVids[0].videoHeight : 9 / 16;
+          const span = 0.7;
+          const vSpan = Math.min(0.9, (vidAspect * span) / Math.max(0.2, bandAspect));
+          const v1 = 0.9;
+          const v0 = Math.max(0, v1 - vSpan);
+          const ang = (((0.125 - orbit / (Math.PI * 2)) % 1) + 1) % 1;
+          const slice = ang * 4;
+          const faceA = Math.floor(slice) % 4;
+          const f = slice - Math.floor(slice);
+          const u0 = (1 - span) * f;
+          let faceB = faceA;
+          let u1 = u0;
+          let mixB = 0;
+          if (f > 0.55) {
+            faceB = (faceA + 1) % 4;
+            u1 = 0;
+            const t = (f - 0.55) / 0.45;
+            mixB = t * t * (3 - 2 * t);
+          }
+          for (let i = 0; i < 4; i += 1) {
+            const vid = skyVids[i]!;
+            const live = i === faceA || i === faceB;
+            if (live) {
+              if (vid.paused) playSafe(vid);
+            } else if (!vid.paused) vid.pause();
+            gl.activeTexture(gl.TEXTURE0 + i);
+            if (live && vid.readyState >= 2) uploadVideo(gl, skyTex[i]!, vid);
+            else gl.bindTexture(gl.TEXTURE_2D, skyTex[i]!);
+          }
           gl.disable(gl.BLEND);
-          gl.useProgram(gateProg);
-          gl.bindTexture(gl.TEXTURE_2D, skyTex);
-          gl.uniform1i(gl.getUniformLocation(gateProg, "uTex"), 0);
-          gl.uniform1f(gl.getUniformLocation(gateProg, "uAlpha"), 1);
-          gl.uniform1f(gl.getUniformLocation(gateProg, "uV0"), 0);
-          gl.uniform1f(gl.getUniformLocation(gateProg, "uV1"), 1);
-          gl.uniform1f(gl.getUniformLocation(gateProg, "uMask"), 0);
-          const screenAspect = canvas.width / Math.max(1, canvas.height);
-          const vidAspect = skyVid.videoWidth > 0 ? skyVid.videoWidth / skyVid.videoHeight : 720 / 1280;
-          const skyH = Math.min(1, screenAspect / vidAspect);
-          const spin = ((orbit / Math.PI) % 2 + 2) % 2;
-          drawBuffer(quad(spin - 2, 0, 1, skyH));
-          drawBuffer(quad(spin, 0, 1, skyH));
+          gl.useProgram(skyProg);
+          gl.uniform1i(gl.getUniformLocation(skyProg, "u0"), 0);
+          gl.uniform1i(gl.getUniformLocation(skyProg, "u1"), 1);
+          gl.uniform1i(gl.getUniformLocation(skyProg, "u2"), 2);
+          gl.uniform1i(gl.getUniformLocation(skyProg, "u3"), 3);
+          gl.uniform1f(gl.getUniformLocation(skyProg, "uA"), faceA);
+          gl.uniform1f(gl.getUniformLocation(skyProg, "uB"), faceB);
+          gl.uniform1f(gl.getUniformLocation(skyProg, "uMix"), mixB);
+          gl.uniform1f(gl.getUniformLocation(skyProg, "uU0"), u0);
+          gl.uniform1f(gl.getUniformLocation(skyProg, "uU1"), u1);
+          gl.uniform1f(gl.getUniformLocation(skyProg, "uSpan"), span);
+          gl.uniform1f(gl.getUniformLocation(skyProg, "uV0"), v0);
+          gl.uniform1f(gl.getUniformLocation(skyProg, "uV1"), v1);
+          gl.activeTexture(gl.TEXTURE0);
+          drawBuffer(quad(0, 0, 1, band));
         }
-        if (pathImg.complete && pathImg.naturalWidth > 0) upload(gl, pathTex, pathImg);
-        gl.disable(gl.BLEND);
+        gl.activeTexture(gl.TEXTURE0);
+        if (groundVid.readyState >= 2) uploadVideo(gl, pathTex, groundVid);
+        else if (pathImg.complete && pathImg.naturalWidth > 0) upload(gl, pathTex, pathImg);
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
         gl.useProgram(rockProg);
         gl.bindTexture(gl.TEXTURE_2D, pathTex);
         gl.uniform1i(gl.getUniformLocation(rockProg, "uPath"), 0);
         gl.uniform1f(gl.getUniformLocation(rockProg, "uScroll"), plateOffset);
         gl.uniform1f(gl.getUniformLocation(rockProg, "uYaw"), orbit);
         drawBuffer(FULL);
-        if (rockImg.complete) upload(gl, rockPropTex, rockImg);
-        if (spireImg.complete) upload(gl, spireTex, spireImg);
-        if (cityImg.complete) upload(gl, cityTex, cityImg);
-        const placeDecor = (ox: number, oz: number, kind: "rock" | "spire" | "citadel", scale: number) => {
-          const c = Math.cos(orbit);
-          const si = Math.sin(orbit);
-          const dx = ox;
-          const dz = oz - plateOffset;
-          let x = dx * c + dz * si;
-          let depth = -dx * si + dz * c;
-          if (depth < (kind === "citadel" ? 0.8 : 1.7)) return null;
-          const real = depth;
-          if (depth > 6.5) {
-            x *= 6.5 / depth;
-            depth = 6.5;
-          }
-          const persp = Math.max(0, Math.min(1, (7 - depth) / 6.92));
-          const span = 2.4 + (0.12 - 2.4) * persp;
-          const u = 0.5 + x / span;
-          if (u < -0.4 || u > 1.4) return null;
-          const footY = 1 - Math.sqrt(persp) * 0.47;
-          const near = 1 - persp;
-          const base = kind === "citadel" ? 0.2 : kind === "spire" ? 0.2 : 0.11;
-          const h = base * scale * (0.16 + 0.84 * Math.max(kind === "citadel" ? 0.22 : 0.08, near));
-          const imgA = kind === "spire" ? 0.67 : kind === "citadel" ? 2.33 : 1;
-          const aspect = canvas.width / Math.max(1, canvas.height);
-          const w = (h * imgA) / aspect;
-          return { u, footY, w, h, kind, depth: real };
-        };
-        const spots: { x: number; z: number; kind: "rock" | "spire" | "citadel"; s: number }[] = [
-          { x: 0, z: 56, kind: "citadel", s: 1.35 },
-          { x: -16, z: 44, kind: "citadel", s: 0.9 },
-          { x: 16, z: 48, kind: "citadel", s: 1 },
-        ];
-        const cell = 2.3;
-        const baseCell = Math.floor(plateOffset / cell);
-        for (let i = 0; i < 9; i += 1) {
-          const zi = baseCell + i;
-          const h = decorHash(zi);
-          if (h < 0.2) continue;
-          const z = zi * cell + 0.6;
-          const x = (decorHash(zi + 19) - 0.5) * 7.2;
-          if (Math.abs(x) < 1.35) continue;
-          spots.push({
-            x,
-            z,
-            kind: decorHash(zi + 4) > 0.72 ? "spire" : "rock",
-            s: 0.65 + decorHash(zi + 11) * 0.45,
-          });
-        }
-        const laid = spots
-          .map((spot) => {
-            const at = placeDecor(spot.x, spot.z, spot.kind, spot.s);
-            return at ? { ...at } : null;
-          })
-          .filter((spot): spot is NonNullable<typeof spot> => spot !== null)
-          .sort((a, b) => b.depth - a.depth);
-        gl.enable(gl.BLEND);
-        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-        gl.useProgram(propProg);
-        gl.uniform1i(gl.getUniformLocation(propProg, "uTex"), 0);
-        for (const spot of laid) {
-          const tex = spot.kind === "citadel" ? cityTex : spot.kind === "spire" ? spireTex : rockPropTex;
-          const ready = spot.kind === "citadel" ? cityImg.complete : spot.kind === "spire" ? spireImg.complete : rockImg.complete;
-          if (!ready) continue;
-          gl.bindTexture(gl.TEXTURE_2D, tex);
-          gl.uniform1f(gl.getUniformLocation(propProg, "uAlpha"), spot.depth > 10 ? 0.85 : 1);
-          drawBuffer(quad(spot.u - spot.w / 2, spot.footY - spot.h, spot.w, spot.h));
-        }
       } else if (camFrame && doorMode === "room") {
         gl.disable(gl.BLEND);
         gl.useProgram(gateProg);
@@ -2865,8 +2920,12 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       frame.removeEventListener("pointercancel", onSlideUp);
       frame.removeEventListener("wheel", onWheel);
       if (window.__controlsTest === probe) delete window.__controlsTest;
-      skyVid.pause();
-      skyVid.remove();
+      for (const vid of skyVids) {
+        vid.pause();
+        vid.remove();
+      }
+      groundVid.pause();
+      groundVid.remove();
       audio.ctx?.close().catch(() => undefined);
     };
   }, []);

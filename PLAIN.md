@@ -131,11 +131,11 @@ A 16:9 sky stretched into the phone becomes an oval moon. Cook it like this:
 
 File: `public/master/decor/sky.mp4`.
 
-### Path
+## Path
 
-`public/master/decor/path.jpg`. One top-down Imagine still: black cracked basalt, orange lava veins, no sky, made to tile.
+The path shader in this file is the old one. Do not put it back. The vista that plays now is [VISTA.md](VISTA.md): four portrait sky videos with a full-frame fade, and `ground.mp4` on the GPU with the scroll inside the look direction. Horizon is `0.36`. No rocks, no spires, no Perlin.
 
-`PLATE_FS` throws away `vUv.y > 0.47` (that is the sky). Below that, perspective is the old ground math (`depth` 7 near to 0.08 at the horizon). Rotate by `uYaw`, add `uScroll`, sample `fract(wx * 0.16)`. The horizon cannot receive the path, and the path cannot climb into the sky.
+`public/master/decor/path.jpg` remains the still the ground video was cooked from, and the fallback before `ground.mp4` decodes.
 
 ### Props, same key as Bolt
 
