@@ -27,6 +27,14 @@ type Ash = {
 };
 
 const PEAK_KEY = "pyre-peak-v1";
+const IDLE_LIVE = [
+  { src: "/master/live/c2b2-03.mp4?v=1", x: 1, y: 0.2 },
+  { src: "/master/live/c2b2-06.mp4?v=1", x: 1, y: 0.46 },
+  { src: "/master/live/c2b2-09.mp4?v=1", x: 1, y: 0.71 },
+  { src: "/master/live/c2b2-12.mp4?v=1", x: 1, y: 0.96 },
+  { src: "/master/live/b2a2-06.mp4?v=1", x: 1, y: 1.46 },
+  { src: "/master/live/b2a2-12.mp4?v=1", x: 1, y: 1.96 },
+];
 const SLIDE_AMP = 0.36;
 const BOLT_H = 0.28;
 const BOLT_ASPECT = 784 / 1168;
@@ -131,8 +139,9 @@ uniform float uBreath;
 vec4 keyed(vec4 c) {
   float m = max(c.r, c.b);
   float greenness = c.g - m;
-  float a = 1.0 - smoothstep(0.22, 0.48, greenness);
-  if (greenness > 0.06) c.g = mix(c.g, m, smoothstep(0.06, 0.5, greenness));
+  float a = 1.0 - smoothstep(0.16, 0.38, greenness);
+  c.g = mix(c.g, m, clamp(greenness / 0.07, 0.0, 1.0));
+  if (greenness > 0.36) a = 0.0;
   return vec4(c.rgb, a);
 }
 void main() {
@@ -172,6 +181,42 @@ void main() {
   c.rgb = mix(c.rgb, vec3(0.9, 0.12, 0.05), uThreat * 0.28);
   c.rgb = mix(c.rgb, vec3(0.72, 0.04, 0.06), uFlash * 0.55);
   gl_FragColor = vec4(c.rgb, a * uAlpha);
+}`;
+
+const PLATE_FS = `
+precision mediump float;
+varying vec2 vUv;
+uniform sampler2D uPath;
+uniform float uScroll;
+uniform float uYaw;
+void main() {
+  if (vUv.y > 0.47) discard;
+  float y = clamp(vUv.y / 0.47, 0.0, 1.0);
+  float persp = y * y;
+  float depth = mix(7.0, 0.08, persp);
+  float x = (vUv.x - 0.5) * mix(2.4, 0.12, persp);
+  float c = cos(uYaw);
+  float s = sin(uYaw);
+  float wx = x * c - depth * s;
+  float wz = x * s + depth * c + uScroll;
+  vec3 stone = texture2D(uPath, vec2(fract(wx * 0.16), fract(wz * 0.16))).rgb;
+  float fog = smoothstep(0.0, 0.8, 1.0 - y);
+  stone *= 0.22 + 0.78 * fog;
+  gl_FragColor = vec4(stone, 1.0);
+}`;
+
+const PROP_FS = `
+precision mediump float;
+varying vec2 vUv;
+uniform sampler2D uTex;
+uniform float uAlpha;
+void main() {
+  vec4 c = texture2D(uTex, vUv);
+  float m = max(c.r, c.b);
+  float greenness = c.g - m;
+  if (greenness > 0.14) discard;
+  if (c.g > m + 0.03) c.g = m;
+  gl_FragColor = vec4(c.rgb, uAlpha);
 }`;
 
 const HOWL_FS = `
@@ -413,6 +458,9 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
   const boltThunderBackstepRef = useRef<HTMLVideoElement>(null);
   const boltThunderFaceRef = useRef<HTMLVideoElement>(null);
   const plainRef = useRef<HTMLVideoElement>(null);
+  const plainLeftLiveRef = useRef<HTMLVideoElement>(null);
+  const plainRightLiveRef = useRef<HTMLVideoElement>(null);
+  const idleRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const fallenRef = useRef<HTMLVideoElement>(null);
   const bruteRef = useRef<HTMLVideoElement>(null);
   const bossRef = useRef<HTMLVideoElement>(null);
@@ -492,6 +540,8 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     const boltThunderBackstep = boltThunderBackstepRef.current;
     const boltThunderFace = boltThunderFaceRef.current;
     const plainVid = plainRef.current;
+    const plainLeftLive = plainLeftLiveRef.current;
+    const plainRightLive = plainRightLiveRef.current;
     const fallen = fallenRef.current;
     const brute = bruteRef.current;
     const boss = bossRef.current;
@@ -517,7 +567,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     const ashBrute = ashBruteRef.current;
     const frame = frameRef.current;
     if (
-      !canvas || !fx || !roadA || !roadB || !bolt || !boltIdle || !boltFace || !boltTurn || !boltTurnBack || !boltTurnLeft || !boltTurnLeftBack || !boltThunder || !boltThunderRise || !boltThunderRight || !boltThunderRightBack || !boltThunderLeft || !boltThunderLeftBack || !boltThunderRightIdle || !boltThunderLeftIdle || !boltThunderRun || !boltThunderBackstep || !boltThunderFace || !plainVid || !fallen || !brute || !boss || !bossAsh ||
+      !canvas || !fx || !roadA || !roadB || !bolt || !boltIdle || !boltFace || !boltTurn || !boltTurnBack || !boltTurnLeft || !boltTurnLeftBack || !boltThunder || !boltThunderRise || !boltThunderRight || !boltThunderRightBack || !boltThunderLeft || !boltThunderLeftBack || !boltThunderRightIdle || !boltThunderLeftIdle || !boltThunderRun || !boltThunderBackstep || !boltThunderFace || !plainVid || !plainLeftLive || !plainRightLive || !fallen || !brute || !boss || !bossAsh ||
       !wingL || !wingR || !howlVid || !ashFallen || !ashBrute || !gateA || !gateB ||
       !gateWingL || !gateWingR || !citadel || !openVid || !hall || !breath || !camLeft || !camRight || !camLeftBack || !camRightBack || !holo || !exitVid || !frame
     ) return;
@@ -533,6 +583,8 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     const roadProg = program(gl, ROAD_FS);
     const boltProg = program(gl, BOLT_FS);
     const enemyProg = program(gl, ENEMY_FS);
+    const rockProg = program(gl, PLATE_FS);
+    const propProg = program(gl, PROP_FS);
     const howlProg = program(gl, HOWL_FS);
     const gateProg = program(gl, GATE_FS);
     const orbitProg = program(gl, ORBIT_FS);
@@ -550,6 +602,68 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     const take = (pack: HTMLImageElement[], from: number, to: number) => pack.slice(from - 1, to);
     const leftSide = take(leftPack, 1, 16);
     const rightSide = take(rightPack, 1, 16);
+    const plainLeft = loadOrbit("plain-left", 1);
+    const plainRight = loadOrbit("plain-right", 1);
+    const loadStrip = (name: string, n: number) =>
+      Array.from({ length: n }, (_, i) => {
+        const img = new Image();
+        img.decoding = "async";
+        img.src = `/master/orbit/${name}-${String(i + 1).padStart(2, "0")}.jpg?v=1`;
+        return img;
+      });
+    const plainGo = loadStrip("plain-go", 32);
+    const plainGoL = loadStrip("plain-go-l", 24);
+    const plainGoR = loadStrip("plain-go-r", 24);
+    const loadGrid = (name: string) =>
+      Array.from({ length: 12 }, (_, i) => {
+        const img = new Image();
+        img.decoding = "async";
+        img.src = `/master/grid/${name}-${String(i + 1).padStart(2, "0")}.jpg?v=1`;
+        return img;
+      });
+    const nsPack = [
+      [loadGrid("c1b1"), loadGrid("b1a1")],
+      [loadGrid("c2b2"), loadGrid("b2a2")],
+      [loadGrid("c3b3"), loadGrid("b3a3")],
+    ];
+    const ewPack = [
+      [loadGrid("c1c2"), loadGrid("c2c3")],
+      [loadGrid("b1b2"), loadGrid("b2b3")],
+      [loadGrid("a1a2"), loadGrid("a2a3")],
+    ];
+    let gx = 1;
+    let gy = 0;
+    const gridFrame = () => {
+      if (doorMode !== "out" || !(vistaHold || outArrived)) return null;
+      const col = Math.max(0, Math.min(2, gx));
+      const row = Math.max(0, Math.min(2, gy));
+      const xOff = Math.abs(col - Math.round(col));
+      const yOff = Math.abs(row - Math.round(row));
+      if (xOff < 0.008 && yOff < 0.008) {
+        const c = Math.round(col);
+        const r = Math.round(row);
+        if (c === 1 && r === 0) return null;
+        if (r > 0) return shotAt(nsPack[c]![r - 1]!, 0.999);
+        if (c > 0) return shotAt(ewPack[r]![c - 1]!, 0.999);
+        return shotAt(ewPack[0]![0]!, 0);
+      }
+      if (xOff <= yOff) {
+        const c = Math.max(0, Math.min(2, Math.round(col)));
+        const row0 = Math.max(0, Math.min(1, Math.floor(Math.min(1.999, row))));
+        return shotAt(nsPack[c]![row0]!, row - row0);
+      }
+      const r = Math.max(0, Math.min(2, Math.round(row)));
+      const col0 = Math.max(0, Math.min(1, Math.floor(Math.min(1.999, col))));
+      return shotAt(ewPack[r]![col0]!, col - col0);
+    };
+    const shotAt = (pack: HTMLImageElement[], t: number) => {
+      const idx = Math.min(pack.length - 1, Math.floor(Math.min(0.999, Math.max(0, t)) * pack.length));
+      for (let i = idx; i >= 0; i--) {
+        const shot = pack[i];
+        if (shot && shot.complete && shot.naturalWidth > 0) return shot;
+      }
+      return null;
+    };
     const SIDE = Math.PI / 2;
     const buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
@@ -569,6 +683,38 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     const roomLeftTex = makeTex(gl);
     const roomRightTex = makeTex(gl);
     const roomBackTex = makeTex(gl);
+    const skyTex = makeTex(gl);
+    const pathTex = makeTex(gl);
+    const rockPropTex = makeTex(gl);
+    const spireTex = makeTex(gl);
+    const cityTex = makeTex(gl);
+    const skyVid = document.createElement("video");
+    skyVid.src = "/master/decor/sky.mp4?v=2";
+    skyVid.muted = true;
+    skyVid.loop = true;
+    skyVid.playsInline = true;
+    skyVid.preload = "auto";
+    skyVid.setAttribute("playsinline", "");
+    frame.appendChild(skyVid);
+    const playSky = () => {
+      const pending = skyVid.play();
+      if (pending) pending.catch(() => undefined);
+    };
+    if (skyVid.readyState >= 2) playSky();
+    else skyVid.addEventListener("loadeddata", playSky, { once: true });
+    const decorImg = (src: string) => {
+      const img = new Image();
+      img.src = src;
+      return img;
+    };
+    const pathImg = decorImg("/master/decor/path.jpg");
+    const rockImg = decorImg("/master/decor/rock.jpg");
+    const spireImg = decorImg("/master/decor/spire.jpg");
+    const cityImg = decorImg("/master/decor/citadel.jpg");
+    const decorHash = (n: number) => {
+      const x = Math.sin(n * 127.1 + 311.7) * 43758.5453;
+      return x - Math.floor(x);
+    };
     const poster = new Image();
     poster.src = "/master/pyre-first.jpg";
     const far = new Image();
@@ -605,6 +751,10 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       lastAng: number | null;
       arc: boolean;
       at: number;
+      pts: { x: number; y: number }[];
+      gx: number;
+      gy: number;
+      axis: "ns" | "ew" | null;
     } | null = null;
     let distance = 0;
     let wounds = 0;
@@ -626,11 +776,17 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     let outHide = false;
     let outArrived = false;
     let thunderOn = false;
+    let thunderHold: HTMLVideoElement | null = null;
     let thunderArmed = false;
     let thunderFace: "back" | "face" = "back";
     let thunderTurn: HTMLVideoElement | null = null;
     let thunderTurnTo: "back" | "face" = "back";
+    let thunderTurnAge = 0;
+    let thunderTurnSeenStart = false;
     let plainPush: "run" | "back" | null = null;
+    let plateWish = 0;
+    let plateV = 0;
+    let plateOffset = 0;
     let zoom = 1;
     let zoomTarget = 1;
     let pinch: { dist: number; zoom: number } | null = null;
@@ -718,10 +874,10 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       wing.playbackRate = 1;
       wing.disablePictureInPicture = true;
     }
-    for (const clip of [gateA, gateB, citadel, openVid, hall, breath, holo, exitVid, plainVid]) {
+    for (const clip of [gateA, gateB, citadel, openVid, hall, breath, holo, exitVid, plainVid, plainLeftLive, plainRightLive]) {
       clip.muted = true;
       clip.playsInline = true;
-      clip.loop = clip === breath || clip === gateA || clip === gateB || clip === plainVid;
+      clip.loop = clip === breath || clip === gateA || clip === gateB || clip === plainVid || clip === plainLeftLive || clip === plainRightLive;
       clip.disablePictureInPicture = true;
     }
     for (const clip of [howlVid, ashFallen, ashBrute]) {
@@ -796,11 +952,13 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       }
     };
 
+    let frameZoom = 1;
+    let frameFocusY = 0;
     const drawBuffer = (data: Float32Array) => {
       const prog = gl.getParameter(gl.CURRENT_PROGRAM) as WebGLProgram | null;
       if (prog) {
-        gl.uniform1f(gl.getUniformLocation(prog, "uZoom"), doorMode === "out" ? zoom : 1);
-        gl.uniform2f(gl.getUniformLocation(prog, "uFocus"), 0, 0);
+        gl.uniform1f(gl.getUniformLocation(prog, "uZoom"), frameZoom);
+        gl.uniform2f(gl.getUniformLocation(prog, "uFocus"), 0, frameFocusY);
       }
       gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
       gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
@@ -1084,10 +1242,47 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       return Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
     };
     const wrapAng = (angle: number) => {
-      let next = angle;
-      while (next > Math.PI) next -= Math.PI * 2;
-      while (next < -Math.PI) next += Math.PI * 2;
-      return next;
+      let a = angle;
+      while (a > Math.PI) a -= Math.PI * 2;
+      while (a < -Math.PI) a += Math.PI * 2;
+      return a;
+    };
+    const arcOf = (pts: { x: number; y: number }[]) => {
+      if (pts.length < 6) return null;
+      const a = pts[0]!;
+      const b = pts[pts.length - 1]!;
+      const abx = b.x - a.x;
+      const aby = b.y - a.y;
+      const chord = Math.hypot(abx, aby) || 1;
+      let dev = 0;
+      let len = 0;
+      let pos = 0;
+      let neg = 0;
+      for (let i = 1; i < pts.length; i++) {
+        const p = pts[i]!;
+        dev = Math.max(dev, Math.abs(abx * (p.y - a.y) - aby * (p.x - a.x)) / chord);
+        const prev = pts[i - 1]!;
+        const dx = p.x - prev.x;
+        const dy = p.y - prev.y;
+        len += Math.hypot(dx, dy);
+        if (i >= 2) {
+          const older = pts[i - 2]!;
+          const turn = (prev.x - older.x) * dy - (prev.y - older.y) * dx;
+          if (turn > 0.4) pos += 1;
+          else if (turn < -0.4) neg += 1;
+        }
+      }
+      const head = Math.atan2(pts[2]!.y - a.y, pts[2]!.x - a.x);
+      const tail = Math.atan2(b.y - pts[pts.length - 3]!.y, b.x - pts[pts.length - 3]!.x);
+      let sweep = tail - head;
+      while (sweep > Math.PI) sweep -= Math.PI * 2;
+      while (sweep < -Math.PI) sweep += Math.PI * 2;
+      const same = Math.max(pos, neg);
+      const flip = Math.min(pos, neg);
+      if (len < 140 || len < chord * 1.32 || dev < 58 || dev < chord * 0.52) return null;
+      if (Math.abs(sweep) < 1.2) return null;
+      if (same < 3 || flip > same * 0.35) return null;
+      return sweep > 0 ? ("right" as const) : ("left" as const);
     };
     const beginTurn = (to: "face" | "back", side: "left" | "right") => {
       if (doorMode !== "room") return;
@@ -1117,6 +1312,8 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       if (clip.readyState < 2) clip.addEventListener("canplay", kick, { once: true });
     };
     const onSlideDown = (event: PointerEvent) => {
+      const hit = event.target as HTMLElement | null;
+      if (hit?.closest(".pyre-cover, button")) return;
       const riding = phaseRef.current === "run" || (phaseRef.current === "citadel" && doorMode !== "map");
       if (!riding || event.button !== 0) return;
       hands.set(event.pointerId, { x: event.clientX, y: event.clientY });
@@ -1179,13 +1376,17 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
         lastAng: null,
         arc: false,
         at: performance.now(),
+        pts: [{ x: event.clientX, y: event.clientY }],
+        gx,
+        gy,
+        axis: null,
       };
     };
     const onSlideMove = (event: PointerEvent) => {
       if (hands.has(event.pointerId)) hands.set(event.pointerId, { x: event.clientX, y: event.clientY });
       if (phaseRef.current === "citadel" && doorMode === "out" && hands.size >= 2 && pinch) {
         const dist = fingerDist();
-        if (dist > 16) zoomTarget = Math.max(0.62, Math.min(2.35, pinch.zoom * (dist / pinch.dist)));
+        if (dist > 16) zoomTarget = Math.max(1, Math.min(2.35, pinch.zoom * (dist / pinch.dist)));
         return;
       }
       if (inRoomNow() && hands.size >= 2 && pair) {
@@ -1218,15 +1419,65 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       if (!drag || event.pointerId !== drag.id) return;
       if (phaseRef.current === "citadel" && doorMode === "out") {
         const height = frame.clientHeight || 1;
+        const width = frame.clientWidth || 1;
+        drag.pts.push({ x: event.clientX, y: event.clientY });
+        if (drag.pts.length > 36) drag.pts.splice(1, 1);
         const dx = event.clientX - drag.x;
         const dy = event.clientY - drag.y;
-        if (drag.onBolt) slideTo(event.clientX, drag.x, drag.lane);
-        if (drag.onBolt || Math.abs(dy) > Math.abs(dx) + 8) {
-          const next = Math.max(0, Math.min(0.78, drag.depth + (drag.y - event.clientY) / (height * 0.46)));
-          depthTarget = next;
-          roomDepth = next;
-          if (next > drag.depth + 0.03) plainPush = "run";
-          else if (next < drag.depth - 0.03) plainPush = "back";
+        let bow = 0;
+        const origin = drag.pts[0]!;
+        const tip = drag.pts[drag.pts.length - 1]!;
+        const spanX = tip.x - origin.x;
+        const spanY = tip.y - origin.y;
+        const span = Math.hypot(spanX, spanY) || 1;
+        for (const p of drag.pts) {
+          bow = Math.max(bow, Math.abs(spanX * (p.y - origin.y) - spanY * (p.x - origin.x)) / span);
+        }
+        const flat = Math.abs(dx) > 16 && Math.abs(dx) > Math.abs(dy) * 1.2 && bow < 34 && bow < span * 0.22;
+        if (orbitDrag || (!drag.arc && flat && !drag.onBolt && (vistaHold || outArrived))) {
+          const gain = (Math.PI * 2) / 0.85;
+          orbitTarget = drag.orbit + (-dx / width) * gain;
+          orbit = orbitTarget;
+          orbitDrag = true;
+          plainPush = null;
+          return;
+        }
+        const curl = arcOf(drag.pts);
+        if (curl) {
+          lanePos = drag.lane;
+          depthTarget = drag.depth;
+          roomDepth = drag.depth;
+          orbit = drag.orbit;
+          orbitTarget = drag.orbit;
+          gx = drag.gx;
+          gy = drag.gy;
+          plainPush = null;
+          plateWish = 0;
+          if (!drag.arc) beginThunderTurn(curl);
+          drag.arc = true;
+          return;
+        }
+        const horizontal = Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.05;
+        if (!drag.onBolt && horizontal && (vistaHold || outArrived)) {
+          const gain = (Math.PI * 2) / 0.85;
+          orbitTarget = drag.orbit + (-dx / width) * gain;
+          orbit = orbitTarget;
+          orbitDrag = true;
+          return;
+        }
+        if (!drag.axis && (Math.abs(dx) > 12 || Math.abs(dy) > 12)) {
+          drag.axis = Math.abs(dx) > Math.abs(dy) ? "ew" : "ns";
+        }
+        if (drag.axis === "ns") {
+          gx = Math.max(0, Math.min(2, Math.round(drag.gx)));
+          const pull = (drag.y - event.clientY) / height;
+          plateWish = Math.max(-1.8, Math.min(1.8, pull * 3.2));
+          plainPush = plateWish > 0.08 ? "run" : plateWish < -0.08 ? "back" : null;
+        } else if (drag.axis === "ew") {
+          gy = Math.max(0, Math.min(2, Math.round(drag.gy)));
+          const next = Math.max(0, Math.min(2, drag.gx + (event.clientX - drag.x) / (width * 0.46)));
+          gx = next;
+          plainPush = Math.abs(next - drag.gx) > 0.05 ? "run" : null;
         }
         return;
       }
@@ -1302,8 +1553,9 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
         }
         if (dir) beginTurn(dir, spinSide);
         if (drag && event.pointerId === drag.id && !hands.has(drag.id)) {
-          if (orbitDrag) {
-            orbitTarget = Math.max(-SIDE, Math.min(SIDE, Math.round(orbit / SIDE) * SIDE));
+          if (orbitDrag && doorMode !== "out") {
+            const span = SIDE;
+            orbitTarget = Math.max(-span, Math.min(span, Math.round(orbit / span) * span));
           }
           drag = null;
           runHold = false;
@@ -1326,17 +1578,20 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
         return;
       }
       if (doorMode === "out") {
-        const dx = event.clientX - drag.x;
-        const dy = event.clientY - drag.y;
-        const elapsed = performance.now() - drag.at;
-        const horizontal = Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.12;
-        const flick = elapsed < 380 && horizontal;
-        if (flick || (!drag.onBolt && horizontal)) {
+        const curl = orbitDrag ? null : arcOf(drag.pts);
+        if (curl) {
           lanePos = drag.lane;
           depthTarget = drag.depth;
           roomDepth = drag.depth;
+          orbit = drag.orbit;
+          orbitTarget = drag.orbit;
+          gx = drag.gx;
+          gy = drag.gy;
           plainPush = null;
-          beginThunderTurn(dx > 0 ? "right" : "left");
+          if (!drag.arc) beginThunderTurn(curl);
+        } else if (orbitDrag) {
+          orbitTarget = orbit;
+          plainPush = null;
         } else plainPush = null;
         drag = null;
         runHold = false;
@@ -1384,7 +1639,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     const onWheel = (event: WheelEvent) => {
       if (phaseRef.current !== "citadel" || doorMode !== "out") return;
       event.preventDefault();
-      zoomTarget = Math.max(0.62, Math.min(2.35, zoomTarget * Math.exp(-event.deltaY * 0.0014)));
+      zoomTarget = Math.max(1, Math.min(2.35, zoomTarget * Math.exp(-event.deltaY * 0.0014)));
     };
     frame.addEventListener("wheel", onWheel, { passive: false });
 
@@ -1421,6 +1676,8 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       glanceTarget = 0;
       orbit = 0;
       orbitTarget = 0;
+      gx = 1;
+      gy = 0;
       yaw = "back";
       turnTo = null;
       thunderArmed = false;
@@ -1461,6 +1718,8 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       if (thunderTurn) thunderTurn.pause();
       thunderTurn = clip;
       thunderTurnTo = to;
+      thunderTurnAge = 0;
+      thunderTurnSeenStart = false;
       clip.loop = false;
       try {
         clip.currentTime = 0;
@@ -1486,7 +1745,12 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
 
     const boltBox = () => {
       const aspect = (frame.clientWidth || 1) / (frame.clientHeight || 1);
-      const depth = phaseRef.current === "citadel" && (doorMode === "room" || doorMode === "out") ? roomDepth : 0;
+      const depth =
+        phaseRef.current === "citadel" && doorMode === "room"
+          ? roomDepth
+          : phaseRef.current === "citadel" && doorMode === "out"
+            ? 0.08
+            : 0;
       const nearSpan = PLANT_Y - ROOM_VANISH;
       const farSpan = Math.max(0.04, ROOM_STEP - ROOM_VANISH);
       const persp = 1 + depth * (nearSpan / farSpan - 1);
@@ -1636,6 +1900,8 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       glanceTarget = 0;
       orbit = 0;
       orbitTarget = 0;
+      gx = 1;
+      gy = 0;
       yaw = "back";
       turnTo = null;
       foes.length = 0;
@@ -1685,6 +1951,8 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     const tick = (now: number) => {
       const dt = Math.min(0.1, (now - last) / 1000);
       last = now;
+      zoom = Math.max(1, zoom);
+      zoomTarget = Math.max(1, zoomTarget);
       zoom += (zoomTarget - zoom) * (1 - Math.exp(-dt * 12));
       outHide = false;
       thunderOn = false;
@@ -2012,6 +2280,27 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
             else roomDepth = Math.max(depthTarget, roomDepth - step);
           }
           if (outArrived && breath.paused) playSafe(breath);
+          const follow = 1 - Math.exp(-dt * 6);
+          if (orbitDrag) orbit = orbitTarget;
+          else orbit += (orbitTarget - orbit) * follow;
+          if (settled && !orbitDrag) {
+            const wish = drag && drag.axis === "ns" && !drag.arc ? plateWish : 0;
+            plateV += (wish - plateV) * (1 - Math.exp(-dt * 5));
+            if (Math.abs(plateV) < 0.02 && wish === 0) plateV = 0;
+            plateOffset += plateV * dt;
+            if (!orbitDrag) {
+              const tau = Math.PI * 2;
+              orbit = ((orbit % tau) + tau) % tau;
+              if (orbit > Math.PI) orbit -= tau;
+              orbitTarget = orbit;
+            }
+            if (!drag || drag.axis !== "ns") {
+              plainPush = plateV > 0.12 ? "run" : plateV < -0.12 ? "back" : null;
+            }
+          } else if (!drag) {
+            plateV = 0;
+            plateWish = 0;
+          }
         } else if (!mapHop) {
           if (holo.paused && !holo.ended) playSafe(holo);
           if (holo.ended || (holo.duration > 0 && holo.currentTime > holo.duration - 0.4)) {
@@ -2085,34 +2374,72 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       if (runHold) breathMix = 0;
       if (orbitHold) breathMix = 1;
       if (thunderOn) {
-        if (
-          thunderTurn &&
-          thunderTurn.duration > 0 &&
-          (thunderTurn.ended || thunderTurn.currentTime > thunderTurn.duration - 0.08)
-        ) {
-          thunderFace = thunderTurnTo;
-          thunderTurn.pause();
-          thunderTurn = null;
+        if (thunderTurn) {
+          thunderTurnAge += dt;
+          if (thunderTurn.currentTime > 0.4) thunderTurnSeenStart = true;
+          const spinDur = thunderTurn.duration || 0;
+          const atEnd =
+            thunderTurnSeenStart &&
+            (thunderTurn.ended ||
+              (spinDur > 0 && thunderTurn.currentTime > spinDur - 0.15) ||
+              (spinDur > 0 && thunderTurnAge > spinDur - 0.12) ||
+              thunderTurnAge > 6.2);
+          const rewound = thunderTurnSeenStart && thunderTurn.paused && thunderTurn.currentTime < 0.12 && thunderTurnAge > 0.8;
+          if (atEnd || rewound) {
+            thunderFace = thunderTurnTo;
+            try {
+              if (spinDur > 0.2) thunderTurn.currentTime = Math.max(0.05, spinDur - 0.05);
+            } catch {
+              /* not seekable yet */
+            }
+            thunderTurn.pause();
+            thunderTurn = null;
+            thunderTurnAge = 0;
+            thunderTurnSeenStart = false;
+          }
         }
         const riseDone =
           vistaHold ||
           (boltThunderRise.readyState >= 2 &&
             boltThunderRise.duration > 0 &&
             (boltThunderRise.ended || boltThunderRise.currentTime > boltThunderRise.duration - 0.12));
-        if (thunderTurn && thunderTurn.readyState >= 2) pose = thunderTurn;
-        else if (plainPush === "run" && thunderFace === "back" && boltThunderRun.readyState >= 2) pose = boltThunderRun;
-        else if (plainPush === "back" && thunderFace === "back" && boltThunderBackstep.readyState >= 2) pose = boltThunderBackstep;
-        else if (thunderFace === "face" && boltThunderFace.readyState >= 2) pose = boltThunderFace;
-        else if (!riseDone && boltThunderRise.readyState >= 2) pose = boltThunderRise;
-        else if (boltThunder.readyState >= 2) pose = boltThunder;
+        const nextPose =
+          thunderTurn && thunderTurn.readyState >= 2
+            ? thunderTurn
+            : plainPush === "run" && thunderFace === "back" && boltThunderRun.readyState >= 2
+              ? boltThunderRun
+              : plainPush === "back" && thunderFace === "back" && boltThunderBackstep.readyState >= 2
+                ? boltThunderBackstep
+                : thunderFace === "face"
+                  ? boltThunderFace.readyState >= 2
+                    ? boltThunderFace
+                    : thunderHold
+                  : !riseDone && boltThunderRise.readyState >= 2
+                    ? boltThunderRise
+                    : boltThunder.readyState >= 2
+                      ? boltThunder
+                      : null;
+        if (nextPose) thunderHold = nextPose;
+        if (thunderHold) pose = thunderHold;
         breathMix = 1;
         yaw = "back";
-      }
+      } else thunderHold = null;
       if (orbitHold) {
         if (boltIdle.paused) playSafe(boltIdle);
-      } else if (pose.paused) playSafe(pose);
+      } else if (pose.paused) {
+        const spin =
+          pose === boltThunderRight ||
+          pose === boltThunderRightBack ||
+          pose === boltThunderLeft ||
+          pose === boltThunderLeftBack;
+        const dur = pose.duration || 0;
+        const atSpinEnd = pose.ended || pose.currentTime < 0.08 || (dur > 0 && pose.currentTime > dur - 0.12);
+        if (!spin || (!atSpinEnd && pose.currentTime > 0.08)) playSafe(pose);
+      }
       if (bolt.readyState >= 2) upload(gl, boltTex, bolt);
-      if (pose.readyState >= 2) upload(gl, boltIdleTex, pose);
+      if (thunderOn) {
+        if (thunderHold && thunderHold.readyState >= 2) upload(gl, boltIdleTex, thunderHold);
+      } else if (pose.readyState >= 2) upload(gl, boltIdleTex, pose);
       else if (boltIdle.readyState >= 2) upload(gl, boltIdleTex, boltIdle);
       if (fallen.readyState >= 2) upload(gl, foeTex[0]!, fallen);
       if (brute.readyState >= 2) upload(gl, foeTex[1]!, brute);
@@ -2124,13 +2451,61 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       if (wingL.readyState >= 2) upload(gl, wingLTex, wingL);
       if (wingR.readyState >= 2) upload(gl, wingRTex, wingR);
       let camFrame: HTMLImageElement | null = null;
-      if (doorMode === "room" && Math.abs(orbit) > 0.06) {
-        const seq = orbit >= 0 ? leftSide : rightSide;
+      let sideLive: HTMLVideoElement | null = null;
+      const lookingOut = doorMode === "out" && (vistaHold || outArrived) && Math.abs(orbit) > 0.05;
+      if (lookingOut) {
+        const parked = !orbitDrag && Math.abs(Math.abs(orbit) - SIDE) < 0.16;
+        const live = orbit >= 0 ? plainLeftLive : plainRightLive;
+        if (parked && live.readyState >= 2) {
+          if (live.paused) playSafe(live);
+          sideLive = live;
+        } else {
+          const seq = orbit >= 0 ? plainLeft : plainRight;
+          const shot = shotAt(seq, Math.min(0.999, Math.abs(orbit) / SIDE));
+          if (shot) camFrame = shot;
+        }
+      }
+      const walked = lookingOut ? null : gridFrame();
+      if (!camFrame && !sideLive && walked) camFrame = walked;
+      let pathLive: HTMLVideoElement | null = null;
+      if (!drag && !lookingOut && !sideLive && doorMode === "out" && (vistaHold || outArrived) && Math.abs(gx - 1) < 0.28 && gy > 0.08) {
+        let best = 0;
+        let bestDist = 1e9;
+        IDLE_LIVE.forEach((spot, index) => {
+          const dist = (gx - spot.x) * (gx - spot.x) + (gy - spot.y) * (gy - spot.y);
+          if (dist < bestDist) {
+            bestDist = dist;
+            best = index;
+          }
+        });
+        const live = idleRefs.current[best];
+        if (live && live.readyState >= 2 && bestDist < 0.2) {
+          if (live.paused) playSafe(live);
+          pathLive = live;
+          camFrame = null;
+        }
+        idleRefs.current.forEach((clip) => {
+          if (clip && clip !== pathLive && !clip.paused) clip.pause();
+        });
+      }
+      const orbitSeq =
+        lookingOut || walked
+          ? null
+          : doorMode === "room" && Math.abs(orbit) > 0.06
+          ? orbit >= 0
+            ? leftSide
+            : rightSide
+          : null;
+      if (!lookingOut && !walked && doorMode === "out" && (vistaHold || outArrived) && Math.abs(orbit) > SIDE * 0.62) {
+        const along = shotAt(orbit > 0 ? plainGoL : plainGoR, roomDepth);
+        if (along) camFrame = along;
+      }
+      if (!camFrame && orbitSeq) {
         const local = Math.min(0.999, Math.abs(orbit) / SIDE);
-        const idx = Math.min(seq.length - 1, Math.floor(local * seq.length));
+        const idx = Math.min(orbitSeq.length - 1, Math.floor(local * orbitSeq.length));
         let img: HTMLImageElement | undefined;
         for (let i = idx; i >= 0; i--) {
-          const shot = seq[i];
+          const shot = orbitSeq[i];
           if (shot && shot.complete && shot.naturalWidth > 0) {
             img = shot;
             break;
@@ -2166,6 +2541,8 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
                       : hall;
       const shown = plate;
       if (camFrame) upload(gl, citadelTex, camFrame);
+      else if (sideLive && sideLive.readyState >= 2) upload(gl, citadelTex, sideLive);
+      else if (pathLive && pathLive.readyState >= 2) upload(gl, citadelTex, pathLive);
       else if (shown && shown.readyState >= 2) upload(gl, citadelTex, shown);
       if (!roomPlates && roomLeft.complete && roomRight.complete && roomBack.complete && roomLeft.naturalWidth > 0) {
         upload(gl, roomLeftTex, roomLeft);
@@ -2177,6 +2554,10 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       const wingsReady = wingL.readyState >= 2 && wingR.readyState >= 2;
       const shift = lookShift(glance, wingsReady);
       viewShift = shift;
+
+      const pinchZoom = doorMode === "out" ? zoom : 1;
+      frameZoom = pinchZoom;
+      frameFocusY = 0;
 
       const paintRoad = () => {
         gl.disable(gl.BLEND);
@@ -2198,7 +2579,106 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
         gl.activeTexture(gl.TEXTURE0);
         drawBuffer(FULL);
       };
-      if (camFrame && doorMode === "room") {
+      const onBlack = doorMode === "out" && (vistaHold || outArrived);
+      if (onBlack) {
+        gl.clearColor(0, 0, 0, 1);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        if (skyVid.paused && skyVid.readyState >= 2) playSky();
+        if (skyVid.readyState >= 2) {
+          upload(gl, skyTex, skyVid);
+          gl.disable(gl.BLEND);
+          gl.useProgram(gateProg);
+          gl.bindTexture(gl.TEXTURE_2D, skyTex);
+          gl.uniform1i(gl.getUniformLocation(gateProg, "uTex"), 0);
+          gl.uniform1f(gl.getUniformLocation(gateProg, "uAlpha"), 1);
+          gl.uniform1f(gl.getUniformLocation(gateProg, "uV0"), 0);
+          gl.uniform1f(gl.getUniformLocation(gateProg, "uV1"), 1);
+          gl.uniform1f(gl.getUniformLocation(gateProg, "uMask"), 0);
+          const screenAspect = canvas.width / Math.max(1, canvas.height);
+          const vidAspect = skyVid.videoWidth > 0 ? skyVid.videoWidth / skyVid.videoHeight : 720 / 1280;
+          const skyH = Math.min(1, screenAspect / vidAspect);
+          const spin = ((orbit / Math.PI) % 2 + 2) % 2;
+          drawBuffer(quad(spin - 2, 0, 1, skyH));
+          drawBuffer(quad(spin, 0, 1, skyH));
+        }
+        if (pathImg.complete && pathImg.naturalWidth > 0) upload(gl, pathTex, pathImg);
+        gl.disable(gl.BLEND);
+        gl.useProgram(rockProg);
+        gl.bindTexture(gl.TEXTURE_2D, pathTex);
+        gl.uniform1i(gl.getUniformLocation(rockProg, "uPath"), 0);
+        gl.uniform1f(gl.getUniformLocation(rockProg, "uScroll"), plateOffset);
+        gl.uniform1f(gl.getUniformLocation(rockProg, "uYaw"), orbit);
+        drawBuffer(FULL);
+        if (rockImg.complete) upload(gl, rockPropTex, rockImg);
+        if (spireImg.complete) upload(gl, spireTex, spireImg);
+        if (cityImg.complete) upload(gl, cityTex, cityImg);
+        const placeDecor = (ox: number, oz: number, kind: "rock" | "spire" | "citadel", scale: number) => {
+          const c = Math.cos(orbit);
+          const si = Math.sin(orbit);
+          const dx = ox;
+          const dz = oz - plateOffset;
+          let x = dx * c + dz * si;
+          let depth = -dx * si + dz * c;
+          if (depth < (kind === "citadel" ? 0.8 : 1.7)) return null;
+          const real = depth;
+          if (depth > 6.5) {
+            x *= 6.5 / depth;
+            depth = 6.5;
+          }
+          const persp = Math.max(0, Math.min(1, (7 - depth) / 6.92));
+          const span = 2.4 + (0.12 - 2.4) * persp;
+          const u = 0.5 + x / span;
+          if (u < -0.4 || u > 1.4) return null;
+          const footY = 1 - Math.sqrt(persp) * 0.47;
+          const near = 1 - persp;
+          const base = kind === "citadel" ? 0.2 : kind === "spire" ? 0.2 : 0.11;
+          const h = base * scale * (0.16 + 0.84 * Math.max(kind === "citadel" ? 0.22 : 0.08, near));
+          const imgA = kind === "spire" ? 0.67 : kind === "citadel" ? 2.33 : 1;
+          const aspect = canvas.width / Math.max(1, canvas.height);
+          const w = (h * imgA) / aspect;
+          return { u, footY, w, h, kind, depth: real };
+        };
+        const spots: { x: number; z: number; kind: "rock" | "spire" | "citadel"; s: number }[] = [
+          { x: 0, z: 56, kind: "citadel", s: 1.35 },
+          { x: -16, z: 44, kind: "citadel", s: 0.9 },
+          { x: 16, z: 48, kind: "citadel", s: 1 },
+        ];
+        const cell = 2.3;
+        const baseCell = Math.floor(plateOffset / cell);
+        for (let i = 0; i < 9; i += 1) {
+          const zi = baseCell + i;
+          const h = decorHash(zi);
+          if (h < 0.2) continue;
+          const z = zi * cell + 0.6;
+          const x = (decorHash(zi + 19) - 0.5) * 7.2;
+          if (Math.abs(x) < 1.35) continue;
+          spots.push({
+            x,
+            z,
+            kind: decorHash(zi + 4) > 0.72 ? "spire" : "rock",
+            s: 0.65 + decorHash(zi + 11) * 0.45,
+          });
+        }
+        const laid = spots
+          .map((spot) => {
+            const at = placeDecor(spot.x, spot.z, spot.kind, spot.s);
+            return at ? { ...at } : null;
+          })
+          .filter((spot): spot is NonNullable<typeof spot> => spot !== null)
+          .sort((a, b) => b.depth - a.depth);
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        gl.useProgram(propProg);
+        gl.uniform1i(gl.getUniformLocation(propProg, "uTex"), 0);
+        for (const spot of laid) {
+          const tex = spot.kind === "citadel" ? cityTex : spot.kind === "spire" ? spireTex : rockPropTex;
+          const ready = spot.kind === "citadel" ? cityImg.complete : spot.kind === "spire" ? spireImg.complete : rockImg.complete;
+          if (!ready) continue;
+          gl.bindTexture(gl.TEXTURE_2D, tex);
+          gl.uniform1f(gl.getUniformLocation(propProg, "uAlpha"), spot.depth > 10 ? 0.85 : 1);
+          drawBuffer(quad(spot.u - spot.w / 2, spot.footY - spot.h, spot.w, spot.h));
+        }
+      } else if (camFrame && doorMode === "room") {
         gl.disable(gl.BLEND);
         gl.useProgram(gateProg);
         gl.bindTexture(gl.TEXTURE_2D, citadelTex);
@@ -2264,10 +2744,12 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       };
 
       gl.enable(gl.BLEND);
+      frameZoom = pinchZoom;
+      frameFocusY = 0;
       gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
       drawFoes(false);
 
-      if (!outHide && phaseRef.current !== "cover" && doorMode !== "map" && (bolt.readyState >= 2 || boltIdle.readyState >= 2)) {
+      if (!outHide && phaseRef.current !== "cover" && doorMode !== "map" && !(thunderOn && !thunderHold) && (bolt.readyState >= 2 || boltIdle.readyState >= 2 || thunderHold)) {
         const box = boltBox();
         const thunderPlate =
           pose === boltThunder ||
@@ -2299,7 +2781,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
         gl.uniform1i(gl.getUniformLocation(boltProg, "uTexB"), 1);
         gl.uniform1f(gl.getUniformLocation(boltProg, "uFlash"), flash);
         gl.uniform1f(gl.getUniformLocation(boltProg, "uTime"), now * 0.001);
-        gl.uniform1f(gl.getUniformLocation(boltProg, "uBreath"), boltIdle.readyState >= 2 ? breathMix : 0);
+        gl.uniform1f(gl.getUniformLocation(boltProg, "uBreath"), thunderOn ? 1 : boltIdle.readyState >= 2 ? breathMix : 0);
         gl.activeTexture(gl.TEXTURE0);
         const paw = thunderPlate ? 0.97 : PAW_V;
         const dw = box.w * fit;
@@ -2383,6 +2865,8 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       frame.removeEventListener("pointercancel", onSlideUp);
       frame.removeEventListener("wheel", onWheel);
       if (window.__controlsTest === probe) delete window.__controlsTest;
+      skyVid.pause();
+      skyVid.remove();
       audio.ctx?.close().catch(() => undefined);
     };
   }, []);
@@ -2404,7 +2888,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
 
   return (
     <main className="pyre-root">
-      <div className="pyre-frame" ref={frameRef}>
+      <div className={phase === "run" || phase === "citadel" ? "pyre-frame" : "pyre-frame is-menu"} ref={frameRef}>
         <canvas ref={glRef} className="pyre-gl" />
         <canvas ref={fxRef} className="pyre-fx" />
         <video
@@ -2514,7 +2998,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
         <video ref={boltThunderLeftBackRef} className="pyre-video" src="/master/bolt-thunder-to-back-l.mp4?v=2" muted playsInline disablePictureInPicture preload="auto" />
         <video ref={boltThunderRightIdleRef} className="pyre-video" src="/master/bolt-thunder-right-idle.mp4?v=1" muted loop playsInline disablePictureInPicture preload="auto" />
         <video ref={boltThunderLeftIdleRef} className="pyre-video" src="/master/bolt-thunder-left-idle.mp4?v=1" muted loop playsInline disablePictureInPicture preload="auto" />
-        <video ref={boltThunderRunRef} className="pyre-video" src="/master/bolt-thunder-run.mp4?v=1" muted loop playsInline disablePictureInPicture preload="auto" />
+        <video ref={boltThunderRunRef} className="pyre-video" src="/master/bolt-thunder-run.mp4?v=3" muted loop playsInline disablePictureInPicture preload="auto" />
         <video ref={boltThunderBackstepRef} className="pyre-video" src="/master/bolt-thunder-backstep.mp4?v=1" muted loop playsInline disablePictureInPicture preload="auto" />
         <video ref={boltThunderFaceRef} className="pyre-video" src="/master/bolt-thunder-face.mp4?v=1" muted loop playsInline disablePictureInPicture preload="auto" />
         <video
@@ -2701,6 +3185,23 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           disablePictureInPicture
           preload="auto"
         />
+        <video ref={plainLeftLiveRef} className="pyre-video" src="/master/plain-left-live.mp4?v=1" muted loop playsInline disablePictureInPicture preload="auto" />
+        <video ref={plainRightLiveRef} className="pyre-video" src="/master/plain-right-live.mp4?v=1" muted loop playsInline disablePictureInPicture preload="auto" />
+        {IDLE_LIVE.map((spot, index) => (
+          <video
+            key={spot.src}
+            ref={(el) => {
+              idleRefs.current[index] = el;
+            }}
+            className="pyre-video"
+            src={spot.src}
+            muted
+            loop
+            playsInline
+            disablePictureInPicture
+            preload="auto"
+          />
+        ))}
         <div className="pyre-hud" hidden={phase === "cover"}>
           <div>
             <p className="pyre-paces">
@@ -2717,7 +3218,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
         {phase === "citadel" && doorsReady && <p className="pyre-tap">Tap the gates</p>}
         {phase === "citadel" && roomLive && portalReady && <p className="pyre-tap is-low">Tap the door</p>}
         {phase === "citadel" && roomLive && !portalReady && <p className="pyre-tap is-low">Drag Bolt · swipe the floor, he turns and the room turns with him</p>}
-        {phase === "citadel" && plainLive && <p className="pyre-tap is-low">Swipe to turn him toward you · drag to move · pinch to zoom</p>}
+        {phase === "citadel" && plainLive && <p className="pyre-tap is-low">Swipe up to run. Swipe the ground to turn the camera all the way around</p>}
         {phase !== "run" && phase !== "citadel" && (
           <div className="pyre-cover">
             <p className="pyre-kicker">{phase === "fallen" ? "The ash kept you" : "Blood-moon causeway"}</p>
@@ -2728,13 +3229,13 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
                 : "A gothic causeway under a blood moon. The damned hunt your lane."}
             </p>
             <div className="pyre-menu">
-              <button type="button" className="pyre-start" onClick={start}>
+              <button type="button" className="pyre-start" onPointerUp={(event) => { event.preventDefault(); event.stopPropagation(); start(); }}>
                 Start
               </button>
-              <button type="button" className="pyre-start is-ghost" onClick={atGates}>
+              <button type="button" className="pyre-start is-ghost" onPointerUp={(event) => { event.preventDefault(); event.stopPropagation(); atGates(); }}>
                 The gates
               </button>
-              <button type="button" className="pyre-start is-ghost" onClick={atVista}>
+              <button type="button" className="pyre-start is-ghost" onPointerUp={(event) => { event.preventDefault(); event.stopPropagation(); atVista(); }}>
                 The plain
               </button>
             </div>

@@ -437,3 +437,23 @@ On zoome les sommets, pas les UV. La plaque n'a rien hors cadre. Lune et Thunder
 10. Ouverture des portes : ne pas seek si le clip est déjà à 0, et ne jamais repeindre le biome tant qu'on est en citadelle. Section 10.
 11. Porte du milieu : `citadel-exit.mp4` (salle → plaine, Bolt absent de la plaque). Thunderwolf : `bolt-thunder-rise.mp4` une fois, puis `bolt-thunder.mp4` en boucle, fond vert, `THUNDER_FIT = 1.62`. Le bouton **The plain** est `enterVista()` / `vistaHold`. Section 11.
 12. Sur la plaine : `citadel-plain.mp4` (caméra fixe, la lune tourne). Swipe rapide = rotation qui finit face caméra (`bolt-thunder-to-face-r/l.mp4`, puis `bolt-thunder-face.mp4`). Swipe encore = retour de dos (`bolt-thunder-to-back-r/l.mp4`). Glisser = courir (`bolt-thunder-run.mp4`), reculer (`bolt-thunder-backstep.mp4`), ou se décaler. Pincement = `uZoom` dans `ROAD_VS`, seulement en `doorMode === "out"`. Section 12. Ne pas remettre les clips de profil.
+
+## 13. Plaque vide — c'est ce qui est joué
+
+Lire [PLATE.md](PLATE.md). La grille filmée des 12 pas n'est plus la plaine une fois la porte passée. `onBlack` remplace la vidéo de biome.
+
+Un seul nombre, `plateOffset`, fait défiler le chemin, les rochers, les flèches et la citadelle. `plateWish` vient du swipe nord/sud. Au relâchement, `plateV` retombe à 0. Ne pas clamper `plateOffset`.
+
+La caméra est un `orbit` libre, gain `(2 * PI) / 0.85`, sans snap. Le sol prend `uYaw = orbit`. Le ciel doit prendre le même angle, sinon seule la lave tourne et la lune reste collée. `spin = ((orbit / PI) % 2 + 2) % 2`, deux quads à `spin - 2` et `spin`. `clear` en noir avant, sinon l'ancienne lune reste.
+
+Le ciel est un mp4 9:16 (`master/decor/sky.mp4`). Ne jamais étirer un 16:9 : la lune devient ovale. Hauteur à l'écran = `screenAspect / videoAspect`.
+
+Le chemin est `decor/path.jpg`, échantillonné dans `PLATE_FS` sous l'horizon (`vUv.y > 0.47` est jeté). Les props sont des découpes vertes (`PROP_FS`, `greenness > 0.14` discard). Pas de flèche si `depth < 1.7` ou `|x| < 1.35`, sinon elle traverse Bolt. La citadelle est calée à l'horizon (`depth` clampé à 6.5).
+
+La course : couper le fichier, ne pas seek. Le clip généré commence à l'arrêt et n'a qu'une keyframe, à 0. Samsung rejoue l'arrêt pendant le seek.
+
+```
+ffmpeg -ss 2.25 -to 5.7 -i bolt-thunder-run.mp4 -an -c:v libx264 -crf 18 -pix_fmt yuv420p -g 1 -movflags +faststart
+```
+
+Puis `loop = true` et bumper `?v=` sur la balise.
