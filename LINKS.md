@@ -31,3 +31,7 @@ Missing clip = stay. Legal Hall′ names: [adjacency.json](adjacency.json).
 ## One line
 
 **A door hangs another hall, or nothing.** In = enter clip + dest breath-spawn under the veil. No clip = you stay where you are.
+
+## Plain
+
+Thunderwolf vista, grid, moon loops, key: [PLAIN.md](PLAIN.md).
