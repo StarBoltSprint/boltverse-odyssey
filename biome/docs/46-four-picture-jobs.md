@@ -77,17 +77,17 @@ The single-card kit stays face 0.70.
 
 ## 4. Heightfield, posture only
 
+The hung page, the smooth path flatten, and who samples it are law [50](50-heightfield-posture.md). Stub: [`height.ts`](../scripts/jade-lod/height.ts).
+
 ```
-h(x,z) = 0.20 + 0.20 * fbm(x/28, z/28, s+101)
+h0 = 0.20 + 0.20 * fbm(x/28, z/28, s+101, octaves=3)
 ```
 
-That is 20–40 cm. Stub: [`height.ts`](../scripts/jade-lod/height.ts).
+That is 20–40 cm. Three octaves. Elder and fern share the field. The path eases toward 0.20 with a smoothstep, not a trench and not a hard step.
 
-Bolt's feet, the card group, the shadow, and the capsule base use `h`. Inside `pathHalf` the corridor flattens toward 0.20.
+This noise does **not** decide spawn. Spawn stays `s+0` / `s+17` / `s+31` at L = 14 / 40 / 22. Height is `s+101` at L = 28, so a peak is not a tree.
 
-This noise does **not** decide spawn. Spawn stays the hung `spawnChunk` page — n1 / n2 / n3 at L = 14 / 40 / 22. Height is a different page (`s+101`, scale 28), so a peak is not automatically a tree.
-
-Law 44 still holds: the ground Imagine film stays the flat plate. Height moves contact in meters. It does not paint or lift the sol photo. A fractal that redraws sol is FAIL.
+Law 44 still holds: the ground Imagine film stays the flat plate at `y = 0`. Height moves contact in meters. It does not paint or lift the sol photo. A fractal that redraws sol is FAIL.
 
 ---
 

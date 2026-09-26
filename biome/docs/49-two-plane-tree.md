@@ -14,7 +14,7 @@ Only bole and elder are two planes. Ruin has no crown.
 
 ## Transforms
 
-Parent group at `(row.x, h(x,z), row.z)`. The group is not yawed. Children are local:
+Parent group at `(row.x, h(x,z), row.z)`. `h` is law [50](50-heightfield-posture.md), sampled once into `kit.groundY`. The group is not yawed. Children are local:
 
 | Child | Local | Size |
 |---|---|---|

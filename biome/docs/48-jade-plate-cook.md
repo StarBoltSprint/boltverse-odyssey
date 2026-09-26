@@ -63,7 +63,7 @@ Sky is a sphere or hemisphere, radius about 80–120 m. The center follows camer
 
 Optional roots pass: the same ground mp4, `TILE * 1.7`, opacity 0.18–0.22, `y = heightfield - 0.08`, depth write off.
 
-The visual ground mesh can stay flat. The pawn and the cards sit on `h(x,z)`, 20–40 cm, from law 46. Do not warp the video mesh with the heightfield. If a dish comes later, UV still comes from world XZ.
+The visual ground mesh stays at `y = 0`. The pawn samples `h(x,z)` every tick. A kit stores `groundY` once. That posture is law [50](50-heightfield-posture.md). Do not warp the video mesh with the heightfield. If a dish comes later, UV still comes from world XZ.
 
 No stone road in the mp4. Flatten `h` and skip spawns inside `pathHalf`. An optional shader tint may darken `|x| < pathHalf`. Painted curbs fight a bending path.
 
