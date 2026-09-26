@@ -60,19 +60,63 @@ export function wireColor(hit: Hit): "green" | "cyan" | "gold" | null {
   return null;
 }
 
+/** Cone reach, meters. Not a sphere. */
 export const HOWL_RANGE = 8;
+/** Full angle. The test uses the half-angle. */
 export const HOWL_CONE_DEG = 25;
+export const HOWL_HALF_DEG = 12.5;
+/** Muzzle of the cone, in front of the pawn. Not the miss-burst distance. */
+export const HOWL_ORIGIN_M = 0.4;
+/** Open interval starts past this. A point on the nose is not a target. */
+export const HOWL_INNER_M = 0.3;
+/** Debug L. Gold wire, 8 m, this cone. */
+export const HOWL_CONE_WIRE = "gold";
+/**
+ * Pose length when bolt.glb arrives. This kitchen does not load that clip.
+ * H does not pause the ground plate.
+ */
+export const HOWL_CLIP_S = [0.4, 0.6] as const;
+export const HOWL_PAUSES_GROUND = false;
+/** Miss sparks sit this far in front of the pawn. */
+export const MUZZLE_M = 1.2;
 /** SmiR KEEP. Law 32. Do not recook the rings. */
 export const HOWL_KEEP = "biome/fx/howl/howl-attack.mp4";
-/** ~1 s FX. No capsule. Cook: shard to cyan dust, transparent back, no Bolt, first still, last empty. */
-export const CRYSTAL_BURST = "crystal_burst_vN";
-export const BURST_MS = 1000;
+/**
+ * Burst film names. No bytes in this PR.
+ * v0–v3 match the crystal sheet. Frame 0 still is CRYSTAL_BURST_FRAME0.
+ */
+export const CRYSTAL_BURST_DIR = "public/decor/jade/fx";
+export const CRYSTAL_BURST_FRAME0 = `${CRYSTAL_BURST_DIR}/crystal_burst_v0.png`;
+/** Same quad as the crystal sheet card (two-plane crystal 0.7 × 1.6). */
+export const CRYSTAL_CARD = { w: 0.7, h: 1.6 } as const;
+/** Hide the burst quad after this. Picture-time seconds. */
+export const BURST_FREE_S = 1.1;
+export const BURST_MS = 1100;
+export const CRYSTAL_BURST = crystalBurstMp4(0);
+
+const HOWL_COS = Math.cos((HOWL_HALF_DEG * Math.PI) / 180);
+
+export function crystalBurstMp4(variant: number): string {
+  const v = ((variant % 4) + 4) % 4;
+  return `${CRYSTAL_BURST_DIR}/crystal_burst_v${v}.mp4`;
+}
+
+/** yaw 0 looks down +z. Lane L/C/R later passes that lane's yaw here. */
+export function howlForward(yaw: number): [number, number] {
+  return [Math.sin(yaw), Math.cos(yaw)];
+}
+
+export function howlOrigin(x: number, z: number, yaw: number): [number, number] {
+  const [fx, fz] = howlForward(yaw);
+  return [x + fx * HOWL_ORIGIN_M, z + fz * HOWL_ORIGIN_M];
+}
 
 export type PawTouch = "block" | "fern" | "crystal-walk" | "howl-confirm" | "howl-miss";
 
 /**
  * Crystal shatters only on a confirmed Howl inside the cone.
- * A body overlap is the soft drag. A Howl that misses the cone is pose and audio.
+ * A body overlap is the soft drag. A Howl that misses the cone is pose and muzzle.
+ * `inCone` is `inHowlCone`. There is not a second test.
  */
 export function pawTouch(kind: Kind, howl: boolean, inCone: boolean, overlap: boolean): PawTouch | null {
   if (kind === "crystal" && howl && inCone) return "howl-confirm";
@@ -83,7 +127,11 @@ export function pawTouch(kind: Kind, howl: boolean, inCone: boolean, overlap: bo
   return null;
 }
 
-/** True when a point sits in the Howl cone. 8 m, 25 degrees. */
+/**
+ * One cone. Field uses the mesh yaw. The 3-lane howlPose uses this same function.
+ * Range 8 m, half-angle 12.5° (25° full). Origin is the pawn plus forward × 0.4.
+ * Valid distance is (0.3, 8].
+ */
 export function inHowlCone(
   camX: number,
   camZ: number,
@@ -91,14 +139,206 @@ export function inHowlCone(
   x: number,
   z: number,
 ): boolean {
-  const dx = x - camX;
-  const dz = z - camZ;
+  const [ox, oz] = howlOrigin(camX, camZ, yaw);
+  const dx = x - ox;
+  const dz = z - oz;
   const dist = Math.hypot(dx, dz);
-  if (dist > HOWL_RANGE || dist === 0) return false;
-  let d = Math.atan2(dx, dz) - yaw;
-  while (d > Math.PI) d -= Math.PI * 2;
-  while (d < -Math.PI) d += Math.PI * 2;
-  return Math.abs(d) <= (HOWL_CONE_DEG * Math.PI) / 180;
+  if (!(dist > HOWL_INNER_M && dist <= HOWL_RANGE)) return false;
+  const [fx, fz] = howlForward(yaw);
+  const dot = (dx / dist) * fx + (dz / dist) * fz;
+  return dot >= HOWL_COS;
+}
+
+export type HowlCandidate = {
+  id: string;
+  x: number;
+  z: number;
+  h: number;
+  yaw: number;
+  variant: number;
+  hit: Hit;
+  groundY: number;
+  w?: number;
+};
+
+/** Burst quad. Same yaw and scale as the sheet card. Freed after 1.1 s. The id stays shattered. */
+export type BurstQuad = {
+  id: string;
+  x: number;
+  y: number;
+  z: number;
+  yaw: number;
+  w: number;
+  h: number;
+  variant: number;
+  /** Picture-time seconds. Pause passes dt 0. */
+  t: number;
+  muted: true;
+  playing: boolean;
+  src: string | null;
+};
+
+export type HowlVerb = {
+  /** Rising edge that was allowed to fire. A hold is not a second shot. */
+  fired: boolean;
+  pose: boolean;
+  muzzle: boolean;
+  targetId: string | null;
+  quad: BurstQuad | null;
+  /** 80 stand-in, 40 halo, 0 when this tick did not birth. */
+  points: number;
+  icing: "stand-in" | "halo" | null;
+  origin: [number, number, number] | null;
+};
+
+const shattered = new Set<string>();
+const quads = new Map<string, BurstQuad>();
+let held = false;
+
+/** True while H is down after the press has already fired. */
+export function howlArmed(): boolean {
+  return held;
+}
+
+export function isShattered(id: string): boolean {
+  return shattered.has(id);
+}
+
+export function shatteredIds(): readonly string[] {
+  return [...shattered];
+}
+
+/** Same frame as the verb. Sheet rows and volumes both drop. */
+export function dropShattered<T extends { id: string }>(list: readonly T[]): T[] {
+  return list.filter((item) => !shattered.has(item.id));
+}
+
+export function forgetShattered(ids: readonly string[]): void {
+  for (const id of ids) {
+    shattered.delete(id);
+    quads.delete(id);
+  }
+}
+
+export function burstOf(id: string): BurstQuad | undefined {
+  return quads.get(id);
+}
+
+export function resetHowl(): void {
+  shattered.clear();
+  quads.clear();
+  held = false;
+}
+
+/** Smallest distance inside the cone. Already shattered ids are skipped. Hit must be shatter. */
+export function pickHowlTarget(
+  pawnX: number,
+  pawnZ: number,
+  yaw: number,
+  candidates: readonly HowlCandidate[],
+): HowlCandidate | null {
+  const [ox, oz] = howlOrigin(pawnX, pawnZ, yaw);
+  let best: HowlCandidate | null = null;
+  let bestD = Infinity;
+  for (const c of candidates) {
+    if (c.hit !== "shatter") continue;
+    if (shattered.has(c.id)) continue;
+    if (!inHowlCone(pawnX, pawnZ, yaw, c.x, c.z)) continue;
+    const d = Math.hypot(c.x - ox, c.z - oz);
+    if (d < bestD) {
+      best = c;
+      bestD = d;
+    }
+  }
+  return best;
+}
+
+function ageBursts(dt: number): void {
+  if (!(dt > 0)) return;
+  for (const [id, q] of quads) {
+    q.t += dt;
+    if (q.t > BURST_FREE_S) quads.delete(id);
+  }
+}
+
+/**
+ * One Howl per press. Cone, one target, shatter only when hit is shatter.
+ * A miss is the pose and the muzzle sparks. Nothing is deleted.
+ * The burst quad advances by sim dt. Pause passes dt 0. This does not read the wall clock
+ * and does not pause the ground plate.
+ * Call it every picture tick, whether H is down or not, so the quad ages.
+ * Then `tickField`: the field omits shattered ids on that same frame.
+ */
+export function howlVerb(input: {
+  howlDown: boolean;
+  /** Sim seconds. Ignored while paused. */
+  dt: number;
+  paused?: boolean;
+  pawn: { x: number; z: number; yaw: number; y?: number };
+  candidates: readonly HowlCandidate[];
+  /** True when that variant's mp4 is bound. Unbound still breaks the crystal. */
+  filmBound?: (variant: number) => boolean;
+}): HowlVerb {
+  ageBursts(input.paused ? 0 : input.dt);
+  const rising = input.howlDown && !held;
+  held = input.howlDown;
+  const empty: HowlVerb = {
+    fired: false,
+    pose: false,
+    muzzle: false,
+    targetId: null,
+    quad: null,
+    points: 0,
+    icing: null,
+    origin: null,
+  };
+  if (!rising) return empty;
+
+  const target = pickHowlTarget(input.pawn.x, input.pawn.z, input.pawn.yaw, input.candidates);
+  if (!target) {
+    const [fx, fz] = howlForward(input.pawn.yaw);
+    const y = input.pawn.y ?? 0;
+    return {
+      fired: true,
+      pose: true,
+      muzzle: true,
+      targetId: null,
+      quad: null,
+      points: 80,
+      icing: "stand-in",
+      origin: [input.pawn.x + fx * MUZZLE_M, y, input.pawn.z + fz * MUZZLE_M],
+    };
+  }
+
+  shattered.add(target.id);
+  const h = target.h > 0 ? target.h : CRYSTAL_CARD.h;
+  const w = target.w ?? CRYSTAL_CARD.w;
+  const bound = input.filmBound?.(target.variant) ?? false;
+  const quad: BurstQuad = {
+    id: target.id,
+    x: target.x,
+    y: target.groundY + h * 0.5,
+    z: target.z,
+    yaw: target.yaw,
+    w,
+    h,
+    variant: target.variant,
+    t: 0,
+    muted: true,
+    playing: bound,
+    src: bound ? crystalBurstMp4(target.variant) : null,
+  };
+  quads.set(target.id, quad);
+  return {
+    fired: true,
+    pose: true,
+    muzzle: false,
+    targetId: target.id,
+    quad,
+    points: bound ? 40 : 80,
+    icing: bound ? "halo" : "stand-in",
+    origin: [quad.x, quad.y, quad.z],
+  };
 }
 
 export type ClipName = (typeof BOLT_CLIPS)[number];

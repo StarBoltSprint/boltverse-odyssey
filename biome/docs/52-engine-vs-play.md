@@ -57,6 +57,7 @@ Spawn, instances, and volumes read geo only. `prev.get` is allowed while the id'
 | `prev[id].band` | chunk ∉ mem |
 | `kit.fade` / `kit.lod` | stashed in `memKits` when the mesh goes; die with mem |
 | `kit.groundY` sidecar | chunk ∉ mem |
+| shattered crystal ids | chunk ∉ mem. The cap does not spend them inside mem |
 
 The minimum that survives the geo drop is `prev` plus `groundY`. The kit rebuilds from `holdBand` on the way back in. `memKits` is optional: it resumes a fade that was mid-flight. It does not pick a new band.
 
@@ -64,7 +65,7 @@ Cap 512. Evict the farthest chunk-center from the pawn. Never evict an id whose 
 
 Re-enter. `holdBand(id)` is still there, so the band stays sticky. Do not use the enter distances just because the kit was missing. A missing kit is not missing memory. `groundY[id] ?? h(x, z)`.
 
-Do not keep instance matrices, GPU particle births, volume objects, or Imagine textures in this ring. Textures stay shared. Particle look stays law [53](53-gpu-particles.md).
+Do not keep instance matrices, GPU particle births, volume objects, or Imagine textures in this ring. Textures stay shared. Particle look stays law [53](53-gpu-particles.md). A shattered id is the exception that lives here: it leaves when the chunk leaves mem, and a geo re-enter does not mint that crystal again.
 
 `bandDraw` is the budget ticket in section 3. It is not stored in `prev`.
 
@@ -78,7 +79,7 @@ Done-when: 30 boles inside 10 m show 24 crowns and 6 bare trunks. Cull 6 crowned
 
 ### 4. Far → cull shrink
 
-This closes the LOD kitchen. Soft gait, a new Howl cook, and `bolt.glb` are the next sketches. They are not this cut.
+Far ↔ cull is the last LOD edge. Soft gait is section 6. The Howl verb is section 5. `bolt.glb` stays unwired.
 
 `holdBand` still gates. Leave far is 80 m. Enter far is 72 m. The shrink is the fade on that gate. It is not a second hysteresis.
 
@@ -110,9 +111,42 @@ Done-when: sprint out of a far grove. The specks shrink, then vanish. No cards s
 
 ### 5. Howl / shatter
 
-A crystal's hit kind is `shatter`. Howl is H, held, in a cone of about 8 m and 25°. On confirm: hide the card and drop the volume the same frame, then play `crystal_burst_vN` (about 1 s, no capsule). Walking into a crystal is a soft drag. It does not shatter. A miss is the Howl pose and the audio only.
+Howl is a verb. H, one press (`howlArmed`). A hold is not a laser. During that press the cone is tested once. At most one target. Shatter only when `hit === "shatter"` and the shard is inside the cone. A miss elsewhere is the Howl pose and the muzzle sparks. Nothing is deleted.
 
-Cook: shard becomes quartz dust, transparent back, no Bolt, first frame is the still, last frame is empty. Not chrome. The rings stay the Howl KEEP. This plate, `crystal_burst_vN`, is the primary shatter picture. The spark overlay is law [53](53-gpu-particles.md): 80 points in the vertex shader, each one sampling the Imagine spark-dust sheet. Those points are a playback tape. They do not settle on a bole and they do not write SprintCore. A later debris that must land is a separate Verlet of at most 80, still not Rapier. A missing sheet hides those points. They are not a mesh, not a colored disc, and not the world.
+The pose, when `lock/bolt.glb` is on the pawn, is 0.4–0.6 s. This PR does not load that clip. H does not pause the ground plate.
+
+```
+range = 8 m
+halfAng = 12.5°     // 25° full
+origin = pawn.xz + forward * 0.4
+forward = (sin(yaw), cos(yaw))
+```
+
+A point `v` is valid when `d = length(v.xz − origin)` is in `(0.3, 8]`, `dir = normalize(v.xz − origin)`, and `dot(dir, forward) >= cos(12.5°)`. The keeper is the smallest `d`. Nothing behind the head. Nothing at 20 m because it is a crystal. `howlPose` on the three Odyssey lanes is this same cone. The field passes the mesh yaw. The rail passes L / C / R as a discrete forward. One test. Debug L draws a gold wire cone, 8 m.
+
+Same frame, in order:
+
+1. Press, plus the best target.
+2. `shattered.add(id)`.
+3. Drop the volume.
+4. Hide the sheet card.
+5. Plant the burst quad at `(x, groundY + h * 0.5, z)`, same yaw and scale as the card.
+6. Play the mp4 from 0, muted, when that asset exists.
+7. Spawn the GPU dust. 80 stand-in points when the film is unbound. 40 points, life 0.4–0.7, when it is bound.
+8. On ended, or `t > 1.1` s, free the quad. The id stays in `shattered`.
+
+No crystal respawn. `shattered` lives with the mem ring. Leaving geo and coming back does not rebuild the shard. Leaving mem forgets the id with `prev`. The 512 cap still drops ordinary trail ids. It does not spend a shattered id while that chunk is inside mem: this spawn's live ring is already past 512, and spending the shard on a geo leave would grow it back.
+
+The burst film is names and rails only. Paths, per crystal variant:
+
+```
+public/decor/jade/fx/crystal_burst_v0.mp4 … v3.mp4
+public/decor/jade/fx/crystal_burst_v0.png
+```
+
+The png is frame 0, the same shard as `crystal_vN.png`. Full cook table is [`../scripts/jade-lod/SHEETS.md`](../scripts/jade-lod/SHEETS.md). Duration 0.9–1.1 s. 512×1024. Native alpha or a chroma lock with cyan despill. Same rear-three-quarter, withers, late-day lock. Last frame is empty dust. The camera does not truck. Bolt is forbidden. This PR does not cook the mp4. Until those files exist, the 80 points are the break. With the film, the points are a halo and the film carries the form. Points do not invent a shard that the sheet did not have.
+
+Picture-time. The quad advances with sim `dt`. Pause freezes it. The ground film keeps its own clock. The rings stay the Howl KEEP. Sparks are law [53](53-gpu-particles.md): a playback tape, not a mesh, not a colored disc, not the world. A missing spark sheet hides the points and still returns the shattered id. A later debris that must land is a separate Verlet of at most 80, still not Rapier.
 
 ### 6. Soft versus block
 
@@ -144,7 +178,7 @@ The step you leave, those four are gone: want, accel, the nick, and the yaw. No 
 
 `0.55` still lets you cross. `0.2` would trap you. Half yaw is undergrowth, not ice. `m -= 0.03` a tick at 60 Hz is about `−1.8` a second, a nick along a chain. The block's `−0.8` is the only real cut. A push plus a slow yaw is an invisible wall. Soft does not push.
 
-Crystal underfoot uses the same soft numbers without the yaw clamp and without the forced walk. You still have to aim the Howl. Walking into quartz does not shatter it. Howl plates are not cooked in this cut.
+Crystal underfoot uses the same soft numbers without the yaw clamp and without the forced walk. You still have to aim the Howl. Walking into quartz does not shatter it. The burst mp4 is a rail in section 5. This cut does not cook it.
 
 Gait, for when `lock/bolt.glb` is on the pawn. This cut does not wire that file. The capsule prototype applies `wantSpeed` and `yawRate` only. The clip table is the note:
 
@@ -175,7 +209,7 @@ Spawn, the flatten, and the shader tint read that same `d`. No stones in the mp4
 
 ### 8. KEEP bolt.glb
 
-`lock/bolt.glb`. Hybrid white coat, withers 0.6 m. SprintCore moves him. `y = h + foot`. Clips are idle, walk, and sprint. A fern forces walk, and sprint waits 80 ms after the disk. This PR does not load the file. The capsule prototype applies `wantSpeed` and `yawRate` only. The boom camera sits behind the mesh and follows it. Bolt is never culled. No second wolf in a plate or a sheet.
+`lock/bolt.glb`. Hybrid white coat, withers 0.6 m. SprintCore moves him. `y = h + foot`. Clips on the file are idle, walk, and sprint. The Howl pose is a note, 0.4–0.6 s, and it does not pause the ground film. This PR does not load the file and does not invent a howl clip inside it. A fern forces walk, and sprint waits 80 ms after the disk. The capsule prototype applies `wantSpeed` and `yawRate` only. The boom camera sits behind the mesh and follows it. Bolt is never culled. No second wolf in a plate or a sheet.
 
 ---
 
@@ -193,6 +227,7 @@ Spawn, the flatten, and the shader tint read that same `d`. No stones in the mp4
 - Calling the enter distances because a kit respawned. Missing kit is not missing memory.
 - Shrinking a crown fade. Shrink on mid ↔ far. Scale to 0. A fade longer than about 200 ms on far ↔ cull. Scaling the group, the shadow, or a hidden bole. Writing that scale into the idle impostor pool.
 - Shattering a crystal because a body touched it.
+- A burst film with a wolf in it. Frame 0 that is not the crystal sheet. A 360° cone. An 8 m sphere. A volume that stays up while the burst plays. Recreating a crystal because its chunk re-entered geo. Advancing the burst mp4 with `Date.now`.
 - A push on a soft volume. `speed *= 0.88` as the fern. A soft hit that cuts `m` like a block. Stacking the fern multipliers once per tuft. A long lerp after you leave the disk. A fern radius taken from the card width.
 - Baking the path, or stones, into the ground film.
 - A spawn skip on `abs(x)` while the height uses the valley.
@@ -204,6 +239,6 @@ Spawn, the flatten, and the shader tint read that same `d`. No stones in the mp4
 
 ## Done-when
 
-Walk the wandering path. The flatten, the empty corridor, and the tint use one `d`. Stand among 30 boles at 8 m: 24 crowns, 6 trunks, and the six are still remembered as near. Step so a slot frees. A crown returns without a trip to the enter line. Orbit a bole on the seam at 32.0. The crown stays, because `prev` outlived the mesh. Sprint until the trail is long. The cap drops chunk-centers outside geo and leaves the live ring, even when that ring is already past 512. Walk 80 m away and back. That forget is legal. A speck at the horizon shrinks to 0.35 over 180 ms and is gone. Turn back inside the belt and it grows from the size it had. Mid boles are at 40 m. Sprint into a fern: walk, a wide turn, out, sprint again about 80 ms later, `m` only nicked. Sprint into a bole: stop, knock, `m` jumps, clip unchanged. A crystal you walk through drags and stays. A held Howl inside the cone hides it the same frame and plays the dust. Bolt is the sealed white dog. The ground film is still flat.
+Walk the wandering path. The flatten, the empty corridor, and the tint use one `d`. Stand among 30 boles at 8 m: 24 crowns, 6 trunks, and the six are still remembered as near. Step so a slot frees. A crown returns without a trip to the enter line. Orbit a bole on the seam at 32.0. The crown stays, because `prev` outlived the mesh. Sprint until the trail is long. The cap drops chunk-centers outside geo and leaves the live ring, even when that ring is already past 512. Walk 80 m away and back. That forget is legal. A speck at the horizon shrinks to 0.35 over 180 ms and is gone. Turn back inside the belt and it grows from the size it had. Mid boles are at 40 m. Sprint into a fern: walk, a wide turn, out, sprint again about 80 ms later, `m` only nicked. Sprint into a bole: stop, knock, `m` jumps, clip unchanged. A crystal you walk through drags and stays. Face a crystal at 6 m and press H: the sheet is gone, the capsule is gone, the burst quad runs about a second (particles when the mp4 is not cooked yet), and the dust is GPU. Walk through that dust. Press H into empty air: the pose and the muzzle play, and nothing dies. A crystal behind the head survives. Leave the chunk and come back inside mem: the shard stays gone. Bolt is the sealed white dog. The ground film is still flat, and H does not freeze it.
 
 World stays Imagine Video assets. The player stays the sealed Bolt. No wallet. No player API keys. Hang URL stays `https://boltverse-odysseyyyy.grok.me`.

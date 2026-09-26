@@ -63,7 +63,34 @@ FX (256×256, one speck, alpha around it, same suffix, no Bolt). Law [53](../../
 - `fx/ember_v0.png` — one ember spark
 - `fx/spark_dust_v0.png` — one shard of crystal dust, quartz, never chrome
 
-The Howl shatter's primary picture is the short plate `crystal_burst_vN` (law 52): shard becomes dust, transparent back, no Bolt, first frame is the still, last frame is empty, about 1 s. Point sparks do not replace that plate.
+The Howl shatter's primary picture is the burst film (law 52). Names only. This PR does not cook the files. Point sparks do not replace a missing shard.
+
+```
+public/decor/jade/fx/crystal_burst_v0.mp4 … v3.mp4
+public/decor/jade/fx/crystal_burst_v0.png
+```
+
+The png is frame 0, the still crystal. One file per crystal variant.
+
+| | |
+|---|---|
+| Dur | 0.9–1.1 s |
+| Res | 512×1024, same frame as `crystal_vN.png` |
+| Alpha | native, or a chroma lock with cyan despill |
+| Cam | same rear-three-quarter, withers, late-day light lock |
+| Frame 0 | the same shard as `crystal_vN.png` |
+| Last | empty dust, no second shard |
+| Cam clip | locked. No truck, no yaw |
+| Bolt | forbidden |
+
+Prompt, after the shared suffix:
+
+```
+isolated shard cracking into cyan-gold dust, transparent background,
+no grove, no dog, one shot, not a loop
+```
+
+QC: overlay frame 0 on `crystal_vN.png`. A jump is a recook. Card to burst is a 1-frame cross, not a morph. No loop. End hides the quad. Until the mp4 exists, the GPU points are the break. When it exists, the film carries the form and the points are the halo. Picture-time advances the quad with sim dt. Pause freezes it. The wall clock does not.
 
 ## Crown loop
 

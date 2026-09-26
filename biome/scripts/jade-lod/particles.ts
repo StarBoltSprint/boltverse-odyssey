@@ -4,18 +4,32 @@
  * p + v*t + g*t². A slot does not read its neighbors, does not read trunks,
  * and does not write SprintCore. That is weather, not a physics engine.
  * Picture-time only, the same 1/60 family as fade and SprintCore. Pause freezes
- * births and the integration. Never Date.now.
+ * births and the integration. The Howl burst quad advances by sim dt in play.ts.
+ * Never Date.now.
  * The look is an Imagine cutout. A missing sheet hides the points. No colored disc.
+ * Howl is the verb in play.ts. These points are the stand-in and, once the mp4
+ * is bound, a smaller halo. They do not pick a sphere and they do not delete a crystal.
  * Rapier, Cannon, Ammo, and Chaos are not this file. A Verlet that must land
  * is a different machine, 80 grains at most, and it is not built here.
  */
+
+import {
+  crystalBurstMp4,
+  howlVerb,
+  type HowlCandidate,
+  type HowlVerb,
+} from "./play";
 
 export const SLOT_COUNT = 1400;
 export const MOTE_DT = 0.18;
 export const PAW_DT = 0.06;
 export const SPRINT_MIN = 3.2;
 export const BURST_COUNT = 80;
-export const HOWL_RANGE = 8;
+/** Halo while the burst film is bound. Stand-in stays BURST_COUNT. */
+export const HALO_COUNT = 40;
+export const HALO_LIFE_MIN = 0.4;
+export const HALO_LIFE_MAX = 0.7;
+export { HOWL_RANGE } from "./play";
 /** HUD chip. Playback tape, not a compute sandbox and not a rigid solver. */
 export const HUD_FX = "fx GPU";
 /** This file. Not granular, not Rapier. */
@@ -37,8 +51,11 @@ export const FX_SHEETS = {
   paw: `${FX_DIR}/ember_v0.png`,
   burst: `${FX_DIR}/spark_dust_v0.png`,
 } as const;
-/** Primary shatter picture. Law 52. Points do not replace this plate. */
-export const BURST_PLATE = "crystal_burst_vN";
+/**
+ * Primary shatter picture. Law 52. v0–v3. Names only.
+ * Points do not replace a missing shard. Unbound film still breaks the crystal.
+ */
+export const BURST_PLATE = crystalBurstMp4(0);
 export const MUZZLE = 1.2;
 
 export const KIND = { mote: 0, paw: 1, burst: 2 } as const;
@@ -103,6 +120,7 @@ export function writeBirth(
   origin: readonly [number, number, number],
   vel: readonly [number, number, number],
   seed: number,
+  life?: number,
 ): number {
   const i = buf.cursor;
   const o = i * 3;
@@ -113,7 +131,7 @@ export function writeBirth(
   buf.vel[o + 1] = vel[1];
   buf.vel[o + 2] = vel[2];
   buf.birth[i] = now;
-  buf.life[i] = LIFE[kind];
+  buf.life[i] = life ?? LIFE[kind];
   buf.seed[i] = seed;
   buf.kind[i] = kind;
   buf.cursor = (i + 1) % SLOT_COUNT;
@@ -127,25 +145,33 @@ function unit(n: number): number {
   return (x >>> 0) / 4294967296;
 }
 
-export type CrystalMark = { id: string; x: number; y: number; z: number };
+export type CrystalMark = {
+  id: string;
+  x: number;
+  /** Card center when groundY is omitted. */
+  y: number;
+  z: number;
+  h?: number;
+  yaw?: number;
+  variant?: number;
+  groundY?: number;
+  hit?: "shatter" | "block" | "soft" | "decor";
+  w?: number;
+};
 
-/** Nearest crystal inside 8 m. Null means the burst sits in front of the muzzle. */
-export function nearestCrystal(
-  crystals: readonly CrystalMark[],
-  x: number,
-  z: number,
-  range: number = HOWL_RANGE,
-): CrystalMark | null {
-  let best: CrystalMark | null = null;
-  let bestD = range;
-  for (const c of crystals) {
-    const d = Math.hypot(c.x - x, c.z - z);
-    if (d <= bestD) {
-      best = c;
-      bestD = d;
-    }
-  }
-  return best;
+function asCandidate(c: CrystalMark): HowlCandidate {
+  const h = c.h ?? 1.6;
+  return {
+    id: c.id,
+    x: c.x,
+    z: c.z,
+    h,
+    yaw: c.yaw ?? 0,
+    variant: c.variant ?? 0,
+    hit: c.hit ?? "shatter",
+    groundY: c.groundY ?? c.y - h * 0.5,
+    w: c.w,
+  };
 }
 
 /** Facing matches inHowlCone: yaw 0 looks down +z. */
@@ -160,27 +186,26 @@ export function muzzlePoint(
 }
 
 /**
- * Eighty spark births. They sample the Imagine dust sheet. Returns the crystal id when one was inside 8 m.
- * The caller hides that card and drops its volume the same frame (law 52).
- * This function does not spawn a tree.
+ * Spark births at an origin the verb already chose.
+ * Halo (film bound): 40 points, life 0.4–0.7. Stand-in: 80, life 0.8.
+ * Does not delete a crystal and does not spawn a tree.
  */
 export function birthHowl(
   buf: ParticleBuffers,
   now: number,
-  bolt: readonly [number, number, number],
-  yaw: number,
-  crystals: readonly CrystalMark[],
-): string | null {
-  const hit = nearestCrystal(crystals, bolt[0], bolt[2]);
-  const origin = hit ? ([hit.x, hit.y, hit.z] as const) : muzzlePoint(bolt[0], bolt[1], bolt[2], yaw);
-  for (let n = 0; n < BURST_COUNT; n++) {
+  origin: readonly [number, number, number],
+  count: number,
+  halo = false,
+): void {
+  for (let n = 0; n < count; n++) {
     const a = unit(now * 10 + n);
     const b = unit(now * 3 + n * 1.7);
     const ang = a * Math.PI * 2;
-    const sp = 0.6 + b * 1.4;
-    writeBirth(buf, now, KIND.burst, origin, [Math.cos(ang) * sp, 0.4 + b, Math.sin(ang) * sp], n + 1);
+    const sp = halo ? 0.35 + b * 0.45 : 0.6 + b * 1.4;
+    const life = halo ? HALO_LIFE_MIN + b * (HALO_LIFE_MAX - HALO_LIFE_MIN) : undefined;
+    const lift = halo ? 0.15 + b * 0.25 : 0.4 + b;
+    writeBirth(buf, now, KIND.burst, origin, [Math.cos(ang) * sp, lift, Math.sin(ang) * sp], n + 1, life);
   }
-  return hit ? hit.id : null;
 }
 
 export type ParticleInput = {
@@ -190,24 +215,37 @@ export type ParticleInput = {
   yaw: number;
   /** Shift+WASD raises this. Paw sparks start above SPRINT_MIN. */
   sprintSpeed: number;
-  /** Rising edge of H or Space. */
+  /** Rising edge of H or Space. A hold does not fire again. */
   howlDown: boolean;
   crystals: readonly CrystalMark[];
   /** Bound Imagine sheets. Omit to keep the birth clock. A false flag skips that kind. */
   sheets?: FxSheets;
+  /** Sim seconds for the burst quad. Pause passes 0, or set paused. */
+  dt?: number;
+  paused?: boolean;
+  /** Variant mp4 is bound. False still shatters. Points stay the 80 stand-in. */
+  filmBound?: (variant: number) => boolean;
 };
 
 /**
  * CPU births only. Motes every 0.18 s. Paws every 0.06 s while sprinting.
- * A Howl edge writes 80 burst slots, or a muzzle burst when nothing is in range.
+ * Howl goes through `howlVerb` (one press, one cone). Points follow that result.
+ * A missing burst sheet still returns the shattered id and writes no points.
  */
 export function tickBirths(
   buf: ParticleBuffers,
   clock: BirthClock,
   input: ParticleInput,
-): { shattered: string | null } {
-  let shattered: string | null = null;
+): { shattered: string | null; verb: HowlVerb } {
   const show = (kind: ParticleKind) => !input.sheets || fxVisible(kind, input.sheets) === "draw";
+  const verb = howlVerb({
+    howlDown: input.howlDown,
+    dt: input.dt ?? 0,
+    paused: input.paused,
+    pawn: { x: input.bolt[0], y: input.bolt[1], z: input.bolt[2], yaw: input.yaw },
+    candidates: input.crystals.map(asCandidate),
+    filmBound: input.filmBound,
+  });
   if (show(KIND.mote) && (clock.mote < 0 || input.now - clock.mote >= MOTE_DT)) {
     clock.mote = input.now;
     const j = unit(input.now);
@@ -232,14 +270,9 @@ export function tickBirths(
       j,
     );
   }
-  if (input.howlDown && !clock.howl) {
-    if (show(KIND.burst)) {
-      shattered = birthHowl(buf, input.now, input.bolt, input.yaw, input.crystals);
-    } else {
-      const hit = nearestCrystal(input.crystals, input.bolt[0], input.bolt[2]);
-      shattered = hit ? hit.id : null;
-    }
+  if (verb.fired && verb.origin && verb.points > 0 && show(KIND.burst)) {
+    birthHowl(buf, input.now, verb.origin, verb.points, verb.icing === "halo");
   }
   clock.howl = input.howlDown;
-  return { shattered };
+  return { shattered: verb.targetId, verb };
 }

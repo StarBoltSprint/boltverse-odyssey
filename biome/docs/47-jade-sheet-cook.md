@@ -30,7 +30,7 @@ fx/spark_dust_v0.png
 
 `vN` is `row.variant` 0–3. The same `N` on bole and crown is a pair: same bark temperature, same light. Elder uses this bole/crown family at the larger quad. `hash2` (the spawn salt) picks the variant. No per-tree art direction.
 
-FX sheets are cutouts too. One subject, transparent, no Bolt. Law [53](53-gpu-particles.md) samples them on the point. `moss_dust` is the mote. `pollen` is the alternate mote. `ember` is the paw spark. `spark_dust` is the Howl point burst. An atlas may replace the three live files later. The primary shatter picture is not a point: it is the short plate `crystal_burst_vN` (law [52](52-engine-vs-play.md)). A missing FX sheet hides that particle kind. It does not fall back to a colored disc. Tree sheets still fall back to v0.
+FX sheets are cutouts too. One subject, transparent, no Bolt. Law [53](53-gpu-particles.md) samples them on the point. `moss_dust` is the mote. `pollen` is the alternate mote. `ember` is the paw spark. `spark_dust` is the Howl point burst. An atlas may replace the three live files later. The primary shatter picture is not a point: it is `public/decor/jade/fx/crystal_burst_vN.mp4` (law [52](52-engine-vs-play.md), rails in [`../scripts/jade-lod/SHEETS.md`](../scripts/jade-lod/SHEETS.md)). Names only until that cook exists. A missing FX sheet hides that particle kind. It does not fall back to a colored disc. Tree sheets still fall back to v0.
 
 Hung `spawnChunk` still emits 0–2. The cook set is 0–3 so v3 can land without a new scatter.
 

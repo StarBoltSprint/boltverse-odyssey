@@ -1,6 +1,7 @@
 import { forgetFades, liftFade, restoreFade, type FadeStash } from "./fade";
 import { postureHeight } from "./height";
 import { applyLod, forgetIds, holdBand, volumesOf } from "./lod";
+import { forgetShattered, isShattered, resetHowl } from "./play";
 import { spawnChunk } from "./spawn";
 import { CHUNK, type Band, type LodRow, type SpawnRow, type Volume } from "./types";
 
@@ -66,7 +67,8 @@ function dropId(id: string, forgotten: string[]) {
  * geoRing streams the mesh. memRing remembers the band and the ground.
  * A chunk can leave geo and keep prev. forgetIds runs only outside mem.
  * Instance matrices, particle births, volume objects, and Imagine textures
- * are not stored here.
+ * are not stored here. Shattered ids are. They leave with the chunk, same as prev.
+ * A crystal in that set is omitted from rows and volumes. Geo re-enter does not rebuild it.
  */
 export function tickField(
   camX: number,
@@ -89,8 +91,6 @@ export function tickField(
   const geoIds = new Set<string>();
   for (const [chunk, rows] of spawnCache) {
     for (const row of rows) {
-      geoRows.push(row);
-      geoIds.add(row.id);
       if (!memory.has(row.id)) {
         memory.set(row.id, {
           x: row.x,
@@ -99,6 +99,9 @@ export function tickField(
           groundY: postureHeight(row.x, row.z),
         });
       }
+      if (isShattered(row.id)) continue;
+      geoRows.push(row);
+      geoIds.add(row.id);
     }
   }
 
@@ -115,12 +118,17 @@ export function tickField(
     memKits.set(id, { lod, fade: liftFade(id) });
   }
 
+  const capSkip = new Set<string>();
   while (memory.size > MEM_CAP) {
     let worstKey: string | null = null;
     let worstD = -1;
     const byChunk = new Map<string, string[]>();
     for (const [id, slot] of memory) {
-      if (geo.has(slot.chunk)) continue;
+      if (geo.has(slot.chunk) || capSkip.has(slot.chunk)) continue;
+      // A shattered shard stays while its chunk is still in mem.
+      // This spawn's live ring is already past the cap, so a geo leave
+      // would otherwise evict the id and the next enter would regrow the crystal.
+      if (isShattered(id)) continue;
       const list = byChunk.get(slot.chunk) ?? [];
       list.push(id);
       byChunk.set(slot.chunk, list);
@@ -134,6 +142,7 @@ export function tickField(
     const victims = worstKey ? byChunk.get(worstKey) : undefined;
     if (!victims || victims.length === 0) break;
     for (const id of victims) dropId(id, forgotten);
+    if (worstKey) capSkip.add(worstKey);
   }
 
   for (const id of geoIds) {
@@ -146,6 +155,7 @@ export function tickField(
   if (forgotten.length) {
     forgetIds(forgotten);
     forgetFades(forgotten);
+    forgetShattered(forgotten);
   }
 
   const rows = applyLod(
@@ -178,4 +188,5 @@ export function resetField() {
   spawnCache.clear();
   memory.clear();
   memKits.clear();
+  resetHowl();
 }
