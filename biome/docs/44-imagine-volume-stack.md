@@ -64,7 +64,7 @@ LOD picks how much twin you get as you close in. It does not thicken the mp4. Le
 |---|---|---|---|
 | Near | `< 12` / leave `14` | full card + shadow | yes |
 | Mid | `< 40` / leave `44` | bole-only, smaller | yes |
-| Far | `< 72` / leave `80` | impostor quad | no |
+| Far | `< 72` / leave `80` | lab cross; live tableau draws none | no |
 | Cull | beyond | ground film only | no |
 
 Near capped at 24. Extras drop to mid and keep the capsule. Far trees may be ghosts in the ground film. Near and mid must thud. The volume twin dies with the card band (far and cull have no capsule).
@@ -75,9 +75,10 @@ LOD remix: [`../scripts/jade-lod/`](../scripts/jade-lod/README.md). Seed `7749`,
 
 ```ts
 import { tickField } from "./field";
-import { applyLodToKit } from "./billboard";
+import { applyLodToKit, applyCheapAlpha } from "./billboard";
 const { rows, volumes } = tickField(cam.x, cam.z, 1);
-// rows → applyLodToKit; volumes → SprintCore obstacles this frame
+const drawn = applyCheapAlpha(applyLodToKit(rows, cam.x, cam.z), nowMs);
+// volumes → SprintCore obstacles this frame (capsule snaps; it never fades)
 ```
 
 Remix next: point the cards at Jade Imagine sheets. Hook `volumes` into the obstacle query.
@@ -90,10 +91,28 @@ Earlier one-file companion: [`../scripts/jade-billboard/jadeBillboard.ts`](../sc
 
 1. A camera-facing quad. A cheap two-plane (bole + crown) is enough when one quad is too thin.
 2. Scale from distance. Far cards get smaller. Do not stretch a far card up to fill the screen.
-3. Billboard toward the camera, not all the way. About 70% face-camera and 30% planted yaw from the seed on that row, so the trunk stays rooted: `yaw = 0.7 * faceCamera + 0.3 * plantedYaw`.
+3. Billboard the bole and the crown toward the camera, not all the way. About 70% face-camera and 30% planted yaw from the seed on that row, so the trunk stays rooted: `yaw = 0.7 * faceCamera + 0.3 * plantedYaw`. The far cross does not take this mix. Its yaw is the spawn seed, and that seed plus `π/2`.
 4. Draw far to near. That is the occlusion.
 5. Soft contact shadow on the ground plane at `(x, z)`. Near band only. Mid and far have no contact blob.
 6. Fog or mist so the mid band fades into the plate.
+
+## Cheap alpha
+
+Fill rate is the cost. The curve is not. Resting trees stay cutout. Blend only while a band change is dissolving. Kitchen: [`fade.ts`](../scripts/jade-lod/fade.ts), [`card.frag.glsl`](../scripts/jade-lod/card.frag.glsl), `applyCheapAlpha` in [`billboard.ts`](../scripts/jade-lod/billboard.ts). Those files do not import three.
+
+| State | GPU path |
+|---|---|
+| Idle near / mid / far | **cutout** (`alphaTest 0.45`, `transparent: false`, `depthWrite: true`) |
+| Mid-fade only | **blend** (`transparent: true`, `depthWrite: false`, premultiplied `rgb * a, a`) |
+| `a < 0.02` | skip the draw (`discard` / `visible = false`) |
+
+Cap **8** concurrent fades. A further band change snaps. Fade is **220–280 ms** (hung at 250). That is shorter than the hysteresis belt (2–8 m), so two fades rarely stack on one tree. A second change on the same id snaps. While coverage is still 1, the card stays cutout. The blend path starts once `a` drops.
+
+Front side only. The 70/30 yaw already faces the camera.
+
+The capsule never fades. Soft alpha is look only. The hit snaps on the hysteresis line in `lod.ts`. The node stack for that shading is law [45](45-shader-graph-look-kitchen.md). The graph does not spawn, pick the band, or own the capsule. A two-plane tree does not put this fade on the bole when the crown dissolves. That kit is law [49](49-two-plane-tree.md).
+
+Not hung yet: InstancedMesh per kind+band, an atlas, impostor mip bias, one opaque cutout pass then the ≤8 fades back-to-front. Skip OIT. Far ↔ cull shrink is hung in law [52](52-engine-vs-play.md): planted cross only, 180 ms, scale 1.00 ↔ 0.35.
 
 ---
 
@@ -101,7 +120,7 @@ Earlier one-file companion: [`../scripts/jade-billboard/jadeBillboard.ts`](../sc
 
 - Two ground rates. The same clip, two UV speeds.
 - Path ribbon in world X. Grove already keeps that path empty. Do not paint it into Video A.
-- Heightfield from the seed, about 30 cm, under the feet and the cards only. The feet follow that tiny rise. The ground film stays the flat Imagine plane. It does not redraw sol and it does not paint the dirt photo. Fractal noise that lifts or refills that photo stays FAIL. That GROVE lock does not move.
+- Heightfield from the seed, about 30 cm, under the feet and the cards only. The feet follow that tiny rise. The ground film stays the flat Imagine plane at `y = 0`. It does not redraw sol and it does not paint the dirt photo. Fractal noise that lifts or refills that photo stays FAIL. That GROVE lock does not move. The hung page is law [50](50-heightfield-posture.md): posture only, `s+101`, L = 28, three octaves, peak 0.40. Spawn stays `s+0` / `s+17` / `s+31`. A peak is not a tree. Do not warp the ground mp4.
 - Occlusion before the look composite. A hide pass. The required draw is already far to near. This pass is extra.
 
 ---
@@ -120,6 +139,7 @@ Done-when for a remix. Stop here before thickening the forest.
 2. From the existing tree seed (Grove cell 3.3 m), take eight bole rows in the near band only (about 3–12 m). One keyed bole sheet per row. Same `(x, z, kind)`.
 3. Billboard mix, contact shadow, and fog, as in the GPU list above.
 4. Capsules on, from those same rows. Walk a circle around one tree.
+5. Those resting boles stay cutout (`alphaTest 0.45`). A band change may blend, eight at a time.
 
 Pass: that tree stays planted (the trunk does not spin off its shadow). The forest behind it slides (near faster than far, near hides far). The paws thud the trunk.
 
@@ -141,5 +161,7 @@ Then thicken mid, elders, and collision polish.
 - Extruding the mp4.
 - A depth map cooked into the video.
 - One clip treated as the volume.
+- An always-transparent forest. Resting cards are cutout. Blend is the dissolve only, eight at a time.
+- Fading the capsule. The hit snaps. Alpha is look.
 
 World stays Imagine Video assets. GPU composites keyed layers only. The player stays the sealed Bolt. No wallet. No player API keys. Hang URL stays `https://boltverse-odysseyyyy.grok.me`.
