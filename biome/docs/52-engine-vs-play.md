@@ -91,9 +91,13 @@ far → cull:  s = mix(1.00, 0.35, t);  a = 1 - t
 cull → far:  s = mix(0.35, 1.00, t);  a = t
 ```
 
-Not mid ↔ far. Not near ↔ mid. Those keep world size. The bole and the impostor still handshake there. Shrink only on far ↔ cull. Scale never goes to 0. 0.35 keeps a 128 px impostor readable for one frame.
+Not mid ↔ far. Not near ↔ mid. Those keep world size. The bole and the cross still handshake there. Shrink only on far ↔ cull. Scale never goes to 0. 0.35 keeps a 128 px plane readable for one frame.
 
-Only the impostor quad scales, and it scales on X and Y together. The bole and the crown are already hidden on far. Do not scale them. Do not scale the group. Do not scale the contact shadow. It is already off on far.
+The far mesh is a planted cross: two planes at 90°, yaw from the spawn seed. It does not billboard. A face mix of 0.9, or any lean toward the camera, is a card fence. Near is bole plus crown (the crown may face the camera). Mid is the bole only. The cross is far only.
+
+Only that cross scales, both planes, X and Y together. The bole and the crown are already hidden on far. Do not scale them. Do not scale the group. Do not scale the contact shadow. It is already off on far.
+
+Bench. Chairs are near 24, mid 64, far 96. Far has no capsule. At `t = 0.5` on far → cull, `impScale = mix(1, 0.35, 0.5) = 0.675`. Both planes take that scale. Yaw stays the seed.
 
 The same cap of 8. A 9th tree snaps: hide the impostor, scale 1, no smear. The idle impostor pool stays scale 1. A shrinking tree leaves `inst.impostor` and draws as its own kit for 180 ms.
 
@@ -103,7 +107,7 @@ Turn around inside the belt. At t = 0.4 on the way out, swap the ends and set `m
 
 Depth write is off for this edge only. Cutoff still discards below 0.02. The blend is premultiplied. Fill at mid-fade is about `0.35² × 0.5`, a few percent of a full fading quad.
 
-Done-when: sprint out of a far grove. The specks shrink, then vanish. No cards slide across the sky. Turn at 76 m. They grow back. Mid boles are there at 40 m.
+Done-when: sprint out of a far grove. The crosses shrink, then vanish. Orbit them and they stay planted. No cards slide into a fence. Turn at 76 m. They grow back. Mid boles are there at 40 m.
 
 ---
 
@@ -258,7 +262,7 @@ Done-when: empty plates, then the white gallop on the highway. Walk and sprint a
 - `memRing` equal to `geoRing`.
 - Evicting an id whose chunk is still in geo.
 - Calling the enter distances because a kit respawned. Missing kit is not missing memory.
-- Shrinking a crown fade. Shrink on mid ↔ far. Scale to 0. A fade longer than about 200 ms on far ↔ cull. Scaling the group, the shadow, or a hidden bole. Writing that scale into the idle impostor pool.
+- Shrinking a crown fade. Shrink on mid ↔ far. Scale to 0. A fade longer than about 200 ms on far ↔ cull. Scaling the group, the shadow, or a hidden bole. Writing that scale into the idle impostor pool. Billboarding the far cross (face 0.9 or any lean). A single camera card where the cross should stand.
 - Shattering a crystal because a body touched it.
 - A burst film with a wolf in it. Frame 0 that is not the crystal sheet. A 360° cone. An 8 m sphere. A volume that stays up while the burst plays. Recreating a crystal because its chunk re-entered geo. Advancing the burst mp4 with `Date.now`.
 - A push on a soft volume. `speed *= 0.88` as the fern. A soft hit that cuts `m` like a block. Stacking the fern multipliers once per tuft. A long lerp after you leave the disk. A fern radius taken from the card width.

@@ -8,7 +8,7 @@ Does **not** thicken the mp4. Picks **how much twin** a spawned thing gets as yo
 |---|---|---|---|
 | Near | `< 12` / leave `14` | full card + shadow | yes |
 | Mid | `< 40` / leave `44` | bole-only, smaller | yes |
-| Far | `< 72` / leave `80` | impostor quad | no |
+| Far | `< 72` / leave `80` | planted cross | no |
 | Cull | beyond | ground film only | no |
 
 Leave is farther than enter so a tree on the line does not flicker. Near capped at **24** cards; extras drop to mid and **keep** their capsule.
@@ -47,7 +47,7 @@ Policy: [`fade.ts`](fade.ts) (`requestFade`, `tickFades`, `activeFadeCount`). Fl
 
 Flattened chain in the fragment: sample → multiply fade → discard cutoff → premultiply. The node stack, the two material instances, and the ground/sky graph are law [45](../../docs/45-shader-graph-look-kitchen.md). The graph shades a card the CPU already posed. `billboardYaw` owns yaw. `bandDraw` in [`lod.ts`](lod.ts) owns meshLod. `holdBand` stays the sticky meters. The capsule stays `volumes`.
 
-Not hung yet: InstancedMesh per kind+band, an atlas, impostor mip bias, one opaque cutout pass then the ≤8 fades back-to-front. Skip OIT. Far ↔ cull shrink is hung: impostor quad only, 180 ms, scale 1.00 ↔ 0.35.
+Not hung yet: InstancedMesh per kind+band, an atlas, impostor mip bias, one opaque cutout pass then the ≤8 fades back-to-front. Skip OIT. Far ↔ cull shrink is hung: planted cross only, 180 ms, scale 1.00 ↔ 0.35. At `t = 0.5` the scale is 0.675.
 
 ## Four picture jobs
 
@@ -57,7 +57,7 @@ Law [46](../../docs/46-four-picture-jobs.md). Same seed, same ids. The film stil
 
 **Plates.** The room, not the furniture. Folder `public/decor/jade/plates/` (names only). `jade_ground.mp4` + poster, `jade_sky.mp4` + poster. Optional `jade_ground_still.jpg`, same UV. `TILE` 24 m. `u = worldX/TILE + 0.02*sin(pictureTime*0.15)`. `pictureTime` is the sim clock. Never `Date.now`. Sky yaws with the camera and does not nod. Kits are siblings of the plane. Cook: law [48](../../docs/48-jade-plate-cook.md) · prompts [`PLATES.md`](PLATES.md) · [`plates.ts`](plates.ts).
 
-**Two planes.** [`twoPlane.ts`](twoPlane.ts). Law [49](../../docs/49-two-plane-tree.md). One address, two jobs. Bole is the mask. Crown may dissolve. They do not share a material. Near = bole + crown + shadow. Mid = bole. Far = impostor only (no hidden bole). Cull = nothing. Near↔mid is **one** slot, 220 ms, crown `a` 1↔0, shadow `0.28 * a`, bole stays cutout, volume stays. Mid↔far is 280 ms: bole may go translucent on that edge only, impostor fades in, crown already 0. Volume snaps off at the 44 m leave, and snaps on at the 40 m enter even if bole `a` is still 0.3. Far↔cull is the impostor alone, 180 ms, scale 1.00 ↔ 0.35 on X and Y together, no volume. The bole is not scaled. The idle impostor pool stays at scale 1. Yaw is per child (bole 0.55, crown 0.85, impostor 0.90, shadow none). The group does not yaw. Cylinder on the bole: bole `r` 0.28, elder `r` 0.55 (thicker bole, not the crown). Sizes: bole 2.4 / 2.0, elder 4.2 / 3.2. Ruin has no crown.
+**Two planes.** [`twoPlane.ts`](twoPlane.ts). Law [49](../../docs/49-two-plane-tree.md). One address, two jobs. Bole is the mask. Crown may dissolve. They do not share a material. Near = bole + crown + shadow. Mid = bole. Far = planted cross only (two planes at 90°, spawn yaw, no hidden bole, no face-cam). Cull = nothing. Near↔mid is **one** slot, 220 ms, crown `a` 1↔0, shadow `0.28 * a`, bole stays cutout, volume stays. Mid↔far is 280 ms: bole may go translucent on that edge only, the cross fades in, crown already 0. Volume snaps off at the 44 m leave, and snaps on at the 40 m enter even if bole `a` is still 0.3. Far↔cull scales both planes of the cross, 180 ms, scale 1.00 ↔ 0.35 on X and Y together (`t = 0.5` → 0.675), no volume. The bole is not scaled. The idle impostor pool stays at scale 1. Yaw is per child (bole 0.55, crown 0.85 and may face the camera, impostor planted, shadow none). The group does not yaw. A far lean of 0.9 is a card fence. Cylinder on the bole: bole `r` 0.28, elder `r` 0.55 (thicker bole, not the crown). Sizes: bole 2.4 / 2.0, elder 4.2 / 3.2. Ruin has no crown.
 
 **Height.** [`height.ts`](height.ts). Law [50](../../docs/50-heightfield-posture.md). Posture only. `h0 = 0.20 + 0.20 * fbm(x/28, z/28, s+101)` with 3 octaves. The valley (law [54](../../docs/54-path-noise-valley.md), [`path.ts`](path.ts)) flattens toward 0.20 with one `d`, shoulders `0.55`–`1.15` of `pathHalf`. Not `abs(x)`. The keyed plant sits on `h`. The card offset is `h + 0.45`. A kit stores `groundY` once. The cylinder base is that `groundY`, never 0. The sol film stays `y = 0`.
 

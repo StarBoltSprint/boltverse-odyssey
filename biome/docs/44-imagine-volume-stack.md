@@ -64,7 +64,7 @@ LOD picks how much twin you get as you close in. It does not thicken the mp4. Le
 |---|---|---|---|
 | Near | `< 12` / leave `14` | full card + shadow | yes |
 | Mid | `< 40` / leave `44` | bole-only, smaller | yes |
-| Far | `< 72` / leave `80` | impostor quad | no |
+| Far | `< 72` / leave `80` | planted cross (two planes, spawn yaw) | no |
 | Cull | beyond | ground film only | no |
 
 Near capped at 24. Extras drop to mid and keep the capsule. Far trees may be ghosts in the ground film. Near and mid must thud. The volume twin dies with the card band (far and cull have no capsule).
@@ -91,7 +91,7 @@ Earlier one-file companion: [`../scripts/jade-billboard/jadeBillboard.ts`](../sc
 
 1. A camera-facing quad. A cheap two-plane (bole + crown) is enough when one quad is too thin.
 2. Scale from distance. Far cards get smaller. Do not stretch a far card up to fill the screen.
-3. Billboard toward the camera, not all the way. About 70% face-camera and 30% planted yaw from the seed on that row, so the trunk stays rooted: `yaw = 0.7 * faceCamera + 0.3 * plantedYaw`.
+3. Billboard the bole and the crown toward the camera, not all the way. About 70% face-camera and 30% planted yaw from the seed on that row, so the trunk stays rooted: `yaw = 0.7 * faceCamera + 0.3 * plantedYaw`. The far cross does not take this mix. Its yaw is the spawn seed, and that seed plus `π/2`.
 4. Draw far to near. That is the occlusion.
 5. Soft contact shadow on the ground plane at `(x, z)`. Near band only. Mid and far have no contact blob.
 6. Fog or mist so the mid band fades into the plate.
@@ -112,7 +112,7 @@ Front side only. The 70/30 yaw already faces the camera.
 
 The capsule never fades. Soft alpha is look only. The hit snaps on the hysteresis line in `lod.ts`. The node stack for that shading is law [45](45-shader-graph-look-kitchen.md). The graph does not spawn, pick the band, or own the capsule. A two-plane tree does not put this fade on the bole when the crown dissolves. That kit is law [49](49-two-plane-tree.md).
 
-Not hung yet: InstancedMesh per kind+band, an atlas, impostor mip bias, one opaque cutout pass then the ≤8 fades back-to-front. Skip OIT. Far ↔ cull shrink is hung in law [52](52-engine-vs-play.md): impostor quad only, 180 ms, scale 1.00 ↔ 0.35.
+Not hung yet: InstancedMesh per kind+band, an atlas, impostor mip bias, one opaque cutout pass then the ≤8 fades back-to-front. Skip OIT. Far ↔ cull shrink is hung in law [52](52-engine-vs-play.md): planted cross only, 180 ms, scale 1.00 ↔ 0.35.
 
 ---
 

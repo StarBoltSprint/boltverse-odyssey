@@ -4,19 +4,21 @@ import { KIND_TABLE, type Band, type Kind, type LodRow } from "./types";
 /**
  * Two-plane tree kit. Law 49. Kitchen types. Does not import three.
  * Bole = architecture (mask). Crown = weather (may dissolve). One address.
- * They do not share a material path. The impostor is a third far silhouette.
- * The group is not yawed. Each child mixes yaw on its own.
+ * They do not share a material path. The far picture is a planted cross, not a camera card.
+ * The group is not yawed. Bole and crown mix yaw on their own. The cross does not.
+ * Near is bole + crown. Mid is the bole. The cross is far only.
  * Near↔mid is one fade slot (the crown, 220 ms), including a budget demote.
  * That fade follows bandDraw, not holdBand. Shadow follows the crown.
  * The bole goes translucent only on mid↔far.
- * Far↔cull scales the impostor quad only (180 ms, down to 0.35). Bole and shadow stay off.
+ * Far↔cull scales both planes of the cross (180 ms, down to 0.35). Bole and shadow stay off.
  */
 
 export type Plane = "bole" | "crown" | "shadow" | "impostor";
 
 export const BOLE_FACE = 0.55;
 export const CROWN_FACE = 0.85;
-export const IMP_FACE = 0.9;
+/** Second plane of the far cross. Yaw is the spawn seed plus this. Not a camera lean. */
+export const IMP_CROSS = Math.PI / 2;
 export const CROWN_FADE_MS = 220;
 export const BOLE_IMP_FADE_MS = 280;
 export const IMP_FADE_MS = 180;
@@ -219,12 +221,19 @@ export function dissolveJob(from: Band, to: Band): DissolveJob | null {
   return { planes: ["impostor"], ms: edge.ms, boleStaysCutout: true, slots: 1 };
 }
 
-/** Shadow does not yaw. The others mix planted yaw toward the camera. */
+/**
+ * Shadow does not yaw. Bole and crown mix planted yaw toward the camera.
+ * The far cross is planted. A 0.9 face-cam (or any lean) is a card fence.
+ */
 export function planeFace(plane: Plane): number | null {
-  if (plane === "shadow") return null;
+  if (plane === "shadow" || plane === "impostor") return null;
   if (plane === "crown") return CROWN_FACE;
-  if (plane === "impostor") return IMP_FACE;
   return BOLE_FACE;
+}
+
+/** Two planes, 90° apart, both on the spawn yaw. The camera does not enter. */
+export function impostorYaws(planted: number): [number, number] {
+  return [planted, planted + IMP_CROSS];
 }
 
 export type EdgeAlpha = {
@@ -410,28 +419,35 @@ export function posePlanes(
     opacity: SHADOW_A,
     sheet: "",
   });
-  const imp = hasCrown(row.kind)
-    ? { w: 1.2, h: 1.6, y: (size.hBole + size.hCrown) * 0.35 }
-    : { w: size.wBole, h: size.hBole, y: size.hBole * 0.35 };
-  push({
-    plane: "impostor",
-    on: on.impostor,
-    x: 0,
-    y: imp.y,
-    z: 0,
-    yaw: yawOf("impostor"),
-    w: imp.w,
-    h: imp.h,
-    cutout: true,
-    renderOrder: RENDER_ORDER.impostor,
-    opacity: 1,
-    sheet: tex.imp,
-  });
+  if (on.impostor) {
+    const imp = impostorSize(row.kind, size);
+    for (const yaw of impostorYaws(row.yaw)) {
+      push({
+        plane: "impostor",
+        on: 1,
+        x: 0,
+        y: imp.y,
+        z: 0,
+        yaw,
+        w: imp.w,
+        h: imp.h,
+        cutout: true,
+        renderOrder: RENDER_ORDER.impostor,
+        opacity: 1,
+        sheet: tex.imp,
+      });
+    }
+  }
   return out;
 }
 
+function impostorSize(kind: Kind, size: { hBole: number; hCrown: number; wBole: number }): { w: number; h: number; y: number } {
+  if (hasCrown(kind)) return { w: 1.2, h: 1.6, y: (size.hBole + size.hCrown) * 0.35 };
+  return { w: size.wBole, h: size.hBole, y: size.hBole * 0.35 };
+}
+
 /**
- * Uniform X/Y on the impostor quad only. Hidden bole, crown, and shadow stay put.
+ * Uniform X/Y on both planes of the far cross. Hidden bole, crown, and shadow stay put.
  * The parent group is not in this list, so it does not scale.
  */
 export function applyImpostorScale(poses: PlanePose[], scale: number): PlanePose[] {
@@ -442,29 +458,28 @@ export function applyImpostorScale(poses: PlanePose[], scale: number): PlanePose
 }
 
 /**
- * The shrinking speck. One impostor quad. Bole, crown, and shadow are absent.
- * w and h take the same scale. The parent that carries this child stays yaw 0 and unscaled.
+ * The shrinking cross. Two planted planes. Bole, crown, and shadow are absent.
+ * w and h take the same scale on both. The camera does not turn them.
+ * The parent that carries these children stays yaw 0 and unscaled.
  */
 export function shrinkingImpostor(
   row: LodRow,
-  camX: number,
-  camZ: number,
+  _camX: number,
+  _camZ: number,
   scale: number,
   opacity: number,
-): PlanePose {
+): PlanePose[] {
   const size = planeSize(row.kind);
   const tex = texOf(row.kind, row.variant);
-  const imp = hasCrown(row.kind)
-    ? { w: 1.2, h: 1.6, y: (size.hBole + size.hCrown) * 0.35 }
-    : { w: size.wBole, h: size.hBole, y: size.hBole * 0.35 };
+  const imp = impostorSize(row.kind, size);
   const s = Math.max(0.35, scale);
-  return {
-    plane: "impostor",
-    on: 1,
+  return impostorYaws(row.yaw).map((yaw) => ({
+    plane: "impostor" as const,
+    on: 1 as const,
     x: 0,
     y: imp.y,
     z: 0,
-    yaw: billboardYaw(row.yaw, camX, camZ, row.x, row.z, IMP_FACE),
+    yaw,
     w: imp.w * s,
     h: imp.h * s,
     cutout: false,
@@ -472,7 +487,7 @@ export function shrinkingImpostor(
     opacity,
     sheet: tex.imp,
     depthWrite: false,
-  };
+  }));
 }
 
 /** Parent at (x, h, z). Yaw stays 0 so children do not double-turn. */
