@@ -1,4 +1,4 @@
-import { valueNoise } from "./noise";
+import { fbm, OCTAVE_LOCK } from "./noise";
 import { PATH_HALF, SEED } from "./types";
 
 /**
@@ -14,9 +14,10 @@ export const SPAWN_PAGES = [0, 17, 31] as const;
 
 export const HEIGHT_BASE = 0.2;
 export const HEIGHT_AMP = 0.2;
-export const HEIGHT_L = 28;
-export const HEIGHT_PAGE = 101;
-export const HEIGHT_OCTAVES = 3;
+export const HEIGHT_L = OCTAVE_LOCK.height.L;
+export const HEIGHT_PAGE = OCTAVE_LOCK.height.page;
+/** Three while the rise is 20 cm. Four only if the amp becomes meters. */
+export const HEIGHT_OCTAVES = OCTAVE_LOCK.height.octaves;
 /** Withers above the posture. Bolt snaps here every physics tick. */
 export const WITHERS = 0.45;
 /** Contact shadow lift. Law 49 shadow child uses the same 0.02. */
@@ -32,20 +33,15 @@ export const HEIGHT_MIN = HEIGHT_BASE;
 export const HEIGHT_SCALE = HEIGHT_L;
 export const HEIGHT_SALT = HEIGHT_PAGE;
 
-/** Three octaves of the hung value noise. Returns 0..1. Does not paint sol. */
-export function fbm(x: number, z: number, page: number, octaves: number = HEIGHT_OCTAVES): number {
-  let amp = 0.5;
-  let sum = 0;
-  let norm = 0;
-  let freq = 1;
-  const n = octaves < 1 ? 1 : octaves;
-  for (let i = 0; i < n; i++) {
-    sum += amp * valueNoise(x * freq, z * freq, page + i * HEIGHT_PAGE);
-    norm += amp;
-    amp *= 0.5;
-    freq *= 2;
-  }
-  return sum / norm;
+export { fbm } from "./noise";
+
+/**
+ * At 20 cm the lock is 3. A fourth octave (~3.5 m) fights the stride.
+ * Four is allowed only when the amplitude is meters, and not before.
+ */
+export function heightOctaveCount(amp: number = HEIGHT_AMP): number {
+  if (amp >= 1) return 4;
+  return HEIGHT_OCTAVES;
 }
 
 function smoothstep(edge0: number, edge1: number, x: number): number {
@@ -60,7 +56,7 @@ function smoothstep(edge0: number, edge1: number, x: number): number {
  */
 export function heightRaw(x: number, z: number, s: number = SEED): number {
   const page = s + HEIGHT_PAGE;
-  const raw = fbm(x / HEIGHT_L, z / HEIGHT_L, page, HEIGHT_OCTAVES);
+  const raw = fbm(x / HEIGHT_L, z / HEIGHT_L, page, heightOctaveCount(HEIGHT_AMP));
   return HEIGHT_BASE + HEIGHT_AMP * raw;
 }
 

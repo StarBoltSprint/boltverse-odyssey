@@ -59,7 +59,9 @@ Law [46](../../docs/46-four-picture-jobs.md). Same seed, same ids. The film stil
 
 **Two planes.** [`twoPlane.ts`](twoPlane.ts). Law [49](../../docs/49-two-plane-tree.md). One address, two jobs. Bole is the mask. Crown may dissolve. They do not share a material. Near = bole + crown + shadow. Mid = bole. Far = impostor only (no hidden bole). Cull = nothing. Near↔mid is **one** slot, 220 ms, crown `a` 1↔0, shadow `0.28 * a`, bole stays cutout, volume stays. Mid↔far is 280 ms: bole may go translucent on that edge only, impostor fades in, crown already 0. Volume snaps off at the 44 m leave, and snaps on at the 40 m enter even if bole `a` is still 0.3. Far↔cull is the impostor alone, 180 ms, no volume. Yaw is per child (bole 0.55, crown 0.85, impostor 0.90, shadow none). The group does not yaw. Cylinder on the bole: bole `r` 0.28, elder `r` 0.55 (thicker bole, not the crown). Sizes: bole 2.4 / 2.0, elder 4.2 / 3.2. Ruin has no crown.
 
-**Height.** [`height.ts`](height.ts). Law [50](../../docs/50-heightfield-posture.md). Posture only. `h0 = 0.20 + 0.20 * fbm(x/28, z/28, s+101)` with 3 octaves. Path flattens toward 0.20 with a smoothstep (`pathHalf` 3.4). Bolt snaps `h + 0.45` every tick. A kit stores `groundY` once. The cylinder base is that `groundY`, never 0. Spawn stays `s+0` / `s+17` / `s+31`. The sol film stays `y = 0`.
+**Height.** [`height.ts`](height.ts). Law [50](../../docs/50-heightfield-posture.md). Posture only. `h0 = 0.20 + 0.20 * fbm(x/28, z/28, s+101)` with 3 octaves. Path flattens toward 0.20 with a smoothstep (`pathHalf` 3.4). Bolt snaps `h + 0.45` every tick. A kit stores `groundY` once. The cylinder base is that `groundY`, never 0. The sol film stays `y = 0`.
+
+**Octaves.** Law [51](../../docs/51-octave-map.md). [`noise.ts`](noise.ts) `OCTAVE_LOCK`. Page and `L` stay put. Height 3 at `s+101` / 28 m. Spawn in [`spawn.ts`](spawn.ts): n1 bole 3 at `s+0` / 14 m, n2 ruin **2** at `s+17` / 40 m, n3 shard 3 at `s+31` / 22 m. Do not copy the height count onto ruins.
 
 Frame: picture-time → `tickField` → snap kits to `h` → pawn `(x, h, z)` and volumes at `y = h`.
 

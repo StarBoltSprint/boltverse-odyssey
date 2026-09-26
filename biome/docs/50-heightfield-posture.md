@@ -20,7 +20,7 @@ raw = fbm(x/L_h, z/L_h, page, octaves=3)
 h0 = base + amp * raw
 ```
 
-Three octaves only. An elder gets no extra dirt. The fern stands on the same field.
+Three octaves only. An elder gets no extra dirt. The fern stands on the same field. The last octave is about 7 m, longer than a stride. Do not raise this to 4 while the amplitude is 20 cm. The full page/octave/L lock, including spawn, is law [51](51-octave-map.md).
 
 Spawn is `s+0` / `s+17` / `s+31` at L = 14 / 40 / 22. Height is `s+101` at L = 28. Same `s` on every client. Never `if h > 0.3 spawn elder`.
 
