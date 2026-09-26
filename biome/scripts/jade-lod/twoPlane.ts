@@ -46,6 +46,7 @@ export const SIZE: Record<Kind, Size> = {
   elder: { hBole: 4.2, hCrown: 3.2, wBole: 1.15, wCrown: 2.8, twoPlane: true },
   ruin: { hBole: 2.8, hCrown: 0, wBole: 3.2, wCrown: 0, twoPlane: false },
   crystal: { hBole: 1.6, hCrown: 0, wBole: 0.7, wCrown: 0, twoPlane: false },
+  /** Card width 1.1 is the picture. The hit disk is KIND_TABLE fern r 0.45. */
   fern: { hBole: 0.6, hCrown: 0, wBole: 1.1, wCrown: 0, twoPlane: false },
 };
 

@@ -116,11 +116,50 @@ Cook: shard becomes quartz dust, transparent back, no Bolt, first frame is the s
 
 ### 6. Soft versus block
 
-Block: push, `speed * 0.35`, `m -= 0.8`.
+The hit is read on the volume. Never on the fern pixels. A green wire that thuds is the wrong hit.
 
-Soft fern: no push, `wantSpeed * 0.55`, a slower accel, `m -= 0.03`, yaw at half, and the walk clip even if Shift is down.
+| Hit | Kinds | In the disk |
+|---|---|---|
+| block | bole, elder, ruin | push out, then the knock |
+| soft | fern | no push — the pawn stays inside |
+| shatter | crystal | soft while walking; delete only on a confirmed Howl |
 
-Crystal underfoot is that soft hit without the yaw clamp.
+Fern volume is `r = 0.45`, `h = 0.6`. That is a tuft. The card is wider. The card width is not the disk.
+
+Disk: `d < r + PAWN_R`. `PAWN_R` is the pawn disk in [`play.ts`](../scripts/jade-lod/play.ts).
+
+Block, unchanged. Push along the line from the tree to the pawn. `speed *= 0.35`. `m -= 0.8` once. The clip stays what it was. Yaw is not touched. An elder stops you. It does not force the walk clip.
+
+Soft, each tick while you are in the disk:
+
+```
+wantSpeed *= 0.55     // even if Shift is down
+accel      = 0.08     // the run accel is 0.18
+m         -= 0.03
+yawRate   *= 0.5
+clip       = walk     // even if the speed wants sprint
+```
+
+The step you leave, those four are gone: want, accel, the nick, and the yaw. No 400 ms exit lerp. A ghost fern is FAIL. Two ferns are one set. Never `0.55` to the power of the tuft count.
+
+`0.55` still lets you cross. `0.2` would trap you. Half yaw is undergrowth, not ice. `m -= 0.03` a tick at 60 Hz is about `−1.8` a second, a nick along a chain. The block's `−0.8` is the only real cut. A push plus a slow yaw is an invisible wall. Soft does not push.
+
+Crystal underfoot uses the same soft numbers without the yaw clamp and without the forced walk. You still have to aim the Howl. Walking into quartz does not shatter it. Howl plates are not cooked in this cut.
+
+Gait, for when `lock/bolt.glb` is on the pawn. This cut does not wire that file. The capsule prototype applies `wantSpeed` and `yawRate` only. The clip table is the note:
+
+```
+speed < 0.2 → idle
+in the fern → walk, even if Shift
+speed < 4   → walk
+else        → sprint
+```
+
+The clip hysteresis is not an LOD band. Entering the fern switches to walk the same tick. Leaving it waits 80 ms outside before sprint may return. That is about 0.4 m at 5 m/s.
+
+Debug L. Soft wire is green. Block is cyan. Shatter is gold.
+
+Done-when: sprint into a fern. The white settles to walk, the turn goes wide, you leave, and sprint is back about 80 ms later. `m` is nicked, not cut. Sprint into a bole. You stop, you are knocked, `m` jumps, and the clip does not change. A Howl on a crystal is the confirm it already was.
 
 ### 7. Path as noise
 
@@ -136,7 +175,7 @@ Spawn, the flatten, and the shader tint read that same `d`. No stones in the mp4
 
 ### 8. KEEP bolt.glb
 
-`lock/bolt.glb`. Hybrid white coat, withers 0.6 m. SprintCore moves him. `y = h + foot`. Clips are idle, walk, and sprint. A fern forces walk. The boom camera sits behind the mesh and follows it. Bolt is never culled. No second wolf in a plate or a sheet.
+`lock/bolt.glb`. Hybrid white coat, withers 0.6 m. SprintCore moves him. `y = h + foot`. Clips are idle, walk, and sprint. A fern forces walk, and sprint waits 80 ms after the disk. This PR does not load the file. The capsule prototype applies `wantSpeed` and `yawRate` only. The boom camera sits behind the mesh and follows it. Bolt is never culled. No second wolf in a plate or a sheet.
 
 ---
 
@@ -154,6 +193,7 @@ Spawn, the flatten, and the shader tint read that same `d`. No stones in the mp4
 - Calling the enter distances because a kit respawned. Missing kit is not missing memory.
 - Shrinking a crown fade. Shrink on mid ↔ far. Scale to 0. A fade longer than about 200 ms on far ↔ cull. Scaling the group, the shadow, or a hidden bole. Writing that scale into the idle impostor pool.
 - Shattering a crystal because a body touched it.
+- A push on a soft volume. `speed *= 0.88` as the fern. A soft hit that cuts `m` like a block. Stacking the fern multipliers once per tuft. A long lerp after you leave the disk. A fern radius taken from the card width.
 - Baking the path, or stones, into the ground film.
 - A spawn skip on `abs(x)` while the height uses the valley.
 - A second hero, or a wolf cooked into a sheet.
@@ -164,6 +204,6 @@ Spawn, the flatten, and the shader tint read that same `d`. No stones in the mp4
 
 ## Done-when
 
-Walk the wandering path. The flatten, the empty corridor, and the tint use one `d`. Stand among 30 boles at 8 m: 24 crowns, 6 trunks, and the six are still remembered as near. Step so a slot frees. A crown returns without a trip to the enter line. Orbit a bole on the seam at 32.0. The crown stays, because `prev` outlived the mesh. Sprint until the trail is long. The cap drops chunk-centers outside geo and leaves the live ring, even when that ring is already past 512. Walk 80 m away and back. That forget is legal. A speck at the horizon shrinks to 0.35 over 180 ms and is gone. Turn back inside the belt and it grows from the size it had. Mid boles are at 40 m. A fern slows you and keeps the walk clip. A crystal you walk through drags and stays. A held Howl inside the cone hides it the same frame and plays the dust. Bolt is the sealed white dog. The ground film is still flat.
+Walk the wandering path. The flatten, the empty corridor, and the tint use one `d`. Stand among 30 boles at 8 m: 24 crowns, 6 trunks, and the six are still remembered as near. Step so a slot frees. A crown returns without a trip to the enter line. Orbit a bole on the seam at 32.0. The crown stays, because `prev` outlived the mesh. Sprint until the trail is long. The cap drops chunk-centers outside geo and leaves the live ring, even when that ring is already past 512. Walk 80 m away and back. That forget is legal. A speck at the horizon shrinks to 0.35 over 180 ms and is gone. Turn back inside the belt and it grows from the size it had. Mid boles are at 40 m. Sprint into a fern: walk, a wide turn, out, sprint again about 80 ms later, `m` only nicked. Sprint into a bole: stop, knock, `m` jumps, clip unchanged. A crystal you walk through drags and stays. A held Howl inside the cone hides it the same frame and plays the dust. Bolt is the sealed white dog. The ground film is still flat.
 
 World stays Imagine Video assets. The player stays the sealed Bolt. No wallet. No player API keys. Hang URL stays `https://boltverse-odysseyyyy.grok.me`.

@@ -25,7 +25,8 @@ export const KIND_RH: Record<Kind, { r: number; h: number; hit: Hit }> = {
   elder: { r: 0.9, h: 5.5, hit: "block" },
   ruin: { r: 1.2, h: 2.4, hit: "block" },
   crystal: { r: 0.35, h: 1.6, hit: "shatter" },
-  fern: { r: 0.25, h: 0.9, hit: "soft" },
+  /** Tuft disk. Not the 1.1 m card width. */
+  fern: { r: 0.45, h: 0.6, hit: "soft" },
 };
 
 /** Same table. Capsule r hangs on the bole, never the crown. */
