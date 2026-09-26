@@ -78,7 +78,10 @@ function scaleForPicture(picture: LodRow["picture"]): number {
 }
 
 /**
- * Idle cutout vs mid-fade blend vs skip.
+ * Single-quad card. Idle cutout vs mid-fade blend vs skip.
+ * A two-plane tree does not use this on the bole for a crown dissolve.
+ * That path is one slot per tree in twoPlane.ts (law 49): crown first,
+ * bole translucent only on mid↔far.
  * Does not import three. Copy `alpha` onto the material the remix already has.
  * FrontSide only. Resting cards stay cutout. Capsule is not in this return —
  * `volumes` from tickField already snapped.

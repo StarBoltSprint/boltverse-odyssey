@@ -60,7 +60,7 @@ Bole and crown quads share `(x, z)`. Elder is the same pair, bigger. Ruin, cryst
 | Shadow | `y = 0.02` above the posture — near only |
 | Impostor | far only |
 
-Widths: bole about 0.7–1.0 m, crown about 1.8–2.4 m. Elder takes the top of each range. Trunk radius sits on the bole: contact 0.28, bole 0.55. The live capsule is still `KIND_TABLE[kind].r` (bole 0.55, elder 0.9, and the other kinds as hung). Never the crown width.
+Hung sizes, per-child yaw, and the bole cylinder are law [49](49-two-plane-tree.md). The crown width is never the hit.
 
 | Band | Bole | Crown | Shadow | Impostor |
 |---|---|---|---|---|
@@ -69,9 +69,9 @@ Widths: bole about 0.7–1.0 m, crown about 1.8–2.4 m. Elder takes the top of 
 | Far | 0 | 0 | 0 | 1 |
 | Cull | 0 | 0 | 0 | 0 |
 
-Near ↔ mid dissolves **only crown and shadow** (~220 ms). The bole stays cutout and writes depth. Mid ↔ far dissolves bole ↔ impostor (~280 ms). Both sit inside the 220–280 ms fade band and under the cap of 8. The capsule never fades.
+Near ↔ mid is one slot: crown and shadow only. The bole stays cutout. Mid ↔ far is the only edge where the bole may go translucent. Far does not keep a hidden bole. The capsule never fades. Detail is law [49](49-two-plane-tree.md).
 
-Crown faces the camera about 0.85. Bole about 0.55. The single-card kit stays 0.70.
+The single-card kit stays face 0.70.
 
 ---
 

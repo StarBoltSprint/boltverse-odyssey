@@ -7,10 +7,12 @@ import type { Band, LodRow } from "./types";
  * The capsule is not in this file. Hit snaps on the hysteresis line in lod.ts.
  */
 
-/** Hung duration. Inside 220–280 ms, shorter than the 2–8 m hysteresis belt. */
+/** Hung duration for a single card. Inside 220–280 ms, shorter than the 2–8 m hysteresis belt. */
 export const FADE_MS = 250;
 export const FADE_MS_MIN = 220;
 export const FADE_MS_MAX = 280;
+/** Impostor-only far↔cull. One slot. Not the bole. */
+export const FADE_MS_IMP = 180;
 export const FADE_CAP = 8;
 export const ALPHA_SKIP = 0.02;
 export const ALPHA_TEST = 0.45;
@@ -41,7 +43,7 @@ type Slot = {
   from: Band;
   to: Band;
   t0: number;
-  /** 220 crown/shadow, 250 default, 280 bole↔impostor. */
+  /** 180 impostor, 220 crown, 250 card, 280 bole↔impostor. One slot per tree. */
   ms: number;
 };
 
@@ -151,8 +153,10 @@ function flagsFor(from: Band, to: Band, u: number, fading: boolean): CheapAlpha 
 
 /**
  * Band changed on the hysteresis line.
- * One slot per id. Cap 8. A full cap snaps. A second change on the same id snaps.
- * nowMs is milliseconds.
+ * One slot per id. A two-plane tree passes the tree id once: near↔mid is the crown,
+ * mid↔far is the bole, far↔cull is the impostor. Cap 8. A full cap snaps.
+ * A second change on the same id snaps. nowMs is milliseconds.
+ * durationMs 180 is the impostor edge. 220 and 280 stay inside the belt.
  */
 export function requestFade(
   id: string,
@@ -170,7 +174,9 @@ export function requestFade(
     settled.set(id, to);
     return "snap";
   }
-  const ms = Math.min(FADE_MS_MAX, Math.max(FADE_MS_MIN, durationMs));
+  const ms = durationMs === FADE_MS_IMP
+    ? FADE_MS_IMP
+    : Math.min(FADE_MS_MAX, Math.max(FADE_MS_MIN, durationMs));
   slots.set(id, { id, from, to, t0: nowMs, ms });
   return "fade";
 }
