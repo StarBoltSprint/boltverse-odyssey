@@ -13,6 +13,9 @@ Read this before the rails. A paste-reader who skips it and ships a code world i
 - **The player is Bolt.** Bolt is the StarBoltSprint dog already on this GitHub (`StarBoltSprint/boltverse-odyssey`). Use that one. Do not invent another player craft.
 - **Use the sealed GPU Bolt already hung here.** Section 2. Default motion is [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4). Show [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) before any new Bolt still. Do not invent a new hero, craft, manta, ray, ship, or mesh player.
 - **Inventing another player avatar instead of that Bolt is FAIL** (Velum manta-class).
+- **Details are also Imagine Video.** Rocks, ruins, vapor, crystals, path dressing, terrain relief dressing, and vegetation dressing beyond the sealed herbe/arbres cook are cooked mp4 plates or keyed Imagine layers over densify/sol/ciel.
+- **Do not invent mesh or live procedural generators** for path, terrain, vegetation, ruins, or details (old Three.js PathGenerator / Terrain / Detail class).
+- **Inventing those generators instead of cooking Imagine detail assets is FAIL.** Simplex placement of already-cooked herbe/arbres stays. That is placement of Imagine assets.
 - **WebGL/GPU may only composite keyed layers** (that sealed Bolt, trees, howl, lights) **over** those cooked videos. That is Rail B. It does not invent the sky, the ground, or a new hero.
 - **No playable hang** until the required Imagine mp4s exist and play.
 
@@ -87,7 +90,7 @@ Flat. No relief:
 
 > Pas de relief. Le sol est une vidéo Imagine, comme la lave. Pas de colline. Pas de ruines. Pas de détails. Pas de cristaux, pas de vapeur.
 
-The ground is an Imagine video, the way the lava ground is an Imagine video. No hill. No ruins. No extra detail. No crystals. No steam.
+The ground is an Imagine video, the way the lava ground is an Imagine video. No hill. No ruins. No extra detail. No crystals. No steam. When details are wanted later, they are cooked as Imagine too: « Pas de détails » bans mesh and live procedural generators, not Imagine detail plates.
 
 Preview choice, two doors into play: "The gates, or the forest."
 
@@ -372,13 +375,14 @@ Forest / open ground:
 - Preloading every sky and every orbit JPEG at boot
 - Putting the trimmed road, wings, demons, howl, `ground.mp4`, or Thunderwolf clips back into the published forest pack
 - Recooking sol, ciel, herbe, or arbres after they are cooked, or a new prompt / WFC / adaptive quest for the next chunk
-- Relief on the forest ground: a hill, ruins, extra detail, crystals, or steam
+- Relief baked into the forest ground film: a hill, ruins, crystals, or steam in sol. Detail dressing, when wanted, is an Imagine plate or keyed layer, not a mesh or live procedural generator.
 - A black-plate pipeline longer than the color clear plus those cooked Imagine layers
 
 Either world:
 
 - Building the world in Three.js, Babylon, Unity, Unreal-as-world, Vite/TS, raw WebGL meshes, or a procedural shader scene. Imagine videos are the assets. No other language or engine is the world. A cinematic code biome with no Imagine mp4s is FAIL (Velum-class). WebGL/GPU only composites keyed layers over those videos.
 - Another player avatar instead of Bolt. The player is the StarBoltSprint dog already on this GitHub. Use the sealed GPU Bolt in section 2 (`lock/bolt-gallop-cycle.mp4`; show `lock/bolt-back.jpg` before any new Bolt still). A new hero, craft, manta, ray, ship, or mesh player is FAIL (Velum manta-class).
+- Details (rocks, ruins, vapor, crystals, path dressing, terrain relief dressing, vegetation dressing beyond the sealed herbe/arbres cook) that are mesh or live procedural generators (old Three.js PathGenerator / Terrain / Detail class) instead of cooked Imagine mp4 plates or keyed Imagine layers over densify/sol/ciel. Inventing those generators is FAIL. Simplex placement of already-cooked herbe/arbres stays.
 - A playable hang while the required Imagine mp4s are missing or not playing
 - Chrome crystals, Connect Wallet, player API keys, a new grok.me, or a Build share URL as the hang
 - Links to `pyre/PLAIN.md` or `pyre/VISTA.md` (those paths 404; from `biome/docs/` the real files are [`../../pyre/METHOD.md`](../../pyre/METHOD.md), [`../../pyre/GROVE.md`](../../pyre/GROVE.md), [`../../pyre/PLATE.md`](../../pyre/PLATE.md), [`../../pyre/ORBIT.md`](../../pyre/ORBIT.md))
@@ -413,6 +417,7 @@ Either:
 
 - [ ] The required Imagine mp4s exist and play. The world is those videos. Three.js, or any other language or engine, did not build the world. GPU only composites keyed layers over the plates.
 - [ ] The player is Bolt, the StarBoltSprint dog already on this GitHub. Default motion is the sealed cycle `lock/bolt-gallop-cycle.mp4` (section 2). No invented hero, craft, manta, ray, ship, or mesh player.
+- [ ] Details, when present, are Imagine plates or keyed Imagine layers over densify/sol/ciel (same class as herbe/arbres). No mesh or live procedural generator for path, terrain, vegetation, ruins, or details. Simplex placement of already-cooked herbe/arbres stays.
 - [ ] Laws 39–42 were followed where that rail is on.
 - [ ] The hang is `https://boltverse-odysseyyyy.grok.me` only.
 - [ ] No wallet. No player keys.

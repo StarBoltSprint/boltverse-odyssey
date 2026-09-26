@@ -11,6 +11,8 @@ Hung citadel recipe (kitchen): https://boltverse-odyssey.grok.me
 
 **HARD / FAIL — the player is Bolt.** Bolt is the StarBoltSprint dog already on this GitHub. Use the sealed GPU Bolt (`lock/bolt-gallop-cycle.mp4`; show `lock/bolt-back.jpg` before any new Bolt still — section 2 of the biome-method paste). Do not invent a new hero, craft, manta, ray, ship, or mesh player. Another player avatar is FAIL (Velum manta-class).
 
+**HARD / FAIL — details stay Imagine Video.** Rocks, ruins, vapor, crystals, path dressing, terrain relief dressing, and vegetation dressing beyond the sealed herbe/arbres cook are cooked Imagine plates or keyed Imagine layers over densify/sol/ciel. Do not invent mesh or live procedural generators for path, terrain, vegetation, ruins, or details (old Three.js PathGenerator / Terrain / Detail class). Inventing those generators instead of cooking Imagine detail assets is FAIL. Simplex placement of already-cooked herbe/arbres stays.
+
 ## Product model — Grok = console, Odyssey = game
 
 **Grok chat app = the console.** Boot / teaser / talk to Grok.  
