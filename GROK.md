@@ -13,6 +13,8 @@ Hung citadel recipe (kitchen): https://boltverse-odyssey.grok.me
 
 **HARD / FAIL — details stay Imagine Video.** Rocks, ruins, vapor, crystals, path dressing, terrain relief dressing, and vegetation dressing beyond the sealed herbe/arbres cook are cooked Imagine plates or keyed Imagine layers over densify/sol/ciel. Do not invent mesh or live procedural generators for path, terrain, vegetation, ruins, or details (old Three.js PathGenerator / Terrain / Detail class). Inventing those generators instead of cooking Imagine detail assets is FAIL. Simplex placement of already-cooked herbe/arbres stays.
 
+**HARD / FAIL — simplex places, Imagine draws.** Simplex (and placement noise) places already-cooked Imagine assets only. It does not draw the world. Drawing is Imagine Video. Noise that paints terrain, relief, or details is FAIL.
+
 ## Product model — Grok = console, Odyssey = game
 
 **Grok chat app = the console.** Boot / teaser / talk to Grok.  

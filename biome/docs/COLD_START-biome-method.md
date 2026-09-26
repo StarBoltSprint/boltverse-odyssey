@@ -16,6 +16,8 @@ Read this before the rails. A paste-reader who skips it and ships a code world i
 - **Details are also Imagine Video.** Rocks, ruins, vapor, crystals, path dressing, terrain relief dressing, and vegetation dressing beyond the sealed herbe/arbres cook are cooked mp4 plates or keyed Imagine layers over densify/sol/ciel.
 - **Do not invent mesh or live procedural generators** for path, terrain, vegetation, ruins, or details (old Three.js PathGenerator / Terrain / Detail class).
 - **Inventing those generators instead of cooking Imagine detail assets is FAIL.** Simplex placement of already-cooked herbe/arbres stays. That is placement of Imagine assets.
+- **Simplex (and placement noise) places already-cooked Imagine assets only.** It does not draw the world.
+- **Drawing is Imagine Video.** Noise that paints terrain, relief, or details is FAIL.
 - **WebGL/GPU may only composite keyed layers** (that sealed Bolt, trees, howl, lights) **over** those cooked videos. That is Rail B. It does not invent the sky, the ground, or a new hero.
 - **No playable hang** until the required Imagine mp4s exist and play.
 
@@ -80,7 +82,7 @@ Diablo forest, once the Imagine videos exist:
 
 > On l'a déjà fait pour les vidéos Imagine : sol, ciel, herbe, arbres. Une fois cuites, elles ne changent plus.
 
-Ground, sky, grass, trees. Cooked, then static. The next chunk of forest is the same simplex placement. It is not a new prompt, not WFC, and not a quest that rewrites the world while he runs.
+Ground, sky, grass, trees. Cooked, then static. The next chunk of forest is the same simplex placement of those already-cooked herbe and arbres. Simplex does not draw that forest. It is not a new prompt, not WFC, and not a quest that rewrites the world while he runs.
 
 The run layer is a flat plate, the ribbon, the grass, the trees, a few rocks:
 
@@ -162,7 +164,7 @@ u = v * 0.18
 wrap = (u - floor(u)) / 0.18
 ```
 
-Fractal noise (4 octaves, persistence 0.42, lacunarity 1.9) tints. It does not lift the ground. Do not put it back over the photo. A ground video under the paws is worse than a sharp photo: the decoder and the compression enlarge the spots. Perlin at 6 octaves and 0.8 fills the photo back in. Leave it off.
+Fractal noise (4 octaves, persistence 0.42, lacunarity 1.9) tints. It does not lift the ground. That tint is not drawing the world. Do not put it back over the photo. A ground video under the paws is worse than a sharp photo: the decoder and the compression enlarge the spots. Perlin at 6 octaves and 0.8 fills the photo back in. Leave it off.
 
 Set `uFlat = 1` only while this biome's dirt is the plate. Leave the plain's `sharp * intoSky` alone (`uFlat = 0`). Lava and the red sky are the same darkness, so that fade is enough on the plain.
 
@@ -200,7 +202,7 @@ Bolt looks sharper when the trunk fills the screen, while the files are about th
 
 **Four faces are the next step. They are not a v1 KEEP.** Bolt has one video per side, and you play one, because he is alone. In the forest a front trunk and a side trunk are on screen together. All trees share four videos. Four decoders, not one decoder per tree. Twelve (three kinds times four faces) is no. Each face is cooked with the first, the middle, and the last frame locked on that side of the same trunk, larger. The four faces use that lock. They do not replace it. In play the face follows where the player stands (`atan2` toward the tree), not the yaw of the head. Use a wide threshold before the image changes. Otherwise the tree spins as soon as the player moves a little. Between two faces the card is flat. You do not see the edge of the wood. Instancing comes after: one GPU pass for every tree of one face. It lightens the frame. It does not add a pixel. Wiring it onto the blurry video does not show.
 
-Placement is simplex. The next forest chunk stays that simplex. It does not call a new Imagine prompt, WFC, or an adaptive quest in the middle of the run.
+Placement is simplex: where to put the already-cooked herbe and arbres. The next forest chunk stays that placement. Simplex does not draw it. It does not call a new Imagine prompt, WFC, or an adaptive quest in the middle of the run.
 
 - Grass: cell of 1.15 m. Low noise is a gap. High noise is a tuft.
 - Trees: cell of 3.3 m. A wide noise says the grove. A finer noise picks the tree.
@@ -383,6 +385,7 @@ Either world:
 - Building the world in Three.js, Babylon, Unity, Unreal-as-world, Vite/TS, raw WebGL meshes, or a procedural shader scene. Imagine videos are the assets. No other language or engine is the world. A cinematic code biome with no Imagine mp4s is FAIL (Velum-class). WebGL/GPU only composites keyed layers over those videos.
 - Another player avatar instead of Bolt. The player is the StarBoltSprint dog already on this GitHub. Use the sealed GPU Bolt in section 2 (`lock/bolt-gallop-cycle.mp4`; show `lock/bolt-back.jpg` before any new Bolt still). A new hero, craft, manta, ray, ship, or mesh player is FAIL (Velum manta-class).
 - Details (rocks, ruins, vapor, crystals, path dressing, terrain relief dressing, vegetation dressing beyond the sealed herbe/arbres cook) that are mesh or live procedural generators (old Three.js PathGenerator / Terrain / Detail class) instead of cooked Imagine mp4 plates or keyed Imagine layers over densify/sol/ciel. Inventing those generators is FAIL. Simplex placement of already-cooked herbe/arbres stays.
+- Using simplex (or other noise) as a terrain or detail drawer. Simplex (and placement noise) places already-cooked Imagine assets only. It does not draw the world. Drawing is Imagine Video. Noise that paints terrain, relief, or details is FAIL.
 - A playable hang while the required Imagine mp4s are missing or not playing
 - Chrome crystals, Connect Wallet, player API keys, a new grok.me, or a Build share URL as the hang
 - Links to `pyre/PLAIN.md` or `pyre/VISTA.md` (those paths 404; from `biome/docs/` the real files are [`../../pyre/METHOD.md`](../../pyre/METHOD.md), [`../../pyre/GROVE.md`](../../pyre/GROVE.md), [`../../pyre/PLATE.md`](../../pyre/PLATE.md), [`../../pyre/ORBIT.md`](../../pyre/ORBIT.md))
@@ -410,7 +413,7 @@ Forest / open ground:
 - [ ] `uGrove = 1`. Bolt is not baked into the plate.
 - [ ] Swipe up sprints. A held finger left or right is followed. The camera catch-up turns sky and ground together.
 - [ ] Sol, ciel, herbe, arbres are Imagine layers, cooked, then left alone. The ground is a flat Imagine video, like the lava: no hill, no ruins, no crystals, no steam.
-- [ ] The run layer is the flat plate, the ribbon, the grass, the trees, a few rocks. The next chunk is simplex.
+- [ ] The run layer is the flat plate, the ribbon, the grass, the trees, a few rocks. The next chunk is the same simplex placement of those cooked herbe and arbres.
 - [ ] The preview choice is "The gates, or the forest."
 
 Either:
@@ -418,6 +421,7 @@ Either:
 - [ ] The required Imagine mp4s exist and play. The world is those videos. Three.js, or any other language or engine, did not build the world. GPU only composites keyed layers over the plates.
 - [ ] The player is Bolt, the StarBoltSprint dog already on this GitHub. Default motion is the sealed cycle `lock/bolt-gallop-cycle.mp4` (section 2). No invented hero, craft, manta, ray, ship, or mesh player.
 - [ ] Details, when present, are Imagine plates or keyed Imagine layers over densify/sol/ciel (same class as herbe/arbres). No mesh or live procedural generator for path, terrain, vegetation, ruins, or details. Simplex placement of already-cooked herbe/arbres stays.
+- [ ] Simplex (and placement noise) places already-cooked Imagine assets only. It does not draw the world. Drawing is Imagine Video. Noise that paints terrain, relief, or details is FAIL.
 - [ ] Laws 39–42 were followed where that rail is on.
 - [ ] The hang is `https://boltverse-odysseyyyy.grok.me` only.
 - [ ] No wallet. No player keys.
