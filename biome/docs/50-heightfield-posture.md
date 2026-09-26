@@ -45,7 +45,7 @@ Toward the base, not a trench. `pathHalf` is 3.4. The same `d` skips spawn and t
 
 | Who | When | Value |
 |---|---|---|
-| Bolt mesh | every physics tick | `root.y = h(x,z)` (paws). Law [52](52-engine-vs-play.md) §8. `h + 0.45` is not this root |
+| Bolt plant | every physics tick | `plant.y = h(x,z)` (paws). Law [52](52-engine-vs-play.md) §8. The keyed gallop sits here. `h + 0.45` is the card offset |
 | New kit | once, at spawn | `kit.groundY` stays static |
 | Shadow | from the stored kit | `kit.groundY + 0.02` |
 | Volume | from the stored kit | base = `kit.groundY` |

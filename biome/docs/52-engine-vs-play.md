@@ -6,7 +6,7 @@ Engine draws, and it remembers. Play is what the paws mean. They stay apart the 
 
 Laws behind this page: [44](44-imagine-volume-stack.md) volume, [45](45-shader-graph-look-kitchen.md) look, [46](46-four-picture-jobs.md) pictures, [47](47-jade-sheet-cook.md) sheets, [48](48-jade-plate-cook.md) plates, [49](49-two-plane-tree.md) the two-plane tree, [50](50-heightfield-posture.md) posture, [51](51-octave-map.md) octaves. Howl rings stay the KEEP in [32](32-howl-gpu-targets.md) and [34](34-howl-live-aim.md): [`../fx/howl/howl-attack.mp4`](../fx/howl/howl-attack.mp4). Do not recook them.
 
-The player is the sealed Bolt. The pawn mesh is the Hybrid KEEP `game/public/assets/bolt.glb` (white coat, four legs, withers 0.6 m). The bytes live in StarBoltSprint/bolt-hybrid. This repo does not copy them and does not cook a second wolf. Motion teacher stays [`../../lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4). Style teacher stays [`../../lock/bolt-back.jpg`](../../lock/bolt-back.jpg). The cycle is not drawn beside the pawn.
+The player is the sealed Bolt. Plates are cooked empty: no Bolt in the ground, the sky, a sheet, or a burst. Bolt is then the Imagine VIDEO GPU layer [`../../lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4), the same bytes as `public/master/bolt.mp4`. The compositor is [`../scripts/bolt-key-gl/bolt-key-gl.ts`](../scripts/bolt-key-gl/bolt-key-gl.ts) (`makeCompositor`: chroma key, then plant). Style teacher stays [`../../lock/bolt-back.jpg`](../../lock/bolt-back.jpg). SprintCore writes x, z, yaw, speed, and m. The disc is the thud. `game/public/assets/bolt.glb` is an optional Hybrid withers note (0.6 m) only. Drawing that mesh, or painting Bolt into a plate, is FAIL. One layer. White coat.
 
 Stubs: [`../scripts/jade-lod/field.ts`](../scripts/jade-lod/field.ts), [`lod.ts`](../scripts/jade-lod/lod.ts), [`fade.ts`](../scripts/jade-lod/fade.ts), [`noise.ts`](../scripts/jade-lod/noise.ts), [`spawn.ts`](../scripts/jade-lod/spawn.ts), [`height.ts`](../scripts/jade-lod/height.ts), [`play.ts`](../scripts/jade-lod/play.ts). No `three` import. The instance pools are a remix contract.
 
@@ -21,7 +21,7 @@ Stubs: [`../scripts/jade-lod/field.ts`](../scripts/jade-lod/field.ts), [`lod.ts`
 5. Soft gait.
 6. Howl burst.
 7. InstancedMesh.
-8. Pawn KEEP (`game/public/assets/bolt.glb`).
+8. Pawn KEEP (empty plates, then the sealed gallop layer).
 
 Steps 1–8 are the play spine. Atlas UVs and `M_CardJade` are not this spine.
 
@@ -33,7 +33,7 @@ Steps 1–8 are the play spine. Atlas UVs and `M_CardJade` are not this spine.
 
 Idle cutouts are one draw per pool: `inst.bole`, `inst.elder`, `inst.ruin`, `inst.crystal`, `inst.fern`, and `inst.impostor`. Crowns are a second channel, `inst.crown`, and only while idle near. A fade leaves the pool as its own kit. At most 8 of those. No per-instance transparent material. Blend is the kit that left.
 
-Done-when: with zero fades, the woods, the plates, and Bolt are about six draws.
+Done-when: with zero fades, the woods and the plates are about six draws. Bolt is the keyed gallop layer, not a seventh tree.
 
 ### 2. Chunk memory — geoRing versus memRing
 
@@ -113,7 +113,7 @@ Done-when: sprint out of a far grove. The specks shrink, then vanish. No cards s
 
 Howl is a verb. H, one press (`howlArmed`). A hold is not a laser. During that press the cone is tested once. At most one target. Shatter only when `hit === "shatter"` and the shard is inside the cone. A miss elsewhere is the Howl pose and the muzzle sparks. Nothing is deleted.
 
-The howl oneshot is 0.4–0.6 s on the pawn mesh (section 8). H does not pause the ground plate. A missing howl clip still fires this cook.
+The howl window is 0.4–0.6 s on the gallop clock (section 8). The clock holds idle or walk. It does not swap to a second dog video. H does not pause the ground plate. The cook still fires.
 
 ```
 range = 8 m
@@ -122,7 +122,7 @@ origin = pawn.xz + forward * 0.4
 forward = (sin(yaw), cos(yaw))
 ```
 
-A point `v` is valid when `d = length(v.xz − origin)` is in `(0.3, 8]`, `dir = normalize(v.xz − origin)`, and `dot(dir, forward) >= cos(12.5°)`. The keeper is the smallest `d`. Nothing behind the head. Nothing at 20 m because it is a crystal. `howlPose` on the three Odyssey lanes is this same cone. The field passes the mesh yaw. The rail passes L / C / R as a discrete forward. One test. Debug L draws a gold wire cone, 8 m.
+A point `v` is valid when `d = length(v.xz − origin)` is in `(0.3, 8]`, `dir = normalize(v.xz − origin)`, and `dot(dir, forward) >= cos(12.5°)`. The keeper is the smallest `d`. Nothing behind the head. Nothing at 20 m because it is a crystal. `howlPose` on the three Odyssey lanes is this same cone. The field passes SprintCore yaw. The rail passes L / C / R as a discrete forward. One test. Debug L draws a gold wire cone, 8 m.
 
 Same frame, in order:
 
@@ -180,7 +180,7 @@ The step you leave, those four are gone: want, accel, the nick, and the yaw. No 
 
 Crystal underfoot uses the same soft numbers without the yaw clamp and without the forced walk. You still have to aim the Howl. Walking into quartz does not shatter it. The burst mp4 is a rail in section 5. This cut does not cook it.
 
-The mixer graph is section 8. Entering the fern switches to walk the same tick, and Shift does not beat it. Leaving the disk waits 80 ms before sprint is legal. That wait is the crossfade window. It does not stack on a second 80–120 ms. The capsule still applies `wantSpeed` and `yawRate`. The mesh does not replace the disk.
+The gallop clock is section 8. Entering the fern forces the walk rate the same tick, and Shift does not beat it. Leaving the disk waits 80 ms before the sprint rate is legal. That wait is the rate window. It does not stack on a second 80–120 ms. The capsule still applies `wantSpeed` and `yawRate`. The plant does not replace the disk.
 
 Debug L. Soft wire is green. Block is cyan. Shatter is gold.
 
@@ -198,34 +198,36 @@ onPath = d < pathHalf
 
 Spawn, the flatten, and the shader tint read that same `d`. No stones in the mp4. No magnet on the pawn. `onPath` is not a SprintCore rail.
 
-### 8. KEEP bolt.glb — the pawn
+### 8. KEEP gallop layer — the pawn
 
-The Hybrid KEEP is the pawn. It is not a costume on the capsule. Path: `game/public/assets/bolt.glb` in StarBoltSprint/bolt-hybrid. White coat, four legs, material `Coat_White`, one mesh. This kitchen does not import three, does not vendor a second glb, and does not pull the Imagine dog into a plate.
+Plates are cooked empty. Bolt is added after, as one Imagine VIDEO GPU layer. The file is [`../../lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4). `public/master/bolt.mp4` is the same bytes. The compositor is [`../scripts/bolt-key-gl/bolt-key-gl.ts`](../scripts/bolt-key-gl/bolt-key-gl.ts): `makeCompositor` before any `getContext("2d")`, chroma key, then plant. Copy that file and `wet-fx.ts`. The scissor sketch is FAIL. `getImageData` on the hot path is FAIL. Do not invent a new gallop or a new angle. Style teacher stays [`../../lock/bolt-back.jpg`](../../lock/bolt-back.jpg). White coat.
 
-The file's POSITION min is y = 0, so the origin is the paws. The long axis is Z, so proto yaw 0 stays +Z. A later export that faces +X takes `π/2` once in the loader. A chest-centered export (min y below 0) offsets in the loader. The camera does not rise to hide a bad origin.
-
-```
-root.position.set(bolt.x, h(x, z) + yOffset, bolt.z)
-root.rotation.y = bolt.yaw + yawFix
-```
-
-`h` is law [50](50-heightfield-posture.md). The mesh paws sit on `h`. The card's `h + 0.45` is not this root. SprintCore writes x, z, yaw, speed, and m. The mixer writes the clip and `timeScale`. The boom sits on the root.
-
-The idle clip keys translation on the bone `root`. Strip that track. Idle plays in place. Two translations skate.
-
-Clips by name, then by index `idle 0, walk 1, sprint 2, howl 3`. The KEEP on disk today has `idle` (2 s) only. Missing howl: hold idle or walk, and still fire the Howl cook. Missing sprint: play walk scaled by speed, or idle if walk is missing too. Do not synthesize a clip. Do not morph the coat. No extra paired mesh. No Bolt LOD. Never cull Bolt.
+`game/public/assets/bolt.glb` is an optional Hybrid reference for a 0.6 m withers note. It is not the pawn picture. Drawing that mesh, alone or beside the video, is FAIL. This kitchen does not import three, does not vendor the glb, and does not paint Bolt into `jade_ground`, a sheet, or a burst.
 
 ```
-if howlPlaying:        howl    timeScale = 1
-else if speed < 0.2:   idle    timeScale = 1
-else if inSoft:        walk    timeScale = 0.85
-else if speed < 4:     walk    timeScale = 0.8 + speed * 0.15
-else:                  sprint  timeScale = 0.9 + min(0.25, m * 0.02)
+plant.position.set(bolt.x, h(x, z), bolt.z)
+plant.yaw = bolt.yaw
+layer = lock/bolt-gallop-cycle.mp4
+draw = imagine-video
+compositor = makeCompositor
 ```
 
-Howl is a 0.5 s oneshot inside 0.4–0.6 s. It starts the same frame as the cone test and the burst plant. The hit is that frame. An optional hit at 0.2 s is not the default. H does not pause the ground plate. Soft beats Shift. After the oneshot, the graph falls back. Crossfade walk ↔ sprint is 100 ms (band 80–120). Howl fades 60 ms in and 100 ms out. The fern exit holds walk 80 ms, and that is the same window: do not add another crossfade after it. `timeScale` follows speed on the walk. `m` only nudges the sprint. It is not an anim slider.
+`h` is law [50](50-heightfield-posture.md). The plant's paws sit on `h`. The card's `h + 0.45` is not this plant. SprintCore writes x, z, yaw, speed, and m. The clock writes `timeScale` on that one file. The boom sits on the plant.
 
-Camera, behind the root, not a bone and not a plate:
+Lane play at 1× is the treadmill default. Open ground moves the dog with SprintCore. The playback rate is the gait. Idle holds the clock at 0 so a looped gallop does not run while standing. Do not seek every frame. Do not cache 534 canvases. No Bolt LOD. Never cull Bolt. No second video.
+
+```
+if howl window and speed < 0.2:  idle    timeScale = 0
+else if howl window:             walk    (rates below)
+else if speed < 0.2:             idle    timeScale = 0
+else if inSoft:                  walk    timeScale = 0.85
+else if speed < 4:               walk    timeScale = 0.8 + speed * 0.15
+else:                            sprint  timeScale = 0.9 + min(0.25, m * 0.02)
+```
+
+Howl is a 0.5 s window inside 0.4–0.6 s on that same clock. It holds idle or walk. It does not load a howl dog. The cook still fires the same frame as the cone test and the burst plant. The hit is that frame. An optional hit at 0.2 s is not the default. H does not pause the ground plate. Soft beats Shift. After the window, the clock falls back to the speed rate. Walk ↔ sprint rate ramp is 100 ms (band 80–120). The fern exit holds the walk rate 80 ms, and that is the same window: do not add another 80–120 ms after it. `timeScale` follows speed on the walk. `m` only nudges the sprint. It is not a second asset.
+
+Camera, behind the plant, not a bone and not a plate:
 
 ```
 behind = 6.2    height = 2.4
@@ -234,13 +236,13 @@ lookAt(pawn.x, h + 0.7, pawn.z)
 lookY = max(lookY, h + 0.3)
 ```
 
-The disk stays `PAWN_R = 0.32` in xz. No convex hull from the fur. Debug L draws that disk at `h`, not the mesh AABB. Paw sparks birth at `(x, h + 0.12, z)`. The Howl cone reads the root yaw.
+The disk stays `PAWN_R = 0.32` in xz. No convex hull from the fur. Debug L draws that disk at `h`. Paw sparks birth at `(x, h + 0.12, z)`. The Howl cone reads SprintCore yaw.
 
-The loader does not draw the path, the trees, or the sky. It does not scroll the world. It does not parent the camera to a clip. Volumes stay disks. Fade and instancing do not include Bolt. The gallop cycle stays the lane teacher. It is not a second dog in the grove.
+The plant does not draw the path, the trees, or the sky. It does not scroll the world. It does not parent the camera to a plate camera. Volumes stay disks. Fade and instancing do not include Bolt.
 
-Scale: measure withers once, lock `scale = 0.6 / measured`. This KEEP's ears sit near 1.15 and its paws sit at 0, so the lock is a measure, not a guess written into the file.
+The 0.6 m withers figure is a note beside the optional glb reference. It does not scale a mesh into the grove.
 
-Done-when: the white KEEP on the highway. Walk and sprint match speed. Feet on `h`. Camera behind the mesh. A fern forces walk. H plays howl when the clip exists, and shatters either way. No skate. No second dog. The disk still stops a bole.
+Done-when: empty plates, then the white gallop on the highway. Walk and sprint are rates on that file. Feet on `h`. Camera behind the plant. A fern forces the walk rate. H holds the clock and shatters either way. No second dog. The disk still stops a bole.
 
 ---
 
@@ -263,7 +265,8 @@ Done-when: the white KEEP on the highway. Walk and sprint match speed. Feet on `
 - Baking the path, or stones, into the ground film.
 - A spawn skip on `abs(x)` while the height uses the valley.
 - A second hero, or a wolf cooked into a sheet, a plate, a burst, or the ground film.
-- Root translation left on the pawn. A camera parented to a clip or a bone. A soft disk while the mesh sprints. A physics mesh used as the thud. A fox morph. Chrome on the coat mid-run.
+- Bolt cooked into `jade_ground`, a sheet, or a burst. A second wolf: the glb drawn with the video, or two videos. A new gallop, or a new angle. `getImageData` on the compositor hot path. Drawing Bolt as a glb mesh.
+- A camera parented to a bone or a plate camera. A soft disk while the plant sprints. A physics mesh used as the thud. Chrome on the coat mid-run.
 - Importing Three as the world. The pools are a contract for the remix.
 - One solver that owns Bolt, the capsules, and the sparks. SprintCore is the dog. Volumes are the woods. Particles are the weather.
 
@@ -271,6 +274,6 @@ Done-when: the white KEEP on the highway. Walk and sprint match speed. Feet on `
 
 ## Done-when
 
-Walk the wandering path. The flatten, the empty corridor, and the tint use one `d`. Stand among 30 boles at 8 m: 24 crowns, 6 trunks, and the six are still remembered as near. Step so a slot frees. A crown returns without a trip to the enter line. Orbit a bole on the seam at 32.0. The crown stays, because `prev` outlived the mesh. Sprint until the trail is long. The cap drops chunk-centers outside geo and leaves the live ring, even when that ring is already past 512. Walk 80 m away and back. That forget is legal. A speck at the horizon shrinks to 0.35 over 180 ms and is gone. Turn back inside the belt and it grows from the size it had. Mid boles are at 40 m. Sprint into a fern: walk, a wide turn, out, sprint again about 80 ms later, `m` only nicked. Sprint into a bole: stop, knock, `m` jumps, clip unchanged. A crystal you walk through drags and stays. Face a crystal at 6 m and press H: the sheet is gone, the capsule is gone, the burst quad runs about a second (particles when the mp4 is not cooked yet), and the dust is GPU. Walk through that dust. Press H into empty air: the pose and the muzzle play, and nothing dies. A crystal behind the head survives. Leave the chunk and come back inside mem: the shard stays gone. Bolt is the Hybrid KEEP on the highway: walk and sprint match speed, the paws sit on `h`, the boom sits behind the mesh, a fern forces walk, and H howls and shatters. The disk still stops a bole. One dog. The ground film is still flat, and H does not freeze it.
+Walk the wandering path. The flatten, the empty corridor, and the tint use one `d`. Stand among 30 boles at 8 m: 24 crowns, 6 trunks, and the six are still remembered as near. Step so a slot frees. A crown returns without a trip to the enter line. Orbit a bole on the seam at 32.0. The crown stays, because `prev` outlived the mesh. Sprint until the trail is long. The cap drops chunk-centers outside geo and leaves the live ring, even when that ring is already past 512. Walk 80 m away and back. That forget is legal. A speck at the horizon shrinks to 0.35 over 180 ms and is gone. Turn back inside the belt and it grows from the size it had. Mid boles are at 40 m. Sprint into a fern: walk, a wide turn, out, sprint again about 80 ms later, `m` only nicked. Sprint into a bole: stop, knock, `m` jumps, clip unchanged. A crystal you walk through drags and stays. Face a crystal at 6 m and press H: the sheet is gone, the capsule is gone, the burst quad runs about a second (particles when the mp4 is not cooked yet), and the dust is GPU. Walk through that dust. Press H into empty air: the pose and the muzzle play, and nothing dies. A crystal behind the head survives. Leave the chunk and come back inside mem: the shard stays gone. Bolt is the sealed gallop on the highway: empty plates, one keyed layer, walk and sprint are rates on that file, the paws sit on `h`, the boom sits behind the plant, a fern forces the walk rate, and H holds that clock and still shatters. The disk still stops a bole. One dog. The ground film is still flat, and H does not freeze it.
 
 World stays Imagine Video assets. The player stays the sealed Bolt. No wallet. No player API keys. Hang URL stays `https://boltverse-odysseyyyy.grok.me`.
