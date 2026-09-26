@@ -49,17 +49,39 @@ Loop the way METHOD §7 does: two readers on the same mp4. When the live reader 
 
 Recook this mp4 in **this** plate's light. `pyre/master/pyre-road.mp4` is the Diablo lava example. It is not the road for another biome.
 
+Pyre's Diablo road, when that paint is the one asked for: obsidian flagstone, blood-ember seams, blood-ash sky. Bolt is keyed on his own plate. The road plate has no dog, so the road has no hole where he was cut out. Those color words belong to that plate. Another biome recooks its own light.
+
 ## B. Forest / open ground — world cook (law 43)
 
 Use this when the paint is a forest, packed dirt, or any ground that is not a 3-lane road. This is law 43. It is the same rig as the lava plain: four portrait skies, one tiling ground, one `orbit`. It is not the default for a road biome. Do not hang a road ribbon under this sky. The player already rejected that.
 
 Laws [20](20-default-plate-proportions.md), [23](23-plate-geo-qc.md), and [24](24-camera-1point.md) are the 3-lane cone. Horizon there is 0.38 because that is where the dashes vanish. `plate-geo-qc.py` looks for three dash tubes. **Do not run that script on this ground.** There are no dashes. It will FAIL a good tile. φ is an audit on the lane. Do not put φ, `0.618`, or a UV table in an Imagine prompt.
 
-The world is built in this order. Stop if a step is missing. Numbers and the full shaders are in [43](43-open-ground.md), [`COLD_START-open-ground.md`](COLD_START-open-ground.md), and [`pyre/GROVE.md`](../../pyre/GROVE.md). The order and the FAILs are here.
+The world is built in this order. Stop if a step is missing. Numbers and the full shaders stay in [43](43-open-ground.md), [`COLD_START-open-ground.md`](COLD_START-open-ground.md), [`pyre/GROVE.md`](../../pyre/GROVE.md), and the procedural plain in [`pyre/PLATE.md`](../../pyre/PLATE.md). Law 43 still owns the four-sky cook and the tiling ground. The lines below are the Diablo kitchen voice. They do not replace those numbers.
+
+Diablo forest, once the Imagine videos exist:
+
+> On l'a déjà fait pour les vidéos Imagine : sol, ciel, herbe, arbres. Une fois cuites, elles ne changent plus.
+
+Ground, sky, grass, trees. Cooked, then static. The next chunk of forest is the same simplex placement. It is not a new prompt, not WFC, and not a quest that rewrites the world while he runs.
+
+The run layer is a flat plate, the ribbon, the grass, the trees, a few rocks:
+
+> une plaque plate, le ruban, l'herbe, les arbres, quelques rochers.
+
+Flat. No relief:
+
+> Pas de relief. Le sol est une vidéo Imagine, comme la lave. Pas de colline. Pas de ruines. Pas de détails. Pas de cristaux, pas de vapeur.
+
+The ground is an Imagine video, the way the lava ground is an Imagine video. No hill. No ruins. No extra detail. No crystals. No steam.
+
+Preview choice, two doors into play: "The gates, or the forest."
 
 ### B1. Empty plate, then black
 
 The world is an empty plate. No Bolt in the plate. No trees in the plate. No canopy baked into a ground film.
+
+The black step is the color clear, then those cooked Imagine layers (sol, ciel, herbe, arbres). There is no longer black-plate pipeline than that.
 
 Once the door is open and the vista has settled (`onBlack` in [`pyre/PLATE.md`](../../pyre/PLATE.md)), do not cook another cell video for this world. The filmed 12-step grid is not this vista. One number can scroll a procedural plain (`plateOffset`, unclamped, endless). Forest travel is `worldX` / `worldZ` with yaw, not a scalar scroll after the yaw.
 
@@ -95,9 +117,9 @@ Skies stay portrait.
 
 After the sky. `SRC_ALPHA`. Same `orbit` as the sky (`uYaw = orbit`). Travel is `worldX` / `worldZ`. One tile. Not a road. Not a new ground film per meter.
 
-GROVE KEEP, and what you hang: a picture that is already lit, laid large. Tile `0.18`. No fade toward a flat brown. A ground video under the paws is worse than that sharp photo: the decoder and the compression enlarge the spots.
+Diablo kitchen lock: the ground is an Imagine video, like the lava. No relief. Law 43 still cooks that tile (still of flat packed dirt, edges that tile, grain visible, no horizon in the photo, then image-to-video, locked overhead, a little dust, no bumps). Dirt can be square (`720:720`). Same ffmpeg line as the skies.
 
-The still, before anything else: flat packed dirt, no relief, edges that tile, grain visible. Not a photograph of a field with a horizon in it. Dirt can be square (`720:720`). Law 43 cooks an image-to-video of that still on the same rig as the plain (locked overhead camera, a little dust, no bumps appearing, same ffmpeg line as the skies). GROVE is the later KEEP: hang the lit photo. Do not hang the video under the paws.
+GROVE owns the shader on that tile, not a second ground. A picture already lit, laid large. Tile `0.18`. No fade toward a flat brown. A decoded video under the paws gets uglier than that sharp photo: the decoder and the compression enlarge the spots. Use the wrap below either way. Do not add hills to "fix" it.
 
 After a long run `worldX` / `worldZ` are too big for `mediump` and `fract` breaks the tile. Fold the position into one tile **before** the shader:
 
@@ -144,11 +166,12 @@ Bolt looks sharper when the trunk fills the screen, while the files are about th
 
 **Four faces are the next step. They are not a v1 KEEP.** Bolt has one video per side, and you play one, because he is alone. In the forest a front trunk and a side trunk are on screen together. All trees share four videos. Four decoders, not one decoder per tree. Twelve (three kinds times four faces) is no. Each face is cooked with the first, the middle, and the last frame locked on that side of the same trunk, larger. The four faces use that lock. They do not replace it. In play the face follows where the player stands (`atan2` toward the tree), not the yaw of the head. Use a wide threshold before the image changes. Otherwise the tree spins as soon as the player moves a little. Between two faces the card is flat. You do not see the edge of the wood. Instancing comes after: one GPU pass for every tree of one face. It lightens the frame. It does not add a pixel. Wiring it onto the blurry video does not show.
 
-Placement is simplex.
+Placement is simplex. The next forest chunk stays that simplex. It does not call a new Imagine prompt, WFC, or an adaptive quest in the middle of the run.
 
 - Grass: cell of 1.15 m. Low noise is a gap. High noise is a tuft.
 - Trees: cell of 3.3 m. A wide noise says the grove. A finer noise picks the tree.
-- The path stays empty. Do not decide a cell until the path has passed in front of it.
+- A few rocks sit with that same placement. They are not a ruin field, not crystals, and not steam.
+- The path (the ribbon) stays empty. Do not decide a cell until the path has passed in front of it.
 
 ### B6. Forest controls
 
@@ -181,7 +204,7 @@ The pack had grown past what a republish accepts. What no longer serves the fore
 - Start: the road, the wings, the demons, the howl, `ground.mp4`.
 - The plain: the Thunderwolf (every `bolt-thunder*` video), the `plain-*` strips, `citadel-plain.mp4`.
 
-The menu opens the doors or the forest. Do not put those mp4s back into the published pack.
+The menu opens the doors or the forest. Preview choice: "The gates, or the forest." Do not put those mp4s back into the published pack.
 
 ## 2. Bolt, one video (Rail B)
 
@@ -196,6 +219,8 @@ The sealed-cycle path still runs scale, gallop-clock, plate grade, and paw conta
 On open ground, section B5 sets `uGrove = 1` and does not recook the dog.
 
 ## 3. Gesture grammar (default controls)
+
+KEEP: finger on Bolt = lane. Finger elsewhere = glance, and Bolt's head does not turn. Finger on a foe = howl that one foe.
 
 Decided at `pointerdown`. Not after a delay. Reference: `slideTo` and `uGlance` in [`pyre/src/pyre-stage.tsx`](../../pyre/src/pyre-stage.tsx).
 
@@ -218,6 +243,8 @@ Law [42](42-shoulder-panorama.md) is a different look rail (flick changes lane, 
 Two plates, left and right, continued past the edge of the road's first frame. Same exposure and the same color words as this plate (laws [31](31-light-lock.md) and [39](39-imagine-live-light.md)).
 
 Pyre craft (METHOD §3): the wings scroll with the road. `currentTime` locks to the road reader on screen. `playbackRate = 1`. Do not seek them every frame.
+
+Diablo wing KEEP: cook left and right from a frame of the road plate. Same horizon. Same light. Not a mirror. The blend is wider on the ground and shorter in the sky. When `glance` is 0 the center stays sharp.
 
 Seam: sample the wing **inward** during the blend. Repeating the edge column leaves a torn vertical band. A blur across the whole road makes the front view soft. `cover` keeps the front view on the road until the glance is real. Pyre: `seam` is 0.14 in the sky and 0.32 on the ground; `shift = glance * smoothstep(0.10, 0.48, abs(glance))`. Bolt and foes move by the same `viewShift`. Their collision lane does not change.
 
@@ -282,6 +309,9 @@ Road:
 - Densify chopped into spatial GPU tiles (law 36)
 - One-still image-to-video for a plate or a walk
 - A KEEP claimed while the dog is still baked into the road
+- A Diablo road whose flagstone was cooked with Bolt in the plate (the cut leaves a hole)
+- Wing plates mirrored from each other, or a wing whose horizon and light do not match the road frame
+- A soft center while `glance` is 0
 
 Forest / open ground:
 
@@ -310,6 +340,9 @@ Forest / open ground:
 - A forest Bolt with the lava tint still on (`uGrove` left at 0)
 - Preloading every sky and every orbit JPEG at boot
 - Putting the trimmed road, wings, demons, howl, `ground.mp4`, or Thunderwolf clips back into the published forest pack
+- Recooking sol, ciel, herbe, or arbres after they are cooked, or a new prompt / WFC / adaptive quest for the next chunk
+- Relief on the forest ground: a hill, ruins, extra detail, crystals, or steam
+- A black-plate pipeline longer than the color clear plus those cooked Imagine layers
 
 Either world:
 
@@ -324,8 +357,9 @@ Road:
 - [ ] Densify is one continuous plate, first and last pinned: no dog, no baked howl, no baked beam, no baked open door.
 - [ ] That plate was recooked in this plate's light. Law 20 is the frame. Law 35 is the material unless the paint already named one.
 - [ ] Bolt is the sealed cycle, or one native green clip of the same white shepherd because this paint required it.
-- [ ] Finger on Bolt slides the lane and the lane stays. Finger elsewhere glances and returns. Finger on a foe howls that foe.
-- [ ] Wings, if present, match this plate's light and do not tear at the seam.
+- [ ] Finger on Bolt is the lane and the lane stays. Finger elsewhere is the glance, and Bolt's head does not turn. Finger on a foe howls that one foe.
+- [ ] Wings, if present, are cooked from a frame of this road, same horizon and light, not a mirror. Blend wider on the ground, shorter in the sky. Center sharp when glance is 0.
+- [ ] On the Diablo road only: obsidian flagstone, blood-ember seams, blood-ash sky, Bolt keyed off the plate so the road has no hole.
 - [ ] Foes and howl, if present, are keyed layers over the plate.
 
 Forest / open ground:
@@ -337,6 +371,9 @@ Forest / open ground:
 - [ ] Trees are the source videos, one texture per variant. Four faces were not required.
 - [ ] `uGrove = 1`. Bolt is not baked into the plate.
 - [ ] Swipe up sprints. A held finger left or right is followed. The camera catch-up turns sky and ground together.
+- [ ] Sol, ciel, herbe, arbres are Imagine layers, cooked, then left alone. The ground is a flat Imagine video, like the lava: no hill, no ruins, no crystals, no steam.
+- [ ] The run layer is the flat plate, the ribbon, the grass, the trees, a few rocks. The next chunk is simplex.
+- [ ] The preview choice is "The gates, or the forest."
 
 Either:
 
