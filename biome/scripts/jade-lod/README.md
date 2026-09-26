@@ -63,6 +63,10 @@ Law [46](../../docs/46-four-picture-jobs.md). Same seed, same ids. The film stil
 
 **Octaves.** Law [51](../../docs/51-octave-map.md). [`noise.ts`](noise.ts) `OCTAVE_LOCK`. Page and `L` stay put. Height 3 at `s+101` / 28 m. Spawn in [`spawn.ts`](spawn.ts): n1 bole 3 at `s+0` / 14 m, n2 ruin **2** at `s+17` / 40 m, n3 shard 3 at `s+31` / 22 m. Do not copy the height count onto ruins.
 
+**Engine vs Play.** Law [52](../../docs/52-engine-vs-play.md). Engine draws. Play is the paws. [`field.ts`](field.ts): `GEO_RING` 1, `MEM_RING` 2, cap 512. [`lod.ts`](lod.ts): `prev` is `holdBand` only; `bandDraw` is after the budget of 24. [`fade.ts`](fade.ts): far ↔ cull shrinks to 0.35 over 180 ms. Path center is `s+7`, two octaves, swing 18 m. The same distance flattens, skips spawn, and tints. [`play.ts`](play.ts): block versus fern versus a crystal you walk through. Howl KEEP is `biome/fx/howl/howl-attack.mp4`. A confirmed Howl hides the crystal the same frame. `lock/bolt.glb` is the Pack KEEP. This folder does not import `three`.
+
+**Instance pools (remix contract).** One mesh per `bole`, `elder`, `ruin`, `crystal`, `fern`, and `impostor`. `crown` is the idle-near channel. A fade, at most 8, leaves the pool as its own kit. Nothing in the pool is transparent. Zero fades: the woods, the plates, and Bolt are about six draws. Do not build that pool in this folder.
+
 Frame: picture-time → `tickField` → snap kits to `h` → pawn `(x, h, z)` and volumes at `y = h`.
 
 ## Pack law

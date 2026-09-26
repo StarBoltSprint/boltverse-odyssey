@@ -31,11 +31,13 @@ Spawn is `s+0` / `s+17` / `s+31` at L = 14 / 40 / 22. Height is `s+101` at L = 2
 ## Path flatten
 
 ```
-w = 1 - smoothstep(pathHalf * 0.55, pathHalf * 1.15, abs(x))
+center(z) = (fbm(0, z/64, s+7, octaves=2) - 0.5) * 18
+d = abs(x - center(z))
+w = 1 - smoothstep(pathHalf * 0.55, pathHalf * 1.15, d)
 h = mix(h0, base, w)
 ```
 
-Toward the base, not a trench. `pathHalf` is 3.4. A later curved path uses distance-to-spline with the same flatten. Do not bake the road into the mp4. A hard step at the corridor edge is FAIL.
+Toward the base, not a trench. `pathHalf` is 3.4. The same `d` skips spawn and tints the shader. Two octaves only. Do not bake the road, or stones, into the mp4. A hard step at the corridor edge is FAIL. The path page is law [52](52-engine-vs-play.md). It is not a spawn octave.
 
 ---
 

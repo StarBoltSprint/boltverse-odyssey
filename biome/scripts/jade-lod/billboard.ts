@@ -26,9 +26,14 @@ export function scaleByBand(band: LodRow["band"]): number {
   return 0;
 }
 
+/** What the mesh shows. Budget lives here. holdBand does not. */
+export function drawBand(row: LodRow): LodRow["band"] {
+  return row.bandDraw ?? row.band;
+}
+
 /** Shadow only on near (full card). Mid/far: no contact blob. */
 export function wantsShadow(row: LodRow): boolean {
-  return row.band === "near" && row.picture === "full";
+  return drawBand(row) === "near" && row.picture === "full";
 }
 
 export type CardKit = {
@@ -47,7 +52,7 @@ export function applyLodToKit(
   camZ: number,
 ): CardKit[] {
   return rows.map((row) => {
-    if (row.band === "cull" || row.picture === "none") {
+    if (drawBand(row) === "cull" || row.picture === "none") {
       return {
         visible: false,
         yaw: billboardYaw(row.yaw, camX, camZ, row.x, row.z),
@@ -60,7 +65,7 @@ export function applyLodToKit(
     return {
       visible: true,
       yaw: billboardYaw(row.yaw, camX, camZ, row.x, row.z),
-      scale: scaleByBand(row.band),
+      scale: scaleByBand(drawBand(row)),
       picture: row.picture,
       shadow: wantsShadow(row),
       row,
@@ -90,7 +95,7 @@ function scaleForPicture(picture: LodRow["picture"]): number {
 export function applyCheapAlpha(kits: CardKit[], nowMs: number): CardDraw[] {
   tickFades(nowMs);
   return kits.map((kit) => {
-    const alpha = resolveCheapAlpha(kit.row.id, kit.row.band, nowMs);
+    const alpha = resolveCheapAlpha(kit.row.id, drawBand(kit.row), nowMs);
     return {
       ...kit,
       visible: alpha.visible,

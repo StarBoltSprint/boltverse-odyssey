@@ -1,5 +1,5 @@
 import { CHUNK, KIND_RH, PATH_HALF, SEED, type Kind, type SpawnRow } from "./types";
-import { noise01, OCTAVE_LOCK, sampleLock } from "./noise";
+import { noise01, OCTAVE_LOCK, pathDist, sampleLock } from "./noise";
 
 /** Bole continents. Below this is a moth-hole, not a tree. */
 export const N1_BOLE = 0.42;
@@ -37,7 +37,7 @@ export function spawnChunk(ix: number, iz: number, s: number = SEED): SpawnRow[]
     for (let lx = 0; lx < CHUNK; lx += step) {
       const x = ox + lx + noise01(ix * 100 + Math.floor(lx), iz * 100 + Math.floor(lz), 1, s) * step;
       const z = oz + lz + noise01(ix * 100 + Math.floor(lx), iz * 100 + Math.floor(lz), 2, s) * step;
-      if (Math.abs(x) < PATH_HALF) continue;
+      if (pathDist(x, z, s) < PATH_HALF) continue;
       const n1 = sampleLock("n1", x, z, s);
       const n2 = sampleLock("n2", x, z, s);
       const n3 = sampleLock("n3", x, z, s);

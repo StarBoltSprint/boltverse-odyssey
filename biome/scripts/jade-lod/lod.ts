@@ -35,41 +35,45 @@ function pictureOf(band: Band): LodRow["picture"] {
 }
 
 /**
- * Hysteresis + near budget. Near capped at 24; extras drop to mid and keep capsule.
- * Volume dies with the card: far/cull → no volume.
+ * Hysteresis, then the near budget on a separate field.
+ * prev[id] stores the hysteresis band only. Budget writes bandDraw.
+ * A tree demoted to mid stays remembered as near, so a free slot
+ * brings the crown back without walking out to the enter line.
+ * Volume follows bandDraw. Far and cull have no volume.
+ * Forgetting an id is forgetIds, when it leaves the memory ring.
  */
 export function applyLod(rows: SpawnRow[], camX: number, camZ: number): LodRow[] {
   const scored = rows.map((row) => {
     const dist = Math.hypot(camX - row.x, camZ - row.z);
     const prev = prevBand.get(row.id);
-    let band = pickBand(dist, prev);
+    const band = pickBand(dist, prev);
     return { row, dist, band };
   });
 
   scored.sort((a, b) => a.dist - b.dist);
   let nearCount = 0;
+  const drawn: LodRow[] = [];
   for (const s of scored) {
+    prevBand.set(s.row.id, s.band);
+    let bandDraw = s.band;
     if (s.band === "near") {
       nearCount++;
-      if (nearCount > NEAR_BUDGET) s.band = "mid"; // keep capsule
+      if (nearCount > NEAR_BUDGET) bandDraw = "mid";
     }
-    prevBand.set(s.row.id, s.band);
+    drawn.push({
+      ...s.row,
+      band: s.band,
+      bandDraw,
+      picture: pictureOf(bandDraw),
+      volume: bandDraw === "near" || bandDraw === "mid",
+    });
   }
+  return drawn;
+}
 
-  // drop stale hysteresis for forgotten ids (caller should prune; soft GC)
-  if (prevBand.size > 4000) {
-    const keep = new Set(scored.map((s) => s.row.id));
-    for (const id of [...prevBand.keys()]) {
-      if (!keep.has(id)) prevBand.delete(id);
-    }
-  }
-
-  return scored.map(({ row, band }) => ({
-    ...row,
-    band,
-    picture: pictureOf(band),
-    volume: band === "near" || band === "mid",
-  }));
+/** Drop hysteresis for ids that left the memory ring. Not a budget write. */
+export function forgetIds(ids: Iterable<string>): void {
+  for (const id of ids) prevBand.delete(id);
 }
 
 /** Twins that thud — near/mid only. Far ghosts live in the ground film. */

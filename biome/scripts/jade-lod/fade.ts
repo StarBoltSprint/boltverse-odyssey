@@ -62,6 +62,33 @@ export function resetFadeState(): void {
   seen.clear();
 }
 
+/** Drop fade memory for ids that left the memory ring. */
+export function forgetFades(ids: Iterable<string>): void {
+  for (const id of ids) {
+    slots.delete(id);
+    settled.delete(id);
+    seen.delete(id);
+  }
+}
+
+/** Far ↔ cull only. Horizon specks shrink, then die. Other edges stay full size. */
+export const FAR_SHRINK_MS = 180;
+export const FAR_SHRINK_SCALE = 0.35;
+
+export function farShrink(
+  from: Band,
+  to: Band,
+  u: number,
+): { scale: number; opacity: number } {
+  const edge = (from === "far" && to === "cull") || (from === "cull" && to === "far");
+  if (!edge) return { scale: 1, opacity: 1 };
+  const t = Math.min(1, Math.max(0, u));
+  if (from === "far") {
+    return { scale: 1 + (FAR_SHRINK_SCALE - 1) * t, opacity: 1 - t };
+  }
+  return { scale: FAR_SHRINK_SCALE + (1 - FAR_SHRINK_SCALE) * t, opacity: t };
+}
+
 function pictureOf(band: Band): Picture {
   if (band === "near") return "full";
   if (band === "mid") return "bole";

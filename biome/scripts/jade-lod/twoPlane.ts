@@ -341,7 +341,7 @@ export function posePlanes(
   const boleFile = files.bole !== false;
   const crownFile = files.crown !== false && hasCrown(row.kind);
   if (!boleFile) return [];
-  const on = planesFor(row.band);
+  const on = planesFor(row.bandDraw ?? row.band);
   if (!crownFile) {
     on.crown = 0;
     on.shadow = 0;

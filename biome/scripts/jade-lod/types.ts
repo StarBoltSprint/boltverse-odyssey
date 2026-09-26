@@ -42,7 +42,10 @@ export type Volume = {
 };
 
 export type LodRow = SpawnRow & {
+  /** Hysteresis. holdBand reads this. The near budget does not write it. */
   band: Band;
+  /** After the near cap. Picture, mesh, and volume follow this. */
+  bandDraw: Band;
   picture: "full" | "bole" | "impostor" | "none";
   volume: boolean;
 };

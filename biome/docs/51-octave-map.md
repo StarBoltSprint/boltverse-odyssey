@@ -31,6 +31,8 @@ Extra octaves spend the budget on finer wiggles. On a spawn threshold that shred
 
 The page is the same on every octave. Do not salt a new page to “add richness.” Moving an octave count without changing the job is FAIL.
 
+The path is a different page, `s+7`, `L = 64`, **2** octaves. It is not in the table above. Law [52](52-engine-vs-play.md). Do not raise it to 3.
+
 ---
 
 ## FAIL

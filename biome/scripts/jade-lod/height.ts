@@ -1,4 +1,4 @@
-import { fbm, OCTAVE_LOCK } from "./noise";
+import { fbm, OCTAVE_LOCK, pathDist } from "./noise";
 import { PATH_HALF, SEED } from "./types";
 
 /**
@@ -67,10 +67,21 @@ export function terrainHeight(x: number, z: number, s: number = SEED): number {
 
 /**
  * 1 on the path, 0 outside the band.
- * w = 1 - smoothstep(pathHalf*0.55, pathHalf*1.15, abs(x))
+ * d = abs(x - center(z)). Same d as the spawn skip and the shader tint.
+ * w = 1 - smoothstep(pathHalf*0.55, pathHalf*1.15, d)
  */
-export function pathWeight(x: number, pathHalf: number = PATH_HALF): number {
-  return 1 - smoothstep(pathHalf * PATH_IN, pathHalf * PATH_OUT, Math.abs(x));
+export function pathWeight(
+  x: number,
+  z: number,
+  pathHalf: number = PATH_HALF,
+  s: number = SEED,
+): number {
+  return 1 - smoothstep(pathHalf * PATH_IN, pathHalf * PATH_OUT, pathDist(x, z, s));
+}
+
+/** Tint weight for the remix shader. Not painted into the ground mp4. */
+export function pathShade(x: number, z: number, s: number = SEED, pathHalf: number = PATH_HALF): number {
+  return pathWeight(x, z, pathHalf, s);
 }
 
 /**
@@ -84,7 +95,7 @@ export function postureHeight(
   pathHalf: number = PATH_HALF,
 ): number {
   const h0 = heightRaw(x, z, s);
-  const w = pathWeight(x, pathHalf);
+  const w = pathWeight(x, z, pathHalf, s);
   return h0 * (1 - w) + HEIGHT_BASE * w;
 }
 
