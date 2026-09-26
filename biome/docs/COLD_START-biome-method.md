@@ -2,6 +2,19 @@
 
 Kitchen only. Do not read this to the player.
 
+## HARD — world = Imagine videos (SmiR 2026-09-26)
+
+The whole game is built with Imagine videos used as assets. Cook the mp4s first. Then hang Live that plays those videos. Do not open Live, and do not ship a playable biome, until those mp4s exist and are wired. Code that draws a pretty world without them is **FAIL**, even when it looks cinematic. Velum (Vite / TypeScript / Three.js, shader sky and ground, zero Imagine plates) is that FAIL.
+
+- **A. Road densify.** One continuous Imagine plate. Session Imagine Video, first frame and last frame pinned.
+- **B. Open ground (law 43).** Sol and ciel are Imagine videos. Herbe and arbres are keyed Imagine layers on top. Cook those mp4s, then play them.
+
+**FAIL as the world:** Three.js, Babylon, Unity, Unreal used as the world, raw WebGL mesh scenes, procedural geometry biomes, shader-only skies or grounds that replace Imagine plates, a Vite/TS open-world demo. Live and the GPU key layers over the cooked videos. Meshes, noise floors, and shader-painted worlds do not stand in for those plates.
+
+GPU/WebGL that composites keyed plates (Bolt, trees, howl, lights) over the densify or the open-ground videos stays allowed. That is Rail B.
+
+Rails A and B below. Law 43 stays. Laws 39–42 stay. No new law number.
+
 Paste this as the first message when a new Grok, in a new conversation, cooks a **playable biome composite** for **any** named biome. The name and the paint are free: nebula, shore, forest, gothic, lava, ice, or whatever the player named. `pyre/` is the Diablo gothic worked example. It is not the only biome type. Copy the craft. Recook the pixels in this plate's light.
 
 Two world cooks live in this file. Pick one.
@@ -363,6 +376,7 @@ Forest / open ground:
 
 Either world:
 
+- A world drawn in Three.js, Babylon, Unity, Unreal, a raw WebGL mesh scene, procedural geometry, or a shader sky/ground with no Imagine mp4s (Velum). Keyed GPU layers over cooked videos stay Rail B.
 - Chrome crystals, Connect Wallet, player API keys, a new grok.me, or a Build share URL as the hang
 - Links to `pyre/PLAIN.md` or `pyre/VISTA.md` (those paths 404; from `biome/docs/` the real files are [`../../pyre/METHOD.md`](../../pyre/METHOD.md), [`../../pyre/GROVE.md`](../../pyre/GROVE.md), [`../../pyre/PLATE.md`](../../pyre/PLATE.md), [`../../pyre/ORBIT.md`](../../pyre/ORBIT.md))
 
@@ -394,6 +408,7 @@ Forest / open ground:
 
 Either:
 
+- [ ] The world on screen is the cooked Imagine mp4s, wired in Live. No engine world stood in for those plates.
 - [ ] Laws 39–42 were followed where that rail is on.
 - [ ] The hang is `https://boltverse-odysseyyyy.grok.me` only.
 - [ ] No wallet. No player keys.

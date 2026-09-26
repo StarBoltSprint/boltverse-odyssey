@@ -24,6 +24,8 @@ Pages here are **optional**. They are **not** cook gates. Default Bolt remains e
 
 **Any new biome convo — playable composite (lane, glance, wings, foes, howl), any paint:** paste [COLD_START-biome-method.md](COLD_START-biome-method.md) first. Section A is the road densify. Section B is the forest / open-ground world cook (black → sky → ground → horizon → GPU), inline. Worked example: [pyre/METHOD.md](../../pyre/METHOD.md) (Diablo road only). Forest numbers and shaders: [43-open-ground.md](43-open-ground.md), [COLD_START-open-ground.md](COLD_START-open-ground.md), [pyre/GROVE.md](../../pyre/GROVE.md). Room look: [pyre/ORBIT.md](../../pyre/ORBIT.md). Plain / Thunderwolf: [pyre/PLATE.md](../../pyre/PLATE.md) and METHOD sections 11–13. There is no `pyre/PLAIN.md` or `pyre/VISTA.md`. From this folder the Pyre files are `../../pyre/…`.
 
+**HARD — Imagine videos are the world (SmiR 2026-09-26, Velum FAIL).** Cook the Imagine mp4s (road densify, or open-ground sol/ciel plus keyed herbe/arbres) and wire Live to them before any playable biome; Three.js, Babylon, Unity, Unreal-as-world, raw WebGL meshes, procedural geometry, and shader-painted worlds are FAIL, and GPU compositing of keyed layers over those videos stays Rail B — [COLD_START-biome-method.md](COLD_START-biome-method.md).
+
 **Densify and Imagine Live keyed props** (laws 39–42) still paste [COLD_START-imagine-engine.md](COLD_START-imagine-engine.md). That paste does not replace the composite method above.
 
 | Page | Gate |
@@ -40,4 +42,4 @@ Pages here are **optional**. They are **not** cook gates. Default Bolt remains e
 
 **Open ground (forest, dirt plain, no road):** the world-cook order is section B of [COLD_START-biome-method.md](COLD_START-biome-method.md). Numbers and shaders: [COLD_START-open-ground.md](COLD_START-open-ground.md) and [43-open-ground.md](43-open-ground.md). Do not run `plate-geo-qc.py`. Four-face grove trees are the next step in [pyre/GROVE.md](../../pyre/GROVE.md), not a v1 KEEP.
 
-**Playable composite, any paint:** [COLD_START-biome-method.md](COLD_START-biome-method.md). Not a law number. Law 43 stays open ground.
+**Playable composite, any paint:** [COLD_START-biome-method.md](COLD_START-biome-method.md). Not a law number. Law 43 stays open ground. Imagine videos are the world; a Three.js or shader-only world is FAIL.

@@ -14,6 +14,8 @@ This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play
 
 **START HERE (playable biome, any paint):** paste [docs/COLD_START-biome-method.md](docs/COLD_START-biome-method.md). Section A is the road densify. Section B is the forest / open-ground world cook (black → sky → ground → horizon → GPU). Densify / QC order for a road: [scripts/biome-cook/README.md](scripts/biome-cook/README.md) · [docs/COLD_START-biome-cook.md](docs/COLD_START-biome-cook.md). Imagine Live keyed props: [docs/COLD_START-imagine-engine.md](docs/COLD_START-imagine-engine.md) (laws 39–42).
 
+**HARD — Imagine videos are the world (SmiR 2026-09-26, Velum FAIL).** Cook the Imagine mp4s (road densify, or open-ground sol/ciel plus keyed herbe/arbres) and wire Live to them before any playable biome; Three.js, Babylon, Unity, Unreal-as-world, raw WebGL meshes, procedural geometry, and shader-painted worlds are FAIL, and GPU compositing of keyed layers over those videos stays Rail B — [docs/COLD_START-biome-method.md](docs/COLD_START-biome-method.md).
+
 **HARD LOCK — Chat biome catalog (on ask).** **what biomes** / **which runs** / **what can I play** → hung chapters only (never invent). `play canyon` / `only Tide`. Never on Welcome. No chrome picker. Hang grows the list; wipe shrinks it = FAIL.
 
 ## Engine lock (read PLAY first)
