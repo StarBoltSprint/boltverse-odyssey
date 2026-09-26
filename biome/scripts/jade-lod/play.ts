@@ -6,19 +6,33 @@ import type { Hit, Kind, Volume } from "./types";
  * One Bolt. The mesh path is the Pack KEEP. This kitchen does not cook a second wolf.
  */
 
-/** Pack KEEP. White German Shepherd already sealed for the Pack. Not a new hero. */
-export const BOLT_GLB = "lock/bolt.glb";
-/** Mesh withers, meters. The plate fraction stays law 20. */
+/**
+ * Hybrid KEEP. White coat, four legs. Bytes live in StarBoltSprint/bolt-hybrid.
+ * This recipe does not copy them into a plate, a sheet, or a burst, and it does not cook another wolf.
+ */
+export const BOLT_GLB = "game/public/assets/bolt.glb";
+/** Withers target, meters. Measure the KEEP once and lock the scale. */
 export const BOLT_WITHERS_M = 0.6;
-export const BOLT_CLIPS = ["idle", "walk", "sprint"] as const;
-/** The play mesh is never culled. A far tree may be. */
+export const BOLT_CLIPS = ["idle", "walk", "sprint", "howl"] as const;
+/** Name miss falls back to this index, then to idle. Do not synthesize a clip. */
+export const BOLT_CLIP_INDEX = { idle: 0, walk: 1, sprint: 2, howl: 3 } as const;
+/** The play mesh is never culled and has no LOD. A far tree may. */
 export const BOLT_NEVER_CULL = true;
-/** Motion teacher stays the sealed cycle. The glb does not replace it. */
+export const BOLT_NO_LOD = true;
+/**
+ * The idle clip keys translation on the bone named `root`. Strip that track.
+ * SprintCore is the only translation. Two of them skate.
+ */
+export const BOLT_ROOT_MOTION = "strip" as const;
+export const BOLT_ROOT_NODE = "root";
+/** This KEEP is long on Z, and its POSITION min.y is 0. Proto yaw 0 looks down +Z. */
+export const BOLT_KEEP_FACING = "+Z" as const;
+/** Motion teacher stays the sealed cycle. It is not a second mesh beside the pawn. */
 export const BOLT_MOTION = "lock/bolt-gallop-cycle.mp4";
 export const BOLT_STYLE = "lock/bolt-back.jpg";
 
-/** Pawn disk added to the volume radius. Not a card width. */
-export const PAWN_R = 0.4;
+/** Pawn disk in xz. Not the fur, not a mesh AABB. Debug L draws it at h. */
+export const PAWN_R = 0.32;
 /** Run accel. Soft replaces this while the disk holds. */
 export const RUN_ACCEL = 0.18;
 export const SOFT_ACCEL = 0.08;
@@ -76,6 +90,21 @@ export const HOWL_CONE_WIRE = "gold";
  * H does not pause the ground plate.
  */
 export const HOWL_CLIP_S = [0.4, 0.6] as const;
+/** Oneshot length inside that band. The mixer does not loop it. */
+export const HOWL_ONESHOT_S = 0.5;
+export const HOWL_FADE_IN_MS = 60;
+export const HOWL_FADE_OUT_MS = 100;
+/** Walk ↔ sprint. The soft exit is the same window, not a second wait. */
+export const GAIT_CROSSFADE_MS = 100;
+export const CAM_BEHIND = 6.2;
+export const CAM_HEIGHT = 2.4;
+export const CAM_LOOK_UP = 0.7;
+export const CAM_LOOK_MIN = 0.3;
+/** Paw sparks sit just above the ground. */
+export const PAW_LIFT = 0.12;
+/** Shatter on the press frame. 0.2 s is optional and not the default. */
+export const HOWL_HIT_S = 0;
+export const HOWL_HIT_OPTIONAL_S = 0.2;
 export const HOWL_PAUSES_GROUND = false;
 /** Miss sparks sit this far in front of the pawn. */
 export const MUZZLE_M = 1.2;
@@ -381,7 +410,7 @@ function pushOut(px: number, pz: number, vol: Volume): { x: number; z: number } 
  * One tick of volumes. Hit comes from `volume.hit`, never from a fern card.
  * Block pushes and knocks once. Soft nicks once, even if several tufts overlap.
  * Leaving the disk clears want, accel, the nick, and yaw this tick. No exit lerp.
- * `clip` is the gait note. This function does not load lock/bolt.glb.
+ * `clip` is the fern note. The mixer reads `stepGait`. This function does not import three.
  */
 export function resolveVolumes(
   pawn: { x: number; z: number; speed: number; wantSpeed: number; yawRate: number; m: number },
@@ -417,16 +446,41 @@ export function resolveVolumes(
   };
 }
 
-export type GaitMem = { outsideMs: number; holding: boolean };
+export type GaitMem = { outsideMs: number; holding: boolean; howlLeft: number; prev: ClipName };
+
+export type GaitPresent = { walk?: boolean; sprint?: boolean; howl?: boolean };
+
+export type GaitStep = {
+  /** Clip the graph asked for. */
+  clip: ClipName;
+  /** Clip the mixer actually plays after a missing-name fallback. */
+  play: ClipName;
+  timeScale: number;
+  /** One blend. The soft exit does not add a second delay on top of this. */
+  fadeMs: number;
+  /** True on the H edge even when the howl clip is missing. The cook still fires. */
+  howlCook: boolean;
+  mem: GaitMem;
+};
 
 export function resetGait(): GaitMem {
-  return { outsideMs: SOFT_CLIP_HOLD_MS, holding: false };
+  return { outsideMs: SOFT_CLIP_HOLD_MS, holding: false, howlLeft: 0, prev: "idle" };
+}
+
+function walkScale(speed: number): number {
+  return 0.8 + speed * 0.15;
+}
+
+function sprintScale(m: number): number {
+  return 0.9 + Math.min(0.25, m * 0.02);
 }
 
 /**
- * Clip table for when bolt.glb arrives. Not wired here.
- * Idle wins under 0.2. A fern forces walk the same tick, Shift included.
- * After the disk, sprint waits 80 ms. That hold is the clip only.
+ * Mixer graph for the pawn mesh. Shift does not beat a fern.
+ * Howl oneshot wins, then the fallback. Idle wins under 0.2.
+ * Leaving the disk holds walk 80 ms, and that is the only wait before sprint.
+ * A missing howl clip holds idle or walk and still reports howlCook.
+ * A missing sprint clip plays walk, scaled by speed. No second wolf.
  */
 export function stepGait(
   speed: number,
@@ -434,22 +488,157 @@ export function stepGait(
   mem: GaitMem,
   dtMs: number,
   _shift = false,
-): { clip: ClipName; mem: GaitMem } {
-  if (inSoft) {
-    const clip: ClipName = speed < GAIT_IDLE_SPEED ? "idle" : "walk";
-    return { clip, mem: { outsideMs: 0, holding: true } };
-  }
+  extra?: { m?: number; howlEdge?: boolean; present?: GaitPresent },
+): GaitStep {
+  const present = {
+    walk: extra?.present?.walk !== false,
+    sprint: extra?.present?.sprint !== false,
+    howl: extra?.present?.howl !== false,
+  };
+  const m = extra?.m ?? 0;
+  let howlLeft = mem.howlLeft ?? 0;
+  const howlCook = extra?.howlEdge === true;
+  if (howlCook && present.howl) howlLeft = HOWL_ONESHOT_S;
+  const howlPlaying = present.howl && howlLeft > 0;
+
   let outsideMs = mem.outsideMs;
   let holding = mem.holding;
-  if (holding) {
+  const wasHolding = holding;
+  if (inSoft) {
+    outsideMs = 0;
+    holding = true;
+  } else if (holding) {
     outsideMs += dtMs;
     if (outsideMs >= SOFT_CLIP_HOLD_MS) holding = false;
   }
-  const next = { outsideMs, holding };
-  if (speed < GAIT_IDLE_SPEED) return { clip: "idle", mem: next };
-  if (holding) return { clip: "walk", mem: next };
-  if (speed < GAIT_SPRINT_SPEED) return { clip: "walk", mem: next };
-  return { clip: "sprint", mem: next };
+
+  let clip: ClipName;
+  if (howlPlaying) clip = "howl";
+  else if (speed < GAIT_IDLE_SPEED) clip = "idle";
+  else if (inSoft || holding) clip = "walk";
+  else if (speed < GAIT_SPRINT_SPEED) clip = "walk";
+  else clip = "sprint";
+
+  let play = clip;
+  let timeScale = 1;
+  if (clip === "howl") timeScale = 1;
+  else if (clip === "idle") timeScale = 1;
+  else if (inSoft && clip === "walk") timeScale = 0.85;
+  else if (clip === "walk") timeScale = walkScale(speed);
+  else timeScale = sprintScale(m);
+
+  if (clip === "sprint" && !present.sprint) {
+    play = present.walk ? "walk" : "idle";
+    timeScale = walkScale(speed);
+  } else if (clip === "walk" && !present.walk) {
+    play = "idle";
+    timeScale = speed < GAIT_IDLE_SPEED ? 1 : walkScale(speed);
+  }
+
+  const prev = mem.prev ?? "idle";
+  const releasedSoft = wasHolding && !holding && prev === "walk" && play === "sprint";
+  let fadeMs = 0;
+  if (howlCook && play === "howl") fadeMs = HOWL_FADE_IN_MS;
+  else if (prev === "howl" && play !== "howl") fadeMs = HOWL_FADE_OUT_MS;
+  else if (play !== prev) {
+    const walkSprint =
+      (prev === "walk" && play === "sprint") || (prev === "sprint" && play === "walk");
+    fadeMs = walkSprint && releasedSoft ? SOFT_CLIP_HOLD_MS : GAIT_CROSSFADE_MS;
+  }
+  if (play === prev) fadeMs = 0;
+
+  if (play === "howl") howlLeft = Math.max(0, howlLeft - dtMs / 1000);
+  else howlLeft = 0;
+
+  return {
+    clip,
+    play,
+    timeScale,
+    fadeMs,
+    howlCook,
+    mem: { outsideMs, holding, howlLeft, prev: play },
+  };
+}
+
+/**
+ * Name first. Index only when the name is absent. Never invent a clip.
+ * The Hybrid KEEP currently ships `idle` alone. Walk, sprint, and howl stay named slots.
+ */
+export function resolveClip(
+  names: readonly string[],
+  want: ClipName,
+): { name: string; index: number; missing: boolean } {
+  const hit = names.findIndex((n) => n.toLowerCase() === want);
+  if (hit >= 0) return { name: names[hit], index: hit, missing: false };
+  if (want === "sprint") {
+    const walk = names.findIndex((n) => n.toLowerCase() === "walk");
+    if (walk >= 0) return { name: names[walk], index: walk, missing: true };
+  }
+  if (want !== "idle") {
+    const idle = names.findIndex((n) => n.toLowerCase() === "idle");
+    if (idle >= 0) return { name: names[idle], index: idle, missing: true };
+  }
+  const index = BOLT_CLIP_INDEX[want] ?? 0;
+  return {
+    name: names[index] ?? want,
+    index: names.length ? Math.min(index, names.length - 1) : index,
+    missing: true,
+  };
+}
+
+/** Measure withers once. boundsMinY is unscaled. Paws on the ground stay at offset 0. */
+export function lockBolt(measuredWithersM: number, boundsMinY = 0): { scale: number; yOffset: number } {
+  const scale = measuredWithersM > 1e-4 ? BOLT_WITHERS_M / measuredWithersM : 1;
+  const yOffset = -boundsMinY * scale;
+  return { scale, yOffset: yOffset === 0 ? 0 : yOffset };
+}
+
+/** gltf root. Yaw 0 is +Z. A KEEP that faces +X takes π/2 once. Root motion stays stripped. */
+export function placeRoot(
+  bolt: { x: number; z: number; yaw: number },
+  groundY: number,
+  yOffset = 0,
+  facing: "+Z" | "+X" = BOLT_KEEP_FACING,
+): { x: number; y: number; z: number; yaw: number; rootMotion: "strip" } {
+  const yawFix = facing === "+X" ? Math.PI / 2 : 0;
+  return {
+    x: bolt.x,
+    y: groundY + yOffset,
+    z: bolt.z,
+    yaw: bolt.yaw + yawFix,
+    rootMotion: "strip",
+  };
+}
+
+/** Boom on the root. Not a bone, not a clip, not a camera baked into a plate. */
+export function boomCamera(
+  x: number,
+  z: number,
+  yaw: number,
+  groundY: number,
+): { x: number; y: number; z: number; lookX: number; lookY: number; lookZ: number; parent: "root" } {
+  const [fx, fz] = howlForward(yaw);
+  let lookY = groundY + CAM_LOOK_UP;
+  const floorY = groundY + CAM_LOOK_MIN;
+  if (lookY < floorY) lookY = floorY;
+  return {
+    x: x - fx * CAM_BEHIND,
+    y: groundY + CAM_HEIGHT,
+    z: z - fz * CAM_BEHIND,
+    lookX: x,
+    lookY,
+    lookZ: z,
+    parent: "root",
+  };
+}
+
+export function pawSparkPoint(x: number, groundY: number, z: number): [number, number, number] {
+  return [x, groundY + PAW_LIFT, z];
+}
+
+/** Debug L. The disk at h. Not the mesh bounds. */
+export function debugDisc(x: number, z: number, groundY: number): { x: number; y: number; z: number; r: number } {
+  return { x, y: groundY, z, r: PAWN_R };
 }
 
 /**

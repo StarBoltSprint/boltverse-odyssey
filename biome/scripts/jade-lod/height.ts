@@ -19,7 +19,7 @@ export const HEIGHT_L = OCTAVE_LOCK.height.L;
 export const HEIGHT_PAGE = OCTAVE_LOCK.height.page;
 /** Three while the rise is 20 cm. Four only if the amp becomes meters. */
 export const HEIGHT_OCTAVES = OCTAVE_LOCK.height.octaves;
-/** Withers above the posture. Bolt snaps here every physics tick. */
+/** Card offset above posture. The pawn mesh does not use this. Its paws sit on `h`. */
 export const WITHERS = 0.45;
 /** Contact shadow lift. Law 49 shadow child uses the same 0.02. */
 export const SHADOW_LIFT = 0.02;
@@ -94,7 +94,7 @@ export function postureHeight(
   return h0 * (1 - w) + HEIGHT_BASE * w;
 }
 
-/** Bolt, every physics tick. Snap. Do not lerp this for 200 ms. */
+/** Card pawn, `h + 0.45`. The glb root is `postureHeight` (paws on h). Snap. Do not lerp. */
 export function pawnY(x: number, z: number, s: number = SEED, pathHalf: number = PATH_HALF): number {
   return postureHeight(x, z, s, pathHalf) + WITHERS;
 }
