@@ -4,7 +4,7 @@
 // Two instances, not one uber translucent shader:
 //   Mask (rest): uCutout=1, uFadeAlpha=1, uCutoff=0.45. Clip writes depth. Unlit opaque.
 //   Fade (≤8):   uCutout=0, uFadeAlpha=t, uCutoff=0.02. Premultiply. Material depth write stays off.
-// Yaw (billboardYaw), meshLod (holdBand), and the capsule are CPU. Not in this shader.
+// Yaw (billboardYaw), meshLod (bandDraw), and the capsule are CPU. Not in this shader.
 // Fog, tint, AtlasRect, MistColor, UnlitBoost are law 45 pins. This file is the alpha chain.
 // Browser mask path: MeshBasicMaterial + alphaTest. Unreal graphs: M_CardJade / M_PlateGround.
 // Front side only. The 70/30 billboard yaw already faces the camera.

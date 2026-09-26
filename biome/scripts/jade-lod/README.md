@@ -37,15 +37,15 @@ Resting trees are **cutout**. Blend only while a band change is dissolving. Fill
 | Mid-fade only | **blend** (`transparent: true`, `depthWrite: false`, premultiplied `rgb * a, a`) |
 | `a < 0.02` | skip the draw (`discard` / `visible = false`) |
 
-Cap **8** concurrent fades. Extra band changes snap. Duration **250 ms** (allowed 220–280), shorter than the hysteresis belt (2–8 m), so two fades rarely stack on one tree. A second change on the same id snaps. Closer kits take the slots first (`applyLod` is near to far). While coverage is still 1, the card stays cutout. The blend path starts once `a` drops.
+Cap **8** concurrent fades. A ninth snaps the farthest slot. The nearest 24 have priority. Duration **250 ms** on a plain card (allowed 220–280). Near ↔ mid is the crown, 220 ms, one slot. A promote reverses that fade from the current `t` and does not require `dist < 12`. A different edge on the same id snaps. Closer kits take the slots first (`applyLod` sorts by distance). While coverage is still 1, the card stays cutout. The blend path starts once `a` drops.
 
 Front side only. The 70/30 yaw already faces the camera.
 
-The capsule never fades. Soft alpha is look only. The hit snaps on the hysteresis line in `lod.ts`.
+The capsule never fades. Soft alpha is look only. The hit follows `bandDraw` in `lod.ts`, not `prev`.
 
 Policy: [`fade.ts`](fade.ts) (`requestFade`, `tickFades`, `activeFadeCount`). Flags: `applyCheapAlpha` in [`billboard.ts`](billboard.ts). Fragment: [`card.frag.glsl`](card.frag.glsl). This folder does not import `three`.
 
-Flattened chain in the fragment: sample → multiply fade → discard cutoff → premultiply. The node stack, the two material instances, and the ground/sky graph are law [45](../../docs/45-shader-graph-look-kitchen.md). The graph shades a card the CPU already posed. `billboardYaw` owns yaw. `holdBand` in [`lod.ts`](lod.ts) owns meshLod. The capsule stays `volumes`.
+Flattened chain in the fragment: sample → multiply fade → discard cutoff → premultiply. The node stack, the two material instances, and the ground/sky graph are law [45](../../docs/45-shader-graph-look-kitchen.md). The graph shades a card the CPU already posed. `billboardYaw` owns yaw. `bandDraw` in [`lod.ts`](lod.ts) owns meshLod. `holdBand` stays the sticky meters. The capsule stays `volumes`.
 
 Not hung yet: InstancedMesh per kind+band, an atlas, impostor mip bias, scale-down on far→cull while `a` falls, one opaque cutout pass then the ≤8 fades back-to-front. Skip OIT.
 
