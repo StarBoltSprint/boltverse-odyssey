@@ -112,7 +112,7 @@ export function applyCheapAlpha(kits: CardKit[], nowMs: number): CardDraw[] {
       ...kit,
       visible: alpha.visible,
       picture: alpha.picture,
-      scale: scaleForPicture(alpha.picture),
+      scale: alpha.picture === "impostor" ? scaleForPicture(alpha.picture) * alpha.quadScale : scaleForPicture(alpha.picture),
       shadow: alpha.visible && alpha.picture === "full",
       alpha,
     };

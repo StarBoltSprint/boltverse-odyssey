@@ -66,7 +66,7 @@ Only two edges matter for the trunk. The cap stays 8. A two-plane near ↔ mid f
 | Mid → near | 220 | the reverse | stays |
 | Mid → far | 280 | bole may go translucent **this edge only**; impostor fades in; crown is already 0 | snaps **off** at the 44 m leave, not at the fade midpoint |
 | Far → mid | 280 | bole comes back; impostor fades out | snaps **on** at the 40 m enter, even if bole `a` is still 0.3 |
-| Far ↔ cull | 180 | impostor only | none |
+| Far ↔ cull | 180 | impostor quad only, scale 1.00 ↔ 0.35 with the alpha. Not the bole. Not the group. | none |
 
 A budget demote starts the official near → mid fade. It does not snap. A sprint through the belt snaps the matrix and skips the fade.
 
@@ -98,6 +98,6 @@ Cylinder on the bole only: `{ x, z, r: 0.28 | 0.55, h: hBole, block }`. The crow
 
 ## Done-when
 
-Walk up to a bole. The trunk is a cutout and writes depth. The crown is a second card. Step back through near → mid. In 220 ms the crown and the shadow dissolve, the bole does not go translucent, and the capsule stays. One slot is used, not two. Step through mid → far. The crown is already gone. The bole may fade only here, the impostor fades in, and the capsule drops at 44 m, not halfway through the 280 ms. Come back. The capsule is on at 40 m while the bole alpha is still low. Far shows the impostor only. Cull fades that impostor in 180 ms and has no volume. Elder’s hit is 0.55 m on the bole, not the 2.8 m crown. A v1 crown sits 0.15 m to the side and the capsule does not. A missing bole does not leave a crown in the air.
+Walk up to a bole. The trunk is a cutout and writes depth. The crown is a second card. Step back through near → mid. In 220 ms the crown and the shadow dissolve, the bole does not go translucent, and the capsule stays. One slot is used, not two. Step through mid → far. The crown is already gone. The bole may fade only here, the impostor fades in, and the capsule drops at 44 m, not halfway through the 280 ms. Come back. The capsule is on at 40 m while the bole alpha is still low. Far shows the impostor only. Cull shrinks that impostor to 0.35 over 180 ms, then it is gone. Scale does not go to 0. The bole is not in that scale. No volume. Elder’s hit is 0.55 m on the bole, not the 2.8 m crown. A v1 crown sits 0.15 m to the side and the capsule does not. A missing bole does not leave a crown in the air.
 
 World stays Imagine Video assets. The player stays the sealed Bolt. No wallet. No player API keys. Hang URL stays `https://boltverse-odysseyyyy.grok.me`.

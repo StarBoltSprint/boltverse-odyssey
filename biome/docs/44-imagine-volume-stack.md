@@ -112,7 +112,7 @@ Front side only. The 70/30 yaw already faces the camera.
 
 The capsule never fades. Soft alpha is look only. The hit snaps on the hysteresis line in `lod.ts`. The node stack for that shading is law [45](45-shader-graph-look-kitchen.md). The graph does not spawn, pick the band, or own the capsule. A two-plane tree does not put this fade on the bole when the crown dissolves. That kit is law [49](49-two-plane-tree.md).
 
-Not hung yet: InstancedMesh per kind+band, an atlas, impostor mip bias, scale-down on far→cull while `a` falls, one opaque cutout pass then the ≤8 fades back-to-front. Skip OIT.
+Not hung yet: InstancedMesh per kind+band, an atlas, impostor mip bias, one opaque cutout pass then the ≤8 fades back-to-front. Skip OIT. Far ↔ cull shrink is hung in law [52](52-engine-vs-play.md): impostor quad only, 180 ms, scale 1.00 ↔ 0.35.
 
 ---
 

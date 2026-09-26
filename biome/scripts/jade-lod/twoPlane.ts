@@ -9,6 +9,7 @@ import { KIND_TABLE, type Band, type Kind, type LodRow } from "./types";
  * Near↔mid is one fade slot (the crown, 220 ms), including a budget demote.
  * That fade follows bandDraw, not holdBand. Shadow follows the crown.
  * The bole goes translucent only on mid↔far.
+ * Far↔cull scales the impostor quad only (180 ms, down to 0.35). Bole and shadow stay off.
  */
 
 export type Plane = "bole" | "crown" | "shadow" | "impostor";
@@ -293,7 +294,8 @@ export function edgeAlpha(from: Band, to: Band, u: number): EdgeAlpha {
       impostorDepthWrite: !fading && imp >= 1,
     };
   }
-  const imp = from === "far" ? 1 - t : t;
+  const s = t * t * (3 - 2 * t);
+  const imp = from === "far" ? 1 - s : s;
   return {
     bole: 0,
     crown: 0,
@@ -302,7 +304,7 @@ export function edgeAlpha(from: Band, to: Band, u: number): EdgeAlpha {
     boleCutout: true,
     boleDepthWrite: false,
     crownDepthWrite: false,
-    impostorDepthWrite: imp >= 1,
+    impostorDepthWrite: false,
   };
 }
 
@@ -323,6 +325,8 @@ export type PlanePose = {
   /** Shadow is 0.28 at rest. Other planes are 1 when shown. */
   opacity: number;
   sheet: string;
+  /** Far↔cull impostor is false for the whole edge. Omitted means the cutout default. */
+  depthWrite?: boolean;
 };
 
 export type TreeFiles = { bole?: boolean; crown?: boolean };
@@ -423,6 +427,51 @@ export function posePlanes(
     sheet: tex.imp,
   });
   return out;
+}
+
+/**
+ * Uniform X/Y on the impostor quad only. Hidden bole, crown, and shadow stay put.
+ * The parent group is not in this list, so it does not scale.
+ */
+export function applyImpostorScale(poses: PlanePose[], scale: number): PlanePose[] {
+  return poses.map((pose) => {
+    if (pose.plane !== "impostor") return pose;
+    return { ...pose, w: pose.w * scale, h: pose.h * scale };
+  });
+}
+
+/**
+ * The shrinking speck. One impostor quad. Bole, crown, and shadow are absent.
+ * w and h take the same scale. The parent that carries this child stays yaw 0 and unscaled.
+ */
+export function shrinkingImpostor(
+  row: LodRow,
+  camX: number,
+  camZ: number,
+  scale: number,
+  opacity: number,
+): PlanePose {
+  const size = planeSize(row.kind);
+  const tex = texOf(row.kind, row.variant);
+  const imp = hasCrown(row.kind)
+    ? { w: 1.2, h: 1.6, y: (size.hBole + size.hCrown) * 0.35 }
+    : { w: size.wBole, h: size.hBole, y: size.hBole * 0.35 };
+  const s = Math.max(0.35, scale);
+  return {
+    plane: "impostor",
+    on: 1,
+    x: 0,
+    y: imp.y,
+    z: 0,
+    yaw: billboardYaw(row.yaw, camX, camZ, row.x, row.z, IMP_FACE),
+    w: imp.w * s,
+    h: imp.h * s,
+    cutout: false,
+    renderOrder: RENDER_ORDER.impostor,
+    opacity,
+    sheet: tex.imp,
+    depthWrite: false,
+  };
 }
 
 /** Parent at (x, h, z). Yaw stays 0 so children do not double-turn. */

@@ -36,6 +36,8 @@ export type CheapAlpha = {
   visible: boolean;
   /** True while this id holds one of the 8 slots, including the opaque endpoints. */
   fading: boolean;
+  /** Impostor quad only. 1 on every other edge. Never 0. */
+  quadScale: number;
 };
 
 type Slot = {
@@ -48,12 +50,19 @@ type Slot = {
   dist: number;
   /** Nearest 24. A farther tree does not steal their slot. */
   priority: boolean;
+  /** Set when a far↔cull fade reverses. Scale grows from here. */
+  shrinkScale0?: number;
+  shrinkAlpha0?: number;
 };
 
 const slots = new Map<string, Slot>();
 /** Last settled look band. First sight snaps. Not a collision cache. */
 const settled = new Map<string, Band>();
 const seen = new Set<string>();
+/** Previous frame distance. A belt-sized jump does not start a shrink. */
+const lastDist = new Map<string, number>();
+/** Grew back inside the 8 m belt while the gate still says cull. Scale stays 1. */
+const heldGrow = new Set<string>();
 
 export function activeFadeCount(): number {
   return slots.size;
@@ -63,6 +72,8 @@ export function resetFadeState(): void {
   slots.clear();
   settled.clear();
   seen.clear();
+  lastDist.clear();
+  heldGrow.clear();
 }
 
 /** Drop fade memory for ids that left the memory ring. */
@@ -71,6 +82,8 @@ export function forgetFades(ids: Iterable<string>): void {
     slots.delete(id);
     settled.delete(id);
     seen.delete(id);
+    lastDist.delete(id);
+    heldGrow.delete(id);
   }
 }
 
@@ -109,22 +122,61 @@ export function restoreFade(id: string, stash: FadeStash): void {
   });
 }
 
-/** Far ↔ cull only. Horizon specks shrink, then die. Other edges stay full size. */
+/**
+ * Far ↔ cull only. Horizon specks shrink, then die.
+ * Mid ↔ far and near ↔ mid stay world size.
+ * Lockstep with lod.ts BANDS.far: enter 72, leave 80. The shrink does not move that gate.
+ */
 export const FAR_SHRINK_MS = 180;
 export const FAR_SHRINK_SCALE = 0.35;
+export const FAR_ENTER_M = 72;
+export const FAR_LEAVE_M = 80;
+export const FAR_BELT_M = FAR_LEAVE_M - FAR_ENTER_M;
+
+export function isShrinkEdge(from: Band, to: Band): boolean {
+  return (from === "far" && to === "cull") || (from === "cull" && to === "far");
+}
+
+/** One tick from the enter line past the leave line, farther than the belt. 72 → 90 snaps. */
+export function skippedFarBelt(prevDist: number, dist: number): boolean {
+  return prevDist <= FAR_ENTER_M && dist >= FAR_LEAVE_M && dist - prevDist > FAR_BELT_M;
+}
 
 export function farShrink(
   from: Band,
   to: Band,
   u: number,
+  carry?: { scale: number; opacity: number },
 ): { scale: number; opacity: number } {
-  const edge = (from === "far" && to === "cull") || (from === "cull" && to === "far");
-  if (!edge) return { scale: 1, opacity: 1 };
-  const t = Math.min(1, Math.max(0, u));
+  if (!isShrinkEdge(from, to)) return { scale: 1, opacity: 1 };
+  const t = smoothstep(u);
+  if (carry) {
+    const endScale = to === "cull" ? FAR_SHRINK_SCALE : 1;
+    const endAlpha = to === "cull" ? 0 : 1;
+    return {
+      scale: Math.max(FAR_SHRINK_SCALE, carry.scale + (endScale - carry.scale) * t),
+      opacity: carry.opacity + (endAlpha - carry.opacity) * t,
+    };
+  }
   if (from === "far") {
     return { scale: 1 + (FAR_SHRINK_SCALE - 1) * t, opacity: 1 - t };
   }
   return { scale: FAR_SHRINK_SCALE + (1 - FAR_SHRINK_SCALE) * t, opacity: t };
+}
+
+export function fadeMs(id: string): number | undefined {
+  return slots.get(id)?.ms;
+}
+
+/** Live impostor scale. Undefined when this id is not on the shrink edge. */
+export function shrinkSample(id: string, nowMs: number): { scale: number; opacity: number } | undefined {
+  const slot = slots.get(id);
+  if (!slot || !isShrinkEdge(slot.from, slot.to)) return undefined;
+  const u = (nowMs - slot.t0) / slot.ms;
+  if (slot.shrinkScale0 !== undefined && slot.shrinkAlpha0 !== undefined) {
+    return farShrink(slot.from, slot.to, u, { scale: slot.shrinkScale0, opacity: slot.shrinkAlpha0 });
+  }
+  return farShrink(slot.from, slot.to, u);
 }
 
 function pictureOf(band: Band): Picture {
@@ -151,6 +203,7 @@ function cutout(picture: Picture, fading: boolean): CheapAlpha {
     side: "front",
     visible: true,
     fading,
+    quadScale: 1,
   };
 }
 
@@ -166,6 +219,7 @@ function skip(fading: boolean): CheapAlpha {
     side: "front",
     visible: false,
     fading,
+    quadScale: 1,
   };
 }
 
@@ -198,7 +252,30 @@ export function dissolveSample(
   return { a: smoothstep((t - 0.5) * 2), picture: toPic };
 }
 
-function flagsFor(from: Band, to: Band, u: number, fading: boolean): CheapAlpha {
+function flagsFor(
+  from: Band,
+  to: Band,
+  u: number,
+  fading: boolean,
+  carry?: { scale: number; opacity: number },
+): CheapAlpha {
+  if (isShrinkEdge(from, to)) {
+    const shrunk = farShrink(from, to, u, carry);
+    if (shrunk.opacity < ALPHA_SKIP) return skip(fading);
+    return {
+      path: "blend",
+      a: shrunk.opacity,
+      picture: "impostor",
+      transparent: true,
+      depthWrite: false,
+      alphaTest: 0,
+      premultiplied: true,
+      side: "front",
+      visible: true,
+      fading: true,
+      quadScale: shrunk.scale,
+    };
+  }
   const { a, picture } = dissolveSample(from, to, u);
   if (picture === "none" || a < ALPHA_SKIP) return skip(fading);
   if (a >= 0.999) return cutout(picture, fading);
@@ -213,6 +290,7 @@ function flagsFor(from: Band, to: Band, u: number, fading: boolean): CheapAlpha 
     side: "front",
     visible: true,
     fading,
+    quadScale: 1,
   };
 }
 
@@ -253,6 +331,29 @@ export function requestFade(
     }
     if (existing.from === to && existing.to === from) {
       const u = Math.min(1, Math.max(0, (nowMs - existing.t0) / existing.ms));
+      if (isShrinkEdge(existing.from, existing.to)) {
+        const newMs = FAR_SHRINK_MS * (1 - u);
+        if (newMs < 1) {
+          slots.delete(id);
+          settled.set(id, to);
+          return "snap";
+        }
+        const origin = existing.shrinkScale0 !== undefined && existing.shrinkAlpha0 !== undefined
+          ? farShrink(existing.from, existing.to, u, { scale: existing.shrinkScale0, opacity: existing.shrinkAlpha0 })
+          : farShrink(existing.from, existing.to, u);
+        slots.set(id, {
+          id,
+          from,
+          to,
+          t0: nowMs,
+          ms: newMs,
+          dist,
+          priority,
+          shrinkScale0: origin.scale,
+          shrinkAlpha0: origin.opacity,
+        });
+        return "fade";
+      }
       const rev = 1 - u;
       const ms = edgeMs(from, to);
       slots.set(id, { id, from, to, t0: nowMs - rev * ms, ms, dist, priority });
@@ -286,7 +387,7 @@ export function requestFade(
 /** Drop finished slots. applyCheapAlpha calls this once per frame. */
 export function tickFades(nowMs: number): void {
   for (const [id, slot] of slots) {
-    if (nowMs - slot.t0 >= slot.ms) {
+    if (nowMs - slot.t0 >= slot.ms && !isShrinkEdge(slot.from, slot.to)) {
       slots.delete(id);
       settled.set(id, slot.to);
     }
@@ -311,7 +412,49 @@ export function resolveCheapAlpha(
   priority: boolean = false,
 ): CheapAlpha {
   seen.add(id);
-  const slot = slots.get(id);
+  const prevD = lastDist.get(id);
+  const leapt = prevD !== undefined && band === "cull" && skippedFarBelt(prevD, dist);
+  lastDist.set(id, dist);
+  if (leapt) {
+    slots.delete(id);
+    heldGrow.delete(id);
+    settled.set(id, "cull");
+    return skip(false);
+  }
+
+  let slot = slots.get(id);
+  if (slot && isShrinkEdge(slot.from, slot.to)) {
+    const want: Band = dist >= FAR_LEAVE_M ? "cull" : "far";
+    if (slot.to !== want) {
+      requestFade(id, slot.to, want, nowMs, FAR_SHRINK_MS, dist, priority);
+      slot = slots.get(id);
+    }
+    if (slot && isShrinkEdge(slot.from, slot.to)) {
+      const u = (nowMs - slot.t0) / slot.ms;
+      if (u >= 1) {
+        slots.delete(id);
+        if (slot.to === "far" && band !== "far" && dist < FAR_LEAVE_M) {
+          heldGrow.add(id);
+          settled.set(id, "far");
+          return cutout("impostor", false);
+        }
+        heldGrow.delete(id);
+        settled.set(id, slot.to);
+        return slot.to === "cull" ? skip(false) : idle(slot.to);
+      }
+      const carry = slot.shrinkScale0 !== undefined && slot.shrinkAlpha0 !== undefined
+        ? { scale: slot.shrinkScale0, opacity: slot.shrinkAlpha0 }
+        : undefined;
+      return flagsFor(slot.from, slot.to, u, true, carry);
+    }
+  }
+
+  if (heldGrow.has(id)) {
+    if (band !== "far" && dist < FAR_LEAVE_M) return cutout("impostor", false);
+    heldGrow.delete(id);
+  }
+
+  slot = slots.get(id);
   if (slot) {
     if (slot.to !== band) {
       const mode = requestFade(id, slot.to, band, nowMs, edgeMs(slot.to, band), dist, priority);
@@ -319,7 +462,10 @@ export function resolveCheapAlpha(
       const revived = slots.get(id);
       if (!revived) return idle(band);
       const u = (nowMs - revived.t0) / revived.ms;
-      return flagsFor(revived.from, revived.to, u, true);
+      const carry = revived.shrinkScale0 !== undefined && revived.shrinkAlpha0 !== undefined
+        ? { scale: revived.shrinkScale0, opacity: revived.shrinkAlpha0 }
+        : undefined;
+      return flagsFor(revived.from, revived.to, u, true, carry);
     }
     const u = (nowMs - slot.t0) / slot.ms;
     if (u >= 1) {
@@ -328,6 +474,10 @@ export function resolveCheapAlpha(
       return idle(band);
     }
     return flagsFor(slot.from, slot.to, u, true);
+  }
+
+  if (band === "cull" && settled.get(id) === "far" && dist < FAR_LEAVE_M) {
+    return cutout("impostor", false);
   }
 
   const prev = settled.get(id);

@@ -78,9 +78,31 @@ Done-when: 30 boles inside 10 m show 24 crowns and 6 bare trunks. Cull 6 crowned
 
 ### 4. Far → cull shrink
 
-`scale = mix(1, 0.35, t)` and `opacity = 1 - t` over 180 ms. Cull → far is the reverse. This is the far ↔ cull edge only.
+This closes the LOD kitchen. Soft gait, a new Howl cook, and `bolt.glb` are the next sketches. They are not this cut.
 
-Done-when: specks on the horizon shrink, then die.
+`holdBand` still gates. Leave far is 80 m. Enter far is 72 m. The shrink is the fade on that gate. It is not a second hysteresis.
+
+```
+far → cull   180 ms   scale 1.00 → 0.35, alpha 1 → 0
+cull → far   180 ms   scale 0.35 → 1.00, alpha 0 → 1
+t = smoothstep(elapsed / 180)
+far → cull:  s = mix(1.00, 0.35, t);  a = 1 - t
+cull → far:  s = mix(0.35, 1.00, t);  a = t
+```
+
+Not mid ↔ far. Not near ↔ mid. Those keep world size. The bole and the impostor still handshake there. Shrink only on far ↔ cull. Scale never goes to 0. 0.35 keeps a 128 px impostor readable for one frame.
+
+Only the impostor quad scales, and it scales on X and Y together. The bole and the crown are already hidden on far. Do not scale them. Do not scale the group. Do not scale the contact shadow. It is already off on far.
+
+The same cap of 8. A 9th tree snaps: hide the impostor, scale 1, no smear. The idle impostor pool stays scale 1. A shrinking tree leaves `inst.impostor` and draws as its own kit for 180 ms.
+
+The belt is 8 m. A sprint of 5.2 m/s covers about 0.9 m during the fade, so the fade finishes inside the belt. One tick that jumps 72 → 90 does not fade. It snaps to cull.
+
+Turn around inside the belt. At t = 0.4 on the way out, swap the ends and set `ms = 180 * (1 - t)`. Scale grows from the current size. It does not jump to 1.
+
+Depth write is off for this edge only. Cutoff still discards below 0.02. The blend is premultiplied. Fill at mid-fade is about `0.35² × 0.5`, a few percent of a full fading quad.
+
+Done-when: sprint out of a far grove. The specks shrink, then vanish. No cards slide across the sky. Turn at 76 m. They grow back. Mid boles are there at 40 m.
 
 ---
 
@@ -130,7 +152,7 @@ Spawn, the flatten, and the shader tint read that same `d`. No stones in the mp4
 - `memRing` equal to `geoRing`.
 - Evicting an id whose chunk is still in geo.
 - Calling the enter distances because a kit respawned. Missing kit is not missing memory.
-- Shrinking a crown fade.
+- Shrinking a crown fade. Shrink on mid ↔ far. Scale to 0. A fade longer than about 200 ms on far ↔ cull. Scaling the group, the shadow, or a hidden bole. Writing that scale into the idle impostor pool.
 - Shattering a crystal because a body touched it.
 - Baking the path, or stones, into the ground film.
 - A spawn skip on `abs(x)` while the height uses the valley.
@@ -142,6 +164,6 @@ Spawn, the flatten, and the shader tint read that same `d`. No stones in the mp4
 
 ## Done-when
 
-Walk the wandering path. The flatten, the empty corridor, and the tint use one `d`. Stand among 30 boles at 8 m: 24 crowns, 6 trunks, and the six are still remembered as near. Step so a slot frees. A crown returns without a trip to the enter line. Orbit a bole on the seam at 32.0. The crown stays, because `prev` outlived the mesh. Sprint until the trail is long. The cap drops chunk-centers outside geo and leaves the live ring, even when that ring is already past 512. Walk 80 m away and back. That forget is legal. A speck at the horizon shrinks over 180 ms and is gone. A fern slows you and keeps the walk clip. A crystal you walk through drags and stays. A held Howl inside the cone hides it the same frame and plays the dust. Bolt is the sealed white dog. The ground film is still flat.
+Walk the wandering path. The flatten, the empty corridor, and the tint use one `d`. Stand among 30 boles at 8 m: 24 crowns, 6 trunks, and the six are still remembered as near. Step so a slot frees. A crown returns without a trip to the enter line. Orbit a bole on the seam at 32.0. The crown stays, because `prev` outlived the mesh. Sprint until the trail is long. The cap drops chunk-centers outside geo and leaves the live ring, even when that ring is already past 512. Walk 80 m away and back. That forget is legal. A speck at the horizon shrinks to 0.35 over 180 ms and is gone. Turn back inside the belt and it grows from the size it had. Mid boles are at 40 m. A fern slows you and keeps the walk clip. A crystal you walk through drags and stays. A held Howl inside the cone hides it the same frame and plays the dust. Bolt is the sealed white dog. The ground film is still flat.
 
 World stays Imagine Video assets. The player stays the sealed Bolt. No wallet. No player API keys. Hang URL stays `https://boltverse-odysseyyyy.grok.me`.

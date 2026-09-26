@@ -168,6 +168,14 @@ export function inCrownPool(bandDraw: Band): boolean {
   return bandDraw === "near";
 }
 
+/**
+ * Idle impostor pool. A far↔cull fade leaves this pool as its own kit.
+ * A scale other than 1 must not be written into the pool.
+ */
+export function inImpostorPool(bandDraw: Band, fading: boolean, quadScale = 1): boolean {
+  return bandDraw === "far" && !fading && quadScale === 1;
+}
+
 export function resetLodState() {
   prevBand.clear();
 }
