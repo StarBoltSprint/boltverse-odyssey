@@ -22,9 +22,15 @@ crown_imp optional (far usually bole_imp only)
 ruin_v0..v3 + ruin_imp
 crystal_v0..v3 + crystal_imp
 fern_v0..v3 + fern_imp
+fx/moss_dust_v0.png
+fx/pollen_v0.png
+fx/ember_v0.png
+fx/spark_dust_v0.png
 ```
 
 `vN` is `row.variant` 0–3. The same `N` on bole and crown is a pair: same bark temperature, same light. Elder uses this bole/crown family at the larger quad. `hash2` (the spawn salt) picks the variant. No per-tree art direction.
+
+FX sheets are cutouts too. One subject, transparent, no Bolt. Law [53](53-gpu-particles.md) samples them on the point. `moss_dust` is the mote. `pollen` is the alternate mote. `ember` is the paw spark. `spark_dust` is the Howl point burst. An atlas may replace the three live files later. The primary shatter picture is not a point: it is the short plate `crystal_burst_vN` (law [52](52-engine-vs-play.md)). A missing FX sheet hides that particle kind. It does not fall back to a colored disc. Tree sheets still fall back to v0.
 
 Hung `spawnChunk` still emits 0–2. The cook set is 0–3 so v3 can land without a new scatter.
 
@@ -42,6 +48,7 @@ A loop only when a crown must breathe: `crown_v0.mp4`, 2–3 s, first frame matc
 | crystal | 512×1024 | one shard, point up |
 | fern | 768×512 | low clump, contact at the bottom |
 | `*_imp` | 128×128 | a readable silhouette only |
+| `fx/*` | 256×256 | one speck, pollen, ember, or dust, alpha around it |
 
 Premultiplied PNG, or straight PNG plus a locked key. No JPEG. No background plate baked in.
 
@@ -100,6 +107,8 @@ Crown loops: 2–3 s, first ≈ last (MAE, same bar as Odyssey), wind in the lea
 - A ruin that is a solid wall.
 - Text or UI.
 - An impostor whose silhouette does not read.
+- An FX sheet that is a forest, a path, a sky, Bolt, or a flat colored disc.
+- A particle keep that draws when its FX sheet is missing.
 
 ---
 

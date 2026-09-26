@@ -1,19 +1,33 @@
-// Law 53. Disc, discard, premultiplied add.
-// 0 mote jade, 1 paw orange, 2 burst cyan. Not chrome. Not the world.
+// Law 53. Imagine cutout on the point. Not a colored disc.
+// Missing sheet: discard. Do not ship a procedural blob.
+// 0 mote moss-dust, 1 paw ember, 2 burst spark-dust. Premultiplied add.
 
 precision mediump float;
 
 varying float vKind;
 varying float vAlpha;
 
+uniform sampler2D uMote;
+uniform sampler2D uPaw;
+uniform sampler2D uBurst;
+uniform float uHasMote;
+uniform float uHasPaw;
+uniform float uHasBurst;
+
 void main() {
   if (vAlpha <= 0.0) discard;
-  vec2 q = gl_PointCoord * 2.0 - 1.0;
-  float r = dot(q, q);
-  if (r > 1.0) discard;
-  float a = (1.0 - r) * vAlpha;
-  vec3 color = vec3(0.45, 0.85, 0.62);
-  if (vKind > 0.5 && vKind < 1.5) color = vec3(0.95, 0.45, 0.12);
-  if (vKind >= 1.5) color = vec3(0.35, 0.85, 0.95);
-  gl_FragColor = vec4(color * a, a);
+  vec4 tex;
+  if (vKind < 0.5) {
+    if (uHasMote < 0.5) discard;
+    tex = texture2D(uMote, gl_PointCoord);
+  } else if (vKind < 1.5) {
+    if (uHasPaw < 0.5) discard;
+    tex = texture2D(uPaw, gl_PointCoord);
+  } else {
+    if (uHasBurst < 0.5) discard;
+    tex = texture2D(uBurst, gl_PointCoord);
+  }
+  if (tex.a < 0.02) discard;
+  float a = tex.a * vAlpha;
+  gl_FragColor = vec4(tex.rgb * a, a);
 }

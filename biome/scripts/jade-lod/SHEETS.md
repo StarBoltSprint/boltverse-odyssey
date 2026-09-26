@@ -56,6 +56,15 @@ Impostor (128×128, still, never a video):
 
 `crown_imp` is optional. The far tree ghost is `bole_imp_vN.png`.
 
+FX (256×256, one speck, alpha around it, same suffix, no Bolt). Law [53](../../docs/53-gpu-particles.md) samples these. Names only:
+
+- `fx/moss_dust_v0.png` — one fleck of moss dust
+- `fx/pollen_v0.png` — one pollen grain, alternate mote
+- `fx/ember_v0.png` — one ember spark
+- `fx/spark_dust_v0.png` — one shard of crystal dust, quartz, never chrome
+
+The Howl shatter's primary picture is the short plate `crystal_burst_vN` (law 52): shard becomes dust, transparent back, no Bolt, first frame is the still, last frame is empty, about 1 s. Point sparks do not replace that plate.
+
 ## Crown loop
 
 Boles do not loop. A crown loop is `crown_vN.mp4`, 2–3 s. Keep the suffix. Add, after it:

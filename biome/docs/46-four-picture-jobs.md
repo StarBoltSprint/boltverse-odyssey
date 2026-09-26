@@ -18,6 +18,7 @@ One asset family per `kind`. The spawn row already carries `variant`. Cook **she
 | `crown_vN.png` | near only |
 | `ruin_vN.png` · `crystal_vN.png` · `fern_vN.png` | that kind's card |
 | `*_imp_vN.png` | far impostor, 64–128 px |
+| `fx/moss_dust_v0.png` · `pollen_v0` · `ember_v0` · `spark_dust_v0` | particle cutouts, law [53](53-gpu-particles.md). One subject, transparent, no Bolt |
 
 `N` is 0–3. Hung `spawnChunk` emits 0–2. A fourth sheet can land without a new scatter.
 
@@ -27,7 +28,7 @@ Cook stills first. A short 2–3 s loop only when the crown must breathe. First 
 
 Wire: `TEX.bole[2].bole / .crown / .imp` from [`twoPlane.ts`](../scripts/jade-lod/twoPlane.ts) `texOf`. Lookup is `row.kind` + `row.variant` only. A missing file falls back to v0. The row still draws. Capsules stay `KIND_TABLE[kind].r` on the **bole**. The crown is not a collider. `KIND_TABLE` is the hung `KIND_RH`.
 
-The cook (folder, canvas, prompts, key, variant meaning) is law [47](47-jade-sheet-cook.md). Far tree ghost file is `bole_imp_vN.png`. Ground and sky stay a separate cook.
+The cook (folder, canvas, prompts, key, variant meaning) is law [47](47-jade-sheet-cook.md). Far tree ghost file is `bole_imp_vN.png`. Ground and sky stay a separate cook. FX sheets are the same cutout job (one subject, transparent, no Bolt). A missing tree sheet falls back to v0. A missing FX sheet hides the points.
 
 **FAIL:** a sheet with a second tree, a path, or Bolt.
 

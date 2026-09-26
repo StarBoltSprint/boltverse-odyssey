@@ -2,6 +2,7 @@
  * GPU particle playback. Law 53. Does not import three.
  * One Points draw. The vertex shader moves the slot. The CPU only writes births.
  * Sparks are an FX overlay. They do not spawn trees and they do not draw the ground.
+ * The look is an Imagine cutout. A missing sheet hides the points. No colored disc.
  */
 
 export const SLOT_COUNT = 1400;
@@ -12,6 +13,23 @@ export const BURST_COUNT = 80;
 export const HOWL_RANGE = 8;
 /** HUD chip. Playback, not a compute sandbox. */
 export const HUD_FX = "fx GPU";
+/** Look lock. A flat gl_Point color is not a keep. */
+export const LOOK = "imagine-cutout" as const;
+
+/**
+ * FX sheets. Cutouts, law 47. One subject, transparent, no Bolt. No binaries here.
+ * Mote and paw are stills. The Howl shatter's primary picture is the burst plate.
+ * Point sparks, if drawn, sample the dust sheet. An atlas may replace the three files later.
+ */
+export const FX_DIR = "public/decor/jade/sheets/fx";
+export const FX_SHEETS = {
+  mote: `${FX_DIR}/moss_dust_v0.png`,
+  pollen: `${FX_DIR}/pollen_v0.png`,
+  paw: `${FX_DIR}/ember_v0.png`,
+  burst: `${FX_DIR}/spark_dust_v0.png`,
+} as const;
+/** Primary shatter picture. Law 52. Points do not replace this plate. */
+export const BURST_PLATE = "crystal_burst_vN";
 export const MUZZLE = 1.2;
 
 export const KIND = { mote: 0, paw: 1, burst: 2 } as const;
@@ -25,6 +43,15 @@ export const GRAVITY: Record<ParticleKind, readonly [number, number, number]> = 
 };
 
 export const LIFE: Record<ParticleKind, number> = { 0: 1.4, 1: 0.35, 2: 0.8 };
+
+export type FxSheets = { mote: boolean; paw: boolean; burst: boolean };
+
+/** Missing sheet hides that kind. Never a stand-in disc. */
+export function fxVisible(kind: ParticleKind, sheets: FxSheets): "draw" | "hide" {
+  if (kind === KIND.mote) return sheets.mote ? "draw" : "hide";
+  if (kind === KIND.paw) return sheets.paw ? "draw" : "hide";
+  return sheets.burst ? "draw" : "hide";
+}
 
 export type ParticleBuffers = {
   /** xyz origin, length SLOT_COUNT * 3 */
@@ -124,7 +151,7 @@ export function muzzlePoint(
 }
 
 /**
- * Eighty cyan births. Returns the crystal id when one was inside 8 m.
+ * Eighty spark births. They sample the Imagine dust sheet. Returns the crystal id when one was inside 8 m.
  * The caller hides that card and drops its volume the same frame (law 52).
  * This function does not spawn a tree.
  */
@@ -156,6 +183,8 @@ export type ParticleInput = {
   /** Rising edge of H or Space. */
   howlDown: boolean;
   crystals: readonly CrystalMark[];
+  /** Bound Imagine sheets. Omit to keep the birth clock. A false flag skips that kind. */
+  sheets?: FxSheets;
 };
 
 /**
@@ -168,7 +197,8 @@ export function tickBirths(
   input: ParticleInput,
 ): { shattered: string | null } {
   let shattered: string | null = null;
-  if (clock.mote < 0 || input.now - clock.mote >= MOTE_DT) {
+  const show = (kind: ParticleKind) => !input.sheets || fxVisible(kind, input.sheets) === "draw";
+  if (show(KIND.mote) && (clock.mote < 0 || input.now - clock.mote >= MOTE_DT)) {
     clock.mote = input.now;
     const j = unit(input.now);
     writeBirth(
@@ -180,7 +210,7 @@ export function tickBirths(
       j,
     );
   }
-  if (input.sprintSpeed > SPRINT_MIN && (clock.paw < 0 || input.now - clock.paw >= PAW_DT)) {
+  if (show(KIND.paw) && input.sprintSpeed > SPRINT_MIN && (clock.paw < 0 || input.now - clock.paw >= PAW_DT)) {
     clock.paw = input.now;
     const j = unit(input.now + 8);
     writeBirth(
@@ -193,7 +223,12 @@ export function tickBirths(
     );
   }
   if (input.howlDown && !clock.howl) {
-    shattered = birthHowl(buf, input.now, input.bolt, input.yaw, input.crystals);
+    if (show(KIND.burst)) {
+      shattered = birthHowl(buf, input.now, input.bolt, input.yaw, input.crystals);
+    } else {
+      const hit = nearestCrystal(input.crystals, input.bolt[0], input.bolt[2]);
+      shattered = hit ? hit.id : null;
+    }
   }
   clock.howl = input.howlDown;
   return { shattered };
