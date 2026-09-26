@@ -22,7 +22,7 @@ Pages here are **optional**. They are **not** cook gates. Default Bolt remains e
 | [37-path-beat.md](37-path-beat.md) | Path beat. Chemin reveals one lane ~3 s ahead. Runtime `scripts/path-beat/pathBeat.js`. Paste: [COLD_START-path-beat.md](COLD_START-path-beat.md). |
 | [38-gpu-light-openable.md](38-gpu-light-openable.md) | GPU light layers + openables. Light-only plates and closed/open/transition. Runtime `scripts/gpu-light/` · `scripts/gpu-openable/`. Paste: [COLD_START-gpu-light-openable.md](COLD_START-gpu-light-openable.md). |
 
-**Any new biome convo — playable composite (lane, glance, wings, foes, howl), any paint:** paste [COLD_START-biome-method.md](COLD_START-biome-method.md) first. Worked example: [pyre/METHOD.md](../../pyre/METHOD.md) (Diablo only). Forest / open ground: [pyre/GROVE.md](../../pyre/GROVE.md). Room look: [pyre/ORBIT.md](../../pyre/ORBIT.md). Plain / Thunderwolf: [pyre/PLATE.md](../../pyre/PLATE.md) and METHOD sections 11–13. There is no `pyre/PLAIN.md` or `pyre/VISTA.md`.
+**Any new biome convo — playable composite (lane, glance, wings, foes, howl), any paint:** paste [COLD_START-biome-method.md](COLD_START-biome-method.md) first. Section A is the road densify. Section B is the forest / open-ground world cook (black → sky → ground → horizon → GPU), inline. Worked example: [pyre/METHOD.md](../../pyre/METHOD.md) (Diablo road only). Forest numbers and shaders: [43-open-ground.md](43-open-ground.md), [COLD_START-open-ground.md](COLD_START-open-ground.md), [pyre/GROVE.md](../../pyre/GROVE.md). Room look: [pyre/ORBIT.md](../../pyre/ORBIT.md). Plain / Thunderwolf: [pyre/PLATE.md](../../pyre/PLATE.md) and METHOD sections 11–13. There is no `pyre/PLAIN.md` or `pyre/VISTA.md`. From this folder the Pyre files are `../../pyre/…`.
 
 **Densify and Imagine Live keyed props** (laws 39–42) still paste [COLD_START-imagine-engine.md](COLD_START-imagine-engine.md). That paste does not replace the composite method above.
 
@@ -32,12 +32,12 @@ Pages here are **optional**. They are **not** cook gates. Default Bolt remains e
 | [40-nebula-cycle.md](40-nebula-cycle.md) | Nebula Lane: nebula → shore → disk → eclipse. 30 s hold + 3.2 s fade. Continue from the last frame. Trim the slow head. Paste: [COLD_START-nebula-lane.md](COLD_START-nebula-lane.md). |
 | [41-eclipse-look.md](41-eclipse-look.md) | Hidden 3D yaw, eclipse only. Videos stay videos. Drag looks, tap changes lane. Planet cards + star sky. Runtime `scripts/eclipse-look/eclipseLook.js`. Paste: [COLD_START-nebula-lane.md](COLD_START-nebula-lane.md). |
 | [42-shoulder-panorama.md](42-shoulder-panorama.md) | Any already-cooked biome. Three videos, not yaw. Flick changes lane, a 150 ms hold looks, the outer flick boards one luminous path. Path scrolls only while boarded. No fog veil, no offline stitch. Runtime `scripts/shoulder-panorama/shoulderPanorama.js`. Paste: [COLD_START-shoulder-panorama.md](COLD_START-shoulder-panorama.md). |
-| [43-open-ground.md](43-open-ground.md) | Open ground, no lane. Four locked skies, one tiling ground video, GPU Bolt. Horizon grain is 0 inside the depth clamp, so no vertical dirt strokes. Not plate-geo-qc. Script `scripts/open-ground/earth_color.py`. Paste: [COLD_START-open-ground.md](COLD_START-open-ground.md). |
+| [43-open-ground.md](43-open-ground.md) | Open ground, no lane. Four locked skies, one tiling ground, GPU Bolt. Horizon grain is 0 inside the depth clamp, so no vertical dirt strokes. Not plate-geo-qc. Script `scripts/open-ground/earth_color.py`. World-cook order: section B of [COLD_START-biome-method.md](COLD_START-biome-method.md). Numbers: [COLD_START-open-ground.md](COLD_START-open-ground.md). |
 
 **Look left on a biome you already cooked:** read [COLD_START-shoulder-panorama.md](COLD_START-shoulder-panorama.md).
 
 **Nebula Lane, a new convo:** read [COLD_START-nebula-lane.md](COLD_START-nebula-lane.md) before cooking.
 
-**Open ground (forest, dirt plain, no road):** read [COLD_START-open-ground.md](COLD_START-open-ground.md). Do not run `plate-geo-qc.py`. Four-face grove trees are the next step in [pyre/GROVE.md](../../pyre/GROVE.md), not a v1 KEEP.
+**Open ground (forest, dirt plain, no road):** the world-cook order is section B of [COLD_START-biome-method.md](COLD_START-biome-method.md). Numbers and shaders: [COLD_START-open-ground.md](COLD_START-open-ground.md) and [43-open-ground.md](43-open-ground.md). Do not run `plate-geo-qc.py`. Four-face grove trees are the next step in [pyre/GROVE.md](../../pyre/GROVE.md), not a v1 KEEP.
 
 **Playable composite, any paint:** [COLD_START-biome-method.md](COLD_START-biome-method.md). Not a law number. Law 43 stays open ground.

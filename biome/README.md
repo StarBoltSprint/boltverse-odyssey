@@ -12,7 +12,7 @@ This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play
 
 **HARD LOCK — Hang ≠ wipe.** New biome = ADD `road-<biome>*.mp4` + plates-index / dealer entries. KEEP canyon→cars→duel→night→war. NEVER `rm` hung masters. Law: [docs/09-recette-biome.md](docs/09-recette-biome.md).
 
-**START HERE (playable biome, any paint):** paste [docs/COLD_START-biome-method.md](docs/COLD_START-biome-method.md). Densify / QC order: [scripts/biome-cook/README.md](scripts/biome-cook/README.md) · [docs/COLD_START-biome-cook.md](docs/COLD_START-biome-cook.md). Imagine Live keyed props: [docs/COLD_START-imagine-engine.md](docs/COLD_START-imagine-engine.md).
+**START HERE (playable biome, any paint):** paste [docs/COLD_START-biome-method.md](docs/COLD_START-biome-method.md). Section A is the road densify. Section B is the forest / open-ground world cook (black → sky → ground → horizon → GPU). Densify / QC order for a road: [scripts/biome-cook/README.md](scripts/biome-cook/README.md) · [docs/COLD_START-biome-cook.md](docs/COLD_START-biome-cook.md). Imagine Live keyed props: [docs/COLD_START-imagine-engine.md](docs/COLD_START-imagine-engine.md) (laws 39–42).
 
 **HARD LOCK — Chat biome catalog (on ask).** **what biomes** / **which runs** / **what can I play** → hung chapters only (never invent). `play canyon` / `only Tide`. Never on Welcome. No chrome picker. Hang grows the list; wipe shrinks it = FAIL.
 
@@ -58,7 +58,7 @@ This folder is a **recipe**, not an app. Do **not** scaffold a new grok.me. Play
 | [docs/16-biome-ground-fx.md](docs/16-biome-ground-fx.md) | **Biome ground FX + grade** — paw prints / splash / dust per `{PAINT}`. Frost-parity for any biome. |
 | [docs/17-live-compositor.md](docs/17-live-compositor.md) | **Live compositor** — what actually stuck Bolt: quad dest, luma protect, plate bounce, sin grain, rVFC, FX quads. FAIL = old scissor/IGN sketch. |
 | [docs/00-PRIORITY0-any-biome.md](docs/00-PRIORITY0-any-biome.md) | **PRIORITY 0 any biome** — GPU + sealed 6 s + FX table. Frost-parity for a cold Grok / random player. |
-| [docs/COLD_START-biome-method.md](docs/COLD_START-biome-method.md) | **Default paste** — playable composite for any paint. Pyre METHOD is the worked example. |
+| [docs/COLD_START-biome-method.md](docs/COLD_START-biome-method.md) | **Default paste** — playable composite for any paint. Section A road densify. Section B forest / open-ground world cook. Pyre METHOD is the Diablo road example. |
 | [docs/COLD_START-any-biome.md](docs/COLD_START-any-biome.md) | Kitchen paste — parity brief inside that method (supersedes COLD_START-gpu-6s as the cook paste). |
 | [docs/COLD_START-gpu-6s.md](docs/COLD_START-gpu-6s.md) | Kitchen note — REUSE 6s lock + GPU law 15. Cook paste superseded by [COLD_START-any-biome.md](docs/COLD_START-any-biome.md). |
 | [docs/18-room-starmap-lena.md](docs/18-room-starmap-lena.md) | **Player journey** — room star map → constellation → seal → door → biome → Lena climb → sealed planet. |

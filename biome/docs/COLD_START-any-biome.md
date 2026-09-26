@@ -1,4 +1,4 @@
-Playable composite (any paint): paste [`COLD_START-biome-method.md`](COLD_START-biome-method.md) first. Ordered densify kit: [`COLD_START-biome-cook.md`](COLD_START-biome-cook.md). Lane props and path UI: [`COLD_START-imagine-engine.md`](COLD_START-imagine-engine.md). This paste stays the any-biome parity brief inside that method.
+Playable composite (any paint): paste [`COLD_START-biome-method.md`](COLD_START-biome-method.md) first. Section A is this road. Section B is the forest / open-ground world cook. Ordered densify kit for a road: [`COLD_START-biome-cook.md`](COLD_START-biome-cook.md). Lane props and path UI: [`COLD_START-imagine-engine.md`](COLD_START-imagine-engine.md) (laws 39–42). This paste stays the any-biome parity brief inside that method.
 
 # COLD START — cook any biome (parity brief)
 
