@@ -53,7 +53,7 @@ Not hung yet: InstancedMesh per kind+band, an atlas, impostor mip bias, scale-do
 
 Law [46](../../docs/46-four-picture-jobs.md). Same seed, same ids. The film still has no thickness. No sheet or plate binaries in this folder.
 
-**Sheets.** `bole_vN.png` (mid + near trunk; elder uses it larger), `crown_vN.png` (near only), `ruin_vN.png` / `crystal_vN.png` / `fern_vN.png`, `*_imp_vN.png` (far, 64–128 px). `N` is 0–3. Wire: `texOf(kind, variant)` → `TEX[kind][variant].bole / .crown / .imp`.
+**Sheets.** Cutouts, not places. Folder `public/decor/jade/sheets/` (names only, no binaries). `bole_v0..v3`, `crown_v0..v3`, `bole_imp_v0..v3`, optional `crown_imp`, plus `ruin` / `crystal` / `fern` and their `_imp`. Same `N` on bole+crown is one pair. Wire: `TEX.bole[2].bole / .crown / .imp` via `texOf(kind, variant)`. Missing file → v0, the row still draws. Cook rail: law [47](../../docs/47-jade-sheet-cook.md) · prompts [`SHEETS.md`](SHEETS.md).
 
 **Plates.** `jade_ground.mp4` world-XZ, picture-time `uv.x = worldX/24 + 0.02*sin(pictureTime)`, `uv.y = worldZ/24`. `jade_sky.mp4` yaw only. Cards stand on the floor. They are not baked into the mp4.
 

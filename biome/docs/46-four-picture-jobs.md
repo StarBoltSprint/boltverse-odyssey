@@ -25,7 +25,9 @@ Key: clean alpha, or a locked green screen with despill. Same light lock as the 
 
 Cook stills first. A short 2–3 s loop only when the crown must breathe. First frame matches the last.
 
-Wire: `TEX[kind][variant].bole / .crown / .imp` from [`twoPlane.ts`](../scripts/jade-lod/twoPlane.ts) `texOf`. Capsules stay `KIND_TABLE[kind].r` on the **bole**. The crown is not a collider. `KIND_TABLE` is the hung `KIND_RH`.
+Wire: `TEX.bole[2].bole / .crown / .imp` from [`twoPlane.ts`](../scripts/jade-lod/twoPlane.ts) `texOf`. Lookup is `row.kind` + `row.variant` only. A missing file falls back to v0. The row still draws. Capsules stay `KIND_TABLE[kind].r` on the **bole**. The crown is not a collider. `KIND_TABLE` is the hung `KIND_RH`.
+
+The cook (folder, canvas, prompts, key, variant meaning) is law [47](47-jade-sheet-cook.md). Far tree ghost file is `bole_imp_vN.png`. Ground and sky stay a separate cook.
 
 **FAIL:** a sheet with a second tree, a path, or Bolt.
 

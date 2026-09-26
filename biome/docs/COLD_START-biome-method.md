@@ -26,9 +26,9 @@ Paste this as the first message when a new Grok, in a new conversation, cooks a 
 Two world cooks live in this file. Pick one.
 
 - **A. Road densify** — the paint is a road. One continuous Imagine plate is the world clock.
-- **B. Forest / open ground** — the paint is a forest, a dirt plain, or any ground with no road. Law 43. The order is black, sky, ground, horizon, then GPU. That order is written below. You do not open five files to learn it. Volume on that ground (capsule + look) is law 44. Card shading is law 45. Picture jobs are law 46.
+- **B. Forest / open ground** — the paint is a forest, a dirt plain, or any ground with no road. Law 43. The order is black, sky, ground, horizon, then GPU. That order is written below. You do not open five files to learn it. Volume on that ground (capsule + look) is law 44. Card shading is law 45. Picture jobs are law 46. Sheet cook is law 47.
 
-Law 43 is already [open ground](43-open-ground.md). Law 44 is the [Imagine volume stack](44-imagine-volume-stack.md) on that ground. Law 45 is the [shader-graph look kitchen](45-shader-graph-look-kitchen.md) on those cards. Law 46 is the [four picture jobs](46-four-picture-jobs.md) (sheets, plates, two-plane tree, height posture). This paste does not take a new law number. It points at the laws that stay. Laws 39–42 stay in force when that rail is on. Do not invent a second law 43, a second volume law, a second look-graph law, or a second picture-job law.
+Law 43 is already [open ground](43-open-ground.md). Law 44 is the [Imagine volume stack](44-imagine-volume-stack.md) on that ground. Law 45 is the [shader-graph look kitchen](45-shader-graph-look-kitchen.md) on those cards. Law 46 is the [four picture jobs](46-four-picture-jobs.md) (sheets, plates, two-plane tree, height posture). Law 47 is the [Jade sheet cook](47-jade-sheet-cook.md) (cutouts on empty air). This paste does not take a new law number. It points at the laws that stay. Laws 39–42 stay in force when that rail is on. Do not invent a second law 43, a second volume law, a second look-graph law, a second picture-job law, or a second sheet-cook law.
 
 ## What to open
 
@@ -41,6 +41,7 @@ Law 43 is already [open ground](43-open-ground.md). Law 44 is the [Imagine volum
    - Forest volume (collision capsule + look cards), after section B5: [`44-imagine-volume-stack.md`](44-imagine-volume-stack.md) · LOD [`../scripts/jade-lod/README.md`](../scripts/jade-lod/README.md) · earlier one-file [`../scripts/jade-billboard/jadeBillboard.ts`](../scripts/jade-billboard/jadeBillboard.ts)
    - Card shading (shader graph on the posed card), after law 44: [`45-shader-graph-look-kitchen.md`](45-shader-graph-look-kitchen.md) · flattened chain [`../scripts/jade-lod/card.frag.glsl`](../scripts/jade-lod/card.frag.glsl)
    - Four picture jobs (sheets, ground/sky, two-plane tree, height posture), after law 45: [`46-four-picture-jobs.md`](46-four-picture-jobs.md) · [`../scripts/jade-lod/twoPlane.ts`](../scripts/jade-lod/twoPlane.ts) · [`../scripts/jade-lod/height.ts`](../scripts/jade-lod/height.ts)
+   - Jade sheet cook (cutouts, prompts, names), after law 46: [`47-jade-sheet-cook.md`](47-jade-sheet-cook.md) · [`../scripts/jade-lod/SHEETS.md`](../scripts/jade-lod/SHEETS.md)
    - Empty plate, black clear, orbit on sky and ground (lava plain example): [`pyre/PLATE.md`](../../pyre/PLATE.md) section "Procedural plain — this is what is built" · METHOD §13
    - Room look: [`pyre/ORBIT.md`](../../pyre/ORBIT.md) · journey [`COLD_START-room-starmap.md`](COLD_START-room-starmap.md)
 
@@ -456,6 +457,7 @@ Forest / open ground:
 - [ ] LOD bands match law 44: near `< 12` / leave `14` full card + shadow + volume (cap 24, extras drop to mid and keep the capsule); mid `< 40` / leave `44` bole-only + volume; far `< 72` / leave `80` impostor, no volume; cull is the ground film only. The twin dies with the band. The mp4 is not thickened.
 - [ ] Law 45 shades the card the CPU already posed. Mask instance at rest (cutoff 0.45, depth write). Fade instance only while dissolving, cap 8 (cutoff 0.02, translucent, depth write off). The graph does not spawn, pick `holdBand`, or own the capsule.
 - [ ] Law 46 picture jobs: sheets per kind (no second tree, path, or Bolt in the sheet), empty ground and sky films, two-plane tree (crown fade only on near↔mid, capsule on the bole), height `0.20 + 0.20 * fbm(x/28, z/28, s+101)` as posture. Spawn stays the hung page. The sol film stays flat.
+- [ ] Law 47 sheets are cutouts on empty air under `public/decor/jade/sheets/`. Same variant on bole and crown. Lookup `TEX.bole[variant]`. A missing file falls back to v0. The row still draws. Ground and sky stay a separate cook.
 - [ ] The preview choice is "The gates, or the forest."
 
 Either:

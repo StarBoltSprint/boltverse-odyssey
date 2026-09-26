@@ -42,21 +42,50 @@ export function planeSize(kind: Kind): { wBole: number; wCrown: number; hBole: n
   return { wBole: 0.85, wCrown: 0, hBole: h, hCrown: 0 };
 }
 
+/** Documented folder. No binaries in the repo. Law 47. */
+export const SHEET_DIR = "public/decor/jade/sheets";
+
+export function clampVariant(variant: number): number {
+  if (!Number.isFinite(variant)) return 0;
+  return Math.min(3, Math.max(0, variant | 0));
+}
+
 /**
- * Sheet names. Cook v0–v3. Hung spawnChunk currently emits variant 0–2.
+ * Sheet file names. Cook v0–v3. Elder shares the bole/crown family.
+ * Far tree ghost is bole_imp. crown_imp is optional and is not the far default.
  * No binaries here.
  */
-export function sheetFile(kind: Kind, variant: number, part: "bole" | "crown" | "imp" | "sheet"): string {
-  const v = Math.min(3, Math.max(0, variant | 0));
-  if (part === "imp") return `${kind}_imp_v${v}.png`;
+export function sheetFile(
+  kind: Kind,
+  variant: number,
+  part: "bole" | "crown" | "imp" | "crownImp" | "sheet",
+): string {
+  const v = clampVariant(variant);
+  if (part === "crownImp") return `crown_imp_v${v}.png`;
+  if (part === "imp") {
+    if (kind === "bole" || kind === "elder") return `bole_imp_v${v}.png`;
+    return `${kind}_imp_v${v}.png`;
+  }
   if (part === "crown") return `crown_v${v}.png`;
   if (part === "bole" && hasCrown(kind)) return `bole_v${v}.png`;
   return `${kind}_v${v}.png`;
 }
 
+/** Missing file → v0 name. The row still draws. */
+export function resolveSheet(
+  kind: Kind,
+  variant: number,
+  part: "bole" | "crown" | "imp" | "crownImp" | "sheet",
+  hasFile: (fileName: string) => boolean,
+): string {
+  const name = sheetFile(kind, variant, part);
+  if (clampVariant(variant) === 0 || hasFile(name)) return name;
+  return sheetFile(kind, 0, part);
+}
+
 export type TexSet = { bole?: string; crown?: string; imp: string; sheet?: string };
 
-/** TEX[kind][variant].bole / .crown / .imp */
+/** TEX.bole[2].bole / .crown / .imp — kind + variant only. Paths sit under SHEET_DIR. */
 export function texOf(kind: Kind, variant: number): TexSet {
   const imp = sheetFile(kind, variant, "imp");
   if (hasCrown(kind)) {
