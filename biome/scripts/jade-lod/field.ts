@@ -1,6 +1,6 @@
 import { applyLod, volumesOf } from "./lod";
 import { spawnChunk } from "./spawn";
-import { CHUNK, LodRow, SpawnRow, Volume } from "./types";
+import { CHUNK, type LodRow, type SpawnRow, type Volume } from "./types";
 
 const loaded = new Map<string, SpawnRow[]>();
 

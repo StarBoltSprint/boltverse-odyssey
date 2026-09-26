@@ -1,4 +1,4 @@
-import { CHUNK, KIND_RH, Kind, PATH_HALF, SEED, SpawnRow } from "./types";
+import { CHUNK, KIND_RH, PATH_HALF, SEED, type Kind, type SpawnRow } from "./types";
 import { noise01, valueNoise } from "./noise";
 
 const KINDS: Kind[] = ["bole", "bole", "bole", "elder", "ruin", "crystal", "fern"];

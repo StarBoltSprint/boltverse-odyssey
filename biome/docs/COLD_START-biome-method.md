@@ -221,13 +221,14 @@ Two jobs. Both. Same `(x, z)` as the row.
 
 The Imagine file has no thickness. Cards in meters stand in front of sol and ciel. The stack, the part cook, the GPU steps, the optional extras, and the 8-bole test are the law. Run that test before calling the forest deep.
 
-LOD picks how much twin as you close in. It does not thicken the mp4. Hang: [`../scripts/jade-lod/README.md`](../scripts/jade-lod/README.md). Near `< 12` / leave `14`, full card + shadow, volume yes (cap 24; extras drop to mid and keep the capsule). Mid `< 40` / leave `44`, bole-only, volume yes. Far `< 72` / leave `80`, impostor quad, no volume. Cull beyond, ground film only, no volume. Near and mid must thud. The twin dies with the card band.
+LOD picks how much twin as you close in. It does not thicken the mp4. Hang: [`../scripts/jade-lod/README.md`](../scripts/jade-lod/README.md). Near `< 12` / leave `14`, full card + shadow, volume yes (cap 24; extras drop to mid and keep the capsule). Mid `< 40` / leave `44`, bole-only, volume yes. Far `< 72` / leave `80`, impostor quad, no volume. Cull beyond, ground film only, no volume. Near and mid must thud. The twin dies with the card band. Cheap alpha: resting cards are cutout. Blend only while a band change dissolves, cap 8, 250 ms. The capsule never fades. [`fade.ts`](../scripts/jade-lod/fade.ts).
 
 ```ts
 import { tickField } from "./field";
-import { applyLodToKit } from "./billboard";
+import { applyLodToKit, applyCheapAlpha } from "./billboard";
 const { rows, volumes } = tickField(cam.x, cam.z, 1);
-// rows → applyLodToKit; volumes → SprintCore obstacles this frame
+const drawn = applyCheapAlpha(applyLodToKit(rows, cam.x, cam.z), nowMs);
+// volumes → SprintCore obstacles this frame (capsule snaps; it never fades)
 ```
 
 Remix next: point the cards at Jade Imagine sheets. Hook `volumes` into the obstacle query. The earlier one-file companion is [`../scripts/jade-billboard/jadeBillboard.ts`](../scripts/jade-billboard/jadeBillboard.ts). `tickCards` alone looks deep and you still walk through bark. The companion imports `three` for a port. Three.js is not the world. Do not rewrite `pyre-stage`. Noise that draws terrain is FAIL. Mesh solids in place of Imagine cards are FAIL.

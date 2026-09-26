@@ -75,9 +75,10 @@ LOD remix: [`../scripts/jade-lod/`](../scripts/jade-lod/README.md). Seed `7749`,
 
 ```ts
 import { tickField } from "./field";
-import { applyLodToKit } from "./billboard";
+import { applyLodToKit, applyCheapAlpha } from "./billboard";
 const { rows, volumes } = tickField(cam.x, cam.z, 1);
-// rows → applyLodToKit; volumes → SprintCore obstacles this frame
+const drawn = applyCheapAlpha(applyLodToKit(rows, cam.x, cam.z), nowMs);
+// volumes → SprintCore obstacles this frame (capsule snaps; it never fades)
 ```
 
 Remix next: point the cards at Jade Imagine sheets. Hook `volumes` into the obstacle query.
@@ -94,6 +95,24 @@ Earlier one-file companion: [`../scripts/jade-billboard/jadeBillboard.ts`](../sc
 4. Draw far to near. That is the occlusion.
 5. Soft contact shadow on the ground plane at `(x, z)`. Near band only. Mid and far have no contact blob.
 6. Fog or mist so the mid band fades into the plate.
+
+## Cheap alpha
+
+Fill rate is the cost. The curve is not. Resting trees stay cutout. Blend only while a band change is dissolving. Kitchen: [`fade.ts`](../scripts/jade-lod/fade.ts), [`card.frag.glsl`](../scripts/jade-lod/card.frag.glsl), `applyCheapAlpha` in [`billboard.ts`](../scripts/jade-lod/billboard.ts). Those files do not import three.
+
+| State | GPU path |
+|---|---|
+| Idle near / mid / far | **cutout** (`alphaTest 0.45`, `transparent: false`, `depthWrite: true`) |
+| Mid-fade only | **blend** (`transparent: true`, `depthWrite: false`, premultiplied `rgb * a, a`) |
+| `a < 0.02` | skip the draw (`discard` / `visible = false`) |
+
+Cap **8** concurrent fades. A further band change snaps. Fade is **220–280 ms** (hung at 250). That is shorter than the hysteresis belt (2–8 m), so two fades rarely stack on one tree. A second change on the same id snaps. While coverage is still 1, the card stays cutout. The blend path starts once `a` drops.
+
+Front side only. The 70/30 yaw already faces the camera.
+
+The capsule never fades. Soft alpha is look only. The hit snaps on the hysteresis line in `lod.ts`.
+
+Not hung yet: InstancedMesh per kind+band, an atlas, impostor mip bias, scale-down on far→cull while `a` falls, one opaque cutout pass then the ≤8 fades back-to-front. Skip OIT.
 
 ---
 
@@ -120,6 +139,7 @@ Done-when for a remix. Stop here before thickening the forest.
 2. From the existing tree seed (Grove cell 3.3 m), take eight bole rows in the near band only (about 3–12 m). One keyed bole sheet per row. Same `(x, z, kind)`.
 3. Billboard mix, contact shadow, and fog, as in the GPU list above.
 4. Capsules on, from those same rows. Walk a circle around one tree.
+5. Those resting boles stay cutout (`alphaTest 0.45`). A band change may blend, eight at a time.
 
 Pass: that tree stays planted (the trunk does not spin off its shadow). The forest behind it slides (near faster than far, near hides far). The paws thud the trunk.
 
@@ -141,5 +161,7 @@ Then thicken mid, elders, and collision polish.
 - Extruding the mp4.
 - A depth map cooked into the video.
 - One clip treated as the volume.
+- An always-transparent forest. Resting cards are cutout. Blend is the dissolve only, eight at a time.
+- Fading the capsule. The hit snaps. Alpha is look.
 
 World stays Imagine Video assets. GPU composites keyed layers only. The player stays the sealed Bolt. No wallet. No player API keys. Hang URL stays `https://boltverse-odysseyyyy.grok.me`.

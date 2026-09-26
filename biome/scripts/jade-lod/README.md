@@ -17,14 +17,35 @@ Leave is farther than enter so a tree on the line does not flicker. Near capped 
 
 ```ts
 import { tickField } from "./field";
-import { applyLodToKit } from "./billboard";
+import { applyLodToKit, applyCheapAlpha } from "./billboard";
 
 const { rows, volumes } = tickField(cam.x, cam.z, 1);
-// rows → applyLodToKit(rows, cam.x, cam.z) per card
-// volumes → SprintCore obstacles this frame
+const kits = applyLodToKit(rows, cam.x, cam.z);
+const drawn = applyCheapAlpha(kits, nowMs);
+// volumes → SprintCore obstacles this frame (capsule snaps; it never fades)
 ```
 
 Far trees are allowed to be ghosts: they live in the ground film. Near/mid must thud.
+
+## Cheap alpha
+
+Resting trees are **cutout**. Blend only while a band change is dissolving. Fill rate is the enemy. The curve is not.
+
+| State | GPU path |
+|---|---|
+| Idle near / mid / far | **cutout** (`alphaTest 0.45`, `transparent: false`, `depthWrite: true`) |
+| Mid-fade only | **blend** (`transparent: true`, `depthWrite: false`, premultiplied `rgb * a, a`) |
+| `a < 0.02` | skip the draw (`discard` / `visible = false`) |
+
+Cap **8** concurrent fades. Extra band changes snap. Duration **250 ms** (allowed 220–280), shorter than the hysteresis belt (2–8 m), so two fades rarely stack on one tree. A second change on the same id snaps. Closer kits take the slots first (`applyLod` is near to far). While coverage is still 1, the card stays cutout. The blend path starts once `a` drops.
+
+Front side only. The 70/30 yaw already faces the camera.
+
+The capsule never fades. Soft alpha is look only. The hit snaps on the hysteresis line in `lod.ts`.
+
+Policy: [`fade.ts`](fade.ts) (`requestFade`, `tickFades`, `activeFadeCount`). Flags: `applyCheapAlpha` in [`billboard.ts`](billboard.ts). Fragment: [`card.frag.glsl`](card.frag.glsl). This folder does not import `three`.
+
+Not hung yet: InstancedMesh per kind+band, an atlas, impostor mip bias, scale-down on far→cull while `a` falls, one opaque cutout pass then the ≤8 fades back-to-front. Skip OIT.
 
 ## Pack law
 

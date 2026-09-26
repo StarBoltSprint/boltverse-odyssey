@@ -1,4 +1,5 @@
-import { LodRow } from "./types";
+import { resolveCheapAlpha, tickFades, type CheapAlpha } from "./fade";
+import type { LodRow } from "./types";
 
 const FACE = 0.7; // 70% face-cam → 30% planted yaw
 
@@ -48,7 +49,7 @@ export function applyLodToKit(
     if (row.band === "cull" || row.picture === "none") {
       return {
         visible: false,
-        yaw: row.yaw,
+        yaw: billboardYaw(row.yaw, camX, camZ, row.x, row.z),
         scale: 0,
         picture: "none",
         shadow: false,
@@ -62,6 +63,37 @@ export function applyLodToKit(
       picture: row.picture,
       shadow: wantsShadow(row),
       row,
+    };
+  });
+}
+
+export type CardDraw = CardKit & { alpha: CheapAlpha };
+
+function scaleForPicture(picture: LodRow["picture"]): number {
+  if (picture === "full") return scaleByBand("near");
+  if (picture === "bole") return scaleByBand("mid");
+  if (picture === "impostor") return scaleByBand("far");
+  return 0;
+}
+
+/**
+ * Idle cutout vs mid-fade blend vs skip.
+ * Does not import three. Copy `alpha` onto the material the remix already has.
+ * FrontSide only. Resting cards stay cutout. Capsule is not in this return —
+ * `volumes` from tickField already snapped.
+ * nowMs is milliseconds. Scale-down while `a` falls is not hung; scale follows the picture.
+ */
+export function applyCheapAlpha(kits: CardKit[], nowMs: number): CardDraw[] {
+  tickFades(nowMs);
+  return kits.map((kit) => {
+    const alpha = resolveCheapAlpha(kit.row.id, kit.row.band, nowMs);
+    return {
+      ...kit,
+      visible: alpha.visible,
+      picture: alpha.picture,
+      scale: scaleForPicture(alpha.picture),
+      shadow: alpha.visible && alpha.picture === "full",
+      alpha,
     };
   });
 }

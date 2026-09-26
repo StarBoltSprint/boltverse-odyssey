@@ -1,4 +1,4 @@
-import { Band, LodRow, SpawnRow, Volume } from "./types";
+import type { Band, LodRow, SpawnRow, Volume } from "./types";
 
 /** Enter / leave distances — leave farther than enter (hysteresis). */
 export const BANDS = {
