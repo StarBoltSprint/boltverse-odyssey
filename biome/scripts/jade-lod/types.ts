@@ -19,7 +19,7 @@ export type SpawnRow = {
   hit: Hit;
 };
 
-/** Defaults by kind — capsule twin uses same r/h. */
+/** Defaults by kind — capsule twin uses same r/h. Law 46 name: KIND_TABLE. */
 export const KIND_RH: Record<Kind, { r: number; h: number; hit: Hit }> = {
   bole: { r: 0.55, h: 3.2, hit: "block" },
   elder: { r: 0.9, h: 5.5, hit: "block" },
@@ -27,6 +27,9 @@ export const KIND_RH: Record<Kind, { r: number; h: number; hit: Hit }> = {
   crystal: { r: 0.35, h: 1.6, hit: "shatter" },
   fern: { r: 0.25, h: 0.9, hit: "soft" },
 };
+
+/** Same table. Capsule r hangs on the bole, never the crown. */
+export const KIND_TABLE = KIND_RH;
 
 export type Volume = {
   x: number;

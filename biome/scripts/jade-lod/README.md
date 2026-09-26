@@ -49,6 +49,20 @@ Flattened chain in the fragment: sample → multiply fade → discard cutoff →
 
 Not hung yet: InstancedMesh per kind+band, an atlas, impostor mip bias, scale-down on far→cull while `a` falls, one opaque cutout pass then the ≤8 fades back-to-front. Skip OIT.
 
+## Four picture jobs
+
+Law [46](../../docs/46-four-picture-jobs.md). Same seed, same ids. The film still has no thickness. No sheet or plate binaries in this folder.
+
+**Sheets.** `bole_vN.png` (mid + near trunk; elder uses it larger), `crown_vN.png` (near only), `ruin_vN.png` / `crystal_vN.png` / `fern_vN.png`, `*_imp_vN.png` (far, 64–128 px). `N` is 0–3. Wire: `texOf(kind, variant)` → `TEX[kind][variant].bole / .crown / .imp`.
+
+**Plates.** `jade_ground.mp4` world-XZ, picture-time `uv.x = worldX/24 + 0.02*sin(pictureTime)`, `uv.y = worldZ/24`. `jade_sky.mp4` yaw only. Cards stand on the floor. They are not baked into the mp4.
+
+**Two planes.** [`twoPlane.ts`](twoPlane.ts). Near = bole + crown + shadow. Mid = bole. Far = impostor. Cull = nothing. Near↔mid fades crown + shadow in 220 ms; the bole stays cutout. Mid↔far fades bole↔impostor in 280 ms. Crown face 0.85, bole face 0.55. Capsule `r` is `KIND_TABLE[kind].r` on the bole (contact band 0.28 / bole 0.55). Never the crown.
+
+**Height.** [`height.ts`](height.ts). `h = 0.20 + 0.20 * fbm(x/28, z/28, s+101)`. Posture only. Spawn stays `spawnChunk` (n1/n2/n3 at L=14/40/22). The sol film stays flat.
+
+Frame: picture-time → `tickField` → snap kits to `h` → pawn `(x, h, z)` and volumes at `y = h`.
+
 ## Pack law
 
 - Imagine videos stay the world (sol/ciel). Cards are keyed Imagine sheets.

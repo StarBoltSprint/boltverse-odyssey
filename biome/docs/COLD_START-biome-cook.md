@@ -1,6 +1,6 @@
 # COLD START — biome cook (paste this, then follow one file)
 
-A playable composite (lane, glance, wings, foes, howl, any paint) pastes `biome/docs/COLD_START-biome-method.md` first. This file is the **road** densify / QC order (section A of that paste). A forest or other open ground follows section B of that paste (black, four skies, one ground tile, horizon, GPU). Volume on that forest is law 44 (`44-imagine-volume-stack.md`). Card shading is law 45 (`45-shader-graph-look-kitchen.md`). Neither is this kit. Do not run this 3-lane kit as the forest world.
+A playable composite (lane, glance, wings, foes, howl, any paint) pastes `biome/docs/COLD_START-biome-method.md` first. This file is the **road** densify / QC order (section A of that paste). A forest or other open ground follows section B of that paste (black, four skies, one ground tile, horizon, GPU). Volume on that forest is law 44 (`44-imagine-volume-stack.md`). Card shading is law 45 (`45-shader-graph-look-kitchen.md`). Picture jobs are law 46 (`46-four-picture-jobs.md`). None of these is this kit. Do not run this 3-lane kit as the forest world.
 
 Open `biome/scripts/biome-cook/README.md` and follow **only** that order (steps 1→17). Do not invent a cook. Do not invent QC math. Do not rewrite script bodies. Do not hunt the rest of `biome/docs/` first.
 

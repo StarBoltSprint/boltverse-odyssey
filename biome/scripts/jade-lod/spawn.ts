@@ -3,7 +3,10 @@ import { noise01, valueNoise } from "./noise";
 
 const KINDS: Kind[] = ["bole", "bole", "bole", "elder", "ruin", "crystal", "fern"];
 
-/** Same (ix, iz) → same woods every visit. Path corridor empty. */
+/**
+ * Same (ix, iz) → same woods every visit. Path corridor empty.
+ * Spawn page stays here. Height (height.ts, s+101) is posture only — do not gate this loop on it.
+ */
 export function spawnChunk(ix: number, iz: number): SpawnRow[] {
   const rows: SpawnRow[] = [];
   const ox = ix * CHUNK;

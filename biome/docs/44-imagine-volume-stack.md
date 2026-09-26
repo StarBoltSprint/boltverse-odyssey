@@ -120,7 +120,7 @@ Not hung yet: InstancedMesh per kind+band, an atlas, impostor mip bias, scale-do
 
 - Two ground rates. The same clip, two UV speeds.
 - Path ribbon in world X. Grove already keeps that path empty. Do not paint it into Video A.
-- Heightfield from the seed, about 30 cm, under the feet and the cards only. The feet follow that tiny rise. The ground film stays the flat Imagine plane. It does not redraw sol and it does not paint the dirt photo. Fractal noise that lifts or refills that photo stays FAIL. That GROVE lock does not move.
+- Heightfield from the seed, about 30 cm, under the feet and the cards only. The feet follow that tiny rise. The ground film stays the flat Imagine plane. It does not redraw sol and it does not paint the dirt photo. Fractal noise that lifts or refills that photo stays FAIL. That GROVE lock does not move. The hung posture formula is law [46](46-four-picture-jobs.md): `h = 0.20 + 0.20 * fbm(x/28, z/28, s+101)`. It does not decide spawn.
 - Occlusion before the look composite. A hide pass. The required draw is already far to near. This pass is extra.
 
 ---

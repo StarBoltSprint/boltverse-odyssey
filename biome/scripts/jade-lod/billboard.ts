@@ -10,12 +10,13 @@ export function billboardYaw(
   camZ: number,
   x: number,
   z: number,
+  face: number = FACE,
 ): number {
   const toCam = Math.atan2(camX - x, camZ - z);
   let d = toCam - planted;
   while (d > Math.PI) d -= Math.PI * 2;
   while (d < -Math.PI) d += Math.PI * 2;
-  return planted + d * FACE;
+  return planted + d * face;
 }
 
 export function scaleByBand(band: LodRow["band"]): number {

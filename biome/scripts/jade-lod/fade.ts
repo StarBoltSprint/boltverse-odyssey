@@ -41,6 +41,8 @@ type Slot = {
   from: Band;
   to: Band;
   t0: number;
+  /** 220 crown/shadow, 250 default, 280 bole↔impostor. */
+  ms: number;
 };
 
 const slots = new Map<string, Slot>();
@@ -157,6 +159,7 @@ export function requestFade(
   from: Band,
   to: Band,
   nowMs: number,
+  durationMs: number = FADE_MS,
 ): "fade" | "snap" {
   if (from === to) {
     settled.set(id, to);
@@ -167,14 +170,15 @@ export function requestFade(
     settled.set(id, to);
     return "snap";
   }
-  slots.set(id, { id, from, to, t0: nowMs });
+  const ms = Math.min(FADE_MS_MAX, Math.max(FADE_MS_MIN, durationMs));
+  slots.set(id, { id, from, to, t0: nowMs, ms });
   return "fade";
 }
 
 /** Drop finished slots. applyCheapAlpha calls this once per frame. */
 export function tickFades(nowMs: number): void {
   for (const [id, slot] of slots) {
-    if (nowMs - slot.t0 >= FADE_MS) {
+    if (nowMs - slot.t0 >= slot.ms) {
       slots.delete(id);
       settled.set(id, slot.to);
     }
@@ -200,7 +204,7 @@ export function resolveCheapAlpha(id: string, band: Band, nowMs: number): CheapA
       settled.set(id, band);
       return idle(band);
     }
-    const u = (nowMs - slot.t0) / FADE_MS;
+    const u = (nowMs - slot.t0) / slot.ms;
     if (u >= 1) {
       slots.delete(id);
       settled.set(id, band);
