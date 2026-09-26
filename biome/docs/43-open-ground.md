@@ -6,6 +6,8 @@ Paste: [`COLD_START-open-ground.md`](COLD_START-open-ground.md)
 
 This is the method that made the forest match the plain. A cold Grok copies it. Do not invent a second sky.
 
+**Shaders sample Imagine videos.** Sky and ground are cooked mp4s. The shader is a sampler and a composite of those videos. It does not invent the sky or the ground. Three.js, or any other language or engine as the world, is FAIL. Same lock as the top of [`COLD_START-biome-method.md`](COLD_START-biome-method.md).
+
 ---
 
 ## What it is
@@ -140,6 +142,7 @@ Run clip `bolt-native.mp4`, `playbackRate = 4`. Idle `bolt-breath.mp4`, rate 1. 
 
 ## FAIL
 
+- A Three.js, Babylon, Unity, Unreal, Vite/TS, or procedural shader world in place of the Imagine sky and ground videos. The shader samples those mp4s. It is not the world.
 - Empty blue video plus a sun sticker and a cloud sticker.
 - A canopy, or a sky video that already contains the ground.
 - One looping film that zooms when he runs. The loop reads as reverse.
