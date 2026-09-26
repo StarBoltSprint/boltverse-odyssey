@@ -4,7 +4,7 @@
 
 Sheets are **cutouts**, not places. Each file is one subject on empty air. The field graph instances them. A sheet that already looks like a forest makes the seed plant a forest on a forest.
 
-Law [46](46-four-picture-jobs.md) names the picture jobs. This law is the cook. No png and no mp4 ship in this repo. Do not rewrite `pyre-stage`. Three.js is not the world. Ground and sky plates stay a separate cook. `bole_v0` has no horizon.
+Law [46](46-four-picture-jobs.md) names the picture jobs. This law is the cook. No png and no mp4 ship in this repo. Do not rewrite `pyre-stage`. Three.js is not the world. Ground and sky plates are the empty room (law [48](48-jade-plate-cook.md)). Sheets stay cutouts. `bole_v0` has no horizon.
 
 Prompts: [`../scripts/jade-lod/SHEETS.md`](../scripts/jade-lod/SHEETS.md). Names: [`../scripts/jade-lod/twoPlane.ts`](../scripts/jade-lod/twoPlane.ts).
 

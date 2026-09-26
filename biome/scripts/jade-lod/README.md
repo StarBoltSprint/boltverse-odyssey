@@ -55,7 +55,7 @@ Law [46](../../docs/46-four-picture-jobs.md). Same seed, same ids. The film stil
 
 **Sheets.** Cutouts, not places. Folder `public/decor/jade/sheets/` (names only, no binaries). `bole_v0..v3`, `crown_v0..v3`, `bole_imp_v0..v3`, optional `crown_imp`, plus `ruin` / `crystal` / `fern` and their `_imp`. Same `N` on bole+crown is one pair. Wire: `TEX.bole[2].bole / .crown / .imp` via `texOf(kind, variant)`. Missing file → v0, the row still draws. Cook rail: law [47](../../docs/47-jade-sheet-cook.md) · prompts [`SHEETS.md`](SHEETS.md).
 
-**Plates.** `jade_ground.mp4` world-XZ, picture-time `uv.x = worldX/24 + 0.02*sin(pictureTime)`, `uv.y = worldZ/24`. `jade_sky.mp4` yaw only. Cards stand on the floor. They are not baked into the mp4.
+**Plates.** The room, not the furniture. Folder `public/decor/jade/plates/` (names only). `jade_ground.mp4` + poster, `jade_sky.mp4` + poster. Optional `jade_ground_still.jpg`, same UV. `TILE` 24 m. `u = worldX/TILE + 0.02*sin(pictureTime*0.15)`. `pictureTime` is the sim clock. Never `Date.now`. Sky yaws with the camera and does not nod. Kits are siblings of the plane. Cook: law [48](../../docs/48-jade-plate-cook.md) · prompts [`PLATES.md`](PLATES.md) · [`plates.ts`](plates.ts).
 
 **Two planes.** [`twoPlane.ts`](twoPlane.ts). Near = bole + crown + shadow. Mid = bole. Far = impostor. Cull = nothing. Near↔mid fades crown + shadow in 220 ms; the bole stays cutout. Mid↔far fades bole↔impostor in 280 ms. Crown face 0.85, bole face 0.55. Capsule `r` is `KIND_TABLE[kind].r` on the bole (contact band 0.28 / bole 0.55). Never the crown.
 

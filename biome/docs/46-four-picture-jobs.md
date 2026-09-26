@@ -39,18 +39,11 @@ Two looping films, empty of things you can thud.
 
 `jade_ground.mp4` — world-XZ projected. A little travel or haze is fine. It is not a treadmill that slides dirt under planted cards.
 
-```
-uv.x = worldX/24 + 0.02*sin(pictureTime)
-uv.y = worldZ/24
-```
-
-Picture-time, not the wall clock. Stub: [`plates.ts`](../scripts/jade-lod/plates.ts).
-
 `jade_sky.mp4` — dome or sphere, yaw only, no pitch flip. The horizon color matches the ground edge.
 
-Optional second ground pass: the same clip, UV / 1.7, opacity about 0.2, 8 cm lower.
+The hung files, the UV (`TILE` 24 m, `sin(pictureTime * 0.15)`), the roots pass, and the cook rails are law [48](48-jade-plate-cook.md). Picture-time is the sim clock. Never `Date.now`. Stub: [`plates.ts`](../scripts/jade-lod/plates.ts).
 
-Cards parent to world XZ **on** this floor. They are not composited into the mp4.
+Cards are siblings of the floor. They are not children of the video mesh, and they are not composited into the mp4. Sheets stay cutouts (law [47](47-jade-sheet-cook.md)).
 
 **FAIL:** near trunks painted into the ground film. That doubles the seed.
 

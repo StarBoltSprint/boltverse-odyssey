@@ -20,4 +20,4 @@ Use the **lit** line it prints, not the raw mean.
 
 Do not run `plate-geo-qc.py` on this ground. Do not put φ in the Imagine prompt. Do not hang stickers, a canopy, or a zooming loop.
 
-Volume (capsules and cards in meters) is [44-imagine-volume-stack.md](44-imagine-volume-stack.md). Card shading is [45-shader-graph-look-kitchen.md](45-shader-graph-look-kitchen.md). Picture jobs are [46-four-picture-jobs.md](46-four-picture-jobs.md). Sheet cook is [47-jade-sheet-cook.md](47-jade-sheet-cook.md). This file stays the sky and ground numbers.
+Volume (capsules and cards in meters) is [44-imagine-volume-stack.md](44-imagine-volume-stack.md). Card shading is [45-shader-graph-look-kitchen.md](45-shader-graph-look-kitchen.md). Picture jobs are [46-four-picture-jobs.md](46-four-picture-jobs.md). Sheet cook is [47-jade-sheet-cook.md](47-jade-sheet-cook.md). Plate cook is [48-jade-plate-cook.md](48-jade-plate-cook.md). This file stays the sky and ground numbers.
