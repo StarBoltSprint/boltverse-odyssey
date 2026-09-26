@@ -10,7 +10,10 @@ Read this before the rails. A paste-reader who skips it and ships a code world i
 - **Cook the Imagine videos first.** Session Imagine Video. Then Live plays those videos.
 - **No other language or engine builds the world.** Do not build the world in Three.js, Babylon, Unity, Unreal-as-world, Vite/TS demos, raw WebGL mesh scenes, or procedural geometry/shader worlds that replace the plates.
 - **A cinematic code biome with no Imagine mp4s wired is FAIL** (Velum-class).
-- **WebGL/GPU may only composite keyed layers** (Bolt, trees, howl, lights) **over** those cooked videos. That is Rail B. It does not invent the sky or the ground.
+- **The player is Bolt.** Bolt is the StarBoltSprint dog already on this GitHub (`StarBoltSprint/boltverse-odyssey`). Use that one. Do not invent another player craft.
+- **Use the sealed GPU Bolt already hung here.** Section 2. Default motion is [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4). Show [`lock/bolt-back.jpg`](../../lock/bolt-back.jpg) before any new Bolt still. Do not invent a new hero, craft, manta, ray, ship, or mesh player.
+- **Inventing another player avatar instead of that Bolt is FAIL** (Velum manta-class).
+- **WebGL/GPU may only composite keyed layers** (that sealed Bolt, trees, howl, lights) **over** those cooked videos. That is Rail B. It does not invent the sky, the ground, or a new hero.
 - **No playable hang** until the required Imagine mp4s exist and play.
 
 Paste this as the first message when a new Grok, in a new conversation, cooks a **playable biome composite** for **any** named biome. The name and the paint are free: nebula, shore, forest, gothic, lava, ice, or whatever the player named. `pyre/` is the Diablo gothic worked example. It is not the only biome type. Copy the craft. Recook the pixels in this plate's light.
@@ -375,6 +378,7 @@ Forest / open ground:
 Either world:
 
 - Building the world in Three.js, Babylon, Unity, Unreal-as-world, Vite/TS, raw WebGL meshes, or a procedural shader scene. Imagine videos are the assets. No other language or engine is the world. A cinematic code biome with no Imagine mp4s is FAIL (Velum-class). WebGL/GPU only composites keyed layers over those videos.
+- Another player avatar instead of Bolt. The player is the StarBoltSprint dog already on this GitHub. Use the sealed GPU Bolt in section 2 (`lock/bolt-gallop-cycle.mp4`; show `lock/bolt-back.jpg` before any new Bolt still). A new hero, craft, manta, ray, ship, or mesh player is FAIL (Velum manta-class).
 - A playable hang while the required Imagine mp4s are missing or not playing
 - Chrome crystals, Connect Wallet, player API keys, a new grok.me, or a Build share URL as the hang
 - Links to `pyre/PLAIN.md` or `pyre/VISTA.md` (those paths 404; from `biome/docs/` the real files are [`../../pyre/METHOD.md`](../../pyre/METHOD.md), [`../../pyre/GROVE.md`](../../pyre/GROVE.md), [`../../pyre/PLATE.md`](../../pyre/PLATE.md), [`../../pyre/ORBIT.md`](../../pyre/ORBIT.md))
@@ -408,6 +412,7 @@ Forest / open ground:
 Either:
 
 - [ ] The required Imagine mp4s exist and play. The world is those videos. Three.js, or any other language or engine, did not build the world. GPU only composites keyed layers over the plates.
+- [ ] The player is Bolt, the StarBoltSprint dog already on this GitHub. Default motion is the sealed cycle `lock/bolt-gallop-cycle.mp4` (section 2). No invented hero, craft, manta, ray, ship, or mesh player.
 - [ ] Laws 39–42 were followed where that rail is on.
 - [ ] The hang is `https://boltverse-odysseyyyy.grok.me` only.
 - [ ] No wallet. No player keys.
