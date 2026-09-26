@@ -4,6 +4,8 @@
 
 Paste: [`COLD_START-open-ground.md`](COLD_START-open-ground.md)
 
+Imagine sky videos and the ground video are the paint. Shaders only sample and composite those mp4s. A shader sky, a noise floor, or a Three.js world with no cooked plates is FAIL. Gate: [`COLD_START-biome-method.md`](COLD_START-biome-method.md).
+
 This is the method that made the forest match the plain. A cold Grok copies it. Do not invent a second sky.
 
 ---
@@ -140,6 +142,7 @@ Run clip `bolt-native.mp4`, `playbackRate = 4`. Idle `bolt-breath.mp4`, rate 1. 
 
 ## FAIL
 
+- A shader-only sky or ground, or a mesh/engine world, in place of the cooked Imagine videos (Velum).
 - Empty blue video plus a sun sticker and a cloud sticker.
 - A canopy, or a sky video that already contains the ground.
 - One looping film that zooms when he runs. The loop reads as reverse.

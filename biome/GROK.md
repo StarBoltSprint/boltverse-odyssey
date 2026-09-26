@@ -2,6 +2,8 @@
 
 **START HERE:** a playable biome composite (any paint) pastes [`docs/COLD_START-biome-method.md`](docs/COLD_START-biome-method.md) first. That paste holds both world cooks: **A** road densify (one continuous Imagine plate, law 20) and **B** forest / open ground (law 43 — black, four skies, one ground tile, horizon, GPU trees and Bolt). Densify / QC order for a road stays [`scripts/biome-cook/README.md`](scripts/biome-cook/README.md) · [`docs/COLD_START-biome-cook.md`](docs/COLD_START-biome-cook.md). Imagine Live keyed props stay [`docs/COLD_START-imagine-engine.md`](docs/COLD_START-imagine-engine.md) (laws 39–42). Do not invent a new law number.
 
+**HARD — Imagine videos are the world (SmiR 2026-09-26, Velum FAIL).** Cook the Imagine mp4s (road densify, or open-ground sol/ciel plus keyed herbe/arbres) and wire Live to them before any playable biome; Three.js, Babylon, Unity, Unreal-as-world, raw WebGL meshes, procedural geometry, and shader-painted worlds are FAIL, and GPU compositing of keyed layers over those videos stays Rail B — [`docs/COLD_START-biome-method.md`](docs/COLD_START-biome-method.md).
+
 Repo: `https://github.com/StarBoltSprint/boltverse-odyssey`  
 **This folder** = Biome / Sprint lane recipe. Citadel halls = repo root.
 
