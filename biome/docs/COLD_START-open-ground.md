@@ -1,6 +1,6 @@
 # COLD START — open ground
 
-Read [43-open-ground.md](43-open-ground.md) before touching a forest, a plain of dirt, or any biome that is **not** a 3-lane road.
+The cook **order** (black → four skies → one ground tile → horizon → GPU Bolt and trees) is section B of [COLD_START-biome-method.md](COLD_START-biome-method.md). This file is the numbers. Read [43-open-ground.md](43-open-ground.md) before touching a forest, a plain of dirt, or any biome that is **not** a 3-lane road.
 
 Copy the lava plain: four locked portrait skies, one tiling ground video, the same `orbit` on both, GPU Bolt (`bolt-native.mp4` at rate 4, `bolt-breath.mp4` idle, `uGrove = 1`).
 

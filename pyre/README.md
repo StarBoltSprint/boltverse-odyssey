@@ -10,7 +10,7 @@ Le regard gauche / droite est `master/pyre-wing-l.mp4` et `master/pyre-wing-r.mp
 
 À 600 pas il n'y a pas de boss. La route entre dans la citadelle (`master/citadel-arrive.mp4`), les portes s'ouvrent, le hall mène à la salle de la star map. Un tap sur l'anneau joue `master/room-holo.mp4` puis ouvre la constellation. Le retour se fait par `https://boltversee-odyssey.grok.me/room`, pas par la page Start.
 
-La méthode pour tout refaire Pyre est dans [METHOD.md](METHOD.md). Cette méthode est la base any-biome : [`biome/docs/COLD_START-biome-method.md`](../biome/docs/COLD_START-biome-method.md). Pyre reste l'exemple Diablo, pas le seul type de biome.
+La méthode pour tout refaire Pyre est dans [METHOD.md](METHOD.md). Cette méthode est la base any-biome : [`biome/docs/COLD_START-biome-method.md`](../biome/docs/COLD_START-biome-method.md). La section A est la route. La section B est la forêt (sol ouvert) : noir, quatre ciels, une tuile, l'horizon, puis le GPU. Les chiffres restent [GROVE.md](GROVE.md) et la loi 43. Pyre reste l'exemple Diablo, pas le seul type de biome.
 
 Le composite est `src/pyre-stage.tsx`.
 

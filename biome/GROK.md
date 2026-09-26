@@ -1,6 +1,6 @@
 # GROK — biome / Sprint cook (kitchen)
 
-**START HERE:** a playable biome composite (any paint) pastes [`docs/COLD_START-biome-method.md`](docs/COLD_START-biome-method.md) first. Densify / QC order stays [`scripts/biome-cook/README.md`](scripts/biome-cook/README.md) · [`docs/COLD_START-biome-cook.md`](docs/COLD_START-biome-cook.md). Imagine Live keyed props stay [`docs/COLD_START-imagine-engine.md`](docs/COLD_START-imagine-engine.md).
+**START HERE:** a playable biome composite (any paint) pastes [`docs/COLD_START-biome-method.md`](docs/COLD_START-biome-method.md) first. That paste holds both world cooks: **A** road densify (one continuous Imagine plate, law 20) and **B** forest / open ground (law 43 — black, four skies, one ground tile, horizon, GPU trees and Bolt). Densify / QC order for a road stays [`scripts/biome-cook/README.md`](scripts/biome-cook/README.md) · [`docs/COLD_START-biome-cook.md`](docs/COLD_START-biome-cook.md). Imagine Live keyed props stay [`docs/COLD_START-imagine-engine.md`](docs/COLD_START-imagine-engine.md) (laws 39–42). Do not invent a new law number.
 
 Repo: `https://github.com/StarBoltSprint/boltverse-odyssey`  
 **This folder** = Biome / Sprint lane recipe. Citadel halls = repo root.

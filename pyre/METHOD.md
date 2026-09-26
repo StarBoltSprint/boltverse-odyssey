@@ -1,6 +1,6 @@
 # Pyre — méthode complète
 
-Exemple travaillé (Diablo, lave, citadelle). La peinture est libre. Pour n'importe quel biome, le collage de départ est [`biome/docs/COLD_START-biome-method.md`](../biome/docs/COLD_START-biome-method.md).
+Exemple travaillé (Diablo, lave, citadelle). La peinture est libre. Pour n'importe quel biome, le collage de départ est [`biome/docs/COLD_START-biome-method.md`](../biome/docs/COLD_START-biome-method.md). La route est la section A. La forêt (sol ouvert) est la section B de ce collage : noir, quatre ciels, une tuile de sol, horizon, GPU. Ce fichier reste l'exemple de la route.
 
 La plaine et le Thunderwolf sont les sections 11–13 et [PLATE.md](PLATE.md). Il n'y a pas de `PLAIN.md` ni de `VISTA.md` dans `pyre/` — ces chemins 404. À la racine du dépôt, `PLAIN.md` est l'ancienne grille à neuf cases, `VISTA.md` est une note de ciel plus vieille. Un biome neuf ne commence pas là.
 
