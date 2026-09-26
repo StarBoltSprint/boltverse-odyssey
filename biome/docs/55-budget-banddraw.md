@@ -55,7 +55,7 @@ More than 8 fades: snap the farthest. The nearest 24 have priority.
 
 ## Volumes and pools
 
-Volume follows `bandDraw`, not `prev.band`. Mid still has the bole capsule. Far and cull have none. Far `meshLod` is the planted cross (law [49](49-two-plane-tree.md)), not a camera card.
+Volume follows `bandDraw`, not `prev.band`. Mid still has the bole capsule. Far and cull have none. The far chair of 96 is the lab cross (law [49](49-two-plane-tree.md)). A live tableau (law [48](48-jade-plate-cook.md)) sets that chair to 0. The plate holds the far. The crosses do not instance.
 
 Bole pool: `bandDraw` is near or mid, and the tree is not fading. Crown pool: `bandDraw === near` only. A tree that is still near in `prev` but mid in `bandDraw` sits in the bole pool, not the crown pool.
 

@@ -4,7 +4,8 @@ import { KIND_TABLE, type Band, type Kind, type LodRow } from "./types";
 /**
  * Two-plane tree kit. Law 49. Kitchen types. Does not import three.
  * Bole = architecture (mask). Crown = weather (may dissolve). One address.
- * They do not share a material path. The far picture is a planted cross, not a camera card.
+ * They do not share a material path. The planted cross is the lab far, before a tableau plate.
+ * A live plate already holds the far grove. Those crosses do not instance (far chair 0).
  * The group is not yawed. Bole and crown mix yaw on their own. The cross does not.
  * Near is bole + crown. Mid is the bole. The cross is far only.
  * Near↔mid is one fade slot (the crown, 220 ms), including a budget demote.

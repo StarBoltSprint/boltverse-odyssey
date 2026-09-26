@@ -2,7 +2,9 @@
 
 **Go 2026-09-26 (SmiR).** Kitchen only. Do not read this to the player.
 
-Two planes are one tree **split by job**. The bole is architecture. It stays a mask almost always. The crown is weather. It is allowed to dissolve. They share an address. They do not share a material path. The far picture is a planted cross: two planes at 90°, yaw from the spawn seed. It is not a camera card and not a tiny copy of bole plus crown.
+Two planes are one tree **split by job**. The bole is architecture. It stays a mask almost always. The crown is weather. It is allowed to dissolve. They share an address. They do not share a material path.
+
+The planted cross (two planes at 90°, spawn yaw) is the **lab** far, before a tableau plate exists. It is not a camera card. When the live plate carries the far grove (law [48](48-jade-plate-cook.md)), the far chair is 0 and these crosses do not instance. Near and mid sheets stay.
 
 A single quad forces a translucent fade on the walkable trunk. Depth write dies, the sort goes wrong, and the pawn ghosts through the bark.
 
@@ -41,7 +43,7 @@ Yaw is per child. Do not yaw the whole group.
 | Impostor | planted. Spawn yaw, and that yaw plus `π/2`. No face-cam. |
 | Shadow | none |
 
-A far mix of 0.9 (or any lean toward the camera) is FAIL. Orbiting that grove reads as a card fence. The cross is far only. Mid does not keep it. Near does not keep it.
+A far mix of 0.9 (or any lean toward the camera) is FAIL on the lab cross. Orbiting that grove reads as a card fence. The cross is the lab far only. Mid does not keep it. Near does not keep it. A live tableau does not draw it at all.
 
 ---
 
@@ -51,7 +53,7 @@ A far mix of 0.9 (or any lean toward the camera) is FAIL. Orbiting that grove re
 |---|---|
 | Near | bole + crown + shadow |
 | Mid | bole only |
-| Far | planted cross only |
+| Far | lab: planted cross. Live tableau: nothing (the plate holds the far) |
 | Cull | nothing |
 
 Far does not keep a hidden bole.
@@ -101,6 +103,6 @@ Cylinder on the bole only: `{ x, z, r: 0.28 | 0.55, h: hBole, block }`. The crow
 
 ## Done-when
 
-Walk up to a bole. The trunk is a cutout and writes depth. The crown is a second card. Step back through near → mid. In 220 ms the crown and the shadow dissolve, the bole does not go translucent, and the capsule stays. One slot is used, not two. Step through mid → far. The crown is already gone. The bole may fade only here, the impostor fades in, and the capsule drops at 44 m, not halfway through the 280 ms. Come back. The capsule is on at 40 m while the bole alpha is still low. Far shows the planted cross only. Orbit it: the two planes stay on the spawn yaw. They do not swing into a fence. Cull shrinks both planes to 0.35 over 180 ms, then they are gone. At `t = 0.5` the scale is `mix(1, 0.35, 0.5) = 0.675`. Scale does not go to 0. The bole is not in that scale. No volume. Chairs stay near 24, mid 64, far 96. Far has no capsule. Elder’s hit is 0.55 m on the bole, not the 2.8 m crown. A v1 crown sits 0.15 m to the side and the capsule does not. A missing bole does not leave a crown in the air.
+Walk up to a bole. The trunk is a cutout and writes depth. The crown is a second card. Step back through near → mid. In 220 ms the crown and the shadow dissolve, the bole does not go translucent, and the capsule stays. One slot is used, not two. Step through mid → far. The crown is already gone. The bole may fade only here, the impostor fades in, and the capsule drops at 44 m, not halfway through the 280 ms. Come back. The capsule is on at 40 m while the bole alpha is still low. Far shows the planted cross only. Orbit it: the two planes stay on the spawn yaw. They do not swing into a fence. Cull shrinks both planes to 0.35 over 180 ms, then they are gone. At `t = 0.5` the scale is `mix(1, 0.35, 0.5) = 0.675`. Scale does not go to 0. The bole is not in that scale. No volume. Lab chairs stay near 24, mid 64, far 96. A live tableau sets far to 0. Far has no capsule. Elder’s hit is 0.55 m on the bole, not the 2.8 m crown. A v1 crown sits 0.15 m to the side and the capsule does not. A missing bole does not leave a crown in the air.
 
 World stays Imagine Video assets. The player stays the sealed Bolt. No wallet. No player API keys. Hang URL stays `https://boltverse-odysseyyyy.grok.me`.

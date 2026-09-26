@@ -79,6 +79,8 @@ Done-when: 30 boles inside 10 m show 24 crowns and 6 bare trunks. Cull 6 crowned
 
 ### 4. Far → cull shrink
 
+This shrink is the **lab** cross, before a tableau plate. Live play (law [48](48-jade-plate-cook.md)) sets the far chair to 0, so those instances never spawn. The numbers below stay the bench for the stand-in.
+
 Far ↔ cull is the last LOD edge. Soft gait is section 6. The Howl verb is section 5. The pawn KEEP is section 8.
 
 `holdBand` still gates. Leave far is 80 m. Enter far is 72 m. The shrink is the fade on that gate. It is not a second hysteresis.
@@ -97,7 +99,7 @@ The far mesh is a planted cross: two planes at 90°, yaw from the spawn seed. It
 
 Only that cross scales, both planes, X and Y together. The bole and the crown are already hidden on far. Do not scale them. Do not scale the group. Do not scale the contact shadow. It is already off on far.
 
-Bench. Chairs are near 24, mid 64, far 96. Far has no capsule. At `t = 0.5` on far → cull, `impScale = mix(1, 0.35, 0.5) = 0.675`. Both planes take that scale. Yaw stays the seed.
+Lab bench. Chairs are near 24, mid 64, far 96. Far has no capsule. At `t = 0.5` on far → cull, `impScale = mix(1, 0.35, 0.5) = 0.675`. Both planes take that scale. Yaw stays the seed. A live tableau keeps near 24 and mid 64, and sets far to 0.
 
 The same cap of 8. A 9th tree snaps: hide the impostor, scale 1, no smear. The idle impostor pool stays scale 1. A shrinking tree leaves `inst.impostor` and draws as its own kit for 180 ms.
 

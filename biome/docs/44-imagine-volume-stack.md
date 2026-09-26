@@ -64,7 +64,7 @@ LOD picks how much twin you get as you close in. It does not thicken the mp4. Le
 |---|---|---|---|
 | Near | `< 12` / leave `14` | full card + shadow | yes |
 | Mid | `< 40` / leave `44` | bole-only, smaller | yes |
-| Far | `< 72` / leave `80` | planted cross (two planes, spawn yaw) | no |
+| Far | `< 72` / leave `80` | lab cross; live tableau draws none | no |
 | Cull | beyond | ground film only | no |
 
 Near capped at 24. Extras drop to mid and keep the capsule. Far trees may be ghosts in the ground film. Near and mid must thud. The volume twin dies with the card band (far and cull have no capsule).

@@ -38,11 +38,11 @@ The cook (folder, canvas, prompts, key, variant meaning) is law [47](47-jade-she
 
 Two looping films, empty of things you can thud.
 
-`jade_ground.mp4` — world-XZ projected. A little travel or haze is fine. It is not a treadmill that slides dirt under planted cards.
+`<biome>_ground.mp4` — world-XZ projected, 2048². Grain and a weak crawl. It is not a treadmill that slides dirt under planted cards. `biome` is `ember` or `jade`.
 
-`jade_sky.mp4` — dome or sphere, yaw only, no pitch flip. The horizon color matches the ground edge.
+`<biome>_sky.mp4` — dome or lat-long, yaw only, no pitch. The horizon color matches the ground's far edge.
 
-The hung files, the UV (`TILE` 24 m, `sin(pictureTime * 0.15)`), the roots pass, and the cook rails are law [48](48-jade-plate-cook.md). Picture-time is the sim clock. Never `Date.now`. Stub: [`plates.ts`](../scripts/jade-lod/plates.ts).
+The hung files, the UV (`TILE` 24 m, `0.015 * sin(pictureTime * 0.12)`), and the cook rails are law [48](48-jade-plate-cook.md). Picture-time is the sim clock. Never `Date.now`. A live plate sets the far chair to 0. Stub: [`plates.ts`](../scripts/jade-lod/plates.ts).
 
 Cards are siblings of the floor. They are not children of the video mesh, and they are not composited into the mp4. Sheets stay cutouts (law [47](47-jade-sheet-cook.md)).
 
