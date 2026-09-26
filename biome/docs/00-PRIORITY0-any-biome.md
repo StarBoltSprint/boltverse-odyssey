@@ -1,6 +1,6 @@
 # PRIORITY 0 — Any biome = Frost-parity (random player, cold Grok)
 
-**START HERE** → [`../scripts/biome-cook/README.md`](../scripts/biome-cook/README.md) in order (steps 1→17). Paste [`COLD_START-biome-cook.md`](COLD_START-biome-cook.md). This file stays the parity law.
+**START HERE** → a playable composite (any paint) pastes [`COLD_START-biome-method.md`](COLD_START-biome-method.md) first. Densify / QC order: [`../scripts/biome-cook/README.md`](../scripts/biome-cook/README.md) (steps 1→17) and [`COLD_START-biome-cook.md`](COLD_START-biome-cook.md). This file stays the parity law inside that method.
 
 **Audience:** a brand-new Grok in a brand-new conversation, cooking **any** named biome (Frost, Tide, Ember, invented `{PAINT}`). Not Frost-only.
 

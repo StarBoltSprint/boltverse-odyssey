@@ -1,5 +1,9 @@
 # Pyre — méthode complète
 
+Exemple travaillé (Diablo, lave, citadelle). La peinture est libre. Pour n'importe quel biome, le collage de départ est [`biome/docs/COLD_START-biome-method.md`](../biome/docs/COLD_START-biome-method.md).
+
+La plaine et le Thunderwolf sont les sections 11–13 et [PLATE.md](PLATE.md). Il n'y a pas de `PLAIN.md` ni de `VISTA.md` dans `pyre/` — ces chemins 404. À la racine du dépôt, `PLAIN.md` est l'ancienne grille à neuf cases, `VISTA.md` est une note de ciel plus vieille. Un biome neuf ne commence pas là.
+
 Ce fichier suffit à refaire Pyre. Ne pas réinventer Bolt, l’aura, la jointure des ailes, ni le hurlement : les essais ratés sont listés en bas. Le regard dans la salle est [ORBIT.md](ORBIT.md) — ne pas le réinventer non plus.
 
 Pyre est un endless runner Diablo. Une route de lave défile. Bolt (berger blanc, vu de dos) sprinte dessus. Le joueur glisse pour changer de voie, regarde à gauche et à droite, et tape un ennemi pour le hurler.
