@@ -2,21 +2,23 @@
 
 **STOP — HARD SPLIT.** NEVER Imagine Agent for these clips. NEVER a video with only one still.
 
-**Primary (Build / SuperGrok session):** Imagine Video with **two stills** pinned. Session credits. No API key is required to know or follow this law.
+**Primary (Build / SuperGrok session):** Imagine Video with **two stills** pinned, plus an optional mid keyframe. Session credits. No API key is required to know or follow this law.
 
 - `first` = exact last pixels of the previous plate (extract below). P0 uses the empty first still.
 - `last` = the advanced-world still (same camera, world closer, not a new noun pile).
+- `mid` = optional exact picture inside the clip. Not a reference. `scripts/imagine-mid.mjs` → `imagineMidClip({ first, mid, last, dest })`. Sent as `keyframes`. One file lands at half the duration. Up to 4, at least 1/3 s apart. Between pins the model still invents the motion.
 - Hang the mp4, then run `python3 biome/scripts/plate-mae-qc/plate-mae-qc.py`. Exit 0 = PASS. Do not claim MAE PASS without that run.
 
 **Optional CLI rail:** `scripts/imagine-hooks.mjs` calls `api.x.ai` only when `XAI_API_KEY` is set.
 
 - Hall: `imagineClip` — `image` + **`last_frame`** (citadel only — **banned** for biome Bolt)
 - Biome road / Video A: `imagineBiomeClip` — `image` + **`last_frame`** (distinct, ZERO dog, **48fps**)
+- Mid pin: `scripts/imagine-mid.mjs` — `imagineMidClip({ first, mid, last, dest })` — `image` + `keyframes` + `last_frame`
 - Bolt cutout: **REUSE** [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) — key + despill + composite. `imagineBoltClip` = **SmiR only** (replace the lock)
 
 Missing `XAI_API_KEY` is not a stop and not a FAIL. `--dry-run` plans without a key.
 
-**BAN:** stopping the biome because the key is absent · inventing “forcé localement” · one-still `imagine_image_to_video` / `imagine_reference_to_video` · claiming MAE PASS without `plate-mae-qc.py` · Imagine Agent video · a new Bolt sprint.
+**BAN:** stopping the biome because the key is absent · inventing “forcé localement” · one-still `imagine_image_to_video` / `imagine_reference_to_video` · claiming MAE PASS without `plate-mae-qc.py` · Imagine Agent video · a new Bolt sprint · sending a mid picture as `image_urls` and calling it pinned.
 
 **Make biome:** décor scrolls; Bolt sprints **IN PLACE**. Pipeline: [10-bolt-cutout-law.md](10-bolt-cutout-law.md). Never bake Bolt into a single final film. Never a 3-Bolt multi-lane mask.
 
