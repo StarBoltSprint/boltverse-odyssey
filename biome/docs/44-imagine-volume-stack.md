@@ -55,6 +55,18 @@ Do not extrude the mp4. Stand objects on it.
 
 ---
 
+## Snippet
+
+Remix tick: [`../scripts/jade-billboard/jadeBillboard.ts`](../scripts/jade-billboard/jadeBillboard.ts). Read [`../scripts/jade-billboard/README.md`](../scripts/jade-billboard/README.md).
+
+Paint order each frame (`DRAW_ORDER`): sky → ground film → far décor (in the plate) → mid cards → near cards → shadows → Bolt → howl/fx.
+
+One spawn row drives the card. `volumeOf(row)` is the capsule `(x, z, r)` into SprintCore obstacles (the return also carries `h`, `kind`, `hit`). Capsule code is not in that file. `tickCards` alone looks deep and you still walk through bark. Feed both.
+
+Far band draws nothing. Those trees stay in the ground film. Do not billboard the horizon.
+
+The file imports `three` so a remix can port the tick. It does not make Three.js the world. `pyre-stage` stays the WebGL composite of Imagine videos. Do not rewrite it into a Three.js world. There is no `biomes.ts` on this repo. Do not invent one. Sit the script next to the spawn table the remix already uses.
+
 ## GPU, every frame, per spawn row
 
 1. A camera-facing quad. A cheap two-plane (bole + crown) is enough when one quad is too thin.

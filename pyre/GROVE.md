@@ -42,6 +42,8 @@ Le fichier Imagine n'a pas d'épaisseur. Des cartes en mètres devant le film so
 
 Test le plus petit : les films de sol et de ciel déjà là, huit troncs dans la bande près, billboard + ombre + brume, capsules allumées, un tour autour d'un arbre. L'arbre reste planté et la forêt glisse derrière. Sinon ce n'est pas le volume.
 
+Le tick de remix est [`biome/scripts/jade-billboard/jadeBillboard.ts`](../biome/scripts/jade-billboard/jadeBillboard.ts). Ordre de peinture : ciel → film de sol → décor loin (dans la plaque) → cartes milieu → cartes près → ombres → Bolt → hurlement/fx. Une ligne de spawn pilote la carte. `volumeOf(row)` est la capsule `(x, z, r)` vers les obstacles SprintCore. Le code de la capsule n'est pas dans ce fichier. `tickCards` seul a l'air profond et on traverse l'écorce. Les deux. La bande loin ne dessine rien : ces arbres restent dans le film de sol. L'import `three` est le port du remix. Il ne fait pas de Three.js le monde. On ne réécrit pas `pyre-stage` en monde Three.js. Il n'y a pas de `biomes.ts` ici. On n'en invente pas.
+
 ## Volume — ce qu'on a jeté
 
 | Essai | Résultat |
