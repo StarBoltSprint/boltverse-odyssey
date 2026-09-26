@@ -4,7 +4,9 @@ Earlier one-file companion. The LOD hang is [`../jade-lod/README.md`](../jade-lo
 
 Kitchen remix / Rail B card tick. One spawn row drives the card. The capsule is the same `(x, z, r)` via `volumeOf(row)` into SprintCore obstacles. Capsule code is not in this file.
 
-Law: [`../../docs/44-imagine-volume-stack.md`](../../docs/44-imagine-volume-stack.md)
+Law: [`../../docs/44-imagine-volume-stack.md`](../../docs/44-imagine-volume-stack.md) · look graph [`../../docs/45-shader-graph-look-kitchen.md`](../../docs/45-shader-graph-look-kitchen.md)
+
+Resting browser port is `MeshBasicMaterial` + `alphaTest` 0.45. That is the mask path. The fade path is a second material, eight at a time.
 
 | File | Role |
 |---|---|

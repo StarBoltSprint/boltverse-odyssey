@@ -1,28 +1,30 @@
-// Cheap alpha for one Imagine card. Kitchen. Not a world shader.
-// Lockstep with fade.ts: ALPHA_SKIP 0.02, ALPHA_TEST 0.45.
-// Idle cutout. Mid-fade premultiplied blend. a < 0.02 discards.
-// Resting trees stay on the cutout branch. Fill rate is the cost, not the curve.
+// Law 45 flattened chain for one Imagine card. Kitchen. Not a world shader.
+// sample → multiply FadeAlpha → discard Cutoff → premultiply.
+// Lockstep with fade.ts: ALPHA_TEST 0.45 (mask), ALPHA_SKIP 0.02 (fade).
+// Two instances, not one uber translucent shader:
+//   Mask (rest): uCutout=1, uFadeAlpha=1, uCutoff=0.45. Clip writes depth. Unlit opaque.
+//   Fade (≤8):   uCutout=0, uFadeAlpha=t, uCutoff=0.02. Premultiply. Material depth write stays off.
+// Yaw (billboardYaw), meshLod (holdBand), and the capsule are CPU. Not in this shader.
+// Fog, tint, AtlasRect, MistColor, UnlitBoost are law 45 pins. This file is the alpha chain.
+// Browser mask path: MeshBasicMaterial + alphaTest. Unreal graphs: M_CardJade / M_PlateGround.
 // Front side only. The 70/30 billboard yaw already faces the camera.
-// The capsule never samples this shader. Hit snaps in lod.ts.
-//
-// Remix uniforms: uMap, uAlpha (coverage 0..1), uCutout (1 cutout, 0 blend).
-// Blend path: gl.blendFunc(ONE, ONE_MINUS_SRC_ALPHA).
+// Blend instance: gl.blendFunc(ONE, ONE_MINUS_SRC_ALPHA).
 // Expects vUv from the card quad. World pixels stay the Imagine sheet.
 
 precision mediump float;
 
 uniform sampler2D uMap;
-uniform float uAlpha;
+uniform float uFadeAlpha;
+uniform float uCutoff;
 uniform float uCutout;
 
 varying vec2 vUv;
 
 void main() {
   vec4 tex = texture2D(uMap, vUv);
-  float a = tex.a * uAlpha;
-  if (a < 0.02) discard;
+  float a = tex.a * uFadeAlpha;
+  if (a < uCutoff) discard;
   if (uCutout > 0.5) {
-    if (a < 0.45) discard;
     gl_FragColor = vec4(tex.rgb, 1.0);
   } else {
     gl_FragColor = vec4(tex.rgb * a, a);

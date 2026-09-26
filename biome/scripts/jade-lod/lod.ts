@@ -91,6 +91,11 @@ export function volumesOf(lodRows: LodRow[]): Volume[] {
   return out;
 }
 
+/** Sticky meshLod for this id. The shader graph does not choose it. */
+export function holdBand(id: string): Band | undefined {
+  return prevBand.get(id);
+}
+
 export function resetLodState() {
   prevBand.clear();
 }

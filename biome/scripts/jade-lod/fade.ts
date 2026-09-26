@@ -221,10 +221,24 @@ export function resolveCheapAlpha(id: string, band: Band, nowMs: number): CheapA
   return flagsFor(prev, band, 0, true);
 }
 
-/** Uniforms for card.frag.glsl. uCutout 1 = idle/opaque cutout, 0 = dissolve blend. */
-export function cheapAlphaUniforms(alpha: CheapAlpha): { uAlpha: number; uCutout: number } {
+/**
+ * Uniforms for card.frag.glsl (law 45 alpha chain).
+ * Mask instance: uCutout 1, FadeAlpha 1, Cutoff 0.45.
+ * Fade instance: uCutout 0, FadeAlpha = coverage, Cutoff 0.02.
+ * uAlpha is the same scalar as uFadeAlpha.
+ */
+export function cheapAlphaUniforms(alpha: CheapAlpha): {
+  uAlpha: number;
+  uFadeAlpha: number;
+  uCutout: number;
+  uCutoff: number;
+} {
+  const fadeAlpha = alpha.path === "skip" ? 0 : alpha.a;
+  const cutout = alpha.path === "cutout" ? 1 : 0;
   return {
-    uAlpha: alpha.path === "skip" ? 0 : alpha.a,
-    uCutout: alpha.path === "cutout" ? 1 : 0,
+    uAlpha: fadeAlpha,
+    uFadeAlpha: fadeAlpha,
+    uCutout: cutout,
+    uCutoff: cutout ? ALPHA_TEST : ALPHA_SKIP,
   };
 }

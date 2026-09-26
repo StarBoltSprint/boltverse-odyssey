@@ -26,9 +26,9 @@ Paste this as the first message when a new Grok, in a new conversation, cooks a 
 Two world cooks live in this file. Pick one.
 
 - **A. Road densify** — the paint is a road. One continuous Imagine plate is the world clock.
-- **B. Forest / open ground** — the paint is a forest, a dirt plain, or any ground with no road. Law 43. The order is black, sky, ground, horizon, then GPU. That order is written below. You do not open five files to learn it. Volume on that ground (capsule + look) is law 44.
+- **B. Forest / open ground** — the paint is a forest, a dirt plain, or any ground with no road. Law 43. The order is black, sky, ground, horizon, then GPU. That order is written below. You do not open five files to learn it. Volume on that ground (capsule + look) is law 44. Card shading is law 45.
 
-Law 43 is already [open ground](43-open-ground.md). Law 44 is the [Imagine volume stack](44-imagine-volume-stack.md) on that ground. This paste does not take a new law number. It points at the laws that stay. Laws 39–42 stay in force when that rail is on. Do not invent a second law 43 or a second volume law.
+Law 43 is already [open ground](43-open-ground.md). Law 44 is the [Imagine volume stack](44-imagine-volume-stack.md) on that ground. Law 45 is the [shader-graph look kitchen](45-shader-graph-look-kitchen.md) on those cards. This paste does not take a new law number. It points at the laws that stay. Laws 39–42 stay in force when that rail is on. Do not invent a second law 43, a second volume law, or a second look-graph law.
 
 ## What to open
 
@@ -39,6 +39,7 @@ Law 43 is already [open ground](43-open-ground.md). Law 44 is the [Imagine volum
    - Empty-plate parity, scale, clock, ground FX, for a **road**: [`COLD_START-any-biome.md`](COLD_START-any-biome.md) · [00](00-PRIORITY0-any-biome.md) · [20](20-default-plate-proportions.md)
    - Forest numbers and shaders, after you have followed section B: [`43-open-ground.md`](43-open-ground.md) · [`COLD_START-open-ground.md`](COLD_START-open-ground.md) · [`pyre/GROVE.md`](../../pyre/GROVE.md)
    - Forest volume (collision capsule + look cards), after section B5: [`44-imagine-volume-stack.md`](44-imagine-volume-stack.md) · LOD [`../scripts/jade-lod/README.md`](../scripts/jade-lod/README.md) · earlier one-file [`../scripts/jade-billboard/jadeBillboard.ts`](../scripts/jade-billboard/jadeBillboard.ts)
+   - Card shading (shader graph on the posed card), after law 44: [`45-shader-graph-look-kitchen.md`](45-shader-graph-look-kitchen.md) · flattened chain [`../scripts/jade-lod/card.frag.glsl`](../scripts/jade-lod/card.frag.glsl)
    - Empty plate, black clear, orbit on sky and ground (lava plain example): [`pyre/PLATE.md`](../../pyre/PLATE.md) section "Procedural plain — this is what is built" · METHOD §13
    - Room look: [`pyre/ORBIT.md`](../../pyre/ORBIT.md) · journey [`COLD_START-room-starmap.md`](COLD_START-room-starmap.md)
 
@@ -221,7 +222,7 @@ Two jobs. Both. Same `(x, z)` as the row.
 
 The Imagine file has no thickness. Cards in meters stand in front of sol and ciel. The stack, the part cook, the GPU steps, the optional extras, and the 8-bole test are the law. Run that test before calling the forest deep.
 
-LOD picks how much twin as you close in. It does not thicken the mp4. Hang: [`../scripts/jade-lod/README.md`](../scripts/jade-lod/README.md). Near `< 12` / leave `14`, full card + shadow, volume yes (cap 24; extras drop to mid and keep the capsule). Mid `< 40` / leave `44`, bole-only, volume yes. Far `< 72` / leave `80`, impostor quad, no volume. Cull beyond, ground film only, no volume. Near and mid must thud. The twin dies with the card band. Cheap alpha: resting cards are cutout. Blend only while a band change dissolves, cap 8, 250 ms. The capsule never fades. [`fade.ts`](../scripts/jade-lod/fade.ts).
+LOD picks how much twin as you close in. It does not thicken the mp4. Hang: [`../scripts/jade-lod/README.md`](../scripts/jade-lod/README.md). Near `< 12` / leave `14`, full card + shadow, volume yes (cap 24; extras drop to mid and keep the capsule). Mid `< 40` / leave `44`, bole-only, volume yes. Far `< 72` / leave `80`, impostor quad, no volume. Cull beyond, ground film only, no volume. Near and mid must thud. The twin dies with the card band. Cheap alpha: resting cards are cutout. Blend only while a band change dissolves, cap 8, 250 ms. The capsule never fades. [`fade.ts`](../scripts/jade-lod/fade.ts). Law [45](45-shader-graph-look-kitchen.md) shades that card: sample → multiply fade → discard cutoff → premultiply. The graph does not spawn, pick LOD, or own the capsule.
 
 ```ts
 import { tickField } from "./field";
@@ -452,6 +453,7 @@ Forest / open ground:
 - [ ] Law 44 two jobs are both on: capsule `(x, z, r, h)` from the same spawn row `(x, z, kind)`, and look from parallax + occlusion + scale.
 - [ ] 8-bole test from law 44: existing ground and sky films, eight near bole cards from the tree seed, billboard mix + contact shadow + fog, capsules on, a circle around one tree. The tree stays planted. The forest slides behind it. The paws thud the trunk.
 - [ ] LOD bands match law 44: near `< 12` / leave `14` full card + shadow + volume (cap 24, extras drop to mid and keep the capsule); mid `< 40` / leave `44` bole-only + volume; far `< 72` / leave `80` impostor, no volume; cull is the ground film only. The twin dies with the band. The mp4 is not thickened.
+- [ ] Law 45 shades the card the CPU already posed. Mask instance at rest (cutoff 0.45, depth write). Fade instance only while dissolving, cap 8 (cutoff 0.02, translucent, depth write off). The graph does not spawn, pick `holdBand`, or own the capsule.
 - [ ] The preview choice is "The gates, or the forest."
 
 Either:

@@ -110,7 +110,7 @@ Cap **8** concurrent fades. A further band change snaps. Fade is **220–280 ms*
 
 Front side only. The 70/30 yaw already faces the camera.
 
-The capsule never fades. Soft alpha is look only. The hit snaps on the hysteresis line in `lod.ts`.
+The capsule never fades. Soft alpha is look only. The hit snaps on the hysteresis line in `lod.ts`. The node stack for that shading is law [45](45-shader-graph-look-kitchen.md). The graph does not spawn, pick the band, or own the capsule.
 
 Not hung yet: InstancedMesh per kind+band, an atlas, impostor mip bias, scale-down on far→cull while `a` falls, one opaque cutout pass then the ≤8 fades back-to-front. Skip OIT.
 

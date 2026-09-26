@@ -45,6 +45,8 @@ The capsule never fades. Soft alpha is look only. The hit snaps on the hysteresi
 
 Policy: [`fade.ts`](fade.ts) (`requestFade`, `tickFades`, `activeFadeCount`). Flags: `applyCheapAlpha` in [`billboard.ts`](billboard.ts). Fragment: [`card.frag.glsl`](card.frag.glsl). This folder does not import `three`.
 
+Flattened chain in the fragment: sample → multiply fade → discard cutoff → premultiply. The node stack, the two material instances, and the ground/sky graph are law [45](../../docs/45-shader-graph-look-kitchen.md). The graph shades a card the CPU already posed. `billboardYaw` owns yaw. `holdBand` in [`lod.ts`](lod.ts) owns meshLod. The capsule stays `volumes`.
+
 Not hung yet: InstancedMesh per kind+band, an atlas, impostor mip bias, scale-down on far→cull while `a` falls, one opaque cutout pass then the ≤8 fades back-to-front. Skip OIT.
 
 ## Pack law
