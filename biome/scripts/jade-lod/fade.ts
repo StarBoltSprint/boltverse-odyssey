@@ -45,6 +45,9 @@ type Slot = {
   t0: number;
   /** 180 impostor, 220 crown, 250 card, 280 bole↔impostor. One slot per tree. */
   ms: number;
+  dist: number;
+  /** Nearest 24. A farther tree does not steal their slot. */
+  priority: boolean;
 };
 
 const slots = new Map<string, Slot>();
@@ -82,10 +85,28 @@ export function liftFade(id: string): FadeStash | undefined {
   return { from: slot.from, to: slot.to, t0: slot.t0, ms: slot.ms };
 }
 
+export function fadingIds(): string[] {
+  return [...slots.keys()];
+}
+
+export function fadeU(id: string, nowMs: number): number | undefined {
+  const slot = slots.get(id);
+  if (!slot) return undefined;
+  return (nowMs - slot.t0) / slot.ms;
+}
+
 /** Put a stashed fade back when the kit returns. A full cap leaves it down. */
 export function restoreFade(id: string, stash: FadeStash): void {
   if (slots.has(id) || slots.size >= FADE_CAP) return;
-  slots.set(id, { id, from: stash.from, to: stash.to, t0: stash.t0, ms: stash.ms });
+  slots.set(id, {
+    id,
+    from: stash.from,
+    to: stash.to,
+    t0: stash.t0,
+    ms: stash.ms,
+    dist: Number.POSITIVE_INFINITY,
+    priority: false,
+  });
 }
 
 /** Far ↔ cull only. Horizon specks shrink, then die. Other edges stay full size. */
@@ -195,12 +216,20 @@ function flagsFor(from: Band, to: Band, u: number, fading: boolean): CheapAlpha 
   };
 }
 
+/** Lockstep with twoPlane: crown 220, bole↔impostor 280, impostor 180. One slot per tree. */
+function edgeMs(from: Band, to: Band): number {
+  const pair = (a: Band, b: Band) => (from === a && to === b) || (from === b && to === a);
+  if (pair("near", "mid")) return 220;
+  if (pair("mid", "far")) return 280;
+  if (pair("far", "cull")) return FADE_MS_IMP;
+  return FADE_MS;
+}
+
 /**
- * Band changed on the hysteresis line.
- * One slot per id. A two-plane tree passes the tree id once: near↔mid is the crown,
- * mid↔far is the bole, far↔cull is the impostor. Cap 8. A full cap snaps.
- * A second change on the same id snaps. nowMs is milliseconds.
- * durationMs 180 is the impostor edge. 220 and 280 stay inside the belt.
+ * bandDraw changed. One slot per tree, not per plane.
+ * Near↔mid is the crown, 220 ms. A promote reverses from the current t.
+ * Cap 8. The nearest 24 win. A full cap snaps the farthest slot.
+ * nowMs is milliseconds. Pass bandDraw, not holdBand.
  */
 export function requestFade(
   id: string,
@@ -208,20 +237,49 @@ export function requestFade(
   to: Band,
   nowMs: number,
   durationMs: number = FADE_MS,
+  dist: number = Number.POSITIVE_INFINITY,
+  priority: boolean = false,
 ): "fade" | "snap" {
   if (from === to) {
     settled.set(id, to);
     return "snap";
   }
-  if (slots.has(id) || slots.size >= FADE_CAP) {
+  const existing = slots.get(id);
+  if (existing) {
+    if (existing.to === to && existing.from === from) {
+      existing.dist = dist;
+      existing.priority = priority;
+      return "fade";
+    }
+    if (existing.from === to && existing.to === from) {
+      const u = Math.min(1, Math.max(0, (nowMs - existing.t0) / existing.ms));
+      const rev = 1 - u;
+      const ms = edgeMs(from, to);
+      slots.set(id, { id, from, to, t0: nowMs - rev * ms, ms, dist, priority });
+      return "fade";
+    }
     slots.delete(id);
     settled.set(id, to);
     return "snap";
   }
-  const ms = durationMs === FADE_MS_IMP
-    ? FADE_MS_IMP
-    : Math.min(FADE_MS_MAX, Math.max(FADE_MS_MIN, durationMs));
-  slots.set(id, { id, from, to, t0: nowMs, ms });
+  if (slots.size >= FADE_CAP) {
+    let victim: Slot | undefined;
+    for (const slot of slots.values()) {
+      if (!victim || slot.dist > victim.dist) victim = slot;
+    }
+    const nearer = priority && victim !== undefined && (!victim.priority || dist < victim.dist);
+    if (nearer && victim) {
+      slots.delete(victim.id);
+      settled.set(victim.id, victim.to);
+    } else {
+      settled.set(id, to);
+      return "snap";
+    }
+  }
+  const ms = durationMs === edgeMs(from, to) || durationMs === FADE_MS
+    ? edgeMs(from, to)
+    : durationMs;
+  slots.set(id, { id, from, to, t0: nowMs, ms, dist, priority });
   return "fade";
 }
 
@@ -245,14 +303,23 @@ export function tickFades(nowMs: number): void {
  * Look alpha for one row. First sight snaps to cutout (or skip if culled).
  * Closer kits should call this first: the first eight band changes keep the slots.
  */
-export function resolveCheapAlpha(id: string, band: Band, nowMs: number): CheapAlpha {
+export function resolveCheapAlpha(
+  id: string,
+  band: Band,
+  nowMs: number,
+  dist: number = Number.POSITIVE_INFINITY,
+  priority: boolean = false,
+): CheapAlpha {
   seen.add(id);
   const slot = slots.get(id);
   if (slot) {
     if (slot.to !== band) {
-      slots.delete(id);
-      settled.set(id, band);
-      return idle(band);
+      const mode = requestFade(id, slot.to, band, nowMs, edgeMs(slot.to, band), dist, priority);
+      if (mode === "snap") return idle(band);
+      const revived = slots.get(id);
+      if (!revived) return idle(band);
+      const u = (nowMs - revived.t0) / revived.ms;
+      return flagsFor(revived.from, revived.to, u, true);
     }
     const u = (nowMs - slot.t0) / slot.ms;
     if (u >= 1) {
@@ -270,7 +337,7 @@ export function resolveCheapAlpha(id: string, band: Band, nowMs: number): CheapA
   }
   if (prev === band) return idle(band);
 
-  const mode = requestFade(id, prev, band, nowMs);
+  const mode = requestFade(id, prev, band, nowMs, edgeMs(prev, band), dist, priority);
   if (mode === "snap") return idle(band);
   return flagsFor(prev, band, 0, true);
 }

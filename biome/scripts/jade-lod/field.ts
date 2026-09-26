@@ -19,7 +19,10 @@ export const MEM_CAP = 512;
 
 type Slot = { x: number; z: number; chunk: string; groundY: number };
 
-/** Optional. Mid-fade resume when the mesh comes back. Not a second prev. */
+/**
+ * Optional. Mid-fade resume when the mesh comes back.
+ * lod is a copy of holdBand for that resume. It is not bandDraw and not a second prev map.
+ */
 export type MemKit = { lod: Band; fade?: FadeStash };
 
 const spawnCache = new Map<string, SpawnRow[]>();

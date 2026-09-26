@@ -16,10 +16,10 @@ This file is the recipe for a later cold Grok. It does not ship a new player. It
 | Cutout / fade alpha | yes | fade `t` as a scalar |
 | Premultiply, fog, tint | yes | — |
 | Billboard yaw 70/30 | no | `billboardYaw` |
-| Which meshLod | no | `holdBand` |
+| Which meshLod | no | `bandDraw` (law 55) |
 | Capsule | never | occupancy grid |
 
-`holdBand` is the sticky band in [`../scripts/jade-lod/lod.ts`](../scripts/jade-lod/lod.ts) (enter / leave hysteresis). `billboardYaw` is in [`billboard.ts`](../scripts/jade-lod/billboard.ts). Fade `t` is [`fade.ts`](../scripts/jade-lod/fade.ts). The capsule is `volumes` from `tickField` — the occupancy the paws hit. The graph never reads it.
+`holdBand` is the sticky band in [`../scripts/jade-lod/lod.ts`](../scripts/jade-lod/lod.ts) (enter / leave hysteresis). `meshLod` copies `bandDraw`, the chair after the quota (law [55](55-budget-banddraw.md)). The graph does not read either one. `billboardYaw` is in [`billboard.ts`](../scripts/jade-lod/billboard.ts). Fade `t` is [`fade.ts`](../scripts/jade-lod/fade.ts). The capsule is `volumes` from `tickField` — the occupancy the paws hit. The graph never reads it.
 
 **FAIL:** a node that reads world position to decide a tree exists. That is spawn moved into the shader.
 
@@ -96,6 +96,6 @@ The card graph hangs on `M_CardJade`. The ground graph hangs on `M_PlateGround`.
 - Parallax occlusion on the ground film.
 - One uber translucent shader for the resting forest.
 - Sampling the ground texture to place trunks.
-- The graph choosing yaw, `holdBand`, or the capsule.
+- The graph choosing yaw, `holdBand`, `bandDraw`, or the capsule.
 
 World stays Imagine Video assets. GPU composites keyed layers only. The player stays the sealed Bolt. No wallet. No player API keys. Hang URL stays `https://boltverse-odysseyyyy.grok.me`.

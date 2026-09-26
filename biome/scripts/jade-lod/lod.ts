@@ -7,7 +7,11 @@ export const BANDS = {
   far: { enter: 72, leave: 80 },
 } as const;
 
+/** Chairs, not identity. Near 24, mid 64, far 96. */
 export const NEAR_BUDGET = 24;
+export const MID_BUDGET = 64;
+export const FAR_BUDGET = 96;
+export const BUDGET = { near: NEAR_BUDGET, mid: MID_BUDGET, far: FAR_BUDGET } as const;
 
 const prevBand = new Map<string, Band>();
 
@@ -40,40 +44,55 @@ function pictureOf(band: Band): LodRow["picture"] {
 }
 
 /**
- * Hysteresis, then the near budget on a separate field.
- * prev[id] stores the hysteresis band only. Budget writes bandDraw.
+ * Hysteresis, then the chairs on a separate field. Law 55.
+ * prev[id] stores the hysteresis band only. promoteLod writes bandDraw.
  * A tree demoted to mid stays remembered as near, so a free slot
- * brings the crown back without walking out to the enter line.
+ * brings the crown back without requiring dist < 12.
  * Volume follows bandDraw. Far and cull have no volume.
  * Forgetting an id is forgetIds, when its chunk leaves the memory ring.
  * A geo drop does not call forgetIds. bandDraw is never written into prev.
  */
+function admit(draw: Band, n: number, m: number, f: number): { draw: Band; n: number; m: number; f: number } {
+  if (draw === "near" && n >= NEAR_BUDGET) draw = "mid";
+  if (draw === "mid" && m >= MID_BUDGET) draw = "far";
+  if (draw === "far" && f >= FAR_BUDGET) draw = "cull";
+  if (draw === "near") n += 1;
+  else if (draw === "mid") m += 1;
+  else if (draw === "far") f += 1;
+  return { draw, n, m, f };
+}
+
 export function applyLod(rows: SpawnRow[], camX: number, camZ: number): LodRow[] {
   const scored = rows.map((row) => {
     const dist = Math.hypot(camX - row.x, camZ - row.z);
-    const prev = prevBand.get(row.id);
-    const band = pickBand(dist, prev);
+    const band = holdBand(row.id, dist);
     return { row, dist, band };
   });
 
   scored.sort((a, b) => a.dist - b.dist);
-  let nearCount = 0;
+  let n = 0;
+  let m = 0;
+  let f = 0;
   const drawn: LodRow[] = [];
-  for (const s of scored) {
-    // Hysteresis only. The budget below writes bandDraw and must not land here.
+  for (let i = 0; i < scored.length; i++) {
+    const s = scored[i];
+    // Sticky only. The quota below must not land in this map.
     prevBand.set(s.row.id, s.band);
-    let bandDraw = s.band;
-    if (s.band === "near") {
-      nearCount++;
-      if (nearCount > NEAR_BUDGET) bandDraw = "mid";
-    }
-    drawn.push({
+    const seat = admit(s.band, n, m, f);
+    n = seat.n;
+    m = seat.m;
+    f = seat.f;
+    const base: LodRow = {
       ...s.row,
       band: s.band,
-      bandDraw,
-      picture: pictureOf(bandDraw),
-      volume: bandDraw === "near" || bandDraw === "mid",
-    });
+      bandDraw: s.band,
+      meshLod: s.band,
+      picture: pictureOf(s.band),
+      volume: hasVolume(s.band),
+      dist: s.dist,
+      fadePriority: i < NEAR_BUDGET,
+    };
+    drawn.push(promoteLod(base, seat.draw));
   }
   return drawn;
 }
@@ -109,9 +128,44 @@ export function volumesOf(lodRows: LodRow[]): Volume[] {
   return out;
 }
 
-/** Sticky meshLod for this id. The shader graph does not choose it. */
-export function holdBand(id: string): Band | undefined {
-  return prevBand.get(id);
+/**
+ * Sticky meters only. Ignores quotas, fades, missing kits, and geo versus mem.
+ * With dist: enter/leave against prev. Does not write prev.
+ * Without dist: the stored band, if this id is still remembered.
+ */
+export function holdBand(id: string): Band | undefined;
+export function holdBand(id: string, dist: number): Band;
+export function holdBand(id: string, dist?: number): Band | undefined {
+  const prev = prevBand.get(id);
+  if (dist === undefined) return prev;
+  return pickBand(dist, prev);
+}
+
+function hasVolume(draw: Band): boolean {
+  return draw === "near" || draw === "mid";
+}
+
+/**
+ * Writes bandDraw, meshLod, picture, and volume. Does not write prev.
+ * A promote does not ask for dist < 12. The sticky band already decided that.
+ */
+export function promoteLod(row: LodRow, draw: Band): LodRow {
+  return {
+    ...row,
+    bandDraw: draw,
+    meshLod: draw,
+    picture: pictureOf(draw),
+    volume: hasVolume(draw),
+  };
+}
+
+/** Bole pool: drawn near or mid, and not in a fade. Crown pool is near only. */
+export function inBolePool(bandDraw: Band, fading: boolean): boolean {
+  return (bandDraw === "near" || bandDraw === "mid") && !fading;
+}
+
+export function inCrownPool(bandDraw: Band): boolean {
+  return bandDraw === "near";
 }
 
 export function resetLodState() {

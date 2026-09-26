@@ -58,7 +58,7 @@ Far does not keep a hidden bole.
 
 ## Fade edges
 
-Only two edges matter for the trunk. The cap stays 8. A two-plane near ↔ mid fade is **one** slot. Shadow follows the crown. It does not take a second slot.
+Only two edges matter for the trunk. The cap stays 8. A two-plane near ↔ mid fade is **one** slot. Shadow follows the crown. It does not take a second slot. That slot follows `bandDraw`, not `holdBand` (law [55](55-budget-banddraw.md)). A budget demote near → mid is this same crown fade, 220 ms. A budget promote reverses from the current `t` and does not require `dist < 12`. Volume follows `bandDraw`: mid still has the bole capsule, far and cull have none.
 
 | Edge | ms | What moves | Volume |
 |---|---|---|---|

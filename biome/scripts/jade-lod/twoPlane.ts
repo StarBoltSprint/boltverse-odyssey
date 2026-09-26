@@ -6,7 +6,8 @@ import { KIND_TABLE, type Band, type Kind, type LodRow } from "./types";
  * Bole = architecture (mask). Crown = weather (may dissolve). One address.
  * They do not share a material path. The impostor is a third far silhouette.
  * The group is not yawed. Each child mixes yaw on its own.
- * Near↔mid is one fade slot (the crown). Shadow follows the crown.
+ * Near↔mid is one fade slot (the crown, 220 ms), including a budget demote.
+ * That fade follows bandDraw, not holdBand. Shadow follows the crown.
  * The bole goes translucent only on mid↔far.
  */
 

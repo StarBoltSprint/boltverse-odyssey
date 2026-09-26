@@ -94,8 +94,20 @@ function scaleForPicture(picture: LodRow["picture"]): number {
  */
 export function applyCheapAlpha(kits: CardKit[], nowMs: number): CardDraw[] {
   tickFades(nowMs);
-  return kits.map((kit) => {
-    const alpha = resolveCheapAlpha(kit.row.id, drawBand(kit.row), nowMs);
+  const order = kits.map((kit, index) => ({ index, dist: kit.row.dist })).sort((a, b) => a.dist - b.dist);
+  const alphaAt: CheapAlpha[] = new Array(kits.length);
+  for (const item of order) {
+    const kit = kits[item.index];
+    alphaAt[item.index] = resolveCheapAlpha(
+      kit.row.id,
+      drawBand(kit.row),
+      nowMs,
+      kit.row.dist,
+      kit.row.fadePriority,
+    );
+  }
+  return kits.map((kit, index) => {
+    const alpha = alphaAt[index];
     return {
       ...kit,
       visible: alpha.visible,

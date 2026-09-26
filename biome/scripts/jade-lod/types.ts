@@ -42,10 +42,16 @@ export type Volume = {
 };
 
 export type LodRow = SpawnRow & {
-  /** Hysteresis. holdBand reads this. The near budget does not write it. */
+  /** Hysteresis. holdBand reads this. The budget does not write it. */
   band: Band;
-  /** After the near cap. Picture, mesh, and volume follow this. */
+  /** After the quota. Picture, mesh, and volume follow this. Not prev. */
   bandDraw: Band;
+  /** Same as bandDraw. The picture lod. Not the sticky band. */
+  meshLod: Band;
   picture: "full" | "bole" | "impostor" | "none";
+  /** True for bandDraw near or mid. Far and cull have no capsule. */
   volume: boolean;
+  dist: number;
+  /** Nearest 24. They win a fade slot over a farther tree. */
+  fadePriority: boolean;
 };

@@ -72,9 +72,9 @@ Done-when: orbit a bole on the chunk seam at 32.0. The crown stays. After a long
 
 ### 3. Budget must not overwrite holdBand
 
-This is the budget ticket. Section 2 must not store it. `prev[id].band` is `holdBand` only. `row.bandDraw` is the mesh after the budget. `holdBand` never reads `bandDraw`. The budget may start a fade toward mid. `prev` stays near. Volume uses `bandDraw`, not the remembered near.
+This ticket is law [55](55-budget-banddraw.md). Section 2 stores `prev` only. `holdBand` is meters. `bandDraw` is the chair: near 24, mid 64, far 96. `promoteLod` writes the draw fields and does not write `prev`. A crown fade is one slot, 220 ms, cap 8, and it follows `bandDraw`.
 
-Done-when: 30 trees at 8 m show 24 crowns and 6 mid cards. Free a slot and the crown returns. You do not walk to 11.9 m to get it back.
+Done-when: 30 boles inside 10 m show 24 crowns and 6 bare trunks. Cull 6 crowned ones outward. The bare trunks take the crowns in place. Their `prev.band` never went mid.
 
 ### 4. Far → cull shrink
 
@@ -120,7 +120,11 @@ Spawn, the flatten, and the shader tint read that same `d`. No stones in the mp4
 
 ## FAIL
 
-- Writing the budget into `prev`. Storing `bandDraw` there is the same fail.
+- Writing the budget into `prev`. Storing `bandDraw` there is the same fail. `prev.set` after the quota, with the draw band, is that fail.
+- A volume taken from `prev.band`.
+- Requiring `dist < 12` before a budget-demoted crown may return.
+- Counting a fade per plane.
+- Two `prev` maps that copy each other.
 - Forgetting an id that is still inside the memory ring.
 - `forgetIds` tied to a geo drop.
 - `memRing` equal to `geoRing`.
