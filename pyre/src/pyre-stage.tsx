@@ -136,6 +136,7 @@ uniform sampler2D uTexB;
 uniform float uFlash;
 uniform float uTime;
 uniform float uBreath;
+uniform float uGrove;
 vec4 keyed(vec4 c) {
   float m = max(c.r, c.b);
   float greenness = c.g - m;
@@ -156,10 +157,11 @@ void main() {
   float fringe = smoothstep(0.02, 0.55, a) * smoothstep(0.98, 0.22, a);
   float spark = fract(sin(dot(vec2(vUv.x * 42.0, vUv.y * 26.0 - uTime * 8.0), vec2(12.9898, 78.233))) * 43758.5453);
   float crack = smoothstep(0.74, 0.96, spark);
-  c.rgb += vec3(0.72, 0.1, 0.05) * (1.0 - shade) * belly * 0.45;
-  c.rgb += vec3(0.95, 0.22, 0.12) * moon * shade * 0.07;
-  c.rgb += vec3(1.0, 0.2, 0.06) * fringe * crack * 0.35;
-  c.rgb += vec3(0.9, 0.16, 0.08) * moon * 0.08;
+  float lava = 1.0 - uGrove;
+  c.rgb += vec3(0.72, 0.1, 0.05) * (1.0 - shade) * belly * 0.45 * lava;
+  c.rgb += vec3(0.95, 0.22, 0.12) * moon * shade * 0.07 * lava;
+  c.rgb += vec3(1.0, 0.2, 0.06) * fringe * crack * 0.35 * lava;
+  c.rgb += vec3(0.9, 0.16, 0.08) * moon * 0.08 * lava;
   c.rgb = mix(c.rgb, vec3(0.72, 0.04, 0.06), uFlash * 0.65);
   gl_FragColor = vec4(c.rgb, a);
 }`;
@@ -216,6 +218,71 @@ const BOLT_FOOT_Y = 0.16;
 const boltPivot = 0.72 / Math.max(0.02, groundHorizon - BOLT_FOOT_Y);
 const gaitFor = (speed: number) => RUN.idleRate + Math.abs(speed) * (RUN.strideSeconds / RUN.strideMeters);
 
+const simplex2 = (() => {
+  const F2 = 0.5 * (Math.sqrt(3) - 1);
+  const G2 = (3 - Math.sqrt(3)) / 6;
+  const grad = [
+    [1, 1],
+    [-1, 1],
+    [1, -1],
+    [-1, -1],
+    [1, 0],
+    [-1, 0],
+    [0, 1],
+    [0, -1],
+  ];
+  const p = new Uint8Array(256);
+  for (let i = 0; i < 256; i += 1) p[i] = i;
+  let seed = 2166136261;
+  for (let i = 255; i > 0; i -= 1) {
+    seed = Math.imul(seed ^ (seed >>> 16), 0x7feb352d);
+    const j = (seed >>> 0) % (i + 1);
+    const t = p[i]!;
+    p[i] = p[j]!;
+    p[j] = t;
+  }
+  const perm = new Uint8Array(512);
+  for (let i = 0; i < 512; i += 1) perm[i] = p[i & 255]!;
+  return (xin: number, yin: number) => {
+    const skew = (xin + yin) * F2;
+    const i = Math.floor(xin + skew);
+    const j = Math.floor(yin + skew);
+    const t = (i + j) * G2;
+    const x0 = xin - (i - t);
+    const y0 = yin - (j - t);
+    const i1 = x0 > y0 ? 1 : 0;
+    const j1 = x0 > y0 ? 0 : 1;
+    const x1 = x0 - i1 + G2;
+    const y1 = y0 - j1 + G2;
+    const x2 = x0 - 1 + 2 * G2;
+    const y2 = y0 - 1 + 2 * G2;
+    const ii = i & 255;
+    const jj = j & 255;
+    const g0 = grad[perm[ii + perm[jj]!]! % 8]!;
+    const g1 = grad[perm[ii + i1 + perm[jj + j1]!]! % 8]!;
+    const g2 = grad[perm[ii + 1 + perm[jj + 1]!]! % 8]!;
+    let n0 = 0;
+    let n1 = 0;
+    let n2 = 0;
+    let t0 = 0.5 - x0 * x0 - y0 * y0;
+    if (t0 > 0) {
+      t0 *= t0;
+      n0 = t0 * t0 * (g0[0]! * x0 + g0[1]! * y0);
+    }
+    let t1 = 0.5 - x1 * x1 - y1 * y1;
+    if (t1 > 0) {
+      t1 *= t1;
+      n1 = t1 * t1 * (g1[0]! * x1 + g1[1]! * y1);
+    }
+    let t2 = 0.5 - x2 * x2 - y2 * y2;
+    if (t2 > 0) {
+      t2 *= t2;
+      n2 = t2 * t2 * (g2[0]! * x2 + g2[1]! * y2);
+    }
+    return 70 * (n0 + n1 + n2);
+  };
+})();
+
 const PLATE_FS = `
 #extension GL_OES_standard_derivatives : enable
 precision mediump float;
@@ -229,6 +296,7 @@ uniform float uFade1;
 uniform float uPivot;
 uniform float uWorldX;
 uniform float uWorldZ;
+uniform float uFlat;
 void main() {
   float horizon = uHorizon;
   if (vUv.y > horizon) discard;
@@ -240,7 +308,8 @@ void main() {
   float relZ = depth - uPivot;
   float wx = x * c - relZ * s + uWorldX;
   float wz = x * s + relZ * c + uPivot + uWorldZ;
-  vec2 p = vec2(wx, wz) * 0.18;
+  float tile = 0.18;
+  vec2 p = vec2(wx, wz) * tile;
   vec2 f = fract(p);
   vec3 a = texture2D(uPath, f).rgb;
   vec3 b = texture2D(uPath, fract(p + 0.5)).rgb;
@@ -248,9 +317,18 @@ void main() {
   float seam = smoothstep(0.92, 1.0, edge);
   vec3 stone = mix(a, b, seam);
   float stretch = max(length(dFdx(p)), length(dFdy(p)));
-  float sharp = 1.0 - smoothstep(0.02, 0.055, stretch);
+  float near = uFlat > 0.5 ? 0.1 : 0.02;
+  float far = uFlat > 0.5 ? 0.5 : 0.055;
+  float sharp = 1.0 - smoothstep(near, far, stretch);
   float intoSky = 1.0 - smoothstep(uFade0, uFade1, vUv.y);
-  gl_FragColor = vec4(stone, sharp * intoSky);
+  vec3 col = stone;
+  float alpha = sharp * intoSky;
+  if (uFlat > 0.5) {
+    float dyScreen = horizon - vUv.y;
+    col = stone;
+    alpha = smoothstep(0.0, 0.055, dyScreen);
+  }
+  gl_FragColor = vec4(col, alpha);
 }`;
 
 const PROP_FS = `
@@ -265,6 +343,129 @@ void main() {
   if (greenness > 0.14) discard;
   if (c.g > m + 0.03) c.g = m;
   gl_FragColor = vec4(c.rgb, uAlpha);
+}`;
+
+const RIBBON_FS = `
+precision mediump float;
+varying vec2 vUv;
+uniform sampler2D uTex;
+uniform float uAlpha;
+uniform float uS0;
+uniform float uS1;
+uniform float uUp;
+void main() {
+  float along = mix(uS0, uS1, uUp > 0.5 ? vUv.x : vUv.y);
+  vec2 uv = uUp > 0.5 ? vec2(mix(0.32, 0.68, vUv.y), fract(along / 8.0)) : vec2(vUv.x, fract(along / 8.0));
+  vec4 c = texture2D(uTex, uv);
+  float lum = max(c.r, max(c.g, c.b));
+  float a = smoothstep(0.02, 0.16, lum);
+  if (uUp > 0.5) a *= mix(1.0, 0.28, vUv.y);
+  if (a < 0.03) discard;
+  gl_FragColor = vec4(c.rgb, a * uAlpha);
+}`;
+
+const MARK_FS = `
+precision mediump float;
+varying vec2 vUv;
+uniform sampler2D uTex;
+uniform float uAlpha;
+uniform float uFlip;
+uniform float uShade;
+uniform float uKey;
+void main() {
+  vec2 uv = vec2(uFlip > 0.5 ? 1.0 - vUv.x : vUv.x, vUv.y);
+  vec4 c = texture2D(uTex, uv);
+  float a;
+  if (uKey > 0.5) {
+    float mag = min(c.r, c.b) - c.g;
+    a = 1.0 - smoothstep(0.12, 0.42, mag);
+    if (mag > 0.48) a = 0.0;
+    float spill = clamp(mag / 0.18, 0.0, 1.0);
+    c.r = mix(c.r, c.g, spill);
+    c.b = mix(c.b, c.g, spill);
+  } else {
+    float m = max(c.r, c.b);
+    float greenness = c.g - m;
+    a = 1.0 - smoothstep(0.08, 0.28, greenness);
+    if (greenness > 0.26) a = 0.0;
+    c.g = mix(c.g, m, clamp(greenness / 0.08, 0.0, 1.0));
+  }
+  if (a < 0.04) discard;
+  gl_FragColor = vec4(c.rgb * uShade, a * uAlpha);
+}`;
+
+const INST_VS = `
+attribute vec2 aCorner;
+attribute vec4 aRect;
+attribute vec4 aLive;
+uniform float uZoom;
+uniform vec2 uFocus;
+uniform vec4 uCrop;
+varying vec2 vUv;
+varying float vShade;
+varying float vAlpha;
+void main() {
+  float u = mix(uCrop.x, uCrop.y, aCorner.x);
+  if (aLive.x > 0.5) u = mix(uCrop.y, uCrop.x, aCorner.x);
+  float v = mix(uCrop.w, uCrop.z, aCorner.y);
+  vUv = vec2(u, v);
+  vShade = aLive.y;
+  vAlpha = aLive.z;
+  vec2 p = vec2(aRect.x + aCorner.x * aRect.z, aRect.y + aCorner.y * aRect.w);
+  vec2 clip = vec2(p.x * 2.0 - 1.0, 1.0 - p.y * 2.0);
+  gl_Position = vec4(uFocus + (clip - uFocus) * uZoom, 0.0, 1.0);
+}`;
+
+const INST_FS = `
+precision mediump float;
+varying vec2 vUv;
+varying float vShade;
+varying float vAlpha;
+uniform sampler2D uTex;
+void main() {
+  vec4 c = texture2D(uTex, vUv);
+  float mag = min(c.r, c.b) - c.g;
+  float a = 1.0 - smoothstep(0.12, 0.42, mag);
+  if (mag > 0.48) a = 0.0;
+  float spill = clamp(mag / 0.18, 0.0, 1.0);
+  c.r = mix(c.r, c.g, spill);
+  c.b = mix(c.b, c.g, spill);
+  a *= vAlpha;
+  if (a < 0.04) discard;
+  gl_FragColor = vec4(c.rgb * vShade, a);
+}`;
+
+const SPARK_VS = `
+attribute vec2 aCorner;
+attribute vec4 aRect;
+attribute vec4 aLive;
+uniform float uZoom;
+uniform vec2 uFocus;
+varying vec2 vUv;
+varying vec3 vTint;
+varying float vAlpha;
+void main() {
+  vUv = vec2(aCorner.x, 1.0 - aCorner.y);
+  vTint = aLive.xyz;
+  vAlpha = aLive.w;
+  vec2 p = vec2(aRect.x + aCorner.x * aRect.z, aRect.y + aCorner.y * aRect.w);
+  vec2 clip = vec2(p.x * 2.0 - 1.0, 1.0 - p.y * 2.0);
+  gl_Position = vec4(uFocus + (clip - uFocus) * uZoom, 0.0, 1.0);
+}`;
+
+const SPARK_FS = `
+precision mediump float;
+varying vec2 vUv;
+varying vec3 vTint;
+varying float vAlpha;
+uniform sampler2D uTex;
+void main() {
+  vec4 c = texture2D(uTex, vUv);
+  float mag = min(c.r, c.b) - c.g;
+  float a = 1.0 - smoothstep(0.06, 0.32, mag);
+  float hot = max(c.r, max(c.g, c.b));
+  if (a < 0.04 || hot < 0.05) discard;
+  gl_FragColor = vec4(vTint * hot * a * vAlpha, 1.0);
 }`;
 
 const SKY_FS = `
@@ -282,6 +483,10 @@ uniform float uU1;
 uniform float uSpan;
 uniform float uV0;
 uniform float uV1;
+uniform float uWrap;
+uniform float uRun;
+uniform float uWX;
+uniform float uWZ;
 vec3 face(float i, vec2 uv) {
   if (i < 0.5) return texture2D(u0, uv).rgb;
   if (i < 1.5) return texture2D(u1, uv).rgb;
@@ -290,6 +495,17 @@ vec3 face(float i, vec2 uv) {
 }
 void main() {
   float v = mix(uV0, uV1, vUv.y);
+  if (uWrap > 0.5) {
+    float horizon = uV0;
+    float above = clamp((vUv.y - horizon) / max(0.001, 1.0 - horizon), 0.0, 1.0);
+    float tv = mix(0.04, 0.96, pow(above, 0.72));
+    vec3 sky = texture2D(u0, vec2(clamp(vUv.x, 0.0, 1.0), tv)).rgb;
+    vec3 haze = vec3(0.55, 0.74, 0.90);
+    sky = mix(sky, haze, smoothstep(0.16, 0.0, above) * 0.85);
+    if (vUv.y < horizon) sky = haze;
+    gl_FragColor = vec4(sky, 1.0);
+    return;
+  }
   vec3 a = face(uA, vec2(uU0 + vUv.x * uSpan, v));
   vec3 b = face(uB, vec2(uU1 + vUv.x * uSpan, v));
   gl_FragColor = vec4(mix(a, b, uMix), 1.0);
@@ -442,6 +658,21 @@ function program(gl: WebGLRenderingContext, fsSrc: string) {
   return prog;
 }
 
+function linkProg(gl: WebGLRenderingContext, vsSrc: string, fsSrc: string) {
+  const prog = gl.createProgram();
+  if (!prog) throw new Error("program");
+  gl.attachShader(prog, compile(gl, gl.VERTEX_SHADER, vsSrc));
+  gl.attachShader(prog, compile(gl, gl.FRAGMENT_SHADER, fsSrc));
+  gl.bindAttribLocation(prog, 0, "aCorner");
+  gl.bindAttribLocation(prog, 2, "aRect");
+  gl.bindAttribLocation(prog, 3, "aLive");
+  gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+    throw new Error(gl.getProgramInfoLog(prog) || "link");
+  }
+  return prog;
+}
+
 function makeTex(gl: WebGLRenderingContext) {
   const tex = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, tex);
@@ -474,10 +705,9 @@ function uploadVideo(gl: WebGLRenderingContext, tex: WebGLTexture | null, video:
   gl.bindTexture(gl.TEXTURE_2D, tex);
   if (video.readyState < 2) return;
   const frames = video.getVideoPlaybackQuality?.().totalVideoFrames ?? 0;
-  if (frames > 0) {
-    if (frameStamp.get(video) === frames) return;
-    frameStamp.set(video, frames);
-  }
+  const stamp = Math.round(video.currentTime * 30) + frames * 100000;
+  if (frameStamp.get(video) === stamp) return;
+  frameStamp.set(video, stamp);
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
 }
@@ -503,6 +733,19 @@ function quad(x: number, y: number, w: number, h: number) {
 
 const FULL = quad(0, 0, 1, 1);
 
+function quadUV(x: number, y: number, w: number, h: number, u0: number, v0: number, u1: number, v1: number) {
+  const x0 = x * 2 - 1;
+  const x1 = (x + w) * 2 - 1;
+  const yTop = 1 - y * 2;
+  const yBot = 1 - (y + h) * 2;
+  return new Float32Array([
+    x0, yBot, u0, v0,
+    x1, yBot, u1, v0,
+    x0, yTop, u0, v1,
+    x1, yTop, u1, v1,
+  ]);
+}
+
 function beam(x0: number, y0: number, x1: number, y1: number, halfW: number) {
   const dx = x1 - x0;
   const dy = y1 - y0;
@@ -519,6 +762,25 @@ function beam(x0: number, y0: number, x1: number, y1: number, halfW: number) {
     d[0], d[1], 0, 1,
     a[0], a[1], 1, 0,
     c[0], c[1], 1, 1,
+  ]);
+}
+
+function groundRibbon(
+  x0: number, y0: number,
+  x1: number, y1: number,
+  x2: number, y2: number,
+  x3: number, y3: number,
+) {
+  const clip = (x: number, y: number) => [x * 2 - 1, y * 2 - 1] as const;
+  const p0 = clip(x0, y0);
+  const p1 = clip(x1, y1);
+  const p2 = clip(x2, y2);
+  const p3 = clip(x3, y3);
+  return new Float32Array([
+    p0[0], p0[1], 0, 0,
+    p1[0], p1[1], 0, 1,
+    p2[0], p2[1], 1, 0,
+    p3[0], p3[1], 1, 1,
   ]);
 }
 
@@ -546,6 +808,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
   const boltThunderRunRef = useRef<HTMLVideoElement>(null);
   const boltThunderRunLeftRef = useRef<HTMLVideoElement>(null);
   const boltThunderRunRightRef = useRef<HTMLVideoElement>(null);
+  const boltThunderRunFaceRef = useRef<HTMLVideoElement>(null);
   const boltThunderBackstepRef = useRef<HTMLVideoElement>(null);
   const boltThunderFaceRef = useRef<HTMLVideoElement>(null);
   const plainRef = useRef<HTMLVideoElement>(null);
@@ -586,6 +849,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
   const [roomLive, setRoomLive] = useState(startInRoom);
   const [portalReady, setPortalReady] = useState(false);
   const [plainLive, setPlainLive] = useState(false);
+  const [groveLive, setGroveLive] = useState(false);
   const phaseRef = useRef<Phase>(startInRoom ? "citadel" : "cover");
   const startInRoomRef = useRef(startInRoom);
   const hudRef = useRef<(paces: number, wounds: number) => void>(() => undefined);
@@ -630,6 +894,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     const boltThunderRun = boltThunderRunRef.current;
     const boltThunderRunLeft = boltThunderRunLeftRef.current;
     const boltThunderRunRight = boltThunderRunRightRef.current;
+    const boltThunderRunFace = boltThunderRunFaceRef.current;
     const boltThunderBackstep = boltThunderBackstepRef.current;
     const boltThunderFace = boltThunderFaceRef.current;
     const plainVid = plainRef.current;
@@ -660,7 +925,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     const ashBrute = ashBruteRef.current;
     const frame = frameRef.current;
     if (
-      !canvas || !fx || !roadA || !roadB || !bolt || !boltIdle || !boltFace || !boltTurn || !boltTurnBack || !boltTurnLeft || !boltTurnLeftBack || !boltThunder || !boltThunderRise || !boltThunderRight || !boltThunderRightBack || !boltThunderLeft || !boltThunderLeftBack || !boltThunderRightIdle || !boltThunderLeftIdle || !boltThunderRun || !boltThunderRunLeft || !boltThunderRunRight || !boltThunderBackstep || !boltThunderFace || !plainVid || !plainLeftLive || !plainRightLive || !fallen || !brute || !boss || !bossAsh ||
+      !canvas || !fx || !roadA || !roadB || !bolt || !boltIdle || !boltFace || !boltTurn || !boltTurnBack || !boltTurnLeft || !boltTurnLeftBack || !boltThunder || !boltThunderRise || !boltThunderRight || !boltThunderRightBack || !boltThunderLeft || !boltThunderLeftBack || !boltThunderRightIdle || !boltThunderLeftIdle || !boltThunderRun || !boltThunderRunLeft || !boltThunderRunRight || !boltThunderRunFace || !boltThunderBackstep || !boltThunderFace || !plainVid || !plainLeftLive || !plainRightLive || !fallen || !brute || !boss || !bossAsh ||
       !wingL || !wingR || !howlVid || !ashFallen || !ashBrute || !gateA || !gateB ||
       !gateWingL || !gateWingR || !citadel || !openVid || !hall || !breath || !camLeft || !camRight || !camLeftBack || !camRightBack || !holo || !exitVid || !frame
     ) return;
@@ -679,6 +944,11 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     const enemyProg = program(gl, ENEMY_FS);
     const rockProg = program(gl, PLATE_FS);
     const propProg = program(gl, PROP_FS);
+    const ribbonProg = program(gl, RIBBON_FS);
+    const markProg = program(gl, MARK_FS);
+    const instExt = gl.getExtension("ANGLE_instanced_arrays");
+    const instProg = linkProg(gl, INST_VS, INST_FS);
+    const sparkProg = linkProg(gl, SPARK_VS, SPARK_FS);
     const skyProg = program(gl, SKY_FS);
     const howlProg = program(gl, HOWL_FS);
     const gateProg = program(gl, GATE_FS);
@@ -689,7 +959,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       Array.from({ length: ORBIT_N }, (_, i) => {
         const img = new Image();
         img.decoding = "async";
-        img.src = `/master/orbit/${name}-${String(i + 1).padStart(2, "0")}.jpg?v=${v}`;
+        img.dataset.src = `/master/orbit/${name}-${String(i + 1).padStart(2, "0")}.jpg?v=${v}`;
         return img;
       });
     const leftPack = loadOrbit("left", 5);
@@ -703,7 +973,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       Array.from({ length: n }, (_, i) => {
         const img = new Image();
         img.decoding = "async";
-        img.src = `/master/orbit/${name}-${String(i + 1).padStart(2, "0")}.jpg?v=1`;
+        img.dataset.src = `/master/orbit/${name}-${String(i + 1).padStart(2, "0")}.jpg?v=1`;
         return img;
       });
     const plainGo = loadStrip("plain-go", 32);
@@ -713,7 +983,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       Array.from({ length: 12 }, (_, i) => {
         const img = new Image();
         img.decoding = "async";
-        img.src = `/master/grid/${name}-${String(i + 1).padStart(2, "0")}.jpg?v=1`;
+        img.dataset.src = `/master/grid/${name}-${String(i + 1).padStart(2, "0")}.jpg?v=1`;
         return img;
       });
     const nsPack = [
@@ -726,6 +996,23 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       [loadGrid("b1b2"), loadGrid("b2b3")],
       [loadGrid("a1a2"), loadGrid("a2a3")],
     ];
+    const warmImgs = (imgs: HTMLImageElement[]) => {
+      for (const img of imgs) {
+        const src = img.dataset.src;
+        if (src && !img.getAttribute("src")) img.src = src;
+      }
+    };
+    const warmWorld = () => {
+      warmImgs(leftPack);
+      warmImgs(rightPack);
+      warmImgs(plainLeft);
+      warmImgs(plainRight);
+      warmImgs(plainGo);
+      warmImgs(plainGoL);
+      warmImgs(plainGoR);
+      for (const row of nsPack) for (const pack of row) warmImgs(pack);
+      for (const row of ewPack) for (const pack of row) warmImgs(pack);
+    };
     let gx = 1;
     let gy = 0;
     const gridFrame = () => {
@@ -780,7 +1067,20 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     const roomBackTex = makeTex(gl);
     const skyTex = [makeTex(gl), makeTex(gl), makeTex(gl), makeTex(gl)];
     const pathTex = makeTex(gl);
+    const pathGlowTex = makeTex(gl);
+    const treeTex = [0, 1, 2].map(() => makeTex(gl));
+    const floorTex = [0, 1, 2].map(() => makeTex(gl));
+    const boulderTex = makeTex(gl);
     const rockPropTex = makeTex(gl);
+    const sparkTex = makeTex(gl);
+    const sparkImg = new Image();
+    sparkImg.src = "/master/decor/grove-spark.png?v=1";
+    let sparkReady = false;
+    const cornerBuf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, cornerBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 1, 0, 0, 1, 1, 1]), gl.STATIC_DRAW);
+    const instBuf = gl.createBuffer();
+    const instScratch = new Float32Array(2048 * 8);
     const spireTex = makeTex(gl);
     const cityTex = makeTex(gl);
     const decorImg = (src: string) => {
@@ -790,32 +1090,67 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     };
     const skyVids = [0, 1, 2, 3].map((i) => {
       const video = document.createElement("video");
-      video.src = `/master/decor/sky-${i}.mp4?v=1`;
+      video.dataset.src = `/master/decor/sky-${i}.mp4?v=1`;
       video.muted = true;
       video.loop = true;
       video.playsInline = true;
-      video.preload = "auto";
+      video.preload = "none";
       video.setAttribute("playsinline", "");
       frame.appendChild(video);
-      if (i === 0) {
-        const play = () => {
-          const pending = video.play();
-          if (pending) pending.catch(() => undefined);
-        };
-        if (video.readyState >= 2) play();
-        else video.addEventListener("loadeddata", play, { once: true });
-      }
       return video;
     });
     const groundVid = document.createElement("video");
-    groundVid.src = "/master/decor/ground.mp4?v=2";
     groundVid.muted = true;
     groundVid.loop = true;
     groundVid.playsInline = true;
-    groundVid.preload = "auto";
+    groundVid.preload = "none";
     groundVid.setAttribute("playsinline", "");
     frame.appendChild(groundVid);
+    const armVid = (video: HTMLVideoElement) => {
+      const src = video.dataset.src;
+      if (src && !video.getAttribute("src")) {
+        video.preload = "auto";
+        video.src = src;
+      }
+    };
+    const forestClip = (src: string) => {
+      const video = document.createElement("video");
+      video.dataset.src = src;
+      video.muted = true;
+      video.loop = true;
+      video.playsInline = true;
+      video.preload = "none";
+      video.setAttribute("playsinline", "");
+      frame.appendChild(video);
+      return video;
+    };
+    const forestSkies = [0, 1, 2, 3].map((i) => forestClip(`/master/decor/forest-sky-${i}.mp4?v=1`));
+    const pathGlowVid = forestClip("/master/decor/grove-path.mp4?v=3");
+    const treeVids = [0, 1, 2].map((i) => forestClip(`/master/decor/grove-tree-${i}.mp4?v=1`));
+    const treeAspects = [768 / 1168, 768 / 1168, 832 / 1088];
+    const floorVids = [
+      forestClip("/master/decor/grove-moss.mp4?v=2"),
+      forestClip("/master/decor/grove-grass.mp4?v=2"),
+      forestClip("/master/decor/grove-leaves.mp4?v=2"),
+    ];
+    const floorAspects = [1.5, 768 / 1168, 1.5];
+    const LAVA_GROUND = "/master/decor/ground.mp4?v=3";
+    const GROVE_GROUND = "/master/decor/grove-floor.mp4?v=1";
+    const groveFloorImg = decorImg("/master/decor/grove-floor.jpg?v=2");
+    let groveFloorSent = false;
+    const setGround = (src: string) => {
+      if (groundVid.dataset.plate === src) {
+        if (groundVid.paused) playSafe(groundVid);
+        return;
+      }
+      groundVid.dataset.plate = src;
+      groundVid.src = src;
+      const start = () => playSafe(groundVid);
+      if (groundVid.readyState >= 2) start();
+      else groundVid.addEventListener("loadeddata", start, { once: true });
+    };
     const pathImg = decorImg("/master/decor/path.jpg");
+    const boulderImg = decorImg("/master/decor/grove-rock.jpg");
     const rockImg = decorImg("/master/decor/rock.jpg");
     const spireImg = decorImg("/master/decor/spire.jpg");
     const cityImg = decorImg("/master/decor/citadel.jpg");
@@ -901,11 +1236,23 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     let plainPush: "run" | "back" | null = null;
     let plateWish = 0;
     let plateV = 0;
+    let boltWatch = 0;
+    let boltSeen = -1;
+    let strafeWish = 0;
+    let strafeV = 0;
     let plateOffset = 0;
     let zoom = 1;
     let zoomTarget = 1;
     let pinch: { dist: number; zoom: number } | null = null;
     let vistaHold = false;
+    let grove = false;
+    const grovePath: { x: number; z: number; s: number }[] = [];
+    const groveMarks: { x: number; z: number; s: number; kind: number; scale: number; flip: number; shade: number; variant: number; ang: number }[] = [];
+    let pathS = 0;
+    let pathCursor = 0;
+    const grassSeen = new Set<number>();
+    const treeSeen = new Set<number>();
+    let boulderReady = false;
     let portalHint = false;
     let plainNoted = false;
     let breathMix = startInRoomRef.current ? 1 : 0;
@@ -949,7 +1296,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     boltIdle.loop = true;
     boltIdle.playbackRate = 1;
     boltIdle.disablePictureInPicture = true;
-    for (const clip of [boltFace, boltTurn, boltTurnBack, boltTurnLeft, boltTurnLeftBack, boltThunder, boltThunderRise, boltThunderRight, boltThunderRightBack, boltThunderLeft, boltThunderLeftBack, boltThunderRightIdle, boltThunderLeftIdle, boltThunderRun, boltThunderRunLeft, boltThunderRunRight, boltThunderBackstep, boltThunderFace]) {
+    for (const clip of [boltFace, boltTurn, boltTurnBack, boltTurnLeft, boltTurnLeftBack, boltThunder, boltThunderRise, boltThunderRight, boltThunderRightBack, boltThunderLeft, boltThunderLeftBack, boltThunderRightIdle, boltThunderLeftIdle, boltThunderRun, boltThunderRunLeft, boltThunderRunRight, boltThunderRunFace, boltThunderBackstep, boltThunderFace]) {
       clip.muted = true;
       clip.playsInline = true;
       clip.disablePictureInPicture = true;
@@ -962,6 +1309,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     boltThunderRun.loop = true;
     boltThunderRunLeft.loop = true;
     boltThunderRunRight.loop = true;
+    boltThunderRunFace.loop = true;
     boltThunderBackstep.loop = true;
     boltThunderFace.loop = true;
     boltThunderRun.playbackRate = 1.25;
@@ -1086,6 +1434,114 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     };
 
+    type Card = { x: number; y: number; w: number; h: number; flip: number; shade: number; alpha: number };
+    const drawCards = (tex: WebGLTexture, crop: [number, number, number, number], cards: Card[]) => {
+      const n = Math.min(cards.length, 2048);
+      if (!n || !tex) return;
+      if (!instExt) {
+        gl.useProgram(markProg);
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.uniform1i(gl.getUniformLocation(markProg, "uTex"), 0);
+        gl.uniform1f(gl.getUniformLocation(markProg, "uKey"), 1);
+        for (let i = 0; i < n; i += 1) {
+          const card = cards[i]!;
+          gl.uniform1f(gl.getUniformLocation(markProg, "uAlpha"), card.alpha);
+          gl.uniform1f(gl.getUniformLocation(markProg, "uFlip"), card.flip);
+          gl.uniform1f(gl.getUniformLocation(markProg, "uShade"), card.shade);
+          drawBuffer(quadUV(card.x, card.y, card.w, card.h, crop[0], crop[2], crop[1], crop[3]));
+        }
+        return;
+      }
+      let o = 0;
+      for (let i = 0; i < n; i += 1) {
+        const card = cards[i]!;
+        instScratch[o++] = card.x;
+        instScratch[o++] = card.y;
+        instScratch[o++] = card.w;
+        instScratch[o++] = card.h;
+        instScratch[o++] = card.flip;
+        instScratch[o++] = card.shade;
+        instScratch[o++] = card.alpha;
+        instScratch[o++] = 0;
+      }
+      gl.useProgram(instProg);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.uniform1i(gl.getUniformLocation(instProg, "uTex"), 0);
+      gl.uniform4f(gl.getUniformLocation(instProg, "uCrop"), crop[0], crop[1], crop[2], crop[3]);
+      gl.uniform1f(gl.getUniformLocation(instProg, "uZoom"), frameZoom);
+      gl.uniform2f(gl.getUniformLocation(instProg, "uFocus"), 0, frameFocusY);
+      gl.bindBuffer(gl.ARRAY_BUFFER, cornerBuf);
+      gl.enableVertexAttribArray(0);
+      gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+      instExt.vertexAttribDivisorANGLE(0, 0);
+      gl.disableVertexAttribArray(1);
+      gl.bindBuffer(gl.ARRAY_BUFFER, instBuf);
+      gl.bufferData(gl.ARRAY_BUFFER, instScratch.subarray(0, n * 8), gl.DYNAMIC_DRAW);
+      gl.enableVertexAttribArray(2);
+      gl.enableVertexAttribArray(3);
+      gl.vertexAttribPointer(2, 4, gl.FLOAT, false, 32, 0);
+      gl.vertexAttribPointer(3, 4, gl.FLOAT, false, 32, 16);
+      instExt.vertexAttribDivisorANGLE(2, 1);
+      instExt.vertexAttribDivisorANGLE(3, 1);
+      instExt.drawArraysInstancedANGLE(gl.TRIANGLE_STRIP, 0, 4, n);
+      instExt.vertexAttribDivisorANGLE(2, 0);
+      instExt.vertexAttribDivisorANGLE(3, 0);
+      gl.disableVertexAttribArray(2);
+      gl.disableVertexAttribArray(3);
+    };
+
+    type Spark = { x: number; y: number; vx: number; vy: number; life: number; max: number; size: number; r: number; g: number; b: number };
+    const sparks: Spark[] = [];
+    let sparkAcc = 0;
+    const drawSparks = () => {
+      const n = Math.min(sparks.length, 96);
+      if (!n || !sparkReady) return;
+      const side = canvas.width / Math.max(1, canvas.height);
+      if (!instExt) {
+        gl.useProgram(sparkProg);
+        return;
+      }
+      let o = 0;
+      for (let i = 0; i < n; i += 1) {
+        const p = sparks[i]!;
+        const w = p.size;
+        const h = p.size * side;
+        instScratch[o++] = p.x - w / 2;
+        instScratch[o++] = p.y - h / 2;
+        instScratch[o++] = w;
+        instScratch[o++] = h;
+        instScratch[o++] = p.r;
+        instScratch[o++] = p.g;
+        instScratch[o++] = p.b;
+        instScratch[o++] = p.life / p.max;
+      }
+      gl.useProgram(sparkProg);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, sparkTex);
+      gl.uniform1i(gl.getUniformLocation(sparkProg, "uTex"), 0);
+      gl.uniform1f(gl.getUniformLocation(sparkProg, "uZoom"), frameZoom);
+      gl.uniform2f(gl.getUniformLocation(sparkProg, "uFocus"), 0, frameFocusY);
+      gl.bindBuffer(gl.ARRAY_BUFFER, cornerBuf);
+      gl.enableVertexAttribArray(0);
+      gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+      instExt.vertexAttribDivisorANGLE(0, 0);
+      gl.disableVertexAttribArray(1);
+      gl.bindBuffer(gl.ARRAY_BUFFER, instBuf);
+      gl.bufferData(gl.ARRAY_BUFFER, instScratch.subarray(0, n * 8), gl.DYNAMIC_DRAW);
+      gl.enableVertexAttribArray(2);
+      gl.enableVertexAttribArray(3);
+      gl.vertexAttribPointer(2, 4, gl.FLOAT, false, 32, 0);
+      gl.vertexAttribPointer(3, 4, gl.FLOAT, false, 32, 16);
+      instExt.vertexAttribDivisorANGLE(2, 1);
+      instExt.vertexAttribDivisorANGLE(3, 1);
+      instExt.drawArraysInstancedANGLE(gl.TRIANGLE_STRIP, 0, 4, n);
+      instExt.vertexAttribDivisorANGLE(2, 0);
+      instExt.vertexAttribDivisorANGLE(3, 0);
+      gl.disableVertexAttribArray(2);
+      gl.disableVertexAttribArray(3);
+    };
+
     const paintHud = () => {
       hudRef.current(Math.floor(distance), wounds);
     };
@@ -1146,6 +1602,9 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       depthTarget = 0;
       mapHop = false;
       vistaHold = false;
+      grove = false;
+      setGroveLive(false);
+      setGround(LAVA_GROUND);
       setBossHp(0);
       setGatesOpen(false);
       setDoorsReady(false);
@@ -1540,10 +1999,29 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       if (phaseRef.current === "citadel" && doorMode === "out") {
         const height = frame.clientHeight || 1;
         const width = frame.clientWidth || 1;
-        drag.pts.push({ x: event.clientX, y: event.clientY });
-        if (drag.pts.length > 36) drag.pts.splice(1, 1);
         const dx = event.clientX - drag.x;
         const dy = event.clientY - drag.y;
+        if (grove && (vistaHold || outArrived)) {
+          if (!drag.axis && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) drag.axis = Math.abs(dx) > Math.abs(dy) * 0.75 ? "ew" : "ns";
+          if (drag.axis === "ew") {
+            const next = drag.self + (-dx / width) * TAU;
+            selfAng = next;
+            orbit = next;
+            orbitTarget = next;
+            strafeWish = 0;
+            plateWish = 0;
+            plainPush = null;
+          } else if (drag.axis === "ns") {
+            const pull = (drag.y - event.clientY) / height;
+            plateWish = Math.max(0, Math.min(2.8, pull * 4.4));
+            strafeWish = 0;
+            plainPush = plateWish > 0.08 ? "run" : null;
+            slideTo(event.clientX, drag.x, drag.lane);
+          }
+          return;
+        }
+        drag.pts.push({ x: event.clientX, y: event.clientY });
+        if (drag.pts.length > 36) drag.pts.splice(1, 1);
         let bow = 0;
         const origin = drag.pts[0]!;
         const tip = drag.pts[drag.pts.length - 1]!;
@@ -1716,6 +2194,21 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
         return;
       }
       if (doorMode === "out") {
+        if (grove) {
+          orbit = selfAng;
+          orbitTarget = selfAng;
+          profileGo = false;
+          chase = false;
+          drag = null;
+          runHold = false;
+          orbitDrag = false;
+          try {
+            if (frame.hasPointerCapture(event.pointerId)) frame.releasePointerCapture(event.pointerId);
+          } catch {
+            /* already released */
+          }
+          return;
+        }
         const curl = orbitDrag ? null : arcOf(drag.pts);
         if (curl) {
           lanePos = drag.lane;
@@ -1770,7 +2263,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           } else if (onRing) openMap();
         }
       }
-      if (orbitDrag && doorMode !== "out") {
+      if (orbitDrag) {
         orbitTarget = Math.max(-SIDE, Math.min(SIDE, Math.round(orbit / SIDE) * SIDE));
       }
       drag = null;
@@ -1822,6 +2315,8 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       setPortalReady(false);
       setRoomLive(false);
       setPlainLive(false);
+      setGroveLive(false);
+      grove = false;
       lanePos = 0;
       glance = 0;
       glanceTarget = 0;
@@ -1936,9 +2431,12 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       depthTarget = 0;
       mapHop = false;
       vistaHold = false;
+      grove = false;
       setPhase("citadel");
       setRoomLive(false);
       setPlainLive(false);
+      setGroveLive(false);
+      setGround(LAVA_GROUND);
       setBossHp(0);
       setDoorsReady(atDoors);
       setGatesOpen(false);
@@ -1990,6 +2488,9 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       depthTarget = 0.42;
       mapHop = false;
       vistaHold = false;
+      grove = false;
+      setGroveLive(false);
+      setGround(LAVA_GROUND);
       distance = PYRE_PACES;
       lanePos = 0;
       glance = 0;
@@ -2032,6 +2533,11 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     };
 
     const enterVista = () => {
+      warmWorld();
+      for (const vid of skyVids) armVid(vid);
+      grove = false;
+      setGroveLive(false);
+      setGround(LAVA_GROUND);
       phaseRef.current = "citadel";
       doorMode = "out";
       doorsLive = false;
@@ -2103,9 +2609,534 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       idleOn = true;
     };
 
+    const enterGrove = () => {
+      phaseRef.current = "citadel";
+      doorMode = "out";
+      grove = true;
+      doorsLive = false;
+      cardShown = true;
+      vistaHold = true;
+      thunderArmed = false;
+      thunderOn = false;
+      thunderFace = "back";
+      thunderTurn = null;
+      zoom = 1;
+      zoomTarget = 1;
+      outHide = false;
+      outArrived = true;
+      roomDepth = 0.06;
+      depthTarget = 0.06;
+      mapHop = false;
+      distance = PYRE_PACES;
+      lanePos = 0;
+      glance = 0;
+      glanceTarget = 0;
+      orbit = 0;
+      selfAng = 0;
+      orbitTarget = 0;
+      worldX = 0;
+      worldZ = 0;
+      grovePath.length = 0;
+      groveMarks.length = 0;
+      pathS = 0;
+      pathCursor = 0;
+      grassSeen.clear();
+      treeSeen.clear();
+      plateV = 0;
+      plateWish = 0;
+      plainPush = null;
+      profileGo = false;
+      chase = false;
+      gx = 1;
+      gy = 0;
+      yaw = "back";
+      turnTo = null;
+      foes.length = 0;
+      ashes.length = 0;
+      shots.length = 0;
+      setPhase("citadel");
+      setRoomLive(false);
+      setPlainLive(false);
+      setGroveLive(true);
+      setPortalReady(false);
+      setDoorsReady(false);
+      setGatesOpen(false);
+      setBossHp(0);
+      setLastRun(PYRE_PACES);
+      setPaces(PYRE_PACES);
+      paintHud();
+      roads.forEach((video) => video.pause());
+      citadel.pause();
+      openVid.pause();
+      hall.pause();
+      breath.pause();
+      holo.pause();
+      exitVid.pause();
+      plainVid.pause();
+      boltThunder.pause();
+      bolt.preload = "auto";
+      boltIdle.preload = "auto";
+      if (bolt.readyState < 2) bolt.load();
+      playSafe(bolt);
+      const startBreath = () => playSafe(boltIdle);
+      if (boltIdle.readyState >= 2) startBreath();
+      else {
+        boltIdle.addEventListener("loadeddata", startBreath, { once: true });
+        boltIdle.load();
+      }
+      forestSkies.forEach((vid) => {
+        armVid(vid);
+        const start = () => playSafe(vid);
+        if (vid.readyState >= 2) start();
+        else vid.addEventListener("loadeddata", start, { once: true });
+      });
+      for (const vid of [pathGlowVid, ...treeVids, ...floorVids]) {
+        armVid(vid);
+        const start = () => playSafe(vid);
+        if (vid.readyState >= 2) start();
+        else vid.addEventListener("loadeddata", start, { once: true });
+      }
+      setGround(GROVE_GROUND);
+      breathMix = 0;
+      idleOn = true;
+    };
+
+    const groveFoot = () => ({ x: worldX, z: worldZ + boltPivot });
+    const smooth01 = (t: number) => {
+      const x = Math.max(0, Math.min(1, t));
+      return x * x * (3 - 2 * x);
+    };
+    const groveHeading = (s: number) => 0.62 + s * 0.007;
+    const groveHash = (n: number) => {
+      let x = Math.imul(n | 0, 0x9e3779b1);
+      x = Math.imul(x ^ (x >>> 16), 0x85ebca6b);
+      x = Math.imul(x ^ (x >>> 13), 0xc2b2ae35);
+      return ((x ^ (x >>> 16)) >>> 0) / 4294967296;
+    };
+    const groveNearest = () => {
+      const foot = groveFoot();
+      let best = pathCursor;
+      let bestD = Infinity;
+      for (const p of grovePath) {
+        if (p.s < pathCursor - 1.5 || p.s > pathCursor + 6) continue;
+        const d = (p.x - foot.x) ** 2 + (p.z - foot.z) ** 2;
+        if (d < bestD) {
+          bestD = d;
+          best = p.s;
+        }
+      }
+      if (best > pathCursor) pathCursor = best;
+      return pathCursor;
+    };
+    const growGrovePath = () => {
+      if (!grovePath.length) {
+        const foot = groveFoot();
+        grovePath.push({ x: foot.x, z: foot.z, s: 0 });
+        pathS = 0;
+      }
+      const speed = Math.max(plateV, 1.7);
+      const unit = 1 / GROUND.tileMeters;
+      const need = groveNearest() + speed * unit * 7.5;
+      const step = 0.45;
+      while (pathS < need) {
+        const ang = groveHeading(pathS);
+        const prev = grovePath[grovePath.length - 1]!;
+        const x = prev.x - Math.sin(ang) * step;
+        const z = prev.z + Math.cos(ang) * step;
+        pathS += step;
+        grovePath.push({ x, z, s: pathS });
+      }
+      const nearest = (px: number, pz: number) => {
+        let nearD = 1e9;
+        let nearS = 0;
+        let nearI = 0;
+        for (let i = 0; i < grovePath.length; i += 2) {
+          const p = grovePath[i]!;
+          const d = Math.hypot(p.x - px, p.z - pz);
+          if (d < nearD) {
+            nearD = d;
+            nearS = p.s;
+            nearI = i;
+          }
+        }
+        return { nearD, nearS, nearI };
+      };
+      const cell = 1.15;
+      const ix0 = Math.floor((worldX - 16) / cell);
+      const ix1 = Math.floor((worldX + 16) / cell);
+      const iz0 = Math.floor((worldZ - 6) / cell);
+      const iz1 = Math.floor((worldZ + 28) / cell);
+      for (let ix = ix0; ix <= ix1; ix += 1) {
+        for (let iz = iz0; iz <= iz1; iz += 1) {
+          const key = ix * 8192 + iz;
+          if (grassSeen.has(key)) continue;
+          const wx = ix * cell;
+          const wz = iz * cell;
+          const field = simplex2(wx * 0.08, wz * 0.08);
+          const speckle = simplex2(wx * 0.52 + 11, wz * 0.52);
+          const px = wx + simplex2(wx * 0.83 + 8, wz * 0.83) * cell * 0.92;
+          const pz = wz + simplex2(wx * 0.83, wz * 0.83 + 8) * cell * 0.92;
+          const spot = nearest(px, pz);
+          if (spot.nearI >= grovePath.length - 2 || spot.nearD < 2.5) continue;
+          grassSeen.add(key);
+          if (field < -0.28 && speckle < 0.2) continue;
+          const n = key * 3 + 11;
+          groveMarks.push({
+            x: px,
+            z: pz,
+            s: spot.nearS,
+            kind: 3,
+            scale: 0.72 + (field + 0.18) * 0.85,
+            flip: groveHash(n + 5) > 0.5 ? 1 : 0,
+            shade: 0.86 + groveHash(n + 9) * 0.16,
+            variant: 0,
+            ang: groveHash(n + 13) * 6.2,
+          });
+          if (field > 0.45 && spot.nearD > 3.3) {
+            groveMarks.push({
+              x: px + simplex2(px + 3, pz) * 0.42,
+              z: pz + simplex2(px, pz + 3) * 0.42,
+              s: spot.nearS,
+              kind: 3,
+              scale: 0.68 + field * 0.35,
+              flip: groveHash(n + 17) > 0.5 ? 1 : 0,
+              shade: 0.9,
+              variant: 0,
+              ang: groveHash(n + 21) * 6.2,
+            });
+          }
+        }
+      }
+      const treeCell = 3.3;
+      const tx0 = Math.floor((worldX - 18) / treeCell);
+      const tx1 = Math.floor((worldX + 18) / treeCell);
+      const tz0 = Math.floor((worldZ - 8) / treeCell);
+      const tz1 = Math.floor((worldZ + 30) / treeCell);
+      for (let ix = tx0; ix <= tx1; ix += 1) {
+        for (let iz = tz0; iz <= tz1; iz += 1) {
+          const key = ix * 4096 + iz;
+          if (treeSeen.has(key)) continue;
+          const wx = ix * treeCell;
+          const wz = iz * treeCell;
+          const clump = simplex2(wx * 0.055, wz * 0.055);
+          const pick = simplex2(wx * 0.41 + 17, wz * 0.41);
+          const px = wx + simplex2(wx * 0.77 + 12, wz * 0.77) * treeCell * 0.95;
+          const pz = wz + simplex2(wx * 0.77, wz * 0.77 + 12) * treeCell * 0.95;
+          const spot = nearest(px, pz);
+          if (spot.nearI >= grovePath.length - 2 || spot.nearD < 4.1) continue;
+          treeSeen.add(key);
+          const n = key * 5 + 3;
+          if (pick <= 0.46 - clump * 0.72) {
+            const rockN = simplex2(wx * 0.23 + 50, wz * 0.23);
+            if (rockN > 0.62) {
+              groveMarks.push({
+                x: px,
+                z: pz,
+                s: spot.nearS,
+                kind: 1,
+                scale: 0.65 + rockN * 0.35,
+                flip: 0,
+                shade: 0.9,
+                variant: 0,
+                ang: 0,
+              });
+            }
+            continue;
+          }
+          groveMarks.push({
+            x: px,
+            z: pz,
+            s: spot.nearS,
+            kind: 0,
+            scale: 0.82 + Math.max(0, clump) * 0.7,
+            flip: groveHash(n) > 0.5 ? 1 : 0,
+            shade: 0.74 + groveHash(n + 2) * 0.36,
+            variant: Math.floor(groveHash(n + 4) * 3),
+            ang: groveHeading(spot.nearS) + groveHash(n + 6) * 1.4,
+          });
+        }
+      }
+      const keep = groveNearest() - 18;
+      while (grovePath.length > 8 && grovePath[1]!.s < keep) grovePath.shift();
+      while (groveMarks.length && groveMarks[0]!.s < keep) groveMarks.shift();
+    };
+    const groveScreen = (wx: number, wz: number) => {
+      const c = Math.cos(orbit);
+      const s = Math.sin(orbit);
+      const dx = wx - worldX;
+      const dz = wz - (worldZ + boltPivot);
+      const x = dx * c + dz * s;
+      const relZ = -dx * s + dz * c;
+      const depth = relZ + boltPivot;
+      if (depth < 0.8) return null;
+      const y = groundHorizon - 0.72 / depth;
+      if (y < -0.02 || y > groundHorizon - 0.004) return null;
+      return { x: 0.5 + x / (depth * groundXMul), y, depth };
+    };
+    const paintGrove = () => {
+      growGrovePath();
+      const speed = Math.max(plateV, 1.7);
+      const unit = 1 / GROUND.tileMeters;
+      const near = groveNearest();
+      const lead = near + speed * unit * 0.28;
+      const far = near + speed * unit * 3;
+      gl.enable(gl.BLEND);
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+      if (pathGlowVid.readyState >= 2) {
+        gl.activeTexture(gl.TEXTURE0);
+        uploadVideo(gl, pathGlowTex, pathGlowVid);
+        gl.useProgram(ribbonProg);
+        gl.bindTexture(gl.TEXTURE_2D, pathGlowTex);
+        gl.uniform1i(gl.getUniformLocation(ribbonProg, "uTex"), 0);
+        const alpha = gl.getUniformLocation(ribbonProg, "uAlpha");
+        const s0 = gl.getUniformLocation(ribbonProg, "uS0");
+        const s1 = gl.getUniformLocation(ribbonProg, "uS1");
+        const up = gl.getUniformLocation(ribbonProg, "uUp");
+        for (let i = 0; i < grovePath.length - 1; i += 1) {
+          const a = grovePath[i]!;
+          const b = grovePath[i + 1]!;
+          if (b.s < lead || a.s > far) continue;
+          const dx = b.x - a.x;
+          const dz = b.z - a.z;
+          const len = Math.hypot(dx, dz) || 0.001;
+          const rx = dz / len;
+          const rz = -dx / len;
+          const half = 2.4;
+          const leftA = groveScreen(a.x + rx * half, a.z + rz * half);
+          const rightA = groveScreen(a.x - rx * half, a.z - rz * half);
+          const leftB = groveScreen(b.x + rx * half, b.z + rz * half);
+          const rightB = groveScreen(b.x - rx * half, b.z - rz * half);
+          if (!leftA || !rightA || !leftB || !rightB) continue;
+          const mid = (a.s + b.s) * 0.5;
+          const t = (mid - lead) / Math.max(0.001, far - lead);
+          const fade = Math.min(smooth01(t / 0.12), smooth01((1 - t) / 0.16));
+          if (fade < 0.04) continue;
+          gl.uniform1f(s0, a.s);
+          gl.uniform1f(s1, b.s);
+          gl.uniform1f(up, 0);
+          gl.uniform1f(alpha, fade);
+          drawBuffer(groundRibbon(rightA.x, rightA.y, rightB.x, rightB.y, leftA.x, leftA.y, leftB.x, leftB.y));
+        }
+      }
+      for (let i = 0; i < treeVids.length; i += 1) {
+        const vid = treeVids[i]!;
+        if (vid.readyState < 2) continue;
+        if (vid.videoWidth > 0) treeAspects[i] = vid.videoWidth / vid.videoHeight;
+        gl.activeTexture(gl.TEXTURE0);
+        uploadVideo(gl, treeTex[i]!, vid);
+      }
+      for (let i = 0; i < floorVids.length; i += 1) {
+        const vid = floorVids[i]!;
+        if (vid.readyState < 2) continue;
+        if (vid.videoWidth > 0) floorAspects[i] = vid.videoWidth / vid.videoHeight;
+        gl.activeTexture(gl.TEXTURE0);
+        uploadVideo(gl, floorTex[i]!, vid);
+      }
+      if (!boulderReady && boulderImg.complete && boulderImg.naturalWidth > 0) {
+        upload(gl, boulderTex, boulderImg);
+        boulderReady = true;
+      }
+      const aspect = canvas.height / Math.max(1, canvas.width);
+      const lookX = -Math.sin(orbit);
+      const lookZ = Math.cos(orbit);
+      const drawn = groveMarks
+        .map((mark) => ({ mark, at: groveScreen(mark.x, mark.z) }))
+        .filter((row): row is { mark: (typeof groveMarks)[number]; at: { x: number; y: number; depth: number } } => {
+          if (!row.at) return false;
+          return row.at.x > -0.35 && row.at.x < 1.35;
+        })
+        .sort((a, b) => b.at.depth - a.at.depth);
+      const grassBatch: Card[] = [];
+      const flushGrass = () => {
+        if (!grassBatch.length) return;
+        const tex = floorTex[1];
+        if (tex && floorVids[1]!.readyState >= 2) drawCards(tex, [0.12, 0.88, 0, 0.56], grassBatch);
+        grassBatch.length = 0;
+      };
+      for (const row of drawn) {
+        if (row.mark.kind !== 3) flushGrass();
+        if (row.mark.kind >= 2) {
+          const slot = row.mark.kind === 3 ? 1 : row.mark.kind === 4 ? 2 : 0;
+          const vid = floorVids[slot]!;
+          if (vid.readyState < 2) continue;
+          const dy = groundHorizon - row.at.y;
+          if (dy < 0.01) continue;
+          const lod = smooth01(Math.min(1, (dy - 0.01) / 0.04));
+          const worldH = row.mark.kind === 3 ? 0.68 : row.mark.kind === 2 ? 0.7 : 0.32;
+          const cap = row.mark.kind === 3 ? 0.14 : row.mark.kind === 2 ? 0.13 : 0.045;
+          const h = Math.min(cap, (worldH * row.mark.scale) / row.at.depth);
+          if (h < 0.012 || (row.mark.kind === 3 && h < 0.02)) continue;
+          const imgAspect = row.mark.kind === 3 ? 0.89 : floorAspects[slot]!;
+          const w = h * imgAspect * aspect;
+          const foot = 1 - row.at.y + Math.min(0.006, h * 0.05);
+          if (row.mark.kind === 3) {
+            grassBatch.push({
+              x: row.at.x - w / 2,
+              y: foot - h,
+              w,
+              h,
+              flip: row.mark.flip,
+              shade: row.mark.shade,
+              alpha: lod,
+            });
+            continue;
+          }
+          gl.useProgram(markProg);
+          gl.bindTexture(gl.TEXTURE_2D, floorTex[slot]!);
+          gl.uniform1i(gl.getUniformLocation(markProg, "uTex"), 0);
+          gl.uniform1f(gl.getUniformLocation(markProg, "uKey"), 1);
+          const worldHalf = (w * groundXMul * row.at.depth) / 2 * 0.7;
+          const ang = row.mark.ang + Math.PI / 4;
+          const dirs = [
+            [Math.cos(ang), Math.sin(ang)],
+            [-Math.sin(ang), Math.cos(ang)],
+          ];
+          let side: { dx: number; dz: number; face: number; flip: number } | null = null;
+          dirs.forEach(([dx, dz], i) => {
+            const face = Math.abs(-dz! * lookX + dx! * lookZ);
+            const score = face * (1 - face);
+            if (!side || score > side.face * (1 - side.face)) side = { dx: dx!, dz: dz!, face, flip: i === 0 ? row.mark.flip : 1 - row.mark.flip };
+          });
+          if (row.mark.kind !== 3 && side && side.face > 0.18 && side.face < 0.82) {
+            const thick = side.face * (1 - side.face) * 4;
+            const near = (px: number, pz: number) => {
+              let p = groveScreen(row.mark.x + px, row.mark.z + pz);
+              if (p && p.depth < row.at.depth * 0.75) p = groveScreen(row.mark.x + px * 0.45, row.mark.z + pz * 0.45);
+              return p;
+            };
+            const left = near(-side.dx * worldHalf, -side.dz * worldHalf);
+            const right = near(side.dx * worldHalf, side.dz * worldHalf);
+            if (left && right && thick > 0.2) {
+              gl.uniform1f(gl.getUniformLocation(markProg, "uAlpha"), lod * thick * 0.85);
+              gl.uniform1f(gl.getUniformLocation(markProg, "uFlip"), side.flip);
+              gl.uniform1f(gl.getUniformLocation(markProg, "uShade"), row.mark.shade * 0.8);
+              drawBuffer(groundRibbon(
+                left.x, left.y,
+                left.x, left.y + h,
+                right.x, right.y,
+                right.x, right.y + h,
+              ));
+            }
+          }
+          gl.uniform1f(gl.getUniformLocation(markProg, "uAlpha"), lod);
+          gl.uniform1f(gl.getUniformLocation(markProg, "uFlip"), row.mark.flip);
+          gl.uniform1f(gl.getUniformLocation(markProg, "uShade"), row.mark.shade);
+          const card = row.mark.kind === 3
+            ? quadUV(row.at.x - w / 2, foot - h, w, h, 0.12, 0.0, 0.88, 0.56)
+            : quad(row.at.x - w / 2, foot - h, w, h);
+          drawBuffer(card);
+          continue;
+        }
+        const rock = row.mark.kind === 1;
+        const variant = row.mark.variant % 3;
+        const treeReady = treeVids[variant]!.readyState >= 2;
+        if (rock ? !boulderReady : !treeReady) continue;
+        const dy = groundHorizon - row.at.y;
+        if (dy < 0.012) continue;
+        const h = ((rock ? 0.9 : 2.55) * row.mark.scale) / row.at.depth;
+        if (h < 0.02) continue;
+        const w = h * (rock ? 1.05 : treeAspects[variant]!) * aspect;
+        const sink = Math.min(0.008, h * 0.03);
+        const foot = 1 - row.at.y + sink;
+        const lod = smooth01(Math.min(1, (dy - 0.012) / 0.045));
+        if (row.at.depth < 12) {
+          gl.useProgram(shadowProg);
+          const sw = w * (rock ? 0.72 : 0.55);
+          drawBuffer(quad(row.at.x - sw / 2, foot - h * 0.02, sw, Math.max(0.008, h * 0.05)));
+        }
+        gl.useProgram(markProg);
+        gl.bindTexture(gl.TEXTURE_2D, rock ? boulderTex : treeTex[variant]!);
+        gl.uniform1i(gl.getUniformLocation(markProg, "uTex"), 0);
+        gl.uniform1f(gl.getUniformLocation(markProg, "uShade"), row.mark.shade);
+        gl.uniform1f(gl.getUniformLocation(markProg, "uKey"), rock ? 0 : 1);
+        if (!rock) {
+          const worldHalf = (2.55 * row.mark.scale * treeAspects[variant]! * aspect * groundXMul) / 2;
+          const ang = row.mark.ang + Math.PI / 4;
+          const dirs = [
+            [Math.cos(ang), Math.sin(ang)],
+            [-Math.sin(ang), Math.cos(ang)],
+          ];
+          let side: { dx: number; dz: number; face: number; flip: number } | null = null;
+          dirs.forEach(([dx, dz], i) => {
+            const face = Math.abs(-dz! * lookX + dx! * lookZ);
+            const score = face * (1 - face);
+            if (!side || score > side.face * (1 - side.face)) side = { dx: dx!, dz: dz!, face, flip: i === 0 ? row.mark.flip : 1 - row.mark.flip };
+          });
+          if (side) {
+            const span = side.face < 0.22 || side.face > 0.78 ? 0 : worldHalf * 0.82;
+            const near = (px: number, pz: number) => {
+              let p = groveScreen(row.mark.x + px, row.mark.z + pz);
+              if (p && p.depth < row.at.depth * 0.75) p = groveScreen(row.mark.x + px * 0.45, row.mark.z + pz * 0.45);
+              return p;
+            };
+            const left = span > 0 ? near(-side.dx * span, -side.dz * span) : null;
+            const right = span > 0 ? near(side.dx * span, side.dz * span) : null;
+            const thick = side.face * (1 - side.face) * 4;
+            if (left && right && thick > 0.18) {
+              const hT = (2.55 * row.mark.scale) / row.at.depth;
+              const sinkT = Math.min(0.008, hT * 0.03);
+              gl.uniform1f(gl.getUniformLocation(markProg, "uAlpha"), lod * thick);
+              gl.uniform1f(gl.getUniformLocation(markProg, "uFlip"), side.flip);
+              gl.uniform1f(gl.getUniformLocation(markProg, "uShade"), row.mark.shade * 0.82);
+              drawBuffer(groundRibbon(
+                left.x, left.y - sinkT,
+                left.x, left.y - sinkT + hT,
+                right.x, right.y - sinkT,
+                right.x, right.y - sinkT + hT,
+              ));
+            }
+          }
+        }
+        gl.uniform1f(gl.getUniformLocation(markProg, "uAlpha"), lod);
+        gl.uniform1f(gl.getUniformLocation(markProg, "uFlip"), row.mark.flip);
+        gl.uniform1f(gl.getUniformLocation(markProg, "uShade"), row.mark.shade);
+        drawBuffer(quad(row.at.x - w / 2, foot - h, w, h));
+      }
+      flushGrass();
+    };
+
     const tick = (now: number) => {
+      if (phaseRef.current === "cover") {
+        raf = requestAnimationFrame(tick);
+        return;
+      }
       const dt = Math.min(0.1, (now - last) / 1000);
       last = now;
+      if (grove) {
+        for (let i = sparks.length - 1; i >= 0; i -= 1) {
+          const mote = sparks[i]!;
+          mote.life -= dt;
+          if (mote.life <= 0) {
+            sparks.splice(i, 1);
+            continue;
+          }
+          mote.x += mote.vx * dt;
+          mote.y += mote.vy * dt;
+        }
+        sparkAcc += dt * (0.55 + Math.max(0, plateV) * 7);
+        const paw = boltBox();
+        while (sparkAcc > 1 && sparks.length < 72) {
+          sparkAcc -= 1;
+          const roll = Math.random();
+          const dust = roll < 0.42;
+          const hot = !dust && roll > 0.72;
+          const tint = dust ? [0.62, 0.48, 0.28] : hot ? [1, 0.86, 0.4] : [1, 0.3, 0.06];
+          const life = dust ? 0.5 + Math.random() * 0.4 : 0.26 + Math.random() * 0.32;
+          sparks.push({
+            x: paw.x + paw.w * (0.3 + Math.random() * 0.4),
+            y: paw.footY + (dust ? 0.012 : -0.018),
+            vx: (Math.random() - 0.5) * (dust ? 0.24 : 0.09),
+            vy: dust ? 0.04 + Math.random() * 0.07 : -(0.07 + Math.random() * 0.2),
+            life,
+            max: life,
+            size: dust ? 0.038 + Math.random() * 0.028 : 0.013 + Math.random() * 0.016,
+            r: tint[0]!,
+            g: tint[1]!,
+            b: tint[2]!,
+          });
+        }
+        if (sparkAcc > 4) sparkAcc = 0;
+      } else if (sparks.length) sparks.length = 0;
       zoom = Math.max(1, zoom);
       zoomTarget = Math.max(1, zoomTarget);
       zoom += (zoomTarget - zoom) * (1 - Math.exp(-dt * 12));
@@ -2404,12 +3435,14 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           outArrived = vistaHold || exitVid.ended || t > 0.84;
           outHide = !vistaHold && !outArrived && t > 0.4 && t < 0.64;
           thunderOn = t >= 0.64;
+          if (grove) thunderOn = false;
           const settled = vistaHold || outArrived;
           if (settled && !plainVid.paused) plainVid.pause();
           if (settled) {
-            if (!plainNoted) {
+            if (grove) setPlainLive(false);
+            else if (!plainNoted) {
               plainNoted = true;
-              setPlainLive(true);
+              if (!grove) setPlainLive(true);
               if (!drag) {
                 depthTarget = 0.06;
                 roomDepth = 0.06;
@@ -2446,7 +3479,39 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           }
           if (orbitDrag) orbit = orbitTarget;
           else orbit += wrapAng((chase || gap > 0.08 ? selfAng : orbitTarget) - orbit) * follow;
-          if (settled && !orbitDrag) {
+          if (grove && settled) {
+            profileGo = false;
+            chase = false;
+            orbitDrag = false;
+            orbit = selfAng;
+            orbitTarget = selfAng;
+            if (drag && drag.axis === "ns" && lanePos !== 0) {
+              const catchUp = 1 - Math.exp(-dt * 3.6);
+              const take = lanePos * catchUp;
+              selfAng -= take * 0.85;
+              orbit = selfAng;
+              orbitTarget = selfAng;
+              const sideStep = take * 2.2;
+              worldX += Math.cos(selfAng) * sideStep;
+              worldZ += Math.sin(selfAng) * sideStep;
+              lanePos -= take;
+              drag.lane = lanePos;
+              const hand = hands.get(drag.id);
+              if (hand) drag.x = hand.x;
+            }
+            const wish = drag && drag.axis === "ns" ? Math.max(0, plateWish) : 0;
+            const side = drag && drag.axis === "ew" ? strafeWish : 0;
+            plateV += (wish - plateV) * (1 - Math.exp(-dt * 7));
+            strafeV += (side - strafeV) * (1 - Math.exp(-dt * 7));
+            if (plateV < 0.02 && wish === 0) plateV = 0;
+            if (Math.abs(strafeV) < 0.02 && side === 0) strafeV = 0;
+            plateOffset += plateV * dt;
+            const step = (dt / GROUND.tileMeters) * 4;
+            worldX += -Math.sin(selfAng) * plateV * step + Math.cos(selfAng) * strafeV * step;
+            worldZ += Math.cos(selfAng) * plateV * step + Math.sin(selfAng) * strafeV * step;
+            plainPush = plateV > 0.08 || Math.abs(strafeV) > 0.08 ? "run" : null;
+            thunderOn = false;
+          } else if (settled && !orbitDrag) {
             if (profileGo) {
               plateWish = 1.25;
               plainPush = "run";
@@ -2596,7 +3661,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
                       : null;
         if (nextPose) thunderHold = nextPose;
         if (thunderHold) pose = thunderHold;
-        if (pose === boltThunderRun || pose === boltThunderRunLeft || pose === boltThunderRunRight || pose === boltThunderBackstep) {
+        if (pose === boltThunderRun || pose === boltThunderRunLeft || pose === boltThunderRunRight || pose === boltThunderRunFace || pose === boltThunderBackstep) {
           const gait = gaitFor(plateV);
           if (Math.abs(pose.playbackRate - gait) > 0.04) pose.playbackRate = gait;
         }
@@ -2608,8 +3673,14 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           const u = ang / step;
           const i = Math.floor(u) % 4;
           const f = u - Math.floor(u);
-          const moving = profileGo || plainPush === "run" || Math.abs(plateV) > 0.08;
-          if (moving && boltThunderRun.readyState >= 2) {
+          const toward = !profileGo && (plainPush === "back" || plateV < -0.08);
+          const away = profileGo || plainPush === "run" || plateV > 0.08;
+          if (toward && boltThunderRunFace.readyState >= 2) {
+            pose = boltThunderRunFace;
+            thunderHold = pose;
+            orbitMate = null;
+            orbitMix = 1;
+          } else if (away && boltThunderRun.readyState >= 2) {
             const dBack = Math.min(ang, TAU - ang);
             const dLeft = Math.abs(ang - Math.PI / 2);
             const dRight = Math.abs(ang - Math.PI * 1.5);
@@ -2636,6 +3707,10 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
             orbitMix = orbitMate ? eased : 0;
           }
         }
+        if (pose === boltThunderRun || pose === boltThunderRunLeft || pose === boltThunderRunRight || pose === boltThunderRunFace || pose === boltThunderBackstep) {
+          const gait = gaitFor(plateV);
+          if (Math.abs(pose.playbackRate - gait) > 0.04) pose.playbackRate = gait;
+        }
         breathMix = 1;
         yaw = "back";
       } else thunderHold = null;
@@ -2655,16 +3730,55 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       const onPlain = doorMode === "out" && (vistaHold || outArrived);
       if (onPlain) {
         for (const clip of [plainVid, plainLeftLive, plainRightLive, roadA, roadB, wingL, wingR, fallen, brute, boss, bolt, breath, exitVid, howlVid]) {
+          if (grove && clip === bolt) continue;
           if (!clip.paused) clip.pause();
         }
         idleRefs.current.forEach((clip) => {
           if (clip && !clip.paused) clip.pause();
         });
-        const thunderClips = [boltThunder, boltThunderRise, boltThunderRun, boltThunderRunLeft, boltThunderRunRight, boltThunderBackstep, boltThunderFace, boltThunderRight, boltThunderRightBack, boltThunderLeft, boltThunderLeftBack, boltThunderRightIdle, boltThunderLeftIdle];
+        const thunderClips = [boltThunder, boltThunderRise, boltThunderRun, boltThunderRunLeft, boltThunderRunRight, boltThunderRunFace, boltThunderBackstep, boltThunderFace, boltThunderRight, boltThunderRightBack, boltThunderLeft, boltThunderLeftBack, boltThunderRightIdle, boltThunderLeftIdle];
         for (const clip of thunderClips) {
           if (clip !== pose && clip !== orbitMate && !clip.paused) clip.pause();
         }
-        if (groundVid.paused) playSafe(groundVid);
+        if (onPlain && groundVid.paused) playSafe(groundVid);
+      }
+      if (grove && onPlain) {
+        const moving = plateV > 0.08 || Math.abs(strafeV) > 0.08;
+        const clip = moving ? bolt : boltIdle.readyState >= 2 ? boltIdle : bolt;
+        const gait = moving ? Math.min(4.5, 1.8 + Math.abs(plateV) * 1.5) : 0.85;
+        for (const other of [boltThunder, boltThunderRise, boltThunderRun, boltThunderRunLeft, boltThunderRunRight, boltThunderRunFace, boltThunderBackstep, boltThunderFace]) {
+          if (!other.paused) other.pause();
+        }
+        if (clip.readyState >= 2) {
+          pose = clip;
+          if (Math.abs(clip.playbackRate - gait) > 0.04) clip.playbackRate = gait;
+          if (clip.paused && !clip.seeking) playSafe(clip);
+          if (Math.abs(clip.currentTime - boltSeen) > 0.001) {
+            boltSeen = clip.currentTime;
+            boltWatch = 0;
+          } else boltWatch += dt;
+          if (boltWatch > 0.18 && !clip.seeking && clip.duration > 0.2) {
+            boltWatch = 0;
+            try {
+              clip.currentTime = (clip.currentTime + Math.max(0.05, dt * gait)) % clip.duration;
+            } catch {
+              /* not seekable yet */
+            }
+          }
+        } else if (clip.paused) playSafe(clip);
+        if (bolt !== pose && !bolt.paused) bolt.pause();
+        if (boltIdle !== pose && !boltIdle.paused) boltIdle.pause();
+        breathMix = 0;
+        thunderHold = null;
+        thunderOn = false;
+        for (const vid of [pathGlowVid, ...treeVids, ...floorVids]) {
+          if (vid.readyState >= 2) {
+            if (!vid.paused) vid.pause();
+          } else if (vid.paused) playSafe(vid);
+        }
+      } else {
+        for (const vid of forestSkies) if (!vid.paused) vid.pause();
+        for (const vid of [pathGlowVid, ...treeVids, ...floorVids]) if (!vid.paused) vid.pause();
       }
       if (!onPlain && !groundVid.paused) groundVid.pause();
       if (!onPlain && roadSource) {
@@ -2672,7 +3786,8 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
         else upload(gl, roadTex, roadSource);
       }
       if (!onPlain && bolt.readyState >= 2) uploadVideo(gl, boltTex, bolt);
-      if (thunderOn) {
+      if (grove && pose.readyState >= 2 && !pose.seeking) uploadVideo(gl, boltTex, pose);
+      else if (thunderOn) {
         if (orbitMix < 1 && pose.readyState >= 2) uploadVideo(gl, boltTex, pose);
         const mate = orbitMate ?? thunderHold;
         if (mate && mate.readyState >= 2) uploadVideo(gl, boltIdleTex, mate);
@@ -2822,10 +3937,12 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       if (onBlack) {
         gl.clearColor(0, 0, 0, 1);
         gl.clear(gl.COLOR_BUFFER_BIT);
-        if (skyVids[0].readyState >= 2) {
+        const skies = grove ? forestSkies : skyVids;
+        if (skies[0].readyState >= 2) {
           const band = SKY.band;
-          const bandAspect = canvas.width / Math.max(1, canvas.height) / band;
-          const vidAspect = skyVids[0].videoWidth > 0 ? skyVids[0].videoWidth / skyVids[0].videoHeight : 9 / 16;
+          const skySrc = skies[0];
+          const bandAspect = canvas.width / Math.max(1, canvas.height) / Math.max(0.2, band);
+          const vidAspect = skySrc.videoWidth > 0 ? skySrc.videoWidth / skySrc.videoHeight : 9 / 16;
           const span = SKY.span;
           const vSpan = Math.min(0.9, (vidAspect * span) / Math.max(0.2, bandAspect));
           const v1 = SKY.v1;
@@ -2846,8 +3963,11 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
             u1 = (1 - span) * (1 - f) * SKY.lead;
           }
           for (let i = 0; i < 4; i += 1) {
-            const vid = skyVids[i]!;
-            if (vid.paused) playSafe(vid);
+            const vid = skies[i]!;
+            const showing = i === faceA || i === faceB;
+            if (showing) {
+              if (vid.paused) playSafe(vid);
+            } else if (!vid.paused) vid.pause();
             gl.activeTexture(gl.TEXTURE0 + i);
             if (vid.readyState >= 2) uploadVideo(gl, skyTex[i]!, vid);
             else gl.bindTexture(gl.TEXTURE_2D, skyTex[i]!);
@@ -2866,26 +3986,51 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           gl.uniform1f(gl.getUniformLocation(skyProg, "uSpan"), span);
           gl.uniform1f(gl.getUniformLocation(skyProg, "uV0"), v0);
           gl.uniform1f(gl.getUniformLocation(skyProg, "uV1"), v1);
+          gl.uniform1f(gl.getUniformLocation(skyProg, "uWrap"), 0);
+          gl.uniform1f(gl.getUniformLocation(skyProg, "uRun"), 0);
+          gl.uniform1f(gl.getUniformLocation(skyProg, "uWX"), 0);
+          gl.uniform1f(gl.getUniformLocation(skyProg, "uWZ"), 0);
           gl.activeTexture(gl.TEXTURE0);
           drawBuffer(quad(0, 0, 1, band));
         }
+        const groveVid = grove && groundVid.readyState >= 2 && groundVid.dataset.plate === GROVE_GROUND;
+        const groveStill = grove && !groveVid && groveFloorImg.complete && groveFloorImg.naturalWidth > 0;
+        if (groveVid || groveStill || (!grove && (groundVid.readyState >= 2 || (pathImg.complete && pathImg.naturalWidth > 0)))) {
         gl.activeTexture(gl.TEXTURE0);
-        if (groundVid.readyState >= 2) uploadVideo(gl, pathTex, groundVid);
-        else if (pathImg.complete && pathImg.naturalWidth > 0) upload(gl, pathTex, pathImg);
+        if (groveVid) {
+          uploadVideo(gl, pathTex, groundVid);
+          groveFloorSent = false;
+        } else if (groveStill) {
+          if (!groveFloorSent) {
+            upload(gl, pathTex, groveFloorImg);
+            groveFloorSent = true;
+          }
+        } else if (groundVid.readyState >= 2 && !grove) {
+          uploadVideo(gl, pathTex, groundVid);
+          groveFloorSent = false;
+        } else if (pathImg.complete && pathImg.naturalWidth > 0) upload(gl, pathTex, pathImg);
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
         gl.useProgram(rockProg);
         gl.bindTexture(gl.TEXTURE_2D, pathTex);
         gl.uniform1i(gl.getUniformLocation(rockProg, "uPath"), 0);
-        gl.uniform1f(gl.getUniformLocation(rockProg, "uWorldX"), worldX);
-        gl.uniform1f(gl.getUniformLocation(rockProg, "uWorldZ"), worldZ);
+        const groundTile = 0.18;
+        const wrapGround = (v: number) => {
+          const u = v * groundTile;
+          return (u - Math.floor(u)) / groundTile;
+        };
+        gl.uniform1f(gl.getUniformLocation(rockProg, "uWorldX"), wrapGround(worldX));
+        gl.uniform1f(gl.getUniformLocation(rockProg, "uWorldZ"), wrapGround(worldZ));
         gl.uniform1f(gl.getUniformLocation(rockProg, "uYaw"), orbit);
         gl.uniform1f(gl.getUniformLocation(rockProg, "uXMul"), groundXMul);
         gl.uniform1f(gl.getUniformLocation(rockProg, "uHorizon"), groundHorizon);
         gl.uniform1f(gl.getUniformLocation(rockProg, "uFade0"), groundFade0);
         gl.uniform1f(gl.getUniformLocation(rockProg, "uFade1"), groundFade1);
+        gl.uniform1f(gl.getUniformLocation(rockProg, "uFlat"), grove ? 1 : 0);
         gl.uniform1f(gl.getUniformLocation(rockProg, "uPivot"), boltPivot);
         drawBuffer(FULL);
+        if (grove) paintGrove();
+        }
       } else if (camFrame && doorMode === "room") {
         gl.disable(gl.BLEND);
         gl.useProgram(gateProg);
@@ -2920,7 +4065,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
 
       const aspect = canvas.width / canvas.height;
       const placed =
-        phaseRef.current === "cover"
+        (phaseRef.current as string) === "cover"
           ? []
           : foes
               .map((foe) => {
@@ -2957,10 +4102,11 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
       drawFoes(false);
 
-      if (!outHide && phaseRef.current !== "cover" && doorMode !== "map" && !(thunderOn && !thunderHold) && (bolt.readyState >= 2 || boltIdle.readyState >= 2 || thunderHold)) {
+      if (!outHide && (phaseRef.current as string) !== "cover" && doorMode !== "map" && !(thunderOn && !thunderHold) && (bolt.readyState >= 2 || boltIdle.readyState >= 2 || thunderHold)) {
         const box = boltBox();
         const thunderPlate =
-          pose === boltThunder ||
+          !grove &&
+          (pose === boltThunder ||
           pose === boltThunderRise ||
           pose === boltThunderRight ||
           pose === boltThunderRightBack ||
@@ -2971,16 +4117,23 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           pose === boltThunderRun ||
           pose === boltThunderRunLeft ||
           pose === boltThunderRunRight ||
+          pose === boltThunderRunFace ||
           pose === boltThunderBackstep ||
-          pose === boltThunderFace;
+          pose === boltThunderFace);
         const turningPlate =
           pose === boltTurn || pose === boltTurnBack || pose === boltTurnLeft || pose === boltTurnLeftBack;
         const fit = thunderPlate ? THUNDER_FIT : turningPlate && pose.readyState >= 2 ? TURN_FIT : 1;
+        const paw = thunderPlate ? 0.97 : PAW_V;
+        const dw = box.w * fit;
+        const dh = box.h * fit;
+        const dx = box.x + box.w / 2 - dw / 2;
+        const foot = box.footY;
+        const dy = foot - paw * dh;
         gl.useProgram(shadowProg);
         const pawX = box.x + box.w / 2;
         const shadowW = box.w * 0.42 * fit;
-        const shadowH = box.h * 0.04 * fit;
-        const shadowY = box.footY - shadowH * 0.35;
+        const shadowH = box.h * 0.035 * fit;
+        const shadowY = foot - shadowH * 0.45;
         drawBuffer(quad(pawX - shadowW / 2, shadowY, shadowW, shadowH));
         gl.useProgram(boltProg);
         gl.activeTexture(gl.TEXTURE0);
@@ -2991,14 +4144,22 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
         gl.uniform1i(gl.getUniformLocation(boltProg, "uTexB"), 1);
         gl.uniform1f(gl.getUniformLocation(boltProg, "uFlash"), flash);
         gl.uniform1f(gl.getUniformLocation(boltProg, "uTime"), now * 0.001);
-        gl.uniform1f(gl.getUniformLocation(boltProg, "uBreath"), thunderOn ? orbitMix : boltIdle.readyState >= 2 ? breathMix : 0);
+        gl.uniform1f(gl.getUniformLocation(boltProg, "uBreath"), grove ? 0 : thunderOn ? orbitMix : boltIdle.readyState >= 2 ? breathMix : 0);
+        gl.uniform1f(gl.getUniformLocation(boltProg, "uGrove"), grove ? 1 : 0);
         gl.activeTexture(gl.TEXTURE0);
-        const paw = thunderPlate ? 0.97 : PAW_V;
-        const dw = box.w * fit;
-        const dh = box.h * fit;
-        const dx = box.x + box.w / 2 - dw / 2;
-        const dy = box.footY - paw * dh;
         drawBuffer(quad(dx, dy, dw, dh));
+      }
+
+      if (grove && sparks.length) {
+        if (!sparkReady && sparkImg.complete && sparkImg.naturalWidth > 0) {
+          upload(gl, sparkTex, sparkImg);
+          sparkReady = true;
+        }
+        if (sparkReady) {
+          gl.blendFunc(gl.ONE, gl.ONE);
+          drawSparks();
+          gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        }
       }
 
       if (shots.length && howlVid.readyState >= 2) {
@@ -3060,9 +4221,9 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
     paintHud();
     if (startInRoomRef.current || backToRoom()) enterRoom();
 
-    const api = { begin, atGates: () => openGates(true), atVista: () => enterVista() };
+    const api = { begin, atGates: () => openGates(true), atVista: () => enterVista(), atGrove: () => enterGrove() };
     frame.dataset.ready = "1";
-    (frame as HTMLDivElement & { __pyre?: { begin: () => void; atGates: () => void; atVista: () => void } }).__pyre = api;
+    (frame as HTMLDivElement & { __pyre?: { begin: () => void; atGates: () => void; atVista: () => void; atGrove: () => void } }).__pyre = api;
 
     return () => {
       cancelAnimationFrame(raf);
@@ -3081,12 +4242,26 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
       }
       groundVid.pause();
       groundVid.remove();
+      for (const vid of forestSkies) {
+        vid.pause();
+        vid.remove();
+      }
+      pathGlowVid.pause();
+      pathGlowVid.remove();
+      for (const vid of treeVids) {
+        vid.pause();
+        vid.remove();
+      }
+      for (const vid of floorVids) {
+        vid.pause();
+        vid.remove();
+      }
       audio.ctx?.close().catch(() => undefined);
     };
-  }, []);
+  }, [PLATE_FS]);
 
   const pyreApi = () =>
-    frameRef.current as (HTMLDivElement & { __pyre?: { begin: () => void; atGates: () => void; atVista: () => void } }) | null;
+    frameRef.current as (HTMLDivElement & { __pyre?: { begin: () => void; atGates: () => void; atVista: () => void; atGrove: () => void } }) | null;
 
   const start = () => {
     pyreApi()?.__pyre?.begin();
@@ -3098,6 +4273,9 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
 
   const atVista = () => {
     pyreApi()?.__pyre?.atVista();
+  };
+  const atGrove = () => {
+    pyreApi()?.__pyre?.atGrove();
   };
 
   return (
@@ -3112,7 +4290,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           poster="/master/pyre-first.jpg"
           muted
           playsInline
-          preload="auto"
+          preload="none"
         />
         <video
           ref={roadBRef}
@@ -3120,16 +4298,16 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           src="/master/pyre-road.mp4"
           muted
           playsInline
-          preload="auto"
+          preload="none"
         />
         <video
           ref={boltRef}
           className="pyre-video"
-          src="/master/bolt-native.mp4?v=2"
+          src="/master/bolt-native.mp4?v=3"
           muted
           playsInline
           disablePictureInPicture
-          preload="auto"
+          preload="none"
         />
         <video
           ref={boltIdleRef}
@@ -3139,7 +4317,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           loop
           playsInline
           disablePictureInPicture
-          preload="auto"
+          preload="none"
         />
         <video
           ref={boltFaceRef}
@@ -3149,7 +4327,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           loop
           playsInline
           disablePictureInPicture
-          preload="auto"
+          preload="none"
         />
         <video
           ref={boltTurnRef}
@@ -3158,7 +4336,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           muted
           playsInline
           disablePictureInPicture
-          preload="auto"
+          preload="none"
         />
         <video
           ref={boltTurnBackRef}
@@ -3167,7 +4345,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           muted
           playsInline
           disablePictureInPicture
-          preload="auto"
+          preload="none"
         />
         <video
           ref={boltTurnLeftRef}
@@ -3176,7 +4354,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           muted
           playsInline
           disablePictureInPicture
-          preload="auto"
+          preload="none"
         />
         <video
           ref={boltTurnLeftBackRef}
@@ -3185,7 +4363,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           muted
           playsInline
           disablePictureInPicture
-          preload="auto"
+          preload="none"
         />
         <video
           ref={boltThunderRef}
@@ -3195,7 +4373,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           loop
           playsInline
           disablePictureInPicture
-          preload="auto"
+          preload="none"
         />
         <video
           ref={boltThunderRiseRef}
@@ -3204,19 +4382,20 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           muted
           playsInline
           disablePictureInPicture
-          preload="auto"
+          preload="none"
         />
-        <video ref={boltThunderRightRef} className="pyre-video" src="/master/bolt-thunder-to-face-r.mp4?v=2" muted playsInline disablePictureInPicture preload="auto" />
-        <video ref={boltThunderRightBackRef} className="pyre-video" src="/master/bolt-thunder-to-back-r.mp4?v=2" muted playsInline disablePictureInPicture preload="auto" />
-        <video ref={boltThunderLeftRef} className="pyre-video" src="/master/bolt-thunder-to-face-l.mp4?v=2" muted playsInline disablePictureInPicture preload="auto" />
-        <video ref={boltThunderLeftBackRef} className="pyre-video" src="/master/bolt-thunder-to-back-l.mp4?v=2" muted playsInline disablePictureInPicture preload="auto" />
-        <video ref={boltThunderRightIdleRef} className="pyre-video" src="/master/bolt-thunder-right-idle.mp4?v=1" muted loop playsInline disablePictureInPicture preload="auto" />
-        <video ref={boltThunderLeftIdleRef} className="pyre-video" src="/master/bolt-thunder-left-idle.mp4?v=1" muted loop playsInline disablePictureInPicture preload="auto" />
-        <video ref={boltThunderRunRef} className="pyre-video" src="/master/bolt-thunder-run.mp4?v=3" muted loop playsInline disablePictureInPicture preload="auto" />
-        <video ref={boltThunderRunLeftRef} className="pyre-video" src="/master/bolt-thunder-run-left.mp4?v=1" muted loop playsInline disablePictureInPicture preload="auto" />
-        <video ref={boltThunderRunRightRef} className="pyre-video" src="/master/bolt-thunder-run-right.mp4?v=1" muted loop playsInline disablePictureInPicture preload="auto" />
-        <video ref={boltThunderBackstepRef} className="pyre-video" src="/master/bolt-thunder-backstep.mp4?v=1" muted loop playsInline disablePictureInPicture preload="auto" />
-        <video ref={boltThunderFaceRef} className="pyre-video" src="/master/bolt-thunder-face.mp4?v=1" muted loop playsInline disablePictureInPicture preload="auto" />
+        <video ref={boltThunderRightRef} className="pyre-video" src="/master/bolt-thunder-to-face-r.mp4?v=2" muted playsInline disablePictureInPicture preload="none" />
+        <video ref={boltThunderRightBackRef} className="pyre-video" src="/master/bolt-thunder-to-back-r.mp4?v=2" muted playsInline disablePictureInPicture preload="none" />
+        <video ref={boltThunderLeftRef} className="pyre-video" src="/master/bolt-thunder-to-face-l.mp4?v=2" muted playsInline disablePictureInPicture preload="none" />
+        <video ref={boltThunderLeftBackRef} className="pyre-video" src="/master/bolt-thunder-to-back-l.mp4?v=2" muted playsInline disablePictureInPicture preload="none" />
+        <video ref={boltThunderRightIdleRef} className="pyre-video" src="/master/bolt-thunder-right-idle.mp4?v=1" muted loop playsInline disablePictureInPicture preload="none" />
+        <video ref={boltThunderLeftIdleRef} className="pyre-video" src="/master/bolt-thunder-left-idle.mp4?v=2" muted loop playsInline disablePictureInPicture preload="none" />
+        <video ref={boltThunderRunRef} className="pyre-video" src="/master/bolt-thunder-run.mp4?v=4" muted loop playsInline disablePictureInPicture preload="none" />
+        <video ref={boltThunderRunLeftRef} className="pyre-video" src="/master/bolt-thunder-run-left.mp4?v=2" muted loop playsInline disablePictureInPicture preload="none" />
+        <video ref={boltThunderRunRightRef} className="pyre-video" src="/master/bolt-thunder-run-right.mp4?v=2" muted loop playsInline disablePictureInPicture preload="none" />
+        <video ref={boltThunderRunFaceRef} className="pyre-video" src="/master/bolt-thunder-run-face.mp4?v=2" muted loop playsInline disablePictureInPicture preload="none" />
+        <video ref={boltThunderBackstepRef} className="pyre-video" src="/master/bolt-thunder-backstep.mp4?v=1" muted loop playsInline disablePictureInPicture preload="none" />
+        <video ref={boltThunderFaceRef} className="pyre-video" src="/master/bolt-thunder-face.mp4?v=2" muted loop playsInline disablePictureInPicture preload="none" />
         <video
           ref={fallenRef}
           className="pyre-video"
@@ -3224,7 +4403,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           muted
           playsInline
           disablePictureInPicture
-          preload="auto"
+          preload="none"
         />
         <video
           ref={bruteRef}
@@ -3233,7 +4412,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           muted
           playsInline
           disablePictureInPicture
-          preload="auto"
+          preload="none"
         />
         <video
           ref={bossRef}
@@ -3242,7 +4421,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           muted
           playsInline
           disablePictureInPicture
-          preload="auto"
+          preload="none"
         />
         <video
           ref={bossAshRef}
@@ -3251,7 +4430,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           muted
           playsInline
           disablePictureInPicture
-          preload="auto"
+          preload="none"
         />
         <video
           ref={wingLRef}
@@ -3260,7 +4439,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           muted
           playsInline
           disablePictureInPicture
-          preload="auto"
+          preload="none"
         />
         <video
           ref={wingRRef}
@@ -3269,7 +4448,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           muted
           playsInline
           disablePictureInPicture
-          preload="auto"
+          preload="none"
         />
         <video
           ref={howlRef}
@@ -3278,7 +4457,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           muted
           playsInline
           disablePictureInPicture
-          preload="auto"
+          preload="none"
         />
         <video
           ref={ashFallenRef}
@@ -3287,7 +4466,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           muted
           playsInline
           disablePictureInPicture
-          preload="auto"
+          preload="none"
         />
         <video
           ref={ashBruteRef}
@@ -3296,7 +4475,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           muted
           playsInline
           disablePictureInPicture
-          preload="auto"
+          preload="none"
         />
         <video
           ref={gateARef}
@@ -3304,7 +4483,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           src="/master/citadel-road.mp4"
           muted
           playsInline
-          preload="auto"
+          preload="none"
         />
         <video
           ref={gateBRef}
@@ -3312,7 +4491,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           src="/master/citadel-road.mp4"
           muted
           playsInline
-          preload="auto"
+          preload="none"
         />
         <video
           ref={gateWingLRef}
@@ -3321,7 +4500,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           muted
           playsInline
           disablePictureInPicture
-          preload="auto"
+          preload="none"
         />
         <video
           ref={gateWingRRef}
@@ -3330,7 +4509,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           muted
           playsInline
           disablePictureInPicture
-          preload="auto"
+          preload="none"
         />
         <video
           ref={citadelRef}
@@ -3339,7 +4518,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           muted
           playsInline
           disablePictureInPicture
-          preload="auto"
+          preload="none"
         />
         <video
           ref={openRef}
@@ -3348,7 +4527,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           muted
           playsInline
           disablePictureInPicture
-          preload="auto"
+          preload="none"
         />
         <video
           ref={hallRef}
@@ -3357,7 +4536,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           muted
           playsInline
           disablePictureInPicture
-          preload="auto"
+          preload="none"
         />
         <video
           ref={breathRef}
@@ -3367,7 +4546,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           playsInline
           loop
           disablePictureInPicture
-          preload="auto"
+          preload="none"
         />
         <video ref={camLeftRef} className="pyre-video" muted playsInline disablePictureInPicture preload="none" />
         <video ref={camRightRef} className="pyre-video" muted playsInline disablePictureInPicture preload="none" />
@@ -3380,7 +4559,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           muted
           playsInline
           disablePictureInPicture
-          preload="auto"
+          preload="none"
         />
         <video
           ref={exitRef}
@@ -3389,7 +4568,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           muted
           playsInline
           disablePictureInPicture
-          preload="auto"
+          preload="none"
         />
         <video
           ref={plainRef}
@@ -3399,10 +4578,10 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
           loop
           playsInline
           disablePictureInPicture
-          preload="auto"
+          preload="none"
         />
-        <video ref={plainLeftLiveRef} className="pyre-video" src="/master/plain-left-live.mp4?v=1" muted loop playsInline disablePictureInPicture preload="auto" />
-        <video ref={plainRightLiveRef} className="pyre-video" src="/master/plain-right-live.mp4?v=1" muted loop playsInline disablePictureInPicture preload="auto" />
+        <video ref={plainLeftLiveRef} className="pyre-video" src="/master/plain-left-live.mp4?v=1" muted loop playsInline disablePictureInPicture preload="none" />
+        <video ref={plainRightLiveRef} className="pyre-video" src="/master/plain-right-live.mp4?v=1" muted loop playsInline disablePictureInPicture preload="none" />
         {IDLE_LIVE.map((spot, index) => (
           <video
             key={spot.src}
@@ -3415,7 +4594,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
             loop
             playsInline
             disablePictureInPicture
-            preload="auto"
+            preload="none"
           />
         ))}
         <div className="pyre-hud" hidden={phase === "cover"}>
@@ -3435,6 +4614,7 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
         {phase === "citadel" && roomLive && portalReady && <p className="pyre-tap is-low">Tap the door</p>}
         {phase === "citadel" && roomLive && !portalReady && <p className="pyre-tap is-low">Drag Bolt · swipe the floor, he turns and the room turns with him</p>}
         {phase === "citadel" && plainLive && <p className="pyre-tap is-low">Swipe up to run. Swipe the ground to turn the camera all the way around</p>}
+        {phase === "citadel" && groveLive && <p className="pyre-tap is-low">Swipe up to run. Swipe sideways to turn. Sky and ground turn together</p>}
         {phase !== "run" && phase !== "citadel" && (
           <div className="pyre-cover">
             <p className="pyre-kicker">{phase === "fallen" ? "The ash kept you" : "Blood-moon causeway"}</p>
@@ -3453,6 +4633,9 @@ export function PyreStage({ startInRoom = false }: { startInRoom?: boolean }) {
               </button>
               <button type="button" className="pyre-start is-ghost" onPointerUp={(event) => { event.preventDefault(); event.stopPropagation(); atVista(); }}>
                 The plain
+              </button>
+              <button type="button" className="pyre-start is-ghost" onPointerUp={(event) => { event.preventDefault(); event.stopPropagation(); atGrove(); }}>
+                The forest
               </button>
             </div>
             <p className="pyre-note">Stay on the pyre road. At 600 paces the road runs into the citadel.</p>
