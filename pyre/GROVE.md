@@ -58,7 +58,7 @@ Une vidéo de sol sous les pattes est pire qu'une photo nette : le décodeur et 
 
 ## Placer
 
-Simplex décide.
+Simplex décide où poser l'herbe et les arbres déjà cuits. Il ne dessine pas le sol, le relief, ni le détail.
 
 - Herbe : case de 1,15 m. Bruit bas = trou. Bruit haut = touffe.
 - Arbres : case de 3,3 m. Un bruit large dit le bosquet, un bruit plus fin choisit l'arbre.
