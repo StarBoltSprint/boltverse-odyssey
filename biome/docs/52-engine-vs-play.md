@@ -90,7 +90,7 @@ Done-when: specks on the horizon shrink, then die.
 
 A crystal's hit kind is `shatter`. Howl is H, held, in a cone of about 8 m and 25°. On confirm: hide the card and drop the volume the same frame, then play `crystal_burst_vN` (about 1 s, no capsule). Walking into a crystal is a soft drag. It does not shatter. A miss is the Howl pose and the audio only.
 
-Cook: shard becomes quartz dust, transparent back, no Bolt, first frame is the still, last frame is empty. Not chrome. The rings stay the Howl KEEP. This plate, `crystal_burst_vN`, is the primary shatter picture. The spark overlay is law [53](53-gpu-particles.md): 80 points in the vertex shader, each one sampling the Imagine spark-dust sheet. A missing sheet hides those points. They are not a mesh, not a colored disc, and not the world.
+Cook: shard becomes quartz dust, transparent back, no Bolt, first frame is the still, last frame is empty. Not chrome. The rings stay the Howl KEEP. This plate, `crystal_burst_vN`, is the primary shatter picture. The spark overlay is law [53](53-gpu-particles.md): 80 points in the vertex shader, each one sampling the Imagine spark-dust sheet. Those points are a playback tape. They do not settle on a bole and they do not write SprintCore. A later debris that must land is a separate Verlet of at most 80, still not Rapier. A missing sheet hides those points. They are not a mesh, not a colored disc, and not the world.
 
 ### 6. Soft versus block
 
@@ -129,6 +129,7 @@ The same `d` flattens the posture, skips spawn, and tints the shader. Two octave
 - Baking the path, or stones, into the ground film.
 - A second hero, or a wolf cooked into a sheet.
 - Importing Three as the world. The pools are a contract for the remix.
+- One solver that owns Bolt, the capsules, and the sparks. SprintCore is the dog. Volumes are the woods. Particles are the weather.
 
 ---
 

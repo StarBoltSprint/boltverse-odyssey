@@ -12,6 +12,35 @@ Stub: [`../scripts/jade-lod/particles.ts`](../scripts/jade-lod/particles.ts). Sn
 
 ---
 
+## Playback tape
+
+Shipped particles are a **playback tape**, not a particle-physics engine. Birth, velocity, and life sit in the buffers. The vertex shader integrates `p + v*t + g*t²`. A slot never sees its neighbors. It never sees a trunk. It never writes SprintCore. That is VFX.
+
+A particle-physics engine is a different machine. Its grains touch each other, the colliders, and the pawn.
+
+Three machines. Do not fold them into one.
+
+| Machine | Job | Jade |
+|---|---|---|
+| VFX integrator | motes, paw sparks, Howl burst look | this law. Keep it. |
+| Granular / PBD | debris that settles, moss you can kick | optional later, 80 grains at most |
+| Rigid body (Rapier, Cannon, Ammo) | crates and doors | not dust, not the forest |
+
+Bolt's thud is a disc query. Trees are capsules. The dog stays SprintCore. Do not move the sprint into Chaos or Rapier so the woods can be rigid. A hybrid that does that is banned.
+
+What Jade needs:
+
+- Motes, paws, and the Howl look stay on this tape. Imagine textures stay mandatory.
+- A Howl that must land and stay is an optional Verlet, 80 grains at most, against `h(x, z)` and the volume discs, dead after 1 s. Not Rapier. The shatter picture stays `crystal_burst_vN` in law [52](52-engine-vs-play.md).
+- A fern you can kick is that same small Verlet. It is not a rigid-body forest.
+- Fluid and smoke volumes are not this field. Do not build them.
+
+Any solver, if one is ever switched on, ticks picture-time. The step is the sim `dt`, the same clock as fade and SprintCore at 1/60. Pause freezes births and the integration. `Date.now` is FAIL. A collide reads the volume table and `h(x, z)`. It does not read video pixels.
+
+**Lock.** Do not adopt a particle-physics engine for the field. Keep this VFX tape. Rapier is only for rigid toys later. SprintCore is the dog. Volumes are the woods. Particles are the weather. An engine that eats all three is chrome FAIL.
+
+---
+
 ## Buffer
 
 Ring of 1400. Attributes: position (origin), `aVel`, `aBirth`, `aLife`, `aSeed`, `aKind`. The cursor wraps. A dead slot stays in the buffer with `aBirth` in the past. The shader sets point size to 0. One draw, always.
@@ -54,11 +83,19 @@ The burst plate is the primary FX. These points are sparks on top of it. They ar
 - A spark layer that replaces the ground film.
 - A solid-color `gl_Point` disc, or any procedural-only blob, with no Imagine map.
 - Shipping colored discs when the sheet is missing. Hide the FX, or HOLD.
+- A particle-physics engine for motes, paws, or the Howl look.
+- Sparks that read each other, read trunks, or write SprintCore.
+- Rapier, Cannon, Ammo, or Chaos used for dust or for the forest.
+- Moving the sprint into a rigid-body solver so the woods can be simulated.
+- `Date.now` as the particle clock. Pause must freeze births and the integration.
+- Colliding a spark against video pixels.
+- A fluid or a smoke volume standing in for the field.
+- One engine that owns the dog, the woods, and the weather.
 
 ---
 
 ## Done-when
 
-Stand still with `moss_dust_v0` bound. Motes appear around Bolt about every 0.18 s, one draw, each point a cutout. Unbind the sheet. The motes disappear. They do not turn into jade discs. Sprint with `ember_v0` bound. Paw sparks leave the paws. Press H on a crystal inside 8 m. The card is gone the same frame, the capsule is gone, `crystal_burst_vN` plays, and 80 points sample `spark_dust_v0` at that crystal. Press H in an empty corridor. The burst plate and the points sit in front of the muzzle. No dust sheet: the points stay hidden and the plate, if cooked, is still the shatter. Dead slots stay in the buffer and draw at size 0. The cursor wraps. The forest did not gain a tree from a spark. The ground film is still the plate.
+Stand still with `moss_dust_v0` bound. Motes appear around Bolt about every 0.18 s, one draw, each point a cutout. Unbind the sheet. The motes disappear. They do not turn into jade discs. Sprint with `ember_v0` bound. Paw sparks leave the paws. Press H on a crystal inside 8 m. The card is gone the same frame, the capsule is gone, `crystal_burst_vN` plays, and 80 points sample `spark_dust_v0` at that crystal. Press H in an empty corridor. The burst plate and the points sit in front of the muzzle. No dust sheet: the points stay hidden and the plate, if cooked, is still the shatter. Dead slots stay in the buffer and draw at size 0. The cursor wraps. The forest did not gain a tree from a spark. The sparks did not stick to a trunk and did not move Bolt. Pause freezes the tape. The ground film is still the plate.
 
 World stays Imagine Video assets. The player stays the sealed Bolt. No wallet. No player API keys. Hang URL stays `https://boltverse-odysseyyyy.grok.me`.

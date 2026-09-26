@@ -1,8 +1,13 @@
 /**
- * GPU particle playback. Law 53. Does not import three.
- * One Points draw. The vertex shader moves the slot. The CPU only writes births.
- * Sparks are an FX overlay. They do not spawn trees and they do not draw the ground.
+ * VFX playback tape. Law 53. Does not import three.
+ * Birth, velocity, and life live in the buffers. The vertex shader integrates
+ * p + v*t + g*t². A slot does not read its neighbors, does not read trunks,
+ * and does not write SprintCore. That is weather, not a physics engine.
+ * Picture-time only, the same 1/60 family as fade and SprintCore. Pause freezes
+ * births and the integration. Never Date.now.
  * The look is an Imagine cutout. A missing sheet hides the points. No colored disc.
+ * Rapier, Cannon, Ammo, and Chaos are not this file. A Verlet that must land
+ * is a different machine, 80 grains at most, and it is not built here.
  */
 
 export const SLOT_COUNT = 1400;
@@ -11,8 +16,12 @@ export const PAW_DT = 0.06;
 export const SPRINT_MIN = 3.2;
 export const BURST_COUNT = 80;
 export const HOWL_RANGE = 8;
-/** HUD chip. Playback, not a compute sandbox. */
+/** HUD chip. Playback tape, not a compute sandbox and not a rigid solver. */
 export const HUD_FX = "fx GPU";
+/** This file. Not granular, not Rapier. */
+export const MACHINE = "vfx-playback" as const;
+/** SprintCore and fade share this step. Callers pass picture-time. */
+export const SIM_HZ = 60;
 /** Look lock. A flat gl_Point color is not a keep. */
 export const LOOK = "imagine-cutout" as const;
 
@@ -175,6 +184,7 @@ export function birthHowl(
 }
 
 export type ParticleInput = {
+  /** Picture-time seconds. Pause freezes it. Never Date.now. */
   now: number;
   bolt: readonly [number, number, number];
   yaw: number;

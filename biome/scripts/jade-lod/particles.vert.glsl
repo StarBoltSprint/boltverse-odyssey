@@ -1,5 +1,6 @@
-// Law 53. One Points draw. CPU wrote the births. This shader moves them.
+// Law 53. VFX tape. One Points draw. CPU wrote the births. This shader moves them.
 // p = origin + vel * age + gravity(kind) * age * age
+// This slot does not read its neighbors, trunks, or SprintCore.
 // Dead slots (age outside life) keep their attributes and draw at size 0.
 
 attribute vec3 aOrigin;
