@@ -77,17 +77,34 @@ The ground is an Imagine video, the way the lava ground is an Imagine video. No 
 
 Preview choice, two doors into play: "The gates, or the forest."
 
-### B1. Empty plate, then black
+### B1. Black under the stack, then the videos, then the horizon
 
-The world is an empty plate. No Bolt in the plate. No trees in the plate. No canopy baked into a ground film.
+The forest starts on black. That black is the empty plate the world travels on. It is the void the stack paints into. Travel scrolls the world across it. The screen is black because the color buffer is cleared to black before any video is drawn. Cook no black film. Hang no black mp4. The clear is the plate.
 
-The black step is the color clear, then those cooked Imagine layers (sol, ciel, herbe, arbres). There is no longer black-plate pipeline than that.
+Nothing lives inside that plate. No Bolt. No trees. No canopy baked into a ground film. The videos sit on the travel, on top of the black.
 
-Once the door is open and the vista has settled (`onBlack` in [`pyre/PLATE.md`](../../pyre/PLATE.md)), do not cook another cell video for this world. The filmed 12-step grid is not this vista. One number can scroll a procedural plain (`plateOffset`, unclamped, endless). Forest travel is `worldX` / `worldZ` with yaw, not a scalar scroll after the yaw.
+What loops is the travel. The same sol tile repeats as `worldX` / `worldZ` run. The same ciel faces come back as yaw turns. The black under them is the clear, every frame.
 
-Clear the color buffer to black **before** the sky. If you skip the clear, the old sun or moon stays painted in the gap.
+Once the door is open and the vista has settled (`onBlack` in [`pyre/PLATE.md`](../../pyre/PLATE.md)), this vista is the plate. Cook no second cell video. The filmed 12-step grid is not this vista. On the lava plain, one number scrolls the procedural plain (`plateOffset`, unclamped, endless). Forest travel is `worldX` / `worldZ` with yaw, not a scalar scroll after the yaw. Section A is a different world: one continuous Imagine plate as the clock. Here the black clear is the void, and the cooked videos ride `worldX` / `worldZ`.
+
+Clear the color buffer to black before the sky. If you skip the clear, the old sun or moon stays painted in the gap.
 
 Load nothing at boot. `preload="none"`, `dataset.src`. Arm the four skies and the dirt only when the player enters the biome. Preloading every clip freezes the phone on the menu.
+
+On that travel, layer the Imagine videos. Sol, ciel, herbe, arbres. Cook each one once. After that they stay. They loop in place: clouds drift, a little dust moves, the clip does not advance the world. Travel is what scrolls. The next chunk of forest is the same placement. It is not a new prompt.
+
+Paste this order:
+
+1. **Black under the stack.** Clear to black. The empty plate is what the world travels on.
+2. **Travel.** Yaw and `worldX` / `worldZ` scroll that world. The videos ride the scroll.
+3. **Ciel.** Draw the sky videos into the black. Four locked portraits, one orbit. B2 cooks them.
+4. **Sol.** Draw the tiling ground video after the sky. One top-down tile, same orbit, same travel. B3 cooks it. The ground is an Imagine video, the way the lava ground is. Flat. No hill in the film.
+5. **Herbe and arbres.** Keyed layers over sol and ciel. Cooked once, then static. B5 places the grass, the trees, and Bolt.
+6. **Horizon.** Where sol meets ciel, manage the join. B4 owns that fix and its numbers. Leave `groundHorizon`, the depth clamp, and the grain kill where B4 sealed them.
+
+The frame draws black, then ciel, then sol, then the horizon join, then GPU (Bolt, herbe, arbres). The join is drawn with the ground, before the keyed layers. Step 5 names those layers and points at B5. It does not paint them in front of the join.
+
+Law 43, [`pyre/GROVE.md`](../../pyre/GROVE.md), and the procedural plain in [`pyre/PLATE.md`](../../pyre/PLATE.md) own the shaders. This step points at them. It does not copy a second set of numbers.
 
 ### B2. Sky — four locked portrait videos
 
