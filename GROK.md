@@ -7,6 +7,8 @@
 Repo: `https://github.com/StarBoltSprint/boltverse-odyssey`  
 Hung citadel recipe (kitchen): https://boltverse-odyssey.grok.me
 
+**HARD / FAIL — biome world = Imagine videos as assets.** Paste [`biome/docs/COLD_START-biome-method.md`](biome/docs/COLD_START-biome-method.md) and obey the FAIL block at the top. The whole game is those Imagine mp4s. No other language or engine builds the world. Three.js, Babylon, Unity, Unreal-as-world, Vite/TS, raw WebGL mesh scenes, or a procedural shader world with no Imagine mp4s is FAIL (Velum-class). GPU only composites keyed layers over those videos. No playable hang until the mp4s exist and play.
+
 ## Product model — Grok = console, Odyssey = game
 
 **Grok chat app = the console.** Boot / teaser / talk to Grok.  

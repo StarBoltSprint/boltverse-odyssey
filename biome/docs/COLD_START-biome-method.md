@@ -2,6 +2,17 @@
 
 Kitchen only. Do not read this to the player.
 
+## FAIL / HARD — Imagine videos are the assets
+
+Read this before the rails. A paste-reader who skips it and ships a code world is FAIL.
+
+- **The world is Imagine Video.** Those mp4s are the assets. Road densify (A), or open-ground sol/ciel plus keyed herbe/arbres (B).
+- **Cook the Imagine videos first.** Session Imagine Video. Then Live plays those videos.
+- **No other language or engine builds the world.** Do not build the world in Three.js, Babylon, Unity, Unreal-as-world, Vite/TS demos, raw WebGL mesh scenes, or procedural geometry/shader worlds that replace the plates.
+- **A cinematic code biome with no Imagine mp4s wired is FAIL** (Velum-class).
+- **WebGL/GPU may only composite keyed layers** (Bolt, trees, howl, lights) **over** those cooked videos. That is Rail B. It does not invent the sky or the ground.
+- **No playable hang** until the required Imagine mp4s exist and play.
+
 Paste this as the first message when a new Grok, in a new conversation, cooks a **playable biome composite** for **any** named biome. The name and the paint are free: nebula, shore, forest, gothic, lava, ice, or whatever the player named. `pyre/` is the Diablo gothic worked example. It is not the only biome type. Copy the craft. Recook the pixels in this plate's light.
 
 Two world cooks live in this file. Pick one.
@@ -363,6 +374,8 @@ Forest / open ground:
 
 Either world:
 
+- Building the world in Three.js, Babylon, Unity, Unreal-as-world, Vite/TS, raw WebGL meshes, or a procedural shader scene. Imagine videos are the assets. No other language or engine is the world. A cinematic code biome with no Imagine mp4s is FAIL (Velum-class). WebGL/GPU only composites keyed layers over those videos.
+- A playable hang while the required Imagine mp4s are missing or not playing
 - Chrome crystals, Connect Wallet, player API keys, a new grok.me, or a Build share URL as the hang
 - Links to `pyre/PLAIN.md` or `pyre/VISTA.md` (those paths 404; from `biome/docs/` the real files are [`../../pyre/METHOD.md`](../../pyre/METHOD.md), [`../../pyre/GROVE.md`](../../pyre/GROVE.md), [`../../pyre/PLATE.md`](../../pyre/PLATE.md), [`../../pyre/ORBIT.md`](../../pyre/ORBIT.md))
 
@@ -394,6 +407,7 @@ Forest / open ground:
 
 Either:
 
+- [ ] The required Imagine mp4s exist and play. The world is those videos. Three.js, or any other language or engine, did not build the world. GPU only composites keyed layers over the plates.
 - [ ] Laws 39–42 were followed where that rail is on.
 - [ ] The hang is `https://boltverse-odysseyyyy.grok.me` only.
 - [ ] No wallet. No player keys.

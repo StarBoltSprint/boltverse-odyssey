@@ -2,6 +2,8 @@
 
 The cook **order** (black → four skies → one ground tile → horizon → GPU Bolt and trees) is section B of [COLD_START-biome-method.md](COLD_START-biome-method.md). This file is the numbers. Read [43-open-ground.md](43-open-ground.md) before touching a forest, a plain of dirt, or any biome that is **not** a 3-lane road.
 
+These shaders sample and composite the Imagine videos (sol, ciel, herbe, arbres). They are not a substitute world. Three.js or any other engine as the world is FAIL. Same lock as the top of [COLD_START-biome-method.md](COLD_START-biome-method.md).
+
 Copy the lava plain: four locked portrait skies, one tiling ground video, the same `orbit` on both, GPU Bolt (`bolt-native.mp4` at rate 4, `bolt-breath.mp4` idle, `uGrove = 1`).
 
 Set `uFlat = 1` only for that ground. Leave the plain's `sharp * intoSky` alone.
