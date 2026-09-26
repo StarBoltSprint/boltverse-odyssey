@@ -19,3 +19,5 @@ python3 biome/scripts/open-ground/earth_color.py <ground.mp4>
 Use the **lit** line it prints, not the raw mean.
 
 Do not run `plate-geo-qc.py` on this ground. Do not put φ in the Imagine prompt. Do not hang stickers, a canopy, or a zooming loop.
+
+Volume (capsules and cards in meters) is [44-imagine-volume-stack.md](44-imagine-volume-stack.md). This file stays the sky and ground numbers.

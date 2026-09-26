@@ -26,9 +26,9 @@ Paste this as the first message when a new Grok, in a new conversation, cooks a 
 Two world cooks live in this file. Pick one.
 
 - **A. Road densify** — the paint is a road. One continuous Imagine plate is the world clock.
-- **B. Forest / open ground** — the paint is a forest, a dirt plain, or any ground with no road. Law 43. The order is black, sky, ground, horizon, then GPU. That order is written below. You do not open five files to learn it.
+- **B. Forest / open ground** — the paint is a forest, a dirt plain, or any ground with no road. Law 43. The order is black, sky, ground, horizon, then GPU. That order is written below. You do not open five files to learn it. Volume on that ground (capsule + look) is law 44.
 
-Law 43 is already [open ground](43-open-ground.md). This paste does not take a new law number. It points at the laws that stay. Laws 39–42 stay in force when that rail is on.
+Law 43 is already [open ground](43-open-ground.md). Law 44 is the [Imagine volume stack](44-imagine-volume-stack.md) on that ground. This paste does not take a new law number. It points at the laws that stay. Laws 39–42 stay in force when that rail is on. Do not invent a second law 43 or a second volume law.
 
 ## What to open
 
@@ -38,6 +38,7 @@ Law 43 is already [open ground](43-open-ground.md). This paste does not take a n
    - Densify + Imagine Live keyed props: [`COLD_START-imagine-engine.md`](COLD_START-imagine-engine.md) · laws [39](39-imagine-live-light.md) [40](40-nebula-cycle.md) [41](41-eclipse-look.md) [42](42-shoulder-panorama.md)
    - Empty-plate parity, scale, clock, ground FX, for a **road**: [`COLD_START-any-biome.md`](COLD_START-any-biome.md) · [00](00-PRIORITY0-any-biome.md) · [20](20-default-plate-proportions.md)
    - Forest numbers and shaders, after you have followed section B: [`43-open-ground.md`](43-open-ground.md) · [`COLD_START-open-ground.md`](COLD_START-open-ground.md) · [`pyre/GROVE.md`](../../pyre/GROVE.md)
+   - Forest volume (collision capsule + look cards), after section B5: [`44-imagine-volume-stack.md`](44-imagine-volume-stack.md)
    - Empty plate, black clear, orbit on sky and ground (lava plain example): [`pyre/PLATE.md`](../../pyre/PLATE.md) section "Procedural plain — this is what is built" · METHOD §13
    - Room look: [`pyre/ORBIT.md`](../../pyre/ORBIT.md) · journey [`COLD_START-room-starmap.md`](COLD_START-room-starmap.md)
 
@@ -76,7 +77,7 @@ Use this when the paint is a forest, packed dirt, or any ground that is not a 3-
 
 Laws [20](20-default-plate-proportions.md), [23](23-plate-geo-qc.md), and [24](24-camera-1point.md) are the 3-lane cone. Horizon there is 0.38 because that is where the dashes vanish. `plate-geo-qc.py` looks for three dash tubes. **Do not run that script on this ground.** There are no dashes. It will FAIL a good tile. φ is an audit on the lane. Do not put φ, `0.618`, or a UV table in an Imagine prompt.
 
-The world is built in this order. Stop if a step is missing. Numbers and the full shaders stay in [43](43-open-ground.md), [`COLD_START-open-ground.md`](COLD_START-open-ground.md), [`pyre/GROVE.md`](../../pyre/GROVE.md), and the procedural plain in [`pyre/PLATE.md`](../../pyre/PLATE.md). Law 43 still owns the four-sky cook and the tiling ground. The lines below are the Diablo kitchen voice. They do not replace those numbers.
+The world is built in this order. Stop if a step is missing. Numbers and the full shaders stay in [43](43-open-ground.md), [`COLD_START-open-ground.md`](COLD_START-open-ground.md), [`pyre/GROVE.md`](../../pyre/GROVE.md), and the procedural plain in [`pyre/PLATE.md`](../../pyre/PLATE.md). Law 43 still owns the four-sky cook and the tiling ground. Volume on those marks is [44](44-imagine-volume-stack.md) (section B5b). The lines below are the Diablo kitchen voice. They do not replace those numbers.
 
 Diablo forest, once the Imagine videos exist:
 
@@ -100,7 +101,7 @@ Preview choice, two doors into play: "The gates, or the forest."
 
 The forest starts on black. That black is the empty plate the world travels on. It is the void the stack paints into. Travel scrolls the world across it. The screen is black because the color buffer is cleared to black before any video is drawn. Cook no black film. Hang no black mp4. The clear is the plate.
 
-Nothing lives inside that plate. No Bolt. No trees. No canopy baked into a ground film. The videos sit on the travel, on top of the black.
+Nothing lives inside that plate. No Bolt. No near trunks. No canopy baked into a ground film. Soft far forest may sit in the ground film (law 44). Near trunks are cards. The videos sit on the travel, on top of the black.
 
 What loops is the travel. The same sol tile repeats as `worldX` / `worldZ` run. The same ciel faces come back as yaw turns. The black under them is the clear, every frame.
 
@@ -200,7 +201,7 @@ Trees: show the source videos, `decor/grove-tree-0.mp4`, `grove-tree-1.mp4`, `gr
 
 Bolt looks sharper when the trunk fills the screen, while the files are about the same width (about 780 pixels). Bolt is drawn smaller than his video: the phone scales down, and the picture stays sharp. The trunk is enlarged: 768 pixels stretched across the screen. No sharpen filter adds grooves that are not in the file. For a sharp trunk at full screen, cook a wider video aimed at 1080. The first frame, the middle frame, and the last frame are the original trunk. The model may not leave that lock. It redraws pixels: from far it is the same tree, up close a groove may move. That is not a perfect enlarge. It is still the only way to have real extra pixels.
 
-**Four faces are the next step. They are not a v1 KEEP.** Bolt has one video per side, and you play one, because he is alone. In the forest a front trunk and a side trunk are on screen together. All trees share four videos. Four decoders, not one decoder per tree. Twelve (three kinds times four faces) is no. Each face is cooked with the first, the middle, and the last frame locked on that side of the same trunk, larger. The four faces use that lock. They do not replace it. In play the face follows where the player stands (`atan2` toward the tree), not the yaw of the head. Use a wide threshold before the image changes. Otherwise the tree spins as soon as the player moves a little. Between two faces the card is flat. You do not see the edge of the wood. Instancing comes after: one GPU pass for every tree of one face. It lightens the frame. It does not add a pixel. Wiring it onto the blurry video does not show.
+**Four faces are the next step. They are not a v1 KEEP.** Bolt has one video per side, and you play one, because he is alone. In the forest a front trunk and a side trunk are on screen together. All trees share four videos. Four decoders, not one decoder per tree. Twelve (three kinds times four faces) is no. Each face is cooked with the first, the middle, and the last frame locked on that side of the same trunk, larger. The four faces use that lock. They do not replace it. In play the face follows where the player stands (`atan2` toward the tree), not the yaw of the head. Use a wide threshold before the image changes. Otherwise the tree spins as soon as the player moves a little. Between two faces the card is flat. You do not see the edge of the wood. Instancing comes after: one GPU pass for every tree of one face. It lightens the frame. It does not add a pixel. Wiring it onto the blurry video does not show. Four faces are not the volume. The volume is section B5b.
 
 Placement is simplex: where to put the already-cooked herbe and arbres. The next forest chunk stays that placement. Simplex does not draw it. It does not call a new Imagine prompt, WFC, or an adaptive quest in the middle of the run.
 
@@ -208,6 +209,19 @@ Placement is simplex: where to put the already-cooked herbe and arbres. The next
 - Trees: cell of 3.3 m. A wide noise says the grove. A finer noise picks the tree.
 - A few rocks sit with that same placement. They are not a ruin field, not crystals, and not steam.
 - The path (the ribbon) stays empty. Do not decide a cell until the path has passed in front of it.
+
+### B5b. Volume on those marks (law 44)
+
+The simplex rows above stay the placer. Law [44](44-imagine-volume-stack.md) extends each tree row. It does not draw a new forest. It does not replace the Imagine sheets.
+
+Two jobs. Both. Same `(x, z)` as the row.
+
+1. **Collision.** A capsule `(x, z, r, h)` from `(x, z, kind)`. You thud the trunk.
+2. **Look.** Parallax, occlusion, and scale. Near slides faster than far. Near hides far. The trunk stays planted when you yaw. Not a depth map inside the video.
+
+The Imagine file has no thickness. Cards in meters stand in front of sol and ciel. The stack, the part cook, the GPU steps, the optional extras, and the 8-bole test are the law. Run that test before calling the forest deep.
+
+A heightfield of about 30 cm under the feet and the cards is optional. The feet may rise. The sol film stays the flat Imagine plane. Noise that paints or lifts that film is still FAIL.
 
 ### B6. Forest controls
 
@@ -360,11 +374,20 @@ Forest / open ground:
 - One looping film that zooms when he runs. The loop reads as reverse
 - Sky and ground on different orbits, so the sun stays glued
 - Color buffer left dirty before the sky, so the old sun or moon stays in the gap
-- Bolt, trees, or a canopy baked into the ground plate
+- Bolt, near trunks, or a canopy baked into the ground plate. Soft far décor in that plate is the cheap depth in law 44. Near trunks are cards.
 - Tree JPEGs (`grove-turn-*.jpg`) in place of the source videos
 - Four-face grove trees treated as required for v1
 - One decoder per tree, or twelve decoders (three kinds times four faces)
 - Any row of the rejected-volume table in B7 (six JPEGs, depth slices, bark cylinder, photo block, screen stereo, SIFT/ORB mesh)
+- Mesh solids or cones in place of Imagine cards (Iris Mere FAIL, law 44)
+- Video wrapped on a coarse proxy so the ugly silhouette is the look
+- 8-face or multi-JPEG succession claimed as finished volume (four faces stay the next step, not v1, and not the volume)
+- Capsules without cards (solid, looks like a screensaver) or cards without capsules (deep, you ghost through)
+- A heightfield or noise that paints or lifts the sol Imagine film. An optional ~30 cm rise under feet and cards (law 44) moves the contact in meters. It does not redraw the dirt photo.
+- Asking Imagine for one "3D forest video" instead of parts (empty ground, empty sky, object sheets)
+- Extruding the mp4, or a depth map cooked into the video, as the volume
+- One clip treated as the volume (a spinning poster)
+- A Velum-class Three.js world standing in for the cards
 - `fract` of a huge `worldX` / `worldZ` inside `mediump` (the tile breaks after a long run)
 - Fractal noise or Perlin put back over the photo so it lifts or refills the dirt
 - Painting the whole floor toward blue (`haze` over `dist` 0.14)
@@ -413,7 +436,9 @@ Forest / open ground:
 - [ ] `uGrove = 1`. Bolt is not baked into the plate.
 - [ ] Swipe up sprints. A held finger left or right is followed. The camera catch-up turns sky and ground together.
 - [ ] Sol, ciel, herbe, arbres are Imagine layers, cooked, then left alone. The ground is a flat Imagine video, like the lava: no hill, no ruins, no crystals, no steam.
-- [ ] The run layer is the flat plate, the ribbon, the grass, the trees, a few rocks. The next chunk is the same simplex placement of those cooked herbe and arbres.
+- [ ] The run layer is the flat plate, the ribbon, the grass, the trees, a few rocks. The next chunk is the same simplex placement of those cooked herbe and arbres. Law 44 only adds the twin capsule, the contact shadow, the near and mid bands, and the billboard mix on those rows.
+- [ ] Law 44 two jobs are both on: capsule `(x, z, r, h)` from the same spawn row `(x, z, kind)`, and look from parallax + occlusion + scale.
+- [ ] 8-bole test from law 44: existing ground and sky films, eight near bole cards from the tree seed, billboard mix + contact shadow + fog, capsules on, a circle around one tree. The tree stays planted. The forest slides behind it. The paws thud the trunk.
 - [ ] The preview choice is "The gates, or the forest."
 
 Either:

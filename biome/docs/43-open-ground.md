@@ -154,3 +154,5 @@ Run clip `bolt-native.mp4`, `playbackRate = 4`. Idle `bolt-breath.mp4`, rate 1. 
 - Changing `groundHorizon`, `SKY.span`, or the plain's `sharp * intoSky` to "match" this biome.
 
 Related: [VISTA](../../VISTA.md) is the plain this copies. [24](24-camera-1point.md) is the other camera. Do not mix them.
+
+Volume on this ground (collision capsule + look cards) is [44](44-imagine-volume-stack.md). This law stays the four skies and the tile.

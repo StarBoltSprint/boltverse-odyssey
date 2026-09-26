@@ -25,7 +25,22 @@ Au jeu, la face suit l'endroit où l'on se tient (`atan2` vers l'arbre), pas le 
 
 Ça donne le volume de Bolt : on sent qu'on en fait le tour, parce que la silhouette change. Entre deux faces, la carte est plate. On ne voit pas le bord du bois.
 
+Quatre faces restent la suite, pas le volume fini, pas la v1. Le volume qui passe est la [loi 44](../biome/docs/44-imagine-volume-stack.md).
+
 L'instancié vient après. Un seul passage GPU pour tous les arbres d'une même face. Ça allège. Ça n'ajoute pas un pixel. Le brancher sur la vidéo floue ne se voit pas.
+
+## Volume — pile de cartes (loi 44)
+
+SmiR a dit Go le 2026-09-26. Le texte est [`biome/docs/44-imagine-volume-stack.md`](../biome/docs/44-imagine-volume-stack.md). On ne remplace pas le placement simplex plus bas. On l'étend : capsule jumelle, ombre de contact, bandes près et milieu, billboard mixte. Le simplex place. Imagine dessine.
+
+Deux jobs. Les deux.
+
+1. **Collision.** Une capsule. Tu cognes le tronc. La ligne `(x, z, kind)` pose `(x, z, r, h)`.
+2. **Regard.** En tournant ou en marchant, le proche glisse plus vite que le loin, le proche cache le loin, le tronc reste planté. Parallaxe, occlusion, échelle. Pas une carte de profondeur dans la vidéo.
+
+Le fichier Imagine n'a pas d'épaisseur. Des cartes en mètres devant le film sol/ciel. Même `(x, z)`. Le seed garde les couches honnêtes.
+
+Test le plus petit : les films de sol et de ciel déjà là, huit troncs dans la bande près, billboard + ombre + brume, capsules allumées, un tour autour d'un arbre. L'arbre reste planté et la forêt glisse derrière. Sinon ce n'est pas le volume.
 
 ## Volume — ce qu'on a jeté
 
