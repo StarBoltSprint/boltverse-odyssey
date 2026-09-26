@@ -69,19 +69,4 @@ export function sampleLock(job: OctaveJob, x: number, z: number, s: number = SEE
   return fbm(x / row.L, z / row.L, s + row.page, row.octaves);
 }
 
-/**
- * Path page. Law 52. Not a spawn octave and not the height page.
- * Two octaves only. A third would shred the corridor.
- */
-export const PATH_NOISE = { page: 7, octaves: 2, L: 64, swing: 18 } as const;
-
-/** center(z) = (fbm(0, z/64, s+7, octaves=2) - 0.5) * 18 */
-export function pathCenter(z: number, s: number = SEED): number {
-  const n = fbm(0, z / PATH_NOISE.L, s + PATH_NOISE.page, PATH_NOISE.octaves);
-  return (n - 0.5) * PATH_NOISE.swing;
-}
-
-/** Distance off the wandering center. Flatten, spawn skip, and the tint share this. */
-export function pathDist(x: number, z: number, s: number = SEED): number {
-  return Math.abs(x - pathCenter(z, s));
-}
+/** Path valley is path.ts. Page s+7 is not an octave-lock job. Two octaves. x stays out of the fbm. */

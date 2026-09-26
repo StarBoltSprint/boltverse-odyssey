@@ -31,7 +31,13 @@ Extra octaves spend the budget on finer wiggles. On a spawn threshold that shred
 
 The page is the same on every octave. Do not salt a new page to “add richness.” Moving an octave count without changing the job is FAIL.
 
-The path is a different page, `s+7`, `L = 64`, **2** octaves. It is not in the table above. Law [52](52-engine-vs-play.md). Do not raise it to 3.
+The path is a different page. It is not in the table above.
+
+```
+path     fbm(0, z/64, s+7, octaves=2)   L=64   wander=18
+```
+
+`x` does not enter that `fbm`. Two octaves. A third snakes under the paws. Law [54](54-path-noise-valley.md). Do not raise it to 3.
 
 ---
 

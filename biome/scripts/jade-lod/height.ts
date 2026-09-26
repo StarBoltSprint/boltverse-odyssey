@@ -1,4 +1,5 @@
-import { fbm, OCTAVE_LOCK, pathDist } from "./noise";
+import { fbm, OCTAVE_LOCK } from "./noise";
+import { flattenWeight, pathDist, tintStrip } from "./path";
 import { PATH_HALF, SEED } from "./types";
 
 /**
@@ -24,7 +25,7 @@ export const WITHERS = 0.45;
 export const SHADOW_LIFT = 0.02;
 /** Ground mp4 stays here. Do not warp the mesh with h. */
 export const GROUND_MESH_Y = 0;
-/** Smooth flatten band, as a fraction of pathHalf. Not a hard step. */
+/** Smooth flatten band, as a fraction of pathHalf. Law 54. Not a hard step. */
 export const PATH_IN = 0.55;
 export const PATH_OUT = 1.15;
 
@@ -42,12 +43,6 @@ export { fbm } from "./noise";
 export function heightOctaveCount(amp: number = HEIGHT_AMP): number {
   if (amp >= 1) return 4;
   return HEIGHT_OCTAVES;
-}
-
-function smoothstep(edge0: number, edge1: number, x: number): number {
-  const span = edge1 - edge0;
-  const t = span === 0 ? 0 : Math.min(1, Math.max(0, (x - edge0) / span));
-  return t * t * (3 - 2 * t);
 }
 
 /**
@@ -76,17 +71,17 @@ export function pathWeight(
   pathHalf: number = PATH_HALF,
   s: number = SEED,
 ): number {
-  return 1 - smoothstep(pathHalf * PATH_IN, pathHalf * PATH_OUT, pathDist(x, z, s));
+  return flattenWeight(pathDist(x, z, s), pathHalf);
 }
 
-/** Tint weight for the remix shader. Not painted into the ground mp4. */
+/** Tint strip for the remix shader. Wider than the flatten. Not painted into the ground mp4. */
 export function pathShade(x: number, z: number, s: number = SEED, pathHalf: number = PATH_HALF): number {
-  return pathWeight(x, z, pathHalf, s);
+  return tintStrip(pathDist(x, z, s), pathHalf);
 }
 
 /**
  * Flatten toward the base, not a trench.
- * h = mix(h0, base, w). A later curved path uses distance-to-spline in place of abs(x).
+ * h = mix(h0, base, w). The valley is law 54. Not a trench. Not abs(x).
  */
 export function postureHeight(
   x: number,

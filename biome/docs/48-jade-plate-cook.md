@@ -65,7 +65,7 @@ Optional roots pass: the same ground mp4, `TILE * 1.7`, opacity 0.18–0.22, `y 
 
 The visual ground mesh stays at `y = 0`. The pawn samples `h(x,z)` every tick. A kit stores `groundY` once. That posture is law [50](50-heightfield-posture.md). Do not warp the video mesh with the heightfield. If a dish comes later, UV still comes from world XZ.
 
-No stone road in the mp4. Flatten `h` and skip spawns inside `pathHalf`. An optional shader tint may darken `|x| < pathHalf`. Painted curbs fight a bending path.
+No stone road in the mp4. The valley is law [54](54-path-noise-valley.md). Spawn skips `onPath`. Height flattens with the same `d`. The shader only multiplies: `strip = 1 - smoothstep(pathHalf * 0.7, pathHalf * 1.3, d)`, then `albedo *= mix(1, 0.72, strip)`. Painted curbs fight a bending path.
 
 Parenting: `skyDome`, `groundPlane`, `groundRoots`, `kits[]`, Bolt. Kits are siblings of the plane. They are not children of the video mesh. `y = h(x,z)`.
 
@@ -84,6 +84,7 @@ The plate is not a spawn map. Bright pixels are not trees.
 - Sheets, ground, and sky from different hours.
 - Cards parented to the video plane.
 - The plate used as a spawn map (CV, or a bright pixel meaning a tree).
+- A road, curb, or valley depression baked into the ground mp4.
 
 ---
 

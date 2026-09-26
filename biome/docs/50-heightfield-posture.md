@@ -37,7 +37,7 @@ w = 1 - smoothstep(pathHalf * 0.55, pathHalf * 1.15, d)
 h = mix(h0, base, w)
 ```
 
-Toward the base, not a trench. `pathHalf` is 3.4. The same `d` skips spawn and tints the shader. Two octaves only. Do not bake the road, or stones, into the mp4. A hard step at the corridor edge is FAIL. The path page is law [52](52-engine-vs-play.md). It is not a spawn octave.
+Toward the base, not a trench. `pathHalf` is 3.4. The same `d` skips spawn and tints the shader. Two octaves only. Do not bake the road, or stones, into the mp4. A hard step at the corridor edge is FAIL. The valley is law [54](54-path-noise-valley.md). It is not a spawn octave and it is not `abs(x)`.
 
 ---
 

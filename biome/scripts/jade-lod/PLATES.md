@@ -20,7 +20,7 @@ Square floor, 1920² or 2048². Not 9:16.
 ```
 dirt you stand on, moss grain, fine roots, wet sheen, tiny décor stones,
 light crawl, mist texture, flatter moss color for a path tone,
-not a modeled road, not curbs
+not a modeled road, not curbs, no valley cut into the dirt
 ```
 
 Then the shared block.

@@ -2,7 +2,11 @@
  * Ground and sky films. Law 48. The room, not the furniture.
  * pictureTime is the sim clock (same family as fade dt). Pause passes a frozen time.
  * Never Date.now. No mp4/jpg bytes in this repo — names only.
+ * The valley tint is law 54. It is a shader multiply, not a road in the mp4.
  */
+
+import { pathDist, tintAlbedo } from "./path";
+import { SEED } from "./types";
 
 export const PLATE_DIR = "public/decor/jade/plates";
 export const TILE = 24;
@@ -67,4 +71,17 @@ export function skyPose(
 /** @deprecated use skyPose. Yaw only. */
 export function skyYaw(camYaw: number): number {
   return camYaw;
+}
+
+/**
+ * Shader strip only. Law 54. albedo *= mix(1, 0.72, strip).
+ * The mp4 stays a floor. Do not paint this valley into the plate.
+ */
+export function groundAlbedo(
+  worldX: number,
+  worldZ: number,
+  albedo: number = 1,
+  s: number = SEED,
+): number {
+  return tintAlbedo(albedo, pathDist(worldX, worldZ, s));
 }

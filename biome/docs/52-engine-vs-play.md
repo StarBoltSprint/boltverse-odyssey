@@ -102,13 +102,15 @@ Crystal underfoot is that soft hit without the yaw clamp.
 
 ### 7. Path as noise
 
+The valley is law [54](54-path-noise-valley.md). One page, `s+7`, two octaves, `L = 64`, wander 18 m. `x` does not enter the noise.
+
 ```
 center(z) = (fbm(0, z/64, s+7, octaves=2) - 0.5) * 18
 d = abs(x - center(z))
 onPath = d < pathHalf
 ```
 
-The same `d` flattens the posture, skips spawn, and tints the shader. Two octaves only. No stones in the mp4.
+Spawn, the flatten, and the shader tint read that same `d`. No stones in the mp4. No magnet on the pawn. `onPath` is not a SprintCore rail.
 
 ### 8. KEEP bolt.glb
 
@@ -127,6 +129,7 @@ The same `d` flattens the posture, skips spawn, and tints the shader. Two octave
 - Shrinking a crown fade.
 - Shattering a crystal because a body touched it.
 - Baking the path, or stones, into the ground film.
+- A spawn skip on `abs(x)` while the height uses the valley.
 - A second hero, or a wolf cooked into a sheet.
 - Importing Three as the world. The pools are a contract for the remix.
 - One solver that owns Bolt, the capsules, and the sparks. SprintCore is the dog. Volumes are the woods. Particles are the weather.
