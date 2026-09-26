@@ -28,10 +28,11 @@ Both. Same `(x, z)` as the spawn table.
 |---|---|---|
 | Sky film | Imagine nebula, or a canopy roof when that is the paint | 4-face / far dome, yaw only. Already law 43. The sky file does not contain the ground. |
 | Ground film | Dirt or moss | Floor plane under the paws. Already law 43. |
-| Far décor | Soft forest | Baked in the ground plate only if it stays soft and far. No near trunks in the empty-ground cook. Cheap depth. |
-| Mid cards | Imagine tree, ruin, elder, or crystal stills, or 2–3 s loops | Billboards about 12–40 m. Scale by distance. |
-| Near cards | The same assets, sharper | About 3–12 m. A nearer card may cover Bolt's flank. |
-| Contact shadow | Dark multiply blob under the card and under Bolt | On the ground plane, at `(x, z)`. |
+| Far décor / cull | Ground film only | Beyond the far leave (`80` m). No card. No volume. |
+| Far cards | Impostor quad | Enter `< 72`, leave `80`. No volume. A ghost in the ground film is allowed. |
+| Mid cards | Bole-only, smaller | Enter `< 40`, leave `44`. Volume yes. |
+| Near cards | Full Imagine card | Enter `< 12`, leave `14`. Volume yes. Near cap 24; extras drop to mid and keep the capsule. |
+| Contact shadow | Dark multiply blob under the card and under Bolt | On the ground plane, at `(x, z)`. Near band only. |
 | Bolt | Sealed keyed cutout | SprintCore / the existing Bolt. |
 
 Each frame still sorts by distance. The table is the kind order. A card closer than Bolt draws in front of his flank.
@@ -55,17 +56,35 @@ Do not extrude the mp4. Stand objects on it.
 
 ---
 
+## Bands
+
+LOD picks how much twin you get as you close in. It does not thicken the mp4. Leave is farther than enter so a tree on the line does not flicker.
+
+| Band | Distance (enter / leave) | Picture | Volume |
+|---|---|---|---|
+| Near | `< 12` / leave `14` | full card + shadow | yes |
+| Mid | `< 40` / leave `44` | bole-only, smaller | yes |
+| Far | `< 72` / leave `80` | impostor quad | no |
+| Cull | beyond | ground film only | no |
+
+Near capped at 24. Extras drop to mid and keep the capsule. Far trees may be ghosts in the ground film. Near and mid must thud. The volume twin dies with the card band (far and cull have no capsule).
+
 ## Snippet
 
-Remix tick: [`../scripts/jade-billboard/jadeBillboard.ts`](../scripts/jade-billboard/jadeBillboard.ts). Read [`../scripts/jade-billboard/README.md`](../scripts/jade-billboard/README.md).
+LOD remix: [`../scripts/jade-lod/`](../scripts/jade-lod/README.md). Seed `7749`, chunk `32` m, path half `3.4` m. Same `(ix, iz)` is the same woods every visit. The seed places. It does not draw terrain.
 
-Paint order each frame (`DRAW_ORDER`): sky → ground film → far décor (in the plate) → mid cards → near cards → shadows → Bolt → howl/fx.
+```ts
+import { tickField } from "./field";
+import { applyLodToKit } from "./billboard";
+const { rows, volumes } = tickField(cam.x, cam.z, 1);
+// rows → applyLodToKit; volumes → SprintCore obstacles this frame
+```
 
-One spawn row drives the card. `volumeOf(row)` is the capsule `(x, z, r)` into SprintCore obstacles (the return also carries `h`, `kind`, `hit`). Capsule code is not in that file. `tickCards` alone looks deep and you still walk through bark. Feed both.
+Remix next: point the cards at Jade Imagine sheets. Hook `volumes` into the obstacle query.
 
-Far band draws nothing. Those trees stay in the ground film. Do not billboard the horizon.
+Earlier one-file companion: [`../scripts/jade-billboard/jadeBillboard.ts`](../scripts/jade-billboard/jadeBillboard.ts). Paint order there: sky → ground film → far décor (in the plate) → mid cards → near cards → shadows → Bolt → howl/fx. `tickCards` alone looks deep and you still walk through bark. Feed `volumeOf` too.
 
-The file imports `three` so a remix can port the tick. It does not make Three.js the world. `pyre-stage` stays the WebGL composite of Imagine videos. Do not rewrite it into a Three.js world. There is no `biomes.ts` on this repo. Do not invent one. Sit the script next to the spawn table the remix already uses.
+`jade-lod` does not import `three`. The companion does, so a remix can port a card. That import does not make Three.js the world. `pyre-stage` stays the WebGL composite of Imagine videos. Do not rewrite it into a Three.js world. There is no `biomes.ts` on this repo. Do not invent one.
 
 ## GPU, every frame, per spawn row
 
@@ -73,7 +92,7 @@ The file imports `three` so a remix can port the tick. It does not make Three.js
 2. Scale from distance. Far cards get smaller. Do not stretch a far card up to fill the screen.
 3. Billboard toward the camera, not all the way. About 70% face-camera and 30% planted yaw from the seed on that row, so the trunk stays rooted: `yaw = 0.7 * faceCamera + 0.3 * plantedYaw`.
 4. Draw far to near. That is the occlusion.
-5. Soft contact shadow on the ground plane at `(x, z)`.
+5. Soft contact shadow on the ground plane at `(x, z)`. Near band only. Mid and far have no contact blob.
 6. Fog or mist so the mid band fades into the plate.
 
 ---
@@ -117,7 +136,8 @@ Then thicken mid, elders, and collision polish.
 - Cards without capsules. It looks deep and you ghost through the trunk.
 - A heightfield or noise that paints or lifts the ground Imagine film.
 - Asking Imagine for one "3D forest video" instead of the parts above.
-- A Velum-class Three.js world (or Babylon, Unity, Unreal-as-world, a mesh scene) standing in for the cards.
+- A Velum-class Three.js world (or Babylon, Unity, Unreal-as-world, a mesh scene) standing in for the cards. Three.js is not the world.
+- Noise that draws terrain. The seed places rows. It does not paint the ground.
 - Extruding the mp4.
 - A depth map cooked into the video.
 - One clip treated as the volume.

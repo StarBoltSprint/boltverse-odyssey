@@ -38,7 +38,7 @@ Law 43 is already [open ground](43-open-ground.md). Law 44 is the [Imagine volum
    - Densify + Imagine Live keyed props: [`COLD_START-imagine-engine.md`](COLD_START-imagine-engine.md) · laws [39](39-imagine-live-light.md) [40](40-nebula-cycle.md) [41](41-eclipse-look.md) [42](42-shoulder-panorama.md)
    - Empty-plate parity, scale, clock, ground FX, for a **road**: [`COLD_START-any-biome.md`](COLD_START-any-biome.md) · [00](00-PRIORITY0-any-biome.md) · [20](20-default-plate-proportions.md)
    - Forest numbers and shaders, after you have followed section B: [`43-open-ground.md`](43-open-ground.md) · [`COLD_START-open-ground.md`](COLD_START-open-ground.md) · [`pyre/GROVE.md`](../../pyre/GROVE.md)
-   - Forest volume (collision capsule + look cards), after section B5: [`44-imagine-volume-stack.md`](44-imagine-volume-stack.md) · remix tick [`../scripts/jade-billboard/jadeBillboard.ts`](../scripts/jade-billboard/jadeBillboard.ts)
+   - Forest volume (collision capsule + look cards), after section B5: [`44-imagine-volume-stack.md`](44-imagine-volume-stack.md) · LOD [`../scripts/jade-lod/README.md`](../scripts/jade-lod/README.md) · earlier one-file [`../scripts/jade-billboard/jadeBillboard.ts`](../scripts/jade-billboard/jadeBillboard.ts)
    - Empty plate, black clear, orbit on sky and ground (lava plain example): [`pyre/PLATE.md`](../../pyre/PLATE.md) section "Procedural plain — this is what is built" · METHOD §13
    - Room look: [`pyre/ORBIT.md`](../../pyre/ORBIT.md) · journey [`COLD_START-room-starmap.md`](COLD_START-room-starmap.md)
 
@@ -221,7 +221,16 @@ Two jobs. Both. Same `(x, z)` as the row.
 
 The Imagine file has no thickness. Cards in meters stand in front of sol and ciel. The stack, the part cook, the GPU steps, the optional extras, and the 8-bole test are the law. Run that test before calling the forest deep.
 
-Remix tick: [`../scripts/jade-billboard/jadeBillboard.ts`](../scripts/jade-billboard/jadeBillboard.ts). Paint order each frame: sky → ground film → far décor (in the plate) → mid cards → near cards → shadows → Bolt → howl/fx. One row drives the card. `volumeOf(row)` is the capsule `(x, z, r)` into SprintCore obstacles. Capsule code is not in that file. `tickCards` alone looks deep and you still walk through bark. Feed both. Far band draws nothing; those trees stay in the ground film. The import of `three` is the remix port. It does not make Three.js the world. Do not rewrite `pyre-stage` into a Three.js world. There is no `biomes.ts` here. Do not invent one.
+LOD picks how much twin as you close in. It does not thicken the mp4. Hang: [`../scripts/jade-lod/README.md`](../scripts/jade-lod/README.md). Near `< 12` / leave `14`, full card + shadow, volume yes (cap 24; extras drop to mid and keep the capsule). Mid `< 40` / leave `44`, bole-only, volume yes. Far `< 72` / leave `80`, impostor quad, no volume. Cull beyond, ground film only, no volume. Near and mid must thud. The twin dies with the card band.
+
+```ts
+import { tickField } from "./field";
+import { applyLodToKit } from "./billboard";
+const { rows, volumes } = tickField(cam.x, cam.z, 1);
+// rows → applyLodToKit; volumes → SprintCore obstacles this frame
+```
+
+Remix next: point the cards at Jade Imagine sheets. Hook `volumes` into the obstacle query. The earlier one-file companion is [`../scripts/jade-billboard/jadeBillboard.ts`](../scripts/jade-billboard/jadeBillboard.ts). `tickCards` alone looks deep and you still walk through bark. The companion imports `three` for a port. Three.js is not the world. Do not rewrite `pyre-stage`. Noise that draws terrain is FAIL. Mesh solids in place of Imagine cards are FAIL.
 
 A heightfield of about 30 cm under the feet and the cards is optional. The feet may rise. The sol film stays the flat Imagine plane. Noise that paints or lifts that film is still FAIL.
 
@@ -441,6 +450,7 @@ Forest / open ground:
 - [ ] The run layer is the flat plate, the ribbon, the grass, the trees, a few rocks. The next chunk is the same simplex placement of those cooked herbe and arbres. Law 44 only adds the twin capsule, the contact shadow, the near and mid bands, and the billboard mix on those rows.
 - [ ] Law 44 two jobs are both on: capsule `(x, z, r, h)` from the same spawn row `(x, z, kind)`, and look from parallax + occlusion + scale.
 - [ ] 8-bole test from law 44: existing ground and sky films, eight near bole cards from the tree seed, billboard mix + contact shadow + fog, capsules on, a circle around one tree. The tree stays planted. The forest slides behind it. The paws thud the trunk.
+- [ ] LOD bands match law 44: near `< 12` / leave `14` full card + shadow + volume (cap 24, extras drop to mid and keep the capsule); mid `< 40` / leave `44` bole-only + volume; far `< 72` / leave `80` impostor, no volume; cull is the ground film only. The twin dies with the band. The mp4 is not thickened.
 - [ ] The preview choice is "The gates, or the forest."
 
 Either:

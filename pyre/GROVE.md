@@ -42,7 +42,16 @@ Le fichier Imagine n'a pas d'épaisseur. Des cartes en mètres devant le film so
 
 Test le plus petit : les films de sol et de ciel déjà là, huit troncs dans la bande près, billboard + ombre + brume, capsules allumées, un tour autour d'un arbre. L'arbre reste planté et la forêt glisse derrière. Sinon ce n'est pas le volume.
 
-Le tick de remix est [`biome/scripts/jade-billboard/jadeBillboard.ts`](../biome/scripts/jade-billboard/jadeBillboard.ts). Ordre de peinture : ciel → film de sol → décor loin (dans la plaque) → cartes milieu → cartes près → ombres → Bolt → hurlement/fx. Une ligne de spawn pilote la carte. `volumeOf(row)` est la capsule `(x, z, r)` vers les obstacles SprintCore. Le code de la capsule n'est pas dans ce fichier. `tickCards` seul a l'air profond et on traverse l'écorce. Les deux. La bande loin ne dessine rien : ces arbres restent dans le film de sol. L'import `three` est le port du remix. Il ne fait pas de Three.js le monde. On ne réécrit pas `pyre-stage` en monde Three.js. Il n'y a pas de `biomes.ts` ici. On n'en invente pas.
+Le LOD choisit combien de jumeau on a en s'approchant. Il n'épaissit pas le mp4. Le hang est [`biome/scripts/jade-lod/README.md`](../biome/scripts/jade-lod/README.md). Près `< 12` / quitte `14`, carte pleine + ombre, volume oui (plafond 24 ; le surplus passe au milieu et garde la capsule). Milieu `< 40` / quitte `44`, tronc seul, volume oui. Loin `< 72` / quitte `80`, quad imposteur, pas de volume. Au-delà, film de sol seul, pas de volume. Près et milieu cognent. Le jumeau meurt avec la bande.
+
+```ts
+import { tickField } from "./field";
+import { applyLodToKit } from "./billboard";
+const { rows, volumes } = tickField(cam.x, cam.z, 1);
+// rows → applyLodToKit; volumes → obstacles SprintCore cette frame
+```
+
+Suite du remix : les cartes pointent les feuilles Imagine Jade. `volumes` entre dans la requête d'obstacles. Le compagnon d'une seule page reste [`biome/scripts/jade-billboard/jadeBillboard.ts`](../biome/scripts/jade-billboard/jadeBillboard.ts). `tickCards` seul a l'air profond et on traverse l'écorce. Three.js n'est pas le monde. On ne réécrit pas `pyre-stage`. Le bruit qui dessine le terrain est FAIL. Les solides mesh à la place des cartes Imagine sont FAIL.
 
 ## Volume — ce qu'on a jeté
 

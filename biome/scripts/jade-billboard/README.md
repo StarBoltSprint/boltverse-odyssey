@@ -1,5 +1,7 @@
 # jade-billboard — law 44 card tick
 
+Earlier one-file companion. The LOD hang is [`../jade-lod/README.md`](../jade-lod/README.md). LOD picks how much twin as you close in. It does not thicken the mp4.
+
 Kitchen remix / Rail B card tick. One spawn row drives the card. The capsule is the same `(x, z, r)` via `volumeOf(row)` into SprintCore obstacles. Capsule code is not in this file.
 
 Law: [`../../docs/44-imagine-volume-stack.md`](../../docs/44-imagine-volume-stack.md)
