@@ -22,7 +22,9 @@ Pages here are **optional**. They are **not** cook gates. Default Bolt remains e
 | [37-path-beat.md](37-path-beat.md) | Path beat. Chemin reveals one lane ~3 s ahead. Runtime `scripts/path-beat/pathBeat.js`. Paste: [COLD_START-path-beat.md](COLD_START-path-beat.md). |
 | [38-gpu-light-openable.md](38-gpu-light-openable.md) | GPU light layers + openables. Light-only plates and closed/open/transition. Runtime `scripts/gpu-light/` · `scripts/gpu-openable/`. Paste: [COLD_START-gpu-light-openable.md](COLD_START-gpu-light-openable.md). |
 
-**Any new biome convo: paste [COLD_START-imagine-engine.md](COLD_START-imagine-engine.md) first** (then biome-specific cold starts).
+**Any new biome convo — playable composite (lane, glance, wings, foes, howl), any paint:** paste [COLD_START-biome-method.md](COLD_START-biome-method.md) first. Worked example: [pyre/METHOD.md](../../pyre/METHOD.md) (Diablo only). Forest / open ground: [pyre/GROVE.md](../../pyre/GROVE.md). Room look: [pyre/ORBIT.md](../../pyre/ORBIT.md). Plain / Thunderwolf: [pyre/PLATE.md](../../pyre/PLATE.md) and METHOD sections 11–13. There is no `pyre/PLAIN.md` or `pyre/VISTA.md`.
+
+**Densify and Imagine Live keyed props** (laws 39–42) still paste [COLD_START-imagine-engine.md](COLD_START-imagine-engine.md). That paste does not replace the composite method above.
 
 | Page | Gate |
 |---|---|
@@ -36,4 +38,6 @@ Pages here are **optional**. They are **not** cook gates. Default Bolt remains e
 
 **Nebula Lane, a new convo:** read [COLD_START-nebula-lane.md](COLD_START-nebula-lane.md) before cooking.
 
-**Open ground (forest, dirt plain, no road):** read [COLD_START-open-ground.md](COLD_START-open-ground.md). Do not run `plate-geo-qc.py`.
+**Open ground (forest, dirt plain, no road):** read [COLD_START-open-ground.md](COLD_START-open-ground.md). Do not run `plate-geo-qc.py`. Four-face grove trees are the next step in [pyre/GROVE.md](../../pyre/GROVE.md), not a v1 KEEP.
+
+**Playable composite, any paint:** [COLD_START-biome-method.md](COLD_START-biome-method.md). Not a law number. Law 43 stays open ground.

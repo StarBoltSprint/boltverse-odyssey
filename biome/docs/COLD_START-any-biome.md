@@ -1,6 +1,6 @@
-Prefer [`COLD_START-biome-cook.md`](COLD_START-biome-cook.md) (`biome/scripts/biome-cook/README.md`) for the full ordered kit. Mechanics override for lane props and path UI: [`COLD_START-imagine-engine.md`](COLD_START-imagine-engine.md). This paste stays the any-biome parity brief.
+Playable composite (any paint): paste [`COLD_START-biome-method.md`](COLD_START-biome-method.md) first. Ordered densify kit: [`COLD_START-biome-cook.md`](COLD_START-biome-cook.md). Lane props and path UI: [`COLD_START-imagine-engine.md`](COLD_START-imagine-engine.md). This paste stays the any-biome parity brief inside that method.
 
-# COLD START — cook any biome (paste as first Build message)
+# COLD START — cook any biome (parity brief)
 
 You are cooking a **Lane biome** for Boltverse Odyssey for a **random player**. Read GitHub `main` first:
 

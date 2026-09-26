@@ -1,5 +1,7 @@
 # COLD START — biome cook (paste this, then follow one file)
 
+A playable composite (lane, glance, wings, foes, howl, any paint) pastes `biome/docs/COLD_START-biome-method.md` first. This file is the densify / QC order inside that method.
+
 Open `biome/scripts/biome-cook/README.md` and follow **only** that order (steps 1→17). Do not invent a cook. Do not invent QC math. Do not rewrite script bodies. Do not hunt the rest of `biome/docs/` first.
 
 **Before step 3 (empty first/last stills):** choose a lane material. Read `biome/docs/35-lane-materials.md`. Paste `biome/docs/COLD_START-lane-materials.md`.

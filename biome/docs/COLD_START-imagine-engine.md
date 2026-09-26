@@ -1,6 +1,6 @@
 # COLD START — Imagine Engine (any biome)
 
-Paste this as the first Build message for **any** new biome. It overrides older gates that still hang still-bib LOD or path-beat cards.
+A **playable biome composite** (lane slide, glance, wings, foes, howl, any paint) pastes [`COLD_START-biome-method.md`](COLD_START-biome-method.md) first. This file stays the densify and Imagine Live keyed-prop paste (laws 39–42). It overrides older gates that still hang still-bib LOD or path-beat cards.
 
 Read GitHub `main` first:
 

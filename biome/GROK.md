@@ -1,6 +1,6 @@
 # GROK — biome / Sprint cook (kitchen)
 
-**START HERE:** [`scripts/biome-cook/README.md`](scripts/biome-cook/README.md) · paste [`docs/COLD_START-biome-cook.md`](docs/COLD_START-biome-cook.md).
+**START HERE:** a playable biome composite (any paint) pastes [`docs/COLD_START-biome-method.md`](docs/COLD_START-biome-method.md) first. Densify / QC order stays [`scripts/biome-cook/README.md`](scripts/biome-cook/README.md) · [`docs/COLD_START-biome-cook.md`](docs/COLD_START-biome-cook.md). Imagine Live keyed props stay [`docs/COLD_START-imagine-engine.md`](docs/COLD_START-imagine-engine.md).
 
 Repo: `https://github.com/StarBoltSprint/boltverse-odyssey`  
 **This folder** = Biome / Sprint lane recipe. Citadel halls = repo root.
