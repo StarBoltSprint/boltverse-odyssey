@@ -35,15 +35,44 @@ Idle cutouts are one draw per pool: `inst.bole`, `inst.elder`, `inst.ruin`, `ins
 
 Done-when: with zero fades, the woods, the plates, and Bolt are about six draws.
 
-### 2. Chunk-edge memory
+### 2. Chunk memory — geoRing versus memRing
 
-`geoRing = 1` (a 3×3 of spawn, kits, and volumes). `memRing = 2` (a 5×5 that holds `holdBand`, `kit.groundY`, and the fade). `forgetIds` runs only when an id leaves the memory ring. Cap about 512 ids. Past that, drop the farthest.
+`holdBand` is sticky only if `prev` outlives the mesh. Geometry can forget a tree. Memory cannot, until that chunk is two rings away.
 
-Done-when: orbit a bole across a 32 m seam. The crown does not pop. `groundY` is the value stored the first time.
+```
+chunk = 32 m
+geoRing = 1  → 3×3 spawn, kits, volumes, cards
+memRing = 2  → 5×5 prev.band, kit.groundY, kit.fade, kit.lod
+```
+
+`geo = chunksAround(x, z, 1)`. `mem = chunksAround(x, z, 2)`.
+
+Spawn, instances, and volumes read geo only. `prev.get` is allowed while the id's chunk is inside mem. `forgetIds` runs only when that chunk is outside mem. A geo drop is not a forget.
+
+| Store | Dies when |
+|---|---|
+| spawn rows in the cache | chunk ∉ geo |
+| kit mesh | chunk ∉ geo (hide, then remove) |
+| volumes | rebuilt every tick from geo |
+| `prev[id].band` | chunk ∉ mem |
+| `kit.fade` / `kit.lod` | stashed in `memKits` when the mesh goes; die with mem |
+| `kit.groundY` sidecar | chunk ∉ mem |
+
+The minimum that survives the geo drop is `prev` plus `groundY`. The kit rebuilds from `holdBand` on the way back in. `memKits` is optional: it resumes a fade that was mid-flight. It does not pick a new band.
+
+Cap 512. Evict the farthest chunk-center from the pawn. Never evict an id whose chunk is still in geo. Evict `prev`, `groundY`, and `memKits` together. A chunk still inside mem is remembered when the store is under the cap. This spawn's live 3×3 is already past 512, so the cap spends the trail outside geo and the live ring stays whole. It does not eat on-screen ids to force the count under 512.
+
+Re-enter. `holdBand(id)` is still there, so the band stays sticky. Do not use the enter distances just because the kit was missing. A missing kit is not missing memory. `groundY[id] ?? h(x, z)`.
+
+Do not keep instance matrices, GPU particle births, volume objects, or Imagine textures in this ring. Textures stay shared. Particle look stays law [53](53-gpu-particles.md).
+
+`bandDraw` is the budget ticket in section 3. It is not stored in `prev`.
+
+Done-when: orbit a bole on the chunk seam at 32.0. The crown stays. After a long sprint, every id still in `prev` has its chunk inside geo once the live ring is past 512, and none of those on-screen ids were the ones dropped. Walk 80 m away and back. That chunk has left mem. The forget is legal. The seam orbit is not that forget.
 
 ### 3. Budget must not overwrite holdBand
 
-`prev[id].band` is `holdBand` only. `row.bandDraw` is the mesh after the budget. `holdBand` never reads `bandDraw`. The budget may start a fade toward mid. `prev` stays near. Volume uses `bandDraw`, not the remembered near.
+This is the budget ticket. Section 2 must not store it. `prev[id].band` is `holdBand` only. `row.bandDraw` is the mesh after the budget. `holdBand` never reads `bandDraw`. The budget may start a fade toward mid. `prev` stays near. Volume uses `bandDraw`, not the remembered near.
 
 Done-when: 30 trees at 8 m show 24 crowns and 6 mid cards. Free a slot and the crown returns. You do not walk to 11.9 m to get it back.
 
@@ -89,8 +118,12 @@ The same `d` flattens the posture, skips spawn, and tints the shader. Two octave
 
 ## FAIL
 
-- Writing the budget into `prev`.
+- Writing the budget into `prev`. Storing `bandDraw` there is the same fail.
 - Forgetting an id that is still inside the memory ring.
+- `forgetIds` tied to a geo drop.
+- `memRing` equal to `geoRing`.
+- Evicting an id whose chunk is still in geo.
+- Calling the enter distances because a kit respawned. Missing kit is not missing memory.
 - Shrinking a crown fade.
 - Shattering a crystal because a body touched it.
 - Baking the path, or stones, into the ground film.
@@ -101,6 +134,6 @@ The same `d` flattens the posture, skips spawn, and tints the shader. Two octave
 
 ## Done-when
 
-Walk the wandering path. The flatten, the empty corridor, and the tint use one `d`. Stand among 30 boles at 8 m: 24 crowns, 6 trunks, and the six are still remembered as near. Step so a slot frees. A crown returns without a trip to the enter line. Orbit across a chunk seam. The crown you left is the crown you come back to. A speck at the horizon shrinks over 180 ms and is gone. A fern slows you and keeps the walk clip. A crystal you walk through drags and stays. A held Howl inside the cone hides it the same frame and plays the dust. Bolt is the sealed white dog. The ground film is still flat.
+Walk the wandering path. The flatten, the empty corridor, and the tint use one `d`. Stand among 30 boles at 8 m: 24 crowns, 6 trunks, and the six are still remembered as near. Step so a slot frees. A crown returns without a trip to the enter line. Orbit a bole on the seam at 32.0. The crown stays, because `prev` outlived the mesh. Sprint until the trail is long. The cap drops chunk-centers outside geo and leaves the live ring, even when that ring is already past 512. Walk 80 m away and back. That forget is legal. A speck at the horizon shrinks over 180 ms and is gone. A fern slows you and keeps the walk clip. A crystal you walk through drags and stays. A held Howl inside the cone hides it the same frame and plays the dust. Bolt is the sealed white dog. The ground film is still flat.
 
 World stays Imagine Video assets. The player stays the sealed Bolt. No wallet. No player API keys. Hang URL stays `https://boltverse-odysseyyyy.grok.me`.

@@ -46,7 +46,7 @@ Law 43 is already [open ground](43-open-ground.md). Law 44 is the [Imagine volum
    - Two-plane tree kit (bole mask, crown weather, one slot), after law 46: [`49-two-plane-tree.md`](49-two-plane-tree.md) · [`../scripts/jade-lod/twoPlane.ts`](../scripts/jade-lod/twoPlane.ts)
    - Height as posture (`s+101`, film stays flat), after law 46: [`50-heightfield-posture.md`](50-heightfield-posture.md) · [`../scripts/jade-lod/height.ts`](../scripts/jade-lod/height.ts)
    - Octave lock (height 3, n2 ruin 2), with law 50: [`51-octave-map.md`](51-octave-map.md) · [`../scripts/jade-lod/noise.ts`](../scripts/jade-lod/noise.ts) · [`../scripts/jade-lod/spawn.ts`](../scripts/jade-lod/spawn.ts)
-   - Engine versus play (rings, budget, path, Howl, one Bolt), after law 51: [`52-engine-vs-play.md`](52-engine-vs-play.md) · [`../scripts/jade-lod/play.ts`](../scripts/jade-lod/play.ts) · [`../scripts/jade-lod/field.ts`](../scripts/jade-lod/field.ts)
+   - Engine versus play (geoRing 1 versus memRing 2, bandDraw apart from prev, path, Howl, one Bolt), after law 51: [`52-engine-vs-play.md`](52-engine-vs-play.md) · [`../scripts/jade-lod/play.ts`](../scripts/jade-lod/play.ts) · [`../scripts/jade-lod/field.ts`](../scripts/jade-lod/field.ts)
    - GPU particles (Imagine cutouts on one Points draw; hide if the sheet is missing), after law 52: [`53-gpu-particles.md`](53-gpu-particles.md) · [`../scripts/jade-lod/particles.ts`](../scripts/jade-lod/particles.ts)
    - Empty plate, black clear, orbit on sky and ground (lava plain example): [`pyre/PLATE.md`](../../pyre/PLATE.md) section "Procedural plain — this is what is built" · METHOD §13
    - Room look: [`pyre/ORBIT.md`](../../pyre/ORBIT.md) · journey [`COLD_START-room-starmap.md`](COLD_START-room-starmap.md)

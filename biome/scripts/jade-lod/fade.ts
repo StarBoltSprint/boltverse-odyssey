@@ -71,6 +71,23 @@ export function forgetFades(ids: Iterable<string>): void {
   }
 }
 
+/** A fade in flight. Stashed when the mesh leaves geo. Not a bandDraw. */
+export type FadeStash = { from: Band; to: Band; t0: number; ms: number };
+
+/** Pull the live slot off the mesh. Settled band stays. A geo drop calls this. */
+export function liftFade(id: string): FadeStash | undefined {
+  const slot = slots.get(id);
+  if (!slot) return undefined;
+  slots.delete(id);
+  return { from: slot.from, to: slot.to, t0: slot.t0, ms: slot.ms };
+}
+
+/** Put a stashed fade back when the kit returns. A full cap leaves it down. */
+export function restoreFade(id: string, stash: FadeStash): void {
+  if (slots.has(id) || slots.size >= FADE_CAP) return;
+  slots.set(id, { id, from: stash.from, to: stash.to, t0: stash.t0, ms: stash.ms });
+}
+
 /** Far ↔ cull only. Horizon specks shrink, then die. Other edges stay full size. */
 export const FAR_SHRINK_MS = 180;
 export const FAR_SHRINK_SCALE = 0.35;

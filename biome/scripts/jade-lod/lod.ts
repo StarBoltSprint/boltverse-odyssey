@@ -11,6 +11,11 @@ export const NEAR_BUDGET = 24;
 
 const prevBand = new Map<string, Band>();
 
+/**
+ * Sticky when prev is set. Undefined prev is a first sight, so the enter
+ * distances apply. A kit that left geo and came back is not a first sight:
+ * prev is still here. Do not call this as enterBand just because the mesh was missing.
+ */
 function pickBand(dist: number, prev: Band | undefined): Band {
   if (prev === "near") {
     if (dist < BANDS.near.leave) return "near";
@@ -40,7 +45,8 @@ function pictureOf(band: Band): LodRow["picture"] {
  * A tree demoted to mid stays remembered as near, so a free slot
  * brings the crown back without walking out to the enter line.
  * Volume follows bandDraw. Far and cull have no volume.
- * Forgetting an id is forgetIds, when it leaves the memory ring.
+ * Forgetting an id is forgetIds, when its chunk leaves the memory ring.
+ * A geo drop does not call forgetIds. bandDraw is never written into prev.
  */
 export function applyLod(rows: SpawnRow[], camX: number, camZ: number): LodRow[] {
   const scored = rows.map((row) => {
@@ -54,6 +60,7 @@ export function applyLod(rows: SpawnRow[], camX: number, camZ: number): LodRow[]
   let nearCount = 0;
   const drawn: LodRow[] = [];
   for (const s of scored) {
+    // Hysteresis only. The budget below writes bandDraw and must not land here.
     prevBand.set(s.row.id, s.band);
     let bandDraw = s.band;
     if (s.band === "near") {
@@ -71,9 +78,16 @@ export function applyLod(rows: SpawnRow[], camX: number, camZ: number): LodRow[]
   return drawn;
 }
 
-/** Drop hysteresis for ids that left the memory ring. Not a budget write. */
+/**
+ * Drop hysteresis for ids whose chunk left the memory ring.
+ * Not a geo drop. Not a budget write. bandDraw is not stored here.
+ */
 export function forgetIds(ids: Iterable<string>): void {
   for (const id of ids) prevBand.delete(id);
+}
+
+export function prevCount(): number {
+  return prevBand.size;
 }
 
 /** Twins that thud — near/mid only. Far ghosts live in the ground film. */
