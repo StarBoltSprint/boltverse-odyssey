@@ -64,6 +64,7 @@ Play:
 - One hardcoded px scale for every biome  
 - Scaling the *plate* to fit Bolt  
 - Measuring withers to the ear tips  
-- Growing the dog past the lane to hit withersMin  
+- Growing the dog past the lane to hit withersMin
+- Enlarging a small cutout (`scale > 1`). That is law [56](56-cutout-native-scale.md). Recook at the on-screen pixel size. `withersFrac ~0.10` is the cook size, not a stretch. Shrink (`scale ≤ 1`) stays legal.  
 
 Sealed 2026-09-20 — auto-scale cook gate (anti-truck HARD).

@@ -45,7 +45,7 @@ On this wide skeleton, Live KEEP is the **small dog**.
 
 `withersMin` is **soft** (13d). Hitting 0.22 withers on a wide nationale = dog≈truck. **KEEP ~0.10.** `PAW_PLANT = 0.80` (+ `PAW_SINK=0.072` → paws ~0.87).
 
-**FAIL:** grow Bolt 2–3× to fake withersMin 0.22. **FAIL:** widen PATH to the visual lanes then re-run 13d.
+**FAIL:** grow Bolt 2–3× to fake withersMin 0.22. **FAIL:** widen PATH to the visual lanes then re-run 13d. Growing the sprite (`scale > 1`) is law [56](56-cutout-native-scale.md). `withersFrac ~0.10` is the cook size.
 
 ## Default GPU start knobs (law 17 + **22** — biome-adaptable)
 
