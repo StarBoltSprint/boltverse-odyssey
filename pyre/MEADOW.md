@@ -23,12 +23,14 @@ On attend la première image de `h0` (celui qui joue déjà pour l'herbe), on la
 
 On ne dessine que le haut, au-dessus de 0,534. Le bas est jeté. C'est l'autre noir.
 
-Le soleil fait le tour avec le même doigt que l'herbe, mais ce n'est pas la vidéo qui défile. C'est la place du soleil :
+Le soleil fait le tour avec le même doigt que l'herbe, mais ce n'est pas la vidéo qui défile. Tant que le soleil est dans l'image, on affiche la photo. Dès qu'un pixel sort de la photo, on ne recopie pas la colonne du bord : cette colonne, étirée, devient des traits horizontaux. On la remplace par le dégradé du ciel vide, pris à gauche de `h0` (bleu sombre en haut, bleu clair à l'horizon), sans le soleil.
 
 ```
-rel = atan(sin(-yaw), cos(-yaw))
-sunU = 0.5 + rel / SKY_FOV
-u = clamp(sx - (sunU - 0.49), 0, 1)
+raw = sx - (sunU - 0.49)
+inside = le pixel est encore dans la photo
+photo = la vidéo
+fill = dégradé lisse entre trois points du ciel vide
+couleur = mix(fill, photo, inside)
 ```
 
 `SKY_FOV = 43°`. Le soleil traverse l'écran, puis il reste dehors presque tout le tour. Il ne revient pas de l'autre côté au bout de 45°. Un seul soleil, celui de `h0`.
