@@ -9,9 +9,11 @@ L'herbe et le ciel ne sont plus la même image. Chacun a sa plaque. On ne ré-en
 
 Huit vidéos d'origine, `decor/meadow-h/h0.mp4` … `h7.mp4`. Une tous les 45°.
 
-On envoie le fichier tel quel au GPU. `u` et `v` sont le pixel de l'écran. Pas de décalage, pas de zoom, pas de marge. Le haut de l'image (au-dessus de 0,534) est jeté. C'est le noir. L'herbe en dessous est la vidéo.
+On envoie le fichier tel quel au GPU. Pas de zoom vertical. Le haut de l'image (au-dessus de 0,534) est jeté. C'est le noir. L'herbe en dessous est la vidéo.
 
-Le doigt choisit les deux plaques les plus proches et les fond. Au repos, une seule plaque, nette. Les autres lecteurs sont en pause.
+Le doigt choisit les deux plaques les plus proches et les fond. En même temps, l'herbe glisse. Plus on est près des pattes, plus elle glisse. À l'horizon, elle ne bouge presque pas. C'est ça qui fait la rotation. Le fondu seul ne faisait que changer de vidéo.
+
+Le glissement reste dans l'image. On ne montre jamais le bord, donc pas de bande floue. Au repos, une seule plaque, nette. Les autres lecteurs sont en pause.
 
 Vitesse de cette plaque : `GRASS_RATE = 1`. Elle ne suit pas le ciel.
 
@@ -45,7 +47,7 @@ Bolt est une troisième plaque, le cycle grove, par-dessus. Il ne fait pas parti
 
 ## Ne pas
 
-- Glisser l'herbe pour « fluidifier ». Ça étire le bord et ça fait la bande floue.
+- Glisser l'herbe jusqu'au bord de la vidéo. Le bord s'étire et fait la bande floue. Le glissement actuel reste à l'intérieur.
 - Étirer une colonne du ciel pour boucher le trou. Le ciel devient plat et coupé.
 - Recadrer ou zoomer une plaque pour cacher un bord. On perd la vidéo.
 - Ré-encoder l'herbe ou le ciel sur un mp4 noir. Le noir se fait en ne dessinant pas.
