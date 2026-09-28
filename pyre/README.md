@@ -15,3 +15,5 @@ La méthode pour tout refaire Pyre est dans [METHOD.md](METHOD.md). Cette métho
 Le composite est `src/pyre-stage.tsx`.
 
 Le regard dans la salle est [ORBIT.md](ORBIT.md) : un doigt sur le sol, la pièce tourne autour de l’anneau, Bolt reste de dos au centre.
+
+La prairie : la méthode en cours est [MEADOW.md](MEADOW.md). Le chemin, les ratés et ce qu'on garde sont dans [MEADOW-LOG.md](MEADOW-LOG.md).
