@@ -23,13 +23,13 @@ On attend la première image de `h0` (celui qui joue déjà pour l'herbe), on la
 
 On ne dessine que le haut, au-dessus de 0,534. Le bas est jeté. C'est l'autre noir.
 
-Le soleil fait le tour avec le même doigt que l'herbe, mais ce n'est pas la vidéo qui défile. Tant que le soleil est dans l'image, on affiche la photo. Dès qu'un pixel sort de la photo, on ne recopie pas la colonne du bord : cette colonne, étirée, devient des traits horizontaux. On la remplace par le dégradé du ciel vide, pris à gauche de `h0` (bleu sombre en haut, bleu clair à l'horizon), sans le soleil.
+Le soleil fait le tour avec le même doigt que l'herbe, mais ce n'est pas la vidéo qui défile. Tant que le pixel est dans la photo, c'est la photo, nette. Dès qu'il en sort, on ne coupe pas avec un autre bleu : ça fait une ligne verticale. On continue avec la couleur du bord de la photo, lissée de haut en bas pour qu'il n'y ait pas de traits. Le fondu fait 18 % de l'écran, du côté vide seulement.
 
 ```
 raw = sx - (sunU - 0.49)
 inside = le pixel est encore dans la photo
 photo = la vidéo
-fill = dégradé lisse entre trois points du ciel vide
+fill = la couleur du bord, lissée de haut en bas
 couleur = mix(fill, photo, inside)
 ```
 
