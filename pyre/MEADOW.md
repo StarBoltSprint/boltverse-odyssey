@@ -3,6 +3,8 @@
 Cuisine seulement. Ne pas lire ça au joueur.
 Repo : `StarBoltSprint/boltverse-odyssey`. Le jeu qui tourne est `src/game/pyre-stage.tsx`, fonction `Meadow`.
 
+Leçons froides (Pack — ne pas effacer ce fichier) : [`biome/docs/COLD_START-meadow-jobs.md`](../biome/docs/COLD_START-meadow-jobs.md). Échelle des découpes : loi [`biome/docs/56-cutout-native-scale.md`](../biome/docs/56-cutout-native-scale.md) (`scale > 1` = liche).
+
 L'herbe et le ciel ne sont plus la même image. Chacun a sa plaque. On ne ré-encode pas. Un nouvel mp4 noir écrase les pixels. Le noir est fait à l'affichage : on ne dessine pas l'autre moitié.
 
 ## Plaque herbe
