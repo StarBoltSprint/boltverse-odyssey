@@ -1,0 +1,49 @@
+# MEADOW — deux plaques noires
+
+Cuisine seulement. Ne pas lire ça au joueur.
+Repo : `StarBoltSprint/boltverse-odyssey`. Le jeu qui tourne est `src/game/pyre-stage.tsx`, fonction `Meadow`.
+
+L'herbe et le ciel ne sont plus la même image. Chacun a sa plaque. On ne ré-encode pas. Un nouvel mp4 noir écrase les pixels. Le noir est fait à l'affichage : on ne dessine pas l'autre moitié.
+
+## Plaque herbe
+
+Huit vidéos d'origine, `decor/meadow-h/h0.mp4` … `h7.mp4`. Une tous les 45°.
+
+On envoie le fichier tel quel au GPU. `u` et `v` sont le pixel de l'écran. Pas de décalage, pas de zoom, pas de marge. Le haut de l'image (au-dessus de 0,534) est jeté. C'est le noir. L'herbe en dessous est la vidéo.
+
+Le doigt choisit les deux plaques les plus proches et les fond. Au repos, une seule plaque, nette. Les autres lecteurs sont en pause.
+
+Vitesse de cette plaque : `GRASS_RATE = 1`. Elle ne suit pas le ciel.
+
+## Plaque ciel
+
+Un second lecteur sur `h0.mp4`, mis en pause à 0,2 s. Il ne joue pas. La photo ne bouge pas, donc elle ne se compresse pas d'une frame à l'autre.
+
+On ne dessine que le haut, au-dessus de 0,534. Le bas est jeté. C'est l'autre noir.
+
+Le soleil fait le tour avec le même doigt que l'herbe, mais ce n'est pas la vidéo qui défile. C'est la place du soleil :
+
+```
+rel = atan(sin(-yaw), cos(-yaw))
+sunU = 0.5 + rel / SKY_FOV
+u = clamp(sx - (sunU - 0.49), 0, 1)
+```
+
+`SKY_FOV = 43°`. Le soleil traverse l'écran, puis il reste dehors presque tout le tour. Il ne revient pas de l'autre côté au bout de 45°. Un seul soleil, celui de `h0`.
+
+Vitesse du ciel : 0. On ne change que `SKY_FOV` si le soleil doit traverser plus vite ou plus lentement. On ne touche pas à `GRASS_RATE` pour ça.
+
+## Les deux ensemble
+
+Le ciel est dessiné en premier. L'herbe par-dessus, en transparence là où elle est jetée. Même ligne d'horizon, 0,534. Pas de bande entre les deux.
+
+Bolt est une troisième plaque, le cycle grove, par-dessus. Il ne fait pas partie de l'herbe ni du ciel.
+
+## Ne pas
+
+- Glisser l'herbe pour « fluidifier ». Ça étire le bord et ça fait la bande floue.
+- Étirer une colonne du ciel pour boucher le trou. Le ciel devient plat et coupé.
+- Recadrer ou zoomer une plaque pour cacher un bord. On perd la vidéo.
+- Ré-encoder l'herbe ou le ciel sur un mp4 noir. Le noir se fait en ne dessinant pas.
+- Prendre le ciel dans la plaque d'herbe qui est en train de jouer. Le ciel a son lecteur, en pause.
+- Mettre un soleil dans chacune des huit plaques. Le soleil revient trop tôt.
