@@ -17,7 +17,9 @@ Vitesse de cette plaque : `GRASS_RATE = 1`. Elle ne suit pas le ciel.
 
 ## Plaque ciel
 
-Un second lecteur sur `h0.mp4`, mis en pause à 0,2 s. Il ne joue pas. La photo ne bouge pas, donc elle ne se compresse pas d'une frame à l'autre.
+Pas un second lecteur. Sur ce téléphone, un deuxième `h0` mis en pause avant d'avoir joué ne décode rien : l'écran reste noir, et la plaque d'herbe de face reste coincée avec lui.
+
+On attend la première image de `h0` (celui qui joue déjà pour l'herbe), on la copie une fois, et on ne la reprend plus. L'herbe continue à sa vitesse. Le ciel ne suit pas.
 
 On ne dessine que le haut, au-dessus de 0,534. Le bas est jeté. C'est l'autre noir.
 
@@ -45,5 +47,5 @@ Bolt est une troisième plaque, le cycle grove, par-dessus. Il ne fait pas parti
 - Étirer une colonne du ciel pour boucher le trou. Le ciel devient plat et coupé.
 - Recadrer ou zoomer une plaque pour cacher un bord. On perd la vidéo.
 - Ré-encoder l'herbe ou le ciel sur un mp4 noir. Le noir se fait en ne dessinant pas.
-- Prendre le ciel dans la plaque d'herbe qui est en train de jouer. Le ciel a son lecteur, en pause.
+- Prendre le ciel dans un second lecteur de `h0` qui ne joue pas. L'écran devient noir. On copie la première image du lecteur qui joue déjà.
 - Mettre un soleil dans chacune des huit plaques. Le soleil revient trop tôt.
