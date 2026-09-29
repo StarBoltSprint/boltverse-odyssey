@@ -192,3 +192,7 @@ Kitchen — do not read aloud. biome / Sprint cook / lane / B-stack / green-scre
 ```
 
 Video A does not wait on `node` or `XAI_API_KEY`. Pin both stills in the SuperGrok session, hang the mp4, run `plate-mae-qc.py`. One-still I2V does not Hang. Missing key is not a stop.
+
+## Void Orbit ship (experiment, not a lane law)
+
+Free-flight hull, 2026-09-29. What failed and what held: [docs/57-void-orbit-ship-relief.md](docs/57-void-orbit-ship-relief.md). Source: [void-orbit/](void-orbit/README.md). Does not replace law 44.
