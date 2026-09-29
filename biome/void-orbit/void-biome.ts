@@ -54,12 +54,73 @@ void main() {
 
 const SHELL_FRAG = /* glsl */ `
 precision mediump float;
-uniform sampler2D flank;
+uniform sampler2D map;
 varying vec2 vUv;
 void main() {
-  vec3 c = texture2D(flank, vUv).rgb;
-  float m = max(c.r, max(c.g, c.b));
-  if (m < 0.035) discard;
+  gl_FragColor = vec4(texture2D(map, vUv).rgb, 1.0);
+}
+`;
+
+const METAL_FRAG = /* glsl */ `
+precision mediump float;
+varying vec2 vUv;
+void main() {
+  float rim = smoothstep(0.0, 0.07, vUv.x) * smoothstep(1.0, 0.93, vUv.x);
+  rim *= smoothstep(0.0, 0.07, vUv.y) * smoothstep(1.0, 0.93, vUv.y);
+  vec3 c = vec3(0.07, 0.074, 0.086) + vUv.y * 0.025;
+  c += (1.0 - rim) * vec3(0.11, 0.08, 0.035);
+  gl_FragColor = vec4(c, 1.0);
+}
+`;
+
+const GUN_FRAG = /* glsl */ `
+precision mediump float;
+varying vec2 vUv;
+void main() {
+  float along = vUv.y;
+  float around = vUv.x;
+  float band = smoothstep(0.035, 0.0, abs(fract(along * 5.0) - 0.18));
+  float muzzle = smoothstep(0.9, 0.96, along);
+  vec3 steel = vec3(0.1, 0.105, 0.115) * (0.72 + 0.28 * sin(around * 6.28318));
+  vec3 gold = vec3(0.78, 0.58, 0.2);
+  vec3 c = mix(steel, gold, clamp(band + muzzle * 0.85, 0.0, 1.0));
+  c = mix(c, vec3(0.015, 0.018, 0.02), smoothstep(0.93, 1.0, along));
+  gl_FragColor = vec4(c, 1.0);
+}
+`;
+
+const GOLD_FRAG = /* glsl */ `
+precision mediump float;
+varying vec2 vUv;
+void main() {
+  vec3 c = vec3(0.66, 0.48, 0.16) * (0.82 + 0.18 * vUv.y);
+  gl_FragColor = vec4(c, 1.0);
+}
+`;
+
+const CRAFT_FRAG = /* glsl */ `
+precision mediump float;
+varying vec2 vUv;
+void main() {
+  vec3 hull = vec3(0.07, 0.075, 0.09);
+  float win = smoothstep(0.18, 0.28, vUv.x) * smoothstep(0.78, 0.68, vUv.x);
+  win *= smoothstep(0.3, 0.42, vUv.y) * smoothstep(0.72, 0.6, vUv.y);
+  vec3 c = hull + win * vec3(0.15, 0.72, 0.9);
+  gl_FragColor = vec4(c, 1.0);
+}
+`;
+
+
+const STERN_FRAG = /* glsl */ `
+precision mediump float;
+uniform sampler2D map;
+uniform vec4 crop;
+varying vec2 vUv;
+void main() {
+  if (vUv.x < 0.0 || vUv.y < 0.0 || vUv.x > 1.0 || vUv.y > 1.0) discard;
+  vec2 tuv = vec2(mix(crop.x, crop.z, vUv.x), mix(crop.y, crop.w, vUv.y));
+  vec3 c = texture2D(map, tuv).rgb;
+  if (c.r + c.g + c.b < 0.09) discard;
   gl_FragColor = vec4(c, 1.0);
 }
 `;
@@ -85,7 +146,7 @@ const DRAG = 1.35;
 const STRAFE = 26;
 const LOOK = 0.00215;
 
-const SHIP = new THREE.Vector3(0, 4, -52);
+const SHIP = new THREE.Vector3(0, 8, -168);
 
 function makeVideo(src: string, bin: HTMLElement) {
   const video = document.createElement("video");
@@ -95,6 +156,7 @@ function makeVideo(src: string, bin: HTMLElement) {
   video.defaultMuted = true;
   video.playsInline = true;
   video.preload = "auto";
+  video.autoplay = true;
   video.setAttribute("playsinline", "");
   video.setAttribute("muted", "");
   video.crossOrigin = "anonymous";
@@ -104,6 +166,7 @@ function makeVideo(src: string, bin: HTMLElement) {
   texture.minFilter = THREE.LinearFilter;
   texture.magFilter = THREE.LinearFilter;
   texture.generateMipmaps = false;
+  void video.play().catch(() => undefined);
   return { video, texture };
 }
 
@@ -119,7 +182,7 @@ function plateMaterial(texture: THREE.Texture, alpha: number, feather: number) {
     fragmentShader: PLATE_FRAG,
     transparent: true,
     depthWrite: false,
-    depthTest: false,
+    depthTest: true,
     side: THREE.FrontSide,
     toneMapped: false,
   });
@@ -130,6 +193,7 @@ export function mountVoidBiome(
   touch: TouchPilot,
   onHud: (hud: VoidHud) => void,
 ) {
+  SHIP.set(0, 8, -168);
   const bin = document.createElement("div");
   bin.setAttribute("aria-hidden", "true");
   bin.style.cssText = "position:fixed;width:0;height:0;overflow:hidden;pointer-events:none";
@@ -178,130 +242,692 @@ export function mountVoidBiome(
     sky.add(mesh);
   }
 
-  const shipW = 300;
-  const shipH = 170;
-  const BEAM = 12;
-  const HULL_W = 192;
-  const HULL_H = 108;
+  const shipLen = 520;
+  const shipH = 102;
+  const shipBeam = 120;
+  const shipYaw = 0.28;
+  const NX = 160;
+  const hullTop = new Float32Array(NX);
+  const hullBot = new Float32Array(NX);
+  const hullHalf = new Float32Array(NX);
+  let hullReady = false;
+  let hullX0 = -shipLen * 0.5;
+  let hullX1 = shipLen * 0.5;
+  let bayOn = false;
+  let bayX0 = 0;
+  let bayX1 = 0;
+  const bayFloorT = new Float32Array(NX);
+  const bayCeilT = new Float32Array(NX);
+  let bayDepth = 34;
+  const blocks: { x0: number; x1: number; y0: number; y1: number; z0: number; z1: number }[] = [];
   const shipRoot = new THREE.Group();
+  shipRoot.rotation.y = shipYaw;
   scene.add(shipRoot);
   const loader = new THREE.TextureLoader();
   const stillTex = (src: string) => {
     const tex = loader.load(src);
     tex.colorSpace = THREE.NoColorSpace;
-    tex.minFilter = THREE.LinearFilter;
+    tex.generateMipmaps = true;
+    tex.minFilter = THREE.LinearMipmapLinearFilter;
     tex.magFilter = THREE.LinearFilter;
-    tex.generateMipmaps = false;
+    tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    tex.wrapS = THREE.ClampToEdgeWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
     return tex;
   };
   const flankMap = stillTex("/biome/ship-flank.jpg");
-  const shellMat = new THREE.ShaderMaterial({
-    uniforms: { flank: { value: flankMap } },
+  const topMap = stillTex("/biome/ship-top.jpg");
+  const bellyMap = stillTex("/biome/ship-belly.jpg");
+  const sternMap = stillTex("/biome/ship-stern.jpg");
+  const flankHiMap = [0, 1, 2, 3].map((i) => stillTex(`/biome/flank-${i}.jpg`));
+  const topHiMap = [0, 1, 2, 3].map((i) => stillTex(`/biome/top-${i}.jpg`));
+  const bellyHiMap = [0, 1, 2, 3].map((i) => stillTex(`/biome/belly-${i}.jpg`));
+  const bayBackMap = stillTex("/biome/hangar-back.jpg");
+  const bayFloorMap = stillTex("/biome/hangar-floor.jpg");
+  const bayCeilMap = stillTex("/biome/hangar-ceiling.jpg");
+  const bayWallMap = stillTex("/biome/hangar-wall.jpg");
+  const faceMat = (map: THREE.Texture) =>
+    new THREE.ShaderMaterial({
+      uniforms: { map: { value: map } },
+      vertexShader: SHELL_VERT,
+      fragmentShader: SHELL_FRAG,
+      side: THREE.DoubleSide,
+      depthWrite: true,
+      depthTest: true,
+      toneMapped: false,
+    });
+  const metalMat = new THREE.ShaderMaterial({
     vertexShader: SHELL_VERT,
-    fragmentShader: SHELL_FRAG,
+    fragmentShader: METAL_FRAG,
     side: THREE.DoubleSide,
     depthWrite: true,
     depthTest: true,
-    transparent: true,
     toneMapped: false,
   });
-  const card = new THREE.Mesh(new THREE.PlaneGeometry(shipW, shipH), shellMat);
-  card.position.z = 1;
-  card.frustumCulled = false;
-  card.renderOrder = 3;
-  shipRoot.add(card);
-  const hullThick = new Float32Array(HULL_W * HULL_H);
-  const deckY = new Float32Array(HULL_W);
-  const deckT = new Float32Array(HULL_W);
-  const sampleThick = (x: number, y: number) => {
-    const u = x / shipW + 0.5;
-    const v = y / shipH + 0.5;
-    if (u <= 0 || v <= 0 || u >= 1 || v >= 1) return 0;
-    const fx = u * (HULL_W - 1);
-    const fy = v * (HULL_H - 1);
-    const i = Math.floor(fx);
-    const j = Math.floor(fy);
-    const tx = fx - i;
-    const ty = fy - j;
-    const at = (ii: number, jj: number) => hullThick[Math.max(0, Math.min(HULL_H - 1, jj)) * HULL_W + Math.max(0, Math.min(HULL_W - 1, ii))];
-    const a = at(i, j);
-    const b = at(i + 1, j);
-    const c = at(i, j + 1);
-    const d = at(i + 1, j + 1);
-    return a * (1 - tx) * (1 - ty) + b * tx * (1 - ty) + c * (1 - tx) * ty + d * tx * ty;
-  };
-  const depthImg = new Image();
-  depthImg.onload = () => {
-    const canvas2d = document.createElement("canvas");
-    canvas2d.width = depthImg.width;
-    canvas2d.height = depthImg.height;
-    const ctx = canvas2d.getContext("2d", { willReadFrequently: true });
-    if (!ctx) return;
-    ctx.drawImage(depthImg, 0, 0);
-    const px = ctx.getImageData(0, 0, canvas2d.width, canvas2d.height).data;
-    const gw = canvas2d.width;
-    const gh = canvas2d.height;
-    if (gw !== HULL_W || gh !== HULL_H) return;
-    const front = new Int32Array(gw * gh).fill(-1);
-    const positions: number[] = [];
-    const uvs: number[] = [];
-    for (let j = 0; j < gh; j++) {
-      for (let i = 0; i < gw; i++) {
-        const src = ((gh - 1 - j) * gw + i) * 4;
-        const half = (px[src + 1] > 128 ? px[src] / 255 : 0) * BEAM;
-        hullThick[j * gw + i] = half;
-        if (half > deckT[i]) {
-          deckT[i] = half;
-          deckY[i] = (j / (gh - 1) - 0.5) * shipH;
+  const sternMat = new THREE.ShaderMaterial({
+    uniforms: {
+      map: { value: sternMap },
+      crop: { value: new THREE.Vector4(0, 0, 1, 1) },
+    },
+    vertexShader: SHELL_VERT,
+    fragmentShader: STERN_FRAG,
+    side: THREE.DoubleSide,
+    depthWrite: true,
+    depthTest: true,
+    toneMapped: false,
+  });
+  type Pix = { data: Uint8ClampedArray; w: number; h: number };
+  const loadPix = (src: string) =>
+    new Promise<Pix>((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement("canvas");
+        c.width = img.width;
+        c.height = img.height;
+        const ctx = c.getContext("2d", { willReadFrequently: true });
+        if (!ctx) {
+          resolve({ data: new Uint8ClampedArray(16), w: 2, h: 2 });
+          return;
         }
-        if (half < 0.35) continue;
-        const u = i / (gw - 1);
-        const v = j / (gh - 1);
-        const x = (u - 0.5) * shipW;
-        const y = (v - 0.5) * shipH;
-        positions.push(x, y, half, x, y, -half);
-        uvs.push(u, v, u, v);
-        front[j * gw + i] = (positions.length / 3) - 2;
-      }
-    }
-    const indices: number[] = [];
-    const cell = (i: number, j: number) => {
-      if (i < 0 || j < 0 || i >= gw - 1 || j >= gh - 1) return false;
-      return front[j * gw + i] >= 0 && front[j * gw + i + 1] >= 0 && front[(j + 1) * gw + i] >= 0 && front[(j + 1) * gw + i + 1] >= 0;
+        ctx.drawImage(img, 0, 0);
+        const im = ctx.getImageData(0, 0, c.width, c.height);
+        resolve({ data: im.data, w: c.width, h: c.height });
+      };
+      img.onerror = () => resolve({ data: new Uint8ClampedArray(16), w: 2, h: 2 });
+      img.src = src;
+    });
+  const sampleCol = (x: number) => {
+    const u = x / shipLen + 0.5;
+    if (u <= 0.002 || u >= 0.998) return null;
+    const f = u * (NX - 1);
+    const i = Math.floor(f);
+    const t = f - i;
+    const i1 = Math.min(NX - 1, i + 1);
+    if (hullHalf[i] < 1 || hullHalf[i1] < 1) return null;
+    return {
+      top: hullTop[i] * (1 - t) + hullTop[i1] * t,
+      bot: hullBot[i] * (1 - t) + hullBot[i1] * t,
+      half: hullHalf[i] * (1 - t) + hullHalf[i1] * t,
     };
-    for (let j = 0; j < gh - 1; j++) {
-      for (let i = 0; i < gw - 1; i++) {
-        if (!cell(i, j)) continue;
-        const a = front[j * gw + i];
-        const b = front[j * gw + i + 1];
-        const c = front[(j + 1) * gw + i + 1];
-        const d = front[(j + 1) * gw + i];
-        indices.push(a, b, c, a, c, d, a + 1, c + 1, b + 1, a + 1, d + 1, c + 1);
-      }
-    }
-    const stitch = (a: number, b: number) => {
-      indices.push(a, b, b + 1, a, b + 1, a + 1);
-    };
-    for (let j = 0; j < gh; j++) {
-      for (let i = 0; i < gw; i++) {
-        const a = front[j * gw + i];
-        if (a < 0) continue;
-        if (i + 1 < gw && front[j * gw + i + 1] >= 0 && !(cell(i, j) || cell(i, j - 1))) stitch(a, front[j * gw + i + 1]);
-        if (j + 1 < gh && front[(j + 1) * gw + i] >= 0 && !(cell(i, j) || cell(i - 1, j))) stitch(a, front[(j + 1) * gw + i]);
-      }
-    }
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
-    geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
-    geometry.setIndex(indices);
-    geometry.computeVertexNormals();
-    const mesh = new THREE.Mesh(geometry, shellMat);
-    mesh.frustumCulled = false;
-    mesh.renderOrder = 2;
-    shipRoot.add(mesh);
-    card.visible = false;
   };
-  depthImg.src = "/biome/ship-depth.png";
+  void Promise.all([
+    loadPix("/biome/ship-flank.jpg"),
+    loadPix("/biome/ship-top.jpg"),
+    loadPix("/biome/ship-belly.jpg"),
+    loadPix("/biome/ship-stern.jpg"),
+    loadPix("/biome/cannon-side.jpg"),
+    loadPix("/biome/cannon-top.jpg"),
+    loadPix("/biome/cannon-bottom.jpg"),
+    loadPix("/biome/cannon-muzzle.jpg"),
+    ...[0, 1, 2, 3].flatMap((i) => [
+      loadPix(`/biome/flank-${i}.jpg`),
+      loadPix(`/biome/top-${i}.jpg`),
+      loadPix(`/biome/belly-${i}.jpg`),
+    ]),
+  ]).then((loaded) => {
+    const side = loaded[0];
+    const top = loaded[1];
+    const belly = loaded[2];
+    const stern = loaded[3];
+    const cSide = loaded[4];
+    const cTop = loaded[5];
+    const cBot = loaded[6];
+    const cMuz = loaded[7];
+    const flankHi = [0, 1, 2, 3].map((i) => loaded[8 + i * 3]);
+    const topHi = [0, 1, 2, 3].map((i) => loaded[9 + i * 3]);
+    const bellyHi = [0, 1, 2, 3].map((i) => loaded[10 + i * 3]);
+    const lum = (p: Pix, x: number, y: number) => {
+      const xx = Math.max(0, Math.min(p.w - 1, x | 0));
+      const yy = Math.max(0, Math.min(p.h - 1, y | 0));
+      const i = (yy * p.w + xx) * 4;
+      return (p.data[i] + p.data[i + 1] + p.data[i + 2]) / 3;
+    };
+    const on = (p: Pix, x: number, y: number) => lum(p, x, y) > 16;
+    const bounds = (p: Pix) => {
+      let x0 = p.w;
+      let y0 = p.h;
+      let x1 = 0;
+      let y1 = 0;
+      for (let y = 0; y < p.h; y += 2) {
+        for (let x = 0; x < p.w; x += 2) {
+          if (!on(p, x, y)) continue;
+          if (x < x0) x0 = x;
+          if (y < y0) y0 = y;
+          if (x > x1) x1 = x;
+          if (y > y1) y1 = y;
+        }
+      }
+      return { x0, y0, x1, y1 };
+    };
+    const colSpan = (p: Pix, box: { x0: number; y0: number; x1: number; y1: number }, u: number) => {
+      const x = Math.round(box.x0 + u * (box.x1 - box.x0));
+      let a = -1;
+      let b = -1;
+      for (let y = box.y0; y <= box.y1; y++) {
+        if (!on(p, x, y)) continue;
+        if (a < 0) a = y;
+        b = y;
+      }
+      return a < 0 ? null : { a, b };
+    };
+    const sideBox = bounds(side);
+    const topBox = bounds(top);
+    const bellyBox = bounds(belly);
+    const sternBox = bounds(stern);
+    const s0 = new Int32Array(NX);
+    const s1 = new Int32Array(NX);
+    const rawHalf = new Float32Array(NX);
+    let maxSpan = 1;
+    for (let i = 0; i < NX; i++) {
+      const u = i / (NX - 1);
+      const ss = colSpan(side, sideBox, u);
+      const ts = colSpan(top, topBox, u);
+      if (!ss || !ts) continue;
+      s0[i] = ss.a;
+      s1[i] = ss.b;
+      const span = ts.b - ts.a;
+      rawHalf[i] = span;
+      if (span > maxSpan) maxSpan = span;
+    }
+    for (let i = 0; i < NX; i++) {
+      if (rawHalf[i] > 0) continue;
+      let p = i - 1;
+      let n = i + 1;
+      while (p >= 0 && rawHalf[p] <= 0) p--;
+      while (n < NX && rawHalf[n] <= 0) n++;
+      if (p < 0 || n >= NX) continue;
+      const t = (i - p) / (n - p);
+      s0[i] = Math.round(s0[p] * (1 - t) + s0[n] * t);
+      s1[i] = Math.round(s1[p] * (1 - t) + s1[n] * t);
+      rawHalf[i] = rawHalf[p] * (1 - t) + rawHalf[n] * t;
+    }
+    for (let i = 0; i < NX; i++) {
+      if (rawHalf[i] <= 0 || s1[i] <= s0[i]) continue;
+      const topT = (s0[i] - sideBox.y0) / Math.max(1, sideBox.y1 - sideBox.y0);
+      const botT = (s1[i] - sideBox.y0) / Math.max(1, sideBox.y1 - sideBox.y0);
+      hullTop[i] = (0.5 - topT) * shipH;
+      hullBot[i] = (0.5 - botT) * shipH;
+      hullHalf[i] = (rawHalf[i] / maxSpan) * (shipBeam * 0.5);
+    }
+    const blur = (src: Float32Array) => {
+      const tmp = Float32Array.from(src);
+      for (let i = 1; i < NX - 1; i++) {
+        if (src[i] === 0 || src[i - 1] === 0 || src[i + 1] === 0) continue;
+        tmp[i] = src[i] * 0.5 + src[i - 1] * 0.25 + src[i + 1] * 0.25;
+      }
+      src.set(tmp);
+    };
+    blur(hullTop);
+    blur(hullBot);
+    blur(hullHalf);
+    let i0 = 0;
+    let i1 = NX - 1;
+    while (i0 < NX && hullHalf[i0] < 2) i0++;
+    while (i1 > i0 && hullHalf[i1] < 2) i1--;
+    hullX0 = (i0 / (NX - 1) - 0.5) * shipLen;
+    hullX1 = (i1 / (NX - 1) - 0.5) * shipLen;
+    if (i1 - i0 < 4) return;
+    const NY = 28;
+    const NZ = 36;
+    const pushMesh = (mat: THREE.ShaderMaterial, pos: number[], uv: number[], idx: number[], axis: number, sign: number) => {
+      if (idx.length < 3) return;
+      const order = idx.slice();
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+      geo.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
+      geo.setIndex(order);
+      geo.computeVertexNormals();
+      const nrm = geo.getAttribute("normal");
+      let sum = 0;
+      for (let i = 0; i < nrm.count; i += 6) sum += nrm.getComponent(i, axis);
+      if (sum * sign < 0) {
+        for (let t = 0; t < order.length; t += 3) {
+          const tmp = order[t + 1];
+          order[t + 1] = order[t + 2];
+          order[t + 2] = tmp;
+        }
+        geo.setIndex(order);
+        geo.computeVertexNormals();
+      }
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.frustumCulled = false;
+      mesh.renderOrder = 2;
+      shipRoot.add(mesh);
+    };
+    const quad = (idx: number[], a: number, b: number, c: number, d: number) => {
+      if (a < 0 || b < 0 || c < 0 || d < 0) return;
+      idx.push(a, b, c, a, c, d);
+    };
+    const sideU = (i: number, t: number) => {
+      const u = i / (NX - 1);
+      const ix = sideBox.x0 + u * (sideBox.x1 - sideBox.x0);
+      const iy = s1[i] + (s0[i] - s1[i]) * t;
+      return [ix / side.w, 1 - iy / side.h, lum(side, ix, iy)] as const;
+    };
+    const pixU = (ix: number) => (ix - sideBox.x0) / Math.max(1, sideBox.x1 - sideBox.x0);
+    const bayIx0 = 1085;
+    const bayIx1 = 1475;
+    const bayIyTop = 500;
+    const bayIyBot = 615;
+    const uA = Math.max(0, Math.min(1, pixU(bayIx0)));
+    const uB = Math.max(0, Math.min(1, pixU(bayIx1)));
+    bayX0 = (uA - 0.5) * shipLen;
+    bayX1 = (uB - 0.5) * shipLen;
+    const tOfIy = (i: number, iy: number) => {
+      const den = s0[i] - s1[i];
+      if (Math.abs(den) < 2) return -1;
+      return (iy - s1[i]) / den;
+    };
+    for (let i = 0; i < NX; i++) {
+      bayFloorT[i] = tOfIy(i, bayIyBot);
+      bayCeilT[i] = tOfIy(i, bayIyTop);
+    }
+    const iA = Math.max(i0, Math.min(i1, Math.round(uA * (NX - 1))));
+    const iB = Math.max(iA + 2, Math.min(i1, Math.round(uB * (NX - 1))));
+    const midI = (iA + iB) >> 1;
+    bayDepth = Math.min(40, Math.max(22, hullHalf[midI] - 16));
+    bayOn = bayCeilT[midI] > bayFloorT[midI] + 0.04;
+    const inOpening = (i: number, j: number) => {
+      if (!bayOn) return false;
+      const x = (i / (NX - 1) - 0.5) * shipLen;
+      if (x <= bayX0 || x >= bayX1) return false;
+      const t = j / NY;
+      const tf = bayFloorT[i];
+      const tc = bayCeilT[i];
+      return tf >= 0 && tc > tf && t > tf && t < tc;
+    };
+    const contentBox = (p: Pix) => {
+      let x0 = p.w;
+      let y0 = p.h;
+      let x1 = 0;
+      let y1 = 0;
+      for (let y = 0; y < p.h; y += 2) {
+        for (let x = 0; x < p.w; x += 2) {
+          if (lum(p, x, y) <= 16) continue;
+          if (x < x0) x0 = x;
+          if (y < y0) y0 = y;
+          if (x > x1) x1 = x;
+          if (y > y1) y1 = y;
+        }
+      }
+      if (x1 <= x0 || y1 <= y0) return { x0: 0, y0: 0, x1: Math.max(1, p.w - 1), y1: Math.max(1, p.h - 1) };
+      return { x0, y0, x1, y1 };
+    };
+    const colIx = (i: number) => {
+      const u = i / (NX - 1);
+      return sideBox.x0 + u * (sideBox.x1 - sideBox.x0);
+    };
+    const SECTIONS = 4;
+    const flankBox = flankHi.map(contentBox);
+    for (const sign of [1, -1] as const) {
+      for (let s = 0; s < SECTIONS; s++) {
+        const pixX0 = (s * side.w) / SECTIONS;
+        const pixX1 = ((s + 1) * side.w) / SECTIONS;
+        const owns = (i: number) => {
+          const ix = colIx(i);
+          return s === SECTIONS - 1 ? ix >= pixX0 && ix <= pixX1 + 1 : ix >= pixX0 && ix < pixX1;
+        };
+        let ia = i1;
+        let ib = i0;
+        for (let i = i0; i < i1; i++) {
+          if (!owns(i)) continue;
+          if (i < ia) ia = i;
+          if (i + 1 > ib) ib = i + 1;
+        }
+        if (ib <= ia) continue;
+        const box = flankBox[s];
+        const img = flankHi[s];
+        const pos: number[] = [];
+        const uv: number[] = [];
+        const idx: number[] = [];
+        const row = new Int32Array((ib - ia + 1) * (NY + 1)).fill(-1);
+        const at = (i: number, j: number) => row[(i - ia) * (NY + 1) + j];
+        for (let i = ia; i <= ib; i++) {
+          for (let j = 0; j <= NY; j++) {
+            const t = j / NY;
+            const y = hullBot[i] + t * (hullTop[i] - hullBot[i]);
+            const x = (i / (NX - 1) - 0.5) * shipLen;
+            const su = sideU(i, t);
+            const edge = j === 0 || j === NY || i === ia || i === ib;
+            const z = sign * (hullHalf[i] + (edge ? 0 : (su[2] / 255 - 0.42) * 2.2));
+            const k = Math.max(0, Math.min(1, (colIx(i) - pixX0) / (pixX1 - pixX0)));
+            const ixT = box.x0 + k * (box.x1 - box.x0);
+            const iyT = box.y1 + t * (box.y0 - box.y1);
+            pos.push(x, y, z);
+            uv.push(ixT / img.w, 1 - iyT / img.h);
+            row[(i - ia) * (NY + 1) + j] = pos.length / 3 - 1;
+          }
+        }
+        for (let i = ia; i < ib; i++) {
+          if (!owns(i)) continue;
+          for (let j = 0; j < NY; j++) {
+            if (inOpening(i, j) && inOpening(i + 1, j) && inOpening(i + 1, j + 1) && inOpening(i, j + 1)) continue;
+            quad(idx, at(i, j), at(i + 1, j), at(i + 1, j + 1), at(i, j + 1));
+          }
+        }
+        pushMesh(faceMat(flankHiMap[s]), pos, uv, idx, 2, sign);
+      }
+    }
+    const deck = (
+      up: boolean,
+      p: Pix,
+      box: { x0: number; y0: number; x1: number; y1: number },
+      hi: Pix[],
+      maps: THREE.Texture[],
+    ) => {
+      const boxes = hi.map(contentBox);
+      for (let s = 0; s < SECTIONS; s++) {
+        const pixX0 = (s * p.w) / SECTIONS;
+        const pixX1 = ((s + 1) * p.w) / SECTIONS;
+        const owns = (i: number) => {
+          const u = i / (NX - 1);
+          const uu = box.x0 + u * (box.x1 - box.x0);
+          return s === SECTIONS - 1 ? uu >= pixX0 && uu <= pixX1 + 1 : uu >= pixX0 && uu < pixX1;
+        };
+        let ia = i1;
+        let ib = i0;
+        for (let i = i0; i < i1; i++) {
+          if (!owns(i)) continue;
+          if (i < ia) ia = i;
+          if (i + 1 > ib) ib = i + 1;
+        }
+        if (ib <= ia) continue;
+        const hb = boxes[s];
+        const img = hi[s];
+        const pos: number[] = [];
+        const uv: number[] = [];
+        const idx: number[] = [];
+        const row = new Int32Array((ib - ia + 1) * (NZ + 1)).fill(-1);
+        const at = (i: number, k: number) => row[(i - ia) * (NZ + 1) + k];
+        for (let i = ia; i <= ib; i++) {
+          const u = i / (NX - 1);
+          const span = colSpan(p, box, u);
+          const x = (u - 0.5) * shipLen;
+          const uu = box.x0 + u * (box.x1 - box.x0);
+          const kAlong = Math.max(0, Math.min(1, (uu - pixX0) / (pixX1 - pixX0)));
+          for (let k = 0; k <= NZ; k++) {
+            const t = k / NZ;
+            const z0 = -hullHalf[i] + t * hullHalf[i] * 2;
+            const edge = k === 0 || k === NZ || i === ia || i === ib;
+            let y = up ? hullTop[i] : hullBot[i];
+            let vv = box.y0 + t * (box.y1 - box.y0);
+            if (span) vv = span.a + t * (span.b - span.a);
+            if (!edge) y += (up ? 1 : -1) * (lum(p, uu, vv) / 255 - 0.42) * 1.4;
+            const ixT = hb.x0 + kAlong * (hb.x1 - hb.x0);
+            const iyT = hb.y0 + t * (hb.y1 - hb.y0);
+            pos.push(x, y, z0);
+            uv.push(ixT / img.w, 1 - iyT / img.h);
+            row[(i - ia) * (NZ + 1) + k] = pos.length / 3 - 1;
+          }
+        }
+        for (let i = ia; i < ib; i++) {
+          if (!owns(i)) continue;
+          for (let k = 0; k < NZ; k++) quad(idx, at(i, k), at(i + 1, k), at(i + 1, k + 1), at(i, k + 1));
+        }
+        pushMesh(faceMat(maps[s]), pos, uv, idx, 1, up ? 1 : -1);
+      }
+    };
+    deck(true, top, topBox, topHi, topHiMap);
+    deck(false, belly, bellyBox, bellyHi, bellyHiMap);
+    const cap = (i: number, nose: boolean) => {
+      const pos: number[] = [];
+      const uv: number[] = [];
+      const idx: number[] = [];
+      const x = (i / (NX - 1) - 0.5) * shipLen;
+      const u = i / (NX - 1);
+      const ix = sideBox.x0 + u * (sideBox.x1 - sideBox.x0);
+      for (let j = 0; j <= NY; j++) {
+        for (let k = 0; k <= NZ; k++) {
+          const ty = j / NY;
+          const tz = k / NZ;
+          const y = hullBot[i] + ty * (hullTop[i] - hullBot[i]);
+          const z = -hullHalf[i] + tz * hullHalf[i] * 2;
+          const iy = s1[i] + (s0[i] - s1[i]) * ty;
+          pos.push(x, y, z);
+          uv.push(ix / side.w, 1 - iy / side.h);
+        }
+      }
+      const at = (j: number, k: number) => j * (NZ + 1) + k;
+      for (let j = 0; j < NY; j++) {
+        for (let k = 0; k < NZ; k++) quad(idx, at(j, k), at(j, k + 1), at(j + 1, k + 1), at(j + 1, k));
+      }
+      pushMesh(metalMat, pos, uv, idx, 0, nose ? 1 : -1);
+      if (nose) return;
+      const photoA = (sternBox.x1 - sternBox.x0) / Math.max(1, sternBox.y1 - sternBox.y0);
+      const capA = (hullHalf[i] * 2) / Math.max(1, hullTop[i] - hullBot[i]);
+      let spanU = 1;
+      let spanV = 1;
+      if (capA < photoA) spanV = capA / photoA;
+      else spanU = photoA / capA;
+      const dPos: number[] = [];
+      const dUv: number[] = [];
+      const dIdx: number[] = [];
+      const xOut = x - 0.8;
+      for (let j = 0; j <= NY; j++) {
+        for (let k = 0; k <= NZ; k++) {
+          const ty = j / NY;
+          const tz = k / NZ;
+          const y = hullBot[i] + ty * (hullTop[i] - hullBot[i]);
+          const z = -hullHalf[i] + tz * hullHalf[i] * 2;
+          const photoU = (tz - (0.5 - spanU / 2)) / spanU;
+          const photoV = (ty - (0.5 - spanV / 2)) / spanV;
+          dPos.push(xOut, y, z);
+          dUv.push(photoU, photoV);
+        }
+      }
+      for (let j = 0; j < NY; j++) {
+        for (let k = 0; k < NZ; k++) quad(dIdx, at(j, k), at(j, k + 1), at(j + 1, k + 1), at(j + 1, k));
+      }
+      sternMat.uniforms.crop.value.set(
+        sternBox.x0 / stern.w,
+        1 - sternBox.y1 / stern.h,
+        sternBox.x1 / stern.w,
+        1 - sternBox.y0 / stern.h,
+      );
+      pushMesh(sternMat, dPos, dUv, dIdx, 0, -1);
+    };
+    cap(i0, false);
+    cap(i1, true);
+    if (bayOn) {
+      const backMat = faceMat(bayBackMap);
+      const floorMat = faceMat(bayFloorMap);
+      const ceilMat = faceMat(bayCeilMap);
+      const wallMat = faceMat(bayWallMap);
+      const yAt = (i: number, t: number) => hullBot[i] + t * (hullTop[i] - hullBot[i]);
+      const NB = 14;
+      for (const sign of [1, -1] as const) {
+        const band = (mat: THREE.ShaderMaterial, edge: "floor" | "ceil" | "back" | "aft" | "fore") => {
+          const pos: number[] = [];
+          const uv: number[] = [];
+          const idx: number[] = [];
+          const cols = edge === "aft" || edge === "fore" ? 8 : NB;
+          for (let i = 0; i <= cols; i++) {
+            const u = i / cols;
+            const x = edge === "aft" ? bayX0 : edge === "fore" ? bayX1 : bayX0 + (bayX1 - bayX0) * u;
+            const ii = Math.max(0, Math.min(NX - 1, Math.round((x / shipLen + 0.5) * (NX - 1))));
+            const tf = Math.max(0.02, bayFloorT[ii]);
+            const tc = Math.min(0.92, bayCeilT[ii]);
+            const y0 = yAt(ii, tf) + 0.2;
+            const y1 = yAt(ii, tc) - 0.2;
+            const zOut = sign * (hullHalf[ii] - 0.35);
+            const zIn = sign * Math.max(8, hullHalf[ii] - bayDepth);
+            if (edge === "floor" || edge === "ceil") {
+              const y = edge === "floor" ? y0 : y1;
+              pos.push(x, y, zOut, x, y, zIn);
+              uv.push(u, 0, u, 1);
+            } else if (edge === "back") {
+              pos.push(x, y0, zIn, x, y1, zIn);
+              uv.push(u, 0, u, 1);
+            } else {
+              const z = zIn + (zOut - zIn) * u;
+              pos.push(x, y0, z, x, y1, z);
+              uv.push(u, 0, u, 1);
+            }
+          }
+          for (let i = 0; i < cols; i++) {
+            const a = i * 2;
+            idx.push(a, a + 1, a + 3, a, a + 3, a + 2);
+          }
+          const axis = edge === "floor" || edge === "ceil" ? 1 : edge === "back" ? 2 : 0;
+          const facing =
+            edge === "ceil" ? -1 : edge === "back" ? sign : edge === "fore" ? -1 : 1;
+          pushMesh(mat, pos, uv, idx, axis, facing);
+        };
+        band(floorMat, "floor");
+        band(ceilMat, "ceil");
+        band(backMat, "back");
+        band(wallMat, "aft");
+        band(wallMat, "fore");
+      }
+    }
+    const plateBox = (p: Pix) => {
+      let x0 = p.w;
+      let y0 = p.h;
+      let x1 = 0;
+      let y1 = 0;
+      for (let y = 0; y < p.h; y += 2) {
+        for (let x = 0; x < p.w; x += 2) {
+          if (lum(p, x, y) <= 16) continue;
+          if (x < x0) x0 = x;
+          if (y < y0) y0 = y;
+          if (x > x1) x1 = x;
+          if (y > y1) y1 = y;
+        }
+      }
+      return { x0, y0, x1, y1 };
+    };
+    const cSideBox = plateBox(cSide);
+    const cTopBox = plateBox(cTop);
+    const cBotBox = plateBox(cBot);
+    const cMuzBox = plateBox(cMuz);
+    const CN = 26;
+    const cannonLen = 68;
+    const sideTop = new Float32Array(CN);
+    const sideBot = new Float32Array(CN);
+    const halfW = new Float32Array(CN);
+    const spanAt = (p: Pix, box: { x0: number; y0: number; x1: number; y1: number }, u: number) => {
+      const x = box.x0 + u * (box.x1 - box.x0);
+      let a = -1;
+      let b = -1;
+      for (let y = box.y0; y <= box.y1; y++) {
+        if (lum(p, x, y) <= 14) continue;
+        if (a < 0) a = y;
+        b = y;
+      }
+      if (a < 0) {
+        const mid = (box.y0 + box.y1) >> 1;
+        return { a: mid, b: mid + 2 };
+      }
+      return { a, b };
+    };
+    for (let i = 0; i < CN; i++) {
+      const u = i / (CN - 1);
+      const s = spanAt(cSide, cSideBox, u);
+      sideTop[i] = s.a;
+      sideBot[i] = s.b;
+      const tspan = spanAt(cTop, cTopBox, u);
+      const zScale = cannonLen / Math.max(1, cTopBox.x1 - cTopBox.x0);
+      halfW[i] = Math.max(1.8, (tspan.b - tspan.a) * 0.5 * zScale);
+    }
+    const yScale = cannonLen / Math.max(1, cSideBox.x1 - cSideBox.x0);
+    const sideMid = (cSideBox.y0 + cSideBox.y1) * 0.5;
+    const yLocal = (iy: number) => (sideMid - iy) * yScale;
+    const xLocal = (i: number) => (i / (CN - 1) - 0.5) * cannonLen;
+    const sideMat = faceMat(flankMap);
+    const topMatC = faceMat(topMap);
+    const muzMat = faceMat(flankMap);
+    const arm = { x0: 500, y0: 348, x1: 1040, y1: 470 };
+    let maxHalf = 1;
+    for (let i = 0; i < CN; i++) if (halfW[i] > maxHalf) maxHalf = halfW[i];
+    const stampUv = (geo: THREE.CircleGeometry, box: { x0: number; y0: number; x1: number; y1: number }, img: Pix) => {
+      const uv = geo.getAttribute("uv");
+      const u0 = box.x0 / img.w;
+      const u1 = box.x1 / img.w;
+      const v0 = 1 - box.y1 / img.h;
+      const v1 = 1 - box.y0 / img.h;
+      for (let i = 0; i < uv.count; i++) {
+        uv.setXY(i, u0 + uv.getX(i) * (u1 - u0), v0 + uv.getY(i) * (v1 - v0));
+      }
+      uv.needsUpdate = true;
+    };
+    const stations = [-228, -148, -68, 18, 208];
+    for (const cx of stations) {
+      const u = cx / shipLen + 0.5;
+      const ii = Math.max(0, Math.min(NX - 1, Math.round(u * (NX - 1))));
+      if (hullHalf[ii] < 8) continue;
+      if (bayOn && cx + cannonLen * 0.5 > bayX0 - 4 && cx - cannonLen * 0.5 < bayX1 + 4) continue;
+      const yMid = hullBot[ii] + 0.2 * (hullTop[ii] - hullBot[ii]);
+      for (const sign of [1, -1] as const) {
+        const zMid = sign * (hullHalf[ii] + maxHalf * 0.42);
+        const addStrip = (
+          mat: THREE.ShaderMaterial,
+          kind: "side" | "top" | "bot",
+          zSign: number,
+        ) => {
+          const pos: number[] = [];
+          const uv: number[] = [];
+          const idx: number[] = [];
+          for (let i = 0; i < CN; i++) {
+            const x = xLocal(i) + cx;
+            const uu = i / (CN - 1);
+            if (kind === "side") {
+              const yA = yMid + yLocal(sideTop[i]);
+              const yB = yMid + yLocal(sideBot[i]);
+              const z = zMid + zSign * halfW[i];
+              const ix = arm.x0 + uu * (arm.x1 - arm.x0);
+              pos.push(x, yA, z, x, yB, z);
+              uv.push(ix / side.w, 1 - arm.y0 / side.h, ix / side.w, 1 - arm.y1 / side.h);
+            } else {
+              const y = yMid + yLocal(kind === "top" ? sideTop[i] : sideBot[i]);
+              pos.push(x, y, zMid - halfW[i], x, y, zMid + halfW[i]);
+              uv.push(0.28 + uu * 0.44, 0.58, 0.28 + uu * 0.44, 0.42);
+            }
+          }
+          for (let i = 0; i < CN - 1; i++) {
+            const a = i * 2;
+            idx.push(a, a + 1, a + 3, a, a + 3, a + 2);
+          }
+          pushMesh(mat, pos, uv, idx, kind === "side" ? 2 : 1, kind === "bot" ? -1 : zSign);
+        };
+        addStrip(sideMat, "side", 1);
+        addStrip(sideMat, "side", -1);
+        addStrip(topMatC, "top", 1);
+        addStrip(topMatC, "bot", -1);
+        const endHalf = Math.abs(yLocal(sideTop[CN - 1]) - yLocal(sideBot[CN - 1])) * 0.5;
+        const muzR = Math.max(1.4, Math.min(halfW[CN - 1], endHalf) * 0.96);
+        const muzzle = new THREE.Mesh(new THREE.CircleGeometry(muzR, 20), muzMat);
+        stampUv(muzzle.geometry as THREE.CircleGeometry, { x0: 700, y0: 360, x1: 860, y1: 450 }, side);
+        muzzle.rotation.y = Math.PI / 2;
+        muzzle.position.set(cx + cannonLen * 0.5 + 0.08, yMid, zMid);
+        muzzle.frustumCulled = false;
+        const brR = Math.max(1.4, Math.min(halfW[0], Math.abs(yLocal(sideTop[0]) - yLocal(sideBot[0])) * 0.5) * 0.9);
+        const breech = new THREE.Mesh(new THREE.CircleGeometry(brR, 16), sideMat);
+        stampUv(breech.geometry as THREE.CircleGeometry, {
+          x0: arm.x0,
+          x1: arm.x0 + 160,
+          y0: arm.y0,
+          y1: arm.y1,
+        }, side);
+        breech.rotation.y = -Math.PI / 2;
+        breech.position.set(cx - cannonLen * 0.5 - 0.08, yMid, zMid);
+        breech.frustumCulled = false;
+        shipRoot.add(muzzle, breech);
+        const y0 = yMid + yLocal(sideBot[CN >> 1]);
+        const y1 = yMid + yLocal(sideTop[CN >> 1]);
+        blocks.push({
+          x0: cx - cannonLen * 0.48,
+          x1: cx + cannonLen * 0.48,
+          y0: Math.min(y0, y1) - 0.4,
+          y1: Math.max(y0, y1) + 0.4,
+          z0: zMid - maxHalf,
+          z1: zMid + maxHalf,
+        });
+      }
+    }
+    hullReady = true;
+  }).catch(() => {
+    hullReady = false;
+  });
   shipRoot.position.copy(SHIP);
 
   const breath = makeVideo("/biome/bolt-breath.mp4", bin);
@@ -338,7 +964,7 @@ export function mountVoidBiome(
   gallop.video.addEventListener("loadedmetadata", fitBolt);
   fitBolt();
 
-  const pos = new THREE.Vector3(0, 12, 28);
+  const pos = new THREE.Vector3(0, 20, -24);
   const vel = new THREE.Vector3();
   const forward = new THREE.Vector3();
   const right = new THREE.Vector3();
@@ -355,6 +981,7 @@ export function mountVoidBiome(
   let runMix = 0;
   let bank = 0;
   let landed = false;
+  let landBay = false;
   let shipSpeed = 0;
   let shipAge = 0;
   let inside = false;
@@ -531,7 +1158,35 @@ export function mountVoidBiome(
       yaw = faceYaw;
       pitch = 0;
     },
+    setLook: (faceYaw: number, facePitch: number) => {
+      yaw = faceYaw;
+      pitch = facePitch;
+    },
     isAboard: () => pos.distanceTo(SHIP) < 80,
+    getShip: () => {
+      const mid = (bayX0 + bayX1) * 0.5;
+      const col = sampleCol(mid);
+      const u = mid / shipLen + 0.5;
+      const f = u * (NX - 1);
+      const i = Math.max(0, Math.min(NX - 2, Math.floor(f)));
+      const tt = f - i;
+      const tF = bayFloorT[i] * (1 - tt) + bayFloorT[i + 1] * tt;
+      const tC = bayCeilT[i] * (1 - tt) + bayCeilT[i + 1] * tt;
+      const span = col ? col.top - col.bot : 0;
+      return {
+        x: SHIP.x,
+        y: SHIP.y,
+        z: SHIP.z,
+        yaw: shipYaw,
+        bayOn,
+        bayX0,
+        bayX1,
+        bayDepth,
+        y0: col ? col.bot + tF * span : 0,
+        y1: col ? col.bot + tC * span : 0,
+        half: col ? col.half : 0,
+      };
+    },
     isLanded: () => landed,
     isGrounded: () => false,
     getPose: () => ({ x: pos.x, y: pos.y, z: pos.z, yaw, speed }),
@@ -581,63 +1236,174 @@ export function mountVoidBiome(
     pos.addScaledVector(vel, dt);
 
     shipAge += dt;
-    const lead = pos.z - SHIP.z;
-    const cruiseSpeed = lead > 80 ? 2.2 : 7;
-    const wantSpeed = shipAge < 4 ? 0 : cruiseSpeed;
+    const along = pos.z - SHIP.z;
+    const cruiseSpeed = along > 210 ? 0 : along > 160 ? 2.2 : along > 100 ? 5.5 : 8.5;
+    const wantSpeed = shipAge < 1.2 ? 0 : cruiseSpeed;
     shipSpeed = THREE.MathUtils.damp(shipSpeed, wantSpeed, 0.7, dt);
     SHIP.z -= shipSpeed * dt;
     shipRoot.position.copy(SHIP);
 
-    let lx = pos.x - SHIP.x;
+    const cY = Math.cos(shipYaw);
+    const sY = Math.sin(shipYaw);
+    const dx = pos.x - SHIP.x;
+    const dz = pos.z - SHIP.z;
+    let lx = dx * cY - dz * sY;
     let ly = pos.y - SHIP.y;
-    let lz = pos.z - SHIP.z;
-    const colU = lx / shipW + 0.5;
-    const colI = Math.max(0, Math.min(HULL_W - 1, Math.round(colU * (HULL_W - 1))));
-    const top = deckY[colI];
-    const topT = deckT[colI];
-    if (landed && (rise > 0.45 || topT < 1 || ly > top + 16)) {
-      landed = false;
-      if (rise > 0.45) vel.y = Math.max(vel.y, 18);
-    }
-    if (!landed && topT > 2 && Math.abs(lz) < topT + 3 && ly > top - 1.5 && ly < top + 10 && rise <= 0.05) {
-      landed = true;
-    }
-    if (!landed) {
-      for (let n = 0; n < 5; n++) {
-        const t = sampleThick(lx, ly);
-        if (t < 0.4 || Math.abs(lz) >= t) break;
-        const penZ = t - Math.abs(lz);
-        const gx = sampleThick(lx + 2.2, ly) - sampleThick(lx - 2.2, ly);
-        const gy = sampleThick(lx, ly + 2.2) - sampleThick(lx, ly - 2.2);
-        const glen = Math.hypot(gx, gy);
-        const penXY = glen > 0.15 ? (t * 4.4) / glen : 99;
-        if (penZ <= penXY) {
-          lz = Math.sign(lz || 1) * (t + 0.4);
-          vel.z = -shipSpeed;
-          break;
-        }
-        lx -= (gx / glen) * 2.4;
-        ly -= (gy / glen) * 2.4;
-        vel.x = 0;
-        vel.y = Math.min(vel.y, 0);
-      }
-      pos.x = SHIP.x + lx;
+    let lz = dx * sY + dz * cY;
+    const writeLocal = () => {
+      pos.x = SHIP.x + lx * cY + lz * sY;
       pos.y = SHIP.y + ly;
-      pos.z = SHIP.z + lz;
-    }
-    if (landed) {
-      const slide = THREE.MathUtils.clamp(-steer * 12, -16, 16);
-      pos.x = THREE.MathUtils.damp(pos.x, pos.x + slide * dt * 3, 6, dt);
-      lx = pos.x - SHIP.x;
-      const u = Math.max(0, Math.min(HULL_W - 1, Math.round((lx / shipW + 0.5) * (HULL_W - 1))));
-      const stand = deckY[u];
-      const standT = deckT[u];
-      if (standT < 1) landed = false;
-      else {
-        pos.y = SHIP.y + stand + 1.3;
-        pos.z = THREE.MathUtils.clamp(pos.z, SHIP.z - standT + 1, SHIP.z + standT - 1);
-        vel.set(0, 0, -shipSpeed);
-        speed = Math.abs(slide);
+      pos.z = SHIP.z - lx * sY + lz * cY;
+    };
+    if (hullReady) {
+      const col = sampleCol(lx);
+      let bay: { y0: number; y1: number; inner: number; half: number } | null = null;
+      if (bayOn && col && lx > bayX0 && lx < bayX1) {
+        const u = lx / shipLen + 0.5;
+        const f = u * (NX - 1);
+        const i = Math.max(0, Math.min(NX - 2, Math.floor(f)));
+        const tt = f - i;
+        const tF = bayFloorT[i] * (1 - tt) + bayFloorT[i + 1] * tt;
+        const tC = bayCeilT[i] * (1 - tt) + bayCeilT[i + 1] * tt;
+        if (tC > tF && tF > -0.05) {
+          const span = col.top - col.bot;
+          bay = {
+            y0: col.bot + tF * span,
+            y1: col.bot + tC * span,
+            inner: Math.max(8, col.half - bayDepth),
+            half: col.half,
+          };
+        }
+      }
+      const inBay =
+        !!bay &&
+        ly > bay.y0 - 1.1 &&
+        ly < bay.y1 + 0.7 &&
+        Math.abs(lz) > bay.inner - 1.5 &&
+        Math.abs(lz) < bay.half + 2.4;
+      const over = !col || ly > col.top + 1.4 || Math.abs(lz) > col.half + 2.5;
+      if (landed && landBay) {
+        if (rise > 0.45 || !inBay) {
+          landed = false;
+          landBay = false;
+          if (rise > 0.45) vel.y = Math.max(vel.y, 16);
+        }
+      } else if (landed && (rise > 0.45 || over)) {
+        landed = false;
+        landBay = false;
+        if (rise > 0.45) vel.y = Math.max(vel.y, 16);
+      }
+      if (
+        !landed &&
+        !inBay &&
+        col &&
+        Math.abs(lz) < col.half * 0.94 &&
+        ly <= col.top + 2.4 &&
+        ly >= col.top - 2.4 &&
+        vel.y <= 1.6 &&
+        rise <= 0.05
+      ) {
+        landed = true;
+        landBay = false;
+      }
+      if (!landed && inBay && bay && ly <= bay.y0 + 3.1 && ly >= bay.y0 - 1.2 && vel.y <= 2.4 && rise <= 0.05) {
+        landed = true;
+        landBay = true;
+      }
+      if (!landed && inBay && bay) {
+        const sgn = Math.sign(lz) || 1;
+        if (Math.abs(lz) < bay.inner + 0.8) lz = sgn * (bay.inner + 1);
+        if (ly > bay.y1 - 0.35) {
+          ly = bay.y1 - 0.7;
+          vel.y = Math.min(vel.y, 0);
+        }
+        if (ly < bay.y0 + 0.35) {
+          ly = bay.y0 + 0.55;
+          vel.y = Math.max(vel.y, 0);
+        }
+        lx = THREE.MathUtils.clamp(lx, bayX0 + 1.2, bayX1 - 1.2);
+        writeLocal();
+      } else if (!landed && col && ly < col.top + 0.4 && ly > col.bot - 0.4 && Math.abs(lz) < col.half + 1.2) {
+        const penTop = col.top - ly;
+        const penBot = ly - col.bot;
+        const penZ = col.half - Math.abs(lz);
+        if (penTop < penZ && penTop < penBot && penTop < 10) {
+          ly = col.top + 1.6;
+          vel.y = Math.max(vel.y, 2);
+        } else if (penZ <= penTop && penZ <= penBot) {
+          lz = Math.sign(lz || 1) * (col.half + 1.4);
+          vel.z = -shipSpeed;
+        } else {
+          ly = col.bot - 1.6;
+          vel.y = Math.min(vel.y, -2);
+        }
+        writeLocal();
+      }
+      if (!landed && !col && lx < hullX0 && lx > hullX0 - 8) {
+        const end = sampleCol(hullX0 + 4);
+        if (end && ly < end.top && ly > end.bot && Math.abs(lz) < end.half) {
+          lx = hullX0 - 1.5;
+          vel.x = 0;
+          writeLocal();
+        }
+      }
+      if (!landed && !col && lx > hullX1 && lx < hullX1 + 8) {
+        const end = sampleCol(hullX1 - 4);
+        if (end && ly < end.top && ly > end.bot && Math.abs(lz) < end.half) {
+          lx = hullX1 + 1.5;
+          vel.x = 0;
+          writeLocal();
+        }
+      }
+      if (!landed && !inBay) {
+        for (let bi = 0; bi < blocks.length; bi++) {
+          const b = blocks[bi];
+          if (lx < b.x0 || lx > b.x1 || ly < b.y0 || ly > b.y1 || lz < b.z0 || lz > b.z1) continue;
+          const px = Math.min(lx - b.x0, b.x1 - lx);
+          const py = Math.min(ly - b.y0, b.y1 - ly);
+          const pz = Math.min(lz - b.z0, b.z1 - lz);
+          if (pz <= px && pz <= py) lz = lz < (b.z0 + b.z1) * 0.5 ? b.z0 - 0.8 : b.z1 + 0.8;
+          else if (py <= px) ly = ly < (b.y0 + b.y1) * 0.5 ? b.y0 - 0.8 : b.y1 + 0.8;
+          else lx = lx < (b.x0 + b.x1) * 0.5 ? b.x0 - 0.8 : b.x1 + 0.8;
+          writeLocal();
+        }
+      }
+      if (landed && landBay && bay) {
+        lx += -steer * 18 * dt;
+        lx = THREE.MathUtils.clamp(lx, bayX0 + 2, bayX1 - 2);
+        const stand = sampleCol(lx);
+        if (!stand) {
+          landed = false;
+          landBay = false;
+        } else {
+          const spn = stand.top - stand.bot;
+          const uf = lx / shipLen + 0.5;
+          const ff = uf * (NX - 1);
+          const ii = Math.max(0, Math.min(NX - 2, Math.floor(ff)));
+          const ttt = ff - ii;
+          const tf = bayFloorT[ii] * (1 - ttt) + bayFloorT[ii + 1] * ttt;
+          const y0 = stand.bot + tf * spn;
+          const inner = Math.max(8, stand.half - bayDepth);
+          ly = y0 + 1.7;
+          const sgn = Math.sign(lz) || 1;
+          lz = sgn * THREE.MathUtils.clamp(Math.abs(lz), inner + 1.5, stand.half - 1.1);
+          writeLocal();
+          vel.set(0, 0, -shipSpeed);
+          speed = Math.abs(steer) * 8;
+        }
+      } else if (landed) {
+        lx += -steer * 26 * dt;
+        const stand = sampleCol(lx);
+        if (!stand || Math.abs(lz) > stand.half + 2) {
+          landed = false;
+          landBay = false;
+        } else {
+          ly = stand.top + 1.8;
+          lz = THREE.MathUtils.clamp(lz, -stand.half + 1.4, stand.half - 1.4);
+          writeLocal();
+          vel.set(0, 0, -shipSpeed);
+          speed = Math.abs(steer) * 8;
+        }
       }
     }
     if (!landed) speed = vel.length();
@@ -678,7 +1444,7 @@ export function mountVoidBiome(
       onHud({
         speed: Math.round(speed),
         bearing,
-        place: landed ? "On the hull" : near < 160 ? "Meridian" : "open void",
+        place: landed ? "On the hull" : near < 480 ? "Meridian" : "open void",
       });
     }
   };
@@ -725,7 +1491,21 @@ declare global {
       getSpeed: () => number;
       setKeys: (codes: string[]) => void;
       setPose: (x: number, y: number, z: number, faceYaw: number) => void;
+      setLook: (faceYaw: number, facePitch: number) => void;
       isAboard: () => boolean;
+      getShip: () => {
+        x: number;
+        y: number;
+        z: number;
+        yaw: number;
+        bayOn: boolean;
+        bayX0: number;
+        bayX1: number;
+        bayDepth: number;
+        y0: number;
+        y1: number;
+        half: number;
+      };
       isLanded: () => boolean;
       isGrounded: () => boolean;
       getPose: () => { x: number; y: number; z: number; yaw: number; speed: number };
