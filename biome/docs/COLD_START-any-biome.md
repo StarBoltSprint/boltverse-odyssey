@@ -1,5 +1,7 @@
 Playable composite (any paint): paste [`COLD_START-biome-method.md`](COLD_START-biome-method.md) first. Section A is this road. Section B is the forest / open-ground world cook. Ordered densify kit for a road: [`COLD_START-biome-cook.md`](COLD_START-biome-cook.md). Lane props and path UI: [`COLD_START-imagine-engine.md`](COLD_START-imagine-engine.md) (laws 39–42). This paste stays the any-biome parity brief inside that method.
 
+**HARD — Law 59 exception:** [`59-invisible-depth-carrier.md`](59-invisible-depth-carrier.md) is the owner-approved 2026-09-29 invisible depth carrier exception. It is the only no-mesh exception: Imagine pixels on a dense depth-displaced carrier; no own pixels, no Three.js / procedural / mesh world.
+
 # COLD START — cook any biome (parity brief)
 
 You are cooking a **Lane biome** for Boltverse Odyssey for a **random player**. Read GitHub `main` first:
