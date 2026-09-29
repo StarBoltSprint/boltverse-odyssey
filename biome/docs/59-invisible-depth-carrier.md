@@ -8,6 +8,13 @@
 - Purpose is real parallax when Bolt turns. Each plate covers about **±20°**; cook one locked-off Imagine plate per **~40° heading**. No push-in, zoom, or dolly. Crossfade neighboring plates over **~15–25°**; clamp at plate edges. Heading 0 shows the center of its plate so the turn stays inside cooked pixels.
 - The carrier **NEVER draws its own pixels**: no own color, texture, lighting, shading, or procedural detail. Every visible pixel is an Imagine Video pixel.
 
+## Still Imagine image for static decor
+
+- The relief texture for static solid decor (rocks, hulls, wrecks, ground) may be a still Imagine IMAGE, or one locked frame of an Imagine plate. This is preferred: depth is computed on that exact frame (perfect match), with no loop snap and sharper detail.
+- Living elements (stars twinkle, dust, vapor, lights) stay separate keyed Imagine VIDEO layers that loop seamlessly: first frame = last frame, or ping-pong. **Never** hard-restart them.
+- **FAIL** a plate video with baked object drift / rotation that snaps back on loop, or depth computed on one frame while the pixels drift. Bolt stays `lock/bolt-gallop-cycle.mp4`.
+- **APPROACH:** moving toward an object never zooms a plate beyond **~1.3×**. Crossfade to a plate cooked closer on the same axis (far / mid / near). Otherwise keep the object as distant decor.
+
 ## BOLT LOCK
 
 - **NEVER apply this carrier to Bolt.** Bolt stays the keyed `lock/bolt-gallop-cycle.mp4` layer with the camera locked behind. No extrusion, no Blender, no `.glb`, no four-photo shell. All are **FAIL, Velum-class**.
