@@ -169,8 +169,6 @@ Later: script the pipeline — image → 8 views → QC → hull → placement. 
 
 ## Test 4 attempts that FAILED (2026-09-30)
 
-This supersedes *Next* item 2 below: a 360° Imagine turntable video is the first row here.
-
 | Attempt | Why it failed |
 | --- | --- |
 | Turntable video | One Imagine Video of the object spinning 360°. The object morphs, and the ring rotated like a carousel. |
@@ -188,7 +186,7 @@ This supersedes *Next* item 2 below: a 360° Imagine turntable video is the firs
 ## Next — not KEEP yet
 
 1. Approach test (sandbox only). Never zoom a plate past **~1.3×**. Crossfade to a closer plate of the same object on the same axis (far / mid / near). Law 59.
-2. One rock as a 360° Imagine turntable. Not a pasted copy.
+2. The turntable / rotation-video rock is **FAIL** (see the test 4 FAIL table). Next: the walk-around rock via the closed invisible hull method above, from **8 Imagine still views**, plus real free movement of Bolt around a fixed rock.
 3. First space zone only after approach passes QC.
 4. Ground biome later. Do not start it from this PR.
 
