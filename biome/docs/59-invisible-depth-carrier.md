@@ -35,3 +35,8 @@
 ## KEEP
 
 Reference: **“space void relief sandbox test passed owner QC (KEEP) 2026-09-29”** — parallax near > mid > far, crisp at ±20°, no halo, stable detail, Bolt clean.
+
+## Method writeup
+
+Step-by-step numbers (plate frame 12, depth, 138° outpaint, Bolt key, controls): [`60-imagine-relief-panorama-method.md`](60-imagine-relief-panorama-method.md). Review only. Not a hang. Test 2c panorama is KEEP. Test 2d 360° cylinder is FAIL (wrap pop, pasted copies, no parallax at the cylinder center).
+
