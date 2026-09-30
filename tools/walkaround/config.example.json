@@ -1,0 +1,25 @@
+{
+  "name": "rock",
+  "objectSize": [1.2, 1.6, 1.1],
+  "vote": 7,
+  "grid": 32,
+  "bgThreshold": 0.04,
+  "camera": {
+    "distance": 3.0,
+    "eyeY": 0.0,
+    "fovYDeg": 40
+  },
+  "placement": {
+    "position": [0, 0, 0]
+  },
+  "views": [
+    {"file": "yaw-000.png", "yawDeg": 0},
+    {"file": "yaw-045.png", "yawDeg": 45},
+    {"file": "yaw-090.png", "yawDeg": 90},
+    {"file": "yaw-135.png", "yawDeg": 135},
+    {"file": "yaw-180.png", "yawDeg": 180},
+    {"file": "yaw-225.png", "yawDeg": 225},
+    {"file": "yaw-270.png", "yawDeg": 270},
+    {"file": "yaw-315.png", "yawDeg": 315}
+  ]
+}
