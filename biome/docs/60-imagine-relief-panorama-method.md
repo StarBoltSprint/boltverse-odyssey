@@ -82,7 +82,7 @@ Imagine **image-to-image** still extension. Not a video, and not a camera pan.
 - Held keys: **30°/s**.
 - Drag: `Δheading = (Δx / canvasWidth) * fovX`. One screen width is the horizontal FOV. Uses the canvas rect, not a constant.
 - On-screen Left / Right buttons are the same hold.
-- Yaw is **clamped** to −31.27° .. +30.55°. Taking the clamp off was part of the 2d FAIL.
+- Yaw on the 138° plane is **clamped** to −31.27° .. +30.55°. The 2d ring is not clamped; see below.
 - Android copy menu, on `html`, `body`, the stage, the canvas, and the buttons:
   - `user-select: none`
   - `-webkit-user-select: none`
@@ -93,7 +93,7 @@ Imagine **image-to-image** still extension. Not a video, and not a camera pan.
 
 WebGL2 `MAX_TEXTURE_SIZE` minimum is **4096**. The 138° panorama is **3916**, so one texture is legal.
 
-A 360° attempt was **4636** wide. Uploading that as one image comes back black on a 4096 GPU. Split at `ceil(width/2)` (**2318 + 2318**) and choose the slice in the fragment shader. The split does not make a seam match. It only makes the upload show the pixels.
+The 2d KEEP ring is **4636** wide. Uploading that as one image comes back black on a 4096 GPU. Split at `ceil(width/2)` (**2318 + 2318**) and choose the slice in the fragment shader. The split does not make a seam match. It only makes the upload show the pixels.
 
 ## KEEP / FAIL
 
@@ -105,18 +105,37 @@ A 360° attempt was **4636** wide. Uploading that as one image comes back black 
 | T2b | FAIL | Asking Imagine to pan (yaw) returned a push-in / dolly. Hull morphed, debris broke. Do not ask Imagine to pan. |
 | Plate video as the texture | FAIL | Baked drift, loop snap. Use frame 12. |
 | T2c panorama | KEEP | 3916×720, center pixels unchanged, no visible seam, sides match, no stretch at ±31°, Bolt clean, Android menu fixed. |
-| T2d 360° cylinder | FAIL | (1) 0/360 wrap pops: readout jumped about 18° → 340°, the center wreck vanished, the view snapped to the start. The width was not one matched seam mapped to exactly 360°. (2) Pasted copies: the same asteroid and wreck repeated, and near 72° a stack of identical square rocks. Pasted pixels are FAIL. Imagine-only. (3) Flat: the camera sat at the cylinder center, pure yaw, no translation, so near and far scrolled together. No parallax. |
+| T2d 360° cylinder | KEEP | **4636×720** mapped to exactly 360°. Columns `0..31` and the last 32 columns are the same pixels (seam MAE 0). Heading is `((h % τ) + τ) % τ`. No clamp. Camera arm **2.05**: eye `(ARM·sin yaw, 0.02, −ARM + ARM·cos yaw)`, pivot ahead of the camera. Right half is Imagine-only outpaint, each pass a different object, black void between them. The big rock’s depth is clamped to **0.30**, blurred inside the silhouette, then a max-filter skirt of **~4 grid cells** (18 px; cell ≈ 4.58 px) into near-black, feathered down. **Tear is OFF.** |
 
-## Next — not done, not KEEP
+## Test 2d KEEP — full ring
 
-1. **2d fix** (sandbox only, still not a hang):
-   - column 0 and the last column are the same seam; the full image width maps to exactly 360°; heading wraps with modulo; no clamp
-   - delete every pasted duplicate; refill the right half only with Imagine outpaint passes, each pass different; black void between them is allowed
-   - camera on a short arm behind Bolt, pivot ahead of the camera (the test-1 orbit), so turning also translates; relief stays on the whole ring; near rocks must slide over far detail
-2. Approach test. Never zoom a plate past **~1.3×**. Crossfade to a closer plate on the same axis (far / mid / near). Law 59.
-3. One rock as a 360° Imagine turntable. Not a pasted copy.
-4. First space zone only after 2d passes QC.
-5. Ground biome later. Do not start it from this PR.
+Owner QC 2026-09-30. The 138° flat plane above stays the 2c KEEP. This is the ring that replaced it.
+
+- Width **4636×720**. `uArc = 2π`, so the full image is one turn. Not 3916.
+- Seam: copy columns `0..31` onto the last 32 columns. Those columns match exactly. The wrap is invisible.
+- Heading wraps with modulo. **No clamp.** `A`/`D`/drag still 30°/s and one screen = `fovX`.
+- Camera arm **2.05** behind the pivot (pivot is ahead of the eye). At heading 0 the eye is still the origin, so plate 0’s framing does not move. Turning translates the eye, so near relief slides over far relief.
+- Right of the locked plate (x ≥ 2635) is Imagine image-to-image only. Each pass is a different object. Black void between them is allowed. No pasted copies.
+- Big rock (center about heading **69°**): depth clamp **0.30**, gaussian blur inside the silhouette, then dilate that depth **~4 grid cells** into pixels with luminance under 0.03 and feather it down. Stretched triangles then sit on black texels.
+- Grid tear **OFF**. Discarding triangles with a depth jump removed interior triangles and shredded the rock. Do not turn it back on.
+
+### 2d attempts that FAILED before this KEEP
+
+| Attempt | Why it failed |
+| --- | --- |
+| Wrap pop | 0/360 snapped (readout about 18° → 340°). The width was not one matched seam mapped to exactly 360°. |
+| Pasted copies | The same asteroid and wreck repeated, and near 72° a stack of identical square rocks. |
+| Flat center yaw | Camera at the cylinder center, pure yaw, no translation. Near and far scrolled together. |
+| Smear | Depth-jump triangles stretched the rock into rubber fins and horizontal streaks. |
+| Shredded rock | The depth-jump tear punched black holes inside the rock, not only at the silhouette. |
+| Half rock | The Imagine pass was cut by its own frame edge (a straight vertical cut, left half black). Redo that gap as one new outpaint. Do not leave the cut. |
+
+## Next — not KEEP yet
+
+1. Approach test (sandbox only). Never zoom a plate past **~1.3×**. Crossfade to a closer plate of the same object on the same axis (far / mid / near). Law 59.
+2. One rock as a 360° Imagine turntable. Not a pasted copy.
+3. First space zone only after approach passes QC.
+4. Ground biome later. Do not start it from this PR.
 
 ## Do not
 
