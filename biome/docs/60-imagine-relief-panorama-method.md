@@ -130,10 +130,63 @@ Owner QC 2026-09-30. The 138° flat plane above stays the 2c KEEP. This is the r
 | Shredded rock | The depth-jump tear punched black holes inside the rock, not only at the silhouette. |
 | Half rock | The Imagine pass was cut by its own frame edge (a straight vertical cut, left half black). Redo that gap as one new outpaint. Do not leave the cut. |
 
+## Test 3 — FAR→MID rock handoff (PARKED)
+
+Status **PARKED — "better, not perfect"**. Sandbox only. Not KEEP.
+
+- The FAR→MID handoff was a **one-frame cut**. It is now a **smoothstep** crossfade over zoom **1.18× → 1.30×**.
+- Registration: within **~2 px** on the edges. About **12 px** off on the top contour, because the MID / NEAR stills are **different sculpts**.
+- Zoom cap **1.30×**. Never zoom a plate past it (law 59 approach).
+
+## Law 59 extension — closed invisible hull (walk-around objects)
+
+**Owner-approved 2026-09-30.** Extends [`59-invisible-depth-carrier.md`](59-invisible-depth-carrier.md). Everything else in law 59 stays.
+
+- For **walk-around objects**, the invisible depth carrier may be a **CLOSED invisible hull**.
+- The hull is computed in code: **silhouette carving** of the object's Imagine views, then **Depth Anything V2** refinement.
+- The Imagine views are projected onto the hull. The hull **never draws its own pixels**: no own color, texture, lighting, or shading. Every visible pixel is an Imagine pixel.
+- **Not for Bolt.** Bolt stays `lock/bolt-gallop-cycle.mp4`, keyed, screen-centered.
+- **Not a license** for procedural or mesh worlds, terrain generators, or modeled objects.
+
+## KEEP method — walk-around object from Imagine stills
+
+Validated for **rock construction**. Movement is still in progress (see the test 4 FAIL table, last row).
+
+1. **V0.** Start from one sharp Imagine still of the object. Full-res PNG, **1248×1584**, lossless.
+2. **8 views.** Cook one view every **45°**, progressively, with Imagine **IMAGE**. Each view is cooked from its neighbor + V0 as reference, with a **silhouette lock**: area **±15%**, height **±8%** vs its neighbors. No video.
+3. **QC.** Check every view against V0: same object, same features, no extra lobes. Reject and recook any view that differs.
+4. **Hull.** Voxel visual hull: keep a voxel when **7 of 8** silhouettes agree. Refine with Depth Anything V2, smooth, and close the underside with a **rounded cap**. No flat cut, no floor.
+5. **Texturing.**
+   - Each of the 8 photos is projected from its **FIXED world camera**.
+   - Per surface point, use **ONE** best-facing view. Weight `(normal · viewDir)^8`.
+   - Blend only in a **narrow seam band**.
+   - Fall back to the **nearest view**. Never black, never averaged.
+   - Native-res textures, mipmaps + max anisotropy. Close-up cap **1.30×**.
+   - Texture choice must **never** depend on the current camera yaw.
+6. **Placement.** Put the object at a **fixed world position** with a **collision radius**. The 360° ring holds **FAR content only** (stars, nebula, distant asteroids). Near objects are keyed out of the ring and live in the world.
+
+Later: script the pipeline — image → 8 views → QC → hull → placement. Budget **2–3** walk-around objects per clearing.
+
+## Test 4 attempts that FAILED (2026-09-30)
+
+| Attempt | Why it failed |
+| --- | --- |
+| Turntable video | One Imagine Video of the object spinning 360°. The object morphs, and the ring rotated like a carousel. |
+| Video wedges | Imagine Video rotation wedges between key views (fixed first / last frame). Still morphs. |
+| Card scroll | A single card with the 8 views scrolling past Bolt as the rotation center. No volume, no real movement. |
+| See-through crossfade | Crossfading between views. Ghosting. |
+| No silhouette lock | Views cooked without the silhouette lock. Lobes on the sides and back. |
+| Averaged views | All views averaged, facing angle up to 60° on one face. Marbled, streaky smear, although the source PNGs were sharp. |
+| 24 extra views | In-betweens + top + low, added without strict same-object QC. The hull was carved with holes, blocky staircase. |
+| Unkeyed props | Extra small props as unkeyed stills. "Photos in black frames". |
+| Blanked ring | Clearing the ghost near-rock by blanking the ring. The ring went black. Fix: key out only the near-rock patch and fill it from its neighbors. |
+| Letterbox | Landscape canvas letterboxed on a portrait phone. Black bands. Fix: `100dvh` / `100vw` canvas, ring extended only beyond its top / bottom edges, buttons as a transparent overlay. |
+| Camera-locked object | Camera locked rigidly behind Bolt, and the object attached to the camera. Bolt never moves on screen, and the object seems to rotate with the ring. HUD position / distance constant = **FAIL signal**. Movement must be proven with HUD **x, z, heading and distance** changing. |
+
 ## Next — not KEEP yet
 
 1. Approach test (sandbox only). Never zoom a plate past **~1.3×**. Crossfade to a closer plate of the same object on the same axis (far / mid / near). Law 59.
-2. One rock as a 360° Imagine turntable. Not a pasted copy.
+2. The turntable / rotation-video rock is **FAIL** (see the test 4 FAIL table). Next: the walk-around rock via the closed invisible hull method above, from **8 Imagine still views**, plus real free movement of Bolt around a fixed rock.
 3. First space zone only after approach passes QC.
 4. Ground biome later. Do not start it from this PR.
 
