@@ -1,0 +1,2261 @@
+{
+  "tool": "playcheck",
+  "url": "http://127.0.0.1:8080/packs/zone-a/play/index.html?debug=1",
+  "layout": "/workspace/odyssey/packs/zone-a/clearing.json",
+  "layoutId": "zone-a",
+  "viewport": {
+    "css": [
+      360,
+      800
+    ],
+    "dpr": 2,
+    "framebuffer": [
+      720,
+      1600
+    ]
+  },
+  "video": {
+    "file": "/workspace/odyssey/packs/zone-a/proof/playcheck/walk.mp4",
+    "width": 720,
+    "height": 1600,
+    "fps": 30,
+    "frames": 2210,
+    "seconds": 73.7,
+    "bytes": 13628485,
+    "codec": "h264"
+  },
+  "stills": [
+    "stills/01-spawn.png",
+    "stills/02-turn-180.png",
+    "stills/02-turn-225.png",
+    "stills/02-turn-270.png",
+    "stills/02-turn-315.png",
+    "stills/02-turn-045.png",
+    "stills/02-turn-090.png",
+    "stills/02-turn-135.png",
+    "stills/03-gate-start.png",
+    "stills/03-gate-end.png",
+    "stills/04-stop-000.png",
+    "stills/04-stop-045.png",
+    "stills/04-stop-090.png",
+    "stills/04-stop-135.png",
+    "stills/04-stop-180.png",
+    "stills/04-stop-225.png",
+    "stills/04-stop-270.png",
+    "stills/04-stop-315.png",
+    "stills/05-hero-00.png",
+    "stills/05-mid-00.png",
+    "stills/05-mid-01.png",
+    "stills/05-mid-02.png",
+    "stills/05-mid-03.png",
+    "stills/05-near-00.png",
+    "stills/05-near-01.png",
+    "stills/05-near-02.png",
+    "stills/05-near-03.png",
+    "stills/05-near-04.png",
+    "stills/05-near-05.png",
+    "stills/06-gallop.png",
+    "stills/07-idle.png"
+  ],
+  "steps": [
+    {
+      "id": "01-spawn",
+      "kind": "spawn",
+      "x": 0,
+      "z": 0,
+      "hdg": 182.59617982090626,
+      "spd": 0,
+      "mag": 0.9407600596125186,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "02-turn-180",
+      "kind": "turn",
+      "x": 0,
+      "z": 0,
+      "hdg": 187.59617982090626,
+      "spd": 0,
+      "mag": 0.9407600596125186,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "02-turn-225",
+      "kind": "turn",
+      "x": 0,
+      "z": 0,
+      "hdg": 217.59617982090626,
+      "spd": 0,
+      "mag": 0.9407600596125186,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "02-turn-270",
+      "kind": "turn",
+      "x": 0,
+      "z": 0,
+      "hdg": 262.5961798209063,
+      "spd": 0,
+      "mag": 0.9407600596125186,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "02-turn-315",
+      "kind": "turn",
+      "x": 0,
+      "z": 0,
+      "hdg": 307.5961798209063,
+      "spd": 0,
+      "mag": 0.9407600596125186,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "02-turn-045",
+      "kind": "turn",
+      "x": 0,
+      "z": 0,
+      "hdg": 37.596179820906286,
+      "spd": 0,
+      "mag": 0.9407600596125186,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "02-turn-090",
+      "kind": "turn",
+      "x": 0,
+      "z": 0,
+      "hdg": 82.59617982090629,
+      "spd": 0,
+      "mag": 0.9407600596125186,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "02-turn-135",
+      "kind": "turn",
+      "x": 0,
+      "z": 0,
+      "hdg": 127.59617982090629,
+      "spd": 0,
+      "mag": 0.9407600596125186,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "03-gate-start",
+      "kind": "gate",
+      "x": 0,
+      "z": 0,
+      "hdg": 238,
+      "spd": 0,
+      "mag": 0.9407600596125186,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "03-gate-end",
+      "kind": "gate",
+      "x": -1.9335496592366508,
+      "z": -1.2082159224517073,
+      "hdg": 238,
+      "spd": 2.85,
+      "mag": 0.9407600596125186,
+      "state": "GALLOP",
+      "blocked": false,
+      "pathTrigger": true
+    },
+    {
+      "id": "04-stop-000",
+      "kind": "stop",
+      "x": 0,
+      "z": 17.92,
+      "hdg": 0,
+      "spd": 0,
+      "mag": 0.9407600596125186,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "04-stop-045",
+      "kind": "stop",
+      "x": 12.671353518862933,
+      "z": 12.671353518862933,
+      "hdg": 45,
+      "spd": 0,
+      "mag": 0.9407600596125186,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "04-stop-090",
+      "kind": "stop",
+      "x": 4.115745873235715,
+      "z": 0.10707080047699646,
+      "hdg": 90,
+      "spd": 0,
+      "mag": 0.9407600596125186,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "04-stop-135",
+      "kind": "stop",
+      "x": 5.95858435954984,
+      "z": -6.075954710914072,
+      "hdg": 135,
+      "spd": 0,
+      "mag": 0.9407600596125186,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "04-stop-180",
+      "kind": "stop",
+      "x": 0.00011113101793364111,
+      "z": -7.40931888365153,
+      "hdg": 180,
+      "spd": 0,
+      "mag": 0.9407600596125186,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "04-stop-225",
+      "kind": "stop",
+      "x": -12.671353518862933,
+      "z": -12.671353518862933,
+      "hdg": 225,
+      "spd": 0,
+      "mag": 0.9407600596125186,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "04-stop-270",
+      "kind": "stop",
+      "x": -7.949951309468617,
+      "z": -0.08543685316178551,
+      "hdg": 270,
+      "spd": 0,
+      "mag": 0.9407600596125186,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "04-stop-315",
+      "kind": "stop",
+      "x": -4.0024575698543945,
+      "z": 4.032020684283443,
+      "hdg": 315,
+      "spd": 0,
+      "mag": 0.9407600596125186,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "05-hero-00",
+      "kind": "approach",
+      "x": -0.3227367214808486,
+      "z": -7.117686843954839,
+      "hdg": 182.59617982090626,
+      "spd": 0,
+      "mag": 0.9407600596125186,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "05-mid-00",
+      "kind": "approach",
+      "x": 2.5330962175165905,
+      "z": 3.6178507350913582,
+      "hdg": 34.5965216613065,
+      "spd": 0,
+      "mag": 0.9407600596125186,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "05-mid-01",
+      "kind": "approach",
+      "x": 5.841484495412689,
+      "z": -4.559074345725572,
+      "hdg": 127.97079267009968,
+      "spd": 0,
+      "mag": 0.9407600596125186,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "05-mid-02",
+      "kind": "approach",
+      "x": -4.110100623760345,
+      "z": 0.5010300382660785,
+      "hdg": 278.3896863684431,
+      "spd": 0,
+      "mag": 0.9407600596125186,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "05-mid-03",
+      "kind": "approach",
+      "x": -4.001533331759849,
+      "z": 3.9451548365969753,
+      "hdg": 313.87837350836446,
+      "spd": 0,
+      "mag": 0.9407600596125186,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "05-near-00",
+      "kind": "approach",
+      "x": 2.149499175258685,
+      "z": 3.361510567522021,
+      "hdg": 32.59665480657304,
+      "spd": 0,
+      "mag": 0.9407600596125186,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "05-near-01",
+      "kind": "approach",
+      "x": 3.6849013289583943,
+      "z": -0.38539226229992035,
+      "hdg": 95.97067894083204,
+      "spd": 0,
+      "mag": 0.9407600596125186,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "05-near-02",
+      "kind": "approach",
+      "x": 1.3982104683916485,
+      "z": -3.1211227925347633,
+      "hdg": 155.86842372922206,
+      "spd": 0,
+      "mag": 0.9407600596125186,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "05-near-03",
+      "kind": "approach",
+      "x": -4.01651849670062,
+      "z": 3.1913130786028834,
+      "hdg": 308.4687955091725,
+      "spd": 0,
+      "mag": 0.9407600596125186,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "05-near-04",
+      "kind": "approach",
+      "x": -3.5789968559319476,
+      "z": 0.958022184100772,
+      "hdg": 284.9855534389627,
+      "spd": 0,
+      "mag": 0.9407600596125186,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "05-near-05",
+      "kind": "approach",
+      "x": -1.2938656220660147,
+      "z": 2.5393723145761276,
+      "hdg": 333.0001647592475,
+      "spd": 0,
+      "mag": 0.9407600596125186,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "06-gallop",
+      "kind": "gallop",
+      "x": 1.6553774936962382,
+      "z": 4.548112284603798,
+      "hdg": 20,
+      "spd": 4.4,
+      "mag": 0.9407600596125186,
+      "state": "GALLOP",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "07-idle",
+      "kind": "idle",
+      "x": 1.6553774936962382,
+      "z": 4.548112284603798,
+      "hdg": 20,
+      "spd": 0,
+      "mag": 0.9407600596125186,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    }
+  ],
+  "rows": [
+    {
+      "id": "webgl_errors",
+      "result": "PASS",
+      "numbers": {
+        "count": 0
+      },
+      "detail": "No WebGL errors from gl.getError or the console during the walk.",
+      "heuristic": false,
+      "partial": false
+    },
+    {
+      "id": "webgl_clean",
+      "result": "PASS",
+      "numbers": {
+        "count": 0
+      },
+      "detail": "Doc 63 name for the same WebGL capture as webgl_errors.",
+      "heuristic": false,
+      "partial": false
+    },
+    {
+      "id": "mag_max",
+      "result": "PASS",
+      "numbers": {
+        "mag_max": 0.941,
+        "at": "01-spawn",
+        "limit": 1,
+        "missing": 0
+      },
+      "detail": "Peak magnification 0.9407600596125186 at 01-spawn, limit 1.",
+      "heuristic": false,
+      "partial": false
+    },
+    {
+      "id": "mag",
+      "result": "PASS",
+      "numbers": {
+        "mag_max": 0.941,
+        "at": "01-spawn",
+        "limit": 1,
+        "missing": 0
+      },
+      "detail": "Doc 63 name for the same HUD magnification peak as mag_max. Above the layout limit is FAIL.",
+      "heuristic": false,
+      "partial": false
+    },
+    {
+      "id": "stops_visible",
+      "result": "PASS",
+      "numbers": {
+        "stops": 8,
+        "invisible": 0,
+        "rows": [
+          {
+            "id": "04-stop-000",
+            "heading": 0,
+            "dist": 17.92,
+            "gap": 0.08,
+            "blocked": false,
+            "contact": true,
+            "frac": 0.801,
+            "pixels": 113271,
+            "label": "ring-13",
+            "color": {
+              "visible": true,
+              "samples": 80,
+              "std": 41.327,
+              "groundDiff": 999,
+              "meanL": 93.08,
+              "reason": "drawn"
+            },
+            "covered": true
+          },
+          {
+            "id": "04-stop-045",
+            "heading": 45,
+            "dist": 17.92,
+            "gap": 0.08,
+            "blocked": false,
+            "contact": true,
+            "frac": 0.8,
+            "pixels": 113124,
+            "label": "ring-19",
+            "color": {
+              "visible": true,
+              "samples": 80,
+              "std": 37.511,
+              "groundDiff": 999,
+              "meanL": 80.316,
+              "reason": "drawn"
+            },
+            "covered": true
+          },
+          {
+            "id": "04-stop-090",
+            "heading": 90,
+            "dist": 4.117,
+            "gap": 0.06,
+            "blocked": false,
+            "contact": true,
+            "frac": 0.418,
+            "pixels": 59146,
+            "label": "ring-25",
+            "color": {
+              "visible": true,
+              "samples": 19,
+              "std": 48.131,
+              "groundDiff": 999,
+              "meanL": 81.369,
+              "reason": "drawn"
+            },
+            "covered": true
+          },
+          {
+            "id": "04-stop-135",
+            "heading": 135,
+            "dist": 8.51,
+            "gap": 0.06,
+            "blocked": false,
+            "contact": true,
+            "frac": 0.466,
+            "pixels": 65949,
+            "label": "ring-31",
+            "color": {
+              "visible": true,
+              "samples": 33,
+              "std": 34.447,
+              "groundDiff": 999,
+              "meanL": 70.811,
+              "reason": "drawn"
+            },
+            "covered": true
+          },
+          {
+            "id": "04-stop-180",
+            "heading": 180,
+            "dist": 7.409,
+            "gap": 0.06,
+            "blocked": false,
+            "contact": true,
+            "frac": 0.55,
+            "pixels": 77728,
+            "label": "hero-00",
+            "color": {
+              "visible": true,
+              "samples": 80,
+              "std": 29.964,
+              "groundDiff": 999,
+              "meanL": 59.501,
+              "reason": "drawn"
+            },
+            "covered": true
+          },
+          {
+            "id": "04-stop-225",
+            "heading": 225,
+            "dist": 17.92,
+            "gap": 0.08,
+            "blocked": false,
+            "contact": true,
+            "frac": 0.757,
+            "pixels": 107026,
+            "label": "exit-to-path-b",
+            "color": {
+              "visible": true,
+              "samples": 80,
+              "std": 35.369,
+              "groundDiff": 999,
+              "meanL": 76.073,
+              "reason": "drawn"
+            },
+            "covered": true
+          },
+          {
+            "id": "04-stop-270",
+            "heading": 270,
+            "dist": 7.95,
+            "gap": 0.06,
+            "blocked": false,
+            "contact": true,
+            "frac": 0.45,
+            "pixels": 63647,
+            "label": "ring-02",
+            "color": {
+              "visible": true,
+              "samples": 24,
+              "std": 42.393,
+              "groundDiff": 999,
+              "meanL": 78.936,
+              "reason": "drawn"
+            },
+            "covered": true
+          },
+          {
+            "id": "04-stop-315",
+            "heading": 315,
+            "dist": 5.681,
+            "gap": 0.06,
+            "blocked": false,
+            "contact": true,
+            "frac": 0.503,
+            "pixels": 71165,
+            "label": "mid-03",
+            "color": {
+              "visible": true,
+              "samples": 24,
+              "std": 41.245,
+              "groundDiff": 999,
+              "meanL": 74.74,
+              "reason": "drawn"
+            },
+            "covered": true
+          }
+        ]
+      },
+      "detail": "Every stop has a layout object covering the view ahead, and those pixels are not empty ground or flat black.",
+      "heuristic": false,
+      "partial": true
+    },
+    {
+      "id": "collider_eq_visual",
+      "result": "PASS",
+      "numbers": {
+        "tolerance_m": 0.5,
+        "stops": 8,
+        "bad": 0,
+        "rows": [
+          {
+            "id": "04-stop-000",
+            "heading": 0,
+            "dist": 17.92,
+            "gap": 0.08,
+            "surface": "edge_ring",
+            "near": true,
+            "visible": true
+          },
+          {
+            "id": "04-stop-045",
+            "heading": 45,
+            "dist": 17.92,
+            "gap": 0.08,
+            "surface": "edge_ring",
+            "near": true,
+            "visible": true
+          },
+          {
+            "id": "04-stop-090",
+            "heading": 90,
+            "dist": 4.117,
+            "gap": 0.06,
+            "surface": "near-01",
+            "near": true,
+            "visible": true
+          },
+          {
+            "id": "04-stop-135",
+            "heading": 135,
+            "dist": 8.51,
+            "gap": 0.06,
+            "surface": "mid-01",
+            "near": true,
+            "visible": true
+          },
+          {
+            "id": "04-stop-180",
+            "heading": 180,
+            "dist": 7.409,
+            "gap": 0.06,
+            "surface": "hero-00",
+            "near": true,
+            "visible": true
+          },
+          {
+            "id": "04-stop-225",
+            "heading": 225,
+            "dist": 17.92,
+            "gap": 0.08,
+            "surface": "edge_ring",
+            "near": true,
+            "visible": true
+          },
+          {
+            "id": "04-stop-270",
+            "heading": 270,
+            "dist": 7.95,
+            "gap": 0.06,
+            "surface": "mid-02",
+            "near": true,
+            "visible": true
+          },
+          {
+            "id": "04-stop-315",
+            "heading": 315,
+            "dist": 5.681,
+            "gap": 0.06,
+            "surface": "near-03",
+            "near": true,
+            "visible": true
+          }
+        ]
+      },
+      "detail": "Stop must be within 0.5 m of a layout surface AND that surface must be visible. Data distance without pixels is FAIL.",
+      "heuristic": false,
+      "partial": true
+    },
+    {
+      "id": "layout_rendered",
+      "result": "PASS",
+      "numbers": {
+        "objects": 57,
+        "missing": [],
+        "rows": [
+          {
+            "id": "ring-00",
+            "kind": "edge",
+            "facing": 4,
+            "saw": true
+          },
+          {
+            "id": "ring-01",
+            "kind": "edge",
+            "facing": 3,
+            "saw": true
+          },
+          {
+            "id": "ring-02",
+            "kind": "edge",
+            "facing": 3,
+            "saw": true
+          },
+          {
+            "id": "ring-03",
+            "kind": "edge",
+            "facing": 2,
+            "saw": true
+          },
+          {
+            "id": "ring-04",
+            "kind": "edge",
+            "facing": 3,
+            "saw": true
+          },
+          {
+            "id": "ring-05",
+            "kind": "edge",
+            "facing": 2,
+            "saw": true
+          },
+          {
+            "id": "ring-06",
+            "kind": "edge",
+            "facing": 3,
+            "saw": true
+          },
+          {
+            "id": "ring-07",
+            "kind": "edge",
+            "facing": 3,
+            "saw": true
+          },
+          {
+            "id": "ring-08",
+            "kind": "edge",
+            "facing": 4,
+            "saw": true
+          },
+          {
+            "id": "ring-09",
+            "kind": "edge",
+            "facing": 3,
+            "saw": true
+          },
+          {
+            "id": "ring-10",
+            "kind": "edge",
+            "facing": 2,
+            "saw": true
+          },
+          {
+            "id": "ring-11",
+            "kind": "edge",
+            "facing": 2,
+            "saw": true
+          },
+          {
+            "id": "ring-12",
+            "kind": "edge",
+            "facing": 3,
+            "saw": true
+          },
+          {
+            "id": "ring-13",
+            "kind": "edge",
+            "facing": 3,
+            "saw": true
+          },
+          {
+            "id": "ring-14",
+            "kind": "edge",
+            "facing": 2,
+            "saw": true
+          },
+          {
+            "id": "ring-15",
+            "kind": "edge",
+            "facing": 2,
+            "saw": true
+          },
+          {
+            "id": "ring-16",
+            "kind": "edge",
+            "facing": 3,
+            "saw": true
+          },
+          {
+            "id": "ring-17",
+            "kind": "edge",
+            "facing": 4,
+            "saw": true
+          },
+          {
+            "id": "ring-18",
+            "kind": "edge",
+            "facing": 3,
+            "saw": true
+          },
+          {
+            "id": "ring-19",
+            "kind": "edge",
+            "facing": 3,
+            "saw": true
+          },
+          {
+            "id": "ring-20",
+            "kind": "edge",
+            "facing": 2,
+            "saw": true
+          },
+          {
+            "id": "ring-21",
+            "kind": "edge",
+            "facing": 3,
+            "saw": true
+          },
+          {
+            "id": "ring-22",
+            "kind": "edge",
+            "facing": 3,
+            "saw": true
+          },
+          {
+            "id": "ring-23",
+            "kind": "edge",
+            "facing": 3,
+            "saw": true
+          },
+          {
+            "id": "ring-24",
+            "kind": "edge",
+            "facing": 3,
+            "saw": true
+          },
+          {
+            "id": "ring-25",
+            "kind": "edge",
+            "facing": 4,
+            "saw": true
+          },
+          {
+            "id": "ring-26",
+            "kind": "edge",
+            "facing": 3,
+            "saw": true
+          },
+          {
+            "id": "ring-27",
+            "kind": "edge",
+            "facing": 2,
+            "saw": true
+          },
+          {
+            "id": "ring-28",
+            "kind": "edge",
+            "facing": 2,
+            "saw": true
+          },
+          {
+            "id": "ring-29",
+            "kind": "edge",
+            "facing": 4,
+            "saw": true
+          },
+          {
+            "id": "ring-30",
+            "kind": "edge",
+            "facing": 4,
+            "saw": true
+          },
+          {
+            "id": "ring-31",
+            "kind": "edge",
+            "facing": 3,
+            "saw": true
+          },
+          {
+            "id": "ring-32",
+            "kind": "edge",
+            "facing": 2,
+            "saw": true
+          },
+          {
+            "id": "ring-33",
+            "kind": "edge",
+            "facing": 2,
+            "saw": true
+          },
+          {
+            "id": "ring-34",
+            "kind": "edge",
+            "facing": 3,
+            "saw": true
+          },
+          {
+            "id": "ring-35",
+            "kind": "edge",
+            "facing": 2,
+            "saw": true
+          },
+          {
+            "id": "ring-36",
+            "kind": "edge",
+            "facing": 3,
+            "saw": true
+          },
+          {
+            "id": "ring-37",
+            "kind": "edge",
+            "facing": 4,
+            "saw": true
+          },
+          {
+            "id": "ring-38",
+            "kind": "edge",
+            "facing": 5,
+            "saw": true
+          },
+          {
+            "id": "ring-39",
+            "kind": "edge",
+            "facing": 4,
+            "saw": true
+          },
+          {
+            "id": "ring-40",
+            "kind": "edge",
+            "facing": 2,
+            "saw": true
+          },
+          {
+            "id": "ring-41",
+            "kind": "edge",
+            "facing": 3,
+            "saw": true
+          },
+          {
+            "id": "ring-42",
+            "kind": "edge",
+            "facing": 4,
+            "saw": true
+          },
+          {
+            "id": "exit-to-path-a",
+            "kind": "edge",
+            "facing": 3,
+            "saw": true
+          },
+          {
+            "id": "exit-to-path-b",
+            "kind": "edge",
+            "facing": 4,
+            "saw": true
+          },
+          {
+            "id": "gate:to-path",
+            "kind": "gate",
+            "facing": 6,
+            "saw": true
+          },
+          {
+            "id": "hero-00",
+            "kind": "interior",
+            "facing": 1,
+            "saw": true
+          },
+          {
+            "id": "mid-00",
+            "kind": "interior",
+            "facing": 1,
+            "saw": true
+          },
+          {
+            "id": "mid-01",
+            "kind": "interior",
+            "facing": 1,
+            "saw": true
+          },
+          {
+            "id": "mid-02",
+            "kind": "interior",
+            "facing": 1,
+            "saw": true
+          },
+          {
+            "id": "mid-03",
+            "kind": "interior",
+            "facing": 1,
+            "saw": true
+          },
+          {
+            "id": "near-00",
+            "kind": "interior",
+            "facing": 1,
+            "saw": true
+          },
+          {
+            "id": "near-01",
+            "kind": "interior",
+            "facing": 1,
+            "saw": true
+          },
+          {
+            "id": "near-02",
+            "kind": "interior",
+            "facing": 1,
+            "saw": true
+          },
+          {
+            "id": "near-03",
+            "kind": "interior",
+            "facing": 1,
+            "saw": true
+          },
+          {
+            "id": "near-04",
+            "kind": "interior",
+            "facing": 1,
+            "saw": true
+          },
+          {
+            "id": "near-05",
+            "kind": "interior",
+            "facing": 1,
+            "saw": true
+          }
+        ]
+      },
+      "detail": "Every layout object wrote visible pixels on a frame that faced it.",
+      "heuristic": false,
+      "partial": true
+    },
+    {
+      "id": "ring_closed",
+      "result": "PASS",
+      "numbers": {
+        "dataHits": 345,
+        "dataMisses": [],
+        "dataMissCount": 0,
+        "gateSkip": 15,
+        "renderHeadings": 36,
+        "renderMiss": 0,
+        "renderMissDeg": []
+      },
+      "detail": "Data rays and the 36 rendered headings both have to close. A collider ring with no pixels is FAIL. Gate span is the allowed opening.",
+      "heuristic": false,
+      "partial": false
+    },
+    {
+      "id": "gate",
+      "result": "PASS",
+      "numbers": {
+        "id": "to-path",
+        "pixels": 25495,
+        "color": "drawn",
+        "bearing_deg": 0,
+        "dist_m": 15.72,
+        "layoutDist": 18,
+        "pathTrigger": true
+      },
+      "detail": "The gate frame must be visible from the centre, the HUD bearing and distance must match, and walking the opening must hit the path trigger.",
+      "heuristic": false,
+      "partial": false
+    },
+    {
+      "id": "near_lens",
+      "result": "PASS",
+      "numbers": {
+        "cull_m": 1.2,
+        "nearest_m": 2.68,
+        "at": "01-spawn",
+        "missing": 0,
+        "samples": 67
+      },
+      "detail": "Nearest non-hero fragment that passed alpha must stay outside near_lens.cull_m. Partial: the distance is the renderer’s fragment metric, cross-checked only by being present on every frame.",
+      "heuristic": true,
+      "partial": true
+    },
+    {
+      "id": "fog_band",
+      "result": "PASS",
+      "numbers": {
+        "patches": 28,
+        "fogPixels": 433282,
+        "colored": true,
+        "streakFrac": 0,
+        "streakSamples": 200
+      },
+      "detail": "Fog must be in the file (20+ patches) and in the picture. Hard streak edges are a heuristic FAIL.",
+      "heuristic": true,
+      "partial": true
+    },
+    {
+      "id": "black_regions",
+      "result": "PASS",
+      "numbers": {
+        "hits": [],
+        "hitCount": 0,
+        "skyBandsIgnored": 0,
+        "scanned": 31
+      },
+      "detail": "Large flat near-black rectangles are FAIL. A full-width night-sky band that touches the top is ignored. Heuristic.",
+      "heuristic": true,
+      "partial": false
+    },
+    {
+      "id": "tile_repeat",
+      "result": "PASS",
+      "numbers": {
+        "scanned": 18,
+        "worstPeak": 0.966,
+        "worstLag": 4,
+        "worstAt": "04-stop-225",
+        "flagged": []
+      },
+      "detail": "Autocorrelation on the ground band. Obvious tile or checker repetition is FAIL. A smooth gradient is not. Heuristic.",
+      "heuristic": true,
+      "partial": false
+    },
+    {
+      "id": "backdrop_res",
+      "result": "PASS",
+      "numbers": {
+        "mag": 0.894,
+        "magW": 0.894,
+        "magH": 0.877,
+        "slice": 805.093,
+        "sourceW": 12768,
+        "sourceH": 912,
+        "screenW": 720,
+        "screenH": 800,
+        "fovDeg": 22.7,
+        "at": "01-spawn",
+        "missing": 0
+      },
+      "detail": "Backdrop magnification is on-screen pixels divided by the source pixels of the visible ring slice (and by source height). Above 1.0 is an upscale, FAIL. The sizes come from the live renderer, not from a hand-written table.",
+      "heuristic": false,
+      "partial": true
+    },
+    {
+      "id": "single_hero",
+      "result": "PASS",
+      "numbers": {
+        "frames": 67,
+        "heroCount": 1,
+        "blobs": 1
+      },
+      "detail": "One hero on every captured frame.",
+      "heuristic": false,
+      "partial": false
+    },
+    {
+      "id": "single_bolt",
+      "result": "PASS",
+      "numbers": {
+        "single_hero": "PASS",
+        "idle_gallop_switch": "PASS"
+      },
+      "detail": "Doc 63 single_bolt: one hero in frame, and both idle and gallop captured.",
+      "heuristic": false,
+      "partial": false
+    },
+    {
+      "id": "idle_gallop_switch",
+      "result": "PASS",
+      "numbers": {
+        "gallop": {
+          "state": "GALLOP",
+          "spd": 4.4
+        },
+        "idle": {
+          "state": "IDLE",
+          "spd": 0
+        },
+        "movingWhileIdle": []
+      },
+      "detail": "State is GALLOP while moving and IDLE after the stop.",
+      "heuristic": false,
+      "partial": false
+    },
+    {
+      "id": "fullscreen",
+      "result": "PASS",
+      "numbers": {
+        "width": 720,
+        "height": 1600,
+        "frames": 67
+      },
+      "detail": "Canvas backing store and screenshots are 720×1600.",
+      "heuristic": false,
+      "partial": false
+    },
+    {
+      "id": "debug_hook",
+      "result": "PASS",
+      "numbers": {
+        "frames": 67,
+        "labels": [
+          "",
+          "hero",
+          "ground",
+          "fog",
+          "ring-00",
+          "ring-01",
+          "ring-02",
+          "ring-03",
+          "ring-04",
+          "ring-05",
+          "ring-06",
+          "ring-07",
+          "ring-08",
+          "ring-09",
+          "ring-10",
+          "ring-11",
+          "ring-12",
+          "ring-13",
+          "ring-14",
+          "ring-15",
+          "ring-16",
+          "ring-17",
+          "ring-18",
+          "ring-19",
+          "ring-20",
+          "ring-21",
+          "ring-22",
+          "ring-23",
+          "ring-24",
+          "ring-25",
+          "ring-26",
+          "ring-27",
+          "ring-28",
+          "ring-29",
+          "ring-30",
+          "ring-31",
+          "ring-32",
+          "ring-33",
+          "ring-34",
+          "ring-35",
+          "ring-36",
+          "ring-37",
+          "ring-38",
+          "ring-39",
+          "ring-40",
+          "ring-41",
+          "ring-42",
+          "exit-to-path-a",
+          "exit-to-path-b",
+          "hero-00",
+          "mid-00",
+          "mid-01",
+          "mid-02",
+          "mid-03",
+          "near-01",
+          "near-02",
+          "near-03",
+          "near-04",
+          "gate:to-path"
+        ]
+      },
+      "detail": "snapshot() and object-ID buffer present on every captured step.",
+      "heuristic": false,
+      "partial": false
+    },
+    {
+      "id": "fps_avg",
+      "result": "PASS",
+      "numbers": {
+        "fpsAvg": 29.99999999999998,
+        "min": 30,
+        "samples": 67
+      },
+      "detail": "Average FPS is the inverse of the mean present interval over the last 300 frames. A mid-range phone needs at least 30. Within budget.",
+      "heuristic": false,
+      "partial": false
+    },
+    {
+      "id": "fps_1low",
+      "result": "PASS",
+      "numbers": {
+        "fps1Low": 29.999999999999996,
+        "min": 20,
+        "samples": 67
+      },
+      "detail": "1% low is the inverse of the mean of the slowest 1% of those intervals (at least one frame). A mid-range phone needs at least 20. Within budget.",
+      "heuristic": false,
+      "partial": false
+    },
+    {
+      "id": "frame_ms",
+      "result": "PASS",
+      "numbers": {
+        "frameMsAvg": 33.33333333333336,
+        "frameMs": 33.333333333333336,
+        "max": 33.333
+      },
+      "detail": "Mean present-frame time must stay at or under 33.333 ms, the same 30 FPS budget. Within budget.",
+      "heuristic": false,
+      "partial": false
+    },
+    {
+      "id": "js_heap",
+      "result": "PASS",
+      "numbers": {
+        "heapBytes": null,
+        "max": 402653184,
+        "available": false
+      },
+      "detail": "performance.memory was not reported. The 384 MiB mid-range tab budget was not measured. A reported heap above that budget is FAIL.",
+      "heuristic": false,
+      "partial": true
+    },
+    {
+      "id": "texture_mem",
+      "result": "PASS",
+      "numbers": {
+        "textureBytes": 204790784,
+        "max": 268435456
+      },
+      "detail": "Estimated GPU texture memory is the sum of registered textures (width × height × bytes per pixel, one slot per id). Mid-range phone budget is 256 MiB. Within budget.",
+      "heuristic": false,
+      "partial": false
+    },
+    {
+      "id": "video_decoders",
+      "result": "PASS",
+      "numbers": {
+        "videoDecoders": 3,
+        "max": 6
+      },
+      "detail": "Concurrent video decoders (registered ids, or video elements with a source, whichever is larger). Mid-range phone budget is 6. Within budget.",
+      "heuristic": false,
+      "partial": false
+    },
+    {
+      "id": "draw_calls",
+      "result": "PASS",
+      "numbers": {
+        "drawCalls": 24,
+        "max": 150
+      },
+      "detail": "Peak draw calls in a presented frame. Mid-range phone budget is 150. Instanced fog is one draw. Within budget.",
+      "heuristic": false,
+      "partial": false
+    },
+    {
+      "id": "bolt_grounded",
+      "result": "PASS",
+      "numbers": {
+        "frames": 67,
+        "bad": 0,
+        "rows": []
+      },
+      "detail": "Hero bbox is fully on screen, feet are within 5% of the ground, and the sprite quad matches the source aspect.",
+      "heuristic": false,
+      "partial": false
+    }
+  ],
+  "summary": {
+    "passed": 27,
+    "failed": 0,
+    "result": "PASS"
+  },
+  "notes": [
+    "Heuristic rows: black_regions, tile_repeat, fog_band streak test. Partial rows: stops are every 45° (8 headings) rather than 36 walked headings; ring coverage is sampled every 10° from the centre; backdrop size is reported by the renderer; near_lens uses the renderer's nearest fragment distance. A data-only agreement is not a PASS."
+  ],
+  "generatedAt": "2026-10-01T20:51:09.342Z",
+  "perf": {
+    "schema": "playcheck-perf/1",
+    "thresholds": {
+      "fpsAvgMin": 30,
+      "fps1LowMin": 20,
+      "frameMsMax": 33.333333333333336,
+      "heapBytesMax": 402653184,
+      "textureBytesMax": 268435456,
+      "videoDecodersMax": 6,
+      "drawCallsMax": 150
+    },
+    "budgetApplied": true,
+    "harness": false,
+    "aggregate": {
+      "fpsAvg": 29.99999999999998,
+      "fps1Low": 29.999999999999996,
+      "frameMs": 33.333333333333336,
+      "frameMsAvg": 33.33333333333336,
+      "heapBytes": null,
+      "heapAvailable": false,
+      "textureBytes": 204790784,
+      "videoDecoders": 3,
+      "drawCalls": 24,
+      "samples": 67
+    },
+    "samples": [
+      {
+        "step": "01-spawn",
+        "fpsAvg": 29.999999999999996,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.333333333333336,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      },
+      {
+        "step": "02-turn-180",
+        "fpsAvg": 29.999999999999993,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333334,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      },
+      {
+        "step": "02-turn-225",
+        "fpsAvg": 29.999999999999986,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333335,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 23,
+        "scripted": false
+      },
+      {
+        "step": "02-turn-270",
+        "fpsAvg": 30.000000000000004,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333333,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 23,
+        "scripted": false
+      },
+      {
+        "step": "02-turn-315",
+        "fpsAvg": 30.000000000000018,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.333333333333314,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      },
+      {
+        "step": "02-turn-045",
+        "fpsAvg": 30.000000000000025,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333331,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      },
+      {
+        "step": "02-turn-090",
+        "fpsAvg": 30.000000000000004,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333333,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      },
+      {
+        "step": "02-turn-135",
+        "fpsAvg": 29.999999999999993,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333334,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 21,
+        "scripted": false
+      },
+      {
+        "step": "03-gate-start",
+        "fpsAvg": 29.99999999999997,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.333333333333364,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      },
+      {
+        "step": "03-gate-end",
+        "fpsAvg": 29.999999999999954,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.333333333333385,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 23,
+        "scripted": false
+      },
+      {
+        "step": "04-stop-000",
+        "fpsAvg": 29.999999999999993,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333334,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 23,
+        "scripted": false
+      },
+      {
+        "step": "04-stop-045",
+        "fpsAvg": 29.999999999999993,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333334,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 24,
+        "scripted": false
+      },
+      {
+        "step": "04-stop-090",
+        "fpsAvg": 29.999999999999993,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333334,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      },
+      {
+        "step": "04-stop-135",
+        "fpsAvg": 29.999999999999993,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333334,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 23,
+        "scripted": false
+      },
+      {
+        "step": "04-stop-180",
+        "fpsAvg": 29.999999999999993,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333334,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 23,
+        "scripted": false
+      },
+      {
+        "step": "04-stop-225",
+        "fpsAvg": 29.999999999999993,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333334,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 24,
+        "scripted": false
+      },
+      {
+        "step": "04-stop-270",
+        "fpsAvg": 29.999999999999993,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333334,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      },
+      {
+        "step": "04-stop-315",
+        "fpsAvg": 29.999999999999993,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333334,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 23,
+        "scripted": false
+      },
+      {
+        "step": "05-hero-00",
+        "fpsAvg": 29.999999999999993,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333334,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 23,
+        "scripted": false
+      },
+      {
+        "step": "05-mid-00",
+        "fpsAvg": 29.999999999999993,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333334,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      },
+      {
+        "step": "05-mid-01",
+        "fpsAvg": 29.999999999999993,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333334,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 23,
+        "scripted": false
+      },
+      {
+        "step": "05-mid-02",
+        "fpsAvg": 29.999999999999993,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333334,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 23,
+        "scripted": false
+      },
+      {
+        "step": "05-mid-03",
+        "fpsAvg": 29.999999999999993,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333334,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 23,
+        "scripted": false
+      },
+      {
+        "step": "05-near-00",
+        "fpsAvg": 29.999999999999993,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333334,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      },
+      {
+        "step": "05-near-01",
+        "fpsAvg": 29.999999999999993,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333334,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      },
+      {
+        "step": "05-near-02",
+        "fpsAvg": 29.999999999999993,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333334,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      },
+      {
+        "step": "05-near-03",
+        "fpsAvg": 29.999999999999993,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333334,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 23,
+        "scripted": false
+      },
+      {
+        "step": "05-near-04",
+        "fpsAvg": 29.999999999999993,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333334,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 23,
+        "scripted": false
+      },
+      {
+        "step": "05-near-05",
+        "fpsAvg": 29.999999999999993,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333334,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 23,
+        "scripted": false
+      },
+      {
+        "step": "06-gallop",
+        "fpsAvg": 29.999999999999993,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333334,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 23,
+        "scripted": false
+      },
+      {
+        "step": "07-idle",
+        "fpsAvg": 29.999999999999993,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333334,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 23,
+        "scripted": false
+      },
+      {
+        "step": "ring-start",
+        "fpsAvg": 29.999999999999996,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.333333333333336,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      },
+      {
+        "step": "ring-190",
+        "fpsAvg": 29.999999999999993,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333334,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      },
+      {
+        "step": "ring-200",
+        "fpsAvg": 29.999999999999993,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333334,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      },
+      {
+        "step": "ring-210",
+        "fpsAvg": 29.999999999999993,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333334,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      },
+      {
+        "step": "ring-220",
+        "fpsAvg": 29.999999999999986,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333335,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 23,
+        "scripted": false
+      },
+      {
+        "step": "ring-230",
+        "fpsAvg": 29.999999999999986,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333335,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 23,
+        "scripted": false
+      },
+      {
+        "step": "ring-240",
+        "fpsAvg": 29.999999999999993,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333334,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      },
+      {
+        "step": "ring-250",
+        "fpsAvg": 29.999999999999996,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.333333333333336,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 21,
+        "scripted": false
+      },
+      {
+        "step": "ring-260",
+        "fpsAvg": 29.999999999999996,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.333333333333336,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 21,
+        "scripted": false
+      },
+      {
+        "step": "ring-270",
+        "fpsAvg": 30.000000000000004,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333333,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      },
+      {
+        "step": "ring-280",
+        "fpsAvg": 30.000000000000004,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333333,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      },
+      {
+        "step": "ring-290",
+        "fpsAvg": 30.00000000000001,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333332,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 21,
+        "scripted": false
+      },
+      {
+        "step": "ring-300",
+        "fpsAvg": 30.00000000000001,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333332,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      },
+      {
+        "step": "ring-310",
+        "fpsAvg": 30.000000000000018,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.333333333333314,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      },
+      {
+        "step": "ring-320",
+        "fpsAvg": 30.000000000000018,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.333333333333314,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      },
+      {
+        "step": "ring-330",
+        "fpsAvg": 30.000000000000018,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.333333333333314,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 23,
+        "scripted": false
+      },
+      {
+        "step": "ring-340",
+        "fpsAvg": 30.000000000000025,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333331,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 23,
+        "scripted": false
+      },
+      {
+        "step": "ring-350",
+        "fpsAvg": 30.000000000000025,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333331,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      },
+      {
+        "step": "ring-0",
+        "fpsAvg": 30.000000000000025,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333331,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 21,
+        "scripted": false
+      },
+      {
+        "step": "ring-10",
+        "fpsAvg": 30.000000000000025,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333331,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 21,
+        "scripted": false
+      },
+      {
+        "step": "ring-20",
+        "fpsAvg": 30.00000000000003,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.3333333333333,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 20,
+        "scripted": false
+      },
+      {
+        "step": "ring-30",
+        "fpsAvg": 30.00000000000003,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.3333333333333,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      },
+      {
+        "step": "ring-40",
+        "fpsAvg": 30.000000000000025,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333331,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      },
+      {
+        "step": "ring-50",
+        "fpsAvg": 30.000000000000018,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.333333333333314,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      },
+      {
+        "step": "ring-60",
+        "fpsAvg": 30.000000000000018,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.333333333333314,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      },
+      {
+        "step": "ring-70",
+        "fpsAvg": 30.00000000000001,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333332,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      },
+      {
+        "step": "ring-80",
+        "fpsAvg": 30.000000000000004,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333333,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 23,
+        "scripted": false
+      },
+      {
+        "step": "ring-90",
+        "fpsAvg": 30.000000000000004,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333333,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      },
+      {
+        "step": "ring-100",
+        "fpsAvg": 29.999999999999996,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.333333333333336,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      },
+      {
+        "step": "ring-110",
+        "fpsAvg": 29.999999999999996,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.333333333333336,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 21,
+        "scripted": false
+      },
+      {
+        "step": "ring-120",
+        "fpsAvg": 29.999999999999993,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333334,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 21,
+        "scripted": false
+      },
+      {
+        "step": "ring-130",
+        "fpsAvg": 29.999999999999993,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333334,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 21,
+        "scripted": false
+      },
+      {
+        "step": "ring-140",
+        "fpsAvg": 29.999999999999986,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333335,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      },
+      {
+        "step": "ring-150",
+        "fpsAvg": 29.999999999999986,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333335,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      },
+      {
+        "step": "ring-160",
+        "fpsAvg": 29.99999999999998,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333336,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 23,
+        "scripted": false
+      },
+      {
+        "step": "ring-170",
+        "fpsAvg": 29.99999999999998,
+        "fps1Low": 29.999999999999996,
+        "frameMs": 33.333333333333336,
+        "frameMsAvg": 33.33333333333336,
+        "heapBytes": 0,
+        "textureBytes": 204790784,
+        "videoDecoders": 3,
+        "drawCalls": 22,
+        "scripted": false
+      }
+    ]
+  }
+}

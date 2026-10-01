@@ -82,6 +82,7 @@ function finish(layout, frames, extras) {
   rows.push(rowBlack(frames));
   rows.push(rowTiles(frames));
   rows.push(rowBackdrop(frames, layout));
+  rows.push(rowBoltGrounded(frames));
   pushTransition(rows, frames);
   const perf = judgePerf(frames);
   for (const perfRow of perf.rows) rows.push(perfRow);
@@ -616,6 +617,100 @@ function rowTiles(frames) {
     "Autocorrelation on the ground band. Obvious tile or checker repetition is FAIL. A smooth gradient is not. Heuristic.",
     { heuristic: true },
   );
+}
+
+function rowBoltGrounded(frames) {
+  if (!frames.length) return row("bolt_grounded", "FAIL", {}, "No frame to measure Bolt's feet.");
+  const bad = [];
+  let checked = 0;
+  for (const f of frames) {
+    if (!f.ids || !f.snap) continue;
+    const box = labelBox(f.ids, "hero");
+    checked++;
+    const src = f.snap.boltSource || {};
+    const quad = f.snap.boltQuad || {};
+    const sw = Number(src.w);
+    const sh = Number(src.h);
+    const qw = Number(quad.w);
+    const qh = Number(quad.h);
+    const srcAspect = sw > 0 && sh > 0 ? sw / sh : null;
+    const quadAspect = qw > 0 && qh > 0 ? qw / qh : null;
+    const aspectErr = srcAspect && quadAspect ? Math.abs(quadAspect - srcAspect) / srcAspect : 1;
+    const screenH = f.ids.height || f.height || 1600;
+    const screenW = f.ids.width || f.width || 720;
+    const onScreen = !!(box && box.minX > 1 && box.minY > 1 && box.maxX < screenW - 2 && box.maxY < screenH - 2);
+    const ground = groundUnder(f.ids, box);
+    const gapFrac = box && ground != null ? (ground - box.maxY) / screenH : 1;
+    const feetOk = box && ground != null && gapFrac >= -0.02 && gapFrac <= 0.05;
+    const insideQuad = !!(
+      box &&
+      Number.isFinite(Number(quad.x)) &&
+      box.minX >= Number(quad.x) - 3 &&
+      box.maxX <= Number(quad.x) + qw + 3 &&
+      box.minY >= Number(quad.y) - 3 &&
+      box.maxY <= Number(quad.y) + qh + 3
+    );
+    const aspectOk = aspectErr <= 0.02 && insideQuad;
+    if (!onScreen || !feetOk || !aspectOk) {
+      bad.push({
+        id: f.id,
+        onScreen,
+        feetOk,
+        aspectOk,
+        gapFrac: round(gapFrac),
+        aspectErr: round(aspectErr),
+        srcAspect: srcAspect ? round(srcAspect) : null,
+        quadAspect: quadAspect ? round(quadAspect) : null,
+      });
+    }
+  }
+  if (!checked) return row("bolt_grounded", "FAIL", {}, "Hero pixels were not in the ID buffer.");
+  const result = bad.length ? "FAIL" : "PASS";
+  return row(
+    "bolt_grounded",
+    result,
+    { frames: checked, bad: bad.length, rows: bad.slice(0, 6) },
+    result === "PASS"
+      ? "Hero bbox is fully on screen, feet are within 5% of the ground, and the sprite quad matches the source aspect."
+      : "Bolt must stay fully on screen, feet within 5% of ground contact, unstretched (quad aspect = source).",
+  );
+}
+
+function labelBox(ids, label) {
+  const idx = ids.labels.indexOf(label);
+  if (idx < 0) return null;
+  let minX = 1e9;
+  let minY = 1e9;
+  let maxX = -1;
+  let maxY = -1;
+  let n = 0;
+  const w = ids.width;
+  const h = ids.height;
+  const data = ids.data;
+  for (let y = 0; y < h; y++) {
+    const row = y * w;
+    for (let x = 0; x < w; x++) {
+      if (data[row + x] !== idx) continue;
+      n++;
+      if (x < minX) minX = x;
+      if (y < minY) minY = y;
+      if (x > maxX) maxX = x;
+      if (y > maxY) maxY = y;
+    }
+  }
+  if (!n) return null;
+  return { minX, minY, maxX, maxY, n };
+}
+
+function groundUnder(ids, box) {
+  if (!box) return null;
+  const idx = ids.labels.indexOf("ground");
+  if (idx < 0) return null;
+  const x = Math.max(0, Math.min(ids.width - 1, Math.round((box.minX + box.maxX) / 2)));
+  for (let y = box.maxY; y < ids.height; y++) {
+    if (ids.data[y * ids.width + x] === idx) return y;
+  }
+  return null;
 }
 
 function rowBackdrop(frames, layout) {

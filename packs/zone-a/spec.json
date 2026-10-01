@@ -1,0 +1,118 @@
+{
+  "schema": "layout-spec/1",
+  "id": "zone-a",
+  "seed": 10,
+  "zone": {
+    "shape": "circle",
+    "center": [0, 0],
+    "radius_m": 24,
+    "ground": {
+      "tile_m": 0.9,
+      "tiles": [
+        "biome/assets/take10/floor-t8/t8.png",
+        "biome/assets/take10/floor-t9/t9.png",
+        "biome/assets/take10/floor-t10/t10.png"
+      ],
+      "relief": {
+        "amp_m": 0.08,
+        "edge_height_m": 0,
+        "seed": 10,
+        "frequency": 0.11,
+        "octaves": 3,
+        "edge_fade_start": 0.84
+      }
+    }
+  },
+  "ring": { "radius_m": 18, "max_gap_deg": 0 },
+  "gates": [
+    {
+      "id": "to-path",
+      "heading_deg": 238,
+      "width_m": 4.6,
+      "frame_asset": "packs/zone-a/hulls/ring-b/asset.json",
+      "field": "packs/zone-a/src/gate/gate-field.mp4",
+      "leads_to": "path-ab"
+    }
+  ],
+  "hero": { "width_m": 0.7, "radius_m": 0.45 },
+  "spawn": { "position": [0, 0], "face": "wreck" },
+  "limits": {
+    "spawn_clearance_m": 2.4,
+    "min_gap_m": 0.35,
+    "path_width_m": 1.5,
+    "gate_cone_m": 6.0,
+    "gate_cone_half_deg": 18,
+    "yaw_eps_deg": 8,
+    "scale_eps": 0.03
+  },
+  "view": {
+    "width": 720,
+    "height": 1600,
+    "fov_y_deg": 48.1,
+    "mag_max": 1.0,
+    "boom_m": 6.4,
+    "eye_height_m": 2.05
+  },
+  "near_lens": { "cull_m": 1.2, "fade_m": [1.2, 2.4] },
+  "fog_band": {
+    "inner_m": 11.5,
+    "outer_m": 17.2,
+    "patches": 28,
+    "atlas": "packs/zone-a/src/fog/fog-atlas.png",
+    "size_m": [2.4, 4.2],
+    "opacity": [0.18, 0.34],
+    "near_fade_m": [3, 6]
+  },
+  "backdrop": {
+    "ring": "packs/zone-a/src/sky",
+    "slices": [
+      "packs/zone-a/src/sky/sky-0.png",
+      "packs/zone-a/src/sky/sky-1.png",
+      "packs/zone-a/src/sky/sky-2.png",
+      "packs/zone-a/src/sky/sky-3.png",
+      "packs/zone-a/src/sky/sky-4.png",
+      "packs/zone-a/src/sky/sky-5.png"
+    ],
+    "sourceW": 12768,
+    "sourceH": 912
+  },
+  "bolt": {
+    "gallop": "lock/bolt-gallop-cycle.mp4",
+    "idle": "lock/bolt-idle-breath.mp4"
+  },
+  "categories": {
+    "ring": {
+      "assets": ["packs/zone-a/hulls/ring-b/asset.json"],
+      "scale": [0.9, 1.25]
+    },
+    "exit": {
+      "assets": ["packs/zone-a/hulls/ring-b/asset.json"],
+      "scale": [0.9, 1.25]
+    },
+    "mid": {
+      "count": 4,
+      "assets": ["packs/zone-a/hulls/ring-b/asset.json"],
+      "scale": [0.95, 1.15],
+      "band_m": [7.2, 11.0]
+    },
+    "near": {
+      "count": 6,
+      "assets": ["packs/zone-a/hulls/ring-b/asset.json"],
+      "scale": [0.72, 0.95],
+      "band_m": [3.6, 6.4]
+    },
+    "hero": {
+      "count": 1,
+      "assets": ["packs/zone-a/hulls/wreck10/asset.json"],
+      "scale": [0.72, 0.82],
+      "band_m": [8.6, 11.2]
+    }
+  },
+  "budgets": {
+    "ring": [12, 80],
+    "exit": [2, 6],
+    "mid": [4, 8],
+    "near": [4, 10],
+    "hero": [1, 3]
+  }
+}

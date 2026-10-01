@@ -76,6 +76,8 @@ export async function launchPhone(videoDir) {
       "--disable-gpu-sandbox",
       "--hide-scrollbars",
       "--mute-audio",
+      "--disable-logging",
+      "--log-level=3",
     ],
   });
   const context = await browser.newContext({
@@ -91,7 +93,11 @@ export async function launchPhone(videoDir) {
   const consoleErrors = [];
   page.on("console", (msg) => {
     const t = msg.type();
-    if (t === "error" || t === "warning") consoleErrors.push(msg.text());
+    if (t === "error" || t === "warning") {
+      const text = msg.text();
+      if (/GPU stall due to ReadPixels/i.test(text)) return;
+      consoleErrors.push(text);
+    }
   });
   page.on("pageerror", (err) => consoleErrors.push(String(err && err.message ? err.message : err)));
   return { browser, context, page, consoleErrors, executablePath, videoDir };

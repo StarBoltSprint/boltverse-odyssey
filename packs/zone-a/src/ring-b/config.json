@@ -1,0 +1,18 @@
+{
+  "name": "ring-b",
+  "objectSize": [1.55, 1.6, 1.55],
+  "vote": 7,
+  "grid": 28,
+  "bgThreshold": 0.04,
+  "camera": { "distance": 6.2, "eyeY": 0.1, "fovYDeg": 34 },
+  "views": [
+    {"file": "yaw-000.png", "yawDeg": 0},
+    {"file": "yaw-045.png", "yawDeg": 45},
+    {"file": "yaw-090.png", "yawDeg": 90},
+    {"file": "yaw-135.png", "yawDeg": 135},
+    {"file": "yaw-180.png", "yawDeg": 180},
+    {"file": "yaw-225.png", "yawDeg": 225},
+    {"file": "yaw-270.png", "yawDeg": 270},
+    {"file": "yaw-315.png", "yawDeg": 315}
+  ]
+}

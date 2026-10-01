@@ -1,0 +1,386 @@
+{
+  "format": "walkaround-hull-1",
+  "name": "wreck10",
+  "invisibleHull": true,
+  "drawsOwnPixels": false,
+  "notForBolt": true,
+  "pixels": "original-png-lossless",
+  "sampling": "nearest",
+  "mipmaps": false,
+  "assignment": "per-fragment-best-facing",
+  "assignmentDependsOnViewerYaw": false,
+  "weight": "(normal \u00b7 viewDir)^8",
+  "seamRatio": 0.65,
+  "surface": "surface-nets",
+  "vertexCount": 20990,
+  "triangleCount": 41976,
+  "vote": 7,
+  "viewCount": 8,
+  "grid": [
+    64,
+    64,
+    64
+  ],
+  "origin": [
+    -2.3520000000000003,
+    -1.344,
+    -3.5840000000000005
+  ],
+  "voxelSize": [
+    0.07350000000000001,
+    0.042,
+    0.11200000000000002
+  ],
+  "halfExtent": [
+    2.3520000000000003,
+    1.344,
+    3.5840000000000005
+  ],
+  "placement": {
+    "position": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "collisionRadius": 3.6684524872761584
+  },
+  "approach": {
+    "minDistance": 8.002499609497024,
+    "capDistance": 8.002499609497024,
+    "maxMagnification": 0.974918,
+    "magnificationLimit": 1.0
+  },
+  "cameras": [
+    {
+      "file": "yaw-000.png",
+      "yawDeg": 0.0,
+      "elevationDeg": 1.4320961841646465,
+      "pitchDeg": 1.4320961841646465,
+      "fovYDeg": 32.0,
+      "width": 1792,
+      "height": 1008,
+      "group": "body",
+      "position": [
+        0.0,
+        0.2,
+        8.0
+      ],
+      "right": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "up": [
+        0.0,
+        0.9996876464081228,
+        -0.024992191160203073
+      ],
+      "forward": [
+        -0.0,
+        -0.024992191160203066,
+        -0.9996876464081226
+      ]
+    },
+    {
+      "file": "yaw-045.png",
+      "yawDeg": 45.0,
+      "elevationDeg": 1.4320961841646465,
+      "pitchDeg": 1.4320961841646465,
+      "fovYDeg": 32.0,
+      "width": 1792,
+      "height": 1008,
+      "group": "body",
+      "position": [
+        5.65685424949238,
+        0.2,
+        5.656854249492381
+      ],
+      "right": [
+        0.7071067811865476,
+        0.0,
+        -0.7071067811865475
+      ],
+      "up": [
+        -0.01767214784609008,
+        0.9996876464081228,
+        -0.017672147846090083
+      ],
+      "forward": [
+        -0.7068859138436031,
+        -0.024992191160203073,
+        -0.7068859138436032
+      ]
+    },
+    {
+      "file": "yaw-090.png",
+      "yawDeg": 90.0,
+      "elevationDeg": 1.4320961841646465,
+      "pitchDeg": 1.4320961841646465,
+      "fovYDeg": 32.0,
+      "width": 1792,
+      "height": 1008,
+      "group": "body",
+      "position": [
+        8.0,
+        0.2,
+        4.898587196589413e-16
+      ],
+      "right": [
+        6.123233995736766e-17,
+        0.0,
+        -1.0
+      ],
+      "up": [
+        -0.024992191160203073,
+        0.9996876464081228,
+        -1.5303303454010734e-18
+      ],
+      "forward": [
+        -0.9996876464081226,
+        -0.024992191160203066,
+        -6.121321381604292e-17
+      ]
+    },
+    {
+      "file": "yaw-135.png",
+      "yawDeg": 135.0,
+      "elevationDeg": 1.4320961841646465,
+      "pitchDeg": 1.4320961841646465,
+      "fovYDeg": 32.0,
+      "width": 1792,
+      "height": 1008,
+      "group": "body",
+      "position": [
+        5.656854249492381,
+        0.2,
+        -5.65685424949238
+      ],
+      "right": [
+        -0.7071067811865475,
+        0.0,
+        -0.7071067811865476
+      ],
+      "up": [
+        -0.017672147846090083,
+        0.9996876464081228,
+        0.01767214784609008
+      ],
+      "forward": [
+        -0.7068859138436031,
+        -0.024992191160203066,
+        0.706885913843603
+      ]
+    },
+    {
+      "file": "yaw-180.png",
+      "yawDeg": 180.0,
+      "elevationDeg": 1.4320961841646465,
+      "pitchDeg": 1.4320961841646465,
+      "fovYDeg": 32.0,
+      "width": 1792,
+      "height": 1008,
+      "group": "body",
+      "position": [
+        9.797174393178826e-16,
+        0.2,
+        -8.0
+      ],
+      "right": [
+        -1.0,
+        0.0,
+        -1.2246467991473532e-16
+      ],
+      "up": [
+        -3.0606606908021468e-18,
+        0.9996876464081228,
+        0.024992191160203073
+      ],
+      "forward": [
+        -1.2242642763208584e-16,
+        -0.024992191160203066,
+        0.9996876464081226
+      ]
+    },
+    {
+      "file": "yaw-225.png",
+      "yawDeg": 225.0,
+      "elevationDeg": 1.4320961841646465,
+      "pitchDeg": 1.4320961841646465,
+      "fovYDeg": 32.0,
+      "width": 1792,
+      "height": 1008,
+      "group": "body",
+      "position": [
+        -5.65685424949238,
+        0.2,
+        -5.6568542494923815
+      ],
+      "right": [
+        -0.7071067811865477,
+        0.0,
+        0.7071067811865475
+      ],
+      "up": [
+        0.017672147846090076,
+        0.9996876464081228,
+        0.017672147846090083
+      ],
+      "forward": [
+        0.706885913843603,
+        -0.024992191160203066,
+        0.7068859138436032
+      ]
+    },
+    {
+      "file": "yaw-270.png",
+      "yawDeg": 270.0,
+      "elevationDeg": 1.4320961841646465,
+      "pitchDeg": 1.4320961841646465,
+      "fovYDeg": 32.0,
+      "width": 1792,
+      "height": 1008,
+      "group": "body",
+      "position": [
+        -8.0,
+        0.2,
+        -1.4695761589768238e-15
+      ],
+      "right": [
+        -1.83697019872103e-16,
+        0.0,
+        1.0
+      ],
+      "up": [
+        0.024992191160203073,
+        0.9996876464081228,
+        4.59099103620322e-18
+      ],
+      "forward": [
+        0.9996876464081226,
+        -0.024992191160203066,
+        1.8363964144812875e-16
+      ]
+    },
+    {
+      "file": "yaw-315.png",
+      "yawDeg": 315.0,
+      "elevationDeg": 1.4320961841646465,
+      "pitchDeg": 1.4320961841646465,
+      "fovYDeg": 32.0,
+      "width": 1792,
+      "height": 1008,
+      "group": "body",
+      "position": [
+        -5.6568542494923815,
+        0.2,
+        5.656854249492379
+      ],
+      "right": [
+        0.7071067811865474,
+        -0.0,
+        0.7071067811865477
+      ],
+      "up": [
+        0.017672147846090086,
+        0.9996876464081228,
+        -0.01767214784609008
+      ],
+      "forward": [
+        0.7068859138436033,
+        -0.024992191160203073,
+        -0.706885913843603
+      ]
+    }
+  ],
+  "views": [
+    {
+      "file": "views/yaw-000.png",
+      "sha256": "72efc3944e82a56e4e467716ed263d3837fd3bce434ca4e2f2a7c713c21e1087",
+      "yawDeg": 0.0,
+      "elevationDeg": 1.4320961841646465,
+      "width": 1792,
+      "height": 1008,
+      "group": "body"
+    },
+    {
+      "file": "views/yaw-045.png",
+      "sha256": "d48492c91384bca16db3eca0447c8cc73392fb0f96df0c9472598239c1279033",
+      "yawDeg": 45.0,
+      "elevationDeg": 1.4320961841646465,
+      "width": 1792,
+      "height": 1008,
+      "group": "body"
+    },
+    {
+      "file": "views/yaw-090.png",
+      "sha256": "e3add76966c59e8c277796d7bc3792acbf31e3b49e53ecd34e304d76833f1eda",
+      "yawDeg": 90.0,
+      "elevationDeg": 1.4320961841646465,
+      "width": 1792,
+      "height": 1008,
+      "group": "body"
+    },
+    {
+      "file": "views/yaw-135.png",
+      "sha256": "2ece0ddea811109e37aec24742413413cffe3d043db3a0328a2951ff5ad28b98",
+      "yawDeg": 135.0,
+      "elevationDeg": 1.4320961841646465,
+      "width": 1792,
+      "height": 1008,
+      "group": "body"
+    },
+    {
+      "file": "views/yaw-180.png",
+      "sha256": "2baad5a0f81a5a56306afa30e73efe1bb7a273a34bec2c80e2fde23e431d4b11",
+      "yawDeg": 180.0,
+      "elevationDeg": 1.4320961841646465,
+      "width": 1792,
+      "height": 1008,
+      "group": "body"
+    },
+    {
+      "file": "views/yaw-225.png",
+      "sha256": "85c48185eeb87f0b6f562aac8ed16bb19de0d53792d2b498bc472412b96aea5d",
+      "yawDeg": 225.0,
+      "elevationDeg": 1.4320961841646465,
+      "width": 1792,
+      "height": 1008,
+      "group": "body"
+    },
+    {
+      "file": "views/yaw-270.png",
+      "sha256": "f23e52331d030623ffd296d87add24d3e3c11e548a21365b655016b185efdf4c",
+      "yawDeg": 270.0,
+      "elevationDeg": 1.4320961841646465,
+      "width": 1792,
+      "height": 1008,
+      "group": "body"
+    },
+    {
+      "file": "views/yaw-315.png",
+      "sha256": "b7266b079b0d10b35d172851ac2aa61b2edcb491f6d986d36bc0462fed68c736",
+      "yawDeg": 315.0,
+      "elevationDeg": 1.4320961841646465,
+      "width": 1792,
+      "height": 1008,
+      "group": "body"
+    }
+  ],
+  "files": {
+    "hull": "hull.npz",
+    "views": "views/",
+    "report": "qc/report.json",
+    "mesh": "mesh.bin"
+  },
+  "depthRefine": "skipped",
+  "depthRelief": 0.35,
+  "subObjects": [],
+  "ok": true,
+  "depthRange": [
+    4.3937,
+    11.627
+  ],
+  "depthMin": 4.3937,
+  "depthMax": 11.627,
+  "bboxDepth": 6.9512
+}
