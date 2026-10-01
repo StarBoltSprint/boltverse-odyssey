@@ -35,7 +35,7 @@ The **360° Imagine ring** is the far backdrop only (sky and ridges). It is not 
 Rock cutouts are Imagine images. Simplex **places** them. Placement only. Law 59 also allows a **90°** rotation. Simplex does not draw the rock.
 
 - Dusk-grade the cutout to the scene. The grade is the Imagine pixels, matched to the dusk. It is not a new paint.
-- A small soft contact shadow is a GPU overlay. Law [56](56-cutout-native-scale.md): light and shadow stay overlays.
+- Contact darkening and shadows come from Imagine pixels, baked into the Imagine asset or a keyed Imagine shadow card. Never code-drawn.
 - The base snaps to the relief height.
 
 ## Boulders
