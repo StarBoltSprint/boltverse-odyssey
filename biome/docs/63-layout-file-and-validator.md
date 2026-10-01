@@ -4,9 +4,23 @@ Kitchen only. Not a hang. Owner direction **2026-10-01**, after the take 8 FAIL 
 
 Biome-agnostic. Any biome, cooked by any player's Grok, lays out its clearings the same way. The world-by-zones creation process is [doc 62](62-open-world-zones-process.md). The clearing method is [doc 61](61-free-clearing-walk.md). The invisible-shape exception is the [2026-10-01 extension of law 59](59-invisible-depth-carrier.md#extension-2026-10-01-invisible-procedural-terrain-shape). Every hard lock in doc 62 stays: every visible pixel is Imagine, code computes invisible shape only, one Bolt, magnification ≤ 1.0 at 720×1600.
 
-## Status of `tools/clearing/`
+## Run the validator — required
 
-`tools/clearing/` is **not on `main` yet** (2026-10-01). This doc is the spec it must meet. A first implementation may exist on a `take8-archive` branch. It was not on the remote when this doc was written. If you find it, treat it as a draft. Its validator is exactly the data-only kind that reported ALL PASS on take 8, so it must be brought up to the rendered-pixel rows below before anyone trusts it.
+The rendered-pixel check is a command, not a table you type.
+
+```bash
+tools/playcheck/run --url <play url or local build> --layout <clearing.json>
+```
+
+Install and the debug hook: [`tools/playcheck/README.md`](../../tools/playcheck/README.md). Phone portrait, full screen, **360×800 CSS at DPR 2** (framebuffer **720×1600**). Headless Chrome with software WebGL is enough. No GPU.
+
+The command writes `report.md`, `report.json`, `stills/`, and `walk.mp4` (H.264, 30 fps, HUD visible, about 15 MB or under). `--video` is on by default.
+
+**Before any play URL:** paste that `report.md` and the stills (and the mp4). A hand-written PASS table is not accepted. Exit 0 is the only PASS. Then **STOP** for the owner's phone QC. A tool PASS is not a KEEP.
+
+`?debug=1` must expose `window.__play` (`snapshot`, `setInput`, `tick`, `look`, `reset`) with the live HUD pose, magnification, and an object-ID buffer from the same draws as the colour view, same alpha discard. Builders keep that hook. The tool adds `?debug=1` itself.
+
+`tools/clearing/` (generate placement from `clearing.json`) is still a separate step. It is not this check. A generator that agrees with its own JSON is the take 8 failure mode.
 
 Expected layout:
 
@@ -73,8 +87,21 @@ The validator prints one table. Every row must be **PASS on the rendered view**.
 | `mag` | Tile size, hull approach caps (`qc/report.json` ≤ 1.0). | Magnification of ground, hulls, gate, fog, and Bolt **≤ 1.0** on the 720×1600 render, same number as the HUD. |
 | `webgl_clean` | — | Zero WebGL errors (`gl.getError()` after the frame, console capture) during every validation render. |
 | `single_bolt` | One Bolt entity; IDLE / GALLOP switch wired. | Exactly one Bolt in the rendered frame, at every heading and stop; idle frame and gallop frame both captured. |
+| `webgl_errors` | — | Same capture as `webgl_clean`. The tool prints both names. |
+| `mag_max` | — | Same HUD peak as `mag`. Above `view.mag_max` is FAIL. |
+| `stops_visible` | — | Every blocked stop has a layout object's pixels covering the view ahead. |
+| `layout_rendered` | Every object in the file. | Each hull, gate, and interior writes visible pixels on a frame that faced it. |
+| `black_regions` | — | Large flat near-black rectangles FAIL. A full-width night-sky band that touches the top does not. Heuristic. |
+| `tile_repeat` | — | Obvious periodic repetition of the floor. Heuristic. |
+| `backdrop_res` | — | Backdrop source pixels versus on-screen pixels. Upscale (above 1) is FAIL. |
+| `single_hero` | — | Exactly one hero blob in the ID buffer. |
+| `idle_gallop_switch` | — | `GALLOP` while moving, `IDLE` after the stop. |
+| `fullscreen` | — | Canvas and screenshots are 720×1600. |
+| `debug_hook` | — | `snapshot()` and the ID buffer are present. Missing is FAIL. |
 
-Extra rows may be added. None of these may be removed. **A data-only check is FAIL**, even when the data agrees.
+Extra rows may be added. None of these may be removed. **A data-only check is FAIL**, even when the data agrees. Unmeasured is FAIL.
+
+Honest limits of the tool, not excuses to skip it: `black_regions`, `tile_repeat`, and the fog streak test are heuristics. Outward stops are 8 headings (every 45°), not 36 walked trips. Horizon coverage is 36 headings (every 10°) from the centre during the turn. `backdrop_res` and `mag` read the live hook (source size, fov, HUD number), and the colour image has to agree with the ID buffer (flat black or empty ground does not count). `near_lens` is the renderer's nearest fragment that passed alpha.
 
 ### How "rendered" is checked
 
@@ -88,7 +115,7 @@ Extra rows may be added. None of these may be removed. **A data-only check is FA
 
 ### Proof and STOP
 
-- **HARD: no play URL** until every row PASSES on the rendered view.
+- **HARD: no play URL** until `tools/playcheck/run` exits 0 and its `report.md`, stills, and `walk.mp4` are pasted. A hand-written PASS table is not that report.
 - Proof stills, written by the validator from the play view:
   1. debug top-down map (zone, ring, gate, colliders, fog band, stop points);
   2. centre → gate view;
@@ -117,5 +144,7 @@ The console also showed WebGL **`texSubImage3D` `INVALID_OPERATION`** errors, wh
 - Hand-place a hull, collider, gate, or fog patch outside `clearing.json`.
 - Put biome words in the schema.
 - Validate against the JSON, the debug map, or the collider set alone.
+- Paste a hand-written PASS table, or a play URL, without `tools/playcheck/run`'s `report.md`, stills, and `walk.mp4`.
+- Remove `window.__play` when `?debug=1` is set.
 - Count a cut-out (alpha-discarded) texel as a visible pixel.
 - Post a play URL, or call a clearing KEEP, before every row passes on the rendered view and the owner's phone QC.
