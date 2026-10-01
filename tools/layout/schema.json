@@ -96,7 +96,11 @@
         "heading_deg": { "type": "number" },
         "width_deg": { "type": "number" },
         "base_y_m": { "type": "number" },
-        "interactive": { "type": "boolean" }
+        "interactive": { "type": "boolean" },
+        "library_id": {
+          "type": "string",
+          "description": "Set when the spec named a biome/library object id. Absent for a path string."
+        }
       }
     }
   }

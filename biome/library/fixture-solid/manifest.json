@@ -1,0 +1,69 @@
+{
+  "asset": "tools/walkaround/testdata/synthetic-rock/out/asset.json",
+  "collider": {
+    "radius_m": 0.7366173380262299,
+    "type": "circle"
+  },
+  "fixture": true,
+  "id": "fixture-solid",
+  "lod": {
+    "billboardViews": [
+      "yaw-000.png",
+      "yaw-045.png",
+      "yaw-090.png",
+      "yaw-135.png",
+      "yaw-180.png",
+      "yaw-225.png",
+      "yaw-270.png",
+      "yaw-315.png"
+    ],
+    "impostor": true
+  },
+  "reports": {
+    "assetcheck": {
+      "notes": [],
+      "path": "tools/assetcheck/samples/good-cutout/report.json",
+      "verdict": "PASS"
+    },
+    "objsheet": {
+      "notes": [],
+      "path": "tools/objsheet/samples/repo-synthetic-rock/report.json",
+      "verdict": "PASS"
+    },
+    "walkaround": {
+      "notes": [],
+      "path": "tools/walkaround/testdata/synthetic-rock/out/qc/report.json",
+      "verdict": "PASS"
+    }
+  },
+  "scale": {
+    "default": 1.0,
+    "max": 1.2,
+    "min": 0.85
+  },
+  "schema": "library-object/1",
+  "shape": {
+    "method": "surface-nets",
+    "walkaround": "tools/walkaround/testdata/synthetic-rock/out"
+  },
+  "source": {
+    "imagineIds": [
+      "fixture-synthetic-solid"
+    ],
+    "promptRef": "biome/library/fixture-solid/prompt-ref.txt"
+  },
+  "views": {
+    "dir": "tools/walkaround/testdata/synthetic-rock/views",
+    "files": [
+      "yaw-000.png",
+      "yaw-045.png",
+      "yaw-090.png",
+      "yaw-135.png",
+      "yaw-180.png",
+      "yaw-225.png",
+      "yaw-270.png",
+      "yaw-315.png"
+    ],
+    "yawStepDeg": 45
+  }
+}
