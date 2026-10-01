@@ -1,0 +1,56 @@
+{
+  "schema": "clearing/1",
+  "id": "sample-zone",
+  "zone": {
+    "shape": "circle",
+    "center": [0, 0],
+    "radius_m": 20,
+    "ground": {
+      "tile_m": 0.9,
+      "tiles": ["tiles/t0.png", "tiles/t1.png", "tiles/t2.png", "tiles/t3.png"],
+      "relief": { "amp_m": 0.15, "edge_height_m": 0 }
+    }
+  },
+  "edge_ring": {
+    "radius_m": 18,
+    "max_gap_deg": 0,
+    "hulls": [
+      { "id": "edge-0", "asset": "hulls/edge-a/asset.json", "heading_deg": 23.166, "yaw_deg": 180, "width_deg": 46.332 },
+      { "id": "edge-1", "asset": "hulls/edge-b/asset.json", "heading_deg": 69.498, "yaw_deg": 180, "width_deg": 46.332 },
+      { "id": "edge-2", "asset": "hulls/edge-c/asset.json", "heading_deg": 115.83, "yaw_deg": 180, "width_deg": 46.332 },
+      { "id": "edge-3", "asset": "hulls/edge-d/asset.json", "heading_deg": 162.162, "yaw_deg": 180, "width_deg": 46.332 },
+      { "id": "edge-4", "asset": "hulls/edge-e/asset.json", "heading_deg": 208.494, "yaw_deg": 180, "width_deg": 46.332 },
+      { "id": "edge-5", "asset": "hulls/edge-f/asset.json", "heading_deg": 263.617, "yaw_deg": 180, "width_deg": 38.553 },
+      { "id": "edge-6", "asset": "hulls/edge-g/asset.json", "heading_deg": 302.17, "yaw_deg": 180, "width_deg": 38.553 },
+      { "id": "edge-7", "asset": "hulls/edge-h/asset.json", "heading_deg": 340.723, "yaw_deg": 180, "width_deg": 38.553 }
+    ]
+  },
+  "gates": [
+    {
+      "id": "to-path",
+      "heading_deg": 238,
+      "width_m": 4,
+      "frame": "hulls/gate/asset.json",
+      "field": "living/gate-field.mp4",
+      "leads_to": "path-ab"
+    }
+  ],
+  "interior_objects": [
+    { "id": "interior-0", "asset": "hulls/interior-a/asset.json", "position": [5, 4], "yaw_deg": 15, "interactive": false, "radius_m": 0.75 },
+    { "id": "interior-1", "asset": "hulls/interior-b/asset.json", "position": [-4, 6], "yaw_deg": -10, "interactive": true, "radius_m": 0.75 }
+  ],
+  "near_lens": { "cull_m": 1.2, "fade_m": [1.2, 2.5] },
+  "fog_band": {
+    "inner_m": 13,
+    "outer_m": 24,
+    "patches": 32,
+    "atlas": "living/fog-atlas.png",
+    "size_m": [3, 6],
+    "opacity": [0.15, 0.35],
+    "near_fade_m": [3, 6]
+  },
+  "spawn": { "position": [0, 0], "face": "gate:to-path" },
+  "backdrop": { "ring": "backdrop/ring-360.png" },
+  "view": { "width": 720, "height": 1600, "mag_max": 1.0 },
+  "bolt": { "gallop": "lock/bolt-gallop-cycle.mp4", "idle": "lock/bolt-idle-breath.mp4" }
+}

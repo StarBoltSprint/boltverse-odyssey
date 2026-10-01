@@ -1,0 +1,899 @@
+{
+  "tool": "playcheck",
+  "url": "http://127.0.0.1:46549/index.html?fixture=clean&debug=1",
+  "layout": "/workspace/tools/playcheck/fixture/clearing.json",
+  "layoutId": "sample-zone",
+  "viewport": {
+    "css": [
+      360,
+      800
+    ],
+    "dpr": 2,
+    "framebuffer": [
+      720,
+      1600
+    ]
+  },
+  "video": {
+    "file": "/workspace/tools/playcheck/sample/clean/walk.mp4",
+    "width": 720,
+    "height": 1600,
+    "fps": 30,
+    "frames": 1670,
+    "seconds": 55.7,
+    "bytes": 6856336,
+    "codec": "h264"
+  },
+  "stills": [
+    "stills/01-spawn.png",
+    "stills/02-turn-270.png",
+    "stills/02-turn-315.png",
+    "stills/02-turn-045.png",
+    "stills/02-turn-090.png",
+    "stills/02-turn-135.png",
+    "stills/02-turn-180.png",
+    "stills/02-turn-225.png",
+    "stills/03-gate-start.png",
+    "stills/03-gate-end.png",
+    "stills/04-stop-000.png",
+    "stills/04-stop-045.png",
+    "stills/04-stop-090.png",
+    "stills/04-stop-135.png",
+    "stills/04-stop-180.png",
+    "stills/04-stop-225.png",
+    "stills/04-stop-270.png",
+    "stills/04-stop-315.png",
+    "stills/05-interior-0.png",
+    "stills/05-interior-1.png",
+    "stills/06-gallop.png",
+    "stills/07-idle.png"
+  ],
+  "steps": [
+    {
+      "id": "01-spawn",
+      "kind": "spawn",
+      "x": 0,
+      "z": 0,
+      "hdg": 238,
+      "spd": 0,
+      "mag": 0.467,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "02-turn-270",
+      "kind": "turn",
+      "x": 0,
+      "z": 0,
+      "hdg": 263.667,
+      "spd": 0,
+      "mag": 0.467,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "02-turn-315",
+      "kind": "turn",
+      "x": 0,
+      "z": 0,
+      "hdg": 308,
+      "spd": 0,
+      "mag": 0.467,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "02-turn-045",
+      "kind": "turn",
+      "x": 0,
+      "z": 0,
+      "hdg": 39,
+      "spd": 0,
+      "mag": 0.467,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "02-turn-090",
+      "kind": "turn",
+      "x": 0,
+      "z": 0,
+      "hdg": 83.333,
+      "spd": 0,
+      "mag": 0.467,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "02-turn-135",
+      "kind": "turn",
+      "x": 0,
+      "z": 0,
+      "hdg": 127.667,
+      "spd": 0,
+      "mag": 0.467,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "02-turn-180",
+      "kind": "turn",
+      "x": 0,
+      "z": 0,
+      "hdg": 172,
+      "spd": 0,
+      "mag": 0.467,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "02-turn-225",
+      "kind": "turn",
+      "x": 0,
+      "z": 0,
+      "hdg": 218.667,
+      "spd": 0,
+      "mag": 0.467,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "03-gate-start",
+      "kind": "gate",
+      "x": 0,
+      "z": 0,
+      "hdg": 238,
+      "spd": 0,
+      "mag": 0.467,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "03-gate-end",
+      "kind": "gate",
+      "x": -15.214,
+      "z": -9.507,
+      "hdg": 238,
+      "spd": 4.6,
+      "mag": 0.467,
+      "state": "GALLOP",
+      "blocked": false,
+      "pathTrigger": true
+    },
+    {
+      "id": "04-stop-000",
+      "kind": "stop",
+      "x": 0,
+      "z": 17.633,
+      "hdg": 0,
+      "spd": 0,
+      "mag": 0.467,
+      "state": "IDLE",
+      "blocked": true,
+      "pathTrigger": false
+    },
+    {
+      "id": "04-stop-045",
+      "kind": "stop",
+      "x": 3.903,
+      "z": 3.903,
+      "hdg": 45,
+      "spd": 0,
+      "mag": 0.467,
+      "state": "IDLE",
+      "blocked": true,
+      "pathTrigger": false
+    },
+    {
+      "id": "04-stop-090",
+      "kind": "stop",
+      "x": 17.633,
+      "z": 0,
+      "hdg": 90,
+      "spd": 0,
+      "mag": 0.467,
+      "state": "IDLE",
+      "blocked": true,
+      "pathTrigger": false
+    },
+    {
+      "id": "04-stop-135",
+      "kind": "stop",
+      "x": 12.469,
+      "z": -12.469,
+      "hdg": 135,
+      "spd": 0,
+      "mag": 0.467,
+      "state": "IDLE",
+      "blocked": true,
+      "pathTrigger": false
+    },
+    {
+      "id": "04-stop-180",
+      "kind": "stop",
+      "x": 0,
+      "z": -17.633,
+      "hdg": 180,
+      "spd": 0,
+      "mag": 0.467,
+      "state": "IDLE",
+      "blocked": true,
+      "pathTrigger": false
+    },
+    {
+      "id": "04-stop-225",
+      "kind": "stop",
+      "x": -12.469,
+      "z": -12.469,
+      "hdg": 225,
+      "spd": 0,
+      "mag": 0.467,
+      "state": "IDLE",
+      "blocked": true,
+      "pathTrigger": false
+    },
+    {
+      "id": "04-stop-270",
+      "kind": "stop",
+      "x": -17.633,
+      "z": 0,
+      "hdg": 270,
+      "spd": 0,
+      "mag": 0.467,
+      "state": "IDLE",
+      "blocked": true,
+      "pathTrigger": false
+    },
+    {
+      "id": "04-stop-315",
+      "kind": "stop",
+      "x": -12.469,
+      "z": 12.469,
+      "hdg": 315,
+      "spd": 0,
+      "mag": 0.467,
+      "state": "IDLE",
+      "blocked": true,
+      "pathTrigger": false
+    },
+    {
+      "id": "05-interior-0",
+      "kind": "approach",
+      "x": 4.071,
+      "z": 3.257,
+      "hdg": 51.34,
+      "spd": 0,
+      "mag": 0.467,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "05-interior-1",
+      "kind": "approach",
+      "x": -3.317,
+      "z": 4.976,
+      "hdg": 326.31,
+      "spd": 0,
+      "mag": 0.467,
+      "state": "GALLOP",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "06-gallop",
+      "kind": "gallop",
+      "x": 2.333,
+      "z": 6.409,
+      "hdg": 20,
+      "spd": 6.2,
+      "mag": 0.467,
+      "state": "GALLOP",
+      "blocked": false,
+      "pathTrigger": false
+    },
+    {
+      "id": "07-idle",
+      "kind": "idle",
+      "x": 2.333,
+      "z": 6.409,
+      "hdg": 20,
+      "spd": 0,
+      "mag": 0.467,
+      "state": "IDLE",
+      "blocked": false,
+      "pathTrigger": false
+    }
+  ],
+  "rows": [
+    {
+      "id": "webgl_errors",
+      "result": "PASS",
+      "numbers": {
+        "count": 0
+      },
+      "detail": "No WebGL errors from gl.getError or the console during the walk.",
+      "heuristic": false,
+      "partial": false
+    },
+    {
+      "id": "webgl_clean",
+      "result": "PASS",
+      "numbers": {
+        "count": 0
+      },
+      "detail": "Doc 63 name for the same WebGL capture as webgl_errors.",
+      "heuristic": false,
+      "partial": false
+    },
+    {
+      "id": "mag_max",
+      "result": "PASS",
+      "numbers": {
+        "mag_max": 0.937,
+        "at": "01-spawn",
+        "limit": 1,
+        "missing": 0
+      },
+      "detail": "Peak magnification 0.937 at 01-spawn, limit 1.",
+      "heuristic": false,
+      "partial": false
+    },
+    {
+      "id": "mag",
+      "result": "PASS",
+      "numbers": {
+        "mag_max": 0.937,
+        "at": "01-spawn",
+        "limit": 1,
+        "missing": 0
+      },
+      "detail": "Doc 63 name for the same HUD magnification peak as mag_max. Above the layout limit is FAIL.",
+      "heuristic": false,
+      "partial": false
+    },
+    {
+      "id": "stops_visible",
+      "result": "PASS",
+      "numbers": {
+        "stops": 8,
+        "invisible": 0,
+        "rows": [
+          {
+            "id": "04-stop-000",
+            "heading": 0,
+            "dist": 17.633,
+            "gap": 0.367,
+            "blocked": true,
+            "contact": true,
+            "frac": 1,
+            "pixels": 8976,
+            "label": "edge-0",
+            "color": {
+              "visible": true,
+              "samples": 80,
+              "std": 21.925,
+              "groundDiff": 59.383,
+              "meanL": 97.35,
+              "reason": "drawn"
+            },
+            "covered": true
+          },
+          {
+            "id": "04-stop-045",
+            "heading": 45,
+            "dist": 5.52,
+            "gap": 0.351,
+            "blocked": true,
+            "contact": true,
+            "frac": 0.499,
+            "pixels": 4482,
+            "label": "interior-0",
+            "color": {
+              "visible": true,
+              "samples": 80,
+              "std": 0,
+              "groundDiff": 53.444,
+              "meanL": 95.429,
+              "reason": "drawn"
+            },
+            "covered": true
+          },
+          {
+            "id": "04-stop-090",
+            "heading": 90,
+            "dist": 17.633,
+            "gap": 0.367,
+            "blocked": true,
+            "contact": true,
+            "frac": 1,
+            "pixels": 8976,
+            "label": "edge-1",
+            "color": {
+              "visible": true,
+              "samples": 80,
+              "std": 24.729,
+              "groundDiff": 23.236,
+              "meanL": 121.766,
+              "reason": "drawn"
+            },
+            "covered": true
+          },
+          {
+            "id": "04-stop-135",
+            "heading": 135,
+            "dist": 17.634,
+            "gap": 0.366,
+            "blocked": true,
+            "contact": true,
+            "frac": 1,
+            "pixels": 8976,
+            "label": "edge-2",
+            "color": {
+              "visible": true,
+              "samples": 80,
+              "std": 19.233,
+              "groundDiff": 43.597,
+              "meanL": 98.609,
+              "reason": "drawn"
+            },
+            "covered": true
+          },
+          {
+            "id": "04-stop-180",
+            "heading": 180,
+            "dist": 17.633,
+            "gap": 0.367,
+            "blocked": true,
+            "contact": true,
+            "frac": 1,
+            "pixels": 8976,
+            "label": "edge-3",
+            "color": {
+              "visible": true,
+              "samples": 80,
+              "std": 25.057,
+              "groundDiff": 44.8,
+              "meanL": 115.323,
+              "reason": "drawn"
+            },
+            "covered": true
+          },
+          {
+            "id": "04-stop-225",
+            "heading": 225,
+            "dist": 17.634,
+            "gap": 0.366,
+            "blocked": true,
+            "contact": true,
+            "frac": 1,
+            "pixels": 8976,
+            "label": "edge-4",
+            "color": {
+              "visible": true,
+              "samples": 80,
+              "std": 18.97,
+              "groundDiff": 36.886,
+              "meanL": 88.11,
+              "reason": "drawn"
+            },
+            "covered": true
+          },
+          {
+            "id": "04-stop-270",
+            "heading": 270,
+            "dist": 17.633,
+            "gap": 0.367,
+            "blocked": true,
+            "contact": true,
+            "frac": 1,
+            "pixels": 8976,
+            "label": "edge-5",
+            "color": {
+              "visible": true,
+              "samples": 80,
+              "std": 17.844,
+              "groundDiff": 47.003,
+              "meanL": 122.855,
+              "reason": "drawn"
+            },
+            "covered": true
+          },
+          {
+            "id": "04-stop-315",
+            "heading": 315,
+            "dist": 17.634,
+            "gap": 0.366,
+            "blocked": true,
+            "contact": true,
+            "frac": 1,
+            "pixels": 8976,
+            "label": "edge-6",
+            "color": {
+              "visible": true,
+              "samples": 80,
+              "std": 14.635,
+              "groundDiff": 48.417,
+              "meanL": 140.316,
+              "reason": "drawn"
+            },
+            "covered": true
+          }
+        ]
+      },
+      "detail": "Every stop has a layout object covering the view ahead, and those pixels are not empty ground or flat black.",
+      "heuristic": false,
+      "partial": true
+    },
+    {
+      "id": "collider_eq_visual",
+      "result": "PASS",
+      "numbers": {
+        "tolerance_m": 0.5,
+        "stops": 8,
+        "bad": 0,
+        "rows": [
+          {
+            "id": "04-stop-000",
+            "heading": 0,
+            "dist": 17.633,
+            "gap": 0.367,
+            "surface": "edge_ring",
+            "near": true,
+            "visible": true
+          },
+          {
+            "id": "04-stop-045",
+            "heading": 45,
+            "dist": 5.52,
+            "gap": 0.351,
+            "surface": "interior-0",
+            "near": true,
+            "visible": true
+          },
+          {
+            "id": "04-stop-090",
+            "heading": 90,
+            "dist": 17.633,
+            "gap": 0.367,
+            "surface": "edge_ring",
+            "near": true,
+            "visible": true
+          },
+          {
+            "id": "04-stop-135",
+            "heading": 135,
+            "dist": 17.634,
+            "gap": 0.366,
+            "surface": "edge_ring",
+            "near": true,
+            "visible": true
+          },
+          {
+            "id": "04-stop-180",
+            "heading": 180,
+            "dist": 17.633,
+            "gap": 0.367,
+            "surface": "edge_ring",
+            "near": true,
+            "visible": true
+          },
+          {
+            "id": "04-stop-225",
+            "heading": 225,
+            "dist": 17.634,
+            "gap": 0.366,
+            "surface": "edge_ring",
+            "near": true,
+            "visible": true
+          },
+          {
+            "id": "04-stop-270",
+            "heading": 270,
+            "dist": 17.633,
+            "gap": 0.367,
+            "surface": "edge_ring",
+            "near": true,
+            "visible": true
+          },
+          {
+            "id": "04-stop-315",
+            "heading": 315,
+            "dist": 17.634,
+            "gap": 0.366,
+            "surface": "edge_ring",
+            "near": true,
+            "visible": true
+          }
+        ]
+      },
+      "detail": "Stop must be within 0.5 m of a layout surface AND that surface must be visible. Data distance without pixels is FAIL.",
+      "heuristic": false,
+      "partial": true
+    },
+    {
+      "id": "layout_rendered",
+      "result": "PASS",
+      "numbers": {
+        "objects": 11,
+        "missing": [],
+        "rows": [
+          {
+            "id": "edge-0",
+            "kind": "edge",
+            "facing": 7,
+            "saw": true
+          },
+          {
+            "id": "edge-1",
+            "kind": "edge",
+            "facing": 8,
+            "saw": true
+          },
+          {
+            "id": "edge-2",
+            "kind": "edge",
+            "facing": 8,
+            "saw": true
+          },
+          {
+            "id": "edge-3",
+            "kind": "edge",
+            "facing": 7,
+            "saw": true
+          },
+          {
+            "id": "edge-4",
+            "kind": "edge",
+            "facing": 8,
+            "saw": true
+          },
+          {
+            "id": "edge-5",
+            "kind": "edge",
+            "facing": 8,
+            "saw": true
+          },
+          {
+            "id": "edge-6",
+            "kind": "edge",
+            "facing": 7,
+            "saw": true
+          },
+          {
+            "id": "edge-7",
+            "kind": "edge",
+            "facing": 6,
+            "saw": true
+          },
+          {
+            "id": "gate:to-path",
+            "kind": "gate",
+            "facing": 6,
+            "saw": true
+          },
+          {
+            "id": "interior-0",
+            "kind": "interior",
+            "facing": 1,
+            "saw": true
+          },
+          {
+            "id": "interior-1",
+            "kind": "interior",
+            "facing": 1,
+            "saw": true
+          }
+        ]
+      },
+      "detail": "Every layout object wrote visible pixels on a frame that faced it.",
+      "heuristic": false,
+      "partial": true
+    },
+    {
+      "id": "ring_closed",
+      "result": "PASS",
+      "numbers": {
+        "dataHits": 347,
+        "dataMisses": [],
+        "dataMissCount": 0,
+        "gateSkip": 13,
+        "renderHeadings": 36,
+        "renderMiss": 0,
+        "renderMissDeg": []
+      },
+      "detail": "Data rays and the 36 rendered headings both have to close. A collider ring with no pixels is FAIL. Gate span is the allowed opening.",
+      "heuristic": false,
+      "partial": false
+    },
+    {
+      "id": "gate",
+      "result": "PASS",
+      "numbers": {
+        "id": "to-path",
+        "pixels": 693,
+        "color": "drawn",
+        "bearing_deg": 0,
+        "dist_m": 18,
+        "layoutDist": 18,
+        "pathTrigger": true
+      },
+      "detail": "The gate frame must be visible from the centre, the HUD bearing and distance must match, and walking the opening must hit the path trigger.",
+      "heuristic": false,
+      "partial": false
+    },
+    {
+      "id": "near_lens",
+      "result": "PASS",
+      "numbers": {
+        "cull_m": 1.2,
+        "nearest_m": 1.41,
+        "at": "03-gate-end",
+        "missing": 0,
+        "samples": 58
+      },
+      "detail": "Nearest non-hero fragment that passed alpha must stay outside near_lens.cull_m. Partial: the distance is the renderer’s fragment metric, cross-checked only by being present on every frame.",
+      "heuristic": true,
+      "partial": true
+    },
+    {
+      "id": "fog_band",
+      "result": "PASS",
+      "numbers": {
+        "patches": 32,
+        "fogPixels": 191527,
+        "colored": true,
+        "streakFrac": 0,
+        "streakSamples": 200
+      },
+      "detail": "Fog must be in the file (20+ patches) and in the picture. Hard streak edges are a heuristic FAIL.",
+      "heuristic": true,
+      "partial": true
+    },
+    {
+      "id": "black_regions",
+      "result": "PASS",
+      "numbers": {
+        "hits": [],
+        "hitCount": 0,
+        "skyBandsIgnored": 0,
+        "scanned": 22
+      },
+      "detail": "Large flat near-black rectangles are FAIL. A full-width night-sky band that touches the top is ignored. Heuristic.",
+      "heuristic": true,
+      "partial": false
+    },
+    {
+      "id": "tile_repeat",
+      "result": "PASS",
+      "numbers": {
+        "scanned": 18,
+        "worstPeak": 0.681,
+        "worstLag": 111,
+        "worstAt": "04-stop-225",
+        "flagged": []
+      },
+      "detail": "Autocorrelation on the ground band. Obvious tile or checker repetition is FAIL. A smooth gradient is not. Heuristic.",
+      "heuristic": true,
+      "partial": false
+    },
+    {
+      "id": "backdrop_res",
+      "result": "PASS",
+      "numbers": {
+        "mag": 0.937,
+        "magW": 0.937,
+        "magH": 0.656,
+        "slice": 768.432,
+        "sourceW": 8192,
+        "sourceH": 1024,
+        "screenW": 720,
+        "screenH": 672,
+        "fovDeg": 33.769,
+        "at": "01-spawn",
+        "missing": 0
+      },
+      "detail": "Backdrop magnification is on-screen pixels divided by the source pixels of the visible ring slice (and by source height). Above 1.0 is an upscale, FAIL. The sizes come from the live renderer, not from a hand-written table.",
+      "heuristic": false,
+      "partial": true
+    },
+    {
+      "id": "single_hero",
+      "result": "PASS",
+      "numbers": {
+        "frames": 58,
+        "heroCount": 1,
+        "blobs": 1
+      },
+      "detail": "One hero on every captured frame.",
+      "heuristic": false,
+      "partial": false
+    },
+    {
+      "id": "single_bolt",
+      "result": "PASS",
+      "numbers": {
+        "single_hero": "PASS",
+        "idle_gallop_switch": "PASS"
+      },
+      "detail": "Doc 63 single_bolt: one hero in frame, and both idle and gallop captured.",
+      "heuristic": false,
+      "partial": false
+    },
+    {
+      "id": "idle_gallop_switch",
+      "result": "PASS",
+      "numbers": {
+        "gallop": {
+          "state": "GALLOP",
+          "spd": 6.2
+        },
+        "idle": {
+          "state": "IDLE",
+          "spd": 0
+        },
+        "movingWhileIdle": []
+      },
+      "detail": "State is GALLOP while moving and IDLE after the stop.",
+      "heuristic": false,
+      "partial": false
+    },
+    {
+      "id": "fullscreen",
+      "result": "PASS",
+      "numbers": {
+        "width": 720,
+        "height": 1600,
+        "frames": 58
+      },
+      "detail": "Canvas backing store and screenshots are 720×1600.",
+      "heuristic": false,
+      "partial": false
+    },
+    {
+      "id": "debug_hook",
+      "result": "PASS",
+      "numbers": {
+        "frames": 58,
+        "labels": [
+          "",
+          "edge-0",
+          "edge-1",
+          "edge-2",
+          "edge-3",
+          "edge-4",
+          "edge-5",
+          "edge-6",
+          "edge-7",
+          "interior-0",
+          "interior-1",
+          "gate:to-path",
+          "fog",
+          "hero"
+        ]
+      },
+      "detail": "snapshot() and object-ID buffer present on every captured step.",
+      "heuristic": false,
+      "partial": false
+    }
+  ],
+  "summary": {
+    "passed": 19,
+    "failed": 0,
+    "result": "PASS"
+  },
+  "notes": [
+    "This URL is the playcheck fixture harness, not a biome play build. This repo has no clearing play build. The harness paints test patterns so the tool can run here. It is not a style and it does not change a game.",
+    "Heuristic rows: black_regions, tile_repeat, fog_band streak test. Partial rows: stops are every 45° (8 headings) rather than 36 walked headings; ring coverage is sampled every 10° from the centre; backdrop size is reported by the renderer; near_lens uses the renderer's nearest fragment distance. A data-only agreement is not a PASS."
+  ],
+  "generatedAt": "2026-10-01T15:32:33.259Z"
+}
