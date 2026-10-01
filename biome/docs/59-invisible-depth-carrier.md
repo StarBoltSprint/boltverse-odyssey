@@ -40,3 +40,36 @@ Reference: **“space void relief sandbox test passed owner QC (KEEP) 2026-09-29
 
 Step-by-step numbers (plate frame 12, depth, 138° outpaint, Bolt key, controls): [`60-imagine-relief-panorama-method.md`](60-imagine-relief-panorama-method.md). Review only. Not a hang. Test 2c panorama is KEEP. Test 2d 360° relief ring is KEEP (values in [doc 60](60-imagine-relief-panorama-method.md), merged via PR #124).
 
+## Extension 2026-10-01: invisible procedural terrain shape
+
+**Owner-approved (SmiR) 2026-10-01.** Official exception. Extends this law; everything above stays. The Odyssey world is still **Imagine pixels only**. The existing FAIL rules stay: no procedural / Three.js / noise-drawn floor, and simplex is placement only. This extension licenses invisible shape, never visible pixels.
+
+### ALLOWED — invisible shape computed in code
+
+- Code **MAY** compute the invisible **SHAPE** of walkable ground:
+  - the ground plane;
+  - height relief, for example Depth Anything on a top-down Imagine image, **a few cm up to ~15–25 cm**, with tile edges at height **0**;
+  - tile layout;
+  - collision;
+  - placement.
+
+### REQUIRED — every visible pixel is Imagine
+
+- **Walkable ground** = seamless **top-down Imagine still tiles** (**≥ 4 variants**) laid at **true world scale** on that invisible relief.
+- **Rocks** = upright Imagine rock cutouts placed by **simplex** (placement + **90° rotation** only).
+- **Large boulders** = walk-around hulls via `tools/walkaround/build.py` (PR #127).
+- Code **never** draws, paints, shades, normal-maps or colours pixels. Lighting stays **baked** in the Imagine pixels.
+
+### Quality lock (still applies)
+
+- Magnification **≤ 1.0** on portrait **720×1600**. Size the tiles so the bottom screen edge stays **≤ 1.0**. Watch slope stretching.
+- Lossless PNG. No blur.
+- Watch for visible tile repetition.
+
+### Backdrop
+
+- The 360° ring of Imagine stills stays the **FAR** backdrop (sky + ridges). It does **not** move when Bolt walks.
+
+### Why
+
+- **Rocky Clearing walk test 2026-10-01 FAILED:** a single ring / relief still upscales after **~4 cm** of camera travel, so the ground froze (the HUD distance changed, the image did not). Walkable ground therefore uses top-down tiles; the ring is backdrop only. Recorded in [doc 60](60-imagine-relief-panorama-method.md#walkable-ground-2026-10-01).

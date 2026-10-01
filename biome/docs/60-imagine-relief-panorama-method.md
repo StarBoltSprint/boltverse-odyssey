@@ -183,6 +183,14 @@ Later: script the pipeline — image → 8 views → QC → hull → placement. 
 | Letterbox | Landscape canvas letterboxed on a portrait phone. Black bands. Fix: `100dvh` / `100vw` canvas, ring extended only beyond its top / bottom edges, buttons as a transparent overlay. |
 | Camera-locked object | Camera locked rigidly behind Bolt, and the object attached to the camera. Bolt never moves on screen, and the object seems to rotate with the ring. HUD position / distance constant = **FAIL signal**. Movement must be proven with HUD **x, z, heading and distance** changing. |
 
+## Walkable ground (2026-10-01)
+
+**Owner-approved (SmiR) 2026-10-01.** See [law 59 extension: invisible procedural terrain shape](59-invisible-depth-carrier.md#extension-2026-10-01-invisible-procedural-terrain-shape). Code may compute the invisible shape of walkable ground (plane, height relief, tile layout, collision, placement). Every visible pixel stays Imagine: top-down Imagine still tiles (≥ 4 variants) at true world scale, simplex-placed Imagine rock cutouts, and walk-around hulls for large boulders.
+
+| Test | Result | Why |
+| --- | --- | --- |
+| Rocky Clearing walk test (2026-10-01) | FAIL | A single ring / relief still upscales after **~4 cm** of camera travel, so the ground froze: the HUD distance changed, the image did not. Walkable ground uses top-down Imagine tiles. The 360° ring is the FAR backdrop only (sky + ridges) and does not move when Bolt walks. |
+
 ## Next — not KEEP yet
 
 1. Approach test (sandbox only). Never zoom a plate past **~1.3×**. Crossfade to a closer plate of the same object on the same axis (far / mid / near). Law 59.
