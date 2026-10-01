@@ -6,4 +6,6 @@ Synthetic PASS: `good-cutout`, `smooth-still`, `tiles-good`, `loop-good`.
 
 Synthetic FAIL: `black-plate` (opaque black, no alpha), `halo` (fringe thicker than 3 px), `small-mask` (foreground rows 377–596, asked to cover 700 px), `banded-jpeg` (JPEG plus posterization), `tiles-exposure`, `tiles-seam`, `backdrop-wide` (width 4200, split required), `backdrop-short`, `loop-jump`, `loop-frozen`, `morph-pop`.
 
-Real files, unchanged, are `real-gallop`, `real-bolt-back`, and `real-ship-depth`. Numbers are in each `report.md`. The gallop clears mean seam error and fails the p95 and the coarse flow. The JPEG still fails the lossless rule. The 192×108 PNG fails magnification against a 200×200 declaration.
+`locked-flag` and `lock-dir` are grandfathered: the opaque plate is measured and reported as WARN, and the exit code is 0. `mixed-lock` keeps that WARN and still FAILs on the unlocked JPEG.
+
+Real files under `lock/` (`real-gallop`, `real-bolt-back`) are the same. The gallop still prints seam p95 33 and flow 2.09 px, as WARN. That is not a reason to recook or replace it. Bolt stays `lock/bolt-gallop-cycle.mp4` and `lock/bolt-idle-breath.mp4`. `real-ship-depth` is outside `lock/` and still FAILs magnification.

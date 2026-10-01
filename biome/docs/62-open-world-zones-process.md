@@ -8,13 +8,15 @@ The free-walk method is [doc 61](61-free-clearing-walk.md). The invisible-shape 
 
 **Before any Imagine file enters:** run [`tools/assetcheck`](../../tools/assetcheck/README.md) on every KEEP candidate (image or video) and [`tools/objsheet`](../../tools/objsheet/README.md) on every object's view set before its hull. Paste the reports. A hand-written PASS is not a PASS. The tools only measure. They do not paint, resize, or replace a pixel.
 
+**`lock/` is grandfathered.** Anything under `lock/` (and any manifest entry with `locked: true`) is owner KEEP. `assetcheck` still measures it and prints **WARN**. A WARN is not a FAIL, the exit code stays 0, and it is not a reason to recook or replace that file. Bolt stays [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) and `lock/bolt-idle-breath.mp4`. If the idle file is missing, ask the owner. Do not cook a new one.
+
 ## Hard locks (already in the repo, unchanged)
 
 This doc restates them. It does not change them.
 
 - **Every visible pixel is Imagine:** Imagine images, or seamless looping keyed Imagine video.
 - **Code never draws, shades, or colours a pixel.** Code computes only **invisible shape**: relief, tile layout, colliders, placement, orientation. That includes shadows: **never draw a shadow in code** (take 8 below).
-- **Bolt** = keyed back-view gallop [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) + idle `lock/bolt-idle-breath.mp4`, with the automatic IDLE / GALLOP switch of doc 61. **Exactly one Bolt** on screen. Never a hull, never a new gallop. If `lock/bolt-idle-breath.mp4` is missing from your checkout, do not recook it; ask the owner.
+- **Bolt** = keyed back-view gallop [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) + idle `lock/bolt-idle-breath.mp4`, with the automatic IDLE / GALLOP switch of doc 61. **Exactly one Bolt** on screen. Never a hull, never a new gallop. If `lock/bolt-idle-breath.mp4` is missing from your checkout, do not recook it; ask the owner. An `assetcheck` **WARN** on either lock file is not a recook order.
 - **Magnification ≤ 1.0** at portrait **720×1600**. Lossless. No blur. Measured, and shown on the HUD.
 - **Full-screen phone portrait.** Controls are a transparent overlay. No letterbox (doc 60 test 4 FAIL table).
 - **360° ring = far backdrop only.** It does not move when Bolt walks. It is not the floor.
@@ -142,3 +144,4 @@ Take 8 is a past clearing take. Its paint is not a model. Only these lessons car
 - Draw, shade, colour, or shadow any pixel in code.
 - Hand-write PASS for an Imagine file or an object view set. The asset-gate report and the consistency sheet are the PASS.
 - Build a walk-around hull, or name an Imagine path in `clearing.json`, before those reports exist and exit 0.
+- Recook or replace anything under `lock/` because `assetcheck` printed WARN. That WARN is informational. Bolt stays the locked gallop and the idle loop.

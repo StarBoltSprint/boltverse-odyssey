@@ -28,7 +28,17 @@ See `manifest.example.json`.
 | `loop` | Run the seam check. Implied by kind `loop`. |
 | `lossless` | Stills, cutouts, tiles, and backdrops require a PNG. Videos are lossy unless this is set. |
 
-Missing `onScreen` (and no camera projection) is a resolution **FAIL**. The gate cannot prove magnification ≤ 1 without a declared size.
+Missing `onScreen` (and no camera projection) is a resolution **FAIL**, unless the file is grandfathered (below). The gate cannot prove magnification ≤ 1 without a declared size.
+
+## Grandfathered locks
+
+Anything whose path has a `lock/` directory, and any manifest entry with `"locked": true`, is owner-approved KEEP.
+
+The same measurements still run. A miss is printed as **WARN**, with the numbers. It is not a FAIL. It does not set `"ok": false`. It does not make the exit code non-zero.
+
+A WARN on a locked asset is not a reason to recook it or replace it. Bolt stays `lock/bolt-gallop-cycle.mp4` and `lock/bolt-idle-breath.mp4`. If the idle file is missing from the checkout, ask the owner. Do not cook a new one.
+
+An unlocked file in the same manifest still FAILs the run.
 
 ## Checks
 
@@ -63,9 +73,11 @@ Real files in this repo, same command, no retune:
 
 | Sample | File | Result |
 | --- | --- | --- |
-| `real-gallop` | `lock/bolt-gallop-cycle.mp4` | **FAIL** loop. 768×1168, h264, 96 fps, 534 frames, 5.5625 s. Seam MAE **4.63** (under 8). Seam p95 **33** (limit 28). Coarse flow **2.09 px** (limit 2). No pop, no frozen run. Foreground mask **192×580**, rows **318–897**, fill height **0.50**. Declared on-screen 180×280 → magnification **0.94**. |
-| `real-bolt-back` | `lock/bolt-back.jpg` | **FAIL** basic. JPEG is not a lossless still. |
-| `real-ship-depth` | `biome/void-orbit/stills/ship-depth.png` | **FAIL** resolution. 192×108 against a declared 200×200, magnification **1.85**. |
+| `real-gallop` | `lock/bolt-gallop-cycle.mp4` | **WARN** (grandfathered, exit 0). Loop numbers still print: seam MAE **4.63**, p95 **33**, coarse flow **2.09 px**. 768×1168, h264, 96 fps, 534 frames. Mask **192×580**, rows **318–897**. Not a recook. |
+| `real-bolt-back` | `lock/bolt-back.jpg` | **WARN** (grandfathered, exit 0). JPEG is noted. Not a recook. |
+| `locked-flag` / `lock-dir` | synthetic opaque plate, `locked: true` or under `lock/` | **WARN**, exit 0. |
+| `mixed-lock` | a `lock/` plate plus an unlocked JPEG | Plate is WARN. JPEG still **FAIL**s the run. |
+| `real-ship-depth` | `biome/void-orbit/stills/ship-depth.png` | **FAIL** resolution. 192×108 against a declared 200×200, magnification **1.85**. This path is not under `lock/`. |
 
 Those three reports are what the gate prints. They are not a KEEP and not a recook order.
 

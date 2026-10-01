@@ -6,7 +6,9 @@ Measures only. Does not resize, regrade, or replace the source.
   python3 tools/assetcheck/check.py --manifest manifest.json --out reports/assetcheck
   python3 tools/assetcheck/check.py --dir stills --kind cutout --on-screen 400x700 --out reports/assetcheck
 
-Exit 0 when every check PASSes. Exit 1 on any FAIL. A hand-written PASS is not a PASS.
+Exit 0 when every unlocked check PASSes. Exit 1 on any FAIL.
+Files under lock/ and manifest entries with locked: true are WARN, never FAIL, and do not change the exit code.
+A hand-written PASS is not a PASS. A WARN on a locked file is not a reason to recook it.
 """
 
 from __future__ import annotations
@@ -77,7 +79,13 @@ def main() -> int:
                 extra = f" seamMAE={check['seamMAE']} flow={check['seamFlowPx']}"
             print(f"{flag} {name} {asset['file']}{extra}")
     if report["ok"]:
-        print(f"PASS assetcheck out={args.out} assets={len(report['assets'])}")
+        warns = report.get("warnings") or []
+        if warns:
+            print(f"PASS assetcheck out={args.out} assets={len(report['assets'])} warnings={len(warns)}")
+            for line in warns:
+                print(line)
+        else:
+            print(f"PASS assetcheck out={args.out} assets={len(report['assets'])}")
         return 0
     print(f"FAIL assetcheck out={args.out} failures={len(report['failures'])}")
     for line in report["failures"]:

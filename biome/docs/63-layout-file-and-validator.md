@@ -13,7 +13,7 @@ The rendered table below does not re-measure source files. Those files are gated
 | Every Imagine image or video | `python3 tools/assetcheck/check.py --manifest … --out …` | `report.json` and `report.md`. Exit 0. Magnification ≤ 1 at 720×1600, key, loop seam, tile seams, backdrop split. |
 | Every solid object, before `tools/walkaround/build.py` | `python3 tools/objsheet/sheet.py --views … --config … --out …` | `report.json`, `report.md`, and `sheet.png`. Exit 0. Eight yaws, guide IoU ≥ 0.97 when a guide exists, adjacent silhouette lock, hull-keep fraction. Sub-objects included. |
 
-A hand-written PASS is not a PASS. A missing report, or a report with `"ok": false`, blocks generate. Law and thresholds: [`tools/assetcheck/README.md`](../../tools/assetcheck/README.md), [`tools/objsheet/README.md`](../../tools/objsheet/README.md).
+A hand-written PASS is not a PASS. A missing report, or a report with `"ok": false`, blocks generate. A **WARN** on a file under `lock/`, or on a manifest entry with `locked: true`, does not. Those files are grandfathered owner KEEP: the measurements still print, the exit code stays 0, and `"ok"` stays true. A WARN is not a reason to recook or replace the file. Bolt stays `lock/bolt-gallop-cycle.mp4` and `lock/bolt-idle-breath.mp4`. Law and thresholds: [`tools/assetcheck/README.md`](../../tools/assetcheck/README.md), [`tools/objsheet/README.md`](../../tools/objsheet/README.md).
 
 ## Status of `tools/clearing/`
 
@@ -131,3 +131,4 @@ The console also showed WebGL **`texSubImage3D` `INVALID_OPERATION`** errors, wh
 - Count a cut-out (alpha-discarded) texel as a visible pixel.
 - Post a play URL, or call a clearing KEEP, before every row passes on the rendered view and the owner's phone QC.
 - Name an Imagine path, or build its hull, without a pasted asset-gate report and, for every solid object, a pasted consistency sheet. A sentence that says PASS is not the report.
+- Recook or replace a `lock/` file because the asset gate printed WARN. Bolt stays the locked gallop and the idle loop.

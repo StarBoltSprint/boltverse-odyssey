@@ -8,9 +8,11 @@ A hand-written PASS is not a PASS. This file is the gate.
 
 A WARN on a file under `lock/`, or on a manifest entry with `locked: true`, is informational. It is not a FAIL, it does not fail this run, and it is not a reason to recook or replace that file. Bolt stays `lock/bolt-gallop-cycle.mp4` and `lock/bolt-idle-breath.mp4`.
 
-## black-plate.png
+## lock/plate.png
 
-Kind `cutout`. Asset **FAIL**.
+Kind `cutout`. Asset **WARN**.
+
+Grandfathered (`lock/`). Owner KEEP. Do not recook or replace this file because of a WARN.
 
 ### basic — PASS
 
@@ -37,7 +39,7 @@ Kind `cutout`. Asset **FAIL**.
 - magnification: `0.4255`
 - magnificationLimit: `1.0`
 
-### alpha — FAIL
+### alpha — WARN
 
 - key: `undeclared-black`
 - alphaMin: `255`
@@ -48,15 +50,51 @@ Kind `cutout`. Asset **FAIL**.
 - plateTouchesFrame: `True`
 - plateRectangularity: `0.8285`
 - haloThicknessPx: `0.0`
-- FAIL alpha unkeyed near-black fraction=0.8285 limit=0.02
-- FAIL alpha cutout has an opaque black field and no alpha; declare key=black or key the plate
-- FAIL alpha solid background plate fraction=0.8285 rectangularity=0.829
+- WARN alpha unkeyed near-black fraction=0.8285 limit=0.02
+- WARN alpha cutout has an opaque black field and no alpha; declare key=black or key the plate
+- WARN alpha solid background plate fraction=0.8285 rectangularity=0.829
+
+## banded.jpg
+
+Kind `still`. Asset **FAIL**.
+
+### basic — FAIL
+
+- codec: `jpeg`
+- container: `jpg`
+- pixFmt: `None`
+- mode: `RGB`
+- width: `160`
+- height: `96`
+- fps: `None`
+- frames: `None`
+- durationSec: `None`
+- lossless: `False`
+- losslessRequired: `True`
+- bandingFraction: `0.0`
+- FAIL basic lossless required, codec=jpeg container=jpg
+
+### resolution — PASS
+
+- screen: `[720, 1600]`
+- frame: `[160, 96]`
+- onScreen: `[80.0, 40.0]`
+- mask: `{'width': 160, 'height': 96, 'area': 15360, 'rows': [0, 95], 'cols': [0, 159], 'fillHeight': 1.0, 'fillArea': 1.0}`
+- compared: `frame`
+- magnification: `0.5`
+- magnificationLimit: `1.0`
 
 ## Failures
 
-- black-plate.png: FAIL alpha unkeyed near-black fraction=0.8285 limit=0.02
-- black-plate.png: FAIL alpha cutout has an opaque black field and no alpha; declare key=black or key the plate
-- black-plate.png: FAIL alpha solid background plate fraction=0.8285 rectangularity=0.829
+- banded.jpg: FAIL basic lossless required, codec=jpeg container=jpg
+
+## Warnings
+
+Informational. Not a recook order.
+
+- lock/plate.png: WARN alpha unkeyed near-black fraction=0.8285 limit=0.02
+- lock/plate.png: WARN alpha cutout has an opaque black field and no alpha; declare key=black or key the plate
+- lock/plate.png: WARN alpha solid background plate fraction=0.8285 rectangularity=0.829
 
 ## Heuristics
 

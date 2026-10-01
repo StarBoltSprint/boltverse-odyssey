@@ -17,12 +17,12 @@
   ],
   "assets": [
     {
-      "file": "black-plate.png",
+      "file": "lock/plate.png",
       "kind": "cutout",
       "yaw": null,
       "elevation": null,
-      "locked": false,
-      "lockReason": null,
+      "locked": true,
+      "lockReason": "lock/",
       "checks": {
         "basic": {
           "status": "PASS",
@@ -38,7 +38,8 @@
           "lossless": true,
           "losslessRequired": true,
           "bandingFraction": 0.0,
-          "failures": []
+          "failures": [],
+          "warnings": []
         },
         "resolution": {
           "status": "PASS",
@@ -72,10 +73,11 @@
           "compared": "mask",
           "magnification": 0.4255,
           "magnificationLimit": 1.0,
-          "failures": []
+          "failures": [],
+          "warnings": []
         },
         "alpha": {
-          "status": "FAIL",
+          "status": "WARN",
           "key": "undeclared-black",
           "alphaMin": 255,
           "alphaMax": 255,
@@ -89,25 +91,95 @@
           "plateTouchesFrame": true,
           "plateRectangularity": 0.8285,
           "haloThicknessPx": 0.0,
-          "failures": [
-            "FAIL alpha unkeyed near-black fraction=0.8285 limit=0.02",
-            "FAIL alpha cutout has an opaque black field and no alpha; declare key=black or key the plate",
-            "FAIL alpha solid background plate fraction=0.8285 rectangularity=0.829"
+          "failures": [],
+          "warnings": [
+            "WARN alpha unkeyed near-black fraction=0.8285 limit=0.02",
+            "WARN alpha cutout has an opaque black field and no alpha; declare key=black or key the plate",
+            "WARN alpha solid background plate fraction=0.8285 rectangularity=0.829"
           ]
         }
       },
+      "failures": [],
+      "ok": true,
+      "warnings": [
+        "WARN alpha unkeyed near-black fraction=0.8285 limit=0.02",
+        "WARN alpha cutout has an opaque black field and no alpha; declare key=black or key the plate",
+        "WARN alpha solid background plate fraction=0.8285 rectangularity=0.829"
+      ]
+    },
+    {
+      "file": "banded.jpg",
+      "kind": "still",
+      "yaw": null,
+      "elevation": null,
+      "locked": false,
+      "lockReason": null,
+      "checks": {
+        "basic": {
+          "status": "FAIL",
+          "codec": "jpeg",
+          "container": "jpg",
+          "pixFmt": null,
+          "mode": "RGB",
+          "width": 160,
+          "height": 96,
+          "fps": null,
+          "frames": null,
+          "durationSec": null,
+          "lossless": false,
+          "losslessRequired": true,
+          "bandingFraction": 0.0,
+          "failures": [
+            "FAIL basic lossless required, codec=jpeg container=jpg"
+          ]
+        },
+        "resolution": {
+          "status": "PASS",
+          "screen": [
+            720,
+            1600
+          ],
+          "frame": [
+            160,
+            96
+          ],
+          "onScreen": [
+            80.0,
+            40.0
+          ],
+          "mask": {
+            "width": 160,
+            "height": 96,
+            "area": 15360,
+            "rows": [
+              0,
+              95
+            ],
+            "cols": [
+              0,
+              159
+            ],
+            "fillHeight": 1.0,
+            "fillArea": 1.0
+          },
+          "compared": "frame",
+          "magnification": 0.5,
+          "magnificationLimit": 1.0,
+          "failures": []
+        }
+      },
       "failures": [
-        "FAIL alpha unkeyed near-black fraction=0.8285 limit=0.02",
-        "FAIL alpha cutout has an opaque black field and no alpha; declare key=black or key the plate",
-        "FAIL alpha solid background plate fraction=0.8285 rectangularity=0.829"
+        "FAIL basic lossless required, codec=jpeg container=jpg"
       ],
       "ok": false
     }
   ],
   "failures": [
-    "black-plate.png: FAIL alpha unkeyed near-black fraction=0.8285 limit=0.02",
-    "black-plate.png: FAIL alpha cutout has an opaque black field and no alpha; declare key=black or key the plate",
-    "black-plate.png: FAIL alpha solid background plate fraction=0.8285 rectangularity=0.829"
+    "banded.jpg: FAIL basic lossless required, codec=jpeg container=jpg"
   ],
-  "warnings": []
+  "warnings": [
+    "lock/plate.png: WARN alpha unkeyed near-black fraction=0.8285 limit=0.02",
+    "lock/plate.png: WARN alpha cutout has an opaque black field and no alpha; declare key=black or key the plate",
+    "lock/plate.png: WARN alpha solid background plate fraction=0.8285 rectangularity=0.829"
+  ]
 }

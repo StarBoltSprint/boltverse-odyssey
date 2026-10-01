@@ -1,14 +1,18 @@
 # assetcheck
 
-Result: **FAIL**
+Result: **PASS**
 
 Screen 720×1600. WebGL max texture 4096.
 
 A hand-written PASS is not a PASS. This file is the gate.
 
+A WARN on a file under `lock/`, or on a manifest entry with `locked: true`, is informational. It is not a FAIL, it does not fail this run, and it is not a reason to recook or replace that file. Bolt stays `lock/bolt-gallop-cycle.mp4` and `lock/bolt-idle-breath.mp4`.
+
 ## ../../../../lock/bolt-gallop-cycle.mp4
 
-Kind `loop`. Asset **FAIL**.
+Kind `loop`. Asset **WARN**.
+
+Grandfathered (`lock/`). Owner KEEP. Do not recook or replace this file because of a WARN.
 
 ### basic — PASS
 
@@ -48,7 +52,7 @@ Kind `loop`. Asset **FAIL**.
 - greenSpillFraction: `0.0553`
 - greenFieldStd: `1.8306`
 
-### loop — FAIL
+### loop — WARN
 
 - fps: `96.0`
 - frames: `534`
@@ -61,13 +65,15 @@ Kind `loop`. Asset **FAIL**.
 - popFrames: `[]`
 - frozenHits: `0`
 - limits: `{'seamMAE': 8.0, 'seamP95': 28.0, 'seamFlowPx': 2.0, 'frozenSec': 0.4}`
-- FAIL loop seam p95=33.000 limit=28.0
-- FAIL loop seam flow=2.085px limit=2.0
+- WARN loop seam p95=33.000 limit=28.0
+- WARN loop seam flow=2.085px limit=2.0
 
-## Failures
+## Warnings
 
-- ../../../../lock/bolt-gallop-cycle.mp4: FAIL loop seam p95=33.000 limit=28.0
-- ../../../../lock/bolt-gallop-cycle.mp4: FAIL loop seam flow=2.085px limit=2.0
+Informational. Not a recook order.
+
+- ../../../../lock/bolt-gallop-cycle.mp4: WARN loop seam p95=33.000 limit=28.0
+- ../../../../lock/bolt-gallop-cycle.mp4: WARN loop seam flow=2.085px limit=2.0
 
 ## Heuristics
 
@@ -77,3 +83,4 @@ Kind `loop`. Asset **FAIL**.
 - A declared key (black or green) is trusted as the compositor key. Undeclared cutouts must carry alpha.
 - Magnification uses the declared on-screen size at the closest camera on a 720×1600 portrait.
 - A hand-written PASS is not a PASS. The exit code and this file are the gate.
+- Anything under lock/ or marked locked: true is grandfathered owner KEEP. The same measurements run. A miss is WARN, never FAIL, and does not change the exit code. A WARN is not a reason to recook or replace that file. Bolt stays lock/bolt-gallop-cycle.mp4 and lock/bolt-idle-breath.mp4.

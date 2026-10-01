@@ -6,6 +6,8 @@ Screen 720×1600. WebGL max texture 4096.
 
 A hand-written PASS is not a PASS. This file is the gate.
 
+A WARN on a file under `lock/`, or on a manifest entry with `locked: true`, is informational. It is not a FAIL, it does not fail this run, and it is not a reason to recook or replace that file. Bolt stays `lock/bolt-gallop-cycle.mp4` and `lock/bolt-idle-breath.mp4`.
+
 ## tile-0.png
 
 Kind `tile`. Asset **PASS**.
@@ -149,3 +151,4 @@ Kind `tile`. Asset **PASS**.
 - A declared key (black or green) is trusted as the compositor key. Undeclared cutouts must carry alpha.
 - Magnification uses the declared on-screen size at the closest camera on a 720×1600 portrait.
 - A hand-written PASS is not a PASS. The exit code and this file are the gate.
+- Anything under lock/ or marked locked: true is grandfathered owner KEEP. The same measurements run. A miss is WARN, never FAIL, and does not change the exit code. A WARN is not a reason to recook or replace that file. Bolt stays lock/bolt-gallop-cycle.mp4 and lock/bolt-idle-breath.mp4.

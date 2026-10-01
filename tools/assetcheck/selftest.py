@@ -234,6 +234,36 @@ def case_loop_frozen(src: Path) -> None:
     manifest(src, [{"file": "frozen.mp4", "kind": "loop", "key": "green", "onScreen": [16, 20], "loop": True}])
 
 
+def case_locked_flag(src: Path) -> None:
+    img = ellipse(320, 200, 160, 100, 70, 50, (180, 90, 40))
+    img[..., 3] = 255
+    save_png(src / "plate.png", img)
+    manifest(src, [{"file": "plate.png", "kind": "cutout", "onScreen": [40, 60], "locked": True}])
+
+
+def case_lock_dir(src: Path) -> None:
+    img = ellipse(320, 200, 160, 100, 70, 50, (180, 90, 40))
+    img[..., 3] = 255
+    save_png(src / "lock" / "plate.png", img)
+    manifest(src, [{"file": "lock/plate.png", "kind": "cutout", "onScreen": [40, 60]}])
+
+
+def case_mixed(src: Path) -> None:
+    img = ellipse(320, 200, 160, 100, 70, 50, (180, 90, 40))
+    img[..., 3] = 255
+    save_png(src / "lock" / "plate.png", img)
+    ramp = ((np.arange(160) // 8) * 8).astype(np.uint8)
+    rgb = np.dstack([np.tile(ramp, (96, 1))] * 3)
+    Image.fromarray(rgb, "RGB").save(src / "banded.jpg", "JPEG", quality=20)
+    manifest(
+        src,
+        [
+            {"file": "lock/plate.png", "kind": "cutout", "onScreen": [40, 60]},
+            {"file": "banded.jpg", "kind": "still", "onScreen": [80, 40]},
+        ],
+    )
+
+
 def case_morph(src: Path) -> None:
     frames = [circle_frame(96, 64, 32, 48, 16, key="black") for _ in range(6)]
     frames[3] = circle_frame(96, 64, 32, 48, 30, key="black")
@@ -257,7 +287,42 @@ CASES = [
     ("loop-jump", case_loop_jump, False, "loop"),
     ("loop-frozen", case_loop_frozen, False, "frozen"),
     ("morph-pop", case_morph, False, "morph"),
+    ("locked-flag", case_locked_flag, True, None),
+    ("lock-dir", case_lock_dir, True, None),
+    ("mixed-lock", case_mixed, False, "lossless"),
 ]
+
+
+def assert_grandfather(name: str, code: int, report: dict) -> None:
+    warnings = "\n".join(report.get("warnings") or [])
+    failures = "\n".join(report.get("failures") or [])
+    if name in {"locked-flag", "lock-dir"}:
+        if code != 0 or not report.get("ok") or failures or "WARN alpha" not in warnings:
+            raise SystemExit(f"{name} should WARN and exit 0\n{warnings}\n{failures}")
+        for asset in report["assets"]:
+            if not asset.get("locked") or asset.get("failures"):
+                raise SystemExit(f"{name} asset not grandfathered: {asset.get('file')}")
+            for check in asset.get("checks", {}).values():
+                if check.get("status") == "FAIL":
+                    raise SystemExit(f"{name} still FAILs {check}")
+    if name == "mixed-lock":
+        if code == 0 or report.get("ok"):
+            raise SystemExit("mixed-lock: an unlocked FAIL must still exit non-zero")
+        if "lock/plate.png" in failures or "WARN" not in warnings:
+            raise SystemExit(f"mixed-lock split wrong\nWARN {warnings}\nFAIL {failures}")
+    if name == "real-gallop":
+        if code != 0 or not report.get("ok") or failures:
+            raise SystemExit(f"gallop lock must not FAIL\n{failures}")
+        if "WARN loop" not in warnings:
+            raise SystemExit(warnings or "gallop produced no WARN")
+    if name == "real-bolt-back":
+        if code != 0 or not report.get("ok") or failures:
+            raise SystemExit(f"bolt-back lock must not FAIL\n{failures}")
+        if "WARN basic" not in warnings:
+            raise SystemExit(warnings or "bolt-back produced no WARN")
+    if name == "real-ship-depth":
+        if code == 0 or report.get("ok"):
+            raise SystemExit("ship-depth is outside lock/ and must still FAIL")
 
 
 def real_cases(tmp: Path) -> None:
@@ -298,8 +363,12 @@ def real_cases(tmp: Path) -> None:
             rewritten.append(item)
         path = manifest(dest, rewritten)
         code, report = run(path, tmp / name / "out")
-        print(f"real {name} exit={code} ok={report.get('ok')} failures={len(report.get('failures') or [])}")
-        for line in (report.get("failures") or [])[:8]:
+        assert_grandfather(name, code, report)
+        print(
+            f"real {name} exit={code} ok={report.get('ok')} "
+            f"failures={len(report.get('failures') or [])} warnings={len(report.get('warnings') or [])}"
+        )
+        for line in (report.get("failures") or report.get("warnings") or [])[:8]:
             print(" ", line)
         shutil.copy(tmp / name / "out" / "report.json", dest / "report.json")
         shutil.copy(tmp / name / "out" / "report.md", dest / "report.md")
@@ -336,6 +405,7 @@ def main() -> None:
         builder(src)
         code, report = run(src / "manifest.json", tmp / name / "out")
         expect(code, report, ok, needle)
+        assert_grandfather(name, code, report)
         dest = SAMPLES / name
         if dest.exists():
             shutil.rmtree(dest)

@@ -65,6 +65,7 @@ HEURISTICS = [
     "A declared key (black or green) is trusted as the compositor key. Undeclared cutouts must carry alpha.",
     "Magnification uses the declared on-screen size at the closest camera on a 720×1600 portrait.",
     "A hand-written PASS is not a PASS. The exit code and this file are the gate.",
+    "Anything under lock/ or marked locked: true is grandfathered owner KEEP. The same measurements run. A miss is WARN, never FAIL, and does not change the exit code. A WARN is not a reason to recook or replace that file. Bolt stays lock/bolt-gallop-cycle.mp4 and lock/bolt-idle-breath.mp4.",
 ]
 
 
@@ -74,6 +75,39 @@ def r4(value) -> float:
 
 def status_of(ok: bool) -> str:
     return "PASS" if ok else "FAIL"
+
+
+def lock_of(item: dict, path: Path) -> tuple[bool, str]:
+    """Owner KEEP. lock/ on disk, or locked: true in the manifest. Never a FAIL."""
+    flagged = item.get("locked")
+    if isinstance(flagged, str):
+        flagged = flagged.strip().lower() == "true"
+    parts = tuple(Path(str(item.get("file") or "")).parts) + tuple(path.parts)
+    under_lock = "lock" in parts
+    if under_lock:
+        return True, "lock/"
+    if flagged is True:
+        return True, "manifest"
+    return False, ""
+
+
+def grandfather(asset: dict) -> None:
+    """Turn every FAIL on a locked asset into an informational WARN. ok stays true."""
+    warnings: list[str] = []
+    for check in (asset.get("checks") or {}).values():
+        local: list[str] = []
+        for line in list(check.get("failures") or []):
+            text = line[4:] if str(line).startswith("FAIL") else str(line)
+            text = text[4:].lstrip() if text.startswith("WARN") else text
+            local.append("WARN " + text.lstrip())
+        if local or check.get("status") == "FAIL":
+            check["status"] = "WARN"
+        check["warnings"] = local
+        check["failures"] = []
+        warnings.extend(local)
+    asset["warnings"] = warnings
+    asset["failures"] = []
+    asset["ok"] = True
 
 
 class CheckError(Exception):
@@ -938,11 +972,14 @@ def which_checks(kind: str, item: dict) -> set[str]:
 def measure_asset(item: dict, root: Path, screen: tuple[int, int], webgl_max: int) -> dict:
     path = resolve_file(item["file"], root)
     kind = kind_of(item, path)
+    locked, lock_reason = lock_of(item, path)
     result = {
         "file": item["file"],
         "kind": kind,
         "yaw": item.get("yaw"),
         "elevation": item.get("elevation", item.get("elevationDeg")),
+        "locked": locked,
+        "lockReason": lock_reason or None,
     }
     if not path.is_file():
         result["ok"] = False
@@ -1022,18 +1059,23 @@ def measure_manifest(manifest: dict, root: Path) -> dict:
                 assets[index]["checks"]["tiling"] = {
                     "status": group["status"],
                     "sharedWith": tiles[0][0],
-                    "failures": [],
+                    "failures": list(group["failures"]) if group["status"] == "FAIL" else [],
                 }
-        if group["status"] == "FAIL":
-            index = tiles[0][2]
-            assets[index]["failures"] = [
-                line for line in assets[index]["failures"] if not line.startswith("FAIL tiling")
-            ] + list(group["failures"])
-            assets[index]["ok"] = False
+            if group["status"] == "FAIL":
+                assets[index]["failures"] = [
+                    line for line in assets[index]["failures"] if not line.startswith("FAIL tiling")
+                ] + list(group["failures"])
+                assets[index]["ok"] = False
     failures = []
+    warnings = []
     for asset in assets:
-        for line in asset["failures"]:
-            failures.append(f"{asset['file']}: {line}")
+        if asset.get("locked"):
+            grandfather(asset)
+            for line in asset["warnings"]:
+                warnings.append(f"{asset['file']}: {line}")
+        else:
+            for line in asset["failures"]:
+                failures.append(f"{asset['file']}: {line}")
     return {
         "tool": "assetcheck",
         "ok": not failures,
@@ -1042,7 +1084,16 @@ def measure_manifest(manifest: dict, root: Path) -> dict:
         "heuristics": HEURISTICS,
         "assets": assets,
         "failures": failures,
+        "warnings": warnings,
     }
+
+
+def asset_banner(asset: dict) -> str:
+    if asset.get("locked") and asset.get("warnings"):
+        return "WARN"
+    if asset.get("ok"):
+        return "PASS"
+    return "FAIL"
 
 
 def to_markdown(report: dict) -> str:
@@ -1055,11 +1106,18 @@ def to_markdown(report: dict) -> str:
         "",
         "A hand-written PASS is not a PASS. This file is the gate.",
         "",
+        "A WARN on a file under `lock/`, or on a manifest entry with `locked: true`, is informational. It is not a FAIL, it does not fail this run, and it is not a reason to recook or replace that file. Bolt stays `lock/bolt-gallop-cycle.mp4` and `lock/bolt-idle-breath.mp4`.",
+        "",
     ]
     for asset in report["assets"]:
         lines.append(f"## {asset['file']}")
         lines.append("")
-        lines.append(f"Kind `{asset['kind']}`. Asset **{'PASS' if asset['ok'] else 'FAIL'}**.")
+        lines.append(f"Kind `{asset['kind']}`. Asset **{asset_banner(asset)}**.")
+        if asset.get("locked"):
+            lines.append("")
+            lines.append(
+                f"Grandfathered (`{asset.get('lockReason')}`). Owner KEEP. Do not recook or replace this file because of a WARN."
+            )
         lines.append("")
         for name, check in asset.get("checks", {}).items():
             if check.get("deferred"):
@@ -1067,16 +1125,26 @@ def to_markdown(report: dict) -> str:
             lines.append(f"### {name} — {check.get('status')}")
             lines.append("")
             for key, value in check.items():
-                if key in {"status", "failures", "tiles"}:
+                if key in {"status", "failures", "warnings", "tiles"}:
                     continue
                 lines.append(f"- {key}: `{value}`")
             for failure in check.get("failures") or []:
                 lines.append(f"- {failure}")
+            for warning in check.get("warnings") or []:
+                lines.append(f"- {warning}")
             lines.append("")
     if report["failures"]:
         lines.append("## Failures")
         lines.append("")
         for line in report["failures"]:
+            lines.append(f"- {line}")
+        lines.append("")
+    if report.get("warnings"):
+        lines.append("## Warnings")
+        lines.append("")
+        lines.append("Informational. Not a recook order.")
+        lines.append("")
+        for line in report["warnings"]:
             lines.append(f"- {line}")
         lines.append("")
     lines.append("## Heuristics")

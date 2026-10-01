@@ -26,6 +26,14 @@
       "key": "green",
       "onScreen": [280, 360],
       "loop": true
+    },
+    {
+      "file": "lock/bolt-gallop-cycle.mp4",
+      "kind": "loop",
+      "key": "green",
+      "onScreen": [180, 280],
+      "loop": true,
+      "locked": true
     }
   ]
 }

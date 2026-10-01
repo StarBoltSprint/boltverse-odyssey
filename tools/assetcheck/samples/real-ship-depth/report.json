@@ -12,7 +12,8 @@
     "Banding is a posterization heuristic (flat run, then a step). Noise can hide bands.",
     "A declared key (black or green) is trusted as the compositor key. Undeclared cutouts must carry alpha.",
     "Magnification uses the declared on-screen size at the closest camera on a 720\u00d71600 portrait.",
-    "A hand-written PASS is not a PASS. The exit code and this file are the gate."
+    "A hand-written PASS is not a PASS. The exit code and this file are the gate.",
+    "Anything under lock/ or marked locked: true is grandfathered owner KEEP. The same measurements run. A miss is WARN, never FAIL, and does not change the exit code. A WARN is not a reason to recook or replace that file. Bolt stays lock/bolt-gallop-cycle.mp4 and lock/bolt-idle-breath.mp4."
   ],
   "assets": [
     {
@@ -20,6 +21,8 @@
       "kind": "still",
       "yaw": null,
       "elevation": null,
+      "locked": false,
+      "lockReason": null,
       "checks": {
         "basic": {
           "status": "PASS",
@@ -82,5 +85,6 @@
   ],
   "failures": [
     "../../../../biome/void-orbit/stills/ship-depth.png: FAIL resolution magnification=1.8519 limit=1.0 source=192x108 rows=0-107 frame=192x108 onScreen=200x200 fillHeight=1.0000"
-  ]
+  ],
+  "warnings": []
 }

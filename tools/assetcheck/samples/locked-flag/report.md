@@ -1,6 +1,6 @@
 # assetcheck
 
-Result: **FAIL**
+Result: **PASS**
 
 Screen 720×1600. WebGL max texture 4096.
 
@@ -8,18 +8,20 @@ A hand-written PASS is not a PASS. This file is the gate.
 
 A WARN on a file under `lock/`, or on a manifest entry with `locked: true`, is informational. It is not a FAIL, it does not fail this run, and it is not a reason to recook or replace that file. Bolt stays `lock/bolt-gallop-cycle.mp4` and `lock/bolt-idle-breath.mp4`.
 
-## ring.png
+## plate.png
 
-Kind `backdrop`. Asset **FAIL**.
+Kind `cutout`. Asset **WARN**.
+
+Grandfathered (`manifest`). Owner KEEP. Do not recook or replace this file because of a WARN.
 
 ### basic — PASS
 
 - codec: `png`
 - container: `png`
 - pixFmt: `None`
-- mode: `RGB`
-- width: `4200`
-- height: `48`
+- mode: `RGBA`
+- width: `200`
+- height: `320`
 - fps: `None`
 - frames: `None`
 - durationSec: `None`
@@ -30,27 +32,35 @@ Kind `backdrop`. Asset **FAIL**.
 ### resolution — PASS
 
 - screen: `[720, 1600]`
-- frame: `[4200, 48]`
-- onScreen: `[720.0, 30.0]`
-- mask: `{'width': 4200, 'height': 48, 'area': 201600, 'rows': [0, 47], 'cols': [0, 4199], 'fillHeight': 1.0, 'fillArea': 1.0}`
-- compared: `frame`
-- magnification: `0.625`
+- frame: `[200, 320]`
+- onScreen: `[40.0, 60.0]`
+- mask: `{'width': 101, 'height': 141, 'area': 10973, 'rows': [90, 230], 'cols': [50, 150], 'fillHeight': 0.4406, 'fillArea': 0.1715}`
+- compared: `mask`
+- magnification: `0.4255`
 - magnificationLimit: `1.0`
 
-### backdrop — FAIL
+### alpha — WARN
 
-- width: `4200`
-- height: `48`
-- webglMaxTexture: `4096`
-- splitNeeded: `True`
-- verticalMagnification: `0.625`
-- seam: `{'seam': 0.3333, 'interior': 0.0, 'ratio': 0.3333}`
-- screen: `[720, 1600]`
-- FAIL backdrop width=4200 exceeds WebGL max texture 4096; split before upload
+- key: `undeclared-black`
+- alphaMin: `255`
+- alphaMax: `255`
+- unkeyedBlackFraction: `0.8285`
+- plateFraction: `0.8285`
+- plateColor: `[0.0, 0.0, 0.0]`
+- plateTouchesFrame: `True`
+- plateRectangularity: `0.8285`
+- haloThicknessPx: `0.0`
+- WARN alpha unkeyed near-black fraction=0.8285 limit=0.02
+- WARN alpha cutout has an opaque black field and no alpha; declare key=black or key the plate
+- WARN alpha solid background plate fraction=0.8285 rectangularity=0.829
 
-## Failures
+## Warnings
 
-- ring.png: FAIL backdrop width=4200 exceeds WebGL max texture 4096; split before upload
+Informational. Not a recook order.
+
+- plate.png: WARN alpha unkeyed near-black fraction=0.8285 limit=0.02
+- plate.png: WARN alpha cutout has an opaque black field and no alpha; declare key=black or key the plate
+- plate.png: WARN alpha solid background plate fraction=0.8285 rectangularity=0.829
 
 ## Heuristics
 

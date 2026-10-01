@@ -17,12 +17,12 @@
   ],
   "assets": [
     {
-      "file": "good-cutout.png",
+      "file": "plate.png",
       "kind": "cutout",
-      "yaw": 0,
-      "elevation": 0,
-      "locked": false,
-      "lockReason": null,
+      "yaw": null,
+      "elevation": null,
+      "locked": true,
+      "lockReason": "manifest",
       "checks": {
         "basic": {
           "status": "PASS",
@@ -38,7 +38,8 @@
           "lossless": true,
           "losslessRequired": true,
           "bandingFraction": 0.0,
-          "failures": []
+          "failures": [],
+          "warnings": []
         },
         "resolution": {
           "status": "PASS",
@@ -51,51 +52,66 @@
             320
           ],
           "onScreen": [
-            80.0,
-            120.0
+            40.0,
+            60.0
           ],
           "mask": {
-            "width": 141,
-            "height": 221,
-            "area": 24173,
+            "width": 101,
+            "height": 141,
+            "area": 10973,
             "rows": [
-              40,
-              260
+              90,
+              230
             ],
             "cols": [
-              30,
-              170
+              50,
+              150
             ],
-            "fillHeight": 0.6906,
-            "fillArea": 0.3777
+            "fillHeight": 0.4406,
+            "fillArea": 0.1715
           },
           "compared": "mask",
-          "magnification": 0.5674,
+          "magnification": 0.4255,
           "magnificationLimit": 1.0,
-          "failures": []
+          "failures": [],
+          "warnings": []
         },
         "alpha": {
-          "status": "PASS",
-          "key": "alpha",
-          "alphaMin": 0,
+          "status": "WARN",
+          "key": "undeclared-black",
+          "alphaMin": 255,
           "alphaMax": 255,
-          "unkeyedBlackFraction": 0.0,
-          "plateFraction": 0.6223,
+          "unkeyedBlackFraction": 0.8285,
+          "plateFraction": 0.8285,
           "plateColor": [
             0.0,
             0.0,
             0.0
           ],
           "plateTouchesFrame": true,
-          "plateRectangularity": 0.6223,
+          "plateRectangularity": 0.8285,
           "haloThicknessPx": 0.0,
-          "failures": []
+          "failures": [],
+          "warnings": [
+            "WARN alpha unkeyed near-black fraction=0.8285 limit=0.02",
+            "WARN alpha cutout has an opaque black field and no alpha; declare key=black or key the plate",
+            "WARN alpha solid background plate fraction=0.8285 rectangularity=0.829"
+          ]
         }
       },
       "failures": [],
-      "ok": true
+      "ok": true,
+      "warnings": [
+        "WARN alpha unkeyed near-black fraction=0.8285 limit=0.02",
+        "WARN alpha cutout has an opaque black field and no alpha; declare key=black or key the plate",
+        "WARN alpha solid background plate fraction=0.8285 rectangularity=0.829"
+      ]
     }
   ],
   "failures": [],
-  "warnings": []
+  "warnings": [
+    "plate.png: WARN alpha unkeyed near-black fraction=0.8285 limit=0.02",
+    "plate.png: WARN alpha cutout has an opaque black field and no alpha; declare key=black or key the plate",
+    "plate.png: WARN alpha solid background plate fraction=0.8285 rectangularity=0.829"
+  ]
 }

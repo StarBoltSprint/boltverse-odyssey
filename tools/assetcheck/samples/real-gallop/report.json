@@ -1,6 +1,6 @@
 {
   "tool": "assetcheck",
-  "ok": false,
+  "ok": true,
   "screen": [
     720,
     1600
@@ -12,7 +12,8 @@
     "Banding is a posterization heuristic (flat run, then a step). Noise can hide bands.",
     "A declared key (black or green) is trusted as the compositor key. Undeclared cutouts must carry alpha.",
     "Magnification uses the declared on-screen size at the closest camera on a 720\u00d71600 portrait.",
-    "A hand-written PASS is not a PASS. The exit code and this file are the gate."
+    "A hand-written PASS is not a PASS. The exit code and this file are the gate.",
+    "Anything under lock/ or marked locked: true is grandfathered owner KEEP. The same measurements run. A miss is WARN, never FAIL, and does not change the exit code. A WARN is not a reason to recook or replace that file. Bolt stays lock/bolt-gallop-cycle.mp4 and lock/bolt-idle-breath.mp4."
   ],
   "assets": [
     {
@@ -20,6 +21,8 @@
       "kind": "loop",
       "yaw": null,
       "elevation": null,
+      "locked": true,
+      "lockReason": "lock/",
       "checks": {
         "basic": {
           "status": "PASS",
@@ -35,7 +38,8 @@
           "lossless": false,
           "losslessRequired": false,
           "bandingFraction": 0.0,
-          "failures": []
+          "failures": [],
+          "warnings": []
         },
         "resolution": {
           "status": "PASS",
@@ -69,7 +73,8 @@
           "compared": "mask",
           "magnification": 0.9375,
           "magnificationLimit": 1.0,
-          "failures": []
+          "failures": [],
+          "warnings": []
         },
         "alpha": {
           "status": "PASS",
@@ -87,10 +92,11 @@
           "haloThicknessPx": 0.0,
           "greenSpillFraction": 0.0553,
           "greenFieldStd": 1.8306,
-          "failures": []
+          "failures": [],
+          "warnings": []
         },
         "loop": {
-          "status": "FAIL",
+          "status": "WARN",
           "fps": 96.0,
           "frames": 534,
           "durationSec": 5.5625,
@@ -107,21 +113,24 @@
             "seamFlowPx": 2.0,
             "frozenSec": 0.4
           },
-          "failures": [
-            "FAIL loop seam p95=33.000 limit=28.0",
-            "FAIL loop seam flow=2.085px limit=2.0"
+          "failures": [],
+          "warnings": [
+            "WARN loop seam p95=33.000 limit=28.0",
+            "WARN loop seam flow=2.085px limit=2.0"
           ]
         }
       },
-      "failures": [
-        "FAIL loop seam p95=33.000 limit=28.0",
-        "FAIL loop seam flow=2.085px limit=2.0"
-      ],
-      "ok": false
+      "failures": [],
+      "ok": true,
+      "warnings": [
+        "WARN loop seam p95=33.000 limit=28.0",
+        "WARN loop seam flow=2.085px limit=2.0"
+      ]
     }
   ],
-  "failures": [
-    "../../../../lock/bolt-gallop-cycle.mp4: FAIL loop seam p95=33.000 limit=28.0",
-    "../../../../lock/bolt-gallop-cycle.mp4: FAIL loop seam flow=2.085px limit=2.0"
+  "failures": [],
+  "warnings": [
+    "../../../../lock/bolt-gallop-cycle.mp4: WARN loop seam p95=33.000 limit=28.0",
+    "../../../../lock/bolt-gallop-cycle.mp4: WARN loop seam flow=2.085px limit=2.0"
   ]
 }
