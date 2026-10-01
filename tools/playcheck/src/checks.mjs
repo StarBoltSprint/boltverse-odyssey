@@ -23,6 +23,7 @@ import {
   windowCount,
   windowCountAny,
 } from "./pixels.mjs";
+import { judgePerf } from "../../perf/stats.mjs";
 
 const WEBGL_RE = /webgl|invalid_|gl_invalid|texsubimage|teximage|geterror/i;
 
@@ -80,6 +81,8 @@ function finish(layout, frames, extras) {
   rows.push(rowBlack(frames));
   rows.push(rowTiles(frames));
   rows.push(rowBackdrop(frames, layout));
+  const perf = judgePerf(frames);
+  for (const perfRow of perf.rows) rows.push(perfRow);
 
   const failed = rows.filter((r) => r.result !== "PASS").length;
   return {
@@ -88,6 +91,7 @@ function finish(layout, frames, extras) {
     passed: rows.length - failed,
     glErrors: gl.errors,
     consoleErrors: gl.console,
+    perf: perf.report,
   };
 }
 
