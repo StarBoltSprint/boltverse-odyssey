@@ -2,7 +2,7 @@
 
 One command turns a folder of still views of **one** object into a closed invisible hull the sandbox can load. It does not call Imagine. It does not cook views. It is not for Bolt. Bolt stays `lock/bolt-gallop-cycle.mp4`.
 
-Law: [`biome/docs/59-invisible-depth-carrier.md`](../../biome/docs/59-invisible-depth-carrier.md). Method: [`biome/docs/60-imagine-relief-panorama-method.md`](../../biome/docs/60-imagine-relief-panorama-method.md) (walk-around hull, Script).
+Law: [`biome/docs/59-invisible-depth-carrier.md`](../../biome/docs/59-invisible-depth-carrier.md). Method: [`biome/docs/60-imagine-relief-panorama-method.md`](../../biome/docs/60-imagine-relief-panorama-method.md) (walk-around hull, Script). Clearing placement (Rocky Clearing take 3 KEEP): [`biome/docs/61-free-clearing-walk.md`](../../biome/docs/61-free-clearing-walk.md). Boulders only. Bolt stays a keyed video.
 
 The hull is a depth/occlusion carrier. It has no color, no texture, no lighting. Every visible pixel is a nearest sample of an original PNG. This is not a license for procedural or mesh-drawn worlds.
 

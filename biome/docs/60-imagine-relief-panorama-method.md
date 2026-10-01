@@ -145,12 +145,12 @@ Status **PARKED — "better, not perfect"**. Sandbox only. Not KEEP.
 - For **walk-around objects**, the invisible depth carrier may be a **CLOSED invisible hull**.
 - The hull is computed in code: **silhouette carving** of the object's Imagine views, then **Depth Anything V2** refinement.
 - The Imagine views are projected onto the hull. The hull **never draws its own pixels**: no own color, texture, lighting, or shading. Every visible pixel is an Imagine pixel.
-- **Not for Bolt.** Bolt stays `lock/bolt-gallop-cycle.mp4`, keyed, screen-centered.
+- **Not for Bolt.** Bolt stays a keyed video, screen-centered: `lock/bolt-gallop-cycle.mp4` while he moves, `lock/bolt-idle-breath.mp4` when he has stopped ([doc 61](61-free-clearing-walk.md)). A hull of Bolt is FAIL.
 - **Not a license** for procedural or mesh worlds, terrain generators, or modeled objects.
 
 ## KEEP method — walk-around object from Imagine stills
 
-Validated for **rock construction**. Movement is still in progress (see the test 4 FAIL table, last row).
+Validated for **rock construction**. The 2026-09-30 movement attempts in the test 4 FAIL table stayed FAIL (camera-locked object). The free-360 walk that passed phone QC is [doc 61](61-free-clearing-walk.md).
 
 1. **V0.** Start from one sharp Imagine still of the object. Full-res PNG, **1248×1584**, lossless.
 2. **8 views.** Cook one view every **45°**, progressively, with Imagine **IMAGE**. Each view is cooked from its neighbor + V0 as reference, with a **silhouette lock**: area **±15%**, height **±8%** vs its neighbors. No video.
@@ -203,14 +203,15 @@ Imagine pixels are never upscaled or degraded. The command copies each source PN
 
 | Test | Result | Why |
 | --- | --- | --- |
-| Rocky Clearing walk test (2026-10-01) | FAIL | A single ring / relief still upscales after **~4 cm** of camera travel, so the ground froze: the HUD distance changed, the image did not. Walkable ground uses top-down Imagine tiles. The 360° ring is the FAR backdrop only (sky + ridges) and does not move when Bolt walks. |
+| Rocky Clearing walk test (2026-10-01), attempt 1 | FAIL | A single ring / relief still upscales after **~4 cm** of camera travel, so the ground froze: the HUD distance changed, the image did not. Freezing that still to the camera (to avoid the upscale) left the ground stuck. HUD magnification **0.406**, claimed **0.990**. |
 
-## Next — not KEEP yet
+**Take 3 KEEP** of that clearing (phone QC 2026-10-01, magnification **0.979** on the HUD and on the phone), the edge that is still **IN PROGRESS**, and the Bolt idle-breath KEEP are [`61-free-clearing-walk.md`](61-free-clearing-walk.md). This file stays the relief panorama and the hull command.
+
+## Still open
 
 1. Approach test (sandbox only). Never zoom a plate past **~1.3×**. Crossfade to a closer plate of the same object on the same axis (far / mid / near). Law 59.
-2. The turntable / rotation-video rock is **FAIL** (see the test 4 FAIL table). Next: the walk-around rock via the closed invisible hull method above, from **8 Imagine still views**, plus real free movement of Bolt around a fixed rock.
+2. The turntable / rotation-video rock is **FAIL** (see the test 4 FAIL table). Boulders use the closed invisible hull above, from **8 Imagine still views**. Free movement on the clearing is KEEP in [doc 61](61-free-clearing-walk.md). The clearing edge in that doc is still IN PROGRESS.
 3. First space zone only after approach passes QC.
-4. Ground biome later. Do not start it from this PR.
 
 ## Do not
 

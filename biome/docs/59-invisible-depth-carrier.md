@@ -12,12 +12,12 @@
 
 - The relief texture for static solid decor (rocks, hulls, wrecks, ground) may be a still Imagine IMAGE, or one locked frame of an Imagine plate. This is preferred: depth is computed on that exact frame (perfect match), with no loop snap and sharper detail.
 - Living elements (stars twinkle, dust, vapor, lights) stay separate keyed Imagine VIDEO layers that loop seamlessly: first frame = last frame, or ping-pong. **Never** hard-restart them.
-- **FAIL** a plate video with baked object drift / rotation that snaps back on loop, or depth computed on one frame while the pixels drift. Bolt stays `lock/bolt-gallop-cycle.mp4`.
+- **FAIL** a plate video with baked object drift / rotation that snaps back on loop, or depth computed on one frame while the pixels drift. Bolt stays a keyed video (Bolt lock below).
 - **APPROACH:** moving toward an object never zooms a plate beyond **~1.3×**. Crossfade to a plate cooked closer on the same axis (far / mid / near). Otherwise keep the object as distant decor.
 
 ## BOLT LOCK
 
-- **NEVER apply this carrier to Bolt.** Bolt stays the keyed `lock/bolt-gallop-cycle.mp4` layer with the camera locked behind. No extrusion, no Blender, no `.glb`, no four-photo shell. All are **FAIL, Velum-class**.
+- **NEVER apply this carrier to Bolt.** Bolt stays a keyed video, camera locked behind: `lock/bolt-gallop-cycle.mp4` while he moves, `lock/bolt-idle-breath.mp4` when he has stopped ([doc 61](61-free-clearing-walk.md)). Same wolf, same key. The gallop file does not change. No extrusion, no Blender, no `.glb`, no four-photo shell, no walk-around hull. All are **FAIL, Velum-class**.
 
 ## NOT LICENSED
 
@@ -38,7 +38,7 @@ Reference: **“space void relief sandbox test passed owner QC (KEEP) 2026-09-29
 
 ## Method writeup
 
-Step-by-step numbers (plate frame 12, depth, 138° outpaint, Bolt key, controls): [`60-imagine-relief-panorama-method.md`](60-imagine-relief-panorama-method.md). Review only. Not a hang. Test 2c panorama is KEEP. Test 2d 360° relief ring is KEEP (values in [doc 60](60-imagine-relief-panorama-method.md), merged via PR #124).
+Step-by-step numbers (plate frame 12, depth, 138° outpaint, Bolt key, controls): [`60-imagine-relief-panorama-method.md`](60-imagine-relief-panorama-method.md). Review only. Not a hang. Test 2c panorama is KEEP. Test 2d 360° relief ring is KEEP (values in [doc 60](60-imagine-relief-panorama-method.md), merged via PR #124). Free-360 clearing walk (Rocky Clearing take 3 KEEP) and Bolt idle breath: [`61-free-clearing-walk.md`](61-free-clearing-walk.md).
 
 ## Extension 2026-10-01: invisible procedural terrain shape
 
@@ -72,4 +72,4 @@ Step-by-step numbers (plate frame 12, depth, 138° outpaint, Bolt key, controls)
 
 ### Why
 
-- **Rocky Clearing walk test 2026-10-01 FAILED:** a single ring / relief still upscales after **~4 cm** of camera travel, so the ground froze (the HUD distance changed, the image did not). Walkable ground therefore uses top-down tiles; the ring is backdrop only. Recorded in [doc 60](60-imagine-relief-panorama-method.md#walkable-ground-2026-10-01).
+- **Rocky Clearing walk test 2026-10-01, attempt 1, FAILED:** a single ring / relief still upscales after **~4 cm** of camera travel, so the ground froze (the HUD distance changed, the image did not). Freezing that still to the camera left magnification **0.406** on the HUD against a claimed **0.990**. Walkable ground therefore uses top-down tiles; the ring is backdrop only. Recorded in [doc 60](60-imagine-relief-panorama-method.md#walkable-ground-2026-10-01). **Take 3 KEEP** (phone QC, HUD and phone both **0.979**) and the idle-breath KEEP are [doc 61](61-free-clearing-walk.md). The clearing edge in that doc is still **IN PROGRESS**.
