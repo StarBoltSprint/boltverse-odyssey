@@ -1,0 +1,19 @@
+{
+  "screen": [
+    720,
+    1600
+  ],
+  "webglMaxTexture": 4096,
+  "assets": [
+    {
+      "file": "../../../../lock/bolt-gallop-cycle.mp4",
+      "kind": "loop",
+      "key": "green",
+      "onScreen": [
+        180,
+        280
+      ],
+      "loop": true
+    }
+  ]
+}

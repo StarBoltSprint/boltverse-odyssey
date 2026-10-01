@@ -1,0 +1,364 @@
+{
+  "tool": "assetcheck",
+  "ok": true,
+  "screen": [
+    720,
+    1600
+  ],
+  "webglMaxTexture": 4096,
+  "heuristics": [
+    "The tool only measures. It does not repaint, resize, or replace the source.",
+    "Loop optical flow is coarse block matching on a downscale, not a learned flow model.",
+    "Banding is a posterization heuristic (flat run, then a step). Noise can hide bands.",
+    "A declared key (black or green) is trusted as the compositor key. Undeclared cutouts must carry alpha.",
+    "Magnification uses the declared on-screen size at the closest camera on a 720\u00d71600 portrait.",
+    "A hand-written PASS is not a PASS. The exit code and this file are the gate.",
+    "Anything under lock/ or marked locked: true is grandfathered owner KEEP. The same measurements run. A miss is WARN, never FAIL, and does not change the exit code. A WARN is not a reason to recook or replace that file. Bolt stays lock/bolt-gallop-cycle.mp4 and lock/bolt-idle-breath.mp4."
+  ],
+  "assets": [
+    {
+      "file": "tile-0.png",
+      "kind": "tile",
+      "yaw": null,
+      "elevation": null,
+      "locked": false,
+      "lockReason": null,
+      "checks": {
+        "basic": {
+          "status": "PASS",
+          "codec": "png",
+          "container": "png",
+          "pixFmt": null,
+          "mode": "RGB",
+          "width": 64,
+          "height": 64,
+          "fps": null,
+          "frames": null,
+          "durationSec": null,
+          "lossless": true,
+          "losslessRequired": true,
+          "bandingFraction": 0.0,
+          "failures": []
+        },
+        "resolution": {
+          "status": "PASS",
+          "screen": [
+            720,
+            1600
+          ],
+          "frame": [
+            64,
+            64
+          ],
+          "onScreen": [
+            48.0,
+            48.0
+          ],
+          "mask": {
+            "width": 64,
+            "height": 64,
+            "area": 4096,
+            "rows": [
+              0,
+              63
+            ],
+            "cols": [
+              0,
+              63
+            ],
+            "fillHeight": 1.0,
+            "fillArea": 1.0
+          },
+          "compared": "frame",
+          "magnification": 0.75,
+          "magnificationLimit": 1.0,
+          "failures": []
+        },
+        "tiling": {
+          "status": "PASS",
+          "tiles": [
+            {
+              "file": "tile-0.png",
+              "x": {
+                "seam": 6.0286,
+                "interior": 5.8698,
+                "ratio": 1.0271
+              },
+              "y": {
+                "seam": 0.2734,
+                "interior": 0.8099,
+                "ratio": 0.2734
+              },
+              "lumaMean": 87.9984,
+              "lumaStd": 23.6203
+            },
+            {
+              "file": "tile-1.png",
+              "x": {
+                "seam": 6.0547,
+                "interior": 5.8411,
+                "ratio": 1.0366
+              },
+              "y": {
+                "seam": 0.2734,
+                "interior": 0.8125,
+                "ratio": 0.2734
+              },
+              "lumaMean": 87.9965,
+              "lumaStd": 23.6642
+            },
+            {
+              "file": "tile-2.png",
+              "x": {
+                "seam": 6.0807,
+                "interior": 5.7448,
+                "ratio": 1.0585
+              },
+              "y": {
+                "seam": 0.2474,
+                "interior": 0.7786,
+                "ratio": 0.2474
+              },
+              "lumaMean": 87.9948,
+              "lumaStd": 23.6615
+            },
+            {
+              "file": "tile-3.png",
+              "x": {
+                "seam": 6.0417,
+                "interior": 5.7135,
+                "ratio": 1.0574
+              },
+              "y": {
+                "seam": 0.2448,
+                "interior": 0.7839,
+                "ratio": 0.2448
+              },
+              "lumaMean": 87.9983,
+              "lumaStd": 23.662
+            }
+          ],
+          "exposureDelta": 0.0036,
+          "contrastRatio": 1.0019,
+          "crossSeam": [
+            7.026,
+            7.1042,
+            7.0781,
+            3.6589
+          ],
+          "limits": {
+            "seamRatio": 2.2,
+            "seamAbs": 12.0,
+            "exposureDelta": 18.0
+          },
+          "failures": []
+        }
+      },
+      "failures": [],
+      "ok": true
+    },
+    {
+      "file": "tile-1.png",
+      "kind": "tile",
+      "yaw": null,
+      "elevation": null,
+      "locked": false,
+      "lockReason": null,
+      "checks": {
+        "basic": {
+          "status": "PASS",
+          "codec": "png",
+          "container": "png",
+          "pixFmt": null,
+          "mode": "RGB",
+          "width": 64,
+          "height": 64,
+          "fps": null,
+          "frames": null,
+          "durationSec": null,
+          "lossless": true,
+          "losslessRequired": true,
+          "bandingFraction": 0.0,
+          "failures": []
+        },
+        "resolution": {
+          "status": "PASS",
+          "screen": [
+            720,
+            1600
+          ],
+          "frame": [
+            64,
+            64
+          ],
+          "onScreen": [
+            48.0,
+            48.0
+          ],
+          "mask": {
+            "width": 64,
+            "height": 64,
+            "area": 4096,
+            "rows": [
+              0,
+              63
+            ],
+            "cols": [
+              0,
+              63
+            ],
+            "fillHeight": 1.0,
+            "fillArea": 1.0
+          },
+          "compared": "frame",
+          "magnification": 0.75,
+          "magnificationLimit": 1.0,
+          "failures": []
+        },
+        "tiling": {
+          "status": "PASS",
+          "sharedWith": "tile-0.png",
+          "failures": []
+        }
+      },
+      "failures": [],
+      "ok": true
+    },
+    {
+      "file": "tile-2.png",
+      "kind": "tile",
+      "yaw": null,
+      "elevation": null,
+      "locked": false,
+      "lockReason": null,
+      "checks": {
+        "basic": {
+          "status": "PASS",
+          "codec": "png",
+          "container": "png",
+          "pixFmt": null,
+          "mode": "RGB",
+          "width": 64,
+          "height": 64,
+          "fps": null,
+          "frames": null,
+          "durationSec": null,
+          "lossless": true,
+          "losslessRequired": true,
+          "bandingFraction": 0.0,
+          "failures": []
+        },
+        "resolution": {
+          "status": "PASS",
+          "screen": [
+            720,
+            1600
+          ],
+          "frame": [
+            64,
+            64
+          ],
+          "onScreen": [
+            48.0,
+            48.0
+          ],
+          "mask": {
+            "width": 64,
+            "height": 64,
+            "area": 4096,
+            "rows": [
+              0,
+              63
+            ],
+            "cols": [
+              0,
+              63
+            ],
+            "fillHeight": 1.0,
+            "fillArea": 1.0
+          },
+          "compared": "frame",
+          "magnification": 0.75,
+          "magnificationLimit": 1.0,
+          "failures": []
+        },
+        "tiling": {
+          "status": "PASS",
+          "sharedWith": "tile-0.png",
+          "failures": []
+        }
+      },
+      "failures": [],
+      "ok": true
+    },
+    {
+      "file": "tile-3.png",
+      "kind": "tile",
+      "yaw": null,
+      "elevation": null,
+      "locked": false,
+      "lockReason": null,
+      "checks": {
+        "basic": {
+          "status": "PASS",
+          "codec": "png",
+          "container": "png",
+          "pixFmt": null,
+          "mode": "RGB",
+          "width": 64,
+          "height": 64,
+          "fps": null,
+          "frames": null,
+          "durationSec": null,
+          "lossless": true,
+          "losslessRequired": true,
+          "bandingFraction": 0.0,
+          "failures": []
+        },
+        "resolution": {
+          "status": "PASS",
+          "screen": [
+            720,
+            1600
+          ],
+          "frame": [
+            64,
+            64
+          ],
+          "onScreen": [
+            48.0,
+            48.0
+          ],
+          "mask": {
+            "width": 64,
+            "height": 64,
+            "area": 4096,
+            "rows": [
+              0,
+              63
+            ],
+            "cols": [
+              0,
+              63
+            ],
+            "fillHeight": 1.0,
+            "fillArea": 1.0
+          },
+          "compared": "frame",
+          "magnification": 0.75,
+          "magnificationLimit": 1.0,
+          "failures": []
+        },
+        "tiling": {
+          "status": "PASS",
+          "sharedWith": "tile-0.png",
+          "failures": []
+        }
+      },
+      "failures": [],
+      "ok": true
+    }
+  ],
+  "failures": [],
+  "warnings": []
+}

@@ -4,6 +4,27 @@ Kitchen only. Not a hang. Owner direction **2026-10-01**, after the take 8 FAIL 
 
 Biome-agnostic. Any biome, cooked by any player's Grok, lays out its clearings the same way. The world-by-zones creation process is [doc 62](62-open-world-zones-process.md). The clearing method is [doc 61](61-free-clearing-walk.md). The invisible-shape exception is the [2026-10-01 extension of law 59](59-invisible-depth-carrier.md#extension-2026-10-01-invisible-procedural-terrain-shape). Every hard lock in doc 62 stays: every visible pixel is Imagine, code computes invisible shape only, one Bolt, magnification ≤ 1.0 at 720×1600.
 
+## Pipeline
+
+Every zone follows one order:
+
+1. `python3 tools/assetcheck/check.py` on every Imagine image or video.
+2. `python3 tools/objsheet/sheet.py` on every object's view set.
+3. `tools/walkaround/build.py` only after that sheet exits 0.
+4. `clearing.json`, then `tools/clearing/` generate.
+5. `tools/playcheck/run` on the rendered 720×1600 play view.
+
+## Before the layout
+
+The rendered table below does not re-measure source files. Those files are gated **before** they are written into `clearing.json` and before a hull is built. This is necessary. It is not a rendered-pixel PASS, and it does not clear any row in the table.
+
+| Gate | Command | What is pasted |
+| --- | --- | --- |
+| Every Imagine image or video | `python3 tools/assetcheck/check.py --manifest … --out …` | `report.json` and `report.md`. Exit 0. Magnification ≤ 1 at 720×1600, key, loop seam, tile seams, backdrop split. |
+| Every solid object, before `tools/walkaround/build.py` | `python3 tools/objsheet/sheet.py --views … --config … --out …` | `report.json`, `report.md`, and `sheet.png`. Exit 0. Eight yaws, guide IoU ≥ 0.97 when a guide exists, adjacent silhouette lock, hull-keep fraction. Sub-objects included. |
+
+A hand-written PASS is not a PASS. A missing report, or a report with `"ok": false`, blocks generate. A **WARN** on a file under `lock/`, or on a manifest entry with `locked: true`, does not. Those files are grandfathered owner KEEP: the measurements still print, the exit code stays 0, and `"ok"` stays true. A WARN is not a reason to recook or replace the file. Bolt stays `lock/bolt-gallop-cycle.mp4` and `lock/bolt-idle-breath.mp4`. Law and thresholds: [`tools/assetcheck/README.md`](../../tools/assetcheck/README.md), [`tools/objsheet/README.md`](../../tools/objsheet/README.md).
+
 ## Run the validator — required
 
 The rendered-pixel check is a command, not a table you type.
@@ -148,3 +169,5 @@ The console also showed WebGL **`texSubImage3D` `INVALID_OPERATION`** errors, wh
 - Remove `window.__play` when `?debug=1` is set.
 - Count a cut-out (alpha-discarded) texel as a visible pixel.
 - Post a play URL, or call a clearing KEEP, before every row passes on the rendered view and the owner's phone QC.
+- Name an Imagine path, or build its hull, without a pasted asset-gate report and, for every solid object, a pasted consistency sheet. A sentence that says PASS is not the report.
+- Recook or replace a `lock/` file because the asset gate printed WARN. Bolt stays the locked gallop and the idle loop.

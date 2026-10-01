@@ -6,13 +6,17 @@ Kitchen only. Not a hang. Not a new play URL. Owner direction **2026-10-01**.
 
 The free-walk method is [doc 61](61-free-clearing-walk.md). The invisible-shape exception is the [2026-10-01 extension of law 59](59-invisible-depth-carrier.md#extension-2026-10-01-invisible-procedural-terrain-shape) (PR #128). Hulls are [`tools/walkaround/build.py`](../../tools/walkaround/build.py) (PR #127, method in [doc 60](60-imagine-relief-panorama-method.md#script)). The layout file and the rendered-pixel validator are [doc 63](63-layout-file-and-validator.md).
 
+**Order:** [`tools/assetcheck`](../../tools/assetcheck/README.md) on every Imagine file, then [`tools/objsheet`](../../tools/objsheet/README.md) on every object view set, then [`tools/walkaround/build.py`](../../tools/walkaround/build.py), then `clearing.json` and generate, then [`tools/playcheck/run`](../../tools/playcheck/README.md). Paste each report. A hand-written PASS is not a PASS. The measure tools only measure. They do not paint, resize, or replace a pixel.
+
+**`lock/` is grandfathered.** Anything under `lock/` (and any manifest entry with `locked: true`) is owner KEEP. `assetcheck` still measures it and prints **WARN**. A WARN is not a FAIL, the exit code stays 0, and it is not a reason to recook or replace that file. Bolt stays [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) and `lock/bolt-idle-breath.mp4`. If the idle file is missing, ask the owner. Do not cook a new one.
+
 ## Hard locks (already in the repo, unchanged)
 
 This doc restates them. It does not change them.
 
 - **Every visible pixel is Imagine:** Imagine images, or seamless looping keyed Imagine video.
 - **Code never draws, shades, or colours a pixel.** Code computes only **invisible shape**: relief, tile layout, colliders, placement, orientation. That includes shadows: **never draw a shadow in code** (take 8 below).
-- **Bolt** = keyed back-view gallop [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) + idle `lock/bolt-idle-breath.mp4`, with the automatic IDLE / GALLOP switch of doc 61. **Exactly one Bolt** on screen. Never a hull, never a new gallop. If `lock/bolt-idle-breath.mp4` is missing from your checkout, do not recook it; ask the owner.
+- **Bolt** = keyed back-view gallop [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) + idle `lock/bolt-idle-breath.mp4`, with the automatic IDLE / GALLOP switch of doc 61. **Exactly one Bolt** on screen. Never a hull, never a new gallop. If `lock/bolt-idle-breath.mp4` is missing from your checkout, do not recook it; ask the owner. An `assetcheck` **WARN** on either lock file is not a recook order.
 - **Magnification ≤ 1.0** at portrait **720×1600**. Lossless. No blur. Measured, and shown on the HUD.
 - **Full-screen phone portrait.** Controls are a transparent overlay. No letterbox (doc 60 test 4 FAIL table).
 - **360° ring = far backdrop only.** It does not move when Bolt walks. It is not the floor.
@@ -68,7 +72,7 @@ Each zone has its own `clearing.json` (doc 63). The links between zones are the 
 Owner-approved **2026-10-01**. Every solid object in every zone (edge-ring pieces, gates, interior objects, the solid part of a composite object) is built the same way, whatever the style. Code computes **invisible shape only**. It never draws a pixel.
 
 1. **Cook 8 Imagine views, one every 45°.** Same object, same light, plain background, silhouette lock (doc 60 KEEP method: V0 first, each view from its neighbour + V0, area ±15%, height ±8%). Objects with hidden hollows (a cockpit, a bowl, an arch seen from above) also get a **top view** and **3/4-high views**.
-2. **Silhouette visual hull** via [`tools/walkaround/build.py`](../../tools/walkaround/build.py) (7-of-8 vote on the horizontal ring, rounded underside cap). The default draw surface is a smooth mesh on that volume. The occupancy grid stays the collider.
+2. **Gate the stills, then the hull.** `python3 tools/assetcheck/check.py` on every view (kind `cutout`, declared on-screen size, declared key). Then `python3 tools/objsheet/sheet.py` on the view set, including top / 3/4-high views, guide frames from a turntable when one was cooked, and each sub-object's own views. Paste `report.json`, `report.md`, and `sheet.png`. Exit 0 only. Then the **silhouette visual hull** via [`tools/walkaround/build.py`](../../tools/walkaround/build.py) (7-of-8 vote on the horizontal ring, rounded underside cap). The default draw surface is a smooth mesh on that volume. The occupancy grid stays the collider. A failed sheet does not get a hull.
 3. **Per-view monocular depth maps refine the surface inward**, inside the silhouette hull. They do not add volume outside it. See the table for the limit that is actually in the tool.
 4. **Protrusions** (parts that stick out of the main body, for example cannons, antennas, turrets). The tool can **flag** a narrow part. It does not cook that part’s views. Supply the part as a **sub-object** with its own view set, a joint, and an axis. The tool carves it out of the parent and attaches the mesh. The axis is stored. This command does not animate the joint. Pixels stay Imagine.
 5. **Project the real Imagine views onto the final surface.** On the smooth mesh that choice is per fragment: best-facing view, weight `(normal · viewDir)^8`, occlusion against that view, a second view only in a narrow seam, nearest texel of the lossless PNG. Not chosen by the viewer’s yaw (doc 60). Magnification ≤ 1.0 (`qc/report.json`). The legacy voxel path still assigns one view per voxel.
@@ -77,7 +81,7 @@ Owner-approved **2026-10-01**. Every solid object in every zone (edge-ring piece
 
 | Step | Status |
 | --- | --- |
-| 1. 8 yaw views | Supported. Optional per-view `elevationDeg` (top, 3/4-high) for carving and for projection. The horizontal ring stays 7-of-8. An elevated still is a mandatory carver and is not hole-filled, so a hollow the ring cannot see can stay open. Elevated stills are silhouette-locked only inside their own pitch band. One top view is not compared to the side ring. |
+| 1. 8 yaw views | Supported. Optional per-view `elevationDeg` (top, 3/4-high) for carving and for projection. The horizontal ring stays 7-of-8. An elevated still is a mandatory carver and is not hole-filled, so a hollow the ring cannot see can stay open. Elevated stills are silhouette-locked only inside their own pitch band. One top view is not compared to the side ring. Before this build, [`tools/assetcheck`](../../tools/assetcheck/README.md) must PASS each still and [`tools/objsheet`](../../tools/objsheet/README.md) must PASS the set (guide IoU ≥ 0.97 when a guide exists; adjacent area ±15%, height ±8%; hull-keep fraction from the same 7-of-8 vote). |
 | 2. Silhouette hull | Supported. Default surface is surface nets on a finer occupancy (`max(64, 2×grid)`, cap 128) plus Taubin smoothing. `--legacy-voxels` keeps the cube grid. Collider remains the occupancy grid. |
 | 3. Depth refine | **Partial.** `--model` (Depth Anything V2) or `--depth-dir` (near = white, same pixel size as the still) moves the front **inward** only. Near stays on the outer hull. Far recedes by `depthRelief` (default **0.35** of local thickness on the smooth path, **0.10** on legacy voxels). On the smooth path, when at least four depth views exist, a voxel recedes only if **two** agree. A depth set that would delete more than 60% of the solid is rejected. Depth does not invent shell outside the silhouettes, and it does not push outward. |
 | 4. Protrusions + sub-objects | **Partial.** A supplied `subObjects` entry (own config, own views, `joint`, `localAttach`, `axis`) is carved out of the parent and attached. The axis is written. The tool does not rotate it. Auto-detect only **flags** a narrow neck (a 3-voxel opening: bbox and a suggested joint). It does not cook views and it does not cut the hull. Sub-objects require the smooth surface. `--legacy-voxels` with `subObjects` is a FAIL. |
@@ -90,12 +94,13 @@ Do not claim steps 3 and 4 as done in a report. Do not fake them with code-drawn
 Do the steps in order. Stop when one fails.
 
 1. **Pick the style.** The player names it. Any paint. Write it down once as `{PAINT}`; it is used only in Imagine prompts, never in the schema or the code.
-2. **Cook the Imagine assets** for one zone (and later its corridor), all in `{PAINT}`, all lossless:
-   1. **Ground tiles:** top-down, seamless, **≥ 4 variants**, true world scale for **0.90 m**, no horizon, no Bolt.
-   2. **360° backdrop:** far content only, seam matched, mapped to exactly 360° (doc 60 test 2d; split above 4096 px).
-   3. **Edge-ring, gate, and interior objects:** the standard 3D object pipeline above, for each object: V0 + **8 views every 45°** with the silhouette lock (top / 3/4-high views for hollows), then `python3 tools/walkaround/build.py --views … --config … --out …`; large protrusions as separate sub-objects. `qc/report.json` magnification ≤ 1.0 for every view. Several distinct edge assets; no identical copies side by side (doc 60 "pasted copies" FAIL).
-   4. **Living loops:** fog atlas (one looping video packed into frames), gate / light / particle loops. First frame = last frame. Keyed.
-   5. **Corridor ground video** (when the corridor step comes): scrolling, one direction, speed measured (`bakedGroundSpeed`).
+2. **Cook the Imagine assets** for one zone (and later its corridor), all in `{PAINT}`, all lossless. **Every file is gated before it is named in `clearing.json` or passed to a hull:**
+   1. **Ground tiles:** top-down, seamless, **≥ 4 variants**, true world scale for **0.90 m**, no horizon, no Bolt. `tools/assetcheck` kind `tile`, one manifest for the variant set (wrap seam, exposure, magnification ≤ 1 at 720×1600).
+   2. **360° backdrop:** far content only, seam matched, mapped to exactly 360° (doc 60 test 2d; split above 4096 px). `tools/assetcheck` kind `backdrop`. Width above the WebGL max is a FAIL until the file is split.
+   3. **Edge-ring, gate, and interior objects:** the standard 3D object pipeline above, for each object: V0 + **8 views every 45°** with the silhouette lock (top / 3/4-high views for hollows). `tools/assetcheck` on each still, then `tools/objsheet` on the set (and on each sub-object). Only a passing sheet goes to `python3 tools/walkaround/build.py --views … --config … --out …`. `qc/report.json` magnification ≤ 1.0 for every view. Several distinct edge assets; no identical copies side by side (doc 60 "pasted copies" FAIL).
+   4. **Living loops:** fog atlas (one looping video packed into frames), gate / light / particle loops. First frame = last frame. Keyed. `tools/assetcheck` kind `loop` (seam, pops, frozen runs, key). A turntable that must hold one shape also gets kind `turntable` (morph).
+   5. **Corridor ground video** (when the corridor step comes): scrolling, one direction, speed measured (`bakedGroundSpeed`). `tools/assetcheck` before it is wired.
+   Paste each `report.md` and `report.json`. Attach each `sheet.png`. Exit code 0. A sentence that says PASS, with no report, is a FAIL.
 3. **Fill `clearing.json`** for the zone: `zone`, `edge_ring`, `gates`, `interior_objects`, `near_lens`, `fog_band` (+ `spawn`, `backdrop`, `view`, `bolt`). Schema in doc 63.
 4. **Generate.** `tools/clearing/` builds placement, colliders, gates, and fog patches from that file.
 5. **Validate on the rendered view.** Run `tools/playcheck/run --url <play url or local build> --layout <clearing.json>` ([doc 63](63-layout-file-and-validator.md), [`tools/playcheck/README.md`](../../tools/playcheck/README.md)). Every row **PASS** on the real 720×1600 play view. A data-only PASS is FAIL. Any WebGL error is FAIL (take 8). Paste `report.md`, the stills, and `walk.mp4`. A hand-written PASS table is not accepted.
@@ -137,3 +142,6 @@ Take 8 is a past clearing take. Its paint is not a model. Only these lessons car
 - Hand-place ring hulls, gates, colliders, or fog. They are generated from `clearing.json`.
 - Post a play URL before every validator row passes on the rendered view.
 - Draw, shade, colour, or shadow any pixel in code.
+- Hand-write PASS for an Imagine file or an object view set. The asset-gate report and the consistency sheet are the PASS.
+- Build a walk-around hull, or name an Imagine path in `clearing.json`, before those reports exist and exit 0.
+- Recook or replace anything under `lock/` because `assetcheck` printed WARN. That WARN is informational. Bolt stays the locked gallop and the idle loop.
