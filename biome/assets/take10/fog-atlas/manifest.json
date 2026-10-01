@@ -1,0 +1,15 @@
+{
+  "name": "fog-atlas",
+  "files": [
+    {
+      "file": "fog-atlas.png",
+      "sha256": "af1a16581981b4d4fe90a9dbbda1c4aa48152d0e5bf4489187653483ff17be90",
+      "bytes": 1149877,
+      "note": "Existing vapour atlas. assetcheck alpha halo 24px FAIL. Not binarized (play fog must stay soft).",
+      "tool": "assetcheck",
+      "width": 1024,
+      "height": 1024,
+      "codec": "png"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "bolt-idle",
+  "files": [
+    {
+      "file": "bolt-idle-breath.mp4",
+      "sha256": "cd2e3f09ca61cc741e9863e941233213e86f27a791dfb82c9d48cc67da60e943",
+      "bytes": 2134353,
+      "note": "LOCK. assetcheck WARN. Not recooked.",
+      "tool": "assetcheck WARN",
+      "codec": "mp4"
+    }
+  ]
+}

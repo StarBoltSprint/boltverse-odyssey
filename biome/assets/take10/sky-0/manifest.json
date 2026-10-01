@@ -1,0 +1,15 @@
+{
+  "name": "sky-0",
+  "files": [
+    {
+      "file": "sky-0.png",
+      "sha256": "d41d9cc2560280252c551726c43add3893ea76d874b14dd557700729ce6b0149",
+      "bytes": 4359636,
+      "note": "KEEP take 9 sharp sky tile. Not recooked. assetcheck backdrop seam FAIL on sky-0 and sky-1 (panorama slice, not a wrapping tile). sky-2 PASS.",
+      "tool": "tools/assetcheck report public/odyssey/zone-a/take10/assetcheck/report.md",
+      "width": 3371,
+      "height": 912,
+      "codec": "png"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "name": "floor-t8",
+  "files": [
+    {
+      "file": "t8.png",
+      "sha256": "2964b9e64fab7e1460f6c741e80d90f9598646bd5c0fb2781557b75730b52a69",
+      "bytes": 2497417,
+      "note": "Floor tile. Group t8,t10,t9 passed assetcheck tiling.",
+      "tool": "assetcheck PASS tiling",
+      "width": 1408,
+      "height": 1408,
+      "codec": "png"
+    }
+  ]
+}
