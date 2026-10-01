@@ -17,7 +17,7 @@ This doc restates them. It does not change them.
 - **Full-screen phone portrait.** Controls are a transparent overlay. No letterbox (doc 60 test 4 FAIL table).
 - **360° ring = far backdrop only.** It does not move when Bolt walks. It is not the floor.
 - **Walkable zone ground** = world-locked top-down Imagine tiles (**0.90 m**, ≥ 4 variants) on the invisible relief.
-- **Solid objects** = 8-view Imagine hulls via `tools/walkaround/build.py`.
+- **Solid objects** = 8-view Imagine hulls via `tools/walkaround/build.py` (standard 3D object pipeline below).
 - **Living layers** (fog, particles, lights, energy, water, anything that moves) = seamless looping keyed Imagine video.
 - **Scrolling, speed-tied Imagine ground video** is allowed **only** on a straight corridor between two zones. Never as a zone floor.
 - **Fog** = one looping Imagine video packed into a frame atlas, drawn as **20–40+** camera-facing billboard patches, GPU instanced, each patch with its own size, tint, opacity, and loop offset, fading out near the camera. Tint and opacity are GPU controls on Imagine pixels (the law [38](38-gpu-light-openable.md) light-layer pattern). They never generate a colour or a shape of their own.
@@ -63,6 +63,28 @@ Each zone has its own `clearing.json` (doc 63). The links between zones are the 
 - Walls / edges are Imagine pixels: in the corridor video itself, or keyed Imagine side layers.
 - Corridor distance on the HUD. The corridor ends at the next zone's gate, visible ahead before the switch.
 
+## Standard 3D object pipeline (all objects)
+
+Owner-approved **2026-10-01**. Every solid object in every zone (edge-ring pieces, gates, interior objects, the solid part of a composite object) is built the same way, whatever the style. Code computes **invisible shape only**. It never draws a pixel.
+
+1. **Cook 8 Imagine views, one every 45°.** Same object, same light, plain background, silhouette lock (doc 60 KEEP method: V0 first, each view from its neighbour + V0, area ±15%, height ±8%). Objects with hidden hollows (a cockpit, a bowl, an arch seen from above) also get a **top view** and **3/4-high views**.
+2. **Silhouette visual hull** via [`tools/walkaround/build.py`](../../tools/walkaround/build.py) = the **coarse volume** (7-of-8 vote, rounded underside cap).
+3. **Per-view monocular depth maps refine the surface.** Push and carve medium relief so details are real volume, not flat paint on a smooth hull.
+4. **Auto-detect large protrusions** (parts that stick out of the main body, for example cannons, antennas, turrets) and **flag them**. Each flagged part is cooked as a **separate sub-object** with its own 8 views + hull, attached to the parent at a fixed joint. A sub-object may animate (rotate on its joint); its pixels stay Imagine.
+5. **Project the real Imagine views onto the final volume.** Best-facing view per surface point, weight `(normal · viewDir)^8`, narrow seam band, nearest-view fallback, never averaged, never chosen by the viewer's yaw (doc 60). Nearest sample of the lossless PNG; magnification ≤ 1.0 (`qc/report.json`).
+
+### What `tools/walkaround` does today
+
+| Step | Status on `main` (2026-10-01) |
+| --- | --- |
+| 1. 8 yaw views | Supported. One shared `camera.eyeY` for all views. **Top / 3/4-high views are not supported yet** (no per-view elevation). |
+| 2. Silhouette hull | Supported (7-of-8 vote, hole fill, rounded cap). |
+| 3. Depth refine | Partial: `--model` (Depth Anything V2) or `--depth-dir` pushes the front **inward** only. Push **and** carve medium relief is a **planned upgrade, not implemented yet**. |
+| 4. Protrusion detection + sub-objects | **Planned upgrade, not implemented yet.** Until it lands, split large protrusions by hand: cook the part as its own object (8 views + hull) and attach it in `clearing.json`. |
+| 5. Projection | Supported (best-facing view, seam band, nearest fallback, `FAIL upscale` above 1.0). |
+
+Do not claim steps 3 and 4 as done in a report. Do not fake them with code-drawn detail: relief that is not in the Imagine views is not added by code, and no pixel is painted to suggest it.
+
 ## Pipeline — every player's Grok, any style
 
 Do the steps in order. Stop when one fails.
@@ -71,7 +93,7 @@ Do the steps in order. Stop when one fails.
 2. **Cook the Imagine assets** for one zone (and later its corridor), all in `{PAINT}`, all lossless:
    1. **Ground tiles:** top-down, seamless, **≥ 4 variants**, true world scale for **0.90 m**, no horizon, no Bolt.
    2. **360° backdrop:** far content only, seam matched, mapped to exactly 360° (doc 60 test 2d; split above 4096 px).
-   3. **Edge-ring, gate, and interior objects:** for each object, V0 + **8 views every 45°** with the silhouette lock (doc 60 KEEP method), then `python3 tools/walkaround/build.py --views … --config … --out …`. `qc/report.json` magnification ≤ 1.0 for every view. Several distinct edge assets; no identical copies side by side (doc 60 "pasted copies" FAIL).
+   3. **Edge-ring, gate, and interior objects:** the standard 3D object pipeline above, for each object: V0 + **8 views every 45°** with the silhouette lock (top / 3/4-high views for hollows), then `python3 tools/walkaround/build.py --views … --config … --out …`; large protrusions as separate sub-objects. `qc/report.json` magnification ≤ 1.0 for every view. Several distinct edge assets; no identical copies side by side (doc 60 "pasted copies" FAIL).
    4. **Living loops:** fog atlas (one looping video packed into frames), gate / light / particle loops. First frame = last frame. Keyed.
    5. **Corridor ground video** (when the corridor step comes): scrolling, one direction, speed measured (`bakedGroundSpeed`).
 3. **Fill `clearing.json`** for the zone: `zone`, `edge_ring`, `gates`, `interior_objects`, `near_lens`, `fog_band` (+ `spawn`, `backdrop`, `view`, `bolt`). Schema in doc 63.
