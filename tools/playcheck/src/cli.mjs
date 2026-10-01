@@ -119,6 +119,7 @@ Exit 0 only when every row PASSes. A hand-written PASS table is not this report.
         pathTrigger: s.snap.pathTrigger,
       })),
       rows: judged.rows,
+      perf: judged.perf,
       notes,
       generatedAt: new Date().toISOString(),
     });

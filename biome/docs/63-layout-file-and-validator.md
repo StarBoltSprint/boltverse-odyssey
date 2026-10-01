@@ -11,8 +11,9 @@ Every zone follows one order:
 1. `python3 tools/assetcheck/check.py` on every Imagine image or video.
 2. `python3 tools/objsheet/sheet.py` on every object's view set.
 3. `tools/walkaround/build.py` only after that sheet exits 0.
-4. `python3 tools/layout/layout.py generate`, then `layout.py check`. One `clearing.json` per zone. Paste that `report.md`. Invisible shape only.
+4. `python3 tools/layout/layout.py generate`, then `layout.py check`. One `clearing.json` per zone. Paste that `report.md`. Invisible shape only. A spec may name a validated object by id (`{ "library": "<object-id>" }`, [`biome/library`](../../biome/library/README.md)) instead of recooking it. With a corridor, add `--world <world.json>` so the `transition` row is included. Without `--world` the row set is unchanged.
 5. `tools/playcheck/run` on the rendered 720×1600 play view. `--layout` is that same file.
+6. `python3 tools/reportview/build.py` and deliver the page with the play URL. This is the last step. It only displays the reports above. A missing section is NOT RUN, not PASS. [`tools/reportview/README.md`](../../tools/reportview/README.md).
 
 `tools/layout/` **generates and checks the file**. It is on this tree. Command and honest limits: [`tools/layout/README.md`](../../tools/layout/README.md).
 
@@ -44,6 +45,8 @@ The command writes `report.md`, `report.json`, `stills/`, and `walk.mp4` (H.264,
 **Before any play URL:** paste that `report.md` and the stills (and the mp4). A hand-written PASS table is not accepted. Exit 0 is the only PASS. Then **STOP** for the owner's phone QC. A tool PASS is not a KEEP.
 
 `?debug=1` must expose `window.__play` (`snapshot`, `setInput`, `tick`, `look`, `reset`) with the live HUD pose, magnification, and an object-ID buffer from the same draws as the colour view, same alpha discard. Builders keep that hook. The tool adds `?debug=1` itself.
+
+A play view that crosses a corridor also puts `transition` on `snapshot()` (`black` or `rgba`, and `hitchMs`) for each handoff frame. `tools/playcheck` then adds `transition_black` (luma under 12 on at least 92% of sampled pixels fails) and `transition_hitch` (over 100 ms fails). Those rows are absent when `transition` is absent. The runtime is [`biome/scripts/zone-flow`](../../biome/scripts/zone-flow/README.md). The synthetic demo is [`tools/zoneflow`](../../tools/zoneflow/README.md).
 
 ## Expected layout
 
@@ -168,7 +171,7 @@ Honest limits of the tool, not excuses to skip it: `black_regions`, `tile_repeat
 
 ### Proof and STOP
 
-- **HARD: no play URL** until `tools/playcheck/run` exits 0 and its `report.md`, stills, and `walk.mp4` are pasted. A hand-written PASS table is not that report.
+- **HARD: no play URL** until `tools/playcheck/run` exits 0 and its `report.md`, stills, and `walk.mp4` are pasted. A hand-written PASS table is not that report. Then run `tools/reportview` and deliver the page with the play URL.
 - Proof stills, written by the validator from the play view:
   1. debug top-down map (zone, ring, gate, colliders, fog band, stop points);
   2. centre → gate view;

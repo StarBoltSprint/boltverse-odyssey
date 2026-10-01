@@ -44,16 +44,20 @@ def _fmt(v) -> str:
     return str(v)
 
 
-def check_clearing(clearing_path: Path, asset_roots: list[Path] | None = None) -> tuple[list[Row], dict]:
+def check_clearing(
+    clearing_path: Path,
+    asset_roots: list[Path] | None = None,
+    world: dict | None = None,
+) -> tuple[list[Row], dict]:
     clearing = load_json(clearing_path)
     roots = list(asset_roots or [])
     roots.append(clearing_path.parent)
     roots.append(Path.cwd())
-    rows, extra = evaluate(clearing, roots)
+    rows, extra = evaluate(clearing, roots, world)
     return rows, extra
 
 
-def evaluate(clearing: dict, roots: list[Path]) -> tuple[list[Row], dict]:
+def evaluate(clearing: dict, roots: list[Path], world: dict | None = None) -> tuple[list[Row], dict]:
     rows: list[Row] = []
     zone = clearing.get("zone") or {}
     edge = clearing.get("edge_ring") or {}
@@ -454,6 +458,11 @@ def evaluate(clearing: dict, roots: list[Path]) -> tuple[list[Row], dict]:
             {"gallop": 1 if bolt.get("gallop") else 0, "idle": 1 if bolt.get("idle") else 0},
         )
     )
+
+    if world is not None:
+        from tools.layout.transition import transition_rows
+
+        rows.extend(transition_rows(clearing, world))
 
     extra = {
         "visual_gap": {"deg": v_gap[0], "at": v_gap[2], "length_deg": v_gap[0]},

@@ -1,0 +1,21 @@
+{
+  "schema": "clearing/1",
+  "id": "clearing-a",
+  "fixture": true,
+  "note": "TEST FIXTURE. Synthetic plate. Not Imagine. Not a layout PASS.",
+  "zone": { "shape": "circle", "center": [0, 0], "radius_m": 20 },
+  "edge_ring": { "radius_m": 18, "hulls": [] },
+  "gates": [
+    { "id": "out", "heading_deg": 0, "width_m": 4.5, "leads_to": "path-ab" }
+  ],
+  "interior_objects": [],
+  "near_lens": { "cull_m": 1.2 },
+  "fog_band": { "patches": 0 },
+  "spawn": { "position": [0, 0], "face": "gate:out" },
+  "view": { "width": 720, "height": 1600, "fov_y_deg": 40, "boom_m": 6, "mag_max": 1 },
+  "bolt": {
+    "gallop": "lock/bolt-gallop-cycle.mp4",
+    "idle": "lock/bolt-idle-breath.mp4"
+  },
+  "plate": "tools/zoneflow/fixture/clearing-a.png"
+}

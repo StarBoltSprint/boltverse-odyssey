@@ -1,0 +1,2 @@
+Fixture reference only. This file is not an Imagine prompt and not a style.
+The real cook keeps its prompt next to the Imagine job. The manifest stores the path.

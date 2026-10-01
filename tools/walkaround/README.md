@@ -121,6 +121,66 @@ A 3-voxel opening flags narrow parts (`qc/report.json` → `protrusions`). A fla
 
 Depth only recesses. It does not add shell outside the silhouettes. On the smooth path, with at least four depth views, a voxel moves inward only when two of them agree. A depth set that would delete more than 60% of the solid is rejected.
 
+## Depth numbers in `qc/report.json`
+
+Every method, including the default, writes the same depth block. Adding the numbers does not move the default mesh.
+
+| Field | Meaning |
+| --- | --- |
+| `depthMetrics.units` | `metres`. |
+| `depthMetrics.perView[].nearM` | Closest camera-space z of that view's shipped surface, in metres. |
+| `depthMetrics.perView[].farM` | Farthest camera-space z of that view's shipped surface, in metres. |
+| `depthMetrics.perView[].meanOffsetM` | Mean depth-refine recess for that view, metres along camera z. |
+| `depthMetrics.perView[].maxOffsetM` | Max of that recess. |
+| `depthMetrics.refinement.meanOffsetM` | Mean of the per-view means, over views that had a depth map. |
+| `depthMetrics.refinement.maxOffsetM` | Max of the per-view maxima. |
+| `depthMetrics.refinement.applied` | True only when the depth carve kept the solid. False when depth was skipped, the carve was rejected, or the method is an optional shape (those do not recess). |
+| `depthMetrics.refinement.source` | `skipped`, `png`, or `depth-anything-v2`. Same value as `depthRefine`. |
+| `depthMetrics.refinement.depthRelief` | The fraction of local thickness the carve is allowed to use. |
+| `depthMetrics.bboxDepth` | World-Z extent of the shipped mesh, or of the occupancy solid when there is no mesh. Metres. |
+| `depthMetrics.bboxMin` / `bboxMax` | That axis-aligned box. |
+| `depthMin`, `depthMax`, `depthRange` | Minimum `nearM` and maximum `farM` across views. Copied onto `hull` as well. |
+
+`tools/reportview` reads `depthRange`, or `depthMin` and `depthMax`, on the report or on `hull`. The per-view metres, the two offsets, and `bboxDepth` are the fields that page can show from `depthMetrics`.
+
+The offset is how far the depth target sits behind the visual-hull front. It is not a second surface. `nearM` and `farM` describe the surface that was actually written.
+
+## Optional shape
+
+Omit `--shape` and the build is the silhouette volume, surface nets, and Taubin, as above. These flags do not change that path.
+
+| Flag | When to try it | What it does |
+| --- | --- | --- |
+| `--shape photogrammetry` | The object is rigid and you have four Imagine turntable videos, each 90°, pinned first and last, plus the usual HD stills. An optional top-rise video can be set in config `topRise` or `--top-rise`. | CPU structure-from-motion in the declared cameras, then a star mesh (one radius per direction). The HD stills are projected with the same native-resolution projector as the default. |
+| `--shape primitive --primitive box` | The object is a box. A face-on silhouette and a diagonal one differ by more than the ±15% area lock, so that lock is the wrong test. | Fits an invisible box to the silhouettes. Reports silhouette IoU per view and corner-seam warnings. The area lock is waived and recorded. |
+| `--shape primitive --primitive cylinder` | The object is a vertical cylinder (axis world Y). | Same fit, round section. A tube lying on its side will not fit. |
+| `--compare --shape …` | You want the default and one or more options on the same stills. | Writes `qc/report.json` (`comparison.schema` = `walkaround-compare-1`), `qc/report.md`, and five thumbnails per method under `qc/compare/<method>/` (four sides and one 3/4-high). Recommended = highest score among methods with `ok` true. |
+
+Photogrammetry config (file paths are resolved next to the config, or under `--videos`):
+
+```json
+"turntables": [
+  {"file": "videos/q0.mp4", "yawStartDeg": 0, "yawEndDeg": 90}
+],
+"topRise": {"file": "videos/top.mp4", "yawDeg": 0, "elevStartDeg": 20, "elevEndDeg": 70}
+```
+
+Four clips are required. `--turntable path:yawStart:yawEnd` four times overrides the config. `--photogram-engine cpu` (default) uses OpenCV on the CPU. `--photogram-engine colmap` shells out to COLMAP with GPU flags off. If `colmap` is not installed, that engine FAILs. It does not switch to `cpu` and it does not switch to the silhouette hull.
+
+A poor registration FAILs in `qc/report.json` (`shape.ok` false, `shape.fallback` set) and the process exits non-zero. The message says the run did not switch methods. Re-run without `--shape photogrammetry` to use the default. Nothing here silently substitutes the default mesh.
+
+Reported for photogrammetry: `registeredFrameRatio`, `meanReprojectionPx`, `pointCount`, `meshFaces`, `holes`, `loopClosureSilhouetteIoU`. The loop check compares the pinned first frame of the first clip with the pinned last frame of the last clip. A turntable whose object changes shape between those frames FAILs even when neighbouring frames still match.
+
+Honest limits:
+
+- The default method is unchanged. Optional shapes are not a better default.
+- The star densifier cannot reconstruct a dent or a through-hole. One radius per direction around the centroid.
+- There is no GPU in this builder. COLMAP's CPU path is present and untested when the `colmap` binary is absent; the selftest runs the CPU engine.
+- Video frames are used for shape only. Colour stays a nearest sample of the HD stills. Code does not draw pixels.
+- A box corner is a seam when the two faces pick different stills. The warning is the point of the report.
+- Primitive silhouette IoU is the fit measure. The ±15% / ±8% lock remains the default method's gate.
+- `--compare` of a failed requested method exits non-zero even if another method scores higher. The report still names the recommendation. It does not copy the failed mesh into the pass.
+
 ## Web view
 
 `web/view.html` loads `asset.json`, `mesh.bin`, and the copied PNGs. Serve the asset folder and open the page with `?root=` pointed at it. Sampling is nearest. There is no lighting pass. The page prints `PASS` only when `gl.getError()` stays 0.

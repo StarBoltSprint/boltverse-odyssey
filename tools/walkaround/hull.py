@@ -351,6 +351,7 @@ def refine_with_depth(
     vsize: np.ndarray,
     max_fraction: float = 0.10,
     min_agree: int = 1,
+    offset_log: dict | None = None,
 ) -> np.ndarray:
     """Move the front inward to the depth target. Near (white) stays on the hull.
 
@@ -363,6 +364,7 @@ def refine_with_depth(
     n = solid.shape[0]
     pts = voxel_centers(n, half, vsize).reshape(n, n, n, 3)
     remove = np.zeros(solid.shape, np.uint8)
+    offset_rows: list[dict] = []
     for view in views:
         depth = view.get("depth")
         if depth is None:
@@ -398,11 +400,33 @@ def refine_with_depth(
         thick = span > (1.5 * float(np.min(vsize)))
         carve_to = zfront[vi_ok, ui_ok] + np.minimum((1.0 - dn) * span, max_fraction * span)
         carved = thick & (z_ok < carve_to - 0.25 * float(np.min(vsize)))
+        if offset_log is not None:
+            # Same recess the carve uses: how far the front target sits behind the
+            # visual-hull front, in camera-space metres. This does not move a voxel.
+            recess = np.minimum((1.0 - dn) * span, max_fraction * span)
+            use = recess[thick]
+            offset_rows.append(
+                {
+                    "file": view.get("stored", view["file"]),
+                    "meanOffsetM": float(np.mean(use)) if use.size else 0.0,
+                    "maxOffsetM": float(np.max(use)) if use.size else 0.0,
+                }
+            )
         sel = solid_idx[np.where(ok)[0][carved]]
         if len(sel):
             remove[sel[:, 0], sel[:, 1], sel[:, 2]] += 1
     kept = solid & (remove < int(min_agree))
-    if int(kept.sum()) < int(0.4 * solid.sum()):
+    rejected = int(kept.sum()) < int(0.4 * solid.sum())
+    if offset_log is not None:
+        if rejected:
+            offset_log["applied"] = False
+            offset_log["perView"] = [
+                {"file": row["file"], "meanOffsetM": 0.0, "maxOffsetM": 0.0} for row in offset_rows
+            ]
+        else:
+            offset_log["applied"] = True
+            offset_log["perView"] = offset_rows
+    if rejected:
         return solid
     return kept
 
@@ -936,6 +960,7 @@ def make_solid(
     grid_pad: float,
     depth_relief: float,
     min_agree: int,
+    offset_log: dict | None = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict]:
     half = object_size * 0.5 * float(grid_pad)
     vsize = (2.0 * half) / int(n)
@@ -950,8 +975,17 @@ def make_solid(
     solid = carve_elevated(solid, elevs, half, vsize)
     if any(v.get("depth") is not None for v in views):
         solid = refine_with_depth(
-            solid, views, half, vsize, max_fraction=float(depth_relief), min_agree=int(min_agree)
+            solid,
+            views,
+            half,
+            vsize,
+            max_fraction=float(depth_relief),
+            min_agree=int(min_agree),
+            offset_log=offset_log,
         )
+    elif offset_log is not None:
+        offset_log["applied"] = False
+        offset_log["perView"] = []
     solid = fill_pits(solid)
     solid = erode6(dilate6(solid))
     solid = fill_voids(solid)
@@ -1236,6 +1270,202 @@ def _build_subobject(
     }
 
 
+def _run_shape(
+    shape_name: str,
+    options: dict,
+    views: list[dict],
+    cfg: dict,
+    object_size: np.ndarray,
+    config_path: Path,
+    out_dir: Path,
+) -> dict:
+    """Optional invisible shape. The default path never calls this."""
+    if shape_name == "photogrammetry":
+        import photogram
+
+        return photogram.reconstruct(
+            config_path,
+            cfg,
+            object_size,
+            out_dir,
+            videos_dir=options.get("videos"),
+            turntable_cli=options.get("turntables"),
+            top_rise_cli=options.get("top_rise"),
+            max_frames=int(options.get("max_frames") or 8),
+            engine=str(options.get("photogram_engine") or "cpu"),
+        )
+    if shape_name == "primitive":
+        import primitive
+
+        return primitive.build_primitive(str(options.get("primitive") or ""), views, object_size)
+    raise SystemExit(
+        f"FAIL shape: unknown method {shape_name}. Use photogrammetry or primitive. "
+        "This run did not fall back to the silhouette method."
+    )
+
+
+def _camera_span(points: np.ndarray, view: dict) -> tuple[float | None, float | None]:
+    """Closest and farthest camera-space z of `points` that land in the silhouette."""
+    if points is None or len(points) == 0:
+        return None, None
+    u, v, z = project(points, view["cam"], view["width"], view["height"], view["fovY"])
+    ui = np.rint(np.asarray(u)).astype(np.int32)
+    vi = np.rint(np.asarray(v)).astype(np.int32)
+    z = np.asarray(z, np.float64)
+    ok = (
+        (z > 1e-4)
+        & (ui >= 0)
+        & (vi >= 0)
+        & (ui < view["width"])
+        & (vi < view["height"])
+    )
+    mask = view.get("mask")
+    if mask is not None and np.any(ok):
+        ok = ok & mask[np.clip(vi, 0, view["height"] - 1), np.clip(ui, 0, view["width"] - 1)]
+    if not np.any(ok):
+        return None, None
+    return float(np.min(z[ok])), float(np.max(z[ok]))
+
+
+def _solid_points(solid: np.ndarray, half: np.ndarray, vsize: np.ndarray) -> np.ndarray:
+    idx = np.argwhere(solid)
+    if len(idx) == 0:
+        return np.zeros((0, 3), np.float64)
+    n = int(solid.shape[0])
+    grid = voxel_centers(n, half, vsize).reshape(n, n, n, 3)
+    return grid[idx[:, 0], idx[:, 1], idx[:, 2]]
+
+
+def _r4(value: float | None) -> float | None:
+    if value is None:
+        return None
+    return round(float(value), 4)
+
+
+def measure_depth_report(
+    solid: np.ndarray,
+    views: list[dict],
+    half: np.ndarray,
+    vsize: np.ndarray,
+    mesh_vertices: np.ndarray | None,
+    sub_records: list[dict],
+    offset_log: dict | None,
+    depth_source: str,
+    depth_relief: float,
+) -> dict:
+    """Numeric depth for qc/report.json. Does not move the solid or the mesh.
+
+    nearM / farM are camera-space z of the shipped surface, in metres.
+    meanOffsetM / maxOffsetM are how far depth refine receded the front from
+    the visual-hull front, in metres along that camera's z. They are 0 when
+    depth was skipped, the carve was rejected, or the shape method does not
+    recess. bboxDepth is the world-Z extent of the shipped mesh, or of the
+    solid when there is no mesh.
+    """
+    offset_log = offset_log or {}
+    by_file = {row["file"]: row for row in (offset_log.get("perView") or [])}
+    applied = bool(offset_log.get("applied"))
+
+    def points_for(view: dict) -> np.ndarray:
+        group = view.get("group", "body")
+        if group != "body":
+            for sub in sub_records:
+                verts = sub.get("vertices")
+                if sub["name"] == group and verts is not None and len(verts):
+                    # The part's stills look at its own origin. The stored mesh
+                    # is already in the parent frame, so measure depth in the
+                    # camera frame those stills were shot in.
+                    world = np.asarray(sub["vertices"], np.float64)
+                    joint = np.asarray(sub["joint"], np.float64)
+                    attach = np.asarray(sub["localAttach"], np.float64)
+                    local = (world - joint) @ yaw_matrix(float(sub["yawDeg"])) + attach
+                    return local
+        if mesh_vertices is not None and len(mesh_vertices) and group == "body":
+            return np.asarray(mesh_vertices, np.float64)
+        return _solid_points(solid, half, vsize)
+
+    if mesh_vertices is not None and len(mesh_vertices):
+        bbox_pts = np.asarray(mesh_vertices, np.float64)
+    else:
+        bbox_pts = _solid_points(solid, half, vsize)
+    if len(bbox_pts) == 0:
+        bbox_min = [0.0, 0.0, 0.0]
+        bbox_max = [0.0, 0.0, 0.0]
+        bbox_depth = 0.0
+    else:
+        lo = bbox_pts.min(axis=0)
+        hi = bbox_pts.max(axis=0)
+        bbox_min = [round(float(v), 4) for v in lo]
+        bbox_max = [round(float(v), 4) for v in hi]
+        bbox_depth = round(float(hi[2] - lo[2]), 4)
+
+    per_view = []
+    for view in views:
+        near, far = _camera_span(points_for(view), view)
+        key = view.get("stored", view["file"])
+        recorded = by_file.get(key) or by_file.get(view["file"]) or {}
+        mean_off = float(recorded.get("meanOffsetM", 0.0)) if applied else 0.0
+        max_off = float(recorded.get("maxOffsetM", 0.0)) if applied else 0.0
+        per_view.append(
+            {
+                "file": key,
+                "yawDeg": round(float(view["yawDeg"]), 4),
+                "elevationDeg": round(float(view["cam"]["elevationDeg"]), 4),
+                "nearM": _r4(near),
+                "farM": _r4(far),
+                "meanOffsetM": round(mean_off, 4),
+                "maxOffsetM": round(max_off, 4),
+            }
+        )
+    if applied and by_file:
+        mean_offset = float(np.mean([float(row["meanOffsetM"]) for row in by_file.values()]))
+        max_offset = float(np.max([float(row["maxOffsetM"]) for row in by_file.values()]))
+    else:
+        mean_offset = 0.0
+        max_offset = 0.0
+    nears = [row["nearM"] for row in per_view if row["nearM"] is not None]
+    fars = [row["farM"] for row in per_view if row["farM"] is not None]
+    depth_min = round(float(min(nears)), 4) if nears else None
+    depth_max = round(float(max(fars)), 4) if fars else None
+    return {
+        "units": "metres",
+        "bboxDepth": bbox_depth,
+        "bboxMin": bbox_min,
+        "bboxMax": bbox_max,
+        "depthMin": depth_min,
+        "depthMax": depth_max,
+        "depthRange": None if depth_min is None else [depth_min, depth_max],
+        "refinement": {
+            "applied": applied,
+            "source": depth_source,
+            "depthRelief": round(float(depth_relief), 4),
+            "meanOffsetM": round(mean_offset, 4),
+            "maxOffsetM": round(max_offset, 4),
+        },
+        "perView": per_view,
+    }
+
+
+def attach_depth(report: dict, block: dict) -> None:
+    """Copy the names reportview already displays, plus the per-view block."""
+    report["depthMetrics"] = block
+    if block.get("depthRange") is not None:
+        report["depthMin"] = block["depthMin"]
+        report["depthMax"] = block["depthMax"]
+        report["depthRange"] = block["depthRange"]
+    hull = report.get("hull")
+    if isinstance(hull, dict):
+        hull["bboxDepth"] = block["bboxDepth"]
+        if block.get("depthRange") is not None:
+            hull["depthMin"] = block["depthMin"]
+            hull["depthMax"] = block["depthMax"]
+            hull["depthRange"] = block["depthRange"]
+
+
+def _write_report(qc_out: Path, report: dict) -> None:
+    (qc_out / "report.json").write_text(json.dumps(report, indent=2) + "\n")
+
+
 def build(
     views_dir: Path,
     config_path: Path,
@@ -1423,14 +1653,72 @@ def build(
     # The legacy voxel path stays a single-view carve, matching the previous tool.
     min_agree = 2 if surface_mode == "nets" and len(depth_views) >= 4 else 1
     body_views = list(views)
-    solid, half, vsize, solid_meta = make_solid(
-        body_views, object_size, vote, n, pad, depth_relief, min_agree
-    )
+    sub_specs = list(cfg.get("subObjects") or [])
+    shape_name = options.get("shape") or None
+    shaped = None
+    offset_log: dict = {}
+    surface_name = "surface-nets" if surface_mode == "nets" else "voxels"
+    if shape_name:
+        if sub_specs:
+            raise SystemExit(
+                "FAIL shape: a sub-object stays on the default silhouette method. "
+                "Do not pass --shape with subObjects."
+            )
+        if surface_mode != "nets":
+            raise SystemExit(
+                "FAIL shape: --legacy-voxels is the occupancy grid. Omit it when passing --shape."
+            )
+        shaped = _run_shape(shape_name, options, body_views, cfg, object_size, config_path, out_dir)
+        report["shape"] = shaped["stats"]
+        surface_name = str(shaped["stats"].get("surface") or shape_name)
+        solid = np.asarray(shaped["solid"]).astype(bool)
+        half = np.asarray(shaped["half"], np.float64).reshape(3)
+        vsize = np.asarray(shaped["vsize"], np.float64).reshape(-1)
+        if vsize.size == 1:
+            vsize = np.repeat(float(vsize.reshape(-1)[0]), 3)
+        vsize = np.asarray(vsize, np.float64).reshape(3)
+        solid_meta = {
+            "carvedVoxels": int(np.asarray(solid).sum()),
+            "undersideCap": {
+                "applied": False,
+                "note": "a shape method does not run the underside cap",
+            },
+            "voteUsed": min(int(vote), len(body_views)),
+            "horizontalViews": sum(1 for v in body_views if not v.get("elevated")),
+            "elevatedViews": sum(1 for v in body_views if v.get("elevated")),
+        }
+        offset_log = {"applied": False, "perView": []}
+        if len(np.asarray(shaped["vertices"])) < 16 or int(np.asarray(solid).sum()) < 16:
+            failures = list(shaped.get("failures") or [])
+            if not failures:
+                failures = [
+                    "FAIL shape: the method produced no closed surface. This run did not switch methods."
+                ]
+            report["hull"] = {
+                "surface": surface_name,
+                "vertexCount": int(len(np.asarray(shaped["vertices"]))),
+                "triangleCount": int(len(np.asarray(shaped["faces"]))),
+                "depthRelief": depth_relief,
+                "bboxDepth": 0.0,
+            }
+            attach_depth(
+                report,
+                measure_depth_report(
+                    solid, body_views, half, vsize, None, [], offset_log, depth_source, depth_relief
+                ),
+            )
+            report["ok"] = False
+            report["failures"] = failures
+            _write_report(qc_out, report)
+            fail_lines(failures, report)
+    else:
+        solid, half, vsize, solid_meta = make_solid(
+            body_views, object_size, vote, n, pad, depth_relief, min_agree, offset_log=offset_log
+        )
     carved_count = int(solid_meta["carvedVoxels"])
     cap_info = solid_meta["undersideCap"]
     protrusions = flag_protrusions(solid, half, vsize)
     sub_records = []
-    sub_specs = list(cfg.get("subObjects") or [])
     if sub_specs and surface_mode != "nets":
         raise SystemExit(
             "FAIL subObjects: a sub-object is carved out of the smooth mesh. "
@@ -1493,7 +1781,18 @@ def build(
     mesh_groups = None
     group_ranges = [(0, len(body_views))]
     mesh_info = None
-    if surface_mode == "nets":
+    if shaped is not None:
+        mesh_vertices = np.asarray(shaped["vertices"], np.float32)
+        mesh_normals = np.asarray(shaped["normals"], np.float32)
+        mesh_faces = np.asarray(shaped["faces"], np.int32)
+        mesh_groups = np.zeros(len(mesh_vertices), np.int32)
+        group_ranges = [(0, len(body_views))]
+        mesh_info = {
+            "edges": _surface().geometric_edge_histogram(mesh_vertices, mesh_faces),
+            "volume": None,
+        }
+        _surface().write_mesh_bin(out_dir / "mesh.bin", mesh_vertices, mesh_normals, mesh_faces, mesh_groups)
+    elif surface_mode == "nets":
         sample_origin = -half + 0.5 * vsize
         mesh_info = _surface().build_smooth_mesh(
             solid, sample_origin, vsize, iterations=smooth_iters, blur_sigma=0.7
@@ -1605,7 +1904,20 @@ def build(
         "requestedMinDistance": requested_note,
         "viewport": {"width": screen_w, "height": screen_h, "fovYDeg": screen_fov},
     }
-    failures = list(lock_fail)
+    waive_lock = bool(shaped is not None and shaped.get("waive_silhouette_lock"))
+    if waive_lock:
+        report["silhouetteLock"]["waived"] = True
+        report["silhouetteLock"]["waiveReason"] = (
+            "This primitive is scored by silhouette IoU. "
+            "The ±15% area and ±8% height lock stays on the default silhouette method."
+        )
+        failures = []
+    else:
+        failures = list(lock_fail)
+    if shaped is not None:
+        for line in shaped.get("failures") or []:
+            if line not in failures:
+                failures.append(line)
     if max_mag > MAG_LIMIT:
         for item in per_view_mag:
             if item["maxMagnification"] > MAG_LIMIT:
@@ -1763,7 +2075,7 @@ def build(
         for v in views
     ]
     report["hull"] = {
-        "surface": "surface-nets" if surface_mode == "nets" else "voxels",
+        "surface": surface_name,
         "surfaceGrid": int(n),
         "legacyGrid": int(legacy_grid),
         "vertexCount": 0 if mesh_vertices is None else int(len(mesh_vertices)),
@@ -1836,7 +2148,7 @@ def build(
         "assignmentDependsOnViewerYaw": False,
         "weight": "(normal · viewDir)^8",
         "seamRatio": SEAM_RATIO,
-        "surface": "surface-nets" if surface_mode == "nets" else "voxels",
+        "surface": surface_name,
         "vertexCount": 0 if mesh_vertices is None else int(len(mesh_vertices)),
         "triangleCount": 0 if mesh_faces is None else int(len(mesh_faces)),
         "vote": vote,
@@ -1893,12 +2205,28 @@ def build(
         payload["meshIndices"] = mesh_faces.astype(np.int32)
         payload["meshGroup"] = mesh_groups.astype(np.int16)
     np.savez_compressed(out_dir / "hull.npz", **payload)
+    depth_block = measure_depth_report(
+        solid,
+        views,
+        half,
+        vsize,
+        mesh_vertices,
+        sub_records,
+        offset_log,
+        depth_source,
+        depth_relief,
+    )
+    attach_depth(report, depth_block)
+    asset["depthRange"] = report.get("depthRange")
+    asset["depthMin"] = report.get("depthMin")
+    asset["depthMax"] = report.get("depthMax")
+    asset["bboxDepth"] = depth_block["bboxDepth"]
     (out_dir / "asset.json").write_text(json.dumps(asset, indent=2) + "\n")
     report["ok"] = not failures
     report["failures"] = failures
     report["collisionRadius"] = radius
     report["qc"] = qc_files
-    (qc_out / "report.json").write_text(json.dumps(report, indent=2) + "\n")
+    _write_report(qc_out, report)
     if failures:
         fail_lines(failures, report)
     return report

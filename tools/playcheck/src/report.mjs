@@ -21,6 +21,15 @@ const ORDER = [
   "idle_gallop_switch",
   "fullscreen",
   "debug_hook",
+  "transition_black",
+  "transition_hitch",
+  "fps_avg",
+  "fps_1low",
+  "frame_ms",
+  "js_heap",
+  "texture_mem",
+  "video_decoders",
+  "draw_calls",
 ];
 
 export function writeReport(dir, payload) {
@@ -43,6 +52,7 @@ export function writeReport(dir, payload) {
     },
     notes: payload.notes,
     generatedAt: payload.generatedAt,
+    perf: payload.perf || null,
   };
   writeFileSync(path.join(dir, "report.json"), JSON.stringify(json, null, 2));
   writeFileSync(path.join(dir, "report.md"), markdown(json));
@@ -93,6 +103,16 @@ function markdown(json) {
     lines.push("");
     lines.push("```json");
     lines.push(JSON.stringify(r.numbers, null, 2));
+    lines.push("```");
+    lines.push("");
+  }
+  if (json.perf) {
+    lines.push("## Perf");
+    lines.push("");
+    lines.push("Additive `perf` object for tools/reportview. Schema `playcheck-perf/1`. Existing row fields are unchanged.");
+    lines.push("");
+    lines.push("```json");
+    lines.push(JSON.stringify(json.perf, null, 2));
     lines.push("```");
     lines.push("");
   }

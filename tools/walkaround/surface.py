@@ -343,6 +343,26 @@ def taubin_smooth(
     return v.astype(np.float32)
 
 
+def geometric_edge_histogram(vertices: np.ndarray, faces: np.ndarray, tol: float = 1e-4) -> dict:
+    """Edge counts after welding vertices that sit on the same point.
+
+    A flat-shaded box keeps one normal per face, so corners are stored twice.
+    Those copies are one corner. The index-only histogram would call every
+    face edge a boundary. This welds them first.
+    """
+    if len(faces) == 0 or len(vertices) == 0:
+        return manifold_edge_histogram(faces)
+    quant = np.round(np.asarray(vertices, np.float64) / float(tol)).astype(np.int64)
+    _uniq, inverse = np.unique(quant, axis=0, return_inverse=True)
+    welded = inverse[np.asarray(faces, np.int64)]
+    keep = (
+        (welded[:, 0] != welded[:, 1])
+        & (welded[:, 1] != welded[:, 2])
+        & (welded[:, 2] != welded[:, 0])
+    )
+    return manifold_edge_histogram(welded[keep].astype(np.int32))
+
+
 def manifold_edge_histogram(faces: np.ndarray) -> dict:
     if len(faces) == 0:
         return {"edges": 0, "boundary": 0, "manifold": 0, "nonManifold": 0}

@@ -23,6 +23,8 @@ import {
   windowCount,
   windowCountAny,
 } from "./pixels.mjs";
+import { judgeTransition } from "../../../biome/scripts/zone-flow/zoneFlow.mjs";
+import { judgePerf } from "../../perf/stats.mjs";
 
 const WEBGL_RE = /webgl|invalid_|gl_invalid|texsubimage|teximage|geterror/i;
 
@@ -80,6 +82,9 @@ function finish(layout, frames, extras) {
   rows.push(rowBlack(frames));
   rows.push(rowTiles(frames));
   rows.push(rowBackdrop(frames, layout));
+  pushTransition(rows, frames);
+  const perf = judgePerf(frames);
+  for (const perfRow of perf.rows) rows.push(perfRow);
 
   const failed = rows.filter((r) => r.result !== "PASS").length;
   return {
@@ -88,7 +93,48 @@ function finish(layout, frames, extras) {
     passed: rows.length - failed,
     glErrors: gl.errors,
     consoleErrors: gl.console,
+    perf: perf.report,
   };
+}
+
+function transitionSamples(frames) {
+  const samples = [];
+  for (const frame of frames) {
+    const snap = frame.snap || {};
+    const block = snap.transition;
+    if (!block) continue;
+    if (Array.isArray(block)) samples.push(...block);
+    else if (Array.isArray(block.samples)) samples.push(...block.samples);
+    else samples.push(block);
+  }
+  return samples;
+}
+
+function pushTransition(rows, frames) {
+  const samples = transitionSamples(frames);
+  if (!samples.length) return;
+  const judged = judgeTransition(samples);
+  rows.push(
+    row(
+      "transition_black",
+      judged.black.ok ? "PASS" : "FAIL",
+      {
+        blacks: judged.black.blacks,
+        frames: judged.black.frames,
+        lumaMax: judged.black.lumaMax,
+        frac: judged.black.frac,
+      },
+      "A transition frame is black when luma stays under 12 on at least 92% of sampled pixels. No black frame is allowed. Rows appear only when snapshot().transition is present.",
+    ),
+  );
+  rows.push(
+    row(
+      "transition_hitch",
+      judged.hitch.ok ? "PASS" : "FAIL",
+      { maxHitchMs: judged.hitch.maxHitchMs, limitMs: judged.hitch.limitMs, frames: judged.hitch.frames },
+      "Largest transition frame gap must stay at or under 100 ms.",
+    ),
+  );
 }
 
 function row(id, result, numbers, detail, extra = {}) {
