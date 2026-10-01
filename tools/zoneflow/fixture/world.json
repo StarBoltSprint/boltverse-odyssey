@@ -1,0 +1,24 @@
+{
+  "schema": "world/1",
+  "start": "clearing-a",
+  "fadeMs": 400,
+  "preloadM": 8,
+  "triggerM": 1.5,
+  "fixture": true,
+  "note": "TEST FIXTURE. Synthetic plates. Not Imagine.",
+  "corridors": [
+    {
+      "id": "path-ab",
+      "from": { "zone": "clearing-a", "gate": "out" },
+      "to": { "zone": "clearing-b", "gate": "in" },
+      "ground": "tools/zoneflow/fixture/ground.mp4",
+      "bakedGroundSpeed": 4,
+      "length_m": 24,
+      "fixture": true
+    }
+  ],
+  "zones": {
+    "clearing-a": "tools/zoneflow/fixture/clearing-a.json",
+    "clearing-b": "tools/zoneflow/fixture/clearing-b.json"
+  }
+}

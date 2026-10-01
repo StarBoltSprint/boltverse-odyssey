@@ -115,6 +115,8 @@ WebGL errors are captured even without the hook, by wrapping `getError` and the 
 | `idle_gallop_switch` | Moving frame is not `GALLOP`, or the stop frame is not `IDLE` at about speed 0. |
 | `fullscreen` | Canvas or screenshot is not 720×1600. |
 | `debug_hook` | `snapshot()` or the ID buffer is missing. |
+| `transition_black` | Only when `snapshot().transition` is present. A frame is black (luma under 12 on at least 92% of sampled pixels), or `black` / `rgba` was not provided. |
+| `transition_hitch` | Only when `snapshot().transition` is present. `hitchMs` is missing or the largest value is over 100. |
 | `fps_avg` | Average present FPS under **30**, or `snapshot().perf` missing. Not applied on the measurement fixture (`snap.harness`). |
 | `fps_1low` | 1% low under **20** (mean of the slowest 1% of the last 300 intervals). Same fixture exception. |
 | `frame_ms` | Mean present interval above **33.333 ms**. |
@@ -131,7 +133,7 @@ Include [`tools/perf/overlay.js`](../perf/README.md). The panel is off unless th
 
 The play view calls `__perf.noteFrame`, `__perf.noteDraw`, and `__perf.noteTexture`, and copies `__perf.snapshot()` onto `snapshot().perf`.
 
-`report.json` gains an additive `perf` object, schema `playcheck-perf/1`, documented for the upcoming `tools/reportview`:
+`report.json` gains an additive `perf` object, schema `playcheck-perf/1`, documented for `tools/reportview`:
 
 | Field | Meaning |
 | --- | --- |
@@ -154,6 +156,7 @@ The fixture under `fixture/` is a harness. It records perf and does not fail the
 - `near_lens` is the renderer's nearest fragment distance, required on every frame. It is not a second depth buffer inside this tool.
 - The committed samples under `sample/` are runs of `fixture/`, because this repo has no clearing play build. `sample/clean` is the harness with objects drawn. `sample/take8` reproduces invisible stops, a missing gate, an unkeyed black rectangle, a repeated floor, an upscaled ring, magnification above 1, and a real `texSubImage3D` error. Those committed files predate the perf rows. A new run writes the additive `perf` object and the seven perf rows. On this harness the phone budget is recorded and not applied.
 - FPS is the present interval the page reports via `noteFrame`. This walk calls `tick(1/30)`, so a harness that forwards that `dt` is reporting the driven interval. `workMs` is accepted by the counter but the fps rows use `dtMs` when it is set. A device build should pass `requestAnimationFrame` deltas. The counter does not read the GPU clock.
+- `transition_black` and `transition_hitch` are omitted unless a captured `snapshot().transition` exists (one object, an array, or `{ samples: [...] }` with `black` or `rgba`, and `hitchMs`). A walk that never leaves its clearing keeps the previous row set, plus the perf rows. The zone handoff itself is `biome/scripts/zone-flow`. The labelled synthetic demo is `tools/zoneflow`.
 
 ## Tests
 

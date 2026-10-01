@@ -88,6 +88,68 @@ test("a webgl console error fails webgl_errors", () => {
   assert.equal(rows.find((r) => r.id === "webgl_clean").result, "FAIL");
 });
 
+test("transition rows stay absent until snapshot().transition is present", () => {
+  const judge = createJudge(layout);
+  judge.add({
+    id: "spawn",
+    kind: "spawn",
+    width: 8,
+    height: 8,
+    rgba: new Uint8Array(8 * 8 * 4),
+    snap: {
+      mag: 0.5,
+      heroCount: 1,
+      canvas: { width: 720, height: 1600 },
+      nearestVisibleM: 4,
+      objectIds: ids({}),
+    },
+  });
+  const plain = judge.finish({ glErrors: [], consoleErrors: [] }).rows;
+  assert.equal(plain.some((r) => r.id === "transition_black"), false);
+  assert.equal(plain.some((r) => r.id === "transition_hitch"), false);
+
+  const again = createJudge(layout);
+  again.add({
+    id: "handoff",
+    kind: "spawn",
+    width: 8,
+    height: 8,
+    rgba: new Uint8Array(8 * 8 * 4),
+    snap: {
+      mag: 0.5,
+      heroCount: 1,
+      canvas: { width: 720, height: 1600 },
+      nearestVisibleM: 4,
+      objectIds: ids({}),
+      transition: { black: false, hitchMs: 16 },
+    },
+  });
+  const passed = again.finish({ glErrors: [], consoleErrors: [] }).rows;
+  assert.equal(passed.find((r) => r.id === "transition_black").result, "PASS");
+  assert.equal(passed.find((r) => r.id === "transition_hitch").result, "PASS");
+
+  const bad = createJudge(layout);
+  bad.add({
+    id: "handoff",
+    kind: "spawn",
+    width: 8,
+    height: 8,
+    rgba: new Uint8Array(8 * 8 * 4),
+    snap: {
+      mag: 0.5,
+      heroCount: 1,
+      canvas: { width: 720, height: 1600 },
+      nearestVisibleM: 4,
+      objectIds: ids({}),
+      transition: { black: true, hitchMs: 180 },
+    },
+  });
+  const failed = bad.finish({ glErrors: [], consoleErrors: [] }).rows;
+  assert.equal(failed.find((r) => r.id === "transition_black").result, "FAIL");
+  assert.equal(failed.find((r) => r.id === "transition_hitch").result, "FAIL");
+  assert.equal(failed.find((r) => r.id === "transition_hitch").numbers.limitMs, 100);
+});
+
 test("ring data misses fail even if no pixels were required yet", () => {
   const open = normalizeLayout({
     id: "open",
