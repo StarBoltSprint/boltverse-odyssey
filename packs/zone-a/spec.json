@@ -82,7 +82,10 @@
   },
   "categories": {
     "ring": {
-      "assets": ["packs/zone-a/hulls/ring-b/asset.json"],
+      "assets": [
+        "packs/zone-a/hulls/ring-b/asset.json",
+        "packs/zone-a/hulls/hull-a10/asset.json"
+      ],
       "scale": [0.9, 1.25]
     },
     "exit": {
@@ -91,13 +94,19 @@
     },
     "mid": {
       "count": 4,
-      "assets": ["packs/zone-a/hulls/ring-b/asset.json"],
-      "scale": [0.95, 1.15],
+      "assets": [
+        "packs/zone-a/hulls/monolith-a10/asset.json",
+        "packs/zone-a/hulls/monolith-b10/asset.json"
+      ],
+      "scale": [0.9, 1.12],
       "band_m": [7.2, 11.0]
     },
     "near": {
       "count": 6,
-      "assets": ["packs/zone-a/hulls/ring-b/asset.json"],
+      "assets": [
+        "packs/zone-a/hulls/hull-a10/asset.json",
+        "packs/zone-a/hulls/monolith-b10/asset.json"
+      ],
       "scale": [0.72, 0.95],
       "band_m": [3.6, 6.4]
     },

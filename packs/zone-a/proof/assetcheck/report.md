@@ -336,6 +336,990 @@ Kind `cutout`. Asset **PASS**.
 - plateRectangularity: `0.6657`
 - haloThicknessPx: `0.2495`
 
+## src/monolith-a10/views/yaw-000.png
+
+Kind `cutout`. Asset **PASS**.
+
+### basic — PASS
+
+- codec: `png`
+- container: `png`
+- pixFmt: `None`
+- mode: `RGBA`
+- width: `1200`
+- height: `1600`
+- fps: `None`
+- frames: `None`
+- durationSec: `None`
+- lossless: `True`
+- losslessRequired: `True`
+- bandingFraction: `0.0`
+
+### resolution — PASS
+
+- screen: `[720, 1600]`
+- frame: `[1200, 1600]`
+- onScreen: `[420.0, 800.0]`
+- mask: `{'width': 520, 'height': 1383, 'area': 605987, 'rows': [107, 1489], 'cols': [341, 860], 'fillHeight': 0.8644, 'fillArea': 0.3156}`
+- compared: `mask`
+- magnification: `0.8077`
+- magnificationLimit: `1.0`
+
+### alpha — PASS
+
+- key: `alpha`
+- alphaMin: `0`
+- alphaMax: `255`
+- unkeyedBlackFraction: `0.0`
+- plateFraction: `0.6844`
+- plateColor: `[0.0, 0.0, 0.0]`
+- plateTouchesFrame: `True`
+- plateRectangularity: `0.6844`
+- haloThicknessPx: `0.0`
+
+## src/monolith-a10/views/yaw-045.png
+
+Kind `cutout`. Asset **PASS**.
+
+### basic — PASS
+
+- codec: `png`
+- container: `png`
+- pixFmt: `None`
+- mode: `RGBA`
+- width: `1200`
+- height: `1600`
+- fps: `None`
+- frames: `None`
+- durationSec: `None`
+- lossless: `True`
+- losslessRequired: `True`
+- bandingFraction: `0.0`
+
+### resolution — PASS
+
+- screen: `[720, 1600]`
+- frame: `[1200, 1600]`
+- onScreen: `[420.0, 800.0]`
+- mask: `{'width': 500, 'height': 1367, 'area': 578334, 'rows': [114, 1480], 'cols': [355, 854], 'fillHeight': 0.8544, 'fillArea': 0.3012}`
+- compared: `mask`
+- magnification: `0.84`
+- magnificationLimit: `1.0`
+
+### alpha — PASS
+
+- key: `alpha`
+- alphaMin: `0`
+- alphaMax: `255`
+- unkeyedBlackFraction: `0.0`
+- plateFraction: `0.6988`
+- plateColor: `[0.0, 0.0, 0.0]`
+- plateTouchesFrame: `True`
+- plateRectangularity: `0.6988`
+- haloThicknessPx: `0.0`
+
+## src/monolith-a10/views/yaw-090.png
+
+Kind `cutout`. Asset **PASS**.
+
+### basic — PASS
+
+- codec: `png`
+- container: `png`
+- pixFmt: `None`
+- mode: `RGBA`
+- width: `1200`
+- height: `1600`
+- fps: `None`
+- frames: `None`
+- durationSec: `None`
+- lossless: `True`
+- losslessRequired: `True`
+- bandingFraction: `0.0`
+
+### resolution — PASS
+
+- screen: `[720, 1600]`
+- frame: `[1200, 1600]`
+- onScreen: `[420.0, 800.0]`
+- mask: `{'width': 472, 'height': 1372, 'area': 545152, 'rows': [108, 1479], 'cols': [370, 841], 'fillHeight': 0.8575, 'fillArea': 0.2839}`
+- compared: `mask`
+- magnification: `0.8898`
+- magnificationLimit: `1.0`
+
+### alpha — PASS
+
+- key: `alpha`
+- alphaMin: `0`
+- alphaMax: `255`
+- unkeyedBlackFraction: `0.0`
+- plateFraction: `0.7161`
+- plateColor: `[0.0, 0.0, 0.0]`
+- plateTouchesFrame: `True`
+- plateRectangularity: `0.7161`
+- haloThicknessPx: `0.0`
+
+## src/monolith-a10/views/yaw-135.png
+
+Kind `cutout`. Asset **PASS**.
+
+### basic — PASS
+
+- codec: `png`
+- container: `png`
+- pixFmt: `None`
+- mode: `RGBA`
+- width: `1200`
+- height: `1600`
+- fps: `None`
+- frames: `None`
+- durationSec: `None`
+- lossless: `True`
+- losslessRequired: `True`
+- bandingFraction: `0.0`
+
+### resolution — PASS
+
+- screen: `[720, 1600]`
+- frame: `[1200, 1600]`
+- onScreen: `[420.0, 800.0]`
+- mask: `{'width': 514, 'height': 1388, 'area': 602149, 'rows': [104, 1491], 'cols': [359, 872], 'fillHeight': 0.8675, 'fillArea': 0.3136}`
+- compared: `mask`
+- magnification: `0.8171`
+- magnificationLimit: `1.0`
+
+### alpha — PASS
+
+- key: `alpha`
+- alphaMin: `0`
+- alphaMax: `255`
+- unkeyedBlackFraction: `0.0`
+- plateFraction: `0.6864`
+- plateColor: `[0.0, 0.0, 0.0]`
+- plateTouchesFrame: `True`
+- plateRectangularity: `0.6864`
+- haloThicknessPx: `0.0`
+
+## src/monolith-a10/views/yaw-180.png
+
+Kind `cutout`. Asset **PASS**.
+
+### basic — PASS
+
+- codec: `png`
+- container: `png`
+- pixFmt: `None`
+- mode: `RGBA`
+- width: `1200`
+- height: `1600`
+- fps: `None`
+- frames: `None`
+- durationSec: `None`
+- lossless: `True`
+- losslessRequired: `True`
+- bandingFraction: `0.0`
+
+### resolution — PASS
+
+- screen: `[720, 1600]`
+- frame: `[1200, 1600]`
+- onScreen: `[420.0, 800.0]`
+- mask: `{'width': 521, 'height': 1386, 'area': 607078, 'rows': [105, 1490], 'cols': [340, 860], 'fillHeight': 0.8662, 'fillArea': 0.3162}`
+- compared: `mask`
+- magnification: `0.8061`
+- magnificationLimit: `1.0`
+
+### alpha — PASS
+
+- key: `alpha`
+- alphaMin: `0`
+- alphaMax: `255`
+- unkeyedBlackFraction: `0.0`
+- plateFraction: `0.6838`
+- plateColor: `[0.0, 0.0, 0.0]`
+- plateTouchesFrame: `True`
+- plateRectangularity: `0.6838`
+- haloThicknessPx: `0.0`
+
+## src/monolith-a10/views/yaw-225.png
+
+Kind `cutout`. Asset **PASS**.
+
+### basic — PASS
+
+- codec: `png`
+- container: `png`
+- pixFmt: `None`
+- mode: `RGBA`
+- width: `1200`
+- height: `1600`
+- fps: `None`
+- frames: `None`
+- durationSec: `None`
+- lossless: `True`
+- losslessRequired: `True`
+- bandingFraction: `0.0`
+
+### resolution — PASS
+
+- screen: `[720, 1600]`
+- frame: `[1200, 1600]`
+- onScreen: `[420.0, 800.0]`
+- mask: `{'width': 515, 'height': 1384, 'area': 598815, 'rows': [106, 1489], 'cols': [345, 859], 'fillHeight': 0.865, 'fillArea': 0.3119}`
+- compared: `mask`
+- magnification: `0.8155`
+- magnificationLimit: `1.0`
+
+### alpha — PASS
+
+- key: `alpha`
+- alphaMin: `0`
+- alphaMax: `255`
+- unkeyedBlackFraction: `0.0`
+- plateFraction: `0.6881`
+- plateColor: `[0.0, 0.0, 0.0]`
+- plateTouchesFrame: `True`
+- plateRectangularity: `0.6881`
+- haloThicknessPx: `0.0`
+
+## src/monolith-a10/views/yaw-270.png
+
+Kind `cutout`. Asset **PASS**.
+
+### basic — PASS
+
+- codec: `png`
+- container: `png`
+- pixFmt: `None`
+- mode: `RGBA`
+- width: `1200`
+- height: `1600`
+- fps: `None`
+- frames: `None`
+- durationSec: `None`
+- lossless: `True`
+- losslessRequired: `True`
+- bandingFraction: `0.0`
+
+### resolution — PASS
+
+- screen: `[720, 1600]`
+- frame: `[1200, 1600]`
+- onScreen: `[420.0, 800.0]`
+- mask: `{'width': 501, 'height': 1362, 'area': 571825, 'rows': [122, 1483], 'cols': [351, 851], 'fillHeight': 0.8512, 'fillArea': 0.2978}`
+- compared: `mask`
+- magnification: `0.8383`
+- magnificationLimit: `1.0`
+
+### alpha — PASS
+
+- key: `alpha`
+- alphaMin: `0`
+- alphaMax: `255`
+- unkeyedBlackFraction: `0.0`
+- plateFraction: `0.7022`
+- plateColor: `[0.0, 0.0, 0.0]`
+- plateTouchesFrame: `True`
+- plateRectangularity: `0.7022`
+- haloThicknessPx: `0.0`
+
+## src/monolith-a10/views/yaw-315.png
+
+Kind `cutout`. Asset **PASS**.
+
+### basic — PASS
+
+- codec: `png`
+- container: `png`
+- pixFmt: `None`
+- mode: `RGBA`
+- width: `1200`
+- height: `1600`
+- fps: `None`
+- frames: `None`
+- durationSec: `None`
+- lossless: `True`
+- losslessRequired: `True`
+- bandingFraction: `0.0`
+
+### resolution — PASS
+
+- screen: `[720, 1600]`
+- frame: `[1200, 1600]`
+- onScreen: `[420.0, 800.0]`
+- mask: `{'width': 504, 'height': 1382, 'area': 584141, 'rows': [108, 1489], 'cols': [353, 856], 'fillHeight': 0.8638, 'fillArea': 0.3042}`
+- compared: `mask`
+- magnification: `0.8333`
+- magnificationLimit: `1.0`
+
+### alpha — PASS
+
+- key: `alpha`
+- alphaMin: `0`
+- alphaMax: `255`
+- unkeyedBlackFraction: `0.0`
+- plateFraction: `0.6958`
+- plateColor: `[0.0, 0.0, 0.0]`
+- plateTouchesFrame: `True`
+- plateRectangularity: `0.6958`
+- haloThicknessPx: `0.0`
+
+## src/monolith-b10/views/yaw-000.png
+
+Kind `cutout`. Asset **PASS**.
+
+### basic — PASS
+
+- codec: `png`
+- container: `png`
+- pixFmt: `None`
+- mode: `RGBA`
+- width: `1200`
+- height: `1600`
+- fps: `None`
+- frames: `None`
+- durationSec: `None`
+- lossless: `True`
+- losslessRequired: `True`
+- bandingFraction: `0.0`
+
+### resolution — PASS
+
+- screen: `[720, 1600]`
+- frame: `[1200, 1600]`
+- onScreen: `[640.0, 560.0]`
+- mask: `{'width': 868, 'height': 776, 'area': 526122, 'rows': [419, 1194], 'cols': [173, 1040], 'fillHeight': 0.485, 'fillArea': 0.274}`
+- compared: `mask`
+- magnification: `0.7373`
+- magnificationLimit: `1.0`
+
+### alpha — PASS
+
+- key: `alpha`
+- alphaMin: `0`
+- alphaMax: `255`
+- unkeyedBlackFraction: `0.0`
+- plateFraction: `0.726`
+- plateColor: `[0.0, 0.0, 0.0]`
+- plateTouchesFrame: `True`
+- plateRectangularity: `0.726`
+- haloThicknessPx: `0.0`
+
+## src/monolith-b10/views/yaw-045.png
+
+Kind `cutout`. Asset **PASS**.
+
+### basic — PASS
+
+- codec: `png`
+- container: `png`
+- pixFmt: `None`
+- mode: `RGBA`
+- width: `1200`
+- height: `1600`
+- fps: `None`
+- frames: `None`
+- durationSec: `None`
+- lossless: `True`
+- losslessRequired: `True`
+- bandingFraction: `0.0`
+
+### resolution — PASS
+
+- screen: `[720, 1600]`
+- frame: `[1200, 1600]`
+- onScreen: `[640.0, 560.0]`
+- mask: `{'width': 778, 'height': 765, 'area': 467285, 'rows': [420, 1184], 'cols': [215, 992], 'fillHeight': 0.4781, 'fillArea': 0.2434}`
+- compared: `mask`
+- magnification: `0.8226`
+- magnificationLimit: `1.0`
+
+### alpha — PASS
+
+- key: `alpha`
+- alphaMin: `0`
+- alphaMax: `255`
+- unkeyedBlackFraction: `0.0`
+- plateFraction: `0.7566`
+- plateColor: `[0.0, 0.0, 0.0]`
+- plateTouchesFrame: `True`
+- plateRectangularity: `0.7566`
+- haloThicknessPx: `0.0`
+
+## src/monolith-b10/views/yaw-090.png
+
+Kind `cutout`. Asset **PASS**.
+
+### basic — PASS
+
+- codec: `png`
+- container: `png`
+- pixFmt: `None`
+- mode: `RGBA`
+- width: `1200`
+- height: `1600`
+- fps: `None`
+- frames: `None`
+- durationSec: `None`
+- lossless: `True`
+- losslessRequired: `True`
+- bandingFraction: `0.0`
+
+### resolution — PASS
+
+- screen: `[720, 1600]`
+- frame: `[1200, 1600]`
+- onScreen: `[640.0, 560.0]`
+- mask: `{'width': 801, 'height': 786, 'area': 492391, 'rows': [421, 1206], 'cols': [206, 1006], 'fillHeight': 0.4913, 'fillArea': 0.2565}`
+- compared: `mask`
+- magnification: `0.799`
+- magnificationLimit: `1.0`
+
+### alpha — PASS
+
+- key: `alpha`
+- alphaMin: `0`
+- alphaMax: `255`
+- unkeyedBlackFraction: `0.0`
+- plateFraction: `0.7435`
+- plateColor: `[0.0, 0.0, 0.0]`
+- plateTouchesFrame: `True`
+- plateRectangularity: `0.7435`
+- haloThicknessPx: `0.0`
+
+## src/monolith-b10/views/yaw-135.png
+
+Kind `cutout`. Asset **PASS**.
+
+### basic — PASS
+
+- codec: `png`
+- container: `png`
+- pixFmt: `None`
+- mode: `RGBA`
+- width: `1200`
+- height: `1600`
+- fps: `None`
+- frames: `None`
+- durationSec: `None`
+- lossless: `True`
+- losslessRequired: `True`
+- bandingFraction: `0.0`
+
+### resolution — PASS
+
+- screen: `[720, 1600]`
+- frame: `[1200, 1600]`
+- onScreen: `[640.0, 560.0]`
+- mask: `{'width': 792, 'height': 780, 'area': 483563, 'rows': [426, 1205], 'cols': [213, 1004], 'fillHeight': 0.4875, 'fillArea': 0.2519}`
+- compared: `mask`
+- magnification: `0.8081`
+- magnificationLimit: `1.0`
+
+### alpha — PASS
+
+- key: `alpha`
+- alphaMin: `0`
+- alphaMax: `255`
+- unkeyedBlackFraction: `0.0`
+- plateFraction: `0.7481`
+- plateColor: `[0.0, 0.0, 0.0]`
+- plateTouchesFrame: `True`
+- plateRectangularity: `0.7481`
+- haloThicknessPx: `0.0`
+
+## src/monolith-b10/views/yaw-180.png
+
+Kind `cutout`. Asset **PASS**.
+
+### basic — PASS
+
+- codec: `png`
+- container: `png`
+- pixFmt: `None`
+- mode: `RGBA`
+- width: `1200`
+- height: `1600`
+- fps: `None`
+- frames: `None`
+- durationSec: `None`
+- lossless: `True`
+- losslessRequired: `True`
+- bandingFraction: `0.0`
+
+### resolution — PASS
+
+- screen: `[720, 1600]`
+- frame: `[1200, 1600]`
+- onScreen: `[640.0, 560.0]`
+- mask: `{'width': 827, 'height': 772, 'area': 498870, 'rows': [419, 1190], 'cols': [190, 1016], 'fillHeight': 0.4825, 'fillArea': 0.2598}`
+- compared: `mask`
+- magnification: `0.7739`
+- magnificationLimit: `1.0`
+
+### alpha — PASS
+
+- key: `alpha`
+- alphaMin: `0`
+- alphaMax: `255`
+- unkeyedBlackFraction: `0.0`
+- plateFraction: `0.7402`
+- plateColor: `[0.0, 0.0, 0.0]`
+- plateTouchesFrame: `True`
+- plateRectangularity: `0.7402`
+- haloThicknessPx: `0.0`
+
+## src/monolith-b10/views/yaw-225.png
+
+Kind `cutout`. Asset **PASS**.
+
+### basic — PASS
+
+- codec: `png`
+- container: `png`
+- pixFmt: `None`
+- mode: `RGBA`
+- width: `1200`
+- height: `1600`
+- fps: `None`
+- frames: `None`
+- durationSec: `None`
+- lossless: `True`
+- losslessRequired: `True`
+- bandingFraction: `0.0`
+
+### resolution — PASS
+
+- screen: `[720, 1600]`
+- frame: `[1200, 1600]`
+- onScreen: `[640.0, 560.0]`
+- mask: `{'width': 869, 'height': 777, 'area': 527349, 'rows': [419, 1195], 'cols': [173, 1041], 'fillHeight': 0.4856, 'fillArea': 0.2747}`
+- compared: `mask`
+- magnification: `0.7365`
+- magnificationLimit: `1.0`
+
+### alpha — PASS
+
+- key: `alpha`
+- alphaMin: `0`
+- alphaMax: `255`
+- unkeyedBlackFraction: `0.0`
+- plateFraction: `0.7253`
+- plateColor: `[0.0, 0.0, 0.0]`
+- plateTouchesFrame: `True`
+- plateRectangularity: `0.7253`
+- haloThicknessPx: `0.0`
+
+## src/monolith-b10/views/yaw-270.png
+
+Kind `cutout`. Asset **PASS**.
+
+### basic — PASS
+
+- codec: `png`
+- container: `png`
+- pixFmt: `None`
+- mode: `RGBA`
+- width: `1200`
+- height: `1600`
+- fps: `None`
+- frames: `None`
+- durationSec: `None`
+- lossless: `True`
+- losslessRequired: `True`
+- bandingFraction: `0.0`
+
+### resolution — PASS
+
+- screen: `[720, 1600]`
+- frame: `[1200, 1600]`
+- onScreen: `[640.0, 560.0]`
+- mask: `{'width': 865, 'height': 778, 'area': 525261, 'rows': [418, 1195], 'cols': [175, 1039], 'fillHeight': 0.4863, 'fillArea': 0.2736}`
+- compared: `mask`
+- magnification: `0.7399`
+- magnificationLimit: `1.0`
+
+### alpha — PASS
+
+- key: `alpha`
+- alphaMin: `0`
+- alphaMax: `255`
+- unkeyedBlackFraction: `0.0`
+- plateFraction: `0.7264`
+- plateColor: `[0.0, 0.0, 0.0]`
+- plateTouchesFrame: `True`
+- plateRectangularity: `0.7264`
+- haloThicknessPx: `0.0`
+
+## src/monolith-b10/views/yaw-315.png
+
+Kind `cutout`. Asset **PASS**.
+
+### basic — PASS
+
+- codec: `png`
+- container: `png`
+- pixFmt: `None`
+- mode: `RGBA`
+- width: `1200`
+- height: `1600`
+- fps: `None`
+- frames: `None`
+- durationSec: `None`
+- lossless: `True`
+- losslessRequired: `True`
+- bandingFraction: `0.0`
+
+### resolution — PASS
+
+- screen: `[720, 1600]`
+- frame: `[1200, 1600]`
+- onScreen: `[640.0, 560.0]`
+- mask: `{'width': 869, 'height': 778, 'area': 528493, 'rows': [418, 1195], 'cols': [173, 1041], 'fillHeight': 0.4863, 'fillArea': 0.2753}`
+- compared: `mask`
+- magnification: `0.7365`
+- magnificationLimit: `1.0`
+
+### alpha — PASS
+
+- key: `alpha`
+- alphaMin: `0`
+- alphaMax: `255`
+- unkeyedBlackFraction: `0.0`
+- plateFraction: `0.7247`
+- plateColor: `[0.0, 0.0, 0.0]`
+- plateTouchesFrame: `True`
+- plateRectangularity: `0.7247`
+- haloThicknessPx: `0.0`
+
+## src/hull-a10/views/yaw-000.png
+
+Kind `cutout`. Asset **PASS**.
+
+### basic — PASS
+
+- codec: `png`
+- container: `png`
+- pixFmt: `None`
+- mode: `RGBA`
+- width: `1200`
+- height: `1600`
+- fps: `None`
+- frames: `None`
+- durationSec: `None`
+- lossless: `True`
+- losslessRequired: `True`
+- bandingFraction: `0.0`
+
+### resolution — PASS
+
+- screen: `[720, 1600]`
+- frame: `[1200, 1600]`
+- onScreen: `[640.0, 640.0]`
+- mask: `{'width': 870, 'height': 894, 'area': 510421, 'rows': [341, 1234], 'cols': [170, 1039], 'fillHeight': 0.5587, 'fillArea': 0.2658}`
+- compared: `mask`
+- magnification: `0.7356`
+- magnificationLimit: `1.0`
+
+### alpha — PASS
+
+- key: `alpha`
+- alphaMin: `0`
+- alphaMax: `255`
+- unkeyedBlackFraction: `0.0`
+- plateFraction: `0.7342`
+- plateColor: `[0.0, 0.0, 0.0]`
+- plateTouchesFrame: `True`
+- plateRectangularity: `0.7342`
+- haloThicknessPx: `0.0`
+
+## src/hull-a10/views/yaw-045.png
+
+Kind `cutout`. Asset **PASS**.
+
+### basic — PASS
+
+- codec: `png`
+- container: `png`
+- pixFmt: `None`
+- mode: `RGBA`
+- width: `1200`
+- height: `1600`
+- fps: `None`
+- frames: `None`
+- durationSec: `None`
+- lossless: `True`
+- losslessRequired: `True`
+- bandingFraction: `0.0`
+
+### resolution — PASS
+
+- screen: `[720, 1600]`
+- frame: `[1200, 1600]`
+- onScreen: `[640.0, 640.0]`
+- mask: `{'width': 862, 'height': 895, 'area': 474390, 'rows': [341, 1235], 'cols': [176, 1037], 'fillHeight': 0.5594, 'fillArea': 0.2471}`
+- compared: `mask`
+- magnification: `0.7425`
+- magnificationLimit: `1.0`
+
+### alpha — PASS
+
+- key: `alpha`
+- alphaMin: `0`
+- alphaMax: `255`
+- unkeyedBlackFraction: `0.0`
+- plateFraction: `0.7529`
+- plateColor: `[0.0, 0.0, 0.0]`
+- plateTouchesFrame: `True`
+- plateRectangularity: `0.7529`
+- haloThicknessPx: `0.0`
+
+## src/hull-a10/views/yaw-090.png
+
+Kind `cutout`. Asset **PASS**.
+
+### basic — PASS
+
+- codec: `png`
+- container: `png`
+- pixFmt: `None`
+- mode: `RGBA`
+- width: `1200`
+- height: `1600`
+- fps: `None`
+- frames: `None`
+- durationSec: `None`
+- lossless: `True`
+- losslessRequired: `True`
+- bandingFraction: `0.0`
+
+### resolution — PASS
+
+- screen: `[720, 1600]`
+- frame: `[1200, 1600]`
+- onScreen: `[640.0, 640.0]`
+- mask: `{'width': 821, 'height': 848, 'area': 548170, 'rows': [341, 1188], 'cols': [196, 1016], 'fillHeight': 0.53, 'fillArea': 0.2855}`
+- compared: `mask`
+- magnification: `0.7795`
+- magnificationLimit: `1.0`
+
+### alpha — PASS
+
+- key: `alpha`
+- alphaMin: `0`
+- alphaMax: `255`
+- unkeyedBlackFraction: `0.0`
+- plateFraction: `0.7145`
+- plateColor: `[0.0, 0.0, 0.0]`
+- plateTouchesFrame: `True`
+- plateRectangularity: `0.7145`
+- haloThicknessPx: `0.0`
+
+## src/hull-a10/views/yaw-135.png
+
+Kind `cutout`. Asset **PASS**.
+
+### basic — PASS
+
+- codec: `png`
+- container: `png`
+- pixFmt: `None`
+- mode: `RGBA`
+- width: `1200`
+- height: `1600`
+- fps: `None`
+- frames: `None`
+- durationSec: `None`
+- lossless: `True`
+- losslessRequired: `True`
+- bandingFraction: `0.0`
+
+### resolution — PASS
+
+- screen: `[720, 1600]`
+- frame: `[1200, 1600]`
+- onScreen: `[640.0, 640.0]`
+- mask: `{'width': 869, 'height': 893, 'area': 534605, 'rows': [341, 1233], 'cols': [171, 1039], 'fillHeight': 0.5581, 'fillArea': 0.2784}`
+- compared: `mask`
+- magnification: `0.7365`
+- magnificationLimit: `1.0`
+
+### alpha — PASS
+
+- key: `alpha`
+- alphaMin: `0`
+- alphaMax: `255`
+- unkeyedBlackFraction: `0.0`
+- plateFraction: `0.7216`
+- plateColor: `[0.0, 0.0, 0.0]`
+- plateTouchesFrame: `True`
+- plateRectangularity: `0.7216`
+- haloThicknessPx: `0.0`
+
+## src/hull-a10/views/yaw-180.png
+
+Kind `cutout`. Asset **PASS**.
+
+### basic — PASS
+
+- codec: `png`
+- container: `png`
+- pixFmt: `None`
+- mode: `RGBA`
+- width: `1200`
+- height: `1600`
+- fps: `None`
+- frames: `None`
+- durationSec: `None`
+- lossless: `True`
+- losslessRequired: `True`
+- bandingFraction: `0.0`
+
+### resolution — PASS
+
+- screen: `[720, 1600]`
+- frame: `[1200, 1600]`
+- onScreen: `[640.0, 640.0]`
+- mask: `{'width': 864, 'height': 886, 'area': 529674, 'rows': [341, 1226], 'cols': [172, 1035], 'fillHeight': 0.5537, 'fillArea': 0.2759}`
+- compared: `mask`
+- magnification: `0.7407`
+- magnificationLimit: `1.0`
+
+### alpha — PASS
+
+- key: `alpha`
+- alphaMin: `0`
+- alphaMax: `255`
+- unkeyedBlackFraction: `0.0`
+- plateFraction: `0.7241`
+- plateColor: `[0.0, 0.0, 0.0]`
+- plateTouchesFrame: `True`
+- plateRectangularity: `0.7241`
+- haloThicknessPx: `0.0`
+
+## src/hull-a10/views/yaw-225.png
+
+Kind `cutout`. Asset **PASS**.
+
+### basic — PASS
+
+- codec: `png`
+- container: `png`
+- pixFmt: `None`
+- mode: `RGBA`
+- width: `1200`
+- height: `1600`
+- fps: `None`
+- frames: `None`
+- durationSec: `None`
+- lossless: `True`
+- losslessRequired: `True`
+- bandingFraction: `0.0`
+
+### resolution — PASS
+
+- screen: `[720, 1600]`
+- frame: `[1200, 1600]`
+- onScreen: `[640.0, 640.0]`
+- mask: `{'width': 863, 'height': 892, 'area': 506427, 'rows': [341, 1232], 'cols': [179, 1041], 'fillHeight': 0.5575, 'fillArea': 0.2638}`
+- compared: `mask`
+- magnification: `0.7416`
+- magnificationLimit: `1.0`
+
+### alpha — PASS
+
+- key: `alpha`
+- alphaMin: `0`
+- alphaMax: `255`
+- unkeyedBlackFraction: `0.0`
+- plateFraction: `0.7362`
+- plateColor: `[0.0, 0.0, 0.0]`
+- plateTouchesFrame: `True`
+- plateRectangularity: `0.7362`
+- haloThicknessPx: `0.0`
+
+## src/hull-a10/views/yaw-270.png
+
+Kind `cutout`. Asset **PASS**.
+
+### basic — PASS
+
+- codec: `png`
+- container: `png`
+- pixFmt: `None`
+- mode: `RGBA`
+- width: `1200`
+- height: `1600`
+- fps: `None`
+- frames: `None`
+- durationSec: `None`
+- lossless: `True`
+- losslessRequired: `True`
+- bandingFraction: `0.0`
+
+### resolution — PASS
+
+- screen: `[720, 1600]`
+- frame: `[1200, 1600]`
+- onScreen: `[640.0, 640.0]`
+- mask: `{'width': 855, 'height': 880, 'area': 554168, 'rows': [346, 1225], 'cols': [180, 1034], 'fillHeight': 0.55, 'fillArea': 0.2886}`
+- compared: `mask`
+- magnification: `0.7485`
+- magnificationLimit: `1.0`
+
+### alpha — PASS
+
+- key: `alpha`
+- alphaMin: `0`
+- alphaMax: `255`
+- unkeyedBlackFraction: `0.0`
+- plateFraction: `0.7114`
+- plateColor: `[0.0, 0.0, 0.0]`
+- plateTouchesFrame: `True`
+- plateRectangularity: `0.7114`
+- haloThicknessPx: `0.0`
+
+## src/hull-a10/views/yaw-315.png
+
+Kind `cutout`. Asset **PASS**.
+
+### basic — PASS
+
+- codec: `png`
+- container: `png`
+- pixFmt: `None`
+- mode: `RGBA`
+- width: `1200`
+- height: `1600`
+- fps: `None`
+- frames: `None`
+- durationSec: `None`
+- lossless: `True`
+- losslessRequired: `True`
+- bandingFraction: `0.0`
+
+### resolution — PASS
+
+- screen: `[720, 1600]`
+- frame: `[1200, 1600]`
+- onScreen: `[640.0, 640.0]`
+- mask: `{'width': 863, 'height': 892, 'area': 510199, 'rows': [341, 1232], 'cols': [184, 1046], 'fillHeight': 0.5575, 'fillArea': 0.2657}`
+- compared: `mask`
+- magnification: `0.7416`
+- magnificationLimit: `1.0`
+
+### alpha — PASS
+
+- key: `alpha`
+- alphaMin: `0`
+- alphaMax: `255`
+- unkeyedBlackFraction: `0.0`
+- plateFraction: `0.7343`
+- plateColor: `[0.0, 0.0, 0.0]`
+- plateTouchesFrame: `True`
+- plateRectangularity: `0.7343`
+- haloThicknessPx: `0.0`
+
 ## hulls/wreck10/views/yaw-000.png
 
 Kind `cutout`. Asset **PASS**.

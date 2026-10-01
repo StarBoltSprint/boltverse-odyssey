@@ -57,7 +57,7 @@
       ],
       "id": "ring-01",
       "object_id": "ring-01",
-      "radius_m": 1.3408
+      "radius_m": 1.3126
     },
     {
       "base_y_m": -0.0181,
@@ -77,7 +77,7 @@
       ],
       "id": "ring-03",
       "object_id": "ring-03",
-      "radius_m": 1.2728
+      "radius_m": 1.2461
     },
     {
       "base_y_m": 0.0487,
@@ -117,7 +117,7 @@
       ],
       "id": "ring-07",
       "object_id": "ring-07",
-      "radius_m": 1.3408
+      "radius_m": 1.3126
     },
     {
       "base_y_m": 0.0301,
@@ -137,7 +137,7 @@
       ],
       "id": "ring-09",
       "object_id": "ring-09",
-      "radius_m": 1.2728
+      "radius_m": 1.2461
     },
     {
       "base_y_m": 0.0324,
@@ -177,7 +177,7 @@
       ],
       "id": "ring-13",
       "object_id": "ring-13",
-      "radius_m": 1.3408
+      "radius_m": 1.3126
     },
     {
       "base_y_m": -0.0045,
@@ -197,7 +197,7 @@
       ],
       "id": "ring-15",
       "object_id": "ring-15",
-      "radius_m": 1.2728
+      "radius_m": 1.2461
     },
     {
       "base_y_m": -0.0294,
@@ -237,7 +237,7 @@
       ],
       "id": "ring-19",
       "object_id": "ring-19",
-      "radius_m": 1.3408
+      "radius_m": 1.3126
     },
     {
       "base_y_m": -0.002,
@@ -257,7 +257,7 @@
       ],
       "id": "ring-21",
       "object_id": "ring-21",
-      "radius_m": 1.2728
+      "radius_m": 1.2461
     },
     {
       "base_y_m": 0.0201,
@@ -297,7 +297,7 @@
       ],
       "id": "ring-25",
       "object_id": "ring-25",
-      "radius_m": 1.3408
+      "radius_m": 1.3126
     },
     {
       "base_y_m": 0.0148,
@@ -317,7 +317,7 @@
       ],
       "id": "ring-27",
       "object_id": "ring-27",
-      "radius_m": 1.2728
+      "radius_m": 1.2461
     },
     {
       "base_y_m": -0.0255,
@@ -357,7 +357,7 @@
       ],
       "id": "ring-31",
       "object_id": "ring-31",
-      "radius_m": 1.3408
+      "radius_m": 1.3126
     },
     {
       "base_y_m": 0.0396,
@@ -377,7 +377,7 @@
       ],
       "id": "ring-33",
       "object_id": "ring-33",
-      "radius_m": 1.2728
+      "radius_m": 1.2461
     },
     {
       "base_y_m": -0.0202,
@@ -417,7 +417,7 @@
       ],
       "id": "ring-37",
       "object_id": "ring-37",
-      "radius_m": 1.3408
+      "radius_m": 1.3126
     },
     {
       "base_y_m": 0.0044,
@@ -437,7 +437,7 @@
       ],
       "id": "ring-39",
       "object_id": "ring-39",
-      "radius_m": 1.2728
+      "radius_m": 1.2461
     },
     {
       "base_y_m": 0.0069,
@@ -507,7 +507,7 @@
       ],
       "id": "mid-00",
       "object_id": "mid-00",
-      "radius_m": 1.1889
+      "radius_m": 0.6813
     },
     {
       "base_y_m": -0.0165,
@@ -517,7 +517,7 @@
       ],
       "id": "mid-01",
       "object_id": "mid-01",
-      "radius_m": 1.2455
+      "radius_m": 1.1658
     },
     {
       "base_y_m": -0.0125,
@@ -527,7 +527,7 @@
       ],
       "id": "mid-02",
       "object_id": "mid-02",
-      "radius_m": 1.3021
+      "radius_m": 0.7488
     },
     {
       "base_y_m": 0.0074,
@@ -537,7 +537,7 @@
       ],
       "id": "mid-03",
       "object_id": "mid-03",
-      "radius_m": 1.1436
+      "radius_m": 1.0669
     },
     {
       "base_y_m": 0.0032,
@@ -547,7 +547,7 @@
       ],
       "id": "near-00",
       "object_id": "near-00",
-      "radius_m": 0.9455
+      "radius_m": 0.9256
     },
     {
       "base_y_m": 0.0028,
@@ -557,7 +557,7 @@
       ],
       "id": "near-01",
       "object_id": "near-01",
-      "radius_m": 1.0021
+      "radius_m": 0.9734
     },
     {
       "base_y_m": -0.0429,
@@ -567,7 +567,7 @@
       ],
       "id": "near-02",
       "object_id": "near-02",
-      "radius_m": 0.9455
+      "radius_m": 0.9256
     },
     {
       "base_y_m": 0.0235,
@@ -577,7 +577,7 @@
       ],
       "id": "near-03",
       "object_id": "near-03",
-      "radius_m": 0.9455
+      "radius_m": 0.9184
     },
     {
       "base_y_m": 0.025,
@@ -587,7 +587,7 @@
       ],
       "id": "near-04",
       "object_id": "near-04",
-      "radius_m": 1.0021
+      "radius_m": 0.981
     },
     {
       "base_y_m": 0.0538,
@@ -597,7 +597,7 @@
       ],
       "id": "near-05",
       "object_id": "near-05",
-      "radius_m": 0.9455
+      "radius_m": 0.9184
     }
   ],
   "edge_ring": {
@@ -619,7 +619,7 @@
         "yaw_deg": 61.796
       },
       {
-        "asset": "packs/zone-a/hulls/ring-b/asset.json",
+        "asset": "packs/zone-a/hulls/hull-a10/asset.json",
         "base_y_m": 0.006,
         "category": "ring",
         "heading_deg": 264.473,
@@ -629,9 +629,9 @@
           -17.9163,
           -1.7338
         ],
-        "radius_m": 1.3408,
+        "radius_m": 1.3126,
         "scale": 1.1841,
-        "width_deg": 8.544,
+        "width_deg": 8.363,
         "yaw_deg": 84.473
       },
       {
@@ -651,7 +651,7 @@
         "yaw_deg": 107.149
       },
       {
-        "asset": "packs/zone-a/hulls/ring-b/asset.json",
+        "asset": "packs/zone-a/hulls/hull-a10/asset.json",
         "base_y_m": -0.0097,
         "category": "ring",
         "heading_deg": 279.825,
@@ -661,9 +661,9 @@
           -17.736,
           3.0716
         ],
-        "radius_m": 1.2728,
+        "radius_m": 1.2461,
         "scale": 1.1241,
-        "width_deg": 8.11,
+        "width_deg": 7.939,
         "yaw_deg": 129.825
       },
       {
@@ -683,7 +683,7 @@
         "yaw_deg": 77.502
       },
       {
-        "asset": "packs/zone-a/hulls/ring-b/asset.json",
+        "asset": "packs/zone-a/hulls/hull-a10/asset.json",
         "base_y_m": 0.0064,
         "category": "ring",
         "heading_deg": 295.178,
@@ -694,7 +694,7 @@
           7.6578
         ],
         "radius_m": 1.2049,
-        "scale": 1.0641,
+        "scale": 1.087,
         "width_deg": 7.676,
         "yaw_deg": 100.178
       },
@@ -715,7 +715,7 @@
         "yaw_deg": 122.854
       },
       {
-        "asset": "packs/zone-a/hulls/ring-b/asset.json",
+        "asset": "packs/zone-a/hulls/hull-a10/asset.json",
         "base_y_m": -0.025,
         "category": "ring",
         "heading_deg": 310.531,
@@ -725,9 +725,9 @@
           -13.681,
           11.6974
         ],
-        "radius_m": 1.3408,
+        "radius_m": 1.3126,
         "scale": 1.1841,
-        "width_deg": 8.544,
+        "width_deg": 8.363,
         "yaw_deg": 145.531
       },
       {
@@ -747,7 +747,7 @@
         "yaw_deg": 168.207
       },
       {
-        "asset": "packs/zone-a/hulls/ring-b/asset.json",
+        "asset": "packs/zone-a/hulls/hull-a10/asset.json",
         "base_y_m": 0.0462,
         "category": "ring",
         "heading_deg": 325.884,
@@ -757,9 +757,9 @@
           -10.0958,
           14.9022
         ],
-        "radius_m": 1.2728,
+        "radius_m": 1.2461,
         "scale": 1.1241,
-        "width_deg": 8.11,
+        "width_deg": 7.939,
         "yaw_deg": 115.884
       },
       {
@@ -779,7 +779,7 @@
         "yaw_deg": 138.56
       },
       {
-        "asset": "packs/zone-a/hulls/ring-b/asset.json",
+        "asset": "packs/zone-a/hulls/hull-a10/asset.json",
         "base_y_m": 0.0298,
         "category": "ring",
         "heading_deg": 341.236,
@@ -790,7 +790,7 @@
           17.0434
         ],
         "radius_m": 1.2049,
-        "scale": 1.0641,
+        "scale": 1.087,
         "width_deg": 7.676,
         "yaw_deg": 161.236
       },
@@ -811,7 +811,7 @@
         "yaw_deg": 183.913
       },
       {
-        "asset": "packs/zone-a/hulls/ring-b/asset.json",
+        "asset": "packs/zone-a/hulls/hull-a10/asset.json",
         "base_y_m": -0.0053,
         "category": "ring",
         "heading_deg": 356.589,
@@ -821,9 +821,9 @@
           -1.071,
           17.9681
         ],
-        "radius_m": 1.3408,
+        "radius_m": 1.3126,
         "scale": 1.1841,
-        "width_deg": 8.544,
+        "width_deg": 8.363,
         "yaw_deg": 206.589
       },
       {
@@ -843,7 +843,7 @@
         "yaw_deg": 154.265
       },
       {
-        "asset": "packs/zone-a/hulls/ring-b/asset.json",
+        "asset": "packs/zone-a/hulls/hull-a10/asset.json",
         "base_y_m": 0.0228,
         "category": "ring",
         "heading_deg": 11.942,
@@ -853,9 +853,9 @@
           3.7245,
           17.6105
         ],
-        "radius_m": 1.2728,
+        "radius_m": 1.2461,
         "scale": 1.1241,
-        "width_deg": 8.11,
+        "width_deg": 7.939,
         "yaw_deg": 176.942
       },
       {
@@ -875,7 +875,7 @@
         "yaw_deg": 199.618
       },
       {
-        "asset": "packs/zone-a/hulls/ring-b/asset.json",
+        "asset": "packs/zone-a/hulls/hull-a10/asset.json",
         "base_y_m": -0.0352,
         "category": "ring",
         "heading_deg": 27.295,
@@ -886,7 +886,7 @@
           15.9959
         ],
         "radius_m": 1.2049,
-        "scale": 1.0641,
+        "scale": 1.087,
         "width_deg": 7.676,
         "yaw_deg": 222.295
       },
@@ -907,7 +907,7 @@
         "yaw_deg": 244.971
       },
       {
-        "asset": "packs/zone-a/hulls/ring-b/asset.json",
+        "asset": "packs/zone-a/hulls/hull-a10/asset.json",
         "base_y_m": 0.0064,
         "category": "ring",
         "heading_deg": 42.647,
@@ -917,9 +917,9 @@
           12.1947,
           13.2397
         ],
-        "radius_m": 1.3408,
+        "radius_m": 1.3126,
         "scale": 1.1841,
-        "width_deg": 8.544,
+        "width_deg": 8.363,
         "yaw_deg": 192.647
       },
       {
@@ -939,7 +939,7 @@
         "yaw_deg": 215.324
       },
       {
-        "asset": "packs/zone-a/hulls/ring-b/asset.json",
+        "asset": "packs/zone-a/hulls/hull-a10/asset.json",
         "base_y_m": 0.0027,
         "category": "ring",
         "heading_deg": 58.0,
@@ -949,9 +949,9 @@
           15.2649,
           9.5385
         ],
-        "radius_m": 1.2728,
+        "radius_m": 1.2461,
         "scale": 1.1241,
-        "width_deg": 8.11,
+        "width_deg": 7.939,
         "yaw_deg": 238.0
       },
       {
@@ -971,7 +971,7 @@
         "yaw_deg": 260.676
       },
       {
-        "asset": "packs/zone-a/hulls/ring-b/asset.json",
+        "asset": "packs/zone-a/hulls/hull-a10/asset.json",
         "base_y_m": 0.0355,
         "category": "ring",
         "heading_deg": 73.353,
@@ -982,7 +982,7 @@
           5.1566
         ],
         "radius_m": 1.2049,
-        "scale": 1.0641,
+        "scale": 1.087,
         "width_deg": 7.676,
         "yaw_deg": 283.353
       },
@@ -1003,7 +1003,7 @@
         "yaw_deg": 231.029
       },
       {
-        "asset": "packs/zone-a/hulls/ring-b/asset.json",
+        "asset": "packs/zone-a/hulls/hull-a10/asset.json",
         "base_y_m": -0.0397,
         "category": "ring",
         "heading_deg": 88.705,
@@ -1013,9 +1013,9 @@
           17.9954,
           0.4067
         ],
-        "radius_m": 1.3408,
+        "radius_m": 1.3126,
         "scale": 1.1841,
-        "width_deg": 8.544,
+        "width_deg": 8.363,
         "yaw_deg": 253.705
       },
       {
@@ -1035,7 +1035,7 @@
         "yaw_deg": 276.382
       },
       {
-        "asset": "packs/zone-a/hulls/ring-b/asset.json",
+        "asset": "packs/zone-a/hulls/hull-a10/asset.json",
         "base_y_m": 0.019,
         "category": "ring",
         "heading_deg": 104.058,
@@ -1045,9 +1045,9 @@
           17.4609,
           -4.3723
         ],
-        "radius_m": 1.2728,
+        "radius_m": 1.2461,
         "scale": 1.1241,
-        "width_deg": 8.11,
+        "width_deg": 7.939,
         "yaw_deg": 299.058
       },
       {
@@ -1067,7 +1067,7 @@
         "yaw_deg": 321.735
       },
       {
-        "asset": "packs/zone-a/hulls/ring-b/asset.json",
+        "asset": "packs/zone-a/hulls/hull-a10/asset.json",
         "base_y_m": -0.0311,
         "category": "ring",
         "heading_deg": 119.411,
@@ -1078,7 +1078,7 @@
           -8.8393
         ],
         "radius_m": 1.2049,
-        "scale": 1.0641,
+        "scale": 1.087,
         "width_deg": 7.676,
         "yaw_deg": 269.411
       },
@@ -1099,7 +1099,7 @@
         "yaw_deg": 292.087
       },
       {
-        "asset": "packs/zone-a/hulls/ring-b/asset.json",
+        "asset": "packs/zone-a/hulls/hull-a10/asset.json",
         "base_y_m": 0.002,
         "category": "ring",
         "heading_deg": 134.764,
@@ -1109,9 +1109,9 @@
           12.7803,
           -12.6753
         ],
-        "radius_m": 1.3408,
+        "radius_m": 1.3126,
         "scale": 1.1841,
-        "width_deg": 8.544,
+        "width_deg": 8.363,
         "yaw_deg": 314.764
       },
       {
@@ -1131,7 +1131,7 @@
         "yaw_deg": 337.44
       },
       {
-        "asset": "packs/zone-a/hulls/ring-b/asset.json",
+        "asset": "packs/zone-a/hulls/hull-a10/asset.json",
         "base_y_m": -0.0066,
         "category": "ring",
         "heading_deg": 150.116,
@@ -1141,9 +1141,9 @@
           8.9683,
           -15.6067
         ],
-        "radius_m": 1.2728,
+        "radius_m": 1.2461,
         "scale": 1.1241,
-        "width_deg": 8.11,
+        "width_deg": 7.939,
         "yaw_deg": 0.116
       },
       {
@@ -1163,7 +1163,7 @@
         "yaw_deg": 307.793
       },
       {
-        "asset": "packs/zone-a/hulls/ring-b/asset.json",
+        "asset": "packs/zone-a/hulls/hull-a10/asset.json",
         "base_y_m": -0.0221,
         "category": "ring",
         "heading_deg": 165.469,
@@ -1174,7 +1174,7 @@
           -17.4242
         ],
         "radius_m": 1.2049,
-        "scale": 1.0641,
+        "scale": 1.087,
         "width_deg": 7.676,
         "yaw_deg": 330.469
       },
@@ -1195,7 +1195,7 @@
         "yaw_deg": 353.146
       },
       {
-        "asset": "packs/zone-a/hulls/ring-b/asset.json",
+        "asset": "packs/zone-a/hulls/hull-a10/asset.json",
         "base_y_m": 0.032,
         "category": "ring",
         "heading_deg": 180.822,
@@ -1205,9 +1205,9 @@
           -0.2582,
           -17.9981
         ],
-        "radius_m": 1.3408,
+        "radius_m": 1.3126,
         "scale": 1.1841,
-        "width_deg": 8.544,
+        "width_deg": 8.363,
         "yaw_deg": 15.822
       },
       {
@@ -1227,7 +1227,7 @@
         "yaw_deg": 38.498
       },
       {
-        "asset": "packs/zone-a/hulls/ring-b/asset.json",
+        "asset": "packs/zone-a/hulls/hull-a10/asset.json",
         "base_y_m": 0.0033,
         "category": "ring",
         "heading_deg": 196.175,
@@ -1237,9 +1237,9 @@
           -5.0142,
           -17.2875
         ],
-        "radius_m": 1.2728,
+        "radius_m": 1.2461,
         "scale": 1.1241,
-        "width_deg": 8.11,
+        "width_deg": 7.939,
         "yaw_deg": 346.175
       },
       {
@@ -1259,7 +1259,7 @@
         "yaw_deg": 8.851
       },
       {
-        "asset": "packs/zone-a/hulls/ring-b/asset.json",
+        "asset": "packs/zone-a/hulls/hull-a10/asset.json",
         "base_y_m": 0.0195,
         "category": "ring",
         "heading_deg": 211.527,
@@ -1270,7 +1270,7 @@
           -15.343
         ],
         "radius_m": 1.2049,
-        "scale": 1.0641,
+        "scale": 1.087,
         "width_deg": 7.676,
         "yaw_deg": 31.527
       },
@@ -1661,7 +1661,7 @@
       "yaw_deg": 182.596
     },
     {
-      "asset": "packs/zone-a/hulls/ring-b/asset.json",
+      "asset": "packs/zone-a/hulls/monolith-a10/asset.json",
       "base_y_m": 0.0234,
       "category": "mid",
       "id": "mid-00",
@@ -1670,12 +1670,12 @@
         5.4759,
         7.9388
       ],
-      "radius_m": 1.1889,
-      "scale": 1.05,
+      "radius_m": 0.6813,
+      "scale": 1.01,
       "yaw_deg": 34.596
     },
     {
-      "asset": "packs/zone-a/hulls/ring-b/asset.json",
+      "asset": "packs/zone-a/hulls/monolith-b10/asset.json",
       "base_y_m": -0.0165,
       "category": "mid",
       "id": "mid-01",
@@ -1684,12 +1684,12 @@
         7.1738,
         -5.5989
       ],
-      "radius_m": 1.2455,
-      "scale": 1.1,
+      "radius_m": 1.1658,
+      "scale": 1.06,
       "yaw_deg": 217.971
     },
     {
-      "asset": "packs/zone-a/hulls/ring-b/asset.json",
+      "asset": "packs/zone-a/hulls/monolith-a10/asset.json",
       "base_y_m": -0.0125,
       "category": "mid",
       "id": "mid-02",
@@ -1698,12 +1698,12 @@
         -8.3162,
         1.2265
       ],
-      "radius_m": 1.3021,
-      "scale": 1.15,
+      "radius_m": 0.7488,
+      "scale": 1.11,
       "yaw_deg": 98.39
     },
     {
-      "asset": "packs/zone-a/hulls/ring-b/asset.json",
+      "asset": "packs/zone-a/hulls/monolith-b10/asset.json",
       "base_y_m": 0.0074,
       "category": "mid",
       "id": "mid-03",
@@ -1712,12 +1712,12 @@
         -6.421,
         6.1744
       ],
-      "radius_m": 1.1436,
-      "scale": 1.01,
+      "radius_m": 1.0669,
+      "scale": 0.97,
       "yaw_deg": 223.879
     },
     {
-      "asset": "packs/zone-a/hulls/ring-b/asset.json",
+      "asset": "packs/zone-a/hulls/hull-a10/asset.json",
       "base_y_m": 0.0032,
       "category": "near",
       "id": "near-00",
@@ -1726,12 +1726,12 @@
         2.9096,
         4.5502
       ],
-      "radius_m": 0.9455,
+      "radius_m": 0.9256,
       "scale": 0.835,
       "yaw_deg": 32.596
     },
     {
-      "asset": "packs/zone-a/hulls/ring-b/asset.json",
+      "asset": "packs/zone-a/hulls/monolith-b10/asset.json",
       "base_y_m": 0.0028,
       "category": "near",
       "id": "near-01",
@@ -1740,12 +1740,12 @@
         4.9729,
         -0.5201
       ],
-      "radius_m": 1.0021,
+      "radius_m": 0.9734,
       "scale": 0.885,
       "yaw_deg": 185.971
     },
     {
-      "asset": "packs/zone-a/hulls/ring-b/asset.json",
+      "asset": "packs/zone-a/hulls/hull-a10/asset.json",
       "base_y_m": -0.0429,
       "category": "near",
       "id": "near-02",
@@ -1754,12 +1754,12 @@
         1.8947,
         -4.2294
       ],
-      "radius_m": 0.9455,
+      "radius_m": 0.9256,
       "scale": 0.835,
       "yaw_deg": 335.868
     },
     {
-      "asset": "packs/zone-a/hulls/ring-b/asset.json",
+      "asset": "packs/zone-a/hulls/monolith-b10/asset.json",
       "base_y_m": 0.0235,
       "category": "near",
       "id": "near-03",
@@ -1768,12 +1768,12 @@
         -5.0065,
         3.9779
       ],
-      "radius_m": 0.9455,
+      "radius_m": 0.9184,
       "scale": 0.835,
       "yaw_deg": 218.469
     },
     {
-      "asset": "packs/zone-a/hulls/ring-b/asset.json",
+      "asset": "packs/zone-a/hulls/hull-a10/asset.json",
       "base_y_m": 0.025,
       "category": "near",
       "id": "near-04",
@@ -1782,12 +1782,12 @@
         -4.8207,
         1.2904
       ],
-      "radius_m": 1.0021,
+      "radius_m": 0.981,
       "scale": 0.885,
       "yaw_deg": 329.986
     },
     {
-      "asset": "packs/zone-a/hulls/ring-b/asset.json",
+      "asset": "packs/zone-a/hulls/monolith-b10/asset.json",
       "base_y_m": 0.0538,
       "category": "near",
       "id": "near-05",
@@ -1796,7 +1796,7 @@
         -1.9585,
         3.8438
       ],
-      "radius_m": 0.9455,
+      "radius_m": 0.9184,
       "scale": 0.835,
       "yaw_deg": 62.999
     }
@@ -1834,13 +1834,16 @@
       "packs/zone-a/hulls/wreck10/asset.json"
     ],
     "mid": [
-      "packs/zone-a/hulls/ring-b/asset.json"
+      "packs/zone-a/hulls/monolith-a10/asset.json",
+      "packs/zone-a/hulls/monolith-b10/asset.json"
     ],
     "near": [
-      "packs/zone-a/hulls/ring-b/asset.json"
+      "packs/zone-a/hulls/hull-a10/asset.json",
+      "packs/zone-a/hulls/monolith-b10/asset.json"
     ],
     "ring": [
-      "packs/zone-a/hulls/ring-b/asset.json"
+      "packs/zone-a/hulls/ring-b/asset.json",
+      "packs/zone-a/hulls/hull-a10/asset.json"
     ]
   },
   "view": {

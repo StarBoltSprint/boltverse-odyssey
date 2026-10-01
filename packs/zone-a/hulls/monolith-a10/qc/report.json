@@ -1,0 +1,655 @@
+{
+  "ok": true,
+  "name": "monolith-a10",
+  "vote": 7,
+  "viewCount": 8,
+  "drawsOwnPixels": false,
+  "invisibleHull": true,
+  "notForBolt": true,
+  "pixels": "lossless-png-nearest",
+  "assignment": "per-fragment-best-facing",
+  "assignmentDependsOnViewerYaw": false,
+  "magnificationLimit": 1.0,
+  "syntheticInput": false,
+  "silhouetteLock": {
+    "pass": true,
+    "bands": [
+      {
+        "band": "horizontal",
+        "count": 8,
+        "checked": true
+      }
+    ],
+    "perView": [
+      {
+        "file": "yaw-000.png",
+        "area": 605987,
+        "height": 1383,
+        "width": 520,
+        "yawDeg": 0.0,
+        "elevationDeg": 0.9240453527727062,
+        "elevated": false
+      },
+      {
+        "file": "yaw-045.png",
+        "area": 578334,
+        "height": 1367,
+        "width": 500,
+        "yawDeg": 45.0,
+        "elevationDeg": 0.9240453527727062,
+        "elevated": false
+      },
+      {
+        "file": "yaw-090.png",
+        "area": 545152,
+        "height": 1372,
+        "width": 472,
+        "yawDeg": 90.0,
+        "elevationDeg": 0.9240453527727062,
+        "elevated": false
+      },
+      {
+        "file": "yaw-135.png",
+        "area": 602149,
+        "height": 1388,
+        "width": 514,
+        "yawDeg": 135.0,
+        "elevationDeg": 0.9240453527727062,
+        "elevated": false
+      },
+      {
+        "file": "yaw-180.png",
+        "area": 607078,
+        "height": 1386,
+        "width": 521,
+        "yawDeg": 180.0,
+        "elevationDeg": 0.9240453527727062,
+        "elevated": false
+      },
+      {
+        "file": "yaw-225.png",
+        "area": 598815,
+        "height": 1384,
+        "width": 515,
+        "yawDeg": 225.0,
+        "elevationDeg": 0.9240453527727062,
+        "elevated": false
+      },
+      {
+        "file": "yaw-270.png",
+        "area": 571825,
+        "height": 1362,
+        "width": 501,
+        "yawDeg": 270.0,
+        "elevationDeg": 0.9240453527727062,
+        "elevated": false
+      },
+      {
+        "file": "yaw-315.png",
+        "area": 584141,
+        "height": 1382,
+        "width": 504,
+        "yawDeg": 315.0,
+        "elevationDeg": 0.9240453527727062,
+        "elevated": false
+      }
+    ]
+  },
+  "depthRefine": "skipped",
+  "viewerYawProbeIgnored": 123.0,
+  "magnification": {
+    "limit": 1.0,
+    "max": 0.98735,
+    "perView": [
+      {
+        "file": "yaw-000.png",
+        "yawDeg": 0.0,
+        "elevationDeg": 0.9240453527727062,
+        "width": 1200,
+        "height": 1600,
+        "maxMagnification": 0.924642,
+        "hullHeight": 1244.042,
+        "hullWidth": 480.814,
+        "sourceHeight": 1383,
+        "sourceWidth": 520,
+        "atDistance": 6.788459881297347
+      },
+      {
+        "file": "yaw-045.png",
+        "yawDeg": 45.0,
+        "elevationDeg": 0.9240453527727062,
+        "width": 1200,
+        "height": 1600,
+        "maxMagnification": 0.960394,
+        "hullHeight": 1242.525,
+        "hullWidth": 480.197,
+        "sourceHeight": 1367,
+        "sourceWidth": 500,
+        "atDistance": 6.788459881297347
+      },
+      {
+        "file": "yaw-090.png",
+        "yawDeg": 90.0,
+        "elevationDeg": 0.9240453527727062,
+        "width": 1200,
+        "height": 1600,
+        "maxMagnification": 0.98735,
+        "hullHeight": 1242.112,
+        "hullWidth": 466.029,
+        "sourceHeight": 1372,
+        "sourceWidth": 472,
+        "atDistance": 6.788459881297347
+      },
+      {
+        "file": "yaw-135.png",
+        "yawDeg": 135.0,
+        "elevationDeg": 0.9240453527727062,
+        "width": 1200,
+        "height": 1600,
+        "maxMagnification": 0.942814,
+        "hullHeight": 1245.168,
+        "hullWidth": 484.607,
+        "sourceHeight": 1388,
+        "sourceWidth": 514,
+        "atDistance": 6.788459881297347
+      },
+      {
+        "file": "yaw-180.png",
+        "yawDeg": 180.0,
+        "elevationDeg": 0.9240453527727062,
+        "width": 1200,
+        "height": 1600,
+        "maxMagnification": 0.924432,
+        "hullHeight": 1248.276,
+        "hullWidth": 481.629,
+        "sourceHeight": 1386,
+        "sourceWidth": 521,
+        "atDistance": 6.788459881297347
+      },
+      {
+        "file": "yaw-225.png",
+        "yawDeg": 225.0,
+        "elevationDeg": 0.9240453527727062,
+        "width": 1200,
+        "height": 1600,
+        "maxMagnification": 0.912856,
+        "hullHeight": 1247.347,
+        "hullWidth": 470.121,
+        "sourceHeight": 1384,
+        "sourceWidth": 515,
+        "atDistance": 6.788459881297347
+      },
+      {
+        "file": "yaw-270.png",
+        "yawDeg": 270.0,
+        "elevationDeg": 0.9240453527727062,
+        "width": 1200,
+        "height": 1600,
+        "maxMagnification": 0.919567,
+        "hullHeight": 1248.611,
+        "hullWidth": 460.703,
+        "sourceHeight": 1362,
+        "sourceWidth": 501,
+        "atDistance": 6.788459881297347
+      },
+      {
+        "file": "yaw-315.png",
+        "yawDeg": 315.0,
+        "elevationDeg": 0.9240453527727062,
+        "width": 1200,
+        "height": 1600,
+        "maxMagnification": 0.958551,
+        "hullHeight": 1245.853,
+        "hullWidth": 483.11,
+        "sourceHeight": 1382,
+        "sourceWidth": 504,
+        "atDistance": 6.788459881297347
+      }
+    ],
+    "approachMinDistance": 6.788459881297347,
+    "approachCapDistance": 6.788459881297347,
+    "requestedMinDistance": null,
+    "viewport": {
+      "width": 1200,
+      "height": 1600,
+      "fovYDeg": 34.0
+    }
+  },
+  "coverage": {
+    "surfaceCount": 7170,
+    "assignedFraction": 1.0,
+    "silhouetteHitFraction": 1.0,
+    "seamFraction": 0.00599721059972106,
+    "perViewFraction": [
+      0.3200836820083682,
+      0.08242677824267783,
+      0.10767085076708507,
+      0.08591352859135286,
+      0.12635983263598327,
+      0.07838214783821479,
+      0.11408647140864714,
+      0.08507670850767085
+    ],
+    "solidVoxels": 64282,
+    "carvedVoxels": 64255,
+    "undersideCap": {
+      "applied": false,
+      "flatFraction": 0.07460035523978685,
+      "capVoxels": 0
+    }
+  },
+  "holes": {
+    "perRender": [
+      {
+        "hitPixels": 522222,
+        "seamPixels": 18630,
+        "seamFraction": 0.03567448326573756,
+        "fallbackPixels": 1199,
+        "reentryPixels": 0,
+        "reentryFraction": 0.0,
+        "centerHitPixels": 522222,
+        "centerReentryPixels": 0,
+        "centerReentryFraction": 0.0,
+        "axisRunMean": 6.798076923076923,
+        "file": "yaw-000.png",
+        "yawDeg": 0.0,
+        "elevated": false,
+        "sourceHoleFraction": 0.0,
+        "openingMatchedToSource": false,
+        "interiorHolePixels": 0,
+        "interiorHoleFraction": 0.0
+      },
+      {
+        "hitPixels": 519419,
+        "seamPixels": 30957,
+        "seamFraction": 0.05959928304509462,
+        "fallbackPixels": 1839,
+        "reentryPixels": 0,
+        "reentryFraction": 0.0,
+        "centerHitPixels": 519419,
+        "centerReentryPixels": 0,
+        "centerReentryFraction": 0.0,
+        "axisRunMean": 6.753623188405797,
+        "file": "yaw-045.png",
+        "yawDeg": 45.0,
+        "elevated": false,
+        "sourceHoleFraction": 0.0,
+        "openingMatchedToSource": false,
+        "interiorHolePixels": 0,
+        "interiorHoleFraction": 0.0
+      },
+      {
+        "hitPixels": 505903,
+        "seamPixels": 47138,
+        "seamFraction": 0.09317596456237658,
+        "fallbackPixels": 1767,
+        "reentryPixels": 0,
+        "reentryFraction": 0.0,
+        "centerHitPixels": 505903,
+        "centerReentryPixels": 0,
+        "centerReentryFraction": 0.0,
+        "axisRunMean": 6.567441860465117,
+        "file": "yaw-090.png",
+        "yawDeg": 90.0,
+        "elevated": false,
+        "sourceHoleFraction": 0.0,
+        "openingMatchedToSource": false,
+        "interiorHolePixels": 0,
+        "interiorHoleFraction": 0.0
+      },
+      {
+        "hitPixels": 527191,
+        "seamPixels": 52497,
+        "seamFraction": 0.0995787105622061,
+        "fallbackPixels": 656,
+        "reentryPixels": 0,
+        "reentryFraction": 0.0,
+        "centerHitPixels": 527191,
+        "centerReentryPixels": 0,
+        "centerReentryFraction": 0.0,
+        "axisRunMean": 6.752969121140143,
+        "file": "yaw-135.png",
+        "yawDeg": 135.0,
+        "elevated": false,
+        "sourceHoleFraction": 0.0,
+        "openingMatchedToSource": false,
+        "interiorHolePixels": 0,
+        "interiorHoleFraction": 0.0
+      },
+      {
+        "hitPixels": 523685,
+        "seamPixels": 52227,
+        "seamFraction": 0.09972979940231246,
+        "fallbackPixels": 940,
+        "reentryPixels": 0,
+        "reentryFraction": 0.0,
+        "centerHitPixels": 523685,
+        "centerReentryPixels": 0,
+        "centerReentryFraction": 0.0,
+        "axisRunMean": 6.7458033573141485,
+        "file": "yaw-180.png",
+        "yawDeg": 180.0,
+        "elevated": false,
+        "sourceHoleFraction": 0.0,
+        "openingMatchedToSource": false,
+        "interiorHolePixels": 0,
+        "interiorHoleFraction": 0.0
+      },
+      {
+        "hitPixels": 511719,
+        "seamPixels": 50562,
+        "seamFraction": 0.09880813493343026,
+        "fallbackPixels": 1807,
+        "reentryPixels": 0,
+        "reentryFraction": 0.0,
+        "centerHitPixels": 511719,
+        "centerReentryPixels": 0,
+        "centerReentryFraction": 0.0,
+        "axisRunMean": 6.660377358490566,
+        "file": "yaw-225.png",
+        "yawDeg": 225.0,
+        "elevated": false,
+        "sourceHoleFraction": 0.0,
+        "openingMatchedToSource": false,
+        "interiorHolePixels": 0,
+        "interiorHoleFraction": 0.0
+      },
+      {
+        "hitPixels": 497216,
+        "seamPixels": 36494,
+        "seamFraction": 0.07339667267344574,
+        "fallbackPixels": 1673,
+        "reentryPixels": 0,
+        "reentryFraction": 0.0,
+        "centerHitPixels": 497216,
+        "centerReentryPixels": 0,
+        "centerReentryFraction": 0.0,
+        "axisRunMean": 6.694117647058824,
+        "file": "yaw-270.png",
+        "yawDeg": 270.0,
+        "elevated": false,
+        "sourceHoleFraction": 0.0,
+        "openingMatchedToSource": false,
+        "interiorHolePixels": 0,
+        "interiorHoleFraction": 0.0
+      },
+      {
+        "hitPixels": 524163,
+        "seamPixels": 20849,
+        "seamFraction": 0.039775794934018616,
+        "fallbackPixels": 893,
+        "reentryPixels": 0,
+        "reentryFraction": 0.0,
+        "centerHitPixels": 524163,
+        "centerReentryPixels": 0,
+        "centerReentryFraction": 0.0,
+        "axisRunMean": 6.622641509433962,
+        "file": "yaw-315.png",
+        "yawDeg": 315.0,
+        "elevated": false,
+        "sourceHoleFraction": 0.0,
+        "openingMatchedToSource": false,
+        "interiorHolePixels": 0,
+        "interiorHoleFraction": 0.0
+      },
+      {
+        "hitPixels": 523217,
+        "seamPixels": 51509,
+        "seamFraction": 0.09844672478149602,
+        "fallbackPixels": 2097,
+        "reentryPixels": 0,
+        "reentryFraction": 0.0,
+        "centerHitPixels": 523217,
+        "centerReentryPixels": 0,
+        "centerReentryFraction": 0.0,
+        "axisRunMean": 6.47926267281106,
+        "file": "behind.png",
+        "yawDeg": 180.0,
+        "elevated": false,
+        "sourceHoleFraction": 0.0,
+        "openingMatchedToSource": false,
+        "interiorHolePixels": 0,
+        "interiorHoleFraction": 0.0
+      }
+    ],
+    "maxGapReentryFraction": 0.0,
+    "maxCenterReentryFraction": 0.0,
+    "maxInteriorHoleFraction": 0.0,
+    "accidentalInteriorHoleFraction": 0.0,
+    "enclosedVoids": 0,
+    "watertight": true
+  },
+  "sources": [
+    {
+      "file": "yaw-000.png",
+      "width": 1200,
+      "height": 1600,
+      "yawDeg": 0.0,
+      "elevationDeg": 0.9240453527727062,
+      "pitchDeg": 0.9240453527727062,
+      "group": "body"
+    },
+    {
+      "file": "yaw-045.png",
+      "width": 1200,
+      "height": 1600,
+      "yawDeg": 45.0,
+      "elevationDeg": 0.9240453527727062,
+      "pitchDeg": 0.9240453527727064,
+      "group": "body"
+    },
+    {
+      "file": "yaw-090.png",
+      "width": 1200,
+      "height": 1600,
+      "yawDeg": 90.0,
+      "elevationDeg": 0.9240453527727062,
+      "pitchDeg": 0.9240453527727062,
+      "group": "body"
+    },
+    {
+      "file": "yaw-135.png",
+      "width": 1200,
+      "height": 1600,
+      "yawDeg": 135.0,
+      "elevationDeg": 0.9240453527727062,
+      "pitchDeg": 0.9240453527727064,
+      "group": "body"
+    },
+    {
+      "file": "yaw-180.png",
+      "width": 1200,
+      "height": 1600,
+      "yawDeg": 180.0,
+      "elevationDeg": 0.9240453527727062,
+      "pitchDeg": 0.9240453527727062,
+      "group": "body"
+    },
+    {
+      "file": "yaw-225.png",
+      "width": 1200,
+      "height": 1600,
+      "yawDeg": 225.0,
+      "elevationDeg": 0.9240453527727062,
+      "pitchDeg": 0.9240453527727062,
+      "group": "body"
+    },
+    {
+      "file": "yaw-270.png",
+      "width": 1200,
+      "height": 1600,
+      "yawDeg": 270.0,
+      "elevationDeg": 0.9240453527727062,
+      "pitchDeg": 0.9240453527727062,
+      "group": "body"
+    },
+    {
+      "file": "yaw-315.png",
+      "width": 1200,
+      "height": 1600,
+      "yawDeg": 315.0,
+      "elevationDeg": 0.9240453527727062,
+      "pitchDeg": 0.9240453527727062,
+      "group": "body"
+    }
+  ],
+  "hull": {
+    "surface": "surface-nets",
+    "surfaceGrid": 64,
+    "legacyGrid": 32,
+    "vertexCount": 11562,
+    "triangleCount": 23124,
+    "smoothIters": 8,
+    "depthRelief": 0.35,
+    "depthMinAgree": 1,
+    "edges": {
+      "edges": 34684,
+      "boundary": 0,
+      "manifold": 34682,
+      "nonManifold": 2
+    },
+    "meshVolume": 2.9278728111951318,
+    "voxelVolume": 2.938294186925782,
+    "bboxDepth": 1.2203,
+    "depthMin": 5.5533,
+    "depthMax": 6.8798,
+    "depthRange": [
+      5.5533,
+      6.8798
+    ]
+  },
+  "seam": {
+    "seamRatio": 0.65,
+    "viewsBlendedMax": 2,
+    "fragmentSeamFraction": 0.09972979940231246,
+    "meanFragmentSeamFraction": 0.0775761742400131,
+    "fallbackPixels": 12871,
+    "voxelSeamFraction": 0.00599721059972106
+  },
+  "protrusions": {
+    "detected": 0,
+    "flags": [],
+    "note": "Flags are a 3-voxel opening. They do not cook views. Supplied subObjects are carved and jointed."
+  },
+  "subObjects": [],
+  "depthMetrics": {
+    "units": "metres",
+    "bboxDepth": 1.2203,
+    "bboxMin": [
+      -0.6249,
+      -1.617,
+      -0.5979
+    ],
+    "bboxMax": [
+      0.6246,
+      1.6175,
+      0.6224
+    ],
+    "depthMin": 5.5533,
+    "depthMax": 6.8798,
+    "depthRange": [
+      5.5533,
+      6.8798
+    ],
+    "refinement": {
+      "applied": false,
+      "source": "skipped",
+      "depthRelief": 0.35,
+      "meanOffsetM": 0.0,
+      "maxOffsetM": 0.0
+    },
+    "perView": [
+      {
+        "file": "yaw-000.png",
+        "yawDeg": 0.0,
+        "elevationDeg": 0.924,
+        "nearM": 5.594,
+        "farM": 6.8168,
+        "meanOffsetM": 0.0,
+        "maxOffsetM": 0.0
+      },
+      {
+        "file": "yaw-045.png",
+        "yawDeg": 45.0,
+        "elevationDeg": 0.924,
+        "nearM": 5.5904,
+        "farM": 6.8798,
+        "meanOffsetM": 0.0,
+        "maxOffsetM": 0.0
+      },
+      {
+        "file": "yaw-090.png",
+        "yawDeg": 90.0,
+        "elevationDeg": 0.924,
+        "nearM": 5.5858,
+        "farM": 6.8444,
+        "meanOffsetM": 0.0,
+        "maxOffsetM": 0.0
+      },
+      {
+        "file": "yaw-135.png",
+        "yawDeg": 135.0,
+        "elevationDeg": 0.924,
+        "nearM": 5.591,
+        "farM": 6.8426,
+        "meanOffsetM": 0.0,
+        "maxOffsetM": 0.0
+      },
+      {
+        "file": "yaw-180.png",
+        "yawDeg": 180.0,
+        "elevationDeg": 0.924,
+        "nearM": 5.6132,
+        "farM": 6.8392,
+        "meanOffsetM": 0.0,
+        "maxOffsetM": 0.0
+      },
+      {
+        "file": "yaw-225.png",
+        "yawDeg": 225.0,
+        "elevationDeg": 0.924,
+        "nearM": 5.5533,
+        "farM": 6.8422,
+        "meanOffsetM": 0.0,
+        "maxOffsetM": 0.0
+      },
+      {
+        "file": "yaw-270.png",
+        "yawDeg": 270.0,
+        "elevationDeg": 0.924,
+        "nearM": 5.5855,
+        "farM": 6.8444,
+        "meanOffsetM": 0.0,
+        "maxOffsetM": 0.0
+      },
+      {
+        "file": "yaw-315.png",
+        "yawDeg": 315.0,
+        "elevationDeg": 0.924,
+        "nearM": 5.5894,
+        "farM": 6.8395,
+        "meanOffsetM": 0.0,
+        "maxOffsetM": 0.0
+      }
+    ]
+  },
+  "depthMin": 5.5533,
+  "depthMax": 6.8798,
+  "depthRange": [
+    5.5533,
+    6.8798
+  ],
+  "failures": [],
+  "collisionRadius": 1.6213052208880123,
+  "qc": [
+    "qc/yaw-000.png",
+    "qc/yaw-045.png",
+    "qc/yaw-090.png",
+    "qc/yaw-135.png",
+    "qc/yaw-180.png",
+    "qc/yaw-225.png",
+    "qc/yaw-270.png",
+    "qc/yaw-315.png",
+    "qc/behind.png"
+  ]
+}
