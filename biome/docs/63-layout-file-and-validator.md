@@ -13,6 +13,7 @@ Every zone follows one order:
 3. `tools/walkaround/build.py` only after that sheet exits 0.
 4. `python3 tools/layout/layout.py generate`, then `layout.py check`. One `clearing.json` per zone. Paste that `report.md`. Invisible shape only.
 5. `tools/playcheck/run` on the rendered 720×1600 play view. `--layout` is that same file.
+6. `python3 tools/reportview/build.py` and deliver the page with the play URL. This is the last step. It only displays the reports above. A missing section is NOT RUN, not PASS. [`tools/reportview/README.md`](../../tools/reportview/README.md).
 
 `tools/layout/` **generates and checks the file**. It is on this tree. Command and honest limits: [`tools/layout/README.md`](../../tools/layout/README.md).
 
@@ -168,7 +169,7 @@ Honest limits of the tool, not excuses to skip it: `black_regions`, `tile_repeat
 
 ### Proof and STOP
 
-- **HARD: no play URL** until `tools/playcheck/run` exits 0 and its `report.md`, stills, and `walk.mp4` are pasted. A hand-written PASS table is not that report.
+- **HARD: no play URL** until `tools/playcheck/run` exits 0 and its `report.md`, stills, and `walk.mp4` are pasted. A hand-written PASS table is not that report. Then run `tools/reportview` and deliver the page with the play URL.
 - Proof stills, written by the validator from the play view:
   1. debug top-down map (zone, ring, gate, colliders, fog band, stop points);
   2. centre → gate view;

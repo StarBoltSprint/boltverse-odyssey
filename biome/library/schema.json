@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "library-object/1",
+  "title": "Reusable object manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "id", "source", "views", "shape", "reports", "scale", "collider", "lod", "asset"],
+  "properties": {
+    "schema": { "const": "library-object/1" },
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,63}$" },
+    "fixture": {
+      "type": "boolean",
+      "description": "True when the folder is a synthetic test object, not an Imagine cook."
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["imagineIds", "promptRef"],
+      "properties": {
+        "imagineIds": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Imagine job ids. Prompt prose is not stored here."
+        },
+        "promptRef": {
+          "type": "string",
+          "description": "Path to the prompt file kept with the cook. The text is not copied into this manifest."
+        }
+      }
+    },
+    "views": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dir", "files", "yawStepDeg"],
+      "properties": {
+        "dir": { "type": "string" },
+        "files": { "type": "array", "items": { "type": "string" }, "minItems": 8 },
+        "yawStepDeg": { "const": 45 }
+      }
+    },
+    "shape": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "walkaround"],
+      "properties": {
+        "method": {
+          "type": "string",
+          "description": "Walkaround surface method name, such as surface-nets or legacy-voxels."
+        },
+        "walkaround": { "type": "string", "description": "Directory written by tools/walkaround/build.py." }
+      }
+    },
+    "reports": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["assetcheck", "objsheet", "walkaround"],
+      "properties": {
+        "assetcheck": { "$ref": "#/$defs/report" },
+        "objsheet": { "$ref": "#/$defs/report" },
+        "walkaround": { "$ref": "#/$defs/report" }
+      }
+    },
+    "scale": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["min", "max", "default"],
+      "properties": {
+        "min": { "type": "number", "exclusiveMinimum": 0 },
+        "max": { "type": "number", "exclusiveMinimum": 0 },
+        "default": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "collider": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "radius_m"],
+      "properties": {
+        "type": { "const": "circle" },
+        "radius_m": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "lod": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["billboardViews", "impostor"],
+      "properties": {
+        "billboardViews": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "View file names used as far billboards. The library does not draw them."
+        },
+        "impostor": { "const": true }
+      }
+    },
+    "asset": { "type": "string", "description": "walkaround asset.json a layout spec places." }
+  },
+  "$defs": {
+    "report": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "verdict"],
+      "properties": {
+        "path": { "type": "string" },
+        "verdict": { "enum": ["PASS", "WARN"] },
+        "notes": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}
