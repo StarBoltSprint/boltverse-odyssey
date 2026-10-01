@@ -1,0 +1,10 @@
+#!/usr/bin/env node
+import { main } from "./src/cli.mjs";
+
+try {
+  const code = await main(process.argv.slice(2));
+  process.exit(code);
+} catch (err) {
+  console.error(err && err.stack ? err.stack : err);
+  process.exit(2);
+}

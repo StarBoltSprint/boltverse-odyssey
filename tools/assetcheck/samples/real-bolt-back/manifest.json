@@ -1,0 +1,17 @@
+{
+  "screen": [
+    720,
+    1600
+  ],
+  "webglMaxTexture": 4096,
+  "assets": [
+    {
+      "file": "../../../../lock/bolt-back.jpg",
+      "kind": "still",
+      "onScreen": [
+        200,
+        360
+      ]
+    }
+  ]
+}

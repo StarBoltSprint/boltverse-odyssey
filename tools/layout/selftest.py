@@ -178,33 +178,40 @@ def test_generate_and_check(write_samples: bool) -> None:
     png = SAMPLE / "good" / "debug-topdown.png"
     if png.read_bytes()[:8] != b"\x89PNG\r\n\x1a\n":
         fail("debug png header")
-    _playcheck_import(SAMPLE / "good" / "clearing.json")
+    _playcheck_import(SAMPLE / "good" / "clearing.json", SAMPLE / "broken" / "clearing.json")
     _ = extra
 
 
-def _playcheck_import(clearing: Path) -> None:
-    """If PR #132's layout reader is on this tree, the good file must import clean."""
+def _playcheck_import(good: Path, broken: Path) -> None:
+    """The playcheck layout reader must accept the good file and count the broken gap."""
     mjs = ROOT / "tools" / "playcheck" / "src" / "layout.mjs"
     if not mjs.is_file():
-        return
+        fail("tools/playcheck/src/layout.mjs is missing; the import must run")
     script = """
 import { normalizeLayout, ringRays } from "./tools/playcheck/src/layout.mjs";
 import fs from "fs";
-const raw = JSON.parse(fs.readFileSync(process.env.CLEARING, "utf8"));
-const layout = normalizeLayout(raw);
-const rays = ringRays(layout);
-if (rays.misses.length) {
-  console.error("playcheck misses", rays.misses.slice(0, 8).join(","));
+function rays(path) {
+  const raw = JSON.parse(fs.readFileSync(path, "utf8"));
+  return ringRays(normalizeLayout(raw));
+}
+const good = rays(process.env.GOOD);
+const broken = rays(process.env.BROKEN);
+if (good.misses.length !== 0) {
+  console.error("good misses", good.misses.length, good.misses.slice(0, 8).join(","));
   process.exit(1);
 }
-console.log("PASS playcheck-import hulls=" + layout.hulls.length);
+if (broken.misses.length !== 104) {
+  console.error("broken misses", broken.misses.length, "expected 104");
+  process.exit(1);
+}
+console.log("PASS playcheck-import good=0 broken=" + broken.misses.length);
 """
     proc = subprocess.run(
         ["node", "--input-type=module", "--eval", script],
         cwd=ROOT,
         text=True,
         capture_output=True,
-        env={**os.environ, "CLEARING": str(clearing)},
+        env={**os.environ, "GOOD": str(good), "BROKEN": str(broken)},
     )
     if proc.returncode != 0:
         fail("playcheck import\n" + proc.stdout + proc.stderr)
