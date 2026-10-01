@@ -24,11 +24,16 @@ PY = sys.executable
 
 
 def call(cmd: list[str]) -> str:
-    proc = subprocess.run(cmd, cwd=ROOT, text=True, capture_output=True)
-    text = (proc.stdout or "") + (proc.stderr or "")
-    if proc.returncode != 0:
+    code, text = call_raw(cmd)
+    if code != 0:
         raise SystemExit(text.strip() or f"FAIL command {cmd}")
     return text
+
+
+def call_raw(cmd: list[str]) -> tuple[int, str]:
+    proc = subprocess.run(cmd, cwd=ROOT, text=True, capture_output=True)
+    text = (proc.stdout or "") + (proc.stderr or "")
+    return proc.returncode, text
 
 
 def build(views: Path, config: Path, out: Path, extra: list[str]) -> dict:
@@ -46,6 +51,46 @@ def solid_at(out: Path, point: list[float]) -> bool:
     vsize = z["voxelSize"]
     ijk = np.rint((np.array(point, np.float64) - origin) / vsize - 0.5).astype(int)
     return bool(z["solid"][tuple(ijk.tolist())])
+
+
+def assert_depth(report: dict, source: str) -> None:
+    """Numeric depth is recorded for the default method. Geometry checks stay separate."""
+    block = report.get("depthMetrics")
+    if not isinstance(block, dict):
+        raise SystemExit("FAIL selftest: depthMetrics missing")
+    if block.get("units") != "metres":
+        raise SystemExit(f"FAIL selftest: depth units {block.get('units')}")
+    bbox = float(block.get("bboxDepth") or 0)
+    if bbox <= 0.2:
+        raise SystemExit(f"FAIL selftest: bboxDepth {bbox}")
+    span = report.get("depthRange")
+    if not isinstance(span, list) or len(span) != 2:
+        raise SystemExit(f"FAIL selftest: depthRange {span}")
+    if report.get("depthMin") != span[0] or report.get("depthMax") != span[1]:
+        raise SystemExit("FAIL selftest: depthMin/depthMax do not match depthRange")
+    hull = report.get("hull") or {}
+    if hull.get("depthRange") != span or hull.get("bboxDepth") != block.get("bboxDepth"):
+        raise SystemExit("FAIL selftest: hull is missing the depth fields reportview reads")
+    if float(span[0]) <= 0 or float(span[1]) <= float(span[0]):
+        raise SystemExit(f"FAIL selftest: depth range {span}")
+    per = block.get("perView") or []
+    if len(per) < 8:
+        raise SystemExit(f"FAIL selftest: depth perView {len(per)}")
+    for row in per:
+        for key in ("nearM", "farM", "meanOffsetM", "maxOffsetM"):
+            if row.get(key) is None:
+                raise SystemExit(f"FAIL selftest: {row.get('file')} missing {key}")
+        if float(row["farM"]) <= float(row["nearM"]):
+            raise SystemExit(f"FAIL selftest: {row['file']} near/far {row['nearM']} {row['farM']}")
+        if float(row["maxOffsetM"]) < float(row["meanOffsetM"]):
+            raise SystemExit(f"FAIL selftest: offset order {row}")
+    refine = block.get("refinement") or {}
+    if refine.get("source") != source:
+        raise SystemExit(f"FAIL selftest: depth source {refine.get('source')}")
+    if float(refine.get("maxOffsetM", -1)) < float(refine.get("meanOffsetM", 0)):
+        raise SystemExit(f"FAIL selftest: refinement offsets {refine}")
+    if source == "png" and refine.get("applied") and float(refine["maxOffsetM"]) <= 0:
+        raise SystemExit("FAIL selftest: applied depth offset is zero")
 
 
 def assert_smooth(report: dict, min_vertices: int) -> None:
@@ -84,6 +129,8 @@ def check_rock(tmp: Path) -> None:
         ["--surface-grid", "48", "--smooth-iters", "6", "--depth-dir", str(ROCK / "depth")],
     )
     assert_smooth(nets, 500)
+    assert_depth(legacy, "png")
+    assert_depth(nets, "png")
     print("selftest rock legacy+nets ok")
 
 
@@ -97,6 +144,7 @@ def check_bowl(tmp: Path) -> None:
         ["--surface-grid", "48", "--smooth-iters", "4"],
     )
     assert_smooth(report, 500)
+    assert_depth(report, "skipped")
     out = tmp / "bowl-out"
     if solid_at(out, [0.0, 0.0, 0.0]):
         raise SystemExit("FAIL selftest: elevated top view left the shaft solid")
@@ -118,6 +166,7 @@ def check_assembly(tmp: Path) -> None:
         ["--surface-grid", "48", "--smooth-iters", "4"],
     )
     assert_smooth(report, 500)
+    assert_depth(report, "skipped")
     subs = report.get("subObjects") or []
     if len(subs) != 1 or subs[0]["name"] != "spur":
         raise SystemExit("FAIL selftest: spur was not attached")
@@ -128,6 +177,155 @@ def check_assembly(tmp: Path) -> None:
     if int(report["viewCount"]) != 16:
         raise SystemExit(f"FAIL selftest: viewCount {report['viewCount']}")
     print("selftest assembly ok")
+
+
+def check_shapes(tmp: Path) -> None:
+    box = tmp / "box-src"
+    call([PY, str(TOOL / "make_synthetic.py"), "--kind", "box", "--out", str(box)])
+    box_report = build(
+        box / "views",
+        box / "config.json",
+        tmp / "box-out",
+        ["--shape", "primitive", "--primitive", "box", "--surface-grid", "40", "--smooth-iters", "2"],
+    )
+    iou = float(box_report["shape"]["silhouetteIoU"]["mean"])
+    if iou < 0.85:
+        raise SystemExit(f"FAIL selftest: box IoU {iou}")
+    if int(box_report["shape"]["cornerSeamWarnings"]) < 1:
+        raise SystemExit("FAIL selftest: box corner seams were not reported")
+    if box_report["hull"]["surface"] != "primitive-box":
+        raise SystemExit(f"FAIL selftest: box surface {box_report['hull']['surface']}")
+    assert_depth(box_report, "skipped")
+    if box_report["depthMetrics"]["refinement"]["applied"]:
+        raise SystemExit("FAIL selftest: primitive recessed with depth")
+    print("selftest primitive box ok")
+
+    cyl = tmp / "cyl-src"
+    call([PY, str(TOOL / "make_synthetic.py"), "--kind", "cylinder", "--out", str(cyl)])
+    cyl_report = build(
+        cyl / "views",
+        cyl / "config.json",
+        tmp / "cyl-out",
+        ["--shape", "primitive", "--primitive", "cylinder", "--surface-grid", "40", "--smooth-iters", "2"],
+    )
+    cyl_iou = float(cyl_report["shape"]["silhouetteIoU"]["mean"])
+    if cyl_iou < 0.80:
+        raise SystemExit(f"FAIL selftest: cylinder IoU {cyl_iou}")
+    if cyl_report["hull"]["surface"] != "primitive-cylinder":
+        raise SystemExit("FAIL selftest: cylinder surface")
+    assert_depth(cyl_report, "skipped")
+    print("selftest primitive cylinder ok")
+
+    turn = tmp / "turn-src"
+    call([PY, str(TOOL / "make_synthetic.py"), "--kind", "turntable", "--out", str(turn)])
+    photo = build(
+        turn / "views",
+        turn / "config.json",
+        tmp / "turn-out",
+        ["--shape", "photogrammetry", "--photogram-engine", "cpu", "--max-frames", "8", "--surface-grid", "40"],
+    )
+    stats = photo["shape"]
+    if stats.get("method") != "photogrammetry" or not stats.get("ok"):
+        raise SystemExit(f"FAIL selftest: photogrammetry {stats}")
+    if float(stats["registeredFrameRatio"]) < 0.70:
+        raise SystemExit(f"FAIL selftest: registered {stats['registeredFrameRatio']}")
+    if float(stats["meanReprojectionPx"]) > 2.5:
+        raise SystemExit(f"FAIL selftest: reprojection {stats['meanReprojectionPx']}")
+    if int(stats["pointCount"]) < 30 or int(stats["meshFaces"]) < 100:
+        raise SystemExit(f"FAIL selftest: cloud {stats['pointCount']} faces {stats['meshFaces']}")
+    if float(stats["loopClosureSilhouetteIoU"]) < 0.90:
+        raise SystemExit(f"FAIL selftest: loop {stats['loopClosureSilhouetteIoU']}")
+    assert_depth(photo, "skipped")
+    print("selftest photogrammetry ok")
+
+    morph = tmp / "morph-src"
+    call([PY, str(TOOL / "make_synthetic.py"), "--kind", "morph", "--out", str(morph)])
+    code, text = call_raw(
+        [
+            PY,
+            str(TOOL / "build.py"),
+            "--views",
+            str(morph / "views"),
+            "--config",
+            str(morph / "config.json"),
+            "--out",
+            str(tmp / "morph-out"),
+            "--shape",
+            "photogrammetry",
+            "--photogram-engine",
+            "cpu",
+            "--max-frames",
+            "8",
+        ]
+    )
+    if code == 0 or "did not switch" not in text and "did not fall back" not in text:
+        raise SystemExit(text.strip() or "FAIL selftest: morph did not FAIL")
+    morph_report = json.loads((tmp / "morph-out" / "qc" / "report.json").read_text())
+    if morph_report.get("ok") or (morph_report.get("shape") or {}).get("method") != "photogrammetry":
+        raise SystemExit("FAIL selftest: morph report is not an explicit photogrammetry FAIL")
+    if (morph_report.get("shape") or {}).get("ok"):
+        raise SystemExit("FAIL selftest: morph shape.ok stayed true")
+    if morph_report.get("hull", {}).get("surface") == "surface-nets" and morph_report.get("ok"):
+        raise SystemExit("FAIL selftest: morph silently became the default hull")
+    print("selftest morph FAIL ok")
+
+    code, text = call_raw(
+        [
+            PY,
+            str(TOOL / "build.py"),
+            "--views",
+            str(box / "views"),
+            "--config",
+            str(box / "config.json"),
+            "--out",
+            str(tmp / "compare-out"),
+            "--compare",
+            "--shape",
+            "primitive",
+            "--primitive",
+            "box",
+            "--surface-grid",
+            "40",
+            "--smooth-iters",
+            "2",
+        ]
+    )
+    if code != 0 or "COMPARE recommended=" not in text:
+        raise SystemExit(text.strip() or "FAIL selftest: compare")
+    comp_report = json.loads((tmp / "compare-out" / "qc" / "report.json").read_text())
+    comparison = comp_report.get("comparison") or {}
+    if comparison.get("schema") != "walkaround-compare-1":
+        raise SystemExit(f"FAIL selftest: comparison schema {comparison.get('schema')}")
+    ids = [row["id"] for row in comparison.get("methods") or []]
+    if ids != ["default", "primitive-box"]:
+        raise SystemExit(f"FAIL selftest: methods {ids}")
+    if not (tmp / "compare-out" / "qc" / "report.md").is_file():
+        raise SystemExit("FAIL selftest: report.md missing")
+    for name in ("side-000.png", "side-090.png", "side-180.png", "side-270.png", "three-quarter.png"):
+        for method in ("default", "primitive-box"):
+            thumb = tmp / "compare-out" / "qc" / "compare" / method / name
+            if not thumb.is_file():
+                raise SystemExit(f"FAIL selftest: missing {thumb}")
+    if comparison.get("recommended") not in ids:
+        raise SystemExit("FAIL selftest: recommended method")
+    assert_depth(comp_report, comp_report["depthMetrics"]["refinement"]["source"])
+    sheet = contact_sheet(tmp / "compare-out" / "qc" / "compare")
+    proof = TOOL / "proof"
+    proof.mkdir(parents=True, exist_ok=True)
+    sheet.save(proof / "shape-compare.png")
+    print("selftest compare ok", "recommended", comparison.get("recommended"))
+
+
+def contact_sheet(root: Path) -> Image.Image:
+    tiles = []
+    for method in ("default", "primitive-box"):
+        for name in ("side-000.png", "side-090.png", "side-180.png", "side-270.png", "three-quarter.png"):
+            tiles.append(Image.open(root / method / name).convert("RGB"))
+    w, h = tiles[0].size
+    sheet = Image.new("RGB", (w * 5 + 16, h * 2 + 8), (0, 0, 0))
+    for i, tile in enumerate(tiles):
+        sheet.paste(tile, ((i % 5) * (w + 4), (i // 5) * (h + 4)))
+    return sheet
 
 
 def side_by_side(left: Path, right: Path, dest: Path, scale: int = 1) -> None:
@@ -278,6 +476,7 @@ def main() -> int:
         check_rock(tmp)
         check_bowl(tmp)
         check_assembly(tmp)
+        check_shapes(tmp)
         if proof:
             write_proof(tmp)
     print("PASS selftest")

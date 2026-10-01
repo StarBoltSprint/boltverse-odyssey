@@ -286,7 +286,8 @@ void main() {
     fail(String(err && err.message || err));
   }
   if (asset.format !== "walkaround-hull-1") fail("format " + asset.format);
-  if (asset.surface !== "surface-nets") fail("surface " + asset.surface + " has no mesh draw");
+  const meshSurfaces = { "surface-nets": 1, photogrammetry: 1, "primitive-box": 1, "primitive-cylinder": 1 };
+  if (!meshSurfaces[asset.surface]) fail("surface " + asset.surface + " has no mesh draw");
   const mesh = parseMesh(meshBuf);
   const cams = asset.cameras || [];
   if (!cams.length || cams.length > MAX_VIEWS) fail("view count " + cams.length);
