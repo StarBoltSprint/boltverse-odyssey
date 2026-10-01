@@ -2,6 +2,8 @@ Playable composite (any paint): paste [`COLD_START-biome-method.md`](COLD_START-
 
 **HARD — Law 59 exception:** [`59-invisible-depth-carrier.md`](59-invisible-depth-carrier.md) is the owner-approved 2026-09-29 invisible depth carrier exception. It is the only no-mesh exception: Imagine pixels on a dense depth-displaced carrier; no own pixels, no Three.js / procedural / mesh world. Exact sandbox numbers, the 138° KEEP panorama, and the FAIL list: [`60-imagine-relief-panorama-method.md`](60-imagine-relief-panorama-method.md). Review only. Not a hang. Test 2d 360° cylinder is KEEP in doc 60 (law 59). Free-360 clearing walk (Rocky Clearing take 3 KEEP, phone QC 2026-10-01) and Bolt idle breath: [`61-free-clearing-walk.md`](61-free-clearing-walk.md).
 
+**HARD — new biome / open world by zones (2026-10-01), read first:** no style lives in this repo; the player picks it. Creation process (zones + straight corridors, step-by-step pipeline, take 8 lessons): [`62-open-world-zones-process.md`](62-open-world-zones-process.md) · one `clearing.json` per zone + rendered-pixel validator, data-only PASS = FAIL, any WebGL error = FAIL: [`63-layout-file-and-validator.md`](63-layout-file-and-validator.md).
+
 # COLD START — cook any biome (parity brief)
 
 You are cooking a **Lane biome** for Boltverse Odyssey for a **random player**. Read GitHub `main` first:
