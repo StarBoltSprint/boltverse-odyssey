@@ -39,12 +39,31 @@ def fail_lines(lines: list[str], report: dict) -> None:
     raise BuildFailure(lines, report)
 
 
-def camera_pose(yaw_deg: float, distance: float, eye_y: float) -> dict:
+def camera_pose(yaw_deg: float, distance: float, eye_y: float, elevation_deg: float | None = None) -> dict:
+    """Eye on the horizontal ring, or on a sphere when elevation_deg is set.
+
+    elevation 0 is the horizon. 90 looks straight down from above the origin.
+    The legacy eye_y offset is kept for callers that do not pass an elevation.
+    """
     yaw = math.radians(yaw_deg)
-    pos = np.array(
-        [math.sin(yaw) * distance, eye_y, math.cos(yaw) * distance],
-        dtype=np.float64,
-    )
+    if elevation_deg is None:
+        pos = np.array(
+            [math.sin(yaw) * distance, eye_y, math.cos(yaw) * distance],
+            dtype=np.float64,
+        )
+        elev_out = math.degrees(math.atan2(eye_y, max(distance, 1e-8)))
+    else:
+        elev = math.radians(float(elevation_deg))
+        horiz = math.cos(elev) * distance
+        pos = np.array(
+            [
+                math.sin(yaw) * horiz,
+                math.sin(elev) * distance + eye_y,
+                math.cos(yaw) * horiz,
+            ],
+            dtype=np.float64,
+        )
+        elev_out = float(elevation_deg)
     forward = -pos
     # Look at the origin. If the eye sits on the origin the view is undefined.
     norm = float(np.linalg.norm(forward))
@@ -61,15 +80,31 @@ def camera_pose(yaw_deg: float, distance: float, eye_y: float) -> dict:
     right = right / rn
     up = np.cross(right, forward)
     up = up / np.linalg.norm(up)
+    pitch = math.degrees(math.atan2(float(pos[1]), float(math.hypot(pos[0], pos[2]))))
     return {
         "yawDeg": float(yaw_deg),
+        "elevationDeg": float(elev_out),
+        "pitchDeg": float(pitch),
         "position": pos,
         "right": right,
         "up": up,
         "forward": forward,
-        "distance": float(distance),
-        "eyeY": float(eye_y),
+        "distance": float(np.linalg.norm(pos)),
+        "eyeY": float(pos[1]),
     }
+
+
+def pose_along(position: np.ndarray, distance: float) -> dict:
+    """Same look-at-origin basis, eye pulled to `distance` from the origin."""
+    pos = np.asarray(position, dtype=np.float64)
+    length = float(np.linalg.norm(pos))
+    if length < 1e-8:
+        raise ValueError("camera distance is zero")
+    pos = pos * (float(distance) / length)
+    yaw = math.degrees(math.atan2(float(pos[0]), float(pos[2])))
+    horiz = float(math.hypot(pos[0], pos[2]))
+    elev = math.degrees(math.atan2(float(pos[1]), max(horiz, 1e-8)))
+    return camera_pose(yaw, float(np.linalg.norm(pos)), 0.0, elev)
 
 
 def project(points: np.ndarray, cam: dict, width: int, height: int, fov_y_deg: float):
@@ -112,11 +147,22 @@ def enclosed_2d(body: np.ndarray) -> np.ndarray:
     return ~outside
 
 
-def silhouette_from_rgba(rgba: np.ndarray, threshold: float) -> np.ndarray:
+def foreground_mask(rgba: np.ndarray, threshold: float) -> np.ndarray:
     rgb = rgba[:, :, :3].astype(np.float32)
     alpha = rgba[:, :, 3] if rgba.shape[2] == 4 else np.full(rgba.shape[:2], 255, np.uint8)
     mx = rgb.max(axis=2) / 255.0
-    fg = (mx > threshold) & (alpha > 8)
+    return (mx > threshold) & (alpha > 8)
+
+
+def silhouette_from_rgba(rgba: np.ndarray, threshold: float, fill_holes: bool = True) -> np.ndarray:
+    """Horizontal stills fill enclosed dark pixels so a mark does not tunnel the hull.
+
+    Elevated stills (top, 3/4) keep those holes. That is how a hollow the ring
+    cannot see gets carved.
+    """
+    fg = foreground_mask(rgba, threshold)
+    if not fill_holes:
+        return fg
     return enclosed_2d(fg)
 
 
@@ -304,15 +350,19 @@ def refine_with_depth(
     half: np.ndarray,
     vsize: np.ndarray,
     max_fraction: float = 0.10,
+    min_agree: int = 1,
 ) -> np.ndarray:
-    """Push the front inward where monocular depth (near = white) says it is farther.
+    """Move the front inward to the depth target. Near (white) stays on the hull.
 
-    Depth is a guide. A tunnel carved by a bad depth pixel is filled later.
-    Color PNGs are not resized or rewritten here.
+    The visual hull is the outer limit. Depth cannot add volume outside it:
+    a near pixel keeps the silhouette front, a far pixel recedes by up to
+    `max_fraction` of the local thickness. A voxel recedes only when
+    `min_agree` depth views say it is in front of their target. Color PNGs
+    are not resized or rewritten here.
     """
     n = solid.shape[0]
     pts = voxel_centers(n, half, vsize).reshape(n, n, n, 3)
-    remove = np.zeros_like(solid)
+    remove = np.zeros(solid.shape, np.uint8)
     for view in views:
         depth = view.get("depth")
         if depth is None:
@@ -349,8 +399,9 @@ def refine_with_depth(
         carve_to = zfront[vi_ok, ui_ok] + np.minimum((1.0 - dn) * span, max_fraction * span)
         carved = thick & (z_ok < carve_to - 0.25 * float(np.min(vsize)))
         sel = solid_idx[np.where(ok)[0][carved]]
-        remove[sel[:, 0], sel[:, 1], sel[:, 2]] = True
-    kept = solid & ~remove
+        if len(sel):
+            remove[sel[:, 0], sel[:, 1], sel[:, 2]] += 1
+    kept = solid & (remove < int(min_agree))
     if int(kept.sum()) < int(0.4 * solid.sum()):
         return solid
     return kept
@@ -790,8 +841,416 @@ def load_config(path: Path, views_dir: Path) -> dict:
     return cfg
 
 
-def build(views_dir: Path, config_path: Path, out_dir: Path, model: Path | None, depth_dir: Path | None) -> dict:
+ELEVATED_PITCH = 25.0
+
+
+def _surface():
+    import surface as surface_mod
+
+    return surface_mod
+
+
+def lock_failures(band: list[dict]) -> list[str]:
+    """Silhouette lock inside one elevation band. A lone view is not compared."""
+    fails = []
+    if len(band) < 2:
+        return fails
+    ordered = sorted(band, key=lambda v: (v["yawDeg"], v["file"]))
+    for i, view in enumerate(ordered):
+        nxt = ordered[(i + 1) % len(ordered)]
+        if view["area"] == 0 or nxt["area"] == 0:
+            fails.append(f"FAIL silhouette-lock: empty mask {view['file']}")
+            continue
+        area_ratio = view["area"] / nxt["area"]
+        if area_ratio < 0.85 or area_ratio > 1.15:
+            fails.append(
+                "FAIL silhouette-lock: area {a} vs {b} ratio {r:.3f} (limit ±15%)".format(
+                    a=view["file"], b=nxt["file"], r=area_ratio
+                )
+            )
+        href = max(nxt["maskHeight"], 1)
+        hdelta = abs(view["maskHeight"] - nxt["maskHeight"]) / href
+        if hdelta > 0.08:
+            fails.append(
+                "FAIL silhouette-lock: height {a} vs {b} delta {d:.3f} (limit ±8%)".format(
+                    a=view["file"], b=nxt["file"], d=hdelta
+                )
+            )
+    return fails
+
+
+def lock_views(views: list[dict]) -> tuple[list[str], list[dict]]:
+    """Horizontal ring locked together. Elevated views locked only with their own band."""
+    horiz = [v for v in views if not v.get("elevated")]
+    elev = [v for v in views if v.get("elevated")]
+    fails = lock_failures(horiz)
+    notes = [{"band": "horizontal", "count": len(horiz), "checked": len(horiz) >= 2}]
+    bands: dict[int, list[dict]] = {}
+    for view in elev:
+        key = int(round(float(view["cam"]["pitchDeg"]) / 15.0) * 15)
+        bands.setdefault(key, []).append(view)
+    for key, band in sorted(bands.items()):
+        fails.extend(lock_failures(band))
+        notes.append(
+            {
+                "band": f"elevation-{key}",
+                "count": len(band),
+                "checked": len(band) >= 2,
+                "files": [v["file"] for v in band],
+            }
+        )
+    return fails, notes
+
+
+def carve_elevated(solid: np.ndarray, views: list[dict], half: np.ndarray, vsize: np.ndarray) -> np.ndarray:
+    """Elevated stills are mandatory carvers. A top view can open a hollow the ring never sees."""
+    if not views or int(solid.sum()) == 0:
+        return solid
+    n = solid.shape[0]
+    pts = voxel_centers(n, half, vsize)
+    keep = np.ones(pts.shape[0], dtype=bool)
+    for view in views:
+        u, v, z = project(pts, view["cam"], view["width"], view["height"], view["fovY"])
+        ui = np.rint(u).astype(np.int32)
+        vi = np.rint(v).astype(np.int32)
+        in_frame = (
+            (z > 0)
+            & (ui >= 0)
+            & (vi >= 0)
+            & (ui < view["width"])
+            & (vi < view["height"])
+        )
+        hit = np.ones(pts.shape[0], dtype=bool)
+        sel = np.where(in_frame)[0]
+        if len(sel):
+            hit[sel] = view["mask"][vi[sel], ui[sel]]
+        keep &= ~(in_frame & ~hit)
+    return solid & keep.reshape(solid.shape)
+
+
+def make_solid(
+    views: list[dict],
+    object_size: np.ndarray,
+    vote: int,
+    n: int,
+    grid_pad: float,
+    depth_relief: float,
+    min_agree: int,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict]:
+    half = object_size * 0.5 * float(grid_pad)
+    vsize = (2.0 * half) / int(n)
+    points = voxel_centers(n, half, vsize)
+    horiz = [v for v in views if not v.get("elevated")]
+    elevs = [v for v in views if v.get("elevated")]
+    if not horiz:
+        horiz, elevs = list(views), []
+    vote_h = min(int(vote), len(horiz))
+    solid, _votes = carve(points, horiz, vote_h, n)
+    carved_count = int(solid.sum())
+    solid = carve_elevated(solid, elevs, half, vsize)
+    if any(v.get("depth") is not None for v in views):
+        solid = refine_with_depth(
+            solid, views, half, vsize, max_fraction=float(depth_relief), min_agree=int(min_agree)
+        )
+    solid = fill_pits(solid)
+    solid = erode6(dilate6(solid))
+    solid = fill_voids(solid)
+    solid, cap_info = round_underside(solid)
+    solid = fill_voids(solid)
+    meta = {
+        "carvedVoxels": carved_count,
+        "undersideCap": cap_info,
+        "voteUsed": vote_h,
+        "horizontalViews": len(horiz),
+        "elevatedViews": len(elevs),
+    }
+    return solid, half, vsize, meta
+
+
+def _components(mask: np.ndarray) -> list[list[tuple[int, int, int]]]:
+    found = []
+    visited = np.zeros(mask.shape, dtype=bool)
+    seeds = np.argwhere(mask)
+    nx, ny, nz = mask.shape
+    for seed in seeds:
+        i0, j0, k0 = (int(seed[0]), int(seed[1]), int(seed[2]))
+        if visited[i0, j0, k0]:
+            continue
+        q = deque([(i0, j0, k0)])
+        visited[i0, j0, k0] = True
+        comp = []
+        while q:
+            i, j, k = q.popleft()
+            comp.append((i, j, k))
+            for di, dj, dk in ((1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1)):
+                ia, jb, kc = i + di, j + dj, k + dk
+                if ia < 0 or jb < 0 or kc < 0 or ia >= nx or jb >= ny or kc >= nz:
+                    continue
+                if mask[ia, jb, kc] and not visited[ia, jb, kc]:
+                    visited[ia, jb, kc] = True
+                    q.append((ia, jb, kc))
+        found.append(comp)
+    return found
+
+
+def flag_protrusions(solid: np.ndarray, half: np.ndarray, vsize: np.ndarray) -> list[dict]:
+    """Flag narrow parts that a 3-voxel opening removes.
+
+    This does not cook views and does not cut the hull. A supplied sub-object
+    is what gets carved and attached.
+    """
+    total = int(solid.sum())
+    if total < 64:
+        return []
+    opened = solid
+    for _ in range(3):
+        opened = erode6(opened)
+    if int(opened.sum()) < 16:
+        return []
+    for _ in range(3):
+        opened = dilate6(opened)
+    residue = solid & ~opened
+    origin0 = -half + 0.5 * vsize
+    flags = []
+    for comp in _components(residue):
+        if len(comp) < 36 or len(comp) > int(0.35 * total):
+            continue
+        touch = []
+        for i, j, k in comp:
+            for di, dj, dk in ((1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1)):
+                ia, jb, kc = i + di, j + dj, k + dk
+                if (
+                    0 <= ia < solid.shape[0]
+                    and 0 <= jb < solid.shape[1]
+                    and 0 <= kc < solid.shape[2]
+                    and opened[ia, jb, kc]
+                ):
+                    touch.append((i, j, k))
+                    break
+        if len(touch) < 4:
+            continue
+        if len(touch) / len(comp) > 0.55:
+            continue
+        pts = origin0 + np.array(touch, np.float64) * vsize
+        joint = pts.mean(axis=0)
+        flags.append(
+            {
+                "voxels": len(comp),
+                "contactVoxels": len(touch),
+                "joint": [round(float(x), 5) for x in joint],
+                "bboxMin": [round(float(x), 5) for x in (origin0 + np.array(comp, np.float64).min(0) * vsize)],
+                "bboxMax": [round(float(x), 5) for x in (origin0 + np.array(comp, np.float64).max(0) * vsize)],
+            }
+        )
+    return flags
+
+
+def yaw_matrix(yaw_deg: float) -> np.ndarray:
+    a = math.radians(float(yaw_deg))
+    c = math.cos(a)
+    s = math.sin(a)
+    return np.array([[c, 0.0, s], [0.0, 1.0, 0.0], [-s, 0.0, c]], dtype=np.float64)
+
+
+def map_local_to_world(local: np.ndarray, joint: np.ndarray, local_attach: np.ndarray, yaw_deg: float) -> np.ndarray:
+    rot = yaw_matrix(yaw_deg)
+    return (np.asarray(local, np.float64) - np.asarray(local_attach, np.float64)) @ rot.T + np.asarray(joint, np.float64)
+
+
+def subtract_world_points(
+    solid: np.ndarray,
+    half: np.ndarray,
+    vsize: np.ndarray,
+    points: np.ndarray,
+    joint: np.ndarray,
+    outward: np.ndarray,
+    overlap: float,
+) -> tuple[np.ndarray, int]:
+    """Clear parent voxels occupied by the protruding part of a sub-object."""
+    if len(points) == 0:
+        return solid, 0
+    outward = np.asarray(outward, np.float64)
+    outward = outward / max(float(np.linalg.norm(outward)), 1e-8)
+    rel = np.asarray(points, np.float64) - np.asarray(joint, np.float64)
+    protruding = rel @ outward >= -float(overlap)
+    pts = np.asarray(points, np.float64)[protruding]
+    if len(pts) == 0:
+        return solid, 0
+    ijk = world_to_ijk(pts, half, vsize)
+    nx, ny, nz = solid.shape
+    ok = (
+        (ijk[:, 0] >= 0)
+        & (ijk[:, 1] >= 0)
+        & (ijk[:, 2] >= 0)
+        & (ijk[:, 0] < nx)
+        & (ijk[:, 1] < ny)
+        & (ijk[:, 2] < nz)
+    )
+    sel = ijk[ok]
+    out = solid.copy()
+    before = int(out.sum())
+    if len(sel):
+        out[sel[:, 0], sel[:, 1], sel[:, 2]] = False
+    return out, before - int(out.sum())
+
+
+def _build_subobject(
+    spec: dict,
+    parent_config: Path,
+    view_out: Path,
+    mask_out: Path,
+    model: Path | None,
+    surface_grid: int,
+    smooth_iters: int,
+) -> dict:
+    """Carve a supplied part, mesh it, and leave it in parent space at the joint."""
+    name = str(spec.get("name") or "part")
+    if name.lower() in {"bolt", "bolt-gallop"}:
+        raise SystemExit("FAIL bolt: this hull is not for Bolt. Bolt stays lock/bolt-gallop-cycle.mp4")
+    base = parent_config.parent
+    if "config" not in spec:
+        raise SystemExit(f"FAIL subObjects: {name} needs a config")
+    cfg_path = Path(spec["config"])
+    if not cfg_path.is_absolute():
+        cfg_path = (base / cfg_path).resolve()
+    if spec.get("viewsDir"):
+        views_dir = Path(spec["viewsDir"])
+        if not views_dir.is_absolute():
+            views_dir = (base / views_dir).resolve()
+    else:
+        views_dir = cfg_path.parent / "views"
+    sub_cfg = load_config(cfg_path, views_dir)
+    cam_cfg = sub_cfg.get("camera", {})
+    distance = float(cam_cfg.get("distance", 3.0))
+    eye_y = float(cam_cfg.get("eyeY", 0.0))
+    fov_y = float(cam_cfg.get("fovYDeg", 40.0))
+    threshold = float(sub_cfg.get("bgThreshold", 0.04))
+    object_size = np.array(sub_cfg["objectSize"], dtype=np.float64)
+    vote = int(sub_cfg.get("vote", 7))
+    views = []
+    copies = []
+    for item in sub_cfg["views"]:
+        src = views_dir / item["file"]
+        if not src.is_file():
+            raise SystemExit(f"FAIL subObjects: {name} missing {src}")
+        png_bytes_ok(src)
+        stored = f"{name}-{src.name}"
+        dst = view_out / stored
+        shutil.copyfile(src, dst)
+        if src.read_bytes() != dst.read_bytes():
+            raise SystemExit(f"FAIL pixels: copy of {stored} is not byte-identical")
+        im = Image.open(src)
+        if im.format != "PNG":
+            raise SystemExit(f"FAIL pixels: {src.name} is not a PNG")
+        rgba = np.array(im.convert("RGBA"))
+        elev_raw = item.get("elevationDeg", item.get("elevDeg"))
+        dist_v = float(item.get("distance", distance))
+        eye_v = float(item.get("eyeY", eye_y))
+        fov_v = float(item.get("fovYDeg", fov_y))
+        if elev_raw is None:
+            cam = camera_pose(float(item["yawDeg"]), dist_v, eye_v, None)
+        else:
+            cam = camera_pose(float(item["yawDeg"]), dist_v, eye_v, float(elev_raw))
+        elevated = abs(float(cam["pitchDeg"])) >= ELEVATED_PITCH
+        mask = silhouette_from_rgba(rgba, threshold, fill_holes=not elevated)
+        if int(mask.sum()) < 32:
+            raise SystemExit(f"FAIL silhouette: {name} {src.name} has no object")
+        area, height, width = mask_box(mask)
+        Image.fromarray(mask.astype(np.uint8) * 255, "L").save(mask_out / stored)
+        if model is not None:
+            depth = infer_depth_anything(rgba, model)
+        else:
+            depth = None
+        rec = {
+            "file": src.name,
+            "stored": stored,
+            "group": name,
+            "yawDeg": float(item["yawDeg"]),
+            "width": int(rgba.shape[1]),
+            "height": int(rgba.shape[0]),
+            "fovY": fov_v,
+            "elevated": abs(float(cam["pitchDeg"])) >= ELEVATED_PITCH,
+            "rgba": rgba,
+            "mask": mask,
+            "cam": cam,
+            "sha256": sha256(dst),
+            "area": area,
+            "maskHeight": height,
+            "maskWidth": width,
+            "depth": depth,
+        }
+        views.append(rec)
+        copies.append(
+            {
+                "file": f"views/{stored}",
+                "sha256": rec["sha256"],
+                "yawDeg": rec["yawDeg"],
+                "elevationDeg": cam["elevationDeg"],
+                "width": rec["width"],
+                "height": rec["height"],
+                "group": name,
+            }
+        )
+    relief = float(sub_cfg.get("depthRelief", 0.35 if any(v["depth"] is not None for v in views) else 0.0))
+    agree = 2 if sum(v["depth"] is not None for v in views) >= 4 else 1
+    solid, half, vsize, _meta = make_solid(
+        views,
+        object_size,
+        vote,
+        surface_grid,
+        float(sub_cfg.get("gridPad", 1.12)),
+        relief,
+        agree,
+    )
+    if int(solid.sum()) < 16:
+        raise SystemExit(f"FAIL subObjects: {name} carving removed the part")
+    sample_origin = -half + 0.5 * vsize
+    mesh = _surface().build_smooth_mesh(solid, sample_origin, vsize, iterations=smooth_iters, blur_sigma=0.7)
+    if len(mesh["vertices"]) < 8:
+        raise SystemExit(f"FAIL subObjects: {name} surface nets produced no surface")
+    joint = np.array(spec.get("joint", [0.0, 0.0, 0.0]), dtype=np.float64)
+    local_attach = np.array(spec.get("localAttach", [0.0, 0.0, 0.0]), dtype=np.float64)
+    yaw = float(spec.get("yawDeg", 0.0))
+    rot = yaw_matrix(yaw)
+    world_v = map_local_to_world(mesh["vertices"], joint, local_attach, yaw).astype(np.float32)
+    world_n = (mesh["normals"].astype(np.float64) @ rot.T).astype(np.float32)
+    idx = np.argwhere(solid)
+    local_pts = sample_origin + idx.astype(np.float64) * vsize
+    world_pts = map_local_to_world(local_pts, joint, local_attach, yaw)
+    axis = np.array(spec.get("axis", [0.0, 1.0, 0.0]), dtype=np.float64)
+    axis = axis / max(float(np.linalg.norm(axis)), 1e-8)
+    return {
+        "name": name,
+        "views": views,
+        "copies": copies,
+        "vertices": world_v,
+        "normals": world_n,
+        "faces": mesh["faces"],
+        "worldPoints": world_pts,
+        "joint": joint.tolist(),
+        "localAttach": local_attach.tolist(),
+        "axis": axis.tolist(),
+        "yawDeg": yaw,
+        "viewCount": len(views),
+        "edges": mesh["edges"],
+    }
+
+
+def build(
+    views_dir: Path,
+    config_path: Path,
+    out_dir: Path,
+    model: Path | None,
+    depth_dir: Path | None,
+    options: dict | None = None,
+) -> dict:
+    options = options or {}
     cfg = load_config(config_path, views_dir)
+    surface_mode = str(options.get("surface") or cfg.get("surface") or "nets")
+    if options.get("legacy_voxels") or surface_mode == "voxels":
+        surface_mode = "voxels"
+    else:
+        surface_mode = "nets"
     out_dir.mkdir(parents=True, exist_ok=True)
     view_out = out_dir / "views"
     mask_out = out_dir / "masks"
@@ -808,11 +1267,36 @@ def build(views_dir: Path, config_path: Path, out_dir: Path, model: Path | None,
     eye_y = float(cam_cfg.get("eyeY", 0.0))
     fov_y = float(cam_cfg.get("fovYDeg", 40.0))
     vote = int(cfg.get("vote", 7))
-    n = int(cfg.get("grid", 32))
+    legacy_grid = int(cfg.get("grid", 32))
+    if surface_mode == "nets":
+        n = int(options.get("surface_grid") or cfg.get("surfaceGrid") or max(64, legacy_grid * 2))
+        n = max(16, min(n, 128))
+    else:
+        n = legacy_grid
+    if options.get("smooth_iters") is not None:
+        smooth_iters = int(options["smooth_iters"])
+    else:
+        smooth_iters = int(cfg.get("smoothIters", 8))
+    if options.get("depth_relief") is not None:
+        depth_relief = float(options["depth_relief"])
+    elif "depthRelief" in cfg:
+        depth_relief = float(cfg["depthRelief"])
+    else:
+        depth_relief = 0.35 if surface_mode == "nets" else 0.10
     threshold = float(cfg.get("bgThreshold", 0.04))
     listed = cfg["views"]
     if len(listed) != 8 and "vote" not in cfg:
-        raise SystemExit("FAIL views: 8 stills is the KEEP default. Set vote explicitly for another count.")
+        # A top or 3/4 view carries elevationDeg and is not part of the 8-yaw ring.
+        extra = [
+            v
+            for v in listed
+            if v.get("elevationDeg") is not None or v.get("elevDeg") is not None
+        ]
+        if len(listed) - len(extra) != 8:
+            raise SystemExit(
+                "FAIL views: 8 horizontal stills is the KEEP default. "
+                "Set vote explicitly for another count, or mark top / 3/4 views with elevationDeg."
+            )
     if vote > len(listed) or vote < 1:
         raise SystemExit("FAIL vote: vote must be between 1 and the view count (KEEP is 7 of 8)")
 
@@ -846,18 +1330,29 @@ def build(views_dir: Path, config_path: Path, out_dir: Path, model: Path | None,
         if im.format != "PNG":
             raise SystemExit(f"FAIL pixels: {src.name} is not a PNG")
         rgba = np.array(im.convert("RGBA"))
-        mask = silhouette_from_rgba(rgba, threshold)
+        elev_raw = item.get("elevationDeg", item.get("elevDeg"))
+        dist_v = float(item.get("distance", distance))
+        eye_v = float(item.get("eyeY", eye_y))
+        fov_v = float(item.get("fovYDeg", fov_y))
+        if elev_raw is None:
+            cam = camera_pose(float(item["yawDeg"]), dist_v, eye_v, None)
+        else:
+            cam = camera_pose(float(item["yawDeg"]), dist_v, eye_v, float(elev_raw))
+        elevated = abs(float(cam["pitchDeg"])) >= ELEVATED_PITCH
+        mask = silhouette_from_rgba(rgba, threshold, fill_holes=not elevated)
         if int(mask.sum()) < 32:
             raise SystemExit(f"FAIL silhouette: {src.name} has no object")
         area, height, width = mask_box(mask)
         Image.fromarray(mask.astype(np.uint8) * 255, "L").save(mask_out / src.name)
-        cam = camera_pose(float(item["yawDeg"]), distance, eye_y)
         rec = {
             "file": src.name,
+            "stored": src.name,
+            "group": "body",
             "yawDeg": float(item["yawDeg"]),
             "width": int(rgba.shape[1]),
             "height": int(rgba.shape[0]),
-            "fovY": fov_y,
+            "fovY": fov_v,
+            "elevated": abs(float(cam["pitchDeg"])) >= ELEVATED_PITCH,
             "rgba": rgba,
             "mask": mask,
             "cam": cam,
@@ -868,29 +1363,32 @@ def build(views_dir: Path, config_path: Path, out_dir: Path, model: Path | None,
             "depth": None,
         }
         views.append(rec)
-        copies.append({"file": f"views/{src.name}", "sha256": rec["sha256"], "yawDeg": rec["yawDeg"]})
+        copies.append(
+            {
+                "file": f"views/{src.name}",
+                "sha256": rec["sha256"],
+                "yawDeg": rec["yawDeg"],
+                "elevationDeg": rec["cam"]["elevationDeg"],
+                "width": rec["width"],
+                "height": rec["height"],
+                "group": "body",
+            }
+        )
 
-    lock_fail = []
-    for i, view in enumerate(views):
-        nxt = views[(i + 1) % len(views)]
-        if view["area"] == 0 or nxt["area"] == 0:
-            lock_fail.append(f"FAIL silhouette-lock: empty mask {view['file']}")
-            continue
-        area_ratio = view["area"] / nxt["area"]
-        if area_ratio < 0.85 or area_ratio > 1.15:
-            lock_fail.append(
-                f"FAIL silhouette-lock: area {view['file']} vs {nxt['file']} ratio {area_ratio:.3f} (limit ±15%)"
-            )
-        href = max(nxt["maskHeight"], 1)
-        hdelta = abs(view["maskHeight"] - nxt["maskHeight"]) / href
-        if hdelta > 0.08:
-            lock_fail.append(
-                f"FAIL silhouette-lock: height {view['file']} vs {nxt['file']} delta {hdelta:.3f} (limit ±8%)"
-            )
+    lock_fail, lock_notes = lock_views(views)
     report["silhouetteLock"] = {
         "pass": not lock_fail,
+        "bands": lock_notes,
         "perView": [
-            {"file": v["file"], "area": v["area"], "height": v["maskHeight"], "width": v["maskWidth"]}
+            {
+                "file": v["file"],
+                "area": v["area"],
+                "height": v["maskHeight"],
+                "width": v["maskWidth"],
+                "yawDeg": v["yawDeg"],
+                "elevationDeg": v["cam"]["elevationDeg"],
+                "elevated": v["elevated"],
+            }
             for v in views
         ],
     }
@@ -920,22 +1418,108 @@ def build(views_dir: Path, config_path: Path, out_dir: Path, model: Path | None,
     report["depthRefine"] = depth_source
 
     pad = float(cfg.get("gridPad", 1.12))
-    half = object_size * 0.5 * pad
-    vsize = (2.0 * half) / n
-    points = voxel_centers(n, half, vsize)
-    solid, votes = carve(points, views, vote, n)
-    carved_count = int(solid.sum())
-    if depth_source != "skipped":
-        solid = refine_with_depth(solid, views, half, vsize)
-    solid = fill_pits(solid)
-    solid = erode6(dilate6(solid))
-    solid = fill_voids(solid)
-    solid, cap_info = round_underside(solid)
-    solid = fill_voids(solid)
+    depth_views = [v for v in views if v.get("depth") is not None]
+    # Two views must agree before a nets hull recedes, so one bad map cannot chew a hole.
+    # The legacy voxel path stays a single-view carve, matching the previous tool.
+    min_agree = 2 if surface_mode == "nets" and len(depth_views) >= 4 else 1
+    body_views = list(views)
+    solid, half, vsize, solid_meta = make_solid(
+        body_views, object_size, vote, n, pad, depth_relief, min_agree
+    )
+    carved_count = int(solid_meta["carvedVoxels"])
+    cap_info = solid_meta["undersideCap"]
+    protrusions = flag_protrusions(solid, half, vsize)
+    sub_records = []
+    sub_specs = list(cfg.get("subObjects") or [])
+    if sub_specs and surface_mode != "nets":
+        raise SystemExit(
+            "FAIL subObjects: a sub-object is carved out of the smooth mesh. "
+            "Leave the surface on nets (do not pass --legacy-voxels)."
+        )
+    for spec in sub_specs:
+        sub_records.append(
+            _build_subobject(spec, config_path, view_out, mask_out, model, n, smooth_iters)
+        )
+        sub_records[-1]["viewStart"] = len(views)
+        sub_views = sub_records[-1]["views"]
+        lock_more, notes_more = lock_views(sub_views)
+        lock_fail.extend(lock_more)
+        report["silhouetteLock"]["bands"].extend(
+            [{"sub": sub_records[-1]["name"], **note} for note in notes_more]
+        )
+        report["silhouetteLock"]["pass"] = not lock_fail
+        report["silhouetteLock"]["perView"].extend(
+            {
+                "file": v["stored"],
+                "area": v["area"],
+                "height": v["maskHeight"],
+                "width": v["maskWidth"],
+                "yawDeg": v["yawDeg"],
+                "elevationDeg": v["cam"]["elevationDeg"],
+                "elevated": v["elevated"],
+                "group": v["group"],
+            }
+            for v in sub_views
+        )
+        joint = np.array(sub_records[-1]["joint"], np.float64)
+        outward = joint - np.zeros(3)
+        if float(np.linalg.norm(outward)) < 1e-6:
+            outward = np.array([0.0, 1.0, 0.0])
+        solid, removed = subtract_world_points(
+            solid,
+            half,
+            vsize,
+            sub_records[-1]["worldPoints"],
+            joint,
+            outward,
+            overlap=float(spec.get("overlap", float(np.min(vsize)) * 1.5)),
+        )
+        sub_records[-1]["carvedParentVoxels"] = removed
+        views.extend(sub_views)
+        copies.extend(sub_records[-1]["copies"])
+    if sub_records:
+        solid = fill_voids(solid)
+    report["viewCount"] = len(views)
+    report["assignment"] = (
+        "per-fragment-best-facing" if surface_mode == "nets" else "per-surface-point-best-facing"
+    )
     if int(solid.sum()) < 16:
         raise SystemExit("FAIL hull: carving removed the object")
 
-    surf = assign_views(solid, views, half, vsize)
+    surf = assign_views(solid, body_views, half, vsize)
+    mesh_vertices = None
+    mesh_normals = None
+    mesh_faces = None
+    mesh_groups = None
+    group_ranges = [(0, len(body_views))]
+    mesh_info = None
+    if surface_mode == "nets":
+        sample_origin = -half + 0.5 * vsize
+        mesh_info = _surface().build_smooth_mesh(
+            solid, sample_origin, vsize, iterations=smooth_iters, blur_sigma=0.7
+        )
+        if len(mesh_info["vertices"]) < 16:
+            raise SystemExit("FAIL hull: surface nets produced no closed surface")
+        parts_v = [mesh_info["vertices"]]
+        parts_n = [mesh_info["normals"]]
+        parts_f = [mesh_info["faces"]]
+        parts_g = [np.zeros(len(mesh_info["vertices"]), np.int32)]
+        cursor = len(mesh_info["vertices"])
+        for si, sub in enumerate(sub_records):
+            parts_v.append(sub["vertices"])
+            parts_n.append(sub["normals"])
+            parts_f.append(sub["faces"] + cursor)
+            parts_g.append(np.full(len(sub["vertices"]), si + 1, np.int32))
+            group_ranges.append((sub["viewStart"], sub["viewCount"]))
+            sub["vertexStart"] = int(cursor)
+            sub["vertexCount"] = int(len(sub["vertices"]))
+            cursor += len(sub["vertices"])
+        mesh_vertices = np.vstack(parts_v).astype(np.float32)
+        mesh_normals = np.vstack(parts_n).astype(np.float32)
+        mesh_faces = np.vstack(parts_f).astype(np.int32)
+        mesh_groups = np.concatenate(parts_g).astype(np.int32)
+        mesh_info["edges"] = _surface().manifold_edge_histogram(mesh_faces)
+        _surface().write_mesh_bin(out_dir / "mesh.bin", mesh_vertices, mesh_normals, mesh_faces, mesh_groups)
     # Assignment is a function of the baked normals and the fixed cameras.
     # Re-running it does not read a viewer yaw. Spot-check a handful of points.
     yaw_probe = float(cfg.get("_viewerYawProbe", 123.0))
@@ -954,13 +1538,38 @@ def build(views_dir: Path, config_path: Path, out_dir: Path, model: Path | None,
         pass
     approach_cfg = cfg.get("approach", {})
     requested = approach_cfg.get("minDistance", None)
+    def geometry_for(view: dict) -> tuple[np.ndarray, np.ndarray]:
+        if mesh_vertices is None:
+            return surf["position"], surf["normal"]
+        if view.get("group", "body") == "body":
+            pick = mesh_groups == 0
+            return mesh_vertices[pick], mesh_normals[pick]
+        for sub in sub_records:
+            if sub["name"] == view.get("group"):
+                return sub["vertices"], sub["normals"]
+        return surf["position"], surf["normal"]
+
     approach = {
         "width": screen_w,
         "height": screen_h,
         "fovY": screen_fov,
         "minDistance": float(np.linalg.norm(views[0]["cam"]["position"])),
     }
-    cap = approach_cap_distance(surf["position"], surf["normal"], views, approach)
+
+    def max_mag_at(distance: float) -> float:
+        trial = dict(approach)
+        trial["minDistance"] = distance
+        return max(
+            measure_magnification(*geometry_for(v), v, trial)["maxMagnification"] for v in views
+        )
+
+    cap_d = max(float(np.linalg.norm(v["cam"]["position"])) for v in views)
+    for _ in range(12):
+        mag_now = max_mag_at(cap_d)
+        if mag_now <= MAG_LIMIT:
+            break
+        cap_d *= max(mag_now, 1.01) * 1.01
+    cap = cap_d
     if requested is None:
         use_d = cap
         requested_note = None
@@ -970,16 +1579,20 @@ def build(views_dir: Path, config_path: Path, out_dir: Path, model: Path | None,
     approach["minDistance"] = use_d
     per_view_mag = []
     for view in views:
-        measured = measure_magnification(surf["position"], surf["normal"], view, approach)
+        measured = measure_magnification(*geometry_for(view), view, approach)
         per_view_mag.append(
             {
-                "file": view["file"],
+                "file": view.get("stored", view["file"]),
                 "yawDeg": view["yawDeg"],
+                "elevationDeg": view["cam"]["elevationDeg"],
+                "width": view["width"],
+                "height": view["height"],
                 "maxMagnification": round(float(measured["maxMagnification"]), 6),
                 "hullHeight": round(float(measured["hullHeight"]), 3),
                 "hullWidth": round(float(measured["hullWidth"]), 3),
                 "sourceHeight": int(measured["sourceHeight"]),
                 "sourceWidth": int(measured["sourceWidth"]),
+                "atDistance": use_d,
             }
         )
     max_mag = max(item["maxMagnification"] for item in per_view_mag)
@@ -1005,7 +1618,10 @@ def build(views_dir: Path, config_path: Path, out_dir: Path, model: Path | None,
                     )
                 )
 
-    radius = collision_radius(surf["position"].astype(np.float64))
+    if mesh_vertices is not None:
+        radius = collision_radius(mesh_vertices.astype(np.float64))
+    else:
+        radius = collision_radius(surf["position"].astype(np.float64))
     placement = cfg.get("placement", {})
     position = [float(x) for x in placement.get("position", [0, 0, 0])]
 
@@ -1037,49 +1653,169 @@ def build(views_dir: Path, config_path: Path, out_dir: Path, model: Path | None,
         length = float(np.linalg.norm(base["position"]))
         scale = qc_approach_eye / length
         pos = base["position"] * scale
-        return camera_pose(yaw, math.hypot(pos[0], pos[2]), float(pos[1]))
+        return camera_pose(yaw, math.hypot(float(pos[0]), float(pos[2])), float(pos[1]))
 
-    jobs = [(f"yaw-{int(v['yawDeg']):03d}.png", v["yawDeg"], 0.0) for v in views]
-    jobs.append(("behind.png", 180.0, -0.35))
-    for name, yaw, eye_off in jobs:
-        cam = pose_at(yaw, eye_off)
-        rgba, stats = render_view(solid, surf, views, half, vsize, cam, screen_w, screen_h, screen_fov)
+    zbuffers = None
+    if mesh_vertices is not None:
+        bias = max(2.5 * float(np.min(vsize)), 1e-3)
+        zbuffers = [
+            _surface().render_zbuffer(mesh_vertices, mesh_faces, v["cam"], v["width"], v["height"], v["fovY"])
+            for v in views
+        ]
+
+    def render_qc(cam: dict) -> tuple[np.ndarray, dict]:
+        if mesh_vertices is None:
+            return render_view(solid, surf, body_views, half, vsize, cam, screen_w, screen_h, screen_fov)
+        buffers = _surface().rasterize_mesh(
+            mesh_vertices, mesh_normals, mesh_faces, mesh_groups, cam, screen_w, screen_h, screen_fov
+        )
+        rgba, stats = _surface().project_fragments(buffers, views, zbuffers, group_ranges, bias)
+        stats["reentryPixels"] = 0
+        stats["reentryFraction"] = 0.0
+        stats["centerHitPixels"] = stats["hitPixels"]
+        stats["centerReentryPixels"] = 0
+        stats["centerReentryFraction"] = 0.0
+        stats["axisRunMean"] = _surface().axis_run_mean(rgba[:, :, 3])
+        return rgba, stats
+
+    def source_hole_fraction(mask: np.ndarray) -> float:
+        holes = interior_holes((mask.astype(np.uint8) * 255))
+        return float(holes / max(1, int(np.asarray(mask).sum())))
+
+    used_names = set()
+    jobs = []
+    for view in body_views:
+        stem = Path(view["stored"]).stem
+        name = f"{stem}.png"
+        if name in used_names:
+            name = f"{stem}-e{int(round(view['cam']['pitchDeg']))}.png"
+        used_names.add(name)
+        elevated = bool(view.get("elevated"))
+        jobs.append(
+            (
+                name,
+                pose_along(view["cam"]["position"], qc_approach_eye),
+                view["yawDeg"],
+                elevated,
+                source_hole_fraction(view["mask"]) if elevated else 0.0,
+            )
+        )
+    behind = pose_at(180.0, -0.35)
+    jobs.append(("behind.png", behind, 180.0, False, 0.0))
+    for name, cam, yaw, elevated, src_holes in jobs:
+        rgba, stats = render_qc(cam)
         Image.fromarray(rgba, "RGBA").save(qc_out / name)
         holes_px = interior_holes(rgba[:, :, 3])
+        frac = float(holes_px / max(1, stats["hitPixels"]))
+        # An elevated still that already shows an opening (a bowl, a cockpit)
+        # is allowed to keep that opening. A horizontal render is not.
+        excused = elevated and frac <= src_holes + 0.02
         stats["file"] = name
         stats["yawDeg"] = yaw
+        stats["elevated"] = elevated
+        stats["sourceHoleFraction"] = src_holes
+        stats["openingMatchedToSource"] = excused
         stats["interiorHolePixels"] = holes_px
-        stats["interiorHoleFraction"] = float(holes_px / max(1, stats["hitPixels"]))
+        stats["interiorHoleFraction"] = frac
         hole_rows.append(stats)
         qc_files.append(f"qc/{name}")
     max_reentry = max(row["reentryFraction"] for row in hole_rows)
     max_center = max(row["centerReentryFraction"] for row in hole_rows)
     max_holes = max(row["interiorHoleFraction"] for row in hole_rows)
+    accidental = [
+        row["interiorHoleFraction"] for row in hole_rows if not row.get("openingMatchedToSource")
+    ]
+    max_accidental = max(accidental) if accidental else 0.0
     enclosed = int((fill_voids(solid) & ~solid).sum())
     report["holes"] = {
         "perRender": hole_rows,
         "maxGapReentryFraction": max_reentry,
         "maxCenterReentryFraction": max_center,
         "maxInteriorHoleFraction": max_holes,
+        "accidentalInteriorHoleFraction": max_accidental,
         "enclosedVoids": enclosed,
         "watertight": enclosed == 0 and max_holes <= 0.01 and max_center <= 0.05,
     }
-    if max_holes > 0.01 or max_center > 0.05 or enclosed > 0:
+    if max_accidental > 0.01 or max_center > 0.05 or enclosed > 0:
         failures.append(
             "FAIL holes: interiorHoleFraction={h:.4f} centerReentryFraction={c:.4f} enclosedVoids={v}. The back bite is not closed.".format(
-                h=max_holes, c=max_center, v=enclosed
+                h=max_accidental, c=max_center, v=enclosed
             )
         )
+    if mesh_info is not None and int(mesh_info["edges"].get("boundary", 0)) > 0:
+        failures.append(
+            "FAIL hull: surface has {n} boundary edges. The smooth hull is not closed.".format(
+                n=mesh_info["edges"]["boundary"]
+            )
+        )
+
+    seam_fracs = [float(row.get("seamFraction", surf["seamFraction"])) for row in hole_rows]
+    report["sources"] = [
+        {
+            "file": v.get("stored", v["file"]),
+            "width": int(v["width"]),
+            "height": int(v["height"]),
+            "yawDeg": v["yawDeg"],
+            "elevationDeg": v["cam"]["elevationDeg"],
+            "pitchDeg": v["cam"]["pitchDeg"],
+            "group": v.get("group", "body"),
+        }
+        for v in views
+    ]
+    report["hull"] = {
+        "surface": "surface-nets" if surface_mode == "nets" else "voxels",
+        "surfaceGrid": int(n),
+        "legacyGrid": int(legacy_grid),
+        "vertexCount": 0 if mesh_vertices is None else int(len(mesh_vertices)),
+        "triangleCount": 0 if mesh_faces is None else int(len(mesh_faces)),
+        "smoothIters": int(smooth_iters) if surface_mode == "nets" else 0,
+        "depthRelief": depth_relief,
+        "depthMinAgree": min_agree,
+        "edges": None if mesh_info is None else mesh_info["edges"],
+        "meshVolume": None if mesh_info is None else mesh_info.get("volume"),
+        "voxelVolume": float(solid.sum()) * float(np.prod(vsize)),
+    }
+    report["seam"] = {
+        "seamRatio": SEAM_RATIO,
+        "viewsBlendedMax": 2,
+        "fragmentSeamFraction": max(seam_fracs) if seam_fracs else 0.0,
+        "meanFragmentSeamFraction": float(np.mean(seam_fracs)) if seam_fracs else 0.0,
+        "fallbackPixels": int(sum(int(row.get("fallbackPixels", 0)) for row in hole_rows)),
+        "voxelSeamFraction": surf["seamFraction"],
+    }
+    report["protrusions"] = {
+        "detected": len(protrusions),
+        "flags": protrusions,
+        "note": "Flags are a 3-voxel opening. They do not cook views. Supplied subObjects are carved and jointed.",
+    }
+    report["subObjects"] = [
+        {
+            "name": sub["name"],
+            "joint": sub["joint"],
+            "axis": sub["axis"],
+            "localAttach": sub["localAttach"],
+            "yawDeg": sub["yawDeg"],
+            "viewStart": sub["viewStart"],
+            "viewCount": sub["viewCount"],
+            "vertexStart": sub.get("vertexStart", 0),
+            "vertexCount": sub.get("vertexCount", 0),
+            "carvedParentVoxels": sub.get("carvedParentVoxels", 0),
+        }
+        for sub in sub_records
+    ]
 
     cameras_json = []
     for view in views:
         cameras_json.append(
             {
-                "file": view["file"],
+                "file": view.get("stored", view["file"]),
                 "yawDeg": view["yawDeg"],
+                "elevationDeg": view["cam"]["elevationDeg"],
+                "pitchDeg": view["cam"]["pitchDeg"],
                 "fovYDeg": view["fovY"],
                 "width": view["width"],
                 "height": view["height"],
+                "group": view.get("group", "body"),
                 "position": view["cam"]["position"].tolist(),
                 "right": view["cam"]["right"].tolist(),
                 "up": view["cam"]["up"].tolist(),
@@ -1096,10 +1832,13 @@ def build(views_dir: Path, config_path: Path, out_dir: Path, model: Path | None,
         "pixels": "original-png-lossless",
         "sampling": "nearest",
         "mipmaps": False,
-        "assignment": "per-surface-point-best-facing",
+        "assignment": "per-fragment-best-facing" if surface_mode == "nets" else "per-surface-point-best-facing",
         "assignmentDependsOnViewerYaw": False,
         "weight": "(normal · viewDir)^8",
         "seamRatio": SEAM_RATIO,
+        "surface": "surface-nets" if surface_mode == "nets" else "voxels",
+        "vertexCount": 0 if mesh_vertices is None else int(len(mesh_vertices)),
+        "triangleCount": 0 if mesh_faces is None else int(len(mesh_faces)),
         "vote": vote,
         "viewCount": len(views),
         "grid": [n, n, n],
@@ -1115,8 +1854,15 @@ def build(views_dir: Path, config_path: Path, out_dir: Path, model: Path | None,
         },
         "cameras": cameras_json,
         "views": copies,
-        "files": {"hull": "hull.npz", "views": "views/", "report": "qc/report.json"},
+        "files": {
+            "hull": "hull.npz",
+            "views": "views/",
+            "report": "qc/report.json",
+            **({"mesh": "mesh.bin"} if mesh_vertices is not None else {}),
+        },
         "depthRefine": depth_source,
+        "depthRelief": depth_relief,
+        "subObjects": report["subObjects"],
         "ok": not failures,
     }
     # The stored approach distance is always the legal cap when the request failed,
@@ -1125,8 +1871,7 @@ def build(views_dir: Path, config_path: Path, out_dir: Path, model: Path | None,
         asset["approach"]["minDistance"] = use_d
         asset["approach"]["maxMagnification"] = max_mag
 
-    np.savez_compressed(
-        out_dir / "hull.npz",
+    payload = dict(
         solid=solid.astype(np.uint8),
         origin=(-half).astype(np.float32),
         voxelSize=vsize.astype(np.float32),
@@ -1142,6 +1887,12 @@ def build(views_dir: Path, config_path: Path, out_dir: Path, model: Path | None,
         seamVol=surf["seamVol"],
         seamWeightVol=surf["seamWVol"],
     )
+    if mesh_vertices is not None:
+        payload["meshVertices"] = mesh_vertices
+        payload["meshNormals"] = mesh_normals
+        payload["meshIndices"] = mesh_faces.astype(np.int32)
+        payload["meshGroup"] = mesh_groups.astype(np.int16)
+    np.savez_compressed(out_dir / "hull.npz", **payload)
     (out_dir / "asset.json").write_text(json.dumps(asset, indent=2) + "\n")
     report["ok"] = not failures
     report["failures"] = failures

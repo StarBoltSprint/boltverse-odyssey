@@ -155,7 +155,7 @@ Validated for **rock construction**. The 2026-09-30 movement attempts in the tes
 1. **V0.** Start from one sharp Imagine still of the object. Full-res PNG, **1248×1584**, lossless.
 2. **8 views.** Cook one view every **45°**, progressively, with Imagine **IMAGE**. Each view is cooked from its neighbor + V0 as reference, with a **silhouette lock**: area **±15%**, height **±8%** vs its neighbors. No video.
 3. **QC.** Check every view against V0: same object, same features, no extra lobes. Reject and recook any view that differs.
-4. **Hull.** Voxel visual hull: keep a voxel when **7 of 8** silhouettes agree. Refine with Depth Anything V2, smooth, and close the underside with a **rounded cap**. No flat cut, no floor.
+4. **Hull.** Voxel visual hull: keep a voxel when **7 of 8** silhouettes agree. Refine with Depth Anything V2, smooth, and close the underside with a **rounded cap**. No flat cut, no floor. The command’s default surface is that volume as a smooth mesh (surface nets and Taubin). `--legacy-voxels` keeps the cube grid. Depth only recesses inside the silhouette. See the script below and [doc 62](62-open-world-zones-process.md) for what is still partial.
 5. **Texturing.**
    - Each of the 8 photos is projected from its **FIXED world camera**.
    - Per surface point, use **ONE** best-facing view. Weight `(normal · viewDir)^8`.
@@ -177,9 +177,11 @@ python3 tools/walkaround/build.py --views <views-dir> --config <config.json> --o
 
 Depth Anything V2 refinement (near = white, input `pixel_values`): add `--model /path/to/depth_anything_v2_small.onnx`. The ONNX is not in the repo. Notes: [`tools/walkaround/README.md`](../../tools/walkaround/README.md).
 
-Imagine pixels are never upscaled or degraded. The command copies each source PNG lossless, samples it nearest-neighbor, and does not blur it or build mipmaps. `qc/report.json` lists the max magnification of every view. That number must be **≤ 1.0** at the approach distance stored in the asset: one source pixel covers at most one screen pixel. If any view would be enlarged, the command prints `FAIL upscale` and exits non-zero. Cap zoom and approach to that distance. This is stricter than the 1.30× plate close-up above.
+The default surface is smooth (surface nets + Taubin on a finer occupancy). `--legacy-voxels` keeps the coarse grid. A view may set `elevationDeg` (top or 3/4). A supplied `subObjects` part is carved and jointed; auto-detect only flags a narrow part and does not cook its views. Depth moves the hull inward inside the silhouettes and does not add shell outside them. The pass line prints each source’s pixel size, the hull vertex count, the seam fraction, and the distance where magnification stays ≤ 1. What is still partial is the table in [doc 62](62-open-world-zones-process.md).
 
-`hull.npz` is an invisible depth carrier. It does not draw its own pixels. Each surface point stores the best-facing still, weight `(normal · viewDir)^8`, plus a narrow seam. That choice is baked on the surface. It does not follow the viewer’s yaw. Not for Bolt.
+Imagine pixels are never upscaled or degraded. The command copies each source PNG lossless, samples it nearest-neighbor, and does not blur it or build mipmaps. On the smooth mesh the sample is per fragment, from at most two views, and only in a narrow seam. `qc/report.json` lists the max magnification of every view. That number must be **≤ 1.0** at the approach distance stored in the asset: one source pixel covers at most one screen pixel. If any view would be enlarged, the command prints `FAIL upscale` and exits non-zero. Cap zoom and approach to that distance. This is stricter than the 1.30× plate close-up above.
+
+`hull.npz` is an invisible depth carrier. It does not draw its own pixels. The smooth mesh (`mesh.bin` when present) is the same kind of carrier: shape only. Each fragment stores no color. It picks a source texel, weight `(normal · viewDir)^8`, plus a narrow seam. That choice is baked from the fixed cameras. It does not follow the viewer’s yaw. The occupancy `viewVol` is still written so an older raymarcher can load the file; that path quantizes the picture onto the grid. Not for Bolt.
 
 ## Test 4 attempts that FAILED (2026-09-30)
 
