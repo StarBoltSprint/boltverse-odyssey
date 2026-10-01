@@ -1,0 +1,113 @@
+{
+  "schema": "layout-spec/1",
+  "id": "sample-zone",
+  "seed": 11,
+  "zone": {
+    "shape": "circle",
+    "center": [0, 0],
+    "radius_m": 22,
+    "ground": {
+      "tile_m": 0.9,
+      "tiles": ["tiles/t0.png", "tiles/t1.png", "tiles/t2.png", "tiles/t3.png"],
+      "relief": {
+        "amp_m": 0.15,
+        "edge_height_m": 0,
+        "seed": 11,
+        "frequency": 0.11,
+        "octaves": 3,
+        "edge_fade_start": 0.82
+      }
+    }
+  },
+  "ring": { "radius_m": 18.07, "max_gap_deg": 0 },
+  "gates": [
+    {
+      "id": "to-path",
+      "heading_deg": 238,
+      "width_m": 4.5,
+      "frame_asset": "tools/layout/testdata/assets/gate/asset.json",
+      "field": "living/gate-field.mp4",
+      "leads_to": "path-ab"
+    }
+  ],
+  "hero": { "width_m": 0.7, "radius_m": 0.45 },
+  "spawn": { "position": [0, 0], "face": "gate:to-path" },
+  "limits": {
+    "spawn_clearance_m": 3.2,
+    "min_gap_m": 0.35,
+    "path_width_m": 1.5,
+    "gate_cone_m": 5.5,
+    "gate_cone_half_deg": 26,
+    "yaw_eps_deg": 8,
+    "scale_eps": 0.03
+  },
+  "view": {
+    "width": 720,
+    "height": 1600,
+    "fov_y_deg": 40,
+    "mag_max": 1.0,
+    "boom_m": 6.0,
+    "eye_height_m": 0.85
+  },
+  "near_lens": { "cull_m": 1.2, "fade_m": [1.2, 2.5] },
+  "fog_band": {
+    "inner_m": 12,
+    "outer_m": 20,
+    "patches": 28,
+    "atlas": "living/fog-atlas.png",
+    "size_m": [3, 6],
+    "opacity": [0.15, 0.35],
+    "near_fade_m": [3, 6]
+  },
+  "backdrop": { "ring": "backdrop/ring-360.png" },
+  "bolt": {
+    "gallop": "lock/bolt-gallop-cycle.mp4",
+    "idle": "lock/bolt-idle-breath.mp4"
+  },
+  "categories": {
+    "ring": {
+      "assets": [
+        "tools/layout/testdata/assets/ring-a/asset.json",
+        "tools/layout/testdata/assets/ring-b/asset.json",
+        "tools/layout/testdata/assets/ring-c/asset.json"
+      ],
+      "scale": [0.85, 1.2]
+    },
+    "exit": {
+      "assets": ["tools/layout/testdata/assets/gate/asset.json"],
+      "scale": [0.85, 1.2]
+    },
+    "mid": {
+      "count": 5,
+      "assets": [
+        "tools/layout/testdata/assets/mid-a/asset.json",
+        "tools/layout/testdata/assets/mid-b/asset.json"
+      ],
+      "scale": [0.9, 1.15],
+      "band_m": [8.0, 12.2]
+    },
+    "near": {
+      "count": 8,
+      "assets": [
+        "tools/layout/testdata/assets/pebble-a/asset.json",
+        "tools/layout/testdata/assets/pebble-b/asset.json",
+        "tools/layout/testdata/assets/pebble-c/asset.json"
+      ],
+      "scale": [0.85, 1.1],
+      "band_m": [3.8, 7.2]
+    },
+    "hero": {
+      "count": 1,
+      "assets": ["tools/layout/testdata/assets/hero-a/asset.json"],
+      "scale": [0.9, 1.1],
+      "band_m": [9.0, 11.5]
+    }
+  },
+  "budgets": {
+    "ring": [20, 90],
+    "exit": [2, 6],
+    "mid": [4, 8],
+    "near": [6, 12],
+    "hero": [1, 3]
+  }
+}

@@ -4,9 +4,9 @@ Kitchen only. Not a hang. Not a new play URL. Owner direction **2026-10-01**.
 
 **This repo holds no biome style.** Each player chooses the style of every biome freely. This doc is the **creation process**: style-agnostic and fully codified. Any player's Grok follows the same steps for any paint. Nothing below is a look to copy. No example biome here is a model.
 
-The free-walk method is [doc 61](61-free-clearing-walk.md). The invisible-shape exception is the [2026-10-01 extension of law 59](59-invisible-depth-carrier.md#extension-2026-10-01-invisible-procedural-terrain-shape) (PR #128). Hulls are [`tools/walkaround/build.py`](../../tools/walkaround/build.py) (PR #127, method in [doc 60](60-imagine-relief-panorama-method.md#script)). The layout file and the rendered-pixel validator are [doc 63](63-layout-file-and-validator.md).
+The free-walk method is [doc 61](61-free-clearing-walk.md). The invisible-shape exception is the [2026-10-01 extension of law 59](59-invisible-depth-carrier.md#extension-2026-10-01-invisible-procedural-terrain-shape) (PR #128). Hulls are [`tools/walkaround/build.py`](../../tools/walkaround/build.py) (PR #127, method in [doc 60](60-imagine-relief-panorama-method.md#script)). One `clearing.json` per zone is written and checked by [`tools/layout`](../../tools/layout/README.md). The rendered-pixel validator is [doc 63](63-layout-file-and-validator.md).
 
-**Order:** [`tools/assetcheck`](../../tools/assetcheck/README.md) on every Imagine file, then [`tools/objsheet`](../../tools/objsheet/README.md) on every object view set, then [`tools/walkaround/build.py`](../../tools/walkaround/build.py), then `clearing.json` and generate, then [`tools/playcheck/run`](../../tools/playcheck/README.md). Paste each report. A hand-written PASS is not a PASS. The measure tools only measure. They do not paint, resize, or replace a pixel.
+**Order:** [`tools/assetcheck`](../../tools/assetcheck/README.md) on every Imagine file, then [`tools/objsheet`](../../tools/objsheet/README.md) on every object view set, then [`tools/walkaround/build.py`](../../tools/walkaround/build.py), then [`tools/layout`](../../tools/layout/README.md) (`layout.py generate`, then `layout.py check`, one `clearing.json` per zone), then [`tools/playcheck/run`](../../tools/playcheck/README.md). Paste each report. A hand-written PASS is not a PASS. A layout PASS is invisible shape only. The measure tools only measure. They do not paint, resize, or replace a pixel.
 
 **`lock/` is grandfathered.** Anything under `lock/` (and any manifest entry with `locked: true`) is owner KEEP. `assetcheck` still measures it and prints **WARN**. A WARN is not a FAIL, the exit code stays 0, and it is not a reason to recook or replace that file. Bolt stays [`lock/bolt-gallop-cycle.mp4`](../../lock/bolt-gallop-cycle.mp4) and `lock/bolt-idle-breath.mp4`. If the idle file is missing, ask the owner. Do not cook a new one.
 
@@ -101,9 +101,9 @@ Do the steps in order. Stop when one fails.
    4. **Living loops:** fog atlas (one looping video packed into frames), gate / light / particle loops. First frame = last frame. Keyed. `tools/assetcheck` kind `loop` (seam, pops, frozen runs, key). A turntable that must hold one shape also gets kind `turntable` (morph).
    5. **Corridor ground video** (when the corridor step comes): scrolling, one direction, speed measured (`bakedGroundSpeed`). `tools/assetcheck` before it is wired.
    Paste each `report.md` and `report.json`. Attach each `sheet.png`. Exit code 0. A sentence that says PASS, with no report, is a FAIL.
-3. **Fill `clearing.json`** for the zone: `zone`, `edge_ring`, `gates`, `interior_objects`, `near_lens`, `fog_band` (+ `spawn`, `backdrop`, `view`, `bolt`). Schema in doc 63.
-4. **Generate.** `tools/clearing/` builds placement, colliders, gates, and fog patches from that file.
-5. **Validate on the rendered view.** Run `tools/playcheck/run --url <play url or local build> --layout <clearing.json>` ([doc 63](63-layout-file-and-validator.md), [`tools/playcheck/README.md`](../../tools/playcheck/README.md)). Every row **PASS** on the real 720×1600 play view. A data-only PASS is FAIL. Any WebGL error is FAIL (take 8). Paste `report.md`, the stills, and `walk.mp4`. A hand-written PASS table is not accepted.
+3. **Generate `clearing.json`.** Write a zone spec (radius, ring radius, gate bearing and width, walkaround asset list, counts for ring / mid / near / hero / exit). Run `python3 tools/layout/layout.py generate --spec <spec.json> --out <dir>`. Do not type coordinates by hand. Schema in doc 63. The file is the placement, including colliders.
+4. **Check the layout file.** `python3 tools/layout/layout.py check --clearing <dir>/clearing.json --out <dir>`. Paste `report.md`. Exit code non-zero means FAIL. This is invisible shape only (ring, gate, path, relief, magnification, variety). It is not a framebuffer.
+5. **Validate on the rendered view.** Run `tools/playcheck/run --url <play url or local build> --layout <clearing.json>` ([doc 63](63-layout-file-and-validator.md), [`tools/playcheck/README.md`](../../tools/playcheck/README.md)). Every row **PASS** on the real 720×1600 play view. A data-only PASS is FAIL, including a `tools/layout` PASS. Any WebGL error is FAIL (take 8). Paste `report.md`, the stills, and `walk.mp4`. A hand-written PASS table is not accepted.
 6. **Proof stills** come from that command (the play view), not from a hand export: spawn, the turn, centre → gate, stops with the hero against a visible hull, fog, IDLE, GALLOP, plus `walk.mp4`.
 7. **STOP.** Only now may a sandbox play URL be shared. The owner records phone QC himself. Only an owner KEEP opens the next step.
 
@@ -139,7 +139,7 @@ Take 8 is a past clearing take. Its paint is not a model. Only these lessons car
 - Commit a biome style (a look, a prompt set, a palette) to this repo as the model.
 - Lay a zone floor as the scrolling ground video, or put free 360° turning on a corridor.
 - Leave the ring open, or close it with colliders that have no visible hull in front of them.
-- Hand-place ring hulls, gates, colliders, or fog. They are generated from `clearing.json`.
+- Hand-place ring hulls, gates, colliders, or fog. `tools/layout` writes `clearing.json`. Paste the check report. A layout PASS is not a rendered PASS.
 - Post a play URL before every validator row passes on the rendered view.
 - Draw, shade, colour, or shadow any pixel in code.
 - Hand-write PASS for an Imagine file or an object view set. The asset-gate report and the consistency sheet are the PASS.

@@ -11,8 +11,12 @@ Every zone follows one order:
 1. `python3 tools/assetcheck/check.py` on every Imagine image or video.
 2. `python3 tools/objsheet/sheet.py` on every object's view set.
 3. `tools/walkaround/build.py` only after that sheet exits 0.
-4. `clearing.json`, then `tools/clearing/` generate.
-5. `tools/playcheck/run` on the rendered 720×1600 play view.
+4. `python3 tools/layout/layout.py generate`, then `layout.py check`. One `clearing.json` per zone. Paste that `report.md`. Invisible shape only.
+5. `tools/playcheck/run` on the rendered 720×1600 play view. `--layout` is that same file.
+
+`tools/layout/` **generates and checks the file**. It is on this tree. Command and honest limits: [`tools/layout/README.md`](../../tools/layout/README.md).
+
+That check is invisible shape (ring, gate, colliders, relief, scale). It does **not** read a framebuffer. A layout PASS is not a play URL. The rendered-pixel rows further down are still required. `tools/playcheck` consumes this same `clearing.json` (`--layout`) and is the framebuffer run. It is a different command. A data-only PASS, including a `tools/layout` PASS, is not that run. A generator that agrees with its own JSON is the take 8 failure mode.
 
 ## Before the layout
 
@@ -41,17 +45,15 @@ The command writes `report.md`, `report.json`, `stills/`, and `walk.mp4` (H.264,
 
 `?debug=1` must expose `window.__play` (`snapshot`, `setInput`, `tick`, `look`, `reset`) with the live HUD pose, magnification, and an object-ID buffer from the same draws as the colour view, same alpha discard. Builders keep that hook. The tool adds `?debug=1` itself.
 
-`tools/clearing/` (generate placement from `clearing.json`) is still a separate step. It is not this check. A generator that agrees with its own JSON is the take 8 failure mode.
-
-Expected layout:
+## Expected layout
 
 | Path | What |
 | --- | --- |
-| `tools/clearing/README.md` | How to run generate + validate. |
-| `tools/clearing/schema.json` | JSON Schema for `clearing.json`. No biome-specific words. |
-| `tools/clearing/generate.*` | `clearing.json` → placement, colliders, gate, fog patches. |
-| `tools/clearing/validate.*` | Renders the real play view, prints the PASS / FAIL table, writes proof stills. |
-| `<biome>/clearings/<id>/clearing.json` | One file per clearing. Single source of truth. |
+| `tools/layout/layout.py` | `generate` writes `clearing.json` from a zone spec. `check` prints PASS/FAIL rows, writes `report.md` and a top-down diagram, exits non-zero on FAIL. |
+| `tools/layout/schema.json` | JSON Schema for `clearing.json`. No biome-specific words. |
+| `tools/layout/README.md` | How to run it, and what a PASS does not prove. |
+| `<zone>/clearing.json` | One file per zone. Single source of truth. |
+| `tools/playcheck` | Rendered-pixel run. Not part of `tools/layout`. Uses this file as `--layout` when the command is present. |
 
 ## Layout as data
 
@@ -93,6 +95,36 @@ Example (values are illustrative):
   "bolt": { "gallop": "lock/bolt-gallop-cycle.mp4", "idle": "lock/bolt-idle-breath.mp4" }
 }
 ```
+
+## Generate and check — `tools/layout`
+
+Builders do not hand-place a hull, a collider, or a gate. They write a zone spec (radius, ring radius, gate bearing and width, asset manifests from `tools/walkaround`, counts per category) and run:
+
+```bash
+python3 tools/layout/layout.py generate --spec <spec.json> --out <dir>
+python3 tools/layout/layout.py check --clearing <dir>/clearing.json --out <dir>
+```
+
+Paste `report.md` from the check. Exit code is non-zero on FAIL.
+
+The generator is deterministic for a seed. It may place with simplex. It writes positions, yaw, scale, `base_y_m` on the relief, and a `colliders` list. `position` is `[x, z]` so the playcheck reader (heading 0 = +z, 90 = +x) can load the same file. Height is `base_y_m`, not a third component of `position`.
+
+Rows the check prints, each with numbers:
+
+| Row | FAIL when |
+| --- | --- |
+| `ring_closed` | A 1° ray misses the visual ring or the collider ring outside a gate, or that gap's arc is longer than the hero width. |
+| `collider_eq_visual` | A collider has no object with the same footprint, or an outward ray hits a collider more than 0.5 m before a visual. |
+| `gate` / `path` / `gate_cone` | The frame is missing, the opening is blocked, the path from spawn is narrower than the limit, or a solid sits in the clearance cone. |
+| `spawn_clearance` / `separation` | Spawn disk or the minimum air gap is violated. Interiors may not overlap. Ring pieces may overlap each other; that closes the ring. |
+| `relief` | The object's base is not the relief height at that xz. |
+| `mag` | Source pixels at the closest follow-camera distance would be magnified above `view.mag_max` (1.0). |
+| `variety` | A neighbour matches asset, yaw, and scale, or variants are clumped. |
+| `playcheck_data` | The file's `width_deg` values fail the data half of the playcheck ring test. |
+
+The diagram `debug-topdown.png` draws the ring, the gate cone, the colliders, and the path. It is a kitchen diagram. It is not the play view and not an Imagine pixel.
+
+**This table is not the rendered-pixel table below.** Take 8 is why. A file can list a hull and a matching collider and still draw nothing. `tools/layout` cannot see that. Do not paste a layout PASS as a phone PASS.
 
 ## Validator — PASS / FAIL table
 
@@ -162,9 +194,9 @@ The console also showed WebGL **`texSubImage3D` `INVALID_OPERATION`** errors, wh
 
 ## Do not
 
-- Hand-place a hull, collider, gate, or fog patch outside `clearing.json`.
+- Hand-place a hull, collider, gate, or fog patch outside `clearing.json`. Generate the file with `tools/layout`.
 - Put biome words in the schema.
-- Validate against the JSON, the debug map, or the collider set alone.
+- Treat a `tools/layout` PASS, or the top-down diagram, as the rendered-pixel check. A check that only agrees with the JSON, the debug map, or the collider set is not a play PASS.
 - Paste a hand-written PASS table, or a play URL, without `tools/playcheck/run`'s `report.md`, stills, and `walk.mp4`.
 - Remove `window.__play` when `?debug=1` is set.
 - Count a cut-out (alpha-discarded) texel as a visible pixel.

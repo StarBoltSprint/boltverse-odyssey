@@ -1,0 +1,50 @@
+{
+  "format": "walkaround-hull-1",
+  "name": "pebble-b",
+  "category": "near",
+  "drawsOwnPixels": false,
+  "invisibleHull": true,
+  "notForBolt": true,
+  "pixels": "original-png-lossless",
+  "synthetic": true,
+  "height_m": 0.24,
+  "width_m": 0.36,
+  "halfExtent": [
+    0.18,
+    0.12,
+    0.153
+  ],
+  "placement": {
+    "collisionRadius": 0.18,
+    "position": [
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "footprint": {
+    "type": "circle",
+    "radius_m": 0.18
+  },
+  "sourcePx": {
+    "width": 300,
+    "height": 360,
+    "kind": "silhouette"
+  },
+  "yawQuantizeDeg": 90,
+  "approach": {
+    "capDistance": 4.5,
+    "maxMagnification": 0.586129,
+    "minDistance": 4.5,
+    "magnificationLimit": 1.0
+  },
+  "cameras": [
+    {
+      "file": "yaw-000.png",
+      "yawDeg": 0.0,
+      "fovYDeg": 40.0,
+      "width": 300,
+      "height": 360
+    }
+  ]
+}

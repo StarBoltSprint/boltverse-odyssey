@@ -1,0 +1,50 @@
+{
+  "format": "walkaround-hull-1",
+  "name": "hero-a",
+  "category": "hero",
+  "drawsOwnPixels": false,
+  "invisibleHull": true,
+  "notForBolt": true,
+  "pixels": "original-png-lossless",
+  "synthetic": true,
+  "height_m": 1.65,
+  "width_m": 2.5,
+  "halfExtent": [
+    1.25,
+    0.825,
+    1.0625
+  ],
+  "placement": {
+    "collisionRadius": 1.25,
+    "position": [
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "footprint": {
+    "type": "circle",
+    "radius_m": 1.25
+  },
+  "sourcePx": {
+    "width": 1300,
+    "height": 1600,
+    "kind": "silhouette"
+  },
+  "yawQuantizeDeg": 15,
+  "approach": {
+    "capDistance": 4.5,
+    "maxMagnification": 0.939309,
+    "minDistance": 4.5,
+    "magnificationLimit": 1.0
+  },
+  "cameras": [
+    {
+      "file": "yaw-000.png",
+      "yawDeg": 0.0,
+      "fovYDeg": 40.0,
+      "width": 1300,
+      "height": 1600
+    }
+  ]
+}
