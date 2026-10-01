@@ -165,7 +165,21 @@ Validated for **rock construction**. Movement is still in progress (see the test
    - Texture choice must **never** depend on the current camera yaw.
 6. **Placement.** Put the object at a **fixed world position** with a **collision radius**. The 360° ring holds **FAR content only** (stars, nebula, distant asteroids). Near objects are keyed out of the ring and live in the world.
 
-Later: script the pipeline — image → 8 views → QC → hull → placement. Budget **2–3** walk-around objects per clearing.
+Budget **2–3** walk-around objects per clearing. The command that builds the hull from those stills is below. It does not cook the views.
+
+## Script
+
+One command. Stills you already have → invisible hull + QC. It does not call Imagine.
+
+```bash
+python3 tools/walkaround/build.py --views <views-dir> --config <config.json> --out <out-dir>
+```
+
+Depth Anything V2 refinement (near = white, input `pixel_values`): add `--model /path/to/depth_anything_v2_small.onnx`. The ONNX is not in the repo. Notes: [`tools/walkaround/README.md`](../../tools/walkaround/README.md).
+
+Imagine pixels are never upscaled or degraded. The command copies each source PNG lossless, samples it nearest-neighbor, and does not blur it or build mipmaps. `qc/report.json` lists the max magnification of every view. That number must be **≤ 1.0** at the approach distance stored in the asset: one source pixel covers at most one screen pixel. If any view would be enlarged, the command prints `FAIL upscale` and exits non-zero. Cap zoom and approach to that distance. This is stricter than the 1.30× plate close-up above.
+
+`hull.npz` is an invisible depth carrier. It does not draw its own pixels. Each surface point stores the best-facing still, weight `(normal · viewDir)^8`, plus a narrow seam. That choice is baked on the surface. It does not follow the viewer’s yaw. Not for Bolt.
 
 ## Test 4 attempts that FAILED (2026-09-30)
 

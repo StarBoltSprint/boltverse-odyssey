@@ -1,0 +1,58 @@
+{
+  "name": "synthetic-rock",
+  "synthetic": true,
+  "objectSize": [
+    1.28,
+    1.62,
+    1.16
+  ],
+  "vote": 7,
+  "grid": 36,
+  "bgThreshold": 0.04,
+  "camera": {
+    "distance": 3.05,
+    "eyeY": 0.0,
+    "fovYDeg": 40.0
+  },
+  "views": [
+    {
+      "file": "yaw-000.png",
+      "yawDeg": 0.0
+    },
+    {
+      "file": "yaw-045.png",
+      "yawDeg": 45.0
+    },
+    {
+      "file": "yaw-090.png",
+      "yawDeg": 90.0
+    },
+    {
+      "file": "yaw-135.png",
+      "yawDeg": 135.0
+    },
+    {
+      "file": "yaw-180.png",
+      "yawDeg": 180.0
+    },
+    {
+      "file": "yaw-225.png",
+      "yawDeg": 225.0
+    },
+    {
+      "file": "yaw-270.png",
+      "yawDeg": 270.0
+    },
+    {
+      "file": "yaw-315.png",
+      "yawDeg": 315.0
+    }
+  ],
+  "placement": {
+    "position": [
+      0,
+      0,
+      0
+    ]
+  }
+}
