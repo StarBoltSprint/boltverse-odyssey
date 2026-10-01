@@ -69,7 +69,8 @@ window.__play = {
       magSources: { ground, backdrop },    // optional; included in mag_max
       canvas: { width, height },           // backing store, 720×1600
       backdrop: { sourceW, sourceH, screenW, screenH, fovDeg },
-      objectIds: { width, height, labels, b64 }
+      objectIds: { width, height, labels, b64 },
+      perf: {}   // optional; see Phone performance below. Required on a real play URL.
     };
   }
 };
@@ -116,6 +117,36 @@ WebGL errors are captured even without the hook, by wrapping `getError` and the 
 | `debug_hook` | `snapshot()` or the ID buffer is missing. |
 | `transition_black` | Only when `snapshot().transition` is present. A frame is black (luma under 12 on at least 92% of sampled pixels), or `black` / `rgba` was not provided. |
 | `transition_hitch` | Only when `snapshot().transition` is present. `hitchMs` is missing or the largest value is over 100. |
+| `fps_avg` | Average present FPS under **30**, or `snapshot().perf` missing. Not applied on the measurement fixture (`snap.harness`). |
+| `fps_1low` | 1% low under **20** (mean of the slowest 1% of the last 300 intervals). Same fixture exception. |
+| `frame_ms` | Mean present interval above **33.333 ms**. |
+| `js_heap` | Reported `usedJSHeapSize` above **384 MiB**. Missing `performance.memory` is PASS, `available: false`, partial. |
+| `texture_mem` | Estimated GPU texture bytes above **256 MiB**. |
+| `video_decoders` | More than **6** concurrent decoders. |
+| `draw_calls` | Peak draws in a frame above **150**. |
+
+These seven rows are additive. The rows above them are unchanged. A hand-written PASS is not a PASS.
+
+## Phone performance
+
+Include [`tools/perf/overlay.js`](../perf/README.md). The panel is off unless the URL has `?perf=1`. This command does **not** add that flag (it adds `?debug=1` only), so the walk does not cover the controls. The script still installs `window.__perf`.
+
+The play view calls `__perf.noteFrame`, `__perf.noteDraw`, and `__perf.noteTexture`, and copies `__perf.snapshot()` onto `snapshot().perf`.
+
+`report.json` gains an additive `perf` object, schema `playcheck-perf/1`, documented for `tools/reportview`:
+
+| Field | Meaning |
+| --- | --- |
+| `perf.schema` | `playcheck-perf/1` |
+| `perf.thresholds` | The mid-range phone caps (`fpsAvgMin` 30, `fps1LowMin` 20, `frameMsMax` 33.333, `heapBytesMax` 402653184, `textureBytesMax` 268435456, `videoDecodersMax` 6, `drawCallsMax` 150). |
+| `perf.budgetApplied` | False only for the measurement fixture. |
+| `perf.harness` | True when every frame was `snap.harness`. |
+| `perf.aggregate` | Walk totals: `fpsAvg`, `fps1Low`, `frameMs`, `frameMsAvg`, `heapBytes`, `heapAvailable`, `textureBytes`, `videoDecoders`, `drawCalls`, `samples`. |
+| `perf.samples[]` | One object per captured step, same numbers plus `step` and `scripted`. |
+
+Existing report keys (`tool`, `url`, `layout`, `rows`, `summary`, `viewport`, `video`, `stills`, `steps`, `notes`, `generatedAt`) stay. Row objects stay `{ id, result, numbers, detail, heuristic, partial }`.
+
+The fixture under `fixture/` is a harness. It records perf and does not fail the phone budget, because its tile loop is a test pattern, not a phone scene. A play URL without `harness: true` is judged.
 
 ## Honest limits
 
@@ -123,8 +154,9 @@ WebGL errors are captured even without the hook, by wrapping `getError` and the 
 - Outward stops are **8 headings** (every 45°), not 36 separate walks. Horizon coverage is **36 headings** (every 10°) from the centre during the turn. `ring_closed` / `stops_visible` / `collider_eq_visual` are marked partial for that reason.
 - `backdrop_res` and `mag` use sizes and the HUD number the renderer reports on the live hook. The colour cross-check rejects an ID buffer whose pixels are empty ground or flat black. A hook that lies about both the sizes and the pixels can still fool a row. The screenshots are the proof a person can look at.
 - `near_lens` is the renderer's nearest fragment distance, required on every frame. It is not a second depth buffer inside this tool.
-- The committed samples under `sample/` are runs of `fixture/`, because this repo has no clearing play build. `sample/clean` is the harness with objects drawn. `sample/take8` reproduces invisible stops, a missing gate, an unkeyed black rectangle, a repeated floor, an upscaled ring, magnification above 1, and a real `texSubImage3D` error.
-- `transition_black` and `transition_hitch` are omitted unless a captured `snapshot().transition` exists (one object, an array, or `{ samples: [...] }` with `black` or `rgba`, and `hitchMs`). A walk that never leaves its clearing keeps the previous row set. The zone handoff itself is `biome/scripts/zone-flow`. The labelled synthetic demo is `tools/zoneflow`.
+- The committed samples under `sample/` are runs of `fixture/`, because this repo has no clearing play build. `sample/clean` is the harness with objects drawn. `sample/take8` reproduces invisible stops, a missing gate, an unkeyed black rectangle, a repeated floor, an upscaled ring, magnification above 1, and a real `texSubImage3D` error. Those committed files predate the perf rows. A new run writes the additive `perf` object and the seven perf rows. On this harness the phone budget is recorded and not applied.
+- FPS is the present interval the page reports via `noteFrame`. This walk calls `tick(1/30)`, so a harness that forwards that `dt` is reporting the driven interval. `workMs` is accepted by the counter but the fps rows use `dtMs` when it is set. A device build should pass `requestAnimationFrame` deltas. The counter does not read the GPU clock.
+- `transition_black` and `transition_hitch` are omitted unless a captured `snapshot().transition` exists (one object, an array, or `{ samples: [...] }` with `black` or `rgba`, and `hitchMs`). A walk that never leaves its clearing keeps the previous row set, plus the perf rows. The zone handoff itself is `biome/scripts/zone-flow`. The labelled synthetic demo is `tools/zoneflow`.
 
 ## Tests
 

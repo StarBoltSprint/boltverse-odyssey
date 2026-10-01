@@ -78,6 +78,15 @@
   const heroTex = texFromCanvas(gl, makeHero(), gl.LINEAR);
   const white = texFromCanvas(gl, solid(8, 8, 255, 255, 255, 255), gl.LINEAR);
   const flat = texFromCanvas(gl, solid(4, 4, 255, 255, 255, 255), gl.NEAREST);
+  if (window.__perf) {
+    window.__perf.noteTexture("tiles", 4 * tileSize * tileSize * 4);
+    window.__perf.noteTexture("backdrop", backdropW * backdropH * 4);
+    window.__perf.noteTexture("fog", 128 * 128 * 4);
+    window.__perf.noteTexture("hero", 64 * 96 * 4);
+    window.__perf.noteTexture("white", 8 * 8 * 4);
+    window.__perf.noteTexture("flat", 4 * 4 * 4);
+    window.__perf.noteTexture("id", ID_W * ID_H * 4);
+  }
 
   const prog = program(gl, VS, FS);
   const buf = gl.createBuffer();
@@ -252,8 +261,10 @@
   }
 
   let drawMode = "color";
+  let colorDraws = 0;
   function render(mode) {
     drawMode = mode;
+    if (mode === "color") colorDraws = 0;
     resize();
     const w = mode === "id" ? ID_W : canvas.width;
     const h = mode === "id" ? ID_H : canvas.height;
@@ -338,6 +349,7 @@
       screenQuad(0.12, 0.5, -0.28, 0.22, flat, [0, 0, 0, 1], 0, 0.01);
     }
     gl.enable(gl.DEPTH_TEST);
+    if (mode === "color" && window.__perf) window.__perf.noteDraw(colorDraws);
   }
 
   function drawHull(vp, h, eye) {
@@ -458,6 +470,7 @@
     gl.uniform1f(loc.cut, cut);
     gl.uniform1f(loc.keep, keep ? 1 : 0);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
+    if (drawMode === "color") colorDraws += 1;
   }
 
   function readIds() {
@@ -500,6 +513,7 @@
       },
       objectIds: readIds(),
       glRenderer: gl.getParameter(gl.RENDERER),
+      perf: window.__perf ? window.__perf.snapshot() : undefined,
     };
   }
 
@@ -540,9 +554,11 @@
       tick(dt) {
         sim.automated = true;
         external = performance.now();
+        const t0 = performance.now();
         step(dt);
         render("color");
         updateHud();
+        if (window.__perf) window.__perf.noteFrame({ dtMs: dt * 1000, workMs: performance.now() - t0 });
         return pose();
       },
       snapshot,
@@ -555,10 +571,12 @@
     requestAnimationFrame(loop);
     if (!debug || sim.automated) return;
     if (performance.now() - external < 250) return;
+    const t0 = performance.now();
     applyKeys();
     step(1 / 30);
     render("color");
     updateHud();
+    if (window.__perf) window.__perf.noteFrame({ dtMs: 1000 / 30, workMs: performance.now() - t0 });
   })();
 
   function wrap(a) {

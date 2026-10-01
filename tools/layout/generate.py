@@ -24,6 +24,7 @@ from tools.layout.model import (
     qnum,
     relief_y,
 )
+from tools.library.resolve import load_library_asset
 from tools.layout.noise import fbm
 
 
@@ -59,7 +60,11 @@ def build_clearing(spec: dict, roots: list[Path]) -> dict:
     spawn = spec.get("spawn") or {"position": [0, 0]}
     spawn_x, spawn_z = float(spawn["position"][0]), float(spawn["position"][1])
     categories = spec["categories"]
-    assets = {key: [load_asset(p, roots) for p in cat["assets"]] for key, cat in categories.items() if cat.get("assets")}
+    assets = {
+        key: [_load_spec_asset(entry, roots) for entry in cat["assets"]]
+        for key, cat in categories.items()
+        if cat.get("assets")
+    }
     for key, group in assets.items():
         if not group:
             raise LayoutError(f"category {key} has no assets")
@@ -86,7 +91,7 @@ def build_clearing(spec: dict, roots: list[Path]) -> dict:
 
     ring_assets = assets["ring"]
     exit_assets = assets.get("exit") or ring_assets
-    scale_lo, scale_hi = _scale_pair(categories["ring"])
+    scale_lo, scale_hi = _scale_pair(categories["ring"], ring_assets)
     legal = []
     for asset in ring_assets + exit_assets:
         cap = max_legal_scale(asset, view, hero_r, scale_lo, scale_hi)
@@ -176,7 +181,7 @@ def build_clearing(spec: dict, roots: list[Path]) -> dict:
     if not face and gates:
         face = f"gate:{gates[0]['id']}"
     budgets = spec.get("budgets") or {}
-    variants = {key: list(cat["assets"]) for key, cat in categories.items() if cat.get("assets")}
+    variants = {key: [asset.path for asset in group] for key, group in assets.items()}
     clearing = {
         "backdrop": spec.get("backdrop") or {},
         "bolt": spec.get("bolt")
@@ -208,9 +213,27 @@ def build_clearing(spec: dict, roots: list[Path]) -> dict:
     return clearing
 
 
-def _scale_pair(cat: dict) -> tuple[float, float]:
-    pair = cat.get("scale") or [1.0, 1.0]
-    return float(pair[0]), float(pair[1])
+def _scale_pair(cat: dict, assets: list | None = None) -> tuple[float, float]:
+    """Spec scale wins. A file path with no scale stays 1..1. Library ids can supply a band."""
+    if cat.get("scale"):
+        pair = cat["scale"]
+        return float(pair[0]), float(pair[1])
+    if assets:
+        bands = [a.library_scale for a in assets if getattr(a, "library_scale", None)]
+        if bands and len(bands) == len(assets):
+            lo = max(b[0] for b in bands)
+            hi = min(b[1] for b in bands)
+            if lo <= hi + 1e-9:
+                return lo, hi
+    return 1.0, 1.0
+
+
+def _load_spec_asset(entry, roots: list) -> Asset:
+    if isinstance(entry, str):
+        return load_asset(entry, roots)
+    if isinstance(entry, dict) and isinstance(entry.get("library"), str):
+        return load_library_asset(entry["library"], roots)
+    raise LayoutError("an asset entry must be a path string or {\"library\": \"<id>\"}")
 
 
 def _free_arcs(gates: list[dict]) -> list[tuple[float, float]]:
@@ -302,22 +325,22 @@ def _cover_arc(
         x += origin[0]
         z += origin[1]
         yaw = _quantize(center_h + 180.0 + yaw_cycle[i % len(yaw_cycle)], asset.yaw_step)
-        pieces.append(
-            {
-                "asset": asset.path,
-                "asset_obj": asset,
-                "base_y_m": 0.0,
-                "category": category,
-                "gate_side": gate_side,
-                "heading_deg": center_h,
-                "interactive": False,
-                "position": [x, z],
-                "radius_m": radius,
-                "scale": scale,
-                "width_deg": half * 2.0,
-                "yaw_deg": yaw,
-            }
-        )
+        piece = {
+            "asset": asset.path,
+            "asset_obj": asset,
+            "base_y_m": 0.0,
+            "category": category,
+            "gate_side": gate_side,
+            "heading_deg": center_h,
+            "interactive": False,
+            "position": [x, z],
+            "radius_m": radius,
+            "scale": scale,
+            "width_deg": half * 2.0,
+            "yaw_deg": yaw,
+        }
+        _stamp_library(piece, asset)
+        pieces.append(piece)
     return pieces, asset_cursor
 
 
@@ -380,7 +403,7 @@ def _place_category(
 ) -> list[dict]:
     count = int(cat["count"])
     band = cat.get("band_m") or [2.0, ring_r * 0.6]
-    scale_lo, scale_hi_spec = _scale_pair(cat)
+    scale_lo, scale_hi_spec = _scale_pair(cat, group)
     clearance = float(limits["spawn_clearance_m"])
     min_gap = float(limits["min_gap_m"])
     path_r = float(limits["path_width_m"]) * 0.5
@@ -431,21 +454,21 @@ def _place_category(
                 origin,
             ):
                 continue
-            made.append(
-                {
-                    "asset": asset.path,
-                    "asset_obj": asset,
-                    "base_y_m": 0.0,
-                    "category": cat_name,
-                    "heading_deg": heading_of(x - spawn_x, z - spawn_z),
-                    "id": f"{cat_name}-{i:02d}",
-                    "interactive": cat_name == "hero",
-                    "position": [x, z],
-                    "radius_m": radius,
-                    "scale": scale,
-                    "yaw_deg": yaw,
-                }
-            )
+            placed_obj = {
+                "asset": asset.path,
+                "asset_obj": asset,
+                "base_y_m": 0.0,
+                "category": cat_name,
+                "heading_deg": heading_of(x - spawn_x, z - spawn_z),
+                "id": f"{cat_name}-{i:02d}",
+                "interactive": cat_name == "hero",
+                "position": [x, z],
+                "radius_m": radius,
+                "scale": scale,
+                "yaw_deg": yaw,
+            }
+            _stamp_library(placed_obj, asset)
+            made.append(placed_obj)
             placed = True
             break
         if not placed:
@@ -526,29 +549,36 @@ def _stamp_relief(objs: list[dict], zone: dict, perm: list[int]) -> None:
             o["width_deg"] = qnum(o["width_deg"], 3)
 
 
+def _stamp_library(row: dict, asset: Asset) -> None:
+    lid = getattr(asset, "library_id", None)
+    if lid:
+        row["library_id"] = lid
+
+
 def _hull_records(objs: list[dict]) -> list[dict]:
     rows = []
     for o in objs:
-        rows.append(
-            {
-                "asset": o["asset"],
-                "base_y_m": o["base_y_m"],
-                "category": o["category"],
-                "heading_deg": o["heading_deg"],
-                "id": o["id"],
-                "interactive": False,
-                "position": o["position"],
-                "radius_m": o["radius_m"],
-                "scale": o["scale"],
-                "width_deg": o["width_deg"],
-                "yaw_deg": o["yaw_deg"],
-            }
-        )
+        row = {
+            "asset": o["asset"],
+            "base_y_m": o["base_y_m"],
+            "category": o["category"],
+            "heading_deg": o["heading_deg"],
+            "id": o["id"],
+            "interactive": False,
+            "position": o["position"],
+            "radius_m": o["radius_m"],
+            "scale": o["scale"],
+            "width_deg": o["width_deg"],
+            "yaw_deg": o["yaw_deg"],
+        }
+        if o.get("library_id"):
+            row["library_id"] = o["library_id"]
+        rows.append(row)
     return rows
 
 
 def _interior_record(o: dict) -> dict:
-    return {
+    row = {
         "asset": o["asset"],
         "base_y_m": o["base_y_m"],
         "category": o["category"],
@@ -559,6 +589,9 @@ def _interior_record(o: dict) -> dict:
         "scale": o["scale"],
         "yaw_deg": o["yaw_deg"],
     }
+    if o.get("library_id"):
+        row["library_id"] = o["library_id"]
+    return row
 
 
 def _collider(o: dict) -> dict:

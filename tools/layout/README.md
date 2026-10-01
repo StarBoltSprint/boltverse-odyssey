@@ -51,7 +51,9 @@ Paste `report.md`. A layout PASS does not open a play URL.
 
 Categories used by the sample: `ring`, `exit` (gate jambs), `mid`, `near`, `hero`. Counts live in the spec. Doc 61's walk-around interior budget is the `hero` budget (sample max 3). The edge ring is not that budget.
 
-Asset paths point at a walkaround `asset.json` (or the same shape of manifest). The loader reads, in order:
+Asset paths point at a walkaround `asset.json` (or the same shape of manifest). A category may instead list `{ "library": "<object-id>" }`, which resolves through [`biome/library`](../../biome/library/README.md) to that object's asset. Path strings are unchanged. If the category sets `scale`, that band is used. If it omits `scale` and every entry is a library id, the manifest's scale band is used. If it omits `scale` and the entries are paths, the band stays `1..1`.
+
+The loader reads, in order:
 
 1. `sourcePx.width` / `sourcePx.height` on the manifest (silhouette pixels, not a padded frame).
 2. Else `qc/report.json` → `silhouetteLock.perView`, using the **smallest** width and height so the magnification check stays conservative.
