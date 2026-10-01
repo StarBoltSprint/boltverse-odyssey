@@ -21,6 +21,8 @@ const ORDER = [
   "idle_gallop_switch",
   "fullscreen",
   "debug_hook",
+  "transition_black",
+  "transition_hitch",
 ];
 
 export function writeReport(dir, payload) {

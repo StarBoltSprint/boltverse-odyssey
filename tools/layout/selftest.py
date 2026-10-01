@@ -17,6 +17,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from tools.layout.check import evaluate
+from tools.layout.transition import transition_rows
 from tools.layout.generate import _free_arcs, build_clearing
 from tools.layout.geom import polygon_intersects
 from tools.layout.model import dump_json, load_asset, load_json, magnification
@@ -224,6 +225,68 @@ def _write_samples(good: dict, broken: dict) -> None:
         (dest / "clearing.json").write_text(dump_json(data), encoding="utf-8")
 
 
+def _world_for(good: dict) -> dict:
+    return {
+        "schema": "world/1",
+        "start": good["id"],
+        "corridors": [
+            {
+                "id": "path-ab",
+                "from": {"zone": good["id"], "gate": "to-path"},
+                "to": {"zone": "zone-b", "gate": "arrive"},
+                "ground": "tools/zoneflow/fixture/ground.mp4",
+                "bakedGroundSpeed": 4,
+                "length_m": 24,
+            }
+        ],
+        "zones": {
+            good["id"]: "tools/layout/sample/good/clearing.json",
+            "zone-b": {
+                "id": "zone-b",
+                "gates": [{"id": "arrive", "heading_deg": 180, "width_m": 4.5}],
+                "zone": {"radius_m": 18},
+                "edge_ring": {"radius_m": 18},
+            },
+        },
+    }
+
+
+def test_transition_opt_in() -> None:
+    good, _broken = build_pair()
+    plain = [r.name for r in evaluate(good, [ROOT])[0]]
+    if "transition" in plain:
+        fail("transition row is present without a world")
+    world = _world_for(good)
+    rows, _extra = evaluate(good, [ROOT], world)
+    linked = row(rows, "transition")
+    if not linked.ok:
+        fail(linked.line())
+    slow = json_world(world, bakedGroundSpeed=0)
+    if row(evaluate(good, [ROOT], slow)[0], "transition").ok:
+        fail("bakedGroundSpeed 0 passed")
+    missing = json_world(world, gate="missing-gate")
+    if row(evaluate(good, [ROOT], missing)[0], "transition").ok:
+        fail("missing gate passed")
+    fixture = load_json(ROOT / "tools" / "zoneflow" / "fixture" / "clearing-a.json")
+    fixture_world = load_json(ROOT / "tools" / "zoneflow" / "fixture" / "world.json")
+    fixture_rows = transition_rows(fixture, fixture_world)
+    if len(fixture_rows) != 1 or not fixture_rows[0].ok:
+        fail(fixture_rows[0].line() if fixture_rows else "fixture transition missing")
+    if transition_rows(fixture, None):
+        fail("transition_rows(None) should be empty")
+
+
+def json_world(world: dict, bakedGroundSpeed: float | None = None, gate: str | None = None) -> dict:
+    import copy
+
+    out = copy.deepcopy(world)
+    if bakedGroundSpeed is not None:
+        out["corridors"][0]["bakedGroundSpeed"] = bakedGroundSpeed
+    if gate is not None:
+        out["corridors"][0]["from"]["gate"] = gate
+    return out
+
+
 def main() -> None:
     write = "--write-samples" in sys.argv
     test_polygon()
@@ -231,6 +294,7 @@ def main() -> None:
     test_two_gate_layout()
     test_walkaround_manifest()
     test_generate_and_check(write)
+    test_transition_opt_in()
     print("PASS layout selftest")
 
 

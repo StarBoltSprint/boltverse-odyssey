@@ -20,7 +20,14 @@ python3 tools/layout/layout.py generate \
 python3 tools/layout/layout.py check \
   --clearing /tmp/zone/clearing.json \
   --out /tmp/zone
+
+python3 tools/layout/layout.py check \
+  --clearing tools/zoneflow/fixture/clearing-a.json \
+  --world tools/zoneflow/fixture/world.json \
+  --out /tmp/zone-world
 ```
+
+The fixture clearing has no edge ring, so that check fails the zone rows. The `transition` line is the corridor graph. `python3 tools/layout/selftest.py` runs the same row on the good sample, where the other rows still pass.
 
 `check` writes `report.md`, `report.json`, and `debug-topdown.png`. It prints one `PASS` or `FAIL` row per rule. Exit **0** when every row passes. Exit **1** when any row fails. Exit **2** when the file or an asset cannot be read.
 
@@ -79,6 +86,7 @@ The same seed writes the same bytes. Interior positions and relief use seeded 2D
 | `budgets` | A category count is outside the range copied into the file. |
 | `playcheck_data` | The 1° `width_deg` test from `tools/playcheck/src/layout.mjs` misses. **Data half only.** |
 | `bolt_paths` | `bolt.gallop` or `bolt.idle` is empty. This does not open the files. |
+| `transition` | Present only with `--world`. FAIL when this zone is not on a corridor, `bakedGroundSpeed` is not above 0, `length_m` is not above 0, the ground file is missing, or the from / to gate is not in that zone's `clearing.json`. |
 
 ## Magnification
 
@@ -105,3 +113,4 @@ The broken edit is intentional: visuals removed on headings [40°, 143°), colli
 - A polygon manifest is placed and checked as its bounding circle (the ring, the path, and the separation row all use that circle). Height is used for relief and magnification, not for a 3D intersection. The occupancy grid inside `hull.npz` is not the collider the check walks, beyond that one radius.
 - Fog streaks, blur, WebGL errors, and whether a texture actually appears are outside this tool.
 - `sourcePx` taken from a camera frame instead of a silhouette makes `mag` look safer than the phone.
+- `--world` adds the `transition` row and does not change a check that omits it. The sample reports stay 16 rows. That row checks the corridor graph only. Black frames and hitch time are `tools/playcheck` (`transition_black`, `transition_hitch`), and only when the play view reports `snapshot().transition`.

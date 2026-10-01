@@ -11,7 +11,7 @@ Every zone follows one order:
 1. `python3 tools/assetcheck/check.py` on every Imagine image or video.
 2. `python3 tools/objsheet/sheet.py` on every object's view set.
 3. `tools/walkaround/build.py` only after that sheet exits 0.
-4. `python3 tools/layout/layout.py generate`, then `layout.py check`. One `clearing.json` per zone. Paste that `report.md`. Invisible shape only.
+4. `python3 tools/layout/layout.py generate`, then `layout.py check`. One `clearing.json` per zone. Paste that `report.md`. Invisible shape only. With a corridor, add `--world <world.json>` so the `transition` row is included. Without `--world` the row set is unchanged.
 5. `tools/playcheck/run` on the rendered 720×1600 play view. `--layout` is that same file.
 
 `tools/layout/` **generates and checks the file**. It is on this tree. Command and honest limits: [`tools/layout/README.md`](../../tools/layout/README.md).
@@ -44,6 +44,8 @@ The command writes `report.md`, `report.json`, `stills/`, and `walk.mp4` (H.264,
 **Before any play URL:** paste that `report.md` and the stills (and the mp4). A hand-written PASS table is not accepted. Exit 0 is the only PASS. Then **STOP** for the owner's phone QC. A tool PASS is not a KEEP.
 
 `?debug=1` must expose `window.__play` (`snapshot`, `setInput`, `tick`, `look`, `reset`) with the live HUD pose, magnification, and an object-ID buffer from the same draws as the colour view, same alpha discard. Builders keep that hook. The tool adds `?debug=1` itself.
+
+A play view that crosses a corridor also puts `transition` on `snapshot()` (`black` or `rgba`, and `hitchMs`) for each handoff frame. `tools/playcheck` then adds `transition_black` (luma under 12 on at least 92% of sampled pixels fails) and `transition_hitch` (over 100 ms fails). Those rows are absent when `transition` is absent. The runtime is [`biome/scripts/zone-flow`](../../biome/scripts/zone-flow/README.md). The synthetic demo is [`tools/zoneflow`](../../tools/zoneflow/README.md).
 
 ## Expected layout
 

@@ -19,7 +19,7 @@ if str(ROOT) not in sys.path:
 from tools.layout.check import check_clearing, render_report, rows_json
 from tools.layout.diagram import write_diagram
 from tools.layout.generate import LayoutError, generate
-from tools.layout.model import dump_json
+from tools.layout.model import dump_json, load_json
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -35,6 +35,12 @@ def main(argv: list[str] | None = None) -> int:
     chk.add_argument("--clearing", required=True, type=Path)
     chk.add_argument("--out", required=True, type=Path)
     chk.add_argument("--assets", type=Path, default=None)
+    chk.add_argument(
+        "--world",
+        type=Path,
+        default=None,
+        help="optional world.json; adds the transition row and leaves a check without it unchanged",
+    )
 
     args = parser.parse_args(argv)
     try:
@@ -43,14 +49,15 @@ def main(argv: list[str] | None = None) -> int:
             clearing = generate(args.spec, args.out, roots)
             print(f"PASS generate id={clearing.get('id')} out={args.out / 'clearing.json'}")
             return 0
-        return _check(args.clearing, args.out, [args.assets] if args.assets else [])
+        world = load_json(args.world) if args.world else None
+        return _check(args.clearing, args.out, [args.assets] if args.assets else [], world)
     except (LayoutError, FileNotFoundError, ValueError, KeyError, OSError) as exc:
         print(f"FAIL layout {exc}", file=sys.stderr)
         return 2
 
 
-def _check(clearing_path: Path, out_dir: Path, roots: list[Path]) -> int:
-    rows, extra = check_clearing(clearing_path, roots)
+def _check(clearing_path: Path, out_dir: Path, roots: list[Path], world: dict | None = None) -> int:
+    rows, extra = check_clearing(clearing_path, roots, world)
     clearing = json.loads(clearing_path.read_text(encoding="utf-8"))
     text = render_report(rows, str(clearing.get("id") or clearing_path.stem))
     out_dir.mkdir(parents=True, exist_ok=True)

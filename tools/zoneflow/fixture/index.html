@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>zone flow fixture</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: #000; }
+    #stage { position: fixed; inset: 0; }
+    #stage img, #stage video {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; opacity: 0; pointer-events: none;
+    }
+    #readout {
+      position: fixed; top: 8px; left: 8px; z-index: 2;
+      color: #fff; font: 12px/1.4 sans-serif;
+      background: transparent; pointer-events: none; max-width: 70vw;
+    }
+  </style>
+</head>
+<body>
+  <div id="stage">
+    <img id="plate-clearing-a" alt="TEST FIXTURE clearing A, not Imagine">
+    <img id="plate-clearing-b" alt="TEST FIXTURE clearing B, not Imagine">
+    <video id="plate-path-ab" playsinline muted loop alt="TEST FIXTURE corridor, not Imagine"></video>
+    <video id="plate-bolt" playsinline muted loop></video>
+  </div>
+  <div id="readout">TEST FIXTURE</div>
+  <script type="module" src="./play.js"></script>
+</body>
+</html>

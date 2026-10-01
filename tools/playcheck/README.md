@@ -114,6 +114,8 @@ WebGL errors are captured even without the hook, by wrapping `getError` and the 
 | `idle_gallop_switch` | Moving frame is not `GALLOP`, or the stop frame is not `IDLE` at about speed 0. |
 | `fullscreen` | Canvas or screenshot is not 720×1600. |
 | `debug_hook` | `snapshot()` or the ID buffer is missing. |
+| `transition_black` | Only when `snapshot().transition` is present. A frame is black (luma under 12 on at least 92% of sampled pixels), or `black` / `rgba` was not provided. |
+| `transition_hitch` | Only when `snapshot().transition` is present. `hitchMs` is missing or the largest value is over 100. |
 
 ## Honest limits
 
@@ -122,6 +124,7 @@ WebGL errors are captured even without the hook, by wrapping `getError` and the 
 - `backdrop_res` and `mag` use sizes and the HUD number the renderer reports on the live hook. The colour cross-check rejects an ID buffer whose pixels are empty ground or flat black. A hook that lies about both the sizes and the pixels can still fool a row. The screenshots are the proof a person can look at.
 - `near_lens` is the renderer's nearest fragment distance, required on every frame. It is not a second depth buffer inside this tool.
 - The committed samples under `sample/` are runs of `fixture/`, because this repo has no clearing play build. `sample/clean` is the harness with objects drawn. `sample/take8` reproduces invisible stops, a missing gate, an unkeyed black rectangle, a repeated floor, an upscaled ring, magnification above 1, and a real `texSubImage3D` error.
+- `transition_black` and `transition_hitch` are omitted unless a captured `snapshot().transition` exists (one object, an array, or `{ samples: [...] }` with `black` or `rgba`, and `hitchMs`). A walk that never leaves its clearing keeps the previous row set. The zone handoff itself is `biome/scripts/zone-flow`. The labelled synthetic demo is `tools/zoneflow`.
 
 ## Tests
 
