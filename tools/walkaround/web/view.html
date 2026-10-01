@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Walk-around hull</title>
+  <style>
+    html, body { margin: 0; background: #000; color: #ddd; font: 13px/1.4 ui-monospace, monospace; }
+    #status { padding: 8px 10px; white-space: pre-wrap; }
+    canvas { display: block; image-rendering: pixelated; background: #000; }
+  </style>
+</head>
+<body>
+  <div id="status">loading</div>
+  <canvas id="view"></canvas>
+  <script>
+"use strict";
+const statusEl = document.getElementById("status");
+const canvas = document.getElementById("view");
+const MAX_VIEWS = 24;
+const MAX_GROUPS = 8;
+
+function fail(msg) {
+  statusEl.textContent = "FAIL " + msg;
+  document.title = "FAIL";
+  throw new Error(msg);
+}
+
+function rootUrl() {
+  const q = new URLSearchParams(location.search).get("root");
+  if (!q) return new URL("./", location.href);
+  return new URL(q.endsWith("/") ? q : q + "/", location.href);
+}
+
+function glName(gl, err) {
+  if (err === gl.NO_ERROR) return "NO_ERROR";
+  for (const k of Object.keys(gl)) {
+    if (gl[k] === err && /^(INVALID_|OUT_OF_MEMORY|CONTEXT_LOST)/.test(k)) return k;
+  }
+  return String(err);
+}
+
+const root = rootUrl();
+
+function parseMesh(buf) {
+  const head = new DataView(buf, 0, 20);
+  const magic = String.fromCharCode(head.getUint8(0), head.getUint8(1), head.getUint8(2), head.getUint8(3));
+  if (magic !== "MSH1") fail("mesh.bin magic " + magic);
+  const vc = head.getUint32(4, true);
+  const ic = head.getUint32(8, true);
+  const flags = head.getUint32(12, true);
+  const groupCount = head.getUint32(16, true);
+  if (flags !== 1) fail("mesh.bin flags " + flags);
+  let off = 20;
+  const verts = new Float32Array(buf, off, vc * 3); off += vc * 3 * 4;
+  const normals = new Float32Array(buf, off, vc * 3); off += vc * 3 * 4;
+  const indices = new Uint32Array(buf, off, ic); off += ic * 4;
+  const groups = new Uint16Array(buf, off, vc);
+  return { vc, ic, groupCount, verts, normals, groups, indices };
+}
+
+function packZ(z) {
+  const n = Math.max(0, Math.min(1, z / 16));
+  const e = Math.round(n * 16777215);
+  return [e & 255, (e >> 8) & 255, (e >> 16) & 255, 255];
+}
+
+async function loadRGBA(url, maskUrl) {
+  const img = await loadImage(url);
+  const mask = await loadImage(maskUrl);
+  if (img.width !== mask.width || img.height !== mask.height) {
+    fail("mask size " + maskUrl);
+  }
+  const c = document.createElement("canvas");
+  c.width = img.width;
+  c.height = img.height;
+  const g = c.getContext("2d", { willReadFrequently: true });
+  g.drawImage(img, 0, 0);
+  const color = g.getImageData(0, 0, img.width, img.height);
+  g.clearRect(0, 0, img.width, img.height);
+  g.drawImage(mask, 0, 0);
+  const m = g.getImageData(0, 0, img.width, img.height);
+  const out = new Uint8Array(color.data.length);
+  for (let i = 0; i < out.length; i += 4) {
+    out[i] = color.data[i];
+    out[i + 1] = color.data[i + 1];
+    out[i + 2] = color.data[i + 2];
+    out[i + 3] = m.data[i] > 127 ? 255 : 0;
+  }
+  return { w: img.width, h: img.height, data: out };
+}
+
+function loadImage(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error("image " + url));
+    img.src = url;
+  });
+}
+
+function compile(gl, type, src) {
+  const sh = gl.createShader(type);
+  gl.shaderSource(sh, src);
+  gl.compileShader(sh);
+  if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) fail(gl.getShaderInfoLog(sh));
+  return sh;
+}
+
+function program(gl, vs, fs) {
+  const p = gl.createProgram();
+  gl.attachShader(p, compile(gl, gl.VERTEX_SHADER, vs));
+  gl.attachShader(p, compile(gl, gl.FRAGMENT_SHADER, fs));
+  gl.linkProgram(p);
+  if (!gl.getProgramParameter(p, gl.LINK_STATUS)) fail(gl.getProgramInfoLog(p));
+  return p;
+}
+
+const zVS = `#version 300 es
+precision highp float;
+layout(location=0) in vec3 aPos;
+uniform vec3 uEye, uRight, uUp, uForward;
+uniform float uFovY;
+uniform vec2 uSize;
+out float vZ;
+void main() {
+  vec3 rel = aPos - uEye;
+  float z = dot(rel, uForward);
+  float x = dot(rel, uRight);
+  float y = dot(rel, uUp);
+  float fy = (uSize.y * 0.5) / tan(radians(uFovY) * 0.5);
+  float u = (uSize.x - 1.0) * 0.5 + fy * (x / max(z, 1e-4));
+  float v = (uSize.y - 1.0) * 0.5 - fy * (y / max(z, 1e-4));
+  float ndcX = ((u + 0.5) / uSize.x) * 2.0 - 1.0;
+  float ndcY = 1.0 - ((v + 0.5) / uSize.y) * 2.0;
+  float ndcZ = clamp((z - 0.02) / (16.0 - 0.02), 0.0, 1.0) * 2.0 - 1.0;
+  gl_Position = vec4(ndcX * (z > 0.0 ? 1.0 : 0.0), ndcY, ndcZ, z > 0.0 ? 1.0 : 0.0);
+  vZ = z;
+}`;
+
+const zFS = `#version 300 es
+precision highp float;
+in float vZ;
+out vec4 o;
+vec4 pack(float z) {
+  float n = clamp(z / 16.0, 0.0, 1.0);
+  float e = n * 16777215.0;
+  float r = floor(mod(e, 256.0));
+  float g = floor(mod(floor(e / 256.0), 256.0));
+  float b = floor(mod(floor(e / 65536.0), 256.0));
+  return vec4(r, g, b, 255.0) / 255.0;
+}
+void main() { o = pack(vZ); }`;
+
+const cVS = `#version 300 es
+precision highp float;
+layout(location=0) in vec3 aPos;
+layout(location=1) in vec3 aNrm;
+layout(location=2) in float aGroup;
+uniform vec3 uEye, uRight, uUp, uForward;
+uniform float uFovY;
+uniform vec2 uSize;
+out vec3 vPos;
+out vec3 vNrm;
+flat out int vGroup;
+void main() {
+  vec3 rel = aPos - uEye;
+  float z = dot(rel, uForward);
+  float x = dot(rel, uRight);
+  float y = dot(rel, uUp);
+  float fy = (uSize.y * 0.5) / tan(radians(uFovY) * 0.5);
+  float u = (uSize.x - 1.0) * 0.5 + fy * (x / max(z, 1e-4));
+  float v = (uSize.y - 1.0) * 0.5 - fy * (y / max(z, 1e-4));
+  float ndcX = ((u + 0.5) / uSize.x) * 2.0 - 1.0;
+  float ndcY = 1.0 - ((v + 0.5) / uSize.y) * 2.0;
+  float ndcZ = clamp((z - 0.02) / (16.0 - 0.02), 0.0, 1.0) * 2.0 - 1.0;
+  gl_Position = vec4(ndcX, ndcY, ndcZ, z > 0.0 ? 1.0 : 0.0);
+  vPos = aPos;
+  vNrm = aNrm;
+  vGroup = int(aGroup + 0.5);
+}`;
+
+const cFS = `#version 300 es
+precision highp float;
+precision highp int;
+precision highp sampler2DArray;
+uniform highp sampler2DArray uViews;
+uniform highp sampler2DArray uDepth;
+uniform int uViewCount;
+uniform vec3 uCamPos[24];
+uniform vec3 uCamRight[24];
+uniform vec3 uCamUp[24];
+uniform vec3 uCamForward[24];
+uniform float uFov[24];
+uniform vec2 uViewSize[24];
+uniform int uGroupStart[8];
+uniform int uGroupCount[8];
+uniform float uBias;
+uniform float uSeam;
+in vec3 vPos;
+in vec3 vNrm;
+flat in int vGroup;
+out vec4 o;
+float unpack(vec4 c) {
+  float e = c.r * 255.0 + c.g * 255.0 * 256.0 + c.b * 255.0 * 65536.0;
+  return e / 16777215.0 * 16.0;
+}
+void project(int i, vec3 p, out vec2 uv, out float z) {
+  vec3 rel = p - uCamPos[i];
+  z = dot(rel, uCamForward[i]);
+  float x = dot(rel, uCamRight[i]);
+  float y = dot(rel, uCamUp[i]);
+  vec2 sz = uViewSize[i];
+  float fy = (sz.y * 0.5) / tan(radians(uFov[i]) * 0.5);
+  uv.x = (sz.x - 1.0) * 0.5 + fy * (x / max(z, 1e-4));
+  uv.y = (sz.y - 1.0) * 0.5 - fy * (y / max(z, 1e-4));
+}
+void main() {
+  vec3 n = normalize(vNrm);
+  int start = uGroupStart[vGroup];
+  int count = uGroupCount[vGroup];
+  float bestW = -1.0;
+  int bestI = start;
+  float secondW = -1.0;
+  int secondI = -1;
+  float faceW = -1.0;
+  int faceI = start;
+  bool anyVis = false;
+  for (int k = 0; k < 24; k++) {
+    if (k >= count) break;
+    int i = start + k;
+    vec3 toCam = uCamPos[i] - vPos;
+    float nd = clamp(dot(n, normalize(toCam)), 0.0, 1.0);
+    float w = pow(nd, 8.0);
+    if (w > faceW) { faceW = w; faceI = i; }
+    vec2 uv; float z;
+    project(i, vPos, uv, z);
+    vec2 sz = uViewSize[i];
+    ivec2 px = ivec2(int(floor(uv.x + 0.5)), int(floor(uv.y + 0.5)));
+    bool inside = z > 0.0001 && px.x >= 0 && px.y >= 0 && px.x < int(sz.x) && px.y < int(sz.y);
+    bool mask = false;
+    bool occ = false;
+    if (inside) {
+      vec4 src = texelFetch(uViews, ivec3(px, i), 0);
+      mask = src.a > 0.5;
+      float zRef = unpack(texelFetch(uDepth, ivec3(px, i), 0));
+      occ = z <= zRef + uBias;
+    }
+    float wv = (inside && mask && occ && w > 0.0) ? w : 0.0;
+    if (wv > 0.0) anyVis = true;
+    if (wv > bestW) {
+      secondW = bestW; secondI = bestI;
+      bestW = wv; bestI = i;
+    } else if (wv > secondW) {
+      secondW = wv; secondI = i;
+    }
+  }
+  if (!anyVis) { bestI = faceI; bestW = 0.0; secondW = -1.0; secondI = -1; }
+  vec2 uv; float z;
+  project(bestI, vPos, uv, z);
+  ivec2 px = ivec2(int(floor(uv.x + 0.5)), int(floor(uv.y + 0.5)));
+  vec2 sz = uViewSize[bestI];
+  px = clamp(px, ivec2(0), ivec2(int(sz.x) - 1, int(sz.y) - 1));
+  vec3 col = texelFetch(uViews, ivec3(px, bestI), 0).rgb;
+  if (secondW > 0.0 && bestW > 0.0 && secondW / max(bestW, 1e-6) >= uSeam) {
+    vec2 uv2; float z2;
+    project(secondI, vPos, uv2, z2);
+    ivec2 px2 = ivec2(int(floor(uv2.x + 0.5)), int(floor(uv2.y + 0.5)));
+    vec2 sz2 = uViewSize[secondI];
+    px2 = clamp(px2, ivec2(0), ivec2(int(sz2.x) - 1, int(sz2.y) - 1));
+    vec3 sec = texelFetch(uViews, ivec3(px2, secondI), 0).rgb;
+    float m = bestW / max(bestW + secondW, 1e-6);
+    col = col * m + sec * (1.0 - m);
+  }
+  o = vec4(col, 1.0);
+}`;
+
+(async () => {
+  let asset, meshBuf;
+  try {
+    asset = await (await fetch(new URL("asset.json", root))).json();
+    const meshRes = await fetch(new URL(asset.files && asset.files.mesh ? asset.files.mesh : "mesh.bin", root));
+    if (!meshRes.ok) fail("no mesh.bin (smooth surface). Legacy voxels stay on the occupancy grid.");
+    meshBuf = await meshRes.arrayBuffer();
+  } catch (err) {
+    if (String(statusEl.textContent).startsWith("FAIL")) return;
+    fail(String(err && err.message || err));
+  }
+  if (asset.format !== "walkaround-hull-1") fail("format " + asset.format);
+  if (asset.surface !== "surface-nets") fail("surface " + asset.surface + " has no mesh draw");
+  const mesh = parseMesh(meshBuf);
+  const cams = asset.cameras || [];
+  if (!cams.length || cams.length > MAX_VIEWS) fail("view count " + cams.length);
+  const ranges = [];
+  for (let i = 0; i < cams.length; i++) {
+    const name = cams[i].group || "body";
+    if (!ranges.length || ranges[ranges.length - 1].name !== name) ranges.push({ name, start: i, count: 1 });
+    else ranges[ranges.length - 1].count++;
+  }
+  if (ranges.length > MAX_GROUPS) fail("group count " + ranges.length);
+
+  const images = [];
+  let maxW = 1, maxH = 1;
+  for (const cam of cams) {
+    const file = cam.file;
+    const img = await loadRGBA(new URL("views/" + file, root).href, new URL("masks/" + file, root).href);
+    if (img.w !== cam.width || img.h !== cam.height) fail("source size " + file);
+    images.push(img);
+    maxW = Math.max(maxW, img.w);
+    maxH = Math.max(maxH, img.h);
+  }
+
+  const gl = canvas.getContext("webgl2", { antialias: false, alpha: false, depth: true, premultipliedAlpha: false });
+  if (!gl) fail("no webgl2");
+  const check = (where) => {
+    const e = gl.getError();
+    if (e !== gl.NO_ERROR) fail(where + " " + glName(gl, e));
+  };
+
+  canvas.width = cams[0].width;
+  canvas.height = cams[0].height;
+  gl.viewport(0, 0, canvas.width, canvas.height);
+  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+  gl.disable(gl.BLEND);
+  gl.disable(gl.DITHER);
+
+  const viewsTex = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D_ARRAY, viewsTex);
+  gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, maxW, maxH, cams.length);
+  check("texStorage3D views");
+  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  for (let i = 0; i < images.length; i++) {
+    const img = images[i];
+    gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, i, img.w, img.h, 1, gl.RGBA, gl.UNSIGNED_BYTE, img.data);
+    check("texSubImage3D view " + i);
+  }
+
+  const depthTex = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D_ARRAY, depthTex);
+  gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, maxW, maxH, cams.length);
+  check("texStorage3D depth");
+  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  const farPx = new Uint8Array(maxW * maxH * 4);
+  const far = packZ(16);
+  for (let i = 0; i < farPx.length; i += 4) {
+    farPx[i] = far[0]; farPx[i + 1] = far[1]; farPx[i + 2] = far[2]; farPx[i + 3] = 255;
+  }
+  for (let i = 0; i < cams.length; i++) {
+    gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, i, maxW, maxH, 1, gl.RGBA, gl.UNSIGNED_BYTE, farPx);
+    check("texSubImage3D depth clear " + i);
+  }
+
+  const vao = gl.createVertexArray();
+  gl.bindVertexArray(vao);
+  const vbo = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+  const inter = new ArrayBuffer(mesh.vc * (12 + 12 + 4));
+  const f32 = new Float32Array(inter);
+  const g32 = new Float32Array(inter);
+  for (let i = 0; i < mesh.vc; i++) {
+    f32[i * 7] = mesh.verts[i * 3];
+    f32[i * 7 + 1] = mesh.verts[i * 3 + 1];
+    f32[i * 7 + 2] = mesh.verts[i * 3 + 2];
+    f32[i * 7 + 3] = mesh.normals[i * 3];
+    f32[i * 7 + 4] = mesh.normals[i * 3 + 1];
+    f32[i * 7 + 5] = mesh.normals[i * 3 + 2];
+    g32[i * 7 + 6] = mesh.groups[i];
+  }
+  gl.bufferData(gl.ARRAY_BUFFER, inter, gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(0);
+  gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 28, 0);
+  gl.enableVertexAttribArray(1);
+  gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 28, 12);
+  gl.enableVertexAttribArray(2);
+  gl.vertexAttribPointer(2, 1, gl.FLOAT, false, 28, 24);
+  const ibo = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, mesh.indices, gl.STATIC_DRAW);
+  check("buffers");
+
+  const zProg = program(gl, zVS, zFS);
+  const cProg = program(gl, cVS, cFS);
+  check("link");
+
+  const fbo = gl.createFramebuffer();
+  const rb = gl.createRenderbuffer();
+  gl.bindRenderbuffer(gl.RENDERBUFFER, rb);
+  gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, maxW, maxH);
+  check("depth renderbuffer");
+  gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+  gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, rb);
+
+  gl.useProgram(zProg);
+  gl.enable(gl.DEPTH_TEST);
+  gl.enable(gl.CULL_FACE);
+  gl.cullFace(gl.BACK);
+  gl.frontFace(gl.CCW);
+  const zEye = gl.getUniformLocation(zProg, "uEye");
+  const zRight = gl.getUniformLocation(zProg, "uRight");
+  const zUp = gl.getUniformLocation(zProg, "uUp");
+  const zFwd = gl.getUniformLocation(zProg, "uForward");
+  const zFov = gl.getUniformLocation(zProg, "uFovY");
+  const zSize = gl.getUniformLocation(zProg, "uSize");
+  for (let i = 0; i < cams.length; i++) {
+    const cam = cams[i];
+    gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, depthTex, 0, i);
+    const fb = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+    if (fb !== gl.FRAMEBUFFER_COMPLETE) fail("framebuffer layer " + i + " " + fb);
+    gl.viewport(0, 0, cam.width, cam.height);
+    gl.clearColor(far[0] / 255, far[1] / 255, far[2] / 255, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.uniform3fv(zEye, cam.position);
+    gl.uniform3fv(zRight, cam.right);
+    gl.uniform3fv(zUp, cam.up);
+    gl.uniform3fv(zFwd, cam.forward);
+    gl.uniform1f(zFov, cam.fovYDeg);
+    gl.uniform2f(zSize, cam.width, cam.height);
+    gl.drawElements(gl.TRIANGLES, mesh.ic, gl.UNSIGNED_INT, 0);
+    check("z pass " + i);
+  }
+
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  gl.viewport(0, 0, canvas.width, canvas.height);
+  gl.useProgram(cProg);
+  gl.clearColor(0, 0, 0, 1);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  const eye0 = cams[0];
+  gl.uniform3fv(gl.getUniformLocation(cProg, "uEye"), eye0.position);
+  gl.uniform3fv(gl.getUniformLocation(cProg, "uRight"), eye0.right);
+  gl.uniform3fv(gl.getUniformLocation(cProg, "uUp"), eye0.up);
+  gl.uniform3fv(gl.getUniformLocation(cProg, "uForward"), eye0.forward);
+  gl.uniform1f(gl.getUniformLocation(cProg, "uFovY"), eye0.fovYDeg);
+  gl.uniform2f(gl.getUniformLocation(cProg, "uSize"), eye0.width, eye0.height);
+  gl.uniform1i(gl.getUniformLocation(cProg, "uViewCount"), cams.length);
+  const pos = [], right = [], up = [], fwd = [], fov = [], sz = [];
+  for (const cam of cams) {
+    pos.push(...cam.position); right.push(...cam.right); up.push(...cam.up); fwd.push(...cam.forward);
+    fov.push(cam.fovYDeg); sz.push(cam.width, cam.height);
+  }
+  while (pos.length < MAX_VIEWS * 3) { pos.push(0, 0, 1); right.push(1, 0, 0); up.push(0, 1, 0); fwd.push(0, 0, 1); fov.push(40); sz.push(1, 1); }
+  gl.uniform3fv(gl.getUniformLocation(cProg, "uCamPos"), pos);
+  gl.uniform3fv(gl.getUniformLocation(cProg, "uCamRight"), right);
+  gl.uniform3fv(gl.getUniformLocation(cProg, "uCamUp"), up);
+  gl.uniform3fv(gl.getUniformLocation(cProg, "uCamForward"), fwd);
+  gl.uniform1fv(gl.getUniformLocation(cProg, "uFov"), fov);
+  gl.uniform2fv(gl.getUniformLocation(cProg, "uViewSize"), sz);
+  const gs = new Int32Array(MAX_GROUPS);
+  const gc = new Int32Array(MAX_GROUPS);
+  ranges.forEach((r, i) => { gs[i] = r.start; gc[i] = r.count; });
+  gl.uniform1iv(gl.getUniformLocation(cProg, "uGroupStart"), gs);
+  gl.uniform1iv(gl.getUniformLocation(cProg, "uGroupCount"), gc);
+  const bias = 2.5 * Math.min(...(asset.voxelSize || [0.02]));
+  gl.uniform1f(gl.getUniformLocation(cProg, "uBias"), bias);
+  gl.uniform1f(gl.getUniformLocation(cProg, "uSeam"), asset.seamRatio || 0.65);
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D_ARRAY, viewsTex);
+  gl.uniform1i(gl.getUniformLocation(cProg, "uViews"), 0);
+  gl.activeTexture(gl.TEXTURE1);
+  gl.bindTexture(gl.TEXTURE_2D_ARRAY, depthTex);
+  gl.uniform1i(gl.getUniformLocation(cProg, "uDepth"), 1);
+  gl.drawElements(gl.TRIANGLES, mesh.ic, gl.UNSIGNED_INT, 0);
+  check("color pass");
+
+  const pix = new Uint8Array(4);
+  gl.readPixels(canvas.width >> 1, canvas.height >> 1, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pix);
+  check("readPixels");
+  const lines = cams.map((c) => c.file + " " + c.width + "x" + c.height + " yaw=" + c.yawDeg + " elev=" + c.elevationDeg);
+  const mag = asset.approach && asset.approach.maxMagnification;
+  statusEl.textContent = [
+    "PASS gl.getError=0",
+    "vertices=" + mesh.vc + " triangles=" + (mesh.ic / 3) + " surface=" + asset.surface,
+    "magnification=" + mag + " atDistance=" + (asset.approach && asset.approach.minDistance),
+    "centerRGBA=" + Array.from(pix).join(","),
+    ...lines
+  ].join("\n");
+  document.title = "PASS";
+})().catch((err) => {
+  if (!String(statusEl.textContent).startsWith("FAIL")) statusEl.textContent = "FAIL " + (err && err.message || err);
+  document.title = "FAIL";
+});
+  </script>
+</body>
+</html>

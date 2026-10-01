@@ -68,20 +68,20 @@ Each zone has its own `clearing.json` (doc 63). The links between zones are the 
 Owner-approved **2026-10-01**. Every solid object in every zone (edge-ring pieces, gates, interior objects, the solid part of a composite object) is built the same way, whatever the style. Code computes **invisible shape only**. It never draws a pixel.
 
 1. **Cook 8 Imagine views, one every 45°.** Same object, same light, plain background, silhouette lock (doc 60 KEEP method: V0 first, each view from its neighbour + V0, area ±15%, height ±8%). Objects with hidden hollows (a cockpit, a bowl, an arch seen from above) also get a **top view** and **3/4-high views**.
-2. **Silhouette visual hull** via [`tools/walkaround/build.py`](../../tools/walkaround/build.py) = the **coarse volume** (7-of-8 vote, rounded underside cap).
-3. **Per-view monocular depth maps refine the surface.** Push and carve medium relief so details are real volume, not flat paint on a smooth hull.
-4. **Auto-detect large protrusions** (parts that stick out of the main body, for example cannons, antennas, turrets) and **flag them**. Each flagged part is cooked as a **separate sub-object** with its own 8 views + hull, attached to the parent at a fixed joint. A sub-object may animate (rotate on its joint); its pixels stay Imagine.
-5. **Project the real Imagine views onto the final volume.** Best-facing view per surface point, weight `(normal · viewDir)^8`, narrow seam band, nearest-view fallback, never averaged, never chosen by the viewer's yaw (doc 60). Nearest sample of the lossless PNG; magnification ≤ 1.0 (`qc/report.json`).
+2. **Silhouette visual hull** via [`tools/walkaround/build.py`](../../tools/walkaround/build.py) (7-of-8 vote on the horizontal ring, rounded underside cap). The default draw surface is a smooth mesh on that volume. The occupancy grid stays the collider.
+3. **Per-view monocular depth maps refine the surface inward**, inside the silhouette hull. They do not add volume outside it. See the table for the limit that is actually in the tool.
+4. **Protrusions** (parts that stick out of the main body, for example cannons, antennas, turrets). The tool can **flag** a narrow part. It does not cook that part’s views. Supply the part as a **sub-object** with its own view set, a joint, and an axis. The tool carves it out of the parent and attaches the mesh. The axis is stored. This command does not animate the joint. Pixels stay Imagine.
+5. **Project the real Imagine views onto the final surface.** On the smooth mesh that choice is per fragment: best-facing view, weight `(normal · viewDir)^8`, occlusion against that view, a second view only in a narrow seam, nearest texel of the lossless PNG. Not chosen by the viewer’s yaw (doc 60). Magnification ≤ 1.0 (`qc/report.json`). The legacy voxel path still assigns one view per voxel.
 
 ### What `tools/walkaround` does today
 
-| Step | Status on `main` (2026-10-01) |
+| Step | Status |
 | --- | --- |
-| 1. 8 yaw views | Supported. One shared `camera.eyeY` for all views. **Top / 3/4-high views are not supported yet** (no per-view elevation). |
-| 2. Silhouette hull | Supported (7-of-8 vote, hole fill, rounded cap). |
-| 3. Depth refine | Partial: `--model` (Depth Anything V2) or `--depth-dir` pushes the front **inward** only. Push **and** carve medium relief is a **planned upgrade, not implemented yet**. |
-| 4. Protrusion detection + sub-objects | **Planned upgrade, not implemented yet.** Until it lands, split large protrusions by hand: cook the part as its own object (8 views + hull) and attach it in `clearing.json`. |
-| 5. Projection | Supported (best-facing view, seam band, nearest fallback, `FAIL upscale` above 1.0). |
+| 1. 8 yaw views | Supported. Optional per-view `elevationDeg` (top, 3/4-high) for carving and for projection. The horizontal ring stays 7-of-8. An elevated still is a mandatory carver and is not hole-filled, so a hollow the ring cannot see can stay open. Elevated stills are silhouette-locked only inside their own pitch band. One top view is not compared to the side ring. |
+| 2. Silhouette hull | Supported. Default surface is surface nets on a finer occupancy (`max(64, 2×grid)`, cap 128) plus Taubin smoothing. `--legacy-voxels` keeps the cube grid. Collider remains the occupancy grid. |
+| 3. Depth refine | **Partial.** `--model` (Depth Anything V2) or `--depth-dir` (near = white, same pixel size as the still) moves the front **inward** only. Near stays on the outer hull. Far recedes by `depthRelief` (default **0.35** of local thickness on the smooth path, **0.10** on legacy voxels). On the smooth path, when at least four depth views exist, a voxel recedes only if **two** agree. A depth set that would delete more than 60% of the solid is rejected. Depth does not invent shell outside the silhouettes, and it does not push outward. |
+| 4. Protrusions + sub-objects | **Partial.** A supplied `subObjects` entry (own config, own views, `joint`, `localAttach`, `axis`) is carved out of the parent and attached. The axis is written. The tool does not rotate it. Auto-detect only **flags** a narrow neck (a 3-voxel opening: bbox and a suggested joint). It does not cook views and it does not cut the hull. Sub-objects require the smooth surface. `--legacy-voxels` with `subObjects` is a FAIL. |
+| 5. Projection | Supported. Smooth mesh: per fragment, best facing view, visibility check, two-view seam only when the second weight is at least 0.65 of the best, nearest PNG texel, no mip, no third view. A sub-object samples only its own views. Legacy voxels: one view id per voxel (`viewVol`), which is the chopped look. `FAIL upscale` above magnification 1.0. The pass line prints every source’s width and height, vertex count, seam fraction, and the distance where magnification stays ≤ 1. |
 
 Do not claim steps 3 and 4 as done in a report. Do not fake them with code-drawn detail: relief that is not in the Imagine views is not added by code, and no pixel is painted to suggest it.
 

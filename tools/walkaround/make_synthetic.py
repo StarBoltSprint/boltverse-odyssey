@@ -115,10 +115,121 @@ def render(yaw_deg: float) -> tuple[np.ndarray, np.ndarray]:
     return rgb.reshape(HEIGHT, WIDTH, 3), depth.reshape(HEIGHT, WIDTH)
 
 
+def tube_inside(p: np.ndarray) -> np.ndarray:
+    """Open vertical tube. Side views see a wall; a top view sees the hole."""
+    radius = np.sqrt(p[..., 0] ** 2 + p[..., 2] ** 2)
+    return (np.abs(p[..., 1]) < 0.55) & (radius < 0.46) & (radius > 0.20)
+
+
+def spur_inside(p: np.ndarray) -> np.ndarray:
+    """Knob centered on its own origin. Radii stay close so the 8-view area lock holds."""
+    return (p[..., 0] / 0.18) ** 2 + (p[..., 1] / 0.16) ** 2 + (p[..., 2] / 0.16) ** 2 < 1.0
+
+
+def color_of(pos: np.ndarray) -> np.ndarray:
+    yaw = np.arctan2(pos[..., 0], pos[..., 2])
+    band = np.floor((yaw + math.pi) / (2 * math.pi) * 8.0).astype(np.int32) % 8
+    base = BANDS[band]
+    speck = 0.82 + 0.18 * np.sin(pos[..., 0] * 28.0 + pos[..., 2] * 21.0)
+    return np.clip(base * speck[..., None], 0, 255)
+
+
+def render_mask(yaw_deg: float, inside_fn, elevation_deg: float = 0.0) -> np.ndarray:
+    """Raymarch a synthetic solid. Pixels are this generator's pattern, not a hull texture."""
+    from hull import camera_pose
+
+    elev = None if abs(elevation_deg) < 1e-6 else float(elevation_deg)
+    cam = camera_pose(yaw_deg, DISTANCE, EYE_Y, elev)
+    ys, xs = np.mgrid[0:HEIGHT, 0:WIDTH]
+    fy = (HEIGHT * 0.5) / math.tan(math.radians(FOV_Y) * 0.5)
+    cx = (WIDTH - 1) * 0.5
+    cy = (HEIGHT - 1) * 0.5
+    x_cam = (xs - cx) / fy
+    y_cam = -(ys - cy) / fy
+    dirs = (
+        x_cam[..., None] * cam["right"]
+        + y_cam[..., None] * cam["up"]
+        + np.ones_like(x_cam)[..., None] * cam["forward"]
+    )
+    dirs = dirs / np.maximum(np.linalg.norm(dirs, axis=-1, keepdims=True), 1e-8)
+    eye = cam["position"]
+    flat = dirs.reshape(-1, 3)
+    t = np.full(flat.shape[0], 0.35, np.float64)
+    hit_t = np.full(flat.shape[0], np.nan)
+    step = 0.012
+    for _ in range(420):
+        pos = eye + flat * t[:, None]
+        inside = inside_fn(pos)
+        new = inside & np.isnan(hit_t)
+        hit_t[new] = t[new]
+        t += step
+        if np.all(~np.isnan(hit_t) | (t > 8.5)):
+            break
+    rgb = np.zeros((flat.shape[0], 3), np.uint8)
+    ok = ~np.isnan(hit_t)
+    if np.any(ok):
+        pos = eye + flat[ok] * hit_t[ok, None]
+        rgb[ok] = color_of(pos).astype(np.uint8)
+    return rgb.reshape(HEIGHT, WIDTH, 3)
+
+
+def write_views(out: Path, shots: list[tuple[str, float, float]], inside_fn, size, name: str) -> None:
+    view_dir = out / "views"
+    view_dir.mkdir(parents=True, exist_ok=True)
+    views = []
+    for file_name, yaw, elev in shots:
+        rgb = render_mask(yaw, inside_fn, elev)
+        Image.fromarray(rgb, "RGB").save(view_dir / file_name)
+        item = {"file": file_name, "yawDeg": yaw}
+        if abs(elev) > 1e-6:
+            item["elevationDeg"] = elev
+        views.append(item)
+        print(f"wrote {file_name}")
+    cfg = {
+        "name": name,
+        "synthetic": True,
+        "objectSize": size,
+        "vote": 7,
+        "grid": 36,
+        "bgThreshold": 0.04,
+        "camera": {"distance": DISTANCE, "eyeY": EYE_Y, "fovYDeg": FOV_Y},
+        "views": views,
+        "placement": {"position": [0, 0, 0]},
+    }
+    (out / "config.json").write_text(json.dumps(cfg, indent=2) + "\n")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--kind", choices=("rock", "bowl", "assembly"), default="rock")
     args = parser.parse_args()
+    if args.kind == "bowl":
+        shots = [(f"yaw-{int(i*45):03d}.png", i * 45.0, 0.0) for i in range(8)]
+        shots.append(("top.png", 0.0, 90.0))
+        shots.append(("three-quarter.png", 20.0, 42.0))
+        write_views(args.out, shots, tube_inside, [1.05, 1.25, 1.05], "synthetic-bowl")
+        return
+    if args.kind == "assembly":
+        # Parent stills are the body alone. The protruding part has its own view set.
+        shots = [(f"yaw-{int(i*45):03d}.png", i * 45.0, 0.0) for i in range(8)]
+        write_views(args.out, shots, lambda p: field(p) < 0, [1.28, 1.62, 1.16], "synthetic-assembly")
+        spur_shots = [(f"yaw-{int(i*45):03d}.png", i * 45.0, 0.0) for i in range(8)]
+        write_views(args.out / "spur", spur_shots, spur_inside, [0.48, 0.42, 0.42], "spur")
+        parent = json.loads((args.out / "config.json").read_text())
+        parent["subObjects"] = [
+            {
+                "name": "spur",
+                "config": "spur/config.json",
+                "viewsDir": "spur/views",
+                "joint": [0.48, 0.08, 0.0],
+                "localAttach": [-0.08, 0.0, 0.0],
+                "axis": [0.0, 1.0, 0.0],
+            }
+        ]
+        (args.out / "config.json").write_text(json.dumps(parent, indent=2) + "\n")
+        print(f"config {args.out / 'config.json'}")
+        return
     view_dir = args.out / "views"
     depth_dir = args.out / "depth"
     view_dir.mkdir(parents=True, exist_ok=True)

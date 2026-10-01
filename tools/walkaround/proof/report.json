@@ -1,0 +1,95 @@
+{
+  "cameraDistance": 3.3065506424044577,
+  "before": {
+    "surface": "voxels",
+    "vertices": 0,
+    "magnification": 0.986012
+  },
+  "after": {
+    "surface": "surface-nets",
+    "vertices": 16542,
+    "triangles": 33080,
+    "edges": {
+      "edges": 49620,
+      "boundary": 0,
+      "manifold": 49620,
+      "nonManifold": 0
+    },
+    "magnification": 0.988734,
+    "seam": 0.11162913039638367,
+    "sources": [
+      {
+        "file": "yaw-000.png",
+        "width": 160,
+        "height": 200,
+        "yawDeg": 0.0,
+        "elevationDeg": 0.0,
+        "pitchDeg": 0.0,
+        "group": "body"
+      },
+      {
+        "file": "yaw-045.png",
+        "width": 160,
+        "height": 200,
+        "yawDeg": 45.0,
+        "elevationDeg": 0.0,
+        "pitchDeg": 0.0,
+        "group": "body"
+      },
+      {
+        "file": "yaw-090.png",
+        "width": 160,
+        "height": 200,
+        "yawDeg": 90.0,
+        "elevationDeg": 0.0,
+        "pitchDeg": 0.0,
+        "group": "body"
+      },
+      {
+        "file": "yaw-135.png",
+        "width": 160,
+        "height": 200,
+        "yawDeg": 135.0,
+        "elevationDeg": 0.0,
+        "pitchDeg": 0.0,
+        "group": "body"
+      },
+      {
+        "file": "yaw-180.png",
+        "width": 160,
+        "height": 200,
+        "yawDeg": 180.0,
+        "elevationDeg": 0.0,
+        "pitchDeg": 0.0,
+        "group": "body"
+      },
+      {
+        "file": "yaw-225.png",
+        "width": 160,
+        "height": 200,
+        "yawDeg": 225.0,
+        "elevationDeg": 0.0,
+        "pitchDeg": 0.0,
+        "group": "body"
+      },
+      {
+        "file": "yaw-270.png",
+        "width": 160,
+        "height": 200,
+        "yawDeg": 270.0,
+        "elevationDeg": 0.0,
+        "pitchDeg": 0.0,
+        "group": "body"
+      },
+      {
+        "file": "yaw-315.png",
+        "width": 160,
+        "height": 200,
+        "yawDeg": 315.0,
+        "elevationDeg": 0.0,
+        "pitchDeg": 0.0,
+        "group": "body"
+      }
+    ]
+  }
+}
