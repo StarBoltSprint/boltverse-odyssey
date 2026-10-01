@@ -1,0 +1,86 @@
+{
+  "tool": "assetcheck",
+  "ok": false,
+  "screen": [
+    720,
+    1600
+  ],
+  "webglMaxTexture": 4096,
+  "heuristics": [
+    "The tool only measures. It does not repaint, resize, or replace the source.",
+    "Loop optical flow is coarse block matching on a downscale, not a learned flow model.",
+    "Banding is a posterization heuristic (flat run, then a step). Noise can hide bands.",
+    "A declared key (black or green) is trusted as the compositor key. Undeclared cutouts must carry alpha.",
+    "Magnification uses the declared on-screen size at the closest camera on a 720\u00d71600 portrait.",
+    "A hand-written PASS is not a PASS. The exit code and this file are the gate."
+  ],
+  "assets": [
+    {
+      "file": "../../../../lock/bolt-back.jpg",
+      "kind": "still",
+      "yaw": null,
+      "elevation": null,
+      "checks": {
+        "basic": {
+          "status": "FAIL",
+          "codec": "jpeg",
+          "container": "jpg",
+          "pixFmt": null,
+          "mode": "RGB",
+          "width": 1152,
+          "height": 1712,
+          "fps": null,
+          "frames": null,
+          "durationSec": null,
+          "lossless": false,
+          "losslessRequired": true,
+          "bandingFraction": 0.0,
+          "failures": [
+            "FAIL basic lossless required, codec=jpeg container=jpg"
+          ]
+        },
+        "resolution": {
+          "status": "PASS",
+          "screen": [
+            720,
+            1600
+          ],
+          "frame": [
+            1152,
+            1712
+          ],
+          "onScreen": [
+            200.0,
+            360.0
+          ],
+          "mask": {
+            "width": 1152,
+            "height": 1712,
+            "area": 1972224,
+            "rows": [
+              0,
+              1711
+            ],
+            "cols": [
+              0,
+              1151
+            ],
+            "fillHeight": 1.0,
+            "fillArea": 1.0
+          },
+          "compared": "frame",
+          "magnification": 0.2103,
+          "magnificationLimit": 1.0,
+          "failures": []
+        }
+      },
+      "failures": [
+        "FAIL basic lossless required, codec=jpeg container=jpg"
+      ],
+      "ok": false
+    }
+  ],
+  "failures": [
+    "../../../../lock/bolt-back.jpg: FAIL basic lossless required, codec=jpeg container=jpg"
+  ]
+}

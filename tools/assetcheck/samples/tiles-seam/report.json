@@ -1,0 +1,115 @@
+{
+  "tool": "assetcheck",
+  "ok": false,
+  "screen": [
+    720,
+    1600
+  ],
+  "webglMaxTexture": 4096,
+  "heuristics": [
+    "The tool only measures. It does not repaint, resize, or replace the source.",
+    "Loop optical flow is coarse block matching on a downscale, not a learned flow model.",
+    "Banding is a posterization heuristic (flat run, then a step). Noise can hide bands.",
+    "A declared key (black or green) is trusted as the compositor key. Undeclared cutouts must carry alpha.",
+    "Magnification uses the declared on-screen size at the closest camera on a 720\u00d71600 portrait.",
+    "A hand-written PASS is not a PASS. The exit code and this file are the gate."
+  ],
+  "assets": [
+    {
+      "file": "seam.png",
+      "kind": "tile",
+      "yaw": null,
+      "elevation": null,
+      "checks": {
+        "basic": {
+          "status": "PASS",
+          "codec": "png",
+          "container": "png",
+          "pixFmt": null,
+          "mode": "RGB",
+          "width": 64,
+          "height": 64,
+          "fps": null,
+          "frames": null,
+          "durationSec": null,
+          "lossless": true,
+          "losslessRequired": true,
+          "bandingFraction": 0.0,
+          "failures": []
+        },
+        "resolution": {
+          "status": "PASS",
+          "screen": [
+            720,
+            1600
+          ],
+          "frame": [
+            64,
+            64
+          ],
+          "onScreen": [
+            48.0,
+            48.0
+          ],
+          "mask": {
+            "width": 64,
+            "height": 64,
+            "area": 4096,
+            "rows": [
+              0,
+              63
+            ],
+            "cols": [
+              0,
+              63
+            ],
+            "fillHeight": 1.0,
+            "fillArea": 1.0
+          },
+          "compared": "frame",
+          "magnification": 0.75,
+          "magnificationLimit": 1.0,
+          "failures": []
+        },
+        "tiling": {
+          "status": "FAIL",
+          "tiles": [
+            {
+              "file": "seam.png",
+              "x": {
+                "seam": 66.5651,
+                "interior": 5.8698,
+                "ratio": 11.3403
+              },
+              "y": {
+                "seam": 0.2656,
+                "interior": 0.7917,
+                "ratio": 0.2656
+              },
+              "lumaMean": 84.4095,
+              "lumaStd": 28.7721
+            }
+          ],
+          "exposureDelta": 0.0,
+          "contrastRatio": 1.0,
+          "crossSeam": [],
+          "limits": {
+            "seamRatio": 2.2,
+            "seamAbs": 12.0,
+            "exposureDelta": 18.0
+          },
+          "failures": [
+            "FAIL tiling seam.png x-seam ratio=11.340 abs=66.57"
+          ]
+        }
+      },
+      "failures": [
+        "FAIL tiling seam.png x-seam ratio=11.340 abs=66.57"
+      ],
+      "ok": false
+    }
+  ],
+  "failures": [
+    "seam.png: FAIL tiling seam.png x-seam ratio=11.340 abs=66.57"
+  ]
+}

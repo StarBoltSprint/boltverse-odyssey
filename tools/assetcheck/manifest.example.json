@@ -1,0 +1,31 @@
+{
+  "screen": [720, 1600],
+  "webglMaxTexture": 4096,
+  "assets": [
+    {
+      "file": "views/yaw-000.png",
+      "kind": "cutout",
+      "yaw": 0,
+      "elevation": 0,
+      "onScreen": [420, 640],
+      "key": "alpha"
+    },
+    {
+      "file": "tiles/a.png",
+      "kind": "tile",
+      "onScreen": [128, 128]
+    },
+    {
+      "file": "backdrop/ring.png",
+      "kind": "backdrop",
+      "onScreen": [720, 640]
+    },
+    {
+      "file": "living/loop.mp4",
+      "kind": "loop",
+      "key": "green",
+      "onScreen": [280, 360],
+      "loop": true
+    }
+  ]
+}

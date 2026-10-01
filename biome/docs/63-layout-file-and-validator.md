@@ -4,6 +4,17 @@ Kitchen only. Not a hang. Owner direction **2026-10-01**, after the take 8 FAIL 
 
 Biome-agnostic. Any biome, cooked by any player's Grok, lays out its clearings the same way. The world-by-zones creation process is [doc 62](62-open-world-zones-process.md). The clearing method is [doc 61](61-free-clearing-walk.md). The invisible-shape exception is the [2026-10-01 extension of law 59](59-invisible-depth-carrier.md#extension-2026-10-01-invisible-procedural-terrain-shape). Every hard lock in doc 62 stays: every visible pixel is Imagine, code computes invisible shape only, one Bolt, magnification ≤ 1.0 at 720×1600.
 
+## Before the layout
+
+The rendered table below does not re-measure source files. Those files are gated **before** they are written into `clearing.json` and before a hull is built. This is necessary. It is not a rendered-pixel PASS, and it does not clear any row in the table.
+
+| Gate | Command | What is pasted |
+| --- | --- | --- |
+| Every Imagine image or video | `python3 tools/assetcheck/check.py --manifest … --out …` | `report.json` and `report.md`. Exit 0. Magnification ≤ 1 at 720×1600, key, loop seam, tile seams, backdrop split. |
+| Every solid object, before `tools/walkaround/build.py` | `python3 tools/objsheet/sheet.py --views … --config … --out …` | `report.json`, `report.md`, and `sheet.png`. Exit 0. Eight yaws, guide IoU ≥ 0.97 when a guide exists, adjacent silhouette lock, hull-keep fraction. Sub-objects included. |
+
+A hand-written PASS is not a PASS. A missing report, or a report with `"ok": false`, blocks generate. Law and thresholds: [`tools/assetcheck/README.md`](../../tools/assetcheck/README.md), [`tools/objsheet/README.md`](../../tools/objsheet/README.md).
+
 ## Status of `tools/clearing/`
 
 `tools/clearing/` is **not on `main` yet** (2026-10-01). This doc is the spec it must meet. A first implementation may exist on a `take8-archive` branch. It was not on the remote when this doc was written. If you find it, treat it as a draft. Its validator is exactly the data-only kind that reported ALL PASS on take 8, so it must be brought up to the rendered-pixel rows below before anyone trusts it.
@@ -119,3 +130,4 @@ The console also showed WebGL **`texSubImage3D` `INVALID_OPERATION`** errors, wh
 - Validate against the JSON, the debug map, or the collider set alone.
 - Count a cut-out (alpha-discarded) texel as a visible pixel.
 - Post a play URL, or call a clearing KEEP, before every row passes on the rendered view and the owner's phone QC.
+- Name an Imagine path, or build its hull, without a pasted asset-gate report and, for every solid object, a pasted consistency sheet. A sentence that says PASS is not the report.

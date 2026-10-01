@@ -1,0 +1,516 @@
+{
+  "tool": "objsheet",
+  "ok": false,
+  "sheet": "sheet.png",
+  "objects": [
+    {
+      "name": "void-orbit-stills",
+      "ok": false,
+      "views": [
+        {
+          "file": "yaw-000.jpg",
+          "width": 1008,
+          "height": 1792,
+          "yawDeg": 0.0,
+          "elevationDeg": null,
+          "span": {
+            "area": 590565,
+            "height": 958,
+            "width": 922,
+            "rows": [
+              426,
+              1383
+            ],
+            "cols": [
+              86,
+              1007
+            ]
+          }
+        },
+        {
+          "file": "yaw-045.jpg",
+          "width": 1008,
+          "height": 1792,
+          "yawDeg": 45.0,
+          "elevationDeg": null,
+          "span": {
+            "area": 602560,
+            "height": 756,
+            "width": 1008,
+            "rows": [
+              507,
+              1262
+            ],
+            "cols": [
+              0,
+              1007
+            ]
+          }
+        },
+        {
+          "file": "yaw-090.jpg",
+          "width": 1008,
+          "height": 1792,
+          "yawDeg": 90.0,
+          "elevationDeg": null,
+          "span": {
+            "area": 509881,
+            "height": 643,
+            "width": 1008,
+            "rows": [
+              562,
+              1204
+            ],
+            "cols": [
+              0,
+              1007
+            ]
+          }
+        },
+        {
+          "file": "yaw-135.jpg",
+          "width": 1008,
+          "height": 1792,
+          "yawDeg": 135.0,
+          "elevationDeg": null,
+          "span": {
+            "area": 320122,
+            "height": 530,
+            "width": 944,
+            "rows": [
+              644,
+              1173
+            ],
+            "cols": [
+              0,
+              943
+            ]
+          }
+        },
+        {
+          "file": "yaw-180.jpg",
+          "width": 1008,
+          "height": 1792,
+          "yawDeg": 180.0,
+          "elevationDeg": null,
+          "span": {
+            "area": 627513,
+            "height": 933,
+            "width": 851,
+            "rows": [
+              425,
+              1357
+            ],
+            "cols": [
+              157,
+              1007
+            ]
+          }
+        },
+        {
+          "file": "yaw-225.jpg",
+          "width": 1008,
+          "height": 1792,
+          "yawDeg": 225.0,
+          "elevationDeg": null,
+          "span": {
+            "area": 561863,
+            "height": 889,
+            "width": 838,
+            "rows": [
+              464,
+              1352
+            ],
+            "cols": [
+              170,
+              1007
+            ]
+          }
+        },
+        {
+          "file": "yaw-270.jpg",
+          "width": 1792,
+          "height": 1008,
+          "yawDeg": 270.0,
+          "elevationDeg": null,
+          "span": {
+            "area": 490663,
+            "height": 390,
+            "width": 1686,
+            "rows": [
+              300,
+              689
+            ],
+            "cols": [
+              75,
+              1760
+            ]
+          }
+        },
+        {
+          "file": "yaw-315.jpg",
+          "width": 1792,
+          "height": 1008,
+          "yawDeg": 315.0,
+          "elevationDeg": null,
+          "span": {
+            "area": 637401,
+            "height": 635,
+            "width": 1584,
+            "rows": [
+              174,
+              808
+            ],
+            "cols": [
+              103,
+              1686
+            ]
+          }
+        }
+      ],
+      "silhouette": {
+        "status": "PASS",
+        "views": [
+          {
+            "file": "yaw-000.jpg",
+            "fillArea": 0.3269,
+            "height": 958
+          },
+          {
+            "file": "yaw-045.jpg",
+            "fillArea": 0.3336,
+            "height": 756
+          },
+          {
+            "file": "yaw-090.jpg",
+            "fillArea": 0.2823,
+            "height": 643
+          },
+          {
+            "file": "yaw-135.jpg",
+            "fillArea": 0.1772,
+            "height": 530
+          },
+          {
+            "file": "yaw-180.jpg",
+            "fillArea": 0.3474,
+            "height": 933
+          },
+          {
+            "file": "yaw-225.jpg",
+            "fillArea": 0.3111,
+            "height": 889
+          },
+          {
+            "file": "yaw-270.jpg",
+            "fillArea": 0.2716,
+            "height": 390
+          },
+          {
+            "file": "yaw-315.jpg",
+            "fillArea": 0.3529,
+            "height": 635
+          }
+        ],
+        "failures": []
+      },
+      "ring": {
+        "status": "PASS",
+        "yaws": [
+          0,
+          45,
+          90,
+          135,
+          180,
+          225,
+          270,
+          315
+        ],
+        "missing": [],
+        "failures": []
+      },
+      "consistency": {
+        "status": "FAIL",
+        "adjacent": [
+          {
+            "a": "yaw-000.jpg",
+            "b": "yaw-045.jpg",
+            "yawA": 0.0,
+            "yawB": 45.0,
+            "areaDelta": 0.0201,
+            "heightDelta": 0.2357,
+            "colorCorr": 0.9729,
+            "colorDist": 9.876
+          },
+          {
+            "a": "yaw-045.jpg",
+            "b": "yaw-090.jpg",
+            "yawA": 45.0,
+            "yawB": 90.0,
+            "areaDelta": 0.1666,
+            "heightDelta": 0.1615,
+            "colorCorr": 0.9798,
+            "colorDist": 3.1375
+          },
+          {
+            "a": "yaw-090.jpg",
+            "b": "yaw-135.jpg",
+            "yawA": 90.0,
+            "yawB": 135.0,
+            "areaDelta": 0.4572,
+            "heightDelta": 0.1927,
+            "colorCorr": 0.9879,
+            "colorDist": 3.8409
+          },
+          {
+            "a": "yaw-135.jpg",
+            "b": "yaw-180.jpg",
+            "yawA": 135.0,
+            "yawB": 180.0,
+            "areaDelta": 0.6488,
+            "heightDelta": 0.5509,
+            "colorCorr": 0.8634,
+            "colorDist": 6.867
+          },
+          {
+            "a": "yaw-180.jpg",
+            "b": "yaw-225.jpg",
+            "yawA": 180.0,
+            "yawB": 225.0,
+            "areaDelta": 0.1104,
+            "heightDelta": 0.0483,
+            "colorCorr": 0.9917,
+            "colorDist": 8.4276
+          },
+          {
+            "a": "yaw-225.jpg",
+            "b": "yaw-270.jpg",
+            "yawA": 225.0,
+            "yawB": 270.0,
+            "areaDelta": 0.1353,
+            "heightDelta": 0.7803,
+            "colorCorr": 0.9317,
+            "colorDist": 10.9994
+          },
+          {
+            "a": "yaw-270.jpg",
+            "b": "yaw-315.jpg",
+            "yawA": 270.0,
+            "yawB": 315.0,
+            "areaDelta": 0.2602,
+            "heightDelta": 0.478,
+            "colorCorr": 0.8237,
+            "colorDist": 10.8115
+          },
+          {
+            "a": "yaw-315.jpg",
+            "b": "yaw-000.jpg",
+            "yawA": 315.0,
+            "yawB": 0.0,
+            "areaDelta": 0.0763,
+            "heightDelta": 0.4055,
+            "colorCorr": 0.9941,
+            "colorDist": 7.2496
+          }
+        ],
+        "opposite": [
+          {
+            "a": "yaw-000.jpg",
+            "b": "yaw-180.jpg",
+            "widthDelta": 0.0801,
+            "heightDelta": 0.0264
+          },
+          {
+            "a": "yaw-045.jpg",
+            "b": "yaw-225.jpg",
+            "widthDelta": 0.1842,
+            "heightDelta": 0.1617
+          },
+          {
+            "a": "yaw-090.jpg",
+            "b": "yaw-270.jpg",
+            "widthDelta": 0.5033,
+            "heightDelta": 0.4898
+          },
+          {
+            "a": "yaw-135.jpg",
+            "b": "yaw-315.jpg",
+            "widthDelta": 0.5063,
+            "heightDelta": 0.1803
+          }
+        ],
+        "limits": {
+          "area": 0.15,
+          "height": 0.08,
+          "oppositeWidth": 0.15,
+          "oppositeHeight": 0.08,
+          "colorCorr": 0.2,
+          "colorDist": 110.0
+        },
+        "failures": [
+          "FAIL adjacent yaw-000.jpg\u2192yaw-045.jpg height delta=0.236 limit=0.08",
+          "FAIL adjacent yaw-045.jpg\u2192yaw-090.jpg area delta=0.167 limit=0.15",
+          "FAIL adjacent yaw-045.jpg\u2192yaw-090.jpg height delta=0.162 limit=0.08",
+          "FAIL adjacent yaw-090.jpg\u2192yaw-135.jpg area delta=0.457 limit=0.15",
+          "FAIL adjacent yaw-090.jpg\u2192yaw-135.jpg height delta=0.193 limit=0.08",
+          "FAIL adjacent yaw-135.jpg\u2192yaw-180.jpg area delta=0.649 limit=0.15",
+          "FAIL adjacent yaw-135.jpg\u2192yaw-180.jpg height delta=0.551 limit=0.08",
+          "FAIL adjacent yaw-225.jpg\u2192yaw-270.jpg height delta=0.780 limit=0.08",
+          "FAIL adjacent yaw-270.jpg\u2192yaw-315.jpg area delta=0.260 limit=0.15",
+          "FAIL adjacent yaw-270.jpg\u2192yaw-315.jpg height delta=0.478 limit=0.08",
+          "FAIL adjacent yaw-315.jpg\u2192yaw-000.jpg height delta=0.406 limit=0.08",
+          "FAIL opposite yaw-045.jpg|yaw-225.jpg width delta=0.184 limit=0.15",
+          "FAIL opposite yaw-045.jpg|yaw-225.jpg height delta=0.162 limit=0.08",
+          "FAIL opposite yaw-090.jpg|yaw-270.jpg width delta=0.503 limit=0.15",
+          "FAIL opposite yaw-090.jpg|yaw-270.jpg height delta=0.490 limit=0.08",
+          "FAIL opposite yaw-135.jpg|yaw-315.jpg width delta=0.506 limit=0.15",
+          "FAIL opposite yaw-135.jpg|yaw-315.jpg height delta=0.180 limit=0.08"
+        ]
+      },
+      "guide": {
+        "status": "SKIP",
+        "reason": "no guide frames",
+        "views": [],
+        "limit": 0.97,
+        "failures": []
+      },
+      "hull": {
+        "status": "FAIL",
+        "vote": 7,
+        "grid": 32,
+        "volumeFraction": 0.3138,
+        "meanKeep": 0.7119,
+        "minKeep": 0.313,
+        "views": [
+          {
+            "file": "yaw-000.jpg",
+            "yawDeg": 0.0,
+            "elevationDeg": null,
+            "keepFraction": 0.7996,
+            "horizontal": true
+          },
+          {
+            "file": "yaw-045.jpg",
+            "yawDeg": 45.0,
+            "elevationDeg": null,
+            "keepFraction": 0.7727,
+            "horizontal": true
+          },
+          {
+            "file": "yaw-090.jpg",
+            "yawDeg": 90.0,
+            "elevationDeg": null,
+            "keepFraction": 0.919,
+            "horizontal": true
+          },
+          {
+            "file": "yaw-135.jpg",
+            "yawDeg": 135.0,
+            "elevationDeg": null,
+            "keepFraction": 0.9812,
+            "horizontal": true
+          },
+          {
+            "file": "yaw-180.jpg",
+            "yawDeg": 180.0,
+            "elevationDeg": null,
+            "keepFraction": 0.7634,
+            "horizontal": true
+          },
+          {
+            "file": "yaw-225.jpg",
+            "yawDeg": 225.0,
+            "elevationDeg": null,
+            "keepFraction": 0.76,
+            "horizontal": true
+          },
+          {
+            "file": "yaw-270.jpg",
+            "yawDeg": 270.0,
+            "elevationDeg": null,
+            "keepFraction": 0.3866,
+            "horizontal": true
+          },
+          {
+            "file": "yaw-315.jpg",
+            "yawDeg": 315.0,
+            "elevationDeg": null,
+            "keepFraction": 0.313,
+            "horizontal": true
+          }
+        ],
+        "limits": {
+          "minKeep": 0.7,
+          "meanKeep": 0.8
+        },
+        "failures": [
+          "FAIL hull min keep=0.313 limit=0.7 (views disagree, hull shrinks)",
+          "FAIL hull mean keep=0.712 limit=0.8"
+        ]
+      },
+      "failures": [
+        "FAIL adjacent yaw-000.jpg\u2192yaw-045.jpg height delta=0.236 limit=0.08",
+        "FAIL adjacent yaw-045.jpg\u2192yaw-090.jpg area delta=0.167 limit=0.15",
+        "FAIL adjacent yaw-045.jpg\u2192yaw-090.jpg height delta=0.162 limit=0.08",
+        "FAIL adjacent yaw-090.jpg\u2192yaw-135.jpg area delta=0.457 limit=0.15",
+        "FAIL adjacent yaw-090.jpg\u2192yaw-135.jpg height delta=0.193 limit=0.08",
+        "FAIL adjacent yaw-135.jpg\u2192yaw-180.jpg area delta=0.649 limit=0.15",
+        "FAIL adjacent yaw-135.jpg\u2192yaw-180.jpg height delta=0.551 limit=0.08",
+        "FAIL adjacent yaw-225.jpg\u2192yaw-270.jpg height delta=0.780 limit=0.08",
+        "FAIL adjacent yaw-270.jpg\u2192yaw-315.jpg area delta=0.260 limit=0.15",
+        "FAIL adjacent yaw-270.jpg\u2192yaw-315.jpg height delta=0.478 limit=0.08",
+        "FAIL adjacent yaw-315.jpg\u2192yaw-000.jpg height delta=0.406 limit=0.08",
+        "FAIL opposite yaw-045.jpg|yaw-225.jpg width delta=0.184 limit=0.15",
+        "FAIL opposite yaw-045.jpg|yaw-225.jpg height delta=0.162 limit=0.08",
+        "FAIL opposite yaw-090.jpg|yaw-270.jpg width delta=0.503 limit=0.15",
+        "FAIL opposite yaw-090.jpg|yaw-270.jpg height delta=0.490 limit=0.08",
+        "FAIL opposite yaw-135.jpg|yaw-315.jpg width delta=0.506 limit=0.15",
+        "FAIL opposite yaw-135.jpg|yaw-315.jpg height delta=0.180 limit=0.08",
+        "FAIL hull min keep=0.313 limit=0.7 (views disagree, hull shrinks)",
+        "FAIL hull mean keep=0.712 limit=0.8"
+      ]
+    }
+  ],
+  "failures": [
+    "void-orbit-stills: FAIL adjacent yaw-000.jpg\u2192yaw-045.jpg height delta=0.236 limit=0.08",
+    "void-orbit-stills: FAIL adjacent yaw-045.jpg\u2192yaw-090.jpg area delta=0.167 limit=0.15",
+    "void-orbit-stills: FAIL adjacent yaw-045.jpg\u2192yaw-090.jpg height delta=0.162 limit=0.08",
+    "void-orbit-stills: FAIL adjacent yaw-090.jpg\u2192yaw-135.jpg area delta=0.457 limit=0.15",
+    "void-orbit-stills: FAIL adjacent yaw-090.jpg\u2192yaw-135.jpg height delta=0.193 limit=0.08",
+    "void-orbit-stills: FAIL adjacent yaw-135.jpg\u2192yaw-180.jpg area delta=0.649 limit=0.15",
+    "void-orbit-stills: FAIL adjacent yaw-135.jpg\u2192yaw-180.jpg height delta=0.551 limit=0.08",
+    "void-orbit-stills: FAIL adjacent yaw-225.jpg\u2192yaw-270.jpg height delta=0.780 limit=0.08",
+    "void-orbit-stills: FAIL adjacent yaw-270.jpg\u2192yaw-315.jpg area delta=0.260 limit=0.15",
+    "void-orbit-stills: FAIL adjacent yaw-270.jpg\u2192yaw-315.jpg height delta=0.478 limit=0.08",
+    "void-orbit-stills: FAIL adjacent yaw-315.jpg\u2192yaw-000.jpg height delta=0.406 limit=0.08",
+    "void-orbit-stills: FAIL opposite yaw-045.jpg|yaw-225.jpg width delta=0.184 limit=0.15",
+    "void-orbit-stills: FAIL opposite yaw-045.jpg|yaw-225.jpg height delta=0.162 limit=0.08",
+    "void-orbit-stills: FAIL opposite yaw-090.jpg|yaw-270.jpg width delta=0.503 limit=0.15",
+    "void-orbit-stills: FAIL opposite yaw-090.jpg|yaw-270.jpg height delta=0.490 limit=0.08",
+    "void-orbit-stills: FAIL opposite yaw-135.jpg|yaw-315.jpg width delta=0.506 limit=0.15",
+    "void-orbit-stills: FAIL opposite yaw-135.jpg|yaw-315.jpg height delta=0.180 limit=0.08",
+    "void-orbit-stills: FAIL hull min keep=0.313 limit=0.7 (views disagree, hull shrinks)",
+    "void-orbit-stills: FAIL hull mean keep=0.712 limit=0.8"
+  ],
+  "heuristics": [
+    "The sheet is a proof. It is not an Imagine asset and it must not be hung or sampled as a texture.",
+    "Silhouette IoU against a guide is the strict identity check (limit 0.97) and runs only when a guide is given.",
+    "Adjacent area \u00b115% and height \u00b18% match the walk-around silhouette lock.",
+    "Opposite views are compared on width and height, not as a pixel mirror. An asymmetric part can fail the width band.",
+    "Colour histogram correlation is a weak identity test. A different facing colour can score low. The silhouette numbers are the gate.",
+    "Hull keep is a coarse 7-of-8 voxel carve (grid 32), ray-marched back into each mask. It is not the smooth surface-nets mesh.",
+    "Views that disagree shrink that carve toward a blob, and the keep fraction falls.",
+    "A hand-written PASS is not a PASS. Paste report.json and the sheet PNG."
+  ],
+  "thresholds": {
+    "guideIoU": 0.97,
+    "adjacentArea": 0.15,
+    "adjacentHeight": 0.08,
+    "oppositeWidth": 0.15,
+    "oppositeHeight": 0.08,
+    "colorCorr": 0.2,
+    "colorDist": 110.0,
+    "keepMin": 0.7,
+    "keepMean": 0.8
+  }
+}
