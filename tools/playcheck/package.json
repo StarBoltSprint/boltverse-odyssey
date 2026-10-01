@@ -1,0 +1,17 @@
+{
+  "name": "playcheck",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Rendered-pixel play-test validator. Measures a real phone-sized play view. Does not draw the game.",
+  "bin": {
+    "playcheck": "./run"
+  },
+  "scripts": {
+    "test": "node --test src/pixels.test.mjs src/checks.test.mjs"
+  },
+  "dependencies": {
+    "playwright-core": "1.58.2",
+    "pngjs": "7.0.0"
+  }
+}

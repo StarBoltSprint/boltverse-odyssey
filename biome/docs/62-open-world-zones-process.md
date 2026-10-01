@@ -98,8 +98,8 @@ Do the steps in order. Stop when one fails.
    5. **Corridor ground video** (when the corridor step comes): scrolling, one direction, speed measured (`bakedGroundSpeed`).
 3. **Fill `clearing.json`** for the zone: `zone`, `edge_ring`, `gates`, `interior_objects`, `near_lens`, `fog_band` (+ `spawn`, `backdrop`, `view`, `bolt`). Schema in doc 63.
 4. **Generate.** `tools/clearing/` builds placement, colliders, gates, and fog patches from that file.
-5. **Validate on the rendered view.** Every doc 63 row **PASS** on the real 720×1600 play view. A data-only PASS is FAIL. Check the browser console too: any WebGL error is FAIL (take 8).
-6. **Proof stills** from the play view: debug top-down map, centre → gate view, two stop views with Bolt against a visible hull, fog band, Bolt IDLE, Bolt GALLOP.
+5. **Validate on the rendered view.** Run `tools/playcheck/run --url <play url or local build> --layout <clearing.json>` ([doc 63](63-layout-file-and-validator.md), [`tools/playcheck/README.md`](../../tools/playcheck/README.md)). Every row **PASS** on the real 720×1600 play view. A data-only PASS is FAIL. Any WebGL error is FAIL (take 8). Paste `report.md`, the stills, and `walk.mp4`. A hand-written PASS table is not accepted.
+6. **Proof stills** come from that command (the play view), not from a hand export: spawn, the turn, centre → gate, stops with the hero against a visible hull, fog, IDLE, GALLOP, plus `walk.mp4`.
 7. **STOP.** Only now may a sandbox play URL be shared. The owner records phone QC himself. Only an owner KEEP opens the next step.
 
 ### Order of work for a new world
