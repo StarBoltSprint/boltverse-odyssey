@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "clearing/1",
+  "title": "Zone clearing layout",
+  "type": "object",
+  "required": ["schema", "id", "zone", "edge_ring", "gates", "interior_objects", "near_lens", "fog_band", "spawn", "view"],
+  "properties": {
+    "schema": { "const": "clearing/1" },
+    "id": { "type": "string" },
+    "seed": { "type": "integer" },
+    "zone": {
+      "type": "object",
+      "required": ["shape", "center", "radius_m"],
+      "properties": {
+        "shape": { "const": "circle" },
+        "center": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" } },
+        "radius_m": { "type": "number", "exclusiveMinimum": 0 },
+        "ground": { "type": "object" }
+      }
+    },
+    "edge_ring": {
+      "type": "object",
+      "required": ["radius_m", "hulls"],
+      "properties": {
+        "radius_m": { "type": "number", "exclusiveMinimum": 0 },
+        "max_gap_deg": { "type": "number" },
+        "hulls": { "type": "array", "items": { "$ref": "#/$defs/placed" } }
+      }
+    },
+    "gates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "heading_deg", "width_m"],
+        "properties": {
+          "id": { "type": "string" },
+          "heading_deg": { "type": "number" },
+          "width_m": { "type": "number", "exclusiveMinimum": 0 },
+          "frame": { "type": "string" },
+          "frame_ids": { "type": "array", "items": { "type": "string" } },
+          "field": { "type": "string" },
+          "leads_to": { "type": "string" }
+        }
+      }
+    },
+    "interior_objects": { "type": "array", "items": { "$ref": "#/$defs/placed" } },
+    "colliders": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "object_id", "center", "radius_m"],
+        "properties": {
+          "id": { "type": "string" },
+          "object_id": { "type": "string" },
+          "center": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" } },
+          "radius_m": { "type": "number", "minimum": 0 },
+          "base_y_m": { "type": "number" }
+        }
+      }
+    },
+    "hero": {
+      "type": "object",
+      "properties": {
+        "width_m": { "type": "number", "exclusiveMinimum": 0 },
+        "radius_m": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "limits": { "type": "object" },
+    "near_lens": { "type": "object" },
+    "fog_band": { "type": "object" },
+    "spawn": { "type": "object" },
+    "backdrop": { "type": "object" },
+    "view": { "type": "object" },
+    "bolt": { "type": "object" },
+    "variants": { "type": "object" },
+    "budgets": { "type": "object" }
+  },
+  "$defs": {
+    "placed": {
+      "type": "object",
+      "required": ["id", "asset", "position"],
+      "properties": {
+        "id": { "type": "string" },
+        "asset": { "type": "string" },
+        "category": { "type": "string" },
+        "position": {
+          "description": "[x, z] metres. The second component is z, matching tools/playcheck. Height is base_y_m.",
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": { "type": "number" }
+        },
+        "yaw_deg": { "type": "number" },
+        "scale": { "type": "number", "exclusiveMinimum": 0 },
+        "radius_m": { "type": "number", "minimum": 0 },
+        "heading_deg": { "type": "number" },
+        "width_deg": { "type": "number" },
+        "base_y_m": { "type": "number" },
+        "interactive": { "type": "boolean" }
+      }
+    }
+  }
+}

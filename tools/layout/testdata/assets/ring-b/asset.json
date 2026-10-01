@@ -1,0 +1,50 @@
+{
+  "format": "walkaround-hull-1",
+  "name": "ring-b",
+  "category": "ring",
+  "drawsOwnPixels": false,
+  "invisibleHull": true,
+  "notForBolt": true,
+  "pixels": "original-png-lossless",
+  "synthetic": true,
+  "height_m": 1.35,
+  "width_m": 2.0,
+  "halfExtent": [
+    1.0,
+    0.675,
+    0.85
+  ],
+  "placement": {
+    "collisionRadius": 1.0,
+    "position": [
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "footprint": {
+    "type": "circle",
+    "radius_m": 1.0
+  },
+  "sourcePx": {
+    "width": 1100,
+    "height": 1400,
+    "kind": "silhouette"
+  },
+  "yawQuantizeDeg": 15,
+  "approach": {
+    "capDistance": 4.5,
+    "maxMagnification": 0.888074,
+    "minDistance": 4.5,
+    "magnificationLimit": 1.0
+  },
+  "cameras": [
+    {
+      "file": "yaw-000.png",
+      "yawDeg": 0.0,
+      "fovYDeg": 40.0,
+      "width": 1100,
+      "height": 1400
+    }
+  ]
+}

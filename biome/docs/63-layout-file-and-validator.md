@@ -4,19 +4,21 @@ Kitchen only. Not a hang. Owner direction **2026-10-01**, after the take 8 FAIL 
 
 Biome-agnostic. Any biome, cooked by any player's Grok, lays out its clearings the same way. The world-by-zones creation process is [doc 62](62-open-world-zones-process.md). The clearing method is [doc 61](61-free-clearing-walk.md). The invisible-shape exception is the [2026-10-01 extension of law 59](59-invisible-depth-carrier.md#extension-2026-10-01-invisible-procedural-terrain-shape). Every hard lock in doc 62 stays: every visible pixel is Imagine, code computes invisible shape only, one Bolt, magnification ≤ 1.0 at 720×1600.
 
-## Status of `tools/clearing/`
+## Status
 
-`tools/clearing/` is **not on `main` yet** (2026-10-01). This doc is the spec it must meet. A first implementation may exist on a `take8-archive` branch. It was not on the remote when this doc was written. If you find it, treat it as a draft. Its validator is exactly the data-only kind that reported ALL PASS on take 8, so it must be brought up to the rendered-pixel rows below before anyone trusts it.
+`tools/layout/` **generates and checks the file**. It is on this tree. Command and honest limits: [`tools/layout/README.md`](../../tools/layout/README.md).
+
+That check is invisible shape (ring, gate, colliders, relief, scale). It does **not** read a framebuffer. A layout PASS is not a play URL. The rendered-pixel rows further down are still required. `tools/clearing/` as a separate scene generator is not the layout tool. `tools/playcheck`, when it is on the tree, consumes this same `clearing.json` (`--layout`) and is the framebuffer run. It is a different command. A data-only PASS, including a `tools/layout` PASS, is not that run.
 
 Expected layout:
 
 | Path | What |
 | --- | --- |
-| `tools/clearing/README.md` | How to run generate + validate. |
-| `tools/clearing/schema.json` | JSON Schema for `clearing.json`. No biome-specific words. |
-| `tools/clearing/generate.*` | `clearing.json` → placement, colliders, gate, fog patches. |
-| `tools/clearing/validate.*` | Renders the real play view, prints the PASS / FAIL table, writes proof stills. |
-| `<biome>/clearings/<id>/clearing.json` | One file per clearing. Single source of truth. |
+| `tools/layout/layout.py` | `generate` writes `clearing.json` from a zone spec. `check` prints PASS/FAIL rows, writes `report.md` and a top-down diagram, exits non-zero on FAIL. |
+| `tools/layout/schema.json` | JSON Schema for `clearing.json`. No biome-specific words. |
+| `tools/layout/README.md` | How to run it, and what a PASS does not prove. |
+| `<zone>/clearing.json` | One file per zone. Single source of truth. |
+| `tools/playcheck` | Rendered-pixel run. Not part of `tools/layout`. Uses this file as `--layout` when the command is present. |
 
 ## Layout as data
 
@@ -58,6 +60,36 @@ Example (values are illustrative):
   "bolt": { "gallop": "lock/bolt-gallop-cycle.mp4", "idle": "lock/bolt-idle-breath.mp4" }
 }
 ```
+
+## Generate and check — `tools/layout`
+
+Builders do not hand-place a hull, a collider, or a gate. They write a zone spec (radius, ring radius, gate bearing and width, asset manifests from `tools/walkaround`, counts per category) and run:
+
+```bash
+python3 tools/layout/layout.py generate --spec <spec.json> --out <dir>
+python3 tools/layout/layout.py check --clearing <dir>/clearing.json --out <dir>
+```
+
+Paste `report.md` from the check. Exit code is non-zero on FAIL.
+
+The generator is deterministic for a seed. It may place with simplex. It writes positions, yaw, scale, `base_y_m` on the relief, and a `colliders` list. `position` is `[x, z]` so the playcheck reader (heading 0 = +z, 90 = +x) can load the same file. Height is `base_y_m`, not a third component of `position`.
+
+Rows the check prints, each with numbers:
+
+| Row | FAIL when |
+| --- | --- |
+| `ring_closed` | A 1° ray misses the visual ring or the collider ring outside a gate, or that gap's arc is longer than the hero width. |
+| `collider_eq_visual` | A collider has no object with the same footprint, or an outward ray hits a collider more than 0.5 m before a visual. |
+| `gate` / `path` / `gate_cone` | The frame is missing, the opening is blocked, the path from spawn is narrower than the limit, or a solid sits in the clearance cone. |
+| `spawn_clearance` / `separation` | Spawn disk or the minimum air gap is violated. Interiors may not overlap. Ring pieces may overlap each other; that closes the ring. |
+| `relief` | The object's base is not the relief height at that xz. |
+| `mag` | Source pixels at the closest follow-camera distance would be magnified above `view.mag_max` (1.0). |
+| `variety` | A neighbour matches asset, yaw, and scale, or variants are clumped. |
+| `playcheck_data` | The file's `width_deg` values fail the data half of the playcheck ring test. |
+
+The diagram `debug-topdown.png` draws the ring, the gate cone, the colliders, and the path. It is a kitchen diagram. It is not the play view and not an Imagine pixel.
+
+**This table is not the rendered-pixel table below.** Take 8 is why. A file can list a hull and a matching collider and still draw nothing. `tools/layout` cannot see that. Do not paste a layout PASS as a phone PASS.
 
 ## Validator — PASS / FAIL table
 
@@ -114,8 +146,8 @@ The console also showed WebGL **`texSubImage3D` `INVALID_OPERATION`** errors, wh
 
 ## Do not
 
-- Hand-place a hull, collider, gate, or fog patch outside `clearing.json`.
+- Hand-place a hull, collider, gate, or fog patch outside `clearing.json`. Generate the file with `tools/layout`.
 - Put biome words in the schema.
-- Validate against the JSON, the debug map, or the collider set alone.
+- Treat a `tools/layout` PASS, or the top-down diagram, as the rendered-pixel check. A check that only agrees with the JSON, the debug map, or the collider set is not a play PASS.
 - Count a cut-out (alpha-discarded) texel as a visible pixel.
 - Post a play URL, or call a clearing KEEP, before every row passes on the rendered view and the owner's phone QC.

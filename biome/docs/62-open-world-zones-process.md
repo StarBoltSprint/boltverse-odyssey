@@ -4,7 +4,7 @@ Kitchen only. Not a hang. Not a new play URL. Owner direction **2026-10-01**.
 
 **This repo holds no biome style.** Each player chooses the style of every biome freely. This doc is the **creation process**: style-agnostic and fully codified. Any player's Grok follows the same steps for any paint. Nothing below is a look to copy. No example biome here is a model.
 
-The free-walk method is [doc 61](61-free-clearing-walk.md). The invisible-shape exception is the [2026-10-01 extension of law 59](59-invisible-depth-carrier.md#extension-2026-10-01-invisible-procedural-terrain-shape) (PR #128). Hulls are [`tools/walkaround/build.py`](../../tools/walkaround/build.py) (PR #127, method in [doc 60](60-imagine-relief-panorama-method.md#script)). The layout file and the rendered-pixel validator are [doc 63](63-layout-file-and-validator.md).
+The free-walk method is [doc 61](61-free-clearing-walk.md). The invisible-shape exception is the [2026-10-01 extension of law 59](59-invisible-depth-carrier.md#extension-2026-10-01-invisible-procedural-terrain-shape) (PR #128). Hulls are [`tools/walkaround/build.py`](../../tools/walkaround/build.py) (PR #127, method in [doc 60](60-imagine-relief-panorama-method.md#script)). One `clearing.json` per zone is written and checked by [`tools/layout`](../../tools/layout/README.md). The rendered-pixel validator is [doc 63](63-layout-file-and-validator.md).
 
 ## Hard locks (already in the repo, unchanged)
 
@@ -96,9 +96,9 @@ Do the steps in order. Stop when one fails.
    3. **Edge-ring, gate, and interior objects:** the standard 3D object pipeline above, for each object: V0 + **8 views every 45°** with the silhouette lock (top / 3/4-high views for hollows), then `python3 tools/walkaround/build.py --views … --config … --out …`; large protrusions as separate sub-objects. `qc/report.json` magnification ≤ 1.0 for every view. Several distinct edge assets; no identical copies side by side (doc 60 "pasted copies" FAIL).
    4. **Living loops:** fog atlas (one looping video packed into frames), gate / light / particle loops. First frame = last frame. Keyed.
    5. **Corridor ground video** (when the corridor step comes): scrolling, one direction, speed measured (`bakedGroundSpeed`).
-3. **Fill `clearing.json`** for the zone: `zone`, `edge_ring`, `gates`, `interior_objects`, `near_lens`, `fog_band` (+ `spawn`, `backdrop`, `view`, `bolt`). Schema in doc 63.
-4. **Generate.** `tools/clearing/` builds placement, colliders, gates, and fog patches from that file.
-5. **Validate on the rendered view.** Every doc 63 row **PASS** on the real 720×1600 play view. A data-only PASS is FAIL. Check the browser console too: any WebGL error is FAIL (take 8).
+3. **Generate `clearing.json`.** Write a zone spec (radius, ring radius, gate bearing and width, walkaround asset list, counts for ring / mid / near / hero / exit). Run `python3 tools/layout/layout.py generate --spec <spec.json> --out <dir>`. Do not type coordinates by hand. Schema in doc 63. The file is the placement, including colliders.
+4. **Check the layout file.** `python3 tools/layout/layout.py check --clearing <dir>/clearing.json --out <dir>`. Paste `report.md`. Exit code non-zero means FAIL. This is invisible shape only (ring, gate, path, relief, magnification, variety). It is not a framebuffer.
+5. **Validate on the rendered view.** Every doc 63 rendered row **PASS** on the real 720×1600 play view. A data-only PASS is FAIL, including a `tools/layout` PASS. When `tools/playcheck` is on the tree, its `--layout` argument is this `clearing.json`. Check the browser console too: any WebGL error is FAIL (take 8).
 6. **Proof stills** from the play view: debug top-down map, centre → gate view, two stop views with Bolt against a visible hull, fog band, Bolt IDLE, Bolt GALLOP.
 7. **STOP.** Only now may a sandbox play URL be shared. The owner records phone QC himself. Only an owner KEEP opens the next step.
 
@@ -134,6 +134,6 @@ Take 8 is a past clearing take. Its paint is not a model. Only these lessons car
 - Commit a biome style (a look, a prompt set, a palette) to this repo as the model.
 - Lay a zone floor as the scrolling ground video, or put free 360° turning on a corridor.
 - Leave the ring open, or close it with colliders that have no visible hull in front of them.
-- Hand-place ring hulls, gates, colliders, or fog. They are generated from `clearing.json`.
+- Hand-place ring hulls, gates, colliders, or fog. `tools/layout` writes `clearing.json`. Paste the check report. A layout PASS is not a rendered PASS.
 - Post a play URL before every validator row passes on the rendered view.
 - Draw, shade, colour, or shadow any pixel in code.

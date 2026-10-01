@@ -1,0 +1,176 @@
+{
+  "id": "sample-zone",
+  "ok": true,
+  "rows": [
+    {
+      "name": "rules_present",
+      "note": "",
+      "numbers": {
+        "missing": "none"
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "ring_closed",
+      "note": "",
+      "numbers": {
+        "collider_gap_at_deg": 0.0,
+        "collider_gap_deg": 0.0,
+        "collider_gap_m": 0.0,
+        "hero_width_m": 0.7,
+        "miss_collider": 0,
+        "miss_visual": 0,
+        "visual_gap_at_deg": 0.0,
+        "visual_gap_deg": 0.0,
+        "visual_gap_m": 0.0
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "collider_eq_visual",
+      "note": "",
+      "numbers": {
+        "collider_only": 0,
+        "duplicate_ids": 0,
+        "footprint_mismatch": 0,
+        "invisible_heading_deg": 0.0,
+        "invisible_stop_m": 0.0,
+        "invisible_stops": 0,
+        "object_only": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "gate",
+      "note": "",
+      "numbers": {
+        "frame_missing": 0,
+        "gates": 1,
+        "narrow": 0,
+        "opening_blocked": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "path",
+      "note": "",
+      "numbers": {
+        "min_clearance_m": 1.5946273272527738,
+        "need_m": 0.75,
+        "spawn_x": 0.0,
+        "spawn_z": 0.0
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "gate_cone",
+      "note": "",
+      "numbers": {
+        "blocked_gates": 0,
+        "cone_m": 5.5,
+        "half_deg": 26.0
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "spawn_clearance",
+      "note": "",
+      "numbers": {
+        "clearance_m": 4.586165977039491,
+        "need_m": 3.2
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "separation",
+      "note": "",
+      "numbers": {
+        "min_gap_m": 0.35,
+        "overlaps": 0,
+        "pair": "near-01|near-02",
+        "worst_gap_m": 1.0625922767741354
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "relief",
+      "note": "",
+      "numbers": {
+        "id": "ring-27",
+        "off_surface": 0,
+        "worst_err_m": 5.130632640763799e-05
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "mag",
+      "note": "",
+      "numbers": {
+        "closest_m": 7.262409865576646,
+        "id": "mid-02",
+        "mag_max": 1.0,
+        "over": 0,
+        "unresolved_assets": 0,
+        "worst": 0.6128701966542879
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "variety",
+      "note": "",
+      "numbers": {
+        "identical_neighbours": 0,
+        "spread": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "fog_band",
+      "note": "",
+      "numbers": {
+        "inner_m": 12.0,
+        "instances": 28,
+        "outer_m": 20.0,
+        "outside_band": 0,
+        "patches": 28
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "near_lens",
+      "note": "",
+      "numbers": {
+        "cull_m": 1.2,
+        "spawn_surface_m": 4.586165977039491
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "budgets",
+      "note": "",
+      "numbers": {
+        "categories": 5,
+        "outside": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "playcheck_data",
+      "note": "data half only; rendered pixels are tools/playcheck",
+      "numbers": {
+        "first_miss_deg": 0,
+        "ray_misses": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "bolt_paths",
+      "note": "",
+      "numbers": {
+        "gallop": 1,
+        "idle": 1
+      },
+      "status": "PASS"
+    }
+  ]
+}
