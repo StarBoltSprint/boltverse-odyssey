@@ -448,6 +448,221 @@
           "FAIL hull mean keep=0.712 limit=0.8"
         ]
       },
+      "margin": {
+        "status": "FAIL",
+        "limits": {
+          "marginFrac": 0.03,
+          "maxEdgePx": 2048
+        },
+        "minMarginFrac": 0.0,
+        "maxEdgePx": 1792,
+        "views": [
+          {
+            "file": "yaw-000.jpg",
+            "width": 1008,
+            "height": 1792,
+            "measuredFrom": "file",
+            "margin": {
+              "topPx": 426,
+              "bottomPx": 408,
+              "leftPx": 86,
+              "rightPx": 0,
+              "topFrac": 0.2377,
+              "bottomFrac": 0.2277,
+              "leftFrac": 0.0853,
+              "rightFrac": 0.0,
+              "minFrac": 0.0
+            },
+            "holeFraction": 0.0959
+          },
+          {
+            "file": "yaw-045.jpg",
+            "width": 1008,
+            "height": 1792,
+            "measuredFrom": "file",
+            "margin": {
+              "topPx": 507,
+              "bottomPx": 529,
+              "leftPx": 0,
+              "rightPx": 0,
+              "topFrac": 0.2829,
+              "bottomFrac": 0.2952,
+              "leftFrac": 0.0,
+              "rightFrac": 0.0,
+              "minFrac": 0.0
+            },
+            "holeFraction": 0.067
+          },
+          {
+            "file": "yaw-090.jpg",
+            "width": 1008,
+            "height": 1792,
+            "measuredFrom": "file",
+            "margin": {
+              "topPx": 562,
+              "bottomPx": 587,
+              "leftPx": 0,
+              "rightPx": 0,
+              "topFrac": 0.3136,
+              "bottomFrac": 0.3276,
+              "leftFrac": 0.0,
+              "rightFrac": 0.0,
+              "minFrac": 0.0
+            },
+            "holeFraction": 0.0902
+          },
+          {
+            "file": "yaw-135.jpg",
+            "width": 1008,
+            "height": 1792,
+            "measuredFrom": "file",
+            "margin": {
+              "topPx": 644,
+              "bottomPx": 618,
+              "leftPx": 0,
+              "rightPx": 64,
+              "topFrac": 0.3594,
+              "bottomFrac": 0.3449,
+              "leftFrac": 0.0,
+              "rightFrac": 0.0635,
+              "minFrac": 0.0
+            },
+            "holeFraction": 0.0694
+          },
+          {
+            "file": "yaw-180.jpg",
+            "width": 1008,
+            "height": 1792,
+            "measuredFrom": "file",
+            "margin": {
+              "topPx": 425,
+              "bottomPx": 434,
+              "leftPx": 157,
+              "rightPx": 0,
+              "topFrac": 0.2372,
+              "bottomFrac": 0.2422,
+              "leftFrac": 0.1558,
+              "rightFrac": 0.0,
+              "minFrac": 0.0
+            },
+            "holeFraction": 0.0747
+          },
+          {
+            "file": "yaw-225.jpg",
+            "width": 1008,
+            "height": 1792,
+            "measuredFrom": "file",
+            "margin": {
+              "topPx": 464,
+              "bottomPx": 439,
+              "leftPx": 170,
+              "rightPx": 0,
+              "topFrac": 0.2589,
+              "bottomFrac": 0.245,
+              "leftFrac": 0.1687,
+              "rightFrac": 0.0,
+              "minFrac": 0.0
+            },
+            "holeFraction": 0.0605
+          },
+          {
+            "file": "yaw-270.jpg",
+            "width": 1792,
+            "height": 1008,
+            "measuredFrom": "file",
+            "margin": {
+              "topPx": 300,
+              "bottomPx": 318,
+              "leftPx": 75,
+              "rightPx": 31,
+              "topFrac": 0.2976,
+              "bottomFrac": 0.3155,
+              "leftFrac": 0.0419,
+              "rightFrac": 0.0173,
+              "minFrac": 0.0173
+            },
+            "holeFraction": 0.0344
+          },
+          {
+            "file": "yaw-315.jpg",
+            "width": 1792,
+            "height": 1008,
+            "measuredFrom": "file",
+            "margin": {
+              "topPx": 174,
+              "bottomPx": 199,
+              "leftPx": 103,
+              "rightPx": 105,
+              "topFrac": 0.1726,
+              "bottomFrac": 0.1974,
+              "leftFrac": 0.0575,
+              "rightFrac": 0.0586,
+              "minFrac": 0.0575
+            },
+            "holeFraction": 0.1093
+          }
+        ],
+        "failures": [
+          "FAIL margin yaw-000.jpg right=0px minFrac=0.0000 limit=0.03 (cropped views carve the hull)",
+          "FAIL margin yaw-045.jpg left=0px, right=0px minFrac=0.0000 limit=0.03 (cropped views carve the hull)",
+          "FAIL margin yaw-090.jpg left=0px, right=0px minFrac=0.0000 limit=0.03 (cropped views carve the hull)",
+          "FAIL margin yaw-135.jpg left=0px minFrac=0.0000 limit=0.03 (cropped views carve the hull)",
+          "FAIL margin yaw-180.jpg right=0px minFrac=0.0000 limit=0.03 (cropped views carve the hull)",
+          "FAIL margin yaw-225.jpg right=0px minFrac=0.0000 limit=0.03 (cropped views carve the hull)",
+          "FAIL margin yaw-270.jpg right=31px minFrac=0.0173 limit=0.03 (cropped views carve the hull)"
+        ]
+      },
+      "holes": {
+        "status": "FAIL",
+        "limits": {
+          "holeFraction": 0.002
+        },
+        "maxHoleFraction": 0.1093,
+        "views": [
+          {
+            "file": "yaw-000.jpg",
+            "holeFraction": 0.0959
+          },
+          {
+            "file": "yaw-045.jpg",
+            "holeFraction": 0.067
+          },
+          {
+            "file": "yaw-090.jpg",
+            "holeFraction": 0.0902
+          },
+          {
+            "file": "yaw-135.jpg",
+            "holeFraction": 0.0694
+          },
+          {
+            "file": "yaw-180.jpg",
+            "holeFraction": 0.0747
+          },
+          {
+            "file": "yaw-225.jpg",
+            "holeFraction": 0.0605
+          },
+          {
+            "file": "yaw-270.jpg",
+            "holeFraction": 0.0344
+          },
+          {
+            "file": "yaw-315.jpg",
+            "holeFraction": 0.1093
+          }
+        ],
+        "failures": [
+          "FAIL holes yaw-000.jpg interior=0.0959 limit=0.002 (transparent interior is see-through on screen)",
+          "FAIL holes yaw-045.jpg interior=0.0670 limit=0.002 (transparent interior is see-through on screen)",
+          "FAIL holes yaw-090.jpg interior=0.0902 limit=0.002 (transparent interior is see-through on screen)",
+          "FAIL holes yaw-135.jpg interior=0.0694 limit=0.002 (transparent interior is see-through on screen)",
+          "FAIL holes yaw-180.jpg interior=0.0747 limit=0.002 (transparent interior is see-through on screen)",
+          "FAIL holes yaw-225.jpg interior=0.0605 limit=0.002 (transparent interior is see-through on screen)",
+          "FAIL holes yaw-270.jpg interior=0.0344 limit=0.002 (transparent interior is see-through on screen)",
+          "FAIL holes yaw-315.jpg interior=0.1093 limit=0.002 (transparent interior is see-through on screen)"
+        ]
+      },
       "failures": [
         "FAIL adjacent yaw-000.jpg\u2192yaw-045.jpg height delta=0.236 limit=0.08",
         "FAIL adjacent yaw-045.jpg\u2192yaw-090.jpg area delta=0.167 limit=0.15",
@@ -467,7 +682,22 @@
         "FAIL opposite yaw-135.jpg|yaw-315.jpg width delta=0.506 limit=0.15",
         "FAIL opposite yaw-135.jpg|yaw-315.jpg height delta=0.180 limit=0.08",
         "FAIL hull min keep=0.313 limit=0.7 (views disagree, hull shrinks)",
-        "FAIL hull mean keep=0.712 limit=0.8"
+        "FAIL hull mean keep=0.712 limit=0.8",
+        "FAIL margin yaw-000.jpg right=0px minFrac=0.0000 limit=0.03 (cropped views carve the hull)",
+        "FAIL margin yaw-045.jpg left=0px, right=0px minFrac=0.0000 limit=0.03 (cropped views carve the hull)",
+        "FAIL margin yaw-090.jpg left=0px, right=0px minFrac=0.0000 limit=0.03 (cropped views carve the hull)",
+        "FAIL margin yaw-135.jpg left=0px minFrac=0.0000 limit=0.03 (cropped views carve the hull)",
+        "FAIL margin yaw-180.jpg right=0px minFrac=0.0000 limit=0.03 (cropped views carve the hull)",
+        "FAIL margin yaw-225.jpg right=0px minFrac=0.0000 limit=0.03 (cropped views carve the hull)",
+        "FAIL margin yaw-270.jpg right=31px minFrac=0.0173 limit=0.03 (cropped views carve the hull)",
+        "FAIL holes yaw-000.jpg interior=0.0959 limit=0.002 (transparent interior is see-through on screen)",
+        "FAIL holes yaw-045.jpg interior=0.0670 limit=0.002 (transparent interior is see-through on screen)",
+        "FAIL holes yaw-090.jpg interior=0.0902 limit=0.002 (transparent interior is see-through on screen)",
+        "FAIL holes yaw-135.jpg interior=0.0694 limit=0.002 (transparent interior is see-through on screen)",
+        "FAIL holes yaw-180.jpg interior=0.0747 limit=0.002 (transparent interior is see-through on screen)",
+        "FAIL holes yaw-225.jpg interior=0.0605 limit=0.002 (transparent interior is see-through on screen)",
+        "FAIL holes yaw-270.jpg interior=0.0344 limit=0.002 (transparent interior is see-through on screen)",
+        "FAIL holes yaw-315.jpg interior=0.1093 limit=0.002 (transparent interior is see-through on screen)"
       ]
     }
   ],
@@ -490,7 +720,22 @@
     "void-orbit-stills: FAIL opposite yaw-135.jpg|yaw-315.jpg width delta=0.506 limit=0.15",
     "void-orbit-stills: FAIL opposite yaw-135.jpg|yaw-315.jpg height delta=0.180 limit=0.08",
     "void-orbit-stills: FAIL hull min keep=0.313 limit=0.7 (views disagree, hull shrinks)",
-    "void-orbit-stills: FAIL hull mean keep=0.712 limit=0.8"
+    "void-orbit-stills: FAIL hull mean keep=0.712 limit=0.8",
+    "void-orbit-stills: FAIL margin yaw-000.jpg right=0px minFrac=0.0000 limit=0.03 (cropped views carve the hull)",
+    "void-orbit-stills: FAIL margin yaw-045.jpg left=0px, right=0px minFrac=0.0000 limit=0.03 (cropped views carve the hull)",
+    "void-orbit-stills: FAIL margin yaw-090.jpg left=0px, right=0px minFrac=0.0000 limit=0.03 (cropped views carve the hull)",
+    "void-orbit-stills: FAIL margin yaw-135.jpg left=0px minFrac=0.0000 limit=0.03 (cropped views carve the hull)",
+    "void-orbit-stills: FAIL margin yaw-180.jpg right=0px minFrac=0.0000 limit=0.03 (cropped views carve the hull)",
+    "void-orbit-stills: FAIL margin yaw-225.jpg right=0px minFrac=0.0000 limit=0.03 (cropped views carve the hull)",
+    "void-orbit-stills: FAIL margin yaw-270.jpg right=31px minFrac=0.0173 limit=0.03 (cropped views carve the hull)",
+    "void-orbit-stills: FAIL holes yaw-000.jpg interior=0.0959 limit=0.002 (transparent interior is see-through on screen)",
+    "void-orbit-stills: FAIL holes yaw-045.jpg interior=0.0670 limit=0.002 (transparent interior is see-through on screen)",
+    "void-orbit-stills: FAIL holes yaw-090.jpg interior=0.0902 limit=0.002 (transparent interior is see-through on screen)",
+    "void-orbit-stills: FAIL holes yaw-135.jpg interior=0.0694 limit=0.002 (transparent interior is see-through on screen)",
+    "void-orbit-stills: FAIL holes yaw-180.jpg interior=0.0747 limit=0.002 (transparent interior is see-through on screen)",
+    "void-orbit-stills: FAIL holes yaw-225.jpg interior=0.0605 limit=0.002 (transparent interior is see-through on screen)",
+    "void-orbit-stills: FAIL holes yaw-270.jpg interior=0.0344 limit=0.002 (transparent interior is see-through on screen)",
+    "void-orbit-stills: FAIL holes yaw-315.jpg interior=0.1093 limit=0.002 (transparent interior is see-through on screen)"
   ],
   "heuristics": [
     "The sheet is a proof. It is not an Imagine asset and it must not be hung or sampled as a texture.",
@@ -500,6 +745,9 @@
     "Colour histogram correlation is a weak identity test. A different facing colour can score low. The silhouette numbers are the gate.",
     "Hull keep is a coarse 7-of-8 voxel carve (grid 32), ray-marched back into each mask. It is not the smooth surface-nets mesh.",
     "Views that disagree shrink that carve toward a blob, and the keep fraction falls.",
+    "A silhouette that comes within 3% of any frame edge is cropped. Cropped views carve the hull. The margin is measured on the unfilled mask.",
+    "Interior holes are transparent pixels enclosed by the silhouette, as a fraction of interior pixels. Above 0.2% the stone is see-through. The tool does not fill those pixels.",
+    "Width and height are read from the file. A still over 2048 px on a side fails.",
     "A hand-written PASS is not a PASS. Paste report.json and the sheet PNG."
   ],
   "thresholds": {
@@ -511,6 +759,9 @@
     "colorCorr": 0.2,
     "colorDist": 110.0,
     "keepMin": 0.7,
-    "keepMean": 0.8
+    "keepMean": 0.8,
+    "marginFrac": 0.03,
+    "holeFraction": 0.002,
+    "maxEdgePx": 2048
   }
 }

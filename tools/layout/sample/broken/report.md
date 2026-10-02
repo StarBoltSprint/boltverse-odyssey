@@ -4,7 +4,7 @@
 | --- | --- | --- |
 | rules_present | PASS | missing=none |
 | ring_closed | FAIL | visual_gap_deg=104.0000, visual_gap_m=32.7996, visual_gap_at_deg=42.5000, collider_gap_deg=0.0000, collider_gap_m=0.0000, collider_gap_at_deg=0.0000, hero_width_m=0.7000, miss_visual=104, miss_collider=0 |
-| collider_eq_visual | FAIL | collider_only=16, object_only=0, footprint_mismatch=0, duplicate_ids=0, invisible_stops=76, invisible_stop_m=17.3749, invisible_heading_deg=42.5000 — ids=ring-23,ring-24,ring-25,ring-26,ring-27,ring-28 |
+| collider_eq_visual | FAIL | collider_only=16, object_only=0, footprint_mismatch=0, duplicate_ids=0, invisible_stops=76, invisible_stop_m=17.3749, invisible_heading_deg=42.5000, ring_wall=0 — ids=ring-23,ring-24,ring-25,ring-26,ring-27,ring-28 |
 | gate | FAIL | gates=1, frame_missing=1, opening_blocked=1, narrow=0 |
 | path | FAIL | min_clearance_m=-1.2500, need_m=0.7500, spawn_x=0.0000, spawn_z=0.0000 |
 | gate_cone | FAIL | blocked_gates=1, cone_m=5.5000, half_deg=26.0000 |

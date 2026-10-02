@@ -22,6 +22,8 @@ MARGIN_FRAC = 0.03
 HOLE_MAX = 0.002
 # Imagine stills are at most 2K on a side. Measured from the file.
 MAX_EDGE_PX = 2048
+# Pitch at or above this is a top or 3/4 still. An opening there is the hollow.
+ELEVATED_PITCH = 25.0
 
 HANDEDNESS = {
     "schema": "walkaround-basis-1",
@@ -137,6 +139,19 @@ def interior_hole_fraction(mask: np.ndarray) -> float:
     return holes / float(denom)
 
 
+def _elevated(view: dict) -> bool:
+    """True for a top or 3/4 still. Its enclosed opening is the hollow, not a hole to reject."""
+    if view.get("elevated"):
+        return True
+    elev = view.get("elevationDeg")
+    if elev is None:
+        cam = view.get("cam") or {}
+        elev = cam.get("pitchDeg", cam.get("elevationDeg"))
+    if elev is None:
+        return False
+    return abs(float(elev)) >= ELEVATED_PITCH
+
+
 def _raw_mask(view: dict) -> np.ndarray:
     raw = view.get("rawMask")
     if raw is not None:
@@ -187,7 +202,7 @@ def source_view_report(views: list[dict]) -> dict:
             failures.append(
                 f"FAIL margin {view['file']} {', '.join(touched)} minFrac={margins['minFrac']:.4f} limit={MARGIN_FRAC} (cropped views carve the hull)"
             )
-        if hole > HOLE_MAX + 1e-12:
+        if not _elevated(view) and hole > HOLE_MAX + 1e-12:
             failures.append(
                 f"FAIL holes {view['file']} interior={hole:.4f} limit={HOLE_MAX} (transparent interior is see-through on screen)"
             )

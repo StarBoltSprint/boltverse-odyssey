@@ -20,6 +20,8 @@ Object **PASS**.
   - yaw-270.png IoU `1.0`
   - yaw-315.png IoU `1.0`
 - hull: `PASS` mean keep `0.9981` min `0.9957` volume `0.3954`
+- margin: `PASS` minFrac `0.16` maxEdge `200`
+- holes: `PASS` max interior `0.0`
   - yaw-000.png keep `0.9992`
   - yaw-045.png keep `0.9974`
   - yaw-090.png keep `0.9991`
@@ -52,4 +54,7 @@ Object **PASS**.
 - Colour histogram correlation is a weak identity test. A different facing colour can score low. The silhouette numbers are the gate.
 - Hull keep is a coarse 7-of-8 voxel carve (grid 32), ray-marched back into each mask. It is not the smooth surface-nets mesh.
 - Views that disagree shrink that carve toward a blob, and the keep fraction falls.
+- A silhouette that comes within 3% of any frame edge is cropped. Cropped views carve the hull. The margin is measured on the unfilled mask.
+- Interior holes are transparent pixels enclosed by the silhouette, as a fraction of interior pixels. Above 0.2% the stone is see-through. The tool does not fill those pixels.
+- Width and height are read from the file. A still over 2048 px on a side fails.
 - A hand-written PASS is not a PASS. Paste report.json and the sheet PNG.

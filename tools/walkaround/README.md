@@ -91,7 +91,7 @@ These run after the stills are decoded and before any voxel is carved. A failure
 | Gate | FAIL |
 | --- | --- |
 | Frame margin | Unfilled mask within **3%** of any side, or touching the frame. Cropped source views carve the hull. |
-| Interior holes | Enclosed transparent pixels above **0.2%** of the interior. The build does not paint those pixels closed. Horizontal carving still flood-fills enclosed dark pixels for the occupancy vote; the hole fraction is stored from the unfilled mask and fails first. |
+| Interior holes | Enclosed transparent pixels above **0.2%** of the interior, on a horizontal still. The build does not paint those pixels closed. A top or 3/4 still (pitch ≥ 25°) may show a real opening; that opening is recorded and is not this fail. Horizontal carving still flood-fills enclosed dark pixels for the occupancy vote; the hole fraction is stored from the unfilled mask and fails first. |
 | File size | Width or height above **2048**, measured from the decoded file. |
 | Handedness | `right` is not `cross(forward, worldUp)`, or a point on +X at yaw 0 is not screen-right. Bearing 90 selects yaw 90, not yaw 270. After the QC renders, a view that matches its horizontal mirror better than the source (by more than 0.02 mean absolute error) also fails. A tie on a symmetric solid is not a fail. |
 

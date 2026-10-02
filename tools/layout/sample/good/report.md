@@ -4,7 +4,7 @@
 | --- | --- | --- |
 | rules_present | PASS | missing=none |
 | ring_closed | PASS | visual_gap_deg=0.0000, visual_gap_m=0.0000, visual_gap_at_deg=0.0000, collider_gap_deg=0.0000, collider_gap_m=0.0000, collider_gap_at_deg=0.0000, hero_width_m=0.7000, miss_visual=0, miss_collider=0 |
-| collider_eq_visual | PASS | collider_only=0, object_only=0, footprint_mismatch=0, duplicate_ids=0, invisible_stops=0, invisible_stop_m=0.0000, invisible_heading_deg=0.0000 |
+| collider_eq_visual | PASS | collider_only=0, object_only=0, footprint_mismatch=0, duplicate_ids=0, invisible_stops=0, invisible_stop_m=0.0000, invisible_heading_deg=0.0000, ring_wall=0 |
 | gate | PASS | gates=1, frame_missing=0, opening_blocked=0, narrow=0 |
 | path | PASS | min_clearance_m=1.5946, need_m=0.7500, spawn_x=0.0000, spawn_z=0.0000 |
 | gate_cone | PASS | blocked_gates=0, cone_m=5.5000, half_deg=26.0000 |

@@ -27,7 +27,7 @@ Needs `numpy` and `pillow`. A guide video also needs `ffmpeg`. No GPU. No depth 
 | Colour | Histogram correlation and mean foreground distance, reported on every adjacent pair. | Correlation **< 0.20** and distance **> 110** together. |
 | Hull keep | Coarse **7-of-8** voxel carve (grid capped at 40). Each mask is ray-marched; keep fraction is the share of the mask the carve still covers. | Any horizontal view under **0.70**, or the mean under **0.80**, or the volume collapses. Disagreeing views shrink the carve toward a blob and the fraction falls. |
 | Frame margin | Empty pixels on every side of the unfilled mask, as a fraction of that side. Width and height are the decoded file. | Any side under **3%**, a mask that touches the frame, or a still over **2048** px on a side. A cropped view carves the hull down to the frame. |
-| Interior holes | Transparent pixels enclosed by the silhouette, divided by interior pixels (opaque plus those holes). Measured on the unfilled mask. | Above **0.2%**. The sheet does not fill those pixels. A see-through stone is a failed still, not a hole to paint shut. |
+| Interior holes | Transparent pixels enclosed by the silhouette, divided by interior pixels (opaque plus those holes). Measured on the unfilled mask of each horizontal still. | Above **0.2%**. The sheet does not fill those pixels. A see-through stone is a failed still, not a hole to paint shut. A top or 3/4 still (pitch ≥ 25°) may show a real opening; that opening is recorded and is not this fail. |
 
 Sub-objects are the same checks on their own view set, drawn on the sheet under their name. A failed part fails the sheet.
 
