@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "engine": "triposr",
+  "image": "tools/mesh3d/inputs/ship/yaw-000.png",
+  "resolution": 48,
+  "triangles": 2536,
+  "vertices": 1270,
+  "densityMin": 9.705502179713221e-07,
+  "densityMax": 17940.99609375,
+  "vertexColors": false,
+  "reason": "mesh written, network colours discarded"
+}
