@@ -88,3 +88,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | World-locked top-down Imagine tiles, about 0.90 m, at least 4 variants, on an invisible height relief. Take 3 phone QC read magnification 0.979 on the HUD and on the phone. |
 | Guard | `tools/assetcheck` kind `tile` (seam ratio, exposure delta > 18, contrast ratio > 1.75, magnification > 1). `tools/layout` row `mag` against `view.mag_max` (1.0). `tools/playcheck` rows `mag` and `mag_max`. A HUD number that does not match the claim is a FAIL even when a tool has not run. |
 | Sources | [`biome/docs/60-imagine-relief-panorama-method.md`](../biome/docs/60-imagine-relief-panorama-method.md) walkable ground, attempt 1. [`biome/docs/61-free-clearing-walk.md`](../biome/docs/61-free-clearing-walk.md) take 3 KEEP (commit `e4ba55e`, PR #129). |
+
+### 2026-10-02 — rounded demo shapes passed the numeric gates
+
+| | |
+| --- | --- |
+| Take | Owner review 2026-10-01/02. No numbered zone take is stored for these reactions. |
+| Defect | A round paw-anchor emblem looked pasted on like a sticker. The earlier rounded egg-pod ship was ugly. Spherical and blob rocks, and identical capsule views, read as a demo. Orbit views of two different ships are not one object. Safe rounded shapes were chosen to pass checks. |
+| Root cause | Area, height, and silhouette IoU measure agreement between views. They do not measure whether the shape is sharp, etched, or the design the owner kept. |
+| Fix | Read `learn/taste.md` before a visual step. The Golden rule is first: a living painted film, Imagine pixels, the filmed Bolt gallop, the owner's decrees. Style rules: sharp edges, distinctive silhouettes, no circles, etched angular dark-violet weathered marks, large organic biomes, one ship across an orbit set. Append the owner's reaction after the review. |
+| Guard | `python3 tools/judge/judge.py --candidate <still> --ref <ref>` (1–3 refs). The prompt includes the Golden rule and `learn/taste.md`. Exit 0 only when the reply is valid, score ≥ 7 (`--threshold`), `keep` is true, and `matches_refs` is true. `python3 tools/judge/selftest.py` checks the 128 KiB image-block cap and rejects a bad reply (exit 1). A judge score does not override a hard law and does not replace owner review. |
+| Sources | [`learn/taste.md`](../learn/taste.md). [`tools/judge/README.md`](../tools/judge/README.md). |
