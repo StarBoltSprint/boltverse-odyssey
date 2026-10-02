@@ -121,9 +121,9 @@ const basis = chaseBasis(headingDeg);
 
 `chaseBasis`: heading 0 looks along +Z, heading 90 looks along +X, `right = cross(forward, worldUp)`. If steering feels backwards, negate the turn input. Do not negate `right`. A stored camera whose right is the mirror is refused at load. View index follows yaw: bearing 90 selects the yaw-90 still, not yaw 270.
 
-When [`biome/docs/65-render-quality.md`](../../biome/docs/65-render-quality.md) is on main, repeated draws follow that instancing law. Until then this runtime is the volume contract. Far-band cards with no collider stay the impostor path in [doc 62](../../biome/docs/62-open-world-zones-process.md). A solid that can stop the hero is a hull.
+Repeated draws follow [law 65](../../biome/docs/65-render-quality.md): one `drawElementsInstanced` per asset, vertex data uploaded once with `STATIC_DRAW`, Imagine stills sampled with `LINEAR_MIPMAP_LINEAR` and mipmaps. Far-band cards with no collider stay the impostor path in [doc 62](../../biome/docs/62-open-world-zones-process.md). A solid that can stop the hero is a hull.
 
-Sampling stays `texelFetch` of the original PNG. Code does not draw, shade, or colour a pixel. Magnification stays ≤ 1 on a 720×1600 view. Imagine stills are at most 2048 px on a side, measured from the file.
+The colour the player sees is that mipmapped still. Which view faces a fragment is still the exact source texel. Code does not draw, shade, or colour a pixel. Magnification stays ≤ 1 on a 720×1600 view. Imagine stills are at most 2048 px on a side, measured from the file.
 
 ## Elevation
 

@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import html
 import json
+import re
 import shutil
 import sys
 from datetime import datetime, timezone
@@ -16,6 +17,7 @@ from pathlib import Path
 
 IMAGE_EXT = {".png", ".jpg", ".jpeg", ".webp", ".gif"}
 VIDEO_EXT = {".mp4", ".webm", ".mov"}
+PERF_LINE_RE = re.compile(r"Perf:\s*drawCalls=\S+,\s*texMB=\S+,\s*activeVideos=\S+,\s*jsMs=\S+")
 
 # Documented limits that the source tool prints in README / fail lines
 # but does not always copy into the JSON `limits` object.
@@ -925,6 +927,7 @@ def section_play(directory: Path | None, copier: Copier) -> dict:
         copied = copier.copy(src if src.is_file() else None, "play")
         stills.append({"name": Path(str(rel)).name, "src": copied})
     rows = [play_row(r) for r in rows_in if isinstance(r, dict)]
+    rows = ensure_perf_line(rows, report)
     summary = report.get("summary") if isinstance(report.get("summary"), dict) else {}
     status = worst([r["status"] for r in rows] or ["NOT RUN"])
     if summary.get("result") == "FAIL" or report.get("ok") is False:
@@ -982,7 +985,30 @@ PLAY_EXPLAIN = {
     "idle_gallop_switch": "A moving frame has to be GALLOP, and the stop frame IDLE at about speed 0.",
     "fullscreen": "The canvas or screenshot is not 720×1600.",
     "debug_hook": "snapshot() or the ID buffer is missing.",
+    "active_videos": "Law 65. More than 4 videos decoding at once fails. Pause or unload the rest.",
+    "perf_line": "Law 65. The report must contain drawCalls, texMB, activeVideos, and jsMs. SwiftShader frame time is not this row.",
+    "render_source": "Law 65 source scan. NEAREST on a world texture, a per-batch typed-array upload, a per-object draw loop, or camQuad on a solid fails. An unscanned play source fails.",
+    "fps_avg": "Present-interval average. On a SwiftShader playcheck run this row is informational and is not a pass or a fail.",
+    "fps_1low": "Slowest 1% of present intervals. On SwiftShader this row is informational.",
+    "frame_ms": "Mean present-frame time. On SwiftShader this row is informational.",
 }
+
+
+def ensure_perf_line(rows: list[dict], report: dict) -> list[dict]:
+    line = str(report.get("perfLine") or "")
+    valid = bool(PERF_LINE_RE.search(line)) and "missing" not in line
+    explain = (
+        "Law 65. Every playcheck report carries drawCalls, texMB, activeVideos, and jsMs. "
+        "A missing field is FAIL. SwiftShader frame time is informational and is not this row."
+    )
+    existing = next((r for r in rows if r["title"] == "perf_line"), None)
+    if existing is None:
+        rows.append(metric_row("PASS" if valid else "FAIL", "perf_line", line or "missing", explain, [], []))
+    elif not valid:
+        existing["status"] = "FAIL"
+        existing["summary"] = line or "missing"
+        existing["explain"] = explain
+    return rows
 
 
 def play_row(row: dict) -> dict:

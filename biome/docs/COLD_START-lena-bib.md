@@ -1,5 +1,7 @@
 # COLD START — Lena bib (clés en main)
 
+**Tool feedback (law 66):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take, write `feedback/<date>-<tool>.md`, and open it upstream. [`66-tool-feedback-loop.md`](66-tool-feedback-loop.md).
+
 Read `biome/docs/36-gpu-zones-lena-procedural.md`. Runtime: `biome/scripts/lena-lod/lenaLod.js`. Run `node biome/scripts/lena-lod/demo.js`.
 
 Densify Video A (Rail A) stays a **SuperGrok session** Imagine Video with **first + last** pinned. Build does not drive that session. Missing `XAI_API_KEY` is not a stop for Video A.

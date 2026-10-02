@@ -1,5 +1,7 @@
 # COLD — plate geometric QC (paste before hang)
 
+**Tool feedback (law 66):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take, write `feedback/<date>-<tool>.md`, and open it upstream. [`66-tool-feedback-loop.md`](66-tool-feedback-loop.md).
+
 Read `biome/docs/23-plate-geo-qc.md`.
 
 **Before hang** of any Video A (empty or densify):

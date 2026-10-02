@@ -1,5 +1,7 @@
 # COLD — Room + Star Map + Lena climb (kitchen)
 
+**Tool feedback (law 66):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take, write `feedback/<date>-<tool>.md`, and open it upstream. [`66-tool-feedback-loop.md`](66-tool-feedback-loop.md).
+
 Read `biome/docs/18-room-starmap-lena.md` first.
 
 Flow: **ROOM** (2 doors + center star map) → tap map → **CONSTELLATION** → seal planet → back room → **DOOR** → biome sprint → **Lena space climb** → arrive sealed planet.

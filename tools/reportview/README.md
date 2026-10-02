@@ -61,7 +61,7 @@ Fields are the ones those tools write. See each tool's README for the check.
 | Objects | `objsheet` `report.json` + `sheet.png`, `walkaround` `qc/report.json` | Proof sheet, each view, guide IoU and `limit`, adjacent area and height against the consistency `limits`, hull-keep fraction, per-view `maxMagnification`. |
 | Hull | `qc/report.json` | `depthRefine`, `hull.depthRelief`, `hull.depthMinAgree`, `vertexCount`, `triangleCount`, `smoothIters`, `subObjects`. |
 | Layout | `report.json`, `debug-topdown.png`, `clearing.json` | Diagram, zone id, gate count from the file, then check rows. Ring, gate, and collider rows are first. |
-| Playcheck | `report.json`, `stills/`, `walk.mp4` | `<video controls playsinline>`, stills, rows. `detail` is the tap text. |
+| Playcheck | `report.json`, `stills/`, `walk.mp4` | `<video controls playsinline>`, stills, rows. `detail` is the tap text. Law 65 adds `active_videos` (≤ 4), `perf_line` (`Perf: drawCalls, texMB, activeVideos, jsMs`), and `render_source` when playcheck wrote it. A playcheck report with no valid `perfLine` is FAIL on this page. SwiftShader `fps_avg` / `fps_1low` / `frame_ms` are informational. |
 
 A row shows the measured number and the threshold that is stored on that check (`limits`, `magnificationLimit`, `need_m`, `mag_max`, and the same kind of field). Tap the row for a short explanation. A check the report does not contain is **n/a**, not PASS.
 

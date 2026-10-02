@@ -1,5 +1,7 @@
 # COLD — biome sprint plan (paste before d1)
 
+**Tool feedback (law 66):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take, write `feedback/<date>-<tool>.md`, and open it upstream. [`66-tool-feedback-loop.md`](66-tool-feedback-loop.md).
+
 Read `biome/docs/26-biome-sprint-plan.md`. Frost example: `biome/docs/26b-frost-sprint-plan.md`.
 
 **Before cooking d1:** write `biome/docs/plans/<biome>-sprint.md` — 10 plates, one spine, every row has +1 still + spectacular hazard + `--expect` + **GPU Howl target** (law 32: keyed name + shatter plate, or —).

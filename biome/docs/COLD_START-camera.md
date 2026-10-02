@@ -1,5 +1,7 @@
 # COLD — sprint camera (paste into Imagine + before hang)
 
+**Tool feedback (law 66):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take, write `feedback/<date>-<tool>.md`, and open it upstream. [`66-tool-feedback-loop.md`](66-tool-feedback-loop.md).
+
 Read `biome/docs/24-camera-1point.md`.
 
 Sprint Video A = **conical 1-point lock-off**. Not 2-point. Not 3-point.

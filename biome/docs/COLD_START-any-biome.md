@@ -6,6 +6,8 @@ Playable composite (any paint): paste [`COLD_START-biome-method.md`](COLD_START-
 
 **HARD — Imagine and Build limits, read before a long cook:** [`64-imagine-build-limits.md`](64-imagine-build-limits.md). Documented caps as of 2026-10-01 (docs.x.ai) and the adaptations: spec file, resolution by mode, measure the file, 360 slices, no GPU depth or image-to-3D step inside Build. One cook = one plate or one extension. Section F is uncertain and is not law. No biome style on that page.
 
+**HARD — render quality, every play view:** [`65-render-quality.md`](65-render-quality.md). Magnification ≤ 1.0 and sharpness held. Instanced repeats, one `STATIC_DRAW` upload, mipmapped stills, `LINEAR` video, at most 4 decoding videos, DPR ≤ 2, the playcheck perf line (`drawCalls`, `texMB`, `activeVideos`, `jsMs`), world-locked solids. SwiftShader frame time is informational. No biome style on that page.
+
 # COLD START — cook any biome (parity brief)
 
 You are cooking a **Lane biome** for Boltverse Odyssey for a **random player**. Read GitHub `main` first:
@@ -26,6 +28,7 @@ You are cooking a **Lane biome** for Boltverse Odyssey for a **random player**. 
 9. **`biome/docs/26-biome-sprint-plan.md`** ← **write the 10-plate cinematic plan BEFORE d1.** Frost: `26b-frost-sprint-plan.md` + `plans/frost-sprint.md`. Paste: `biome/docs/COLD_START-sprint-plan.md`. GPU Howl column = law 32 (Prismwake names targets; Frost cells stay —).
 10. **`biome/docs/32-howl-gpu-targets.md`** ← rail A dodge (law 25) vs rail B keyed Howl targets. Shatter per type. Howl = **REUSE** `biome/fx/howl/howl-attack.mp4` (SmiR KEEP). Vertical rings, birth narrow → wider, locked cam, black key, no baked shatter. Paste: `biome/docs/COLD_START-howl-gpu.md`.
 11. **`biome/docs/33-plate-mae-qc.md`** ← `python3 biome/scripts/plate-mae-qc/plate-mae-qc.py <N.mp4> <N+1.mp4>` before hang. Exit non-zero = FAIL. Paste: `biome/docs/COLD_START-plate-mae.md`.
+12. **Tool feedback (law 66).** If a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take and file `biome/docs/66-tool-feedback-loop.md` upstream.
 
 ## Fixed
 - Bolt motion = REUSE `lock/bolt-gallop-cycle.mp4` (**6 s / 96 fps / 534 frames / green / rear**). Remux → `public/master/bolt.mp4`. Never invent a gallop. Never use `lock/bolt-gallop-cycle-0.93s-prev.mp4` as play.

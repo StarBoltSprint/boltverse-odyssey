@@ -1,0 +1,104 @@
+name: Tool feedback
+description: A repo tool let a defect through, reported a wrong number, or was hard to use.
+title: "[tool-feedback] "
+labels: ["tool-feedback"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Finish your take first. The same fields belong in `feedback/<date>-<tool>.md` on your branch. Law: `biome/docs/66-tool-feedback-loop.md`.
+
+        No API keys, tokens, or private style prompts. Maintainers review accepted reports and turn them into tool PRs. Nothing auto-merges.
+
+        This form applies the label `tool-feedback` when that label exists on the repo. Drag images into the still box. GitHub issue forms have no separate file field.
+  - type: dropdown
+    id: tool
+    attributes:
+      label: Which tool
+      description: The repo tool that missed, miscounted, or was hard to use.
+      options:
+        - tools/walkaround (hull / volume)
+        - tools/objsheet
+        - tools/assetcheck
+        - tools/layout
+        - tools/playcheck
+        - tools/reportview
+        - tools/perf (perf / render lint)
+        - law doc (biome/docs)
+        - other
+    validations:
+      required: true
+  - type: input
+    id: tool-commit
+    attributes:
+      label: Tool version / commit
+      description: Commit of the recipe checkout that holds the tool. `git rev-parse --short HEAD` is enough.
+      placeholder: abc1234
+    validations:
+      required: true
+  - type: input
+    id: take
+    attributes:
+      label: Take / branch and commit of the game being tested
+      description: Branch and commit of the play build where the defect showed.
+      placeholder: "my-take @ def5678"
+    validations:
+      required: true
+  - type: textarea
+    id: defect
+    attributes:
+      label: Defect seen on screen
+      description: What a person saw in the play view. No style prompt.
+      placeholder: A dark seam between the two ground tiles, about a thumb wide, while walking north.
+    validations:
+      required: true
+  - type: textarea
+    id: metric
+    attributes:
+      label: Metric the tool reported vs what was actually measured
+      description: Both numbers. What the tool printed, and what you measured on the frame.
+      placeholder: |
+        tool: seam 0.4 px (PASS)
+        measured: seam 6 px on the 720×1600 frame
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: How to reproduce
+      description: The command.
+      placeholder: python3 tools/layout/layout.py check packs/zone-a/clearing.json
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: still
+    attributes:
+      label: Still / screenshot
+      description: Required. Drag the image into this box (a still of the defect on screen).
+      placeholder: Drag the screenshot here.
+    validations:
+      required: true
+  - type: textarea
+    id: video
+    attributes:
+      label: Short video
+      description: Optional. Drag a short clip when the defect is motion.
+      placeholder: Optional.
+    validations:
+      required: false
+  - type: textarea
+    id: fix
+    attributes:
+      label: Proposed fix
+      description: Optional. What the tool or the law should do differently.
+      placeholder: Optional.
+    validations:
+      required: false
+  - type: checkboxes
+    id: secrets
+    attributes:
+      label: Confirmation
+      options:
+        - label: This report includes no secrets, API keys, tokens, or private style prompts.
+          required: true

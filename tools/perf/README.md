@@ -42,7 +42,7 @@ Call `noteFrame` once per presented frame from the play loop. The first call mar
 
 ## Mid-range phone budget
 
-These are the playcheck thresholds. They are not retuned for a desktop or for software WebGL.
+These are the playcheck thresholds for a mid-range phone. Frame-time rows (`fps_avg`, `fps_1low`, `frame_ms`) are informational when the run is SwiftShader. They are not retuned for a desktop.
 
 | Row | PASS |
 | --- | --- |
@@ -52,7 +52,11 @@ These are the playcheck thresholds. They are not retuned for a desktop or for so
 | `js_heap` | `usedJSHeapSize` ≤ **384 MiB** (402653184 bytes). If the browser does not expose `performance.memory`, the row is PASS, `available: false`, partial. A reported heap over the cap is FAIL. |
 | `texture_mem` | estimated texture bytes ≤ **256 MiB** (268435456). |
 | `video_decoders` | concurrent decoders ≤ **6**. |
+| `active_videos` | concurrent decoders ≤ **4** (law 65). The wider `video_decoders` row stays. |
 | `draw_calls` | peak draws in a frame ≤ **150**. |
+| `perf_line` | `drawCalls`, `texMB` (texture bytes ÷ 1024²), `activeVideos`, and `jsMs` are all present. |
+
+`fps_avg`, `fps_1low`, and `frame_ms` stay in the report. When playcheck runs on SwiftShader they are informational and do not fail the take. A missing `snapshot().perf` is still FAIL. Law: [`biome/docs/65-render-quality.md`](../../biome/docs/65-render-quality.md).
 
 The measurement fixture (`snap.harness === true`, `tools/playcheck/fixture`) records the same numbers and does **not** apply this budget, so the existing fixture exit code stays what the other rows decide. A real play URL is not the harness. Missing `snapshot().perf` on a real play URL is FAIL.
 
@@ -70,6 +74,7 @@ The measurement fixture (`snap.harness === true`, `tools/playcheck/fixture`) rec
     "heapBytesMax": 402653184,
     "textureBytesMax": 268435456,
     "videoDecodersMax": 6,
+    "activeVideosMax": 4,
     "drawCallsMax": 150
   },
   "budgetApplied": true,

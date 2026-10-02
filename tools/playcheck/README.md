@@ -118,15 +118,28 @@ WebGL errors are captured even without the hook, by wrapping `getError` and the 
 | `debug_hook` | `snapshot()` or the ID buffer is missing. |
 | `transition_black` | Only when `snapshot().transition` is present. A frame is black (luma under 12 on at least 92% of sampled pixels), or `black` / `rgba` was not provided. |
 | `transition_hitch` | Only when `snapshot().transition` is present. `hitchMs` is missing or the largest value is over 100. |
-| `fps_avg` | Average present FPS under **30**, or `snapshot().perf` missing. Not applied on the measurement fixture (`snap.harness`). |
-| `fps_1low` | 1% low under **20** (mean of the slowest 1% of the last 300 intervals). Same fixture exception. |
-| `frame_ms` | Mean present interval above **33.333 ms**. |
+| `fps_avg` | `snapshot().perf` missing is FAIL. On this command's SwiftShader run a low average is informational and does not fail the take. Not applied on the measurement fixture (`snap.harness`). |
+| `fps_1low` | Same as `fps_avg` for the slowest 1% of the last 300 intervals (floor 20 on a device GPU). SwiftShader does not fail the take. |
+| `frame_ms` | `snapshot().perf` missing is FAIL. A mean present interval above **33.333 ms** is informational on SwiftShader and does not fail the take. |
 | `js_heap` | Reported `usedJSHeapSize` above **384 MiB**. Missing `performance.memory` is PASS, `available: false`, partial. |
 | `texture_mem` | Estimated GPU texture bytes above **256 MiB**. |
 | `video_decoders` | More than **6** concurrent decoders. |
 | `draw_calls` | Peak draws in a frame above **150**. |
+| `active_videos` | More than **4** videos decoding in a captured frame. Law 65. The older `video_decoders` cap (6) stays. |
+| `perf_line` | `drawCalls`, `texMB`, `activeVideos`, or `jsMs` was not reported. The report also prints `Perf: drawCalls=<n>, texMB=<n>, activeVideos=<n>, jsMs=<n>`. |
+| `render_source` | Play source was not scanned, or the scan found `NEAREST` on a world texture, `bufferData` of a new typed array, a non-instanced draw inside a loop, or `camQuad` on a solid. An object-ID buffer may use `NEAREST`. |
 
-These seven rows are additive. The rows above them are unchanged. A hand-written PASS is not a PASS.
+`fps_avg`, `fps_1low`, and `frame_ms` are measured on SwiftShader in this command. Those three rows are informational on that run and do not fail the take. A missing `snapshot().perf` is still FAIL. Law 65: [`biome/docs/65-render-quality.md`](../../biome/docs/65-render-quality.md).
+
+These rows are additive. The rows above the phone block are unchanged. A hand-written PASS is not a PASS.
+
+`--source <play.js>` (repeatable) scans that file. A local `--url` directory is scanned for the `.js` files in that directory. A remote URL without `--source` fails `render_source`. The fixture (`snap.harness`, or `tools/playcheck/fixture`) records the row and does not apply it.
+
+```bash
+node tools/playcheck/src/renderlint.mjs <play.js>
+```
+
+Exit 0 is a clean scan. Exit 1 is a finding. The scan is the same function the walk uses.
 
 ## Phone performance
 
@@ -139,7 +152,8 @@ The play view calls `__perf.noteFrame`, `__perf.noteDraw`, and `__perf.noteTextu
 | Field | Meaning |
 | --- | --- |
 | `perf.schema` | `playcheck-perf/1` |
-| `perf.thresholds` | The mid-range phone caps (`fpsAvgMin` 30, `fps1LowMin` 20, `frameMsMax` 33.333, `heapBytesMax` 402653184, `textureBytesMax` 268435456, `videoDecodersMax` 6, `drawCallsMax` 150). |
+| `perf.thresholds` | The mid-range phone caps (`fpsAvgMin` 30, `fps1LowMin` 20, `frameMsMax` 33.333, `heapBytesMax` 402653184, `textureBytesMax` 268435456, `videoDecodersMax` 6, `activeVideosMax` 4, `drawCallsMax` 150). |
+| `perf.perfLine` | `Perf: drawCalls=<n>, texMB=<n>, activeVideos=<n>, jsMs=<n>`. Required on every report. |
 | `perf.budgetApplied` | False only for the measurement fixture. |
 | `perf.harness` | True when every frame was `snap.harness`. |
 | `perf.aggregate` | Walk totals: `fpsAvg`, `fps1Low`, `frameMs`, `frameMsAvg`, `heapBytes`, `heapAvailable`, `textureBytes`, `videoDecoders`, `drawCalls`, `samples`. |

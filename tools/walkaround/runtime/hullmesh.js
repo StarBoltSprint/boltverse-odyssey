@@ -4,8 +4,10 @@
  *
  * Imagine pixels stay in the view PNGs. This file places the mesh and picks
  * the already-shot view per fragment (best facing, stored cameras). It does
- * not shade, tint, or draw a pixel of its own. Sampling is texelFetch of the
- * original PNG.
+ * not shade, tint, or draw a pixel of its own. Displayed stills follow
+ * biome/docs/65-render-quality.md: one instanced draw, STATIC_DRAW upload,
+ * LINEAR_MIPMAP_LINEAR. Occupancy (which view faces the fragment) reads the
+ * exact source texel.
  *
  * Camera right is the vector stored in asset.json, which is
  * cross(forward, worldUp). A mirrored right is refused at load.
@@ -204,6 +206,13 @@ float unpack(vec4 c) {
   float e = c.r * 255.0 + c.g * 255.0 * 256.0 + c.b * 255.0 * 65536.0;
   return e / 16777215.0 * 16.0;
 }
+vec3 imagineRgb(int i, vec2 uv) {
+  vec2 sz = uViewSize[i];
+  vec2 clamped = clamp(uv, vec2(0.0), max(sz - vec2(1.0), vec2(0.0)));
+  vec2 texSz = vec2(textureSize(uViews, 0).xy);
+  vec2 st = (clamped + vec2(0.5)) / texSz;
+  return texture(uViews, vec3(st, float(i))).rgb;
+}
 void project(int i, vec3 p, out vec2 uv, out float z) {
   vec3 rel = p - uCamPos[i];
   z = dot(rel, uCamForward[i]);
@@ -259,7 +268,7 @@ void main() {
   px = clamp(px, ivec2(0), ivec2(int(sz.x) - 1, int(sz.y) - 1));
   vec4 src = texelFetch(uViews, ivec3(px, bestI), 0);
   if (src.a < 0.5) discard;
-  vec3 col = src.rgb;
+  vec3 col = imagineRgb(bestI, uv);
   if (secondW > 0.0 && bestW > 0.0 && secondW / max(bestW, 1e-6) >= uSeam) {
     vec2 uv2; float z2;
     project(secondI, vLocal, uv2, z2);
@@ -269,7 +278,7 @@ void main() {
     vec4 sec = texelFetch(uViews, ivec3(px2, secondI), 0);
     if (sec.a > 0.5) {
       float m = bestW / max(bestW + secondW, 1e-6);
-      col = col * m + sec.rgb * (1.0 - m);
+      col = col * m + imagineRgb(secondI, uv2) * (1.0 - m);
     }
   }
   if (uMode == 1) o = vec4(uId, 1.0);
@@ -302,23 +311,25 @@ export async function mountHull(gl, assetUrl) {
   gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
 
+  const viewLevels = Math.floor(Math.log2(Math.max(maxW, maxH))) + 1;
   const viewsTex = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D_ARRAY, viewsTex);
-  gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, maxW, maxH, cams.length);
-  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texStorage3D(gl.TEXTURE_2D_ARRAY, viewLevels, gl.RGBA8, maxW, maxH, cams.length);
+  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   for (let i = 0; i < images.length; i++) {
     const img = images[i];
     gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, i, img.w, img.h, 1, gl.RGBA, gl.UNSIGNED_BYTE, img.data);
   }
+  gl.generateMipmap(gl.TEXTURE_2D_ARRAY);
 
   const depthTex = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D_ARRAY, depthTex);
   gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, maxW, maxH, cams.length);
-  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
   const vao = gl.createVertexArray();
   gl.bindVertexArray(vao);
@@ -380,7 +391,7 @@ export async function mountHull(gl, assetUrl) {
     gl.uniform3fv(gl.getUniformLocation(zProg, "uForward"), cam.forward);
     gl.uniform1f(gl.getUniformLocation(zProg, "uFovY"), cam.fovYDeg);
     gl.uniform2f(gl.getUniformLocation(zProg, "uSize"), cam.width, cam.height);
-    gl.drawElements(gl.TRIANGLES, mesh.ic, gl.UNSIGNED_INT, 0);
+    gl.drawElementsInstanced(gl.TRIANGLES, mesh.ic, gl.UNSIGNED_INT, 0, 1);
   }
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   gl.deleteFramebuffer(fbo);

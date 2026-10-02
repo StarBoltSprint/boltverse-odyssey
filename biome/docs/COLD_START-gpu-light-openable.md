@@ -1,5 +1,7 @@
 # COLD START — GPU light layers + openable objects (clés en main)
 
+**Tool feedback (law 66):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take, write `feedback/<date>-<tool>.md`, and open it upstream. [`66-tool-feedback-loop.md`](66-tool-feedback-loop.md).
+
 Read `biome/docs/38-gpu-light-openable.md`. Runtimes: `biome/scripts/gpu-light/gpuLight.js` and `biome/scripts/gpu-openable/gpuOpenable.js`. Run `node biome/scripts/gpu-light/demo.js` and `node biome/scripts/gpu-openable/demo.js`.
 
 ## **GPU is REQUIRED.**

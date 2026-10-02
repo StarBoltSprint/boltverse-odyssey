@@ -85,8 +85,9 @@ function finish(layout, frames, extras) {
   rows.push(rowBackdrop(frames, layout));
   rows.push(rowSolids(frames));
   pushTransition(rows, frames);
-  const perf = judgePerf(frames);
+  const perf = judgePerf(frames, { softwareGl: !!extras.softwareGl });
   for (const perfRow of perf.rows) rows.push(perfRow);
+  if (extras.sourceLint) rows.push(rowSource(extras.sourceLint));
 
   const failed = rows.filter((r) => r.result !== "PASS").length;
   return {
@@ -110,6 +111,42 @@ function transitionSamples(frames) {
     else samples.push(block);
   }
   return samples;
+}
+
+function rowSource(lint) {
+  const findings = Array.isArray(lint.findings) ? lint.findings : [];
+  if (lint.skipped) {
+    return row(
+      "render_source",
+      "PASS",
+      { skipped: lint.skipped, findings: findings.length },
+      "Measurement fixture. Law 65 source lint is recorded and not applied, so this harness does not change the playcheck exit code.",
+      { partial: true },
+    );
+  }
+  if (!lint.scanned) {
+    return row(
+      "render_source",
+      "FAIL",
+      { scanned: false, findings: findings.length },
+      findings[0]?.detail || "Play source was not scanned. Pass a local build or --source <play.js>. Unmeasured is not a PASS.",
+    );
+  }
+  if (!findings.length) {
+    return row(
+      "render_source",
+      "PASS",
+      { scanned: true, files: lint.files || 0, findings: 0 },
+      "Law 65 source scan. No NEAREST world texture, no per-batch typed-array upload, no per-object draw loop, no camQuad on a solid.",
+    );
+  }
+  const sample = findings.slice(0, 8).map((f) => `${f.file}:${f.line} ${f.rule}`);
+  return row(
+    "render_source",
+    "FAIL",
+    { scanned: true, findings: findings.length, sample },
+    `Law 65 source scan failed. ${sample.join("; ")}`,
+  );
 }
 
 function pushTransition(rows, frames) {

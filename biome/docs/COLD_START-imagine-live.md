@@ -1,5 +1,7 @@
 # COLD START — Imagine live light (law 39)
 
+**Tool feedback (law 66):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take, write `feedback/<date>-<tool>.md`, and open it upstream. [`66-tool-feedback-loop.md`](66-tool-feedback-loop.md).
+
 Read [39-imagine-live-light.md](39-imagine-live-light.md) before cooking a GPU prop.
 
 1. Name the plate's three colors. Do not invent a new light.

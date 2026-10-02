@@ -1,5 +1,7 @@
 # COLD START — lane materials (paste before P0 stills)
 
+**Tool feedback (law 66):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take, write `feedback/<date>-<tool>.md`, and open it upstream. [`66-tool-feedback-loop.md`](66-tool-feedback-loop.md).
+
 Read `biome/docs/35-lane-materials.md`. Grammar stays Pack: 3 lanes, 1-point lock-off, ZERO dog. Law 20 measures the frame (width ~0.75–0.82, sky ~45%, plant ~0.80). Those numbers are not asphalt.
 
 **Before empty first/last stills:** if `{PAINT}` already names a road material, use it. Otherwise propose this menu and do not cook P0 on a silent default.

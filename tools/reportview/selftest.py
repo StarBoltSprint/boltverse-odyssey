@@ -42,6 +42,8 @@ def main() -> int:
     assert "<video controls playsinline" in html_pass
     assert "debug-topdown.png" in html_pass
     assert "ring_closed" in html_pass
+    assert "Perf: drawCalls=12, texMB=4.000, activeVideos=1, jsMs=8.000" in html_pass
+    missing_perf_line()
     assert "clearing.json id sample-zone" in html_pass
     assert "<script" not in html_pass
     assert "cdn." not in html_pass
@@ -184,6 +186,28 @@ def bad_flag() -> None:
         )
         if proc.returncode != 2:
             raise SystemExit(f"missing directory should exit 2, got {proc.returncode}")
+
+
+def missing_perf_line() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        take = Path(tmp) / "take"
+        out = Path(tmp) / "out"
+        build_take(take, "pass")
+        report_path = take / "playcheck" / "report.json"
+        report = json.loads(report_path.read_text(encoding="utf-8"))
+        report.pop("perfLine", None)
+        report_path.write_text(json.dumps(report), encoding="utf-8")
+        proc = subprocess.run(
+            [sys.executable, str(BUILD), "--take", "no-perf", "--take-dir", str(take), "--play-url", PASS_URL, "--date", "2026-10-02", "--out", str(out)],
+            check=False,
+            text=True,
+            capture_output=True,
+        )
+        if proc.returncode != 0 or not proc.stdout.startswith("FAIL "):
+            raise SystemExit(f"a playcheck report without the perf line must FAIL, got {proc.stdout!r}")
+        text = (out / "index.html").read_text(encoding="utf-8")
+        if 'data-verdict="FAIL"' not in text or "perf_line" not in text:
+            raise SystemExit("missing perf line was not shown as FAIL")
 
 
 def stable() -> None:
@@ -473,6 +497,7 @@ def play_report(kind: str) -> dict:
         "rows": rows,
         "summary": {"passed": passed, "failed": len(rows) - passed, "result": result},
         "notes": ["Synthetic reportview fixture. Numbers are the shape of a playcheck report, not a play build."],
+        "perfLine": "Perf: drawCalls=12, texMB=4.000, activeVideos=1, jsMs=8.000",
     }
 
 
