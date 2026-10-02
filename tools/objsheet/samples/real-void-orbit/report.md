@@ -12,6 +12,8 @@ Object **FAIL**.
 - ring: `PASS` yaws `[0, 45, 90, 135, 180, 225, 270, 315]`
 - guide: `SKIP` limit 0.97
 - hull: `FAIL` mean keep `0.7119` min `0.313` volume `0.3138`
+- margin: `FAIL` minFrac `0.0` maxEdge `1792`
+- holes: `FAIL` max interior `0.1093`
   - yaw-000.jpg keep `0.7996`
   - yaw-045.jpg keep `0.7727`
   - yaw-090.jpg keep `0.919`
@@ -53,6 +55,21 @@ Object **FAIL**.
 - FAIL opposite yaw-135.jpg|yaw-315.jpg height delta=0.180 limit=0.08
 - FAIL hull min keep=0.313 limit=0.7 (views disagree, hull shrinks)
 - FAIL hull mean keep=0.712 limit=0.8
+- FAIL margin yaw-000.jpg right=0px minFrac=0.0000 limit=0.03 (cropped views carve the hull)
+- FAIL margin yaw-045.jpg left=0px, right=0px minFrac=0.0000 limit=0.03 (cropped views carve the hull)
+- FAIL margin yaw-090.jpg left=0px, right=0px minFrac=0.0000 limit=0.03 (cropped views carve the hull)
+- FAIL margin yaw-135.jpg left=0px minFrac=0.0000 limit=0.03 (cropped views carve the hull)
+- FAIL margin yaw-180.jpg right=0px minFrac=0.0000 limit=0.03 (cropped views carve the hull)
+- FAIL margin yaw-225.jpg right=0px minFrac=0.0000 limit=0.03 (cropped views carve the hull)
+- FAIL margin yaw-270.jpg right=31px minFrac=0.0173 limit=0.03 (cropped views carve the hull)
+- FAIL holes yaw-000.jpg interior=0.0959 limit=0.002 (transparent interior is see-through on screen)
+- FAIL holes yaw-045.jpg interior=0.0670 limit=0.002 (transparent interior is see-through on screen)
+- FAIL holes yaw-090.jpg interior=0.0902 limit=0.002 (transparent interior is see-through on screen)
+- FAIL holes yaw-135.jpg interior=0.0694 limit=0.002 (transparent interior is see-through on screen)
+- FAIL holes yaw-180.jpg interior=0.0747 limit=0.002 (transparent interior is see-through on screen)
+- FAIL holes yaw-225.jpg interior=0.0605 limit=0.002 (transparent interior is see-through on screen)
+- FAIL holes yaw-270.jpg interior=0.0344 limit=0.002 (transparent interior is see-through on screen)
+- FAIL holes yaw-315.jpg interior=0.1093 limit=0.002 (transparent interior is see-through on screen)
 
 ## Heuristics
 
@@ -63,4 +80,7 @@ Object **FAIL**.
 - Colour histogram correlation is a weak identity test. A different facing colour can score low. The silhouette numbers are the gate.
 - Hull keep is a coarse 7-of-8 voxel carve (grid 32), ray-marched back into each mask. It is not the smooth surface-nets mesh.
 - Views that disagree shrink that carve toward a blob, and the keep fraction falls.
+- A silhouette that comes within 3% of any frame edge is cropped. Cropped views carve the hull. The margin is measured on the unfilled mask.
+- Interior holes are transparent pixels enclosed by the silhouette, as a fraction of interior pixels. Above 0.2% the stone is see-through. The tool does not fill those pixels.
+- Width and height are read from the file. A still over 2048 px on a side fails.
 - A hand-written PASS is not a PASS. Paste report.json and the sheet PNG.

@@ -4,7 +4,7 @@
   "sheet": "sheet.png",
   "objects": [
     {
-      "name": "bad-guide",
+      "name": "interior-holes",
       "ok": false,
       "views": [
         {
@@ -14,16 +14,16 @@
           "yawDeg": 0.0,
           "elevationDeg": null,
           "span": {
-            "area": 10864,
-            "height": 136,
-            "width": 102,
+            "area": 7529,
+            "height": 121,
+            "width": 81,
             "rows": [
-              32,
-              167
+              40,
+              160
             ],
             "cols": [
-              28,
-              129
+              40,
+              120
             ]
           }
         },
@@ -34,16 +34,16 @@
           "yawDeg": 45.0,
           "elevationDeg": null,
           "span": {
-            "area": 10298,
-            "height": 136,
-            "width": 97,
+            "area": 7529,
+            "height": 121,
+            "width": 81,
             "rows": [
-              32,
-              167
+              40,
+              160
             ],
             "cols": [
-              33,
-              129
+              40,
+              120
             ]
           }
         },
@@ -54,16 +54,16 @@
           "yawDeg": 90.0,
           "elevationDeg": null,
           "span": {
-            "area": 9820,
-            "height": 136,
-            "width": 92,
+            "area": 7529,
+            "height": 121,
+            "width": 81,
             "rows": [
-              32,
-              167
+              40,
+              160
             ],
             "cols": [
-              34,
-              125
+              40,
+              120
             ]
           }
         },
@@ -74,16 +74,16 @@
           "yawDeg": 135.0,
           "elevationDeg": null,
           "span": {
-            "area": 10298,
-            "height": 136,
-            "width": 97,
+            "area": 7529,
+            "height": 121,
+            "width": 81,
             "rows": [
-              32,
-              167
+              40,
+              160
             ],
             "cols": [
-              30,
-              126
+              40,
+              120
             ]
           }
         },
@@ -94,16 +94,16 @@
           "yawDeg": 180.0,
           "elevationDeg": null,
           "span": {
-            "area": 10864,
-            "height": 136,
-            "width": 102,
+            "area": 7529,
+            "height": 121,
+            "width": 81,
             "rows": [
-              32,
-              167
+              40,
+              160
             ],
             "cols": [
-              30,
-              131
+              40,
+              120
             ]
           }
         },
@@ -114,16 +114,16 @@
           "yawDeg": 225.0,
           "elevationDeg": null,
           "span": {
-            "area": 10386,
-            "height": 136,
-            "width": 98,
+            "area": 7529,
+            "height": 121,
+            "width": 81,
             "rows": [
-              32,
-              167
+              40,
+              160
             ],
             "cols": [
-              32,
-              129
+              40,
+              120
             ]
           }
         },
@@ -134,16 +134,16 @@
           "yawDeg": 270.0,
           "elevationDeg": null,
           "span": {
-            "area": 9688,
-            "height": 136,
-            "width": 90,
+            "area": 7529,
+            "height": 121,
+            "width": 81,
             "rows": [
-              32,
-              167
+              40,
+              160
             ],
             "cols": [
-              35,
-              124
+              40,
+              120
             ]
           }
         },
@@ -154,16 +154,16 @@
           "yawDeg": 315.0,
           "elevationDeg": null,
           "span": {
-            "area": 10386,
-            "height": 136,
-            "width": 98,
+            "area": 7529,
+            "height": 121,
+            "width": 81,
             "rows": [
-              32,
-              167
+              40,
+              160
             ],
             "cols": [
-              30,
-              127
+              40,
+              120
             ]
           }
         }
@@ -173,43 +173,43 @@
         "views": [
           {
             "file": "yaw-000.png",
-            "fillArea": 0.3395,
-            "height": 136
+            "fillArea": 0.2353,
+            "height": 121
           },
           {
             "file": "yaw-045.png",
-            "fillArea": 0.3218,
-            "height": 136
+            "fillArea": 0.2353,
+            "height": 121
           },
           {
             "file": "yaw-090.png",
-            "fillArea": 0.3069,
-            "height": 136
+            "fillArea": 0.2353,
+            "height": 121
           },
           {
             "file": "yaw-135.png",
-            "fillArea": 0.3218,
-            "height": 136
+            "fillArea": 0.2353,
+            "height": 121
           },
           {
             "file": "yaw-180.png",
-            "fillArea": 0.3395,
-            "height": 136
+            "fillArea": 0.2353,
+            "height": 121
           },
           {
             "file": "yaw-225.png",
-            "fillArea": 0.3246,
-            "height": 136
+            "fillArea": 0.2353,
+            "height": 121
           },
           {
             "file": "yaw-270.png",
-            "fillArea": 0.3028,
-            "height": 136
+            "fillArea": 0.2353,
+            "height": 121
           },
           {
             "file": "yaw-315.png",
-            "fillArea": 0.3246,
-            "height": 136
+            "fillArea": 0.2353,
+            "height": 121
           }
         ],
         "failures": []
@@ -237,80 +237,80 @@
             "b": "yaw-045.png",
             "yawA": 0.0,
             "yawB": 45.0,
-            "areaDelta": 0.0535,
+            "areaDelta": 0.0,
             "heightDelta": 0.0,
-            "colorCorr": 0.6727,
-            "colorDist": 38.6607
+            "colorCorr": 1.0,
+            "colorDist": 0.0
           },
           {
             "a": "yaw-045.png",
             "b": "yaw-090.png",
             "yawA": 45.0,
             "yawB": 90.0,
-            "areaDelta": 0.0475,
+            "areaDelta": 0.0,
             "heightDelta": 0.0,
-            "colorCorr": 0.6501,
-            "colorDist": 42.4429
+            "colorCorr": 1.0,
+            "colorDist": 0.0
           },
           {
             "a": "yaw-090.png",
             "b": "yaw-135.png",
             "yawA": 90.0,
             "yawB": 135.0,
-            "areaDelta": 0.0475,
+            "areaDelta": 0.0,
             "heightDelta": 0.0,
-            "colorCorr": 0.6866,
-            "colorDist": 54.3023
+            "colorCorr": 1.0,
+            "colorDist": 0.0
           },
           {
             "a": "yaw-135.png",
             "b": "yaw-180.png",
             "yawA": 135.0,
             "yawB": 180.0,
-            "areaDelta": 0.0535,
+            "areaDelta": 0.0,
             "heightDelta": 0.0,
-            "colorCorr": 0.6715,
-            "colorDist": 49.8756
+            "colorCorr": 1.0,
+            "colorDist": 0.0
           },
           {
             "a": "yaw-180.png",
             "b": "yaw-225.png",
             "yawA": 180.0,
             "yawB": 225.0,
-            "areaDelta": 0.045,
+            "areaDelta": 0.0,
             "heightDelta": 0.0,
-            "colorCorr": 0.8009,
-            "colorDist": 34.1997
+            "colorCorr": 1.0,
+            "colorDist": 0.0
           },
           {
             "a": "yaw-225.png",
             "b": "yaw-270.png",
             "yawA": 225.0,
             "yawB": 270.0,
-            "areaDelta": 0.0695,
+            "areaDelta": 0.0,
             "heightDelta": 0.0,
-            "colorCorr": 0.646,
-            "colorDist": 38.7612
+            "colorCorr": 1.0,
+            "colorDist": 0.0
           },
           {
             "a": "yaw-270.png",
             "b": "yaw-315.png",
             "yawA": 270.0,
             "yawB": 315.0,
-            "areaDelta": 0.0695,
+            "areaDelta": 0.0,
             "heightDelta": 0.0,
-            "colorCorr": 0.6176,
-            "colorDist": 60.9032
+            "colorCorr": 1.0,
+            "colorDist": 0.0
           },
           {
             "a": "yaw-315.png",
             "b": "yaw-000.png",
             "yawA": 315.0,
             "yawB": 0.0,
-            "areaDelta": 0.045,
+            "areaDelta": 0.0,
             "heightDelta": 0.0,
-            "colorCorr": 0.8367,
-            "colorDist": 50.6202
+            "colorCorr": 1.0,
+            "colorDist": 0.0
           }
         ],
         "opposite": [
@@ -323,19 +323,19 @@
           {
             "a": "yaw-045.png",
             "b": "yaw-225.png",
-            "widthDelta": 0.0103,
+            "widthDelta": 0.0,
             "heightDelta": 0.0
           },
           {
             "a": "yaw-090.png",
             "b": "yaw-270.png",
-            "widthDelta": 0.022,
+            "widthDelta": 0.0,
             "heightDelta": 0.0
           },
           {
             "a": "yaw-135.png",
             "b": "yaw-315.png",
-            "widthDelta": 0.0103,
+            "widthDelta": 0.0,
             "heightDelta": 0.0
           }
         ],
@@ -350,131 +350,74 @@
         "failures": []
       },
       "guide": {
-        "status": "FAIL",
-        "views": [
-          {
-            "file": "yaw-000.png",
-            "yawDeg": 0.0,
-            "iou": 0.5427,
-            "note": null
-          },
-          {
-            "file": "yaw-045.png",
-            "yawDeg": 45.0,
-            "iou": 0.5231,
-            "note": null
-          },
-          {
-            "file": "yaw-090.png",
-            "yawDeg": 90.0,
-            "iou": 0.5066,
-            "note": null
-          },
-          {
-            "file": "yaw-135.png",
-            "yawDeg": 135.0,
-            "iou": 0.5231,
-            "note": null
-          },
-          {
-            "file": "yaw-180.png",
-            "yawDeg": 180.0,
-            "iou": 0.5427,
-            "note": null
-          },
-          {
-            "file": "yaw-225.png",
-            "yawDeg": 225.0,
-            "iou": 0.5274,
-            "note": null
-          },
-          {
-            "file": "yaw-270.png",
-            "yawDeg": 270.0,
-            "iou": 0.5006,
-            "note": null
-          },
-          {
-            "file": "yaw-315.png",
-            "yawDeg": 315.0,
-            "iou": 0.5274,
-            "note": null
-          }
-        ],
+        "status": "SKIP",
+        "reason": "no guide frames",
+        "views": [],
         "limit": 0.97,
-        "failures": [
-          "FAIL guide yaw-000.png IoU=0.5427 limit=0.97",
-          "FAIL guide yaw-045.png IoU=0.5231 limit=0.97",
-          "FAIL guide yaw-090.png IoU=0.5066 limit=0.97",
-          "FAIL guide yaw-135.png IoU=0.5231 limit=0.97",
-          "FAIL guide yaw-180.png IoU=0.5427 limit=0.97",
-          "FAIL guide yaw-225.png IoU=0.5274 limit=0.97",
-          "FAIL guide yaw-270.png IoU=0.5006 limit=0.97",
-          "FAIL guide yaw-315.png IoU=0.5274 limit=0.97"
-        ]
+        "failures": []
       },
       "hull": {
         "status": "PASS",
         "vote": 7,
-        "grid": 36,
-        "volumeFraction": 0.3951,
-        "meanKeep": 0.9971,
-        "minKeep": 0.9939,
+        "grid": 32,
+        "volumeFraction": 0.2428,
+        "meanKeep": 0.9946,
+        "minKeep": 0.994,
         "views": [
           {
             "file": "yaw-000.png",
             "yawDeg": 0.0,
             "elevationDeg": null,
-            "keepFraction": 0.9975,
+            "keepFraction": 0.994,
             "horizontal": true
           },
           {
             "file": "yaw-045.png",
             "yawDeg": 45.0,
             "elevationDeg": null,
-            "keepFraction": 0.9939,
+            "keepFraction": 0.994,
             "horizontal": true
           },
           {
             "file": "yaw-090.png",
             "yawDeg": 90.0,
             "elevationDeg": null,
-            "keepFraction": 1.0,
+            "keepFraction": 0.9964,
             "horizontal": true
           },
           {
             "file": "yaw-135.png",
             "yawDeg": 135.0,
             "elevationDeg": null,
-            "keepFraction": 0.9974,
+            "keepFraction": 0.994,
             "horizontal": true
           },
           {
             "file": "yaw-180.png",
             "yawDeg": 180.0,
             "elevationDeg": null,
-            "keepFraction": 0.995,
+            "keepFraction": 0.994,
             "horizontal": true
           },
           {
             "file": "yaw-225.png",
             "yawDeg": 225.0,
             "elevationDeg": null,
-            "keepFraction": 0.9965,
+            "keepFraction": 0.994,
             "horizontal": true
           },
           {
             "file": "yaw-270.png",
             "yawDeg": 270.0,
             "elevationDeg": null,
-            "keepFraction": 0.9991,
+            "keepFraction": 0.9964,
             "horizontal": true
           },
           {
             "file": "yaw-315.png",
             "yawDeg": 315.0,
             "elevationDeg": null,
-            "keepFraction": 0.9974,
+            "keepFraction": 0.994,
             "horizontal": true
           }
         ],
@@ -490,7 +433,7 @@
           "marginFrac": 0.03,
           "maxEdgePx": 2048
         },
-        "minMarginFrac": 0.16,
+        "minMarginFrac": 0.195,
         "maxEdgePx": 200,
         "views": [
           {
@@ -499,17 +442,17 @@
             "height": 200,
             "measuredFrom": "file",
             "margin": {
-              "topPx": 32,
-              "bottomPx": 32,
-              "leftPx": 28,
-              "rightPx": 30,
-              "topFrac": 0.16,
-              "bottomFrac": 0.16,
-              "leftFrac": 0.175,
-              "rightFrac": 0.1875,
-              "minFrac": 0.16
+              "topPx": 40,
+              "bottomPx": 39,
+              "leftPx": 40,
+              "rightPx": 39,
+              "topFrac": 0.2,
+              "bottomFrac": 0.195,
+              "leftFrac": 0.25,
+              "rightFrac": 0.2437,
+              "minFrac": 0.195
             },
-            "holeFraction": 0.0
+            "holeFraction": 0.1043
           },
           {
             "file": "yaw-045.png",
@@ -517,17 +460,17 @@
             "height": 200,
             "measuredFrom": "file",
             "margin": {
-              "topPx": 32,
-              "bottomPx": 32,
-              "leftPx": 33,
-              "rightPx": 30,
-              "topFrac": 0.16,
-              "bottomFrac": 0.16,
-              "leftFrac": 0.2062,
-              "rightFrac": 0.1875,
-              "minFrac": 0.16
+              "topPx": 40,
+              "bottomPx": 39,
+              "leftPx": 40,
+              "rightPx": 39,
+              "topFrac": 0.2,
+              "bottomFrac": 0.195,
+              "leftFrac": 0.25,
+              "rightFrac": 0.2437,
+              "minFrac": 0.195
             },
-            "holeFraction": 0.0
+            "holeFraction": 0.1043
           },
           {
             "file": "yaw-090.png",
@@ -535,17 +478,17 @@
             "height": 200,
             "measuredFrom": "file",
             "margin": {
-              "topPx": 32,
-              "bottomPx": 32,
-              "leftPx": 34,
-              "rightPx": 34,
-              "topFrac": 0.16,
-              "bottomFrac": 0.16,
-              "leftFrac": 0.2125,
-              "rightFrac": 0.2125,
-              "minFrac": 0.16
+              "topPx": 40,
+              "bottomPx": 39,
+              "leftPx": 40,
+              "rightPx": 39,
+              "topFrac": 0.2,
+              "bottomFrac": 0.195,
+              "leftFrac": 0.25,
+              "rightFrac": 0.2437,
+              "minFrac": 0.195
             },
-            "holeFraction": 0.0
+            "holeFraction": 0.1043
           },
           {
             "file": "yaw-135.png",
@@ -553,17 +496,17 @@
             "height": 200,
             "measuredFrom": "file",
             "margin": {
-              "topPx": 32,
-              "bottomPx": 32,
-              "leftPx": 30,
-              "rightPx": 33,
-              "topFrac": 0.16,
-              "bottomFrac": 0.16,
-              "leftFrac": 0.1875,
-              "rightFrac": 0.2062,
-              "minFrac": 0.16
+              "topPx": 40,
+              "bottomPx": 39,
+              "leftPx": 40,
+              "rightPx": 39,
+              "topFrac": 0.2,
+              "bottomFrac": 0.195,
+              "leftFrac": 0.25,
+              "rightFrac": 0.2437,
+              "minFrac": 0.195
             },
-            "holeFraction": 0.0
+            "holeFraction": 0.1043
           },
           {
             "file": "yaw-180.png",
@@ -571,17 +514,17 @@
             "height": 200,
             "measuredFrom": "file",
             "margin": {
-              "topPx": 32,
-              "bottomPx": 32,
-              "leftPx": 30,
-              "rightPx": 28,
-              "topFrac": 0.16,
-              "bottomFrac": 0.16,
-              "leftFrac": 0.1875,
-              "rightFrac": 0.175,
-              "minFrac": 0.16
+              "topPx": 40,
+              "bottomPx": 39,
+              "leftPx": 40,
+              "rightPx": 39,
+              "topFrac": 0.2,
+              "bottomFrac": 0.195,
+              "leftFrac": 0.25,
+              "rightFrac": 0.2437,
+              "minFrac": 0.195
             },
-            "holeFraction": 0.0
+            "holeFraction": 0.1043
           },
           {
             "file": "yaw-225.png",
@@ -589,17 +532,17 @@
             "height": 200,
             "measuredFrom": "file",
             "margin": {
-              "topPx": 32,
-              "bottomPx": 32,
-              "leftPx": 32,
-              "rightPx": 30,
-              "topFrac": 0.16,
-              "bottomFrac": 0.16,
-              "leftFrac": 0.2,
-              "rightFrac": 0.1875,
-              "minFrac": 0.16
+              "topPx": 40,
+              "bottomPx": 39,
+              "leftPx": 40,
+              "rightPx": 39,
+              "topFrac": 0.2,
+              "bottomFrac": 0.195,
+              "leftFrac": 0.25,
+              "rightFrac": 0.2437,
+              "minFrac": 0.195
             },
-            "holeFraction": 0.0
+            "holeFraction": 0.1043
           },
           {
             "file": "yaw-270.png",
@@ -607,17 +550,17 @@
             "height": 200,
             "measuredFrom": "file",
             "margin": {
-              "topPx": 32,
-              "bottomPx": 32,
-              "leftPx": 35,
-              "rightPx": 35,
-              "topFrac": 0.16,
-              "bottomFrac": 0.16,
-              "leftFrac": 0.2188,
-              "rightFrac": 0.2188,
-              "minFrac": 0.16
+              "topPx": 40,
+              "bottomPx": 39,
+              "leftPx": 40,
+              "rightPx": 39,
+              "topFrac": 0.2,
+              "bottomFrac": 0.195,
+              "leftFrac": 0.25,
+              "rightFrac": 0.2437,
+              "minFrac": 0.195
             },
-            "holeFraction": 0.0
+            "holeFraction": 0.1043
           },
           {
             "file": "yaw-315.png",
@@ -625,84 +568,93 @@
             "height": 200,
             "measuredFrom": "file",
             "margin": {
-              "topPx": 32,
-              "bottomPx": 32,
-              "leftPx": 30,
-              "rightPx": 32,
-              "topFrac": 0.16,
-              "bottomFrac": 0.16,
-              "leftFrac": 0.1875,
-              "rightFrac": 0.2,
-              "minFrac": 0.16
+              "topPx": 40,
+              "bottomPx": 39,
+              "leftPx": 40,
+              "rightPx": 39,
+              "topFrac": 0.2,
+              "bottomFrac": 0.195,
+              "leftFrac": 0.25,
+              "rightFrac": 0.2437,
+              "minFrac": 0.195
             },
-            "holeFraction": 0.0
+            "holeFraction": 0.1043
           }
         ],
         "failures": []
       },
       "holes": {
-        "status": "PASS",
+        "status": "FAIL",
         "limits": {
           "holeFraction": 0.002
         },
-        "maxHoleFraction": 0.0,
+        "maxHoleFraction": 0.1043,
         "views": [
           {
             "file": "yaw-000.png",
-            "holeFraction": 0.0
+            "holeFraction": 0.1043
           },
           {
             "file": "yaw-045.png",
-            "holeFraction": 0.0
+            "holeFraction": 0.1043
           },
           {
             "file": "yaw-090.png",
-            "holeFraction": 0.0
+            "holeFraction": 0.1043
           },
           {
             "file": "yaw-135.png",
-            "holeFraction": 0.0
+            "holeFraction": 0.1043
           },
           {
             "file": "yaw-180.png",
-            "holeFraction": 0.0
+            "holeFraction": 0.1043
           },
           {
             "file": "yaw-225.png",
-            "holeFraction": 0.0
+            "holeFraction": 0.1043
           },
           {
             "file": "yaw-270.png",
-            "holeFraction": 0.0
+            "holeFraction": 0.1043
           },
           {
             "file": "yaw-315.png",
-            "holeFraction": 0.0
+            "holeFraction": 0.1043
           }
         ],
-        "failures": []
+        "failures": [
+          "FAIL holes yaw-000.png interior=0.1043 limit=0.002 (transparent interior is see-through on screen)",
+          "FAIL holes yaw-045.png interior=0.1043 limit=0.002 (transparent interior is see-through on screen)",
+          "FAIL holes yaw-090.png interior=0.1043 limit=0.002 (transparent interior is see-through on screen)",
+          "FAIL holes yaw-135.png interior=0.1043 limit=0.002 (transparent interior is see-through on screen)",
+          "FAIL holes yaw-180.png interior=0.1043 limit=0.002 (transparent interior is see-through on screen)",
+          "FAIL holes yaw-225.png interior=0.1043 limit=0.002 (transparent interior is see-through on screen)",
+          "FAIL holes yaw-270.png interior=0.1043 limit=0.002 (transparent interior is see-through on screen)",
+          "FAIL holes yaw-315.png interior=0.1043 limit=0.002 (transparent interior is see-through on screen)"
+        ]
       },
       "failures": [
-        "FAIL guide yaw-000.png IoU=0.5427 limit=0.97",
-        "FAIL guide yaw-045.png IoU=0.5231 limit=0.97",
-        "FAIL guide yaw-090.png IoU=0.5066 limit=0.97",
-        "FAIL guide yaw-135.png IoU=0.5231 limit=0.97",
-        "FAIL guide yaw-180.png IoU=0.5427 limit=0.97",
-        "FAIL guide yaw-225.png IoU=0.5274 limit=0.97",
-        "FAIL guide yaw-270.png IoU=0.5006 limit=0.97",
-        "FAIL guide yaw-315.png IoU=0.5274 limit=0.97"
+        "FAIL holes yaw-000.png interior=0.1043 limit=0.002 (transparent interior is see-through on screen)",
+        "FAIL holes yaw-045.png interior=0.1043 limit=0.002 (transparent interior is see-through on screen)",
+        "FAIL holes yaw-090.png interior=0.1043 limit=0.002 (transparent interior is see-through on screen)",
+        "FAIL holes yaw-135.png interior=0.1043 limit=0.002 (transparent interior is see-through on screen)",
+        "FAIL holes yaw-180.png interior=0.1043 limit=0.002 (transparent interior is see-through on screen)",
+        "FAIL holes yaw-225.png interior=0.1043 limit=0.002 (transparent interior is see-through on screen)",
+        "FAIL holes yaw-270.png interior=0.1043 limit=0.002 (transparent interior is see-through on screen)",
+        "FAIL holes yaw-315.png interior=0.1043 limit=0.002 (transparent interior is see-through on screen)"
       ]
     }
   ],
   "failures": [
-    "bad-guide: FAIL guide yaw-000.png IoU=0.5427 limit=0.97",
-    "bad-guide: FAIL guide yaw-045.png IoU=0.5231 limit=0.97",
-    "bad-guide: FAIL guide yaw-090.png IoU=0.5066 limit=0.97",
-    "bad-guide: FAIL guide yaw-135.png IoU=0.5231 limit=0.97",
-    "bad-guide: FAIL guide yaw-180.png IoU=0.5427 limit=0.97",
-    "bad-guide: FAIL guide yaw-225.png IoU=0.5274 limit=0.97",
-    "bad-guide: FAIL guide yaw-270.png IoU=0.5006 limit=0.97",
-    "bad-guide: FAIL guide yaw-315.png IoU=0.5274 limit=0.97"
+    "interior-holes: FAIL holes yaw-000.png interior=0.1043 limit=0.002 (transparent interior is see-through on screen)",
+    "interior-holes: FAIL holes yaw-045.png interior=0.1043 limit=0.002 (transparent interior is see-through on screen)",
+    "interior-holes: FAIL holes yaw-090.png interior=0.1043 limit=0.002 (transparent interior is see-through on screen)",
+    "interior-holes: FAIL holes yaw-135.png interior=0.1043 limit=0.002 (transparent interior is see-through on screen)",
+    "interior-holes: FAIL holes yaw-180.png interior=0.1043 limit=0.002 (transparent interior is see-through on screen)",
+    "interior-holes: FAIL holes yaw-225.png interior=0.1043 limit=0.002 (transparent interior is see-through on screen)",
+    "interior-holes: FAIL holes yaw-270.png interior=0.1043 limit=0.002 (transparent interior is see-through on screen)",
+    "interior-holes: FAIL holes yaw-315.png interior=0.1043 limit=0.002 (transparent interior is see-through on screen)"
   ],
   "heuristics": [
     "The sheet is a proof. It is not an Imagine asset and it must not be hung or sampled as a texture.",

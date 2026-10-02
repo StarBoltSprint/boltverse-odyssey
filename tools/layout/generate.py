@@ -601,6 +601,7 @@ def _collider(o: dict) -> dict:
         "id": o["id"],
         "object_id": o["id"],
         "radius_m": o["radius_m"],
+        "source": "hull-footprint",
     }
 
 

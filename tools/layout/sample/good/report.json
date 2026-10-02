@@ -36,7 +36,8 @@
         "invisible_heading_deg": 0.0,
         "invisible_stop_m": 0.0,
         "invisible_stops": 0,
-        "object_only": 0
+        "object_only": 0,
+        "ring_wall": 0
       },
       "status": "PASS"
     },

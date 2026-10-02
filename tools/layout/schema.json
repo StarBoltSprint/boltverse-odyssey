@@ -54,7 +54,8 @@
           "object_id": { "type": "string" },
           "center": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" } },
           "radius_m": { "type": "number", "minimum": 0 },
-          "base_y_m": { "type": "number" }
+          "base_y_m": { "type": "number" },
+          "source": { "type": "string" }
         }
       }
     },

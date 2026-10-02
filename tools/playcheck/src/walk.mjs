@@ -63,8 +63,11 @@ export async function runWalk({ page, layout, stillsDir, video, log }) {
   await capture("01-spawn", "spawn");
 
   await page.evaluate(() => window.__play.setInput({ forward: 0, turn: 1, gallop: false }));
+  const seen5 = new Set();
   const seen10 = new Set();
   const seen45 = new Set();
+  const orbitDir = path.join(stillsDir, "orbit");
+  mkdirSync(orbitDir, { recursive: true });
   const startSnap = await page.evaluate(() => window.__play.snapshot());
   samples.push({ id: "ring-start", kind: "ring", snap: startSnap });
   seen10.add(Math.round(startSnap.hdg / 10) * 10 % 360);
@@ -78,8 +81,19 @@ export async function runWalk({ page, layout, stillsDir, video, log }) {
     if (delta > 90) delta = 0;
     turned += delta;
     prev = pose.hdg;
+    const bucket5 = Math.round(pose.hdg / 5) * 5 % 360;
     const bucket10 = Math.round(pose.hdg / 10) * 10 % 360;
     const bucket45 = Math.round(pose.hdg / 45) * 45 % 360;
+    if (!seen5.has(bucket5) && angDist(pose.hdg, bucket5) <= 2.6) {
+      seen5.add(bucket5);
+      if (video) await video.grab(1);
+      else await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+      const snap = await page.evaluate(() => window.__play.snapshot());
+      snap.bearingDeg = bucket5;
+      const png = path.join(orbitDir, `b${String(bucket5).padStart(3, "0")}.png`);
+      await page.screenshot({ path: png, type: "png", scale: "device" });
+      samples.push({ id: `orbit-${String(bucket5).padStart(3, "0")}`, kind: "orbit", snap, png });
+    }
     if (!seen10.has(bucket10) && angDist(pose.hdg, bucket10) <= 6) {
       seen10.add(bucket10);
       const snap = await page.evaluate(() => window.__play.snapshot());

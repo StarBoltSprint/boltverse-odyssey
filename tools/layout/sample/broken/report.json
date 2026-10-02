@@ -36,7 +36,8 @@
         "invisible_heading_deg": 42.5,
         "invisible_stop_m": 17.37492593125609,
         "invisible_stops": 76,
-        "object_only": 0
+        "object_only": 0,
+        "ring_wall": 0
       },
       "status": "FAIL"
     },

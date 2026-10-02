@@ -188,7 +188,18 @@ def evaluate(clearing: dict, roots: list[Path], world: dict | None = None) -> tu
                 worst_delta = delta
                 worst_heading = sample
                 worst_stop = tc
-    pair_ok = not collider_only and not object_only and not mismatch and not dup and invisible == 0
+    ring_wall = []
+    if ring_r > 1.0:
+        for c in colliders:
+            cc = c.get("center") or [0, 0]
+            if hypot(float(cc[0]) - ox, float(cc[1]) - oz) <= 0.05 and abs(float(c.get("radius_m") or 0) - ring_r) <= 0.05:
+                ring_wall.append(str(c.get("id")))
+    pair_ok = not collider_only and not object_only and not mismatch and not dup and invisible == 0 and not ring_wall
+    note_bits = []
+    if collider_only:
+        note_bits.append("ids=" + ",".join(collider_only[:6]))
+    if ring_wall:
+        note_bits.append("ring_wall=" + ",".join(ring_wall[:4]))
     rows.append(
         Row(
             "collider_eq_visual",
@@ -201,8 +212,9 @@ def evaluate(clearing: dict, roots: list[Path], world: dict | None = None) -> tu
                 "invisible_stops": invisible,
                 "invisible_stop_m": worst_stop if worst_stop is not None else 0.0,
                 "invisible_heading_deg": worst_heading if invisible else 0.0,
+                "ring_wall": len(ring_wall),
             },
-            note=("ids=" + ",".join(collider_only[:6])) if collider_only else "",
+            note=" ".join(note_bits),
         )
     )
 

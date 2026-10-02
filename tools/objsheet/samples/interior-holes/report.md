@@ -1,60 +1,27 @@
 # objsheet
 
-Result: **PASS**
+Result: **FAIL**
 
 A hand-written PASS is not a PASS. Paste this file with the sheet PNG.
 
-## with-spur
+## interior-holes
 
-Object **PASS**.
-
-- silhouette: `PASS`
-- ring: `PASS` yaws `[0, 45, 90, 135, 180, 225, 270, 315]`
-- guide: `SKIP` limit 0.97
-- hull: `PASS` mean keep `0.9971` min `0.9939` volume `0.3951`
-- margin: `PASS` minFrac `0.16` maxEdge `200`
-- holes: `PASS` max interior `0.0`
-  - yaw-000.png keep `0.9975`
-  - yaw-045.png keep `0.9939`
-  - yaw-090.png keep `1.0`
-  - yaw-135.png keep `0.9974`
-  - yaw-180.png keep `0.995`
-  - yaw-225.png keep `0.9965`
-  - yaw-270.png keep `0.9991`
-  - yaw-315.png keep `0.9974`
-- adjacent:
-  - yaw-000.png → yaw-045.png area `0.0535` height `0.0` colour `0.6727`
-  - yaw-045.png → yaw-090.png area `0.0475` height `0.0` colour `0.6501`
-  - yaw-090.png → yaw-135.png area `0.0475` height `0.0` colour `0.6866`
-  - yaw-135.png → yaw-180.png area `0.0535` height `0.0` colour `0.6715`
-  - yaw-180.png → yaw-225.png area `0.045` height `0.0` colour `0.8009`
-  - yaw-225.png → yaw-270.png area `0.0695` height `0.0` colour `0.646`
-  - yaw-270.png → yaw-315.png area `0.0695` height `0.0` colour `0.6176`
-  - yaw-315.png → yaw-000.png area `0.045` height `0.0` colour `0.8367`
-- opposite:
-  - yaw-000.png | yaw-180.png width `0.0` height `0.0`
-  - yaw-045.png | yaw-225.png width `0.0103` height `0.0`
-  - yaw-090.png | yaw-270.png width `0.022` height `0.0`
-  - yaw-135.png | yaw-315.png width `0.0103` height `0.0`
-
-## spur
-
-Object **PASS**.
+Object **FAIL**.
 
 - silhouette: `PASS`
 - ring: `PASS` yaws `[0, 45, 90, 135, 180, 225, 270, 315]`
 - guide: `SKIP` limit 0.97
-- hull: `PASS` mean keep `0.9896` min `0.9875` volume `0.5115`
-- margin: `PASS` minFrac `0.2583` maxEdge `120`
-- holes: `PASS` max interior `0.0`
-  - yaw-000.png keep `0.9916`
-  - yaw-045.png keep `0.9875`
-  - yaw-090.png keep `0.9916`
-  - yaw-135.png keep `0.9875`
-  - yaw-180.png keep `0.9916`
-  - yaw-225.png keep `0.9875`
-  - yaw-270.png keep `0.9916`
-  - yaw-315.png keep `0.9875`
+- hull: `PASS` mean keep `0.9946` min `0.994` volume `0.2428`
+- margin: `PASS` minFrac `0.195` maxEdge `200`
+- holes: `FAIL` max interior `0.1043`
+  - yaw-000.png keep `0.994`
+  - yaw-045.png keep `0.994`
+  - yaw-090.png keep `0.9964`
+  - yaw-135.png keep `0.994`
+  - yaw-180.png keep `0.994`
+  - yaw-225.png keep `0.994`
+  - yaw-270.png keep `0.9964`
+  - yaw-315.png keep `0.994`
 - adjacent:
   - yaw-000.png → yaw-045.png area `0.0` height `0.0` colour `1.0`
   - yaw-045.png → yaw-090.png area `0.0` height `0.0` colour `1.0`
@@ -69,6 +36,14 @@ Object **PASS**.
   - yaw-045.png | yaw-225.png width `0.0` height `0.0`
   - yaw-090.png | yaw-270.png width `0.0` height `0.0`
   - yaw-135.png | yaw-315.png width `0.0` height `0.0`
+- FAIL holes yaw-000.png interior=0.1043 limit=0.002 (transparent interior is see-through on screen)
+- FAIL holes yaw-045.png interior=0.1043 limit=0.002 (transparent interior is see-through on screen)
+- FAIL holes yaw-090.png interior=0.1043 limit=0.002 (transparent interior is see-through on screen)
+- FAIL holes yaw-135.png interior=0.1043 limit=0.002 (transparent interior is see-through on screen)
+- FAIL holes yaw-180.png interior=0.1043 limit=0.002 (transparent interior is see-through on screen)
+- FAIL holes yaw-225.png interior=0.1043 limit=0.002 (transparent interior is see-through on screen)
+- FAIL holes yaw-270.png interior=0.1043 limit=0.002 (transparent interior is see-through on screen)
+- FAIL holes yaw-315.png interior=0.1043 limit=0.002 (transparent interior is see-through on screen)
 
 ## Heuristics
 

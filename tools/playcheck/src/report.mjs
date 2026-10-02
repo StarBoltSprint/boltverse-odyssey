@@ -8,6 +8,7 @@ const ORDER = [
   "mag",
   "stops_visible",
   "collider_eq_visual",
+  "solids_world_locked",
   "layout_rendered",
   "ring_closed",
   "gate",

@@ -93,7 +93,21 @@ Exit 0 only when every row PASSes. A hand-written PASS table is not this report.
       judge.add({ id: shot.id, kind: shot.kind, width, height, rgba, snap: shot.snap });
     }
     for (const sample of samples) {
-      judge.add({ id: sample.id, kind: sample.kind, width: 0, height: 0, rgba: null, snap: sample.snap });
+      let width = 0;
+      let height = 0;
+      let rgba = null;
+      if (sample.png) {
+        try {
+          const png = PNG.sync.read(readFileSync(sample.png));
+          width = png.width;
+          height = png.height;
+          rgba = png.data;
+          stills.push(path.relative(outDir, sample.png));
+        } catch {
+          notes.push(`Could not read still ${sample.id}`);
+        }
+      }
+      judge.add({ id: sample.id, kind: sample.kind, width, height, rgba, snap: sample.snap });
     }
     const sourceLint = collectSource(target, args.sources, shots);
     const judged = judge.finish({

@@ -427,6 +427,204 @@
         },
         "failures": []
       },
+      "margin": {
+        "status": "PASS",
+        "limits": {
+          "marginFrac": 0.03,
+          "maxEdgePx": 2048
+        },
+        "minMarginFrac": 0.16,
+        "maxEdgePx": 200,
+        "views": [
+          {
+            "file": "yaw-000.png",
+            "width": 160,
+            "height": 200,
+            "measuredFrom": "file",
+            "margin": {
+              "topPx": 32,
+              "bottomPx": 32,
+              "leftPx": 28,
+              "rightPx": 30,
+              "topFrac": 0.16,
+              "bottomFrac": 0.16,
+              "leftFrac": 0.175,
+              "rightFrac": 0.1875,
+              "minFrac": 0.16
+            },
+            "holeFraction": 0.0
+          },
+          {
+            "file": "yaw-045.png",
+            "width": 160,
+            "height": 200,
+            "measuredFrom": "file",
+            "margin": {
+              "topPx": 32,
+              "bottomPx": 32,
+              "leftPx": 33,
+              "rightPx": 30,
+              "topFrac": 0.16,
+              "bottomFrac": 0.16,
+              "leftFrac": 0.2062,
+              "rightFrac": 0.1875,
+              "minFrac": 0.16
+            },
+            "holeFraction": 0.0
+          },
+          {
+            "file": "yaw-090.png",
+            "width": 160,
+            "height": 200,
+            "measuredFrom": "file",
+            "margin": {
+              "topPx": 32,
+              "bottomPx": 32,
+              "leftPx": 34,
+              "rightPx": 34,
+              "topFrac": 0.16,
+              "bottomFrac": 0.16,
+              "leftFrac": 0.2125,
+              "rightFrac": 0.2125,
+              "minFrac": 0.16
+            },
+            "holeFraction": 0.0
+          },
+          {
+            "file": "yaw-135.png",
+            "width": 160,
+            "height": 200,
+            "measuredFrom": "file",
+            "margin": {
+              "topPx": 32,
+              "bottomPx": 32,
+              "leftPx": 30,
+              "rightPx": 33,
+              "topFrac": 0.16,
+              "bottomFrac": 0.16,
+              "leftFrac": 0.1875,
+              "rightFrac": 0.2062,
+              "minFrac": 0.16
+            },
+            "holeFraction": 0.0
+          },
+          {
+            "file": "yaw-180.png",
+            "width": 160,
+            "height": 200,
+            "measuredFrom": "file",
+            "margin": {
+              "topPx": 32,
+              "bottomPx": 32,
+              "leftPx": 30,
+              "rightPx": 28,
+              "topFrac": 0.16,
+              "bottomFrac": 0.16,
+              "leftFrac": 0.1875,
+              "rightFrac": 0.175,
+              "minFrac": 0.16
+            },
+            "holeFraction": 0.0
+          },
+          {
+            "file": "yaw-225.png",
+            "width": 160,
+            "height": 200,
+            "measuredFrom": "file",
+            "margin": {
+              "topPx": 32,
+              "bottomPx": 32,
+              "leftPx": 32,
+              "rightPx": 30,
+              "topFrac": 0.16,
+              "bottomFrac": 0.16,
+              "leftFrac": 0.2,
+              "rightFrac": 0.1875,
+              "minFrac": 0.16
+            },
+            "holeFraction": 0.0
+          },
+          {
+            "file": "yaw-270.png",
+            "width": 160,
+            "height": 200,
+            "measuredFrom": "file",
+            "margin": {
+              "topPx": 32,
+              "bottomPx": 32,
+              "leftPx": 35,
+              "rightPx": 35,
+              "topFrac": 0.16,
+              "bottomFrac": 0.16,
+              "leftFrac": 0.2188,
+              "rightFrac": 0.2188,
+              "minFrac": 0.16
+            },
+            "holeFraction": 0.0
+          },
+          {
+            "file": "yaw-315.png",
+            "width": 160,
+            "height": 200,
+            "measuredFrom": "file",
+            "margin": {
+              "topPx": 32,
+              "bottomPx": 32,
+              "leftPx": 30,
+              "rightPx": 32,
+              "topFrac": 0.16,
+              "bottomFrac": 0.16,
+              "leftFrac": 0.1875,
+              "rightFrac": 0.2,
+              "minFrac": 0.16
+            },
+            "holeFraction": 0.0
+          }
+        ],
+        "failures": []
+      },
+      "holes": {
+        "status": "PASS",
+        "limits": {
+          "holeFraction": 0.002
+        },
+        "maxHoleFraction": 0.0,
+        "views": [
+          {
+            "file": "yaw-000.png",
+            "holeFraction": 0.0
+          },
+          {
+            "file": "yaw-045.png",
+            "holeFraction": 0.0
+          },
+          {
+            "file": "yaw-090.png",
+            "holeFraction": 0.0
+          },
+          {
+            "file": "yaw-135.png",
+            "holeFraction": 0.0
+          },
+          {
+            "file": "yaw-180.png",
+            "holeFraction": 0.0
+          },
+          {
+            "file": "yaw-225.png",
+            "holeFraction": 0.0
+          },
+          {
+            "file": "yaw-270.png",
+            "holeFraction": 0.0
+          },
+          {
+            "file": "yaw-315.png",
+            "holeFraction": 0.0
+          }
+        ],
+        "failures": []
+      },
       "failures": []
     },
     {
@@ -853,6 +1051,204 @@
         },
         "failures": []
       },
+      "margin": {
+        "status": "PASS",
+        "limits": {
+          "marginFrac": 0.03,
+          "maxEdgePx": 2048
+        },
+        "minMarginFrac": 0.2583,
+        "maxEdgePx": 120,
+        "views": [
+          {
+            "file": "yaw-000.png",
+            "width": 96,
+            "height": 120,
+            "measuredFrom": "file",
+            "margin": {
+              "topPx": 32,
+              "bottomPx": 31,
+              "leftPx": 26,
+              "rightPx": 25,
+              "topFrac": 0.2667,
+              "bottomFrac": 0.2583,
+              "leftFrac": 0.2708,
+              "rightFrac": 0.2604,
+              "minFrac": 0.2583
+            },
+            "holeFraction": 0.0
+          },
+          {
+            "file": "yaw-045.png",
+            "width": 96,
+            "height": 120,
+            "measuredFrom": "file",
+            "margin": {
+              "topPx": 32,
+              "bottomPx": 31,
+              "leftPx": 26,
+              "rightPx": 25,
+              "topFrac": 0.2667,
+              "bottomFrac": 0.2583,
+              "leftFrac": 0.2708,
+              "rightFrac": 0.2604,
+              "minFrac": 0.2583
+            },
+            "holeFraction": 0.0
+          },
+          {
+            "file": "yaw-090.png",
+            "width": 96,
+            "height": 120,
+            "measuredFrom": "file",
+            "margin": {
+              "topPx": 32,
+              "bottomPx": 31,
+              "leftPx": 26,
+              "rightPx": 25,
+              "topFrac": 0.2667,
+              "bottomFrac": 0.2583,
+              "leftFrac": 0.2708,
+              "rightFrac": 0.2604,
+              "minFrac": 0.2583
+            },
+            "holeFraction": 0.0
+          },
+          {
+            "file": "yaw-135.png",
+            "width": 96,
+            "height": 120,
+            "measuredFrom": "file",
+            "margin": {
+              "topPx": 32,
+              "bottomPx": 31,
+              "leftPx": 26,
+              "rightPx": 25,
+              "topFrac": 0.2667,
+              "bottomFrac": 0.2583,
+              "leftFrac": 0.2708,
+              "rightFrac": 0.2604,
+              "minFrac": 0.2583
+            },
+            "holeFraction": 0.0
+          },
+          {
+            "file": "yaw-180.png",
+            "width": 96,
+            "height": 120,
+            "measuredFrom": "file",
+            "margin": {
+              "topPx": 32,
+              "bottomPx": 31,
+              "leftPx": 26,
+              "rightPx": 25,
+              "topFrac": 0.2667,
+              "bottomFrac": 0.2583,
+              "leftFrac": 0.2708,
+              "rightFrac": 0.2604,
+              "minFrac": 0.2583
+            },
+            "holeFraction": 0.0
+          },
+          {
+            "file": "yaw-225.png",
+            "width": 96,
+            "height": 120,
+            "measuredFrom": "file",
+            "margin": {
+              "topPx": 32,
+              "bottomPx": 31,
+              "leftPx": 26,
+              "rightPx": 25,
+              "topFrac": 0.2667,
+              "bottomFrac": 0.2583,
+              "leftFrac": 0.2708,
+              "rightFrac": 0.2604,
+              "minFrac": 0.2583
+            },
+            "holeFraction": 0.0
+          },
+          {
+            "file": "yaw-270.png",
+            "width": 96,
+            "height": 120,
+            "measuredFrom": "file",
+            "margin": {
+              "topPx": 32,
+              "bottomPx": 31,
+              "leftPx": 26,
+              "rightPx": 25,
+              "topFrac": 0.2667,
+              "bottomFrac": 0.2583,
+              "leftFrac": 0.2708,
+              "rightFrac": 0.2604,
+              "minFrac": 0.2583
+            },
+            "holeFraction": 0.0
+          },
+          {
+            "file": "yaw-315.png",
+            "width": 96,
+            "height": 120,
+            "measuredFrom": "file",
+            "margin": {
+              "topPx": 32,
+              "bottomPx": 31,
+              "leftPx": 26,
+              "rightPx": 25,
+              "topFrac": 0.2667,
+              "bottomFrac": 0.2583,
+              "leftFrac": 0.2708,
+              "rightFrac": 0.2604,
+              "minFrac": 0.2583
+            },
+            "holeFraction": 0.0
+          }
+        ],
+        "failures": []
+      },
+      "holes": {
+        "status": "PASS",
+        "limits": {
+          "holeFraction": 0.002
+        },
+        "maxHoleFraction": 0.0,
+        "views": [
+          {
+            "file": "yaw-000.png",
+            "holeFraction": 0.0
+          },
+          {
+            "file": "yaw-045.png",
+            "holeFraction": 0.0
+          },
+          {
+            "file": "yaw-090.png",
+            "holeFraction": 0.0
+          },
+          {
+            "file": "yaw-135.png",
+            "holeFraction": 0.0
+          },
+          {
+            "file": "yaw-180.png",
+            "holeFraction": 0.0
+          },
+          {
+            "file": "yaw-225.png",
+            "holeFraction": 0.0
+          },
+          {
+            "file": "yaw-270.png",
+            "holeFraction": 0.0
+          },
+          {
+            "file": "yaw-315.png",
+            "holeFraction": 0.0
+          }
+        ],
+        "failures": []
+      },
       "failures": []
     }
   ],
@@ -865,6 +1261,9 @@
     "Colour histogram correlation is a weak identity test. A different facing colour can score low. The silhouette numbers are the gate.",
     "Hull keep is a coarse 7-of-8 voxel carve (grid 32), ray-marched back into each mask. It is not the smooth surface-nets mesh.",
     "Views that disagree shrink that carve toward a blob, and the keep fraction falls.",
+    "A silhouette that comes within 3% of any frame edge is cropped. Cropped views carve the hull. The margin is measured on the unfilled mask.",
+    "Interior holes are transparent pixels enclosed by the silhouette, as a fraction of interior pixels. Above 0.2% the stone is see-through. The tool does not fill those pixels.",
+    "Width and height are read from the file. A still over 2048 px on a side fails.",
     "A hand-written PASS is not a PASS. Paste report.json and the sheet PNG."
   ],
   "thresholds": {
@@ -876,6 +1275,9 @@
     "colorCorr": 0.2,
     "colorDist": 110.0,
     "keepMin": 0.7,
-    "keepMean": 0.8
+    "keepMean": 0.8,
+    "marginFrac": 0.03,
+    "holeFraction": 0.002,
+    "maxEdgePx": 2048
   }
 }

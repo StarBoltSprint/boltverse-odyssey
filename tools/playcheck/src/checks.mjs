@@ -25,6 +25,7 @@ import {
 } from "./pixels.mjs";
 import { judgeTransition } from "../../../biome/scripts/zone-flow/zoneFlow.mjs";
 import { judgePerf } from "../../perf/stats.mjs";
+import { judgeOrbit } from "./billboard.mjs";
 
 const WEBGL_RE = /webgl|invalid_|gl_invalid|texsubimage|teximage|geterror/i;
 
@@ -82,6 +83,7 @@ function finish(layout, frames, extras) {
   rows.push(rowBlack(frames));
   rows.push(rowTiles(frames));
   rows.push(rowBackdrop(frames, layout));
+  rows.push(rowSolids(frames));
   pushTransition(rows, frames);
   const perf = judgePerf(frames, { softwareGl: !!extras.softwareGl });
   for (const perfRow of perf.rows) rows.push(perfRow);
@@ -176,6 +178,40 @@ function pushTransition(rows, frames) {
 
 function row(id, result, numbers, detail, extra = {}) {
   return { id, result, numbers, detail, heuristic: !!extra.heuristic, partial: !!extra.partial };
+}
+
+function rowSolids(frames) {
+  const orbits = frames.filter((f) => f.kind === "orbit");
+  const harness = frames.some((f) => f.snap && f.snap.harness);
+  const judged = judgeOrbit(orbits);
+  const numbers = {
+    objects: judged.objects,
+    pairs: judged.pairs,
+    identical: judged.identical,
+    applied: !harness,
+  };
+  const detail =
+    "A solid's screen crop must change across consecutive 5° orbit steps. Mean absolute error at or under 3/255 is the same card. Zero identical pairs is the only pass. The measurement harness records the count and does not apply it.";
+  if (harness) {
+    return row("solids_world_locked", "PASS", numbers, detail, { partial: true });
+  }
+  if (judged.pairs === 0) {
+    return row(
+      "solids_world_locked",
+      "FAIL",
+      numbers,
+      "No 5° orbit pair was measured. An unmeasured solid is not world-locked.",
+    );
+  }
+  if (!judged.ok) {
+    return row(
+      "solids_world_locked",
+      "FAIL",
+      numbers,
+      "At least one solid stayed pixel-identical across a 5° step. That draw is a camera-facing card.",
+    );
+  }
+  return row("solids_world_locked", "PASS", numbers, detail);
 }
 
 function rowDebug(frames) {

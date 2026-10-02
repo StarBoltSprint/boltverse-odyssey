@@ -131,6 +131,21 @@ def check_rock(tmp: Path) -> None:
     assert_smooth(nets, 500)
     assert_depth(legacy, "png")
     assert_depth(nets, "png")
+    if nets.get("sourceGates", {}).get("status") != "PASS":
+        raise SystemExit(f"FAIL selftest: source gates {nets.get('sourceGates')}")
+    handed = nets.get("handedness") or {}
+    if handed.get("status") != "PASS" or not handed.get("plusXAtYaw0IsScreenRight"):
+        raise SystemExit(f"FAIL selftest: handedness {handed}")
+    asset = json.loads((tmp / "rock-nets" / "asset.json").read_text())
+    foot = asset.get("footprint") or {}
+    if foot.get("source") != "hull-xz":
+        raise SystemExit(f"FAIL selftest: footprint {foot}")
+    if abs(float(asset["placement"]["collisionRadius"]) - float(foot["radius_m"])) > 1e-6:
+        raise SystemExit("FAIL selftest: collision radius is not the XZ footprint")
+    if float(asset["placement"]["boundingRadius"]) + 1e-6 < float(foot["radius_m"]):
+        raise SystemExit("FAIL selftest: bounding radius is inside the footprint")
+    if (asset.get("handedness") or {}).get("right") != "cross(forward, worldUp)":
+        raise SystemExit("FAIL selftest: asset handedness contract")
     print("selftest rock legacy+nets ok")
 
 
@@ -469,10 +484,98 @@ def write_proof(tmp: Path) -> None:
     print("proof stills", proof)
 
 
+def _eight(folder: Path, painter) -> tuple[Path, Path]:
+    views = folder / "views"
+    views.mkdir(parents=True)
+    entries = []
+    for yaw in range(0, 360, 45):
+        name = f"yaw-{yaw:03d}.png"
+        painter(views / name)
+        entries.append({"file": name, "yawDeg": float(yaw)})
+    cfg = {
+        "name": folder.name,
+        "objectSize": [1.2, 1.2, 1.2],
+        "vote": 7,
+        "grid": 16,
+        "bgThreshold": 0.04,
+        "camera": {"distance": 3.0, "eyeY": 0.0, "fovYDeg": 40.0},
+        "views": entries,
+    }
+    config = folder / "config.json"
+    config.write_text(json.dumps(cfg, indent=2) + "\n")
+    return views, config
+
+
+def _expect_fail(views: Path, config: Path, out: Path, needle: str) -> None:
+    if out.exists():
+        shutil.rmtree(out)
+    code, text = call_raw([PY, str(TOOL / "build.py"), "--views", str(views), "--config", str(config), "--out", str(out)])
+    if code == 0 or needle not in text:
+        raise SystemExit(f"FAIL selftest: expected {needle}\n{text}")
+    if (out / "asset.json").is_file():
+        raise SystemExit("FAIL selftest: a rejected view set wrote asset.json")
+
+
+def check_basis() -> None:
+    proc = subprocess.run(
+        ["node", "--test", str(TOOL / "runtime" / "basis.test.mjs")],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+    )
+    if proc.returncode != 0:
+        raise SystemExit(proc.stdout + proc.stderr)
+    if str(TOOL) not in sys.path:
+        sys.path.insert(0, str(TOOL))
+    from gates import basis_report, view_index
+
+    yaws = [float(i) for i in range(0, 360, 45)]
+    if view_index(90.0, yaws) != yaws.index(90.0):
+        raise SystemExit("FAIL selftest: bearing 90 did not select yaw 90")
+    if view_index(90.0, yaws) == yaws.index(270.0):
+        raise SystemExit("FAIL selftest: bearing 90 selected the mirror yaw")
+    probe = basis_report([])
+    if probe.get("status") != "PASS" or not probe.get("plusXAtYaw0IsScreenRight"):
+        raise SystemExit(f"FAIL selftest: basis probe {probe}")
+    print("selftest basis ok")
+
+
+def check_rejects(tmp: Path) -> None:
+    def cropped(path: Path) -> None:
+        rgb = np.zeros((200, 160, 3), np.uint8)
+        rgb[0:140, 30:130] = (180, 180, 180)
+        Image.fromarray(rgb, "RGB").save(path)
+
+    def holed(path: Path) -> None:
+        h, w = 200, 160
+        rgba = np.zeros((h, w, 4), np.uint8)
+        ys, xs = np.mgrid[0:h, 0:w]
+        body = ((ys - 100) / 60) ** 2 + ((xs - 80) / 40) ** 2 <= 1
+        hole = ((ys - 100) / 18) ** 2 + ((xs - 80) / 14) ** 2 <= 1
+        rgba[body] = (200, 180, 160, 255)
+        rgba[hole] = (0, 0, 0, 0)
+        Image.fromarray(rgba, "RGBA").save(path)
+
+    def oversized(path: Path) -> None:
+        rgb = np.zeros((80, 2100, 3), np.uint8)
+        rgb[12:68, 80:2020] = (160, 160, 160)
+        Image.fromarray(rgb, "RGB").save(path)
+
+    views, config = _eight(tmp / "cropped", cropped)
+    _expect_fail(views, config, tmp / "cropped-out", "FAIL margin")
+    views, config = _eight(tmp / "holed", holed)
+    _expect_fail(views, config, tmp / "holed-out", "FAIL holes")
+    views, config = _eight(tmp / "oversized", oversized)
+    _expect_fail(views, config, tmp / "oversized-out", "FAIL size")
+    print("selftest source rejects ok")
+
+
 def main() -> int:
     proof = "--proof" in sys.argv
+    check_basis()
     with tempfile.TemporaryDirectory(prefix="walkaround-selftest-") as raw:
         tmp = Path(raw)
+        check_rejects(tmp)
         check_rock(tmp)
         check_bowl(tmp)
         check_assembly(tmp)
