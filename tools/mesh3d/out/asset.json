@@ -1,0 +1,231 @@
+{
+  "schema": "mesh3d-real-1",
+  "engine": "triposr",
+  "drawsOwnPixels": false,
+  "unlit": true,
+  "blend": "cos(yawDelta), zero past 45deg",
+  "elevationDeg": 18.0,
+  "elevationSource": "KEEP prompt, eighteen degrees (learn/recipes/hull-ship-xai-starship-hero.md)",
+  "hfovDeg": 24.0,
+  "photoDistance": 4.0,
+  "viewDistance": 4.271686501651659,
+  "groundY": 0.0034677088260650635,
+  "bury": "half",
+  "zBias": 0.08,
+  "phone": [
+    720,
+    1600
+  ],
+  "projectYaws": [
+    0,
+    45,
+    90,
+    180,
+    270,
+    315
+  ],
+  "hullYaws": [
+    0,
+    90,
+    180,
+    270
+  ],
+  "views": [
+    {
+      "file": "yaw-000.png",
+      "yawDeg": 0.0,
+      "width": 1280,
+      "height": 720,
+      "fovYDeg": 13.63618607980901,
+      "camera": {
+        "yawDeg": 0.0,
+        "elevationDeg": 18.0,
+        "distance": 4.0,
+        "position": [
+          0.0,
+          1.236068,
+          3.804226
+        ],
+        "right": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "up": [
+          0.0,
+          0.951057,
+          -0.309017
+        ],
+        "forward": [
+          -0.0,
+          -0.309017,
+          -0.951057
+        ]
+      }
+    },
+    {
+      "file": "yaw-045.png",
+      "yawDeg": 45.0,
+      "width": 1280,
+      "height": 720,
+      "fovYDeg": 13.63618607980901,
+      "camera": {
+        "yawDeg": 45.0,
+        "elevationDeg": 18.0,
+        "distance": 4.0,
+        "position": [
+          2.689994,
+          1.236068,
+          2.689994
+        ],
+        "right": [
+          0.707107,
+          0.0,
+          -0.707107
+        ],
+        "up": [
+          -0.218508,
+          0.951057,
+          -0.218508
+        ],
+        "forward": [
+          -0.672499,
+          -0.309017,
+          -0.672499
+        ]
+      }
+    },
+    {
+      "file": "yaw-090.png",
+      "yawDeg": 90.0,
+      "width": 1280,
+      "height": 720,
+      "fovYDeg": 13.63618607980901,
+      "camera": {
+        "yawDeg": 90.0,
+        "elevationDeg": 18.0,
+        "distance": 4.0,
+        "position": [
+          3.804226,
+          1.236068,
+          0.0
+        ],
+        "right": [
+          0.0,
+          0.0,
+          -1.0
+        ],
+        "up": [
+          -0.309017,
+          0.951057,
+          -0.0
+        ],
+        "forward": [
+          -0.951057,
+          -0.309017,
+          -0.0
+        ]
+      }
+    },
+    {
+      "file": "yaw-180.png",
+      "yawDeg": 180.0,
+      "width": 1280,
+      "height": 720,
+      "fovYDeg": 13.63618607980901,
+      "camera": {
+        "yawDeg": 180.0,
+        "elevationDeg": 18.0,
+        "distance": 4.0,
+        "position": [
+          0.0,
+          1.236068,
+          -3.804226
+        ],
+        "right": [
+          -1.0,
+          0.0,
+          -0.0
+        ],
+        "up": [
+          -0.0,
+          0.951057,
+          0.309017
+        ],
+        "forward": [
+          -0.0,
+          -0.309017,
+          0.951057
+        ]
+      }
+    },
+    {
+      "file": "yaw-270.png",
+      "yawDeg": 270.0,
+      "width": 1280,
+      "height": 720,
+      "fovYDeg": 13.63618607980901,
+      "camera": {
+        "yawDeg": 270.0,
+        "elevationDeg": 18.0,
+        "distance": 4.0,
+        "position": [
+          -3.804226,
+          1.236068,
+          -0.0
+        ],
+        "right": [
+          -0.0,
+          0.0,
+          1.0
+        ],
+        "up": [
+          0.309017,
+          0.951057,
+          0.0
+        ],
+        "forward": [
+          0.951057,
+          -0.309017,
+          0.0
+        ]
+      }
+    },
+    {
+      "file": "yaw-315.png",
+      "yawDeg": 315.0,
+      "width": 1280,
+      "height": 720,
+      "fovYDeg": 13.63618607980901,
+      "camera": {
+        "yawDeg": 315.0,
+        "elevationDeg": 18.0,
+        "distance": 4.0,
+        "position": [
+          -2.689994,
+          1.236068,
+          2.689994
+        ],
+        "right": [
+          0.707107,
+          -0.0,
+          0.707107
+        ],
+        "up": [
+          0.218508,
+          0.951057,
+          -0.218508
+        ],
+        "forward": [
+          0.672499,
+          -0.309017,
+          -0.672499
+        ]
+      }
+    }
+  ],
+  "mesh": "ship.obj",
+  "glb": "ship.glb",
+  "triangles": 2536,
+  "vertices": 1270
+}

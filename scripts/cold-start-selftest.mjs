@@ -719,7 +719,10 @@ must(/béton/.test(laneLaw) && /grey concrete/.test(laneLaw) && /silent default/
 must(/\{LANE_MATERIAL\}/.test(laneLaw) && /\{PAINT\}/.test(laneLaw), "law 35: {LANE_MATERIAL} inside {PAINT}");
 must(hasLaneMenu(lanePaste) && /béton/.test(lanePaste), "lane-materials paste: menu + béton ban");
 must(hasLaneMenu(cookReadme) && /35-lane-materials/.test(cookReadme) && /béton/.test(cookReadme), "biome-cook README step 3: menu + law 35");
-must(cookPaste === cookPasteCopy, "COLD_START-biome-cook copies match");
+// The two pastes are the same text. The law 66 link target differs so it
+// resolves from biome/docs/ and from biome/scripts/biome-cook/.
+const cookPasteNorm = (text) => text.replace(/\[[^\]]+\]\([^)]*66-tool-feedback-loop\.md\)/g, "[66-tool-feedback-loop.md](66-tool-feedback-loop.md)");
+must(cookPasteNorm(cookPaste) === cookPasteNorm(cookPasteCopy), "COLD_START-biome-cook copies match");
 must(hasLaneMenu(cookPaste) && /35-lane-materials/.test(cookPaste) && /béton/.test(cookPaste), "COLD_START-biome-cook: menu before P0");
 must(/35-lane-materials/.test(cookSh) && /béton/.test(cookSh) && /Obsidian glass/.test(cookSh) && /Mix vault/.test(cookSh), "biome-cook.sh checklist: law 35 menu");
 must(/\{LANE_MATERIAL\}/.test(emptyPlate) && /\{PAINT\}/.test(emptyPlate), "image-empty-plate: {LANE_MATERIAL} + {PAINT}");

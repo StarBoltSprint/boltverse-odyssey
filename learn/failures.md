@@ -220,3 +220,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Rail 12 in `spec.md` and [`learn/geometry.md`](geometry.md). Reports on the same script: `--report horizon`, `sky`, `turn`, `sun`, `texel`, `scale`. They are not the hang gate. The dash thresholds stay sealed. |
 | Guard | `python3 biome/scripts/plate-geo-qc/selftest.py` |
 | Sources | Owner geometry lock, 2026-10-02. Practice, not an xAI seal. |
+
+### 2026-10-02 — single-image mesh leaves the phone orbit with holes
+
+| | |
+| --- | --- |
+| Take | Ship real-3D proof. No new Imagine cook. |
+| Defect | The phone orbit of the crashed ship shows holes through the hull. Mean coverage of the above-ground surface is 0.703. The minimum is 0.618 at yaw 90 and yaw 180. |
+| Root cause | TripoSR saw one still (`yaw-000`) and invented the other sides. After yaw/scale alignment the silhouette IoU against the four cardinal plates is 0.445. The build accepts that mesh at 0.15, so a shape that does not sit in the plates is drawn, and every texel those plates miss stays transparent. View drift between the plates is a separate, already logged miss (orbit views). |
+| Fix | The shown frames keep the transparent holes. The four-view visual hull on the same cameras scored silhouette IoU 0.543 and remains the fallback when the network mesh will not line up. No second network resolution. |
+| Guard | `tools/mesh3d/out/qc/report.json` fields `coverageMin`, `coverageMean`, and `triposr.alignIoU`. `python3 tools/mesh3d/selftest.py` checks the synthetic box, the blend, and magnification ≤ 1. Nothing fails the ship build for a low align IoU or for holes. |
+| Sources | `learn/take-notes/2026-10-02-ship-real3d.md`. Frames `tools/mesh3d/out/frames/yaw-090.png`. |

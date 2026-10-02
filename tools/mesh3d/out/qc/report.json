@@ -1,0 +1,120 @@
+{
+  "ok": true,
+  "engine": "triposr",
+  "visualHullTries": [
+    {
+      "iou": 0.5431726287030858,
+      "grid": 40,
+      "min_votes": 3,
+      "dilate_px": 8,
+      "triangles": 4948,
+      "solid": 2670
+    }
+  ],
+  "visualHullIoU": 0.5431726287030858,
+  "triposr": {
+    "ok": true,
+    "engine": "triposr",
+    "image": "tools/mesh3d/inputs/ship/yaw-000.png",
+    "resolution": 48,
+    "triangles": 2536,
+    "densityMin": 9.705502179713221e-07,
+    "densityMax": 17940.99609375,
+    "vertexColors": false,
+    "reason": "mesh written, network colours discarded",
+    "attempted": true,
+    "reused": true,
+    "alignIoU": 0.44497605560548714,
+    "alignYawDeg": 320.0,
+    "alignScale": 1.215
+  },
+  "triposrWeights": "/tmp/cursor/triposr/model.ckpt",
+  "triangles": 2536,
+  "vertices": 1270,
+  "texture": "source png nearest, 1280x720, no atlas upsample",
+  "phone": [
+    720,
+    1600
+  ],
+  "maxMagnification": 0.975609756097561,
+  "magnificationPerView": [
+    {
+      "yawDeg": 0.0,
+      "maxMagnification": 0.9314
+    },
+    {
+      "yawDeg": 90.0,
+      "maxMagnification": 0.9756
+    },
+    {
+      "yawDeg": 180.0,
+      "maxMagnification": 0.9342
+    },
+    {
+      "yawDeg": 270.0,
+      "maxMagnification": 0.8287
+    }
+  ],
+  "viewDistance": 4.271686501651659,
+  "photoDistance": 4.0,
+  "coverageByYaw": [
+    {
+      "yawDeg": 0,
+      "visible": 40386,
+      "covered": 30848,
+      "fraction": 0.763829049670678
+    },
+    {
+      "yawDeg": 45,
+      "visible": 42072,
+      "covered": 31782,
+      "fraction": 0.7554192812321734
+    },
+    {
+      "yawDeg": 90,
+      "visible": 40935,
+      "covered": 25284,
+      "fraction": 0.6176621473067058
+    },
+    {
+      "yawDeg": 135,
+      "visible": 38874,
+      "covered": 25520,
+      "fraction": 0.656479909451047
+    },
+    {
+      "yawDeg": 180,
+      "visible": 44756,
+      "covered": 27655,
+      "fraction": 0.6179059790866029
+    },
+    {
+      "yawDeg": 225,
+      "visible": 48055,
+      "covered": 31933,
+      "fraction": 0.66450941629383
+    },
+    {
+      "yawDeg": 270,
+      "visible": 46970,
+      "covered": 35735,
+      "fraction": 0.7608047690014903
+    },
+    {
+      "yawDeg": 315,
+      "visible": 37296,
+      "covered": 29218,
+      "fraction": 0.7834084084084084
+    }
+  ],
+  "coverageMean": 0.702502370056367,
+  "coverageMin": 0.6176621473067058,
+  "coverageFaceHalfBuried": 0.762170790103751,
+  "coverageFaceNote": "above-ground face centroids that received a real texel from at least one orbit yaw; no facing test; coverageByYaw is the claim",
+  "ghostMean": 0.10455693091664996,
+  "ghostMax": 0.12072216719388962,
+  "seconds": 55.87,
+  "mp4": "ok",
+  "frames": "tools/mesh3d/out/frames",
+  "contact": "tools/mesh3d/out/contact.png"
+}
