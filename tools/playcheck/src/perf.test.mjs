@@ -90,6 +90,7 @@ test("report.json keeps the previous keys and adds perf", () => {
     assert.equal(disk.perf.aggregate.fpsAvg, 60);
     const md = readFileSync(path.join(dir, "report.md"), "utf8");
     assert.match(md, /playcheck-perf\/1/);
+    assert.match(md, /Perf: drawCalls=missing, texMB=missing, activeVideos=missing, jsMs=missing/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

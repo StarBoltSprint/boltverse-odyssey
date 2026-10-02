@@ -29,7 +29,10 @@ const ORDER = [
   "js_heap",
   "texture_mem",
   "video_decoders",
+  "active_videos",
   "draw_calls",
+  "perf_line",
+  "render_source",
 ];
 
 export function writeReport(dir, payload) {
@@ -53,6 +56,7 @@ export function writeReport(dir, payload) {
     notes: payload.notes,
     generatedAt: payload.generatedAt,
     perf: payload.perf || null,
+    perfLine: payload.perf?.perfLine || "Perf: drawCalls=missing, texMB=missing, activeVideos=missing, jsMs=missing",
   };
   writeFileSync(path.join(dir, "report.json"), JSON.stringify(json, null, 2));
   writeFileSync(path.join(dir, "report.md"), markdown(json));
@@ -75,6 +79,8 @@ function markdown(json) {
   lines.push(`Layout: \`${json.layout}\` (\`${json.layoutId}\`)`);
   lines.push("");
   lines.push("Viewport: 360×800 CSS, device pixel ratio 2, framebuffer 720×1600, full screen.");
+  lines.push("");
+  lines.push(json.perfLine);
   lines.push("");
   if (json.video) {
     lines.push(`Video: \`${json.video.file}\` (${json.video.width}×${json.video.height}, ${json.video.fps} fps, ${json.video.seconds}s, ${json.video.bytes} bytes)`);
