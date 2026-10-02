@@ -1,5 +1,5 @@
 import { createRequire } from "node:module";
-import { mkdirSync, readFileSync, statSync } from "node:fs";
+import { mkdirSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { normalizeLayout } from "./layout.mjs";
 import { launchPhone, readGlErrors } from "./browser.mjs";
@@ -8,6 +8,7 @@ import { runWalk } from "./walk.mjs";
 import { openVideo } from "./video.mjs";
 import { createJudge } from "./checks.mjs";
 import { writeReport } from "./report.mjs";
+import { lintPlayFiles } from "./renderlint.mjs";
 
 const require = createRequire(import.meta.url);
 const { PNG } = require("pngjs");
@@ -15,7 +16,7 @@ const { PNG } = require("pngjs");
 export async function main(argv) {
   const args = parse(argv);
   if (args.help || !args.url || !args.layout) {
-    console.log(`tools/playcheck/run --url <play url or local build> --layout <clearing.json> [--out dir] [--video|--no-video]
+    console.log(`tools/playcheck/run --url <play url or local build> --layout <clearing.json> [--source play.js] [--out dir] [--video|--no-video]
 
 Drives the real play view at 360x800 CSS, DPR 2 (720x1600) and writes report.md, report.json, stills/, and walk.mp4.
 Exit 0 only when every row PASSes. A hand-written PASS table is not this report.`);
@@ -94,7 +95,13 @@ Exit 0 only when every row PASSes. A hand-written PASS table is not this report.
     for (const sample of samples) {
       judge.add({ id: sample.id, kind: sample.kind, width: 0, height: 0, rgba: null, snap: sample.snap });
     }
-    const judged = judge.finish({ glErrors, consoleErrors: launched.consoleErrors });
+    const sourceLint = collectSource(target, args.sources, shots);
+    const judged = judge.finish({
+      glErrors,
+      consoleErrors: launched.consoleErrors,
+      softwareGl: true,
+      sourceLint,
+    });
     if (shots.some((s) => s.snap && s.snap.harness)) {
       notes.push("This URL is the playcheck fixture harness, not a biome play build. This repo has no clearing play build. The harness paints test patterns so the tool can run here. It is not a style and it does not change a game.");
     }
@@ -135,11 +142,12 @@ Exit 0 only when every row PASSes. A hand-written PASS table is not this report.
 }
 
 function parse(argv) {
-  const args = { video: true, url: null, layout: null, out: null, help: false };
+  const args = { video: true, url: null, layout: null, out: null, help: false, sources: [] };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--url") args.url = argv[++i];
     else if (a === "--layout") args.layout = argv[++i];
+    else if (a === "--source") args.sources.push(argv[++i]);
     else if (a === "--out") args.out = argv[++i];
     else if (a === "--video") args.video = true;
     else if (a === "--no-video") args.video = false;
@@ -158,6 +166,54 @@ function resolveTarget(input) {
   const st = statSync(abs);
   if (st.isDirectory()) return { serve: true, root: abs, pathname: `/${query ? "index.html" : "index.html"}${query}` };
   return { serve: true, root: path.dirname(abs), pathname: `/${path.basename(abs)}${query}` };
+}
+
+function collectSource(target, sources, shots) {
+  const harness = shots.some((s) => s.snap && s.snap.harness === true);
+  const root = target.root ? target.root.split(path.sep).join("/") : "";
+  if (harness || root.endsWith("tools/playcheck/fixture")) {
+    return { skipped: "harness", findings: [], scanned: false };
+  }
+  const paths = [];
+  if (sources && sources.length) {
+    for (const name of sources) paths.push(path.resolve(name));
+  } else if (target.serve && target.root) {
+    let names = [];
+    try {
+      names = readdirSync(target.root);
+    } catch {
+      names = [];
+    }
+    for (const name of names) {
+      if (name.endsWith(".js")) paths.push(path.join(target.root, name));
+    }
+  }
+  if (!paths.length) {
+    return {
+      scanned: false,
+      findings: [
+        {
+          file: "",
+          line: 0,
+          rule: "source_missing",
+          detail: "Play source was not scanned. Pass a local build or --source <play.js>. Unmeasured is not a PASS.",
+        },
+      ],
+    };
+  }
+  const files = [];
+  for (const name of paths) {
+    try {
+      files.push({ name, text: readFileSync(name, "utf8") });
+    } catch {
+      return {
+        scanned: false,
+        findings: [{ file: name, line: 0, rule: "source_missing", detail: `Could not read ${name}` }],
+      };
+    }
+  }
+  const result = lintPlayFiles(files);
+  return { scanned: true, files: files.length, findings: result.findings };
 }
 
 function withDebug(href) {

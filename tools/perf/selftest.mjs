@@ -79,6 +79,37 @@ test("the measurement fixture records numbers and does not apply the budget", ()
   assert.equal(judged.report.aggregate.drawCalls, 900);
 });
 
+test("swiftshader frame time is informational and does not fail the take", () => {
+  const judged = judgePerf(
+    [
+      {
+        id: "spawn",
+        snap: {
+          perf: {
+            fpsAvg: 8,
+            fps1Low: 4,
+            frameMsAvg: 80,
+            frameMs: 80,
+            textureBytes: 1024,
+            drawCalls: 10,
+            videoDecoders: 1,
+            heapBytes: 1024,
+          },
+        },
+      },
+    ],
+    { softwareGl: true },
+  );
+  const byId = Object.fromEntries(judged.rows.map((r) => [r.id, r]));
+  assert.equal(byId.fps_avg.result, "PASS");
+  assert.equal(byId.fps_1low.result, "PASS");
+  assert.equal(byId.frame_ms.result, "PASS");
+  assert.equal(byId.fps_avg.partial, true);
+  assert.equal(byId.active_videos.result, "PASS");
+  assert.match(byId.perf_line.numbers.perfLine, /drawCalls=10, texMB=0\.001, activeVideos=1, jsMs=80/);
+  assert.equal(judged.report.perfLine, byId.perf_line.numbers.perfLine);
+});
+
 test("overlay stays off unless perf=1 and does not cover controls", () => {
   const src = readFileSync(path.join(here, "overlay.js"), "utf8");
   assert.match(src, /params\.get\("perf"\) !== "1"/);

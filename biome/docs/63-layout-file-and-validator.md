@@ -154,6 +154,9 @@ The validator prints one table. Every row must be **PASS on the rendered view**.
 | `idle_gallop_switch` | — | `GALLOP` while moving, `IDLE` after the stop. |
 | `fullscreen` | — | Canvas and screenshots are 720×1600. |
 | `debug_hook` | — | `snapshot()` and the ID buffer are present. Missing is FAIL. |
+| `active_videos` | — | More than **4** videos decoding in a captured frame. Law 65. |
+| `perf_line` | — | The report line `Perf: drawCalls, texMB, activeVideos, jsMs` is missing a field. Law 65. |
+| `render_source` | Play `.js` scanned (`--source`, or the `.js` files beside a local build). | `NEAREST` on a world texture, `bufferData` of a new typed array, a per-object draw loop, or `camQuad` on a solid. Unscanned source on a real play URL is FAIL. The measurement fixture does not apply this row. |
 
 Extra rows may be added. None of these may be removed. **A data-only check is FAIL**, even when the data agrees. Unmeasured is FAIL.
 
