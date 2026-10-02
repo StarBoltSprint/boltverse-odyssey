@@ -209,3 +209,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | [`spec.md`](../spec.md) and `AGENTS.md`: one goal, a done-when list of at most 8 rows, `REPORT.md` written as the rows are measured, stop after 2 failures of the same defect. Hall smoke stays one fresh cook plus one enlarge. |
 | Guard | The spec text. There is still no check that a run ended with a final answer. |
 | Sources | Take 10d oversize entry above. |
+
+### 2026-10-02 — law 23 does not measure a level horizon, slice closure, f_px, or texel density
+
+| | |
+| --- | --- |
+| Take | Geometry lock. No cook. |
+| Defect | A level plate (horizon at half the frame) and a pitched Frost cone (diamond near 0.38) were easy to mix. The dash judge does not read horizon row, slice count, focal length in pixels, or pixels per metre. |
+| Root cause | Law 23 walks neon dashes toward 0.38 and does not fail fitted VP.y against 0.382. Nothing else in that script measured the rail 12 numbers. |
+| Fix | Rail 12 in `spec.md` and [`learn/geometry.md`](geometry.md). Reports on the same script: `--report horizon`, `sky`, `turn`, `sun`, `texel`, `scale`. They are not the hang gate. The dash thresholds stay sealed. |
+| Guard | `python3 biome/scripts/plate-geo-qc/selftest.py` |
+| Sources | Owner geometry lock, 2026-10-02. Practice, not an xAI seal. |

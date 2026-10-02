@@ -1,6 +1,6 @@
 # 20b — Frost aurora KEEP + visual / φ measures
 
-**Appendix to [20 — Default plate proportions](20-default-plate-proportions.md).** Not a second law 20.
+**Appendix to [20 — Default plate proportions](20-default-plate-proportions.md).** Not a second law 20. The horizon row below (~0.38, φ minor 0.382) is this Frost KEEP, a pitched cone. A level plate is 0.50 ([`learn/geometry.md`](../../learn/geometry.md)). Do not copy 0.38 into a level prompt.
 
 **Sealed 2026-09-20 (SmiR phone review).** Hang ≠ wipe. Beat stays hung.
 
