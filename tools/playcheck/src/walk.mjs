@@ -1,14 +1,21 @@
 import path from "node:path";
 import { mkdirSync } from "node:fs";
 import { angDist, inGateSpan } from "./layout.mjs";
+import { runOrganicWalk } from "./organic-walk.mjs";
 
 const DT = 1 / 30;
 
 /**
  * Scripted phone walk. Yields often enough for the screencast to see motion.
  * Still PNGs are the photographed steps. Ring samples are ID snapshots every 10°.
+ * An organic layout (schema clearing/2) uses the waypoint walk. Circle files stay on this path.
  */
-export async function runWalk({ page, layout, stillsDir, video, log }) {
+export async function runWalk(opts) {
+  if (opts.layout && opts.layout.organic) return runOrganicWalk(opts);
+  return runCircleWalk(opts);
+}
+
+async function runCircleWalk({ page, layout, stillsDir, video, log }) {
   mkdirSync(stillsDir, { recursive: true });
   const shots = [];
   const samples = [];

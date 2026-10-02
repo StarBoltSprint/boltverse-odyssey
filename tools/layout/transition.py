@@ -93,11 +93,17 @@ def transition_rows(clearing: dict, world: dict | None) -> list[Row]:
                 gate_bad += 1
                 problems.append(f"{cid} leads_to")
             else:
-                ring = (clearing.get("edge_ring") or {}).get("radius_m") or (clearing.get("zone") or {}).get("radius_m") or 0
-                half = gate_half_deg(float(gate.get("width_m") or 0), float(ring or 0))
-                if half <= 0:
-                    gate_bad += 1
-                    problems.append(f"{cid} gate width")
+                zone = clearing.get("zone") or {}
+                if str(zone.get("shape") or "") == "organic":
+                    if float(gate.get("width_m") or 0) <= 0:
+                        gate_bad += 1
+                        problems.append(f"{cid} gate width")
+                else:
+                    ring = (clearing.get("edge_ring") or {}).get("radius_m") or zone.get("radius_m") or 0
+                    half = gate_half_deg(float(gate.get("width_m") or 0), float(ring or 0))
+                    if half <= 0:
+                        gate_bad += 1
+                        problems.append(f"{cid} gate width")
             dest_doc = _zone_doc(world, str(dest.get("zone") or ""))
             if dest_doc is None or _gate(dest_doc, str(dest.get("gate") or "")) is None:
                 gate_bad += 1

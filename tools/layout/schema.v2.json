@@ -1,0 +1,244 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "clearing/2",
+  "title": "Organic zone clearing layout",
+  "type": "object",
+  "required": ["schema", "id", "zone", "boundary", "gates", "sub_areas", "passages", "interior_objects", "spawn", "view"],
+  "properties": {
+    "schema": { "const": "clearing/2" },
+    "id": { "type": "string" },
+    "seed": { "type": "integer" },
+    "note": { "type": "string" },
+    "zone": {
+      "type": "object",
+      "required": ["shape", "center", "footprint", "reference_area_m2"],
+      "properties": {
+        "shape": { "const": "organic" },
+        "center": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" } },
+        "reference_area_m2": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Walkable area of the retired circle this zone replaces. zone_area compares against it."
+        },
+        "footprint": {
+          "type": "array",
+          "minItems": 3,
+          "description": "Closed polygon in metres, counter-clockwise. [x, z] per vertex.",
+          "items": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": { "type": "number" }
+          }
+        },
+        "ground": { "type": "object" }
+      }
+    },
+    "boundary": {
+      "type": "object",
+      "required": ["pieces"],
+      "properties": {
+        "rows": { "type": "integer", "minimum": 1, "maximum": 3 },
+        "pieces": { "type": "array", "items": { "$ref": "#/$defs/placed" } }
+      }
+    },
+    "sub_areas": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "required": ["id", "center", "radius_m"],
+        "properties": {
+          "id": { "type": "string" },
+          "center": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" } },
+          "radius_m": { "type": "number", "exclusiveMinimum": 0 },
+          "role": { "type": "string" }
+        }
+      }
+    },
+    "passages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "from", "to", "width_m", "center"],
+        "properties": {
+          "id": { "type": "string" },
+          "from": { "type": "string" },
+          "to": { "type": "string" },
+          "width_m": { "type": "number", "exclusiveMinimum": 0 },
+          "center": {
+            "description": "Centre polyline in metres, [x, z] per vertex.",
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": { "type": "number" }
+            }
+          }
+        }
+      }
+    },
+    "gates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "heading_deg", "width_m", "position"],
+        "properties": {
+          "id": { "type": "string" },
+          "heading_deg": { "type": "number", "description": "Outward normal. 0 = +z, 90 = +x." },
+          "width_m": { "type": "number", "exclusiveMinimum": 0 },
+          "position": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" } },
+          "at_m": { "type": "number", "description": "Arc length along the footprint." },
+          "span_m": { "type": "number" },
+          "frame": { "type": "string" },
+          "frame_ids": { "type": "array", "items": { "type": "string" } },
+          "field": { "type": "string" },
+          "leads_to": { "type": "string" }
+        }
+      }
+    },
+    "interior_objects": { "type": "array", "items": { "$ref": "#/$defs/placed" } },
+    "pois": {
+      "type": "array",
+      "description": "Discovery placements. intent is hidden_from_spawn, landmark, or on_route.",
+      "items": { "$ref": "#/$defs/placed" }
+    },
+    "far_plates": {
+      "type": "array",
+      "description": "Plates beyond the boundary. No collider. Resident via always.",
+      "items": { "$ref": "#/$defs/placed" }
+    },
+    "always": {
+      "type": "array",
+      "description": "Far-plate ids that stay resident.",
+      "items": { "type": "string" }
+    },
+    "cells": {
+      "type": "array",
+      "description": "Streaming cells. Grid or one cell per sub-area.",
+      "items": {
+        "type": "object",
+        "required": ["id", "members"],
+        "properties": {
+          "id": { "type": "string" },
+          "members": { "type": "array", "items": { "type": "string" } },
+          "neighbours": { "type": "array", "items": { "type": "string" } },
+          "aabb": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": { "type": "number" }
+            }
+          },
+          "preload": {
+            "type": "array",
+            "description": "Eight compass headings. Each lists neighbour cell ids whose centres sit inside that heading cone and within preload_lookahead_m. Omitted when the spec has no streaming block. The cell itself is excluded.",
+            "minItems": 8,
+            "maxItems": 8,
+            "items": {
+              "type": "object",
+              "required": ["heading_deg", "cells"],
+              "properties": {
+                "heading_deg": { "type": "number" },
+                "cells": { "type": "array", "items": { "type": "string" } }
+              }
+            }
+          }
+        }
+      }
+    },
+    "streaming": {
+      "type": "object",
+      "description": "Organic streaming plan. Omitted when the spec has no streaming object. fade_in_ms is 300-600 (owner decree #457, approved 2026-10-02). preload_lookahead_m is at least the resident cell radius (spec rail 11, default 40 m, not written when omitted). enter_rule crossfade-from-far-if-on-screen: an object already on screen as its far representation crossfades and does not vanish first. Alpha starts at 0 only when it was outside the frustum, occluded, or beyond fog. The fade is alpha on existing pixels.",
+      "properties": {
+        "fade_in_ms": { "type": "number" },
+        "fade_in_distance_m": { "type": "number", "exclusiveMinimum": 0 },
+        "preload_lookahead_m": { "type": "number", "minimum": 0 },
+        "preload_cone_deg": { "type": "number", "minimum": 0, "maximum": 360 },
+        "cell_radius_m": { "type": "number", "exclusiveMinimum": 0 },
+        "enter_rule": { "const": "crossfade-from-far-if-on-screen" },
+        "headings_deg": {
+          "type": "array",
+          "items": { "type": "number" }
+        }
+      }
+    },
+    "colliders": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "object_id", "center", "radius_m"],
+        "properties": {
+          "id": { "type": "string" },
+          "object_id": { "type": "string" },
+          "center": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" } },
+          "radius_m": { "type": "number", "minimum": 0 },
+          "base_y_m": { "type": "number" },
+          "source": { "type": "string" }
+        }
+      }
+    },
+    "hero": { "type": "object" },
+    "limits": { "type": "object" },
+    "near_lens": { "type": "object" },
+    "fog_band": { "type": "object" },
+    "spawn": { "type": "object" },
+    "backdrop": { "type": "object" },
+    "view": { "type": "object" },
+    "bolt": { "type": "object" },
+    "variants": { "type": "object" },
+    "budgets": { "type": "object" },
+    "yaw_bands": {
+      "type": "object",
+      "description": "Present when the spec set yaw_band_deg, and on an organic file for boundary and exit even when that key is absent (world [-15, 15]). lo and hi are degrees. world is yaw 0. yaw_ref inward is banned. Placed labels boundary-N use the boundary band. Director decision 2026-10-02 15:04 (delegated owner approval). Spec rail 8. Omitted on a circle file when the spec has no yaw_band_deg.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["lo", "hi", "ref"],
+        "properties": {
+          "lo": { "type": "number" },
+          "hi": { "type": "number" },
+          "ref": { "type": "string", "enum": ["world", "inward"] }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "placed": {
+      "type": "object",
+      "required": ["id", "asset", "position"],
+      "properties": {
+        "id": { "type": "string" },
+        "asset": { "type": "string" },
+        "category": { "type": "string" },
+        "position": {
+          "description": "[x, z] metres. Height is base_y_m.",
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": { "type": "number" }
+        },
+        "yaw_deg": { "type": "number" },
+        "scale": { "type": "number", "exclusiveMinimum": 0 },
+        "radius_m": { "type": "number", "minimum": 0 },
+        "heading_deg": { "type": "number" },
+        "base_y_m": { "type": "number" },
+        "s_m": { "type": "number", "description": "Arc length along the footprint polyline." },
+        "row": { "type": "integer" },
+        "interactive": { "type": "boolean" },
+        "library_id": { "type": "string" },
+        "band": { "type": "string", "description": "Depth band: fore, mid, or far." },
+        "intent": { "type": "string", "description": "hidden_from_spawn, landmark, or on_route." },
+        "height_m": { "type": "number", "minimum": 0 },
+        "within_m": { "type": "number", "minimum": 0 },
+        "bearing_deg": { "type": "number" },
+        "d_min_m": { "type": "number", "minimum": 0 }
+      }
+    }
+  }
+}

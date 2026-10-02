@@ -1,0 +1,1687 @@
+{
+  "schema": "clearing/2",
+  "id": "organic-fixture",
+  "zone": {
+    "shape": "organic",
+    "center": [
+      20,
+      15
+    ],
+    "footprint": [
+      [
+        0,
+        0
+      ],
+      [
+        40,
+        0
+      ],
+      [
+        40,
+        30
+      ],
+      [
+        0,
+        30
+      ]
+    ],
+    "reference_area_m2": 100
+  },
+  "boundary": {
+    "pieces": [
+      {
+        "id": "b-0",
+        "position": [
+          0,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-1",
+        "position": [
+          0.8,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-2",
+        "position": [
+          1.6,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-3",
+        "position": [
+          2.4,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-4",
+        "position": [
+          3.2,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-5",
+        "position": [
+          4,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-6",
+        "position": [
+          4.8,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-7",
+        "position": [
+          5.6,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-8",
+        "position": [
+          6.4,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-9",
+        "position": [
+          7.2,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-10",
+        "position": [
+          8,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-11",
+        "position": [
+          8.8,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-12",
+        "position": [
+          9.6,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-13",
+        "position": [
+          10.4,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-14",
+        "position": [
+          11.2,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-15",
+        "position": [
+          12,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-16",
+        "position": [
+          12.8,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-17",
+        "position": [
+          13.6,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-18",
+        "position": [
+          14.4,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-19",
+        "position": [
+          15.2,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-20",
+        "position": [
+          16,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-21",
+        "position": [
+          16.8,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-22",
+        "position": [
+          23.2,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-23",
+        "position": [
+          24,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-24",
+        "position": [
+          24.8,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-25",
+        "position": [
+          25.6,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-26",
+        "position": [
+          26.4,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-27",
+        "position": [
+          27.2,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-28",
+        "position": [
+          28,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-29",
+        "position": [
+          28.8,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-30",
+        "position": [
+          29.6,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-31",
+        "position": [
+          30.4,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-32",
+        "position": [
+          31.2,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-33",
+        "position": [
+          32,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-34",
+        "position": [
+          32.8,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-35",
+        "position": [
+          33.6,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-36",
+        "position": [
+          34.4,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-37",
+        "position": [
+          35.2,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-38",
+        "position": [
+          36,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-39",
+        "position": [
+          36.8,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-40",
+        "position": [
+          37.6,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-41",
+        "position": [
+          38.4,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-42",
+        "position": [
+          39.2,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-43",
+        "position": [
+          40,
+          0
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-44",
+        "position": [
+          40,
+          0.8
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-45",
+        "position": [
+          40,
+          1.6
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-46",
+        "position": [
+          40,
+          2.4
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-47",
+        "position": [
+          40,
+          3.2
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-48",
+        "position": [
+          40,
+          4
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-49",
+        "position": [
+          40,
+          4.8
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-50",
+        "position": [
+          40,
+          5.6
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-51",
+        "position": [
+          40,
+          6.4
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-52",
+        "position": [
+          40,
+          7.2
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-53",
+        "position": [
+          40,
+          8
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-54",
+        "position": [
+          40,
+          8.8
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-55",
+        "position": [
+          40,
+          9.6
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-56",
+        "position": [
+          40,
+          10.4
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-57",
+        "position": [
+          40,
+          11.2
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-58",
+        "position": [
+          40,
+          12
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-59",
+        "position": [
+          40,
+          12.8
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-60",
+        "position": [
+          40,
+          13.6
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-61",
+        "position": [
+          40,
+          14.4
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-62",
+        "position": [
+          40,
+          15.2
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-63",
+        "position": [
+          40,
+          16
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-64",
+        "position": [
+          40,
+          16.8
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-65",
+        "position": [
+          40,
+          17.6
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-66",
+        "position": [
+          40,
+          18.4
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-67",
+        "position": [
+          40,
+          19.2
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-68",
+        "position": [
+          40,
+          20
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-69",
+        "position": [
+          40,
+          20.8
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-70",
+        "position": [
+          40,
+          21.6
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-71",
+        "position": [
+          40,
+          22.4
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-72",
+        "position": [
+          40,
+          23.2
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-73",
+        "position": [
+          40,
+          24
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-74",
+        "position": [
+          40,
+          24.8
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-75",
+        "position": [
+          40,
+          25.6
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-76",
+        "position": [
+          40,
+          26.4
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-77",
+        "position": [
+          40,
+          27.2
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-78",
+        "position": [
+          40,
+          28
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-79",
+        "position": [
+          40,
+          28.8
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-80",
+        "position": [
+          40,
+          29.6
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-81",
+        "position": [
+          39.6,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-82",
+        "position": [
+          38.8,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-83",
+        "position": [
+          38,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-84",
+        "position": [
+          37.2,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-85",
+        "position": [
+          36.4,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-86",
+        "position": [
+          35.6,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-87",
+        "position": [
+          34.8,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-88",
+        "position": [
+          34,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-89",
+        "position": [
+          33.2,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-90",
+        "position": [
+          32.4,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-91",
+        "position": [
+          31.6,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-92",
+        "position": [
+          30.8,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-93",
+        "position": [
+          30,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-94",
+        "position": [
+          29.2,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-95",
+        "position": [
+          28.4,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-96",
+        "position": [
+          27.6,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-97",
+        "position": [
+          26.8,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-98",
+        "position": [
+          26,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-99",
+        "position": [
+          25.2,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-100",
+        "position": [
+          24.4,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-101",
+        "position": [
+          23.6,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-102",
+        "position": [
+          22.8,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-103",
+        "position": [
+          22,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-104",
+        "position": [
+          21.2,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-105",
+        "position": [
+          20.4,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-106",
+        "position": [
+          19.6,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-107",
+        "position": [
+          18.8,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-108",
+        "position": [
+          18,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-109",
+        "position": [
+          17.2,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-110",
+        "position": [
+          16.4,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-111",
+        "position": [
+          15.6,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-112",
+        "position": [
+          14.8,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-113",
+        "position": [
+          14,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-114",
+        "position": [
+          13.2,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-115",
+        "position": [
+          12.4,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-116",
+        "position": [
+          11.6,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-117",
+        "position": [
+          10.8,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-118",
+        "position": [
+          10,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-119",
+        "position": [
+          9.2,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-120",
+        "position": [
+          8.4,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-121",
+        "position": [
+          7.6,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-122",
+        "position": [
+          6.8,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-123",
+        "position": [
+          6,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-124",
+        "position": [
+          5.2,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-125",
+        "position": [
+          4.4,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-126",
+        "position": [
+          3.6,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-127",
+        "position": [
+          2.8,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-128",
+        "position": [
+          2,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-129",
+        "position": [
+          1.2,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-130",
+        "position": [
+          0.4,
+          30
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-131",
+        "position": [
+          0,
+          29.6
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-132",
+        "position": [
+          0,
+          28.8
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-133",
+        "position": [
+          0,
+          28
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-134",
+        "position": [
+          0,
+          27.2
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-135",
+        "position": [
+          0,
+          26.4
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-136",
+        "position": [
+          0,
+          25.6
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-137",
+        "position": [
+          0,
+          24.8
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-138",
+        "position": [
+          0,
+          24
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-139",
+        "position": [
+          0,
+          23.2
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-140",
+        "position": [
+          0,
+          22.4
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-141",
+        "position": [
+          0,
+          21.6
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-142",
+        "position": [
+          0,
+          20.8
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-143",
+        "position": [
+          0,
+          20
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-144",
+        "position": [
+          0,
+          19.2
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-145",
+        "position": [
+          0,
+          18.4
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-146",
+        "position": [
+          0,
+          17.6
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-147",
+        "position": [
+          0,
+          16.8
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-148",
+        "position": [
+          0,
+          16
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-149",
+        "position": [
+          0,
+          15.2
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-150",
+        "position": [
+          0,
+          14.4
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-151",
+        "position": [
+          0,
+          13.6
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-152",
+        "position": [
+          0,
+          12.8
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-153",
+        "position": [
+          0,
+          12
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-154",
+        "position": [
+          0,
+          11.2
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-155",
+        "position": [
+          0,
+          10.4
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-156",
+        "position": [
+          0,
+          9.6
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-157",
+        "position": [
+          0,
+          8.8
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-158",
+        "position": [
+          0,
+          8
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-159",
+        "position": [
+          0,
+          7.2
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-160",
+        "position": [
+          0,
+          6.4
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-161",
+        "position": [
+          0,
+          5.6
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-162",
+        "position": [
+          0,
+          4.8
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-163",
+        "position": [
+          0,
+          4
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-164",
+        "position": [
+          0,
+          3.2
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-165",
+        "position": [
+          0,
+          2.4
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-166",
+        "position": [
+          0,
+          1.6
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      },
+      {
+        "id": "b-167",
+        "position": [
+          0,
+          0.8
+        ],
+        "radius_m": 0.45,
+        "category": "boundary-0"
+      }
+    ]
+  },
+  "sub_areas": [
+    {
+      "id": "sa-a",
+      "center": [
+        10,
+        15
+      ],
+      "radius_m": 6,
+      "role": "spawn"
+    },
+    {
+      "id": "sa-b",
+      "center": [
+        30,
+        15
+      ],
+      "radius_m": 6,
+      "role": "walk"
+    },
+    {
+      "id": "sa-c",
+      "center": [
+        20,
+        8
+      ],
+      "radius_m": 5,
+      "role": "end"
+    }
+  ],
+  "passages": [
+    {
+      "id": "p-ab",
+      "from": "sa-a",
+      "to": "sa-b",
+      "width_m": 4,
+      "center": [
+        [
+          10,
+          15
+        ],
+        [
+          30,
+          15
+        ]
+      ]
+    },
+    {
+      "id": "p-bc",
+      "from": "sa-b",
+      "to": "sa-c",
+      "width_m": 4,
+      "center": [
+        [
+          30,
+          15
+        ],
+        [
+          20,
+          8
+        ]
+      ]
+    },
+    {
+      "id": "p-ca",
+      "from": "sa-c",
+      "to": "sa-a",
+      "width_m": 4,
+      "center": [
+        [
+          20,
+          8
+        ],
+        [
+          10,
+          15
+        ]
+      ]
+    }
+  ],
+  "gates": [
+    {
+      "id": "to-path",
+      "heading_deg": 180,
+      "width_m": 6,
+      "at_m": 20,
+      "position": [
+        20,
+        0
+      ],
+      "leads_to": "path-ab"
+    }
+  ],
+  "pois": [
+    {
+      "id": "poi-hide-a",
+      "intent": "hidden_from_spawn",
+      "position": [
+        30,
+        16
+      ]
+    },
+    {
+      "id": "poi-hide-b",
+      "intent": "hidden_from_spawn",
+      "position": [
+        20,
+        8
+      ]
+    },
+    {
+      "id": "poi-mark",
+      "intent": "landmark",
+      "position": [
+        10,
+        22
+      ]
+    }
+  ],
+  "interior_objects": [],
+  "spawn": {
+    "position": [
+      10,
+      15
+    ]
+  },
+  "near_lens": {
+    "cull_m": 1.2
+  },
+  "fog_band": {
+    "patches": 24,
+    "inner_m": 4,
+    "outer_m": 18
+  },
+  "view": {
+    "mag_max": 1,
+    "width": 720,
+    "height": 1600
+  },
+  "backdrop": {
+    "asset": "backdrop/far.png"
+  }
+}

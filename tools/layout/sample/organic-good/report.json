@@ -1,0 +1,297 @@
+{
+  "id": "organic-sample",
+  "ok": true,
+  "rows": [
+    {
+      "name": "rules_present",
+      "note": "",
+      "numbers": {
+        "missing": "none"
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "zone_area",
+      "note": "",
+      "numbers": {
+        "footprint_m2": 6630.5,
+        "ratio": 14.6275,
+        "reference_m2": 400.0,
+        "walkable_m2": 5851.0
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "footprint_shape",
+      "note": "",
+      "numbers": {
+        "circle_iou": 0.42070484581497797,
+        "convexity": 0.5342761024153422,
+        "long_axis_m": 171.73234989366446
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "sub_areas",
+      "note": "",
+      "numbers": {
+        "count": 4,
+        "smallest_m2": 717.0
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "passages",
+      "note": "",
+      "numbers": {
+        "cycles": 1,
+        "max_turn_deg": 36.00013413004285,
+        "max_width_m": 6.001768013399294,
+        "min_width_m": 4.323224317656654,
+        "samples": 54
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "boundary_closed",
+      "note": "",
+      "numbers": {
+        "collider_gap_m": 0.0,
+        "gap_at_m": 0.0,
+        "gaps": "none",
+        "hero_width_m": 0.7,
+        "ray_misses": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "collider_eq_visual",
+      "note": "",
+      "numbers": {
+        "collider_only": 0,
+        "duplicate_ids": 0,
+        "footprint_mismatch": 0,
+        "invisible_heading_deg": 0.0,
+        "invisible_stop_m": 0.0,
+        "invisible_stops": 0,
+        "object_only": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "no_ring",
+      "note": "",
+      "numbers": {
+        "by_asset_cv": 0.1861,
+        "by_asset_hits": 0,
+        "by_asset_n": 6,
+        "by_asset_span_deg": 210.9313,
+        "by_asset_where": "tools/layout/testdata/organic/scatter-a/asset.json",
+        "cv": 0.4984,
+        "hits": 0,
+        "n": 1051,
+        "span_deg": 352.5918,
+        "where": "boundary"
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "relief",
+      "note": "",
+      "numbers": {
+        "id": "fog-20",
+        "off_surface": 0,
+        "worst_err_m": 5.0798586941458446e-05
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "relief_slope",
+      "note": "",
+      "numbers": {
+        "amp_m": 0.9,
+        "max_slope_deg": 8.659102386998757,
+        "wavelength_m": 42.0
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "mag",
+      "note": "",
+      "numbers": {
+        "closest_m": 21.761860580612126,
+        "far_d_m": 21.761860580612126,
+        "far_d_min_m": 21.464667339489235,
+        "ground_mag": 0.32246251790222547,
+        "id": "poi-mark",
+        "mag_max": 1.0,
+        "over": 0,
+        "slope_stretch": 1.0115298167613842,
+        "unresolved_assets": 0,
+        "worst": 0.9863433900781599
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "gate",
+      "note": "",
+      "numbers": {
+        "frame_missing": 0,
+        "gates": 1,
+        "narrow": 0,
+        "off_boundary": 0,
+        "opening_blocked": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "spawn_clearance",
+      "note": "",
+      "numbers": {
+        "clearance_m": 4.346502284430141,
+        "need_m": 3.2
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "separation",
+      "note": "",
+      "numbers": {
+        "min_gap_m": 0.35,
+        "overlaps": 0,
+        "pair": "mid-01|scatter-far-01",
+        "worst_gap_m": 0.4857596155838792
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "variety",
+      "note": "",
+      "numbers": {
+        "identical_neighbours": 0,
+        "spread": 0,
+        "yaw_span_cat": "boundary",
+        "yaw_span_deg": 30.0
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "yaw_band",
+      "note": "",
+      "numbers": {
+        "checked": 1072,
+        "inward_refs": 0,
+        "outside": 0,
+        "worst_excess_deg": 0.0,
+        "worst_hi": 0.0,
+        "worst_id": "none",
+        "worst_lo": 0.0,
+        "worst_offset_deg": 0.0,
+        "worst_ref": "none",
+        "worst_yaw_deg": 0.0
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "fog_band",
+      "note": "",
+      "numbers": {
+        "instances": 24,
+        "outside_footprint": 0,
+        "patches": 24
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "near_lens",
+      "note": "",
+      "numbers": {
+        "cull_m": 1.2,
+        "spawn_surface_m": 4.346502284430141
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "budgets",
+      "note": "",
+      "numbers": {
+        "categories": 11,
+        "outside": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "discovery_data",
+      "note": "",
+      "numbers": {
+        "hidden": 2,
+        "hidden_occluded": 2,
+        "hidden_visible": 0,
+        "landmark_samples": 1474,
+        "landmark_visible_frac": 0.9850746268656716,
+        "landmarks": 1,
+        "on_route": 1,
+        "on_route_far": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "cells",
+      "note": "",
+      "numbers": {
+        "aabb_outside": 0,
+        "always": 3,
+        "always_missing": 0,
+        "asymmetric": 0,
+        "cells": 27,
+        "duplicated": 0,
+        "far_in_cell": 0,
+        "members": 1075,
+        "missing": 0,
+        "unknown": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "stream_plan",
+      "note": "fade_in_ms in [300, 600] (owner decree #457, approved 2026-10-02). preload_cone_deg in [30, 180] and fade_in_distance_m in [2, 24] when present (Director decision 2026-10-02 15:04, delegated owner approval). preload_lookahead_m >= cell radius (spec rail 11, default 40 m). The rule: a fade from alpha 0 applies only to an object that was not on screen before it entered range (outside the frustum, occluded, or beyond fog). An object already visible as its far representation must crossfade to the near representation and must never drop to 0.",
+      "numbers": {
+        "cell_radius_m": 40.0,
+        "cell_radius_source": "rail-11",
+        "cells": 27,
+        "fade_in_distance_m": 16.0,
+        "fade_in_ms": 450.0,
+        "headings": 8,
+        "mismatch": 0,
+        "missing_refs": 0,
+        "preload_cone_deg": 90.0,
+        "preload_lookahead_m": 48.0,
+        "preload_refs": 356
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "scatter",
+      "note": "",
+      "numbers": {
+        "bands_missing": "none",
+        "far": 4,
+        "fore": 4,
+        "mid": 4,
+        "min_clear_m": 5.26339792474155,
+        "need_m": 5.2,
+        "steep": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "bolt_paths",
+      "note": "",
+      "numbers": {
+        "gallop": 1,
+        "idle": 1
+      },
+      "status": "PASS"
+    }
+  ]
+}

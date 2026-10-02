@@ -53,6 +53,10 @@ Exit 0 only when every row PASSes. A hand-written PASS table is not this report.
     const hooked = await launched.page.evaluate(() => !!(window.__play && window.__play.ready && window.__play.snapshot));
     let shots = [];
     let samples = [];
+    let popSamples = [];
+    let fadeSamples = [];
+    let preloadSamples = [];
+    let waypoints = [];
     if (hooked) {
       const walked = await runWalk({
         page: launched.page,
@@ -63,6 +67,10 @@ Exit 0 only when every row PASSes. A hand-written PASS table is not this report.
       });
       shots = walked.shots;
       samples = walked.samples;
+      popSamples = walked.popSamples || [];
+      fadeSamples = walked.fadeSamples || [];
+      preloadSamples = walked.preloadSamples || [];
+      waypoints = walked.waypoints || [];
     } else {
       const png = path.join(stillsDir, "00-no-hook.png");
       await launched.page.screenshot({ path: png, type: "png", scale: "device" }).catch(() => {});
@@ -115,11 +123,20 @@ Exit 0 only when every row PASSes. A hand-written PASS table is not this report.
       consoleErrors: launched.consoleErrors,
       softwareGl: true,
       sourceLint,
+      popSamples: layout.organic ? popSamples : undefined,
+      fadeSamples: layout.streaming ? fadeSamples : undefined,
+      preloadSamples: layout.streaming ? preloadSamples : undefined,
     });
     if (shots.some((s) => s.snap && s.snap.harness)) {
       notes.push("This URL is the playcheck fixture harness, not a biome play build. This repo has no clearing play build. The harness paints test patterns so the tool can run here. It is not a style and it does not change a game.");
     }
     notes.push("Heuristic rows: black_regions, tile_repeat, fog_band streak test. Partial rows: stops are every 45° (8 headings) rather than 36 walked headings; ring coverage is sampled every 10° from the centre; backdrop size is reported by the renderer; near_lens uses the renderer's nearest fragment distance. A data-only agreement is not a PASS.");
+    if (layout.organic) {
+      notes.push("Organic layout: waypoint route, boundary probes every 10 m, discovery, no_pop, and the cells line. Circle rows ring_closed, stops_visible, and collider_eq_visual are not emitted. Owner decision 2026-10-02, spec rails 10 and 11.");
+    }
+    if (layout.streaming) {
+      notes.push("Streaming: fade_in and preload_ahead. The fade is alpha on existing pixels. An object already visible as its far representation crossfades and does not drop to 0 first. Alpha starts at 0 only when the object was outside the frustum, occluded, or beyond fog. Owner decree #457, approved 2026-10-02. Spec rail 11.");
+    }
     if (args.video && !videoInfo) notes.push("Video was requested but not written.");
     const report = writeReport(outDir, {
       url: href,
@@ -143,6 +160,7 @@ Exit 0 only when every row PASSes. A hand-written PASS table is not this report.
       perf: judged.perf,
       notes,
       generatedAt: new Date().toISOString(),
+      waypoints: layout.organic ? waypoints : undefined,
     });
     console.log(report.summary.result);
     for (const row of report.rows) console.log(`${row.result}\t${row.id}`);

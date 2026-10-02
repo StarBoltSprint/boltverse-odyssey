@@ -26,6 +26,8 @@ import {
 import { judgeTransition } from "../../../biome/scripts/zone-flow/zoneFlow.mjs";
 import { judgePerf } from "../../perf/stats.mjs";
 import { judgeOrbit } from "./billboard.mjs";
+import { boundaryRecords, discoveryFromFrames, evaluateBoundary, evaluateCells, evaluateDiscovery, evaluateNoPop } from "./organic.mjs";
+import { evaluateFadeIn, evaluatePreloadAhead, fadeSamplesFromFrames, preloadSamplesFromFrames } from "./streaming.mjs";
 
 const WEBGL_RE = /webgl|invalid_|gl_invalid|texsubimage|teximage|geterror/i;
 
@@ -54,6 +56,7 @@ export function createJudge(layout) {
 }
 
 function finish(layout, frames, extras) {
+  if (layout && layout.organic) return finishOrganic(layout, frames, extras);
   const labels = layoutLabels(layout);
   const objectLabels = [...labels.hulls, ...labels.gates, ...labels.interiors];
   const gl = collectGl(extras);
@@ -98,6 +101,133 @@ function finish(layout, frames, extras) {
     consoleErrors: gl.console,
     perf: perf.report,
   };
+}
+
+function finishOrganic(layout, frames, extras) {
+  const gl = collectGl(extras);
+  const rows = [];
+  rows.push(rowDebug(frames));
+  rows.push(rowWebgl(gl));
+  rows.push(rowWebglClean(gl));
+  const mag = rowMag(frames, layout);
+  rows.push(mag);
+  rows.push({
+    ...mag,
+    id: "mag",
+    detail: "Doc 63 name for the same HUD magnification peak as mag_max. Above the layout limit is FAIL.",
+  });
+  rows.push(rowFullscreen(frames, layout));
+  rows.push(rowSingleHero(frames));
+  rows.push(rowIdleGallop(frames));
+  rows.push(rowSingleBolt(frames, rows));
+  rows.push(rowLayoutOrganic(frames, layout));
+  rows.push(rowGateOrganic(frames, layout));
+  rows.push(evaluateBoundary(boundaryRecords(layout, frames)));
+  rows.push(evaluateDiscovery(discoveryFromFrames(layout, frames)));
+  rows.push(evaluateNoPop(extras.popSamples || []));
+  const last = frames.length ? frames[frames.length - 1].snap : {};
+  const snap = last || {};
+  const pageStreaming = !!(snap.streaming || (snap.cells && snap.cells.streaming === true));
+  const layoutStreaming = !!(layout.streaming && typeof layout.streaming === "object" && !Array.isArray(layout.streaming));
+  rows.push(evaluateCells(snap, { streaming: layoutStreaming || pageStreaming }));
+  if (layoutStreaming) {
+    const fadeSamples = Array.isArray(extras.fadeSamples) && extras.fadeSamples.length
+      ? extras.fadeSamples
+      : fadeSamplesFromFrames(frames);
+    rows.push(evaluateFadeIn(fadeSamples, layout.streaming));
+  }
+  if (layoutStreaming || pageStreaming) {
+    const preloadSamples = Array.isArray(extras.preloadSamples) && extras.preloadSamples.length
+      ? extras.preloadSamples
+      : preloadSamplesFromFrames(frames);
+    const preloadLayout = layoutStreaming ? layout : { ...layout, streaming: { declared: true } };
+    rows.push(evaluatePreloadAhead(preloadSamples, preloadLayout));
+  }
+  rows.push(rowNear(frames, layout));
+  rows.push(rowFog(frames, layout));
+  rows.push(rowBlack(frames));
+  rows.push(rowTiles(frames));
+  rows.push(rowBackdrop(frames, layout));
+  rows.push(rowSolids(frames));
+  pushTransition(rows, frames);
+  const perf = judgePerf(frames, { softwareGl: !!extras.softwareGl });
+  for (const perfRow of perf.rows) rows.push(perfRow);
+  if (extras.sourceLint) rows.push(rowSource(extras.sourceLint));
+  const failed = rows.filter((r) => r.result !== "PASS").length;
+  return {
+    rows,
+    failed,
+    passed: rows.length - failed,
+    glErrors: gl.errors,
+    consoleErrors: gl.console,
+    perf: perf.report,
+  };
+}
+
+function rowLayoutOrganic(frames, layout) {
+  const expected = [];
+  for (const g of layout.gates || []) {
+    const saw = frames.some((f) => f.kind === "gate" && (seenLabel(f, g.label) || seenLabel(f, g.id)));
+    expected.push({ id: g.label, kind: "gate", saw });
+  }
+  for (const p of layout.pois || []) {
+    const saw = frames.some((f) => (f.kind === "sub_area" || f.kind === "passage") && seenLabel(f, p.id));
+    expected.push({ id: p.id, kind: "poi", saw });
+  }
+  const missing = expected.filter((e) => !e.saw);
+  return row(
+    "layout_rendered",
+    missing.length ? "FAIL" : "PASS",
+    { objects: expected.length, missing: missing.map((m) => m.id), rows: expected },
+    missing.length
+      ? "A gate or POI on the organic route wrote no visible pixels. Boundary pieces are measured by boundary_visible, not by this row."
+      : "Every gate and POI on the organic route wrote visible pixels. Boundary contact is boundary_visible.",
+    { partial: true },
+  );
+}
+
+function rowGateOrganic(frames, layout) {
+  const gate = layout.gates[0];
+  if (!gate) return row("gate", "FAIL", {}, "Layout has no gate.");
+  const pos = gate.position || [0, 0];
+  let best = null;
+  for (const f of frames) {
+    const dx = pos[0] - (Number(f.snap.x) || 0);
+    const dz = pos[1] - (Number(f.snap.z) || 0);
+    const aim = (Math.atan2(dx, dz) * 180) / Math.PI;
+    const facing = f.kind === "gate" || angDist(Number(f.snap.hdg) || 0, aim) < 25;
+    if (!facing) continue;
+    const win = windowCount(f.ids, gate.label, 0.3, 0.2, 0.7, 0.62);
+    const alt = windowCount(f.ids, gate.id, 0.3, 0.2, 0.7, 0.62);
+    const n = Math.max(win.n, alt.n);
+    const which = win.n >= alt.n ? gate.label : gate.id;
+    const color = f.rgba ? colorVisible(f.rgba, f.width, f.height, f.ids, which) : { visible: n >= 8 };
+    const layoutDist = Math.hypot(dx, dz);
+    if (!best || n > best.n) best = { id: f.id, n, color, snap: f.snap, layoutDist };
+  }
+  const end = frames.filter((f) => f.kind === "gate").pop();
+  const bearing = best ? Number(best.snap.gate && best.snap.gate.bearing_deg) : null;
+  const dist = best ? Number(best.snap.gate && best.snap.gate.dist_m) : null;
+  const layoutDist = best ? best.layoutDist : null;
+  const distOk = Number.isFinite(dist) && Number.isFinite(layoutDist) && Math.abs(dist - layoutDist) <= Math.max(1.5, layoutDist * 0.2);
+  const bearingOk = Number.isFinite(bearing) && Math.abs(bearing) <= 12;
+  const visible = !!(best && best.n >= 10 && best.color.visible);
+  const trigger = !!(end && end.snap.pathTrigger);
+  const result = visible && distOk && bearingOk && trigger ? "PASS" : "FAIL";
+  return row(
+    "gate",
+    result,
+    {
+      id: gate.id,
+      pixels: best ? best.n : 0,
+      color: best ? best.color.reason || best.color.visible : "no-facing-frame",
+      bearing_deg: Number.isFinite(bearing) ? round(bearing) : null,
+      dist_m: Number.isFinite(dist) ? round(dist) : null,
+      layoutDist: Number.isFinite(layoutDist) ? round(layoutDist) : null,
+      pathTrigger: trigger,
+    },
+    "The gate frame must show the opening, the HUD bearing and distance must match the hero position, and walking the opening must hit the path trigger.",
+  );
 }
 
 function transitionSamples(frames) {

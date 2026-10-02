@@ -1,0 +1,45 @@
+{
+  "format": "walkaround-hull-1",
+  "name": "near-b",
+  "category": "near",
+  "note": "TEST FIXTURE - not Imagine",
+  "drawsOwnPixels": false,
+  "invisibleHull": true,
+  "notForBolt": true,
+  "pixels": "original-png-lossless",
+  "synthetic": true,
+  "height_m": 0.85,
+  "width_m": 1.0,
+  "halfExtent": [
+    0.55,
+    0.425,
+    0.55
+  ],
+  "placement": {
+    "collisionRadius": 0.55,
+    "position": [
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "footprint": {
+    "type": "circle",
+    "radius_m": 0.55
+  },
+  "sourcePx": {
+    "width": 1400,
+    "height": 1600,
+    "kind": "silhouette"
+  },
+  "yawQuantizeDeg": 15,
+  "cameras": [
+    {
+      "file": "yaw-000.png",
+      "yawDeg": 0.0,
+      "fovYDeg": 40.0,
+      "width": 1400,
+      "height": 1600
+    }
+  ]
+}
