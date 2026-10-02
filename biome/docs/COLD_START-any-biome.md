@@ -8,6 +8,8 @@ Playable composite (any paint): paste [`COLD_START-biome-method.md`](COLD_START-
 
 **HARD — render quality, every play view:** [`65-render-quality.md`](65-render-quality.md). Magnification ≤ 1.0 and sharpness held. Instanced repeats, one `STATIC_DRAW` upload, mipmapped stills, `LINEAR` video, at most 4 decoding videos, DPR ≤ 2, the playcheck perf line (`drawCalls`, `texMB`, `activeVideos`, `jsMs`), world-locked solids. SwiftShader frame time is informational. No biome style on that page.
 
+**HARD — Law 67 exception (owner SmiR 2026-10-02), light post-pass:** [`67-imagine-post-pass.md`](67-imagine-post-pass.md). Code may apply only distance / exponential fog (colour sampled from an Imagine sky or plate, never invented), one light colour grade per biome (ACES / AgX-style curve, subtle saturation and contrast), and subtle capped bloom on bright Imagine highlights. Real-time lights, shadows, AO, computed reflections / refraction, code-drawn particles, and non-Imagine models or textures stay FAIL. Every source pixel is Imagine. Holds on 720×1600, one combined native pass preferred, half-res bloom allowed, no banding / blur / sharpness loss (law 65 still applies). Bolt stays readable. Perf report carries fps before and after. Prompts for one scene lock one sun direction, time of day, and palette across all plates. No biome style on that page.
+
 # COLD START — cook any biome (parity brief)
 
 You are cooking a **Lane biome** for Boltverse Odyssey for a **random player**. Read GitHub `main` first:

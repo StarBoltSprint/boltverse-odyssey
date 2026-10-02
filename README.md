@@ -105,6 +105,7 @@ Search: `StarBoltSprint citadel-room` · living film · boltverse-odyssey.grok.m
 | [`biome/docs/37-path-beat.md`](biome/docs/37-path-beat.md) | **Path beat** (law 37) — chemin reveals one lane ~3 s ahead. Runtime [`biome/scripts/path-beat/pathBeat.js`](biome/scripts/path-beat/pathBeat.js). |
 | [`biome/docs/38-gpu-light-openable.md`](biome/docs/38-gpu-light-openable.md) | **GPU light layers + openables** (law 38) — keyed lights and closed/open/transition over densify. Runtime [`biome/scripts/gpu-light/gpuLight.js`](biome/scripts/gpu-light/gpuLight.js) · [`biome/scripts/gpu-openable/gpuOpenable.js`](biome/scripts/gpu-openable/gpuOpenable.js). |
 | [`biome/docs/66-tool-feedback-loop.md`](biome/docs/66-tool-feedback-loop.md) | **Tool feedback** (law 66) — a tool miss goes upstream. Finish the take, write `feedback/<date>-<tool>.md`, open the issue. Nothing auto-merges. |
+| [`biome/docs/67-imagine-post-pass.md`](biome/docs/67-imagine-post-pass.md) | **Light post-pass exception** (law 67, owner SmiR 2026-10-02) — fog sampled from an Imagine sky or plate, one light grade per biome, subtle capped bloom on Imagine highlights. Nothing else. Fps before/after. |
 | [AGENTS.md](AGENTS.md) | cold-start HARD SPLIT: Agent = STYLE stills; video = hooks first+last |
 | [GROK.md](GROK.md) | console flow + how to rebuild the citadel hall |
 | [ROOM.md](ROOM.md) | skeleton — encode flags, playsInline, ENTER map, player bugs |
