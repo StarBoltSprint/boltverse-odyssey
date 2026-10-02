@@ -127,6 +127,7 @@ WebGL errors are captured even without the hook, by wrapping `getError` and the 
 | --- | --- |
 | `webgl_errors` / `webgl_clean` | Any `gl.getError` or console WebGL error, including `texSubImage3D`. |
 | `mag_max` / `mag` | Peak HUD magnification, including `magSources` when present, is above `view.mag_max` (1.0). |
+| `fix_hint` | Always PASS. Report only. Names the object and stop behind the worst `mag_max` (from `magHits`, else the largest `magSources` key) and a farther camera (`dist * mag / limit`) or a smaller scale (`scale * limit / mag`). When `snapshot().heroVisible` is under 0.85 it names that fraction. It does not change the failed-row count. |
 | `stops_visible` | A stop is not in contact with a layout surface (blocked, or within 0.5 m), or nothing from the layout covers the view ahead. Flat black and pixels that match unlabeled ground do not count. |
 | `collider_eq_visual` | Stop is more than 0.5 m from a layout surface, or the surface is not visible. |
 | `solids_world_locked` | A solid's screen crop stays pixel-identical (mean absolute error ≤ 3/255) across a consecutive orbit step of 3–7°. Zero identical pairs is the only pass. No orbit frames is a FAIL. The measurement harness (`snap.harness`) records the count as partial and does not apply it. Hero, fog, and `gate:` labels are skipped. |

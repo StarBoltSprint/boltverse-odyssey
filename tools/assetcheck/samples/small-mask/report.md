@@ -49,6 +49,8 @@ Kind `cutout`. Asset **FAIL**.
 - plateTouchesFrame: `True`
 - plateRectangularity: `0.9465`
 - haloThicknessPx: `0.0`
+- edgeGreenFraction: `0.0`
+- edgeBandPx: `3`
 - FAIL alpha solid background plate fraction=0.9465 rectangularity=0.947
 
 ## Failures

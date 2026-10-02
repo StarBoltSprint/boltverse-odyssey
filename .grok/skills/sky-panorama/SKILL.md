@@ -43,12 +43,37 @@ A texture wider than 4096 is split before upload. The 2d KEEP ring is 4636 wide 
 ## Seam
 
 ```bash
+python3 tools/sky/check.py --slices <dir> --out <reports>
 python3 tools/assetcheck/check.py --manifest <manifest.json> --out <reports>
 ```
 
-Kind `backdrop`. Width above 4096 fails until the file is split. Vertical magnification above 1 fails. Horizontal wrap uses the tile seam limits (ratio > 2.2 and absolute seam > 12).
+`tools/sky/check.py` is the chain gate. It rejects a trailing clone or mirror, a content-strip join MAE above 4, a column-luma swing above 6 inside any 60° window, and a chain that does not close (last joins first). The report names which joins fail and the cheapest slice to recook. Kind `backdrop` still applies: width above 4096 fails until the file is split, vertical magnification above 1 fails, and a hard horizontal wrap uses the tile seam limits (ratio > 2.2 and absolute seam > 12).
 
 The relief KEEP also requires plate MAE 0 and an overlap MAE in the band written in [`biome/docs/60-imagine-relief-panorama-method.md`](../../../biome/docs/60-imagine-relief-panorama-method.md) (accepted about 0.02–3.5).
+
+A narrow crossfade (2–4% of the slice width, default 3%) may mix the two slices' own pixels after this gate passes. It stays off when the gate fails, and when the layout says seam blend off. It does not invent a pixel and it does not hide a failed join.
+
+Stop after 2 failures of the same seam defect. List the miss. Do not spend a third cook on it.
+
+## Living sky
+
+The hung sky is video, not a frozen still. Each still slice is the first frame of an Imagine video seamless loop. Cook three layers for the whole yaw, not one video per slice:
+
+| Layer | Duration |
+| --- | --- |
+| Stars | about 13 s |
+| Dust | about 17 s |
+| Nebula drift | about 29 s |
+
+Those durations are pairwise coprime. The combined sky repeats at their least common multiple (6409 s for 13, 17, and 29). The gate fails a combined repeat under 600 s and prints `combinedRepeatSec`.
+
+Give each slice its own random start offset. Adjacent slices, including the last against the first, must differ by at least 0.75 s. One decoder per layer samples those offsets. Do not open a decoder per slice.
+
+Motion stays slow and small. No flash, no shooting star, and no other one-off event inside the loop: a distinctive feature that returns on a fixed period under 60 s makes the repeat obvious. The perceived-repetition row flags that period. An always-on star field is the texture and is not that row. A rare event, if one is wanted, is a separate one-shot Imagine clip fired at a random gap of at least 30 s.
+
+Phone caps: at most 3 sky videos (Bolt keeps one decoder of the game's four) and 48 MiB of sky textures. Kind `sky-loop` in assetcheck measures one file's loop seam, amplitude, and that repetition row.
+
+The plate-0 prompt was not stored. Do not write a new one. Record the call you actually made.
 
 ## After an accepted step
 

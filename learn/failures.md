@@ -99,3 +99,113 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Read `learn/taste.md` before a visual step. The Golden rule is first: a living painted film, Imagine pixels, the filmed Bolt gallop, the owner's decrees. Style rules: sharp edges, distinctive silhouettes, no circles, etched angular dark-violet weathered marks, large organic biomes, one ship across an orbit set. Append the owner's reaction after the review. |
 | Guard | `python3 tools/judge/judge.py --candidate <still> --ref <ref>` (1–3 refs). The prompt includes the Golden rule and `learn/taste.md`. Exit 0 only when the reply is valid, score ≥ 7 (`--threshold`), `keep` is true, and `matches_refs` is true. `python3 tools/judge/selftest.py` checks the 128 KiB image-block cap and rejects a bad reply (exit 1). A judge score does not override a hard law and does not replace owner review. |
 | Sources | [`learn/taste.md`](../learn/taste.md). [`tools/judge/README.md`](../tools/judge/README.md). |
+
+### 2026-10-02 — orbit views drift in camera height and exposure
+
+| | |
+| --- | --- |
+| Take | 10d, ship rounds r1, r2, r3 (Grok Build CLI, `cli/take10d-ship`). |
+| Defect | Eight Imagine views of one ship were not shot from one camera. r2: yaw-000 came back as a plan view (luma +46%) and yaw-180 +29.5% luma, with mixed elevations across the set. r3 asked for 18° on every call and still passed only 4/8: yaw-000 hs_corr 0.218 (grey, not violet), yaw-045 luma +37.7% and keel tilt 22.1°, yaw-180 top fraction 0.214 vs hero 0.059 (too high) and wingtip margin 0.019, yaw-315 steep (top 0.204), luma +12.6%, tilt 24.7°. |
+| Root cause | Imagine does not hold an elevation or an exposure across edits. End-on and front-quarter views are the worst: the model returns a plan or a steep view, and every edit drifts brighter. Text such as "eighteen degrees above the horizon" is not a camera lock. Asking for a level end view often turns the ship back to a side view. |
+| Fix | Not fixed in take 10d. The stop rule ended it after 3 rounds. What helped: cook the hero first and gate it, then pass the hero as the first image of every view call ("match the first image's camera and darkness"), and change one thing per edit (rotation, then exposure). What is still needed: a per-view gate before keeping a plate (top fraction within ±25% of the hero, luma ±10%, keel tilt ≤ 20°), and a reference that fixes the camera, such as a rendered proxy at the right yaw/elevation as the second image. |
+| Guard | Ship-run drift script rows (`ship-ref/VIEWS_READY.txt`): hs_corr vs hero ≥ 0.80, luma ±10%, top fraction ±25% (side) / not plan, not too high (ends) / ≤ 3× hero (quarters), keel tilt ≤ 20°, margin ≥ 3%. Not in the repo yet: no repo tool gates the elevation of an orbit set. `tools/objsheet` only gates area and height. |
+| Sources | `/workspace/grokcli/out/take10d/ship-ref/VIEWS_READY.r2.txt`, `VIEWS_READY.txt` (r3), `drift-report.json`, `r3-prompts.jsonl` on the box. |
+
+### 2026-10-02 — hull carve does not match its own views (silhouetteFit)
+
+| | |
+| --- | --- |
+| Take | 10d attempt 2, ring-b rebuilt from the slab orbit (`c4436f2`). Cites "silhouette hull blobs thin parts" above. |
+| Defect | The walkaround hull reprojected into each view covered a different shape than the view: ring-b IoU mean 0.596, min 0.470. Thin parts kept 0–13%. The overhang concavity was filled. The old primitive hulls scored 0.80–0.94, so a good-looking new rock produced a worse solid. Ship r1 views were refused by the silhouette lock. |
+| Root cause | The 7-of-8 vote carves inconsistent Imagine framing (size and centre change per view) down to a core box. The underside cap fills any concavity. The silhouette lock's area rule is wrong for long objects. The texture then stretches over the shrunken hull. The report had no per-view fit number, so none of this showed up in `qc/report.json`. |
+| Fix | Report only so far: `tools/walkaround/hull.py` writes `silhouetteFit` (per view: iou, missed, overfill; plus minIoU), `selftest.py` `check_silhouette_fit` (red on the old code: "report has no silhouetteFit.perView / minIoU"; green: good minIoU 0.914, shifted 0.6455). Local commit `40afc90` on `cli/take10d` (first `3052dcd` on `cli/take10d-ship`). Not done: per-view registration (scale and principal point, also in `hullmesh.js`), soft vote that protects thin parts, keeping concavities, an aspect-aware silhouette lock, and an IoU gate once a law sets the limit. |
+| Guard | `python3 tools/walkaround/selftest.py` `check_silhouette_fit`. `qc/report.json` → `silhouetteFit.minIoU` (no PASS limit yet; take 10d used 0.85 as the target row `hull_silhouette_fit`). |
+| Sources | `/workspace/grokcli/out/take10d/hullcheck/HULLCHECK.md`, `hullcheck.py`, `redgreen/` on the box. |
+
+### 2026-10-02 — chroma key leaves a green edge band that the key gate does not count
+
+| | |
+| --- | --- |
+| Take | 10d ship r3 views. |
+| Defect | The keyed views had a dark green band along every edge: 35–98% of the pixels in a 3 px edge band leaned green (G > R+6 and G > B+6), visible on a grey contact sheet. The run's own key check said "key-green pixels inside every opaque mask: 0". |
+| Root cause | The key gate only counted bright key green (G > max(R,B)+28 and G > 70). Dark spill on a near-black hull is under that threshold, so it stayed opaque. |
+| Fix | Despill through the key: clamp G to max(R,B) and erode alpha 1 px. Result 0% green edge, luma −1..−3 (copy at `ship-ref/views-despill/`). |
+| Guard | None in the repo. A row is needed: share of edge-band pixels with G > max(R,B)+6, limit about 1%. `tools/assetcheck` kind `cutout` does not measure edge spill. |
+| Sources | Director measurement 2026-10-02 16:30 on `ship-ref/views/yaw-*.png`. |
+
+### 2026-10-02 — sky slices made by cloning or mirroring columns
+
+| | |
+| --- | --- |
+| Take | 10d. The interrupted web session's WIP commit `71a44b2` (branch `take10d-web`) installed the sky. Attempts 2 and 3 (Grok Build CLI) tried to replace it. |
+| Defect | The installed sky-0..6 end in cloned or mirrored trailing columns. That is code-made pixels, a hard-law breach. The content-strip MAE between slices reaches 40.94 (limit 4). Attempts 2 and 3 cooked a real chain: 9 accepted slices (join content MAE 1.56–2.66, but Laplacian variance fell from 4546.81 on slice-00 to 915.99 on slice-08, so the chain softens with every edit). They did not close it, and then 8 rejects in a row broke the luma window (37.1–43.3). Attempt 3 reached 10 slices, still open at the 17:45 cutoff. The installed cloned sky stays in take 10d (owner 17:20: deferred). |
+| Root cause | A chain with a tight luma window drifts darker or brighter with every edit, and the window narrows as slices are added. Cloning columns hid the missing width instead of cooking it. One slice (37) swung column luma by 62 and poisoned every chain that started with it. |
+| Fix | Not fixed in 10d. Next time: score each new slice against the first slice's luma as well as the previous one, plan the closing slice early (an edit with the last slice and slice 0 as the two images), and do not start a chain from a slice that already swings more than 6. |
+| Guard | Take 10d REPORT rows `sky_unique_sha256`, `sky_join_mae` (content-strip MAE ≤ 4), `sky_column_luma_swing` (≤ 6 in any 60° window). `tools/assetcheck` kind `backdrop` measures the seam and magnification, not cloned columns. No repo row detects mirrored columns yet. |
+| Sources | `/workspace/grokcli/out/take10d/sky-chain/STATUS.md`, `work/measure-now/sky.json`, REPORT.md (take 10d). |
+
+### 2026-10-02 — one oversize step per headless session, ending without a final answer
+
+| | |
+| --- | --- |
+| Take | 10d, Grok Build CLI attempts 1 and 2 (and attempt 3 ran past the 18:15 deadline). |
+| Defect | Attempt 1 ran 419 turns (8 compactions, $14) and ended with no final answer and no REPORT. Attempt 2 ran 290 turns (5 compactions) and ended with no final answer. Its REPORT had 33 rows "not measured". The phone playcheck, which takes about 40 minutes, never ran on a HEAD in either attempt. |
+| Root cause | The step held about 10 items and more than 79 rows, plus art cooks. After each compaction the session re-read the spec and GROK.md, and the END pipeline was planned last. The session stopped (end_turn) in the middle of the work. |
+| Fix | Attempt 3 put the measurement first (step 0: playcheck in a subagent in the first 20 minutes), wrote REPORT.md after every item, and used a fixed time cutoff. That gave a measured table. Next time: one art family per step, the playcheck at the start and at the end, and time the 40-minute playcheck into the deadline. |
+| Guard | None in the repo. The kit has no check that a run ended with a final answer. The Director checks `.exit` plus the last `text` event. |
+| Sources | `/workspace/grokcli/logs/20261002-120625-take10d.*`, `20261002-144151-take10d.*`, `20261002-163629-take10d.*`, `/workspace/grokcli/next/take10d.progress.log`. |
+
+### 2026-10-02 — sky clone gate now rejects a copied or mirrored trailing run
+
+| | |
+| --- | --- |
+| Take | Tooling follow-up to take 10d. Cites "sky slices made by cloning or mirroring columns" above. |
+| Defect | The same cloned and mirrored trailing columns, and a chain that never closed. |
+| Root cause | `tools/assetcheck` kind `backdrop` measured a wrap seam and magnification. It did not compare a trailing run with the run before it, and it did not require last-to-first. |
+| Fix | `python3 tools/sky/check.py` fails a trailing clone or mirror, a content-strip join MAE above 4, a column-luma swing above 6 in any 60° window, and an open close. The report names the cheapest slice to recook. |
+| Guard | `python3 tools/sky/selftest.py`. Join MAE limit 4. Swing limit 6. A chain that only fails the close recooks the last slice. |
+| Sources | Take 10d sky entry above. Tool version that let it through: `db693e5`. Stills were on the take box and are not stored in this repo. |
+
+### 2026-10-02 — dark green edge band is now a cutout fail
+
+| | |
+| --- | --- |
+| Take | Tooling follow-up to take 10d. Cites "chroma key leaves a green edge band that the key gate does not count" above. |
+| Defect | A 3 px edge with G above max(R, B) by 6 stayed opaque. The bright-green fringe row did not see it. |
+| Root cause | The key gate counted bright key green only. |
+| Fix | `tools/assetcheck` `check_alpha` fails when more than 1% of that 3 px band leans green, for key `alpha` or `green`. `python3 tools/assetcheck/despill.py` clamps G to max(R, B) and erodes alpha 1 px into a different file. A `lock/` path stays WARN. |
+| Guard | `python3 tools/assetcheck/selftest.py` `edge_green_despill` (red on the fringe, green after despill). Limit 0.01. |
+| Sources | Take 10d chroma entry above. Tool version `db693e5`. The ship stills are not stored in this repo. |
+
+### 2026-10-02 — orbit preflight gates luma and elevation before eight views
+
+| | |
+| --- | --- |
+| Take | Tooling follow-up to take 10d. Cites "orbit views drift in camera height and exposure" above. |
+| Defect | Eight views drifted in elevation and luma. `tools/objsheet` gated area and height only. |
+| Root cause | No per-view check against the hero still. |
+| Fix | `python3 tools/objsheet/preflight.py` grades luma (±10%), hue correlation (≥ 0.80), centered silhouette IoU (≥ 0.55), top fraction (±25% of the hero), and ground gap (0.12). A fail recommends 3–4 views on a limited arc and a stop after 2 of the same defect. Elevation is a silhouette proxy, not a surveyed camera. |
+| Guard | `python3 tools/objsheet/selftest.py` `preflight_views`. A bright copy of the hero fails luma. A near copy passes. |
+| Sources | Take 10d orbit entry above. Tool version `db693e5`. The view stills are not stored in this repo. |
+
+### 2026-10-02 — a short sky loop reads as the same flash
+
+| | |
+| --- | --- |
+| Take | Tooling follow-up. Owner refinement on the living sky: the loop must not feel repetitive. |
+| Defect | One short loop, shared by every slice, makes a distinctive event (a flash, a shooting star) return on a fixed period. |
+| Root cause | A single duration and a single start time. The backdrop gate did not measure a period. |
+| Fix | Three Imagine layers at about 13 s, 17 s, and 29 s. Combined repeat is their least common multiple (6409 s). The gate fails a combined repeat under 600 s. Each slice gets its own start offset (adjacent offsets at least 0.75 s apart). Motion stays slow (frame MAE ≤ 8). A rare bright feature on a fixed period under 60 s fails. A rare event is a separate one-shot clip with a random gap of at least 30 s. |
+| Guard | `python3 tools/sky/selftest.py` (flash period 1 s fails; a gentle drift and an always-on star field pass; 10/20/30 s fails the 600 s floor). `python3 tools/sky/check.py` prints `combinedRepeatSec`. |
+| Sources | Owner refinement on the living-sky requirement. No still of the repetitive loop is stored. |
+
+### 2026-10-02 — step size and the two-failure stop are written down
+
+| | |
+| --- | --- |
+| Take | Tooling follow-up to take 10d. Cites "one oversize step per headless session, ending without a final answer" above. |
+| Defect | Attempts of 419 and 290 turns ended with no final answer. The same orbit drift was cooked a third time. |
+| Root cause | The step held many art families, and the stop was "after 3 rounds". |
+| Fix | [`spec.md`](../spec.md) and `AGENTS.md`: one goal, a done-when list of at most 8 rows, `REPORT.md` written as the rows are measured, stop after 2 failures of the same defect. Hall smoke stays one fresh cook plus one enlarge. |
+| Guard | The spec text. There is still no check that a run ended with a final answer. |
+| Sources | Take 10d oversize entry above. |

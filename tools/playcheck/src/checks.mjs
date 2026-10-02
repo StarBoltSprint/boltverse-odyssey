@@ -73,6 +73,7 @@ function finish(layout, frames, extras) {
     id: "mag",
     detail: "Doc 63 name for the same HUD magnification peak as mag_max. Above the layout limit is FAIL.",
   });
+  rows.push(rowFixHint(frames, layout));
   rows.push(rowSingleHero(frames));
   rows.push(rowIdleGallop(frames));
   rows.push(rowSingleBolt(frames, rows));
@@ -116,6 +117,7 @@ function finishOrganic(layout, frames, extras) {
     id: "mag",
     detail: "Doc 63 name for the same HUD magnification peak as mag_max. Above the layout limit is FAIL.",
   });
+  rows.push(rowFixHint(frames, layout));
   rows.push(rowFullscreen(frames, layout));
   rows.push(rowSingleHero(frames));
   rows.push(rowIdleGallop(frames));
@@ -460,6 +462,83 @@ function rowMag(frames, layout) {
       ? `Peak magnification ${max} at ${at}, limit ${limit}.`
       : `Peak magnification ${max} at ${at}, limit ${limit}. Above 1.0 is FAIL.`;
   return row("mag_max", result, { mag_max: round(max), at, limit, missing: missing.length }, detail);
+}
+
+function rowFixHint(frames, layout) {
+  const limit = Number(layout.magMax) || 1;
+  const hits = [];
+  let heroMin = null;
+  let heroAt = null;
+  for (const f of frames) {
+    const snap = f.snap || {};
+    const listed = Array.isArray(snap.magHits) ? snap.magHits.slice() : [];
+    if (!listed.length) {
+      const sources = snap.magSources || {};
+      let bestId = null;
+      let best = -Infinity;
+      for (const [key, value] of Object.entries(sources)) {
+        const n = Number(value);
+        if (Number.isFinite(n) && n >= best) {
+          best = n;
+          bestId = key;
+        }
+      }
+      const mag = Number(snap.mag);
+      if (Number.isFinite(mag) && mag > best) {
+        best = mag;
+        bestId = bestId || "mag";
+      }
+      if (bestId && best > limit + 1e-3) {
+        listed.push({
+          id: bestId,
+          mag: best,
+          stop: f.id,
+          dist_m: snap.nearestVisibleM,
+          scale: snap.scale,
+        });
+      }
+    }
+    for (const hit of listed) {
+      if (Number(hit.mag) > limit + 1e-3) {
+        hits.push({
+          id: hit.id,
+          mag: Number(hit.mag),
+          stop: hit.stop || f.id,
+          dist_m: hit.dist_m != null ? Number(hit.dist_m) : Number(snap.nearestVisibleM),
+          scale: hit.scale != null ? Number(hit.scale) : Number(snap.scale),
+        });
+      }
+    }
+    const hv = Number(snap.heroVisible);
+    if (Number.isFinite(hv) && (heroMin === null || hv < heroMin)) {
+      heroMin = hv;
+      heroAt = f.id;
+    }
+  }
+  hits.sort((a, b) => b.mag - a.mag);
+  const worst = hits[0];
+  const numbers = { reportOnly: true, hits: hits.slice(0, 6).map((hit) => ({ ...hit, mag: round(hit.mag) })) };
+  let detail = "Report only. This hint does not change PASS or FAIL.";
+  if (worst) {
+    const scale = Number.isFinite(worst.scale) ? worst.scale : 1;
+    const distSuggest = Number.isFinite(worst.dist_m) ? worst.dist_m * (worst.mag / limit) : null;
+    const scaleSuggest = scale * (limit / worst.mag);
+    numbers.object = worst.id;
+    numbers.stop = worst.stop;
+    numbers.mag = round(worst.mag);
+    numbers.suggestedDist_m = distSuggest == null ? null : round(distSuggest);
+    numbers.suggestedScale = round(scaleSuggest);
+    const distText = numbers.suggestedDist_m == null ? "a larger follow distance" : `about ${numbers.suggestedDist_m} m`;
+    detail =
+      `Report only. ${worst.id} at ${worst.stop} is mag ${numbers.mag} (limit ${limit}). ` +
+      `Move the camera out to ${distText}, or set scale about ${numbers.suggestedScale}.`;
+  }
+  if (heroMin !== null && heroMin < 0.85) {
+    numbers.heroVisible = round(heroMin);
+    numbers.heroStop = heroAt;
+    detail += ` Hero visible fraction ${numbers.heroVisible} at ${heroAt}. Back the camera up until the hero is in frame.`;
+  }
+  return row("fix_hint", "PASS", numbers, detail, { partial: true, heuristic: true });
 }
 
 function heroStats(frame) {

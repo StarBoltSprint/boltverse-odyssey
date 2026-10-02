@@ -47,6 +47,8 @@ Kind `loop`. Asset **FAIL**.
 - plateTouchesFrame: `True`
 - plateRectangularity: `0.8703`
 - haloThicknessPx: `0.0`
+- edgeGreenFraction: `0.0`
+- edgeBandPx: `3`
 - greenSpillFraction: `0.0`
 - greenFieldStd: `0.0`
 
