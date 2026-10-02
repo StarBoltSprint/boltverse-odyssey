@@ -20,7 +20,8 @@ The step START brief is `python3 tools/decrees/brief.py` ([`tools/decrees/README
 1. Copy the template to `learn/take-notes/<YYYY-MM-DD>-<take>.md` on the first accepted step. On later steps, update that file. Record quota or turns spent per item, the biggest waste and why, what to reuse, and which recipes and failures were added.
 2. If this step produced a cook that passed its QC rows, copy [`learn/recipes/_template.md`](../../../learn/recipes/_template.md) and add a row to the index. The prompt is the string that was sent. `not stored` if it was not saved. Do not reconstruct it.
 3. If this step hit a miss that is not already in the failure log, append an entry. Name the test or row that now guards it. If no row guards it, say so.
-4. If a repo tool let the defect through, reported a wrong number, or was hard to use, also write `feedback/<date>-<tool>.md` as in [`biome/docs/66-tool-feedback-loop.md`](../../../biome/docs/66-tool-feedback-loop.md). That file is the tool report. The failure log is the cook lesson. Both can exist. Neither auto-merges.
+4. Append one concrete prompt or tool improvement under `learn/` (a recipe update, a failure entry, or a geometry refinement). If the step only confirmed an existing row, say so in the take note. Do not invent a prompt, a QC number, or a commit to fill the slot.
+5. If a repo tool let the defect through, reported a wrong number, or was hard to use, also write `feedback/<date>-<tool>.md` as in [`biome/docs/66-tool-feedback-loop.md`](../../../biome/docs/66-tool-feedback-loop.md). That file is the tool report. The failure log is the cook lesson. Both can exist. Neither auto-merges.
 
 ## Reuse instead of recook
 

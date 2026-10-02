@@ -6,7 +6,7 @@
 
 This is the **full measure set** from the Frost aurora KEEP (PR #92 / 20b). Tide / canyon / ember / invented `{PAINT}` start from **these same numbers**. Frost aurora remains the **worked example** that already hits them. Player (or explicit paint) may adapt. Without override, Grok **starts here**.
 
-φ is a **composition audit only**. The law is the table + scale + GPU start knobs below.
+φ is a **composition audit only**. The law is the table + scale + GPU start knobs below. Phi does not set the horizon. The ~0.38 diamond is the pitched Frost measurement. Level plates use 0.50 ([`learn/geometry.md`](../../learn/geometry.md)). `withersFrac ~0.10` stays the chase-plate frame fraction. Bolt’s withers in metres are about **0.60** at the shoulders; do not enlarge the sprite to chase either number (law 56).
 
 ## Lane material (not this law)
 
@@ -22,7 +22,7 @@ Measured 2026-09-20 on the Frost aurora KEEP (720×1280, plant `y = 0.80`). Fram
 | 3-lane at `y=0.70` | **~0.73** | ~0.49 | 0.526 |
 | 1-lane at plant | **~0.25** | ~0.18–0.22 | 0.217 |
 | Sky / upper void | **~45 %** (band ~0.35–0.50) | ~15 % | — |
-| Horizon / road diamond | **~0.38** from top | too low | PATH far `y=0.22` |
+| Horizon / road diamond | **~0.38** from top on the Frost KEEP (pitched). A **level** plate is **0.50** (720×1600 → row 800). | too low, or 0.38 mixed into a level plate | PATH far `y=0.22` |
 | Road takes frame | **~0.62** lower mass | enclosed corridor | — |
 | Paw plant Y | **~0.80** (`PAW_PLANT`) | — | PATH plant sample 0.86 |
 | Vanishing | high, near center | lower, ice-hole / canyon | — |

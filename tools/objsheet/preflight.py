@@ -7,8 +7,9 @@ still against the hero. It does not call Imagine and it does not rewrite a plate
   python3 tools/objsheet/preflight.py --views <dir> --hero <file> --out <proof>
 
 Exit 0 when every view PASSes. Exit 1 when any view FAILs.
-A failing set should fall back to 3-4 views on a limited arc. Stop after 2
-failures of the same defect.
+A failing orbit falls back to 3-4 views for a hero ship, or to 4 views at 90°
+for a calibrated turnaround. Stop after 2 failures of the same defect.
+`--kind hero-ship` makes 3-4 views the default and fails any other count.
 """
 
 from __future__ import annotations
@@ -29,10 +30,20 @@ GROUND_GAP = 0.12
 ELEV_SPREAD = 12.0
 
 FALLBACK = (
-    "Fall back to 3-4 views on a limited orbit arc (about 90–120° around the hero). "
-    "Do not cook eight yaws. Stop after 2 failures of this same defect. "
+    "Fall back to 3-4 views for a hero ship (front, 3/4, side, optional back). "
+    "A calibrated turnaround falls back to 4 views at 90°. "
+    "A 120° arc does not pass. Do not cook eight yaws. "
+    "Stop after 2 failures of this same defect. "
     "A small Imagine-intrinsic miss is listed and accepted, not fought with more quota."
 )
+
+HERO_SHIP_DEFAULT = (
+    "Hero ship default is 3-4 views: front, 3/4, side, optional back. "
+    "The picture method is not chosen. "
+    "Do not cook an 8-view orbit for this ship."
+)
+
+HERO_SHIP_COUNTS = (3, 4)
 
 
 def load_rgba(path: Path) -> np.ndarray:
@@ -188,8 +199,13 @@ def grade(name: str, rgba: np.ndarray, hero_rgba: np.ndarray, hero_mask, hero_st
     }
 
 
-def recommend(rows: list[dict]) -> str:
+def recommend(rows: list[dict], kind: str = "orbit", view_count: int | None = None) -> str:
     failed = [row for row in rows if row["status"] != "PASS"]
+    if kind == "hero-ship":
+        text = HERO_SHIP_DEFAULT
+        if view_count is not None and view_count not in HERO_SHIP_COUNTS:
+            text += f" This set has {view_count} views; keep 3-4."
+        return text
     if not failed:
         return "Views match the hero elevation, luma, hue, and silhouette. An 8-view orbit can proceed."
     return FALLBACK
@@ -201,18 +217,25 @@ def collect(folder: Path, hero: Path) -> list[Path]:
     return [p for p in files if p.resolve() != hero_res]
 
 
-def run_views(paths: list[Path], hero: Path) -> dict:
+def run_views(paths: list[Path], hero: Path, kind: str = "orbit") -> dict:
     hero_rgba = load_rgba(hero)
     hero_mask = foreground(hero_rgba)
     hero_stats = silhouette(hero_mask)
     hero_hue = hue_hist(hero_rgba, hero_mask)
     hero_luma = mask_luma(hero_rgba, hero_mask)
     rows = [grade(path.name, load_rgba(path), hero_rgba, hero_mask, hero_stats, hero_hue, hero_luma) for path in paths]
+    view_count = len(paths) + 1
     failures = [line for row in rows for line in row["failures"]]
-    text = recommend(rows)
+    if kind == "hero-ship" and view_count not in HERO_SHIP_COUNTS:
+        failures.append(
+            f"FAIL view count={view_count} hero ship default is 3-4 (front, 3/4, side, optional back)"
+        )
+    text = recommend(rows, kind, view_count)
     return {
         "ok": not failures,
         "status": "PASS" if not failures else "FAIL",
+        "kind": kind,
+        "viewCount": view_count,
         "hero": str(hero),
         "heroLuma": round(hero_luma, 4),
         "heroElevationDeg": hero_stats["elevationDeg"],
@@ -236,12 +259,13 @@ def main() -> int:
     parser.add_argument("--views", type=Path, required=True)
     parser.add_argument("--hero", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--kind", choices=("orbit", "hero-ship"), default="orbit")
     args = parser.parse_args()
     paths = collect(args.views, args.hero)
     if not paths:
         print("FAIL preflight: no views besides the hero", file=sys.stderr)
         return 2
-    report = run_views(paths, args.hero)
+    report = run_views(paths, args.hero, args.kind)
     args.out.mkdir(parents=True, exist_ok=True)
     (args.out / "report.json").write_text(json.dumps(report, indent=2) + "\n")
     lines = [f"# view preflight {report['status']}", "", report["recommendation"], ""]

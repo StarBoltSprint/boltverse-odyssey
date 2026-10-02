@@ -61,11 +61,14 @@ Run this before keeping an 8-view orbit. It does not call Imagine and it does no
 
 ```bash
 python3 tools/objsheet/preflight.py --views <dir> --hero <hero.png> --out <proof>
+python3 tools/objsheet/preflight.py --views <dir> --hero <hero.png> --kind hero-ship --out <proof>
 ```
 
 Each view is graded against the hero. Luma within ±10%. Hue correlation at least 0.80. Centered silhouette IoU at least 0.55. Top fraction within ±25% of the hero (the floor of that band is 0.05). Ground gap within 0.12. Elevation spread above 12° fails only when the top fraction also fails. Elevation is the silhouette proxy (area above the widest row, and how high the contact sits). It is not a surveyed camera angle.
 
-A failing set prints the fallback: 3–4 views on about a 90–120° arc around the hero, and stop after 2 failures of that same defect. A small Imagine-intrinsic miss is listed and accepted.
+A failing orbit prints the fallback: 3–4 views for a hero ship (front, 3/4, side, optional back), or 4 views at 90° for a calibrated turnaround. A 120° arc does not pass. Stop after 2 failures of that same defect. A small Imagine-intrinsic miss is listed and accepted.
+
+`--kind hero-ship` makes 3–4 views the default even when the pixels match. Any other count fails. The pack is [`learn/ship-turnaround.md`](../../learn/ship-turnaround.md).
 
 ## Self-test
 

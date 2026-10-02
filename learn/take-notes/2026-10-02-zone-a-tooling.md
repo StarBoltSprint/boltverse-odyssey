@@ -15,6 +15,20 @@ No Imagine cook. No prompt was sent. No QC number was measured on a plate.
 - Recipe appended (path, or `none`): none
 - Failure appended (heading in `learn/failures.md`, or `none`): none
 
+## This step
+
+- Step: store the ship turnaround pack (no cook)
+- Accepted because (command, row, numbers): owner pack 2026-10-02, `python3 tools/objsheet/selftest.py` (hero-ship kind, counts 3 and 4 pass, count 2 fails)
+- Recipe appended (path, or `none`): none
+- Failure appended (heading in `learn/failures.md`, or `none`): none
+
+## This step
+
+- Step: hold the object-class and ship sprite-swap picture (no cook)
+- Accepted because (command, row, numbers): owner HOLD 2026-10-02. Those picture defaults are a rejected draft. Real 3D is the direction. The method is not chosen.
+- Recipe appended (path, or `none`): none
+- Failure appended (heading in `learn/failures.md`, or `none`): none
+
 ## Biggest waste
 
 None in a cook. The blank kit template is supposed to fail `check --file` until the paint fields are filled.
@@ -29,3 +43,5 @@ None in a cook. The blank kit template is supposed to fail `check --file` until 
 
 - New recipes: none
 - New failure entries: none
+- Stored pack: [`learn/ship-turnaround.md`](../ship-turnaround.md). Phone hero ship keeps a 3–4 view count in `tools/objsheet/preflight.py --kind hero-ship`. Sprite-swap is not the picture. The rail 12 turnaround (8×45° / 4×90°) is unchanged.
+- [`learn/object-classes.md`](../object-classes.md) is a rejected draft. It is not a kit lock and not a view-count gate. No cook.

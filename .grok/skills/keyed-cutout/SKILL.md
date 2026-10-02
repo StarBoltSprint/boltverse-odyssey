@@ -7,7 +7,7 @@ description: Gate a keyed cutout for magnification, alpha, and halo before it is
 
 Cook the cut at or above its final on-screen pixels. The compositor may shrink (`scale` ≤ 1). It does not enlarge. Law: [`biome/docs/56-cutout-native-scale.md`](../../../biome/docs/56-cutout-native-scale.md).
 
-Bolt's motion is `lock/bolt-gallop-cycle.mp4`. A WARN from assetcheck on a `lock/` path is not a recook.
+Bolt's motion is `lock/bolt-gallop-cycle.mp4`. A WARN from assetcheck on a `lock/` path is not a recook. Bolt’s withers are about **0.60 m** at the shoulders. `h_px = f_px × H / Z`. State the pixel fraction, then measure. Do not enlarge the cut to hit a fraction (law 56). Chase plates still use `withersFrac ~0.10`. Lock: [`learn/geometry.md`](../../../learn/geometry.md).
 
 ## Biome kit
 

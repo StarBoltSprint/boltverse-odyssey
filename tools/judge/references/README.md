@@ -1,12 +1,6 @@
 # Canonical reference images
 
-`tools/judge/references.json` is the registry. It starts empty:
-
-```json
-{
-  "references": []
-}
-```
+`tools/judge/references.json` is the registry. A path under `lock/` is rejected, including `biome/lock/`. Howl KEEP is an mp4 and is not registered. Ship and slab stills from take 10d are not in this repo and are not registered.
 
 A canonical reference is an owner-kept still. Register it before the judge treats that file as the reference for a design. An ad-hoc `--ref` path still runs; the prompt says it is not registered.
 

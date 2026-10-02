@@ -1,3 +1,44 @@
 {
-  "references": []
+  "references": [
+    {
+      "path": "packs/frost/stills/spawn.jpg",
+      "sha256": "3f6102085d91d150dd38c27887fb5291e527bf84082961f5417455a5906e1340",
+      "for": "Ice-hall KEEP spawn: one white German Shepherd centered, cyan left portal and gold right portal."
+    },
+    {
+      "path": "packs/frost/stills/at-a.jpg",
+      "sha256": "eb13ee5a69ac3910dfbff2e616fd9a040a1d8d7e65c0af8f61c6a94ab3e0ecb5",
+      "for": "Ice-hall KEEP at the teal left sill. One dog already at the threshold."
+    },
+    {
+      "path": "packs/frost/stills/at-b.jpg",
+      "sha256": "c0b8586518696d3817e75c81002ce9643721f077e7f40ef8d3b3d22087eace85",
+      "for": "Ice-hall KEEP at the gold right sill. One dog already at the threshold."
+    },
+    {
+      "path": "assets/relief/plate0.png",
+      "sha256": "18ad095923295eff57f73d7e9d0b54e5ab1aa710e050c139782d5327a75e283b",
+      "for": "Locked relief plate 0. Overlap against this plate is the MAE 0 anchor."
+    },
+    {
+      "path": "assets/relief/panorama-138.png",
+      "sha256": "859e8842e99b9b9d0e5ddee804e878fbd8f994528ff350a6bdb406b2a7b81e65",
+      "for": "138 degree KEEP outpaint of the relief ring. A second relief reference, not a sky recipe."
+    },
+    {
+      "path": "biome/void-orbit/stills/ship-flank.jpg",
+      "sha256": "28aaf2ebf950175ac829a6d8f9bc862885511fe298d37e1f7b795a75c1ac1bd2",
+      "for": "Void-orbit ship flank kept in doc 57. Black angular hull, one ship."
+    },
+    {
+      "path": "biome/void-orbit/stills/ship-top.jpg",
+      "sha256": "2af394a3f8173eca0bf02f5fb32dd0f3c4626ad914a240a152893d40cdaf6883",
+      "for": "Void-orbit ship top kept in doc 57. Same hull as the flank still."
+    },
+    {
+      "path": "biome/void-orbit/stills/ship-nose.jpg",
+      "sha256": "a027f9feaf1be89205507859290be6337ff9510b3dd183aa56ac34ae5ed0c3c6",
+      "for": "Void-orbit ship nose kept in doc 57. Same hull as the flank still."
+    }
+  ]
 }

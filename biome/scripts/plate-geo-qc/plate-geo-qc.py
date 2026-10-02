@@ -7,6 +7,15 @@ Empty Frost KEEP is the teacher that sealed the thresholds.
   python3 biome/scripts/plate-geo-qc/plate-geo-qc.py road-frost.mp4
   python3 biome/scripts/plate-geo-qc/plate-geo-qc.py --json empty.mp4 d1.mp4 d2.mp4
 
+Rail 12 reports (not the hang gate; they do not change the dash judge):
+
+  python3 biome/scripts/plate-geo-qc/plate-geo-qc.py --report horizon --image plate.png
+  python3 biome/scripts/plate-geo-qc/plate-geo-qc.py --report sky --manifest sky.json
+  python3 biome/scripts/plate-geo-qc/plate-geo-qc.py --report turn --manifest views.json
+  python3 biome/scripts/plate-geo-qc/plate-geo-qc.py --report sun --manifest sun.json
+  python3 biome/scripts/plate-geo-qc/plate-geo-qc.py --report texel --manifest tiles.json
+  python3 biome/scripts/plate-geo-qc/plate-geo-qc.py --report scale --manifest scale.json
+
 Needs: ffmpeg, numpy, Pillow. No other deps.
 Exit 0 = all plates PASS. Exit 1 = any FAIL.
 """
@@ -14,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import subprocess
 import sys
@@ -39,6 +49,25 @@ W70_DROP_MAX = 0.12  # first→last pull-back
 FRAME = (720, 1280)
 FPS_MIN, FPS_MAX = 45.0, 51.0
 SAMPLE_FRACS = (0.08, 0.35, 0.62, 0.90)
+
+# Rail 12 (2026-10-02). Practice, not an xAI seal. Reports only.
+# The dash judge above is unchanged. These numbers are not law-23 thresholds.
+LEVEL_HORIZON = 0.50
+PITCHED_HORIZON = 0.38  # law 20 / 24 Frost cone; also 1/3 and 1/φ²
+HORIZON_TOL = 0.02
+HORIZON_STRENGTH_MIN = 15.0  # same luma count as peaks_px; a row-mean step, not a dash
+PHONE_W, PHONE_H = 720, 1600
+SKY_N = 8
+SKY_HFOV = 60.0
+SKY_STEP = 45.0
+SKY_OVERLAP = 0.25
+TURN_ELEV = 15.0
+TURN_HFOV = 24.0
+TURN_HFOV_TOL = 1.0
+BOLT_WITHERS_M = 0.60
+SUN_HALF_DEG = 90.0  # bright side stays in the same half-plane
+EDIT_SOURCES_MAX = 5
+TEXEL_REL = 0.02
 
 
 def _run(cmd: list[str]) -> subprocess.CompletedProcess[str]:
@@ -406,11 +435,542 @@ def fmt_report(res: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def _load_rgb(path: str) -> np.ndarray:
+    if not os.path.isfile(path):
+        raise FileNotFoundError(path)
+    return np.asarray(Image.open(path).convert("RGB"))
+
+
+def _read_manifest(path: str | None) -> dict[str, Any]:
+    if not path:
+        return {}
+    if not os.path.isfile(path):
+        raise FileNotFoundError(path)
+    data = json.loads(open(path, encoding="utf-8").read())
+    if not isinstance(data, dict):
+        raise ValueError("manifest must be an object")
+    return data
+
+
+def measure_horizon(rgb: np.ndarray) -> dict[str, Any]:
+    """Strongest row-mean step. frac is the first row of the far side, from the top."""
+    gray = rgb.astype(np.float32).mean(axis=2).mean(axis=1)
+    height = int(gray.shape[0])
+    if height < 8:
+        return {"frac": None, "row": None, "strength": 0.0, "height": height}
+    diff = np.diff(gray)
+    lo = max(1, int(round(0.05 * len(diff))))
+    hi = min(len(diff) - 1, int(round(0.95 * len(diff))))
+    window = diff[lo:hi]
+    rel = int(np.argmax(np.abs(window)))
+    strength = float(abs(window[rel]))
+    ground_row = lo + rel + 1
+    return {
+        "frac": ground_row / float(height),
+        "row": ground_row,
+        "strength": strength,
+        "height": height,
+    }
+
+
+def _pitched(frac: float) -> bool:
+    return (
+        abs(frac - PITCHED_HORIZON) <= HORIZON_TOL
+        or abs(frac - (1.0 / 3.0)) <= HORIZON_TOL
+        or abs(frac - INV_PHI2) <= HORIZON_TOL
+    )
+
+
+def report_horizon(payload: dict[str, Any]) -> dict[str, Any]:
+    fails: list[str] = []
+    warns: list[str] = []
+    path = payload.get("image")
+    try:
+        measured = measure_horizon(_load_rgb(str(path)))
+    except (FileNotFoundError, OSError) as exc:
+        return {"kind": "horizon", "verdict": "FAIL", "failures": [f"missing image {exc}"], "warns": [], "numbers": {}}
+    frac = measured["frac"]
+    strength = float(measured["strength"])
+    pitch = payload.get("pitchDeg")
+    numbers = {
+        "frac": None if frac is None else round(frac, 4),
+        "row": measured["row"],
+        "height": measured["height"],
+        "strength": round(strength, 2),
+        "level": LEVEL_HORIZON,
+        "phoneRow": PHONE_H // 2,
+        "pitchDeg": pitch,
+    }
+    if frac is None or strength < HORIZON_STRENGTH_MIN:
+        fails.append(f"no horizon step strength={strength:.1f} min={HORIZON_STRENGTH_MIN:.0f}")
+    elif pitch in (None, 0, 0.0):
+        if _pitched(frac):
+            fails.append(
+                f"horizon {frac:.3f} is a pitched camera (0.38 / 0.382 / 1/3). "
+                "State the pitch. Do not mix it with a level 1-point plate."
+            )
+        elif abs(frac - LEVEL_HORIZON) > HORIZON_TOL:
+            fails.append(f"horizon {frac:.3f} is not the level row {LEVEL_HORIZON:.2f}")
+    else:
+        if abs(frac - LEVEL_HORIZON) <= HORIZON_TOL:
+            fails.append(
+                f"pitch {pitch}° is stated but the horizon is the level row {frac:.3f}"
+            )
+        elif not _pitched(frac):
+            fails.append(
+                f"pitched horizon {frac:.3f} is not 0.38, 0.382, or 1/3 (pitch {pitch}°)"
+            )
+    if measured["height"] == PHONE_H and measured["row"] == PHONE_H // 2 and not fails:
+        numbers["phoneRowHit"] = True
+    return {
+        "kind": "horizon",
+        "verdict": "FAIL" if fails else "PASS",
+        "failures": fails,
+        "warns": warns,
+        "numbers": numbers,
+    }
+
+
+def focal_px(width: float, hfov_deg: float) -> float:
+    """f_px = (W/2) / tan(HFOV/2). Width is measured pixels."""
+    half = math.radians(hfov_deg) / 2.0
+    return (float(width) / 2.0) / math.tan(half)
+
+
+def report_sky(payload: dict[str, Any]) -> dict[str, Any]:
+    fails: list[str] = []
+    warns: list[str] = []
+    if payload.get("projection") == "equirect":
+        w = payload.get("widthPx")
+        h = payload.get("heightPx")
+        if not w or not h:
+            fails.append("equirect width and height were not measured")
+        elif abs((float(w) / float(h)) - 2.0) > 1e-6:
+            fails.append(f"equirect width/height {float(w) / float(h):.4f} is not 2 (2π/π)")
+        return {
+            "kind": "sky",
+            "verdict": "FAIL" if fails else "PASS",
+            "failures": fails,
+            "warns": ["equirect is code only; Imagine does not emit it"],
+            "numbers": {"widthPx": w, "heightPx": h, "aspect": None if not w or not h else round(float(w) / float(h), 4)},
+        }
+    slices = list(payload.get("slices") or [])
+    hfov = payload.get("hfovDeg")
+    step = payload.get("stepDeg", SKY_STEP)
+    n = len(slices)
+    if n != SKY_N:
+        fails.append(f"slice count {n} is not {SKY_N} (the circle is not closed)")
+    if hfov is None:
+        fails.append("hfovDeg not stated")
+    else:
+        hfov = float(hfov)
+        if hfov > SKY_HFOV + 1e-6:
+            fails.append(f"HFOV {hfov:.1f}° is over {SKY_HFOV:.0f}°")
+        if hfov > 70:
+            fails.append(f"HFOV {hfov:.1f}° stretches a rectilinear slice (about 70°)")
+        if abs(hfov - SKY_HFOV) > 1e-6:
+            fails.append(f"closing set HFOV is {SKY_HFOV:.0f}°, got {hfov:.1f}°")
+    step = float(step)
+    if abs(step - SKY_STEP) > 1e-6:
+        fails.append(f"step {step:.1f}° is not {SKY_STEP:.0f}°")
+    if abs(n * step - 360.0) > 1e-6:
+        fails.append(f"n*step {n * step:.1f}° does not close 360°")
+    overlap = None
+    if hfov not in (None,) and hfov:
+        overlap = (float(hfov) - step) / float(hfov)
+        if abs(overlap - SKY_OVERLAP) > 1e-6:
+            fails.append(f"overlap {overlap:.3f} is not {SKY_OVERLAP:.2f}")
+    stated = payload.get("overlap")
+    if stated is not None and overlap is not None and abs(float(stated) - overlap) > 1e-6:
+        fails.append(f"stated overlap {stated} does not match (HFOV-step)/HFOV {overlap:.3f}")
+    yaws = []
+    widths = []
+    focals = []
+    for index, sl in enumerate(slices):
+        if not isinstance(sl, dict):
+            fails.append(f"slice {index} is not an object")
+            continue
+        yaw = sl.get("yawDeg")
+        if yaw is None:
+            fails.append(f"slice {index} has no yawDeg")
+        else:
+            yaws.append(float(yaw) % 360.0)
+        width = sl.get("widthPx")
+        if width in (None, 0):
+            fails.append(f"slice {index} width was not measured (do not assume 2k)")
+        else:
+            widths.append(float(width))
+            if hfov:
+                focals.append(focal_px(float(width), float(hfov)))
+    expect = [i * SKY_STEP for i in range(SKY_N)]
+    if len(yaws) == SKY_N and sorted(yaws) != expect:
+        fails.append(f"yaws {sorted(yaws)} are not {expect}")
+    if len(widths) >= 2 and any(abs(w - widths[0]) > 0.5 for w in widths):
+        fails.append(f"slice widths {widths} do not share one focal length")
+    numbers = {
+        "n": n,
+        "hfovDeg": hfov,
+        "stepDeg": step,
+        "overlap": None if overlap is None else round(overlap, 4),
+        "widths": widths,
+        "fPx": [round(v, 3) for v in focals],
+    }
+    return {"kind": "sky", "verdict": "FAIL" if fails else "PASS", "failures": fails, "warns": warns, "numbers": numbers}
+
+
+def report_turn(payload: dict[str, Any]) -> dict[str, Any]:
+    fails: list[str] = []
+    warns: list[str] = []
+    views = list(payload.get("views") or [])
+    n = len(views)
+    step = 45.0 if n == 8 else 90.0 if n == 4 else None
+    if step is None:
+        fails.append(f"view count {n} is not 8 (45°) or 4 (90°)")
+    yaws = []
+    widths = []
+    elevs = []
+    dists = []
+    for index, view in enumerate(views):
+        if not isinstance(view, dict):
+            fails.append(f"view {index} is not an object")
+            continue
+        if view.get("yawDeg") is None:
+            fails.append(f"view {index} has no yawDeg")
+        else:
+            yaws.append(float(view["yawDeg"]) % 360.0)
+        if view.get("widthPx") not in (None, 0):
+            widths.append(float(view["widthPx"]))
+        if view.get("elevationDeg") is not None:
+            elevs.append(float(view["elevationDeg"]))
+        if view.get("distanceM") is not None:
+            dists.append(float(view["distanceM"]))
+    if step is not None and len(yaws) == n:
+        expect = [i * step for i in range(n)]
+        if sorted(round(y, 4) for y in yaws) != [round(y, 4) for y in expect]:
+            fails.append(f"yaws {sorted(yaws)} are not steps of {step:.0f}°")
+    elev = payload.get("elevationDeg")
+    if elev is None and elevs:
+        elev = elevs[0]
+    if elev is None:
+        fails.append("elevationDeg not stated")
+    elif abs(float(elev) - TURN_ELEV) > 1e-6:
+        fails.append(f"elevation {elev}° is not +{TURN_ELEV:.0f}°")
+    if elevs and any(abs(e - float(elevs[0])) > 1e-6 for e in elevs):
+        fails.append(f"elevations {elevs} are not one angle")
+    dist = payload.get("distanceM")
+    if dist is None and dists:
+        dist = dists[0]
+    if dist is None:
+        fails.append("distanceM not stated")
+    if dists and any(abs(d - dists[0]) > 1e-6 for d in dists):
+        fails.append(f"distances {dists} are not one distance")
+    hfov = payload.get("hfovDeg")
+    if hfov is None:
+        fails.append("hfovDeg not stated (85 mm class, about 24°)")
+    elif abs(float(hfov) - TURN_HFOV) > TURN_HFOV_TOL:
+        fails.append(f"HFOV {hfov}° is outside the 85 mm class ({TURN_HFOV:.0f}° ± {TURN_HFOV_TOL:.0f}°)")
+    sources = payload.get("sourceCount")
+    if sources is not None and int(sources) > EDIT_SOURCES_MAX:
+        fails.append(f"sourceCount {sources} exceeds {EDIT_SOURCES_MAX}")
+    focals = []
+    if hfov and widths:
+        focals = [focal_px(w, float(hfov)) for w in widths]
+        if any(abs(f - focals[0]) > 0.05 for f in focals):
+            fails.append("measured widths do not share one f_px")
+    elif not widths:
+        warns.append("width not measured; f_px skipped")
+    return {
+        "kind": "turn",
+        "verdict": "FAIL" if fails else "PASS",
+        "failures": fails,
+        "warns": warns,
+        "numbers": {
+            "n": n,
+            "stepDeg": step,
+            "elevationDeg": elev,
+            "distanceM": dist,
+            "hfovDeg": hfov,
+            "fPx": [round(v, 3) for v in focals],
+            "sourceCount": sources,
+        },
+    }
+
+
+def shade_azimuth(rgb: np.ndarray) -> float | None:
+    gray = rgb.astype(np.float32).mean(axis=2)
+    gy, gx = np.gradient(gray)
+    vx = float(np.mean(gx))
+    vy = float(np.mean(gy))
+    if abs(vx) + abs(vy) < 1e-3:
+        return None
+    return float(np.degrees(np.arctan2(vx, -vy)))
+
+
+def _ang_diff(a: float, b: float) -> float:
+    return abs((a - b + 180.0) % 360.0 - 180.0)
+
+
+def shadow_length(height_m: float, elevation_deg: float) -> float | None:
+    tangent = math.tan(math.radians(elevation_deg))
+    if tangent <= 1e-8:
+        return None
+    return float(height_m) / tangent
+
+
+def report_sun(payload: dict[str, Any]) -> dict[str, Any]:
+    fails: list[str] = []
+    warns: list[str] = []
+    az = payload.get("azimuthDeg")
+    el = payload.get("elevationDeg")
+    kelvin = payload.get("kelvin")
+    if az is None:
+        fails.append("azimuthDeg not stated")
+    if el is None:
+        fails.append("elevationDeg not stated")
+    if kelvin is None:
+        fails.append("kelvin not stated")
+    elif isinstance(kelvin, list) or (isinstance(kelvin, str) and "," in kelvin):
+        fails.append("more than one kelvin")
+    height = payload.get("heightM", BOLT_WITHERS_M)
+    shadow = None
+    if el is not None and height is not None:
+        shadow = shadow_length(float(height), float(el))
+        if shadow is None:
+            fails.append("sun elevation is on the horizon; the shadow does not close")
+        elif abs(float(el) - 45.0) <= 1e-6 and abs(shadow - float(height)) > 1e-6:
+            fails.append(f"45° shadow {shadow} is not the height {height}")
+    angles = []
+    for path in payload.get("images") or []:
+        try:
+            ang = shade_azimuth(_load_rgb(str(path)))
+        except (FileNotFoundError, OSError) as exc:
+            fails.append(f"missing image {exc}")
+            continue
+        if ang is None:
+            fails.append(f"{path} has no shading gradient")
+        else:
+            angles.append(ang)
+    for i in range(len(angles)):
+        for j in range(i + 1, len(angles)):
+            gap = _ang_diff(angles[i], angles[j])
+            if gap > SUN_HALF_DEG:
+                fails.append(f"shading azimuths differ by {gap:.1f}° (bright side flipped)")
+    return {
+        "kind": "sun",
+        "verdict": "FAIL" if fails else "PASS",
+        "failures": fails,
+        "warns": warns,
+        "numbers": {
+            "azimuthDeg": az,
+            "elevationDeg": el,
+            "kelvin": kelvin,
+            "heightM": height,
+            "shadowM": None if shadow is None else round(shadow, 4),
+            "shadeDeg": [round(a, 2) for a in angles],
+        },
+    }
+
+
+def _seam_tools():
+    root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+    if root not in sys.path:
+        sys.path.insert(0, root)
+    from tools.assetcheck.measures import SEAM_ABS, SEAM_RATIO, edge_seam
+
+    return edge_seam, SEAM_RATIO, SEAM_ABS
+
+
+def report_texel(payload: dict[str, Any]) -> dict[str, Any]:
+    fails: list[str] = []
+    warns: list[str] = []
+    tiles = list(payload.get("tiles") or [])
+    if len(tiles) < 1:
+        fails.append("no tiles")
+    edge_seam, ratio_max, abs_max = _seam_tools()
+    densities = []
+    for tile in tiles:
+        if not isinstance(tile, dict):
+            fails.append("tile is not an object")
+            continue
+        path = tile.get("file")
+        meters = tile.get("meters")
+        try:
+            rgb = _load_rgb(str(path))
+        except (FileNotFoundError, OSError) as exc:
+            fails.append(f"missing tile {exc}")
+            continue
+        if meters in (None, 0):
+            fails.append(f"{path} has no world metres")
+            continue
+        width = int(rgb.shape[1])
+        density = width / float(meters)
+        densities.append(density)
+        horizon = measure_horizon(rgb)
+        if float(horizon["strength"]) >= HORIZON_STRENGTH_MIN:
+            fails.append(
+                f"{path} has a horizon at {horizon['frac']:.3f}; a nadir tile has no horizon and no vanishing point"
+            )
+        for axis in ("x", "y"):
+            seam = edge_seam(rgb, axis)
+            if seam["ratio"] > ratio_max and seam["seam"] > abs_max:
+                fails.append(
+                    f"{path} {axis}-seam ratio={seam['ratio']:.3f} abs={seam['seam']:.2f}"
+                )
+    if len(densities) >= 2:
+        lo, hi = min(densities), max(densities)
+        if lo <= 0 or (hi - lo) / lo > TEXEL_REL:
+            fails.append(f"texel density {densities} is not constant (px per metre)")
+    return {
+        "kind": "texel",
+        "verdict": "FAIL" if fails else "PASS",
+        "failures": fails,
+        "warns": warns,
+        "numbers": {"pxPerM": [round(v, 3) for v in densities]},
+    }
+
+
+def report_scale(payload: dict[str, Any]) -> dict[str, Any]:
+    fails: list[str] = []
+    warns: list[str] = []
+    f_px = payload.get("fPx")
+    height = BOLT_WITHERS_M if payload.get("bolt") else payload.get("heightM")
+    dist = payload.get("distanceM")
+    if f_px is None:
+        fails.append("fPx not stated (lock f)")
+    if height is None:
+        fails.append("heightM not stated")
+    if dist in (None, 0):
+        fails.append("distanceM not stated (lock Z)")
+    h_px = None
+    frac = None
+    frame_h = payload.get("frameH")
+    if f_px is not None and height is not None and dist not in (None, 0):
+        h_px = float(f_px) * float(height) / float(dist)
+        if frame_h:
+            frac = h_px / float(frame_h)
+    measured = payload.get("measuredFrac")
+    if measured is not None and frac is not None and abs(float(measured) - frac) > HORIZON_TOL:
+        fails.append(
+            f"measured fraction {measured} is not h_px/frame {frac:.4f} (state the fraction, then measure)"
+        )
+    elif measured is None:
+        warns.append("no measured fraction; formula only")
+    return {
+        "kind": "scale",
+        "verdict": "FAIL" if fails else "PASS",
+        "failures": fails,
+        "warns": warns,
+        "numbers": {
+            "fPx": f_px,
+            "heightM": height,
+            "distanceM": dist,
+            "hPx": None if h_px is None else round(h_px, 3),
+            "fraction": None if frac is None else round(frac, 4),
+            "boltWithersM": BOLT_WITHERS_M,
+        },
+    }
+
+
+REPORTS = {
+    "horizon": report_horizon,
+    "sky": report_sky,
+    "turn": report_turn,
+    "sun": report_sun,
+    "texel": report_texel,
+    "scale": report_scale,
+}
+
+
+def run_report(kind: str, payload: dict[str, Any]) -> dict[str, Any]:
+    fn = REPORTS.get(kind)
+    if fn is None:
+        return {"kind": kind, "verdict": "FAIL", "failures": [f"unknown report {kind}"], "warns": [], "numbers": {}}
+    return fn(payload)
+
+
+def _print_report(res: dict[str, Any]) -> None:
+    print(f"{res['verdict']:4}  rail 12  {res['kind']}")
+    nums = res.get("numbers") or {}
+    if nums:
+        print(f"      {json.dumps(nums, sort_keys=True)}")
+    for line in res.get("failures") or []:
+        print(f"      FAIL  {line}")
+    for line in res.get("warns") or []:
+        print(f"      WARN  {line}")
+
+
+def _payload_from_args(args: argparse.Namespace) -> dict[str, Any]:
+    payload: dict[str, Any] = {}
+    if args.manifest:
+        payload.update(_read_manifest(args.manifest))
+    if args.image:
+        if args.report == "horizon":
+            payload["image"] = args.image[0]
+        elif args.report == "sun":
+            payload["images"] = list(args.image)
+        elif args.report == "texel":
+            tiles = list(payload.get("tiles") or [])
+            for path in args.image:
+                tiles.append({"file": path, "meters": args.meters})
+            payload["tiles"] = tiles
+    if args.pitch_deg is not None:
+        payload["pitchDeg"] = args.pitch_deg
+    if args.f_px is not None:
+        payload["fPx"] = args.f_px
+    if args.height_m is not None:
+        payload["heightM"] = args.height_m
+    if args.distance_m is not None:
+        payload["distanceM"] = args.distance_m
+    if args.frame_h is not None:
+        payload["frameH"] = args.frame_h
+    if args.measured_frac is not None:
+        payload["measuredFrac"] = args.measured_frac
+    if args.azimuth is not None:
+        payload["azimuthDeg"] = args.azimuth
+    if args.elevation is not None:
+        payload["elevationDeg"] = args.elevation
+    if args.kelvin is not None:
+        payload["kelvin"] = args.kelvin
+    if args.bolt:
+        payload["bolt"] = True
+    return payload
+
+
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(description="Law 23 geometric judge for Lane Video A")
-    ap.add_argument("plates", nargs="+", help="mp4 plate(s)")
+    ap = argparse.ArgumentParser(description="Law 23 geometric judge for Lane Video A, plus rail 12 reports")
+    ap.add_argument("plates", nargs="*", help="mp4 plate(s) for the law 23 dash judge")
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--report", choices=sorted(REPORTS))
+    ap.add_argument("--image", action="append", default=[])
+    ap.add_argument("--manifest")
+    ap.add_argument("--pitch-deg", type=float)
+    ap.add_argument("--meters", type=float)
+    ap.add_argument("--f-px", type=float)
+    ap.add_argument("--height-m", type=float)
+    ap.add_argument("--distance-m", type=float)
+    ap.add_argument("--frame-h", type=float)
+    ap.add_argument("--measured-frac", type=float)
+    ap.add_argument("--azimuth", type=float)
+    ap.add_argument("--elevation", type=float)
+    ap.add_argument("--kelvin", type=float)
+    ap.add_argument("--bolt", action="store_true")
     args = ap.parse_args(argv)
+    if args.report:
+        if args.plates:
+            print("FAIL usage: --report does not take plates. The dash judge is a separate call.", file=sys.stderr)
+            return 2
+        try:
+            res = run_report(args.report, _payload_from_args(args))
+        except (FileNotFoundError, ValueError, json.JSONDecodeError) as exc:
+            print(f"FAIL usage: {exc}", file=sys.stderr)
+            return 2
+        if args.json:
+            print(json.dumps({"rail": 12, "result": res}, indent=2))
+        else:
+            _print_report(res)
+        return 0 if res["verdict"] == "PASS" else 1
+    if not args.plates:
+        ap.error("plates required unless --report")
     results = []
     with tempfile.TemporaryDirectory(prefix="plate-geo-qc-") as tmp:
         for p in args.plates:

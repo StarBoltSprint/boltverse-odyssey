@@ -1,6 +1,6 @@
 # Layout spec rails
 
-The tools cite these rails by number. The numbers are the ones `tools/layout` already enforces (`tools/layout/README.md`, `tools/layout/organic_check.py`). This file does not add a second set.
+The tools cite these rails by number. Rails 8–11 are the ones `tools/layout` already enforces (`tools/layout/README.md`, `tools/layout/organic_check.py`). Rail 12 is the image-geometry lock. `tools/layout` does not read it. This file does not add a second layout set.
 
 ## Rail 8 — variety and yaw
 
@@ -47,3 +47,33 @@ Hall smoke is unchanged: one fresh cook plus one enlarge, then stock. This rail 
 ## One step
 
 A Grok step has one goal and a done-when list of at most 8 rows. Write `REPORT.md` as each row is measured. An oversized step (several art families, the playcheck left until the end, no final answer) is a failure. Take 10d attempts 1 and 2 (419 and 290 turns) are that failure.
+
+## Rail 12 — geometry lock
+
+Owner-approved **2026-10-02**. Practice. Not an xAI seal. Not a layout row. The long form is [`learn/geometry.md`](learn/geometry.md). It sits on laws 20, 20b, 23, and 24, on [`biome/prompts/camera-1point.txt`](biome/prompts/camera-1point.txt), on [`biome/docs/COLD_START-camera.md`](biome/docs/COLD_START-camera.md), and on [`VISTA.md`](VISTA.md). It does not replace those pages. Do not cook from this rail.
+
+**Camera.** A level camera puts the horizon at **50%** of the frame height. On **720×1600** that row is **y = 800**. A horizon at **0.382** or at **1/3** means the camera is pitched and the verticals converge. Never mix that horizon with a 1-point plate.
+
+| Attitude | What it is | Where |
+| --- | --- | --- |
+| 1-point | Looking down one axis. One vanishing point. Verticals parallel. | Chase plates and ground plates that show a horizon. Level horizon **0.50**. |
+| 2-point | Corner, level. Two vanishing points on the horizon. | 3/4 orbit views. |
+| 3-point | Tilted. Three vanishing points. | Hero shots only. |
+
+Law 24’s horizon **0.38** is the pitched Frost cone. It stays legal only when the pitch is stated in the spec and in the prompt. It is not the level horizon.
+
+**Sky.** Imagine has no panorama. Rectilinear slices, horizontal field **≤ 60°**. Close the circle with **8** slices, **60°** horizontal field, **45°** step, **25%** overlap (`8 × 45 = 360`). Wider than about **70°** rectilinear stretches the edges. An equirectangular image exists only in code: width = **2 ×** height (`2π / π`). Focal length in pixels is `f_px = (W / 2) / tan(HFOV / 2)`, from the **measured** file width. Never assume a 2k token is a pixel width.
+
+**Turnaround.** Eight views step **45°**. Four views step **90°**. Elevation **+15°**. One distance. One focal length, the **85 mm** class, horizontal field about **24°**. The same light on every view. Imagine does not document a consistent turntable. A multi-image edit takes at most **5** sources.
+
+**Ship.** Crashed hero ship, practice, not a seal: [`learn/ship-turnaround.md`](learn/ship-turnaround.md). Phone set is **3–4** Imagine views (front, 3/4, side, optional back). DRAFT — rejected as default by owner 2026-10-02: owner wants real 3D objects (invisible volume + projected Imagine views). Sprite-swap is not the picture. The exact method is not chosen. This does not replace the 8×45° / 4×90° turnaround above and it is not a layout row. Do not cook from this line.
+
+**Objects.** [`learn/object-classes.md`](learn/object-classes.md) is a rejected draft. It is not a kit lock and not a view-count gate. The exact method is not chosen. Do not cook from this line.
+
+**Light.** One sun. Azimuth and elevation in degrees. One kelvin. Shadow length = height / tan(elevation). A **45°** sun throws a shadow as long as the object is tall.
+
+**Scale.** `h_px = f_px × H / Z`. Lock the distance and the focal length. Bolt’s withers are about **0.60 m**, measured at the shoulders. State the pixel fraction, then measure the file.
+
+**Ground.** Orthographic, straight down. No vanishing point. No horizon. A seamless tile is not an Imagine mode. QC the edges. Texel density is pixels per world metre, and it stays constant across the set.
+
+**φ.** Phi and Fibonacci do not fix perspective. Pi is only for closing a circle and for converting radians.

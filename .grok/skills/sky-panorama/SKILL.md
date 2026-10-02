@@ -7,6 +7,8 @@ description: Build a wide sky from chained Imagine slices and a seam check. Use 
 
 Imagine has no panorama mode and no output wider than the 2k token. The pixel size is not published. Measure the file.
 
+Close a full yaw with **8** rectilinear slices, **60°** horizontal field, **45°** step, **25%** overlap (`8 × 45 = 360`). Horizontal field stays ≤ 60°. Wider than about 70° stretches the edges. `f_px = (W / 2) / tan(HFOV / 2)` from the measured width. An equirectangular image is code only: width = 2 × height. Law 64’s 22.7° line is the magnification example below, not this closing set. Lock: [`learn/geometry.md`](../../../learn/geometry.md).
+
 ## Biome kit
 
 The sky plate is 8 Imagine slices, 60° HFOV, yaw step 45°, level horizon at 50%. Paste `python3 tools/kits/kit.py show --id <kit-id>`. Template: [`biome/kits/_template/`](../../../biome/kits/_template/README.md). One sun.

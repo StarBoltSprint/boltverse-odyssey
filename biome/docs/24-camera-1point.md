@@ -15,11 +15,15 @@ Imagine block: [`../prompts/camera-1point.txt`](../prompts/camera-1point.txt)
 
 | | When | Sprint plate |
 |---|---|---|
-| **1-point** | Face to the road. One VP ahead. Verticals stay vertical. | **YES — only this** |
-| **2-point** | Look **aside** (¾, corner, turn, door) | NO on sprint. OK on a crate / cutscene / at-A at-B |
-| **3-point** | Plongée / contre-plongée (verticals vanish) | NO on sprint. OK on a drone / planet arrive. **Not** a minimap (minimap = ortho) |
+| **1-point** | Face to the road. One VP ahead. Verticals stay vertical. Level horizon **0.50**. | **YES — only this** |
+| **2-point** | Look **aside** (¾, corner, turn, door). Level. Two VPs on the horizon. | NO on sprint. OK on a crate / cutscene / at-A at-B / 3/4 orbit |
+| **3-point** | Plongée / contre-plongée (verticals vanish). Three VPs. | NO on sprint. Hero only: drone / planet arrive. **Not** a minimap (minimap = ortho) |
 
-Slight **yaw** (VP.x ≈ **0.53**, not 0.50) and slight **pitch** (horizon **0.38**, PP at 0.50) stay 1-point. They are attitude, not a second / third vanishing.
+A **level** plate puts the horizon at **0.50** of the frame height (720×1600 → row **800**). Verticals stay parallel. That is the 1-point default in [`learn/geometry.md`](../../learn/geometry.md) (spec rail 12, 2026-10-02, practice, not an xAI seal).
+
+The Frost KEEP still measures a visual diamond at **0.38**. That is a **pitched** cone: the camera is not level, and the verticals converge. It stays on this page as the sealed sprint teacher (`w(y)` below). A new plate may use 0.38, 0.382, or 1/3 only when the pitch in degrees is written in the spec and in the prompt. Do not paste that horizon into a level 1-point plate.
+
+Slight **yaw** (VP.x ≈ **0.53**, not 0.50) is still one vanishing point. It is not a second point. Law 23 still walks dashes toward 0.38 and does not fail fitted VP.y against 0.382. Do not retarget that judge to 0.50.
 
 Bolt X stays **0.50**. Do not φ-slide the dog.
 
