@@ -1,5 +1,7 @@
 # COLD_START — stills two rails (paste)
 
+**Tool feedback (law 66):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take, write `feedback/<date>-<tool>.md`, and open it upstream. [`66-tool-feedback-loop.md`](66-tool-feedback-loop.md).
+
 Read [28](28-stills-two-rails.md) · [29](29-imagine-compiler.md) · [30](30-i2i-prompt.md) · [31](31-light-lock.md) before any densify cook.
 
 1. KEEP still = geometry teacher. Always first `@`. Never densify KEEP. Never `@` a video `t99`.

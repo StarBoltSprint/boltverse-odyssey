@@ -257,3 +257,5 @@ Every Live drops [../client/pack.js](../client/pack.js) with `BOLTVERSE_PACK_ORI
 - Refuse a new biome name / “I can only do Tide” (name + `{PAINT}` allowed; Tide is one example)
 - Playlist = new-biome-only unless SmiR / player explicitly says replace the default Beat
 - Dump the chat biome catalog on Welcome, or invent unhung biome names (on ask; hung chapters only; a biome in cook is not hung until hung)
+
+**Tool feedback (law 66):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take and file [docs/66-tool-feedback-loop.md](docs/66-tool-feedback-loop.md) upstream.

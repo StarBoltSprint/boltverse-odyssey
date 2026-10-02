@@ -22,6 +22,8 @@ Pages here are **optional**. They are **not** cook gates. Default Bolt remains e
 | [37-path-beat.md](37-path-beat.md) | Path beat. Chemin reveals one lane ~3 s ahead. Runtime `scripts/path-beat/pathBeat.js`. Paste: [COLD_START-path-beat.md](COLD_START-path-beat.md). |
 | [38-gpu-light-openable.md](38-gpu-light-openable.md) | GPU light layers + openables. Light-only plates and closed/open/transition. Runtime `scripts/gpu-light/` · `scripts/gpu-openable/`. Paste: [COLD_START-gpu-light-openable.md](COLD_START-gpu-light-openable.md). |
 
+**Tool feedback (law 66):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take and file [66-tool-feedback-loop.md](66-tool-feedback-loop.md) upstream.
+
 **Any new biome convo — playable composite (lane, glance, wings, foes, howl), any paint:** paste [COLD_START-biome-method.md](COLD_START-biome-method.md) first. Section A is the road densify. Section B is the forest / open-ground world cook (black → sky → ground → horizon → GPU), inline. Worked example: [pyre/METHOD.md](../../pyre/METHOD.md) (Diablo road only). Forest numbers and shaders: [43-open-ground.md](43-open-ground.md), [COLD_START-open-ground.md](COLD_START-open-ground.md), [pyre/GROVE.md](../../pyre/GROVE.md). Room look: [pyre/ORBIT.md](../../pyre/ORBIT.md). Plain / Thunderwolf: [pyre/PLATE.md](../../pyre/PLATE.md) and METHOD sections 11–13. There is no `pyre/PLAIN.md` or `pyre/VISTA.md`. From this folder the Pyre files are `../../pyre/…`.
 
 **Densify and Imagine Live keyed props** (laws 39–42) still paste [COLD_START-imagine-engine.md](COLD_START-imagine-engine.md). That paste does not replace the composite method above.

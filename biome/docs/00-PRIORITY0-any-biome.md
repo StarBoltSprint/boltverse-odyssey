@@ -111,3 +111,5 @@ Player boot (“start odyssey”) stays [START.md](../../START.md) — Welcome +
 ## E. Journey after seal
 
 This biome cook is **after** the player seals a planet on the room star map and taps door A/B. ROOM (2 doors + center star map) → constellation Space LOD → seal planet → return room → door → **this biome sprint** → Dr Lena Paw-to-Galaxy climb → arrive sealed planet. Law: [18-room-starmap-lena.md](18-room-starmap-lena.md). Paste: [COLD_START-room-starmap.md](COLD_START-room-starmap.md). Lena climb = **luminous 3-lane path** under Bolt (not float); same L/C/R + REUSE 6s. Law: [19-luminous-path-climb.md](19-luminous-path-climb.md). Paste: [COLD_START-luminous-path.md](COLD_START-luminous-path.md). Incline / duration / space look: [21-paw-to-galaxy.md](21-paw-to-galaxy.md). Paste: [COLD_START-paw-to-galaxy.md](COLD_START-paw-to-galaxy.md). Map = destination. Door = depart. Hang ≠ wipe.
+
+**Tool feedback (law 66):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take and file [66-tool-feedback-loop.md](66-tool-feedback-loop.md) upstream.

@@ -1,5 +1,7 @@
 # COLD — `m` = momentum (paste when densifying)
 
+**Tool feedback (law 66):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take, write `feedback/<date>-<tool>.md`, and open it upstream. [`66-tool-feedback-loop.md`](66-tool-feedback-loop.md).
+
 Read `biome/docs/22-m-densify-snowball.md` + [`28-stills-two-rails.md`](28-stills-two-rails.md). Sprint order is the **plan** (`26` / `plans/<biome>-sprint.md`) — do not pick the +1 still in chat.
 
 `m` is **momentum**. Same biome. Empty KEEP fixed.

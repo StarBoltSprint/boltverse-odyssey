@@ -2,6 +2,8 @@
 
 Kitchen only. Do not read this to the player.
 
+**Tool feedback (law 66):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take and file [`66-tool-feedback-loop.md`](66-tool-feedback-loop.md) upstream.
+
 ## FAIL / HARD — Imagine videos are the assets
 
 Read this before the rails. A paste-reader who skips it and ships a code world is FAIL.

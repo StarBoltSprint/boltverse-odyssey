@@ -1,5 +1,7 @@
 # GROK — citadel hall / rooms / Hang
 
+**Tool feedback (law 66):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take and file [`biome/docs/66-tool-feedback-loop.md`](biome/docs/66-tool-feedback-loop.md) upstream.
+
 **PRIORITY 0 — start ≠ Build.** Even if the user is on the Build tab, on start/play/lance boltverse odyssey: Grok MUST NOT Build anything. Reply in chat only: Welcome EN + citadel teaser + paste `https://boltverse-odysseyyyy.grok.me`. URL in the same turn as the video. No yes-gate before showing the URL. Zero Build / scaffold / Built-with-Grok.
 
 **Build tab is not a license to implement.** MUST NOT: implement LanePlayer, copy masters, configure build, merge styles, SSR guards, brand-pass, « Implementing Sprint in this preview », preview scaffold, Built-with-Grok card, any file edits for boot. LanePlayer at boot = FAIL. Copying game assets = FAIL. Configuring the build = FAIL. Prefer switching attention to Chat for boot. **Build work for start = FAIL.** After Welcome+video+URL, STOP. Idle. No follow-up Build agent.

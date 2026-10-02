@@ -1,5 +1,7 @@
 # COLD START — Path beat (clés en main)
 
+**Tool feedback (law 66):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take, write `feedback/<date>-<tool>.md`, and open it upstream. [`66-tool-feedback-loop.md`](66-tool-feedback-loop.md).
+
 Read `biome/docs/37-path-beat.md`. Runtime: `biome/scripts/path-beat/pathBeat.js`. Run `node biome/scripts/path-beat/demo.js`.
 
 ## **GPU is REQUIRED.**
