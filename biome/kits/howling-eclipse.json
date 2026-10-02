@@ -1,0 +1,116 @@
+{
+  "schema": "biome-kit/1",
+  "id": "howling-eclipse",
+  "name": "The Howling Eclipse",
+  "example": "A",
+  "timeOfDay": "night",
+  "paint": "night violet, a black angular ship",
+  "sun": {
+    "count": 1,
+    "azimuthDeg": 285,
+    "elevationDeg": -4,
+    "kelvin": 7500
+  },
+  "palette": {
+    "sky": "#140820",
+    "ground": "#1c1824",
+    "accent": "#7a4cff",
+    "horizon": "#3a2060"
+  },
+  "fog": {
+    "colourSource": "Sample the horizon band of this biome's Imagine sky plate and average those pixels."
+  },
+  "geometry": {
+    "horizonFraction": 0.5,
+    "level": true,
+    "skySlices": 8,
+    "hfovDeg": 60,
+    "yawStepDeg": 45,
+    "sunCount": 1,
+    "ground": "ortho"
+  },
+  "camera": {
+    "play": {
+      "width": 720,
+      "height": 1600,
+      "horizonFraction": 0.5,
+      "level": true,
+      "fovYDeg": 40,
+      "eyeHeightM": 0.85,
+      "boomM": 6,
+      "magMax": 1
+    },
+    "plates": {
+      "sky": {
+        "type": "slice-ring",
+        "slices": 8,
+        "hfovDeg": 60,
+        "yawStepDeg": 45,
+        "horizonFraction": 0.5,
+        "level": true
+      },
+      "ground": {
+        "type": "ortho",
+        "tileM": 0.9,
+        "horizon": false
+      },
+      "orbit": {
+        "type": "still-ring",
+        "count": 8,
+        "yawStepDeg": 45,
+        "elevationDeg": 18
+      },
+      "ship": {
+        "type": "orbit-still",
+        "count": 8,
+        "yawStepDeg": 45,
+        "elevationDeg": 18
+      }
+    }
+  },
+  "skySlicePlan": {
+    "count": 8,
+    "hfovDeg": 60,
+    "yawStepDeg": 45,
+    "overlapDeg": 15,
+    "horizonFraction": 0.5,
+    "level": true,
+    "headingsDeg": [0, 45, 90, 135, 180, 225, 270, 315]
+  },
+  "livingLoops": [
+    {"role": "stars", "durationSec": 13},
+    {"role": "dust", "durationSec": 17},
+    {"role": "nebula", "durationSec": 29}
+  ],
+  "promptPreamble": "The Howling Eclipse. Night violet, a black angular ship. One sun: azimuth 285°, elevation -4°, 7500 K. Level horizon at 50% of the frame. 8 Imagine sky slices, 60° HFOV, yaw step 45°. Ground tiles are ortho and top-down. Palette guidance for the prompt, not a code colour: sky #140820, ground #1c1824, accent #7a4cff. Fog colour is sampled from the horizon band of this biome's Imagine sky plate. Bolt's shoulder reference is withers 0.10 of the 720×1600 frame, measured at the shoulders. Every visible pixel is an Imagine image or video.",
+  "decreeHooks": ["howling", "eclipse", "night", "violet", "ship"],
+  "scale": {
+    "boltShoulder": {
+      "withersFrac": 0.1,
+      "frame": [720, 1600],
+      "measure": "shoulders, not ears",
+      "bodyWidthM": 0.7,
+      "bodyRadiusM": 0.45,
+      "sources": [
+        "biome/docs/20-default-plate-proportions.md",
+        "biome/docs/13d-auto-scale.md",
+        "tools/layout/testdata/spec.json"
+      ]
+    }
+  },
+  "negatives": [
+    {"heading": "sky slices made by cloning or mirroring columns", "source": "learn/failures.md"},
+    {"heading": "a short sky loop reads as the same flash", "source": "learn/failures.md"},
+    {"heading": "a sky or hull video that drifts inside the frame", "source": "learn/failures.md"},
+    {"heading": "one ground still frozen to the camera", "source": "learn/failures.md"},
+    {"heading": "nearest sampling on world textures", "source": "learn/failures.md"},
+    {"heading": "rounded demo shapes passed the numeric gates", "source": "learn/failures.md"},
+    {"heading": "chroma key leaves a green edge band that the key gate does not count", "source": "learn/failures.md"},
+    {"heading": "orbit views drift in camera height and exposure", "source": "learn/failures.md"},
+    {"heading": "orbit views cooked without a silhouette lock", "source": "learn/failures.md"}
+  ],
+  "pixels": {
+    "source": "imagine",
+    "codeMay": ["invisible relief", "placement", "physics", "fog", "grade", "bloom"]
+  }
+}

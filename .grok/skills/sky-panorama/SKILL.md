@@ -9,6 +9,10 @@ Imagine has no panorama mode and no output wider than the 2k token. The pixel si
 
 Close a full yaw with **8** rectilinear slices, **60°** horizontal field, **45°** step, **25%** overlap (`8 × 45 = 360`). Horizontal field stays ≤ 60°. Wider than about 70° stretches the edges. `f_px = (W / 2) / tan(HFOV / 2)` from the measured width. An equirectangular image is code only: width = 2 × height. Law 64’s 22.7° line is the magnification example below, not this closing set. Lock: [`learn/geometry.md`](../../../learn/geometry.md).
 
+## Biome kit
+
+The sky plate is 8 Imagine slices, 60° HFOV, yaw step 45°, level horizon at 50%. Paste `python3 tools/kits/kit.py show --id <kit-id>`. Template: [`biome/kits/_template/`](../../../biome/kits/_template/README.md). One sun.
+
 ## Before the first slice
 
 Read [`learn/failures.md`](../../../learn/failures.md) (a sky or hull video that drifts) and [`learn/recipes/INDEX.md`](../../../learn/recipes/INDEX.md) `#sky`. Copy a listed recipe. The plate-0 prompt was not stored. Do not write one.
@@ -23,7 +27,7 @@ From [`biome/docs/64-imagine-build-limits.md`](../../../biome/docs/64-imagine-bu
 
    `required_px = play_width / (hfov_deg / 360)`
 
-   The documented example is hfov 22.7° on a 720 px play view, about 11419 px, budget about 11500 px.
+   The documented example is hfov 22.7° on a 720 px play view, about 11419 px, budget about 11500 px. A biome kit cook uses the kit plan instead of that count: 8 slices, 60° HFOV, 45° step, level horizon 50%. At 60° on a 720 px play view, `required_px` is 4320, so a slice wider than 4096 is split before upload.
 4. Each next slice is an **edit** with the previous slice as the source.
 5. Hard-paste pixels already kept. Do not blend the locked center. Do not ask Imagine to pan.
 
@@ -74,6 +78,8 @@ Give each slice its own random start offset. Adjacent slices, including the last
 Motion stays slow and small. No flash, no shooting star, and no other one-off event inside the loop: a distinctive feature that returns on a fixed period under 60 s makes the repeat obvious. The perceived-repetition row flags that period. An always-on star field is the texture and is not that row. A rare event, if one is wanted, is a separate one-shot Imagine clip fired at a random gap of at least 30 s.
 
 Phone caps: at most 3 sky videos (Bolt keeps one decoder of the game's four) and 48 MiB of sky textures. Kind `sky-loop` in assetcheck measures one file's loop seam, amplitude, and that repetition row.
+
+When that file passes, register it in [`stock/loops/loops.json`](../../../stock/loops/loops.json) (duration, seam MAE, biome tags, layer role, decode cost). `python3 stock/loops/check.py --registry stock/loops/loops.json --out <dir>`. An empty registry is valid. Only list a file that exists.
 
 The plate-0 prompt was not stored. Do not write a new one. Record the call you actually made.
 

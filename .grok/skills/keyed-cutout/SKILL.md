@@ -9,6 +9,10 @@ Cook the cut at or above its final on-screen pixels. The compositor may shrink (
 
 Bolt's motion is `lock/bolt-gallop-cycle.mp4`. A WARN from assetcheck on a `lock/` path is not a recook. Bolt’s withers are about **0.60 m** at the shoulders. `h_px = f_px × H / Z`. State the pixel fraction, then measure. Do not enlarge the cut to hit a fraction (law 56). Chase plates still use `withersFrac ~0.10`. Lock: [`learn/geometry.md`](../../../learn/geometry.md).
 
+## Biome kit
+
+Paste the kit preamble before the Imagine call: `python3 tools/kits/kit.py show --id <kit-id>`. Template: [`biome/kits/_template/`](../../../biome/kits/_template/README.md). The hexes are prompt guidance. Fog colour is sampled from the Imagine plate named in the kit.
+
 ## Before the cook
 
 Read [`learn/failures.md`](../../../learn/failures.md) and [`learn/recipes/INDEX.md`](../../../learn/recipes/INDEX.md) `#cutout`.

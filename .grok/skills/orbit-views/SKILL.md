@@ -7,6 +7,24 @@ description: Cook eight consistent views of one object from one reference still,
 
 Eight stills, one every **45°**. Four stills, one every **90°**. Elevation **+15°**. One distance. One focal length, the 85 mm class, horizontal field about **24°**. Same light on every view. Imagine does not offer this as one feature and does not document a consistent turntable. A multi-image edit takes at most five sources ([`biome/docs/64-imagine-build-limits.md`](../../../biome/docs/64-imagine-build-limits.md) section C). A 120° set does not pass. Lock: [`learn/geometry.md`](../../../learn/geometry.md). The ship KEEP text that says eighteen degrees stays in its recipe. A new turnaround uses +15°.
 
+## Hero ship
+
+Phone set for a crashed hero ship is **3–4** views: front, 3/4, side, optional back. Store: [`learn/ship-turnaround.md`](../../../learn/ship-turnaround.md). Chain each later angle as an edit. The front is source 1. The previous angle is source 2. The same camera sentence every time. At most 5 sources. No character sheet. No video orbit for volume. Invisible volume is placement and collision. DRAFT — rejected as default by owner 2026-10-02: owner wants real 3D objects (invisible volume + projected Imagine views). Sprite-swap is not the picture. The exact method is not chosen.
+
+```bash
+python3 tools/objsheet/preflight.py --views <views> --hero <hero.png> --kind hero-ship --out <proof>
+```
+
+A pixel grade that passes on any other count still fails that kind. The 8×45° / 4×90° set above stays the calibrated turnaround.
+
+## Object classes
+
+[`learn/object-classes.md`](../../../learn/object-classes.md) is DRAFT — rejected as default by owner 2026-10-02: owner wants real 3D objects (invisible volume + projected Imagine views). It is not a view-count gate. The exact method is not chosen.
+
+## Biome kit
+
+Paste the kit preamble: `python3 tools/kits/kit.py show --id <kit-id>`. Template: [`biome/kits/_template/`](../../../biome/kits/_template/README.md). An orbit plate in the kit is eight stills, yaw step 45°, elevation 18°. One sun, the kit's azimuth, elevation, and Kelvin.
+
 ## Before the first still
 
 Read [`learn/failures.md`](../../../learn/failures.md) (orbit views without a silhouette lock) and [`learn/recipes/INDEX.md`](../../../learn/recipes/INDEX.md) `#rock` and `#hull-ship`. If a recipe file is listed, copy it. Do not invent its prompt.

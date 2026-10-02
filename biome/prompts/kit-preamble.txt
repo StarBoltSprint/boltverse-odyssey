@@ -1,0 +1,7 @@
+Paste the biome kit promptPreamble verbatim into every Imagine prompt for that scene. Do not rewrite the sun azimuth, the elevation, the Kelvin, the time of day, or the palette words.
+
+python3 tools/kits/kit.py show --id <kit-id>
+
+The blank file is biome/kits/_template/kit.json. Copy it to biome/kits/<id>.json. Fill the name, the sun, the palette, the living-loop roles, the preamble, and the decree hooks. Leave the geometry: level horizon 50%, 8 sky slices, 60° HFOV, 45° yaw step, one sun, ortho ground tiles.
+
+One sun, one time of day, one palette, on every plate of the scene. Fog colour is sampled from the Imagine sky plate named in the kit. The hex values stay in the prompt. Code does not paint them.

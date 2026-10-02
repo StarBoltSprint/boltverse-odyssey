@@ -4,7 +4,7 @@ Copy this file to `learn/take-notes/<YYYY-MM-DD>-<take>.md` at the first accepte
 
 ## Quota and turns
 
-One line per item that was cooked or rejected in this take.
+One line per item that was cooked or rejected in this take. Counted turns, tool calls, image and video generations, tokens, and wall time are appended by `python3 tools/quota/quota.py` to [`learn/quota-log.md`](../quota-log.md). Copy that row. Do not invent the numbers.
 
 | Item | Kind | Turns or tries | Quota spent | Result |
 | --- | --- | --- | --- | --- |

@@ -1,0 +1,51 @@
+{
+  "schema": "biome-kit-template/1",
+  "kitSchema": "biome-kit/1",
+  "geometry": {
+    "horizonFraction": 0.5,
+    "level": true,
+    "skySlices": 8,
+    "hfovDeg": 60,
+    "yawStepDeg": 45,
+    "sunCount": 1,
+    "ground": "ortho"
+  },
+  "cameraPlay": {
+    "width": 720,
+    "height": 1600,
+    "fovYDeg": 40,
+    "eyeHeightM": 0.85,
+    "boomM": 6,
+    "magMax": 1,
+    "horizonFraction": 0.5,
+    "level": true
+  },
+  "groundTileM": 0.9,
+  "headingsDeg": [0, 45, 90, 135, 180, 225, 270, 315],
+  "orbit": {
+    "count": 8,
+    "yawStepDeg": 45,
+    "elevationDeg": 18
+  },
+  "scale": {
+    "withersFrac": 0.1,
+    "frame": [720, 1600],
+    "bodyWidthM": 0.7,
+    "bodyRadiusM": 0.45
+  },
+  "combinedRepeatMinSec": 600,
+  "livingLoopRoles": ["stars", "dust", "vapor", "embers", "mist", "fireflies", "nebula", "fog"],
+  "plateTypes": ["slice-ring", "ortho", "still-ring", "orbit-still", "1-point"],
+  "codeMay": ["invisible relief", "placement", "physics", "fog", "grade", "bloom"],
+  "requiredNegatives": [
+    "sky slices made by cloning or mirroring columns",
+    "a short sky loop reads as the same flash",
+    "a sky or hull video that drifts inside the frame",
+    "one ground still frozen to the camera",
+    "nearest sampling on world textures",
+    "rounded demo shapes passed the numeric gates",
+    "chroma key leaves a green edge band that the key gate does not count",
+    "orbit views drift in camera height and exposure",
+    "orbit views cooked without a silhouette lock"
+  ]
+}

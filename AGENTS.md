@@ -121,6 +121,13 @@ Read **[GROK.md](GROK.md)** next. Stills = **[LAYOUT.md](LAYOUT.md)** + RIG-PROM
 **HARD — stop after 2 (take 10d).** The same defect fails twice, then stop. List the small Imagine-intrinsic miss and accept it. Do not spend another cook on it. Hall smoke still caps a plate at one fresh cook plus one enlarge.
 
 **HARD — one step, one goal (take 10d).** A Grok step has one goal and a done-when list of at most 8 rows. Write `REPORT.md` as each row is measured. An oversized step that ends without a final answer is a failure. Layout rails, the stop, and the step size are [`spec.md`](spec.md).
+
+**Step START — decrees.** Before the first action of a step, write the decree brief: `python3 tools/decrees/brief.py --spec <step-spec> --step <step-dir>` ([`tools/decrees/README.md`](tools/decrees/README.md)). Add `--kit <id>` when the step has a biome kit. The brief cites post id, date, and quote. `decrees/decrees.jsonl` is local and is not committed when it is absent.
+
+**Step END — quota and phone preview.** After the gates of an accepted step, append one row: `python3 tools/quota/quota.py --log <ndjson> --step <name>` ([`tools/quota/README.md`](tools/quota/README.md), log [`learn/quota-log.md`](learn/quota-log.md)). Then freeze the zone play page: `python3 tools/preview/freeze.py` ([`tools/preview/README.md`](tools/preview/README.md)). The copy stays on 127.0.0.1. The script does not open a tunnel or deploy. A public URL waits for the owner's explicit OK.
+
+**Biome kits and living loops.** Any biome fills [`biome/kits/_template/`](biome/kits/_template/README.md). Examples: The Howling Eclipse, Ember Mesa, Cascade Verdance ([`biome/kits/README.md`](biome/kits/README.md)). Paste `python3 tools/kits/kit.py show --id <id>`. Reusable Imagine loops: [`stock/loops/`](stock/loops/README.md).
+
 Never dump this to the player.
 
 **HARD LOCK — Hang ≠ wipe.** New biome / sprint run = ADD `road-<biome>*.mp4` + plates-index / dealer entries. KEEP canyon→cars→duel→night→war. NEVER `rm` `biome/master` / `public/master`. NEVER Tide-only playlist unless SmiR / player explicitly says replace the default Beat. Recook Bolt may replace `bolt.mp4` only. Law: [`biome/docs/09-recette-biome.md`](biome/docs/09-recette-biome.md).

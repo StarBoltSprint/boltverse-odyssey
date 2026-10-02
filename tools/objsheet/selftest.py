@@ -267,7 +267,7 @@ def _side(color: tuple[int, int, int]) -> np.ndarray:
 def preflight_views(tmp: Path) -> None:
     if str(TOOL) not in sys.path:
         sys.path.insert(0, str(TOOL))
-    from preflight import FALLBACK, run_views
+    from preflight import FALLBACK, HERO_SHIP_DEFAULT, run_views
 
     hero_dir = tmp / "preflight-good"
     hero_dir.mkdir()
@@ -286,6 +286,30 @@ def preflight_views(tmp: Path) -> None:
         raise SystemExit("red preflight luma was not rejected\n" + text)
     if "3-4 views" not in bad["recommendation"] or bad["recommendation"] != FALLBACK:
         raise SystemExit("failing orbit did not recommend the 3-4 view fallback")
+    if "120°" not in bad["recommendation"] or "90–120" in bad["recommendation"]:
+        raise SystemExit("orbit fallback still offers a 120° arc")
+    ship = run_views([hero_dir / "yaw-045.png"], hero_dir / "hero.png", kind="hero-ship")
+    if ship["ok"] or ship["viewCount"] != 2 or not ship["recommendation"].startswith(HERO_SHIP_DEFAULT):
+        raise SystemExit("hero ship with 2 views should stay outside the 3-4 default\n" + ship["recommendation"])
+    if "8-view orbit can proceed" in ship["recommendation"]:
+        raise SystemExit("hero ship default must not send an 8-view orbit")
+    band = tmp / "preflight-ship"
+    band.mkdir()
+    Image.fromarray(_side((48, 40, 72)), "RGBA").save(band / "hero.png")
+    Image.fromarray(_side((49, 41, 73)), "RGBA").save(band / "three-quarter.png")
+    Image.fromarray(_side((50, 42, 74)), "RGBA").save(band / "side.png")
+    Image.fromarray(_side((51, 43, 75)), "RGBA").save(band / "back.png")
+    three = run_views([band / "three-quarter.png", band / "side.png"], band / "hero.png", kind="hero-ship")
+    four = run_views(
+        [band / "three-quarter.png", band / "side.png", band / "back.png"],
+        band / "hero.png",
+        kind="hero-ship",
+    )
+    if not three["ok"] or three["viewCount"] != 3 or not four["ok"] or four["viewCount"] != 4:
+        raise SystemExit(
+            "hero ship 3-view and 4-view sets should pass\n"
+            + "\n".join(three["failures"] + four["failures"])
+        )
     print("selftest preflight red luma then green match")
 
 
