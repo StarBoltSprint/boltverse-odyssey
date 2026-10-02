@@ -26,6 +26,7 @@ WALK = Path(__file__).resolve().parents[1] / "walkaround"
 if str(WALK) not in sys.path:
     sys.path.insert(0, str(WALK))
 
+from gates import HOLE_MAX, MARGIN_FRAC, MAX_EDGE_PX, source_view_report  # noqa: E402
 from hull import camera_pose, carve, enclosed_2d, foreground_mask, voxel_centers, world_to_ijk, sample_volume  # noqa: E402
 
 YAWS = [0, 45, 90, 135, 180, 225, 270, 315]
@@ -50,6 +51,9 @@ HEURISTICS = [
     "Colour histogram correlation is a weak identity test. A different facing colour can score low. The silhouette numbers are the gate.",
     "Hull keep is a coarse 7-of-8 voxel carve (grid 32), ray-marched back into each mask. It is not the smooth surface-nets mesh.",
     "Views that disagree shrink that carve toward a blob, and the keep fraction falls.",
+    "A silhouette that comes within 3% of any frame edge is cropped. Cropped views carve the hull. The margin is measured on the unfilled mask.",
+    "Interior holes are transparent pixels enclosed by the silhouette, as a fraction of interior pixels. Above 0.2% the stone is see-through. The tool does not fill those pixels.",
+    "Width and height are read from the file. A still over 2048 px on a side fails.",
     "A hand-written PASS is not a PASS. Paste report.json and the sheet PNG.",
 ]
 
@@ -207,6 +211,7 @@ def prepare_views(views_dir: Path, config: dict, work: Path | None) -> list[dict
         rgba = load_rgba(path)
         elev = entry.get("elevationDeg", entry.get("elevDeg"))
         horizontal = elev is None or abs(float(elev)) < ELEVATED_PITCH
+        raw_mask = object_mask(rgba, threshold, fill=False)
         mask = object_mask(rgba, threshold, fill=horizontal)
         view_distance = float(entry.get("distance", distance))
         view_fov = float(entry.get("fovYDeg", fov))
@@ -240,6 +245,7 @@ def prepare_views(views_dir: Path, config: dict, work: Path | None) -> list[dict
                 "path": path,
                 "rgba": rgba,
                 "mask": mask,
+                "rawMask": raw_mask,
                 "span": span_of(mask),
                 "yawDeg": float(entry.get("yawDeg", 0.0)),
                 "elevationDeg": None if elev is None else float(elev),
@@ -556,12 +562,30 @@ def measure_object(name: str, views_dir: Path, config: dict, work: Path) -> dict
     pairs = pair_checks(views)
     guides = guide_check(views)
     hull = hull_check(views, config)
+    sourced = source_view_report(views)
+    margin = {
+        "status": "PASS" if not any(line.startswith("FAIL margin") or line.startswith("FAIL size") for line in sourced["failures"]) else "FAIL",
+        "limits": {"marginFrac": MARGIN_FRAC, "maxEdgePx": MAX_EDGE_PX},
+        "minMarginFrac": sourced["minMarginFrac"],
+        "maxEdgePx": sourced["maxEdgePx"],
+        "views": sourced["views"],
+        "failures": [line for line in sourced["failures"] if line.startswith("FAIL margin") or line.startswith("FAIL size")],
+    }
+    holes = {
+        "status": "PASS" if not any(line.startswith("FAIL holes") for line in sourced["failures"]) else "FAIL",
+        "limits": {"holeFraction": HOLE_MAX},
+        "maxHoleFraction": sourced["maxHoleFraction"],
+        "views": [{"file": row["file"], "holeFraction": row["holeFraction"]} for row in sourced["views"]],
+        "failures": [line for line in sourced["failures"] if line.startswith("FAIL holes")],
+    }
     failures = []
     failures.extend(sil["failures"])
     failures.extend(ring["failures"])
     failures.extend(pairs["failures"])
     failures.extend(guides["failures"])
     failures.extend(hull["failures"])
+    failures.extend(margin["failures"])
+    failures.extend(holes["failures"])
     failed_files = set()
     for line in failures:
         for view in views:
@@ -576,6 +600,8 @@ def measure_object(name: str, views_dir: Path, config: dict, work: Path) -> dict
         "consistency": pairs,
         "guide": guides,
         "hull": hull,
+        "margin": margin,
+        "holes": holes,
         "failures": failures,
         "_draw": views,
         "_failed": failed_files,
@@ -604,6 +630,12 @@ def to_markdown(report: dict) -> str:
         hull = obj["hull"]
         lines.append(
             f"- hull: `{hull['status']}` mean keep `{hull['meanKeep']}` min `{hull['minKeep']}` volume `{hull['volumeFraction']}`"
+        )
+        lines.append(
+            f"- margin: `{obj['margin']['status']}` minFrac `{obj['margin']['minMarginFrac']}` maxEdge `{obj['margin']['maxEdgePx']}`"
+        )
+        lines.append(
+            f"- holes: `{obj['holes']['status']}` max interior `{obj['holes']['maxHoleFraction']}`"
         )
         for row in hull["views"]:
             lines.append(f"  - {row['file']} keep `{row['keepFraction']}`")
@@ -676,6 +708,9 @@ def run(views: Path, config_path: Path, out: Path) -> dict:
             "colorDist": COLOR_DIST_MAX,
             "keepMin": KEEP_MIN,
             "keepMean": KEEP_MEAN,
+            "marginFrac": MARGIN_FRAC,
+            "holeFraction": HOLE_MAX,
+            "maxEdgePx": MAX_EDGE_PX,
         },
     }
     out.mkdir(parents=True, exist_ok=True)

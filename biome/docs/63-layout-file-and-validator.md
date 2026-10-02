@@ -26,7 +26,7 @@ The rendered table below does not re-measure source files. Those files are gated
 | Gate | Command | What is pasted |
 | --- | --- | --- |
 | Every Imagine image or video | `python3 tools/assetcheck/check.py --manifest … --out …` | `report.json` and `report.md`. Exit 0. Magnification ≤ 1 at 720×1600, key, loop seam, tile seams, backdrop split. |
-| Every solid object, before `tools/walkaround/build.py` | `python3 tools/objsheet/sheet.py --views … --config … --out …` | `report.json`, `report.md`, and `sheet.png`. Exit 0. Eight yaws, guide IoU ≥ 0.97 when a guide exists, adjacent silhouette lock, hull-keep fraction. Sub-objects included. |
+| Every solid object, before `tools/walkaround/build.py` | `python3 tools/objsheet/sheet.py --views … --config … --out …` | `report.json`, `report.md`, and `sheet.png`. Exit 0. Eight yaws, guide IoU ≥ 0.97 when a guide exists, adjacent silhouette lock, hull-keep fraction, 3% empty margin on every side, interior holes ≤ 0.2%, stills ≤ 2048 px measured from the file. Sub-objects included. The hull build repeats those gates. How the play view mounts every solid: [how Grok uses it](../../tools/walkaround/README.md#how-grok-uses-it). |
 
 A hand-written PASS is not a PASS. A missing report, or a report with `"ok": false`, blocks generate. A **WARN** on a file under `lock/`, or on a manifest entry with `locked: true`, does not. Those files are grandfathered owner KEEP: the measurements still print, the exit code stays 0, and `"ok"` stays true. A WARN is not a reason to recook or replace the file. Bolt stays `lock/bolt-gallop-cycle.mp4` and `lock/bolt-idle-breath.mp4`. Law and thresholds: [`tools/assetcheck/README.md`](../../tools/assetcheck/README.md), [`tools/objsheet/README.md`](../../tools/objsheet/README.md).
 

@@ -251,6 +251,23 @@ def _world_for(good: dict) -> dict:
     }
 
 
+def test_ring_wall() -> None:
+    good, _broken = build_pair()
+    wall = {
+        "base_y_m": 0.0,
+        "center": list(good["zone"]["center"]),
+        "id": "ring-wall",
+        "object_id": "ring-wall",
+        "radius_m": good["edge_ring"]["radius_m"],
+        "source": "ring",
+    }
+    good["colliders"].append(wall)
+    rows, _extra = evaluate(good, [ROOT])
+    hit = row(rows, "collider_eq_visual")
+    if hit.ok or int(hit.numbers.get("ring_wall") or 0) < 1:
+        fail("ring wall was not rejected: " + hit.line())
+
+
 def test_transition_opt_in() -> None:
     good, _broken = build_pair()
     plain = [r.name for r in evaluate(good, [ROOT])[0]]
@@ -294,6 +311,7 @@ def main() -> None:
     test_two_gate_layout()
     test_walkaround_manifest()
     test_generate_and_check(write)
+    test_ring_wall()
     test_transition_opt_in()
     print("PASS layout selftest")
 

@@ -40,7 +40,7 @@ Exit **0** only when every row is PASS. Exit **1** when any row FAILs. Exit **2*
 ## What the walk does
 
 1. Spawn.
-2. Full 360° turn, stills every 45°, horizon samples every 10°.
+2. Full 360° turn, stills every 45°, horizon samples every 10°, and an orbit screenshot every 5° under `stills/orbit/`. Those frames are the `solids_world_locked` measurement.
 3. Walk to the first gate until the path trigger or a stop.
 4. Walk outward on 8 headings (every 45°, skipping the gate opening) until a collider stops the hero, then wait for idle.
 5. Walk up to each `interior_objects` entry.
@@ -103,6 +103,7 @@ WebGL errors are captured even without the hook, by wrapping `getError` and the 
 | `mag_max` / `mag` | Peak HUD magnification, including `magSources` when present, is above `view.mag_max` (1.0). |
 | `stops_visible` | A stop is not in contact with a layout surface (blocked, or within 0.5 m), or nothing from the layout covers the view ahead. Flat black and pixels that match unlabeled ground do not count. |
 | `collider_eq_visual` | Stop is more than 0.5 m from a layout surface, or the surface is not visible. |
+| `solids_world_locked` | A solid's screen crop stays pixel-identical (mean absolute error ≤ 3/255) across a consecutive orbit step of 3–7°. Zero identical pairs is the only pass. No orbit frames is a FAIL. The measurement harness (`snap.harness`) records the count as partial and does not apply it. Hero, fog, and `gate:` labels are skipped. |
 | `layout_rendered` | A hull, gate, or interior that the walk faced never wrote visible pixels. |
 | `ring_closed` | A 1° data ray misses outside the gate span, or a 10° heading from the centre shows no edge pixels. |
 | `gate` | Gate frame not visible at its heading, HUD bearing/distance off, or the opening never sets `pathTrigger`. |

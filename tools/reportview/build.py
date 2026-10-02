@@ -567,9 +567,13 @@ def object_check_rows(obj: dict) -> list[dict]:
         ("consistency", "View consistency", "Adjacent views stay within the limits object: area ±15% and height ±8% in the tool. Opposite views compare width and height, not a pixel mirror."),
         ("guide", "Guide IoU", "Each still against its guide mask. The limit field on this check is the threshold. SKIP means no guide was given; that is not a PASS and not a FAIL."),
         ("hull", "Hull keep", "Coarse 7-of-8 carve. The limits object holds minKeep and meanKeep. This is not the smooth mesh."),
+        ("margin", "Frame margin", "Empty margin on every side of the unfilled mask. Under 3% the still is cropped and the carve follows the frame. Width and height are measured from the file. Above 2048 px on a side fails."),
+        ("holes", "Interior holes", "Transparent pixels enclosed by the silhouette, as a fraction of interior pixels. Above 0.2% the stone is see-through. The tool does not fill those pixels."),
     ):
         check = obj.get(key)
         if not isinstance(check, dict):
+            if key in ("margin", "holes"):
+                continue
             rows.append(na_row(title, "This check is not in the objsheet report."))
             continue
         rows.append(check_summary_row(title, check, explain))
@@ -585,7 +589,7 @@ def check_summary_row(title: str, check: dict, explain: str) -> dict:
         measured.append(f"fill {fmt(max(fills))} · limit 0.92")
     if isinstance(check.get("yaws"), list):
         measured.append(f"yaws {len(check['yaws'])} · expected 8")
-    for key in ("meanKeep", "minKeep", "volumeFraction", "reason"):
+    for key in ("meanKeep", "minKeep", "volumeFraction", "reason", "minMarginFrac", "maxHoleFraction", "maxEdgePx"):
         if key in check:
             measured.append(f"{key} {fmt(check.get(key))}")
     if title == "Guide IoU":
@@ -844,7 +848,7 @@ def section_layout(directory: Path | None, copier: Copier) -> dict:
 
 LAYOUT_EXPLAIN = {
     "ring_closed": "A 1° ray from the centre must hit the visual ring and the collider ring outside a gate. A missed arc longer than the hero width fails. Both gaps are in the numbers.",
-    "collider_eq_visual": "A collider needs an object and an object needs a collider, within about 2 cm. An outward ray that hits a collider more than 0.5 m before any visual fails.",
+    "collider_eq_visual": "A collider needs an object and an object needs a collider, within about 2 cm. An outward ray that hits a collider more than 0.5 m before any visual fails. A collider centred on the zone whose radius is the ring radius is a ring wall and fails.",
     "gate": "The frame asset has to be present, the opening has to clear the hero and the path, and no collider may enter the opening.",
     "path": "Clearance from the spawn point to the gate mouth is compared with half the path width (need_m in the numbers).",
     "gate_cone": "A solid circle meeting the cone in front of a gate fails.",
@@ -964,6 +968,7 @@ PLAY_EXPLAIN = {
     "mag": "Same HUD peak as mag_max.",
     "stops_visible": "A stop has to meet a layout surface, and something from the layout has to cover the view ahead.",
     "collider_eq_visual": "The stop is more than 0.5 m from a layout surface, or that surface is not visible.",
+    "solids_world_locked": "A solid crop that stays pixel-identical across a 5° orbit step is a camera-facing card. Zero identical pairs is the pass. The harness records the count and does not apply it.",
     "layout_rendered": "A hull, gate, or interior the walk faced never wrote visible pixels.",
     "ring_closed": "A 1° data ray misses outside the gate, or a heading from the centre shows no edge pixels.",
     "gate": "The frame is not visible at its heading, the HUD bearing or distance is off, or the opening never sets pathTrigger.",

@@ -84,6 +84,47 @@ Sandbox draw:
 1. The occupancy grid is the collider. It is not the picture.
 2. Color pass projects the mesh fragment into the chosen still and `texelFetch`s the original PNG (nearest, one mip level). No lighting term. No yaw-based texture switch.
 
+## Source gates
+
+These run after the stills are decoded and before any voxel is carved. A failure writes `qc/report.json` and does not write `asset.json`. The same checks are on the object sheet, so a session sees them before the build. Skipping the sheet does not skip them here.
+
+| Gate | FAIL |
+| --- | --- |
+| Frame margin | Unfilled mask within **3%** of any side, or touching the frame. Cropped source views carve the hull. |
+| Interior holes | Enclosed transparent pixels above **0.2%** of the interior. The build does not paint those pixels closed. Horizontal carving still flood-fills enclosed dark pixels for the occupancy vote; the hole fraction is stored from the unfilled mask and fails first. |
+| File size | Width or height above **2048**, measured from the decoded file. |
+| Handedness | `right` is not `cross(forward, worldUp)`, or a point on +X at yaw 0 is not screen-right. Bearing 90 selects yaw 90, not yaw 270. After the QC renders, a view that matches its horizontal mirror better than the source (by more than 0.02 mean absolute error) also fails. A tie on a symmetric solid is not a fail. |
+
+`asset.json` records `handedness` (`schema` `walkaround-basis-1`) and `footprint` (`type` circle, `source` `hull-xz`). `placement.collisionRadius` is that ground radius. `placement.boundingRadius` is the 3D bound and is not the collider.
+
+## How Grok uses it
+
+One solid, one hull. Every copy of that solid is an instance. A camera-facing card is not a volume. `tools/playcheck` row `solids_world_locked` fails a solid whose screen crop stays the same across a 5° orbit step.
+
+1. `python3 tools/objsheet/sheet.py --views … --config … --out …` and stop unless it exits 0.
+2. `python3 tools/walkaround/build.py --views … --config … --out hulls/<object>`. Read `qc/report.json`. Magnification ≤ 1. `sourceGates` and `handedness` are PASS.
+3. `python3 tools/layout/layout.py generate` then `layout.py check`. Colliders are the hull footprint, one per instance. A circle the size of `edge_ring.radius_m` is a ring wall and fails `collider_eq_visual`.
+4. In the play view, copy `tools/walkaround/runtime/hullmesh.js` and `tools/walkaround/runtime/basis.mjs` together. Mount each asset once. Pass every placement of that asset to `setInstances`. Nothing draws until that call. `collide` uses the footprint. Do not stop the hero on `edge_ring.radius_m`.
+
+```js
+import { mountHull } from "./hullmesh.js";
+import { chaseBasis } from "./basis.mjs";
+
+const rock = await mountHull(gl, "hulls/rock/asset.json");
+rock.setInstances(placements);
+rock.draw(viewProjection, 0, idRgb);
+const hit = rock.collide(heroX, heroZ, heroRadius);
+const basis = chaseBasis(headingDeg);
+```
+
+`placements` entries are `{ id, position, yaw_deg, scale, base_y_m }`. `position` is `[x, z]` or `[x, y, z]`. Repeated stones of one asset are one mount and one static matrix buffer.
+
+`chaseBasis`: heading 0 looks along +Z, heading 90 looks along +X, `right = cross(forward, worldUp)`. If steering feels backwards, negate the turn input. Do not negate `right`. A stored camera whose right is the mirror is refused at load. View index follows yaw: bearing 90 selects the yaw-90 still, not yaw 270.
+
+When [`biome/docs/65-render-quality.md`](../../biome/docs/65-render-quality.md) is on main, repeated draws follow that instancing law. Until then this runtime is the volume contract. Far-band cards with no collider stay the impostor path in [doc 62](../../biome/docs/62-open-world-zones-process.md). A solid that can stop the hero is a hull.
+
+Sampling stays `texelFetch` of the original PNG. Code does not draw, shade, or colour a pixel. Magnification stays ≤ 1 on a 720×1600 view. Imagine stills are at most 2048 px on a side, measured from the file.
+
 ## Elevation
 
 A view with `elevationDeg` (degrees above the horizon, 90 = top) is carved as a mandatory mask: a voxel whose center lands on the background of that still is removed. Pitch at or above 25° is elevated. Those stills are locked only against other stills in the same 15° pitch band. One top view is not compared to the side ring. Horizontal stills still flood-fill enclosed holes. Elevated stills do not, so a ring or a bowl can stay open.

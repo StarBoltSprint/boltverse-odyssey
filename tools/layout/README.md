@@ -59,7 +59,7 @@ The loader reads, in order:
 2. Else `qc/report.json` → `silhouetteLock.perView`, using the **smallest** width and height so the magnification check stays conservative.
 3. Else the first camera's frame size. A full frame is larger than the silhouette, so this **under-estimates** magnification. Prefer a silhouette.
 
-Footprint: `footprint` circle or convex polygon, else `hull.npz` when numpy is present, else `placement.collisionRadius`.
+Footprint: `footprint` circle (`source: hull-xz` is the occupied columns on the ground, and that radius is `placement.collisionRadius`) or convex polygon, else `hull.npz` when numpy is present, else `placement.collisionRadius`. Generated colliders copy that radius and set `source` to `hull-footprint`. They are one circle per instance, not the ring.
 
 ## What generate writes
 
@@ -74,7 +74,7 @@ The same seed writes the same bytes. Interior positions and relief use seeded 2D
 | Row | FAIL when |
 | --- | --- |
 | `ring_closed` | A 1° ray from the centre misses the visual ring or the collider ring outside a gate, or the missed arc is longer than `hero.width_m`. Both gaps are printed. |
-| `collider_eq_visual` | A collider has no object, an object has no collider, the centre or radius differs by more than 2 cm, or an outward ray hits a collider more than 0.5 m before any visual. The invisible-stop distance and heading are printed. |
+| `collider_eq_visual` | A collider has no object, an object has no collider, the centre or radius differs by more than 2 cm, or an outward ray hits a collider more than 0.5 m before any visual. The invisible-stop distance and heading are printed. A collider centred on the zone (within 5 cm) whose radius matches `edge_ring.radius_m` (within 5 cm) is a ring wall: `ring_wall` counts it and the row fails. `edge_ring.radius_m` is the placement centreline, not a stop. |
 | `gate` | Frame asset or `frame_ids` missing, the opening chord is narrower than the hero and the path, or a collider's angular span enters the opening. |
 | `path` | Clearance from the spawn point to the gate mouth is under half `path_width_m`. |
 | `gate_cone` | A solid circle meets the cone in front of a gate. |

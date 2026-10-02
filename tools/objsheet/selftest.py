@@ -213,6 +213,48 @@ def void_orbit(tmp: Path) -> None:
         print(" ", line)
 
 
+def cropped_margin(tmp: Path) -> None:
+    folder = tmp / "cropped"
+    views = folder / "views"
+    views.mkdir(parents=True)
+    entries = []
+    for yaw in range(0, 360, 45):
+        name = f"yaw-{yaw:03d}.png"
+        ellipse(views / name, 200, 160, 40, 80, 50, 36, (170, 170, 170))
+        entries.append({"file": name, "yawDeg": float(yaw)})
+    write_config(folder / "config.json", entries, name="cropped-margin")
+    code, report = run(views, folder / "config.json", tmp / "cropped-out")
+    expect(code, report, False, "FAIL margin")
+    publish("cropped-margin", tmp / "cropped-out")
+    print("selftest cropped-margin")
+
+
+def interior_holes(tmp: Path) -> None:
+    folder = tmp / "holed"
+    views = folder / "views"
+    views.mkdir(parents=True)
+    entries = []
+    h, w = 200, 160
+    ys, xs = np.mgrid[0:h, 0:w]
+    body = ((ys - 100) / 60) ** 2 + ((xs - 80) / 40) ** 2 <= 1
+    hole = ((ys - 100) / 18) ** 2 + ((xs - 80) / 14) ** 2 <= 1
+    rgba = np.zeros((h, w, 4), np.uint8)
+    rgba[body] = (200, 180, 160, 255)
+    rgba[hole] = (0, 0, 0, 0)
+    for yaw in range(0, 360, 45):
+        name = f"yaw-{yaw:03d}.png"
+        Image.fromarray(rgba, "RGBA").save(views / name)
+        entries.append({"file": name, "yawDeg": float(yaw)})
+    write_config(folder / "config.json", entries, name="interior-holes")
+    code, report = run(views, folder / "config.json", tmp / "holed-out")
+    expect(code, report, False, "FAIL holes")
+    frac = report["objects"][0]["holes"]["maxHoleFraction"]
+    if frac < 0.02:
+        raise SystemExit(f"hole fraction {frac} is under the director band")
+    publish("interior-holes", tmp / "holed-out")
+    print(f"selftest interior-holes {frac}")
+
+
 def main() -> None:
     tmp = Path("/tmp/objsheet-selftest")
     if tmp.exists():
@@ -224,6 +266,8 @@ def main() -> None:
     inconsistent(tmp)
     bad_guide(tmp)
     with_subobject(tmp)
+    cropped_margin(tmp)
+    interior_holes(tmp)
     void_orbit(tmp)
     print("PASS objsheet selftest")
 

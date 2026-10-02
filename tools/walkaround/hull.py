@@ -16,6 +16,8 @@ import shutil
 from collections import deque
 from pathlib import Path
 
+import gates
+
 import numpy as np
 from PIL import Image
 
@@ -1186,7 +1188,8 @@ def _build_subobject(
         else:
             cam = camera_pose(float(item["yawDeg"]), dist_v, eye_v, float(elev_raw))
         elevated = abs(float(cam["pitchDeg"])) >= ELEVATED_PITCH
-        mask = silhouette_from_rgba(rgba, threshold, fill_holes=not elevated)
+        raw_mask = silhouette_from_rgba(rgba, threshold, fill_holes=False)
+        mask = raw_mask if elevated or not raw_mask.any() else enclosed_2d(raw_mask)
         if int(mask.sum()) < 32:
             raise SystemExit(f"FAIL silhouette: {name} {src.name} has no object")
         area, height, width = mask_box(mask)
@@ -1206,6 +1209,7 @@ def _build_subobject(
             "elevated": abs(float(cam["pitchDeg"])) >= ELEVATED_PITCH,
             "rgba": rgba,
             "mask": mask,
+            "rawMask": raw_mask,
             "cam": cam,
             "sha256": sha256(dst),
             "area": area,
@@ -1225,6 +1229,9 @@ def _build_subobject(
                 "group": name,
             }
         )
+    part_gate = gates.source_view_report(views)
+    if part_gate["failures"]:
+        raise SystemExit("\n".join(f"{name}: {line}" for line in part_gate["failures"]))
     relief = float(sub_cfg.get("depthRelief", 0.35 if any(v["depth"] is not None for v in views) else 0.0))
     agree = 2 if sum(v["depth"] is not None for v in views) >= 4 else 1
     solid, half, vsize, _meta = make_solid(
@@ -1569,7 +1576,8 @@ def build(
         else:
             cam = camera_pose(float(item["yawDeg"]), dist_v, eye_v, float(elev_raw))
         elevated = abs(float(cam["pitchDeg"])) >= ELEVATED_PITCH
-        mask = silhouette_from_rgba(rgba, threshold, fill_holes=not elevated)
+        raw_mask = silhouette_from_rgba(rgba, threshold, fill_holes=False)
+        mask = raw_mask if elevated or not raw_mask.any() else enclosed_2d(raw_mask)
         if int(mask.sum()) < 32:
             raise SystemExit(f"FAIL silhouette: {src.name} has no object")
         area, height, width = mask_box(mask)
@@ -1585,6 +1593,7 @@ def build(
             "elevated": abs(float(cam["pitchDeg"])) >= ELEVATED_PITCH,
             "rgba": rgba,
             "mask": mask,
+            "rawMask": raw_mask,
             "cam": cam,
             "sha256": sha256(dst),
             "area": area,
@@ -1604,6 +1613,24 @@ def build(
                 "group": "body",
             }
         )
+
+    source_gate = gates.source_view_report(views)
+    basis = gates.basis_report(views)
+    report["sourceGates"] = source_gate
+    report["handedness"] = {
+        "status": basis["status"],
+        "schema": basis["schema"],
+        "contract": basis["contract"],
+        "viewIndex": basis["viewIndex"],
+        "plusXAtYaw0IsScreenRight": basis["plusXAtYaw0IsScreenRight"],
+        "failures": basis["failures"],
+    }
+    early = list(source_gate["failures"]) + list(basis["failures"])
+    if early:
+        report["ok"] = False
+        report["failures"] = early
+        _write_report(qc_out, report)
+        raise SystemExit("\n".join(early))
 
     lock_fail, lock_notes = lock_views(views)
     report["silhouetteLock"] = {
@@ -1931,9 +1958,12 @@ def build(
                 )
 
     if mesh_vertices is not None:
-        radius = collision_radius(mesh_vertices.astype(np.float64))
+        bound_radius = collision_radius(mesh_vertices.astype(np.float64))
     else:
-        radius = collision_radius(surf["position"].astype(np.float64))
+        bound_radius = collision_radius(surf["position"].astype(np.float64))
+    radius = gates.xz_radius(solid, -half, vsize)
+    if radius <= 0:
+        radius = bound_radius
     placement = cfg.get("placement", {})
     position = [float(x) for x in placement.get("position", [0, 0, 0])]
 
@@ -2048,6 +2078,18 @@ def build(
         "enclosedVoids": enclosed,
         "watertight": enclosed == 0 and max_holes <= 0.01 and max_center <= 0.05,
     }
+    mirror = gates.mirror_against_sources(body_views, qc_out)
+    report["handedness"]["mirror"] = {
+        "status": mirror["status"],
+        "conclusiveViews": mirror["conclusiveViews"],
+        "views": mirror["views"],
+    }
+    for line in mirror["failures"]:
+        failures.append(line)
+    if mirror["failures"]:
+        report["handedness"]["status"] = "FAIL"
+        report["handedness"]["failures"] = list(report["handedness"].get("failures") or []) + mirror["failures"]
+
     if max_accidental > 0.01 or max_center > 0.05 or enclosed > 0:
         failures.append(
             "FAIL holes: interiorHoleFraction={h:.4f} centerReentryFraction={c:.4f} enclosedVoids={v}. The back bite is not closed.".format(
@@ -2157,7 +2199,13 @@ def build(
         "origin": (-half).tolist(),
         "voxelSize": vsize.tolist(),
         "halfExtent": half.tolist(),
-        "placement": {"position": position, "collisionRadius": radius},
+        "placement": {
+            "position": position,
+            "collisionRadius": radius,
+            "boundingRadius": bound_radius,
+        },
+        "footprint": {"type": "circle", "radius_m": radius, "source": "hull-xz"},
+        "handedness": gates.HANDEDNESS,
         "approach": {
             "minDistance": cap if max_mag > MAG_LIMIT else use_d,
             "capDistance": cap,
