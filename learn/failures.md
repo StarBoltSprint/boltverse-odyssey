@@ -154,3 +154,58 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Attempt 3 put the measurement first (step 0: playcheck in a subagent in the first 20 minutes), wrote REPORT.md after every item, and used a fixed time cutoff. That gave a measured table. Next time: one art family per step, the playcheck at the start and at the end, and time the 40-minute playcheck into the deadline. |
 | Guard | None in the repo. The kit has no check that a run ended with a final answer. The Director checks `.exit` plus the last `text` event. |
 | Sources | `/workspace/grokcli/logs/20261002-120625-take10d.*`, `20261002-144151-take10d.*`, `20261002-163629-take10d.*`, `/workspace/grokcli/next/take10d.progress.log`. |
+
+### 2026-10-02 — sky clone gate now rejects a copied or mirrored trailing run
+
+| | |
+| --- | --- |
+| Take | Tooling follow-up to take 10d. Cites "sky slices made by cloning or mirroring columns" above. |
+| Defect | The same cloned and mirrored trailing columns, and a chain that never closed. |
+| Root cause | `tools/assetcheck` kind `backdrop` measured a wrap seam and magnification. It did not compare a trailing run with the run before it, and it did not require last-to-first. |
+| Fix | `python3 tools/sky/check.py` fails a trailing clone or mirror, a content-strip join MAE above 4, a column-luma swing above 6 in any 60° window, and an open close. The report names the cheapest slice to recook. |
+| Guard | `python3 tools/sky/selftest.py`. Join MAE limit 4. Swing limit 6. A chain that only fails the close recooks the last slice. |
+| Sources | Take 10d sky entry above. Tool version that let it through: `db693e5`. Stills were on the take box and are not stored in this repo. |
+
+### 2026-10-02 — dark green edge band is now a cutout fail
+
+| | |
+| --- | --- |
+| Take | Tooling follow-up to take 10d. Cites "chroma key leaves a green edge band that the key gate does not count" above. |
+| Defect | A 3 px edge with G above max(R, B) by 6 stayed opaque. The bright-green fringe row did not see it. |
+| Root cause | The key gate counted bright key green only. |
+| Fix | `tools/assetcheck` `check_alpha` fails when more than 1% of that 3 px band leans green, for key `alpha` or `green`. `python3 tools/assetcheck/despill.py` clamps G to max(R, B) and erodes alpha 1 px into a different file. A `lock/` path stays WARN. |
+| Guard | `python3 tools/assetcheck/selftest.py` `edge_green_despill` (red on the fringe, green after despill). Limit 0.01. |
+| Sources | Take 10d chroma entry above. Tool version `db693e5`. The ship stills are not stored in this repo. |
+
+### 2026-10-02 — orbit preflight gates luma and elevation before eight views
+
+| | |
+| --- | --- |
+| Take | Tooling follow-up to take 10d. Cites "orbit views drift in camera height and exposure" above. |
+| Defect | Eight views drifted in elevation and luma. `tools/objsheet` gated area and height only. |
+| Root cause | No per-view check against the hero still. |
+| Fix | `python3 tools/objsheet/preflight.py` grades luma (±10%), hue correlation (≥ 0.80), centered silhouette IoU (≥ 0.55), top fraction (±25% of the hero), and ground gap (0.12). A fail recommends 3–4 views on a limited arc and a stop after 2 of the same defect. Elevation is a silhouette proxy, not a surveyed camera. |
+| Guard | `python3 tools/objsheet/selftest.py` `preflight_views`. A bright copy of the hero fails luma. A near copy passes. |
+| Sources | Take 10d orbit entry above. Tool version `db693e5`. The view stills are not stored in this repo. |
+
+### 2026-10-02 — a short sky loop reads as the same flash
+
+| | |
+| --- | --- |
+| Take | Tooling follow-up. Owner refinement on the living sky: the loop must not feel repetitive. |
+| Defect | One short loop, shared by every slice, makes a distinctive event (a flash, a shooting star) return on a fixed period. |
+| Root cause | A single duration and a single start time. The backdrop gate did not measure a period. |
+| Fix | Three Imagine layers at about 13 s, 17 s, and 29 s. Combined repeat is their least common multiple (6409 s). The gate fails a combined repeat under 600 s. Each slice gets its own start offset (adjacent offsets at least 0.75 s apart). Motion stays slow (frame MAE ≤ 8). A rare bright feature on a fixed period under 60 s fails. A rare event is a separate one-shot clip with a random gap of at least 30 s. |
+| Guard | `python3 tools/sky/selftest.py` (flash period 1 s fails; a gentle drift and an always-on star field pass; 10/20/30 s fails the 600 s floor). `python3 tools/sky/check.py` prints `combinedRepeatSec`. |
+| Sources | Owner refinement on the living-sky requirement. No still of the repetitive loop is stored. |
+
+### 2026-10-02 — step size and the two-failure stop are written down
+
+| | |
+| --- | --- |
+| Take | Tooling follow-up to take 10d. Cites "one oversize step per headless session, ending without a final answer" above. |
+| Defect | Attempts of 419 and 290 turns ended with no final answer. The same orbit drift was cooked a third time. |
+| Root cause | The step held many art families, and the stop was "after 3 rounds". |
+| Fix | [`spec.md`](../spec.md) and `AGENTS.md`: one goal, a done-when list of at most 8 rows, `REPORT.md` written as the rows are measured, stop after 2 failures of the same defect. Hall smoke stays one fresh cook plus one enlarge. |
+| Guard | The spec text. There is still no check that a run ended with a final answer. |
+| Sources | Take 10d oversize entry above. |

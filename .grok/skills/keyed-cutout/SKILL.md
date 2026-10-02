@@ -26,8 +26,16 @@ Rows that have to pass:
 | Row | FAIL |
 | --- | --- |
 | `resolution` | Magnification > 1.0. The cutout uses the foreground mask bbox. |
-| `alpha` | Opaque near-black with no alpha, an undeclared black field, a background rectangle, a halo thicker than 3 px, or a green fringe on more than 0.35 of the edge. |
+| `alpha` | Opaque near-black with no alpha, an undeclared black field, a background rectangle, a halo thicker than 3 px, a bright green fringe on more than 0.35 of the edge, or more than 1% of a 3 px edge band with G > max(R, B) + 6. |
 | `basic` | Not a PNG when lossless is required. Banding fraction above 0.045. |
+
+Dark spill fails the 3 px edge row. Bright key green (G > max(R, B) + 28 and G > 70, or G > R + 35 and G > 80) is the older fringe row and still applies on a green key.
+
+```bash
+python3 tools/assetcheck/despill.py --in fringe.png --out clean.png
+```
+
+Despill clamps G to max(R, B) and erodes alpha by 1 px. It writes only `--out`. Then run the gate again. Stop after 2 failures of the same edge defect. List a small remaining miss and accept it.
 
 Paste `report.md` and `report.json`. Exit 1 stops the cook.
 

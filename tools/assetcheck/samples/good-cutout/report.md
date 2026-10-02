@@ -48,6 +48,8 @@ Kind `cutout`. Asset **PASS**.
 - plateTouchesFrame: `True`
 - plateRectangularity: `0.6223`
 - haloThicknessPx: `0.0`
+- edgeGreenFraction: `0.0`
+- edgeBandPx: `3`
 
 ## Heuristics
 

@@ -10,6 +10,19 @@
   const debug = params.has("debug");
   const take8 = params.get("fixture") === "take8";
   const layout = await (await fetch("clearing.json")).json();
+  if (layout.sky && globalThis.BoltSky) {
+    const skyState = globalThis.BoltSky.skyPlan({
+      t: 0,
+      gateOk: !!layout.sky.gateOk,
+      seamBlend: layout.sky.seamBlend,
+      seamFrac: layout.sky.seamFrac,
+      sliceCount: Array.isArray(layout.sky.slices) ? layout.sky.slices.length : 0,
+      offsets: layout.sky.offsetsSec || [],
+      layers: layout.sky.layers || [],
+      oneShots: layout.sky.oneShots || [],
+    });
+    if (window.__perf) globalThis.BoltSky.bindSkyPerf(window.__perf, skyState);
+  }
   const canvas = document.getElementById("view");
   const hud = document.getElementById("hud");
   const gl = canvas.getContext("webgl2", { antialias: false, alpha: false, depth: true, preserveDrawingBuffer: true });

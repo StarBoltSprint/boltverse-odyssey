@@ -255,6 +255,40 @@ def interior_holes(tmp: Path) -> None:
     print(f"selftest interior-holes {frac}")
 
 
+def _side(color: tuple[int, int, int]) -> np.ndarray:
+    h, w = 96, 128
+    rgba = np.zeros((h, w, 4), np.uint8)
+    yy, xx = np.mgrid[0:h, 0:w]
+    body = ((yy - 70) / 16) ** 2 + ((xx - 64) / 40) ** 2 <= 1
+    rgba[body] = (*color, 255)
+    return rgba
+
+
+def preflight_views(tmp: Path) -> None:
+    if str(TOOL) not in sys.path:
+        sys.path.insert(0, str(TOOL))
+    from preflight import FALLBACK, run_views
+
+    hero_dir = tmp / "preflight-good"
+    hero_dir.mkdir()
+    Image.fromarray(_side((48, 40, 72)), "RGBA").save(hero_dir / "hero.png")
+    Image.fromarray(_side((50, 42, 74)), "RGBA").save(hero_dir / "yaw-045.png")
+    good = run_views([hero_dir / "yaw-045.png"], hero_dir / "hero.png")
+    if not good["ok"]:
+        raise SystemExit("green preflight should pass\n" + "\n".join(good["failures"]))
+    bad_dir = tmp / "preflight-bad"
+    bad_dir.mkdir()
+    Image.fromarray(_side((48, 40, 72)), "RGBA").save(bad_dir / "hero.png")
+    Image.fromarray(_side((210, 200, 230)), "RGBA").save(bad_dir / "yaw-180.png")
+    bad = run_views([bad_dir / "yaw-180.png"], bad_dir / "hero.png")
+    text = "\n".join(bad["failures"])
+    if bad["ok"] or "luma" not in text:
+        raise SystemExit("red preflight luma was not rejected\n" + text)
+    if "3-4 views" not in bad["recommendation"] or bad["recommendation"] != FALLBACK:
+        raise SystemExit("failing orbit did not recommend the 3-4 view fallback")
+    print("selftest preflight red luma then green match")
+
+
 def main() -> None:
     tmp = Path("/tmp/objsheet-selftest")
     if tmp.exists():
@@ -269,6 +303,7 @@ def main() -> None:
     cropped_margin(tmp)
     interior_holes(tmp)
     void_orbit(tmp)
+    preflight_views(tmp)
     print("PASS objsheet selftest")
 
 

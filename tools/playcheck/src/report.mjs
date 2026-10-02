@@ -6,6 +6,7 @@ const ORDER = [
   "webgl_clean",
   "mag_max",
   "mag",
+  "fix_hint",
   "stops_visible",
   "collider_eq_visual",
   "solids_world_locked",

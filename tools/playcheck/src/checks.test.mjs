@@ -62,6 +62,49 @@ test("magnification above 1 fails even when the rest of the pose looks fine", ()
   const mag = rows.find((r) => r.id === "mag_max");
   assert.equal(mag.result, "FAIL");
   assert.ok(mag.numbers.mag_max > 1);
+  const hint = rows.find((r) => r.id === "fix_hint");
+  assert.equal(hint.result, "PASS");
+  assert.equal(hint.numbers.reportOnly, true);
+  assert.equal(hint.numbers.object, "ground");
+  assert.equal(hint.numbers.stop, "spawn");
+  assert.ok(hint.numbers.suggestedScale < 1);
+});
+
+test("fix_hint names the object and the hero crop without failing the row", () => {
+  const judge = createJudge(layout);
+  const rgba = new Uint8Array(8 * 8 * 4);
+  rgba.fill(40);
+  judge.add({
+    id: "stop-gate",
+    kind: "gate",
+    width: 8,
+    height: 8,
+    rgba,
+    snap: {
+      mag: 3.668,
+      magHits: [{ id: "ship-hero", mag: 3.668, stop: "stop-gate", dist_m: 4.2, scale: 1 }],
+      heroVisible: 0.31,
+      heroCount: 1,
+      state: "IDLE",
+      spd: 0,
+      canvas: { width: 720, height: 1600 },
+      nearestVisibleM: 4.2,
+      objectIds: ids({ hero: [1] }),
+    },
+  });
+  const { rows, failed } = judge.finish({ glErrors: [], consoleErrors: [] });
+  const hint = rows.find((r) => r.id === "fix_hint");
+  const mag = rows.find((r) => r.id === "mag_max");
+  assert.equal(mag.result, "FAIL");
+  assert.equal(hint.result, "PASS");
+  assert.equal(hint.numbers.object, "ship-hero");
+  assert.equal(hint.numbers.stop, "stop-gate");
+  assert.ok(hint.numbers.suggestedDist_m > 4.2);
+  assert.ok(hint.numbers.suggestedScale < 0.3);
+  assert.equal(hint.numbers.heroVisible, 0.31);
+  assert.match(hint.detail, /ship-hero/);
+  assert.match(hint.detail, /stop-gate/);
+  assert.ok(failed >= 1);
 });
 
 test("a webgl console error fails webgl_errors", () => {

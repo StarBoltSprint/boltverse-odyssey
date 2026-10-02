@@ -12,7 +12,7 @@ Skills: [`.grok/skills/`](../../.grok/skills/). Failures already paid for: [`../
 | --- | --- | --- |
 | — | — | — |
 
-Chained slices, not one wide file: [`biome/docs/64-imagine-build-limits.md`](../../biome/docs/64-imagine-build-limits.md) section D (generate slice 1 at 21:9 or 5:2, each next slice an edit of the previous, `required_px = play_width / (hfov_deg / 360)`). Seam and magnification: `python3 tools/assetcheck/check.py` kind `backdrop` ([`tools/assetcheck/README.md`](../../tools/assetcheck/README.md)). The 138° KEEP outpaint and the overlap MAE band are [`tools/relief/README.md`](../../tools/relief/README.md) and [`biome/docs/60-imagine-relief-panorama-method.md`](../../biome/docs/60-imagine-relief-panorama-method.md). Plate-0 prompt: not stored.
+Chained slices, not one wide file: [`biome/docs/64-imagine-build-limits.md`](../../biome/docs/64-imagine-build-limits.md) section D (generate slice 1 at 21:9 or 5:2, each next slice an edit of the previous, `required_px = play_width / (hfov_deg / 360)`). The chain gate, the living-loop period, and the perceived-repetition row are the sky skill ([`.grok/skills/sky-panorama/SKILL.md`](../../.grok/skills/sky-panorama/SKILL.md)) and `python3 tools/sky/check.py`. Kind `backdrop` is still `python3 tools/assetcheck/check.py` ([`tools/assetcheck/README.md`](../../tools/assetcheck/README.md)). The 138° KEEP outpaint and the overlap MAE band are [`tools/relief/README.md`](../../tools/relief/README.md) and [`biome/docs/60-imagine-relief-panorama-method.md`](../../biome/docs/60-imagine-relief-panorama-method.md). Plate-0 prompt: not stored. No sky recipe file: the prompt for a living layer was not stored.
 
 ## ground-tile
 

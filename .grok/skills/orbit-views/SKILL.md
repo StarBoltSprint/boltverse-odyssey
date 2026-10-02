@@ -21,11 +21,16 @@ Read [`learn/failures.md`](../../../learn/failures.md) (orbit views without a si
 ## Gate
 
 ```bash
+python3 tools/objsheet/preflight.py --views <views> --hero <hero.png> --out <proof>
 python3 tools/assetcheck/check.py --dir <views> --kind cutout --on-screen <W>x<H> --key <alpha|black|green> --out <reports>
 python3 tools/objsheet/sheet.py --views <views> --config <config.json> --out <proof>
 ```
 
-Stop unless both exit 0. Paste `report.json`, `report.md`, and `sheet.png`.
+Run the preflight before keeping an 8-view set. It grades each still against the hero: luma within ±10%, hue correlation at least 0.80, centered silhouette IoU at least 0.55, top fraction within ±25% of the hero, ground gap within 0.12. Elevation is that silhouette proxy, not a surveyed camera. A failing set should fall back to **3–4 views** on a limited arc (about 90–120° around the hero). Do not cook eight yaws after that.
+
+Stop after 2 failures of the same defect (the same drift, the same exposure jump). List the small Imagine-intrinsic miss and accept it. Do not spend a third round on it.
+
+Stop the hull unless assetcheck and the sheet both exit 0. Paste `report.json`, `report.md`, and `sheet.png`.
 
 Then, for a solid:
 

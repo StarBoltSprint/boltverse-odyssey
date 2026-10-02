@@ -55,6 +55,18 @@ Sub-objects are the same checks on their own view set, drawn on the sheet under 
 | `interior-holes` | Synthetic keyed ellipse with an enclosed transparent hole | FAIL holes. |
 | `real-void-orbit` | Eight real stills from `biome/void-orbit/stills/` (flanks, top, belly, stern), yaws assigned only so the ring has eight numbers | FAIL adjacent area and height. They are not one locked walk-around. |
 
+## View preflight
+
+Run this before keeping an 8-view orbit. It does not call Imagine and it does not rewrite a still.
+
+```bash
+python3 tools/objsheet/preflight.py --views <dir> --hero <hero.png> --out <proof>
+```
+
+Each view is graded against the hero. Luma within ±10%. Hue correlation at least 0.80. Centered silhouette IoU at least 0.55. Top fraction within ±25% of the hero (the floor of that band is 0.05). Ground gap within 0.12. Elevation spread above 12° fails only when the top fraction also fails. Elevation is the silhouette proxy (area above the widest row, and how high the contact sits). It is not a surveyed camera angle.
+
+A failing set prints the fallback: 3–4 views on about a 90–120° arc around the hero, and stop after 2 failures of that same defect. A small Imagine-intrinsic miss is listed and accepted.
+
 ## Self-test
 
 ```bash

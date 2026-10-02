@@ -39,7 +39,7 @@ Grandfathered (`lock/`). Owner KEEP. Do not recook or replace this file because 
 - magnification: `0.9375`
 - magnificationLimit: `1.0`
 
-### alpha — PASS
+### alpha — WARN
 
 - key: `green`
 - alphaMin: `255`
@@ -49,8 +49,11 @@ Grandfathered (`lock/`). Owner KEEP. Do not recook or replace this file because 
 - plateTouchesFrame: `True`
 - plateRectangularity: `0.911`
 - haloThicknessPx: `0.0`
+- edgeGreenFraction: `0.1408`
+- edgeBandPx: `3`
 - greenSpillFraction: `0.0553`
 - greenFieldStd: `1.8306`
+- WARN alpha edge green fraction=0.1408 limit=0.01
 
 ### loop — WARN
 
@@ -72,6 +75,7 @@ Grandfathered (`lock/`). Owner KEEP. Do not recook or replace this file because 
 
 Informational. Not a recook order.
 
+- ../../../../lock/bolt-gallop-cycle.mp4: WARN alpha edge green fraction=0.1408 limit=0.01
 - ../../../../lock/bolt-gallop-cycle.mp4: WARN loop seam p95=33.000 limit=28.0
 - ../../../../lock/bolt-gallop-cycle.mp4: WARN loop seam flow=2.085px limit=2.0
 

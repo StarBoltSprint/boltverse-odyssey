@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import math
 import subprocess
+import sys
 from collections import deque
 from pathlib import Path
 
@@ -29,6 +30,9 @@ PLATE_COLOR_DIST = 18.0
 PLATE_AREA_FRACTION = 0.12
 HALO_THICKNESS_PX = 3.0
 GREEN_SPILL_FRACTION = 0.35
+EDGE_GREEN_DELTA = 6.0
+EDGE_GREEN_LIMIT = 0.01
+EDGE_BAND_PX = 3
 
 # Loop. Mean absolute error is on 0–255. Flow is source pixels.
 SEAM_MAE = 8.0
@@ -421,6 +425,18 @@ def erode(mask: np.ndarray, times: int = 1) -> np.ndarray:
     return out
 
 
+def dilate(mask: np.ndarray, times: int = 1) -> np.ndarray:
+    out = mask.copy()
+    for _ in range(times):
+        nxt = out.copy()
+        nxt[1:] |= out[:-1]
+        nxt[:-1] |= out[1:]
+        nxt[:, 1:] |= out[:, :-1]
+        nxt[:, :-1] |= out[:, 1:]
+        out = nxt
+    return out
+
+
 def declare_key(item: dict, rgba: np.ndarray, kind: str) -> str:
     if item.get("key"):
         return str(item["key"])
@@ -625,6 +641,19 @@ def check_alpha(rgba: np.ndarray, key: str, kind: str) -> dict:
     details["haloThicknessPx"] = r4(thickness)
     if key == "alpha" and thickness > HALO_THICKNESS_PX:
         failures.append(f"FAIL alpha halo thickness={thickness:.2f}px limit={HALO_THICKNESS_PX}")
+
+    if key in {"green", "alpha"} and mask.any():
+        boundary = mask & ~erode(mask)
+        band = dilate(boundary, EDGE_BAND_PX - 1) & mask
+        gch, rch, bch = rgb[..., 1], rgb[..., 0], rgb[..., 2]
+        lean = band & (gch > np.maximum(rch, bch) + EDGE_GREEN_DELTA)
+        edge_frac = float(lean.sum()) / float(max(int(band.sum()), 1))
+        details["edgeGreenFraction"] = r4(edge_frac)
+        details["edgeBandPx"] = EDGE_BAND_PX
+        if edge_frac > EDGE_GREEN_LIMIT:
+            failures.append(
+                f"FAIL alpha edge green fraction={edge_frac:.4f} limit={EDGE_GREEN_LIMIT}"
+            )
 
     if key == "green":
         boundary = mask & ~erode(mask) if mask.any() else np.zeros_like(mask)
@@ -912,6 +941,39 @@ def check_tiling(images: list[tuple[str, np.ndarray]]) -> dict:
     }
 
 
+def check_sky_loop(path: Path, info: dict, series: np.ndarray, fps: float, item: dict) -> dict:
+    """One living sky layer: slow motion, no short distinctive repeat, phone bytes."""
+    root = Path(__file__).resolve().parents[2]
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+    from tools.sky.pixels import AMPLITUDE_MAE, SKY_TEX_MAX, SKY_VIDEOS_MAX, frame_amplitude, perceived_repetition
+
+    failures = []
+    amp = frame_amplitude(series)
+    repeat = perceived_repetition(series, fps or float(info.get("fps") or 0))
+    tex = int(item.get("texBytes") or 0)
+    videos = int(item.get("activeVideos") or 1)
+    if amp > AMPLITUDE_MAE:
+        failures.append(f"FAIL sky_loop motion MAE={amp:.2f} limit={AMPLITUDE_MAE}")
+    if not repeat["ok"]:
+        failures.append(
+            f"FAIL sky_loop perceived repetition period={repeat['periodSec']}s under 60s"
+        )
+    if tex > SKY_TEX_MAX:
+        failures.append(f"FAIL sky_loop texture bytes={tex} limit={SKY_TEX_MAX}")
+    if videos > SKY_VIDEOS_MAX:
+        failures.append(f"FAIL sky_loop activeVideos={videos} limit={SKY_VIDEOS_MAX}")
+    return {
+        "status": status_of(not failures),
+        "amplitudeMAE": r4(amp),
+        "repetition": repeat,
+        "texBytes": tex,
+        "activeVideos": videos,
+        "limits": {"amplitudeMAE": AMPLITUDE_MAE, "texBytes": SKY_TEX_MAX, "activeVideos": SKY_VIDEOS_MAX},
+        "failures": failures,
+    }
+
+
 def check_backdrop(rgba: np.ndarray, on_screen, screen, webgl_max: int) -> dict:
     h, w = rgba.shape[:2]
     failures = []
@@ -957,6 +1019,8 @@ def which_checks(kind: str, item: dict) -> set[str]:
         checks.update({"alpha", "morph"})
         if item.get("loop", False):
             checks.add("loop")
+    elif kind == "sky-loop":
+        checks.update({"loop", "sky_loop"})
     elif kind == "video":
         if item.get("loop"):
             checks.add("loop")
@@ -1019,9 +1083,12 @@ def measure_asset(item: dict, root: Path, screen: tuple[int, int], webgl_max: in
             checks["resolution"]["status"] = "FAIL"
     if "alpha" in wanted:
         checks["alpha"] = check_alpha(rgba, key, kind)
-    if "loop" in wanted:
+    if "loop" in wanted or "sky_loop" in wanted:
         series, fps = decode_gray_series(path)
-        checks["loop"] = check_loop(path, info, series, fps or float(info.get("fps") or 0))
+        if "loop" in wanted:
+            checks["loop"] = check_loop(path, info, series, fps or float(info.get("fps") or 0))
+        if "sky_loop" in wanted:
+            checks["sky_loop"] = check_sky_loop(path, info, series, fps or float(info.get("fps") or 0), item)
     if "morph" in wanted:
         checks["morph"] = check_morph(path, key)
     if "backdrop" in wanted:

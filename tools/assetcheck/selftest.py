@@ -393,6 +393,33 @@ def os_path_rel(start: Path, target: Path) -> str:
             ups += 1
 
 
+def edge_green_despill() -> None:
+    """A dark green fringe fails the 3 px edge band, then despill clears it."""
+    if str(TOOL) not in sys.path:
+        sys.path.insert(0, str(TOOL))
+    from despill import despill_rgba
+    from measures import check_alpha
+
+    h = w = 96
+    rgba = np.zeros((h, w, 4), np.uint8)
+    rgba[2:-2, 2:-2] = (30, 32, 28, 255)
+    rgba[2:5, 2:-2] = (12, 40, 14, 255)
+    rgba[-5:-2, 2:-2] = (12, 40, 14, 255)
+    rgba[2:-2, 2:5] = (12, 40, 14, 255)
+    rgba[2:-2, -5:-2] = (12, 40, 14, 255)
+    before = check_alpha(rgba, "alpha", "cutout")
+    text = "\n".join(before["failures"])
+    if before["status"] == "PASS" or "edge green" not in text:
+        raise SystemExit("red edge green was not rejected\n" + text)
+    cleaned = despill_rgba(rgba)
+    if not (cleaned[..., 1] <= np.maximum(cleaned[..., 0], cleaned[..., 2])).all():
+        raise SystemExit("despill left G above max(R, B)")
+    after = check_alpha(cleaned, "alpha", "cutout")
+    if after["status"] != "PASS":
+        raise SystemExit("green despill still failed\n" + "\n".join(after["failures"]))
+    print("selftest edge-green red then despill green")
+
+
 def main() -> None:
     tmp = Path("/tmp/assetcheck-selftest")
     if tmp.exists():
@@ -414,6 +441,7 @@ def main() -> None:
         shutil.copy(tmp / name / "out" / "report.md", dest / "report.md")
         print(f"selftest {name} ok={ok}")
     real_cases(tmp)
+    edge_green_despill()
     print("PASS assetcheck selftest")
 
 
