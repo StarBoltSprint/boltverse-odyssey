@@ -76,7 +76,7 @@
       "name": "spawn_clearance",
       "note": "",
       "numbers": {
-        "clearance_m": 3.395591271432987,
+        "clearance_m": 10.219793822603902,
         "need_m": 2.4
       },
       "status": "PASS"
@@ -87,8 +87,8 @@
       "numbers": {
         "min_gap_m": 0.35,
         "overlaps": 0,
-        "pair": "mid-03|near-03",
-        "worst_gap_m": 0.6272509564408503
+        "pair": "mid-02|near-04",
+        "worst_gap_m": 0.7522254833502421
       },
       "status": "PASS"
     },
@@ -106,12 +106,12 @@
       "name": "mag",
       "note": "",
       "numbers": {
-        "closest_m": 7.600162074470349,
+        "closest_m": 7.599584426941873,
         "id": "mid-02",
         "mag_max": 1.0,
         "over": 0,
         "unresolved_assets": 0,
-        "worst": 0.9789094279723368
+        "worst": 0.9789838352793555
       },
       "status": "PASS"
     },
@@ -141,7 +141,7 @@
       "note": "",
       "numbers": {
         "cull_m": 1.2,
-        "spawn_surface_m": 3.395591271432987
+        "spawn_surface_m": 10.219793822603902
       },
       "status": "PASS"
     },

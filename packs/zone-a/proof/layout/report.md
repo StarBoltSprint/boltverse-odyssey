@@ -8,13 +8,13 @@
 | gate | PASS | gates=1, frame_missing=0, opening_blocked=0, narrow=0 |
 | path | PASS | min_clearance_m=2.2666, need_m=0.7500, spawn_x=0.0000, spawn_z=0.0000 |
 | gate_cone | PASS | blocked_gates=0, cone_m=6.0000, half_deg=18.0000 |
-| spawn_clearance | PASS | clearance_m=3.3956, need_m=2.4000 |
-| separation | PASS | worst_gap_m=0.6273, min_gap_m=0.3500, overlaps=0, pair=mid-03|near-03 |
+| spawn_clearance | PASS | clearance_m=10.2198, need_m=2.4000 |
+| separation | PASS | worst_gap_m=0.7522, min_gap_m=0.3500, overlaps=0, pair=mid-02|near-04 |
 | relief | PASS | worst_err_m=0.0000, off_surface=0, id=ring-32 |
-| mag | PASS | worst=0.9789, mag_max=1.0000, id=mid-02, closest_m=7.6002, over=0, unresolved_assets=0 |
+| mag | PASS | worst=0.9790, mag_max=1.0000, id=mid-02, closest_m=7.5996, over=0, unresolved_assets=0 |
 | variety | PASS | identical_neighbours=0, spread=0 |
 | fog_band | PASS | patches=28, instances=28, outside_band=0, inner_m=11.5000, outer_m=17.2000 |
-| near_lens | PASS | spawn_surface_m=3.3956, cull_m=1.2000 |
+| near_lens | PASS | spawn_surface_m=10.2198, cull_m=1.2000 |
 | budgets | PASS | categories=5, outside=0 |
 | playcheck_data | PASS | ray_misses=0, first_miss_deg=0 — data half only; rendered pixels are tools/playcheck |
 | bolt_paths | PASS | gallop=1, idle=1 |

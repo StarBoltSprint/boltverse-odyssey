@@ -57,7 +57,7 @@
           "mask": {
             "width": 929,
             "height": 941,
-            "area": 534106,
+            "area": 566520,
             "rows": [
               316,
               1256
@@ -67,7 +67,7 @@
               1078
             ],
             "fillHeight": 0.5881,
-            "fillArea": 0.2782
+            "fillArea": 0.2951
           },
           "compared": "mask",
           "magnification": 0.7651,
@@ -88,7 +88,7 @@
           ],
           "plateTouchesFrame": true,
           "plateRectangularity": 0.6663,
-          "haloThicknessPx": 0.2854,
+          "haloThicknessPx": 0.0,
           "failures": []
         }
       },
@@ -136,7 +136,7 @@
           "mask": {
             "width": 926,
             "height": 942,
-            "area": 509390,
+            "area": 552327,
             "rows": [
               316,
               1257
@@ -146,7 +146,7 @@
               1079
             ],
             "fillHeight": 0.5887,
-            "fillArea": 0.2653
+            "fillArea": 0.2877
           },
           "compared": "mask",
           "magnification": 0.7643,
@@ -167,7 +167,7 @@
           ],
           "plateTouchesFrame": true,
           "plateRectangularity": 0.676,
-          "haloThicknessPx": 0.2656,
+          "haloThicknessPx": 0.0,
           "failures": []
         }
       },
@@ -215,7 +215,7 @@
           "mask": {
             "width": 922,
             "height": 938,
-            "area": 543064,
+            "area": 580367,
             "rows": [
               319,
               1256
@@ -225,7 +225,7 @@
               1078
             ],
             "fillHeight": 0.5863,
-            "fillArea": 0.2828
+            "fillArea": 0.3023
           },
           "compared": "mask",
           "magnification": 0.7676,
@@ -246,7 +246,7 @@
           ],
           "plateTouchesFrame": true,
           "plateRectangularity": 0.6677,
-          "haloThicknessPx": 0.2684,
+          "haloThicknessPx": 0.0,
           "failures": []
         }
       },
@@ -294,7 +294,7 @@
           "mask": {
             "width": 901,
             "height": 922,
-            "area": 507886,
+            "area": 569564,
             "rows": [
               323,
               1244
@@ -304,7 +304,7 @@
               1073
             ],
             "fillHeight": 0.5763,
-            "fillArea": 0.2645
+            "fillArea": 0.2966
           },
           "compared": "mask",
           "magnification": 0.7809,
@@ -325,7 +325,7 @@
           ],
           "plateTouchesFrame": true,
           "plateRectangularity": 0.6771,
-          "haloThicknessPx": 0.2343,
+          "haloThicknessPx": 0.0,
           "failures": []
         }
       },
@@ -372,21 +372,21 @@
           ],
           "mask": {
             "width": 910,
-            "height": 936,
-            "area": 559012,
+            "height": 935,
+            "area": 623600,
             "rows": [
               318,
-              1253
+              1252
             ],
             "cols": [
               162,
               1071
             ],
-            "fillHeight": 0.585,
-            "fillArea": 0.2912
+            "fillHeight": 0.5844,
+            "fillArea": 0.3248
           },
           "compared": "mask",
-          "magnification": 0.7692,
+          "magnification": 0.7701,
           "magnificationLimit": 1.0,
           "failures": []
         },
@@ -404,7 +404,7 @@
           ],
           "plateTouchesFrame": true,
           "plateRectangularity": 0.6664,
-          "haloThicknessPx": 0.2362,
+          "haloThicknessPx": 0.0,
           "failures": []
         }
       },
@@ -452,7 +452,7 @@
           "mask": {
             "width": 905,
             "height": 943,
-            "area": 547540,
+            "area": 587823,
             "rows": [
               315,
               1257
@@ -462,7 +462,7 @@
               1068
             ],
             "fillHeight": 0.5894,
-            "fillArea": 0.2852
+            "fillArea": 0.3062
           },
           "compared": "mask",
           "magnification": 0.7635,
@@ -483,7 +483,7 @@
           ],
           "plateTouchesFrame": true,
           "plateRectangularity": 0.6659,
-          "haloThicknessPx": 0.2596,
+          "haloThicknessPx": 0.0,
           "failures": []
         }
       },
@@ -531,7 +531,7 @@
           "mask": {
             "width": 912,
             "height": 938,
-            "area": 499571,
+            "area": 544531,
             "rows": [
               328,
               1265
@@ -541,7 +541,7 @@
               1072
             ],
             "fillHeight": 0.5863,
-            "fillArea": 0.2602
+            "fillArea": 0.2836
           },
           "compared": "mask",
           "magnification": 0.7676,
@@ -562,7 +562,7 @@
           ],
           "plateTouchesFrame": true,
           "plateRectangularity": 0.6829,
-          "haloThicknessPx": 0.2581,
+          "haloThicknessPx": 0.0,
           "failures": []
         }
       },
@@ -609,21 +609,21 @@
           ],
           "mask": {
             "width": 911,
-            "height": 929,
-            "area": 535265,
+            "height": 928,
+            "area": 595658,
             "rows": [
               325,
-              1253
+              1252
             ],
             "cols": [
               161,
               1071
             ],
-            "fillHeight": 0.5806,
-            "fillArea": 0.2788
+            "fillHeight": 0.58,
+            "fillArea": 0.3102
           },
           "compared": "mask",
-          "magnification": 0.775,
+          "magnification": 0.7759,
           "magnificationLimit": 1.0,
           "failures": []
         },
@@ -641,7 +641,7 @@
           ],
           "plateTouchesFrame": true,
           "plateRectangularity": 0.6657,
-          "haloThicknessPx": 0.2495,
+          "haloThicknessPx": 0.0,
           "failures": []
         }
       },
@@ -2545,7 +2545,7 @@
       "ok": true
     },
     {
-      "file": "hulls/wreck10/views/yaw-000.png",
+      "file": "src/wreck10/views/yaw-000.png",
       "kind": "cutout",
       "yaw": 0,
       "elevation": null,
@@ -2579,26 +2579,26 @@
             1008
           ],
           "onScreen": [
-            700.0,
-            500.0
+            640.0,
+            420.0
           ],
           "mask": {
-            "width": 1670,
-            "height": 997,
-            "area": 990996,
+            "width": 1327,
+            "height": 836,
+            "area": 638639,
             "rows": [
-              11,
-              1007
+              69,
+              904
             ],
             "cols": [
-              65,
-              1734
+              230,
+              1556
             ],
-            "fillHeight": 0.9891,
-            "fillArea": 0.5486
+            "fillHeight": 0.8294,
+            "fillArea": 0.3536
           },
           "compared": "mask",
-          "magnification": 0.5015,
+          "magnification": 0.5024,
           "magnificationLimit": 1.0,
           "failures": []
         },
@@ -2607,15 +2607,15 @@
           "key": "alpha",
           "alphaMin": 0,
           "alphaMax": 255,
-          "unkeyedBlackFraction": 0.0013,
-          "plateFraction": 0.4507,
+          "unkeyedBlackFraction": 0.0,
+          "plateFraction": 0.6461,
           "plateColor": [
-            168.0,
-            168.0,
-            168.0
+            167.0,
+            167.0,
+            167.0
           ],
           "plateTouchesFrame": true,
-          "plateRectangularity": 0.4507,
+          "plateRectangularity": 0.6461,
           "haloThicknessPx": 0.0,
           "failures": []
         }
@@ -2624,7 +2624,7 @@
       "ok": true
     },
     {
-      "file": "hulls/wreck10/views/yaw-045.png",
+      "file": "src/wreck10/views/yaw-045.png",
       "kind": "cutout",
       "yaw": 45,
       "elevation": null,
@@ -2658,26 +2658,26 @@
             1008
           ],
           "onScreen": [
-            700.0,
-            500.0
+            640.0,
+            420.0
           ],
           "mask": {
-            "width": 1627,
-            "height": 1008,
-            "area": 1087442,
+            "width": 1146,
+            "height": 819,
+            "area": 582442,
             "rows": [
-              0,
-              1007
+              82,
+              900
             ],
             "cols": [
-              122,
-              1748
+              362,
+              1507
             ],
-            "fillHeight": 1.0,
-            "fillArea": 0.602
+            "fillHeight": 0.8125,
+            "fillArea": 0.3224
           },
           "compared": "mask",
-          "magnification": 0.496,
+          "magnification": 0.5585,
           "magnificationLimit": 1.0,
           "failures": []
         },
@@ -2686,15 +2686,15 @@
           "key": "alpha",
           "alphaMin": 0,
           "alphaMax": 255,
-          "unkeyedBlackFraction": 0.0006,
-          "plateFraction": 0.3969,
+          "unkeyedBlackFraction": 0.0,
+          "plateFraction": 0.6772,
           "plateColor": [
             165.0,
             165.0,
             165.0
           ],
           "plateTouchesFrame": true,
-          "plateRectangularity": 0.3969,
+          "plateRectangularity": 0.6772,
           "haloThicknessPx": 0.0,
           "failures": []
         }
@@ -2703,7 +2703,7 @@
       "ok": true
     },
     {
-      "file": "hulls/wreck10/views/yaw-090.png",
+      "file": "src/wreck10/views/yaw-090.png",
       "kind": "cutout",
       "yaw": 90,
       "elevation": null,
@@ -2737,26 +2737,26 @@
             1008
           ],
           "onScreen": [
-            700.0,
-            500.0
+            640.0,
+            420.0
           ],
           "mask": {
-            "width": 1641,
-            "height": 1001,
-            "area": 1102052,
+            "width": 1171,
+            "height": 860,
+            "area": 664963,
             "rows": [
-              7,
-              1007
+              62,
+              921
             ],
             "cols": [
-              137,
-              1777
+              363,
+              1533
             ],
-            "fillHeight": 0.9931,
-            "fillArea": 0.6101
+            "fillHeight": 0.8532,
+            "fillArea": 0.3681
           },
           "compared": "mask",
-          "magnification": 0.4995,
+          "magnification": 0.5465,
           "magnificationLimit": 1.0,
           "failures": []
         },
@@ -2765,16 +2765,16 @@
           "key": "alpha",
           "alphaMin": 0,
           "alphaMax": 255,
-          "unkeyedBlackFraction": 0.0002,
-          "plateFraction": 0.3887,
+          "unkeyedBlackFraction": 0.0,
+          "plateFraction": 0.6341,
           "plateColor": [
-            165.0,
-            166.0,
-            165.0
+            0.0,
+            0.0,
+            0.0
           ],
           "plateTouchesFrame": true,
-          "plateRectangularity": 0.3887,
-          "haloThicknessPx": 0.0,
+          "plateRectangularity": 0.6341,
+          "haloThicknessPx": 0.118,
           "failures": []
         }
       },
@@ -2782,7 +2782,7 @@
       "ok": true
     },
     {
-      "file": "hulls/wreck10/views/yaw-135.png",
+      "file": "src/wreck10/views/yaw-135.png",
       "kind": "cutout",
       "yaw": 135,
       "elevation": null,
@@ -2816,26 +2816,26 @@
             1008
           ],
           "onScreen": [
-            700.0,
-            500.0
+            640.0,
+            420.0
           ],
           "mask": {
-            "width": 1647,
-            "height": 989,
-            "area": 1131475,
+            "width": 1268,
+            "height": 840,
+            "area": 623509,
             "rows": [
-              15,
-              1003
+              117,
+              956
             ],
             "cols": [
-              17,
-              1663
+              262,
+              1529
             ],
-            "fillHeight": 0.9812,
-            "fillArea": 0.6264
+            "fillHeight": 0.8333,
+            "fillArea": 0.3452
           },
           "compared": "mask",
-          "magnification": 0.5056,
+          "magnification": 0.5047,
           "magnificationLimit": 1.0,
           "failures": []
         },
@@ -2845,15 +2845,15 @@
           "alphaMin": 0,
           "alphaMax": 255,
           "unkeyedBlackFraction": 0.0,
-          "plateFraction": 0.362,
+          "plateFraction": 0.6551,
           "plateColor": [
-            163.0,
-            163.0,
-            163.0
+            0.0,
+            0.0,
+            0.0
           ],
           "plateTouchesFrame": true,
-          "plateRectangularity": 0.362,
-          "haloThicknessPx": 0.0,
+          "plateRectangularity": 0.6551,
+          "haloThicknessPx": 0.2103,
           "failures": []
         }
       },
@@ -2861,7 +2861,7 @@
       "ok": true
     },
     {
-      "file": "hulls/wreck10/views/yaw-180.png",
+      "file": "src/wreck10/views/yaw-180.png",
       "kind": "cutout",
       "yaw": 180,
       "elevation": null,
@@ -2895,26 +2895,26 @@
             1008
           ],
           "onScreen": [
-            700.0,
-            500.0
+            640.0,
+            420.0
           ],
           "mask": {
-            "width": 1661,
-            "height": 995,
-            "area": 984913,
+            "width": 1236,
+            "height": 865,
+            "area": 643863,
             "rows": [
-              13,
-              1007
+              82,
+              946
             ],
             "cols": [
-              65,
-              1725
+              305,
+              1540
             ],
-            "fillHeight": 0.9871,
-            "fillArea": 0.5453
+            "fillHeight": 0.8581,
+            "fillArea": 0.3564
           },
           "compared": "mask",
-          "magnification": 0.5025,
+          "magnification": 0.5178,
           "magnificationLimit": 1.0,
           "failures": []
         },
@@ -2923,16 +2923,16 @@
           "key": "alpha",
           "alphaMin": 0,
           "alphaMax": 255,
-          "unkeyedBlackFraction": 0.0004,
-          "plateFraction": 0.4521,
+          "unkeyedBlackFraction": 0.0,
+          "plateFraction": 0.6457,
           "plateColor": [
-            159.0,
-            159.0,
-            159.0
+            0.0,
+            0.0,
+            0.0
           ],
           "plateTouchesFrame": true,
-          "plateRectangularity": 0.4521,
-          "haloThicknessPx": 0.0,
+          "plateRectangularity": 0.6457,
+          "haloThicknessPx": 0.2304,
           "failures": []
         }
       },
@@ -2940,7 +2940,7 @@
       "ok": true
     },
     {
-      "file": "hulls/wreck10/views/yaw-225.png",
+      "file": "src/wreck10/views/yaw-225.png",
       "kind": "cutout",
       "yaw": 225,
       "elevation": null,
@@ -2974,26 +2974,26 @@
             1008
           ],
           "onScreen": [
-            700.0,
-            500.0
+            640.0,
+            420.0
           ],
           "mask": {
-            "width": 1749,
-            "height": 993,
-            "area": 1127753,
+            "width": 1210,
+            "height": 843,
+            "area": 561143,
             "rows": [
-              11,
-              1003
+              114,
+              956
             ],
             "cols": [
-              16,
-              1764
+              348,
+              1557
             ],
-            "fillHeight": 0.9851,
-            "fillArea": 0.6243
+            "fillHeight": 0.8363,
+            "fillArea": 0.3107
           },
           "compared": "mask",
-          "magnification": 0.5035,
+          "magnification": 0.5289,
           "magnificationLimit": 1.0,
           "failures": []
         },
@@ -3003,15 +3003,15 @@
           "alphaMin": 0,
           "alphaMax": 255,
           "unkeyedBlackFraction": 0.0,
-          "plateFraction": 0.3627,
+          "plateFraction": 0.6911,
           "plateColor": [
-            162.0,
-            162.0,
-            162.0
+            0.0,
+            0.0,
+            0.0
           ],
           "plateTouchesFrame": true,
-          "plateRectangularity": 0.3627,
-          "haloThicknessPx": 0.0,
+          "plateRectangularity": 0.6911,
+          "haloThicknessPx": 0.1601,
           "failures": []
         }
       },
@@ -3019,7 +3019,7 @@
       "ok": true
     },
     {
-      "file": "hulls/wreck10/views/yaw-270.png",
+      "file": "src/wreck10/views/yaw-270.png",
       "kind": "cutout",
       "yaw": 270,
       "elevation": null,
@@ -3053,26 +3053,26 @@
             1008
           ],
           "onScreen": [
-            700.0,
-            500.0
+            640.0,
+            420.0
           ],
           "mask": {
-            "width": 1752,
-            "height": 992,
-            "area": 1067258,
+            "width": 1193,
+            "height": 897,
+            "area": 642624,
             "rows": [
-              16,
-              1007
+              45,
+              941
             ],
             "cols": [
-              20,
-              1771
+              294,
+              1486
             ],
-            "fillHeight": 0.9841,
-            "fillArea": 0.5908
+            "fillHeight": 0.8899,
+            "fillArea": 0.3558
           },
           "compared": "mask",
-          "magnification": 0.504,
+          "magnification": 0.5365,
           "magnificationLimit": 1.0,
           "failures": []
         },
@@ -3081,16 +3081,16 @@
           "key": "alpha",
           "alphaMin": 0,
           "alphaMax": 255,
-          "unkeyedBlackFraction": 0.0004,
-          "plateFraction": 0.4079,
+          "unkeyedBlackFraction": 0.0,
+          "plateFraction": 0.6443,
           "plateColor": [
-            165.0,
-            165.0,
-            165.0
+            0.0,
+            0.0,
+            0.0
           ],
           "plateTouchesFrame": true,
-          "plateRectangularity": 0.4079,
-          "haloThicknessPx": 0.0,
+          "plateRectangularity": 0.6443,
+          "haloThicknessPx": 0.1461,
           "failures": []
         }
       },
@@ -3098,7 +3098,7 @@
       "ok": true
     },
     {
-      "file": "hulls/wreck10/views/yaw-315.png",
+      "file": "src/wreck10/views/yaw-315.png",
       "kind": "cutout",
       "yaw": 315,
       "elevation": null,
@@ -3132,26 +3132,26 @@
             1008
           ],
           "onScreen": [
-            700.0,
-            500.0
+            640.0,
+            420.0
           ],
           "mask": {
-            "width": 1627,
-            "height": 1008,
-            "area": 1087442,
+            "width": 1115,
+            "height": 838,
+            "area": 594686,
             "rows": [
-              0,
-              1007
+              76,
+              913
             ],
             "cols": [
-              43,
-              1669
+              366,
+              1480
             ],
-            "fillHeight": 1.0,
-            "fillArea": 0.602
+            "fillHeight": 0.8313,
+            "fillArea": 0.3292
           },
           "compared": "mask",
-          "magnification": 0.496,
+          "magnification": 0.574,
           "magnificationLimit": 1.0,
           "failures": []
         },
@@ -3160,16 +3160,16 @@
           "key": "alpha",
           "alphaMin": 0,
           "alphaMax": 255,
-          "unkeyedBlackFraction": 0.0006,
-          "plateFraction": 0.3969,
+          "unkeyedBlackFraction": 0.0,
+          "plateFraction": 0.6708,
           "plateColor": [
-            165.0,
-            165.0,
-            165.0
+            0.0,
+            0.0,
+            0.0
           ],
           "plateTouchesFrame": true,
-          "plateRectangularity": 0.3969,
-          "haloThicknessPx": 0.0,
+          "plateRectangularity": 0.6708,
+          "haloThicknessPx": 0.1401,
           "failures": []
         }
       },
@@ -3190,8 +3190,8 @@
           "container": "png",
           "pixFmt": null,
           "mode": "RGB",
-          "width": 2128,
-          "height": 912,
+          "width": 1792,
+          "height": 1008,
           "fps": null,
           "frames": null,
           "durationSec": null,
@@ -3207,44 +3207,44 @@
             1600
           ],
           "frame": [
-            2128,
-            912
+            1792,
+            1008
           ],
           "onScreen": [
             720.0,
-            800.0
+            860.0
           ],
           "mask": {
-            "width": 2128,
-            "height": 912,
-            "area": 1940736,
+            "width": 1792,
+            "height": 1008,
+            "area": 1806336,
             "rows": [
               0,
-              911
+              1007
             ],
             "cols": [
               0,
-              2127
+              1791
             ],
             "fillHeight": 1.0,
             "fillArea": 1.0
           },
           "compared": "frame",
-          "magnification": 0.8772,
+          "magnification": 0.8532,
           "magnificationLimit": 1.0,
           "failures": []
         },
         "backdrop": {
           "status": "PASS",
-          "width": 2128,
-          "height": 912,
+          "width": 1792,
+          "height": 1008,
           "webglMaxTexture": 4096,
           "splitNeeded": false,
-          "verticalMagnification": 0.8772,
+          "verticalMagnification": 0.8532,
           "seam": {
-            "seam": 0.2582,
-            "interior": 0.8024,
-            "ratio": 0.2582
+            "seam": 0.0,
+            "interior": 0.3403,
+            "ratio": 0.0
           },
           "screen": [
             720,
@@ -3270,8 +3270,8 @@
           "container": "png",
           "pixFmt": null,
           "mode": "RGB",
-          "width": 2128,
-          "height": 912,
+          "width": 1792,
+          "height": 1008,
           "fps": null,
           "frames": null,
           "durationSec": null,
@@ -3287,44 +3287,44 @@
             1600
           ],
           "frame": [
-            2128,
-            912
+            1792,
+            1008
           ],
           "onScreen": [
             720.0,
-            800.0
+            860.0
           ],
           "mask": {
-            "width": 2128,
-            "height": 912,
-            "area": 1940736,
+            "width": 1792,
+            "height": 1008,
+            "area": 1806336,
             "rows": [
               0,
-              911
+              1007
             ],
             "cols": [
               0,
-              2127
+              1791
             ],
             "fillHeight": 1.0,
             "fillArea": 1.0
           },
           "compared": "frame",
-          "magnification": 0.8772,
+          "magnification": 0.8532,
           "magnificationLimit": 1.0,
           "failures": []
         },
         "backdrop": {
           "status": "PASS",
-          "width": 2128,
-          "height": 912,
+          "width": 1792,
+          "height": 1008,
           "webglMaxTexture": 4096,
           "splitNeeded": false,
-          "verticalMagnification": 0.8772,
+          "verticalMagnification": 0.8532,
           "seam": {
-            "seam": 0.2582,
-            "interior": 0.8024,
-            "ratio": 0.2582
+            "seam": 0.0,
+            "interior": 0.3732,
+            "ratio": 0.0
           },
           "screen": [
             720,
@@ -3350,8 +3350,8 @@
           "container": "png",
           "pixFmt": null,
           "mode": "RGB",
-          "width": 2128,
-          "height": 912,
+          "width": 1792,
+          "height": 1008,
           "fps": null,
           "frames": null,
           "durationSec": null,
@@ -3367,44 +3367,44 @@
             1600
           ],
           "frame": [
-            2128,
-            912
+            1792,
+            1008
           ],
           "onScreen": [
             720.0,
-            800.0
+            860.0
           ],
           "mask": {
-            "width": 2128,
-            "height": 912,
-            "area": 1940736,
+            "width": 1792,
+            "height": 1008,
+            "area": 1806336,
             "rows": [
               0,
-              911
+              1007
             ],
             "cols": [
               0,
-              2127
+              1791
             ],
             "fillHeight": 1.0,
             "fillArea": 1.0
           },
           "compared": "frame",
-          "magnification": 0.8772,
+          "magnification": 0.8532,
           "magnificationLimit": 1.0,
           "failures": []
         },
         "backdrop": {
           "status": "PASS",
-          "width": 2128,
-          "height": 912,
+          "width": 1792,
+          "height": 1008,
           "webglMaxTexture": 4096,
           "splitNeeded": false,
-          "verticalMagnification": 0.8772,
+          "verticalMagnification": 0.8532,
           "seam": {
-            "seam": 0.2582,
-            "interior": 0.8024,
-            "ratio": 0.2582
+            "seam": 0.0,
+            "interior": 0.3054,
+            "ratio": 0.0
           },
           "screen": [
             720,
@@ -3430,8 +3430,8 @@
           "container": "png",
           "pixFmt": null,
           "mode": "RGB",
-          "width": 2128,
-          "height": 912,
+          "width": 1792,
+          "height": 1008,
           "fps": null,
           "frames": null,
           "durationSec": null,
@@ -3447,44 +3447,44 @@
             1600
           ],
           "frame": [
-            2128,
-            912
+            1792,
+            1008
           ],
           "onScreen": [
             720.0,
-            800.0
+            860.0
           ],
           "mask": {
-            "width": 2128,
-            "height": 912,
-            "area": 1940736,
+            "width": 1792,
+            "height": 1008,
+            "area": 1806336,
             "rows": [
               0,
-              911
+              1007
             ],
             "cols": [
               0,
-              2127
+              1791
             ],
             "fillHeight": 1.0,
             "fillArea": 1.0
           },
           "compared": "frame",
-          "magnification": 0.8772,
+          "magnification": 0.8532,
           "magnificationLimit": 1.0,
           "failures": []
         },
         "backdrop": {
           "status": "PASS",
-          "width": 2128,
-          "height": 912,
+          "width": 1792,
+          "height": 1008,
           "webglMaxTexture": 4096,
           "splitNeeded": false,
-          "verticalMagnification": 0.8772,
+          "verticalMagnification": 0.8532,
           "seam": {
-            "seam": 0.2582,
-            "interior": 0.8024,
-            "ratio": 0.2582
+            "seam": 0.0,
+            "interior": 0.4511,
+            "ratio": 0.0
           },
           "screen": [
             720,
@@ -3510,8 +3510,8 @@
           "container": "png",
           "pixFmt": null,
           "mode": "RGB",
-          "width": 2128,
-          "height": 912,
+          "width": 1792,
+          "height": 1008,
           "fps": null,
           "frames": null,
           "durationSec": null,
@@ -3527,44 +3527,44 @@
             1600
           ],
           "frame": [
-            2128,
-            912
+            1792,
+            1008
           ],
           "onScreen": [
             720.0,
-            800.0
+            860.0
           ],
           "mask": {
-            "width": 2128,
-            "height": 912,
-            "area": 1940736,
+            "width": 1792,
+            "height": 1008,
+            "area": 1806336,
             "rows": [
               0,
-              911
+              1007
             ],
             "cols": [
               0,
-              2127
+              1791
             ],
             "fillHeight": 1.0,
             "fillArea": 1.0
           },
           "compared": "frame",
-          "magnification": 0.8772,
+          "magnification": 0.8532,
           "magnificationLimit": 1.0,
           "failures": []
         },
         "backdrop": {
           "status": "PASS",
-          "width": 2128,
-          "height": 912,
+          "width": 1792,
+          "height": 1008,
           "webglMaxTexture": 4096,
           "splitNeeded": false,
-          "verticalMagnification": 0.8772,
+          "verticalMagnification": 0.8532,
           "seam": {
-            "seam": 0.2582,
-            "interior": 0.8024,
-            "ratio": 0.2582
+            "seam": 0.0,
+            "interior": 0.3052,
+            "ratio": 0.0
           },
           "screen": [
             720,
@@ -3590,8 +3590,8 @@
           "container": "png",
           "pixFmt": null,
           "mode": "RGB",
-          "width": 2128,
-          "height": 912,
+          "width": 1792,
+          "height": 1008,
           "fps": null,
           "frames": null,
           "durationSec": null,
@@ -3607,44 +3607,124 @@
             1600
           ],
           "frame": [
-            2128,
-            912
+            1792,
+            1008
           ],
           "onScreen": [
             720.0,
-            800.0
+            860.0
           ],
           "mask": {
-            "width": 2128,
-            "height": 912,
-            "area": 1940736,
+            "width": 1792,
+            "height": 1008,
+            "area": 1806336,
             "rows": [
               0,
-              911
+              1007
             ],
             "cols": [
               0,
-              2127
+              1791
             ],
             "fillHeight": 1.0,
             "fillArea": 1.0
           },
           "compared": "frame",
-          "magnification": 0.8772,
+          "magnification": 0.8532,
           "magnificationLimit": 1.0,
           "failures": []
         },
         "backdrop": {
           "status": "PASS",
-          "width": 2128,
-          "height": 912,
+          "width": 1792,
+          "height": 1008,
           "webglMaxTexture": 4096,
           "splitNeeded": false,
-          "verticalMagnification": 0.8772,
+          "verticalMagnification": 0.8532,
           "seam": {
-            "seam": 0.2582,
-            "interior": 0.8024,
-            "ratio": 0.2582
+            "seam": 0.0,
+            "interior": 0.3608,
+            "ratio": 0.0
+          },
+          "screen": [
+            720,
+            1600
+          ],
+          "failures": []
+        }
+      },
+      "failures": [],
+      "ok": true
+    },
+    {
+      "file": "src/sky/sky-6.png",
+      "kind": "backdrop",
+      "yaw": null,
+      "elevation": null,
+      "locked": false,
+      "lockReason": null,
+      "checks": {
+        "basic": {
+          "status": "PASS",
+          "codec": "png",
+          "container": "png",
+          "pixFmt": null,
+          "mode": "RGB",
+          "width": 1792,
+          "height": 1008,
+          "fps": null,
+          "frames": null,
+          "durationSec": null,
+          "lossless": true,
+          "losslessRequired": true,
+          "bandingFraction": 0.0,
+          "failures": []
+        },
+        "resolution": {
+          "status": "PASS",
+          "screen": [
+            720,
+            1600
+          ],
+          "frame": [
+            1792,
+            1008
+          ],
+          "onScreen": [
+            720.0,
+            860.0
+          ],
+          "mask": {
+            "width": 1792,
+            "height": 1008,
+            "area": 1806336,
+            "rows": [
+              0,
+              1007
+            ],
+            "cols": [
+              0,
+              1791
+            ],
+            "fillHeight": 1.0,
+            "fillArea": 1.0
+          },
+          "compared": "frame",
+          "magnification": 0.8532,
+          "magnificationLimit": 1.0,
+          "failures": []
+        },
+        "backdrop": {
+          "status": "PASS",
+          "width": 1792,
+          "height": 1008,
+          "webglMaxTexture": 4096,
+          "splitNeeded": false,
+          "verticalMagnification": 0.8532,
+          "seam": {
+            "seam": 0.0,
+            "interior": 0.4565,
+            "ratio": 0.0
           },
           "screen": [
             720,
@@ -3834,8 +3914,8 @@
       "ok": true
     },
     {
-      "file": "../../biome/assets/take10/floor-t8/t8.png",
-      "kind": "still",
+      "file": "src/ground/g0.png",
+      "kind": "tile",
       "yaw": null,
       "elevation": null,
       "locked": false,
@@ -3889,6 +3969,85 @@
           "compared": "frame",
           "magnification": 0.3693,
           "magnificationLimit": 1.0,
+          "failures": []
+        },
+        "tiling": {
+          "status": "PASS",
+          "tiles": [
+            {
+              "file": "src/ground/g0.png",
+              "x": {
+                "seam": 3.4276,
+                "interior": 6.7462,
+                "ratio": 0.5081
+              },
+              "y": {
+                "seam": 3.601,
+                "interior": 7.089,
+                "ratio": 0.508
+              },
+              "lumaMean": 45.4618,
+              "lumaStd": 13.106
+            },
+            {
+              "file": "src/ground/g1.png",
+              "x": {
+                "seam": 3.4276,
+                "interior": 6.7127,
+                "ratio": 0.5106
+              },
+              "y": {
+                "seam": 3.601,
+                "interior": 7.0497,
+                "ratio": 0.5108
+              },
+              "lumaMean": 45.4898,
+              "lumaStd": 11.5548
+            },
+            {
+              "file": "src/ground/g2.png",
+              "x": {
+                "seam": 3.4276,
+                "interior": 6.7122,
+                "ratio": 0.5106
+              },
+              "y": {
+                "seam": 3.601,
+                "interior": 7.0533,
+                "ratio": 0.5105
+              },
+              "lumaMean": 45.4544,
+              "lumaStd": 17.1134
+            },
+            {
+              "file": "src/ground/g3.png",
+              "x": {
+                "seam": 3.4276,
+                "interior": 6.7132,
+                "ratio": 0.5106
+              },
+              "y": {
+                "seam": 3.601,
+                "interior": 7.0485,
+                "ratio": 0.5109
+              },
+              "lumaMean": 45.4406,
+              "lumaStd": 11.7601
+            }
+          ],
+          "exposureDelta": 0.0492,
+          "contrastRatio": 1.4811,
+          "crossSeam": [
+            3.4276,
+            3.4276,
+            3.4276,
+            3.4276
+          ],
+          "limits": {
+            "seamRatio": 2.2,
+            "seamAbs": 12.0,
+            "exposureDelta": 18.0
+          },
           "failures": []
         }
       },
@@ -3896,8 +4055,8 @@
       "ok": true
     },
     {
-      "file": "../../biome/assets/take10/floor-t9/t9.png",
-      "kind": "still",
+      "file": "src/ground/g1.png",
+      "kind": "tile",
       "yaw": null,
       "elevation": null,
       "locked": false,
@@ -3951,6 +4110,11 @@
           "compared": "frame",
           "magnification": 0.3693,
           "magnificationLimit": 1.0,
+          "failures": []
+        },
+        "tiling": {
+          "status": "PASS",
+          "sharedWith": "src/ground/g0.png",
           "failures": []
         }
       },
@@ -3958,8 +4122,8 @@
       "ok": true
     },
     {
-      "file": "../../biome/assets/take10/floor-t10/t10.png",
-      "kind": "still",
+      "file": "src/ground/g2.png",
+      "kind": "tile",
       "yaw": null,
       "elevation": null,
       "locked": false,
@@ -4013,6 +4177,78 @@
           "compared": "frame",
           "magnification": 0.3693,
           "magnificationLimit": 1.0,
+          "failures": []
+        },
+        "tiling": {
+          "status": "PASS",
+          "sharedWith": "src/ground/g0.png",
+          "failures": []
+        }
+      },
+      "failures": [],
+      "ok": true
+    },
+    {
+      "file": "src/ground/g3.png",
+      "kind": "tile",
+      "yaw": null,
+      "elevation": null,
+      "locked": false,
+      "lockReason": null,
+      "checks": {
+        "basic": {
+          "status": "PASS",
+          "codec": "png",
+          "container": "png",
+          "pixFmt": null,
+          "mode": "RGB",
+          "width": 1408,
+          "height": 1408,
+          "fps": null,
+          "frames": null,
+          "durationSec": null,
+          "lossless": true,
+          "losslessRequired": true,
+          "bandingFraction": 0.0,
+          "failures": []
+        },
+        "resolution": {
+          "status": "PASS",
+          "screen": [
+            720,
+            1600
+          ],
+          "frame": [
+            1408,
+            1408
+          ],
+          "onScreen": [
+            520.0,
+            520.0
+          ],
+          "mask": {
+            "width": 1408,
+            "height": 1408,
+            "area": 1982464,
+            "rows": [
+              0,
+              1407
+            ],
+            "cols": [
+              0,
+              1407
+            ],
+            "fillHeight": 1.0,
+            "fillArea": 1.0
+          },
+          "compared": "frame",
+          "magnification": 0.3693,
+          "magnificationLimit": 1.0,
+          "failures": []
+        },
+        "tiling": {
+          "status": "PASS",
+          "sharedWith": "src/ground/g0.png",
           "failures": []
         }
       },
@@ -4035,9 +4271,9 @@
           "mode": null,
           "width": 768,
           "height": 1168,
-          "fps": 96.0,
-          "frames": 534,
-          "durationSec": 5.56,
+          "fps": 24.0,
+          "frames": 145,
+          "durationSec": 6.04,
           "lossless": false,
           "losslessRequired": false,
           "bandingFraction": 0.0,
@@ -4059,22 +4295,22 @@
             280.0
           ],
           "mask": {
-            "width": 192,
-            "height": 580,
-            "area": 69411,
+            "width": 204,
+            "height": 623,
+            "area": 81262,
             "rows": [
-              318,
-              897
+              304,
+              926
             ],
             "cols": [
-              284,
+              272,
               475
             ],
-            "fillHeight": 0.4966,
-            "fillArea": 0.0774
+            "fillHeight": 0.5334,
+            "fillArea": 0.0906
           },
           "compared": "mask",
-          "magnification": 0.9375,
+          "magnification": 0.8824,
           "magnificationLimit": 1.0,
           "failures": [],
           "warnings": []
@@ -4084,29 +4320,29 @@
           "key": "green",
           "alphaMin": 255,
           "alphaMax": 255,
-          "plateFraction": 0.911,
+          "plateFraction": 0.902,
           "plateColor": [
-            32.0,
-            250.0,
-            26.0
+            22.0,
+            198.0,
+            33.0
           ],
           "plateTouchesFrame": true,
-          "plateRectangularity": 0.911,
+          "plateRectangularity": 0.902,
           "haloThicknessPx": 0.0,
-          "greenSpillFraction": 0.0553,
-          "greenFieldStd": 1.8306,
+          "greenSpillFraction": 0.0523,
+          "greenFieldStd": 2.248,
           "failures": [],
           "warnings": []
         },
         "loop": {
-          "status": "WARN",
-          "fps": 96.0,
-          "frames": 534,
-          "durationSec": 5.56,
-          "seamMAE": 4.6305,
-          "seamP95": 33.0,
-          "seamFlowPx": 2.0855,
-          "medianFrameMAE": 1.2448,
+          "status": "PASS",
+          "fps": 24.0,
+          "frames": 145,
+          "durationSec": 6.04,
+          "seamMAE": 0.3195,
+          "seamP95": 2.0,
+          "seamFlowPx": 0.0,
+          "medianFrameMAE": 2.8528,
           "popLimit": 18.0,
           "popFrames": [],
           "frozenHits": 0,
@@ -4117,18 +4353,12 @@
             "frozenSec": 0.4
           },
           "failures": [],
-          "warnings": [
-            "WARN loop seam p95=33.000 limit=28.0",
-            "WARN loop seam flow=2.085px limit=2.0"
-          ]
+          "warnings": []
         }
       },
       "failures": [],
       "ok": true,
-      "warnings": [
-        "WARN loop seam p95=33.000 limit=28.0",
-        "WARN loop seam flow=2.085px limit=2.0"
-      ]
+      "warnings": []
     },
     {
       "file": "../../lock/bolt-idle-breath.mp4",
@@ -4170,22 +4400,22 @@
             280.0
           ],
           "mask": {
-            "width": 194,
-            "height": 535,
-            "area": 67682,
+            "width": 190,
+            "height": 614,
+            "area": 82606,
             "rows": [
-              340,
-              874
+              304,
+              917
             ],
             "cols": [
-              288,
-              481
+              282,
+              471
             ],
-            "fillHeight": 0.458,
-            "fillArea": 0.0755
+            "fillHeight": 0.5257,
+            "fillArea": 0.0921
           },
           "compared": "mask",
-          "magnification": 0.9278,
+          "magnification": 0.9474,
           "magnificationLimit": 1.0,
           "failures": [],
           "warnings": []
@@ -4195,29 +4425,29 @@
           "key": "green",
           "alphaMin": 255,
           "alphaMax": 255,
-          "plateFraction": 0.9145,
+          "plateFraction": 0.8986,
           "plateColor": [
-            33.0,
-            247.0,
-            27.0
+            32.0,
+            187.0,
+            40.0
           ],
           "plateTouchesFrame": true,
-          "plateRectangularity": 0.9145,
+          "plateRectangularity": 0.8986,
           "haloThicknessPx": 0.0,
-          "greenSpillFraction": 0.1329,
-          "greenFieldStd": 1.8639,
+          "greenSpillFraction": 0.0443,
+          "greenFieldStd": 2.2906,
           "failures": [],
           "warnings": []
         },
         "loop": {
-          "status": "WARN",
+          "status": "PASS",
           "fps": 24.0,
           "frames": 145,
           "durationSec": 6.04,
-          "seamMAE": 6.2544,
-          "seamP95": 30.0,
-          "seamFlowPx": 2.2382,
-          "medianFrameMAE": 1.0965,
+          "seamMAE": 0.4616,
+          "seamP95": 3.0,
+          "seamFlowPx": 0.0,
+          "medianFrameMAE": 0.6187,
           "popLimit": 18.0,
           "popFrames": [],
           "frozenHits": 0,
@@ -4228,25 +4458,14 @@
             "frozenSec": 0.4
           },
           "failures": [],
-          "warnings": [
-            "WARN loop seam p95=30.000 limit=28.0",
-            "WARN loop seam flow=2.238px limit=2.0"
-          ]
+          "warnings": []
         }
       },
       "failures": [],
       "ok": true,
-      "warnings": [
-        "WARN loop seam p95=30.000 limit=28.0",
-        "WARN loop seam flow=2.238px limit=2.0"
-      ]
+      "warnings": []
     }
   ],
   "failures": [],
-  "warnings": [
-    "../../lock/bolt-gallop-cycle.mp4: WARN loop seam p95=33.000 limit=28.0",
-    "../../lock/bolt-gallop-cycle.mp4: WARN loop seam flow=2.085px limit=2.0",
-    "../../lock/bolt-idle-breath.mp4: WARN loop seam p95=30.000 limit=28.0",
-    "../../lock/bolt-idle-breath.mp4: WARN loop seam flow=2.238px limit=2.0"
-  ]
+  "warnings": []
 }

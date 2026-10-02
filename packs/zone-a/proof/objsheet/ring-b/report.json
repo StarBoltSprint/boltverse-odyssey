@@ -14,7 +14,7 @@
           "yawDeg": 0.0,
           "elevationDeg": null,
           "span": {
-            "area": 575082,
+            "area": 566520,
             "height": 941,
             "width": 929,
             "rows": [
@@ -34,7 +34,7 @@
           "yawDeg": 45.0,
           "elevationDeg": null,
           "span": {
-            "area": 558272,
+            "area": 552327,
             "height": 942,
             "width": 926,
             "rows": [
@@ -54,7 +54,7 @@
           "yawDeg": 90.0,
           "elevationDeg": null,
           "span": {
-            "area": 585416,
+            "area": 580367,
             "height": 938,
             "width": 922,
             "rows": [
@@ -74,7 +74,7 @@
           "yawDeg": 135.0,
           "elevationDeg": null,
           "span": {
-            "area": 576515,
+            "area": 569564,
             "height": 922,
             "width": 901,
             "rows": [
@@ -94,12 +94,12 @@
           "yawDeg": 180.0,
           "elevationDeg": null,
           "span": {
-            "area": 626351,
-            "height": 936,
+            "area": 623600,
+            "height": 935,
             "width": 910,
             "rows": [
               318,
-              1253
+              1252
             ],
             "cols": [
               162,
@@ -114,7 +114,7 @@
           "yawDeg": 225.0,
           "elevationDeg": null,
           "span": {
-            "area": 593427,
+            "area": 587823,
             "height": 943,
             "width": 905,
             "rows": [
@@ -134,7 +134,7 @@
           "yawDeg": 270.0,
           "elevationDeg": null,
           "span": {
-            "area": 549772,
+            "area": 544531,
             "height": 938,
             "width": 912,
             "rows": [
@@ -154,12 +154,12 @@
           "yawDeg": 315.0,
           "elevationDeg": null,
           "span": {
-            "area": 601512,
-            "height": 929,
+            "area": 595658,
+            "height": 928,
             "width": 911,
             "rows": [
               325,
-              1253
+              1252
             ],
             "cols": [
               161,
@@ -173,43 +173,43 @@
         "views": [
           {
             "file": "yaw-000.png",
-            "fillArea": 0.2995,
+            "fillArea": 0.2951,
             "height": 941
           },
           {
             "file": "yaw-045.png",
-            "fillArea": 0.2908,
+            "fillArea": 0.2877,
             "height": 942
           },
           {
             "file": "yaw-090.png",
-            "fillArea": 0.3049,
+            "fillArea": 0.3023,
             "height": 938
           },
           {
             "file": "yaw-135.png",
-            "fillArea": 0.3003,
+            "fillArea": 0.2966,
             "height": 922
           },
           {
             "file": "yaw-180.png",
-            "fillArea": 0.3262,
-            "height": 936
+            "fillArea": 0.3248,
+            "height": 935
           },
           {
             "file": "yaw-225.png",
-            "fillArea": 0.3091,
+            "fillArea": 0.3062,
             "height": 943
           },
           {
             "file": "yaw-270.png",
-            "fillArea": 0.2863,
+            "fillArea": 0.2836,
             "height": 938
           },
           {
             "file": "yaw-315.png",
-            "fillArea": 0.3133,
-            "height": 929
+            "fillArea": 0.3102,
+            "height": 928
           }
         ],
         "failures": []
@@ -237,80 +237,80 @@
             "b": "yaw-045.png",
             "yawA": 0.0,
             "yawB": 45.0,
-            "areaDelta": 0.0297,
+            "areaDelta": 0.0254,
             "heightDelta": 0.0011,
-            "colorCorr": 0.9982,
-            "colorDist": 5.6635
+            "colorCorr": 0.9983,
+            "colorDist": 5.1713
           },
           {
             "a": "yaw-045.png",
             "b": "yaw-090.png",
             "yawA": 45.0,
             "yawB": 90.0,
-            "areaDelta": 0.0475,
+            "areaDelta": 0.0495,
             "heightDelta": 0.0043,
-            "colorCorr": 0.994,
-            "colorDist": 3.2105
+            "colorCorr": 0.9959,
+            "colorDist": 2.3983
           },
           {
             "a": "yaw-090.png",
             "b": "yaw-135.png",
             "yawA": 90.0,
             "yawB": 135.0,
-            "areaDelta": 0.0153,
+            "areaDelta": 0.0188,
             "heightDelta": 0.0172,
-            "colorCorr": 0.9741,
-            "colorDist": 8.9943
+            "colorCorr": 0.987,
+            "colorDist": 6.4981
           },
           {
             "a": "yaw-135.png",
             "b": "yaw-180.png",
             "yawA": 135.0,
             "yawB": 180.0,
-            "areaDelta": 0.0829,
-            "heightDelta": 0.0151,
-            "colorCorr": 0.9904,
-            "colorDist": 4.313
+            "areaDelta": 0.0906,
+            "heightDelta": 0.014,
+            "colorCorr": 0.9911,
+            "colorDist": 5.7362
           },
           {
             "a": "yaw-180.png",
             "b": "yaw-225.png",
             "yawA": 180.0,
             "yawB": 225.0,
-            "areaDelta": 0.054,
-            "heightDelta": 0.0075,
-            "colorCorr": 0.9864,
-            "colorDist": 13.4801
+            "areaDelta": 0.0591,
+            "heightDelta": 0.0085,
+            "colorCorr": 0.9842,
+            "colorDist": 12.5637
           },
           {
             "a": "yaw-225.png",
             "b": "yaw-270.png",
             "yawA": 225.0,
             "yawB": 270.0,
-            "areaDelta": 0.0764,
+            "areaDelta": 0.0765,
             "heightDelta": 0.0053,
-            "colorCorr": 0.9904,
-            "colorDist": 5.7809
+            "colorCorr": 0.9914,
+            "colorDist": 5.1264
           },
           {
             "a": "yaw-270.png",
             "b": "yaw-315.png",
             "yawA": 270.0,
             "yawB": 315.0,
-            "areaDelta": 0.0899,
-            "heightDelta": 0.0096,
-            "colorCorr": 0.9937,
-            "colorDist": 6.695
+            "areaDelta": 0.0897,
+            "heightDelta": 0.0107,
+            "colorCorr": 0.9947,
+            "colorDist": 6.1886
           },
           {
             "a": "yaw-315.png",
             "b": "yaw-000.png",
             "yawA": 315.0,
             "yawB": 0.0,
-            "areaDelta": 0.0449,
-            "heightDelta": 0.0128,
-            "colorCorr": 0.9874,
-            "colorDist": 13.2669
+            "areaDelta": 0.0501,
+            "heightDelta": 0.0139,
+            "colorCorr": 0.9913,
+            "colorDist": 11.9614
           }
         ],
         "opposite": [
@@ -318,7 +318,7 @@
             "a": "yaw-000.png",
             "b": "yaw-180.png",
             "widthDelta": 0.0207,
-            "heightDelta": 0.0053
+            "heightDelta": 0.0064
           },
           {
             "a": "yaw-045.png",
@@ -336,7 +336,7 @@
             "a": "yaw-135.png",
             "b": "yaw-315.png",
             "widthDelta": 0.011,
-            "heightDelta": 0.0076
+            "heightDelta": 0.0065
           }
         ],
         "limits": {
@@ -360,64 +360,64 @@
         "status": "PASS",
         "vote": 7,
         "grid": 28,
-        "volumeFraction": 0.7992,
-        "meanKeep": 0.8063,
-        "minKeep": 0.7599,
+        "volumeFraction": 0.7827,
+        "meanKeep": 0.8024,
+        "minKeep": 0.7541,
         "views": [
           {
             "file": "yaw-000.png",
             "yawDeg": 0.0,
             "elevationDeg": null,
-            "keepFraction": 0.7599,
+            "keepFraction": 0.7541,
             "horizontal": true
           },
           {
             "file": "yaw-045.png",
             "yawDeg": 45.0,
             "elevationDeg": null,
-            "keepFraction": 0.8268,
+            "keepFraction": 0.8225,
             "horizontal": true
           },
           {
             "file": "yaw-090.png",
             "yawDeg": 90.0,
             "elevationDeg": null,
-            "keepFraction": 0.7599,
+            "keepFraction": 0.7594,
             "horizontal": true
           },
           {
             "file": "yaw-135.png",
             "yawDeg": 135.0,
             "elevationDeg": null,
-            "keepFraction": 0.8571,
+            "keepFraction": 0.8531,
             "horizontal": true
           },
           {
             "file": "yaw-180.png",
             "yawDeg": 180.0,
             "elevationDeg": null,
-            "keepFraction": 0.7671,
+            "keepFraction": 0.7588,
             "horizontal": true
           },
           {
             "file": "yaw-225.png",
             "yawDeg": 225.0,
             "elevationDeg": null,
-            "keepFraction": 0.8276,
+            "keepFraction": 0.8212,
             "horizontal": true
           },
           {
             "file": "yaw-270.png",
             "yawDeg": 270.0,
             "elevationDeg": null,
-            "keepFraction": 0.8017,
+            "keepFraction": 0.8005,
             "horizontal": true
           },
           {
             "file": "yaw-315.png",
             "yawDeg": 315.0,
             "elevationDeg": null,
-            "keepFraction": 0.85,
+            "keepFraction": 0.8496,
             "horizontal": true
           }
         ],

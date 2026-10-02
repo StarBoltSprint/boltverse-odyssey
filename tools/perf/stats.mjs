@@ -11,6 +11,7 @@ export const PHONE = {
   heapBytesMax: 384 * 1024 * 1024,
   textureBytesMax: 256 * 1024 * 1024,
   videoDecodersMax: 6,
+  activeVideosMax: 4,
   drawCallsMax: 150,
 };
 
@@ -109,7 +110,13 @@ export function createPerfMonitor() {
 /**
  * @param {Array<{snap?: object, id?: string}>} frames
  */
-export function judgePerf(frames) {
+export function formatPerfLine(agg) {
+  const a = agg || {};
+  return `Perf: drawCalls=${field(a.drawCalls)}, texMB=${megabytes(a.textureBytes)}, activeVideos=${field(a.videoDecoders)}, jsMs=${field(a.jsMs)}`;
+}
+
+export function judgePerf(frames, options = {}) {
+  const softwareGl = !!options.softwareGl;
   const list = frames || [];
   const harness = list.length > 0 && list.every((f) => f.snap && f.snap.harness === true);
   const perfs = [];
@@ -125,16 +132,19 @@ export function judgePerf(frames) {
     budgetApplied,
     harness,
     aggregate,
+    perfLine: formatPerfLine(aggregate),
     samples: perfs.map(compactSample),
   };
   const rows = [
-    rowFpsAvg(aggregate, perfs, budgetApplied),
-    rowFps1(aggregate, perfs, budgetApplied),
-    rowFrame(aggregate, perfs, budgetApplied),
+    rowFpsAvg(aggregate, perfs, budgetApplied, softwareGl),
+    rowFps1(aggregate, perfs, budgetApplied, softwareGl),
+    rowFrame(aggregate, perfs, budgetApplied, softwareGl),
     rowHeap(aggregate, perfs, budgetApplied),
     rowTex(aggregate, perfs, budgetApplied),
     rowDecoders(aggregate, perfs, budgetApplied),
+    rowActive(aggregate, perfs, budgetApplied),
     rowDraws(aggregate, perfs, budgetApplied),
+    rowPerfLine(aggregate, perfs, budgetApplied),
   ];
   return { rows, report };
 }
@@ -151,6 +161,7 @@ function aggregatePerf(perfs) {
       textureBytes: null,
       videoDecoders: null,
       drawCalls: null,
+      jsMs: null,
       samples: 0,
     };
   }
@@ -166,11 +177,13 @@ function aggregatePerf(perfs) {
     textureBytes: Math.max(...perfs.map((p) => num(p.textureBytes) || 0)),
     videoDecoders: Math.max(...perfs.map((p) => num(p.videoDecoders) || 0)),
     drawCalls: Math.max(...perfs.map((p) => num(p.drawCalls) || 0)),
+    jsMs: num(last.workMs) ?? num(last.jsMs) ?? num(last.frameMsAvg),
     samples: perfs.length,
   };
 }
 
-function rowFpsAvg(agg, perfs, budgetApplied) {
+function rowFpsAvg(agg, perfs, budgetApplied, softwareGl) {
+  if (softwareGl && perfs.length) return softwareRow("fps_avg", { fpsAvg: agg.fpsAvg, min: PHONE.fpsAvgMin, samples: agg.samples });
   return budgetRow(
     "fps_avg",
     perfs,
@@ -181,7 +194,8 @@ function rowFpsAvg(agg, perfs, budgetApplied) {
   );
 }
 
-function rowFps1(agg, perfs, budgetApplied) {
+function rowFps1(agg, perfs, budgetApplied, softwareGl) {
+  if (softwareGl && perfs.length) return softwareRow("fps_1low", { fps1Low: agg.fps1Low, min: PHONE.fps1LowMin, samples: agg.samples });
   return budgetRow(
     "fps_1low",
     perfs,
@@ -192,8 +206,9 @@ function rowFps1(agg, perfs, budgetApplied) {
   );
 }
 
-function rowFrame(agg, perfs, budgetApplied) {
+function rowFrame(agg, perfs, budgetApplied, softwareGl) {
   const ms = agg.frameMsAvg;
+  if (softwareGl && perfs.length) return softwareRow("frame_ms", { frameMsAvg: ms, frameMs: agg.frameMs, max: round(PHONE.frameMsMax) });
   return budgetRow(
     "frame_ms",
     perfs,
@@ -251,6 +266,61 @@ function rowDecoders(agg, perfs, budgetApplied) {
     { videoDecoders: agg.videoDecoders, max: PHONE.videoDecodersMax },
     `Concurrent video decoders (registered ids, or video elements with a source, whichever is larger). Mid-range phone budget is ${PHONE.videoDecodersMax}.`,
   );
+}
+
+function rowActive(agg, perfs, budgetApplied) {
+  return budgetRow(
+    "active_videos",
+    perfs,
+    budgetApplied,
+    agg.videoDecoders != null && agg.videoDecoders <= PHONE.activeVideosMax,
+    { activeVideos: agg.videoDecoders, max: PHONE.activeVideosMax },
+    `Law 65: at most ${PHONE.activeVideosMax} videos may decode at once on a phone. Pause or unload the rest.`,
+  );
+}
+
+function rowPerfLine(agg, perfs, budgetApplied) {
+  const line = formatPerfLine(agg);
+  const present =
+    perfs.length > 0 &&
+    agg.drawCalls != null &&
+    agg.textureBytes != null &&
+    agg.videoDecoders != null &&
+    agg.jsMs != null;
+  if (!perfs.length) {
+    const missing = missingRow("perf_line", budgetApplied);
+    missing.numbers = { ...missing.numbers, perfLine: line };
+    missing.detail = `Law 65 requires this line on every playcheck report. ${line}`;
+    return missing;
+  }
+  if (!budgetApplied) return harnessRow("perf_line", { perfLine: line, drawCalls: agg.drawCalls, texMB: megabytes(agg.textureBytes), activeVideos: agg.videoDecoders, jsMs: agg.jsMs });
+  return {
+    id: "perf_line",
+    result: present ? "PASS" : "FAIL",
+    numbers: {
+      perfLine: line,
+      drawCalls: agg.drawCalls,
+      texMB: megabytes(agg.textureBytes),
+      activeVideos: agg.videoDecoders,
+      jsMs: agg.jsMs,
+    },
+    detail: present
+      ? `${line} Law 65. SwiftShader frame time is informational and is not this row.`
+      : `${line} One of drawCalls, texMB, activeVideos, jsMs was not reported.`,
+    heuristic: false,
+    partial: false,
+  };
+}
+
+function softwareRow(id, numbers) {
+  return {
+    id,
+    result: "PASS",
+    numbers: { ...numbers, softwareGl: true, informational: true },
+    detail: "SwiftShader (software rendering, no GPU). This frame time is informational and is not a pass or a fail. Law 65.",
+    heuristic: false,
+    partial: true,
+  };
 }
 
 function rowDraws(agg, perfs, budgetApplied) {
@@ -332,4 +402,13 @@ function round(n) {
 function num(v) {
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
+}
+
+function field(v) {
+  return v == null ? "missing" : String(v);
+}
+
+function megabytes(bytes) {
+  if (bytes == null) return "missing";
+  return (Number(bytes) / (1024 * 1024)).toFixed(3);
 }

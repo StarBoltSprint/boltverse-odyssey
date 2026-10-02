@@ -12,8 +12,8 @@
   "weight": "(normal \u00b7 viewDir)^8",
   "seamRatio": 0.65,
   "surface": "surface-nets",
-  "vertexCount": 20990,
-  "triangleCount": 41976,
+  "vertexCount": 16240,
+  "triangleCount": 32476,
   "vote": 7,
   "viewCount": 8,
   "grid": [
@@ -42,12 +42,12 @@
       0.0,
       0.0
     ],
-    "collisionRadius": 3.6684524872761584
+    "collisionRadius": 2.8483735126632066
   },
   "approach": {
-    "minDistance": 8.002499609497024,
-    "capDistance": 8.002499609497024,
-    "maxMagnification": 0.974918,
+    "minDistance": 8.302244186633958,
+    "capDistance": 8.302244186633958,
+    "maxMagnification": 0.985404,
     "magnificationLimit": 1.0
   },
   "cameras": [
@@ -295,7 +295,7 @@
   "views": [
     {
       "file": "views/yaw-000.png",
-      "sha256": "72efc3944e82a56e4e467716ed263d3837fd3bce434ca4e2f2a7c713c21e1087",
+      "sha256": "8dbb472441e220d69c39dbf57be07a083730d1a03d0e61e9b716c528aa01aec0",
       "yawDeg": 0.0,
       "elevationDeg": 1.4320961841646465,
       "width": 1792,
@@ -304,7 +304,7 @@
     },
     {
       "file": "views/yaw-045.png",
-      "sha256": "d48492c91384bca16db3eca0447c8cc73392fb0f96df0c9472598239c1279033",
+      "sha256": "1357ad9c8aff31e993c463374ea460c40f2873105ec0c19293f5822ab30c3265",
       "yawDeg": 45.0,
       "elevationDeg": 1.4320961841646465,
       "width": 1792,
@@ -313,7 +313,7 @@
     },
     {
       "file": "views/yaw-090.png",
-      "sha256": "e3add76966c59e8c277796d7bc3792acbf31e3b49e53ecd34e304d76833f1eda",
+      "sha256": "ff94acc05b3083f860dbf3b1ad7e8f59304b4302dac972961212b2ab183f33f0",
       "yawDeg": 90.0,
       "elevationDeg": 1.4320961841646465,
       "width": 1792,
@@ -322,7 +322,7 @@
     },
     {
       "file": "views/yaw-135.png",
-      "sha256": "2ece0ddea811109e37aec24742413413cffe3d043db3a0328a2951ff5ad28b98",
+      "sha256": "d697a2f23c5fa8ae841dad0c4383f39408cf64f359247e580bb37128d3f9267c",
       "yawDeg": 135.0,
       "elevationDeg": 1.4320961841646465,
       "width": 1792,
@@ -331,7 +331,7 @@
     },
     {
       "file": "views/yaw-180.png",
-      "sha256": "2baad5a0f81a5a56306afa30e73efe1bb7a273a34bec2c80e2fde23e431d4b11",
+      "sha256": "561df1b41f9aa980bcabdeecd7bb8687cb81c3367f624ec3ea17d4120a601de4",
       "yawDeg": 180.0,
       "elevationDeg": 1.4320961841646465,
       "width": 1792,
@@ -340,7 +340,7 @@
     },
     {
       "file": "views/yaw-225.png",
-      "sha256": "85c48185eeb87f0b6f562aac8ed16bb19de0d53792d2b498bc472412b96aea5d",
+      "sha256": "e05e6545177dc2bf891fe8f825426c18660af1c5c521a03630d8aeb31402112a",
       "yawDeg": 225.0,
       "elevationDeg": 1.4320961841646465,
       "width": 1792,
@@ -349,7 +349,7 @@
     },
     {
       "file": "views/yaw-270.png",
-      "sha256": "f23e52331d030623ffd296d87add24d3e3c11e548a21365b655016b185efdf4c",
+      "sha256": "0ec0603f3a90e551b1f4df9c5428e7cf0e5778474a3f5ad9d7c94ce42f3659d1",
       "yawDeg": 270.0,
       "elevationDeg": 1.4320961841646465,
       "width": 1792,
@@ -358,7 +358,7 @@
     },
     {
       "file": "views/yaw-315.png",
-      "sha256": "b7266b079b0d10b35d172851ac2aa61b2edcb491f6d986d36bc0462fed68c736",
+      "sha256": "9614b5e08081bd9f2267e6935bfbc6b1592f509cd0fa70231847349275f50a50",
       "yawDeg": 315.0,
       "elevationDeg": 1.4320961841646465,
       "width": 1792,
@@ -377,10 +377,10 @@
   "subObjects": [],
   "ok": true,
   "depthRange": [
-    4.3937,
-    11.627
+    5.1805,
+    10.8349
   ],
-  "depthMin": 4.3937,
-  "depthMax": 11.627,
-  "bboxDepth": 6.9512
+  "depthMin": 5.1805,
+  "depthMax": 10.8349,
+  "bboxDepth": 5.3627
 }

@@ -85,8 +85,9 @@ function finish(layout, frames, extras) {
   rows.push(rowBoltGrounded(frames));
   pushAcceptance(rows, frames, layout);
   pushTransition(rows, frames);
-  const perf = judgePerf(frames);
+  const perf = judgePerf(frames, { softwareGl: !!extras.softwareGl });
   for (const perfRow of perf.rows) rows.push(perfRow);
+  if (extras.sourceLint) rows.push(rowSource(extras.sourceLint));
 
   const failed = rows.filter((r) => r.result !== "PASS").length;
   return {
@@ -119,6 +120,9 @@ function pushAcceptance(rows, frames, layout) {
   rows.push(rowSteer(frames));
   rows.push(rowGateBearing(frames, layout));
   rows.push(rowWreckLocked(frames));
+  rows.push(rowSolidsLocked(frames, layout));
+  rows.push(rowHandedness(frames));
+  rows.push(rowNoPop(frames, layout));
 }
 
 function rowHeroVisible(frames) {
@@ -208,6 +212,122 @@ function wrap180deg(a) {
   if (x < 0) x += 360;
   if (x > 180) x -= 360;
   return x;
+}
+
+function rowSource(lint) {
+  const findings = Array.isArray(lint.findings) ? lint.findings : [];
+  if (lint.skipped) {
+    return row(
+      "render_source",
+      "PASS",
+      { skipped: lint.skipped, findings: findings.length },
+      "Measurement fixture. Law 65 source lint is recorded and not applied.",
+      { partial: true },
+    );
+  }
+  if (!lint.scanned) {
+    return row(
+      "render_source",
+      "FAIL",
+      { scanned: false, findings: findings.length },
+      findings[0]?.detail || "Play source was not scanned. Pass a local build or --source <play.js>. Unmeasured is not a PASS.",
+    );
+  }
+  if (!findings.length) {
+    return row(
+      "render_source",
+      "PASS",
+      { scanned: true, files: lint.files || 0, findings: 0 },
+      "Law 65 source scan. No NEAREST world texture, no per-batch typed-array upload, no per-object draw loop, no camQuad on a solid.",
+    );
+  }
+  const sample = findings.slice(0, 8).map((f) => `${f.file}:${f.line} ${f.rule}`);
+  return row("render_source", "FAIL", { scanned: true, findings: findings.length, sample }, `Law 65 source scan failed. ${sample.join("; ")}`);
+}
+
+function rowSolidsLocked(frames, layout) {
+  const host = frames.find((f) => f.snap && f.snap.solidLock && Array.isArray(f.snap.solidLock.objects));
+  if (!host) return row("solids_world_locked", "FAIL", {}, "No 5° orbit audit. Unmeasured is not a PASS.");
+  const got = new Map(host.snap.solidLock.objects.map((o) => [o.id, o]));
+  const need = [];
+  for (const o of layout.interiors) need.push(o.id);
+  const rings = (layout.hulls || []).filter((h) => String(h.asset || "").includes("ring-b")).slice(0, 4);
+  for (const h of rings) need.push(h.id);
+  const bad = [];
+  for (const id of need) {
+    const o = got.get(id);
+    if (!o) {
+      bad.push({ id, reason: "missing" });
+      continue;
+    }
+    if (o.identical !== 0 || !(Number(o.cardMin) > 3 / 255)) bad.push({ id, identical: o.identical, cardMin: o.cardMin, steps: o.steps });
+  }
+  const result = bad.length || !need.length ? "FAIL" : "PASS";
+  return row(
+    "solids_world_locked",
+    result,
+    { objects: need.length, bad: bad.slice(0, 8), limitIdentical: 0, cardMae: round(3 / 255) },
+    "Every interior and four ring stones: 0 identical consecutive 5° crops, and the four cardinal renders differ by more than 3/255.",
+  );
+}
+
+function rowHandedness(frames) {
+  const host = frames.find((f) => f.snap && f.snap.handedness && Number(f.snap.handedness.bearings) > 0);
+  if (!host) return row("hull_handedness", "FAIL", {}, "No mirror check. Unmeasured is not a PASS.");
+  const h = host.snap.handedness;
+  const ok = h.beats === h.bearings && h.bearings >= 8;
+  return row(
+    "hull_handedness",
+    ok ? "PASS" : "FAIL",
+    { beats: h.beats, bearings: h.bearings, worstSame: round(Number(h.worstSame) || 0) },
+    "At each 45° bearing the render correlates better with the same-yaw view than with its horizontal mirror.",
+  );
+}
+
+function rowNoPop(frames, layout) {
+  const seq = frames.filter((f) => f.ids && (f.kind === "ring" || f.kind === "turn" || f.kind === "spawn"));
+  const pops = [];
+  for (let i = 1; i < seq.length; i++) {
+    const a = seq[i - 1];
+    const b = seq[i];
+    const dh = Math.abs(wrap180deg((Number(b.snap.hdg) || 0) - (Number(a.snap.hdg) || 0)));
+    if (dh > 20) continue;
+    const labels = b.ids.labels || [];
+    for (let li = 1; li < labels.length; li++) {
+      const name = labels[li];
+      if (!name || name === "hero" || name === "ground" || name === "fog" || String(name).startsWith("gate")) continue;
+      const prev = a.counts.get(name) || 0;
+      const next = b.counts.get(name) || 0;
+      if (prev > 3000 && next < prev * 0.2 && centerInView(layout, b.snap, name)) {
+        pops.push({ id: b.id, name, prev, next });
+      }
+    }
+  }
+  const flagged = frames.filter((f) => Number(f.snap && f.snap.popCount) > 0).length;
+  const result = pops.length || flagged ? "FAIL" : "PASS";
+  return row(
+    "no_pop",
+    result,
+    { pops: pops.length, flagged, sample: pops.slice(0, 4) },
+    "No in-frustum object above 3000 px may drop below 20% of that count between consecutive turn samples.",
+  );
+}
+
+function centerInView(layout, snap, name) {
+  const list = [...(layout.hulls || []), ...(layout.interiors || [])];
+  const o = list.find((item) => item.id === name);
+  if (!o || !o.position) return true;
+  const hdg = ((Number(snap.hdg) || 0) * Math.PI) / 180;
+  const fwdX = Math.sin(hdg);
+  const fwdZ = Math.cos(hdg);
+  const eyeX = (Number(snap.x) || 0) - fwdX * 6.4;
+  const eyeZ = (Number(snap.z) || 0) - fwdZ * 6.4;
+  const dx = o.position[0] - eyeX;
+  const dz = o.position[1] - eyeZ;
+  const vz = dx * fwdX + dz * fwdZ;
+  const vx = dx * Math.cos(hdg) - dz * Math.sin(hdg);
+  if (vz < 1) return false;
+  return Math.abs(vx / vz) < Math.tan((22.7 * Math.PI) / 180 / 2) * 0.75;
 }
 
 function rowWreckLocked(frames) {

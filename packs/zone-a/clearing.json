@@ -7,10 +7,11 @@
       "packs/zone-a/src/sky/sky-2.png",
       "packs/zone-a/src/sky/sky-3.png",
       "packs/zone-a/src/sky/sky-4.png",
-      "packs/zone-a/src/sky/sky-5.png"
+      "packs/zone-a/src/sky/sky-5.png",
+      "packs/zone-a/src/sky/sky-6.png"
     ],
-    "sourceH": 912,
-    "sourceW": 12768
+    "sourceH": 1008,
+    "sourceW": 12544
   },
   "bolt": {
     "gallop": "lock/bolt-gallop-cycle.mp4",
@@ -490,110 +491,110 @@
       "radius_m": 1.2049
     },
     {
-      "base_y_m": 0.0226,
+      "base_y_m": 0.0232,
       "center": [
-        -0.4653,
-        -10.2618
+        -0.5911,
+        -13.0366
       ],
       "id": "hero-00",
       "object_id": "hero-00",
       "radius_m": 2.8302
     },
     {
-      "base_y_m": 0.0234,
+      "base_y_m": 0.0069,
       "center": [
-        5.4759,
-        7.9388
+        8.714,
+        8.962
       ],
       "id": "mid-00",
       "object_id": "mid-00",
       "radius_m": 0.6813
     },
     {
-      "base_y_m": -0.0165,
+      "base_y_m": 0.0361,
       "center": [
-        7.1738,
-        -5.5989
+        9.8541,
+        -7.6907
       ],
       "id": "mid-01",
       "object_id": "mid-01",
       "radius_m": 1.1658
     },
     {
-      "base_y_m": -0.0125,
+      "base_y_m": -0.0471,
       "center": [
-        -8.3162,
-        1.2265
+        -12.4754,
+        0.7827
       ],
       "id": "mid-02",
       "object_id": "mid-02",
       "radius_m": 0.7488
     },
     {
-      "base_y_m": 0.0074,
+      "base_y_m": 0.021,
       "center": [
-        -6.421,
-        6.1744
+        -9.0102,
+        8.6641
       ],
       "id": "mid-03",
       "object_id": "mid-03",
       "radius_m": 1.0669
     },
     {
-      "base_y_m": 0.0032,
+      "base_y_m": -0.0108,
       "center": [
-        2.9096,
-        4.5502
+        6.734,
+        10.531
       ],
       "id": "near-00",
       "object_id": "near-00",
       "radius_m": 0.9256
     },
     {
-      "base_y_m": 0.0028,
+      "base_y_m": 0.0231,
       "center": [
-        4.9729,
-        -0.5201
+        12.4322,
+        -1.3002
       ],
       "id": "near-01",
       "object_id": "near-01",
       "radius_m": 0.9734
     },
     {
-      "base_y_m": -0.0429,
+      "base_y_m": 0.014,
       "center": [
-        1.8947,
-        -4.2294
+        5.1104,
+        -11.4076
       ],
       "id": "near-02",
       "object_id": "near-02",
       "radius_m": 0.9256
     },
     {
-      "base_y_m": 0.0235,
+      "base_y_m": 0.0257,
       "center": [
-        -5.0065,
-        3.9779
+        -10.6842,
+        6.4882
       ],
       "id": "near-03",
       "object_id": "near-03",
       "radius_m": 0.9184
     },
     {
-      "base_y_m": 0.025,
+      "base_y_m": -0.0443,
       "center": [
-        -4.8207,
-        1.2904
+        -12.0749,
+        3.2322
       ],
       "id": "near-04",
       "object_id": "near-04",
       "radius_m": 0.981
     },
     {
-      "base_y_m": 0.0538,
+      "base_y_m": 0.0054,
       "center": [
-        -1.9585,
-        3.8438
+        -5.6748,
+        11.1376
       ],
       "id": "near-05",
       "object_id": "near-05",
@@ -1648,13 +1649,13 @@
   "interior_objects": [
     {
       "asset": "packs/zone-a/hulls/wreck10/asset.json",
-      "base_y_m": 0.0226,
+      "base_y_m": 0.0232,
       "category": "hero",
       "id": "hero-00",
       "interactive": true,
       "position": [
-        -0.4653,
-        -10.2618
+        -0.5911,
+        -13.0366
       ],
       "radius_m": 2.8302,
       "scale": 0.77,
@@ -1662,13 +1663,13 @@
     },
     {
       "asset": "packs/zone-a/hulls/monolith-a10/asset.json",
-      "base_y_m": 0.0234,
+      "base_y_m": 0.0069,
       "category": "mid",
       "id": "mid-00",
       "interactive": false,
       "position": [
-        5.4759,
-        7.9388
+        8.714,
+        8.962
       ],
       "radius_m": 0.6813,
       "scale": 1.01,
@@ -1676,13 +1677,13 @@
     },
     {
       "asset": "packs/zone-a/hulls/monolith-b10/asset.json",
-      "base_y_m": -0.0165,
+      "base_y_m": 0.0361,
       "category": "mid",
       "id": "mid-01",
       "interactive": false,
       "position": [
-        7.1738,
-        -5.5989
+        9.8541,
+        -7.6907
       ],
       "radius_m": 1.1658,
       "scale": 1.06,
@@ -1690,13 +1691,13 @@
     },
     {
       "asset": "packs/zone-a/hulls/monolith-a10/asset.json",
-      "base_y_m": -0.0125,
+      "base_y_m": -0.0471,
       "category": "mid",
       "id": "mid-02",
       "interactive": false,
       "position": [
-        -8.3162,
-        1.2265
+        -12.4754,
+        0.7827
       ],
       "radius_m": 0.7488,
       "scale": 1.11,
@@ -1704,13 +1705,13 @@
     },
     {
       "asset": "packs/zone-a/hulls/monolith-b10/asset.json",
-      "base_y_m": 0.0074,
+      "base_y_m": 0.021,
       "category": "mid",
       "id": "mid-03",
       "interactive": false,
       "position": [
-        -6.421,
-        6.1744
+        -9.0102,
+        8.6641
       ],
       "radius_m": 1.0669,
       "scale": 0.97,
@@ -1718,13 +1719,13 @@
     },
     {
       "asset": "packs/zone-a/hulls/hull-a10/asset.json",
-      "base_y_m": 0.0032,
+      "base_y_m": -0.0108,
       "category": "near",
       "id": "near-00",
       "interactive": false,
       "position": [
-        2.9096,
-        4.5502
+        6.734,
+        10.531
       ],
       "radius_m": 0.9256,
       "scale": 0.835,
@@ -1732,13 +1733,13 @@
     },
     {
       "asset": "packs/zone-a/hulls/monolith-b10/asset.json",
-      "base_y_m": 0.0028,
+      "base_y_m": 0.0231,
       "category": "near",
       "id": "near-01",
       "interactive": false,
       "position": [
-        4.9729,
-        -0.5201
+        12.4322,
+        -1.3002
       ],
       "radius_m": 0.9734,
       "scale": 0.885,
@@ -1746,13 +1747,13 @@
     },
     {
       "asset": "packs/zone-a/hulls/hull-a10/asset.json",
-      "base_y_m": -0.0429,
+      "base_y_m": 0.014,
       "category": "near",
       "id": "near-02",
       "interactive": false,
       "position": [
-        1.8947,
-        -4.2294
+        5.1104,
+        -11.4076
       ],
       "radius_m": 0.9256,
       "scale": 0.835,
@@ -1760,13 +1761,13 @@
     },
     {
       "asset": "packs/zone-a/hulls/monolith-b10/asset.json",
-      "base_y_m": 0.0235,
+      "base_y_m": 0.0257,
       "category": "near",
       "id": "near-03",
       "interactive": false,
       "position": [
-        -5.0065,
-        3.9779
+        -10.6842,
+        6.4882
       ],
       "radius_m": 0.9184,
       "scale": 0.835,
@@ -1774,13 +1775,13 @@
     },
     {
       "asset": "packs/zone-a/hulls/hull-a10/asset.json",
-      "base_y_m": 0.025,
+      "base_y_m": -0.0443,
       "category": "near",
       "id": "near-04",
       "interactive": false,
       "position": [
-        -4.8207,
-        1.2904
+        -12.0749,
+        3.2322
       ],
       "radius_m": 0.981,
       "scale": 0.885,
@@ -1788,13 +1789,13 @@
     },
     {
       "asset": "packs/zone-a/hulls/monolith-b10/asset.json",
-      "base_y_m": 0.0538,
+      "base_y_m": 0.0054,
       "category": "near",
       "id": "near-05",
       "interactive": false,
       "position": [
-        -1.9585,
-        3.8438
+        -5.6748,
+        11.1376
       ],
       "radius_m": 0.9184,
       "scale": 0.835,
@@ -1870,9 +1871,10 @@
       },
       "tile_m": 0.9,
       "tiles": [
-        "biome/assets/take10/floor-t8/t8.png",
-        "biome/assets/take10/floor-t9/t9.png",
-        "biome/assets/take10/floor-t10/t10.png"
+        "packs/zone-a/src/ground/g0.png",
+        "packs/zone-a/src/ground/g1.png",
+        "packs/zone-a/src/ground/g2.png",
+        "packs/zone-a/src/ground/g3.png"
       ]
     },
     "radius_m": 24,

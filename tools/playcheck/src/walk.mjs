@@ -59,6 +59,8 @@ export async function runWalk({ page, layout, stillsDir, video, log }) {
   }
 
   await page.evaluate(() => window.__play.reset());
+  page.setDefaultTimeout(180000);
+  await page.evaluate(() => window.__play.audit());
   await simulate(0.7);
   await capture("01-spawn", "spawn");
 
@@ -136,16 +138,23 @@ export async function runWalk({ page, layout, stillsDir, video, log }) {
 
   const wreck = (layout.interiors || []).find((o) => o.id === "hero-00") || layout.interiors[0];
   if (wreck && wreck.position) {
+    const inward = Math.atan2(-wreck.position[0], -wreck.position[1]);
     for (const bearing of [0, 90, 180, 270]) {
-      await page.evaluate(({ x0, z0, yaw, bearing: b }) => {
-        const a = ((yaw + b) * Math.PI) / 180;
-        const dist = 4.4;
-        const x = x0 + Math.sin(a) * dist;
-        const z = z0 + Math.cos(a) * dist;
+      await page.evaluate(({ x0, z0, yaw, bearing: b, inward: inn }) => {
+        const side = ((yaw + b) * Math.PI) / 180;
+        const pull = 0.7;
+        let dx = Math.sin(side) * (1 - pull) + Math.sin(inn) * pull;
+        let dz = Math.cos(side) * (1 - pull) + Math.cos(inn) * pull;
+        const n = Math.hypot(dx, dz) || 1;
+        dx /= n;
+        dz /= n;
+        const dist = 4.8;
+        const x = x0 + dx * dist;
+        const z = z0 + dz * dist;
         const hdg = (Math.atan2(x0 - x, z0 - z) * 180) / Math.PI;
         window.__play.place(x, z, (hdg + 360) % 360);
         window.__play.setInput({ forward: 0, turn: 0, gallop: false });
-      }, { x0: wreck.position[0], z0: wreck.position[1], yaw: wreck.yaw || 0, bearing });
+      }, { x0: wreck.position[0], z0: wreck.position[1], yaw: wreck.yaw || 0, bearing, inward });
       await simulate(0.25);
       await capture(`08-wreck-${String(bearing).padStart(3, "0")}`, "wreck-orbit");
     }

@@ -11,29 +11,29 @@ Object **PASS**.
 - silhouette: `PASS`
 - ring: `PASS` yaws `[0, 45, 90, 135, 180, 225, 270, 315]`
 - guide: `SKIP` limit 0.97
-- hull: `PASS` mean keep `0.8063` min `0.7599` volume `0.7992`
-  - yaw-000.png keep `0.7599`
-  - yaw-045.png keep `0.8268`
-  - yaw-090.png keep `0.7599`
-  - yaw-135.png keep `0.8571`
-  - yaw-180.png keep `0.7671`
-  - yaw-225.png keep `0.8276`
-  - yaw-270.png keep `0.8017`
-  - yaw-315.png keep `0.85`
+- hull: `PASS` mean keep `0.8024` min `0.7541` volume `0.7827`
+  - yaw-000.png keep `0.7541`
+  - yaw-045.png keep `0.8225`
+  - yaw-090.png keep `0.7594`
+  - yaw-135.png keep `0.8531`
+  - yaw-180.png keep `0.7588`
+  - yaw-225.png keep `0.8212`
+  - yaw-270.png keep `0.8005`
+  - yaw-315.png keep `0.8496`
 - adjacent:
-  - yaw-000.png → yaw-045.png area `0.0297` height `0.0011` colour `0.9982`
-  - yaw-045.png → yaw-090.png area `0.0475` height `0.0043` colour `0.994`
-  - yaw-090.png → yaw-135.png area `0.0153` height `0.0172` colour `0.9741`
-  - yaw-135.png → yaw-180.png area `0.0829` height `0.0151` colour `0.9904`
-  - yaw-180.png → yaw-225.png area `0.054` height `0.0075` colour `0.9864`
-  - yaw-225.png → yaw-270.png area `0.0764` height `0.0053` colour `0.9904`
-  - yaw-270.png → yaw-315.png area `0.0899` height `0.0096` colour `0.9937`
-  - yaw-315.png → yaw-000.png area `0.0449` height `0.0128` colour `0.9874`
+  - yaw-000.png → yaw-045.png area `0.0254` height `0.0011` colour `0.9983`
+  - yaw-045.png → yaw-090.png area `0.0495` height `0.0043` colour `0.9959`
+  - yaw-090.png → yaw-135.png area `0.0188` height `0.0172` colour `0.987`
+  - yaw-135.png → yaw-180.png area `0.0906` height `0.014` colour `0.9911`
+  - yaw-180.png → yaw-225.png area `0.0591` height `0.0085` colour `0.9842`
+  - yaw-225.png → yaw-270.png area `0.0765` height `0.0053` colour `0.9914`
+  - yaw-270.png → yaw-315.png area `0.0897` height `0.0107` colour `0.9947`
+  - yaw-315.png → yaw-000.png area `0.0501` height `0.0139` colour `0.9913`
 - opposite:
-  - yaw-000.png | yaw-180.png width `0.0207` height `0.0053`
+  - yaw-000.png | yaw-180.png width `0.0207` height `0.0064`
   - yaw-045.png | yaw-225.png width `0.0229` height `0.0011`
   - yaw-090.png | yaw-270.png width `0.0109` height `0.0`
-  - yaw-135.png | yaw-315.png width `0.011` height `0.0076`
+  - yaw-135.png | yaw-315.png width `0.011` height `0.0065`
 
 ## Heuristics
 

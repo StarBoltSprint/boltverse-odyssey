@@ -68,6 +68,9 @@ function assignHulls(list, gates, radius) {
     heading: num(h.heading_deg, 0),
     width: Number.isFinite(Number(h.width_deg)) ? Number(h.width_deg) : null,
     asset: h.asset || "",
+    position: Array.isArray(h.position) ? [num(h.position[0], 0), num(h.position[1], 0)] : null,
+    radius: num(h.radius_m, 0),
+    yaw: num(h.yaw_deg, num(h.heading_deg, 0)),
   }));
   if (explicit.every((h) => h.width != null)) {
     return explicit.map((h) => ({ ...h, width: h.width }));
@@ -140,6 +143,15 @@ export function surfaceGap(layout, x, z) {
   const dist = Math.hypot(dx, dz);
   let gap = Math.abs(layout.edgeRadius - dist);
   let which = "edge_ring";
+  for (const o of layout.hulls || []) {
+    if (!o.position || !(o.radius > 0)) continue;
+    const d = Math.hypot(x - o.position[0], z - o.position[1]);
+    const g = Math.abs(d - o.radius);
+    if (g < gap) {
+      gap = g;
+      which = o.id;
+    }
+  }
   for (const o of layout.interiors) {
     const d = Math.hypot(x - o.position[0], z - o.position[1]);
     const g = Math.abs(d - o.radius);

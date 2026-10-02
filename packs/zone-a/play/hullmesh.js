@@ -1,8 +1,9 @@
 /**
- * World-locked walkaround mesh. Imagine pixels stay in the source views.
- * Code only places the mesh and picks the already-shot view per fragment.
+ * Instanced world-locked hulls. Imagine pixels stay in the source views.
+ * One drawElementsInstanced per asset. Geometry uploads once.
  */
 const MAX_VIEWS = 8;
+const MAX_INST = 64;
 
 function parseMesh(buf) {
   const head = new DataView(buf, 0, 20);
@@ -18,8 +19,6 @@ function parseMesh(buf) {
   const normals = new Float32Array(buf, off, vc * 3);
   off += vc * 3 * 4;
   const indices = new Uint32Array(buf.slice(off, off + ic * 4));
-  off += ic * 4;
-  const groups = new Uint16Array(buf, off, vc);
   let minY = Infinity;
   let maxY = -Infinity;
   for (let i = 0; i < vc; i++) {
@@ -27,7 +26,7 @@ function parseMesh(buf) {
     if (y < minY) minY = y;
     if (y > maxY) maxY = y;
   }
-  return { vc, ic, verts, normals, groups, indices, minY, maxY };
+  return { vc, ic, verts, normals, indices, minY, maxY };
 }
 
 function compile(gl, type, src) {
@@ -38,13 +37,128 @@ function compile(gl, type, src) {
   return sh;
 }
 
-function program(gl, vs, fs) {
-  const p = gl.createProgram();
-  gl.attachShader(p, compile(gl, gl.VERTEX_SHADER, vs));
-  gl.attachShader(p, compile(gl, gl.FRAGMENT_SHADER, fs));
-  gl.linkProgram(p);
-  if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
-  return p;
+let sharedProg = null;
+let sharedLoc = null;
+
+function shader(gl) {
+  if (sharedProg) return;
+  const vs = `#version 300 es
+precision highp float;
+layout(location=0) in vec3 aPos;
+layout(location=1) in vec3 aNrm;
+layout(location=3) in vec4 aM0;
+layout(location=4) in vec4 aM1;
+layout(location=5) in vec4 aM2;
+layout(location=6) in vec4 aM3;
+layout(location=7) in float aId;
+uniform mat4 uVP;
+out vec3 vLocal;
+out vec3 vNrm;
+flat out float vId;
+void main() {
+  mat4 M = mat4(aM0, aM1, aM2, aM3);
+  gl_Position = uVP * M * vec4(aPos, 1.0);
+  vLocal = aPos;
+  vNrm = aNrm;
+  vId = aId;
+}`;
+  const fs = `#version 300 es
+precision highp float;
+precision highp int;
+precision highp sampler2DArray;
+uniform highp sampler2DArray uViews;
+uniform int uViewCount;
+uniform vec3 uCamPos[8];
+uniform vec3 uCamRight[8];
+uniform vec3 uCamUp[8];
+uniform vec3 uCamForward[8];
+uniform float uFov[8];
+uniform vec2 uViewSize[8];
+uniform vec2 uTexSize;
+uniform float uHand;
+uniform int uMode;
+in vec3 vLocal;
+in vec3 vNrm;
+flat in float vId;
+out vec4 o;
+void project(int i, vec3 p, out vec2 uv, out float z) {
+  vec3 rel = p - uCamPos[i];
+  z = dot(rel, uCamForward[i]);
+  float x = dot(rel, uCamRight[i]);
+  float y = dot(rel, uCamUp[i]);
+  vec2 sz = uViewSize[i];
+  float fy = (sz.y * 0.5) / tan(radians(uFov[i]) * 0.5);
+  uv.x = (sz.x - 1.0) * 0.5 + uHand * fy * (x / max(z, 1e-4));
+  uv.y = (sz.y - 1.0) * 0.5 - fy * (y / max(z, 1e-4));
+}
+void main() {
+  vec3 n = normalize(vNrm);
+  float bestW = -1.0;
+  int bestI = 0;
+  float faceW = -1.0;
+  int faceI = 0;
+  float anyA = -1.0;
+  int anyI = 0;
+  for (int i = 0; i < 8; i++) {
+    if (i >= uViewCount) break;
+    vec3 toCam = uCamPos[i] - vLocal;
+    float nd = clamp(dot(n, normalize(toCam)), 0.0, 1.0);
+    float w = pow(nd, 8.0);
+    if (w > faceW) { faceW = w; faceI = i; }
+    vec2 uv; float z;
+    project(i, vLocal, uv, z);
+    vec2 sz = uViewSize[i];
+    ivec2 px = ivec2(int(floor(uv.x + 0.5)), int(floor(uv.y + 0.5)));
+    bool inside = z > 0.0001 && px.x >= 1 && px.y >= 1 && px.x < int(sz.x) - 1 && px.y < int(sz.y) - 1;
+    float a = 0.0;
+    if (inside) a = texelFetch(uViews, ivec3(px, i), 0).a;
+    if (inside && a > anyA) { anyA = a; anyI = i; }
+    float wv = (inside && a > 0.45) ? w : 0.0;
+    if (wv > bestW) { bestW = wv; bestI = i; }
+  }
+  int useI = bestW > 0.0 ? bestI : (anyA > 0.2 ? anyI : faceI);
+  vec2 uv; float z;
+  project(useI, vLocal, uv, z);
+  vec2 sz = uViewSize[useI];
+  vec2 tuv = clamp((uv + 0.5) / uTexSize, vec2(0.5) / uTexSize, (sz - 0.5) / uTexSize);
+  vec4 src = texture(uViews, vec3(tuv, float(useI)));
+  if (src.a < 0.35 && anyA > 0.2 && anyI != useI) {
+    vec2 uvA; float zA;
+    project(anyI, vLocal, uvA, zA);
+    vec2 tuvA = clamp((uvA + 0.5) / uTexSize, vec2(0.5) / uTexSize, (uViewSize[anyI] - 0.5) / uTexSize);
+    vec4 alt = texture(uViews, vec3(tuvA, float(anyI)));
+    if (alt.a > src.a) src = alt;
+  }
+  if (src.a < 0.2) {
+    vec2 uvF; float zF;
+    project(faceI, vLocal, uvF, zF);
+    vec2 tuvF = clamp((uvF + 0.5) / uTexSize, vec2(0.5) / uTexSize, (uViewSize[faceI] - 0.5) / uTexSize);
+    vec4 altF = texture(uViews, vec3(tuvF, float(faceI)));
+    if (altF.a > src.a) src = altF;
+  }
+  if (uMode == 1) o = vec4(vId / 255.0, 0.0, 0.0, 1.0);
+  else o = vec4(src.rgb, 1.0);
+}`;
+  sharedProg = gl.createProgram();
+  gl.attachShader(sharedProg, compile(gl, gl.VERTEX_SHADER, vs));
+  gl.attachShader(sharedProg, compile(gl, gl.FRAGMENT_SHADER, fs));
+  gl.linkProgram(sharedProg);
+  if (!gl.getProgramParameter(sharedProg, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(sharedProg));
+  const u = (n) => gl.getUniformLocation(sharedProg, n);
+  sharedLoc = {
+    vp: u("uVP"),
+    views: u("uViews"),
+    count: u("uViewCount"),
+    pos: u("uCamPos"),
+    right: u("uCamRight"),
+    up: u("uCamUp"),
+    fwd: u("uCamForward"),
+    fov: u("uFov"),
+    size: u("uViewSize"),
+    texSize: u("uTexSize"),
+    hand: u("uHand"),
+    mode: u("uMode"),
+  };
 }
 
 function loadImage(url) {
@@ -56,221 +170,66 @@ function loadImage(url) {
   });
 }
 
-async function rgbaOf(url) {
-  const img = await loadImage(url);
+function fitCanvas(img, maxH) {
+  const scale = Math.min(1, maxH / img.height);
+  const w = Math.max(2, Math.round(img.width * scale));
+  const h = Math.max(2, Math.round(img.height * scale));
   const c = document.createElement("canvas");
-  c.width = img.width;
-  c.height = img.height;
+  c.width = w;
+  c.height = h;
   const g = c.getContext("2d", { willReadFrequently: true });
-  g.drawImage(img, 0, 0);
-  return { w: img.width, h: img.height, data: new Uint8Array(g.getImageData(0, 0, img.width, img.height).data.buffer) };
-}
-
-function packZ(z) {
-  const n = Math.max(0, Math.min(1, z / 16));
-  const e = Math.round(n * 16777215);
-  return [e & 255, (e >> 8) & 255, (e >> 16) & 255, 255];
-}
-
-const zVS = `#version 300 es
-precision highp float;
-layout(location=0) in vec3 aPos;
-uniform vec3 uEye, uRight, uUp, uForward;
-uniform float uFovY;
-uniform vec2 uSize;
-out float vZ;
-void main() {
-  vec3 rel = aPos - uEye;
-  float z = dot(rel, uForward);
-  float x = dot(rel, uRight);
-  float y = dot(rel, uUp);
-  float fy = (uSize.y * 0.5) / tan(radians(uFovY) * 0.5);
-  float u = (uSize.x - 1.0) * 0.5 + fy * (x / max(z, 1e-4));
-  float v = (uSize.y - 1.0) * 0.5 - fy * (y / max(z, 1e-4));
-  float ndcX = ((u + 0.5) / uSize.x) * 2.0 - 1.0;
-  float ndcY = 1.0 - ((v + 0.5) / uSize.y) * 2.0;
-  float ndcZ = clamp((z - 0.02) / (16.0 - 0.02), 0.0, 1.0) * 2.0 - 1.0;
-  gl_Position = vec4(ndcX * (z > 0.0 ? 1.0 : 0.0), ndcY, ndcZ, z > 0.0 ? 1.0 : 0.0);
-  vZ = z;
-}`;
-
-const zFS = `#version 300 es
-precision highp float;
-in float vZ;
-out vec4 o;
-vec4 pack(float z) {
-  float n = clamp(z / 16.0, 0.0, 1.0);
-  float e = n * 16777215.0;
-  float r = floor(mod(e, 256.0));
-  float g = floor(mod(floor(e / 256.0), 256.0));
-  float b = floor(mod(floor(e / 65536.0), 256.0));
-  return vec4(r, g, b, 255.0) / 255.0;
-}
-void main() { o = pack(vZ); }`;
-
-const cVS = `#version 300 es
-precision highp float;
-layout(location=0) in vec3 aPos;
-layout(location=1) in vec3 aNrm;
-uniform mat4 uVP;
-uniform mat4 uModel;
-out vec3 vLocal;
-out vec3 vNrm;
-void main() {
-  gl_Position = uVP * uModel * vec4(aPos, 1.0);
-  vLocal = aPos;
-  vNrm = aNrm;
-}`;
-
-const cFS = `#version 300 es
-precision highp float;
-precision highp int;
-precision highp sampler2DArray;
-uniform highp sampler2DArray uViews;
-uniform highp sampler2DArray uDepth;
-uniform int uViewCount;
-uniform vec3 uCamPos[8];
-uniform vec3 uCamRight[8];
-uniform vec3 uCamUp[8];
-uniform vec3 uCamForward[8];
-uniform float uFov[8];
-uniform vec2 uViewSize[8];
-uniform float uBias;
-uniform float uSeam;
-uniform int uMode;
-uniform vec3 uId;
-in vec3 vLocal;
-in vec3 vNrm;
-out vec4 o;
-float unpack(vec4 c) {
-  float e = c.r * 255.0 + c.g * 255.0 * 256.0 + c.b * 255.0 * 65536.0;
-  return e / 16777215.0 * 16.0;
-}
-void project(int i, vec3 p, out vec2 uv, out float z) {
-  vec3 rel = p - uCamPos[i];
-  z = dot(rel, uCamForward[i]);
-  float x = dot(rel, uCamRight[i]);
-  float y = dot(rel, uCamUp[i]);
-  vec2 sz = uViewSize[i];
-  float fy = (sz.y * 0.5) / tan(radians(uFov[i]) * 0.5);
-  uv.x = (sz.x - 1.0) * 0.5 + fy * (x / max(z, 1e-4));
-  uv.y = (sz.y - 1.0) * 0.5 - fy * (y / max(z, 1e-4));
-}
-void main() {
-  vec3 n = normalize(vNrm);
-  float bestW = -1.0;
-  int bestI = 0;
-  float secondW = -1.0;
-  int secondI = -1;
-  float faceW = -1.0;
-  int faceI = 0;
-  bool anyVis = false;
-  for (int i = 0; i < 8; i++) {
-    if (i >= uViewCount) break;
-    vec3 toCam = uCamPos[i] - vLocal;
-    float nd = clamp(dot(n, normalize(toCam)), 0.0, 1.0);
-    float w = pow(nd, 8.0);
-    if (w > faceW) { faceW = w; faceI = i; }
-    vec2 uv; float z;
-    project(i, vLocal, uv, z);
-    vec2 sz = uViewSize[i];
-    ivec2 px = ivec2(int(floor(uv.x + 0.5)), int(floor(uv.y + 0.5)));
-    bool inside = z > 0.0001 && px.x >= 0 && px.y >= 0 && px.x < int(sz.x) && px.y < int(sz.y);
-    bool mask = false;
-    bool occ = false;
-    if (inside) {
-      vec4 src = texelFetch(uViews, ivec3(px, i), 0);
-      mask = src.a > 0.5;
-      float zRef = unpack(texelFetch(uDepth, ivec3(px, i), 0));
-      occ = z <= zRef + uBias;
-    }
-    float wv = (inside && mask && occ && w > 0.0) ? w : 0.0;
-    if (wv > 0.0) anyVis = true;
-    if (wv > bestW) {
-      secondW = bestW; secondI = bestI;
-      bestW = wv; bestI = i;
-    } else if (wv > secondW) {
-      secondW = wv; secondI = i;
+  g.imageSmoothingEnabled = scale < 1;
+  g.drawImage(img, 0, 0, w, h);
+  const data = new Uint8Array(g.getImageData(0, 0, w, h).data.buffer);
+  const lw = 32;
+  const lh = 32;
+  const luma = new Float32Array(lw * lh);
+  for (let y = 0; y < lh; y++) {
+    for (let x = 0; x < lw; x++) {
+      const sx = Math.min(w - 1, Math.floor((x + 0.5) * w / lw));
+      const sy = Math.min(h - 1, Math.floor((y + 0.5) * h / lh));
+      const o = (sy * w + sx) * 4;
+      const a = data[o + 3];
+      luma[y * lw + x] = a > 40 ? (data[o] * 0.299 + data[o + 1] * 0.587 + data[o + 2] * 0.114) / 255 : -1;
     }
   }
-  if (!anyVis) { bestI = faceI; bestW = 0.0; secondW = -1.0; secondI = -1; }
-  vec2 uv; float z;
-  project(bestI, vLocal, uv, z);
-  ivec2 px = ivec2(int(floor(uv.x + 0.5)), int(floor(uv.y + 0.5)));
-  vec2 sz = uViewSize[bestI];
-  px = clamp(px, ivec2(0), ivec2(int(sz.x) - 1, int(sz.y) - 1));
-  vec4 src = texelFetch(uViews, ivec3(px, bestI), 0);
-  if (src.a < 0.5) discard;
-  vec3 col = src.rgb;
-  if (secondW > 0.0 && bestW > 0.0 && secondW / max(bestW, 1e-6) >= uSeam) {
-    vec2 uv2; float z2;
-    project(secondI, vLocal, uv2, z2);
-    ivec2 px2 = ivec2(int(floor(uv2.x + 0.5)), int(floor(uv2.y + 0.5)));
-    vec2 sz2 = uViewSize[secondI];
-    px2 = clamp(px2, ivec2(0), ivec2(int(sz2.x) - 1, int(sz2.y) - 1));
-    vec4 sec = texelFetch(uViews, ivec3(px2, secondI), 0);
-    if (sec.a > 0.5) {
-      float m = bestW / max(bestW + secondW, 1e-6);
-      col = col * m + sec.rgb * (1.0 - m);
-    }
-  }
-  if (uMode == 1) o = vec4(uId, 1.0);
-  else o = vec4(col, 1.0);
-}`;
+  return { w, h, data, luma };
+}
 
-export async function loadWorldHull(gl, assetUrl, onBytes) {
+export async function loadWorldHull(gl, assetUrl, onBytes, opts) {
+  shader(gl);
+  const maxH = Math.max(64, (opts && opts.maxH) || 720);
   const folder = assetUrl.replace(/\/asset\.json$/, "");
   const asset = await (await fetch(assetUrl)).json();
   const meshBuf = await (await fetch(folder + "/" + ((asset.files && asset.files.mesh) || "mesh.bin"))).arrayBuffer();
   const mesh = parseMesh(meshBuf);
   const cams = (asset.cameras || []).slice(0, MAX_VIEWS);
-  if (!cams.length) throw new Error("hull has no cameras");
+  if (!cams.length) throw new Error("hull has no cameras " + assetUrl);
   const images = [];
-  let maxW = 1;
-  let maxH = 1;
-  for (const cam of cams) {
-    const img = await rgbaOf(folder + "/views/" + cam.file);
-    images.push(img);
+  for (const cam of cams) images.push(fitCanvas(await loadImage(folder + "/views/" + cam.file), maxH));
+  let maxW = 2;
+  let maxDimH = 2;
+  for (const img of images) {
     maxW = Math.max(maxW, img.w);
-    maxH = Math.max(maxH, img.h);
+    maxDimH = Math.max(maxDimH, img.h);
   }
-
-  const savedViewport = gl.getParameter(gl.VIEWPORT);
-  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
-  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-
+  const levels = Math.floor(Math.log2(Math.max(maxW, maxDimH))) + 1;
   const viewsTex = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D_ARRAY, viewsTex);
-  gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, maxW, maxH, cams.length);
-  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texStorage3D(gl.TEXTURE_2D_ARRAY, levels, gl.RGBA8, maxW, maxDimH, cams.length);
+  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
   for (let i = 0; i < images.length; i++) {
     const img = images[i];
     gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, i, img.w, img.h, 1, gl.RGBA, gl.UNSIGNED_BYTE, img.data);
   }
-  if (onBytes) onBytes("hull-views", maxW * maxH * 4 * cams.length);
-
-  const depthTex = gl.createTexture();
-  gl.bindTexture(gl.TEXTURE_2D_ARRAY, depthTex);
-  gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, maxW, maxH, cams.length);
-  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  const farPx = new Uint8Array(maxW * maxH * 4);
-  const far = packZ(16);
-  for (let i = 0; i < farPx.length; i += 4) {
-    farPx[i] = far[0];
-    farPx[i + 1] = far[1];
-    farPx[i + 2] = far[2];
-    farPx[i + 3] = 255;
-  }
-  for (let i = 0; i < cams.length; i++) {
-    gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, i, maxW, maxH, 1, gl.RGBA, gl.UNSIGNED_BYTE, farPx);
-  }
-  if (onBytes) onBytes("hull-depth", maxW * maxH * 4 * cams.length);
+  gl.generateMipmap(gl.TEXTURE_2D_ARRAY);
+  const bytes = Math.ceil(maxW * maxDimH * 4 * cams.length * 4 / 3);
+  if (onBytes) onBytes(assetUrl, bytes);
 
   const vao = gl.createVertexArray();
   gl.bindVertexArray(vao);
@@ -286,7 +245,7 @@ export async function loadWorldHull(gl, assetUrl, onBytes) {
     f32[i * 6 + 4] = mesh.normals[i * 3 + 1];
     f32[i * 6 + 5] = mesh.normals[i * 3 + 2];
   }
-  gl.bufferData(gl.ARRAY_BUFFER, inter, gl.STATIC_DRAW);
+  gl.bufferData(gl.ARRAY_BUFFER, f32, gl.STATIC_DRAW);
   gl.enableVertexAttribArray(0);
   gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 24, 0);
   gl.enableVertexAttribArray(1);
@@ -295,91 +254,94 @@ export async function loadWorldHull(gl, assetUrl, onBytes) {
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, mesh.indices, gl.STATIC_DRAW);
 
-  const zProg = program(gl, zVS, zFS);
-  const cProg = program(gl, cVS, cFS);
-  const fbo = gl.createFramebuffer();
-  const rb = gl.createRenderbuffer();
-  gl.bindRenderbuffer(gl.RENDERBUFFER, rb);
-  gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, maxW, maxH);
-  gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
-  gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, rb);
-  gl.useProgram(zProg);
-  gl.enable(gl.DEPTH_TEST);
-  gl.enable(gl.CULL_FACE);
-  gl.cullFace(gl.BACK);
-  gl.frontFace(gl.CCW);
-  gl.disable(gl.BLEND);
-  for (let i = 0; i < cams.length; i++) {
-    const cam = cams[i];
-    gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, depthTex, 0, i);
-    if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
-      throw new Error("hull depth fbo " + i);
-    }
-    gl.viewport(0, 0, cam.width, cam.height);
-    gl.clearColor(far[0] / 255, far[1] / 255, far[2] / 255, 1);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    gl.uniform3fv(gl.getUniformLocation(zProg, "uEye"), cam.position);
-    gl.uniform3fv(gl.getUniformLocation(zProg, "uRight"), cam.right);
-    gl.uniform3fv(gl.getUniformLocation(zProg, "uUp"), cam.up);
-    gl.uniform3fv(gl.getUniformLocation(zProg, "uForward"), cam.forward);
-    gl.uniform1f(gl.getUniformLocation(zProg, "uFovY"), cam.fovYDeg);
-    gl.uniform2f(gl.getUniformLocation(zProg, "uSize"), cam.width, cam.height);
-    gl.drawElements(gl.TRIANGLES, mesh.ic, gl.UNSIGNED_INT, 0);
+  const inst = new Float32Array(MAX_INST * 17);
+  const ibuf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, ibuf);
+  gl.bufferData(gl.ARRAY_BUFFER, inst.byteLength, gl.STATIC_DRAW);
+  const stride = 17 * 4;
+  for (let c = 0; c < 4; c++) {
+    gl.enableVertexAttribArray(3 + c);
+    gl.vertexAttribPointer(3 + c, 4, gl.FLOAT, false, stride, c * 16);
+    gl.vertexAttribDivisor(3 + c, 1);
   }
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-  gl.deleteFramebuffer(fbo);
-  gl.deleteRenderbuffer(rb);
+  gl.enableVertexAttribArray(7);
+  gl.vertexAttribPointer(7, 1, gl.FLOAT, false, stride, 64);
+  gl.vertexAttribDivisor(7, 1);
   gl.bindVertexArray(null);
-  gl.viewport(savedViewport[0], savedViewport[1], savedViewport[2], savedViewport[3]);
-  gl.disable(gl.CULL_FACE);
-  gl.enable(gl.BLEND);
 
-  const loc = {
-    vp: gl.getUniformLocation(cProg, "uVP"),
-    model: gl.getUniformLocation(cProg, "uModel"),
-    views: gl.getUniformLocation(cProg, "uViews"),
-    depth: gl.getUniformLocation(cProg, "uDepth"),
-    count: gl.getUniformLocation(cProg, "uViewCount"),
-    pos: gl.getUniformLocation(cProg, "uCamPos"),
-    right: gl.getUniformLocation(cProg, "uCamRight"),
-    up: gl.getUniformLocation(cProg, "uCamUp"),
-    fwd: gl.getUniformLocation(cProg, "uCamForward"),
-    fov: gl.getUniformLocation(cProg, "uFov"),
-    size: gl.getUniformLocation(cProg, "uViewSize"),
-    bias: gl.getUniformLocation(cProg, "uBias"),
-    seam: gl.getUniformLocation(cProg, "uSeam"),
-    mode: gl.getUniformLocation(cProg, "uMode"),
-    id: gl.getUniformLocation(cProg, "uId"),
-  };
   const pos = [];
   const right = [];
   const up = [];
   const fwd = [];
   const fov = [];
   const sz = [];
-  for (const cam of cams) {
-    pos.push(...cam.position);
-    right.push(...cam.right);
-    up.push(...cam.up);
-    fwd.push(...cam.forward);
+  const yaws = [];
+  const lumas = [];
+  for (let i = 0; i < cams.length; i++) {
+    const cam = cams[i];
+    const img = images[i];
+    pos.push(cam.position[0], cam.position[1], cam.position[2]);
+    right.push(cam.right[0], cam.right[1], cam.right[2]);
+    up.push(cam.up[0], cam.up[1], cam.up[2]);
+    fwd.push(cam.forward[0], cam.forward[1], cam.forward[2]);
     fov.push(cam.fovYDeg);
-    sz.push(cam.width, cam.height);
+    sz.push(img.w, img.h);
+    yaws.push(cam.yawDeg || 0);
+    lumas.push(img.luma);
   }
   while (pos.length < MAX_VIEWS * 3) {
-    pos.push(0, 0, 1);
+    pos.push(0, 0.2, 8);
     right.push(1, 0, 0);
     up.push(0, 1, 0);
-    fwd.push(0, 0, 1);
-    fov.push(40);
-    sz.push(1, 1);
+    fwd.push(0, 0, -1);
+    fov.push(32);
+    sz.push(maxW, maxDimH);
   }
-  const bias = 2.5 * Math.min(...(asset.voxelSize || [0.05]));
+  let count = 0;
+  let saved = null;
+  let savedN = 0;
 
-  function draw(vp, model, mode, idRgb) {
-    gl.useProgram(cProg);
+  function writeInstance(index, x, y, z, yawDeg, scale, idIndex) {
+    const a = yawDeg * Math.PI / 180;
+    const c = Math.cos(a);
+    const s = Math.sin(a);
+    const o = index * 17;
+    inst[o] = c * scale;
+    inst[o + 1] = 0;
+    inst[o + 2] = -s * scale;
+    inst[o + 3] = 0;
+    inst[o + 4] = 0;
+    inst[o + 5] = scale;
+    inst[o + 6] = 0;
+    inst[o + 7] = 0;
+    inst[o + 8] = s * scale;
+    inst[o + 9] = 0;
+    inst[o + 10] = c * scale;
+    inst[o + 11] = 0;
+    inst[o + 12] = x;
+    inst[o + 13] = y;
+    inst[o + 14] = z;
+    inst[o + 15] = 1;
+    inst[o + 16] = idIndex;
+  }
+
+  function addInstance(x, y, z, yawDeg, scale, idIndex) {
+    if (count >= MAX_INST) return;
+    writeInstance(count, x, y, z, yawDeg, scale, idIndex);
+    count++;
+  }
+
+  function upload() {
+    gl.bindBuffer(gl.ARRAY_BUFFER, ibuf);
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, inst);
+  }
+
+  function draw(vp, mode) {
+    if (!count) return;
+    const loc = sharedLoc;
+    gl.useProgram(sharedProg);
     gl.bindVertexArray(vao);
     gl.uniformMatrix4fv(loc.vp, false, vp);
-    gl.uniformMatrix4fv(loc.model, false, model);
     gl.uniform1i(loc.count, cams.length);
     gl.uniform3fv(loc.pos, pos);
     gl.uniform3fv(loc.right, right);
@@ -387,33 +349,54 @@ export async function loadWorldHull(gl, assetUrl, onBytes) {
     gl.uniform3fv(loc.fwd, fwd);
     gl.uniform1fv(loc.fov, fov);
     gl.uniform2fv(loc.size, sz);
-    gl.uniform1f(loc.bias, bias);
-    gl.uniform1f(loc.seam, asset.seamRatio || 0.65);
+    gl.uniform2f(loc.texSize, maxW, maxDimH);
+    gl.uniform1f(loc.hand, -1);
     gl.uniform1i(loc.mode, mode | 0);
-    gl.uniform3f(loc.id, idRgb[0], idRgb[1], idRgb[2]);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D_ARRAY, viewsTex);
     gl.uniform1i(loc.views, 0);
-    gl.activeTexture(gl.TEXTURE1);
-    gl.bindTexture(gl.TEXTURE_2D_ARRAY, depthTex);
-    gl.uniform1i(loc.depth, 1);
     gl.enable(gl.DEPTH_TEST);
     gl.depthMask(true);
-    gl.enable(gl.CULL_FACE);
     gl.disable(gl.BLEND);
-    gl.drawElements(gl.TRIANGLES, mesh.ic, gl.UNSIGNED_INT, 0);
     gl.disable(gl.CULL_FACE);
-    gl.enable(gl.BLEND);
+    gl.drawElementsInstanced(gl.TRIANGLES, mesh.ic, gl.UNSIGNED_INT, 0, count);
     gl.bindVertexArray(null);
-    gl.activeTexture(gl.TEXTURE0);
+  }
+
+  function solo(vp, x, y, z, yawDeg, scale, idIndex) {
+    savedN = count;
+    saved = inst.slice(0, Math.max(1, count) * 17);
+    count = 0;
+    addInstance(x, y, z, yawDeg, scale, idIndex);
+    upload();
+    draw(vp, 0);
+    if (saved) inst.set(saved);
+    count = savedN;
+    upload();
   }
 
   return {
+    addInstance,
+    upload,
     draw,
+    solo,
     minY: mesh.minY,
     maxY: mesh.maxY,
-    halfExtent: asset.halfExtent,
-    approach: asset.approach && asset.approach.minDistance ? asset.approach.minDistance : 8,
-    vertexCount: mesh.vc,
+    halfExtent: asset.halfExtent || [1, 1, 1],
+    approach: asset.approach && asset.approach.minDistance ? asset.approach.minDistance : 6,
+    srcH: maxDimH,
+    srcW: maxW,
+    name: asset.name || assetUrl,
+    yaws,
+    lumas,
+    cameras: cams.map((cam) => ({
+      yaw: cam.yawDeg || 0,
+      position: cam.position,
+      right: cam.right,
+      up: cam.up,
+      forward: cam.forward,
+      fov: cam.fovYDeg,
+    })),
+    indexCount: mesh.ic,
   };
 }

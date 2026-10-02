@@ -23,7 +23,7 @@
     "perView": [
       {
         "file": "yaw-000.png",
-        "area": 575082,
+        "area": 566520,
         "height": 941,
         "width": 929,
         "yawDeg": 0.0,
@@ -32,7 +32,7 @@
       },
       {
         "file": "yaw-045.png",
-        "area": 558272,
+        "area": 552327,
         "height": 942,
         "width": 926,
         "yawDeg": 45.0,
@@ -41,7 +41,7 @@
       },
       {
         "file": "yaw-090.png",
-        "area": 585416,
+        "area": 580367,
         "height": 938,
         "width": 922,
         "yawDeg": 90.0,
@@ -50,7 +50,7 @@
       },
       {
         "file": "yaw-135.png",
-        "area": 576515,
+        "area": 569564,
         "height": 922,
         "width": 901,
         "yawDeg": 135.0,
@@ -59,8 +59,8 @@
       },
       {
         "file": "yaw-180.png",
-        "area": 626351,
-        "height": 936,
+        "area": 623600,
+        "height": 935,
         "width": 910,
         "yawDeg": 180.0,
         "elevationDeg": 0.9240453527727062,
@@ -68,7 +68,7 @@
       },
       {
         "file": "yaw-225.png",
-        "area": 593427,
+        "area": 587823,
         "height": 943,
         "width": 905,
         "yawDeg": 225.0,
@@ -77,7 +77,7 @@
       },
       {
         "file": "yaw-270.png",
-        "area": 549772,
+        "area": 544531,
         "height": 938,
         "width": 912,
         "yawDeg": 270.0,
@@ -86,8 +86,8 @@
       },
       {
         "file": "yaw-315.png",
-        "area": 601512,
-        "height": 929,
+        "area": 595658,
+        "height": 928,
         "width": 911,
         "yawDeg": 315.0,
         "elevationDeg": 0.9240453527727062,
@@ -99,7 +99,7 @@
   "viewerYawProbeIgnored": 123.0,
   "magnification": {
     "limit": 1.0,
-    "max": 0.990473,
+    "max": 0.989051,
     "perView": [
       {
         "file": "yaw-000.png",
@@ -107,12 +107,12 @@
         "elevationDeg": 0.9240453527727062,
         "width": 1200,
         "height": 1600,
-        "maxMagnification": 0.820324,
-        "hullHeight": 715.301,
-        "hullWidth": 762.081,
+        "maxMagnification": 0.820702,
+        "hullHeight": 707.493,
+        "hullWidth": 762.432,
         "sourceHeight": 941,
         "sourceWidth": 929,
-        "atDistance": 6.346081993533966
+        "atDistance": 6.3254426077943355
       },
       {
         "file": "yaw-045.png",
@@ -120,12 +120,12 @@
         "elevationDeg": 0.9240453527727062,
         "width": 1200,
         "height": 1600,
-        "maxMagnification": 0.962815,
-        "hullHeight": 711.087,
-        "hullWidth": 891.567,
+        "maxMagnification": 0.963045,
+        "hullHeight": 709.75,
+        "hullWidth": 891.78,
         "sourceHeight": 942,
         "sourceWidth": 926,
-        "atDistance": 6.346081993533966
+        "atDistance": 6.3254426077943355
       },
       {
         "file": "yaw-090.png",
@@ -133,12 +133,12 @@
         "elevationDeg": 0.9240453527727062,
         "width": 1200,
         "height": 1600,
-        "maxMagnification": 0.823334,
-        "hullHeight": 714.268,
-        "hullWidth": 759.114,
+        "maxMagnification": 0.825293,
+        "hullHeight": 705.821,
+        "hullWidth": 760.92,
         "sourceHeight": 938,
         "sourceWidth": 922,
-        "atDistance": 6.346081993533966
+        "atDistance": 6.3254426077943355
       },
       {
         "file": "yaw-135.png",
@@ -146,12 +146,12 @@
         "elevationDeg": 0.9240453527727062,
         "width": 1200,
         "height": 1600,
-        "maxMagnification": 0.990473,
-        "hullHeight": 714.582,
-        "hullWidth": 892.417,
+        "maxMagnification": 0.989051,
+        "hullHeight": 708.224,
+        "hullWidth": 891.135,
         "sourceHeight": 922,
         "sourceWidth": 901,
-        "atDistance": 6.346081993533966
+        "atDistance": 6.3254426077943355
       },
       {
         "file": "yaw-180.png",
@@ -159,12 +159,12 @@
         "elevationDeg": 0.9240453527727062,
         "width": 1200,
         "height": 1600,
-        "maxMagnification": 0.835943,
-        "hullHeight": 726.805,
-        "hullWidth": 760.708,
-        "sourceHeight": 936,
+        "maxMagnification": 0.838198,
+        "hullHeight": 719.89,
+        "hullWidth": 762.76,
+        "sourceHeight": 935,
         "sourceWidth": 910,
-        "atDistance": 6.346081993533966
+        "atDistance": 6.3254426077943355
       },
       {
         "file": "yaw-225.png",
@@ -172,12 +172,12 @@
         "elevationDeg": 0.9240453527727062,
         "width": 1200,
         "height": 1600,
-        "maxMagnification": 0.984425,
-        "hullHeight": 728.306,
-        "hullWidth": 890.904,
+        "maxMagnification": 0.982837,
+        "hullHeight": 723.13,
+        "hullWidth": 889.468,
         "sourceHeight": 943,
         "sourceWidth": 905,
-        "atDistance": 6.346081993533966
+        "atDistance": 6.3254426077943355
       },
       {
         "file": "yaw-270.png",
@@ -185,12 +185,12 @@
         "elevationDeg": 0.9240453527727062,
         "width": 1200,
         "height": 1600,
-        "maxMagnification": 0.836165,
-        "hullHeight": 724.918,
-        "hullWidth": 762.583,
+        "maxMagnification": 0.837514,
+        "hullHeight": 717.916,
+        "hullWidth": 763.813,
         "sourceHeight": 938,
         "sourceWidth": 912,
-        "atDistance": 6.346081993533966
+        "atDistance": 6.3254426077943355
       },
       {
         "file": "yaw-315.png",
@@ -198,16 +198,16 @@
         "elevationDeg": 0.9240453527727062,
         "width": 1200,
         "height": 1600,
-        "maxMagnification": 0.978876,
-        "hullHeight": 710.253,
-        "hullWidth": 891.756,
-        "sourceHeight": 929,
+        "maxMagnification": 0.978372,
+        "hullHeight": 705.492,
+        "hullWidth": 891.297,
+        "sourceHeight": 928,
         "sourceWidth": 911,
-        "atDistance": 6.346081993533966
+        "atDistance": 6.3254426077943355
       }
     ],
-    "approachMinDistance": 6.346081993533966,
-    "approachCapDistance": 6.346081993533966,
+    "approachMinDistance": 6.3254426077943355,
+    "approachCapDistance": 6.3254426077943355,
     "requestedMinDistance": null,
     "viewport": {
       "width": 1200,
@@ -216,136 +216,136 @@
     }
   },
   "coverage": {
-    "surfaceCount": 20778,
+    "surfaceCount": 21936,
     "assignedFraction": 1.0,
     "silhouetteHitFraction": 1.0,
-    "seamFraction": 0.012128212532486284,
+    "seamFraction": 0.01062180889861415,
     "perViewFraction": [
-      0.3375204543266917,
-      0.05515449032630667,
-      0.14481663297718742,
-      0.05813841563191838,
-      0.15800365771489075,
-      0.045865819616902496,
-      0.14106266243141785,
-      0.05943786697468476
+      0.3300054704595186,
+      0.05538840262582057,
+      0.14943471918307805,
+      0.058533916849015315,
+      0.15723012399708242,
+      0.04654449307075128,
+      0.13808351568198396,
+      0.06477935813274982
     ],
-    "solidVoxels": 186060,
-    "carvedVoxels": 182029,
+    "solidVoxels": 181597,
+    "carvedVoxels": 178265,
     "undersideCap": {
       "applied": false,
-      "flatFraction": 0.0068080649384655665,
+      "flatFraction": 0.002880335166273894,
       "capVoxels": 0
     }
   },
   "holes": {
     "perRender": [
       {
-        "hitPixels": 516015,
-        "seamPixels": 17634,
-        "seamFraction": 0.03417342519112816,
-        "fallbackPixels": 3848,
+        "hitPixels": 514533,
+        "seamPixels": 17758,
+        "seamFraction": 0.03451284951596885,
+        "fallbackPixels": 4843,
         "reentryPixels": 0,
         "reentryFraction": 0.0,
-        "centerHitPixels": 516015,
+        "centerHitPixels": 514533,
         "centerReentryPixels": 0,
         "centerReentryFraction": 0.0,
-        "axisRunMean": 6.567357512953368,
+        "axisRunMean": 6.516129032258065,
         "file": "yaw-000.png",
         "yawDeg": 0.0,
         "elevated": false,
         "sourceHoleFraction": 0.0,
         "openingMatchedToSource": false,
-        "interiorHolePixels": 0,
-        "interiorHoleFraction": 0.0
+        "interiorHolePixels": 7,
+        "interiorHoleFraction": 1.3604569580571119e-05
       },
       {
-        "hitPixels": 568257,
-        "seamPixels": 16550,
-        "seamFraction": 0.029124146292962515,
-        "fallbackPixels": 5733,
+        "hitPixels": 561772,
+        "seamPixels": 18113,
+        "seamFraction": 0.03224261800160919,
+        "fallbackPixels": 4264,
         "reentryPixels": 0,
         "reentryFraction": 0.0,
-        "centerHitPixels": 568257,
+        "centerHitPixels": 561772,
         "centerReentryPixels": 0,
         "centerReentryFraction": 0.0,
-        "axisRunMean": 4.279569892473118,
+        "axisRunMean": 4.148397976391231,
         "file": "yaw-045.png",
         "yawDeg": 45.0,
         "elevated": false,
         "sourceHoleFraction": 0.0,
         "openingMatchedToSource": false,
-        "interiorHolePixels": 0,
-        "interiorHoleFraction": 0.0
+        "interiorHolePixels": 280,
+        "interiorHoleFraction": 0.0004984228477033387
       },
       {
-        "hitPixels": 514226,
-        "seamPixels": 13482,
-        "seamFraction": 0.02621804420624395,
-        "fallbackPixels": 4670,
+        "hitPixels": 508318,
+        "seamPixels": 14437,
+        "seamFraction": 0.028401512439063737,
+        "fallbackPixels": 5425,
         "reentryPixels": 0,
         "reentryFraction": 0.0,
-        "centerHitPixels": 514226,
+        "centerHitPixels": 508318,
         "centerReentryPixels": 0,
         "centerReentryFraction": 0.0,
-        "axisRunMean": 5.348195329087049,
+        "axisRunMean": 5.38477366255144,
         "file": "yaw-090.png",
         "yawDeg": 90.0,
         "elevated": false,
         "sourceHoleFraction": 0.0,
         "openingMatchedToSource": false,
-        "interiorHolePixels": 111,
-        "interiorHoleFraction": 0.00021585839689163908
+        "interiorHolePixels": 72,
+        "interiorHoleFraction": 0.00014164361679106386
       },
       {
-        "hitPixels": 572546,
-        "seamPixels": 16296,
-        "seamFraction": 0.028462341890433257,
-        "fallbackPixels": 9081,
+        "hitPixels": 566939,
+        "seamPixels": 16406,
+        "seamFraction": 0.028937857512007465,
+        "fallbackPixels": 11867,
         "reentryPixels": 0,
         "reentryFraction": 0.0,
-        "centerHitPixels": 572546,
+        "centerHitPixels": 566939,
         "centerReentryPixels": 0,
         "centerReentryFraction": 0.0,
-        "axisRunMean": 4.203935599284437,
+        "axisRunMean": 4.1096121416526135,
         "file": "yaw-135.png",
         "yawDeg": 135.0,
         "elevated": false,
         "sourceHoleFraction": 0.0,
         "openingMatchedToSource": false,
-        "interiorHolePixels": 159,
-        "interiorHoleFraction": 0.0002777069440708694
+        "interiorHolePixels": 64,
+        "interiorHoleFraction": 0.00011288692434283054
       },
       {
-        "hitPixels": 521376,
-        "seamPixels": 19610,
-        "seamFraction": 0.037612011293193394,
-        "fallbackPixels": 756,
+        "hitPixels": 518435,
+        "seamPixels": 21243,
+        "seamFraction": 0.040975242798036396,
+        "fallbackPixels": 1024,
         "reentryPixels": 0,
         "reentryFraction": 0.0,
-        "centerHitPixels": 521376,
+        "centerHitPixels": 518435,
         "centerReentryPixels": 0,
         "centerReentryFraction": 0.0,
-        "axisRunMean": 5.7482678983833715,
+        "axisRunMean": 5.650334075723831,
         "file": "yaw-180.png",
         "yawDeg": 180.0,
         "elevated": false,
         "sourceHoleFraction": 0.0,
         "openingMatchedToSource": false,
-        "interiorHolePixels": 2,
-        "interiorHoleFraction": 3.836003191554655e-06
+        "interiorHolePixels": 0,
+        "interiorHoleFraction": 0.0
       },
       {
-        "hitPixels": 576095,
-        "seamPixels": 18233,
-        "seamFraction": 0.031649293953254234,
-        "fallbackPixels": 1829,
+        "hitPixels": 573062,
+        "seamPixels": 19841,
+        "seamFraction": 0.03462278078113712,
+        "fallbackPixels": 2485,
         "reentryPixels": 0,
         "reentryFraction": 0.0,
-        "centerHitPixels": 576095,
+        "centerHitPixels": 573062,
         "centerReentryPixels": 0,
         "centerReentryFraction": 0.0,
-        "axisRunMean": 4.141891891891892,
+        "axisRunMean": 4.224108658743633,
         "file": "yaw-225.png",
         "yawDeg": 225.0,
         "elevated": false,
@@ -355,16 +355,16 @@
         "interiorHoleFraction": 0.0
       },
       {
-        "hitPixels": 518618,
-        "seamPixels": 14055,
-        "seamFraction": 0.02710087193271348,
-        "fallbackPixels": 2216,
+        "hitPixels": 517655,
+        "seamPixels": 14225,
+        "seamFraction": 0.0274796920729057,
+        "fallbackPixels": 2239,
         "reentryPixels": 0,
         "reentryFraction": 0.0,
-        "centerHitPixels": 518618,
+        "centerHitPixels": 517655,
         "centerReentryPixels": 0,
         "centerReentryFraction": 0.0,
-        "axisRunMean": 5.246464646464647,
+        "axisRunMean": 5.8,
         "file": "yaw-270.png",
         "yawDeg": 270.0,
         "elevated": false,
@@ -374,16 +374,16 @@
         "interiorHoleFraction": 0.0
       },
       {
-        "hitPixels": 573809,
-        "seamPixels": 17289,
-        "seamFraction": 0.030130234973658482,
-        "fallbackPixels": 2162,
+        "hitPixels": 572807,
+        "seamPixels": 16977,
+        "seamFraction": 0.029638255119088977,
+        "fallbackPixels": 1610,
         "reentryPixels": 0,
         "reentryFraction": 0.0,
-        "centerHitPixels": 573809,
+        "centerHitPixels": 572807,
         "centerReentryPixels": 0,
         "centerReentryFraction": 0.0,
-        "axisRunMean": 4.450090744101633,
+        "axisRunMean": 4.609942638623327,
         "file": "yaw-315.png",
         "yawDeg": 315.0,
         "elevated": false,
@@ -393,16 +393,16 @@
         "interiorHoleFraction": 0.0
       },
       {
-        "hitPixels": 520535,
-        "seamPixels": 19281,
-        "seamFraction": 0.03704073693411586,
-        "fallbackPixels": 4600,
+        "hitPixels": 519088,
+        "seamPixels": 21039,
+        "seamFraction": 0.04053069999691767,
+        "fallbackPixels": 6564,
         "reentryPixels": 0,
         "reentryFraction": 0.0,
-        "centerHitPixels": 520535,
+        "centerHitPixels": 519088,
         "centerReentryPixels": 0,
         "centerReentryFraction": 0.0,
-        "axisRunMean": 5.559550561797753,
+        "axisRunMean": 5.515625,
         "file": "behind.png",
         "yawDeg": 180.0,
         "elevated": false,
@@ -414,8 +414,8 @@
     ],
     "maxGapReentryFraction": 0.0,
     "maxCenterReentryFraction": 0.0,
-    "maxInteriorHoleFraction": 0.0002777069440708694,
-    "accidentalInteriorHoleFraction": 0.0002777069440708694,
+    "maxInteriorHoleFraction": 0.0004984228477033387,
+    "accidentalInteriorHoleFraction": 0.0004984228477033387,
     "enclosedVoids": 0,
     "watertight": true
   },
@@ -497,121 +497,159 @@
     "surface": "surface-nets",
     "surfaceGrid": 64,
     "legacyGrid": 28,
-    "vertexCount": 28693,
-    "triangleCount": 57708,
+    "vertexCount": 30249,
+    "triangleCount": 60876,
     "smoothIters": 8,
     "depthRelief": 0.35,
     "depthMinAgree": 1,
     "edges": {
-      "edges": 86468,
+      "edges": 91177,
       "boundary": 0,
-      "manifold": 86374,
-      "nonManifold": 94
+      "manifold": 91040,
+      "nonManifold": 137
     },
-    "meshVolume": 3.813987711352382,
-    "voxelVolume": 3.8331034612500017,
-    "bboxDepth": 1.6838,
-    "depthMin": 5.0612,
-    "depthMax": 7.3396,
+    "meshVolume": 3.7239628214912357,
+    "voxelVolume": 3.7411592456875016,
+    "bboxDepth": 1.6837,
+    "depthMin": 5.061,
+    "depthMax": 7.3397,
     "depthRange": [
-      5.0612,
-      7.3396
+      5.061,
+      7.3397
     ]
   },
   "seam": {
     "seamRatio": 0.65,
     "viewsBlendedMax": 2,
-    "fragmentSeamFraction": 0.037612011293193394,
-    "meanFragmentSeamFraction": 0.03127901185196704,
-    "fallbackPixels": 34895,
-    "voxelSeamFraction": 0.012128212532486284
+    "fragmentSeamFraction": 0.040975242798036396,
+    "meanFragmentSeamFraction": 0.033037945359637236,
+    "fallbackPixels": 40321,
+    "voxelSeamFraction": 0.01062180889861415
   },
   "protrusions": {
     "detected": 13,
     "flags": [
       {
-        "voxels": 250,
-        "contactVoxels": 98,
+        "voxels": 65,
+        "contactVoxels": 35,
         "joint": [
-          -0.77583,
-          -0.58486,
-          0.01993
+          -0.80639,
+          -0.6068,
+          -0.17089
+        ],
+        "bboxMin": [
+          -0.82731,
+          -0.686,
+          -0.36619
+        ],
+        "bboxMax": [
+          -0.77306,
+          -0.518,
+          0.01356
+        ]
+      },
+      {
+        "voxels": 59,
+        "contactVoxels": 29,
+        "joint": [
+          -0.74407,
+          -0.57593,
+          -0.528
+        ],
+        "bboxMin": [
+          -0.82731,
+          -0.658,
+          -0.69169
+        ],
+        "bboxMax": [
+          -0.66456,
+          -0.462,
+          -0.36619
+        ]
+      },
+      {
+        "voxels": 285,
+        "contactVoxels": 99,
+        "joint": [
+          -0.69278,
+          -0.54006,
+          0.27741
         ],
         "bboxMin": [
           -0.82731,
           -0.714,
-          -0.47469
+          0.01356
         ],
         "bboxMax": [
-          -0.47469,
-          -0.462,
+          -0.44756,
+          -0.434,
           0.42044
         ]
       },
       {
-        "voxels": 50,
-        "contactVoxels": 21,
+        "voxels": 70,
+        "contactVoxels": 38,
         "joint": [
-          -0.80148,
-          -0.426,
-          -0.54444
+          -0.80875,
+          -0.29768,
+          -0.59961
         ],
         "bboxMin": [
           -0.82731,
           -0.546,
-          -0.66456
-        ],
-        "bboxMax": [
-          -0.74594,
-          -0.35,
-          -0.44756
-        ]
-      },
-      {
-        "voxels": 44,
-        "contactVoxels": 23,
-        "joint": [
-          -0.8049,
-          -0.20391,
-          -0.66574
-        ],
-        "bboxMin": [
-          -0.82731,
-          -0.322,
           -0.74594
         ],
         "bboxMax": [
           -0.77306,
           -0.098,
-          -0.58319
+          -0.44756
         ]
       },
       {
-        "voxels": 75,
-        "contactVoxels": 38,
+        "voxels": 108,
+        "contactVoxels": 42,
         "joint": [
-          -0.6253,
-          -0.34705,
-          0.79234
+          -0.67554,
+          -0.262,
+          0.78792
         ],
         "bboxMin": [
-          -0.77306,
-          -0.462,
-          0.66456
+          -0.80019,
+          -0.434,
+          0.71881
         ],
         "bboxMax": [
-          -0.42044,
+          -0.52894,
           -0.126,
           0.82731
         ]
       },
       {
-        "voxels": 3555,
-        "contactVoxels": 696,
+        "voxels": 46,
+        "contactVoxels": 16,
         "joint": [
-          0.23559,
-          -0.42776,
-          -0.60423
+          -0.66287,
+          -0.672,
+          -0.0729
+        ],
+        "bboxMin": [
+          -0.74594,
+          -0.798,
+          -0.14919
+        ],
+        "bboxMax": [
+          -0.58319,
+          -0.63,
+          -0.01356
+        ]
+      },
+      {
+        "voxels": 5238,
+        "contactVoxels": 1168,
+        "joint": [
+          0.40167,
+          -0.35762,
+          -0.25727
         ],
         "bboxMin": [
           -0.58319,
@@ -620,39 +658,39 @@
         ],
         "bboxMax": [
           0.82731,
-          -0.098,
-          -0.23056
-        ]
-      },
-      {
-        "voxels": 873,
-        "contactVoxels": 195,
-        "joint": [
-          0.11441,
-          -0.58994,
-          0.58235
-        ],
-        "bboxMin": [
-          -0.47469,
-          -0.77,
-          0.01356
-        ],
-        "bboxMax": [
-          0.55606,
-          -0.378,
+          0.098,
           0.82731
         ]
       },
       {
-        "voxels": 45,
-        "contactVoxels": 16,
+        "voxels": 440,
+        "contactVoxels": 114,
         "joint": [
-          -0.3255,
-          -0.707,
-          -0.42552
+          -0.2929,
+          -0.4814,
+          0.71286
         ],
         "bboxMin": [
-          -0.44756,
+          -0.47469,
+          -0.686,
+          0.55606
+        ],
+        "bboxMax": [
+          -0.06781,
+          -0.266,
+          0.82731
+        ]
+      },
+      {
+        "voxels": 38,
+        "contactVoxels": 14,
+        "joint": [
+          -0.31,
+          -0.704,
+          -0.42819
+        ],
+        "bboxMin": [
+          -0.42044,
           -0.77,
           -0.47469
         ],
@@ -663,69 +701,69 @@
         ]
       },
       {
-        "voxels": 286,
-        "contactVoxels": 92,
+        "voxels": 744,
+        "contactVoxels": 197,
         "joint": [
-          0.52569,
-          -0.60352,
-          -0.00118
+          0.18705,
+          -0.55794,
+          0.52784
         ],
         "bboxMin": [
-          0.33906,
-          -0.77,
-          -0.20344
+          -0.09494,
+          -0.742,
+          0.14919
         ],
         "bboxMax": [
-          0.71881,
+          0.50181,
           -0.434,
-          0.33906
+          0.82731
         ]
       },
       {
-        "voxels": 226,
+        "voxels": 165,
+        "contactVoxels": 46,
+        "joint": [
+          0.1999,
+          -0.6093,
+          -0.27479
+        ],
+        "bboxMin": [
+          0.01356,
+          -0.714,
+          -0.47469
+        ],
+        "bboxMax": [
+          0.42044,
+          -0.546,
+          -0.17631
+        ]
+      },
+      {
+        "voxels": 233,
         "contactVoxels": 88,
         "joint": [
-          0.52,
-          -0.301,
-          0.77584
+          0.50983,
+          -0.29209,
+          0.76998
         ],
         "bboxMin": [
           0.33906,
-          -0.462,
-          0.66456
+          -0.49,
+          0.63744
         ],
         "bboxMax": [
-          0.71881,
+          0.66456,
           -0.126,
           0.82731
         ]
       },
       {
-        "voxels": 203,
-        "contactVoxels": 71,
+        "voxels": 49,
+        "contactVoxels": 24,
         "joint": [
-          0.76275,
-          -0.55389,
-          0.12015
-        ],
-        "bboxMin": [
-          0.55606,
-          -0.686,
-          -0.14919
-        ],
-        "bboxMax": [
-          0.82731,
-          -0.406,
-          0.36619
-        ]
-      },
-      {
-        "voxels": 53,
-        "contactVoxels": 26,
-        "joint": [
-          0.76576,
-          -0.08938,
-          -0.74907
+          0.76628,
+          -0.09333,
+          -0.74368
         ],
         "bboxMin": [
           0.66456,
@@ -737,44 +775,6 @@
           -0.042,
           -0.63744
         ]
-      },
-      {
-        "voxels": 136,
-        "contactVoxels": 49,
-        "joint": [
-          0.77583,
-          -0.13514,
-          0.71881
-        ],
-        "bboxMin": [
-          0.66456,
-          -0.378,
-          0.58319
-        ],
-        "bboxMax": [
-          0.82731,
-          0.098,
-          0.82731
-        ]
-      },
-      {
-        "voxels": 79,
-        "contactVoxels": 35,
-        "joint": [
-          0.80484,
-          -0.2844,
-          0.40029
-        ],
-        "bboxMin": [
-          0.77306,
-          -0.406,
-          0.31194
-        ],
-        "bboxMax": [
-          0.82731,
-          -0.154,
-          0.50181
-        ]
       }
     ],
     "note": "Flags are a 3-voxel opening. They do not cook views. Supplied subObjects are carved and jointed."
@@ -782,22 +782,22 @@
   "subObjects": [],
   "depthMetrics": {
     "units": "metres",
-    "bboxDepth": 1.6838,
+    "bboxDepth": 1.6837,
     "bboxMin": [
       -0.8417,
-      -0.8297,
-      -0.8419
+      -0.7734,
+      -0.8418
     ],
     "bboxMax": [
       0.8419,
       0.8688,
-      0.8418
+      0.8419
     ],
-    "depthMin": 5.0612,
-    "depthMax": 7.3396,
+    "depthMin": 5.061,
+    "depthMax": 7.3397,
     "depthRange": [
-      5.0612,
-      7.3396
+      5.061,
+      7.3397
     ],
     "refinement": {
       "applied": false,
@@ -812,7 +812,7 @@
         "yawDeg": 0.0,
         "elevationDeg": 0.924,
         "nearM": 5.3496,
-        "farM": 7.0514,
+        "farM": 7.0498,
         "meanOffsetM": 0.0,
         "maxOffsetM": 0.0
       },
@@ -838,7 +838,7 @@
         "file": "yaw-135.png",
         "yawDeg": 135.0,
         "elevationDeg": 0.924,
-        "nearM": 5.0612,
+        "nearM": 5.061,
         "farM": 7.3224,
         "meanOffsetM": 0.0,
         "maxOffsetM": 0.0
@@ -848,7 +848,7 @@
         "yawDeg": 180.0,
         "elevationDeg": 0.924,
         "nearM": 5.3484,
-        "farM": 7.0504,
+        "farM": 7.0507,
         "meanOffsetM": 0.0,
         "maxOffsetM": 0.0
       },
@@ -857,7 +857,7 @@
         "yawDeg": 225.0,
         "elevationDeg": 0.924,
         "nearM": 5.0771,
-        "farM": 7.3246,
+        "farM": 7.3247,
         "meanOffsetM": 0.0,
         "maxOffsetM": 0.0
       },
@@ -866,7 +866,7 @@
         "yawDeg": 270.0,
         "elevationDeg": 0.924,
         "nearM": 5.3484,
-        "farM": 7.0515,
+        "farM": 7.0512,
         "meanOffsetM": 0.0,
         "maxOffsetM": 0.0
       },
@@ -875,17 +875,17 @@
         "yawDeg": 315.0,
         "elevationDeg": 0.924,
         "nearM": 5.0792,
-        "farM": 7.3396,
+        "farM": 7.3397,
         "meanOffsetM": 0.0,
         "maxOffsetM": 0.0
       }
     ]
   },
-  "depthMin": 5.0612,
-  "depthMax": 7.3396,
+  "depthMin": 5.061,
+  "depthMax": 7.3397,
   "depthRange": [
-    5.0612,
-    7.3396
+    5.061,
+    7.3397
   ],
   "failures": [],
   "collisionRadius": 1.1507028043952106,
