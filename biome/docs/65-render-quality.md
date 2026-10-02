@@ -6,7 +6,7 @@ Kitchen only. Not a hang. Dated **2026-10-02**.
 
 Performance work may only remove waste. The picture the player sees stays as sharp as the Imagine files, at magnification **≤ 1.0**.
 
-Law [56](56-cutout-native-scale.md) already forbids enlarging a keyed cut. Law [63](63-layout-file-and-validator.md) already fails a play view whose HUD magnification is above `1.0`. This page is the draw path around those locks. Do not invent a second render-quality law.
+Law [56](56-cutout-native-scale.md) already forbids enlarging a keyed cut. Law [63](63-layout-file-and-validator.md) already fails a play view whose HUD magnification is above `1.0`. This page is the draw path around those locks. Do not invent a second render-quality law. The only passes allowed on top of Imagine pixels (fog, grade, bloom) are the law [67](67-imagine-post-pass.md) exception, and these rules still apply under it.
 
 ## Acceptance
 
