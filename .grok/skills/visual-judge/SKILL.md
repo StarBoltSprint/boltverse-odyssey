@@ -7,6 +7,10 @@ description: Gate a candidate still against 1-3 references and the owner taste l
 
 A gate before owner review. Not a replacement for it. A judge score never overrides a hard law.
 
+## Biome kit
+
+The still was cooked from a kit preamble (`python3 tools/kits/kit.py show --id <kit-id>`). Palette hexes in the kit are prompt guidance. The judge does not score a still against a hex.
+
 ## Before the still
 
 Read [`learn/taste.md`](../../../learn/taste.md). The Golden rule is the first section. The Style rules bind the cook. Do not round a shape so a numeric check will pass.

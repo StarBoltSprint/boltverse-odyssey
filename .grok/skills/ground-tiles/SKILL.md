@@ -7,6 +7,10 @@ description: Cook at least four world-locked ground tiles and gate their seams b
 
 A clearing floor is top-down Imagine stills, about **0.90 m**, **≥ 4** variants, on an invisible relief. A single relief still is not the floor. A scrolling ground video is the corridor, not the zone.
 
+## Biome kit
+
+Copy [`biome/kits/_template/`](../../../biome/kits/_template/README.md) and paste the preamble: `python3 tools/kits/kit.py show --id <kit-id>`. Ground plates in that kit are ortho, 0.90 m, with no horizon. Prompt file: [`biome/prompts/kit-preamble.txt`](../../../biome/prompts/kit-preamble.txt).
+
 ## Before the cook
 
 Read [`learn/failures.md`](../../../learn/failures.md) (one ground still frozen to the camera) and [`learn/recipes/INDEX.md`](../../../learn/recipes/INDEX.md) `#ground-tile`.

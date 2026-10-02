@@ -13,6 +13,8 @@ Do this at the end of every accepted step. Do not wait for the whole biome.
 - [`learn/recipes/INDEX.md`](../../../learn/recipes/INDEX.md)
 - [`learn/take-notes/_template.md`](../../../learn/take-notes/_template.md)
 
+The step START brief is `python3 tools/decrees/brief.py` ([`tools/decrees/README.md`](../../../tools/decrees/README.md)). It should already be in the step folder.
+
 ## Write
 
 1. Copy the template to `learn/take-notes/<YYYY-MM-DD>-<take>.md` on the first accepted step. On later steps, update that file. Record quota or turns spent per item, the biggest waste and why, what to reuse, and which recipes and failures were added.
@@ -38,3 +40,12 @@ python3 tools/reportview/build.py
 ```
 
 A missing section on that page is NOT RUN. It is not a PASS.
+
+Quota row, then the local phone preview, after the gates pass:
+
+```bash
+python3 tools/quota/quota.py --log <ndjson> --step <name>
+python3 tools/preview/freeze.py --zone <zone> --commit <sha> --report <REPORT.md> --play-dir <play> --out previews
+```
+
+Copy the quota numbers into the take note. The preview stays on 127.0.0.1. A public URL waits for the owner's explicit OK ([`tools/preview/README.md`](../../../tools/preview/README.md)).

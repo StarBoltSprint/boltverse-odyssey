@@ -1,0 +1,98 @@
+{
+  "schema": "biome-kit/1",
+  "id": "",
+  "name": "",
+  "timeOfDay": "",
+  "paint": "",
+  "sun": {
+    "count": 1,
+    "azimuthDeg": null,
+    "elevationDeg": null,
+    "kelvin": null
+  },
+  "palette": {
+    "sky": "",
+    "ground": "",
+    "accent": ""
+  },
+  "fog": {
+    "colourSource": ""
+  },
+  "geometry": {
+    "horizonFraction": 0.5,
+    "level": true,
+    "skySlices": 8,
+    "hfovDeg": 60,
+    "yawStepDeg": 45,
+    "sunCount": 1,
+    "ground": "ortho"
+  },
+  "camera": {
+    "play": {
+      "width": 720,
+      "height": 1600,
+      "horizonFraction": 0.5,
+      "level": true,
+      "fovYDeg": 40,
+      "eyeHeightM": 0.85,
+      "boomM": 6,
+      "magMax": 1
+    },
+    "plates": {
+      "sky": {
+        "type": "slice-ring",
+        "slices": 8,
+        "hfovDeg": 60,
+        "yawStepDeg": 45,
+        "horizonFraction": 0.5,
+        "level": true
+      },
+      "ground": {
+        "type": "ortho",
+        "tileM": 0.9,
+        "horizon": false
+      }
+    }
+  },
+  "skySlicePlan": {
+    "count": 8,
+    "hfovDeg": 60,
+    "yawStepDeg": 45,
+    "overlapDeg": 15,
+    "horizonFraction": 0.5,
+    "level": true,
+    "headingsDeg": [0, 45, 90, 135, 180, 225, 270, 315]
+  },
+  "livingLoops": [],
+  "promptPreamble": "",
+  "decreeHooks": [],
+  "scale": {
+    "boltShoulder": {
+      "withersFrac": 0.1,
+      "frame": [720, 1600],
+      "measure": "shoulders, not ears",
+      "bodyWidthM": 0.7,
+      "bodyRadiusM": 0.45,
+      "sources": [
+        "biome/docs/20-default-plate-proportions.md",
+        "biome/docs/13d-auto-scale.md",
+        "tools/layout/testdata/spec.json"
+      ]
+    }
+  },
+  "negatives": [
+    {"heading": "sky slices made by cloning or mirroring columns", "source": "learn/failures.md"},
+    {"heading": "a short sky loop reads as the same flash", "source": "learn/failures.md"},
+    {"heading": "a sky or hull video that drifts inside the frame", "source": "learn/failures.md"},
+    {"heading": "one ground still frozen to the camera", "source": "learn/failures.md"},
+    {"heading": "nearest sampling on world textures", "source": "learn/failures.md"},
+    {"heading": "rounded demo shapes passed the numeric gates", "source": "learn/failures.md"},
+    {"heading": "chroma key leaves a green edge band that the key gate does not count", "source": "learn/failures.md"},
+    {"heading": "orbit views drift in camera height and exposure", "source": "learn/failures.md"},
+    {"heading": "orbit views cooked without a silhouette lock", "source": "learn/failures.md"}
+  ],
+  "pixels": {
+    "source": "imagine",
+    "codeMay": ["invisible relief", "placement", "physics", "fog", "grade", "bloom"]
+  }
+}

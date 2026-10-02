@@ -7,6 +7,10 @@ description: Cook eight consistent views of one object from one reference still,
 
 Eight stills, one every 45°. Imagine does not offer this as one feature. A multi-image edit takes at most five sources ([`biome/docs/64-imagine-build-limits.md`](../../../biome/docs/64-imagine-build-limits.md) section C).
 
+## Biome kit
+
+Paste the kit preamble: `python3 tools/kits/kit.py show --id <kit-id>`. Template: [`biome/kits/_template/`](../../../biome/kits/_template/README.md). An orbit plate in the kit is eight stills, yaw step 45°, elevation 18°. One sun, the kit's azimuth, elevation, and Kelvin.
+
 ## Before the first still
 
 Read [`learn/failures.md`](../../../learn/failures.md) (orbit views without a silhouette lock) and [`learn/recipes/INDEX.md`](../../../learn/recipes/INDEX.md) `#rock` and `#hull-ship`. If a recipe file is listed, copy it. Do not invent its prompt.

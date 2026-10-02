@@ -1,0 +1,7 @@
+{"type":"turn","ts":"2026-10-02T12:00:00Z"}
+{"type":"tool_call","name":"read_file","ts":"2026-10-02T12:00:01Z"}
+{"type":"tool_call","name":"imagine_image_to_image","ts":"2026-10-02T12:00:02Z"}
+{"type":"video_generation","ts":"2026-10-02T12:00:40Z"}
+{"type":"usage","input_tokens":100,"output_tokens":40,"ts":"2026-10-02T12:01:00Z"}
+{"type":"turn","ts":"2026-10-02T12:01:00Z"}
+not json

@@ -9,6 +9,10 @@ Cook the cut at or above its final on-screen pixels. The compositor may shrink (
 
 Bolt's motion is `lock/bolt-gallop-cycle.mp4`. A WARN from assetcheck on a `lock/` path is not a recook.
 
+## Biome kit
+
+Paste the kit preamble before the Imagine call: `python3 tools/kits/kit.py show --id <kit-id>`. Template: [`biome/kits/_template/`](../../../biome/kits/_template/README.md). The hexes are prompt guidance. Fog colour is sampled from the Imagine plate named in the kit.
+
 ## Before the cook
 
 Read [`learn/failures.md`](../../../learn/failures.md) and [`learn/recipes/INDEX.md`](../../../learn/recipes/INDEX.md) `#cutout`.
