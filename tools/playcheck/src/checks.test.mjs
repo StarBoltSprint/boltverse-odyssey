@@ -166,3 +166,64 @@ test("ring data misses fail even if no pixels were required yet", () => {
   assert.equal(ring.result, "FAIL");
   assert.ok(ring.numbers.dataMissCount > 0);
 });
+
+test("acceptance rows stay absent until snapshot().acceptance is set", () => {
+  const judge = createJudge(layout);
+  judge.add({
+    id: "spawn",
+    kind: "spawn",
+    width: 8,
+    height: 8,
+    rgba: new Uint8Array(8 * 8 * 4),
+    snap: {
+      mag: 0.5,
+      heroCount: 1,
+      canvas: { width: 720, height: 1600 },
+      nearestVisibleM: 4,
+      objectIds: ids({}),
+    },
+  });
+  const plain = judge.finish({ glErrors: [], consoleErrors: [] }).rows;
+  assert.equal(plain.some((r) => r.id === "hero_visible"), false);
+  assert.equal(plain.some((r) => r.id === "steer_direction"), false);
+  assert.equal(plain.some((r) => r.id === "wreck_world_locked"), false);
+
+  const again = createJudge(layout);
+  const pics = [10, 80, 150, 220].map((v) => {
+    const a = new Uint8Array(8 * 8 * 4);
+    a.fill(v);
+    return a;
+  });
+  const base = {
+    mag: 0.4,
+    heroCount: 1,
+    heroPixels: 1000,
+    camRight: [1, 0, 0],
+    hdg: 0,
+    x: 0,
+    z: 0,
+    canvas: { width: 720, height: 1600 },
+    nearestVisibleM: 4,
+    acceptance: true,
+    gate: { id: "to-path", bearing_deg: 90, dist_m: 18 },
+    objectIds: ids({}),
+  };
+  again.add({ id: "01-spawn", kind: "spawn", width: 8, height: 8, rgba: pics[0], snap: base });
+  again.add({ id: "08-wreck-000", kind: "wreck-orbit", width: 8, height: 8, rgba: pics[0], snap: { ...base, heroPixels: 900 } });
+  again.add({
+    id: "08-wreck-090",
+    kind: "wreck-orbit",
+    width: 8,
+    height: 8,
+    rgba: pics[1],
+    snap: { ...base, heroPixels: 800, hdg: 90, camRight: [0, 0, -1], gate: { bearing_deg: 0, dist_m: 18 } },
+  });
+  again.add({ id: "08-wreck-180", kind: "wreck-orbit", width: 8, height: 8, rgba: pics[2], snap: { ...base, heroPixels: 700, hdg: 180, camRight: [-1, 0, 0], gate: { bearing_deg: -90, dist_m: 18 } } });
+  again.add({ id: "08-wreck-270", kind: "wreck-orbit", width: 8, height: 8, rgba: pics[3], snap: { ...base, heroPixels: 650, hdg: 270, camRight: [0, 0, 1], gate: { bearing_deg: 180, dist_m: 18 } } });
+  const rows = again.finish({ glErrors: [], consoleErrors: [] }).rows;
+  assert.equal(rows.find((r) => r.id === "hero_visible").result, "PASS");
+  assert.equal(rows.find((r) => r.id === "steer_direction").result, "PASS");
+  assert.equal(rows.find((r) => r.id === "wreck_world_locked").result, "PASS");
+  assert.equal(rows.find((r) => r.id === "gate_bearing").result, "PASS");
+});
+

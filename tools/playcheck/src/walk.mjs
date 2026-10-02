@@ -134,5 +134,22 @@ export async function runWalk({ page, layout, stillsDir, video, log }) {
   await simulate(0.55);
   await capture("07-idle", "idle");
 
+  const wreck = (layout.interiors || []).find((o) => o.id === "hero-00") || layout.interiors[0];
+  if (wreck && wreck.position) {
+    for (const bearing of [0, 90, 180, 270]) {
+      await page.evaluate(({ x0, z0, yaw, bearing: b }) => {
+        const a = ((yaw + b) * Math.PI) / 180;
+        const dist = 4.4;
+        const x = x0 + Math.sin(a) * dist;
+        const z = z0 + Math.cos(a) * dist;
+        const hdg = (Math.atan2(x0 - x, z0 - z) * 180) / Math.PI;
+        window.__play.place(x, z, (hdg + 360) % 360);
+        window.__play.setInput({ forward: 0, turn: 0, gallop: false });
+      }, { x0: wreck.position[0], z0: wreck.position[1], yaw: wreck.yaw || 0, bearing });
+      await simulate(0.25);
+      await capture(`08-wreck-${String(bearing).padStart(3, "0")}`, "wreck-orbit");
+    }
+  }
+
   return { shots, samples };
 }

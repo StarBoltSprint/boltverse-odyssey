@@ -2,6 +2,7 @@
  * Zone A phone view. Code places. Imagine pixels only.
  * Portrait 720×1600, hfov 22.7°, Bolt feet on the ground, source aspect.
  */
+import { loadWorldHull } from "./hullmesh.js";
 const W = 720;
 const H = 1600;
 const HFOV = 22.7 * Math.PI / 180;
@@ -217,7 +218,13 @@ function cross(a, b) {
 
 const P = perspective();
 
+let wreckHull = null;
+let heroPixels = 0;
+let camRightNow = [1, 0, 0];
+const keptViews = [];
+let viewEpoch = 0;
 let clearing = null;
+
 let objects = [];
 let tiles = [];
 let skyTex = [];
@@ -274,22 +281,48 @@ async function loadAsset(path) {
   if (assetViews.has(path)) return assetViews.get(path);
   const asset = await (await fetch(absUrl(path))).json();
   const folder = absUrl(path).replace(/\/asset\.json$/, "");
-  const cams = asset.cameras || [];
+  const wreck = /wreck10/.test(path);
   const views = [];
-  for (const cam of cams) {
-    const img = await loadImage(`${folder}/views/${cam.file}`);
-    const tex = makeTex(img, path + cam.file);
-    const b = await boundsOf(img);
-    views.push({ yaw: cam.yawDeg, tex, w: img.width, h: img.height, bounds: b });
+  if (!wreck) {
+    const cams = asset.cameras || [];
+    for (const cam of cams) {
+      const img = await loadImage(`${folder}/views/${cam.file}`);
+      const b = await boundsOf(img);
+      const view = { yaw: cam.yawDeg, img, tex: null, key: path + cam.file, w: img.width, h: img.height, bounds: b, used: 0 };
+      views.push(view);
+      keptViews.push(view);
+    }
   }
   const rec = {
     path,
     views,
-    height: (asset.halfExtent ? asset.halfExtent[1] * 2 : 1.6),
+    wreck,
+    height: asset.halfExtent ? asset.halfExtent[1] * 2 : 1.6,
     radius: asset.placement ? asset.placement.collisionRadius : 1,
+    halfExtent: asset.halfExtent || null,
+    approach: asset.approach && asset.approach.minDistance ? asset.approach.minDistance : 8,
   };
   assetViews.set(path, rec);
   return rec;
+}
+
+function retainView(view) {
+  view.used = viewEpoch;
+  if (view.tex) return view.tex;
+  view.tex = makeTex(view.img, view.key);
+  return view.tex;
+}
+
+function evictViews() {
+  for (const view of keptViews) {
+    if (!view.tex || view.used === viewEpoch) continue;
+    gl.deleteTexture(view.tex);
+    if (textures.has(view.key)) {
+      texBytes -= textures.get(view.key);
+      textures.delete(view.key);
+    }
+    view.tex = null;
+  }
 }
 
 function videoEl(url) {
@@ -367,10 +400,78 @@ function reset() {
 function camera() {
   const yaw = state.hdg * Math.PI / 180;
   const fwd = [Math.sin(yaw), 0, Math.cos(yaw)];
-  const eye = [state.x - fwd[0] * BOOM, EYE, state.z - fwd[2] * BOOM];
-  const right = norm(cross(fwd, [0, 1, 0]));
   const up = [0, 1, 0];
+  const right = norm(cross(up, fwd));
+  let boom = BOOM;
+  let slide = 0;
+  let eyeY = EYE;
+  let eye = [state.x - fwd[0] * boom, eyeY, state.z - fwd[2] * boom];
+  for (let i = 0; i < 8; i++) {
+    eye = [
+      state.x - fwd[0] * boom + right[0] * slide,
+      eyeY,
+      state.z - fwd[2] * boom + right[2] * slide,
+    ];
+    let pushed = false;
+    for (const o of objects) {
+      const asset = assetViews.get(o.asset);
+      if (!asset || !asset.wreck) continue;
+      const dSafe = asset.approach * (o.scale || 1) * 1.06;
+      const dx = eye[0] - o.position[0];
+      const dz = eye[2] - o.position[1];
+      const d = Math.hypot(dx, dz) || 1e-4;
+      if (d < dSafe) {
+        eye[0] = o.position[0] + (dx / d) * dSafe;
+        eye[2] = o.position[1] + (dz / d) * dSafe;
+        pushed = true;
+      }
+    }
+    const target = [state.x, 1.05, state.z];
+    if (losClear(eye, target) && !pushed) break;
+    if (!losClear(eye, target)) {
+      const sign = i % 2 === 0 ? 1 : -1;
+      slide += sign * (0.55 + 0.2 * i);
+      if (Math.abs(slide) > 2.6) {
+        slide *= 0.25;
+        eyeY = Math.min(2.7, eyeY + 0.28);
+        boom = Math.min(9.2, boom + 0.45);
+      }
+    } else break;
+  }
+  camRightNow = right;
   return { eye, right, up, fwd };
+}
+
+function segmentHits(p, q, c, r) {
+  const abx = q[0] - p[0];
+  const aby = q[1] - p[1];
+  const abz = q[2] - p[2];
+  const ab2 = abx * abx + aby * aby + abz * abz || 1e-6;
+  let t = ((c[0] - p[0]) * abx + (c[1] - p[1]) * aby + (c[2] - p[2]) * abz) / ab2;
+  t = Math.max(0, Math.min(1, t));
+  const x = p[0] + abx * t - c[0];
+  const y = p[1] + aby * t - c[1];
+  const z = p[2] + abz * t - c[2];
+  return x * x + y * y + z * z < r * r;
+}
+
+function losClear(eye, target) {
+  for (const o of objects) {
+    const asset = assetViews.get(o.asset);
+    if (asset && asset.wreck) continue;
+    const h = Math.max(0.4, (o.radius_m || 0.8) * 0.45);
+    const r = Math.max(0.35, (o.radius_m || 0.8) * 0.72);
+    if (segmentHits(eye, target, [o.position[0], h, o.position[1]], r)) return false;
+  }
+  return true;
+}
+
+function hidesBolt(o, eye) {
+  const asset = assetViews.get(o.asset);
+  if (asset && asset.wreck) return false;
+  const h = Math.max(0.5, (o.radius_m || 0.8) * 0.5);
+  const r = Math.max(0.4, (o.radius_m || 0.8) * 0.85);
+  return segmentHits(eye, [state.x, 1.05, state.z], [o.position[0], h, o.position[1]], r);
 }
 
 function project(eye, right, up, fwd, x, y, z) {
@@ -463,11 +564,14 @@ function batch(tex, idIndex, keyMode, alpha = 1) {
 
 function buildScene(mode) {
   batches.clear();
+  viewEpoch++;
+  evictViews();
+  nearestM = 80;
   const cam = camera();
   const { eye, right, up, fwd } = cam;
   const groundIdx = labelOf("ground");
   const tileM = clearing.zone.ground.tile_m || 0.9;
-  const reach = 26;
+  const reach = 32;
   const ix0 = Math.floor((eye[0] - reach) / tileM);
   const ix1 = Math.floor((eye[0] + reach) / tileM);
   const iz0 = Math.floor((eye[2] - reach) / tileM);
@@ -493,8 +597,8 @@ function buildScene(mode) {
 
   const sky = clearing.backdrop || {};
   const skyR = 90;
-  const yBot = EYE;
-  const yTop = EYE + skyR * Math.tan(VFOV / 2) * 1.08;
+  const yTop = cam.eye[1] + skyR * Math.tan(VFOV / 2);
+  const yBot = cam.eye[1] - skyR * Math.tan(0.055);
   for (let i = 0; i < skyTex.length; i++) {
     const a0 = (i / skyTex.length) * Math.PI * 2;
     const a1 = ((i + 1) / skyTex.length) * Math.PI * 2;
@@ -506,30 +610,59 @@ function buildScene(mode) {
   }
 
   const fog = (clearing.fog_band && clearing.fog_band.instances) || [];
+  const fade = (clearing.fog_band && clearing.fog_band.near_fade_m) || [3, 6];
   if (fogTex) {
-    const buf = batch(fogTex, mode === 1 ? labelOf("fog") : 0, 2, 0.55);
     for (const inst of fog) {
-      const s = Math.min(inst.size_m || 2.2, 2.2);
+      const dx = inst.position[0] - eye[0];
+      const dz = inst.position[1] - eye[2];
+      const dist = Math.hypot(dx, dz);
+      let alpha = 0;
+      if (dist > fade[0]) {
+        const t = Math.min(1, (dist - fade[0]) / Math.max(0.001, fade[1] - fade[0]));
+        alpha = t * Math.min(0.34, inst.opacity == null ? 0.28 : inst.opacity);
+      }
+      if (alpha < 0.02) continue;
+      const buf = batch(fogTex, mode === 1 ? labelOf("fog") : 0, 2, Math.round(alpha * 20) / 20);
+      const s = Math.min(inst.size_m || 2.2, 4.2);
       const y0 = inst.base_y_m || 0;
-      // Keep the puff below the horizon so it cannot cover ring-stone IDs.
-      const h = Math.min(s, Math.max(0.6, EYE - 0.18 - y0));
+      const h = Math.min(s * 0.85, 2.4);
       camQuad(buf, eye, right, up, inst.position[0], y0, inst.position[1], h, s);
     }
   }
 
+  let objectMag = 0;
   for (const o of objects) {
     const asset = assetViews.get(o.asset);
-    if (!asset) continue;
+    if (!asset || asset.wreck) continue;
     const view = pickView(asset, o.position[0], o.position[1], o.yaw_deg || 0);
     const dim = objectWorld(o, view);
-    let ox = o.position[0];
-    let oz = o.position[1];
+    const ox = o.position[0];
+    const oz = o.position[1];
     const distCam = Math.hypot(eye[0] - ox, eye[2] - oz);
-    if (distCam < 4.8) continue;
-    const buf = batch(view.tex, mode === 1 ? labelOf(o.id) : 0, 2, 1);
+    const mid = project(eye, right, up, fwd, ox, dim.y0 + dim.worldH * 0.5, oz);
+    if (!mid) continue;
+    const ndcX = ((mid.x / W) - 0.5) * 2;
+    const ndcY = (0.5 - (mid.y / H)) * 2;
+    if (Math.abs(ndcX) > 1.35 || ndcY > 1.35 || ndcY < -1.15) continue;
+    const magSafe = (focalGuess() * dim.worldH) / Math.max(1, view.h);
+    if (distCam < Math.max(1.2, magSafe)) continue;
+    if (hidesBolt(o, eye)) continue;
+    const tex = retainView(view);
+    let alpha = 1;
+    const near = clearing.near_lens || { fade_m: [1.2, 2.4] };
+    const fade0 = near.fade_m ? near.fade_m[0] : 1.2;
+    const fade1 = near.fade_m ? near.fade_m[1] : 2.4;
+    if (distCam < fade1) alpha = Math.max(0, (distCam - fade0) / Math.max(0.001, fade1 - fade0));
+    if (alpha < 0.02) continue;
+    const buf = batch(tex, mode === 1 ? labelOf(o.id) : 0, 2, alpha);
     camQuad(buf, eye, right, up, ox, dim.y0, oz, dim.worldH, dim.worldW);
+    const om = (focalGuess() * dim.worldH) / (distCam * view.h);
+    if (om > objectMag) objectMag = om;
+    const nearFace = distCam - (o.radius_m || 0.5);
+    if (nearFace > 0.2) nearestM = Math.min(nearestM, nearFace);
   }
 
+  let gateMag = 0;
   const gate = clearing.gates[0];
   const gtex = uploadGate() || gateTex;
   if (gate && gtex) {
@@ -537,8 +670,13 @@ function buildScene(mode) {
     const ring = clearing.edge_ring.radius_m;
     const gx = Math.sin(rad) * ring;
     const gz = Math.cos(rad) * ring;
-    const gh = 4.4;
+    const gdist = Math.hypot(eye[0] - gx, eye[2] - gz) || 1;
+    let gh = 4.4;
+    const gSrc = 1168;
+    const raw = (focalGuess() * gh) / (gdist * gSrc);
+    if (raw > 0.98) gh *= 0.98 / raw;
     const gw = gh * (784 / 1168);
+    gateMag = (focalGuess() * gh) / (gdist * gSrc);
     const buf = batch(gtex, mode === 1 ? labelOf("gate:" + gate.id) : 0, 3, 1);
     camQuad(buf, eye, right, up, gx, 0, gz, gh, gw);
   }
@@ -567,16 +705,77 @@ function buildScene(mode) {
         h: Math.abs(bot.y - top.y),
       };
     }
-    if (foot) nearestM = Math.min(nearestM, foot.z);
   }
 
-  // ground mag at the bottom of the portrait
-  const hit = EYE / Math.tan(VFOV / 2);
-  const focal = (H / 2) / Math.tan(VFOV / 2);
+  const hit = cam.eye[1] / Math.tan(VFOV / 2);
+  const focal = focalGuess();
   const tilePx = 1408;
   const span = 2.02;
-  magNow = Math.min(0.99, (focal / hit) * span / tilePx);
-  nearestM = Math.max(hit * 0.98, 1.25);
+  const groundMag = (focal / hit) * span / tilePx;
+  const skyW = sky.sourceW || 12768;
+  const skyH = sky.sourceH || 912;
+  const skyMagW = W / (skyW * (HFOV / (Math.PI * 2)));
+  const skyAng = Math.atan((yTop - cam.eye[1]) / skyR) - Math.atan((yBot - cam.eye[1]) / skyR);
+  const skyMagH = (skyAng / VFOV) * H / skyH;
+  const boltDist = Math.hypot(cam.eye[0] - state.x, cam.eye[2] - state.z) || BOOM;
+  const boltMag = (focal * BOLT_H) / (boltDist * BOLT_SRC.h);
+  let wreckMag = 0;
+  if (wreckHull) {
+    for (const o of objects) {
+      const asset = assetViews.get(o.asset);
+      if (!asset || !asset.wreck) continue;
+      const dist = Math.hypot(cam.eye[0] - o.position[0], cam.eye[2] - o.position[1]) || 1;
+      const worldH = (wreckHull.maxY - wreckHull.minY) * (o.scale || 1);
+      const srcH = 572;
+      wreckMag = Math.max(wreckMag, (focal * worldH) / (dist * srcH));
+    }
+  }
+  magNow = Math.max(groundMag, skyMagW, skyMagH, boltMag, objectMag, wreckMag, gateMag);
+  nearestM = Math.min(nearestM, Math.max(hit, clearing.near_lens.cull_m));
+}
+
+function focalGuess() {
+  return (H / 2) / Math.tan(VFOV / 2);
+}
+
+function modelMatrix(x, y, z, yawDeg, scale) {
+  const a = yawDeg * Math.PI / 180;
+  const c = Math.cos(a);
+  const s = Math.sin(a);
+  const m = new Float32Array(16);
+  m[0] = c * scale;
+  m[1] = 0;
+  m[2] = -s * scale;
+  m[3] = 0;
+  m[4] = 0;
+  m[5] = scale;
+  m[6] = 0;
+  m[7] = 0;
+  m[8] = s * scale;
+  m[9] = 0;
+  m[10] = c * scale;
+  m[11] = 0;
+  m[12] = x;
+  m[13] = y;
+  m[14] = z;
+  m[15] = 1;
+  return m;
+}
+
+function drawHulls(mode) {
+  if (!wreckHull) return;
+  const cam = camera();
+  const vp = mul(P, viewMatrix(cam.eye, cam.right, cam.up, cam.fwd));
+  for (const o of objects) {
+    const asset = assetViews.get(o.asset);
+    if (!asset || !asset.wreck) continue;
+    const s = o.scale || 1;
+    const y = (o.base_y_m || 0) - wreckHull.minY * s;
+    const model = modelMatrix(o.position[0], y, o.position[1], o.yaw_deg || 0, s);
+    const id = idRgb(mode === 1 ? labelOf(o.id) : 0);
+    wreckHull.draw(vp, model, mode, id);
+    drawCalls++;
+  }
 }
 
 function drawBatches(mode) {
@@ -616,6 +815,8 @@ function render(mode) {
   gl.clearColor(0.05, 0.04, 0.08, 1);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   drawCalls = 0;
+  drawHulls(mode);
+  gl.useProgram(prog);
   drawBatches(mode);
 }
 
@@ -632,8 +833,33 @@ function tick(dt) {
   let nz = state.z + Math.cos(yaw) * state.spd * dt;
   const center = clearing.zone.center || [0, 0];
   for (const o of clearing.interior_objects || []) {
+    const asset = assetViews.get(o.asset);
     const dx = nx - o.position[0];
     const dz = nz - o.position[1];
+    if (asset && asset.halfExtent && asset.wreck) {
+      const s = o.scale || 1;
+      const yaw = (o.yaw_deg || 0) * Math.PI / 180;
+      const c = Math.cos(yaw);
+      const sn = Math.sin(yaw);
+      const lx = c * dx - sn * dz;
+      const lz = sn * dx + c * dz;
+      const hx = asset.halfExtent[0] * s + 0.28;
+      const hz = asset.halfExtent[2] * s + 0.28;
+      if (Math.abs(lx) < hx && Math.abs(lz) < hz) {
+        const px = hx - Math.abs(lx);
+        const pz = hz - Math.abs(lz);
+        let nlx = lx;
+        let nlz = lz;
+        if (px < pz) nlx = Math.sign(lx || 1) * hx;
+        else nlz = Math.sign(lz || 1) * hz;
+        nx = o.position[0] + c * nlx + sn * nlz;
+        nz = o.position[1] - sn * nlx + c * nlz;
+        state.blocked = true;
+        state.spd = 0;
+        state.mode = "IDLE";
+      }
+      continue;
+    }
     const d = Math.hypot(dx, dz) || 1e-4;
     const limit = o.radius_m + 0.06;
     if (d < limit) {
@@ -671,7 +897,7 @@ function tick(dt) {
   if (active && active.paused) active.play().catch(() => {});
   if (gateVideo && gateVideo.paused) gateVideo.play().catch(() => {});
   render(0);
-  frameMs.push(1000 / 30);
+  frameMs.push(Math.max(0.1, performance.now() - t0));
   if (frameMs.length > 300) frameMs.shift();
   paintHud();
   return {
@@ -692,7 +918,8 @@ function gateInfo() {
   const edge = clearing.edge_ring.radius_m;
   const gx = Math.sin(gate.heading_deg * Math.PI / 180) * edge;
   const gz = Math.cos(gate.heading_deg * Math.PI / 180) * edge;
-  const rel = wrap180(gate.heading_deg - state.hdg);
+  const abs = bearing(state.x, state.z, gx, gz);
+  const rel = wrap180(abs - state.hdg);
   return {
     id: gate.id,
     bearing_deg: rel,
@@ -738,6 +965,9 @@ function snapshot() {
       ids[dst + x] = pix[(src + x) * 4];
     }
   }
+  const heroI = labelOf("hero");
+  heroPixels = 0;
+  for (let i = 0; i < ids.length; i++) if (ids[i] === heroI) heroPixels++;
   let bin = "";
   const bytes = new Uint8Array(ids.buffer);
   const chunk = 0x8000;
@@ -755,6 +985,9 @@ function snapshot() {
     magSources: { ground: magNow, backdrop: (720 / (sky.sourceW * (22.7 / 360))) },
     state: state.mode,
     heroCount: 1,
+    heroPixels,
+    camRight: camRightNow.slice(),
+    acceptance: true,
     blocked: state.blocked,
     pathTrigger: state.pathTrigger,
     gate: gateInfo(),
@@ -780,6 +1013,17 @@ function paintHud() {
     `x ${state.x.toFixed(2)}  z ${state.z.toFixed(2)}  hdg ${state.hdg.toFixed(1)}\n` +
     `mag ${magNow.toFixed(3)}  bolt ${state.mode}\n` +
     `gate ${g.bearing_deg.toFixed(1)}°  ${g.dist_m.toFixed(2)} m`;
+}
+
+function place(x, z, hdg) {
+  state.x = x;
+  state.z = z;
+  if (hdg != null) state.hdg = wrap360(hdg);
+  state.spd = 0;
+  state.mode = "IDLE";
+  state.forward = 0;
+  state.turn = 0;
+  state.gallop = false;
 }
 
 function look(headingDeg) {
@@ -886,6 +1130,14 @@ async function boot() {
   for (const h of clearing.edge_ring.hulls) paths.add(h.asset);
   for (const o of clearing.interior_objects) paths.add(o.asset);
   for (const p of paths) await loadAsset(p);
+  const wreckPath = [...paths].find((p) => /wreck10/.test(p));
+  if (wreckPath) {
+    wreckHull = await loadWorldHull(gl, absUrl(wreckPath), (id, bytes) => {
+      if (textures.has(id)) texBytes -= textures.get(id);
+      textures.set(id, bytes);
+      texBytes += bytes;
+    });
+  }
   objects = [];
   for (const h of clearing.edge_ring.hulls) objects.push({ ...h, kind: "edge" });
   for (const o of clearing.interior_objects) objects.push({ ...o, kind: "interior" });
@@ -907,6 +1159,7 @@ async function boot() {
     ready: true,
     reset,
     look,
+    place,
     setInput,
     tick,
     snapshot,

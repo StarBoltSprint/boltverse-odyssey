@@ -83,6 +83,7 @@ function finish(layout, frames, extras) {
   rows.push(rowTiles(frames));
   rows.push(rowBackdrop(frames, layout));
   rows.push(rowBoltGrounded(frames));
+  pushAcceptance(rows, frames, layout);
   pushTransition(rows, frames);
   const perf = judgePerf(frames);
   for (const perfRow of perf.rows) rows.push(perfRow);
@@ -109,6 +110,142 @@ function transitionSamples(frames) {
     else samples.push(block);
   }
   return samples;
+}
+
+function pushAcceptance(rows, frames, layout) {
+  const marked = frames.some((f) => f.snap && f.snap.acceptance);
+  if (!marked) return;
+  rows.push(rowHeroVisible(frames));
+  rows.push(rowSteer(frames));
+  rows.push(rowGateBearing(frames, layout));
+  rows.push(rowWreckLocked(frames));
+}
+
+function rowHeroVisible(frames) {
+  const spawn = frames.find((f) => f.kind === "spawn") || frames[0];
+  const base = spawn ? Number(spawn.snap.heroPixels) : NaN;
+  if (!Number.isFinite(base) || base < 1) {
+    return row("hero_visible", "FAIL", { spawn: base }, "Spawn hero pixel count was not measured.");
+  }
+  const bad = [];
+  let worst = 1;
+  for (const f of frames) {
+    const n = Number(f.snap.heroPixels);
+    const frac = Number.isFinite(n) ? n / base : 0;
+    if (frac < worst) worst = frac;
+    if (!(frac >= 0.6)) bad.push({ id: f.id, heroPixels: n, frac: round(frac) });
+  }
+  const result = bad.length ? "FAIL" : "PASS";
+  return row(
+    "hero_visible",
+    result,
+    { spawn: base, worstFrac: round(worst), bad: bad.slice(0, 6), frames: frames.length },
+    "Hero pixels must stay at or above 60% of the spawn count on every walked frame.",
+  );
+}
+
+function rowSteer(frames) {
+  let worst = 1;
+  const bad = [];
+  let n = 0;
+  for (const f of frames) {
+    const r = f.snap.camRight;
+    if (!r || r.length < 3) continue;
+    n++;
+    const yaw = (Number(f.snap.hdg) || 0) * Math.PI / 180;
+    const ex = Math.cos(yaw);
+    const ez = -Math.sin(yaw);
+    const dot = r[0] * ex + r[2] * ez;
+    if (dot < worst) worst = dot;
+    if (dot < 0.95) bad.push({ id: f.id, dot: round(dot), hdg: round(Number(f.snap.hdg) || 0) });
+  }
+  if (!n) return row("steer_direction", "FAIL", {}, "camRight was not reported.");
+  const result = bad.length ? "FAIL" : "PASS";
+  return row(
+    "steer_direction",
+    result,
+    { frames: n, worstDot: round(worst), bad: bad.slice(0, 4) },
+    "Camera right is cross(up, forward). A positive heading faces +X on screen right. Dot with that right must be ≥ 0.95.",
+  );
+}
+
+function rowGateBearing(frames, layout) {
+  const gate = layout.gates[0];
+  if (!gate) return row("gate_bearing", "FAIL", {}, "No gate.");
+  let worst = 0;
+  let at = null;
+  let samples = 0;
+  for (const f of frames) {
+    const g = f.snap.gate;
+    if (!g || !Number.isFinite(Number(g.bearing_deg))) continue;
+    const x = Number(f.snap.x) || 0;
+    const z = Number(f.snap.z) || 0;
+    const hdg = Number(f.snap.hdg) || 0;
+    const rad = (gate.heading * Math.PI) / 180;
+    const gx = Math.sin(rad) * layout.edgeRadius;
+    const gz = Math.cos(rad) * layout.edgeRadius;
+    const abs = (Math.atan2(gx - x, gz - z) * 180) / Math.PI;
+    const expect = wrap180deg(abs - hdg);
+    const err = Math.abs(wrap180deg(Number(g.bearing_deg) - expect));
+    samples++;
+    if (err > worst) {
+      worst = err;
+      at = f.id;
+    }
+  }
+  if (!samples) return row("gate_bearing", "FAIL", {}, "No gate bearing was reported.");
+  const result = worst <= 1 ? "PASS" : "FAIL";
+  return row(
+    "gate_bearing",
+    result,
+    { worstDeg: round(worst), at, limit: 1, samples },
+    "HUD gate bearing is atan2 from Bolt to the gate, minus heading. Error above 1° is FAIL.",
+  );
+}
+
+function wrap180deg(a) {
+  let x = a % 360;
+  if (x < 0) x += 360;
+  if (x > 180) x -= 360;
+  return x;
+}
+
+function rowWreckLocked(frames) {
+  const orbit = frames.filter((f) => f.kind === "wreck-orbit" && f.rgba && f.rgba.length);
+  if (orbit.length < 4) {
+    return row("wreck_world_locked", "FAIL", { frames: orbit.length }, "Need four wreck-local bearings with screenshots.");
+  }
+  let worst = Infinity;
+  const pairs = [];
+  for (let i = 0; i < orbit.length; i++) {
+    for (let j = i + 1; j < orbit.length; j++) {
+      const mae = meanAbs(orbit[i].rgba, orbit[j].rgba);
+      pairs.push({ a: orbit[i].id, b: orbit[j].id, mae: round(mae) });
+      if (mae < worst) worst = mae;
+    }
+  }
+  const result = worst > 3 / 255 ? "PASS" : "FAIL";
+  return row(
+    "wreck_world_locked",
+    result,
+    { frames: orbit.length, worstMae: round(worst), limit: round(3 / 255), pairs: pairs.slice(0, 8) },
+    "Orbit screenshots at different wreck-local bearings must differ by more than 3/255 mean absolute error. A camera-facing card that does not change is FAIL.",
+  );
+}
+
+function meanAbs(a, b) {
+  const n = Math.min(a.length, b.length);
+  if (!n) return 0;
+  let s = 0;
+  const step = Math.max(4, Math.floor(n / 40000) * 4);
+  let c = 0;
+  for (let i = 0; i < n; i += step) {
+    s += Math.abs(a[i] - b[i]);
+    if (i + 1 < n) s += Math.abs(a[i + 1] - b[i + 1]);
+    if (i + 2 < n) s += Math.abs(a[i + 2] - b[i + 2]);
+    c += 3;
+  }
+  return c ? s / c : 0;
 }
 
 function pushTransition(rows, frames) {
