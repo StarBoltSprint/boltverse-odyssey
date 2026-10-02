@@ -1,6 +1,6 @@
 # COLD START — Imagine Engine (any biome)
 
-**Tool feedback (law 65):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take, write `feedback/<date>-<tool>.md`, and open it upstream. [`65-tool-feedback-loop.md`](65-tool-feedback-loop.md).
+**Tool feedback (law 66):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take, write `feedback/<date>-<tool>.md`, and open it upstream. [`66-tool-feedback-loop.md`](66-tool-feedback-loop.md).
 
 A **playable biome composite** (lane slide, glance, wings, foes, howl, any paint) pastes [`COLD_START-biome-method.md`](COLD_START-biome-method.md) first. This file stays the densify and Imagine Live keyed-prop paste (laws 39–42). It overrides older gates that still hang still-bib LOD or path-beat cards.
 

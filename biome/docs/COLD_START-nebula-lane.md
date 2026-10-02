@@ -1,6 +1,6 @@
 # COLD START — Nebula Lane (laws 39, 40, 41, 42)
 
-**Tool feedback (law 65):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take, write `feedback/<date>-<tool>.md`, and open it upstream. [`65-tool-feedback-loop.md`](65-tool-feedback-loop.md).
+**Tool feedback (law 66):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take, write `feedback/<date>-<tool>.md`, and open it upstream. [`66-tool-feedback-loop.md`](66-tool-feedback-loop.md).
 
 Read this **first** if the player says Nebula Lane, the 4th biome, eclipse, or "look left and see the planet".
 

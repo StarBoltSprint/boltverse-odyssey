@@ -1,6 +1,6 @@
 # COLD_START — Prismwake
 
-**Tool feedback (law 65):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take, write `feedback/<date>-<tool>.md`, and open it upstream. [`65-tool-feedback-loop.md`](65-tool-feedback-loop.md).
+**Tool feedback (law 66):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take, write `feedback/<date>-<tool>.md`, and open it upstream. [`66-tool-feedback-loop.md`](66-tool-feedback-loop.md).
 
 Plan: [plans/prismwake-sprint.md](plans/prismwake-sprint.md). Stack: `biome/stills/stack/manifest.json`.
 

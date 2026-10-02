@@ -1,6 +1,6 @@
 # COLD — Howl GPU targets (paste before a destroyable)
 
-**Tool feedback (law 65):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take, write `feedback/<date>-<tool>.md`, and open it upstream. [`65-tool-feedback-loop.md`](65-tool-feedback-loop.md).
+**Tool feedback (law 66):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take, write `feedback/<date>-<tool>.md`, and open it upstream. [`66-tool-feedback-loop.md`](66-tool-feedback-loop.md).
 
 Read `biome/docs/32-howl-gpu-targets.md`. Law 25 meteors stay **dodge**. They are not Howl targets. **Live wire = law 34** (`biome/docs/34-howl-live-aim.md`, copy `biome/scripts/howl-live/`).
 

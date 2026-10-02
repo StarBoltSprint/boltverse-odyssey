@@ -92,7 +92,6 @@ Loop seam = **hard cut** on the closed period — do **NOT** optical-flow morph 
 4n. **[docs/38-gpu-light-openable.md](docs/38-gpu-light-openable.md)** — light layers and openables. Imagine cooks light-only plates and closed/open/transition bibs. GPU owns intensity, tint, hit, and open/close. Do not bake them into densify. Runtime [scripts/gpu-light/gpuLight.js](scripts/gpu-light/gpuLight.js) (`lightLayerFrame`) · [scripts/gpu-openable/gpuOpenable.js](scripts/gpu-openable/gpuOpenable.js) (`openableFrame`). Paste [docs/COLD_START-gpu-light-openable.md](docs/COLD_START-gpu-light-openable.md).
 4o. **[docs/56-cutout-native-scale.md](docs/56-cutout-native-scale.md)** — keyed cuts cook at or above final on-screen pixels. `scale > 1` is FAIL (liche). Near / mid / far are separate cooks. Meadow heading versus run versus sky: [docs/COLD_START-meadow-jobs.md](docs/COLD_START-meadow-jobs.md) (not a law number).
 4p. **[docs/64-imagine-build-limits.md](docs/64-imagine-build-limits.md)** — read before any long cook. Documented Imagine / Build caps (docs.x.ai, 2026-10-01) and the adaptations. One cook = one plate or one extension. Section F is uncertain and is not law. No biome style on that page.
-4q. **[docs/65-tool-feedback-loop.md](docs/65-tool-feedback-loop.md)** — if a repo tool let a defect through, reported a wrong number, or was hard to use: finish the take, write `feedback/<date>-<tool>.md`, and file it upstream. Nothing auto-merges. No secrets or private style prompts.
 5. **[docs/11-plate-order.md](docs/11-plate-order.md)** — HARD LOCK dealer playlist (canyon → cars → duel → night → war)
 6. **[docs/05-key.md](docs/05-key.md)** — chroma + crown, not luma
 7. **[reference/LanePlayer.tsx](reference/LanePlayer.tsx)** — r38 compositor
@@ -257,3 +256,5 @@ Every Live drops [../client/pack.js](../client/pack.js) with `BOLTVERSE_PACK_ORI
 - Refuse a new biome name / “I can only do Tide” (name + `{PAINT}` allowed; Tide is one example)
 - Playlist = new-biome-only unless SmiR / player explicitly says replace the default Beat
 - Dump the chat biome catalog on Welcome, or invent unhung biome names (on ask; hung chapters only; a biome in cook is not hung until hung)
+
+**Tool feedback (law 66):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take and file [docs/66-tool-feedback-loop.md](docs/66-tool-feedback-loop.md) upstream.

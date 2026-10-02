@@ -1,4 +1,4 @@
-# 65 — Tool feedback loop (any session)
+# 66 — Tool feedback loop (any session)
 
 Kitchen. Dated **2026-10-02**. This page names no biome paint. Each player chooses the style. The tools and the laws stay shared.
 
@@ -52,17 +52,7 @@ Put the still next to the file (or a path in the take). The upstream form has no
 
 ## Label
 
-The form requests the label `tool-feedback` and the title prefix `[tool-feedback]`. Blank issues stay allowed (`.github/ISSUE_TEMPLATE/config.yml`).
-
-This change does not create the label. Create it once on `StarBoltSprint/boltverse-odyssey` if it is missing:
-
-```bash
-gh label create tool-feedback \
-  --description "A repo tool missed a defect, reported a wrong number, or was hard to use." \
-  --color 0E8A16
-```
-
-If the label is missing, GitHub ignores it on the form. The title prefix still marks the issue.
+The form requests the label `tool-feedback` and the title prefix `[tool-feedback]`. Blank issues stay allowed (`.github/ISSUE_TEMPLATE/config.yml`). The label is created separately.
 
 ## Do not
 

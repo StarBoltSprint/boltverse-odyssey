@@ -1,6 +1,6 @@
 # COLD START — meadow jobs (heading, run, sky)
 
-**Tool feedback (law 65):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take, write `feedback/<date>-<tool>.md`, and open it upstream. [`65-tool-feedback-loop.md`](65-tool-feedback-loop.md).
+**Tool feedback (law 66):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take, write `feedback/<date>-<tool>.md`, and open it upstream. [`66-tool-feedback-loop.md`](66-tool-feedback-loop.md).
 
 Kitchen only. Do not read this to the player. Paste this when the paint is a meadow, a 360 field, or any open ground where the player can turn. It is **not** a biome law number.
 

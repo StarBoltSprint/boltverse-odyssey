@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Finish your take first. The same fields belong in `feedback/<date>-<tool>.md` on your branch. Law: `biome/docs/65-tool-feedback-loop.md`.
+        Finish your take first. The same fields belong in `feedback/<date>-<tool>.md` on your branch. Law: `biome/docs/66-tool-feedback-loop.md`.
 
         No API keys, tokens, or private style prompts. Maintainers review accepted reports and turn them into tool PRs. Nothing auto-merges.
 

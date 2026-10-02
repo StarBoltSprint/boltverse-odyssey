@@ -1,6 +1,6 @@
 # COLD_START — Frost aurora KEEP (paste into Build)
 
-**Tool feedback (law 65):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take, write `feedback/<date>-<tool>.md`, and open it upstream. [`65-tool-feedback-loop.md`](65-tool-feedback-loop.md).
+**Tool feedback (law 66):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take, write `feedback/<date>-<tool>.md`, and open it upstream. [`66-tool-feedback-loop.md`](66-tool-feedback-loop.md).
 
 You are hanging **Frost** beside Beat. Hang ≠ wipe. Empty-still skeleton = the **full** [20-default-plate-proportions.md](20-default-plate-proportions.md) set (frame + scale + GPU start — not φ-only). Frost **paint** KEEP = [20b-frost-aurora-proportions.md](20b-frost-aurora-proportions.md). Read both before Imagine.
 
