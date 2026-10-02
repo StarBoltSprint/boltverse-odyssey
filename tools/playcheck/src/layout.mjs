@@ -1,7 +1,10 @@
 /**
  * clearing.json → the object list the rendered view must show.
  * Keys stay generic. Asset paths are opaque strings.
+ * Organic files (schema clearing/2) add route and probe fields. Circle files do not.
  */
+
+import { buildRoute, planBoundaryProbes, readOrganic } from "./organic.mjs";
 
 const GATE_LABEL = (id) => `gate:${id}`;
 
@@ -31,7 +34,7 @@ export function normalizeLayout(raw) {
     yaw: num(o.yaw_deg, 0),
     radius: num(o.radius_m, 0.7),
   }));
-  return {
+  const layout = {
     id: raw.id || "clearing",
     center: [num(center[0], 0), num(center[1], 0)],
     zoneRadius: num(zone.radius_m, radius),
@@ -50,6 +53,32 @@ export function normalizeLayout(raw) {
     spawn: raw.spawn || { position: [0, 0] },
     hasBackdrop: !!(raw.backdrop && (raw.backdrop.ring || raw.backdrop.asset)),
   };
+  if (!isOrganicLayout(raw)) return layout;
+  const shape = readOrganic(raw);
+  layout.organic = true;
+  layout.pieces = shape.pieces;
+  layout.pois = shape.pois;
+  layout.footprint = shape.footprint;
+  layout.subAreas = shape.subAreas;
+  layout.passages = shape.passages;
+  layout.probes = planBoundaryProbes(shape);
+  layout.route = buildRoute(shape);
+  layout.gates = layout.gates.map((g, i) => {
+    const src = (raw.gates || [])[i] || {};
+    const pos = Array.isArray(src.position) ? [num(src.position[0], 0), num(src.position[1], 0)] : [0, 0];
+    return { ...g, position: pos, at_m: num(src.at_m, 0), span_m: num(src.span_m, g.widthM) };
+  });
+  if (raw.streaming && typeof raw.streaming === "object" && !Array.isArray(raw.streaming)) {
+    layout.streaming = raw.streaming;
+    layout.cells = Array.isArray(raw.cells) ? raw.cells : [];
+  }
+  return layout;
+}
+
+function isOrganicLayout(raw) {
+  if (!raw || typeof raw !== "object") return false;
+  if (raw.schema === "clearing/2") return true;
+  return !!(raw.zone && raw.zone.shape === "organic");
 }
 
 function num(v, d) {

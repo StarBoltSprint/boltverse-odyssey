@@ -1,0 +1,45 @@
+{
+  "format": "walkaround-hull-1",
+  "name": "mid-b",
+  "category": "mid",
+  "note": "TEST FIXTURE - not Imagine",
+  "drawsOwnPixels": false,
+  "invisibleHull": true,
+  "notForBolt": true,
+  "pixels": "original-png-lossless",
+  "synthetic": true,
+  "height_m": 1.05,
+  "width_m": 1.5,
+  "halfExtent": [
+    0.8,
+    0.525,
+    0.8
+  ],
+  "placement": {
+    "collisionRadius": 0.8,
+    "position": [
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "footprint": {
+    "type": "circle",
+    "radius_m": 0.8
+  },
+  "sourcePx": {
+    "width": 1400,
+    "height": 1600,
+    "kind": "silhouette"
+  },
+  "yawQuantizeDeg": 15,
+  "cameras": [
+    {
+      "file": "yaw-000.png",
+      "yawDeg": 0.0,
+      "fovYDeg": 40.0,
+      "width": 1400,
+      "height": 1600
+    }
+  ]
+}

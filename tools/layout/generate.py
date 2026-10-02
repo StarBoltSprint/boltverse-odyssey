@@ -26,6 +26,7 @@ from tools.layout.model import (
 )
 from tools.library.resolve import load_library_asset
 from tools.layout.noise import fbm
+from tools.layout.yawband import apply_yaw_bands, collect_bands
 
 
 class LayoutError(RuntimeError):
@@ -47,6 +48,10 @@ def generate(spec_path: Path, out_dir: Path, asset_roots: list[Path] | None = No
 
 
 def build_clearing(spec: dict, roots: list[Path]) -> dict:
+    if str((spec.get("zone") or {}).get("shape") or "") == "organic":
+        from tools.layout.organic import build_organic
+
+        return build_organic(spec, roots)
     zone = spec["zone"]
     ring_r = float(spec["ring"]["radius_m"])
     zone_r = float(zone["radius_m"])
@@ -157,6 +162,16 @@ def build_clearing(spec: dict, roots: list[Path]) -> dict:
         solids.extend(_as_circles(made))
 
     _stamp_relief(ring_pieces + exits + interiors, zone, perm)
+    # Absent yaw_band_deg: do not touch yaw. Round-mode bytes stay as they are.
+    bands = collect_bands(spec)
+    if bands:
+        apply_yaw_bands(
+            ring_pieces + exits + interiors,
+            bands,
+            float(limits.get("yaw_eps_deg") or 8.0),
+            float(limits.get("scale_eps") or 0.03),
+            roots,
+        )
 
     fog = _fog(spec.get("fog_band") or {}, gates, ring_r, zone, perm, origin)
     hulls = _hull_records(ring_pieces + exits)
@@ -210,6 +225,8 @@ def build_clearing(spec: dict, roots: list[Path]) -> dict:
         "view": view,
         "zone": zone,
     }
+    if bands:
+        clearing["yaw_bands"] = bands
     return clearing
 
 

@@ -34,6 +34,12 @@ const ORDER = [
   "draw_calls",
   "perf_line",
   "render_source",
+  "boundary_visible",
+  "discovery",
+  "no_pop",
+  "cells",
+  "fade_in",
+  "preload_ahead",
 ];
 
 export function writeReport(dir, payload) {
@@ -59,6 +65,7 @@ export function writeReport(dir, payload) {
     perf: payload.perf || null,
     perfLine: payload.perf?.perfLine || "Perf: drawCalls=missing, texMB=missing, activeVideos=missing, jsMs=missing",
   };
+  if (Array.isArray(payload.waypoints)) json.waypoints = payload.waypoints;
   writeFileSync(path.join(dir, "report.json"), JSON.stringify(json, null, 2));
   writeFileSync(path.join(dir, "report.md"), markdown(json));
   return json;
@@ -127,6 +134,14 @@ function markdown(json) {
     lines.push("## Notes");
     lines.push("");
     for (const n of json.notes) lines.push(`- ${n}`);
+    lines.push("");
+  }
+  if (json.waypoints?.length) {
+    lines.push("## Waypoints");
+    lines.push("");
+    for (const w of json.waypoints) {
+      lines.push(`- ${w.kind} ${w.subArea || w.passage || w.id} target ${w.x}, ${w.z} arrived ${w.arrivedX}, ${w.arrivedZ}`);
+    }
     lines.push("");
   }
   lines.push("## Stills");

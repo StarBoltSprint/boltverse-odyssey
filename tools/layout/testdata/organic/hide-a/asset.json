@@ -1,0 +1,45 @@
+{
+  "format": "walkaround-hull-1",
+  "name": "hide-a",
+  "category": "hide",
+  "note": "TEST FIXTURE - not Imagine",
+  "drawsOwnPixels": false,
+  "invisibleHull": true,
+  "notForBolt": true,
+  "pixels": "original-png-lossless",
+  "synthetic": true,
+  "height_m": 0.45,
+  "width_m": 0.7,
+  "halfExtent": [
+    0.35,
+    0.225,
+    0.35
+  ],
+  "placement": {
+    "collisionRadius": 0.35,
+    "position": [
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "footprint": {
+    "type": "circle",
+    "radius_m": 0.35
+  },
+  "sourcePx": {
+    "width": 1400,
+    "height": 1600,
+    "kind": "silhouette"
+  },
+  "yawQuantizeDeg": 15,
+  "cameras": [
+    {
+      "file": "yaw-000.png",
+      "yawDeg": 0.0,
+      "fovYDeg": 40.0,
+      "width": 1400,
+      "height": 1600
+    }
+  ]
+}

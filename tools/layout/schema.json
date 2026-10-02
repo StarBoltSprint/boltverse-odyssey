@@ -74,7 +74,20 @@
     "view": { "type": "object" },
     "bolt": { "type": "object" },
     "variants": { "type": "object" },
-    "budgets": { "type": "object" }
+    "budgets": { "type": "object" },
+    "yaw_bands": {
+      "type": "object",
+      "description": "Present only when the spec set yaw_band_deg. lo and hi are degrees. world is yaw 0. inward is heading_deg + 180. Owner decision 2026-10-02, spec rail 8. Omitted when the spec has no yaw_band_deg.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["lo", "hi", "ref"],
+        "properties": {
+          "lo": { "type": "number" },
+          "hi": { "type": "number" },
+          "ref": { "type": "string", "enum": ["world", "inward"] }
+        }
+      }
+    }
   },
   "$defs": {
     "placed": {

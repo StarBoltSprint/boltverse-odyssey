@@ -1,0 +1,45 @@
+{
+  "format": "walkaround-hull-1",
+  "name": "piece-b",
+  "category": "boundary",
+  "note": "TEST FIXTURE - not Imagine",
+  "drawsOwnPixels": false,
+  "invisibleHull": true,
+  "notForBolt": true,
+  "pixels": "original-png-lossless",
+  "synthetic": true,
+  "height_m": 1.15,
+  "width_m": 1.9,
+  "halfExtent": [
+    1.0,
+    0.575,
+    1.0
+  ],
+  "placement": {
+    "collisionRadius": 1.0,
+    "position": [
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "footprint": {
+    "type": "circle",
+    "radius_m": 1.0
+  },
+  "sourcePx": {
+    "width": 1400,
+    "height": 1600,
+    "kind": "silhouette"
+  },
+  "yawQuantizeDeg": 15,
+  "cameras": [
+    {
+      "file": "yaw-000.png",
+      "yawDeg": 0.0,
+      "fovYDeg": 40.0,
+      "width": 1400,
+      "height": 1600
+    }
+  ]
+}

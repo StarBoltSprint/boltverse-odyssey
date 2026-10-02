@@ -21,6 +21,7 @@ from tools.layout.geom import (
     circle_hits_sector,
 )
 from tools.layout.model import load_asset, load_json, magnification, perm_for_zone, relief_y
+from tools.layout.yawband import clearing_objects, measure_yaw_band, yaw_matches, yaw_span
 
 
 @dataclass
@@ -58,6 +59,10 @@ def check_clearing(
 
 
 def evaluate(clearing: dict, roots: list[Path], world: dict | None = None) -> tuple[list[Row], dict]:
+    if str((clearing.get("zone") or {}).get("shape") or "") == "organic" or clearing.get("schema") == "clearing/2":
+        from tools.layout.organic_check import evaluate_organic
+
+        return evaluate_organic(clearing, roots, world)
     rows: list[Row] = []
     zone = clearing.get("zone") or {}
     edge = clearing.get("edge_ring") or {}
@@ -390,15 +395,29 @@ def evaluate(clearing: dict, roots: list[Path], world: dict | None = None) -> tu
     # --- variety ---
     yaw_eps = float(limits.get("yaw_eps_deg") or 8.0)
     scale_eps = float(limits.get("scale_eps") or 0.03)
-    identical = _identical_neighbours(hulls, interiors, yaw_eps, scale_eps)
+    bands = clearing.get("yaw_bands") or {}
+    if bands:
+        identical = _identical_neighbours(hulls, interiors, yaw_eps, scale_eps, bands, roots)
+    else:
+        identical = _identical_neighbours(hulls, interiors, yaw_eps, scale_eps)
     spread = _spread(clearing, hulls, interiors)
+    variety_numbers = {"identical_neighbours": identical, "spread": spread}
+    if bands:
+        span = yaw_span(clearing_objects(clearing), bands, roots)
+        if span is not None:
+            variety_numbers["yaw_span_deg"] = span[0]
+            variety_numbers["yaw_span_cat"] = span[1]
     rows.append(
         Row(
             "variety",
             identical == 0 and spread == 0,
-            {"identical_neighbours": identical, "spread": spread},
+            variety_numbers,
         )
     )
+    if bands:
+        measured = measure_yaw_band(clearing_objects(clearing), bands, roots)
+        if measured is not None:
+            rows.append(Row("yaw_band", measured["ok"], measured["numbers"]))
 
     # --- fog and near lens ---
     fog = clearing.get("fog_band") or {}
@@ -552,8 +571,16 @@ def _min_surface(circles: list[tuple[float, float, float]], x: float, z: float) 
     return min(hypot(cx - x, cz - z) - r for cx, cz, r in circles)
 
 
-def _identical_neighbours(hulls: list[dict], interiors: list[dict], yaw_eps: float, scale_eps: float) -> int:
+def _identical_neighbours(
+    hulls: list[dict],
+    interiors: list[dict],
+    yaw_eps: float,
+    scale_eps: float,
+    bands: dict | None = None,
+    roots: list[Path] | None = None,
+) -> int:
     bad = 0
+    cache: dict = {}
     ordered = sorted(hulls, key=lambda h: float(h.get("heading_deg") or 0.0))
     for i, a in enumerate(ordered):
         b = ordered[(i + 1) % len(ordered)] if ordered else None
@@ -565,7 +592,7 @@ def _identical_neighbours(hulls: list[dict], interiors: list[dict], yaw_eps: flo
         gap -= float(b.get("width_deg") or 0) * 0.5
         if gap > 1.0:
             continue
-        if _same(a, b, yaw_eps, scale_eps):
+        if _same(a, b, yaw_eps, scale_eps, bands, roots, cache):
             bad += 1
     by_cat: dict[str, list[dict]] = {}
     for o in interiors:
@@ -582,15 +609,26 @@ def _identical_neighbours(hulls: list[dict], interiors: list[dict], yaw_eps: flo
                 if d < best_d:
                     best_d = d
                     best = b
-            if best is not None and _same(a, best, yaw_eps, scale_eps):
+            if best is not None and _same(a, best, yaw_eps, scale_eps, bands, roots, cache):
                 bad += 1
     return bad
 
 
-def _same(a: dict, b: dict, yaw_eps: float, scale_eps: float) -> bool:
+def _same(
+    a: dict,
+    b: dict,
+    yaw_eps: float,
+    scale_eps: float,
+    bands: dict | None = None,
+    roots: list[Path] | None = None,
+    cache: dict | None = None,
+) -> bool:
     if str(a.get("asset")) != str(b.get("asset")):
         return False
-    if ang_dist(float(a.get("yaw_deg") or 0), float(b.get("yaw_deg") or 0)) > yaw_eps:
+    if bands:
+        if not yaw_matches(a, b, yaw_eps, bands, roots or [], cache if cache is not None else {}):
+            return False
+    elif ang_dist(float(a.get("yaw_deg") or 0), float(b.get("yaw_deg") or 0)) > yaw_eps:
         return False
     if abs(float(a.get("scale") or 1) - float(b.get("scale") or 1)) > scale_eps:
         return False
