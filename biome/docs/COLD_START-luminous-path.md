@@ -1,5 +1,7 @@
 # COLD — luminous path climb
 
+**Tool feedback (law 65):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take, write `feedback/<date>-<tool>.md`, and open it upstream. [`65-tool-feedback-loop.md`](65-tool-feedback-loop.md).
+
 Read `biome/docs/19-luminous-path-climb.md`.
 
 Lena climb = **3-lane luminous path** under Bolt, not float. Same REUSE 6s gallop + GPU. Path forms ahead of paws; L/C/R dodge stays.

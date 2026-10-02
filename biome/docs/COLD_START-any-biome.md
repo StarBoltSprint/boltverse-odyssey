@@ -6,6 +6,8 @@ Playable composite (any paint): paste [`COLD_START-biome-method.md`](COLD_START-
 
 **HARD — Imagine and Build limits, read before a long cook:** [`64-imagine-build-limits.md`](64-imagine-build-limits.md). Documented caps as of 2026-10-01 (docs.x.ai) and the adaptations: spec file, resolution by mode, measure the file, 360 slices, no GPU depth or image-to-3D step inside Build. One cook = one plate or one extension. Section F is uncertain and is not law. No biome style on that page.
 
+**Tool feedback (law 65):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take, write `feedback/<date>-<tool>.md`, and open it upstream. [`65-tool-feedback-loop.md`](65-tool-feedback-loop.md).
+
 # COLD START — cook any biome (parity brief)
 
 You are cooking a **Lane biome** for Boltverse Odyssey for a **random player**. Read GitHub `main` first:

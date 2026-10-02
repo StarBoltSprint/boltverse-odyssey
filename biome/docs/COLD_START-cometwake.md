@@ -1,5 +1,7 @@
 # COLD_START — Cometwake
 
+**Tool feedback (law 65):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take, write `feedback/<date>-<tool>.md`, and open it upstream. [`65-tool-feedback-loop.md`](65-tool-feedback-loop.md).
+
 Plan: [plans/cometwake-sprint.md](plans/cometwake-sprint.md).
 
 **Play / Live KEEP:** https://boltboltverse-odyssey.grok.me

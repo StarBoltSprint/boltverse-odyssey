@@ -1,5 +1,7 @@
 # COLD START — meadow jobs (heading, run, sky)
 
+**Tool feedback (law 65):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take, write `feedback/<date>-<tool>.md`, and open it upstream. [`65-tool-feedback-loop.md`](65-tool-feedback-loop.md).
+
 Kitchen only. Do not read this to the player. Paste this when the paint is a meadow, a 360 field, or any open ground where the player can turn. It is **not** a biome law number.
 
 Law [56](56-cutout-native-scale.md) is the cutout scale (never `scale > 1`). Law [43](43-open-ground.md) still owns four skies and the tiling ground. Law [48](48-jade-plate-cook.md) still owns empty plates and **zero yaw inside the clip**. Law [24](24-camera-1point.md) still owns the sprint-road camera. This paste does not replace them. Do not invent a second law 43 or a law numbered from Engine decrees.

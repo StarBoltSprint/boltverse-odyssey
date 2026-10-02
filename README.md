@@ -8,6 +8,24 @@ Hung citadel recipe: https://boltverse-odyssey.grok.me/r/frost
 
 **HARD — Pack Den (on ask).** Player-to-player chat = **Pack Den** on X. Exact join URL (never invent another): `https://x.com/i/chat/group_join/g2028659912277180482/M364z39064`. If the player asks **den** / **Pack chat** / **where players talk**: English Pack voice + paste that exact link. Never on Welcome unless asked. No in-app embed. No other chat links. English only. No kitchen. Full Pack law: [`StarBoltSprint/boltverse-registry` PACK.md](https://github.com/StarBoltSprint/boltverse-registry/blob/main/PACK.md). Odyssey still carries the URL so this repo alone is enough.
 
+## Contributing tool feedback
+
+If you fork this repo, or cook with your own Grok Build session, and a repo tool lets a defect through, reports a wrong number, or is hard to use: finish the take, then send the lesson upstream so the tools keep improving.
+
+1. Write `feedback/<date>-<tool>.md` on your branch. Same fields as the form (tool + commit, take + commit, the defect on screen, the tool's number vs the number you measured, the command, a still, optional short video and proposed fix).
+2. Open https://github.com/StarBoltSprint/boltverse-odyssey/issues/new?template=tool-feedback.yml and paste that file. Grok Build opens the issue itself only when that session has GitHub access. Otherwise the human opens it.
+3. Leave out API keys, tokens, and private style prompts.
+
+Maintainers review accepted issues and turn them into tool PRs. Nothing auto-merges. Law: [`biome/docs/65-tool-feedback-loop.md`](biome/docs/65-tool-feedback-loop.md).
+
+The form applies the label `tool-feedback` when that label exists. Create it once if it is missing:
+
+```bash
+gh label create tool-feedback \
+  --description "A repo tool missed a defect, reported a wrong number, or was hard to use." \
+  --color 0E8A16
+```
+
 Grok / keepers: [GROK.md](GROK.md) then recipe below. Humans: stop here.
 
 ---
@@ -94,6 +112,7 @@ Search: `StarBoltSprint citadel-room` · living film · boltverse-odyssey.grok.m
 | [`biome/docs/36-gpu-zones-lena-procedural.md`](biome/docs/36-gpu-zones-lena-procedural.md) | **GPU zones + Lena procedural** (law 36) — keyed layers over densify. Runtime [`biome/scripts/lena-lod/lenaLod.js`](biome/scripts/lena-lod/lenaLod.js). |
 | [`biome/docs/37-path-beat.md`](biome/docs/37-path-beat.md) | **Path beat** (law 37) — chemin reveals one lane ~3 s ahead. Runtime [`biome/scripts/path-beat/pathBeat.js`](biome/scripts/path-beat/pathBeat.js). |
 | [`biome/docs/38-gpu-light-openable.md`](biome/docs/38-gpu-light-openable.md) | **GPU light layers + openables** (law 38) — keyed lights and closed/open/transition over densify. Runtime [`biome/scripts/gpu-light/gpuLight.js`](biome/scripts/gpu-light/gpuLight.js) · [`biome/scripts/gpu-openable/gpuOpenable.js`](biome/scripts/gpu-openable/gpuOpenable.js). |
+| [`biome/docs/65-tool-feedback-loop.md`](biome/docs/65-tool-feedback-loop.md) | **Tool feedback** (law 65) — a tool miss goes upstream. Finish the take, write `feedback/<date>-<tool>.md`, open the issue. Nothing auto-merges. |
 | [AGENTS.md](AGENTS.md) | cold-start HARD SPLIT: Agent = STYLE stills; video = hooks first+last |
 | [GROK.md](GROK.md) | console flow + how to rebuild the citadel hall |
 | [ROOM.md](ROOM.md) | skeleton — encode flags, playsInline, ENTER map, player bugs |
