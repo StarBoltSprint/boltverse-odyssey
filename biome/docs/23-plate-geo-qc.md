@@ -22,6 +22,8 @@ python3 biome/scripts/plate-geo-qc/plate-geo-qc.py <plate.mp4>
 
 Exit 0 = PASS → hang allowed. Exit 1 = FAIL → recook, do not hang.
 
+Open-world reports (`--report horizon`, `sky`, `turn`, `sun`, `texel`, `scale`) are **not** this hang gate. They live in the same script and they do not change the thresholds below. A level horizon is 0.50; this dash judge still walks toward the pitched Frost diamond at 0.38. Law: [`learn/geometry.md`](../../learn/geometry.md).
+
 ---
 
 ## Sealed thresholds (empty KEEP)

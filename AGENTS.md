@@ -4,6 +4,10 @@
 
 **Before any visual step.** Read [`learn/taste.md`](learn/taste.md). The Golden rule is first. The Style rules bind the cook. After the owner reacts, append that reaction to `learn/taste.md`: date, the thing judged, verdict KEEP/FAIL/LOVE, the owner's words, the design lesson. Append only. Do not rewrite an old row. The visual gate before that review is `python3 tools/judge/judge.py` ([`tools/judge/README.md`](tools/judge/README.md)). A judge score never overrides a hard law and never replaces the owner.
 
+**IMAGE GEOMETRY.** Before a still, a sky slice, an orbit, or a ground tile, read [`learn/geometry.md`](learn/geometry.md) and rail 12 in [`spec.md`](spec.md). A level plate puts the horizon at 0.50 (720×1600 → row 800). A horizon at 0.38, 0.382, or 1/3 is a pitched camera and is legal only when the pitch is stated. Do not cook from this paragraph.
+
+**ALWAYS IMPROVE.** At the end of every accepted step, append one concrete prompt or tool improvement under `learn/` (a recipe update, a failure entry, or a geometry refinement). If the step only confirmed an existing row, say so in the take note. Do not invent a prompt, a QC number, or a commit to fill the slot.
+
 **STOP 0 — STYLES FIRST (SmiR 2026-09-12). Miss this = the whole room is dead.**
 **STOP — HARD SPLIT.** Imagine Agent is obligatoire / MUST / systematically for STYLE stills when restyling. NEVER for Walk A, Walk B, breath, or any video. Walks / breaths / films = session Imagine Video with both stills pinned (first-frame + last-frame). Optional CLI: imagine-hooks / cook-room when `XAI_API_KEY` is set. One-still I2V is banned for walks. Missing `XAI_API_KEY` is not a stop. Soft KEEP banned. Smoke still gates.
 
@@ -98,7 +102,7 @@ Read **[GROK.md](GROK.md)** next. Stills = **[LAYOUT.md](LAYOUT.md)** + RIG-PROM
 
 **Citadel** = this repo, root (rooms / Hang / `cook-room`). **Biome / lane** = [`biome/`](biome/README.md) (PLAY · `06-techniques` · `09-recette-biome` · `10-bolt-cutout-law` · `12-lane-path-ribbon` · LanePlayer · `/master`). `StarBoltSprint/bolt-lane-recipe` may remain as archive. Do **not** recook the hall for a sprint ask. 3-take L/M/R is not the default.
 
-**MUST read before cooking** (biome / Sprint cook / lane / B-stack / green-screen / chroma): [`learn/failures.md`](learn/failures.md), [`learn/taste.md`](learn/taste.md), and [`learn/recipes/INDEX.md`](learn/recipes/INDEX.md) first, then the list. Read `learn/taste.md` again before any visual step. At the end of every accepted step, append new recipes and failures, append every owner reaction to `learn/taste.md`, and write a take note ([`learn/take-notes/_template.md`](learn/take-notes/_template.md)).
+**MUST read before cooking** (biome / Sprint cook / lane / B-stack / green-screen / chroma): [`learn/failures.md`](learn/failures.md), [`learn/taste.md`](learn/taste.md), [`learn/recipes/INDEX.md`](learn/recipes/INDEX.md), and [`learn/geometry.md`](learn/geometry.md) first, then the list. Read `learn/taste.md` again before any visual step. At the end of every accepted step, append new recipes and failures, append every owner reaction to `learn/taste.md`, and write a take note ([`learn/take-notes/_template.md`](learn/take-notes/_template.md)).
 1. [`biome/PLAY.md`](biome/PLAY.md)
 2. [`biome/docs/06-techniques.md`](biome/docs/06-techniques.md) (r38 techniques bible)
 3. **[`biome/docs/09-recette-biome.md`](biome/docs/09-recette-biome.md)** — REQUIRED full checklist (empty→cousin→speed→dealer→box; SPAWN/WIDTH; road-bar/blast)

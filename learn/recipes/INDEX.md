@@ -4,7 +4,7 @@ Filled recipes live in this directory, one file per validated cook, copied from 
 
 Filled so far: take 10d hero ship and slab rock (below). The methods below are the docs and commands a new cook follows until a recipe file exists. They are not recipes: several of them say the prompt was not stored.
 
-Skills: [`.grok/skills/`](../../.grok/skills/). Failures already paid for: [`../failures.md`](../failures.md).
+Skills: [`.grok/skills/`](../../.grok/skills/). Failures already paid for: [`../failures.md`](../failures.md). Image geometry (horizon, slices, turnaround, sun, scale, texel density) is [`../geometry.md`](../geometry.md). That page is a lock, not a recipe. No cook was stored for it.
 
 ## sky
 

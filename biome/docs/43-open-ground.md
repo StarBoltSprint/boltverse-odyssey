@@ -30,7 +30,7 @@ Swipe sideways turns **sky and ground together**. One `orbit`. If only the groun
 
 Laws [20](20-default-plate-proportions.md), [23](23-plate-geo-qc.md) and [24](24-camera-1point.md) are the **3-lane cone**. Horizon there is 0.38 because that is where the dashes vanish. `plate-geo-qc.py` looks for three dash tubes.
 
-**Do not run that script on this ground.** There are no dashes. It will FAIL a good tile. Do not replace this dirt with a road ribbon. The player already rejected that.
+**Do not run that script on this ground.** There are no dashes. It will FAIL a good tile. Do not replace this dirt with a road ribbon. The player already rejected that. A nadir tile is orthographic: no vanishing point, no horizon. `python3 biome/scripts/plate-geo-qc/plate-geo-qc.py --report texel --manifest <tiles.json>` checks pixels per metre and the edge seam. That report is not the dash judge and it is not a hang gate.
 
 φ is an audit on the lane. Do not put φ, `0.618`, or a UV table in an Imagine prompt.
 

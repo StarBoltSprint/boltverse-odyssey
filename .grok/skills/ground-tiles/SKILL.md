@@ -15,7 +15,7 @@ Method: [`biome/docs/61-free-clearing-walk.md`](../../../biome/docs/61-free-clea
 
 ## Cook
 
-Lossless PNG. No horizon. No Bolt. True world scale for 0.90 m so magnification stays ≤ 1 at 720×1600. Record generate or edit, the image refs, and the measured size in the recipe. This repo's image CLI is `POST /images/edits` in [`scripts/imagine-hooks.mjs`](../../../scripts/imagine-hooks.mjs). Hall `imagineStill` is not this cook.
+Lossless PNG. Orthographic, straight down. No vanishing point. No horizon. No Bolt. True world scale for 0.90 m so magnification stays ≤ 1 at 720×1600. Texel density (pixels per world metre) stays constant across the set. A seamless tile is not an Imagine mode. Record generate or edit, the image refs, and the measured size in the recipe. This repo's image CLI is `POST /images/edits` in [`scripts/imagine-hooks.mjs`](../../../scripts/imagine-hooks.mjs). Hall `imagineStill` is not this cook. Lock: [`learn/geometry.md`](../../../learn/geometry.md).
 
 ## Gate
 
@@ -25,7 +25,13 @@ One manifest for the whole variant set:
 python3 tools/assetcheck/check.py --manifest <manifest.json> --out <reports>
 ```
 
-Kind `tile`. Seam ratio above 2.2 and absolute seam above 12 fails. Exposure delta above 18 (0–255) or contrast ratio above 1.75 fails. Magnification above 1 fails.
+Kind `tile`. Seam ratio above 2.2 and absolute seam above 12 fails. Exposure delta above 18 (0–255) or contrast ratio above 1.75 fails. Magnification above 1 fails. Do not run the law 23 dash judge on these tiles. The nadir report is:
+
+```bash
+python3 biome/scripts/plate-geo-qc/plate-geo-qc.py --report texel --manifest <tiles.json>
+```
+
+That report is not a hang gate.
 
 Then placement, which does not draw:
 

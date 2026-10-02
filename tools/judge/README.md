@@ -54,7 +54,7 @@ Exit 0 only when the reply is that object and all of these hold:
 
 ## References
 
-Canonical stills are registered in [`references.json`](references.json) (`path`, `sha256`, `for`). The file starts empty. How to add a row: [`references/README.md`](references/README.md). A `--ref` that matches a row must hash-match. A `--ref` that is not registered still runs, and the prompt says so.
+Canonical stills are registered in [`references.json`](references.json) (`path`, `sha256`, `for`). How to add a row: [`references/README.md`](references/README.md). A `--ref` that matches a row must hash-match. A `--ref` that is not registered still runs, and the prompt says so. Paths under `lock/` are rejected. The rows now in the file are ice-hall stills, the relief plate, and the void-orbit ship skins. Howl is a video and is not registered.
 
 ## Selftest
 

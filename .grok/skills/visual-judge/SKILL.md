@@ -20,7 +20,7 @@ python3 tools/judge/judge.py --candidate <still> --ref <ref>
 
 1 to 3 references. The prompt includes the Golden rule and the taste log. Pass (exit 0) only when the reply is valid, `score` ≥ 7 (`--threshold` to change it), `keep` is true, and `matches_refs` is true. A bad reply exits 1.
 
-Canonical references are [`tools/judge/references.json`](../../../tools/judge/references.json). Registration is [`tools/judge/references/README.md`](../../../tools/judge/references/README.md). The registry starts empty.
+Canonical references are [`tools/judge/references.json`](../../../tools/judge/references.json). Registration is [`tools/judge/references/README.md`](../../../tools/judge/references/README.md). The registry holds owner-kept stills that already live in the repo (ice hall, relief plate, void-orbit ship). A path under `lock/` is rejected. Howl stays a video and is not registered.
 
 Offline check: `python3 tools/judge/selftest.py`.
 
