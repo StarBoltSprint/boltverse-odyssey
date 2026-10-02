@@ -28,6 +28,8 @@ Ice KEEP (`packs/frost/stills/`, `lock/SEAL-*.jpg`) = play example. Do not delet
 
 `STEP 0: attach lock/bolt-back.jpg (or biome/lock/bolt-back.jpg) in chat before cooking Bolt.`
 
+**sill ≠ spawn.** at-A = already AT the teal LEFT sill (seuil / threshold). at-B = already AT the gold RIGHT sill. Spawn = CENTER only (both doors + fork). Mid-hall at-A/at-B = **FAIL**. Soft KEEP banned.
+
 **PRIORITY 0 — Bolt sprint for new biomes = REUSE, not invent.**
 A fresh Grok in a new Build convo must **NOT** cook a new Bolt gallop from scratch (no new Imagine dog sprint). Pipeline is:
 1. Empty road plate only (Video A) — biome décor, no dog. Lane material first (law 35 menu A–D, or the material already in `{PAINT}`). GPU zones first (law 36): keyed layers over that plate; do not tile densify. Path beat (law 37) names the lane in code ~3 s ahead; do not bake it into that plate.
@@ -74,8 +76,6 @@ This repo is a **recipe**, not an app. Do not scaffold a player. Do not publish 
 **Owner:** SmiR / StarBoltSprint  
 **Hung citadel recipe:** https://boltverse-odyssey.grok.me  
 **Clone:** https://github.com/StarBoltSprint/boltverse-odyssey
-
-**sill ≠ spawn.** at-A = already AT the teal LEFT sill (seuil / threshold). at-B = already AT the gold RIGHT sill. Spawn = CENTER only (both doors + fork). Mid-hall at-A/at-B = **FAIL**. Soft KEEP banned.
 
 **Identity base:** Bolt is ALWAYS a full-white German Shepherd (white coat forever). That base never changes to grey / silver / black.
 
