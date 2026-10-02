@@ -2,7 +2,7 @@
 
 Filled recipes live in this directory, one file per validated cook, copied from [`_template.md`](_template.md). Add the row when the file is added. Do not list a cook whose prompt or QC numbers were not stored.
 
-No filled recipe is in the tree yet. The methods below are the docs and commands a new cook follows until a recipe file exists. They are not recipes: several of them say the prompt was not stored.
+Filled so far: take 10d hero ship and slab rock (below). The methods below are the docs and commands a new cook follows until a recipe file exists. They are not recipes: several of them say the prompt was not stored.
 
 Skills: [`.grok/skills/`](../../.grok/skills/). Failures already paid for: [`../failures.md`](../failures.md).
 
@@ -26,7 +26,7 @@ World-locked top-down stills, about **0.90 m**, **≥ 4** variants: [`biome/docs
 
 | Recipe | Commit | QC |
 | --- | --- | --- |
-| — | — | — |
+| [rock-slab-overhang.md](rock-slab-overhang.md) — grey slate slab with an overhang (owner-approved still; orbit only partly validated) | `c4436f2` (local `cli/take10d`) | natural-rock circ 0.464–0.633, bg/fringe/holes clean; objsheet keep 0.452/0.377 FAIL |
 
 Eight views, one every 45°, from one sharp still (V0) plus the previous view: [`biome/docs/60-imagine-relief-panorama-method.md`](../../biome/docs/60-imagine-relief-panorama-method.md) KEEP method. Eight consistent views are not an Imagine feature (max 5 sources): [`biome/docs/64-imagine-build-limits.md`](../../biome/docs/64-imagine-build-limits.md) section C. Before a hull: `python3 tools/assetcheck/check.py` kind `cutout`, then `python3 tools/objsheet/sheet.py`.
 
@@ -34,7 +34,7 @@ Eight views, one every 45°, from one sharp still (V0) plus the previous view: [
 
 | Recipe | Commit | QC |
 | --- | --- | --- |
-| — | — | — |
+| [hull-ship-xai-starship-hero.md](hull-ship-xai-starship-hero.md) — black faceted starship, 18° camera, etched shield emblem (hero only; the orbit failed) | `0bb54c1` (local `cli/take10d`, wreck10 install) | margins ≥ 0.041, luma rel −0.005, emblem rows by eye |
 
 Hull from stills that already passed the sheet: `python3 tools/walkaround/build.py --views <dir> --config <config.json> --out <dir>`. Read `qc/report.json`. Magnification ≤ 1. Register a passing object with `python3 tools/library/library.py add` so the next zone names `{ "library": "<id>" }` instead of recooking it ([`tools/library/README.md`](../../tools/library/README.md)).
 
