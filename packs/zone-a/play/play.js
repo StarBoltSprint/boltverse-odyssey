@@ -3,6 +3,7 @@
  * Portrait 720×1600, hfov 22.7°. Solids are world-locked hulls.
  */
 import { loadWorldHull } from "./hullmesh.js";
+import { createTerrain } from "./terrain.js";
 
 const W = 720;
 const H = 1600;
@@ -37,6 +38,11 @@ if (!gl) throw new Error("webgl2 missing");
 
 const anisoExt = gl.getExtension("EXT_texture_filter_anisotropic");
 const anisoMax = anisoExt ? gl.getParameter(anisoExt.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : 0;
+const terrain = createTerrain(gl, {
+  anisoExt, anisoMax, trackTex, loadImage, absUrl, W, H, FOCAL, VFOV, NEAR, FAR,
+});
+let useRelief = false;
+let shot = null;
 
 function compile(type, src) {
   const s = gl.createShader(type);
@@ -174,8 +180,16 @@ uniform vec3 uId;
 uniform int uMode;
 uniform int uKey;
 uniform float uAlpha;
+uniform float uPost;
 in vec2 vUv;
 out vec4 o;
+vec3 grade(vec3 x) {
+  vec3 t = clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0);
+  vec3 y = mix(x, t, 0.26);
+  float l = dot(y, vec3(0.2126, 0.7152, 0.0722));
+  y = mix(vec3(l), y, 1.05);
+  return clamp(y, 0.0, 1.0);
+}
 void main() {
   vec4 c = texture(uTex, vUv);
   if (uKey == 1) {
@@ -187,7 +201,7 @@ void main() {
     if (lum < 0.07) discard;
   }
   if (uMode == 1) o = vec4(uId, 1.0);
-  else if (uKey == 1 || uKey == 3) o = vec4(c.rgb, uAlpha);
+  else if (uKey == 1 || uKey == 3) o = vec4(uPost > 0.5 ? grade(c.rgb) : c.rgb, uAlpha);
   else o = vec4(c.rgb, c.a * uAlpha);
 }`);
 
@@ -229,6 +243,7 @@ const cardLoc = {
   mode: gl.getUniformLocation(cardProg, "uMode"),
   key: gl.getUniformLocation(cardProg, "uKey"),
   alpha: gl.getUniformLocation(cardProg, "uAlpha"),
+  post: gl.getUniformLocation(cardProg, "uPost"),
 };
 
 const P = new Float32Array(16);
@@ -362,6 +377,7 @@ let idleVideo = null;
 let pawFrac = 0.92;
 let heroQuad = { x: 0, y: 0, w: 0, h: 0 };
 let magNow = 0.4;
+let groundMagNow = 0;
 let nearestM = 4;
 let camRightNow = [1, 0, 0];
 let camBoom = BOOM;
@@ -743,9 +759,43 @@ function poseMetrics(eye) {
   return poseOut;
 }
 
+function feetY() {
+  return useRelief ? terrain.heightAt(state.x, state.z) : 0;
+}
+
+function applyShot() {
+  const e = shot.e;
+  const t = shot.t;
+  const dx = t[0] - e[0];
+  const dy = t[1] - e[1];
+  const dz = t[2] - e[2];
+  const len = Math.hypot(dx, dy, dz) || 1;
+  camFwd[0] = dx / len;
+  camFwd[1] = dy / len;
+  camFwd[2] = dz / len;
+  const rx = camFwd[2];
+  const rz = -camFwd[0];
+  const rl = Math.hypot(rx, rz) || 1;
+  rightBuf[0] = rx / rl;
+  rightBuf[1] = 0;
+  rightBuf[2] = rz / rl;
+  camUp[0] = camFwd[1] * rightBuf[2] - camFwd[2] * rightBuf[1];
+  camUp[1] = camFwd[2] * rightBuf[0] - camFwd[0] * rightBuf[2];
+  camUp[2] = camFwd[0] * rightBuf[1] - camFwd[1] * rightBuf[0];
+  const ul = Math.hypot(camUp[0], camUp[1], camUp[2]) || 1;
+  camUp[0] /= ul;
+  camUp[1] /= ul;
+  camUp[2] /= ul;
+  eyeBuf[0] = e[0];
+  eyeBuf[1] = e[1];
+  eyeBuf[2] = e[2];
+  camRightNow = rightBuf;
+  camBoom = Math.hypot(state.x - e[0], state.z - e[2]);
+}
+
 function pitchView(eye) {
   const along = (state.x - eye[0]) * fwdBuf[0] + (state.z - eye[2]) * fwdBuf[2];
-  const targetY = BOLT_H * 0.45;
+  const targetY = feetY() + BOLT_H * 0.45;
   const pitch = Math.atan2(targetY - eye[1], Math.max(0.35, along));
   const cp = Math.cos(pitch);
   const sp = Math.sin(pitch);
@@ -758,6 +808,10 @@ function pitchView(eye) {
 }
 
 function solveCamera() {
+  if (shot) {
+    applyShot();
+    return;
+  }
   const yaw = state.hdg * Math.PI / 180;
   fwdBuf[0] = Math.sin(yaw);
   fwdBuf[1] = 0;
@@ -792,8 +846,8 @@ function solveCamera() {
       for (let si = 0; si < slides.length; si++) {
         const slide = slides[si];
         candEye[0] = state.x - fwdBuf[0] * boom + rightBuf[0] * slide;
-        candEye[1] = eyes[ei];
         candEye[2] = state.z - fwdBuf[2] * boom + rightBuf[2] * slide;
+        candEye[1] = eyes[ei] + (useRelief ? terrain.heightAt(candEye[0], candEye[2]) : 0);
         const behind = (candEye[0] - state.x) * fwdBuf[0] + (candEye[2] - state.z) * fwdBuf[2];
         if (behind > -MIN_BOOM + 0.08) continue;
         const dist = Math.hypot(boom, slide, eyes[ei] - 0.97);
@@ -830,8 +884,8 @@ function solveCamera() {
     camBoom = fbBoom;
   } else if (!found) {
     eyeBuf[0] = state.x - fwdBuf[0] * BOOM;
-    eyeBuf[1] = EYE;
     eyeBuf[2] = state.z - fwdBuf[2] * BOOM;
+    eyeBuf[1] = EYE + (useRelief ? terrain.heightAt(eyeBuf[0], eyeBuf[2]) : 0);
     camBoom = BOOM;
   }
   pitchView(eyeBuf);
@@ -862,8 +916,9 @@ function boltFullyOn(eye) {
     for (let j = 0; j < 2; j++) {
       const ox = (i - 0.5) * worldW;
       const oy = y0 + j * worldH;
+      const gy = feetY();
       const x = state.x + rightBuf[0] * ox + camUp[0] * oy;
-      const y = rightBuf[1] * ox + camUp[1] * oy;
+      const y = gy + rightBuf[1] * ox + camUp[1] * oy;
       const z = state.z + rightBuf[2] * ox + camUp[2] * oy;
       const p = projectPoint(eye, rightBuf, camUp, camFwd, x, y, z);
       if (!p) return false;
@@ -875,8 +930,9 @@ function boltFullyOn(eye) {
 
 function spawnHeading() {
   const wreck = (clearing.interior_objects || []).find((o) => /wreck/i.test(o.asset || "") || o.category === "hero");
-  if (!wreck) return 0;
-  return bearing(state.x, state.z, wreck.position[0], wreck.position[1]);
+  if (wreck) return bearing(state.x, state.z, wreck.position[0], wreck.position[1]);
+  if (clearing.spawn && clearing.spawn.heading_deg != null) return clearing.spawn.heading_deg;
+  return 0;
 }
 function reset() {
   const s = clearing.spawn.position;
@@ -934,8 +990,11 @@ function resolveBody(nx, nz) {
 }
 
 function gatePoint() {
-  const gate = clearing.gates[0];
-  const edge = clearing.edge_ring.radius_m;
+  const gate = clearing.gates && clearing.gates[0];
+  const edge = clearing.edge_ring && clearing.edge_ring.radius_m;
+  if (!gate || !edge) {
+    return { gate: { id: "none", heading_deg: 0, width_m: 1 }, x: 1e6, z: 1e6 };
+  }
   const rad = gate.heading_deg * Math.PI / 180;
   return {
     gate,
@@ -1050,6 +1109,7 @@ function drawCard(mode, tex, key, cx, cy, cz, y0, w, h, idIndex, alpha) {
   gl.uniform1i(cardLoc.mode, mode);
   gl.uniform1i(cardLoc.key, key);
   gl.uniform1f(cardLoc.alpha, alpha);
+  gl.uniform1f(cardLoc.post, useRelief && terrain.postEnabled() && key === 1 && mode === 0 ? 1 : 0);
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_2D, tex);
   gl.uniform1i(cardLoc.tex, 0);
@@ -1077,10 +1137,11 @@ function updateHeroQuad(eye) {
     for (let j = 0; j < 2; j++) {
       const ox = (i - 0.5) * worldW;
       const oy = y0 + j * worldH;
+      const gy = feetY();
       const p = projectPoint(
         eye, rightBuf, camUp, camFwd,
         state.x + rightBuf[0] * ox + camUp[0] * oy,
-        camUp[1] * oy,
+        gy + camUp[1] * oy,
         state.z + rightBuf[2] * ox + camUp[2] * oy,
       );
       if (!p) return;
@@ -1107,7 +1168,9 @@ function measureMag(eye) {
   }
   nearestM = near;
   const groundD = Math.max(0.4, eye[1] / Math.tan(VFOV / 2));
-  const groundMag = (FOCAL * (clearing.zone.ground.tile_m || 0.9)) / (groundD * groundSrc);
+  const groundMag = useRelief
+    ? terrain.mag(eye)
+    : (FOCAL * (clearing.zone.ground.tile_m || 0.9)) / (groundD * groundSrc);
   const skyAng = Math.atan(Math.tan(VFOV / 2)) - Math.atan(-Math.tan(0.055));
   const skyScreenH = (skyAng / VFOV) * H;
   const skyMagW = W / (skySrcW * (HFOV / (Math.PI * 2)));
@@ -1116,9 +1179,13 @@ function measureMag(eye) {
   const g = gatePoint();
   const gdist = Math.hypot(eye[0] - g.x, eye[2] - g.z) || 1;
   let gh = 4.4;
-  const raw = (FOCAL * gh) / (gdist * GATE_SRC.h);
-  if (raw > 0.98) gh *= 0.98 / raw;
-  const gateMag = (FOCAL * gh) / (gdist * GATE_SRC.h);
+  let gateMag = 0;
+  if (clearing.gates && clearing.gates[0]) {
+    const raw = (FOCAL * gh) / (gdist * GATE_SRC.h);
+    if (raw > 0.98) gh *= 0.98 / raw;
+    gateMag = (FOCAL * gh) / (gdist * GATE_SRC.h);
+  }
+  groundMagNow = groundMag;
   magNow = Math.max(groundMag, skyMagW, skyMagH, boltMag, objectMag, gateMag);
   return { gh, gw: gh * (GATE_SRC.w / GATE_SRC.h), skyScreenH };
 }
@@ -1130,27 +1197,35 @@ function render(mode) {
   fillView(eye, rightBuf, camUp, camFwd);
   fillVP();
   const sized = measureMag(eye);
-  gl.bindFramebuffer(gl.FRAMEBUFFER, mode === 1 ? idFb : null);
+  if (useRelief && mode === 0) terrain.bindScene();
+  else gl.bindFramebuffer(gl.FRAMEBUFFER, mode === 1 ? idFb : null);
   gl.viewport(0, 0, W, H);
-  gl.clearColor(0.05, 0.04, 0.08, 1);
+  gl.clearColor(0, 0, 0, 1);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   drawCalls = 0;
   drawSky(mode, eye);
-  drawGround(mode);
+  if (useRelief) {
+    const rgb = idRgb(mode === 1 ? labelOf("ground") : 0);
+    terrain.draw(vpM, mode, rgb);
+    drawCalls += 2;
+  } else {
+    drawGround(mode);
+  }
   for (let i = 0; i < hullList.length; i++) hullList[i].draw(vpM, mode);
   drawCalls += hullList.length;
   if (showGate && uploadVideo(gateVideo, gateTex, "gate")) {
     const g = gatePoint();
     drawCard(mode, gateTex, 3, g.x, 0, g.z, 0, sized.gw, sized.gh, labelOf("gate:" + g.gate.id), 1);
   }
-  drawFog(mode, eye);
+  if (!useRelief) drawFog(mode, eye);
+  if (useRelief && mode === 0) terrain.composite();
   const active = state.mode === "GALLOP" ? gallopVideo : idleVideo;
   const boltReady = uploadVideo(active, boltTex, "bolt") || videoStamp.has("bolt");
   if (boltReady) {
     const worldH = BOLT_H;
     const worldW = worldH * (BOLT_SRC.w / BOLT_SRC.h);
     const y0 = -(1 - pawFrac) * worldH;
-    drawCard(mode, boltTex, 1, state.x, 0, state.z, y0, worldW, worldH, labelOf("hero"), 1);
+    drawCard(mode, boltTex, 1, state.x, feetY(), state.z, y0, worldW, worldH, labelOf("hero"), 1);
     updateHeroQuad(eye);
   }
   skyScreenCache = sized.skyScreenH;
@@ -1174,16 +1249,27 @@ function tick(dt) {
     state.spd = 0;
     state.mode = "IDLE";
   }
-  state.x = solved.x;
-  state.z = solved.z;
-  const g = gateInfo();
-  const edge = clearing.edge_ring.radius_m;
-  const gate = clearing.gates[0];
-  const half = Math.atan((gate.width_m * 0.5) / edge) * 180 / Math.PI;
-  const center = clearing.zone.center || [0, 0];
-  const ang = bearing(center[0], center[1], state.x, state.z);
-  const inGate = angDist(ang, gate.heading_deg) <= half + 0.4;
-  state.pathTrigger = inGate && g.dist_m < 16;
+  let px = solved.x;
+  let pz = solved.z;
+  if (useRelief) {
+    const held = terrain.contain(px, pz);
+    px = held.x;
+    pz = held.z;
+  }
+  state.x = px;
+  state.z = pz;
+  if (clearing.gates && clearing.gates[0] && clearing.edge_ring) {
+    const g = gateInfo();
+    const edge = clearing.edge_ring.radius_m;
+    const gate = clearing.gates[0];
+    const half = Math.atan((gate.width_m * 0.5) / edge) * 180 / Math.PI;
+    const center = clearing.zone.center || [0, 0];
+    const ang = bearing(center[0], center[1], state.x, state.z);
+    const inGate = angDist(ang, gate.heading_deg) <= half + 0.4;
+    state.pathTrigger = inGate && g.dist_m < 16;
+  } else {
+    state.pathTrigger = false;
+  }
   render(0);
   lastWork = Math.max(0.05, performance.now() - t0);
   frameMs[frameN % 300] = lastWork;
@@ -1199,6 +1285,7 @@ function tick(dt) {
     blocked: state.blocked,
     pathTrigger: state.pathTrigger,
     mag: magNow,
+    ground: groundMagNow,
     gate: gateInfo(),
   };
 }
@@ -1289,6 +1376,7 @@ function snapshot() {
     mag: magNow,
     magSources: {
       presented: magNow,
+      ground: groundMagNow,
       backdrop: Math.max(W / (skySrcW * (HFOV / (Math.PI * 2))), skyScreenCache / skySrcH),
     },
     state: state.mode,
@@ -1328,6 +1416,32 @@ function paintHud() {
     `mag ${magNow.toFixed(3)}  bolt ${state.mode}\n` +
     `gate ${g.bearing_deg.toFixed(1)}°  ${g.dist_m.toFixed(2)} m\n` +
     `Perf: drawCalls=${drawCalls}, texMB=${mb}, activeVideos=${activeVideoCount()}, jsMs=${lastWork.toFixed(2)}`;
+}
+
+function sampleHorizon(imgs) {
+  let r = 0;
+  let g = 0;
+  let b = 0;
+  let n = 0;
+  for (let i = 0; i < imgs.length; i++) {
+    const img = imgs[i];
+    const c = document.createElement("canvas");
+    c.width = img.width;
+    c.height = img.height;
+    const g2 = c.getContext("2d", { willReadFrequently: true });
+    g2.drawImage(img, 0, 0);
+    const y0 = Math.max(0, Math.floor(img.height * 0.48));
+    const y1 = Math.min(img.height, Math.ceil(img.height * 0.52));
+    const data = g2.getImageData(0, y0, img.width, Math.max(1, y1 - y0)).data;
+    for (let p = 0; p < data.length; p += 16) {
+      r += data[p];
+      g += data[p + 1];
+      b += data[p + 2];
+      n++;
+    }
+  }
+  if (!n) return [0, 0, 0];
+  return [r / n / 255, g / n / 255, b / n / 255];
 }
 
 function maeBytes(a, b) {
@@ -1590,16 +1704,18 @@ async function boot() {
     const paths = [];
     const seen = new Set();
     const add = (p) => { if (!seen.has(p)) { seen.add(p); paths.push(p); } };
-    for (const h of clearing.edge_ring.hulls) add(h.asset);
-    for (const o of clearing.interior_objects) add(o.asset);
+    const edgeHulls = (clearing.edge_ring && clearing.edge_ring.hulls) || [];
+    const interiors = clearing.interior_objects || [];
+    for (const h of edgeHulls) add(h.asset);
+    for (const o of interiors) add(o.asset);
     for (const p of paths) {
       const hull = await loadWorldHull(gl, absUrl(p), (id, bytes) => trackTex(id, bytes), { maxH: capFor(p) });
       hullByPath.set(p, hull);
       hullList.push(hull);
     }
     objects = [];
-    for (const h of clearing.edge_ring.hulls) objects.push({ ...h, kind: "edge" });
-    for (const o of clearing.interior_objects) objects.push({ ...o, kind: "interior" });
+    for (const h of edgeHulls) objects.push({ ...h, kind: "edge" });
+    for (const o of interiors) objects.push({ ...o, kind: "interior" });
     for (let i = 0; i < objects.length; i++) {
       const o = objects[i];
       const hull = hullByPath.get(o.asset);
@@ -1608,12 +1724,19 @@ async function boot() {
       hull.addInstance(o.position[0], y, o.position[1], o.yaw_deg || 0, o.scale || 1, labelOf(o.id));
     }
     for (let i = 0; i < hullList.length; i++) hullList[i].upload();
-    const tileUrls = clearing.zone.ground.tiles;
-    const tileImgs = [];
-    for (const u of tileUrls) tileImgs.push(await loadImage(absUrl(u)));
-    groundSrc = tileImgs[0].width;
-    groundTex = makeArray(tileImgs, "ground", true);
-    buildGround(clearing.zone.ground.tile_m || 0.9);
+    const ground = clearing.zone.ground;
+    if (ground.depth && ground.mask && ground.details) {
+      useRelief = true;
+      await terrain.load(ground);
+      groundSrc = terrain.srcW();
+    } else {
+      const tileUrls = ground.tiles;
+      const tileImgs = [];
+      for (const u of tileUrls) tileImgs.push(await loadImage(absUrl(u)));
+      groundSrc = tileImgs[0].width;
+      groundTex = makeArray(tileImgs, "ground", true);
+      buildGround(ground.tile_m || 0.9);
+    }
     const slices = clearing.backdrop.slices || [];
     const skyImgs = [];
     for (const u of slices) skyImgs.push(await loadImage(absUrl(u)));
@@ -1622,8 +1745,11 @@ async function boot() {
     for (let i = 0; i < skyImgs.length; i++) skySrcW += skyImgs[i].width;
     skyTex = makeArray(skyImgs, "sky", false);
     buildSky();
-    fogTex = makeStill(await loadImage(absUrl(clearing.fog_band.atlas)), "fog");
-    buildFog();
+    if (useRelief) terrain.setFog(sampleHorizon(skyImgs));
+    if (clearing.fog_band && clearing.fog_band.atlas) {
+      fogTex = makeStill(await loadImage(absUrl(clearing.fog_band.atlas)), "fog");
+      buildFog();
+    }
     buildCard();
     boltTex = gl.createTexture();
     gateTex = gl.createTexture();
@@ -1635,10 +1761,12 @@ async function boot() {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gallopVideo = videoEl(clearing.bolt.gallop);
     idleVideo = videoEl(clearing.bolt.idle);
-    gateVideo = videoEl(clearing.gates[0].field);
     gallopVideo.loop = true;
     idleVideo.loop = true;
-    gateVideo.loop = true;
+    if (clearing.gates && clearing.gates[0] && clearing.gates[0].field) {
+      gateVideo = videoEl(clearing.gates[0].field);
+      gateVideo.loop = true;
+    }
     await measurePaw(gallopVideo);
     await idleVideo.play().catch(() => {});
     await new Promise((r) => {
@@ -1649,9 +1777,14 @@ async function boot() {
     trackTex("id", W * H * 4);
     reset();
     window.__play = {
-      version: 2,
+      version: 3,
       ready: true,
       reset, look, place, setInput, tick, snapshot, audit,
+      lookAt(e, t) { shot = { e, t }; },
+      clearShot() { shot = null; },
+      setPost(on) { terrain.setPost(on); },
+      groundInfo() { return terrain.info(); },
+      heightAt(x, z) { return terrain.heightAt(x, z); },
     };
     render(0);
     paintHud();
