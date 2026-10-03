@@ -63,3 +63,28 @@ defect per round, from a queue fed by Director QC and `feedback/`.
 | [`learn/quota-log.md`](../../learn/quota-log.md) | Turns / quota per step. |
 | [`learn/prompts-audit.md`](../../learn/prompts-audit.md) | Audit of prompts against the geometry lock. |
 | [`feedback/`](../../feedback/README.md) | Tool defect reports (law 66). |
+
+## 6. Recipe progression (versions, score, lock)
+
+Asked by SmiR once the sky and the ground were validated (2026-10-03 21:56). Every recipe keeps getting better and never
+slides back.
+
+- **Versions.** Each recipe (ground, sky, rocks, hard objects, and every new one) has numbered versions: `<recipe> v1`,
+  `v2`, … A version names its PR / commit, its recipe page and its gate command.
+- **Score.** A version's score = the **automatic gates** (the recipe's gate plus root `npm test`, `tools/playcheck`, mag ≤ 1,
+  each row PASS / FAIL with its measured number) **plus SmiR's phone verdict** (VALIDATED / APPROVED, IN TEST, or FAIL, with
+  his words in [`learn/taste.md`](../../learn/taste.md)). The phone verdict outranks any number.
+- **Lock.** The best version is **locked**: it is what every new zone builds with, and its accepted known issues stay
+  declared next to it.
+- **Replace only when better.** A new attempt replaces the locked version only when it scores better **and** regresses
+  nothing: every gate row the locked version passed still passes, no accepted known issue gets worse, and SmiR's phone
+  verdict is at least as good. Otherwise the attempt is logged (failure or rejected row) and the lock stays.
+- **Record.** A new lock is a row in the table below and a dated row in the [decisions log](decisions-log.md), in the same PR.
+  Stop rule = 2 applies to attempts at the same defect.
+
+| Recipe | Locked version | Source | Status | Score / notes |
+|---|---|---|---|---|
+| Sky | **v1** — zone A sky, 13 unstretched slices per band, shader neighbour crossfade (d74f367), instanced video layers with per-tile time offsets, closed dome, parallax | PR #159, [`sky.md`](sky.md) | **VALIDATED** SmiR 2026-10-03 21:56 (phone) | Gates: `tools/sky/check.py` PASS (13 slices, 0 failures), `tools/sky/selftest.py` PASS, `npm test` PASS. Known issues in `sky.md` Part 2. |
+| Hard objects | **v1** — Howl frigate, measured-section loft, one unlit Imagine skin per part | PRs #161 / #163, [`hard-objects.md`](hard-objects.md) | **VALIDATED** SmiR 2026-10-03 21:36 (phone) | Gate `python3 tools/hard-objects/rebuild.py`. Known issues in METHOD.md. |
+| Rocks | **v1** — kit-driven TerrainFeatureGenerator, zone A kit `howling-eclipse` | PR #162, [`rocks.md`](rocks.md) | IN TEST (merged, phone QC open) | `tools/rocks/selftest.py` PASS. Known issues: skins mag 1.15–1.32 up close, one shape per type, crest hull not carved. |
+| Ground | **v1** — current zone A relief ground with Imagine materials and image-depth micro relief | PR #156, [`ground.md`](ground.md) | Look APPROVED 2026-10-03; not VALIDATED | Pending: the slope fix (≤ 3 m / ≥ 20 m, ≤ 15°) as v2, validated on the phone. |

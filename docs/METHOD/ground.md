@@ -1,7 +1,7 @@
 # Ground — the approved recipe (any biome)
 
-Back to [METHOD.md](../METHOD.md). **Status: APPROVED look — SmiR, 2026-10-03** (zone A step 1, PR #156).
-**Relief fixes still pending** (§13): the PR is not merged until they land.
+Back to [METHOD.md](../METHOD.md). **Status: APPROVED look — SmiR, 2026-10-03** (zone A step 1, PR #156). Merged to main 2026-10-03 as part of zone A. **Not VALIDATED:** the slope fix is deferred and waits for SmiR's phone check.
+**Relief fixes still pending** (§13): deferred. PR #156 was merged with zone A on 2026-10-03 before they landed (owner approval 21:56 Paris).
 
 This page is self-contained: a fresh Grok (or a player) who reads only this page can rebuild the zone A ground and make the
 ground of another biome at the same quality. Part 1 is the generic recipe, driven by the biome kit. Part 2 is the filled-in

@@ -1,7 +1,7 @@
 # Sky — the base recipe (any biome)
 
-Back to [METHOD.md](../METHOD.md). **Status: IN TEST** — zone A step 2b rebuilt the living sky on branch `zone-a-step2-sky`.
-Only SmiR approves it on the phone. The METHOD sky row (2026-10-02, plus the 2026-10-03 instancing clause) stays the law.
+Back to [METHOD.md](../METHOD.md). **Status: VALIDATED** — SmiR 2026-10-03 21:56 Paris, on the phone, after the seam crossfade fix d74f367 (PR #159). Same force as APPROVED.
+The validated version is the zone A sky in Part 2 (locked as sky v1, see [recipe progression](self-improvement.md#6-recipe-progression-versions-score-lock)).
 This page is how to build it for every biome.
 
 Palettes and exact Imagine prompt text stay in untracked `*.local.*` files and in
@@ -118,7 +118,29 @@ Look at the pictures. A passing number has shipped a washed sky before.
 
 Kit `howling-eclipse`: night, sun azimuth 285°, elevation −4°, 7500 K. Eclipse glow sits in slice 6 (heading 270–315), left of that slice's centre.
 
-**Current layout — IN TEST (zone A step 2d, SmiR look-validated 2026-10-03 except the vertical seams, which are now crossfaded):** 13 slices per band (about 27.7° each) on the horizon and upper bands, 8 × 45° on the high band. This replaces the 8 × 45° horizon/upper rows of step 2b. The METHOD rail (8 × 60° HFOV) stays the law until SmiR approves this layout.
+**Current layout — VALIDATED (SmiR 2026-10-03 21:56 Paris, on the phone, after the seam fix d74f367):** 13 slices per band (about 27.7° each) on the horizon and upper bands, 8 × 45° on the high band. This replaces the 8 × 45° horizon/upper rows of step 2b and, for the sky display, the 8 × 60° rail (SmiR approved this layout).
+
+### Validated version (sky v1, locked)
+
+| Piece | What was validated |
+|---|---|
+| Slices | Unstretched Imagine slices: magnification ≤ 1 on every band, no slice widened past its band's own limit |
+| Ring | 13 slices per band on horizon and upper (about 27.7° each), 8 × 45° on high, cap from about 74.6° |
+| Vertical seams | Neighbour overlap crossfade in the shader (two slices' own pixels, smoothstep, `textureGrad`, no new pixels), commit d74f367 |
+| Living layers | GPU-instanced video layers (one decode, one texture, one instanced draw per layer) with per-tile time offsets |
+| Dome | Closed: horizon, upper, high bands and the polar cap, no hole and no edge clamp |
+| Depth | Parallax layers: small yaw offset by depth (table in Part 1 §4) |
+
+**Accepted known issues** (declared, not blockers; do not spend Imagine quota on them):
+
+- A faint joint may remain around 19–28° up (horizon/upper overlap, where the upper band has no room to widen).
+- Two duplicated upper slices.
+- The streak layer reads as a meteor-rain grid instead of sparse shooting stars.
+- Meteor streaks stop or vanish at the slice joints (SmiR 2026-10-03 21:56). A fix is in progress locally as a separate task; it is not part of this version.
+- Darker zenith centre (the cap painting's own dark centre, see Pitfalls step 2c).
+- A small load regression (first sky frame about 1.7 s during boot).
+
+A new sky attempt replaces v1 only when it scores better without regressing any row above.
 
 | Band | Files | Size | Elevation | mag (gate) |
 |---|---|---|---|---|
