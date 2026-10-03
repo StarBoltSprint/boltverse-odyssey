@@ -438,6 +438,7 @@ Still open:
 
 - **Bolt.** Owner QC showed Bolt as a carved blob instead of the Imagine video `lock/bolt-gallop-cycle.mp4` / `lock/bolt-idle-breath.mp4`. This folder does not draw Bolt. Do not carve, hull, or recook Bolt.
 - **Port nozzles.** An inpaint of `port.jpg` removed the painted stern nozzles but moved the locked silhouette (`x0` 75 → 132). Stopped after that attempt. The side skin still paints the nozzles next to the 3D bells.
+- **Bridge side.** The tower's side still shows a dark wedge from the plate margin. A second inpaint was not spent on it.
 - **Bay aft edge.** A thin dark strip can show between the port rim and the aft wall.
 - **Backdrop on a wide frame.** 1008 px cannot cover a 1280-wide view at magnification ≤ 1, so that frame letterboxes. Portrait is the phone check.
 
