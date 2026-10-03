@@ -178,3 +178,13 @@ Step 2c, Director visual QC 2026-10-03 (blockers, not merged):
   difference with the videos actually playing, and look at it on the phone at normal speed.
 - A frame-step capture that pauses the videos also stops texture uploads (`uploadVideo` skips paused videos). Keep
   `paused` false while stepping `currentTime`, or the motion proof shows nothing.
+
+Step 2d, Director visual QC 2026-10-03 (blockers, not merged):
+
+- Fresh, unchained stills per slice end the clones inside a slice, but neighbours become unrelated paintings: hard seams
+  and clashing styles. Each fresh slice still needs a shared style source and a real edge match with its neighbours.
+- The same Imagine image used for two slices is a cloned column at ring scale. The motif gate must also compare every
+  slice with every other slice in its band, not only inside one slice.
+- An additive streak loop at high gain tiled over the dome repeats the same parallel streaks on a grid. Shooting stars
+  must be sparse in time and position: per-tile phase offsets, few streaks per frame, varied directions.
+- A paused frame-step capture can miss a layer entirely. Prove motion with a real-time capture (CDP screencast) too.
