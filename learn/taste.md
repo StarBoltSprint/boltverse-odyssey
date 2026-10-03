@@ -38,3 +38,5 @@ Append a row at the bottom. Do not rewrite an old row. Verdict is KEEP, FAIL, or
 | 2026-10-01/02 | Circles | FAIL | no circles | No circles. |
 | 2026-10-01/02 | Large organic biomes | KEEP | large organic biomes | Large organic biomes stay. |
 | 2026-10-01/02 | Inconsistent orbit views (two different ships) | FAIL | inconsistent orbit views (two different ships) are a FAIL | Two different ships in one orbit set are a FAIL. |
+| 2026-10-03 | Camera shake while Bolt gallops | FAIL | no camera shake, ever | The chase must not snap the eye from frame to frame. |
+| 2026-10-03 | Sky living layers that do not read | FAIL | there are no videos, it's just images | A living layer has to move where the player looks, without covering the paintings in rectangles. |

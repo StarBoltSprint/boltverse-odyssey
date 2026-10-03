@@ -20,14 +20,14 @@
   "backdrop": {
     "ring": "packs/zone-a/src/sky",
     "slices": [
-      "packs/zone-a/src/sky/sky-0.png",
-      "packs/zone-a/src/sky/sky-1.png",
-      "packs/zone-a/src/sky/sky-2.png",
-      "packs/zone-a/src/sky/sky-3.png",
-      "packs/zone-a/src/sky/sky-4.png",
-      "packs/zone-a/src/sky/sky-5.png",
-      "packs/zone-a/src/sky/sky-6.png",
-      "packs/zone-a/src/sky/sky-7.png"
+      "packs/zone-a/src/sky/sky-0.jpg",
+      "packs/zone-a/src/sky/sky-1.jpg",
+      "packs/zone-a/src/sky/sky-2.jpg",
+      "packs/zone-a/src/sky/sky-3.jpg",
+      "packs/zone-a/src/sky/sky-4.jpg",
+      "packs/zone-a/src/sky/sky-5.jpg",
+      "packs/zone-a/src/sky/sky-6.jpg",
+      "packs/zone-a/src/sky/sky-7.jpg"
     ],
     "sourceH": 976,
     "sourceW": 11488

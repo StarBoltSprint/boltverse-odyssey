@@ -106,13 +106,14 @@ vec3 sampleBand(sampler2DArray tex, float layers, float turns, float el, float e
   float uu = fract(lf);
   float nxt = mod(layer + 1.0, max(1.0, layers));
   vec3 col = texture(tex, vec3(uu, v, layer)).rgb;
-  float seam = smoothstep(0.97, 1.0, uu);
+  float seamFrac = mix(0.03, 0.14, smoothstep(0.90, 1.45, el));
+  float seam = smoothstep(1.0 - seamFrac, 1.0, uu);
   vec3 edge = texture(tex, vec3(0.0, v, nxt)).rgb;
   return mix(col, edge, seam);
 }
-float bandWeight(float el, float e0, float e1) {
-  float enter = smoothstep(e0, e0 + 0.035, el);
-  float leave = 1.0 - smoothstep(e1 - 0.035, e1, el);
+float bandWeight(float el, float e0, float e1, float enterW, float leaveW) {
+  float enter = smoothstep(e0, e0 + max(0.02, enterW), el);
+  float leave = 1.0 - smoothstep(e1 - max(0.02, leaveW), e1, el);
   return enter * leave;
 }
 void main() {
@@ -126,20 +127,23 @@ void main() {
   if (az < 0.0) az += 6.28318530718;
   float el = asin(clamp(dir.y, -1.0, 1.0));
   float turns = az / 6.28318530718;
-  float wH = 1.0 - smoothstep(uElH1 - 0.035, uElH1, el);
-  float wU = uHasUpper * bandWeight(el, uElU0, uElU1);
-  float wK = uHasHigh * bandWeight(el, uElK0, uElK1);
-  float wC = smoothstep(uCapEl - 0.035, uCapEl + 0.01, el);
+  float hu = uHasUpper > 0.5 ? max(0.05, uElH1 - uElU0) : 0.02;
+  float uk = uHasHigh > 0.5 ? max(0.05, uElU1 - uElK0) : 0.02;
+  float kc = max(0.05, uElK1 - uCapEl);
+  float wH = 1.0 - smoothstep(uElH1 - hu, uElH1, el);
+  float wU = uHasUpper * bandWeight(el, uElU0, uElU1, hu, uk);
+  float wK = uHasHigh * bandWeight(el, uElK0, uElK1, uk, kc);
+  float wC = smoothstep(uCapEl - kc, min(uCapEl + 0.02, uElK1), el);
   vec3 acc = sampleBand(uTex, uLayers, turns, el, uElH0, uElH1) * wH;
   if (wU > 0.001) acc += sampleBand(uUpper, uUpperLayers, turns, el, uElU0, uElU1) * wU;
   if (wK > 0.001) acc += sampleBand(uHigh, uHighLayers, turns, el, uElK0, uElK1) * wK;
   float hlen = length(dir.xz);
-  float capR = (1.57079632679 - el) / max(0.001, 1.57079632679 - uCapEl);
+  float capR = clamp((1.57079632679 - el) / max(0.001, 1.57079632679 - uCapEl), 0.0, 1.0);
   vec2 nrm = hlen < 1e-4 ? vec2(0.0) : dir.xz / hlen;
   float ca = cos(uAzBias);
   float sa = sin(uAzBias);
   nrm = vec2(ca * nrm.x - sa * nrm.y, sa * nrm.x + ca * nrm.y);
-  vec2 capUv = vec2(0.5) + nrm * capR * 0.5;
+  vec2 capUv = clamp(vec2(0.5) + nrm * capR * 0.5, vec2(0.0), vec2(1.0));
   if (wC > 0.001) acc += texture(uZenith, capUv).rgb * wC;
   o = vec4(acc / max(0.001, wH + wU + wK + wC), 1.0);
 }`);
@@ -153,23 +157,39 @@ uniform vec3 uEye;
 uniform float uAzBias;
 uniform float uRadius;
 uniform float uTime;
+uniform float uScroll;
 out vec2 vUv;
+flat out vec2 vTile;
 void main() {
   float az = aTile.x + (aCorner.x - 0.5) * aTile.z + uAzBias;
   float el = aTile.y + (aCorner.y - 0.5) * aTile.w;
   float c = cos(el);
   vec3 p = vec3(sin(az) * c, sin(el), cos(az) * c) * uRadius + uEye;
   gl_Position = uVP * vec4(p, 1.0);
-  vUv = aCorner + vec2(aPhase.x + aPhase.y * uTime, aPhase.y * uTime * 0.15);
+  vec2 drift = vec2(aPhase.x + aPhase.y * uTime, aPhase.y * uTime * 0.15);
+  vUv = aCorner + drift * uScroll;
+  vTile = aTile.xy;
 }`, `#version 300 es
 precision highp float;
 uniform sampler2D uTex;
 uniform float uGain;
+uniform float uMask;
+uniform float uMaskAz;
+uniform float uMaskEl;
 in vec2 vUv;
+flat in vec2 vTile;
 out vec4 o;
 void main() {
   vec3 s = texture(uTex, fract(vUv)).rgb;
-  o = vec4(s * uGain, 1.0);
+  float lobe = 1.0;
+  if (uMask > 0.5) {
+    float dAz = abs(atan(sin(vTile.x - uMaskAz), cos(vTile.x - uMaskAz)));
+    float dEl = abs(vTile.y - uMaskEl);
+    lobe = 1.0 - smoothstep(0.08, 0.16, length(vec2(dAz, dEl)));
+    float bright = max(s.r, max(s.g, s.b));
+    lobe *= smoothstep(0.22, 0.55, bright);
+  }
+  o = vec4(s * uGain * lobe, 1.0);
 }`);
 
 const fogProg = program(`#version 300 es
@@ -314,8 +334,12 @@ const skyLayerLoc = {
   azBias: gl.getUniformLocation(skyLayerProg, "uAzBias"),
   radius: gl.getUniformLocation(skyLayerProg, "uRadius"),
   time: gl.getUniformLocation(skyLayerProg, "uTime"),
+  scroll: gl.getUniformLocation(skyLayerProg, "uScroll"),
   tex: gl.getUniformLocation(skyLayerProg, "uTex"),
   gain: gl.getUniformLocation(skyLayerProg, "uGain"),
+  mask: gl.getUniformLocation(skyLayerProg, "uMask"),
+  maskAz: gl.getUniformLocation(skyLayerProg, "uMaskAz"),
+  maskEl: gl.getUniformLocation(skyLayerProg, "uMaskEl"),
 };
 const groundLoc = {
   vp: gl.getUniformLocation(groundProg, "uVP"),
@@ -524,7 +548,7 @@ let zenithSrc = 1024;
 const skyVideos = [null, null, null];
 const skyVideoTex = [null, null, null];
 const SKY_VIDEO_IDS = ["sky-stars", "sky-dust", "sky-nebula"];
-const SKY_GAIN = [0.1, 0.04, 0.05];
+const SKY_GAIN = [0.1, 0.04, 0.65];
 const SKY_TILE_AZ_N = 17;
 const SKY_TILE_EL_N = 8;
 const SKY_TILE_AZ = 360 / SKY_TILE_AZ_N;
@@ -535,11 +559,11 @@ let skyManifest = null;
 const skyBand = {
   h0: -1.5 * Math.PI / 180,
   h1: 24 * Math.PI / 180,
-  u0: 21.5 * Math.PI / 180,
-  u1: 54 * Math.PI / 180,
+  u0: 19 * Math.PI / 180,
+  u1: 56 * Math.PI / 180,
   k0: 52 * Math.PI / 180,
   k1: 77.5 * Math.PI / 180,
-  cap: 76 * Math.PI / 180,
+  cap: 74.6 * Math.PI / 180,
 };
 const skyMagParts = {
   horizon: 0, upper: 0, high: 0, cap: 0, stars: 0, dust: 0, nebula: 0,
@@ -691,6 +715,26 @@ function uploadVideo(v, tex, id) {
   return true;
 }
 
+function downscaleWidth(img, targetW) {
+  if (!img || img.width <= targetW + 1) return img;
+  const c = document.createElement("canvas");
+  c.width = targetW | 0;
+  c.height = img.height;
+  const g = c.getContext("2d");
+  g.imageSmoothingEnabled = true;
+  g.imageSmoothingQuality = "high";
+  g.drawImage(img, 0, 0, c.width, c.height);
+  return c;
+}
+
+function releaseImages(list) {
+  if (!list) return;
+  for (let i = 0; i < list.length; i++) {
+    const img = list[i];
+    if (img && typeof img.src === "string") img.src = "";
+  }
+}
+
 function rgbBytes(img) {
   const rgba = canvasPixels(img);
   const rgb = new Uint8Array(img.width * img.height * 3);
@@ -783,7 +827,7 @@ function buildSky() {
   const el0 = -0.055;
   const el1 = Math.PI / 2;
   const azN = 64;
-  const elN = 20;
+  const elN = 28;
   const data = [];
   const push = (az, el) => {
     const c = Math.cos(el);
@@ -792,12 +836,16 @@ function buildSky() {
   for (let ia = 0; ia < azN; ia++) {
     const a0 = (ia / azN) * Math.PI * 2;
     const a1 = ((ia + 1) / azN) * Math.PI * 2;
-    for (let ie = 0; ie < elN; ie++) {
+    for (let ie = 0; ie < elN - 1; ie++) {
       const e0 = el0 + (ie / elN) * (el1 - el0);
       const e1 = el0 + ((ie + 1) / elN) * (el1 - el0);
       push(a0, e0); push(a1, e0); push(a1, e1);
       push(a0, e0); push(a1, e1); push(a0, e1);
     }
+    const eBase = el0 + ((elN - 1) / elN) * (el1 - el0);
+    push(a0, eBase);
+    push(a1, eBase);
+    push(0, el1);
   }
   skyLayers = skyTex.layers;
   const buf = new Float32Array(data);
@@ -1443,6 +1491,7 @@ function drawSkyLayers(eye, yaw) {
   gl.uniform3f(skyLayerLoc.eye, eye[0], eye[1], eye[2]);
   gl.uniform1f(skyLayerLoc.radius, 86);
   gl.uniform1f(skyLayerLoc.time, performance.now() * 0.001);
+  gl.uniform1f(skyLayerLoc.scroll, 1.0);
   gl.uniform1i(skyLayerLoc.tex, 0);
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.ONE, gl.ONE);
@@ -1454,6 +1503,10 @@ function drawSkyLayers(eye, yaw) {
     if (gain <= 0) continue;
     gl.uniform1f(skyLayerLoc.gain, gain);
     gl.uniform1f(skyLayerLoc.azBias, bias[i]);
+    gl.uniform1f(skyLayerLoc.scroll, i === 2 ? 0.0 : 1.0);
+    gl.uniform1f(skyLayerLoc.mask, i === 2 ? 1 : 0);
+    gl.uniform1f(skyLayerLoc.maskAz, 285 * Math.PI / 180);
+    gl.uniform1f(skyLayerLoc.maskEl, 15 * Math.PI / 180);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, skyVideoTex[i]);
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, skyTileCount);
@@ -1841,6 +1894,7 @@ function snapshot() {
     eye: [eyeBuf[0], eyeBuf[1], eyeBuf[2]],
     pitch: camPitch * 180 / Math.PI,
     acceptance: heroPixels > 0 && magNow <= 1.001,
+    firstFrameMs,
     blocked: state.blocked,
     pathTrigger: state.pathTrigger,
     gate: gateInfo(),
@@ -2179,6 +2233,8 @@ let skyTileAzDeg = SKY_TILE_AZ;
 let skyTileElDeg = SKY_TILE_EL;
 let skyVideoW = 848;
 let skyVideoH = 480;
+let firstFrameMs = null;
+let bootT0 = 0;
 
 async function loadBand(manifest, id) {
   const display = manifest && manifest.display;
@@ -2194,6 +2250,7 @@ async function loadBand(manifest, id) {
 
 async function boot() {
   try {
+    bootT0 = performance.now();
     hud.textContent = "loading";
     clearing = await (await fetch("/packs/zone-a/clearing.json")).json();
     {
@@ -2252,15 +2309,34 @@ async function boot() {
     skySrcW = 0;
     skySrcH = skyImgs[0] ? skyImgs[0].height : 912;
     for (let i = 0; i < skyImgs.length; i++) skySrcW += skyImgs[i].width;
-    skyTex = makeSkyArray(skyImgs, "sky");
+    const horizonFog = useRelief ? sampleHorizon(skyImgs) : null;
+    const horizonFit = skyImgs.map((im) => downscaleWidth(im, 1500));
+    skyTex = makeSkyArray(horizonFit, "sky");
+    releaseImages(skyImgs);
+    const hold = document.createElement("canvas");
+    hold.width = 2;
+    hold.height = 2;
+    zenithTex = makeStill(hold, "sky-zenith");
+    buildSky();
+    reset();
+    render(0);
+    if (firstFrameMs == null) firstFrameMs = performance.now() - bootT0;
     const upperImgs = await loadBand(skyManifest, "upper");
     const highImgs = await loadBand(skyManifest, "high");
-    if (upperImgs) skyUpper = makeSkyArray(upperImgs, "sky-upper");
-    if (highImgs) skyHigh = makeSkyArray(highImgs, "sky-high");
-    buildSky();
+    if (upperImgs) {
+      skyUpper = makeSkyArray(upperImgs.map((im) => downscaleWidth(im, 1380)), "sky-upper");
+      releaseImages(upperImgs);
+    }
+    if (highImgs) {
+      skyHigh = makeSkyArray(highImgs.map((im) => downscaleWidth(im, 930)), "sky-high");
+      releaseImages(highImgs);
+    }
     const zenithImg = await loadImage(absUrl("packs/zone-a/src/sky-cap/zenith.png"));
     zenithSrc = zenithImg.width;
+    const prevZ = zenithTex;
     zenithTex = makeStill(zenithImg, "sky-zenith");
+    if (prevZ) gl.deleteTexture(prevZ);
+    releaseImages([zenithImg]);
     const loopUrls = [
       "packs/zone-a/src/sky/stars.mp4",
       "packs/zone-a/src/sky/dust.mp4",
@@ -2278,7 +2354,7 @@ async function boot() {
       skyVideos[i] = videoEl(loopUrls[i]);
       skyVideos[i].loop = true;
     }
-    if (useRelief) terrain.setFog(sampleHorizon(skyImgs));
+    if (useRelief && horizonFog) terrain.setFog(horizonFog);
     if (clearing.fog_band && clearing.fog_band.atlas) {
       fogTex = makeStill(await loadImage(absUrl(clearing.fog_band.atlas)), "fog");
       buildFog();

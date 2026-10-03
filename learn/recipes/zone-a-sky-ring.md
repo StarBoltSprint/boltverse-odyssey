@@ -15,3 +15,5 @@ Eight horizon slices, each two chained Imagine outpaints joined by an overlap cr
 ## Do not repeat
 
 Do not cut the middle of a joined slice to force one width. Do not stretch one video frame over 360°. Do not mix the tiles heavily enough to draw rectangles. Heading 0 can still show two cloud banks after the edge stamp. Straight up still shows the cap's dark centre and lat-long spokes.
+
+Step 2c did not replace those slices. Two horizon continuations failed the same way and were stopped. The motif gate in `tools/sky/check.py` now fails a repeated, mirrored, copied, or hard-seamed interior. A bright living shape is keyed from its own pixels onto one tile. Prompt text for that layer is in `/workspace/grokcli/out/zoneA-step2c/provenance.json`, not here.

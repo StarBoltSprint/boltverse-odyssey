@@ -373,6 +373,110 @@ def frame_amplitude(frames: np.ndarray) -> float:
     return float(np.abs(a - b).mean())
 
 
+MOTIF_REPEAT = 0.80
+MOTIF_MIRROR = 0.58
+MOTIF_HALF = 0.58
+MOTIF_NEIGHBOUR = 0.88
+MOTIF_FLAT = 6.0
+
+
+def _box_luma(rgb: np.ndarray, tw: int, th: int) -> np.ndarray:
+    """Downscale luma for a motif test. The buffer is not a texture and is not saved."""
+    luma = rgb[..., :3].astype(np.float32).mean(axis=2)
+    h, w = luma.shape
+    tw = max(2, min(int(tw), w))
+    th = max(2, min(int(th), h))
+    ys = np.linspace(0, h, th + 1).astype(np.int32)
+    xs = np.linspace(0, w, tw + 1).astype(np.int32)
+    out = np.empty((th, tw), np.float32)
+    for y in range(th):
+        y0, y1 = int(ys[y]), max(int(ys[y + 1]), int(ys[y]) + 1)
+        y1 = min(h, y1)
+        row = luma[y0:y1]
+        for x in range(tw):
+            x0, x1 = int(xs[x]), max(int(xs[x + 1]), int(xs[x]) + 1)
+            x1 = min(w, x1)
+            out[y, x] = float(row[:, x0:x1].mean())
+    return out
+
+
+def _zncc(a: np.ndarray, b: np.ndarray) -> float:
+    """Per-window normalised correlation. Flat windows are not a motif."""
+    if a.size < 8 or a.shape != b.shape:
+        return 0.0
+    if float(a.std()) < MOTIF_FLAT or float(b.std()) < MOTIF_FLAT:
+        return 0.0
+    aa = a.astype(np.float32).ravel()
+    bb = b.astype(np.float32).ravel()
+    aa -= float(aa.mean())
+    bb -= float(bb.mean())
+    na = float(np.dot(aa, aa)) ** 0.5
+    nb = float(np.dot(bb, bb)) ** 0.5
+    if na < 1e-3 or nb < 1e-3:
+        return 0.0
+    return float(np.dot(aa, bb) / (na * nb))
+
+
+def motif_defect(rgb: np.ndarray) -> dict:
+    """A cloud bank copied inside one slice, or a left-right mirror / diptych.
+
+    Trailing-column copies stay in trailing_defect. This looks at separated
+    interior windows and at the two halves. A flat field scores zero.
+    """
+    small = _box_luma(rgb, 160, 72)
+    _h, w = small.shape
+    win = max(8, w // 4)
+    step = 1
+    sep = max(1, int(round(0.85 * win)))
+    best = 0.0
+    x0 = 0
+    while x0 + win <= w:
+        wa = small[:, x0 : x0 + win]
+        x1 = x0 + sep
+        while x1 + win <= w:
+            best = max(best, _zncc(wa, small[:, x1 : x1 + win]))
+            x1 += step
+        x0 += step
+    half = max(1, w // 2)
+    left = small[:, :half]
+    right = small[:, w - half :]
+    half_copy = _zncc(left, right)
+    half_flip = _zncc(left, right[:, ::-1])
+    seam_luma = _box_luma(rgb, 240, 96)
+    diff = np.abs(np.diff(seam_luma, axis=1))
+    col = diff.mean(axis=0)
+    med = float(np.median(col)) + 1e-3
+    peak_i = int(np.argmax(col))
+    at = peak_i / max(1, len(col))
+    row_med = np.median(diff, axis=1)
+    frac = float((diff[:, peak_i] > np.maximum(row_med * 2.5, 6.0)).mean())
+    ratio = float(col[peak_i] / med)
+    seamed = 0.12 < at < 0.88 and ratio >= 4.5 and frac >= 0.55 and float(col[peak_i]) >= 12.0
+    return {
+        "repeat": r4(best),
+        "mirror": r4(half_flip),
+        "half": r4(half_copy),
+        "seamRatio": r4(ratio),
+        "seamAt": r4(at),
+        "repeated": best >= MOTIF_REPEAT,
+        "mirrored": half_flip >= MOTIF_MIRROR,
+        "copied": half_copy >= MOTIF_HALF,
+        "seamed": seamed,
+    }
+
+
+def motif_neighbour(left: np.ndarray, right: np.ndarray) -> float:
+    """Interior match between neighbours. Joining edges may agree; the middles may not be copies."""
+    a = _box_luma(left, 96, 48)
+    b = _box_luma(right, 96, 48)
+    w = min(a.shape[1], b.shape[1])
+    x0 = int(w * 0.30)
+    x1 = int(w * 0.70)
+    if x1 - x0 < 8:
+        return 0.0
+    return _zncc(a[:, x0:x1], b[:, x0:x1])
+
+
 def assess_slices(named: list[tuple[str, np.ndarray]]) -> dict:
     """Gate a sky slice chain. The chain must close: last joins first."""
     failures = []
@@ -383,6 +487,7 @@ def assess_slices(named: list[tuple[str, np.ndarray]]) -> dict:
         defect = trailing_defect(rgb)
         luma = column_luma(rgb)
         content = luma[: max(1, len(luma) - int(defect["run"]))]
+        motif = motif_defect(rgb)
         row = {
             "file": name,
             "cloned": bool(defect["cloned"]),
@@ -391,11 +496,29 @@ def assess_slices(named: list[tuple[str, np.ndarray]]) -> dict:
             "cloneMae": defect.get("mae", 0.0),
             "columnLumaMin": r4(float(content.min()) if len(content) else 0),
             "columnLumaMax": r4(float(content.max()) if len(content) else 0),
+            "motifRepeat": motif["repeat"],
+            "motifMirror": motif["mirror"],
+            "motifHalf": motif["half"],
+            "motifRepeated": bool(motif["repeated"]),
+            "motifMirrored": bool(motif["mirrored"]),
+            "motifCopied": bool(motif["copied"]),
+            "motifSeamed": bool(motif["seamed"]),
+            "motifSeamRatio": motif["seamRatio"],
         }
         if defect["cloned"]:
             failures.append(f"FAIL sky clone {name} trailing run={defect['run']} mae={defect['mae']}")
         if defect["mirrored"]:
             failures.append(f"FAIL sky mirror {name} trailing run={defect['run']} mae={defect['mae']}")
+        if motif["repeated"]:
+            failures.append(f"FAIL sky motif repeat {name} ncc={motif['repeat']}")
+        if motif["mirrored"]:
+            failures.append(f"FAIL sky motif mirror {name} ncc={motif['mirror']}")
+        if motif["copied"]:
+            failures.append(f"FAIL sky motif copy {name} ncc={motif['half']}")
+        if motif["seamed"]:
+            failures.append(
+                f"FAIL sky motif seam {name} ratio={motif['seamRatio']} at={motif['seamAt']}"
+            )
         slices.append(row)
         runs.append(int(defect["run"]) if defect["cloned"] or defect["mirrored"] else 0)
         images.append(rgb)
@@ -404,29 +527,50 @@ def assess_slices(named: list[tuple[str, np.ndarray]]) -> dict:
     for i in range(len(named) - 1):
         mae = join_mae(images[i], images[i + 1], runs[i], runs[i + 1])
         ok = mae <= JOIN_MAE
+        neighbour = motif_neighbour(images[i], images[i + 1])
+        neighbour_ok = neighbour < MOTIF_NEIGHBOUR
         joins.append(
             {
                 "left": named[i][0],
                 "right": named[i + 1][0],
                 "mae": r4(mae),
                 "limit": JOIN_MAE,
-                "ok": ok,
+                "ok": ok and neighbour_ok,
                 "close": False,
+                "motifNeighbour": r4(neighbour),
             }
         )
         if not ok:
             failures.append(
                 f"FAIL sky join {named[i][0]} -> {named[i + 1][0]} content MAE={mae:.2f} limit={JOIN_MAE}"
             )
+        if not neighbour_ok:
+            failures.append(
+                f"FAIL sky motif neighbour {named[i][0]} -> {named[i + 1][0]} ncc={neighbour:.2f}"
+            )
 
     closed = None
     if len(named) >= 2:
         mae = join_mae(images[-1], images[0], runs[-1], runs[0])
+        neighbour = motif_neighbour(images[-1], images[0])
         ok = mae <= JOIN_MAE
-        closed = {"left": named[-1][0], "right": named[0][0], "mae": r4(mae), "limit": JOIN_MAE, "ok": ok, "close": True}
+        neighbour_ok = neighbour < MOTIF_NEIGHBOUR
+        closed = {
+            "left": named[-1][0],
+            "right": named[0][0],
+            "mae": r4(mae),
+            "limit": JOIN_MAE,
+            "ok": ok and neighbour_ok,
+            "close": True,
+            "motifNeighbour": r4(neighbour),
+        }
         if not ok:
             failures.append(
                 f"FAIL sky close {named[-1][0]} -> {named[0][0]} content MAE={mae:.2f} limit={JOIN_MAE}"
+            )
+        if not neighbour_ok:
+            failures.append(
+                f"FAIL sky motif neighbour {named[-1][0]} -> {named[0][0]} ncc={neighbour:.2f}"
             )
     elif len(named) == 1:
         failures.append("FAIL sky chain needs at least 2 slices to close")
@@ -492,6 +636,9 @@ def _cheapest(slices, joins, closed, per_swing) -> dict:
             blame[row["file"]] += 3
             kind = "cloned" if row["cloned"] else "mirrored"
             reasons[row["file"]].append(f"trailing columns are {kind}")
+        if row.get("motifRepeated") or row.get("motifMirrored") or row.get("motifCopied") or row.get("motifSeamed"):
+            blame[row["file"]] += 3
+            reasons[row["file"]].append("interior motif is repeated or mirrored")
     swing_of = {row["file"]: row["swing"] for row in per_swing}
     for name, swing in swing_of.items():
         if swing > EXPOSURE_MAX:

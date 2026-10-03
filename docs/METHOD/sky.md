@@ -91,6 +91,7 @@ No stretch. Magnification stays ≤ 1. The mesh does not follow Bolt across the 
 - a slice join or the closing join is over the MAE limit
 - slice-median exposure swing is over 24 in the ring
 - a column run is a clone or a mirror
+- an interior window repeats the same motif, mirrors, copies the other half, or a hard seam sits inside the slice (and the same between neighbour interiors)
 - a living loop is not seamless, too short together, or over the texture budget (layer `texBytes` only, 48 MiB)
 - `display.videoTiles` is missing while layers exist
 - **any** displayed band, cap, or video tile is over magnification 1.0 at 720×1600
@@ -115,13 +116,14 @@ Kit `howling-eclipse`: night, sun azimuth 285°, elevation −4°, 7500 K. Eclip
 
 | Band | Files | Size | Elevation | mag (gate) |
 |---|---|---|---|---|
-| Horizon | `packs/zone-a/src/sky/sky-0..7.png` | 1867×864 | −1.5° to 24° | 0.982 |
-| Upper | `src/sky/upper/sky-0..7.png` | 1424×1248 | 21.5° to 54° | 0.933 |
-| High | `src/sky/high/sky-0..7.png` | 1152×864 | 52° to 77.5° | 0.982 |
-| Cap | `src/sky-cap/zenith.png` | 1024×1024 | from 76° | 0.901 |
-| Stars / dust / nebula | existing mp4 | 848×480 tiles 21.18°×11.25° | full dome | 0.792 |
+| Horizon | `packs/zone-a/src/sky/sky-0..7.jpg` | 1867×864 | −1.5° to 24° | 0.982 |
+| Upper | `src/sky/upper/sky-0..7.jpg` | 1424×1248 | 19° to 56° | 0.987 |
+| High | `src/sky/high/sky-0..7.jpg` | 1152×864 | 52° to 77.5° | 0.982 |
+| Cap | `src/sky-cap/zenith.png` | 1024×1024 | from 74.6° | 0.989 |
+| Stars / dust | existing mp4, 13.0 s and 16.708 s | 848×480 tiles 21.18°×11.25° | full dome, low gain | 0.792 |
+| Corona (nebula slot) | Imagine loop, 3.3 s, one keyed tile near azimuth 285° | 848×480 | one tile | 0.792 |
 
-Horizon and upper are two chained outpaints per 45° slice. High is one still per slice. Two horizon outpaints arrived as diptychs after one redo each; the continuous side was cropped and the rest of the chain was kept (stop after 2). Video files were not recooked: stars 13.0 s, dust 16.708 s, nebula 28.95 s. Combined repeat on the file durations is many hours. Gains on the additive tiles are small (stars / dust / nebula) so the paintings stay the hero. One instanced draw per layer. Play snapshot: mag_max 0.982, activeVideos 4, drawCalls 7. Total GPU textures are about 220 MB because three full-resolution bands are resident. The 48 MiB sky gate counts layer `texBytes` only (about 4.9 MB) and passes.
+Horizon and upper are two chained outpaints per 45° slice. High is one still per slice. Step 2b left repeated and mirrored slices in the ring. Step 2c stopped after two failed horizon outpaints of the same defect and did not install a new slice. The stills are lossy-encoded at the same pixel size. The cap file is unchanged. Bands overlap by several degrees (horizon/upper and upper/high) and the pole mesh is a fan, with cap UVs held inside the painting. The third living layer is a short corona loop, keyed from its own bright pixels and drawn on one tile near the eclipse azimuth. Stars and dust stay low-gain full-dome tiles. One instanced draw per layer. Play snapshot this step: mag_max 0.989, activeVideos 4, drawCalls 7, texMB 202.7. `packs/zone-a/src` download is 42.7 MB (was 79.3 MB at the previous commit). First sky frame during boot was about 1.7 s. The 48 MiB sky gate still counts layer `texBytes` only.
 
 Play code: `packs/zone-a/play/play.js`. Manifest: `packs/zone-a/src/sky/sky.json` (`display.bands`, `display.cap`, `display.videoTiles`).
 
@@ -158,4 +160,12 @@ Step 2b, Director visual QC 2026-10-03 (blockers, not merged):
 - Square patches with hard edges pasted inside a slice read as crop rectangles in play.
 - Band-to-band edges (upper → high) show as a hard horizontal line when looking up 45°. Blend bands with their own
   overlapping pixels over several degrees, and check the look-up shot.
+
+Step 2c:
+
+- An outpaint that pastes the neighbour as a left-hand strip (a diptych), or that repeats the source cloud bank, is rejected. Two tries of the same horizon continuation, then stop. Do not install a panel that does not continue the neighbour edge.
+- A slow pulse whose consecutive frames stay under the freeze MAE for more than 0.4 s fails the loop row. Keeping a subset of the Imagine frames (no new pixels) can clear that row. Do not interpolate new frames.
+- Additive gain on a full video frame draws a rectangle even when the frame is mostly dark. Key the bright pixels of that frame and show one tile. Do not raise the gain of a structured full-dome layer.
+- The interior motif gate misses a soft gap whose two halves are different paintings (upper slice 6). Do not lower the threshold until the kept slices are re-measured.
+- The cap file's dark centre is part of the painting. Clamping the cap UV removes the edge smear. It does not repaint that centre. Do not upscale the cap.
 - Green gates are not a pass: sky check, selftest, npm test and playcheck all passed with these blockers visible.

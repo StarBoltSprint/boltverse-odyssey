@@ -1,13 +1,13 @@
 {
   "slices": [
-    "sky-0.png",
-    "sky-1.png",
-    "sky-2.png",
-    "sky-3.png",
-    "sky-4.png",
-    "sky-5.png",
-    "sky-6.png",
-    "sky-7.png"
+    "sky-0.jpg",
+    "sky-1.jpg",
+    "sky-2.jpg",
+    "sky-3.jpg",
+    "sky-4.jpg",
+    "sky-5.jpg",
+    "sky-6.jpg",
+    "sky-7.jpg"
   ],
   "offsetsSec": [
     0,
@@ -31,30 +31,30 @@
       {
         "id": "upper",
         "files": [
-          "upper/sky-0.png",
-          "upper/sky-1.png",
-          "upper/sky-2.png",
-          "upper/sky-3.png",
-          "upper/sky-4.png",
-          "upper/sky-5.png",
-          "upper/sky-6.png",
-          "upper/sky-7.png"
+          "upper/sky-0.jpg",
+          "upper/sky-1.jpg",
+          "upper/sky-2.jpg",
+          "upper/sky-3.jpg",
+          "upper/sky-4.jpg",
+          "upper/sky-5.jpg",
+          "upper/sky-6.jpg",
+          "upper/sky-7.jpg"
         ],
         "azimuthDeg": 45,
-        "elBottomDeg": 21.5,
-        "elTopDeg": 54
+        "elBottomDeg": 19,
+        "elTopDeg": 56
       },
       {
         "id": "high",
         "files": [
-          "high/sky-0.png",
-          "high/sky-1.png",
-          "high/sky-2.png",
-          "high/sky-3.png",
-          "high/sky-4.png",
-          "high/sky-5.png",
-          "high/sky-6.png",
-          "high/sky-7.png"
+          "high/sky-0.jpg",
+          "high/sky-1.jpg",
+          "high/sky-2.jpg",
+          "high/sky-3.jpg",
+          "high/sky-4.jpg",
+          "high/sky-5.jpg",
+          "high/sky-6.jpg",
+          "high/sky-7.jpg"
         ],
         "azimuthDeg": 45,
         "elBottomDeg": 52,
@@ -63,7 +63,7 @@
     ],
     "cap": {
       "file": "../sky-cap/zenith.png",
-      "elStartDeg": 76
+      "elStartDeg": 74.6
     },
     "videoTiles": [
       {"id": "stars", "azimuthDeg": 21.176470588, "elevationDeg": 11.25},
@@ -87,7 +87,7 @@
     {
       "id": "nebula",
       "file": "nebula.mp4",
-      "durationSec": 28.95,
+      "durationSec": 3.3,
       "texBytes": 1628160
     }
   ]

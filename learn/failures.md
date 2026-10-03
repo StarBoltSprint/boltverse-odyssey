@@ -318,3 +318,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Crop spare width from the outer edges only. Keep video tiles, and drop the additive gain until the paintings stay sharp. Magnification of those tiles is now a hard fail in `tools/sky/check.py` and `tools/playcheck`. |
 | Guard | `python3 tools/sky/check.py` display rows. Old 848×480 over 360° fails (mag about 13.5). The step 2b tiles pass at 0.792. The edge MAE still does not see a content mismatch at heading 0; that one is listed in the step 2b report. |
 | Sources | `docs/METHOD/sky.md`, `packs/zone-a/play/play.js`, `tools/sky/pixels.py`. | |
+
+### 2026-10-03 — horizon outpaint repeated the source, then stopped
+
+| | |
+| --- | --- |
+| Take | Zone A step 2c. Failed slices only. |
+| Defect | Two Imagine edits meant to continue a kept horizon edge. The first repeated the source motif and added a ground silhouette. The second was a hard diptych and still showed a ground silhouette. Neither continued the neighbour edge. |
+| Root cause | The edit treated the supplied strip as a picture to place beside a new painting, instead of growing that strip. |
+| Fix | Stopped after the second try. The step-2b slices stay in the ring. The motif gate now fails those files. |
+| Guard | `python3 tools/sky/check.py` motif rows. Horizon 0–4 and 7 fail repeat. Upper 6 still passes (soft gap). |
+| Sources | `tools/sky/pixels.py`, `packs/zone-a/proof/step2/REPORT.md`. Untracked provenance: `/workspace/grokcli/out/zoneA-step2c/provenance.json`. |

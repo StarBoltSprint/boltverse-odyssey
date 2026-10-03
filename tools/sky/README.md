@@ -43,6 +43,8 @@ Phone caps, with Bolt keeping one decoder of the game's four: at most **3** sky 
 
 ## Magnification
 
+The same command rejects an interior motif: a window that repeats elsewhere in the slice, a left/right mirror, a copied half, or a hard seam in the middle of the frame. Neighbour interiors that match each other also fail. A soft join of two different paintings can still pass; look at the file. `python3 tools/sky/selftest.py` includes that row.
+
 `display` on `sky.json` names every band, the cap, and each video tile: azimuth span, elevation span, and (for the cap) the elevation where it starts. The gate measures source width and height from the files and fails when screen pixels per source pixel exceed **1.0** on the 720×1600 play view. A video tile of 848×480 mapped over 360° fails. A tile of about 21° by 11° passes. Stills and the cap are in the same check. `tools/playcheck` fails `mag_max` when the live snapshot reports any of those sources above 1.
 
 `tools/assetcheck` kind `sky-loop` runs the loop seam (MAE, p95, flow, pop) and the same amplitude, repetition, and byte rows on one file. The set-level period, offsets, and cheapest recook stay in this command.

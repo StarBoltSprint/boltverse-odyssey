@@ -36,6 +36,7 @@ a change is a new row that cites the old one. Times are Paris.
 | 2026-10-03 | Sky video layers are GPU-instanced: one decode and one texture per layer, one instanced draw of tiles, per-instance placement, UV offset, and phase. Magnification of every sky texel, video tiles included, must be ≤ 1. A missing `display.videoTiles` block, or an 848×480 frame over 360°, fails `python3 tools/sky/check.py` and `tools/playcheck`. | IN TEST | SmiR 2026-10-03, zone A step 2b |
 | 2026-10-03 | Sky light-layer parallax: stars nearest to still, painted slices far, nebula wisps and dust a little nearer, as a small yaw offset. No invisible relief for the sky. The ring stays centred on the eye. | IN TEST | SmiR approved 2026-10-03, zone A step 2b |
 | 2026-10-03 | Camera: no shake, ever. The chase holds one legal pose with hysteresis and eases eye height off the raw relief sample. A per-frame rescore that snaps the eye is banned. Magnification stays ≤ 1. | IN TEST | SmiR 2026-10-03, zone A step 2c |
+| 2026-10-03 | Sky motif gate: a slice fails when an interior window repeats, mirrors, copies the other half, or carries a hard interior seam. Opaque slices may be lossy-encoded. The horizon band is shown before the rest. A bright living shape is keyed from its own pixels onto one tile, not mixed as a full-dome veil. | IN TEST | zone A step 2c |
 
 ## Contradictions found (2026-10-03 sweep)
 

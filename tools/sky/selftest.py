@@ -65,6 +65,35 @@ def test_clone_and_mirror() -> None:
     print("red clone+mirror FAIL")
 
 
+def test_interior_motif() -> None:
+    """A copied bank in the middle, and a kaleidoscope, are not trailing-column defects."""
+    rng = np.random.RandomState(7)
+    h, w = 96, 320
+    base = rng.randint(15, 230, (h, w, 3), dtype=np.uint8)
+    base[:, :, 0] = np.clip(base[:, :, 0].astype(np.int16) + np.linspace(-40, 40, w).astype(np.int16), 0, 255)
+    cloned = base.copy()
+    cloned[:, 180:260] = cloned[:, 40:120]
+    report = assess_slices([("keep.png", base), ("again.png", cloned)])
+    text = "\n".join(report["failures"])
+    if "motif repeat" not in text:
+        fail("interior motif repeat was not rejected\n" + text)
+    field = rng.randint(20, 210, (h, w // 2, 3), dtype=np.uint8)
+    mirror = np.concatenate([field, field[:, ::-1]], axis=1)
+    noise = rng.randint(0, 5, mirror.shape, dtype=np.uint8)
+    mirror = np.clip(mirror.astype(np.int16) + noise, 0, 255).astype(np.uint8)
+    report_m = assess_slices([("keep.png", base), ("kaleidoscope.png", mirror)])
+    text_m = "\n".join(report_m["failures"])
+    if "motif mirror" not in text_m:
+        fail("interior mirror was not rejected\n" + text_m)
+    copied = np.concatenate([field, field], axis=1)
+    copied = np.clip(copied.astype(np.int16) + noise, 0, 255).astype(np.uint8)
+    report_c = assess_slices([("keep.png", base), ("diptych.png", copied)])
+    text_c = "\n".join(report_c["failures"])
+    if "motif copy" not in text_c and "motif repeat" not in text_c:
+        fail("interior diptych copy was not rejected\n" + text_c)
+    print("interior motif FAIL")
+
+
 def test_join_and_close_and_cheapest() -> None:
     h, w = 24, 64
     slices = []
@@ -314,6 +343,7 @@ def main() -> None:
     tmp.mkdir()
     test_chain_pass()
     test_clone_and_mirror()
+    test_interior_motif()
     test_join_and_close_and_cheapest()
     test_swing()
     test_repetition()
