@@ -306,4 +306,15 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Root cause | `applyShot` built a zero right vector when the view was exactly up, so the view matrix collapsed and the clear colour was fogged. The dome pole is a lat-long pinch. Two zenith projections (polar, then gnomonic) left the notch. |
 | Fix | When the horizontal right vector is shorter than 1e-4, pick a world axis. Stopped after the second projection. The notch is listed in `packs/zone-a/proof/step2/REPORT.md`. |
 | Guard | No playcheck row reads a straight-up frame. The proof PNG is `packs/zone-a/proof/step2/lookup.png`. |
-| Sources | `packs/zone-a/play/play.js` `applyShot` and the sky dome. | |
+| Sources | `packs/zone-a/play/play.js` `applyShot` and the sky dome. |
+
+### 2026-10-03 — a centre splice and a heavy tile mix both passed the old sky edge gate
+
+| | |
+| --- | --- |
+| Take | Zone A step 2b. Living sky. |
+| Defect | Joined slices showed a hard vertical seam in the middle while join MAE on the outer columns was 0. A first play view also drew a grid of video rectangles over the paintings. |
+| Root cause | Equalising slice width by cutting the middle and concatenating the sides. Eight stamped edge columns satisfy the join strip and hide a cloud mismatch. Additive tiles at a high gain draw their quad edges. |
+| Fix | Crop spare width from the outer edges only. Keep video tiles, and drop the additive gain until the paintings stay sharp. Magnification of those tiles is now a hard fail in `tools/sky/check.py` and `tools/playcheck`. |
+| Guard | `python3 tools/sky/check.py` display rows. Old 848×480 over 360° fails (mag about 13.5). The step 2b tiles pass at 0.792. The edge MAE still does not see a content mismatch at heading 0; that one is listed in the step 2b report. |
+| Sources | `docs/METHOD/sky.md`, `packs/zone-a/play/play.js`, `tools/sky/pixels.py`. | |

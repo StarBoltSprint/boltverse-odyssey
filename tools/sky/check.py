@@ -31,6 +31,7 @@ from pixels import (  # noqa: E402
     OFFSET_MIN_SEC,
     SKY_TEX_MAX,
     SKY_VIDEOS_MAX,
+    assess_display,
     assess_slices,
     frame_amplitude,
     lcm_seconds,
@@ -41,6 +42,43 @@ from pixels import (  # noqa: E402
 def load_rgb(path: Path) -> np.ndarray:
     with Image.open(path) as im:
         return np.array(im.convert("RGB"))
+
+
+def _measure_display(manifest: dict, root: Path, named: list) -> dict:
+    """Source pixels for each displayed band, cap, and video tile. Missing files stay size 0."""
+    display = manifest.get("display") or {}
+    measured = {}
+    for band in display.get("bands") or []:
+        name = str(band.get("id") or "band")
+        files = band.get("files")
+        try:
+            if files == "slices" and named:
+                h, w = named[0][1].shape[:2]
+                measured[name] = {"srcW": int(w), "srcH": int(h)}
+            elif isinstance(files, list) and files:
+                rgb = load_rgb(root / str(files[0]))
+                measured[name] = {"srcW": int(rgb.shape[1]), "srcH": int(rgb.shape[0])}
+        except (OSError, CheckError):
+            measured[name] = {"srcW": 0, "srcH": 0}
+    cap = display.get("cap") or {}
+    if cap.get("file"):
+        try:
+            rgb = load_rgb(root / str(cap["file"]))
+            measured["cap"] = {"srcW": int(rgb.shape[1]), "srcH": int(rgb.shape[0])}
+        except (OSError, CheckError):
+            measured["cap"] = {"srcW": 0, "srcH": 0}
+    layers = {str(layer.get("id")): layer for layer in (manifest.get("layers") or [])}
+    for tile in display.get("videoTiles") or []:
+        name = str(tile.get("id") or "")
+        layer = layers.get(name)
+        if not layer or not layer.get("file"):
+            continue
+        try:
+            info = probe_video(root / str(layer["file"]))
+            measured[name] = {"srcW": int(info["width"]), "srcH": int(info["height"])}
+        except CheckError:
+            measured[name] = {"srcW": 0, "srcH": 0}
+    return measured
 
 
 def slices_from_dir(folder: Path) -> list[tuple[str, np.ndarray]]:
@@ -170,8 +208,17 @@ def main() -> int:
             layers = assess_layers(manifest, root, len(named))
             report["layers"] = layers
             report["failures"] = list(report["failures"]) + list(layers["failures"])
-            report["ok"] = not report["failures"]
-            report["status"] = "PASS" if report["ok"] else "FAIL"
+        display = manifest.get("display") if manifest else None
+        if manifest and manifest.get("layers") and not (isinstance(display, dict) and display.get("videoTiles")):
+            report["failures"] = list(report["failures"]) + [
+                "FAIL sky display videoTiles missing; cannot prove magnification <= 1"
+            ]
+        if isinstance(display, dict):
+            shown = assess_display(display, _measure_display(manifest, root, named))
+            report["display"] = shown
+            report["failures"] = list(report["failures"]) + list(shown["failures"])
+        report["ok"] = not report["failures"]
+        report["status"] = "PASS" if report["ok"] else "FAIL"
     except CheckError as exc:
         print(f"FAIL sky {exc.message}", file=sys.stderr)
         return 2
@@ -186,6 +233,13 @@ def main() -> int:
     if report.get("layers"):
         lines.append("")
         lines.append(f"Combined repeat: {report['layers']['combinedRepeatSec']}s")
+    if report.get("display"):
+        lines.append("")
+        lines.append(f"Magnification limit: {report['display'].get('limit')}")
+        for row in report["display"].get("rows") or []:
+            lines.append(
+                f"- {row.get('id')} mag={row.get('mag')} magW={row.get('magW')} magH={row.get('magH')}"
+            )
     lines.append("")
     (args.out / "report.md").write_text("\n".join(lines))
     print(f"{report['status']} sky out={args.out} slices={len(named)} failures={len(report['failures'])}")

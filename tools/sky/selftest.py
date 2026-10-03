@@ -22,7 +22,7 @@ if str(ROOT) not in sys.path:
 if str(SKY) not in sys.path:
     sys.path.insert(0, str(SKY))
 
-from pixels import assess_slices, lcm_seconds, perceived_repetition  # noqa: E402
+from pixels import assess_display, assess_slices, lcm_seconds, perceived_repetition  # noqa: E402
 
 
 def fail(msg: str) -> None:
@@ -171,6 +171,73 @@ def test_manifest_roundtrip(tmp: Path) -> None:
     print("manifest chain PASS")
 
 
+def test_display_mag() -> None:
+    """The step-2 veil (one 848×480 frame over 360°) must fail. A tiled layer must pass."""
+    old = assess_display(
+        {
+            "bands": [
+                {
+                    "id": "horizon",
+                    "srcW": 1436,
+                    "srcH": 976,
+                    "azimuthDeg": 45,
+                    "elBottomDeg": -3,
+                    "elTopDeg": 24,
+                }
+            ],
+            "cap": {"srcW": 1024, "elStartDeg": 24},
+            "videoTiles": [
+                {"id": "stars", "srcW": 848, "srcH": 480, "azimuthDeg": 360, "elevationDeg": 48}
+            ],
+        }
+    )
+    text = "\n".join(old["failures"])
+    if old["ok"] or "stars" not in text or "cap" not in text:
+        fail("old 360 veil and low cap must fail\n" + text)
+    stars = next(row for row in old["rows"] if row["id"] == "stars")
+    if stars["mag"] < 10:
+        fail(f"old veil mag should be about 13, got {stars['mag']}")
+    good = assess_display(
+        {
+            "bands": [
+                {
+                    "id": "horizon",
+                    "srcW": 1900,
+                    "srcH": 864,
+                    "azimuthDeg": 45,
+                    "elBottomDeg": -1.5,
+                    "elTopDeg": 24,
+                },
+                {
+                    "id": "upper",
+                    "srcW": 1480,
+                    "srcH": 1248,
+                    "azimuthDeg": 45,
+                    "elBottomDeg": 21.5,
+                    "elTopDeg": 54,
+                },
+                {
+                    "id": "high",
+                    "srcW": 1152,
+                    "srcH": 864,
+                    "azimuthDeg": 45,
+                    "elBottomDeg": 52,
+                    "elTopDeg": 77.5,
+                },
+            ],
+            "cap": {"srcW": 1024, "elStartDeg": 76},
+            "videoTiles": [
+                {"id": "stars", "srcW": 848, "srcH": 480, "azimuthDeg": 21.18, "elevationDeg": 11.25},
+                {"id": "dust", "srcW": 848, "srcH": 480, "azimuthDeg": 21.18, "elevationDeg": 11.25},
+                {"id": "nebula", "srcW": 848, "srcH": 480, "azimuthDeg": 21.18, "elevationDeg": 11.25},
+            ],
+        }
+    )
+    if not good["ok"]:
+        fail("tiled layout should pass\n" + "\n".join(good["failures"]))
+    print("display mag old FAIL", stars["mag"], "new PASS")
+
+
 def test_runtime() -> None:
     probe = r"""
 await import("file://" + process.argv[1]);
@@ -250,6 +317,7 @@ def main() -> None:
     test_join_and_close_and_cheapest()
     test_swing()
     test_repetition()
+    test_display_mag()
     test_manifest_roundtrip(tmp)
     test_runtime()
     print("PASS sky selftest")

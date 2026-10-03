@@ -70,6 +70,47 @@ test("magnification above 1 fails even when the rest of the pose looks fine", ()
   assert.ok(hint.numbers.suggestedScale < 1);
 });
 
+test("a sky video stretched over 360 degrees fails mag_max", () => {
+  const judge = createJudge(layout);
+  const rgba = new Uint8Array(8 * 8 * 4);
+  rgba.fill(40);
+  const base = {
+    heroCount: 1,
+    state: "IDLE",
+    spd: 0,
+    hdg: 0,
+    x: 0,
+    z: 0,
+    canvas: { width: 720, height: 1600 },
+    nearestVisibleM: 4,
+    objectIds: ids({}),
+  };
+  judge.add({
+    id: "spawn",
+    kind: "spawn",
+    width: 8,
+    height: 8,
+    rgba,
+    snap: { ...base, mag: 0.8, magSources: { ground: 0.8, skyStars: 13.46, skySlice: 0.75, skyCap: 0.9 } },
+  });
+  const failed = judge.finish({ glErrors: [], consoleErrors: [] });
+  const mag = failed.rows.find((r) => r.id === "mag_max");
+  assert.equal(mag.result, "FAIL");
+  assert.ok(mag.numbers.mag_max > 13);
+
+  const again = createJudge(layout);
+  again.add({
+    id: "spawn",
+    kind: "spawn",
+    width: 8,
+    height: 8,
+    rgba,
+    snap: { ...base, mag: 0.9, magSources: { ground: 0.8, skyStars: 0.79, skySlice: 0.9, skyCap: 0.85 } },
+  });
+  const passed = again.finish({ glErrors: [], consoleErrors: [] });
+  assert.equal(passed.rows.find((r) => r.id === "mag_max").result, "PASS");
+});
+
 test("fix_hint names the object and the hero crop without failing the row", () => {
   const judge = createJudge(layout);
   const rgba = new Uint8Array(8 * 8 * 4);

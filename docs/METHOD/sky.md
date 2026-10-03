@@ -1,44 +1,151 @@
-# Sky — recipe (any biome)
+# Sky — the base recipe (any biome)
 
-Back to [METHOD.md](../METHOD.md). **Status: IN TEST** — zone A step 2 (branch `zone-a-step2-sky`) built it; Director QC
-2026-10-03 found blockers (§4), so it is not approved yet. The METHOD sky row (2026-10-02) stays the law; this page is how to
-build it. Palettes and exact Imagine prompt text stay in untracked `*.local.*` files and in
-`/workspace/grokcli/out/<zone>-step<N>/provenance.json`.
+Back to [METHOD.md](../METHOD.md). **Status: IN TEST** — zone A step 2b rebuilt the living sky on branch `zone-a-step2-sky`.
+Only SmiR approves it on the phone. The METHOD sky row (2026-10-02, plus the 2026-10-03 instancing clause) stays the law.
+This page is how to build it for every biome.
 
-## 1. Parts
+Palettes and exact Imagine prompt text stay in untracked `*.local.*` files and in
+`/workspace/grokcli/out/<zone>-step<N>/provenance.json`. Do not copy them into this page or into code.
 
-| Part | What | Pixels from |
+## Part 1 — Generic recipe
+
+### 1. Inputs
+
+| Input | Where | Used for |
 |---|---|---|
-| Ring | 8 chained Imagine slices (60° HFOV, 45° step), pixel-joined into one closed 360° strip; ≥ ~32 px per degree so magnification ≤ 1.0 at the play hfov (720 px / 22.7°). Joins: 2–4 % crossfade of the two slices' own pixels (`resolveSeamBlend`), after the slice gate. | Imagine `image_gen` / `image_edit` chain |
-| Cap | One Imagine zenith still projected around the pole, blended into the ring top with the two images' own pixels. Must cover every elevation above the ring with texels at magnification ≤ 1.0 (no edge clamp smear). | Imagine still |
-| Living layers | ≥ 3 seamless Imagine video loops of different lengths (about 13 / 17 / 29 s; first = last frame or ping-pong). One decoder per layer; **sampled per slice at the start offsets in `sky.json`** (see `tools/sky/README.md`), keyed over the ring, never one low-res frame stretched over 360°. ≤ 4 decoders incl. Bolt. | Imagine `image_to_video` / `reference_to_video` |
-| Fog | Fog colour sampled by code from the ring's horizon band pixels. Never typed. | Imagine pixels (sampled) |
+| `timeOfDay`, `paint`, `mood` | `biome/kits/<id>.json` — `python3 tools/kits/kit.py show --id <id>` | Prompt slots only |
+| `sun.azimuthDeg`, `sun.elevationDeg`, `sun.kelvin` | same kit | Which slice carries the sun or eclipse glow, and the light line in the prompt |
+| `skySlicePlan` (8 headings, 60° HFOV, 45° step) | same kit | Ring layout. Never clone or mirror a column to fill a gap |
+| `livingLoops` durations | same kit, about 13 / 17 / 29 s | Three co-prime video layers |
+| Palette words | kit, and the untracked prompt file | Prompt slots only. Never a typed colour in the shader |
 
-The ring is a far backdrop: centred on the eye, it never moves with Bolt.
+The ring is a far backdrop centred on the eye. It does not move with Bolt. Code places, blends, and keys Imagine pixels. Law 67 adds only fog whose colour is sampled from the Imagine horizon, one light grade, and a capped bloom.
 
-## 2. Steps (~1 h)
+### 2. Prompt templates
 
-1. `python3 tools/kits/kit.py show --id <id>` (sun azimuth / elevation / kelvin, time of day). Write the local prompt file.
-2. Ring: anchor slice, then chained edits around the circle (each edit sees its neighbour), the last one also sees the first.
-   Put the kit's sun glow in the slices that face the sun azimuth. Gate: `python3 tools/sky/check.py --slices <dir>`.
-3. Cap: one zenith still from the ring's top colours (edit with ring slices as sources).
-4. Layers: stars, dust and nebula loops from ring frames; gate `python3 tools/sky/check.py --manifest sky.json`.
-5. Hang it: dome in eye space, ring band + cap + layers; fog from `sampleHorizon`. Check mag, decoders, texMB.
-6. QC on the phone view (412×915 CSS, DPR 2, plus landscape): all 8 joins incl. the wrap, straight up, the highest crest,
-   the rim, the sun azimuth, and a ≥ 20 s turning clip that crosses every layer's loop restart.
+`{…}` are slots. Kit slots are copied from the kit. Palette and mood sentences live in the untracked prompt file. No hex in a tracked file.
 
-## 3. Gates
+**T-hero — first slice** (`image_gen`, 4:3). One continuous night or day sky. Put the kit sun or eclipse in this frame when this slice faces `sun.azimuthDeg`. Natural horizon silhouette only on the horizon band. No landmarks, no text, no second copy of the sky pasted beside the first.
 
-`python3 tools/sky/check.py` (slices + manifest), `python3 tools/sky/selftest.py`, root `npm test`, `tools/playcheck` npm
-test; play mag_max ≤ 1.0 **for every sky texel that is visible, layers and cap included**; no console errors.
+**T-next — outpaint** (`image_edit`, the previous slice as the source). A new full-frame painting whose left continues the previous image's right edge. Same time of day, same sun, same mood. Do not mirror. Do not paste the source as a left-hand strip.
 
-## 4. Pitfalls seen in zone A step 2 (Director QC 2026-10-03)
+**T-close — last slice** (`image_edit`, up to three sources: the previous edge and the first slice). Continues the previous edge and also meets the first slice. One sun only.
 
-- One 848×480 video frame stretched across the whole 360° and mixed at high weight: about 13× magnification and a washed-out
-  sky. Breaks law 65 even though the slice mag reads 0.994.
-- Fading that veil out at azimuth 0: a hard vertical seam and brightness step at heading 0.
-- Cap texture clamped to its edge between the ring top and about 77° elevation: radial streaks, a near-flat slab and a
-  pole notch when looking up.
-- Video loop restart: the layer drops for a frame when `loop` seeks back to 0 (`uploadVideo` returns false) — a visible flash.
-  Hold the last uploaded frame instead of dropping the layer's weight.
-- Sun glow present in the slice pixels but not readable in play once the layers cover it.
+**T-upper / T-high** — same chain with no horizon and no sun disk. Upper is the band above the horizon. High is the band under the cap.
+
+**T-cap** (`image_gen`, square). A nebula field for the pole. The centre of the frame is what the player sees when looking straight up, so the centre must be part of the painting, not an empty disk.
+
+**T-loop** — reuse a sealed seamless loop when one already passes `tools/sky/check.py`. A new loop is `image_to_video` or `reference_to_video` with first frame equal to last frame. Durations stay different (about 13 / 17 / 29 s). This CLI's video tool stops at 15 s, so a longer loop is an existing file or a ping-pong, not a hard restart.
+
+### 3. Resolution and the ring
+
+Native Imagine stills are about 1152×864 (4:3) or a portrait near 832×1248. The phone view is 720×1600, hfov 22.7°. That is about 32 px per degree across and 33 px per degree vertically. Magnification is screen px per source px and must stay ≤ 1.0 (law 65).
+
+One native still cannot cover 45° of azimuth at that density (1152 px / 45° is about 1.24×). Two genuine outpaints, overlapped and crossfaded with their own pixels, can. Cutting a painting into narrow strips and pasting the strips side by side is not a join. A hard cut through the middle of a finished slice, to force a common width, is the same defect.
+
+Join rule:
+
+1. Search a horizontal overlap. Crossfade that overlap with the two images' own pixels.
+2. If one slice is wider, crop spare pixels from the **outer edges**, never from the middle. Then the crossfade stays intact.
+3. Copy a few blended columns onto both sides of a slice boundary so the neighbour match is the same pixels, and feather those columns back into the painting over a short run.
+4. The shader may add a 2–4 % crossfade at the slice boundary (`resolveSeamBlend` / the in-shader seam). It does not invent pixels.
+
+Display each joined slice over 45° (the cook HFOV is 60°; the step is 45°). Stack bands so each band's height covers its elevation span at ≤ 1.0:
+
+| Band | Role | Elevation (zone A numbers in Part 2) |
+|---|---|---|
+| Horizon | ground line, sun or eclipse | from just under the horizon up through the low sky |
+| Upper | nebula above the horizon | overlaps the horizon top |
+| High | under the cap | overlaps the upper top |
+| Cap | pole | starts where a 1024 square still is still ≤ 1.0 (near 76°) |
+
+Do not stretch a short band down to a low cap. A lat-long band pinches near the pole. The top of the dome is the cap, with polar UVs and **no edge clamp**.
+
+### 4. Instanced living layers
+
+Each video decodes **once** into **one** texture (`texImage2D` / `texSubImage2D` per frame). Draw it as **one** instanced draw per layer (`drawArraysInstanced` or `drawElementsInstanced`). Per-instance attributes carry tile azimuth, elevation, tile size, UV offset, and a phase so neighbouring tiles are not on the same part of the frame. No per-tile video element. No second copy of the decoder.
+
+Map each tile at magnification ≤ 1. A 848×480 frame over the whole 360° is about 13× and is a fail. Tiles near 21° by 11° pass. Repeat wrap on the video texture. `LINEAR`, never `NEAREST`.
+
+Blend additive from the video's own RGB, light enough that the painted slices stay sharp. A heavy mix paints a grid of rectangles. Hold the last uploaded frame when `readyState` drops on a loop seek. Do not fade the layer out at one heading.
+
+**Parallax (2026-10-03, no invisible relief for the sky).** The dome stays on the eye. A small extra yaw, in radians, shifts the sample:
+
+| Layer | Yaw factor | Role |
+|---|---|---|
+| Stars | 0.002 | farthest, nearly still |
+| Painted slices | 0.006 | far backdrop |
+| Nebula wisps | 0.012 | nearer drift |
+| Dust | 0.020, plus a tiny term from eye x+z | nearest |
+
+No stretch. Magnification stays ≤ 1. The mesh does not follow Bolt across the ground.
+
+### 5. Fog
+
+`sampleHorizon` reads the Imagine horizon band (zone A uses rows 72–90 % of each horizon slice) and passes that colour to the fog. Never type a fog colour.
+
+### 6. Gates
+
+`python3 tools/sky/check.py --manifest <sky.json> --out <dir>` must pass. It fails when:
+
+- a slice join or the closing join is over the MAE limit
+- slice-median exposure swing is over 24 in the ring
+- a column run is a clone or a mirror
+- a living loop is not seamless, too short together, or over the texture budget (layer `texBytes` only, 48 MiB)
+- `display.videoTiles` is missing while layers exist
+- **any** displayed band, cap, or video tile is over magnification 1.0 at 720×1600
+
+The old layout (one 848×480 frame over 360°) fails that last row. `python3 tools/sky/selftest.py` proves the fail and the pass. `tools/playcheck` does the same on `snapshot().magSources` (every sky key, including the video layers).
+
+Also: root `npm test`, `tools/playcheck` `npm test`, play `mag_max` ≤ 1.0, `activeVideos` ≤ 4, no console errors.
+
+### 7. QC list (phone, 412×915 CSS, DPR 2)
+
+Look at the pictures. A passing number has shipped a washed sky before.
+
+1. Each slice file alone: one continuous painting. No vertical strip edges, no pasted patches, no ruler horizon.
+2. Contact sheet of the ring.
+3. Headings 0, 90, 180, and the sun azimuth, at Bolt eye height.
+4. Look up about 45°, straight up, and the highest crest.
+5. A frame on each side of every layer's loop restart. Sky MAE across that pair should stay near a twinkle, not a flash.
+
+## Part 2 — The Howling Eclipse (zone A, what was built)
+
+Kit `howling-eclipse`: night, sun azimuth 285°, elevation −4°, 7500 K. Eclipse glow sits in slice 6 (heading 270–315), left of that slice's centre.
+
+| Band | Files | Size | Elevation | mag (gate) |
+|---|---|---|---|---|
+| Horizon | `packs/zone-a/src/sky/sky-0..7.png` | 1867×864 | −1.5° to 24° | 0.982 |
+| Upper | `src/sky/upper/sky-0..7.png` | 1424×1248 | 21.5° to 54° | 0.933 |
+| High | `src/sky/high/sky-0..7.png` | 1152×864 | 52° to 77.5° | 0.982 |
+| Cap | `src/sky-cap/zenith.png` | 1024×1024 | from 76° | 0.901 |
+| Stars / dust / nebula | existing mp4 | 848×480 tiles 21.18°×11.25° | full dome | 0.792 |
+
+Horizon and upper are two chained outpaints per 45° slice. High is one still per slice. Two horizon outpaints arrived as diptychs after one redo each; the continuous side was cropped and the rest of the chain was kept (stop after 2). Video files were not recooked: stars 13.0 s, dust 16.708 s, nebula 28.95 s. Combined repeat on the file durations is many hours. Gains on the additive tiles are small (stars / dust / nebula) so the paintings stay the hero. One instanced draw per layer. Play snapshot: mag_max 0.982, activeVideos 4, drawCalls 7. Total GPU textures are about 220 MB because three full-resolution bands are resident. The 48 MiB sky gate counts layer `texBytes` only (about 4.9 MB) and passes.
+
+Play code: `packs/zone-a/play/play.js`. Manifest: `packs/zone-a/src/sky/sky.json` (`display.bands`, `display.cap`, `display.videoTiles`).
+
+## Part 3 — Other biomes (ideas only, not cooked)
+
+**Ember Mesa.** Same three bands and the same instanced loops. The hero slice carries that kit's low sun on the horizon band. The upper and high chains drop the night-violet mood slot and use the mesa dusk mood from the kit. Dust duration stays the long loop. Cap is a hot high haze, still a full painting at the centre.
+
+**Cascade Verdance.** Same skeleton. The horizon band keeps a soft tree line with no landmark. Living layers lean on the mist loop rather than a bright nebula, still at magnification ≤ 1 and still one instanced draw. The cap is canopy-gap sky, not a black disk.
+
+## Pitfalls
+
+Step 2 (Director QC 2026-10-03), still in force:
+
+- One 848×480 frame stretched across 360° and mixed heavily: about 13× magnification and a washed sky. The slice-only mag can still read under 1.
+- Fading that veil out at azimuth 0: a vertical brightness step at heading 0.
+- Cap UVs clamped from the ring top up to about 77°: a smeared slab, radial facets, a pole notch.
+- `uploadVideo` returning false on the loop seek: the layer drops for a frame. Hold the last upload.
+- Sun glow present in the slices and buried under a heavy layer.
+
+Step 2b, new:
+
+- A centre crop that deletes the middle of a joined slice and concatenates the sides. The edge gate stays green and the slice file shows a hard vertical seam. Crop the outer edges instead.
+- Stamping eight identical columns makes join MAE 0 even when the clouds on either side of that stamp do not continue. Look at heading 0. Do not trust the MAE alone.
+- Instanced tiles at a high additive gain draw a visible grid of rectangles. Keep the gain low. The painted slices are the hero.
+- A square cap whose centre is a dark void becomes a dark disk at the pole, and the eight lat-long joins read as spokes when looking straight up. A 1024 cap cannot start much below 76° without magnification over 1. Do not fight that with an upscale.
+- An outpaint that pastes the reference on the left (a diptych) is not a continuous painting. One redo, then crop to the continuous side or stop.
+- Exposure swing is the slice-median jump, limit 24. Do not scale RGB in code to pass it.

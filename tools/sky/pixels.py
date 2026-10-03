@@ -12,6 +12,13 @@ import numpy as np
 
 JOIN_MAE = 4.0
 SWING_MAX = 6.0
+# Slice-median exposure jump. Raw column range rejects a high-contrast nebula
+# and let the flat step-2 collage pass. A whole slice that jumps stays a fail.
+EXPOSURE_MAX = 24.0
+PLAY_W = 720
+PLAY_H = 1600
+HFOV_DEG = 22.7
+MAG_LIMIT = 1.0
 WINDOW_DEG = 60.0
 CLONE_MAE = 1.0
 CLONE_FAR = 6.0
@@ -107,6 +114,130 @@ def _window_swing(luma: np.ndarray, deg: float) -> float:
         seg = luma[i : i + window]
         worst = max(worst, float(seg.max() - seg.min()))
     return worst
+
+
+def play_px_per_deg() -> tuple[float, float]:
+    """Screen pixels per degree on the 720×1600 play view, horizontal and vertical."""
+    hfov = math.radians(HFOV_DEG)
+    aspect = PLAY_W / PLAY_H
+    vfov = 2.0 * math.atan(math.tan(hfov / 2.0) / aspect)
+    return PLAY_W / math.degrees(hfov), PLAY_H / math.degrees(vfov)
+
+
+def band_mag(src_w: float, src_h: float, az_deg: float, el_deg: float, el_bottom_deg: float = 0.0) -> dict:
+    """Screen px per source px. Worst horizontal case is the bottom of the band."""
+    pxh, pxv = play_px_per_deg()
+    mag_w = pxh * math.cos(math.radians(el_bottom_deg)) * float(az_deg) / float(src_w)
+    mag_h = pxv * float(el_deg) / float(src_h)
+    mag = max(mag_w, mag_h)
+    return {"mag": r4(mag), "magW": r4(mag_w), "magH": r4(mag_h), "ok": mag <= MAG_LIMIT + 1e-3}
+
+
+def cap_mag(src_w: float, el_start_deg: float) -> dict:
+    """Polar cap. The outer parallel is the worst ring; radius maps to half the texture."""
+    pxh, pxv = play_px_per_deg()
+    circ = 360.0 * math.cos(math.radians(el_start_deg))
+    px_per = (math.pi * float(src_w)) / max(1e-6, circ)
+    mag = max(pxh, pxv) / px_per
+    return {"mag": r4(mag), "ok": mag <= MAG_LIMIT + 1e-3, "elStartDeg": el_start_deg, "srcW": src_w}
+
+
+def tile_mag(src_w: float, src_h: float, az_deg: float, el_deg: float) -> dict:
+    """One video tile at the horizon, where a degree of azimuth is a full visual degree."""
+    row = band_mag(src_w, src_h, az_deg, el_deg, 0.0)
+    row["azimuthDeg"] = az_deg
+    row["elevationDeg"] = el_deg
+    return row
+
+
+def assess_display(display: dict, measured: dict | None = None) -> dict:
+    """Fail if a slice, cap, or video tile is mapped above magnification 1.
+
+    `measured` may supply srcW/srcH per id when the manifest does not inline them.
+    A video tile whose azimuth is the whole 360° (the step-2 veil) fails.
+    """
+    measured = measured or {}
+    failures = []
+    rows = []
+    if not isinstance(display, dict):
+        return {"ok": False, "failures": ["FAIL sky display mapping missing"], "rows": rows}
+    for band in display.get("bands") or []:
+        name = str(band.get("id") or "band")
+        size = measured.get(name) or band
+        src_w = float(size.get("srcW") or 0)
+        src_h = float(size.get("srcH") or 0)
+        az = float(band.get("azimuthDeg") or 0)
+        el0 = float(band.get("elBottomDeg") or 0)
+        el1 = float(band.get("elTopDeg") or 0)
+        if src_w < 2 or src_h < 2 or az <= 0 or el1 <= el0:
+            failures.append(f"FAIL sky display {name} missing size or angular span")
+            continue
+        row = band_mag(src_w, src_h, az, el1 - el0, el0)
+        row["id"] = name
+        rows.append(row)
+        if not row["ok"]:
+            failures.append(
+                f"FAIL sky magnification {name}={row['mag']} limit={MAG_LIMIT} "
+                f"(src {int(src_w)}x{int(src_h)} over {az} deg x {el1 - el0:.2f} deg)"
+            )
+    cap = display.get("cap")
+    if cap:
+        size = measured.get("cap") or cap
+        src_w = float(size.get("srcW") or 0)
+        el = float(cap.get("elStartDeg") or 0)
+        if src_w < 2:
+            failures.append("FAIL sky display cap missing size")
+        else:
+            row = cap_mag(src_w, el)
+            row["id"] = "cap"
+            rows.append(row)
+            if not row["ok"]:
+                failures.append(
+                    f"FAIL sky magnification cap={row['mag']} limit={MAG_LIMIT} "
+                    f"(src {int(src_w)} from elevation {el} deg)"
+                )
+    for tile in display.get("videoTiles") or []:
+        name = str(tile.get("id") or "layer")
+        size = measured.get(name) or tile
+        src_w = float(size.get("srcW") or 0)
+        src_h = float(size.get("srcH") or 0)
+        az = float(tile.get("azimuthDeg") or 0)
+        el = float(tile.get("elevationDeg") or 0)
+        if src_w < 2 or src_h < 2 or az <= 0 or el <= 0:
+            failures.append(f"FAIL sky display video {name} missing size or tile span")
+            continue
+        row = tile_mag(src_w, src_h, az, el)
+        row["id"] = name
+        rows.append(row)
+        if not row["ok"]:
+            failures.append(
+                f"FAIL sky magnification {name}={row['mag']} limit={MAG_LIMIT} "
+                f"(video {int(src_w)}x{int(src_h)} tile {az} deg x {el} deg)"
+            )
+    return {"ok": not failures, "failures": failures, "rows": rows, "limit": MAG_LIMIT}
+
+
+def slice_median(rgb: np.ndarray) -> float:
+    img = rgb[..., :3].astype(np.float32)
+    return float(np.median(img.mean(axis=2)))
+
+
+def exposure_swing(images: list[np.ndarray]) -> dict:
+    """Median luma jump between slices. Internal nebula contrast is not a drift."""
+    medians = [slice_median(rgb) for rgb in images]
+    if len(medians) < 2:
+        return {"swing": 0.0, "ok": True, "medians": medians}
+    worst = 0.0
+    for i, med in enumerate(medians):
+        nxt = medians[(i + 1) % len(medians)]
+        worst = max(worst, abs(med - nxt))
+    worst = max(worst, max(medians) - min(medians))
+    return {
+        "swing": r4(worst),
+        "ok": worst <= EXPOSURE_MAX + 1e-6,
+        "medians": [r4(m) for m in medians],
+        "limit": EXPOSURE_MAX,
+    }
 
 
 def chain_swing(images: list[np.ndarray], runs: list[int]) -> dict:
@@ -300,25 +431,29 @@ def assess_slices(named: list[tuple[str, np.ndarray]]) -> dict:
     elif len(named) == 1:
         failures.append("FAIL sky chain needs at least 2 slices to close")
 
-    swing = chain_swing(images, runs) if images else {"swing": 0.0, "ok": True, "windowPx": 0}
-    if images and not swing["ok"]:
+    column = chain_swing(images, runs) if images else {"swing": 0.0, "ok": True, "windowPx": 0}
+    exposed = exposure_swing(images) if images else {"swing": 0.0, "ok": True, "medians": []}
+    # `swing` stays the gate number (exposure). Raw column range is reported beside it.
+    swing = {
+        "swing": exposed["swing"],
+        "ok": exposed["ok"],
+        "medians": exposed.get("medians") or [],
+        "limit": EXPOSURE_MAX,
+        "columnSwing": column.get("swing", 0.0),
+        "windowPx": column.get("windowPx", 0),
+    }
+    if images and not exposed["ok"]:
         failures.append(
-            f"FAIL sky column luma swing={swing['swing']} limit={SWING_MAX} in a {WINDOW_DEG:.0f} deg window"
+            f"FAIL sky exposure swing={exposed['swing']} limit={EXPOSURE_MAX} "
+            f"in a {WINDOW_DEG:.0f} deg window"
         )
 
     per_swing = []
-    widths = []
-    for rgb, run in zip(images, runs):
-        luma = column_luma(rgb)
-        widths.append(max(1, len(luma) - int(run)))
-    total_w = sum(widths) or 1
-    for (name, rgb), run, width in zip(named, runs, widths):
-        luma = column_luma(rgb)[:width]
-        deg = 360.0 * width / total_w
-        local = _window_swing(luma, deg)
-        per_swing.append({"file": name, "swing": r4(local), "deg": r4(deg)})
-        if local > SWING_MAX + 1e-6:
-            failures.append(f"FAIL sky slice swing {name} column luma swing={local:.2f} limit={SWING_MAX}")
+    medians = exposed.get("medians") or []
+    anchor = float(np.median(medians)) if medians else 0.0
+    for (name, _rgb), med in zip(named, medians or [0.0] * len(named)):
+        local = abs(float(med) - anchor)
+        per_swing.append({"file": name, "swing": r4(local), "median": med})
 
     advice = _cheapest(slices, joins, closed, per_swing)
     ok = not failures
@@ -330,7 +465,7 @@ def assess_slices(named: list[tuple[str, np.ndarray]]) -> dict:
         "close": closed,
         "swing": swing,
         "sliceSwing": per_swing,
-        "limits": {"joinMae": JOIN_MAE, "swing": SWING_MAX, "windowDeg": WINDOW_DEG},
+        "limits": {"joinMae": JOIN_MAE, "swing": EXPOSURE_MAX, "windowDeg": WINDOW_DEG},
         "cheapest": advice,
         "failures": failures,
     }
@@ -359,9 +494,9 @@ def _cheapest(slices, joins, closed, per_swing) -> dict:
             reasons[row["file"]].append(f"trailing columns are {kind}")
     swing_of = {row["file"]: row["swing"] for row in per_swing}
     for name, swing in swing_of.items():
-        if swing > SWING_MAX:
+        if swing > EXPOSURE_MAX:
             blame[name] += 2
-            reasons[name].append(f"column luma swing {swing}")
+            reasons[name].append(f"exposure swing {swing}")
     if not blame:
         return {"file": None, "clears": 0, "why": "no slices"}
     ranked = sorted(blame.items(), key=lambda item: (-item[1], -order.get(item[0], 0)))
