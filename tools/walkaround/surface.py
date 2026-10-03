@@ -670,7 +670,11 @@ def render_zbuffer(
 
 
 def _sample_nearest(view: dict, u: np.ndarray, v: np.ndarray) -> np.ndarray:
-    """Nearest source texel. No filter, no mip."""
+    """measurement buffer only: nearest source texel for QC renders, not the play view.
+
+    The play view samples the same PNG with LINEAR_MIPMAP_LINEAR and mipmaps
+    (law 65). This function does not feed that view.
+    """
     rgba = view["rgba"]
     height, width = rgba.shape[:2]
     ui = np.clip(np.rint(u).astype(np.int32), 0, width - 1)
@@ -687,7 +691,8 @@ def project_fragments(
 ) -> tuple[np.ndarray, dict]:
     """Per fragment: best facing visible view, blend the second only in the seam.
 
-    Samples are nearest texels of the original images. No third view, no blur.
+    QC colour is a measurement buffer (nearest texel), not the play view.
+    No third view. The play view uses LINEAR_MIPMAP_LINEAR.
     `group_ranges[g]` is (first view index, count) for mesh group g.
     """
     seam_ratio = 0.65

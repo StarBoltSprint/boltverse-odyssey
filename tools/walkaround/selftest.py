@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -570,8 +571,62 @@ def check_rejects(tmp: Path) -> None:
     print("selftest source rejects ok")
 
 
+def check_law65_play_sampling() -> None:
+    """Play viewers sample stills with LINEAR_MIPMAP_LINEAR. QC nearest is measurement only.
+
+    Law 65 (biome/docs/65-render-quality.md). Magnification limit stays 1.0.
+    Issue https://github.com/StarBoltSprint/boltverse-odyssey/issues/153.
+    """
+    view = (TOOL / "web" / "view.html").read_text()
+    runtime = (TOOL / "runtime" / "hullmesh.js").read_text()
+    hull_src = (TOOL / "hull.py").read_text()
+    surface_src = (TOOL / "surface.py").read_text()
+
+    if "MAG_LIMIT = 1.0" not in hull_src:
+        raise SystemExit("FAIL selftest: magnification limit is not 1.0")
+
+    for label, text in (("view.html", view), ("hullmesh.js", runtime)):
+        if "LINEAR_MIPMAP_LINEAR" not in text:
+            raise SystemExit(f"FAIL selftest: {label} does not set LINEAR_MIPMAP_LINEAR")
+        if "generateMipmap" not in text:
+            raise SystemExit(f"FAIL selftest: {label} does not build mipmaps")
+        if re.search(r"TEXTURE_(?:MIN|MAG)_FILTER\s*,\s*gl\.NEAREST", text):
+            raise SystemExit(f"FAIL selftest: {label} sets NEAREST on a texture")
+        if "texture(uViews" not in text:
+            raise SystemExit(f"FAIL selftest: {label} colour pass does not sample with texture()")
+        if re.search(r"\bcol\s*=\s*texelFetch", text):
+            raise SystemExit(f"FAIL selftest: {label} colour is a texelFetch")
+
+    proc = subprocess.run(
+        [
+            "node",
+            str(ROOT / "tools" / "playcheck" / "src" / "renderlint.mjs"),
+            str(TOOL / "web" / "view.html"),
+            str(TOOL / "runtime" / "hullmesh.js"),
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+    )
+    if proc.returncode != 0:
+        raise SystemExit(
+            "FAIL selftest: play viewer renderlint\n" + (proc.stdout or "") + (proc.stderr or "")
+        )
+
+    if '"sampling": "nearest"' in hull_src or '"mipmaps": False' in hull_src:
+        raise SystemExit("FAIL selftest: hull asset still records nearest play sampling")
+    if "LINEAR_MIPMAP_LINEAR" not in hull_src:
+        raise SystemExit("FAIL selftest: hull asset does not record LINEAR_MIPMAP_LINEAR")
+
+    sampler = surface_src.split("def _sample_nearest", 1)[-1][:500]
+    if "measurement" not in sampler or "not the play view" not in sampler:
+        raise SystemExit("FAIL selftest: QC nearest sampler is not marked measurement-only")
+    print("selftest law65 sampling ok")
+
+
 def main() -> int:
     proof = "--proof" in sys.argv
+    check_law65_play_sampling()
     check_basis()
     with tempfile.TemporaryDirectory(prefix="walkaround-selftest-") as raw:
         tmp = Path(raw)

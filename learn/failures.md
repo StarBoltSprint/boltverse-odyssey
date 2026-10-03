@@ -231,3 +231,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | The shown frames keep the transparent holes. The four-view visual hull on the same cameras scored silhouette IoU 0.543 and remains the fallback when the network mesh will not line up. No second network resolution. |
 | Guard | `tools/mesh3d/out/qc/report.json` fields `coverageMin`, `coverageMean`, and `triposr.alignIoU`. `python3 tools/mesh3d/selftest.py` checks the synthetic box, the blend, and magnification ≤ 1. Nothing fails the ship build for a low align IoU or for holes. |
 | Sources | `learn/take-notes/2026-10-02-ship-real3d.md`. Frames `tools/mesh3d/out/frames/yaw-090.png`. |
+
+### 2026-10-03 — walkaround and mesh3d still sampled nearest, and auto called TripoSR
+
+| | |
+| --- | --- |
+| Take | Tool loop for issue #153. No Imagine cook. |
+| Defect | Play viewers in `tools/walkaround` and `tools/mesh3d` sampled world stills with nearest / no mipmaps. `tools/mesh3d --engine auto` could replace the play mesh with TripoSR. |
+| Root cause | Law 65 and the golden rule were written into the docs on 2026-10-03. The tool code and the selftests were not updated, so a green selftest could still ship nearest sampling and a network mesh. |
+| Fix | Play stills use `LINEAR_MIPMAP_LINEAR` and mipmaps. CPU QC nearest is labelled a measurement buffer. `auto` is the visual hull. TripoSR runs only with `--experiment triposr` and is not written into the play mesh. The checked-in `out/asset.json` stays the 2026-10-02 experiment record with `feedsPlay` false. Magnification limit stays 1.0. |
+| Guard | `python3 tools/walkaround/selftest.py` (`check_law65_play_sampling`) and `python3 tools/mesh3d/selftest.py` (`check_law65_and_triposr`). `node tools/playcheck/src/renderlint.mjs` on `tools/walkaround/web/view.html`, `tools/walkaround/runtime/hullmesh.js`, and `tools/mesh3d/viewer/main.js`. |
+| Sources | Issue #153. [`docs/METHOD/decisions-log.md`](../docs/METHOD/decisions-log.md) contradictions 7 and 8. [`biome/docs/65-render-quality.md`](../biome/docs/65-render-quality.md). |

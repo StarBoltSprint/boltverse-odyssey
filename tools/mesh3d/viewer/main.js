@@ -30,6 +30,7 @@ for (const view of asset.views) {
   const depth = new THREE.WebGLRenderTarget(view.width, view.height, {
     type: THREE.FloatType,
     format: THREE.RedFormat,
+    // measurement z buffer, not a world texture
     minFilter: THREE.NearestFilter,
     magFilter: THREE.NearestFilter,
     depthBuffer: true,
@@ -201,10 +202,11 @@ const material = new THREE.ShaderMaterial({
         float u = (wh.x - 1.0) * 0.5 + Fy(i) * (x / z);
         float v = (wh.y - 1.0) * 0.5 - Fy(i) * (y / z);
         if (u < 0.0 || v < 0.0 || u > wh.x - 1.0 || v > wh.y - 1.0) continue;
-        vec2 uv = (vec2(floor(u), floor(v)) + 0.5) / wh;
+        vec2 uv = (vec2(u, v) + 0.5) / wh;
         vec4 src = fetchMap(i, uv);
         if (src.a < 0.06) continue;
-        float recorded = fetchDep(i, uv);
+        vec2 uvZ = (vec2(floor(u), floor(v)) + 0.5) / wh;
+        float recorded = fetchDep(i, uvZ);
         if (recorded < 1e-3) continue;
         if (z > recorded + zBias) continue;
         acc += w * src.rgb;
@@ -290,9 +292,9 @@ function loadTexture(url) {
     new THREE.TextureLoader().load(
       url,
       (tex) => {
-        tex.minFilter = THREE.NearestFilter;
-        tex.magFilter = THREE.NearestFilter;
-        tex.generateMipmaps = false;
+        tex.minFilter = THREE.LinearMipmapLinearFilter;
+        tex.magFilter = THREE.LinearFilter;
+        tex.generateMipmaps = true;
         tex.colorSpace = THREE.NoColorSpace;
         tex.wrapS = THREE.ClampToEdgeWrapping;
         tex.wrapT = THREE.ClampToEdgeWrapping;

@@ -1,21 +1,21 @@
 # Real 3D, tested on the crashed ship
 
-> **Superseded (2026-10-03, [`docs/METHOD.md`](../../docs/METHOD.md)): do not use TripoSR** or any single-image mesh network as a shape source (Golden rule: no TripoSR-style mesh generators; it invents unseen sides). Shapes come from Imagine images (8-view carving, or the hard-object measured-section method, IN TEST). Sampling: **use mipmaps per law 65** (`LINEAR_MIPMAP_LINEAR`, never `NEAREST`), not "nearest, no mipmaps". Kept as a measurement record; tool code unchanged; fix tracked for the tool loop.
-
 Invisible shape, Imagine pixels. Code does not draw colour, lights, shadows, or a texture.
 
-An image-to-3D network sees one still and invents the sides it did not see. That invention is allowed only as the invisible shape. A surface the orbit cannot cover with a real Imagine view stays transparent. The ship is half-buried so the belly, which no still shows, is not on screen.
+The play shape is the visual hull carved from the Imagine stills. TripoSR is not a shape source (golden rule, 2026-10-02: no TripoSR-style mesh generators). It runs only with `--experiment triposr`, and that mesh is not written into the play asset. 8-view carving (`tools/walkaround`) and the hard-object measured-section method (IN TEST) stay the Imagine-derived shape paths.
+
+A surface the orbit cannot cover with a real Imagine view stays transparent. The ship is half-buried so the belly, which no still shows, is not on screen. The play viewer samples the stills with `LINEAR_MIPMAP_LINEAR` and mipmaps (law 65). QC frames from `shade.py` are a measurement buffer, not the play view.
 
 ## Command
 
 ```bash
 python3 tools/mesh3d/selftest.py
-python3 tools/mesh3d/build.py --views tools/mesh3d/inputs/ship --out tools/mesh3d/out --engine auto
+python3 tools/mesh3d/build.py --views tools/mesh3d/inputs/ship --out tools/mesh3d/out --engine visual-hull
 ```
 
-`--engine visual-hull` skips the network. `--engine triposr` does not fall back. `auto` tries TripoSR once and, if that mesh will not line up with the stills, keeps the visual hull and says so in `out/qc/report.json`.
+`--engine auto` is the same visual hull. It does not call TripoSR. `--experiment triposr` records a network mesh under `qc/` with `feedsPlay: false` and does not replace `ship.obj`.
 
-The viewer is `tools/mesh3d/viewer/index.html` (serve `tools/mesh3d` and open it). It is unlit. Sampling is nearest from the original PNGs. Weight is `cos` of the yaw gap, and zero past 45°. `?bury=0` shows the unburied mesh, including transparent holes. Phone size is 720×1600.
+The viewer is `tools/mesh3d/viewer/index.html` (serve `tools/mesh3d` and open it). It is unlit. Imagine stills use `LINEAR_MIPMAP_LINEAR` and mipmaps. The depth target is a measurement z buffer. Weight is `cos` of the yaw gap, and zero past 45°. `?bury=0` shows the unburied mesh, including transparent holes. Phone size is 720×1600. `node tools/playcheck/src/renderlint.mjs tools/mesh3d/viewer/main.js` stays clean.
 
 ```bash
 node tools/mesh3d/shot.mjs
@@ -33,7 +33,7 @@ Shape votes use yaws 0, 90, 180, 270. Colour uses 0, 45, 90, 180, 270, 315 (fron
 
 The visual hull dilates each silhouette and keeps a voxel when 3 of 4 agree. That is the tolerance for the known view drift. It does not invent a colour for the gap.
 
-TripoSR, when the weights and the CPU stack are present, runs on `yaw-000.png` (it has an alpha; `hero.png` is an unkeyed plate). The network’s own vertex colours are discarded. `torchmcubes` is not required. The density grid is meshed with surface nets. The mesh is then yaw-and-scale aligned to the four silhouettes.
+`--experiment triposr`, when the weights and the CPU stack are present, runs on `yaw-000.png` (it has an alpha; `hero.png` is an unkeyed plate) and writes a side note. The network’s own vertex colours are discarded. That mesh is not the play hull. `torchmcubes` is not required. The density grid is meshed with surface nets only inside that experiment.
 
 ## Pixels
 
@@ -41,4 +41,4 @@ Do not enlarge a source. The phone measure is the hull’s projected box in 720�
 
 ## This ship
 
-The measurement is `learn/take-notes/2026-10-02-ship-real3d.md`. TripoSR on `yaw-000` (CPU, resolution 48) aligned at silhouette IoU 0.445. Screen coverage of the above-ground surface averages 0.703 and bottoms at 0.618. Max magnification is 0.976. Weights stay outside the repo (`triposr_status` says when they are missing). The visual hull is the fallback.
+The measurement is `learn/take-notes/2026-10-02-ship-real3d.md`. TripoSR on `yaw-000` (CPU, resolution 48) aligned at silhouette IoU 0.445. Screen coverage of the above-ground surface averages 0.703 and bottoms at 0.618. Max magnification is 0.976. That run is why the network is not a play shape. The checked-in `out/asset.json` is that record (`engine` `triposr`, `feedsPlay` false). A new build writes the visual hull. Weights stay outside the repo (`triposr_status` says when they are missing). The visual hull is the play mesh.
