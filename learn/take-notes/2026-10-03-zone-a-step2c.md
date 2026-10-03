@@ -2,14 +2,16 @@
 
 ## Quota and turns
 
-The quota row is appended by `python3 tools/quota/quota.py` after the commit. Do not invent the counts.
+`python3 tools/quota/quota.py` on this session's `events.jsonl` appended: date 2026-10-03, step zone-a-step2c, commit 624f00c, turns 0, tool calls 0, image gens 0, video gens 0, tokens n/a, wall 3639.0 s. Those zero counts are what the tool printed. The log's event types are `turn_started` and `tool_started`, which that counter does not tally. The wall time is the span of timestamps in the file. Do not invent a second count.
+
+Phone preview freeze refused: REPORT has no `Verdict: PASS` line. The script exits 1 and writes nothing. That matches the sky-check FAIL on the unreplaced slices.
 
 | Item | Kind | Turns or tries | Quota spent | Result |
 | --- | --- | --- | --- | --- |
-| Camera chase | other | 1, committed earlier | see quota log | accepted, IN TEST |
-| Horizon continuation | sky | 2 | see quota log | rejected, stopped |
-| Corona loop | sky | 1 video, then a frame subset | see quota log | accepted as one keyed tile |
-| Failed slices | sky | 0 installed | | left as step 2b |
+| Camera chase | other | 1, committed earlier | tool row above | accepted, IN TEST |
+| Horizon continuation | sky | 2 | tool row above | rejected, stopped |
+| Corona loop | sky | 1 video, then a frame subset | tool row above | accepted as one keyed tile |
+| Failed slices | sky | 0 installed | tool row above | left as step 2b |
 
 ## This step
 
