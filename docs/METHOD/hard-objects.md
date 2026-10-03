@@ -9,6 +9,10 @@ The plates are the measure and the unlit skin of one lofted volume. A normal is 
 uses (roof, belly, port, starboard) and to flip the quad outward. There is no second shell pushed out along the normal.
 Do not add one.
 
+**Approved by SmiR 2026-10-03** (these two points are APPROVED; the recipe as a whole stays IN TEST):
+1. The hull is **lofted measured cross-sections only** — no offset shell, no other hull generator.
+2. **Colour-free templates in the repo, exact Imagine prompts only in the untracked local file** (section 0).
+
 ## 0. What you are allowed to change
 
 Build only the frigate. Do not edit the capital ship, the corvette, the flight, or Bolt.
@@ -418,10 +422,10 @@ Fixed in this pass (still **IN TEST** until SmiR checks them on the phone):
 1. **Hangar, see-through.** The port mouth is still a hole. Behind it is a bay: floor, ceiling, fore wall, aft wall, and a smaller far bulkhead, skinned with crops of `hangar.jpg`. There is no face across the mouth and no typed colour. The starboard skin stays closed, so you see into the bay, not out the other side.
 2. **Stretched add-on faces.** Top and bottom faces of a prism span a band of the side image (section 7), not one repeated row. Caps still use the front content box.
 3. **Pylons and the ventral gap.** The strut's long axis is the gap (`rotation.x = π/2` on local Y). The short axes are clamped to 2.05–3.4 so the strut is visible and not the old giant slab. The ventral turret's highest point after `rotation.x = π` is set to the belly surface minus 0.45.
-4. **Painted deck turret and painted belly bells.** Those pixels are covered by Imagine patches taken from deck and belly plating (no code colour). The 3D dorsal turret and the 3D bells stay. The hull silhouette was not moved; the measure gate still passes.
+4. **Painted deck turret and painted belly bells.** Those pixels are covered by Imagine patches taken from deck and belly plating (no code colour). The 3D dorsal turret and the 3D bells stay. The patches are clipped to the **original filled silhouette** of `top.jpg` / `belly.jpg` (merge review 2026-10-03: the first patch stuck out of the plan outline by up to ~30 px per side over u ≈ 0.68–0.83, which widened `beamPort` / `beamStbd` there; the gate does not check beams). Column extents now match the original plates within 1 px. A plate patch must never move the outline.
 5. **Backdrop.** The turntable does not clear to a typed colour and does not build a sky cube. `scene.background` is the single Imagine plate `backdrop.jpg`. The flight sky was not edited.
 
-Proof clip, not a phone shot: `tools/hard-objects/qc/howl-fixes.mp4`. Twenty seconds of orbit, then close-ups of the bay, the pylon, the ventral turret, the deck, and the belly.
+Proof clip, not a phone shot: `tools/hard-objects/qc/howl-fixes.mp4`. Twenty seconds of orbit, then close-ups of the bay, the pylon, the ventral turret, the deck, and the belly. The clip was rendered **before** the patch clip above, so its forward hull is slightly too wide in plan.
 
 Still open:
 
@@ -429,6 +433,9 @@ Still open:
 - **Stern plate still paints bells**, and `top.jpg` still paints the nacelles, while the mesh also builds those parts. Not part of the deck-turret / belly-bell fix.
 - **Patch seams.** The deck and belly repairs are rectangular Imagine patches. A seam can show. That is an accepted Imagine-native defect. Do not paint over it with a code colour.
 - **Pylon cross-section** is clamped, so the thin strut image is wider than its plate. That is the visibility fix, not a new slab. Do not go back to a uniform scale.
+- **Streaks on add-on parts** (merge review, QC clip): the bridge tower top and the pylon / nacelle blocks still show smeared, stretched texture on some faces. The band fix helped the top/bottom faces only.
+- **Bay aft edge**: a thin dark strip shows between the port rim and the aft wall. You see into the bay, not out the starboard side.
+- **Backdrop magnification**: `backdrop.jpg` is 1792×1008 used as `scene.background`, so on a portrait phone it is stretched to the canvas (aspect distorted, magnification > 1). Needs a larger / portrait plate or a cover crop before phone QC under law 65.
 
 ## 12. Run the gate
 
