@@ -12,7 +12,7 @@ Status of the sky look: IN TEST. Owner phone QC is still open. This note records
 
 ## This step
 
-- Step: zone A step 2b, living sky, branch `zone-a-step2-sky`.
+- Step: zone A step 2b, living sky, branch `zone-a-step2-sky`, commit `25dd00d`.
 - Accepted because (command, row, numbers): `python3 tools/sky/check.py --manifest packs/zone-a/src/sky/sky.json` PASS, failures 0. Horizon mag 0.9822, upper 0.9326, high 0.9822, cap 0.9009, stars/dust/nebula 0.7921. Combined repeat 62959 s. Play snapshot mag_max 0.982, activeVideos 4, drawCalls 7, texMB 219.9, console errors 0. Loop-restart sky MAE about 1.0. `tools/sky/selftest.py` PASS. Root `npm test` PASS. `tools/playcheck` `npm test` 43 pass, 0 fail.
 - Recipe appended (path, or `none`): `learn/recipes/zone-a-sky-ring.md`.
 - Failure appended (heading in `learn/failures.md`, or `none`): `2026-10-03 — a centre splice and a heavy tile mix both passed the old sky edge gate`.
