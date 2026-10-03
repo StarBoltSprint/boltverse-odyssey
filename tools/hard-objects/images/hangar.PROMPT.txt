@@ -1,0 +1,22 @@
+STATUS
+The verbatim Imagine tool-call string that produced this JPEG was not stored.
+The file's EXIF is JFIF only (no prompt, no comment). No session log kept the call.
+This JPEG is the locked ruler. Do not regenerate it and treat the new file as this plate.
+Block ASK is the generation contract to copy if the plate must be replaced.
+It matches this file's pixel size, aspect and job. It is not a recovered transcript.
+
+DO NOT REPLACE this JPEG unless docs/METHOD/hard-objects.md section 4 says the new file is measurable,
+and you keep this file beside it until the rebuild gate passes on the new bytes.
+
+ROLE interior skin of the port bay box. Loaded by frigate.ts as /biome/frigate/hangar.jpg.
+PIXELS 1792x1008. ASPECT 16:9.
+JOB Five faces of a flat inset box sample this whole image with UV 0 to 1.
+LOCKED FILE DEFECT (open issue, do not pretend otherwise): the centre is dark (luminance around 26)
+and the corners are grey (around 90). On the mesh the bay reads as flat black walls, not a see-through hangar.
+The ASK below is what a replacement must be. It is not a claim that this JPEG already looks like that.
+
+ASK
+Imagine, aspect 16:9. Orthographic, no perspective, no camera tilt, no ground, no stars, no other ship, no text, no border, no watermark. Black background. One object, filling the frame with a small dark margin. Mid-grey gunmetal. Panels, seams, hatches and vents readable at phone size without crushing the mid-grey into black or white. Gold only on edges and small markings. A few small lit windows, not a glow wash. No code-flat colour.
+Interior of the Howl-class port hangar, looking in from the opening.
+Mid-grey deck, ribs and walls, readable panels, a little gold only on edges.
+Not a black void. Not flat black walls. No ship exterior. The picture is the inside of the bay, edge to edge.

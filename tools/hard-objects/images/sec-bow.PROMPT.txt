@@ -1,0 +1,20 @@
+STATUS
+The verbatim Imagine tool-call string that produced this JPEG was not stored.
+The file's EXIF is JFIF only (no prompt, no comment). No session log kept the call.
+This JPEG is the locked ruler. Do not regenerate it and treat the new file as this plate.
+Block ASK is the generation contract to copy if the plate must be replaced.
+It matches this file's pixel size, aspect and job. It is not a recovered transcript.
+
+DO NOT REPLACE this JPEG unless docs/METHOD/hard-objects.md section 4 says the new file is measurable,
+and you keep this file beside it until the rebuild gate passes on the new bytes.
+
+ROLE section measure only. Loaded by frigate.ts as /biome/frigate/sec-bow.jpg.
+PIXELS 1408x1408. ASPECT 1:1. STATION u=0.90 (near the bow).
+JOB Same rules as sec-stern.jpg. The bow slice is tall. A ray that stops at 1.8 times the half-width will clip it.
+The code uses the box diagonal plus 8 px. Keep the whole section inside the frame.
+
+ASK
+Imagine, aspect 1:1. Orthographic, no perspective, no camera tilt, no ground, no stars, no other ship, no text, no border, no watermark. Black background. One object, filling the frame with a small dark margin. Mid-grey gunmetal. Panels, seams, hatches and vents readable at phone size without crushing the mid-grey into black or white. Gold only on edges and small markings. A few small lit windows, not a glow wash. No code-flat colour.
+One filled cross-section of the Howl-class frigate near the bow (about 90 percent of the length from the stern),
+viewed looking forward. Left = port, right = starboard. Solid metal, one closed outline, black background.
+The section may be tall. Keep all of it inside the frame. Not a side elevation.

@@ -1,0 +1,25 @@
+STATUS
+The verbatim Imagine tool-call string that produced this JPEG was not stored.
+The file's EXIF is JFIF only (no prompt, no comment). No session log kept the call.
+This JPEG is the locked ruler. Do not regenerate it and treat the new file as this plate.
+Block ASK is the generation contract to copy if the plate must be replaced.
+It matches this file's pixel size, aspect and job. It is not a recovered transcript.
+
+DO NOT REPLACE this JPEG unless docs/METHOD/hard-objects.md section 4 says the new file is measurable,
+and you keep this file beside it until the rebuild gate passes on the new bytes.
+
+ROLE measure + unlit skin. Loaded by frigate.ts as /biome/frigate/port.jpg.
+PIXELS 2400x528. ASPECT 50:11.
+JOB Port elevation. Left = stern, right = bow. Top of the image = up.
+The hull is one component. An open hangar hole sits about a third to halfway along, port only,
+and the black background shows through that hole (a column scan must see a gap of at least 70 px).
+No bridge tower on this side. A sharp shoulder step about one third of the way from the stern.
+If nacelles are in frame they are detached at the stern with black between them and the hull.
+They must not touch the hull mask.
+
+ASK
+Imagine, aspect 50:11. Orthographic, no perspective, no camera tilt, no ground, no stars, no other ship, no text, no border, no watermark. Black background. One object, filling the frame with a small dark margin. Mid-grey gunmetal. Panels, seams, hatches and vents readable at phone size without crushing the mid-grey into black or white. Gold only on edges and small markings. A few small lit windows, not a glow wash. No code-flat colour.
+Port side elevation of a Howl-class frigate, bow to the right, stern to the left.
+Open hangar bay on this side only: a real hole, background visible through it, not a dark rectangle painted on solid metal.
+No bridge tower. Sharp shoulder step about one third from the stern. Hollowed keel suggested by the underside contour.
+Detached stern nacelles only if they do not touch the hull silhouette.

@@ -1,0 +1,22 @@
+STATUS
+The verbatim Imagine tool-call string that produced this JPEG was not stored.
+The file's EXIF is JFIF only (no prompt, no comment). No session log kept the call.
+This JPEG is the locked ruler. Do not regenerate it and treat the new file as this plate.
+Block ASK is the generation contract to copy if the plate must be replaced.
+It matches this file's pixel size, aspect and job. It is not a recovered transcript.
+
+DO NOT REPLACE this JPEG unless docs/METHOD/hard-objects.md section 4 says the new file is measurable,
+and you keep this file beside it until the rebuild gate passes on the new bytes.
+
+ROLE measure + unlit skin. Loaded by frigate.ts as /biome/frigate/stbd.jpg.
+PIXELS 2400x528. ASPECT 50:11.
+JOB Starboard elevation. Same bow-right framing as port.jpg, same length.
+This side is closed: armoured belt, three hatches, no hangar hole.
+The bridge tower exists only on this plate, sitting on the deck.
+The tower must be a bump in the deck contour, not a separate flying blob and not a smear down the hull.
+
+ASK
+Imagine, aspect 50:11. Orthographic, no perspective, no camera tilt, no ground, no stars, no other ship, no text, no border, no watermark. Black background. One object, filling the frame with a small dark margin. Mid-grey gunmetal. Panels, seams, hatches and vents readable at phone size without crushing the mid-grey into black or white. Gold only on edges and small markings. A few small lit windows, not a glow wash. No code-flat colour.
+Starboard side elevation of the same Howl-class frigate, bow to the right, stern to the left, same length as the port plate.
+Closed side: armoured belt and three hatches. No hangar hole.
+Bridge tower on the deck, offset to this side, a few lit windows. The tower is part of the silhouette.

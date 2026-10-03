@@ -1,0 +1,21 @@
+STATUS
+The verbatim Imagine tool-call string that produced this JPEG was not stored.
+The file's EXIF is JFIF only (no prompt, no comment). No session log kept the call.
+This JPEG is the locked ruler. Do not regenerate it and treat the new file as this plate.
+Block ASK is the generation contract to copy if the plate must be replaced.
+It matches this file's pixel size, aspect and job. It is not a recovered transcript.
+
+DO NOT REPLACE this JPEG unless docs/METHOD/hard-objects.md section 4 says the new file is measurable,
+and you keep this file beside it until the rebuild gate passes on the new bytes.
+
+ROLE measure + unlit skin (stern cap and the four bells). Loaded by frigate.ts as /biome/frigate/stern.jpg.
+PIXELS 1408x1408. ASPECT 1:1.
+JOB Looking at the stern. Exactly four engine bells. Each core is saturated blue:
+blue channel > 80, blue > red + 18, and blue > green. Grey metal is not blue.
+Fewer or more than four blue blobs means this plate is not measurable. Do not invent bells in code.
+
+ASK
+Imagine, aspect 1:1. Orthographic, no perspective, no camera tilt, no ground, no stars, no other ship, no text, no border, no watermark. Black background. One object, filling the frame with a small dark margin. Mid-grey gunmetal. Panels, seams, hatches and vents readable at phone size without crushing the mid-grey into black or white. Gold only on edges and small markings. A few small lit windows, not a glow wash. No code-flat colour.
+Stern view of the same Howl-class frigate, looking at the engines, ship centred.
+Exactly four engine bells in a cluster. Each bell core is a saturated blue glow, the only saturated blue in the picture.
+Grey metal around them. No fifth bell. No blue running lights elsewhere.

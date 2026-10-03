@@ -1,0 +1,19 @@
+STATUS
+The verbatim Imagine tool-call string that produced this JPEG was not stored.
+The file's EXIF is JFIF only (no prompt, no comment). No session log kept the call.
+This JPEG is the locked ruler. Do not regenerate it and treat the new file as this plate.
+Block ASK is the generation contract to copy if the plate must be replaced.
+It matches this file's pixel size, aspect and job. It is not a recovered transcript.
+
+DO NOT REPLACE this JPEG unless docs/METHOD/hard-objects.md section 4 says the new file is measurable,
+and you keep this file beside it until the rebuild gate passes on the new bytes.
+
+ROLE part side skin + prism silhouette. Loaded by frigate.ts as /biome/frigate/nacelle.jpg.
+PIXELS 2160x864. ASPECT 5:2.
+JOB One nacelle, side view, bow to the right, detached pod, not the whole ship.
+Black background. The silhouette is the prism profile. Do not include the hull.
+
+ASK
+Imagine, aspect 5:2. Orthographic, no perspective, no camera tilt, no ground, no stars, no other ship, no text, no border, no watermark. Black background. One object, filling the frame with a small dark margin. Mid-grey gunmetal. Panels, seams, hatches and vents readable at phone size without crushing the mid-grey into black or white. Gold only on edges and small markings. A few small lit windows, not a glow wash. No code-flat colour.
+One engine nacelle of the Howl-class frigate, side view, nose to the right, alone on black.
+Not attached to a hull. Readable panel lines. No second nacelle.
