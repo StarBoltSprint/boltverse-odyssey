@@ -1,0 +1,20 @@
+STATUS
+The verbatim Imagine tool-call string that produced this JPEG was not stored.
+The file's EXIF is JFIF only (no prompt, no comment). No session log kept the call.
+This JPEG is the locked ruler. Do not regenerate it and treat the new file as this plate.
+Block ASK is the generation contract to copy if the plate must be replaced.
+It matches this file's pixel size, aspect and job. It is not a recovered transcript.
+
+DO NOT REPLACE this JPEG unless docs/METHOD/hard-objects.md section 4 says the new file is measurable,
+and you keep this file beside it until the rebuild gate passes on the new bytes.
+
+ROLE part cap skin. Loaded by frigate.ts as /biome/frigate/nacelle-front.jpg.
+PIXELS 1408x1408. ASPECT 1:1.
+JOB Front view of one nacelle, centred, content not touching the corners (the code samples the content box, not UV 0-1).
+
+ASK (colour-free template; the tone, palette and subject wording are untracked, see
+/workspace/grokcli/next/METHOD/hard-objects-prompts.local.md, section nacelle-front)
+Imagine, aspect 1:1. Orthographic, no perspective, no camera tilt, no ground, no stars, no other ship, no text,
+no border, no watermark. Plain empty background the reader can segment. One object, filling the frame with a small
+empty margin. <TONE + ACCENTS from the local file>. Panels, seams, hatches and vents readable at phone size.
+Subject: the JOB above, nothing else.
