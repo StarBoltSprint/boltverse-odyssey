@@ -4,6 +4,7 @@
  */
 import { loadWorldHull } from "./hullmesh.js";
 import { createTerrain } from "./terrain.js";
+import { mountRocks } from "./rocks.js";
 
 const W = 720;
 const H = 1600;
@@ -1620,6 +1621,10 @@ function measureMag(eye) {
     const m = (FOCAL * worldHeight(o, hull)) / (d * hull.srcH);
     if (m > objectMag) objectMag = m;
   }
+  if (rockLayer) {
+    const pm = rockLayer.mag(eye, FOCAL);
+    if (pm > objectMag) objectMag = pm;
+  }
   nearestM = near;
   const groundD = Math.max(0.4, eye[1] / Math.tan(VFOV / 2));
   const groundMag = useRelief
@@ -1692,6 +1697,10 @@ function render(mode) {
   }
   for (let i = 0; i < hullList.length; i++) hullList[i].draw(vpM, mode);
   drawCalls += hullList.length;
+  if (rockLayer) {
+    rockLayer.draw(vpM);
+    drawCalls += rockLayer.draws;
+  }
   if (showGate && uploadVideo(gateVideo, gateTex, "gate")) {
     const g = gatePoint();
     drawCard(mode, gateTex, 3, g.x, 0, g.z, 0, sized.gw, sized.gh, labelOf("gate:" + g.gate.id), 1);
@@ -1885,6 +1894,8 @@ function snapshot() {
     acceptance: heroPixels > 0 && magNow <= 1.001,
     firstFrameMs,
     blocked: state.blocked,
+    rockLoadMs,
+    rocks: rockLayer ? rockLayer.info() : null,
     pathTrigger: state.pathTrigger,
     gate: gateInfo(),
     nearestVisibleM: nearestM,
@@ -2224,6 +2235,8 @@ let skyVideoW = 848;
 let skyVideoH = 480;
 let firstFrameMs = null;
 let bootT0 = 0;
+let rockLayer = null;
+let rockLoadMs = 0;
 
 async function loadBand(manifest, id) {
   const display = manifest && manifest.display;
@@ -2310,6 +2323,26 @@ async function boot() {
     reset();
     render(0);
     if (firstFrameMs == null) firstFrameMs = performance.now() - bootT0;
+    try {
+      const rockT0 = performance.now();
+      rockLayer = await mountRocks(gl, {
+        absUrl,
+        loadImage,
+        trackTex,
+        labelOf,
+        heightAt: (x, z) => (useRelief ? terrain.heightAt(x, z) : 0),
+      });
+      rockLoadMs = rockLayer.loadMs || (performance.now() - rockT0);
+      for (let i = 0; i < rockLayer.hulls.length; i++) {
+        const row = rockLayer.hulls[i];
+        hullByPath.set(row.path, row.hull);
+        hullList.push(row.hull);
+      }
+      for (let i = 0; i < rockLayer.objects.length; i++) objects.push(rockLayer.objects[i]);
+    } catch (err) {
+      console.warn("rocks", err);
+      rockLayer = null;
+    }
     const upperImgs = await loadBand(skyManifest, "upper");
     const highImgs = await loadBand(skyManifest, "high");
     if (upperImgs) {
