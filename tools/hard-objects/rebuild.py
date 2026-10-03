@@ -292,6 +292,41 @@ def main():
     mpx0, mpy0, mpx1, mpy1 = content_box(measure_port_m, mpw, mph)
     tx0, ty0, tx1, ty1 = content_box(top_m, tw, th)
     mx0, my0, mx1, my1 = content_box(measure_m, mw, mh)
+    # Plan lock is the hull, not the five painted engine mouths. Those mouths
+    # are the gapped columns at the stern tip. The hull starts at the first
+    # run of solid columns.
+    def col_gaps(mask, ww, hh, x):
+        if x < 0 or x >= ww:
+            return 999
+        n = 0
+        top = bot = -1
+        for y in range(hh):
+            if not mask[y * ww + x]:
+                continue
+            if top < 0:
+                top = y
+            bot = y
+            n += 1
+        if n < 80:
+            return 999
+        return (bot - top + 1) - n
+
+    stern_x = mx0
+    last = min(mx1 - 12, mx0 + 400)
+    for x in range(mx0, last):
+        if all(col_gaps(measure_m, mw, mh, x + k) <= 1 for k in range(12)):
+            stern_x = x
+            break
+    hy0, hy1 = mh, 0
+    for y in range(mh):
+        row = y * mw
+        if any(measure_m[row + x] for x in range(stern_x, mx1)):
+            if y < hy0:
+                hy0 = y
+            hy1 = y
+    mx0 = stern_x
+    if hy1 > hy0:
+        my0, my1 = hy0, hy1
     port_scale = LEN / max(8, px1 - px0)
     top_scale = LEN / max(8, tx1 - tx0)
     measure_scale = LEN / max(8, mx1 - mx0)
@@ -481,8 +516,8 @@ def main():
         problems.append(f"port box {report['portBox']}")
     if len(port_nozzles) != 0:
         problems.append(f"port skin still paints nozzles {len(port_nozzles)}")
-    if not (70 <= mx0 <= 90 and my0 > 100 and mx1 > 2200):
-        problems.append(f"top box {report['topBox']} (nacelle seed would put y0 near 49)")
+    if not (130 <= mx0 <= 160 and my0 > 100 and mx1 > 2200):
+        problems.append(f"top box {report['topBox']} (hull stern, not the engine mouths)")
     if not (0.09 < measure_scale < 0.11):
         problems.append(f"topScale {measure_scale}")
     if hole_n < 10 or not (0.25 < hole_u0 < 0.36 and 0.44 < hole_u1 < 0.55):

@@ -321,8 +321,8 @@ Placement is in the hull frame. `placePrism` sets `position` and then `rotation.
 
 Numbers from the TypeScript after the seed fix. **Section 12 does not gate pylons or the bridge.**
 It gates the port box, the top box, `topScale`, the hole `u` window, 4 bells, 2 nacelles, and the OBJ face count.
-These decimals are the reading, not extra PASS rows: measure top box `75,119–2337,401`, `topScale` `0.099`,
-nacelles `x = −100.02`, `z = −17.01` and `+16.95`, length `23.27` (the gate only checks `length ≤ 40` and `|x| ≥ 70`).
+These decimals are the reading, not extra PASS rows: measure hull box `140,119–2337,401` (the raw content box still starts at `x0 = 75` on the five engine mouths), `topScale` `0.102`,
+nacelles `x = −106.3`, `z = −17.51` and `+17.45`, length `23.96` (the gate only checks `length ≤ 40` and `|x| ≥ 70`).
 Pylon keeps the plate aspect (about 6) and spans the gap. Hole `u` `0.289–0.482` (`n = 17`).
 Bridge `u` about `0.42`, height about `13`. Four bells, read from `measure/stern.jpg`. The clean stern skin has none. The cones wear `bell.jpg`, not that plate.
 
@@ -373,7 +373,7 @@ Turntable (`frigate-view.ts`), if you use it:
 - Faces: port `θ = π/2`, `φ = 0.16`; starboard `θ = −π/2`, `φ = 0.16`; bow `θ = 0`, `φ = 0.12`;
   stern `θ = π`, `φ = 0.1`; top `θ = π/2`, `φ = 1.15`; belly `θ = π/2`, `φ = −1.05`.
 - Wanted up is continuous. Project world +X onto the plane perpendicular to the view. `smoothstep` that perpendicular length from 0 to 1 and blend world +Y toward it. No aspect test and no threshold, so the roll does not snap. The live `camera.up` eases toward that vector (`1 − exp(−dt * 2.2)`) and is renormalised. Fit and the zoom floor use the eased up.
-- Zoom floor is magnification 1: `viewH / (2 * tan(fov/2) * 10.1)`, which matches the horizontal texel limit. Pinch, wheel and `look` cannot go closer. `step(dt)` and `freeze()` advance one frame with the rAF stopped, so a clip can be exactly 25 fps.
+- Zoom floor is magnification 1 at the aim point: `viewH / (2 * tan(fov/2) * 10.1)`, which matches the horizontal texel limit. Pinch, wheel and `look` cannot go closer than that distance. A surface nearer than the aim point can still exceed magnification 1; the cap does not hold for the whole depth of the frame. `step(dt)` and `freeze()` advance one frame with the rAF stopped, so a clip can be exactly 25 fps.
 - Fit, unless the user has zoomed. Half-extents `hx, hy, hz = 120, 34, 28` (a box on the origin).
   Forward `F = (−cos φ · cos θ, −sin φ, −cos φ · sin θ)`, right `R = F × up`.
   Over the 8 corners, `maxU` is the max `|dot(corner, up)|` and `maxR` the max `|dot(corner, right)|`.
@@ -401,7 +401,7 @@ Turntable (`frigate-view.ts`), if you use it:
    inside the hull box. That pixel was the stern nacelle overlapping the box (about `75,49–310,126`).
    `topScale` jumped to about `0.95`. Nacelles became length 224, one of them near `z ≈ 326`.
    **Fix:** pick the component with the most pixels, flood from its own start pixel, never from a box corner.
-   After the fix the top box is about `75,119–2337,401` and `topScale` about `0.099`.
+   After the fix the raw content box is about `75,119–2337,401`. The locked hull, past the five engine mouths, is `140,119–2337,401` and `topScale` about `0.102`.
    The gate fails if `topBox.y0` is not above 100, which is what the nacelle seed looks like.
 
 4. **Pylons read as giant slabs.** Same cause as 3. The gap from a nacelle at `z ≈ 326` to the hull
@@ -438,11 +438,12 @@ Fixed in this pass (still **IN TEST** until SmiR checks them on the phone), 2026
 2. **Pylon aspect.** The strut keeps the plate's aspect (about 6). It is not widened to 2.05–3.4. Magnification on the pylon stays ≤ 1.
 3. **Ventral seat.** The turret tip sits on the underside sample. The old 0.45 sink is gone.
 4. **Bells.** Four cones, one 2×2, gaps kept, on the stern bulkhead rather than a one-pixel tip. Cone skin is `bell.jpg`. Mouth is `bell-front.jpg`. They are not sampled from the painted stern plate.
-5. **Plan outline.** Beams and the roof skin both use the measure plan. `top.jpg`'s largest box is that same box (`75, 119, 2337, 401`). A repair that moves it is rejected.
-6. **Backdrop.** One Imagine plate, 1280×1728. Portrait 720×1600 cover is about 0.93. A wider frame does not smear the edge texel.
+5. **Plan lock.** The raw measure-plan content box starts at `x0 = 75`, the tips of the five painted engine mouths. The locked hull is the first solid column run past those mouths: `140, 119, 2337, 401`, `topScale` `0.102`. Beams use that hull. Erasing the mouths does not move this lock.
+6. **Backdrop.** One Imagine plate, 1280×1728. Not a 9:16 strip. Portrait 720×1600 cover is about 0.93. A wider frame does not smear the edge texel.
 7. **Camera.** `camera.up` eases continuously. There is no binary length-up flip. Distance uses the eased up. The proof clip is 25 fps from `step(1/25)`.
+8. **Deck skin.** An Imagine edit removed the painted dorsal turret and the dotted island footprint. Only interior pixels were pasted. The skin's largest box stayed `75, 119, 2337, 401`.
 
-Earlier mesh fixes still stand: open port bay with `hangar.jpg` walls. Proof clip for this pass: `tools/hard-objects/qc/howl-single.mp4` (stern, then a smooth orbit). `howl-fixes.mp4` is an older pass.
+Earlier mesh fixes still stand: open port bay with `hangar.jpg` walls. Proof clip for this pass: `tools/hard-objects/qc/howl-single.mp4` (stern, deck, nacelles and pylons, belly, bay, 25 fps, eased). `howl-fixes.mp4` is an older pass.
 
 Still open:
 
@@ -450,8 +451,7 @@ Still open:
 - **Starboard nozzles.** `stbd.jpg` still paints the four stern nozzles and the lower pods beside the 3D bells. Three full Imagine redraws and one local clone failed (they redrew the ship or left a speckled flare). Stopped. Do not start another full-frame redraw.
 - **Streaks.** The bridge tower roof still repeats the side-plate lip across its thickness. Not signed off.
 - **Black faces.** Bridge side wedge, nacelle inner face, stern edge strips, deck block and the bay's aft edge were not signed off from a still.
-- **Plan stern mouths.** `top.jpg` still paints the four engine circles. Filling them either moved the measured outline or left a tiled patch. The 3D bells are the volume. The footprint stays.
-- **Bridge footprint.** A dotted island edge may remain on `top.jpg` beside the tower. Not signed off.
+- **Plan stern mouths.** `top.jpg` still paints five engine circles (not four). The locked hull starts at the solid stern edge (`x0 = 140`), so the mouths are no longer the lock. An inpaint cleared the tips but left the arcs cut in half, so that paste was not kept. The 3D bells are the volume. The footprint stays.
 
 ## 12. Run the gate
 
@@ -473,19 +473,19 @@ The script requires these 28 JPEGs and a sibling `.PROMPT.txt` for each (same ba
 
 A locked number moved → exit **1** and the word `FAIL`. Success → exit **0**, the last line is `PASS`, and these files appear:
 
-- `tools/hard-objects/out/report.json` with keys `images`, `portBox` (the **measure** port box), `skinPortBox`, `topBox` (the **measure** plan), `skinTopBox`, `topScale`,
+- `tools/hard-objects/out/report.json` with keys `images`, `portBox` (the **measure** port box), `skinPortBox`, `topBox` (the **measure hull**, past the engine mouths), `skinTopBox`, `topScale`,
   `texelsPerUnit`, `hole` (u0, u1, s0, s1, n), `bells`, `skinBells`, `skinNacelles`, `portNozzles`, `nacelles` (each `u`, `x`, `z`, `length`), `verts`, `faces`, `length`.
   No pylon key. No bridge key. Those are section 7 readings, not this file.
 - `tools/hard-objects/out/frigate.obj` (hull quads, hangar window omitted). `length` in the JSON is the constant `LEN` (224).
 
-`topScale = LEN / measureTopWidth`. A wrong `LEN` fails the `topScale` row by itself. Do not add a second LEN check. Beams in the OBJ and in `frigate.ts` are lofted from the **measure** plan, so the mesh matches the locked outline. The locked port box is `measure/port.jpg`, not the skin. `skinPortBox` is reported and not range-checked.
+`topScale = LEN / hullWidth`, where the hull width starts at the first solid column of the measure plan, not at the engine mouths. A wrong `LEN` fails the `topScale` row by itself. Do not add a second LEN check. Beams in the OBJ and in `frigate.ts` are lofted from that hull box. The locked port box is `measure/port.jpg`, not the skin. `skinPortBox` and `skinTopBox` are reported and not range-checked. `skinTopBox` still starts at the five mouths.
 
 PASS means all of the following. If one fails, the measure is wrong; do not loosen the test to go green.
 
 | Check | Range |
 |---|---|
 | Port content box | measure port: `x0` in 70..90, `x1` > 2200, height > 200 |
-| Top content box | measure plan: `x0` in 70..90, `y0` > 100, `x1` > 2200 |
+| Top content box | measure hull, not the engine mouths: `x0` in 130..160, `y0` > 100, `x1` > 2200 |
 | `topScale` | (0.09, 0.11), from the measure plan |
 | Hole | `n ≥ 10`, `u0` in (0.25, 0.36), `u1` in (0.44, 0.55) |
 | Bells | exactly 4, on `measure/stern.jpg` |

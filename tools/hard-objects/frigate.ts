@@ -372,6 +372,55 @@ export async function mountFrigate(
   const portScale = LEN / Math.max(8, portBox.x1 - portBox.x0);
   const topMeasureM = largestMask(maskOf(topMeasure, 16), topMeasure.w, topMeasure.h);
   const topMeasureBox = contentBox(topMeasureM, topMeasure.w, topMeasure.h);
+  // The raw content box starts on the five painted engine mouths. The hull
+  // lock is the first solid run of columns, past those mouths.
+  {
+    const gapsAt = (x: number) => {
+      const ix = Math.max(0, Math.min(topMeasure.w - 1, x));
+      let top = -1;
+      let bot = -1;
+      let n = 0;
+      for (let y = 0; y < topMeasure.h; y++) {
+        if (!topMeasureM[y * topMeasure.w + ix]) continue;
+        if (top < 0) top = y;
+        bot = y;
+        n++;
+      }
+      if (n < 80) return 999;
+      return bot - top + 1 - n;
+    };
+    const last = Math.min(topMeasureBox.x1 - 12, topMeasureBox.x0 + 400);
+    let stern = topMeasureBox.x0;
+    for (let x = topMeasureBox.x0; x < last; x++) {
+      let ok = true;
+      for (let k = 0; k < 12; k++) {
+        if (gapsAt(x + k) > 1) {
+          ok = false;
+          break;
+        }
+      }
+      if (ok) {
+        stern = x;
+        break;
+      }
+    }
+    let y0 = topMeasure.h;
+    let y1 = 0;
+    for (let y = 0; y < topMeasure.h; y++) {
+      const row = y * topMeasure.w;
+      for (let x = stern; x < topMeasureBox.x1; x++) {
+        if (!topMeasureM[row + x]) continue;
+        if (y < y0) y0 = y;
+        if (y > y1) y1 = y;
+        break;
+      }
+    }
+    topMeasureBox.x0 = stern;
+    if (y1 > y0) {
+      topMeasureBox.y0 = y0;
+      topMeasureBox.y1 = y1;
+    }
+  }
   const measureScale = LEN / Math.max(8, topMeasureBox.x1 - topMeasureBox.x0);
 
   const column = (m: Uint8Array, w: number, h: number, x: number) => {
