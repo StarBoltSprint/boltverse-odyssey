@@ -1,5 +1,7 @@
 # AGENTS — cold-start hall cook
 
+**READ [`docs/METHOD.md`](docs/METHOD.md) FIRST** — The Odyssey Method: the one approved way to build each element (owner decisions with dates).
+
 **SELF-LEARNING — before any step.** Read [`learn/failures.md`](learn/failures.md) and [`learn/recipes/INDEX.md`](learn/recipes/INDEX.md). Reuse a recipe that already passed. Do not repeat a logged failure. At the end of every accepted step, append any new recipe under `learn/recipes/` (and a row in the index), append any new failure to `learn/failures.md`, append every owner reaction to [`learn/taste.md`](learn/taste.md), and write or update a take note from [`learn/take-notes/_template.md`](learn/take-notes/_template.md). Skills for the repeated moves: [`.grok/skills/`](.grok/skills/). Do not invent a prompt, a QC number, or a commit.
 
 **Before any visual step.** Read [`learn/taste.md`](learn/taste.md). The Golden rule is first. The Style rules bind the cook. After the owner reacts, append that reaction to `learn/taste.md`: date, the thing judged, verdict KEEP/FAIL/LOVE, the owner's words, the design lesson. Append only. Do not rewrite an old row. The visual gate before that review is `python3 tools/judge/judge.py` ([`tools/judge/README.md`](tools/judge/README.md)). A judge score never overrides a hard law and never replaces the owner.

@@ -1,0 +1,65 @@
+# Self-improvement and auto-learning loops
+
+Back to [METHOD.md](../METHOD.md). These loops exist so an approved method is never forgotten and a paid-for failure is
+never paid twice.
+
+## 1. Per step (every Grok run)
+
+| When | Do | Where |
+|---|---|---|
+| Before any step | Read this sheet, [`learn/failures.md`](../../learn/failures.md), [`learn/recipes/INDEX.md`](../../learn/recipes/INDEX.md), [`learn/taste.md`](../../learn/taste.md) (Golden rule first), [`learn/geometry.md`](../../learn/geometry.md) before any still / slice / orbit / tile. Reuse a recipe that passed; never repeat a logged failure. | `AGENTS.md`, `GROK.md` |
+| Step start | Decree brief: `python3 tools/decrees/brief.py --spec <spec> --step <dir> [--kit <id>]`. | [`tools/decrees`](../../tools/decrees/README.md) |
+| During | One goal, ≤ 8 done-when rows, `REPORT.md` written as each row is measured; start the ~40 min playcheck early. | [`spec.md`](../../spec.md) "One step" |
+| Stop rule | **Stop after 2** failures of the same defect: list the Imagine-born miss, accept it, move on. (Hall smoke: 1 fresh + 1 enlarge.) | `spec.md` "Stop after 2", `AGENTS.md` |
+| Step end | Screenshots + 3-line report; quota row (`tools/quota`); phone preview (`tools/preview/freeze.py`); reportview page. | METHOD §2 |
+| Retro | Append owner reaction to `learn/taste.md` (KEEP / FAIL / LOVE, owner's words, lesson); new recipe in `learn/recipes/` + index row; new failure in `learn/failures.md`; take note from `learn/take-notes/_template.md`; **one concrete prompt or tool improvement** ("ALWAYS IMPROVE"). Skill: [`take-retro`](../../.grok/skills/take-retro/SKILL.md). | `learn/` |
+| New owner method | Add the dated line to METHOD.md + [decisions log](decisions-log.md) in the same PR. | METHOD §3 |
+
+## 2. QC gates (machine first, owner last)
+
+1. **Asset gate** — `tools/assetcheck` on every Imagine file (tile seams/exposure/mag, cutout alpha/halo/green band,
+   loop seam/flow, backdrop width/mag).
+2. **Anti-sky-copy / anti-seam** — `tools/sky/check.py`: trailing cloned or mirrored columns FAIL, join MAE ≤ 4,
+   column-luma swing ≤ 6 per 60°, closed loop, living layers combined repeat ≥ 600 s with per-slice offsets.
+3. **Object consistency** — `tools/objsheet` (+ `preflight.py`): same object in all 8 views, no crop, no holes, hull keep.
+4. **Layout** — `tools/layout check`: organic shape, `no_ring`, colliders = visible pieces, mag incl. slope stretch.
+5. **Rendered pixels** — `tools/playcheck`: judges the framebuffer, never the data (take 8 lesson); renderlint for NEAREST.
+6. **Visual judge** — `tools/judge/judge.py` with refs from `tools/judge/references.json` and the taste log; score ≥ 7.
+   Skill: [`visual-judge`](../../.grok/skills/visual-judge/SKILL.md). Never overrides a hard law or the owner.
+7. **Owner phone QC** — the only final KEEP. Every reaction goes into `learn/taste.md`.
+
+Skills for the repeated moves: [`.grok/skills/`](../../.grok/skills/) — `ground-tiles`, `keyed-cutout`, `orbit-views`,
+`sky-panorama`, `visual-judge`, `take-retro`.
+
+## 3. Tool feedback routine (law 66)
+
+A session that finds a tool let a defect through, gave a wrong number, or was hard to use: finish the take, write
+`feedback/<date>-<tool>.md` (fields of [`.github/ISSUE_TEMPLATE/tool-feedback.yml`](../../.github/ISSUE_TEMPLATE/tool-feedback.yml):
+tool, version, take, defect, reported vs measured number, repro, still), and open it upstream as an issue (or tell the
+human to). Law: [`66-tool-feedback-loop.md`](../../biome/docs/66-tool-feedback-loop.md). Nothing auto-merges.
+
+## 4. Tool-improvement loop (Director, parallel to zone steps)
+
+Runbook: `/workspace/grokcli/next/tool-loop.md` (local). A second headless Grok session fixes measuring tools, one
+defect per round, from a queue fed by Director QC and `feedback/`.
+
+- Tools only measure; **no Imagine calls**; diff limited to `tools/<tool>/**` + one `feedback/` file.
+- **Red first:** a selftest that fails on the base for the defect's reason, then the minimal fix. Never delete or weaken a
+  case; never loosen a threshold; a new threshold cites its law or is reported with "threshold needs owner decision".
+- Director green check (`gate-round.sh`, `selftest-tools.sh`): all 9 selftests green, red-on-base / green-on-round,
+  scope clean, zero Imagine calls, renderlint unchanged → merge (standing permission).
+- 3 rounds with an identical failure → defect BLOCKED, next item. Zone loop has quota priority.
+- Done so far: rounds r01–r06 (organic layout L0a/L0b, yaw band L1, organic walk P8, decree #457 preload, DR1) → PR #145;
+  take 10d tool gates (sky clone, green edge band, orbit preflight, living-loop period) → PR #148.
+
+## 5. Records
+
+| File | What |
+|---|---|
+| [`learn/taste.md`](../../learn/taste.md) | Golden rule, style rules, owner reaction log (append-only). |
+| [`learn/failures.md`](../../learn/failures.md) | Defect → root cause → fix → guard (append-only). |
+| [`learn/recipes/`](../../learn/recipes/INDEX.md) | Validated cooks with exact prompt and QC numbers. |
+| [`learn/take-notes/`](../../learn/take-notes/) | One retro per accepted step. |
+| [`learn/quota-log.md`](../../learn/quota-log.md) | Turns / quota per step. |
+| [`learn/prompts-audit.md`](../../learn/prompts-audit.md) | Audit of prompts against the geometry lock. |
+| [`feedback/`](../../feedback/README.md) | Tool defect reports (law 66). |

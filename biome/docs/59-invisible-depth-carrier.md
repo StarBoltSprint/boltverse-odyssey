@@ -1,5 +1,7 @@
 # Law 59 — INVISIBLE DEPTH CARRIER exception
 
+> **Superseded by [`docs/METHOD.md`](../../docs/METHOD.md)** in part: relief amplitude (now up to 3 m over ≥ 20 m, slope ≤ 15°, plus per-tile depth relief), rocks (now 8-view carved, not upright cutouts) and approach zoom (magnification ≤ 1.0, law 65). The carrier itself stays law. Kept for history; not deleted.
+
 **HARD / EXCEPTION ONLY — owner-approved 2026-09-29.** This is the sole approved exception to the no-mesh law. It is an invisible carrier for Imagine pixels, not a new renderer or world.
 
 ## ALLOWED

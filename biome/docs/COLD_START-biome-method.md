@@ -1,5 +1,7 @@
 # COLD START — biome method (paste this first)
 
+**READ [`docs/METHOD.md`](../../docs/METHOD.md) FIRST** — The Odyssey Method: the one approved way to build each element (owner decisions with dates).
+
 Kitchen only. Do not read this to the player.
 
 **Tool feedback (law 66):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take and file [`66-tool-feedback-loop.md`](66-tool-feedback-loop.md) upstream.

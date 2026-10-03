@@ -1,5 +1,7 @@
 # 62 — Open world by zones: the creation process (any biome, any style)
 
+> **Superseded by [`docs/METHOD.md`](../../docs/METHOD.md)** in part: the closed round edge ring is replaced by large organic zones with natural boundaries, no circles / rings (owner 2026-10-02). Kept for history; not deleted.
+
 Kitchen only. Not a hang. Not a new play URL. Owner direction **2026-10-01**.
 
 **This repo holds no biome style.** Each player chooses the style of every biome freely. This doc is the **creation process**: style-agnostic and fully codified. Any player's Grok follows the same steps for any paint. Nothing below is a look to copy. No example biome here is a model.

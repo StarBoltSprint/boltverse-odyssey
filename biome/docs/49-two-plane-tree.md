@@ -1,5 +1,7 @@
 # 49 — Two-plane tree
 
+> **Superseded by [`docs/METHOD.md`](../../docs/METHOD.md)** for open zones: trees use the 8-view silhouette carving method. Kept for history; not deleted.
+
 **Go 2026-09-26 (SmiR).** Kitchen only. Do not read this to the player.
 
 Two planes are one tree **split by job**. The bole is architecture. It stays a mask almost always. The crown is weather. It is allowed to dissolve. They share an address. They do not share a material path.

@@ -1,5 +1,7 @@
 # 63 — Layout file + rendered-pixel validator (any biome)
 
+> **Superseded by [`docs/METHOD.md`](../../docs/METHOD.md)** in part: ring rows apply to the retired circle mode only; zones use the organic mode (owner 2026-10-02). Kept for history; not deleted.
+
 Kitchen only. Not a hang. Owner direction **2026-10-01**, after the take 8 FAIL below.
 
 Biome-agnostic. Any biome, cooked by any player's Grok, lays out its clearings the same way. The world-by-zones creation process is [doc 62](62-open-world-zones-process.md). The clearing method is [doc 61](61-free-clearing-walk.md). The invisible-shape exception is the [2026-10-01 extension of law 59](59-invisible-depth-carrier.md#extension-2026-10-01-invisible-procedural-terrain-shape). Every hard lock in doc 62 stays: every visible pixel is Imagine, code computes invisible shape only, one Bolt, magnification ≤ 1.0 at 720×1600.

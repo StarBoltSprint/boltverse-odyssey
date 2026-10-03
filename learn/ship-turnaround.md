@@ -1,5 +1,7 @@
 # Ship turnaround pack
 
+> **Superseded by [`docs/METHOD.md`](../docs/METHOD.md)** for hard objects (ships, gates, wrecks): real 3D, measured-section method IN TEST. Kept for history; not deleted.
+
 Owner-approved **2026-10-02**. Practice. Not an xAI seal. Store only. Do not cook from this page.
 
 Visible pixels stay Imagine stills. Code may place the ship, collide with it, and apply the law 67 fog, grade, and bloom. A mesh is invisible volume. It is never the skin.
