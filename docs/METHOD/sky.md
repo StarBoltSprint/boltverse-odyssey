@@ -137,7 +137,7 @@ Kit `howling-eclipse`: night, sun azimuth 285°, elevation −4°, 7500 K. Eclip
 
 - A faint joint may remain around 19–28° up (horizon/upper overlap, where the upper band has no room to widen).
 - Two duplicated upper slices.
-- ~~The streak layer reads as a meteor-rain grid instead of sparse shooting stars.~~ **Fixed 2026-10-03 (PR #PRNUM, IN TEST until SmiR's phone check):** the meteor loop now shows on 16 sparse, irregular tiles, each on for part of its own period, instead of the same streaks on all 136 dome tiles.
+- ~~The streak layer reads as a meteor-rain grid instead of sparse shooting stars.~~ **Fixed 2026-10-03 (PR #165, IN TEST until SmiR's phone check):** the meteor loop now shows on 16 sparse, irregular tiles, each on for part of its own period, instead of the same streaks on all 136 dome tiles.
 - ~~Meteor streaks stop or vanish at the slice joints (SmiR 2026-10-03 21:56).~~ **Fixed 2026-10-03 (same PR):** the cut was at the 17 × 8 video-tile edges and at the `fract` wrap inside each tile, not at the slice crossfade. Each meteor tile now shows the whole frame once through a soft alpha window held inside the frame, so a streak fades in and out and never stops dead at an edge. The meteor tiles carry no drift and never overlap. Left: a streak can still fade out early inside its window, and a streak from the same frame may show in two far-apart tiles at once (one texture, one frame).
 - Darker zenith centre (the cap painting's own dark centre, see Pitfalls step 2c).
 - A small load regression (first sky frame about 1.7 s during boot).
