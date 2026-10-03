@@ -11,7 +11,8 @@ Do not add one.
 
 ## 0. What you are allowed to change
 
-Build only the frigate. Do not edit the capital ship, the corvette, the flight, Bolt, or the sky.
+Build only the frigate. Do not edit the capital ship, the corvette, the flight, or Bolt.
+Do not edit the flight sky (`tools/sky` or the biome sky). The turntable backdrop is `backdrop.jpg` in this folder, one plate, not a cube.
 This folder does not wire itself into a flight. `mountFrigate`'s default place `(280, 22, -250)`, yaw `0.42`,
 is the flight-world slot. Leave that default. Callers that want a turntable pass `{ x: 0, y: 0, z: 0, yaw: 0 }`.
 
@@ -28,7 +29,7 @@ The verbatim Imagine tool-call strings were not stored (JPEG EXIF is JFIF only; 
 
 | Path | What it is |
 |---|---|
-| `tools/hard-objects/images/*.jpg` | 17 measure/skin plates + 3 sharpened port edits. Bytes are the ruler. |
+| `tools/hard-objects/images/*.jpg` | 17 measure/skin plates + 3 sharpened port edits + `backdrop.jpg` (turntable only). Bytes are the ruler. |
 | `tools/hard-objects/images/*.PROMPT.txt` | Generation contract next to each JPEG. Required by the gate. |
 | `tools/hard-objects/frigate.ts` | Reader, loft, part builder, unlit skins. The skinned mesh. |
 | `tools/hard-objects/frigate-view.ts` | Optional turntable (orbit, pinch, face buttons, one-lap tour). Not the flight. |
@@ -96,7 +97,8 @@ and do not regenerate a locked JPEG to "match" the ASK.
 | `bridge.jpg` | 1152×1728 | 2:3 | Tower alone, side. |
 | `bridge-front.jpg` | 1152×1728 | 2:3 | Tower cap. |
 | `pylon.jpg` | 1152×1728 | 2:3 | One strut. Used as **both** the side map and the cap map. |
-| `hangar.jpg` | 1792×1008 | 16:9 | Interior of the inset bay. The locked file is too dark (section 11). |
+| `hangar.jpg` | 1792×1008 | 16:9 | Inner walls of the port bay. Crops, not one poster. The mouth stays open. |
+| `backdrop.jpg` | 1792×1008 | 16:9 | Turntable background only. One plate. Not a cube. Not loaded by the hull. |
 | `port-detail-aft.jpg` | 1904×1040 | image-to-image | Stern third of `port.jpg`, crop x 40–860, y 40–490. Reference only. Not loaded. |
 | `port-detail-mid.jpg` | 1920×1024 | image-to-image | Mid third, crop x 780–1620, y 40–490. Reference only. Not loaded. |
 | `port-detail-bow.jpg` | 1952×1008 | image-to-image | Bow third, crop x 1500–2360, y 40–490. Reference only. Not loaded. |
@@ -153,7 +155,8 @@ Job line (one per file, after the paragraph):
 | `bridge.jpg` | Bridge tower alone, side, portrait 2:3, a few lit windows. |
 | `bridge-front.jpg` | Front of that tower, portrait 2:3, corners empty. |
 | `pylon.jpg` | One narrow strut, portrait 2:3, alone. Not a hull plate. |
-| `hangar.jpg` | Interior of the bay, readable walls and deck, edge to edge. The locked JPEG fails this (dark centre). The ASK is the replacement, not a description of the locked file. |
+| `hangar.jpg` | Interior wall plate. Crops of it skin the bay walls. The port mouth stays open. |
+| `backdrop.jpg` | One continuous backdrop for the turntable. Not a cube and not a typed clear. |
 | `port-detail-aft.jpg` | Image-to-image of port crop x 40–860, y 40–490. Sharpen in place. Do not move the silhouette or fill a hole. |
 | `port-detail-mid.jpg` | Image-to-image of port crop x 780–1620, y 40–490. Keep the hangar hole. |
 | `port-detail-bow.jpg` | Image-to-image of port crop x 1500–2360, y 40–490. Do not add a hangar. |
@@ -280,19 +283,23 @@ Scale so the side content-box width equals `length`.
 The front content box is the mask > 16 on the front image, not the full frame.
 `thick = max(0.35, ((frontBox.x1 − frontBox.x0) / max(8, frontBox.y1 − frontBox.y0)) * sideH)`.
 Caps sample that front content box, not UV 0–1, so empty corners are not stretched across the cap.
-The long faces sample the side image. `low` is the smallest silhouette y in the prism's local frame, before `rotation.x`.
+The two big side faces sample the side image from the silhouette top to the silhouette bottom.
+The thin top and bottom faces do **not** repeat one row across the thickness. Each uses a band
+`band = max(6, round((box.y1 − box.y0) * 0.22))` pixels: the near edge samples the silhouette row,
+the far edge samples that row plus `band` (top) or minus `band` (bottom).
+`low` is the smallest silhouette y in the prism's local frame, before `rotation.x`.
 
 Placement is in the hull frame. `placePrism` sets `position` and then `rotation.x`.
 
 | Part | Where the numbers come from | Where it is put |
 |---|---|---|
 | Nacelles | `top.jpg` components after the hull, min **800** px. Not the port plate. The port plate puts them amidships; that reading is wrong. | `u = (cx − topBox.x0) / (topBox.x1 − topBox.x0)`. `i = round(u * 83)`. `length = max(6, pixelWidth * topScale)`. `x = (u−0.5)*LEN`. `y = (hullTop[i] + hullBot[i]) / 2`. `z = (cy − centerPx) * topScale` (positive z = port). `rotation.x = 0`. |
-| Pylon | One prism of `pylon.jpg` built at length **1**, both maps are `pylon.jpg`. | `outward = sign(z)`, or `+1` if `z` is 0. `hullZ = beamPort[i]` if `outward > 0`, else `−beamStbd[i]`. `gap = |z − hullZ|`. `span = max(1.2, gap − nacelleThick*0.4)`. `long = high − low` of the unit prism. `scale = span / long` on all three axes. `rotation.x = π/2`. Position `(x, y, (hullZ + z) / 2)` using the nacelle's `x` and `y`. |
-| Dorsal turret | Port components min **400** px, not the hull, whose centre is **above the local deck**: `cy < column.topY + 4`. The biggest such blob. Do not test `cy < hullBox.y0 + 8` — the turret centre can sit below the hull box top (it did: cy 89, box y0 75) and still be above the local deck. | `u` from the blob centre on the **port** box, `i = round(u * 83)`. `length` from pixel width × `portScale`. `x = (u−0.5)*LEN`. `y = hullTop[i] − prism.low`. `z = 0`. `rotation.x = 0`. |
-| Ventral turret | Belly components after the hull, min 800 px. Dark fraction = share of samples (step 2 px) with luminance < 18. Take the darkest only if it beats the lightest extra blob by **more than 0.08**. If it does not, add **no** ventral turret. Nacelles on the belly are lighter (~0.21) than the turret (~0.37). | `u` from the belly box, `i = round(u * 83)`. `rotation.x = π`. `z = (cy − bellyBoxMid) * bellyScale`, `bellyBoxMid = (bellyBox.y0 + bellyBox.y1) / 2`, `bellyScale = LEN / bellyWidth`. Positive z is still port. `y = hullBot[i] + prism.low` **after** the rotation. That `+ low` is the open gap in section 11. Do not "fix" it while you are only learning the recipe. |
+| Pylon | One prism of `pylon.jpg` built at length **1**, both maps are `pylon.jpg`. The plate is a thin strut (content height about 6× the width), so a uniform scale that fits the gap makes a hair. | `outward = sign(z)`, or `+1` if `z` is 0. `hullZ = beamPort[i]` if `outward > 0`, else `−beamStbd[i]`. `gap = |z − hullZ|`. `span = max(2.4, gap + 0.55)` so the ends overlap the hull and the nacelle. `long = high − low`. `sLong = span / long`. Cross-section scales are clamped so the short axes land in **2.05..3.4** (`sX`, `sZ`), while `sLong` is only on Y. `scale.set(sX, sLong, sZ)`. `rotation.x = π/2` maps local Y onto world Z (the gap). Position `(x, y, (hullZ + z) / 2)`. |
+| Dorsal turret | Port components min **400** px, not the hull, whose centre is **above the local deck**: `cy < column.topY + 4`. The biggest such blob. Do not test `cy < hullBox.y0 + 8` — the turret centre can sit below the hull box top (it did: cy 89, box y0 75) and still be above the local deck. | `u` from the blob centre on the **port** box, `i = round(u * 83)`. `length` from pixel width × `portScale`. `x = (u−0.5)*LEN`. `y = hullTop[i] − prism.low`. `z = 0`. `rotation.x = 0`. The painted turret on `top.jpg` is covered by an Imagine deck patch (section 11). The 3D turret stays. |
+| Ventral turret | Belly components after the hull, min 800 px. Dark fraction = share of samples (step 2 px) with luminance < 18. Take the darkest only if it beats the lightest extra blob by **more than 0.08**. If it does not, add **no** ventral turret. | `u` from the belly box, `i = round(u * 83)`. `rotation.x = π`. `z = (cy − bellyBoxMid) * bellyScale`, `bellyBoxMid = (bellyBox.y0 + bellyBox.y1) / 2`, `bellyScale = LEN / bellyWidth`. Positive z is still port. After the half-turn, local `y` flips, so the highest world point of the prism is `position.y − low`. Set `position.y = surfaceY + low − 0.45`, where `surfaceY` is the underside ring sample at station `i` (`sy ≤ 0.5`) closest in `z` to the turret. The 0.45 sinks the mesh into the hull so the gap stays closed. |
 | Bridge | Longest run of stations where `stbdTop − align − hullTop > 3.2`. `bridgeU` = centre of that run. `bridgeH` = peak of that bump. | `x = (bridgeU − 0.5) * LEN`. `bi = round(bridgeU * 83)`. `rotation.x = 0`. `z` from pixels on `top.jpg` with luminance **> 200**, stepped by 2, inside `u ∈ [bridgeU−0.1, bridgeU+0.16]`. If more than 8 such samples, `z = (meanY − centerPx) * topScale`. Else `z = −max(1.5, beamStbd[bi]*0.28)`. Build the prism at length 1. `towerScale = max(4, bridgeH) / (high − low)`. `y = hullTop[bi] − low * towerScale`. |
-| Bells | The 4 largest blobs on `stern.jpg` that pass the bell-core channel test (section 4). | `xSurf = −112` (station 0). `half = (sternBox.x1 − sternBox.x0) / 2`, `midX = (sternBox.x0 + sternBox.x1) / 2`, `reach = max(beamPort[0], beamStbd[0])`. `z = −((cx − midX) / half) * reach`. `t = (sternBox.y1 − cy) / (sternBox.y1 − sternBox.y0)`, `y = hullBot[0] + clamp(t,0,1) * (hullTop[0] − hullBot[0])`. `r = max(0.7, ((x1−x0)/2 / half) * reach)`, `len = max(2.2, r*2)`, 16 segments. Outer ring at `xSurf − len`, radius `r*1.25`. Mouth at `xSurf − len*0.15`, radius `r*0.92`. Core disc at `xSurf − len − 0.05`, radius `r*0.55`. Skin is `stern.jpg`. They are **also** painted in that skin. Both exist. Open issue 5. Do not delete the cones in this pass. |
-| Hangar box | The four port-side ring samples closest in `sy` to the hole corners: `(holeU0, holeS1)`, `(holeU1, holeS1)`, `(holeU0, holeS0)`, `(holeU1, holeS0)`. | `mid = floor(84 * 0.5) = 42`. `depth = max(6, beamPort[42] * 0.55)`. Inset is `(x, y, z − depth)` (from port toward the centreline). Five quads (back, sill, lintel, aft wall, fore wall), each UVed with corners `(0,0),(1,0),(1,1),(0,1)` of the **whole** `hangar.jpg`. The four rim quads share one UV: the port side UV at `u = (holeU0+holeU1)/2`, `sy = (holeS0+holeS1)/2`. This is a flat box, not a bay you can see out the other side. |
+| Bells | The 4 largest blobs on `stern.jpg` that pass the bell-core channel test (section 4). | `xSurf = −112` (station 0). `half = (sternBox.x1 − sternBox.x0) / 2`, `midX = (sternBox.x0 + sternBox.x1) / 2`, `reach = max(beamPort[0], beamStbd[0])`. `z = −((cx − midX) / half) * reach`. `t = (sternBox.y1 − cy) / (sternBox.y1 − sternBox.y0)`, `y = hullBot[0] + clamp(t,0,1) * (hullTop[0] − hullBot[0])`. `r = max(0.7, ((x1−x0)/2 / half) * reach)`, `len = max(2.2, r*2)`, 16 segments. Outer ring at `xSurf − len`, radius `r*1.25`. Mouth at `xSurf − len*0.15`, radius `r*0.92`. Core disc at `xSurf − len − 0.05`, radius `r*0.55`. Skin is `stern.jpg`. The belly plate no longer paints a second set (section 11). The stern plate still does. Do not delete the cones. |
+| Hangar bay | The four port-side ring samples closest in `sy` to the hole corners: `(holeU0, holeS1)`, `(holeU1, holeS1)`, `(holeU0, holeS0)`, `(holeU1, holeS0)`. | `depth = max(8, beamPort[42] * 0.82)`. Inset is `(x, y, z − depth)`. The far corners are pulled 0.72 of the way toward the inset centre in x and y, so the opening is larger than the far bulkhead and the side walls read as depth. No quad on the port mouth. Wall crops of `hangar.jpg`: back `u 0.08–0.92, v 0.08–0.92`; floor `v 0.72–0.98`; ceiling `v 0.02–0.28`; aft wall `u 0.02–0.28`; fore wall `u 0.72–0.98`. Rim quads take the port UV of each outer corner, not one shared texel. Starboard skin stays closed. |
 
 Numbers from the TypeScript after the seed fix. **Section 12 does not gate pylons or the bridge.**
 It gates the port box, the top box, `topScale`, the hole `u` window, 4 bells, 2 nacelles, and the OBJ face count.
@@ -308,7 +315,7 @@ The same JPEG is the ruler and the skin. No code colour. No computed light.
 - Material: `MeshBasicMaterial({ map, toneMapped: false, side: DoubleSide })`. Default material colour (no tint). Nothing else.
 - Texture (law 65): `SRGBColorSpace`, `minFilter = LinearMipmapLinearFilter`, `magFilter = LinearFilter`,
   `generateMipmaps = true`, `ClampToEdgeWrapping` on S and T. Never `NearestFilter`.
-- Renderer around it (the turntable, not the flight): `NoToneMapping`, output `SRGBColorSpace`, empty clear (see `frigate-view.ts`),
+- Renderer around it (the turntable, not the flight): `NoToneMapping`, output `SRGBColorSpace`. No typed clear colour. `scene.background` is `backdrop.jpg` (one Imagine plate, linear mipmaps, clamp). Not a cube. Not the flight sky.
   pixel ratio `min(devicePixelRatio, 1.5)` when `matchMedia("(max-width: 800px)")` matches, else `min(devicePixelRatio, 2)`, fov 46.
 
 Side UV, per station, not one box for the whole ship: `sy = 1` maps to that station's deck pixel, `sy = 0` to its keel pixel.
@@ -404,32 +411,24 @@ Turntable (`frigate-view.ts`), if you use it:
     so on a 390×844 phone the distance went to about 729 and the ship was a stripe.
     **Fix:** section 9 (length-up, AABB `(120, 34, 28) * 1.16`). This is in `frigate-view.ts` only.
 
-## 11. Open issues (do not fix them in this pass)
+## 11. QC issues
 
-Owner QC, still true. Leave them listed. Do not patch the mesh while you are saving or re-reading the recipe.
+Fixed in this pass (still **IN TEST** until SmiR checks them on the phone):
 
-1. The hangar is not see-through and the walls are flat and dark. The hull window is a real omitted quad, but
-   behind it sits a five-face box inset by `depth`, UVed 0–1 from `hangar.jpg`. That JPEG is dark in the
-   centre (luminance about 26) and brighter in the corners (about 90). You cannot see out the starboard side.
-   A replacement interior must be a readable bay; do not paint the box with a code colour, and do not close the hole.
-2. Add-on prisms stretch. `addPrism` extrudes one side silhouette to a constant thickness. The long faces
-   map a single column of the side image across that thickness. Caps are the front plate, which is a different
-   crop, so the seam between cap and side looks pulled.
-3. Nacelles have no **visible** pylons. The struts are in the mesh (section 7, scale about 0.8, `rotation.x = π/2`).
-   They do not read on the phone. Making them giant again is bug 4, not a fix.
-4. Gap at the ventral turret. `y = hullBot + prism.low` is applied **after** `rotation.x = π`, so `low`
-   (the unrotated minimum) does not sit the mesh on the keel.
-5. Painted duplicates. `top.jpg` already paints the dorsal turret and the nacelles, `stern.jpg` already paints
-   the bells, and the code **also** adds turret prisms and bell cones. Both show. Do not delete either until
-   a pass is dedicated to choosing one.
-6. Sky cube edges. Those edges belong to the flight sky box, not to this mesh. The turntable clears to an empty
-   background and has no sky. This recipe does not change the sky. Do not edit the sky to quiet this line.
-7. Bolt read as a carved blob, not the filmed wolf. In the owner QC shot Bolt was a carved shape instead of the
-   keyed `lock/` gallop / idle video. Nothing in this folder draws Bolt (the turntable has no Bolt). Wherever the
-   frigate is shown with Bolt, Bolt must be the filmed `lock/bolt-gallop-cycle.mp4` / `lock/bolt-idle-breath.mp4`
-   (golden rule, Bolt lock). Never carve, hull or recook Bolt.
+1. **Hangar, see-through.** The port mouth is still a hole. Behind it is a bay: floor, ceiling, fore wall, aft wall, and a smaller far bulkhead, skinned with crops of `hangar.jpg`. There is no face across the mouth and no typed colour. The starboard skin stays closed, so you see into the bay, not out the other side.
+2. **Stretched add-on faces.** Top and bottom faces of a prism span a band of the side image (section 7), not one repeated row. Caps still use the front content box.
+3. **Pylons and the ventral gap.** The strut's long axis is the gap (`rotation.x = π/2` on local Y). The short axes are clamped to 2.05–3.4 so the strut is visible and not the old giant slab. The ventral turret's highest point after `rotation.x = π` is set to the belly surface minus 0.45.
+4. **Painted deck turret and painted belly bells.** Those pixels are covered by Imagine patches taken from deck and belly plating (no code colour). The 3D dorsal turret and the 3D bells stay. The hull silhouette was not moved; the measure gate still passes.
+5. **Backdrop.** The turntable does not clear to a typed colour and does not build a sky cube. `scene.background` is the single Imagine plate `backdrop.jpg`. The flight sky was not edited.
 
-Owner QC listed six issues; items 3 and 4 above are one owner line (pylons + ventral gap), so the list has seven rows.
+Proof clip, not a phone shot: `tools/hard-objects/qc/howl-fixes.mp4`. Twenty seconds of orbit, then close-ups of the bay, the pylon, the ventral turret, the deck, and the belly.
+
+Still open:
+
+- **Bolt.** Owner QC showed Bolt as a carved blob instead of the filmed `lock/bolt-gallop-cycle.mp4` / `lock/bolt-idle-breath.mp4`. This folder does not draw Bolt. Do not carve, hull, or recook Bolt. Out of scope for the frigate fix.
+- **Stern plate still paints bells**, and `top.jpg` still paints the nacelles, while the mesh also builds those parts. Not part of the deck-turret / belly-bell fix.
+- **Patch seams.** The deck and belly repairs are rectangular Imagine patches. A seam can show. That is an accepted Imagine-native defect. Do not paint over it with a code colour.
+- **Pylon cross-section** is clamped, so the thin strut image is wider than its plate. That is the visibility fix, not a new slab. Do not go back to a uniform scale.
 
 ## 12. Run the gate
 
@@ -441,11 +440,11 @@ python3 tools/hard-objects/rebuild.py
 ```
 
 This gate passed on Pillow 12.3.0. Pillow missing → exit **2**.
-The script requires these 20 JPEGs and a sibling `.PROMPT.txt` for each (same basename). Missing either → exit **1**:
+The script requires these 21 JPEGs and a sibling `.PROMPT.txt` for each (same basename). Missing either → exit **1**:
 
 `port.jpg`, `stbd.jpg`, `top.jpg`, `belly.jpg`, `stern.jpg`, `sec-stern.jpg`, `sec-shoulder.jpg`, `sec-mid.jpg`,
 `sec-bow.jpg`, `nacelle.jpg`, `nacelle-front.jpg`, `turret.jpg`, `turret-front.jpg`, `bridge.jpg`, `bridge-front.jpg`,
-`pylon.jpg`, `hangar.jpg`, `port-detail-aft.jpg`, `port-detail-mid.jpg`, `port-detail-bow.jpg`.
+`pylon.jpg`, `hangar.jpg`, `backdrop.jpg`, `port-detail-aft.jpg`, `port-detail-mid.jpg`, `port-detail-bow.jpg`.
 
 A locked number moved → exit **1** and the word `FAIL`. Success → exit **0**, the last line is `PASS`, and these files appear:
 
@@ -493,15 +492,15 @@ Those live in `frigate.ts` and `frigate-view.ts`. Read sections 7–9. Do not ex
 7. Run `python3 tools/hard-objects/<ship>/rebuild.py`. Expected: exit 0, `PASS`, `out/report.json`, `out/frigate.obj`
    with on the order of `NU * NS` vertices (84×64 = 5376) and a face count below that because of the hole.
 8. Skins: same files, unlit, section 8. Phone: section 9, whole ship in frame, magnification ≤ 1 at that frame.
-9. Do not touch the capital, the corvette, the flight, or the sky. Do not mark the method APPROVED.
-   Phone QC is still required. Copy any new open issue into the copy of section 11 rather than hiding it.
+9. Do not touch the capital, the corvette, the flight, or the flight sky. Do not mark the method APPROVED.
+   Phone QC is still required. Copy any new open issue into section 11 rather than hiding it.
 
 ## 14. Order a fresh reader follows
 
 1. Read section 0 and do not open the flight.
-2. Confirm the 20 JPEGs and 20 `.PROMPT.txt` files in section 1 exist. Do not regenerate them.
+2. Confirm the JPEGs and `.PROMPT.txt` files in section 1 and section 12 exist. Do not regenerate them.
 3. Read the frame in section 2 once. Do not flip y.
 4. Run section 12. If it is not `PASS`, stop and re-read section 10 bugs 1 and 3. Do not edit the ranges.
 5. Only if you need the skinned mesh: copy images and the two `.ts` files into the app that already has `three`,
    serve the JPEGs at `/biome/frigate/`, call `mountFrigate` or `mountFrigateView`. Do not add `three` to this repo.
-6. Leave section 11 undone.
+6. Section 11 lists what this pass fixed and what is still open. Do not mark the recipe APPROVED.

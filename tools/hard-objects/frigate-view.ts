@@ -67,13 +67,20 @@ export function mountFrigateView(canvas: HTMLCanvasElement): FrigateView {
     powerPreference: "high-performance",
     premultipliedAlpha: false,
   });
-  renderer.setClearColor(0x000000, 1);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.NoToneMapping;
   const mobile = window.matchMedia("(max-width: 800px)").matches;
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 2));
 
   const scene = new THREE.Scene();
+  const backdrop = new THREE.TextureLoader().load("/biome/frigate/backdrop.jpg");
+  backdrop.colorSpace = THREE.SRGBColorSpace;
+  backdrop.magFilter = THREE.LinearFilter;
+  backdrop.minFilter = THREE.LinearMipmapLinearFilter;
+  backdrop.generateMipmaps = true;
+  backdrop.wrapS = THREE.ClampToEdgeWrapping;
+  backdrop.wrapT = THREE.ClampToEdgeWrapping;
+  scene.background = backdrop;
   const camera = new THREE.PerspectiveCamera(46, 1, 0.4, 5000);
   scene.add(camera);
   void mountFrigate(scene, { x: 0, y: 0, z: 0, yaw: 0 });
