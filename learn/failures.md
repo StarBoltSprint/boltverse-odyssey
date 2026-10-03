@@ -351,3 +351,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Two cooks, then stop. The crest slots stay in the manifest and play skips them when no hull is present. Boulders are the sky-line solids in this pass. |
 | Guard | `python3 tools/objsheet/sheet.py` adjacent height ±8% and area ±15%. The crest set fails height. No row detects "short and denser" before the scale attempt. |
 | Sources | `docs/METHOD/rocks.md` pitfalls. Views stay outside the repo. |
+
+### 2026-10-03 — a walk opening that meets the frame is not an enclosed hole
+
+| | |
+| --- | --- |
+| Take | Zone A step 4. Eclipse Gate loft. |
+| Defect | The first hole finder kept only a small enclosed crack. The arch the player walks toward was missing, so the loft filled the gateway. |
+| Root cause | The opening meets the bottom border. A flood from the corner treats that dark span as outside, not as a hole. |
+| Fix | The gate loft takes the dark span between the first and last stone of each row, unions enclosed voids of at least 800 px, and keeps the tallest component as the opening. |
+| Guard | `python3 tools/ruins/selftest.py --kit howling-eclipse` requires `openingClear` and a non-empty hole box. |
+| Sources | `tools/ruins/gate.py`, `packs/zone-a/src/ruins/measure.json`. |

@@ -31,6 +31,14 @@ World-locked top-down stills, about **0.90 m**, **≥ 4** variants: [`biome/docs
 
 Eight views, one every 45°, from one sharp still (V0) plus the previous view: [`biome/docs/60-imagine-relief-panorama-method.md`](../../biome/docs/60-imagine-relief-panorama-method.md) KEEP method. Eight consistent views are not an Imagine feature (max 5 sources): [`biome/docs/64-imagine-build-limits.md`](../../biome/docs/64-imagine-build-limits.md) section C. Before a hull: `python3 tools/assetcheck/check.py` kind `cutout`, then `python3 tools/objsheet/sheet.py`.
 
+## ruin
+
+| Recipe | Commit | QC |
+| --- | --- | --- |
+| [zone-a-ruins.md](zone-a-ruins.md) — kit-driven gate loft plus a reused Howl wreck (prompt text stays in the untracked local file) | step 4, filled after the commit | gate texels/m 155.81, approach 11.508 m; wreck texels/m 160.07, approach 11.201 m; play frame mag 0.998 |
+
+One command: `python3 tools/ruins/build.py --kit <id>` then `python3 tools/ruins/selftest.py --kit <id>`. The Howl loft gate stays `python3 tools/hard-objects/rebuild.py`.
+
 ## hull-ship
 
 | Recipe | Commit | QC |
