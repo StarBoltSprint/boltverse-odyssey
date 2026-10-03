@@ -13,9 +13,9 @@ PIXELS 1408x1408. ASPECT 1:1. STATION u=0.56 (through the hangar station).
 JOB Same rules as sec-stern.jpg. Do not cut the hangar out of this slice.
 The hangar hole is read from port.jpg. This slice still has a closed outer contour.
 
-ASK
-Imagine, aspect 1:1. Orthographic, no perspective, no camera tilt, no ground, no stars, no other ship, no text, no border, no watermark. Black background. One object, filling the frame with a small dark margin. Mid-grey gunmetal. Panels, seams, hatches and vents readable at phone size without crushing the mid-grey into black or white. Gold only on edges and small markings. A few small lit windows, not a glow wash. No code-flat colour.
-One filled cross-section of the Howl-class frigate at mid-length (through the hangar station, about 56 percent from the stern),
-viewed looking forward. Left = port, right = starboard.
-Solid outer contour. Do not cut a hole to the background for the hangar; the hangar is measured on the port elevation.
-Not a side elevation.
+ASK (colour-free template; the tone, palette and subject wording are untracked, see
+/workspace/grokcli/next/METHOD/hard-objects-prompts.local.md, section sec-mid)
+Imagine, aspect 1:1. Orthographic, no perspective, no camera tilt, no ground, no stars, no other ship, no text,
+no border, no watermark. Plain empty background the reader can segment. One object, filling the frame with a small
+empty margin. <TONE + ACCENTS from the local file>. Panels, seams, hatches and vents readable at phone size.
+Subject: the JOB above, nothing else.

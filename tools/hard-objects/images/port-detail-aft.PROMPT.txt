@@ -12,7 +12,7 @@ ROLE reference only. NOT loaded by frigate.ts. Do not skin the hull with this fi
 PIXELS 1904x1040. Source: image-to-image edit of port.jpg crop x=40..860, y=40..490 (stern third).
 Misaligned if swapped onto the loft. Kept so a later pass can see the sharper panels. Not a measure plate.
 
-ASK
+ASK (colour-free image-to-image template; no tone or palette needed)
 Imagine image-to-image. Source crop is the stern third of the locked port.jpg (pixels x 40-860, y 40-490).
 Keep the silhouette and the hangar hole exactly where they are. Sharpen panels, seams, hatches and vents in place.
 Do not restyle, do not move the ship, do not add a tower, do not fill the hangar hole.

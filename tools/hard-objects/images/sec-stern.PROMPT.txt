@@ -11,11 +11,12 @@ and you keep this file beside it until the rebuild gate passes on the new bytes.
 ROLE section measure only (not a skin). Loaded by frigate.ts as /biome/frigate/sec-stern.jpg.
 PIXELS 1408x1408. ASPECT 1:1. STATION u=0.08 (near the stern).
 JOB A filled cross-section looking toward the bow. Left of the image = port, right = starboard.
-One closed solid shape on black. Not a side view, not a perspective, not a photo of the whole ship.
+One closed solid shape on an empty background. Not a side view, not a perspective, not a photo of the whole ship.
 Painted interior marks are allowed; the outer contour must be one component. The hangar hole is NOT cut in this image.
 
-ASK
-Imagine, aspect 1:1. Orthographic, no perspective, no camera tilt, no ground, no stars, no other ship, no text, no border, no watermark. Black background. One object, filling the frame with a small dark margin. Mid-grey gunmetal. Panels, seams, hatches and vents readable at phone size without crushing the mid-grey into black or white. Gold only on edges and small markings. A few small lit windows, not a glow wash. No code-flat colour.
-One filled cross-section of the Howl-class frigate near the stern (about 8 percent of the length from the stern),
-viewed looking forward toward the bow. Left side of the image is port, right side is starboard.
-Solid metal fill, one closed outline, black background. Not a side elevation.
+ASK (colour-free template; the tone, palette and subject wording are untracked, see
+/workspace/grokcli/next/METHOD/hard-objects-prompts.local.md, section sec-stern)
+Imagine, aspect 1:1. Orthographic, no perspective, no camera tilt, no ground, no stars, no other ship, no text,
+no border, no watermark. Plain empty background the reader can segment. One object, filling the frame with a small
+empty margin. <TONE + ACCENTS from the local file>. Panels, seams, hatches and vents readable at phone size.
+Subject: the JOB above, nothing else.

@@ -4,7 +4,7 @@ Back to [METHOD.md](../METHOD.md). This page is the recipe. Status: **IN TEST**,
 Do not change the word to APPROVED. Contradiction 12 in [decisions-log.md](decisions-log.md) stays **OPEN**
 (law 59 does not yet name a lofted hull). Do not amend law 59 in the same breath as using this recipe.
 
-The one-line row on METHOD.md says "plates as offset copies along computed normals". **This recipe does not do that.**
+The first IN TEST row on METHOD.md said "plates as offset copies along computed normals". **This recipe does not do that.**
 The plates are the measure and the unlit skin of one lofted volume. A normal is used only to pick which skin a quad
 uses (roof, belly, port, starboard) and to flip the quad outward. There is no second shell pushed out along the normal.
 Do not add one.
@@ -15,13 +15,14 @@ Build only the frigate. Do not edit the capital ship, the corvette, the flight, 
 This folder does not wire itself into a flight. `mountFrigate`'s default place `(280, 22, -250)`, yaw `0.42`,
 is the flight-world slot. Leave that default. Callers that want a turntable pass `{ x: 0, y: 0, z: 0, yaw: 0 }`.
 
-Prompt text for the rest of the repo stays out of tracked files (METHOD.md, 2026-10-03).
-The owner overrode that **for this folder only**: each JPEG has a sibling `.PROMPT.txt`, and section 3 is the template.
-That override does not reopen prompts anywhere else.
+Palettes and Imagine prompt text stay out of tracked files (METHOD.md, 2026-10-03), **this folder included**.
+Each JPEG has a sibling `.PROMPT.txt` (the gate requires it) holding only the colour-free contract: STATUS, ROLE,
+PIXELS / ASPECT, JOB and a colour-free ASK template. The tone / palette / subject wording that produced these plates
+lives in the untracked local file `/workspace/grokcli/next/METHOD/hard-objects-prompts.local.md` (one section per plate).
 
 The verbatim Imagine tool-call strings were not stored (JPEG EXIF is JFIF only; no session log kept the call).
 **The JPEG is the locked ruler.** The contract to copy if a plate must be replaced is written in section 3
-(STATUS, ROLE, ASK). The sibling `.PROMPT.txt` is that same text, not a second source. It is not a recovered transcript.
+(STATUS, ROLE, ASK template) plus the local file above for the tone lines. It is not a recovered transcript.
 
 ## 1. Files
 
@@ -83,7 +84,7 @@ and do not regenerate a locked JPEG to "match" the ASK.
 | `stbd.jpg` | 2400×528 | 50:11 | Starboard elevation. Closed side, three hatches, **bridge bump**. Also the starboard skin. |
 | `top.jpg` | 2400×528 | 50:11 | Plan. Beam, which side is which, **nacelle XZ**. Also the roof skin. |
 | `belly.jpg` | 2400×528 | 50:11 | Underside plan, same side up. **Ventral turret**. Also the belly skin. |
-| `stern.jpg` | 1408×1408 | 1:1 | Stern cap skin and the **four blue bells**. |
+| `stern.jpg` | 1408×1408 | 1:1 | Stern cap skin and the **four bells** (bell-core channel test, section 4 step 8). |
 | `sec-stern.jpg` | 1408×1408 | 1:1 | Filled slice at u=0.08. |
 | `sec-shoulder.jpg` | 1408×1408 | 1:1 | Filled slice at the shoulder, u=0.34. |
 | `sec-mid.jpg` | 1408×1408 | 1:1 | Filled slice at the hangar station, u=0.56. Do not cut the hangar out of this slice. |
@@ -100,8 +101,9 @@ and do not regenerate a locked JPEG to "match" the ASK.
 | `port-detail-mid.jpg` | 1920×1024 | image-to-image | Mid third, crop x 780–1620, y 40–490. Reference only. Not loaded. |
 | `port-detail-bow.jpg` | 1952×1008 | image-to-image | Bow third, crop x 1500–2360, y 40–490. Reference only. Not loaded. |
 
-Shared contract. Write `images/<name>.PROMPT.txt` as the STATUS header, then the ROLE block, then `ASK`,
-then the paragraph, then that file's job line. Nothing else. The sibling file on disk is this text.
+Shared contract. Write `images/<name>.PROMPT.txt` as the STATUS header, then the ROLE block, then `JOB` and the
+job line, then the colour-free `ASK` template below. Nothing else. No palette words, no hex, no verbatim prompt text:
+the tone / accent wording goes in the untracked local prompts file (section 0).
 
 ROLE block. One of these four first lines, then PIXELS and ASPECT from the table above:
 
@@ -122,12 +124,14 @@ Block ASK is the generation contract to copy if the plate must be replaced.
 It matches this file's pixel size, aspect and job. It is not a recovered transcript.
 ```
 
-ASK paragraph, every plate:
+ASK template, every plate (colour-free; fill `<TONE + ACCENTS>` from the local prompts file, never in the repo):
 
-> Orthographic, no perspective, no camera tilt, no ground, no stars, no other ship, no text, no border, no watermark.
-> Black background. One object, filling the frame with a small dark margin. Mid-grey gunmetal. Panels, seams, hatches
-> and vents readable at phone size without crushing the mid-grey into black or white. Gold only on edges and small
-> markings. A few small lit windows, not a glow wash.
+> Imagine, aspect `<aspect>`. Orthographic, no perspective, no camera tilt, no ground, no stars, no other ship, no text,
+> no border, no watermark. Plain empty background the reader can segment. One object, filling the frame with a small
+> empty margin. `<TONE + ACCENTS>`. Panels, seams, hatches and vents readable at phone size.
+> Subject: the JOB line, nothing else.
+
+The skins must stay readable mid-tones (METHOD.md row), so the section 4 luminance masks work.
 
 Job line (one per file, after the paragraph):
 
@@ -135,9 +139,9 @@ Job line (one per file, after the paragraph):
 |---|---|
 | `port.jpg` | Port elevation, bow right. Real hangar hole, background visible through it. No tower. Shoulder step about one third from the stern. Nacelles detached, not touching the hull mask. |
 | `stbd.jpg` | Starboard elevation, bow right, same length. Closed side, armoured belt, three hatches, no hole. Bridge tower on the deck, in the silhouette. |
-| `top.jpg` | Plan, bow right. Top edge of the picture is starboard. Bright bridge windows toward the top. Two stern nacelles, black gap, hull is the largest component. |
+| `top.jpg` | Plan, bow right. Top edge of the picture is starboard. Bright bridge windows toward the top. Two stern nacelles, empty gap, hull is the largest component. |
 | `belly.jpg` | Belly plan, bow right, same side up as the top (not mirrored). Top edge is starboard. Ventral turret darker than the nacelles. |
-| `stern.jpg` | Stern, centred. Exactly four bells. Each core is the only saturated blue (`B > 80`, `B > R+18`, `B > G`). |
+| `stern.jpg` | Stern, centred. Exactly four bells. Each core passes the bell-core channel test (section 4 step 8); nothing else in the picture does. |
 | `sec-stern.jpg` | Filled cross-section at 8% from the stern, looking forward. Left = port. One closed outline. Not a side view. |
 | `sec-shoulder.jpg` | Same, at the shoulder step, about one third from the stern. |
 | `sec-mid.jpg` | Same, at 56% (hangar station). Do not cut the hangar out of this slice. |
@@ -145,11 +149,11 @@ Job line (one per file, after the paragraph):
 | `nacelle.jpg` | One nacelle, side, nose right, alone. Aspect 5:2. |
 | `nacelle-front.jpg` | Front of one nacelle, centred, metal not touching the corners. Aspect 1:1. |
 | `turret.jpg` | One twin-barrel turret, side, alone. Aspect 16:9. |
-| `turret-front.jpg` | Front of that turret, two barrels, corners black. Aspect 1:1. |
+| `turret-front.jpg` | Front of that turret, two barrels, corners empty. Aspect 1:1. |
 | `bridge.jpg` | Bridge tower alone, side, portrait 2:3, a few lit windows. |
-| `bridge-front.jpg` | Front of that tower, portrait 2:3, corners dark. |
+| `bridge-front.jpg` | Front of that tower, portrait 2:3, corners empty. |
 | `pylon.jpg` | One narrow strut, portrait 2:3, alone. Not a hull plate. |
-| `hangar.jpg` | Interior of the bay, readable mid-grey walls and deck, edge to edge. The locked JPEG fails this (dark centre). The ASK is the replacement, not a description of the locked file. |
+| `hangar.jpg` | Interior of the bay, readable walls and deck, edge to edge. The locked JPEG fails this (dark centre). The ASK is the replacement, not a description of the locked file. |
 | `port-detail-aft.jpg` | Image-to-image of port crop x 40–860, y 40–490. Sharpen in place. Do not move the silhouette or fill a hole. |
 | `port-detail-mid.jpg` | Image-to-image of port crop x 780–1620, y 40–490. Keep the hangar hole. |
 | `port-detail-bow.jpg` | Image-to-image of port crop x 1500–2360, y 40–490. Do not add a hangar. |
@@ -168,7 +172,7 @@ Do this on the pixels before changing a threshold. Luminance is `0.2126 R + 0.71
 4. The hull content box should sit inside a dark margin, not cropped by the frame.
    On these locked plates that margin is about 75 px (`x0` near 75, `x1` past 2200 on a 2400-wide plate).
    The Howl gate in section 12 checks that box. A new ship records its own box in its own gate. Do not copy 75.
-   A flat grey fill can have a luma standard deviation of only 3–6. Low variation is not "empty"
+   A flat uniform fill can have a luma standard deviation of only 3–6. Low variation is not "empty"
    if the mask is one component with a real contour. There is no std-dev threshold in the code.
 5. **The centroid may lie in a hole.** The hangar centroid is empty. An empty centroid is not an empty hull.
    Never seed a flood from the centroid, and never seed from the first mask pixel inside the bounding box
@@ -275,7 +279,7 @@ Scale so the side content-box width equals `length`.
 `sideH` is the world height of that silhouette (`max top − min bottom`).
 The front content box is the mask > 16 on the front image, not the full frame.
 `thick = max(0.35, ((frontBox.x1 − frontBox.x0) / max(8, frontBox.y1 − frontBox.y0)) * sideH)`.
-Caps sample that front content box, not UV 0–1, so black corners are not stretched across the cap.
+Caps sample that front content box, not UV 0–1, so empty corners are not stretched across the cap.
 The long faces sample the side image. `low` is the smallest silhouette y in the prism's local frame, before `rotation.x`.
 
 Placement is in the hull frame. `placePrism` sets `position` and then `rotation.x`.
@@ -287,7 +291,7 @@ Placement is in the hull frame. `placePrism` sets `position` and then `rotation.
 | Dorsal turret | Port components min **400** px, not the hull, whose centre is **above the local deck**: `cy < column.topY + 4`. The biggest such blob. Do not test `cy < hullBox.y0 + 8` — the turret centre can sit below the hull box top (it did: cy 89, box y0 75) and still be above the local deck. | `u` from the blob centre on the **port** box, `i = round(u * 83)`. `length` from pixel width × `portScale`. `x = (u−0.5)*LEN`. `y = hullTop[i] − prism.low`. `z = 0`. `rotation.x = 0`. |
 | Ventral turret | Belly components after the hull, min 800 px. Dark fraction = share of samples (step 2 px) with luminance < 18. Take the darkest only if it beats the lightest extra blob by **more than 0.08**. If it does not, add **no** ventral turret. Nacelles on the belly are lighter (~0.21) than the turret (~0.37). | `u` from the belly box, `i = round(u * 83)`. `rotation.x = π`. `z = (cy − bellyBoxMid) * bellyScale`, `bellyBoxMid = (bellyBox.y0 + bellyBox.y1) / 2`, `bellyScale = LEN / bellyWidth`. Positive z is still port. `y = hullBot[i] + prism.low` **after** the rotation. That `+ low` is the open gap in section 11. Do not "fix" it while you are only learning the recipe. |
 | Bridge | Longest run of stations where `stbdTop − align − hullTop > 3.2`. `bridgeU` = centre of that run. `bridgeH` = peak of that bump. | `x = (bridgeU − 0.5) * LEN`. `bi = round(bridgeU * 83)`. `rotation.x = 0`. `z` from pixels on `top.jpg` with luminance **> 200**, stepped by 2, inside `u ∈ [bridgeU−0.1, bridgeU+0.16]`. If more than 8 such samples, `z = (meanY − centerPx) * topScale`. Else `z = −max(1.5, beamStbd[bi]*0.28)`. Build the prism at length 1. `towerScale = max(4, bridgeH) / (high − low)`. `y = hullTop[bi] − low * towerScale`. |
-| Bells | The 4 largest blue blobs on `stern.jpg` (section 4). | `xSurf = −112` (station 0). `half = (sternBox.x1 − sternBox.x0) / 2`, `midX = (sternBox.x0 + sternBox.x1) / 2`, `reach = max(beamPort[0], beamStbd[0])`. `z = −((cx − midX) / half) * reach`. `t = (sternBox.y1 − cy) / (sternBox.y1 − sternBox.y0)`, `y = hullBot[0] + clamp(t,0,1) * (hullTop[0] − hullBot[0])`. `r = max(0.7, ((x1−x0)/2 / half) * reach)`, `len = max(2.2, r*2)`, 16 segments. Outer ring at `xSurf − len`, radius `r*1.25`. Mouth at `xSurf − len*0.15`, radius `r*0.92`. Core disc at `xSurf − len − 0.05`, radius `r*0.55`. Skin is `stern.jpg`. They are **also** painted in that skin. Both exist. Open issue 5. Do not delete the cones in this pass. |
+| Bells | The 4 largest blobs on `stern.jpg` that pass the bell-core channel test (section 4). | `xSurf = −112` (station 0). `half = (sternBox.x1 − sternBox.x0) / 2`, `midX = (sternBox.x0 + sternBox.x1) / 2`, `reach = max(beamPort[0], beamStbd[0])`. `z = −((cx − midX) / half) * reach`. `t = (sternBox.y1 − cy) / (sternBox.y1 − sternBox.y0)`, `y = hullBot[0] + clamp(t,0,1) * (hullTop[0] − hullBot[0])`. `r = max(0.7, ((x1−x0)/2 / half) * reach)`, `len = max(2.2, r*2)`, 16 segments. Outer ring at `xSurf − len`, radius `r*1.25`. Mouth at `xSurf − len*0.15`, radius `r*0.92`. Core disc at `xSurf − len − 0.05`, radius `r*0.55`. Skin is `stern.jpg`. They are **also** painted in that skin. Both exist. Open issue 5. Do not delete the cones in this pass. |
 | Hangar box | The four port-side ring samples closest in `sy` to the hole corners: `(holeU0, holeS1)`, `(holeU1, holeS1)`, `(holeU0, holeS0)`, `(holeU1, holeS0)`. | `mid = floor(84 * 0.5) = 42`. `depth = max(6, beamPort[42] * 0.55)`. Inset is `(x, y, z − depth)` (from port toward the centreline). Five quads (back, sill, lintel, aft wall, fore wall), each UVed with corners `(0,0),(1,0),(1,1),(0,1)` of the **whole** `hangar.jpg`. The four rim quads share one UV: the port side UV at `u = (holeU0+holeU1)/2`, `sy = (holeS0+holeS1)/2`. This is a flat box, not a bay you can see out the other side. |
 
 Numbers from the TypeScript after the seed fix. **Section 12 does not gate pylons or the bridge.**
@@ -301,9 +305,10 @@ Bridge `u` about `0.42`, height about `13`, `z` about `−7.4`. Four bells.
 
 The same JPEG is the ruler and the skin. No code colour. No computed light.
 
-- Material: `MeshBasicMaterial({ map, toneMapped: false, side: DoubleSide })`. Default colour white. Nothing else.
-- Texture: `SRGBColorSpace`, `NearestFilter` for mag and min, `generateMipmaps = false`, `ClampToEdgeWrapping` on S and T.
-- Renderer around it (the turntable, not the flight): `NoToneMapping`, output `SRGBColorSpace`, clear `0x000000`,
+- Material: `MeshBasicMaterial({ map, toneMapped: false, side: DoubleSide })`. Default material colour (no tint). Nothing else.
+- Texture (law 65): `SRGBColorSpace`, `minFilter = LinearMipmapLinearFilter`, `magFilter = LinearFilter`,
+  `generateMipmaps = true`, `ClampToEdgeWrapping` on S and T. Never `NearestFilter`.
+- Renderer around it (the turntable, not the flight): `NoToneMapping`, output `SRGBColorSpace`, empty clear (see `frigate-view.ts`),
   pixel ratio `min(devicePixelRatio, 1.5)` when `matchMedia("(max-width: 800px)")` matches, else `min(devicePixelRatio, 2)`, fov 46.
 
 Side UV, per station, not one box for the whole ship: `sy = 1` maps to that station's deck pixel, `sy = 0` to its keel pixel.
@@ -320,12 +325,11 @@ Stern UV, also used by the bells. `H = max(0.001, hullTop[0] − hullBot[0])`, `
 `py = sternBox.y1 − t * (sternBox.y1 − sternBox.y0)`.
 `half = max(1, (sternBox.x1 − sternBox.x0) * 0.5)`, `mid = (sternBox.x0 + sternBox.x1) * 0.5`,
 `reach = max(beamPort[0], beamStbd[0], 0.001)`, `px = mid − (z / reach) * half`.
-Then the same `pixUV`. Do not use UV 0–1 on `stern.jpg` or the black corners cover the cap.
+Then the same `pixUV`. Do not use UV 0–1 on `stern.jpg` or the empty corners cover the cap.
 
-Law 65 (the play-still rule, not one of the six QC issues in section 11): stills use `LINEAR_MIPMAP_LINEAR` and
-mipmaps, never `NEAREST`. This test used nearest so a close look does not invent pixels. That tension is **open**.
-Do not resample the plates, and do not flip the filter, as a drive-by. Magnification ≤ 1 is a separate rule
-(section 9) and is not a reason to add mipmaps here.
+Law 65 (the play-still rule, not one of the owner QC issues in section 11): stills use `LINEAR_MIPMAP_LINEAR` and
+mipmaps, never `NEAREST`. The first test build used nearest; it was switched to law 65 sampling at merge review
+(2026-10-03). Do not go back to nearest. Do not resample the plates. Magnification ≤ 1 is a separate rule (section 9).
 
 ## 9. Magnification and the phone
 
@@ -354,7 +358,7 @@ Turntable (`frigate-view.ts`), if you use it:
 - Tour: add `2π` to θ at `0.45` rad/s. Each frame `φ += (0.32 − φ) * min(1, dt * 3)` with `dt` in seconds, capped at 0.05.
   Stop when the added angle reaches `2π`. No separate ease duration.
 - Phone check: portrait frame shows the whole length, panels readable, no second ship, no Bolt, no starfield.
-  A thin stripe on black is a failed frame, not a failed hull.
+  A thin stripe on an empty frame is a failed frame, not a failed hull.
 
 ## 10. Bugs and the fix for each
 
@@ -374,7 +378,7 @@ Turntable (`frigate-view.ts`), if you use it:
    After the fix the top box is about `75,119–2337,401` and `topScale` about `0.099`.
    The gate fails if `topBox.y0` is not above 100, which is what the nacelle seed looks like.
 
-4. **Pylons read as giant gold slabs.** Same cause as 3. The gap from a nacelle at `z ≈ 326` to the hull
+4. **Pylons read as giant slabs.** Same cause as 3. The gap from a nacelle at `z ≈ 326` to the hull
    was huge, and `scale = span / long` became a slab. **Fix:** bug 3's seed. After it, span is about 4.8–5.0
    and scale about 0.8. A thin pylon can still be hard to see; that is open issue 3, not this bug.
    Do not delete the pylon code because the QC says "no visible pylons".
@@ -404,10 +408,10 @@ Turntable (`frigate-view.ts`), if you use it:
 
 Owner QC, still true. Leave them listed. Do not patch the mesh while you are saving or re-reading the recipe.
 
-1. The hangar is not see-through and the walls are flat black. The hull window is a real omitted quad, but
+1. The hangar is not see-through and the walls are flat and dark. The hull window is a real omitted quad, but
    behind it sits a five-face box inset by `depth`, UVed 0–1 from `hangar.jpg`. That JPEG is dark in the
-   centre (luminance about 26) and grey in the corners (about 90). You cannot see out the starboard side.
-   A replacement interior must be a readable bay; do not paint the box with code black, and do not close the hole.
+   centre (luminance about 26) and brighter in the corners (about 90). You cannot see out the starboard side.
+   A replacement interior must be a readable bay; do not paint the box with a code colour, and do not close the hole.
 2. Add-on prisms stretch. `addPrism` extrudes one side silhouette to a constant thickness. The long faces
    map a single column of the side image across that thickness. Caps are the front plate, which is a different
    crop, so the seam between cap and side looks pulled.
@@ -418,8 +422,14 @@ Owner QC, still true. Leave them listed. Do not patch the mesh while you are sav
 5. Painted duplicates. `top.jpg` already paints the dorsal turret and the nacelles, `stern.jpg` already paints
    the bells, and the code **also** adds turret prisms and bell cones. Both show. Do not delete either until
    a pass is dedicated to choosing one.
-6. Sky cube edges. Those edges belong to the flight sky box, not to this mesh. The turntable clears to black
-   and has no sky. This recipe does not change the sky. Do not edit the sky to quiet this line.
+6. Sky cube edges. Those edges belong to the flight sky box, not to this mesh. The turntable clears to an empty
+   background and has no sky. This recipe does not change the sky. Do not edit the sky to quiet this line.
+7. Bolt read as a carved blob, not the filmed wolf. In the owner QC shot Bolt was a carved shape instead of the
+   keyed `lock/` gallop / idle video. Nothing in this folder draws Bolt (the turntable has no Bolt). Wherever the
+   frigate is shown with Bolt, Bolt must be the filmed `lock/bolt-gallop-cycle.mp4` / `lock/bolt-idle-breath.mp4`
+   (golden rule, Bolt lock). Never carve, hull or recook Bolt.
+
+Owner QC listed six issues; items 3 and 4 above are one owner line (pylons + ventral gap), so the list has seven rows.
 
 ## 12. Run the gate
 
@@ -467,9 +477,9 @@ Those live in `frigate.ts` and `frigate-view.ts`. Read sections 7–9. Do not ex
 
 1. Copy the folder to `tools/hard-objects/<ship>/` (new images, new `frigate.ts`, new `rebuild.py`).
    Do not reuse the Howl JPEGs for a different hull. Do not edit the Howl gate to make the new ship pass.
-2. Ask Imagine with the section 3 contract (STATUS, ROLE, ASK paragraph, job line). Write that text to
-   `<name>.PROMPT.txt` beside the JPEG **before** you run the gate (missing prompt → exit 1).
-   Do not look for a prompt outside this page. The JPEG you keep is the ruler, not a fresh regeneration.
+2. Ask Imagine with the section 3 contract (STATUS, ROLE, job line, colour-free ASK template) plus your own tone
+   lines kept in an untracked `*.local.md`. Write the colour-free text to `<name>.PROMPT.txt` beside the JPEG
+   **before** you run the gate (missing prompt → exit 1). Never put palette words, hex or verbatim prompts in it. The JPEG you keep is the ruler, not a fresh regeneration.
 3. Run section 4 on every plate. If a plate fails, replace that plate. Do not paper over it with a threshold.
 4. Change `LEN` only if this ship is a different length, and change it in **both** the TypeScript and the Python.
    Change the four stations only if the section pictures were taken at different `u`.

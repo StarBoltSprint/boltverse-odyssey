@@ -41,9 +41,10 @@ const lumAt = (p: Pix, i: number) =>
 const skinTex = (src: string) => {
   const tex = new THREE.TextureLoader().load(src);
   tex.colorSpace = THREE.SRGBColorSpace;
-  tex.magFilter = THREE.NearestFilter;
-  tex.minFilter = THREE.NearestFilter;
-  tex.generateMipmaps = false;
+  // Law 65: stills sample LINEAR_MIPMAP_LINEAR with mipmaps, never NEAREST.
+  tex.magFilter = THREE.LinearFilter;
+  tex.minFilter = THREE.LinearMipmapLinearFilter;
+  tex.generateMipmaps = true;
   tex.wrapS = THREE.ClampToEdgeWrapping;
   tex.wrapT = THREE.ClampToEdgeWrapping;
   return tex;

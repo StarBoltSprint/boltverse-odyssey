@@ -15,13 +15,12 @@ Small image y (top of the picture) is STARBOARD. Large image y is PORT.
 Proof used by the code: the bridge windows are bright and sit toward the top of this picture,
 and the tower exists only on stbd.jpg.
 The hull is the single largest component. Two nacelles sit at the stern, one each side,
-detached, with black gap, not overlapping the hull's corner pixels.
+detached, with an empty gap, not overlapping the hull's corner pixels.
 Do not draw the nacelles amidships.
 
-ASK
-Imagine, aspect 50:11. Orthographic, no perspective, no camera tilt, no ground, no stars, no other ship, no text, no border, no watermark. Black background. One object, filling the frame with a small dark margin. Mid-grey gunmetal. Panels, seams, hatches and vents readable at phone size without crushing the mid-grey into black or white. Gold only on edges and small markings. A few small lit windows, not a glow wash. No code-flat colour.
-Top-down plan of the same Howl-class frigate, bow to the right.
-Top edge of the picture is the starboard side (the side with the bridge). Bottom edge is port.
-Bridge windows are a small bright cluster toward the top of the frame, near mid-length.
-Two engine nacelles at the stern only, one port and one starboard, clear black gap between each nacelle and the hull.
-The hull is one connected shape, the largest object in the frame.
+ASK (colour-free template; the tone, palette and subject wording are untracked, see
+/workspace/grokcli/next/METHOD/hard-objects-prompts.local.md, section top)
+Imagine, aspect 50:11. Orthographic, no perspective, no camera tilt, no ground, no stars, no other ship, no text,
+no border, no watermark. Plain empty background the reader can segment. One object, filling the frame with a small
+empty margin. <TONE + ACCENTS from the local file>. Panels, seams, hatches and vents readable at phone size.
+Subject: the JOB above, nothing else.

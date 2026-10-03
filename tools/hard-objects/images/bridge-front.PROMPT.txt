@@ -12,6 +12,9 @@ ROLE part cap skin. Loaded by frigate.ts as /biome/frigate/bridge-front.jpg.
 PIXELS 1152x1728. ASPECT 2:3.
 JOB Front of the same tower, content inside a margin.
 
-ASK
-Imagine, aspect 2:3. Orthographic, no perspective, no camera tilt, no ground, no stars, no other ship, no text, no border, no watermark. Black background. One object, filling the frame with a small dark margin. Mid-grey gunmetal. Panels, seams, hatches and vents readable at phone size without crushing the mid-grey into black or white. Gold only on edges and small markings. A few small lit windows, not a glow wash. No code-flat colour.
-Front view of the Howl-class bridge tower alone, portrait frame, a few small lit windows, centred, black corners.
+ASK (colour-free template; the tone, palette and subject wording are untracked, see
+/workspace/grokcli/next/METHOD/hard-objects-prompts.local.md, section bridge-front)
+Imagine, aspect 2:3. Orthographic, no perspective, no camera tilt, no ground, no stars, no other ship, no text,
+no border, no watermark. Plain empty background the reader can segment. One object, filling the frame with a small
+empty margin. <TONE + ACCENTS from the local file>. Panels, seams, hatches and vents readable at phone size.
+Subject: the JOB above, nothing else.

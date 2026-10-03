@@ -12,7 +12,7 @@ ROLE reference only. NOT loaded by frigate.ts. Do not skin the hull with this fi
 PIXELS 1952x1008. Source: image-to-image edit of port.jpg crop x=1500..2360, y=40..490 (bow third).
 Misaligned if swapped onto the loft.
 
-ASK
+ASK (colour-free image-to-image template; no tone or palette needed)
 Imagine image-to-image. Source crop is the bow third of the locked port.jpg (pixels x 1500-2360, y 40-490).
 Keep the silhouette exactly. Sharpen panels, seams and vents in place.
 Do not restyle. Do not move the ship. Do not add a hangar on this third.
