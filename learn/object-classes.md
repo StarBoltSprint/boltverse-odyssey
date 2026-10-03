@@ -1,5 +1,7 @@
 # Object-class pack
 
+> **Superseded by [`docs/METHOD.md`](../docs/METHOD.md)** (already a rejected draft): see METHOD organic / hard objects rows. Kept for history; not deleted.
+
 DRAFT — rejected as default by owner 2026-10-02: owner wants real 3D objects (invisible volume + projected Imagine views)
 
 This page is not the cook default. Do not copy it into a kit. Do not gate a still count from it. The exact method is not chosen.

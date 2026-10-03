@@ -1,5 +1,7 @@
 # 61 — Free-360 clearing walk
 
+> **Superseded by [`docs/METHOD.md`](../../docs/METHOD.md)** in part: relief amplitude, single-material ground and upright rock cutouts (see METHOD ground + organic objects rows). Kept for history; not deleted.
+
 Kitchen only. Not a hang. Not a new play URL. Phone QC **2026-10-01**, Rocky Clearing.
 
 Invisible shape is the [2026-10-01 extension of law 59](59-invisible-depth-carrier.md#extension-2026-10-01-invisible-procedural-terrain-shape). Code computes the plane, the relief, the tile layout, collision, and placement. Every visible pixel is Imagine. The relief panorama, the far ring, and the hull command stay [doc 60](60-imagine-relief-panorama-method.md). This file is the walk that passed.

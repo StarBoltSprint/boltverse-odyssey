@@ -1,5 +1,7 @@
 # COLD START — open ground
 
+**READ [`docs/METHOD.md`](../../docs/METHOD.md) FIRST** — The Odyssey Method: the one approved way to build each element (owner decisions with dates).
+
 **Tool feedback (law 66):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take, write `feedback/<date>-<tool>.md`, and open it upstream. [`66-tool-feedback-loop.md`](66-tool-feedback-loop.md).
 
 The cook **order** (black → four skies → one ground tile → horizon → GPU Bolt and trees) is section B of [COLD_START-biome-method.md](COLD_START-biome-method.md). This file is the numbers. Read [43-open-ground.md](43-open-ground.md) before touching a forest, a plain of dirt, or any biome that is **not** a 3-lane road.

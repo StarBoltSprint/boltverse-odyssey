@@ -1,5 +1,7 @@
 # 43 — Open ground (four skies, one tile, horizon without strokes)
 
+> **Superseded by [`docs/METHOD.md`](../../docs/METHOD.md)** for open zones: ground = several Imagine materials on invisible relief (not one tiled dirt video); sky = closed slice ring + living layers. Kept for history; not deleted.
+
 **Sealed 2026-09-25 (SmiR).** The forest. Same rig as the lava plain. Not a lane.
 
 Paste: [`COLD_START-open-ground.md`](COLD_START-open-ground.md)
