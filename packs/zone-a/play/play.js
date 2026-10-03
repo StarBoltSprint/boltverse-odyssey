@@ -183,6 +183,7 @@ uniform float uRadius;
 uniform float uTime;
 uniform float uScroll;
 uniform float uMeteor;
+uniform vec2 uMetDuty;
 out vec2 vUv;
 flat out vec2 vTile;
 flat out vec4 vMet;
@@ -201,8 +202,8 @@ void main() {
   vMet = vec4(0.0);
   if (uMeteor > 0.5) {
     float ph = mod(uTime + aMeteor.w, aMeteor.z);
-    float on = 0.38 * aMeteor.z;
-    float env = smoothstep(0.0, 1.1, ph) * (1.0 - smoothstep(on - 1.1, on, ph));
+    float on = uMetDuty.x * aMeteor.z;
+    float env = smoothstep(0.0, uMetDuty.y, ph) * (1.0 - smoothstep(on - uMetDuty.y, on, ph));
     vUv = aCorner;
     vMet = vec4(aMeteor.xy, env, 1.0);
   }
@@ -211,6 +212,7 @@ precision highp float;
 uniform sampler2D uTex;
 uniform float uGain;
 uniform float uKey;
+uniform vec3 uMetWin;
 in vec2 vUv;
 flat in vec2 vTile;
 flat in vec4 vMet;
@@ -221,8 +223,8 @@ void main() {
   float key = smoothstep(uKey, uKey + 0.06, lum);
   if (vMet.w > 0.5) {
     // Soft elliptical alpha window held inside the frame: a streak fades in and out, it is never cut.
-    float d = length((vUv - vMet.xy) / vec2(0.34, 0.28));
-    key *= (1.0 - smoothstep(0.55, 1.0, d)) * vMet.z;
+    float d = length((vUv - vMet.xy) / uMetWin.xy);
+    key *= (1.0 - smoothstep(uMetWin.z, 1.0, d)) * vMet.z;
   }
   o = vec4(s * uGain * key, 1.0);
 }`);
@@ -377,6 +379,8 @@ const skyLayerLoc = {
   gain: gl.getUniformLocation(skyLayerProg, "uGain"),
   key: gl.getUniformLocation(skyLayerProg, "uKey"),
   meteor: gl.getUniformLocation(skyLayerProg, "uMeteor"),
+  metDuty: gl.getUniformLocation(skyLayerProg, "uMetDuty"),
+  metWin: gl.getUniformLocation(skyLayerProg, "uMetWin"),
 };
 const groundLoc = {
   vp: gl.getUniformLocation(groundProg, "uVP"),
@@ -585,9 +589,9 @@ let zenithSrc = 1024;
 const skyVideos = [null, null, null];
 const skyVideoTex = [null, null, null];
 const SKY_VIDEO_IDS = ["sky-stars", "sky-dust", "sky-nebula"];
-const SKY_GAIN = [0.1, 0.04, 1.25];
-// Meteor layer key 0.22: keeps the bright streaks of the loop, drops its faint cloud wisps.
-const SKY_KEY = [0.12, 0.08, 0.22];
+const SKY_GAIN = [0.1, 0.04, 1.5];
+// Meteor layer key 0.30 (keyed from the loop's own brightness): keeps the streaks, drops the cyan cloud wisps.
+const SKY_KEY = [0.12, 0.08, 0.30];
 const SKY_TILE_AZ_N = 17;
 const SKY_TILE_EL_N = 8;
 const SKY_TILE_AZ = 360 / SKY_TILE_AZ_N;
@@ -595,10 +599,19 @@ const SKY_TILE_EL = 11.25;
 let skyTileVao = null;
 let skyTileCount = 0;
 // Meteors (nebula slot): a few sparse tiles, not the full 17 x 8 grid, so streaks never line up in a rain grid.
-const METEOR_TILES = 16;
+// Chase view (pitch about +3 deg, vfov 48.1 deg) sees sky from the relief silhouette (about 8-10 deg up) to
+// about 27 deg up. Window centres sit in that band; tiles may hang below it, only the window is visible.
+const METEOR = {
+  tiles: 36, // scattered over every azimuth, windows never overlap
+  elLoDeg: 7, elHiDeg: 18, // window centre elevation band
+  win: [0.40, 0.16, 0.55], // window radii in frame UV (x, y) and flat core fraction
+  duty: 0.32, fadeSec: 0.8, // share of each tile's own period it is on, fade in/out
+  periodSec: [6, 11],
+};
 let meteorVao = null;
 let meteorCount = 0;
 const meteorInfo = [];
+let meteorShow = true; // debug hook only (QC A/B); always true in play
 let skyManifest = null;
 const skyBand = {
   h0: -1.5 * Math.PI / 180,
@@ -954,24 +967,27 @@ function buildSkyTiles() {
 }
 
 // Sparse, irregular meteor tiles. Same tile size as the full-dome layers (magnification unchanged), whole frame
-// per tile. Placement is a seeded jittered draw with no two tiles overlapping, between 13 and 58 degrees up.
+// per tile. Each tile carries an alpha window held inside the frame; the window centre (not the tile) is placed
+// by a seeded jittered draw in the chase-view sky band, and no two windows overlap.
 function buildMeteorTiles(cbuf, azSpan, elSpan) {
   let seed = 0x5eed1;
   const rnd = () => {
     seed = (seed * 1664525 + 1013904223) >>> 0;
     return seed / 4294967296;
   };
-  const elLo = 13 * Math.PI / 180 + elSpan * 0.5;
-  const elHi = 58 * Math.PI / 180 - elSpan * 0.5;
+  const d2r = Math.PI / 180;
+  const [rx, ry] = METEOR.win;
+  const sepAz = 2 * rx * azSpan;
+  const sepEl = 2 * ry * elSpan;
   const placed = [];
-  for (let tries = 0; placed.length < METEOR_TILES && tries < 4000; tries++) {
+  for (let tries = 0; placed.length < METEOR.tiles && tries < 20000; tries++) {
     const az = rnd() * Math.PI * 2;
-    const el = elLo + rnd() * (elHi - elLo);
+    const el = (METEOR.elLoDeg + rnd() * (METEOR.elHiDeg - METEOR.elLoDeg)) * d2r;
     let ok = true;
     for (const q of placed) {
       let da = Math.abs(az - q.az);
-      da = Math.min(da, Math.PI * 2 - da) * Math.cos(Math.min(el, q.el));
-      if (da < azSpan * 0.9 && Math.abs(el - q.el) < elSpan * 1.3) { ok = false; break; }
+      da = Math.min(da, Math.PI * 2 - da);
+      if (da < sepAz && Math.abs(el - q.el) < sepEl) { ok = false; break; }
     }
     if (ok) placed.push({ az, el });
   }
@@ -981,17 +997,19 @@ function buildMeteorTiles(cbuf, azSpan, elSpan) {
   let k = 0;
   for (let i = 0; i < meteorCount; i++) {
     const p = placed[i];
-    inst[k++] = p.az;
-    inst[k++] = p.el;
+    const cx = 0.42 + rnd() * 0.16;
+    const cy = 0.3 + rnd() * 0.4;
+    inst[k++] = p.az - (cx - 0.5) * azSpan;
+    inst[k++] = p.el - (cy - 0.5) * elSpan;
     inst[k++] = azSpan;
     inst[k++] = elSpan;
     inst[k++] = 0;
     inst[k++] = 0;
-    inst[k++] = 0.36 + rnd() * 0.28;
-    inst[k++] = 0.3 + rnd() * 0.4;
-    inst[k++] = 7.3 + rnd() * 6.4;
+    inst[k++] = cx;
+    inst[k++] = cy;
+    inst[k++] = METEOR.periodSec[0] + rnd() * (METEOR.periodSec[1] - METEOR.periodSec[0]);
     inst[k++] = rnd() * 40;
-    meteorInfo.push({ azDeg: p.az * 180 / Math.PI, elDeg: p.el * 180 / Math.PI, periodSec: inst[k - 2], offsetSec: inst[k - 1] });
+    meteorInfo.push({ azDeg: p.az / d2r, elDeg: p.el / d2r, periodSec: inst[k - 2], offsetSec: inst[k - 1] });
   }
   meteorVao = gl.createVertexArray();
   gl.bindVertexArray(meteorVao);
@@ -1643,8 +1661,11 @@ function drawSkyLayers(eye, yaw) {
     gl.uniform1f(skyLayerLoc.scroll, 1.0);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, skyVideoTex[i]);
+    if (i === 2 && meteorVao && !meteorShow) continue;
     if (i === 2 && meteorVao) {
       gl.uniform1f(skyLayerLoc.meteor, 1.0);
+      gl.uniform2f(skyLayerLoc.metDuty, METEOR.duty, METEOR.fadeSec);
+      gl.uniform3f(skyLayerLoc.metWin, METEOR.win[0], METEOR.win[1], METEOR.win[2]);
       gl.bindVertexArray(meteorVao);
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, meteorCount);
       gl.uniform1f(skyLayerLoc.meteor, 0.0);
@@ -2584,6 +2605,8 @@ async function boot() {
         return skyVideos.map((v) => (v ? { d: v.duration, t: v.currentTime, rs: v.readyState, paused: v.paused } : null));
       },
       meteorTiles() { return meteorInfo.map((m) => ({ ...m })); },
+      meteorsOn(on) { meteorShow = !!on; },
+      camInfo() { return { pitchDeg: camPitch * 180 / Math.PI, vfovDeg: VFOV * 180 / Math.PI, hfovDeg: HFOV * 180 / Math.PI }; },
       seekSky(i, t) {
         const v = skyVideos[i];
         if (!v || !Number.isFinite(t)) return false;
