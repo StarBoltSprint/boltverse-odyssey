@@ -2,7 +2,7 @@
 
 Kitchen only. Not a hang. Dated **2026-10-01**.
 
-**This repo holds no biome style.** Each player chooses the paint. This page is the documented Imagine / Build caps and how a cold session adapts. Nothing below is a look to copy.
+**This repo holds no biome palette and no Imagine prompt** (biome names are allowed, SmiR 2026-10-03). Each player chooses the paint. This page is the documented Imagine / Build caps and how a cold session adapts. Nothing below is a look to copy.
 
 Documented rows are from [docs.x.ai](https://docs.x.ai) as of that date. A row marked **reported** or **UNCERTAIN** is not law. Do not promote it.
 
@@ -57,17 +57,17 @@ Pinned first + last (the loop this repo cooks) is reference-to-video, so **720p*
 
 ## D — How this pipeline adapts
 
-**360 sky.** Several native Imagine slices side by side.
+**360 sky** (amended 2026-10-03 to match [`docs/METHOD.md`](../../docs/METHOD.md), rail 12 and the biome kits). **8 native Imagine slices**, each **60° HFOV**, stepped **45°** (25% overlap, `8 × 45 = 360`), level horizon 0.50, plus living seamless-looping Imagine layers.
 
 1. Generate slice 1 at the widest aspect (21:9 or 5:2).
 2. Measure the real width. Do not assume a pixel size from the 1k / 2k token.
-3. Slice count is the smallest integer whose total width is at least the width the play view needs for magnification **≤ 1.0** at that hfov.
+3. The slice count is fixed at **8**. Each slice's measured width must reach the width the play view needs for magnification **≤ 1.0** over its 60°:
 
-   `required_px = play_width / (hfov_deg / 360)`
+   `required_px = play_width / (hfov_deg / 360)` for the full ring, so each 60° slice needs `required_px × 60 / 360`.
 
-   Example: hfov **22.7°** on a **720 px** wide play view → `720 / (22.7 / 360) ≈ 11419`, so budget **~11500 px**.
+   Example: play hfov **22.7°** on a **720 px** wide view → ring `720 / (22.7 / 360) ≈ 11419 px`, so each 60° slice needs **≥ ~1903 px**. A narrower slice fails the magnification gate: recook it wider (21:9 / 5:2); do not add slices or stretch.
 4. Each next slice is an Imagine **edit** with the previous slice as the source.
-5. QC the joins with [`tools/assetcheck`](../../tools/assetcheck/README.md) (backdrop wrap, seam, magnification).
+5. QC the joins with [`tools/sky/check.py`](../../tools/sky/README.md) (clone / mirror, join MAE, luma swing, closed ring) and [`tools/assetcheck`](../../tools/assetcheck/README.md) (backdrop wrap, seam, magnification).
 
 **Living plates.** Prefer **1080p image-to-video** for ground and sky plates where sharpness matters (one image, no refs, no last frame, no keyframes). Accept **720p** when the cook needs an identity lock or a pinned first+last loop, and put that 720p size into the magnification budget.
 

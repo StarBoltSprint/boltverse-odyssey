@@ -1,5 +1,7 @@
 # 45 — Shader graph look kitchen
 
+> **SUPERSEDED 2026-10-03 by [`docs/METHOD.md`](../../docs/METHOD.md).** Shading look cards is retired with the cards of law 44: solids are **8-view Imagine objects**, living parts are **keyed Imagine video layers**, and the only computed passes are law 67 fog / grade / bloom. Do not cook from this law; kept for history.
+
 **Go 2026-09-26 (SmiR).** Kitchen only. Do not read this to the player.
 
 Law [44](44-imagine-volume-stack.md) poses the card and the capsule. This law shades that card. The graph does not spawn trees, pick LOD, or own the capsule. Nodes shade a card or a plate the CPU already posed.

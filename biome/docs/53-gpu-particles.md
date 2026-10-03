@@ -1,6 +1,6 @@
 # 53 — GPU particles
 
-> **Superseded by [`docs/METHOD.md`](../../docs/METHOD.md)** for open zones: living elements (stars, dust, vapor, glow) are keyed seamless Imagine video layers; law 67 bans code-drawn particles. Kept for history; not deleted.
+> **SUPERSEDED 2026-10-03 by [`docs/METHOD.md`](../../docs/METHOD.md).** GPU particles are replaced by **keyed seamless-looping Imagine video living layers** (stars, dust, vapor, sparks, glow); law 67 bans code-drawn particles. Do not cook from this law; kept for history.
 
 **Go 2026-09-26 (SmiR).** Kitchen only. Do not read this to the player.
 

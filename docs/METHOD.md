@@ -31,17 +31,18 @@ Status words: **APPROVED** = build it this way. **IN TEST** = candidate, pending
 | | **Anti-carpet:** relief silhouettes against the sky; raised lips at fissures/plates; small Imagine cutout ground details standing up; oblique/grazing Imagine textures where useful; fog for depth. | 2026-10-03 |
 | | **Magnification ≤ 1.0** on 720×1600, including slope stretch; watch tile repetition. Relief: up to 3 m over ≥ 20 m, walkable slope ≤ 15° (Director 2026-10-02); taller cliffs are objects, not relief. | 2026-10-01/02 |
 | **Ground (fixed paths between zones)** | May use the **speed-tied scrolling Imagine ground video** (`rate = boltSpeed / bakedGroundSpeed`, rate 0 + idle breath when stopped). | 2026-09-30 |
-| **Sky** | **Closed sky from Imagine slices** (e.g. 8 × 60° HFOV, 45° step; chained edits, never cloned/mirrored columns) **+ living seamless-looping Imagine video layers with different durations** (e.g. stars 13 s, dust 17 s, nebula 29 s). 360° ring = far backdrop, does not move with Bolt. **Fog colour sampled from the sky horizon band**, never typed. Gate: `python3 tools/sky/check.py`. | 2026-10-02 |
+| **Sky** | **Closed sky from Imagine slices** (8 × 60° HFOV, 45° step, rail 12 / kits; chained edits, never cloned/mirrored columns) **+ living seamless-looping Imagine video layers with different durations** (e.g. stars 13 s, dust 17 s, nebula 29 s). 360° ring = far backdrop, does not move with Bolt. **Fog colour sampled from the sky horizon band**, never typed. Gate: `python3 tools/sky/check.py`. | 2026-10-02 |
 | **Post** | Light distance fog, one light colour grade per biome, subtle capped bloom on bright Imagine pixels. Phone-cheap, zero quality loss, Bolt never glows. Nothing else computed. Law 67. | 2026-10-02 |
 | **Static solid decor** | Still Imagine image on an **invisible depth relief** (law 59 carrier). | 2026-09-29 |
 | **Living elements** (stars, dust, vapor, lights, glow) | **Keyed seamless-looping Imagine video layers** (first = last frame or ping-pong; never hard-restart). ≤ 4 decoding videos incl. Bolt. | 2026-09-29 |
 | **Organic objects** (rocks, trees) | **8-view Imagine silhouette carving** (8 views every 45°, one sharp V0 + silhouette lock) → `tools/objsheet` → `tools/walkaround/build.py`. Natural, irregular, sharp silhouettes; **never balls / blobs / capsules**. Placement by simplex/code = placement only, never drawing. | 2026-10-01/02 |
 | **Hard objects** (ships, gates, wrecks) | **Real 3D the player can walk around.** Flat angle-switching impostors are rejected as the main solution. | 2026-10-02 |
 | | **IN TEST — pending validation** (frigate test by SmiR 2026-10-03): shapes **measured from Imagine images** (side, top, cross-sections, plates); sections **lofted** into the hull; plates as **offset copies along computed normals** (normals for geometry only); holes kept; left/right read separately; generic part builder; **one unlit Imagine skin per part**; mid-grey readable skins. Measure images come from Imagine, never drawn by code. | 2026-10-03 |
-| **Zones / biomes** | **3 biomes:** A *The Howling Eclipse* (night violet, ship wreck, Eclipse Gate) · B *Ember Mesa* · C *Cascade Verdance*. Each a **large natural organic open zone** (≥ 5× the retired circle, irregular footprint, nooks, natural soft boundaries, **no circles / rings**), joined by **paths with a distance-based fog/grade blend**. Kits: [`biome/kits/`](../biome/kits/README.md). | 2026-10-02 |
+| **Zones / biomes** | **3 biomes:** A *The Howling Eclipse* (ship wreck, Eclipse Gate) · B *Ember Mesa* · C *Cascade Verdance*. Each a **large natural organic open zone** (≥ 5× the retired circle, irregular footprint, nooks, natural soft boundaries, **no circles / rings**), joined by **paths with a distance-based fog/grade blend**. Kits: [`biome/kits/`](../biome/kits/README.md). | 2026-10-02 |
 | | Ship = **lore / POI, not a vehicle**. Bolt sprints through space powered by the **Lightning Core**. | 2026-10-02 |
 | | **PARKED** narrative frame: each biome is a **Frontier Shard** woken by Bolt's permanent EMP wave (decrees #031, #063, #064). Lore never changes the visual laws. | 2026-10-02 |
 | **Bolt** | Keyed `lock/` gallop + idle breath, automatic IDLE/GALLOP switch, camera behind, one Bolt. `lock/` WARN = informational, never a recook. | 2026-09-20 → 2026-10-01 |
+| **Biome names in docs** | Biome **names** are allowed in tracked repo files (docs, commit messages, ids). **Palettes and Imagine prompt text stay out** (only in prompts and untracked `*.local.*` files). | 2026-10-03 |
 | **Phone** | Portrait 720×1600, full screen, controls as transparent overlay. Stills `LINEAR_MIPMAP_LINEAR` + mipmaps, video `LINEAR`, never `NEAREST`, DPR ≤ 2, perf only removes waste. | 2026-10-02 (law 65) |
 
 ## 2. Workflow — APPROVED
@@ -49,7 +50,7 @@ Status words: **APPROVED** = build it this way. **IN TEST** = candidate, pending
 1. Steps of **~1 h**. Each step = **one fresh Grok run** pointing at a **spec file** (goal, rails, done-when ≤ 8 rows).
 2. The prompt gives **goal + fixed rules**; Grok **chooses its own method** inside them.
 3. Every step ends with **screenshots + a 3-line report**; **owner QC on the phone**.
-4. Accept small Imagine-born defects. **Stop after 2 failed attempts** at the same defect; list it, move on.
+4. Accept small Imagine-born defects. **Stop after 2 failed attempts** at the same defect; list it, move on (everywhere: steps, attempts, tool-loop rounds).
 5. Tests pass + laws respected → **merge**. Then the retro: taste row, failure / recipe, take note
    ([self-improvement](METHOD/self-improvement.md)).
 
