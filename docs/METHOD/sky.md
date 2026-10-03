@@ -169,3 +169,12 @@ Step 2c:
 - The interior motif gate misses a soft gap whose two halves are different paintings (upper slice 6). Do not lower the threshold until the kept slices are re-measured.
 - The cap file's dark centre is part of the painting. Clamping the cap UV removes the edge smear. It does not repaint that centre. Do not upscale the cap.
 - Green gates are not a pass: sky check, selftest, npm test and playcheck all passed with these blockers visible.
+
+Step 2c, Director visual QC 2026-10-03 (blockers, not merged):
+
+- A keyed corona video tile placed above the painted eclipse reads as a second, large, dark sun. One sun per sky: put
+  the living corona on the painted eclipse, with the same position and size, or leave it out.
+- Low-gain additive layers are not "living": the same view changed by about 1.3/255 over 12 s. Measure a same-view frame
+  difference with the videos actually playing, and look at it on the phone at normal speed.
+- A frame-step capture that pauses the videos also stops texture uploads (`uploadVideo` skips paused videos). Keep
+  `paused` false while stepping `currentTime`, or the motion proof shows nothing.
