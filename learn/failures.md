@@ -232,6 +232,49 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Guard | `tools/mesh3d/out/qc/report.json` fields `coverageMin`, `coverageMean`, and `triposr.alignIoU`. `python3 tools/mesh3d/selftest.py` checks the synthetic box, the blend, and magnification ≤ 1. Nothing fails the ship build for a low align IoU or for holes. |
 | Sources | `learn/take-notes/2026-10-02-ship-real3d.md`. Frames `tools/mesh3d/out/frames/yaw-090.png`. |
 
+### 2026-10-03 — a wide camera still reads the ground tile period
+
+| | |
+| --- | --- |
+| Take | Zone A step 1. Ground and relief. |
+| Defect | From a high or far camera the 1.45 m still repeats. Family changes follow a height test, so a lip can show a hard contour. |
+| Root cause | Eight stills cannot cover 6500 m2 without a period. A code blend mask is not allowed, and no transition still was cooked. |
+| Fix | Left as a known issue. The tile was not enlarged again: walk ground mag was already 0.912. |
+| Guard | No row fails a wide view for period. The phone mag check only caps magnification. |
+| Sources | `packs/zone-a/proof/step1/01-overview.png`, `02-wide.png`. |
+
+### 2026-10-03 — page.screenshot hangs on the play canvas
+
+| | |
+| --- | --- |
+| Take | Zone A step 1. Proof capture. |
+| Defect | `page.screenshot` timed out at 30 s and at 60 s after fonts loaded. The canvas itself was fine. |
+| Root cause | On this host the SwiftShader compositor does not finish a screenshot of the WebGL canvas. |
+| Fix | Proof PNGs came from `canvas.toDataURL` (`preserveDrawingBuffer` is on). |
+| Guard | No playcheck row. Filed `feedback/2026-10-03-playcheck.md`. |
+| Sources | `packs/zone-a/proof/step1/02-wide.png`. |
+
+### 2026-10-03 — one ground edit returned HTTP 429
+
+| | |
+| --- | --- |
+| Take | Zone A step 1. Eighth ground slot. |
+| Defect | Materials 6 and 7 are the same bytes. The second slot is not a new still. |
+| Root cause | The edit of session `2.jpg` failed with HTTP 429 resource-exhausted. It was not retried. |
+| Fix | Copied the saved still into both slots. Stopped. One failed attempt, not two. |
+| Guard | No row compares the eight slot hashes. |
+| Sources | `packs/zone-a/src/ground/m6.png` and `m7.png` share one sha256. |
+
+### 2026-10-03 — depth prep treated the mask name as a tile
+
+| | |
+| --- | --- |
+| Take | Zone A step 1. `packs/zone-a/src/terrain/prep.py`. |
+| Defect | A run wrote `hask.png` beside the depth maps. |
+| Root cause | `mask.png` starts with `m`, and the depth branch used `startswith("m")` plus a replace of the first `m`. |
+| Fix | Depth runs only when the second character is a digit (`m0.png`). `hask.png` is not in the tree. |
+| Guard | No test calls `prep.py`. The branch is the guard. |
+| Sources | `packs/zone-a/src/terrain/prep.py`. |
 ### 2026-10-03 — walkaround and mesh3d still sampled nearest, and auto called TripoSR
 
 | | |

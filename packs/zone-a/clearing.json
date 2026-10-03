@@ -1,0 +1,64 @@
+{
+  "schema": "clearing/1",
+  "seed": 1,
+  "spawn": {
+    "position": [-6, -14],
+    "heading_deg": 32
+  },
+  "view": {
+    "width": 720,
+    "height": 1600,
+    "mag_max": 1.0
+  },
+  "bolt": {
+    "gallop": "lock/bolt-gallop-cycle.mp4",
+    "idle": "lock/bolt-idle-breath.mp4"
+  },
+  "backdrop": {
+    "ring": "packs/zone-a/src/sky",
+    "slices": [
+      "packs/zone-a/src/sky/sky-0.png",
+      "packs/zone-a/src/sky/sky-1.png",
+      "packs/zone-a/src/sky/sky-2.png",
+      "packs/zone-a/src/sky/sky-3.png",
+      "packs/zone-a/src/sky/sky-4.png",
+      "packs/zone-a/src/sky/sky-5.png",
+      "packs/zone-a/src/sky/sky-6.png"
+    ],
+    "sourceH": 1008,
+    "sourceW": 12544
+  },
+  "zone": {
+    "shape": "relief",
+    "center": [0, 0],
+    "ground": {
+      "tile_m": 1.45,
+      "tiles": [
+        "packs/zone-a/src/ground/m0.png",
+        "packs/zone-a/src/ground/m1.png",
+        "packs/zone-a/src/ground/m2.png",
+        "packs/zone-a/src/ground/m3.png",
+        "packs/zone-a/src/ground/m4.png",
+        "packs/zone-a/src/ground/m5.png",
+        "packs/zone-a/src/ground/m6.png",
+        "packs/zone-a/src/ground/m7.png"
+      ],
+      "depth": [
+        "packs/zone-a/src/ground/h0.png",
+        "packs/zone-a/src/ground/h1.png",
+        "packs/zone-a/src/ground/h2.png",
+        "packs/zone-a/src/ground/h3.png",
+        "packs/zone-a/src/ground/h4.png",
+        "packs/zone-a/src/ground/h5.png",
+        "packs/zone-a/src/ground/h6.png",
+        "packs/zone-a/src/ground/h7.png"
+      ],
+      "mask": "packs/zone-a/src/ground/mask.png",
+      "details": [
+        "packs/zone-a/src/detail/c0.png",
+        "packs/zone-a/src/detail/c1.png",
+        "packs/zone-a/src/detail/c2.png"
+      ]
+    }
+  }
+}
