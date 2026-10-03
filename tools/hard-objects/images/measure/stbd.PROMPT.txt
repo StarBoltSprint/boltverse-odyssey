@@ -1,0 +1,13 @@
+STATUS
+The verbatim Imagine tool-call string that produced this JPEG was not stored.
+The file's EXIF is JFIF only (no prompt, no comment). No session log kept the call.
+This JPEG is the locked ruler for the starboard elevation. Do not regenerate it.
+
+ROLE measure only. NOT the hull skin.
+PIXELS 2400x528. ASPECT 50:11.
+JOB Starboard elevation ruler. Left = stern, right = bow. The bridge tower is on this side. Painted stern nozzles stay here. The skin is still the same bytes until a repair removes the nozzles without moving the silhouette.
+
+ASK (colour-free template; tone wording stays in the untracked local prompts file)
+Imagine, aspect 50:11. Orthographic, no perspective, no camera tilt, no ground, no stars, no other ship, no text, no border, no watermark. Plain empty background the reader can segment.
+<TONE + ACCENTS from the local file>.
+Subject: the JOB above, nothing else.

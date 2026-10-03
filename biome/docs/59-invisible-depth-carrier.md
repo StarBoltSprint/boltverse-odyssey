@@ -1,6 +1,6 @@
 # Law 59 — INVISIBLE DEPTH CARRIER exception
 
-> **Amended 2026-10-03 to match [`docs/METHOD.md`](../../docs/METHOD.md)** (newer owner decisions win): relief height, rocks and approach zoom below. Hard-object (lofted hull) amendment waits for the frigate validation.
+> **Amended 2026-10-03 to match [`docs/METHOD.md`](../../docs/METHOD.md)** (newer owner decisions win): relief height, rocks and approach zoom below. Hard-object (lofted hull) amendment 2026-10-03 21:36 at the end of this page (frigate validated by SmiR on the phone).
 
 **HARD / EXCEPTION ONLY — owner-approved 2026-09-29.** This is the sole approved exception to the no-mesh law. It is an invisible carrier for Imagine pixels, not a new renderer or world.
 
@@ -23,7 +23,7 @@
 
 ## NOT LICENSED
 
-- This is not permission for Three.js / procedural / mesh worlds, terrain generators, or modeled objects. Simplex stays placement only.
+- This is not permission for Three.js / procedural / mesh worlds, terrain generators, or modeled objects. Simplex stays placement only. The lofted measured-section hulls of the 2026-10-03 amendment below are the only hard-object carrier.
 
 ## FAIL
 
@@ -75,3 +75,11 @@ Step-by-step numbers (plate frame 12, depth, 138° outpaint, Bolt key, controls)
 ### Why
 
 - **Rocky Clearing walk test 2026-10-01, attempt 1, FAILED:** a single ring / relief still upscales after **~4 cm** of camera travel, so the ground froze (the HUD distance changed, the image did not). Freezing that still to the camera left magnification **0.406** on the HUD against a claimed **0.990**. Walkable ground therefore uses top-down tiles; the ring is backdrop only. Recorded in [doc 60](60-imagine-relief-panorama-method.md#walkable-ground-2026-10-01). **Take 3 KEEP** (phone QC, HUD and phone both **0.979**) and the idle-breath KEEP are [doc 61](61-free-clearing-walk.md). The clearing edge in that doc is still **IN PROGRESS**.
+
+## Amendment 2026-10-03: lofted measured-section hulls
+
+**Owner SmiR validated the frigate on the phone 2026-10-03 21:36 (Paris), after PR #161.** Recipe: [`docs/METHOD/hard-objects.md`](../../docs/METHOD/hard-objects.md).
+
+- **ALLOWED:** hard objects (ships, gates, wrecks) may use an invisible hull **lofted from cross-sections measured on Imagine images** (side, top, sections). Volume parts are measured once on the Imagine image where they are painted and built once. This is an approved invisible carrier, like the depth relief and walk-around hulls above.
+- **REQUIRED:** every visible pixel stays **unlit Imagine** (one Imagine skin per part, no lighting, shading, tint or procedural detail from code). Magnification ≤ 1.0 (law 65). No offset shell, no other hull generator, no TripoSR-style mesh.
+- **Bolt lock** still applies. This is not permission for mesh worlds.

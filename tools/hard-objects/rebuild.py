@@ -265,26 +265,71 @@ def main():
         "port.jpg", "stbd.jpg", "top.jpg", "belly.jpg", "stern.jpg",
         "sec-stern.jpg", "sec-shoulder.jpg", "sec-mid.jpg", "sec-bow.jpg",
         "nacelle.jpg", "nacelle-front.jpg", "turret.jpg", "turret-front.jpg",
-        "bridge.jpg", "bridge-front.jpg", "pylon.jpg", "hangar.jpg",
+        "bridge.jpg", "bridge-front.jpg", "pylon.jpg", "hangar.jpg", "backdrop.jpg",
         "port-detail-aft.jpg", "port-detail-mid.jpg", "port-detail-bow.jpg",
+        "measure/top.jpg", "measure/belly.jpg", "measure/stern.jpg",
+        "measure/port.jpg", "measure/stbd.jpg", "bell.jpg", "bell-front.jpg",
     ]
     missing = [n for n in need if not (IMG / n).is_file() or not (IMG / (n.replace(".jpg", ".PROMPT.txt"))).is_file()]
     if missing:
         print("missing", missing, file=sys.stderr)
         return 1
 
-    pw, ph, plum, _ = load("port.jpg")
+    pw, ph, plum, praw = load("port.jpg")
+    mpw, mph, mplum, _ = load("measure/port.jpg")
     tw, th, tlum, _ = load("top.jpg")
+    mw, mh, mlum, _ = load("measure/top.jpg")
     sw, sh, slum, _ = load("stbd.jpg")
-    bw, bh, blum, braw = load("stern.jpg")
+    bw, bh, blum, braw = load("measure/stern.jpg")
+    skin_bw, skin_bh, _, skin_braw = load("stern.jpg")
     sections = [load(n) for n in ("sec-stern.jpg", "sec-shoulder.jpg", "sec-mid.jpg", "sec-bow.jpg")]
 
     port_m, _ = largest_mask(mask_of(plum, 16), pw, ph)
+    measure_port_m, _ = largest_mask(mask_of(mplum, 16), mpw, mph)
     top_m, _ = largest_mask(mask_of(tlum, 16), tw, th)
+    measure_m, _ = largest_mask(mask_of(mlum, 16), mw, mh)
     px0, py0, px1, py1 = content_box(port_m, pw, ph)
+    mpx0, mpy0, mpx1, mpy1 = content_box(measure_port_m, mpw, mph)
     tx0, ty0, tx1, ty1 = content_box(top_m, tw, th)
+    mx0, my0, mx1, my1 = content_box(measure_m, mw, mh)
+    # Plan lock is the hull, not the five painted engine mouths. Those mouths
+    # are the gapped columns at the stern tip. The hull starts at the first
+    # run of solid columns.
+    def col_gaps(mask, ww, hh, x):
+        if x < 0 or x >= ww:
+            return 999
+        n = 0
+        top = bot = -1
+        for y in range(hh):
+            if not mask[y * ww + x]:
+                continue
+            if top < 0:
+                top = y
+            bot = y
+            n += 1
+        if n < 80:
+            return 999
+        return (bot - top + 1) - n
+
+    stern_x = mx0
+    last = min(mx1 - 12, mx0 + 400)
+    for x in range(mx0, last):
+        if all(col_gaps(measure_m, mw, mh, x + k) <= 1 for k in range(12)):
+            stern_x = x
+            break
+    hy0, hy1 = mh, 0
+    for y in range(mh):
+        row = y * mw
+        if any(measure_m[row + x] for x in range(stern_x, mx1)):
+            if y < hy0:
+                hy0 = y
+            hy1 = y
+    mx0 = stern_x
+    if hy1 > hy0:
+        my0, my1 = hy0, hy1
     port_scale = LEN / max(8, px1 - px0)
     top_scale = LEN / max(8, tx1 - tx0)
+    measure_scale = LEN / max(8, mx1 - mx0)
 
     hull_top = [0.0] * NU
     hull_bot = [0.0] * NU
@@ -341,27 +386,30 @@ def main():
     mids = []
     for i in range(int(NU * 0.72), int(NU * 0.94)):
         u = i / (NU - 1)
-        col = column(top_m, tw, th, tx0 + u * (tx1 - tx0))
+        col = column(measure_m, mw, mh, mx0 + u * (mx1 - mx0))
         if col:
             mids.append((col[0] + col[1]) * 0.5)
     mids.sort()
-    center = mids[len(mids) // 2] if mids else (ty0 + ty1) / 2
+    center = mids[len(mids) // 2] if mids else (my0 + my1) / 2
     beam_port = [4.0] * NU
     beam_stbd = [4.0] * NU
     for i in range(NU):
         u = i / (NU - 1)
-        col = column(top_m, tw, th, tx0 + u * (tx1 - tx0))
+        col = column(measure_m, mw, mh, mx0 + u * (mx1 - mx0))
         if not col:
             if i:
                 beam_port[i] = beam_port[i - 1]
                 beam_stbd[i] = beam_stbd[i - 1]
             continue
-        beam_stbd[i] = max(0.8, (center - col[0]) * top_scale)
-        beam_port[i] = max(0.8, (col[1] - center) * top_scale)
+        beam_stbd[i] = max(0.8, (center - col[0]) * measure_scale)
+        beam_port[i] = max(0.8, (col[1] - center) * measure_scale)
     smooth_keep(hull_top)
     smooth_keep(hull_bot)
     smooth_keep(beam_port)
     smooth_keep(beam_stbd)
+    if hull_top[0] - hull_bot[0] < (hull_top[1] - hull_bot[1]) * 0.45:
+        hull_top[0] = hull_top[1]
+        hull_bot[0] = hull_bot[1]
 
     shapes = [rays_of(w, h, lum) for w, h, lum, _raw in sections]
     verts = []
@@ -400,28 +448,55 @@ def main():
             bm[i] = 1
     bells = blobs(bm, bw, bh, 80)[:4]
 
-    top_parts = blobs(mask_of(tlum, 16), tw, th, 800)[1:]
+    top_parts = blobs(mask_of(mlum, 16), mw, mh, 800)[1:]
     nacelles = []
+    mmids = []
+    for i in range(int(NU * 0.72), int(NU * 0.94)):
+        u = i / (NU - 1)
+        col = column(measure_m, mw, mh, mx0 + u * (mx1 - mx0))
+        if col:
+            mmids.append((col[0] + col[1]) * 0.5)
+    mmids.sort()
+    measure_center = mmids[len(mmids) // 2] if mmids else (my0 + my1) / 2
     for b in top_parts:
-        u = (b["cx"] - tx0) / max(1, tx1 - tx0)
-        i = max(0, min(NU - 1, int(round(u * (NU - 1)))))
+        u = (b["cx"] - mx0) / max(1, mx1 - mx0)
         nacelles.append(
             {
                 "u": round(u, 4),
                 "x": round((u - 0.5) * LEN, 2),
-                "z": round((b["cy"] - center) * top_scale, 2),
-                "length": round(max(6, (b["x1"] - b["x0"]) * top_scale), 2),
+                "z": round((b["cy"] - measure_center) * measure_scale, 2),
+                "length": round(max(6, (b["x1"] - b["x0"]) * measure_scale), 2),
             }
         )
 
+    skin_bm = [0] * (skin_bw * skin_bh)
+    for i in range(skin_bw * skin_bh):
+        r, g, b = skin_braw[i * 3 : i * 3 + 3]
+        if b > 80 and b > r + 18 and b > g:
+            skin_bm[i] = 1
+    skin_bells = blobs(skin_bm, skin_bw, skin_bh, 80)
+    skin_nacelles = blobs(mask_of(tlum, 16), tw, th, 800)[1:]
+
+    port_bm = [0] * (pw * ph)
+    for i in range(pw * ph):
+        r, g, b = praw[i * 3 : i * 3 + 3]
+        if b > 140 and b > r + 40 and b > g + 20:
+            port_bm[i] = 1
+    port_nozzles = blobs(port_bm, pw, ph, 40)
+
     report = {
         "images": len(need),
-        "portBox": [px0, py0, px1, py1],
-        "topBox": [tx0, ty0, tx1, ty1],
-        "topScale": round(top_scale, 4),
+        "portBox": [mpx0, mpy0, mpx1, mpy1],
+        "skinPortBox": [px0, py0, px1, py1],
+        "topBox": [mx0, my0, mx1, my1],
+        "skinTopBox": [tx0, ty0, tx1, ty1],
+        "topScale": round(measure_scale, 4),
         "texelsPerUnit": round((px1 - px0) / LEN, 2),
         "hole": [round(hole_u0, 3), round(hole_u1, 3), round(hole_s0, 3), round(hole_s1, 3), hole_n],
         "bells": len(bells),
+        "skinBells": len(skin_bells),
+        "skinNacelles": len(skin_nacelles),
+        "portNozzles": len(port_nozzles),
         "nacelles": nacelles,
         "verts": len(verts),
         "faces": len(faces),
@@ -437,16 +512,22 @@ def main():
     (OUT / "frigate.obj").write_text("\n".join(lines) + "\n")
 
     problems = []
-    if not (70 <= px0 <= 90 and px1 > 2200 and py1 - py0 > 200):
+    if not (70 <= mpx0 <= 90 and mpx1 > 2200 and mpy1 - mpy0 > 200):
         problems.append(f"port box {report['portBox']}")
-    if not (70 <= tx0 <= 90 and ty0 > 100 and tx1 > 2200):
-        problems.append(f"top box {report['topBox']} (nacelle seed would put y0 near 49)")
-    if not (0.09 < top_scale < 0.11):
-        problems.append(f"topScale {top_scale}")
+    if len(port_nozzles) != 0:
+        problems.append(f"port skin still paints nozzles {len(port_nozzles)}")
+    if not (130 <= mx0 <= 160 and my0 > 100 and mx1 > 2200):
+        problems.append(f"top box {report['topBox']} (hull stern, not the engine mouths)")
+    if not (0.09 < measure_scale < 0.11):
+        problems.append(f"topScale {measure_scale}")
     if hole_n < 10 or not (0.25 < hole_u0 < 0.36 and 0.44 < hole_u1 < 0.55):
         problems.append(f"hole {report['hole']}")
     if len(bells) != 4:
         problems.append(f"bells {len(bells)}")
+    if len(skin_bells) != 0:
+        problems.append(f"skin still paints bells {len(skin_bells)}")
+    if len(skin_nacelles) != 0:
+        problems.append(f"skin still paints nacelles {len(skin_nacelles)}")
     if len(nacelles) != 2:
         problems.append(f"nacelles {len(nacelles)}")
     else:
