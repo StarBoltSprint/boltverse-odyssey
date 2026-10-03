@@ -11,9 +11,8 @@ and you keep this file beside it until the rebuild gate passes on the new bytes.
 ROLE part skin for the nacelle pylon (side and cap both use this file).
 Loaded by frigate.ts as /biome/frigate/pylon.jpg for both the side map and the cap map.
 PIXELS 1152x1728. ASPECT 2:3.
-JOB One strut, long axis vertical in the picture. The code builds it at length 1, then scales it to the gap
-and rotates it 90 degrees about X so the long axis spans port-starboard.
-A giant slab means the measured gap was wrong (see the nacelle-seed bug), not that this picture is the hull.
+JOB One strut, long axis vertical in the picture. The mesh keeps this plate's aspect.
+The long axis spans the gap. The strut is not widened past the plate.
 
 ASK (colour-free template; the tone, palette and subject wording are untracked, see
 /workspace/grokcli/next/METHOD/hard-objects-prompts.local.md, section pylon)
