@@ -8,6 +8,7 @@ No new colour is invented. Style words stay out of this file.
 from __future__ import annotations
 
 import math
+import os
 from pathlib import Path
 
 import numpy as np
@@ -16,12 +17,15 @@ from PIL import Image
 
 MEAN = np.array([0.485, 0.456, 0.406], np.float32)
 STD = np.array([0.229, 0.224, 0.225], np.float32)
-MODEL = Path("/workspace/grokcli/models/depth_anything_v2_small.onnx")
-ROOT = Path("/workspace/grokcli/zoneA")
-SRC = Path(
+MODEL = Path(os.environ.get("DEPTH_MODEL", "/workspace/grokcli/models/depth_anything_v2_small.onnx"))
+# Repo root of the checkout this file lives in (packs/zone-a/src/terrain/prep.py).
+ROOT = Path(__file__).resolve().parents[4]
+# Imagine session stills. A copy of the zone A set is in /workspace/grokcli/out/zoneA-step1/stills/.
+SRC = Path(os.environ.get(
+    "GROUND_SRC",
     "/workspace/x-live/chrome-game-home/.grok/sessions/"
-    "%2Fworkspace%2Fgrokcli%2FzoneA/01a100b7-a59d-7b11-b4e7-6871c562bf09/images"
-)
+    "%2Fworkspace%2Fgrokcli%2FzoneA/01a100b7-a59d-7b11-b4e7-6871c562bf09/images",
+))
 GROUND = ROOT / "packs/zone-a/src/ground"
 DETAIL = ROOT / "packs/zone-a/src/detail"
 

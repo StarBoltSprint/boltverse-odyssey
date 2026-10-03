@@ -30,6 +30,7 @@ a change is a new row that cites the old one. Times are Paris.
 | 2026-10-03 | This sheet (`docs/METHOD.md`) is the single entry point; every new approved method is added here in the same PR. | APPROVED | PR #152 |
 | 2026-10-03 10:00 | Biome **names** allowed in tracked repo files; palettes and Imagine prompts stay out (resolves contradiction 1; hard law rail 6 amended in repo docs 62 / 64 and local `hard-laws.inc`, spec rail 6, tool-loop rule 6). | APPROVED | SmiR 2026-10-03 |
 | 2026-10-03 | Newer always wins: older laws/docs amended to METHOD.md (contradictions 2–6, 9–11); stop rule = 2 everywhere; sky = 8 × 60° slices; GPU tint only as the law 67 light grade. | APPROVED | follow-up docs PR |
+| 2026-10-03 11:45 | Ground recipe written down: `docs/METHOD/ground.md` (generic, kit-driven; volume under the plates mandatory; templates T1–T4; zone A filled example; B/C material ideas; exact prompts in the local file). Owner approved the zone A step 1 ground look; relief fixes pending (7.66 m / 33° accepted for now, target ≤ 3 m per ≥ 20 m and ≤ 15°). One-command tool: issue #157. | APPROVED (look) — relief fixes pending | SmiR 2026-10-03, PR #156 |
 
 ## Contradictions found (2026-10-03 sweep)
 
