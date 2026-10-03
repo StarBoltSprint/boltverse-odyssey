@@ -1,6 +1,6 @@
 # Zone A step 2 — living sky
 
-Verdict: PASS
+Verdict: PASS (Grok self-check). Director QC 2026-10-03: FAIL — see `docs/METHOD/sky.md` §4; not merged.
 
 Closed 360° night sky: 8 Imagine slices (1436×976, chain 11488×976) and a 1024×1024 zenith still, on a dome that follows the eye, plus three seamless Imagine video layers (stars 13.0 s, dust 16.708 s, nebula 28.95 s). Fog colour is `sampleHorizon` on the new slices (measured 0.255, 0.269, 0.375). Ground relief was left as it was.
 

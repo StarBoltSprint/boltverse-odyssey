@@ -5,7 +5,7 @@ open-zone game. The citadel boot / Welcome laws in [`AGENTS.md`](../AGENTS.md) a
 Hard laws that stay in force beside it: the Bolt lock, law 65 ([render quality](../biome/docs/65-render-quality.md),
 zero quality loss) and law 67 ([post-pass exception](../biome/docs/67-imagine-post-pass.md)).
 
-Subpages: [**ground recipe**](METHOD/ground.md) · [tools](METHOD/tools.md) · [self-improvement loops](METHOD/self-improvement.md) ·
+Subpages: [**ground recipe**](METHOD/ground.md) · [sky recipe (IN TEST)](METHOD/sky.md) · [tools](METHOD/tools.md) · [self-improvement loops](METHOD/self-improvement.md) ·
 [rejected approaches](METHOD/rejected.md) · [decisions log + contradictions](METHOD/decisions-log.md).
 Taste log (owner reactions): [`learn/taste.md`](../learn/taste.md). Failures already paid for: [`learn/failures.md`](../learn/failures.md).
 
