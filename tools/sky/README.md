@@ -19,13 +19,13 @@ At least two stills. The chain must close: the last slice joins the first.
 | Mirror | The trailing run matches the flip of the previous run, or the flip of the left edge, and the picture is not symmetric as a whole. |
 | Join | Content-strip MAE between neighbours is above **4**. The strip sits inside any cloned run. |
 | Close | The same join from last to first is above **4**. |
-| Swing | Column luma moves by more than **6** inside any **60°** window of the chain, including the wrap, or inside one slice. |
+| Swing | Slice-median exposure jumps by more than **24** between neighbours or across the whole chain. A rich nebula is allowed to be contrasty inside one slice. The raw column-luma range is printed as `columnSwing` and does not fail the gate (a window of 6 passed the flat step-2 collage and rejected the nebula the owner asked for). |
 
 The report names the cheapest recook: both ends of a bad join are blamed, a clone or a mirror weighs more, and a tie goes to the later slice. A chain that only fails the close recooks the last slice.
 
 ## Living layers
 
-A still slice is the first frame of an Imagine video. Each layer is one seamless loop for the whole yaw, not one video per slice. The page keeps one decoder per layer and samples it at a per-slice start offset.
+A still slice is the painted sky. Each living layer is one seamless Imagine loop, decoded once. The play page tiles that frame at magnification ≤ 1 (one instanced draw per layer). It does not stretch one frame over the whole yaw. The manifest `display.videoTiles` block is the proof: a missing block, or a tile whose azimuth is 360°, fails. The 48 MiB cap counts those layer textures (`texBytes`), not the slice arrays. The play perf line reports total GPU textures.
 
 | Layer | Duration |
 | --- | --- |
@@ -39,7 +39,13 @@ Adjacent slice offsets must differ by at least **0.75 s**, including the wrap fr
 
 Motion stays slow. Frame-to-frame gray MAE above **8** fails. A distinctive bright speck that comes back on a fixed period under **60 s** fails (a flash, a shooting star baked into the loop). An always-on star field is the texture and passes. A rare event, if one is wanted, is a separate one-shot Imagine clip with a random gap of at least **30 s** (`minGapSec` / `maxGapSec`), not a short loop.
 
-Phone caps, with Bolt keeping one decoder of the game's four: at most **3** sky videos (layers, plus one decoder if any one-shot is playing) and **48 MiB** of sky textures.
+Phone caps, with Bolt keeping one decoder of the game's four: at most **3** sky videos (layers, plus one decoder if any one-shot is playing) and **48 MiB** of sky-layer textures.
+
+## Magnification
+
+The same command rejects an interior motif: a window that repeats elsewhere in the slice, a left/right mirror, a copied half, or a hard seam in the middle of the frame. Neighbour interiors that match each other also fail. A soft join of two different paintings can still pass; look at the file. `python3 tools/sky/selftest.py` includes that row.
+
+`display` on `sky.json` names every band, the cap, and each video tile: azimuth span, elevation span, and (for the cap) the elevation where it starts. The gate measures source width and height from the files and fails when screen pixels per source pixel exceed **1.0** on the 720×1600 play view. A video tile of 848×480 mapped over 360° fails. A tile of about 21° by 11° passes. Stills and the cap are in the same check. `tools/playcheck` fails `mag_max` when the live snapshot reports any of those sources above 1.
 
 `tools/assetcheck` kind `sky-loop` runs the loop seam (MAE, p95, flow, pop) and the same amplitude, repetition, and byte rows on one file. The set-level period, offsets, and cheapest recook stay in this command.
 

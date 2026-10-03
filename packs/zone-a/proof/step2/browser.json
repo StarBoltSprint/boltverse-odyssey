@@ -1,0 +1,59 @@
+{
+  "crest": {
+    "h": 5.404389209559073,
+    "x": 20,
+    "z": 33
+  },
+  "rim": {
+    "h": 4.834551484582157,
+    "x": 32.46456863980368,
+    "z": 46.36420899267819
+  },
+  "snap": {
+    "mag": 0.9939504006479085,
+    "magSources": {
+      "presented": 0.9939504006479085,
+      "ground": 0.8637603090648033,
+      "backdrop": 0.9939504006479085
+    },
+    "perf": {
+      "fpsAvg": 322.5806426803478,
+      "fps1Low": 322.5806426803478,
+      "frameMs": 3.299999952316284,
+      "frameMsAvg": 3.100000023841858,
+      "samples": 2,
+      "heapBytes": null,
+      "textureBytes": 150002349,
+      "videoDecoders": 4,
+      "drawCalls": 4,
+      "workMs": 3.2999999970197678,
+      "jsMs": 3.2999999970197678
+    },
+    "backdrop": {
+      "sourceW": 11488,
+      "sourceH": 976,
+      "screenW": 720,
+      "screenH": 905,
+      "fovDeg": 22.7
+    }
+  },
+  "after": {
+    "mag": 0.9939504006479085,
+    "perf": {
+      "fpsAvg": 365.448506503093,
+      "fps1Low": 365.448506503093,
+      "frameMs": 2.9000000953674316,
+      "frameMsAvg": 2.736363624984568,
+      "samples": 11,
+      "heapBytes": null,
+      "textureBytes": 150002349,
+      "videoDecoders": 4,
+      "drawCalls": 4,
+      "workMs": 2.899999998509884,
+      "jsMs": 2.899999998509884
+    },
+    "hud": "x -6.00  z -14.00  hdg 180.0\nmag 0.994  bolt IDLE\ngate -135.0°  1414227.70 m\nPerf: drawCalls=4, texMB=143.1, activeVideos=4, jsMs=2.90",
+    "errors": []
+  },
+  "errors": []
+}

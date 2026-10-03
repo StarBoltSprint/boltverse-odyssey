@@ -1,0 +1,109 @@
+{
+  "slices": [
+    "sky-0.jpg",
+    "sky-1.jpg",
+    "sky-2.jpg",
+    "sky-3.jpg",
+    "sky-4.jpg",
+    "sky-5.jpg",
+    "sky-6.jpg",
+    "sky-7.jpg",
+    "sky-8.jpg",
+    "sky-9.jpg",
+    "sky-10.jpg",
+    "sky-11.jpg",
+    "sky-12.jpg"
+  ],
+  "offsetsSec": [
+    0,
+    0.8,
+    1.6,
+    2.4,
+    3.2,
+    4.0,
+    4.8,
+    5.6,
+    6.4,
+    7.2,
+    8.0,
+    8.8,
+    9.6
+  ],
+  "display": {
+    "bands": [
+      {
+        "id": "horizon",
+        "files": "slices",
+        "azimuthDeg": 27.692307692,
+        "elBottomDeg": -1.5,
+        "elTopDeg": 23
+      },
+      {
+        "id": "upper",
+        "files": [
+          "upper/sky-0.jpg",
+          "upper/sky-1.jpg",
+          "upper/sky-2.jpg",
+          "upper/sky-3.jpg",
+          "upper/sky-4.jpg",
+          "upper/sky-5.jpg",
+          "upper/sky-6.jpg",
+          "upper/sky-7.jpg",
+          "upper/sky-8.jpg",
+          "upper/sky-9.jpg",
+          "upper/sky-10.jpg",
+          "upper/sky-11.jpg",
+          "upper/sky-12.jpg"
+        ],
+        "azimuthDeg": 27.692307692,
+        "elBottomDeg": 19,
+        "elTopDeg": 56
+      },
+      {
+        "id": "high",
+        "files": [
+          "high/sky-0.jpg",
+          "high/sky-1.jpg",
+          "high/sky-2.jpg",
+          "high/sky-3.jpg",
+          "high/sky-4.jpg",
+          "high/sky-5.jpg",
+          "high/sky-6.jpg",
+          "high/sky-7.jpg"
+        ],
+        "azimuthDeg": 45,
+        "elBottomDeg": 52,
+        "elTopDeg": 77.5
+      }
+    ],
+    "cap": {
+      "file": "../sky-cap/zenith.png",
+      "elStartDeg": 74.6
+    },
+    "videoTiles": [
+      {"id": "stars", "azimuthDeg": 21.176470588, "elevationDeg": 11.25},
+      {"id": "dust", "azimuthDeg": 21.176470588, "elevationDeg": 11.25},
+      {"id": "nebula", "azimuthDeg": 21.176470588, "elevationDeg": 11.25}
+    ]
+  },
+  "layers": [
+    {
+      "id": "stars",
+      "file": "stars.mp4",
+      "durationSec": 13.0,
+      "texBytes": 1628160
+    },
+    {
+      "id": "dust",
+      "file": "dust.mp4",
+      "durationSec": 16.708333,
+      "texBytes": 1628160
+    },
+    {
+      "id": "nebula",
+      "file": "nebula.mp4",
+      "durationSec": 11.041667,
+      "texBytes": 1628160
+    }
+  ]
+}

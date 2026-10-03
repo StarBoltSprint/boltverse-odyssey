@@ -22,7 +22,7 @@ if str(ROOT) not in sys.path:
 if str(SKY) not in sys.path:
     sys.path.insert(0, str(SKY))
 
-from pixels import assess_slices, lcm_seconds, perceived_repetition  # noqa: E402
+from pixels import assess_display, assess_slices, lcm_seconds, perceived_repetition  # noqa: E402
 
 
 def fail(msg: str) -> None:
@@ -63,6 +63,92 @@ def test_clone_and_mirror() -> None:
     if report_m["ok"] or "mirror" not in text_m:
         fail("red mirror was not rejected\n" + text_m)
     print("red clone+mirror FAIL")
+
+
+def test_interior_motif() -> None:
+    """A copied bank in the middle, and a kaleidoscope, are not trailing-column defects."""
+    rng = np.random.RandomState(7)
+    h, w = 96, 320
+    base = rng.randint(15, 230, (h, w, 3), dtype=np.uint8)
+    base[:, :, 0] = np.clip(base[:, :, 0].astype(np.int16) + np.linspace(-40, 40, w).astype(np.int16), 0, 255)
+    cloned = base.copy()
+    cloned[:, 180:260] = cloned[:, 40:120]
+    report = assess_slices([("keep.png", base), ("again.png", cloned)])
+    text = "\n".join(report["failures"])
+    if "motif repeat" not in text:
+        fail("interior motif repeat was not rejected\n" + text)
+    field = rng.randint(20, 210, (h, w // 2, 3), dtype=np.uint8)
+    mirror = np.concatenate([field, field[:, ::-1]], axis=1)
+    noise = rng.randint(0, 5, mirror.shape, dtype=np.uint8)
+    mirror = np.clip(mirror.astype(np.int16) + noise, 0, 255).astype(np.uint8)
+    report_m = assess_slices([("keep.png", base), ("kaleidoscope.png", mirror)])
+    text_m = "\n".join(report_m["failures"])
+    if "motif mirror" not in text_m:
+        fail("interior mirror was not rejected\n" + text_m)
+    copied = np.concatenate([field, field], axis=1)
+    copied = np.clip(copied.astype(np.int16) + noise, 0, 255).astype(np.uint8)
+    report_c = assess_slices([("keep.png", base), ("diptych.png", copied)])
+    text_c = "\n".join(report_c["failures"])
+    if "motif copy" not in text_c and "motif repeat" not in text_c:
+        fail("interior diptych copy was not rejected\n" + text_c)
+    print("interior motif FAIL")
+
+
+def test_soft_gap() -> None:
+    """Upper 6 is two paintings with a soft centre. A continuous field is not."""
+    from pixels import motif_defect
+
+    h, w = 96, 360
+    rng = np.random.default_rng(3)
+    yy = np.linspace(0, 1, h)[:, None]
+    xx = np.linspace(0, 1, w)[None, :]
+    # One field: slow unique clouds, no copied motif.
+    whole_f = np.zeros((h, w, 3), np.float32)
+    whole_f[:, :, 0] = 40 + 90 * yy + 30 * np.sin(xx * 1.3 + yy)
+    whole_f[:, :, 1] = 50 + 40 * xx + 25 * np.cos(yy * 2.1)
+    whole_f[:, :, 2] = 80 + 35 * np.sin((xx + yy) * 1.7)
+    whole_f += rng.integers(0, 12, whole_f.shape)
+    # Two different paintings, blended only across the centre column pair.
+    left = np.zeros((h, w, 3), np.float32)
+    left[:, :, 0] = 30 + 160 * yy * (0.3 + xx)
+    left[:, :, 1] = 20 + 40 * np.sin(yy * 3.0)
+    left[:, :, 2] = 140 - 80 * yy
+    right = np.zeros((h, w, 3), np.float32)
+    right[:, :, 0] = 20 + 30 * xx
+    right[:, :, 1] = 40 + 150 * (1.0 - yy) * (0.4 + 0.6 * np.sin(xx * 2))
+    right[:, :, 2] = 30 + 100 * xx * yy
+    left += rng.integers(0, 8, left.shape)
+    right += rng.integers(0, 8, right.shape)
+    t = np.clip((xx - 0.46) / 0.08, 0, 1)
+    t = t * t * (3 - 2 * t)
+    t = t[..., None]
+    gap = np.clip(left * (1 - t) + right * t, 0, 255).astype(np.uint8)
+    whole = np.clip(whole_f, 0, 255).astype(np.uint8)
+    report = assess_slices([("keep.png", whole), ("upper-6.png", gap)])
+    text = "\n".join(report["failures"])
+    if "motif gap" not in text or "upper-6" not in text:
+        fail("soft two-painting gap was not rejected\n" + text)
+    if motif_defect(whole)["gapped"]:
+        fail("one continuous field was marked as a gap")
+    fixture = SKY / "testdata" / "upper6-softgap.jpg"
+    if not fixture.is_file():
+        fail(f"missing upper-6 fixture {fixture}")
+    real = np.asarray(Image.open(fixture).convert("RGB"))
+    if not motif_defect(real)["gapped"]:
+        fail("real upper-6 soft gap was not rejected")
+    keepers = [
+        ROOT / "packs/zone-a/src/sky/sky-5.jpg",
+        ROOT / "packs/zone-a/src/sky/sky-6.jpg",
+        ROOT / "packs/zone-a/src/sky/upper/sky-0.jpg",
+        ROOT / "packs/zone-a/src/sky/upper/sky-1.jpg",
+        ROOT / "packs/zone-a/src/sky/upper/sky-5.jpg",
+        ROOT / "packs/zone-a/src/sky/high/sky-0.jpg",
+    ]
+    for path in keepers:
+        rgb = np.asarray(Image.open(path).convert("RGB"))
+        if motif_defect(rgb)["gapped"]:
+            fail(f"keeper marked as a soft gap: {path.name}")
+    print("soft gap FAIL on upper-6, keepers PASS")
 
 
 def test_join_and_close_and_cheapest() -> None:
@@ -171,6 +257,73 @@ def test_manifest_roundtrip(tmp: Path) -> None:
     print("manifest chain PASS")
 
 
+def test_display_mag() -> None:
+    """The step-2 veil (one 848×480 frame over 360°) must fail. A tiled layer must pass."""
+    old = assess_display(
+        {
+            "bands": [
+                {
+                    "id": "horizon",
+                    "srcW": 1436,
+                    "srcH": 976,
+                    "azimuthDeg": 45,
+                    "elBottomDeg": -3,
+                    "elTopDeg": 24,
+                }
+            ],
+            "cap": {"srcW": 1024, "elStartDeg": 24},
+            "videoTiles": [
+                {"id": "stars", "srcW": 848, "srcH": 480, "azimuthDeg": 360, "elevationDeg": 48}
+            ],
+        }
+    )
+    text = "\n".join(old["failures"])
+    if old["ok"] or "stars" not in text or "cap" not in text:
+        fail("old 360 veil and low cap must fail\n" + text)
+    stars = next(row for row in old["rows"] if row["id"] == "stars")
+    if stars["mag"] < 10:
+        fail(f"old veil mag should be about 13, got {stars['mag']}")
+    good = assess_display(
+        {
+            "bands": [
+                {
+                    "id": "horizon",
+                    "srcW": 1900,
+                    "srcH": 864,
+                    "azimuthDeg": 45,
+                    "elBottomDeg": -1.5,
+                    "elTopDeg": 24,
+                },
+                {
+                    "id": "upper",
+                    "srcW": 1480,
+                    "srcH": 1248,
+                    "azimuthDeg": 45,
+                    "elBottomDeg": 21.5,
+                    "elTopDeg": 54,
+                },
+                {
+                    "id": "high",
+                    "srcW": 1152,
+                    "srcH": 864,
+                    "azimuthDeg": 45,
+                    "elBottomDeg": 52,
+                    "elTopDeg": 77.5,
+                },
+            ],
+            "cap": {"srcW": 1024, "elStartDeg": 76},
+            "videoTiles": [
+                {"id": "stars", "srcW": 848, "srcH": 480, "azimuthDeg": 21.18, "elevationDeg": 11.25},
+                {"id": "dust", "srcW": 848, "srcH": 480, "azimuthDeg": 21.18, "elevationDeg": 11.25},
+                {"id": "nebula", "srcW": 848, "srcH": 480, "azimuthDeg": 21.18, "elevationDeg": 11.25},
+            ],
+        }
+    )
+    if not good["ok"]:
+        fail("tiled layout should pass\n" + "\n".join(good["failures"]))
+    print("display mag old FAIL", stars["mag"], "new PASS")
+
+
 def test_runtime() -> None:
     probe = r"""
 await import("file://" + process.argv[1]);
@@ -247,9 +400,12 @@ def main() -> None:
     tmp.mkdir()
     test_chain_pass()
     test_clone_and_mirror()
+    test_interior_motif()
+    test_soft_gap()
     test_join_and_close_and_cheapest()
     test_swing()
     test_repetition()
+    test_display_mag()
     test_manifest_roundtrip(tmp)
     test_runtime()
     print("PASS sky selftest")

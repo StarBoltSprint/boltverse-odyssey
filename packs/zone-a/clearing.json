@@ -2,7 +2,10 @@
   "schema": "clearing/1",
   "seed": 1,
   "spawn": {
-    "position": [-6, -14],
+    "position": [
+      -6,
+      -14
+    ],
     "heading_deg": 32
   },
   "view": {
@@ -17,20 +20,29 @@
   "backdrop": {
     "ring": "packs/zone-a/src/sky",
     "slices": [
-      "packs/zone-a/src/sky/sky-0.png",
-      "packs/zone-a/src/sky/sky-1.png",
-      "packs/zone-a/src/sky/sky-2.png",
-      "packs/zone-a/src/sky/sky-3.png",
-      "packs/zone-a/src/sky/sky-4.png",
-      "packs/zone-a/src/sky/sky-5.png",
-      "packs/zone-a/src/sky/sky-6.png"
+      "packs/zone-a/src/sky/sky-0.jpg",
+      "packs/zone-a/src/sky/sky-1.jpg",
+      "packs/zone-a/src/sky/sky-2.jpg",
+      "packs/zone-a/src/sky/sky-3.jpg",
+      "packs/zone-a/src/sky/sky-4.jpg",
+      "packs/zone-a/src/sky/sky-5.jpg",
+      "packs/zone-a/src/sky/sky-6.jpg",
+      "packs/zone-a/src/sky/sky-7.jpg",
+      "packs/zone-a/src/sky/sky-8.jpg",
+      "packs/zone-a/src/sky/sky-9.jpg",
+      "packs/zone-a/src/sky/sky-10.jpg",
+      "packs/zone-a/src/sky/sky-11.jpg",
+      "packs/zone-a/src/sky/sky-12.jpg"
     ],
-    "sourceH": 1008,
-    "sourceW": 12544
+    "sourceH": 832,
+    "sourceW": 16224
   },
   "zone": {
     "shape": "relief",
-    "center": [0, 0],
+    "center": [
+      0,
+      0
+    ],
     "ground": {
       "tile_m": 1.45,
       "tiles": [

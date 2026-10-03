@@ -5,7 +5,7 @@ open-zone game. The citadel boot / Welcome laws in [`AGENTS.md`](../AGENTS.md) a
 Hard laws that stay in force beside it: the Bolt lock, law 65 ([render quality](../biome/docs/65-render-quality.md),
 zero quality loss) and law 67 ([post-pass exception](../biome/docs/67-imagine-post-pass.md)).
 
-Subpages: [**ground recipe**](METHOD/ground.md) · [tools](METHOD/tools.md) · [self-improvement loops](METHOD/self-improvement.md) ·
+Subpages: [**ground recipe**](METHOD/ground.md) · [sky recipe (IN TEST)](METHOD/sky.md) · [tools](METHOD/tools.md) · [self-improvement loops](METHOD/self-improvement.md) ·
 [rejected approaches](METHOD/rejected.md) · [decisions log + contradictions](METHOD/decisions-log.md).
 Taste log (owner reactions): [`learn/taste.md`](../learn/taste.md). Failures already paid for: [`learn/failures.md`](../learn/failures.md).
 
@@ -32,7 +32,9 @@ Status words: **APPROVED** = build it this way. **VALIDATED** = an IN TEST candi
 | | **Anti-carpet:** relief silhouettes against the sky; raised lips at fissures/plates; small Imagine cutout ground details standing up; oblique/grazing Imagine textures where useful; fog for depth. | 2026-10-03 |
 | | **Magnification ≤ 1.0** on 720×1600, including slope stretch; watch tile repetition. Relief: up to 3 m over ≥ 20 m, walkable slope ≤ 15° (Director 2026-10-02); taller cliffs are objects, not relief. | 2026-10-01/02 |
 | **Ground (fixed paths between zones)** | May use the **speed-tied scrolling Imagine ground video** (`rate = boltSpeed / bakedGroundSpeed`, rate 0 + idle breath when stopped). | 2026-09-30 |
-| **Sky** | **Closed sky from Imagine slices** (8 × 60° HFOV, 45° step, rail 12 / kits; chained edits, never cloned/mirrored columns) **+ living seamless-looping Imagine video layers with different durations** (e.g. stars 13 s, dust 17 s, nebula 29 s). 360° ring = far backdrop, does not move with Bolt. **Fog colour sampled from the sky horizon band**, never typed. Gate: `python3 tools/sky/check.py`. | 2026-10-02 |
+| **Sky** | **Closed sky from Imagine slices** (8 × 60° HFOV, 45° step, rail 12 / kits; chained edits, never cloned/mirrored columns) **+ living seamless-looping Imagine video layers with different durations** (e.g. stars 13 s, dust 17 s, nebula 29 s). 360° ring = far backdrop, does not move with Bolt. **Fog colour sampled from the sky horizon band**, never typed. Gate: `python3 tools/sky/check.py`. **Zone A look validated by SmiR 2026-10-03 except the vertical seams. Seams are fixed by crossfading neighbour slices (no new pixels, mag unchanged). That fix and the 13-slices-per-band layout are IN TEST** ([sky.md](METHOD/sky.md)). | 2026-10-02 / 2026-10-03 |
+| | **IN TEST (2026-10-03):** those living layers are GPU-instanced tiles (one decode, one texture, one instanced draw per layer) at magnification ≤ 1, with a small yaw parallax by depth and no sky relief. The sky gate fails any slice, cap, or video tile displayed above magnification 1. Recipe: [`METHOD/sky.md`](METHOD/sky.md). | 2026-10-03 |
+| | **IN TEST (2026-10-03, step 2c):** the sky gate also rejects a repeated, mirrored, copied, or hard-seamed motif inside a slice. Opaque slices may be lossy-encoded. Show the horizon band before the other bands. A bright living shape is keyed from its own pixels onto one tile. | 2026-10-03 |
 | **Post** | Light distance fog, one light colour grade per biome, subtle capped bloom on bright Imagine pixels. Phone-cheap, zero quality loss, Bolt never glows. Nothing else computed. Law 67. | 2026-10-02 |
 | **Static solid decor** | Still Imagine image on an **invisible depth relief** (law 59 carrier). | 2026-09-29 |
 | **Living elements** (stars, dust, vapor, lights, glow) | **Keyed seamless-looping Imagine video layers** (first = last frame or ping-pong; never hard-restart). ≤ 4 decoding videos incl. Bolt. | 2026-09-29 |
@@ -43,6 +45,7 @@ Status words: **APPROVED** = build it this way. **VALIDATED** = an IN TEST candi
 | | Ship = **lore / POI, not a vehicle**. Bolt sprints through space powered by the **Lightning Core**. | 2026-10-02 |
 | | **PARKED** narrative frame: each biome is a **Frontier Shard** woken by Bolt's permanent EMP wave (decrees #031, #063, #064). Lore never changes the visual laws. | 2026-10-02 |
 | **Bolt** | Keyed `lock/` gallop + idle breath, automatic IDLE/GALLOP switch, camera behind, one Bolt. `lock/` WARN = informational, never a recook. | 2026-09-20 → 2026-10-01 |
+| **Camera** | No shake, ever. The chase holds one legal pose (hysteresis on boom / eye / slide) and eases eye height off the raw relief sample. A per-frame rescore must not snap the eye. Magnification stays ≤ 1. | 2026-10-03 |
 | **Biome names in docs** | Biome **names** are allowed in tracked repo files (docs, commit messages, ids). **Palettes and Imagine prompt text stay out** (only in prompts and untracked `*.local.*` files). | 2026-10-03 |
 | **Phone** | Portrait 720×1600, full screen, controls as transparent overlay. Stills `LINEAR_MIPMAP_LINEAR` + mipmaps, video `LINEAR`, never `NEAREST`, DPR ≤ 2, perf only removes waste. | 2026-10-02 (law 65) |
 

@@ -31,16 +31,88 @@ from pixels import (  # noqa: E402
     OFFSET_MIN_SEC,
     SKY_TEX_MAX,
     SKY_VIDEOS_MAX,
+    assess_display,
     assess_slices,
     frame_amplitude,
     lcm_seconds,
+    motif_defect,
+    motif_neighbour,
     perceived_repetition,
+    MOTIF_NEIGHBOUR,
 )
 
 
 def load_rgb(path: Path) -> np.ndarray:
     with Image.open(path) as im:
         return np.array(im.convert("RGB"))
+
+
+def _measure_display(manifest: dict, root: Path, named: list) -> dict:
+    """Source pixels for each displayed band, cap, and video tile. Missing files stay size 0."""
+    display = manifest.get("display") or {}
+    measured = {}
+    for band in display.get("bands") or []:
+        name = str(band.get("id") or "band")
+        files = band.get("files")
+        try:
+            if files == "slices" and named:
+                h, w = named[0][1].shape[:2]
+                measured[name] = {"srcW": int(w), "srcH": int(h)}
+            elif isinstance(files, list) and files:
+                rgb = load_rgb(root / str(files[0]))
+                measured[name] = {"srcW": int(rgb.shape[1]), "srcH": int(rgb.shape[0])}
+        except (OSError, CheckError):
+            measured[name] = {"srcW": 0, "srcH": 0}
+    cap = display.get("cap") or {}
+    if cap.get("file"):
+        try:
+            rgb = load_rgb(root / str(cap["file"]))
+            measured["cap"] = {"srcW": int(rgb.shape[1]), "srcH": int(rgb.shape[0])}
+        except (OSError, CheckError):
+            measured["cap"] = {"srcW": 0, "srcH": 0}
+    layers = {str(layer.get("id")): layer for layer in (manifest.get("layers") or [])}
+    for tile in display.get("videoTiles") or []:
+        name = str(tile.get("id") or "")
+        layer = layers.get(name)
+        if not layer or not layer.get("file"):
+            continue
+        try:
+            info = probe_video(root / str(layer["file"]))
+            measured[name] = {"srcW": int(info["width"]), "srcH": int(info["height"])}
+        except CheckError:
+            measured[name] = {"srcW": 0, "srcH": 0}
+    return measured
+
+
+def motif_on_band(root: Path, files: list, label: str) -> list[str]:
+    """Repeat / mirror / seam gate for a band that is not the horizon slice list."""
+    failures = []
+    images = []
+    names = []
+    for rel in files:
+        name = f"{label}/{Path(str(rel)).name}"
+        rgb = load_rgb(root / str(rel))
+        defect = motif_defect(rgb)
+        if defect["repeated"]:
+            failures.append(f"FAIL sky motif repeat {name} ncc={defect['repeat']}")
+        if defect["mirrored"]:
+            failures.append(f"FAIL sky motif mirror {name} ncc={defect['mirror']}")
+        if defect["copied"]:
+            failures.append(f"FAIL sky motif copy {name} ncc={defect['half']}")
+        if defect["seamed"]:
+            failures.append(f"FAIL sky motif seam {name} ratio={defect['seamRatio']} at={defect['seamAt']}")
+        if defect["gapped"]:
+            failures.append(
+                f"FAIL sky motif gap {name} center={defect['gapCenter']} drop={defect['gapDrop']}"
+            )
+        images.append(rgb)
+        names.append(name)
+    for i in range(len(images)):
+        nxt = (i + 1) % len(images)
+        score = motif_neighbour(images[i], images[nxt])
+        if score >= MOTIF_NEIGHBOUR:
+            failures.append(f"FAIL sky motif neighbour {names[i]} -> {names[nxt]} ncc={score:.2f}")
+    return failures
 
 
 def slices_from_dir(folder: Path) -> list[tuple[str, np.ndarray]]:
@@ -166,12 +238,30 @@ def main() -> int:
             print("FAIL sky: pass --slices or --manifest", file=sys.stderr)
             return 2
         report = assess_slices(named)
+        display = manifest.get("display") if manifest else None
+        if isinstance(display, dict):
+            for band in display.get("bands") or []:
+                files = band.get("files")
+                if not isinstance(files, list) or len(files) < 2:
+                    continue
+                report["failures"] = list(report["failures"]) + motif_on_band(
+                    root, files, str(band.get("id") or "band")
+                )
         if manifest.get("layers") or manifest.get("oneShots") or manifest.get("offsetsSec"):
             layers = assess_layers(manifest, root, len(named))
             report["layers"] = layers
             report["failures"] = list(report["failures"]) + list(layers["failures"])
-            report["ok"] = not report["failures"]
-            report["status"] = "PASS" if report["ok"] else "FAIL"
+        display = manifest.get("display") if manifest else None
+        if manifest and manifest.get("layers") and not (isinstance(display, dict) and display.get("videoTiles")):
+            report["failures"] = list(report["failures"]) + [
+                "FAIL sky display videoTiles missing; cannot prove magnification <= 1"
+            ]
+        if isinstance(display, dict):
+            shown = assess_display(display, _measure_display(manifest, root, named))
+            report["display"] = shown
+            report["failures"] = list(report["failures"]) + list(shown["failures"])
+        report["ok"] = not report["failures"]
+        report["status"] = "PASS" if report["ok"] else "FAIL"
     except CheckError as exc:
         print(f"FAIL sky {exc.message}", file=sys.stderr)
         return 2
@@ -186,6 +276,13 @@ def main() -> int:
     if report.get("layers"):
         lines.append("")
         lines.append(f"Combined repeat: {report['layers']['combinedRepeatSec']}s")
+    if report.get("display"):
+        lines.append("")
+        lines.append(f"Magnification limit: {report['display'].get('limit')}")
+        for row in report["display"].get("rows") or []:
+            lines.append(
+                f"- {row.get('id')} mag={row.get('mag')} magW={row.get('magW')} magH={row.get('magH')}"
+            )
     lines.append("")
     (args.out / "report.md").write_text("\n".join(lines))
     print(f"{report['status']} sky out={args.out} slices={len(named)} failures={len(report['failures'])}")

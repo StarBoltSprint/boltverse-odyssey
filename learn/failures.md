@@ -285,3 +285,47 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Play stills use `LINEAR_MIPMAP_LINEAR` and mipmaps. CPU QC nearest is labelled a measurement buffer. `auto` is the visual hull. TripoSR runs only with `--experiment triposr` and is not written into the play mesh. The checked-in `out/asset.json` stays the 2026-10-02 experiment record with `feedsPlay` false. Magnification limit stays 1.0. |
 | Guard | `python3 tools/walkaround/selftest.py` (`check_law65_play_sampling`) and `python3 tools/mesh3d/selftest.py` (`check_law65_and_triposr`). `node tools/playcheck/src/renderlint.mjs` on `tools/walkaround/web/view.html`, `tools/walkaround/runtime/hullmesh.js`, and `tools/mesh3d/viewer/main.js`. |
 | Sources | Issue #153. [`docs/METHOD/decisions-log.md`](../docs/METHOD/decisions-log.md) contradictions 7 and 8. [`biome/docs/65-render-quality.md`](../biome/docs/65-render-quality.md). |
+
+### 2026-10-03 — slow sky dissolve fails the frozen loop row
+
+| | |
+| --- | --- |
+| Take | Zone A step 2. Stars, dust, nebula. |
+| Defect | The Imagine clips looped in content and still failed `check_loop`. |
+| Root cause | A slow dissolve keeps consecutive frame MAE under 0.45 for longer than 0.40 s. A crossfade of those frames stays frozen. |
+| Fix | Keep existing frames whose gray MAE sits in [0.45, 16), then ping-pong so the last kept index equals the first. |
+| Guard | `python3 tools/sky/check.py` loop row. `check_loop` FROZEN_MAE 0.45 and FROZEN_SEC 0.40. |
+| Sources | `packs/zone-a/src/sky/stars.mp4`, `dust.mp4`, `nebula.mp4`. |
+
+### 2026-10-03 — straight-up view collapses, then the pole still notches
+
+| | |
+| --- | --- |
+| Take | Zone A step 2. Look-up proof. |
+| Defect | A look straight up first filled the frame with one fogged colour. After the camera basis was fixed, the same view showed faint radial lines and one small notch at the pole. |
+| Root cause | `applyShot` built a zero right vector when the view was exactly up, so the view matrix collapsed and the clear colour was fogged. The dome pole is a lat-long pinch. Two zenith projections (polar, then gnomonic) left the notch. |
+| Fix | When the horizontal right vector is shorter than 1e-4, pick a world axis. Stopped after the second projection. The notch is listed in `packs/zone-a/proof/step2/REPORT.md`. |
+| Guard | No playcheck row reads a straight-up frame. The proof PNG is `packs/zone-a/proof/step2/lookup.png`. |
+| Sources | `packs/zone-a/play/play.js` `applyShot` and the sky dome. |
+
+### 2026-10-03 — a centre splice and a heavy tile mix both passed the old sky edge gate
+
+| | |
+| --- | --- |
+| Take | Zone A step 2b. Living sky. |
+| Defect | Joined slices showed a hard vertical seam in the middle while join MAE on the outer columns was 0. A first play view also drew a grid of video rectangles over the paintings. |
+| Root cause | Equalising slice width by cutting the middle and concatenating the sides. Eight stamped edge columns satisfy the join strip and hide a cloud mismatch. Additive tiles at a high gain draw their quad edges. |
+| Fix | Crop spare width from the outer edges only. Keep video tiles, and drop the additive gain until the paintings stay sharp. Magnification of those tiles is now a hard fail in `tools/sky/check.py` and `tools/playcheck`. |
+| Guard | `python3 tools/sky/check.py` display rows. Old 848×480 over 360° fails (mag about 13.5). The step 2b tiles pass at 0.792. The edge MAE still does not see a content mismatch at heading 0; that one is listed in the step 2b report. |
+| Sources | `docs/METHOD/sky.md`, `packs/zone-a/play/play.js`, `tools/sky/pixels.py`. | |
+
+### 2026-10-03 — horizon outpaint repeated the source, then stopped
+
+| | |
+| --- | --- |
+| Take | Zone A step 2c. Failed slices only. |
+| Defect | Two Imagine edits meant to continue a kept horizon edge. The first repeated the source motif and added a ground silhouette. The second was a hard diptych and still showed a ground silhouette. Neither continued the neighbour edge. |
+| Root cause | The edit treated the supplied strip as a picture to place beside a new painting, instead of growing that strip. |
+| Fix | Stopped after the second try. The step-2b slices stay in the ring. The motif gate now fails those files. |
+| Guard | `python3 tools/sky/check.py` motif rows. Horizon 0–4 and 7 fail repeat. Upper 6 still passes (soft gap). |
+| Sources | `tools/sky/pixels.py`, `packs/zone-a/proof/step2/REPORT.md`. Untracked provenance: `/workspace/grokcli/out/zoneA-step2c/provenance.json`. |
