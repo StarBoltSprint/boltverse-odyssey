@@ -6,7 +6,7 @@ Status: validated for this step's phone walk. The exact Imagine prompt is not in
 | --- | --- |
 | Asset kind | `ground tile` |
 | Take | zone A step 1 |
-| Commit | filled when this file is committed |
+| Commit | `6afb2a2` |
 | Date | 2026-10-03 |
 | Size | ground stills 1024×1024; world tile 1.45 m; detail cards at most 0.30 m tall |
 | Tries | 12 Imagine calls, 11 saved, 1 edit returned HTTP 429 |
