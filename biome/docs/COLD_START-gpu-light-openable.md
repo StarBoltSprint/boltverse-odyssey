@@ -59,7 +59,7 @@ One still or one short clip. Pixels are **only** the light: a beam, a glow, a ne
 - Hang the file at `lightBib(kind, noun)` → `biome/fx/light/<kind>/<noun>.mp4`.
 - Kinds: `beam` | `glow` | `neon` | `flash`.
 - A short clip uses session Imagine Video with first + last pinned (the light may shimmer). A still is one frame of that same black key. Do not paint this light into Video A.
-- GPU then owns intensity `0→1`, tint, on/off, cone position, and the fade (`LIGHT.fadeSec` is 0.35). `gradeFromPlate` stays true: bloom and mist still come from **this** densify plate. Tint does not replace that grade. Law 31 exposure on Video A does not rise.
+- GPU then owns intensity `0→1`, tint (only as the approved law 67 light colour grade; otherwise neutral, no code colour), on/off, cone position, and the fade (`LIGHT.fadeSec` is 0.35). `gradeFromPlate` stays true: bloom and mist still come from **this** densify plate. Tint does not replace that grade. Law 31 exposure on Video A does not rise.
 
 ## Cook openable state bibs
 

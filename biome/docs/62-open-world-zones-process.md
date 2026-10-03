@@ -1,10 +1,10 @@
 # 62 — Open world by zones: the creation process (any biome, any style)
 
-> **Superseded by [`docs/METHOD.md`](../../docs/METHOD.md)** in part: the closed round edge ring is replaced by large organic zones with natural boundaries, no circles / rings (owner 2026-10-02). Kept for history; not deleted.
+> **Amended 2026-10-03 to match [`docs/METHOD.md`](../../docs/METHOD.md)** (newer owner decisions win): zones are large organic open areas with natural soft boundaries, no circles / rings (owner 2026-10-02). The take 8 lessons below stay.
 
 Kitchen only. Not a hang. Not a new play URL. Owner direction **2026-10-01**.
 
-**This repo holds no biome style.** Each player chooses the style of every biome freely. This doc is the **creation process**: style-agnostic and fully codified. Any player's Grok follows the same steps for any paint. Nothing below is a look to copy. No example biome here is a model.
+**This repo holds no biome palette and no Imagine prompt** (biome names are allowed, SmiR 2026-10-03). Each player chooses the style of every biome freely. This doc is the **creation process**: style-agnostic and fully codified. Any player's Grok follows the same steps for any paint. Nothing below is a look to copy. No example biome here is a model.
 
 The free-walk method is [doc 61](61-free-clearing-walk.md). The invisible-shape exception is the [2026-10-01 extension of law 59](59-invisible-depth-carrier.md#extension-2026-10-01-invisible-procedural-terrain-shape) (PR #128). Hulls are [`tools/walkaround/build.py`](../../tools/walkaround/build.py) (PR #127, method in [doc 60](60-imagine-relief-panorama-method.md#script)). One `clearing.json` per zone is written and checked by [`tools/layout`](../../tools/layout/README.md). The rendered-pixel validator is [doc 63](63-layout-file-and-validator.md).
 
@@ -32,8 +32,8 @@ This doc restates them. It does not change them.
 
 A world is a graph:
 
-- **Zone** = a free-walk 360° clearing (doc 61 method). Closed edge ring of solid hulls. One or more readable **gates**.
-- **Corridor** = a straight path between two gates, floored by a scrolling speed-tied Imagine ground video.
+- **Zone** = a **large natural organic open area** (doc 61 free-walk method): irregular footprint ≥ 5× the retired circle, ≥ 3 sub-areas / nooks, meandering passages, natural soft boundaries, **no circles or rings**. One or more readable **gates** on the boundary.
+- **Corridor** = a fixed path between two gates, floored by a scrolling speed-tied Imagine ground video, with a distance-based fog / grade blend between the two biomes (law 67, owner 2026-10-02).
 
 Smallest world:
 
@@ -53,13 +53,13 @@ Each zone has its own `clearing.json` (doc 63). The links between zones are the 
 
 ### Zone rules
 
-- **Closed edge ring.** Seen from anywhere inside, the ring hulls cover the horizon band at every heading except the gates. Colliders follow the visible hulls, nothing else. An invisible wall is FAIL.
+- **Natural soft boundary** (amended 2026-10-03, owner 2026-10-02). The footprint is closed, except at the gates, by visible Imagine pieces (cliff faces, rock masses, dense vegetation, terrain rising into them) with a soft fog band. Colliders follow the visible pieces, nothing else. An invisible wall is FAIL. **No ring:** no object family is laid out on a circle (`tools/layout` row `no_ring`).
 - **Readable gates.** Each gate is framed so it reads as the way out from across the zone.
 - **Spawn** (first zone) faces the first gate. Arrival from a corridor enters through that zone's gate.
 - **HUD** (kitchen QC HUD, not player chrome): `x`, `z`, heading, magnification, `bolt IDLE` / `bolt GALLOP`, and **heading + distance to each gate**. Movement is proven by those numbers changing (doc 60 test 4).
-- **Fog band** just inside the ring, per the fog lock. Soft, wide feathered alpha, low opacity. Hard streaks are FAIL (doc 61 take 4).
-- **Interior objects** (walk-around, interactive): 8-view hulls, budget **2–3** per zone (doc 61).
-- **Composite objects** (for example a plant with moving foliage): rigid hull for the solid part + looping keyed Imagine cards for the moving part. Distant copies = **8-view impostors** (nearest of the 8 views by bearing to the camera; far band only, no collider, not claimed as volume).
+- **Fog band** along the boundary, per the fog lock. Soft, wide feathered alpha, low opacity. Hard streaks are FAIL (doc 61 take 4).
+- **Interior objects** (walk-around, interactive): 8-view hulls (organic) or real 3D hard objects (METHOD.md). One huge readable landmark + ≥ 3 discovery POIs per zone; the count is limited by the phone perf budgets, not a fixed 2–3.
+- **Composite objects** (for example a plant with moving foliage): rigid hull for the solid part + keyed seamless-looping Imagine video layers for the moving part. Distant copies = **8-view impostors** (nearest of the 8 views by bearing to the camera; far band only, no collider, not claimed as volume).
 
 ### Corridor rules
 
@@ -110,12 +110,12 @@ Do the steps in order. Stop when one fails.
 2. **Cook the Imagine assets** for one zone (and later its corridor), all in `{PAINT}`, all lossless. **Every file is gated before it is named in `clearing.json` or passed to a hull:**
    1. **Ground tiles:** top-down, seamless, **≥ 4 variants**, true world scale for **0.90 m**, no horizon, no Bolt. `tools/assetcheck` kind `tile`, one manifest for the variant set (wrap seam, exposure, magnification ≤ 1 at 720×1600).
    2. **360° backdrop:** far content only, seam matched, mapped to exactly 360° (doc 60 test 2d; split above 4096 px). `tools/assetcheck` kind `backdrop`. Width above the WebGL max is a FAIL until the file is split.
-   3. **Edge-ring, gate, and interior objects:** the standard 3D object pipeline above, for each object: V0 + **8 views every 45°** with the silhouette lock (top / 3/4-high views for hollows). `tools/assetcheck` on each still, then `tools/objsheet` on the set (and on each sub-object). Only a passing sheet goes to `python3 tools/walkaround/build.py --views … --config … --out …`. `qc/report.json` magnification ≤ 1.0 for every view. Several distinct edge assets; no identical copies side by side (doc 60 "pasted copies" FAIL).
+   3. **Boundary pieces, gates, landmark, POIs and interior objects:** the standard 3D object pipeline above, for each object: V0 + **8 views every 45°** with the silhouette lock (top / 3/4-high views for hollows). `tools/assetcheck` on each still, then `tools/objsheet` on the set (and on each sub-object). Only a passing sheet goes to `python3 tools/walkaround/build.py --views … --config … --out …`. `qc/report.json` magnification ≤ 1.0 for every view. Several distinct boundary assets; no identical copies side by side (doc 60 "pasted copies" FAIL).
    4. **Living loops:** fog atlas (one looping video packed into frames), gate / light / particle loops. First frame = last frame. Keyed. `tools/assetcheck` kind `loop` (seam, pops, frozen runs, key). A turntable that must hold one shape also gets kind `turntable` (morph).
    5. **Corridor ground video** (when the corridor step comes): scrolling, one direction, speed measured (`bakedGroundSpeed`). `tools/assetcheck` before it is wired.
    Paste each `report.md` and `report.json`. Attach each `sheet.png`. Exit code 0. A sentence that says PASS, with no report, is a FAIL.
-3. **Generate `clearing.json`.** Write a zone spec (radius, ring radius, gate bearing and width, walkaround asset list, counts for ring / mid / near / hero / exit). A category entry may be a path or `{ "library": "<object-id>" }` from [`biome/library`](../../biome/library/README.md) (`tools/library`) so a validated object is reused instead of recooked. Run `python3 tools/layout/layout.py generate --spec <spec.json> --out <dir>`. Do not type coordinates by hand. Schema in doc 63. The file is the placement, including colliders.
-4. **Check the layout file.** `python3 tools/layout/layout.py check --clearing <dir>/clearing.json --out <dir>`. Paste `report.md`. Exit code non-zero means FAIL. This is invisible shape only (ring, gate, path, relief, magnification, variety). It is not a framebuffer. When a corridor links this zone, run the same check with `--world <world.json>`. That adds the `transition` row (speed, ground file, gates from each `clearing.json`). A check without `--world` does not add it. Black frames and hitch time are the playcheck rows `transition_black` and `transition_hitch`, and only when `snapshot().transition` is present. The labelled synthetic walk is `node tools/zoneflow/selftest.mjs` (`tools/zoneflow/fixture`, not Imagine).
+3. **Generate `clearing.json`.** Write an organic zone spec (`zone.shape: "organic"`, footprint polygon or seeded generator with sub-areas and passages, relief, boundary assets, gates, scatter categories, POIs, cells; `tools/layout/README.md` "Organic zones"). The circle mode is the retired test layout. A category entry may be a path or `{ "library": "<object-id>" }` from [`biome/library`](../../biome/library/README.md) (`tools/library`) so a validated object is reused instead of recooked. Run `python3 tools/layout/layout.py generate --spec <spec.json> --out <dir>`. Do not type coordinates by hand. Schema in doc 63. The file is the placement, including colliders.
+4. **Check the layout file.** `python3 tools/layout/layout.py check --clearing <dir>/clearing.json --out <dir>`. Paste `report.md`. Exit code non-zero means FAIL. This is invisible shape only (footprint, sub-areas, passages, boundary, gates, `no_ring`, relief and slope, magnification, variety). It is not a framebuffer. When a corridor links this zone, run the same check with `--world <world.json>`. That adds the `transition` row (speed, ground file, gates from each `clearing.json`). A check without `--world` does not add it. Black frames and hitch time are the playcheck rows `transition_black` and `transition_hitch`, and only when `snapshot().transition` is present. The labelled synthetic walk is `node tools/zoneflow/selftest.mjs` (`tools/zoneflow/fixture`, not Imagine).
 5. **Validate on the rendered view.** Run `tools/playcheck/run --url <play url or local build> --layout <clearing.json>` ([doc 63](63-layout-file-and-validator.md), [`tools/playcheck/README.md`](../../tools/playcheck/README.md)). Every row **PASS** on the real 720×1600 play view. A data-only PASS is FAIL, including a `tools/layout` PASS. Any WebGL error is FAIL (take 8). Law 65 rows are part of that PASS: `perf_line` (`drawCalls`, `texMB`, `activeVideos`, `jsMs`), `active_videos` (at most 4), and `render_source` (local `.js` or `--source`). Magnification stays ≤ 1.0. SwiftShader frame time is informational. Paste `report.md`, the stills, and `walk.mp4`. A hand-written PASS table is not accepted. [`65-render-quality.md`](65-render-quality.md).
 6. **Proof stills** come from that command (the play view), not from a hand export: spawn, the turn, centre → gate, stops with the hero against a visible hull, fog, IDLE, GALLOP, plus `walk.mp4`.
 7. **Phone page.** Run `python3 tools/reportview/build.py` ([`tools/reportview/README.md`](../../tools/reportview/README.md)) on those report folders and deliver the page with the play URL. A section that was not run stays **NOT RUN**. It is not a PASS. The page only displays the reports.
@@ -123,7 +123,7 @@ Do the steps in order. Stop when one fails.
 
 ### Order of work for a new world
 
-1. First zone: edge ring + gate → KEEP.
+1. First zone: organic footprint + natural boundary + gates → KEEP.
 2. Corridor to the second zone → KEEP.
 3. Second zone with its interior objects → KEEP.
 4. Composite-object test (for example a plant: hull + looping cards; far impostors) → KEEP.
@@ -152,8 +152,8 @@ Take 8 is a past clearing take. Its paint is not a model. Only these lessons car
 
 - Commit a biome style (a look, a prompt set, a palette) to this repo as the model.
 - Lay a zone floor as the scrolling ground video, or put free 360° turning on a corridor.
-- Leave the ring open, or close it with colliders that have no visible hull in front of them.
-- Hand-place ring hulls, gates, colliders, or fog. `tools/layout` writes `clearing.json`. Paste the check report. A layout PASS is not a rendered PASS.
+- Leave the boundary open, or close it with colliders that have no visible piece in front of them. Lay out any object family on a circle or ring.
+- Hand-place boundary pieces, gates, colliders, or fog. `tools/layout` writes `clearing.json`. Paste the check report. A layout PASS is not a rendered PASS.
 - Post a play URL before every validator row passes on the rendered view.
 - Draw, shade, colour, or shadow any pixel in code.
 - Hand-write PASS for an Imagine file or an object view set. The asset-gate report and the consistency sheet are the PASS.

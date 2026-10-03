@@ -1,5 +1,7 @@
 # Real 3D, tested on the crashed ship
 
+> **Superseded (2026-10-03, [`docs/METHOD.md`](../../docs/METHOD.md)): do not use TripoSR** or any single-image mesh network as a shape source (Golden rule: no TripoSR-style mesh generators; it invents unseen sides). Shapes come from Imagine images (8-view carving, or the hard-object measured-section method, IN TEST). Sampling: **use mipmaps per law 65** (`LINEAR_MIPMAP_LINEAR`, never `NEAREST`), not "nearest, no mipmaps". Kept as a measurement record; tool code unchanged; fix tracked for the tool loop.
+
 Invisible shape, Imagine pixels. Code does not draw colour, lights, shadows, or a texture.
 
 An image-to-3D network sees one still and invents the sides it did not see. That invention is allowed only as the invisible shape. A surface the orbit cannot cover with a real Imagine view stays transparent. The ship is half-buried so the belly, which no still shows, is not on screen.

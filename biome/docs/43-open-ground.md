@@ -1,6 +1,6 @@
-# 43 — Open ground (four skies, one tile, horizon without strokes)
+# 43 — Open ground (sky ring + living layers, ground materials on relief, horizon without strokes)
 
-> **Superseded by [`docs/METHOD.md`](../../docs/METHOD.md)** for open zones: ground = several Imagine materials on invisible relief (not one tiled dirt video); sky = closed slice ring + living layers. Kept for history; not deleted.
+> **Amended 2026-10-03 to match [`docs/METHOD.md`](../../docs/METHOD.md)** (newer owner decisions win): ground and sky below follow the current rule. The 2026-09-25 forest rig (four sky videos, one tiled dirt video, shader earth colour) is kept as history only; do not cook from it.
 
 **Sealed 2026-09-25 (SmiR).** The forest. Same rig as the lava plain. Not a lane.
 
@@ -18,8 +18,8 @@ An open biome. No road, no three lanes, no dashes.
 
 | Layer | What | Where |
 |---|---|---|
-| Sky | Four portrait videos, camera locked. Crossfade on yaw. | Drawn first, full width, `SKY.band` |
-| Ground | One top-down video, tiled. Same yaw as the sky. | After the sky, `SRC_ALPHA` |
+| Sky | **Closed sky from Imagine slices** (8 × 60° HFOV, 45° step, rail 12) **+ living seamless-looping Imagine video layers with different durations** (e.g. 13 / 17 / 29 s). 360° ring = far backdrop. Fog colour sampled from the sky horizon band. Gate: `tools/sky/check.py`. | Drawn first, full width |
+| Ground | **Several distinct Imagine materials** (world-locked top-down tiles, ≥ 4 variants) on invisible height relief + per-tile depth relief, distributed by the relief with soft transitions; never one plain dirt texture. Anti-carpet rules of METHOD.md. Fixed paths may use the speed-tied ground video. | After the sky |
 | Bolt | `bolt-native.mp4` at rate 4, `bolt-breath.mp4` idle. GPU key. | On top. `uGrove = 1` |
 
 The sun lives in **one** sky face (`sky-0`), the way the moon lives in one face on the plain. It is not a sticker. Clouds are in the sky videos. An empty gradient plus keyed cards looks cheap and the loop shows.
@@ -32,7 +32,7 @@ Swipe sideways turns **sky and ground together**. One `orbit`. If only the groun
 
 Laws [20](20-default-plate-proportions.md), [23](23-plate-geo-qc.md) and [24](24-camera-1point.md) are the **3-lane cone**. Horizon there is 0.38 because that is where the dashes vanish. `plate-geo-qc.py` looks for three dash tubes.
 
-**Do not run that script on this ground.** There are no dashes. It will FAIL a good tile. Do not replace this dirt with a road ribbon. The player already rejected that. A nadir tile is orthographic: no vanishing point, no horizon. `python3 biome/scripts/plate-geo-qc/plate-geo-qc.py --report texel --manifest <tiles.json>` checks pixels per metre and the edge seam. That report is not the dash judge and it is not a hang gate.
+**Do not run that script on this ground.** There are no dashes. It will FAIL a good tile. Do not replace the ground with a road ribbon. The player already rejected that. Do not ship one plain dirt texture either (owner 2026-10-03: ugly). A nadir tile is orthographic: no vanishing point, no horizon. `python3 biome/scripts/plate-geo-qc/plate-geo-qc.py --report texel --manifest <tiles.json>` checks pixels per metre and the edge seam. That report is not the dash judge and it is not a hang gate.
 
 φ is an audit on the lane. Do not put φ, `0.618`, or a UV table in an Imagine prompt.
 
@@ -40,13 +40,15 @@ Laws [20](20-default-plate-proportions.md), [23](23-plate-geo-qc.md) and [24](24
 
 ## Cook
 
-Four skies, 9:16, camera locked, no Bolt, no canopy, no zoom, no dolly.
+Current cook (amended 2026-10-03). No Bolt, no canopy, no zoom, no dolly.
 
-1. Still `sky-0`: blue sky, sun in the upper third, clouds with volume. This face owns the sun.
-2. Stills `sky-1` `sky-2` `sky-3`: the same sky, turned. No second sun. Match the horizon height of `sky-0`.
-3. Image-to-video each still. Locked camera. Clouds drift. The sun does not travel across the frame.
-4. Ground still: flat packed dirt, no relief, edges that tile, grain visible. Not a photograph of a field with a horizon in it.
-5. Image-to-video that still. Locked overhead camera. A little dust. No bumps appearing.
+1. Sky: 8 chained Imagine slices, 60° HFOV, 45° step, level horizon 0.50, one sun in one slice; each next slice an edit of the previous; close the ring (last edit with the last slice and slice 0). Never clone or mirror columns. `tools/sky/check.py`. Skill: `sky-panorama`.
+2. Living sky: separate keyed seamless-looping Imagine video layers (stars, dust, nebula…) with different durations (e.g. 13 / 17 / 29 s) and per-slice offsets.
+3. Ground: several distinct top-down Imagine material tiles (≥ 4 variants each where repeated), orthographic, edges that tile; gate with `tools/assetcheck` kind `tile`. Skill: `ground-tiles`.
+4. Ground relief: invisible terrain relief by code + per-tile depth relief (depth + light high-pass). Materials distributed by relief, soft transitions, large-scale variation. Add small standing Imagine ground cutouts and fog for depth.
+5. Fixed paths between zones only: a speed-tied scrolling Imagine ground video (`biome/scripts/zone-flow`).
+
+History (2026-09-25 forest, do not cook): four 9:16 sky videos crossfaded on yaw, one flat packed-dirt ground video tiled.
 
 Compress before hang:
 
@@ -100,7 +102,7 @@ depth = 0.72 / dy
 
 **Plain** (`uFlat = 0`): `alpha = sharp * intoSky`. Do not touch it. Lava and the red sky are the same darkness, so that fade is enough.
 
-**Open ground** (`uFlat = 1`, only when this biome's dirt video is the plate):
+**Open ground** (`uFlat = 1`, history only). **Superseded 2026-10-03:** the `earth` / `mix(..., vec3(...))` lines below compute a colour in code, which the Golden rule and law 67 ban; current ground pixels are Imagine only (fog, one light grade, capped bloom are the only computed passes).
 
 ```
 dist = clamp((horizon - vUv.y) / horizon, 0, 1)

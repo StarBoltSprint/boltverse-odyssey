@@ -1,6 +1,6 @@
 # 49 — Two-plane tree
 
-> **Superseded by [`docs/METHOD.md`](../../docs/METHOD.md)** for open zones: trees use the 8-view silhouette carving method. Kept for history; not deleted.
+> **SUPERSEDED 2026-10-03 by [`docs/METHOD.md`](../../docs/METHOD.md).** Two-plane trees are replaced by the **8-view silhouette carving** method (8 views every 45°, natural irregular shapes); moving foliage = keyed Imagine video layers. Do not cook from this law; kept for history.
 
 **Go 2026-09-26 (SmiR).** Kitchen only. Do not read this to the player.
 

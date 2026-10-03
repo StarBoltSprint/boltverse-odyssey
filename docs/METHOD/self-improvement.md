@@ -48,7 +48,7 @@ defect per round, from a queue fed by Director QC and `feedback/`.
   case; never loosen a threshold; a new threshold cites its law or is reported with "threshold needs owner decision".
 - Director green check (`gate-round.sh`, `selftest-tools.sh`): all 9 selftests green, red-on-base / green-on-round,
   scope clean, zero Imagine calls, renderlint unchanged → merge (standing permission).
-- 3 rounds with an identical failure → defect BLOCKED, next item. Zone loop has quota priority.
+- 2 rounds with an identical failure → defect BLOCKED, next item (stop rule = 2). Zone loop has quota priority.
 - Done so far: rounds r01–r06 (organic layout L0a/L0b, yaw band L1, organic walk P8, decree #457 preload, DR1) → PR #145;
   take 10d tool gates (sky clone, green edge band, orbit preflight, living-loop period) → PR #148.
 

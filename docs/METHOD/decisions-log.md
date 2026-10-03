@@ -27,34 +27,49 @@ a change is a new row that cites the old one. Times are Paris.
 | 2026-10-02 | Sky = closed Imagine slice ring + living loop layers of different durations (13 / 17 / 29 s); fog colour from the sky horizon band. | APPROVED | PR #148, `tools/sky` |
 | 2026-10-03 | Ground: several distinct Imagine materials by relief (never one plain dirt texture), per-pixel depth micro-relief from each tile, anti-carpet rules. | APPROVED | owner 2026-10-03 |
 | 2026-10-03 | Hard objects: measured-section loft + offset plates + one unlit Imagine skin per part (frigate test). | IN TEST — pending validation | owner 2026-10-03 |
-| 2026-10-03 | This sheet (`docs/METHOD.md`) is the single entry point; every new approved method is added here in the same PR. | APPROVED | this PR |
+| 2026-10-03 | This sheet (`docs/METHOD.md`) is the single entry point; every new approved method is added here in the same PR. | APPROVED | PR #152 |
+| 2026-10-03 10:00 | Biome **names** allowed in tracked repo files; palettes and Imagine prompts stay out (resolves contradiction 1; hard law rail 6 amended in repo docs 62 / 64 and local `hard-laws.inc`, spec rail 6, tool-loop rule 6). | APPROVED | SmiR 2026-10-03 |
+| 2026-10-03 | Newer always wins: older laws/docs amended to METHOD.md (contradictions 2–6, 9–11); stop rule = 2 everywhere; sky = 8 × 60° slices; GPU tint only as the law 67 light grade. | APPROVED | follow-up docs PR |
 
 ## Contradictions found (2026-10-03 sweep)
 
-Older docs marked `Superseded by docs/METHOD.md` carry a one-line header; nothing was deleted.
+Older docs carry a one-line `Amended …` or `Superseded by docs/METHOD.md` header; nothing was deleted.
+Status after the follow-up PR: **RESOLVED** = old text amended to the newer rule; **TRACKED** = doc note + tool-loop issue; **OPEN** = left for the owner.
 
 1. **Biome names vs style-agnostic rail.** Local spec rail 6 / `hard-laws.inc` say no biome name in any tracked file, but
    `AGENTS.md`, `biome/kits/*.json` (PR #150) and now this sheet name them (owner asked for them here). Owner to confirm
    that names (not palettes / prompts) are allowed in tracked docs.
+    Status: **RESOLVED** — SmiR 2026-10-03: names allowed in tracked files; palettes and Imagine prompts stay out. Note: `biome/kits/*.json` and `biome/kits/README.md` still carry palette words (PR #150); left for a separate owner call.
 2. **Relief amplitude.** Law 59 extension + doc 61: relief "a few cm up to ~15–25 cm", tile edges at 0. Newer: 3 m over
    ≥ 20 m, slope ≤ 15° (2026-10-02) plus per-tile depth micro-relief (2026-10-03).
+    Status: **RESOLVED** — law 59 extension + doc 61 now say 3 m / ≥ 20 m / ≤ 15° + per-tile depth relief.
 3. **Rocks.** Law 59 extension + doc 61: rocks = upright Imagine cutouts, simplex + 90° rotation. Newer: rocks = 8-view
    carved hulls; cutouts only for small ground details.
+    Status: **RESOLVED** — law 59 + doc 61: rocks are 8-view carved hulls; cutouts only for small ground details.
 4. **Ground material.** Law 43: one tiled ground video + four sky videos, "do not replace this dirt". Newer: several
    Imagine materials by relief; closed slice sky + living layers.
+    Status: **RESOLVED** — law 43 ground/sky rewritten to the current rule; old rig and shader earth colour marked history.
 5. **Zone shape.** Docs 62 / 63: closed round edge ring around a clearing. Newer: organic zones, no rings (Director docs
    PR still pending).
+    Status: **RESOLVED** — docs 62 / 63 describe organic no-ring zones; circle mode = retired test layout.
 6. **Approach zoom.** Law 59: approach may zoom a plate up to ~1.3×. Law 65 / rail 3: magnification ≤ 1.0 everywhere.
+    Status: **RESOLVED** — law 59 approach: magnification ≤ 1.0.
 7. **Sampling.** `tools/walkaround/README.md` and `tools/mesh3d` say visible pixels are nearest samples / no mipmaps.
-   Law 65: `LINEAR_MIPMAP_LINEAR` + mipmaps. (Tool docs not edited here: the tool loop owns `tools/`.)
+   Law 65: `LINEAR_MIPMAP_LINEAR` + mipmaps. (Tool code not edited: the tool loop owns `tools/`.)
+    Status: **TRACKED** — note in `tools/walkaround/README.md` + tool-loop issue [#153](https://github.com/StarBoltSprint/boltverse-odyssey/issues/153); code unchanged.
 8. **TripoSR.** `tools/mesh3d` keeps TripoSR as an invisible-shape engine; the Golden rule now bans TripoSR-style generators.
+    Status: **TRACKED** — note in `tools/mesh3d/README.md` (do not use TripoSR) + tool-loop issue [#153](https://github.com/StarBoltSprint/boltverse-odyssey/issues/153); code unchanged.
 9. **Cards and particles.** Laws 44 / 45 / 49 (cards + capsule, two-plane tree) and law 53 (GPU particles) vs 8-view
    objects and law 67 (no code-drawn particles; living elements = keyed Imagine loops). Law 38 lets the GPU own "tint" of
    light layers, which reads as a code colour.
+    Status: **RESOLVED** — laws 44 / 45 / 49 / 53 marked SUPERSEDED (8-view objects, Imagine video living layers); law 38 tint only as the law 67 light grade.
 10. **Stop rule.** Local spec §7 and the tool loop stop after 3 identical attempts; owner rule and repo `spec.md` say stop
     after 2.
+    Status: **RESOLVED** — stop rule = 2 in local spec §7, tool-loop.md, tool-step template, step-01 and METHOD subpages.
 11. **Sky slice count.** Rail 12 / kits: 8 slices × 60° HFOV; local spec §8 / doc 64 D estimate ~9–10 chained slices at
-    hfov 22.7°. METHOD keeps "e.g. 8".
+    hfov 22.7°.
+    Status: **RESOLVED** — doc 64 D and local spec §8: 8 slices × 60° HFOV, per-slice width for magnification ≤ 1.0.
 12. **Hard objects vs law 59 wording.** Law 59 is "the sole exception to the no-mesh law" and lists depth relief, terrain
     shape and walk-around hulls; lofted measured-section hulls are a new invisible carrier and need a law 59 amendment
     once the frigate test is validated. `GROK.md` still says raw WebGL mesh scenes are FAIL (true for visible meshes).
+    Status: **OPEN** — waits for the frigate validation.
