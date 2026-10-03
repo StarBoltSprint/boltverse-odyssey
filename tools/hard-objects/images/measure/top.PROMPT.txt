@@ -1,0 +1,13 @@
+STATUS
+The verbatim Imagine tool-call string that produced this JPEG was not stored.
+The file's EXIF is JFIF only (no prompt, no comment). No session log kept the call.
+This JPEG is the locked ruler for where a part was painted. Do not regenerate it.
+The skin plate of the same name has that painted part removed. This file is not a skin.
+
+ROLE measure only. NOT a hull skin. Loaded by frigate.ts as /biome/frigate/measure/top.jpg.
+PIXELS 2400x528. ASPECT 50:11.
+JOB Plan ruler. Two stern nacelles and the deck parts stay painted here so their position and size can be read. Not a skin.
+
+ASK (colour-free template; tone wording stays in the untracked local prompts file)
+Imagine, aspect 50:11. Orthographic, no perspective, no camera tilt, no ground, no stars, no other ship, no text, no border, no watermark. Plain empty background the reader can segment. One object, filling the frame with a small empty margin. <TONE + ACCENTS from the local file>. Panels, seams, hatches and vents readable at phone size.
+Subject: the JOB above, nothing else.

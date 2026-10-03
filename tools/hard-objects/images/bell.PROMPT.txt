@@ -1,0 +1,14 @@
+STATUS
+The verbatim Imagine tool-call string that produced this JPEG was not stored.
+The file's EXIF is JFIF only (no prompt, no comment). No session log kept the call.
+This JPEG is the locked ruler. Do not regenerate it and treat the new file as this plate.
+
+ROLE unlit skin of one bell cone. Loaded by frigate.ts as /biome/frigate/bell.jpg.
+PIXELS 2160x864. ASPECT 5:2.
+JOB Cylindrical unwrap of one bell. The long axis runs from the mouth to the root. The short axis goes around the cone. Not the stern plate. Not a second copy of measure/stern.jpg.
+
+ASK (colour-free template; tone wording stays in the untracked local prompts file)
+Imagine, aspect 5:2. Orthographic unwrap, no perspective, no ground, no text, no border, no watermark.
+One continuous sheet of plating that can wrap a cone without a stretched texel.
+<TONE + ACCENTS from the local file>.
+Subject: the JOB above, nothing else.

@@ -8,15 +8,12 @@ It matches this file's pixel size, aspect and job. It is not a recovered transcr
 DO NOT REPLACE this JPEG unless docs/METHOD/hard-objects.md section 4 says the new file is measurable,
 and you keep this file beside it until the rebuild gate passes on the new bytes.
 
-ROLE measure + unlit skin. Loaded by frigate.ts as /biome/frigate/top.jpg.
+ROLE unlit skin. Loaded by frigate.ts as /biome/frigate/top.jpg.
 PIXELS 2400x528. ASPECT 50:11.
-JOB Plan view. Bow to the right, stern to the left.
+JOB Plan skin. Bow to the right, stern to the left.
 Small image y (top of the picture) is STARBOARD. Large image y is PORT.
-Proof used by the code: the bridge windows are bright and sit toward the top of this picture,
-and the tower exists only on stbd.jpg.
-The hull is the single largest component. Two nacelles sit at the stern, one each side,
-detached, with an empty gap, not overlapping the hull's corner pixels.
-Do not draw the nacelles amidships.
+Plain deck plating. Nacelles, the deck turret and the bridge island are not on this plate.
+Their position is read from measure/top.jpg. Do not paint them back onto this skin.
 
 ASK (colour-free template; the tone, palette and subject wording are untracked, see
 /workspace/grokcli/next/METHOD/hard-objects-prompts.local.md, section top)

@@ -8,13 +8,9 @@ It matches this file's pixel size, aspect and job. It is not a recovered transcr
 DO NOT REPLACE this JPEG unless docs/METHOD/hard-objects.md section 4 says the new file is measurable,
 and you keep this file beside it until the rebuild gate passes on the new bytes.
 
-ROLE interior skin of the port bay box. Loaded by frigate.ts as /biome/frigate/hangar.jpg.
+ROLE part skin. Loaded by frigate.ts as /biome/frigate/hangar.jpg.
 PIXELS 1792x1008. ASPECT 16:9.
-JOB Five faces of a flat inset box sample this whole image with UV 0 to 1.
-LOCKED FILE DEFECT (open issue, do not pretend otherwise): the centre is dark (luminance around 26)
-and the corners are brighter (around 90). On the mesh the bay reads as flat dark walls, not a see-through hangar.
-A replacement shows the inside of the bay edge to edge: readable deck, ribs and walls, no void, no ship exterior.
-The ASK below is what a replacement must be. It is not a claim that this JPEG already looks like that.
+JOB Interior wall plate for the port bay. The mesh crops this image onto the inner walls, floor, ceiling and far bulkhead. The port mouth stays open. Not a flat poster filling the hole.
 
 ASK (colour-free template; the tone, palette and subject wording are untracked, see
 /workspace/grokcli/next/METHOD/hard-objects-prompts.local.md, section hangar)
