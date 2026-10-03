@@ -1,6 +1,8 @@
 # Rocks — the approved recipe (any biome)
 
-**Status: IN TEST (2026-10-03).** Owner phone QC still open. Part 1 is the generic kit-driven generator.
+**Status: IN TEST (2026-10-03).** Owner phone QC still open. Merged to main 2026-10-03 (PR #162, zone A step 3).
+Known issues: rock skins reach magnification 1.15–1.32 up close; one shape per type; the crest hull is not carved.
+Part 1 is the generic kit-driven generator.
 Part 2 fills it for The Howling Eclipse (zone A). Part 3 is only material ideas for Ember Mesa and Cascade Verdance.
 
 Every visible pixel is an Imagine still: an 8-view hull skin, or a keyed cutout at or under 30 cm.
