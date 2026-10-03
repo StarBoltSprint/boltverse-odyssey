@@ -27,10 +27,15 @@
       "packs/zone-a/src/sky/sky-4.jpg",
       "packs/zone-a/src/sky/sky-5.jpg",
       "packs/zone-a/src/sky/sky-6.jpg",
-      "packs/zone-a/src/sky/sky-7.jpg"
+      "packs/zone-a/src/sky/sky-7.jpg",
+      "packs/zone-a/src/sky/sky-8.jpg",
+      "packs/zone-a/src/sky/sky-9.jpg",
+      "packs/zone-a/src/sky/sky-10.jpg",
+      "packs/zone-a/src/sky/sky-11.jpg",
+      "packs/zone-a/src/sky/sky-12.jpg"
     ],
-    "sourceH": 976,
-    "sourceW": 11488
+    "sourceH": 832,
+    "sourceW": 16224
   },
   "zone": {
     "shape": "relief",

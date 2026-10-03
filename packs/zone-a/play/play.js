@@ -538,7 +538,7 @@ let zenithSrc = 1024;
 const skyVideos = [null, null, null];
 const skyVideoTex = [null, null, null];
 const SKY_VIDEO_IDS = ["sky-stars", "sky-dust", "sky-nebula"];
-const SKY_GAIN = [0.1, 0.04, 0.0];
+const SKY_GAIN = [0.1, 0.04, 1.25];
 const SKY_KEY = [0.12, 0.08, 0.12];
 const SKY_TILE_AZ_N = 17;
 const SKY_TILE_EL_N = 8;
@@ -1636,9 +1636,9 @@ function measureMag(eye) {
     const magH = pxV * span / srcH;
     return Math.max(magW, magH);
   };
-  skyMagParts.horizon = skyTex ? bandMag(skyTex.w, skyTex.h, 45, skyBand.h0, skyBand.h1) : 0;
-  skyMagParts.upper = skyUpper ? bandMag(skyUpper.w, skyUpper.h, 45, skyBand.u0, skyBand.u1) : 0;
-  skyMagParts.high = skyHigh ? bandMag(skyHigh.w, skyHigh.h, 45, skyBand.k0, skyBand.k1) : 0;
+  skyMagParts.horizon = skyTex ? bandMag(skyTex.w, skyTex.h, skyBand.hAz || 45, skyBand.h0, skyBand.h1) : 0;
+  skyMagParts.upper = skyUpper ? bandMag(skyUpper.w, skyUpper.h, skyBand.uAz || 45, skyBand.u0, skyBand.u1) : 0;
+  skyMagParts.high = skyHigh ? bandMag(skyHigh.w, skyHigh.h, skyBand.kAz || 45, skyBand.k0, skyBand.k1) : 0;
   if (zenithSrc > 0) {
     const circ = 360 * Math.cos(skyBand.cap);
     const pxPer = (Math.PI * zenithSrc) / Math.max(1, circ);
@@ -2207,9 +2207,9 @@ function applySkyDisplay(display) {
   const h = find("horizon");
   const u = find("upper");
   const k = find("high");
-  if (h) { skyBand.h0 = deg(h.elBottomDeg); skyBand.h1 = deg(h.elTopDeg); }
-  if (u) { skyBand.u0 = deg(u.elBottomDeg); skyBand.u1 = deg(u.elTopDeg); }
-  if (k) { skyBand.k0 = deg(k.elBottomDeg); skyBand.k1 = deg(k.elTopDeg); }
+  if (h) { skyBand.h0 = deg(h.elBottomDeg); skyBand.h1 = deg(h.elTopDeg); skyBand.hAz = h.azimuthDeg || 45; }
+  if (u) { skyBand.u0 = deg(u.elBottomDeg); skyBand.u1 = deg(u.elTopDeg); skyBand.uAz = u.azimuthDeg || 45; }
+  if (k) { skyBand.k0 = deg(k.elBottomDeg); skyBand.k1 = deg(k.elTopDeg); skyBand.kAz = k.azimuthDeg || 45; }
   if (display.cap && display.cap.elStartDeg != null) skyBand.cap = deg(display.cap.elStartDeg);
   const tile = (display.videoTiles || [])[0];
   if (tile && tile.azimuthDeg && tile.elevationDeg) {

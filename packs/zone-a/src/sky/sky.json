@@ -7,26 +7,36 @@
     "sky-4.jpg",
     "sky-5.jpg",
     "sky-6.jpg",
-    "sky-7.jpg"
+    "sky-7.jpg",
+    "sky-8.jpg",
+    "sky-9.jpg",
+    "sky-10.jpg",
+    "sky-11.jpg",
+    "sky-12.jpg"
   ],
   "offsetsSec": [
     0,
-    1.7,
-    3.4,
-    5.1,
-    6.8,
-    8.5,
-    10.2,
-    11.9
+    0.8,
+    1.6,
+    2.4,
+    3.2,
+    4.0,
+    4.8,
+    5.6,
+    6.4,
+    7.2,
+    8.0,
+    8.8,
+    9.6
   ],
   "display": {
     "bands": [
       {
         "id": "horizon",
         "files": "slices",
-        "azimuthDeg": 45,
+        "azimuthDeg": 27.692307692,
         "elBottomDeg": -1.5,
-        "elTopDeg": 24
+        "elTopDeg": 23
       },
       {
         "id": "upper",
@@ -38,9 +48,14 @@
           "upper/sky-4.jpg",
           "upper/sky-5.jpg",
           "upper/sky-6.jpg",
-          "upper/sky-7.jpg"
+          "upper/sky-7.jpg",
+          "upper/sky-8.jpg",
+          "upper/sky-9.jpg",
+          "upper/sky-10.jpg",
+          "upper/sky-11.jpg",
+          "upper/sky-12.jpg"
         ],
-        "azimuthDeg": 45,
+        "azimuthDeg": 27.692307692,
         "elBottomDeg": 19,
         "elTopDeg": 56
       },
@@ -87,7 +102,7 @@
     {
       "id": "nebula",
       "file": "nebula.mp4",
-      "durationSec": 3.3,
+      "durationSec": 11.041667,
       "texBytes": 1628160
     }
   ]
