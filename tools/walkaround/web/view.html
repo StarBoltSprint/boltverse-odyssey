@@ -204,6 +204,13 @@ float unpack(vec4 c) {
   float e = c.r * 255.0 + c.g * 255.0 * 256.0 + c.b * 255.0 * 65536.0;
   return e / 16777215.0 * 16.0;
 }
+vec4 imagineTex(int i, vec2 uv) {
+  vec2 sz = uViewSize[i];
+  vec2 clamped = clamp(uv, vec2(0.0), max(sz - vec2(1.0), vec2(0.0)));
+  vec2 texSz = vec2(textureSize(uViews, 0).xy);
+  vec2 st = (clamped + vec2(0.5)) / texSz;
+  return texture(uViews, vec3(st, float(i)));
+}
 void project(int i, vec3 p, out vec2 uv, out float z) {
   vec3 rel = p - uCamPos[i];
   z = dot(rel, uCamForward[i]);
@@ -260,16 +267,19 @@ void main() {
   ivec2 px = ivec2(int(floor(uv.x + 0.5)), int(floor(uv.y + 0.5)));
   vec2 sz = uViewSize[bestI];
   px = clamp(px, ivec2(0), ivec2(int(sz.x) - 1, int(sz.y) - 1));
-  vec3 col = texelFetch(uViews, ivec3(px, bestI), 0).rgb;
+  if (texelFetch(uViews, ivec3(px, bestI), 0).a < 0.5) discard;
+  vec3 col = imagineTex(bestI, uv).rgb;
   if (secondW > 0.0 && bestW > 0.0 && secondW / max(bestW, 1e-6) >= uSeam) {
     vec2 uv2; float z2;
     project(secondI, vPos, uv2, z2);
     ivec2 px2 = ivec2(int(floor(uv2.x + 0.5)), int(floor(uv2.y + 0.5)));
     vec2 sz2 = uViewSize[secondI];
     px2 = clamp(px2, ivec2(0), ivec2(int(sz2.x) - 1, int(sz2.y) - 1));
-    vec3 sec = texelFetch(uViews, ivec3(px2, secondI), 0).rgb;
-    float m = bestW / max(bestW + secondW, 1e-6);
-    col = col * m + sec * (1.0 - m);
+    if (texelFetch(uViews, ivec3(px2, secondI), 0).a > 0.5) {
+      vec3 sec = imagineTex(secondI, uv2).rgb;
+      float m = bestW / max(bestW + secondW, 1e-6);
+      col = col * m + sec * (1.0 - m);
+    }
   }
   o = vec4(col, 1.0);
 }`;
@@ -324,12 +334,13 @@ void main() {
   gl.disable(gl.BLEND);
   gl.disable(gl.DITHER);
 
+  const viewLevels = Math.floor(Math.log2(Math.max(maxW, maxH))) + 1;
   const viewsTex = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D_ARRAY, viewsTex);
-  gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, maxW, maxH, cams.length);
+  gl.texStorage3D(gl.TEXTURE_2D_ARRAY, viewLevels, gl.RGBA8, maxW, maxH, cams.length);
   check("texStorage3D views");
-  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   for (let i = 0; i < images.length; i++) {
@@ -337,13 +348,16 @@ void main() {
     gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, i, img.w, img.h, 1, gl.RGBA, gl.UNSIGNED_BYTE, img.data);
     check("texSubImage3D view " + i);
   }
+  gl.generateMipmap(gl.TEXTURE_2D_ARRAY);
+  check("generateMipmap views");
 
   const depthTex = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D_ARRAY, depthTex);
   gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, maxW, maxH, cams.length);
   check("texStorage3D depth");
-  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  // measurement z buffer, not a world texture. Reads are texelFetch at mip 0.
+  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   const farPx = new Uint8Array(maxW * maxH * 4);
@@ -421,7 +435,7 @@ void main() {
     gl.uniform3fv(zFwd, cam.forward);
     gl.uniform1f(zFov, cam.fovYDeg);
     gl.uniform2f(zSize, cam.width, cam.height);
-    gl.drawElements(gl.TRIANGLES, mesh.ic, gl.UNSIGNED_INT, 0);
+    gl.drawElementsInstanced(gl.TRIANGLES, mesh.ic, gl.UNSIGNED_INT, 0, 1);
     check("z pass " + i);
   }
 

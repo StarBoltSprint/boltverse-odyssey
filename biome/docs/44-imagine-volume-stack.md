@@ -1,5 +1,7 @@
 # 44 — Imagine volume stack
 
+> **SUPERSEDED 2026-10-03 by [`docs/METHOD.md`](../../docs/METHOD.md).** Look cards + twin capsule are replaced by **8-view Imagine objects** (organic: 8-view carved hulls; hard objects: real 3D, IN TEST). Living parts = keyed Imagine video layers. Do not cook from this law; kept for history.
+
 **Go 2026-09-26 (SmiR).** Director confirmed this is the Pack-compatible path. Kitchen only. Do not read this to the player.
 
 Law [43](43-open-ground.md) still owns the four skies and the tiling ground. This law stands objects on that ground. It extends the simplex placement of herbe and arbres in [`pyre/GROVE.md`](../../pyre/GROVE.md) and section B5 of [`COLD_START-biome-method.md`](COLD_START-biome-method.md). Same rows. It adds the twin capsule, the contact shadow, the near and mid bands, and the billboard mix. It does not replace those locks. Simplex still only places. Imagine still draws.

@@ -4,7 +4,7 @@ One command turns a folder of still views of **one** object into a closed invisi
 
 Law: [`biome/docs/59-invisible-depth-carrier.md`](../../biome/docs/59-invisible-depth-carrier.md). Method: [`biome/docs/60-imagine-relief-panorama-method.md`](../../biome/docs/60-imagine-relief-panorama-method.md) (walk-around hull, Script). Clearing placement (Rocky Clearing take 3 KEEP): [`biome/docs/61-free-clearing-walk.md`](../../biome/docs/61-free-clearing-walk.md). Boulders only. Bolt stays a keyed video.
 
-The hull is a depth/occlusion carrier. It has no color, no texture, no lighting. Every visible pixel is a nearest sample of an original PNG. This is not a license for procedural or mesh-drawn worlds.
+The hull is a depth/occlusion carrier. It has no color, no texture, no lighting. Every visible pixel in the play view is a `LINEAR_MIPMAP_LINEAR` sample of an original PNG, with mipmaps (law 65). CPU QC renders are a measurement buffer, not the play view. This is not a license for procedural or mesh-drawn worlds.
 
 Do not point this at the live hang `https://boltverse-odysseyyyy.grok.me`.
 
@@ -24,7 +24,7 @@ Needs `numpy` and `pillow`. Depth Anything V2 also needs `onnxruntime` and the S
 
 KEEP default is **8** horizontal views at **45°**. A voxel stays when **7 of 8** of those silhouettes agree. Neighbor silhouettes in one elevation band must stay within area **±15%** and height **±8%**. The underside of a flat cut is closed with a rounded cap. Enclosed voids are filled so the back is not a see-through bite. An elevated still (a top view, a 3/4 view) is not hole-filled: a hollow that still shows in that still stays open.
 
-The default surface is **surface nets** on a finer occupancy grid (`max(64, 2×grid)`, capped at 128) plus Taubin smoothing (`--smooth-iters`, default 8). That mesh is invisible shape. Visible color is a nearest sample of the original PNG, chosen per fragment. `--legacy-voxels` (or `--surface voxels`) keeps the old cube grid and the per-voxel view id.
+The default surface is **surface nets** on a finer occupancy grid (`max(64, 2×grid)`, capped at 128) plus Taubin smoothing (`--smooth-iters`, default 8). That mesh is invisible shape. Visible color in the play view is a mipmapped linear sample of the original PNG, chosen per fragment. `--legacy-voxels` (or `--surface voxels`) keeps the old cube grid and the per-voxel view id.
 
 On a pass the command prints source width and height for every view, hull vertex count, mean seam fraction, and the distance at which magnification stays ≤ 1:
 
@@ -56,8 +56,8 @@ See `config.example.json`.
 Imagine pixels must not be enlarged or degraded.
 
 - Source files are copied byte-for-byte. JPEG and any non-PNG still are refused.
-- Sampling is nearest-neighbor at native resolution. No blur kernel. No mipmaps. No lossy re-encode.
-- A narrow seam may mix the two nearest source pixels. It never averages the set of views.
+- The play view samples with `LINEAR_MIPMAP_LINEAR` and mipmaps ([law 65](../../biome/docs/65-render-quality.md)). No lossy re-encode. Magnification stays ≤ 1.0, so a source texel is not enlarged onto more than one screen pixel.
+- CPU QC renders (`surface.py`) are a measurement buffer: nearest source texel, not the play view. A narrow seam may mix the two nearest source pixels. It never averages the set of views.
 - Screen texel density at the allowed approach stays at or below one source pixel per screen pixel.
 - Magnification of a view is the hull’s projected height or width in screen pixels, divided by that still’s silhouette height or width. The max of those ratios is the view’s magnification.
 - `qc/report.json` records `magnification.perView[].maxMagnification`. Every value must be **≤ 1.0**.
@@ -77,12 +77,12 @@ Imagine pixels must not be enlarged or degraded.
 
 On the smooth mesh, each fragment picks the source view whose direction best matches the normal, weight `(normal · viewDir)^8`, and keeps it only when that view’s silhouette and z-buffer see the fragment. The second-best view is blended only when its weight is at least **0.65** of the best (a narrow seam). No third view, no mip, no blur. A sub-object samples only its own views. If nothing is visible, the best-facing still is used so the fragment is not left black. The choice does not follow the viewer’s yaw.
 
-`viewVol` is still written, one id per voxel, so an older occupancy raymarcher can load the same `hull.npz`. That path chops the picture on the grid. The draw that keeps the source sharp is the mesh, sampling the PNG at native resolution (`tools/walkaround/web/view.html`).
+`viewVol` is still written, one id per voxel, so an older occupancy raymarcher can load the same `hull.npz`. That path chops the picture on the grid. The draw the player sees is the mesh (`runtime/hullmesh.js`, `web/view.html`), sampling the PNG with `LINEAR_MIPMAP_LINEAR`.
 
 Sandbox draw:
 
 1. The occupancy grid is the collider. It is not the picture.
-2. Color pass projects the mesh fragment into the chosen still and `texelFetch`s the original PNG (nearest, one mip level). No lighting term. No yaw-based texture switch.
+2. Color pass projects the mesh fragment into the chosen still and samples it with `texture()` (`LINEAR_MIPMAP_LINEAR`, mipmaps). Occupancy may `texelFetch` the exact source alpha. No lighting term. No yaw-based texture switch.
 
 ## Source gates
 
@@ -217,18 +217,18 @@ Honest limits:
 - The default method is unchanged. Optional shapes are not a better default.
 - The star densifier cannot reconstruct a dent or a through-hole. One radius per direction around the centroid.
 - There is no GPU in this builder. COLMAP's CPU path is present and untested when the `colmap` binary is absent; the selftest runs the CPU engine.
-- Video frames are used for shape only. Colour stays a nearest sample of the HD stills. Code does not draw pixels.
+- Video frames are used for shape only. Play colour is a mipmapped linear sample of the HD stills. QC colour is a measurement buffer. Code does not draw pixels.
 - A box corner is a seam when the two faces pick different stills. The warning is the point of the report.
 - Primitive silhouette IoU is the fit measure. The ±15% / ±8% lock remains the default method's gate.
 - `--compare` of a failed requested method exits non-zero even if another method scores higher. The report still names the recommendation. It does not copy the failed mesh into the pass.
 
 ## Web view
 
-`web/view.html` loads `asset.json`, `mesh.bin`, and the copied PNGs. Serve the asset folder and open the page with `?root=` pointed at it. Sampling is nearest. There is no lighting pass. The page prints `PASS` only when `gl.getError()` stays 0.
+`web/view.html` loads `asset.json`, `mesh.bin`, and the copied PNGs. Serve the asset folder and open the page with `?root=` pointed at it. Sampling is `LINEAR_MIPMAP_LINEAR` with mipmaps. The z target is a measurement buffer. There is no lighting pass. The page prints `PASS` only when `gl.getError()` stays 0. `node tools/playcheck/src/renderlint.mjs tools/walkaround/web/view.html tools/walkaround/runtime/hullmesh.js` stays clean.
 
 ## Proof
 
-`proof/` holds before/after stills of the synthetic rock (the only view set checked into this repo). Left is `--legacy-voxels`. Right is surface nets. Same camera. `compare-*-x4.png` is a nearest-neighbor viewing copy of that pair, not an upscale of the asset. `viewing-yaw-090.png` is the same camera and fov drawn into more pixels so the staircase is easier to see. Its magnification is above 1. It is not the legal QC. `bowl-top.png` and `assembly-yaw-090.png` show an elevated opening and a supplied part. `python3 tools/walkaround/selftest.py --proof` regenerates them. The synthetic PNGs are not Imagine pixels.
+`proof/` holds before/after stills of the synthetic rock (the only view set checked into this repo). Left is `--legacy-voxels`. Right is surface nets. Same camera. `compare-*-x4.png` is a nearest-neighbor viewing copy of that pair so the staircase is easier to see. It is not the play view and it is not an upscale of the asset. `viewing-yaw-090.png` is the same camera and fov drawn into more pixels so the staircase is easier to see. Its magnification is above 1. It is not the legal QC. `bowl-top.png` and `assembly-yaw-090.png` show an elevated opening and a supplied part. `python3 tools/walkaround/selftest.py --proof` regenerates them. The synthetic PNGs are not Imagine pixels.
 
 ## Synthetic test
 

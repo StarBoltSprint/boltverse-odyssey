@@ -1,5 +1,7 @@
 # Law 59 — INVISIBLE DEPTH CARRIER exception
 
+> **Amended 2026-10-03 to match [`docs/METHOD.md`](../../docs/METHOD.md)** (newer owner decisions win): relief height, rocks and approach zoom below. Hard-object (lofted hull) amendment waits for the frigate validation.
+
 **HARD / EXCEPTION ONLY — owner-approved 2026-09-29.** This is the sole approved exception to the no-mesh law. It is an invisible carrier for Imagine pixels, not a new renderer or world.
 
 ## ALLOWED
@@ -13,7 +15,7 @@
 - The relief texture for static solid decor (rocks, hulls, wrecks, ground) may be a still Imagine IMAGE, or one locked frame of an Imagine plate. This is preferred: depth is computed on that exact frame (perfect match), with no loop snap and sharper detail.
 - Living elements (stars twinkle, dust, vapor, lights) stay separate keyed Imagine VIDEO layers that loop seamlessly: first frame = last frame, or ping-pong. **Never** hard-restart them.
 - **FAIL** a plate video with baked object drift / rotation that snaps back on loop, or depth computed on one frame while the pixels drift. Bolt stays a keyed video (Bolt lock below).
-- **APPROACH:** moving toward an object never zooms a plate beyond **~1.3×**. Crossfade to a plate cooked closer on the same axis (far / mid / near). Otherwise keep the object as distant decor.
+- **APPROACH (amended 2026-10-03):** moving toward an object never pushes **magnification above 1.0** (law 65, 720×1600). Crossfade to a plate cooked closer on the same axis (far / mid / near) before the displayed magnification would exceed 1.0. Otherwise keep the object as distant decor. (Was: zoom up to ~1.3×.)
 
 ## BOLT LOCK
 
@@ -48,16 +50,16 @@ Step-by-step numbers (plate frame 12, depth, 138° outpaint, Bolt key, controls)
 
 - Code **MAY** compute the invisible **SHAPE** of walkable ground:
   - the ground plane;
-  - height relief, for example Depth Anything on a top-down Imagine image, **a few cm up to ~15–25 cm**, with tile edges at height **0**;
+  - height relief (amended 2026-10-03, owner/Director 2026-10-02): natural terrain relief **up to 3 m over ≥ 20 m wavelength**, walkable slopes **≤ 15°**; taller cliffs and canyon walls are objects standing on it, never relief;
+  - per-pixel depth micro-relief of each top-down Imagine tile (monocular depth, e.g. Depth Anything, + light high-pass), so painted cracks, plates and crystals get real micro-volume (owner 2026-10-03). Tiles stay continuous across their edges on the terrain;
   - tile layout;
   - collision;
   - placement.
 
 ### REQUIRED — every visible pixel is Imagine
 
-- **Walkable ground** = seamless **top-down Imagine still tiles** (**≥ 4 variants**) laid at **true world scale** on that invisible relief.
-- **Rocks** = upright Imagine rock cutouts placed by **simplex** (placement + **90° rotation** only).
-- **Large boulders** = walk-around hulls via `tools/walkaround/build.py` (PR #127).
+- **Walkable ground** = seamless **top-down Imagine still tiles** (**≥ 4 variants**) laid at **true world scale** on that invisible relief, in **several distinct Imagine materials** distributed by the relief with soft transitions and large-scale variation (never one plain dirt texture), plus the anti-carpet rules of METHOD.md (relief silhouettes, raised lips, small standing Imagine ground cutouts, grazing textures, fog).
+- **Rocks and boulders** (amended 2026-10-03) = **8-view Imagine silhouette carving** (8 views every 45°) → `tools/objsheet` → `tools/walkaround/build.py` (PR #127). Natural irregular shapes, never balls. Simplex places them (placement only). Small upright Imagine cutouts remain only for small ground details.
 - Code **never** draws, paints, shades, normal-maps or colours pixels. Lighting stays **baked** in the Imagine pixels.
 
 ### Quality lock (still applies)

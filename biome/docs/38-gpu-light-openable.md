@@ -1,5 +1,7 @@
 # 38 — GPU light layers + openable objects
 
+> **Amended 2026-10-03 to match [`docs/METHOD.md`](../../docs/METHOD.md):** GPU `tint` is allowed only as the approved law 67 light colour grade; otherwise no code colour. The light colour itself comes from the Imagine light plate.
+
 **Sealed 2026-09-23 (SmiR product lock).** Runtime hang. Hang ≠ wipe. Does not recook hung masters. Does not invent a gallop. Does not change a Live URL. Pack RT is a baked look plus a fake interactive overlay. It is not a raytracer.
 
 Light runtime: [`../scripts/gpu-light/gpuLight.js`](../scripts/gpu-light/gpuLight.js) — `lightLayerState` / `lightLayerFrame` / `lightBib` / `assertLightNative`.  
@@ -23,7 +25,7 @@ Two GPU jobs. One cone. No second geometry stack.
 
 | Job | Imagine cooks | GPU owns |
 |---|---|---|
-| **Light layer** | A still or short clip that is **only** light: beam, glow, neon, or flash. Keyed black or transparent. No road, no dog, no densify décor. | Intensity `0→1`, tint, on/off, cone position (`howlPose`), fade (`LIGHT.fadeSec` 0.35). |
+| **Light layer** | A still or short clip that is **only** light: beam, glow, neon, or flash. Keyed black or transparent. No road, no dog, no densify décor. | Intensity `0→1`, tint (only as the approved law 67 light colour grade; otherwise neutral — no code colour), on/off, cone position (`howlPose`), fade (`LIGHT.fadeSec` 0.35). |
 | **Openable** | Three keyed states per prop: `closed`, `open`, `transition`. Kinds: door, chest, generator, crystal hatch. Optional content bib. | Hit zone, open/close anim (`OPENABLE.animSec` 0.45), Lena LOD band, content spawn when open. |
 
 Composite + states, same stack as the path beat and Lena. The Pack RT rule below is that stack. It is not a raytracer.
@@ -97,7 +99,7 @@ if (assertLightNative(frame).length) throw new Error("light native FAIL");
 - `lightBib(kind, noun)` → `biome/fx/light/<kind>/<noun>.mp4`.
 - Kinds: `beam` | `glow` | `neon` | `flash`.
 - `key` is `"black"`. `onlyLight` is true. The plate is light pixels only.
-- `gradeFromPlate` is true. Tint multiplies. Bloom and mist still come from this densify plate.
+- `gradeFromPlate` is true. Tint multiplies only as the approved law 67 light colour grade; otherwise it stays neutral (no code colour). Bloom and mist still come from this densify plate.
 - `ambience` is `"densify"`. Law 31 exposure stays on Video A. These layers do not raise it.
 
 ---

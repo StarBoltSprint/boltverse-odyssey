@@ -1,7 +1,7 @@
 """CPU photogrammetry for one rigid turntable. No GPU.
 
-The shape is invisible. Texture stays a nearest sample of the HD stills,
-applied later by the same projector as the silhouette hull.
+The shape is invisible. QC colour stays a measurement sample of the HD stills,
+not the play view. The play view uses LINEAR_MIPMAP_LINEAR.
 
 Engine `cpu` (the default, and the one the selftest runs):
 OpenCV SIFT on extracted frames, matches along the turn, triangulation in the

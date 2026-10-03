@@ -1,5 +1,7 @@
 # 49 — Two-plane tree
 
+> **SUPERSEDED 2026-10-03 by [`docs/METHOD.md`](../../docs/METHOD.md).** Two-plane trees are replaced by the **8-view silhouette carving** method (8 views every 45°, natural irregular shapes); moving foliage = keyed Imagine video layers. Do not cook from this law; kept for history.
+
 **Go 2026-09-26 (SmiR).** Kitchen only. Do not read this to the player.
 
 Two planes are one tree **split by job**. The bole is architecture. It stays a mask almost always. The crown is weather. It is allowed to dissolve. They share an address. They do not share a material path.

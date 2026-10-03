@@ -1,5 +1,7 @@
 # 53 — GPU particles
 
+> **SUPERSEDED 2026-10-03 by [`docs/METHOD.md`](../../docs/METHOD.md).** GPU particles are replaced by **keyed seamless-looping Imagine video living layers** (stars, dust, vapor, sparks, glow); law 67 bans code-drawn particles. Do not cook from this law; kept for history.
+
 **Go 2026-09-26 (SmiR).** Kitchen only. Do not read this to the player.
 
 A spark layer on the field. Mask-friendly motes, paw sparks, and the Howl burst. The sim is in the vertex shader. The CPU only writes births. One `Points` draw, about 1400 slots. This is GPU playback, not a compute sandbox. It is enough for motes, paws, and a Howl. A million moss specks would want a position texture. That density is not Jade v1.

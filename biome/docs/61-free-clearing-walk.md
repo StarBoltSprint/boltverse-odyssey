@@ -1,5 +1,7 @@
 # 61 — Free-360 clearing walk
 
+> **Amended 2026-10-03 to match [`docs/METHOD.md`](../../docs/METHOD.md)** (newer owner decisions win): relief height, ground materials and rocks below.
+
 Kitchen only. Not a hang. Not a new play URL. Phone QC **2026-10-01**, Rocky Clearing.
 
 Invisible shape is the [2026-10-01 extension of law 59](59-invisible-depth-carrier.md#extension-2026-10-01-invisible-procedural-terrain-shape). Code computes the plane, the relief, the tile layout, collision, and placement. Every visible pixel is Imagine. The relief panorama, the far ring, and the hull command stay [doc 60](60-imagine-relief-panorama-method.md). This file is the walk that passed.
@@ -26,13 +28,13 @@ Code computes only the invisible shape:
 
 Code never draws, shades, or colours a pixel. Lighting stays baked in the Imagine pixels.
 
-The tiles are Imagine stills at true world scale. Law 59 asks for **≥ 4** variants. Tile edges sit at height **0**. Relief amplitude stays the law 59 range: a few centimetres up to **~15–25 cm**.
+The tiles are Imagine stills at true world scale. Law 59 asks for **≥ 4** variants. Relief (amended 2026-10-03): terrain **up to 3 m over ≥ 20 m**, slopes **≤ 15°** (magnification includes the slope stretch), plus per-pixel depth micro-relief from each tile (depth + light high-pass). Use **several distinct Imagine materials** distributed by the relief with soft transitions; never one plain dirt texture. Anti-carpet: relief silhouettes against the sky, raised lips at fissures/plates, small standing Imagine ground cutouts, grazing textures where useful, fog for depth.
 
 The **360° Imagine ring** is the far backdrop only (sky and ridges). It is not the walkable ground. It stays put when Bolt walks.
 
 ## Rocks
 
-Rock cutouts are Imagine images. Simplex **places** them. Placement only. Law 59 also allows a **90°** rotation. Simplex does not draw the rock.
+Rocks (amended 2026-10-03) are **8-view carved hulls** like the boulders below: 8 Imagine views every 45°, natural irregular silhouettes, never balls. Simplex **places** them. Placement only. Simplex does not draw the rock. Small upright Imagine cutouts are only for small ground details.
 
 - Dusk-grade the cutout to the scene. The grade is the Imagine pixels, matched to the dusk. It is not a new paint.
 - Contact darkening and shadows come from Imagine pixels, baked into the Imagine asset or a keyed Imagine shadow card. Never code-drawn.
@@ -46,7 +48,7 @@ Preferred build: **8** Imagine views, then [`tools/walkaround/build.py`](../../t
 
 Weaker fallback: one photo, a depth map, and a mirrored back. The back is mirror-symmetric. The sides are a thin seam. Cook the 8 views when the boulder has to be walked around.
 
-Budget stays **2–3** walk-around objects per clearing.
+Budget (amended 2026-10-03): set by the phone perf budgets (instancing, drawCalls, texMB, LOD), not a fixed count (was 2–3 per clearing).
 
 ## Quality lock
 
@@ -67,7 +69,7 @@ A stuck ground, and a HUD magnification that does not match the claim, are FAIL.
 - Patchwork tile seams, and the same tile repeating.
 - Rocks brighter than the dusk.
 - Green key fringe on the paws. Despill the same way as the gallop on that plate ([doc 60](60-imagine-relief-panorama-method.md) sandbox key, or law [17](17-live-compositor.md) on the lane compositor).
-- Uniform ground. Add mid-size stones: Imagine cutouts, simplex placement.
+- Uniform ground. Use several Imagine materials by relief and add small standing Imagine ground details; mid-size stones are 8-view hulls, simplex placement.
 - Floating cutouts. Snap the base to the relief.
 
 ## Paths between clearings

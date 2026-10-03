@@ -1,5 +1,7 @@
 # 50 — Heightfield posture
 
+> **Superseded by [`docs/METHOD.md`](../../docs/METHOD.md)** for open zones: the ground is not a flat film; it carries invisible height relief + per-tile depth relief. Kept for history; not deleted.
+
 **Go 2026-09-26 (SmiR).** Kitchen only. Do not read this to the player.
 
 Height is **posture**, not population. `s + 101` is a different page of the same book, so the ground rolls wider than the grove. Trees still come from n1 / n2 / n3. Hills only say how high the paws and the kit sit.

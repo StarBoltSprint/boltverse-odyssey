@@ -4,7 +4,8 @@ Law: biome/docs/59-invisible-depth-carrier.md
 Method: biome/docs/60-imagine-relief-panorama-method.md
 
 The hull is a depth/occlusion carrier. It has no color of its own.
-Visible pixels are nearest samples of the original PNGs.
+The play view samples the original PNGs with LINEAR_MIPMAP_LINEAR and mipmaps.
+QC renders in this module are a measurement buffer, not the play view.
 """
 
 from __future__ import annotations
@@ -678,7 +679,7 @@ def render_view(
     height: int,
     fov_y: float,
 ) -> tuple[np.ndarray, dict]:
-    """Raymarch the hull. Color is a nearest Imagine sample, never a hull material."""
+    """Raymarch the hull for QC. Colour is a measurement sample, not the play view."""
     ys, xs = np.mgrid[0:height, 0:width]
     fy = (height * 0.5) / math.tan(math.radians(fov_y) * 0.5)
     fx = fy
@@ -1545,7 +1546,8 @@ def build(
         "drawsOwnPixels": False,
         "invisibleHull": True,
         "notForBolt": True,
-        "pixels": "lossless-png-nearest",
+        "pixels": "lossless-png",
+        "playSampling": "LINEAR_MIPMAP_LINEAR",
         "assignment": "per-surface-point-best-facing",
         "assignmentDependsOnViewerYaw": False,
         "magnificationLimit": MAG_LIMIT,
@@ -2184,8 +2186,9 @@ def build(
         "drawsOwnPixels": False,
         "notForBolt": True,
         "pixels": "original-png-lossless",
-        "sampling": "nearest",
-        "mipmaps": False,
+        "sampling": "LINEAR_MIPMAP_LINEAR",
+        "mipmaps": True,
+        "qcSampling": "measurement-nearest",
         "assignment": "per-fragment-best-facing" if surface_mode == "nets" else "per-surface-point-best-facing",
         "assignmentDependsOnViewerYaw": False,
         "weight": "(normal · viewDir)^8",

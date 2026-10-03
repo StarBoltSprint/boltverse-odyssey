@@ -3,8 +3,9 @@
 
   python3 tools/mesh3d/build.py --views tools/mesh3d/inputs/ship --out tools/mesh3d/out
 
-The mesh is shape only. Visible pixels are a cos(yaw) blend of Imagine
-views, zero past 45 degrees. Uncovered texels stay transparent.
+The mesh is shape only. The play viewer samples Imagine views with
+LINEAR_MIPMAP_LINEAR. QC frames are a measurement buffer, not the play view.
+Uncovered texels stay transparent. Weight is cos(yaw), zero past 45 degrees.
 """
 
 from __future__ import annotations
@@ -173,7 +174,39 @@ def _cam_json(cam: dict) -> dict:
     }
 
 
-def build(views_dir: Path, out_dir: Path, engine: str, phone_scale: float) -> dict:
+def resolve_shape(engine: str, experiment: str | None) -> dict:
+    """Play shape is the Imagine visual hull. TripoSR never feeds that mesh.
+
+    ``--experiment triposr`` may record a network mesh beside the hull.
+    That record has experimentFeedsPlay false and is not copied into ship.obj.
+    """
+    engine = (engine or "visual-hull").strip()
+    experiment = (experiment or "").strip() or None
+    if engine not in ("auto", "visual-hull", "triposr"):
+        raise SystemExit(f"FAIL mesh3d engine {engine}")
+    if experiment not in (None, "triposr"):
+        raise SystemExit(f"FAIL mesh3d experiment {experiment}")
+    if engine == "triposr" and experiment != "triposr":
+        raise SystemExit(
+            "FAIL mesh3d: TripoSR is not a shape source. "
+            "Pass --experiment triposr. That output cannot feed a play build."
+        )
+    return {
+        "shape": "visual-hull",
+        "feedsPlay": True,
+        "attemptTriposr": experiment == "triposr",
+        "experimentFeedsPlay": False,
+        "experiment": experiment,
+    }
+
+
+def build(
+    views_dir: Path,
+    out_dir: Path,
+    engine: str,
+    phone_scale: float,
+    experiment: str | None = None,
+) -> dict:
     t0 = time.time()
     views = load_view_pngs(views_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -183,12 +216,22 @@ def build(views_dir: Path, out_dir: Path, engine: str, phone_scale: float) -> di
     if hull is None or len(hull["faces"]) == 0:
         raise SystemExit("FAIL mesh3d: visual hull is empty")
 
-    tri_note = {"ok": False, "attempted": False, "reason": "not requested"}
+    policy = resolve_shape(engine, experiment)
+    tri_note = {
+        "ok": False,
+        "attempted": False,
+        "reason": "not a shape source",
+        "feedsPlay": False,
+        "label": "rejected-shape-source",
+    }
     mesh = hull
-    used = "visual-hull"
-    if engine in ("auto", "triposr"):
+    used = policy["shape"]
+    if policy["attemptTriposr"]:
         image = views_dir / "yaw-000.png"
         tri_note = _try_triposr(image, out_dir)
+        tri_note["feedsPlay"] = False
+        tri_note["label"] = "experiment-triposr"
+        tri_note["playMesh"] = "visual-hull"
         npz = out_dir / "qc" / "triposr.npz"
         if tri_note.get("ok") and npz.is_file():
             data = np.load(npz)
@@ -205,28 +248,9 @@ def build(views_dir: Path, out_dir: Path, engine: str, phone_scale: float) -> di
             tri_note["alignIoU"] = aligned["iou"]
             tri_note["alignYawDeg"] = aligned["yawDeg"]
             tri_note["alignScale"] = aligned["scale"]
-            if aligned["iou"] >= 0.15 and len(data["faces"]) > 0:
-                from engines import _surface
-
-                surf = _surface()
-                verts = aligned["vertices"]
-                faces = np.asarray(data["faces"], np.int32)
-                faces = surf.orient_outward(verts, faces)
-                normals = surf.vertex_normals(verts, faces)
-                mesh = {
-                    "vertices": verts,
-                    "faces": faces,
-                    "normals": normals,
-                    "engine": "triposr",
-                    "silhouetteIoU": aligned["iou"],
-                }
-                used = "triposr"
-            else:
-                tri_note["ok"] = False
-                tri_note["reason"] = (
-                    f"aligned silhouette IoU {aligned['iou']:.3f} below 0.15; "
-                    "kept the visual hull. Network mesh was not shown."
-                )
+            tri_note["reason"] = (
+                "experiment only; the network mesh was not written into the play asset"
+            )
 
     sources = prepare_sources(views, PROJECT_YAWS, PHOTO_DISTANCE, ELEVATION_DEG, HFOV_DEG)
     z_bias = 0.08
@@ -346,6 +370,9 @@ def build(views_dir: Path, out_dir: Path, engine: str, phone_scale: float) -> di
     asset = {
         "schema": "mesh3d-real-1",
         "engine": used,
+        "feedsPlay": True,
+        "sampling": "LINEAR_MIPMAP_LINEAR",
+        "mipmaps": True,
         "drawsOwnPixels": False,
         "unlit": True,
         "blend": "cos(yawDelta), zero past 45deg",
@@ -387,7 +414,7 @@ def build(views_dir: Path, out_dir: Path, engine: str, phone_scale: float) -> di
         "triposrWeights": str(TRIPOSR_CKPT),
         "triangles": int(len(mesh["faces"])),
         "vertices": int(len(mesh["vertices"])),
-        "texture": "source png nearest, 1280x720, no atlas upsample",
+        "texture": "play LINEAR_MIPMAP_LINEAR + mipmaps; QC frames are a measurement buffer",
         "phone": [phone_w, phone_h],
         "maxMagnification": fit["maxMagnification"],
         "magnificationPerView": fit["perView"],
@@ -424,10 +451,16 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Invisible mesh + Imagine projection")
     parser.add_argument("--views", type=Path, default=HERE / "inputs" / "ship")
     parser.add_argument("--out", type=Path, default=HERE / "out")
-    parser.add_argument("--engine", choices=("auto", "visual-hull", "triposr"), default="visual-hull")
+    parser.add_argument("--engine", choices=("auto", "visual-hull"), default="visual-hull")
+    parser.add_argument(
+        "--experiment",
+        choices=("triposr",),
+        default=None,
+        help="Labelled experiment. The network mesh cannot feed a play build.",
+    )
     parser.add_argument("--phone-scale", type=float, default=1.0)
     args = parser.parse_args()
-    build(args.views, args.out, args.engine, args.phone_scale)
+    build(args.views, args.out, args.engine, args.phone_scale, args.experiment)
     return 0
 
 

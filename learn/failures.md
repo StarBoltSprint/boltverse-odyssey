@@ -275,3 +275,13 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Depth runs only when the second character is a digit (`m0.png`). `hask.png` is not in the tree. |
 | Guard | No test calls `prep.py`. The branch is the guard. |
 | Sources | `packs/zone-a/src/terrain/prep.py`. |
+### 2026-10-03 — walkaround and mesh3d still sampled nearest, and auto called TripoSR
+
+| | |
+| --- | --- |
+| Take | Tool loop for issue #153. No Imagine cook. |
+| Defect | Play viewers in `tools/walkaround` and `tools/mesh3d` sampled world stills with nearest / no mipmaps. `tools/mesh3d --engine auto` could replace the play mesh with TripoSR. |
+| Root cause | Law 65 and the golden rule were written into the docs on 2026-10-03. The tool code and the selftests were not updated, so a green selftest could still ship nearest sampling and a network mesh. |
+| Fix | Play stills use `LINEAR_MIPMAP_LINEAR` and mipmaps. CPU QC nearest is labelled a measurement buffer. `auto` is the visual hull. TripoSR runs only with `--experiment triposr` and is not written into the play mesh. The checked-in `out/asset.json` stays the 2026-10-02 experiment record with `feedsPlay` false. Magnification limit stays 1.0. |
+| Guard | `python3 tools/walkaround/selftest.py` (`check_law65_play_sampling`) and `python3 tools/mesh3d/selftest.py` (`check_law65_and_triposr`). `node tools/playcheck/src/renderlint.mjs` on `tools/walkaround/web/view.html`, `tools/walkaround/runtime/hullmesh.js`, and `tools/mesh3d/viewer/main.js`. |
+| Sources | Issue #153. [`docs/METHOD/decisions-log.md`](../docs/METHOD/decisions-log.md) contradictions 7 and 8. [`biome/docs/65-render-quality.md`](../biome/docs/65-render-quality.md). |

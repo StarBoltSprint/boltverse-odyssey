@@ -1,5 +1,7 @@
 # 63 — Layout file + rendered-pixel validator (any biome)
 
+> **Amended 2026-10-03 to match [`docs/METHOD.md`](../../docs/METHOD.md):** new zones are organic (`clearing/2`, no circles / rings, owner 2026-10-02). Circle-mode keys and rows (`edge_ring`, `ring_closed`) remain only for the retired test layout and tool samples.
+
 Kitchen only. Not a hang. Owner direction **2026-10-01**, after the take 8 FAIL below.
 
 Biome-agnostic. Any biome, cooked by any player's Grok, lays out its clearings the same way. The world-by-zones creation process is [doc 62](62-open-world-zones-process.md). The clearing method is [doc 61](61-free-clearing-walk.md). The invisible-shape exception is the [2026-10-01 extension of law 59](59-invisible-depth-carrier.md#extension-2026-10-01-invisible-procedural-terrain-shape). Every hard lock in doc 62 stays: every visible pixel is Imagine, code computes invisible shape only, one Bolt, magnification ≤ 1.0 at 720×1600.
@@ -66,10 +68,10 @@ The schema uses only these generic words. No style or paint word appears as a ke
 
 | Key | Meaning |
 | --- | --- |
-| `zone` | Walkable area: shape, radius, centre, ground tile set (top-down Imagine tiles, `0.90` m), relief settings (amplitude, edge height 0). |
-| `edge_ring` | Ring radius, the list of hull assets (`tools/walkaround` `asset.json`) with heading, radial offset, yaw. Max gap allowed outside gates: 0°. |
+| `zone` | Walkable area. New zones: `shape: "organic"` (schema `clearing/2`): footprint polygon or seeded generator, sub-areas, passages, ground tile sets (several Imagine materials, `0.90` m tiles), relief (up to 3 m over ≥ 20 m, slope ≤ 15°). `shape: "circle"` is the retired test mode. |
+| `edge_ring` | **Retired circle mode only** (`clearing/1`). Organic zones use `boundary` pieces placed along the closed footprint (no ring; row `no_ring`). |
 | `gates` | Each gate: `id`, heading, opening width, hull asset of the frame, optional living-layer asset (looping keyed Imagine video), `leads_to`. |
-| `interior_objects` | Walk-around hulls inside the zone: asset, position, yaw, `interactive` flag. Budget 2–3 (doc 61). |
+| `interior_objects` | Walk-around hulls inside the zone: asset, position, yaw, `interactive` flag. Landmark + ≥ 3 POIs per organic zone; count limited by phone perf budgets. |
 | `near_lens` | Camera-near cull and fade distances, so nothing blurry or semi-transparent sits in front of the lens (doc 61 take 4: blurry, semi-transparent near cutouts FAIL). |
 | `fog_band` | Inner / outer radius, patch count (20–40+), fog atlas asset (one looping Imagine video packed into frames), size range, tint range, opacity range, loop offsets, near-camera fade. |
 
@@ -101,7 +103,7 @@ Example (values are illustrative):
 
 ## Generate and check — `tools/layout`
 
-Builders do not hand-place a hull, a collider, or a gate. They write a zone spec (radius, ring radius, gate bearing and width, asset manifests from `tools/walkaround`, counts per category) and run:
+Builders do not hand-place a hull, a collider, or a gate. They write an organic zone spec (footprint or generator, sub-areas, passages, relief, boundary assets, gates, scatter, POIs, cells; asset manifests from `tools/walkaround`) and run:
 
 ```bash
 python3 tools/layout/layout.py generate --spec <spec.json> --out <dir>
@@ -137,7 +139,7 @@ Rows the check prints, each with numbers:
 | `stream_plan` | Organic files only, and only when the clearing has a `streaming` object. `fade_in_ms` is outside [300, 600] (owner decree #457, approved 2026-10-02), `preload_cone_deg` is outside [30, 180], a present `fade_in_distance_m` is outside [2, 24], `preload_lookahead_m` is under the resident cell radius (spec rail 11, default 40 m when the file omits `cell_radius_m`), a preload id is missing or names its own cell, or the stored eight-heading lists differ from the cone recomputed on those cells. Numbers are printed. Absent `streaming` omits the row. Director decision 2026-10-02 15:04 (delegated owner approval) sets the cone and distance caps. |
 | `scatter` | Organic files only. A passage's measured clearance is under that passage's `width_m`, an interior sits on a slope over the walkable 15° (or a tighter authored cap) without a boundary flag, or a depth band (`fore`, `mid`, `far`) has no category. |
 
-Circle files (`zone.shape` `circle`, schema `clearing/1`) keep the rows they had and do not emit the organic rows. They emit `yaw_band` only when the clearing records `yaw_bands`. Organic files (schema `clearing/2`) do not emit `ring_closed` or `playcheck_data`. They emit `yaw_band` when the clearing records `yaw_bands`, after `variety`. They emit `stream_plan` only when the clearing has a `streaming` object, after `cells`.
+Circle files (`zone.shape` `circle`, schema `clearing/1`; retired test layout, kept for samples and selftests) keep the rows they had and do not emit the organic rows. They emit `yaw_band` only when the clearing records `yaw_bands`. Organic files (schema `clearing/2`) do not emit `ring_closed` or `playcheck_data`. They emit `yaw_band` when the clearing records `yaw_bands`, after `variety`. They emit `stream_plan` only when the clearing has a `streaming` object, after `cells`.
 
 The diagram `debug-topdown.png` draws the ring, the gate cone, the colliders, and the path. For an organic file it draws the polygon, the boundary pieces, the gates, the sub-areas, the passages, the cell rectangles, the depth bands, and the POI intents. It is a kitchen diagram. It is not the play view and not an Imagine pixel.
 

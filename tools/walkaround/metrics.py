@@ -1,7 +1,7 @@
 """Comparison block for walkaround --compare.
 
 Schema walkaround-compare-1. Scores are a reading aid. A FAIL stays a FAIL.
-Pixels in the thumbnails are nearest samples of the Imagine (or synthetic) stills.
+Pixels in the thumbnails are a measurement buffer (nearest), not the play view.
 """
 
 from __future__ import annotations
@@ -259,7 +259,7 @@ def write_comparison(out_dir: Path, methods: list[tuple[str, Path, dict | None]]
         "note": (
             "Recommended is the highest score among methods with ok true. "
             "A failed optional method is not replaced by the default. "
-            "Thumbnails are four sides plus one 3/4-high view, nearest samples of the stills."
+            "Thumbnails are four sides plus one 3/4-high view, a measurement buffer, not the play view."
         ),
         "methods": rows,
     }
