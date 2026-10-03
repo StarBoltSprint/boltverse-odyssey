@@ -1,6 +1,6 @@
 # 44 — Imagine volume stack
 
-> **SUPERSEDED 2026-10-03 by [`docs/METHOD.md`](../../docs/METHOD.md).** Look cards + twin capsule are replaced by **8-view Imagine objects** (organic: 8-view carved hulls; hard objects: real 3D, IN TEST). Living parts = keyed Imagine video layers. Do not cook from this law; kept for history.
+> **SUPERSEDED 2026-10-03 by [`docs/METHOD.md`](../../docs/METHOD.md).** Look cards + twin capsule are replaced by **8-view Imagine objects** (organic: 8-view carved hulls; hard objects: real 3D, VALIDATED 2026-10-03). Living parts = keyed Imagine video layers. Do not cook from this law; kept for history.
 
 **Go 2026-09-26 (SmiR).** Director confirmed this is the Pack-compatible path. Kitchen only. Do not read this to the player.
 

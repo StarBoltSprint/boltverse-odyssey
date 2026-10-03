@@ -1,15 +1,15 @@
 # Hard objects — measured loft (Howl-class frigate)
 
-Back to [METHOD.md](../METHOD.md). This page is the recipe. Status: **IN TEST**, pending phone validation by SmiR.
-Do not change the word to APPROVED. Contradiction 12 in [decisions-log.md](decisions-log.md) stays **OPEN**
-(law 59 does not yet name a lofted hull). Do not amend law 59 in the same breath as using this recipe.
+Back to [METHOD.md](../METHOD.md). This page is the recipe. Status: **VALIDATED** — SmiR 2026-10-03 21:36 Paris, on the phone, after PR #161.
+The known issues in section 11 are accepted as declared, not blockers. Contradiction 12 in [decisions-log.md](decisions-log.md) is **RESOLVED**:
+[law 59](../../biome/docs/59-invisible-depth-carrier.md#amendment-2026-10-03-lofted-measured-section-hulls) now says lofted measured-section hulls are an approved invisible carrier; every visible pixel stays unlit Imagine.
 
 The first IN TEST row on METHOD.md said "plates as offset copies along computed normals". **This recipe does not do that.**
 The plates are the measure and the unlit skin of one lofted volume. A normal is used only to pick which skin a quad
 uses (roof, belly, port, starboard) and to flip the quad outward. There is no second shell pushed out along the normal.
 Do not add one.
 
-**Approved by SmiR 2026-10-03** (these two points are APPROVED; the recipe as a whole stays IN TEST):
+**Approved by SmiR 2026-10-03** (these two points were APPROVED first; the whole recipe is VALIDATED since 2026-10-03 21:36, see the status line):
 1. The hull is **lofted measured cross-sections only** — no offset shell, no other hull generator.
 2. **Colour-free templates in the repo, exact Imagine prompts only in the untracked local file** (section 0).
 
@@ -432,7 +432,7 @@ Turntable (`frigate-view.ts`), if you use it:
 
 ## 11. QC issues
 
-Fixed in this pass (still **IN TEST** until SmiR checks them on the phone), 2026-10-03:
+Fixed in PR #161 and validated by SmiR on the phone, 2026-10-03 21:36:
 
 1. **No second copy of a part on the plates that were actually cleaned.** Engine bells, nacelles, the deck turret and the ventral gun are measured on `images/measure/` and built once. `stern.jpg` and `belly.jpg` are plain plating. The port skin no longer paints the four stern nozzles. Not a code rectangle.
 2. **Pylon aspect.** The strut keeps the plate's aspect (about 6). It is not widened to 2.05–3.4. Magnification on the pylon stays ≤ 1.
@@ -445,7 +445,7 @@ Fixed in this pass (still **IN TEST** until SmiR checks them on the phone), 2026
 
 Earlier mesh fixes still stand: open port bay with `hangar.jpg` walls. Proof clip for this pass: `tools/hard-objects/qc/howl-single.mp4` (stern, deck, nacelles and pylons, belly, bay, 25 fps, eased). `howl-fixes.mp4` is an older pass.
 
-Still open:
+Accepted known issues (SmiR 2026-10-03: declared and accepted; do not spend Imagine quota on them; a fix is welcome, not required):
 
 - **Bolt.** Owner QC showed Bolt as a carved blob instead of the Imagine video `lock/bolt-gallop-cycle.mp4` / `lock/bolt-idle-breath.mp4`. This folder does not draw Bolt. Do not carve, hull, or recook Bolt.
 - **Starboard nozzles.** `stbd.jpg` still paints the four stern nozzles and the lower pods beside the 3D bells. Three full Imagine redraws and one local clone failed (they redrew the ship or left a speckled flare). Stopped. Do not start another full-frame redraw.

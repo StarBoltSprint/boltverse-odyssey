@@ -2,7 +2,7 @@
 
 Invisible shape, Imagine pixels. Code does not draw colour, lights, shadows, or a texture.
 
-The play shape is the visual hull carved from the Imagine stills. TripoSR is not a shape source (golden rule, 2026-10-02: no TripoSR-style mesh generators). It runs only with `--experiment triposr`, and that mesh is not written into the play asset. 8-view carving (`tools/walkaround`) and the hard-object measured-section method (IN TEST) stay the Imagine-derived shape paths.
+The play shape is the visual hull carved from the Imagine stills. TripoSR is not a shape source (golden rule, 2026-10-02: no TripoSR-style mesh generators). It runs only with `--experiment triposr`, and that mesh is not written into the play asset. 8-view carving (`tools/walkaround`) and the hard-object measured-section method (VALIDATED 2026-10-03) stay the Imagine-derived shape paths.
 
 A surface the orbit cannot cover with a real Imagine view stays transparent. The ship is half-buried so the belly, which no still shows, is not on screen. The play viewer samples the stills with `LINEAR_MIPMAP_LINEAR` and mipmaps (law 65). QC frames from `shade.py` are a measurement buffer, not the play view.
 
