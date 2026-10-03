@@ -404,13 +404,61 @@ function trackTex(id, bytes) {
   texBytes += bytes;
 }
 
-function loadImage(url) {
+// Phone over 4G: a big PNG can drop mid-transfer. Load at most 4 at a time,
+// retry with backoff, and share one promise per URL so prefetch and boot agree.
+const imgCache = new Map();
+const imgQueue = [];
+let imgActive = 0;
+let imgDone = 0;
+function imageOnce(url) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => resolve(img);
     img.onerror = () => reject(new Error(url));
     img.src = url;
   });
+}
+function pumpImages() {
+  while (imgActive < 4 && imgQueue.length) {
+    imgActive++;
+    imgQueue.shift()();
+  }
+}
+function loadProgress() {
+  if (!window.__play) hud.textContent = "loading " + imgDone + "/" + imgCache.size;
+}
+function loadImage(url) {
+  if (imgCache.has(url)) return imgCache.get(url);
+  const p = new Promise((resolve, reject) => {
+    imgQueue.push(async () => {
+      try {
+        for (let a = 0; ; a++) {
+          try {
+            const img = await imageOnce(a ? url + (url.includes("?") ? "&" : "?") + "retry=" + a : url);
+            imgDone++;
+            loadProgress();
+            resolve(img);
+            return;
+          } catch (e) {
+            if (a >= 3) throw e;
+            await new Promise((r) => setTimeout(r, 1000 * 2 ** a));
+          }
+        }
+      } catch (e) {
+        reject(e);
+      } finally {
+        imgActive--;
+        pumpImages();
+      }
+    });
+    pumpImages();
+  });
+  imgCache.set(url, p);
+  loadProgress();
+  return p;
+}
+function prefetchImages(urls) {
+  for (const u of urls) if (u) loadImage(absUrl(u)).catch(() => {});
 }
 function absUrl(p) {
   if (!p) return p;
@@ -2064,7 +2112,12 @@ async function loadBand(manifest, id) {
 
 async function boot() {
   try {
+    hud.textContent = "loading";
     clearing = await (await fetch("/packs/zone-a/clearing.json")).json();
+    {
+      const g = clearing.zone.ground;
+      prefetchImages([...(g.tiles || []), ...(g.depth || []), g.mask, ...(g.details || []), ...((clearing.backdrop && clearing.backdrop.slices) || [])]);
+    }
     labelOf("hero");
     labelOf("ground");
     labelOf("fog");
@@ -2105,6 +2158,11 @@ async function boot() {
       buildGround(ground.tile_m || 0.9);
     }
     skyManifest = await (await fetch(absUrl("packs/zone-a/src/sky/sky.json"))).json();
+    {
+      const bands = (skyManifest.display && skyManifest.display.bands) || [];
+      const band = (id) => ((bands.find((b) => b.id === id) || {}).files || []).map((f) => "packs/zone-a/src/sky/" + f);
+      prefetchImages([...band("upper"), ...band("high"), "packs/zone-a/src/sky-cap/zenith.png", clearing.fog_band && clearing.fog_band.atlas]);
+    }
     applySkyDisplay(skyManifest.display);
     const slices = clearing.backdrop.slices || [];
     const skyImgs = [];
@@ -2163,9 +2221,14 @@ async function boot() {
     await measurePaw(gallopVideo);
     for (let i = 0; i < skyVideos.length; i++) {
       const v = skyVideos[i];
+      hud.textContent = "loading sky video " + (i + 1) + "/" + skyVideos.length;
       await new Promise((r) => {
         if (v.readyState >= 2) r();
-        else v.addEventListener("loadeddata", () => r(), { once: true });
+        else {
+          v.addEventListener("loadeddata", () => r(), { once: true });
+          v.addEventListener("error", () => r(), { once: true });
+          setTimeout(r, 20000);
+        }
       });
       await v.play().catch(() => {});
     }
