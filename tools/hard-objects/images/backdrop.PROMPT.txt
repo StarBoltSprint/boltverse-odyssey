@@ -1,0 +1,16 @@
+STATUS
+The verbatim Imagine tool-call string that produced this JPEG was not stored.
+The file's EXIF is JFIF only (no prompt, no comment). No session log kept the call.
+This JPEG is the locked ruler. Do not regenerate it and treat the new file as this plate.
+Block ASK is the generation contract to copy if the plate must be replaced.
+It matches this file's pixel size, aspect and job. It is not a recovered transcript.
+
+ROLE turntable backdrop only. Not a skin of the hull. Loaded by frigate-view.ts as /biome/frigate/backdrop.jpg.
+PIXELS 1792x1008. ASPECT 16:9.
+JOB One continuous backdrop plate. Not a cube, not six faces, not a typed clear. The turntable sets it as the scene background so no cube edge can appear.
+
+ASK (colour-free template; tone wording stays in the untracked local prompts file)
+Imagine, aspect 16:9. No ship, no ground, no text, no border, no watermark, no frame, no cube faces.
+One continuous field, even from edge to edge, so it can sit behind the ship without a join.
+<TONE + ACCENTS from the local file>.
+Subject: the JOB above, nothing else.

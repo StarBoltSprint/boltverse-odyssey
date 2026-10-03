@@ -265,7 +265,7 @@ def main():
         "port.jpg", "stbd.jpg", "top.jpg", "belly.jpg", "stern.jpg",
         "sec-stern.jpg", "sec-shoulder.jpg", "sec-mid.jpg", "sec-bow.jpg",
         "nacelle.jpg", "nacelle-front.jpg", "turret.jpg", "turret-front.jpg",
-        "bridge.jpg", "bridge-front.jpg", "pylon.jpg", "hangar.jpg",
+        "bridge.jpg", "bridge-front.jpg", "pylon.jpg", "hangar.jpg", "backdrop.jpg",
         "port-detail-aft.jpg", "port-detail-mid.jpg", "port-detail-bow.jpg",
     ]
     missing = [n for n in need if not (IMG / n).is_file() or not (IMG / (n.replace(".jpg", ".PROMPT.txt"))).is_file()]

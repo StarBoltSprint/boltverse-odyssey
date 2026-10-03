@@ -350,7 +350,6 @@ export async function mountFrigate(
   const bridgeMap = skinTex("/biome/frigate/bridge.jpg");
   const bridgeFrontMap = skinTex("/biome/frigate/bridge-front.jpg");
   const pylonMap = skinTex("/biome/frigate/pylon.jpg");
-  const pylonFrontMap = skinTex("/biome/frigate/pylon.jpg");
   const hangarMap = skinTex("/biome/frigate/hangar.jpg");
 
   const portM = largestMask(maskOf(port, 16), port.w, port.h);
@@ -736,7 +735,7 @@ export async function mountFrigate(
   root.add(bells.mesh(sternMap));
   root.add(cores.mesh(sternMap));
 
-  const depth = Math.max(6, (beamPort[Math.floor(NU * 0.5)] || 8) * 0.55);
+  const depth = Math.max(8, (beamPort[Math.floor(NU * 0.5)] || 8) * 0.82);
   const sample = (u: number, sy: number, zSide: number) => {
     const i = Math.max(0, Math.min(NU - 1, Math.round(u * (NU - 1))));
     let best = P[i][0];
@@ -762,27 +761,44 @@ export async function mountFrigate(
   const iUR = inset(hUR);
   const iLL = inset(hLL);
   const iLR = inset(hLR);
-  const face = (bucket: Bucket, A: V3, B: V3, C: V3, D: V3, mapFull: boolean, edge?: UV) => {
-    const uv = (k: number): UV => {
-      if (!mapFull && edge) return edge;
-      return [k === 1 || k === 2 ? 1 : 0, k === 2 || k === 3 ? 1 : 0];
-    };
-    const ia = bucket.v(A.x, A.y, A.z, uv(0)[0], uv(0)[1]);
-    const ib = bucket.v(B.x, B.y, B.z, uv(1)[0], uv(1)[1]);
-    const ic = bucket.v(C.x, C.y, C.z, uv(2)[0], uv(2)[1]);
-    const idd = bucket.v(D.x, D.y, D.z, uv(3)[0], uv(3)[1]);
+  const face = (bucket: Bucket, A: V3, B: V3, C: V3, D: V3, uv: UV[]) => {
+    const ia = bucket.v(A.x, A.y, A.z, uv[0][0], uv[0][1]);
+    const ib = bucket.v(B.x, B.y, B.z, uv[1][0], uv[1][1]);
+    const ic = bucket.v(C.x, C.y, C.z, uv[2][0], uv[2][1]);
+    const idd = bucket.v(D.x, D.y, D.z, uv[3][0], uv[3][1]);
     bucket.quad(ia, ib, ic, idd);
   };
-  face(hang, iUL, iUR, iLR, iLL, true);
-  face(hang, hLL, hLR, iLR, iLL, true);
-  face(hang, hUL, iUL, iUR, hUR, true);
-  face(hang, hUL, hLL, iLL, iUL, true);
-  face(hang, hUR, iUR, iLR, hLR, true);
-  const edgeUV = sideUV(port, portBox, portImgTop, portImgBot, (holeU0 + holeU1) / 2, (holeS0 + holeS1) / 2);
-  face(rim, hUL, hUR, iUR, iUL, false, edgeUV);
-  face(rim, hLL, iLL, iLR, hLR, false, edgeUV);
-  face(rim, hUL, iUL, iLL, hLL, false, edgeUV);
-  face(rim, hUR, hLR, iLR, iUR, false, edgeUV);
+  const quad = (u0: number, v0: number, u1: number, v1: number): UV[] => [
+    [u0, v0],
+    [u1, v0],
+    [u1, v1],
+    [u0, v1],
+  ];
+  const mid = {
+    x: (iUL.x + iUR.x + iLL.x + iLR.x) / 4,
+    y: (iUL.y + iUR.y + iLL.y + iLR.y) / 4,
+    z: (iUL.z + iUR.z + iLL.z + iLR.z) / 4,
+  };
+  const shrink = (p: V3): V3 => ({
+    x: mid.x + (p.x - mid.x) * 0.72,
+    y: mid.y + (p.y - mid.y) * 0.72,
+    z: p.z,
+  });
+  const bUL = shrink(iUL);
+  const bUR = shrink(iUR);
+  const bLL = shrink(iLL);
+  const bLR = shrink(iLR);
+  // Open at the port mouth. Inner walls use crops of hangar.jpg so the bay is a volume, not one flat poster.
+  face(hang, bUL, bUR, bLR, bLL, quad(0.08, 0.08, 0.92, 0.92));
+  face(hang, hLL, hLR, bLR, bLL, quad(0.05, 0.72, 0.95, 0.98));
+  face(hang, hUL, bUL, bUR, hUR, quad(0.05, 0.02, 0.95, 0.28));
+  face(hang, hUL, hLL, bLL, bUL, quad(0.02, 0.15, 0.28, 0.85));
+  face(hang, hUR, bUR, bLR, hLR, quad(0.72, 0.15, 0.98, 0.85));
+  const uvPt = (p: Pt): UV => sideUV(port, portBox, portImgTop, portImgBot, p.u, p.sy);
+  face(rim, hUL, hUR, iUR, iUL, [uvPt(hUL), uvPt(hUR), uvPt(hUR), uvPt(hUL)]);
+  face(rim, hLL, iLL, iLR, hLR, [uvPt(hLL), uvPt(hLL), uvPt(hLR), uvPt(hLR)]);
+  face(rim, hUL, iUL, iLL, hLL, [uvPt(hUL), uvPt(hUL), uvPt(hLL), uvPt(hLL)]);
+  face(rim, hUR, hLR, iLR, iUR, [uvPt(hUR), uvPt(hLR), uvPt(hLR), uvPt(hUR)]);
   root.add(hang.mesh(hangarMap));
   root.add(rim.mesh(portMap));
 
@@ -857,23 +873,33 @@ export async function mountFrigate(
     };
     putFace(thick / 2);
     putFace(-thick / 2);
+    const band = Math.max(6, Math.round((box.y1 - box.y0) * 0.22));
+    const clampY = (y: number) => Math.max(0, Math.min(side.h - 1, Math.round(y)));
+    const topNear = (i: number) => clampY(pxT[i] < 0 ? ref : pxT[i]);
+    const topFar = (i: number) => clampY(topNear(i) + band);
+    const botNear = (i: number) => clampY(pxB[i] < 0 ? ref : pxB[i]);
+    const botFar = (i: number) => clampY(botNear(i) - band);
     for (let i = 0; i < N - 1; i++) {
       const u0 = i / (N - 1);
       const u1 = (i + 1) / (N - 1);
       const x0 = (u0 - 0.5) * length;
       const x1 = (u1 - 0.5) * length;
-      const uv0 = pixUV(side, cols[i], pxT[i] < 0 ? ref : pxT[i]);
-      const uv1 = pixUV(side, cols[i + 1], pxT[i + 1] < 0 ? ref : pxT[i + 1]);
+      const uv0 = pixUV(side, cols[i], topNear(i));
+      const uv1 = pixUV(side, cols[i + 1], topNear(i + 1));
+      const uv0f = pixUV(side, cols[i], topFar(i));
+      const uv1f = pixUV(side, cols[i + 1], topFar(i + 1));
       const a = body.v(x0, topY[i], thick / 2, uv0[0], uv0[1]);
       const b = body.v(x1, topY[i + 1], thick / 2, uv1[0], uv1[1]);
-      const c = body.v(x1, topY[i + 1], -thick / 2, uv1[0], uv1[1]);
-      const d = body.v(x0, topY[i], -thick / 2, uv0[0], uv0[1]);
+      const c = body.v(x1, topY[i + 1], -thick / 2, uv1f[0], uv1f[1]);
+      const d = body.v(x0, topY[i], -thick / 2, uv0f[0], uv0f[1]);
       body.quad(a, b, c, d);
-      const uvb0 = pixUV(side, cols[i], pxB[i] < 0 ? ref : pxB[i]);
-      const uvb1 = pixUV(side, cols[i + 1], pxB[i + 1] < 0 ? ref : pxB[i + 1]);
+      const uvb0 = pixUV(side, cols[i], botNear(i));
+      const uvb1 = pixUV(side, cols[i + 1], botNear(i + 1));
+      const uvb0f = pixUV(side, cols[i], botFar(i));
+      const uvb1f = pixUV(side, cols[i + 1], botFar(i + 1));
       const e = body.v(x0, botY[i], thick / 2, uvb0[0], uvb0[1]);
-      const f = body.v(x0, botY[i], -thick / 2, uvb0[0], uvb0[1]);
-      const g = body.v(x1, botY[i + 1], -thick / 2, uvb1[0], uvb1[1]);
+      const f = body.v(x0, botY[i], -thick / 2, uvb0f[0], uvb0f[1]);
+      const g = body.v(x1, botY[i + 1], -thick / 2, uvb1f[0], uvb1f[1]);
       const hh = body.v(x1, botY[i + 1], thick / 2, uvb1[0], uvb1[1]);
       body.quad(e, f, g, hh);
     }
@@ -934,14 +960,19 @@ export async function mountFrigate(
     const i = Math.max(0, Math.min(NU - 1, Math.round(u * (NU - 1))));
     const y = (hullTop[i] + hullBot[i]) * 0.5;
     const z = (b.cy - centerPx) * topScale;
-    const built = placePrism(nacelle, nacelleFront, nacelleMap, nacelleFrontMap, length, (u - 0.5) * LEN, y, z);
+    placePrism(nacelle, nacelleFront, nacelleMap, nacelleFrontMap, length, (u - 0.5) * LEN, y, z);
     const outward = Math.sign(z) || 1;
     const hullZ = outward > 0 ? beamPort[i] : -beamStbd[i];
     const gap = Math.abs(z - hullZ);
-    const span = Math.max(1.2, gap - built.thick * 0.4);
-    const arm = addPrism(pylon, pylon, 1, pylonMap, pylonFrontMap);
+    const span = Math.max(2.4, gap + 0.55);
+    const arm = addPrism(pylon, pylon, 1, pylonMap, pylonMap);
     const long = Math.max(0.2, arm.high - arm.low);
-    arm.g.scale.setScalar(span / long);
+    const sLong = span / long;
+    const minC = 2.05;
+    const maxC = 3.4;
+    const sX = Math.min(maxC, Math.max(minC, sLong)) / 1;
+    const sZ = Math.min(maxC, Math.max(minC, arm.thick * sLong)) / Math.max(0.2, arm.thick);
+    arm.g.scale.set(sX, sLong, sZ);
     arm.g.rotation.x = Math.PI / 2;
     arm.g.position.set((u - 0.5) * LEN, y, (hullZ + z) / 2);
     root.add(arm.g);
@@ -977,7 +1008,17 @@ export async function mountFrigate(
     const bellyMid = (bellyBox.y0 + bellyBox.y1) / 2;
     const z = (ventral.cy - bellyMid) * bellyScale;
     const built = placePrism(turret, turretFront, turretMap, turretFrontMap, length, (u - 0.5) * LEN, 0, z, Math.PI);
-    built.g.position.y = hullBot[i] + built.low;
+    let surfaceY = hullBot[i];
+    let bestD = 1e9;
+    for (const p of P[i]) {
+      if (p.sy > 0.5) continue;
+      const d = Math.abs(p.z - z);
+      if (d < bestD) {
+        bestD = d;
+        surfaceY = p.y;
+      }
+    }
+    built.g.position.y = surfaceY + built.low - 0.45;
   }
 
   let bridgeZ = -Math.max(1.5, beamStbd[Math.round(bridgeU * (NU - 1))] * 0.28);
