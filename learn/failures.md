@@ -329,3 +329,25 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Stopped after the second try. The step-2b slices stay in the ring. The motif gate now fails those files. |
 | Guard | `python3 tools/sky/check.py` motif rows. Horizon 0–4 and 7 fail repeat. Upper 6 still passes (soft gap). |
 | Sources | `tools/sky/pixels.py`, `packs/zone-a/proof/step2/REPORT.md`. Untracked provenance: `/workspace/grokcli/out/zoneA-step2c/provenance.json`. |
+
+### 2026-10-03 — dark rock pixels fail the walkaround hole gate
+
+| | |
+| --- | --- |
+| Take | Zone A step 3. Stone hull. |
+| Defect | All eight stone views failed interior holes at 0.024 to 0.074. The plates were not missing pixels. |
+| Root cause | `foreground_mask` drops a pixel when its max channel is at or under the 0.04 background threshold. Opaque basalt with max channel ≤ 10 counts as a hole. Alpha holes on the same plates were 0. |
+| Fix | The rock carve config sets `bgThreshold` to -1, so the silhouette follows alpha. The walkaround default is unchanged. Do not flood-fill the dark pixels. |
+| Guard | `tools/walkaround` hole row, limit 0.002, on the raw mask. A negative `bgThreshold` in the rock config is what lets this set pass. No selftest feeds an opaque black subject. Filed `feedback/2026-10-03-walkaround-dark-hole.md`. |
+| Sources | `tools/walkaround/hull.py` foreground mask. `tools/rocks/build.py` writes the config. |
+
+### 2026-10-03 — a short dense orbit view cannot be height-matched by scaling down
+
+| | |
+| --- | --- |
+| Take | Zone A step 3. Crest hull. Not shipped. |
+| Defect | Yaw 90 was about 15% shorter than its neighbours and also the densest plate. Yaw 270 was the same kind of miss. Keep min was 0.7085, which passes 0.70. The height lock failed. |
+| Root cause | Shrinking the tall plates to the short height drops pixel area past the 0.15 lock. Enlarging the short plate is forbidden. |
+| Fix | Two cooks, then stop. The crest slots stay in the manifest and play skips them when no hull is present. Boulders are the sky-line solids in this pass. |
+| Guard | `python3 tools/objsheet/sheet.py` adjacent height ±8% and area ±15%. The crest set fails height. No row detects "short and denser" before the scale attempt. |
+| Sources | `docs/METHOD/rocks.md` pitfalls. Views stay outside the repo. |

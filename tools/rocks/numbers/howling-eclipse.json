@@ -1,0 +1,81 @@
+{
+  "schema": "rocks-numbers/1",
+  "kit": "howling-eclipse",
+  "pack": "packs/zone-a",
+  "seed": 20261003,
+  "corridor": {
+    "headingDeg": 32,
+    "halfWidthM": 4.2,
+    "spawn": [-6, -14],
+    "bubbleM": 9.5,
+    "lengthM": 80
+  },
+  "insideFrac": 0.8,
+  "rhoMin": 3.0,
+  "clusters": 6,
+  "clusterStepM": 11,
+  "clusterSepM": 16,
+  "clusterNoiseMin": 0.42,
+  "jitterM": 3.2,
+  "cloneRadiusM": 4.2,
+  "cloneYawDeg": 38,
+  "cloneScale": 0.12,
+  "types": {
+    "crest": {
+      "kind": "hull",
+      "count": 6,
+      "objectSize": [1.75, 1.65, 1.6],
+      "scale": [0.9, 1.0],
+      "spanMax": 0.32,
+      "minSeparation": 9.0,
+      "minAcrossM": 9.2,
+      "minMacro": 0.45,
+      "annulus": [0, 0],
+      "fovYDeg": 32,
+      "fill": 0.62,
+      "maxTex": 640,
+      "collider": true
+    },
+    "boulder": {
+      "kind": "hull",
+      "count": 16,
+      "objectSize": [1.55, 1.35, 1.45],
+      "scale": [0.92, 1.0],
+      "spanMax": 0.28,
+      "minSeparation": 3.4,
+      "minAcrossM": 10.0,
+      "annulus": [2.4, 8.0],
+      "fovYDeg": 32,
+      "fill": 0.7,
+      "maxTex": 512,
+      "collider": true
+    },
+    "stone": {
+      "kind": "hull",
+      "count": 28,
+      "objectSize": [0.54, 0.95, 0.5],
+      "scale": [0.62, 1.0],
+      "spanMax": 0.2,
+      "minSeparation": 1.7,
+      "minAcrossM": 6.0,
+      "annulus": [3.5, 12.0],
+      "fovYDeg": 32,
+      "fill": 0.74,
+      "maxTex": 512,
+      "collider": true
+    },
+    "pebble": {
+      "kind": "cutout",
+      "count": 40,
+      "variants": ["pebble-a", "pebble-b"],
+      "heightM": [0.16, 0.26],
+      "scale": [0.78, 1.0],
+      "spanMax": 0.1,
+      "minSeparation": 0.85,
+      "minAcrossM": 4.8,
+      "annulus": [2.0, 14.0],
+      "maxTex": 384,
+      "collider": false
+    }
+  }
+}
