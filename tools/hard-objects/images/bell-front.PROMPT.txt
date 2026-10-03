@@ -1,0 +1,14 @@
+STATUS
+The verbatim Imagine tool-call string that produced this JPEG was not stored.
+The file's EXIF is JFIF only (no prompt, no comment). No session log kept the call.
+This JPEG is the locked ruler. Do not regenerate it and treat the new file as this plate.
+
+ROLE unlit skin of one bell mouth. Loaded by frigate.ts as /biome/frigate/bell-front.jpg.
+PIXELS 1408x1408. ASPECT 1:1.
+JOB The mouth of one bell, a disc centred in the frame. The mesh reads only the painted disc. The empty margin is not a texel on the cone.
+
+ASK (colour-free template; tone wording stays in the untracked local prompts file)
+Imagine, aspect 1:1. Orthographic, no perspective, no ground, no text, no border, no watermark.
+One disc filling most of the frame, empty margin the reader can ignore.
+<TONE + ACCENTS from the local file>.
+Subject: the JOB above, nothing else.

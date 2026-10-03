@@ -268,13 +268,15 @@ def main():
         "bridge.jpg", "bridge-front.jpg", "pylon.jpg", "hangar.jpg", "backdrop.jpg",
         "port-detail-aft.jpg", "port-detail-mid.jpg", "port-detail-bow.jpg",
         "measure/top.jpg", "measure/belly.jpg", "measure/stern.jpg",
+        "measure/port.jpg", "measure/stbd.jpg", "bell.jpg", "bell-front.jpg",
     ]
     missing = [n for n in need if not (IMG / n).is_file() or not (IMG / (n.replace(".jpg", ".PROMPT.txt"))).is_file()]
     if missing:
         print("missing", missing, file=sys.stderr)
         return 1
 
-    pw, ph, plum, _ = load("port.jpg")
+    pw, ph, plum, praw = load("port.jpg")
+    mpw, mph, mplum, _ = load("measure/port.jpg")
     tw, th, tlum, _ = load("top.jpg")
     mw, mh, mlum, _ = load("measure/top.jpg")
     sw, sh, slum, _ = load("stbd.jpg")
@@ -283,9 +285,11 @@ def main():
     sections = [load(n) for n in ("sec-stern.jpg", "sec-shoulder.jpg", "sec-mid.jpg", "sec-bow.jpg")]
 
     port_m, _ = largest_mask(mask_of(plum, 16), pw, ph)
+    measure_port_m, _ = largest_mask(mask_of(mplum, 16), mpw, mph)
     top_m, _ = largest_mask(mask_of(tlum, 16), tw, th)
     measure_m, _ = largest_mask(mask_of(mlum, 16), mw, mh)
     px0, py0, px1, py1 = content_box(port_m, pw, ph)
+    mpx0, mpy0, mpx1, mpy1 = content_box(measure_port_m, mpw, mph)
     tx0, ty0, tx1, ty1 = content_box(top_m, tw, th)
     mx0, my0, mx1, my1 = content_box(measure_m, mw, mh)
     port_scale = LEN / max(8, px1 - px0)
@@ -347,27 +351,30 @@ def main():
     mids = []
     for i in range(int(NU * 0.72), int(NU * 0.94)):
         u = i / (NU - 1)
-        col = column(top_m, tw, th, tx0 + u * (tx1 - tx0))
+        col = column(measure_m, mw, mh, mx0 + u * (mx1 - mx0))
         if col:
             mids.append((col[0] + col[1]) * 0.5)
     mids.sort()
-    center = mids[len(mids) // 2] if mids else (ty0 + ty1) / 2
+    center = mids[len(mids) // 2] if mids else (my0 + my1) / 2
     beam_port = [4.0] * NU
     beam_stbd = [4.0] * NU
     for i in range(NU):
         u = i / (NU - 1)
-        col = column(top_m, tw, th, tx0 + u * (tx1 - tx0))
+        col = column(measure_m, mw, mh, mx0 + u * (mx1 - mx0))
         if not col:
             if i:
                 beam_port[i] = beam_port[i - 1]
                 beam_stbd[i] = beam_stbd[i - 1]
             continue
-        beam_stbd[i] = max(0.8, (center - col[0]) * top_scale)
-        beam_port[i] = max(0.8, (col[1] - center) * top_scale)
+        beam_stbd[i] = max(0.8, (center - col[0]) * measure_scale)
+        beam_port[i] = max(0.8, (col[1] - center) * measure_scale)
     smooth_keep(hull_top)
     smooth_keep(hull_bot)
     smooth_keep(beam_port)
     smooth_keep(beam_stbd)
+    if hull_top[0] - hull_bot[0] < (hull_top[1] - hull_bot[1]) * 0.45:
+        hull_top[0] = hull_top[1]
+        hull_bot[0] = hull_bot[1]
 
     shapes = [rays_of(w, h, lum) for w, h, lum, _raw in sections]
     verts = []
@@ -435,9 +442,17 @@ def main():
     skin_bells = blobs(skin_bm, skin_bw, skin_bh, 80)
     skin_nacelles = blobs(mask_of(tlum, 16), tw, th, 800)[1:]
 
+    port_bm = [0] * (pw * ph)
+    for i in range(pw * ph):
+        r, g, b = praw[i * 3 : i * 3 + 3]
+        if b > 140 and b > r + 40 and b > g + 20:
+            port_bm[i] = 1
+    port_nozzles = blobs(port_bm, pw, ph, 40)
+
     report = {
         "images": len(need),
-        "portBox": [px0, py0, px1, py1],
+        "portBox": [mpx0, mpy0, mpx1, mpy1],
+        "skinPortBox": [px0, py0, px1, py1],
         "topBox": [mx0, my0, mx1, my1],
         "skinTopBox": [tx0, ty0, tx1, ty1],
         "topScale": round(measure_scale, 4),
@@ -446,6 +461,7 @@ def main():
         "bells": len(bells),
         "skinBells": len(skin_bells),
         "skinNacelles": len(skin_nacelles),
+        "portNozzles": len(port_nozzles),
         "nacelles": nacelles,
         "verts": len(verts),
         "faces": len(faces),
@@ -461,8 +477,10 @@ def main():
     (OUT / "frigate.obj").write_text("\n".join(lines) + "\n")
 
     problems = []
-    if not (70 <= px0 <= 90 and px1 > 2200 and py1 - py0 > 200):
+    if not (70 <= mpx0 <= 90 and mpx1 > 2200 and mpy1 - mpy0 > 200):
         problems.append(f"port box {report['portBox']}")
+    if len(port_nozzles) != 0:
+        problems.append(f"port skin still paints nozzles {len(port_nozzles)}")
     if not (70 <= mx0 <= 90 and my0 > 100 and mx1 > 2200):
         problems.append(f"top box {report['topBox']} (nacelle seed would put y0 near 49)")
     if not (0.09 < measure_scale < 0.11):

@@ -34,7 +34,7 @@ The verbatim Imagine tool-call strings were not stored (JPEG EXIF is JFIF only; 
 | Path | What it is |
 |---|---|
 | `tools/hard-objects/images/*.jpg` | Skin plates, part plates, 3 sharpened port edits, and `backdrop.jpg` (turntable only). |
-| `tools/hard-objects/images/measure/` | Rulers only. `top.jpg`, `belly.jpg`, `stern.jpg` still show the painted parts. Not skins. |
+| `tools/hard-objects/images/measure/` | Rulers only. `top.jpg`, `belly.jpg`, `stern.jpg`, `port.jpg`, `stbd.jpg` still show the painted parts. Not skins. |
 | `tools/hard-objects/images/*.PROMPT.txt` | Generation contract next to each JPEG. Required by the gate. |
 | `tools/hard-objects/frigate.ts` | Reader, loft, part builder, unlit skins. The skinned mesh. |
 | `tools/hard-objects/frigate-view.ts` | Optional turntable (orbit, pinch, face buttons, one-lap tour). Not the flight. |
@@ -86,14 +86,18 @@ and do not regenerate a locked JPEG to "match" the ASK.
 
 | File | Pixels | Aspect | Why it exists |
 |---|---|---|---|
-| `port.jpg` | 2400×528 | 50:11 | Port elevation. Deck, keel, **and the hangar hole**. Also the port skin. |
-| `stbd.jpg` | 2400×528 | 50:11 | Starboard elevation. Closed side, three hatches, **bridge bump**. Also the starboard skin. |
-| `top.jpg` | 2400×528 | 50:11 | Plan skin. Plain deck plating. Nacelle XZ is **not** read here. |
+| `port.jpg` | 2400×528 | 50:11 | Port skin. Hangar hole stays. Stern nozzles are not painted here. The locked box is `measure/port.jpg`. |
+| `stbd.jpg` | 2400×528 | 50:11 | Starboard elevation and skin. Closed side, three hatches, **bridge bump**. |
+| `top.jpg` | 2400×528 | 50:11 | Plan skin. Plain deck plating where the island was lifted. Nacelle XZ is **not** read here. |
 | `belly.jpg` | 2400×528 | 50:11 | Underside skin. Plain plating. Ventral position is **not** read here. |
 | `stern.jpg` | 1408×1408 | 1:1 | Stern cap skin. Plain plating. The four bells are **not** painted here. |
-| `measure/top.jpg` | 2400×528 | 50:11 | Plan ruler. Nacelles and deck parts stay painted. Not a skin. |
+| `measure/top.jpg` | 2400×528 | 50:11 | Plan ruler. Nacelles and deck parts stay painted. Beams are read here. Not a skin. |
 | `measure/belly.jpg` | 2400×528 | 50:11 | Belly ruler. Ventral turret and painted bells stay. Not a skin. |
 | `measure/stern.jpg` | 1408×1408 | 1:1 | Stern ruler. Exactly four bells. Not a skin. |
+| `measure/port.jpg` | 2400×528 | 50:11 | Port ruler. The locked elevation box. Stern nozzles stay painted. Not a skin. |
+| `measure/stbd.jpg` | 2400×528 | 50:11 | Starboard ruler. Stern nozzles stay painted. Not a skin. |
+| `bell.jpg` | 2160×864 | 5:2 | Bell cone unwrap. Mouth band at the left edge. Not the stern plate. |
+| `bell-front.jpg` | 1408×1408 | 1:1 | Bell mouth. One circle, corners empty. Not the stern plate. |
 | `sec-stern.jpg` | 1408×1408 | 1:1 | Filled slice at u=0.08. |
 | `sec-shoulder.jpg` | 1408×1408 | 1:1 | Filled slice at the shoulder, u=0.34. |
 | `sec-mid.jpg` | 1408×1408 | 1:1 | Filled slice at the hangar station, u=0.56. Do not cut the hangar out of this slice. |
@@ -106,7 +110,7 @@ and do not regenerate a locked JPEG to "match" the ASK.
 | `bridge-front.jpg` | 1152×1728 | 2:3 | Tower cap. |
 | `pylon.jpg` | 1152×1728 | 2:3 | One strut. Used as **both** the side map and the cap map. |
 | `hangar.jpg` | 1792×1008 | 16:9 | Inner walls of the port bay. Crops, not one poster. The mouth stays open. |
-| `backdrop.jpg` | 1008×1792 | 9:16 | Turntable background only. One tall plate. Not a cube. Not loaded by the hull. |
+| `backdrop.jpg` | 1280×1728 | wide plate | Turntable background only. One plate. Not a cube. Not loaded by the hull. |
 | `port-detail-aft.jpg` | 1904×1040 | image-to-image | Stern third of `port.jpg`, crop x 40–860, y 40–490. Reference only. Not loaded. |
 | `port-detail-mid.jpg` | 1920×1024 | image-to-image | Mid third, crop x 780–1620, y 40–490. Reference only. Not loaded. |
 | `port-detail-bow.jpg` | 1952×1008 | image-to-image | Bow third, crop x 1500–2360, y 40–490. Reference only. Not loaded. |
@@ -115,12 +119,12 @@ Shared contract. Write `images/<name>.PROMPT.txt` as the STATUS header, then the
 job line, then the colour-free `ASK` template below. Nothing else. No palette words, no hex, no verbatim prompt text:
 the tone / accent wording goes in the untracked local prompts file (section 0).
 
-ROLE block. One of these four first lines, then PIXELS and ASPECT from the table above:
+ROLE block. One of these first lines, then PIXELS and ASPECT from the table above:
 
 - Loaded elevation or plan skin (`port`, `stbd`, `top`, `belly`, `stern`): `ROLE unlit skin. Loaded by frigate.ts as /biome/frigate/<name>.jpg.`
-- Measure ruler (`measure/top`, `measure/belly`, `measure/stern`): `ROLE measure only. NOT a hull skin. Loaded by frigate.ts as /biome/frigate/measure/<name>.jpg.`
+- Measure ruler (`measure/top`, `measure/belly`, `measure/stern`, `measure/port`, `measure/stbd`): `ROLE measure only. NOT a hull skin. Loaded by frigate.ts as /biome/frigate/measure/<name>.jpg.`
 - Loaded section (`sec-*.jpg`): `ROLE section measure only (not a skin). Loaded by frigate.ts as /biome/frigate/<name>.jpg.`
-- Loaded part (`nacelle`, `nacelle-front`, `turret`, `turret-front`, `bridge`, `bridge-front`, `pylon`, `hangar`): `ROLE part skin. Loaded by frigate.ts as /biome/frigate/<name>.jpg.`
+- Loaded part (`nacelle`, `nacelle-front`, `turret`, `turret-front`, `bridge`, `bridge-front`, `pylon`, `hangar`, `bell`, `bell-front`): `ROLE part skin. Loaded by frigate.ts as /biome/frigate/<name>.jpg.`
 - The three `port-detail-*.jpg`: `ROLE reference only. NOT loaded by frigate.ts. Do not skin the hull with this file.`
 
 Then, for every file including the detail crops: `PIXELS <width>x<height>. ASPECT <aspect>.`
@@ -148,8 +152,12 @@ Job line (one per file, after the paragraph):
 
 | File | Job line |
 |---|---|
-| `port.jpg` | Port elevation, bow right. Real hangar hole, background visible through it. No tower. Shoulder step about one third from the stern. Nacelles detached, not touching the hull mask. |
+| `port.jpg` | Port skin, bow right. Real hangar hole. No tower. No stern nozzles (those stay on `measure/port.jpg`). Shoulder step about one third from the stern. Nacelles detached, not touching the hull mask. |
 | `stbd.jpg` | Starboard elevation, bow right, same length. Closed side, armoured belt, three hatches, no hole. Bridge tower on the deck, in the silhouette. |
+| `measure/port.jpg` | Port ruler, bow right. The locked elevation box. Stern nozzles stay painted so length can be read. Not a skin. |
+| `measure/stbd.jpg` | Starboard ruler, bow right. Stern nozzles stay painted. Not a skin. |
+| `bell.jpg` | One bell cone, unwrapped, mouth band at the left edge, alone. Aspect 5:2. Not the stern plate. |
+| `bell-front.jpg` | Mouth of one bell, one circle, corners empty. Aspect 1:1. Not the stern plate. |
 | `top.jpg` | Plan skin, bow right. Top edge is starboard. Plain deck plating. Nacelles, deck turret and bridge island are not on this plate. Their place is `measure/top.jpg`. |
 | `belly.jpg` | Belly skin, bow right, same side up as the top. Plain plating. The ventral turret is not on this plate. Its place is `measure/belly.jpg`. |
 | `stern.jpg` | Stern cap skin, centred, plain plating. No bells. The four bells stay on `measure/stern.jpg`. |
@@ -168,7 +176,7 @@ Job line (one per file, after the paragraph):
 | `bridge-front.jpg` | Front of that tower, portrait 2:3, corners empty. |
 | `pylon.jpg` | One narrow strut, portrait 2:3, alone. Not a hull plate. |
 | `hangar.jpg` | Interior wall plate. Crops of it skin the bay walls. The port mouth stays open. |
-| `backdrop.jpg` | One continuous backdrop, tall enough for a portrait frame. Uniform cover, magnification ≤ 1. Not a cube and not a typed clear. |
+| `backdrop.jpg` | One continuous backdrop. Cover at magnification ≤ 1. A wider frame must not smear an edge pixel. Not a cube and not a typed clear. |
 | `port-detail-aft.jpg` | Image-to-image of port crop x 40–860, y 40–490. Sharpen in place. Do not move the silhouette or fill a hole. |
 | `port-detail-mid.jpg` | Image-to-image of port crop x 780–1620, y 40–490. Keep the hangar hole. |
 | `port-detail-bow.jpg` | Image-to-image of port crop x 1500–2360, y 40–490. Do not add a hangar. |
@@ -308,15 +316,15 @@ Placement is in the hull frame. `placePrism` sets `position` and then `rotation.
 | Dorsal turret | Port components min **400** px, not the hull, whose centre is **above the local deck**: `cy < column.topY + 4`. The biggest such blob. Do not test `cy < hullBox.y0 + 8` — the turret centre can sit below the hull box top (it did: cy 89, box y0 75) and still be above the local deck. | `u` from the blob centre on the **port** box, `i = round(u * 83)`. `length` from pixel width × `portScale`. `x = (u−0.5)*LEN`. `y = hullTop[i] − prism.low`. `z = 0`. `rotation.x = 0`. The roof skin no longer paints a second turret. The 3D turret stays. |
 | Ventral turret | `measure/belly.jpg` components after the hull, min 800 px. Dark fraction = share of samples (step 2 px) with luminance < 18. Take the darkest only if it beats the lightest extra blob by **more than 0.08**. If it does not, add **no** ventral turret. | `u` from the measure belly box, `i = round(u * 83)`. `rotation.x = π`. `z = (cy − bellyBoxMid) * bellyScale`. Positive z is still port. After the half-turn, local `y` flips, so the highest world point of the prism is `position.y − low`. Set `position.y = surfaceY + low` (no sink). `surfaceY` is the underside ring sample at station `i` (`sy ≤ 0.5`) closest in `z`. The belly skin does not paint it. |
 | Bridge | Longest run of stations where `stbdTop − align − hullTop > 3.2`. `bridgeU` = centre of that run. `bridgeH` = peak of that bump. | `x = (bridgeU − 0.5) * LEN`. `bi = round(bridgeU * 83)`. `rotation.x = 0`. `z` from pixels on `measure/top.jpg` with luminance **> 200**, stepped by 2, inside `u ∈ [bridgeU−0.1, bridgeU+0.16]`. If more than 8 such samples, `z = (meanY − measureCenter) * measureScale`. Else `z = −max(1.5, beamStbd[bi]*0.28)`. Build the prism at length 1. `towerScale = max(4, bridgeH) / (high − low)`, one uniform scalar. `y = hullTop[bi] − low * towerScale`. The roof skin does not paint the island. |
-| Bells | The 4 largest blobs on `measure/stern.jpg` that pass the bell-core channel test (section 4). | `xSurf = −112` (station 0). `half`, `midX`, `reach` from the **measure** stern box. `z = −((cx − midX) / half) * reach`. `t = (sternBox.y1 − cy) / (sternBox.y1 − sternBox.y0)`, `y` from hull top and bottom at station 0. `r` from the blob half-width. `len` is how far the painted stern mouths stuck past the clean skin on the plan: `max(1.5, (skinTop.x0 − measureTop.x0) * measureScale)`, not `max(2.2, r*2)`. 16 segments. Outer ring, mouth and core as before. The cone skin is `measure/stern.jpg`. The cap skin is the clean `stern.jpg`, which has no bell cores. Do not delete the cones. |
+| Bells | The 4 largest blobs on `measure/stern.jpg` that pass the bell-core channel test (section 4). | Station 0, after a one-column speck at the cleaned stern tip is replaced by the next station's deck and keel (the speck is not a section). Uniform scale `min(faceW / plateW, faceH / plateH)` of the measure-stern content box onto that face, centred. `y = faceY − (cy − plateMidY) * scale`, `z = faceZ − (cx − plateMidX) * scale` (image left = port = +Z, larger image y = lower world y). `r = blue half-width * scale * 1.65` so the gold ring is included and the four stay gapped. `len` is how far `measure/port.jpg` sticks past the cleaned port skin: `clamp((skinPort.x0 − measurePort.x0) * portMeasureScale, 2.2, 8)`, about 2.8. Not the stern taper. 24 segments. Cone skin is `bell.jpg` (`u` along the cone, 0 at the mouth). Mouth disc is `bell-front.jpg` inside its painted circle. Do not skin the cones with `measure/stern.jpg`. |
 | Hangar bay | The four port-side ring samples closest in `sy` to the hole corners: `(holeU0, holeS1)`, `(holeU1, holeS1)`, `(holeU0, holeS0)`, `(holeU1, holeS0)`. | `depth = max(8, beamPort[42] * 0.82)`. Inset is `(x, y, z − depth)`. The far corners are pulled 0.72 of the way toward the inset centre in x and y, so the opening is larger than the far bulkhead and the side walls read as depth. No quad on the port mouth. Wall crops of `hangar.jpg`: back `u 0.08–0.92, v 0.08–0.92`; floor `v 0.72–0.98`; ceiling `v 0.02–0.28`; aft wall `u 0.02–0.28`; fore wall `u 0.72–0.98`. Rim quads take the port UV of each outer corner, not one shared texel. Starboard skin stays closed. |
 
 Numbers from the TypeScript after the seed fix. **Section 12 does not gate pylons or the bridge.**
 It gates the port box, the top box, `topScale`, the hole `u` window, 4 bells, 2 nacelles, and the OBJ face count.
 These decimals are the reading, not extra PASS rows: measure top box `75,119–2337,401`, `topScale` `0.099`,
 nacelles `x = −100.02`, `z = −17.01` and `+16.95`, length `23.27` (the gate only checks `length ≤ 40` and `|x| ≥ 70`).
-Pylon keeps the plate aspect (about 6) and spans the gap. Hole `u` `0.301–0.482` (`n = 16`).
-Bridge `u` about `0.42`, height about `13`. Four bells, read from `measure/stern.jpg`. The clean skin has none.
+Pylon keeps the plate aspect (about 6) and spans the gap. Hole `u` `0.289–0.482` (`n = 17`).
+Bridge `u` about `0.42`, height about `13`. Four bells, read from `measure/stern.jpg`. The clean stern skin has none. The cones wear `bell.jpg`, not that plate.
 
 ## 8. Unlit skins
 
@@ -325,7 +333,7 @@ The hull JPEG is the skin. Where a part has real volume, a second JPEG in `image
 - Material: `MeshBasicMaterial({ map, toneMapped: false, side: DoubleSide })`. Default material colour (no tint). Nothing else.
 - Texture (law 65): `SRGBColorSpace`, `minFilter = LinearMipmapLinearFilter`, `magFilter = LinearFilter`,
   `generateMipmaps = true`, `ClampToEdgeWrapping` on S and T. Never `NearestFilter`.
-- Renderer around it (the turntable, not the flight): `NoToneMapping`, output `SRGBColorSpace`. No typed clear colour. The backdrop is one camera-child plane of `backdrop.jpg` (1008×1792), not `scene.background`. Cover-fit when that fit stays at magnification ≤ 1; otherwise letterbox at 1:1 with edge clamp. Not a cube. Not the flight sky.
+- Renderer around it (the turntable, not the flight): `NoToneMapping`, output `SRGBColorSpace`. No typed clear colour. The backdrop is one camera-child plane of `backdrop.jpg` (1280×1728), not `scene.background`. When cover-fit stays at magnification ≤ 1 the plane crops the plate (`repeat` below 1). When a frame is wider than the plate, the plate stays at magnification 1 in the centre and the margins are interior 64 px tiles, not a stretched edge. Not a cube. Not the flight sky.
   pixel ratio `min(devicePixelRatio, 1.5)` when `matchMedia("(max-width: 800px)")` matches, else `min(devicePixelRatio, 2)`, fov 46.
 
 Side UV, per station, not one box for the whole ship: `sy = 1` maps to that station's deck pixel, `sy = 0` to its keel pixel.
@@ -338,7 +346,8 @@ For the roof, `center` is `centerPx` and `scale` is `topScale`.
 For the belly, `center` is `(bellyBox.y0 + bellyBox.y1) / 2` and `scale = LEN / (bellyBox.x1 − bellyBox.x0)`.
 Bug 2's word `mid` means that centre: `centerPx` on the roof, the belly-box centre on the belly. Do not flip the belly UV.
 
-Stern UV on the cap uses the clean `stern.jpg` box. Bell UVs use the `measure/stern.jpg` box the same way. `H = max(0.001, hullTop[0] − hullBot[0])`, `t = clamp((y − hullBot[0]) / H, 0, 1)`,
+Stern UV on the cap uses the clean `stern.jpg` box. Bell cones do **not** sample that plate or `measure/stern.jpg`.
+`H = max(0.001, hullTop[0] − hullBot[0])`, `t = clamp((y − hullBot[0]) / H, 0, 1)`,
 `py = sternBox.y1 − t * (sternBox.y1 − sternBox.y0)`.
 `half = max(1, (sternBox.x1 − sternBox.x0) * 0.5)`, `mid = (sternBox.x0 + sternBox.x1) * 0.5`,
 `reach = max(beamPort[0], beamStbd[0], 0.001)`, `px = mid − (z / reach) * half`.
@@ -363,8 +372,8 @@ Turntable (`frigate-view.ts`), if you use it:
   `look + dist * (cos φ · cos θ, sin φ, cos φ · sin θ)`.
 - Faces: port `θ = π/2`, `φ = 0.16`; starboard `θ = −π/2`, `φ = 0.16`; bow `θ = 0`, `φ = 0.12`;
   stern `θ = π`, `φ = 0.1`; top `θ = π/2`, `φ = 1.15`; belly `θ = π/2`, `φ = −1.05`.
-- `lengthUp` when `aspect < 0.92` and `|cos θ · cos φ| < 0.62`. The wanted up is then `(1,0,0)`, else `(0,1,0)`.
-  The live `camera.up` lerps toward that vector (`1 − exp(−dt * 10)`) and is renormalised. Fit uses the wanted up, so distance does not pop when the axis swaps. Do not snap `camera.up` in one frame.
+- Wanted up is continuous. Project world +X onto the plane perpendicular to the view. `smoothstep` that perpendicular length from 0 to 1 and blend world +Y toward it. No aspect test and no threshold, so the roll does not snap. The live `camera.up` eases toward that vector (`1 − exp(−dt * 2.2)`) and is renormalised. Fit and the zoom floor use the eased up.
+- Zoom floor is magnification 1: `viewH / (2 * tan(fov/2) * 10.1)`, which matches the horizontal texel limit. Pinch, wheel and `look` cannot go closer. `step(dt)` and `freeze()` advance one frame with the rAF stopped, so a clip can be exactly 25 fps.
 - Fit, unless the user has zoomed. Half-extents `hx, hy, hz = 120, 34, 28` (a box on the origin).
   Forward `F = (−cos φ · cos θ, −sin φ, −cos φ · sin θ)`, right `R = F × up`.
   Over the 8 corners, `maxU` is the max `|dot(corner, up)|` and `maxR` the max `|dot(corner, right)|`.
@@ -425,22 +434,24 @@ Turntable (`frigate-view.ts`), if you use it:
 
 Fixed in this pass (still **IN TEST** until SmiR checks them on the phone), 2026-10-03:
 
-1. **No second copy of a part.** Engine bells, nacelles, the deck turret, the bridge island and the ventral gun are measured on `images/measure/` and built once. Imagine repainted those areas on `stern.jpg`, `top.jpg` and `belly.jpg` as plain hull plating. Not a code rectangle.
+1. **No second copy of a part on the plates that were actually cleaned.** Engine bells, nacelles, the deck turret and the ventral gun are measured on `images/measure/` and built once. `stern.jpg` and `belly.jpg` are plain plating. The port skin no longer paints the four stern nozzles. Not a code rectangle.
 2. **Pylon aspect.** The strut keeps the plate's aspect (about 6). It is not widened to 2.05–3.4. Magnification on the pylon stays ≤ 1.
 3. **Ventral seat.** The turret tip sits on the underside sample. The old 0.45 sink is gone.
-4. **Isotropic bands and caps.** Prism top/bottom bands and caps use `rho` (content pixels per world unit). They do not repeat one row and they do not stretch the cap.
-5. **Backdrop.** One Imagine plate, 1008×1792. A camera-child plane cover-fits it when magnification stays ≤ 1 (portrait 720×1600 is about 0.89). A wider frame letterboxes at 1:1 instead of stretching. Not `scene.background`. Not the flight sky.
-6. **Camera.** `camera.up` eases when the portrait length-up test flips. Distance uses that same wanted up, so the frame does not pop.
+4. **Bells.** Four cones, one 2×2, gaps kept, on the stern bulkhead rather than a one-pixel tip. Cone skin is `bell.jpg`. Mouth is `bell-front.jpg`. They are not sampled from the painted stern plate.
+5. **Plan outline.** Beams and the roof skin both use the measure plan. `top.jpg`'s largest box is that same box (`75, 119, 2337, 401`). A repair that moves it is rejected.
+6. **Backdrop.** One Imagine plate, 1280×1728. Portrait 720×1600 cover is about 0.93. A wider frame does not smear the edge texel.
+7. **Camera.** `camera.up` eases continuously. There is no binary length-up flip. Distance uses the eased up. The proof clip is 25 fps from `step(1/25)`.
 
-Earlier mesh fixes still stand: open port bay with `hangar.jpg` walls. Proof clip for this pass: `tools/hard-objects/qc/howl-single.mp4` (orbit, then stern, nacelles, pylons, deck and belly). `howl-fixes.mp4` is the previous pass and does not show this one.
+Earlier mesh fixes still stand: open port bay with `hangar.jpg` walls. Proof clip for this pass: `tools/hard-objects/qc/howl-single.mp4` (stern, then a smooth orbit). `howl-fixes.mp4` is an older pass.
 
 Still open:
 
 - **Bolt.** Owner QC showed Bolt as a carved blob instead of the Imagine video `lock/bolt-gallop-cycle.mp4` / `lock/bolt-idle-breath.mp4`. This folder does not draw Bolt. Do not carve, hull, or recook Bolt.
-- **Port nozzles.** An inpaint of `port.jpg` removed the painted stern nozzles but moved the locked silhouette (`x0` 75 → 132). Stopped after that attempt. The side skin still paints the nozzles next to the 3D bells.
-- **Bridge side.** The tower's side still shows a dark wedge from the plate margin. A second inpaint was not spent on it.
-- **Bay aft edge.** A thin dark strip can show between the port rim and the aft wall.
-- **Backdrop on a wide frame.** 1008 px cannot cover a 1280-wide view at magnification ≤ 1, so that frame letterboxes. Portrait is the phone check.
+- **Starboard nozzles.** `stbd.jpg` still paints the four stern nozzles and the lower pods beside the 3D bells. Three full Imagine redraws and one local clone failed (they redrew the ship or left a speckled flare). Stopped. Do not start another full-frame redraw.
+- **Streaks.** The bridge tower roof still repeats the side-plate lip across its thickness. Not signed off.
+- **Black faces.** Bridge side wedge, nacelle inner face, stern edge strips, deck block and the bay's aft edge were not signed off from a still.
+- **Plan stern mouths.** `top.jpg` still paints the four engine circles. Filling them either moved the measured outline or left a tiled patch. The 3D bells are the volume. The footprint stays.
+- **Bridge footprint.** A dotted island edge may remain on `top.jpg` beside the tower. Not signed off.
 
 ## 12. Run the gate
 
@@ -452,33 +463,35 @@ python3 tools/hard-objects/rebuild.py
 ```
 
 This gate passed on Pillow 12.3.0. Pillow missing → exit **2**.
-The script requires these 24 JPEGs and a sibling `.PROMPT.txt` for each (same basename). Missing either → exit **1**:
+The script requires these 28 JPEGs and a sibling `.PROMPT.txt` for each (same basename). Missing either → exit **1**:
 
 `port.jpg`, `stbd.jpg`, `top.jpg`, `belly.jpg`, `stern.jpg`, `sec-stern.jpg`, `sec-shoulder.jpg`, `sec-mid.jpg`,
 `sec-bow.jpg`, `nacelle.jpg`, `nacelle-front.jpg`, `turret.jpg`, `turret-front.jpg`, `bridge.jpg`, `bridge-front.jpg`,
 `pylon.jpg`, `hangar.jpg`, `backdrop.jpg`, `port-detail-aft.jpg`, `port-detail-mid.jpg`, `port-detail-bow.jpg`,
-`measure/top.jpg`, `measure/belly.jpg`, `measure/stern.jpg`.
+`measure/top.jpg`, `measure/belly.jpg`, `measure/stern.jpg`, `measure/port.jpg`, `measure/stbd.jpg`,
+`bell.jpg`, `bell-front.jpg`.
 
 A locked number moved → exit **1** and the word `FAIL`. Success → exit **0**, the last line is `PASS`, and these files appear:
 
-- `tools/hard-objects/out/report.json` with keys `images`, `portBox` (x0,y0,x1,y1), `topBox` (the **measure** plan), `skinTopBox`, `topScale`,
-  `texelsPerUnit`, `hole` (u0, u1, s0, s1, n), `bells`, `skinBells`, `skinNacelles`, `nacelles` (each `u`, `x`, `z`, `length`), `verts`, `faces`, `length`.
+- `tools/hard-objects/out/report.json` with keys `images`, `portBox` (the **measure** port box), `skinPortBox`, `topBox` (the **measure** plan), `skinTopBox`, `topScale`,
+  `texelsPerUnit`, `hole` (u0, u1, s0, s1, n), `bells`, `skinBells`, `skinNacelles`, `portNozzles`, `nacelles` (each `u`, `x`, `z`, `length`), `verts`, `faces`, `length`.
   No pylon key. No bridge key. Those are section 7 readings, not this file.
 - `tools/hard-objects/out/frigate.obj` (hull quads, hangar window omitted). `length` in the JSON is the constant `LEN` (224).
 
-`topScale = LEN / measureTopWidth`. A wrong `LEN` fails the `topScale` row by itself. Do not add a second LEN check. The hull OBJ still lofts beams from the **skin** plan so the mesh matches the texture. The locked box is the measure plan, not the skin.
+`topScale = LEN / measureTopWidth`. A wrong `LEN` fails the `topScale` row by itself. Do not add a second LEN check. Beams in the OBJ and in `frigate.ts` are lofted from the **measure** plan, so the mesh matches the locked outline. The locked port box is `measure/port.jpg`, not the skin. `skinPortBox` is reported and not range-checked.
 
 PASS means all of the following. If one fails, the measure is wrong; do not loosen the test to go green.
 
 | Check | Range |
 |---|---|
-| Port content box | `x0` in 70..90, `x1` > 2200, height > 200 |
+| Port content box | measure port: `x0` in 70..90, `x1` > 2200, height > 200 |
 | Top content box | measure plan: `x0` in 70..90, `y0` > 100, `x1` > 2200 |
 | `topScale` | (0.09, 0.11), from the measure plan |
 | Hole | `n ≥ 10`, `u0` in (0.25, 0.36), `u1` in (0.44, 0.55) |
 | Bells | exactly 4, on `measure/stern.jpg` |
 | Skin bells | exactly 0 on `stern.jpg` |
 | Skin nacelles | exactly 0 detached components on `top.jpg` |
+| Port nozzles | exactly 0 blue cores on the port **skin** |
 | Nacelles | exactly 2, from the measure plan, each `length ≤ 40` and `|x| ≥ 70` |
 | OBJ faces | ≥ 4000 |
 

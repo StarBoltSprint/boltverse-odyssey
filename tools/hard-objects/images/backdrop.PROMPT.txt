@@ -6,8 +6,8 @@ Block ASK is the generation contract to copy if the plate must be replaced.
 It matches this file's pixel size, aspect and job. It is not a recovered transcript.
 
 ROLE turntable backdrop only. Not a skin of the hull. Loaded by frigate-view.ts as /biome/frigate/backdrop.jpg.
-PIXELS 1008x1792. ASPECT 9:16.
-JOB One continuous backdrop plate, tall enough for a portrait frame. Not a cube, not six faces, not a typed clear. The turntable fits it with a uniform cover so the aspect is not distorted and one source texel is not stretched across more than one screen pixel.
+PIXELS 1280x1728.
+JOB One continuous backdrop plate. Wide enough for a 1280-wide frame and tall enough for a 1600-tall portrait, so a cover fit stays at magnification ≤ 1 on both. Not a cube, not six faces. Edge texels are not smeared across a letterbox.
 
 ASK (colour-free template; tone wording stays in the untracked local prompts file)
 Imagine, aspect 9:16. No ship, no ground, no text, no border, no watermark, no frame, no cube faces.
