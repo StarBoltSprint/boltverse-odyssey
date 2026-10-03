@@ -149,3 +149,13 @@ Step 2b, new:
 - A square cap whose centre is a dark void becomes a dark disk at the pole, and the eight lat-long joins read as spokes when looking straight up. A 1024 cap cannot start much below 76° without magnification over 1. Do not fight that with an upscale.
 - An outpaint that pastes the reference on the left (a diptych) is not a continuous painting. One redo, then crop to the continuous side or stop.
 - Exposure swing is the slice-median jump, limit 24. Do not scale RGB in code to pass it.
+
+Step 2b, Director visual QC 2026-10-03 (blockers, not merged):
+
+- Outpaint clones: Imagine outpaints often repeat the reference motif two or three times across the new canvas. Each slice
+  then shows the same cloud bank side by side. View every slice file alone before joining; the gates do not see it.
+- Mirrored columns (kaleidoscope symmetry) in the upper band: same rule as cloned columns. Reject the image.
+- Square patches with hard edges pasted inside a slice read as crop rectangles in play.
+- Band-to-band edges (upper → high) show as a hard horizontal line when looking up 45°. Blend bands with their own
+  overlapping pixels over several degrees, and check the look-up shot.
+- Green gates are not a pass: sky check, selftest, npm test and playcheck all passed with these blockers visible.
