@@ -48,7 +48,11 @@ Join rule:
 1. Search a horizontal overlap. Crossfade that overlap with the two images' own pixels.
 2. If one slice is wider, crop spare pixels from the **outer edges**, never from the middle. Then the crossfade stays intact.
 3. Copy a few blended columns onto both sides of a slice boundary so the neighbour match is the same pixels, and feather those columns back into the painting over a short run.
-4. The shader may add a 2–4 % crossfade at the slice boundary (`resolveSeamBlend` / the in-shader seam). It does not invent pixels.
+4. The shader crossfades the two neighbouring slices at every vertical joint (see *Vertical seams* below). It mixes the two Imagine images only. It never invents pixels and never smears one edge column across the joint.
+
+**Vertical seams — neighbour crossfade (SmiR 2026-10-03: sky validated except vertical seams; seams fixed by crossfading neighbour slices, no new pixels).**
+Each slice is drawn a little wider than its azimuth step, so neighbours overlap. In the overlap the shader shows both slices with a smoothstep alpha, from 1/0 to 0.5/0.5 at the joint to 0/1. A slice may widen only until its horizontal magnification reaches that band's own current limit (the larger of its width and height magnification). The band's gated mag therefore never rises (`seamOverlap` in `play.js`, `bandMag` uses it). The overlap is capped at 25 % of a slice step and is computed per elevation. Higher up, `cos(el)` gives more room, and the slice keeps a constant angular width instead of being squeezed. The slice files, the download, the living video layers, the camera, the ground and the rocks do not change. Mip level comes from `textureGrad` with the analytic UV derivative, so the joint has no mip line.
+Zone A numbers: horizon 25 % overlap at every elevation (about 6.9°; width mag 0.70 → 0.88, still under its 0.98 height mag). The upper band is already at width mag 0.998 at its 19° bottom, so its overlap grows with elevation: 0 % at 19°, about 3 % at 23°, 9 % at 30°, 15 % at 35° and 25 % from about 41°. The high band goes from 4 % at 52° to 25 % from about 59°. Do not widen past these limits to hide the low upper joint. That would stretch pixels.
 
 Display each joined slice over 45° (the cook HFOV is 60°; the step is 45°). Stack bands so each band's height covers its elevation span at ≤ 1.0:
 
@@ -114,11 +118,13 @@ Look at the pictures. A passing number has shipped a washed sky before.
 
 Kit `howling-eclipse`: night, sun azimuth 285°, elevation −4°, 7500 K. Eclipse glow sits in slice 6 (heading 270–315), left of that slice's centre.
 
+**Current layout — IN TEST (zone A step 2d, SmiR look-validated 2026-10-03 except the vertical seams, which are now crossfaded):** 13 slices per band (about 27.7° each) on the horizon and upper bands, 8 × 45° on the high band. This replaces the 8 × 45° horizon/upper rows of step 2b. The METHOD rail (8 × 60° HFOV) stays the law until SmiR approves this layout.
+
 | Band | Files | Size | Elevation | mag (gate) |
 |---|---|---|---|---|
-| Horizon | `packs/zone-a/src/sky/sky-0..7.jpg` | 1867×864 | −1.5° to 24° | 0.982 |
-| Upper | `src/sky/upper/sky-0..7.jpg` | 1424×1248 | 19° to 56° | 0.987 |
-| High | `src/sky/high/sky-0..7.jpg` | 1152×864 | 52° to 77.5° | 0.982 |
+| Horizon | `packs/zone-a/src/sky/sky-0..12.jpg` (13 × 27.69°) | 1248×832 | −1.5° to 23° | 0.980 (height); width 0.88 with the 25 % joint overlap |
+| Upper | `src/sky/upper/sky-0..12.jpg` (13 × 27.69°) | 832×1248 | 19° to 56° | 0.998 (width at 19°) |
+| High | `src/sky/high/sky-0..7.jpg` (8 × 45°) | 1152×864, shown 930 wide | 52° to 77.5° | 0.982 |
 | Cap | `src/sky-cap/zenith.png` | 1024×1024 | from 74.6° | 0.989 |
 | Stars / dust | existing mp4, 13.0 s and 16.708 s | 848×480 tiles 21.18°×11.25° | full dome, low gain | 0.792 |
 | Corona (nebula slot) | Imagine loop, 3.3 s, one keyed tile near azimuth 285° | 848×480 | one tile | 0.792 |
@@ -178,6 +184,11 @@ Step 2c, Director visual QC 2026-10-03 (blockers, not merged):
   difference with the videos actually playing, and look at it on the phone at normal speed.
 - A frame-step capture that pauses the videos also stops texture uploads (`uploadVideo` skips paused videos). Keep
   `paused` false while stepping `currentTime`, or the motion proof shows nothing.
+
+Seam fix, 2026-10-03:
+
+- Mixing the joint toward one edge column of the next slice (the old in-shader seam) smears that column across the joint. That is an infinitely magnified column, and the cut still shows. Crossfade the real overlap of the two slices instead.
+- Copying a wide blended strip onto both sides of a joint puts the same strip twice side by side, which is a cloned column. Keep any baked shared strip to a few pixels.
 
 Step 2d, Director visual QC 2026-10-03 (blockers, not merged):
 

@@ -97,20 +97,42 @@ uniform float uHighLayers;
 uniform float uHasUpper;
 uniform float uHasHigh;
 uniform float uAzBias;
+uniform vec3 uOvH;
+uniform vec3 uOvU;
+uniform vec3 uOvK;
 in vec3 vLocal;
 out vec4 o;
-vec3 sampleBand(sampler2DArray tex, float layers, float turns, float el, float e0, float e1) {
-  float v = clamp((el - e0) / max(0.001, e1 - e0), 0.0, 1.0);
-  v = 1.0 - v;
-  float lf = turns * max(1.0, layers);
-  float layer = floor(lf);
-  float uu = fract(lf);
-  float nxt = mod(layer + 1.0, max(1.0, layers));
-  vec3 col = texture(tex, vec3(uu, v, layer)).rgb;
-  float seamFrac = mix(0.04, 0.42, smoothstep(0.75, 1.20, el));
-  float seam = smoothstep(1.0 - seamFrac, 1.0, uu);
-  vec3 edge = texture(tex, vec3(0.0, v, nxt)).rgb;
-  return mix(col, edge, seam);
+// Each slice keeps its own Imagine pixels. It is widened in azimuth only as far as the band's own
+// magnification allows (ov.y = band mag limit / slice mag at the band bottom, ov.z = cos of that bottom),
+// capped at ov.x of a slice. The overlap shows both neighbours and crossfades them: no new pixels, no stretch.
+vec3 bandTex(sampler2DArray tex, float u, float v, float layer, vec2 gx, vec2 gy) {
+  return textureGrad(tex, vec3(u, v, layer), gx, gy).rgb;
+}
+vec3 sampleBand(sampler2DArray tex, float layers, float turns, float el, float e0, float e1, vec3 ov) {
+  float n = max(1.0, layers);
+  float v = 1.0 - clamp((el - e0) / max(0.001, e1 - e0), 0.0, 1.0);
+  float o = clamp(ov.y * ov.z / max(0.05, cos(el)) - 1.0, 0.0, ov.x);
+  float s = 1.0 / (1.0 + o);
+  float p = turns * n;
+  float i = floor(p);
+  float f = p - i;
+  vec2 dp = vec2(dFdx(p), dFdy(p));
+  dp -= n * floor(dp / n + 0.5);
+  vec2 ds = vec2(dFdx(s), dFdy(s));
+  vec2 dv = vec2(dFdx(v), dFdy(v));
+  vec2 duA = dp * s + (f - 0.5) * ds;
+  vec3 col = bandTex(tex, (f - 0.5) * s + 0.5, v, i, vec2(duA.x, dv.x), vec2(duA.y, dv.y));
+  float h = 0.5 * o;
+  if (o > 0.001 && f > 1.0 - h) {
+    vec2 duB = dp * s + (f - 1.5) * ds;
+    vec3 b = bandTex(tex, (f - 1.5) * s + 0.5, v, mod(i + 1.0, n), vec2(duB.x, dv.x), vec2(duB.y, dv.y));
+    col = mix(col, b, smoothstep(0.0, 1.0, (f - 1.0 + h) / o));
+  } else if (o > 0.001 && f < h) {
+    vec2 duB = dp * s + (f + 0.5) * ds;
+    vec3 b = bandTex(tex, (f + 0.5) * s + 0.5, v, mod(i - 1.0 + n, n), vec2(duB.x, dv.x), vec2(duB.y, dv.y));
+    col = mix(b, col, smoothstep(0.0, 1.0, (f + h) / o));
+  }
+  return col;
 }
 float bandWeight(float el, float e0, float e1, float enterW, float leaveW) {
   float enter = smoothstep(e0, e0 + max(0.02, enterW), el);
@@ -135,9 +157,9 @@ void main() {
   float wU = uHasUpper * bandWeight(el, uElU0, uElU1, hu, uk);
   float wK = uHasHigh * bandWeight(el, uElK0, uElK1, uk, kc);
   float wC = smoothstep(uCapEl - kc, min(uCapEl + 0.02, uElK1), el);
-  vec3 acc = sampleBand(uTex, uLayers, turns, el, uElH0, uElH1) * wH;
-  if (wU > 0.001) acc += sampleBand(uUpper, uUpperLayers, turns, el, uElU0, uElU1) * wU;
-  if (wK > 0.001) acc += sampleBand(uHigh, uHighLayers, turns, el, uElK0, uElK1) * wK;
+  vec3 acc = sampleBand(uTex, uLayers, turns, el, uElH0, uElH1, uOvH) * wH;
+  if (wU > 0.001) acc += sampleBand(uUpper, uUpperLayers, turns, el, uElU0, uElU1, uOvU) * wU;
+  if (wK > 0.001) acc += sampleBand(uHigh, uHighLayers, turns, el, uElK0, uElK1, uOvK) * wK;
   float hlen = length(dir.xz);
   float capR = clamp((1.57079632679 - el) / max(0.001, 1.57079632679 - uCapEl), 0.0, 1.0);
   vec2 nrm = hlen < 1e-4 ? vec2(0.0) : dir.xz / hlen;
@@ -320,6 +342,9 @@ const surfLoc = {
   hasUpper: gl.getUniformLocation(surfProg, "uHasUpper"),
   hasHigh: gl.getUniformLocation(surfProg, "uHasHigh"),
   azBias: gl.getUniformLocation(surfProg, "uAzBias"),
+  ovH: gl.getUniformLocation(surfProg, "uOvH"),
+  ovU: gl.getUniformLocation(surfProg, "uOvU"),
+  ovK: gl.getUniformLocation(surfProg, "uOvK"),
 };
 const skyLayerLoc = {
   vp: gl.getUniformLocation(skyLayerProg, "uVP"),
@@ -1424,6 +1449,31 @@ function syncVideos(eye, fwd) {
   return show;
 }
 
+// Vertical slice joints: neighbours overlap and crossfade. A slice may widen only until its horizontal
+// magnification reaches the band's own current limit (the larger of its width and height mag), so the
+// band mag never rises. Overlap is at most SKY_SEAM_MAX of a slice spacing.
+const SKY_SEAM_MAX = 0.25;
+const seamCache = [];
+function seamOverlap(srcW, srcH, azDeg, el0, el1) {
+  for (let i = 0; i < seamCache.length; i++) {
+    const c = seamCache[i];
+    if (c.srcW === srcW && c.srcH === srcH && c.azDeg === azDeg && c.el0 === el0 && c.el1 === el1) return c;
+  }
+  const pxH = W / (HFOV * 180 / Math.PI);
+  const pxV = H / (VFOV * 180 / Math.PI);
+  const span = Math.max(0.01, (el1 - el0) * 180 / Math.PI);
+  const cos0 = Math.cos(el0);
+  const magW = pxH * cos0 * azDeg / srcW;
+  const magH = pxV * span / srcH;
+  const limit = Math.max(magW, magH);
+  const headroom = Math.max(1, limit / Math.max(1e-6, magW));
+  const o0 = Math.min(SKY_SEAM_MAX, headroom - 1);
+  const c = { srcW, srcH, azDeg, el0, el1, headroom, cos0, magW: magW * (1 + o0), magH };
+  if (seamCache.length > 8) seamCache.length = 0;
+  seamCache.push(c);
+  return c;
+}
+
 function drawSky(mode, eye) {
   if (mode === 1 || !skyVao || !zenithTex || !skyTex) return;
   const yaw = state.hdg * Math.PI / 180;
@@ -1448,6 +1498,12 @@ function drawSky(mode, eye) {
   gl.uniform1f(surfLoc.hasUpper, skyUpper ? 1 : 0);
   gl.uniform1f(surfLoc.hasHigh, skyHigh ? 1 : 0);
   gl.uniform1f(surfLoc.azBias, yaw * 0.006);
+  const ovH = skyTex ? seamOverlap(skyTex.w, skyTex.h, skyBand.hAz || 45, skyBand.h0, skyBand.h1) : null;
+  const ovU = skyUpper ? seamOverlap(skyUpper.w, skyUpper.h, skyBand.uAz || 45, skyBand.u0, skyBand.u1) : null;
+  const ovK = skyHigh ? seamOverlap(skyHigh.w, skyHigh.h, skyBand.kAz || 45, skyBand.k0, skyBand.k1) : null;
+  gl.uniform3f(surfLoc.ovH, ovH ? SKY_SEAM_MAX : 0, ovH ? ovH.headroom : 1, ovH ? ovH.cos0 : 1);
+  gl.uniform3f(surfLoc.ovU, ovU ? SKY_SEAM_MAX : 0, ovU ? ovU.headroom : 1, ovU ? ovU.cos0 : 1);
+  gl.uniform3f(surfLoc.ovK, ovK ? SKY_SEAM_MAX : 0, ovK ? ovK.headroom : 1, ovK ? ovK.cos0 : 1);
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_2D_ARRAY, skyTex.tex);
   gl.uniform1i(surfLoc.tex, 0);
@@ -1636,10 +1692,8 @@ function measureMag(eye) {
   const pxV = H / (VFOV * 180 / Math.PI);
   const bandMag = (srcW, srcH, azDeg, el0, el1) => {
     if (!srcW || !srcH) return 0;
-    const span = Math.max(0.01, (el1 - el0) * 180 / Math.PI);
-    const magW = pxH * Math.cos(el0) * azDeg / srcW;
-    const magH = pxV * span / srcH;
-    return Math.max(magW, magH);
+    const ov = seamOverlap(srcW, srcH, azDeg, el0, el1);
+    return Math.max(ov.magW, ov.magH);
   };
   skyMagParts.horizon = skyTex ? bandMag(skyTex.w, skyTex.h, skyBand.hAz || 45, skyBand.h0, skyBand.h1) : 0;
   skyMagParts.upper = skyUpper ? bandMag(skyUpper.w, skyUpper.h, skyBand.uAz || 45, skyBand.u0, skyBand.u1) : 0;
