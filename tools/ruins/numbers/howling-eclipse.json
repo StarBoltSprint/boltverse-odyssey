@@ -1,0 +1,32 @@
+{
+  "schema": "ruins-numbers/1",
+  "kit": "howling-eclipse",
+  "pack": "packs/zone-a",
+  "focalPx": 1793,
+  "frame": [720, 1600],
+  "skyRadiusM": 90,
+  "corridor": {
+    "headingDeg": 32,
+    "halfWidthM": 4.2,
+    "spawn": [-6, -14],
+    "bubbleM": 9.5,
+    "lengthM": 80
+  },
+  "gate": {
+    "heightM": 7.4,
+    "x": 2.0,
+    "z": 37.1,
+    "sinkM": 0.18,
+    "face": "spawn",
+    "gridStepPx": 5
+  },
+  "wreck": {
+    "lengthM": 14,
+    "x": -24.0,
+    "z": 12.0,
+    "yawDeg": 128,
+    "pitchDeg": -14,
+    "sinkM": 0.85,
+    "howlLength": 224
+  }
+}
