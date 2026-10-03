@@ -378,6 +378,11 @@ MOTIF_MIRROR = 0.58
 MOTIF_HALF = 0.58
 MOTIF_NEIGHBOUR = 0.88
 MOTIF_FLAT = 6.0
+# A soft two-painting gap: the middle pair of colour blocks stops continuing
+# while the rest of the slice still does. Upper slice 6 (step 2c) sits here.
+# Keepers stay above the centre line. Do not lower these to clear a bad slice.
+SOFT_GAP_CENTER = 0.46
+SOFT_GAP_DROP = 0.34
 
 
 def _box_luma(rgb: np.ndarray, tw: int, th: int) -> np.ndarray:
@@ -417,11 +422,42 @@ def _zncc(a: np.ndarray, b: np.ndarray) -> float:
     return float(np.dot(aa, bb) / (na * nb))
 
 
+def _soft_gap(rgb: np.ndarray) -> dict:
+    """Two paintings blended through the middle, with no hard edge.
+
+    Colour blocks across the slice. A continuous painting keeps a similar
+    continuation score at the centre. A soft gap drops only there.
+    """
+    img = rgb[..., :3].astype(np.float32)
+    h, w, _ = img.shape
+    gh, gw = 8, 12
+    blocks = np.empty((gh, gw, 3), np.float32)
+    ys = np.linspace(0, h, gh + 1).astype(np.int32)
+    xs = np.linspace(0, w, gw + 1).astype(np.int32)
+    for y in range(gh):
+        y0, y1 = int(ys[y]), max(int(ys[y + 1]), int(ys[y]) + 1)
+        y1 = min(h, y1)
+        for x in range(gw):
+            x0, x1 = int(xs[x]), max(int(xs[x + 1]), int(xs[x]) + 1)
+            x1 = min(w, x1)
+            blocks[y, x] = img[y0:y1, x0:x1].mean(axis=(0, 1))
+    cont = [_zncc(blocks[:, x], blocks[:, x + 1]) for x in range(gw - 1)]
+    center = float(cont[gw // 2 - 1])
+    med = float(np.median(cont))
+    drop = med - center
+    return {
+        "gapCenter": r4(center),
+        "gapDrop": r4(drop),
+        "gapped": bool(center < SOFT_GAP_CENTER and drop >= SOFT_GAP_DROP),
+    }
+
+
 def motif_defect(rgb: np.ndarray) -> dict:
     """A cloud bank copied inside one slice, or a left-right mirror / diptych.
 
     Trailing-column copies stay in trailing_defect. This looks at separated
     interior windows and at the two halves. A flat field scores zero.
+    A soft two-painting gap is the centre continuation drop.
     """
     small = _box_luma(rgb, 160, 72)
     _h, w = small.shape
@@ -452,6 +488,7 @@ def motif_defect(rgb: np.ndarray) -> dict:
     frac = float((diff[:, peak_i] > np.maximum(row_med * 2.5, 6.0)).mean())
     ratio = float(col[peak_i] / med)
     seamed = 0.12 < at < 0.88 and ratio >= 4.5 and frac >= 0.55 and float(col[peak_i]) >= 12.0
+    gap = _soft_gap(rgb)
     return {
         "repeat": r4(best),
         "mirror": r4(half_flip),
@@ -462,6 +499,9 @@ def motif_defect(rgb: np.ndarray) -> dict:
         "mirrored": half_flip >= MOTIF_MIRROR,
         "copied": half_copy >= MOTIF_HALF,
         "seamed": seamed,
+        "gapCenter": gap["gapCenter"],
+        "gapDrop": gap["gapDrop"],
+        "gapped": gap["gapped"],
     }
 
 
@@ -504,6 +544,9 @@ def assess_slices(named: list[tuple[str, np.ndarray]]) -> dict:
             "motifCopied": bool(motif["copied"]),
             "motifSeamed": bool(motif["seamed"]),
             "motifSeamRatio": motif["seamRatio"],
+            "motifGapped": bool(motif["gapped"]),
+            "motifGapCenter": motif["gapCenter"],
+            "motifGapDrop": motif["gapDrop"],
         }
         if defect["cloned"]:
             failures.append(f"FAIL sky clone {name} trailing run={defect['run']} mae={defect['mae']}")
@@ -518,6 +561,10 @@ def assess_slices(named: list[tuple[str, np.ndarray]]) -> dict:
         if motif["seamed"]:
             failures.append(
                 f"FAIL sky motif seam {name} ratio={motif['seamRatio']} at={motif['seamAt']}"
+            )
+        if motif["gapped"]:
+            failures.append(
+                f"FAIL sky motif gap {name} center={motif['gapCenter']} drop={motif['gapDrop']}"
             )
         slices.append(row)
         runs.append(int(defect["run"]) if defect["cloned"] or defect["mirrored"] else 0)

@@ -101,6 +101,10 @@ def motif_on_band(root: Path, files: list, label: str) -> list[str]:
             failures.append(f"FAIL sky motif copy {name} ncc={defect['half']}")
         if defect["seamed"]:
             failures.append(f"FAIL sky motif seam {name} ratio={defect['seamRatio']} at={defect['seamAt']}")
+        if defect["gapped"]:
+            failures.append(
+                f"FAIL sky motif gap {name} center={defect['gapCenter']} drop={defect['gapDrop']}"
+            )
         images.append(rgb)
         names.append(name)
     for i in range(len(images)):

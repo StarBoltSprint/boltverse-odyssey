@@ -106,7 +106,7 @@ vec3 sampleBand(sampler2DArray tex, float layers, float turns, float el, float e
   float uu = fract(lf);
   float nxt = mod(layer + 1.0, max(1.0, layers));
   vec3 col = texture(tex, vec3(uu, v, layer)).rgb;
-  float seamFrac = mix(0.03, 0.14, smoothstep(0.90, 1.45, el));
+  float seamFrac = mix(0.04, 0.42, smoothstep(0.75, 1.20, el));
   float seam = smoothstep(1.0 - seamFrac, 1.0, uu);
   vec3 edge = texture(tex, vec3(0.0, v, nxt)).rgb;
   return mix(col, edge, seam);
@@ -143,7 +143,7 @@ void main() {
   float ca = cos(uAzBias);
   float sa = sin(uAzBias);
   nrm = vec2(ca * nrm.x - sa * nrm.y, sa * nrm.x + ca * nrm.y);
-  vec2 capUv = clamp(vec2(0.5) + nrm * capR * 0.5, vec2(0.0), vec2(1.0));
+  vec2 capUv = vec2(0.5) + nrm * capR * 0.5;
   if (wC > 0.001) acc += texture(uZenith, capUv).rgb * wC;
   o = vec4(acc / max(0.001, wH + wU + wK + wC), 1.0);
 }`);
@@ -173,23 +173,15 @@ void main() {
 precision highp float;
 uniform sampler2D uTex;
 uniform float uGain;
-uniform float uMask;
-uniform float uMaskAz;
-uniform float uMaskEl;
+uniform float uKey;
 in vec2 vUv;
 flat in vec2 vTile;
 out vec4 o;
 void main() {
   vec3 s = texture(uTex, fract(vUv)).rgb;
-  float lobe = 1.0;
-  if (uMask > 0.5) {
-    float dAz = abs(atan(sin(vTile.x - uMaskAz), cos(vTile.x - uMaskAz)));
-    float dEl = abs(vTile.y - uMaskEl);
-    lobe = 1.0 - smoothstep(0.08, 0.16, length(vec2(dAz, dEl)));
-    float bright = max(s.r, max(s.g, s.b));
-    lobe *= smoothstep(0.22, 0.55, bright);
-  }
-  o = vec4(s * uGain * lobe, 1.0);
+  float lum = dot(s, vec3(0.299, 0.587, 0.114));
+  float key = smoothstep(uKey, uKey + 0.06, lum);
+  o = vec4(s * uGain * key, 1.0);
 }`);
 
 const fogProg = program(`#version 300 es
@@ -337,9 +329,7 @@ const skyLayerLoc = {
   scroll: gl.getUniformLocation(skyLayerProg, "uScroll"),
   tex: gl.getUniformLocation(skyLayerProg, "uTex"),
   gain: gl.getUniformLocation(skyLayerProg, "uGain"),
-  mask: gl.getUniformLocation(skyLayerProg, "uMask"),
-  maskAz: gl.getUniformLocation(skyLayerProg, "uMaskAz"),
-  maskEl: gl.getUniformLocation(skyLayerProg, "uMaskEl"),
+  key: gl.getUniformLocation(skyLayerProg, "uKey"),
 };
 const groundLoc = {
   vp: gl.getUniformLocation(groundProg, "uVP"),
@@ -548,7 +538,8 @@ let zenithSrc = 1024;
 const skyVideos = [null, null, null];
 const skyVideoTex = [null, null, null];
 const SKY_VIDEO_IDS = ["sky-stars", "sky-dust", "sky-nebula"];
-const SKY_GAIN = [0.1, 0.04, 0.65];
+const SKY_GAIN = [0.1, 0.04, 0.0];
+const SKY_KEY = [0.12, 0.08, 0.12];
 const SKY_TILE_AZ_N = 17;
 const SKY_TILE_EL_N = 8;
 const SKY_TILE_AZ = 360 / SKY_TILE_AZ_N;
@@ -1502,11 +1493,9 @@ function drawSkyLayers(eye, yaw) {
     if (skyVideos[i] && uploadVideo(skyVideos[i], skyVideoTex[i], SKY_VIDEO_IDS[i])) gain = SKY_GAIN[i];
     if (gain <= 0) continue;
     gl.uniform1f(skyLayerLoc.gain, gain);
+    gl.uniform1f(skyLayerLoc.key, SKY_KEY[i]);
     gl.uniform1f(skyLayerLoc.azBias, bias[i]);
-    gl.uniform1f(skyLayerLoc.scroll, i === 2 ? 0.0 : 1.0);
-    gl.uniform1f(skyLayerLoc.mask, i === 2 ? 1 : 0);
-    gl.uniform1f(skyLayerLoc.maskAz, 285 * Math.PI / 180);
-    gl.uniform1f(skyLayerLoc.maskEl, 15 * Math.PI / 180);
+    gl.uniform1f(skyLayerLoc.scroll, 1.0);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, skyVideoTex[i]);
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, skyTileCount);

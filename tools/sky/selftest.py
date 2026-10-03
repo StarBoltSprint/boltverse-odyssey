@@ -94,6 +94,63 @@ def test_interior_motif() -> None:
     print("interior motif FAIL")
 
 
+def test_soft_gap() -> None:
+    """Upper 6 is two paintings with a soft centre. A continuous field is not."""
+    from pixels import motif_defect
+
+    h, w = 96, 360
+    rng = np.random.default_rng(3)
+    yy = np.linspace(0, 1, h)[:, None]
+    xx = np.linspace(0, 1, w)[None, :]
+    # One field: slow unique clouds, no copied motif.
+    whole_f = np.zeros((h, w, 3), np.float32)
+    whole_f[:, :, 0] = 40 + 90 * yy + 30 * np.sin(xx * 1.3 + yy)
+    whole_f[:, :, 1] = 50 + 40 * xx + 25 * np.cos(yy * 2.1)
+    whole_f[:, :, 2] = 80 + 35 * np.sin((xx + yy) * 1.7)
+    whole_f += rng.integers(0, 12, whole_f.shape)
+    # Two different paintings, blended only across the centre column pair.
+    left = np.zeros((h, w, 3), np.float32)
+    left[:, :, 0] = 30 + 160 * yy * (0.3 + xx)
+    left[:, :, 1] = 20 + 40 * np.sin(yy * 3.0)
+    left[:, :, 2] = 140 - 80 * yy
+    right = np.zeros((h, w, 3), np.float32)
+    right[:, :, 0] = 20 + 30 * xx
+    right[:, :, 1] = 40 + 150 * (1.0 - yy) * (0.4 + 0.6 * np.sin(xx * 2))
+    right[:, :, 2] = 30 + 100 * xx * yy
+    left += rng.integers(0, 8, left.shape)
+    right += rng.integers(0, 8, right.shape)
+    t = np.clip((xx - 0.46) / 0.08, 0, 1)
+    t = t * t * (3 - 2 * t)
+    t = t[..., None]
+    gap = np.clip(left * (1 - t) + right * t, 0, 255).astype(np.uint8)
+    whole = np.clip(whole_f, 0, 255).astype(np.uint8)
+    report = assess_slices([("keep.png", whole), ("upper-6.png", gap)])
+    text = "\n".join(report["failures"])
+    if "motif gap" not in text or "upper-6" not in text:
+        fail("soft two-painting gap was not rejected\n" + text)
+    if motif_defect(whole)["gapped"]:
+        fail("one continuous field was marked as a gap")
+    fixture = SKY / "testdata" / "upper6-softgap.jpg"
+    if not fixture.is_file():
+        fail(f"missing upper-6 fixture {fixture}")
+    real = np.asarray(Image.open(fixture).convert("RGB"))
+    if not motif_defect(real)["gapped"]:
+        fail("real upper-6 soft gap was not rejected")
+    keepers = [
+        ROOT / "packs/zone-a/src/sky/sky-5.jpg",
+        ROOT / "packs/zone-a/src/sky/sky-6.jpg",
+        ROOT / "packs/zone-a/src/sky/upper/sky-0.jpg",
+        ROOT / "packs/zone-a/src/sky/upper/sky-1.jpg",
+        ROOT / "packs/zone-a/src/sky/upper/sky-5.jpg",
+        ROOT / "packs/zone-a/src/sky/high/sky-0.jpg",
+    ]
+    for path in keepers:
+        rgb = np.asarray(Image.open(path).convert("RGB"))
+        if motif_defect(rgb)["gapped"]:
+            fail(f"keeper marked as a soft gap: {path.name}")
+    print("soft gap FAIL on upper-6, keepers PASS")
+
+
 def test_join_and_close_and_cheapest() -> None:
     h, w = 24, 64
     slices = []
@@ -344,6 +401,7 @@ def main() -> None:
     test_chain_pass()
     test_clone_and_mirror()
     test_interior_motif()
+    test_soft_gap()
     test_join_and_close_and_cheapest()
     test_swing()
     test_repetition()
