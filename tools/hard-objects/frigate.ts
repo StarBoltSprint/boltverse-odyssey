@@ -3,7 +3,8 @@ import * as THREE from "three";
 /**
  * Howl-class frigate. Shape is read off Imagine plates:
  * full contours (not a mirrored half-width), port and starboard separately,
- * and a gap in the port plate is left as a hole. Skins are those same plates, unlit.
+ * and a gap in the port plate is left as a hole. Hull skins are the plates with the
+ * parts lifted off. Part position is read from images/measure, where the part is still painted.
  */
 
 type Pix = { data: Uint8ClampedArray; w: number; h: number };
@@ -317,7 +318,7 @@ export async function mountFrigate(
   scene: THREE.Scene,
   place: { x: number; y: number; z: number; yaw: number } = { x: 280, y: 22, z: -250, yaw: 0.42 },
 ) {
-  const [port, stbd, top, belly, stern, secStern, secShoulder, secMid, secBow, nacelle, nacelleFront, turret, turretFront, bridge, bridgeFront, pylon, hangar] =
+  const [port, stbd, top, belly, stern, secStern, secShoulder, secMid, secBow, nacelle, nacelleFront, turret, turretFront, bridge, bridgeFront, pylon, hangar, topMeasure, bellyMeasure, sternMeasure] =
     await Promise.all([
       loadPix("/biome/frigate/port.jpg"),
       loadPix("/biome/frigate/stbd.jpg"),
@@ -336,6 +337,9 @@ export async function mountFrigate(
       loadPix("/biome/frigate/bridge-front.jpg"),
       loadPix("/biome/frigate/pylon.jpg"),
       loadPix("/biome/frigate/hangar.jpg"),
+      loadPix("/biome/frigate/measure/top.jpg"),
+      loadPix("/biome/frigate/measure/belly.jpg"),
+      loadPix("/biome/frigate/measure/stern.jpg"),
     ]);
 
   const portMap = skinTex("/biome/frigate/port.jpg");
@@ -351,6 +355,7 @@ export async function mountFrigate(
   const bridgeFrontMap = skinTex("/biome/frigate/bridge-front.jpg");
   const pylonMap = skinTex("/biome/frigate/pylon.jpg");
   const hangarMap = skinTex("/biome/frigate/hangar.jpg");
+  const bellMap = skinTex("/biome/frigate/measure/stern.jpg");
 
   const portM = largestMask(maskOf(port, 16), port.w, port.h);
   const stbdM = largestMask(maskOf(stbd, 16), stbd.w, stbd.h);
@@ -642,16 +647,17 @@ export async function mountFrigate(
   }
 
   const sternBox = contentBox(maskOf(stern, 16), stern.w, stern.h);
-  const sternUV = (y: number, z: number): UV => {
+  const makeSternUV = (pix: Pix, box: { x0: number; y0: number; x1: number; y1: number }) => (y: number, z: number): UV => {
     const H = Math.max(1e-3, hullTop[0] - hullBot[0]);
     const t = Math.max(0, Math.min(1, (y - hullBot[0]) / H));
-    const py = sternBox.y1 - t * (sternBox.y1 - sternBox.y0);
-    const half = Math.max(1, (sternBox.x1 - sternBox.x0) * 0.5);
-    const mid = (sternBox.x0 + sternBox.x1) * 0.5;
+    const py = box.y1 - t * (box.y1 - box.y0);
+    const half = Math.max(1, (box.x1 - box.x0) * 0.5);
+    const mid = (box.x0 + box.x1) * 0.5;
     const reach = Math.max(beamPort[0], beamStbd[0], 0.001);
     const px = mid - (z / reach) * half;
-    return pixUV(stern, px, py);
+    return pixUV(pix, px, py);
   };
+  const sternUV = makeSternUV(stern, sternBox);
 
   const cap = (i: number, bow: boolean) => {
     const bucket = bow ? buckets.bow : buckets.stern;
@@ -684,28 +690,45 @@ export async function mountFrigate(
   cap(0, false);
   cap(NU - 1, true);
 
-  const blues = blobs(blueMask(stern), stern.w, stern.h, 80).slice(0, 4);
+  const sternMeasureBox = contentBox(maskOf(sternMeasure, 16), sternMeasure.w, sternMeasure.h);
+  const bellUV = makeSternUV(sternMeasure, sternMeasureBox);
+  const blues = blobs(blueMask(sternMeasure), sternMeasure.w, sternMeasure.h, 80).slice(0, 4);
   const bells = new Bucket();
   const cores = new Bucket();
   const xSurf = P[0][0].x;
+  const topMeasureM = largestMask(maskOf(topMeasure, 16), topMeasure.w, topMeasure.h);
+  const topMeasureBox = contentBox(topMeasureM, topMeasure.w, topMeasure.h);
+  const measureScale = LEN / Math.max(8, topMeasureBox.x1 - topMeasureBox.x0);
+  const bellLen = Math.max(1.5, (topBox.x0 - topMeasureBox.x0) * measureScale);
+  const measureMids: number[] = [];
+  for (let i = Math.floor(NU * 0.72); i < Math.floor(NU * 0.94); i++) {
+    const u = i / (NU - 1);
+    const x = topMeasureBox.x0 + u * (topMeasureBox.x1 - topMeasureBox.x0);
+    const col = column(topMeasureM, topMeasure.w, topMeasure.h, x);
+    if (col) measureMids.push((col.topY + col.botY) * 0.5);
+  }
+  measureMids.sort((a, b) => a - b);
+  const measureCenter = measureMids.length
+    ? measureMids[Math.floor(measureMids.length / 2)]
+    : (topMeasureBox.y0 + topMeasureBox.y1) / 2;
   for (const e of blues) {
     const H = Math.max(1e-3, hullTop[0] - hullBot[0]);
-    const t = (sternBox.y1 - e.cy) / Math.max(1, sternBox.y1 - sternBox.y0);
+    const t = (sternMeasureBox.y1 - e.cy) / Math.max(1, sternMeasureBox.y1 - sternMeasureBox.y0);
     const y = hullBot[0] + Math.max(0, Math.min(1, t)) * H;
     const reach = Math.max(beamPort[0], beamStbd[0]);
-    const half = Math.max(1, (sternBox.x1 - sternBox.x0) * 0.5);
-    const mid = (sternBox.x0 + sternBox.x1) * 0.5;
+    const half = Math.max(1, (sternMeasureBox.x1 - sternMeasureBox.x0) * 0.5);
+    const mid = (sternMeasureBox.x0 + sternMeasureBox.x1) * 0.5;
     const z = -((e.cx - mid) / half) * reach;
     const r = Math.max(0.7, ((e.x1 - e.x0) * 0.5 / half) * reach);
     const SEG = 16;
-    const len = Math.max(2.2, r * 2);
+    const len = bellLen;
     const ring = (bucket: Bucket, x: number, rad: number) => {
       const ids: number[] = [];
       for (let s = 0; s < SEG; s++) {
         const a = (s / SEG) * Math.PI * 2;
         const yy = y + Math.cos(a) * rad;
         const zz = z + Math.sin(a) * rad;
-        const uv = sternUV(yy, zz);
+        const uv = bellUV(yy, zz);
         ids.push(bucket.v(x, yy, zz, uv[0], uv[1]));
       }
       return ids;
@@ -732,8 +755,8 @@ export async function mountFrigate(
   root.add(buckets.belly.mesh(bellyMap));
   root.add(buckets.stern.mesh(sternMap));
   root.add(buckets.bow.mesh(portMap));
-  root.add(bells.mesh(sternMap));
-  root.add(cores.mesh(sternMap));
+  root.add(bells.mesh(bellMap));
+  root.add(cores.mesh(bellMap));
 
   const depth = Math.max(8, (beamPort[Math.floor(NU * 0.5)] || 8) * 0.82);
   const sample = (u: number, sy: number, zSide: number) => {
@@ -873,7 +896,8 @@ export async function mountFrigate(
     };
     putFace(thick / 2);
     putFace(-thick / 2);
-    const band = Math.max(6, Math.round((box.y1 - box.y0) * 0.22));
+    const rho = (box.x1 - box.x0) / Math.max(0.001, length);
+    const band = Math.max(2, Math.min(Math.max(2, box.y1 - box.y0 - 2), Math.round(Math.max(thick, 0.2) * rho)));
     const clampY = (y: number) => Math.max(0, Math.min(side.h - 1, Math.round(y)));
     const topNear = (i: number) => clampY(pxT[i] < 0 ? ref : pxT[i]);
     const topFar = (i: number) => clampY(topNear(i) + band);
@@ -906,16 +930,17 @@ export async function mountFrigate(
     const g = new THREE.Group();
     g.add(body.mesh(sideMap));
     const caps = new Bucket();
-    const fu0 = fbox.x0 / front.w;
-    const fu1 = fbox.x1 / front.w;
-    const fv1 = 1 - fbox.y0 / front.h;
-    const fv0 = 1 - fbox.y1 / front.h;
     const paintCap = (i: number, sign: number) => {
       const x = (i / (N - 1) - 0.5) * length;
-      const a = caps.v(x, topY[i], thick / 2, fu0, fv1);
-      const b = caps.v(x, botY[i], thick / 2, fu0, fv0);
-      const c = caps.v(x, botY[i], -thick / 2, fu1, fv0);
-      const d = caps.v(x, topY[i], -thick / 2, fu1, fv1);
+      const faceH = Math.max(0.2, Math.abs(topY[i] - botY[i]));
+      const du = Math.min((fbox.x1 - fbox.x0) / front.w, (thick * rho) / front.w) * 0.5;
+      const dv = Math.min((fbox.y1 - fbox.y0) / front.h, (faceH * rho) / front.h) * 0.5;
+      const fu = (fbox.x0 + fbox.x1) * 0.5 / front.w;
+      const fv = 1 - (fbox.y0 + fbox.y1) * 0.5 / front.h;
+      const a = caps.v(x, topY[i], thick / 2, fu - du, fv + dv);
+      const b = caps.v(x, botY[i], thick / 2, fu - du, fv - dv);
+      const c = caps.v(x, botY[i], -thick / 2, fu + du, fv - dv);
+      const d = caps.v(x, topY[i], -thick / 2, fu + du, fv + dv);
       if (sign > 0) caps.quad(a, b, c, d);
       else caps.quad(a, d, c, b);
     };
@@ -953,28 +978,25 @@ export async function mountFrigate(
     return built;
   };
 
-  const topParts = blobs(maskOf(top, 16), top.w, top.h, 800).slice(1);
+  const topParts = blobs(maskOf(topMeasure, 16), topMeasure.w, topMeasure.h, 800).slice(1);
   topParts.forEach((b) => {
-    const u = (b.cx - topBox.x0) / Math.max(1, topBox.x1 - topBox.x0);
-    const length = Math.max(6, (b.x1 - b.x0) * topScale);
+    const u = (b.cx - topMeasureBox.x0) / Math.max(1, topMeasureBox.x1 - topMeasureBox.x0);
+    const length = Math.max(6, (b.x1 - b.x0) * measureScale);
     const i = Math.max(0, Math.min(NU - 1, Math.round(u * (NU - 1))));
     const y = (hullTop[i] + hullBot[i]) * 0.5;
-    const z = (b.cy - centerPx) * topScale;
+    const z = (b.cy - measureCenter) * measureScale;
     placePrism(nacelle, nacelleFront, nacelleMap, nacelleFrontMap, length, (u - 0.5) * LEN, y, z);
     const outward = Math.sign(z) || 1;
     const hullZ = outward > 0 ? beamPort[i] : -beamStbd[i];
-    const gap = Math.abs(z - hullZ);
-    const span = Math.max(2.4, gap + 0.55);
-    const arm = addPrism(pylon, pylon, 1, pylonMap, pylonMap);
-    const long = Math.max(0.2, arm.high - arm.low);
-    const sLong = span / long;
-    const minC = 2.05;
-    const maxC = 3.4;
-    const sX = Math.min(maxC, Math.max(minC, sLong)) / 1;
-    const sZ = Math.min(maxC, Math.max(minC, arm.thick * sLong)) / Math.max(0.2, arm.thick);
-    arm.g.scale.set(sX, sLong, sZ);
-    arm.g.rotation.x = Math.PI / 2;
-    arm.g.position.set((u - 0.5) * LEN, y, (hullZ + z) / 2);
+    const gap = z - hullZ;
+    const span = Math.abs(gap) + 0.35;
+    const pBox = boxOf(pylon);
+    const aspect = Math.max(1.2, (pBox.y1 - pBox.y0) / Math.max(1, pBox.x1 - pBox.x0));
+    const arm = addPrism(pylon, pylon, span / aspect, pylonMap, pylonMap);
+    const dir = gap >= 0 ? 1 : -1;
+    arm.g.rotation.x = dir > 0 ? Math.PI / 2 : -Math.PI / 2;
+    const midLocal = (arm.high + arm.low) * 0.5;
+    arm.g.position.set((u - 0.5) * LEN, y, (hullZ + z) * 0.5 - midLocal * dir);
     root.add(arm.g);
   });
 
@@ -992,20 +1014,21 @@ export async function mountFrigate(
     for (let y = b.y0; y <= b.y1; y += 2) {
       for (let x = b.x0; x <= b.x1; x += 2) {
         n++;
-        if (lumAt(belly, y * belly.w + x) < 18) dark++;
+        if (lumAt(bellyMeasure, y * bellyMeasure.w + x) < 18) dark++;
       }
     }
     return n ? dark / n : 0;
   };
-  const bellyParts = blobs(maskOf(belly, 16), belly.w, belly.h, 800).slice(1);
+  const bellyMeasureBox = contentBox(largestMask(maskOf(bellyMeasure, 16), bellyMeasure.w, bellyMeasure.h), bellyMeasure.w, bellyMeasure.h);
+  const bellyParts = blobs(maskOf(bellyMeasure, 16), bellyMeasure.w, bellyMeasure.h, 800).slice(1);
   const scored = bellyParts.map((b) => ({ b, d: darkFrac(b) })).sort((a, c) => c.d - a.d);
   const ventral = scored.length && scored[0].d > scored[scored.length - 1].d + 0.08 ? scored[0].b : undefined;
   if (ventral) {
-    const bellyScale = LEN / Math.max(8, bellyBox.x1 - bellyBox.x0);
-    const u = (ventral.cx - bellyBox.x0) / Math.max(1, bellyBox.x1 - bellyBox.x0);
+    const bellyScale = LEN / Math.max(8, bellyMeasureBox.x1 - bellyMeasureBox.x0);
+    const u = (ventral.cx - bellyMeasureBox.x0) / Math.max(1, bellyMeasureBox.x1 - bellyMeasureBox.x0);
     const i = Math.max(0, Math.min(NU - 1, Math.round(u * (NU - 1))));
     const length = Math.max(4, (ventral.x1 - ventral.x0) * bellyScale);
-    const bellyMid = (bellyBox.y0 + bellyBox.y1) / 2;
+    const bellyMid = (bellyMeasureBox.y0 + bellyMeasureBox.y1) / 2;
     const z = (ventral.cy - bellyMid) * bellyScale;
     const built = placePrism(turret, turretFront, turretMap, turretFrontMap, length, (u - 0.5) * LEN, 0, z, Math.PI);
     let surfaceY = hullBot[i];
@@ -1018,26 +1041,26 @@ export async function mountFrigate(
         surfaceY = p.y;
       }
     }
-    built.g.position.y = surfaceY + built.low - 0.45;
+    built.g.position.y = surfaceY + built.low;
   }
 
   let bridgeZ = -Math.max(1.5, beamStbd[Math.round(bridgeU * (NU - 1))] * 0.28);
   {
     let sy = 0;
     let n = 0;
-    const span = Math.max(1, topBox.x1 - topBox.x0);
+    const span = Math.max(1, topMeasureBox.x1 - topMeasureBox.x0);
     const u0 = bridgeU - 0.1;
     const u1 = bridgeU + 0.16;
-    for (let y = topBox.y0; y <= topBox.y1; y += 2) {
-      for (let x = topBox.x0; x <= topBox.x1; x += 2) {
-        const u = (x - topBox.x0) / span;
+    for (let y = topMeasureBox.y0; y <= topMeasureBox.y1; y += 2) {
+      for (let x = topMeasureBox.x0; x <= topMeasureBox.x1; x += 2) {
+        const u = (x - topMeasureBox.x0) / span;
         if (u < u0 || u > u1) continue;
-        if (lumAt(top, y * top.w + x) < 200) continue;
+        if (lumAt(topMeasure, y * topMeasure.w + x) < 200) continue;
         sy += y;
         n++;
       }
     }
-    if (n > 8) bridgeZ = (sy / n - centerPx) * topScale;
+    if (n > 8) bridgeZ = (sy / n - measureCenter) * measureScale;
   }
   const bi = Math.max(0, Math.min(NU - 1, Math.round(bridgeU * (NU - 1))));
   const tower = addPrism(bridge, bridgeFront, 1, bridgeMap, bridgeFrontMap);

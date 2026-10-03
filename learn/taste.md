@@ -2,7 +2,7 @@
 
 ## Golden rule
 
-The game's unique identity is a living painted film. Every visible pixel comes from Imagine images and videos (no classic 3D models, no computed lights). The hero Bolt is the real filmed wolf gallop video. The universe comes from the owner's 800+ public X decrees. Every new idea must reinforce this look and never drift toward a classic 3D game.
+The game's unique identity is a living painted film. Every visible pixel comes from Imagine images and videos (no classic 3D models, no computed lights). The hero Bolt is an Imagine video of the wolf gallop. The universe comes from the owner's 800+ public X decrees. Every new idea must reinforce this look and never drift toward a classic 3D game.
 
 ## Style rules
 

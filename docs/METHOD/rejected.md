@@ -6,7 +6,7 @@ Back to [METHOD.md](../METHOD.md). Do not retry these without a new owner decisi
 | Date | Approach | Why it was rejected | Use instead |
 |---|---|---|---|
 | 2026-09-26 | Three.js / Babylon / Unity / procedural shader world, mesh or noise generators for terrain, paths, vegetation, details | Not Imagine pixels; classic 3D game look (PRs #114, #117, #118). | Imagine pixels on invisible shape (law 59). Simplex = placement only. |
-| 2026-09-26 | A different hero (manta, ray, ship, mesh player) or a newly cooked Bolt sprint | Bolt is the real filmed wolf (PR #116, AGENTS Bolt lock). | `lock/bolt-gallop-cycle.mp4` + `lock/bolt-idle-breath.mp4`. |
+| 2026-09-26 | A different hero (manta, ray, ship, mesh player) or a newly cooked Bolt sprint | Bolt is an Imagine video of the wolf (PR #116, AGENTS Bolt lock). | `lock/bolt-gallop-cycle.mp4` + `lock/bolt-idle-breath.mp4`. |
 | 2026-09-29 | Imagine plate video with baked drift / rotation used as a texture; asking Imagine to pan | Snaps back on loop; pan returns a dolly; crossfades ghost a second hull. | One locked still + depth relief; living parts as separate seamless loops. |
 | 2026-09-30 | Orbit views cooked without a silhouette lock | Lobes; the 8 views were not one object. | V0 + edit chain every 45°, `tools/objsheet`. |
 | 2026-10-01 | One relief / ring still as the walkable floor | Upscaled after ~4 cm; ground froze (HUD mag 0.406 vs claimed 0.990). | World-locked top-down tiles on invisible relief. |

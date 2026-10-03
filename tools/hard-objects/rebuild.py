@@ -267,6 +267,7 @@ def main():
         "nacelle.jpg", "nacelle-front.jpg", "turret.jpg", "turret-front.jpg",
         "bridge.jpg", "bridge-front.jpg", "pylon.jpg", "hangar.jpg", "backdrop.jpg",
         "port-detail-aft.jpg", "port-detail-mid.jpg", "port-detail-bow.jpg",
+        "measure/top.jpg", "measure/belly.jpg", "measure/stern.jpg",
     ]
     missing = [n for n in need if not (IMG / n).is_file() or not (IMG / (n.replace(".jpg", ".PROMPT.txt"))).is_file()]
     if missing:
@@ -275,16 +276,21 @@ def main():
 
     pw, ph, plum, _ = load("port.jpg")
     tw, th, tlum, _ = load("top.jpg")
+    mw, mh, mlum, _ = load("measure/top.jpg")
     sw, sh, slum, _ = load("stbd.jpg")
-    bw, bh, blum, braw = load("stern.jpg")
+    bw, bh, blum, braw = load("measure/stern.jpg")
+    skin_bw, skin_bh, _, skin_braw = load("stern.jpg")
     sections = [load(n) for n in ("sec-stern.jpg", "sec-shoulder.jpg", "sec-mid.jpg", "sec-bow.jpg")]
 
     port_m, _ = largest_mask(mask_of(plum, 16), pw, ph)
     top_m, _ = largest_mask(mask_of(tlum, 16), tw, th)
+    measure_m, _ = largest_mask(mask_of(mlum, 16), mw, mh)
     px0, py0, px1, py1 = content_box(port_m, pw, ph)
     tx0, ty0, tx1, ty1 = content_box(top_m, tw, th)
+    mx0, my0, mx1, my1 = content_box(measure_m, mw, mh)
     port_scale = LEN / max(8, px1 - px0)
     top_scale = LEN / max(8, tx1 - tx0)
+    measure_scale = LEN / max(8, mx1 - mx0)
 
     hull_top = [0.0] * NU
     hull_bot = [0.0] * NU
@@ -400,28 +406,46 @@ def main():
             bm[i] = 1
     bells = blobs(bm, bw, bh, 80)[:4]
 
-    top_parts = blobs(mask_of(tlum, 16), tw, th, 800)[1:]
+    top_parts = blobs(mask_of(mlum, 16), mw, mh, 800)[1:]
     nacelles = []
+    mmids = []
+    for i in range(int(NU * 0.72), int(NU * 0.94)):
+        u = i / (NU - 1)
+        col = column(measure_m, mw, mh, mx0 + u * (mx1 - mx0))
+        if col:
+            mmids.append((col[0] + col[1]) * 0.5)
+    mmids.sort()
+    measure_center = mmids[len(mmids) // 2] if mmids else (my0 + my1) / 2
     for b in top_parts:
-        u = (b["cx"] - tx0) / max(1, tx1 - tx0)
-        i = max(0, min(NU - 1, int(round(u * (NU - 1)))))
+        u = (b["cx"] - mx0) / max(1, mx1 - mx0)
         nacelles.append(
             {
                 "u": round(u, 4),
                 "x": round((u - 0.5) * LEN, 2),
-                "z": round((b["cy"] - center) * top_scale, 2),
-                "length": round(max(6, (b["x1"] - b["x0"]) * top_scale), 2),
+                "z": round((b["cy"] - measure_center) * measure_scale, 2),
+                "length": round(max(6, (b["x1"] - b["x0"]) * measure_scale), 2),
             }
         )
+
+    skin_bm = [0] * (skin_bw * skin_bh)
+    for i in range(skin_bw * skin_bh):
+        r, g, b = skin_braw[i * 3 : i * 3 + 3]
+        if b > 80 and b > r + 18 and b > g:
+            skin_bm[i] = 1
+    skin_bells = blobs(skin_bm, skin_bw, skin_bh, 80)
+    skin_nacelles = blobs(mask_of(tlum, 16), tw, th, 800)[1:]
 
     report = {
         "images": len(need),
         "portBox": [px0, py0, px1, py1],
-        "topBox": [tx0, ty0, tx1, ty1],
-        "topScale": round(top_scale, 4),
+        "topBox": [mx0, my0, mx1, my1],
+        "skinTopBox": [tx0, ty0, tx1, ty1],
+        "topScale": round(measure_scale, 4),
         "texelsPerUnit": round((px1 - px0) / LEN, 2),
         "hole": [round(hole_u0, 3), round(hole_u1, 3), round(hole_s0, 3), round(hole_s1, 3), hole_n],
         "bells": len(bells),
+        "skinBells": len(skin_bells),
+        "skinNacelles": len(skin_nacelles),
         "nacelles": nacelles,
         "verts": len(verts),
         "faces": len(faces),
@@ -439,14 +463,18 @@ def main():
     problems = []
     if not (70 <= px0 <= 90 and px1 > 2200 and py1 - py0 > 200):
         problems.append(f"port box {report['portBox']}")
-    if not (70 <= tx0 <= 90 and ty0 > 100 and tx1 > 2200):
+    if not (70 <= mx0 <= 90 and my0 > 100 and mx1 > 2200):
         problems.append(f"top box {report['topBox']} (nacelle seed would put y0 near 49)")
-    if not (0.09 < top_scale < 0.11):
-        problems.append(f"topScale {top_scale}")
+    if not (0.09 < measure_scale < 0.11):
+        problems.append(f"topScale {measure_scale}")
     if hole_n < 10 or not (0.25 < hole_u0 < 0.36 and 0.44 < hole_u1 < 0.55):
         problems.append(f"hole {report['hole']}")
     if len(bells) != 4:
         problems.append(f"bells {len(bells)}")
+    if len(skin_bells) != 0:
+        problems.append(f"skin still paints bells {len(skin_bells)}")
+    if len(skin_nacelles) != 0:
+        problems.append(f"skin still paints nacelles {len(skin_nacelles)}")
     if len(nacelles) != 2:
         problems.append(f"nacelles {len(nacelles)}")
     else:

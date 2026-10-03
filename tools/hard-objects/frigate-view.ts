@@ -6,6 +6,7 @@ export type FaceId = "port" | "stbd" | "bow" | "stern" | "top" | "belly";
 export type FrigateView = {
   go: (face: FaceId) => void;
   tour: () => void;
+  pose: (theta: number, phi: number, dist: number) => void;
   destroy: () => void;
 };
 
@@ -23,7 +24,7 @@ const FACES: Record<FaceId, { theta: number; phi: number }> = {
 const lengthUp = (aspect: number, th: number, ph: number) =>
   aspect < 0.92 && Math.abs(Math.cos(th) * Math.cos(ph)) < 0.62;
 
-const framed = (camera: THREE.PerspectiveCamera, th: number, ph: number) => {
+const framed = (camera: THREE.PerspectiveCamera, th: number, ph: number, up: THREE.Vector3) => {
   const hx = 120;
   const hy = 34;
   const hz = 28;
@@ -34,12 +35,9 @@ const framed = (camera: THREE.PerspectiveCamera, th: number, ph: number) => {
   const fx = -cp * ct;
   const fy = -sp;
   const fz = -cp * st;
-  const upX = lengthUp(camera.aspect, th, ph);
-  const ux = upX ? 1 : 0;
-  const uy = upX ? 0 : 1;
-  let rx = fy * 0 - fz * uy;
-  let ry = fz * ux - fx * 0;
-  let rz = fx * uy - fy * ux;
+  let rx = fy * up.z - fz * up.y;
+  let ry = fz * up.x - fx * up.z;
+  let rz = fx * up.y - fy * up.x;
   const rl = Math.hypot(rx, ry, rz) || 1;
   rx /= rl;
   ry /= rl;
@@ -50,7 +48,7 @@ const framed = (camera: THREE.PerspectiveCamera, th: number, ph: number) => {
     for (const y of [-hy, hy]) {
       for (const z of [-hz, hz]) {
         maxR = Math.max(maxR, Math.abs(x * rx + y * ry + z * rz));
-        maxU = Math.max(maxU, Math.abs(x * ux + y * uy));
+        maxU = Math.max(maxU, Math.abs(x * up.x + y * up.y + z * up.z));
       }
     }
   }
@@ -73,16 +71,58 @@ export function mountFrigateView(canvas: HTMLCanvasElement): FrigateView {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 2));
 
   const scene = new THREE.Scene();
-  const backdrop = new THREE.TextureLoader().load("/biome/frigate/backdrop.jpg");
-  backdrop.colorSpace = THREE.SRGBColorSpace;
-  backdrop.magFilter = THREE.LinearFilter;
-  backdrop.minFilter = THREE.LinearMipmapLinearFilter;
-  backdrop.generateMipmaps = true;
-  backdrop.wrapS = THREE.ClampToEdgeWrapping;
-  backdrop.wrapT = THREE.ClampToEdgeWrapping;
-  scene.background = backdrop;
   const camera = new THREE.PerspectiveCamera(46, 1, 0.4, 5000);
+  const backdropTex = new THREE.TextureLoader().load("/biome/frigate/backdrop.jpg", () => fitBackdrop());
+  backdropTex.colorSpace = THREE.SRGBColorSpace;
+  backdropTex.magFilter = THREE.LinearFilter;
+  backdropTex.minFilter = THREE.LinearMipmapLinearFilter;
+  backdropTex.generateMipmaps = true;
+  backdropTex.wrapS = THREE.ClampToEdgeWrapping;
+  backdropTex.wrapT = THREE.ClampToEdgeWrapping;
+  const backdropMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(2, 2),
+    new THREE.MeshBasicMaterial({ map: backdropTex, toneMapped: false, depthTest: false, depthWrite: false }),
+  );
+  backdropMesh.frustumCulled = false;
+  backdropMesh.renderOrder = -1;
+  backdropMesh.position.set(0, 0, -1);
+  camera.add(backdropMesh);
   scene.add(camera);
+  const upNow = new THREE.Vector3(0, 1, 0);
+  const upWant = new THREE.Vector3(0, 1, 0);
+  const frameAt = (th: number, ph: number) => {
+    upWant.set(lengthUp(camera.aspect, th, ph) ? 1 : 0, lengthUp(camera.aspect, th, ph) ? 0 : 1, 0);
+    return framed(camera, th, ph, upWant);
+  };
+  const fitBackdrop = () => {
+    const img = backdropTex.image as { width?: number; height?: number } | undefined;
+    const imgW = img?.width || 1008;
+    const imgH = img?.height || 1792;
+    const viewW = Math.max(1, renderer.domElement.width || 1);
+    const viewH = Math.max(1, renderer.domElement.height || 1);
+    const cover = Math.max(viewW / imgW, viewH / imgH);
+    let fx = 1;
+    let fy = 1;
+    let cw = 1;
+    let ch = 1;
+    if (cover <= 1) {
+      cw = viewW / cover / imgW;
+      ch = viewH / cover / imgH;
+    } else {
+      const dispW = Math.min(viewW, imgW);
+      const dispH = Math.min(viewH, imgH);
+      fx = dispW / viewW;
+      fy = dispH / viewH;
+      cw = dispW / imgW;
+      ch = dispH / imgH;
+    }
+    const rx = cw / fx;
+    const ry = ch / fy;
+    backdropTex.repeat.set(rx, ry);
+    backdropTex.offset.set(0.5 - rx * 0.5, 0.5 - ry * 0.5);
+    const visH = 2 * Math.tan((camera.fov * Math.PI) / 180 / 2);
+    backdropMesh.scale.set((visH * camera.aspect) / 2, visH / 2, 1);
+  };
   void mountFrigate(scene, { x: 0, y: 0, z: 0, yaw: 0 });
 
   let theta = FACES.port.theta;
@@ -102,13 +142,14 @@ export function mountFrigateView(canvas: HTMLCanvasElement): FrigateView {
     camera.aspect = w / Math.max(1, h);
     camera.updateProjectionMatrix();
     renderer.setSize(w, h, false);
+    fitBackdrop();
   };
   resize();
-  dist = targetDist = framed(camera, theta, phi);
+  dist = targetDist = frameAt(theta, phi);
 
   const apply = () => {
     const cp = Math.cos(phi);
-    camera.up.set(lengthUp(camera.aspect, theta, phi) ? 1 : 0, lengthUp(camera.aspect, theta, phi) ? 0 : 1, 0);
+    camera.up.copy(upNow);
     camera.position.set(
       LOOK.x + dist * cp * Math.cos(theta),
       LOOK.y + dist * Math.sin(phi),
@@ -143,7 +184,7 @@ export function mountFrigateView(canvas: HTMLCanvasElement): FrigateView {
       const d = Math.hypot(a.x - b.x, a.y - b.y);
       if (pinch > 8) {
         zoomed = true;
-        const cap = framed(camera, theta, phi);
+        const cap = frameAt(theta, phi);
         targetDist = Math.min(cap * 2.4, Math.max(14, targetDist * (pinch / d)));
         dist = targetDist;
       }
@@ -163,7 +204,7 @@ export function mountFrigateView(canvas: HTMLCanvasElement): FrigateView {
     e.preventDefault();
     touring = false;
     zoomed = true;
-    targetDist = Math.min(framed(camera, theta, phi) * 2.4, Math.max(14, targetDist * (e.deltaY > 0 ? 1.08 : 0.92)));
+    targetDist = Math.min(frameAt(theta, phi) * 2.4, Math.max(14, targetDist * (e.deltaY > 0 ? 1.08 : 0.92)));
   };
   canvas.addEventListener("pointerdown", onDown);
   canvas.addEventListener("pointermove", onMove);
@@ -192,8 +233,11 @@ export function mountFrigateView(canvas: HTMLCanvasElement): FrigateView {
       theta += d * Math.min(1, dt * 7);
       phi += (targetPhi - phi) * Math.min(1, dt * 7);
     }
-    if (!zoomed) targetDist = framed(camera, theta, phi);
+    if (!zoomed) targetDist = frameAt(theta, phi);
+    else upWant.set(lengthUp(camera.aspect, theta, phi) ? 1 : 0, lengthUp(camera.aspect, theta, phi) ? 0 : 1, 0);
     dist += (targetDist - dist) * Math.min(1, dt * 6);
+    upNow.lerp(upWant, 1 - Math.exp(-dt * 10));
+    if (upNow.lengthSq() > 1e-8) upNow.normalize();
     apply();
     renderer.render(scene, camera);
     raf = requestAnimationFrame(tick);
@@ -207,13 +251,20 @@ export function mountFrigateView(canvas: HTMLCanvasElement): FrigateView {
       const pose = FACES[face];
       targetTheta = pose.theta;
       targetPhi = pose.phi;
-      targetDist = framed(camera, pose.theta, pose.phi);
+      targetDist = frameAt(pose.theta, pose.phi);
     },
     tour() {
       touring = true;
       zoomed = false;
       tourLeft = Math.PI * 2;
-      targetDist = framed(camera, theta, phi);
+      targetDist = frameAt(theta, phi);
+    },
+    pose(nextTheta, nextPhi, nextDist) {
+      touring = false;
+      zoomed = true;
+      targetTheta = nextTheta;
+      targetPhi = Math.max(-1.15, Math.min(1.25, nextPhi));
+      targetDist = nextDist;
     },
     destroy() {
       alive = false;

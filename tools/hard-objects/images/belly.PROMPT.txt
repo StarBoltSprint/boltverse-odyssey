@@ -8,10 +8,11 @@ It matches this file's pixel size, aspect and job. It is not a recovered transcr
 DO NOT REPLACE this JPEG unless docs/METHOD/hard-objects.md section 4 says the new file is measurable,
 and you keep this file beside it until the rebuild gate passes on the new bytes.
 
-ROLE measure + unlit skin. Loaded by frigate.ts as /biome/frigate/belly.jpg.
+ROLE unlit skin. Loaded by frigate.ts as /biome/frigate/belly.jpg.
 PIXELS 2400x528. ASPECT 50:11.
-JOB Underside plan. Bow to the right. Same side up as top.jpg: not a mirrored flip.
-Small image y is still starboard. The ventral turret is a dark blob, darker than the nacelles.
+JOB Underside skin. Bow to the right. Same side up as top.jpg: not a mirrored flip.
+Small image y is still starboard. Plain plating. The ventral turret and the bells are not on this plate.
+Their position is read from measure/belly.jpg.
 
 ASK (colour-free template; the tone, palette and subject wording are untracked, see
 /workspace/grokcli/next/METHOD/hard-objects-prompts.local.md, section belly)
