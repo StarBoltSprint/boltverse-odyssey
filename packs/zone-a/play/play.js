@@ -68,30 +68,61 @@ uniform mat4 uVP;
 uniform vec3 uEye;
 uniform float uFollow;
 uniform float uEyeBase;
-out vec2 vUv;
-flat out float vLayer;
+out vec3 vLocal;
 void main() {
   vec3 p = aPos;
-  if (uFollow > 0.5) {
-    p.x += uEye.x;
-    p.z += uEye.z;
-  }
+  if (uFollow > 0.5) p += uEye;
   gl_Position = uVP * vec4(p, 1.0);
-  vUv = aUv;
-  vLayer = aLayer;
+  vLocal = aPos;
 }`, `#version 300 es
 precision highp float;
 precision highp sampler2DArray;
 uniform sampler2DArray uTex;
+uniform sampler2D uZenith;
+uniform sampler2D uStars;
+uniform sampler2D uDust;
+uniform sampler2D uNebula;
 uniform vec3 uId;
 uniform int uMode;
-in vec2 vUv;
-flat in float vLayer;
+uniform float uEl0;
+uniform float uEl1;
+uniform float uLayers;
+uniform vec3 uMix;
+uniform float uFlip;
+in vec3 vLocal;
 out vec4 o;
 void main() {
-  vec4 c = texture(uTex, vec3(vUv, vLayer));
-  if (uMode == 1) o = vec4(uId, 1.0);
-  else o = vec4(c.rgb, 1.0);
+  if (uMode == 1) {
+    o = vec4(uId, 1.0);
+    return;
+  }
+  vec3 dir = normalize(vLocal);
+  float horiz = length(dir.xz);
+  float az = horiz < 1e-4 ? 0.0 : atan(dir.x, dir.z);
+  if (az < 0.0) az += 6.28318530718;
+  float el = asin(clamp(dir.y, -1.0, 1.0));
+  float v = clamp((el - uEl0) / max(0.001, uEl1 - uEl0), 0.0, 1.0);
+  if (uFlip > 0.5) v = 1.0 - v;
+  float turns = az / 6.28318530718;
+  float lf = turns * max(1.0, uLayers);
+  float layer = floor(lf);
+  float uu = fract(lf);
+  float nxt = mod(layer + 1.0, max(1.0, uLayers));
+  vec3 col = texture(uTex, vec3(uu, v, layer)).rgb;
+  float seam = smoothstep(0.97, 1.0, uu);
+  vec3 edge = texture(uTex, vec3(0.0, v, nxt)).rgb;
+  col = mix(col, edge, seam);
+  float capT = smoothstep(uEl1 - 0.03, uEl1 + 0.01, el);
+  vec2 capUv = clamp(vec2(0.5) + vec2(dir.x, dir.z) * (2.2 / max(dir.y, 0.25)), 0.0, 1.0);
+  vec3 zen = texture(uZenith, capUv).rgb;
+  col = mix(col, zen, capT);
+  // One full-frame veil is not a horizontal loop. Keep the pole, soften only that join.
+  float veil = horiz < 0.08 ? 1.0 : smoothstep(0.0, 0.02, min(turns, 1.0 - turns));
+  vec2 suv = vec2(turns, v);
+  col = mix(col, texture(uStars, suv).rgb, uMix.x * veil);
+  col = mix(col, texture(uDust, suv).rgb, uMix.y * veil);
+  col = mix(col, texture(uNebula, suv).rgb, uMix.z * veil);
+  o = vec4(col, 1.0);
 }`);
 
 const fogProg = program(`#version 300 es
@@ -213,6 +244,15 @@ const surfLoc = {
   tex: gl.getUniformLocation(surfProg, "uTex"),
   id: gl.getUniformLocation(surfProg, "uId"),
   mode: gl.getUniformLocation(surfProg, "uMode"),
+  zenith: gl.getUniformLocation(surfProg, "uZenith"),
+  stars: gl.getUniformLocation(surfProg, "uStars"),
+  dust: gl.getUniformLocation(surfProg, "uDust"),
+  nebula: gl.getUniformLocation(surfProg, "uNebula"),
+  el0: gl.getUniformLocation(surfProg, "uEl0"),
+  el1: gl.getUniformLocation(surfProg, "uEl1"),
+  layers: gl.getUniformLocation(surfProg, "uLayers"),
+  mix: gl.getUniformLocation(surfProg, "uMix"),
+  flip: gl.getUniformLocation(surfProg, "uFlip"),
 };
 const groundLoc = {
   vp: gl.getUniformLocation(groundProg, "uVP"),
@@ -366,6 +406,10 @@ let skyTex = null;
 let skyLayers = 0;
 let skySrcW = 12768;
 let skySrcH = 912;
+let zenithTex = null;
+const skyVideos = [null, null, null];
+const skyVideoTex = [null, null, null];
+const SKY_MIX = [0.22, 0.48, 0.34];
 let groundSrc = 1408;
 let fogTex = null;
 let fogCount = 0;
@@ -550,29 +594,29 @@ function buildGround(tileM) {
 }
 
 function buildSky() {
+  // Closed dome in eye space. The horizon band uses the slice textures.
+  // Above that band the zenith still closes the cap. Built once.
   const skyR = 90;
-  const yTop = EYE + skyR * Math.tan(VFOV / 2);
-  const yBot = EYE - skyR * Math.tan(0.055);
-  const layers = skyTex.layers;
+  const el0 = -0.055;
+  const el1 = Math.PI / 2;
+  const azN = 64;
+  const elN = 20;
   const data = [];
-  for (let i = 0; i < layers; i++) {
-    const a0 = (i / layers) * Math.PI * 2;
-    const a1 = ((i + 1) / layers) * Math.PI * 2;
-    const x0 = Math.sin(a0) * skyR;
-    const z0 = Math.cos(a0) * skyR;
-    const x1 = Math.sin(a1) * skyR;
-    const z1 = Math.cos(a1) * skyR;
-    const quad = [
-      x0, yBot, z0, 0, 0, i,
-      x1, yBot, z1, 1, 0, i,
-      x1, yTop, z1, 1, 1, i,
-      x0, yBot, z0, 0, 0, i,
-      x1, yTop, z1, 1, 1, i,
-      x0, yTop, z0, 0, 1, i,
-    ];
-    for (let j = 0; j < quad.length; j++) data.push(quad[j]);
+  const push = (az, el) => {
+    const c = Math.cos(el);
+    data.push(Math.sin(az) * c * skyR, Math.sin(el) * skyR, Math.cos(az) * c * skyR, 0, 0, 0);
+  };
+  for (let ia = 0; ia < azN; ia++) {
+    const a0 = (ia / azN) * Math.PI * 2;
+    const a1 = ((ia + 1) / azN) * Math.PI * 2;
+    for (let ie = 0; ie < elN; ie++) {
+      const e0 = el0 + (ie / elN) * (el1 - el0);
+      const e1 = el0 + ((ie + 1) / elN) * (el1 - el0);
+      push(a0, e0); push(a1, e0); push(a1, e1);
+      push(a0, e0); push(a1, e1); push(a0, e1);
+    }
   }
-  skyLayers = layers;
+  skyLayers = skyTex.layers;
   const buf = new Float32Array(data);
   skyVao = gl.createVertexArray();
   gl.bindVertexArray(skyVao);
@@ -773,9 +817,14 @@ function applyShot() {
   camFwd[0] = dx / len;
   camFwd[1] = dy / len;
   camFwd[2] = dz / len;
-  const rx = camFwd[2];
-  const rz = -camFwd[0];
-  const rl = Math.hypot(rx, rz) || 1;
+  let rx = camFwd[2];
+  let rz = -camFwd[0];
+  let rl = Math.hypot(rx, rz);
+  if (rl < 1e-4) {
+    rx = 0;
+    rz = camFwd[1] >= 0 ? 1 : -1;
+    rl = 1;
+  }
   rightBuf[0] = rx / rl;
   rightBuf[1] = 0;
   rightBuf[2] = rz / rl;
@@ -1029,11 +1078,24 @@ function syncVideos(eye, fwd) {
       if (gateVideo.paused) gateVideo.play().catch(() => {});
     } else if (!gateVideo.paused) gateVideo.pause();
   }
+  // Nebula yields its decoder while the gate film is on screen (four decoders max).
+  const neb = skyVideos[2];
+  if (neb) {
+    if (show) {
+      if (!neb.paused) neb.pause();
+    } else if (neb.paused) neb.play().catch(() => {});
+  }
   return show;
 }
 
 function drawSky(mode, eye) {
-  if (mode === 1) return;
+  if (mode === 1 || !skyVao || !zenithTex) return;
+  let m0 = 0;
+  let m1 = 0;
+  let m2 = 0;
+  if (skyVideos[0] && uploadVideo(skyVideos[0], skyVideoTex[0], "sky-stars")) m0 = SKY_MIX[0];
+  if (skyVideos[1] && uploadVideo(skyVideos[1], skyVideoTex[1], "sky-dust")) m1 = SKY_MIX[1];
+  if (skyVideos[2] && uploadVideo(skyVideos[2], skyVideoTex[2], "sky-nebula")) m2 = SKY_MIX[2];
   gl.useProgram(surfProg);
   gl.bindVertexArray(skyVao);
   gl.uniformMatrix4fv(surfLoc.vp, false, vpM);
@@ -1042,9 +1104,28 @@ function drawSky(mode, eye) {
   gl.uniform1f(surfLoc.eyeBase, EYE);
   gl.uniform1i(surfLoc.mode, 0);
   gl.uniform3f(surfLoc.id, 0, 0, 0);
+  gl.uniform1f(surfLoc.el0, -0.055);
+  gl.uniform1f(surfLoc.el1, VFOV / 2);
+  gl.uniform1f(surfLoc.layers, skyLayers);
+  gl.uniform1f(surfLoc.flip, 1);
+  gl.uniform3f(surfLoc.mix, m0, m1, m2);
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_2D_ARRAY, skyTex.tex);
   gl.uniform1i(surfLoc.tex, 0);
+  gl.activeTexture(gl.TEXTURE1);
+  gl.bindTexture(gl.TEXTURE_2D, zenithTex);
+  gl.uniform1i(surfLoc.zenith, 1);
+  gl.activeTexture(gl.TEXTURE2);
+  gl.bindTexture(gl.TEXTURE_2D, skyVideoTex[0]);
+  gl.uniform1i(surfLoc.stars, 2);
+  gl.activeTexture(gl.TEXTURE3);
+  gl.bindTexture(gl.TEXTURE_2D, skyVideoTex[1]);
+  gl.uniform1i(surfLoc.dust, 3);
+  gl.activeTexture(gl.TEXTURE4);
+  gl.bindTexture(gl.TEXTURE_2D, skyVideoTex[2]);
+  gl.uniform1i(surfLoc.nebula, 4);
+  gl.activeTexture(gl.TEXTURE0);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
   gl.disable(gl.BLEND);
   gl.enable(gl.DEPTH_TEST);
   gl.depthMask(true);
@@ -1310,11 +1391,16 @@ function perfSnap() {
   };
 }
 
+function videoOn(v) {
+  return !!(v && !v.paused && v.readyState >= 2);
+}
+
 function activeVideoCount() {
   let n = 0;
   const bolt = state.mode === "GALLOP" ? gallopVideo : idleVideo;
-  if (bolt && !bolt.paused && bolt.readyState >= 2) n++;
-  if (gateVideo && !gateVideo.paused && gateVideo.readyState >= 2) n++;
+  if (videoOn(bolt)) n++;
+  if (videoOn(gateVideo)) n++;
+  for (let i = 0; i < skyVideos.length; i++) if (videoOn(skyVideos[i])) n++;
   return n;
 }
 
@@ -1745,6 +1831,24 @@ async function boot() {
     for (let i = 0; i < skyImgs.length; i++) skySrcW += skyImgs[i].width;
     skyTex = makeArray(skyImgs, "sky", false);
     buildSky();
+    zenithTex = makeStill(await loadImage(absUrl("packs/zone-a/src/sky-cap/zenith.png")), "sky-zenith");
+    const loopUrls = [
+      "packs/zone-a/src/sky/stars.mp4",
+      "packs/zone-a/src/sky/dust.mp4",
+      "packs/zone-a/src/sky/nebula.mp4",
+    ];
+    for (let i = 0; i < loopUrls.length; i++) {
+      skyVideoTex[i] = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, skyVideoTex[i]);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      const px = new Uint8Array([0, 0, 0, 255]);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, px);
+      skyVideos[i] = videoEl(loopUrls[i]);
+      skyVideos[i].loop = true;
+    }
     if (useRelief) terrain.setFog(sampleHorizon(skyImgs));
     if (clearing.fog_band && clearing.fog_band.atlas) {
       fogTex = makeStill(await loadImage(absUrl(clearing.fog_band.atlas)), "fog");
@@ -1768,6 +1872,14 @@ async function boot() {
       gateVideo.loop = true;
     }
     await measurePaw(gallopVideo);
+    for (let i = 0; i < skyVideos.length; i++) {
+      const v = skyVideos[i];
+      await new Promise((r) => {
+        if (v.readyState >= 2) r();
+        else v.addEventListener("loadeddata", () => r(), { once: true });
+      });
+      await v.play().catch(() => {});
+    }
     await idleVideo.play().catch(() => {});
     await new Promise((r) => {
       if (idleVideo.readyState >= 2) r();

@@ -1,0 +1,42 @@
+{
+  "slices": [
+    "sky-0.png",
+    "sky-1.png",
+    "sky-2.png",
+    "sky-3.png",
+    "sky-4.png",
+    "sky-5.png",
+    "sky-6.png",
+    "sky-7.png"
+  ],
+  "offsetsSec": [
+    0,
+    1.7,
+    3.4,
+    5.1,
+    6.8,
+    8.5,
+    10.2,
+    11.9
+  ],
+  "layers": [
+    {
+      "id": "stars",
+      "file": "stars.mp4",
+      "durationSec": 13.0,
+      "texBytes": 1628160
+    },
+    {
+      "id": "dust",
+      "file": "dust.mp4",
+      "durationSec": 16.708333,
+      "texBytes": 1628160
+    },
+    {
+      "id": "nebula",
+      "file": "nebula.mp4",
+      "durationSec": 28.95,
+      "texBytes": 1628160
+    }
+  ]
+}

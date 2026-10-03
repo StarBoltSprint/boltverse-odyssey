@@ -285,3 +285,25 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Play stills use `LINEAR_MIPMAP_LINEAR` and mipmaps. CPU QC nearest is labelled a measurement buffer. `auto` is the visual hull. TripoSR runs only with `--experiment triposr` and is not written into the play mesh. The checked-in `out/asset.json` stays the 2026-10-02 experiment record with `feedsPlay` false. Magnification limit stays 1.0. |
 | Guard | `python3 tools/walkaround/selftest.py` (`check_law65_play_sampling`) and `python3 tools/mesh3d/selftest.py` (`check_law65_and_triposr`). `node tools/playcheck/src/renderlint.mjs` on `tools/walkaround/web/view.html`, `tools/walkaround/runtime/hullmesh.js`, and `tools/mesh3d/viewer/main.js`. |
 | Sources | Issue #153. [`docs/METHOD/decisions-log.md`](../docs/METHOD/decisions-log.md) contradictions 7 and 8. [`biome/docs/65-render-quality.md`](../biome/docs/65-render-quality.md). |
+
+### 2026-10-03 — slow sky dissolve fails the frozen loop row
+
+| | |
+| --- | --- |
+| Take | Zone A step 2. Stars, dust, nebula. |
+| Defect | The Imagine clips looped in content and still failed `check_loop`. |
+| Root cause | A slow dissolve keeps consecutive frame MAE under 0.45 for longer than 0.40 s. A crossfade of those frames stays frozen. |
+| Fix | Keep existing frames whose gray MAE sits in [0.45, 16), then ping-pong so the last kept index equals the first. |
+| Guard | `python3 tools/sky/check.py` loop row. `check_loop` FROZEN_MAE 0.45 and FROZEN_SEC 0.40. |
+| Sources | `packs/zone-a/src/sky/stars.mp4`, `dust.mp4`, `nebula.mp4`. |
+
+### 2026-10-03 — straight-up view collapses, then the pole still notches
+
+| | |
+| --- | --- |
+| Take | Zone A step 2. Look-up proof. |
+| Defect | A look straight up first filled the frame with one fogged colour. After the camera basis was fixed, the same view showed faint radial lines and one small notch at the pole. |
+| Root cause | `applyShot` built a zero right vector when the view was exactly up, so the view matrix collapsed and the clear colour was fogged. The dome pole is a lat-long pinch. Two zenith projections (polar, then gnomonic) left the notch. |
+| Fix | When the horizontal right vector is shorter than 1e-4, pick a world axis. Stopped after the second projection. The notch is listed in `packs/zone-a/proof/step2/REPORT.md`. |
+| Guard | No playcheck row reads a straight-up frame. The proof PNG is `packs/zone-a/proof/step2/lookup.png`. |
+| Sources | `packs/zone-a/play/play.js` `applyShot` and the sky dome. | |
