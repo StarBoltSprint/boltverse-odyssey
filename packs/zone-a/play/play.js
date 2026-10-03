@@ -584,6 +584,13 @@ const upBuf = [0, 1, 0];
 const fwdBuf = [0, 0, 1];
 const camFwd = [0, 0, 1];
 const camUp = [0, 1, 0];
+// Held chase pose. The eye eases toward it. A fresh score must beat the hold
+// by CAM_HYST before the pose changes, so the grid cannot chatter each frame.
+const CAM_HYST = 80;
+const camHold = { boom: 6, eye: 1.35, slide: 0, live: false };
+const camSm = { ready: false, boom: 6, eye: 1.35, slide: 0, ground: 0, feet: 0 };
+let camStepDt = 0;
+let camPitch = 0;
 
 const CAP = {
   wreck10: 576,
@@ -1062,9 +1069,10 @@ function applyShot() {
   camBoom = Math.hypot(state.x - e[0], state.z - e[2]);
 }
 
-function pitchView(eye) {
+function pitchView(eye, lookFeet) {
   const along = (state.x - eye[0]) * fwdBuf[0] + (state.z - eye[2]) * fwdBuf[2];
-  const targetY = feetY() + BOLT_H * 0.45;
+  const feet = lookFeet == null ? feetY() : lookFeet;
+  const targetY = feet + BOLT_H * 0.45;
   const pitch = Math.atan2(targetY - eye[1], Math.max(0.35, along));
   const cp = Math.cos(pitch);
   const sp = Math.sin(pitch);
@@ -1074,11 +1082,19 @@ function pitchView(eye) {
   camUp[0] = -sp * fwdBuf[0];
   camUp[1] = cp;
   camUp[2] = -sp * fwdBuf[2];
+  camPitch = pitch;
+}
+
+function chase(cur, goal, dt, tau) {
+  if (!(dt > 0)) return goal;
+  return cur + (goal - cur) * (1 - Math.exp(-dt / tau));
 }
 
 function solveCamera() {
   if (shot) {
     applyShot();
+    camPitch = Math.atan2(camFwd[1], Math.hypot(camFwd[0], camFwd[2]));
+    camStepDt = 0;
     return;
   }
   const yaw = state.hdg * Math.PI / 180;
@@ -1097,18 +1113,25 @@ function solveCamera() {
   camRightNow = rightBuf;
   // Chase stays behind Bolt. Prefer an eye near his shoulders so the horizon stays in frame.
   // Higher eyes are only the fallback when a low eye would magnify a solid or hide him.
+  // The winner is a target. Hysteresis holds it, and the eye eases. Raw heightAt is not copied.
   const booms = [4.0, 4.4, 5.2, 6.0, 6.4, 6.8, 7.2];
   const eyes = [1.35, 1.8, 2.4, 3.2, 4.0, 5.5, 6.8, 8.0];
   const slides = [0, 0.5, -0.5, 1, -1];
   const targetDist = 8.0;
   let bestKey = -1e9;
   let found = false;
+  let bestBoom = 6;
+  let bestEye = 1.35;
+  let bestSlide = 0;
   let fbKey = -1e9;
-  let fbX = 0;
-  let fbY = EYE;
-  let fbZ = 0;
   let fbBoom = BOOM;
+  let fbEye = EYE;
+  let fbSlide = 0;
   let haveFb = false;
+  let holdKey = -1e9;
+  let holdHard = false;
+  const dt = camStepDt > 0 ? Math.min(0.05, camStepDt) : 0;
+  camStepDt = 0;
   for (let bi = 0; bi < booms.length; bi++) {
     const boom = booms[bi];
     for (let ei = 0; ei < eyes.length; ei++) {
@@ -1124,40 +1147,87 @@ function solveCamera() {
         pitchView(candEye);
         const m = poseMetrics(candEye);
         const blocked = lineBlocked(candEye);
-        const boomNow = Math.hypot(boom, slide);
         const near = (m.on ? 1000 : 0) + (blocked ? 0 : 200) + Math.min(m.minR, 1.25) * 20 - Math.abs(dist - targetDist) * 40 - Math.abs(slide) * 2 - Math.max(0, eyes[ei] - 1.6) * 80;
+        const hard = m.on && m.minR >= 1.002 && !blocked;
+        const isHold = camHold.live && boom === camHold.boom && eyes[ei] === camHold.eye && slide === camHold.slide;
+        if (isHold) {
+          holdKey = near;
+          holdHard = hard;
+        }
         if (m.on && m.minR >= 1.002 && near > fbKey) {
           fbKey = near;
           haveFb = true;
-          fbX = candEye[0];
-          fbY = candEye[1];
-          fbZ = candEye[2];
-          fbBoom = boomNow;
+          fbBoom = boom;
+          fbEye = eyes[ei];
+          fbSlide = slide;
         }
-        if (!(m.on && m.minR >= 1.002 && !blocked)) continue;
+        if (!hard) continue;
         if (near > bestKey) {
           bestKey = near;
           found = true;
-          eyeBuf[0] = candEye[0];
-          eyeBuf[1] = candEye[1];
-          eyeBuf[2] = candEye[2];
-          camBoom = boomNow;
+          bestBoom = boom;
+          bestEye = eyes[ei];
+          bestSlide = slide;
         }
       }
     }
   }
-  if (!found && haveFb) {
-    eyeBuf[0] = fbX;
-    eyeBuf[1] = fbY;
-    eyeBuf[2] = fbZ;
-    camBoom = fbBoom;
+  let useBoom = bestBoom;
+  let useEye = bestEye;
+  let useSlide = bestSlide;
+  let legal = found;
+  if (camHold.live && holdHard && (!found || bestKey - holdKey < CAM_HYST)) {
+    useBoom = camHold.boom;
+    useEye = camHold.eye;
+    useSlide = camHold.slide;
+    legal = true;
+  } else if (!found && haveFb) {
+    useBoom = fbBoom;
+    useEye = fbEye;
+    useSlide = fbSlide;
+    legal = false;
   } else if (!found) {
-    eyeBuf[0] = state.x - fwdBuf[0] * BOOM;
-    eyeBuf[2] = state.z - fwdBuf[2] * BOOM;
-    eyeBuf[1] = EYE + (useRelief ? terrain.heightAt(eyeBuf[0], eyeBuf[2]) : 0);
-    camBoom = BOOM;
+    useBoom = BOOM;
+    useEye = EYE;
+    useSlide = 0;
+    legal = false;
   }
-  pitchView(eyeBuf);
+  camHold.boom = useBoom;
+  camHold.eye = useEye;
+  camHold.slide = useSlide;
+  camHold.live = true;
+  // An illegal hold snaps onto a legal pose so a solid never sits above magnification 1.
+  // A legal change eases. Terrain height eases either way, so relief cannot kick the eye.
+  const snapPose = !camSm.ready || !legal;
+  if (snapPose) {
+    camSm.boom = useBoom;
+    camSm.eye = useEye;
+    camSm.slide = useSlide;
+  } else if (dt > 0) {
+    camSm.boom = chase(camSm.boom, useBoom, dt, 0.16);
+    camSm.eye = chase(camSm.eye, useEye, dt, 0.16);
+    camSm.slide = chase(camSm.slide, useSlide, dt, 0.16);
+  }
+  eyeBuf[0] = state.x - fwdBuf[0] * camSm.boom + rightBuf[0] * camSm.slide;
+  eyeBuf[2] = state.z - fwdBuf[2] * camSm.boom + rightBuf[2] * camSm.slide;
+  const rawG = useRelief ? terrain.heightAt(eyeBuf[0], eyeBuf[2]) : 0;
+  if (snapPose) camSm.ground = rawG;
+  else if (dt > 0) camSm.ground = chase(camSm.ground, rawG, dt, 0.28);
+  eyeBuf[1] = camSm.eye + camSm.ground;
+  const rawFeet = feetY();
+  if (snapPose) camSm.feet = rawFeet;
+  else if (dt > 0) camSm.feet = chase(camSm.feet, rawFeet, dt, 0.22);
+  camSm.ready = true;
+  let backX = state.x - eyeBuf[0];
+  let backZ = state.z - eyeBuf[2];
+  let backL = Math.hypot(backX, backZ);
+  if (backL < MIN_BOOM && backL > 1e-4) {
+    eyeBuf[0] = state.x - backX / backL * MIN_BOOM;
+    eyeBuf[2] = state.z - backZ / backL * MIN_BOOM;
+    backL = MIN_BOOM;
+  }
+  camBoom = backL;
+  pitchView(eyeBuf, camSm.feet);
 }
 
 function projectPoint(eye, right, up, fwd, x, y, z) {
@@ -1215,6 +1285,8 @@ function reset() {
   state.blocked = false;
   state.pathTrigger = false;
   state.hdg = spawnHeading();
+  camSm.ready = false;
+  camHold.live = false;
 }
 function place(x, z, hdg) {
   state.x = x;
@@ -1225,11 +1297,15 @@ function place(x, z, hdg) {
   state.forward = 0;
   state.turn = 0;
   state.gallop = false;
+  camSm.ready = false;
+  camHold.live = false;
 }
 function look(headingDeg) {
   state.hdg = wrap360(headingDeg);
   state.spd = 0;
   state.mode = "IDLE";
+  camSm.ready = false;
+  camHold.live = false;
 }
 function setInput(inp) {
   state.forward = Number(inp.forward) || 0;
@@ -1596,6 +1672,7 @@ let skyScreenCache = 800;
 
 function tick(dt) {
   const t0 = performance.now();
+  camStepDt = dt > 0 ? dt : 0;
   const fwdIn = Math.abs(state.forward) < 0.04 ? 0 : state.forward;
   if (fwdIn === 0) state.spd = 0;
   else state.spd = state.gallop ? 4.4 : WALK_SPD;
@@ -1645,6 +1722,10 @@ function tick(dt) {
     state: state.mode,
     blocked: state.blocked,
     pathTrigger: state.pathTrigger,
+    eyeX: eyeBuf[0],
+    eyeY: eyeBuf[1],
+    eyeZ: eyeBuf[2],
+    pitch: camPitch * 180 / Math.PI,
     mag: magNow,
     ground: groundMagNow,
     gate: gateInfo(),
@@ -1758,6 +1839,7 @@ function snapshot() {
     camRight: [camRightNow[0], camRightNow[1], camRightNow[2]],
     boom: camBoom,
     eye: [eyeBuf[0], eyeBuf[1], eyeBuf[2]],
+    pitch: camPitch * 180 / Math.PI,
     acceptance: heroPixels > 0 && magNow <= 1.001,
     blocked: state.blocked,
     pathTrigger: state.pathTrigger,

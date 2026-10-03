@@ -44,6 +44,7 @@ Status words: **APPROVED** = build it this way. **IN TEST** = candidate, pending
 | | Ship = **lore / POI, not a vehicle**. Bolt sprints through space powered by the **Lightning Core**. | 2026-10-02 |
 | | **PARKED** narrative frame: each biome is a **Frontier Shard** woken by Bolt's permanent EMP wave (decrees #031, #063, #064). Lore never changes the visual laws. | 2026-10-02 |
 | **Bolt** | Keyed `lock/` gallop + idle breath, automatic IDLE/GALLOP switch, camera behind, one Bolt. `lock/` WARN = informational, never a recook. | 2026-09-20 → 2026-10-01 |
+| **Camera** | No shake, ever. The chase holds one legal pose (hysteresis on boom / eye / slide) and eases eye height off the raw relief sample. A per-frame rescore must not snap the eye. Magnification stays ≤ 1. | 2026-10-03 |
 | **Biome names in docs** | Biome **names** are allowed in tracked repo files (docs, commit messages, ids). **Palettes and Imagine prompt text stay out** (only in prompts and untracked `*.local.*` files). | 2026-10-03 |
 | **Phone** | Portrait 720×1600, full screen, controls as transparent overlay. Stills `LINEAR_MIPMAP_LINEAR` + mipmaps, video `LINEAR`, never `NEAREST`, DPR ≤ 2, perf only removes waste. | 2026-10-02 (law 65) |
 

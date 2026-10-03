@@ -35,6 +35,7 @@ a change is a new row that cites the old one. Times are Paris.
 | 2026-10-03 12:49 | Zone A step 2 sky built on the 2026-10-02 sky row: 8 chained slices pixel-joined into one ring (11488 px, mag 0.994), one Imagine zenith cap, three Imagine loops (13 / 16.7 / 29 s), fog sampled from the ring horizon. Recipe written: [`sky.md`](sky.md). Director QC found blockers (heading-0 seam, stretched low-res layers at high weight, smeared cap looking up, loop-restart flash, no readable eclipse glow), so it is not merged. | IN TEST — QC blockers | Director 2026-10-03, branch `zone-a-step2-sky` |
 | 2026-10-03 | Sky video layers are GPU-instanced: one decode and one texture per layer, one instanced draw of tiles, per-instance placement, UV offset, and phase. Magnification of every sky texel, video tiles included, must be ≤ 1. A missing `display.videoTiles` block, or an 848×480 frame over 360°, fails `python3 tools/sky/check.py` and `tools/playcheck`. | IN TEST | SmiR 2026-10-03, zone A step 2b |
 | 2026-10-03 | Sky light-layer parallax: stars nearest to still, painted slices far, nebula wisps and dust a little nearer, as a small yaw offset. No invisible relief for the sky. The ring stays centred on the eye. | IN TEST | SmiR approved 2026-10-03, zone A step 2b |
+| 2026-10-03 | Camera: no shake, ever. The chase holds one legal pose with hysteresis and eases eye height off the raw relief sample. A per-frame rescore that snaps the eye is banned. Magnification stays ≤ 1. | IN TEST | SmiR 2026-10-03, zone A step 2c |
 
 ## Contradictions found (2026-10-03 sweep)
 
