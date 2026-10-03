@@ -5,7 +5,7 @@ open-zone game. The citadel boot / Welcome laws in [`AGENTS.md`](../AGENTS.md) a
 Hard laws that stay in force beside it: the Bolt lock, law 65 ([render quality](../biome/docs/65-render-quality.md),
 zero quality loss) and law 67 ([post-pass exception](../biome/docs/67-imagine-post-pass.md)).
 
-Subpages: [tools](METHOD/tools.md) · [self-improvement loops](METHOD/self-improvement.md) ·
+Subpages: [**ground recipe**](METHOD/ground.md) · [tools](METHOD/tools.md) · [self-improvement loops](METHOD/self-improvement.md) ·
 [rejected approaches](METHOD/rejected.md) · [decisions log + contradictions](METHOD/decisions-log.md).
 Taste log (owner reactions): [`learn/taste.md`](../learn/taste.md). Failures already paid for: [`learn/failures.md`](../learn/failures.md).
 
@@ -26,6 +26,7 @@ Status words: **APPROVED** = build it this way. **IN TEST** = candidate, pending
 | Element | THE approved way | Decided |
 |---|---|---|
 | **Ground (zones)** | Invisible **height relief built by code** (shape/placement only) carrying **top-down Imagine ground tiles** (world-locked, ≥ 4 variants). | 2026-10-01 |
+| | **Recipe: [`METHOD/ground.md`](METHOD/ground.md)** — generic, kit-driven (volume + skin + anti-carpet, prompt templates, prep, mesh, cutouts, post, QC). **Look APPROVED by SmiR 2026-10-03** (zone A step 1, PR #156); relief fixes (≤ 3 m / ≤ 15°, soft transitions, no wide-view grid, no sky cap) still pending. | 2026-10-03 |
 | | **Plus per-pixel invisible depth relief** derived from each Imagine tile (monocular depth + light high-pass), so painted cracks, plates and crystals get real micro-volume. | 2026-09-29 + 2026-10-03 |
 | | **Several distinct Imagine materials** distributed by the relief, soft transitions, large-scale variation. **Never one plain dirt texture** (rejected as ugly). | 2026-10-03 |
 | | **Anti-carpet:** relief silhouettes against the sky; raised lips at fissures/plates; small Imagine cutout ground details standing up; oblique/grazing Imagine textures where useful; fog for depth. | 2026-10-03 |
