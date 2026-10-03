@@ -1,0 +1,14 @@
+Colour-free contracts. Tone and subject wording stay in the untracked local prompt file.
+Slots: as copied unlit skin copied from the validated hard-object plate top.jpg as copied.
+
+STATUS
+The verbatim Imagine call is not stored in the repo.
+ROLE as named by the plate (unlit skin, or measure only).
+PIXELS as copied. ASPECT as copied.
+JOB unlit skin copied from the validated hard-object plate top.jpg
+
+ASK
+Imagine, aspect as copied. Orthographic, no perspective, no camera tilt, no ground, no stars, no text,
+no border, no watermark. Plain empty background the reader can segment. One object, filling the frame
+with a small empty margin. <TONE + ACCENTS from the local file>. Panels readable at phone size.
+Subject: the JOB line, nothing else.

@@ -1,0 +1,322 @@
+{
+  "gate": {
+    "threshold": 52.23,
+    "frontBox": [
+      66,
+      50,
+      772,
+      1202
+    ],
+    "holeBox": [
+      216,
+      394,
+      594,
+      1202
+    ],
+    "holeCount": 3,
+    "origin": [
+      636,
+      50
+    ],
+    "contentH": 1153,
+    "contentW": 707,
+    "heightM": 7.4,
+    "widthM": 4.538,
+    "depthM": 2.89,
+    "sideBox": [
+      210,
+      94,
+      623,
+      1153
+    ],
+    "texelsPerM": 155.81,
+    "minApproachM": 11.508,
+    "openingLocal": [
+      -0.09,
+      2.593
+    ],
+    "quadsFront": 41452,
+    "quadsSide": 1490,
+    "bounds": {
+      "min": [
+        -2.266,
+        0.013,
+        -2.89
+      ],
+      "max": [
+        2.259,
+        7.394,
+        0.0
+      ]
+    },
+    "pierProfileMae": 0.238,
+    "openingClear": true,
+    "horizRadiusM": 3.668,
+    "yawRad": -2.9863,
+    "placement": {
+      "cord": 20.294489633065364,
+      "bubbleD": 51.72243227072757,
+      "far": 85.48321379162782,
+      "inside": true,
+      "clear": true
+    },
+    "keepRadiusM": 15.176
+  },
+  "gateParts": [
+    {
+      "id": "pier-l",
+      "measure": "front.jpg",
+      "spot": [
+        66,
+        394,
+        216,
+        1202
+      ],
+      "section": "sec-pier-l.jpg",
+      "sectionBox": [
+        265,
+        82,
+        757,
+        941
+      ],
+      "skin": "front.jpg",
+      "erasedFrom": null,
+      "inpaintCall": null,
+      "note": "left jamb of the one loft; section scales thickness only"
+    },
+    {
+      "id": "pier-r",
+      "measure": "front.jpg",
+      "spot": [
+        594,
+        394,
+        772,
+        1202
+      ],
+      "section": "sec-pier-r.jpg",
+      "sectionBox": [
+        336,
+        81,
+        692,
+        942
+      ],
+      "skin": "front.jpg",
+      "erasedFrom": null,
+      "inpaintCall": null,
+      "note": "right jamb, different section, not a mirrored copy"
+    },
+    {
+      "id": "lintel",
+      "measure": "front.jpg",
+      "spot": [
+        66,
+        50,
+        772,
+        394
+      ],
+      "section": "sec-lintel.jpg",
+      "sectionBox": [
+        97,
+        332,
+        926,
+        691
+      ],
+      "skin": "front.jpg",
+      "erasedFrom": null,
+      "inpaintCall": null,
+      "note": "stone above the opening; section profile scales thickness"
+    },
+    {
+      "id": "opening",
+      "measure": "front.jpg",
+      "spot": [
+        216,
+        394,
+        594,
+        1202
+      ],
+      "section": null,
+      "skin": null,
+      "erasedFrom": null,
+      "inpaintCall": null,
+      "note": "largest enclosed void; no faces on those cells and no collider"
+    },
+    {
+      "id": "ring-motif",
+      "measure": "front.jpg",
+      "spot": [
+        216,
+        394,
+        594,
+        1202
+      ],
+      "section": null,
+      "skin": "front.jpg",
+      "erasedFrom": null,
+      "inpaintCall": null,
+      "note": "carved in the skin, not a second volume"
+    }
+  ],
+  "wreck": {
+    "faces": 5159,
+    "verts": 5376,
+    "hole": [
+      0.289,
+      0.482,
+      0.214,
+      0.776,
+      17
+    ],
+    "lengthM": 14.0,
+    "heightM": 3.997,
+    "texelsPerM": 160.07,
+    "minApproachM": 11.201,
+    "horizRadiusM": 6.94,
+    "contact": [
+      6.165,
+      -0.003
+    ],
+    "bounds": {
+      "min": [
+        -6.939,
+        0.0,
+        -0.888
+      ],
+      "max": [
+        6.811,
+        3.997,
+        0.899
+      ]
+    },
+    "howlPass": true,
+    "skinNacelles": 0,
+    "skinBells": 0,
+    "placement": {
+      "cord": 29.042766600878995,
+      "bubbleD": 31.622776601683793,
+      "far": 69.98654357116469,
+      "inside": true,
+      "clear": true
+    },
+    "keepRadiusM": 18.141,
+    "yawRad": 2.234
+  },
+  "wreckParts": [
+    {
+      "id": "hull",
+      "measure": "tools/hard-objects/images/measure/port.jpg",
+      "spot": [
+        75,
+        75,
+        2344,
+        361
+      ],
+      "section": "tools/hard-objects/images/sec-mid.jpg",
+      "skin": "port.jpg",
+      "erasedFrom": "port.jpg",
+      "inpaintCall": null,
+      "note": "loft from the validated Howl rebuild; hangar gap stays a hole"
+    },
+    {
+      "id": "hull-stbd",
+      "measure": "tools/hard-objects/images/measure/stbd.jpg",
+      "spot": [
+        103,
+        75,
+        2344,
+        361
+      ],
+      "section": "tools/hard-objects/images/sec-shoulder.jpg",
+      "skin": "stbd.jpg",
+      "erasedFrom": null,
+      "inpaintCall": null,
+      "note": "starboard elevation of the same loft, read on its own plate"
+    },
+    {
+      "id": "deck",
+      "measure": "tools/hard-objects/images/measure/top.jpg",
+      "spot": [
+        140,
+        119,
+        2337,
+        401
+      ],
+      "section": null,
+      "skin": "top.jpg",
+      "erasedFrom": "top.jpg",
+      "inpaintCall": null,
+      "note": "plan skin; nacelle pixels already absent on the sealed plate"
+    },
+    {
+      "id": "belly",
+      "measure": "tools/hard-objects/images/measure/belly.jpg",
+      "spot": [
+        75,
+        119,
+        2337,
+        401
+      ],
+      "section": null,
+      "skin": "belly.jpg",
+      "erasedFrom": "belly.jpg",
+      "inpaintCall": null,
+      "note": "underside of the same loft"
+    },
+    {
+      "id": "stern-cap",
+      "measure": "tools/hard-objects/images/measure/stern.jpg",
+      "spot": null,
+      "section": null,
+      "skin": "stern.jpg",
+      "erasedFrom": "stern.jpg",
+      "inpaintCall": null,
+      "note": "stern faces only; bells stay off this skin"
+    },
+    {
+      "id": "nacelle-port",
+      "measure": "tools/hard-objects/images/measure/top.jpg",
+      "spot": {
+        "u": 0.0255,
+        "x": -106.29,
+        "z": -17.51,
+        "length": 23.96
+      },
+      "section": "tools/hard-objects/images/nacelle.jpg",
+      "skin": null,
+      "erasedFrom": "top.jpg",
+      "inpaintCall": null,
+      "note": "measured once; not rebuilt here so it is not a second copy. skinNacelles is 0"
+    },
+    {
+      "id": "nacelle-stbd",
+      "measure": "tools/hard-objects/images/measure/top.jpg",
+      "spot": {
+        "u": 0.0255,
+        "x": -106.3,
+        "z": 17.45,
+        "length": 23.96
+      },
+      "section": "tools/hard-objects/images/nacelle.jpg",
+      "skin": null,
+      "erasedFrom": "top.jpg",
+      "inpaintCall": null,
+      "note": "measured once; not rebuilt here"
+    },
+    {
+      "id": "hangar",
+      "measure": "tools/hard-objects/images/measure/port.jpg",
+      "spot": [
+        0.289,
+        0.482,
+        0.214,
+        0.776,
+        17
+      ],
+      "section": null,
+      "skin": null,
+      "erasedFrom": "port.jpg",
+      "inpaintCall": null,
+      "note": "opening kept by the loft; no faces fill that gap"
+    }
+  ]
+}

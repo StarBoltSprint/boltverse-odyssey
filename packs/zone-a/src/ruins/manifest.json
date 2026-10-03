@@ -1,0 +1,85 @@
+{
+  "schema": "ruins-pack/1",
+  "kit": "howling-eclipse",
+  "objects": [
+    {
+      "id": "gate",
+      "mesh": "packs/zone-a/src/ruins/gate/gate.ruin",
+      "skins": [
+        "packs/zone-a/src/ruins/gate/front.jpg",
+        "packs/zone-a/src/ruins/gate/side.jpg"
+      ],
+      "frame": "gate",
+      "x": 2.0,
+      "z": 37.1,
+      "yaw": -2.9863,
+      "sink": 0.18,
+      "contact": [
+        0,
+        0
+      ],
+      "heightM": 7.4,
+      "srcH": 1153,
+      "texelsPerM": 155.81,
+      "minApproachM": 11.508,
+      "horizRadiusM": 3.668,
+      "keepRadiusM": 15.176,
+      "colliders": [
+        {
+          "cx": -1.7681699913269733,
+          "cy": 3.7032090199479617,
+          "cz": -1.3049906810860563,
+          "hx": 0.4973980919340849,
+          "hy": 3.6903729401561147,
+          "hz": 1.3049906810860563,
+          "name": "pier-l"
+        },
+        {
+          "cx": 1.6815264527320035,
+          "cy": 3.7032090199479617,
+          "cz": -1.4450943396226417,
+          "hx": 0.5776235906331311,
+          "hy": 3.6903729401561147,
+          "hz": 1.4450943396226417,
+          "name": "pier-r"
+        },
+        {
+          "cx": 0.04492627927146553,
+          "cy": 6.286470078057242,
+          "cz": -1.4450943396226417,
+          "hx": 2.1179531656548134,
+          "hy": 1.1071118820468344,
+          "hz": 1.4450943396226417,
+          "name": "lintel"
+        }
+      ]
+    },
+    {
+      "id": "wreck",
+      "mesh": "packs/zone-a/src/ruins/wreck/wreck.ruin",
+      "skins": [
+        "packs/zone-a/src/ruins/wreck/port.jpg",
+        "packs/zone-a/src/ruins/wreck/stbd.jpg",
+        "packs/zone-a/src/ruins/wreck/top.jpg",
+        "packs/zone-a/src/ruins/wreck/belly.jpg",
+        "packs/zone-a/src/ruins/wreck/stern.jpg"
+      ],
+      "frame": "ship",
+      "x": -24.0,
+      "z": 12.0,
+      "yaw": 2.234,
+      "sink": 0.85,
+      "contact": [
+        6.165,
+        -0.003
+      ],
+      "heightM": 3.997,
+      "srcH": 640,
+      "texelsPerM": 160.07,
+      "minApproachM": 11.201,
+      "horizRadiusM": 6.94,
+      "keepRadiusM": 18.141,
+      "colliders": []
+    }
+  ]
+}

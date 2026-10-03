@@ -5,6 +5,7 @@
 import { loadWorldHull } from "./hullmesh.js";
 import { createTerrain } from "./terrain.js";
 import { mountRocks } from "./rocks.js";
+import { mountRuins } from "./ruins.js";
 
 const W = 720;
 const H = 1600;
@@ -1681,6 +1682,10 @@ function measureMag(eye) {
     const pm = rockLayer.mag(eye, FOCAL);
     if (pm > objectMag) objectMag = pm;
   }
+  if (ruinLayer) {
+    const rm = ruinLayer.mag(eye, FOCAL);
+    if (rm.m > objectMag) objectMag = rm.m;
+  }
   nearestM = near;
   const groundD = Math.max(0.4, eye[1] / Math.tan(VFOV / 2));
   const groundMag = useRelief
@@ -1755,6 +1760,10 @@ function render(mode) {
     rockLayer.draw(vpM);
     drawCalls += rockLayer.draws;
   }
+  if (ruinLayer) {
+    ruinLayer.draw(vpM, mode);
+    if (mode !== 1) drawCalls += ruinLayer.draws;
+  }
   if (showGate && uploadVideo(gateVideo, gateTex, "gate")) {
     const g = gatePoint();
     drawCard(mode, gateTex, 3, g.x, 0, g.z, 0, sized.gw, sized.gh, labelOf("gate:" + g.gate.id), 1);
@@ -1787,6 +1796,11 @@ function tick(dt) {
   let nx = state.x + Math.sin(yaw) * state.spd * dt;
   let nz = state.z + Math.cos(yaw) * state.spd * dt;
   const solved = resolveBody(nx, nz);
+  if (ruinLayer) {
+    const eased = ruinLayer.ease(solved.x, solved.z);
+    solved.x = eased.x;
+    solved.z = eased.z;
+  }
   state.blocked = solved.blocked;
   if (solved.blocked) {
     state.spd = 0;
@@ -1950,6 +1964,8 @@ function snapshot() {
     blocked: state.blocked,
     rockLoadMs,
     rocks: rockLayer ? rockLayer.info() : null,
+    ruinLoadMs,
+    ruins: ruinLayer ? ruinLayer.info() : null,
     pathTrigger: state.pathTrigger,
     gate: gateInfo(),
     nearestVisibleM: nearestM,
@@ -2291,6 +2307,8 @@ let firstFrameMs = null;
 let bootT0 = 0;
 let rockLayer = null;
 let rockLoadMs = 0;
+let ruinLayer = null;
+let ruinLoadMs = 0;
 
 async function loadBand(manifest, id) {
   const display = manifest && manifest.display;
@@ -2396,6 +2414,19 @@ async function boot() {
     } catch (err) {
       console.warn("rocks", err);
       rockLayer = null;
+    }
+    try {
+      const ruinT0 = performance.now();
+      ruinLayer = await mountRuins(gl, {
+        absUrl,
+        loadImage,
+        trackTex,
+        heightAt: (x, z) => (useRelief ? terrain.heightAt(x, z) : 0),
+      });
+      ruinLoadMs = ruinLayer.loadMs || (performance.now() - ruinT0);
+    } catch (err) {
+      console.warn("ruins", err);
+      ruinLayer = null;
     }
     const upperImgs = await loadBand(skyManifest, "upper");
     const highImgs = await loadBand(skyManifest, "high");
