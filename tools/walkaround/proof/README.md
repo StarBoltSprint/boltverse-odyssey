@@ -10,7 +10,7 @@ Left is `--legacy-voxels` (the coarse occupancy the old raymarcher draws). Right
 
 `bowl-top.png` is a synthetic open tube from a top view (`elevationDeg` 90). The shaft is empty because that still is not hole-filled. `assembly-yaw-090.png` is a body plus a supplied part (`subObjects`) with its own 8 views, carved out and attached at a joint. The tool does not animate the joint.
 
-`web-view.png` is the reference page `web/view.html` drawing a smooth hull (a synthetic open tube, top view included). The status line is `PASS` with `gl.getError` at 0. Headless Chrome, nearest sampling, no lighting pass.
+`web-view.png` is a stored capture of `web/view.html` drawing a smooth hull (a synthetic open tube, top view included). The status line is `PASS` with `gl.getError` at 0. The page samples stills with `LINEAR_MIPMAP_LINEAR` and mipmaps. The z target is a measurement buffer. There is no lighting pass.
 
 `report.json` records vertex count, seam fraction, and magnification for the rock pair.
 

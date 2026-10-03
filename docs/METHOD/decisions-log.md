@@ -54,11 +54,11 @@ Status after the follow-up PR: **RESOLVED** = old text amended to the newer rule
     Status: **RESOLVED** — docs 62 / 63 describe organic no-ring zones; circle mode = retired test layout.
 6. **Approach zoom.** Law 59: approach may zoom a plate up to ~1.3×. Law 65 / rail 3: magnification ≤ 1.0 everywhere.
     Status: **RESOLVED** — law 59 approach: magnification ≤ 1.0.
-7. **Sampling.** `tools/walkaround/README.md` and `tools/mesh3d` say visible pixels are nearest samples / no mipmaps.
-   Law 65: `LINEAR_MIPMAP_LINEAR` + mipmaps. (Tool code not edited: the tool loop owns `tools/`.)
-    Status: **TRACKED** — note in `tools/walkaround/README.md` + tool-loop issue [#153](https://github.com/StarBoltSprint/boltverse-odyssey/issues/153); code unchanged.
-8. **TripoSR.** `tools/mesh3d` keeps TripoSR as an invisible-shape engine; the Golden rule now bans TripoSR-style generators.
-    Status: **TRACKED** — note in `tools/mesh3d/README.md` (do not use TripoSR) + tool-loop issue [#153](https://github.com/StarBoltSprint/boltverse-odyssey/issues/153); code unchanged.
+7. **Sampling.** `tools/walkaround/README.md` and `tools/mesh3d` said visible pixels are nearest samples / no mipmaps.
+   Law 65: `LINEAR_MIPMAP_LINEAR` + mipmaps.
+    Status: **RESOLVED** — play viewers sample stills with `LINEAR_MIPMAP_LINEAR` and mipmaps. CPU QC nearest stays a measurement buffer and does not feed the play view. Magnification limit stays 1.0. Issue [#153](https://github.com/StarBoltSprint/boltverse-odyssey/issues/153).
+8. **TripoSR.** `tools/mesh3d` kept TripoSR as an invisible-shape engine; the Golden rule bans TripoSR-style generators.
+    Status: **RESOLVED** — `auto` and the default engine are the visual hull. TripoSR runs only with `--experiment triposr`, and that mesh is not written into the play asset. Issue [#153](https://github.com/StarBoltSprint/boltverse-odyssey/issues/153).
 9. **Cards and particles.** Laws 44 / 45 / 49 (cards + capsule, two-plane tree) and law 53 (GPU particles) vs 8-view
    objects and law 67 (no code-drawn particles; living elements = keyed Imagine loops). Law 38 lets the GPU own "tint" of
    light layers, which reads as a code colour.

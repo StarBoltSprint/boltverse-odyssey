@@ -6,8 +6,11 @@
 
 from __future__ import annotations
 
+import inspect
 import json
+import re
 import struct
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -256,7 +259,86 @@ def check_status() -> None:
     print(f"triposr available={ok} reason={reason[:180]}")
 
 
+def check_law65_and_triposr() -> None:
+    """Play stills use mipmaps. TripoSR is not auto and cannot feed a play build.
+
+    Law 65 and the golden rule (2026-10-02). Magnification limit stays 1.0.
+    Issue https://github.com/StarBoltSprint/boltverse-odyssey/issues/153.
+    """
+    viewer = (HERE / "viewer" / "main.js").read_text()
+    build_src = (HERE / "build.py").read_text()
+    shade_src = (HERE / "shade.py").read_text()
+
+    if inspect.signature(fit_view_distance).parameters["limit"].default != 1.0:
+        raise SystemExit("FAIL magnification limit was loosened")
+
+    loader = viewer.split("function loadTexture", 1)[-1]
+    if "NearestFilter" in loader:
+        raise SystemExit("FAIL mesh3d viewer samples Imagine stills with NEAREST")
+    if "LinearMipmapLinearFilter" not in loader or "generateMipmaps = true" not in loader:
+        raise SystemExit("FAIL mesh3d viewer stills are not LINEAR_MIPMAP_LINEAR with mipmaps")
+    colour = re.search(r"vec2 uv = ([^;]+);\s*vec4 src = fetchMap", viewer)
+    if colour is None or "floor" in colour.group(1):
+        raise SystemExit("FAIL mesh3d play colour snaps to a nearest texel")
+    depth = viewer.split("new THREE.WebGLRenderTarget", 1)[-1][:500]
+    if "NearestFilter" in depth and "measurement" not in depth:
+        raise SystemExit("FAIL depth nearest is not marked as a measurement buffer")
+
+    proc = subprocess.run(
+        [
+            "node",
+            str(HERE.parent / "playcheck" / "src" / "renderlint.mjs"),
+            str(HERE / "viewer" / "main.js"),
+        ],
+        text=True,
+        capture_output=True,
+    )
+    if proc.returncode != 0:
+        raise SystemExit("FAIL mesh3d viewer renderlint\n" + (proc.stdout or "") + (proc.stderr or ""))
+
+    if re.search(r"""engine\s+in\s+\(\s*['\"]auto['\"]\s*,\s*['\"]triposr['\"]\s*\)""", build_src):
+        raise SystemExit("FAIL triposr is an auto engine")
+    if re.search(r"""used\s*=\s*['\"]triposr['\"]""", build_src):
+        raise SystemExit("FAIL triposr can replace the play mesh")
+    if re.search(r"""choices=\(\s*['\"]auto['\"]\s*,\s*['\"]visual-hull['\"]\s*,\s*['\"]triposr['\"]""", build_src):
+        raise SystemExit("FAIL --engine still offers triposr")
+    if "--experiment" not in build_src:
+        raise SystemExit("FAIL triposr has no labelled experiment flag")
+    if "LINEAR_MIPMAP_LINEAR" not in build_src or "source png nearest" in build_src:
+        raise SystemExit("FAIL play texture is still described as nearest")
+
+    sampler = shade_src.split("def _sample_nearest", 1)[-1][:500]
+    if "measurement" not in sampler or "not the play view" not in sampler:
+        raise SystemExit("FAIL QC nearest sampler is not marked measurement-only")
+
+    from build import resolve_shape  # noqa: WPS433
+
+    play = resolve_shape("auto", None)
+    if play.get("attemptTriposr") or not play.get("feedsPlay") or play.get("shape") != "visual-hull":
+        raise SystemExit(f"FAIL auto shape {play}")
+    hull = resolve_shape("visual-hull", None)
+    if hull.get("attemptTriposr") or not hull.get("feedsPlay") or hull.get("shape") != "visual-hull":
+        raise SystemExit(f"FAIL visual-hull shape {hull}")
+    try:
+        resolve_shape("triposr", None)
+    except SystemExit as exc:
+        if "experiment" not in str(exc):
+            raise SystemExit(f"FAIL bare triposr refusal {exc}") from exc
+    else:
+        raise SystemExit("FAIL bare triposr engine was accepted")
+    exp = resolve_shape("visual-hull", "triposr")
+    if exp.get("shape") != "visual-hull" or exp.get("attemptTriposr") is not True:
+        raise SystemExit(f"FAIL experiment policy {exp}")
+    if exp.get("experimentFeedsPlay") is not False:
+        raise SystemExit("FAIL experiment triposr can feed a play build")
+    committed = json.loads((HERE / "out" / "asset.json").read_text())
+    if committed.get("engine") == "triposr" and committed.get("feedsPlay") is not False:
+        raise SystemExit("FAIL committed triposr asset can feed a play build")
+    print("selftest law65 sampling and triposr policy ok")
+
+
 def main() -> int:
+    check_law65_and_triposr()
     check_weights()
     check_handedness()
     check_files()

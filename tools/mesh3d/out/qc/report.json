@@ -1,6 +1,7 @@
 {
   "ok": true,
   "engine": "triposr",
+  "feedsPlay": false,
   "visualHullTries": [
     {
       "iou": 0.5431726287030858,

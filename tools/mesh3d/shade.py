@@ -126,6 +126,10 @@ def mask_iou(pred: np.ndarray, gt: np.ndarray) -> float:
 
 
 def _sample_nearest(rgba: np.ndarray, u: np.ndarray, v: np.ndarray):
+    """measurement buffer only: nearest source texel for QC coverage, not the play view.
+
+    The viewer samples the PNG with LINEAR_MIPMAP_LINEAR and mipmaps (law 65).
+    """
     h, w = rgba.shape[:2]
     ui = np.rint(u).astype(np.int32)
     vi = np.rint(v).astype(np.int32)

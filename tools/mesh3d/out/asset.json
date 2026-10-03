@@ -1,6 +1,8 @@
 {
   "schema": "mesh3d-real-1",
   "engine": "triposr",
+  "feedsPlay": false,
+  "experiment": "triposr",
   "drawsOwnPixels": false,
   "unlit": true,
   "blend": "cos(yawDelta), zero past 45deg",
