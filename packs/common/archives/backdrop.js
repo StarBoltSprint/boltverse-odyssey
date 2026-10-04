@@ -3,6 +3,7 @@
  * Pause, Archives, and any later screen share this film.
  * The still shows until the video is playing, and again if the video fails.
  * Uniform scale only. Never above one device pixel per Imagine pixel.
+ * Cover (crop) only when that scale is at or below 1. A shorter file stays contained.
  */
 
 import { fitPixels } from "./layout.js";

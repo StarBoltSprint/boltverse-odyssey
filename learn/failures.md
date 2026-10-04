@@ -450,3 +450,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Place the 720×1280 film at scale 1. Hide the world canvas while a menu is open. The gap is a matte sampled once from the still’s four corners. Do not scale, stretch, or smear the frame. |
 | Guard | `node --test packs/common/archives/archives.test.mjs` row “menu film covers a 9:16 phone and never enlarges on a tall one”: 720×1280, 360×800 at device pixel ratio 2 is contain, scale 1, `enlarged` false. Seam row: first-to-last MAE 1.8, which is under 8. |
 | Sources | `packs/common/archives/art/hall-loop.mp4`. `packs/common/archives/backdrop.js`. Phone shot `/workspace/grokcli/out/archives/polish/menu-pause.png`. |
+
+### 2026-10-04 — a 640×1424 menu film still cannot cover 720×1600
+
+| | |
+| --- | --- |
+| Take | Archives futuristic hall. Branch `archives-shards`. Owner 2026-10-04 21:54. |
+| Defect | The shared menu film leaves a matte gap on a 720×1600 phone. Cover would be magnification 1.125. |
+| Root cause | The session video tool rejected aspect `9:20` and resolution `1080p` before writing a file. The accepted call is 640×1424. Two image edits that asked for a taller plate returned 576×1280. The tool schema lists `9:20` and `9:19.5`; the API allow-list does not. Doc 64 still says 1080p is legal for one-image image-to-video. This session’s tool accepts only `480p` and `720p`. |
+| Fix | Place the 640×1424 film at scale 1. The gap is the corner matte. Do not scale, stretch, smear, or spend another call on the same height miss. Close an open Imagine clip with ping-pong when the tool cannot pin the last frame. The source seam was MAE 14.445. The shipped ping-pong seam is MAE 1.813. |
+| Guard | `node --test packs/common/archives/archives.test.mjs` row “menu film never enlarges on a 720x1600 phone”: 640×1424, cover 1.125, contain, scale 1, CSS 320×712. Seam row: first-to-last MAE 1.813, which is under 8, and the 3 s frame is farther from frame 0 than the seam. The 720×1280 entry above names a test title this step replaced. That older entry stays as the record of the gothic film. |
+| Sources | `packs/common/archives/art/hall-loop.mp4`. `packs/common/archives/backdrop.js`. Phone shot `/workspace/grokcli/out/archives/futurist/pause.png`. Tool note `feedback/2026-10-04-imagine-video-aspect.md`. |

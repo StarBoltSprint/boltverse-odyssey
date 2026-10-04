@@ -17,6 +17,7 @@ Short summary of the log below. When a new reaction changes a rule, add a senten
 - A speed-tied scrolling ground video is KEEP.
 - A ruin base that floats above the drawn relief is a FAIL. A black unpainted hull face is a FAIL.
 - Orbit views that show two different ships are a FAIL.
+- A menu hall is a high-tech citadel: dark metal, glass, holographic light, a window to space. A gothic stone hall and a stone door plate are a FAIL.
 
 ## How to append
 
@@ -44,3 +45,4 @@ Append a row at the bottom. Do not rewrite an old row. Verdict is KEEP, FAIL, or
 | 2026-10-04 | Monolith gate base above the relief | FAIL | | Seat every ruin foot on the drawn ground. One contact height leaves a gap on the downhill side. |
 | 2026-10-04 | Wreck hangar interior and the slab beside the opening | FAIL | | An unpainted hull face reads black. Retile it from the same Imagine plate. Do not leave the opening wall empty. |
 | 2026-10-04 | Paw button on the menus | KEEP | scintiller, pulser | The paw shimmers and pulses. An Imagine glow layer changes opacity. The print is not scaled. |
+| 2026-10-04 | Pause menu stone door plate and Living Archives gothic hall | FAIL | look old and "moche" | Menus leave the stone plate and the gothic hall. The hall is a high-tech citadel: dark metal, glass, holographic cyan and violet, a window to space. |

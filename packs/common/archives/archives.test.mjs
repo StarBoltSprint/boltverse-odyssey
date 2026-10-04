@@ -245,23 +245,24 @@ function probeSize(file) {
   return { w, h };
 }
 
-test("menu film covers a 9:16 phone and never enlarges on a tall one", () => {
+test("menu film never enlarges on a 720x1600 phone", () => {
   const video = probeSize(new URL("./art/hall-loop.mp4", import.meta.url));
   const still = probeSize(new URL("./art/hall.jpg", import.meta.url));
-  assert.equal(video.w, 720);
-  assert.equal(video.h, 1280);
+  assert.equal(video.w, 640);
+  assert.equal(video.h, 1424);
   assert.equal(still.w, video.w);
   assert.equal(still.h, video.h);
-  assert.ok(Math.abs(video.w / video.h - 9 / 16) < 0.002);
+  assert.ok(Math.abs(video.w / video.h - 9 / 20) < 0.002);
   const tall = menuFrame(video.w, video.h, 360, 800, 2);
+  const cover = Math.max((360 * 2) / video.w, (800 * 2) / video.h);
+  assert.ok(cover > 1);
+  assert.ok(Math.abs(cover - 1.125) < 0.002);
   assert.equal(tall.enlarged, false);
-  assert.ok(tall.scale <= 1);
+  assert.equal(tall.scale, 1);
   assert.equal(tall.mode, "contain");
   assert.equal(tall.fills, false);
-  const phone = menuFrame(video.w, video.h, 360, 640, 2);
-  assert.equal(phone.mode, "cover");
-  assert.equal(phone.fills, true);
-  assert.ok(Math.abs(phone.scale - 1) < 1e-6);
+  assert.equal(tall.cssW, 320);
+  assert.equal(tall.cssH, 712);
   const wide = menuFrame(1080, 1920, 360, 800, 2);
   assert.equal(wide.mode, "cover");
   assert.equal(wide.fills, true);
@@ -290,7 +291,11 @@ test("a menu pauses world videos and the paw glow does not scale", () => {
   const play = readFileSync(new URL("../../zone-a/play/play.js", import.meta.url), "utf8");
   assert.equal(present.includes("scale("), false);
   assert.equal(backdrop.includes("scale("), false);
+  assert.equal(present.includes("plate.jpg"), false);
+  assert.equal(present.includes("ui.plate"), false);
   assert.ok(present.includes("archives-paw-glow"));
+  assert.ok(present.includes("archives-paw-bob"));
+  assert.ok(present.includes("translateY(-5px)"));
   assert.ok(present.includes("mix-blend-mode: screen"));
   assert.ok(backdrop.includes("archives-cover"));
   assert.ok(backdrop.includes("visibility: hidden"));

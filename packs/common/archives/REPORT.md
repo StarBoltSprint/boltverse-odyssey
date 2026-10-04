@@ -63,3 +63,37 @@ Chrome headless, viewport 360×800, device pixel ratio 2. The world canvas was f
 - `python3 tools/judge/judge.py` exited 1: current `grok -p` is `--single` and does not take the prompt file. The same prompt, recompressed so one argument stayed under 128 KiB, then `judge.py --parse-reply`, returned `FAIL gate: score 4 < 7; keep is false`. `matches_refs` was true. The defects are round basin mouths, repeated crystals, and a rendered look already in the previous hall still. Image budget for this step was already spent. Not recooked.
 
 Verdict: PASS
+
+# Archives menus — futuristic hall
+
+Date: 2026-10-04. Branch `archives-shards`. Owner 2026-10-04 21:54. Imagine this step: 3 image calls, 3 video calls, 1 video file. Two image calls were not used. Prompts were not stored.
+
+The 720×1600 phone is not filled. The shipped film is 640×1424. Cover on that phone is 1.125, so the frame stays at scale 1.
+
+## Done when
+
+| Row | Result |
+| --- | --- |
+| Shared seamless hall | The live file is `art/hall-loop.mp4`, a ping-pong of the one Imagine clip. 640×1424, 24 fps, 289 frames, 12.000 s. First-to-last MAE 1.813. Frame 0 to 3 s MAE 9.98. The source clip before the reverse is 145 frames, 6.041667 s, first-to-last MAE 14.445. |
+| Phone fill by crop only, scale ≤ 1 | The film does not fill the phone. `menuFrame(640, 1424, 360, 800, 2)` is contain, scale 1, `fills` false, CSS 320×712 at (20, 44). Chrome at 360×800, device pixel ratio 2, measured the playing video at the same box (`readyState` 4, paused false, `videoWidth` 640). The 720×1600 shot has matte gaps of 40 device pixels on the left and the right and 88 on the top and the bottom. Gap pixel (35, 38, 51). Computed backdrop colour rgb(35, 38, 51). Green samples in the pause and Archives shots: 0. |
+| Stone plate hidden | Pause image sources were `paw.png`, `paw-glow-alpha.png`, and `hall.jpg`. `plate.jpg` was not among them. `present.js` does not name `plate.jpg` or `ui.plate`. The file is still on disk for the manifest schema. |
+| Paw print, glow, bob | Bytes unchanged. `paw.png` sha256 prefix `3451bb5154db9401`. `paw-glow-alpha.png` sha256 prefix `e0ea6c07907f364e`. At animation time 0 the glow opacity is 0.05 and the paw transform is identity (y 16). At 1400 ms the opacity is 0.72 and the transform is translateY −2.5 px (y 13.5). Element-shot corners are rgb(0, 255, 0), the page behind the transparent button. No `scale(` in `present.js` or `backdrop.js`. |
+| Root `npm test` | PASS, exit 0, including `archives.test.mjs` (13 tests, 0 fail). |
+| `tools/playcheck` `npm test` | PASS. 51 tests, 0 fail. Duration 250486.692 ms. `play.js` was not edited in this step. |
+| Stills and mp4 | `/workspace/grokcli/out/archives/futurist/`: `pause.png`, `archives.png`, `paw-page.png`, `paw-low.png`, `paw-high.png`, `hall-loop.mp4`, `hall-loop-4s.mp4`. |
+| Imagine budget | 3 image calls and 3 video calls. Two video calls returned no file. Two image calls were not used. |
+| Decoders, HUD, shake, draws | A menu pauses sky, gate, and Bolt (`menuVideoHold`). Decoder count with the menu film alone is 1. Debug HUD was not opened; `?debug=1` was not changed. Brightest row of frames 0, 3 s, 6 s, and the last frame stays at row 723 or 724 of 1424 (fraction 0.508). This step adds no WebGL draw. The earlier page figure stands: 14 draws, 282.3 MiB. |
+
+## Phone check
+
+Chrome headless, viewport 360×800, device pixel ratio 2, page `packs/common/archives/_futurist_harness.html` (removed after the shots). The hall video was playing under the pause words and under the Archives list. `html.archives-cover` was set. Pack size on disk after the new film: `packs/zone-a` 105208030 bytes, `packs/common/archives` 7582731 bytes.
+
+## Known issues
+
+- Filling 720×1600 at scale ≤ 1 needs a file at least 720 wide and 1600 tall. The Imagine video is 640×1424. Aspect `9:20` was rejected before a file (`aspect_ratio must be one of: 1:1, 16:9, 9:16, 4:3, 3:4, 3:2, 2:3`). Resolution `1080p` was rejected before a file (`resolution_name must be one of: 480p, 720p`). Two image edits that asked for a taller plate returned 576×1280. That height miss stops here. The film is not enlarged, stretched, or edge-cloned.
+- The source clip does not close (MAE 14.445). The shipped loop is the same clip played forward and then reversed. The turn at 6 s measures MAE 14.444. That is the ping-pong seam, not a camera move.
+- Hologram panels contain marks that are not readable words, and some panels are round. Both are in the Imagine pixels. Not recooked.
+- The Archives list still uses the world `crystal.png` for a found shard and `silhouette.png` for the others. A separate holographic card was not cooked.
+- `python3 tools/judge/judge.py` exited 1: `grok -p` is `--single` and does not take the prompt file. Same failure as `feedback/2026-10-04-judge.md`. A score was not produced. The scale law does not wait on that score.
+
+Verdict: PASS

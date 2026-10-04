@@ -45,7 +45,7 @@ const STYLE = `
 #archives-shade.open, #archives-screen.open { display: block; }
 #archives-menu, #archives-list {
   position: absolute; color: #f4f1ea;
-  font-family: "Iowan Old Style", Palatino, Georgia, serif;
+  font-family: "Segoe UI", system-ui, sans-serif;
   text-shadow: 0 1px 2px rgba(0,0,0,0.85);
 }
 #archives-menu { display: flex; flex-direction: column; justify-content: center; gap: 4px; }
@@ -64,7 +64,7 @@ const STYLE = `
 #archives-list img { justify-self: center; }
 #archives-card {
   position: fixed; z-index: 6; pointer-events: none; display: none;
-  color: #f4f1ea; font-family: "Iowan Old Style", Palatino, Georgia, serif;
+  color: #f4f1ea; font-family: "Segoe UI", system-ui, sans-serif;
   text-shadow: 0 1px 2px rgba(0,0,0,0.85); text-align: center;
 }
 #archives-card img { display: block; margin: 0 auto; }
