@@ -364,6 +364,32 @@ void main() {
     exN = max(exN, sD.g - max(sD.r, sD.b));
     if (ex0 > 0.09 || exN > 0.12) discard;
     c.g = min(c.g, max(c.r, c.b));
+    // Green field is already gone. The matte inside it is a dark neutral
+    // rectangle. Pure black drops. Darker greys drop unless a lit neighbour
+    // (the limb, a ring, a moon) is within 9 px, so the night side stays.
+    float lum = dot(c.rgb, vec3(0.299, 0.587, 0.114));
+    if (lum < 0.063) discard;
+    if (lum < 0.188) {
+      vec2 step = px * 9.0;
+      float nb = lum;
+      vec2 taps[8];
+      taps[0] = vec2(step.x, 0.0);
+      taps[1] = vec2(-step.x, 0.0);
+      taps[2] = vec2(0.0, step.y);
+      taps[3] = vec2(0.0, -step.y);
+      taps[4] = step;
+      taps[5] = -step;
+      taps[6] = vec2(step.x, -step.y);
+      taps[7] = vec2(-step.x, step.y);
+      for (int i = 0; i < 8; i++) {
+        vec4 ts = uSpin > 0.5 ? texture(uVid, uv + taps[i]) : texture(uTex, uv + taps[i]);
+        float texn = ts.g - max(ts.r, ts.b);
+        if (texn > 0.09) continue;
+        ts.g = min(ts.g, max(ts.r, ts.b));
+        nb = max(nb, dot(ts.rgb, vec3(0.299, 0.587, 0.114)));
+      }
+      if (nb < 0.353) discard;
+    }
   }
   if (uMode == 1) o = vec4(uId, 1.0);
   else if (uKey == 1 || uKey == 3) o = vec4(uPost > 0.5 ? grade(c.rgb) : c.rgb, uAlpha);
@@ -691,12 +717,13 @@ let mesaLayer = null;
 let planetCard = null;
 let planetVideo = null;
 let planetTex = null;
-// Disk fit of packs/zone-b/src/sky/planet.png and planet.mp4, pixels from the top left.
+// Disk fit of the planet still and its loop, pixels from the top left.
+// The card keys the whole frame. These numbers stay with that frame size.
 const PLANET_DISK = {
-  png: [218, 115, 99],
-  vid: [358, 242, 216],
-  vidW: 848,
-  vidH: 480,
+  png: [640, 360, 280],
+  vid: [640, 360, 280],
+  vidW: 1280,
+  vidH: 720,
 };
 const planetUv = { off: [0, 0], scale: [1, 1] };
 let nearestM = 4;
