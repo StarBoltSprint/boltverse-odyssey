@@ -181,6 +181,12 @@ Play 720×1600. Presented mag 0.990 on the proof poses and on an in-place turn. 
 
 Five open-sky stills were cooked for an upper band (1280×720, calls 1–5 kept, calls 6–7 rejected). They are not in the pack: five slices cannot close 360° at magnification ≤ 1 without a copy or a stretch. The chase still shows an empty cap above about 17°.
 
+**Ember Mesa (zone B step 1c) — fix pass, IN TEST.** 2026-10-04. Not a lock. Does not replace sky v1. Zone A files were not edited.
+
+Upper band added: 9 slices, azimuth 40°, elevation 12.0° to 30.5° (span 18.5°), each file 1280×620. Presented mag 0.993 (upper), horizon still 0.990. Five kept step-1b stills plus three new 16:9 frames. The fourth new frame had a desert floor and was not installed whole; only the sky above that floor was cropped in. Tops of the other eight were cropped so every layer is the same size. No column was cloned or mirrored. Nothing above 30.5° is painted. Dust gain stays 0.
+
+`python3 tools/sky/check.py --manifest packs/zone-b/src/sky/sky.json` (2026-10-04, step 1c): 59 failures. Horizon joins, motif, exposure swing 69, and the 10.0 s combined repeat are the step 1b rows. The new rows are motif hits on `upper/sky-0.jpg` through `upper/sky-8.jpg`. `python3 tools/sky/selftest.py` PASS.
+
 **Cascade Verdance.** Same skeleton. The horizon band keeps a soft tree line with no landmark. Living layers lean on the mist loop rather than a bright nebula, still at magnification ≤ 1 and still one instanced draw. The cap is canopy-gap sky, not a black disk.
 
 ## Pitfalls

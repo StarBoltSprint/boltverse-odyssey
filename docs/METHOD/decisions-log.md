@@ -50,6 +50,7 @@ a change is a new row that cites the old one. Times are Paris.
 
 | 2026-10-04 | Owner GO 2026-10-04: zone B Ember Mesa started with the generic ground + sky recipes. Pack `packs/zone-b/` is IN TEST. It does not replace a locked recipe. | IN TEST | SmiR 2026-10-04, branch `zone-b-step1-ground-sky` |
 | 2026-10-04 | Zone B step 1b corrective, still IN TEST. Horizon band uses the full 1280×720 frames (−4.31° to 17.12°, mag 0.990). Zone A night bands are not referenced. Dust gain 0. Sky shell at 640 m, clip far 720 m, ground skirt to 480 m in the same mesh. Ground tile 1.42 m. Three yaw-locked butte cards outside the walk radius. Upper ring not installed (slice 5 failed twice; five slices cannot close at magnification ≤ 1). Sky gate 38 failures. Not a lock. | IN TEST | SmiR 2026-10-04, branch `zone-b-step1-ground-sky`, step 1b |
+| 2026-10-04 | Zone B step 1c fix pass, still IN TEST. Upper band 9×40°, 12.0°–30.5°, 1280×620, mag 0.993. Four new Imagine calls; one frame with a desert floor was not installed whole. Skirt rises 42 m and fades into the sky between 300 m and 460 m. Sky gate 59 failures. Hole above 30.5° remains. Not a lock. | IN TEST | SmiR 2026-10-04, branch `zone-b-step1-ground-sky`, step 1c |
 
 ## Contradictions found (2026-10-03 sweep)
 

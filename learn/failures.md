@@ -351,3 +351,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Two cooks, then stop. The crest slots stay in the manifest and play skips them when no hull is present. Boulders are the sky-line solids in this pass. |
 | Guard | `python3 tools/objsheet/sheet.py` adjacent height ±8% and area ±15%. The crest set fails height. No row detects "short and denser" before the scale attempt. |
 | Sources | `docs/METHOD/rocks.md` pitfalls. Views stay outside the repo. |
+
+### 2026-10-04 — skirt fogged to one colour leaves a hard edge
+
+| | |
+| --- | --- |
+| Take | Zone B step 1c. Wide shot. |
+| Defect | Mixing the far ground fully to the one sampled fog colour painted a flat slab. On the wide pose the slab met the sky as a line (luma jump 17, was 35 before the mix). |
+| Root cause | Law 67 keeps one fog colour, sampled across every horizon slice. A dark heading is darker than that average, so the slab and the local sky do not match. The post pass also caps fog at 0.6, so the sky never becomes the same flat colour. |
+| Fix | The skirt still rises. It mixes only 0.40 of the way toward that fog, then its alpha goes from 1 to 0 between 300 m and 460 m over the sky already drawn. The wide pose's largest 8-row luma jump fell to 3.5, and it is not at the horizon. |
+| Guard | No row measures this cliff. `tools/sky/check.py` does not see it. The wide JPEG is the check. |
+| Sources | `packs/zone-b/play/terrain.js`, `packs/zone-b/play/field.js`. Shots in `packs/zone-b/proof/step1c/`. |
