@@ -364,6 +364,46 @@ void main() {
         }
       }
     }
+    // Coarse skirt past the relief rim so a high camera still meets sky pixels.
+    // The first rings sit a few centimetres under the inner mesh (same height
+    // function) so the overlap does not z-fight. One mesh, one draw.
+    {
+      const FAR = 480;
+      const rings = 18;
+      const segs = 96;
+      const skirt0 = count;
+      for (let r = 0; r <= rings; r++) {
+        const t = r / rings;
+        const te = t * t;
+        for (let s = 0; s <= segs; s++) {
+          const th = (s / segs) * Math.PI * 2;
+          const inner = radiusAt(th) * 1.04;
+          const rad = inner + (FAR - inner) * te;
+          const x = Math.sin(th) * rad;
+          const z = Math.cos(th) * rad;
+          let y = heightAt(x, z);
+          if (r < 2) y -= 0.04 * (2 - r);
+          if (y < minH) minH = y;
+          if (y > maxH) maxH = y;
+          positions.push(x, y, z);
+          uvs.push(x / TILE, z / TILE);
+          const blend = familyBlend(x, z);
+          fams.push(blend.a, blend.b, blend.w);
+          masks.push(x / MASK_M, z / MASK_M);
+          count++;
+        }
+      }
+      const row = segs + 1;
+      for (let r = 0; r < rings; r++) {
+        for (let s = 0; s < segs; s++) {
+          const a = skirt0 + r * row + s;
+          const b = a + 1;
+          const c = a + row;
+          const d = c + 1;
+          idx.push(a, c, b, b, c, d);
+        }
+      }
+    }
     const vao = gl.createVertexArray();
     gl.bindVertexArray(vao);
     const vbo = gl.createBuffer();

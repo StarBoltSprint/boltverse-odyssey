@@ -156,7 +156,7 @@ void main() {
   float hu = uHasUpper > 0.5 ? max(0.008, uElH1 - uElU0) : 0.02;
   float uk = uHasHigh > 0.5 ? max(0.008, uElU1 - uElK0) : 0.02;
   float kc = max(0.008, uElK1 - uCapEl);
-  float wH = 1.0 - smoothstep(uElH1 - hu, uElH1, el);
+  float wH = smoothstep(uElH0, uElH0 + 0.004, el) * (1.0 - smoothstep(uElH1 - hu, uElH1, el));
   float wU = uHasUpper * bandWeight(el, uElU0, uElU1, hu, uk);
   float wK = uHasHigh * bandWeight(el, uElK0, uElK1, uk, kc);
   float wC = smoothstep(uCapEl - kc, min(uCapEl + 0.02, uElK1), el);
@@ -200,10 +200,7 @@ void main() {
   vec3 p = vec3(sin(az) * c, sin(el), cos(az) * c) * uRadius + uEye;
   gl_Position = uVP * vec4(p, 1.0);
   vec2 drift = vec2(aPhase.x + aPhase.y * uTime, aPhase.y * uTime * 0.15);
-  // Dust samples the upper band of its own frame (the moving threads). The lower
-  // frame is land and must not stamp a second horizon onto every tile.
-  vec2 base = vec2(aCorner.x, aCorner.y * 0.28 + 0.04);
-  vUv = base + drift * uScroll;
+  vUv = aCorner + drift * uScroll;
   vTile = aTile.xy;
   vMet = vec4(0.0);
   if (uMeteor > 0.5) {
@@ -2409,8 +2406,11 @@ function applySkyDisplay(display) {
   const k = find("high");
   if (h) { skyBand.h0 = deg(h.elBottomDeg); skyBand.h1 = deg(h.elTopDeg); skyBand.hAz = h.azimuthDeg || 45; }
   if (u) { skyBand.u0 = deg(u.elBottomDeg); skyBand.u1 = deg(u.elTopDeg); skyBand.uAz = u.azimuthDeg || 45; }
+  else { skyBand.u0 = 1.6; skyBand.u1 = 1.7; }
   if (k) { skyBand.k0 = deg(k.elBottomDeg); skyBand.k1 = deg(k.elTopDeg); skyBand.kAz = k.azimuthDeg || 45; }
+  else { skyBand.k0 = 1.72; skyBand.k1 = 1.85; }
   if (display.cap && display.cap.elStartDeg != null) skyBand.cap = deg(display.cap.elStartDeg);
+  else skyBand.cap = 1.78;
   const tile = (display.videoTiles || [])[0];
   if (tile && tile.azimuthDeg && tile.elevationDeg) {
     skyTileAzDeg = tile.azimuthDeg;
@@ -2551,13 +2551,17 @@ async function boot() {
       skyHigh = makeSkyArray(highImgs.map((im) => downscaleWidth(im, 4096)), "sky-high");
       releaseImages(highImgs);
     }
-    const capFile = (skyManifest.display && skyManifest.display.cap && skyManifest.display.cap.file) || "zenith.png";
-    const zenithImg = await loadImage(absUrl(PACK + "/src/sky/" + capFile));
-    zenithSrc = zenithImg.width;
-    const prevZ = zenithTex;
-    zenithTex = makeStill(zenithImg, "sky-zenith");
-    if (prevZ) gl.deleteTexture(prevZ);
-    releaseImages([zenithImg]);
+    const capFile = skyManifest.display && skyManifest.display.cap && skyManifest.display.cap.file;
+    if (capFile) {
+      const zenithImg = await loadImage(absUrl(PACK + "/src/sky/" + capFile));
+      zenithSrc = zenithImg.width;
+      const prevZ = zenithTex;
+      zenithTex = makeStill(zenithImg, "sky-zenith");
+      if (prevZ) gl.deleteTexture(prevZ);
+      releaseImages([zenithImg]);
+    } else {
+      zenithSrc = 0;
+    }
     const layers = (skyManifest.layers || []).slice(0, 3);
     skyLayerMeta = [0, 1, 2].map((i) => {
       const l = layers[i];
