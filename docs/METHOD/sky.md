@@ -187,6 +187,12 @@ Upper band added: 9 slices, azimuth 40°, elevation 12.0° to 30.5° (span 18.5�
 
 `python3 tools/sky/check.py --manifest packs/zone-b/src/sky/sky.json` (2026-10-04, step 1c): 59 failures. Horizon joins, motif, exposure swing 69, and the 10.0 s combined repeat are the step 1b rows. The new rows are motif hits on `upper/sky-0.jpg` through `upper/sky-8.jpg`. `python3 tools/sky/selftest.py` PASS.
 
+**Ember Mesa (zone B step 1d) — spectacle pass, IN TEST.** 2026-10-04. Not a lock. Does not replace sky v1. Zone A files were not edited. Horizon and upper slice files were not recooked.
+
+The ringed planet lives in horizon slice 2 (heading about 75°). Chase and eye-level look at heading 255° with a 22.7° horizontal field, so that slice is outside the frame. Step 1d places one eye-locked card from a keyed crop of that planet: `packs/zone-b/src/sky/planet.png` (493×228), heading 259°, elevation 13.5°, distance 380 m, magnification cap 0.94 (`planet.json`). The card is drawn after the buttes, depth-tested, and it does not write depth. Alpha below 0.04 is discarded. The post pass grades the frame once; the card shader does not grade this key. One new Imagine edit. Presented mag on the proof poses stays 0.993. drawCalls 8. Texture bytes 141312386 (134.8 MiB).
+
+`python3 tools/sky/check.py --manifest packs/zone-b/src/sky/sky.json` (2026-10-04, step 1d): 59 failures, the same rows as step 1c. `python3 tools/sky/selftest.py` PASS. Nothing above 30.5° is painted.
+
 **Cascade Verdance.** Same skeleton. The horizon band keeps a soft tree line with no landmark. Living layers lean on the mist loop rather than a bright nebula, still at magnification ≤ 1 and still one instanced draw. The cap is canopy-gap sky, not a black disk.
 
 ## Pitfalls

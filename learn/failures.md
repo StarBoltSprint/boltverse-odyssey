@@ -362,3 +362,25 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | The skirt still rises. It mixes only 0.40 of the way toward that fog, then its alpha goes from 1 to 0 between 300 m and 460 m over the sky already drawn. The wide pose's largest 8-row luma jump fell to 3.5, and it is not at the horizon. |
 | Guard | No row measures this cliff. `tools/sky/check.py` does not see it. The wide JPEG is the check. |
 | Sources | `packs/zone-b/play/terrain.js`, `packs/zone-b/play/field.js`. Shots in `packs/zone-b/proof/step1c/`. |
+
+### 2026-10-04 — a landmark painted into one off-heading slice is invisible in the chase
+
+| | |
+| --- | --- |
+| Take | Zone B step 1d. Chase and eye-level, heading 255°. |
+| Defect | After step 1c the ringed planet was not in the chase or the eye-level frame. |
+| Root cause | The planet is painted only in horizon slice 2, near heading 75°. Those two poses look at heading 255° with a 22.7° horizontal field, so the slice is outside the frame. |
+| Fix | One eye-locked alpha card, keyed from that planet, at heading 259°, elevation 13.5°, 380 m, magnification cap 0.94. Drawn after the buttes. Depth test on, depth write off. |
+| Guard | No row checks that a named landmark is inside the chase frustum. `tools/sky/check.py` does not see it. The chase and eye-level JPEGs are the check. |
+| Sources | `packs/zone-b/src/sky/planet.json`, `packs/zone-b/play/play.js` `drawPlanet`. Shots in `packs/zone-b/proof/step1d/`. |
+
+### 2026-10-04 — a short skirt uncovers the skyline and brings the wide dark band back
+
+| | |
+| --- | --- |
+| Take | Zone B step 1d. Wide pose. Cites the skirt-fog entry above. That entry is not rewritten. |
+| Defect | Skirt lift 8 m put a sharp dark line back on the wide shot (8-row luma jump 12.4 near row 328). Lift 42 m had hidden the sun and the mesa tops. |
+| Root cause | The wide camera (eye y = 18) sees the dark painted foreground under the land, about elevation +0.9°. The chase eye (y about 2.3) sees the same skirt covering the low mesa tops on heading 255. One rise cannot serve both cameras while the paintings stay eye-locked. |
+| Fix | Stop at lift 28 m, ground fog mix 0.18, post fog density 0.0035 and cap 0.16. Wide jump +8.4 at row 256, and it reads as haze. The sun and the planet stay on heading 255. The painted mesa row stays visible at heading 90. The low painted tops on the sun heading stay under the skirt. |
+| Guard | No row measures this cliff. The wide JPEG is the check. Do not drop the skirt to 8 m to chase the painted tops on heading 255. |
+| Sources | `packs/zone-b/play/field.js` `SKIRT_LIFT`, `packs/zone-b/play/terrain.js`. Shots in `packs/zone-b/proof/step1d/`. |
