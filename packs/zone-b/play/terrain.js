@@ -199,7 +199,8 @@ in vec2 vUv;
 out vec4 o;
 ${GRADE_FN}
 void main() {
-  vec3 col = texture(uScene, vUv).rgb;
+  vec4 scene = texture(uScene, vUv);
+  vec3 col = scene.rgb;
   float depth = texture(uDepth, vUv).r;
   float ndc = depth * 2.0 - 1.0;
   float n = uNearFar.x;
@@ -207,6 +208,7 @@ void main() {
   float viewZ = (2.0 * n * f) / (f + n - ndc * (f - n));
   if (uFogOn < 0.5) { o = vec4(col, 1.0); return; }
   float fog = clamp(1.0 - exp(-uFogDensity * viewZ), 0.0, uFogCap);
+  if (scene.a < 0.012) fog *= 0.22;
   col = mix(col, uFog, fog);
   vec3 bloom = texture(uBloom, vUv).rgb;
   col += bloom * uBloomGain * uBloomOn;

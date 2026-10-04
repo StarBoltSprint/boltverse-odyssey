@@ -5,6 +5,7 @@
 import { loadWorldHull } from "./hullmesh.js";
 import { createTerrain } from "./terrain.js";
 import { mountRocks } from "./rocks.js";
+import { mountMesas } from "./mesas.js";
 
 const PACK = "packs/zone-b";
 const DEBUG = new URLSearchParams(location.search).has("debug");
@@ -319,6 +320,14 @@ uniform int uMode;
 uniform int uKey;
 uniform float uAlpha;
 uniform float uPost;
+uniform vec2 uUvOff;
+uniform vec2 uUvScale;
+uniform float uSpin;
+uniform sampler2D uVid;
+uniform vec2 uPngSize;
+uniform vec3 uDisk;
+uniform vec3 uVidDisk;
+uniform vec2 uVidSize;
 in vec2 vUv;
 out vec4 o;
 vec3 grade(vec3 x) {
@@ -329,7 +338,8 @@ vec3 grade(vec3 x) {
   return clamp(y, 0.0, 1.0);
 }
 void main() {
-  vec4 c = texture(uTex, vUv);
+  vec2 uv = uUvOff + vUv * uUvScale;
+  vec4 c = texture(uTex, uv);
   if (uKey == 1) {
     float mx = max(c.r, c.b);
     float dg = c.g - mx;
@@ -338,10 +348,22 @@ void main() {
     float lum = dot(c.rgb, vec3(0.299, 0.587, 0.114));
     if (lum < 0.07) discard;
   } else if (uKey == 4) {
-    if (c.a < 0.04) discard;
+    if (c.a < 0.45) discard;
+    if (uSpin > 0.5 && uDisk.z > 1.0) {
+      vec2 pngPx = vec2(uv.x * uPngSize.x, (1.0 - uv.y) * uPngSize.y);
+      vec2 d = pngPx - uDisk.xy;
+      float rad = length(d) / uDisk.z;
+      float m = 1.0 - smoothstep(0.72, 0.98, rad);
+      float s = uVidDisk.z / uDisk.z;
+      vec2 vidPx = d * s + uVidDisk.xy;
+      vec2 vidUv = vec2(vidPx.x / uVidSize.x, 1.0 - vidPx.y / uVidSize.y);
+      if (vidUv.x < 0.0 || vidUv.y < 0.0 || vidUv.x > 1.0 || vidUv.y > 1.0) m = 0.0;
+      c.rgb = mix(c.rgb, texture(uVid, vidUv).rgb, m);
+    }
   }
   if (uMode == 1) o = vec4(uId, 1.0);
   else if (uKey == 1 || uKey == 3) o = vec4(uPost > 0.5 ? grade(c.rgb) : c.rgb, uAlpha);
+  else if (uKey == 4) o = vec4(c.rgb, 0.004);
   else o = vec4(c.rgb, c.a * uAlpha);
 }`);
 
@@ -418,6 +440,14 @@ const cardLoc = {
   key: gl.getUniformLocation(cardProg, "uKey"),
   alpha: gl.getUniformLocation(cardProg, "uAlpha"),
   post: gl.getUniformLocation(cardProg, "uPost"),
+  uvOff: gl.getUniformLocation(cardProg, "uUvOff"),
+  uvScale: gl.getUniformLocation(cardProg, "uUvScale"),
+  spin: gl.getUniformLocation(cardProg, "uSpin"),
+  vid: gl.getUniformLocation(cardProg, "uVid"),
+  pngSize: gl.getUniformLocation(cardProg, "uPngSize"),
+  disk: gl.getUniformLocation(cardProg, "uDisk"),
+  vidDisk: gl.getUniformLocation(cardProg, "uVidDisk"),
+  vidSize: gl.getUniformLocation(cardProg, "uVidSize"),
 };
 
 const P = new Float32Array(16);
@@ -651,7 +681,18 @@ let groundMagNow = 0;
 let butteMagNow = 0;
 let planetMagNow = 0;
 const butteCards = [];
+let mesaLayer = null;
 let planetCard = null;
+let planetVideo = null;
+let planetTex = null;
+// Disk fit of packs/zone-b/src/sky/planet.png and planet.mp4, pixels from the top left.
+const PLANET_DISK = {
+  png: [218, 115, 99],
+  vid: [358, 242, 216],
+  vidW: 848,
+  vidH: 480,
+};
+const planetUv = { off: [0, 0], scale: [1, 1] };
 let nearestM = 4;
 let camRightNow = [1, 0, 0];
 let camBoom = BOOM;
@@ -1742,7 +1783,7 @@ function drawFog(mode, eye) {
   gl.depthMask(true);
 }
 
-function drawCard(mode, tex, key, cx, cy, cz, y0, w, h, idIndex, alpha) {
+function drawCard(mode, tex, key, cx, cy, cz, y0, w, h, idIndex, alpha, uvOff, uvScale, spin) {
   if (!tex) return;
   const rgb = idRgb(mode === 1 ? idIndex : 0);
   gl.useProgram(cardProg);
@@ -1759,26 +1800,54 @@ function drawCard(mode, tex, key, cx, cy, cz, y0, w, h, idIndex, alpha) {
   gl.uniform1i(cardLoc.key, key);
   gl.uniform1f(cardLoc.alpha, alpha);
   gl.uniform1f(cardLoc.post, useRelief && terrain.postEnabled() && key === 1 && mode === 0 ? 1 : 0);
+  gl.uniform2f(cardLoc.uvOff, uvOff ? uvOff[0] : 0, uvOff ? uvOff[1] : 0);
+  gl.uniform2f(cardLoc.uvScale, uvScale ? uvScale[0] : 1, uvScale ? uvScale[1] : 1);
+  gl.uniform1f(cardLoc.spin, spin ? 1 : 0);
+  gl.uniform1i(cardLoc.vid, 1);
+  gl.uniform2f(cardLoc.pngSize, planetCard ? planetCard.srcW : 1, planetCard ? planetCard.srcH : 1);
+  gl.uniform3f(cardLoc.disk, PLANET_DISK.png[0], PLANET_DISK.png[1], PLANET_DISK.png[2]);
+  const vw = planetVideo && planetVideo.videoWidth ? planetVideo.videoWidth : PLANET_DISK.vidW;
+  const vh = planetVideo && planetVideo.videoHeight ? planetVideo.videoHeight : PLANET_DISK.vidH;
+  const sx = vw / PLANET_DISK.vidW;
+  const sy = vh / PLANET_DISK.vidH;
+  gl.uniform3f(cardLoc.vidDisk, PLANET_DISK.vid[0] * sx, PLANET_DISK.vid[1] * sy, PLANET_DISK.vid[2] * (sx + sy) * 0.5);
+  gl.uniform2f(cardLoc.vidSize, vw, vh);
+  gl.activeTexture(gl.TEXTURE1);
+  gl.bindTexture(gl.TEXTURE_2D, planetTex || tex);
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_2D, tex);
   gl.uniform1i(cardLoc.tex, 0);
   // Hero is a card. Depth against a hull that bulges past its footprint
   // splits the id mask into two blobs. The camera keeps the eye behind him.
-  // Key 4 is an alpha cutout (the ringed planet): blend, test depth, do not write it.
+  // Key 4 writes alpha 0.004 as a fog sentinel. Blend stays off so the RGB replaces the sky.
   if (key === 1) gl.disable(gl.DEPTH_TEST);
   else gl.enable(gl.DEPTH_TEST);
   gl.depthMask(key !== 1 && key !== 4);
-  if (key === 4) {
-    gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-  } else {
-    gl.disable(gl.BLEND);
-  }
+  gl.disable(gl.BLEND);
   gl.drawArrays(gl.TRIANGLES, 0, 6);
   drawCalls++;
   gl.enable(gl.DEPTH_TEST);
   gl.depthMask(true);
   gl.disable(gl.BLEND);
+}
+
+function uploadPlanet() {
+  const v = planetVideo;
+  if (!v || v.readyState < 2 || !planetTex) return false;
+  const stamp = v.currentTime;
+  if (videoStamp.get("planet") === stamp) return true;
+  if (v.paused && videoStamp.has("planet")) return true;
+  videoStamp.set("planet", stamp);
+  gl.bindTexture(gl.TEXTURE_2D, planetTex);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, v);
+  gl.generateMipmap(gl.TEXTURE_2D);
+  trackTex("planet-video", Math.ceil((v.videoWidth || 960) * (v.videoHeight || 480) * 4 * 4 / 3));
+  return true;
 }
 
 function drawPlanet(mode, eye) {
@@ -1790,7 +1859,8 @@ function drawPlanet(mode, eye) {
   const cx = eye[0] + Math.sin(az) * c * p.distanceM;
   const cy = eye[1] + Math.sin(el) * p.distanceM - p.worldH * 0.5;
   const cz = eye[2] + Math.cos(az) * c * p.distanceM;
-  drawCard(mode, p.tex, 4, cx, cy, cz, 0, p.worldW, p.worldH, labelOf("planet"), 1);
+  const spinning = uploadPlanet();
+  drawCard(mode, p.tex, 4, cx, cy, cz, 0, p.worldW, p.worldH, labelOf("planet"), 1, null, null, spinning ? 1 : 0);
 }
 
 function updateHeroQuad(eye) {
@@ -1839,12 +1909,7 @@ function measureMag(eye) {
     if (pm > objectMag) objectMag = pm;
   }
   butteMagNow = 0;
-  for (let i = 0; i < butteCards.length; i++) {
-    const b = butteCards[i];
-    const d = Math.max(0.5, Math.hypot(eye[0] - b.x, eye[2] - b.z));
-    const m = (FOCAL * b.h) / (d * b.srcH);
-    if (m > butteMagNow) butteMagNow = m;
-  }
+  if (mesaLayer) butteMagNow = mesaLayer.mag(eye, FOCAL);
   planetMagNow = 0;
   if (planetCard) {
     planetMagNow = (FOCAL * planetCard.worldH) / (planetCard.distanceM * planetCard.srcH);
@@ -1923,26 +1988,10 @@ function render(mode) {
     rockLayer.draw(vpM);
     drawCalls += rockLayer.draws;
   }
-  const savedRight = [rightBuf[0], rightBuf[1], rightBuf[2]];
-  const savedUp = [upBuf[0], upBuf[1], upBuf[2]];
-  for (let i = 0; i < butteCards.length; i++) {
-    const b = butteCards[i];
-    const len = Math.hypot(b.x, b.z) || 1;
-    rightBuf[0] = b.z / len;
-    rightBuf[1] = 0;
-    rightBuf[2] = -b.x / len;
-    upBuf[0] = 0;
-    upBuf[1] = 1;
-    upBuf[2] = 0;
-    const y = useRelief ? terrain.heightAt(b.x, b.z) + terrain.skirtLift(b.x, b.z) : 0;
-    drawCard(mode, b.tex, 3, b.x, y, b.z, b.y0 || 0, b.h * (b.srcW / b.srcH), b.h, labelOf("butte:" + i), 1);
+  if (mesaLayer) {
+    mesaLayer.draw(vpM, mode);
+    drawCalls += mesaLayer.draws;
   }
-  rightBuf[0] = savedRight[0];
-  rightBuf[1] = savedRight[1];
-  rightBuf[2] = savedRight[2];
-  upBuf[0] = savedUp[0];
-  upBuf[1] = savedUp[1];
-  upBuf[2] = savedUp[2];
   drawPlanet(mode, eye);
   if (showGate && uploadVideo(gateVideo, gateTex, "gate")) {
     const g = gatePoint();
@@ -2056,6 +2105,7 @@ function activeVideoCount() {
   if (videoOn(bolt)) n++;
   if (videoOn(gateVideo)) n++;
   for (let i = 0; i < skyVideos.length; i++) if (videoOn(skyVideos[i])) n++;
+  if (videoOn(planetVideo)) n++;
   return n;
 }
 
@@ -2601,23 +2651,19 @@ async function boot() {
       rockLayer = null;
     }
     try {
-      const butteRes = await fetch(absUrl(PACK + "/src/buttes/manifest.json"));
-      if (butteRes.ok) {
-        const butteMan = await butteRes.json();
-        const cards = butteMan.cards || [];
-        for (let i = 0; i < cards.length; i++) {
-          const c = cards[i];
-          const img = await loadImage(absUrl(PACK + "/src/buttes/" + c.file));
-          const tex = makeStill(img, "butte-" + i);
-          butteCards.push({
-            tex, x: c.x, z: c.z, h: c.h, y0: c.y0 || 0,
-            srcW: img.width, srcH: img.height,
-          });
-          releaseImages([img]);
-        }
-      }
+      mesaLayer = await mountMesas(gl, {
+        absUrl,
+        loadImage,
+        trackTex,
+        labelOf,
+        heightAt: (x, z) => (useRelief ? terrain.heightAt(x, z) : 0),
+        skirtLift: (x, z) => (useRelief ? terrain.skirtLift(x, z) : 0),
+        manifestUrl: absUrl(PACK + "/src/buttes/manifest.json"),
+        root: PACK + "/src/buttes/",
+      });
     } catch (err) {
-      console.warn("buttes", err);
+      console.warn("mesas", err);
+      mesaLayer = null;
     }
     try {
       const planetRes = await fetch(absUrl(PACK + "/src/sky/planet.json"));
@@ -2638,6 +2684,16 @@ async function boot() {
           worldW: worldH * (img.width / img.height),
         };
         releaseImages([img]);
+        if (man.video) {
+          planetTex = gl.createTexture();
+          gl.bindTexture(gl.TEXTURE_2D, planetTex);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+          planetVideo = videoEl(absUrl(PACK + "/src/sky/" + man.video));
+          planetVideo.loop = true;
+        }
       }
     } catch (err) {
       console.warn("planet", err);
@@ -2732,6 +2788,17 @@ async function boot() {
         break;
       }
     }
+    if (planetVideo) {
+      await new Promise((r) => {
+        if (planetVideo.readyState >= 2) r();
+        else {
+          planetVideo.addEventListener("loadeddata", () => r(), { once: true });
+          planetVideo.addEventListener("error", () => r(), { once: true });
+          setTimeout(r, 12000);
+        }
+      });
+      await planetVideo.play().catch(() => {});
+    }
     await idleVideo.play().catch(() => {});
     await new Promise((r) => {
       if (idleVideo.readyState >= 2) r();
@@ -2761,6 +2828,16 @@ async function boot() {
       setPost(on) { terrain.setPost(on); },
       groundInfo() { return terrain.info(); },
       heightAt(x, z) { return terrain.heightAt(x, z); },
+      mesaInfo() { return mesaLayer ? mesaLayer.info() : null; },
+      planetInfo() {
+        return planetCard ? {
+          worldH: planetCard.worldH,
+          worldW: planetCard.worldW,
+          mag: planetMagNow,
+          video: !!(planetVideo && planetVideo.readyState >= 2),
+          uv: { off: planetUv.off.slice(), scale: planetUv.scale.slice() },
+        } : null;
+      },
     };
     render(0);
     paintHud();
