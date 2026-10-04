@@ -88,6 +88,8 @@ The 720×1600 phone is not filled. The shipped film is 640×1424. Cover on that 
 
 Chrome headless, viewport 360×800, device pixel ratio 2, page `packs/common/archives/_futurist_harness.html` (removed after the shots). The hall video was playing under the pause words and under the Archives list. `html.archives-cover` was set. Pack size on disk after the new film: `packs/zone-a` 105208030 bytes, `packs/common/archives` 7582731 bytes.
 
+The same Chrome viewport on `packs/zone-a/play/index.html` showed the paw, no `plate.jpg` in the page, and no debug HUD. A forced tap (the bob keeps the button moving, so a stability click waits) opened the pause menu on `art/hall-loop.mp4`, 640×1424, playing, CSS 320×712 at (20, 44). Menu words: Resume, Archives, Citadel, Settings. No page error. Shot: `/workspace/grokcli/out/archives/futurist/play-pause.png`.
+
 ## Known issues
 
 - Filling 720×1600 at scale ≤ 1 needs a file at least 720 wide and 1600 tall. The Imagine video is 640×1424. Aspect `9:20` was rejected before a file (`aspect_ratio must be one of: 1:1, 16:9, 9:16, 4:3, 3:4, 3:2, 2:3`). Resolution `1080p` was rejected before a file (`resolution_name must be one of: 480p, 720p`). Two image edits that asked for a taller plate returned 576×1280. That height miss stops here. The film is not enlarged, stretched, or edge-cloned.
