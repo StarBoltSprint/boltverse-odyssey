@@ -12,6 +12,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from colliders import body_field, covered_at, free_span, mesh_groups, sd_at, walk_line, wall_area  # noqa: E402
 from gate import build_gate  # noqa: E402
 from geom import pack_ruin  # noqa: E402
 from wreck import build_wreck  # noqa: E402
@@ -138,7 +139,7 @@ process.stdout.write(JSON.stringify({ badIn, badDome, n: pts.length }));
 
 
 def corridor_clear(numbers, x, z, keep):
-    """True when the keep circle stays off the run and the spawn bubble."""
+    """True when the footprint circle (radius `keep`) stays off the run and the spawn bubble."""
     script = r"""
 import { radiusAt } from "./packs/zone-a/play/field.js";
 const spawn = process.env.RUIN_SPAWN.split(",").map(Number);
@@ -208,6 +209,8 @@ def main():
     gate_dir.mkdir(parents=True)
     wreck_dir.mkdir(parents=True)
 
+    coll_opt = dict(numbers.get("collider") or {})
+    body_r = float(coll_opt.get("bodyRadiusM", 0.3))
     meshes, parts, report = build_gate(inbox, numbers)
     if not report.get("openingClear"):
         raise SystemExit("gate opening is blocked by faces")
@@ -221,9 +224,8 @@ def main():
             horiz = max(horiz, math.hypot(arr[i], arr[i + 2]))
     report["horizRadiusM"] = round(horiz, 3)
     report["yawRad"] = round(yaw, 4)
-    keep_g = horiz + report["minApproachM"]
-    report["keepRadiusM"] = round(keep_g, 3)
-    report["keepUsed"] = False
+    # No keep-out circle. The passage sits on the corridor; colliders follow the faces.
+    report["footprintRadiusM"] = round(horiz, 3)
     foot = footprint_ok(numbers, gx, gz, yaw, report["bounds"])
     report["footprint"] = foot
     if foot["badIn"]:
@@ -265,21 +267,67 @@ def main():
         )
     wx = float(numbers["wreck"]["x"])
     wz = float(numbers["wreck"]["z"])
-    keep_w = winfo["horizRadiusM"] + winfo["minApproachM"]
-    place_w = corridor_clear(numbers, wx, wz, keep_w)
+    foot_w = winfo["horizRadiusM"] + body_r
+    place_w = corridor_clear(numbers, wx, wz, foot_w)
     winfo["placement"] = place_w
-    winfo["keepRadiusM"] = round(keep_w, 3)
+    winfo["footprintRadiusM"] = winfo["horizRadiusM"]
     winfo["yawRad"] = round(math.radians(float(numbers["wreck"]["yawDeg"])), 4)
     if not place_w["clear"]:
-        raise SystemExit("wreck keep-out meets the corridor " + json.dumps(place_w))
+        raise SystemExit("wreck footprint meets the corridor " + json.dumps(place_w))
+
+    # Tight colliders from the faces, on flat ground at the seat. Openings must stay walkable.
+    coll = {"rule": "wall where a face crosses the body band; openings walkable; no keep-out", **coll_opt}
+    gsink = float(numbers["gate"]["sinkM"])
+    gfield = body_field(mesh_groups(meshes), gsink, coll_opt)
+    ob = report["openingBoxM"]
+    depth = float(report["depthM"])
+    ocx = 0.5 * (ob[0] + ob[1])
+    run = walk_line(gfield, (ocx, 3.0), (ocx, -depth - 3.0), body_r)
+    width_mid = max(free_span(gfield, ocx, -f * depth, ob[0] - 1.0, ob[1] + 1.0) for f in (0.25, 0.5, 0.75))
+    coll["gate"] = {
+        "groundLocalY": gsink,
+        "throughOpening": run,
+        "freeWidthM": round(width_mid, 3),
+        "underArch": covered_at(gfield, ocx, -0.5 * depth),
+        "pierWallM2": [
+            wall_area(gfield, lambda x, z: x < ob[0] + 0.05),
+            wall_area(gfield, lambda x, z: x > ob[1] - 0.05),
+        ],
+        "openingWallM2": wall_area(gfield, lambda x, z: ob[0] + 0.35 < x < ob[1] - 0.35 and -depth < z < 0),
+        "sealedCells": gfield["sealed"],
+    }
+    if not run["free"]:
+        raise SystemExit("gate opening is not walkable for the body radius " + json.dumps(run))
+    hang = winfo.get("hangar")
+    if hang:
+        wground = float(winfo.get("contactY", 0.0)) + float(numbers["wreck"]["sinkM"])
+        wfield = body_field(mesh_groups(wmeshes), wground, coll_opt)
+        hx = 0.5 * (hang["x"][0] + hang["x"][1])
+        pz = hang["portZ"]
+        inside = walk_line(wfield, (hx, pz + 3.0), (hx, pz - 1.5), body_r)
+        deepest = 0.0
+        d = 0.0
+        while d < 10.0 and sd_at(wfield, hx, pz - d) >= body_r:
+            deepest = d
+            d += 0.05
+        coll["wreck"] = {
+            "groundLocalY": round(wground, 3),
+            "intoHangar": inside,
+            "hangarDepthM": round(deepest, 3),
+            "coveredInside": covered_at(wfield, hx, pz - 1.0),
+            "sealedCells": wfield["sealed"],
+        }
+        if not inside["free"]:
+            raise SystemExit("wreck hangar is not walkable for the body radius " + json.dumps(inside))
     if place_w["far"] > float(numbers["skyRadiusM"]) - 2:
         raise SystemExit("wreck can sit outside the sky dome")
     if not place_w["inside"]:
         raise SystemExit("wreck is outside the walkable rim")
 
     manifest = {
-        "schema": "ruins-pack/1",
+        "schema": "ruins-pack/2",
         "kit": args.kit,
+        "collider": coll_opt,
         "objects": [
             {
                 "id": "gate",
@@ -302,8 +350,10 @@ def main():
                 "openingHeightM": report["openingHeightM"],
                 "minApproachM": report["minApproachM"],
                 "horizRadiusM": report["horizRadiusM"],
-                "keepRadiusM": report["keepRadiusM"],
-                "colliders": [],
+                "footprintRadiusM": report["footprintRadiusM"],
+                "depthM": report["depthM"],
+                "openingBoxM": report["openingBoxM"],
+                "openingTopM": report["openingBoxM"][3],
             },
             {
                 "id": "wreck",
@@ -320,29 +370,29 @@ def main():
                 "texelsPerM": winfo["texelsPerM"],
                 "minApproachM": winfo["minApproachM"],
                 "horizRadiusM": winfo["horizRadiusM"],
-                "keepRadiusM": winfo["keepRadiusM"],
-                "colliders": [],
+                "contactY": winfo.get("contactY", 0.0),
+                "hangar": winfo.get("hangar"),
             },
         ],
     }
     (pack / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
-    measure = {"gate": report, "gateParts": parts, "wreck": winfo, "wreckParts": wparts}
+    measure = {"gate": report, "gateParts": parts, "wreck": winfo, "wreckParts": wparts, "colliders": coll}
     (pack / "measure.json").write_text(json.dumps(measure, indent=2) + "\n")
     numbers_path.write_text(json.dumps(numbers, indent=2) + "\n")
-    # Solved centre is written back. The keep radius is recorded and is not a wall.
+    # Solved gate centre is written back. Colliders are rebuilt from the faces in play.
     print(json.dumps({
         "kit": args.kit,
-        "gateKeep": report["keepRadiusM"],
         "gateApproach": report["minApproachM"],
         "gateHeight": report["heightM"],
-        "gateOpening": report["openingWidthM"],
+        "gateOpening": coll["gate"],
+        "gateOpeningWidthM": report["openingWidthM"],
         "gateDepth": report["depthM"],
         "gateX": round(gx, 3),
         "gateZ": round(gz, 3),
         "nearTexels": report["nearTexelsPerM"],
-        "wreckKeep": winfo["keepRadiusM"],
         "wreckApproach": winfo["minApproachM"],
         "wreckHeight": winfo["heightM"],
+        "wreckHangar": coll.get("wreck"),
         "gateFoot": foot["badIn"] == 0 and foot["badDome"] == 0,
         "wreckClear": place_w["clear"],
     }, indent=2))

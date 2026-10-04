@@ -28,12 +28,21 @@
     "gridStepPx": 5
   },
   "wreck": {
-    "lengthM": 14,
+    "lengthM": 32,
     "x": -24.0,
-    "z": 12.0,
-    "yawDeg": 128,
-    "pitchDeg": -14,
-    "sinkM": 0.85,
-    "howlLength": 224
+    "z": 14.0,
+    "yawDeg": 205,
+    "pitchDeg": -2,
+    "sinkM": 0.05,
+    "howlLength": 224,
+    "seat": "sill"
+  },
+  "collider": {
+    "bodyRadiusM": 0.3,
+    "stepM": 0.25,
+    "clearM": 1.3,
+    "cellM": 0.1,
+    "voxM": 0.15,
+    "padM": 1.2
   }
 }

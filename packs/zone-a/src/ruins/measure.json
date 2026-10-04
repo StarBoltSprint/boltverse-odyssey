@@ -42,6 +42,12 @@
       9.32,
       -3.41
     ],
+    "openingBoxM": [
+      -5.021,
+      4.421,
+      0.055,
+      18.585
+    ],
     "quads": 26814,
     "bounds": {
       "min": [
@@ -102,8 +108,7 @@
     ],
     "horizRadiusM": 10.53,
     "yawRad": -2.5891,
-    "keepRadiusM": 59.462,
-    "keepUsed": false,
+    "footprintRadiusM": 10.53,
     "footprint": {
       "badIn": 0,
       "badDome": 0,
@@ -230,39 +235,62 @@
       0.776,
       17
     ],
-    "lengthM": 14.0,
-    "heightM": 3.997,
-    "texelsPerM": 160.07,
-    "minApproachM": 11.201,
-    "horizRadiusM": 6.94,
+    "lengthM": 32.0,
+    "heightM": 4.116,
+    "texelsPerM": 70.03,
+    "minApproachM": 25.603,
+    "horizRadiusM": 16.068,
     "contact": [
-      6.165,
-      -0.003
+      -3.678,
+      1.867
     ],
+    "contactY": 1.368,
+    "seat": "sill",
+    "hangar": {
+      "x": [
+        -6.766,
+        -0.61
+      ],
+      "sillY": [
+        0.834,
+        1.368
+      ],
+      "lintelY": [
+        2.932,
+        3.279
+      ],
+      "portZ": 1.723,
+      "clearM": 1.814,
+      "mid": [
+        -3.678,
+        1.368,
+        1.867
+      ]
+    },
     "bounds": {
       "min": [
-        -6.939,
+        -16.039,
         0.0,
-        -0.888
+        -2.031
       ],
       "max": [
-        6.811,
-        3.997,
-        0.899
+        15.996,
+        4.116,
+        2.055
       ]
     },
     "howlPass": true,
     "skinNacelles": 0,
     "skinBells": 0,
     "placement": {
-      "cord": 29.042766600878995,
-      "bubbleD": 31.622776601683793,
-      "far": 69.98654357116469,
+      "cord": 30.102605129345406,
+      "bubbleD": 33.28663395418648,
+      "far": 70.57317329531308,
       "inside": true,
       "clear": true
     },
-    "keepRadiusM": 18.141,
-    "yawRad": 2.234
+    "footprintRadiusM": 16.068,
+    "yawRad": 3.5779
   },
   "wreckParts": [
     {
@@ -381,5 +409,39 @@
       "inpaintCall": null,
       "note": "opening kept by the loft; no faces fill that gap"
     }
-  ]
+  ],
+  "colliders": {
+    "rule": "wall where a face crosses the body band; openings walkable; no keep-out",
+    "bodyRadiusM": 0.3,
+    "stepM": 0.25,
+    "clearM": 1.3,
+    "cellM": 0.1,
+    "voxM": 0.15,
+    "padM": 1.2,
+    "gate": {
+      "groundLocalY": 0.18,
+      "throughOpening": {
+        "minClearM": 2.878,
+        "free": true
+      },
+      "freeWidthM": 7.12,
+      "underArch": true,
+      "pierWallM2": [
+        17.6,
+        26.22
+      ],
+      "openingWallM2": 9.2,
+      "sealedCells": 5178
+    },
+    "wreck": {
+      "groundLocalY": 1.418,
+      "intoHangar": {
+        "minClearM": 1.756,
+        "free": true
+      },
+      "hangarDepthM": 3.25,
+      "coveredInside": true,
+      "sealedCells": 0
+    }
+  }
 }
