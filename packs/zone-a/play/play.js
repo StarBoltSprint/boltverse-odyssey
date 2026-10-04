@@ -1659,7 +1659,12 @@ function solveCamera() {
   if (snapPose) camSm.ground = rawG;
   else if (dt > 0) camSm.ground = chase(camSm.ground, rawG, dt, 0.28);
   eyeBuf[1] = camSm.eye + camSm.ground;
-  if (useRelief) eyeBuf[1] = smax(eyeBuf[1], terrain.eyeFloor(eyeBuf[0], eyeBuf[2], GROUND_MAG_TARGET), 0.3);
+  // Inside a ruin's reach the chase eye is main's eye. The eye-floor and the
+  // hull shell run only in the open: fed into the ruin springs they kink the
+  // line and the eye acceleration reverses (camera shake).
+  const chaseBoom = Math.hypot(state.x - eyeBuf[0], state.z - eyeBuf[2]);
+  const ruinOwns = !!(ruinLayer && ruinLayer.near(state.x, state.z, chaseBoom + 6));
+  if (useRelief && !ruinOwns) eyeBuf[1] = smax(eyeBuf[1], terrain.eyeFloor(eyeBuf[0], eyeBuf[2], GROUND_MAG_TARGET), 0.3);
   const rawFeet = feetY();
   if (snapPose) camSm.feet = rawFeet;
   else if (dt > 0) camSm.feet = chase(camSm.feet, rawFeet, dt, 0.22);
@@ -1672,10 +1677,10 @@ function solveCamera() {
     eyeBuf[2] = state.z - backZ / backL * MIN_BOOM;
     backL = MIN_BOOM;
   }
-  clearSolids(eyeBuf);
-  if (useRelief) eyeBuf[1] = Math.max(eyeBuf[1], terrain.eyeFloor(eyeBuf[0], eyeBuf[2], GROUND_MAG_TARGET));
-  // Ruin camera clearance is the final authority when inside a gate or wreck;
-  // keep polish eye-floor/solid guards upstream so they cannot shake the ruin rig.
+  if (!ruinOwns) {
+    clearSolids(eyeBuf);
+    if (useRelief) eyeBuf[1] = Math.max(eyeBuf[1], terrain.eyeFloor(eyeBuf[0], eyeBuf[2], GROUND_MAG_TARGET));
+  }
   ruinBoom(dt, snapPose);
   camBoom = Math.hypot(state.x - eyeBuf[0], state.z - eyeBuf[2]);
   stepLook(dt);

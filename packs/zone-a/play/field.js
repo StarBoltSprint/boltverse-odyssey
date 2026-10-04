@@ -10,13 +10,12 @@ export const MICRO = 0.1;
 
 // Surface-aware ground UV (uvfield.js). Null = planar x / TILE, z / TILE.
 let uvField = null;
-const uvTmp = [0, 0];
 
 export function setUvField(f) {
   uvField = f;
 }
 
-/** Ground tile UV (tile units) at a world point: albedo and micro relief share it. */
+/** Ground tile UV (tile units) at a world point. Albedo only; relief height stays planar. */
 export function uvAt(x, z, out) {
   return uvOf(uvField, x, z, TILE, out || [0, 0]);
 }
@@ -140,8 +139,10 @@ export function microAt(x, z) {
   const fam = familyAt(x, z);
   const map = maps[fam];
   if (!map) return 0;
-  uvOf(uvField, x, z, TILE, uvTmp);
-  const byte = sampleMap(map, uvTmp[0], uvTmp[1]);
+  // Height stays on the planar tile grid. The surface UV warps albedo only.
+  // Sampling this bump through that field shifts the floor by up to 0.2 m and
+  // drops a hangar deck face into Bolt's body band, so the bay reads as a wall.
+  const byte = sampleMap(map, x / TILE, z / TILE);
   const hp = (byte - 128) / 100;
   return hp * MICRO;
 }

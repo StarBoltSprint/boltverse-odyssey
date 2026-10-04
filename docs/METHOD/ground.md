@@ -127,7 +127,8 @@ allowed for shape; zone A used analytic features.
 narrower than ~20 m. Taller cliffs are objects, not relief. Keep a raised boundary inside the same limits (or make it objects).
 
 **Micro relief from the images** (the approved per-pixel depth carrier, law 59): `microAt = MICRO_family ·
-(h_family(uvAt(x, z)) − 128)/100`, bilinear, wrapped, world-locked with the albedo (same UV as the albedo, §6b). Zone A: `MICRO = 0.1 m` for every
+(h_family(x / TILE, z / TILE) − 128)/100`, bilinear, wrapped, world-locked on the planar tile grid. The surface UV (§6b)
+warps albedo only: sampling the bump through it moved the floor enough to close the wreck hangar. Zone A: `MICRO = 0.1 m` for every
 family, sampled from the `h` of the family's first slot.
 
 **Mesh** (`terrain.js buildMesh`): one regular grid, n = 300 cells across `2 × 1.08 × maxRadius` (zone A step 0.435 m,
@@ -161,7 +162,7 @@ Planar top-down UV stretches each Imagine texel by `1 / cos(slope)` along the sl
   each edge wants texture length = 3D length / `TILE` (the symmetric square root of `I + ∇h∇hᵀ`, macro relief only).
   Weighted least squares (Jacobi-preconditioned conjugate gradient, 160 iterations, then 7 × 30), then reweight rounds
   that add texels where a cell still stretches (focus `u ≤ 1.0`). Outside the mesh the target is planar and weak.
-  The UV stays a fixed function of world position (tiles world-locked); `uvAt()` feeds the mesh and the micro relief.
+  The UV stays a fixed function of world position (tiles world-locked); `uvAt()` feeds the mesh albedo. Micro relief stays on `x / TILE`.
   Texels may compress (minification only). `?uv=planar` or `zone.ground.uv: "planar"` = the old mapping (A/B).
 - **Measured** (`stretch` = surface length / texture length, worst direction):
 
