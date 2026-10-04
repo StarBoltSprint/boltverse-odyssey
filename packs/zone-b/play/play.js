@@ -643,6 +643,8 @@ const SKY_TILE_AZ = 360 / SKY_TILE_AZ_N;
 const SKY_TILE_EL = 11.25;
 let skyTileVao = null;
 let skyTileCount = 0;
+let hazeVao = null;
+let hazeCount = 0;
 // Meteors (nebula slot): a few sparse tiles, not the full 17 x 8 grid, so streaks never line up in a rain grid.
 // Chase view (pitch about +3 deg, vfov 48.1 deg) sees sky from the relief silhouette (about 8-10 deg up) to
 // about 27 deg up. Window centres sit in that band; tiles may hang below it, only the window is visible.
@@ -1027,6 +1029,52 @@ function buildSkyTiles() {
   gl.vertexAttribDivisor(2, 1);
   gl.bindVertexArray(null);
   buildMeteorTiles(cbuf, azSpan, elSpan);
+}
+
+// One Imagine haze loop, a few times around the compass. Each card keeps the
+// frame's pixel aspect at magnification 0.75. The 17×8 dome grid repeated the
+// same wisps into a scratch field, so this layer does not use that grid.
+function ensureHazeCards(vw, vh) {
+  if (hazeVao || !(vw > 0) || !(vh > 0)) return;
+  const pxH = W / (HFOV * 180 / Math.PI);
+  const pxV = H / (VFOV * 180 / Math.PI);
+  const mag = 0.75;
+  const elSpan = (mag * vh / pxV) * Math.PI / 180;
+  const azSpan = elSpan * (vw / vh) * (pxV / pxH);
+  const el = 11 * Math.PI / 180;
+  const n = 4;
+  const corners = new Float32Array([
+    0, 0, 1, 0, 1, 1,
+    0, 0, 1, 1, 0, 1,
+  ]);
+  const inst = new Float32Array(n * 6);
+  let k = 0;
+  for (let i = 0; i < n; i++) {
+    inst[k++] = (i / n) * Math.PI * 2;
+    inst[k++] = el;
+    inst[k++] = azSpan;
+    inst[k++] = elSpan;
+    inst[k++] = 0;
+    inst[k++] = 0;
+  }
+  hazeVao = gl.createVertexArray();
+  gl.bindVertexArray(hazeVao);
+  const cbuf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, cbuf);
+  gl.bufferData(gl.ARRAY_BUFFER, corners, gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(0);
+  gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 8, 0);
+  const ibuf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, ibuf);
+  gl.bufferData(gl.ARRAY_BUFFER, inst, gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(1);
+  gl.vertexAttribPointer(1, 4, gl.FLOAT, false, 24, 0);
+  gl.vertexAttribDivisor(1, 1);
+  gl.enableVertexAttribArray(2);
+  gl.vertexAttribPointer(2, 2, gl.FLOAT, false, 24, 16);
+  gl.vertexAttribDivisor(2, 1);
+  gl.bindVertexArray(null);
+  hazeCount = n;
 }
 
 // Sparse, irregular meteor tiles. Same tile size as the full-dome layers (magnification unchanged), whole frame
@@ -1750,6 +1798,15 @@ function drawSkyLayers(eye, yaw) {
     gl.uniform1f(skyLayerLoc.scroll, 1.0);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, skyVideoTex[i]);
+    if (skyLayerMeta[i] && skyLayerMeta[i].id === "haze") {
+      const hv = skyVideos[i];
+      ensureHazeCards(hv && hv.videoWidth ? hv.videoWidth : 1280, hv && hv.videoHeight ? hv.videoHeight : 720);
+      gl.uniform1f(skyLayerLoc.scroll, 0.0);
+      gl.bindVertexArray(hazeVao);
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, hazeCount);
+      drawCalls++;
+      continue;
+    }
     if (i === 2 && meteorVao && !meteorShow) continue;
     if (i === 2 && meteorVao) {
       gl.uniform1f(skyLayerLoc.meteor, 1.0);

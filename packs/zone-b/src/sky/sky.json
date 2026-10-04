@@ -40,5 +40,12 @@
       }
     ]
   },
-  "layers": []
+  "layers": [
+    {
+      "id": "haze",
+      "file": "haze.mp4",
+      "gain": 0.28,
+      "key": 0.16
+    }
+  ]
 }
