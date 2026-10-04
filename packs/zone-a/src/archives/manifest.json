@@ -1,0 +1,73 @@
+{
+  "schema": "echo-shards/1",
+  "zoneId": "howling-eclipse",
+  "pickupRadiusM": 2.25,
+  "cardMs": 2500,
+  "heightCapM": 1.12,
+  "approachM": 2.3,
+  "buryFrac": 0.1,
+  "ui": {
+    "paw": "packs/common/archives/art/paw.png",
+    "pawGlow": "packs/common/archives/art/paw-glow-alpha.png",
+    "hallVideo": "packs/common/archives/art/hall-loop.mp4",
+    "plate": "packs/common/archives/art/plate.jpg",
+    "hall": "packs/common/archives/art/hall.jpg",
+    "silhouette": "packs/common/archives/art/silhouette.png"
+  },
+  "shards": [
+    {
+      "id": "pulse-birth",
+      "title": "The Howling Eclipse",
+      "lore": "Where the Cosmic Pulse runs deepest, the birthplace of the next great surge.",
+      "image": "packs/common/archives/art/crystal.png",
+      "x": -2.114,
+      "z": -4.648,
+      "yaw": 31.66
+    },
+    {
+      "id": "emp-wake",
+      "title": "The permanent wave",
+      "lore": "The permanent EMP wave woke this Frontier Shard. Bolt sprints toward it, lightning in his wake.",
+      "image": "packs/common/archives/art/crystal.png",
+      "x": 6.993,
+      "z": 3.834,
+      "yaw": 31.66
+    },
+    {
+      "id": "gate-memory",
+      "title": "No howl lost",
+      "lore": "No howl of significance shall be lost to time. The Eclipse Gate keeps this one.",
+      "image": "packs/common/archives/art/crystal.png",
+      "x": 9.407,
+      "z": 14.799,
+      "yaw": 31.66
+    },
+    {
+      "id": "hangar-echo",
+      "title": "Not a vehicle",
+      "lore": "The wreck is a memory, not a ship to fly. The Lightning Core in Bolt's chest carries the sprint.",
+      "image": "packs/common/archives/art/crystal.png",
+      "x": -18.528,
+      "z": 15.507,
+      "yaw": -57.16
+    },
+    {
+      "id": "arch-whisper",
+      "title": "Whispering arch",
+      "lore": "Sealed in the Hall of Whispering Archives, the old arch still stands and still remembers.",
+      "image": "packs/common/archives/art/crystal.png",
+      "x": -10.38,
+      "z": 40.102,
+      "yaw": -63.39
+    },
+    {
+      "id": "felt-echo",
+      "title": "How it felt",
+      "lore": "An Echo Shard carries not only what happened, but how it felt.",
+      "image": "packs/common/archives/art/crystal.png",
+      "x": -6.608,
+      "z": 6.027,
+      "yaw": -57.16
+    }
+  ]
+}

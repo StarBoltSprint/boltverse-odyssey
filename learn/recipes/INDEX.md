@@ -48,6 +48,13 @@ One command: `python3 tools/ruins/build.py --kit <id>` then `python3 tools/ruins
 
 Hull from stills that already passed the sheet: `python3 tools/walkaround/build.py --views <dir> --config <config.json> --out <dir>`. Read `qc/report.json`. Magnification ≤ 1. Register a passing object with `python3 tools/library/library.py add` so the next zone names `{ "library": "<id>" }` instead of recooking it ([`tools/library/README.md`](../../tools/library/README.md)).
 
+## menu
+
+| Recipe | Commit | QC |
+| --- | --- | --- |
+| [archives-menu-loop.md](archives-menu-loop.md) — one Imagine hall loop for every menu, paw glow by opacity (prompt not stored) | `a6d14e0` | seam MAE 1.8; mid MAE 9.986; 360×800 dpr 2 contain scale 1 |
+| [archives-futurist-hall.md](archives-futurist-hall.md) — high-tech hall, ping-pong close, scale 1 on a tall phone (prompt not stored) | `2158259` | seam MAE 1.813; mid MAE 9.98; 640×1424 cover 1.125 contain scale 1 |
+
 ## cutout
 
 | Recipe | Commit | QC |

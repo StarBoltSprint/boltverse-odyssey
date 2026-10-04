@@ -418,6 +418,49 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Guard | `python3 tools/ruins/build.py --kit howling-eclipse` prints `wreck retile`. No row fails a walkable frame for a black blob. Proof `packs/zone-a/proof/step4c/01-wreck-outside.jpg` and `02-hangar-inside.jpg`. |
 | Sources | `tools/ruins/wreck.py`, `packs/zone-a/src/ruins/measure.json`, `packs/zone-a/src/ruins/wreck/wreck.ruin`. Owner still `7872ae48d5a83b3d17de8c44687c1f29d8115546ee23a0416c71068c6c8136a7.jpg`. |
 
+### 2026-10-04 — decree brief ranker misses the numbered post
+
+| | |
+| --- | --- |
+| Take | Living Archives / Echo Shards. Branch `archives-shards`. |
+| Defect | The keyword brief’s top five were decrees 625, 643, 704, 697, and 629. Decrees #351 and #352, the posts this step is built on, were absent. |
+| Root cause | The ranker scores shared words. Long Citadel posts outscore a short decree when the spec is full of kit words (bolt, gate, hall). |
+| Fix | The brief keeps the ranker list and appends the owner-named posts from the local jsonl, labeled as ranker misses. Quotes were copied. Nothing was invented. |
+| Guard | `packs/common/archives/decree-brief.md` section “Owner-named decrees” cites post `2071264181135827220` (#351, 2026-06-28T16:07:17Z) and post `2071268834363736574` (#352, 2026-06-28T16:25:47Z). No test fails a brief that omits the numbered decree. |
+| Sources | `tools/decrees/brief.py`. `packs/common/archives/decree-brief.md`. |
+
+### 2026-10-04 — a pickup card over the chase subject reads as a world crystal
+
+| | |
+| --- | --- |
+| Take | Living Archives / Echo Shards. Branch `archives-shards`. |
+| Defect | The first card sat just above the joystick, on Bolt’s legs. The lore read, and the crystal image looked like another shard in the world. |
+| Root cause | `cardBox` anchored the card to the stick’s top edge. On the portrait chase that band is the dog and the near ground. |
+| Fix | The card sits in the upper left, under no paw reserve and clear of the stick. The image is the Imagine crystal. The line under it is HTML text. |
+| Guard | `node --test packs/common/archives/archives.test.mjs` row “paw stays off the stick and inside the reserved corner” asserts the card does not overlap the stick or the paw reserve and that `card.y + card.h < vh * 0.4` at 360×800 and 720×1600. |
+| Sources | `packs/common/archives/layout.js`. Stills `shard-world.png`, `pickup-card.png` under `/workspace/grokcli/out/archives/` (not committed). |
+
+### 2026-10-04 — a 720p menu video cannot cover a 720×1600 phone
+
+| | |
+| --- | --- |
+| Take | Archives polish. Branch `archives-shards`. Owner 2026-10-04 20:36. |
+| Defect | The hall film does not reach the top and bottom of a 720×1600 phone. |
+| Root cause | Imagine video rejected aspect `9:20` and resolution `1080p` before writing a file. The accepted call, 720p at `9:16`, is 720×1280. Covering 720×1600 would be magnification 1.25. |
+| Fix | Place the 720×1280 film at scale 1. Hide the world canvas while a menu is open. The gap is a matte sampled once from the still’s four corners. Do not scale, stretch, or smear the frame. |
+| Guard | `node --test packs/common/archives/archives.test.mjs` row “menu film covers a 9:16 phone and never enlarges on a tall one”: 720×1280, 360×800 at device pixel ratio 2 is contain, scale 1, `enlarged` false. Seam row: first-to-last MAE 1.8, which is under 8. |
+| Sources | `packs/common/archives/art/hall-loop.mp4`. `packs/common/archives/backdrop.js`. Phone shot `/workspace/grokcli/out/archives/polish/menu-pause.png`. |
+
+### 2026-10-04 — a 640×1424 menu film still cannot cover 720×1600
+
+| | |
+| --- | --- |
+| Take | Archives futuristic hall. Branch `archives-shards`. Owner 2026-10-04 21:54. |
+| Defect | The shared menu film leaves a matte gap on a 720×1600 phone. Cover would be magnification 1.125. |
+| Root cause | The session video tool rejected aspect `9:20` and resolution `1080p` before writing a file. The accepted call is 640×1424. Two image edits that asked for a taller plate returned 576×1280. The tool schema lists `9:20` and `9:19.5`; the API allow-list does not. Doc 64 still says 1080p is legal for one-image image-to-video. This session’s tool accepts only `480p` and `720p`. |
+| Fix | Place the 640×1424 film at scale 1. The gap is the corner matte. Do not scale, stretch, smear, or spend another call on the same height miss. Close an open Imagine clip with ping-pong when the tool cannot pin the last frame. The source seam was MAE 14.445. The shipped ping-pong seam is MAE 1.813. |
+| Guard | `node --test packs/common/archives/archives.test.mjs` row “menu film never enlarges on a 720x1600 phone”: 640×1424, cover 1.125, contain, scale 1, CSS 320×712. Seam row: first-to-last MAE 1.813, which is under 8, and the 3 s frame is farther from frame 0 than the seam. The 720×1280 entry above names a test title this step replaced. That older entry stays as the record of the gothic film. |
+| Sources | `packs/common/archives/art/hall-loop.mp4`. `packs/common/archives/backdrop.js`. Phone shot `/workspace/grokcli/out/archives/futurist/pause.png`. Tool note `feedback/2026-10-04-imagine-video-aspect.md`. |
 ### 2026-10-04 — the framebuffer foot gap had no failing row
 
 | | |
