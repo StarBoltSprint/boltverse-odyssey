@@ -114,6 +114,8 @@ uniform int uMode;
 uniform vec3 uFog;
 uniform float uFogNear;
 uniform float uFogFar;
+uniform float uFade0;
+uniform float uFade1;
 uniform float uTile;
 in vec2 vUv;
 in vec2 vMask;
@@ -137,9 +139,10 @@ void main() {
   }
   float rho = length(vUv) * uTile;
   float ft = smoothstep(uFogNear, uFogFar, rho);
-  c = mix(c, uFog, ft);
+  c = mix(c, uFog, ft * 0.40);
+  float a = 1.0 - smoothstep(uFade0, uFade1, rho);
   if (uMode == 1) o = vec4(uId, 1.0);
-  else o = vec4(c, 1.0);
+  else o = vec4(c, a);
 }`);
 
   const cardProg = program(gl, `#version 300 es
@@ -258,6 +261,8 @@ void main() {
     fog: gl.getUniformLocation(groundProg, "uFog"),
     fogNear: gl.getUniformLocation(groundProg, "uFogNear"),
     fogFar: gl.getUniformLocation(groundProg, "uFogFar"),
+    fade0: gl.getUniformLocation(groundProg, "uFade0"),
+    fade1: gl.getUniformLocation(groundProg, "uFade1"),
     tile: gl.getUniformLocation(groundProg, "uTile"),
   };
   const cLoc = {
@@ -625,8 +630,10 @@ void main() {
       gl.uniform3f(gLoc.id, id[0], id[1], id[2]);
       const fog = skirtFog || (post && post.fog) || [0.5, 0.5, 0.5];
       gl.uniform3f(gLoc.fog, fog[0], fog[1], fog[2]);
-      gl.uniform1f(gLoc.fogNear, 140);
-      gl.uniform1f(gLoc.fogFar, 340);
+      gl.uniform1f(gLoc.fogNear, 200);
+      gl.uniform1f(gLoc.fogFar, 420);
+      gl.uniform1f(gLoc.fade0, 300);
+      gl.uniform1f(gLoc.fade1, 460);
       gl.uniform1f(gLoc.tile, TILE);
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D_ARRAY, alb.tex);
@@ -634,7 +641,12 @@ void main() {
       gl.activeTexture(gl.TEXTURE1);
       gl.bindTexture(gl.TEXTURE_2D, maskTex);
       gl.uniform1i(gLoc.mask, 1);
-      gl.disable(gl.BLEND);
+      if (mode === 0) {
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+      } else {
+        gl.disable(gl.BLEND);
+      }
       gl.enable(gl.DEPTH_TEST);
       gl.depthMask(true);
       gl.drawElements(gl.TRIANGLES, mesh.count, gl.UNSIGNED_INT, 0);
