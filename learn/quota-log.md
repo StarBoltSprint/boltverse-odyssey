@@ -10,3 +10,4 @@ Append-only. One row per step. `python3 tools/quota/quota.py` adds the row. Do n
 | 2026-10-04 | step4b | 6e5ddf0 | 0 | 321 | 0 | 0 | 705084 | 198072 | n/a | step04b-gate-20261004-075806.jsonl |
 | 2026-10-04 | step4c | 1772cd8 | 0 | 0 | 0 | 0 | n/a | n/a | 3555.9 | events.jsonl |
 | 2026-10-04 | archives-shards | a79d5e7 | 0 | 0 | 0 | 0 | n/a | n/a | 2790.1 | events.jsonl |
+| 2026-10-04 | archives-polish | a6d14e0 | 0 | 223 | 0 | 0 | 496222 | 115012 | n/a | archives-polish-20261004-2036.jsonl |

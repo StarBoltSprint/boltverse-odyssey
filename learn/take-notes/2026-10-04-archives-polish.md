@@ -2,15 +2,17 @@
 
 ## Quota and turns
 
-The quota row is appended by `python3 tools/quota/quota.py` after the cook commit. Copy that row here. Do not invent its cells.
+Quota row from `python3 tools/quota/quota.py` on `archives-polish-20261004-2036.jsonl`. The log did not count the Imagine calls. Measured spend in this session, separate from that row: 2 image calls, 3 video calls, 1 video file (720×1280, 6.041667 s).
 
-Measured Imagine spend, counted in this session, separate from that row: 2 image calls, 3 video calls, 1 video file (720×1280, 6.041667 s).
+| Date | Step | Commit | Turns | Tool calls | Image gens | Video gens | Tokens in | Tokens out | Wall s | Log |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-10-04 | archives-polish | a6d14e0 | 0 | 223 | 0 | 0 | 496222 | 115012 | n/a | archives-polish-20261004-2036.jsonl |
 
 | Item | Kind | Turns or tries | Quota spent | Result |
 | --- | --- | --- | --- | --- |
-| Hall loop | other | 1 video file, 2 rejected video calls | quota row after the commit | accepted |
-| Paw glow | other | 1 image call | quota row after the commit | accepted |
-| 9:20 hall still | other | 1 image call, 576×1280 | quota row after the commit | rejected as the live fallback |
+| Hall loop | other | 1 video file, 2 rejected video calls | 2026-10-04 archives-polish a6d14e0 turns 0 tools 223 images 0 videos 0 tokens_in 496222 tokens_out 115012 wall_s n/a | accepted |
+| Paw glow | other | 1 image call | same quota row as the hall loop | accepted |
+| 9:20 hall still | other | 1 image call, 576×1280 | same quota row as the hall loop | rejected as the live fallback |
 
 ## This step
 

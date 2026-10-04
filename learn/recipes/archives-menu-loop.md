@@ -6,7 +6,7 @@ Status: validated. The hall film and the paw glow passed the rows below. The pro
 | --- | --- |
 | Asset kind | other |
 | Take | Archives polish, 2026-10-04 |
-| Commit | filled when this step is committed |
+| Commit | `a6d14e0` |
 | Date | 2026-10-04 |
 | Size | hall loop 720×1280, 24 fps, 145 frames, 6.041667 s. Still 720×1280. Paw glow 944×1088. |
 | Tries | 2 image calls. 3 video calls. 1 video file. |
