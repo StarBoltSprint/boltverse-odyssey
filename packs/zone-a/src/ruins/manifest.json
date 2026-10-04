@@ -114,6 +114,49 @@
           2.055
         ]
       }
+    },
+    {
+      "id": "arch",
+      "mesh": "packs/zone-a/src/ruins/arch/arch.ruin",
+      "skins": [
+        "packs/zone-a/src/ruins/arch/atlas.jpg"
+      ],
+      "frame": "gate",
+      "sealed": "tools/ruins/sealed/arch-v1",
+      "x": -5.0,
+      "z": 39.0,
+      "yaw": -3.1227,
+      "sink": 0.18,
+      "contact": [
+        0,
+        0
+      ],
+      "heightM": 7.4,
+      "srcH": 1153,
+      "texelsPerM": 155.81,
+      "minApproachM": 11.508,
+      "horizRadiusM": 3.668,
+      "footprintRadiusM": 3.668,
+      "depthM": 2.89,
+      "openingBoxM": [
+        -1.303,
+        1.123,
+        0.0,
+        5.186
+      ],
+      "openingTopM": 5.186,
+      "bounds": {
+        "min": [
+          -2.266,
+          0.013,
+          -2.89
+        ],
+        "max": [
+          2.259,
+          7.394,
+          0.0
+        ]
+      }
     }
   ]
 }

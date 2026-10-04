@@ -44,5 +44,15 @@
     "cellM": 0.1,
     "voxM": 0.15,
     "padM": 1.2
-  }
+  },
+  "sealed": [
+    {
+      "id": "arch",
+      "dir": "tools/ruins/sealed/arch-v1",
+      "x": -5.0,
+      "z": 39.0,
+      "face": "spawn",
+      "sinkM": 0.18
+    }
+  ]
 }

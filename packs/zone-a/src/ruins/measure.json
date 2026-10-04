@@ -287,6 +287,7 @@
       "bubbleD": 33.28663395418648,
       "far": 70.57317329531308,
       "inside": true,
+      "rimRoom": -11.936571715314916,
       "clear": true
     },
     "footprintRadiusM": 16.068,
@@ -410,6 +411,127 @@
       "note": "opening kept by the loft; no faces fill that gap"
     }
   ],
+  "sealed": {
+    "arch": {
+      "source": "Eclipse Gate as cooked in zone A step 4 (PR 166, 274cab6 / 707647d); kept by owner decision 2026-10-04 09:25",
+      "throughOpening": {
+        "minClearM": 0.476,
+        "free": true
+      },
+      "freeWidthM": 1.82,
+      "underArch": true,
+      "axisRockClearM": 1.062,
+      "rimRoomM": 5.301,
+      "atlas": [
+        1664,
+        1248
+      ],
+      "horizRadiusM": 3.668,
+      "placement": {
+        "cord": 27.237672908203436,
+        "bubbleD": 53.009433122794285,
+        "far": 83.35323144817762,
+        "inside": true,
+        "rimRoom": 5.300547001316318,
+        "clear": true
+      },
+      "parts": [
+        {
+          "id": "pier-l",
+          "measure": "front.jpg",
+          "spot": [
+            66,
+            394,
+            216,
+            1202
+          ],
+          "section": "sec-pier-l.jpg",
+          "sectionBox": [
+            265,
+            82,
+            757,
+            941
+          ],
+          "skin": "front.jpg",
+          "erasedFrom": null,
+          "inpaintCall": null,
+          "note": "left jamb of the one loft; section scales thickness only"
+        },
+        {
+          "id": "pier-r",
+          "measure": "front.jpg",
+          "spot": [
+            594,
+            394,
+            772,
+            1202
+          ],
+          "section": "sec-pier-r.jpg",
+          "sectionBox": [
+            336,
+            81,
+            692,
+            942
+          ],
+          "skin": "front.jpg",
+          "erasedFrom": null,
+          "inpaintCall": null,
+          "note": "right jamb, different section, not a mirrored copy"
+        },
+        {
+          "id": "lintel",
+          "measure": "front.jpg",
+          "spot": [
+            66,
+            50,
+            772,
+            394
+          ],
+          "section": "sec-lintel.jpg",
+          "sectionBox": [
+            97,
+            332,
+            926,
+            691
+          ],
+          "skin": "front.jpg",
+          "erasedFrom": null,
+          "inpaintCall": null,
+          "note": "stone above the opening; section profile scales thickness"
+        },
+        {
+          "id": "opening",
+          "measure": "front.jpg",
+          "spot": [
+            216,
+            394,
+            594,
+            1202
+          ],
+          "section": null,
+          "skin": null,
+          "erasedFrom": null,
+          "inpaintCall": null,
+          "note": "largest enclosed void; no faces on those cells and no collider"
+        },
+        {
+          "id": "ring-motif",
+          "measure": "front.jpg",
+          "spot": [
+            216,
+            394,
+            594,
+            1202
+          ],
+          "section": null,
+          "skin": "front.jpg",
+          "erasedFrom": null,
+          "inpaintCall": null,
+          "note": "carved in the skin, not a second volume"
+        }
+      ]
+    }
+  },
   "colliders": {
     "rule": "wall where a face crosses the body band; openings walkable; no keep-out",
     "bodyRadiusM": 0.3,
@@ -442,6 +564,14 @@
       "hangarDepthM": 3.25,
       "coveredInside": true,
       "sealedCells": 0
+    },
+    "arch": {
+      "throughOpening": {
+        "minClearM": 0.476,
+        "free": true
+      },
+      "freeWidthM": 1.82,
+      "underArch": true
     }
   }
 }

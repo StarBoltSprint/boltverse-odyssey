@@ -47,6 +47,7 @@ test("ruin walk: arch, hangar, walls, slides, sweeps; no invisible wall, no came
   const routes = ruinRoutes(manifest, discs);
   const probes = ruinProbes(manifest, discs, { sweepStepM: 0.5, hullStepM: 3, bayStepM: 1 });
   assert.ok(routes.arch, "gate has a measured opening (openingBoxM)");
+  assert.equal(routes.arches.length, manifest.objects.filter((o) => o.frame !== "ship").length, "every gate-frame ruin has an opening route");
   assert.ok(routes.hangar, "wreck has a measured hangar");
   const server = await startStatic(ROOT);
   const { browser, page, consoleErrors } = await launchPhone();
@@ -54,8 +55,8 @@ test("ruin walk: arch, hangar, walls, slides, sweeps; no invisible wall, no came
   try {
     await page.goto(server.urlFor("/packs/zone-a/play/index.html?debug=1"));
     await page.waitForFunction(
-      () => window.__play && window.__play.ready && window.__play.ruinInfo && window.__play.ruinInfo() && window.__play.ruinInfo().count === 2,
-      null,
+      (n) => window.__play && window.__play.ready && window.__play.ruinInfo && window.__play.ruinInfo() && window.__play.ruinInfo().count === n,
+      manifest.objects.length,
       { timeout: 300000 },
     );
     const truth = await buildTruth(page, manifest, (p) => readFileSync(path.join(ROOT, p)));
@@ -63,27 +64,30 @@ test("ruin walk: arch, hangar, walls, slides, sweeps; no invisible wall, no came
     const topt = { radius: r, tol: 0.2, anyLo: 0.05, anyHi: 2.15, coreLo: 0.4, coreHi: 1.2 };
     out.truthSamples = truth.count;
 
-    await t.test("arch: full gallop through the opening", async () => {
-      const a = await drive(page, archPlan(routes.arch));
-      const j = judge(a.rec);
-      const tc = truthCheck(a.rec, truth, topt);
-      const last = a.rec[a.rec.length - 1];
-      const top = Math.max(...a.rec.map((q) => q.spd));
-      const at = a.rec.findIndex((q) => q.spd >= top * 0.98);
-      const slowest = Math.min(...a.rec.slice(at).map((q) => q.spd));
-      const latDev = Math.max(...a.rec.map((q) => Math.abs(q.lx - routes.arch.lx)));
-      out.arch = { ...j, ...tc, topSpeed: top, slowestAfterTop: slowest, latDev, lx: routes.arch.lx, mags: a.mags };
-      assert.equal(j.blocked, 0, `arch run blocked ${j.blocked} ticks`);
-      assert.ok(last.lz < routes.arch.exitLocalZ, `arch exit: local z ${last.lz.toFixed(2)} not past ${routes.arch.exitLocalZ}`);
-      assert.ok(a.rec.some((q) => q.covered), "Bolt never passed under the arch");
-      assert.ok(slowest >= top * 0.98, `slowed under the arch: ${slowest.toFixed(2)} of ${top.toFixed(2)} m/s`);
-      assert.ok(latDev < 0.05, `arch run pushed sideways ${latDev.toFixed(3)} m`);
-      assert.equal(tc.invisible, 0, `invisible contact in the arch ${JSON.stringify(tc.firstInvisible)}`);
-      assert.ok(j.maxStep <= MAX_STEP_RUN, `arch camera step ${j.maxStep.toFixed(3)} m`);
-      assert.ok(j.maxJerkSteady <= MAX_JERK_STEADY, `arch camera jerk ${j.maxJerkSteady.toFixed(3)} m`);
-      assert.equal(j.shake, 0, "arch camera shake");
-      assert.ok(j.minNear >= NEAR, `arch near plane opens a face (${j.minNear})`);
-    });
+    out.arches = {};
+    for (const route of routes.arches) {
+      await t.test(`arch ${route.id}: full gallop through the opening`, async () => {
+        const a = await drive(page, archPlan(route));
+        const j = judge(a.rec);
+        const tc = truthCheck(a.rec, truth, topt);
+        const last = a.rec[a.rec.length - 1];
+        const top = Math.max(...a.rec.map((q) => q.spd));
+        const at = a.rec.findIndex((q) => q.spd >= top * 0.98);
+        const slowest = Math.min(...a.rec.slice(at).map((q) => q.spd));
+        const latDev = Math.max(...a.rec.map((q) => Math.abs(q.lx - route.lx)));
+        out.arches[route.id] = { ...j, ...tc, topSpeed: top, slowestAfterTop: slowest, latDev, lx: route.lx, mags: a.mags };
+        assert.equal(j.blocked, 0, `${route.id} run blocked ${j.blocked} ticks`);
+        assert.ok(last.lz < route.exitLocalZ, `arch exit: local z ${last.lz.toFixed(2)} not past ${route.exitLocalZ}`);
+        assert.ok(a.rec.some((q) => q.covered), `Bolt never passed under ${route.id}`);
+        assert.ok(slowest >= top * 0.98, `slowed under the arch: ${slowest.toFixed(2)} of ${top.toFixed(2)} m/s`);
+        assert.ok(latDev < 0.05, `arch run pushed sideways ${latDev.toFixed(3)} m`);
+        assert.equal(tc.invisible, 0, `invisible contact in the arch ${JSON.stringify(tc.firstInvisible)}`);
+        assert.ok(j.maxStep <= MAX_STEP_RUN, `arch camera step ${j.maxStep.toFixed(3)} m`);
+        assert.ok(j.maxJerkSteady <= MAX_JERK_STEADY, `arch camera jerk ${j.maxJerkSteady.toFixed(3)} m`);
+        assert.equal(j.shake, 0, `${route.id} camera shake ${j.shake} (zero shake, owner rule)`);
+        assert.ok(j.minNear >= NEAR, `arch near plane opens a face (${j.minNear})`);
+      });
+    }
 
     await t.test("hangar: in under the deck, turn round, back out", async () => {
       const h = await drive(page, hangarPlan(routes.hangar));
@@ -109,7 +113,7 @@ test("ruin walk: arch, hangar, walls, slides, sweeps; no invisible wall, no came
       assert.ok(j.maxJerk <= MAX_JERK_TURN, `hangar camera jerk ${j.maxJerk.toFixed(3)} m`);
       assert.equal(runs.shake, 0, "hangar camera shake on the straight runs");
       assert.ok(runs.maxJerkSteady <= MAX_JERK_STEADY, `hangar run jerk ${runs.maxJerkSteady.toFixed(3)} m`);
-      assert.ok(j.shake <= 2, `hangar camera shake ${j.shake}`);
+      assert.equal(j.shake, 0, `hangar camera shake ${j.shake} (zero shake, owner rule)`);
       assert.ok(j.minNear >= NEAR, `hangar near plane opens the hull (${j.minNear.toFixed(3)} m)`);
       assert.ok(j.maxFeetStep <= 0.2, `feet step ${j.maxFeetStep.toFixed(3)} m`);
     });
@@ -175,6 +179,7 @@ test("ruin walk: arch, hangar, walls, slides, sweeps; no invisible wall, no came
         minFace = Math.min(minFace, tc.minFace);
         assert.equal(tc.invisible, 0, `${w.phase}: invisible contact ${JSON.stringify(tc.firstInvisible)}`);
         assert.ok(tc.minFace >= r - 0.1, `${w.phase}: body inside a face (${tc.minFace.toFixed(3)} m)`);
+        assert.equal(j.shake, 0, `${w.phase}: camera shake ${j.shake} (zero shake, owner rule)`);
         if (w.expectFree) {
           free.push({ phase: w.phase, contact: j.contact });
           assert.equal(j.contact, 0, `${w.phase}: touched a collider ${r + 0.2} m off the bounds`);
@@ -185,7 +190,7 @@ test("ruin walk: arch, hangar, walls, slides, sweeps; no invisible wall, no came
 
     assert.deepEqual(consoleErrors.filter((e) => !/GPU stall|ReadPixels/i.test(e)), []);
     console.log(JSON.stringify({
-      arch: out.arch && { maxStep: out.arch.maxStep, maxJerk: out.arch.maxJerk, shake: out.arch.shake, minNear: out.arch.minNear, topSpeed: out.arch.topSpeed },
+      arches: Object.fromEntries(Object.entries(out.arches).map(([k, a]) => [k, { maxStep: a.maxStep, maxJerk: a.maxJerk, shake: a.shake, minNear: a.minNear, topSpeed: a.topSpeed }])),
       hangar: out.hangar && { depth: out.hangar.depth, maxStep: out.hangar.maxStep, maxJerk: out.hangar.maxJerk, shake: out.hangar.shake, minNear: out.hangar.minNear, maxBoltMag: out.hangar.maxBoltMag },
       sweeps: out.sweeps,
     }));
