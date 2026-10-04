@@ -4,7 +4,7 @@
  * Far painted mesas stay in the sky slices.
  */
 const STATIONS = 28;
-const SINK_M = 1.8;
+const SINK_M = 2.6;
 const KEY = 12;
 const MAX_SIDE = 1280;
 

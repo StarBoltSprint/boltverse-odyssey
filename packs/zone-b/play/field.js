@@ -1,94 +1,147 @@
 /**
- * Invisible relief for zone B. Numbers only. No pixels.
- * Area is at least the zone A clearing. Each feature stays inside the
- * walk targets: amplitude at most 3 m, sigma at least 2.27 times amplitude.
+ * Invisible relief for the Ember Mesa floor. Numbers only. No pixels.
+ * Walkable outline is a star-shaped canyon, about 145 m along +z.
+ * Heading matches play.js: th = atan2(x, z), 0 moves toward +z.
+ * A check: radiusAt(0) lands on the north edge (positive z).
  */
 
 export const TILE = 1.42;
 export const MICRO = 0.1;
 export const MASK_M = 22;
-const AREA = 7800;
+const AREA_TARGET = 6500;
 
-function radiusUnit(th) {
-  let r = 1;
-  r += 0.18 * Math.sin(2 * th + 1.7);
-  r += 0.16 * Math.sin(3 * th + 0.4);
-  r += 0.11 * Math.sin(5 * th + 2.2);
-  r += 0.07 * Math.sin(7 * th - 0.9);
-  r += 0.04 * Math.sin(4 * th + 0.2);
-  return r;
-}
+// Hand outline in metres, before the area fit. West wall, then the south
+// edge, then the east wall back to the north edge.
+const RAW = [
+  [-25.59, 71.8],
+  [-22.64, 44.23],
+  [-19.68, 17.65],
+  [-19.68, -7.94],
+  [-21.65, -31.57],
+  [-24.6, -54.21],
+  [-22.64, -71.93],
+  [21.66, -71.93],
+  [25.6, -51.26],
+  [24.62, -27.63],
+  [22.65, -5.97],
+  [20.68, 15.68],
+  [22.65, 41.28],
+  [24.62, 71.8],
+];
 
-function unitArea() {
-  const n = 2048;
-  const d = (Math.PI * 2) / n;
+function shoelace(poly) {
   let a = 0;
-  for (let i = 0; i < n; i++) {
-    const r = radiusUnit(i * d);
-    a += 0.5 * r * r * d;
+  for (let i = 0; i < poly.length; i++) {
+    const j = (i + 1) % poly.length;
+    a += poly[i][0] * poly[j][1] - poly[j][0] * poly[i][1];
   }
-  return a;
+  return Math.abs(a) * 0.5;
 }
 
-export const SCALE = Math.sqrt(AREA / unitArea());
+export const SCALE = Math.sqrt(AREA_TARGET / shoelace(RAW));
+
+const POLY = RAW.map(([x, z]) => [x * SCALE, z * SCALE]);
+
+function hitRay(th) {
+  const dx = Math.sin(th);
+  const dz = Math.cos(th);
+  let best = 1e9;
+  let hits = 0;
+  for (let i = 0; i < POLY.length; i++) {
+    const x1 = POLY[i][0];
+    const z1 = POLY[i][1];
+    const x2 = POLY[(i + 1) % POLY.length][0];
+    const z2 = POLY[(i + 1) % POLY.length][1];
+    const ex = x2 - x1;
+    const ez = z2 - z1;
+    const denom = ex * dz - dx * ez;
+    if (Math.abs(denom) < 1e-8) continue;
+    const t = (ex * z1 - ez * x1) / denom;
+    const s = (dx * z1 - dz * x1) / denom;
+    if (t > 0.02 && s >= -1e-4 && s <= 1 + 1e-4) {
+      hits++;
+      if (t < best) best = t;
+    }
+  }
+  return { t: best > 1e8 ? 1 : best, hits };
+}
 
 export function radiusAt(th) {
-  return radiusUnit(th) * SCALE;
+  return hitRay(th).t;
 }
 
-export function crackAmt(x, z) {
-  const f = Math.abs(Math.sin(x * 0.11 + Math.sin(z * 0.07) * 1.2));
-  const g = Math.abs(Math.sin(z * 0.09 + Math.sin(x * 0.05) * 1.1));
-  return Math.min(f, g);
+export function rayHits(th) {
+  return hitRay(th).hits;
 }
 
 function gauss(dx, sx, dz, sz) {
   return Math.exp(-(dx * dx) / (2 * sx * sx) - (dz * dz) / (2 * sz * sz));
 }
 
-export function macroAt(x, z) {
-  const rho = Math.hypot(x, z);
-  const th = Math.atan2(x, z);
-  const R = radiusAt(th);
-  const u = rho / Math.max(1, R);
-  let h = 0;
-  // Far rise. A = 2.2, sigma 20 by 16. Steepest slope about 0.067.
-  const hd = 0.9;
-  const ax = Math.sin(hd);
-  const az = Math.cos(hd);
-  const along = x * ax + z * az;
-  const across = -x * az + z * ax;
-  const crestC = 0.48 * radiusAt(hd);
-  h += 2.2 * gauss(along - crestC, 20, across, 16);
-  // Second rise, opposite side, so the two do not stack.
-  const hd2 = hd + Math.PI * 0.85;
-  const ax2 = Math.sin(hd2);
-  const az2 = Math.cos(hd2);
-  const along2 = x * ax2 + z * az2;
-  const across2 = -x * az2 + z * ax2;
-  h += 1.6 * gauss(along2 - 0.42 * radiusAt(hd2), 18, across2, 14);
-  // Shallow basin.
-  h -= 1.5 * gauss(x + 16, 16, z - 6, 14);
-  // Shallow channel, wide enough to stay under 15 degrees.
-  const cx = 6.5 * Math.sin(z * 0.045);
-  h -= 0.7 * gauss(x - cx, 9, 0, 40);
-  // Low crack dip. Wavelength is long, amplitude is small.
-  const crack = crackAmt(x, z);
-  if (crack < 0.2) h -= (0.2 - crack) * 0.35;
-  // Soft outer rise. 0.9 m across a fixed 18 m, so a narrow radius stays walkable.
-  const rim0 = R - 18;
-  if (rho > rim0) {
-    const t = Math.min(1, (rho - rim0) / 18);
-    const s = t * t * (3 - 2 * t);
-    h += s * 0.9;
-  }
-  return h;
+function smooth(t) {
+  const x = Math.max(0, Math.min(1, t));
+  return x * x * (3 - 2 * x);
 }
 
-const RIDGE = 0.85;
-const HOLLOW = -0.42;
-const LOW = -0.08;
-const BAND = 0.32;
+// Seats for the three reused butte lofts. Same order as the manifest.
+export const BUTTES = [
+  { x: 8, z: 24, amp: 0.9, sigma: 8 },
+  { x: -10, z: 54, amp: 0.85, sigma: 8 },
+  { x: 6, z: -58, amp: 0.9, sigma: 8 },
+];
+
+export const LOOP = [
+  { name: "plaza", x: 0, z: 58 },
+  { name: "slot", x: 0, z: 22 },
+  { name: "basin", x: 2, z: -10 },
+  { name: "wash", x: 0, z: -38 },
+  { name: "outpost", x: 0, z: -60 },
+  { name: "mesa-road", x: -12, z: 0 },
+  { name: "return", x: -8, z: 45 },
+];
+
+function segDist(x, z) {
+  let best = 1e9;
+  for (let i = 0; i < POLY.length; i++) {
+    const x1 = POLY[i][0];
+    const z1 = POLY[i][1];
+    const x2 = POLY[(i + 1) % POLY.length][0];
+    const z2 = POLY[(i + 1) % POLY.length][1];
+    const ex = x2 - x1;
+    const ez = z2 - z1;
+    const l2 = ex * ex + ez * ez || 1;
+    let t = ((x - x1) * ex + (z - z1) * ez) / l2;
+    if (t < 0) t = 0;
+    else if (t > 1) t = 1;
+    const dx = x - (x1 + ex * t);
+    const dz = z - (z1 + ez * t);
+    const d = Math.hypot(dx, dz);
+    if (d < best) best = d;
+  }
+  return best;
+}
+
+export function macroAt(x, z) {
+  let h = 0;
+  // Slot floor sits 0.6 m under the plaza across about 40 m.
+  h -= 0.6 * smooth((42 - z) / 40);
+  // Outpost shelf, 0.7 m, across about 22 m.
+  h += 0.7 * smooth((-40 - z) / 22);
+  // Basin dunes. Wavelength 40 m, amplitude under 1 m, faded at the wall.
+  const wall = segDist(x, z);
+  const rimIn = Math.max(0, Math.min(1, wall / 16));
+  const basin = Math.exp(-((z + 10) * (z + 10)) / (2 * 16 * 16));
+  const dune = Math.sin((x * Math.PI * 2) / 40 + z * 0.04) * Math.cos((z * Math.PI * 2) / 42);
+  h += 0.7 * dune * basin * rimIn;
+  // Butte skirts. A low mound, not a second cliff.
+  for (let i = 0; i < BUTTES.length; i++) {
+    const b = BUTTES[i];
+    h += b.amp * gauss(x - b.x, b.sigma, z - b.z, b.sigma) * rimIn;
+  }
+  // Berm in the last 14 m, measured to the wall. 1.6 m of rise.
+  if (wall < 14) h += smooth(1 - wall / 14) * 1.6;
+  return h;
+}
 
 export function familyAt(x, z) {
   return familyBlend(x, z).a;
@@ -96,32 +149,26 @@ export function familyAt(x, z) {
 
 /** a/b are even slot ids. w is 0 inside a family and rises toward a boundary. */
 export function familyBlend(x, z) {
-  const h = macroAt(x, z);
-  const crack = crackAmt(x, z);
+  const wall = segDist(x, z);
+  const rim = Math.max(0, Math.min(1, (14 - wall) / 8));
+  const basin = Math.exp(-((z + 10) * (z + 10)) / (2 * 14 * 14));
+  const slot = Math.exp(-((z - 22) * (z - 22)) / (2 * 16 * 16));
+  const wash = Math.exp(-((z + 35) * (z + 35)) / (2 * 10 * 10));
   let a = 4;
-  if (h > RIDGE) a = 0;
-  else if (h < HOLLOW) a = 2;
-  else if (crack < 0.12) a = 6;
-  else if (h < LOW) a = 2;
-  let b = a;
+  let b = 4;
   let w = 0;
-  if (a === 0) {
-    const d = h - RIDGE;
-    if (d < BAND) { b = 4; w = 1 - d / BAND; }
-  } else if (a === 2 && h <= HOLLOW) {
-    const d = HOLLOW - h;
-    if (d < BAND) { b = 4; w = 1 - d / BAND; }
-  } else if (a === 6) {
-    const d = 0.12 - crack;
-    if (d < 0.05) { b = 4; w = 1 - d / 0.05; }
-  } else if (a === 2) {
-    const d = LOW - h;
-    if (d < BAND) { b = 4; w = 1 - d / BAND; }
-  } else {
-    const dR = RIDGE - h;
-    const dL = h - LOW;
-    if (dR < BAND && dR <= dL) { b = 0; w = 1 - dR / BAND; }
-    else if (dL < BAND) { b = 2; w = 1 - dL / BAND; }
+  if (rim > 0.55) {
+    a = 0;
+    b = 4;
+    w = 1 - (rim - 0.55) / 0.45;
+  } else if (basin > slot && basin > wash && basin > 0.35) {
+    a = 2;
+    b = 4;
+    w = 1 - Math.min(1, (basin - 0.35) / 0.4);
+  } else if (slot > 0.35 || wash > 0.35) {
+    a = 6;
+    b = 4;
+    w = 1 - Math.min(1, (Math.max(slot, wash) - 0.35) / 0.4);
   }
   if (w < 0) w = 0;
   if (w > 1) w = 1;
@@ -175,39 +222,58 @@ export function slopeAt(x, z) {
   return Math.hypot(hx, hz) / (2 * e);
 }
 
+export function wallDist(x, z) {
+  return segDist(x, z);
+}
+
+export function inside(x, z) {
+  const rho = Math.hypot(x, z);
+  if (rho < 0.001) return true;
+  return rho <= radiusAt(Math.atan2(x, z)) + 1e-2;
+}
+
 export function contain(x, z) {
   const rho = Math.hypot(x, z);
   if (rho < 0.001) return { x, z };
   const th = Math.atan2(x, z);
-  const limit = radiusAt(th) * 1.045;
+  const limit = radiusAt(th);
   if (rho <= limit) return { x, z };
   const k = limit / rho;
   return { x: x * k, z: z * k };
 }
 
 export function areaM2() {
-  return AREA;
+  return shoelace(POLY);
 }
 
 export function maxRadius() {
   let m = 0;
-  for (let i = 0; i < 64; i++) m = Math.max(m, radiusAt((i / 64) * Math.PI * 2));
+  for (let i = 0; i < POLY.length; i++) {
+    m = Math.max(m, Math.hypot(POLY[i][0], POLY[i][1]));
+  }
   return m;
 }
 
-// Visual skirt only. The walked relief stays in macroAt (the 3 m cap).
-// 28 m by 480 m covers the dark painted foreground the wide camera
-// (eye y = 18) sees under the land. The sun-heading mesa tops sit
-// under this rise. Heading 90 mesas still clear it.
+export function footprint() {
+  return POLY.map((p) => [p[0], p[1]]);
+}
+
+// Visual skirt past the berm. The walked relief stays in macroAt.
+// The old 28 m rise covered painted mesas in the sky slices. Those
+// paintings are gone, so the skirt only lifts a few metres at the far fade.
 export const SKIRT_FAR = 480;
-export const SKIRT_LIFT = 28;
+export const SKIRT_LIFT = 3.5;
 
 export function skirtLift(x, z) {
   const rho = Math.hypot(x, z);
   const R = radiusAt(Math.atan2(x, z));
   if (rho <= R) return 0;
-  const span = Math.max(1, SKIRT_FAR - R);
-  const t = Math.min(1, (rho - R) / span);
-  const s = t * t * (3 - 2 * t);
-  return s * SKIRT_LIFT;
+  const d = rho - R;
+  const lip = 12;
+  if (d < lip) {
+    return -2.2 * smooth(d / lip);
+  }
+  const span = Math.max(1, SKIRT_FAR - R - lip);
+  const s = smooth(Math.min(1, (d - lip) / span));
+  return -2.2 + s * (SKIRT_LIFT + 2.2);
 }

@@ -2560,6 +2560,9 @@ async function boot() {
     } catch (err) {
       console.warn("kit", err);
     }
+    // The kit's fog is a heavy night grade. This canyon stays lighter so the
+    // wide view is a place. Colour still comes from the horizon sample.
+    terrain.setLook({ fogDensity: 0.0012, fogCap: 0.08 });
     {
       const g = clearing.zone.ground;
       prefetchImages([...(g.tiles || []), ...(g.depth || []), g.mask, ...(g.details || []), ...((clearing.backdrop && clearing.backdrop.slices) || [])]);
