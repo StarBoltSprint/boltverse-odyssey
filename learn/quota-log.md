@@ -8,3 +8,4 @@ Append-only. One row per step. `python3 tools/quota/quota.py` adds the row. Do n
 | 2026-10-03 | zone-a-step2c | 624f00c | 0 | 0 | 0 | 0 | n/a | n/a | 3639.0 | events.jsonl |
 | 2026-10-03 | zone-a-step3-rocks | 5aae7e0 | 0 | 0 | 0 | 0 | n/a | n/a | 4010.6 | events.jsonl |
 | 2026-10-04 | zone-b-step1c | f184f93 | 0 | 0 | 0 | 0 | n/a | n/a | 2824.6 | events.jsonl |
+| 2026-10-04 | zone-b-step1d | effe4a9 | 0 | 0 | 0 | 0 | n/a | n/a | 2048.9 | events.jsonl |
