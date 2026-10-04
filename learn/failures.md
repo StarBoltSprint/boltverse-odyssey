@@ -351,3 +351,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Two cooks, then stop. The crest slots stay in the manifest and play skips them when no hull is present. Boulders are the sky-line solids in this pass. |
 | Guard | `python3 tools/objsheet/sheet.py` adjacent height ±8% and area ±15%. The crest set fails height. No row detects "short and denser" before the scale attempt. |
 | Sources | `docs/METHOD/rocks.md` pitfalls. Views stay outside the repo. |
+
+### 2026-10-04 — micro-details at the texel budget still read as flecks from the chase boom
+
+| | |
+| --- | --- |
+| Take | Zone A step 5. DetailGenerator. Shipped IN TEST. Eye-level row FAIL. |
+| Defect | 700 keyed cards, heights 0.08–0.18 m, sit on the drawn relief and show at eye height. From the chase boom (about 7 m, eye about 1.9 m) the same cards are flecks. The plate carpet remains the read. One pebble sheet kept a joined mirror, so that stone sits proud. |
+| Root cause | Screen height at 7 m is about 40 px for a 0.16 m card. Dark cards on dark plates disappear. The mirror is opaque to the bottom of the crop, so seating the crop bottom lifts the real stone. |
+| Fix | Stop after two cooks. Do not enlarge the stills. Heights already sit on the texel budget (`texelsPerM` 1800, scale ≤ 1). |
+| Guard | No automatic row. `packs/zone-a/proof/step5/REPORT.md` row 2 is the check. `python3 tools/details/selftest.py` checks density and height, not the chase read. |
+| Sources | `docs/METHOD/details.md` known issues. Prompts stay in the local file. |
