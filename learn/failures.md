@@ -362,3 +362,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Stop after two cooks. Do not enlarge the stills. Heights already sit on the texel budget (`texelsPerM` 1800, scale ≤ 1). |
 | Guard | No automatic row. `packs/zone-a/proof/step5/REPORT.md` row 2 is the check. `python3 tools/details/selftest.py` checks density and height, not the chase read. |
 | Sources | `docs/METHOD/details.md` known issues. Prompts stay in the local file. |
+
+### 2026-10-04 — detail cards seated on `heightAt` sank under the drawn ground
+
+| | |
+| --- | --- |
+| Take | Zone A step 5 follow-up (code only, no Imagine call). |
+| Defect | Cards seated on the minimum of `heightAt` samples. The median card sank 13% of its height; 66 of 700 sank more than half and 20 were fully hidden. Part of the "flecks" read in the chase. |
+| Root cause | `heightAt` carries micro relief (up to about ±0.12 m) between ground mesh vertices (about 0.36 m apart). The mesh draws straight triangles between vertices, not that relief. |
+| Fix | `terrain.meshHeightAt` returns the drawn triangle height. Details seat on its lowest point under each plane's bottom edge. After: 0 cards more than half buried, 0 floating. |
+| Guard | None automatic. Any layer that seats small things must seat on `meshHeightAt`, not `heightAt`. |
+| Sources | `docs/METHOD/details.md` §5. |

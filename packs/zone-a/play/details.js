@@ -57,12 +57,17 @@ function empty() {
   };
 }
 
-function seatMin(heightAt, x, z, radius) {
-  const r = Math.max(0.06, radius);
+// Lowest drawn ground under the bottom edge of every crossed plane, so no
+// part of a card floats and micro relief between mesh vertices cannot bury it.
+function seatMin(groundAt, x, z, yaw, planes, halfW) {
   let min = Infinity;
-  for (let i = -1; i <= 1; i++) {
-    for (let j = -1; j <= 1; j++) {
-      const h = heightAt(x + i * r * 0.55, z + j * r * 0.55);
+  for (let k = 0; k < planes; k++) {
+    const a = yaw + k * Math.PI / planes;
+    const ux = Math.cos(a);
+    const uz = -Math.sin(a);
+    for (let i = -2; i <= 2; i++) {
+      const t = (i / 2) * halfW;
+      const h = groundAt(x + ux * t, z + uz * t);
       if (h < min) min = h;
     }
   }
@@ -110,6 +115,7 @@ export async function mountDetails(gl, env) {
   const mh = new Float32Array(magN);
   const mpx = new Float32Array(magN);
   const counts = {};
+  const groundAt = env.drawnHeightAt || env.heightAt;
   let w = 0;
   let placed = 0;
   for (let i = 0; i < instances.length; i++) {
@@ -123,11 +129,11 @@ export async function mountDetails(gl, env) {
     const quadH = worldH * (rectH / variant.contentH);
     const quadW = quadH * (rectW / rectH);
     const sink = worldH * ((variant.padBottom || 0) / variant.contentH) + 0.006;
-    const foot = Math.max(0.06, Math.min(quadW, 0.28) * 0.5);
-    const base = seatMin(env.heightAt, inst.x, inst.z, foot);
-    const y = base - sink;
     const yaw0 = (inst.yaw || 0) * Math.PI / 180;
     const planes = inst.planes || 2;
+    const halfW = 0.5 * worldH * ((variant.contentW || rectW) / variant.contentH);
+    const base = seatMin(groundAt, inst.x, inst.z, yaw0, planes, halfW);
+    const y = base - sink;
     mx[placed * 3] = inst.x;
     mx[placed * 3 + 1] = y + worldH * 0.5;
     mx[placed * 3 + 2] = inst.z;

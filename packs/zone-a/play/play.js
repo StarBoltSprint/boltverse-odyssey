@@ -2532,6 +2532,7 @@ async function boot() {
           loadImage,
           trackTex,
           heightAt: (x, z) => (useRelief ? terrain.heightAt(x, z) : 0),
+          drawnHeightAt: (x, z) => (useRelief ? terrain.meshHeightAt(x, z) : 0),
         });
         detailLoadMs = detailLayer.loadMs || (performance.now() - detailT0);
       } catch (err) {

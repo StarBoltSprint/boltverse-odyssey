@@ -323,7 +323,12 @@ def main() -> int:
         "stats": stats,
         "qc": qc,
     }
-    (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
+    # One instance per line keeps the download small and the diff readable.
+    body = json.dumps({k: v for k, v in manifest.items() if k != "instances"}, indent=2)
+    rows = ",\n".join("    " + json.dumps(inst, separators=(",", ":")) for inst in instances)
+    text = body[:-2] + ',\n  "instances": [\n' + rows + "\n  ]\n}\n"
+    json.loads(text)
+    (out_dir / "manifest.json").write_text(text)
     print(
         f"PASS details kit={args.kit} placed={stats['placed']} drawn={stats['drawn']} "
         f"atlas={atlas.shape[1]}x{atlas.shape[0]} texMiB={manifest['texMiB']} "

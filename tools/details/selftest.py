@@ -102,7 +102,10 @@ def main() -> int:
             if 0 <= along <= 36 and abs(lat) <= float(numbers["bands"]["nearHalf"]):
                 lats.append(lat)
             spec = numbers["types"][inst["type"]]
-            sep = float(spec["minSeparation"]) * 0.98
+            sep = float(spec["minSeparation"])
+            if numbers.get("clumps"):
+                sep = min(sep, float(numbers["clumps"]["sepM"]))
+            sep *= 0.98
             for other in by_type[inst["type"]]:
                 if other is inst:
                     continue

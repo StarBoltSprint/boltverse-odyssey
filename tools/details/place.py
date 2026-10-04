@@ -157,10 +157,144 @@ def place(numbers: dict, solids: list[tuple[float, float, float]], variants: dic
 
     by_type = {name: 0 for name in numbers["types"]}
     tries = 0
-    for name, spec in numbers["types"].items():
-        group = variants.get(name) or []
-        if not group:
+
+    def rejected(x: float, z: float, name: str, gate: float) -> bool:
+        rho = math.hypot(x, z)
+        th = math.atan2(x, z)
+        if rho > radius_at(th) * inside:
+            return True
+        across = abs((x - sx) * rx + (z - sz) * rz)
+        spawn_d = math.hypot(x - sx, z - sz)
+        if spawn_d < spawn_clear:
+            return True
+        if across > far_half and spawn_d > clearing_r:
+            return True
+        crack = crack_amt(x, z)
+        height = macro_at(x, z)
+        if name == "ridge" and not (height < -0.2 or crack < 0.16) and gate > 0.42:
+            return True
+        if name == "shard" and crack > 0.4 and gate > 0.7:
+            return True
+        if name == "tuft" and (height < -0.7 or height > 1.3) and gate > 0.5:
+            return True
+        for px, pz, pr in solids:
+            if math.hypot(x - px, z - pz) < pr + 0.1:
+                return True
+        return False
+
+    def add(x: float, z: float, name: str, i: int, tseed: int, sep: float, cross_m: float) -> bool:
+        spec = numbers["types"][name]
+        group = variants[name]
+        if rejected(x, z, name, hash01(i, 5, tseed)):
+            return False
+        for item in nearby(x, z, max(sep, cross_m)):
+            d2 = (item[0] - x) ** 2 + (item[1] - z) ** 2
+            limit_m = sep if item[2] == name else cross_m
+            if d2 < limit_m * limit_m:
+                return False
+        hv = hash01(i, 6, tseed)
+        local = int(hv * len(group)) % len(group)
+        yaw_h = hash01(i, 7, tseed)
+        if spec.get("align") == "fissure":
+            yaw = (crack_yaw(x, z) + (yaw_h - 0.5) * 40.0) % 360.0
+        else:
+            yaw = (yaw_h * 360.0) % 360.0
+        for item in nearby(x, z, neighbour):
+            if item[2] != name:
+                continue
+            d2 = (item[0] - x) ** 2 + (item[1] - z) ** 2
+            if d2 > neighbour * neighbour:
+                continue
+            if item[4] == local:
+                local = (local + 1 + int(hash01(i, 8, tseed) * 3)) % len(group)
+            gap = abs((yaw - item[3] + 180.0) % 360.0 - 180.0)
+            if gap < 28.0:
+                yaw = (yaw + 53.0) % 360.0
+            break
+        sc0, sc1 = spec["scale"]
+        scale = float(sc0) + hash01(i, 9, tseed) * (float(sc1) - float(sc0))
+        h0, h1 = spec["heightM"]
+        cap = float(group[local]["maxHeightM"])
+        hi = min(float(h1), cap)
+        lo = min(float(h0), hi)
+        height_m = lo + hash01(i, 10, tseed) * (hi - lo)
+        grid.setdefault(cell_of(x, z), []).append((x, z, name, yaw, local, sep))
+        instances.append({
+            "type": name,
+            "variant": local,
+            "x": round(x, 3),
+            "z": round(z, 3),
+            "yaw": round(yaw, 1),
+            "scale": round(scale, 3),
+            "heightM": round(height_m, 4),
+            "planes": int(spec["planes"]),
+        })
+        by_type[name] += 1
+        return True
+
+    for name in numbers["types"]:
+        if not variants.get(name):
             raise SystemExit(f"FAIL details: no variants for {name}")
+
+    # Clumps first: small mixed groups (a stone with chips and a tuft at its
+    # foot) read as one terrain feature from the chase boom, where a lone
+    # 15 cm card is a fleck. Centres follow the same bands; members are
+    # scattered inside a jittered radius, never on a ring or a row.
+    clumps = numbers.get("clumps") or {}
+    clump_n = int(clumps.get("count") or 0)
+    clump_made = 0
+    if clump_n:
+        cseed = type_seed("clump", seed)
+        mix = clumps["mix"]
+        mix_names = [m for m in mix if m in numbers["types"]]
+        mix_total = sum(float(mix[m]) for m in mix_names)
+        m0, m1 = clumps["members"]
+        crad = float(clumps["radiusM"])
+        csep = float(clumps["sepM"])
+        cnear = float(clumps.get("nearFrac", 0.8))
+        attempt = 0
+        while clump_made < clump_n and attempt < clump_n * 40:
+            attempt += 1
+            tries += 1
+            i = attempt
+            along = -behind + hash01(i, 1, cseed) * (length + behind + 2.0)
+            span = hash01(i, 4, cseed)
+            if hash01(i, 2, cseed) < cnear:
+                lat = span * near_half
+            else:
+                lat = near_half + span * (mid_half - near_half)
+            if hash01(i, 3, cseed) < 0.5:
+                lat = -lat
+            cx = sx + fx * along + rx * lat
+            cz = sz + fz * along + rz * lat
+            if rejected(cx, cz, "", 0.0):
+                continue
+            # keep clump centres apart so clumps do not merge into a carpet
+            if any((it[0] - cx) ** 2 + (it[1] - cz) ** 2 < (crad * 1.6) ** 2 for it in nearby(cx, cz, crad * 1.6)):
+                continue
+            want = int(m0) + int(hash01(i, 5, cseed) * (int(m1) - int(m0) + 1))
+            got = 0
+            for k in range(want * 4):
+                if got >= want:
+                    break
+                j = i * 97 + k
+                pick = hash01(j, 21, cseed) * mix_total
+                name = mix_names[-1]
+                for m in mix_names:
+                    pick -= float(mix[m])
+                    if pick <= 0:
+                        name = m
+                        break
+                ang = hash01(j, 22, cseed) * math.tau
+                rad = crad * math.sqrt(hash01(j, 23, cseed)) * (0.55 + 0.45 * radius_unit(ang + i))
+                x = cx + math.cos(ang) * rad
+                z = cz + math.sin(ang) * rad
+                if add(x, z, name, j, type_seed(name, seed), csep, csep * 0.8):
+                    got += 1
+            if got:
+                clump_made += 1
+
+    for name, spec in numbers["types"].items():
         need = int(spec["count"])
         sep = float(spec["minSeparation"])
         tseed = type_seed(name, seed)
@@ -180,8 +314,6 @@ def place(numbers: dict, solids: list[tuple[float, float, float]], variants: dic
                 rad = pr + 0.55 + hash01(i, 14, tseed) * 1.5
                 x = px + math.cos(ang) * rad
                 z = pz + math.sin(ang) * rad
-                lat = (x - sx) * rx + (z - sz) * rz
-                along = (x - sx) * fx + (z - sz) * fz
             else:
                 if roll < 0.72:
                     lat = span * near_half
@@ -193,88 +325,8 @@ def place(numbers: dict, solids: list[tuple[float, float, float]], variants: dic
                     lat = -lat
                 x = sx + fx * along + rx * lat
                 z = sz + fz * along + rz * lat
-            rho = math.hypot(x, z)
-            th = math.atan2(x, z)
-            if rho > radius_at(th) * inside:
-                continue
-            across = abs((x - sx) * rx + (z - sz) * rz)
-            spawn_d = math.hypot(x - sx, z - sz)
-            if spawn_d < spawn_clear:
-                continue
-            if across > far_half and spawn_d > clearing_r:
-                continue
-            crack = crack_amt(x, z)
-            height = macro_at(x, z)
-            gate = hash01(i, 5, tseed)
-            if name == "ridge" and not (height < -0.2 or crack < 0.16) and gate > 0.42:
-                continue
-            if name == "shard" and crack > 0.4 and gate > 0.7:
-                continue
-            if name == "tuft" and (height < -0.7 or height > 1.3) and gate > 0.5:
-                continue
-            blocked = False
-            for px, pz, pr in solids:
-                if math.hypot(x - px, z - pz) < pr + 0.1:
-                    blocked = True
-                    break
-            if blocked:
-                continue
-            conflict = False
-            for item in nearby(x, z, max(sep, cross)):
-                d2 = (item[0] - x) ** 2 + (item[1] - z) ** 2
-                limit_m = sep if item[2] == name else cross
-                if d2 < limit_m * limit_m:
-                    conflict = True
-                    break
-            if conflict:
-                continue
-            hv = hash01(i, 6, tseed)
-            local = int(hv * len(group)) % len(group)
-            yaw_h = hash01(i, 7, tseed)
-            if spec.get("align") == "fissure":
-                yaw = (crack_yaw(x, z) + (yaw_h - 0.5) * 40.0) % 360.0
-            else:
-                yaw = (yaw_h * 360.0) % 360.0
-            for item in nearby(x, z, neighbour):
-                if item[2] != name:
-                    continue
-                d2 = (item[0] - x) ** 2 + (item[1] - z) ** 2
-                if d2 > neighbour * neighbour:
-                    continue
-                if item[4] == local:
-                    local = (local + 1 + int(hash01(i, 8, tseed) * 3)) % len(group)
-                gap = abs((yaw - item[3] + 180.0) % 360.0 - 180.0)
-                if gap < 28.0:
-                    yaw = (yaw + 53.0) % 360.0
-                break
-            sc0, sc1 = spec["scale"]
-            scale = float(sc0) + hash01(i, 9, tseed) * (float(sc1) - float(sc0))
-            h0, h1 = spec["heightM"]
-            cap = float(group[local]["maxHeightM"])
-            hi = min(float(h1), cap)
-            lo = min(float(h0), hi)
-            height_m = lo + hash01(i, 10, tseed) * (hi - lo)
-            rec = (
-                x,
-                z,
-                name,
-                yaw,
-                local,
-                sep,
-            )
-            grid.setdefault(cell_of(x, z), []).append(rec)
-            instances.append({
-                "type": name,
-                "variant": local,
-                "x": round(x, 3),
-                "z": round(z, 3),
-                "yaw": round(yaw, 1),
-                "scale": round(scale, 3),
-                "heightM": round(height_m, 4),
-                "planes": int(spec["planes"]),
-            })
-            got += 1
-        by_type[name] = got
+            if add(x, z, name, i, tseed, sep, cross):
+                got += 1
 
     def frame(x: float, z: float) -> tuple[float, float]:
         dx = x - sx
@@ -308,5 +360,6 @@ def place(numbers: dict, solids: list[tuple[float, float, float]], variants: dic
         "nearPerM2": round(near_n / near_area, 4),
         "farPerM2": round(far_n / far_area, 4),
         "clearing": clearing_n,
+        "clumps": clump_made,
     }
     return instances, stats

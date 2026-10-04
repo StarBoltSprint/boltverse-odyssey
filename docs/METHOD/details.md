@@ -71,12 +71,14 @@ Edges of opaque pixels are bled a few pixels into the empty alpha so mipmaps do 
 
 - Deterministic hash from `seed` and the type name. Same numbers, same points.
 - Path frame: spawn and heading from the numbers file (the rock corridor copy). Forward and right come from that heading.
+- Clumps first (optional `clumps` block): `count` centres, 80% inside `nearHalf`, the rest out to `midHalf`. Each clump takes `members` cards of mixed types (weights in `mix`) inside a jittered `radiusM`, with `sepM` between members. Centres keep 1.6 × `radiusM` from earlier cards so clumps do not merge into a carpet. A clump reads as one small terrain feature from the chase boom, where a lone card is a fleck.
 - Bands: 72% of samples inside `nearHalf`, 18% between near and `midHalf`, 10% out to `farHalf`. Both sides. No lattice, no ring, no row.
 - Pebbles: 28% retarget to a solid's annulus, from hull radius + 0.55 m to + 2.05 m, still outside the hull.
 - Reject: outside the zone radius times `insideFrac`, farther than `farHalf` unless inside `clearingR`, inside `spawnClearM` of spawn, or inside a solid hull + 0.1 m.
 - Ridge prefers a hollow or a crack. Shard prefers a crack. Tuft prefers the mid height band. Each gate is a hash, not a hard wall, so a few still land elsewhere.
 - Neighbours of the same type inside `neighbourM` must differ in variant or in yaw (at least 28°). If not, the yaw steps and the variant changes.
-- Seat at load, not per frame. `y` is the minimum of a 3×3 sample of the **drawn** relief (`heightAt`, macro plus micro) minus a few millimetres and the bottom pad. The quad grows up. World-locked. No camera yaw.
+- Seat at load, not per frame, on the **drawn triangles** (`terrain.meshHeightAt`: the ground mesh grid, linear inside each triangle). `y` is the lowest drawn height under the bottom edge of every crossed plane (5 samples per plane across the content width) minus a few millimetres and the bottom pad. The quad grows up. World-locked. No camera yaw.
+- Do not seat on `heightAt` alone: it carries micro relief (up to about ±0.12 m) between mesh vertices that the mesh does not draw. Seated on it, the median card sank 13% and 20 of 700 cards were fully under the drawn ground (measured 2026-10-04). On the drawn triangles: 0 cards more than half buried, 0 floating.
 
 ### 6. Play
 
@@ -102,12 +104,14 @@ Bands: near 3.2 m, mid 7.5 m, far 16 m, clearing radius 14 m. `texelsPerM` 1800.
 
 | Type | Count | Height (m) | Scale | min separation (m) | Variants kept | texels/m | mag 1 at (m) |
 |---|---:|---|---|---:|---:|---:|---:|
-| shard | 260 | 0.11–0.16 | 0.94–1 | 0.36 | 4 | 1801.2 | 0.995 |
-| pebble | 220 | 0.12–0.18 | 0.94–1 | 0.32 | 4 | 1800.1 | 0.996 |
-| ridge | 100 | 0.08–0.14 | 0.94–1 | 0.90 | 4 | 1820.8 | 0.985 |
-| tuft | 120 | 0.12–0.18 | 0.94–1 | 0.42 | 3 | 1800.9 | 0.996 |
+| shard | 420 + clumps = 702 | 0.12–0.24 (capped by `maxHeightM`) | 0.94–1 | 0.36 | 4 | 1801.2 | 0.995 |
+| pebble | 380 + clumps = 783 | 0.13–0.24 (capped) | 0.94–1 | 0.32 | 4 | 1800.8 | 0.996 |
+| ridge | 140 + clumps = 194 | 0.10–0.24 (capped) | 0.94–1 | 0.90 | 4 | 1800.4 | 0.996 |
+| tuft | 220 + clumps = 319 | 0.13–0.24 (capped) | 0.94–1 | 0.42 | 3 | 1799.5 | 0.996 |
 
-Placed 700. Drawn 1400 (two quads each, all resident). Near 1.0547 / m², far 0.0703 / m², clearing 214.
+Clumps: 170 centres, 3–7 members, radius 0.6 m, member gap 0.17 m, mix pebble 0.4 / shard 0.35 / tuft 0.15 / ridge 0.1. Height ranges reach each still's own `maxHeightM` (contentH / 1800), so no card is enlarged.
+
+Placed 1998. Drawn 3996 (two quads each, all resident). Near 2.8168 / m², far 0.1585 / m², clearing 567. (First pass: 700 / 1400, near 1.0547 / m².)
 Atlas 2048×1024, 10.667 MiB. One extra draw. Load measured in the step 5 report.
 Command: `python3 tools/details/build.py --kit howling-eclipse`.
 
@@ -143,5 +147,7 @@ Same generator. New numbers file, new sheets from that biome's ground tile, same
 - One tuft group broke into needles and was dropped. Three clumps remain. Not recooked.
 - A thin key fringe can remain. No despill.
 - Chase detail magnification measured 0.642. An aimed close pose measured 0.999. A lower eye inside the scatter measured 1.392, because a card was closer than the about-1 m mag-1 distance. Listed, not enlarged.
-- At the chase boom the plates still read as a carpet. The cards are flecks there. At eye height they stand up. Not recooked.
+- At the chase boom the plates still read as a carpet. The cards are flecks there. At eye height they stand up. Not recooked. Code-only follow-up (seat on the drawn mesh, 2.85× cards, clumps, heights up to each still's texel cap) roughly doubles to triples the visible cards in the chase frame but does not change the read: a 0.13–0.23 m card at 5–10 m is 25–80 px on a 1600 px screen. A real fix needs larger source crops (one subject per still, D2) so taller cards stay at mag ≤ 1, which costs new Imagine calls.
+- Crossed planes show as a V or an X on thin tufts seen at about 45°.
+- Low-eye debug poses (eye 0.4–0.5 m above the ground inside the scatter) measure detail mag 1.27–2.49, because the nearest card is under 0.5 m away (the metric ignores the frustum). The ground plates reach 2.3–3.0 at the same poses. The chase camera (eye ≥ 1.22 m) measured at most 0.78.
 - One pebble keeps a joined mirror, so that stone sits proud of the surface. Second cook. Not recooked.

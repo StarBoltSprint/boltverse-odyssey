@@ -28,10 +28,23 @@
   "focalPx": 1793,
   "pad": 4,
   "padBottom": 2,
+  "clumps": {
+    "count": 170,
+    "members": [3, 7],
+    "radiusM": 0.6,
+    "sepM": 0.17,
+    "nearFrac": 0.8,
+    "mix": {
+      "pebble": 0.4,
+      "shard": 0.35,
+      "tuft": 0.15,
+      "ridge": 0.1
+    }
+  },
   "types": {
     "shard": {
-      "count": 260,
-      "heightM": [0.11, 0.16],
+      "count": 420,
+      "heightM": [0.12, 0.24],
       "scale": [0.94, 1],
       "minSeparation": 0.36,
       "planes": 2,
@@ -39,8 +52,8 @@
       "align": "fissure"
     },
     "pebble": {
-      "count": 220,
-      "heightM": [0.12, 0.18],
+      "count": 380,
+      "heightM": [0.13, 0.24],
       "scale": [0.94, 1],
       "minSeparation": 0.32,
       "planes": 2,
@@ -48,8 +61,8 @@
       "align": "hash"
     },
     "ridge": {
-      "count": 100,
-      "heightM": [0.08, 0.14],
+      "count": 140,
+      "heightM": [0.1, 0.24],
       "scale": [0.94, 1],
       "minSeparation": 0.9,
       "planes": 2,
@@ -57,8 +70,8 @@
       "align": "fissure"
     },
     "tuft": {
-      "count": 120,
-      "heightM": [0.12, 0.18],
+      "count": 220,
+      "heightM": [0.13, 0.24],
       "scale": [0.94, 1],
       "minSeparation": 0.42,
       "planes": 2,
