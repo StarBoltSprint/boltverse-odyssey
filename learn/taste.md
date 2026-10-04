@@ -17,6 +17,10 @@ Short summary of the log below. When a new reaction changes a rule, add a senten
 - A speed-tied scrolling ground video is KEEP.
 - Orbit views that show two different ships are a FAIL.
 - A video window sitting on a still sky is a FAIL. The floor has to be large enough to run.
+- A ringed planet whose rings cross, or whose moons have ragged cut edges and a dark fringe, reads as clip-art.
+- A planet that stays a still is a FAIL. The cloud bands have to move.
+- A planet card keeps its native aspect and a uniform scale of at most 1.
+- The planet is large in the sky. Enlarging it past the video's native pixels is a FAIL.
 
 ## How to append
 
@@ -43,3 +47,7 @@ Append a row at the bottom. Do not rewrite an old row. Verdict is KEEP, FAIL, or
 | 2026-10-03 | Sky living layers that do not read | FAIL | there are no videos, it's just images | A living layer has to move where the player looks, without covering the paintings in rectangles. |
 | 2026-10-04 | Zone B sky, the ringed planet, and the canyon floor | FAIL | "make the sky calmer, add the ringed planet spinning with its moons as its own Imagine video, and make the canyon way bigger so Bolt can really run." | An emptier base sky. The planet is its own keyed video. The floor has to be large enough to run. |
 | 2026-10-04 | Zone B step 1f look: empty plain, missing canyon walls, flat sky, clip-art planet | FAIL | "add detail layers little by little, and make the planet look much more realistic." | Add detail in layers. The planet has to read as a photograph, with lighting that matches the sun. |
+| 2026-10-04 23:16 | Ember Mesa ringed planet and moons on the phone | FAIL | "ça va pas du tout" | One coherent ring, soft edges, photoreal. Rings that cross, and moons with a ragged edge and a dark fringe, read as clip-art. |
+| 2026-10-04 23:22 | Ember Mesa planet card on the phone | FAIL | "là c'est juste une image" | The planet video has to spin. A still left on top of a ready video is a FAIL. |
+| 2026-10-04 23:22 | Ember Mesa planet card, stretch | FAIL | no stretching | Native aspect. Uniform scale at most 1. The ring stays an ellipse. |
+| 2026-10-04 23:24 | Ember Mesa planet, size and sharpness | FAIL | planet must be BIG, without losing quality | Frame the video tight at the highest native resolution. Show it large at scale at most 1. Do not enlarge past native pixels. |

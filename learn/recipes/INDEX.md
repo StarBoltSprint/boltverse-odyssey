@@ -44,6 +44,6 @@ Hull from stills that already passed the sheet: `python3 tools/walkaround/build.
 
 | Recipe | Commit | QC |
 | --- | --- | --- |
-| — | — | — |
+| [zone-b-planet-card.md](zone-b-planet-card.md) — one 1280×720 ringed-planet video, soft key, camera-facing (prompt not stored) | PLANETSHA | pair dt 3.830 s; scale 0.5625; videos 4; aspect 1.7778 |
 
 `python3 tools/assetcheck/check.py` kind `cutout` with a declared `onScreen` size and `key` (`alpha`, `black`, or `green`). Cook at or above the on-screen pixels. Compositor `scale` stays ≤ 1 ([`biome/docs/56-cutout-native-scale.md`](../../biome/docs/56-cutout-native-scale.md)). Bolt motion stays `lock/bolt-gallop-cycle.mp4`. An `assetcheck` WARN on a `lock/` file is not a recook.

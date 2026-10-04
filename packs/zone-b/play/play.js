@@ -338,6 +338,12 @@ vec3 grade(vec3 x) {
   y = mix(vec3(l), y, 1.05);
   return clamp(y, 0.0, 1.0);
 }
+float planetCover(vec4 t) {
+  float ex = t.g - max(t.r, t.b);
+  float k = clamp((ex - 0.08) / 0.14, 0.0, 1.0);
+  float sm = k * k * (3.0 - 2.0 * k);
+  return 1.0 - sm;
+}
 void main() {
   vec2 uv = uUvOff + vUv * uUvScale;
   vec4 c = texture(uTex, uv);
@@ -349,6 +355,8 @@ void main() {
     float lum = dot(c.rgb, vec3(0.299, 0.587, 0.114));
     if (lum < 0.07) discard;
   } else if (uKey == 4) {
+    // Soft chroma. Coverage comes from green excess only. A dark limb stays.
+    // One-texel min erodes the green fringe. No luma hole in the disk.
     vec2 px = uSpin > 0.5
       ? vec2(1.0 / max(1.0, uVidSize.x), 1.0 / max(1.0, uVidSize.y))
       : vec2(1.0 / max(1.0, uPngSize.x), 1.0 / max(1.0, uPngSize.y));
@@ -357,44 +365,20 @@ void main() {
     vec4 sL = uSpin > 0.5 ? texture(uVid, uv - vec2(px.x, 0.0)) : texture(uTex, uv - vec2(px.x, 0.0));
     vec4 sU = uSpin > 0.5 ? texture(uVid, uv + vec2(0.0, px.y)) : texture(uTex, uv + vec2(0.0, px.y));
     vec4 sD = uSpin > 0.5 ? texture(uVid, uv - vec2(0.0, px.y)) : texture(uTex, uv - vec2(0.0, px.y));
-    c = s0;
-    float ex0 = s0.g - max(s0.r, s0.b);
-    float exN = sR.g - max(sR.r, sR.b);
-    exN = max(exN, sL.g - max(sL.r, sL.b));
-    exN = max(exN, sU.g - max(sU.r, sU.b));
-    exN = max(exN, sD.g - max(sD.r, sD.b));
-    if (ex0 > 0.09 || exN > 0.12) discard;
-    c.g = min(c.g, max(c.r, c.b));
-    // Green field is already gone. The matte inside it is a dark neutral
-    // rectangle. Pure black drops. Darker greys drop unless a lit neighbour
-    // (the limb, a ring, a moon) is within 9 px, so the night side stays.
-    float lum = dot(c.rgb, vec3(0.299, 0.587, 0.114));
-    if (lum < 0.063) discard;
-    if (lum < 0.188) {
-      vec2 step = px * 9.0;
-      float nb = lum;
-      vec2 taps[8];
-      taps[0] = vec2(step.x, 0.0);
-      taps[1] = vec2(-step.x, 0.0);
-      taps[2] = vec2(0.0, step.y);
-      taps[3] = vec2(0.0, -step.y);
-      taps[4] = step;
-      taps[5] = -step;
-      taps[6] = vec2(step.x, -step.y);
-      taps[7] = vec2(-step.x, step.y);
-      for (int i = 0; i < 8; i++) {
-        vec4 ts = uSpin > 0.5 ? texture(uVid, uv + taps[i]) : texture(uTex, uv + taps[i]);
-        float texn = ts.g - max(ts.r, ts.b);
-        if (texn > 0.09) continue;
-        ts.g = min(ts.g, max(ts.r, ts.b));
-        nb = max(nb, dot(ts.rgb, vec3(0.299, 0.587, 0.114)));
-      }
-      if (nb < 0.353) discard;
-    }
+    float a0 = planetCover(s0);
+    float a = min(a0, planetCover(sR));
+    a = min(a, planetCover(sL));
+    a = min(a, planetCover(sU));
+    a = min(a, planetCover(sD));
+    if (a < 0.03) discard;
+    s0.g = min(s0.g, max(s0.r, s0.b));
+    c = vec4(s0.rgb, a);
   }
-  if (uMode == 1) o = vec4(uId, 1.0);
-  else if (uKey == 1 || uKey == 3) o = vec4(uPost > 0.5 ? grade(c.rgb) : c.rgb, uAlpha);
-  else if (uKey == 4) o = vec4(c.rgb, 0.004);
+  if (uMode == 1) {
+    if (uKey == 4 && c.a < 0.45) discard;
+    o = vec4(uId, 1.0);
+  } else if (uKey == 1 || uKey == 3) o = vec4(uPost > 0.5 ? grade(c.rgb) : c.rgb, uAlpha);
+  else if (uKey == 4) o = vec4(c.rgb, c.a);
   else o = vec4(c.rgb, c.a * uAlpha);
 }`);
 
@@ -837,12 +821,18 @@ function videoEl(url) {
   const v = document.createElement("video");
   v.src = absUrl(url);
   v.muted = true;
+  v.defaultMuted = true;
   v.loop = true;
+  v.autoplay = true;
   v.playsInline = true;
   v.crossOrigin = "anonymous";
   v.preload = "auto";
+  v.setAttribute("muted", "");
+  v.setAttribute("autoplay", "");
   v.setAttribute("playsinline", "");
-  v.style.cssText = "position:fixed;width:1px;height:1px;opacity:0;pointer-events:none";
+  v.setAttribute("webkit-playsinline", "");
+  // A fully hidden element is paused by mobile browsers. Two pixels stay decodable.
+  v.style.cssText = "position:fixed;left:0;top:0;width:2px;height:2px;opacity:0.02;pointer-events:none";
   document.body.appendChild(v);
   return v;
 }
@@ -1711,11 +1701,25 @@ function gateInfo() {
   };
 }
 
+function kickVideos() {
+  const bolt = state.mode === "GALLOP" ? gallopVideo : idleVideo;
+  const list = [planetVideo, bolt];
+  for (let i = 0; i < skyVideos.length; i++) {
+    if (skyLayerMeta[i] && skyLayerMeta[i].gain > 0) list.push(skyVideos[i]);
+  }
+  for (let i = 0; i < list.length; i++) {
+    const v = list[i];
+    if (v && v.paused) v.play().catch(() => {});
+  }
+  if (hardLayer && hardLayer.kick) hardLayer.kick();
+}
+
 function syncVideos(eye, fwd) {
   const active = state.mode === "GALLOP" ? gallopVideo : idleVideo;
   const other = state.mode === "GALLOP" ? idleVideo : gallopVideo;
   if (other && !other.paused) other.pause();
   if (active && active.paused) active.play().catch(() => {});
+  if (planetVideo && planetVideo.paused) planetVideo.play().catch(() => {});
   const g = gatePoint();
   const dx = g.x - eye[0];
   const dz = g.z - eye[2];
@@ -1732,8 +1736,10 @@ function syncVideos(eye, fwd) {
   if (neb) {
     if (show) {
       if (!neb.paused) neb.pause();
-    } else if (neb.paused) neb.play().catch(() => {});
+    } else if (neb.paused && skyLayerMeta[2] && skyLayerMeta[2].gain > 0) neb.play().catch(() => {});
   }
+  // Beacon yields to the gate so Bolt + haze + planet + one of {gate, beacon} stays at 4.
+  if (hardLayer && hardLayer.setVideo) hardLayer.setVideo(!show);
   return show;
 }
 
@@ -1762,7 +1768,7 @@ function seamOverlap(srcW, srcH, azDeg, el0, el1) {
   return c;
 }
 
-function drawSky(mode, eye) {
+function drawSky(mode, eye, withLayers) {
   if (mode === 1 || !skyVao || !zenithTex || !skyTex) return;
   const yaw = state.hdg * Math.PI / 180;
   gl.useProgram(surfProg);
@@ -1812,7 +1818,7 @@ function drawSky(mode, eye) {
   gl.depthMask(true);
   gl.drawArrays(gl.TRIANGLES, 0, skyVao._count);
   drawCalls++;
-  drawSkyLayers(eye, yaw);
+  if (withLayers !== false) drawSkyLayers(eye, yaw);
 }
 
 function drawSkyLayers(eye, yaw) {
@@ -1921,7 +1927,7 @@ function drawCard(mode, tex, key, cx, cy, cz, y0, w, h, idIndex, alpha, uvOff, u
   gl.useProgram(cardProg);
   gl.bindVertexArray(cardVao);
   gl.uniformMatrix4fv(cardLoc.vp, false, vpM);
-  const cardUp = key === 1 ? camUp : upBuf;
+  const cardUp = key === 1 || key === 4 ? camUp : upBuf;
   gl.uniform3f(cardLoc.right, rightBuf[0], rightBuf[1], rightBuf[2]);
   gl.uniform3f(cardLoc.up, cardUp[0], cardUp[1], cardUp[2]);
   gl.uniform3f(cardLoc.center, cx, cy, cz);
@@ -1951,48 +1957,119 @@ function drawCard(mode, tex, key, cx, cy, cz, y0, w, h, idIndex, alpha, uvOff, u
   gl.uniform1i(cardLoc.tex, 0);
   // Hero is a card. Depth against a hull that bulges past its footprint
   // splits the id mask into two blobs. The camera keeps the eye behind him.
-  // Key 4 writes alpha 0.004 as a fog sentinel. Blend stays off so the RGB replaces the sky.
-  if (key === 1) gl.disable(gl.DEPTH_TEST);
-  else gl.enable(gl.DEPTH_TEST);
-  gl.depthMask(key !== 1 && key !== 4);
-  gl.disable(gl.BLEND);
+  // Key 4 is a camera-facing cutout. Coverage blends over the sky. Depth stays
+  // so a nearer mesa covers the limb. Discarded green does not write depth.
+  if (key === 1) {
+    gl.disable(gl.DEPTH_TEST);
+    gl.depthMask(false);
+    gl.disable(gl.BLEND);
+  } else if (key === 4 && mode === 0) {
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthMask(true);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+  } else {
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthMask(true);
+    gl.disable(gl.BLEND);
+  }
   gl.drawArrays(gl.TRIANGLES, 0, 6);
   drawCalls++;
   gl.enable(gl.DEPTH_TEST);
   gl.depthMask(true);
   gl.disable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+}
+
+function fitPlanetSource(srcW, srcH) {
+  if (!planetCard || !(srcW > 0) || !(srcH > 0)) return;
+  const fit = Math.min(1, W / srcW);
+  const cap = Math.min(planetCard.magCap == null ? fit : planetCard.magCap, fit, 1);
+  planetCard.srcW = srcW;
+  planetCard.srcH = srcH;
+  planetCard.worldH = cap * srcH * planetCard.distanceM / FOCAL;
+  planetCard.worldW = planetCard.worldH * (srcW / srcH);
 }
 
 function uploadPlanet() {
   const v = planetVideo;
-  if (!v || v.readyState < 2 || !planetTex) return false;
+  if (!v || !planetTex) return false;
+  if (v.videoWidth > 0) fitPlanetSource(v.videoWidth, v.videoHeight);
+  if (v.readyState < 2) return videoStamp.has("planet");
   const stamp = v.currentTime;
   if (videoStamp.get("planet") === stamp) return true;
   if (v.paused && videoStamp.has("planet")) return true;
   videoStamp.set("planet", stamp);
   gl.bindTexture(gl.TEXTURE_2D, planetTex);
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, v);
-  gl.generateMipmap(gl.TEXTURE_2D);
-  trackTex("planet-video", Math.ceil((v.videoWidth || 960) * (v.videoHeight || 480) * 4 * 4 / 3));
+  if (!videoStamp.has("planet-bytes")) {
+    trackTex("planet-video", (v.videoWidth || 1280) * (v.videoHeight || 720) * 4);
+    videoStamp.set("planet-bytes", 1);
+  }
   return true;
+}
+
+function planetCenter(eye) {
+  const p = planetCard;
+  const az = p.headingDeg * Math.PI / 180;
+  const el = p.elevationDeg * Math.PI / 180;
+  const c = Math.cos(el);
+  return [
+    eye[0] + Math.sin(az) * c * p.distanceM,
+    eye[1] + Math.sin(el) * p.distanceM,
+    eye[2] + Math.cos(az) * c * p.distanceM,
+  ];
 }
 
 function drawPlanet(mode, eye) {
   if (!planetCard) return;
   const p = planetCard;
-  const az = p.headingDeg * Math.PI / 180;
-  const el = p.elevationDeg * Math.PI / 180;
-  const c = Math.cos(el);
-  const cx = eye[0] + Math.sin(az) * c * p.distanceM;
-  const cy = eye[1] + Math.sin(el) * p.distanceM - p.worldH * 0.5;
-  const cz = eye[2] + Math.cos(az) * c * p.distanceM;
+  const mid = planetCenter(eye);
+  const cx = mid[0] - camUp[0] * p.worldH * 0.5;
+  const cy = mid[1] - camUp[1] * p.worldH * 0.5;
+  const cz = mid[2] - camUp[2] * p.worldH * 0.5;
   const spinning = uploadPlanet();
   drawCard(mode, p.tex, 4, cx, cy, cz, 0, p.worldW, p.worldH, labelOf("planet"), 1, null, null, spinning ? 1 : 0);
+}
+
+function planetScreenRect() {
+  if (!planetCard) return null;
+  const p = planetCard;
+  const mid = planetCenter(eyeBuf);
+  const base = [
+    mid[0] - camUp[0] * p.worldH * 0.5,
+    mid[1] - camUp[1] * p.worldH * 0.5,
+    mid[2] - camUp[2] * p.worldH * 0.5,
+  ];
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  let z = 0;
+  for (let i = 0; i < 2; i++) {
+    for (let j = 0; j < 2; j++) {
+      const ox = (i - 0.5) * p.worldW;
+      const oy = j * p.worldH;
+      const s = projectPoint(
+        eyeBuf, rightBuf, camUp, camFwd,
+        base[0] + rightBuf[0] * ox + camUp[0] * oy,
+        base[1] + rightBuf[1] * ox + camUp[1] * oy,
+        base[2] + rightBuf[2] * ox + camUp[2] * oy,
+      );
+      if (!s) return null;
+      if (s.x < minX) minX = s.x;
+      if (s.y < minY) minY = s.y;
+      if (s.x > maxX) maxX = s.x;
+      if (s.y > maxY) maxY = s.y;
+      z = s.z;
+    }
+  }
+  return { x: minX, y: minY, w: maxX - minX, h: maxY - minY, z };
 }
 
 function updateHeroQuad(eye) {
@@ -2108,7 +2185,10 @@ function render(mode) {
   gl.clearColor(0, 0, 0, 1);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   drawCalls = 0;
-  drawSky(mode, eye);
+  const yaw = state.hdg * Math.PI / 180;
+  drawSky(mode, eye, false);
+  drawPlanet(mode, eye);
+  if (mode === 0) drawSkyLayers(eye, yaw);
   if (useRelief) {
     const rgb = idRgb(mode === 1 ? labelOf("ground") : 0);
     terrain.draw(vpM, mode, rgb);
@@ -2130,7 +2210,6 @@ function render(mode) {
     hardLayer.draw(vpM, mode);
     drawCalls += hardLayer.draws;
   }
-  drawPlanet(mode, eye);
   if (showGate && uploadVideo(gateVideo, gateTex, "gate")) {
     const g = gatePoint();
     drawCard(mode, gateTex, 3, g.x, 0, g.z, 0, sized.gw, sized.gh, labelOf("gate:" + g.gate.id), 1);
@@ -2839,13 +2918,15 @@ async function boot() {
       if (planetRes.ok) {
         const man = await planetRes.json();
         const img = await loadImage(absUrl(PACK + "/src/sky/" + man.file));
-        const dist = man.distanceM || 380;
-        const cap = man.mag || 0.94;
-        const worldH = cap * img.height * dist / FOCAL;
+        const dist = man.distanceM || 560;
+        const fit = Math.min(1, W / Math.max(1, img.width));
+        const magCap = Math.min(typeof man.mag === "number" ? man.mag : fit, fit, 1);
+        const worldH = magCap * img.height * dist / FOCAL;
         planetCard = {
           tex: makeStill(img, "planet"),
           srcW: img.width,
           srcH: img.height,
+          magCap,
           headingDeg: man.headingDeg,
           elevationDeg: man.elevationDeg,
           distanceM: dist,
@@ -2999,14 +3080,35 @@ async function boot() {
       heightAt(x, z) { return terrain.heightAt(x, z); },
       mesaInfo() { return mesaLayer ? mesaLayer.info() : null; },
       hardInfo() { return hardLayer ? hardLayer.info() : null; },
+      kick() { kickVideos(); },
+      videos() { return activeVideoCount(); },
       planetInfo() {
-        return planetCard ? {
-          worldH: planetCard.worldH,
-          worldW: planetCard.worldW,
+        if (!planetCard) return null;
+        const p = planetCard;
+        const natW = planetVideo && planetVideo.videoWidth ? planetVideo.videoWidth : p.srcW;
+        const natH = planetVideo && planetVideo.videoHeight ? planetVideo.videoHeight : p.srcH;
+        const screenH = (FOCAL * p.worldH) / p.distanceM;
+        const screenW = (FOCAL * p.worldW) / p.distanceM;
+        return {
+          worldH: p.worldH,
+          worldW: p.worldW,
           mag: planetMagNow,
-          video: !!(planetVideo && planetVideo.readyState >= 2),
+          nativeW: natW,
+          nativeH: natH,
+          screenW,
+          screenH,
+          scale: natW ? screenW / natW : 0,
+          aspectNative: natH ? natW / natH : 0,
+          aspectScreen: screenH ? screenW / screenH : 0,
+          currentTime: planetVideo ? planetVideo.currentTime : 0,
+          duration: planetVideo ? planetVideo.duration : 0,
+          paused: planetVideo ? planetVideo.paused : true,
+          readyState: planetVideo ? planetVideo.readyState : 0,
+          spinning: videoStamp.has("planet"),
+          rect: planetScreenRect(),
+          video: !!(planetVideo && (planetVideo.readyState >= 2 || videoStamp.has("planet"))),
           uv: { off: planetUv.off.slice(), scale: planetUv.scale.slice() },
-        } : null;
+        };
       },
     };
     render(0);
@@ -3023,8 +3125,11 @@ async function boot() {
 const keys = new Set();
 addEventListener("keydown", (e) => {
   keys.add(e.key.toLowerCase());
+  kickVideos();
   e.preventDefault();
 });
+addEventListener("pointerdown", () => kickVideos(), { passive: true });
+addEventListener("touchstart", () => kickVideos(), { passive: true });
 addEventListener("keyup", (e) => keys.delete(e.key.toLowerCase()));
 const stick = document.getElementById("stick");
 const nub = document.getElementById("nub");

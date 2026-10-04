@@ -31,6 +31,8 @@ function empty() {
     push() { return null; },
     blocks() { return false; },
     videoOn() { return false; },
+    kick() {},
+    setVideo() {},
     info() { return { count: 0 }; },
   };
 }
@@ -376,6 +378,15 @@ void main() {
     },
     videoOn() {
       return !!(beaconVideo && !beaconVideo.paused && beaconVideo.readyState >= 2);
+    },
+    kick() {
+      if (beaconVideo && beaconVideo.paused) beaconVideo.play().catch(() => {});
+    },
+    setVideo(on) {
+      if (!beaconVideo) return;
+      if (on) {
+        if (beaconVideo.paused) beaconVideo.play().catch(() => {});
+      } else if (!beaconVideo.paused) beaconVideo.pause();
     },
     draw(vp, mode) {
       gl.useProgram(prog);

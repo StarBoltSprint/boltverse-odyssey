@@ -527,3 +527,36 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Leave the row as the tool wrote it. The step report records the `tool_name` counts. |
 | Guard | A zero tools cell next to a log whose events are `tool_started`. |
 | Sources | `tools/quota/quota.py`. `learn/quota-log.md` row `zone-b-step2`. Log `zoneB-step2-20261004.jsonl`. |
+
+### 2026-10-05 — a planet card stays a still
+
+| | |
+| --- | --- |
+| Take | Zone B planet fix. |
+| Defect | On the phone the planet was a still. A clip pinned only at the first and last frames idled, then snapped. A page opened with `?debug=1` advanced the planet clock by about half a second across three seconds of wall time. |
+| Root cause | The same end frames hold the clip. `debug=1` skips the render that uploads the 2×2 video, and the browser then throttles it. The poster stays until the first uploaded frame. |
+| Fix | Pin a mid keyframe. Set muted, playsinline, and call `play()` on the first pointer, touch, or key, and again every frame while paused. After one frame has uploaded, a pause keeps that frame. Proof captures omit `debug=1`. |
+| Guard | Two phone captures whose media times differ by about 3 s, with `planetInfo().spinning` true. No playcheck row reads the planet clock. |
+| Sources | `packs/zone-b/src/sky/planet-body.mp4`. `packs/zone-b/play/play.js` `kickVideos`, `uploadPlanet`. Shots `packs/zone-b/proof/planetfix/t0.jpg`, `t3.jpg`. |
+
+### 2026-10-05 — a loop-wrap wait lands both planet shots on one phase
+
+| | |
+| --- | --- |
+| Take | Zone B planet fix. Proof pair. |
+| Defect | A wait for `currentTime - start >= 2.9` ran 14 s, and the two grabs were a fraction of a second apart in media time. |
+| Root cause | The start time was already near the end of the 6.042 s loop. After the wrap, `currentTime - start` is negative, so the stop never fired and the later grab overwrote the pair. |
+| Fix | Wait until `currentTime` sits inside `(t0 + 2.85, t0 + 4.2)`. |
+| Guard | `packs/zone-b/proof/planetfix/pair.json` records dt 3.830 s. The discarded wrap stays in the out dir as `proof.json` and is not the proof. |
+| Sources | `packs/zone-b/proof/planetfix/pair.json`. |
+
+### 2026-10-05 — a hard planet key hides the disk, and a world-up card squashes the ring
+
+| | |
+| --- | --- |
+| Take | Zone B planet fix. |
+| Defect | Writing alpha 0.004 with blending off hid the planet. A luma test ate the night side and a moon. A card built on world up turned the ring into a flattened band. One image edit that was asked to turn the clouds returned a near-copy. |
+| Root cause | The post pass treats a near-zero alpha as a fog sentinel. Luma is not the key colour. A high card that uses world up is foreshortened. The edit did not move the clouds. |
+| Fix | Green excess, smoothstep 0.08 to 0.22, a one-texel minimum, despill, discard under alpha 0.03, blend on, interior alpha near 1. Key 4 uses the camera up and the camera right. Stop. One image slot was left unused. The dark night limb is the source shading. |
+| Guard | `planetInfo` scale at most 1, and `aspectNative` matches `aspectScreen`. No row grades the remaining limb. The phone pair is the check. |
+| Sources | `packs/zone-b/play/play.js` `planetCover`, `drawCard`. `packs/zone-b/src/sky/planet.json`. |
