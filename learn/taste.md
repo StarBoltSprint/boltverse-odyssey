@@ -15,6 +15,7 @@ Short summary of the log below. When a new reaction changes a rule, add a senten
 - The rounded egg-pod ship is FAIL.
 - Spherical or blob rocks, and identical capsule views, read as a demo. FAIL.
 - A speed-tied scrolling ground video is KEEP.
+- A ruin base that floats above the drawn relief is a FAIL. A black unpainted hull face is a FAIL.
 - Orbit views that show two different ships are a FAIL.
 
 ## How to append
@@ -40,3 +41,5 @@ Append a row at the bottom. Do not rewrite an old row. Verdict is KEEP, FAIL, or
 | 2026-10-01/02 | Inconsistent orbit views (two different ships) | FAIL | inconsistent orbit views (two different ships) are a FAIL | Two different ships in one orbit set are a FAIL. |
 | 2026-10-03 | Camera shake while Bolt gallops | FAIL | no camera shake, ever | The chase must not snap the eye from frame to frame. |
 | 2026-10-03 | Sky living layers that do not read | FAIL | there are no videos, it's just images | A living layer has to move where the player looks, without covering the paintings in rectangles. |
+| 2026-10-04 | Monolith gate base above the relief | FAIL | | Seat every ruin foot on the drawn ground. One contact height leaves a gap on the downhill side. |
+| 2026-10-04 | Wreck hangar interior and the slab beside the opening | FAIL | | An unpainted hull face reads black. Retile it from the same Imagine plate. Do not leave the opening wall empty. |

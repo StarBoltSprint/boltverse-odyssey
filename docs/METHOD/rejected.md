@@ -25,3 +25,4 @@ Back to [METHOD.md](../METHOD.md). Do not retry these without a new owner decisi
 | (date not recorded) | Code-coloured corvette (hull coloured by code) | Code-drawn colour; not an Imagine skin (owner report; no repo record). | One unlit Imagine skin per part. |
 | 2026-10-03 | One plain dirt texture for a whole zone | Owner: ugly, "carpet" look. | Several Imagine materials by relief + anti-carpet rules. |
 | 2026-09-18 | Wiping hung masters / replacing the playlist with a new biome | Hang ≠ wipe. | Add beside existing masters. |
+| 2026-10-04 | Pale 7.4 m round arch as the Eclipse Gate | Owner rejected it. It read as a small classical arch. | A 25–30 m monolith, veins, a ring in the arch, a real passage, colliders from the mesh. |
