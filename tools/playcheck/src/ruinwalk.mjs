@@ -63,10 +63,10 @@ function gateDepth(gate) {
 
 /** Straight runs derived from the measured parts in the ruin manifest (no fixed coordinates). */
 export function ruinRoutes(manifest, discs) {
-  const gate = manifest.objects.find((o) => o.frame !== "ship");
+  const gates = manifest.objects.filter((o) => o.frame !== "ship" && o.openingBoxM);
   const wreck = manifest.objects.find((o) => o.frame === "ship");
-  const out = {};
-  if (gate && gate.openingBoxM) {
+  const out = { arches: [] };
+  for (const gate of gates) {
     const f = frameOf(gate);
     const ob = gate.openingBoxM;
     const depth = gateDepth(gate);
@@ -90,7 +90,8 @@ export function ruinRoutes(manifest, discs) {
       if (!widest || clear > widest.clear) widest = cand;
     }
     best = best || widest;
-    out.arch = {
+    out.arches.push({
+      id: gate.id,
       frame: f,
       lx: mid + best.off,
       startLocalZ: front + 8,
@@ -99,8 +100,10 @@ export function ruinRoutes(manifest, discs) {
       hdg: hdgOf(best.b[0] - best.a[0], best.b[1] - best.a[1]),
       rockClearM: best.clear,
       depth,
-    };
+    });
   }
+  // The first gate-frame object is the corridor gate; the rest are kept older ruins.
+  if (out.arches.length) out.arch = out.arches[0];
   if (wreck && wreck.hangar) {
     const f = frameOf(wreck);
     const h = wreck.hangar;
@@ -147,7 +150,7 @@ export function lineRun(f, phase, lx, lz, dlx, dlz, lengthM, extra = {}) {
 export function ruinProbes(manifest, discs, opt = {}) {
   const r = (manifest.collider && manifest.collider.bodyRadiusM) || 0.3;
   const sweepStep = opt.sweepStepM || 0.5;
-  const gate = manifest.objects.find((o) => o.frame !== "ship");
+  const gates = manifest.objects.filter((o) => o.frame !== "ship" && o.openingBoxM && o.bounds);
   const wreck = manifest.objects.find((o) => o.frame === "ship");
   const walls = [];
   const slides = [];
@@ -156,15 +159,16 @@ export function ruinProbes(manifest, discs, opt = {}) {
     const e = [run.start[0] + Math.sin((run.hdg * Math.PI) / 180) * run.lengthM, run.start[1] + Math.cos((run.hdg * Math.PI) / 180) * run.lengthM];
     return lineClear(discs, run.start[0], run.start[1], e[0], e[1]);
   };
-  if (gate && gate.openingBoxM && gate.bounds) {
+  for (const gate of gates) {
+    const id = gate.id;
     const f = frameOf(gate);
     const ob = gate.openingBoxM;
     const [x0, , z0] = gate.bounds.min;
     const [x1, , z1] = gate.bounds.max;
     const runIn = 7;
     // Head-on into the middle of each pier's front.
-    for (const [name, lx] of [["gate-pier-left", 0.5 * (x0 + ob[0])], ["gate-pier-right", 0.5 * (ob[1] + x1)]]) {
-      walls.push({ obj: "gate", frame: f, ...lineRun(f, name, lx, z1 + runIn, 0, -1, runIn + (z1 - z0) + 3) });
+    for (const [name, lx] of [[id + "-pier-left", 0.5 * (x0 + ob[0])], [id + "-pier-right", 0.5 * (ob[1] + x1)]]) {
+      walls.push({ obj: id, frame: f, ...lineRun(f, name, lx, z1 + runIn, 0, -1, runIn + (z1 - z0) + 3) });
     }
     // Slide: a shallow line onto the front face of the wider pier, heading away from the opening.
     const leftW = ob[0] - x0;
@@ -174,21 +178,21 @@ export function ruinProbes(manifest, discs, opt = {}) {
     const ang = (opt.slideDeg || 30) * Math.PI / 180;
     const back = 4;
     slides.push({
-      obj: "gate",
+      obj: id,
       frame: f,
       face: { axis: "z", value: z1, normal: 1, along: side },
-      ...lineRun(f, "gate-slide", pierMid - side * Math.cos(ang) * back, z1 + Math.sin(ang) * back, side * Math.cos(ang), -Math.sin(ang), back + 4),
+      ...lineRun(f, id + "-slide", pierMid - side * Math.cos(ang) * back, z1 + Math.sin(ang) * back, side * Math.cos(ang), -Math.sin(ang), back + 4),
     });
     // Sweeps across: lines along local z from in front to behind, every sweepStep across the width.
     for (let lx = x0 - 1; lx <= x1 + 1 + 1e-6; lx += sweepStep) {
-      sweeps.push({ obj: "gate", frame: f, ...lineRun(f, "gate-sweep-z", lx, z1 + 4, 0, -1, (z1 - z0) + 8) });
+      sweeps.push({ obj: id, frame: f, ...lineRun(f, id + "-sweep-z", lx, z1 + 4, 0, -1, (z1 - z0) + 8) });
     }
     // Sweeps along: just clear of the front and back faces (body radius plus 0.2 m), and past the ends.
     const g = r + 0.2;
-    sweeps.push({ obj: "gate", frame: f, expectFree: true, ...lineRun(f, "gate-pass-front", x0 - 4, z1 + g, 1, 0, (x1 - x0) + 8) });
-    sweeps.push({ obj: "gate", frame: f, expectFree: true, ...lineRun(f, "gate-pass-back", x1 + 4, z0 - g, -1, 0, (x1 - x0) + 8) });
-    sweeps.push({ obj: "gate", frame: f, expectFree: true, ...lineRun(f, "gate-pass-left", x0 - g, z1 + 4, 0, -1, (z1 - z0) + 8) });
-    sweeps.push({ obj: "gate", frame: f, expectFree: true, ...lineRun(f, "gate-pass-right", x1 + g, z1 + 4, 0, -1, (z1 - z0) + 8) });
+    sweeps.push({ obj: id, frame: f, expectFree: true, ...lineRun(f, id + "-pass-front", x0 - 4, z1 + g, 1, 0, (x1 - x0) + 8) });
+    sweeps.push({ obj: id, frame: f, expectFree: true, ...lineRun(f, id + "-pass-back", x1 + 4, z0 - g, -1, 0, (x1 - x0) + 8) });
+    sweeps.push({ obj: id, frame: f, expectFree: true, ...lineRun(f, id + "-pass-left", x0 - g, z1 + 4, 0, -1, (z1 - z0) + 8) });
+    sweeps.push({ obj: id, frame: f, expectFree: true, ...lineRun(f, id + "-pass-right", x1 + g, z1 + 4, 0, -1, (z1 - z0) + 8) });
   }
   if (wreck && wreck.hangar && wreck.bounds) {
     const f = frameOf(wreck);
@@ -387,7 +391,7 @@ export async function drive(page, plan) {
       const r = {
         phase, step: stepIdx, k, x: out.x, z: out.z, lx, lz, hdg: out.hdg, spd: out.spd,
         blocked: out.blocked, contact: !!out.ruinContact, state: out.state,
-        eye: cam.eye, fwd: cam.fwd, boom: cam.boom, clamped: cam.clamped, swing: cam.swing, boltMag: cam.boltMag, feet: cam.feet,
+        eye: cam.eye, fwd: cam.fwd, boom: cam.boom, clamped: cam.clamped, swing: cam.swing, boltMag: cam.boltMag, feet: cam.feet, dbg: cam.dbg,
         eyeClear: plan.light ? 99 : P.ruinClearance(cam.eye[0], cam.eye[1], cam.eye[2]),
         covered: !!(w && w.covered),
         travel: Math.hypot(out.x - sx, out.z - sz),
@@ -451,6 +455,54 @@ export async function drive(page, plan) {
  * boomFlips: frames where the boom length reverses direction at speed.
  * shake: frames where the eye's acceleration flips direction at size (SHAKE_M), i.e. jitter.
  */
+/**
+ * Jitter frames (owner rule: zero). A frame counts when, inside one plan step, any of these flips:
+ * the eye's acceleration at more than 1 cm per frame squared (four times stricter than shake),
+ * the boom length's velocity at more than 6 mm per frame on both sides (the boom pumps in and out),
+ * the view's yaw velocity at more than 0.5 deg per frame on both sides (the view swings back), or
+ * the view's yaw or pitch acceleration at more than 0.5 deg per frame squared (angular shake).
+ */
+export function jitter(rec) {
+  const yawOf = (f) => (Math.atan2(f[0], f[2]) * 180) / Math.PI;
+  const pitOf = (f) => (Math.asin(Math.max(-1, Math.min(1, f[1]))) * 180) / Math.PI;
+  const wrap = (a) => ((((a + 180) % 360) + 360) % 360) - 180;
+  const out = { frames: 0, eye: 0, boom: 0, yawBack: 0, yawShake: 0, pitchShake: 0, at: [] };
+  for (let i = 3; i < rec.length; i++) {
+    const r = rec[i], p = rec[i - 1], q = rec[i - 2], o = rec[i - 3];
+    if (o.step !== r.step) continue;
+    const acc = (a, b, c) => [a[0] - 2 * b[0] + c[0], a[1] - 2 * b[1] + c[1], a[2] - 2 * b[2] + c[2]];
+    const j1 = acc(r.eye, p.eye, q.eye);
+    const j0 = acc(p.eye, q.eye, o.eye);
+    const eye = j0[0] * j1[0] + j0[1] * j1[1] + j0[2] * j1[2] < 0 && Math.hypot(...j0) > 0.01 && Math.hypot(...j1) > 0.01;
+    const b1 = r.boom - p.boom;
+    const b0 = p.boom - q.boom;
+    const boom = b1 * b0 < 0 && Math.abs(b1) > 0.006 && Math.abs(b0) > 0.006;
+    const y2 = wrap(yawOf(r.fwd) - yawOf(p.fwd));
+    const y1 = wrap(yawOf(p.fwd) - yawOf(q.fwd));
+    const y0 = wrap(yawOf(q.fwd) - yawOf(o.fwd));
+    const yawBack = y2 * y1 < 0 && Math.abs(y2) > 0.5 && Math.abs(y1) > 0.5;
+    const ya1 = y2 - y1;
+    const ya0 = y1 - y0;
+    const yawShake = ya1 * ya0 < 0 && Math.abs(ya1) > 0.5 && Math.abs(ya0) > 0.5;
+    const p2 = pitOf(r.fwd) - pitOf(p.fwd);
+    const p1 = pitOf(p.fwd) - pitOf(q.fwd);
+    const p0 = pitOf(q.fwd) - pitOf(o.fwd);
+    const pa1 = p2 - p1;
+    const pa0 = p1 - p0;
+    const pitchShake = pa1 * pa0 < 0 && Math.abs(pa1) > 0.5 && Math.abs(pa0) > 0.5;
+    if (eye) out.eye++;
+    if (boom) out.boom++;
+    if (yawBack) out.yawBack++;
+    if (yawShake) out.yawShake++;
+    if (pitchShake) out.pitchShake++;
+    if (eye || boom || yawBack || yawShake || pitchShake) {
+      out.frames++;
+      if (out.at.length < 8) out.at.push({ phase: r.phase, k: r.k, eye, boom, yawBack, yawShake, pitchShake });
+    }
+  }
+  return out;
+}
+
 export function judge(rec, dt = DT) {
   let maxStep = 0;
   let maxJerk = 0;

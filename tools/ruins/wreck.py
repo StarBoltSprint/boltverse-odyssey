@@ -41,6 +41,171 @@ def box_of(path):
     return (w, h, content_box(stone))
 
 
+def find_plate_rect(lum):
+    """A mid-tone window of the same plate. Empty margin and holes are rejected.
+
+    A few dark panel marks are allowed. A window that is mostly empty is not.
+    """
+    import numpy as np
+
+    height, width = lum.shape
+    sizes = ((320, 160), (256, 128), (192, 96), (128, 64), (96, 48))
+    for rw, rh in sizes:
+        if rw >= width or rh >= height:
+            continue
+        step = 16
+        for y in range(0, height - rh, step):
+            band = lum[y : y + rh]
+            for x in range(0, width - rw, step):
+                win = band[:, x : x + rw]
+                if float(win[::4, ::4].mean()) < 45:
+                    continue
+                if float((win < 20).mean()) > 0.02:
+                    continue
+                if float(np.percentile(win, 5)) < 28:
+                    continue
+                mean = float(win.mean())
+                if mean < 50 or mean > 175:
+                    continue
+                return (x, y, rw, rh)
+    return None
+
+
+def retile_black(mesh, image_path, tpm):
+    """Faces that land in the empty margin get new vertices.
+
+    UVs tile a mid-tone rect of this same plate at its native texel rate.
+    Shared vertices of faces that already hit the plate are left alone, so a
+    painted face is not drawn twice and is not stretched.
+    """
+    width, height, lum, _arr = load_rgb(image_path)
+    rect = find_plate_rect(lum)
+    xyz = mesh.xyzuv
+    idx = mesh.idx
+    tris = len(idx) // 3
+    if rect is None or tris == 0 or tpm <= 0:
+        return {"tris": tris, "dark": 0, "left": tris, "rect": None}
+
+    def sample(u, v):
+        px = int(min(width - 1, max(0, round(u * (width - 1)))))
+        py = int(min(height - 1, max(0, round((1.0 - v) * (height - 1)))))
+        return float(lum[py, px])
+
+    dark = []
+    for t in range(0, len(idx), 3):
+        us, vs = [], []
+        for k in range(3):
+            i = idx[t + k] * 5
+            us.append(xyz[i + 3])
+            vs.append(xyz[i + 4])
+        cu, cv = sum(us) / 3.0, sum(vs) / 3.0
+        samples = [sample(cu, cv)]
+        for k in range(3):
+            samples.append(sample(us[k], vs[k]))
+            samples.append(sample((us[k] + cu) * 0.5, (vs[k] + cv) * 0.5))
+        if sample(cu, cv) < 12.0 or sum(1 for s in samples if s < 12.0) >= 3:
+            dark.append(t)
+    if not dark:
+        return {"tris": tris, "dark": 0, "left": 0, "rect": list(rect)}
+
+    rx, ry, rw, rh = rect
+    inner_w = max(1.0, float(rw - 4))
+    inner_h = max(1.0, float(rh - 4))
+
+    def mode_of(i0, i1, i2):
+        ax, ay, az = xyz[i0 * 5], xyz[i0 * 5 + 1], xyz[i0 * 5 + 2]
+        bx, by, bz = xyz[i1 * 5], xyz[i1 * 5 + 1], xyz[i1 * 5 + 2]
+        cx, cy, cz = xyz[i2 * 5], xyz[i2 * 5 + 1], xyz[i2 * 5 + 2]
+        ux, uy, uz = bx - ax, by - ay, bz - az
+        vx, vy, vz = cx - ax, cy - ay, cz - az
+        nx = abs(uy * vz - uz * vy)
+        ny = abs(uz * vx - ux * vz)
+        nz = abs(ux * vy - uy * vx)
+        if nz >= nx and nz >= ny:
+            return 0
+        if ny >= nx:
+            return 1
+        return 2
+
+    def metres(i, mode):
+        x, y, z = xyz[i * 5], xyz[i * 5 + 1], xyz[i * 5 + 2]
+        if mode == 0:
+            return x, y
+        if mode == 1:
+            return x, z
+        return z, y
+
+    def span_ok(i0, i1, i2, mode):
+        ums, vms = zip(*(metres(i, mode) for i in (i0, i1, i2)))
+        return (max(ums) - min(ums)) * tpm <= inner_w - 1 and (max(vms) - min(vms)) * tpm <= inner_h - 1
+
+    def midpoint(a, b):
+        xyz.extend((
+            (xyz[a * 5] + xyz[b * 5]) * 0.5,
+            (xyz[a * 5 + 1] + xyz[b * 5 + 1]) * 0.5,
+            (xyz[a * 5 + 2] + xyz[b * 5 + 2]) * 0.5,
+            0.0,
+            0.0,
+        ))
+        return len(xyz) // 5 - 1
+
+    produced = []
+    stack = [(idx[t], idx[t + 1], idx[t + 2], 0) for t in dark]
+    while stack:
+        i0, i1, i2, depth = stack.pop()
+        mode = mode_of(i0, i1, i2)
+        if depth >= 6 or span_ok(i0, i1, i2, mode):
+            produced.append((i0, i1, i2, mode))
+            continue
+        m01, m12, m20 = midpoint(i0, i1), midpoint(i1, i2), midpoint(i2, i0)
+        stack.append((i0, m01, m20, depth + 1))
+        stack.append((m01, i1, m12, depth + 1))
+        stack.append((m20, m12, i2, depth + 1))
+        stack.append((m01, m12, m20, depth + 1))
+
+    # The first written tri reuses each dark slot. Further pieces are new tris.
+    write_at = list(dark)
+    extra_idx = []
+    for n, (i0, i1, i2, mode) in enumerate(produced):
+        ums, vms = zip(*(metres(i, mode) for i in (i0, i1, i2)))
+        min_u, max_u = min(ums), max(ums)
+        min_v, max_v = min(vms), max(vms)
+        span_u = (max_u - min_u) * tpm
+        span_v = (max_v - min_v) * tpm
+        phase_u = (min_u * tpm) % inner_w
+        phase_v = (min_v * tpm) % inner_h
+        if phase_u + span_u > inner_w:
+            phase_u = 0.0
+        if phase_v + span_v > inner_h:
+            phase_v = 0.0
+        ids = []
+        for i, um, vm in zip((i0, i1, i2), ums, vms):
+            px = rx + 2.0 + phase_u + (um - min_u) * tpm
+            py = ry + 2.0 + phase_v + (vm - min_v) * tpm
+            u = px / max(1, width - 1)
+            v = 1.0 - py / max(1, height - 1)
+            xyz.extend((xyz[i * 5], xyz[i * 5 + 1], xyz[i * 5 + 2], u, v))
+            ids.append(len(xyz) // 5 - 1)
+        if n < len(write_at):
+            at = write_at[n]
+            idx[at], idx[at + 1], idx[at + 2] = ids
+        else:
+            extra_idx.extend(ids)
+    idx.extend(extra_idx)
+
+    left = 0
+    for t in range(0, len(idx), 3):
+        us, vs = [], []
+        for k in range(3):
+            i = idx[t + k] * 5
+            us.append(xyz[i + 3])
+            vs.append(xyz[i + 4])
+        cu, cv = sum(us) / 3.0, sum(vs) / 3.0
+        if sample(cu, cv) < 12.0:
+            left += 1
+    return {"tris": tris, "dark": len(dark), "left": left, "rect": [rx, ry, rw, rh]}
+
+
 def build_wreck(numbers):
     obj_path, report_path = ensure_howl()
     import json
@@ -213,6 +378,12 @@ def build_wreck(numbers):
         arr = mesh.xyzuv
         for i in range(0, len(arr), 5):
             horiz = max(horiz, math.hypot(arr[i], arr[i + 2]))
+    retiled = []
+    for name, mesh in zip(order, baked):
+        stat = retile_black(mesh, images / (name + ".jpg"), texels_per_m)
+        stat["skin"] = name
+        retiled.append(stat)
+        print("wreck retile", name, stat["dark"], "of", stat["tris"], "left", stat["left"])
     parts = [
         {
             "id": "hull",
@@ -315,5 +486,6 @@ def build_wreck(numbers):
         "howlPass": True,
         "skinNacelles": report["skinNacelles"],
         "skinBells": report["skinBells"],
+        "retile": retiled,
     }
     return baked, parts, info, [images / (name + ".jpg") for name in order]

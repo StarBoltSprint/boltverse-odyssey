@@ -1,4 +1,4 @@
-Colour-free contracts. Tone and subject wording stay in the untracked local prompt file.
+Plain contracts. Tone and subject wording stay in the untracked local prompt file.
 Slots: as cooked measure only, right jamb section as cooked.
 
 STATUS

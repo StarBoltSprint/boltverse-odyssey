@@ -26,6 +26,9 @@ const MAX_BOOM = BOOM / 0.62;
 
 const canvas = document.getElementById("view");
 const hud = document.getElementById("hud");
+// Debug HUD (position, heading, mag, gate, perf) only behind an explicit flag: ?debug=1.
+// Players see no text once loaded (loading progress and a boot error stay).
+const SHOW_HUD = /[?&]debug=1(&|$)/.test(location.search);
 canvas.width = W;
 canvas.height = H;
 const gl = canvas.getContext("webgl2", {
@@ -446,20 +449,40 @@ function fillVP() {
   }
 }
 
-const idTex = gl.createTexture();
-const idFb = gl.createFramebuffer();
-const idDepth = gl.createRenderbuffer();
-gl.bindTexture(gl.TEXTURE_2D, idTex);
-gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-gl.bindRenderbuffer(gl.RENDERBUFFER, idDepth);
-gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, W, H);
-gl.bindFramebuffer(gl.FRAMEBUFFER, idFb);
-gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, idTex, 0);
-gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, idDepth);
-if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) throw new Error("id fbo");
-gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+// The id target is tooling only (snapshot labels): it lives only while a snapshot reads it, so
+// players never pay for it and the snapshot's perf numbers are the players' numbers.
+let idTex = null;
+let idFb = null;
+let idDepth = null;
+function releaseIdFb() {
+  if (!idFb) return;
+  gl.deleteFramebuffer(idFb);
+  gl.deleteTexture(idTex);
+  gl.deleteRenderbuffer(idDepth);
+  idFb = null;
+  idTex = null;
+  idDepth = null;
+  trackTex("id", 0);
+  textures.delete("id");
+}
+function ensureIdFb() {
+  if (idFb) return;
+  idTex = gl.createTexture();
+  idFb = gl.createFramebuffer();
+  idDepth = gl.createRenderbuffer();
+  gl.bindTexture(gl.TEXTURE_2D, idTex);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+  gl.bindRenderbuffer(gl.RENDERBUFFER, idDepth);
+  gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, W, H);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, idFb);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, idTex, 0);
+  gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, idDepth);
+  if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) throw new Error("id fbo");
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  trackTex("id", W * H * 4);
+}
 
 const textures = new Map();
 let drawCalls = 0;
@@ -637,6 +660,7 @@ let idleVideo = null;
 let pawFrac = 0.92;
 let heroQuad = { x: 0, y: 0, w: 0, h: 0 };
 let magNow = 0.4;
+let lastRuinMag = null;
 let groundMagNow = 0;
 let nearestM = 4;
 let camRightNow = [1, 0, 0];
@@ -700,6 +724,15 @@ const RUIN_EYE_SOFT = 0.25;
 const RUIN_EYE_FLOOR = 0.35;
 const RUIN_EYE_SUB = 0.04;
 const RUIN_EYE_JUMP = 0.4;
+// Chase heading near a ruin: the rig follows Bolt's heading through a capped critically damped
+// spring instead of rigidly, so turning on the spot in the hangar (150 deg/s) cannot whip the
+// eye round into the hull. Off the ruins the chase heading is Bolt's heading, unchanged.
+const CAM_YAW_W = 5;
+const CAM_YAW_RATE_RUIN = 80;
+const CAM_YAW_RATE_FREE = 400;
+const CAM_YAW_ACC = 500;
+const CAM_YAW_ACC_RUIN = 160;
+const camYaw = { h: 0, v: 0, ready: false, lag: false, last: 0 };
 const RUIN_OFF_W = 6;
 const RUIN_OFF_V = 4;
 const RUIN_OFF_ACC = 20;
@@ -710,7 +743,21 @@ const RUIN_RISE_ACC = 5;
 const ruinCam = {
   rise: 1, riseV: 0, riseGoal: 1,
   eye: [0, 0, 0], want: [0, 0, 0], off: [0, 0, 0], offV: [0, 0, 0], eyeLive: false,
-  len: 0, lenV: 0, full: 0, ready: false, clamped: false, yaw: 0, yawV: 0, goal: 0 };
+  len: 0, lenV: 0, full: 0, ready: false, clamped: false, yaw: 0, yawV: 0, goal: 0, dbg: null,
+  fe: [0, 0, 0], fv: [0, 0, 0], tp: [0, 0, 0], fReady: false, fLag: false,
+  rHold: 0, rHoldV: 0, rShrink: false, rLast: 0 };
+// Last stage near a ruin: the drawn eye tracks the solved eye (position and velocity) through a
+// critically damped follower whose acceleration is capped below the shake threshold, so a face
+// contact, a swing or a boom ease can bend the eye's path but never reverse it frame to frame.
+// Off the ruins it hands over once converged and the eye is the solved eye, unchanged.
+const RUIN_EYE_W = 10;
+const RUIN_EYE_ACC = 30;
+const RUIN_EYE_HARD = 0.4;
+// Hangar turn boom hold: a shortening of more than RUIN_PUMP_EPS per frame starts the hold.
+const RUIN_PUMP_EPS = 0.003;
+const RUIN_HOLD_W = 6;
+const RUIN_HOLD_V = 1.0;
+const RUIN_HOLD_ACC = 8;
 // Eased pose changes are also speed-capped so a far target cannot swoop the eye.
 const CAM_RATE_BOOM = 3.0;
 const CAM_RATE_EYE = 1.5;
@@ -722,6 +769,44 @@ const CAM_ACC = 9;
 const camSm = { ready: false, boom: 6, eye: 1.35, slide: 0, boomV: 0, eyeV: 0, slideV: 0, ground: 0, feet: 0 };
 let camStepDt = 0;
 let camPitch = 0;
+// Look pitch is an offset on the chase pitch. The eye stays where the chase put it, so a look
+// cannot push the near plane into a face. Drag eases toward the finger; release eases back to 0.
+// Caps stay under the 0.5 deg/frame^2 angular shake trip at 1/30 s (6 rad/s^2 -> ~0.38 deg).
+const LOOK_SENS = 0.0038;
+const LOOK_PMIN = -0.61;
+const LOOK_PMAX = 1.40;
+const LOOK_OFF_MIN = -0.9;
+const LOOK_OFF_MAX = 1.70;
+const LOOK_W_DRAG = 14;
+const LOOK_W_BACK = 2.4;
+const LOOK_V_DRAG = 2.6;
+const LOOK_V_BACK = 0.8;
+const LOOK_A_DRAG = 6;
+const LOOK_A_BACK = 0.9;
+const camLook = { drag: false, goal: 0, cur: 0, v: 0, ptr: -1, ly: 0 };
+function clearLook() {
+  camLook.drag = false;
+  camLook.goal = 0;
+  camLook.cur = 0;
+  camLook.v = 0;
+  camLook.ptr = -1;
+}
+function stepLook(dt) {
+  if (!(dt > 0)) return;
+  if (!camLook.drag && camLook.cur === 0 && camLook.v === 0) return;
+  const goal = camLook.drag ? camLook.goal : 0;
+  const w = camLook.drag ? LOOK_W_DRAG : LOOK_W_BACK;
+  const vmax = camLook.drag ? LOOK_V_DRAG : LOOK_V_BACK;
+  const amax = camLook.drag ? LOOK_A_DRAG : LOOK_A_BACK;
+  const sp = springLim(camLook.cur, camLook.v, goal, dt, w, vmax, amax);
+  let x = sp[0];
+  let v = sp[1];
+  if (x > LOOK_OFF_MAX) { x = LOOK_OFF_MAX; if (v > 0) v = 0; }
+  else if (x < LOOK_OFF_MIN) { x = LOOK_OFF_MIN; if (v < 0) v = 0; }
+  if (!camLook.drag && Math.abs(x) < 1e-4 && Math.abs(v) < 1e-3) { x = 0; v = 0; }
+  camLook.cur = x;
+  camLook.v = v;
+}
 
 const CAP = {
   wreck10: 576,
@@ -1293,11 +1378,21 @@ function applyShot() {
   camBoom = Math.hypot(state.x - e[0], state.z - e[2]);
 }
 
-function pitchView(eye, lookFeet) {
+function pitchView(eye, lookFeet, extra) {
   const along = (state.x - eye[0]) * fwdBuf[0] + (state.z - eye[2]) * fwdBuf[2];
   const feet = lookFeet == null ? feetY() : lookFeet;
   const targetY = feet + BOLT_H * 0.45;
-  const pitch = Math.atan2(targetY - eye[1], Math.max(0.35, along));
+  let pitch = Math.atan2(targetY - eye[1], Math.max(0.35, along));
+  // extra === 0 keeps the chase pitch byte-for-byte (pose scoring and the idle walk).
+  // A live look adds the eased offset, then clamps. The floor never lifts a high chase eye.
+  const add = extra == null ? camLook.cur : extra;
+  if (add) {
+    const base = pitch;
+    pitch = base + add;
+    const lo = Math.min(base, LOOK_PMIN);
+    if (pitch > LOOK_PMAX) pitch = LOOK_PMAX;
+    else if (pitch < lo) pitch = lo;
+  }
   const cp = Math.cos(pitch);
   const sp = Math.sin(pitch);
   camFwd[0] = fwdBuf[0] * cp;
@@ -1332,7 +1427,40 @@ function solveCamera() {
     camStepDt = 0;
     return;
   }
-  const yaw = state.hdg * Math.PI / 180;
+  const dtYaw = camStepDt > 0 ? Math.min(0.05, camStepDt) : 0;
+  if (!camYaw.ready || !camSm.ready) {
+    camYaw.h = state.hdg;
+    camYaw.v = 0;
+    camYaw.lag = false;
+    camYaw.ready = true;
+  } else if (dtYaw > 0) {
+    const nearYaw = !!ruinLayer && ruinLayer.near(state.x, state.z, 10);
+    const err = wrap180(state.hdg - camYaw.h);
+    // Leaving the ruins, the lag converges on the free chase (faster cap), then hands over.
+    if (nearYaw) camYaw.lag = true;
+    else if (Math.abs(err) < 0.05 && Math.abs(camYaw.v) < 0.5) camYaw.lag = false;
+    if (camYaw.lag) {
+      // Critically damped, rate-capped. Near a ruin the rig trails a fast turn; leaving the ruins
+      // Bolt's turn rate is fed forward so a steady turn converges with no standing lag.
+      const omega = nearYaw ? 0 : wrap180(state.hdg - camYaw.last) / dtYaw;
+      const vmax = nearYaw ? CAM_YAW_RATE_RUIN : CAM_YAW_RATE_FREE;
+      let acc = CAM_YAW_W * CAM_YAW_W * err + 2 * CAM_YAW_W * (omega - camYaw.v);
+      // Near a ruin the orbit's angular acceleration stays under what the eye follower can track.
+      const amax = nearYaw ? CAM_YAW_ACC_RUIN : CAM_YAW_ACC;
+      if (acc > amax) acc = amax;
+      else if (acc < -amax) acc = -amax;
+      let nv = camYaw.v + acc * dtYaw;
+      if (nv > vmax) nv = vmax;
+      else if (nv < -vmax) nv = -vmax;
+      camYaw.h = wrap360(camYaw.h + nv * dtYaw);
+      camYaw.v = nv;
+    } else {
+      camYaw.h = state.hdg;
+      camYaw.v = 0;
+    }
+  }
+  camYaw.last = state.hdg;
+  const yaw = camYaw.h * Math.PI / 180;
   fwdBuf[0] = Math.sin(yaw);
   fwdBuf[1] = 0;
   fwdBuf[2] = Math.cos(yaw);
@@ -1385,7 +1513,7 @@ function solveCamera() {
         if (behind > -MIN_BOOM + 0.08) continue;
         const dist = Math.hypot(boom, slide, eyes[ei] - 0.97);
         if (dist > 9.3) continue;
-        pitchView(candEye);
+        pitchView(candEye, null, 0);
         const m = poseMetrics(candEye);
         const blocked = lineBlocked(candEye);
         // A chase line through a ruin face only costs score. It never makes a pose illegal,
@@ -1481,6 +1609,7 @@ function solveCamera() {
   }
   ruinBoom(dt, snapPose);
   camBoom = Math.hypot(state.x - eyeBuf[0], state.z - eyeBuf[2]);
+  stepLook(dt);
   pitchView(eyeBuf, camSm.feet);
 }
 
@@ -1553,6 +1682,17 @@ function ruinBoom(dt, snap) {
       goal = bestS > keep + 0.3 ? best : ruinCam.goal;
     }
   }
+  // Turning on the spot near a ruin: the rig may only swing the way Bolt turns (or hold), so the
+  // view never swings back against the turn (owner rule: zero jitter in the hangar turn).
+  const spin = near && !fresh && Math.abs(state.spd) < 0.3 && state.turn ? Math.sign(state.turn) : 0;
+  if (spin) {
+    if (spin * (goal - ruinCam.yaw) < 0 && goal !== ruinCam.goal) {
+      let best = ruinCam.goal;
+      if (spin * (best - ruinCam.yaw) < 0) best = ruinCam.yaw;
+      goal = best;
+    }
+    if (spin * ruinCam.yawV < 0) ruinCam.yawV = 0;
+  }
   if (fresh) {
     ruinCam.yaw = goal;
     ruinCam.yawV = 0;
@@ -1560,6 +1700,7 @@ function ruinBoom(dt, snap) {
     const sw = springLim(ruinCam.yaw, ruinCam.yawV, goal, dt, RUIN_SWING_W, RUIN_SWING_RATE, RUIN_SWING_ACC);
     ruinCam.yaw = sw[0];
     ruinCam.yawV = sw[1];
+    if (spin && spin * ruinCam.yawV < 0) ruinCam.yawV = 0;
   }
   ruinCam.goal = goal;
   if (Math.abs(ruinCam.yaw) < 0.05 && Math.abs(ruinCam.yawV) < 0.5 && goal === 0) {
@@ -1756,11 +1897,111 @@ function ruinBoom(dt, snap) {
     eyeBuf[0] = px;
     eyeBuf[1] = py;
     eyeBuf[2] = pz;
-    // Keep looking at Bolt: turn the rig by the angle the follower moved the eye round him.
+  }
+  // The follower's own result is its state for the next frame (before the smoothing below).
+  const fx = eyeBuf[0];
+  const fy = eyeBuf[1];
+  const fz = eyeBuf[2];
+  if (fresh || !(dt > 0) || !ruinCam.fReady) {
+    for (let i = 0; i < 3; i++) {
+      ruinCam.fe[i] = eyeBuf[i];
+      ruinCam.fv[i] = 0;
+      ruinCam.tp[i] = eyeBuf[i];
+    }
+    ruinCam.fReady = true;
+    ruinCam.fLag = false;
+  } else {
+    const fe = ruinCam.fe;
+    const fv = ruinCam.fv;
+    const tv = [(fx - ruinCam.tp[0]) / dt, (fy - ruinCam.tp[1]) / dt, (fz - ruinCam.tp[2]) / dt];
+    if (near) ruinCam.fLag = true;
+    else if (Math.hypot(fx - fe[0], fy - fe[1], fz - fe[2]) < 1e-3 && Math.hypot(tv[0] - fv[0], tv[1] - fv[1], tv[2] - fv[2]) < 0.05) ruinCam.fLag = false;
+    if (ruinCam.fLag) {
+      const w = RUIN_EYE_W;
+      let ax = w * w * (fx - fe[0]) + 2 * w * (tv[0] - fv[0]);
+      let ay = w * w * (fy - fe[1]) + 2 * w * (tv[1] - fv[1]);
+      let az = w * w * (fz - fe[2]) + 2 * w * (tv[2] - fv[2]);
+      const an = Math.hypot(ax, ay, az);
+      if (an > RUIN_EYE_ACC) {
+        const k = RUIN_EYE_ACC / an;
+        ax *= k;
+        ay *= k;
+        az *= k;
+      }
+      fv[0] += ax * dt;
+      fv[1] += ay * dt;
+      fv[2] += az * dt;
+      fe[0] += fv[0] * dt;
+      fe[1] += fv[1] * dt;
+      fe[2] += fv[2] * dt;
+      // Safety only (the follower already keeps RUIN_EYE_SAFE): the near plane never opens a face.
+      if (ruinLayer) {
+        const c = ruinLayer.clearance(fe[0], fe[1], fe[2]);
+        if (c < RUIN_EYE_HARD) {
+          const g = ruinLayer.clearGrad(fe[0], fe[1], fe[2]);
+          if (g) {
+            for (let i = 0; i < 3; i++) fe[i] += g[i] * (RUIN_EYE_HARD - c);
+            const vin = fv[0] * g[0] + fv[1] * g[1] + fv[2] * g[2];
+            if (vin < 0) for (let i = 0; i < 3; i++) fv[i] -= vin * g[i];
+          }
+        }
+      }
+      const floorY = (useRelief ? terrain.heightAt(fe[0], fe[2]) : 0) + RUIN_EYE_FLOOR;
+      if (fe[1] < floorY) {
+        fe[1] = floorY;
+        if (fv[1] < 0) fv[1] = 0;
+      }
+    } else {
+      fe[0] = fx;
+      fe[1] = fy;
+      fe[2] = fz;
+      fv[0] = tv[0];
+      fv[1] = tv[1];
+      fv[2] = tv[2];
+    }
+    ruinCam.tp[0] = fx;
+    ruinCam.tp[1] = fy;
+    ruinCam.tp[2] = fz;
+    eyeBuf[0] = fe[0];
+    eyeBuf[1] = fe[1];
+    eyeBuf[2] = fe[2];
+  }
+  {
+    // Turning on the spot near a ruin: once the drawn boom (Bolt to eye, flat) has started to
+    // shorten it never pumps back out during the turn. The eye is only drawn nearer to Bolt along
+    // its own flat line (toward Bolt), never into a face. When the turn ends the hold eases off
+    // through a capped spring, so the boom never jumps (owner rule: zero jitter in the hangar turn).
+    const hx = eyeBuf[0] - state.x;
+    const hz = eyeBuf[2] - state.z;
+    const d = Math.hypot(hx, hz);
+    if (!near || fresh || !(dt > 0) || d < 1e-3) {
+      ruinCam.rHold = 0;
+      ruinCam.rHoldV = 0;
+      ruinCam.rShrink = false;
+    } else if (spin) {
+      if (d < ruinCam.rLast - RUIN_PUMP_EPS) ruinCam.rShrink = true;
+      ruinCam.rHold = ruinCam.rShrink ? Math.min(0, ruinCam.rLast - d) : 0;
+      ruinCam.rHoldV = 0;
+    } else {
+      ruinCam.rShrink = false;
+      const sp = springLim(ruinCam.rHold, ruinCam.rHoldV, 0, dt, RUIN_HOLD_W, RUIN_HOLD_V, RUIN_HOLD_ACC);
+      ruinCam.rHold = Math.min(0, sp[0]);
+      ruinCam.rHoldV = sp[1];
+    }
+    const drawn = Math.max(0, d + ruinCam.rHold);
+    if (d >= 1e-3 && drawn !== d) {
+      eyeBuf[0] = state.x + hx * (drawn / d);
+      eyeBuf[2] = state.z + hz * (drawn / d);
+    }
+    ruinCam.rLast = drawn;
+  }
+  {
+    // Keep looking at Bolt: turn the rig by the angle the follower and the smoothing moved the
+    // eye round him.
     const hx0 = dsx - state.x;
     const hz0 = dsz - state.z;
-    const hx1 = px - state.x;
-    const hz1 = pz - state.z;
+    const hx1 = eyeBuf[0] - state.x;
+    const hz1 = eyeBuf[2] - state.z;
     const l0 = Math.hypot(hx0, hz0);
     const l1 = Math.hypot(hx1, hz1);
     if (l0 > 1e-4 && l1 > 1e-4) {
@@ -1769,13 +2010,14 @@ function ruinBoom(dt, snap) {
       turn += Math.atan2(sn, c) * 180 / Math.PI;
     }
   }
+  if (SHOW_HUD) ruinCam.dbg = { chase: [vx0 + state.x, vyFull + hy, vz0 + state.z], want: [dsx, dsy, dsz], len: ruinCam.len, full, yaw: ruinCam.yaw, goal: ruinCam.goal, rise: ruinCam.rise, off: ruinCam.off.slice(), near, live, foll: [fx, fy, fz], fLag: ruinCam.fLag };
   ruinCam.eyeLive = near;
   ruinCam.want[0] = dsx;
   ruinCam.want[1] = dsy;
   ruinCam.want[2] = dsz;
-  ruinCam.eye[0] = eyeBuf[0];
-  ruinCam.eye[1] = eyeBuf[1];
-  ruinCam.eye[2] = eyeBuf[2];
+  ruinCam.eye[0] = fx;
+  ruinCam.eye[1] = fy;
+  ruinCam.eye[2] = fz;
   if (turn !== 0) {
     const f = rotXZ(fwdBuf[0], fwdBuf[2], turn);
     fwdBuf[0] = f[0];
@@ -1842,8 +2084,10 @@ function reset() {
   state.pathTrigger = false;
   state.hdg = spawnHeading();
   camSm.ready = false;
+  camYaw.ready = false;
   camHold.live = false;
   ruinCam.ready = false;
+  clearLook();
 }
 function place(x, z, hdg) {
   state.x = x;
@@ -1855,8 +2099,10 @@ function place(x, z, hdg) {
   state.turn = 0;
   state.gallop = false;
   camSm.ready = false;
+  camYaw.ready = false;
   camHold.live = false;
   ruinCam.ready = false;
+  clearLook();
 }
 function look(headingDeg) {
   state.hdg = wrap360(headingDeg);
@@ -1865,6 +2111,7 @@ function look(headingDeg) {
   camSm.ready = false;
   camHold.live = false;
   ruinCam.ready = false;
+  clearLook();
 }
 function setInput(inp) {
   state.forward = Number(inp.forward) || 0;
@@ -2188,8 +2435,9 @@ function measureMag(eye) {
   }
   if (ruinLayer) {
     const rm = ruinLayer.mag(eye, FOCAL);
+    lastRuinMag = rm;
     if (rm.m > objectMag) objectMag = rm.m;
-  }
+  } else lastRuinMag = null;
   nearestM = near;
   const groundD = Math.max(0.4, eye[1] / Math.tan(VFOV / 2));
   const groundMag = useRelief
@@ -2344,8 +2592,11 @@ function tick(dt, opt) {
   } else {
     state.pathTrigger = false;
   }
-  if (opt && opt.draw === false) solveCamera();
-  else render(0);
+  // Motion, the camera and magnification still run without the GL draw.
+  if (opt && opt.draw === false) {
+    solveCamera();
+    measureMag(eyeBuf);
+  } else render(0);
   lastWork = Math.max(0.05, performance.now() - t0);
   frameMs[frameN % 300] = lastWork;
   frameN++;
@@ -2370,6 +2621,7 @@ function tick(dt, opt) {
     pitch: camPitch * 180 / Math.PI,
     mag: magNow,
     ground: groundMagNow,
+    ruinMag: lastRuinMag,
     gate: gateInfo(),
   };
 }
@@ -2431,11 +2683,13 @@ function countBlobs(data, idx) {
 }
 
 function snapshot() {
+  ensureIdFb();
   render(1);
   const pix = new Uint8Array(W * H * 4);
   gl.bindFramebuffer(gl.FRAMEBUFFER, idFb);
   gl.readPixels(0, 0, W, H, gl.RGBA, gl.UNSIGNED_BYTE, pix);
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  releaseIdFb();
   render(0);
   const ids = new Uint16Array(W * H);
   let heroPixels = 0;
@@ -2511,6 +2765,10 @@ function snapshot() {
 }
 
 function paintHud() {
+  if (!SHOW_HUD) {
+    if (hud.textContent) hud.textContent = "";
+    return;
+  }
   const g = gateInfo();
   const mb = (texBytes / (1024 * 1024)).toFixed(1);
   hud.textContent =
@@ -3030,12 +3288,18 @@ async function boot() {
       else idleVideo.onloadeddata = () => r();
     });
     idleVideo.pause();
-    trackTex("id", W * H * 4);
     reset();
     window.__play = {
       version: 3,
       ready: true,
       reset, look, place, setInput, tick, snapshot, audit,
+      setLook(rad) {
+        camLook.drag = true;
+        camLook.ptr = -1;
+        const g = Number(rad) || 0;
+        camLook.goal = g > LOOK_OFF_MAX ? LOOK_OFF_MAX : g < LOOK_OFF_MIN ? LOOK_OFF_MIN : g;
+      },
+      releaseLook() { camLook.drag = false; camLook.goal = 0; camLook.ptr = -1; },
       lookAt(e, t) { shot = { e, t }; },
       clearShot() { shot = null; },
       skyInfo() {
@@ -3054,6 +3318,13 @@ async function boot() {
       groundInfo() { return terrain.info(); },
       heightAt(x, z) { return terrain.heightAt(x, z); },
       ruinInfo() { return ruinLayer ? ruinLayer.info() : null; },
+      /** Texture budget and draw split (tooling): every tracked texture in bytes, and the draws per layer. */
+      texReport() {
+        return {
+          textures: [...textures.entries()].map(([id, b]) => ({ id, mb: +(b / 1048576).toFixed(2) })).sort((a, b) => b.mb - a.mb),
+          draws: { hulls: hullList.length, rocks: rockLayer ? rockLayer.draws : 0, ruins: ruinLayer ? ruinLayer.draws : 0, terrain: useRelief ? 2 : 1, total: drawCalls },
+        };
+      },
       ruinWhere(x, z) { return ruinLayer ? ruinLayer.where(x == null ? state.x : x, z == null ? state.z : z) : null; },
       ruinProbe() {
         if (!ruinLayer) return {};
@@ -3069,13 +3340,18 @@ async function boot() {
           swing: ruinCam.yaw,
           boltMag: (FOCAL * BOLT_H) / (Math.max(0.2, camBoom) * BOLT_SRC.h),
           feet: feetY(),
+          pitch: camPitch,
+          look: camLook.cur,
+          lookGoal: camLook.goal,
+          lookDrag: camLook.drag,
+          dbg: ruinCam.dbg,
         };
       },
     };
     render(0);
     paintHud();
     const err = gl.getError();
-    if (err) hud.textContent += "\nGL " + err;
+    if (err && SHOW_HUD) hud.textContent += "\nGL " + err;
     requestAnimationFrame(frame);
   } catch (e) {
     hud.textContent = "BOOT " + (e && e.stack ? e.stack : e);
@@ -3102,7 +3378,11 @@ function stickAt(cx, cy) {
   state.forward = Math.max(0, -dy);
   state.gallop = -dy > 0.72;
 }
-stick.addEventListener("pointerdown", (e) => { stickOn = true; stick.setPointerCapture(e.pointerId); stickAt(e.clientX, e.clientY); });
+stick.addEventListener("pointerdown", (e) => {
+  stickOn = true;
+  try { stick.setPointerCapture(e.pointerId); } catch (err) { /* no active pointer on a synthetic event */ }
+  stickAt(e.clientX, e.clientY);
+});
 stick.addEventListener("pointermove", (e) => { if (stickOn) stickAt(e.clientX, e.clientY); });
 stick.addEventListener("pointerup", () => {
   stickOn = false;
@@ -3113,6 +3393,38 @@ stick.addEventListener("pointerup", () => {
   state.gallop = false;
   state.spd = 0;
 });
+const viewEl = document.getElementById("view");
+function inStick(cx, cy) {
+  const r = stick.getBoundingClientRect();
+  return cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom;
+}
+viewEl.addEventListener("pointerdown", (e) => {
+  if (camLook.ptr >= 0) return;
+  if (e.button != null && e.button !== 0) return;
+  if (e.target === stick || e.target === nub || inStick(e.clientX, e.clientY)) return;
+  camLook.ptr = e.pointerId;
+  camLook.drag = true;
+  camLook.ly = e.clientY;
+  try { viewEl.setPointerCapture(e.pointerId); } catch (err) { /* synthetic pointers have no capture */ }
+});
+viewEl.addEventListener("pointermove", (e) => {
+  if (e.pointerId !== camLook.ptr) return;
+  const dy = camLook.ly - e.clientY;
+  camLook.ly = e.clientY;
+  if (!dy) return;
+  let g = camLook.goal + dy * LOOK_SENS;
+  if (g > LOOK_OFF_MAX) g = LOOK_OFF_MAX;
+  else if (g < LOOK_OFF_MIN) g = LOOK_OFF_MIN;
+  camLook.goal = g;
+});
+function endLook(e) {
+  if (e.pointerId !== camLook.ptr) return;
+  camLook.ptr = -1;
+  camLook.drag = false;
+  camLook.goal = 0;
+}
+viewEl.addEventListener("pointerup", endLook);
+viewEl.addEventListener("pointercancel", endLook);
 function pollKeys() {
   if (stickOn) return;
   let f = 0;

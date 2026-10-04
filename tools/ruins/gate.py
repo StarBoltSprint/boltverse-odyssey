@@ -1,9 +1,13 @@
-"""Loft the zone gate from the front elevation. Depth follows each section profile."""
+"""Loft the zone gate from the front elevation. Depth follows each section profile.
+
+The front skin keeps the elevation. Thickness faces use the surface plate when
+one is in the inbox, packed into the same atlas (no scale-up).
+"""
 
 import cv2
 import numpy as np
 
-from geom import Mesh, content_box, enclosed_holes, plate_mask, width_profile
+from geom import Mesh, content_box, plate_mask, width_profile
 
 
 def side_depth_ratio(path):
@@ -15,15 +19,44 @@ def side_depth_ratio(path):
     return (x1 - x0 + 1) / max(1, y1 - y0 + 1), (x0, y0, x1, y1)
 
 
+def gateway_stone(lum):
+    """Union the large components. A hairline seam must not drop a slab."""
+    border = np.concatenate([lum[0, :], lum[-1, :], lum[:, 0], lum[:, -1]])
+    base = float(np.median(border))
+    thr = max(16.0, base + 18.0)
+    bw = (lum > thr).astype(np.uint8)
+    n, labels, stats, _ = cv2.connectedComponentsWithStats(bw, 4)
+    areas = []
+    for i in range(1, n):
+        area = int(stats[i, cv2.CC_STAT_AREA])
+        if area >= 800:
+            areas.append((area, i))
+    areas.sort(reverse=True)
+    if not areas:
+        raise SystemExit("gate: no stone")
+    top = areas[0][0]
+    stone = np.zeros(lum.shape, dtype=bool)
+    origin = (0, 0)
+    joined = 0
+    for area, i in areas:
+        if area < top * 0.25:
+            break
+        stone |= labels == i
+        joined += 1
+        if area == top:
+            ys, xs = np.where(labels == i)
+            origin = (int(xs[0]), int(ys[0]))
+    return stone, origin, thr, joined
+
+
 def build_gate(inbox, numbers):
     from geom import load_rgb
 
     front = inbox / "front.jpg"
     side = inbox / "side.jpg"
+    detail_path = inbox / "detail.jpg"
     w, h, lum, _ = load_rgb(front)
-    stone, origin, thr = plate_mask(lum)
-    # Voids between the jambs, including a walk opening that meets the ground
-    # (that one is not an enclosed hole, because the border shows through it).
+    stone, origin, thr, joined = gateway_stone(lum)
     between = np.zeros(stone.shape, dtype=bool)
     for y in range(stone.shape[0]):
         xs = np.flatnonzero(stone[y])
@@ -34,32 +67,23 @@ def build_gate(inbox, numbers):
         span = ~stone[y, left:right]
         if span.any():
             between[y, left:right] = span
-    voids = enclosed_holes(stone, min_area=800)
-    hole = between.copy()
-    for _area, extra in voids:
-        hole = hole | extra
-    # Keep only large void components so a hairline crack is not a doorway.
-    nlab, labels, stats, _ = cv2.connectedComponentsWithStats(hole.astype(np.uint8), 4)
-    arch = None
-    arch_tall = 0
-    hole = np.zeros(stone.shape, dtype=bool)
-    void_n = 0
+    nlab, labels, stats, _ = cv2.connectedComponentsWithStats(between.astype(np.uint8), 4)
+    holes = []
     for lab in range(1, nlab):
         area = int(stats[lab, cv2.CC_STAT_AREA])
         if area < 800:
             continue
         comp = labels == lab
-        hole = hole | comp
-        void_n += 1
         box = content_box(comp)
-        tall = box[3] - box[1]
-        if tall > arch_tall:
-            arch_tall = tall
-            arch = comp
-    if arch is None:
+        holes.append((box[3] - box[1], area, comp, box))
+    if not holes:
         raise SystemExit("gate: no opening between the jambs")
+    holes.sort(reverse=True)
+    _tall, _area, arch, (hx0, hy0, hx1, hy1) = holes[0]
+    hole = np.zeros(stone.shape, dtype=bool)
+    for _t, _a, comp, _b in holes:
+        hole |= comp
     x0, y0, x1, y1 = content_box(stone)
-    hx0, hy0, hx1, hy1 = content_box(arch)
     content_h = y1 - y0 + 1
     content_w = x1 - x0 + 1
     height_m = float(numbers["gate"]["heightM"])
@@ -72,7 +96,7 @@ def build_gate(inbox, numbers):
     if float(np.mean(np.abs(prof_l - prof_r))) < 0.03:
         raise SystemExit("gate: pier sections look mirrored")
 
-    step = int(numbers["gate"].get("gridStepPx", 4))
+    step = int(numbers["gate"].get("gridStepPx", 5))
     cx = (x0 + x1) * 0.5
     gh = max(1, (y1 - y0) // step)
     gw = max(1, (x1 - x0) // step)
@@ -81,6 +105,31 @@ def build_gate(inbox, numbers):
     solid_frac = sub_s.reshape(gh, step, gw, step).mean(axis=(1, 3))
     hole_frac = sub_h.reshape(gh, step, gw, step).mean(axis=(1, 3))
     solid = (solid_frac > 0.35) & (hole_frac < 0.5)
+    # Alpha cut, at the elevation's own resolution, for the outer skyline only. The silhouette is
+    # the stone plus every hole it encloses (the eclipse disc stays a real hole in the faces, as
+    # built); only the background that reaches the image border is cut. A small opening drops
+    # one-pixel ray tips and a light blur gives the bilinear sampler a smooth 0.5 edge. Below the
+    # opening top the cells are the colliders and stay opaque. Shape only: no pixel is coloured.
+    ns_n, ns_lab = cv2.connectedComponents((~stone).astype(np.uint8), connectivity=4)
+    edge_labs = np.unique(np.concatenate([ns_lab[0], ns_lab[-1], ns_lab[:, 0], ns_lab[:, -1]]))
+    outside = np.isin(ns_lab, edge_labs[edge_labs > 0]) & ~stone
+    sil = (~outside).astype(np.uint8)
+    sil = cv2.morphologyEx(sil, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5)))
+    # Stray specks left beside the skyline are not the gate: keep the one body.
+    sn, slab, sstats, _ = cv2.connectedComponentsWithStats(sil, connectivity=8)
+    if sn > 2:
+        body = 1 + int(np.argmax(sstats[1:, cv2.CC_STAT_AREA]))
+        sil = (slab == body).astype(np.uint8)
+    soft = cv2.GaussianBlur(sil.astype(np.float32), (0, 0), 2.0)
+    soft[hy0:, :] = 1.0
+    alpha = (np.clip(soft, 0.0, 1.0) * 255.0 + 0.5).astype(np.uint8)
+    # Above the opening (out of the body's reach) every cell the cut keeps a pixel of gets faces,
+    # so the skyline follows the elevation's own edge, not the 5 px cell grid. Cells that touch an
+    # enclosed hole are left as they were.
+    sub_a = soft[y0 : y0 + gh * step, x0 : x0 + gw * step]
+    keep_frac = (sub_a.reshape(gh, step, gw, step) >= 0.5).mean(axis=(1, 3))
+    rows_above = (np.arange(gh) * step + y0 + step) <= hy0
+    solid |= rows_above[:, None] & (keep_frac > 0.0) & (hole_frac == 0.0)
 
     def depth_at(px, py):
         if py <= hy0 and hx0 <= px <= hx1:
@@ -98,22 +147,38 @@ def build_gate(inbox, numbers):
     def world(px, py, z):
         return ((px - cx) * m_per_px, (y1 - py) * m_per_px, z)
 
+    has_detail = detail_path.is_file()
+    if has_detail:
+        dw, dh, _, _ = load_rgb(detail_path)
+    else:
+        dw, dh = w, h
+    atlas_w = float(w + (dw if has_detail else 0))
+    if not has_detail:
+        atlas_w = float(w)
+
     def uv_front(px, py):
-        return px / max(1, w - 1), 1.0 - py / max(1, h - 1)
+        u = (px / max(1, w - 1)) * (w / atlas_w)
+        v = 1.0 - py / max(1, h - 1)
+        return u, v
 
-    sw, sh, slum, _ = load_rgb(side)
-    sstone, _, _ = plate_mask(slum)
-    sx0, sy0, sx1, sy1 = content_box(sstone)
+    tile_t = (float(dh) / max(depth_m, 0.3)) if has_detail else (float(h) / max(depth_m, 0.3))
+    tile_m = (float(dw) / tile_t) if has_detail else (float(w) / tile_t)
+    u_off = (w / atlas_w) if has_detail else 0.0
+    u_scale = ((dw / atlas_w) if has_detail else 1.0)
 
-    def uv_side(z, depth, py):
-        u = (sx0 + (z / max(depth, 1e-4)) * (sx1 - sx0)) / max(1, sw - 1)
-        frac = (y1 - py) / max(1, y1 - y0)
-        img_y = sy0 + (1.0 - frac) * (sy1 - sy0)
-        v = 1.0 - img_y / max(1, sh - 1)
-        return float(u), float(v)
+    def uv_face(mode, x_m, y_m, z_m):
+        if mode == "x":
+            across = x_m
+        else:
+            across = y_m
+        span = across % tile_m
+        if span < 0:
+            span += tile_m
+        u_img = span / max(tile_m, 1e-4)
+        v_img = max(0.0, min(1.0, -z_m / max(depth_m, 1e-4)))
+        return u_off + u_scale * u_img, v_img
 
-    front_m = Mesh(0)
-    side_m = Mesh(1)
+    mesh = Mesh(0)
     cells = {}
     for iy in range(gh):
         for ix in range(gw):
@@ -135,7 +200,7 @@ def build_gate(inbox, numbers):
         u10, v10 = uv_front(px2, py)
         u11, v11 = uv_front(px2, py2)
         u01, v01 = uv_front(px, py2)
-        front_m.quad((
+        mesh.quad((
             (*c00, u00, v00),
             (*c10, u10, v10),
             (*c11, u11, v11),
@@ -145,30 +210,35 @@ def build_gate(inbox, numbers):
         b10 = world(px2, py, -depth)
         b11 = world(px2, py2, -depth)
         b01 = world(px, py2, -depth)
-        front_m.quad((
+        mesh.quad((
             (*b10, u10, v10),
             (*b00, u00, v00),
             (*b01, u01, v01),
             (*b11, u11, v11),
         ))
         seams = (
-            ((ix - 1, iy), px, py, px, py2),
-            ((ix + 1, iy), px2, py, px2, py2),
-            ((ix, iy - 1), px, py, px2, py),
-            ((ix, iy + 1), px, py2, px2, py2),
+            ((ix - 1, iy), px, py, px, py2, "y"),
+            ((ix + 1, iy), px2, py, px2, py2, "y"),
+            ((ix, iy - 1), px, py, px2, py, "x"),
+            ((ix, iy + 1), px, py2, px2, py2, "x"),
         )
-        for nkey, ax, ay, bx, by in seams:
+        for nkey, ax, ay, bx, by, mode in seams:
             if nkey in cells:
                 continue
             p0 = world(ax, ay, 0.0)
             p1 = world(bx, by, 0.0)
             p2 = world(bx, by, -depth)
             p3 = world(ax, ay, -depth)
-            s0 = uv_side(0.0, depth, ay)
-            s1 = uv_side(0.0, depth, by)
-            s2 = uv_side(depth, depth, by)
-            s3 = uv_side(depth, depth, ay)
-            side_m.quad((
+            # Seam faces carry the front-image spot of their edge, one pixel inside the cell, for
+            # the alpha cut. Their surface pixels are tiled in the shader from the local position
+            # at the plate's native density (repeat, never stretched).
+            nx = 1 if ax == px and bx == px else (-1 if ax == px2 and bx == px2 else 0)
+            ny = 1 if ay == py and by == py else (-1 if ay == py2 and by == py2 else 0)
+            s0 = uv_front(ax + nx, ay + ny)
+            s1 = uv_front(bx + nx, by + ny)
+            s2 = s1
+            s3 = s0
+            mesh.quad((
                 (*p0, *s0),
                 (*p1, *s1),
                 (*p2, *s2),
@@ -198,18 +268,23 @@ def build_gate(inbox, numbers):
             "hz": depth * 0.5,
         }
 
-    # Arch is the largest hole. Piers stop at its sides. The lintel is the stone above it.
     left = span(lambda px, py, px2, py2: px2 <= hx0 + step)
     right = span(lambda px, py, px2, py2: px >= hx1 - step)
     lintel = span(lambda px, py, px2, py2: py2 <= hy0 + step)
-    colliders = []
-    for name, box in (("pier-l", left), ("pier-r", right), ("lintel", lintel)):
-        if not box:
-            continue
-        box["name"] = name
-        colliders.append(box)
-
     ox, oy, _ = world((hx0 + hx1) * 0.5, (hy0 + hy1) * 0.5, 0)
+    # Clear width is the median run through the middle of the tall void.
+    widths = []
+    for y in range(hy0 + (hy1 - hy0) // 5, hy1 - (hy1 - hy0) // 5):
+        xs = np.flatnonzero(arch[y])
+        if xs.size:
+            widths.append(int(xs[-1] - xs[0] + 1))
+    clear_px = int(np.median(widths)) if widths else (hx1 - hx0)
+    opening_w = clear_px * m_per_px
+    opening_h = (hy1 - hy0 + 1) * m_per_px
+    ring_box = None
+    for _t, _a, _c, box in holes[1:]:
+        ring_box = [int(v) for v in box]
+        break
     parts = [
         {
             "id": "pier-l",
@@ -242,7 +317,7 @@ def build_gate(inbox, numbers):
             "skin": "front.jpg",
             "erasedFrom": None,
             "inpaintCall": None,
-            "note": "stone above the opening; section profile scales thickness",
+            "note": "slab above the opening; section profile scales thickness",
         },
         {
             "id": "opening",
@@ -252,43 +327,59 @@ def build_gate(inbox, numbers):
             "skin": None,
             "erasedFrom": None,
             "inpaintCall": None,
-            "note": "largest enclosed void; no faces on those cells and no collider",
+            "note": "tall void; no faces on those cells",
         },
         {
             "id": "ring-motif",
             "measure": "front.jpg",
-            "spot": [int(hx0), int(hy0), int(hx1), int(hy1)],
+            "spot": ring_box or [int(hx0), int(hy0), int(hx1), int(hy0)],
             "section": None,
             "skin": "front.jpg",
             "erasedFrom": None,
             "inpaintCall": None,
-            "note": "carved in the skin, not a second volume",
+            "note": "painted on the elevation, not a second volume",
+        },
+        {
+            "id": "passage-wall",
+            "measure": "detail.jpg" if has_detail else "side.jpg",
+            "spot": [0, 0, int(dw if has_detail else w), int(dh if has_detail else h)],
+            "section": None,
+            "skin": "detail.jpg" if has_detail else "side.jpg",
+            "erasedFrom": None,
+            "inpaintCall": None,
+            "note": "skin of the thickness faces of the same loft, not a second solid",
         },
     ]
-    # Bounds in local metres.
     xs, ys, zs = [], [], []
-    for mesh in (front_m, side_m):
-        arr = mesh.xyzuv
-        for i in range(0, len(arr), 5):
-            xs.append(arr[i])
-            ys.append(arr[i + 1])
-            zs.append(arr[i + 2])
-    min_d = numbers["focalPx"] * height_m / max(1, content_h)
+    arr = mesh.xyzuv
+    for i in range(0, len(arr), 5):
+        xs.append(arr[i])
+        ys.append(arr[i + 1])
+        zs.append(arr[i + 2])
+    front_t = 1.0 / m_per_px
+    near_t = tile_t
+    min_d = numbers["focalPx"] / max(front_t, 1e-6)
     report = {
         "threshold": round(thr, 2),
+        "joinedComponents": int(joined),
         "frontBox": [int(x0), int(y0), int(x1), int(y1)],
         "holeBox": [int(hx0), int(hy0), int(hx1), int(hy1)],
-        "holeCount": int(void_n),
+        "holeCount": int(len(holes)),
         "origin": [int(origin[0]), int(origin[1])],
         "contentH": int(content_h),
         "contentW": int(content_w),
         "heightM": height_m,
         "widthM": round(content_w * m_per_px, 3),
         "depthM": round(depth_m, 3),
+        "openingWidthM": round(opening_w, 3),
+        "openingHeightM": round(opening_h, 3),
         "sideBox": list(map(int, side_box)),
-        "texelsPerM": round(1.0 / m_per_px, 2),
+        "texelsPerM": round(front_t, 2),
+        "nearTexelsPerM": round(near_t, 2),
+        "nearTileM": round(tile_m, 3),
         "minApproachM": round(min_d, 3),
-        "openingLocal": [round(ox, 3), round(oy, 3)],
+        "nearApproachM": round(numbers["focalPx"] / max(near_t, 1e-6), 3),
+        "openingLocal": [round(ox, 3), round(oy, 3), round(-0.5 * depth_m, 3)],
         # Opening in local metres: x left, x right, sill y, top y. Colliders keep it walkable.
         "openingBoxM": [
             round((hx0 - cx) * m_per_px, 3),
@@ -296,20 +387,31 @@ def build_gate(inbox, numbers):
             round((y1 - hy1) * m_per_px, 3),
             round((y1 - hy0) * m_per_px, 3),
         ],
-        "quadsFront": len(front_m.idx) // 6,
-        "quadsSide": len(side_m.idx) // 6,
+        "quads": len(mesh.idx) // 6,
         "bounds": {
             "min": [round(min(xs), 3), round(min(ys), 3), round(min(zs), 3)],
             "max": [round(max(xs), 3), round(max(ys), 3), round(max(zs), 3)],
         },
         "pierProfileMae": round(float(np.mean(np.abs(prof_l - prof_r))), 4),
         "openingClear": True,
+        "atlas": {
+            "frontU": [0.0, round(w / atlas_w, 4)],
+            "nearU": [round(w / atlas_w, 4), 1.0] if has_detail else [0.0, 1.0],
+            "frontTexels": round(front_t, 2),
+            "nearTexels": round(near_t, 2),
+        },
+        "detailPlate": has_detail,
+        "spans": {"pier-l": left, "pier-r": right, "lintel": lintel},
+        "alphaCut": {"aboveY": round((y1 - hy0) * m_per_px, 3), "outerOnly": True, "openPx": 5, "blurPx": 2.0, "threshold": round(thr, 2)},
+        "nearTileSizeM": [round(tile_m, 3), round(depth_m, 3)],
     }
-    # Opening centre must not sit on a solid cell.
+    report["_alpha"] = alpha
     ocx = int((hx0 + hx1) * 0.5)
     ocy = int((hy0 + hy1) * 0.5)
     ix = (ocx - x0) // step
     iy = (ocy - y0) // step
     if (ix, iy) in cells:
         report["openingClear"] = False
-    return [front_m, side_m], colliders, parts, report
+    if opening_w < 6.0:
+        raise SystemExit("gate opening is under 6 m: " + str(round(opening_w, 2)))
+    return [mesh], parts, report

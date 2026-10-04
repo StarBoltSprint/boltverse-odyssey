@@ -1,0 +1,130 @@
+{
+  "schema": "ruins-sealed/1",
+  "id": "arch-v1",
+  "source": "Eclipse Gate as cooked in zone A step 4 (PR 166, 274cab6 / 707647d); kept by owner decision 2026-10-04 09:25",
+  "frame": "gate",
+  "mesh": "gate.ruin",
+  "skins": [
+    "front.jpg",
+    "side.jpg"
+  ],
+  "heightM": 7.4,
+  "widthM": 4.538,
+  "depthM": 2.89,
+  "texelsPerM": 155.81,
+  "srcH": 1153,
+  "minApproachM": 11.508,
+  "openingBoxM": [
+    -1.303,
+    1.123,
+    0.0,
+    5.186
+  ],
+  "bounds": {
+    "min": [
+      -2.266,
+      0.013,
+      -2.89
+    ],
+    "max": [
+      2.259,
+      7.394,
+      0.0
+    ]
+  },
+  "parts": [
+    {
+      "id": "pier-l",
+      "measure": "front.jpg",
+      "spot": [
+        66,
+        394,
+        216,
+        1202
+      ],
+      "section": "sec-pier-l.jpg",
+      "sectionBox": [
+        265,
+        82,
+        757,
+        941
+      ],
+      "skin": "front.jpg",
+      "erasedFrom": null,
+      "inpaintCall": null,
+      "note": "left jamb of the one loft; section scales thickness only"
+    },
+    {
+      "id": "pier-r",
+      "measure": "front.jpg",
+      "spot": [
+        594,
+        394,
+        772,
+        1202
+      ],
+      "section": "sec-pier-r.jpg",
+      "sectionBox": [
+        336,
+        81,
+        692,
+        942
+      ],
+      "skin": "front.jpg",
+      "erasedFrom": null,
+      "inpaintCall": null,
+      "note": "right jamb, different section, not a mirrored copy"
+    },
+    {
+      "id": "lintel",
+      "measure": "front.jpg",
+      "spot": [
+        66,
+        50,
+        772,
+        394
+      ],
+      "section": "sec-lintel.jpg",
+      "sectionBox": [
+        97,
+        332,
+        926,
+        691
+      ],
+      "skin": "front.jpg",
+      "erasedFrom": null,
+      "inpaintCall": null,
+      "note": "stone above the opening; section profile scales thickness"
+    },
+    {
+      "id": "opening",
+      "measure": "front.jpg",
+      "spot": [
+        216,
+        394,
+        594,
+        1202
+      ],
+      "section": null,
+      "skin": null,
+      "erasedFrom": null,
+      "inpaintCall": null,
+      "note": "largest enclosed void; no faces on those cells and no collider"
+    },
+    {
+      "id": "ring-motif",
+      "measure": "front.jpg",
+      "spot": [
+        216,
+        394,
+        594,
+        1202
+      ],
+      "section": null,
+      "skin": "front.jpg",
+      "erasedFrom": null,
+      "inpaintCall": null,
+      "note": "carved in the skin, not a second volume"
+    }
+  ]
+}

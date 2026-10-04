@@ -47,8 +47,11 @@ def main():
     measure = json.loads((pack / "measure.json").read_text())
     problems = []
     ids = [o["id"] for o in manifest["objects"]]
-    if ids != ["gate", "wreck"]:
+    extra = [o for o in manifest["objects"][2:]]
+    if ids[:2] != ["gate", "wreck"] or any(not o.get("sealed") for o in extra):
         problems.append("objects " + str(ids))
+    if [o["id"] for o in extra] != [e["id"] for e in numbers.get("sealed", [])]:
+        problems.append("sealed ruins do not match the numbers file")
     focal = float(numbers["focalPx"])
     for obj in manifest["objects"]:
         approach = focal / float(obj["texelsPerM"])
@@ -112,6 +115,33 @@ def main():
         bow = walk_line(wfield, (hang["x"][1] + 3.0, pz + 3.0), (hang["x"][1] + 3.0, pz - 1.5), radius)
         if bow["free"]:
             problems.append("closed hull side is not a wall")
+    # Sealed ruins: older kept models, placed with their own face colliders.
+    for obj in extra:
+        sid = obj["id"]
+        sob = obj.get("openingBoxM")
+        if not sob or sob[3] - sob[2] < float(coll.get("clearM", 1.3)):
+            problems.append(sid + " opening lower than the body band")
+            continue
+        sfield = body_field(read_ruin(ROOT / obj["mesh"]), float(obj.get("contactY", 0)) + float(obj["sink"]), coll)
+        sdepth = float(obj["depthM"])
+        scx = 0.5 * (sob[0] + sob[1])
+        run = walk_line(sfield, (scx, 3.0), (scx, -sdepth - 3.0), radius)
+        if not run["free"]:
+            problems.append(sid + " opening not walkable " + json.dumps(run))
+        if not covered_at(sfield, scx, -0.5 * sdepth):
+            problems.append(sid + " has no lintel over the opening")
+        left = walk_line(sfield, (sob[0] - 0.4, 3.0), (sob[0] - 0.4, -sdepth - 3.0), radius)
+        right = walk_line(sfield, (sob[1] + 0.4, 3.0), (sob[1] + 0.4, -sdepth - 3.0), radius)
+        if left["free"] or right["free"]:
+            problems.append(sid + " pier is not a wall")
+        if not (measure.get("sealed") or {}).get(sid, {}).get("throughOpening", {}).get("free"):
+            problems.append(sid + " measure says the opening is blocked")
+        for other in manifest["objects"]:
+            if other is obj:
+                continue
+            d = ((obj["x"] - other["x"]) ** 2 + (obj["z"] - other["z"]) ** 2) ** 0.5
+            if d < float(obj["horizRadiusM"]) + float(other["horizRadiusM"]) + 2 * radius:
+                problems.append(sid + " overlaps " + other["id"])
     if not measure["gate"].get("openingClear"):
         problems.append("opening blocked")
     if measure["gate"].get("holeCount", 0) < 1:
@@ -150,6 +180,7 @@ def main():
     print(json.dumps({
         "gateApproach": manifest["objects"][0]["minApproachM"],
         "wreckApproach": manifest["objects"][1]["minApproachM"],
+        "sealed": {o["id"]: [o["x"], o["z"], o["minApproachM"]] for o in extra},
         "parts": len(part_ids),
         "colliders": "faces in the body band; gate opening and wreck hangar walkable",
     }))

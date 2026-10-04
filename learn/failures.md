@@ -362,3 +362,36 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | The gate loft takes the dark span between the first and last stone of each row, unions enclosed voids of at least 800 px, and keeps the tallest component as the opening. |
 | Guard | `python3 tools/ruins/selftest.py --kit howling-eclipse` requires `openingClear` and a non-empty hole box. |
 | Sources | `tools/ruins/gate.py`, `packs/zone-a/src/ruins/measure.json`. |
+
+### 2026-10-04 — eclipse mark landed above the lintel
+
+| | |
+| --- | --- |
+| Take | Zone A step 4b. Eclipse Gate redo. |
+| Defect | The eclipse mark is painted on the empty part of the elevation above the lintel. The opening the player gallops through is a plain rectangle. |
+| Root cause | The first plate split the lintel and drew two discs. The repair plate joined the slabs and moved the mark onto the crest, still outside the void. |
+| Fix | Two cooks, then stop. The mark stays paint on the elevation. It is not a second volume, so it was not inpainted off the skin. |
+| Guard | `packs/zone-a/proof/step4b/REPORT.md` row 1. A later cook has to show the mark inside the opening on the play frame, not only on the plate. |
+| Sources | `tools/ruins/inbox/howling-eclipse/front.jpg`, `packs/zone-a/src/ruins/measure.json` ring-motif. Prompts stay in the untracked step 4b note. |
+
+### 2026-10-04 — a flat ruin seat floats the downhill foot
+
+| | |
+| --- | --- |
+| Take | Zone A step 4c. Owner phone, 2026-10-04 11:58. |
+| Defect | The monolith's base hovered. The downhill foot sat about 1.37 m above the drawn relief, and the horizon showed under the slab. |
+| Root cause | The seat is one `heightAt` sample minus sink. The mesh bottom is flat. Dropping the whole gate to the lowest foot would bury the opening in the crest. |
+| Fix | `appendSkirts` in `packs/zone-a/play/ruins.js` hangs only the lowest ring down to `heightAt` minus sink. Those faces stay out of the collider. The gate foot repeats the surface plate at its native density. Other skins shift into stone already in the island. |
+| Guard | No playcheck row reads the framebuffer gap. `info().seats` reports `skirts` and `footGap`. Proof `packs/zone-a/proof/step4c/03-gate-base.jpg` (gate footGap 1.371, 106 quads). A one-off solid colour on the foot branch filled that band; the shipped pixels there are the plate. |
+| Sources | `packs/zone-a/play/ruins.js`. Owner still `42183a078c155ab3daf45b26214fa637050a97c22d0d8676ba43f0e36e32f44e.jpg`. |
+
+### 2026-10-04 — wreck faces that sample the plate's black read as a void
+
+| | |
+| --- | --- |
+| Take | Zone A step 4c. Owner phone, 2026-10-04 11:58. |
+| Defect | The hangar interior and a slab beside the opening were black. |
+| Root cause | Inward walls took UVs from the port hole and the empty margin. The plating itself was already grey where the UVs hit the silhouette. |
+| Fix | `retile_black` in `tools/ruins/wreck.py` duplicates those triangles onto a mid-tone window of the same skin, at that skin's texel rate. No new texture. Eight centroids remain on dark specks inside the chosen windows (port 1, starboard 7). Stopped. |
+| Guard | `python3 tools/ruins/build.py --kit howling-eclipse` prints `wreck retile`. No row fails a walkable frame for a black blob. Proof `packs/zone-a/proof/step4c/01-wreck-outside.jpg` and `02-hangar-inside.jpg`. |
+| Sources | `tools/ruins/wreck.py`, `packs/zone-a/src/ruins/measure.json`, `packs/zone-a/src/ruins/wreck/wreck.ruin`. Owner still `7872ae48d5a83b3d17de8c44687c1f29d8115546ee23a0416c71068c6c8136a7.jpg`. |

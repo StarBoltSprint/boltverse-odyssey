@@ -1,11 +1,11 @@
-Colour-free contracts. Tone and subject wording stay in the untracked local prompt file.
-Slots: as cooked front elevation skin, one gateway, opening kept as cooked.
+Plain contracts. Tone and subject wording stay in the untracked local prompt file.
+Slots: as cooked front elevation, one gateway, opening kept as cooked.
 
 STATUS
 The verbatim Imagine call is not stored in the repo.
 ROLE as named by the plate (unlit skin, or measure only).
 PIXELS as cooked. ASPECT as cooked.
-JOB front elevation skin, one gateway, opening kept
+JOB front elevation, one gateway, opening kept
 
 ASK
 Imagine, aspect as cooked. Orthographic, no perspective, no camera tilt, no ground, no stars, no text,

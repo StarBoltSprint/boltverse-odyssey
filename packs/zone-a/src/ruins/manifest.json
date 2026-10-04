@@ -14,39 +14,46 @@
       "id": "gate",
       "mesh": "packs/zone-a/src/ruins/gate/gate.ruin",
       "skins": [
-        "packs/zone-a/src/ruins/gate/front.jpg",
-        "packs/zone-a/src/ruins/gate/side.jpg"
+        "packs/zone-a/src/ruins/gate/atlas.jpg"
       ],
       "frame": "gate",
-      "x": 2.0,
-      "z": 37.1,
-      "yaw": -2.9863,
+      "x": 18.451,
+      "z": 25.657,
+      "yaw": -2.5891,
       "sink": 0.18,
       "contact": [
         0,
         0
       ],
-      "heightM": 7.4,
-      "srcH": 1153,
-      "texelsPerM": 155.81,
-      "minApproachM": 11.508,
-      "horizRadiusM": 3.668,
+      "heightM": 28.0,
+      "srcH": 1026,
+      "texelsPerM": 36.64,
+      "nearTexelsPerM": 182.99,
+      "atlasSplitU": 0.5,
+      "alpha": "packs/zone-a/src/ruins/gate/alpha.png",
+      "alphaAboveM": 18.585,
+      "openingWidthM": 7.314,
+      "openingHeightM": 18.558,
+      "minApproachM": 48.932,
+      "horizRadiusM": 10.53,
+      "footprintRadiusM": 10.53,
+      "depthM": 6.82,
       "openingBoxM": [
-        -1.303,
-        1.123,
-        0.0,
-        5.186
+        -5.021,
+        4.421,
+        0.055,
+        18.585
       ],
-      "openingTopM": 5.186,
+      "openingTopM": 18.585,
       "bounds": {
         "min": [
-          -2.266,
-          0.013,
-          -2.89
+          -8.078,
+          0.0,
+          -6.82
         ],
         "max": [
-          2.259,
-          7.394,
+          8.023,
+          27.7,
           0.0
         ]
       }
@@ -107,6 +114,49 @@
           15.996,
           4.116,
           2.055
+        ]
+      }
+    },
+    {
+      "id": "arch",
+      "mesh": "packs/zone-a/src/ruins/arch/arch.ruin",
+      "skins": [
+        "packs/zone-a/src/ruins/arch/atlas.jpg"
+      ],
+      "frame": "gate",
+      "sealed": "tools/ruins/sealed/arch-v1",
+      "x": -5.0,
+      "z": 39.0,
+      "yaw": -3.1227,
+      "sink": 0.18,
+      "contact": [
+        0,
+        0
+      ],
+      "heightM": 7.4,
+      "srcH": 1153,
+      "texelsPerM": 155.81,
+      "minApproachM": 11.508,
+      "horizRadiusM": 3.668,
+      "footprintRadiusM": 3.668,
+      "depthM": 2.89,
+      "openingBoxM": [
+        -1.303,
+        1.123,
+        0.0,
+        5.186
+      ],
+      "openingTopM": 5.186,
+      "bounds": {
+        "min": [
+          -2.266,
+          0.013,
+          -2.89
+        ],
+        "max": [
+          2.259,
+          7.394,
+          0.0
         ]
       }
     }

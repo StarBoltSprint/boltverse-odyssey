@@ -1,4 +1,4 @@
-Colour-free contracts. Tone and subject wording stay in the untracked local prompt file.
+Plain contracts. Tone and subject wording stay in the untracked local prompt file.
 Slots: as copied unlit skin copied from the validated hard-object plate stern.jpg as copied.
 
 STATUS
