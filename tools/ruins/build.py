@@ -354,6 +354,7 @@ def main():
                 "depthM": report["depthM"],
                 "openingBoxM": report["openingBoxM"],
                 "openingTopM": report["openingBoxM"][3],
+                "bounds": report["bounds"],
             },
             {
                 "id": "wreck",
@@ -372,6 +373,7 @@ def main():
                 "horizRadiusM": winfo["horizRadiusM"],
                 "contactY": winfo.get("contactY", 0.0),
                 "hangar": winfo.get("hangar"),
+                "bounds": winfo["bounds"],
             },
         ],
     }
