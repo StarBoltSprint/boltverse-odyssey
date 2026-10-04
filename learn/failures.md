@@ -417,3 +417,25 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | `retile_black` in `tools/ruins/wreck.py` duplicates those triangles onto a mid-tone window of the same skin, at that skin's texel rate. No new texture. Eight centroids remain on dark specks inside the chosen windows (port 1, starboard 7). Stopped. |
 | Guard | `python3 tools/ruins/build.py --kit howling-eclipse` prints `wreck retile`. No row fails a walkable frame for a black blob. Proof `packs/zone-a/proof/step4c/01-wreck-outside.jpg` and `02-hangar-inside.jpg`. |
 | Sources | `tools/ruins/wreck.py`, `packs/zone-a/src/ruins/measure.json`, `packs/zone-a/src/ruins/wreck/wreck.ruin`. Owner still `7872ae48d5a83b3d17de8c44687c1f29d8115546ee23a0416c71068c6c8136a7.jpg`. |
+
+### 2026-10-04 — decree brief ranker misses the numbered post
+
+| | |
+| --- | --- |
+| Take | Living Archives / Echo Shards. Branch `archives-shards`. |
+| Defect | The keyword brief’s top five were decrees 625, 643, 704, 697, and 629. Decrees #351 and #352, the posts this step is built on, were absent. |
+| Root cause | The ranker scores shared words. Long Citadel posts outscore a short decree when the spec is full of kit words (bolt, gate, hall). |
+| Fix | The brief keeps the ranker list and appends the owner-named posts from the local jsonl, labeled as ranker misses. Quotes were copied. Nothing was invented. |
+| Guard | `packs/common/archives/decree-brief.md` section “Owner-named decrees” cites post `2071264181135827220` (#351, 2026-06-28T16:07:17Z) and post `2071268834363736574` (#352, 2026-06-28T16:25:47Z). No test fails a brief that omits the numbered decree. |
+| Sources | `tools/decrees/brief.py`. `packs/common/archives/decree-brief.md`. |
+
+### 2026-10-04 — a pickup card over the chase subject reads as a world crystal
+
+| | |
+| --- | --- |
+| Take | Living Archives / Echo Shards. Branch `archives-shards`. |
+| Defect | The first card sat just above the joystick, on Bolt’s legs. The lore read, and the crystal image looked like another shard in the world. |
+| Root cause | `cardBox` anchored the card to the stick’s top edge. On the portrait chase that band is the dog and the near ground. |
+| Fix | The card sits in the upper left, under no paw reserve and clear of the stick. The image is the Imagine crystal. The line under it is HTML text. |
+| Guard | `node --test packs/common/archives/archives.test.mjs` row “paw stays off the stick and inside the reserved corner” asserts the card does not overlap the stick or the paw reserve and that `card.y + card.h < vh * 0.4` at 360×800 and 720×1600. |
+| Sources | `packs/common/archives/layout.js`. Stills `shard-world.png`, `pickup-card.png` under `/workspace/grokcli/out/archives/` (not committed). |

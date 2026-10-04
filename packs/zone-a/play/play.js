@@ -9,6 +9,7 @@ import { showIntro, introEnabled } from "./intro.js";
 import { createBiomeBlend, postOf } from "./biomeblend.js";
 import { mountDetails } from "./details.js";
 import { mountRuins } from "./ruins.js";
+import { mountArchives } from "../../common/archives/mount.js";
 
 const W = 720;
 const H = 1600;
@@ -2630,8 +2631,9 @@ function measureMag(eye) {
   magParts.ground = groundMag;
   magParts.bolt = boltMag;
   magParts.gate = gateMag;
+  archivesMag = archivesLayer ? archivesLayer.mag(eye, FOCAL, vpM) : 0;
   magNow = Math.max(
-    groundMag, skyMagW, skyMagH, boltMag, objectMag, gateMag,
+    groundMag, skyMagW, skyMagH, boltMag, objectMag, gateMag, archivesMag,
     skyMagParts.upper, skyMagParts.high, skyMagParts.cap,
     skyMagParts.stars, skyMagParts.dust, skyMagParts.nebula,
   );
@@ -2669,6 +2671,10 @@ function render(mode) {
     detailLayer.draw(vpM, eyeBuf, FOCAL);
     drawCalls += detailLayer.draws;
   }
+  if (archivesLayer && mode === 0) {
+    archivesLayer.draw(vpM, eyeBuf, FOCAL);
+    drawCalls += archivesLayer.draws;
+  }
   if (ruinLayer) {
     ruinLayer.draw(vpM, mode);
     if (mode !== 1) drawCalls += ruinLayer.draws;
@@ -2700,15 +2706,22 @@ let skyScreenCache = 800;
 // opt.draw === false (debug walks only): solve body and camera, skip the GL draw.
 function tick(dt, opt) {
   const t0 = performance.now();
-  camStepDt = dt > 0 ? dt : 0;
+  const hold = !!(archivesLayer && archivesLayer.blocksPlay());
+  const step = hold ? 0 : (dt > 0 ? dt : 0);
+  if (hold) {
+    camLook.drag = false;
+    camLook.ptr = -1;
+    camLook.goal = 0;
+  }
+  camStepDt = step;
   const fwdIn = Math.abs(state.forward) < 0.04 ? 0 : state.forward;
   if (fwdIn === 0) state.spd = 0;
   else state.spd = state.gallop ? 4.4 : WALK_SPD;
-  state.hdg = wrap360(state.hdg + state.turn * 150 * dt);
+  state.hdg = wrap360(state.hdg + state.turn * 150 * step);
   state.mode = state.spd > 0.05 ? "GALLOP" : "IDLE";
   const yaw = state.hdg * Math.PI / 180;
-  let nx = state.x + Math.sin(yaw) * state.spd * dt;
-  let nz = state.z + Math.cos(yaw) * state.spd * dt;
+  let nx = state.x + Math.sin(yaw) * state.spd * step;
+  let nz = state.z + Math.cos(yaw) * state.spd * step;
   const ox = state.x;
   const oz = state.z;
   const solved = resolveBody(nx, nz);
@@ -2753,6 +2766,8 @@ function tick(dt, opt) {
   } else {
     state.pathTrigger = false;
   }
+  if (archivesLayer && !hold) archivesLayer.sense(state.x, state.z);
+  if (archivesLayer) archivesLayer.tick(hold ? 0 : dt);
   // Motion, the camera and magnification still run without the GL draw.
   if (opt && opt.draw === false) {
     solveCamera();
@@ -2933,6 +2948,8 @@ function snapshot() {
     boltSource: { w: BOLT_SRC.w, h: BOLT_SRC.h },
     boltQuad: heroQuad,
     objectIds: { width: W, height: H, labels, b64: btoa(bin) },
+    archives: archivesLayer ? archivesLayer.info() : null,
+    archivesMag,
     perf: perfSnap(),
     popCount,
     solidLock,
@@ -2951,7 +2968,8 @@ function paintHud() {
     `x ${state.x.toFixed(2)}  z ${state.z.toFixed(2)}  hdg ${state.hdg.toFixed(1)}\n` +
     `mag ${magNow.toFixed(3)}  bolt ${state.mode}\n` +
     `gate ${g.bearing_deg.toFixed(1)}°  ${g.dist_m.toFixed(2)} m\n` +
-    `Perf: drawCalls=${drawCalls}, texMB=${mb}, activeVideos=${activeVideoCount()}, jsMs=${lastWork.toFixed(2)}`;
+    `Perf: drawCalls=${drawCalls}, texMB=${mb}, activeVideos=${activeVideoCount()}, jsMs=${lastWork.toFixed(2)}` +
+    (archivesLayer ? `\nechoes ${archivesLayer.info().found}/${archivesLayer.info().total}` : "");
 }
 
 function pxBandScreen() {
@@ -3272,6 +3290,8 @@ let eyeGuardHits = 0;
 let detailLoadMs = 0;
 let ruinLayer = null;
 let ruinLoadMs = 0;
+let archivesLayer = null;
+let archivesMag = 0;
 
 async function loadBand(manifest, id) {
   const display = manifest && manifest.display;
@@ -3456,6 +3476,21 @@ async function boot() {
       console.warn("ruins", err);
       ruinLayer = null;
     }
+    if (!/[?&]archives=0(?:&|$)/.test(location.search)) {
+      try {
+        archivesLayer = await mountArchives(gl, {
+          absUrl,
+          loadImage,
+          trackTex,
+          groundAt: (x, z) => (useRelief ? terrain.meshHeightAt(x, z) : 0),
+          focal: FOCAL,
+          manifestUrl: "packs/zone-a/src/archives/manifest.json",
+        });
+      } catch (err) {
+        console.warn("archives", err);
+        archivesLayer = null;
+      }
+    }
     const upperImgs = await loadBand(skyManifest, "upper");
     const highImgs = await loadBand(skyManifest, "high");
     if (upperImgs) {
@@ -3572,7 +3607,7 @@ async function boot() {
       texReport() {
         return {
           textures: [...textures.entries()].map(([id, b]) => ({ id, mb: +(b / 1048576).toFixed(2) })).sort((a, b) => b.mb - a.mb),
-          draws: { hulls: hullList.length, rocks: rockLayer ? rockLayer.draws : 0, ruins: ruinLayer ? ruinLayer.draws : 0, terrain: useRelief ? 2 : 1, total: drawCalls },
+          draws: { hulls: hullList.length, rocks: rockLayer ? rockLayer.draws : 0, ruins: ruinLayer ? ruinLayer.draws : 0, terrain: useRelief ? 2 : 1, archives: archivesLayer ? archivesLayer.draws : 0, total: drawCalls },
         };
       },
       ruinWhere(x, z) { return ruinLayer ? ruinLayer.where(x == null ? state.x : x, z == null ? state.z : z) : null; },
@@ -3581,6 +3616,7 @@ async function boot() {
         return ruinLayer.probe(eyeBuf, camFwd, camRightNow, camUp, FOCAL, Math.tan(HFOV / 2), Math.tan(VFOV / 2));
       },
       ruinClearance(x, y, z) { return ruinLayer ? ruinLayer.clearance(x, y, z) : 99; },
+      archives() { return archivesLayer ? archivesLayer.api : null; },
       camState() {
         return {
           eye: [eyeBuf[0], eyeBuf[1], eyeBuf[2]],
@@ -3666,10 +3702,17 @@ function inStick(cx, cy) {
   const r = stick.getBoundingClientRect();
   return cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom;
 }
+function inPawCorner(cx, cy) {
+  if (!archivesLayer) return false;
+  const c = archivesLayer.pawCorner(window.innerWidth, window.innerHeight);
+  return cx >= c.x && cx <= c.x + c.w && cy >= c.y && cy <= c.y + c.h;
+}
 viewEl.addEventListener("pointerdown", (e) => {
   if (camLook.ptr >= 0) return;
   if (e.button != null && e.button !== 0) return;
+  if (archivesLayer && archivesLayer.blocksPlay()) return;
   if (e.target === stick || e.target === nub || inStick(e.clientX, e.clientY)) return;
+  if (inPawCorner(e.clientX, e.clientY)) return;
   camLook.ptr = e.pointerId;
   camLook.drag = true;
   camLook.ly = e.clientY;
@@ -3711,7 +3754,7 @@ function frame(now) {
   const dt = Math.min(0.05, (now - last) / 1000);
   last = now;
   if (!location.search.includes("debug=1")) {
-    pollKeys();
+    if (!(archivesLayer && archivesLayer.blocksPlay())) pollKeys();
     tick(dt);
   }
   requestAnimationFrame(frame);
