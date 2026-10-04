@@ -293,6 +293,68 @@
     "howlPass": true,
     "skinNacelles": 0,
     "skinBells": 0,
+    "retile": [
+      {
+        "tris": 3232,
+        "dark": 303,
+        "left": 1,
+        "rect": [
+          416,
+          96,
+          320,
+          160
+        ],
+        "skin": "port"
+      },
+      {
+        "tris": 2758,
+        "dark": 1255,
+        "left": 7,
+        "rect": [
+          320,
+          192,
+          192,
+          96
+        ],
+        "skin": "stbd"
+      },
+      {
+        "tris": 2054,
+        "dark": 66,
+        "left": 0,
+        "rect": [
+          624,
+          128,
+          320,
+          160
+        ],
+        "skin": "top"
+      },
+      {
+        "tris": 2218,
+        "dark": 243,
+        "left": 0,
+        "rect": [
+          304,
+          144,
+          320,
+          160
+        ],
+        "skin": "belly"
+      },
+      {
+        "tris": 56,
+        "dark": 3,
+        "left": 0,
+        "rect": [
+          432,
+          176,
+          320,
+          160
+        ],
+        "skin": "stern"
+      }
+    ],
     "placement": {
       "cord": 30.102605129345406,
       "bubbleD": 33.28663395418648,

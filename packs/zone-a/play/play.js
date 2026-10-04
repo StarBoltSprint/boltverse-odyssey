@@ -769,6 +769,44 @@ const CAM_ACC = 9;
 const camSm = { ready: false, boom: 6, eye: 1.35, slide: 0, boomV: 0, eyeV: 0, slideV: 0, ground: 0, feet: 0 };
 let camStepDt = 0;
 let camPitch = 0;
+// Look pitch is an offset on the chase pitch. The eye stays where the chase put it, so a look
+// cannot push the near plane into a face. Drag eases toward the finger; release eases back to 0.
+// Caps stay under the 0.5 deg/frame^2 angular shake trip at 1/30 s (6 rad/s^2 -> ~0.38 deg).
+const LOOK_SENS = 0.0038;
+const LOOK_PMIN = -0.61;
+const LOOK_PMAX = 1.40;
+const LOOK_OFF_MIN = -0.9;
+const LOOK_OFF_MAX = 1.70;
+const LOOK_W_DRAG = 14;
+const LOOK_W_BACK = 2.4;
+const LOOK_V_DRAG = 2.6;
+const LOOK_V_BACK = 0.8;
+const LOOK_A_DRAG = 6;
+const LOOK_A_BACK = 0.9;
+const camLook = { drag: false, goal: 0, cur: 0, v: 0, ptr: -1, ly: 0 };
+function clearLook() {
+  camLook.drag = false;
+  camLook.goal = 0;
+  camLook.cur = 0;
+  camLook.v = 0;
+  camLook.ptr = -1;
+}
+function stepLook(dt) {
+  if (!(dt > 0)) return;
+  if (!camLook.drag && camLook.cur === 0 && camLook.v === 0) return;
+  const goal = camLook.drag ? camLook.goal : 0;
+  const w = camLook.drag ? LOOK_W_DRAG : LOOK_W_BACK;
+  const vmax = camLook.drag ? LOOK_V_DRAG : LOOK_V_BACK;
+  const amax = camLook.drag ? LOOK_A_DRAG : LOOK_A_BACK;
+  const sp = springLim(camLook.cur, camLook.v, goal, dt, w, vmax, amax);
+  let x = sp[0];
+  let v = sp[1];
+  if (x > LOOK_OFF_MAX) { x = LOOK_OFF_MAX; if (v > 0) v = 0; }
+  else if (x < LOOK_OFF_MIN) { x = LOOK_OFF_MIN; if (v < 0) v = 0; }
+  if (!camLook.drag && Math.abs(x) < 1e-4 && Math.abs(v) < 1e-3) { x = 0; v = 0; }
+  camLook.cur = x;
+  camLook.v = v;
+}
 
 const CAP = {
   wreck10: 576,
@@ -1340,11 +1378,21 @@ function applyShot() {
   camBoom = Math.hypot(state.x - e[0], state.z - e[2]);
 }
 
-function pitchView(eye, lookFeet) {
+function pitchView(eye, lookFeet, extra) {
   const along = (state.x - eye[0]) * fwdBuf[0] + (state.z - eye[2]) * fwdBuf[2];
   const feet = lookFeet == null ? feetY() : lookFeet;
   const targetY = feet + BOLT_H * 0.45;
-  const pitch = Math.atan2(targetY - eye[1], Math.max(0.35, along));
+  let pitch = Math.atan2(targetY - eye[1], Math.max(0.35, along));
+  // extra === 0 keeps the chase pitch byte-for-byte (pose scoring and the idle walk).
+  // A live look adds the eased offset, then clamps. The floor never lifts a high chase eye.
+  const add = extra == null ? camLook.cur : extra;
+  if (add) {
+    const base = pitch;
+    pitch = base + add;
+    const lo = Math.min(base, LOOK_PMIN);
+    if (pitch > LOOK_PMAX) pitch = LOOK_PMAX;
+    else if (pitch < lo) pitch = lo;
+  }
   const cp = Math.cos(pitch);
   const sp = Math.sin(pitch);
   camFwd[0] = fwdBuf[0] * cp;
@@ -1465,7 +1513,7 @@ function solveCamera() {
         if (behind > -MIN_BOOM + 0.08) continue;
         const dist = Math.hypot(boom, slide, eyes[ei] - 0.97);
         if (dist > 9.3) continue;
-        pitchView(candEye);
+        pitchView(candEye, null, 0);
         const m = poseMetrics(candEye);
         const blocked = lineBlocked(candEye);
         // A chase line through a ruin face only costs score. It never makes a pose illegal,
@@ -1561,6 +1609,7 @@ function solveCamera() {
   }
   ruinBoom(dt, snapPose);
   camBoom = Math.hypot(state.x - eyeBuf[0], state.z - eyeBuf[2]);
+  stepLook(dt);
   pitchView(eyeBuf, camSm.feet);
 }
 
@@ -2038,6 +2087,7 @@ function reset() {
   camYaw.ready = false;
   camHold.live = false;
   ruinCam.ready = false;
+  clearLook();
 }
 function place(x, z, hdg) {
   state.x = x;
@@ -2052,6 +2102,7 @@ function place(x, z, hdg) {
   camYaw.ready = false;
   camHold.live = false;
   ruinCam.ready = false;
+  clearLook();
 }
 function look(headingDeg) {
   state.hdg = wrap360(headingDeg);
@@ -2060,6 +2111,7 @@ function look(headingDeg) {
   camSm.ready = false;
   camHold.live = false;
   ruinCam.ready = false;
+  clearLook();
 }
 function setInput(inp) {
   state.forward = Number(inp.forward) || 0;
@@ -3241,6 +3293,13 @@ async function boot() {
       version: 3,
       ready: true,
       reset, look, place, setInput, tick, snapshot, audit,
+      setLook(rad) {
+        camLook.drag = true;
+        camLook.ptr = -1;
+        const g = Number(rad) || 0;
+        camLook.goal = g > LOOK_OFF_MAX ? LOOK_OFF_MAX : g < LOOK_OFF_MIN ? LOOK_OFF_MIN : g;
+      },
+      releaseLook() { camLook.drag = false; camLook.goal = 0; camLook.ptr = -1; },
       lookAt(e, t) { shot = { e, t }; },
       clearShot() { shot = null; },
       skyInfo() {
@@ -3281,6 +3340,10 @@ async function boot() {
           swing: ruinCam.yaw,
           boltMag: (FOCAL * BOLT_H) / (Math.max(0.2, camBoom) * BOLT_SRC.h),
           feet: feetY(),
+          pitch: camPitch,
+          look: camLook.cur,
+          lookGoal: camLook.goal,
+          lookDrag: camLook.drag,
           dbg: ruinCam.dbg,
         };
       },
@@ -3315,7 +3378,11 @@ function stickAt(cx, cy) {
   state.forward = Math.max(0, -dy);
   state.gallop = -dy > 0.72;
 }
-stick.addEventListener("pointerdown", (e) => { stickOn = true; stick.setPointerCapture(e.pointerId); stickAt(e.clientX, e.clientY); });
+stick.addEventListener("pointerdown", (e) => {
+  stickOn = true;
+  try { stick.setPointerCapture(e.pointerId); } catch (err) { /* no active pointer on a synthetic event */ }
+  stickAt(e.clientX, e.clientY);
+});
 stick.addEventListener("pointermove", (e) => { if (stickOn) stickAt(e.clientX, e.clientY); });
 stick.addEventListener("pointerup", () => {
   stickOn = false;
@@ -3326,6 +3393,38 @@ stick.addEventListener("pointerup", () => {
   state.gallop = false;
   state.spd = 0;
 });
+const viewEl = document.getElementById("view");
+function inStick(cx, cy) {
+  const r = stick.getBoundingClientRect();
+  return cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom;
+}
+viewEl.addEventListener("pointerdown", (e) => {
+  if (camLook.ptr >= 0) return;
+  if (e.button != null && e.button !== 0) return;
+  if (e.target === stick || e.target === nub || inStick(e.clientX, e.clientY)) return;
+  camLook.ptr = e.pointerId;
+  camLook.drag = true;
+  camLook.ly = e.clientY;
+  try { viewEl.setPointerCapture(e.pointerId); } catch (err) { /* synthetic pointers have no capture */ }
+});
+viewEl.addEventListener("pointermove", (e) => {
+  if (e.pointerId !== camLook.ptr) return;
+  const dy = camLook.ly - e.clientY;
+  camLook.ly = e.clientY;
+  if (!dy) return;
+  let g = camLook.goal + dy * LOOK_SENS;
+  if (g > LOOK_OFF_MAX) g = LOOK_OFF_MAX;
+  else if (g < LOOK_OFF_MIN) g = LOOK_OFF_MIN;
+  camLook.goal = g;
+});
+function endLook(e) {
+  if (e.pointerId !== camLook.ptr) return;
+  camLook.ptr = -1;
+  camLook.drag = false;
+  camLook.goal = 0;
+}
+viewEl.addEventListener("pointerup", endLook);
+viewEl.addEventListener("pointercancel", endLook);
 function pollKeys() {
   if (stickOn) return;
   let f = 0;

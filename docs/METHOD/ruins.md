@@ -75,7 +75,7 @@ Placement check is the selftest. The hard-object gate stays `python3 tools/hard-
 
 - Positions are numbers in the kit file. There is no second plan file.
 - The gate faces spawn. Yaw is derived from that bearing. The wreck yaw and pitch are numbers.
-- Seat: sample `heightAt` at the contact point and subtract `sinkM`. The gate sink is a small bite into the ridge. The wreck sink is the ploughed nose. The mesh minimum sits on that contact after the pitch, so the rest of the hull is not floated.
+- Seat: sample `heightAt` at the contact point and subtract `sinkM`. The gate sink is a small bite into the ridge. The wreck sink is the ploughed nose. The mesh minimum sits on that contact after the pitch, so the rest of the hull is not floated. Where the relief falls away from that one sample, the play mount hangs the lowest ring down to the ground (`appendSkirts` in `packs/zone-a/play/ruins.js`). The new faces are draw-only: they are not collider cells, so an opening stays open. The gate foot repeats the surface plate at its native density. Other skins shift into stone already inside that skin. Do not translate the whole solid down to the lowest foot; that buries the opening in the crest.
 - Corridor: half-width, heading, bubble, and length from the numbers file. The real footprint (horizontal radius plus Bolt's body radius) must stay out of that ribbon.
 - Magnification: `minApproachM = focalPx / texelsPerM` is reported, not enforced: since 2026-10-04 Bolt can walk up to the faces, so close-ups can exceed magnification 1 (known issue, measured by the ruinwalk probe). A nearer surface plate can carry a higher texel rate on the thickness faces. Stills use `LINEAR_MIPMAP_LINEAR` and mipmaps. Do not enlarge a plate.
 - There is no keep-out circle (superseded 2026-10-04). Collisions follow the drawn faces, section 7.
@@ -184,8 +184,9 @@ Same generator. New numbers file, new plates, same corridor rule tuned to that z
 - (Resolved 2026-10-04) Bolt now walks through the arch and into the hangar; the keep-out is gone.
 - Close-up magnification near the ruins exceeds 1 (pixels are never stretched by code, but Bolt can now stand next to a 70 texels/m hull): see the step 4 collision report for the worst measured values (gate pier, wreck hull inside the bay, and Bolt's own sprite when the boom is short in the bay).
 - (Resolved 2026-10-04) Turning on the spot deep in the hangar: two acceleration reversals. Fixed by the chase-heading spring; the strict check now counts 0.
-- The hangar interior has no Imagine skin yet; it reads black.
+- (2026-10-04 step 4c) Dark wreck faces were retiled onto a mid-tone window of the same plate, at that plate's texel rate. No new skin. Eight centroids still land on dark specks inside those windows (port 1, starboard 7). The hangar proof still shows small jagged dark edges where the hull is already a hole. Stopped. Imagine calls this step: 0.
 - Worst close-up magnification: 43× on the wreck hull inside the bay at 0.85 m camera distance; about 15× on the monolith elevation (36.64 texels/m at 3.2 m); 3–3.7× on the kept arch's piers.
 - The monolith's ring and crown silhouette is stair-stepped (5 px loft grid).
-- The kept arch costs one draw and 10.6 MB of texture memory (texMB 293.4).
+- Step 4b reported zone draws 17 and texMB 293.4, with the kept arch as its own draw (10.6 MB). The live counter after the one-draw pack is 11 draws and texMB 256.76 (`__play.texReport` on the step 4c proof). The arch stays.
+- (2026-10-04 step 4c) The flat seat left the downhill monolith foot 1.37 m above the relief. The foot skirt fills that drop. Gate 106 quads, footGap 1.371 m. Arch 118 quads, footGap 0.267 m. Wreck footGap 0 (the keel is under the sill). No framebuffer row checks the contact. The proof is `packs/zone-a/proof/step4c/03-gate-base.jpg`.
 - The old take-10 gate card in the HUD still points at a dead far coordinate. It is not this landmark. Since 2026-10-04 the HUD text is hidden for players and shows only with `?debug=1`.

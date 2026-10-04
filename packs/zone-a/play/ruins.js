@@ -31,6 +31,8 @@ void main() {
  * elevation where it would be shown magnified past CLOSE_LO..CLOSE_HI, take the surface plate,
  * repeated in local metres at its native density: windows of the plate at random offsets that
  * never cross its border, blended with a variance-keeping weight. Pixels are never stretched.
+ * A foot skirt (local y under 0.02, hanging to the relief) always takes that plate, on the two
+ * axes that span the face, so the base is not a stretched strip of the elevation and is not cut.
  */
 function fragmentSource(units, gateUnit) {
   const decl = [];
@@ -88,13 +90,25 @@ void main() {
   vec4 c = vec4(0.0);
 ${pick.join("\n")}
   if (vUnit == ${gateUnit}) {
-    if (c.a < 0.5) discard;
+    bool foot = vLoc.y < 0.02;
+    if (!foot && c.a < 0.5) discard;
     vec3 an = abs(cross(lx, ly));
     vec2 p;
     vec2 dpx;
     vec2 dpy;
     float w = 1.0;
-    if (an.z >= an.x && an.z >= an.y) {
+    if (foot) {
+      float sx = lx.x * lx.x + ly.x * ly.x;
+      float sy = lx.y * lx.y + ly.y * ly.y;
+      float sz = lx.z * lx.z + ly.z * ly.z;
+      if (sx <= sy && sx <= sz) {
+        p = vLoc.zy; dpx = lx.zy; dpy = ly.zy;
+      } else if (sy <= sz) {
+        p = vLoc.xz; dpx = lx.xz; dpy = ly.xz;
+      } else {
+        p = vLoc.xy; dpx = lx.xy; dpy = ly.xy;
+      }
+    } else if (an.z >= an.x && an.z >= an.y) {
       p = vLoc.xy; dpx = lx.xy; dpy = ly.xy;
       vec2 ts = vec2(textureSize(${g}, 0));
       float rho = max(length(gx * ts), length(gy * ts));
@@ -329,6 +343,167 @@ function packSkin(gl, img, groups, keep, alpha) {
   };
 }
 
+function imageLuma(img) {
+  const c = document.createElement("canvas");
+  c.width = img.width;
+  c.height = img.height;
+  const g = c.getContext("2d", { willReadFrequently: true });
+  g.drawImage(img, 0, 0);
+  return { data: g.getImageData(0, 0, c.width, c.height).data, W: img.width, H: img.height };
+}
+
+function lumaOf(img, x, y) {
+  const ix = Math.max(0, Math.min(img.W - 1, Math.round(x)));
+  const iy = Math.max(0, Math.min(img.H - 1, Math.round(y)));
+  const o = (iy * img.W + ix) * 4;
+  const d = img.data;
+  return 0.2126 * d[o] + 0.7152 * d[o + 1] + 0.0722 * d[o + 2];
+}
+
+/**
+ * Hang the base ring down to the relief. The flat seat is one height; the drawn ground is not.
+ * Only edges of the lowest course, and only where that edge sits above the ground. The drop is
+ * new geometry in the same draw. It is not added to the collider groups, so an opening stays open.
+ * The gate plate is sampled in the shader from local metres. Other skins shift the foot UV into
+ * stone already inside that skin's island, tiled at the skin's own texel rate. No second part.
+ */
+function appendSkirts(parts, groups, obj, seat, heightAt, units, imgs) {
+  const sink = obj.sink || 0;
+  const ship = obj.frame === "ship";
+  const sn = Math.sin(obj.yaw);
+  const cs = Math.cos(obj.yaw);
+  const gatePlate = !!(obj.nearTexelsPerM && obj.atlasSplitU);
+  let minY = Infinity;
+  for (let gi = 0; gi < groups.length; gi++) {
+    const p = groups[gi].xyzuv;
+    for (let k = 1; k < p.length; k += 5) if (p[k] < minY) minY = p[k];
+  }
+  if (!Number.isFinite(minY)) return { quads: 0, maxGap: 0 };
+  const footCut = minY + 0.02;
+  const seen = new Set();
+  const buckets = new Map();
+  let quads = 0;
+  let maxGap = 0;
+  const worldOf = (x, y, z) => {
+    const wx = ship ? x * sn - z * cs : x * cs + z * sn;
+    const wz = ship ? x * cs + z * sn : -x * sn + z * cs;
+    return [seat.x + wx, seat.y + y, seat.z + wz];
+  };
+  for (let gi = 0; gi < groups.length; gi++) {
+    const g = groups[gi];
+    const p = g.xyzuv;
+    const idx = g.idx;
+    const u = units[g.skin];
+    if (!u) continue;
+    let vmin = Infinity, vmax = -Infinity;
+    if (!gatePlate) {
+      for (let k = 0; k < p.length; k += 5) {
+        const vv = p[k + 4];
+        if (vv < vmin) vmin = vv;
+        if (vv > vmax) vmax = vv;
+      }
+    }
+    for (let t = 0; t + 2 < idx.length; t += 3) {
+      const vs = [idx[t], idx[t + 1], idx[t + 2]];
+      const foot = [];
+      for (let k = 0; k < 3; k++) if (p[vs[k] * 5 + 1] <= footCut) foot.push(vs[k]);
+      if (foot.length !== 2) continue;
+      const ia = foot[0], ib = foot[1];
+      const ax = p[ia * 5], ay = p[ia * 5 + 1], az = p[ia * 5 + 2];
+      const bx = p[ib * 5], by = p[ib * 5 + 1], bz = p[ib * 5 + 2];
+      const qa = Math.round(ax / 0.02) + "," + Math.round(az / 0.02);
+      const qb = Math.round(bx / 0.02) + "," + Math.round(bz / 0.02);
+      const key = (qa < qb ? qa + "|" + qb : qb + "|" + qa) + "#" + g.skin;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const wa = worldOf(ax, ay, az);
+      const wb = worldOf(bx, by, bz);
+      const d0 = wa[1] - (heightAt(wa[0], wa[2]) - sink);
+      const d1 = wb[1] - (heightAt(wb[0], wb[2]) - sink);
+      if (d0 > maxGap) maxGap = d0;
+      if (d1 > maxGap) maxGap = d1;
+      const drop0 = d0 > 0.03 ? d0 : 0;
+      const drop1 = d1 > 0.03 ? d1 : 0;
+      if (drop0 === 0 && drop1 === 0) continue;
+      const au = p[ia * 5 + 3], av = p[ia * 5 + 4];
+      const bu = p[ib * 5 + 3], bv = p[ib * 5 + 4];
+      const img = imgs[g.skin];
+      const tpm = obj.texelsPerM || 1;
+      let band = 0;
+      if (!gatePlate && img) {
+        const pyA = (1 - av) * (img.H - 1);
+        const pyB = (1 - bv) * (img.H - 1);
+        const room = Math.min(pyA, pyB) - (1 - vmax) * (img.H - 1);
+        const need = Math.max(drop0, drop1) * tpm;
+        const px = ((au + bu) * 0.5) * (img.W - 1);
+        const lit = lumaOf(img, px, Math.min(pyA, pyB) - need) >= 24;
+        if (room > 8 && need <= room && lit) band = 0;
+        else band = Math.max(8, Math.min(room > 8 ? room : 24, 48));
+      }
+      const segM = !gatePlate && band > 0 ? band / tpm : Math.max(drop0, drop1, 0.01);
+      const nseg = gatePlate || band === 0 ? 1 : Math.max(1, Math.ceil(Math.max(drop0, drop1) / segM));
+      let bucket = buckets.get(g.skin);
+      if (!bucket) {
+        bucket = { skin: g.skin, num: [] };
+        buckets.set(g.skin, bucket);
+      }
+      for (let s = 0; s < nseg; s++) {
+        const f0 = s / nseg;
+        const f1 = (s + 1) / nseg;
+        const h0a = drop0 * f0, h1a = drop0 * f1;
+        const h0b = drop1 * f0, h1b = drop1 * f1;
+        const topA = worldOf(ax, ay - h0a, az);
+        const botA = worldOf(ax, ay - h1a, az);
+        const topB = worldOf(bx, by - h0b, bz);
+        const botB = worldOf(bx, by - h1b, bz);
+        let uva, uvb, uvac, uvbc;
+        if (gatePlate || !img) {
+          uva = [au, av]; uvb = [bu, bv]; uvac = uva; uvbc = uvb;
+        } else if (band === 0) {
+          const sA = (drop0 * f1) * tpm / Math.max(1, img.H - 1);
+          const sB = (drop1 * f1) * tpm / Math.max(1, img.H - 1);
+          const sA0 = (drop0 * f0) * tpm / Math.max(1, img.H - 1);
+          const sB0 = (drop1 * f0) * tpm / Math.max(1, img.H - 1);
+          uva = [au, Math.min(vmax, av + sA0)];
+          uvb = [bu, Math.min(vmax, bv + sB0)];
+          uvac = [au, Math.min(vmax, av + sA)];
+          uvbc = [bu, Math.min(vmax, bv + sB)];
+        } else {
+          const islandTop = (1 - vmax) * (img.H - 1);
+          const pyLo = Math.min((1 - av) * (img.H - 1), (1 - bv) * (img.H - 1));
+          const pyHi = Math.max(islandTop, pyLo - band);
+          const vTop = 1 - pyHi / Math.max(1, img.H - 1);
+          const vBot = 1 - pyLo / Math.max(1, img.H - 1);
+          uva = [au, vTop];
+          uvb = [bu, vTop];
+          uvac = [au, vBot];
+          uvbc = [bu, vBot];
+        }
+        const ru = u.packed.remap;
+        const push = (wpos, uv, lx, ly, lz) => {
+          const m = ru(uv[0], uv[1]);
+          bucket.num.push(wpos[0], wpos[1], wpos[2], m[0], m[1], lx, ly, lz, u.unit);
+        };
+        const base = bucket.num.length / 9;
+        push(topA, uva, ax, ay - h0a, az);
+        push(topB, uvb, bx, by - h0b, bz);
+        push(botB, uvbc, bx, by - h1b, bz);
+        push(botA, uvac, ax, ay - h1a, az);
+        if (!bucket.tris) bucket.tris = [];
+        bucket.tris.push(base, base + 1, base + 2, base, base + 2, base + 3);
+        quads++;
+      }
+    }
+  }
+  for (const bucket of buckets.values()) {
+    if (!bucket.tris || !bucket.tris.length) continue;
+    const v = new Float32Array(bucket.num);
+    const index = new Uint32Array(bucket.tris);
+    parts.push({ v, idx: index });
+  }
+  return { quads, maxGap };
+}
+
 export async function mountRuins(gl, env) {
   const t0 = performance.now();
   let manifest;
@@ -355,6 +530,7 @@ export async function mountRuins(gl, env) {
     const groups = parseRuin(bin);
     const texSize = [];
     const units = [];
+    const skinImgs = [];
     const close = obj.nearTexelsPerM && obj.atlasSplitU ? obj.nearTexelsPerM : 0;
     let alphaImg = null;
     if (obj.alpha) alphaImg = await env.loadImage(env.absUrl(obj.alpha));
@@ -368,6 +544,7 @@ export async function mountRuins(gl, env) {
       const unit = skinTex.length;
       skinTex.push(packed.tex);
       units.push({ unit, packed });
+      skinImgs.push(close ? null : imageLuma(img));
       if (close && sk === 0) {
         gateUnit = unit;
         const r = packed.kept[0];
@@ -402,6 +579,7 @@ export async function mountRuins(gl, env) {
     const frame = frameOf(obj, seat);
     const tc = performance.now();
     const col = buildCollider(groups, frame, env.heightAt, colliderOpt);
+    const skirt = appendSkirts(parts, groups, obj, seat, env.heightAt, units, skinImgs);
     const openTop = obj.openingTopM || 0;
     solids.push({
       id: obj.id,
@@ -432,6 +610,8 @@ export async function mountRuins(gl, env) {
       seatY: seat.y,
       contactX: seat.contactX,
       contactZ: seat.contactZ,
+      skirts: skirt.quads,
+      footGap: skirt.maxGap,
     });
   }
   // One vertex buffer, one index buffer, one draw.
@@ -659,6 +839,8 @@ export async function mountRuins(gl, env) {
           y: o.seatY,
           contact: [o.contactX, o.contactZ],
           approach: o.approach,
+          skirts: o.skirts,
+          footGap: o.footGap,
         })),
         colliders: solids.map((o) => ({
           id: o.id,
