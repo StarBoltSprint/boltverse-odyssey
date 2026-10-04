@@ -23,7 +23,7 @@ import { fileURLToPath } from "node:url";
 import { chromePath, launchPhone } from "./browser.mjs";
 import { startStatic } from "./serve.mjs";
 import {
-  archPlan, buildTruth, drive, hangarPlan, judge, rockDiscs, ruinProbes, ruinRoutes, runPlan, truthCheck,
+  archPlan, buildTruth, drive, hangarPlan, jitter, judge, rockDiscs, ruinProbes, ruinRoutes, runPlan, truthCheck,
 } from "./ruinwalk.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -96,7 +96,10 @@ test("ruin walk: arch, hangar, walls, slides, sweeps; no invisible wall, no came
       const ins = h.rec.filter((q) => q.phase === "in");
       const depth = routes.hangar.portZ - Math.min(...ins.map((q) => q.lz));
       const runs = judge(h.rec.filter((q) => q.phase !== "turn"));
-      out.hangar = { ...j, ...tc, depth, runShake: runs.shake, runMaxJerkSteady: runs.maxJerkSteady, mags: h.mags };
+      const turnRec = h.rec.filter((q) => q.phase === "turn");
+      const spin = judge(turnRec);
+      const jit = jitter(turnRec);
+      out.hangar = { ...j, ...tc, depth, runShake: runs.shake, runMaxJerkSteady: runs.maxJerkSteady, mags: h.mags, turnBoomFlips: spin.boomFlips, turnJitter: jit };
       assert.ok(depth >= 1.5, `hangar depth reached ${depth.toFixed(2)} m`);
       assert.ok(h.rec.some((q) => q.covered), "Bolt never got under the hangar deck");
       // The only wall Bolt may meet on the way in is the bay's far side, after the whole bay depth.
@@ -114,6 +117,10 @@ test("ruin walk: arch, hangar, walls, slides, sweeps; no invisible wall, no came
       assert.equal(runs.shake, 0, "hangar camera shake on the straight runs");
       assert.ok(runs.maxJerkSteady <= MAX_JERK_STEADY, `hangar run jerk ${runs.maxJerkSteady.toFixed(3)} m`);
       assert.equal(j.shake, 0, `hangar camera shake ${j.shake} (zero shake, owner rule)`);
+      // Turning on the spot at the back of the hangar: zero jitter frames (owner rule, strict).
+      assert.equal(spin.shake, 0, `hangar turn: camera shake ${spin.shake}`);
+      assert.equal(spin.boomFlips, 0, `hangar turn: boom pumps ${spin.boomFlips}`);
+      assert.equal(jit.frames, 0, `hangar turn: ${jit.frames} jitter frames ${JSON.stringify(jit.at)}`);
       assert.ok(j.minNear >= NEAR, `hangar near plane opens the hull (${j.minNear.toFixed(3)} m)`);
       assert.ok(j.maxFeetStep <= 0.2, `feet step ${j.maxFeetStep.toFixed(3)} m`);
     });
@@ -191,7 +198,7 @@ test("ruin walk: arch, hangar, walls, slides, sweeps; no invisible wall, no came
     assert.deepEqual(consoleErrors.filter((e) => !/GPU stall|ReadPixels/i.test(e)), []);
     console.log(JSON.stringify({
       arches: Object.fromEntries(Object.entries(out.arches).map(([k, a]) => [k, { maxStep: a.maxStep, maxJerk: a.maxJerk, shake: a.shake, minNear: a.minNear, topSpeed: a.topSpeed }])),
-      hangar: out.hangar && { depth: out.hangar.depth, maxStep: out.hangar.maxStep, maxJerk: out.hangar.maxJerk, shake: out.hangar.shake, minNear: out.hangar.minNear, maxBoltMag: out.hangar.maxBoltMag },
+      hangar: out.hangar && { turnBoomFlips: out.hangar.turnBoomFlips, turnJitterFrames: out.hangar.turnJitter.frames, depth: out.hangar.depth, maxStep: out.hangar.maxStep, maxJerk: out.hangar.maxJerk, shake: out.hangar.shake, minNear: out.hangar.minNear, maxBoltMag: out.hangar.maxBoltMag },
       sweeps: out.sweeps,
     }));
   } finally {

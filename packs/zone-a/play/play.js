@@ -711,6 +711,7 @@ const CAM_YAW_W = 5;
 const CAM_YAW_RATE_RUIN = 80;
 const CAM_YAW_RATE_FREE = 400;
 const CAM_YAW_ACC = 500;
+const CAM_YAW_ACC_RUIN = 160;
 const camYaw = { h: 0, v: 0, ready: false, lag: false, last: 0 };
 const RUIN_OFF_W = 6;
 const RUIN_OFF_V = 4;
@@ -1370,8 +1371,10 @@ function solveCamera() {
       const omega = nearYaw ? 0 : wrap180(state.hdg - camYaw.last) / dtYaw;
       const vmax = nearYaw ? CAM_YAW_RATE_RUIN : CAM_YAW_RATE_FREE;
       let acc = CAM_YAW_W * CAM_YAW_W * err + 2 * CAM_YAW_W * (omega - camYaw.v);
-      if (acc > CAM_YAW_ACC) acc = CAM_YAW_ACC;
-      else if (acc < -CAM_YAW_ACC) acc = -CAM_YAW_ACC;
+      // Near a ruin the orbit's angular acceleration stays under what the eye follower can track.
+      const amax = nearYaw ? CAM_YAW_ACC_RUIN : CAM_YAW_ACC;
+      if (acc > amax) acc = amax;
+      else if (acc < -amax) acc = -amax;
       let nv = camYaw.v + acc * dtYaw;
       if (nv > vmax) nv = vmax;
       else if (nv < -vmax) nv = -vmax;
@@ -1604,6 +1607,17 @@ function ruinBoom(dt, snap) {
       goal = bestS > keep + 0.3 ? best : ruinCam.goal;
     }
   }
+  // Turning on the spot near a ruin: the rig may only swing the way Bolt turns (or hold), so the
+  // view never swings back against the turn (owner rule: zero jitter in the hangar turn).
+  const spin = near && !fresh && Math.abs(state.spd) < 0.3 && state.turn ? Math.sign(state.turn) : 0;
+  if (spin) {
+    if (spin * (goal - ruinCam.yaw) < 0 && goal !== ruinCam.goal) {
+      let best = ruinCam.goal;
+      if (spin * (best - ruinCam.yaw) < 0) best = ruinCam.yaw;
+      goal = best;
+    }
+    if (spin * ruinCam.yawV < 0) ruinCam.yawV = 0;
+  }
   if (fresh) {
     ruinCam.yaw = goal;
     ruinCam.yawV = 0;
@@ -1611,6 +1625,7 @@ function ruinBoom(dt, snap) {
     const sw = springLim(ruinCam.yaw, ruinCam.yawV, goal, dt, RUIN_SWING_W, RUIN_SWING_RATE, RUIN_SWING_ACC);
     ruinCam.yaw = sw[0];
     ruinCam.yawV = sw[1];
+    if (spin && spin * ruinCam.yawV < 0) ruinCam.yawV = 0;
   }
   ruinCam.goal = goal;
   if (Math.abs(ruinCam.yaw) < 0.05 && Math.abs(ruinCam.yawV) < 0.5 && goal === 0) {
@@ -3188,6 +3203,13 @@ async function boot() {
       groundInfo() { return terrain.info(); },
       heightAt(x, z) { return terrain.heightAt(x, z); },
       ruinInfo() { return ruinLayer ? ruinLayer.info() : null; },
+      /** Texture budget and draw split (tooling): every tracked texture in bytes, and the draws per layer. */
+      texReport() {
+        return {
+          textures: [...textures.entries()].map(([id, b]) => ({ id, mb: +(b / 1048576).toFixed(2) })).sort((a, b) => b.mb - a.mb),
+          draws: { hulls: hullList.length, rocks: rockLayer ? rockLayer.draws : 0, ruins: ruinLayer ? ruinLayer.draws : 0, terrain: useRelief ? 2 : 1, total: drawCalls },
+        };
+      },
       ruinWhere(x, z) { return ruinLayer ? ruinLayer.where(x == null ? state.x : x, z == null ? state.z : z) : null; },
       ruinProbe() {
         if (!ruinLayer) return {};

@@ -455,6 +455,54 @@ export async function drive(page, plan) {
  * boomFlips: frames where the boom length reverses direction at speed.
  * shake: frames where the eye's acceleration flips direction at size (SHAKE_M), i.e. jitter.
  */
+/**
+ * Jitter frames (owner rule: zero). A frame counts when, inside one plan step, any of these flips:
+ * the eye's acceleration at more than 1 cm per frame squared (four times stricter than shake),
+ * the boom length's velocity at more than 6 mm per frame on both sides (the boom pumps in and out),
+ * the view's yaw velocity at more than 0.5 deg per frame on both sides (the view swings back), or
+ * the view's yaw or pitch acceleration at more than 0.5 deg per frame squared (angular shake).
+ */
+export function jitter(rec) {
+  const yawOf = (f) => (Math.atan2(f[0], f[2]) * 180) / Math.PI;
+  const pitOf = (f) => (Math.asin(Math.max(-1, Math.min(1, f[1]))) * 180) / Math.PI;
+  const wrap = (a) => ((((a + 180) % 360) + 360) % 360) - 180;
+  const out = { frames: 0, eye: 0, boom: 0, yawBack: 0, yawShake: 0, pitchShake: 0, at: [] };
+  for (let i = 3; i < rec.length; i++) {
+    const r = rec[i], p = rec[i - 1], q = rec[i - 2], o = rec[i - 3];
+    if (o.step !== r.step) continue;
+    const acc = (a, b, c) => [a[0] - 2 * b[0] + c[0], a[1] - 2 * b[1] + c[1], a[2] - 2 * b[2] + c[2]];
+    const j1 = acc(r.eye, p.eye, q.eye);
+    const j0 = acc(p.eye, q.eye, o.eye);
+    const eye = j0[0] * j1[0] + j0[1] * j1[1] + j0[2] * j1[2] < 0 && Math.hypot(...j0) > 0.01 && Math.hypot(...j1) > 0.01;
+    const b1 = r.boom - p.boom;
+    const b0 = p.boom - q.boom;
+    const boom = b1 * b0 < 0 && Math.abs(b1) > 0.006 && Math.abs(b0) > 0.006;
+    const y2 = wrap(yawOf(r.fwd) - yawOf(p.fwd));
+    const y1 = wrap(yawOf(p.fwd) - yawOf(q.fwd));
+    const y0 = wrap(yawOf(q.fwd) - yawOf(o.fwd));
+    const yawBack = y2 * y1 < 0 && Math.abs(y2) > 0.5 && Math.abs(y1) > 0.5;
+    const ya1 = y2 - y1;
+    const ya0 = y1 - y0;
+    const yawShake = ya1 * ya0 < 0 && Math.abs(ya1) > 0.5 && Math.abs(ya0) > 0.5;
+    const p2 = pitOf(r.fwd) - pitOf(p.fwd);
+    const p1 = pitOf(p.fwd) - pitOf(q.fwd);
+    const p0 = pitOf(q.fwd) - pitOf(o.fwd);
+    const pa1 = p2 - p1;
+    const pa0 = p1 - p0;
+    const pitchShake = pa1 * pa0 < 0 && Math.abs(pa1) > 0.5 && Math.abs(pa0) > 0.5;
+    if (eye) out.eye++;
+    if (boom) out.boom++;
+    if (yawBack) out.yawBack++;
+    if (yawShake) out.yawShake++;
+    if (pitchShake) out.pitchShake++;
+    if (eye || boom || yawBack || yawShake || pitchShake) {
+      out.frames++;
+      if (out.at.length < 8) out.at.push({ phase: r.phase, k: r.k, eye, boom, yawBack, yawShake, pitchShake });
+    }
+  }
+  return out;
+}
+
 export function judge(rec, dt = DT) {
   let maxStep = 0;
   let maxJerk = 0;
