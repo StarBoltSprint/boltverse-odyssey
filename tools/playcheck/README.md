@@ -137,6 +137,10 @@ WebGL errors are captured even without the hook, by wrapping `getError` and the 
 | `near_lens` | `nearestVisibleM` missing or inside `near_lens.cull_m`. |
 | `fog_band` | Fewer than 20 patches in the file, or fog pixels missing / hard-edged. |
 | `black_regions` | A large flat near-black rectangle. A full-width night-sky band that touches the top is ignored. |
+| `foot_contact` | Sky-coloured pixels between a solid and the ground in the same columns. A frame under 48 px is skipped. A distant skyline that meets the ground does not fail. Added 2026-10-04. |
+| `untextured` | A large black or flat untextured region. A full-width night band that touches the top is ignored. This does not replace `black_regions`. Added 2026-10-04. |
+| `mag_hotspots` | A `snapshot().magHits` entry above `view.mag_max`. The detail names each hotspot and three fixes: move the camera out (`dist * mag / limit`), set scale to `scale * limit / mag`, or recook the skin at `texels * mag / limit` texels/m and do not enlarge the current texture. `fix_hint` stays PASS and still names only the worst hit. Added 2026-10-04. |
+| `stair_crown` | A silhouette crown of long flat steps. The detail names a finer loft grid, a smoother silhouette, and a recook at the on-screen pixel count. Added 2026-10-04. |
 | `tile_repeat` | Obvious periodic repetition on the ground band. |
 | `backdrop_res` | On-screen ring pixels exceed the source pixels of that slice (`screen / (source × fov/360)`, and sky height / source height). |
 | `single_hero` / `single_bolt` | Not exactly one `hero` blob, or idle and gallop were not both captured. |
@@ -211,6 +215,18 @@ The fixture under `fixture/` is a harness. It records perf and does not fail the
 - The measured gap is from the hero centre to the piece radius. One simulation step can stop short of the visual. The organic fixture walks at 6 m/s so the last step stays inside 0.5 m. A longer step on a correct visual can false-fail the row.
 - `cells` with no streaming declaration prints `n/a` and stays PASS unless `triVisible` is present and over 300000. The organic fixture reports a constant cells block and does not declare streaming, so that `n/a` path stays. When streaming is declared, a missing `resident`, `total`, `triVisible`, or `cellLoad_ms_max` FAILs with `missing field X`. LOD counts and `texMB_peak` stay `n/a`. The tool does not invent the missing numbers. Director decision 2026-10-02 15:04 (delegated owner approval).
 - `fade_in` is omitted when the layout has no `streaming` object. `preload_ahead` is also emitted when the page declares streaming. Round mode never emits them. Without that declaration, a page that lacks `opacity`, `t_ms`, or `cells.residentIds` prints `n/a (page lacks field X)`. With it, a missing `residentIds` FAILs with `missing field residentIds`. The tool does not store 0 for that field. `cells.resident` stays a count. The rule: a fade from alpha 0 applies only to an object that was not on screen before it entered range (outside the frustum, occluded, or beyond fog). An object already visible as its far representation must crossfade to the near representation and must never drop to 0. The command does not draw the fade, recommend `NEAREST`, a lower mip, a DPR cut, or dropping a visible solid. The engine applies alpha on existing pixels later. Synthetic captures in `src/streaming.test.mjs` are labelled `TEST FIXTURE - not Imagine`.
+
+## Pre-merge
+
+Before a details or polish branch lands on a gate:
+
+```bash
+node tools/playcheck/src/premerge.mjs --audit
+node tools/playcheck/src/premerge.mjs
+node tools/playcheck/src/premerge.mjs --full --resume
+```
+
+`--audit` only checks rock discs against gate and hangar walk passages. The default also runs the unit tests and skips the long ruin walk. `--full` adds that walk (openings, hangar, camera shake). Progress defaults to `/tmp/playcheck-premerge-progress.json`. `--selftest` uses a synthetic manifest. A hit is a FAIL. The command does not rewrite `packs/*/src/rocks/manifest.json`.
 
 ## Tests
 
