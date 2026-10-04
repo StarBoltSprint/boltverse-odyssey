@@ -1,0 +1,14 @@
+Plain contracts. Tone and subject wording stay in the untracked local prompt file.
+Slots: as cooked measure only, lintel section as cooked.
+
+STATUS
+The verbatim Imagine call is not stored in the repo.
+ROLE as named by the plate (unlit skin, or measure only).
+PIXELS as cooked. ASPECT as cooked.
+JOB measure only, lintel section
+
+ASK
+Imagine, aspect as cooked. Orthographic, no perspective, no camera tilt, no ground, no stars, no text,
+no border, no watermark. Plain empty background the reader can segment. One object, filling the frame
+with a small empty margin. <TONE + ACCENTS from the local file>. Panels readable at phone size.
+Subject: the JOB line, nothing else.

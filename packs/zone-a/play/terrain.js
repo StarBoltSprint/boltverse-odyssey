@@ -58,6 +58,10 @@ function hash(ix, iz) {
   return ((n ^ (n >>> 16)) >>> 0) / 4294967295;
 }
 
+/** Card heights (m) of the three ground detail cutouts, and the closest the eye gets to one. */
+const DETAIL_H = [0.28, 0.16, 0.3];
+const DETAIL_NEAR_M = 0.8;
+
 function pixelsOf(img) {
   const c = document.createElement("canvas");
   c.width = img.width;
@@ -73,6 +77,7 @@ export function createTerrain(gl, env) {
   let alb = null;
   let maskTex = null;
   let detailTex = null;
+  let detailSrcH = [];
   let mesh = null;
   let cards = null;
   let srcW = 1024;
@@ -316,6 +321,45 @@ void main() {
     };
   }
 
+  /** One-channel 2D texture: the shader reads only .r, so the other channels are not uploaded. */
+  function makeR8(img, id) {
+    const rgba = pixelsOf(img);
+    const r = new Uint8Array(img.width * img.height);
+    for (let i = 0; i < r.length; i++) r[i] = rgba[i * 4];
+    const t = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+    gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, img.width, img.height, 0, gl.RED, gl.UNSIGNED_BYTE, r);
+    gl.generateMipmap(gl.TEXTURE_2D);
+    gl.pixelStorei(gl.UNPACK_ALIGNMENT, 4);
+    env.trackTex(id, Math.ceil(img.width * img.height * 4 / 3));
+    return t;
+  }
+
+  /**
+   * Ground detail cards are small (DETAIL_H metres tall) and never nearer than DETAIL_NEAR_M to the
+   * eye, so a cutout taller than FOCAL * h / DETAIL_NEAR_M pixels is never shown at mag 1. Those
+   * are minified once at load (never enlarged); smaller ones stay as they are.
+   */
+  function fitDetail(img, h) {
+    const want = Math.ceil((env.FOCAL * h) / DETAIL_NEAR_M);
+    if (want >= img.height) return img;
+    const w = Math.max(1, Math.round((img.width * want) / img.height));
+    const c = document.createElement("canvas");
+    c.width = w;
+    c.height = want;
+    const g = c.getContext("2d");
+    g.imageSmoothingEnabled = true;
+    g.imageSmoothingQuality = "high";
+    g.drawImage(img, 0, 0, w, want);
+    return c;
+  }
+
   function buildMesh() {
     const reach = maxRadius() * 1.08;
     const uv = [0, 0];
@@ -407,9 +451,9 @@ void main() {
 
   function buildCards(imgs) {
     const sizes = [
-      { h: 0.28, w: 0.28 * (imgs[0].width / imgs[0].height) },
-      { h: 0.16, w: 0.16 * (imgs[1].width / imgs[1].height) },
-      { h: 0.3, w: 0.3 * (imgs[2].width / imgs[2].height) },
+      { h: DETAIL_H[0], w: DETAIL_H[0] * (imgs[0].width / imgs[0].height) },
+      { h: DETAIL_H[1], w: DETAIL_H[1] * (imgs[1].width / imgs[1].height) },
+      { h: DETAIL_H[2], w: DETAIL_H[2] * (imgs[2].width / imgs[2].height) },
     ];
     const reach = maxRadius() * 0.9;
     const inst = [];
@@ -558,9 +602,12 @@ void main() {
       }
       setDepthMaps(depths);
       if (ground.uv !== "planar") solveUv();
-      maskTex = make2D(await env.loadImage(env.absUrl(ground.mask)), "mask");
+      maskTex = makeR8(await env.loadImage(env.absUrl(ground.mask)), "mask");
       const cuts = [];
-      for (const u of ground.details) cuts.push(await env.loadImage(env.absUrl(u)));
+      for (let i = 0; i < ground.details.length; i++) {
+        cuts.push(fitDetail(await env.loadImage(env.absUrl(ground.details[i])), DETAIL_H[i] || 0.3));
+      }
+      detailSrcH = cuts.map((c) => c.height);
       detailTex = makeArray(cuts, "detail", false);
       buildMesh();
       buildCards(cuts);
@@ -660,9 +707,7 @@ void main() {
       let m = (env.FOCAL * TILE * stretch) / (groundD * srcW);
       if (cards) {
         const near = Math.max(0.8, Math.hypot(4, elev));
-        const detailH = 0.3;
-        const detailSrc = 700;
-        m = Math.max(m, (env.FOCAL * detailH) / (near * detailSrc));
+        for (let i = 0; i < detailSrcH.length; i++) m = Math.max(m, (env.FOCAL * DETAIL_H[i]) / (near * detailSrcH[i]));
       }
       return m;
     },

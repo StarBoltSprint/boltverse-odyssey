@@ -1,0 +1,164 @@
+{
+  "schema": "ruins-pack/2",
+  "kit": "howling-eclipse",
+  "collider": {
+    "bodyRadiusM": 0.3,
+    "stepM": 0.25,
+    "clearM": 1.3,
+    "cellM": 0.1,
+    "voxM": 0.15,
+    "padM": 1.2
+  },
+  "objects": [
+    {
+      "id": "gate",
+      "mesh": "packs/zone-a/src/ruins/gate/gate.ruin",
+      "skins": [
+        "packs/zone-a/src/ruins/gate/atlas.jpg"
+      ],
+      "frame": "gate",
+      "x": 18.451,
+      "z": 25.657,
+      "yaw": -2.5891,
+      "sink": 0.18,
+      "contact": [
+        0,
+        0
+      ],
+      "heightM": 28.0,
+      "srcH": 1026,
+      "texelsPerM": 36.64,
+      "nearTexelsPerM": 182.99,
+      "atlasSplitU": 0.5,
+      "alpha": "packs/zone-a/src/ruins/gate/alpha.png",
+      "alphaAboveM": 18.585,
+      "openingWidthM": 7.314,
+      "openingHeightM": 18.558,
+      "minApproachM": 48.932,
+      "horizRadiusM": 10.53,
+      "footprintRadiusM": 10.53,
+      "depthM": 6.82,
+      "openingBoxM": [
+        -5.021,
+        4.421,
+        0.055,
+        18.585
+      ],
+      "openingTopM": 18.585,
+      "bounds": {
+        "min": [
+          -8.078,
+          0.0,
+          -6.82
+        ],
+        "max": [
+          8.023,
+          27.7,
+          0.0
+        ]
+      }
+    },
+    {
+      "id": "wreck",
+      "mesh": "packs/zone-a/src/ruins/wreck/wreck.ruin",
+      "skins": [
+        "packs/zone-a/src/ruins/wreck/port.jpg",
+        "packs/zone-a/src/ruins/wreck/stbd.jpg",
+        "packs/zone-a/src/ruins/wreck/top.jpg",
+        "packs/zone-a/src/ruins/wreck/belly.jpg",
+        "packs/zone-a/src/ruins/wreck/stern.jpg"
+      ],
+      "frame": "ship",
+      "x": -24.0,
+      "z": 14.0,
+      "yaw": 3.5779,
+      "sink": 0.05,
+      "contact": [
+        -3.678,
+        1.867
+      ],
+      "heightM": 4.116,
+      "srcH": 288,
+      "texelsPerM": 70.03,
+      "minApproachM": 25.603,
+      "horizRadiusM": 16.068,
+      "contactY": 1.368,
+      "hangar": {
+        "x": [
+          -6.766,
+          -0.61
+        ],
+        "sillY": [
+          0.834,
+          1.368
+        ],
+        "lintelY": [
+          2.932,
+          3.279
+        ],
+        "portZ": 1.723,
+        "clearM": 1.814,
+        "mid": [
+          -3.678,
+          1.368,
+          1.867
+        ]
+      },
+      "bounds": {
+        "min": [
+          -16.039,
+          0.0,
+          -2.031
+        ],
+        "max": [
+          15.996,
+          4.116,
+          2.055
+        ]
+      }
+    },
+    {
+      "id": "arch",
+      "mesh": "packs/zone-a/src/ruins/arch/arch.ruin",
+      "skins": [
+        "packs/zone-a/src/ruins/arch/atlas.jpg"
+      ],
+      "frame": "gate",
+      "sealed": "tools/ruins/sealed/arch-v1",
+      "x": -5.0,
+      "z": 39.0,
+      "yaw": -3.1227,
+      "sink": 0.18,
+      "contact": [
+        0,
+        0
+      ],
+      "heightM": 7.4,
+      "srcH": 1153,
+      "texelsPerM": 155.81,
+      "minApproachM": 11.508,
+      "horizRadiusM": 3.668,
+      "footprintRadiusM": 3.668,
+      "depthM": 2.89,
+      "openingBoxM": [
+        -1.303,
+        1.123,
+        0.0,
+        5.186
+      ],
+      "openingTopM": 5.186,
+      "bounds": {
+        "min": [
+          -2.266,
+          0.013,
+          -2.89
+        ],
+        "max": [
+          2.259,
+          7.394,
+          0.0
+        ]
+      }
+    }
+  ]
+}
