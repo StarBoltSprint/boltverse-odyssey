@@ -516,3 +516,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Reshoot those two with `clearShot` and `place` so `solveCamera` holds a legal pose. Presented magnification on the shipped stills is 0.982. |
 | Guard | `snapshot().mag` on a proof that used `lookAt`. The chase solver is the budget pose. |
 | Sources | `packs/zone-b/play/play.js` `solveCamera`. Shots `packs/zone-b/proof/step2/drone.jpg`, `ribcage.jpg`. |
+
+### 2026-10-04 — quota.py ignores tool_started
+
+| | |
+| --- | --- |
+| Take | Zone B step 2. Quota row. |
+| Defect | The appended row says 0 tool calls and 0 image gens for a session that started `image_gen` 11 times. |
+| Root cause | `tools/quota/quota.py` counts `tool_call`, `function_call`, and `tool`. This session log uses `type: tool_started` and `tool_name`. |
+| Fix | Leave the row as the tool wrote it. The step report records the `tool_name` counts. |
+| Guard | A zero tools cell next to a log whose events are `tool_started`. |
+| Sources | `tools/quota/quota.py`. `learn/quota-log.md` row `zone-b-step2`. Log `zoneB-step2-20261004.jsonl`. |

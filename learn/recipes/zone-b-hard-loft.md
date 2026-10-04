@@ -6,7 +6,7 @@ Status: IN TEST. The measured-loft method is already VALIDATED (`docs/METHOD/har
 | --- | --- |
 | Asset kind | `hull/ship` |
 | Take | Zone B step 2 |
-| Commit | STEP2SHA |
+| Commit | `f05e2d2` |
 | Date | 2026-10-04 |
 | Size | Anchor 60 m tall. Legs 3.55×1.50 m. Span segment 1.43×0.38×1.21 m. Tower 3.99×1.86 m. Pylon 3.31×1.37 m. Drone long axis 2.09 m. Cart long axis 2.16 m. Rib 3.86×2.53 m. Atlas 4096×1864. |
 | Tries | Drone caps: 1 rebuild after the open shell. Lintel: 2 placements, then stop. |

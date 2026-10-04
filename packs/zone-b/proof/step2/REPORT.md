@@ -40,4 +40,4 @@ Same files in `/workspace/grokcli/out/zoneB/step2/`.
 
 Run: `python3 -m http.server 8770 --bind 127.0.0.1` from this worktree. Port 8766 was already taken by another tree. Play URL: `http://127.0.0.1:8770/packs/zone-b/play/index.html`.
 
-Preview freeze: recorded after this file is in place. The tool refuses a verdict other than PASS.
+Preview freeze: `python3 tools/preview/freeze.py --zone zone-b --commit f05e2d2 --report packs/zone-b/proof/step2/REPORT.md --play-dir packs/zone-b/play --out previews --date 2026-10-04` exited 1. The tool said `REPORT verdict is missing; freeze waits for PASS`. This file says `Verdict: IN TEST`. No preview folder was written.
