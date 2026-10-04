@@ -352,6 +352,28 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Guard | `python3 tools/objsheet/sheet.py` adjacent height ±8% and area ±15%. The crest set fails height. No row detects "short and denser" before the scale attempt. |
 | Sources | `docs/METHOD/rocks.md` pitfalls. Views stay outside the repo. |
 
+### 2026-10-04 — micro-details at the texel budget still read as flecks from the chase boom
+
+| | |
+| --- | --- |
+| Take | Zone A step 5. DetailGenerator. Shipped IN TEST. Eye-level row FAIL. |
+| Defect | 700 keyed cards, heights 0.08–0.18 m, sit on the drawn relief and show at eye height. From the chase boom (about 7 m, eye about 1.9 m) the same cards are flecks. The plate carpet remains the read. One pebble sheet kept a joined mirror, so that stone sits proud. |
+| Root cause | Screen height at 7 m is about 40 px for a 0.16 m card. Dark cards on dark plates disappear. The mirror is opaque to the bottom of the crop, so seating the crop bottom lifts the real stone. |
+| Fix | Stop after two cooks. Do not enlarge the stills. Heights already sit on the texel budget (`texelsPerM` 1800, scale ≤ 1). |
+| Guard | No automatic row. `packs/zone-a/proof/step5/REPORT.md` row 2 is the check. `python3 tools/details/selftest.py` checks density and height, not the chase read. |
+| Sources | `docs/METHOD/details.md` known issues. Prompts stay in the local file. |
+
+### 2026-10-04 — detail cards seated on `heightAt` sank under the drawn ground
+
+| | |
+| --- | --- |
+| Take | Zone A step 5 follow-up (code only, no Imagine call). |
+| Defect | Cards seated on the minimum of `heightAt` samples. The median card sank 13% of its height; 66 of 700 sank more than half and 20 were fully hidden. Part of the "flecks" read in the chase. |
+| Root cause | `heightAt` carries micro relief (up to about ±0.12 m) between ground mesh vertices (about 0.36 m apart). The mesh draws straight triangles between vertices, not that relief. |
+| Fix | `terrain.meshHeightAt` returns the drawn triangle height. Details seat on its lowest point under each plane's bottom edge. After: 0 cards more than half buried, 0 floating. |
+| Guard | None automatic. Any layer that seats small things must seat on `meshHeightAt`, not `heightAt`. |
+| Sources | `docs/METHOD/details.md` §5. |
+
 ### 2026-10-03 — a walk opening that meets the frame is not an enclosed hole
 
 | | |

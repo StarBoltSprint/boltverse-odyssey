@@ -287,6 +287,29 @@ void main() {
     return t;
   }
 
+  // Grid of the drawn ground mesh, so layers can seat on the triangles that
+  // are actually rendered (heightAt carries micro relief between vertices).
+  const meshGrid = { reach: 0, n: 0, step: 0 };
+  function meshHeightAt(x, z) {
+    if (!meshGrid.n) return heightAt(x, z);
+    const { reach, step } = meshGrid;
+    const fx = (x + reach) / step;
+    const fz = (z + reach) / step;
+    const ix = Math.floor(fx);
+    const iz = Math.floor(fz);
+    const tx = fx - ix;
+    const tz = fz - iz;
+    const x0 = -reach + ix * step;
+    const z0 = -reach + iz * step;
+    const a = heightAt(x0, z0);
+    const b = heightAt(x0 + step, z0);
+    const c = heightAt(x0, z0 + step);
+    const d = heightAt(x0 + step, z0 + step);
+    // Triangles (a, c, b) and (b, c, d), split on the b-c diagonal.
+    if (tx + tz <= 1) return a + (b - a) * tx + (c - a) * tz;
+    return d + (c - d) * (1 - tx) + (b - d) * (1 - tz);
+  }
+
   /** One-channel 2D texture: the shader reads only .r, so the other channels are not uploaded. */
   function makeR8(img, id) {
     const rgba = pixelsOf(img);
@@ -330,6 +353,9 @@ void main() {
     const reach = maxRadius() * 1.08;
     const n = 300;
     const step = (reach * 2) / n;
+    meshGrid.reach = reach;
+    meshGrid.n = n;
+    meshGrid.step = step;
     const positions = [];
     const uvs = [];
     const fams = [];
@@ -525,6 +551,7 @@ void main() {
     SCALE,
     TILE,
     heightAt,
+    meshHeightAt,
     slopeAt,
     contain,
     radiusAt,
