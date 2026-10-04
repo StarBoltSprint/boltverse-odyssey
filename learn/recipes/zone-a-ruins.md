@@ -6,7 +6,7 @@ Status: in test. The verbatim Imagine lines are not stored in this file.
 | --- | --- |
 | Asset kind | `hull/ship` |
 | Take | Zone A step 4 |
-| Commit | `855ff6a` |
+| Commit | `f247ee3` |
 | Date | 2026-10-03 |
 | Size | gate front 832×1248; sections 1024×1024; wreck skins copied from the sealed Howl plates |
 | Tries | 6 image calls, 0 video. Side elevation rejected once, kept on the second try. |
