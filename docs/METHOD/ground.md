@@ -187,7 +187,7 @@ Verified 2026-10-03: `prep.py` rebuilds all 20 zone A files (`m0–m7`, `h0–h7
 |---|---|
 | `boot_clean` | 0 console errors / 4xx |
 | `walk_mag_le_1` | 8 gallops from the centre, every frame mag ≤ 1.0 (ground mag includes slope stretch over a 2.2 m span, cards included) |
-| `relief_span_le_3m_per_20m`, `slope_le_15deg` | walkable cells, 2 m slope baseline, 20 m windows (OPEN today, §13) |
+| `relief_span_le_3m_per_20m`, `slope_le_15deg` | walkable cells, 2 m slope baseline, 20 m windows (OPEN on zone A, §13). Zone B step 1 measured span 2.001 m and slope 14.50° (IN TEST, not a lock) |
 | q1, q3–q5 chase · q2 rim | play camera; no flat cap above the sky (q2) |
 | **q6 Bolt-height** | anti-carpet judge: relief silhouettes, lips, cutouts standing up (mag > 1 allowed, not a play camera) |
 | **q7 close-up** | boom 4.2 m, play mag; materials rich, not plain dirt |
@@ -222,6 +222,27 @@ rim berm `+2.6·t²` for u > 0.9. Micro: `MICRO = 0.1 m`, `TILE = 1.45 m`. Spawn
 `clearing.json` → `zone.ground`: `tile_m`, `tiles` (m0–m7), `depth` (h0–h7), `mask`, `details` (c0–c2); the play engine
 switches to the relief path when `depth`, `mask` and `details` are present.
 
+## Part 2b — Ember Mesa (zone B step 1) — IN TEST
+
+Not a lock. Does not replace ground v1. Numbers from the 2026-10-04 browser grid (2 m cells, 2 m slope baseline, 20 m windows, u < 0.92). Material words stay in the local prompts file.
+
+| Item | Measured |
+|---|---|
+| Pack | `packs/zone-b/` |
+| Area | 7800 m², max radius 66.05 m |
+| Rim | +0.9 m over the outer 18 m |
+| TILE / MICRO / MASK_M | 1.50 m / 0.10 m / 22 m |
+| Sources | 3 stills into 8 slots. Family 0 slots 0–1, family 2 slots 2–3, family 4 slots 4–5, family 6 slots 6–7 |
+| Mask | zone A `mask.png` reused (placement only). No new mask cook |
+| Cutouts | none (`details: []`) |
+| Height | min −0.965 m, max 2.263 m |
+| 20 m span | 2.001 m (limit 3 m) |
+| Slope | 14.50°, cells over 15° = 0 |
+| Spawn | (4, −14), heading 255° |
+| Boot `groundInfo` | tris 77500, sparse-sample maxSlope 0.326 rad |
+
+Known this step: the chase and the wide shot still read as one tile period (TILE cannot grow; ground mag 0.87–0.91). Family weights are in the mesh. No standing cards.
+
 ### 11. How B and C would fill the template (material ideas only; words go to their local file)
 
 | Role | B Ember Mesa (`ember-mesa`, golden hour) | C Cascade Verdance (`cascade-verdance`, morning) |
@@ -244,6 +265,8 @@ Same T1–T4 text; only `{FAMILY_MATERIAL}`, `{CUTOUT_SUBJECT}` and the kit slot
    `terrain.js` card sizes/rules if the cutouts differ; `clearing.json` spawn, sky slices, ground lists.
 3. Do not change: the T1–T4 frames, prep maths, mesh method, filtering, post constants (except one grade per biome), QC rows.
 4. Run §9; fill a recipe (`learn/recipes/`), failures, take note; new approved method → METHOD.md + decisions log.
+
+Zone B (2026-10-04) kept that copy under `packs/zone-b/play/` and read the zone directory, the kit `post` block, and the sky file list from `clearing.json` / `sky.json`. `packs/zone-a` was not edited. The copied `qc.mjs` takes the zone directory as its third argument. `prep.py` in the copy does not rebuild the mask and does not cut cards.
 
 ## 13. Known issues still to fix (targets)
 

@@ -159,7 +159,17 @@ Play code: `packs/zone-a/play/play.js`. Manifest: `packs/zone-a/src/sky/sky.json
 
 ## Part 3 — Other biomes (ideas only, not cooked)
 
-**Ember Mesa.** Same three bands and the same instanced loops. The hero slice carries that kit's low sun on the horizon band. The upper and high chains drop the night-violet mood slot and use the mesa dusk mood from the kit. Dust duration stays the long loop. Cap is a hot high haze, still a full painting at the centre.
+**Ember Mesa (zone B step 1) — built, IN TEST.** Not a lock. Does not replace sky v1.
+
+Horizon: 10 slices × 36°, `sky-0.jpg`…`sky-9.jpg`, 1280×560, elevation 2.457°–19.15° (span 16.693°). Turn offset 15/360 places slice 7 on kit azimuth 255°. Upper: 13 files, 27.692° step, 19°–56°, read from `packs/zone-a/src/sky/upper/` (unstretched). High: 8 files, 45° step, 52°–77.5°, from `packs/zone-a/src/sky/high/`. Cap: `packs/zone-a/src/sky-cap/zenith.png` from 74.6°. No column was cloned or mirrored. An 8-column meet of each pair's own edge pixels is in the JPEG so join MAE reloads at 0.
+
+Living layer: `dust.mp4` 848×480, duration 10.042 s, gain 0.30, key 0.42, one instanced draw, per-tile phase. Manifest also lists `stars.mp4` 13.0 s and `nebula.mp4` 11.042 s at gain 0 (not decoded). `offsetsSec` length 10, step 0.9 s. Tile 21.176° × 11.25°, mag 0.792.
+
+`python3 tools/sky/check.py --manifest packs/zone-b/src/sky/sky.json` (2026-10-04): 7 failures. Joins pass. Motif: sky-2 mirror 0.689; sky-4 repeat 0.836; sky-5 repeat 0.922, mirror 0.658, copy 0.743; sky-6 repeat 0.970. Exposure swing 62 (limit 24). Dust loop PASS, amplitude MAE 4.63.
+
+Play 720×1600, 120-tick gallop and headings 0/90/180/270: worst mag 0.998 (upper). Horizon 0.992, high 0.982, cap 0.989, ground ≤ 0.91, dust tile 0.792. drawCalls 5, texture bytes 187176279 (178.5 MiB), activeVideos 2, download 30078868 bytes. Same view, dust `currentTime` 3.30 s → 4.97 s over 1.2 s, sky-region mean abs difference 4.00.
+
+Known issues (do not recook this step): gate rows above; reused upper band is what the chase sees above 19.15°; slice heights do not share one horizon row; some slices read nearer than a far silhouette; the dust frame still stamps structure inside its tile; visual period is 10.042 s. Step 2, if it replaces the reused bands: about 10 upper stills on the same 36° step, then 8 high and 1 cap (19 calls) if those must change too. Motif and exposure recooks of slices 2, 4, 5 and 6 are separate.
 
 **Cascade Verdance.** Same skeleton. The horizon band keeps a soft tree line with no landmark. Living layers lean on the mist loop rather than a bright nebula, still at magnification ≤ 1 and still one instanced draw. The cap is canopy-gap sky, not a black disk.
 

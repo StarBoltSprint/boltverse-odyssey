@@ -106,5 +106,6 @@
   "pixels": {
     "source": "imagine",
     "codeMay": ["invisible relief", "placement", "physics", "fog", "grade", "bloom"]
-  }
+  },
+  "post": {"fogDensity": 0.02, "fogCap": 0.6, "gradeMix": 0.28, "saturation": 1.06, "bloomGain": 0.08, "bloomThreshold": 0.82}
 }

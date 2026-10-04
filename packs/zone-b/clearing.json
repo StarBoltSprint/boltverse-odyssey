@@ -1,0 +1,70 @@
+{
+  "schema": "clearing/1",
+  "seed": 2,
+  "biome": "ember-mesa",
+  "spawn": {
+    "position": [4, -14],
+    "heading_deg": 255
+  },
+  "view": {
+    "width": 720,
+    "height": 1600,
+    "mag_max": 1.0
+  },
+  "bolt": {
+    "gallop": "lock/bolt-gallop-cycle.mp4",
+    "idle": "lock/bolt-idle-breath.mp4"
+  },
+  "transition": {
+    "to": "howling-eclipse",
+    "toClearing": null,
+    "path": [],
+    "startM": 0,
+    "endM": 40,
+    "widthM": 12
+  },
+  "backdrop": {
+    "ring": "packs/zone-b/src/sky",
+    "slices": [
+      "packs/zone-b/src/sky/sky-0.jpg",
+      "packs/zone-b/src/sky/sky-1.jpg",
+      "packs/zone-b/src/sky/sky-2.jpg",
+      "packs/zone-b/src/sky/sky-3.jpg",
+      "packs/zone-b/src/sky/sky-4.jpg",
+      "packs/zone-b/src/sky/sky-5.jpg",
+      "packs/zone-b/src/sky/sky-6.jpg",
+      "packs/zone-b/src/sky/sky-7.jpg",
+      "packs/zone-b/src/sky/sky-8.jpg",
+      "packs/zone-b/src/sky/sky-9.jpg"
+    ]
+  },
+  "zone": {
+    "shape": "relief",
+    "center": [0, 0],
+    "ground": {
+      "tile_m": 1.5,
+      "tiles": [
+        "packs/zone-b/src/ground/m0.png",
+        "packs/zone-b/src/ground/m1.png",
+        "packs/zone-b/src/ground/m2.png",
+        "packs/zone-b/src/ground/m3.png",
+        "packs/zone-b/src/ground/m4.png",
+        "packs/zone-b/src/ground/m5.png",
+        "packs/zone-b/src/ground/m6.png",
+        "packs/zone-b/src/ground/m7.png"
+      ],
+      "depth": [
+        "packs/zone-b/src/ground/h0.png",
+        "packs/zone-b/src/ground/h1.png",
+        "packs/zone-b/src/ground/h2.png",
+        "packs/zone-b/src/ground/h3.png",
+        "packs/zone-b/src/ground/h4.png",
+        "packs/zone-b/src/ground/h5.png",
+        "packs/zone-b/src/ground/h6.png",
+        "packs/zone-b/src/ground/h7.png"
+      ],
+      "mask": "packs/zone-b/src/ground/mask.png",
+      "details": []
+    }
+  }
+}
