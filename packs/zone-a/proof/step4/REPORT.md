@@ -49,3 +49,18 @@ Run: `python3 -m http.server 8940 --bind 127.0.0.1` in this worktree, then open 
 | nacelle-port | Howl top | u 0.0255, x −106.3, z −17.5 | top.jpg | not rebuilt (skinNacelles 0) |
 | nacelle-stbd | Howl top | u 0.0255, x −106.3, z +17.5 | top.jpg | not rebuilt |
 | hangar | Howl port | u 0.289–0.482 | hole kept, no faces | not this step |
+
+## 2026-10-04 — collisions follow the real geometry (owner decision: no invisible walls)
+
+Keep-out circles removed. Colliders are rebuilt in play from the `.ruin` faces (`packs/zone-a/play/collide.js`; recipe `docs/METHOD/ruins.md` §7). Bolt gallops through the arch (4.4 m/s held, 0 blocked, 0 sideways push) and into the wreck's hangar (3.25 m deep, under the deck), turns round and runs out. Wreck re-seated on its hangar sill at 32 m (yaw 205°, pitch −2°, sink 0.05 m) so the 1.81 m bay fits Bolt.
+
+| Check (`tools/playcheck/src/ruinwalk.test.mjs`) | measured |
+|---|---|
+| Arch run | top 4.4 m/s, slowest after top 4.4; camera step ≤ 0.282 m, jerk 0.026 m, shake 0, near plane clear |
+| Hangar in / turn / out | depth 3.25 m; camera step ≤ 0.459 m, jerk ≤ 0.270 m; shake 0 on the runs, 2 in the on-the-spot turn; eye ≥ 0.53 m from the hull, near plane ≥ 0.56 m |
+| Walls (both piers, closed hull) | stopped 0.010 / 0.011 / 0.081 m from the drawn face; body never inside a face |
+| Slides (gate pier, hull side, 30°) | 3.87 / 3.57 m/s along the face (tangential gallop 3.81), 0 blocked, shake 0 |
+| Sweeps (36 lines across and around) | 0 contacts without a drawn face within r + 0.2 m; 4 near-miss lines 0.2 m off the bounds: 0 contacts |
+| Perf | drawCalls 17, texMB 282.8 (unchanged; colliders are CPU only) |
+
+Worst close-up magnification (known issue, pixels never stretched by code): wreck hull inside the bay 43× (0.85 m, 49 texels/m), hull outside 10.8×, gate pier under the arch 3.3×, lintel 1.2×; Bolt's sprite 6.2× with the short boom in the bay. The hangar interior has no Imagine skin and reads black. Clips: `/workspace/grokcli/out/zoneA-step4/collision/`.
