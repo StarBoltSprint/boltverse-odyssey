@@ -1672,9 +1672,11 @@ function solveCamera() {
     eyeBuf[2] = state.z - backZ / backL * MIN_BOOM;
     backL = MIN_BOOM;
   }
-  ruinBoom(dt, snapPose);
   clearSolids(eyeBuf);
   if (useRelief) eyeBuf[1] = Math.max(eyeBuf[1], terrain.eyeFloor(eyeBuf[0], eyeBuf[2], GROUND_MAG_TARGET));
+  // Ruin camera clearance is the final authority when inside a gate or wreck;
+  // keep polish eye-floor/solid guards upstream so they cannot shake the ruin rig.
+  ruinBoom(dt, snapPose);
   camBoom = Math.hypot(state.x - eyeBuf[0], state.z - eyeBuf[2]);
   stepLook(dt);
   pitchView(eyeBuf, camSm.feet);
