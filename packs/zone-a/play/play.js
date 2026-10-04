@@ -5,6 +5,9 @@
 import { loadWorldHull } from "./hullmesh.js";
 import { createTerrain } from "./terrain.js";
 import { mountRocks } from "./rocks.js";
+import { showIntro, introEnabled } from "./intro.js";
+import { createBiomeBlend, postOf } from "./biomeblend.js";
+import { mountDetails } from "./details.js";
 import { mountRuins } from "./ruins.js";
 
 const W = 720;
@@ -320,13 +323,15 @@ uniform int uMode;
 uniform int uKey;
 uniform float uAlpha;
 uniform float uPost;
+uniform float uGradeMix;
+uniform float uSat;
 in vec2 vUv;
 out vec4 o;
 vec3 grade(vec3 x) {
   vec3 t = clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0);
-  vec3 y = mix(x, t, 0.26);
+  vec3 y = mix(x, t, uGradeMix);
   float l = dot(y, vec3(0.2126, 0.7152, 0.0722));
-  y = mix(vec3(l), y, 1.05);
+  y = mix(vec3(l), y, uSat);
   return clamp(y, 0.0, 1.0);
 }
 void main() {
@@ -416,6 +421,8 @@ const cardLoc = {
   key: gl.getUniformLocation(cardProg, "uKey"),
   alpha: gl.getUniformLocation(cardProg, "uAlpha"),
   post: gl.getUniformLocation(cardProg, "uPost"),
+  gradeMix: gl.getUniformLocation(cardProg, "uGradeMix"),
+  sat: gl.getUniformLocation(cardProg, "uSat"),
 };
 
 const P = new Float32Array(16);
@@ -1285,6 +1292,52 @@ function closestDist(eye, o, hull) {
   return Math.hypot((mx - qx) * s, (my - qy) * s, (mz - qz) * s);
 }
 
+// World offset from the closest hull-box point to the eye (same box as closestDist).
+const clearVec = [0, 0, 0];
+function closestVec(eye, o, hull) {
+  const s = o.scale || 1;
+  const yaw = (o.yaw_deg || 0) * Math.PI / 180;
+  const c = Math.cos(yaw);
+  const sn = Math.sin(yaw);
+  const dx = eye[0] - o.position[0];
+  const dz = eye[2] - o.position[1];
+  const mx = (c * dx - sn * dz) / s;
+  const mz = (sn * dx + c * dz) / s;
+  const my = (eye[1] - (o.base_y_m || 0)) / s + hull.minY;
+  const ex = (mx - Math.max(-hull.halfExtent[0], Math.min(hull.halfExtent[0], mx))) * s;
+  const ey = (my - Math.max(hull.minY, Math.min(hull.maxY, my))) * s;
+  const ez = (mz - Math.max(-hull.halfExtent[2], Math.min(hull.halfExtent[2], mz))) * s;
+  clearVec[0] = c * ex + sn * ez;
+  clearVec[1] = ey;
+  clearVec[2] = -sn * ex + c * ez;
+  return Math.hypot(ex, ey, ez);
+}
+
+// Minimum camera distance per solid: the eased eye can drift off the scored pose (the hold is
+// scored on raw relief, the eye rides eased relief), and boulder-7 then reached mag 1.10 at
+// 4.2 m. The eye is projected out of each hull's mag ≤ OBJ_MAG_TARGET shell. Projection onto
+// the outside of a rounded box is continuous in the eye position: a glide, never a kick.
+const OBJ_MAG_TARGET = 0.98;
+function clearSolids(eye) {
+  for (let pass = 0; pass < 2; pass++) {
+    let moved = false;
+    for (let i = 0; i < objects.length; i++) {
+      const o = objects[i];
+      const hull = hullByPath.get(o.asset);
+      if (!hull) continue;
+      const need = (FOCAL * worldHeight(o, hull)) / (OBJ_MAG_TARGET * hull.srcH);
+      const d = closestVec(eye, o, hull);
+      if (d >= need || d < 1e-4) continue;
+      const k = (need - d) / d;
+      eye[0] += clearVec[0] * k;
+      eye[1] += clearVec[1] * k;
+      eye[2] += clearVec[2] * k;
+      moved = true;
+    }
+    if (!moved) break;
+  }
+}
+
 function segmentHitsObb(eye, target, o, hull) {
   const steps = 14;
   for (let i = 1; i < steps; i++) {
@@ -1296,6 +1349,61 @@ function segmentHitsObb(eye, target, o, hull) {
       const y0 = o.base_y_m || 0;
       const y1 = y0 + (hull.maxY - hull.minY) * (o.scale || 1);
       if (y > y0 - 0.05 && y < y1 + 0.05) return true;
+    }
+  }
+  return false;
+}
+
+// Feature rocks from the detail layer: thin footprints across each card,
+// as wide as the visible rock. Bolt is pushed out like any solid. The chase
+// eye prefers poses clear of them (soft cost only, never a snap).
+let detailSolids = [];
+const EYE_CARD_M = 0.6;
+function detailLocal(d, x, z) {
+  const dx = x - d.x;
+  const dz = z - d.z;
+  return [d.c * dx - d.s * dz, d.s * dx + d.c * dz];
+}
+function detailPush(x, z) {
+  let hit = false;
+  for (let i = 0; i < detailSolids.length; i++) {
+    const d = detailSolids[i];
+    const l = detailLocal(d, x, z);
+    const hx = d.hx + 0.05;
+    const hz = d.hz + 0.05;
+    if (Math.abs(l[0]) >= hx || Math.abs(l[1]) >= hz) continue;
+    let nlx = l[0];
+    let nlz = l[1];
+    if (hx - Math.abs(l[0]) < hz - Math.abs(l[1])) nlx = Math.sign(l[0] || 1) * hx;
+    else nlz = Math.sign(l[1] || 1) * hz;
+    x = d.x + d.c * nlx + d.s * nlz;
+    z = d.z - d.s * nlx + d.c * nlz;
+    hit = true;
+  }
+  return hit ? [x, z] : null;
+}
+function eyeInCard(e, margin) {
+  for (let i = 0; i < detailSolids.length; i++) {
+    const d = detailSolids[i];
+    if (e[1] > d.y1 + margin) continue;
+    const l = detailLocal(d, e[0], e[2]);
+    if (Math.abs(l[0]) < d.hx + margin && Math.abs(l[1]) < d.hz + margin) return true;
+  }
+  return false;
+}
+function cardBetween(e, tx, ty, tz) {
+  if (!detailSolids.length) return false;
+  const steps = 16;
+  for (let k = 1; k < steps; k++) {
+    const t = k / steps;
+    const x = e[0] + (tx - e[0]) * t;
+    const y = e[1] + (ty - e[1]) * t;
+    const z = e[2] + (tz - e[2]) * t;
+    for (let i = 0; i < detailSolids.length; i++) {
+      const d = detailSolids[i];
+      if (y > d.y1 + 0.05 || y < d.y0 - 0.05) continue;
+      const l = detailLocal(d, x, z);
+      if (Math.abs(l[0]) < d.hx && Math.abs(l[1]) < d.hz + 0.05) return true;
     }
   }
   return false;
@@ -1403,6 +1511,18 @@ function pitchView(eye, lookFeet, extra) {
   camUp[2] = -sp * fwdBuf[2];
   camPitch = pitch;
 }
+
+// Smooth maximum (C1): never below max(a, b), blends over a band k so the eye has no kink.
+function smax(a, b, k) {
+  const h = Math.max(k - Math.abs(a - b), 0) / k;
+  return Math.max(a, b) + h * h * k * 0.25;
+}
+
+// The eased eye lags the relief when the boom swings over a ridge (a fast turn sweeps the eye
+// at ~19 m/s). The lag once put the eye 0.58 m over the ridge crest (ground mag 2.09 at heading
+// 82°, 1.42 at 127°). This floor is a smooth function of the eye's ground position, so the eye
+// never sits closer to the relief than ground magnification ≤ 1 allows, and it cannot kick.
+const GROUND_MAG_TARGET = 0.98;
 
 function chase(cur, goal, dt, tau) {
   if (!(dt > 0)) return goal;
@@ -1516,10 +1636,11 @@ function solveCamera() {
         pitchView(candEye, null, 0);
         const m = poseMetrics(candEye);
         const blocked = lineBlocked(candEye);
-        // A chase line through a ruin face only costs score. It never makes a pose illegal,
-        // so it cannot force the snap path below.
+        // Both detail cards and ruin faces are soft camera costs; neither can force a snap.
+        const cardCost = (eyeInCard(candEye, EYE_CARD_M) ? 30 : 0) +
+          (cardBetween(candEye, state.x, feetY() + BOLT_H * 0.45, state.z) ? 15 : 0);
         const ruinCut = ruinNear && ruinLayer.segFree(state.x, headY, state.z, candEye[0], candEye[1], candEye[2], RUIN_LINE_EPS) < 0.999;
-        const near = (m.on ? 1000 : 0) + (blocked ? 0 : 200) + Math.min(m.minR, 1.25) * 20 - Math.abs(dist - targetDist) * 40 - Math.abs(slide) * 2 - Math.max(0, eyes[ei] - 1.6) * (ruinLow ? 230 : 80) - (ruinCut ? 300 : 0);
+        const near = (m.on ? 1000 : 0) + (blocked ? 0 : 200) + Math.min(m.minR, 1.25) * 20 - Math.abs(dist - targetDist) * 40 - Math.abs(slide) * 2 - Math.max(0, eyes[ei] - 1.6) * (ruinLow ? 230 : 80) - (ruinCut ? 300 : 0) - cardCost;
         const hard = m.on && m.minR >= 1.002 && !blocked;
         const isHold = camHold.live && boom === camHold.boom && eyes[ei] === camHold.eye && slide === camHold.slide;
         if (isHold) {
@@ -1595,6 +1716,12 @@ function solveCamera() {
   if (snapPose) camSm.ground = rawG;
   else if (dt > 0) camSm.ground = chase(camSm.ground, rawG, dt, 0.28);
   eyeBuf[1] = camSm.eye + camSm.ground;
+  // Inside a ruin's reach the chase eye is main's eye. The eye-floor and the
+  // hull shell run only in the open: fed into the ruin springs they kink the
+  // line and the eye acceleration reverses (camera shake).
+  const chaseBoom = Math.hypot(state.x - eyeBuf[0], state.z - eyeBuf[2]);
+  const ruinOwns = !!(ruinLayer && ruinLayer.near(state.x, state.z, chaseBoom + 6));
+  if (useRelief && !ruinOwns) eyeBuf[1] = smax(eyeBuf[1], terrain.eyeFloor(eyeBuf[0], eyeBuf[2], GROUND_MAG_TARGET), 0.3);
   const rawFeet = feetY();
   if (snapPose) camSm.feet = rawFeet;
   else if (dt > 0) camSm.feet = chase(camSm.feet, rawFeet, dt, 0.22);
@@ -1607,6 +1734,12 @@ function solveCamera() {
     eyeBuf[2] = state.z - backZ / backL * MIN_BOOM;
     backL = MIN_BOOM;
   }
+  if (!ruinOwns) {
+    clearSolids(eyeBuf);
+    if (useRelief) eyeBuf[1] = Math.max(eyeBuf[1], terrain.eyeFloor(eyeBuf[0], eyeBuf[2], GROUND_MAG_TARGET));
+  }
+  // Feature cards are near-culled rather than snapping the eye; keep the metric on the final pose.
+  if (detailSolids.length && eyeInCard(eyeBuf, 0.05)) eyeGuardHits++;
   ruinBoom(dt, snapPose);
   camBoom = Math.hypot(state.x - eyeBuf[0], state.z - eyeBuf[2]);
   stepLook(dt);
@@ -2135,6 +2268,13 @@ function resolveBody(nx, nz) {
         blocked = true;
       }
     }
+    const dp = detailPush(nx, nz);
+    if (dp) {
+      nx = dp[0];
+      nz = dp[1];
+      hit = true;
+      blocked = true;
+    }
     if (!hit) break;
   }
   return { x: nx, z: nz, blocked };
@@ -2373,6 +2513,9 @@ function drawCard(mode, tex, key, cx, cy, cz, y0, w, h, idIndex, alpha) {
   gl.uniform1i(cardLoc.key, key);
   gl.uniform1f(cardLoc.alpha, alpha);
   gl.uniform1f(cardLoc.post, useRelief && terrain.postEnabled() && key === 1 && mode === 0 ? 1 : 0);
+  // Bolt takes the same biome grade as the world (grade only: no fog, no bloom, never glows).
+  gl.uniform1f(cardLoc.gradeMix, postNow.gradeMix);
+  gl.uniform1f(cardLoc.sat, postNow.saturation);
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_2D, tex);
   gl.uniform1i(cardLoc.tex, 0);
@@ -2417,8 +2560,11 @@ function updateHeroQuad(eye) {
   heroQuad = { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
 }
 
+const magParts = { ground: 0, object: 0, objectId: "", pebble: 0, bolt: 0, gate: 0 };
+
 function measureMag(eye) {
   let objectMag = 0;
+  let objectId = "";
   let near = 80;
   for (let i = 0; i < objects.length; i++) {
     const o = objects[i];
@@ -2427,10 +2573,14 @@ function measureMag(eye) {
     const d = Math.max(0.25, closestDist(eye, o, hull));
     if (d < near) near = d;
     const m = (FOCAL * worldHeight(o, hull)) / (d * hull.srcH);
-    if (m > objectMag) objectMag = m;
+    if (m > objectMag) { objectMag = m; objectId = o.id || o.asset || ""; }
   }
+  magParts.object = objectMag;
+  magParts.objectId = objectId;
+  magParts.pebble = 0;
   if (rockLayer) {
     const pm = rockLayer.mag(eye, FOCAL);
+    magParts.pebble = pm;
     if (pm > objectMag) objectMag = pm;
   }
   if (ruinLayer) {
@@ -2477,6 +2627,9 @@ function measureMag(eye) {
     gateMag = (FOCAL * gh) / (gdist * GATE_SRC.h);
   }
   groundMagNow = groundMag;
+  magParts.ground = groundMag;
+  magParts.bolt = boltMag;
+  magParts.gate = gateMag;
   magNow = Math.max(
     groundMag, skyMagW, skyMagH, boltMag, objectMag, gateMag,
     skyMagParts.upper, skyMagParts.high, skyMagParts.cap,
@@ -2512,6 +2665,10 @@ function render(mode) {
     rockLayer.draw(vpM);
     drawCalls += rockLayer.draws;
   }
+  if (detailLayer && mode === 0) {
+    detailLayer.draw(vpM, eyeBuf, FOCAL);
+    drawCalls += detailLayer.draws;
+  }
   if (ruinLayer) {
     ruinLayer.draw(vpM, mode);
     if (mode !== 1) drawCalls += ruinLayer.draws;
@@ -2521,6 +2678,10 @@ function render(mode) {
     drawCard(mode, gateTex, 3, g.x, 0, g.z, 0, sized.gw, sized.gh, labelOf("gate:" + g.gate.id), 1);
   }
   if (!useRelief) drawFog(mode, eye);
+  if (biomeBlend) {
+    postNow = biomeBlend.update(state.x, state.z);
+    if (useRelief) terrain.setPostParams(postNow);
+  }
   if (useRelief && mode === 0) terrain.composite();
   const active = state.mode === "GALLOP" ? gallopVideo : idleVideo;
   const boltReady = uploadVideo(active, boltTex, "bolt") || videoStamp.has("bolt");
@@ -2728,6 +2889,11 @@ function snapshot() {
       skyStars: skyMagParts.stars,
       skyDust: skyMagParts.dust,
       skyNebula: skyMagParts.nebula,
+      object: magParts.object,
+      objectId: magParts.objectId,
+      pebble: magParts.pebble,
+      bolt: magParts.bolt,
+      gate: magParts.gate,
     },
     state: state.mode,
     heroCount,
@@ -2741,6 +2907,16 @@ function snapshot() {
     blocked: state.blocked,
     rockLoadMs,
     rocks: rockLayer ? rockLayer.info() : null,
+    blend: biomeBlend ? biomeBlend.info() : null,
+    detailLoadMs,
+    details: detailLayer ? detailLayer.info() : null,
+    detailMag: detailLayer ? detailLayer.mag(eyeBuf, FOCAL, vpM) : 0,
+    featureMag: detailLayer && detailLayer.magFeatures ? detailLayer.magFeatures(eyeBuf, FOCAL, vpM) : 0,
+    detailSolids: detailSolids.length,
+    eyeInCard: eyeInCard(eyeBuf, 0.05),
+    nearCulled: detailLayer && detailLayer.nearCulled ? detailLayer.nearCulled(eyeBuf, FOCAL, null) : 0,
+    nearCulledOnScreen: detailLayer && detailLayer.nearCulled ? detailLayer.nearCulled(eyeBuf, FOCAL, vpM) : 0,
+    eyeGuardHits,
     ruinLoadMs,
     ruins: ruinLayer ? ruinLayer.info() : null,
     pathTrigger: state.pathTrigger,
@@ -3088,6 +3264,12 @@ let firstFrameMs = null;
 let bootT0 = 0;
 let rockLayer = null;
 let rockLoadMs = 0;
+// Biome post blend along the exit path (biomeblend.js). Zone A defaults until boot loads kits.
+let biomeBlend = null;
+let postNow = postOf(null);
+let detailLayer = null;
+let eyeGuardHits = 0;
+let detailLoadMs = 0;
 let ruinLayer = null;
 let ruinLoadMs = 0;
 
@@ -3101,6 +3283,53 @@ async function loadBand(manifest, id) {
     imgs.push(await loadImage(absUrl("packs/zone-a/src/sky/" + files[i])));
   }
   return imgs;
+}
+
+async function fetchJson(url) {
+  try {
+    const r = await fetch(absUrl(url));
+    return r.ok ? await r.json() : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+// Zone A → next biome scaffold. clearing.transition = { to: <kit id>, toClearing: <path or
+// null>, path: [[x, z], ...], startM, endM, widthM }. Each kit's numbers-only `post` block
+// drives fog density / cap, grade mix / saturation and bloom; each fog colour comes from that
+// biome's own Imagine sky horizon band. Zone B has no pack yet: its fog colour is null (zone A's
+// sampled colour is kept), the path is empty, so the blend stays at 0 until the path exists.
+async function mountBiomeBlend(fogA) {
+  const kitA = clearing.biome ? await fetchJson("biome/kits/" + clearing.biome + ".json") : null;
+  const from = postOf(kitA, fogA);
+  const tr = clearing.transition || null;
+  const kitB = tr && tr.to ? await fetchJson("biome/kits/" + tr.to + ".json") : null;
+  const to = postOf(kitB || kitA, null);
+  const blend = createBiomeBlend({
+    from, to,
+    path: (tr && tr.path) || [],
+    startM: tr && tr.startM, endM: tr && tr.endM, widthM: tr && tr.widthM,
+    // Placeholder hooks: zone B content does not exist yet.
+    onApproach: () => { if (tr && tr.toClearing) prefetchNextZone(tr.toClearing, blend); },
+    onArrive: () => { blendArrived = true; },
+  });
+  return blend;
+}
+
+let blendArrived = false;
+
+// Hook for zone B: load its clearing, sample its sky horizon band (never a typed colour) and
+// retarget the blend. Silently does nothing until that pack exists.
+async function prefetchNextZone(url, blend) {
+  const next = await fetchJson(url);
+  const slices = next && next.backdrop && next.backdrop.slices;
+  if (!slices || !slices.length) return;
+  const imgs = [];
+  for (const u of slices) imgs.push(await loadImage(absUrl(u)));
+  const fogB = sampleHorizon(imgs);
+  releaseImages(imgs);
+  const kitB = next.biome ? await fetchJson("biome/kits/" + next.biome + ".json") : null;
+  blend.setTarget(postOf(kitB, fogB));
 }
 
 async function boot() {
@@ -3139,6 +3368,7 @@ async function boot() {
     }
     for (let i = 0; i < hullList.length; i++) hullList[i].upload();
     const ground = clearing.zone.ground;
+    if (/[?&]uv=planar\b/.test(location.search)) ground.uv = "planar";
     if (ground.depth && ground.mask && ground.details) {
       useRelief = true;
       await terrain.load(ground);
@@ -3196,6 +3426,23 @@ async function boot() {
       console.warn("rocks", err);
       rockLayer = null;
     }
+    if (!/[?&]details=0(?:&|$)/.test(location.search)) {
+      try {
+        const detailT0 = performance.now();
+        detailLayer = await mountDetails(gl, {
+          absUrl,
+          loadImage,
+          trackTex,
+          heightAt: (x, z) => (useRelief ? terrain.heightAt(x, z) : 0),
+          drawnHeightAt: (x, z) => (useRelief ? terrain.meshHeightAt(x, z) : 0),
+        });
+        detailLoadMs = detailLayer.loadMs || (performance.now() - detailT0);
+        detailSolids = detailLayer.colliders || [];
+      } catch (err) {
+        console.warn("details", err);
+        detailLayer = null;
+      }
+    }
     try {
       const ruinT0 = performance.now();
       ruinLayer = await mountRuins(gl, {
@@ -3243,6 +3490,7 @@ async function boot() {
       skyVideos[i].loop = true;
     }
     if (useRelief && horizonFog) terrain.setFog(horizonFog);
+    biomeBlend = await mountBiomeBlend(horizonFog);
     if (clearing.fog_band && clearing.fog_band.atlas) {
       fogTex = makeStill(await loadImage(absUrl(clearing.fog_band.atlas)), "fog");
       buildFog();
@@ -3315,6 +3563,8 @@ async function boot() {
         return true;
       },
       setPost(on) { terrain.setPost(on); },
+      setBlend(t) { if (biomeBlend) biomeBlend.setOverride(t); },
+      blendInfo() { return biomeBlend ? { ...biomeBlend.info(), arrived: blendArrived, post: terrain.postParams() } : null; },
       groundInfo() { return terrain.info(); },
       heightAt(x, z) { return terrain.heightAt(x, z); },
       ruinInfo() { return ruinLayer ? ruinLayer.info() : null; },
@@ -3345,16 +3595,34 @@ async function boot() {
           lookGoal: camLook.goal,
           lookDrag: camLook.drag,
           dbg: ruinCam.dbg,
+          x: state.x,
+          z: state.z,
+          inCard: eyeInCard(eyeBuf, 0.05),
+          guardHits: eyeGuardHits,
+          solids: detailSolids.length,
         };
       },
     };
     render(0);
     paintHud();
+    if (introEnabled(location.search)) {
+      let title = clearing.title || "";
+      if (!title && clearing.biome) {
+        try {
+          const kit = await (await fetch(absUrl("biome/kits/" + clearing.biome + ".json"))).json();
+          title = kit.name || "";
+        } catch (e) {
+          console.warn("intro kit", e);
+        }
+      }
+      showIntro(document, title);
+    }
     const err = gl.getError();
     if (err && SHOW_HUD) hud.textContent += "\nGL " + err;
     requestAnimationFrame(frame);
   } catch (e) {
     hud.textContent = "BOOT " + (e && e.stack ? e.stack : e);
+    hud.style.visibility = "visible";
     window.__play = { ready: false, error: String(e) };
   }
 }

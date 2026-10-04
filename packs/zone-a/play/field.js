@@ -3,8 +3,32 @@
  * Walkable interior is the irregular rim at u = 1, about 6500 m2.
  */
 
+import { uvOf, stretchOf } from "./uvfield.js";
+
 export const TILE = 1.45;
 export const MICRO = 0.1;
+
+// Surface-aware ground UV (uvfield.js). Null = planar x / TILE, z / TILE.
+let uvField = null;
+
+export function setUvField(f) {
+  uvField = f;
+}
+
+/** Ground tile UV (tile units) at a world point. Albedo only; relief height stays planar. */
+export function uvAt(x, z, out) {
+  return uvOf(uvField, x, z, TILE, out || [0, 0]);
+}
+
+/** Residual texel stretch of the ground UV (1 = true size, > 1 = magnified along a slope). */
+export function stretchAt(x, z) {
+  if (!uvField) {
+    const e = 0.45;
+    const g = Math.hypot(macroAt(x + e, z) - macroAt(x - e, z), macroAt(x, z + e) - macroAt(x, z - e)) / (2 * e);
+    return Math.sqrt(1 + g * g);
+  }
+  return stretchOf(uvField, x, z);
+}
 
 function radiusUnit(th) {
   let r = 1;
@@ -115,6 +139,9 @@ export function microAt(x, z) {
   const fam = familyAt(x, z);
   const map = maps[fam];
   if (!map) return 0;
+  // Height stays on the planar tile grid. The surface UV warps albedo only.
+  // Sampling this bump through that field shifts the floor by up to 0.2 m and
+  // drops a hangar deck face into Bolt's body band, so the bay reads as a wall.
   const byte = sampleMap(map, x / TILE, z / TILE);
   const hp = (byte - 128) / 100;
   return hp * MICRO;

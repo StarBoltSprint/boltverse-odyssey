@@ -18,6 +18,7 @@
   "fog": {
     "colourSource": ""
   },
+  "post": {"fogDensity": 0.015, "fogCap": 0.58, "gradeMix": 0.26, "saturation": 1.05, "bloomGain": 0.11, "bloomThreshold": 0.78},
   "geometry": {
     "horizonFraction": 0.5,
     "level": true,
