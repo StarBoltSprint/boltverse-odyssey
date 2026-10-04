@@ -118,6 +118,33 @@ function boxBlur2(src, nx, nz, r) {
   return out;
 }
 
+function boxBlur3(a, nx, ny, nz) {
+  const tmp = new Float32Array(a.length);
+  const pass = (src, dst, stride, n, outer) => {
+    for (let o = 0; o < outer.length; o++) {
+      const base = outer[o];
+      for (let i = 0; i < n; i++) {
+        const k = base + i * stride;
+        let s = src[k];
+        let c = 1;
+        if (i > 0) { s += src[k - stride]; c++; }
+        if (i < n - 1) { s += src[k + stride]; c++; }
+        dst[k] = s / c;
+      }
+    }
+  };
+  const basesX = [];
+  for (let z = 0; z < nz; z++) for (let y = 0; y < ny; y++) basesX.push((z * ny + y) * nx);
+  const basesY = [];
+  for (let z = 0; z < nz; z++) for (let x = 0; x < nx; x++) basesY.push(z * ny * nx + x);
+  const basesZ = [];
+  for (let y = 0; y < ny; y++) for (let x = 0; x < nx; x++) basesZ.push(y * nx + x);
+  pass(a, tmp, 1, nx, basesX);
+  pass(tmp, a, nx, ny, basesY);
+  pass(a, tmp, nx * ny, nz, basesZ);
+  a.set(tmp);
+}
+
 /** Visit points on every triangle, spaced at most `spacing` apart. cb(lx, ly, lz, ny, gi, ti). */
 function visitFaces(groups, spacing, cb) {
   for (let gi = 0; gi < groups.length; gi++) {
@@ -275,6 +302,9 @@ export function buildCollider(groups, frame, heightAt, opt = {}) {
   const vdist = edt(occ, [vnx, vny, vnz]);
   const df = new Float32Array(vdist.length);
   for (let i = 0; i < df.length; i++) df[i] = Math.max(0, (vdist[i] - 0.5) * voxM);
+  // One 3x3x3 box pass: the trilinear field is then smooth enough for the camera to slide on
+  // (a raw voxel EDT has a stepped gradient that shakes a sliding eye). Shifts it by < voxM / 3.
+  boxBlur3(df, vnx, vny, vnz);
 
   const toLocalX = (wx, wz) => a * (wx - px) + c * (wz - pz);
   const toLocalZ = (wx, wz) => b * (wx - px) + d * (wz - pz);
@@ -465,13 +495,23 @@ export function buildMagProbe(groups, frame, texSize, tagOf, spacing = 0.08) {
   const G = new Uint8Array(tags);
   return function probe(eye, fwd, right, up, focal, tanH, tanV) {
     const out = {};
-    for (let i = 0; i < tagNames.length; i++) out[tagNames[i]] = { mag: 0, dist: Infinity, tpm: 0, at: null };
+    // near: smallest view depth of a face sample inside the frustum (widened by the sample spacing).
+    // Below the camera near plane that face would be cut open on screen.
+    for (let i = 0; i < tagNames.length; i++) out[tagNames[i]] = { mag: 0, dist: Infinity, tpm: 0, at: null, near: Infinity };
     for (let i = 0, k = 0; i < T.length; i++, k += 3) {
       const rx = P[k] - eye[0], ry = P[k + 1] - eye[1], rz = P[k + 2] - eye[2];
       const vz = rx * fwd[0] + ry * fwd[1] + rz * fwd[2];
-      if (vz < 0.05) continue;
+      if (vz < -spacing) continue;
       const vx = rx * right[0] + ry * right[1] + rz * right[2];
       const vy = rx * up[0] + ry * up[1] + rz * up[2];
+      if (vz < 1.0) {
+        const zc = Math.max(0, vz);
+        if (Math.abs(vx) <= tanH * zc + spacing && Math.abs(vy) <= tanV * zc + spacing) {
+          const o = out[tagNames[G[i]]];
+          if (vz < o.near) o.near = vz;
+        }
+      }
+      if (vz < 0.05) continue;
       if (Math.abs(vx / vz) > tanH || Math.abs(vy / vz) > tanV) continue;
       const dist = Math.hypot(rx, ry, rz);
       const m = focal / (Math.max(0.05, dist) * T[i]);

@@ -66,6 +66,7 @@ function empty() {
     lift() { return 0; },
     near() { return false; },
     clearance() { return 99; },
+    clearGrad() { return null; },
     segFree() { return 1; },
     where() { return null; },
     probe() { return {}; },
@@ -328,6 +329,15 @@ export async function mountRuins(gl, env) {
         if (v < m) m = v;
       }
       return m;
+    },
+    /** Unit gradient of clearance() (direction away from the nearest face), or null when flat. */
+    clearGrad(x, y, z) {
+      const h = 0.08;
+      const gx = this.clearance(x + h, y, z) - this.clearance(x - h, y, z);
+      const gy = this.clearance(x, y + h, z) - this.clearance(x, y - h, z);
+      const gz = this.clearance(x, y, z + h) - this.clearance(x, y, z - h);
+      const l = Math.hypot(gx, gy, gz);
+      return l > 1e-6 ? [gx / l, gy / l, gz / l] : null;
     },
     /** Fraction of the segment A->B that stays at least eps from every face (sphere march). 1 = clear. */
     segFree(ax, ay, az, bx, by, bz, eps) {

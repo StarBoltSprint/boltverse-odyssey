@@ -679,20 +679,47 @@ const RUIN_EYE_GAP = 0.45;
 const RUIN_MIN_LEN = 1.6;
 const RUIN_IN_RATE = 4.0;
 const RUIN_OUT_RATE = 2.0;
-const RUIN_EYE_CLEAR = 0.4;
+const RUIN_EYE_CLEAR = 0.85;
 const RUIN_HARD_MIN = 1.0;
 // The boom may swing around Bolt (whole rig, so Bolt keeps his screen place) when the line
 // straight behind him is walled in, e.g. turning round deep in the hangar or under the arch.
 const RUIN_SWING = [0, 25, -25, 50, -50, 75, -75, 100, -100, 130, -130];
-const RUIN_SWING_RATE = 70;
-const ruinCam = { len: 0, ready: false, clamped: false, yaw: 0, goal: 0 };
+const RUIN_SWING_RATE = 150;
+// Boom length and swing move as critically damped springs with a speed and an acceleration cap,
+// so the eye's velocity never jumps (a rate-limited chase flips velocity when its goal turns).
+const RUIN_LEN_W_IN = 9;
+const RUIN_LEN_W_OUT = 3.5;
+const RUIN_LEN_ACC = 14;
+const RUIN_LEN_ACC_URGENT = 40;
+const RUIN_SWING_W = 4;
+const RUIN_SWING_ACC = 420;
+// Hard eye guard: never nearer than RUIN_EYE_SAFE to a face (near plane 0.35 m, corner 0.39 m,
+// field error about half a voxel diagonal), softened over RUIN_EYE_SOFT. Never under the relief.
+const RUIN_EYE_SAFE = 0.5;
+const RUIN_EYE_SOFT = 0.25;
+const RUIN_EYE_FLOOR = 0.35;
+const RUIN_EYE_SUB = 0.04;
+const RUIN_EYE_JUMP = 0.4;
+const RUIN_OFF_W = 6;
+const RUIN_OFF_V = 4;
+const RUIN_OFF_ACC = 20;
+const RUIN_RISES = [0.6, 0.35, 0.15, 0];
+const RUIN_RISE_W = 4;
+const RUIN_RISE_V = 1.2;
+const RUIN_RISE_ACC = 5;
+const ruinCam = {
+  rise: 1, riseV: 0, riseGoal: 1,
+  eye: [0, 0, 0], want: [0, 0, 0], off: [0, 0, 0], offV: [0, 0, 0], eyeLive: false,
+  len: 0, lenV: 0, full: 0, ready: false, clamped: false, yaw: 0, yawV: 0, goal: 0 };
 // Eased pose changes are also speed-capped so a far target cannot swoop the eye.
 const CAM_RATE_BOOM = 3.0;
 const CAM_RATE_EYE = 1.5;
 const CAM_RATE_SLIDE = 1.5;
 let ruinContact = false;
 let ruinStall = 0;
-const camSm = { ready: false, boom: 6, eye: 1.35, slide: 0, ground: 0, feet: 0 };
+const CAM_W = 10;
+const CAM_ACC = 9;
+const camSm = { ready: false, boom: 6, eye: 1.35, slide: 0, boomV: 0, eyeV: 0, slideV: 0, ground: 0, feet: 0 };
 let camStepDt = 0;
 let camPitch = 0;
 
@@ -1287,10 +1314,15 @@ function chase(cur, goal, dt, tau) {
   return cur + (goal - cur) * (1 - Math.exp(-dt / tau));
 }
 
-function chaseLim(cur, goal, dt, tau, rate) {
-  const next = chase(cur, goal, dt, tau);
-  const lim = rate * dt;
-  return Math.max(cur - lim, Math.min(cur + lim, next));
+// One step of a critically damped spring toward goal. |v| <= vmax, |dv/dt| <= amax. Returns [x, v].
+function springLim(x, v, goal, dt, w, vmax, amax) {
+  let a = w * w * (goal - x) - 2 * w * v;
+  if (a > amax) a = amax;
+  else if (a < -amax) a = -amax;
+  let nv = v + a * dt;
+  if (nv > vmax) nv = vmax;
+  else if (nv < -vmax) nv = -vmax;
+  return [x + nv * dt, nv];
 }
 
 function solveCamera() {
@@ -1415,10 +1447,19 @@ function solveCamera() {
     camSm.boom = useBoom;
     camSm.eye = useEye;
     camSm.slide = useSlide;
+    camSm.boomV = camSm.eyeV = camSm.slideV = 0;
   } else if (dt > 0) {
-    camSm.boom = chaseLim(camSm.boom, useBoom, dt, 0.16, CAM_RATE_BOOM);
-    camSm.eye = chaseLim(camSm.eye, useEye, dt, 0.16, CAM_RATE_EYE);
-    camSm.slide = chaseLim(camSm.slide, useSlide, dt, 0.16, CAM_RATE_SLIDE);
+    // Critically damped, speed- and acceleration-capped: a pose change starts and ends without
+    // a velocity step, so the eye never kicks (the old first-order chase jumped to full speed).
+    let sp = springLim(camSm.boom, camSm.boomV, useBoom, dt, CAM_W, CAM_RATE_BOOM, CAM_ACC);
+    camSm.boom = sp[0];
+    camSm.boomV = sp[1];
+    sp = springLim(camSm.eye, camSm.eyeV, useEye, dt, CAM_W, CAM_RATE_EYE, CAM_ACC);
+    camSm.eye = sp[0];
+    camSm.eyeV = sp[1];
+    sp = springLim(camSm.slide, camSm.slideV, useSlide, dt, CAM_W, CAM_RATE_SLIDE, CAM_ACC);
+    camSm.slide = sp[0];
+    camSm.slideV = sp[1];
   }
   eyeBuf[0] = state.x - fwdBuf[0] * camSm.boom + rightBuf[0] * camSm.slide;
   eyeBuf[2] = state.z - fwdBuf[2] * camSm.boom + rightBuf[2] * camSm.slide;
@@ -1479,12 +1520,16 @@ function rotXZ(x, z, deg) {
 function ruinBoom(dt, snap) {
   const hy = camSm.feet + RUIN_HEAD;
   const vx0 = eyeBuf[0] - state.x;
-  const vy = eyeBuf[1] - hy;
+  const vyFull = eyeBuf[1] - hy;
   const vz0 = eyeBuf[2] - state.z;
-  const full = Math.hypot(vx0, vy, vz0);
-  if (!(full > 1e-4)) return;
+  const full0 = Math.hypot(vx0, vyFull, vz0);
+  if (!(full0 > 1e-4)) return;
   const fresh = !ruinCam.ready || snap;
-  const near = !!ruinLayer && ruinLayer.near(state.x, state.z, full + 6);
+  const near = !!ruinLayer && ruinLayer.near(state.x, state.z, full0 + 6);
+  // Rise: share of the chase eye's height over Bolt's head that the line keeps. Under a lintel
+  // or a hull deck a lower, flatter line has room where the high one hits the ceiling.
+  let vy = vyFull * ruinCam.rise;
+  let full = Math.hypot(vx0, vy, vz0);
   // Swing goal: straight back unless it is walled in; then the side with the most room.
   let goal = 0;
   if (near) {
@@ -1510,14 +1555,57 @@ function ruinBoom(dt, snap) {
   }
   if (fresh) {
     ruinCam.yaw = goal;
+    ruinCam.yawV = 0;
   } else if (dt > 0) {
-    ruinCam.yaw = chaseLim(ruinCam.yaw, goal, dt, 0.3, RUIN_SWING_RATE);
+    const sw = springLim(ruinCam.yaw, ruinCam.yawV, goal, dt, RUIN_SWING_W, RUIN_SWING_RATE, RUIN_SWING_ACC);
+    ruinCam.yaw = sw[0];
+    ruinCam.yawV = sw[1];
   }
   ruinCam.goal = goal;
-  if (Math.abs(ruinCam.yaw) < 0.05 && goal === 0) ruinCam.yaw = 0;
+  if (Math.abs(ruinCam.yaw) < 0.05 && Math.abs(ruinCam.yawV) < 0.5 && goal === 0) {
+    ruinCam.yaw = 0;
+    ruinCam.yawV = 0;
+  }
   const r = rotXZ(vx0, vz0, ruinCam.yaw);
   const vx = r[0];
   const vz = r[1];
+  let riseGoal = 1;
+  if (near) {
+    const comfy = Math.min(full0, MIN_BOOM + 0.1);
+    const scoreRise = (k) => {
+      const y = vyFull * k;
+      const f = Math.hypot(vx0, y, vz0);
+      return Math.min(ruinAllow(state.x, hy, state.z, vx, y, vz, f), comfy) + k * 0.4;
+    };
+    let best = 1;
+    let bestS = scoreRise(1);
+    if (bestS < comfy + 0.4 - 1e-3) {
+      for (const k of RUIN_RISES) {
+        const v = scoreRise(k);
+        if (v > bestS) {
+          bestS = v;
+          best = k;
+        }
+      }
+    }
+    const keep = fresh ? -1e9 : scoreRise(ruinCam.riseGoal);
+    riseGoal = bestS > keep + 0.25 ? best : ruinCam.riseGoal;
+  }
+  ruinCam.riseGoal = riseGoal;
+  if (fresh) {
+    ruinCam.rise = riseGoal;
+    ruinCam.riseV = 0;
+  } else if (dt > 0) {
+    const sr = springLim(ruinCam.rise, ruinCam.riseV, riseGoal, dt, RUIN_RISE_W, RUIN_RISE_V, RUIN_RISE_ACC);
+    ruinCam.rise = Math.max(0, Math.min(1, sr[0]));
+    ruinCam.riseV = sr[1];
+  }
+  if (!near && Math.abs(ruinCam.rise - 1) < 1e-3) {
+    ruinCam.rise = 1;
+    ruinCam.riseV = 0;
+  }
+  vy = vyFull * ruinCam.rise;
+  full = Math.hypot(vx0, vy, vz0);
   let allow = full;
   let now = full;
   if (near) {
@@ -1540,24 +1628,159 @@ function ruinBoom(dt, snap) {
   const target = Math.max(Math.min(RUIN_HARD_MIN, full), allow);
   if (fresh) {
     ruinCam.len = target;
+    ruinCam.lenV = 0;
   } else if (dt > 0) {
     const shrink = target < ruinCam.len;
-    // If the eye is already about to touch a face (a turn swept it in), shrink twice as fast.
+    // If the eye is already about to touch a face (a turn swept it in), shrink twice as fast,
+    // still with a capped acceleration so the eye does not kick.
     const urgent = shrink && ruinCam.len > Math.max(Math.min(RUIN_HARD_MIN, full), now) + 0.25;
-    ruinCam.len = chaseLim(ruinCam.len, target, dt, shrink ? 0.12 : 0.45, shrink ? RUIN_IN_RATE * (urgent ? 2 : 1) : RUIN_OUT_RATE);
+    const sp = springLim(
+      ruinCam.len, ruinCam.lenV, target, dt,
+      shrink ? RUIN_LEN_W_IN : RUIN_LEN_W_OUT,
+      shrink ? RUIN_IN_RATE * (urgent ? 2 : 1) : RUIN_OUT_RATE,
+      urgent ? RUIN_LEN_ACC_URGENT : RUIN_LEN_ACC,
+    );
+    ruinCam.len = sp[0];
+    ruinCam.lenV = sp[1];
   }
   ruinCam.ready = true;
-  if (ruinCam.len > full - 1e-3) ruinCam.len = full;
-  ruinCam.clamped = ruinCam.len < full - 0.01;
+  if (ruinCam.len > full - 1e-3) {
+    // On the free chase the spring rides the free boom, velocity included, so a later ease-in
+    // starts from the boom's own motion instead of from rest.
+    ruinCam.lenV = dt > 0 && ruinCam.full > 0 ? Math.max(-8, Math.min(8, (full - ruinCam.full) / dt)) : 0;
+    ruinCam.len = full;
+  }
+  ruinCam.full = full;
+  ruinCam.clamped = ruinCam.len < full - 0.01 || ruinCam.rise < 0.99;
   const k = ruinCam.len / full;
   eyeBuf[0] = state.x + vx * k;
   eyeBuf[1] = hy + vy * k;
   eyeBuf[2] = state.z + vz * k;
-  if (ruinCam.yaw !== 0) {
-    const f = rotXZ(fwdBuf[0], fwdBuf[2], ruinCam.yaw);
+  let turn = ruinCam.yaw;
+  // Eye follower (ruins only). Off the ruins the eye is the chase eye, unchanged.
+  // Near a ruin the eye is a small sphere that cannot enter a face: it moves from where it was
+  // toward the chase eye in short substeps and slides along any face it meets (RUIN_EYE_SAFE from
+  // it, so the 0.35 m near plane never opens stone or hull). A chase eye that jumps further than
+  // RUIN_EYE_JUMP in one frame keeps the excess as an offset that a capped spring takes back, so a
+  // re-solved pose glides instead of popping. In free space the offset is zero and the eye is rigid.
+  const dsx = eyeBuf[0];
+  const dsy = eyeBuf[1];
+  const dsz = eyeBuf[2];
+  const live = near && ruinCam.eyeLive && !fresh && dt > 0;
+  if (!live) {
+    ruinCam.off[0] = ruinCam.off[1] = ruinCam.off[2] = 0;
+    ruinCam.offV[0] = ruinCam.offV[1] = ruinCam.offV[2] = 0;
+  } else {
+    const jx = dsx - ruinCam.want[0];
+    const jy = dsy - ruinCam.want[1];
+    const jz = dsz - ruinCam.want[2];
+    const jl = Math.hypot(jx, jy, jz);
+    if (jl > RUIN_EYE_JUMP) {
+      const ex = 1 - RUIN_EYE_JUMP / jl;
+      ruinCam.off[0] -= jx * ex;
+      ruinCam.off[1] -= jy * ex;
+      ruinCam.off[2] -= jz * ex;
+    }
+    for (let i = 0; i < 3; i++) {
+      const sp = springLim(ruinCam.off[i], ruinCam.offV[i], 0, dt, RUIN_OFF_W, RUIN_OFF_V, RUIN_OFF_ACC);
+      ruinCam.off[i] = sp[0];
+      ruinCam.offV[i] = sp[1];
+    }
+    let px = ruinCam.eye[0];
+    let py = ruinCam.eye[1];
+    let pz = ruinCam.eye[2];
+    const tx = dsx + ruinCam.off[0];
+    const ty = dsy + ruinCam.off[1];
+    const tz = dsz + ruinCam.off[2];
+    const L = Math.hypot(tx - px, ty - py, tz - pz);
+    const n = Math.max(1, Math.ceil(L / RUIN_EYE_SUB));
+    let gx = 0;
+    let gy = 0;
+    let gz = 0;
+    for (let i = 1; i <= n; i++) {
+      // Aim each substep at the remaining target so a slide keeps heading for it.
+      const rem = n - i + 1;
+      px += (tx - px) / rem;
+      py += (ty - py) / rem;
+      pz += (tz - pz) / rem;
+      // Hard core inside the substeps: never closer than RUIN_EYE_SAFE to a face.
+      const c = ruinLayer.clearance(px, py, pz);
+      if (c < RUIN_EYE_SAFE) {
+        const g = ruinLayer.clearGrad(px, py, pz);
+        if (g) {
+          px += g[0] * (RUIN_EYE_SAFE - c);
+          py += g[1] * (RUIN_EYE_SAFE - c);
+          pz += g[2] * (RUIN_EYE_SAFE - c);
+          gx = g[0];
+          gy = g[1];
+          gz = g[2];
+        }
+      }
+    }
+    {
+      // Soft band once per frame (C1 in the clearance): the eye eases off a face it nears
+      // instead of hitting the hard core, so the slide has no kink.
+      const c = ruinLayer.clearance(px, py, pz);
+      const s1 = RUIN_EYE_SAFE + RUIN_EYE_SOFT;
+      if (c < s1) {
+        const g = ruinLayer.clearGrad(px, py, pz);
+        if (g) {
+          const k = ((s1 - c) * (s1 - c)) / (4 * RUIN_EYE_SOFT);
+          px += g[0] * k;
+          py += g[1] * k;
+          pz += g[2] * k;
+          gx = g[0];
+          gy = g[1];
+          gz = g[2];
+        }
+      }
+    }
+    const floorY = (useRelief ? terrain.heightAt(px, pz) : 0) + RUIN_EYE_FLOOR;
+    if (py < floorY) py = floorY;
+    // What the faces took off the target stays in the offset (no velocity kept into the face).
+    const nox = px - dsx;
+    const noy = py - dsy;
+    const noz = pz - dsz;
+    if (gx || gy || gz) {
+      // Touching a face: drop the offset velocity that points into it (inelastic), keep the slide.
+      const vin = ruinCam.offV[0] * gx + ruinCam.offV[1] * gy + ruinCam.offV[2] * gz;
+      if (vin < 0) {
+        ruinCam.offV[0] -= vin * gx;
+        ruinCam.offV[1] -= vin * gy;
+        ruinCam.offV[2] -= vin * gz;
+      }
+    }
+    ruinCam.off[0] = nox;
+    ruinCam.off[1] = noy;
+    ruinCam.off[2] = noz;
+    eyeBuf[0] = px;
+    eyeBuf[1] = py;
+    eyeBuf[2] = pz;
+    // Keep looking at Bolt: turn the rig by the angle the follower moved the eye round him.
+    const hx0 = dsx - state.x;
+    const hz0 = dsz - state.z;
+    const hx1 = px - state.x;
+    const hz1 = pz - state.z;
+    const l0 = Math.hypot(hx0, hz0);
+    const l1 = Math.hypot(hx1, hz1);
+    if (l0 > 1e-4 && l1 > 1e-4) {
+      const c = (hx0 * hx1 + hz0 * hz1) / (l0 * l1);
+      const sn = (hz0 * hx1 - hx0 * hz1) / (l0 * l1);
+      turn += Math.atan2(sn, c) * 180 / Math.PI;
+    }
+  }
+  ruinCam.eyeLive = near;
+  ruinCam.want[0] = dsx;
+  ruinCam.want[1] = dsy;
+  ruinCam.want[2] = dsz;
+  ruinCam.eye[0] = eyeBuf[0];
+  ruinCam.eye[1] = eyeBuf[1];
+  ruinCam.eye[2] = eyeBuf[2];
+  if (turn !== 0) {
+    const f = rotXZ(fwdBuf[0], fwdBuf[2], turn);
     fwdBuf[0] = f[0];
     fwdBuf[2] = f[1];
-    const rr = rotXZ(rightBuf[0], rightBuf[2], ruinCam.yaw);
+    const rr = rotXZ(rightBuf[0], rightBuf[2], turn);
     rightBuf[0] = rr[0];
     rightBuf[2] = rr[1];
   }
@@ -2065,7 +2288,8 @@ function render(mode) {
 
 let skyScreenCache = 800;
 
-function tick(dt) {
+// opt.draw === false (debug walks only): solve body and camera, skip the GL draw.
+function tick(dt, opt) {
   const t0 = performance.now();
   camStepDt = dt > 0 ? dt : 0;
   const fwdIn = Math.abs(state.forward) < 0.04 ? 0 : state.forward;
@@ -2120,7 +2344,8 @@ function tick(dt) {
   } else {
     state.pathTrigger = false;
   }
-  render(0);
+  if (opt && opt.draw === false) solveCamera();
+  else render(0);
   lastWork = Math.max(0.05, performance.now() - t0);
   frameMs[frameN % 300] = lastWork;
   frameN++;
