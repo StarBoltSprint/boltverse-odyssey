@@ -76,8 +76,8 @@ export function createTerrain(gl, env) {
   let skirtFog = null;
   const info = { tris: 0, cards: 0, area: areaM2(), minH: 0, maxH: 0, maxSlope: 0 };
   const look = {
-    fogDensity: 0.02,
-    fogCap: 0.6,
+    fogDensity: 0.0035,
+    fogCap: 0.16,
     gradeMix: 0.28,
     saturation: 1.06,
     bloomGain: 0.08,
@@ -139,8 +139,9 @@ void main() {
   }
   float rho = length(vUv) * uTile;
   float ft = smoothstep(uFogNear, uFogFar, rho);
-  c = mix(c, uFog, ft * 0.40);
+  c = mix(c, uFog, ft * 0.18);
   float a = 1.0 - smoothstep(uFade0, uFade1, rho);
+  if (a < 0.02) discard;
   if (uMode == 1) o = vec4(uId, 1.0);
   else o = vec4(c, a);
 }`);
@@ -630,8 +631,8 @@ void main() {
       gl.uniform3f(gLoc.id, id[0], id[1], id[2]);
       const fog = skirtFog || (post && post.fog) || [0.5, 0.5, 0.5];
       gl.uniform3f(gLoc.fog, fog[0], fog[1], fog[2]);
-      gl.uniform1f(gLoc.fogNear, 200);
-      gl.uniform1f(gLoc.fogFar, 420);
+      gl.uniform1f(gLoc.fogNear, 260);
+      gl.uniform1f(gLoc.fogFar, 470);
       gl.uniform1f(gLoc.fade0, 300);
       gl.uniform1f(gLoc.fade1, 460);
       gl.uniform1f(gLoc.tile, TILE);

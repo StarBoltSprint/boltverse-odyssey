@@ -196,9 +196,11 @@ export function maxRadius() {
 }
 
 // Visual skirt only. The walked relief stays in macroAt (the 3 m cap).
-// Outside the rim the land rises so a high camera meets the painted mesas.
+// 28 m by 480 m covers the dark painted foreground the wide camera
+// (eye y = 18) sees under the land. The sun-heading mesa tops sit
+// under this rise. Heading 90 mesas still clear it.
 export const SKIRT_FAR = 480;
-export const SKIRT_LIFT = 42;
+export const SKIRT_LIFT = 28;
 
 export function skirtLift(x, z) {
   const rho = Math.hypot(x, z);

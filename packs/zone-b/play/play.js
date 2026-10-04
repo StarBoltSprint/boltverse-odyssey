@@ -337,6 +337,8 @@ void main() {
   } else if (uKey == 3) {
     float lum = dot(c.rgb, vec3(0.299, 0.587, 0.114));
     if (lum < 0.07) discard;
+  } else if (uKey == 4) {
+    if (c.a < 0.04) discard;
   }
   if (uMode == 1) o = vec4(uId, 1.0);
   else if (uKey == 1 || uKey == 3) o = vec4(uPost > 0.5 ? grade(c.rgb) : c.rgb, uAlpha);
@@ -647,7 +649,9 @@ let heroQuad = { x: 0, y: 0, w: 0, h: 0 };
 let magNow = 0.4;
 let groundMagNow = 0;
 let butteMagNow = 0;
+let planetMagNow = 0;
 const butteCards = [];
+let planetCard = null;
 let nearestM = 4;
 let camRightNow = [1, 0, 0];
 let camBoom = BOOM;
@@ -1760,14 +1764,33 @@ function drawCard(mode, tex, key, cx, cy, cz, y0, w, h, idIndex, alpha) {
   gl.uniform1i(cardLoc.tex, 0);
   // Hero is a card. Depth against a hull that bulges past its footprint
   // splits the id mask into two blobs. The camera keeps the eye behind him.
+  // Key 4 is an alpha cutout (the ringed planet): blend, test depth, do not write it.
   if (key === 1) gl.disable(gl.DEPTH_TEST);
   else gl.enable(gl.DEPTH_TEST);
-  gl.depthMask(key !== 1);
-  gl.disable(gl.BLEND);
+  gl.depthMask(key !== 1 && key !== 4);
+  if (key === 4) {
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+  } else {
+    gl.disable(gl.BLEND);
+  }
   gl.drawArrays(gl.TRIANGLES, 0, 6);
   drawCalls++;
   gl.enable(gl.DEPTH_TEST);
   gl.depthMask(true);
+  gl.disable(gl.BLEND);
+}
+
+function drawPlanet(mode, eye) {
+  if (!planetCard) return;
+  const p = planetCard;
+  const az = p.headingDeg * Math.PI / 180;
+  const el = p.elevationDeg * Math.PI / 180;
+  const c = Math.cos(el);
+  const cx = eye[0] + Math.sin(az) * c * p.distanceM;
+  const cy = eye[1] + Math.sin(el) * p.distanceM - p.worldH * 0.5;
+  const cz = eye[2] + Math.cos(az) * c * p.distanceM;
+  drawCard(mode, p.tex, 4, cx, cy, cz, 0, p.worldW, p.worldH, labelOf("planet"), 1);
 }
 
 function updateHeroQuad(eye) {
@@ -1822,6 +1845,10 @@ function measureMag(eye) {
     const m = (FOCAL * b.h) / (d * b.srcH);
     if (m > butteMagNow) butteMagNow = m;
   }
+  planetMagNow = 0;
+  if (planetCard) {
+    planetMagNow = (FOCAL * planetCard.worldH) / (planetCard.distanceM * planetCard.srcH);
+  }
   nearestM = near;
   const groundD = Math.max(0.4, eye[1] / Math.tan(VFOV / 2));
   const groundMag = useRelief
@@ -1862,7 +1889,7 @@ function measureMag(eye) {
   }
   groundMagNow = groundMag;
   magNow = Math.max(
-    groundMag, skyMagW, skyMagH, boltMag, objectMag, gateMag, butteMagNow,
+    groundMag, skyMagW, skyMagH, boltMag, objectMag, gateMag, butteMagNow, planetMagNow,
     skyMagParts.upper, skyMagParts.high, skyMagParts.cap,
     skyMagParts.stars, skyMagParts.dust, skyMagParts.nebula,
   );
@@ -1916,6 +1943,7 @@ function render(mode) {
   upBuf[0] = savedUp[0];
   upBuf[1] = savedUp[1];
   upBuf[2] = savedUp[2];
+  drawPlanet(mode, eye);
   if (showGate && uploadVideo(gateVideo, gateTex, "gate")) {
     const g = gatePoint();
     drawCard(mode, gateTex, 3, g.x, 0, g.z, 0, sized.gw, sized.gh, labelOf("gate:" + g.gate.id), 1);
@@ -2099,6 +2127,7 @@ function snapshot() {
       skyDust: skyMagParts.dust,
       skyNebula: skyMagParts.nebula,
       butte: butteMagNow,
+      planet: planetMagNow,
     },
     state: state.mode,
     heroCount,
@@ -2589,6 +2618,29 @@ async function boot() {
       }
     } catch (err) {
       console.warn("buttes", err);
+    }
+    try {
+      const planetRes = await fetch(absUrl(PACK + "/src/sky/planet.json"));
+      if (planetRes.ok) {
+        const man = await planetRes.json();
+        const img = await loadImage(absUrl(PACK + "/src/sky/" + man.file));
+        const dist = man.distanceM || 380;
+        const cap = man.mag || 0.94;
+        const worldH = cap * img.height * dist / FOCAL;
+        planetCard = {
+          tex: makeStill(img, "planet"),
+          srcW: img.width,
+          srcH: img.height,
+          headingDeg: man.headingDeg,
+          elevationDeg: man.elevationDeg,
+          distanceM: dist,
+          worldH,
+          worldW: worldH * (img.width / img.height),
+        };
+        releaseImages([img]);
+      }
+    } catch (err) {
+      console.warn("planet", err);
     }
     const upperImgs = await loadBand(skyManifest, "upper");
     const highImgs = await loadBand(skyManifest, "high");
