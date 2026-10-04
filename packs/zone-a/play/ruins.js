@@ -317,12 +317,27 @@ function packSkin(gl, img, groups, keep, alpha) {
   gl.bindTexture(gl.TEXTURE_2D, tex);
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
   gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
+  // Only the gate cut reads alpha. Other skins store RGB8.
+  const rgb = !alpha;
+  if (rgb) {
+    const px = ctx.getImageData(0, 0, w, h).data;
+    const buf = new Uint8Array(w * h * 3);
+    for (let i = 0, j = 0; i < px.length; i += 4, j += 3) {
+      buf[j] = px[i];
+      buf[j + 1] = px[i + 1];
+      buf[j + 2] = px[i + 2];
+    }
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB8, w, h, 0, gl.RGB, gl.UNSIGNED_BYTE, buf);
+  } else {
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
+  }
   gl.generateMipmap(gl.TEXTURE_2D);
+  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 4);
   const find = (x) => {
     for (const r of rects) if (!r.keep && x >= r.core[0] - 0.5 && x <= r.core[1] + 0.5) return r;
     for (const r of rects) if (r.keep && x >= r.sx && x <= r.sx + r.sw) return r;
@@ -332,6 +347,7 @@ function packSkin(gl, img, groups, keep, alpha) {
     tex,
     w,
     h,
+    bpp: rgb ? 3 : 4,
     kept: rects.filter((q) => q.keep),
     keptMean,
     remap(u, v) {
@@ -539,7 +555,7 @@ export async function mountRuins(gl, env) {
       texSize.push([img.width, img.height]);
       const keep = close && sk === 0 ? [[Math.round(obj.atlasSplitU * img.width), 0, img.width, img.height]] : [];
       const packed = packSkin(gl, img, groups.filter((gr) => gr.skin === sk), keep, alphaImg && sk === 0 ? alphaImg : null);
-      env.trackTex("ruin:" + obj.id + ":" + sk, Math.ceil(packed.w * packed.h * 4 * 4 / 3));
+      env.trackTex("ruin:" + obj.id + ":" + sk, Math.ceil(packed.w * packed.h * packed.bpp * 4 / 3));
       texDims.push({ id: obj.id + ":" + sk, src: [img.width, img.height], packed: [packed.w, packed.h] });
       const unit = skinTex.length;
       skinTex.push(packed.tex);

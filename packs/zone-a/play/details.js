@@ -108,6 +108,83 @@ function seatMin(groundAt, x, z, yaw, planes, halfW) {
   return min;
 }
 
+// Copy each variant rect 1:1 onto a tighter sheet. No resample. Empty atlas padding is not uploaded.
+function repackAtlas(img, variants) {
+  const W = img.width;
+  const H = img.height;
+  if (!W || !H || !variants.length) return { img, variants };
+  const rects = [];
+  for (let i = 0; i < variants.length; i++) {
+    const v = variants[i];
+    const x = Math.round(v.u0 * W);
+    const y = Math.round((1 - v.v1) * H);
+    const w = v.rectW || Math.round((v.u1 - v.u0) * W);
+    const h = v.rectH || Math.round((v.v1 - v.v0) * H);
+    if (w < 1 || h < 1 || x < 0 || y < 0 || x + w > W || y + h > H) return { img, variants };
+    rects.push({ x, y, w, h });
+  }
+  const gutter = 2;
+  let maxRow = 0;
+  for (let i = 0; i < rects.length; i++) if (rects[i].w > maxRow) maxRow = rects[i].w;
+  const packAt = (rowMax) => {
+    let x = 0;
+    let y = 0;
+    let rh = 0;
+    let uw = 0;
+    const at = [];
+    for (let i = 0; i < rects.length; i++) {
+      const r = rects[i];
+      if (x > 0 && x + r.w > rowMax) {
+        y += rh + gutter;
+        x = 0;
+        rh = 0;
+      }
+      at.push({ dx: x, dy: y });
+      x += r.w + gutter;
+      if (x - gutter > uw) uw = x - gutter;
+      if (r.h > rh) rh = r.h;
+    }
+    return { at, w: Math.max(1, uw), h: Math.max(1, y + rh) };
+  };
+  let best = packAt(Math.min(2048, Math.max(maxRow, 1024)));
+  let bestArea = best.w * best.h;
+  for (let rowMax = maxRow; rowMax <= 1400; rowMax += 16) {
+    const trial = packAt(rowMax);
+    const area = trial.w * trial.h;
+    if (area < bestArea) {
+      best = trial;
+      bestArea = area;
+    }
+  }
+  const place = best.at;
+  const cw = best.w;
+  const ch = best.h;
+  if (cw * ch >= W * H * 0.92) return { img, variants };
+  const c = document.createElement("canvas");
+  c.width = cw;
+  c.height = ch;
+  const g = c.getContext("2d");
+  g.imageSmoothingEnabled = false;
+  g.clearRect(0, 0, cw, ch);
+  for (let i = 0; i < rects.length; i++) {
+    const r = rects[i];
+    const p = place[i];
+    g.drawImage(img, r.x, r.y, r.w, r.h, p.dx, p.dy, r.w, r.h);
+  }
+  const next = variants.map((v, i) => {
+    const r = rects[i];
+    const p = place[i];
+    return {
+      ...v,
+      u0: p.dx / cw,
+      u1: (p.dx + r.w) / cw,
+      v1: 1 - p.dy / ch,
+      v0: 1 - (p.dy + r.h) / ch,
+    };
+  });
+  return { img: c, variants: next };
+}
+
 // The manifests store v with the image's top row at v = 1, so every atlas is
 // uploaded flipped. The unpack flags are shared GL state that other layers
 // change between awaits: set them for this upload and put them back.
@@ -131,10 +208,13 @@ export async function mountDetails(gl, env) {
   } catch (e) {
     return empty();
   }
-  const variants = manifest.variants || [];
+  let variants = manifest.variants || [];
   const instances = manifest.instances || [];
   if (!variants.length || !instances.length || !manifest.atlas) return empty();
-  const img = await env.loadImage(env.absUrl(manifest.atlas));
+  let img = await env.loadImage(env.absUrl(manifest.atlas));
+  const packed = repackAtlas(img, variants);
+  img = packed.img;
+  variants = packed.variants;
   const tex = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, tex);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);

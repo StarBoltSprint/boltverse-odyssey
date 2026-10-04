@@ -185,57 +185,87 @@ layout(location=0) in vec2 aCorner;
 layout(location=1) in vec4 aTile;
 layout(location=2) in vec2 aPhase;
 layout(location=3) in vec4 aMeteor;
+layout(location=4) in float aLayer;
 uniform mat4 uVP;
 uniform vec3 uEye;
-uniform float uAzBias;
+uniform float uBias0;
+uniform float uBias1;
+uniform float uBias2;
 uniform float uRadius;
 uniform float uTime;
 uniform float uScroll;
-uniform float uMeteor;
 uniform vec2 uMetDuty;
 out vec2 vUv;
 flat out vec2 vTile;
 flat out vec4 vMet;
-// Meteor tiles (uMeteor = 1): each sparse tile shows the whole frame once (no drift, no wrap), so a streak never
+flat out float vLayer;
+// Stars, dust, and the meteor nebula are one instanced draw. aLayer picks the loop.
+// Layer 2 is the meteor set: each sparse tile shows the whole frame once (no drift, no wrap), so a streak never
 // jumps at a tile edge. aMeteor = window centre (frame UV), period s, time offset s. The tile is on screen
 // for part of its own period with a soft fade in and out: a timing offset per tile, never a new pixel.
 void main() {
-  float az = aTile.x + (aCorner.x - 0.5) * aTile.z + uAzBias;
+  float bias = uBias0;
+  if (aLayer > 1.5) bias = uBias2;
+  else if (aLayer > 0.5) bias = uBias1;
+  float az = aTile.x + (aCorner.x - 0.5) * aTile.z + bias;
   float el = aTile.y + (aCorner.y - 0.5) * aTile.w;
   float c = cos(el);
   vec3 p = vec3(sin(az) * c, sin(el), cos(az) * c) * uRadius + uEye;
   gl_Position = uVP * vec4(p, 1.0);
-  vec2 drift = vec2(aPhase.x + aPhase.y * uTime, aPhase.y * uTime * 0.15);
-  vUv = aCorner + drift * uScroll;
+  vLayer = aLayer;
   vTile = aTile.xy;
-  vMet = vec4(0.0);
-  if (uMeteor > 0.5) {
+  if (aLayer > 1.5) {
     float ph = mod(uTime + aMeteor.w, aMeteor.z);
     float on = uMetDuty.x * aMeteor.z;
     float env = smoothstep(0.0, uMetDuty.y, ph) * (1.0 - smoothstep(on - uMetDuty.y, on, ph));
     vUv = aCorner;
     vMet = vec4(aMeteor.xy, env, 1.0);
+  } else {
+    vec2 drift = vec2(aPhase.x + aPhase.y * uTime, aPhase.y * uTime * 0.15);
+    vUv = aCorner + drift * uScroll;
+    vMet = vec4(0.0);
   }
 }`, `#version 300 es
 precision highp float;
-uniform sampler2D uTex;
-uniform float uGain;
-uniform float uKey;
+uniform sampler2D uTex0;
+uniform sampler2D uTex1;
+uniform sampler2D uTex2;
+uniform float uGain0;
+uniform float uGain1;
+uniform float uGain2;
+uniform float uKey0;
+uniform float uKey1;
+uniform float uKey2;
 uniform vec3 uMetWin;
 in vec2 vUv;
 flat in vec2 vTile;
+flat in float vLayer;
 flat in vec4 vMet;
 out vec4 o;
 void main() {
-  vec3 s = texture(uTex, fract(vUv)).rgb;
+  float gain = uGain0;
+  float keyU = uKey0;
+  vec3 s;
+  if (vLayer > 1.5) {
+    gain = uGain2;
+    keyU = uKey2;
+    s = texture(uTex2, fract(vUv)).rgb;
+  } else if (vLayer > 0.5) {
+    gain = uGain1;
+    keyU = uKey1;
+    s = texture(uTex1, fract(vUv)).rgb;
+  } else {
+    s = texture(uTex0, fract(vUv)).rgb;
+  }
+  if (gain <= 0.0) discard;
   float lum = dot(s, vec3(0.299, 0.587, 0.114));
-  float key = smoothstep(uKey, uKey + 0.06, lum);
+  float key = smoothstep(keyU, keyU + 0.06, lum);
   if (vMet.w > 0.5) {
     // Soft elliptical alpha window held inside the frame: a streak fades in and out, it is never cut.
     float d = length((vUv - vMet.xy) / uMetWin.xy);
     key *= (1.0 - smoothstep(uMetWin.z, 1.0, d)) * vMet.z;
   }
-  o = vec4(s * uGain * key, 1.0);
+  o = vec4(s * gain * key, 1.0);
 }`);
 
 const fogProg = program(`#version 300 es
@@ -382,14 +412,21 @@ const surfLoc = {
 const skyLayerLoc = {
   vp: gl.getUniformLocation(skyLayerProg, "uVP"),
   eye: gl.getUniformLocation(skyLayerProg, "uEye"),
-  azBias: gl.getUniformLocation(skyLayerProg, "uAzBias"),
+  bias0: gl.getUniformLocation(skyLayerProg, "uBias0"),
+  bias1: gl.getUniformLocation(skyLayerProg, "uBias1"),
+  bias2: gl.getUniformLocation(skyLayerProg, "uBias2"),
   radius: gl.getUniformLocation(skyLayerProg, "uRadius"),
   time: gl.getUniformLocation(skyLayerProg, "uTime"),
   scroll: gl.getUniformLocation(skyLayerProg, "uScroll"),
-  tex: gl.getUniformLocation(skyLayerProg, "uTex"),
-  gain: gl.getUniformLocation(skyLayerProg, "uGain"),
-  key: gl.getUniformLocation(skyLayerProg, "uKey"),
-  meteor: gl.getUniformLocation(skyLayerProg, "uMeteor"),
+  tex0: gl.getUniformLocation(skyLayerProg, "uTex0"),
+  tex1: gl.getUniformLocation(skyLayerProg, "uTex1"),
+  tex2: gl.getUniformLocation(skyLayerProg, "uTex2"),
+  gain0: gl.getUniformLocation(skyLayerProg, "uGain0"),
+  gain1: gl.getUniformLocation(skyLayerProg, "uGain1"),
+  gain2: gl.getUniformLocation(skyLayerProg, "uGain2"),
+  key0: gl.getUniformLocation(skyLayerProg, "uKey0"),
+  key1: gl.getUniformLocation(skyLayerProg, "uKey1"),
+  key2: gl.getUniformLocation(skyLayerProg, "uKey2"),
   metDuty: gl.getUniformLocation(skyLayerProg, "uMetDuty"),
   metWin: gl.getUniformLocation(skyLayerProg, "uMetWin"),
 };
@@ -629,8 +666,9 @@ const SKY_TILE_AZ_N = 17;
 const SKY_TILE_EL_N = 8;
 const SKY_TILE_AZ = 360 / SKY_TILE_AZ_N;
 const SKY_TILE_EL = 11.25;
-let skyTileVao = null;
 let skyTileCount = 0;
+let skyLayerVao = null;
+let skyLayerCount = 0;
 // Meteors (nebula slot): a few sparse tiles, not the full 17 x 8 grid, so streaks never line up in a rain grid.
 // Chase view (pitch about +3 deg, vfov 48.1 deg) sees sky from the relief silhouette (about 8-10 deg up) to
 // about 27 deg up. Window centres sit in that band; tiles may hang below it, only the window is visible.
@@ -641,7 +679,6 @@ const METEOR = {
   duty: 0.32, fadeSec: 0.8, // share of each tile's own period it is on, fade in/out
   periodSec: [6, 11],
 };
-let meteorVao = null;
 let meteorCount = 0;
 const meteorInfo = [];
 let meteorShow = true; // debug hook only (QC A/B); always true in play
@@ -845,14 +882,15 @@ function makeArray(images, id, aniso) {
   const packed = [];
   for (let i = 0; i < images.length; i++) {
     const img = images[i];
-    packed.push({ w: img.width, h: img.height, data: canvasPixels(img) });
+    packed.push({ w: img.width, h: img.height, data: rgbBytes(img) });
     maxW = Math.max(maxW, img.width);
     maxH = Math.max(maxH, img.height);
   }
   const levels = Math.floor(Math.log2(Math.max(maxW, maxH))) + 1;
   const t = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D_ARRAY, t);
-  gl.texStorage3D(gl.TEXTURE_2D_ARRAY, levels, gl.RGBA8, maxW, maxH, images.length);
+  // Ground albedo is sampled as .rgb. The alpha channel was never read.
+  gl.texStorage3D(gl.TEXTURE_2D_ARRAY, levels, gl.RGB8, maxW, maxH, images.length);
   gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
   gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -864,24 +902,33 @@ function makeArray(images, id, aniso) {
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
   for (let i = 0; i < packed.length; i++) {
     const p = packed[i];
-    gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, i, p.w, p.h, 1, gl.RGBA, gl.UNSIGNED_BYTE, p.data);
+    gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, i, p.w, p.h, 1, gl.RGB, gl.UNSIGNED_BYTE, p.data);
   }
   gl.generateMipmap(gl.TEXTURE_2D_ARRAY);
-  trackTex(id, Math.ceil(maxW * maxH * 4 * images.length * 4 / 3));
+  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 4);
+  trackTex(id, Math.ceil(maxW * maxH * 3 * images.length * 4 / 3));
   return { tex: t, w: maxW, h: maxH, layers: images.length };
 }
 
-function makeStill(img, id) {
+function makeStill(img, id, rgb) {
   const t = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, t);
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+  if (rgb) {
+    const data = rgbBytes(img);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB8, img.width, img.height, 0, gl.RGB, gl.UNSIGNED_BYTE, data);
+    trackTex(id, Math.ceil(img.width * img.height * 3 * 4 / 3));
+  } else {
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+    trackTex(id, Math.ceil(img.width * img.height * 4 * 4 / 3));
+  }
   gl.generateMipmap(gl.TEXTURE_2D);
-  trackTex(id, Math.ceil(img.width * img.height * 4 * 4 / 3));
+  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 4);
   return t;
 }
 
@@ -926,6 +973,36 @@ function downscaleWidth(img, targetW) {
   g.imageSmoothingQuality = "high";
   g.drawImage(img, 0, 0, c.width, c.height);
   return c;
+}
+
+// Uniform shrink until the band's own magnification reaches cap (still under 1).
+// ceil keeps the result on the safe side of the cap after integer pixels.
+const SKY_MAG_CAP = 0.993;
+function fitBandMag(images, azDeg, el0, el1, cap) {
+  if (!images || !images.length) return images;
+  let maxW = 0;
+  let maxH = 0;
+  for (let i = 0; i < images.length; i++) {
+    maxW = Math.max(maxW, images[i].width);
+    maxH = Math.max(maxH, images[i].height);
+  }
+  const ov = seamOverlap(maxW, maxH, azDeg, el0, el1);
+  const mag = Math.max(ov.magW, ov.magH);
+  if (!(mag > 0) || mag >= cap) return images;
+  const scale = mag / cap;
+  return images.map((im) => {
+    const w = Math.max(1, Math.ceil(im.width * scale));
+    const h = Math.max(1, Math.ceil(im.height * scale));
+    if (w >= im.width && h >= im.height) return im;
+    const c = document.createElement("canvas");
+    c.width = w;
+    c.height = h;
+    const g = c.getContext("2d");
+    g.imageSmoothingEnabled = true;
+    g.imageSmoothingQuality = "high";
+    g.drawImage(im, 0, 0, w, h);
+    return c;
+  });
 }
 
 function releaseImages(list) {
@@ -1067,10 +1144,6 @@ function buildSky() {
 }
 
 function buildSkyTiles() {
-  const corners = new Float32Array([
-    0, 0, 1, 0, 1, 1,
-    0, 0, 1, 1, 0, 1,
-  ]);
   const azN = SKY_TILE_AZ_N;
   const elN = SKY_TILE_EL_N;
   const azSpan = (Math.PI * 2) / azN;
@@ -1090,8 +1163,42 @@ function buildSkyTiles() {
       inst[k++] = 0.015 + ((ia * 3 + ie * 5) % 7) * 0.004;
     }
   }
-  skyTileVao = gl.createVertexArray();
-  gl.bindVertexArray(skyTileVao);
+  buildSkyLayerBatch(inst, buildMeteorTiles(azSpan, elSpan));
+}
+
+// One STATIC buffer: two full-dome layers plus the sparse meteor layer. One draw.
+function buildSkyLayerBatch(tileInst, meteorInst) {
+  const n = skyTileCount * 2 + meteorCount;
+  const data = new Float32Array(n * 11);
+  let o = 0;
+  for (let layer = 0; layer < 2; layer++) {
+    for (let i = 0; i < skyTileCount; i++) {
+      const s = i * 6;
+      data[o++] = tileInst[s];
+      data[o++] = tileInst[s + 1];
+      data[o++] = tileInst[s + 2];
+      data[o++] = tileInst[s + 3];
+      data[o++] = tileInst[s + 4];
+      data[o++] = tileInst[s + 5];
+      data[o++] = 0;
+      data[o++] = 0;
+      data[o++] = 1;
+      data[o++] = 0;
+      data[o++] = layer;
+    }
+  }
+  for (let i = 0; i < meteorCount; i++) {
+    const s = i * 10;
+    for (let j = 0; j < 10; j++) data[o++] = meteorInst[s + j];
+    data[o++] = 2;
+  }
+  skyLayerCount = n;
+  const corners = new Float32Array([
+    0, 0, 1, 0, 1, 1,
+    0, 0, 1, 1, 0, 1,
+  ]);
+  skyLayerVao = gl.createVertexArray();
+  gl.bindVertexArray(skyLayerVao);
   const cbuf = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, cbuf);
   gl.bufferData(gl.ARRAY_BUFFER, corners, gl.STATIC_DRAW);
@@ -1099,21 +1206,27 @@ function buildSkyTiles() {
   gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 8, 0);
   const ibuf = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, ibuf);
-  gl.bufferData(gl.ARRAY_BUFFER, inst, gl.STATIC_DRAW);
+  gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+  const stride = 44;
   gl.enableVertexAttribArray(1);
-  gl.vertexAttribPointer(1, 4, gl.FLOAT, false, 24, 0);
+  gl.vertexAttribPointer(1, 4, gl.FLOAT, false, stride, 0);
   gl.vertexAttribDivisor(1, 1);
   gl.enableVertexAttribArray(2);
-  gl.vertexAttribPointer(2, 2, gl.FLOAT, false, 24, 16);
+  gl.vertexAttribPointer(2, 2, gl.FLOAT, false, stride, 16);
   gl.vertexAttribDivisor(2, 1);
+  gl.enableVertexAttribArray(3);
+  gl.vertexAttribPointer(3, 4, gl.FLOAT, false, stride, 24);
+  gl.vertexAttribDivisor(3, 1);
+  gl.enableVertexAttribArray(4);
+  gl.vertexAttribPointer(4, 1, gl.FLOAT, false, stride, 40);
+  gl.vertexAttribDivisor(4, 1);
   gl.bindVertexArray(null);
-  buildMeteorTiles(cbuf, azSpan, elSpan);
 }
 
 // Sparse, irregular meteor tiles. Same tile size as the full-dome layers (magnification unchanged), whole frame
 // per tile. Each tile carries an alpha window held inside the frame; the window centre (not the tile) is placed
 // by a seeded jittered draw in the chase-view sky band, and no two windows overlap.
-function buildMeteorTiles(cbuf, azSpan, elSpan) {
+function buildMeteorTiles(azSpan, elSpan) {
   let seed = 0x5eed1;
   const rnd = () => {
     seed = (seed * 1664525 + 1013904223) >>> 0;
@@ -1155,24 +1268,7 @@ function buildMeteorTiles(cbuf, azSpan, elSpan) {
     inst[k++] = rnd() * 40;
     meteorInfo.push({ azDeg: p.az / d2r, elDeg: p.el / d2r, periodSec: inst[k - 2], offsetSec: inst[k - 1] });
   }
-  meteorVao = gl.createVertexArray();
-  gl.bindVertexArray(meteorVao);
-  gl.bindBuffer(gl.ARRAY_BUFFER, cbuf);
-  gl.enableVertexAttribArray(0);
-  gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 8, 0);
-  const mbuf = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, mbuf);
-  gl.bufferData(gl.ARRAY_BUFFER, inst, gl.STATIC_DRAW);
-  gl.enableVertexAttribArray(1);
-  gl.vertexAttribPointer(1, 4, gl.FLOAT, false, 40, 0);
-  gl.vertexAttribDivisor(1, 1);
-  gl.enableVertexAttribArray(2);
-  gl.vertexAttribPointer(2, 2, gl.FLOAT, false, 40, 16);
-  gl.vertexAttribDivisor(2, 1);
-  gl.enableVertexAttribArray(3);
-  gl.vertexAttribPointer(3, 4, gl.FLOAT, false, 40, 24);
-  gl.vertexAttribDivisor(3, 1);
-  gl.bindVertexArray(null);
+  return inst;
 }
 
 function buildFog() {
@@ -2429,48 +2525,47 @@ function drawSky(mode, eye) {
 }
 
 function drawSkyLayers(eye, yaw) {
-  if (!skyTileVao) return;
-  const bias = [
-    yaw * 0.002,
-    yaw * 0.02 + (eye[0] + eye[2]) * 0.0004,
-    yaw * 0.012,
-  ];
+  if (!skyLayerVao || !skyVideoTex[0]) return;
+  const gain = [0, 0, 0];
+  for (let i = 0; i < 3; i++) {
+    if (i === 2 && !meteorShow) continue;
+    if (skyVideos[i] && uploadVideo(skyVideos[i], skyVideoTex[i], SKY_VIDEO_IDS[i])) gain[i] = SKY_GAIN[i];
+  }
+  if (gain[0] <= 0 && gain[1] <= 0 && gain[2] <= 0) return;
   gl.useProgram(skyLayerProg);
-  gl.bindVertexArray(skyTileVao);
+  gl.bindVertexArray(skyLayerVao);
   gl.uniformMatrix4fv(skyLayerLoc.vp, false, vpM);
   gl.uniform3f(skyLayerLoc.eye, eye[0], eye[1], eye[2]);
+  gl.uniform1f(skyLayerLoc.bias0, yaw * 0.002);
+  gl.uniform1f(skyLayerLoc.bias1, yaw * 0.02 + (eye[0] + eye[2]) * 0.0004);
+  gl.uniform1f(skyLayerLoc.bias2, yaw * 0.012);
   gl.uniform1f(skyLayerLoc.radius, 86);
   gl.uniform1f(skyLayerLoc.time, performance.now() * 0.001);
   gl.uniform1f(skyLayerLoc.scroll, 1.0);
-  gl.uniform1i(skyLayerLoc.tex, 0);
+  gl.uniform1f(skyLayerLoc.gain0, gain[0]);
+  gl.uniform1f(skyLayerLoc.gain1, gain[1]);
+  gl.uniform1f(skyLayerLoc.gain2, gain[2]);
+  gl.uniform1f(skyLayerLoc.key0, SKY_KEY[0]);
+  gl.uniform1f(skyLayerLoc.key1, SKY_KEY[1]);
+  gl.uniform1f(skyLayerLoc.key2, SKY_KEY[2]);
+  gl.uniform2f(skyLayerLoc.metDuty, METEOR.duty, METEOR.fadeSec);
+  gl.uniform3f(skyLayerLoc.metWin, METEOR.win[0], METEOR.win[1], METEOR.win[2]);
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, skyVideoTex[0]);
+  gl.uniform1i(skyLayerLoc.tex0, 0);
+  gl.activeTexture(gl.TEXTURE1);
+  gl.bindTexture(gl.TEXTURE_2D, skyVideoTex[1]);
+  gl.uniform1i(skyLayerLoc.tex1, 1);
+  gl.activeTexture(gl.TEXTURE2);
+  gl.bindTexture(gl.TEXTURE_2D, skyVideoTex[2]);
+  gl.uniform1i(skyLayerLoc.tex2, 2);
+  gl.activeTexture(gl.TEXTURE0);
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.ONE, gl.ONE);
   gl.enable(gl.DEPTH_TEST);
   gl.depthMask(false);
-  for (let i = 0; i < 3; i++) {
-    let gain = 0;
-    if (skyVideos[i] && uploadVideo(skyVideos[i], skyVideoTex[i], SKY_VIDEO_IDS[i])) gain = SKY_GAIN[i];
-    if (gain <= 0) continue;
-    gl.uniform1f(skyLayerLoc.gain, gain);
-    gl.uniform1f(skyLayerLoc.key, SKY_KEY[i]);
-    gl.uniform1f(skyLayerLoc.azBias, bias[i]);
-    gl.uniform1f(skyLayerLoc.scroll, 1.0);
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, skyVideoTex[i]);
-    if (i === 2 && meteorVao && !meteorShow) continue;
-    if (i === 2 && meteorVao) {
-      gl.uniform1f(skyLayerLoc.meteor, 1.0);
-      gl.uniform2f(skyLayerLoc.metDuty, METEOR.duty, METEOR.fadeSec);
-      gl.uniform3f(skyLayerLoc.metWin, METEOR.win[0], METEOR.win[1], METEOR.win[2]);
-      gl.bindVertexArray(meteorVao);
-      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, meteorCount);
-      gl.uniform1f(skyLayerLoc.meteor, 0.0);
-      gl.bindVertexArray(skyTileVao);
-    } else {
-      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, skyTileCount);
-    }
-    drawCalls++;
-  }
+  gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, skyLayerCount);
+  drawCalls++;
   gl.depthMask(true);
   gl.disable(gl.BLEND);
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
@@ -3436,13 +3531,16 @@ async function boot() {
     skySrcH = skyImgs[0] ? skyImgs[0].height : 912;
     for (let i = 0; i < skyImgs.length; i++) skySrcW += skyImgs[i].width;
     const horizonFog = useRelief ? sampleHorizon(skyImgs) : null;
-    const horizonFit = skyImgs.map((im) => downscaleWidth(im, 1500));
+    const horizonFit = fitBandMag(
+      skyImgs.map((im) => downscaleWidth(im, 1500)),
+      skyBand.hAz || 45, skyBand.h0, skyBand.h1, SKY_MAG_CAP,
+    );
     skyTex = makeSkyArray(horizonFit, "sky");
     releaseImages(skyImgs);
     const hold = document.createElement("canvas");
     hold.width = 2;
     hold.height = 2;
-    zenithTex = makeStill(hold, "sky-zenith");
+    zenithTex = makeStill(hold, "sky-zenith", true);
     buildSky();
     reset();
     render(0);
@@ -3520,13 +3618,16 @@ async function boot() {
       releaseImages(upperImgs);
     }
     if (highImgs) {
-      skyHigh = makeSkyArray(highImgs.map((im) => downscaleWidth(im, 930)), "sky-high");
+      skyHigh = makeSkyArray(fitBandMag(
+        highImgs.map((im) => downscaleWidth(im, 930)),
+        skyBand.kAz || 45, skyBand.k0, skyBand.k1, SKY_MAG_CAP,
+      ), "sky-high");
       releaseImages(highImgs);
     }
     const zenithImg = await loadImage(absUrl("packs/zone-a/src/sky-cap/zenith.png"));
     zenithSrc = zenithImg.width;
     const prevZ = zenithTex;
-    zenithTex = makeStill(zenithImg, "sky-zenith");
+    zenithTex = makeStill(zenithImg, "sky-zenith", true);
     if (prevZ) gl.deleteTexture(prevZ);
     releaseImages([zenithImg]);
     const loopUrls = [
