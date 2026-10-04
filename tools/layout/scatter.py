@@ -18,6 +18,7 @@ from tools.layout.generate import (
 )
 from tools.layout.geom import heading_of, hypot, polar
 from tools.layout.model import focal_px, load_asset, qnum
+from tools.layout.passages import hits_passage, passages_from_spec
 
 # Owner decision 2026-10-02, spec rail 11. Streaming cell edge when the spec
 # does not name a size. Sub-area mode ignores this length.
@@ -510,6 +511,7 @@ def apply_scatter(
 
     added: list[dict] = []
     variants: dict[str, list[str]] = {}
+    hard_passages = passages_from_spec(spec)
     scatter = spec.get("scatter") or {}
     categories = scatter.get("categories") or {}
     for cat_name in sorted(categories):
@@ -560,6 +562,8 @@ def apply_scatter(
                 dx, dz = polar(ang, rad)
                 x, z = sx0 + dx, sz0 + dz
                 radius = asset.radius_m * scale
+                if hits_passage(x, z, radius, hard_passages):
+                    continue
                 if not _in_hosts(x, z, radius, hosts):
                     continue
                 if slope_deg(x, z, zone) > max_slope + 1e-6:
