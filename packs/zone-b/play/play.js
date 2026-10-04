@@ -1907,7 +1907,7 @@ function render(mode) {
     upBuf[0] = 0;
     upBuf[1] = 1;
     upBuf[2] = 0;
-    const y = useRelief ? terrain.heightAt(b.x, b.z) : 0;
+    const y = useRelief ? terrain.heightAt(b.x, b.z) + terrain.skirtLift(b.x, b.z) : 0;
     drawCard(mode, b.tex, 3, b.x, y, b.z, b.y0 || 0, b.h * (b.srcW / b.srcH), b.h, labelOf("butte:" + i), 1);
   }
   rightBuf[0] = savedRight[0];

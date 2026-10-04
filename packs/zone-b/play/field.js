@@ -194,3 +194,18 @@ export function maxRadius() {
   for (let i = 0; i < 64; i++) m = Math.max(m, radiusAt((i / 64) * Math.PI * 2));
   return m;
 }
+
+// Visual skirt only. The walked relief stays in macroAt (the 3 m cap).
+// Outside the rim the land rises so a high camera meets the painted mesas.
+export const SKIRT_FAR = 480;
+export const SKIRT_LIFT = 20;
+
+export function skirtLift(x, z) {
+  const rho = Math.hypot(x, z);
+  const R = radiusAt(Math.atan2(x, z));
+  if (rho <= R) return 0;
+  const span = Math.max(1, SKIRT_FAR - R);
+  const t = Math.min(1, (rho - R) / span);
+  const s = t * t * (3 - 2 * t);
+  return s * SKIRT_LIFT;
+}

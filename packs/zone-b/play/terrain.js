@@ -16,6 +16,7 @@ import {
   setDepthMaps,
   maxRadius,
   areaM2,
+  skirtLift,
 } from "./field.js";
 
 const GRADE_FN = `
@@ -72,6 +73,7 @@ export function createTerrain(gl, env) {
   let srcW = 1024;
   let post = null;
   let postOn = true;
+  let skirtFog = null;
   const info = { tris: 0, cards: 0, area: areaM2(), minH: 0, maxH: 0, maxSlope: 0 };
   const look = {
     fogDensity: 0.02,
@@ -109,6 +111,10 @@ uniform sampler2DArray uAlb;
 uniform sampler2D uMask;
 uniform vec3 uId;
 uniform int uMode;
+uniform vec3 uFog;
+uniform float uFogNear;
+uniform float uFogFar;
+uniform float uTile;
 in vec2 vUv;
 in vec2 vMask;
 flat in float vFam;
@@ -129,6 +135,9 @@ void main() {
     float t = smoothstep(m - 0.1, m + 0.1, vW);
     c = mix(ca, cb, t);
   }
+  float rho = length(vUv) * uTile;
+  float ft = smoothstep(uFogNear, uFogFar, rho);
+  c = mix(c, uFog, ft);
   if (uMode == 1) o = vec4(uId, 1.0);
   else o = vec4(c, 1.0);
 }`);
@@ -246,6 +255,10 @@ void main() {
     mask: gl.getUniformLocation(groundProg, "uMask"),
     id: gl.getUniformLocation(groundProg, "uId"),
     mode: gl.getUniformLocation(groundProg, "uMode"),
+    fog: gl.getUniformLocation(groundProg, "uFog"),
+    fogNear: gl.getUniformLocation(groundProg, "uFogNear"),
+    fogFar: gl.getUniformLocation(groundProg, "uFogFar"),
+    tile: gl.getUniformLocation(groundProg, "uTile"),
   };
   const cLoc = {
     vp: gl.getUniformLocation(cardProg, "uVP"),
@@ -381,7 +394,7 @@ void main() {
           const rad = inner + (FAR - inner) * te;
           const x = Math.sin(th) * rad;
           const z = Math.cos(th) * rad;
-          let y = heightAt(x, z);
+          let y = heightAt(x, z) + skirtLift(x, z);
           if (r < 2) y -= 0.04 * (2 - r);
           if (y < minH) minH = y;
           if (y > maxH) maxH = y;
@@ -567,6 +580,8 @@ void main() {
     setPost(on) { postOn = !!on; },
     postEnabled() { return postOn; },
     setFog(rgb) { if (post) post.fog = rgb; },
+    setSkirtFog(rgb) { skirtFog = rgb; },
+    skirtLift,
     setLook(next) {
       if (!next) return;
       for (const k of Object.keys(look)) {
@@ -608,6 +623,11 @@ void main() {
       gl.uniformMatrix4fv(gLoc.vp, false, vp);
       gl.uniform1i(gLoc.mode, mode);
       gl.uniform3f(gLoc.id, id[0], id[1], id[2]);
+      const fog = skirtFog || (post && post.fog) || [0.5, 0.5, 0.5];
+      gl.uniform3f(gLoc.fog, fog[0], fog[1], fog[2]);
+      gl.uniform1f(gLoc.fogNear, 140);
+      gl.uniform1f(gLoc.fogFar, 340);
+      gl.uniform1f(gLoc.tile, TILE);
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D_ARRAY, alb.tex);
       gl.uniform1i(gLoc.alb, 0);
