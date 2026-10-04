@@ -73,3 +73,5 @@ Live playcheck (`node tools/playcheck/run --url http://127.0.0.1:8983/packs/zone
 | draw_calls | PASS | 7 |
 | perf_line | PASS | |
 | render_source | FAIL | scanned=false (this command does not pass `--source`) |
+
+Preview freeze: `python3 tools/preview/freeze.py --zone zone-b --commit f184f93 --report packs/zone-b/proof/step1c/REPORT.md --play-dir packs/zone-b/play --out previews` exited 1. The tool said `REPORT verdict is missing; freeze waits for PASS`. This file says `Verdict: IN TEST`. No preview folder was written.
