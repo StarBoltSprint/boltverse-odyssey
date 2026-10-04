@@ -36,6 +36,7 @@ Eight views, one every 45°, from one sharp still (V0) plus the previous view: [
 | Recipe | Commit | QC |
 | --- | --- | --- |
 | [hull-ship-xai-starship-hero.md](hull-ship-xai-starship-hero.md) — black faceted starship, 18° camera, etched shield emblem (hero only; the orbit failed) | `0bb54c1` (local `cli/take10d`, wreck10 install) | margins ≥ 0.041, luma rel −0.005, emblem rows by eye |
+| [zone-b-hard-loft.md](zone-b-hard-loft.md) — one elevation loft per part, caps closed, phone mag at the real approach (prompt text not stored) | STEP2SHA | chase presented mag 0.982; drawCalls 10; tex 246.2 MiB; videos 4 |
 
 Hull from stills that already passed the sheet: `python3 tools/walkaround/build.py --views <dir> --config <config.json> --out <dir>`. Read `qc/report.json`. Magnification ≤ 1. Register a passing object with `python3 tools/library/library.py add` so the next zone names `{ "library": "<id>" }` instead of recooking it ([`tools/library/README.md`](../../tools/library/README.md)).
 

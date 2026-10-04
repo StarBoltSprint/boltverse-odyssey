@@ -6,6 +6,7 @@ import { loadWorldHull } from "./hullmesh.js";
 import { createTerrain } from "./terrain.js";
 import { mountRocks } from "./rocks.js";
 import { mountMesas } from "./mesas.js";
+import { mountHard } from "./hard.js";
 
 const PACK = "packs/zone-b";
 const DEBUG = new URLSearchParams(location.search).has("debug");
@@ -712,8 +713,10 @@ let magNow = 0.4;
 let groundMagNow = 0;
 let butteMagNow = 0;
 let planetMagNow = 0;
+let hardMagNow = 0;
 const butteCards = [];
 let mesaLayer = null;
+let hardLayer = null;
 let planetCard = null;
 let planetVideo = null;
 let planetTex = null;
@@ -1305,6 +1308,7 @@ function segmentHitsObb(eye, target, o, hull) {
 }
 
 function lineBlocked(eye) {
+  if (hardLayer && hardLayer.blocks(eye)) return true;
   losA[0] = state.x;
   losA[2] = state.z;
   losB[0] = state.x;
@@ -1342,6 +1346,13 @@ function poseMetrics(eye) {
     const rm = rockLayer.mag(eye, FOCAL);
     if (rm > 1e-4) {
       const r = 1 / rm;
+      if (r < minR) minR = r;
+    }
+  }
+  if (hardLayer) {
+    const hm = hardLayer.mag(eye, FOCAL);
+    if (hm > 1e-4) {
+      const r = 1 / hm;
       if (r < minR) minR = r;
     }
   }
@@ -1654,6 +1665,16 @@ function resolveBody(nx, nz) {
     }
     if (mesaLayer && mesaLayer.push) {
       const pushed = mesaLayer.push(nx, nz);
+      if (pushed) {
+        nx = pushed[0];
+        nz = pushed[1];
+        hit = true;
+        blocked = true;
+      }
+    }
+    if (hardLayer && hardLayer.push) {
+      const feet = useRelief ? terrain.heightAt(nx, nz) : 0;
+      const pushed = hardLayer.push(nx, nz, feet, 2.05);
       if (pushed) {
         nx = pushed[0];
         nz = pushed[1];
@@ -2021,6 +2042,8 @@ function measureMag(eye) {
   }
   butteMagNow = 0;
   if (mesaLayer) butteMagNow = mesaLayer.mag(eye, FOCAL);
+  hardMagNow = 0;
+  if (hardLayer) hardMagNow = hardLayer.mag(eye, FOCAL);
   planetMagNow = 0;
   if (planetCard) {
     planetMagNow = (FOCAL * planetCard.worldH) / (planetCard.distanceM * planetCard.srcH);
@@ -2065,7 +2088,7 @@ function measureMag(eye) {
   }
   groundMagNow = groundMag;
   magNow = Math.max(
-    groundMag, skyMagW, skyMagH, boltMag, objectMag, gateMag, butteMagNow, planetMagNow,
+    groundMag, skyMagW, skyMagH, boltMag, objectMag, gateMag, butteMagNow, hardMagNow, planetMagNow,
     skyMagParts.upper, skyMagParts.high, skyMagParts.cap,
     skyMagParts.stars, skyMagParts.dust, skyMagParts.nebula,
   );
@@ -2102,6 +2125,10 @@ function render(mode) {
   if (mesaLayer) {
     mesaLayer.draw(vpM, mode);
     drawCalls += mesaLayer.draws;
+  }
+  if (hardLayer) {
+    hardLayer.draw(vpM, mode);
+    drawCalls += hardLayer.draws;
   }
   drawPlanet(mode, eye);
   if (showGate && uploadVideo(gateVideo, gateTex, "gate")) {
@@ -2217,6 +2244,7 @@ function activeVideoCount() {
   if (videoOn(gateVideo)) n++;
   for (let i = 0; i < skyVideos.length; i++) if (videoOn(skyVideos[i])) n++;
   if (videoOn(planetVideo)) n++;
+  if (hardLayer && hardLayer.videoOn()) n++;
   return n;
 }
 
@@ -2288,6 +2316,7 @@ function snapshot() {
       skyDust: skyMagParts.dust,
       skyNebula: skyMagParts.nebula,
       butte: butteMagNow,
+      hard: hardMagNow,
       planet: planetMagNow,
     },
     state: state.mode,
@@ -2790,6 +2819,22 @@ async function boot() {
       mesaLayer = null;
     }
     try {
+      hardLayer = await mountHard(gl, {
+        absUrl,
+        loadImage,
+        trackTex,
+        labelOf,
+        videoEl,
+        heightAt: (x, z) => (useRelief ? terrain.heightAt(x, z) : 0),
+        skirtLift: (x, z) => (useRelief ? terrain.skirtLift(x, z) : 0),
+        loftUrl: absUrl(PACK + "/src/hard/loft.json"),
+        root: PACK + "/src/hard/",
+      });
+    } catch (err) {
+      console.warn("hard", err);
+      hardLayer = null;
+    }
+    try {
       const planetRes = await fetch(absUrl(PACK + "/src/sky/planet.json"));
       if (planetRes.ok) {
         const man = await planetRes.json();
@@ -2953,6 +2998,7 @@ async function boot() {
       groundInfo() { return terrain.info(); },
       heightAt(x, z) { return terrain.heightAt(x, z); },
       mesaInfo() { return mesaLayer ? mesaLayer.info() : null; },
+      hardInfo() { return hardLayer ? hardLayer.info() : null; },
       planetInfo() {
         return planetCard ? {
           worldH: planetCard.worldH,

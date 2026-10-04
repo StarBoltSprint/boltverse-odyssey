@@ -483,3 +483,36 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Stop. The video budget is spent (3 of 3). Do not change the key again. Do not recook the planet. |
 | Guard | No row reads the disk for a hole. The planet-close JPEG is the check. |
 | Sources | `packs/zone-b/src/sky/planet-body.mp4`. `packs/zone-b/play/play.js` key 4. Shot `packs/zone-b/proof/step1g/planet-close.jpg`. |
+
+### 2026-10-04 — an open loft reads as stacked cards from above
+
+| | |
+| --- | --- |
+| Take | Zone B step 2. Survey drone. |
+| Defect | The first drone proof was a pile of flat plates above the ground. |
+| Root cause | Each station prism had a front, a back, and two thickness faces, and no top or bottom. A camera above the object looked into the open stations. |
+| Fix | Close every station with a top cap and a bottom cap that sample that station's pixels. Shoot the elevation face, or use the chase camera. |
+| Guard | No row rejects an open prism. The drone JPEG is the check. |
+| Sources | `packs/zone-b/src/hard/build.py` `emit_prism`. Shot `packs/zone-b/proof/step2/drone.jpg`. |
+
+### 2026-10-04 — a bedded cliff crop used as a lintel reads as a barcode
+
+| | |
+| --- | --- |
+| Take | Zone B step 2. Plaza arch span. |
+| Defect | The lintel is a thin bar of repeated horizontal beds. Up close it fills the top of the frame as stripes. |
+| Root cause | The only wide rock plate is a cliff of horizontal beds. Magnification at the soffit forces a short, thin segment, so the face is that crop. A zigzag of mirrored copies made it worse. Straightening the row did not change the skin. |
+| Fix | Stop. Two placements of the same crop. The opening stays clear. Do not spend another cook on this skin. |
+| Guard | No row grades a lintel skin. `arch-under.jpg` and `chase.jpg` are the check. |
+| Sources | `packs/zone-b/src/hard/build.py` cliff slice `y 96:430`. Shots `packs/zone-b/proof/step2/arch-under.jpg`, `chase.jpg`. |
+
+### 2026-10-04 — a proof lookAt can exceed magnification 1
+
+| | |
+| --- | --- |
+| Take | Zone B step 2. Drone and ribcage proofs. |
+| Defect | Two lookAt proofs reported presented magnification 1.75 and 1.65 while the hard layer itself stayed under 0.70. |
+| Root cause | `lookAt` skips the chase solver. A nearby rock, which is not listed in `magSources`, set the presented value. |
+| Fix | Reshoot those two with `clearShot` and `place` so `solveCamera` holds a legal pose. Presented magnification on the shipped stills is 0.982. |
+| Guard | `snapshot().mag` on a proof that used `lookAt`. The chase solver is the budget pose. |
+| Sources | `packs/zone-b/play/play.js` `solveCamera`. Shots `packs/zone-b/proof/step2/drone.jpg`, `ribcage.jpg`. |

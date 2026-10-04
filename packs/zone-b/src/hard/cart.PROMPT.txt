@@ -1,0 +1,19 @@
+STATUS
+The verbatim Imagine tool-call string that produced this JPEG was not stored.
+The file's EXIF is JFIF only (no prompt, no comment). No session log kept the call.
+This JPEG is the locked ruler. Do not regenerate it and treat the new file as this plate.
+Block ASK is the generation contract to copy if the plate must be replaced.
+It matches this file's pixel size, aspect and job. It is not a recovered transcript.
+
+ROLE unlit skin. Loaded by the zone B hard loft as packs/zone-b/src/hard/cart.jpg.
+PIXELS 1248x832. ASPECT 3:2.
+JOB
+One ore cart on a broken rail, side, alone.
+
+ASK (colour-free template; the tone and subject wording are untracked,
+see /workspace/grokcli/out/zoneB/step2/prompts.local.md)
+Imagine, aspect 3:2. Orthographic, no perspective, no camera tilt, no ground, no stars,
+no text, no border, no watermark. Plain empty background the reader can segment.
+One object, filling the frame with a small empty margin.
+<TONE + ACCENTS from the local file>. Panels and seams readable at phone size.
+Subject: the JOB above, nothing else.
