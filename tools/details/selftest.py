@@ -10,7 +10,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from place import load_solids, near_height_cap, place, place_features  # noqa: E402
+from place import load_solids, near_height_cap, place, place_features, thin_micro  # noqa: E402
 
 NUM = Path(__file__).resolve().parent / "numbers"
 HEX = re.compile(r"#[0-9a-fA-F]{3,8}\b")
@@ -176,6 +176,22 @@ def main() -> int:
                 elif abs(lat) + 1e-6 < float(spec["minAcross"]) - half:
                     print(f"FAIL details: feature inside minAcross {inst['type']}")
                     return 1
+            if numbers.get("thin"):
+                kept, ts = thin_micro(numbers, first, fa, solids, variants)
+                kept2, _ = thin_micro(numbers, first, fa, solids, variants)
+                if kept != kept2:
+                    print("FAIL details: thinning is not deterministic")
+                    return 1
+                if not (0.25 <= ts["keptFrac"] <= 0.5):
+                    print(f"FAIL details: thinning kept {ts['keptFrac']} (want about 40%)")
+                    return 1
+                if ts["clumpOnlyKept"] > 0.12 * max(1, ts["placed"]):
+                    print(f"FAIL details: clump-only variants {ts['clumpOnlyKept']} of {ts['placed']}")
+                    return 1
+                if ts["nearPerM2"] < 3 * ts["farPerM2"]:
+                    print(f"FAIL details: thinned near {ts['nearPerM2']} far {ts['farPerM2']}")
+                    return 1
+                print(f"PASS thin selftest kept={ts['placed']}/{ts['before']} clumpOnly={ts['clumpOnlyKept']}")
             if feat.get("near") and near_n < 60:
                 print(f"FAIL details: near band has only {near_n} features")
                 return 1

@@ -20,7 +20,7 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from place import load_solids, mag_height_cap, place, place_features  # noqa: E402
+from place import load_solids, mag_height_cap, place, place_features, thin_micro  # noqa: E402
 
 INBOX = Path("/workspace/grokcli/out/zoneA-details/inbox")
 
@@ -316,6 +316,26 @@ def skirt_rows(canvas: np.ndarray) -> int:
     return n
 
 
+def body_span(canvas: np.ndarray, skirt: int) -> tuple[int, float]:
+    """Visible rock width near the ground, from the still's own alpha: the union
+    of opaque columns over the lower half of the body (above the dust collar).
+    Returns (width px, centre offset px from the card centre). Collider only."""
+    alpha = canvas[:, :, 3] > 127
+    rows = np.where(alpha.any(axis=1))[0]
+    if len(rows) < 4:
+        return 0, 0.0
+    top, bottom = int(rows.min()), int(rows.max())
+    body_bottom = bottom - skirt
+    body_top = top
+    lo = body_top + (body_bottom - body_top) // 2
+    band = alpha[lo : body_bottom + 1]
+    cols = np.where(band.any(axis=0))[0]
+    if len(cols) < 2:
+        return 0, 0.0
+    x0, x1 = int(cols.min()), int(cols.max())
+    return x1 - x0 + 1, (x0 + x1 + 1) * 0.5 - canvas.shape[1] * 0.5
+
+
 def pack_features(typed: list[tuple[str, np.ndarray]], numbers: dict) -> tuple[np.ndarray, list[dict]]:
     feat = numbers["features"]
     pad = int(numbers["pad"])
@@ -407,6 +427,9 @@ def pack_features(typed: list[tuple[str, np.ndarray]], numbers: dict) -> tuple[n
             "maxHeightM": round(min(asked, cap), 4),
             "skirtPx": skirt_rows(canvas),
         })
+        bw, bc = body_span(canvas, variants[-1]["skirtPx"])
+        variants[-1]["bodyWPx"] = int(bw)
+        variants[-1]["bodyCxPx"] = round(float(bc), 1)
     return atlas, variants
 
 
@@ -496,6 +519,13 @@ def main() -> int:
     need = sum(int(spec["count"]) for spec in numbers["types"].values())
     if stats["placed"] < int(need * 0.9):
         raise SystemExit(f"FAIL details: placed {stats['placed']} of {need}")
+    # Features first: the micro thinning gathers the cards around them.
+    feat_built = build_features(numbers, inbox, solids)
+    if numbers.get("thin"):
+        feats = feat_built["instances"] if feat_built else []
+        instances, thin_stats = thin_micro(numbers, instances, feats, solids, by_type)
+        stats = {**stats, "placed": thin_stats["placed"], "drawn": thin_stats["drawn"], "byType": thin_stats["byType"],
+                 "nearPerM2": thin_stats["nearPerM2"], "farPerM2": thin_stats["farPerM2"], "thin": thin_stats}
     out_dir = ROOT / numbers["pack"] / "src" / "details"
     out_dir.mkdir(parents=True, exist_ok=True)
     Image.fromarray(atlas).save(out_dir / "atlas.png", optimize=True)
@@ -535,7 +565,6 @@ def main() -> int:
     text = body[:-2] + ',\n  "instances": [\n' + rows + "\n  ]\n}\n"
     json.loads(text)
     (out_dir / "manifest.json").write_text(text)
-    feat_built = build_features(numbers, inbox, solids)
     if feat_built is not None:
         fatlas = feat_built["atlas"]
         Image.fromarray(fatlas).save(out_dir / "features.png", optimize=True)

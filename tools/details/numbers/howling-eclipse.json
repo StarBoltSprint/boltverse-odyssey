@@ -41,6 +41,19 @@
       "ridge": 0.1
     }
   },
+  "thin": {
+    "massEdgeM": [0.5, 2.4],
+    "crackBelow": 0.07,
+    "crackWeight": 0.7,
+    "bareScaleM": 6.5,
+    "bareBelow": 0.4,
+    "clumpAffinity": 0.75,
+    "floorKeep": 0.03,
+    "power": 1.3,
+    "typeKeep": {"shard": 1.0, "pebble": 0.14, "ridge": 1.0, "tuft": 0.7},
+    "variantWeights": {"shard": [1.0, 1.0, 0.08, 0.08], "pebble": [1.0, 1.0, 1.0, 1.0], "ridge": [1.0, 1.0, 1.0, 1.0], "tuft": [1.0, 1.0, 1.0]},
+    "clumpOnly": {"shard": [2, 3], "pebble": [0, 1, 2, 3]}
+  },
   "types": {
     "shard": {
       "count": 420,

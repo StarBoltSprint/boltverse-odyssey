@@ -5,7 +5,7 @@ import { lintPlaySource } from "./renderlint.mjs";
 
 const SRC = new URL("../../../packs/zone-a/play/details.js", import.meta.url);
 
-test("detail cards are one static instanced draw with mipmaps and no collider", () => {
+test("detail cards are static instanced draws with mipmaps; only feature rocks collide", () => {
   const src = readFileSync(SRC, "utf8");
   const result = lintPlaySource(src, "details.js");
   assert.equal(result.ok, true, JSON.stringify(result.findings));
@@ -13,7 +13,9 @@ test("detail cards are one static instanced draw with mipmaps and no collider", 
   assert.match(src, /STATIC_DRAW/);
   assert.match(src, /LINEAR_MIPMAP_LINEAR/);
   assert.match(src, /generateMipmap/);
-  assert.doesNotMatch(src, /collider/);
+  // Micro cards never collide. Feature rocks collide on their measured visible width.
+  assert.match(src, /bodyWPx/);
+  assert.equal((src.match(/colliders\.push\(/g) || []).length, 1);
   assert.doesNotMatch(src, /camQuad/);
   assert.match(src, /features\.json/);
   assert.match(src, /STATIC_DRAW/);

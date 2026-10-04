@@ -20,7 +20,9 @@
       "u1": 0.5193598347960764,
       "v1": 0.9967689822294022,
       "maxHeightM": 0.4333,
-      "skirtPx": 75
+      "skirtPx": 75,
+      "bodyWPx": 944,
+      "bodyCxPx": 5.0
     },
     {
       "type": "crest",
@@ -34,7 +36,9 @@
       "u1": 0.9979349509550852,
       "v1": 0.9967689822294022,
       "maxHeightM": 1.1393,
-      "skirtPx": 51
+      "skirtPx": 51,
+      "bodyWPx": 915,
+      "bodyCxPx": 0.0
     },
     {
       "type": "pile",
@@ -48,7 +52,9 @@
       "u1": 0.4574083634486319,
       "v1": 0.5630048465266559,
       "maxHeightM": 0.464,
-      "skirtPx": 50
+      "skirtPx": 50,
+      "bodyWPx": 874,
+      "bodyCxPx": 0.0
     },
     {
       "type": "cluster",
@@ -62,7 +68,9 @@
       "u1": 0.8280846670108415,
       "v1": 0.5630048465266559,
       "maxHeightM": 0.7588,
-      "skirtPx": 32
+      "skirtPx": 32,
+      "bodyWPx": 706,
+      "bodyCxPx": 0.0
     }
   ],
   "stats": {

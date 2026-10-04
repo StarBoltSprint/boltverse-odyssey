@@ -26,8 +26,10 @@ const MAX_BOOM = BOOM / 0.62;
 
 const canvas = document.getElementById("view");
 const hud = document.getElementById("hud");
-// Players see no debug HUD. QC opens it with ?hud=1 (or debug=1); the text stays readable for tools.
-if (!/[?&](hud|debug)=1(?:&|$)/.test(location.search)) hud.style.visibility = "hidden";
+// Players see no debug HUD. QC opens it with ?debug=1 (the Gate branch flag; ?hud=1 is an alias).
+// The text stays readable for tools.
+const HUD_ON = /[?&](debug|hud)=1(?:&|$)/.test(location.search);
+if (!HUD_ON) hud.style.visibility = "hidden";
 canvas.width = W;
 canvas.height = H;
 const gl = canvas.getContext("webgl2", {
@@ -1169,6 +1171,61 @@ function segmentHitsObb(eye, target, o, hull) {
   return false;
 }
 
+// Feature rocks from the detail layer: thin footprints across each card,
+// as wide as the visible rock. Bolt is pushed out like any solid. The chase eye
+// keeps EYE_CARD_M off them and never looks at Bolt through one.
+let detailSolids = [];
+const EYE_CARD_M = 0.6;
+function detailLocal(d, x, z) {
+  const dx = x - d.x;
+  const dz = z - d.z;
+  return [d.c * dx - d.s * dz, d.s * dx + d.c * dz];
+}
+function detailPush(x, z) {
+  let hit = false;
+  for (let i = 0; i < detailSolids.length; i++) {
+    const d = detailSolids[i];
+    const l = detailLocal(d, x, z);
+    const hx = d.hx + 0.05;
+    const hz = d.hz + 0.05;
+    if (Math.abs(l[0]) >= hx || Math.abs(l[1]) >= hz) continue;
+    let nlx = l[0];
+    let nlz = l[1];
+    if (hx - Math.abs(l[0]) < hz - Math.abs(l[1])) nlx = Math.sign(l[0] || 1) * hx;
+    else nlz = Math.sign(l[1] || 1) * hz;
+    x = d.x + d.c * nlx + d.s * nlz;
+    z = d.z - d.s * nlx + d.c * nlz;
+    hit = true;
+  }
+  return hit ? [x, z] : null;
+}
+function eyeInCard(e, margin) {
+  for (let i = 0; i < detailSolids.length; i++) {
+    const d = detailSolids[i];
+    if (e[1] > d.y1 + margin) continue;
+    const l = detailLocal(d, e[0], e[2]);
+    if (Math.abs(l[0]) < d.hx + margin && Math.abs(l[1]) < d.hz + margin) return true;
+  }
+  return false;
+}
+function cardBetween(e, tx, ty, tz) {
+  if (!detailSolids.length) return false;
+  const steps = 16;
+  for (let k = 1; k < steps; k++) {
+    const t = k / steps;
+    const x = e[0] + (tx - e[0]) * t;
+    const y = e[1] + (ty - e[1]) * t;
+    const z = e[2] + (tz - e[2]) * t;
+    for (let i = 0; i < detailSolids.length; i++) {
+      const d = detailSolids[i];
+      if (y > d.y1 + 0.05 || y < d.y0 - 0.05) continue;
+      const l = detailLocal(d, x, z);
+      if (Math.abs(l[0]) < d.hx && Math.abs(l[1]) < d.hz + 0.05) return true;
+    }
+  }
+  return false;
+}
+
 function lineBlocked(eye) {
   losA[0] = state.x;
   losA[2] = state.z;
@@ -1320,7 +1377,8 @@ function solveCamera() {
         if (dist > 9.3) continue;
         pitchView(candEye);
         const m = poseMetrics(candEye);
-        const blocked = lineBlocked(candEye);
+        const blocked = lineBlocked(candEye) || eyeInCard(candEye, EYE_CARD_M) ||
+          cardBetween(candEye, state.x, feetY() + BOLT_H * 0.45, state.z);
         const near = (m.on ? 1000 : 0) + (blocked ? 0 : 200) + Math.min(m.minR, 1.25) * 20 - Math.abs(dist - targetDist) * 40 - Math.abs(slide) * 2 - Math.max(0, eyes[ei] - 1.6) * 80;
         const hard = m.on && m.minR >= 1.002 && !blocked;
         const isHold = camHold.live && boom === camHold.boom && eyes[ei] === camHold.eye && slide === camHold.slide;
@@ -1399,6 +1457,37 @@ function solveCamera() {
     eyeBuf[0] = state.x - backX / backL * MIN_BOOM;
     eyeBuf[2] = state.z - backZ / backL * MIN_BOOM;
     backL = MIN_BOOM;
+  }
+  // Safety net: the eased eye never enters a feature rock. Pull it toward Bolt
+  // along the boom line to the last clear point (Bolt himself is always clear).
+  if (detailSolids.length && eyeInCard(eyeBuf, EYE_CARD_M)) {
+    const ex = eyeBuf[0];
+    const ez = eyeBuf[2];
+    // March in from the eye to the first clear point, then bisect so the pull is smooth.
+    let inT = 1;
+    let outT = 0;
+    for (let k = 1; k <= 48; k++) {
+      const tt = 1 - k / 48;
+      eyeBuf[0] = state.x + (ex - state.x) * tt;
+      eyeBuf[2] = state.z + (ez - state.z) * tt;
+      if (!eyeInCard(eyeBuf, EYE_CARD_M)) {
+        outT = tt;
+        break;
+      }
+      inT = tt;
+    }
+    for (let k = 0; k < 8; k++) {
+      const mid = (inT + outT) * 0.5;
+      eyeBuf[0] = state.x + (ex - state.x) * mid;
+      eyeBuf[2] = state.z + (ez - state.z) * mid;
+      if (eyeInCard(eyeBuf, EYE_CARD_M)) inT = mid;
+      else outT = mid;
+    }
+    const t = outT;
+    eyeBuf[0] = state.x + (ex - state.x) * t;
+    eyeBuf[2] = state.z + (ez - state.z) * t;
+    backL = Math.hypot(state.x - eyeBuf[0], state.z - eyeBuf[2]);
+    eyeGuardHits++;
   }
   camBoom = backL;
   pitchView(eyeBuf, camSm.feet);
@@ -1502,6 +1591,13 @@ function resolveBody(nx, nz) {
         hit = true;
         blocked = true;
       }
+    }
+    const dp = detailPush(nx, nz);
+    if (dp) {
+      nx = dp[0];
+      nz = dp[1];
+      hit = true;
+      blocked = true;
     }
     if (!hit) break;
   }
@@ -2078,6 +2174,9 @@ function snapshot() {
     details: detailLayer ? detailLayer.info() : null,
     detailMag: detailLayer ? detailLayer.mag(eyeBuf, FOCAL, vpM) : 0,
     featureMag: detailLayer && detailLayer.magFeatures ? detailLayer.magFeatures(eyeBuf, FOCAL, vpM) : 0,
+    detailSolids: detailSolids.length,
+    eyeInCard: eyeInCard(eyeBuf, 0.05),
+    eyeGuardHits,
     pathTrigger: state.pathTrigger,
     gate: gateInfo(),
     nearestVisibleM: nearestM,
@@ -2420,6 +2519,7 @@ let bootT0 = 0;
 let rockLayer = null;
 let rockLoadMs = 0;
 let detailLayer = null;
+let eyeGuardHits = 0;
 let detailLoadMs = 0;
 
 async function loadBand(manifest, id) {
@@ -2538,6 +2638,7 @@ async function boot() {
           drawnHeightAt: (x, z) => (useRelief ? terrain.meshHeightAt(x, z) : 0),
         });
         detailLoadMs = detailLayer.loadMs || (performance.now() - detailT0);
+        detailSolids = detailLayer.colliders || [];
       } catch (err) {
         console.warn("details", err);
         detailLayer = null;
@@ -2636,6 +2737,7 @@ async function boot() {
       meteorTiles() { return meteorInfo.map((m) => ({ ...m })); },
       meteorsOn(on) { meteorShow = !!on; },
       camInfo() { return { pitchDeg: camPitch * 180 / Math.PI, vfovDeg: VFOV * 180 / Math.PI, hfovDeg: HFOV * 180 / Math.PI }; },
+      camState() { return { eye: [eyeBuf[0], eyeBuf[1], eyeBuf[2]], x: state.x, z: state.z, inCard: eyeInCard(eyeBuf, 0.05), guardHits: eyeGuardHits, solids: detailSolids.length }; },
       seekSky(i, t) {
         const v = skyVideos[i];
         if (!v || !Number.isFinite(t)) return false;

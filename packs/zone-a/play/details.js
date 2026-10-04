@@ -47,6 +47,11 @@ function program(gl, vs, fs) {
   return p;
 }
 
+// Half depth of a feature collider across the card. The card is one plane, so
+// depth is not measured; a thin slab across the plane stops Bolt without
+// reaching past what the side of the rock would cover.
+const COLLIDER_HALF_DEPTH = 0.15;
+
 function empty() {
   return {
     draws: 0,
@@ -54,6 +59,7 @@ function empty() {
     draw() {},
     mag() { return 0; },
     info() { return { placed: 0, drawn: 0, byType: {}, loadMs: 0, draws: 0 }; },
+    colliders: [],
   };
 }
 
@@ -225,6 +231,9 @@ export async function mountDetails(gl, env) {
   let fMh = new Float32Array(0);
   let fPx = new Float32Array(0);
   let fGeo = new Float32Array(0);
+  // Real-obstacle footprint per feature: the visible rock width near the ground,
+  // measured from the still's own alpha (bodyWPx), never wider than the card shows.
+  const colliders = [];
   let fW = 0;
   let fH = 0;
   try {
@@ -277,6 +286,23 @@ export async function mountDetails(gl, env) {
         fGeo[pi * 4 + 1] = Math.cos(yaw0);
         fGeo[pi * 4 + 2] = -Math.sin(yaw0);
         fGeo[pi * 4 + 3] = halfW;
+        if (variant.bodyWPx) {
+          const mpp = worldH / variant.contentH;
+          const bw = variant.bodyWPx * mpp;
+          const off = (variant.bodyCxPx || 0) * mpp * (inst.mirror ? -1 : 1);
+          const cy = Math.cos(yaw0);
+          const sy = Math.sin(yaw0);
+          colliders.push({
+            x: inst.x + cy * off,
+            z: inst.z - sy * off,
+            c: cy,
+            s: sy,
+            hx: bw * 0.5,
+            hz: Math.min(COLLIDER_HALF_DEPTH, bw * 0.25),
+            y0: y + sink,
+            y1: y + worldH,
+          });
+        }
         fCounts[inst.type] = (fCounts[inst.type] || 0) + 1;
         fPlaced++;
         for (let k = 0; k < planes; k++) {
@@ -374,6 +400,7 @@ export async function mountDetails(gl, env) {
   return {
     draws,
     loadMs,
+    colliders,
     draw(vp) {
       paint(vp, vao, tex, drawn);
       paint(vp, fVao, fTex, fDrawn);

@@ -691,3 +691,135 @@ def mark_mirrors(instances: list[dict], seed: int) -> None:
                 best = d
         if math.sqrt(best) >= 4.5 and hash01(i, 1, tseed) < 0.5:
             inst["mirror"] = 1
+
+
+def vnoise2(x: float, z: float, seed: int) -> float:
+    """Smooth 2D value noise in 0..1 (placement density only, never pixels)."""
+    ix = math.floor(x)
+    iz = math.floor(z)
+    fx = x - ix
+    fz = z - iz
+    fx = fx * fx * (3.0 - 2.0 * fx)
+    fz = fz * fz * (3.0 - 2.0 * fz)
+
+    def h(a: int, b: int) -> float:
+        return hash01(a * 73856093 ^ b * 19349663, 51, seed)
+
+    top = h(ix, iz) + (h(ix + 1, iz) - h(ix, iz)) * fx
+    bot = h(ix, iz + 1) + (h(ix + 1, iz + 1) - h(ix, iz + 1)) * fx
+    return top + (bot - top) * fz
+
+
+def thin_micro(numbers: dict, instances: list[dict], features: list[dict],
+               solids: list[tuple[float, float, float]], variants: dict) -> tuple[list[dict], dict]:
+    """Keep micro cards where the ground has a reason for them: at the foot of a
+    rock mass (a feature or a rock solid) or along a plate crack, with bare
+    stretches between. Choose and weight existing variants; no pixel changes.
+    Variants listed in `clumpOnly` may appear only inside a clump."""
+    th = numbers.get("thin")
+    if not th:
+        return instances, {}
+    seed = type_seed("thin", int(numbers["seed"]))
+    m_in, m_out = (float(v) for v in th["massEdgeM"])
+    crack_below = float(th["crackBelow"])
+    crack_w = float(th.get("crackWeight", 0.75))
+    bare_scale = float(th["bareScaleM"])
+    bare_below = float(th["bareBelow"])
+    clump_min = float(th["clumpAffinity"])
+    floor = float(th.get("floorKeep", 0.04))
+    power = float(th.get("power", 1.3))
+    type_keep = th["typeKeep"]
+    weights = th["variantWeights"]
+    clump_only = {k: set(v) for k, v in (th.get("clumpOnly") or {}).items()}
+    masses = [(f["x"], f["z"], 0.45 * f["heightM"] * f.get("scale", 1.0)) for f in features]
+    masses += [(x, z, r) for x, z, r in solids]
+    cell = 4.0
+    grid: dict[tuple[int, int], list] = {}
+    for mx, mz, mr in masses:
+        grid.setdefault((math.floor(mx / cell), math.floor(mz / cell)), []).append((mx, mz, mr))
+
+    def mass_aff(x: float, z: float) -> float:
+        best = 99.0
+        ix, iz = math.floor(x / cell), math.floor(z / cell)
+        for dx in (-2, -1, 0, 1, 2):
+            for dz in (-2, -1, 0, 1, 2):
+                for mx, mz, mr in grid.get((ix + dx, iz + dz), ()):
+                    d = math.hypot(x - mx, z - mz) - mr
+                    if d < best:
+                        best = d
+        if best <= m_in:
+            return 1.0
+        if best >= m_out:
+            return 0.0
+        return 1.0 - (best - m_in) / (m_out - m_in)
+
+    kept: list[dict] = []
+    by_type: dict[str, int] = {}
+    loud = 0
+    for i, inst in enumerate(instances):
+        x, z = inst["x"], inst["z"]
+        name = inst["type"]
+        ma = mass_aff(x, z)
+        c = crack_amt(x, z)
+        ca = max(0.0, 1.0 - c / crack_below) * crack_w
+        aff = max(ma, ca)
+        bare = vnoise2(x / bare_scale, z / bare_scale, seed)
+        if bare < bare_below and ma < 0.5:
+            continue
+        p = float(type_keep.get(name, 1.0)) * (floor + (1.0 - floor) * aff ** power)
+        if hash01(i, 1, seed) >= p:
+            continue
+        group = variants.get(name) or []
+        w = list(weights.get(name) or [1.0] * len(group))[: len(group)]
+        while len(w) < len(group):
+            w.append(1.0)
+        only = clump_only.get(name, set())
+        if aff < clump_min:
+            w = [0.0 if j in only else wj for j, wj in enumerate(w)]
+        tot = sum(w)
+        if tot <= 0:
+            continue
+        r = hash01(i, 2, seed) * tot
+        pick = 0
+        for j, wj in enumerate(w):
+            r -= wj
+            if r <= 0:
+                pick = j
+                break
+        out = dict(inst)
+        out["variant"] = pick
+        cap = float(group[pick].get("maxHeightM", out["heightM"])) if group else out["heightM"]
+        out["heightM"] = round(min(out["heightM"], cap), 4)
+        if pick in only:
+            loud += 1
+        kept.append(out)
+        by_type[name] = by_type.get(name, 0) + 1
+    cor = numbers["corridor"]
+    bands = numbers["bands"]
+    heading = math.radians(float(cor["headingDeg"]))
+    fx, fz = math.sin(heading), math.cos(heading)
+    rx, rz = fz, -fx
+    sx, sz = float(cor["spawn"][0]), float(cor["spawn"][1])
+    near_half = float(bands["nearHalf"])
+    mid_half = float(bands["midHalf"])
+    far_half = float(bands["farHalf"])
+    near_n = far_n = 0
+    for inst in kept:
+        dx, dz = inst["x"] - sx, inst["z"] - sz
+        along, lat = dx * fx + dz * fz, dx * rx + dz * rz
+        if 0 <= along <= 36:
+            if abs(lat) <= near_half:
+                near_n += 1
+            elif mid_half < abs(lat) <= far_half:
+                far_n += 1
+    stats = {
+        "placed": len(kept),
+        "drawn": sum(int(k["planes"]) for k in kept),
+        "byType": by_type,
+        "before": len(instances),
+        "keptFrac": round(len(kept) / max(1, len(instances)), 4),
+        "clumpOnlyKept": loud,
+        "nearPerM2": round(near_n / max(1.0, 36.0 * 2.0 * near_half), 4),
+        "farPerM2": round(far_n / max(1.0, 36.0 * 2.0 * (far_half - mid_half)), 4),
+    }
+    return kept, stats
