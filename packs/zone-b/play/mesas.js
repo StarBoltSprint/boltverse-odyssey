@@ -188,18 +188,22 @@ function bleed(img) {
   return out;
 }
 
+const faceCache = new Map();
+
 async function loadFace(env, file) {
   if (!file) return null;
+  if (faceCache.has(file)) return faceCache.get(file);
+  let face = null;
   try {
     const img = await env.loadImage(env.absUrl(file));
     const px = pixelsOf(img);
     const sil = silhouette(px);
-    if (!sil) return null;
-    return { w: px.w, h: px.h, data: px.data, sil, file };
+    if (sil) face = { w: px.w, h: px.h, data: px.data, sil, file };
   } catch (e) {
     console.warn("mesa face", file, e);
-    return null;
   }
+  faceCache.set(file, face);
+  return face;
 }
 
 function pushVert(verts, p, u, v, fitX, fitY, layer, id) {
@@ -252,6 +256,7 @@ export async function mountMesas(gl, env) {
       mppS = mpp;
       depth = maxW * 0.62;
     }
+    if (c.depthM > 0) depth = c.depthM;
     const len = Math.hypot(c.x, c.z) || 1;
     const rx = c.z / len;
     const rz = -c.x / len;
@@ -259,7 +264,8 @@ export async function mountMesas(gl, env) {
     const fz = -c.z / len;
     const foot = 0.5 * Math.hypot(maxW, depth);
     const seat = seatMin(env.heightAt, env.skirtLift, c.x, c.z, foot, foot);
-    const baseY = seat - SINK_M;
+    const sink = Math.min(SINK_M, Math.max(0.12, worldH * 0.22));
+    const baseY = seat - sink;
     built.push({
       i,
       card: c,
@@ -276,6 +282,7 @@ export async function mountMesas(gl, env) {
       depth,
       baseY,
       seat,
+      sink,
       rx,
       rz,
       fx,
@@ -527,6 +534,39 @@ void main() {
     mode: gl.getUniformLocation(prog, "uMode"),
   };
   const count = index.length;
+  const solids = [];
+  for (let i = 0; i < built.length; i++) {
+    const b = built[i];
+    if (!b.card.touch) continue;
+    solids.push({
+      x: b.card.x,
+      z: b.card.z,
+      rx: b.rx,
+      rz: b.rz,
+      fx: b.fx,
+      fz: b.fz,
+      hx: b.maxW * 0.5 + 0.45,
+      hz: b.depth * 0.5 + 0.45,
+    });
+  }
+  function pushBody(x, z) {
+    for (let i = 0; i < solids.length; i++) {
+      const s = solids[i];
+      const dx = x - s.x;
+      const dz = z - s.z;
+      const lx = dx * s.rx + dz * s.rz;
+      const lz = dx * s.fx + dz * s.fz;
+      if (Math.abs(lx) >= s.hx || Math.abs(lz) >= s.hz) continue;
+      const px = s.hx - Math.abs(lx);
+      const pz = s.hz - Math.abs(lz);
+      let nlx = lx;
+      let nlz = lz;
+      if (px < pz) nlx = Math.sign(lx || 1) * s.hx;
+      else nlz = Math.sign(lz || 1) * s.hz;
+      return [s.x + s.rx * nlx + s.fx * nlz, s.z + s.rz * nlx + s.fz * nlz];
+    }
+    return null;
+  }
   const infoRows = built.map((b) => ({
     i: b.i,
     x: b.card.x,
@@ -536,7 +576,8 @@ void main() {
     depth: b.depth,
     baseY: b.baseY,
     seat: b.seat,
-    sinkM: SINK_M,
+    sinkM: b.sink,
+    touch: !!b.card.touch,
     contentH: b.contentH,
     sideReal: b.sideReal,
     backReal: b.backReal,
@@ -546,6 +587,7 @@ void main() {
   return {
     draws: 1,
     count: built.length,
+    push: pushBody,
     draw(vp, mode) {
       gl.useProgram(prog);
       gl.bindVertexArray(vao);
@@ -564,7 +606,15 @@ void main() {
       let m = 0;
       for (let i = 0; i < built.length; i++) {
         const b = built[i];
-        const d = Math.max(0.5, Math.hypot(eye[0] - b.card.x, eye[2] - b.card.z));
+        const dx = eye[0] - b.card.x;
+        const dz = eye[2] - b.card.z;
+        const lx = dx * b.rx + dz * b.rz;
+        const lz = dx * b.fx + dz * b.fz;
+        const hx = b.maxW * 0.5;
+        const hz = b.depth * 0.5;
+        const qx = Math.max(-hx, Math.min(hx, lx));
+        const qz = Math.max(-hz, Math.min(hz, lz));
+        const d = Math.max(0.35, Math.hypot(lx - qx, lz - qz));
         const sh = (focal * b.worldH) / d;
         const sw = (focal * b.maxW) / d;
         const sd = (focal * b.depth) / d;

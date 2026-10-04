@@ -1256,6 +1256,13 @@ function poseMetrics(eye) {
     const r = d / need;
     if (r < minR) minR = r;
   }
+  if (mesaLayer) {
+    const mm = mesaLayer.mag(eye, FOCAL);
+    if (mm > 1e-4) {
+      const r = 1 / mm;
+      if (r < minR) minR = r;
+    }
+  }
   const behind = (eye[0] - state.x) * fwdBuf[0] + (eye[2] - state.z) * fwdBuf[2];
   poseOut.minR = minR;
   poseOut.nearest = nearest;
@@ -1556,6 +1563,15 @@ function resolveBody(nx, nz) {
       const hull = hullByPath.get(o.asset);
       if (!hull) continue;
       const pushed = pushOutOf(o, hull, nx, nz);
+      if (pushed) {
+        nx = pushed[0];
+        nz = pushed[1];
+        hit = true;
+        blocked = true;
+      }
+    }
+    if (mesaLayer && mesaLayer.push) {
+      const pushed = mesaLayer.push(nx, nz);
       if (pushed) {
         nx = pushed[0];
         nz = pushed[1];

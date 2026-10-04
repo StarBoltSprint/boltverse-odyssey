@@ -83,14 +83,28 @@ function smooth(t) {
   return x * x * (3 - 2 * x);
 }
 
-// Seats for the three reused butte lofts. Same order as the manifest.
-// Centres sit 25 m outside the walk edge so a phone view never enlarges them.
-// The mound is wide on purpose: a narrow peak stayed inside the skirt trench
-// and the loft read as a block on flat sand.
+// Seats under the far lofts. Centres stay outside the walk. A wide mound
+// cancels the skirt trench so a tall card sits on ground, and the same
+// mound is gone before it reaches the floor.
 export const BUTTES = [
-  { x: 46, z: 22, amp: 2.8, sigma: 32 },
-  { x: -48.6, z: 55, amp: 2.2, sigma: 30 },
-  { x: 0, z: -96.8, amp: 2.8, sigma: 32 },
+  { x: -30.32, z: -189.5, amp: 2.2, sigma: 34 },
+  { x: 26.64, z: -181.66, amp: 2.2, sigma: 34 },
+  { x: -48, z: -160, amp: 2.2, sigma: 34 },
+  { x: 46, z: -158, amp: 2.2, sigma: 34 },
+  { x: -16.61, z: -217.98, amp: 2.2, sigma: 34 },
+  { x: 14, z: -214, amp: 2.2, sigma: 34 },
+  { x: 0, z: -230, amp: 2.2, sigma: 34 },
+  { x: -23.12, z: 162.92, amp: 2.2, sigma: 34 },
+  { x: 20, z: 158, amp: 2.2, sigma: 34 },
+  { x: 2, z: 210, amp: 2.2, sigma: 34 },
+  { x: 130, z: -8, amp: 2.2, sigma: 34 },
+  { x: 168, z: 6, amp: 2.2, sigma: 34 },
+  { x: -128, z: 6, amp: 2.2, sigma: 34 },
+  { x: -170, z: -4, amp: 2.2, sigma: 34 },
+  { x: 111.78, z: 128.08, amp: 2.2, sigma: 34 },
+  { x: -110.87, z: 119.74, amp: 2.2, sigma: 34 },
+  { x: 100, z: -120, amp: 2.2, sigma: 34 },
+  { x: -109.34, z: -121.96, amp: 2.2, sigma: 34 },
 ];
 
 export const LOOP = [
