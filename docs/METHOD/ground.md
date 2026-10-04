@@ -249,6 +249,8 @@ Known this step: the chase and the wide shot still read as one tile period (TILE
 
 **Step 1d (2026-10-04) — IN TEST.** Walk relief is unchanged. `SKIRT_LIFT` is 28 m by 480 m. The ground shader mixes 0.18 of the way toward the one horizon fog colour (`fogNear` 260 m, `fogFar` 470 m). Alpha still falls from 1 to 0 between 300 m and 460 m. Fragments with alpha under 0.02 are discarded so they do not write depth. The post pass uses fog density 0.0035 and fog cap 0.16. Butte cards are the same three. On the wide pose the largest 8-row luma jump is +8.4 at row 256. Heading 255 shows the 16 m butte and the sun; the low painted mesa tops on that heading sit under the skirt. Heading 90 still shows the painted mesa row (largest jump +8.7 at row 632). Chase and eye-level foreground jumps are −8.8 and −18.4 at row 1560. The top 80 rows stay under 0.3. Micro cutouts are still none.
 
+**Step 1e (2026-10-04) — IN TEST.** Walk relief and `SKIRT_LIFT` 28 m are unchanged. The three yaw-locked butte cards are one loft (`packs/zone-b/play/mesas.js`), the validated hard-object method: Imagine front, side, and top on measured geometry, one draw. The base sits 1.8 m under `seatMin`. Butte-0 also has a back face. Butte-1 and butte-2 use the front where a back file is absent. Far painted mesas stay in the sky slices. On the wide pose the largest 8-row luma jump is +8.4 at row 256. Chase and eye-level largest jump is −10.8 at row 568. Heading 90 largest jump is +12.6 at row 608. Micro cutouts are still none.
+
 ### 11. How B and C would fill the template (material ideas only; words go to their local file)
 
 | Role | B Ember Mesa (`ember-mesa`, golden hour) | C Cascade Verdance (`cascade-verdance`, morning) |

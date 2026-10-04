@@ -193,6 +193,8 @@ The ringed planet lives in horizon slice 2 (heading about 75°). Chase and eye-l
 
 `python3 tools/sky/check.py --manifest packs/zone-b/src/sky/sky.json` (2026-10-04, step 1d): 59 failures, the same rows as step 1c. `python3 tools/sky/selftest.py` PASS. Nothing above 30.5° is painted.
 
+**Ember Mesa (zone B step 1e) — planet disk, IN TEST.** 2026-10-04. Not a lock. Does not replace sky v1. Slice files were not recooked. The card stays at heading 259°, elevation 13.5°, distance 380 m. World size comes from the 493×228 still: worldW 98.19 m, worldH 45.41 m, magnification cap 0.94. A detached alpha island on the ring tip was removed from `planet.png`. The card writes alpha 0.004 with blending off, so the post pass keeps the fog on that card light. `planet.mp4` colours a feathered disk only. The rings, the moons, and the silhouette stay the still. The sprite does not yaw. drawCalls 6. Texture bytes 210102402 (200.4 MiB). Active videos 2.
+
 **Cascade Verdance.** Same skeleton. The horizon band keeps a soft tree line with no landmark. Living layers lean on the mist loop rather than a bright nebula, still at magnification ≤ 1 and still one instanced draw. The cap is canopy-gap sky, not a black disk.
 
 ## Pitfalls

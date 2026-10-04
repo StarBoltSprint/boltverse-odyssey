@@ -384,3 +384,36 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Stop at lift 28 m, ground fog mix 0.18, post fog density 0.0035 and cap 0.16. Wide jump +8.4 at row 256, and it reads as haze. The sun and the planet stay on heading 255. The painted mesa row stays visible at heading 90. The low painted tops on the sun heading stay under the skirt. |
 | Guard | No row measures this cliff. The wide JPEG is the check. Do not drop the skirt to 8 m to chase the painted tops on heading 255. |
 | Sources | `packs/zone-b/play/field.js` `SKIRT_LIFT`, `packs/zone-b/play/terrain.js`. Shots in `packs/zone-b/proof/step1d/`. |
+
+### 2026-10-04 — blending a sentinel alpha hides the planet and skips the fog exemption
+
+| | |
+| --- | --- |
+| Take | Zone B step 1e. Planet card. |
+| Defect | The ringed planet disappeared. The stored framebuffer alpha stayed near 1, so the light-fog exemption never fired. |
+| Root cause | Key 4 wrote alpha 0.004 and the card draw enabled SRC_ALPHA blending. The planet became a few tenths of a percent of the sky, and the blend replaced the sentinel with the sky alpha. |
+| Fix | Blending stays off for key 4. The card replaces RGB and leaves alpha 0.004 in the scene buffer. The post pass scales fog by 0.22 when scene alpha is under 0.012. |
+| Guard | No row checks planet visibility or that sentinel. The chase JPEG is the check. |
+| Sources | `packs/zone-b/play/play.js` `drawCard`. `packs/zone-b/play/terrain.js` post shader. Shots in `packs/zone-b/proof/step1e/`. |
+
+### 2026-10-04 — UNPACK_FLIP_Y_WEBGL on a 2D-array upload leaves the loft invisible
+
+| | |
+| --- | --- |
+| Take | Zone B step 1e. Near mesas. |
+| Defect | The loft incremented draw calls and every fragment was discarded. The rocks were absent. |
+| Root cause | `UNPACK_FLIP_Y_WEBGL` applies to `texImage2D` and `texSubImage2D`. Set true, `texSubImage3D` is `INVALID_OPERATION` and the immutable array stays at alpha 0. The shader discards alpha under 0.5. |
+| Fix | The upload sets `UNPACK_FLIP_Y_WEBGL` false and copies padded rows with the image top at texture v 0. Texture coordinates are `(px+0.5)/w`, `(py+0.5)/h`. Alpha is dilated onto the RGB bleed before mipmaps. |
+| Guard | No row reads `uploadError`. `mesa.info().uploadError` is 0 on the proof poses. The mesa-close JPEG is the check. |
+| Sources | `packs/zone-b/play/mesas.js`. |
+
+### 2026-10-04 — a planet cleaner that saves before it measures destroys the cutout
+
+| | |
+| --- | --- |
+| Take | Zone B step 1e. `planet.png`. |
+| Defect | The first cleaner replaced `planet.png` with an empty image and printed that it wrote 0 pixels. |
+| Root cause | The file's alpha peaked at 100. A threshold written for 0–255 kept nothing, and the script saved that result over the source. A morphological open on the thin ring also splits the upper ring into teeth. |
+| Fix | Restore the file from git, then drop only detached components (the tip island and specks). Keep the main body and both moons. Do not open the ring. Do not save until the opaque count is in the same range as the source. |
+| Guard | No row. File size and the chase JPEG are the check. |
+| Sources | `packs/zone-b/src/sky/planet.png`. |
