@@ -58,4 +58,4 @@ Mouse and touch on the view, same numbers: pitch reached 1.40 and held, shake sa
 
 ## Commit
 
-SHA is filled in after `git rev-parse HEAD` on this step.
+`1772cd88a7af5231384dc29f612d82660ccc5fe2` (`1772cd8`) on `zone-a-step4-gate-redo`. Not pushed.
