@@ -1,0 +1,7246 @@
+{
+  "schema": "details-manifest/1",
+  "kit": "howling-eclipse",
+  "seed": 20261004,
+  "atlas": "packs/zone-a/src/details/atlas.png",
+  "atlasW": 2048,
+  "atlasH": 1024,
+  "texMiB": 10.667,
+  "variants": [
+    {
+      "type": "shard",
+      "contentW": 214,
+      "contentH": 241,
+      "rectW": 222,
+      "rectH": 247,
+      "padBottom": 2,
+      "u0": 0.001953125,
+      "v0": 0.7548828125,
+      "u1": 0.1103515625,
+      "v1": 0.99609375,
+      "maxHeightM": 0.1339
+    },
+    {
+      "type": "shard",
+      "contentW": 162,
+      "contentH": 261,
+      "rectW": 170,
+      "rectH": 267,
+      "padBottom": 2,
+      "u0": 0.1123046875,
+      "v0": 0.7353515625,
+      "u1": 0.1953125,
+      "v1": 0.99609375,
+      "maxHeightM": 0.145
+    },
+    {
+      "type": "shard",
+      "contentW": 137,
+      "contentH": 277,
+      "rectW": 145,
+      "rectH": 283,
+      "padBottom": 2,
+      "u0": 0.197265625,
+      "v0": 0.7197265625,
+      "u1": 0.26806640625,
+      "v1": 0.99609375,
+      "maxHeightM": 0.1539
+    },
+    {
+      "type": "shard",
+      "contentW": 118,
+      "contentH": 278,
+      "rectW": 126,
+      "rectH": 284,
+      "padBottom": 2,
+      "u0": 0.27001953125,
+      "v0": 0.71875,
+      "u1": 0.33154296875,
+      "v1": 0.99609375,
+      "maxHeightM": 0.1544
+    },
+    {
+      "type": "pebble",
+      "contentW": 282,
+      "contentH": 299,
+      "rectW": 290,
+      "rectH": 305,
+      "padBottom": 2,
+      "u0": 0.33349609375,
+      "v0": 0.6982421875,
+      "u1": 0.47509765625,
+      "v1": 0.99609375,
+      "maxHeightM": 0.1661
+    },
+    {
+      "type": "pebble",
+      "contentW": 296,
+      "contentH": 334,
+      "rectW": 304,
+      "rectH": 340,
+      "padBottom": 2,
+      "u0": 0.47705078125,
+      "v0": 0.6640625,
+      "u1": 0.62548828125,
+      "v1": 0.99609375,
+      "maxHeightM": 0.1856
+    },
+    {
+      "type": "pebble",
+      "contentW": 292,
+      "contentH": 329,
+      "rectW": 300,
+      "rectH": 335,
+      "padBottom": 2,
+      "u0": 0.62744140625,
+      "v0": 0.6689453125,
+      "u1": 0.77392578125,
+      "v1": 0.99609375,
+      "maxHeightM": 0.1828
+    },
+    {
+      "type": "pebble",
+      "contentW": 139,
+      "contentH": 366,
+      "rectW": 147,
+      "rectH": 372,
+      "padBottom": 2,
+      "u0": 0.77587890625,
+      "v0": 0.6328125,
+      "u1": 0.84765625,
+      "v1": 0.99609375,
+      "maxHeightM": 0.2033
+    },
+    {
+      "type": "ridge",
+      "contentW": 330,
+      "contentH": 403,
+      "rectW": 338,
+      "rectH": 409,
+      "padBottom": 2,
+      "u0": 0.001953125,
+      "v0": 0.2294921875,
+      "u1": 0.1669921875,
+      "v1": 0.62890625,
+      "maxHeightM": 0.2239
+    },
+    {
+      "type": "ridge",
+      "contentW": 191,
+      "contentH": 418,
+      "rectW": 199,
+      "rectH": 424,
+      "padBottom": 2,
+      "u0": 0.1689453125,
+      "v0": 0.21484375,
+      "u1": 0.26611328125,
+      "v1": 0.62890625,
+      "maxHeightM": 0.2322
+    },
+    {
+      "type": "ridge",
+      "contentW": 216,
+      "contentH": 227,
+      "rectW": 224,
+      "rectH": 233,
+      "padBottom": 2,
+      "u0": 0.26806640625,
+      "v0": 0.4013671875,
+      "u1": 0.37744140625,
+      "v1": 0.62890625,
+      "maxHeightM": 0.1261
+    },
+    {
+      "type": "ridge",
+      "contentW": 197,
+      "contentH": 193,
+      "rectW": 205,
+      "rectH": 199,
+      "padBottom": 2,
+      "u0": 0.37939453125,
+      "v0": 0.4345703125,
+      "u1": 0.4794921875,
+      "v1": 0.62890625,
+      "maxHeightM": 0.1072
+    },
+    {
+      "type": "tuft",
+      "contentW": 173,
+      "contentH": 266,
+      "rectW": 181,
+      "rectH": 272,
+      "padBottom": 2,
+      "u0": 0.4814453125,
+      "v0": 0.36328125,
+      "u1": 0.56982421875,
+      "v1": 0.62890625,
+      "maxHeightM": 0.1478
+    },
+    {
+      "type": "tuft",
+      "contentW": 123,
+      "contentH": 366,
+      "rectW": 131,
+      "rectH": 372,
+      "padBottom": 2,
+      "u0": 0.57177734375,
+      "v0": 0.265625,
+      "u1": 0.6357421875,
+      "v1": 0.62890625,
+      "maxHeightM": 0.2033
+    },
+    {
+      "type": "tuft",
+      "contentW": 169,
+      "contentH": 228,
+      "rectW": 177,
+      "rectH": 234,
+      "padBottom": 2,
+      "u0": 0.6376953125,
+      "v0": 0.400390625,
+      "u1": 0.72412109375,
+      "v1": 0.62890625,
+      "maxHeightM": 0.1267
+    }
+  ],
+  "instances": [
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 10.802,
+      "z": 17.923,
+      "yaw": 17.6,
+      "scale": 0.997,
+      "heightM": 0.1151,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 10.941,
+      "z": 12.595,
+      "yaw": 291.5,
+      "scale": 0.985,
+      "heightM": 0.1267,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 5.756,
+      "z": 5.656,
+      "yaw": 173.0,
+      "scale": 0.999,
+      "heightM": 0.1346,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 26.481,
+      "z": 39.056,
+      "yaw": 42.6,
+      "scale": 0.963,
+      "heightM": 0.138,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 9.315,
+      "z": -8.873,
+      "yaw": 121.0,
+      "scale": 0.97,
+      "heightM": 0.1231,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 10.079,
+      "z": 17.12,
+      "yaw": 68.0,
+      "scale": 0.992,
+      "heightM": 0.1391,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 22.906,
+      "z": 33.329,
+      "yaw": 149.4,
+      "scale": 0.982,
+      "heightM": 0.1318,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 4.517,
+      "z": 4.317,
+      "yaw": 149.0,
+      "scale": 0.971,
+      "heightM": 0.1188,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 12.64,
+      "z": 10.666,
+      "yaw": 286.5,
+      "scale": 0.979,
+      "heightM": 0.1214,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 4.082,
+      "z": 1.276,
+      "yaw": 302.3,
+      "scale": 0.944,
+      "heightM": 0.1353,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 1.595,
+      "z": -4.974,
+      "yaw": 168.2,
+      "scale": 0.946,
+      "heightM": 0.1148,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 7.643,
+      "z": 32.284,
+      "yaw": 108.6,
+      "scale": 0.981,
+      "heightM": 0.1341,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 3.752,
+      "z": -11.309,
+      "yaw": 197.9,
+      "scale": 0.985,
+      "heightM": 0.1115,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": -15.029,
+      "z": -0.914,
+      "yaw": 98.5,
+      "scale": 0.946,
+      "heightM": 0.1379,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 11.49,
+      "z": 8.264,
+      "yaw": 96.6,
+      "scale": 1.0,
+      "heightM": 0.1217,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 1.25,
+      "z": -1.882,
+      "yaw": 154.2,
+      "scale": 0.972,
+      "heightM": 0.1302,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 26.454,
+      "z": 27.572,
+      "yaw": 359.3,
+      "scale": 0.958,
+      "heightM": 0.1326,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": -4.714,
+      "z": -11.055,
+      "yaw": 108.7,
+      "scale": 0.969,
+      "heightM": 0.1185,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": -1.097,
+      "z": -5.424,
+      "yaw": 141.4,
+      "scale": 0.958,
+      "heightM": 0.1342,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": -12.537,
+      "z": -13.414,
+      "yaw": 105.1,
+      "scale": 0.971,
+      "heightM": 0.1301,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 24.75,
+      "z": 34.108,
+      "yaw": 145.7,
+      "scale": 0.958,
+      "heightM": 0.1102,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 17.376,
+      "z": 21.188,
+      "yaw": 79.4,
+      "scale": 0.947,
+      "heightM": 0.1487,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 9.66,
+      "z": 13.74,
+      "yaw": 41.4,
+      "scale": 0.964,
+      "heightM": 0.1229,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": -11.222,
+      "z": -15.018,
+      "yaw": 204.4,
+      "scale": 0.981,
+      "heightM": 0.1203,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 9.79,
+      "z": 39.6,
+      "yaw": 153.7,
+      "scale": 0.948,
+      "heightM": 0.1208,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 13.632,
+      "z": 12.243,
+      "yaw": 252.7,
+      "scale": 0.985,
+      "heightM": 0.1187,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 18.252,
+      "z": 42.379,
+      "yaw": 134.0,
+      "scale": 0.955,
+      "heightM": 0.1214,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 24.078,
+      "z": 35.773,
+      "yaw": 120.2,
+      "scale": 0.947,
+      "heightM": 0.133,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": -5.113,
+      "z": -10.242,
+      "yaw": 334.3,
+      "scale": 0.962,
+      "heightM": 0.1311,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": -5.565,
+      "z": 8.623,
+      "yaw": 155.5,
+      "scale": 0.958,
+      "heightM": 0.1498,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 5.495,
+      "z": 13.233,
+      "yaw": 220.3,
+      "scale": 0.991,
+      "heightM": 0.1132,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 16.055,
+      "z": 22.443,
+      "yaw": 250.5,
+      "scale": 0.952,
+      "heightM": 0.1478,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": -11.35,
+      "z": -6.28,
+      "yaw": 262.9,
+      "scale": 0.993,
+      "heightM": 0.1341,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": -8.232,
+      "z": -14.85,
+      "yaw": 209.3,
+      "scale": 0.945,
+      "heightM": 0.1333,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 0.415,
+      "z": -3.091,
+      "yaw": 146.7,
+      "scale": 0.976,
+      "heightM": 0.1533,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 2.71,
+      "z": -5.288,
+      "yaw": 151.8,
+      "scale": 0.991,
+      "heightM": 0.1209,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 11.469,
+      "z": 13.532,
+      "yaw": 329.6,
+      "scale": 0.982,
+      "heightM": 0.133,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 29.426,
+      "z": 39.601,
+      "yaw": 71.8,
+      "scale": 0.975,
+      "heightM": 0.1371,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 11.674,
+      "z": 13.912,
+      "yaw": 49.3,
+      "scale": 0.951,
+      "heightM": 0.1242,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 21.148,
+      "z": 31.901,
+      "yaw": 81.6,
+      "scale": 0.946,
+      "heightM": 0.1375,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": -8.609,
+      "z": -19.309,
+      "yaw": 22.4,
+      "scale": 1.0,
+      "heightM": 0.1494,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": -3.844,
+      "z": -14.854,
+      "yaw": 131.5,
+      "scale": 0.986,
+      "heightM": 0.1357,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": -1.803,
+      "z": -25.269,
+      "yaw": 151.8,
+      "scale": 0.988,
+      "heightM": 0.1121,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 26.917,
+      "z": 39.976,
+      "yaw": 236.5,
+      "scale": 0.942,
+      "heightM": 0.1205,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 18.026,
+      "z": 20.506,
+      "yaw": 113.8,
+      "scale": 0.949,
+      "heightM": 0.1442,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 4.889,
+      "z": 6.097,
+      "yaw": 203.8,
+      "scale": 0.994,
+      "heightM": 0.1524,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 19.899,
+      "z": 25.664,
+      "yaw": 239.3,
+      "scale": 0.98,
+      "heightM": 0.1271,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 16.464,
+      "z": 26.268,
+      "yaw": 23.1,
+      "scale": 0.995,
+      "heightM": 0.1118,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": -1.07,
+      "z": 12.777,
+      "yaw": 106.7,
+      "scale": 0.978,
+      "heightM": 0.1127,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 11.046,
+      "z": 11.406,
+      "yaw": 279.7,
+      "scale": 0.941,
+      "heightM": 0.1176,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 8.543,
+      "z": 4.36,
+      "yaw": 346.0,
+      "scale": 0.975,
+      "heightM": 0.1516,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": -3.996,
+      "z": -7.44,
+      "yaw": 324.7,
+      "scale": 0.959,
+      "heightM": 0.1283,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 2.856,
+      "z": 9.961,
+      "yaw": 120.1,
+      "scale": 0.996,
+      "heightM": 0.118,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 25.387,
+      "z": 26.365,
+      "yaw": 187.9,
+      "scale": 0.991,
+      "heightM": 0.1203,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 20.0,
+      "z": 26.195,
+      "yaw": 287.3,
+      "scale": 0.954,
+      "heightM": 0.1365,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 6.417,
+      "z": 2.24,
+      "yaw": 129.4,
+      "scale": 0.954,
+      "heightM": 0.1355,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 24.546,
+      "z": 43.173,
+      "yaw": 224.5,
+      "scale": 0.995,
+      "heightM": 0.1291,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 15.224,
+      "z": 15.467,
+      "yaw": 230.0,
+      "scale": 0.967,
+      "heightM": 0.1403,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": -10.538,
+      "z": -19.157,
+      "yaw": 215.0,
+      "scale": 0.984,
+      "heightM": 0.1292,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 15.255,
+      "z": 16.237,
+      "yaw": 193.0,
+      "scale": 0.967,
+      "heightM": 0.1151,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": -4.034,
+      "z": -12.526,
+      "yaw": 116.0,
+      "scale": 0.993,
+      "heightM": 0.1262,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 11.511,
+      "z": 10.606,
+      "yaw": 333.3,
+      "scale": 0.955,
+      "heightM": 0.1173,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 7.569,
+      "z": 5.004,
+      "yaw": 319.8,
+      "scale": 0.972,
+      "heightM": 0.1273,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 14.721,
+      "z": 23.008,
+      "yaw": 269.3,
+      "scale": 0.995,
+      "heightM": 0.146,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 9.822,
+      "z": 17.948,
+      "yaw": 108.2,
+      "scale": 0.967,
+      "heightM": 0.1337,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 22.916,
+      "z": 5.002,
+      "yaw": 318.0,
+      "scale": 0.973,
+      "heightM": 0.1369,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 27.391,
+      "z": 30.181,
+      "yaw": 343.9,
+      "scale": 0.981,
+      "heightM": 0.1298,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": -1.068,
+      "z": 2.52,
+      "yaw": 319.3,
+      "scale": 0.957,
+      "heightM": 0.1307,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 12.942,
+      "z": 15.324,
+      "yaw": 54.0,
+      "scale": 0.973,
+      "heightM": 0.1201,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 15.084,
+      "z": 21.55,
+      "yaw": 220.9,
+      "scale": 0.974,
+      "heightM": 0.1502,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": -5.977,
+      "z": -21.73,
+      "yaw": 304.0,
+      "scale": 1.0,
+      "heightM": 0.1194,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 3.824,
+      "z": 7.035,
+      "yaw": 155.5,
+      "scale": 0.971,
+      "heightM": 0.1189,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 25.711,
+      "z": 34.97,
+      "yaw": 335.6,
+      "scale": 0.977,
+      "heightM": 0.1161,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 7.605,
+      "z": -4.141,
+      "yaw": 106.0,
+      "scale": 0.998,
+      "heightM": 0.1105,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 11.494,
+      "z": -14.052,
+      "yaw": 226.5,
+      "scale": 0.964,
+      "heightM": 0.124,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 27.603,
+      "z": 35.403,
+      "yaw": 336.1,
+      "scale": 0.997,
+      "heightM": 0.1402,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 14.853,
+      "z": 20.037,
+      "yaw": 93.9,
+      "scale": 0.976,
+      "heightM": 0.1285,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 2.873,
+      "z": 11.817,
+      "yaw": 306.7,
+      "scale": 0.956,
+      "heightM": 0.1204,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 5.509,
+      "z": -17.942,
+      "yaw": 131.8,
+      "scale": 0.99,
+      "heightM": 0.1144,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": -1.464,
+      "z": -6.204,
+      "yaw": 295.4,
+      "scale": 0.981,
+      "heightM": 0.1105,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 23.69,
+      "z": 31.017,
+      "yaw": 187.6,
+      "scale": 0.976,
+      "heightM": 0.1514,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": -8.428,
+      "z": -21.641,
+      "yaw": 289.0,
+      "scale": 0.992,
+      "heightM": 0.1224,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 10.615,
+      "z": 7.613,
+      "yaw": 158.7,
+      "scale": 0.941,
+      "heightM": 0.1281,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 12.549,
+      "z": 38.767,
+      "yaw": 307.9,
+      "scale": 0.999,
+      "heightM": 0.1198,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 9.133,
+      "z": 10.744,
+      "yaw": 285.5,
+      "scale": 0.988,
+      "heightM": 0.1531,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 7.54,
+      "z": 3.477,
+      "yaw": 151.7,
+      "scale": 0.966,
+      "heightM": 0.1242,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": -9.188,
+      "z": -18.153,
+      "yaw": 54.4,
+      "scale": 0.989,
+      "heightM": 0.1395,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": -4.724,
+      "z": -16.477,
+      "yaw": 13.5,
+      "scale": 0.947,
+      "heightM": 0.1205,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 15.904,
+      "z": 25.315,
+      "yaw": 69.0,
+      "scale": 0.951,
+      "heightM": 0.1279,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": -4.663,
+      "z": -9.45,
+      "yaw": 5.7,
+      "scale": 0.97,
+      "heightM": 0.117,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 13.225,
+      "z": 14.37,
+      "yaw": 237.4,
+      "scale": 0.982,
+      "heightM": 0.1129,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 18.327,
+      "z": 22.002,
+      "yaw": 55.1,
+      "scale": 0.957,
+      "heightM": 0.1235,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 2.838,
+      "z": 13.057,
+      "yaw": 312.5,
+      "scale": 0.971,
+      "heightM": 0.1427,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": -3.456,
+      "z": -11.277,
+      "yaw": 131.0,
+      "scale": 0.956,
+      "heightM": 0.1535,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": -6.562,
+      "z": 10.469,
+      "yaw": 179.5,
+      "scale": 0.969,
+      "heightM": 0.1222,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 16.87,
+      "z": 10.458,
+      "yaw": 207.3,
+      "scale": 0.942,
+      "heightM": 0.1261,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 24.184,
+      "z": 28.682,
+      "yaw": 178.4,
+      "scale": 0.972,
+      "heightM": 0.1335,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": -9.668,
+      "z": -14.163,
+      "yaw": 214.5,
+      "scale": 0.952,
+      "heightM": 0.1334,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 23.901,
+      "z": 27.929,
+      "yaw": 227.2,
+      "scale": 0.977,
+      "heightM": 0.119,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 25.724,
+      "z": 31.335,
+      "yaw": 176.5,
+      "scale": 0.977,
+      "heightM": 0.1225,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": -11.964,
+      "z": -18.588,
+      "yaw": 212.3,
+      "scale": 0.948,
+      "heightM": 0.1233,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 8.903,
+      "z": 15.014,
+      "yaw": 46.1,
+      "scale": 0.983,
+      "heightM": 0.1193,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": -1.867,
+      "z": 13.727,
+      "yaw": 107.8,
+      "scale": 0.961,
+      "heightM": 0.1376,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 29.589,
+      "z": 20.401,
+      "yaw": 199.7,
+      "scale": 0.952,
+      "heightM": 0.1231,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": -2.632,
+      "z": 4.93,
+      "yaw": 336.8,
+      "scale": 0.998,
+      "heightM": 0.1304,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 6.617,
+      "z": 11.108,
+      "yaw": 8.8,
+      "scale": 0.945,
+      "heightM": 0.142,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 14.481,
+      "z": 7.522,
+      "yaw": 68.0,
+      "scale": 0.97,
+      "heightM": 0.1161,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": -0.618,
+      "z": -3.581,
+      "yaw": 214.4,
+      "scale": 0.998,
+      "heightM": 0.133,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": -9.837,
+      "z": -4.699,
+      "yaw": 153.9,
+      "scale": 0.942,
+      "heightM": 0.1365,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 19.435,
+      "z": 23.85,
+      "yaw": 265.0,
+      "scale": 0.979,
+      "heightM": 0.1258,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 28.937,
+      "z": 38.438,
+      "yaw": 57.6,
+      "scale": 0.955,
+      "heightM": 0.1168,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 3.431,
+      "z": -1.392,
+      "yaw": 300.6,
+      "scale": 0.999,
+      "heightM": 0.1543,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": -7.475,
+      "z": -12.434,
+      "yaw": 189.0,
+      "scale": 0.943,
+      "heightM": 0.1422,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 25.862,
+      "z": 35.591,
+      "yaw": 40.1,
+      "scale": 0.953,
+      "heightM": 0.1117,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": -9.73,
+      "z": -15.518,
+      "yaw": 227.1,
+      "scale": 0.944,
+      "heightM": 0.1299,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": -2.679,
+      "z": -24.949,
+      "yaw": 106.4,
+      "scale": 0.952,
+      "heightM": 0.1102,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": -6.773,
+      "z": -20.312,
+      "yaw": 288.4,
+      "scale": 0.994,
+      "heightM": 0.1134,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 9.482,
+      "z": 14.584,
+      "yaw": 91.1,
+      "scale": 0.942,
+      "heightM": 0.1465,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": -7.016,
+      "z": -15.986,
+      "yaw": 37.0,
+      "scale": 0.945,
+      "heightM": 0.1204,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 2.514,
+      "z": -2.398,
+      "yaw": 351.1,
+      "scale": 0.982,
+      "heightM": 0.1148,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 9.732,
+      "z": 5.363,
+      "yaw": 356.8,
+      "scale": 0.949,
+      "heightM": 0.1334,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 2.549,
+      "z": 0.661,
+      "yaw": 311.4,
+      "scale": 0.982,
+      "heightM": 0.1294,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 15.81,
+      "z": 19.923,
+      "yaw": 137.8,
+      "scale": 0.984,
+      "heightM": 0.1198,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 7.364,
+      "z": -2.784,
+      "yaw": 271.1,
+      "scale": 0.957,
+      "heightM": 0.1261,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 1.757,
+      "z": -20.708,
+      "yaw": 17.3,
+      "scale": 0.949,
+      "heightM": 0.1131,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 14.439,
+      "z": 13.382,
+      "yaw": 183.8,
+      "scale": 0.95,
+      "heightM": 0.1133,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 8.633,
+      "z": 35.649,
+      "yaw": 282.8,
+      "scale": 0.992,
+      "heightM": 0.1338,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 7.45,
+      "z": 12.698,
+      "yaw": 14.5,
+      "scale": 0.948,
+      "heightM": 0.1134,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 1.005,
+      "z": 21.171,
+      "yaw": 214.4,
+      "scale": 0.973,
+      "heightM": 0.1536,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 22.883,
+      "z": 37.087,
+      "yaw": 86.4,
+      "scale": 0.949,
+      "heightM": 0.15,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 20.717,
+      "z": 46.644,
+      "yaw": 51.4,
+      "scale": 0.949,
+      "heightM": 0.1217,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 3.342,
+      "z": 2.337,
+      "yaw": 294.6,
+      "scale": 0.989,
+      "heightM": 0.1247,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": -7.048,
+      "z": -20.885,
+      "yaw": 353.0,
+      "scale": 0.947,
+      "heightM": 0.1222,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 0.55,
+      "z": -7.269,
+      "yaw": 154.1,
+      "scale": 0.955,
+      "heightM": 0.1119,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": -3.683,
+      "z": -3.889,
+      "yaw": 319.6,
+      "scale": 0.943,
+      "heightM": 0.144,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 0.096,
+      "z": -1.954,
+      "yaw": 148.4,
+      "scale": 0.977,
+      "heightM": 0.122,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 10.395,
+      "z": 7.224,
+      "yaw": 110.1,
+      "scale": 0.972,
+      "heightM": 0.1458,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": -3.414,
+      "z": -7.087,
+      "yaw": 39.6,
+      "scale": 0.95,
+      "heightM": 0.121,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 12.47,
+      "z": -5.726,
+      "yaw": 84.5,
+      "scale": 0.977,
+      "heightM": 0.1415,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 9.426,
+      "z": 4.417,
+      "yaw": 315.3,
+      "scale": 0.946,
+      "heightM": 0.1168,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 26.02,
+      "z": 38.729,
+      "yaw": 117.1,
+      "scale": 0.961,
+      "heightM": 0.1441,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": -7.406,
+      "z": -15.749,
+      "yaw": 95.9,
+      "scale": 0.984,
+      "heightM": 0.1249,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 26.559,
+      "z": 39.798,
+      "yaw": 227.2,
+      "scale": 0.951,
+      "heightM": 0.1201,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 24.712,
+      "z": 33.388,
+      "yaw": 213.1,
+      "scale": 0.953,
+      "heightM": 0.1378,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 0.397,
+      "z": -4.212,
+      "yaw": 189.8,
+      "scale": 0.951,
+      "heightM": 0.1314,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 22.151,
+      "z": 41.917,
+      "yaw": 321.1,
+      "scale": 0.999,
+      "heightM": 0.139,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 20.92,
+      "z": 25.775,
+      "yaw": 295.2,
+      "scale": 0.985,
+      "heightM": 0.1511,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 7.847,
+      "z": 36.456,
+      "yaw": 351.6,
+      "scale": 0.973,
+      "heightM": 0.1528,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 23.981,
+      "z": 33.35,
+      "yaw": 223.2,
+      "scale": 0.988,
+      "heightM": 0.1496,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": -3.73,
+      "z": 11.409,
+      "yaw": 9.4,
+      "scale": 0.969,
+      "heightM": 0.1299,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 16.835,
+      "z": 28.301,
+      "yaw": 349.5,
+      "scale": 0.979,
+      "heightM": 0.1445,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 28.159,
+      "z": 13.215,
+      "yaw": 205.0,
+      "scale": 0.943,
+      "heightM": 0.1172,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 6.216,
+      "z": 9.684,
+      "yaw": 185.4,
+      "scale": 0.985,
+      "heightM": 0.1123,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 27.887,
+      "z": 41.242,
+      "yaw": 256.9,
+      "scale": 0.989,
+      "heightM": 0.1297,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 7.08,
+      "z": 5.249,
+      "yaw": 129.6,
+      "scale": 0.944,
+      "heightM": 0.1185,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 19.098,
+      "z": 21.802,
+      "yaw": 134.0,
+      "scale": 0.956,
+      "heightM": 0.1234,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 27.483,
+      "z": 38.316,
+      "yaw": 74.9,
+      "scale": 0.98,
+      "heightM": 0.1256,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 26.075,
+      "z": 25.346,
+      "yaw": 59.0,
+      "scale": 0.956,
+      "heightM": 0.1202,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": -8.506,
+      "z": -17.475,
+      "yaw": 103.6,
+      "scale": 0.952,
+      "heightM": 0.1295,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 6.402,
+      "z": 3.298,
+      "yaw": 165.4,
+      "scale": 0.962,
+      "heightM": 0.1262,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": -7.873,
+      "z": -11.91,
+      "yaw": 251.3,
+      "scale": 0.993,
+      "heightM": 0.1179,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": -8.817,
+      "z": -14.163,
+      "yaw": 271.2,
+      "scale": 0.998,
+      "heightM": 0.1197,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 8.329,
+      "z": 5.36,
+      "yaw": 25.9,
+      "scale": 0.993,
+      "heightM": 0.1366,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 5.719,
+      "z": 23.706,
+      "yaw": 282.9,
+      "scale": 0.944,
+      "heightM": 0.1128,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 12.506,
+      "z": 35.611,
+      "yaw": 175.6,
+      "scale": 0.948,
+      "heightM": 0.1428,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": -1.524,
+      "z": -4.763,
+      "yaw": 166.6,
+      "scale": 0.978,
+      "heightM": 0.1424,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 5.927,
+      "z": 10.442,
+      "yaw": 232.4,
+      "scale": 0.973,
+      "heightM": 0.111,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 12.416,
+      "z": 16.897,
+      "yaw": 58.3,
+      "scale": 0.952,
+      "heightM": 0.1133,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 21.195,
+      "z": 34.769,
+      "yaw": 50.1,
+      "scale": 0.959,
+      "heightM": 0.1367,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 8.104,
+      "z": 8.28,
+      "yaw": 105.1,
+      "scale": 0.981,
+      "heightM": 0.1395,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 6.226,
+      "z": 7.773,
+      "yaw": 148.2,
+      "scale": 0.996,
+      "heightM": 0.1131,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 18.669,
+      "z": 24.935,
+      "yaw": 245.0,
+      "scale": 0.999,
+      "heightM": 0.1276,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 17.356,
+      "z": 26.455,
+      "yaw": 71.9,
+      "scale": 0.98,
+      "heightM": 0.1165,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": -17.473,
+      "z": -6.574,
+      "yaw": 316.2,
+      "scale": 0.983,
+      "heightM": 0.1336,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 18.881,
+      "z": 27.368,
+      "yaw": 19.7,
+      "scale": 0.952,
+      "heightM": 0.1456,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 0.6,
+      "z": 2.381,
+      "yaw": 300.1,
+      "scale": 0.992,
+      "heightM": 0.1294,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 10.838,
+      "z": 12.034,
+      "yaw": 320.2,
+      "scale": 0.999,
+      "heightM": 0.1176,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 7.334,
+      "z": 9.713,
+      "yaw": 310.0,
+      "scale": 0.999,
+      "heightM": 0.1302,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 19.485,
+      "z": 24.609,
+      "yaw": 314.2,
+      "scale": 0.992,
+      "heightM": 0.1183,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 8.596,
+      "z": -18.429,
+      "yaw": 121.2,
+      "scale": 0.956,
+      "heightM": 0.1164,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 19.712,
+      "z": 33.024,
+      "yaw": 85.8,
+      "scale": 0.993,
+      "heightM": 0.1501,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 5.569,
+      "z": 9.87,
+      "yaw": 122.4,
+      "scale": 0.986,
+      "heightM": 0.1386,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": -2.65,
+      "z": -18.867,
+      "yaw": 209.5,
+      "scale": 0.989,
+      "heightM": 0.1118,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": -3.924,
+      "z": -11.819,
+      "yaw": 189.5,
+      "scale": 0.978,
+      "heightM": 0.1317,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": -0.058,
+      "z": -2.678,
+      "yaw": 138.7,
+      "scale": 0.951,
+      "heightM": 0.1254,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": -6.783,
+      "z": -13.249,
+      "yaw": 62.6,
+      "scale": 0.95,
+      "heightM": 0.1183,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": -2.367,
+      "z": 17.892,
+      "yaw": 223.4,
+      "scale": 0.984,
+      "heightM": 0.1264,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 22.147,
+      "z": 36.144,
+      "yaw": 46.5,
+      "scale": 0.962,
+      "heightM": 0.1311,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": -0.475,
+      "z": -21.25,
+      "yaw": 23.6,
+      "scale": 0.992,
+      "heightM": 0.1324,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 14.112,
+      "z": 17.563,
+      "yaw": 101.9,
+      "scale": 0.969,
+      "heightM": 0.1313,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": -14.363,
+      "z": -15.928,
+      "yaw": 308.3,
+      "scale": 0.977,
+      "heightM": 0.1226,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": -10.215,
+      "z": -15.567,
+      "yaw": 244.5,
+      "scale": 0.943,
+      "heightM": 0.117,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": -7.519,
+      "z": 5.53,
+      "yaw": 287.2,
+      "scale": 0.972,
+      "heightM": 0.128,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 29.934,
+      "z": 35.224,
+      "yaw": 93.6,
+      "scale": 0.993,
+      "heightM": 0.1309,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 23.257,
+      "z": 38.016,
+      "yaw": 246.7,
+      "scale": 0.949,
+      "heightM": 0.1175,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 25.479,
+      "z": 41.672,
+      "yaw": 245.3,
+      "scale": 0.972,
+      "heightM": 0.1388,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 21.083,
+      "z": 29.074,
+      "yaw": 228.5,
+      "scale": 0.958,
+      "heightM": 0.1204,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": -0.418,
+      "z": -16.495,
+      "yaw": 219.3,
+      "scale": 0.995,
+      "heightM": 0.1169,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 7.979,
+      "z": 11.651,
+      "yaw": 5.5,
+      "scale": 0.97,
+      "heightM": 0.1245,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 15.156,
+      "z": 19.523,
+      "yaw": 64.9,
+      "scale": 0.958,
+      "heightM": 0.1412,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 5.357,
+      "z": 1.752,
+      "yaw": 276.3,
+      "scale": 0.974,
+      "heightM": 0.1112,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": -5.404,
+      "z": -13.151,
+      "yaw": 2.8,
+      "scale": 0.962,
+      "heightM": 0.1213,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 25.708,
+      "z": 40.186,
+      "yaw": 289.8,
+      "scale": 0.981,
+      "heightM": 0.1151,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 16.677,
+      "z": 27.329,
+      "yaw": 61.8,
+      "scale": 0.96,
+      "heightM": 0.1233,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 11.315,
+      "z": 15.89,
+      "yaw": 25.6,
+      "scale": 0.967,
+      "heightM": 0.1316,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": -2.082,
+      "z": 13.26,
+      "yaw": 182.3,
+      "scale": 0.952,
+      "heightM": 0.1324,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": -3.092,
+      "z": -4.993,
+      "yaw": 344.0,
+      "scale": 0.994,
+      "heightM": 0.116,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 3.185,
+      "z": 3.259,
+      "yaw": 2.0,
+      "scale": 0.977,
+      "heightM": 0.1365,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 25.976,
+      "z": 26.87,
+      "yaw": 65.0,
+      "scale": 0.956,
+      "heightM": 0.1218,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 0.203,
+      "z": -8.261,
+      "yaw": 268.3,
+      "scale": 0.99,
+      "heightM": 0.1144,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 5.519,
+      "z": 4.251,
+      "yaw": 206.5,
+      "scale": 0.951,
+      "heightM": 0.1283,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 0.17,
+      "z": -3.646,
+      "yaw": 135.3,
+      "scale": 0.985,
+      "heightM": 0.1339,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 25.621,
+      "z": 34.335,
+      "yaw": 331.7,
+      "scale": 0.942,
+      "heightM": 0.1145,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 15.119,
+      "z": 24.492,
+      "yaw": 22.4,
+      "scale": 0.991,
+      "heightM": 0.1423,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": -2.313,
+      "z": -11.757,
+      "yaw": 329.8,
+      "scale": 0.983,
+      "heightM": 0.1168,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 0.98,
+      "z": 1.35,
+      "yaw": 354.2,
+      "scale": 0.953,
+      "heightM": 0.1423,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 4.191,
+      "z": 5.963,
+      "yaw": 202.1,
+      "scale": 0.976,
+      "heightM": 0.1219,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 6.388,
+      "z": 11.727,
+      "yaw": 262.5,
+      "scale": 0.99,
+      "heightM": 0.1153,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 14.088,
+      "z": 14.762,
+      "yaw": 189.6,
+      "scale": 0.983,
+      "heightM": 0.1101,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 24.409,
+      "z": 35.955,
+      "yaw": 329.1,
+      "scale": 0.955,
+      "heightM": 0.1208,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 21.065,
+      "z": 37.038,
+      "yaw": 239.6,
+      "scale": 0.975,
+      "heightM": 0.1204,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 2.292,
+      "z": -1.157,
+      "yaw": 318.0,
+      "scale": 0.945,
+      "heightM": 0.1267,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 1.741,
+      "z": -0.425,
+      "yaw": 279.5,
+      "scale": 0.964,
+      "heightM": 0.1307,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 17.594,
+      "z": 23.616,
+      "yaw": 239.5,
+      "scale": 0.959,
+      "heightM": 0.1261,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 4.549,
+      "z": 7.04,
+      "yaw": 202.7,
+      "scale": 0.946,
+      "heightM": 0.1201,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 27.425,
+      "z": 41.697,
+      "yaw": 225.7,
+      "scale": 0.984,
+      "heightM": 0.1411,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 13.502,
+      "z": 7.36,
+      "yaw": 136.4,
+      "scale": 0.946,
+      "heightM": 0.133,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 20.591,
+      "z": 31.342,
+      "yaw": 128.4,
+      "scale": 0.994,
+      "heightM": 0.136,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 9.455,
+      "z": 16.21,
+      "yaw": 24.7,
+      "scale": 0.982,
+      "heightM": 0.1489,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 18.813,
+      "z": 25.761,
+      "yaw": 320.5,
+      "scale": 0.945,
+      "heightM": 0.1178,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 12.103,
+      "z": 12.217,
+      "yaw": 265.6,
+      "scale": 0.977,
+      "heightM": 0.1137,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 26.682,
+      "z": 32.414,
+      "yaw": 325.4,
+      "scale": 0.968,
+      "heightM": 0.1342,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 0.773,
+      "z": 0.999,
+      "yaw": 309.1,
+      "scale": 0.979,
+      "heightM": 0.1224,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 5.983,
+      "z": 6.772,
+      "yaw": 230.1,
+      "scale": 0.983,
+      "heightM": 0.1201,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 28.433,
+      "z": 16.793,
+      "yaw": 237.4,
+      "scale": 0.954,
+      "heightM": 0.1243,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": -1.739,
+      "z": 4.534,
+      "yaw": 28.9,
+      "scale": 0.981,
+      "heightM": 0.1124,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 15.902,
+      "z": 22.782,
+      "yaw": 327.7,
+      "scale": 0.958,
+      "heightM": 0.1133,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 6.603,
+      "z": 0.222,
+      "yaw": 308.0,
+      "scale": 0.941,
+      "heightM": 0.1117,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 6.637,
+      "z": 8.921,
+      "yaw": 6.1,
+      "scale": 0.956,
+      "heightM": 0.1502,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 5.545,
+      "z": 3.33,
+      "yaw": 160.8,
+      "scale": 0.977,
+      "heightM": 0.1255,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 8.67,
+      "z": -16.002,
+      "yaw": 274.5,
+      "scale": 0.945,
+      "heightM": 0.1492,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 5.423,
+      "z": -3.896,
+      "yaw": 120.3,
+      "scale": 0.989,
+      "heightM": 0.1116,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": -5.477,
+      "z": -18.668,
+      "yaw": 290.0,
+      "scale": 0.94,
+      "heightM": 0.1269,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 22.084,
+      "z": 17.296,
+      "yaw": 38.9,
+      "scale": 0.958,
+      "heightM": 0.1161,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": -6.666,
+      "z": -4.937,
+      "yaw": 322.0,
+      "scale": 0.958,
+      "heightM": 0.1334,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": -8.441,
+      "z": -14.171,
+      "yaw": 214.1,
+      "scale": 0.978,
+      "heightM": 0.128,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 1.945,
+      "z": 2.501,
+      "yaw": 313.5,
+      "scale": 0.975,
+      "heightM": 0.1151,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": -3.454,
+      "z": 9.159,
+      "yaw": 358.8,
+      "scale": 0.958,
+      "heightM": 0.1307,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": -3.674,
+      "z": -16.028,
+      "yaw": 132.1,
+      "scale": 0.942,
+      "heightM": 0.1402,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 0.615,
+      "z": -5.184,
+      "yaw": 135.8,
+      "scale": 0.952,
+      "heightM": 0.1102,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 26.12,
+      "z": 7.421,
+      "yaw": 158.7,
+      "scale": 0.966,
+      "heightM": 0.1188,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": 15.63,
+      "z": 18.436,
+      "yaw": 64.7,
+      "scale": 0.969,
+      "heightM": 0.1304,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": -9.806,
+      "z": -12.624,
+      "yaw": 176.0,
+      "scale": 0.981,
+      "heightM": 0.1458,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 1,
+      "x": -9.421,
+      "z": -20.819,
+      "yaw": 278.0,
+      "scale": 0.98,
+      "heightM": 0.112,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": -7.591,
+      "z": 1.976,
+      "yaw": 107.4,
+      "scale": 0.947,
+      "heightM": 0.1294,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 2,
+      "x": 19.91,
+      "z": 22.451,
+      "yaw": 54.7,
+      "scale": 0.983,
+      "heightM": 0.1157,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 10.217,
+      "z": 1.599,
+      "yaw": 316.2,
+      "scale": 0.942,
+      "heightM": 0.1207,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": -10.816,
+      "z": -19.585,
+      "yaw": 284.0,
+      "scale": 0.954,
+      "heightM": 0.11,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 3,
+      "x": 28.926,
+      "z": 35.103,
+      "yaw": 338.5,
+      "scale": 0.943,
+      "heightM": 0.1184,
+      "planes": 2
+    },
+    {
+      "type": "shard",
+      "variant": 0,
+      "x": 13.354,
+      "z": 29.205,
+      "yaw": 190.0,
+      "scale": 0.979,
+      "heightM": 0.1215,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": -0.374,
+      "z": -19.079,
+      "yaw": 351.1,
+      "scale": 0.947,
+      "heightM": 0.1528,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 21.084,
+      "z": 33.718,
+      "yaw": 322.1,
+      "scale": 0.999,
+      "heightM": 0.1374,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 14.232,
+      "z": 10.031,
+      "yaw": 159.1,
+      "scale": 0.964,
+      "heightM": 0.1212,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": -9.761,
+      "z": -18.345,
+      "yaw": 325.7,
+      "scale": 0.96,
+      "heightM": 0.1745,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 11.396,
+      "z": 14.173,
+      "yaw": 170.0,
+      "scale": 0.988,
+      "heightM": 0.1275,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": -4.025,
+      "z": 11.088,
+      "yaw": 299.9,
+      "scale": 0.954,
+      "heightM": 0.1487,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 13.235,
+      "z": 22.941,
+      "yaw": 135.7,
+      "scale": 0.975,
+      "heightM": 0.1522,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 11.323,
+      "z": -0.173,
+      "yaw": 105.2,
+      "scale": 0.949,
+      "heightM": 0.172,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 4.551,
+      "z": -1.808,
+      "yaw": 123.6,
+      "scale": 0.979,
+      "heightM": 0.1652,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 1.802,
+      "z": -6.101,
+      "yaw": 290.7,
+      "scale": 0.961,
+      "heightM": 0.1301,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 21.192,
+      "z": 22.353,
+      "yaw": 357.9,
+      "scale": 0.96,
+      "heightM": 0.1795,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 21.952,
+      "z": 30.349,
+      "yaw": 204.9,
+      "scale": 0.995,
+      "heightM": 0.159,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": -6.074,
+      "z": -26.886,
+      "yaw": 345.1,
+      "scale": 0.961,
+      "heightM": 0.13,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": -2.316,
+      "z": -13.826,
+      "yaw": 296.5,
+      "scale": 0.994,
+      "heightM": 0.1589,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 20.789,
+      "z": 29.534,
+      "yaw": 100.6,
+      "scale": 0.995,
+      "heightM": 0.1763,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 4.023,
+      "z": 4.234,
+      "yaw": 92.0,
+      "scale": 0.975,
+      "heightM": 0.1668,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": -0.943,
+      "z": -9.698,
+      "yaw": 271.5,
+      "scale": 0.961,
+      "heightM": 0.1293,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": -0.985,
+      "z": -4.052,
+      "yaw": 261.6,
+      "scale": 0.958,
+      "heightM": 0.1309,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": -7.224,
+      "z": -19.042,
+      "yaw": 350.9,
+      "scale": 0.99,
+      "heightM": 0.1578,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 15.068,
+      "z": 32.732,
+      "yaw": 319.2,
+      "scale": 0.974,
+      "heightM": 0.1524,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 9.908,
+      "z": 16.357,
+      "yaw": 270.6,
+      "scale": 0.968,
+      "heightM": 0.1265,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 4.144,
+      "z": -1.887,
+      "yaw": 85.4,
+      "scale": 0.998,
+      "heightM": 0.1417,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": -10.688,
+      "z": -15.361,
+      "yaw": 312.2,
+      "scale": 0.994,
+      "heightM": 0.1561,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 22.661,
+      "z": 33.067,
+      "yaw": 137.5,
+      "scale": 0.941,
+      "heightM": 0.1525,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 5.548,
+      "z": 5.064,
+      "yaw": 279.3,
+      "scale": 0.961,
+      "heightM": 0.1624,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 10.841,
+      "z": 14.784,
+      "yaw": 21.9,
+      "scale": 0.952,
+      "heightM": 0.1304,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": -2.229,
+      "z": -9.364,
+      "yaw": 146.9,
+      "scale": 0.978,
+      "heightM": 0.1394,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 17.951,
+      "z": 25.627,
+      "yaw": 23.3,
+      "scale": 0.996,
+      "heightM": 0.1321,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 10.063,
+      "z": 23.866,
+      "yaw": 118.7,
+      "scale": 0.999,
+      "heightM": 0.178,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 2.329,
+      "z": -4.676,
+      "yaw": 313.6,
+      "scale": 0.951,
+      "heightM": 0.1215,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 10.434,
+      "z": 13.702,
+      "yaw": 8.2,
+      "scale": 0.941,
+      "heightM": 0.1467,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 23.333,
+      "z": 29.327,
+      "yaw": 207.3,
+      "scale": 0.945,
+      "heightM": 0.1583,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 20.073,
+      "z": 19.19,
+      "yaw": 90.8,
+      "scale": 0.985,
+      "heightM": 0.1579,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": -3.407,
+      "z": -13.968,
+      "yaw": 90.2,
+      "scale": 0.949,
+      "heightM": 0.1247,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": -10.14,
+      "z": -16.302,
+      "yaw": 262.5,
+      "scale": 0.979,
+      "heightM": 0.1731,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 0.829,
+      "z": -27.032,
+      "yaw": 168.5,
+      "scale": 0.962,
+      "heightM": 0.1708,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 20.743,
+      "z": 33.171,
+      "yaw": 354.3,
+      "scale": 0.942,
+      "heightM": 0.1407,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 1.584,
+      "z": -2.512,
+      "yaw": 258.3,
+      "scale": 0.941,
+      "heightM": 0.1479,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": -9.454,
+      "z": -20.385,
+      "yaw": 49.0,
+      "scale": 0.94,
+      "heightM": 0.1352,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 4.9,
+      "z": 24.404,
+      "yaw": 118.4,
+      "scale": 0.943,
+      "heightM": 0.1402,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": -2.013,
+      "z": -5.488,
+      "yaw": 267.3,
+      "scale": 0.95,
+      "heightM": 0.1421,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 8.929,
+      "z": 5.238,
+      "yaw": 89.7,
+      "scale": 0.997,
+      "heightM": 0.1483,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 6.612,
+      "z": 11.372,
+      "yaw": 319.8,
+      "scale": 0.965,
+      "heightM": 0.1337,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 10.872,
+      "z": 11.505,
+      "yaw": 324.5,
+      "scale": 0.959,
+      "heightM": 0.1268,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 16.378,
+      "z": 34.582,
+      "yaw": 225.2,
+      "scale": 0.94,
+      "heightM": 0.1537,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 8.985,
+      "z": 7.314,
+      "yaw": 232.9,
+      "scale": 0.955,
+      "heightM": 0.1336,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 13.509,
+      "z": 8.511,
+      "yaw": 11.7,
+      "scale": 0.97,
+      "heightM": 0.1285,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 18.19,
+      "z": 21.623,
+      "yaw": 59.9,
+      "scale": 0.999,
+      "heightM": 0.1333,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 9.005,
+      "z": 14.194,
+      "yaw": 46.2,
+      "scale": 0.974,
+      "heightM": 0.1616,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 12.304,
+      "z": 6.387,
+      "yaw": 271.4,
+      "scale": 0.957,
+      "heightM": 0.1399,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": -10.093,
+      "z": -18.806,
+      "yaw": 123.8,
+      "scale": 0.951,
+      "heightM": 0.1397,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 9.254,
+      "z": 28.098,
+      "yaw": 282.3,
+      "scale": 0.965,
+      "heightM": 0.1558,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 30.993,
+      "z": 35.63,
+      "yaw": 205.0,
+      "scale": 0.98,
+      "heightM": 0.1468,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": -5.379,
+      "z": -27.798,
+      "yaw": 44.7,
+      "scale": 0.962,
+      "heightM": 0.1304,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 15.681,
+      "z": 14.907,
+      "yaw": 180.1,
+      "scale": 0.964,
+      "heightM": 0.1314,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 4.824,
+      "z": 2.587,
+      "yaw": 336.4,
+      "scale": 0.985,
+      "heightM": 0.1454,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": -9.408,
+      "z": -15.927,
+      "yaw": 298.5,
+      "scale": 0.996,
+      "heightM": 0.152,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 16.33,
+      "z": 19.963,
+      "yaw": 82.3,
+      "scale": 0.986,
+      "heightM": 0.162,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 6.902,
+      "z": 1.797,
+      "yaw": 195.6,
+      "scale": 0.947,
+      "heightM": 0.158,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": -16.306,
+      "z": -8.049,
+      "yaw": 291.5,
+      "scale": 0.99,
+      "heightM": 0.1662,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 1.707,
+      "z": -3.436,
+      "yaw": 307.7,
+      "scale": 0.977,
+      "heightM": 0.139,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": -0.331,
+      "z": -0.238,
+      "yaw": 197.6,
+      "scale": 0.989,
+      "heightM": 0.1757,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 14.786,
+      "z": 31.108,
+      "yaw": 257.0,
+      "scale": 0.96,
+      "heightM": 0.1251,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 20.777,
+      "z": 37.904,
+      "yaw": 226.6,
+      "scale": 0.962,
+      "heightM": 0.1687,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 27.031,
+      "z": 39.561,
+      "yaw": 197.1,
+      "scale": 0.98,
+      "heightM": 0.1591,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 3.914,
+      "z": 2.137,
+      "yaw": 5.9,
+      "scale": 0.999,
+      "heightM": 0.1687,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": -0.47,
+      "z": -4.103,
+      "yaw": 105.3,
+      "scale": 0.967,
+      "heightM": 0.1331,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 14.623,
+      "z": 11.462,
+      "yaw": 269.9,
+      "scale": 0.963,
+      "heightM": 0.1584,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 8.244,
+      "z": 10.791,
+      "yaw": 355.4,
+      "scale": 0.955,
+      "heightM": 0.1594,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 5.442,
+      "z": 8.727,
+      "yaw": 133.2,
+      "scale": 0.962,
+      "heightM": 0.1334,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 23.5,
+      "z": 31.593,
+      "yaw": 199.0,
+      "scale": 0.944,
+      "heightM": 0.1464,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": -10.856,
+      "z": -19.788,
+      "yaw": 255.7,
+      "scale": 0.975,
+      "heightM": 0.1745,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 1.372,
+      "z": -0.915,
+      "yaw": 230.5,
+      "scale": 0.942,
+      "heightM": 0.1785,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 11.291,
+      "z": 19.185,
+      "yaw": 35.5,
+      "scale": 0.97,
+      "heightM": 0.1272,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 4.31,
+      "z": -0.559,
+      "yaw": 33.7,
+      "scale": 0.962,
+      "heightM": 0.1594,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 2.533,
+      "z": 19.733,
+      "yaw": 122.1,
+      "scale": 0.996,
+      "heightM": 0.1404,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 27.001,
+      "z": 39.227,
+      "yaw": 250.8,
+      "scale": 0.955,
+      "heightM": 0.1632,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 22.156,
+      "z": 18.836,
+      "yaw": 260.3,
+      "scale": 0.966,
+      "heightM": 0.1599,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": -2.402,
+      "z": -10.382,
+      "yaw": 36.7,
+      "scale": 0.947,
+      "heightM": 0.1781,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 26.257,
+      "z": 38.709,
+      "yaw": 76.2,
+      "scale": 0.997,
+      "heightM": 0.1601,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": -5.614,
+      "z": 11.191,
+      "yaw": 145.1,
+      "scale": 0.977,
+      "heightM": 0.1512,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 0.114,
+      "z": 11.058,
+      "yaw": 85.2,
+      "scale": 0.963,
+      "heightM": 0.1415,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 10.569,
+      "z": 8.066,
+      "yaw": 326.7,
+      "scale": 0.948,
+      "heightM": 0.1381,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 4.095,
+      "z": 8.734,
+      "yaw": 322.9,
+      "scale": 0.969,
+      "heightM": 0.1774,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 6.883,
+      "z": 9.47,
+      "yaw": 152.4,
+      "scale": 0.973,
+      "heightM": 0.1466,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 3.249,
+      "z": -5.159,
+      "yaw": 341.5,
+      "scale": 0.963,
+      "heightM": 0.1421,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 2.381,
+      "z": 3.487,
+      "yaw": 278.9,
+      "scale": 0.949,
+      "heightM": 0.1274,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": -1.737,
+      "z": -6.171,
+      "yaw": 166.5,
+      "scale": 0.979,
+      "heightM": 0.154,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 25.353,
+      "z": 35.275,
+      "yaw": 219.3,
+      "scale": 0.979,
+      "heightM": 0.1657,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 0.247,
+      "z": -3.986,
+      "yaw": 296.7,
+      "scale": 0.969,
+      "heightM": 0.1488,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 19.596,
+      "z": 28.366,
+      "yaw": 254.6,
+      "scale": 0.954,
+      "heightM": 0.1523,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 24.577,
+      "z": 31.79,
+      "yaw": 101.5,
+      "scale": 0.946,
+      "heightM": 0.1236,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 21.178,
+      "z": 25.694,
+      "yaw": 262.5,
+      "scale": 0.964,
+      "heightM": 0.1285,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 26.55,
+      "z": 38.137,
+      "yaw": 349.2,
+      "scale": 0.945,
+      "heightM": 0.1471,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": -2.872,
+      "z": -10.877,
+      "yaw": 104.3,
+      "scale": 0.98,
+      "heightM": 0.1778,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 14.405,
+      "z": 23.138,
+      "yaw": 62.2,
+      "scale": 0.942,
+      "heightM": 0.1421,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": -3.922,
+      "z": -16.268,
+      "yaw": 324.9,
+      "scale": 0.959,
+      "heightM": 0.1341,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 3.965,
+      "z": -2.956,
+      "yaw": 296.3,
+      "scale": 0.976,
+      "heightM": 0.1561,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 5.109,
+      "z": 6.551,
+      "yaw": 174.0,
+      "scale": 0.945,
+      "heightM": 0.1358,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 18.739,
+      "z": 30.44,
+      "yaw": 304.0,
+      "scale": 0.962,
+      "heightM": 0.1266,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 11.628,
+      "z": 15.92,
+      "yaw": 32.1,
+      "scale": 0.958,
+      "heightM": 0.1423,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 17.457,
+      "z": 19.655,
+      "yaw": 132.7,
+      "scale": 0.991,
+      "heightM": 0.163,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": -5.098,
+      "z": -12.458,
+      "yaw": 170.3,
+      "scale": 0.969,
+      "heightM": 0.1484,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 0.004,
+      "z": 8.248,
+      "yaw": 163.0,
+      "scale": 0.946,
+      "heightM": 0.13,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 13.176,
+      "z": 17.43,
+      "yaw": 92.7,
+      "scale": 0.993,
+      "heightM": 0.1771,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 5.174,
+      "z": 3.874,
+      "yaw": 60.3,
+      "scale": 0.958,
+      "heightM": 0.166,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": -3.188,
+      "z": -1.704,
+      "yaw": 13.0,
+      "scale": 0.945,
+      "heightM": 0.1672,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 9.369,
+      "z": 0.018,
+      "yaw": 281.2,
+      "scale": 0.976,
+      "heightM": 0.1542,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 0.718,
+      "z": -7.876,
+      "yaw": 54.3,
+      "scale": 0.988,
+      "heightM": 0.1455,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": -8.7,
+      "z": -15.112,
+      "yaw": 146.7,
+      "scale": 0.974,
+      "heightM": 0.1612,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 13.388,
+      "z": 21.065,
+      "yaw": 173.1,
+      "scale": 0.955,
+      "heightM": 0.1544,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 3.596,
+      "z": -0.241,
+      "yaw": 89.5,
+      "scale": 0.949,
+      "heightM": 0.1223,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": -7.32,
+      "z": -19.955,
+      "yaw": 43.5,
+      "scale": 0.946,
+      "heightM": 0.1387,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 19.99,
+      "z": 22.65,
+      "yaw": 255.2,
+      "scale": 0.978,
+      "heightM": 0.1769,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 2.372,
+      "z": 17.664,
+      "yaw": 150.8,
+      "scale": 0.983,
+      "heightM": 0.1263,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 14.756,
+      "z": 12.576,
+      "yaw": 318.5,
+      "scale": 0.952,
+      "heightM": 0.1746,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 20.463,
+      "z": 41.665,
+      "yaw": 115.3,
+      "scale": 0.992,
+      "heightM": 0.1745,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 10.652,
+      "z": 23.816,
+      "yaw": 159.5,
+      "scale": 0.948,
+      "heightM": 0.1237,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": -1.221,
+      "z": -17.106,
+      "yaw": 100.4,
+      "scale": 0.99,
+      "heightM": 0.1404,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 9.757,
+      "z": 6.55,
+      "yaw": 38.0,
+      "scale": 0.995,
+      "heightM": 0.1648,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 25.237,
+      "z": 40.87,
+      "yaw": 17.6,
+      "scale": 0.966,
+      "heightM": 0.1294,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 9.245,
+      "z": 4.131,
+      "yaw": 190.2,
+      "scale": 0.951,
+      "heightM": 0.1455,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 9.42,
+      "z": 25.374,
+      "yaw": 152.2,
+      "scale": 0.96,
+      "heightM": 0.1735,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 24.266,
+      "z": 44.287,
+      "yaw": 113.8,
+      "scale": 0.944,
+      "heightM": 0.1556,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 16.858,
+      "z": 22.347,
+      "yaw": 135.9,
+      "scale": 0.975,
+      "heightM": 0.1716,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 9.195,
+      "z": 6.755,
+      "yaw": 204.1,
+      "scale": 0.962,
+      "heightM": 0.1325,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 23.846,
+      "z": 33.735,
+      "yaw": 122.5,
+      "scale": 0.957,
+      "heightM": 0.1732,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 0.297,
+      "z": -6.994,
+      "yaw": 178.5,
+      "scale": 0.959,
+      "heightM": 0.1508,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 3.648,
+      "z": 17.894,
+      "yaw": 191.0,
+      "scale": 0.961,
+      "heightM": 0.1414,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 6.283,
+      "z": 0.824,
+      "yaw": 307.1,
+      "scale": 0.961,
+      "heightM": 0.1584,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": -6.916,
+      "z": -26.005,
+      "yaw": 29.6,
+      "scale": 0.973,
+      "heightM": 0.1637,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 22.252,
+      "z": 35.571,
+      "yaw": 153.1,
+      "scale": 0.977,
+      "heightM": 0.1243,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 12.717,
+      "z": 7.288,
+      "yaw": 304.2,
+      "scale": 0.997,
+      "heightM": 0.1364,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 10.683,
+      "z": 15.459,
+      "yaw": 289.5,
+      "scale": 0.99,
+      "heightM": 0.1335,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": -0.293,
+      "z": -6.333,
+      "yaw": 102.6,
+      "scale": 0.975,
+      "heightM": 0.149,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 8.89,
+      "z": 8.687,
+      "yaw": 335.8,
+      "scale": 0.99,
+      "heightM": 0.1435,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 23.925,
+      "z": 35.492,
+      "yaw": 98.8,
+      "scale": 0.993,
+      "heightM": 0.133,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 4.67,
+      "z": 32.927,
+      "yaw": 105.9,
+      "scale": 0.94,
+      "heightM": 0.1209,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 5.165,
+      "z": -0.793,
+      "yaw": 198.1,
+      "scale": 0.961,
+      "heightM": 0.1346,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": -6.84,
+      "z": -5.203,
+      "yaw": 194.0,
+      "scale": 0.971,
+      "heightM": 0.1699,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": -4.76,
+      "z": -12.032,
+      "yaw": 355.3,
+      "scale": 0.957,
+      "heightM": 0.1505,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": -1.572,
+      "z": -9.435,
+      "yaw": 219.9,
+      "scale": 0.997,
+      "heightM": 0.1563,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": -10.27,
+      "z": -17.674,
+      "yaw": 150.5,
+      "scale": 0.955,
+      "heightM": 0.1247,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": -1.366,
+      "z": 10.242,
+      "yaw": 1.0,
+      "scale": 0.968,
+      "heightM": 0.1709,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": -0.755,
+      "z": -10.884,
+      "yaw": 6.6,
+      "scale": 0.976,
+      "heightM": 0.1309,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 28.349,
+      "z": 41.155,
+      "yaw": 183.6,
+      "scale": 0.95,
+      "heightM": 0.1735,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": -1.363,
+      "z": -29.879,
+      "yaw": 233.1,
+      "scale": 0.985,
+      "heightM": 0.1336,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 23.369,
+      "z": 37.375,
+      "yaw": 18.8,
+      "scale": 0.996,
+      "heightM": 0.1451,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 31.478,
+      "z": 35.182,
+      "yaw": 48.7,
+      "scale": 0.978,
+      "heightM": 0.1562,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 19.132,
+      "z": 24.855,
+      "yaw": 324.1,
+      "scale": 0.974,
+      "heightM": 0.1668,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": -4.222,
+      "z": -13.248,
+      "yaw": 154.5,
+      "scale": 0.943,
+      "heightM": 0.1642,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 17.168,
+      "z": 24.873,
+      "yaw": 117.1,
+      "scale": 0.981,
+      "heightM": 0.1661,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": -7.227,
+      "z": -26.595,
+      "yaw": 201.6,
+      "scale": 0.959,
+      "heightM": 0.1225,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": -6.671,
+      "z": -6.431,
+      "yaw": 2.8,
+      "scale": 0.995,
+      "heightM": 0.1333,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 4.7,
+      "z": 1.285,
+      "yaw": 256.6,
+      "scale": 0.983,
+      "heightM": 0.1648,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": -2.295,
+      "z": -12.755,
+      "yaw": 352.0,
+      "scale": 0.977,
+      "heightM": 0.1369,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 7.821,
+      "z": 3.977,
+      "yaw": 281.7,
+      "scale": 0.977,
+      "heightM": 0.1234,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 7.495,
+      "z": 1.769,
+      "yaw": 252.1,
+      "scale": 0.99,
+      "heightM": 0.1763,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": -4.713,
+      "z": -4.159,
+      "yaw": 31.5,
+      "scale": 0.979,
+      "heightM": 0.142,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 25.508,
+      "z": 40.576,
+      "yaw": 97.8,
+      "scale": 0.997,
+      "heightM": 0.1272,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 24.146,
+      "z": 28.255,
+      "yaw": 317.7,
+      "scale": 0.997,
+      "heightM": 0.1796,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 19.107,
+      "z": 28.979,
+      "yaw": 44.6,
+      "scale": 0.989,
+      "heightM": 0.1379,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 0.004,
+      "z": -0.956,
+      "yaw": 348.6,
+      "scale": 0.956,
+      "heightM": 0.1388,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": -21.746,
+      "z": -18.514,
+      "yaw": 2.9,
+      "scale": 0.963,
+      "heightM": 0.1656,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 10.945,
+      "z": 8.54,
+      "yaw": 141.2,
+      "scale": 0.998,
+      "heightM": 0.152,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 27.967,
+      "z": 38.014,
+      "yaw": 351.2,
+      "scale": 0.975,
+      "heightM": 0.1203,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 12.177,
+      "z": 27.951,
+      "yaw": 217.2,
+      "scale": 0.949,
+      "heightM": 0.1543,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 8.764,
+      "z": -1.934,
+      "yaw": 18.6,
+      "scale": 0.988,
+      "heightM": 0.1589,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 6.44,
+      "z": 26.694,
+      "yaw": 343.7,
+      "scale": 0.975,
+      "heightM": 0.1361,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 21.776,
+      "z": 31.082,
+      "yaw": 288.8,
+      "scale": 0.961,
+      "heightM": 0.1253,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 15.628,
+      "z": 33.392,
+      "yaw": 286.0,
+      "scale": 0.998,
+      "heightM": 0.1408,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 16.139,
+      "z": 17.683,
+      "yaw": 276.2,
+      "scale": 0.962,
+      "heightM": 0.1444,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 12.738,
+      "z": 21.925,
+      "yaw": 67.1,
+      "scale": 0.963,
+      "heightM": 0.1592,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": -7.646,
+      "z": -22.34,
+      "yaw": 87.3,
+      "scale": 0.994,
+      "heightM": 0.1301,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 22.394,
+      "z": 1.627,
+      "yaw": 17.7,
+      "scale": 0.968,
+      "heightM": 0.1684,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 19.896,
+      "z": 33.487,
+      "yaw": 38.6,
+      "scale": 0.968,
+      "heightM": 0.1418,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": -2.868,
+      "z": -0.55,
+      "yaw": 196.8,
+      "scale": 0.991,
+      "heightM": 0.1567,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 13.203,
+      "z": 11.094,
+      "yaw": 54.7,
+      "scale": 0.969,
+      "heightM": 0.179,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": -14.43,
+      "z": -13.386,
+      "yaw": 327.8,
+      "scale": 0.953,
+      "heightM": 0.1214,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 1.194,
+      "z": 23.613,
+      "yaw": 176.2,
+      "scale": 0.951,
+      "heightM": 0.1413,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": -3.46,
+      "z": -26.418,
+      "yaw": 41.6,
+      "scale": 0.945,
+      "heightM": 0.166,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": -3.55,
+      "z": 1.578,
+      "yaw": 269.6,
+      "scale": 0.957,
+      "heightM": 0.1549,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 13.011,
+      "z": 24.95,
+      "yaw": 200.5,
+      "scale": 0.951,
+      "heightM": 0.1375,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 13.634,
+      "z": 30.172,
+      "yaw": 278.2,
+      "scale": 0.977,
+      "heightM": 0.1288,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": -8.984,
+      "z": -13.182,
+      "yaw": 23.5,
+      "scale": 0.983,
+      "heightM": 0.1721,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": -3.169,
+      "z": -9.668,
+      "yaw": 279.6,
+      "scale": 0.966,
+      "heightM": 0.1273,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": -9.87,
+      "z": -10.834,
+      "yaw": 301.4,
+      "scale": 0.975,
+      "heightM": 0.1386,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": -2.209,
+      "z": -32.041,
+      "yaw": 288.5,
+      "scale": 0.965,
+      "heightM": 0.1624,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": -22.868,
+      "z": -15.448,
+      "yaw": 12.7,
+      "scale": 0.98,
+      "heightM": 0.1728,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 21.077,
+      "z": 24.687,
+      "yaw": 15.1,
+      "scale": 0.945,
+      "heightM": 0.1206,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 10.648,
+      "z": 10.953,
+      "yaw": 168.1,
+      "scale": 0.987,
+      "heightM": 0.1631,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": -3.417,
+      "z": -7.798,
+      "yaw": 86.6,
+      "scale": 0.977,
+      "heightM": 0.1434,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": -8.901,
+      "z": -17.308,
+      "yaw": 266.0,
+      "scale": 0.986,
+      "heightM": 0.1763,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 14.362,
+      "z": 22.405,
+      "yaw": 214.1,
+      "scale": 0.994,
+      "heightM": 0.1248,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": -7.972,
+      "z": -25.354,
+      "yaw": 26.0,
+      "scale": 0.987,
+      "heightM": 0.126,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 19.812,
+      "z": 35.175,
+      "yaw": 307.4,
+      "scale": 0.941,
+      "heightM": 0.1565,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 23.065,
+      "z": 27.423,
+      "yaw": 161.0,
+      "scale": 0.971,
+      "heightM": 0.1441,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": -0.856,
+      "z": -13.604,
+      "yaw": 93.9,
+      "scale": 0.955,
+      "heightM": 0.1382,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 2.166,
+      "z": 4.746,
+      "yaw": 264.5,
+      "scale": 0.943,
+      "heightM": 0.1506,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 16.873,
+      "z": 21.004,
+      "yaw": 181.5,
+      "scale": 0.997,
+      "heightM": 0.1665,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": -2.985,
+      "z": -12.347,
+      "yaw": 257.6,
+      "scale": 0.964,
+      "heightM": 0.1335,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 19.544,
+      "z": 26.835,
+      "yaw": 265.0,
+      "scale": 0.965,
+      "heightM": 0.1488,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 18.817,
+      "z": 30.83,
+      "yaw": 190.3,
+      "scale": 0.971,
+      "heightM": 0.1326,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 25.184,
+      "z": 31.314,
+      "yaw": 308.5,
+      "scale": 0.979,
+      "heightM": 0.1292,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 17.876,
+      "z": 22.13,
+      "yaw": 323.3,
+      "scale": 0.991,
+      "heightM": 0.1671,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 4.688,
+      "z": -0.782,
+      "yaw": 222.8,
+      "scale": 0.987,
+      "heightM": 0.1202,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": -2.745,
+      "z": -33.068,
+      "yaw": 11.9,
+      "scale": 0.99,
+      "heightM": 0.137,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": 15.278,
+      "z": 11.076,
+      "yaw": 226.6,
+      "scale": 0.974,
+      "heightM": 0.1434,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 0,
+      "x": -6.152,
+      "z": -11.273,
+      "yaw": 237.8,
+      "scale": 0.942,
+      "heightM": 0.1569,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 25.779,
+      "z": 37.71,
+      "yaw": 191.3,
+      "scale": 0.99,
+      "heightM": 0.1684,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": -0.87,
+      "z": -21.502,
+      "yaw": 51.9,
+      "scale": 0.962,
+      "heightM": 0.1589,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 9.082,
+      "z": -8.555,
+      "yaw": 149.3,
+      "scale": 0.991,
+      "heightM": 0.166,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 5.384,
+      "z": -9.858,
+      "yaw": 271.0,
+      "scale": 0.991,
+      "heightM": 0.1621,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": -6.784,
+      "z": -18.886,
+      "yaw": 53.2,
+      "scale": 0.958,
+      "heightM": 0.1558,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 3,
+      "x": 22.14,
+      "z": 25.661,
+      "yaw": 91.3,
+      "scale": 0.961,
+      "heightM": 0.1321,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 1,
+      "x": 27.761,
+      "z": 38.848,
+      "yaw": 29.2,
+      "scale": 0.972,
+      "heightM": 0.1583,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 12.106,
+      "z": -5.923,
+      "yaw": 276.5,
+      "scale": 0.966,
+      "heightM": 0.1529,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": -3.076,
+      "z": -21.185,
+      "yaw": 257.8,
+      "scale": 0.96,
+      "heightM": 0.1304,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": -4.946,
+      "z": -7.207,
+      "yaw": 267.0,
+      "scale": 0.996,
+      "heightM": 0.1554,
+      "planes": 2
+    },
+    {
+      "type": "pebble",
+      "variant": 2,
+      "x": 18.472,
+      "z": 26.243,
+      "yaw": 265.9,
+      "scale": 0.943,
+      "heightM": 0.1777,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 2,
+      "x": 8.806,
+      "z": 9.289,
+      "yaw": 285.5,
+      "scale": 0.948,
+      "heightM": 0.1238,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 2,
+      "x": 23.646,
+      "z": 29.363,
+      "yaw": 187.9,
+      "scale": 0.967,
+      "heightM": 0.0909,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 3,
+      "x": 10.544,
+      "z": 21.599,
+      "yaw": 147.6,
+      "scale": 0.991,
+      "heightM": 0.0919,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 1,
+      "x": 2.731,
+      "z": -2.711,
+      "yaw": 321.4,
+      "scale": 0.946,
+      "heightM": 0.1368,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 3,
+      "x": -17.668,
+      "z": -11.604,
+      "yaw": 187.8,
+      "scale": 0.976,
+      "heightM": 0.0879,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 0,
+      "x": 25.233,
+      "z": 34.652,
+      "yaw": 311.9,
+      "scale": 0.952,
+      "heightM": 0.0842,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 2,
+      "x": 3.056,
+      "z": -4.953,
+      "yaw": 132.4,
+      "scale": 0.962,
+      "heightM": 0.1186,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 1,
+      "x": 3.432,
+      "z": 18.148,
+      "yaw": 37.4,
+      "scale": 0.989,
+      "heightM": 0.1286,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 2,
+      "x": -1.509,
+      "z": -12.23,
+      "yaw": 117.0,
+      "scale": 0.994,
+      "heightM": 0.1238,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 0,
+      "x": -9.868,
+      "z": -19.814,
+      "yaw": 51.3,
+      "scale": 0.982,
+      "heightM": 0.0892,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 1,
+      "x": 7.631,
+      "z": 5.677,
+      "yaw": 347.4,
+      "scale": 0.984,
+      "heightM": 0.1376,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 3,
+      "x": 22.382,
+      "z": 20.54,
+      "yaw": 63.4,
+      "scale": 0.962,
+      "heightM": 0.0976,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 2,
+      "x": 25.676,
+      "z": 32.523,
+      "yaw": 123.2,
+      "scale": 0.977,
+      "heightM": 0.1071,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 3,
+      "x": 12.008,
+      "z": 14.87,
+      "yaw": 16.4,
+      "scale": 0.969,
+      "heightM": 0.0951,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 2,
+      "x": 11.946,
+      "z": 20.515,
+      "yaw": 45.5,
+      "scale": 0.983,
+      "heightM": 0.0998,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 3,
+      "x": 11.609,
+      "z": -9.839,
+      "yaw": 166.2,
+      "scale": 0.963,
+      "heightM": 0.08,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 0,
+      "x": 17.562,
+      "z": 20.261,
+      "yaw": 90.3,
+      "scale": 0.989,
+      "heightM": 0.1078,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 0,
+      "x": 23.017,
+      "z": 36.851,
+      "yaw": 118.7,
+      "scale": 0.986,
+      "heightM": 0.139,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 0,
+      "x": 7.178,
+      "z": -23.059,
+      "yaw": 202.3,
+      "scale": 0.977,
+      "heightM": 0.0921,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 0,
+      "x": 4.307,
+      "z": 7.565,
+      "yaw": 153.7,
+      "scale": 0.986,
+      "heightM": 0.1375,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 1,
+      "x": 19.451,
+      "z": 32.282,
+      "yaw": 51.1,
+      "scale": 0.952,
+      "heightM": 0.0862,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 0,
+      "x": 18.951,
+      "z": 22.935,
+      "yaw": 239.1,
+      "scale": 0.981,
+      "heightM": 0.1209,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 2,
+      "x": -3.879,
+      "z": -4.795,
+      "yaw": 342.8,
+      "scale": 0.988,
+      "heightM": 0.1182,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 1,
+      "x": 2.062,
+      "z": -0.731,
+      "yaw": 304.0,
+      "scale": 0.996,
+      "heightM": 0.1242,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 0,
+      "x": 10.294,
+      "z": 11.761,
+      "yaw": 284.9,
+      "scale": 0.973,
+      "heightM": 0.0929,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 3,
+      "x": 6.972,
+      "z": 8.982,
+      "yaw": 115.2,
+      "scale": 0.976,
+      "heightM": 0.1043,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 0,
+      "x": 0.416,
+      "z": -0.764,
+      "yaw": 153.0,
+      "scale": 0.945,
+      "heightM": 0.0813,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 0,
+      "x": 2.677,
+      "z": 4.383,
+      "yaw": 264.8,
+      "scale": 0.992,
+      "heightM": 0.1162,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 1,
+      "x": -5.989,
+      "z": -12.375,
+      "yaw": 2.4,
+      "scale": 0.955,
+      "heightM": 0.1051,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 1,
+      "x": 20.497,
+      "z": 33.828,
+      "yaw": 65.4,
+      "scale": 0.971,
+      "heightM": 0.1154,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 2,
+      "x": 19.805,
+      "z": 39.159,
+      "yaw": 151.1,
+      "scale": 0.969,
+      "heightM": 0.099,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 0,
+      "x": 26.287,
+      "z": 40.798,
+      "yaw": 235.5,
+      "scale": 0.949,
+      "heightM": 0.0812,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 1,
+      "x": 20.898,
+      "z": 32.456,
+      "yaw": 63.9,
+      "scale": 0.987,
+      "heightM": 0.1127,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 1,
+      "x": -2.568,
+      "z": -22.15,
+      "yaw": 213.6,
+      "scale": 0.954,
+      "heightM": 0.1084,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 1,
+      "x": 19.519,
+      "z": 27.03,
+      "yaw": 233.2,
+      "scale": 0.963,
+      "heightM": 0.0807,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 3,
+      "x": -3.598,
+      "z": -2.064,
+      "yaw": 137.5,
+      "scale": 0.97,
+      "heightM": 0.0951,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 2,
+      "x": 16.471,
+      "z": 26.578,
+      "yaw": 34.2,
+      "scale": 0.967,
+      "heightM": 0.0884,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 0,
+      "x": 14.717,
+      "z": 24.675,
+      "yaw": 20.3,
+      "scale": 0.971,
+      "heightM": 0.1361,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 1,
+      "x": -9.066,
+      "z": -17.597,
+      "yaw": 34.4,
+      "scale": 0.943,
+      "heightM": 0.0896,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 2,
+      "x": 27.316,
+      "z": 41.223,
+      "yaw": 303.9,
+      "scale": 0.951,
+      "heightM": 0.1108,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 2,
+      "x": 10.783,
+      "z": 2.816,
+      "yaw": 322.5,
+      "scale": 0.99,
+      "heightM": 0.1057,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 1,
+      "x": -15.008,
+      "z": -8.161,
+      "yaw": 269.7,
+      "scale": 0.965,
+      "heightM": 0.0812,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 2,
+      "x": 4.524,
+      "z": 10.33,
+      "yaw": 141.2,
+      "scale": 0.973,
+      "heightM": 0.114,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 2,
+      "x": -7.767,
+      "z": -21.906,
+      "yaw": 305.5,
+      "scale": 0.971,
+      "heightM": 0.0907,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 3,
+      "x": 24.575,
+      "z": 29.531,
+      "yaw": 224.3,
+      "scale": 0.955,
+      "heightM": 0.1056,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 2,
+      "x": 21.207,
+      "z": 31.136,
+      "yaw": 76.6,
+      "scale": 0.95,
+      "heightM": 0.1224,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 0,
+      "x": 10.156,
+      "z": 8.2,
+      "yaw": 87.2,
+      "scale": 0.946,
+      "heightM": 0.0908,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 1,
+      "x": -2.641,
+      "z": -19.315,
+      "yaw": 219.7,
+      "scale": 0.999,
+      "heightM": 0.1162,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 3,
+      "x": 16.893,
+      "z": 21.353,
+      "yaw": 84.0,
+      "scale": 0.94,
+      "heightM": 0.1046,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 0,
+      "x": 5.8,
+      "z": 14.129,
+      "yaw": 201.3,
+      "scale": 0.94,
+      "heightM": 0.129,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 3,
+      "x": -8.084,
+      "z": -17.478,
+      "yaw": 99.7,
+      "scale": 0.977,
+      "heightM": 0.0903,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 2,
+      "x": 27.555,
+      "z": 37.684,
+      "yaw": 43.9,
+      "scale": 0.947,
+      "heightM": 0.081,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 0,
+      "x": -6.084,
+      "z": -8.707,
+      "yaw": 356.2,
+      "scale": 0.947,
+      "heightM": 0.1098,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 2,
+      "x": 20.55,
+      "z": 23.076,
+      "yaw": 56.9,
+      "scale": 0.948,
+      "heightM": 0.1222,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 1,
+      "x": -7.89,
+      "z": -6.021,
+      "yaw": 174.8,
+      "scale": 0.986,
+      "heightM": 0.0992,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 2,
+      "x": 23.448,
+      "z": 33.859,
+      "yaw": 158.4,
+      "scale": 0.956,
+      "heightM": 0.1065,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 0,
+      "x": -3.081,
+      "z": 1.122,
+      "yaw": 133.7,
+      "scale": 0.983,
+      "heightM": 0.0847,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 0,
+      "x": 26.74,
+      "z": 42.214,
+      "yaw": 227.3,
+      "scale": 0.947,
+      "heightM": 0.0899,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 0,
+      "x": 23.896,
+      "z": 31.131,
+      "yaw": 184.0,
+      "scale": 0.982,
+      "heightM": 0.1179,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 1,
+      "x": 15.067,
+      "z": 21.182,
+      "yaw": 68.3,
+      "scale": 0.981,
+      "heightM": 0.0977,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 2,
+      "x": 19.109,
+      "z": 20.723,
+      "yaw": 85.8,
+      "scale": 0.984,
+      "heightM": 0.0807,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 3,
+      "x": -6.234,
+      "z": -22.303,
+      "yaw": 279.7,
+      "scale": 0.971,
+      "heightM": 0.1055,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 2,
+      "x": 4.325,
+      "z": -2.049,
+      "yaw": 307.4,
+      "scale": 0.949,
+      "heightM": 0.085,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 3,
+      "x": -9.526,
+      "z": -9.256,
+      "yaw": 88.4,
+      "scale": 0.975,
+      "heightM": 0.0931,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 1,
+      "x": -7.405,
+      "z": -19.25,
+      "yaw": 282.1,
+      "scale": 0.985,
+      "heightM": 0.0809,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 0,
+      "x": 11.995,
+      "z": 13.722,
+      "yaw": 278.4,
+      "scale": 0.982,
+      "heightM": 0.084,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 3,
+      "x": 13.703,
+      "z": 47.414,
+      "yaw": 75.4,
+      "scale": 0.94,
+      "heightM": 0.0856,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 1,
+      "x": 9.807,
+      "z": 15.686,
+      "yaw": 12.7,
+      "scale": 0.991,
+      "heightM": 0.1053,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 0,
+      "x": 15.639,
+      "z": 1.957,
+      "yaw": 151.5,
+      "scale": 0.968,
+      "heightM": 0.1004,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 2,
+      "x": -10.987,
+      "z": -16.801,
+      "yaw": 226.3,
+      "scale": 0.966,
+      "heightM": 0.1118,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 1,
+      "x": -20.553,
+      "z": -10.475,
+      "yaw": 55.0,
+      "scale": 0.998,
+      "heightM": 0.0893,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 1,
+      "x": 10.734,
+      "z": 0.771,
+      "yaw": 315.5,
+      "scale": 0.942,
+      "heightM": 0.0868,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 1,
+      "x": 13.898,
+      "z": 9.639,
+      "yaw": 277.4,
+      "scale": 0.968,
+      "heightM": 0.1323,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 0,
+      "x": 3.525,
+      "z": -6.281,
+      "yaw": 149.7,
+      "scale": 0.972,
+      "heightM": 0.0983,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 1,
+      "x": 11.002,
+      "z": 7.551,
+      "yaw": 133.7,
+      "scale": 0.987,
+      "heightM": 0.0986,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 1,
+      "x": 19.575,
+      "z": 21.997,
+      "yaw": 61.1,
+      "scale": 0.954,
+      "heightM": 0.082,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 3,
+      "x": 24.411,
+      "z": 35.423,
+      "yaw": 7.9,
+      "scale": 0.977,
+      "heightM": 0.1012,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 3,
+      "x": -2.205,
+      "z": 5.229,
+      "yaw": 348.5,
+      "scale": 0.978,
+      "heightM": 0.082,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 2,
+      "x": 25.184,
+      "z": 35.927,
+      "yaw": 311.3,
+      "scale": 0.978,
+      "heightM": 0.1234,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 3,
+      "x": 14.027,
+      "z": 44.662,
+      "yaw": 66.3,
+      "scale": 0.951,
+      "heightM": 0.0869,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 0,
+      "x": 28.745,
+      "z": 40.179,
+      "yaw": 56.2,
+      "scale": 0.952,
+      "heightM": 0.1138,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 0,
+      "x": 2.643,
+      "z": -4.057,
+      "yaw": 201.8,
+      "scale": 0.968,
+      "heightM": 0.1098,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 1,
+      "x": 7.326,
+      "z": 2.38,
+      "yaw": 138.6,
+      "scale": 0.978,
+      "heightM": 0.1044,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 3,
+      "x": 0.913,
+      "z": -1.897,
+      "yaw": 160.3,
+      "scale": 0.976,
+      "heightM": 0.106,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 3,
+      "x": 30.956,
+      "z": 31.127,
+      "yaw": 260.6,
+      "scale": 0.957,
+      "heightM": 0.0869,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 0,
+      "x": 12.545,
+      "z": 19.741,
+      "yaw": 91.0,
+      "scale": 0.978,
+      "heightM": 0.116,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 1,
+      "x": 4.847,
+      "z": -0.947,
+      "yaw": 289.9,
+      "scale": 0.962,
+      "heightM": 0.114,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 0,
+      "x": 31.67,
+      "z": 32.774,
+      "yaw": 245.9,
+      "scale": 0.942,
+      "heightM": 0.113,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 1,
+      "x": -14.01,
+      "z": -15.56,
+      "yaw": 350.6,
+      "scale": 0.972,
+      "heightM": 0.1348,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 2,
+      "x": 1.89,
+      "z": -7.197,
+      "yaw": 147.0,
+      "scale": 0.979,
+      "heightM": 0.1133,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 3,
+      "x": -7.435,
+      "z": -10.617,
+      "yaw": 111.4,
+      "scale": 0.977,
+      "heightM": 0.0822,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 3,
+      "x": 12.974,
+      "z": 10.459,
+      "yaw": 289.8,
+      "scale": 0.966,
+      "heightM": 0.1043,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 0,
+      "x": 17.857,
+      "z": 14.208,
+      "yaw": 210.9,
+      "scale": 0.967,
+      "heightM": 0.1097,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 1,
+      "x": -1.561,
+      "z": -7.489,
+      "yaw": 316.9,
+      "scale": 0.96,
+      "heightM": 0.1033,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 3,
+      "x": 8.51,
+      "z": -0.895,
+      "yaw": 300.5,
+      "scale": 0.944,
+      "heightM": 0.0973,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 1,
+      "x": 18.198,
+      "z": 24.846,
+      "yaw": 239.5,
+      "scale": 0.943,
+      "heightM": 0.1311,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 3,
+      "x": 9.547,
+      "z": 7.468,
+      "yaw": 120.5,
+      "scale": 0.953,
+      "heightM": 0.0951,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 1,
+      "x": -2.675,
+      "z": -12.224,
+      "yaw": 116.3,
+      "scale": 0.965,
+      "heightM": 0.1036,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 3,
+      "x": 19.674,
+      "z": 30.033,
+      "yaw": 4.5,
+      "scale": 0.994,
+      "heightM": 0.0811,
+      "planes": 2
+    },
+    {
+      "type": "ridge",
+      "variant": 1,
+      "x": 22.602,
+      "z": 18.824,
+      "yaw": 50.7,
+      "scale": 0.994,
+      "heightM": 0.1246,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": 28.895,
+      "z": 39.826,
+      "yaw": 59.9,
+      "scale": 0.953,
+      "heightM": 0.1266,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": 20.398,
+      "z": 29.26,
+      "yaw": 217.1,
+      "scale": 0.991,
+      "heightM": 0.1338,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": -4.38,
+      "z": -9.362,
+      "yaw": 314.1,
+      "scale": 0.974,
+      "heightM": 0.1426,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": 24.083,
+      "z": 34.57,
+      "yaw": 271.6,
+      "scale": 0.962,
+      "heightM": 0.1414,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": -7.407,
+      "z": -13.142,
+      "yaw": 82.3,
+      "scale": 0.978,
+      "heightM": 0.1212,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": 24.465,
+      "z": 44.138,
+      "yaw": 28.2,
+      "scale": 0.969,
+      "heightM": 0.1665,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": -8.237,
+      "z": -21.862,
+      "yaw": 135.3,
+      "scale": 0.996,
+      "heightM": 0.1253,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": 6.775,
+      "z": 2.77,
+      "yaw": 276.2,
+      "scale": 0.997,
+      "heightM": 0.1797,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": 14.026,
+      "z": 8.433,
+      "yaw": 267.2,
+      "scale": 0.991,
+      "heightM": 0.1255,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": 0.184,
+      "z": -5.661,
+      "yaw": 85.0,
+      "scale": 0.979,
+      "heightM": 0.1353,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": 26.81,
+      "z": 28.772,
+      "yaw": 150.2,
+      "scale": 0.947,
+      "heightM": 0.1327,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": -5.092,
+      "z": -9.097,
+      "yaw": 279.8,
+      "scale": 0.953,
+      "heightM": 0.1229,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": -13.755,
+      "z": -11.941,
+      "yaw": 316.1,
+      "scale": 0.968,
+      "heightM": 0.1646,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": 0.431,
+      "z": 3.965,
+      "yaw": 180.5,
+      "scale": 0.952,
+      "heightM": 0.149,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": -2.075,
+      "z": -13.464,
+      "yaw": 251.9,
+      "scale": 0.944,
+      "heightM": 0.1243,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": 9.947,
+      "z": 11.095,
+      "yaw": 230.9,
+      "scale": 0.948,
+      "heightM": 0.1345,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": -1.327,
+      "z": -2.568,
+      "yaw": 207.9,
+      "scale": 0.946,
+      "heightM": 0.1468,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": 18.51,
+      "z": 23.928,
+      "yaw": 104.6,
+      "scale": 0.974,
+      "heightM": 0.16,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": 15.595,
+      "z": 11.783,
+      "yaw": 80.2,
+      "scale": 0.943,
+      "heightM": 0.1245,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": 30.714,
+      "z": 33.285,
+      "yaw": 191.8,
+      "scale": 0.999,
+      "heightM": 0.1534,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": -7.909,
+      "z": -17.127,
+      "yaw": 280.4,
+      "scale": 1.0,
+      "heightM": 0.1465,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": 3.692,
+      "z": 1.583,
+      "yaw": 165.0,
+      "scale": 0.954,
+      "heightM": 0.1538,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": -2.164,
+      "z": 15.254,
+      "yaw": 337.2,
+      "scale": 0.966,
+      "heightM": 0.1222,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": 21.018,
+      "z": 43.228,
+      "yaw": 227.6,
+      "scale": 0.97,
+      "heightM": 0.1221,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": 12.926,
+      "z": -4.783,
+      "yaw": 326.6,
+      "scale": 0.998,
+      "heightM": 0.1311,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": 12.621,
+      "z": 12.412,
+      "yaw": 101.0,
+      "scale": 0.975,
+      "heightM": 0.1203,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": 12.132,
+      "z": 9.895,
+      "yaw": 166.3,
+      "scale": 0.951,
+      "heightM": 0.1239,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": 24.51,
+      "z": 41.727,
+      "yaw": 137.2,
+      "scale": 0.978,
+      "heightM": 0.1212,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": -8.332,
+      "z": -18.033,
+      "yaw": 36.0,
+      "scale": 0.953,
+      "heightM": 0.1258,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": -2.27,
+      "z": -5.797,
+      "yaw": 223.5,
+      "scale": 0.949,
+      "heightM": 0.1764,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": 13.769,
+      "z": 24.972,
+      "yaw": 194.7,
+      "scale": 0.963,
+      "heightM": 0.1438,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": 6.079,
+      "z": 16.114,
+      "yaw": 246.4,
+      "scale": 0.973,
+      "heightM": 0.1266,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": 1.198,
+      "z": -4.667,
+      "yaw": 96.1,
+      "scale": 0.973,
+      "heightM": 0.1736,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": -5.469,
+      "z": -17.753,
+      "yaw": 32.6,
+      "scale": 0.995,
+      "heightM": 0.1401,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": -2.085,
+      "z": -8.248,
+      "yaw": 169.7,
+      "scale": 0.984,
+      "heightM": 0.1393,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": 3.124,
+      "z": 13.136,
+      "yaw": 140.6,
+      "scale": 0.974,
+      "heightM": 0.1258,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": -9.482,
+      "z": -16.553,
+      "yaw": 216.9,
+      "scale": 0.959,
+      "heightM": 0.1462,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": 20.342,
+      "z": 35.283,
+      "yaw": 266.1,
+      "scale": 0.977,
+      "heightM": 0.1223,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": -2.727,
+      "z": -21.596,
+      "yaw": 316.9,
+      "scale": 0.94,
+      "heightM": 0.1406,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": -0.768,
+      "z": -6.796,
+      "yaw": 80.8,
+      "scale": 0.956,
+      "heightM": 0.1799,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": 14.51,
+      "z": 8.209,
+      "yaw": 353.2,
+      "scale": 0.963,
+      "heightM": 0.1401,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": 18.222,
+      "z": 46.886,
+      "yaw": 279.3,
+      "scale": 0.986,
+      "heightM": 0.137,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": 8.804,
+      "z": -0.522,
+      "yaw": 5.6,
+      "scale": 0.982,
+      "heightM": 0.1214,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": 3.614,
+      "z": 6.822,
+      "yaw": 235.1,
+      "scale": 0.997,
+      "heightM": 0.1315,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": -14.407,
+      "z": -10.882,
+      "yaw": 332.8,
+      "scale": 0.977,
+      "heightM": 0.1626,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": 24.745,
+      "z": 36.254,
+      "yaw": 158.2,
+      "scale": 0.945,
+      "heightM": 0.1318,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": 26.888,
+      "z": 37.384,
+      "yaw": 293.9,
+      "scale": 0.97,
+      "heightM": 0.1437,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": 1.484,
+      "z": -0.201,
+      "yaw": 240.5,
+      "scale": 0.961,
+      "heightM": 0.132,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": -5.78,
+      "z": -16.096,
+      "yaw": 300.6,
+      "scale": 0.974,
+      "heightM": 0.1285,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": -2.425,
+      "z": -14.521,
+      "yaw": 358.1,
+      "scale": 0.996,
+      "heightM": 0.1209,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": 19.824,
+      "z": 18.656,
+      "yaw": 70.2,
+      "scale": 0.958,
+      "heightM": 0.1241,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": -2.549,
+      "z": -4.437,
+      "yaw": 298.1,
+      "scale": 0.983,
+      "heightM": 0.1257,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": 18.749,
+      "z": 20.623,
+      "yaw": 177.2,
+      "scale": 0.945,
+      "heightM": 0.1326,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": 10.788,
+      "z": -10.059,
+      "yaw": 209.3,
+      "scale": 0.945,
+      "heightM": 0.1395,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": 12.696,
+      "z": 11.86,
+      "yaw": 162.8,
+      "scale": 0.994,
+      "heightM": 0.1286,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": 4.101,
+      "z": 6.321,
+      "yaw": 19.0,
+      "scale": 0.967,
+      "heightM": 0.1242,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": -5.17,
+      "z": -12.031,
+      "yaw": 334.2,
+      "scale": 0.951,
+      "heightM": 0.1261,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": 20.112,
+      "z": 23.664,
+      "yaw": 175.1,
+      "scale": 0.956,
+      "heightM": 0.1219,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": -3.026,
+      "z": -15.009,
+      "yaw": 212.9,
+      "scale": 0.956,
+      "heightM": 0.1215,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": -1.812,
+      "z": -11.318,
+      "yaw": 109.9,
+      "scale": 0.984,
+      "heightM": 0.1737,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": 8.53,
+      "z": 13.238,
+      "yaw": 344.5,
+      "scale": 0.96,
+      "heightM": 0.1233,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": -4.967,
+      "z": -8.261,
+      "yaw": 53.7,
+      "scale": 0.987,
+      "heightM": 0.1461,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": -12.371,
+      "z": -12.784,
+      "yaw": 274.1,
+      "scale": 0.947,
+      "heightM": 0.1247,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": -2.051,
+      "z": -12.183,
+      "yaw": 239.4,
+      "scale": 0.949,
+      "heightM": 0.1204,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": 17.885,
+      "z": 46.62,
+      "yaw": 334.6,
+      "scale": 0.943,
+      "heightM": 0.1222,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": -4.924,
+      "z": -15.344,
+      "yaw": 163.1,
+      "scale": 0.966,
+      "heightM": 0.174,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": 20.689,
+      "z": 37.481,
+      "yaw": 185.5,
+      "scale": 0.959,
+      "heightM": 0.1345,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": -8.617,
+      "z": -14.257,
+      "yaw": 12.7,
+      "scale": 0.95,
+      "heightM": 0.1303,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": -6.766,
+      "z": -11.98,
+      "yaw": 198.5,
+      "scale": 0.999,
+      "heightM": 0.1367,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": 15.732,
+      "z": -3.74,
+      "yaw": 46.9,
+      "scale": 0.955,
+      "heightM": 0.1256,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": 27.139,
+      "z": 42.377,
+      "yaw": 326.4,
+      "scale": 0.943,
+      "heightM": 0.121,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": -4.114,
+      "z": -7.193,
+      "yaw": 265.7,
+      "scale": 0.998,
+      "heightM": 0.1729,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": -4.327,
+      "z": -17.656,
+      "yaw": 81.5,
+      "scale": 0.988,
+      "heightM": 0.1265,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": -3.071,
+      "z": -8.479,
+      "yaw": 258.2,
+      "scale": 0.956,
+      "heightM": 0.1451,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": 8.549,
+      "z": 4.932,
+      "yaw": 223.7,
+      "scale": 0.953,
+      "heightM": 0.1215,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": 18.212,
+      "z": 29.555,
+      "yaw": 181.8,
+      "scale": 0.997,
+      "heightM": 0.1276,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": -2.342,
+      "z": -10.011,
+      "yaw": 193.5,
+      "scale": 0.957,
+      "heightM": 0.1345,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": 2.336,
+      "z": -20.068,
+      "yaw": 70.2,
+      "scale": 0.999,
+      "heightM": 0.1235,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": 25.958,
+      "z": 36.201,
+      "yaw": 132.1,
+      "scale": 0.988,
+      "heightM": 0.145,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": -8.087,
+      "z": -20.189,
+      "yaw": 269.4,
+      "scale": 0.95,
+      "heightM": 0.131,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": 3.112,
+      "z": 2.085,
+      "yaw": 229.7,
+      "scale": 0.944,
+      "heightM": 0.126,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": 3.476,
+      "z": -9.147,
+      "yaw": 321.2,
+      "scale": 0.98,
+      "heightM": 0.1245,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": 2.751,
+      "z": -5.901,
+      "yaw": 82.7,
+      "scale": 0.973,
+      "heightM": 0.1401,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": -11.157,
+      "z": -18.824,
+      "yaw": 2.8,
+      "scale": 0.99,
+      "heightM": 0.1431,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": -2.597,
+      "z": -12.684,
+      "yaw": 285.5,
+      "scale": 0.988,
+      "heightM": 0.1602,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": -6.596,
+      "z": -13.773,
+      "yaw": 357.7,
+      "scale": 0.94,
+      "heightM": 0.1206,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": 23.434,
+      "z": 35.295,
+      "yaw": 338.5,
+      "scale": 0.969,
+      "heightM": 0.1236,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": -7.621,
+      "z": -11.911,
+      "yaw": 61.0,
+      "scale": 1.0,
+      "heightM": 0.1264,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": -9.077,
+      "z": -17.839,
+      "yaw": 102.9,
+      "scale": 0.948,
+      "heightM": 0.1228,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": 20.043,
+      "z": 24.24,
+      "yaw": 105.9,
+      "scale": 0.997,
+      "heightM": 0.1319,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": 23.693,
+      "z": 24.087,
+      "yaw": 203.4,
+      "scale": 0.959,
+      "heightM": 0.145,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": 2.006,
+      "z": 3.306,
+      "yaw": 44.1,
+      "scale": 0.942,
+      "heightM": 0.1317,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": 18.783,
+      "z": 38.887,
+      "yaw": 178.6,
+      "scale": 0.954,
+      "heightM": 0.1232,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": 5.315,
+      "z": 7.853,
+      "yaw": 358.7,
+      "scale": 0.944,
+      "heightM": 0.1677,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": 15.002,
+      "z": 19.153,
+      "yaw": 285.7,
+      "scale": 0.989,
+      "heightM": 0.1256,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": -7.77,
+      "z": -20.685,
+      "yaw": 8.3,
+      "scale": 0.964,
+      "heightM": 0.123,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": 17.892,
+      "z": 35.019,
+      "yaw": 115.9,
+      "scale": 0.952,
+      "heightM": 0.1313,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": 24.143,
+      "z": 32.315,
+      "yaw": 20.9,
+      "scale": 0.998,
+      "heightM": 0.127,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": -11.588,
+      "z": 5.574,
+      "yaw": 235.0,
+      "scale": 0.947,
+      "heightM": 0.138,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": 21.285,
+      "z": 35.623,
+      "yaw": 144.9,
+      "scale": 0.952,
+      "heightM": 0.1657,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": -10.901,
+      "z": -17.736,
+      "yaw": 284.5,
+      "scale": 0.959,
+      "heightM": 0.1508,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": 5.447,
+      "z": -2.344,
+      "yaw": 17.3,
+      "scale": 0.943,
+      "heightM": 0.1213,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": 3.063,
+      "z": 14.313,
+      "yaw": 256.1,
+      "scale": 0.947,
+      "heightM": 0.1266,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": 2.217,
+      "z": 2.604,
+      "yaw": 186.2,
+      "scale": 0.999,
+      "heightM": 0.1237,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": -1.327,
+      "z": -4.457,
+      "yaw": 81.4,
+      "scale": 0.944,
+      "heightM": 0.1582,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": 26.378,
+      "z": 32.525,
+      "yaw": 85.6,
+      "scale": 0.981,
+      "heightM": 0.15,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": 13.033,
+      "z": 18.794,
+      "yaw": 80.6,
+      "scale": 0.945,
+      "heightM": 0.1206,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": -8.081,
+      "z": -21.04,
+      "yaw": 254.2,
+      "scale": 0.953,
+      "heightM": 0.1218,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": 27.548,
+      "z": 41.479,
+      "yaw": 76.0,
+      "scale": 0.953,
+      "heightM": 0.122,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": 29.347,
+      "z": 28.6,
+      "yaw": 354.6,
+      "scale": 0.973,
+      "heightM": 0.1268,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": 27.164,
+      "z": 25.27,
+      "yaw": 122.8,
+      "scale": 0.962,
+      "heightM": 0.127,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": 2.922,
+      "z": -3.581,
+      "yaw": 333.2,
+      "scale": 0.989,
+      "heightM": 0.1648,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": -16.465,
+      "z": -14.493,
+      "yaw": 71.6,
+      "scale": 0.944,
+      "heightM": 0.1257,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": 1.923,
+      "z": -2.907,
+      "yaw": 288.8,
+      "scale": 0.983,
+      "heightM": 0.1265,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": -5.919,
+      "z": -16.984,
+      "yaw": 166.5,
+      "scale": 0.977,
+      "heightM": 0.1242,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": -12.483,
+      "z": -18.597,
+      "yaw": 52.2,
+      "scale": 0.972,
+      "heightM": 0.1747,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": 22.025,
+      "z": 35.659,
+      "yaw": 51.9,
+      "scale": 0.949,
+      "heightM": 0.1278,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 1,
+      "x": 9.579,
+      "z": 8.242,
+      "yaw": 215.4,
+      "scale": 0.982,
+      "heightM": 0.1757,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 2,
+      "x": 6.4,
+      "z": 16.487,
+      "yaw": 63.8,
+      "scale": 0.942,
+      "heightM": 0.124,
+      "planes": 2
+    },
+    {
+      "type": "tuft",
+      "variant": 0,
+      "x": 0.84,
+      "z": -2.324,
+      "yaw": 105.4,
+      "scale": 0.966,
+      "heightM": 0.1246,
+      "planes": 2
+    }
+  ],
+  "stats": {
+    "placed": 700,
+    "drawn": 1400,
+    "byType": {
+      "shard": 260,
+      "pebble": 220,
+      "ridge": 100,
+      "tuft": 120
+    },
+    "tries": 1281,
+    "nearCount": 243,
+    "farCount": 43,
+    "nearPerM2": 1.0547,
+    "farPerM2": 0.0703,
+    "clearing": 214
+  },
+  "qc": {
+    "shard": {
+      "texelsPerM": 1801.2,
+      "mag1M": 0.995,
+      "variants": 4
+    },
+    "pebble": {
+      "texelsPerM": 1800.1,
+      "mag1M": 0.996,
+      "variants": 4
+    },
+    "ridge": {
+      "texelsPerM": 1820.8,
+      "mag1M": 0.985,
+      "variants": 4
+    },
+    "tuft": {
+      "texelsPerM": 1800.9,
+      "mag1M": 0.996,
+      "variants": 3
+    }
+  }
+}

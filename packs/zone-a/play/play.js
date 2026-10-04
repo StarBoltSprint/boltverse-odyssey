@@ -5,6 +5,7 @@
 import { loadWorldHull } from "./hullmesh.js";
 import { createTerrain } from "./terrain.js";
 import { mountRocks } from "./rocks.js";
+import { mountDetails } from "./details.js";
 
 const W = 720;
 const H = 1600;
@@ -1872,6 +1873,10 @@ function render(mode) {
     rockLayer.draw(vpM);
     drawCalls += rockLayer.draws;
   }
+  if (detailLayer && mode === 0) {
+    detailLayer.draw(vpM);
+    drawCalls += detailLayer.draws;
+  }
   if (showGate && uploadVideo(gateVideo, gateTex, "gate")) {
     const g = gatePoint();
     drawCard(mode, gateTex, 3, g.x, 0, g.z, 0, sized.gw, sized.gh, labelOf("gate:" + g.gate.id), 1);
@@ -2067,6 +2072,9 @@ function snapshot() {
     blocked: state.blocked,
     rockLoadMs,
     rocks: rockLayer ? rockLayer.info() : null,
+    detailLoadMs,
+    details: detailLayer ? detailLayer.info() : null,
+    detailMag: detailLayer ? detailLayer.mag(eyeBuf, FOCAL) : 0,
     pathTrigger: state.pathTrigger,
     gate: gateInfo(),
     nearestVisibleM: nearestM,
@@ -2408,6 +2416,8 @@ let firstFrameMs = null;
 let bootT0 = 0;
 let rockLayer = null;
 let rockLoadMs = 0;
+let detailLayer = null;
+let detailLoadMs = 0;
 
 async function loadBand(manifest, id) {
   const display = manifest && manifest.display;
@@ -2513,6 +2523,21 @@ async function boot() {
     } catch (err) {
       console.warn("rocks", err);
       rockLayer = null;
+    }
+    if (!/[?&]details=0(?:&|$)/.test(location.search)) {
+      try {
+        const detailT0 = performance.now();
+        detailLayer = await mountDetails(gl, {
+          absUrl,
+          loadImage,
+          trackTex,
+          heightAt: (x, z) => (useRelief ? terrain.heightAt(x, z) : 0),
+        });
+        detailLoadMs = detailLayer.loadMs || (performance.now() - detailT0);
+      } catch (err) {
+        console.warn("details", err);
+        detailLayer = null;
+      }
     }
     const upperImgs = await loadBand(skyManifest, "upper");
     const highImgs = await loadBand(skyManifest, "high");

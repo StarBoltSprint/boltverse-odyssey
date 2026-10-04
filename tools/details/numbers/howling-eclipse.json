@@ -1,0 +1,70 @@
+{
+  "schema": "details-numbers/1",
+  "kit": "howling-eclipse",
+  "pack": "packs/zone-a",
+  "seed": 20261004,
+  "corridor": {
+    "headingDeg": 32,
+    "halfWidthM": 4.2,
+    "spawn": [-6, -14],
+    "bubbleM": 9.5,
+    "lengthM": 80
+  },
+  "bands": {
+    "nearHalf": 3.2,
+    "midHalf": 7.5,
+    "farHalf": 16,
+    "clearingR": 14,
+    "behindM": 8,
+    "insideFrac": 0.86
+  },
+  "spawnClearM": 0.55,
+  "crossSepM": 0.18,
+  "neighbourM": 1.15,
+  "texelsPerM": 1800,
+  "atlasMaxTexMB": 11,
+  "atlasMaxSide": 2048,
+  "minComponentArea": 2500,
+  "focalPx": 1793,
+  "pad": 4,
+  "padBottom": 2,
+  "types": {
+    "shard": {
+      "count": 260,
+      "heightM": [0.11, 0.16],
+      "scale": [0.94, 1],
+      "minSeparation": 0.36,
+      "planes": 2,
+      "sheet": "shard.jpg",
+      "align": "fissure"
+    },
+    "pebble": {
+      "count": 220,
+      "heightM": [0.12, 0.18],
+      "scale": [0.94, 1],
+      "minSeparation": 0.32,
+      "planes": 2,
+      "sheet": "pebble.jpg",
+      "align": "hash"
+    },
+    "ridge": {
+      "count": 100,
+      "heightM": [0.08, 0.14],
+      "scale": [0.94, 1],
+      "minSeparation": 0.9,
+      "planes": 2,
+      "sheet": "ridge.jpg",
+      "align": "fissure"
+    },
+    "tuft": {
+      "count": 120,
+      "heightM": [0.12, 0.18],
+      "scale": [0.94, 1],
+      "minSeparation": 0.42,
+      "planes": 2,
+      "sheet": "tuft.jpg",
+      "align": "hash",
+      "minArea": 600
+    }
+  }
+}
