@@ -20,6 +20,23 @@
         "azimuthDeg": 36.0,
         "elBottomDeg": -4.31,
         "elTopDeg": 17.12
+      },
+      {
+        "id": "upper",
+        "files": [
+          "upper/sky-0.jpg",
+          "upper/sky-1.jpg",
+          "upper/sky-2.jpg",
+          "upper/sky-3.jpg",
+          "upper/sky-4.jpg",
+          "upper/sky-5.jpg",
+          "upper/sky-6.jpg",
+          "upper/sky-7.jpg",
+          "upper/sky-8.jpg"
+        ],
+        "azimuthDeg": 40.0,
+        "elBottomDeg": 12.0,
+        "elTopDeg": 30.5
       }
     ],
     "videoTiles": [
