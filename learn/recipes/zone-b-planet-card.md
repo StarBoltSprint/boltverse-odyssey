@@ -6,7 +6,7 @@ Status: IN TEST. One keyed planet video on the Ember Mesa chase. It does not rep
 | --- | --- |
 | Asset kind | `cutout` |
 | Take | Zone B planet fix |
-| Commit | PLANETSHA |
+| Commit | `857ac3c` |
 | Date | 2026-10-05 |
 | Size | 1280×720, 24 fps, 6.041667 s, 145 frames. On-screen geometric size 720×405 at magnification 0.5625. |
 | Tries | 3 images, 2 videos. The second still did not turn the clouds. The first video idled. One image slot left unused. |
