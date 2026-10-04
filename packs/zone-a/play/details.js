@@ -2,13 +2,36 @@
  * Instanced micro-details. One atlas, one draw. Cards do not block.
  * Seated on the drawn relief. World-locked crossed cards.
  */
+// Cards nearer the eye than magnification 1 allows are culled per instance,
+// so no drawn card is ever stretched. The GPU cut is a hair tighter than
+// the JS check, so the measured magnification can only overstate.
+const NEAR_CAP_GPU = 0.99;
+const NEAR_CAP_JS = 0.995;
+
 const VS = `#version 300 es
 layout(location=0) in vec2 aCorner;
 layout(location=1) in vec4 aBody;
 layout(location=2) in vec4 aGeom;
 layout(location=3) in vec4 aUv;
 uniform mat4 uVP;
+uniform vec3 uEye;
+uniform float uFocal;
 out vec2 vUv;
+// Distance from the eye to the nearest point of the card's quad (crossed
+// micro cards: a cylinder of radius quadW/2; feature cards: their plane).
+float nearDist(vec4 b, vec4 g, vec3 e) {
+  float qy = clamp(e.y, b.y, b.y + g.y);
+  vec2 d = e.xz - b.xz;
+  float hz;
+  if (g.w > 0.5) {
+    vec2 u = vec2(cos(b.w), -sin(b.w));
+    float t = clamp(dot(d, u), -0.5 * g.x, 0.5 * g.x);
+    hz = length(d - u * t);
+  } else {
+    hz = max(0.0, length(d) - 0.5 * g.x);
+  }
+  return length(vec2(hz, e.y - qy));
+}
 void main() {
   float yaw = aBody.w;
   float c = cos(yaw);
@@ -18,6 +41,11 @@ void main() {
   p.y += aCorner.y * aGeom.y;
   vUv = mix(aUv.xy, aUv.zw, aCorner);
   gl_Position = uVP * vec4(p, 1.0);
+  // Near cull: a card closer to the eye than its own pixels allow at
+  // magnification ${NEAR_CAP_GPU.toFixed(4)} is not drawn at all (same test as nearCut in JS).
+  if (aGeom.z > 0.0 && uFocal > 0.0 && nearDist(aBody, aGeom, uEye) * ${NEAR_CAP_GPU.toFixed(4)} < uFocal * aGeom.z) {
+    gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+  }
 }`;
 
 const FS = `#version 300 es
@@ -133,6 +161,7 @@ export async function mountDetails(gl, env) {
   const mx = new Float32Array(magN * 3);
   const mh = new Float32Array(magN);
   const mpx = new Float32Array(magN);
+  const mq = new Float32Array(magN * 4);
   const counts = {};
   const groundAt = env.drawnHeightAt || env.heightAt;
   let w = 0;
@@ -158,6 +187,10 @@ export async function mountDetails(gl, env) {
     mx[placed * 3 + 2] = inst.z;
     mh[placed] = worldH;
     mpx[placed] = variant.contentH;
+    mq[placed * 4] = y;
+    mq[placed * 4 + 1] = quadW;
+    mq[placed * 4 + 2] = quadH;
+    mq[placed * 4 + 3] = yaw0;
     counts[inst.type] = (counts[inst.type] || 0) + 1;
     placed++;
     for (let k = 0; k < planes; k++) {
@@ -168,6 +201,8 @@ export async function mountDetails(gl, env) {
       data[o + 3] = yaw0 + k * Math.PI / planes;
       data[o + 4] = quadW;
       data[o + 5] = quadH;
+      data[o + 6] = worldH / variant.contentH;
+      data[o + 7] = 0;
       data[o + 8] = variant.u0;
       data[o + 9] = variant.v0;
       data[o + 10] = variant.u1;
@@ -179,6 +214,8 @@ export async function mountDetails(gl, env) {
   const loc = {
     vp: gl.getUniformLocation(prog, "uVP"),
     tex: gl.getUniformLocation(prog, "uTex"),
+    eye: gl.getUniformLocation(prog, "uEye"),
+    focal: gl.getUniformLocation(prog, "uFocal"),
   };
   const corners = new Float32Array([0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1]);
 
@@ -231,6 +268,7 @@ export async function mountDetails(gl, env) {
   let fMh = new Float32Array(0);
   let fPx = new Float32Array(0);
   let fGeo = new Float32Array(0);
+  let fQ = new Float32Array(0);
   // Real-obstacle footprint per feature: the visible rock width near the ground,
   // measured from the still's own alpha (bodyWPx), never wider than the card shows.
   const colliders = [];
@@ -257,6 +295,7 @@ export async function mountDetails(gl, env) {
       fMh = new Float32Array(fists.length);
       fPx = new Float32Array(fists.length);
       fGeo = new Float32Array(fists.length * 4);
+      fQ = new Float32Array(fists.length * 4);
       let fw = 0;
       for (let i = 0; i < fists.length; i++) {
         const inst = fists[i];
@@ -286,6 +325,10 @@ export async function mountDetails(gl, env) {
         fGeo[pi * 4 + 1] = Math.cos(yaw0);
         fGeo[pi * 4 + 2] = -Math.sin(yaw0);
         fGeo[pi * 4 + 3] = halfW;
+        fQ[pi * 4] = y;
+        fQ[pi * 4 + 1] = quadW;
+        fQ[pi * 4 + 2] = quadH;
+        fQ[pi * 4 + 3] = yaw0;
         if (variant.bodyWPx) {
           const mpp = worldH / variant.contentH;
           const bw = variant.bodyWPx * mpp;
@@ -313,6 +356,8 @@ export async function mountDetails(gl, env) {
           fd[o + 3] = yaw0 + k * Math.PI / planes;
           fd[o + 4] = quadW;
           fd[o + 5] = quadH;
+          fd[o + 6] = worldH / variant.contentH;
+          fd[o + 7] = 1;
           fd[o + 8] = inst.mirror ? variant.u1 : variant.u0;
           fd[o + 9] = variant.v0;
           fd[o + 10] = inst.mirror ? variant.u0 : variant.u1;
@@ -344,9 +389,33 @@ export async function mountDetails(gl, env) {
     return Math.abs(cx) <= cw + px && Math.abs(cy) <= cw + py;
   }
 
-  function worst(eye, focal, n, xs, hs, ps, vp) {
+  // Mirror of the shader near cull (nearDist), with the looser JS cap.
+  // True when the card is not drawn from this eye.
+  function nearCut(eye, focal, xs, q, i, mpp, plane) {
+    const x = xs[i * 3];
+    const z = xs[i * 3 + 2];
+    const by = q[i * 4];
+    const qw = q[i * 4 + 1];
+    const qh = q[i * 4 + 2];
+    const qy = Math.max(by, Math.min(by + qh, eye[1]));
+    const dx = eye[0] - x;
+    const dz = eye[2] - z;
+    let hz;
+    if (plane) {
+      const ux = Math.cos(q[i * 4 + 3]);
+      const uz = -Math.sin(q[i * 4 + 3]);
+      const t = Math.max(-0.5 * qw, Math.min(0.5 * qw, dx * ux + dz * uz));
+      hz = Math.hypot(dx - ux * t, dz - uz * t);
+    } else {
+      hz = Math.max(0, Math.hypot(dx, dz) - 0.5 * qw);
+    }
+    return Math.hypot(hz, eye[1] - qy) * NEAR_CAP_JS < focal * mpp;
+  }
+
+  function worst(eye, focal, n, xs, hs, ps, vp, q) {
     let m = 0;
     for (let i = 0; i < n; i++) {
+      if (q && nearCut(eye, focal, xs, q, i, hs[i] / (ps[i] || 1), false)) continue;
       if (!onScreen(vp, focal, xs[i * 3], xs[i * 3 + 1], xs[i * 3 + 2], hs[i])) continue;
       const dx = eye[0] - xs[i * 3];
       const dy = eye[1] - xs[i * 3 + 1];
@@ -359,9 +428,10 @@ export async function mountDetails(gl, env) {
   }
 
   // Features are wide single cards: use the nearest point of the card, not its centre.
-  function worstCards(eye, focal, n, xs, hs, ps, geo, vp) {
+  function worstCards(eye, focal, n, xs, hs, ps, geo, vp, q) {
     let m = 0;
     for (let i = 0; i < n; i++) {
+      if (q && nearCut(eye, focal, xs, q, i, hs[i] / (ps[i] || 1), true)) continue;
       const x = xs[i * 3];
       const z = xs[i * 3 + 2];
       const y0 = geo[i * 4];
@@ -381,11 +451,13 @@ export async function mountDetails(gl, env) {
     return m;
   }
 
-  function paint(vp, batchVao, batchTex, n) {
+  function paint(vp, batchVao, batchTex, n, eye, focal) {
     if (!n || !batchVao) return;
     gl.useProgram(prog);
     gl.bindVertexArray(batchVao);
     gl.uniformMatrix4fv(loc.vp, false, vp);
+    gl.uniform3f(loc.eye, eye ? eye[0] : 0, eye ? eye[1] : 0, eye ? eye[2] : 0);
+    gl.uniform1f(loc.focal, eye && focal ? focal : 0);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, batchTex);
     gl.uniform1i(loc.tex, 0);
@@ -401,15 +473,29 @@ export async function mountDetails(gl, env) {
     draws,
     loadMs,
     colliders,
-    draw(vp) {
-      paint(vp, vao, tex, drawn);
-      paint(vp, fVao, fTex, fDrawn);
+    draw(vp, eye, focal) {
+      paint(vp, vao, tex, drawn, eye, focal);
+      paint(vp, fVao, fTex, fDrawn, eye, focal);
     },
     mag(eye, focal, vp) {
-      return Math.max(worst(eye, focal, placed, mx, mh, mpx, vp), worstCards(eye, focal, fPlaced, fMx, fMh, fPx, fGeo, vp));
+      return Math.max(worst(eye, focal, placed, mx, mh, mpx, vp, mq), worstCards(eye, focal, fPlaced, fMx, fMh, fPx, fGeo, vp, fQ));
     },
     magFeatures(eye, focal, vp) {
-      return worstCards(eye, focal, fPlaced, fMx, fMh, fPx, fGeo, vp);
+      return worstCards(eye, focal, fPlaced, fMx, fMh, fPx, fGeo, vp, fQ);
+    },
+    // Cards hidden by the near cull from this eye (for the snapshot).
+    // With vp, only cards whose bounding sphere meets the frustum count.
+    nearCulled(eye, focal, vp) {
+      let n = 0;
+      for (let i = 0; i < placed; i++) {
+        if (!nearCut(eye, focal, mx, mq, i, mh[i] / (mpx[i] || 1), false)) continue;
+        if (onScreen(vp, focal, mx[i * 3], mx[i * 3 + 1], mx[i * 3 + 2], mh[i])) n++;
+      }
+      for (let i = 0; i < fPlaced; i++) {
+        if (!nearCut(eye, focal, fMx, fQ, i, fMh[i] / (fPx[i] || 1), true)) continue;
+        if (onScreen(vp, focal, fMx[i * 3], fMx[i * 3 + 1], fMx[i * 3 + 2], Math.hypot(fGeo[i * 4 + 3], fMh[i] * 0.5))) n++;
+      }
+      return n;
     },
     info() {
       return {

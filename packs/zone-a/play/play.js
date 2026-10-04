@@ -1172,8 +1172,8 @@ function segmentHitsObb(eye, target, o, hull) {
 }
 
 // Feature rocks from the detail layer: thin footprints across each card,
-// as wide as the visible rock. Bolt is pushed out like any solid. The chase eye
-// keeps EYE_CARD_M off them and never looks at Bolt through one.
+// as wide as the visible rock. Bolt is pushed out like any solid. The chase
+// eye prefers poses clear of them (soft cost only, never a snap).
 let detailSolids = [];
 const EYE_CARD_M = 0.6;
 function detailLocal(d, x, z) {
@@ -1377,9 +1377,13 @@ function solveCamera() {
         if (dist > 9.3) continue;
         pitchView(candEye);
         const m = poseMetrics(candEye);
-        const blocked = lineBlocked(candEye) || eyeInCard(candEye, EYE_CARD_M) ||
-          cardBetween(candEye, state.x, feetY() + BOLT_H * 0.45, state.z);
-        const near = (m.on ? 1000 : 0) + (blocked ? 0 : 200) + Math.min(m.minR, 1.25) * 20 - Math.abs(dist - targetDist) * 40 - Math.abs(slide) * 2 - Math.max(0, eyes[ei] - 1.6) * 80;
+        const blocked = lineBlocked(candEye);
+        // Feature cards never veto a pose (that would snap the eye). A card the
+        // eye is near or looks through is only a soft cost; the near cull in
+        // details.js hides any card the eye gets too close to.
+        const cardCost = (eyeInCard(candEye, EYE_CARD_M) ? 30 : 0) +
+          (cardBetween(candEye, state.x, feetY() + BOLT_H * 0.45, state.z) ? 15 : 0);
+        const near = (m.on ? 1000 : 0) + (blocked ? 0 : 200) + Math.min(m.minR, 1.25) * 20 - Math.abs(dist - targetDist) * 40 - Math.abs(slide) * 2 - Math.max(0, eyes[ei] - 1.6) * 80 - cardCost;
         const hard = m.on && m.minR >= 1.002 && !blocked;
         const isHold = camHold.live && boom === camHold.boom && eyes[ei] === camHold.eye && slide === camHold.slide;
         if (isHold) {
@@ -1458,37 +1462,9 @@ function solveCamera() {
     eyeBuf[2] = state.z - backZ / backL * MIN_BOOM;
     backL = MIN_BOOM;
   }
-  // Safety net: the eased eye never enters a feature rock. Pull it toward Bolt
-  // along the boom line to the last clear point (Bolt himself is always clear).
-  if (detailSolids.length && eyeInCard(eyeBuf, EYE_CARD_M)) {
-    const ex = eyeBuf[0];
-    const ez = eyeBuf[2];
-    // March in from the eye to the first clear point, then bisect so the pull is smooth.
-    let inT = 1;
-    let outT = 0;
-    for (let k = 1; k <= 48; k++) {
-      const tt = 1 - k / 48;
-      eyeBuf[0] = state.x + (ex - state.x) * tt;
-      eyeBuf[2] = state.z + (ez - state.z) * tt;
-      if (!eyeInCard(eyeBuf, EYE_CARD_M)) {
-        outT = tt;
-        break;
-      }
-      inT = tt;
-    }
-    for (let k = 0; k < 8; k++) {
-      const mid = (inT + outT) * 0.5;
-      eyeBuf[0] = state.x + (ex - state.x) * mid;
-      eyeBuf[2] = state.z + (ez - state.z) * mid;
-      if (eyeInCard(eyeBuf, EYE_CARD_M)) inT = mid;
-      else outT = mid;
-    }
-    const t = outT;
-    eyeBuf[0] = state.x + (ex - state.x) * t;
-    eyeBuf[2] = state.z + (ez - state.z) * t;
-    backL = Math.hypot(state.x - eyeBuf[0], state.z - eyeBuf[2]);
-    eyeGuardHits++;
-  }
+  // No pull toward Bolt here: a pull is a jump. An eye at a feature card is
+  // safe because that card is near-culled (its own magnification exceeds 1).
+  if (detailSolids.length && eyeInCard(eyeBuf, 0.05)) eyeGuardHits++;
   camBoom = backL;
   pitchView(eyeBuf, camSm.feet);
 }
@@ -1972,7 +1948,7 @@ function render(mode) {
     drawCalls += rockLayer.draws;
   }
   if (detailLayer && mode === 0) {
-    detailLayer.draw(vpM);
+    detailLayer.draw(vpM, eyeBuf, FOCAL);
     drawCalls += detailLayer.draws;
   }
   if (showGate && uploadVideo(gateVideo, gateTex, "gate")) {
@@ -2176,6 +2152,8 @@ function snapshot() {
     featureMag: detailLayer && detailLayer.magFeatures ? detailLayer.magFeatures(eyeBuf, FOCAL, vpM) : 0,
     detailSolids: detailSolids.length,
     eyeInCard: eyeInCard(eyeBuf, 0.05),
+    nearCulled: detailLayer && detailLayer.nearCulled ? detailLayer.nearCulled(eyeBuf, FOCAL, null) : 0,
+    nearCulledOnScreen: detailLayer && detailLayer.nearCulled ? detailLayer.nearCulled(eyeBuf, FOCAL, vpM) : 0,
     eyeGuardHits,
     pathTrigger: state.pathTrigger,
     gate: gateInfo(),
