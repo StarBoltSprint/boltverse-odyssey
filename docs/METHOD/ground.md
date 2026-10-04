@@ -2,6 +2,9 @@
 
 Back to [METHOD.md](../METHOD.md). **Status: APPROVED look — SmiR, 2026-10-03** (zone A step 1, PR #156). Merged to main 2026-10-03 as part of zone A. **Not VALIDATED:** the slope fix is deferred and waits for SmiR's phone check.
 **Relief fixes still pending** (§13): deferred. PR #156 was merged with zone A on 2026-10-03 before they landed (owner approval 21:56 Paris).
+**Slope fix IN TEST (2026-10-04, branch `zone-a-polish`):** surface-aware ground UV (§6b) removes the texel stretch on
+slopes without touching the relief (no flattening, no carpet); the camera eye keeps a ground-magnification floor (§6b).
+Waits for SmiR's phone check.
 
 This page is self-contained: a fresh Grok (or a player) who reads only this page can rebuild the zone A ground and make the
 ground of another biome at the same quality. Part 1 is the generic recipe, driven by the biome kit. Part 2 is the filled-in
@@ -124,12 +127,13 @@ allowed for shape; zone A used analytic features.
 narrower than ~20 m. Taller cliffs are objects, not relief. Keep a raised boundary inside the same limits (or make it objects).
 
 **Micro relief from the images** (the approved per-pixel depth carrier, law 59): `microAt = MICRO_family ·
-(h_family(x/TILE, z/TILE) − 128)/100`, bilinear, wrapped, world-locked with the albedo. Zone A: `MICRO = 0.1 m` for every
+(h_family(x / TILE, z / TILE) − 128)/100`, bilinear, wrapped, world-locked on the planar tile grid. The surface UV (§6b)
+warps albedo only: sampling the bump through it moved the floor enough to close the wreck hangar. Zone A: `MICRO = 0.1 m` for every
 family, sampled from the `h` of the family's first slot.
 
 **Mesh** (`terrain.js buildMesh`): one regular grid, n = 300 cells across `2 × 1.08 × maxRadius` (zone A step 0.435 m,
 40 829 verts, 77 310 tris), cells outside 1.06 r(θ) dropped, `heightAt` baked into static vertex Y once at boot; per vertex:
-position, tile UV `x/TILE`, family id, mask UV `x/8.5 m`. One draw call. No normals (no lighting exists).
+position, tile UV (surface-aware, §6b; was `x/TILE`), family id, mask UV `x/8.5 m`. One draw call. No normals (no lighting exists).
 
 **Volume inputs per biome** (today constants in `field.js` / `terrain.js`; planned numbers-only kit `ground` block, #157):
 
@@ -149,6 +153,32 @@ position, tile UV `x/TILE`, family id, mask UV `x/8.5 m`. One draw call. No norm
   The mask is an Imagine image, so the variant mix is made of Imagine pixels.
 - **Tile size**: largest that keeps mag ≤ 1 at the play eye: `TILE ≤ (eyeAboveGround / tan(VFOV/2)) · srcW / (FOCAL · stretch)`.
   Zone A: eye 1.22 m, VFOV 48.07°, FOCAL 1793.6 px, srcW 1024 → ≤ 1.56 m / stretch → **TILE = 1.45 m** (walk mag 0.912).
+
+### 6b. Slope stretch fix — surface-aware UV + eye floor (IN TEST 2026-10-04)
+
+Planar top-down UV stretches each Imagine texel by `1 / cos(slope)` along the slope. Code-only fix, relief unchanged:
+
+- **UV solve** (`packs/zone-a/play/uvfield.js`, once at boot, ~0.2 s in Chrome): on a 96-cell grid over the mesh square,
+  each edge wants texture length = 3D length / `TILE` (the symmetric square root of `I + ∇h∇hᵀ`, macro relief only).
+  Weighted least squares (Jacobi-preconditioned conjugate gradient, 160 iterations, then 7 × 30), then reweight rounds
+  that add texels where a cell still stretches (focus `u ≤ 1.0`). Outside the mesh the target is planar and weak.
+  The UV stays a fixed function of world position (tiles world-locked); `uvAt()` feeds the mesh albedo. Micro relief stays on `x / TILE`.
+  Texels may compress (minification only). `?uv=planar` or `zone.ground.uv: "planar"` = the old mapping (A/B).
+- **Measured** (`stretch` = surface length / texture length, worst direction):
+
+  | Band (u = ρ / r(θ)) | planar p95 / max | surface UV p95 / max | min squash |
+  |---|---|---|---|
+  | interior `u < 0.9` | 1.056 / 1.101 | 0.993 / **0.999** | 0.79 |
+  | inner rim `0.9–1.0` | 1.227 / 1.535 | 0.994 / **1.005** | 0.70 |
+  | outer lip `1.0–1.045` (last ~2 m before the edge) | 1.558 / 2.004 | 1.278 / 1.466 | 0.74 |
+
+- **Magnification**: `terrain.mag()` uses the residual UV stretch around the eye (5 samples at 2.2 m) times the micro
+  slope term, instead of `1 / cos(slope)`. `terrain.eyeFloor(x, z, 0.98)` = lowest eye that keeps ground mag ≤ 0.98
+  (smooth macro relief + full micro amplitude); the chase eye is lifted onto it with a C1 smooth max (no kick, no shake).
+  This fixed the playcheck readings 2.09 (heading 82°) and 1.42 (127°): the eased eye lagged the ridge under a 150°/s
+  turn and sat 0.58 m above it. Spawn turn worst mag 2.148 → 0.998 (the sky upper band).
+- Proof frames: `/workspace/grokcli/out/zoneA-polish/slope/` (planar vs surface at the interior flank (−16, 4), the crest
+  flank (27, 27), the rim (−34, 3) and a chase pose) and `/workspace/grokcli/out/zoneA-polish/mag/` (headings 82° / 127°).
 
 ### 7. Layer 3 — cutout placement (`terrain.js buildCards`)
 
@@ -251,6 +281,7 @@ Measured 2026-10-03 on the PR #156 head (`groundInfo` = boot log; QC = `qc.mjs`,
 
 | Issue | Now | Target | Cause / fix direction |
 |---|---|---|---|
+| **Texel stretch on slopes** — IN TEST fix 2026-10-04 (§6b) | planar UV: 1.10 interior, 1.54 inner rim, 2.0 outer lip | stretch ≤ 1.0 | Surface-aware UV: interior 0.999, inner rim 1.005; **outer lip `u` 1.0–1.045 keeps p95 1.28 / max 1.47** (non-developable steep berm; declared). Relief untouched. |
 | **Relief too tall / steep** — owner accepted for now | Boot: max **7.66 m** (−1.74…7.66, mesh incl. rim), max slope **0.639 = 33°** (0.45 m baseline incl. micro). QC: walkable −1.80…5.43 m, **5.20 m** span in a 20 m window, interior max **25.3°**, rim berm **51°**, **21 %** of cells > 15° | **≤ 3 m over ≥ 20 m, slope ≤ 15°** | Crest 6.4 m on σ 8.5 m and rim berm +2.6 m in ~6 m. Scale every feature to A ≤ 3 m with σ ≥ 2.27·A; make the crest a gentle rise (the landmark brings the height as an object); replace the berm by a soft rise or boundary objects. Re-run QC until both relief rows PASS. |
 | **Hard material edges** | `familyAt` per vertex, `flat` attribute → stepped contours along triangles | **Soft transitions made of Imagine pixels** | Never a code gradient. Options: per-vertex relief weight compared with an Imagine mask value (the boundary takes the mask's organic shape over a band), or Imagine transition tiles (`image_edit` of two family tiles into a blend). |
 | **Tile grid in wide views** | 1.45 m period readable in q8–q10 (and the 8.5 m mask repeats) | **No visible grid in wide views** | More variants per family with a world-hashed slot per cell (placement), a second, larger Imagine mask (~40–60 m) between variants, fog. TILE cannot grow (mag 0.912). |

@@ -5,6 +5,7 @@
 
 import {
   TILE,
+  MICRO,
   SCALE,
   heightAt,
   macroAt,
@@ -13,16 +14,24 @@ import {
   contain,
   radiusAt,
   setDepthMaps,
+  setUvField,
+  uvAt,
+  stretchAt,
   maxRadius,
   areaM2,
 } from "./field.js";
+import { solveSurfaceUv } from "./uvfield.js";
 
+// One light grade per biome (law 67). Mix and saturation are uniforms so the path blend can
+// move them between two biome kits; zone A values 0.26 / 1.05 are the defaults.
 const GRADE_FN = `
+uniform float uGradeMix;
+uniform float uSat;
 vec3 grade(vec3 x) {
   vec3 t = clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0);
-  vec3 y = mix(x, t, 0.26);
+  vec3 y = mix(x, t, uGradeMix);
   float l = dot(y, vec3(0.2126, 0.7152, 0.0722));
-  y = mix(vec3(l), y, 1.05);
+  y = mix(vec3(l), y, uSat);
   return clamp(y, 0.0, 1.0);
 }`;
 
@@ -74,6 +83,8 @@ export function createTerrain(gl, env) {
   let srcW = 1024;
   let post = null;
   let postOn = true;
+  // Law 67 post numbers (zone A defaults); setPostParams() takes the biome blend output.
+  const postP = { fogDensity: 0.015, fogCap: 0.58, gradeMix: 0.26, saturation: 1.05, bloomGain: 0.11, bloomThreshold: 0.78 };
   const info = { tris: 0, cards: 0, area: areaM2(), minH: 0, maxH: 0, maxSlope: 0 };
 
   const groundProg = program(gl, `#version 300 es
@@ -157,6 +168,9 @@ uniform vec3 uFog;
 uniform vec2 uNearFar;
 uniform float uFogOn;
 uniform float uBloomOn;
+uniform float uFogK;
+uniform float uFogCap;
+uniform float uBloomGain;
 in vec2 vUv;
 out vec4 o;
 ${GRADE_FN}
@@ -168,10 +182,10 @@ void main() {
   float f = uNearFar.y;
   float viewZ = (2.0 * n * f) / (f + n - ndc * (f - n));
   if (uFogOn < 0.5) { o = vec4(col, 1.0); return; }
-  float fog = clamp(1.0 - exp(-0.015 * viewZ), 0.0, 0.58);
+  float fog = clamp(1.0 - exp(-uFogK * viewZ), 0.0, uFogCap);
   col = mix(col, uFog, fog);
   vec3 bloom = texture(uBloom, vUv).rgb;
-  col += bloom * 0.11 * uBloomOn;
+  col += bloom * uBloomGain * uBloomOn;
   o = vec4(grade(col), 1.0);
 }`);
 
@@ -184,12 +198,13 @@ void main() {
 }`, `#version 300 es
 precision highp float;
 uniform sampler2D uScene;
+uniform float uBloomThr;
 in vec2 vUv;
 out vec4 o;
 void main() {
   vec3 c = texture(uScene, vUv).rgb;
   float m = max(c.r, max(c.g, c.b));
-  float k = clamp((m - 0.78) / 0.22, 0.0, 1.0);
+  float k = clamp((m - uBloomThr) / (1.0 - uBloomThr), 0.0, 1.0);
   o = vec4(c * k, 1.0);
 }`);
 
@@ -287,6 +302,25 @@ void main() {
     return t;
   }
 
+  // Surface-aware UV: solved once from the macro relief (shape only) before the mesh is baked.
+  // Focus = walkable interior and inner rim (u <= 1.0); the outer lip keeps a declared residual.
+  function solveUv() {
+    const t0 = performance.now();
+    const reach = maxRadius() * 1.08;
+    const uOf = (x, z) => Math.hypot(x, z) / radiusAt(Math.atan2(x, z));
+    const f = solveSurfaceUv({
+      macroAt, reach, n: 96, tile: TILE,
+      inside: (x, z) => uOf(x, z) <= 1.06,
+      focus: (x, z) => uOf(x, z) <= 1.0,
+      stretchMax: 1.0, rounds: 8, iters: 160, itersRefine: 30,
+    });
+    setUvField(f);
+    info.uv = {
+      grid: f.n, ms: Math.round(performance.now() - t0),
+      planarWorst: +f.planarWorst.toFixed(3), worst: +f.worst.toFixed(3), least: +f.least.toFixed(3),
+    };
+  }
+
   // Grid of the drawn ground mesh, so layers can seat on the triangles that
   // are actually rendered (heightAt carries micro relief between vertices).
   const meshGrid = { reach: 0, n: 0, step: 0 };
@@ -351,6 +385,7 @@ void main() {
 
   function buildMesh() {
     const reach = maxRadius() * 1.08;
+    const uv = [0, 0];
     const n = 300;
     const step = (reach * 2) / n;
     meshGrid.reach = reach;
@@ -378,7 +413,8 @@ void main() {
         if (y > maxH) maxH = y;
         indexOf[iz * (n + 1) + ix] = count++;
         positions.push(x, y, z);
-        uvs.push(x / TILE, z / TILE);
+        uvAt(x, z, uv);
+        uvs.push(uv[0], uv[1]);
         fams.push(familyAt(x, z));
         masks.push(x / 8.5, z / 8.5);
       }
@@ -541,6 +577,15 @@ void main() {
     env.trackTex("post", env.W * env.H * 4 + bw * bh * 8);
   }
 
+  // Worst residual UV stretch of the ground around (x, z) (centre + 4 points at `span`).
+  function nearStretch(x, z, span) {
+    return Math.max(
+      stretchAt(x, z),
+      stretchAt(x + span, z), stretchAt(x - span, z),
+      stretchAt(x, z + span), stretchAt(x, z - span),
+    );
+  }
+
   function drawQuad(prog) {
     gl.useProgram(prog);
     gl.bindVertexArray(quad);
@@ -559,6 +604,12 @@ void main() {
     setPost(on) { postOn = !!on; },
     postEnabled() { return postOn; },
     setFog(rgb) { if (post) post.fog = rgb; },
+    setPostParams(p) {
+      if (!p) return;
+      for (const k of Object.keys(postP)) if (Number.isFinite(p[k])) postP[k] = p[k];
+      if (p.fog && post) post.fog = p.fog;
+    },
+    postParams() { return { ...postP, fog: post ? post.fog.slice() : null }; },
     bindScene() {
       gl.bindFramebuffer(gl.FRAMEBUFFER, post.fb);
       gl.viewport(0, 0, env.W, env.H);
@@ -577,6 +628,7 @@ void main() {
         depths.push({ w: img.width, h: img.height, data: lum });
       }
       setDepthMaps(depths);
+      if (ground.uv !== "planar") solveUv();
       maskTex = makeR8(await env.loadImage(env.absUrl(ground.mask)), "mask");
       const cuts = [];
       for (let i = 0; i < ground.details.length; i++) {
@@ -630,6 +682,7 @@ void main() {
       gl.disable(gl.BLEND);
       gl.useProgram(brightProg);
       gl.uniform1i(gl.getUniformLocation(brightProg, "uScene"), 0);
+      gl.uniform1f(gl.getUniformLocation(brightProg, "uBloomThr"), postP.bloomThreshold);
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, post.scene);
       drawQuad(brightProg);
@@ -653,6 +706,11 @@ void main() {
       gl.uniform2f(gl.getUniformLocation(postProg, "uNearFar"), env.NEAR, env.FAR);
       gl.uniform1f(gl.getUniformLocation(postProg, "uFogOn"), fogOn);
       gl.uniform1f(gl.getUniformLocation(postProg, "uBloomOn"), bloomOn);
+      gl.uniform1f(gl.getUniformLocation(postProg, "uFogK"), postP.fogDensity);
+      gl.uniform1f(gl.getUniformLocation(postProg, "uFogCap"), postP.fogCap);
+      gl.uniform1f(gl.getUniformLocation(postProg, "uBloomGain"), postP.bloomGain);
+      gl.uniform1f(gl.getUniformLocation(postProg, "uGradeMix"), postP.gradeMix);
+      gl.uniform1f(gl.getUniformLocation(postProg, "uSat"), postP.saturation);
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, post.scene);
       gl.activeTexture(gl.TEXTURE1);
@@ -667,17 +725,29 @@ void main() {
       const elev = Math.max(0.35, eye[1] - gy);
       const groundD = elev / Math.tan(env.VFOV / 2);
       const span = 2.2;
-      const slope = Math.hypot(
-        heightAt(eye[0] + span, eye[2]) - heightAt(eye[0] - span, eye[2]),
-        heightAt(eye[0], eye[2] + span) - heightAt(eye[0], eye[2] - span),
+      // Micro relief (painted depth) is not in the UV solve: its slope over the span adds on top.
+      const micro = Math.hypot(
+        (heightAt(eye[0] + span, eye[2]) - macroAt(eye[0] + span, eye[2])) - (heightAt(eye[0] - span, eye[2]) - macroAt(eye[0] - span, eye[2])),
+        (heightAt(eye[0], eye[2] + span) - macroAt(eye[0], eye[2] + span)) - (heightAt(eye[0], eye[2] - span) - macroAt(eye[0], eye[2] - span)),
       ) / (2 * span);
-      const stretch = 1 / Math.max(0.55, Math.cos(Math.atan(slope)));
+      const stretch = nearStretch(eye[0], eye[2], span) * Math.sqrt(1 + micro * micro);
       let m = (env.FOCAL * TILE * stretch) / (groundD * srcW);
       if (cards) {
         const near = Math.max(0.8, Math.hypot(4, elev));
         for (let i = 0; i < detailSrcH.length; i++) m = Math.max(m, (env.FOCAL * DETAIL_H[i]) / (near * detailSrcH[i]));
       }
       return m;
+    },
+    // Lowest eye height (world Y) that keeps the ground at or under `target` magnification
+    // above (x, z). Inverse of mag(): elev >= FOCAL·TILE·stretch·tan(VFOV/2) / (srcW·target).
+    // Built on the smooth macro relief plus the full micro amplitude, so it never jitters
+    // with the painted micro relief and always clears the raw heightAt() used by mag().
+    eyeFloor(x, z, target) {
+      const span = 2.2;
+      const microSlope = (2 * MICRO) / span;
+      const stretch = nearStretch(x, z, span) * Math.sqrt(1 + microSlope * microSlope);
+      const need = (env.FOCAL * TILE * stretch * Math.tan(env.VFOV / 2)) / (srcW * (target || 0.98));
+      return macroAt(x, z) + MICRO + Math.max(0.35, need);
     },
     srcW: () => srcW,
   };

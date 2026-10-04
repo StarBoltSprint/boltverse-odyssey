@@ -20,6 +20,7 @@
   "fog": {
     "colourSource": "Sample the horizon band of this biome's Imagine sky plate and average those pixels."
   },
+  "post": {"fogDensity": 0.019, "fogCap": 0.62, "gradeMix": 0.32, "saturation": 1.1, "bloomGain": 0.12, "bloomThreshold": 0.76},
   "geometry": {
     "horizonFraction": 0.5,
     "level": true,

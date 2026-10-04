@@ -34,7 +34,7 @@ An orbit plate, when you add one, asks for eight stills, yaw step 45°, elevatio
 
 ## Pixels
 
-Every visible pixel is an Imagine image or video. Code may compute invisible relief, placement, and physics, and it may apply fog, one grade, and capped bloom ([`biome/docs/67-imagine-post-pass.md`](../../docs/67-imagine-post-pass.md)). Fog colour is sampled from the Imagine sky or plate named in `fog.colourSource`. Palette hexes are prompt guidance. They are not a fog colour and not a code colour.
+Every visible pixel is an Imagine image or video. Code may compute invisible relief, placement, and physics, and it may apply fog, one grade, and capped bloom ([`biome/docs/67-imagine-post-pass.md`](../../docs/67-imagine-post-pass.md)). Fog colour is sampled from the Imagine sky or plate named in `fog.colourSource`. `post` holds numbers only (fog density and cap, grade mix and saturation, bloom gain and threshold; light limits in `packs/zone-a/play/biomeblend.js`); a path between two biomes blends these numbers and the two sampled fog colours by distance ([`docs/METHOD.md`](../../../docs/METHOD.md)). Palette hexes are prompt guidance. They are not a fog colour and not a code colour.
 
 Living-loop roles and the registry: [`stock/loops/README.md`](../../../stock/loops/README.md). Two or more layer durations must have a combined repeat of at least 600 s (the sky gate). 13, 17, and 29 do.
 

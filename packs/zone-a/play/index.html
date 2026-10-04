@@ -18,6 +18,22 @@
       border-radius: 50%; border: 1px solid rgba(255,255,255,0.28);
       background: rgba(255,255,255,0.04); touch-action: none; z-index: 3;
     }
+    /* Zone title (UI overlay, never blocks play). Upper third, clear of Bolt, HUD and stick. */
+    #intro {
+      position: fixed; left: 0; right: 0; top: 19vh; z-index: 2; opacity: 0;
+      text-align: center; pointer-events: none; user-select: none;
+      color: rgba(255,255,255,0.94);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.75), 0 0 18px rgba(0,0,0,0.5);
+      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+      padding: 0 24px;
+    }
+    #intro .intro-kicker {
+      font: 600 11px/1.4 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      letter-spacing: 0.34em; text-transform: uppercase; opacity: 0.82; margin-bottom: 8px;
+    }
+    #intro .intro-title {
+      font-size: clamp(26px, 8.2vw, 40px); line-height: 1.15; letter-spacing: 0.04em; font-weight: 500;
+    }
     #nub {
       position: absolute; left: 40px; top: 40px; width: 28px; height: 28px;
       border-radius: 50%; background: rgba(255,255,255,0.22);
