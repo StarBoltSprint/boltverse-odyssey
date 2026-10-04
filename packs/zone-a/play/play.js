@@ -449,20 +449,40 @@ function fillVP() {
   }
 }
 
-const idTex = gl.createTexture();
-const idFb = gl.createFramebuffer();
-const idDepth = gl.createRenderbuffer();
-gl.bindTexture(gl.TEXTURE_2D, idTex);
-gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-gl.bindRenderbuffer(gl.RENDERBUFFER, idDepth);
-gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, W, H);
-gl.bindFramebuffer(gl.FRAMEBUFFER, idFb);
-gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, idTex, 0);
-gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, idDepth);
-if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) throw new Error("id fbo");
-gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+// The id target is tooling only (snapshot labels): it lives only while a snapshot reads it, so
+// players never pay for it and the snapshot's perf numbers are the players' numbers.
+let idTex = null;
+let idFb = null;
+let idDepth = null;
+function releaseIdFb() {
+  if (!idFb) return;
+  gl.deleteFramebuffer(idFb);
+  gl.deleteTexture(idTex);
+  gl.deleteRenderbuffer(idDepth);
+  idFb = null;
+  idTex = null;
+  idDepth = null;
+  trackTex("id", 0);
+  textures.delete("id");
+}
+function ensureIdFb() {
+  if (idFb) return;
+  idTex = gl.createTexture();
+  idFb = gl.createFramebuffer();
+  idDepth = gl.createRenderbuffer();
+  gl.bindTexture(gl.TEXTURE_2D, idTex);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+  gl.bindRenderbuffer(gl.RENDERBUFFER, idDepth);
+  gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, W, H);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, idFb);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, idTex, 0);
+  gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, idDepth);
+  if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) throw new Error("id fbo");
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  trackTex("id", W * H * 4);
+}
 
 const textures = new Map();
 let drawCalls = 0;
@@ -2576,11 +2596,13 @@ function countBlobs(data, idx) {
 }
 
 function snapshot() {
+  ensureIdFb();
   render(1);
   const pix = new Uint8Array(W * H * 4);
   gl.bindFramebuffer(gl.FRAMEBUFFER, idFb);
   gl.readPixels(0, 0, W, H, gl.RGBA, gl.UNSIGNED_BYTE, pix);
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  releaseIdFb();
   render(0);
   const ids = new Uint16Array(W * H);
   let heroPixels = 0;
@@ -3179,7 +3201,6 @@ async function boot() {
       else idleVideo.onloadeddata = () => r();
     });
     idleVideo.pause();
-    trackTex("id", W * H * 4);
     reset();
     window.__play = {
       version: 3,
