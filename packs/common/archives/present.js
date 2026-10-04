@@ -18,7 +18,7 @@ const STYLE = `
 #archives-root { position: fixed; inset: 0; z-index: 6; pointer-events: none; }
 #archives-paw {
   position: fixed; z-index: 6; padding: 0; border: 0; background: transparent;
-  pointer-events: auto; line-height: 0; isolation: isolate;
+  pointer-events: auto; line-height: 0;
 }
 #archives-paw img { display: block; width: 100%; height: 100%; object-fit: contain; }
 #archives-paw .archives-paw-glow {
