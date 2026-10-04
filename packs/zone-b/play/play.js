@@ -1263,6 +1263,13 @@ function poseMetrics(eye) {
       if (r < minR) minR = r;
     }
   }
+  if (rockLayer) {
+    const rm = rockLayer.mag(eye, FOCAL);
+    if (rm > 1e-4) {
+      const r = 1 / rm;
+      if (r < minR) minR = r;
+    }
+  }
   const behind = (eye[0] - state.x) * fwdBuf[0] + (eye[2] - state.z) * fwdBuf[2];
   poseOut.minR = minR;
   poseOut.nearest = nearest;

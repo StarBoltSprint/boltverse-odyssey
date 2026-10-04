@@ -363,6 +363,78 @@
       "y0": 0,
       "touch": true,
       "role": "rim"
+    },
+    {
+      "file": "butte-0.jpg",
+      "side": "butte-0-side.jpg",
+      "back": "butte-0-back.jpg",
+      "top": "butte-0-top.jpg",
+      "x": 8.5,
+      "z": 32,
+      "h": 1.05,
+      "y0": 0,
+      "touch": true,
+      "role": "block"
+    },
+    {
+      "file": "butte-0.jpg",
+      "side": "butte-0-side.jpg",
+      "back": "butte-0-back.jpg",
+      "top": "butte-0-top.jpg",
+      "x": -9.2,
+      "z": 18,
+      "h": 0.95,
+      "y0": 0,
+      "touch": true,
+      "role": "block"
+    },
+    {
+      "file": "butte-0.jpg",
+      "side": "butte-0-side.jpg",
+      "back": "butte-0-back.jpg",
+      "top": "butte-0-top.jpg",
+      "x": 10.4,
+      "z": -2,
+      "h": 1.1,
+      "y0": 0,
+      "touch": true,
+      "role": "block"
+    },
+    {
+      "file": "butte-0.jpg",
+      "side": "butte-0-side.jpg",
+      "back": "butte-0-back.jpg",
+      "top": "butte-0-top.jpg",
+      "x": -8.8,
+      "z": -24,
+      "h": 1.0,
+      "y0": 0,
+      "touch": true,
+      "role": "block"
+    },
+    {
+      "file": "butte-0.jpg",
+      "side": "butte-0-side.jpg",
+      "back": "butte-0-back.jpg",
+      "top": "butte-0-top.jpg",
+      "x": 9.6,
+      "z": -46,
+      "h": 1.15,
+      "y0": 0,
+      "touch": true,
+      "role": "block"
+    },
+    {
+      "file": "butte-0.jpg",
+      "side": "butte-0-side.jpg",
+      "back": "butte-0-back.jpg",
+      "top": "butte-0-top.jpg",
+      "x": -11.2,
+      "z": 44,
+      "h": 0.9,
+      "y0": 0,
+      "touch": true,
+      "role": "block"
     }
   ]
 }

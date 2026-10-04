@@ -1,5 +1,250 @@
 {
-  "types": {},
-  "assets": {},
-  "instances": []
+  "types": {
+    "pebble": {
+      "kind": "cutout",
+      "variants": [
+        "pile",
+        "tuft"
+      ],
+      "maxTex": 512
+    }
+  },
+  "assets": {
+    "pile": {
+      "file": "packs/zone-b/src/rocks/pile.png",
+      "contentH": 280,
+      "tex": 300,
+      "w": 417,
+      "h": 300
+    },
+    "tuft": {
+      "file": "packs/zone-b/src/rocks/tuft.png",
+      "contentH": 226,
+      "tex": 246,
+      "w": 351,
+      "h": 246
+    }
+  },
+  "instances": [
+    {
+      "id": "d0",
+      "type": "pebble",
+      "variant": 0,
+      "x": -2.6,
+      "z": 37,
+      "heightM": 0.26,
+      "yaw": 47,
+      "scale": 1
+    },
+    {
+      "id": "d1",
+      "type": "pebble",
+      "variant": 0,
+      "x": 4.4,
+      "z": 37,
+      "heightM": 0.26,
+      "yaw": 67,
+      "scale": 1
+    },
+    {
+      "id": "d2",
+      "type": "pebble",
+      "variant": 0,
+      "x": 2.6,
+      "z": 28,
+      "heightM": 0.26,
+      "yaw": 94,
+      "scale": 1
+    },
+    {
+      "id": "d3",
+      "type": "pebble",
+      "variant": 1,
+      "x": -4.4,
+      "z": 28,
+      "heightM": 0.18,
+      "yaw": 114,
+      "scale": 1
+    },
+    {
+      "id": "d4",
+      "type": "pebble",
+      "variant": 1,
+      "x": -2.6,
+      "z": 19,
+      "heightM": 0.18,
+      "yaw": 141,
+      "scale": 1
+    },
+    {
+      "id": "d5",
+      "type": "pebble",
+      "variant": 0,
+      "x": 4.4,
+      "z": 19,
+      "heightM": 0.26,
+      "yaw": 161,
+      "scale": 1
+    },
+    {
+      "id": "d6",
+      "type": "pebble",
+      "variant": 0,
+      "x": 2.6,
+      "z": 10,
+      "heightM": 0.26,
+      "yaw": 188,
+      "scale": 1
+    },
+    {
+      "id": "d7",
+      "type": "pebble",
+      "variant": 0,
+      "x": -4.4,
+      "z": 10,
+      "heightM": 0.26,
+      "yaw": 208,
+      "scale": 1
+    },
+    {
+      "id": "d8",
+      "type": "pebble",
+      "variant": 0,
+      "x": -2.6,
+      "z": 1,
+      "heightM": 0.26,
+      "yaw": 235,
+      "scale": 1
+    },
+    {
+      "id": "d9",
+      "type": "pebble",
+      "variant": 1,
+      "x": 4.4,
+      "z": 1,
+      "heightM": 0.18,
+      "yaw": 255,
+      "scale": 1
+    },
+    {
+      "id": "d10",
+      "type": "pebble",
+      "variant": 1,
+      "x": 2.6,
+      "z": -8,
+      "heightM": 0.18,
+      "yaw": 282,
+      "scale": 1
+    },
+    {
+      "id": "d11",
+      "type": "pebble",
+      "variant": 0,
+      "x": -4.4,
+      "z": -8,
+      "heightM": 0.26,
+      "yaw": 302,
+      "scale": 1
+    },
+    {
+      "id": "d12",
+      "type": "pebble",
+      "variant": 0,
+      "x": -2.6,
+      "z": -17,
+      "heightM": 0.26,
+      "yaw": 329,
+      "scale": 1
+    },
+    {
+      "id": "d13",
+      "type": "pebble",
+      "variant": 0,
+      "x": 4.4,
+      "z": -17,
+      "heightM": 0.26,
+      "yaw": 349,
+      "scale": 1
+    },
+    {
+      "id": "d14",
+      "type": "pebble",
+      "variant": 0,
+      "x": 2.6,
+      "z": -26,
+      "heightM": 0.26,
+      "yaw": 16,
+      "scale": 1
+    },
+    {
+      "id": "d15",
+      "type": "pebble",
+      "variant": 1,
+      "x": -4.4,
+      "z": -26,
+      "heightM": 0.18,
+      "yaw": 36,
+      "scale": 1
+    },
+    {
+      "id": "d16",
+      "type": "pebble",
+      "variant": 1,
+      "x": -2.6,
+      "z": -35,
+      "heightM": 0.18,
+      "yaw": 63,
+      "scale": 1
+    },
+    {
+      "id": "d17",
+      "type": "pebble",
+      "variant": 0,
+      "x": 4.4,
+      "z": -35,
+      "heightM": 0.26,
+      "yaw": 83,
+      "scale": 1
+    },
+    {
+      "id": "d18",
+      "type": "pebble",
+      "variant": 0,
+      "x": 2.6,
+      "z": -44,
+      "heightM": 0.26,
+      "yaw": 110,
+      "scale": 1
+    },
+    {
+      "id": "d19",
+      "type": "pebble",
+      "variant": 0,
+      "x": -4.4,
+      "z": -44,
+      "heightM": 0.26,
+      "yaw": 130,
+      "scale": 1
+    },
+    {
+      "id": "d20",
+      "type": "pebble",
+      "variant": 0,
+      "x": -2.6,
+      "z": -53,
+      "heightM": 0.26,
+      "yaw": 157,
+      "scale": 1
+    },
+    {
+      "id": "d21",
+      "type": "pebble",
+      "variant": 1,
+      "x": 4.4,
+      "z": -53,
+      "heightM": 0.18,
+      "yaw": 177,
+      "scale": 1
+    }
+  ]
 }
