@@ -439,3 +439,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | The card sits in the upper left, under no paw reserve and clear of the stick. The image is the Imagine crystal. The line under it is HTML text. |
 | Guard | `node --test packs/common/archives/archives.test.mjs` row “paw stays off the stick and inside the reserved corner” asserts the card does not overlap the stick or the paw reserve and that `card.y + card.h < vh * 0.4` at 360×800 and 720×1600. |
 | Sources | `packs/common/archives/layout.js`. Stills `shard-world.png`, `pickup-card.png` under `/workspace/grokcli/out/archives/` (not committed). |
+
+### 2026-10-04 — a 720p menu video cannot cover a 720×1600 phone
+
+| | |
+| --- | --- |
+| Take | Archives polish. Branch `archives-shards`. Owner 2026-10-04 20:36. |
+| Defect | The hall film does not reach the top and bottom of a 720×1600 phone. |
+| Root cause | Imagine video rejected aspect `9:20` and resolution `1080p` before writing a file. The accepted call, 720p at `9:16`, is 720×1280. Covering 720×1600 would be magnification 1.25. |
+| Fix | Place the 720×1280 film at scale 1. Hide the world canvas while a menu is open. The gap is a matte sampled once from the still’s four corners. Do not scale, stretch, or smear the frame. |
+| Guard | `node --test packs/common/archives/archives.test.mjs` row “menu film covers a 9:16 phone and never enlarges on a tall one”: 720×1280, 360×800 at device pixel ratio 2 is contain, scale 1, `enlarged` false. Seam row: first-to-last MAE 1.8, which is under 8. |
+| Sources | `packs/common/archives/art/hall-loop.mp4`. `packs/common/archives/backdrop.js`. Phone shot `/workspace/grokcli/out/archives/polish/menu-pause.png`. |

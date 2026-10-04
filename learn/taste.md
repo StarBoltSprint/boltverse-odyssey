@@ -43,3 +43,4 @@ Append a row at the bottom. Do not rewrite an old row. Verdict is KEEP, FAIL, or
 | 2026-10-03 | Sky living layers that do not read | FAIL | there are no videos, it's just images | A living layer has to move where the player looks, without covering the paintings in rectangles. |
 | 2026-10-04 | Monolith gate base above the relief | FAIL | | Seat every ruin foot on the drawn ground. One contact height leaves a gap on the downhill side. |
 | 2026-10-04 | Wreck hangar interior and the slab beside the opening | FAIL | | An unpainted hull face reads black. Retile it from the same Imagine plate. Do not leave the opening wall empty. |
+| 2026-10-04 | Paw button on the menus | KEEP | scintiller, pulser | The paw shimmers and pulses. An Imagine glow layer changes opacity. The print is not scaled. |

@@ -60,6 +60,7 @@ export async function mountArchives(gl, env) {
     ui: manifest.ui,
     cardMs: manifest.cardMs || 2500,
     onArchives() { openArchives(); },
+    onHold(open) { if (env.onHold) env.onHold(open); },
   });
 
   function countText() {
@@ -104,6 +105,8 @@ export async function mountArchives(gl, env) {
     info() { return layer.info(); },
     blocksPlay() { return present.blocksPlay(); },
     pawCorner(vw, vh) { return present.pawCorner(vw, vh); },
+    menuVideoOn() { return present.menuVideoOn(); },
+    setScreen(name, on) { present.setScreen(name, on); },
   };
 
   const layer = {
@@ -114,6 +117,7 @@ export async function mountArchives(gl, env) {
     tick(dt) { present.tick(dt, present.blocksPlay()); },
     blocksPlay() { return present.blocksPlay(); },
     pawCorner(vw, vh) { return present.pawCorner(vw, vh); },
+    menuVideoOn() { return present.menuVideoOn(); },
     info() {
       const w = world.info();
       return {

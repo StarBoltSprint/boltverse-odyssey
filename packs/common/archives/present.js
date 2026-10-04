@@ -1,16 +1,16 @@
 /**
  * DOM page for the paw, the pause menu, the pickup card, and the Archives hall.
- * Visible pixels are Imagine images. Words (lore, counts, button names) are HTML text.
+ * Every menu shares one Imagine backdrop (backdrop.js). Words are HTML text.
  * A later 3D hub replaces this view and keeps catalogue.js.
  */
 
+import { HALL_LOOP, PAW_GLOW, mountMenuBackdrop } from "./backdrop.js";
 import { buildCatalogue } from "./catalogue.js";
 import {
   cardBox,
   cardOpacity,
   chromeLayout,
   containBox,
-  fitPixels,
   plateBox,
 } from "./layout.js";
 
@@ -18,16 +18,26 @@ const STYLE = `
 #archives-root { position: fixed; inset: 0; z-index: 6; pointer-events: none; }
 #archives-paw {
   position: fixed; z-index: 6; padding: 0; border: 0; background: transparent;
-  pointer-events: auto; line-height: 0;
+  pointer-events: auto; line-height: 0; isolation: isolate;
 }
-#archives-paw img { display: block; width: 100%; height: 100%; }
+#archives-paw img { display: block; width: 100%; height: 100%; object-fit: contain; }
+#archives-paw .archives-paw-glow {
+  position: absolute; inset: 0; pointer-events: none;
+  mix-blend-mode: screen;
+  animation: archives-paw-glow ${PAW_GLOW.periodS}s ease-in-out infinite alternate;
+}
+@keyframes archives-paw-glow {
+  from { opacity: ${PAW_GLOW.min}; }
+  to { opacity: ${PAW_GLOW.max}; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #archives-paw .archives-paw-glow { animation: none; opacity: ${PAW_GLOW.min}; }
+}
 #archives-shade, #archives-screen {
-  position: fixed; inset: 0; z-index: 7; display: none; pointer-events: auto; overflow: hidden;
+  position: fixed; inset: 0; z-index: 8; display: none; pointer-events: auto; overflow: hidden;
+  background: transparent;
 }
 #archives-shade.open, #archives-screen.open { display: block; }
-#archives-plate, #archives-hall {
-  position: absolute; display: block; max-width: none; max-height: none;
-}
 #archives-menu, #archives-list {
   position: absolute; color: #f4f1ea;
   font-family: "Iowan Old Style", Palatino, Georgia, serif;
@@ -65,19 +75,6 @@ function dprOf() {
   return Math.min(2, Math.max(1, (typeof window !== "undefined" && window.devicePixelRatio) || 1));
 }
 
-function placeImg(img, box, mode) {
-  const nw = img.naturalWidth || 1;
-  const nh = img.naturalHeight || 1;
-  const fit = mode === "contain"
-    ? containBox(nw, nh, box.w, box.h, dprOf())
-    : fitPixels(nw, nh, box.w, box.h, dprOf());
-  img.style.width = fit.cssW + "px";
-  img.style.height = fit.cssH + "px";
-  img.style.left = (box.x + (box.w - fit.cssW) / 2) + "px";
-  img.style.top = (box.y + (box.h - fit.cssH) / 2) + "px";
-  return fit;
-}
-
 export function mountPresent(doc, env) {
   const resolver = env.absUrl;
   if (!doc.getElementById("archives-style")) {
@@ -89,24 +86,30 @@ export function mountPresent(doc, env) {
   const root = doc.createElement("div");
   root.id = "archives-root";
 
+  const pawSrc = resolver(env.ui.paw);
   const paw = doc.createElement("button");
   paw.id = "archives-paw";
   paw.type = "button";
   paw.setAttribute("aria-label", "Pack");
   const pawImg = doc.createElement("img");
   pawImg.alt = "";
-  pawImg.src = resolver(env.ui.paw);
-  paw.appendChild(pawImg);
+  pawImg.src = pawSrc;
+  const pawGlow = doc.createElement("img");
+  pawGlow.className = "archives-paw-glow";
+  pawGlow.alt = "";
+  pawGlow.src = pawSrc;
+  paw.append(pawImg, pawGlow);
+
+  const backdrop = mountMenuBackdrop(doc, {
+    stillSrc: resolver(env.ui.hall),
+    videoSrc: resolver(env.ui.hallVideo || HALL_LOOP),
+  });
 
   const shade = doc.createElement("div");
   shade.id = "archives-shade";
-  const plate = doc.createElement("img");
-  plate.id = "archives-plate";
-  plate.alt = "";
-  plate.src = resolver(env.ui.plate);
   const menu = doc.createElement("div");
   menu.id = "archives-menu";
-  shade.append(plate, menu);
+  shade.append(menu);
 
   const card = doc.createElement("div");
   card.id = "archives-card";
@@ -117,16 +120,12 @@ export function mountPresent(doc, env) {
 
   const screen = doc.createElement("div");
   screen.id = "archives-screen";
-  const hall = doc.createElement("img");
-  hall.id = "archives-hall";
-  hall.alt = "";
-  hall.src = resolver(env.ui.hall);
   const list = doc.createElement("div");
   list.id = "archives-list";
-  screen.append(hall, list);
+  screen.append(list);
 
   root.append(paw, card);
-  doc.body.append(root, shade, screen);
+  doc.body.append(root, backdrop.el, shade, screen);
 
   let menuOpen = false;
   let archivesOpen = false;
@@ -135,6 +134,7 @@ export function mountPresent(doc, env) {
   let cardT = 0;
   let cardTotal = env.cardMs || 2500;
   let countLine = "0 of 0";
+  const openScreens = new Set();
 
   function viewSize() {
     return {
@@ -145,8 +145,8 @@ export function mountPresent(doc, env) {
 
   function layoutPaw() {
     const { w, h } = viewSize();
-    const nw = pawImg.naturalWidth || 483;
-    const nh = pawImg.naturalHeight || 553;
+    const nw = pawImg.naturalWidth || 944;
+    const nh = pawImg.naturalHeight || 1088;
     const fit = containBox(nw, nh, 56, 64, dprOf());
     const box = chromeLayout(w, h, fit.cssW, fit.cssH).paw;
     paw.style.left = box.x + "px";
@@ -155,19 +155,18 @@ export function mountPresent(doc, env) {
     paw.style.height = box.h + "px";
   }
 
-  function layoutPlate() {
+  function layoutMenu() {
     const { w, h } = viewSize();
     const box = plateBox(w, h);
-    placeImg(plate, box, "cover");
     menu.style.left = box.x + "px";
     menu.style.top = box.y + "px";
     menu.style.width = box.w + "px";
     menu.style.height = box.h + "px";
   }
 
-  function layoutHall() {
+  function layoutBackdrop() {
     const { w, h } = viewSize();
-    placeImg(hall, { x: 0, y: 0, w, h }, "cover");
+    backdrop.layout(w, h, dprOf());
   }
 
   function layoutCard() {
@@ -203,6 +202,15 @@ export function mountPresent(doc, env) {
     if (stick) stick.style.visibility = (menuOpen || archivesOpen) ? "hidden" : "";
   }
 
+  function setScreen(name, on) {
+    if (on) openScreens.add(name);
+    else openScreens.delete(name);
+    const any = openScreens.size > 0;
+    backdrop.setOpen(any);
+    if (any) layoutBackdrop();
+    if (env.onHold) env.onHold(any);
+  }
+
   function fillMain() {
     menu.replaceChildren();
     const resume = doc.createElement("button");
@@ -230,7 +238,6 @@ export function mountPresent(doc, env) {
     archives.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      closeMenu();
       if (env.onArchives) env.onArchives();
     });
     settings.addEventListener("pointerdown", (e) => {
@@ -269,13 +276,15 @@ export function mountPresent(doc, env) {
     shade.classList.add("open");
     setPawVisible(false);
     fillMain();
-    layoutPlate();
+    layoutMenu();
+    setScreen("pause", true);
   }
 
   function closeMenu() {
     menuOpen = false;
     shade.classList.remove("open");
     setPawVisible(!archivesOpen);
+    setScreen("pause", false);
   }
 
   function fillArchives(cat) {
@@ -322,17 +331,19 @@ export function mountPresent(doc, env) {
 
   function openArchives(cat) {
     archivesOpen = true;
+    setScreen("archives", true);
     closeMenu();
     setPawVisible(false);
     fillArchives(cat);
     screen.classList.add("open");
-    layoutHall();
+    layoutBackdrop();
   }
 
   function closeArchives() {
     archivesOpen = false;
     screen.classList.remove("open");
     setPawVisible(!menuOpen);
+    setScreen("archives", false);
   }
 
   function showCard(shard, total) {
@@ -354,19 +365,17 @@ export function mountPresent(doc, env) {
   shade.addEventListener("pointerdown", (e) => e.stopPropagation());
   screen.addEventListener("pointerdown", (e) => e.stopPropagation());
   pawImg.addEventListener("load", layoutPaw);
-  plate.addEventListener("load", layoutPlate);
-  hall.addEventListener("load", layoutHall);
   cardImg.addEventListener("load", layoutCard);
   window.addEventListener("resize", () => {
     layoutPaw();
-    if (menuOpen) layoutPlate();
-    if (archivesOpen) layoutHall();
+    if (menuOpen) layoutMenu();
+    if (menuOpen || archivesOpen) layoutBackdrop();
     if (cardOn) layoutCard();
   });
   layoutPaw();
 
   function blocksPlay() {
-    return menuOpen || archivesOpen;
+    return menuOpen || archivesOpen || openScreens.size > 0;
   }
 
   return {
@@ -378,8 +387,10 @@ export function mountPresent(doc, env) {
     closeMenu,
     openArchives,
     closeArchives,
+    setScreen,
     showCard,
     setCount(text) { countLine = text; },
+    menuVideoOn() { return backdrop.videoOn(); },
     tick(dt, blocked) {
       if (cardOn && !blocked) cardT += Math.max(0, dt) * 1000;
       applyCard(!!blocked);

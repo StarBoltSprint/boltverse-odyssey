@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import { decoderCount, menuFrame, menuVideoHold, PAW_GLOW } from "./backdrop.js";
 import { buildCatalogue } from "./catalogue.js";
 import { cardBox, cardOpacity, chromeLayout, containBox, fitPixels, overlaps, plateBox, pointInLook } from "./layout.js";
 import { validateManifest } from "./manifest.js";
@@ -232,4 +234,97 @@ test("zone A places six shards on the path and beside the landmarks", () => {
   assert.equal(src.includes("colliders.push"), false);
   assert.ok(src.includes("colliders: []"));
   assert.equal(src.includes("NEAREST"), false);
+});
+
+function probeSize(file) {
+  const out = execFileSync("ffprobe", [
+    "-v", "error", "-select_streams", "v:0",
+    "-show_entries", "stream=width,height", "-of", "csv=p=0", file,
+  ], { encoding: "utf8" }).trim();
+  const [w, h] = out.split(",").map(Number);
+  return { w, h };
+}
+
+test("menu film covers a 9:16 phone and never enlarges on a tall one", () => {
+  const video = probeSize(new URL("./art/hall-loop.mp4", import.meta.url));
+  const still = probeSize(new URL("./art/hall.jpg", import.meta.url));
+  assert.equal(video.w, 720);
+  assert.equal(video.h, 1280);
+  assert.equal(still.w, video.w);
+  assert.equal(still.h, video.h);
+  assert.ok(Math.abs(video.w / video.h - 9 / 16) < 0.002);
+  const tall = menuFrame(video.w, video.h, 360, 800, 2);
+  assert.equal(tall.enlarged, false);
+  assert.ok(tall.scale <= 1);
+  assert.equal(tall.mode, "contain");
+  assert.equal(tall.fills, false);
+  const phone = menuFrame(video.w, video.h, 360, 640, 2);
+  assert.equal(phone.mode, "cover");
+  assert.equal(phone.fills, true);
+  assert.ok(Math.abs(phone.scale - 1) < 1e-6);
+  const wide = menuFrame(1080, 1920, 360, 800, 2);
+  assert.equal(wide.mode, "cover");
+  assert.equal(wide.fills, true);
+  assert.ok(wide.scale < 1);
+  const glow = probeSize(new URL("./art/paw-glow.png", import.meta.url));
+  const paw = containBox(glow.w, glow.h, 56, 64, 2);
+  assert.ok(paw.scale <= 1);
+  assert.ok(paw.cssW * 2 <= glow.w + 0.01);
+  const layout = chromeLayout(360, 800, paw.cssW, paw.cssH);
+  assert.ok(layout.paw.x >= layout.reserve.x);
+  assert.ok(layout.paw.y + layout.paw.h <= layout.reserve.y + layout.reserve.h);
+});
+
+test("a menu pauses world videos and the paw glow does not scale", () => {
+  const hold = menuVideoHold(true);
+  assert.equal(hold.pauseSky, true);
+  assert.equal(hold.pauseGate, true);
+  assert.equal(hold.pauseBolt, true);
+  assert.deepEqual(menuVideoHold(false), { pauseSky: false, pauseGate: false, pauseBolt: false });
+  assert.equal(decoderCount({ bolt: true, skies: 3, menu: false }), 4);
+  assert.equal(decoderCount({ bolt: false, gate: false, skies: 0, menu: true }), 1);
+  assert.ok(decoderCount({ bolt: true, gate: true, skies: 3, menu: true }) > 4);
+  assert.ok(PAW_GLOW.min > 0 && PAW_GLOW.max < 0.75 && PAW_GLOW.min < PAW_GLOW.max);
+  const present = readFileSync(new URL("./present.js", import.meta.url), "utf8");
+  const backdrop = readFileSync(new URL("./backdrop.js", import.meta.url), "utf8");
+  const play = readFileSync(new URL("../../zone-a/play/play.js", import.meta.url), "utf8");
+  assert.equal(present.includes("scale("), false);
+  assert.equal(backdrop.includes("scale("), false);
+  assert.ok(present.includes("archives-paw-glow"));
+  assert.ok(present.includes("mix-blend-mode: screen"));
+  assert.ok(backdrop.includes("archives-cover"));
+  assert.ok(backdrop.includes("visibility: hidden"));
+  assert.ok(play.includes("menuVideoHold"));
+  assert.ok(present.includes("setScreen"));
+  const manifest = baseManifest();
+  manifest.ui.silhouette = "dim.png";
+  const dim = buildCatalogue(manifest, { found: {} });
+  assert.equal(dim.shards[0].image, "dim.png");
+  assert.equal(dim.shards[0].showLore, false);
+  assert.equal(dim.shards[1].image, "dim.png");
+});
+
+test("hall loop seam stays under the loop gate", () => {
+  const file = new URL("./art/hall-loop.mp4", import.meta.url);
+  const py = `
+import subprocess, tempfile, os
+from PIL import Image, ImageChops, ImageStat
+src = ${JSON.stringify(file.pathname)}
+d = tempfile.mkdtemp()
+subprocess.check_call(["ffmpeg","-y","-i",src,"-vf","select=eq(n\\\\,0)","-vframes","1", d+"/a.png"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+subprocess.check_call(["ffmpeg","-y","-sseof","-0.08","-i",src,"-vframes","1", d+"/b.png"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+subprocess.check_call(["ffmpeg","-y","-ss","3","-i",src,"-vframes","1", d+"/m.png"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+def mae(p, q):
+    A = Image.open(p).convert("RGB")
+    B = Image.open(q).convert("RGB")
+    s = ImageStat.Stat(ImageChops.difference(A, B))
+    return sum(s.mean) / 3
+print(round(mae(d+"/a.png", d+"/b.png"), 3))
+print(round(mae(d+"/a.png", d+"/m.png"), 3))
+`;
+  const out = execFileSync("python3", ["-c", py], { encoding: "utf8" }).trim().split("\n");
+  const seam = Number(out[0]);
+  const mid = Number(out[1]);
+  assert.ok(seam <= 8, "seam mae " + seam);
+  assert.ok(mid > seam, "mid mae " + mid);
 });

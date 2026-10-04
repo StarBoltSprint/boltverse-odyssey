@@ -57,6 +57,7 @@ a change is a new row that cites the old one. Times are Paris.
 
 | 2026-10-04 | Owner decision 2026-10-04: generic kit-driven DetailGenerator — keyed Imagine micro-details (pebbles, crystal shards, small ridges, tufts) near the path and the clearing, non-blocking, instanced, against the carpet effect. Ground cutout cards and rock pebbles stay beside it. Recipe [`details.md`](details.md). Command `python3 tools/details/build.py --kit <id>`. | IN TEST | SmiR 2026-10-04, zone A step 5 |
 | 2026-10-04 | Owner decision 2026-10-04: details v2 — fewer, bigger one-object-per-still Imagine features at real size for the chase read. | IN TEST | SmiR 2026-10-04, zone A step 5b |
+| 2026-10-04 20:36 | **Menus share one living hall film.** Pause, Archives, and every later menu use `backdrop.js`: one seamless Imagine loop of the Citadel hall (first frame is the last), hall still as fallback, uniform scale ≤ 1. The paw shimmers by an Imagine glow layer whose opacity breathes; the print is not scaled. While a menu is open the world canvas is hidden and world videos (sky, gate, Bolt) pause so active videos stay ≤ 4. Unfound shards stay dim silhouettes. Imagine video at 720p is 720×1280 (9:16). A 9:20 video and 1080p were rejected by the API, so a 720×1600 phone is not covered without enlargement; the gap is the page matte, not the frozen world. | IN TEST | SmiR 2026-10-04 20:36, branch `archives-shards` |
 
 ## Contradictions found (2026-10-03 sweep)
 

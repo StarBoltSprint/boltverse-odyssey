@@ -9,6 +9,7 @@ import { showIntro, introEnabled } from "./intro.js";
 import { createBiomeBlend, postOf } from "./biomeblend.js";
 import { mountDetails } from "./details.js";
 import { mountRuins } from "./ruins.js";
+import { menuVideoHold } from "../../common/archives/backdrop.js";
 import { mountArchives } from "../../common/archives/mount.js";
 
 const W = 720;
@@ -2306,6 +2307,25 @@ function gateInfo() {
 }
 
 function syncVideos(eye, fwd) {
+  const menu = !!(archivesLayer && archivesLayer.blocksPlay());
+  const hold = menuVideoHold(menu);
+  if (hold.pauseBolt) {
+    if (gallopVideo && !gallopVideo.paused) gallopVideo.pause();
+    if (idleVideo && !idleVideo.paused) idleVideo.pause();
+  }
+  if (hold.pauseGate && gateVideo && !gateVideo.paused) gateVideo.pause();
+  if (hold.pauseSky) {
+    for (let i = 0; i < skyVideos.length; i++) {
+      const sky = skyVideos[i];
+      if (sky && !sky.paused) sky.pause();
+    }
+    return false;
+  }
+  for (let i = 0; i < skyVideos.length; i++) {
+    if (i === 2) continue;
+    const sky = skyVideos[i];
+    if (sky && sky.paused && sky.readyState >= 2) sky.play().catch(() => {});
+  }
   const active = state.mode === "GALLOP" ? gallopVideo : idleVideo;
   const other = state.mode === "GALLOP" ? idleVideo : gallopVideo;
   if (other && !other.paused) other.pause();
@@ -2832,6 +2852,7 @@ function activeVideoCount() {
   if (videoOn(bolt)) n++;
   if (videoOn(gateVideo)) n++;
   for (let i = 0; i < skyVideos.length; i++) if (videoOn(skyVideos[i])) n++;
+  if (archivesLayer && archivesLayer.menuVideoOn && archivesLayer.menuVideoOn()) n++;
   return n;
 }
 
@@ -3485,6 +3506,7 @@ async function boot() {
           groundAt: (x, z) => (useRelief ? terrain.meshHeightAt(x, z) : 0),
           focal: FOCAL,
           manifestUrl: "packs/zone-a/src/archives/manifest.json",
+          onHold(open) { if (open) syncVideos(eyeBuf, fwdBuf); },
         });
       } catch (err) {
         console.warn("archives", err);
@@ -3560,6 +3582,7 @@ async function boot() {
         }
       });
       await v.play().catch(() => {});
+      if (archivesLayer && archivesLayer.blocksPlay() && !v.paused) v.pause();
     }
     if (skyVideos[0] && skyVideos[0].videoWidth) {
       skyVideoW = skyVideos[0].videoWidth;
