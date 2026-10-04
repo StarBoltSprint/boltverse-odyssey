@@ -123,19 +123,6 @@ flat in float vFam;
 flat in float vFamB;
 in float vW;
 out vec4 o;
-float hash21(vec2 p) {
-  return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
-}
-float vnoise(vec2 p) {
-  vec2 i = floor(p);
-  vec2 f = fract(p);
-  f = f * f * (3.0 - 2.0 * f);
-  float a = hash21(i);
-  float b = hash21(i + vec2(1.0, 0.0));
-  float c = hash21(i + vec2(0.0, 1.0));
-  float d = hash21(i + vec2(1.0, 1.0));
-  return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
-}
 void main() {
   vec2 d = fwidth(vUv);
   float m = texture(uMask, vMask).r;
@@ -152,19 +139,8 @@ void main() {
     float t = smoothstep(m - 0.1, m + 0.1, vW);
     c = mix(ca, cb, t);
   }
-  // Second Imagine family, crossfaded by smooth noise over about four tiles.
-  // Ridges (family 0) stay mostly the base still. No UV shift, so a tile is never stretched.
-  float alt = mod(vFam + 2.0, 8.0);
-  float altB = mod(vFamB + 2.0, 8.0);
-  vec4 s0 = textureGrad(uAlb, vec3(uv, alt), d, gy);
-  vec4 s1 = textureGrad(uAlb, vec3(uv, mod(alt + 1.0, 8.0)), d, gy);
-  vec3 cs = mix(s0.rgb, s1.rgb, m);
-  vec4 t0 = textureGrad(uAlb, vec3(uv, altB), d, gy);
-  vec4 t1 = textureGrad(uAlb, vec3(uv, mod(altB + 1.0, 8.0)), d, gy);
-  float tb = vW > 0.001 ? smoothstep(m - 0.1, m + 0.1, vW) : 0.0;
-  cs = mix(cs, mix(t0.rgb, t1.rgb, m), tb);
-  float cap = vFam < 0.5 ? 0.22 : 0.75;
-  c = mix(c, cs, vnoise(vUv * 0.40) * cap);
+  // One family is two Imagine stills, crossfaded by the mask. A third still
+  // mixed by noise stamped one crack carpet across the basin.
   float rho = length(vUv) * uTile;
   float ft = smoothstep(uFogNear, uFogFar, rho);
   c = mix(c, uFog, ft * 0.18);

@@ -158,7 +158,7 @@ export function macroAt(x, z) {
   const rimIn = Math.max(0, Math.min(1, wall / 16));
   const basin = Math.exp(-((z + 10) * (z + 10)) / (2 * 16 * 16));
   const dune = Math.sin((x * Math.PI * 2) / 40 + z * 0.04) * Math.cos((z * Math.PI * 2) / 42);
-  h += 0.5 * dune * basin * rimIn;
+  h += 0.65 * dune * basin * rimIn;
   // Butte skirts cross the rim. A wide low mound, not a second cliff.
   const mound = butteMound(x, z);
   h += mound;
@@ -178,25 +178,43 @@ export function familyAt(x, z) {
 /** a/b are even slot ids. w is 0 inside a family and rises toward a boundary. */
 export function familyBlend(x, z) {
   const wall = segDist(x, z);
-  const rim = Math.max(0, Math.min(1, (14 - wall) / 8));
-  const basin = Math.exp(-((z + 10) * (z + 10)) / (2 * 14 * 14));
-  const slot = Math.exp(-((z - 22) * (z - 22)) / (2 * 16 * 16));
-  const wash = Math.exp(-((z + 35) * (z + 35)) / (2 * 10 * 10));
-  let a = 4;
-  let b = 4;
+  const rim = Math.max(0, Math.min(1, (16 - wall) / 10));
+  const basin = Math.exp(-((z + 10) * (z + 10)) / (2 * 18 * 18));
+  const slot = Math.exp(-((z - 18) * (z - 18)) / (2 * 12 * 12));
+  const wash = Math.exp(-((z + 38) * (z + 38)) / (2 * 14 * 14));
+  // Rock shelves cross the chase, so the run is not one clay carpet.
+  const shelves = Math.exp(-((z - 36) * (z - 36)) / (2 * 14 * 14));
+  const side = Math.max(0, Math.min(1, (Math.abs(x) - 6) / 6));
+  const clay = Math.exp(-((z - 6) * (z - 6)) / (2 * 12 * 12)) * side;
+  // Open floor is sand. Cracked clay sits on the side shelves of the basin.
+  // Rock rims and a gravel wash break the run, so the chase is not one tile.
+  let a = 2;
+  let b = 2;
   let w = 0;
-  if (rim > 0.55) {
+  if (rim > 0.45) {
     a = 0;
-    b = 4;
-    w = 1 - (rim - 0.55) / 0.45;
-  } else if (basin > slot && basin > wash && basin > 0.35) {
-    a = 2;
-    b = 4;
-    w = 1 - Math.min(1, (basin - 0.35) / 0.4);
-  } else if (slot > 0.35 || wash > 0.35) {
+    b = 2;
+    w = 1 - (rim - 0.45) / 0.55;
+  } else if (wash > 0.4) {
     a = 6;
-    b = 4;
-    w = 1 - Math.min(1, (Math.max(slot, wash) - 0.35) / 0.4);
+    b = 2;
+    w = 1 - Math.min(1, (wash - 0.4) / 0.45);
+  } else if (clay > 0.4) {
+    a = 4;
+    b = 2;
+    w = 1 - Math.min(1, (clay - 0.4) / 0.45);
+  } else if (basin > 0.4 && basin >= slot) {
+    a = 2;
+    b = 6;
+    w = 1 - Math.min(1, (basin - 0.4) / 0.45);
+  } else if (slot > 0.35) {
+    a = 6;
+    b = 2;
+    w = 1 - Math.min(1, (slot - 0.35) / 0.45);
+  } else if (shelves > 0.4) {
+    a = 0;
+    b = 2;
+    w = 1 - Math.min(1, (shelves - 0.4) / 0.45);
   }
   if (w < 0) w = 0;
   if (w > 1) w = 1;
