@@ -93,7 +93,7 @@
     "types": {
       "cluster": {
         "count": 18,
-        "heightM": [0.7, 1.05],
+        "heightM": [0.7, 1.15],
         "scale": [0.92, 1],
         "minSeparation": 4.8,
         "planes": 1,
@@ -103,7 +103,7 @@
       },
       "slab": {
         "count": 26,
-        "heightM": [0.34, 0.5],
+        "heightM": [0.34, 0.75],
         "scale": [0.9, 1],
         "minSeparation": 3.4,
         "planes": 1,
@@ -112,7 +112,7 @@
       },
       "crest": {
         "count": 12,
-        "heightM": [0.75, 1.15],
+        "heightM": [0.75, 1.2],
         "scale": [0.92, 1],
         "minSeparation": 6.0,
         "planes": 1,
@@ -122,12 +122,32 @@
       },
       "pile": {
         "count": 16,
-        "heightM": [0.45, 0.7],
+        "heightM": [0.45, 0.8],
         "scale": [0.9, 1],
         "minSeparation": 4.2,
         "planes": 1,
         "file": "pile.jpg",
         "minAcross": 1.85
+      }
+    },
+    "skirtBuryFrac": 0.85,
+    "near": {
+      "latM": [1.5, 4.0],
+      "alongM": [-6, 80],
+      "gapM": [1.1, 4.2],
+      "members": [1, 4],
+      "clumpR": 1.1,
+      "slideM": 1.0,
+      "fovHalfDeg": 15.4,
+      "minHeightM": 0.3,
+      "sameTypeSepM": 2.2,
+      "buryM": 0.03,
+      "buryExtraFrac": 0.12,
+      "mix": {
+        "slab": 0.34,
+        "pile": 0.28,
+        "cluster": 0.24,
+        "crest": 0.14
       }
     }
   }

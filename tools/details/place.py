@@ -526,10 +526,168 @@ def place_features(numbers: dict, solids: list[tuple[float, float, float]], vari
             })
             by_type[name] += 1
             got += 1
+    near_by = place_near(numbers, feat, types, variants, instances, grid, cell_of, nearby, rejected,
+                         seed, (sx, sz), (fx, fz), (rx, rz), focal, run_clear)
+    for name, n in near_by.items():
+        by_type[name] = by_type.get(name, 0) + n
+    mark_mirrors(instances, seed)
     stats = {
         "placed": len(instances),
         "drawn": len(instances),
         "byType": by_type,
+        "nearByType": near_by,
         "runClearM": run_clear,
     }
     return instances, stats
+
+
+def vnoise(t: float, seed: int) -> float:
+    """Smooth 1D value noise in 0..1 (placement density only, never pixels)."""
+    i = math.floor(t)
+    f = t - i
+    a = hash01(i, 41, seed)
+    b = hash01(i + 1, 41, seed)
+    f = f * f * (3.0 - 2.0 * f)
+    return a + (b - a) * f
+
+
+def near_height_cap(content_h: float, lat: float, near: dict, focal: float) -> float:
+    """Tallest height whose pixels stay at magnification <= 1 from the closest
+    chase eye that can see the card. The eye runs along the path, slid by up
+    to `slideM`; a card enters the frame only inside `fovHalfDeg` of the view
+    axis, so the closest visible distance is lateral / sin(angle)."""
+    slide = float(near.get("slideM", 1.0))
+    ang = math.radians(float(near.get("fovHalfDeg", 15.4)))
+    lc = max(0.3, abs(lat) - slide)
+    dmin = lc / math.sin(ang)
+    return dmin * float(content_h) / float(focal)
+
+
+def place_near(numbers, feat, types, variants, instances, grid, cell_of, nearby, rejected,
+               seed, spawn, fwd, right, focal, run_clear) -> dict:
+    """Near band: clumps of one-still features 1.5-4 m beside the running line.
+    Clump centres walk along each side with noise-driven gaps; members differ in
+    type. Heights reach each still's own no-stretch cap for that lateral."""
+    near = feat.get("near") or {}
+    out = {name: 0 for name in types}
+    if not near:
+        return out
+    sx, sz = spawn
+    fx, fz = fwd
+    rx, rz = right
+    lat0, lat1 = (float(v) for v in near["latM"])
+    a0, a1 = (float(v) for v in near["alongM"])
+    g0, g1 = (float(v) for v in near["gapM"])
+    m0, m1 = (int(v) for v in near["members"])
+    clump_r = float(near["clumpR"])
+    bury = float(near.get("buryM", 0.04))
+    bury_x = float(near.get("buryExtraFrac", 0.12))
+    mix = near["mix"]
+    names = [n for n in mix if n in types and variants.get(n)]
+    tseed = type_seed("near", seed)
+    k = 0
+    for side in (-1.0, 1.0):
+        along = a0 + hash01(int(side + 3), 5, tseed) * g1
+        while along < a1:
+            k += 1
+            dens = vnoise(along / 9.0 + (0 if side < 0 else 37.0), tseed)
+            gap = g1 - (g1 - g0) * dens
+            gap *= 0.75 + 0.5 * hash01(k, 1, tseed)
+            # Open stretches where the noise is low, so the band never reads as a row.
+            if dens < float(near.get("openBelow", 0.38)):
+                gap += float(near.get("openGapM", 3.0)) * (1.0 + 1.6 * hash01(k, 13, tseed))
+            clat = lat0 + 0.35 + hash01(k, 2, tseed) * (lat1 - lat0 - 0.7)
+            members = m0 + int((hash01(k, 3, tseed) * 0.6 + dens * 0.6) * (m1 - m0 + 1))
+            members = max(m0, min(m1, members))
+            # Weighted, without repeats inside a clump.
+            pool = list(names)
+            picked = []
+            for j in range(members):
+                if not pool:
+                    break
+                tot = sum(float(mix[n]) for n in pool)
+                r = hash01(k * 7 + j, 4, tseed) * tot
+                for n in pool:
+                    r -= float(mix[n])
+                    if r <= 0:
+                        break
+                picked.append(n)
+                pool.remove(n)
+            for j, name in enumerate(picked):
+                spec = types[name]
+                group = variants[name]
+                local = int(hash01(k * 7 + j, 6, tseed) * len(group)) % len(group)
+                variant = group[local]
+                ok = False
+                for tr in range(12):
+                    q = k * 97 + j * 13 + tr
+                    ang = hash01(q, 7, tseed) * math.tau
+                    rad = clump_r * math.sqrt(hash01(q, 8, tseed)) if j else clump_r * 0.25 * hash01(q, 8, tseed)
+                    lat = clat + math.cos(ang) * rad
+                    al = along + math.sin(ang) * rad * 1.6
+                    if abs(lat) < lat0 or abs(lat) > lat1:
+                        continue
+                    lat_s = side * lat
+                    x = sx + fx * al + rx * lat_s
+                    z = sz + fz * al + rz * lat_s
+                    if rejected(x, z):
+                        continue
+                    cap = near_height_cap(variant["contentH"], lat, near, focal)
+                    hi = min(float(spec["heightM"][1]), cap)
+                    if hi < float(near.get("minHeightM", 0.3)):
+                        continue
+                    height = hi * (0.86 + 0.14 * hash01(q, 10, tseed))
+                    aspect = float(variant["contentW"]) / max(1.0, float(variant["contentH"]))
+                    half_w = 0.5 * height * aspect
+                    if lat - half_w < run_clear:
+                        continue
+                    crowded = False
+                    for it in nearby(x, z, 3.0):
+                        other = it[6] if len(it) > 6 else 0.6
+                        limit = 0.55 * (half_w + other)
+                        if it[2] == name:
+                            limit = max(limit, float(near.get("sameTypeSepM", 3.0)))
+                        if (it[0] - x) ** 2 + (it[1] - z) ** 2 < limit * limit:
+                            crowded = True
+                            break
+                    if crowded:
+                        continue
+                    ok = True
+                    break
+                if not ok:
+                    continue
+                heading_deg = math.degrees(math.atan2(fx, fz))
+                yaw = (heading_deg + 180.0 + (hash01(q, 11, tseed) - 0.5) * 64.0) % 360.0
+                extra = bury_x * hash01(q, 12, tseed) * height
+                grid.setdefault(cell_of(x, z), []).append((x, z, name, yaw, local, 3.0, half_w))
+                instances.append({
+                    "type": name,
+                    "variant": local,
+                    "x": round(x, 3),
+                    "z": round(z, 3),
+                    "yaw": round(yaw, 1),
+                    "scale": 1.0,
+                    "heightM": round(height, 4),
+                    "planes": 1,
+                    "buryM": round(bury + extra, 4),
+                    "near": 1,
+                })
+                out[name] += 1
+            along += gap
+    return out
+
+
+def mark_mirrors(instances: list[dict], seed: int) -> None:
+    """Flip U on some cards. Never on a card whose nearest same-type neighbour
+    is close enough to read as its mirror twin."""
+    tseed = type_seed("mirror", seed)
+    for i, inst in enumerate(instances):
+        best = 1e9
+        for j, other in enumerate(instances):
+            if j == i or other["type"] != inst["type"]:
+                continue
+            d = (other["x"] - inst["x"]) ** 2 + (other["z"] - inst["z"]) ** 2
+            if d < best:
+                best = d
+        if math.sqrt(best) >= 4.5 and hash01(i, 1, tseed) < 0.5:
+            inst["mirror"] = 1

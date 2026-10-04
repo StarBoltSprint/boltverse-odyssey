@@ -10,7 +10,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from place import load_solids, place, place_features  # noqa: E402
+from place import load_solids, near_height_cap, place, place_features  # noqa: E402
 
 NUM = Path(__file__).resolve().parent / "numbers"
 HEX = re.compile(r"#[0-9a-fA-F]{3,8}\b")
@@ -146,6 +146,7 @@ def main() -> int:
                 print(f"FAIL details: features placed {fs['placed']} of {fneed}")
                 return 1
             run_clear = float(feat.get("runClearM") or 0.9)
+            near_n = 0
             for inst in fa:
                 if inst.get("planes") != 1 or "collider" in inst:
                     print("FAIL details: feature instance")
@@ -162,11 +163,24 @@ def main() -> int:
                 if abs(lat) - half < run_clear - 0.02:
                     print(f"FAIL details: feature on the running line lat {lat:.2f}")
                     return 1
-                if abs(lat) + 1e-6 < float(spec["minAcross"]) - half:
+                if inst.get("near"):
+                    band = feat["near"]["latM"]
+                    if abs(lat) < float(band[0]) - 1e-6 or abs(lat) > float(band[1]) + 1e-6:
+                        print(f"FAIL details: near feature outside its band lat {lat:.2f}")
+                        return 1
+                    cap = near_height_cap(640, abs(lat), feat["near"], float(feat.get("focalPx", 1793)))
+                    if inst["heightM"] * inst["scale"] > cap + 1e-4:
+                        print(f"FAIL details: near feature over its no-stretch cap {inst['heightM']} > {cap:.3f}")
+                        return 1
+                    near_n += 1
+                elif abs(lat) + 1e-6 < float(spec["minAcross"]) - half:
                     print(f"FAIL details: feature inside minAcross {inst['type']}")
                     return 1
+            if feat.get("near") and near_n < 60:
+                print(f"FAIL details: near band has only {near_n} features")
+                return 1
             print(
-                f"PASS features selftest placed={fs['placed']} by={fs['byType']}"
+                f"PASS features selftest placed={fs['placed']} near={near_n} by={fs['byType']}"
             )
         print(
             f"PASS details selftest placed={stats['placed']} near={stats['nearPerM2']}/m2 "

@@ -26,6 +26,8 @@ const MAX_BOOM = BOOM / 0.62;
 
 const canvas = document.getElementById("view");
 const hud = document.getElementById("hud");
+// Players see no debug HUD. QC opens it with ?hud=1 (or debug=1); the text stays readable for tools.
+if (!/[?&](hud|debug)=1(?:&|$)/.test(location.search)) hud.style.visibility = "hidden";
 canvas.width = W;
 canvas.height = H;
 const gl = canvas.getContext("webgl2", {
@@ -2074,7 +2076,8 @@ function snapshot() {
     rocks: rockLayer ? rockLayer.info() : null,
     detailLoadMs,
     details: detailLayer ? detailLayer.info() : null,
-    detailMag: detailLayer ? detailLayer.mag(eyeBuf, FOCAL) : 0,
+    detailMag: detailLayer ? detailLayer.mag(eyeBuf, FOCAL, vpM) : 0,
+    featureMag: detailLayer && detailLayer.magFeatures ? detailLayer.magFeatures(eyeBuf, FOCAL, vpM) : 0,
     pathTrigger: state.pathTrigger,
     gate: gateInfo(),
     nearestVisibleM: nearestM,
@@ -2650,6 +2653,7 @@ async function boot() {
     requestAnimationFrame(frame);
   } catch (e) {
     hud.textContent = "BOOT " + (e && e.stack ? e.stack : e);
+    hud.style.visibility = "visible";
     window.__play = { ready: false, error: String(e) };
   }
 }

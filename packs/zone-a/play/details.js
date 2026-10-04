@@ -74,6 +74,19 @@ function seatMin(groundAt, x, z, yaw, planes, halfW) {
   return min;
 }
 
+// The manifests store v with the image's top row at v = 1, so every atlas is
+// uploaded flipped. The unpack flags are shared GL state that other layers
+// change between awaits: set them for this upload and put them back.
+function texUpload(gl, img) {
+  const flip = gl.getParameter(gl.UNPACK_FLIP_Y_WEBGL);
+  const pre = gl.getParameter(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+  gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, flip);
+  gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, pre);
+}
+
 export async function mountDetails(gl, env) {
   const t0 = performance.now();
   let manifest;
@@ -95,7 +108,7 @@ export async function mountDetails(gl, env) {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+  texUpload(gl, img);
   gl.generateMipmap(gl.TEXTURE_2D);
   const tw = img.width;
   const th = img.height;
@@ -171,7 +184,7 @@ export async function mountDetails(gl, env) {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+    texUpload(gl, img);
     gl.generateMipmap(gl.TEXTURE_2D);
     env.trackTex(label, Math.ceil(img.width * img.height * 4 * 4 / 3));
     return t;
@@ -211,6 +224,7 @@ export async function mountDetails(gl, env) {
   let fMx = new Float32Array(0);
   let fMh = new Float32Array(0);
   let fPx = new Float32Array(0);
+  let fGeo = new Float32Array(0);
   let fW = 0;
   let fH = 0;
   try {
@@ -233,6 +247,7 @@ export async function mountDetails(gl, env) {
       fMx = new Float32Array(fists.length * 3);
       fMh = new Float32Array(fists.length);
       fPx = new Float32Array(fists.length);
+      fGeo = new Float32Array(fists.length * 4);
       let fw = 0;
       for (let i = 0; i < fists.length; i++) {
         const inst = fists[i];
@@ -244,7 +259,9 @@ export async function mountDetails(gl, env) {
         const rectW = variant.rectW || variant.contentW;
         const quadH = worldH * (rectH / variant.contentH);
         const quadW = quadH * (rectW / rectH);
-        const sink = worldH * ((variant.padBottom || 0) / variant.contentH) + (inst.buryM || 0);
+        // The painted dust collar goes under the drawn ground so the body rises out of it.
+        const skirt = (variant.skirtPx || 0) * (fman.skirtBuryFrac == null ? 0.85 : fman.skirtBuryFrac);
+        const sink = worldH * (((variant.padBottom || 0) + skirt) / variant.contentH) + (inst.buryM || 0);
         const yaw0 = (inst.yaw || 0) * Math.PI / 180;
         const planes = inst.planes || 1;
         const halfW = 0.5 * worldH * ((variant.contentW || rectW) / variant.contentH);
@@ -256,6 +273,10 @@ export async function mountDetails(gl, env) {
         fMx[pi * 3 + 2] = inst.z;
         fMh[pi] = worldH;
         fPx[pi] = variant.contentH;
+        fGeo[pi * 4] = y;
+        fGeo[pi * 4 + 1] = Math.cos(yaw0);
+        fGeo[pi * 4 + 2] = -Math.sin(yaw0);
+        fGeo[pi * 4 + 3] = halfW;
         fCounts[inst.type] = (fCounts[inst.type] || 0) + 1;
         fPlaced++;
         for (let k = 0; k < planes; k++) {
@@ -266,9 +287,9 @@ export async function mountDetails(gl, env) {
           fd[o + 3] = yaw0 + k * Math.PI / planes;
           fd[o + 4] = quadW;
           fd[o + 5] = quadH;
-          fd[o + 8] = variant.u0;
+          fd[o + 8] = inst.mirror ? variant.u1 : variant.u0;
           fd[o + 9] = variant.v0;
-          fd[o + 10] = variant.u1;
+          fd[o + 10] = inst.mirror ? variant.u0 : variant.u1;
           fd[o + 11] = variant.v1;
           fw++;
         }
@@ -283,14 +304,52 @@ export async function mountDetails(gl, env) {
   const loadMs = performance.now() - t0;
   const draws = (drawn ? 1 : 0) + (fDrawn ? 1 : 0);
 
-  function worst(eye, focal, n, xs, hs, ps) {
+  // A card off screen paints no pixel, so it cannot be stretched. With a view
+  // matrix, only cards whose bounding sphere meets the frustum count.
+  // Portrait 720x1600: clip margin per metre is 2*focal/W across, 2*focal/H up.
+  function onScreen(vp, focal, x, y, z, r) {
+    if (!vp) return true;
+    const cx = vp[0] * x + vp[4] * y + vp[8] * z + vp[12];
+    const cy = vp[1] * x + vp[5] * y + vp[9] * z + vp[13];
+    const cw = vp[3] * x + vp[7] * y + vp[11] * z + vp[15];
+    if (cw < 0.05 - r) return false;
+    const px = r * (2 * focal / 720);
+    const py = r * (2 * focal / 1600);
+    return Math.abs(cx) <= cw + px && Math.abs(cy) <= cw + py;
+  }
+
+  function worst(eye, focal, n, xs, hs, ps, vp) {
     let m = 0;
     for (let i = 0; i < n; i++) {
+      if (!onScreen(vp, focal, xs[i * 3], xs[i * 3 + 1], xs[i * 3 + 2], hs[i])) continue;
       const dx = eye[0] - xs[i * 3];
       const dy = eye[1] - xs[i * 3 + 1];
       const dz = eye[2] - xs[i * 3 + 2];
       const dist = Math.max(0.35, Math.hypot(dx, dy, dz));
       const mm = (focal * hs[i]) / (dist * (ps[i] || 1));
+      if (mm > m) m = mm;
+    }
+    return m;
+  }
+
+  // Features are wide single cards: use the nearest point of the card, not its centre.
+  function worstCards(eye, focal, n, xs, hs, ps, geo, vp) {
+    let m = 0;
+    for (let i = 0; i < n; i++) {
+      const x = xs[i * 3];
+      const z = xs[i * 3 + 2];
+      const y0 = geo[i * 4];
+      const ux = geo[i * 4 + 1];
+      const uz = geo[i * 4 + 2];
+      const hw = geo[i * 4 + 3];
+      const h = hs[i];
+      if (!onScreen(vp, focal, x, y0 + h * 0.5, z, Math.hypot(hw, h * 0.5))) continue;
+      const ex = eye[0] - x;
+      const ez = eye[2] - z;
+      const t = Math.max(-hw, Math.min(hw, ex * ux + ez * uz));
+      const qy = Math.max(y0, Math.min(y0 + h, eye[1]));
+      const dist = Math.max(0.35, Math.hypot(ex - ux * t, eye[1] - qy, ez - uz * t));
+      const mm = (focal * h) / (dist * (ps[i] || 1));
       if (mm > m) m = mm;
     }
     return m;
@@ -319,8 +378,11 @@ export async function mountDetails(gl, env) {
       paint(vp, vao, tex, drawn);
       paint(vp, fVao, fTex, fDrawn);
     },
-    mag(eye, focal) {
-      return Math.max(worst(eye, focal, placed, mx, mh, mpx), worst(eye, focal, fPlaced, fMx, fMh, fPx));
+    mag(eye, focal, vp) {
+      return Math.max(worst(eye, focal, placed, mx, mh, mpx, vp), worstCards(eye, focal, fPlaced, fMx, fMh, fPx, fGeo, vp));
+    },
+    magFeatures(eye, focal, vp) {
+      return worstCards(eye, focal, fPlaced, fMx, fMh, fPx, fGeo, vp);
     },
     info() {
       return {

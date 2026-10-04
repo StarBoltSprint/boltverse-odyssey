@@ -73,7 +73,11 @@ A feature is one Imagine still of one subject, keyed and packed on its own, draw
 
 Place fewer of them than the micro cards. Keep them near the path and on the flanks, and put some on the crests so the ground line cuts the sky. Seat on the drawn triangles. Bury the base a few centimetres so the card edge sits in the surface and the painted skirt stays the contact. A feature taller than about 0.3 m stays off the running line (`runClearM`, plus half the card width). It does not get a collider and it does not slow Bolt. A feature big enough to be a real obstacle would take a collider from its own footprint and would stay off the running line; zone A does not use that case.
 
-Yaw faces back along the corridor, with a hash jitter, so the chase view sees the face and neighbours do not share a yaw. One still may repeat as a variant. A second still of the same type is a second variant. Do not mirror a still to invent a variant.
+Yaw faces back along the corridor, with a hash jitter, so the chase view sees the face and neighbours do not share a yaw. One still may repeat as a variant. A second still of the same type is a second variant. A card may be drawn mirrored (U flipped, no pixel changed) only when its nearest same-type neighbour is at least 4.5 m away, so a mirror twin never stands beside it (v3, 2026-10-04).
+
+**Near band (v3).** Clumps of one to four features of different types walk along each side of the running line, 1.5–4 m across. Gaps come from smooth value noise along the path (placement only), with open stretches where the noise is low, so the band does not read as a row. A near card's height is the tallest its own pixels allow: `h ≤ dmin · contentH / focal`, with `dmin = (|lat| − slideM) / sin(fovHalfDeg)`. That is the closest a chase eye, slid by up to `slideM`, can be while the card is still inside the frame. Taller cards therefore stand farther out. `runClearM` plus half the card width keeps every card off the running line.
+
+**Seating (v3).** `build.py` measures the painted dust collar at the foot of each still from its own pixels (`skirtPx`: bottom rows of clearly higher luma than the body). Play sinks `skirtBuryFrac` (0.85) of it under the drawn ground, on top of the bottom pad and `buryM`. The rock body rises out of the surface instead of standing on a disc of dust.
 
 ### 4. Prep and key
 
@@ -100,7 +104,9 @@ Edges of opaque pixels are bled a few pixels into the empty alpha so mipmaps do 
 
 `packs/<pack>/play/details.js` fetches the manifest **after the first frame**. `?details=0` skips the mount. A missing manifest boots an empty layer.
 One texture, one instanced draw, `STATIC_DRAW`, `LINEAR_MIPMAP_LINEAR`, alpha test, depth write, no blend. The draw is skipped in the id pass.
-No per-frame allocation. No collider. Fog is the scene fog. Magnification for a card is `focal * worldHeight / (distance * contentH)`, with distance floored at 0.35 m so a camera inside a card does not report infinity.
+No per-frame allocation. No collider. Fog is the scene fog. Magnification for a card is `focal * worldHeight / (distance * contentH)`, with distance floored at 0.35 m so a camera inside a card does not report infinity. Since v3 only cards whose bounding sphere meets the view frustum count (an off-screen card paints no pixel), and a feature card uses the distance to its nearest point, not its centre. `snapshot().featureMag` reports the feature layer alone.
+
+**Upload (v3 fix).** Every atlas is uploaded with `UNPACK_FLIP_Y_WEBGL` set to true and premultiply off, then the previous flags are restored. Both are shared GL state that other layers change between awaits. Before this fix, the atlases were uploaded with whatever flag another layer had left. The cards then sampled a vertically mirrored band of the atlas: mostly empty pixels for the micro cards (flecks) and a neighbour's interior or the skirt on top for the features ("hovering" lids).
 
 ### 7. One command and QC
 
@@ -148,6 +154,12 @@ Placed 72. Drawn 72. Feature atlas 1937×1238, 12.197 MiB. Micro atlas unchanged
 
 Subjects (words only here): one cluster, one raised slab, one crest, one pile. Exact prompts are in the local file.
 
+### v3 near band (zone A, code only, 2026-10-04)
+
+No Imagine call and no new texture. Same command. `features.near`: lateral 1.5–4 m, along −6 to 80 m, gaps 1.1–4.2 m from value noise, open stretches below noise 0.38, one to four members per clump, clump radius 1.1 m, slide 1.0 m, frame half-angle 15.4°, minimum height 0.3 m, same-type gap 2.2 m, mix slab 0.34 / pile 0.28 / cluster 0.24 / crest 0.14. Type ceilings raised to slab 0.75, pile 0.8, cluster 1.15, crest 1.2 m (each still's own cap binds first).
+
+Placed 165 features (72 from v2 plus 93 in the near band: cluster 28, slab 19, crest 23, pile 23). Near heights: slab 0.56–0.75 m, pile 0.70–0.79 m, cluster 0.67–1.15 m, crest 0.55–1.15 m. drawCalls 12, texMB 259.2 (unchanged). Download 42.21 MB. Chase: worst feature magnification 0.644 over 120 gallop ticks and 0.796 over 420 ticks (frustum metric). Gallop blocked 0, speed 4.4.
+
 ## Part 3 — Ember Mesa and Cascade Verdance
 
 Same generator. New numbers file, new sheets from that biome's ground tile, same command.
@@ -190,3 +202,7 @@ Same generator. New numbers file, new sheets from that biome's ground tile, same
 - v2: crest texels per metre are 428, so magnification 1 sits at 4.2 m. The crest band stays outside that.
 - v2: a low eye measured feature-inclusive detail magnification 2.52. The chase run measured 0.777.
 - v2: a two-pixel key erode takes the mixed edge off the feature stills. A thin rim can remain. No despill.
+- v3: the UV flip bug above is fixed. The micro cards now show their real stills: crystals and pebbles, high contrast against the plates, dense (2.8/m² near the path). From the chase they read as a busy, evenly spread peg field. The micro density was raised while the cards were invisible flecks, so it probably wants thinning. Owner call.
+- v3: the near band still reads as two loose lines flanking the path in the wide view. Open stretches break it, but they don't remove it.
+- v3: the bottom of the chase frame (the 4–8 m in front of the eye) only shows about ±1.2 m around the running line. The narrow 22.7° view puts the 1.5–4 m band out of frame there, so that strip still shows the plates and micro cards.
+- v3: features have no collider. A player who steers off the line gallops through a card, and the camera can then pass inside one (a weaving run measured feature magnification 12.8 at that moment). A real-obstacle collider from each card's footprint is the follow-up.

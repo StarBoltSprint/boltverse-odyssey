@@ -289,6 +289,33 @@ def key_one(path: Path, min_area: int) -> np.ndarray:
     return crop
 
 
+def skirt_rows(canvas: np.ndarray) -> int:
+    """Rows of painted dust collar at the foot of a one-subject still.
+    Measured from the still's own pixels; used only to sink the card (placement)."""
+    alpha = canvas[:, :, 3] > 127
+    rows = np.where(alpha.any(axis=1))[0]
+    if len(rows) < 20:
+        return 0
+    top, bottom = int(rows.min()), int(rows.max())
+    luma = canvas[:, :, :3].astype(np.float32) @ np.array([0.3, 0.59, 0.11], np.float32)
+    span = bottom - top + 1
+    upper = alpha[top : top + int(span * 0.6)]
+    body = float(np.median(luma[top : top + int(span * 0.6)][upper]))
+    foot_rows = max(3, int(span * 0.03))
+    foot = alpha[bottom - foot_rows + 1 : bottom + 1]
+    skirt = float(np.mean(luma[bottom - foot_rows + 1 : bottom + 1][foot]))
+    if skirt - body < 25.0:
+        return 0
+    thr = 0.5 * (skirt + body)
+    n = 0
+    for r in range(bottom, top + int(span * 0.4), -1):
+        m = alpha[r]
+        if not m.any() or float(np.mean(luma[r][m])) < thr:
+            break
+        n += 1
+    return n
+
+
 def pack_features(typed: list[tuple[str, np.ndarray]], numbers: dict) -> tuple[np.ndarray, list[dict]]:
     feat = numbers["features"]
     pad = int(numbers["pad"])
@@ -378,6 +405,7 @@ def pack_features(typed: list[tuple[str, np.ndarray]], numbers: dict) -> tuple[n
             "u1": (px + iw) / atlas_w,
             "v1": 1.0 - py / atlas_h,
             "maxHeightM": round(min(asked, cap), 4),
+            "skirtPx": skirt_rows(canvas),
         })
     return atlas, variants
 
@@ -519,6 +547,7 @@ def main() -> int:
             "atlasW": int(fatlas.shape[1]),
             "atlasH": int(fatlas.shape[0]),
             "texMiB": round(tex_mib(fatlas.shape[1], fatlas.shape[0]), 3),
+            "skirtBuryFrac": float(numbers["features"].get("skirtBuryFrac", 0.85)),
             "variants": feat_built["variants"],
             "instances": feat_built["instances"],
             "stats": feat_built["stats"],
