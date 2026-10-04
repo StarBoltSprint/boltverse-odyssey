@@ -1,6 +1,7 @@
 {
   "schema": "clearing/1",
   "seed": 1,
+  "biome": "howling-eclipse",
   "spawn": {
     "position": [
       -6,

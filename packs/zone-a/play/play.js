@@ -5,6 +5,7 @@
 import { loadWorldHull } from "./hullmesh.js";
 import { createTerrain } from "./terrain.js";
 import { mountRocks } from "./rocks.js";
+import { showIntro, introEnabled } from "./intro.js";
 
 const W = 720;
 const H = 1600;
@@ -2696,6 +2697,18 @@ async function boot() {
     };
     render(0);
     paintHud();
+    if (introEnabled(location.search)) {
+      let title = clearing.title || "";
+      if (!title && clearing.biome) {
+        try {
+          const kit = await (await fetch(absUrl("biome/kits/" + clearing.biome + ".json"))).json();
+          title = kit.name || "";
+        } catch (e) {
+          console.warn("intro kit", e);
+        }
+      }
+      showIntro(document, title);
+    }
     const err = gl.getError();
     if (err) hud.textContent += "\nGL " + err;
     requestAnimationFrame(frame);
