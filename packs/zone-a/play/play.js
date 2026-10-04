@@ -2533,6 +2533,7 @@ async function boot() {
     }
     for (let i = 0; i < hullList.length; i++) hullList[i].upload();
     const ground = clearing.zone.ground;
+    if (/[?&]uv=planar\b/.test(location.search)) ground.uv = "planar";
     if (ground.depth && ground.mask && ground.details) {
       useRelief = true;
       await terrain.load(ground);

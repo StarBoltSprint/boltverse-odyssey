@@ -14,9 +14,13 @@ import {
   contain,
   radiusAt,
   setDepthMaps,
+  setUvField,
+  uvAt,
+  stretchAt,
   maxRadius,
   areaM2,
 } from "./field.js";
+import { solveSurfaceUv } from "./uvfield.js";
 
 const GRADE_FN = `
 vec3 grade(vec3 x) {
@@ -283,8 +287,28 @@ void main() {
     return t;
   }
 
+  // Surface-aware UV: solved once from the macro relief (shape only) before the mesh is baked.
+  // Focus = walkable interior and inner rim (u <= 1.0); the outer lip keeps a declared residual.
+  function solveUv() {
+    const t0 = performance.now();
+    const reach = maxRadius() * 1.08;
+    const uOf = (x, z) => Math.hypot(x, z) / radiusAt(Math.atan2(x, z));
+    const f = solveSurfaceUv({
+      macroAt, reach, n: 96, tile: TILE,
+      inside: (x, z) => uOf(x, z) <= 1.06,
+      focus: (x, z) => uOf(x, z) <= 1.0,
+      stretchMax: 1.0, rounds: 8, iters: 160, itersRefine: 30,
+    });
+    setUvField(f);
+    info.uv = {
+      grid: f.n, ms: Math.round(performance.now() - t0),
+      planarWorst: +f.planarWorst.toFixed(3), worst: +f.worst.toFixed(3), least: +f.least.toFixed(3),
+    };
+  }
+
   function buildMesh() {
     const reach = maxRadius() * 1.08;
+    const uv = [0, 0];
     const n = 300;
     const step = (reach * 2) / n;
     const positions = [];
@@ -309,7 +333,8 @@ void main() {
         if (y > maxH) maxH = y;
         indexOf[iz * (n + 1) + ix] = count++;
         positions.push(x, y, z);
-        uvs.push(x / TILE, z / TILE);
+        uvAt(x, z, uv);
+        uvs.push(uv[0], uv[1]);
         fams.push(familyAt(x, z));
         masks.push(x / 8.5, z / 8.5);
       }
@@ -472,6 +497,15 @@ void main() {
     env.trackTex("post", env.W * env.H * 4 + bw * bh * 8);
   }
 
+  // Worst residual UV stretch of the ground around (x, z) (centre + 4 points at `span`).
+  function nearStretch(x, z, span) {
+    return Math.max(
+      stretchAt(x, z),
+      stretchAt(x + span, z), stretchAt(x - span, z),
+      stretchAt(x, z + span), stretchAt(x, z - span),
+    );
+  }
+
   function drawQuad(prog) {
     gl.useProgram(prog);
     gl.bindVertexArray(quad);
@@ -507,6 +541,7 @@ void main() {
         depths.push({ w: img.width, h: img.height, data: lum });
       }
       setDepthMaps(depths);
+      if (ground.uv !== "planar") solveUv();
       maskTex = make2D(await env.loadImage(env.absUrl(ground.mask)), "mask");
       const cuts = [];
       for (const u of ground.details) cuts.push(await env.loadImage(env.absUrl(u)));
@@ -594,11 +629,12 @@ void main() {
       const elev = Math.max(0.35, eye[1] - gy);
       const groundD = elev / Math.tan(env.VFOV / 2);
       const span = 2.2;
-      const slope = Math.hypot(
-        heightAt(eye[0] + span, eye[2]) - heightAt(eye[0] - span, eye[2]),
-        heightAt(eye[0], eye[2] + span) - heightAt(eye[0], eye[2] - span),
+      // Micro relief (painted depth) is not in the UV solve: its slope over the span adds on top.
+      const micro = Math.hypot(
+        (heightAt(eye[0] + span, eye[2]) - macroAt(eye[0] + span, eye[2])) - (heightAt(eye[0] - span, eye[2]) - macroAt(eye[0] - span, eye[2])),
+        (heightAt(eye[0], eye[2] + span) - macroAt(eye[0], eye[2] + span)) - (heightAt(eye[0], eye[2] - span) - macroAt(eye[0], eye[2] - span)),
       ) / (2 * span);
-      const stretch = 1 / Math.max(0.55, Math.cos(Math.atan(slope)));
+      const stretch = nearStretch(eye[0], eye[2], span) * Math.sqrt(1 + micro * micro);
       let m = (env.FOCAL * TILE * stretch) / (groundD * srcW);
       if (cards) {
         const near = Math.max(0.8, Math.hypot(4, elev));
@@ -615,11 +651,7 @@ void main() {
     eyeFloor(x, z, target) {
       const span = 2.2;
       const microSlope = (2 * MICRO) / span;
-      const slope = Math.hypot(
-        macroAt(x + span, z) - macroAt(x - span, z),
-        macroAt(x, z + span) - macroAt(x, z - span),
-      ) / (2 * span) + microSlope;
-      const stretch = 1 / Math.max(0.55, Math.cos(Math.atan(slope)));
+      const stretch = nearStretch(x, z, span) * Math.sqrt(1 + microSlope * microSlope);
       const need = (env.FOCAL * TILE * stretch * Math.tan(env.VFOV / 2)) / (srcW * (target || 0.98));
       return macroAt(x, z) + MICRO + Math.max(0.35, need);
     },
