@@ -6,7 +6,7 @@ Status: IN TEST. Do not mark this validated.
 | --- | --- |
 | Asset kind | ruin gate |
 | Take | Zone A step 4b, 2026-10-04 |
-| Commit | filled after the cook commit |
+| Commit | `6e5ddf0` |
 | Date | 2026-10-04 |
 | Size | authored height 28 m, mesh span 27.7 m, opening 7.314 × 18.558 m |
 | Tries | 4 image calls, 0 video. Front attempt 1 rejected. |

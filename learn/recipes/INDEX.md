@@ -36,7 +36,7 @@ Eight views, one every 45°, from one sharp still (V0) plus the previous view: [
 | Recipe | Commit | QC |
 | --- | --- | --- |
 | [zone-a-ruins.md](zone-a-ruins.md) — kit-driven gate loft plus a reused Howl wreck (prompt text stays in the untracked local file) | `f247ee3` | gate texels/m 155.81, approach 11.508 m; wreck texels/m 160.07, approach 11.201 m; play frame mag 0.998 |
-| [zone-a-gate-monolith.md](zone-a-gate-monolith.md) — 28 m corridor gate, one atlas, mesh-edge walls (prompt text stays untracked). Step 4 arch numbers above are retired. | this step | height 28 m, opening 7.314 m, approach 48.932 m, worst close-up mag 14.99 |
+| [zone-a-gate-monolith.md](zone-a-gate-monolith.md) — 28 m corridor gate, one atlas, mesh-edge walls (prompt text stays untracked). Step 4 arch numbers above are retired. | `6e5ddf0` | height 28 m, opening 7.314 m, approach 48.932 m, worst close-up mag 14.99 |
 
 One command: `python3 tools/ruins/build.py --kit <id>` then `python3 tools/ruins/selftest.py --kit <id>`. The Howl loft gate stays `python3 tools/hard-objects/rebuild.py`.
 
