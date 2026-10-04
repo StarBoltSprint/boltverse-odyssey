@@ -4,7 +4,7 @@
  * walk targets: amplitude at most 3 m, sigma at least 2.27 times amplitude.
  */
 
-export const TILE = 1.5;
+export const TILE = 1.42;
 export const MICRO = 0.1;
 export const MASK_M = 22;
 const AREA = 7800;

@@ -21,7 +21,7 @@ const WALK_SPD = 2.85;
 const BOLT_SRC = { w: 768, h: 1168 };
 const GATE_SRC = { w: 784, h: 1168 };
 const NEAR = 0.35;
-const FAR = 240;
+const FAR = 720;
 const MIN_BOOM = (FOCAL * BOLT_H) / BOLT_SRC.h + 0.04;
 const MAX_BOOM = BOOM / 0.62;
 
@@ -646,6 +646,8 @@ let pawFrac = 0.92;
 let heroQuad = { x: 0, y: 0, w: 0, h: 0 };
 let magNow = 0.4;
 let groundMagNow = 0;
+let butteMagNow = 0;
+const butteCards = [];
 let nearestM = 4;
 let camRightNow = [1, 0, 0];
 let camBoom = BOOM;
@@ -892,8 +894,8 @@ function buildGround(tileM) {
 function buildSky() {
   // Closed dome in eye space. The horizon band uses the slice textures.
   // Above that band the zenith still closes the cap. Built once.
-  const skyR = 90;
-  const el0 = -0.055;
+  const skyR = 640;
+  const el0 = -0.22;
   const el1 = Math.PI / 2;
   const azN = 64;
   const elN = 28;
@@ -1813,6 +1815,13 @@ function measureMag(eye) {
     const pm = rockLayer.mag(eye, FOCAL);
     if (pm > objectMag) objectMag = pm;
   }
+  butteMagNow = 0;
+  for (let i = 0; i < butteCards.length; i++) {
+    const b = butteCards[i];
+    const d = Math.max(0.5, Math.hypot(eye[0] - b.x, eye[2] - b.z));
+    const m = (FOCAL * b.h) / (d * b.srcH);
+    if (m > butteMagNow) butteMagNow = m;
+  }
   nearestM = near;
   const groundD = Math.max(0.4, eye[1] / Math.tan(VFOV / 2));
   const groundMag = useRelief
@@ -1853,7 +1862,7 @@ function measureMag(eye) {
   }
   groundMagNow = groundMag;
   magNow = Math.max(
-    groundMag, skyMagW, skyMagH, boltMag, objectMag, gateMag,
+    groundMag, skyMagW, skyMagH, boltMag, objectMag, gateMag, butteMagNow,
     skyMagParts.upper, skyMagParts.high, skyMagParts.cap,
     skyMagParts.stars, skyMagParts.dust, skyMagParts.nebula,
   );
@@ -1887,6 +1896,26 @@ function render(mode) {
     rockLayer.draw(vpM);
     drawCalls += rockLayer.draws;
   }
+  const savedRight = [rightBuf[0], rightBuf[1], rightBuf[2]];
+  const savedUp = [upBuf[0], upBuf[1], upBuf[2]];
+  for (let i = 0; i < butteCards.length; i++) {
+    const b = butteCards[i];
+    const len = Math.hypot(b.x, b.z) || 1;
+    rightBuf[0] = b.z / len;
+    rightBuf[1] = 0;
+    rightBuf[2] = -b.x / len;
+    upBuf[0] = 0;
+    upBuf[1] = 1;
+    upBuf[2] = 0;
+    const y = useRelief ? terrain.heightAt(b.x, b.z) : 0;
+    drawCard(mode, b.tex, 3, b.x, y, b.z, b.y0 || 0, b.h * (b.srcW / b.srcH), b.h, labelOf("butte:" + i), 1);
+  }
+  rightBuf[0] = savedRight[0];
+  rightBuf[1] = savedRight[1];
+  rightBuf[2] = savedRight[2];
+  upBuf[0] = savedUp[0];
+  upBuf[1] = savedUp[1];
+  upBuf[2] = savedUp[2];
   if (showGate && uploadVideo(gateVideo, gateTex, "gate")) {
     const g = gatePoint();
     drawCard(mode, gateTex, 3, g.x, 0, g.z, 0, sized.gw, sized.gh, labelOf("gate:" + g.gate.id), 1);
@@ -2069,6 +2098,7 @@ function snapshot() {
       skyStars: skyMagParts.stars,
       skyDust: skyMagParts.dust,
       skyNebula: skyMagParts.nebula,
+      butte: butteMagNow,
     },
     state: state.mode,
     heroCount,
@@ -2540,6 +2570,25 @@ async function boot() {
     } catch (err) {
       console.warn("rocks", err);
       rockLayer = null;
+    }
+    try {
+      const butteRes = await fetch(absUrl(PACK + "/src/buttes/manifest.json"));
+      if (butteRes.ok) {
+        const butteMan = await butteRes.json();
+        const cards = butteMan.cards || [];
+        for (let i = 0; i < cards.length; i++) {
+          const c = cards[i];
+          const img = await loadImage(absUrl(PACK + "/src/buttes/" + c.file));
+          const tex = makeStill(img, "butte-" + i);
+          butteCards.push({
+            tex, x: c.x, z: c.z, h: c.h, y0: c.y0 || 0,
+            srcW: img.width, srcH: img.height,
+          });
+          releaseImages([img]);
+        }
+      }
+    } catch (err) {
+      console.warn("buttes", err);
     }
     const upperImgs = await loadBand(skyManifest, "upper");
     const highImgs = await loadBand(skyManifest, "high");

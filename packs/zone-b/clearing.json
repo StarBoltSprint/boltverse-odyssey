@@ -42,7 +42,7 @@
     "shape": "relief",
     "center": [0, 0],
     "ground": {
-      "tile_m": 1.5,
+      "tile_m": 1.42,
       "tiles": [
         "packs/zone-b/src/ground/m0.png",
         "packs/zone-b/src/ground/m1.png",

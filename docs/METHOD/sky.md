@@ -171,6 +171,16 @@ Play 720×1600, 120-tick gallop and headings 0/90/180/270: worst mag 0.998 (uppe
 
 Known issues (do not recook this step): gate rows above; reused upper band is what the chase sees above 19.15°; slice heights do not share one horizon row; some slices read nearer than a far silhouette; the dust frame still stamps structure inside its tile; visual period is 10.042 s. Step 2, if it replaces the reused bands: about 10 upper stills on the same 36° step, then 8 high and 1 cap (19 calls) if those must change too. Motif and exposure recooks of slices 2, 4, 5 and 6 are separate.
 
+**Ember Mesa (zone B step 1b) — corrective, IN TEST.** 2026-10-04. Not a lock. Does not replace sky v1. Same assembler as zone A (`packs/zone-b/play/play.js`). Zone A files were not edited.
+
+Horizon band only: the same 10 files, now the full 1280×720 frames, azimuth 36°, elevation −4.31° to 17.12° (span 21.43°, mag 0.990). No zone A upper, high, or cap path. Dust stays in the manifest at gain 0 and is not decoded. Dome radius 640 m, clip far 720 m, dome floor −0.22 rad, so the 480 m ground skirt is in front of the shell. Weight starts at the band bottom (the bottom texel is not smeared below the band).
+
+Play 720×1600. Presented mag 0.990 on the proof poses and on an in-place turn. After the ground tile was set to 1.42 m, that turn measured ground mag 0.976 at heading 205 and butte mag 0.357. drawCalls 7, texture bytes 112143298 (107.0 MiB), activeVideos 1, heroCount 1, WebGL error 0. Headings 000, 075, 090, 180, 255, 270: same presented mag. Butte cards peak at 0.898 on the wide pose (measured before the tile change; the wide camera did not move).
+
+`python3 tools/sky/check.py --manifest packs/zone-b/src/sky/sky.json` (2026-10-04, step 1b): 38 failures. The full frames do not carry the step 1 edge stamp, so joins fail (content MAE 4.13–23.94, close 19.05, limit 4). Motif rows fail on sky-0 through sky-9. Exposure swing 69 (limit 24). Combined repeat 10.0 s (one layer, limit 600 s). `python3 tools/sky/selftest.py` PASS.
+
+Five open-sky stills were cooked for an upper band (1280×720, calls 1–5 kept, calls 6–7 rejected). They are not in the pack: five slices cannot close 360° at magnification ≤ 1 without a copy or a stretch. The chase still shows an empty cap above about 17°.
+
 **Cascade Verdance.** Same skeleton. The horizon band keeps a soft tree line with no landmark. Living layers lean on the mist loop rather than a bright nebula, still at magnification ≤ 1 and still one instanced draw. The cap is canopy-gap sky, not a black disk.
 
 ## Pitfalls

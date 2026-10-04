@@ -243,6 +243,8 @@ Not a lock. Does not replace ground v1. Numbers from the 2026-10-04 browser grid
 
 Known this step: the chase and the wide shot still read as one tile period (TILE cannot grow; ground mag 0.87–0.91). Family weights are in the mesh. No standing cards.
 
+**Step 1b (2026-10-04) — IN TEST.** Same relief numbers. The ground mesh adds a skirt to 480 m (18 rings, 96 segments) in the same draw. The sky shell sits at 640 m with clip far 720 m, so the skirt is in front of the shell. Ground tile is 1.42 m (`TILE` in `field.js`, `tile_m` in `clearing.json`). Three yaw-locked butte cards, black-keyed from their own pixels, seated outside the walk radius: heights 16.0 m, 7.062 m, 10.463 m (`packs/zone-b/src/buttes/`). An in-place 370° turn after that tile change measured ground mag 0.976 at heading 205. The chase at heading 255 shows the 16 m card breaking the skyline. The wide pose still shows a dark band under the painted land line. Cards at headings 75 and 180 still read above the ground line. Micro cutouts are still none (`details: []`). The body still stops at `contain()`, inside the cards, so the cards are not the collider.
+
 ### 11. How B and C would fill the template (material ideas only; words go to their local file)
 
 | Role | B Ember Mesa (`ember-mesa`, golden hour) | C Cascade Verdance (`cascade-verdance`, morning) |
