@@ -35,6 +35,8 @@ Paste `report.md`. A layout PASS does not open a play URL.
 
 `python3 tools/layout/selftest.py` rebuilds the synthetic zone and checks the committed samples.
 
+Scatter skips a point that lands in a hard-object walk passage (2026-10-04). The spec may set `hard_passages` (quads with `corners` and `pad`) or `ruin_manifest` (a ruins pack). With neither key, placement is unchanged. `python3 tools/layout/passages.py` is that selftest.
+
 ## What the spec asks for
 
 `testdata/spec.json` is the worked spec. Keys stay generic. No paint word is a key.

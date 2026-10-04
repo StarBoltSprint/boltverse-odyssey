@@ -2,10 +2,11 @@
  * Terrain feature placement. Noise picks positions only.
  * Heights come from the zone field. No pixels.
  */
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { hitsPassage, passagesFromRuin } from "./passages.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
@@ -115,6 +116,7 @@ function pickSeeds(numbers, field, frame) {
       if (!insideZone(field, numbers, x, z)) continue;
       if (mix(ix + 11, iz + 19) < numbers.clusterNoiseMin) continue;
       if (inKeepOut(x, z, numbers, frame, 1.2)) continue;
+      if (hitsPassage(x, z, 1.2, numbers.passages)) continue;
       let far = true;
       for (let s = 0; s < seeds.length; s++) {
         if (Math.hypot(seeds[s].x - x, seeds[s].z - z) < numbers.clusterSepM) far = false;
@@ -142,6 +144,7 @@ function sampleXZ(i, salt, seeds, spec, field) {
 function tryAdd(instances, numbers, field, frame, name, spec, x, z, yaw, scale, variant) {
   if (!insideZone(field, numbers, x, z)) return false;
   const foot = footprintOf(spec, scale);
+  if (hitsPassage(x, z, foot, numbers.passages)) return false;
   if (inKeepOut(x, z, numbers, frame, foot)) return false;
   const across = Math.abs(acrossOf(x, z, frame, numbers.corridor.spawn));
   const needAcross = spec.minAcrossM || 0;
@@ -257,6 +260,7 @@ export function checkPlacement(numbers, placed) {
   }
   for (const o of instances) {
     if (inKeepOut(o.x, o.z, numbers, frame, o.footprint * 0.98)) errors.push("keepout " + o.id);
+    if (hitsPassage(o.x, o.z, o.footprint, numbers.passages)) errors.push("passage " + o.id);
     if (o.span > numbers.types[o.type].spanMax + 1e-6) errors.push("span " + o.id);
     if (o.scale < numbers.types[o.type].scale[0] - 1e-6 || o.scale > numbers.types[o.type].scale[1] + 1e-6) {
       errors.push("scale " + o.id);
@@ -325,8 +329,8 @@ async function main() {
   const numbers = JSON.parse(readFileSync(numbersPath, "utf8"));
   const root = resolve(HERE, "../..");
   const field = await loadField(resolve(root, numbers.pack));
-  const placed = placeAll(numbers, field);
   if (self) {
+    const placed = placeAll(numbers, field);
     const errors = checkPlacement(numbers, placed);
     const ring = [];
     for (let i = 0; i < 24; i++) {
@@ -341,10 +345,24 @@ async function main() {
       for (const e of errors) console.error("FAIL " + e);
       process.exit(1);
     }
+    const blocked = {
+      ...numbers,
+      passages: [{ id: "all", pad: 0, corners: [[-1e4, -1e4], [1e4, -1e4], [1e4, 1e4], [-1e4, 1e4]] }],
+    };
+    const none = placeAll(blocked, field);
+    if (none.instances.length !== 0) {
+      fail("passage exclusion still placed " + none.instances.length);
+      return;
+    }
     const counts = countTypes(placed.instances);
     console.log("PASS rocks place " + JSON.stringify(counts) + " seeds " + placed.seeds.length + " cv " + radiusCv(placed.instances).toFixed(3));
     return;
   }
+  const manifestPath = resolve(root, numbers.pack, "src/ruins/manifest.json");
+  if (existsSync(manifestPath)) {
+    numbers.passages = passagesFromRuin(JSON.parse(readFileSync(manifestPath, "utf8")));
+  }
+  const placed = placeAll(numbers, field);
   const wi = argv.indexOf("--write");
   if (wi >= 0) {
     const out = manifestFrom(numbers, placed);

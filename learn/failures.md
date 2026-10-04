@@ -417,3 +417,80 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | `retile_black` in `tools/ruins/wreck.py` duplicates those triangles onto a mid-tone window of the same skin, at that skin's texel rate. No new texture. Eight centroids remain on dark specks inside the chosen windows (port 1, starboard 7). Stopped. |
 | Guard | `python3 tools/ruins/build.py --kit howling-eclipse` prints `wreck retile`. No row fails a walkable frame for a black blob. Proof `packs/zone-a/proof/step4c/01-wreck-outside.jpg` and `02-hangar-inside.jpg`. |
 | Sources | `tools/ruins/wreck.py`, `packs/zone-a/src/ruins/measure.json`, `packs/zone-a/src/ruins/wreck/wreck.ruin`. Owner still `7872ae48d5a83b3d17de8c44687c1f29d8115546ee23a0416c71068c6c8136a7.jpg`. |
+
+### 2026-10-04 — the framebuffer foot gap had no failing row
+
+| | |
+| --- | --- |
+| Take | tools-learn 2026-10-04. The earlier foot entry on this date stays. Its guard said no row reads the gap. |
+| Defect | A ruin foot floated about 1.37 m above downhill relief. The data `footGap` is the skirt drop, so a closed skirt can still leave a visible hole, and a data number never looked at the picture. |
+| Root cause | Playcheck and the proof scanner had no column walk from the ground up through sky pixels to a solid. |
+| Fix | `foot_contact` in `tools/frames` and `tools/playcheck` fails when enough columns show that gap. `seat_foot_gap` stays INFO. |
+| Guard | `python3 tools/frames/selftest.py` (float fails, a seated foot passes, open sky under a far solid passes). `node --test tools/playcheck/src/frames.test.mjs`. |
+| Sources | `tools/frames/pixels.py`, `tools/playcheck/src/frames.mjs`. Proof `packs/zone-a/proof/step4c/03-gate-base.jpg` now passes the pixel row. |
+
+### 2026-10-04 — a large black or untextured face had no failing row
+
+| | |
+| --- | --- |
+| Take | tools-learn 2026-10-04. The earlier black-face entry on this date stays. Its guard said no row fails a black blob. |
+| Defect | Wreck hull and interior faces rendered pure black after an enlarge. `black_regions` only flags a filled near-black rectangle. |
+| Root cause | A jagged or mid-grey flat face is not that rectangle, so the walk stayed green. |
+| Fix | `untextured` fails a large black or flat region that is not a full-width night band touching the top. `black_regions` is unchanged. |
+| Guard | `python3 tools/frames/selftest.py` (jagged black fails, a night band passes, a flat grey fails). `node --test tools/playcheck/src/frames.test.mjs`. |
+| Sources | `tools/frames/pixels.py`, `tools/playcheck/src/frames.mjs`. |
+
+### 2026-10-04 — sky seams, a zenith band, and a hard ground line had no frame row
+
+| | |
+| --- | --- |
+| Take | tools-learn 2026-10-04. Zone B step 1b, any biome. |
+| Defect | The sky showed slice rectangles, overlapping translucent panels, a vertical streak, and a flat dark band at the zenith. The ground ended in a hard horizontal line and a void band under the mesas. |
+| Root cause | `tools/sky/check.py` grades the slice files. It does not read the proof framebuffer. Nothing read the ground horizon in the shot. |
+| Fix | `sky_frame` and `ground_frame` in `tools/frames`. The validated sky recipe stays. This gate is extra and IN TEST. |
+| Guard | `python3 tools/frames/selftest.py` (zenith, slice, panels, streak, hard line, void fail; a busy top and cracked ground pass). |
+| Sources | `tools/frames/pixels.py`. Zone B stills stay outside this repo. |
+
+### 2026-10-04 — a required hero was absent from the proof shots
+
+| | |
+| --- | --- |
+| Take | tools-learn 2026-10-04. Zone B step 1b. |
+| Defect | The brief asked for a ringed planet over the mesas. The shots had none, and the report still closed. |
+| Root cause | No step compared the brief's hero list to a box in the proof frames. |
+| Fix | `## Must show` or `## Heroes` must map through `shows.json` to a crop that is not flat or empty. No such heading is n/a. |
+| Guard | `python3 tools/frames/selftest.py` (a missing planet fails; an empty brief is n/a). |
+| Sources | `tools/frames/heroes.py`. |
+
+### 2026-10-04 — a detail collider blocked a hard-object walk passage
+
+| | |
+| --- | --- |
+| Take | tools-learn 2026-10-04. Merging details onto the new gate. |
+| Defect | A rock disc sat in a walk opening. The hangar and a camera-shake case had already been broken by the same kind of merge. |
+| Root cause | Placement generators did not know the gate opening or the hangar mouth. Nothing ran playcheck on the merged tree before the branch landed. |
+| Fix | `tools/rocks/place.mjs` and `tools/layout/scatter.py` skip those quads. `node tools/playcheck/src/premerge.mjs` audits the discs and runs the unit tests. The committed rocks manifest is not rewritten by that audit. |
+| Guard | `node tools/rocks/place.mjs --selftest` (a covering passage places nothing; kit counts stay). `python3 tools/layout/passages.py`. `node --test tools/playcheck/src/passages.test.mjs`. |
+| Sources | `tools/rocks/passages.mjs`, `tools/layout/passages.py`, `tools/playcheck/src/premerge.mjs`. |
+
+### 2026-10-04 — magnification above 1 and a stair crown were one number
+
+| | |
+| --- | --- |
+| Take | tools-learn 2026-10-04. |
+| Defect | Close hull and monolith faces sat above magnification 1, and a monolith crown was stair-stepped. `fix_hint` named only the worst hit and stayed PASS. |
+| Root cause | The report did not list every hotspot with the three fixes, and no pixel row counted long flat steps on a silhouette. |
+| Fix | `mag_hotspots` fails when the best density at that distance is still above 1 and names the farther camera, the smaller scale, and a recook. Do not enlarge the current texture. `stair_crown` names a finer loft, a smoother silhouette, or that recook. `fix_hint` stays PASS. |
+| Guard | `python3 tools/frames/selftest.py` (close hull mag and the three phrases; a stair fails and a 1 px diagonal passes). `node --test tools/playcheck/src/frames.test.mjs`. |
+| Sources | `tools/frames/pixels.py`, `tools/playcheck/src/frames.mjs`, `tools/playcheck/src/checks.mjs`. |
+
+### 2026-10-04 — a long check died without a resume point
+
+| | |
+| --- | --- |
+| Take | tools-learn 2026-10-04. |
+| Defect | A long proof scan or a pre-merge check stopped mid-run. The next session could not see what was done. |
+| Root cause | The tools wrote the report only at the end, and the step notes did not list a remaining list. |
+| Fix | `tools/frames/check.py` and `tools/playcheck/src/premerge.mjs` write progress and accept `--resume`. The report lists Done and Left. Commit each accepted slice. Do not commit `__pycache__` or `.smoke`. |
+| Guard | `tools/frames/README.md` and the pre-merge section of `tools/playcheck/README.md`. A resumed scan skips ids already in the progress file. |
+| Sources | `tools/frames/resume.py`, `tools/frames/check.py`, `tools/playcheck/src/premerge.mjs`. |

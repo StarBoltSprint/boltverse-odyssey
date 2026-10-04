@@ -28,6 +28,7 @@ import { judgePerf } from "../../perf/stats.mjs";
 import { judgeOrbit } from "./billboard.mjs";
 import { boundaryRecords, discoveryFromFrames, evaluateBoundary, evaluateCells, evaluateDiscovery, evaluateNoPop } from "./organic.mjs";
 import { evaluateFadeIn, evaluatePreloadAhead, fadeSamplesFromFrames, preloadSamplesFromFrames } from "./streaming.mjs";
+import { footContact, hotspotFixes, stairCrown, untexturedSurfaces } from "./frames.mjs";
 
 const WEBGL_RE = /webgl|invalid_|gl_invalid|texsubimage|teximage|geterror/i;
 
@@ -85,6 +86,10 @@ function finish(layout, frames, extras) {
   rows.push(rowNear(frames, layout));
   rows.push(rowFog(frames, layout));
   rows.push(rowBlack(frames));
+  rows.push(rowFoot(frames));
+  rows.push(rowUntextured(frames));
+  rows.push(rowMagHotspots(frames, layout));
+  rows.push(rowStair(frames));
   rows.push(rowTiles(frames));
   rows.push(rowBackdrop(frames, layout));
   rows.push(rowSolids(frames));
@@ -148,6 +153,10 @@ function finishOrganic(layout, frames, extras) {
   rows.push(rowNear(frames, layout));
   rows.push(rowFog(frames, layout));
   rows.push(rowBlack(frames));
+  rows.push(rowFoot(frames));
+  rows.push(rowUntextured(frames));
+  rows.push(rowMagHotspots(frames, layout));
+  rows.push(rowStair(frames));
   rows.push(rowTiles(frames));
   rows.push(rowBackdrop(frames, layout));
   rows.push(rowSolids(frames));
@@ -853,6 +862,96 @@ function rowFog(frames, layout) {
     "Fog must be in the file (20+ patches) and in the picture. Hard streak edges are a heuristic FAIL.",
     { heuristic: true, partial: true },
   );
+}
+
+function scanned(frames) {
+  const measured = frames.filter((f) => f.rgba);
+  const big = measured.filter((f) => f.width >= 48 && f.height >= 48);
+  return { measured, big };
+}
+
+function rowFoot(frames) {
+  const { measured, big } = scanned(frames);
+  if (!measured.length) return row("foot_contact", "FAIL", {}, "No screenshot to scan.", { heuristic: true });
+  const hits = [];
+  for (const f of big) {
+    const found = footContact(f.rgba, f.width, f.height);
+    for (const hit of found.hits) hits.push({ id: f.id, ...hit });
+  }
+  return row(
+    "foot_contact",
+    hits.length ? "FAIL" : "PASS",
+    { hits: hits.slice(0, 4), scanned: big.length, skippedSmall: measured.length - big.length },
+    hits.length
+      ? "Sky pixels sit between a solid and the ground. The framebuffer gap is the fail."
+      : "No foot gap in the framebuffer. A frame under 48 px is skipped.",
+    { heuristic: true },
+  );
+}
+
+function rowUntextured(frames) {
+  const { measured, big } = scanned(frames);
+  if (!measured.length) return row("untextured", "FAIL", {}, "No screenshot to scan.", { heuristic: true });
+  const hits = [];
+  for (const f of big) {
+    const found = untexturedSurfaces(f.rgba, f.width, f.height);
+    for (const hit of found.hits) hits.push({ id: f.id, ...hit });
+  }
+  return row(
+    "untextured",
+    hits.length ? "FAIL" : "PASS",
+    { hits: hits.slice(0, 4), scanned: big.length },
+    "A large black or untextured flat is FAIL. This does not replace black_regions. A night-sky band is ignored.",
+    { heuristic: true },
+  );
+}
+
+function rowStair(frames) {
+  const { measured, big } = scanned(frames);
+  if (!measured.length) return row("stair_crown", "FAIL", {}, "No screenshot to scan.", { heuristic: true });
+  const hits = [];
+  for (const f of big) {
+    const found = stairCrown(f.rgba, f.width, f.height);
+    if (found.stair) hits.push({ id: f.id, runs: found.runs });
+  }
+  const fix = "Use a finer loft grid or smooth the silhouette. Cook the crown at the on-screen pixel count. Do not enlarge the current texture.";
+  return row(
+    "stair_crown",
+    hits.length ? "FAIL" : "PASS",
+    { hits, scanned: big.length },
+    hits.length ? `Stair-stepped crown. ${fix}` : "No stair-stepped crown.",
+    { heuristic: true },
+  );
+}
+
+function rowMagHotspots(frames, layout) {
+  const limit = Number(layout.magMax) || 1;
+  const hits = [];
+  for (const f of frames) {
+    const snap = f.snap || {};
+    const listed = Array.isArray(snap.magHits) ? snap.magHits.slice() : [];
+    for (const hit of listed) {
+      const mag = Number(hit.mag);
+      if (mag > limit + 1e-3) {
+        const dist = hit.dist_m != null ? Number(hit.dist_m) : Number(snap.nearestVisibleM);
+        const scale = hit.scale != null ? Number(hit.scale) : Number(snap.scale);
+        const texels = hit.texelsPerM != null ? Number(hit.texelsPerM) : null;
+        hits.push({
+          id: hit.id,
+          stop: hit.stop || f.id,
+          mag: round(mag),
+          dist_m: Number.isFinite(dist) ? round(dist) : null,
+          fixes: hotspotFixes(mag, Number.isFinite(dist) ? dist : null, Number.isFinite(scale) ? scale : null, texels, limit),
+        });
+      }
+    }
+  }
+  hits.sort((a, b) => b.mag - a.mag);
+  if (!hits.length) {
+    return row("mag_hotspots", "PASS", { hits: [] }, "No surface hotspot above the magnification limit.", { heuristic: true });
+  }
+  const lines = hits.slice(0, 4).map((hit) => `${hit.id} at ${hit.stop} is mag ${hit.mag}. ${hit.fixes.join("; ")}`);
+  return row("mag_hotspots", "FAIL", { hits: hits.slice(0, 6), limit }, lines.join(" "), { heuristic: true });
 }
 
 function rowBlack(frames) {

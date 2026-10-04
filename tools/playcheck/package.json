@@ -8,7 +8,7 @@
     "playcheck": "./run"
   },
   "scripts": {
-    "test": "node --test src/pixels.test.mjs src/checks.test.mjs src/billboard.test.mjs src/perf.test.mjs src/renderlint.test.mjs src/organic.test.mjs src/streaming.test.mjs src/details.test.mjs src/ruinwalk.test.mjs"
+    "test": "node --test src/pixels.test.mjs src/checks.test.mjs src/frames.test.mjs src/billboard.test.mjs src/perf.test.mjs src/renderlint.test.mjs src/organic.test.mjs src/streaming.test.mjs src/details.test.mjs src/passages.test.mjs src/ruinwalk.test.mjs"
   },
   "dependencies": {
     "playwright-core": "1.58.2",
