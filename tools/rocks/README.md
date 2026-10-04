@@ -20,3 +20,5 @@ python3 tools/rocks/selftest.py
 ```
 
 Numbers carry counts, metres, and seeds. Prompts stay in the local prompt file.
+
+A non-selftest run loads `packs/<pack>/src/ruins/manifest.json` when that file exists and skips a disc that lands in a gate opening or a hangar mouth. `--selftest` does not load the live manifest, so the kit counts stay put. `node tools/playcheck/src/premerge.mjs --audit` reports discs that already sit in a passage. It does not rewrite the committed rocks manifest. Added 2026-10-04.
