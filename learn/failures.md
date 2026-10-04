@@ -417,3 +417,47 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Restore the file from git, then drop only detached components (the tip island and specks). Keep the main body and both moons. Do not open the ring. Do not save until the opaque count is in the same range as the source. |
 | Guard | No row. File size and the chase JPEG are the check. |
 | Sources | `packs/zone-b/src/sky/planet.png`. |
+
+### 2026-10-04 — a look above the painted sky draws a black cap
+
+| | |
+| --- | --- |
+| Take | Zone B step 1f. Planet-close and mesa-close. |
+| Defect | The top of the frame was a black curve. |
+| Root cause | The upper band ends at 28.88°. Half the vertical field is 24.04°. A pitch above about 4.8° puts the frame top on the unpainted hold. |
+| Fix | Keep pitch + 24° under 28.88°. The proof looks stay at or under 4.0°. |
+| Guard | No row. The sky-up and planet-close JPEGs are the check. |
+| Sources | `packs/zone-b/src/sky/sky.json` upper `elTopDeg`. Shots in `packs/zone-b/proof/step1f/`. |
+
+### 2026-10-04 — a repeated upper gradient shows a vertical join
+
+| | |
+| --- | --- |
+| Take | Zone B step 1f. Basin aimed near a tile boundary. |
+| Defect | A vertical step in the sky, a slice of the gradient that does not meet its neighbour. |
+| Root cause | One upper frame is repeated nine times. Its own left and right edges differ, and the magnification headroom is about 2%, so the overlap cannot hide the step. Copying the clean horizon frame across eight headings removed the horizon joins and left this one. |
+| Fix | Stop. The image budget is closed. A heading that keeps the join outside the 22.7° field does not show it. Do not stretch the frame across 360°. |
+| Guard | No row sees a repeated band's interior shading. `tools/sky/check.py` fails the copy and the joins (84 failures). The basin JPEG aimed at a join is the check. |
+| Sources | `packs/zone-b/src/sky/upper/gradient.jpg`, `packs/zone-b/src/sky/sky.json`. |
+
+### 2026-10-04 — a second ground family on the same UV does not break the tile lattice
+
+| | |
+| --- | --- |
+| Take | Zone B step 1f. Wide pose. |
+| Defect | The cracked ground still reads as one repeating tile. |
+| Root cause | The crossfade samples another Imagine family at the same `fract` UV. Both families share the tile edge, so a higher mix (0.55, then 0.75) changes the colour inside the cell and leaves the lattice. An UV offset would stretch the tile. |
+| Fix | Stop. Cap stays 0.75, noise period about 2.5 tiles. Do not offset UV. Do not enlarge the tile. |
+| Guard | No row measures this lattice in play. The wide JPEG is the check. |
+| Sources | `packs/zone-b/play/terrain.js` ground fragment shader. Shots in `packs/zone-b/proof/step1f/wide.jpg`. |
+
+### 2026-10-04 — a wide mound still leaves the butte base as a straight cut
+
+| | |
+| --- | --- |
+| Take | Zone B step 1f. Mesa close. |
+| Defect | The near butte meets the ground on a straight line. It reads as a block on the plain. |
+| Root cause | The loft is outside the walk outline so magnification stays under 1. A mound of 2.8 m on a 32 m sigma stays under the 3 m / 20 m relief rule and is too shallow to read as a skirt. Sinking 2.6 m hides the mesh bottom and not the straight cut of the Imagine face. |
+| Fix | Stop. Do not move the loft inside the floor. Do not recook the faces. The centres stay 25 m outside the outline. |
+| Guard | No row grades seating. The mesa JPEG is the check. Butte magnification on the chase budget pose is 0.461. |
+| Sources | `packs/zone-b/play/field.js` `BUTTES`, `packs/zone-b/play/mesas.js`. Shots in `packs/zone-b/proof/step1f/mesa.jpg`. |

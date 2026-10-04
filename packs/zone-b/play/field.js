@@ -84,10 +84,13 @@ function smooth(t) {
 }
 
 // Seats for the three reused butte lofts. Same order as the manifest.
+// Centres sit 25 m outside the walk edge so a phone view never enlarges them.
+// The mound is wide on purpose: a narrow peak stayed inside the skirt trench
+// and the loft read as a block on flat sand.
 export const BUTTES = [
-  { x: 8, z: 24, amp: 0.9, sigma: 8 },
-  { x: -10, z: 54, amp: 0.85, sigma: 8 },
-  { x: 6, z: -58, amp: 0.9, sigma: 8 },
+  { x: 46, z: 22, amp: 2.8, sigma: 32 },
+  { x: -48.6, z: 55, amp: 2.2, sigma: 30 },
+  { x: 0, z: -96.8, amp: 2.8, sigma: 32 },
 ];
 
 export const LOOP = [
@@ -99,6 +102,15 @@ export const LOOP = [
   { name: "mesa-road", x: -12, z: 0 },
   { name: "return", x: -8, z: 45 },
 ];
+
+function butteMound(x, z) {
+  let h = 0;
+  for (let i = 0; i < BUTTES.length; i++) {
+    const b = BUTTES[i];
+    h += b.amp * gauss(x - b.x, b.sigma, z - b.z, b.sigma);
+  }
+  return h;
+}
 
 function segDist(x, z) {
   let best = 1e9;
@@ -132,14 +144,16 @@ export function macroAt(x, z) {
   const rimIn = Math.max(0, Math.min(1, wall / 16));
   const basin = Math.exp(-((z + 10) * (z + 10)) / (2 * 16 * 16));
   const dune = Math.sin((x * Math.PI * 2) / 40 + z * 0.04) * Math.cos((z * Math.PI * 2) / 42);
-  h += 0.7 * dune * basin * rimIn;
-  // Butte skirts. A low mound, not a second cliff.
-  for (let i = 0; i < BUTTES.length; i++) {
-    const b = BUTTES[i];
-    h += b.amp * gauss(x - b.x, b.sigma, z - b.z, b.sigma) * rimIn;
+  h += 0.5 * dune * basin * rimIn;
+  // Butte skirts cross the rim. A wide low mound, not a second cliff.
+  const mound = butteMound(x, z);
+  h += mound;
+  // Berm in the last 14 m, measured to the wall. It fades where the mound
+  // is already the rise, so the two do not stack into a step.
+  if (wall < 14) {
+    const bermW = 1 - Math.min(1, mound / 1.2);
+    h += smooth(1 - wall / 14) * 1.35 * bermW;
   }
-  // Berm in the last 14 m, measured to the wall. 1.6 m of rise.
-  if (wall < 14) h += smooth(1 - wall / 14) * 1.6;
   return h;
 }
 
@@ -269,11 +283,22 @@ export function skirtLift(x, z) {
   const R = radiusAt(Math.atan2(x, z));
   if (rho <= R) return 0;
   const d = rho - R;
-  const lip = 12;
-  if (d < lip) {
-    return -2.2 * smooth(d / lip);
+  const lipD = 12;
+  let y;
+  if (d < lipD) {
+    y = -2.2 * smooth(d / lipD);
+  } else {
+    const span = Math.max(1, SKIRT_FAR - R - lipD);
+    const s = smooth(Math.min(1, (d - lipD) / span));
+    y = -2.2 + s * (SKIRT_LIFT + 2.2);
   }
-  const span = Math.max(1, SKIRT_FAR - R - lip);
-  const s = smooth(Math.min(1, (d - lip) / span));
-  return -2.2 + s * (SKIRT_LIFT + 2.2);
+  // The lip is a trench. Cancel it on a butte mound so the loft sits on the
+  // skirt instead of in the hole. This includes the first 12 m, or the
+  // trench opens in front of the rock.
+  const mound = butteMound(x, z);
+  if (mound > 0.35 && y < 0) {
+    const cover = Math.min(1, (mound - 0.35) / 1.05);
+    y *= 1 - cover;
+  }
+  return y;
 }

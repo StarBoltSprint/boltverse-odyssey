@@ -140,7 +140,6 @@ void main() {
   vec2 d = fwidth(vUv);
   float m = texture(uMask, vMask).r;
   vec2 uv = fract(vUv);
-  vec2 gx = vec2(d.x, d.y);
   vec2 gy = vec2(d.y, d.x);
   vec4 a0 = textureGrad(uAlb, vec3(uv, vFam), d, gy);
   vec4 a1 = textureGrad(uAlb, vec3(uv, vFam + 1.0), d, gy);
@@ -164,8 +163,8 @@ void main() {
   vec4 t1 = textureGrad(uAlb, vec3(uv, mod(altB + 1.0, 8.0)), d, gy);
   float tb = vW > 0.001 ? smoothstep(m - 0.1, m + 0.1, vW) : 0.0;
   cs = mix(cs, mix(t0.rgb, t1.rgb, m), tb);
-  float cap = vFam < 0.5 ? 0.22 : 0.55;
-  c = mix(c, cs, vnoise(vUv * 0.25) * cap);
+  float cap = vFam < 0.5 ? 0.22 : 0.75;
+  c = mix(c, cs, vnoise(vUv * 0.40) * cap);
   float rho = length(vUv) * uTile;
   float ft = smoothstep(uFogNear, uFogFar, rho);
   c = mix(c, uFog, ft * 0.18);
@@ -419,7 +418,8 @@ void main() {
     // function) so the overlap does not z-fight. One mesh, one draw.
     {
       const FAR = 480;
-      const rings = 18;
+      // Denser than 18 so a butte mound 20 m outside the rim is more than two facets.
+      const rings = 48;
       const segs = 96;
       const skirt0 = count;
       for (let r = 0; r <= rings; r++) {

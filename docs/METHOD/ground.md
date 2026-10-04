@@ -251,6 +251,14 @@ Known this step: the chase and the wide shot still read as one tile period (TILE
 
 **Step 1e (2026-10-04) — IN TEST.** Walk relief and `SKIRT_LIFT` 28 m are unchanged. The three yaw-locked butte cards are one loft (`packs/zone-b/play/mesas.js`), the validated hard-object method: Imagine front, side, and top on measured geometry, one draw. The base sits 1.8 m under `seatMin`. Butte-0 also has a back face. Butte-1 and butte-2 use the front where a back file is absent. Far painted mesas stay in the sky slices. On the wide pose the largest 8-row luma jump is +8.4 at row 256. Chase and eye-level largest jump is −10.8 at row 568. Heading 90 largest jump is +12.6 at row 608. Micro cutouts are still none.
 
+**Step 1f (2026-10-04) — IN TEST.** The walkable outline is the 14-vertex canyon. Area 6,500 m². Length 143.73 m. Width along z = 60, 40, 20, 0, −20, −40, −60 is 47.5, 44.5, 40.5, 41.5, 44.0, 47.5, 47.0 m. `contain()` stops on that outline. `TILE` stays 1.42 m. The ground shader crossfades a second Imagine family by value noise (ridge cap 0.22, other families 0.75, about 2.5 tiles). The crack lattice is still visible. Stop. Do not shift UV.
+
+`SKIRT_LIFT` is 3.5 m at 480 m. The first 12 m outside the rim dip 2.2 m, except on a butte mound, where that dip is cancelled. Boot `groundInfo`: tris 57774, minH −2.964, maxH 3.626 (the far skirt), maxSlope 0.227 rad (13.0°) on the inner mesh. Macro 20 m span inside u < 0.92 is 1.65 m, without the depth maps.
+
+The three lofts stay outside the outline so a phone view does not enlarge them: (46, 22), (−48.6, 55), (0, −96.8). Heights 16.0, 7.062, 10.463 m. Sink 2.6 m. Seats 2.33, 2.15, 2.75 m. The mound under each is wide (amplitude 2.8 / 2.2 / 2.8 m, sigma 32 / 30 / 32 m). The mesa close still shows a straight cut where the loft meets the ground. Stop. Do not pull a loft back inside the floor.
+
+Post fog, set after the kit copy: density 0.0012, cap 0.08. Ground fog mix stays 0.18. Micro cutouts are still none. Spawn (0, 55), heading 180.
+
 ### 11. How B and C would fill the template (material ideas only; words go to their local file)
 
 | Role | B Ember Mesa (`ember-mesa`, golden hour) | C Cascade Verdance (`cascade-verdance`, morning) |

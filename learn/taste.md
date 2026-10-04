@@ -16,6 +16,7 @@ Short summary of the log below. When a new reaction changes a rule, add a senten
 - Spherical or blob rocks, and identical capsule views, read as a demo. FAIL.
 - A speed-tied scrolling ground video is KEEP.
 - Orbit views that show two different ships are a FAIL.
+- A video window sitting on a still sky is a FAIL. The floor has to be large enough to run.
 
 ## How to append
 
@@ -40,3 +41,4 @@ Append a row at the bottom. Do not rewrite an old row. Verdict is KEEP, FAIL, or
 | 2026-10-01/02 | Inconsistent orbit views (two different ships) | FAIL | inconsistent orbit views (two different ships) are a FAIL | Two different ships in one orbit set are a FAIL. |
 | 2026-10-03 | Camera shake while Bolt gallops | FAIL | no camera shake, ever | The chase must not snap the eye from frame to frame. |
 | 2026-10-03 | Sky living layers that do not read | FAIL | there are no videos, it's just images | A living layer has to move where the player looks, without covering the paintings in rectangles. |
+| 2026-10-04 | Zone B sky, the ringed planet, and the canyon floor | FAIL | "make the sky calmer, add the ringed planet spinning with its moons as its own Imagine video, and make the canyon way bigger so Bolt can really run." | An emptier base sky. The planet is its own keyed video. The floor has to be large enough to run. |

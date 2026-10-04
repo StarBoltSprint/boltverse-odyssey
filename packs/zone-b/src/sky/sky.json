@@ -1,60 +1,44 @@
 {
   "slices": [
-    "sky-0.jpg",
-    "sky-1.jpg",
-    "sky-2.jpg",
-    "sky-3.jpg",
-    "sky-4.jpg",
-    "sky-5.jpg",
-    "sky-6.jpg",
-    "sky-7.jpg",
-    "sky-8.jpg",
-    "sky-9.jpg"
+    "calm-0.jpg",
+    "calm-1.jpg",
+    "calm-2.jpg",
+    "calm-3.jpg",
+    "calm-4.jpg",
+    "calm-5.jpg",
+    "calm-6.jpg",
+    "calm-7.jpg",
+    "calm-8.jpg"
   ],
-  "offsetsSec": [0.0, 0.9, 1.8, 2.7, 3.6, 4.5, 5.4, 6.3, 7.2, 8.1],
   "display": {
+    "turn0": 0.337333,
     "bands": [
       {
         "id": "horizon",
-        "files": "slices",
-        "azimuthDeg": 36.0,
-        "elBottomDeg": -4.31,
-        "elTopDeg": 17.12
+        "files": [
+          "calm-0.jpg",
+          "calm-1.jpg",
+          "calm-2.jpg",
+          "calm-3.jpg",
+          "calm-4.jpg",
+          "calm-5.jpg",
+          "calm-6.jpg",
+          "calm-7.jpg",
+          "calm-8.jpg"
+        ],
+        "azimuthDeg": 40.0,
+        "elBottomDeg": -10.493,
+        "elTopDeg": 10.493
       },
       {
         "id": "upper",
-        "files": [
-          "upper/sky-0.jpg",
-          "upper/sky-1.jpg",
-          "upper/sky-2.jpg",
-          "upper/sky-3.jpg",
-          "upper/sky-4.jpg",
-          "upper/sky-5.jpg",
-          "upper/sky-6.jpg",
-          "upper/sky-7.jpg",
-          "upper/sky-8.jpg"
-        ],
+        "files": ["upper/gradient.jpg"],
+        "repeat": 9,
         "azimuthDeg": 40.0,
-        "elBottomDeg": 12.0,
-        "elTopDeg": 30.5
-      }
-    ],
-    "videoTiles": [
-      {
-        "id": "dust",
-        "azimuthDeg": 21.176470588,
-        "elevationDeg": 11.25
+        "elBottomDeg": 7.893,
+        "elTopDeg": 28.88
       }
     ]
   },
-  "layers": [
-    {
-      "id": "dust",
-      "file": "dust.mp4",
-      "durationSec": 10.042,
-      "texBytes": 1628160,
-      "gain": 0,
-      "key": 0.82
-    }
-  ]
+  "layers": []
 }

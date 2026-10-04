@@ -1,8 +1,8 @@
 {
-  "file": "planet.png",
-  "video": "planet.mp4",
-  "headingDeg": 259,
-  "elevationDeg": 13.5,
+  "file": "planet-body.png",
+  "video": "planet-body.mp4",
+  "headingDeg": 180,
+  "elevationDeg": 15,
   "distanceM": 380,
-  "mag": 0.94
+  "mag": 0.5
 }

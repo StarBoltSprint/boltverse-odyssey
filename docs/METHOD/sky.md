@@ -195,6 +195,14 @@ The ringed planet lives in horizon slice 2 (heading about 75°). Chase and eye-l
 
 **Ember Mesa (zone B step 1e) — planet disk, IN TEST.** 2026-10-04. Not a lock. Does not replace sky v1. Slice files were not recooked. The card stays at heading 259°, elevation 13.5°, distance 380 m. World size comes from the 493×228 still: worldW 98.19 m, worldH 45.41 m, magnification cap 0.94. A detached alpha island on the ring tip was removed from `planet.png`. The card writes alpha 0.004 with blending off, so the post pass keeps the fog on that card light. `planet.mp4` colours a feathered disk only. The rings, the moons, and the silhouette stay the still. The sprite does not yaw. drawCalls 6. Texture bytes 210102402 (200.4 MiB). Active videos 2.
 
+**Ember Mesa (zone B step 1f) — calmer layered sky, IN TEST.** 2026-10-04. Not a lock. Does not replace sky v1. Zone A files were not edited.
+
+The busy slices and the baked landmark are gone. Horizon: 9 files × 40°, `calm-0.jpg`…`calm-8.jpg`, 1280×720, elevation −10.493° to 10.493°. `display.turn0` is 0.337333 so the sun slice sits near heading 255°. Upper: one 1280×720 gradient, `repeat` 9, elevation 7.893° to 28.88°. Nothing is painted above 28.88°. A look whose frame top passes that line shows the unpainted hold.
+
+The ringed planet and both moons are one card, `planet-body.png` plus `planet-body.mp4` (1280×720, 6.042 s). Heading 180°, elevation 15°, distance 380 m, magnification 0.5. World size 135.60 m × 76.28 m. The whole frame is keyed (green above max(red, blue), plus a one-texel neighbour), alpha 0.004, blend off. Dust is not in the manifest. Active videos 2 (Bolt and the planet). drawCalls 6. Texture bytes 218084034 (208.0 MiB). Presented magnification 0.982.
+
+`python3 tools/sky/check.py --manifest packs/zone-b/src/sky/sky.json` (2026-10-04, step 1f): 84 failures. Eight horizon files are the same frame. The sun slice is the other frame. Joins, motif, and exposure swing 38.7 fail. That copy is the closed image budget. The upper gradient is not flat across its width, so a heading that puts a tile join in frame shows a vertical step. Stop. Do not recook it on this budget.
+
 **Cascade Verdance.** Same skeleton. The horizon band keeps a soft tree line with no landmark. Living layers lean on the mist loop rather than a bright nebula, still at magnification ≤ 1 and still one instanced draw. The cap is canopy-gap sky, not a black disk.
 
 ## Pitfalls

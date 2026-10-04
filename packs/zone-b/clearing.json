@@ -26,16 +26,15 @@
   "backdrop": {
     "ring": "packs/zone-b/src/sky",
     "slices": [
-      "packs/zone-b/src/sky/sky-0.jpg",
-      "packs/zone-b/src/sky/sky-1.jpg",
-      "packs/zone-b/src/sky/sky-2.jpg",
-      "packs/zone-b/src/sky/sky-3.jpg",
-      "packs/zone-b/src/sky/sky-4.jpg",
-      "packs/zone-b/src/sky/sky-5.jpg",
-      "packs/zone-b/src/sky/sky-6.jpg",
-      "packs/zone-b/src/sky/sky-7.jpg",
-      "packs/zone-b/src/sky/sky-8.jpg",
-      "packs/zone-b/src/sky/sky-9.jpg"
+      "packs/zone-b/src/sky/calm-0.jpg",
+      "packs/zone-b/src/sky/calm-1.jpg",
+      "packs/zone-b/src/sky/calm-2.jpg",
+      "packs/zone-b/src/sky/calm-3.jpg",
+      "packs/zone-b/src/sky/calm-4.jpg",
+      "packs/zone-b/src/sky/calm-5.jpg",
+      "packs/zone-b/src/sky/calm-6.jpg",
+      "packs/zone-b/src/sky/calm-7.jpg",
+      "packs/zone-b/src/sky/calm-8.jpg"
     ]
   },
   "zone": {

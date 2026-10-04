@@ -348,18 +348,22 @@ void main() {
     float lum = dot(c.rgb, vec3(0.299, 0.587, 0.114));
     if (lum < 0.07) discard;
   } else if (uKey == 4) {
-    if (c.a < 0.45) discard;
-    if (uSpin > 0.5 && uDisk.z > 1.0) {
-      vec2 pngPx = vec2(uv.x * uPngSize.x, (1.0 - uv.y) * uPngSize.y);
-      vec2 d = pngPx - uDisk.xy;
-      float rad = length(d) / uDisk.z;
-      float m = 1.0 - smoothstep(0.72, 0.98, rad);
-      float s = uVidDisk.z / uDisk.z;
-      vec2 vidPx = d * s + uVidDisk.xy;
-      vec2 vidUv = vec2(vidPx.x / uVidSize.x, 1.0 - vidPx.y / uVidSize.y);
-      if (vidUv.x < 0.0 || vidUv.y < 0.0 || vidUv.x > 1.0 || vidUv.y > 1.0) m = 0.0;
-      c.rgb = mix(c.rgb, texture(uVid, vidUv).rgb, m);
-    }
+    vec2 px = uSpin > 0.5
+      ? vec2(1.0 / max(1.0, uVidSize.x), 1.0 / max(1.0, uVidSize.y))
+      : vec2(1.0 / max(1.0, uPngSize.x), 1.0 / max(1.0, uPngSize.y));
+    vec4 s0 = uSpin > 0.5 ? texture(uVid, uv) : c;
+    vec4 sR = uSpin > 0.5 ? texture(uVid, uv + vec2(px.x, 0.0)) : texture(uTex, uv + vec2(px.x, 0.0));
+    vec4 sL = uSpin > 0.5 ? texture(uVid, uv - vec2(px.x, 0.0)) : texture(uTex, uv - vec2(px.x, 0.0));
+    vec4 sU = uSpin > 0.5 ? texture(uVid, uv + vec2(0.0, px.y)) : texture(uTex, uv + vec2(0.0, px.y));
+    vec4 sD = uSpin > 0.5 ? texture(uVid, uv - vec2(0.0, px.y)) : texture(uTex, uv - vec2(0.0, px.y));
+    c = s0;
+    float ex0 = s0.g - max(s0.r, s0.b);
+    float exN = sR.g - max(sR.r, sR.b);
+    exN = max(exN, sL.g - max(sL.r, sL.b));
+    exN = max(exN, sU.g - max(sU.r, sU.b));
+    exN = max(exN, sD.g - max(sD.r, sD.b));
+    if (ex0 > 0.09 || exN > 0.12) discard;
+    c.g = min(c.g, max(c.r, c.b));
   }
   if (uMode == 1) o = vec4(uId, 1.0);
   else if (uKey == 1 || uKey == 3) o = vec4(uPost > 0.5 ? grade(c.rgb) : c.rgb, uAlpha);
@@ -1663,7 +1667,7 @@ function drawSky(mode, eye) {
   gl.uniform1f(surfLoc.hasUpper, skyUpper ? 1 : 0);
   gl.uniform1f(surfLoc.hasHigh, skyHigh ? 1 : 0);
   gl.uniform1f(surfLoc.azBias, yaw * 0.006);
-  gl.uniform1f(surfLoc.turn0, 15 / 360);
+  gl.uniform1f(surfLoc.turn0, skyTurn0);
   const ovH = skyTex ? seamOverlap(skyTex.w, skyTex.h, skyBand.hAz || 45, skyBand.h0, skyBand.h1) : null;
   const ovU = skyUpper ? seamOverlap(skyUpper.w, skyUpper.h, skyBand.uAz || 45, skyBand.u0, skyBand.u1) : null;
   const ovK = skyHigh ? seamOverlap(skyHigh.w, skyHigh.h, skyBand.kAz || 45, skyBand.k0, skyBand.k1) : null;
@@ -2520,6 +2524,7 @@ function applySkyDisplay(display) {
   else { skyBand.k0 = 1.72; skyBand.k1 = 1.85; }
   if (display.cap && display.cap.elStartDeg != null) skyBand.cap = deg(display.cap.elStartDeg);
   else skyBand.cap = 1.78;
+  if (typeof display.turn0 === "number") skyTurn0 = display.turn0;
   const tile = (display.videoTiles || [])[0];
   if (tile && tile.azimuthDeg && tile.elevationDeg) {
     skyTileAzDeg = tile.azimuthDeg;
@@ -2528,6 +2533,7 @@ function applySkyDisplay(display) {
 }
 
 let skyTileAzDeg = SKY_TILE_AZ;
+let skyTurn0 = 15 / 360;
 let skyTileElDeg = SKY_TILE_EL;
 let skyVideoW = 848;
 let skyVideoH = 480;
@@ -2544,6 +2550,14 @@ async function loadBand(manifest, id) {
   const imgs = [];
   for (let i = 0; i < files.length; i++) {
     imgs.push(await loadImage(absUrl(PACK + "/src/sky/" + files[i])));
+  }
+  const repeat = band.repeat || 1;
+  if (repeat > 1 && imgs.length === 1) {
+    const one = imgs[0];
+    const out = [];
+    for (let i = 0; i < repeat; i++) out.push(one);
+    out.shared = one;
+    return out;
   }
   return imgs;
 }
@@ -2705,7 +2719,7 @@ async function boot() {
     const highImgs = await loadBand(skyManifest, "high");
     if (upperImgs) {
       skyUpper = makeSkyArray(upperImgs.map((im) => downscaleWidth(im, 1380)), "sky-upper");
-      releaseImages(upperImgs);
+      releaseImages(upperImgs.shared ? [upperImgs.shared] : upperImgs);
     }
     if (highImgs) {
       skyHigh = makeSkyArray(highImgs.map((im) => downscaleWidth(im, 4096)), "sky-high");

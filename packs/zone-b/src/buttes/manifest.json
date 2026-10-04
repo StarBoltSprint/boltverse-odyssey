@@ -5,8 +5,8 @@
       "side": "butte-0-side.jpg",
       "back": "butte-0-back.jpg",
       "top": "butte-0-top.jpg",
-      "x": 8,
-      "z": 24,
+      "x": 46,
+      "z": 22,
       "h": 16.0,
       "y0": 0
     },
@@ -14,8 +14,8 @@
       "file": "butte-1.jpg",
       "side": "butte-1-side.jpg",
       "top": "butte-1-top.jpg",
-      "x": -10,
-      "z": 54,
+      "x": -48.6,
+      "z": 55,
       "h": 7.062,
       "y0": 0
     },
@@ -23,8 +23,8 @@
       "file": "butte-2.jpg",
       "side": "butte-2-side.jpg",
       "top": "butte-2-top.jpg",
-      "x": 6,
-      "z": -58,
+      "x": 0,
+      "z": -96.8,
       "h": 10.463,
       "y0": 0
     }
