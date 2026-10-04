@@ -243,6 +243,10 @@ def main():
 
     (gate_dir / "gate.ruin").write_bytes(pack_ruin([(m.skin, m.xyzuv, m.idx) for m in meshes]))
     write_atlas(inbox, gate_dir / "atlas.jpg")
+    alpha = report.pop("_alpha")
+    from PIL import Image
+
+    Image.fromarray(alpha, "L").save(gate_dir / "alpha.png", optimize=True)
     for name, job in (
         ("front.jpg", "front elevation, one gateway, opening kept"),
         ("side.jpg", "side elevation, wall thickness, measure"),
@@ -455,6 +459,8 @@ def main():
                 "texelsPerM": report["texelsPerM"],
                 "nearTexelsPerM": report["nearTexelsPerM"],
                 "atlasSplitU": report["atlas"]["frontU"][1],
+                "alpha": numbers["pack"] + "/src/ruins/gate/alpha.png",
+                "alphaAboveM": report["alphaCut"]["aboveY"],
                 "openingWidthM": report["openingWidthM"],
                 "openingHeightM": report["openingHeightM"],
                 "minApproachM": report["minApproachM"],

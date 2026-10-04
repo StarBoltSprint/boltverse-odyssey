@@ -6,39 +6,112 @@
  */
 import { buildCollider, buildMagProbe, frameOf } from "./collide.js";
 
+// One draw for every ruin: vertices are placed in the world at mount (seats are static), each
+// carries its skin's unit. Samplers cannot be indexed by a varying in GLSL ES 3.0, so the fragment
+// shader picks the skin with a literal if-chain and textureGrad (derivatives taken outside the branch).
 const VS = `#version 300 es
 layout(location=0) in vec3 aPos;
 layout(location=1) in vec2 aUv;
+layout(location=2) in vec3 aLoc;
+layout(location=3) in float aUnit;
 uniform mat4 uVP;
-uniform vec3 uPos;
-uniform float uYaw;
-uniform float uFrame;
 out vec2 vUv;
+out vec3 vLoc;
+flat out int vUnit;
 void main() {
-  float s = sin(uYaw);
-  float c = cos(uYaw);
-  float wx;
-  float wz;
-  if (uFrame < 0.5) {
-    wx = aPos.x * c + aPos.z * s;
-    wz = -aPos.x * s + aPos.z * c;
-  } else {
-    wx = aPos.x * s - aPos.z * c;
-    wz = aPos.x * c + aPos.z * s;
-  }
   vUv = aUv;
-  gl_Position = uVP * vec4(uPos.x + wx, uPos.y + aPos.y, uPos.z + wz, 1.0);
+  vLoc = aLoc;
+  vUnit = int(aUnit + 0.5);
+  gl_Position = uVP * vec4(aPos, 1.0);
 }`;
 
-const FS = `#version 300 es
+/**
+ * gateUnit: the gate's unit (or -1). Its faces drop where the elevation's own alpha cut says so
+ * (front, back and the seam faces through their front-image spot). Thickness faces, and the
+ * elevation where it would be shown magnified past CLOSE_LO..CLOSE_HI, take the surface plate,
+ * repeated in local metres at its native density: windows of the plate at random offsets that
+ * never cross its border, blended with a variance-keeping weight. Pixels are never stretched.
+ */
+function fragmentSource(units, gateUnit) {
+  const decl = [];
+  const pick = [];
+  for (let i = 0; i < units; i++) {
+    decl.push("uniform sampler2D uT" + i + ";");
+    pick.push((i ? "  else " : "  ") + "if (vUnit == " + i + ") c = textureGrad(uT" + i + ", vUv, gx, gy);");
+  }
+  const g = gateUnit >= 0 ? "uT" + gateUnit : "uT0";
+  return `#version 300 es
 precision highp float;
-uniform sampler2D uTex;
+precision highp int;
+${decl.join("\n")}
+uniform vec4 uSlate;
+uniform vec2 uSlatePx;
+uniform float uSlateTpm;
+uniform vec3 uSlateMean;
 in vec2 vUv;
+in vec3 vLoc;
+flat in int vUnit;
 out vec4 o;
+const float CELL = 320.0;
+const float CLOSE_LO = 2.5;
+const float CLOSE_HI = 3.5;
+vec2 hash2(vec2 p) {
+  p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));
+  return fract(sin(p) * 43758.5453);
+}
+vec3 plate(vec2 p, vec2 dpx, vec2 dpy) {
+  vec2 t = p * uSlateTpm / CELL;
+  vec2 k = uSlate.zw / uSlatePx;
+  vec2 gpx = dpx * uSlateTpm * k;
+  vec2 gpy = dpy * uSlateTpm * k;
+  vec3 acc = vec3(0.0);
+  float w2 = 0.0;
+  for (int i = 0; i < 4; i++) {
+    vec2 off = vec2(float(i & 1), float(i >> 1)) * 0.5;
+    vec2 q = t + off;
+    vec2 cell = floor(q);
+    vec2 f = q - cell;
+    vec2 tri = 1.0 - abs(2.0 * f - 1.0);
+    float w = tri.x * tri.y;
+    vec2 r = floor(hash2(cell + off * 37.0) * (uSlatePx - CELL - 4.0)) + 2.0;
+    vec2 uv = uSlate.xy + (r + f * CELL) * k;
+    acc += w * (textureGrad(${g}, uv, gpx, gpy).rgb - uSlateMean);
+    w2 += w * w;
+  }
+  return clamp(uSlateMean + acc / sqrt(max(w2, 1e-4)), 0.0, 1.0);
+}
 void main() {
-  vec4 c = texture(uTex, vUv);
+  vec2 gx = dFdx(vUv);
+  vec2 gy = dFdy(vUv);
+  vec3 lx = dFdx(vLoc);
+  vec3 ly = dFdy(vLoc);
+  vec4 c = vec4(0.0);
+${pick.join("\n")}
+  if (vUnit == ${gateUnit}) {
+    if (c.a < 0.5) discard;
+    vec3 an = abs(cross(lx, ly));
+    vec2 p;
+    vec2 dpx;
+    vec2 dpy;
+    float w = 1.0;
+    if (an.z >= an.x && an.z >= an.y) {
+      p = vLoc.xy; dpx = lx.xy; dpy = ly.xy;
+      vec2 ts = vec2(textureSize(${g}, 0));
+      float rho = max(length(gx * ts), length(gy * ts));
+      w = smoothstep(CLOSE_LO, CLOSE_HI, 1.0 / max(rho, 1e-4));
+    } else if (an.x >= an.y) {
+      p = vLoc.zy; dpx = lx.zy; dpy = ly.zy;
+    } else {
+      p = vLoc.xz; dpx = lx.xz; dpy = ly.xz;
+    }
+    if (w > 0.0) c.rgb = mix(c.rgb, plate(p, dpx, dpy), w);
+  }
   o = vec4(c.rgb, 1.0);
 }`;
+}
+
+/** Close-up swap the gate shader makes, for the mag metrics: [far tpm, close tpm, switch mag]. */
+export const GATE_CLOSE_SWITCH = 3.0;
 
 function program(gl, vs, fs) {
   const compile = (type, src) => {
@@ -118,6 +191,144 @@ function seatOf(obj, heightAt) {
   return { x: obj.x, y: heightAt(wx, wz) - (obj.contactY || 0) - (obj.sink || 0), z: obj.z, contactX: wx, contactZ: wz };
 }
 
+/**
+ * Upload a skin cropped to the parts its faces use: 1:1 copies of each used island (plus a margin,
+ * origins on a 16 px grid so mip blocks keep their alignment), packed side by side. No resampling.
+ * keep: extra rects kept whole [x0, y0, x1, y1] (the gate's surface plate). alpha: optional cut
+ * image at the skin's own resolution, written into the alpha channel over its left part.
+ * remap(u, v) moves a source UV to the packed texture.
+ */
+function packSkin(gl, img, groups, keep, alpha) {
+  const W = img.width;
+  const H = img.height;
+  const MARGIN = 16;
+  const tris = [];
+  for (const g of groups) {
+    const p = g.xyzuv;
+    const idx = g.idx;
+    for (let t = 0; t + 2 < idx.length; t += 3) {
+      let u0 = Infinity, u1 = -Infinity, v0 = Infinity, v1 = -Infinity;
+      for (let k = 0; k < 3; k++) {
+        const x = p[idx[t + k] * 5 + 3] * W;
+        const y = (1 - p[idx[t + k] * 5 + 4]) * H;
+        u0 = Math.min(u0, x); u1 = Math.max(u1, x); v0 = Math.min(v0, y); v1 = Math.max(v1, y);
+      }
+      tris.push([u0, u1, v0, v1]);
+    }
+  }
+  tris.sort((a, b) => a[0] - b[0]);
+  const islands = [];
+  for (const t of tris) {
+    const last = islands[islands.length - 1];
+    if (last && t[0] <= last[1] + 2 * MARGIN) {
+      last[1] = Math.max(last[1], t[1]); last[2] = Math.min(last[2], t[2]); last[3] = Math.max(last[3], t[3]);
+    } else islands.push(t.slice());
+  }
+  const rects = [];
+  const snap = (v) => Math.floor(v / 16) * 16;
+  for (const k of keep) rects.push({ sx: k[0], sy: k[1], sw: k[2] - k[0], sh: k[3] - k[1], keep: true });
+  for (const is of islands) {
+    const sx = Math.max(0, snap(is[0] - MARGIN));
+    const sy = Math.max(0, snap(is[2] - MARGIN));
+    const ex = Math.min(W, Math.ceil((is[1] + MARGIN) / 16) * 16);
+    const ey = Math.min(H, Math.ceil((is[3] + MARGIN) / 16) * 16);
+    // An island inside a kept rect needs no copy of its own.
+    if (rects.some((r) => r.keep && sx >= r.sx && ex <= r.sx + r.sw)) continue;
+    rects.push({ sx, sy, sw: ex - sx, sh: ey - sy, keep: false, core: [is[0], is[1]] });
+  }
+  // Shelves no wider than the phone-safe texture limit (4096, or the GPU's own if smaller).
+  const maxW = Math.min(4096, gl.getParameter(gl.MAX_TEXTURE_SIZE) || 4096);
+  let x = 0;
+  let y = 0;
+  let rowH = 0;
+  let wMax = 0;
+  for (const r of rects) {
+    const cw = Math.ceil(r.sw / 16) * 16;
+    if (x > 0 && x + cw > maxW) {
+      y += Math.ceil(rowH / 16) * 16;
+      x = 0;
+      rowH = 0;
+    }
+    r.dx = x;
+    r.dy = y;
+    x += cw;
+    wMax = Math.max(wMax, x);
+    rowH = Math.max(rowH, r.sh);
+  }
+  const w = Math.max(1, wMax);
+  const h = Math.max(1, y + rowH);
+  const cv = document.createElement("canvas");
+  cv.width = w;
+  cv.height = h;
+  const ctx = cv.getContext("2d", { willReadFrequently: !!alpha || keep.length > 0 });
+  ctx.imageSmoothingEnabled = false;
+  for (const r of rects) ctx.drawImage(img, r.sx, r.sy, r.sw, r.sh, r.dx, r.dy, r.sw, r.sh);
+  let source = cv;
+  const keptMean = [];
+  if (alpha || keep.length) {
+    const data = ctx.getImageData(0, 0, w, h);
+    const px = data.data;
+    for (const r of rects.filter((q) => q.keep)) {
+      let s0 = 0, s1 = 0, s2 = 0, n = 0;
+      for (let yy = r.dy; yy < r.dy + r.sh; yy += 2) {
+        for (let xx = r.dx; xx < r.dx + r.sw; xx += 2) {
+          const o = (yy * w + xx) * 4;
+          s0 += px[o]; s1 += px[o + 1]; s2 += px[o + 2]; n++;
+        }
+      }
+      keptMean.push([s0 / n / 255, s1 / n / 255, s2 / n / 255]);
+    }
+    if (alpha) {
+      const ac = document.createElement("canvas");
+      ac.width = alpha.width;
+      ac.height = alpha.height;
+      const actx = ac.getContext("2d", { willReadFrequently: true });
+      actx.drawImage(alpha, 0, 0);
+      const ad = actx.getImageData(0, 0, alpha.width, alpha.height).data;
+      for (const r of rects.filter((q) => !q.keep)) {
+        for (let yy = 0; yy < r.sh; yy++) {
+          const sy = r.sy + yy;
+          if (sy >= alpha.height) continue;
+          for (let xx = 0; xx < r.sw; xx++) {
+            const sx = r.sx + xx;
+            if (sx >= alpha.width) continue;
+            px[((r.dy + yy) * w + r.dx + xx) * 4 + 3] = ad[(sy * alpha.width + sx) * 4];
+          }
+        }
+      }
+    }
+    source = data;
+  }
+  const tex = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, tex);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+  gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
+  gl.generateMipmap(gl.TEXTURE_2D);
+  const find = (x) => {
+    for (const r of rects) if (!r.keep && x >= r.core[0] - 0.5 && x <= r.core[1] + 0.5) return r;
+    for (const r of rects) if (r.keep && x >= r.sx && x <= r.sx + r.sw) return r;
+    return rects[0];
+  };
+  return {
+    tex,
+    w,
+    h,
+    kept: rects.filter((q) => q.keep),
+    keptMean,
+    remap(u, v) {
+      const x = u * W;
+      const y = (1 - v) * H;
+      const r = find(x);
+      return [(x - r.sx + r.dx) / w, 1 - (y - r.sy + r.dy) / h];
+    },
+  };
+}
+
 export async function mountRuins(gl, env) {
   const t0 = performance.now();
   let manifest;
@@ -130,65 +341,64 @@ export async function mountRuins(gl, env) {
   }
   const objects = manifest.objects || [];
   if (!objects.length) return empty();
-  const prog = program(gl, VS, FS);
-  const loc = {
-    vp: gl.getUniformLocation(prog, "uVP"),
-    pos: gl.getUniformLocation(prog, "uPos"),
-    yaw: gl.getUniformLocation(prog, "uYaw"),
-    frame: gl.getUniformLocation(prog, "uFrame"),
-    tex: gl.getUniformLocation(prog, "uTex"),
-  };
-  const batches = [];
   const mags = [];
   const solids = [];
   const colliderOpt = manifest.collider || {};
+  const skinTex = [];
+  const texDims = [];
+  const parts = [];
+  let gateUnit = -1;
+  let slate = null;
   for (let i = 0; i < objects.length; i++) {
     const obj = objects[i];
     const bin = await (await fetch(env.absUrl(obj.mesh))).arrayBuffer();
     const groups = parseRuin(bin);
-    const textures = [];
     const texSize = [];
-    for (let s = 0; s < obj.skins.length; s++) {
-      const img = await env.loadImage(env.absUrl(obj.skins[s]));
+    const units = [];
+    const close = obj.nearTexelsPerM && obj.atlasSplitU ? obj.nearTexelsPerM : 0;
+    let alphaImg = null;
+    if (obj.alpha) alphaImg = await env.loadImage(env.absUrl(obj.alpha));
+    for (let sk = 0; sk < obj.skins.length; sk++) {
+      const img = await env.loadImage(env.absUrl(obj.skins[sk]));
       texSize.push([img.width, img.height]);
-      const tex = gl.createTexture();
-      gl.bindTexture(gl.TEXTURE_2D, tex);
-      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-      gl.generateMipmap(gl.TEXTURE_2D);
-      env.trackTex("ruin:" + obj.id + ":" + s, Math.ceil(img.width * img.height * 4 * 4 / 3));
-      textures.push(tex);
+      const keep = close && sk === 0 ? [[Math.round(obj.atlasSplitU * img.width), 0, img.width, img.height]] : [];
+      const packed = packSkin(gl, img, groups.filter((gr) => gr.skin === sk), keep, alphaImg && sk === 0 ? alphaImg : null);
+      env.trackTex("ruin:" + obj.id + ":" + sk, Math.ceil(packed.w * packed.h * 4 * 4 / 3));
+      texDims.push({ id: obj.id + ":" + sk, src: [img.width, img.height], packed: [packed.w, packed.h] });
+      const unit = skinTex.length;
+      skinTex.push(packed.tex);
+      units.push({ unit, packed });
+      if (close && sk === 0) {
+        gateUnit = unit;
+        const r = packed.kept[0];
+        slate = {
+          rect: [r.dx / packed.w, 1 - (r.dy + r.sh) / packed.h, r.sw / packed.w, r.sh / packed.h],
+          px: [r.sw, r.sh],
+          tpm: close,
+          mean: packed.keptMean[0],
+        };
+      }
     }
     const seat = seatOf(obj, env.heightAt);
-    const draws = [];
-    for (let g = 0; g < groups.length; g++) {
-      const group = groups[g];
-      if (!group.idx.length || !textures[group.skin]) continue;
-      const vao = gl.createVertexArray();
-      gl.bindVertexArray(vao);
-      const vb = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, vb);
-      gl.bufferData(gl.ARRAY_BUFFER, group.xyzuv, gl.STATIC_DRAW);
-      gl.enableVertexAttribArray(0);
-      gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 20, 0);
-      gl.enableVertexAttribArray(1);
-      gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 20, 12);
-      const ib = gl.createBuffer();
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib);
-      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, group.idx, gl.STATIC_DRAW);
-      gl.bindVertexArray(null);
-      draws.push({ vao, tex: textures[group.skin], count: group.idx.length });
+    const ship = obj.frame === "ship";
+    const sn = Math.sin(obj.yaw);
+    const cs = Math.cos(obj.yaw);
+    for (let gi = 0; gi < groups.length; gi++) {
+      const group = groups[gi];
+      const u = units[group.skin];
+      if (!group.idx.length || !u) continue;
+      const src = group.xyzuv;
+      const n = src.length / 5;
+      const v = new Float32Array(n * 9);
+      for (let k = 0; k < n; k++) {
+        const x = src[k * 5], y = src[k * 5 + 1], z = src[k * 5 + 2];
+        const wx = ship ? x * sn - z * cs : x * cs + z * sn;
+        const wz = ship ? x * cs + z * sn : -x * sn + z * cs;
+        const uv = u.packed.remap(src[k * 5 + 3], src[k * 5 + 4]);
+        v.set([seat.x + wx, seat.y + y, seat.z + wz, uv[0], uv[1], x, y, z, u.unit], k * 9);
+      }
+      parts.push({ v, idx: group.idx });
     }
-    batches.push({
-      draws,
-      pos: [seat.x, seat.y, seat.z],
-      yaw: obj.yaw,
-      frame: obj.frame === "ship" ? 1 : 0,
-    });
     const frame = frameOf(obj, seat);
     const tc = performance.now();
     const col = buildCollider(groups, frame, env.heightAt, colliderOpt);
@@ -200,10 +410,16 @@ export async function mountRuins(gl, env) {
       frame,
       texSize,
       probe: null,
-      tagOf: obj.frame === "ship"
+      tagOf: ship
         ? () => "hull"
         : (gi, ti, cy, ny) => (ny < -0.5 ? "arch-underside" : cy < openTop ? "pier" : "lintel"),
+      // The gate shader's real density: thickness faces show the plate at its native density; the
+      // elevation swaps to it once magnified past GATE_CLOSE_SWITCH (see fragmentSource).
+      densityOf: close
+        ? (nx, ny, nz, tpm) => (Math.abs(nz) >= Math.max(Math.abs(nx), Math.abs(ny)) ? [tpm, close, GATE_CLOSE_SWITCH] : [close, 0])
+        : null,
       texelsPerM: obj.texelsPerM,
+      closeTexelsPerM: close,
       buildMs: performance.now() - tc,
     });
     mags.push({
@@ -218,35 +434,77 @@ export async function mountRuins(gl, env) {
       contactZ: seat.contactZ,
     });
   }
+  // One vertex buffer, one index buffer, one draw.
+  let vn = 0;
+  let inN = 0;
+  for (const pt of parts) {
+    vn += pt.v.length / 9;
+    inN += pt.idx.length;
+  }
+  const verts = new Float32Array(vn * 9);
+  const index = new Uint32Array(inN);
+  let vo = 0;
+  let io = 0;
+  for (const pt of parts) {
+    verts.set(pt.v, vo * 9);
+    for (let k = 0; k < pt.idx.length; k++) index[io + k] = pt.idx[k] + vo;
+    vo += pt.v.length / 9;
+    io += pt.idx.length;
+  }
+  const prog = program(gl, VS, fragmentSource(skinTex.length, gateUnit));
+  const loc = {
+    vp: gl.getUniformLocation(prog, "uVP"),
+    slate: gl.getUniformLocation(prog, "uSlate"),
+    slatePx: gl.getUniformLocation(prog, "uSlatePx"),
+    slateTpm: gl.getUniformLocation(prog, "uSlateTpm"),
+    slateMean: gl.getUniformLocation(prog, "uSlateMean"),
+    tex: skinTex.map((_, k) => gl.getUniformLocation(prog, "uT" + k)),
+  };
+  const vao = gl.createVertexArray();
+  gl.bindVertexArray(vao);
+  const vb = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, vb);
+  gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(0);
+  gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 36, 0);
+  gl.enableVertexAttribArray(1);
+  gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 36, 12);
+  gl.enableVertexAttribArray(2);
+  gl.vertexAttribPointer(2, 3, gl.FLOAT, false, 36, 20);
+  gl.enableVertexAttribArray(3);
+  gl.vertexAttribPointer(3, 1, gl.FLOAT, false, 36, 32);
+  const ib = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, index, gl.STATIC_DRAW);
+  gl.bindVertexArray(null);
   const loadMs = performance.now() - t0;
-  let drawCount = 0;
-  for (let i = 0; i < batches.length; i++) drawCount += batches[i].draws.length;
+  const drawCount = index.length ? 1 : 0;
   return {
     draws: drawCount,
     loadMs,
     draw(vp, mode) {
-      if (mode === 1) return;
+      if (mode === 1 || !drawCount) return;
       gl.useProgram(prog);
       gl.uniformMatrix4fv(loc.vp, false, vp);
-      gl.uniform1i(loc.tex, 0);
+      for (let k = 0; k < skinTex.length; k++) {
+        gl.activeTexture(gl.TEXTURE0 + k);
+        gl.bindTexture(gl.TEXTURE_2D, skinTex[k]);
+        gl.uniform1i(loc.tex[k], k);
+      }
+      if (slate) {
+        gl.uniform4f(loc.slate, slate.rect[0], slate.rect[1], slate.rect[2], slate.rect[3]);
+        gl.uniform2f(loc.slatePx, slate.px[0], slate.px[1]);
+        gl.uniform1f(loc.slateTpm, slate.tpm);
+        gl.uniform3f(loc.slateMean, slate.mean[0], slate.mean[1], slate.mean[2]);
+      }
       gl.enable(gl.DEPTH_TEST);
       gl.depthMask(true);
       gl.disable(gl.BLEND);
       gl.disable(gl.CULL_FACE);
-      gl.activeTexture(gl.TEXTURE0);
-      for (let b = 0; b < batches.length; b++) {
-        const batch = batches[b];
-        gl.uniform3f(loc.pos, batch.pos[0], batch.pos[1], batch.pos[2]);
-        gl.uniform1f(loc.yaw, batch.yaw);
-        gl.uniform1f(loc.frame, batch.frame);
-        for (let d = 0; d < batch.draws.length; d++) {
-          const draw = batch.draws[d];
-          gl.bindVertexArray(draw.vao);
-          gl.bindTexture(gl.TEXTURE_2D, draw.tex);
-          gl.drawElements(gl.TRIANGLES, draw.count, gl.UNSIGNED_INT, 0);
-        }
-      }
+      gl.bindVertexArray(vao);
+      gl.drawElements(gl.TRIANGLES, index.length, gl.UNSIGNED_INT, 0);
       gl.bindVertexArray(null);
+      gl.activeTexture(gl.TEXTURE0);
     },
     /** Closest drawn face from the eye, at the skin's nominal texel density. */
     mag(eye, focal) {
@@ -256,7 +514,8 @@ export async function mountRuins(gl, env) {
         const o = solids[i];
         if (!o.col.near(eye[0], eye[2], 30)) continue;
         const dist = Math.max(0.05, o.col.dist(eye[0], eye[1], eye[2]));
-        const mm = focal / (o.texelsPerM * dist);
+        let mm = focal / (o.texelsPerM * dist);
+        if (o.closeTexelsPerM && mm >= GATE_CLOSE_SWITCH) mm = focal / (o.closeTexelsPerM * dist);
         if (mm > m) {
           m = mm;
           which = o.id;
@@ -383,7 +642,7 @@ export async function mountRuins(gl, env) {
       const out = {};
       for (let i = 0; i < solids.length; i++) {
         const o = solids[i];
-        if (!o.probe) o.probe = buildMagProbe(o.groups, o.frame, o.texSize, o.tagOf);
+        if (!o.probe) o.probe = buildMagProbe(o.groups, o.frame, o.texSize, o.tagOf, 0.08, o.densityOf);
         const r = o.probe(eye, fwd, right, up, focal, tanH, tanV);
         for (const k of Object.keys(r)) out[o.id + ":" + k] = r[k];
       }
@@ -393,6 +652,7 @@ export async function mountRuins(gl, env) {
       return {
         count: objects.length,
         draws: drawCount,
+        textures: texDims,
         loadMs,
         seats: mags.map((o) => ({
           id: o.id,

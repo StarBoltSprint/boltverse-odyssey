@@ -105,6 +105,31 @@ def build_gate(inbox, numbers):
     solid_frac = sub_s.reshape(gh, step, gw, step).mean(axis=(1, 3))
     hole_frac = sub_h.reshape(gh, step, gw, step).mean(axis=(1, 3))
     solid = (solid_frac > 0.35) & (hole_frac < 0.5)
+    # Alpha cut, at the elevation's own resolution, for the outer skyline only. The silhouette is
+    # the stone plus every hole it encloses (the eclipse disc stays a real hole in the faces, as
+    # built); only the background that reaches the image border is cut. A small opening drops
+    # one-pixel ray tips and a light blur gives the bilinear sampler a smooth 0.5 edge. Below the
+    # opening top the cells are the colliders and stay opaque. Shape only: no pixel is coloured.
+    ns_n, ns_lab = cv2.connectedComponents((~stone).astype(np.uint8), connectivity=4)
+    edge_labs = np.unique(np.concatenate([ns_lab[0], ns_lab[-1], ns_lab[:, 0], ns_lab[:, -1]]))
+    outside = np.isin(ns_lab, edge_labs[edge_labs > 0]) & ~stone
+    sil = (~outside).astype(np.uint8)
+    sil = cv2.morphologyEx(sil, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5)))
+    # Stray specks left beside the skyline are not the gate: keep the one body.
+    sn, slab, sstats, _ = cv2.connectedComponentsWithStats(sil, connectivity=8)
+    if sn > 2:
+        body = 1 + int(np.argmax(sstats[1:, cv2.CC_STAT_AREA]))
+        sil = (slab == body).astype(np.uint8)
+    soft = cv2.GaussianBlur(sil.astype(np.float32), (0, 0), 2.0)
+    soft[hy0:, :] = 1.0
+    alpha = (np.clip(soft, 0.0, 1.0) * 255.0 + 0.5).astype(np.uint8)
+    # Above the opening (out of the body's reach) every cell the cut keeps a pixel of gets faces,
+    # so the skyline follows the elevation's own edge, not the 5 px cell grid. Cells that touch an
+    # enclosed hole are left as they were.
+    sub_a = soft[y0 : y0 + gh * step, x0 : x0 + gw * step]
+    keep_frac = (sub_a.reshape(gh, step, gw, step) >= 0.5).mean(axis=(1, 3))
+    rows_above = (np.arange(gh) * step + y0 + step) <= hy0
+    solid |= rows_above[:, None] & (keep_frac > 0.0) & (hole_frac == 0.0)
 
     def depth_at(px, py):
         if py <= hy0 and hx0 <= px <= hx1:
@@ -204,10 +229,15 @@ def build_gate(inbox, numbers):
             p1 = world(bx, by, 0.0)
             p2 = world(bx, by, -depth)
             p3 = world(ax, ay, -depth)
-            s0 = uv_face(mode, p0[0], p0[1], 0.0)
-            s1 = uv_face(mode, p1[0], p1[1], 0.0)
-            s2 = uv_face(mode, p2[0], p2[1], -depth)
-            s3 = uv_face(mode, p3[0], p3[1], -depth)
+            # Seam faces carry the front-image spot of their edge, one pixel inside the cell, for
+            # the alpha cut. Their surface pixels are tiled in the shader from the local position
+            # at the plate's native density (repeat, never stretched).
+            nx = 1 if ax == px and bx == px else (-1 if ax == px2 and bx == px2 else 0)
+            ny = 1 if ay == py and by == py else (-1 if ay == py2 and by == py2 else 0)
+            s0 = uv_front(ax + nx, ay + ny)
+            s1 = uv_front(bx + nx, by + ny)
+            s2 = s1
+            s3 = s0
             mesh.quad((
                 (*p0, *s0),
                 (*p1, *s1),
@@ -372,7 +402,10 @@ def build_gate(inbox, numbers):
         },
         "detailPlate": has_detail,
         "spans": {"pier-l": left, "pier-r": right, "lintel": lintel},
+        "alphaCut": {"aboveY": round((y1 - hy0) * m_per_px, 3), "outerOnly": True, "openPx": 5, "blurPx": 2.0, "threshold": round(thr, 2)},
+        "nearTileSizeM": [round(tile_m, 3), round(depth_m, 3)],
     }
+    report["_alpha"] = alpha
     ocx = int((hx0 + hx1) * 0.5)
     ocy = int((hy0 + hy1) * 0.5)
     ix = (ocx - x0) // step

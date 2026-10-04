@@ -30,6 +30,8 @@
       "texelsPerM": 36.64,
       "nearTexelsPerM": 182.99,
       "atlasSplitU": 0.5,
+      "alpha": "packs/zone-a/src/ruins/gate/alpha.png",
+      "alphaAboveM": 18.585,
       "openingWidthM": 7.314,
       "openingHeightM": 18.558,
       "minApproachM": 48.932,
