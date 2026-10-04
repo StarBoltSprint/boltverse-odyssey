@@ -31,3 +31,14 @@ Shots: `01-spawn.jpg` from spawn, `02-approach.jpg` on the way in, `03-through.j
 Run: `python3 tools/ruins/build.py --kit howling-eclipse && python3 tools/ruins/selftest.py`. Play proof: serve this worktree on 127.0.0.1 and run `node /workspace/grokcli/out/zoneA-step4/gate-redo/fastprove.mjs` (`tick(dt, {draw:false})` for the long counts, one painted frame per still).
 
 Collider: `collide.js` was not in the tree. This step adds it. Edges come from the loft. `keepRadiusM` is stored and `keepUsed` is false. Play does not push a circle.
+
+## Follow-up 2026-10-04 (merge of the collider fix, HUD, kept arch, zero shake)
+
+Supersedes the "Collider" paragraph above: the collider fix of PR 166 (2f204e4, 3ee8bf3, 707647d) is merged. `collide.js` and `colliders.py` rebuild the colliders from the drawn faces; there is no `keepRadiusM` in the manifest.
+
+- Kept arch (owner decision 09:25): the step 4 arch is restored as a sealed ruin at (−5, 39), yaw −3.1227 rad (faces spawn), one 1664 × 1248 atlas, opening walkable (build walk min clearance 0.476 m, 1.82 m free in the body band), 5.3 m walkable room to the rim, 1.06 m rock clearance on its line. Full-gallop run through it: blocked 0, shake 0, exit past the back face.
+- Camera: near a ruin the chase heading follows Bolt through a capped spring, and the drawn eye tracks the solved eye with its acceleration capped at 30 m/s². `ruinwalk` is strict: shake 0 on both arch runs, the hangar turn, every wall and slide, and all 77 sweep lines (was 2 on the hangar turn and 19 of 77 sweeps).
+- HUD: the debug text is hidden for players; only `?debug=1` shows it.
+- Perf (swiftshader, 360 × 800 at 2×): drawCalls 17, texMB 293.4 (282.8 before the arch), download 47.77 MB, firstFrameMs 1712, ruinLoadMs 1687.
+- Gates: `build.py` PASS, `selftest.py` PASS (three objects), `tools/hard-objects/rebuild.py` PASS, `tools/rocks/selftest.py` PASS, `tools/sky/check.py` PASS (13 slices, 0 failures), root `npm test` exit 0, `ruinwalk` 7/7. Protected diffs against 274cab6 are empty.
+- Known issues unchanged: eclipse mark above the lintel; elevation close-up about 15×; wreck hull inside the bay 43× at 0.85 m; hangar interior black; stair-stepped crown silhouette.

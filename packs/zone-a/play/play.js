@@ -26,6 +26,9 @@ const MAX_BOOM = BOOM / 0.62;
 
 const canvas = document.getElementById("view");
 const hud = document.getElementById("hud");
+// Debug HUD (position, heading, mag, gate, perf) only behind an explicit flag: ?debug=1.
+// Players see no text once loaded (loading progress and a boot error stay).
+const SHOW_HUD = /[?&]debug=1(&|$)/.test(location.search);
 canvas.width = W;
 canvas.height = H;
 const gl = canvas.getContext("webgl2", {
@@ -701,6 +704,14 @@ const RUIN_EYE_SOFT = 0.25;
 const RUIN_EYE_FLOOR = 0.35;
 const RUIN_EYE_SUB = 0.04;
 const RUIN_EYE_JUMP = 0.4;
+// Chase heading near a ruin: the rig follows Bolt's heading through a capped critically damped
+// spring instead of rigidly, so turning on the spot in the hangar (150 deg/s) cannot whip the
+// eye round into the hull. Off the ruins the chase heading is Bolt's heading, unchanged.
+const CAM_YAW_W = 5;
+const CAM_YAW_RATE_RUIN = 80;
+const CAM_YAW_RATE_FREE = 400;
+const CAM_YAW_ACC = 500;
+const camYaw = { h: 0, v: 0, ready: false, lag: false, last: 0 };
 const RUIN_OFF_W = 6;
 const RUIN_OFF_V = 4;
 const RUIN_OFF_ACC = 20;
@@ -711,7 +722,15 @@ const RUIN_RISE_ACC = 5;
 const ruinCam = {
   rise: 1, riseV: 0, riseGoal: 1,
   eye: [0, 0, 0], want: [0, 0, 0], off: [0, 0, 0], offV: [0, 0, 0], eyeLive: false,
-  len: 0, lenV: 0, full: 0, ready: false, clamped: false, yaw: 0, yawV: 0, goal: 0 };
+  len: 0, lenV: 0, full: 0, ready: false, clamped: false, yaw: 0, yawV: 0, goal: 0, dbg: null,
+  fe: [0, 0, 0], fv: [0, 0, 0], tp: [0, 0, 0], fReady: false, fLag: false };
+// Last stage near a ruin: the drawn eye tracks the solved eye (position and velocity) through a
+// critically damped follower whose acceleration is capped below the shake threshold, so a face
+// contact, a swing or a boom ease can bend the eye's path but never reverse it frame to frame.
+// Off the ruins it hands over once converged and the eye is the solved eye, unchanged.
+const RUIN_EYE_W = 10;
+const RUIN_EYE_ACC = 30;
+const RUIN_EYE_HARD = 0.4;
 // Eased pose changes are also speed-capped so a far target cannot swoop the eye.
 const CAM_RATE_BOOM = 3.0;
 const CAM_RATE_EYE = 1.5;
@@ -1333,7 +1352,38 @@ function solveCamera() {
     camStepDt = 0;
     return;
   }
-  const yaw = state.hdg * Math.PI / 180;
+  const dtYaw = camStepDt > 0 ? Math.min(0.05, camStepDt) : 0;
+  if (!camYaw.ready || !camSm.ready) {
+    camYaw.h = state.hdg;
+    camYaw.v = 0;
+    camYaw.lag = false;
+    camYaw.ready = true;
+  } else if (dtYaw > 0) {
+    const nearYaw = !!ruinLayer && ruinLayer.near(state.x, state.z, 10);
+    const err = wrap180(state.hdg - camYaw.h);
+    // Leaving the ruins, the lag converges on the free chase (faster cap), then hands over.
+    if (nearYaw) camYaw.lag = true;
+    else if (Math.abs(err) < 0.05 && Math.abs(camYaw.v) < 0.5) camYaw.lag = false;
+    if (camYaw.lag) {
+      // Critically damped, rate-capped. Near a ruin the rig trails a fast turn; leaving the ruins
+      // Bolt's turn rate is fed forward so a steady turn converges with no standing lag.
+      const omega = nearYaw ? 0 : wrap180(state.hdg - camYaw.last) / dtYaw;
+      const vmax = nearYaw ? CAM_YAW_RATE_RUIN : CAM_YAW_RATE_FREE;
+      let acc = CAM_YAW_W * CAM_YAW_W * err + 2 * CAM_YAW_W * (omega - camYaw.v);
+      if (acc > CAM_YAW_ACC) acc = CAM_YAW_ACC;
+      else if (acc < -CAM_YAW_ACC) acc = -CAM_YAW_ACC;
+      let nv = camYaw.v + acc * dtYaw;
+      if (nv > vmax) nv = vmax;
+      else if (nv < -vmax) nv = -vmax;
+      camYaw.h = wrap360(camYaw.h + nv * dtYaw);
+      camYaw.v = nv;
+    } else {
+      camYaw.h = state.hdg;
+      camYaw.v = 0;
+    }
+  }
+  camYaw.last = state.hdg;
+  const yaw = camYaw.h * Math.PI / 180;
   fwdBuf[0] = Math.sin(yaw);
   fwdBuf[1] = 0;
   fwdBuf[2] = Math.cos(yaw);
@@ -1757,11 +1807,82 @@ function ruinBoom(dt, snap) {
     eyeBuf[0] = px;
     eyeBuf[1] = py;
     eyeBuf[2] = pz;
-    // Keep looking at Bolt: turn the rig by the angle the follower moved the eye round him.
+  }
+  // The follower's own result is its state for the next frame (before the smoothing below).
+  const fx = eyeBuf[0];
+  const fy = eyeBuf[1];
+  const fz = eyeBuf[2];
+  if (fresh || !(dt > 0) || !ruinCam.fReady) {
+    for (let i = 0; i < 3; i++) {
+      ruinCam.fe[i] = eyeBuf[i];
+      ruinCam.fv[i] = 0;
+      ruinCam.tp[i] = eyeBuf[i];
+    }
+    ruinCam.fReady = true;
+    ruinCam.fLag = false;
+  } else {
+    const fe = ruinCam.fe;
+    const fv = ruinCam.fv;
+    const tv = [(fx - ruinCam.tp[0]) / dt, (fy - ruinCam.tp[1]) / dt, (fz - ruinCam.tp[2]) / dt];
+    if (near) ruinCam.fLag = true;
+    else if (Math.hypot(fx - fe[0], fy - fe[1], fz - fe[2]) < 1e-3 && Math.hypot(tv[0] - fv[0], tv[1] - fv[1], tv[2] - fv[2]) < 0.05) ruinCam.fLag = false;
+    if (ruinCam.fLag) {
+      const w = RUIN_EYE_W;
+      let ax = w * w * (fx - fe[0]) + 2 * w * (tv[0] - fv[0]);
+      let ay = w * w * (fy - fe[1]) + 2 * w * (tv[1] - fv[1]);
+      let az = w * w * (fz - fe[2]) + 2 * w * (tv[2] - fv[2]);
+      const an = Math.hypot(ax, ay, az);
+      if (an > RUIN_EYE_ACC) {
+        const k = RUIN_EYE_ACC / an;
+        ax *= k;
+        ay *= k;
+        az *= k;
+      }
+      fv[0] += ax * dt;
+      fv[1] += ay * dt;
+      fv[2] += az * dt;
+      fe[0] += fv[0] * dt;
+      fe[1] += fv[1] * dt;
+      fe[2] += fv[2] * dt;
+      // Safety only (the follower already keeps RUIN_EYE_SAFE): the near plane never opens a face.
+      if (ruinLayer) {
+        const c = ruinLayer.clearance(fe[0], fe[1], fe[2]);
+        if (c < RUIN_EYE_HARD) {
+          const g = ruinLayer.clearGrad(fe[0], fe[1], fe[2]);
+          if (g) {
+            for (let i = 0; i < 3; i++) fe[i] += g[i] * (RUIN_EYE_HARD - c);
+            const vin = fv[0] * g[0] + fv[1] * g[1] + fv[2] * g[2];
+            if (vin < 0) for (let i = 0; i < 3; i++) fv[i] -= vin * g[i];
+          }
+        }
+      }
+      const floorY = (useRelief ? terrain.heightAt(fe[0], fe[2]) : 0) + RUIN_EYE_FLOOR;
+      if (fe[1] < floorY) {
+        fe[1] = floorY;
+        if (fv[1] < 0) fv[1] = 0;
+      }
+    } else {
+      fe[0] = fx;
+      fe[1] = fy;
+      fe[2] = fz;
+      fv[0] = tv[0];
+      fv[1] = tv[1];
+      fv[2] = tv[2];
+    }
+    ruinCam.tp[0] = fx;
+    ruinCam.tp[1] = fy;
+    ruinCam.tp[2] = fz;
+    eyeBuf[0] = fe[0];
+    eyeBuf[1] = fe[1];
+    eyeBuf[2] = fe[2];
+  }
+  {
+    // Keep looking at Bolt: turn the rig by the angle the follower and the smoothing moved the
+    // eye round him.
     const hx0 = dsx - state.x;
     const hz0 = dsz - state.z;
-    const hx1 = px - state.x;
-    const hz1 = pz - state.z;
+    const hx1 = eyeBuf[0] - state.x;
+    const hz1 = eyeBuf[2] - state.z;
     const l0 = Math.hypot(hx0, hz0);
     const l1 = Math.hypot(hx1, hz1);
     if (l0 > 1e-4 && l1 > 1e-4) {
@@ -1770,13 +1891,14 @@ function ruinBoom(dt, snap) {
       turn += Math.atan2(sn, c) * 180 / Math.PI;
     }
   }
+  if (SHOW_HUD) ruinCam.dbg = { chase: [vx0 + state.x, vyFull + hy, vz0 + state.z], want: [dsx, dsy, dsz], len: ruinCam.len, full, yaw: ruinCam.yaw, goal: ruinCam.goal, rise: ruinCam.rise, off: ruinCam.off.slice(), near, live, foll: [fx, fy, fz], fLag: ruinCam.fLag };
   ruinCam.eyeLive = near;
   ruinCam.want[0] = dsx;
   ruinCam.want[1] = dsy;
   ruinCam.want[2] = dsz;
-  ruinCam.eye[0] = eyeBuf[0];
-  ruinCam.eye[1] = eyeBuf[1];
-  ruinCam.eye[2] = eyeBuf[2];
+  ruinCam.eye[0] = fx;
+  ruinCam.eye[1] = fy;
+  ruinCam.eye[2] = fz;
   if (turn !== 0) {
     const f = rotXZ(fwdBuf[0], fwdBuf[2], turn);
     fwdBuf[0] = f[0];
@@ -1843,6 +1965,7 @@ function reset() {
   state.pathTrigger = false;
   state.hdg = spawnHeading();
   camSm.ready = false;
+  camYaw.ready = false;
   camHold.live = false;
   ruinCam.ready = false;
 }
@@ -1856,6 +1979,7 @@ function place(x, z, hdg) {
   state.turn = 0;
   state.gallop = false;
   camSm.ready = false;
+  camYaw.ready = false;
   camHold.live = false;
   ruinCam.ready = false;
 }
@@ -2517,6 +2641,10 @@ function snapshot() {
 }
 
 function paintHud() {
+  if (!SHOW_HUD) {
+    if (hud.textContent) hud.textContent = "";
+    return;
+  }
   const g = gateInfo();
   const mb = (texBytes / (1024 * 1024)).toFixed(1);
   hud.textContent =
@@ -3075,13 +3203,14 @@ async function boot() {
           swing: ruinCam.yaw,
           boltMag: (FOCAL * BOLT_H) / (Math.max(0.2, camBoom) * BOLT_SRC.h),
           feet: feetY(),
+          dbg: ruinCam.dbg,
         };
       },
     };
     render(0);
     paintHud();
     const err = gl.getError();
-    if (err) hud.textContent += "\nGL " + err;
+    if (err && SHOW_HUD) hud.textContent += "\nGL " + err;
     requestAnimationFrame(frame);
   } catch (e) {
     hud.textContent = "BOOT " + (e && e.stack ? e.stack : e);

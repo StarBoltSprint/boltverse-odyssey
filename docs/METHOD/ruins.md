@@ -1,9 +1,9 @@
 # Ruins — kit-driven RuinGenerator (any biome)
 
-**Status: IN TEST (2026-10-03; colliders 2026-10-04).** Owner phone QC still open. Do not mark this APPROVED or VALIDATED.
+**Status: IN TEST (2026-10-03; colliders 2026-10-04; old arch kept beside the monolith, owner decision 2026-10-04 09:25).** Owner phone QC still open. Do not mark this APPROVED or VALIDATED.
 
 Part 1 is the generic kit-driven generator.
-Part 2 fills it for The Howling Eclipse (zone A step 4): the Eclipse Gate and one crashed-ship wreck.
+Part 2 fills it for The Howling Eclipse (zone A step 4): the Eclipse Gate, the kept step 4 arch, and one crashed-ship wreck.
 Part 3 is only placement ideas for Ember Mesa and Cascade Verdance.
 
 Every visible pixel is an unlit Imagine still. Code measures sections, lofts the volume, seats the mesh on the relief, and keeps a corridor. It does not draw, tint, or light. The existing zone fog is the only grade on these pixels (law 67, already on the scene target).
@@ -101,29 +101,41 @@ The colliders are rebuilt in play from the same `.ruin` faces that carry the Ima
 
 **Camera (3D).** The same samples fill a `voxM` occupancy grid; its distance transform (one 3×3×3 blur) is `clearance(x, y, z)` and `clearGrad()`; `segFree()` sphere-marches a line.
 In `play.js` the chase line from Bolt's head to the eye eases in (`ruinBoom`): boom length, swing round Bolt and line rise (lower, flatter line under a lintel or deck) are critically damped springs with speed and acceleration caps; a look-ahead on Bolt's own collided path starts the ease before the face arrives. The eye is then a small sphere that cannot come within `RUIN_EYE_SAFE` (0.5 m) of a face (near plane 0.35 m): it moves from where it was toward the chase eye in 4 cm sub-steps, slides on faces with a soft band, and keeps any one-frame jump above 0.4 m as an offset that a spring takes back. Off the ruins the offset is zero and the chase is unchanged. No pose ever snaps because of a ruin.
+Two more stages keep the shake at zero (2026-10-04): near a ruin the chase heading follows Bolt's heading through a critically damped, rate-capped spring (80°/s near a ruin, handed back to the rigid chase once converged), so turning on the spot in the hangar does not whip the eye round into the hull; and the drawn eye tracks the solved eye (position and velocity) through a critically damped follower whose acceleration is capped at 30 m/s², below the shake threshold, so a face contact, a swing or a boom ease bends the eye's path but cannot reverse it frame to frame. A 0.4 m hard guard behind it keeps the near plane off the faces.
 
 **Numbers.** `tools/ruins/numbers/<id>.json` → `"collider": {bodyRadiusM 0.3, stepM 0.25, clearM 1.3, cellM 0.1, voxM 0.15, padM 1.2}`, copied into the manifest. The manifest also carries each object's `bounds`, the gate's `openingBoxM` and the wreck's `hangar` (sill, lintel, port side) so tests can derive routes.
 
 **Build gate.** `tools/ruins/build.py` runs the same rule in Python (`tools/ruins/colliders.py`) on flat ground at the seat and refuses a cook whose gate opening or wreck hangar is not walkable for the body radius. `selftest.py` rebuilds the field from the shipped meshes and fails if the opening or the hangar is blocked, a pier or the closed hull side is not a wall, or any object still carries `keepRadiusM`.
 
-**Proof.** `tools/playcheck/src/ruinwalk.test.mjs` (in `npm test`): full-gallop arch run, hangar in/turn/out, head-on runs into each pier and the closed hull, 30° slides, and sweeps across and around both ruins. Ground truth comes straight from the `.ruin` faces, not from `collide.js`: every contact must have a drawn face within body radius + 0.2 m, a stop must be within 0.2 m of the face, the body never enters a face, and lines 0.2 m clear of the bounds touch nothing. Camera: no pop, no acceleration reversal (shake), near plane never opens a face.
+**Proof.** `tools/playcheck/src/ruinwalk.test.mjs` (in `npm test`): full-gallop arch run, hangar in/turn/out, head-on runs into each pier and the closed hull, 30° slides, and sweeps across and around both ruins. Ground truth comes straight from the `.ruin` faces, not from `collide.js`: every contact must have a drawn face within body radius + 0.2 m, a stop must be within 0.2 m of the face, the body never enters a face, and lines 0.2 m clear of the bounds touch nothing. Camera: no pop, zero acceleration reversals (shake) on every run (arches, hangar turn, walls, slides and all sweep lines), near plane never opens a face.
 
 **API (play).** `ruinLayer.collide`, `lift`, `near`, `clearance`, `clearGrad`, `segFree`, `where`, `probe` (per-part close-up magnification from the face UVs), `info().colliders`. Debug page: `__play.ruinWhere`, `ruinClearance`, `ruinProbe`, `camState`, `tick(dt, { draw: false })`.
+
+### 8. Sealed ruins — keeping an earlier model (owner decision 2026-10-04 09:25)
+
+The owner can keep an earlier ruin beside a new one. It is not re-measured and not re-cooked.
+
+- Folder: `tools/ruins/sealed/<id>/` holds the byte copies of the earlier `.ruin` mesh, its skins, their colour-free `.PROMPT.txt` siblings, and `sealed.json` (metres, opening box, bounds, parts, texel rate, source commit). Numbers only.
+- Numbers file: `"sealed": [{"id", "dir", "x", "z", "face": "spawn" | "yawDeg", "sinkM"}]`. Position is a number; yaw faces spawn unless given.
+- `tools/ruins/sealed.py` packs the skins side by side into one atlas (top aligned, unscaled, no pixel touched) and remaps the UVs, so a kept ruin costs one draw.
+- `build.py` refuses a sealed placement that meets the corridor or the spawn bubble, sits outside the rim or the dome, comes within `2 × body radius + 1 m` of another ruin, leaves less than `2 × body radius + 2 m` between its footprint and the walkable rim (Bolt must be able to walk all the way round), or has a rock on the walking line through its opening. It then runs the same opening walk on the body field as for the gate.
+- The manifest gets one more object (`frame: gate`, `sealed: <dir>`) with `openingBoxM`, `bounds` and `depthM`. Play, colliders (section 7), `selftest.py` and the `ruinwalk` playcheck treat it like any gate: full-gallop run through its opening, piers are walls, sweeps across and around it, zero camera shake.
 
 ## Part 2 — Filled example: The Howling Eclipse (zone A step 4)
 
 Kit `howling-eclipse`. Numbers `tools/ruins/numbers/howling-eclipse.json`.
 Spawn (−6, −14), heading 32°, corridor half-width 4.2 m, bubble 9.5 m, length 80 m.
-Sky dome radius in play is 90 m. Both objects sit inside the walkable rim.
+Sky dome radius in play is 90 m. All three objects sit inside the walkable rim.
 
 | Object | Position (x, z) | Size | texels / m | mag-1 distance (m) | footprint (m) | Seat |
 |---|---|---|---:|---:|---:|---|
 | Eclipse Gate | (18.451, 25.657), yaw −2.5891 rad; opening on the corridor 50 m from spawn | height 28 m (mesh span 27.7 m), width 16.18 m, depth 6.82 m; opening 7.314 × 18.558 m (7.12 m free in the body band) | elevation 36.64; thickness faces 182.99 | 48.932 on the elevation; 9.80 on the thickness faces | 10.53 | contact height minus 0.18 m |
+| Kept arch (step 4, sealed) | (−5.0, 39.0), yaw −3.1227 rad (faces spawn); 53 m from spawn, 27.0 m from the monolith centre, 27.2 m off the corridor line | height 7.4 m, width 4.54 m, depth 2.89 m; opening 2.43 × 5.19 m (1.82 m free in the body band) | 155.81 | 11.508 | 3.668 | contact height minus 0.18 m |
 | Wreck | (−24.0, 14.0), yaw 205°, pitch −2° | length 32 m, height 4.116 m; hangar 6.2 m long, 1.81 m clear, 3.25 m deep | 70.03 | 25.603 | 16.068 | hangar sill on the relief minus 0.05 m |
 
 2026-10-04: the old keep radii (15.176 m and 18.141 m) are gone. The wreck was re-seated at 32 m on its hangar sill so Bolt (2.15 m sprite, 0.3 m body) fits through the bay; its plates are the same sealed Howl plates, so its texel density dropped from 160 to 70 per metre (magnification at close range is a known issue below).
 
-Gate, step 4b (2026-10-04): the opening centre sits on the heading-32 corridor at 50 m from spawn, inside the rim and under the 90 m dome. The elevation is one skin. Thickness faces sample a second plate packed beside it, unscaled. The 7.4 m arch at (2.0, 37.1) is retired.
+Gate, step 4b (2026-10-04): the opening centre sits on the heading-32 corridor at 50 m from spawn, inside the rim and under the 90 m dome. The elevation is one skin. Thickness faces sample a second plate packed beside it, unscaled. The 7.4 m arch first stood at (2.0, 37.1). Since the owner decision of 2026-10-04 09:25 it is kept as a second ruin at (−5.0, 39.0): off the corridor, 5.3 m of walkable room behind it to the rim, 1.06 m from the nearest rock to its walking line, 3.3 m from the nearest rock to its footprint. Its skins (front and side) are packed into one 1664 × 1248 atlas.
 Wreck: 31.6 m from spawn, bearing about −35°, outside the spawn frame, in a lower pocket. Corridor clearance about 29.0 m. Rim distance about 70 m.
 
 Command: `python3 tools/ruins/build.py --kit howling-eclipse`.
@@ -132,7 +144,7 @@ The gate loft reads the front plate on a 5 px grid. Large components are joined 
 
 The wreck is the validated Howl loft (`tools/hard-objects/rebuild.py`), scaled to 32 m (14 m until 2026-10-04), pitched −2° about Z (−14° before), then seated so the hangar sill sits on the relief. Skins are byte copies of the sealed port, starboard, top, belly, and stern plates. Nacelles, bells, turrets, and the bridge volume are not rebuilt (`skinNacelles` 0, `skinBells` 0). The hangar gap stays a hole. The bow cap reuses the port skin's bow column.
 
-Play draws both after the first frame. Step 4b packs the gate into one skin, so ruin draws go from 7 to 6 and the zone draw count from 17 to 16. Texture memory stays on the step-4 budget. See `packs/zone-a/proof/step4b/REPORT.md`.
+Play draws all three after the first frame. Step 4b packs the gate into one skin, so ruin draws went from 7 to 6 and the zone draw count from 17 to 16. The kept arch adds one draw (zone 17) and its atlas adds 10.6 MB of texture memory (282.8 → 293.4 texMB, over the step 4 figure; reported, not hidden). Download 43.17 → 47.77 MB (the arch mesh is 4.5 MB). See `packs/zone-a/proof/step4b/REPORT.md`.
 
 ## Part 3 — Ember Mesa and Cascade Verdance
 
@@ -153,7 +165,9 @@ Same generator. New numbers file, new plates, same corridor rule tuned to that z
 - A raw voxel distance field has a stepped gradient; a camera sliding on it shakes. Blur it once.
 - A first-order chase with a rate cap jumps to full speed when its goal moves. Use a critically damped spring with speed and acceleration caps for every eased camera value.
 - Projecting a camera point out of a thin wall along the gradient flips side when the point crosses the wall's middle (a metre pop). Move the eye from where it was, in short sub-steps, so it can never cross a face.
-- Rocks are not ruins: a rock on the arch axis is a visible blocker (stone-36 sits 2 m behind the gate's back face).
+- Rocks are not ruins: a rock on the arch axis is a visible blocker (stone-36 sat about 2 m behind the old arch's back face on its walking line; the build now refuses a sealed placement with a rock on the line).
+- `field.contain` (the walkable rim) pushes Bolt radially. A ruin placed near the rim can trap him between the rim and its side: the build checks the room between the footprint and the rim.
+- A camera stage that only clamps (a hard push out of a face, a rate cap that drops) gives a one-frame kink. Bound the acceleration of the drawn eye instead.
 - `lookAt` does not move Bolt. An eye on the hero makes bolt magnification explode. Put the hero about 6 m from the eye before reading `mag`.
 - An eye under `heightAt` looks through the ground sheet. The wreck can be seated and still be missing from that frame.
 - A ruin face on the chase line only costs pose score; it never makes a pose illegal, so it cannot force the snap path.
@@ -169,5 +183,9 @@ Same generator. New numbers file, new plates, same corridor rule tuned to that z
 - The wreck wears the sealed Howl plating. Scorch, torn paint, and lit windows were not recooked (quota). Nacelle, bell, turret, and bridge volumes are omitted, not duplicated.
 - (Resolved 2026-10-04) Bolt now walks through the arch and into the hangar; the keep-out is gone.
 - Close-up magnification near the ruins exceeds 1 (pixels are never stretched by code, but Bolt can now stand next to a 70 texels/m hull): see the step 4 collision report for the worst measured values (gate pier, wreck hull inside the bay, and Bolt's own sprite when the boom is short in the bay).
-- Turning on the spot deep in the hangar: the chase eye orbits at about 13 m/s and meets the outer hull; it slows over two frames (two acceleration reversals counted, no pop, near plane clear).
-- The old take-10 gate card in the HUD still points at a dead far coordinate. It is not this landmark.
+- (Resolved 2026-10-04) Turning on the spot deep in the hangar: two acceleration reversals. Fixed by the chase-heading spring; the strict check now counts 0.
+- The hangar interior has no Imagine skin yet; it reads black.
+- Worst close-up magnification: 43× on the wreck hull inside the bay at 0.85 m camera distance; about 15× on the monolith elevation (36.64 texels/m at 3.2 m); 3–3.7× on the kept arch's piers.
+- The monolith's ring and crown silhouette is stair-stepped (5 px loft grid).
+- The kept arch costs one draw and 10.6 MB of texture memory (texMB 293.4).
+- The old take-10 gate card in the HUD still points at a dead far coordinate. It is not this landmark. Since 2026-10-04 the HUD text is hidden for players and shows only with `?debug=1`.
