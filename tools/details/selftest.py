@@ -10,7 +10,15 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from place import load_solids, near_height_cap, place, place_features, thin_micro  # noqa: E402
+from place import (  # noqa: E402
+    in_opening,
+    load_openings,
+    load_solids,
+    near_height_cap,
+    place,
+    place_features,
+    thin_micro,
+)
 
 NUM = Path(__file__).resolve().parent / "numbers"
 HEX = re.compile(r"#[0-9a-fA-F]{3,8}\b")
@@ -192,6 +200,12 @@ def main() -> int:
                     print(f"FAIL details: thinned near {ts['nearPerM2']} far {ts['farPerM2']}")
                     return 1
                 print(f"PASS thin selftest kept={ts['placed']}/{ts['before']} clumpOnly={ts['clumpOnlyKept']}")
+            openings = load_openings(ROOT, numbers["pack"])
+            for inst in fa:
+                spec_v = fvar[inst["type"]][inst["variant"] % len(fvar[inst["type"]])]
+                if in_opening(inst, spec_v, openings):
+                    print(f"FAIL details: {inst['type']} footprint sits in a ruin opening")
+                    return 1
             if feat.get("near") and near_n < 60:
                 print(f"FAIL details: near band has only {near_n} features")
                 return 1

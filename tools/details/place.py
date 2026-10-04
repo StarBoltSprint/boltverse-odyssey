@@ -104,6 +104,164 @@ def crack_yaw(x: float, z: float) -> float:
     return math.degrees(math.atan2(-dz, dx))
 
 
+def load_openings(root: Path, pack: str) -> list[dict]:
+    """Walkable ruin mouths. A feature footprint must not sit in one: Bolt walks
+    the opening and the shallow slide along the front starts inside the mouth."""
+    path = Path(root) / pack / "src" / "ruins" / "manifest.json"
+    if not path.is_file():
+        return []
+    man = json.loads(path.read_text())
+    out = []
+    for obj in man.get("objects") or []:
+        ob = obj.get("openingBoxM")
+        bounds = obj.get("bounds")
+        if not ob or not bounds:
+            continue
+        yaw = float(obj["yaw"])
+        c, s = math.cos(yaw), math.sin(yaw)
+        if obj.get("frame") == "ship":
+            frame = (s, -c, c, s)
+        else:
+            frame = (c, s, -s, c)
+        # Apron in front of the mouth covers the approach the gallop and the
+        # shallow face-slide use before they meet the pier. Interior depth is
+        # the opening itself.
+        out.append({
+            "id": obj.get("id") or "ruin",
+            "frame": frame,
+            "px": float(obj["x"]),
+            "pz": float(obj["z"]),
+            "x0": float(ob[0]) - 0.45,
+            "x1": float(ob[1]) + 0.45,
+            "z0": float(bounds["min"][2]) - 0.35,
+            "z1": float(bounds["max"][2]) + 2.6,
+        })
+    return out
+
+
+def feature_box(inst: dict, variant: dict) -> dict:
+    """Collider footprint, same axes as packs/.../play/details.js."""
+    height = float(inst["heightM"]) * float(inst.get("scale") or 1)
+    content_h = max(1.0, float(variant.get("contentH") or 1))
+    if variant.get("bodyWPx"):
+        mpp = height / content_h
+        bw = float(variant["bodyWPx"]) * mpp
+        off = float(variant.get("bodyCxPx") or 0) * mpp
+        if inst.get("mirror"):
+            off = -off
+        hz = min(0.15, bw * 0.25)
+    else:
+        bw = height * float(variant.get("contentW") or content_h) / content_h
+        off = 0.0
+        hz = 0.15
+    yaw = math.radians(float(inst.get("yaw") or 0))
+    cy, sy = math.cos(yaw), math.sin(yaw)
+    return {
+        "x": float(inst["x"]) + cy * off,
+        "z": float(inst["z"]) - sy * off,
+        "ux": cy,
+        "uz": -sy,
+        "vx": sy,
+        "vz": cy,
+        "hx": bw * 0.5 + 0.05,
+        "hz": hz + 0.05,
+    }
+
+
+def _box_hits_rect(box: dict, opening: dict) -> bool:
+    a, b, c, d = opening["frame"]
+    dx, dz = box["x"] - opening["px"], box["z"] - opening["pz"]
+    cx = a * dx + c * dz
+    cz = b * dx + d * dz
+    # Box axes in the ruin frame.
+    ux = a * box["ux"] + c * box["uz"]
+    uz = b * box["ux"] + d * box["uz"]
+    vx = a * box["vx"] + c * box["vz"]
+    vz = b * box["vx"] + d * box["vz"]
+    hx, hz = box["hx"], box["hz"]
+    x0, x1, z0, z1 = opening["x0"], opening["x1"], opening["z0"], opening["z1"]
+    rcx, rcz = 0.5 * (x0 + x1), 0.5 * (z0 + z1)
+    rhx, rhz = 0.5 * (x1 - x0), 0.5 * (z1 - z0)
+    ox, oz = cx - rcx, cz - rcz
+
+    def separates(ax: float, az: float) -> bool:
+        dist = abs(ox * ax + oz * az)
+        reach = abs(ax * ux + az * uz) * hx + abs(ax * vx + az * vz) * hz
+        reach += abs(ax) * rhx + abs(az) * rhz
+        return dist > reach + 1e-6
+
+    return not (
+        separates(1.0, 0.0) or separates(0.0, 1.0)
+        or separates(ux, uz) or separates(vx, vz)
+    )
+
+
+def in_opening(inst: dict, variant: dict, openings: list[dict]) -> bool:
+    if not openings:
+        return False
+    box = feature_box(inst, variant)
+    return any(_box_hits_rect(box, op) for op in openings)
+
+
+def clear_openings(numbers: dict, instances: list[dict], variants: dict, openings: list[dict]) -> int:
+    """Slide a feature that landed in a ruin mouth along the corridor until the
+    footprint is clear. Lateral position stays, so the running line and the
+    near band still hold. Placement only."""
+    if not openings:
+        return 0
+    cor = numbers["corridor"]
+    heading = math.radians(float(cor["headingDeg"]))
+    fx, fz = math.sin(heading), math.cos(heading)
+    sx, sz = float(cor["spawn"][0]), float(cor["spawn"][1])
+    rx, rz = fz, -fx
+    near = ((numbers.get("features") or {}).get("near") or {}).get("latM")
+    moved = 0
+
+    def lat_of(x: float, z: float) -> float:
+        return (x - sx) * rx + (z - sz) * rz
+
+    def crowded(inst: dict, x: float, z: float) -> bool:
+        for other in instances:
+            if other is inst:
+                continue
+            if (other["x"] - x) ** 2 + (other["z"] - z) ** 2 < 0.55 ** 2:
+                return True
+        return False
+
+    for inst in instances:
+        group = variants.get(inst["type"]) or []
+        if not group:
+            continue
+        variant = group[int(inst["variant"]) % len(group)]
+        if not in_opening(inst, variant, openings):
+            continue
+        base_x, base_z = float(inst["x"]), float(inst["z"])
+        found = False
+        for sign in (-1.0, 1.0):
+            for step in range(1, 56):
+                dist = sign * step * 0.25
+                x = base_x + fx * dist
+                z = base_z + fz * dist
+                if inst.get("near") and near:
+                    lat = abs(lat_of(x, z))
+                    if lat < float(near[0]) - 1e-6 or lat > float(near[1]) + 1e-6:
+                        continue
+                trial = dict(inst)
+                trial["x"], trial["z"] = x, z
+                if in_opening(trial, variant, openings) or crowded(inst, x, z):
+                    continue
+                if math.hypot(x, z) > radius_at(math.atan2(x, z)) * float(numbers["bands"]["insideFrac"]):
+                    continue
+                inst["x"] = round(x, 3)
+                inst["z"] = round(z, 3)
+                found = True
+                moved += 1
+                break
+            if found:
+                break
+    return moved
+
+
 def load_solids(root: Path, pack: str) -> list[tuple[float, float, float]]:
     path = root / pack / "src" / "rocks" / "manifest.json"
     if not path.is_file():
@@ -530,6 +688,8 @@ def place_features(numbers: dict, solids: list[tuple[float, float, float]], vari
                          seed, (sx, sz), (fx, fz), (rx, rz), focal, run_clear)
     for name, n in near_by.items():
         by_type[name] = by_type.get(name, 0) + n
+    root = Path(__file__).resolve().parents[2]
+    clear_openings(numbers, instances, variants, load_openings(root, numbers.get("pack") or ""))
     mark_mirrors(instances, seed)
     stats = {
         "placed": len(instances),
