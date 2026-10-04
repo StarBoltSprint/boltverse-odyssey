@@ -73,5 +73,13 @@
         "packs/zone-a/src/detail/c2.png"
       ]
     }
+  },
+  "transition": {
+    "to": "ember-mesa",
+    "toClearing": null,
+    "path": [],
+    "startM": 0,
+    "endM": 40,
+    "widthM": 12
   }
 }

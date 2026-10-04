@@ -6,6 +6,7 @@ import { loadWorldHull } from "./hullmesh.js";
 import { createTerrain } from "./terrain.js";
 import { mountRocks } from "./rocks.js";
 import { showIntro, introEnabled } from "./intro.js";
+import { createBiomeBlend, postOf } from "./biomeblend.js";
 
 const W = 720;
 const H = 1600;
@@ -317,13 +318,15 @@ uniform int uMode;
 uniform int uKey;
 uniform float uAlpha;
 uniform float uPost;
+uniform float uGradeMix;
+uniform float uSat;
 in vec2 vUv;
 out vec4 o;
 vec3 grade(vec3 x) {
   vec3 t = clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0);
-  vec3 y = mix(x, t, 0.26);
+  vec3 y = mix(x, t, uGradeMix);
   float l = dot(y, vec3(0.2126, 0.7152, 0.0722));
-  y = mix(vec3(l), y, 1.05);
+  y = mix(vec3(l), y, uSat);
   return clamp(y, 0.0, 1.0);
 }
 void main() {
@@ -413,6 +416,8 @@ const cardLoc = {
   key: gl.getUniformLocation(cardProg, "uKey"),
   alpha: gl.getUniformLocation(cardProg, "uAlpha"),
   post: gl.getUniformLocation(cardProg, "uPost"),
+  gradeMix: gl.getUniformLocation(cardProg, "uGradeMix"),
+  sat: gl.getUniformLocation(cardProg, "uSat"),
 };
 
 const P = new Float32Array(16);
@@ -1800,6 +1805,9 @@ function drawCard(mode, tex, key, cx, cy, cz, y0, w, h, idIndex, alpha) {
   gl.uniform1i(cardLoc.key, key);
   gl.uniform1f(cardLoc.alpha, alpha);
   gl.uniform1f(cardLoc.post, useRelief && terrain.postEnabled() && key === 1 && mode === 0 ? 1 : 0);
+  // Bolt takes the same biome grade as the world (grade only: no fog, no bloom, never glows).
+  gl.uniform1f(cardLoc.gradeMix, postNow.gradeMix);
+  gl.uniform1f(cardLoc.sat, postNow.saturation);
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_2D, tex);
   gl.uniform1i(cardLoc.tex, 0);
@@ -1949,6 +1957,10 @@ function render(mode) {
     drawCard(mode, gateTex, 3, g.x, 0, g.z, 0, sized.gw, sized.gh, labelOf("gate:" + g.gate.id), 1);
   }
   if (!useRelief) drawFog(mode, eye);
+  if (biomeBlend) {
+    postNow = biomeBlend.update(state.x, state.z);
+    if (useRelief) terrain.setPostParams(postNow);
+  }
   if (useRelief && mode === 0) terrain.composite();
   const active = state.mode === "GALLOP" ? gallopVideo : idleVideo;
   const boltReady = uploadVideo(active, boltTex, "bolt") || videoStamp.has("bolt");
@@ -2144,6 +2156,7 @@ function snapshot() {
     blocked: state.blocked,
     rockLoadMs,
     rocks: rockLayer ? rockLayer.info() : null,
+    blend: biomeBlend ? biomeBlend.info() : null,
     pathTrigger: state.pathTrigger,
     gate: gateInfo(),
     nearestVisibleM: nearestM,
@@ -2485,6 +2498,9 @@ let firstFrameMs = null;
 let bootT0 = 0;
 let rockLayer = null;
 let rockLoadMs = 0;
+// Biome post blend along the exit path (biomeblend.js). Zone A defaults until boot loads kits.
+let biomeBlend = null;
+let postNow = postOf(null);
 
 async function loadBand(manifest, id) {
   const display = manifest && manifest.display;
@@ -2496,6 +2512,53 @@ async function loadBand(manifest, id) {
     imgs.push(await loadImage(absUrl("packs/zone-a/src/sky/" + files[i])));
   }
   return imgs;
+}
+
+async function fetchJson(url) {
+  try {
+    const r = await fetch(absUrl(url));
+    return r.ok ? await r.json() : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+// Zone A → next biome scaffold. clearing.transition = { to: <kit id>, toClearing: <path or
+// null>, path: [[x, z], ...], startM, endM, widthM }. Each kit's numbers-only `post` block
+// drives fog density / cap, grade mix / saturation and bloom; each fog colour comes from that
+// biome's own Imagine sky horizon band. Zone B has no pack yet: its fog colour is null (zone A's
+// sampled colour is kept), the path is empty, so the blend stays at 0 until the path exists.
+async function mountBiomeBlend(fogA) {
+  const kitA = clearing.biome ? await fetchJson("biome/kits/" + clearing.biome + ".json") : null;
+  const from = postOf(kitA, fogA);
+  const tr = clearing.transition || null;
+  const kitB = tr && tr.to ? await fetchJson("biome/kits/" + tr.to + ".json") : null;
+  const to = postOf(kitB || kitA, null);
+  const blend = createBiomeBlend({
+    from, to,
+    path: (tr && tr.path) || [],
+    startM: tr && tr.startM, endM: tr && tr.endM, widthM: tr && tr.widthM,
+    // Placeholder hooks: zone B content does not exist yet.
+    onApproach: () => { if (tr && tr.toClearing) prefetchNextZone(tr.toClearing, blend); },
+    onArrive: () => { blendArrived = true; },
+  });
+  return blend;
+}
+
+let blendArrived = false;
+
+// Hook for zone B: load its clearing, sample its sky horizon band (never a typed colour) and
+// retarget the blend. Silently does nothing until that pack exists.
+async function prefetchNextZone(url, blend) {
+  const next = await fetchJson(url);
+  const slices = next && next.backdrop && next.backdrop.slices;
+  if (!slices || !slices.length) return;
+  const imgs = [];
+  for (const u of slices) imgs.push(await loadImage(absUrl(u)));
+  const fogB = sampleHorizon(imgs);
+  releaseImages(imgs);
+  const kitB = next.biome ? await fetchJson("biome/kits/" + next.biome + ".json") : null;
+  blend.setTarget(postOf(kitB, fogB));
 }
 
 async function boot() {
@@ -2626,6 +2689,7 @@ async function boot() {
       skyVideos[i].loop = true;
     }
     if (useRelief && horizonFog) terrain.setFog(horizonFog);
+    biomeBlend = await mountBiomeBlend(horizonFog);
     if (clearing.fog_band && clearing.fog_band.atlas) {
       fogTex = makeStill(await loadImage(absUrl(clearing.fog_band.atlas)), "fog");
       buildFog();
@@ -2692,6 +2756,8 @@ async function boot() {
         return true;
       },
       setPost(on) { terrain.setPost(on); },
+      setBlend(t) { if (biomeBlend) biomeBlend.setOverride(t); },
+      blendInfo() { return biomeBlend ? { ...biomeBlend.info(), arrived: blendArrived, post: terrain.postParams() } : null; },
       groundInfo() { return terrain.info(); },
       heightAt(x, z) { return terrain.heightAt(x, z); },
     };

@@ -22,12 +22,16 @@ import {
 } from "./field.js";
 import { solveSurfaceUv } from "./uvfield.js";
 
+// One light grade per biome (law 67). Mix and saturation are uniforms so the path blend can
+// move them between two biome kits; zone A values 0.26 / 1.05 are the defaults.
 const GRADE_FN = `
+uniform float uGradeMix;
+uniform float uSat;
 vec3 grade(vec3 x) {
   vec3 t = clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0);
-  vec3 y = mix(x, t, 0.26);
+  vec3 y = mix(x, t, uGradeMix);
   float l = dot(y, vec3(0.2126, 0.7152, 0.0722));
-  y = mix(vec3(l), y, 1.05);
+  y = mix(vec3(l), y, uSat);
   return clamp(y, 0.0, 1.0);
 }`;
 
@@ -74,6 +78,8 @@ export function createTerrain(gl, env) {
   let srcW = 1024;
   let post = null;
   let postOn = true;
+  // Law 67 post numbers (zone A defaults); setPostParams() takes the biome blend output.
+  const postP = { fogDensity: 0.015, fogCap: 0.58, gradeMix: 0.26, saturation: 1.05, bloomGain: 0.11, bloomThreshold: 0.78 };
   const info = { tris: 0, cards: 0, area: areaM2(), minH: 0, maxH: 0, maxSlope: 0 };
 
   const groundProg = program(gl, `#version 300 es
@@ -157,6 +163,9 @@ uniform vec3 uFog;
 uniform vec2 uNearFar;
 uniform float uFogOn;
 uniform float uBloomOn;
+uniform float uFogK;
+uniform float uFogCap;
+uniform float uBloomGain;
 in vec2 vUv;
 out vec4 o;
 ${GRADE_FN}
@@ -168,10 +177,10 @@ void main() {
   float f = uNearFar.y;
   float viewZ = (2.0 * n * f) / (f + n - ndc * (f - n));
   if (uFogOn < 0.5) { o = vec4(col, 1.0); return; }
-  float fog = clamp(1.0 - exp(-0.015 * viewZ), 0.0, 0.58);
+  float fog = clamp(1.0 - exp(-uFogK * viewZ), 0.0, uFogCap);
   col = mix(col, uFog, fog);
   vec3 bloom = texture(uBloom, vUv).rgb;
-  col += bloom * 0.11 * uBloomOn;
+  col += bloom * uBloomGain * uBloomOn;
   o = vec4(grade(col), 1.0);
 }`);
 
@@ -184,12 +193,13 @@ void main() {
 }`, `#version 300 es
 precision highp float;
 uniform sampler2D uScene;
+uniform float uBloomThr;
 in vec2 vUv;
 out vec4 o;
 void main() {
   vec3 c = texture(uScene, vUv).rgb;
   float m = max(c.r, max(c.g, c.b));
-  float k = clamp((m - 0.78) / 0.22, 0.0, 1.0);
+  float k = clamp((m - uBloomThr) / (1.0 - uBloomThr), 0.0, 1.0);
   o = vec4(c * k, 1.0);
 }`);
 
@@ -523,6 +533,12 @@ void main() {
     setPost(on) { postOn = !!on; },
     postEnabled() { return postOn; },
     setFog(rgb) { if (post) post.fog = rgb; },
+    setPostParams(p) {
+      if (!p) return;
+      for (const k of Object.keys(postP)) if (Number.isFinite(p[k])) postP[k] = p[k];
+      if (p.fog && post) post.fog = p.fog;
+    },
+    postParams() { return { ...postP, fog: post ? post.fog.slice() : null }; },
     bindScene() {
       gl.bindFramebuffer(gl.FRAMEBUFFER, post.fb);
       gl.viewport(0, 0, env.W, env.H);
@@ -592,6 +608,7 @@ void main() {
       gl.disable(gl.BLEND);
       gl.useProgram(brightProg);
       gl.uniform1i(gl.getUniformLocation(brightProg, "uScene"), 0);
+      gl.uniform1f(gl.getUniformLocation(brightProg, "uBloomThr"), postP.bloomThreshold);
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, post.scene);
       drawQuad(brightProg);
@@ -615,6 +632,11 @@ void main() {
       gl.uniform2f(gl.getUniformLocation(postProg, "uNearFar"), env.NEAR, env.FAR);
       gl.uniform1f(gl.getUniformLocation(postProg, "uFogOn"), fogOn);
       gl.uniform1f(gl.getUniformLocation(postProg, "uBloomOn"), bloomOn);
+      gl.uniform1f(gl.getUniformLocation(postProg, "uFogK"), postP.fogDensity);
+      gl.uniform1f(gl.getUniformLocation(postProg, "uFogCap"), postP.fogCap);
+      gl.uniform1f(gl.getUniformLocation(postProg, "uBloomGain"), postP.bloomGain);
+      gl.uniform1f(gl.getUniformLocation(postProg, "uGradeMix"), postP.gradeMix);
+      gl.uniform1f(gl.getUniformLocation(postProg, "uSat"), postP.saturation);
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, post.scene);
       gl.activeTexture(gl.TEXTURE1);
