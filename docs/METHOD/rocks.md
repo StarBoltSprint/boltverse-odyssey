@@ -118,6 +118,8 @@ Same generator. New numbers file, new Imagine kit, same corridor rule tuned to t
 | Stone | sharp scree chunk | small slate shard |
 | Pebble | desert chips and a grit clump, ≤ 30 cm | wet pebbles and a moss cap, ≤ 30 cm |
 
+**Zone B step 1g (2026-10-04) — IN TEST.** This pass did not run `tools/rocks/build.py`. It placed 22 upright keyed cutouts (`pile.png`, `tuft.png`, heights 0.26 m and 0.18 m) beside the lane, and six touch blocks on the loft. The lane in front of the paws stays clear. This does not replace the zone A rocks recipe.
+
 ## Pitfalls
 
 - A long ridge fails the area lock between front and side. Cook a compact outcrop, about as deep as wide.

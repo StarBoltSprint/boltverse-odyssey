@@ -461,3 +461,25 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Stop. Do not move the loft inside the floor. Do not recook the faces. The centres stay 25 m outside the outline. |
 | Guard | No row grades seating. The mesa JPEG is the check. Butte magnification on the chase budget pose is 0.461. |
 | Sources | `packs/zone-b/play/field.js` `BUTTES`, `packs/zone-b/play/mesas.js`. Shots in `packs/zone-b/proof/step1f/mesa.jpg`. |
+
+### 2026-10-04 — a sparse haze plate on the dome grid reads as a scratch field
+
+| | |
+| --- | --- |
+| Take | Zone B step 1g. Haze loop. |
+| Defect | The first haze proof was a field of white scratches across the sky. |
+| Root cause | The loop was drawn on the existing 17×8 dome grid. Each tile shows a different crop of one sparse plate, so the same wisp repeats as a grid. |
+| Fix | Four cards around the compass, magnification 0.75, elevation centre 11°, scroll 0. The video's own motion is the drift. Gain 0.28, key 0.16. |
+| Guard | No row rejects a living layer that is tiled smaller than its frame. The haze JPEG is the check. |
+| Sources | `packs/zone-b/play/play.js` `ensureHazeCards`. `packs/zone-b/src/sky/sky.json`. Shot `packs/zone-b/proof/step1g/layer4-haze.jpg`. |
+
+### 2026-10-04 — a dark band in the planet video opens a hole, and the key fringes a moon
+
+| | |
+| --- | --- |
+| Take | Zone B step 1g. Planet loop. |
+| Defect | Mid-loop frames of the first planet video showed a dark oval in the disk. The neighbour key also ate a moon where the disk was darker than the test. The replacement loop is solid. One moon still has a thin jagged fringe. |
+| Root cause | The oval was in the video, not only in the key. The neighbour test discards a texel under luma 0.188 unless a neighbour about 9 px away is at least luma 0.353. A dark feature wider than that span is discarded. The second loop's body stays lighter than that floor. The fringe is the key meeting the moon's edge. |
+| Fix | Stop. The video budget is spent (3 of 3). Do not change the key again. Do not recook the planet. |
+| Guard | No row reads the disk for a hole. The planet-close JPEG is the check. |
+| Sources | `packs/zone-b/src/sky/planet-body.mp4`. `packs/zone-b/play/play.js` key 4. Shot `packs/zone-b/proof/step1g/planet-close.jpg`. |

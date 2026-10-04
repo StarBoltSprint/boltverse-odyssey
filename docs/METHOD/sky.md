@@ -203,6 +203,10 @@ The ringed planet and both moons are one card, `planet-body.png` plus `planet-bo
 
 `python3 tools/sky/check.py --manifest packs/zone-b/src/sky/sky.json` (2026-10-04, step 1f): 84 failures. Eight horizon files are the same frame. The sun slice is the other frame. Joins, motif, and exposure swing 38.7 fail. That copy is the closed image budget. The upper gradient is not flat across its width, so a heading that puts a tile join in frame shows a vertical step. Stop. Do not recook it on this budget.
 
+**Ember Mesa (zone B step 1g) — detail layers, IN TEST.** 2026-10-04. Not a lock. Does not replace sky v1. Slice files were not recooked. `check.py` was not re-run, so the 84 failures above still stand.
+
+One haze loop, `haze.mp4` (1280×720, 6.042 s, 1,760,694 bytes), gain 0.28, key 0.16. Four cards around the compass, magnification 0.75, elevation centre 11°, scroll 0. The 17×8 dome grid repeated the plate into a scratch field, so the haze is not on that grid. The planet card stays at heading 180°, elevation 15°, distance 380 m, magnification 0.5, world size 135.60 m × 76.28 m. `planet-body.mp4` is the replacement loop (1,216,058 bytes, 1280×720, 6.042 s) after a dark band opened in the first loop. The key is unchanged. A thin fringe remains on one moon. Stop. The video budget for this step is spent. Active videos 3 (Bolt, haze, planet). drawCalls 8. Texture bytes 216551234 (206.5 MiB). Presented magnification 0.982. Pack `packs/zone-b` is 31,611,131 bytes.
+
 **Cascade Verdance.** Same skeleton. The horizon band keeps a soft tree line with no landmark. Living layers lean on the mist loop rather than a bright nebula, still at magnification ≤ 1 and still one instanced draw. The cap is canopy-gap sky, not a black disk.
 
 ## Pitfalls

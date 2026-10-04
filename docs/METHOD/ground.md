@@ -259,6 +259,10 @@ The three lofts stay outside the outline so a phone view does not enlarge them: 
 
 Post fog, set after the kit copy: density 0.0012, cap 0.08. Ground fog mix stays 0.18. Micro cutouts are still none. Spawn (0, 55), heading 180.
 
+**Step 1g (2026-10-04) — IN TEST.** The walkable outline, the area, the length, and the widths are unchanged. `TILE` stays 1.42 m. The value-noise mix of a third family is gone. `familyBlend` picks two even slots by place: open floor is sand (slot 2), the rim is rock blended to sand, the wash and the slot are gravel (slot 6), clay (slot 4) sits only on the basin sides, the basin is sand blended toward gravel, and the shelves are rock. Dune amplitude is 0.65. The berm is 1.35 m over the last 14 m, and it fades where a butte mound is already the rise. A 1.55 m berm measured 16.07° and was put back. Boot `groundInfo`: tris 57774, verts 30442, minH −3.144, maxH 8.745, maxSlope 0.2366 rad (13.56°). The wide pose still shows the tile lattice. Stop. Do not shift UV. Do not rerun `prep.py` on this pack; that path restores the old tile map.
+
+Twenty-two keyed cutouts flank the lane (pebble height 0.26 m, tuft height 0.18 m). Six fallen blocks are touch cards, height 0.9–1.15 m. Canyon walls and the far skyline are the other cards: 39 cards in all (2 slot, 10 skyline, 4 wall, 2 basin, 15 rim, 6 block). Twenty-one are touch. One loft draw. Texture array 1280×1280, 8 layers, 8502 tris, uploadError 0, sink 2.6 m. The straight loft cut remains. `contain()` still stops on the outline. Spawn (0, 55), heading 180.
+
 ### 11. How B and C would fill the template (material ideas only; words go to their local file)
 
 | Role | B Ember Mesa (`ember-mesa`, golden hour) | C Cascade Verdance (`cascade-verdance`, morning) |
