@@ -54,9 +54,9 @@ def main():
         approach = focal / float(obj["texelsPerM"])
         if abs(approach - float(obj["minApproachM"])) > 0.05:
             problems.append(obj["id"] + " approach")
-        keep = float(obj["horizRadiusM"]) + float(obj["minApproachM"])
-        if abs(keep - float(obj["keepRadiusM"])) > 0.05:
-            problems.append(obj["id"] + " keep")
+        # No keep-out circle: collisions follow the drawn faces (docs/METHOD/ruins.md).
+        if "keepRadiusM" in obj:
+            problems.append(obj["id"] + " still carries a keep-out radius")
         mesh = ROOT / obj["mesh"]
         if not mesh.is_file() or mesh.stat().st_size > 20 * 1024 * 1024:
             problems.append(obj["id"] + " mesh size")
@@ -69,6 +69,49 @@ def main():
             sib = path.with_suffix(".PROMPT.txt")
             if not sib.is_file():
                 problems.append("missing prompt sibling " + sib.name)
+    coll = manifest.get("collider") or {}
+    for key in ("bodyRadiusM", "stepM", "clearM", "cellM", "voxM"):
+        if not isinstance(coll.get(key), (int, float)) or coll[key] <= 0:
+            problems.append("collider " + key)
+    if coll and coll.get("stepM", 0) >= coll.get("clearM", 0):
+        problems.append("collider band")
+    # Recompute the body field from the shipped meshes; do not trust measure.json alone.
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from colliders import body_field, covered_at, read_ruin, walk_line  # noqa: E402
+    radius = float(coll.get("bodyRadiusM", 0.3))
+    gate = manifest["objects"][0]
+    ob = gate.get("openingBoxM")
+    if not ob or ob[3] - ob[2] < float(coll.get("clearM", 1.3)):
+        problems.append("gate opening lower than the body band")
+    else:
+        gfield = body_field(read_ruin(ROOT / gate["mesh"]), float(gate.get("contactY", 0)) + float(gate["sink"]), coll)
+        depth = float(measure["gate"]["depthM"])
+        ocx = 0.5 * (ob[0] + ob[1])
+        run = walk_line(gfield, (ocx, 3.0), (ocx, -depth - 3.0), radius)
+        if not run["free"]:
+            problems.append("gate opening not walkable " + json.dumps(run))
+        if not covered_at(gfield, ocx, -0.5 * depth):
+            problems.append("no lintel over the opening")
+        left = walk_line(gfield, (ob[0] - 0.4, 3.0), (ob[0] - 0.4, -depth - 3.0), radius)
+        right = walk_line(gfield, (ob[1] + 0.4, 3.0), (ob[1] + 0.4, -depth - 3.0), radius)
+        if left["free"] or right["free"]:
+            problems.append("a pier is not a wall")
+    wreck = manifest["objects"][1]
+    hang = wreck.get("hangar")
+    if not hang:
+        problems.append("wreck hangar not measured")
+    else:
+        wfield = body_field(read_ruin(ROOT / wreck["mesh"]), float(wreck.get("contactY", 0)) + float(wreck["sink"]), coll)
+        hx = 0.5 * (hang["x"][0] + hang["x"][1])
+        pz = float(hang["portZ"])
+        run = walk_line(wfield, (hx, pz + 3.0), (hx, pz - 1.5), radius)
+        if not run["free"]:
+            problems.append("hangar not walkable " + json.dumps(run))
+        if not covered_at(wfield, hx, pz - 1.0):
+            problems.append("hangar has no deck over it")
+        bow = walk_line(wfield, (hang["x"][1] + 3.0, pz + 3.0), (hang["x"][1] + 3.0, pz - 1.5), radius)
+        if bow["free"]:
+            problems.append("closed hull side is not a wall")
     if not measure["gate"].get("openingClear"):
         problems.append("opening blocked")
     if measure["gate"].get("holeCount", 0) < 1:
@@ -108,6 +151,7 @@ def main():
         "gateApproach": manifest["objects"][0]["minApproachM"],
         "wreckApproach": manifest["objects"][1]["minApproachM"],
         "parts": len(part_ids),
+        "colliders": "faces in the body band; gate opening and wreck hangar walkable",
     }))
     return 0
 

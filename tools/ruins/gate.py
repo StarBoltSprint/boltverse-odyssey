@@ -289,6 +289,13 @@ def build_gate(inbox, numbers):
         "texelsPerM": round(1.0 / m_per_px, 2),
         "minApproachM": round(min_d, 3),
         "openingLocal": [round(ox, 3), round(oy, 3)],
+        # Opening in local metres: x left, x right, sill y, top y. Colliders keep it walkable.
+        "openingBoxM": [
+            round((hx0 - cx) * m_per_px, 3),
+            round((hx1 - cx) * m_per_px, 3),
+            round((y1 - hy1) * m_per_px, 3),
+            round((y1 - hy0) * m_per_px, 3),
+        ],
         "quadsFront": len(front_m.idx) // 6,
         "quadsSide": len(side_m.idx) // 6,
         "bounds": {

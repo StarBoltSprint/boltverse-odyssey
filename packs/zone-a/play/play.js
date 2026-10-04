@@ -670,6 +670,28 @@ const camUp = [0, 1, 0];
 // by CAM_HYST before the pose changes, so the grid cannot chatter each frame.
 const CAM_HYST = 80;
 const camHold = { boom: 6, eye: 1.35, slide: 0, live: false };
+// Ruins: the chase line must not pass through a drawn face, and the eye keeps the near plane off it.
+// The boom eases in (rate-limited) before a face would cut the line, and eases back out after.
+const RUIN_BODY_R = 0.3;
+const RUIN_HEAD = 0.9;
+const RUIN_LINE_EPS = 0.12;
+const RUIN_EYE_GAP = 0.45;
+const RUIN_MIN_LEN = 1.6;
+const RUIN_IN_RATE = 4.0;
+const RUIN_OUT_RATE = 2.0;
+const RUIN_EYE_CLEAR = 0.4;
+const RUIN_HARD_MIN = 1.0;
+// The boom may swing around Bolt (whole rig, so Bolt keeps his screen place) when the line
+// straight behind him is walled in, e.g. turning round deep in the hangar or under the arch.
+const RUIN_SWING = [0, 25, -25, 50, -50, 75, -75, 100, -100, 130, -130];
+const RUIN_SWING_RATE = 70;
+const ruinCam = { len: 0, ready: false, clamped: false, yaw: 0, goal: 0 };
+// Eased pose changes are also speed-capped so a far target cannot swoop the eye.
+const CAM_RATE_BOOM = 3.0;
+const CAM_RATE_EYE = 1.5;
+const CAM_RATE_SLIDE = 1.5;
+let ruinContact = false;
+let ruinStall = 0;
 const camSm = { ready: false, boom: 6, eye: 1.35, slide: 0, ground: 0, feet: 0 };
 let camStepDt = 0;
 let camPitch = 0;
@@ -1203,7 +1225,10 @@ function poseMetrics(eye) {
 }
 
 function feetY() {
-  return useRelief ? terrain.heightAt(state.x, state.z) : 0;
+  if (!useRelief) return 0;
+  const g = terrain.heightAt(state.x, state.z);
+  // A ruin face within one step of the relief (a sill, a hull foot) is floor.
+  return ruinLayer ? g + ruinLayer.lift(state.x, state.z) : g;
 }
 
 function applyShot() {
@@ -1262,6 +1287,12 @@ function chase(cur, goal, dt, tau) {
   return cur + (goal - cur) * (1 - Math.exp(-dt / tau));
 }
 
+function chaseLim(cur, goal, dt, tau, rate) {
+  const next = chase(cur, goal, dt, tau);
+  const lim = rate * dt;
+  return Math.max(cur - lim, Math.min(cur + lim, next));
+}
+
 function solveCamera() {
   if (shot) {
     applyShot();
@@ -1304,6 +1335,12 @@ function solveCamera() {
   let holdHard = false;
   const dt = camStepDt > 0 ? Math.min(0.05, camStepDt) : 0;
   camStepDt = 0;
+  const ruinNear = !!ruinLayer && ruinLayer.near(state.x, state.z, 10);
+  const headY = feetY() + RUIN_HEAD;
+  // Under the arch or in the hangar a low eye keeps the chase line inside the opening.
+  // Score only: legality (and so the snap path) is untouched.
+  const ruinHere = ruinNear ? ruinLayer.where(state.x, state.z) : null;
+  const ruinLow = ruinNear && (ruinCam.clamped || !!(ruinHere && ruinHere.covered));
   for (let bi = 0; bi < booms.length; bi++) {
     const boom = booms[bi];
     for (let ei = 0; ei < eyes.length; ei++) {
@@ -1319,7 +1356,10 @@ function solveCamera() {
         pitchView(candEye);
         const m = poseMetrics(candEye);
         const blocked = lineBlocked(candEye);
-        const near = (m.on ? 1000 : 0) + (blocked ? 0 : 200) + Math.min(m.minR, 1.25) * 20 - Math.abs(dist - targetDist) * 40 - Math.abs(slide) * 2 - Math.max(0, eyes[ei] - 1.6) * 80;
+        // A chase line through a ruin face only costs score. It never makes a pose illegal,
+        // so it cannot force the snap path below.
+        const ruinCut = ruinNear && ruinLayer.segFree(state.x, headY, state.z, candEye[0], candEye[1], candEye[2], RUIN_LINE_EPS) < 0.999;
+        const near = (m.on ? 1000 : 0) + (blocked ? 0 : 200) + Math.min(m.minR, 1.25) * 20 - Math.abs(dist - targetDist) * 40 - Math.abs(slide) * 2 - Math.max(0, eyes[ei] - 1.6) * (ruinLow ? 230 : 80) - (ruinCut ? 300 : 0);
         const hard = m.on && m.minR >= 1.002 && !blocked;
         const isHold = camHold.live && boom === camHold.boom && eyes[ei] === camHold.eye && slide === camHold.slide;
         if (isHold) {
@@ -1376,9 +1416,9 @@ function solveCamera() {
     camSm.eye = useEye;
     camSm.slide = useSlide;
   } else if (dt > 0) {
-    camSm.boom = chase(camSm.boom, useBoom, dt, 0.16);
-    camSm.eye = chase(camSm.eye, useEye, dt, 0.16);
-    camSm.slide = chase(camSm.slide, useSlide, dt, 0.16);
+    camSm.boom = chaseLim(camSm.boom, useBoom, dt, 0.16, CAM_RATE_BOOM);
+    camSm.eye = chaseLim(camSm.eye, useEye, dt, 0.16, CAM_RATE_EYE);
+    camSm.slide = chaseLim(camSm.slide, useSlide, dt, 0.16, CAM_RATE_SLIDE);
   }
   eyeBuf[0] = state.x - fwdBuf[0] * camSm.boom + rightBuf[0] * camSm.slide;
   eyeBuf[2] = state.z - fwdBuf[2] * camSm.boom + rightBuf[2] * camSm.slide;
@@ -1398,8 +1438,129 @@ function solveCamera() {
     eyeBuf[2] = state.z - backZ / backL * MIN_BOOM;
     backL = MIN_BOOM;
   }
-  camBoom = backL;
+  ruinBoom(dt, snapPose);
+  camBoom = Math.hypot(state.x - eyeBuf[0], state.z - eyeBuf[2]);
   pitchView(eyeBuf, camSm.feet);
+}
+
+// Shorten the chase line smoothly where a ruin face would cut it (arch pier, hull wall).
+// Look-ahead on Bolt's own collided path starts the ease before the face arrives.
+// When the line straight back is walled in, the whole rig swings round Bolt to the side
+// with room (eased, speed-capped), so the eye never sits inside stone or hull.
+// Longest boom along v whose line clears every face and whose eye keeps RUIN_EYE_CLEAR
+// (the near plane is 0.35 m). Below RUIN_MIN_LEN it only goes on to RUIN_HARD_MIN when the eye
+// would otherwise touch a face. A floored eye that still touches scores negative so a swing
+// to a roomier side wins.
+function ruinAllow(px, hy, pz, vx, vy, vz, full) {
+  const f = ruinLayer.segFree(px, hy, pz, px + vx, hy + vy, pz + vz, RUIN_LINE_EPS);
+  let len = f < 1 ? Math.max(0, f * full - RUIN_EYE_GAP) : full;
+  const floor = Math.min(RUIN_MIN_LEN, full);
+  const hard = Math.min(RUIN_HARD_MIN, full);
+  let clr = 99;
+  for (;;) {
+    const k = Math.max(len, hard) / full;
+    clr = ruinLayer.clearance(px + vx * k, hy + vy * k, pz + vz * k);
+    if (clr >= RUIN_EYE_CLEAR) break;
+    if (len <= hard) break;
+    if (len <= floor && clr >= RUIN_EYE_CLEAR * 0.5) break;
+    len -= 0.1;
+  }
+  if (clr < RUIN_EYE_CLEAR) return Math.max(len, hard) - (RUIN_EYE_CLEAR - clr) * 8;
+  return len;
+}
+
+function rotXZ(x, z, deg) {
+  const a = deg * Math.PI / 180;
+  const c = Math.cos(a);
+  const s = Math.sin(a);
+  return [x * c + z * s, z * c - x * s];
+}
+
+function ruinBoom(dt, snap) {
+  const hy = camSm.feet + RUIN_HEAD;
+  const vx0 = eyeBuf[0] - state.x;
+  const vy = eyeBuf[1] - hy;
+  const vz0 = eyeBuf[2] - state.z;
+  const full = Math.hypot(vx0, vy, vz0);
+  if (!(full > 1e-4)) return;
+  const fresh = !ruinCam.ready || snap;
+  const near = !!ruinLayer && ruinLayer.near(state.x, state.z, full + 6);
+  // Swing goal: straight back unless it is walled in; then the side with the most room.
+  let goal = 0;
+  if (near) {
+    const comfy = Math.min(full, MIN_BOOM + 0.1);
+    const score = (deg) => {
+      const r = rotXZ(vx0, vz0, deg);
+      return Math.min(ruinAllow(state.x, hy, state.z, r[0], vy, r[1], full), comfy) - Math.abs(deg) / 400;
+    };
+    const s0 = score(0);
+    if (s0 < comfy - 1e-3) {
+      let best = 0;
+      let bestS = s0;
+      for (let i = 1; i < RUIN_SWING.length; i++) {
+        const v = score(RUIN_SWING[i]);
+        if (v > bestS) {
+          bestS = v;
+          best = RUIN_SWING[i];
+        }
+      }
+      const keep = fresh ? -1e9 : score(ruinCam.goal);
+      goal = bestS > keep + 0.3 ? best : ruinCam.goal;
+    }
+  }
+  if (fresh) {
+    ruinCam.yaw = goal;
+  } else if (dt > 0) {
+    ruinCam.yaw = chaseLim(ruinCam.yaw, goal, dt, 0.3, RUIN_SWING_RATE);
+  }
+  ruinCam.goal = goal;
+  if (Math.abs(ruinCam.yaw) < 0.05 && goal === 0) ruinCam.yaw = 0;
+  const r = rotXZ(vx0, vz0, ruinCam.yaw);
+  const vx = r[0];
+  const vz = r[1];
+  let allow = full;
+  let now = full;
+  if (near) {
+    // Look far enough ahead that the speed-capped ease finishes before the face arrives.
+    const ahead = [0, 0.3, 0.6, 1.0, 1.4];
+    for (let i = 0; i < ahead.length; i++) {
+      let ax = state.x;
+      let az = state.z;
+      if (ahead[i] > 0 && state.spd > 0) {
+        const yaw = state.hdg * Math.PI / 180;
+        const p = ruinLayer.collide(state.x, state.z, state.x + Math.sin(yaw) * state.spd * ahead[i], state.z + Math.cos(yaw) * state.spd * ahead[i], RUIN_BODY_R);
+        ax = p.x;
+        az = p.z;
+      }
+      const a = ruinAllow(ax, hy, az, vx, vy, vz, full);
+      if (i === 0) now = a;
+      allow = Math.min(allow, a);
+    }
+  }
+  const target = Math.max(Math.min(RUIN_HARD_MIN, full), allow);
+  if (fresh) {
+    ruinCam.len = target;
+  } else if (dt > 0) {
+    const shrink = target < ruinCam.len;
+    // If the eye is already about to touch a face (a turn swept it in), shrink twice as fast.
+    const urgent = shrink && ruinCam.len > Math.max(Math.min(RUIN_HARD_MIN, full), now) + 0.25;
+    ruinCam.len = chaseLim(ruinCam.len, target, dt, shrink ? 0.12 : 0.45, shrink ? RUIN_IN_RATE * (urgent ? 2 : 1) : RUIN_OUT_RATE);
+  }
+  ruinCam.ready = true;
+  if (ruinCam.len > full - 1e-3) ruinCam.len = full;
+  ruinCam.clamped = ruinCam.len < full - 0.01;
+  const k = ruinCam.len / full;
+  eyeBuf[0] = state.x + vx * k;
+  eyeBuf[1] = hy + vy * k;
+  eyeBuf[2] = state.z + vz * k;
+  if (ruinCam.yaw !== 0) {
+    const f = rotXZ(fwdBuf[0], fwdBuf[2], ruinCam.yaw);
+    fwdBuf[0] = f[0];
+    fwdBuf[2] = f[1];
+    const rr = rotXZ(rightBuf[0], rightBuf[2], ruinCam.yaw);
+    rightBuf[0] = rr[0];
+    rightBuf[2] = rr[1];
+  }
 }
 
 function projectPoint(eye, right, up, fwd, x, y, z) {
@@ -1459,6 +1620,7 @@ function reset() {
   state.hdg = spawnHeading();
   camSm.ready = false;
   camHold.live = false;
+  ruinCam.ready = false;
 }
 function place(x, z, hdg) {
   state.x = x;
@@ -1471,6 +1633,7 @@ function place(x, z, hdg) {
   state.gallop = false;
   camSm.ready = false;
   camHold.live = false;
+  ruinCam.ready = false;
 }
 function look(headingDeg) {
   state.hdg = wrap360(headingDeg);
@@ -1478,6 +1641,7 @@ function look(headingDeg) {
   state.mode = "IDLE";
   camSm.ready = false;
   camHold.live = false;
+  ruinCam.ready = false;
 }
 function setInput(inp) {
   state.forward = Number(inp.forward) || 0;
@@ -1912,11 +2076,23 @@ function tick(dt) {
   const yaw = state.hdg * Math.PI / 180;
   let nx = state.x + Math.sin(yaw) * state.spd * dt;
   let nz = state.z + Math.cos(yaw) * state.spd * dt;
+  const ox = state.x;
+  const oz = state.z;
   const solved = resolveBody(nx, nz);
+  ruinContact = false;
   if (ruinLayer) {
-    const eased = ruinLayer.ease(solved.x, solved.z);
-    solved.x = eased.x;
-    solved.z = eased.z;
+    // Tight colliders from the drawn faces: slide along a wall, walk through an opening.
+    const slid = ruinLayer.collide(ox, oz, solved.x, solved.z, RUIN_BODY_R);
+    solved.x = slid.x;
+    solved.z = slid.z;
+    ruinContact = slid.contact;
+    const want = Math.hypot(nx - ox, nz - oz);
+    const got = Math.hypot(slid.x - ox, slid.z - oz);
+    const prog = want > 1e-5 ? got / want : 1;
+    // Only a head-on push stalls the gallop (with hysteresis, so the clip cannot flicker).
+    if (slid.contact && want > 1e-5 && prog < 0.12) ruinStall++;
+    else if (!slid.contact || prog > 0.3) ruinStall = 0;
+    if (ruinStall >= 3) solved.blocked = true;
   }
   state.blocked = solved.blocked;
   if (solved.blocked) {
@@ -1957,6 +2133,11 @@ function tick(dt) {
     spd: state.spd,
     state: state.mode,
     blocked: state.blocked,
+    ruinContact,
+    ruinCamClamped: ruinCam.clamped,
+    ruinCamSwing: ruinCam.yaw,
+    boom: camBoom,
+    feetY: feetY(),
     pathTrigger: state.pathTrigger,
     eyeX: eyeBuf[0],
     eyeY: eyeBuf[1],
@@ -2647,6 +2828,24 @@ async function boot() {
       setPost(on) { terrain.setPost(on); },
       groundInfo() { return terrain.info(); },
       heightAt(x, z) { return terrain.heightAt(x, z); },
+      ruinInfo() { return ruinLayer ? ruinLayer.info() : null; },
+      ruinWhere(x, z) { return ruinLayer ? ruinLayer.where(x == null ? state.x : x, z == null ? state.z : z) : null; },
+      ruinProbe() {
+        if (!ruinLayer) return {};
+        return ruinLayer.probe(eyeBuf, camFwd, camRightNow, camUp, FOCAL, Math.tan(HFOV / 2), Math.tan(VFOV / 2));
+      },
+      ruinClearance(x, y, z) { return ruinLayer ? ruinLayer.clearance(x, y, z) : 99; },
+      camState() {
+        return {
+          eye: [eyeBuf[0], eyeBuf[1], eyeBuf[2]],
+          fwd: [camFwd[0], camFwd[1], camFwd[2]],
+          boom: camBoom,
+          clamped: ruinCam.clamped,
+          swing: ruinCam.yaw,
+          boltMag: (FOCAL * BOLT_H) / (Math.max(0.2, camBoom) * BOLT_SRC.h),
+          feet: feetY(),
+        };
+      },
     };
     render(0);
     paintHud();

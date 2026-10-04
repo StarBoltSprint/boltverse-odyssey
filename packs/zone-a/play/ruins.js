@@ -1,7 +1,10 @@
 /**
  * Unlit Imagine ruins. The mesh is a measured loft. Pixels stay on the skins.
  * Drawn into the scene target so the existing fog applies.
+ * Colliders come from the same faces (collide.js): a wall where a face crosses Bolt's body band,
+ * openings stay walkable, no keep-out circle.
  */
+import { buildCollider, buildMagProbe, frameOf } from "./collide.js";
 
 const VS = `#version 300 es
 layout(location=0) in vec3 aPos;
@@ -58,8 +61,14 @@ function empty() {
     draws: 0,
     loadMs: 0,
     draw() {},
-    mag() { return 0; },
-    ease(x, z) { return { x, z }; },
+    mag() { return { m: 0, which: "" }; },
+    collide(ox, oz, x, z) { return { x, z, contact: false }; },
+    lift() { return 0; },
+    near() { return false; },
+    clearance() { return 99; },
+    segFree() { return 1; },
+    where() { return null; },
+    probe() { return {}; },
     info() { return { count: 0, loadMs: 0, draws: 0 }; },
   };
 }
@@ -104,7 +113,8 @@ function seatOf(obj, heightAt) {
     wx = obj.x + lx * c + lz * s;
     wz = obj.z - lx * s + lz * c;
   }
-  return { x: obj.x, y: heightAt(wx, wz) - (obj.sink || 0), z: obj.z, contactX: wx, contactZ: wz };
+  // contactY is the local height of the contact point: 0 for a base contact, the sill for a hangar seat.
+  return { x: obj.x, y: heightAt(wx, wz) - (obj.contactY || 0) - (obj.sink || 0), z: obj.z, contactX: wx, contactZ: wz };
 }
 
 export async function mountRuins(gl, env) {
@@ -128,15 +138,18 @@ export async function mountRuins(gl, env) {
     tex: gl.getUniformLocation(prog, "uTex"),
   };
   const batches = [];
-  const keeps = [];
   const mags = [];
+  const solids = [];
+  const colliderOpt = manifest.collider || {};
   for (let i = 0; i < objects.length; i++) {
     const obj = objects[i];
     const bin = await (await fetch(env.absUrl(obj.mesh))).arrayBuffer();
     const groups = parseRuin(bin);
     const textures = [];
+    const texSize = [];
     for (let s = 0; s < obj.skins.length; s++) {
       const img = await env.loadImage(env.absUrl(obj.skins[s]));
+      texSize.push([img.width, img.height]);
       const tex = gl.createTexture();
       gl.bindTexture(gl.TEXTURE_2D, tex);
       gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
@@ -175,7 +188,23 @@ export async function mountRuins(gl, env) {
       yaw: obj.yaw,
       frame: obj.frame === "ship" ? 1 : 0,
     });
-    keeps.push({ x: obj.x, z: obj.z, r: obj.keepRadiusM });
+    const frame = frameOf(obj, seat);
+    const tc = performance.now();
+    const col = buildCollider(groups, frame, env.heightAt, colliderOpt);
+    const openTop = obj.openingTopM || 0;
+    solids.push({
+      id: obj.id,
+      col,
+      groups,
+      frame,
+      texSize,
+      probe: null,
+      tagOf: obj.frame === "ship"
+        ? () => "hull"
+        : (gi, ti, cy, ny) => (ny < -0.5 ? "arch-underside" : cy < openTop ? "pier" : "lintel"),
+      texelsPerM: obj.texelsPerM,
+      buildMs: performance.now() - tc,
+    });
     mags.push({
       id: obj.id,
       x: obj.x,
@@ -218,13 +247,15 @@ export async function mountRuins(gl, env) {
       }
       gl.bindVertexArray(null);
     },
+    /** Closest drawn face from the eye, at the skin's nominal texel density. */
     mag(eye, focal) {
       let m = 0;
       let which = "";
-      for (let i = 0; i < mags.length; i++) {
-        const o = mags[i];
-        const dist = Math.max(0.35, Math.hypot(eye[0] - o.x, eye[2] - o.z) - o.horiz);
-        const mm = focal / (o.texels * dist);
+      for (let i = 0; i < solids.length; i++) {
+        const o = solids[i];
+        if (!o.col.near(eye[0], eye[2], 30)) continue;
+        const dist = Math.max(0.05, o.col.dist(eye[0], eye[1], eye[2]));
+        const mm = focal / (o.texelsPerM * dist);
         if (mm > m) {
           m = mm;
           which = o.id;
@@ -232,20 +263,121 @@ export async function mountRuins(gl, env) {
       }
       return { m, which };
     },
-    ease(x, z) {
-      let ox = x;
-      let oz = z;
-      for (let i = 0; i < keeps.length; i++) {
-        const k = keeps[i];
-        const dx = ox - k.x;
-        const dz = oz - k.z;
-        const d = Math.hypot(dx, dz);
-        if (!(d < k.r) || d < 1e-4) continue;
-        const step = Math.min(k.r - d, 0.35);
-        ox += (dx / d) * step;
-        oz += (dz / d) * step;
+    /**
+     * Move the body from (ox, oz) toward (x, z). A wall pushes it out along the field gradient,
+     * so it slides along the face instead of stopping or snapping. Substeps stop tunnelling.
+     */
+    collide(ox, oz, x, z, radius) {
+      const r = radius || colliderOpt.bodyRadiusM || 0.3;
+      let any = false;
+      for (let i = 0; i < solids.length; i++) {
+        if (solids[i].col.near(x, z, r + 0.5) || solids[i].col.near(ox, oz, r + 0.5)) any = true;
       }
-      return { x: ox, z: oz };
+      if (!any) return { x, z, contact: false };
+      let cx = ox;
+      let cz = oz;
+      let contact = false;
+      const dx = x - ox;
+      const dz = z - oz;
+      const len = Math.hypot(dx, dz);
+      const steps = Math.max(1, Math.ceil(len / solids[0].col.cellM));
+      for (let s = 0; s < steps; s++) {
+        cx += dx / steps;
+        cz += dz / steps;
+        for (let iter = 0; iter < 4; iter++) {
+          let moved = false;
+          for (let i = 0; i < solids.length; i++) {
+            const col = solids[i].col;
+            if (!col.near(cx, cz, r)) continue;
+            const d = col.sd(cx, cz);
+            if (d >= r) continue;
+            const g = col.grad(cx, cz);
+            if (g[0] === 0 && g[1] === 0) continue;
+            cx += g[0] * (r - d);
+            cz += g[1] * (r - d);
+            moved = true;
+            contact = true;
+          }
+          if (!moved) break;
+        }
+      }
+      return { x: cx, z: cz, contact };
+    },
+    /** Floor lift above the relief where a face sits within one step of it (a sill, a hull foot). */
+    lift(x, z) {
+      let m = 0;
+      for (let i = 0; i < solids.length; i++) {
+        const col = solids[i].col;
+        if (!col.near(x, z, 0)) continue;
+        const v = col.lift(x, z);
+        if (v > m) m = v;
+      }
+      return m;
+    },
+    near(x, z, extra) {
+      for (let i = 0; i < solids.length; i++) if (solids[i].col.near(x, z, extra || 0)) return true;
+      return false;
+    },
+    /** Distance from a world point to the nearest drawn ruin face. */
+    clearance(x, y, z) {
+      let m = 99;
+      for (let i = 0; i < solids.length; i++) {
+        const col = solids[i].col;
+        if (!col.near(x, z, 2)) continue;
+        const v = col.dist(x, y, z);
+        if (v < m) m = v;
+      }
+      return m;
+    },
+    /** Fraction of the segment A->B that stays at least eps from every face (sphere march). 1 = clear. */
+    segFree(ax, ay, az, bx, by, bz, eps) {
+      const e = eps == null ? 0.08 : eps;
+      const dx = bx - ax;
+      const dy = by - ay;
+      const dz = bz - az;
+      const len = Math.hypot(dx, dy, dz);
+      if (len < 1e-6) return 1;
+      let close = false;
+      for (let i = 0; i < solids.length; i++) {
+        if (solids[i].col.near(ax, az, len + 2)) close = true;
+      }
+      if (!close) return 1;
+      const minStep = solids[0].col.voxM * 0.5;
+      let t = 0;
+      while (t < len) {
+        const f = t / len;
+        const d = this.clearance(ax + dx * f, ay + dy * f, az + dz * f);
+        if (d < e) return f;
+        t += Math.max(d - e * 0.5, minStep);
+      }
+      return 1;
+    },
+    /** Which ruin a point is in or under (tests, HUD). */
+    where(x, z) {
+      for (let i = 0; i < solids.length; i++) {
+        const col = solids[i].col;
+        if (!col.near(x, z, 0)) continue;
+        return {
+          id: solids[i].id,
+          covered: col.covered(x, z),
+          wall: col.wall(x, z),
+          sd: col.sd(x, z),
+          lx: col.toLocalX(x, z),
+          lz: col.toLocalZ(x, z),
+        };
+      }
+      return null;
+    },
+    /** Close-up magnification per part, from the face UVs, inside the frustum. Built on first call. */
+    probe(eye, fwd, right, up, focal, tanH, tanV) {
+      const out = {};
+      for (let i = 0; i < solids.length; i++) {
+        const o = solids[i];
+        if (!o.probe) o.probe = buildMagProbe(o.groups, o.frame, o.texSize, o.tagOf);
+        const r = o.probe(eye, fwd, right, up, focal, tanH, tanV);
+        for (const k of Object.keys(r)) out[o.id + ":" + k] = r[k];
+      }
+      return out;
     },
     info() {
       return {
@@ -257,6 +389,15 @@ export async function mountRuins(gl, env) {
           y: o.seatY,
           contact: [o.contactX, o.contactZ],
           approach: o.approach,
+        })),
+        colliders: solids.map((o) => ({
+          id: o.id,
+          cells: [o.col.nx, o.col.nz],
+          voxels: [o.col.vnx, o.col.vny, o.col.vnz],
+          wallCells: o.col.wallCells,
+          sealedCells: o.col.sealed,
+          buildMs: Math.round(o.buildMs),
+          bodyBand: [o.col.stepM, o.col.clearM],
         })),
       };
     },

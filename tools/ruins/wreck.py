@@ -157,6 +157,44 @@ def build_wreck(numbers):
     if ncontact:
         contact[0] /= ncontact
         contact[1] /= ncontact
+    contact_y = 0.0
+
+    # Hangar opening in the baked frame: the port ring samples nearest the hole's sill and lintel
+    # on every hole station (same rings as the loft, NU x NS). Measure only, no new faces.
+    nu, ns = 84, 64
+    u0, u1, s0, s1 = [float(v) for v in report["hole"][:4]]
+
+    def bake(v):
+        x, y, z = v
+        return ((x * cp - y * sp) * scale, (x * sp + y * cp) * scale - y0, z * scale)
+
+    sills, lintels = [], []
+    for i in range(int(math.ceil(u0 * (nu - 1))), int(math.floor(u1 * (nu - 1))) + 1):
+        ring = verts[i * ns:(i + 1) * ns]
+        lo = min(v[1] for v in ring)
+        hi = max(v[1] for v in ring)
+        port = [v for v in ring if v[2] > 0]
+        if not port or hi - lo < 1e-6:
+            continue
+        sill = min(port, key=lambda v: abs((v[1] - lo) / (hi - lo) - s0))
+        lintel = min(port, key=lambda v: abs((v[1] - lo) / (hi - lo) - s1))
+        sills.append(bake(sill))
+        lintels.append(bake(lintel))
+    hangar = None
+    if sills:
+        mid = sills[len(sills) // 2]
+        hangar = {
+            "x": [round(min(p[0] for p in sills), 3), round(max(p[0] for p in sills), 3)],
+            "sillY": [round(min(p[1] for p in sills), 3), round(max(p[1] for p in sills), 3)],
+            "lintelY": [round(min(p[1] for p in lintels), 3), round(max(p[1] for p in lintels), 3)],
+            "portZ": round(sum(p[2] for p in sills) / len(sills), 3),
+            "clearM": round(min(t[1] - b[1] for t, b in zip(lintels, sills)), 3),
+            "mid": [round(mid[0], 3), round(mid[1], 3), round(mid[2], 3)],
+        }
+        if numbers["wreck"].get("seat") == "sill":
+            # Seat the hangar sill on the relief (minus sinkM), so Bolt walks in on the ground.
+            contact = [mid[0], mid[2]]
+            contact_y = mid[1]
 
     xs2, zs2, ymax2 = [], [], 0.0
     for mesh in baked:
@@ -267,6 +305,9 @@ def build_wreck(numbers):
         "minApproachM": round(min_d, 3),
         "horizRadiusM": round(horiz, 3),
         "contact": [round(contact[0], 3), round(contact[1], 3)],
+        "contactY": round(contact_y, 3),
+        "seat": numbers["wreck"].get("seat", "lowest"),
+        "hangar": hangar,
         "bounds": {
             "min": [round(min(xs2), 3), 0.0, round(min(zs2), 3)],
             "max": [round(max(xs2), 3), round(ymax2, 3), round(max(zs2), 3)],
