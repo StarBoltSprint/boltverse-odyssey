@@ -744,7 +744,8 @@ const ruinCam = {
   rise: 1, riseV: 0, riseGoal: 1,
   eye: [0, 0, 0], want: [0, 0, 0], off: [0, 0, 0], offV: [0, 0, 0], eyeLive: false,
   len: 0, lenV: 0, full: 0, ready: false, clamped: false, yaw: 0, yawV: 0, goal: 0, dbg: null,
-  fe: [0, 0, 0], fv: [0, 0, 0], tp: [0, 0, 0], fReady: false, fLag: false };
+  fe: [0, 0, 0], fv: [0, 0, 0], tp: [0, 0, 0], fReady: false, fLag: false,
+  rHold: 0, rHoldV: 0, rShrink: false, rLast: 0 };
 // Last stage near a ruin: the drawn eye tracks the solved eye (position and velocity) through a
 // critically damped follower whose acceleration is capped below the shake threshold, so a face
 // contact, a swing or a boom ease can bend the eye's path but never reverse it frame to frame.
@@ -752,6 +753,11 @@ const ruinCam = {
 const RUIN_EYE_W = 10;
 const RUIN_EYE_ACC = 30;
 const RUIN_EYE_HARD = 0.4;
+// Hangar turn boom hold: a shortening of more than RUIN_PUMP_EPS per frame starts the hold.
+const RUIN_PUMP_EPS = 0.003;
+const RUIN_HOLD_W = 6;
+const RUIN_HOLD_V = 1.0;
+const RUIN_HOLD_ACC = 8;
 // Eased pose changes are also speed-capped so a far target cannot swoop the eye.
 const CAM_RATE_BOOM = 3.0;
 const CAM_RATE_EYE = 1.5;
@@ -1910,6 +1916,35 @@ function ruinBoom(dt, snap) {
     eyeBuf[0] = fe[0];
     eyeBuf[1] = fe[1];
     eyeBuf[2] = fe[2];
+  }
+  {
+    // Turning on the spot near a ruin: once the drawn boom (Bolt to eye, flat) has started to
+    // shorten it never pumps back out during the turn. The eye is only drawn nearer to Bolt along
+    // its own flat line (toward Bolt), never into a face. When the turn ends the hold eases off
+    // through a capped spring, so the boom never jumps (owner rule: zero jitter in the hangar turn).
+    const hx = eyeBuf[0] - state.x;
+    const hz = eyeBuf[2] - state.z;
+    const d = Math.hypot(hx, hz);
+    if (!near || fresh || !(dt > 0) || d < 1e-3) {
+      ruinCam.rHold = 0;
+      ruinCam.rHoldV = 0;
+      ruinCam.rShrink = false;
+    } else if (spin) {
+      if (d < ruinCam.rLast - RUIN_PUMP_EPS) ruinCam.rShrink = true;
+      ruinCam.rHold = ruinCam.rShrink ? Math.min(0, ruinCam.rLast - d) : 0;
+      ruinCam.rHoldV = 0;
+    } else {
+      ruinCam.rShrink = false;
+      const sp = springLim(ruinCam.rHold, ruinCam.rHoldV, 0, dt, RUIN_HOLD_W, RUIN_HOLD_V, RUIN_HOLD_ACC);
+      ruinCam.rHold = Math.min(0, sp[0]);
+      ruinCam.rHoldV = sp[1];
+    }
+    const drawn = Math.max(0, d + ruinCam.rHold);
+    if (d >= 1e-3 && drawn !== d) {
+      eyeBuf[0] = state.x + hx * (drawn / d);
+      eyeBuf[2] = state.z + hz * (drawn / d);
+    }
+    ruinCam.rLast = drawn;
   }
   {
     // Keep looking at Bolt: turn the rig by the angle the follower and the smoothing moved the
