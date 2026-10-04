@@ -2,11 +2,15 @@
 
 ## Quota and turns
 
-The quota row is copied here after `python3 tools/quota/quota.py`. Imagine calls this step: 0.
+Quota row from `python3 tools/quota/quota.py` on the session `events.jsonl`. That log did not classify turns or tool calls (the counters stayed 0). Imagine calls this step, counted from the session: 0.
+
+| Date | Step | Commit | Turns | Tool calls | Image gens | Video gens | Tokens in | Tokens out | Wall s | Log |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-10-04 | zone-a-perf | e70c6d3 | 0 | 0 | 0 | 0 | n/a | n/a | 3246.7 | events.jsonl |
 
 | Item | Kind | Turns or tries | Quota spent | Result |
 | --- | --- | --- | --- | --- |
-| Zone A phone budget | other | one pass on the existing play page | see quota-log row `zone-a-perf` | accepted |
+| Zone A phone budget | other | one pass on the existing play page | 2026-10-04 zone-a-perf e70c6d3 turns 0 tools 0 images 0 videos 0 tokens n/a wall_s 3246.7 | accepted |
 
 ## This step
 
