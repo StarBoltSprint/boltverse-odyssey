@@ -1150,6 +1150,52 @@ function closestDist(eye, o, hull) {
   return Math.hypot((mx - qx) * s, (my - qy) * s, (mz - qz) * s);
 }
 
+// World offset from the closest hull-box point to the eye (same box as closestDist).
+const clearVec = [0, 0, 0];
+function closestVec(eye, o, hull) {
+  const s = o.scale || 1;
+  const yaw = (o.yaw_deg || 0) * Math.PI / 180;
+  const c = Math.cos(yaw);
+  const sn = Math.sin(yaw);
+  const dx = eye[0] - o.position[0];
+  const dz = eye[2] - o.position[1];
+  const mx = (c * dx - sn * dz) / s;
+  const mz = (sn * dx + c * dz) / s;
+  const my = (eye[1] - (o.base_y_m || 0)) / s + hull.minY;
+  const ex = (mx - Math.max(-hull.halfExtent[0], Math.min(hull.halfExtent[0], mx))) * s;
+  const ey = (my - Math.max(hull.minY, Math.min(hull.maxY, my))) * s;
+  const ez = (mz - Math.max(-hull.halfExtent[2], Math.min(hull.halfExtent[2], mz))) * s;
+  clearVec[0] = c * ex + sn * ez;
+  clearVec[1] = ey;
+  clearVec[2] = -sn * ex + c * ez;
+  return Math.hypot(ex, ey, ez);
+}
+
+// Minimum camera distance per solid: the eased eye can drift off the scored pose (the hold is
+// scored on raw relief, the eye rides eased relief), and boulder-7 then reached mag 1.10 at
+// 4.2 m. The eye is projected out of each hull's mag ≤ OBJ_MAG_TARGET shell. Projection onto
+// the outside of a rounded box is continuous in the eye position: a glide, never a kick.
+const OBJ_MAG_TARGET = 0.98;
+function clearSolids(eye) {
+  for (let pass = 0; pass < 2; pass++) {
+    let moved = false;
+    for (let i = 0; i < objects.length; i++) {
+      const o = objects[i];
+      const hull = hullByPath.get(o.asset);
+      if (!hull) continue;
+      const need = (FOCAL * worldHeight(o, hull)) / (OBJ_MAG_TARGET * hull.srcH);
+      const d = closestVec(eye, o, hull);
+      if (d >= need || d < 1e-4) continue;
+      const k = (need - d) / d;
+      eye[0] += clearVec[0] * k;
+      eye[1] += clearVec[1] * k;
+      eye[2] += clearVec[2] * k;
+      moved = true;
+    }
+    if (!moved) break;
+  }
+}
+
 function segmentHitsObb(eye, target, o, hull) {
   const steps = 14;
   for (let i = 1; i < steps; i++) {
@@ -1255,6 +1301,18 @@ function pitchView(eye, lookFeet) {
   camUp[2] = -sp * fwdBuf[2];
   camPitch = pitch;
 }
+
+// Smooth maximum (C1): never below max(a, b), blends over a band k so the eye has no kink.
+function smax(a, b, k) {
+  const h = Math.max(k - Math.abs(a - b), 0) / k;
+  return Math.max(a, b) + h * h * k * 0.25;
+}
+
+// The eased eye lags the relief when the boom swings over a ridge (a fast turn sweeps the eye
+// at ~19 m/s). The lag once put the eye 0.58 m over the ridge crest (ground mag 2.09 at heading
+// 82°, 1.42 at 127°). This floor is a smooth function of the eye's ground position, so the eye
+// never sits closer to the relief than ground magnification ≤ 1 allows, and it cannot kick.
+const GROUND_MAG_TARGET = 0.98;
 
 function chase(cur, goal, dt, tau) {
   if (!(dt > 0)) return goal;
@@ -1385,6 +1443,7 @@ function solveCamera() {
   if (snapPose) camSm.ground = rawG;
   else if (dt > 0) camSm.ground = chase(camSm.ground, rawG, dt, 0.28);
   eyeBuf[1] = camSm.eye + camSm.ground;
+  if (useRelief) eyeBuf[1] = smax(eyeBuf[1], terrain.eyeFloor(eyeBuf[0], eyeBuf[2], GROUND_MAG_TARGET), 0.3);
   const rawFeet = feetY();
   if (snapPose) camSm.feet = rawFeet;
   else if (dt > 0) camSm.feet = chase(camSm.feet, rawFeet, dt, 0.22);
@@ -1397,7 +1456,9 @@ function solveCamera() {
     eyeBuf[2] = state.z - backZ / backL * MIN_BOOM;
     backL = MIN_BOOM;
   }
-  camBoom = backL;
+  clearSolids(eyeBuf);
+  if (useRelief) eyeBuf[1] = Math.max(eyeBuf[1], terrain.eyeFloor(eyeBuf[0], eyeBuf[2], GROUND_MAG_TARGET));
+  camBoom = Math.hypot(state.x - eyeBuf[0], state.z - eyeBuf[2]);
   pitchView(eyeBuf, camSm.feet);
 }
 
@@ -1782,8 +1843,11 @@ function updateHeroQuad(eye) {
   heroQuad = { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
 }
 
+const magParts = { ground: 0, object: 0, objectId: "", pebble: 0, bolt: 0, gate: 0 };
+
 function measureMag(eye) {
   let objectMag = 0;
+  let objectId = "";
   let near = 80;
   for (let i = 0; i < objects.length; i++) {
     const o = objects[i];
@@ -1792,10 +1856,14 @@ function measureMag(eye) {
     const d = Math.max(0.25, closestDist(eye, o, hull));
     if (d < near) near = d;
     const m = (FOCAL * worldHeight(o, hull)) / (d * hull.srcH);
-    if (m > objectMag) objectMag = m;
+    if (m > objectMag) { objectMag = m; objectId = o.id || o.asset || ""; }
   }
+  magParts.object = objectMag;
+  magParts.objectId = objectId;
+  magParts.pebble = 0;
   if (rockLayer) {
     const pm = rockLayer.mag(eye, FOCAL);
+    magParts.pebble = pm;
     if (pm > objectMag) objectMag = pm;
   }
   nearestM = near;
@@ -1837,6 +1905,9 @@ function measureMag(eye) {
     gateMag = (FOCAL * gh) / (gdist * GATE_SRC.h);
   }
   groundMagNow = groundMag;
+  magParts.ground = groundMag;
+  magParts.bolt = boltMag;
+  magParts.gate = gateMag;
   magNow = Math.max(
     groundMag, skyMagW, skyMagH, boltMag, objectMag, gateMag,
     skyMagParts.upper, skyMagParts.high, skyMagParts.cap,
@@ -2054,6 +2125,11 @@ function snapshot() {
       skyStars: skyMagParts.stars,
       skyDust: skyMagParts.dust,
       skyNebula: skyMagParts.nebula,
+      object: magParts.object,
+      objectId: magParts.objectId,
+      pebble: magParts.pebble,
+      bolt: magParts.bolt,
+      gate: magParts.gate,
     },
     state: state.mode,
     heroCount,

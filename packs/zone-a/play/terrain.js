@@ -5,6 +5,7 @@
 
 import {
   TILE,
+  MICRO,
   SCALE,
   heightAt,
   macroAt,
@@ -606,6 +607,21 @@ void main() {
         m = Math.max(m, (env.FOCAL * detailH) / (near * detailSrc));
       }
       return m;
+    },
+    // Lowest eye height (world Y) that keeps the ground at or under `target` magnification
+    // above (x, z). Inverse of mag(): elev >= FOCAL·TILE·stretch·tan(VFOV/2) / (srcW·target).
+    // Built on the smooth macro relief plus the full micro amplitude, so it never jitters
+    // with the painted micro relief and always clears the raw heightAt() used by mag().
+    eyeFloor(x, z, target) {
+      const span = 2.2;
+      const microSlope = (2 * MICRO) / span;
+      const slope = Math.hypot(
+        macroAt(x + span, z) - macroAt(x - span, z),
+        macroAt(x, z + span) - macroAt(x, z - span),
+      ) / (2 * span) + microSlope;
+      const stretch = 1 / Math.max(0.55, Math.cos(Math.atan(slope)));
+      const need = (env.FOCAL * TILE * stretch * Math.tan(env.VFOV / 2)) / (srcW * (target || 0.98));
+      return macroAt(x, z) + MICRO + Math.max(0.35, need);
     },
     srcW: () => srcW,
   };
