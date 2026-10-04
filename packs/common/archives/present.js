@@ -102,7 +102,7 @@ export function mountPresent(doc, env) {
   const pawGlow = doc.createElement("img");
   pawGlow.className = "archives-paw-glow";
   pawGlow.alt = "";
-  pawGlow.src = pawSrc;
+  pawGlow.src = env.ui.pawGlow ? resolver(env.ui.pawGlow) : pawSrc;
   paw.append(pawImg, pawGlow);
 
   const backdrop = mountMenuBackdrop(doc, {

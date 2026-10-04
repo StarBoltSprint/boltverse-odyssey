@@ -7,7 +7,8 @@
   "approachM": 2.3,
   "buryFrac": 0.1,
   "ui": {
-    "paw": "packs/common/archives/art/paw-glow.png",
+    "paw": "packs/common/archives/art/paw.png",
+    "pawGlow": "packs/common/archives/art/paw-glow.png",
     "hallVideo": "packs/common/archives/art/hall-loop.mp4",
     "plate": "packs/common/archives/art/plate.jpg",
     "hall": "packs/common/archives/art/hall.jpg",
