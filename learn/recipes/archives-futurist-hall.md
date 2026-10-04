@@ -6,7 +6,7 @@ Status: validated. The high-tech hall film passed the seam row and the scale row
 | --- | --- |
 | Asset kind | other |
 | Take | Archives futuristic hall, 2026-10-04 |
-| Commit | PENDING |
+| Commit | `2158259` |
 | Date | 2026-10-04 |
 | Size | hall loop 640×1424, 24 fps, 289 frames, 12.000 s. Still 640×1424. Source clip 640×1424, 145 frames, 6.041667 s. |
 | Tries | 3 image calls. 3 video calls. 1 video file. Ping-pong is ffmpeg, not another Imagine call. |

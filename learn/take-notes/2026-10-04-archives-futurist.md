@@ -2,13 +2,17 @@
 
 ## Quota and turns
 
-The quota row is appended by `python3 tools/quota/quota.py` after the cook commit. Copy that row here. Do not invent it. Measured Imagine spend in this session, separate from the log: 3 image calls, 3 video calls, 1 video file (640×1424, then a 12 s ping-pong). Two image calls were not used.
+Quota row from `python3 tools/quota/quota.py` on `archives-futurist-20261004-2155.jsonl`. The log did not count the Imagine calls. Measured spend in this session, separate from that row: 3 image calls, 3 video calls, 1 video file (640×1424, then a 12 s ping-pong). Two image calls were not used.
+
+| Date | Step | Commit | Turns | Tool calls | Image gens | Video gens | Tokens in | Tokens out | Wall s | Log |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-10-04 | archives-futurist | 2158259 | 0 | 223 | 0 | 0 | 339018 | 101368 | n/a | archives-futurist-20261004-2155.jsonl |
 
 | Item | Kind | Turns or tries | Quota spent | Result |
 | --- | --- | --- | --- | --- |
-| Hall stills | other | 3 image calls. Two returned 576×1280. The video pin is the third. | filled after quota.py | accepted as the video pin |
-| Hall clip | other | 3 video calls. Two rejected before a file. One file 640×1424, seam MAE 14.445. | filled after quota.py | accepted after ping-pong |
-| Taller plate | other | the same two image calls | filled after quota.py | rejected. Stop. |
+| Hall stills | other | 3 image calls. Two returned 576×1280. The video pin is the third. | 2026-10-04 archives-futurist 2158259 turns 0 tools 223 images 0 videos 0 tokens_in 339018 tokens_out 101368 wall_s n/a | accepted as the video pin |
+| Hall clip | other | 3 video calls. Two rejected before a file. One file 640×1424, seam MAE 14.445. | same quota row | accepted after ping-pong |
+| Taller plate | other | the same two image calls | same quota row | rejected. Stop. |
 
 ## This step
 
