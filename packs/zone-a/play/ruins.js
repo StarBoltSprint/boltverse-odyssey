@@ -1,7 +1,9 @@
 /**
  * Unlit Imagine ruins. The mesh is a measured loft. Pixels stay on the skins.
  * Drawn into the scene target so the existing fog applies.
+ * Walls come from the mesh edges. The stored radius is not a wall.
  */
+import { buildWalls } from "./collide.js";
 
 const VS = `#version 300 es
 layout(location=0) in vec3 aPos;
@@ -128,8 +130,8 @@ export async function mountRuins(gl, env) {
     tex: gl.getUniformLocation(prog, "uTex"),
   };
   const batches = [];
-  const keeps = [];
   const mags = [];
+  const wallInputs = [];
   for (let i = 0; i < objects.length; i++) {
     const obj = objects[i];
     const bin = await (await fetch(env.absUrl(obj.mesh))).arrayBuffer();
@@ -175,7 +177,18 @@ export async function mountRuins(gl, env) {
       yaw: obj.yaw,
       frame: obj.frame === "ship" ? 1 : 0,
     });
-    keeps.push({ x: obj.x, z: obj.z, r: obj.keepRadiusM });
+    wallInputs.push({
+      id: obj.id,
+      yaw: obj.yaw,
+      frame: obj.frame === "ship" ? 1 : 0,
+      x: seat.x,
+      y: seat.y,
+      z: seat.z,
+      groups,
+      texels: obj.texelsPerM,
+      nearTexels: obj.nearTexelsPerM || obj.texelsPerM,
+      splitU: obj.atlasSplitU == null ? null : obj.atlasSplitU,
+    });
     mags.push({
       id: obj.id,
       x: obj.x,
@@ -188,6 +201,7 @@ export async function mountRuins(gl, env) {
       contactZ: seat.contactZ,
     });
   }
+  const walls = buildWalls(wallInputs);
   const loadMs = performance.now() - t0;
   let drawCount = 0;
   for (let i = 0; i < batches.length; i++) drawCount += batches[i].draws.length;
@@ -219,39 +233,22 @@ export async function mountRuins(gl, env) {
       gl.bindVertexArray(null);
     },
     mag(eye, focal) {
-      let m = 0;
-      let which = "";
-      for (let i = 0; i < mags.length; i++) {
-        const o = mags[i];
-        const dist = Math.max(0.35, Math.hypot(eye[0] - o.x, eye[2] - o.z) - o.horiz);
-        const mm = focal / (o.texels * dist);
-        if (mm > m) {
-          m = mm;
-          which = o.id;
-        }
-      }
-      return { m, which };
+      return walls.mag(eye, focal);
     },
-    ease(x, z) {
-      let ox = x;
-      let oz = z;
-      for (let i = 0; i < keeps.length; i++) {
-        const k = keeps[i];
-        const dx = ox - k.x;
-        const dz = oz - k.z;
-        const d = Math.hypot(dx, dz);
-        if (!(d < k.r) || d < 1e-4) continue;
-        const step = Math.min(k.r - d, 0.35);
-        ox += (dx / d) * step;
-        oz += (dz / d) * step;
-      }
-      return { x: ox, z: oz };
+    ease(x, z, px, pz) {
+      if (px == null) return { x, z, blocked: false };
+      return walls.move(x, z, px, pz, 0.55, env.heightAt(x, z));
+    },
+    boomCap(hx, hz, fx, fz, boom) {
+      return walls.boomCap(hx, hz, fx, fz, boom, env.heightAt(hx, hz));
     },
     info() {
       return {
         count: objects.length,
         draws: drawCount,
         loadMs,
+        walls: walls.count,
+        magWalls: walls.magCount,
         seats: mags.map((o) => ({
           id: o.id,
           y: o.seatY,

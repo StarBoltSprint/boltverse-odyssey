@@ -362,3 +362,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | The gate loft takes the dark span between the first and last stone of each row, unions enclosed voids of at least 800 px, and keeps the tallest component as the opening. |
 | Guard | `python3 tools/ruins/selftest.py --kit howling-eclipse` requires `openingClear` and a non-empty hole box. |
 | Sources | `tools/ruins/gate.py`, `packs/zone-a/src/ruins/measure.json`. |
+
+### 2026-10-04 — eclipse mark landed above the lintel
+
+| | |
+| --- | --- |
+| Take | Zone A step 4b. Eclipse Gate redo. |
+| Defect | The eclipse mark is painted on the empty part of the elevation above the lintel. The opening the player gallops through is a plain rectangle. |
+| Root cause | The first plate split the lintel and drew two discs. The repair plate joined the slabs and moved the mark onto the crest, still outside the void. |
+| Fix | Two cooks, then stop. The mark stays paint on the elevation. It is not a second volume, so it was not inpainted off the skin. |
+| Guard | `packs/zone-a/proof/step4b/REPORT.md` row 1. A later cook has to show the mark inside the opening on the play frame, not only on the plate. |
+| Sources | `tools/ruins/inbox/howling-eclipse/front.jpg`, `packs/zone-a/src/ruins/measure.json` ring-motif. Prompts stay in the untracked step 4b note. |

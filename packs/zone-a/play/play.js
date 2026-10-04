@@ -637,6 +637,7 @@ let idleVideo = null;
 let pawFrac = 0.92;
 let heroQuad = { x: 0, y: 0, w: 0, h: 0 };
 let magNow = 0.4;
+let lastRuinMag = null;
 let groundMagNow = 0;
 let nearestM = 4;
 let camRightNow = [1, 0, 0];
@@ -1364,6 +1365,10 @@ function solveCamera() {
     useSlide = 0;
     legal = false;
   }
+  if (ruinLayer && ruinLayer.boomCap) {
+    const cap = ruinLayer.boomCap(state.x, state.z, fwdBuf[0], fwdBuf[2], useBoom);
+    if (cap < useBoom) useBoom = cap;
+  }
   camHold.boom = useBoom;
   camHold.eye = useEye;
   camHold.slide = useSlide;
@@ -1801,8 +1806,9 @@ function measureMag(eye) {
   }
   if (ruinLayer) {
     const rm = ruinLayer.mag(eye, FOCAL);
+    lastRuinMag = rm;
     if (rm.m > objectMag) objectMag = rm.m;
-  }
+  } else lastRuinMag = null;
   nearestM = near;
   const groundD = Math.max(0.4, eye[1] / Math.tan(VFOV / 2));
   const groundMag = useRelief
@@ -1901,7 +1907,7 @@ function render(mode) {
 
 let skyScreenCache = 800;
 
-function tick(dt) {
+function tick(dt, flags) {
   const t0 = performance.now();
   camStepDt = dt > 0 ? dt : 0;
   const fwdIn = Math.abs(state.forward) < 0.04 ? 0 : state.forward;
@@ -1912,11 +1918,14 @@ function tick(dt) {
   const yaw = state.hdg * Math.PI / 180;
   let nx = state.x + Math.sin(yaw) * state.spd * dt;
   let nz = state.z + Math.cos(yaw) * state.spd * dt;
+  const prevX = state.x;
+  const prevZ = state.z;
   const solved = resolveBody(nx, nz);
   if (ruinLayer) {
-    const eased = ruinLayer.ease(solved.x, solved.z);
+    const eased = ruinLayer.ease(solved.x, solved.z, prevX, prevZ);
     solved.x = eased.x;
     solved.z = eased.z;
+    if (eased.blocked) solved.blocked = true;
   }
   state.blocked = solved.blocked;
   if (solved.blocked) {
@@ -1944,12 +1953,19 @@ function tick(dt) {
   } else {
     state.pathTrigger = false;
   }
-  render(0);
+  // A proof run may pass {draw:false}. Motion, the camera, and magnification
+  // still run. The pixels stay unpainted so a long gallop does not wait on GL.
+  if (flags && flags.draw === false) {
+    solveCamera();
+    measureMag(eyeBuf);
+  } else {
+    render(0);
+    paintHud();
+  }
   lastWork = Math.max(0.05, performance.now() - t0);
   frameMs[frameN % 300] = lastWork;
   frameN++;
   if (frameFill < 300) frameFill++;
-  paintHud();
   return {
     x: state.x,
     z: state.z,
@@ -1964,6 +1980,7 @@ function tick(dt) {
     pitch: camPitch * 180 / Math.PI,
     mag: magNow,
     ground: groundMagNow,
+    ruinMag: lastRuinMag,
     gate: gateInfo(),
   };
 }

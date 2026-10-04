@@ -19,15 +19,15 @@ The wreck is lore. Bolt does not board it or drive it.
 | Kit id | `biome/kits/<id>.json` | Name of the zone. Prompt slots stay out of this file's cook path. |
 | Subject words | Untracked local prompt file | The Imagine call. Never typed into the placer. |
 | Metres, positions, seat caps, keep-outs, texture caps | `tools/ruins/numbers/<id>.json` (numbers only, no prompt text) | Placement, seating, magnification, corridor |
-| Gate plates | Inbox `front.jpg`, `side.jpg`, `sec-pier-l.jpg`, `sec-pier-r.jpg`, `sec-lintel.jpg` | Front elevation, thickness, left and right sections |
+| Gate plates | Inbox `front.jpg`, `side.jpg`, optional `detail.jpg`, `sec-pier-l.jpg`, `sec-pier-r.jpg`, `sec-lintel.jpg` | Front elevation, thickness, a surface plate for the near faces, left and right sections |
 | Wreck plates | Sealed hard-object skins, or a new measured set | One loft. Do not invent a second hull generator. |
 
 ### 2. What gets a volume
 
 | Class | Cook | Collider |
 |---|---|---|
-| Landmark gate | Front elevation plus one edge-on side, and two different pier sections plus one lintel section. Left and right are read separately. The opening stays a hole. | Keep-out circle. The body eases out. The chase is not snapped. |
-| Crashed ship | Reuse a validated measured loft when one exists. Pitch and sink are numbers. Nose contact seats on the relief. | Same keep-out. Not a vehicle. |
+| Landmark gate | Front elevation plus one edge-on side, and two different pier sections plus one lintel section. Left and right are read separately. The opening stays a hole. A surface plate may cover the thickness faces. | Mesh edges. The body slides along them. A hole with no edge stays open. The chase eases, it does not snap. |
+| Crashed ship | Reuse a validated measured loft when one exists. Pitch and sink are numbers. Nose contact seats on the relief. | Same mesh edges. Not a vehicle. |
 
 Rejected, do not ship: a camera-facing card; an angle swap as the solid; a mirrored half; a code-filled hole; a second copy of a part that is still painted on the skin; a mesh from a single photo; any generator other than a measured loft.
 
@@ -77,8 +77,8 @@ Placement check is the selftest. The hard-object gate stays `python3 tools/hard-
 - The gate faces spawn. Yaw is derived from that bearing. The wreck yaw and pitch are numbers.
 - Seat: sample `heightAt` at the contact point and subtract `sinkM`. The gate sink is a small bite into the ridge. The wreck sink is the ploughed nose. The mesh minimum sits on that contact after the pitch, so the rest of the hull is not floated.
 - Corridor: half-width, heading, bubble, and length from the numbers file. A keep circle that enters that ribbon is rejected.
-- Magnification: `minApproachM = focalPx / texelsPerM`. The keep radius is the horizontal radius plus that approach. Stills use `LINEAR_MIPMAP_LINEAR` and mipmaps. Do not enlarge a plate.
-- The keep slides the body by at most 0.35 m per solve. It does not set `blocked` and it is not on the chase line test.
+- Magnification: `minApproachM = focalPx / texelsPerM` on the elevation. A nearer surface plate can carry a higher texel rate on the thickness faces. The manifest still stores `keepRadiusM` as the horizontal radius plus `minApproachM`. That radius is not a wall.
+- Play collision is `collide.js`: edges of the loft in the body band. The body slides along an edge. `blocked` is set only when the step toward the goal is mostly cancelled. The chase boom eases shorter if the eye would meet an edge. It does not snap. Stills use `LINEAR_MIPMAP_LINEAR` and mipmaps. Do not enlarge a plate.
 
 ### 6. Play
 
@@ -92,19 +92,19 @@ Sky dome radius in play is 90 m. Both objects sit inside the walkable rim.
 
 | Object | Position (x, z) | Size | texels / m | nearest allowed (m) | keep (m) | Seat |
 |---|---|---|---:|---:|---:|---|
-| Eclipse Gate | (2.0, 37.1) | height 7.4 m, width 4.538 m, depth 2.89 m | 155.81 | 11.508 | 15.176 | contact height minus 0.18 m |
+| Eclipse Gate | (18.451, 25.657), opening on the corridor at (20.496, 28.402) | height 28 m (mesh span 27.7 m), width 16.1 m, depth 6.82 m, opening 7.314 × 18.558 m | elevation 36.64; thickness faces 182.99 | 48.932 on the elevation; 9.80 on the thickness faces | 59.462 stored, not used as a wall | contact height minus 0.18 m |
 | Wreck | (−24.0, 12.0), yaw 128°, pitch −14° | length 14 m, height 3.997 m | 160.07 | 11.201 | 18.141 | contact height minus 0.85 m |
 
-Gate: 51.7 m from spawn, bearing about 9°, outside the spawn field of view of heading 32°. Corridor clearance about 20.3 m (edge 16.1 m). Rim distance about 85 m.
-Wreck: 31.6 m from spawn, bearing about −35°, outside the spawn frame, in a lower pocket. Corridor clearance about 29.0 m. Rim distance about 70 m.
+Gate, step 4b (2026-10-04): the opening centre sits on the heading-32 corridor at 50 m from spawn, inside the rim and under the 90 m dome. The elevation is one skin. Thickness faces sample a second plate packed beside it, unscaled. The 7.4 m arch at (2.0, 37.1) is retired.
+Wreck: 31.6 m from spawn, bearing about −35°, outside the spawn frame, in a lower pocket. Corridor clearance about 29.0 m. Rim distance about 70 m. Unchanged this step.
 
 Command: `python3 tools/ruins/build.py --kit howling-eclipse`.
 
-The gate loft reads the front plate on a 5 px grid. The walk opening meets the bottom border, so a flood from the corner does not see it. The hole is the tall dark span between the jambs, plus enclosed voids of at least 800 px. Cells in that hole have no faces. Left of the hole uses `sec-pier-l`. Right uses `sec-pier-r`. The band above the hole uses `sec-lintel`. Thickness comes from the side plate, scaled per cell. The back reuses the front skin. The ring is paint on that skin, not a second volume.
+The gate loft reads the front plate on a 5 px grid. Large components are joined so a hairline seam does not drop a slab. The hole is the tall dark span between the jambs, plus enclosed voids of at least 800 px. Cells in that hole have no faces. Left of the hole uses `sec-pier-l`. Right uses `sec-pier-r`. The band above the hole uses `sec-lintel`. Thickness comes from the side plate, scaled per cell. Front and back use the elevation. Thickness faces use the surface plate, repeated along the wall with no scale-up, and packed into one atlas. The ring is not a second volume.
 
 The wreck is the validated Howl loft (`tools/hard-objects/rebuild.py`), scaled to 14 m, pitched −14° about Z, then dropped so the lowest vertex is the contact. Skins are byte copies of the sealed port, starboard, top, belly, and stern plates. Nacelles, bells, turrets, and the bridge volume are not rebuilt (`skinNacelles` 0, `skinBells` 0). The hangar gap stays a hole. The bow cap reuses the port skin's bow column.
 
-Play draws both after the first frame. Measured load on the software GL path was a few hundred milliseconds after `firstFrameMs`. Draw calls move from 10 to 17 (seven ruin draws). See `packs/zone-a/proof/step4/REPORT.md` for the play numbers.
+Play draws both after the first frame. Step 4b packs the gate into one skin, so ruin draws go from 7 to 6 and the zone draw count from 17 to 16. Texture memory stays on the step-4 budget. See `packs/zone-a/proof/step4b/REPORT.md`.
 
 ## Part 3 — Ember Mesa and Cascade Verdance
 
@@ -121,7 +121,7 @@ Same generator. New numbers file, new plates, same corridor rule tuned to that z
 - Imagine near-black is not a zero luma. Threshold the plate from the border median, not from a fixed 16.
 - An arch that meets the bottom border is outside a corner flood. Measure the dark span between the first and last stone of each row.
 - Section plates are silhouettes. They scale thickness. They are not a second pair of piers.
-- Do not add the chase boom onto the keep. The corridor would close. A camera that backs into the mass can exceed magnification 1. The heading gallop stays outside the keep.
+- Do not put the stored keep radius back into the solver. A circle around the gate blocks the passage, and a circle around the wreck blocks the hangar. Walls are mesh edges.
 - `lookAt` does not move Bolt. An eye on the hero makes bolt magnification explode. Put the hero about 6 m from the eye before reading `mag`.
 - An eye under `heightAt` looks through the ground sheet. The wreck can be seated and still be missing from that frame.
 - Do not register the keep on the chase line test. A hard push there snaps the camera.
@@ -131,7 +131,9 @@ Same generator. New numbers file, new plates, same corridor rule tuned to that z
 
 - The front plate has a mild perspective and a relief face on the left jamb. Two cooks were not spent on that plate. It stays.
 - Pier sections read as elevation silhouettes, not footprints. Left section slots are not cut as shafts.
-- The ring is skin, not a volume. The back of the gate reuses the front skin. Cracks under 800 px are filled.
-- The wreck wears the sealed Howl plating. Scorch, torn paint, and lit windows were not recooked (quota). Nacelle, bell, turret, and bridge volumes are omitted, not duplicated.
-- The player circles the keep and does not walk through the arch. Backing the camera into the mass can exceed magnification 1.
+- Step 4b: the eclipse mark is painted above the lintel, on the empty part of the elevation, not as a frame inside the opening. Two cooks did not seat it in the arch. It was not cooked again. It is not a second volume, so nothing was inpainted off the skin.
+- The elevation is 36.64 texels/m. The heading gallop measured a worst close-up of 14.99 on that face at 3.265 m (along 59.25, centreline). Thickness faces are 182.99 texels/m (about 9.8 m); a wall eye measured that face at 3.19. Edge samples are binned at 0.32 m. The miss is reported, not hidden.
+- The mesh spans 27.7 m of the 28 m scale. The last partial row of the plate is outside the 5 px grid.
+- The wreck wears the sealed Howl plating. Scorch, torn paint, and the basin edge were not recooked this step. Nacelle, bell, turret, and bridge volumes are omitted, not duplicated.
+- Backing the camera into a face can exceed magnification 1. The heading gallop is measured in the step 4b report.
 - The old take-10 gate card in the HUD still points at a dead far coordinate. It is not this landmark.

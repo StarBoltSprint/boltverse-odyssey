@@ -40,6 +40,103 @@ def write_prompt(path, job, pixels, aspect):
     path.write_text(prompt_sibling(job, pixels, aspect))
 
 
+def write_atlas(inbox, dest):
+    from PIL import Image
+
+    front = Image.open(inbox / "front.jpg").convert("RGB")
+    detail = inbox / "detail.jpg"
+    if detail.is_file():
+        other = Image.open(detail).convert("RGB")
+        canvas = Image.new("RGB", (front.width + other.width, max(front.height, other.height)))
+        canvas.paste(front, (0, 0))
+        canvas.paste(other, (front.width, 0))
+    else:
+        canvas = front
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    canvas.save(dest, "JPEG", quality=92, optimize=True)
+
+
+def solve_anchor(numbers, report):
+    gate = numbers["gate"]
+    spawn = numbers["corridor"]["spawn"]
+    if "alongM" not in gate:
+        gx = float(gate["x"])
+        gz = float(gate["z"])
+        yaw = math.atan2(spawn[0] - gx, spawn[1] - gz)
+        return gx, gz, yaw
+    head = math.radians(float(numbers["corridor"]["headingDeg"]))
+    fx, fz = math.sin(head), math.cos(head)
+    along = float(gate["alongM"])
+    px = spawn[0] + fx * along
+    pz = spawn[1] + fz * along
+    ox, _oy, oz = report["openingLocal"]
+    gx, gz = px, pz
+    yaw = 0.0
+    for _ in range(4):
+        yaw = math.atan2(spawn[0] - gx, spawn[1] - gz)
+        c, s = math.cos(yaw), math.sin(yaw)
+        dx = ox * c + oz * s
+        dz = -ox * s + oz * c
+        gx = px - dx
+        gz = pz - dz
+    yaw = math.atan2(spawn[0] - gx, spawn[1] - gz)
+    report["openingAnchor"] = [round(px, 3), round(pz, 3)]
+    return gx, gz, yaw
+
+
+def footprint_ok(numbers, gx, gz, yaw, bounds):
+    """Corners stay inside the rim and under the dome. Passage sits on the corridor."""
+    script = r"""
+import { radiusAt, heightAt } from "./packs/zone-a/play/field.js";
+const gx = Number(process.env.RUIN_X);
+const gz = Number(process.env.RUIN_Z);
+const yaw = Number(process.env.RUIN_YAW);
+const sky = Number(process.env.RUIN_SKY);
+const sink = Number(process.env.RUIN_SINK);
+const bounds = JSON.parse(process.env.RUIN_BOUNDS);
+const c = Math.cos(yaw), s = Math.sin(yaw);
+const pts = [];
+for (const x of [bounds.min[0], bounds.max[0]]) {
+  for (const y of [bounds.min[1], bounds.max[1]]) {
+    for (const z of [bounds.min[2], bounds.max[2]]) {
+      const wx = gx + x * c + z * s;
+      const wz = gz - x * s + z * c;
+      const ground = heightAt(wx, wz);
+      const wy = ground - sink + y;
+      const th = Math.atan2(wx, wz);
+      const R = radiusAt(th);
+      pts.push({
+        wx, wz, wy,
+        inside: Math.hypot(wx, wz) < R * 0.97,
+        dome: Math.hypot(wx, wy, wz) < sky - 1,
+      });
+    }
+  }
+}
+const badIn = pts.filter((p) => !p.inside).length;
+const badDome = pts.filter((p) => !p.dome).length;
+process.stdout.write(JSON.stringify({ badIn, badDome, n: pts.length }));
+"""
+    env = {
+        "RUIN_X": str(gx),
+        "RUIN_Z": str(gz),
+        "RUIN_YAW": str(yaw),
+        "RUIN_SKY": str(numbers["skyRadiusM"]),
+        "RUIN_SINK": str(numbers["gate"]["sinkM"]),
+        "RUIN_BOUNDS": json.dumps(bounds),
+    }
+    proc = subprocess.run(
+        ["node", "--input-type=module", "-e", script],
+        cwd=str(ROOT),
+        capture_output=True,
+        text=True,
+        env={**dict(**{k: v for k, v in __import__("os").environ.items()}), **env},
+    )
+    if proc.returncode != 0:
+        raise SystemExit(proc.stderr)
+    return json.loads(proc.stdout)
+
+
 def corridor_clear(numbers, x, z, keep):
     """True when the keep circle stays off the run and the spawn bubble."""
     script = r"""
@@ -111,14 +208,12 @@ def main():
     gate_dir.mkdir(parents=True)
     wreck_dir.mkdir(parents=True)
 
-    meshes, colliders, parts, report = build_gate(inbox, numbers)
+    meshes, parts, report = build_gate(inbox, numbers)
     if not report.get("openingClear"):
         raise SystemExit("gate opening is blocked by faces")
-    spawn = numbers["corridor"]["spawn"]
-    gx = float(numbers["gate"]["x"])
-    gz = float(numbers["gate"]["z"])
-    yaw = math.atan2(spawn[0] - gx, spawn[1] - gz)
-    # Horizontal reach of the local mesh.
+    gx, gz, yaw = solve_anchor(numbers, report)
+    numbers["gate"]["x"] = round(gx, 3)
+    numbers["gate"]["z"] = round(gz, 3)
     horiz = 0.0
     for mesh in meshes:
         arr = mesh.xyzuv
@@ -127,30 +222,35 @@ def main():
     report["horizRadiusM"] = round(horiz, 3)
     report["yawRad"] = round(yaw, 4)
     keep_g = horiz + report["minApproachM"]
-    place_g = corridor_clear(numbers, gx, gz, keep_g)
-    report["placement"] = place_g
     report["keepRadiusM"] = round(keep_g, 3)
-    if not place_g["clear"]:
-        raise SystemExit("gate keep-out meets the corridor " + json.dumps(place_g))
-    if place_g["far"] > float(numbers["skyRadiusM"]) - 2:
-        raise SystemExit("gate can sit outside the sky dome")
-    if not place_g["inside"]:
-        raise SystemExit("gate is outside the walkable rim")
+    report["keepUsed"] = False
+    foot = footprint_ok(numbers, gx, gz, yaw, report["bounds"])
+    report["footprint"] = foot
+    if foot["badIn"]:
+        raise SystemExit("gate footprint leaves the walkable rim " + json.dumps(foot))
+    if foot["badDome"]:
+        raise SystemExit("gate footprint meets the sky dome " + json.dumps(foot))
 
     (gate_dir / "gate.ruin").write_bytes(pack_ruin([(m.skin, m.xyzuv, m.idx) for m in meshes]))
+    write_atlas(inbox, gate_dir / "atlas.jpg")
     for name, job in (
-        ("front.jpg", "front elevation skin, one gateway, opening kept"),
-        ("side.jpg", "side elevation skin, wall thickness"),
+        ("front.jpg", "front elevation, one gateway, opening kept"),
+        ("side.jpg", "side elevation, wall thickness, measure"),
+        ("detail.jpg", "surface plate for thickness faces"),
         ("sec-pier-l.jpg", "measure only, left jamb section"),
         ("sec-pier-r.jpg", "measure only, right jamb section"),
         ("sec-lintel.jpg", "measure only, lintel section"),
     ):
         src = inbox / name
-        if name in ("front.jpg", "side.jpg"):
-            shutil.copyfile(src, gate_dir / name)
+        if not src.is_file():
+            continue
         write_prompt(src.with_suffix(".PROMPT.txt"), job, "as cooked", "as cooked")
-        if name in ("front.jpg", "side.jpg"):
-            write_prompt((gate_dir / name).with_suffix(".PROMPT.txt"), job, "as cooked", "as cooked")
+    write_prompt(
+        (gate_dir / "atlas.jpg").with_suffix(".PROMPT.txt"),
+        "packed skin, elevation beside the surface plate, unscaled",
+        "as packed",
+        "as packed",
+    )
 
     wmeshes, wparts, winfo, wpaths = build_wreck(numbers)
     (wreck_dir / "wreck.ruin").write_bytes(pack_ruin([(m.skin, m.xyzuv, m.idx) for m in wmeshes if m.idx]))
@@ -185,22 +285,25 @@ def main():
                 "id": "gate",
                 "mesh": numbers["pack"] + "/src/ruins/gate/gate.ruin",
                 "skins": [
-                    numbers["pack"] + "/src/ruins/gate/front.jpg",
-                    numbers["pack"] + "/src/ruins/gate/side.jpg",
+                    numbers["pack"] + "/src/ruins/gate/atlas.jpg",
                 ],
                 "frame": "gate",
-                "x": gx,
-                "z": gz,
+                "x": round(gx, 3),
+                "z": round(gz, 3),
                 "yaw": report["yawRad"],
                 "sink": float(numbers["gate"]["sinkM"]),
                 "contact": [0, 0],
                 "heightM": report["heightM"],
                 "srcH": report["contentH"],
                 "texelsPerM": report["texelsPerM"],
+                "nearTexelsPerM": report["nearTexelsPerM"],
+                "atlasSplitU": report["atlas"]["frontU"][1],
+                "openingWidthM": report["openingWidthM"],
+                "openingHeightM": report["openingHeightM"],
                 "minApproachM": report["minApproachM"],
                 "horizRadiusM": report["horizRadiusM"],
                 "keepRadiusM": report["keepRadiusM"],
-                "colliders": colliders,
+                "colliders": [],
             },
             {
                 "id": "wreck",
@@ -225,16 +328,22 @@ def main():
     (pack / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     measure = {"gate": report, "gateParts": parts, "wreck": winfo, "wreckParts": wparts}
     (pack / "measure.json").write_text(json.dumps(measure, indent=2) + "\n")
-    # numbers file stays the kit input. The solved keep radii live in the manifest.
+    numbers_path.write_text(json.dumps(numbers, indent=2) + "\n")
+    # Solved centre is written back. The keep radius is recorded and is not a wall.
     print(json.dumps({
         "kit": args.kit,
         "gateKeep": report["keepRadiusM"],
         "gateApproach": report["minApproachM"],
         "gateHeight": report["heightM"],
+        "gateOpening": report["openingWidthM"],
+        "gateDepth": report["depthM"],
+        "gateX": round(gx, 3),
+        "gateZ": round(gz, 3),
+        "nearTexels": report["nearTexelsPerM"],
         "wreckKeep": winfo["keepRadiusM"],
         "wreckApproach": winfo["minApproachM"],
         "wreckHeight": winfo["heightM"],
-        "gateClear": place_g["clear"],
+        "gateFoot": foot["badIn"] == 0 and foot["badDome"] == 0,
         "wreckClear": place_w["clear"],
     }, indent=2))
     print("PASS")

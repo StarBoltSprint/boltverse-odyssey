@@ -1,76 +1,124 @@
 {
   "gate": {
-    "threshold": 52.23,
+    "threshold": 18.0,
+    "joinedComponents": 2,
     "frontBox": [
-      66,
-      50,
-      772,
-      1202
+      119,
+      89,
+      711,
+      1114
     ],
     "holeBox": [
-      216,
-      394,
-      594,
-      1202
+      231,
+      433,
+      577,
+      1112
     ],
-    "holeCount": 3,
+    "holeCount": 2,
     "origin": [
-      636,
-      50
+      416,
+      89
     ],
-    "contentH": 1153,
-    "contentW": 707,
-    "heightM": 7.4,
-    "widthM": 4.538,
-    "depthM": 2.89,
+    "contentH": 1026,
+    "contentW": 593,
+    "heightM": 28.0,
+    "widthM": 16.183,
+    "depthM": 6.82,
+    "openingWidthM": 7.314,
+    "openingHeightM": 18.558,
     "sideBox": [
-      210,
-      94,
-      623,
-      1153
+      290,
+      99,
+      545,
+      1149
     ],
-    "texelsPerM": 155.81,
-    "minApproachM": 11.508,
+    "texelsPerM": 36.64,
+    "nearTexelsPerM": 182.99,
+    "nearTileM": 4.547,
+    "minApproachM": 48.932,
+    "nearApproachM": 9.799,
     "openingLocal": [
-      -0.09,
-      2.593
+      -0.3,
+      9.32,
+      -3.41
     ],
-    "quadsFront": 41452,
-    "quadsSide": 1490,
+    "quads": 26814,
     "bounds": {
       "min": [
-        -2.266,
-        0.013,
-        -2.89
+        -8.078,
+        0.0,
+        -6.82
       ],
       "max": [
-        2.259,
-        7.394,
+        8.023,
+        27.7,
         0.0
       ]
     },
     "pierProfileMae": 0.238,
     "openingClear": true,
-    "horizRadiusM": 3.668,
-    "yawRad": -2.9863,
-    "placement": {
-      "cord": 20.294489633065364,
-      "bubbleD": 51.72243227072757,
-      "far": 85.48321379162782,
-      "inside": true,
-      "clear": true
+    "atlas": {
+      "frontU": [
+        0.0,
+        0.5
+      ],
+      "nearU": [
+        0.5,
+        1.0
+      ],
+      "frontTexels": 36.64,
+      "nearTexels": 182.99
     },
-    "keepRadiusM": 15.176
+    "detailPlate": true,
+    "spans": {
+      "pier-l": {
+        "cx": -6.508771929824561,
+        "cy": 12.348927875243664,
+        "cz": -2.914167691629343,
+        "hx": 1.5692007797270948,
+        "hy": 12.348927875243664,
+        "hz": 2.914167691629343
+      },
+      "pier-r": {
+        "cx": 6.181286549707602,
+        "cy": 12.758284600389862,
+        "cz": -3.4100856327307327,
+        "hx": 1.8421052631578942,
+        "hy": 12.758284600389862,
+        "hz": 3.4100856327307327
+      },
+      "lintel": {
+        "cx": 0.040935672514619714,
+        "cy": 23.12865497076023,
+        "cz": -3.4100856327307327,
+        "hx": 6.754385964912281,
+        "hy": 4.571150097465887,
+        "hz": 3.4100856327307327
+      }
+    },
+    "openingAnchor": [
+      20.496,
+      28.402
+    ],
+    "horizRadiusM": 10.53,
+    "yawRad": -2.5891,
+    "keepRadiusM": 59.462,
+    "keepUsed": false,
+    "footprint": {
+      "badIn": 0,
+      "badDome": 0,
+      "n": 8
+    }
   },
   "gateParts": [
     {
       "id": "pier-l",
       "measure": "front.jpg",
       "spot": [
-        66,
-        394,
-        216,
-        1202
+        119,
+        433,
+        231,
+        1114
       ],
       "section": "sec-pier-l.jpg",
       "sectionBox": [
@@ -88,10 +136,10 @@
       "id": "pier-r",
       "measure": "front.jpg",
       "spot": [
-        594,
-        394,
-        772,
-        1202
+        577,
+        433,
+        711,
+        1114
       ],
       "section": "sec-pier-r.jpg",
       "sectionBox": [
@@ -109,10 +157,10 @@
       "id": "lintel",
       "measure": "front.jpg",
       "spot": [
-        66,
-        50,
-        772,
-        394
+        119,
+        89,
+        711,
+        433
       ],
       "section": "sec-lintel.jpg",
       "sectionBox": [
@@ -124,37 +172,52 @@
       "skin": "front.jpg",
       "erasedFrom": null,
       "inpaintCall": null,
-      "note": "stone above the opening; section profile scales thickness"
+      "note": "slab above the opening; section profile scales thickness"
     },
     {
       "id": "opening",
       "measure": "front.jpg",
       "spot": [
-        216,
-        394,
-        594,
-        1202
+        231,
+        433,
+        577,
+        1112
       ],
       "section": null,
       "skin": null,
       "erasedFrom": null,
       "inpaintCall": null,
-      "note": "largest enclosed void; no faces on those cells and no collider"
+      "note": "tall void; no faces on those cells"
     },
     {
       "id": "ring-motif",
       "measure": "front.jpg",
       "spot": [
-        216,
-        394,
-        594,
-        1202
+        304,
+        202,
+        529,
+        295
       ],
       "section": null,
       "skin": "front.jpg",
       "erasedFrom": null,
       "inpaintCall": null,
-      "note": "carved in the skin, not a second volume"
+      "note": "painted on the elevation, not a second volume"
+    },
+    {
+      "id": "passage-wall",
+      "measure": "detail.jpg",
+      "spot": [
+        0,
+        0,
+        832,
+        1248
+      ],
+      "section": null,
+      "skin": "detail.jpg",
+      "erasedFrom": null,
+      "inpaintCall": null,
+      "note": "skin of the thickness faces of the same loft, not a second solid"
     }
   ],
   "wreck": {
