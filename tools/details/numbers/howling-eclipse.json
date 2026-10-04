@@ -1,0 +1,167 @@
+{
+  "schema": "details-numbers/1",
+  "kit": "howling-eclipse",
+  "pack": "packs/zone-a",
+  "seed": 20261004,
+  "corridor": {
+    "headingDeg": 32,
+    "halfWidthM": 4.2,
+    "spawn": [-6, -14],
+    "bubbleM": 9.5,
+    "lengthM": 80
+  },
+  "bands": {
+    "nearHalf": 3.2,
+    "midHalf": 7.5,
+    "farHalf": 16,
+    "clearingR": 14,
+    "behindM": 8,
+    "insideFrac": 0.86
+  },
+  "spawnClearM": 0.55,
+  "crossSepM": 0.18,
+  "neighbourM": 1.15,
+  "texelsPerM": 1800,
+  "atlasMaxTexMB": 11,
+  "atlasMaxSide": 2048,
+  "minComponentArea": 2500,
+  "focalPx": 1793,
+  "pad": 4,
+  "padBottom": 2,
+  "clumps": {
+    "count": 170,
+    "members": [3, 7],
+    "radiusM": 0.6,
+    "sepM": 0.17,
+    "nearFrac": 0.8,
+    "mix": {
+      "pebble": 0.4,
+      "shard": 0.35,
+      "tuft": 0.15,
+      "ridge": 0.1
+    }
+  },
+  "thin": {
+    "massEdgeM": [0.5, 2.4],
+    "crackBelow": 0.07,
+    "crackWeight": 0.7,
+    "bareScaleM": 6.5,
+    "bareBelow": 0.4,
+    "clumpAffinity": 0.75,
+    "floorKeep": 0.03,
+    "power": 1.3,
+    "typeKeep": {"shard": 1.0, "pebble": 0.14, "ridge": 1.0, "tuft": 0.7},
+    "variantWeights": {"shard": [1.0, 1.0, 0.08, 0.08], "pebble": [1.0, 1.0, 1.0, 1.0], "ridge": [1.0, 1.0, 1.0, 1.0], "tuft": [1.0, 1.0, 1.0]},
+    "clumpOnly": {"shard": [2, 3], "pebble": [0, 1, 2, 3]}
+  },
+  "types": {
+    "shard": {
+      "count": 420,
+      "heightM": [0.12, 0.24],
+      "scale": [0.94, 1],
+      "minSeparation": 0.36,
+      "planes": 2,
+      "sheet": "shard.jpg",
+      "align": "fissure"
+    },
+    "pebble": {
+      "count": 380,
+      "heightM": [0.13, 0.24],
+      "scale": [0.94, 1],
+      "minSeparation": 0.32,
+      "planes": 2,
+      "sheet": "pebble.jpg",
+      "align": "hash"
+    },
+    "ridge": {
+      "count": 140,
+      "heightM": [0.1, 0.24],
+      "scale": [0.94, 1],
+      "minSeparation": 0.9,
+      "planes": 2,
+      "sheet": "ridge.jpg",
+      "align": "fissure"
+    },
+    "tuft": {
+      "count": 220,
+      "heightM": [0.13, 0.24],
+      "scale": [0.94, 1],
+      "minSeparation": 0.42,
+      "planes": 2,
+      "sheet": "tuft.jpg",
+      "align": "hash",
+      "minArea": 600
+    }
+  },
+  "features": {
+    "inbox": "v2",
+    "atlasMaxTexMB": 12.2,
+    "atlasMaxSide": 2048,
+    "minComponentArea": 8000,
+    "slideM": 0.4,
+    "eyeM": 1.3,
+    "focalPx": 1793,
+    "runClearM": 0.95,
+    "buryM": 0.05,
+    "types": {
+      "cluster": {
+        "count": 18,
+        "heightM": [0.7, 1.15],
+        "scale": [0.92, 1],
+        "minSeparation": 4.8,
+        "planes": 1,
+        "file": "cluster.jpg",
+        "minAcross": 2.15,
+        "crestBias": 0.4
+      },
+      "slab": {
+        "count": 26,
+        "heightM": [0.34, 0.75],
+        "scale": [0.9, 1],
+        "minSeparation": 3.4,
+        "planes": 1,
+        "file": "slab.jpg",
+        "minAcross": 1.4
+      },
+      "crest": {
+        "count": 12,
+        "heightM": [0.75, 1.2],
+        "scale": [0.92, 1],
+        "minSeparation": 6.0,
+        "planes": 1,
+        "file": "crest.jpg",
+        "minAcross": 4.8,
+        "crestBias": 0.55
+      },
+      "pile": {
+        "count": 16,
+        "heightM": [0.45, 0.8],
+        "scale": [0.9, 1],
+        "minSeparation": 4.2,
+        "planes": 1,
+        "file": "pile.jpg",
+        "minAcross": 1.85
+      }
+    },
+    "skirtBuryFrac": 0.85,
+    "near": {
+      "latM": [1.5, 4.0],
+      "alongM": [-6, 80],
+      "gapM": [1.1, 4.2],
+      "members": [1, 4],
+      "clumpR": 1.1,
+      "slideM": 1.0,
+      "fovHalfDeg": 15.4,
+      "minHeightM": 0.3,
+      "sameTypeSepM": 2.2,
+      "buryM": 0.03,
+      "buryExtraFrac": 0.12,
+      "mix": {
+        "slab": 0.34,
+        "pile": 0.28,
+        "cluster": 0.24,
+        "crest": 0.14
+      }
+    }
+  }
+}

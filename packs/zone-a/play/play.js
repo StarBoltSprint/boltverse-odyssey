@@ -7,6 +7,7 @@ import { createTerrain } from "./terrain.js";
 import { mountRocks } from "./rocks.js";
 import { showIntro, introEnabled } from "./intro.js";
 import { createBiomeBlend, postOf } from "./biomeblend.js";
+import { mountDetails } from "./details.js";
 import { mountRuins } from "./ruins.js";
 
 const W = 720;
@@ -1353,6 +1354,61 @@ function segmentHitsObb(eye, target, o, hull) {
   return false;
 }
 
+// Feature rocks from the detail layer: thin footprints across each card,
+// as wide as the visible rock. Bolt is pushed out like any solid. The chase
+// eye prefers poses clear of them (soft cost only, never a snap).
+let detailSolids = [];
+const EYE_CARD_M = 0.6;
+function detailLocal(d, x, z) {
+  const dx = x - d.x;
+  const dz = z - d.z;
+  return [d.c * dx - d.s * dz, d.s * dx + d.c * dz];
+}
+function detailPush(x, z) {
+  let hit = false;
+  for (let i = 0; i < detailSolids.length; i++) {
+    const d = detailSolids[i];
+    const l = detailLocal(d, x, z);
+    const hx = d.hx + 0.05;
+    const hz = d.hz + 0.05;
+    if (Math.abs(l[0]) >= hx || Math.abs(l[1]) >= hz) continue;
+    let nlx = l[0];
+    let nlz = l[1];
+    if (hx - Math.abs(l[0]) < hz - Math.abs(l[1])) nlx = Math.sign(l[0] || 1) * hx;
+    else nlz = Math.sign(l[1] || 1) * hz;
+    x = d.x + d.c * nlx + d.s * nlz;
+    z = d.z - d.s * nlx + d.c * nlz;
+    hit = true;
+  }
+  return hit ? [x, z] : null;
+}
+function eyeInCard(e, margin) {
+  for (let i = 0; i < detailSolids.length; i++) {
+    const d = detailSolids[i];
+    if (e[1] > d.y1 + margin) continue;
+    const l = detailLocal(d, e[0], e[2]);
+    if (Math.abs(l[0]) < d.hx + margin && Math.abs(l[1]) < d.hz + margin) return true;
+  }
+  return false;
+}
+function cardBetween(e, tx, ty, tz) {
+  if (!detailSolids.length) return false;
+  const steps = 16;
+  for (let k = 1; k < steps; k++) {
+    const t = k / steps;
+    const x = e[0] + (tx - e[0]) * t;
+    const y = e[1] + (ty - e[1]) * t;
+    const z = e[2] + (tz - e[2]) * t;
+    for (let i = 0; i < detailSolids.length; i++) {
+      const d = detailSolids[i];
+      if (y > d.y1 + 0.05 || y < d.y0 - 0.05) continue;
+      const l = detailLocal(d, x, z);
+      if (Math.abs(l[0]) < d.hx && Math.abs(l[1]) < d.hz + 0.05) return true;
+    }
+  }
+  return false;
+}
+
 function lineBlocked(eye) {
   losA[0] = state.x;
   losA[2] = state.z;
@@ -1580,10 +1636,11 @@ function solveCamera() {
         pitchView(candEye, null, 0);
         const m = poseMetrics(candEye);
         const blocked = lineBlocked(candEye);
-        // A chase line through a ruin face only costs score. It never makes a pose illegal,
-        // so it cannot force the snap path below.
+        // Both detail cards and ruin faces are soft camera costs; neither can force a snap.
+        const cardCost = (eyeInCard(candEye, EYE_CARD_M) ? 30 : 0) +
+          (cardBetween(candEye, state.x, feetY() + BOLT_H * 0.45, state.z) ? 15 : 0);
         const ruinCut = ruinNear && ruinLayer.segFree(state.x, headY, state.z, candEye[0], candEye[1], candEye[2], RUIN_LINE_EPS) < 0.999;
-        const near = (m.on ? 1000 : 0) + (blocked ? 0 : 200) + Math.min(m.minR, 1.25) * 20 - Math.abs(dist - targetDist) * 40 - Math.abs(slide) * 2 - Math.max(0, eyes[ei] - 1.6) * (ruinLow ? 230 : 80) - (ruinCut ? 300 : 0);
+        const near = (m.on ? 1000 : 0) + (blocked ? 0 : 200) + Math.min(m.minR, 1.25) * 20 - Math.abs(dist - targetDist) * 40 - Math.abs(slide) * 2 - Math.max(0, eyes[ei] - 1.6) * (ruinLow ? 230 : 80) - (ruinCut ? 300 : 0) - cardCost;
         const hard = m.on && m.minR >= 1.002 && !blocked;
         const isHold = camHold.live && boom === camHold.boom && eyes[ei] === camHold.eye && slide === camHold.slide;
         if (isHold) {
@@ -1681,6 +1738,8 @@ function solveCamera() {
     clearSolids(eyeBuf);
     if (useRelief) eyeBuf[1] = Math.max(eyeBuf[1], terrain.eyeFloor(eyeBuf[0], eyeBuf[2], GROUND_MAG_TARGET));
   }
+  // Feature cards are near-culled rather than snapping the eye; keep the metric on the final pose.
+  if (detailSolids.length && eyeInCard(eyeBuf, 0.05)) eyeGuardHits++;
   ruinBoom(dt, snapPose);
   camBoom = Math.hypot(state.x - eyeBuf[0], state.z - eyeBuf[2]);
   stepLook(dt);
@@ -2209,6 +2268,13 @@ function resolveBody(nx, nz) {
         blocked = true;
       }
     }
+    const dp = detailPush(nx, nz);
+    if (dp) {
+      nx = dp[0];
+      nz = dp[1];
+      hit = true;
+      blocked = true;
+    }
     if (!hit) break;
   }
   return { x: nx, z: nz, blocked };
@@ -2599,6 +2665,10 @@ function render(mode) {
     rockLayer.draw(vpM);
     drawCalls += rockLayer.draws;
   }
+  if (detailLayer && mode === 0) {
+    detailLayer.draw(vpM, eyeBuf, FOCAL);
+    drawCalls += detailLayer.draws;
+  }
   if (ruinLayer) {
     ruinLayer.draw(vpM, mode);
     if (mode !== 1) drawCalls += ruinLayer.draws;
@@ -2838,6 +2908,15 @@ function snapshot() {
     rockLoadMs,
     rocks: rockLayer ? rockLayer.info() : null,
     blend: biomeBlend ? biomeBlend.info() : null,
+    detailLoadMs,
+    details: detailLayer ? detailLayer.info() : null,
+    detailMag: detailLayer ? detailLayer.mag(eyeBuf, FOCAL, vpM) : 0,
+    featureMag: detailLayer && detailLayer.magFeatures ? detailLayer.magFeatures(eyeBuf, FOCAL, vpM) : 0,
+    detailSolids: detailSolids.length,
+    eyeInCard: eyeInCard(eyeBuf, 0.05),
+    nearCulled: detailLayer && detailLayer.nearCulled ? detailLayer.nearCulled(eyeBuf, FOCAL, null) : 0,
+    nearCulledOnScreen: detailLayer && detailLayer.nearCulled ? detailLayer.nearCulled(eyeBuf, FOCAL, vpM) : 0,
+    eyeGuardHits,
     ruinLoadMs,
     ruins: ruinLayer ? ruinLayer.info() : null,
     pathTrigger: state.pathTrigger,
@@ -3188,6 +3267,9 @@ let rockLoadMs = 0;
 // Biome post blend along the exit path (biomeblend.js). Zone A defaults until boot loads kits.
 let biomeBlend = null;
 let postNow = postOf(null);
+let detailLayer = null;
+let eyeGuardHits = 0;
+let detailLoadMs = 0;
 let ruinLayer = null;
 let ruinLoadMs = 0;
 
@@ -3344,6 +3426,23 @@ async function boot() {
       console.warn("rocks", err);
       rockLayer = null;
     }
+    if (!/[?&]details=0(?:&|$)/.test(location.search)) {
+      try {
+        const detailT0 = performance.now();
+        detailLayer = await mountDetails(gl, {
+          absUrl,
+          loadImage,
+          trackTex,
+          heightAt: (x, z) => (useRelief ? terrain.heightAt(x, z) : 0),
+          drawnHeightAt: (x, z) => (useRelief ? terrain.meshHeightAt(x, z) : 0),
+        });
+        detailLoadMs = detailLayer.loadMs || (performance.now() - detailT0);
+        detailSolids = detailLayer.colliders || [];
+      } catch (err) {
+        console.warn("details", err);
+        detailLayer = null;
+      }
+    }
     try {
       const ruinT0 = performance.now();
       ruinLayer = await mountRuins(gl, {
@@ -3496,6 +3595,11 @@ async function boot() {
           lookGoal: camLook.goal,
           lookDrag: camLook.drag,
           dbg: ruinCam.dbg,
+          x: state.x,
+          z: state.z,
+          inCard: eyeInCard(eyeBuf, 0.05),
+          guardHits: eyeGuardHits,
+          solids: detailSolids.length,
         };
       },
     };
@@ -3518,6 +3622,7 @@ async function boot() {
     requestAnimationFrame(frame);
   } catch (e) {
     hud.textContent = "BOOT " + (e && e.stack ? e.stack : e);
+    hud.style.visibility = "visible";
     window.__play = { ready: false, error: String(e) };
   }
 }
