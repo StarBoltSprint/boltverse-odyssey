@@ -15,4 +15,6 @@ test("detail cards are one static instanced draw with mipmaps and no collider", 
   assert.match(src, /generateMipmap/);
   assert.doesNotMatch(src, /collider/);
   assert.doesNotMatch(src, /camQuad/);
+  assert.match(src, /features\.json/);
+  assert.match(src, /STATIC_DRAW/);
 });

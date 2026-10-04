@@ -161,58 +161,166 @@ export async function mountDetails(gl, env) {
     vp: gl.getUniformLocation(prog, "uVP"),
     tex: gl.getUniformLocation(prog, "uTex"),
   };
-  const vao = gl.createVertexArray();
-  gl.bindVertexArray(vao);
-  const quad = gl.createBuffer();
   const corners = new Float32Array([0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1]);
-  gl.bindBuffer(gl.ARRAY_BUFFER, quad);
-  gl.bufferData(gl.ARRAY_BUFFER, corners, gl.STATIC_DRAW);
-  gl.enableVertexAttribArray(0);
-  gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 8, 0);
-  const ib = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, ib);
-  gl.bufferData(gl.ARRAY_BUFFER, data.subarray(0, w * 12), gl.STATIC_DRAW);
-  gl.enableVertexAttribArray(1);
-  gl.vertexAttribPointer(1, 4, gl.FLOAT, false, 48, 0);
-  gl.vertexAttribDivisor(1, 1);
-  gl.enableVertexAttribArray(2);
-  gl.vertexAttribPointer(2, 4, gl.FLOAT, false, 48, 16);
-  gl.vertexAttribDivisor(2, 1);
-  gl.enableVertexAttribArray(3);
-  gl.vertexAttribPointer(3, 4, gl.FLOAT, false, 48, 32);
-  gl.vertexAttribDivisor(3, 1);
-  gl.bindVertexArray(null);
-  const loadMs = performance.now() - t0;
+
+  function upload(img, label) {
+    const t = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+    gl.generateMipmap(gl.TEXTURE_2D);
+    env.trackTex(label, Math.ceil(img.width * img.height * 4 * 4 / 3));
+    return t;
+  }
+
+  function bindInstances(buf, n) {
+    const vao = gl.createVertexArray();
+    gl.bindVertexArray(vao);
+    const quad = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+    gl.bufferData(gl.ARRAY_BUFFER, corners, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 8, 0);
+    const ib = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, ib);
+    gl.bufferData(gl.ARRAY_BUFFER, buf.subarray(0, n * 12), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(1);
+    gl.vertexAttribPointer(1, 4, gl.FLOAT, false, 48, 0);
+    gl.vertexAttribDivisor(1, 1);
+    gl.enableVertexAttribArray(2);
+    gl.vertexAttribPointer(2, 4, gl.FLOAT, false, 48, 16);
+    gl.vertexAttribDivisor(2, 1);
+    gl.enableVertexAttribArray(3);
+    gl.vertexAttribPointer(3, 4, gl.FLOAT, false, 48, 32);
+    gl.vertexAttribDivisor(3, 1);
+    gl.bindVertexArray(null);
+    return vao;
+  }
+
+  const vao = bindInstances(data, w);
   const drawn = w;
+  let fDrawn = 0;
+  let fPlaced = 0;
+  let fVao = null;
+  let fTex = null;
+  let fCounts = {};
+  let fMx = new Float32Array(0);
+  let fMh = new Float32Array(0);
+  let fPx = new Float32Array(0);
+  let fW = 0;
+  let fH = 0;
+  try {
+    const fres = await fetch(env.absUrl("packs/zone-a/src/details/features.json"));
+    if (fres.ok) {
+      const fman = await fres.json();
+      const fimg = await env.loadImage(env.absUrl(fman.atlas));
+      fTex = upload(fimg, "features");
+      fW = fimg.width;
+      fH = fimg.height;
+      const fBy = {};
+      const fvars = fman.variants || [];
+      const fists = fman.instances || [];
+      for (let i = 0; i < fvars.length; i++) {
+        const v = fvars[i];
+        if (!fBy[v.type]) fBy[v.type] = [];
+        fBy[v.type].push(v);
+      }
+      const fd = new Float32Array(fists.length * 12);
+      fMx = new Float32Array(fists.length * 3);
+      fMh = new Float32Array(fists.length);
+      fPx = new Float32Array(fists.length);
+      let fw = 0;
+      for (let i = 0; i < fists.length; i++) {
+        const inst = fists[i];
+        const group = fBy[inst.type];
+        const variant = group && group[inst.variant];
+        if (!variant || !variant.contentH) continue;
+        const worldH = inst.heightM * (inst.scale || 1);
+        const rectH = variant.rectH || variant.contentH;
+        const rectW = variant.rectW || variant.contentW;
+        const quadH = worldH * (rectH / variant.contentH);
+        const quadW = quadH * (rectW / rectH);
+        const sink = worldH * ((variant.padBottom || 0) / variant.contentH) + (inst.buryM || 0);
+        const yaw0 = (inst.yaw || 0) * Math.PI / 180;
+        const planes = inst.planes || 1;
+        const halfW = 0.5 * worldH * ((variant.contentW || rectW) / variant.contentH);
+        const base = seatMin(groundAt, inst.x, inst.z, yaw0, planes, halfW);
+        const y = base - sink;
+        const pi = fPlaced;
+        fMx[pi * 3] = inst.x;
+        fMx[pi * 3 + 1] = y + worldH * 0.5;
+        fMx[pi * 3 + 2] = inst.z;
+        fMh[pi] = worldH;
+        fPx[pi] = variant.contentH;
+        fCounts[inst.type] = (fCounts[inst.type] || 0) + 1;
+        fPlaced++;
+        for (let k = 0; k < planes; k++) {
+          const o = fw * 12;
+          fd[o] = inst.x;
+          fd[o + 1] = y;
+          fd[o + 2] = inst.z;
+          fd[o + 3] = yaw0 + k * Math.PI / planes;
+          fd[o + 4] = quadW;
+          fd[o + 5] = quadH;
+          fd[o + 8] = variant.u0;
+          fd[o + 9] = variant.v0;
+          fd[o + 10] = variant.u1;
+          fd[o + 11] = variant.v1;
+          fw++;
+        }
+      }
+      fDrawn = fw;
+      if (fDrawn) fVao = bindInstances(fd, fDrawn);
+    }
+  } catch (err) {
+    fDrawn = 0;
+    fPlaced = 0;
+  }
+  const loadMs = performance.now() - t0;
+  const draws = (drawn ? 1 : 0) + (fDrawn ? 1 : 0);
+
+  function worst(eye, focal, n, xs, hs, ps) {
+    let m = 0;
+    for (let i = 0; i < n; i++) {
+      const dx = eye[0] - xs[i * 3];
+      const dy = eye[1] - xs[i * 3 + 1];
+      const dz = eye[2] - xs[i * 3 + 2];
+      const dist = Math.max(0.35, Math.hypot(dx, dy, dz));
+      const mm = (focal * hs[i]) / (dist * (ps[i] || 1));
+      if (mm > m) m = mm;
+    }
+    return m;
+  }
+
+  function paint(vp, batchVao, batchTex, n) {
+    if (!n || !batchVao) return;
+    gl.useProgram(prog);
+    gl.bindVertexArray(batchVao);
+    gl.uniformMatrix4fv(loc.vp, false, vp);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, batchTex);
+    gl.uniform1i(loc.tex, 0);
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthMask(true);
+    gl.disable(gl.BLEND);
+    gl.disable(gl.CULL_FACE);
+    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, n);
+    gl.bindVertexArray(null);
+  }
+
   return {
-    draws: drawn ? 1 : 0,
+    draws,
     loadMs,
     draw(vp) {
-      if (!drawn) return;
-      gl.useProgram(prog);
-      gl.bindVertexArray(vao);
-      gl.uniformMatrix4fv(loc.vp, false, vp);
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, tex);
-      gl.uniform1i(loc.tex, 0);
-      gl.enable(gl.DEPTH_TEST);
-      gl.depthMask(true);
-      gl.disable(gl.BLEND);
-      gl.disable(gl.CULL_FACE);
-      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, drawn);
-      gl.bindVertexArray(null);
+      paint(vp, vao, tex, drawn);
+      paint(vp, fVao, fTex, fDrawn);
     },
     mag(eye, focal) {
-      let m = 0;
-      for (let i = 0; i < placed; i++) {
-        const dx = eye[0] - mx[i * 3];
-        const dy = eye[1] - mx[i * 3 + 1];
-        const dz = eye[2] - mx[i * 3 + 2];
-        const dist = Math.max(0.35, Math.hypot(dx, dy, dz));
-        const mm = (focal * mh[i]) / (dist * (mpx[i] || 1));
-        if (mm > m) m = mm;
-      }
-      return m;
+      return Math.max(worst(eye, focal, placed, mx, mh, mpx), worst(eye, focal, fPlaced, fMx, fMh, fPx));
     },
     info() {
       return {
@@ -220,9 +328,16 @@ export async function mountDetails(gl, env) {
         drawn,
         byType: counts,
         loadMs,
-        draws: drawn ? 1 : 0,
+        draws,
         texMiB: (tw * th * 4 * 4 / 3) / (1024 * 1024),
         atlas: [tw, th],
+        features: {
+          placed: fPlaced,
+          drawn: fDrawn,
+          byType: fCounts,
+          atlas: [fW, fH],
+          texMiB: fW && fH ? (fW * fH * 4 * 4 / 3) / (1024 * 1024) : 0,
+        },
       };
     },
   };

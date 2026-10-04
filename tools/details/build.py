@@ -20,7 +20,7 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from place import load_solids, place  # noqa: E402
+from place import load_solids, mag_height_cap, place, place_features  # noqa: E402
 
 INBOX = Path("/workspace/grokcli/out/zoneA-details/inbox")
 
@@ -254,6 +254,184 @@ def tex_mib(w: int, h: int) -> float:
     return (w * h * 4 * 4 / 3) / (1024 * 1024)
 
 
+def key_one(path: Path, min_area: int) -> np.ndarray:
+    """One subject filling the frame. The sheet size gate does not apply."""
+    import cv2
+
+    rgb = np.array(Image.open(path).convert("RGB"))
+    fg = key_mask(rgb)
+    if float(fg.mean()) < 0.12:
+        raise SystemExit(f"FAIL {path.name}: field ate the subject")
+    n, labels, stats, _ = cv2.connectedComponentsWithStats(fg.astype(np.uint8), 8)
+    if n < 2:
+        raise SystemExit(f"FAIL {path.name}: nothing keyed")
+    order = sorted(range(1, n), key=lambda i: int(stats[i, cv2.CC_STAT_AREA]), reverse=True)
+    i = order[0]
+    if int(stats[i, cv2.CC_STAT_AREA]) < min_area:
+        raise SystemExit(f"FAIL {path.name}: subject under {min_area}px")
+    mask = labels == i
+    # The key fringe is a mixed edge. Drop two pixels of it. Not a tint.
+    mask = cv2.erode(mask.astype(np.uint8), np.ones((3, 3), np.uint8), iterations=2).astype(bool)
+    # Edge dust specks must not stretch the crop to the frame.
+    mask[:2, :] = False
+    mask[-2:, :] = False
+    mask[:, :2] = False
+    mask[:, -2:] = False
+    ys, xs = np.where(mask)
+    if len(xs) < min_area:
+        raise SystemExit(f"FAIL {path.name}: subject touches the frame")
+    y0, y1 = int(ys.min()), int(ys.max())
+    x0, x1 = int(xs.min()), int(xs.max())
+    sub = mask[y0 : y1 + 1, x0 : x1 + 1]
+    crop = np.zeros((sub.shape[0], sub.shape[1], 4), np.uint8)
+    crop[:, :, :3] = rgb[y0 : y1 + 1, x0 : x1 + 1]
+    crop[:, :, 3] = sub.astype(np.uint8) * 255
+    return crop
+
+
+def pack_features(typed: list[tuple[str, np.ndarray]], numbers: dict) -> tuple[np.ndarray, list[dict]]:
+    feat = numbers["features"]
+    pad = int(numbers["pad"])
+    pad_bottom = int(numbers["padBottom"])
+    framed = []
+    for name, crop in typed:
+        canvas, cw, ch = frame_crop(crop, pad, pad_bottom)
+        framed.append((name, canvas, cw, ch))
+    framed.sort(key=lambda item: -item[1].shape[1])
+    sizes = [(im.shape[1], im.shape[0]) for _, im, _, _ in framed]
+    max_side = int(feat["atlasMaxSide"])
+    max_pixels = int(float(feat["atlasMaxTexMB"]) * (1024 * 1024) / (4 * 4 / 3))
+
+    def fits(mid: float) -> bool:
+        scaled = [(max(1, int(round(w * mid))), max(1, int(round(h * mid)))) for w, h in sizes]
+        _uw, uh = shelf_size(scaled, max_side, pad)
+        return uh <= max_side and _uw * uh <= max_pixels
+
+    scale = 1.0
+    if not fits(1.0):
+        lo, hi, best = 0.35, 1.0, 0.35
+        for _ in range(16):
+            mid = (lo + hi) * 0.5
+            if fits(mid):
+                best = mid
+                lo = mid
+            else:
+                hi = mid
+        scale = best
+    if scale < 0.999:
+        resized = []
+        for name, canvas, cw, ch in framed:
+            nw = max(1, int(round(canvas.shape[1] * scale)))
+            nh = max(1, int(round(canvas.shape[0] * scale)))
+            im = Image.fromarray(canvas).resize((nw, nh), Image.Resampling.LANCZOS)
+            resized.append((name, np.array(im), max(1, int(round(cw * scale))), max(1, int(round(ch * scale)))))
+        framed = resized
+        scale_used = scale
+    else:
+        scale_used = 1.0
+    width = max_side
+    x = pad
+    y = pad
+    row_h = 0
+    placed = []
+    for name, canvas, cw, ch in framed:
+        ih, iw = canvas.shape[:2]
+        if x + iw + pad > width:
+            y += row_h + pad
+            x = pad
+            row_h = 0
+        if y + ih + pad > max_side:
+            raise SystemExit(f"FAIL feature atlas overflow on {name}")
+        placed.append((name, canvas, cw, ch, x, y))
+        x += iw + pad
+        row_h = max(row_h, ih)
+    used_h = y + row_h + pad
+    used_w = pad
+    for _, canvas, _, _, px, _ in placed:
+        used_w = max(used_w, px + canvas.shape[1] + pad)
+    # WebGL2 mips accept a non-power-of-two atlas. A power-of-two jump would waste the phone cap.
+    atlas_w = max(4, used_w)
+    atlas_h = max(4, used_h)
+    if atlas_w > max_side or atlas_h > max_side or atlas_w * atlas_h > max_pixels:
+        raise SystemExit(f"FAIL feature atlas {atlas_w}x{atlas_h} over the texture cap")
+    atlas = np.zeros((atlas_h, atlas_w, 4), np.uint8)
+    slide = float(feat.get("slideM", 1.0))
+    eye = float(feat.get("eyeM", 1.30))
+    focal = float(feat.get("focalPx", numbers["focalPx"]))
+    variants = []
+    for name, canvas, cw, ch, px, py in placed:
+        ih, iw = canvas.shape[:2]
+        atlas[py : py + ih, px : px + iw] = canvas
+        spec = numbers["features"]["types"][name]
+        horiz = max(0.35, float(spec["minAcross"]) - slide)
+        cap = mag_height_cap(ch, horiz, eye, focal)
+        asked = float(spec["heightM"][1])
+        variants.append({
+            "type": name,
+            "contentW": int(cw),
+            "contentH": int(ch),
+            "rectW": int(iw),
+            "rectH": int(ih),
+            "padBottom": int(round(pad_bottom * scale_used)),
+            "u0": px / atlas_w,
+            "v0": 1.0 - (py + ih) / atlas_h,
+            "u1": (px + iw) / atlas_w,
+            "v1": 1.0 - py / atlas_h,
+            "maxHeightM": round(min(asked, cap), 4),
+        })
+    return atlas, variants
+
+
+def build_features(numbers: dict, inbox: Path, solids: list) -> dict | None:
+    feat = numbers.get("features")
+    if not feat:
+        return None
+    folder = inbox / str(feat.get("inbox") or "v2")
+    typed = []
+    for name, spec in feat["types"].items():
+        files = spec.get("files") or [spec["file"]]
+        kept = 0
+        for fn in files:
+            sheet = folder / fn
+            if not sheet.is_file():
+                raise SystemExit(f"FAIL details: missing feature {sheet}")
+            crop = key_one(sheet, int(spec.get("minArea") or feat.get("minComponentArea") or 8000))
+            typed.append((name, crop))
+            kept += 1
+        if kept < 1:
+            raise SystemExit(f"FAIL details: {name} has no feature still")
+    atlas, variants = pack_features(typed, numbers)
+    by_type = group_variants(variants)
+    instances, stats = place_features(numbers, solids, by_type)
+    need = sum(int(spec["count"]) for spec in feat["types"].values())
+    if stats["placed"] < int(need * 0.9):
+        raise SystemExit(f"FAIL details: features placed {stats['placed']} of {need}")
+    focal = float(feat.get("focalPx", numbers["focalPx"]))
+    qc = {}
+    for name, group in by_type.items():
+        rates = []
+        for index, variant in enumerate(group):
+            used = [inst["heightM"] for inst in instances if inst["type"] == name and inst["variant"] == index]
+            if not used:
+                continue
+            rates.append(variant["contentH"] / max(used))
+        if rates:
+            worst = min(rates)
+            qc[name] = {
+                "texelsPerM": round(worst, 1),
+                "mag1M": round(focal / worst, 3),
+                "variants": len(group),
+                "maxHeightM": max(v["maxHeightM"] for v in group),
+            }
+    return {
+        "atlas": atlas,
+        "variants": variants,
+        "instances": instances,
+        "stats": stats,
+        "qc": qc,
+    }
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--kit", required=True)
@@ -329,6 +507,32 @@ def main() -> int:
     text = body[:-2] + ',\n  "instances": [\n' + rows + "\n  ]\n}\n"
     json.loads(text)
     (out_dir / "manifest.json").write_text(text)
+    feat_built = build_features(numbers, inbox, solids)
+    if feat_built is not None:
+        fatlas = feat_built["atlas"]
+        Image.fromarray(fatlas).save(out_dir / "features.png", optimize=True)
+        fmanifest = {
+            "schema": "details-features/1",
+            "kit": args.kit,
+            "seed": numbers["seed"],
+            "atlas": f"{numbers['pack']}/src/details/features.png",
+            "atlasW": int(fatlas.shape[1]),
+            "atlasH": int(fatlas.shape[0]),
+            "texMiB": round(tex_mib(fatlas.shape[1], fatlas.shape[0]), 3),
+            "variants": feat_built["variants"],
+            "instances": feat_built["instances"],
+            "stats": feat_built["stats"],
+            "qc": feat_built["qc"],
+        }
+        fbody = json.dumps({k: v for k, v in fmanifest.items() if k != "instances"}, indent=2)
+        frows = ",\n".join("    " + json.dumps(inst, separators=(",", ":")) for inst in feat_built["instances"])
+        ftext = fbody[:-2] + ',\n  "instances": [\n' + frows + "\n  ]\n}\n"
+        json.loads(ftext)
+        (out_dir / "features.json").write_text(ftext)
+        print(
+            f"PASS features placed={feat_built['stats']['placed']} "
+            f"atlas={fatlas.shape[1]}x{fatlas.shape[0]} texMiB={fmanifest['texMiB']} qc={feat_built['qc']}"
+        )
     print(
         f"PASS details kit={args.kit} placed={stats['placed']} drawn={stats['drawn']} "
         f"atlas={atlas.shape[1]}x{atlas.shape[0]} texMiB={manifest['texMiB']} "

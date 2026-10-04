@@ -79,5 +79,56 @@
       "align": "hash",
       "minArea": 600
     }
+  },
+  "features": {
+    "inbox": "v2",
+    "atlasMaxTexMB": 12.2,
+    "atlasMaxSide": 2048,
+    "minComponentArea": 8000,
+    "slideM": 0.4,
+    "eyeM": 1.3,
+    "focalPx": 1793,
+    "runClearM": 0.95,
+    "buryM": 0.05,
+    "types": {
+      "cluster": {
+        "count": 18,
+        "heightM": [0.7, 1.05],
+        "scale": [0.92, 1],
+        "minSeparation": 4.8,
+        "planes": 1,
+        "file": "cluster.jpg",
+        "minAcross": 2.15,
+        "crestBias": 0.4
+      },
+      "slab": {
+        "count": 26,
+        "heightM": [0.34, 0.5],
+        "scale": [0.9, 1],
+        "minSeparation": 3.4,
+        "planes": 1,
+        "file": "slab.jpg",
+        "minAcross": 1.4
+      },
+      "crest": {
+        "count": 12,
+        "heightM": [0.75, 1.15],
+        "scale": [0.92, 1],
+        "minSeparation": 6.0,
+        "planes": 1,
+        "file": "crest.jpg",
+        "minAcross": 4.8,
+        "crestBias": 0.55
+      },
+      "pile": {
+        "count": 16,
+        "heightM": [0.45, 0.7],
+        "scale": [0.9, 1],
+        "minSeparation": 4.2,
+        "planes": 1,
+        "file": "pile.jpg",
+        "minAcross": 1.85
+      }
+    }
   }
 }

@@ -10,7 +10,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from place import load_solids, place  # noqa: E402
+from place import load_solids, place, place_features  # noqa: E402
 
 NUM = Path(__file__).resolve().parent / "numbers"
 HEX = re.compile(r"#[0-9a-fA-F]{3,8}\b")
@@ -122,6 +122,52 @@ def main() -> int:
         if math.sqrt(var) < 0.45:
             print(f"FAIL details: near band is a row, std {math.sqrt(var):.3f}")
             return 1
+        feat = numbers.get("features")
+        if feat:
+            fvar = {}
+            for name, spec in feat["types"].items():
+                if int(spec.get("planes", 1)) != 1:
+                    print(f"FAIL details: feature {name} is crossed")
+                    return 1
+                if float(spec["heightM"][1]) > 1.25:
+                    print(f"FAIL details: feature {name} over 1.25 m")
+                    return 1
+                if spec.get("collider"):
+                    print(f"FAIL details: feature {name} blocks")
+                    return 1
+                fvar[name] = [{"maxHeightM": 1.5, "contentH": 640, "contentW": 520}]
+            fa, fs = place_features(numbers, solids, fvar)
+            fb, _ = place_features(numbers, solids, fvar)
+            if fa != fb:
+                print("FAIL details: features are not deterministic")
+                return 1
+            fneed = sum(int(spec["count"]) for spec in feat["types"].values())
+            if fs["placed"] < int(fneed * 0.9):
+                print(f"FAIL details: features placed {fs['placed']} of {fneed}")
+                return 1
+            run_clear = float(feat.get("runClearM") or 0.9)
+            for inst in fa:
+                if inst.get("planes") != 1 or "collider" in inst:
+                    print("FAIL details: feature instance")
+                    return 1
+                spec = feat["types"][inst["type"]]
+                if inst["heightM"] > float(spec["heightM"][1]) + 1e-6:
+                    print(f"FAIL details: feature height {inst['heightM']}")
+                    return 1
+                dx = inst["x"] - spawn[0]
+                dz = inst["z"] - spawn[1]
+                lat = dx * rx + dz * rz
+                aspect = 520 / 640
+                half = 0.5 * inst["heightM"] * inst["scale"] * aspect
+                if abs(lat) - half < run_clear - 0.02:
+                    print(f"FAIL details: feature on the running line lat {lat:.2f}")
+                    return 1
+                if abs(lat) + 1e-6 < float(spec["minAcross"]) - half:
+                    print(f"FAIL details: feature inside minAcross {inst['type']}")
+                    return 1
+            print(
+                f"PASS features selftest placed={fs['placed']} by={fs['byType']}"
+            )
         print(
             f"PASS details selftest placed={stats['placed']} near={stats['nearPerM2']}/m2 "
             f"far={stats['farPerM2']}/m2 clearing={stats['clearing']}"

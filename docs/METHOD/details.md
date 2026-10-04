@@ -59,6 +59,22 @@ First image is the ground material. One freestanding {SUBJECT}.
 Stop after two failed cooks of the same defect. Record it. Do not spend a third still on it.
 A sheet that keys into several crops is one call, not one call per crop.
 
+**D3 — one feature** (`image_edit`, one source = a ground tile of this biome, one subject)
+
+```
+First image is the ground material. One freestanding {SUBJECT}, centred, filling most of the frame.
+{SCALE_CUE}. Side view from a low camera. Flat chroma-key field, opaque subject,
+a grit skirt on the subject, no floor, no text.
+```
+
+### 3b. Feature rule (v2)
+
+A feature is one Imagine still of one subject, keyed and packed on its own, drawn as **one** world-locked card (not a crossed pair). World height comes from that still's pixel height: `maxHeightM = contentH / texelsPerM`, and texels per metre stay high enough that magnification is at most 1 when the chase eye passes at `minAcross` minus the slide margin. Never enlarge the still. Scale the crop down only to fit the feature atlas.
+
+Place fewer of them than the micro cards. Keep them near the path and on the flanks, and put some on the crests so the ground line cuts the sky. Seat on the drawn triangles. Bury the base a few centimetres so the card edge sits in the surface and the painted skirt stays the contact. A feature taller than about 0.3 m stays off the running line (`runClearM`, plus half the card width). It does not get a collider and it does not slow Bolt. A feature big enough to be a real obstacle would take a collider from its own footprint and would stay off the running line; zone A does not use that case.
+
+Yaw faces back along the corridor, with a hash jitter, so the chase view sees the face and neighbours do not share a yaw. One still may repeat as a variant. A second still of the same type is a second variant. Do not mirror a still to invent a variant.
+
 ### 4. Prep and key
 
 `tools/details/build.py` floods the key from the border with the same channel test as the rock pebble key.
@@ -117,6 +133,21 @@ Command: `python3 tools/details/build.py --kit howling-eclipse`.
 
 Subjects (words only here): angular chips, small stones, low dust ridges, low wiry tufts. Exact prompts and still ids are in the local file and `provenance.json`.
 
+### v2 features (zone A step 5b)
+
+Same command. A second atlas `features.png` and `features.json`, one extra instanced draw, one card each. Slide margin 0.4 m, eye used for the cap 1.30 m, bury 0.05 m, running-line clearance 0.95 m. Focal 1793 px.
+
+| Type | Placed | Height (m) | min across (m) | Variants | texels/m | mag 1 at (m) |
+|---|---:|---|---:|---:|---:|---:|
+| cluster | 18 | 0.70–0.76 | 2.15 | 1 | 911.0 | 1.968 |
+| slab | 26 | 0.34–0.43 | 1.40 | 1 | 1231.9 | 1.455 |
+| crest | 12 | 0.77–1.07 | 4.80 | 1 | 428.1 | 4.188 |
+| pile | 16 | 0.45–0.46 | 1.85 | 1 | 996.1 | 1.800 |
+
+Placed 72. Drawn 72. Feature atlas 1937×1238, 12.197 MiB. Micro atlas unchanged (2048×1024, 10.667 MiB). Worst chase magnification over 120 gallop ticks stayed 0.777 (the micro cards). A low eye measured 2.52.
+
+Subjects (words only here): one cluster, one raised slab, one crest, one pile. Exact prompts are in the local file.
+
 ## Part 3 — Ember Mesa and Cascade Verdance
 
 Same generator. New numbers file, new sheets from that biome's ground tile, same command.
@@ -138,6 +169,9 @@ Same generator. New numbers file, new sheets from that biome's ground tile, same
 - Do not put these cards on the rock pebble ring, and do not retarget them into a solid hull.
 - Do not add the detail magnification into the hero `mag` the play gate already checks. Report it beside that number.
 - Dark cards on a dark plate vanish in the chase until their world height uses the texel budget (`texelsPerM`). Stay at or under `maxHeightM`. Never enlarge the still.
+- A feature atlas that rounds up to the next power of two wastes the phone cap. Pack the used rectangle.
+- A chase view with a narrow horizontal field only shows a feature near the path when that feature is a few metres ahead. Cards kept far off the line read as horizon marks, not as ground relief.
+- One still repeated on every instance of a type reads as a stamp when the cards are large. A second still is a new cook, not a mirror.
 
 ## Known issues (2026-10-04, stop after two)
 
@@ -151,3 +185,8 @@ Same generator. New numbers file, new sheets from that biome's ground tile, same
 - Crossed planes show as a V or an X on thin tufts seen at about 45°.
 - Low-eye debug poses (eye 0.4–0.5 m above the ground inside the scatter) measure detail mag 1.27–2.49, because the nearest card is under 0.5 m away (the metric ignores the frustum). The ground plates reach 2.3–3.0 at the same poses. The chase camera (eye ≥ 1.22 m) measured at most 0.78.
 - One pebble keeps a joined mirror, so that stone sits proud of the surface. Second cook. Not recooked.
+- v2 (2026-10-04): the chase sky line gains feature silhouettes. The near plates in the chase boom still read as a carpet with flecks. The narrow view and the running-line clearance keep a 0.7 m card at about 40–100 px there. Not recooked.
+- v2: the first cluster cook was not packed (it did not match the ground). The packed cluster is the second cook, one variant, so the 18 clusters share that still (yaw and scale differ). Stop after two on that first cook.
+- v2: crest texels per metre are 428, so magnification 1 sits at 4.2 m. The crest band stays outside that.
+- v2: a low eye measured feature-inclusive detail magnification 2.52. The chase run measured 0.777.
+- v2: a two-pixel key erode takes the mixed edge off the feature stills. A thin rim can remain. No despill.
