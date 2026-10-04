@@ -30,6 +30,11 @@ const STYLE = `
   from { opacity: ${PAW_GLOW.min}; }
   to { opacity: ${PAW_GLOW.max}; }
 }
+#archives-paw { animation: archives-paw-bob ${PAW_GLOW.periodS * 2}s ease-in-out infinite alternate; }
+@keyframes archives-paw-bob {
+  from { transform: translateY(0px); }
+  to { transform: translateY(-5px); }
+}
 @media (prefers-reduced-motion: reduce) {
   #archives-paw .archives-paw-glow { animation: none; opacity: ${PAW_GLOW.min}; }
 }

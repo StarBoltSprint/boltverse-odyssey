@@ -10,7 +10,7 @@ import { fitPixels } from "./layout.js";
 export const HALL_LOOP = "packs/common/archives/art/hall-loop.mp4";
 
 /** Opacity of the paw glow layer. The print itself is not scaled. */
-export const PAW_GLOW = { min: 0.22, max: 0.58, periodS: 2.8 };
+export const PAW_GLOW = { min: 0.05, max: 0.72, periodS: 1.4 };
 
 /**
  * While a menu film is on, world videos pause so the phone stays at four decoders.
