@@ -2,11 +2,15 @@
 
 ## Quota and turns
 
-No Imagine cook. The quota row is appended by `python3 tools/quota/quota.py` from this session's `events.jsonl`. Copy that row after it is written. Do not invent the numbers.
+No Imagine cook. `python3 tools/quota/quota.py` read this session's `events.jsonl` and appended the row below. That log did not carry turn, tool, or token fields, so those cells are the tool's own 0 and n/a. Wall time is the tool's number.
+
+| Date | Step | Commit | Turns | Tool calls | Image gens | Video gens | Tokens in | Tokens out | Wall s | Log |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-10-04 | tools-learn-20261004 | ece3195 | 0 | 0 | 0 | 0 | n/a | n/a | 2684.8 | events.jsonl |
 
 | Item | Kind | Turns or tries | Quota spent | Result |
 | --- | --- | --- | --- | --- |
-| Frame gates, playcheck rows, passage skip, premerge | other | see quota log | see quota log | accepted |
+| Frame gates, playcheck rows, passage skip, premerge | other | 0 (log had no turn field) | images 0, videos 0, wall 2684.8 s | accepted |
 
 ## This step
 
