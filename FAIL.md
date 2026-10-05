@@ -34,6 +34,7 @@ The player may **not** see: Forge, % bar, black plate, “generating…” on th
 | Veil / double rAF miss | does not exist on floors 0–1 | floor 3 only |
 | Hash last frame black (mp4 tail) | do not Hang that clip | `probe.last_black` → re-extract −40 ms |
 | Recook same mp4 path | phones keep the sitting ghost | `cache.ghost` — rename + PACK |
+| Module or video with no `?v=` | phone can keep yesterday's file for hours | bump `?v=` after the replace, or check in a private tab, before calling the build broken. Standing rule 7 in [`docs/METHOD.md`](docs/METHOD.md). When the root host 307s, the short share URL is `https://<slug>.grok.me/` |
 
 None of this opens a modal.
 

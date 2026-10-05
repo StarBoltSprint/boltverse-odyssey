@@ -1,5 +1,7 @@
 # Rocks — the approved recipe (any biome)
 
+Superseded for new solids by [docs/METHOD.md](../METHOD.md) standing rules 1 and 8 (2026-10-05): near and mid rocks use the frigate loft; far LOD is a cheaper solid; a card or a stepped box is not that rock. This page stays the IN TEST kit that already shipped.
+
 **Status: IN TEST (2026-10-03).** Owner phone QC still open. Merged to main 2026-10-03 (PR #162, zone A step 3).
 Known issues: rock skins reach magnification 1.15–1.32 up close; one shape per type; the crest hull is not carved.
 2026-10-04 (IN TEST, `zone-a-polish`): the chase eye now keeps a minimum distance from every hull (`clearSolids`, the

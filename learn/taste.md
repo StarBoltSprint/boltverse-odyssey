@@ -18,6 +18,10 @@ Short summary of the log below. When a new reaction changes a rule, add a senten
 - A ruin base that floats above the drawn relief is a FAIL. A black unpainted hull face is a FAIL.
 - Orbit views that show two different ships are a FAIL.
 - A menu hall is a high-tech citadel: dark metal, glass, holographic light, a window to space. A gothic stone hall and a stone door plate are a FAIL.
+- Anything the player can walk up to, other than the sky, is a real solid. Far LOD is a cheaper solid. A card, a billboard, or a sprite for that object is a FAIL.
+- A sky video laid on an already-full still is a FAIL. A planet that is drawn, small in the frame, or not actually rotating is a FAIL.
+- A collision that is not the drawn face is a FAIL. A near rock replaced by a stepped box is a FAIL.
+- View drift and specks stay. Another cook spent on them is a FAIL.
 
 ## How to append
 
@@ -46,3 +50,9 @@ Append a row at the bottom. Do not rewrite an old row. Verdict is KEEP, FAIL, or
 | 2026-10-04 | Wreck hangar interior and the slab beside the opening | FAIL | | An unpainted hull face reads black. Retile it from the same Imagine plate. Do not leave the opening wall empty. |
 | 2026-10-04 | Paw button on the menus | KEEP | scintiller, pulser | The paw shimmers and pulses. An Imagine glow layer changes opacity. The print is not scaled. |
 | 2026-10-04 | Pause menu stone door plate and Living Archives gothic hall | FAIL | look old and "moche" | Menus leave the stone plate and the gothic hall. The hall is a high-tech citadel: dark metal, glass, holographic cyan and violet, a window to space. |
+| 2026-10-04/05 | Flat cards, billboards, or sprites for canyon walls, mesas, rocks, shards, and details | FAIL | | Those objects are frigate solids. Far LOD is a cheaper solid. Only the sky is a backdrop. |
+| 2026-10-04/05 | One video over an already-full still sky | FAIL | | Start from a nearly empty sky. Each animated element is its own looping video. |
+| 2026-10-04/05 | Planet video cooked small, drawn, or unchecked | FAIL | | Highest resolution, planet fills the frame, photorealistic. Confirm the rotation frame by frame. |
+| 2026-10-04/05 | Invisible walls in front of the Gate arch or the wreck hangar | FAIL | | Collisions follow the drawn faces. Walk under the arch. Enter the hangar. |
+| 2026-10-04/05 | A crude stepped box in place of a good near or mid rock | FAIL | | Near and mid stay the frigate loft. Cheaper solids are far only. |
+| 2026-10-04/05 | Another cook aimed at view drift or specks | FAIL | | Accept those Imagine defects. Do not spend the quota again. |

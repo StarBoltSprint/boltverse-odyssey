@@ -189,7 +189,7 @@ The play view calls `__perf.noteFrame`, `__perf.noteDraw`, and `__perf.noteTextu
 | Field | Meaning |
 | --- | --- |
 | `perf.schema` | `playcheck-perf/1` |
-| `perf.thresholds` | The mid-range phone caps (`fpsAvgMin` 30, `fps1LowMin` 20, `frameMsMax` 33.333, `heapBytesMax` 402653184, `textureBytesMax` 268435456, `videoDecodersMax` 6, `activeVideosMax` 4, `drawCallsMax` 150). |
+| `perf.thresholds` | The mid-range phone caps (`fpsAvgMin` 30, `fps1LowMin` 20, `frameMsMax` 33.333, `heapBytesMax` 402653184, `textureBytesMax` 268435456, `videoDecodersMax` 6, `activeVideosMax` 4, `drawCallsMax` 150). Owner caps are tighter ([`docs/METHOD.md`](../../docs/METHOD.md) standing rule 9, 2026-10-05): drawCalls ≤ 12, texMB ≤ 260, videos ≤ 4 including Bolt. `drawCallsMax` 150 is the tool ceiling, not the target. Player debug text stays behind `?debug=1`. |
 | `perf.perfLine` | `Perf: drawCalls=<n>, texMB=<n>, activeVideos=<n>, jsMs=<n>`. Required on every report. |
 | `perf.budgetApplied` | False only for the measurement fixture. |
 | `perf.harness` | True when every frame was `snap.harness`. |

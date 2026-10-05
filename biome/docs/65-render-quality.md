@@ -23,6 +23,17 @@ Law [56](56-cutout-native-scale.md) already forbids enlarging a keyed cut. Law [
 
 Walking **360°** around an object shows different sides. That is the world-lock check.
 
+**Owner phone caps (2026-10-05, [`docs/METHOD.md`](../../docs/METHOD.md) standing rule 9).** These sit on top of the table. They do not add a second render-quality law.
+
+| Cap | PASS | FAIL |
+| --- | --- | --- |
+| Draws | `drawCalls` ≤ **12** | A play view whose perf line is above 12. The playcheck tool ceiling `drawCallsMax` 150 is not this cap. |
+| Textures | `texMB` ≤ **260** | Texture memory above 260 MB on the perf line. |
+| Videos | Decoding videos ≤ **4**, Bolt included | A fifth decode. Already rule 5. |
+| Debug text | Position, mode, take card, and GL errors show only with `?debug=1` | Those lines on the player view in a normal session. |
+
+**Solids (2026-10-05, standing rules 1 and 8).** Rule 8 already fails `camQuad` on a solid. Far canyon walls, mesas, rocks, shards, and details are cheaper LOD solids, not cards. Near and mid stay a frigate loft. A stepped box in place of a good near rock is FAIL.
+
 Frame times measured on software rendering (SwiftShader, no GPU) are printed and are **not** a pass or a fail by themselves. `tools/playcheck` launches Chrome with SwiftShader. Its `fps_avg`, `fps_1low`, and `frame_ms` rows stay in the report and do not decide the take on that run. `jsMs` is still required on the perf line. Draw calls, texture memory, active videos, magnification, and the source lint still decide the take.
 
 The per-frame exceptions are the Bolt quad and the uniforms that pick a view from the camera bearing. Everything else that does not change stays on the GPU.

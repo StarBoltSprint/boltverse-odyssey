@@ -537,3 +537,91 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | `tools/frames/check.py` and `tools/playcheck/src/premerge.mjs` write progress and accept `--resume`. The report lists Done and Left. Commit each accepted slice. Do not commit `__pycache__` or `.smoke`. |
 | Guard | `tools/frames/README.md` and the pre-merge section of `tools/playcheck/README.md`. A resumed scan skips ids already in the progress file. |
 | Sources | `tools/frames/resume.py`, `tools/frames/check.py`, `tools/playcheck/src/premerge.mjs`. |
+
+### 2026-10-05 — flat cards for world solids, and crude boxes up close
+
+| | |
+| --- | --- |
+| Take | Owner lessons hung 2026-10-05. No new cook. |
+| Defect | Canyon walls, mesas, rocks, shards, and details were planned as flat cards, billboards, sprites, or far impostors. A good near rock was also swapped for a stepped box. |
+| Root cause | Older rows still named crossed cards, 8-view impostor far LOD, and "impostors only as far LOD". |
+| Fix | Standing rules 1 and 8 in `docs/METHOD.md`. Far LOD is a cheaper solid. Near and mid stay the frigate loft. Only the sky is a backdrop. |
+| Guard | No new machine row. `stair_crown` in `python3 tools/frames/check.py` still fails a stair-stepped crown. A card that is not that row is caught by the standing rule and [`docs/METHOD/rejected.md`](../docs/METHOD/rejected.md). |
+| Sources | [`docs/METHOD.md`](../docs/METHOD.md), [`docs/METHOD/hard-objects.md`](../docs/METHOD/hard-objects.md). |
+
+### 2026-10-05 — one video laid on a full still sky
+
+| | |
+| --- | --- |
+| Take | Owner lessons hung 2026-10-05. No new cook. |
+| Defect | An animated nebula, cloud, meteor, or planet was one video composited on an already-full still sky. It read as a moving screen on a picture. |
+| Root cause | The locked sky v1 paints full slices and then adds living layers. That stack was copied forward as the only sky cook. |
+| Fix | Standing rule 2. Next sky cooks start nearly empty (gradient + distant stars). Each animated element is its own looping Imagine video. Zone A sky v1 stays locked until a later version scores better. |
+| Guard | No new machine row. `python3 tools/sky/check.py` still gates the locked v1 slices. The cook rule is [`docs/METHOD/sky.md`](../docs/METHOD/sky.md). |
+| Sources | [`docs/METHOD.md`](../docs/METHOD.md) standing rule 2. |
+
+### 2026-10-05 — a planet clip that does not fill the frame or does not turn
+
+| | |
+| --- | --- |
+| Take | Owner lessons hung 2026-10-05. No new cook. |
+| Defect | A planet was drawn, small in the frame, or called rotating without a frame-by-frame check. Display then upscaled it. |
+| Root cause | The prompt asked for a planet. The frames were not scrubbed. |
+| Fix | Standing rule 3. Highest resolution, planet filling almost the whole frame, photorealistic. Confirm rotation on the frames before claiming it works. |
+| Guard | No new machine row. The check is a frame scrub, written in [`docs/METHOD/sky.md`](../docs/METHOD/sky.md). |
+| Sources | [`docs/METHOD.md`](../docs/METHOD.md) standing rule 3. |
+
+### 2026-10-05 — an invisible wall in front of a real opening
+
+| | |
+| --- | --- |
+| Take | Owner lessons hung 2026-10-05. Confirms the 2026-10-04 face-collider row. |
+| Defect | Bolt stopped on a keep-out box while the Gate arch and the wreck hangar were open in the picture. |
+| Root cause | Colliders were a circle or a hand-placed box, not the drawn faces. |
+| Fix | Standing rule 4. Colliders follow the faces. Walk under the arch. Enter the hangar. |
+| Guard | `tools/playcheck/src/ruinwalk.test.mjs`. Recipe [`docs/METHOD/ruins.md`](../docs/METHOD/ruins.md) §7. |
+| Sources | [`docs/METHOD.md`](../docs/METHOD.md) standing rule 4. The 2026-10-04 decisions-log row. |
+
+### 2026-10-05 — a gothic menu, or a second Archives module
+
+| | |
+| --- | --- |
+| Take | Owner lessons hung 2026-10-05. Confirms the 2026-10-04 21:54 hall and the 18:29 shared module. |
+| Defect | A menu used a stone door or a gothic hall. A zone built its own Echo Shards module instead of a manifest. |
+| Root cause | The old plate was still in the art folder. The shared-module rule was easy to miss below the element table. |
+| Fix | Standing rules 5 and 6. High-tech Citadel (dark metal, glass, cyan/violet holograms). One module. Manifest only. Local progress first. |
+| Guard | `node --test packs/common/archives/archives.test.mjs` (no `plate.jpg` on pause). A forked module has no extra row; the standing rule is the guard. |
+| Sources | [`docs/METHOD/archives.md`](../docs/METHOD/archives.md), [`learn/recipes/archives-futurist-hall.md`](recipes/archives-futurist-hall.md). |
+
+### 2026-10-05 — a phone kept a module that had no cache bust
+
+| | |
+| --- | --- |
+| Take | Owner lessons hung 2026-10-05. No new cook. |
+| Defect | A grok.me play page looked unchanged for hours after a publish. The root host 307s to the play path, and a module or video without `?v=` stayed cached. |
+| Root cause | The short share URL and the cache bust were not in the cold-start sheet. |
+| Fix | Standing rule 7. Prefer `https://<slug>.grok.me/` when that redirect exists. Bump `?v=` after a replace, or validate in a private tab, before calling the build broken. |
+| Guard | No machine row. [`FAIL.md`](../FAIL.md) matrix row for a module or video with no `?v=`. |
+| Sources | [`docs/METHOD.md`](../docs/METHOD.md) standing rule 7. |
+
+### 2026-10-05 — player debug text, and a phone over the owner caps
+
+| | |
+| --- | --- |
+| Take | Owner lessons hung 2026-10-05. Confirms the 2026-10-04 debug-text row and the ≤ 12 / ≤ 260 targets. |
+| Defect | Position, mode, take card, or GL errors stayed on the player view. A play view was treated as fine at drawCalls 150 because that is the tool ceiling. |
+| Root cause | Law 65 required the perf line and ≤ 4 videos. It did not state drawCalls ≤ 12, texMB ≤ 260, or the debug-text hide. |
+| Fix | Standing rule 9. drawCalls ≤ 12, texMB ≤ 260, videos ≤ 4 including Bolt. Debug text only with `?debug=1`. |
+| Guard | Law 65 `active_videos` still fails a fifth decode. No playcheck row fails drawCalls above 12 yet (`drawCallsMax` 150). The owner cap is [`biome/docs/65-render-quality.md`](../biome/docs/65-render-quality.md). |
+| Sources | [`docs/METHOD.md`](../docs/METHOD.md) standing rule 9. |
+
+### 2026-10-05 — another cook spent on view drift or specks
+
+| | |
+| --- | --- |
+| Take | Owner lessons hung 2026-10-05. Cites "a sky or hull video that drifts inside the frame" (2026-09-29). |
+| Defect | View drift and specks were cooked again after they were already known Imagine defects. |
+| Root cause | The stop-after-2 rule did not name those two defects, so a new session treated them as fresh bugs. |
+| Fix | Standing rule 10. Accept view drift and specks. Do not burn quota on them. Stop after 2 still applies to any other repeated defect. |
+| Guard | No new machine row. Workflow §2 in [`docs/METHOD.md`](../docs/METHOD.md). |
+| Sources | [`docs/METHOD.md`](../docs/METHOD.md) standing rule 10. |

@@ -2,6 +2,8 @@
 
 **READ [`docs/METHOD.md`](../../docs/METHOD.md) FIRST** — The Odyssey Method: the one approved way to build each element (owner decisions with dates).
 
+**Open zone, owner 2026-10-04/05.** That sheet's standing list wins over card, billboard, and impostor wording later in this paste for canyon walls, mesas, rocks, shards, and details. Those are frigate solids. Far LOD is a cheaper solid. Only the sky is a backdrop: nearly empty base, then one looping Imagine video per animated element (do not lay one video on a full still). A planet video fills the frame, is photoreal, and is checked frame by frame for rotation. Collisions follow the drawn faces. Menus are a high-tech Citadel. Echo Shards are one shared module plus a zone manifest. Phone: drawCalls ≤ 12, texMB ≤ 260, videos ≤ 4 including Bolt; debug text only in debug mode. Accept view drift and specks. Share `https://<slug>.grok.me/` when the root host 307s to the play path, and bump `?v=` or use a private tab before calling a phone stale.
+
 Kitchen only. Do not read this to the player.
 
 **Tool feedback (law 66):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take and file [`66-tool-feedback-loop.md`](66-tool-feedback-loop.md) upstream.

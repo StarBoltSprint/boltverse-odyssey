@@ -66,9 +66,9 @@ Law 24’s horizon **0.38** is the pitched Frost cone. It stays legal only when 
 
 **Turnaround.** Eight views step **45°**. Four views step **90°**. Elevation **+15°**. One distance. One focal length, the **85 mm** class, horizontal field about **24°**. The same light on every view. Imagine does not document a consistent turntable. A multi-image edit takes at most **5** sources.
 
-**Ship.** Crashed hero ship, practice, not a seal: [`learn/ship-turnaround.md`](learn/ship-turnaround.md). Phone set is **3–4** Imagine views (front, 3/4, side, optional back). DRAFT — rejected as default by owner 2026-10-02: owner wants real 3D objects (invisible volume + projected Imagine views). Sprite-swap is not the picture. The exact method is not chosen. This does not replace the 8×45° / 4×90° turnaround above and it is not a layout row. Do not cook from this line.
+**Ship.** Crashed hero ship, practice, not a seal: [`learn/ship-turnaround.md`](learn/ship-turnaround.md). Phone set is **3–4** Imagine views (front, 3/4, side, optional back). DRAFT — rejected as default by owner 2026-10-02: owner wants real 3D objects (invisible volume + projected Imagine views). Sprite-swap is not the picture. The exact method is not chosen. Superseded by [`docs/METHOD.md`](docs/METHOD.md) standing rules 1 and 8 (2026-10-05): the method is the frigate / hard-object loft. This does not replace the 8×45° / 4×90° turnaround above and it is not a layout row. Do not cook from this line.
 
-**Objects.** [`learn/object-classes.md`](learn/object-classes.md) is a rejected draft. It is not a kit lock and not a view-count gate. The exact method is not chosen. Do not cook from this line.
+**Objects.** [`learn/object-classes.md`](learn/object-classes.md) is a rejected draft. It is not a kit lock and not a view-count gate. The exact method is not chosen. Superseded by [`docs/METHOD.md`](docs/METHOD.md) standing rules 1 and 8 (2026-10-05): visible objects are frigate solids; far LOD is a cheaper solid; only the sky is a backdrop. Do not cook from this line.
 
 **Light.** One sun. Azimuth and elevation in degrees. One kelvin. Shadow length = height / tan(elevation). A **45°** sun throws a shadow as long as the object is tall.
 
