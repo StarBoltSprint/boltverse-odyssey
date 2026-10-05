@@ -4,6 +4,8 @@ Back to [METHOD.md](../METHOD.md). **Status: VALIDATED** — SmiR 2026-10-03 21:
 The validated version is the zone A sky in Part 2 (locked as sky v1, see [recipe progression](self-improvement.md#6-recipe-progression-versions-score-lock)).
 This page is how to build it for every biome.
 
+**Stack (owner 2026-10-05, standing rules 2 and 3).** The next sky cook starts nearly empty: a gradient and distant stars. Nebula, clouds, shooting stars, and the planet are each their own seamless Imagine video, stacked on that base. Do not lay one video over an already-full still sky. That reads as a moving screen on a picture. Zone A sky v1 above stays the locked score until a later version beats it without regressing. A planet clip is the highest resolution the tool will emit, with the planet filling almost the whole frame (shown large, never upscaled), photorealistic rather than drawn. Scrub it frame by frame and confirm the planet actually rotates before calling the clip done.
+
 Palettes and exact Imagine prompt text stay in untracked `*.local.*` files and in
 `/workspace/grokcli/out/<zone>-step<N>/provenance.json`. Do not copy them into this page or into code.
 

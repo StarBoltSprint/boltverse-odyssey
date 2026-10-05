@@ -86,6 +86,8 @@ Placement check is the selftest. The hard-object gate stays `python3 tools/hard-
 
 ### 7. Colliders — no invisible walls (owner decision 2026-10-04)
 
+Standing rule 4 (2026-10-05): this face rule is the collision law for every solid the player can meet, not only the gate and the wreck. Walk under the arch. Enter the hangar. A keep-out box is not a wall.
+
 Collisions follow the real geometry. There are no hand-placed boxes and no keep-out circles.
 The colliders are rebuilt in play from the same `.ruin` faces that carry the Imagine skins, so any gate or wreck the generator measures (an arch, a 25–30 m monolith, a longer hull) gets its colliders with no edit. Code builds shape only; no pixel, no colour.
 

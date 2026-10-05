@@ -1,5 +1,7 @@
 # Details — micro-detail generator (any biome)
 
+Superseded for new canyon walls, mesas, rocks, shards, and details by [docs/METHOD.md](../METHOD.md) standing rule 1 (2026-10-05): those objects are frigate solids, with cheaper solids at far range. Do not copy the crossed-card pattern for them. This page stays the IN TEST generator that already shipped.
+
 **Status: IN TEST (2026-10-04).** Owner phone QC still open. Not APPROVED. Not VALIDATED.
 Part 1 is the generic kit-driven generator.
 Part 2 fills it for The Howling Eclipse (zone A, step 5). Part 3 is only material ideas for Ember Mesa and Cascade Verdance.

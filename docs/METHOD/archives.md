@@ -1,6 +1,8 @@
 # Living Archives / Echo Shards — IN TEST (2026-10-04)
 
-One shared module for every zone and every player. A zone does not recook the paw, the card, or the hall. It writes a manifest.
+One shared module for every zone and every player. A zone does not recook the paw, the card, or the hall. It writes a manifest. A second archives module inside a zone pack is FAIL (standing rule 6, 2026-10-05). Progress stays local per player first.
+
+Standing rule 5: menu backgrounds are the high-tech Citadel (dark metal, glass, cyan/violet holograms). A stone door or a gothic hall is not a menu background.
 
 Owner decision 2026-10-04 18:29: decrees #351 and #352 are unparked for this system only. Momentum `m` and the Frontier Shard narrative frame stay PARKED.
 

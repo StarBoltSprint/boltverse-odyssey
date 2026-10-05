@@ -12,6 +12,8 @@ Skills: [`.grok/skills/`](../../.grok/skills/). Failures already paid for: [`../
 | --- | --- | --- |
 | [zone-a-sky-ring.md](zone-a-sky-ring.md) — three-band outpaint ring, instanced living tiles (prompt text stays in the untracked provenance) | `25dd00d` | horizon mag 0.982; video tile mag 0.792; play mag_max 0.982 |
 
+Owner 2026-10-05 (no stored prompt, not a recipe file): the next sky starts nearly empty; each animated element is its own loop; do not lay one video on a full still. A planet clip fills the frame at the highest resolution, is photoreal, and is scrubbed frame by frame for rotation. [`docs/METHOD/sky.md`](../../docs/METHOD/sky.md). Zone A sky v1 in the recipe row above stays locked until a later version scores better.
+
 Chained slices, not one wide file: [`biome/docs/64-imagine-build-limits.md`](../../biome/docs/64-imagine-build-limits.md) section D (generate slice 1 at 21:9 or 5:2, each next slice an edit of the previous, `required_px = play_width / (hfov_deg / 360)`). The chain gate, the living-loop period, and the perceived-repetition row are the sky skill ([`.grok/skills/sky-panorama/SKILL.md`](../../.grok/skills/sky-panorama/SKILL.md)) and `python3 tools/sky/check.py`. Kind `backdrop` is still `python3 tools/assetcheck/check.py` ([`tools/assetcheck/README.md`](../../tools/assetcheck/README.md)). The 138° KEEP outpaint and the overlap MAE band are [`tools/relief/README.md`](../../tools/relief/README.md) and [`biome/docs/60-imagine-relief-panorama-method.md`](../../biome/docs/60-imagine-relief-panorama-method.md). Plate-0 prompt: not stored in the repo. The step 2b ring prompt text is in the untracked provenance file named by the recipe.
 
 ## ground-tile
@@ -28,6 +30,8 @@ World-locked top-down stills, about **0.90 m**, **≥ 4** variants: [`biome/docs
 | --- | --- | --- |
 | [rock-slab-overhang.md](rock-slab-overhang.md) — grey slate slab with an overhang (owner-approved still; orbit only partly validated) | `c4436f2` (local `cli/take10d`) | natural-rock circ 0.464–0.633, bg/fringe/holes clean; objsheet keep 0.452/0.377 FAIL |
 | [zone-a-rocks.md](zone-a-rocks.md) — kit-driven boulder and stone hulls plus pebble cutouts (prompt text stays in the untracked provenance; crest not shipped) | `5aae7e0` | boulder walkaround mag 0.990; stone mag 0.989; chase mag 0.998 |
+
+Owner 2026-10-05: new near and mid rocks use the frigate loft. Far LOD is a cheaper solid, not a card and not a stepped box. The 8-view rows above are the kit that already shipped. [`docs/METHOD.md`](../../docs/METHOD.md) standing rules 1 and 8.
 
 Eight views, one every 45°, from one sharp still (V0) plus the previous view: [`biome/docs/60-imagine-relief-panorama-method.md`](../../biome/docs/60-imagine-relief-panorama-method.md) KEEP method. Eight consistent views are not an Imagine feature (max 5 sources): [`biome/docs/64-imagine-build-limits.md`](../../biome/docs/64-imagine-build-limits.md) section C. Before a hull: `python3 tools/assetcheck/check.py` kind `cutout`, then `python3 tools/objsheet/sheet.py`.
 
@@ -46,6 +50,8 @@ One command: `python3 tools/ruins/build.py --kit <id>` then `python3 tools/ruins
 | --- | --- | --- |
 | [hull-ship-xai-starship-hero.md](hull-ship-xai-starship-hero.md) — black faceted starship, 18° camera, etched shield emblem (hero only; the orbit failed) | `0bb54c1` (local `cli/take10d`, wreck10 install) | margins ≥ 0.041, luma rel −0.005, emblem rows by eye |
 
+Owner 2026-10-05: every visible solid uses this loft family (Gate, wreck, later hard props, canyon walls, mesas, rocks, shards, details). Far LOD is a cheaper solid. Near and mid stay the loft. [`docs/METHOD/hard-objects.md`](../../docs/METHOD/hard-objects.md).
+
 Hull from stills that already passed the sheet: `python3 tools/walkaround/build.py --views <dir> --config <config.json> --out <dir>`. Read `qc/report.json`. Magnification ≤ 1. Register a passing object with `python3 tools/library/library.py add` so the next zone names `{ "library": "<id>" }` instead of recooking it ([`tools/library/README.md`](../../tools/library/README.md)).
 
 ## menu
@@ -54,6 +60,8 @@ Hull from stills that already passed the sheet: `python3 tools/walkaround/build.
 | --- | --- | --- |
 | [archives-menu-loop.md](archives-menu-loop.md) — one Imagine hall loop for every menu, paw glow by opacity (prompt not stored) | `a6d14e0` | seam MAE 1.8; mid MAE 9.986; 360×800 dpr 2 contain scale 1 |
 | [archives-futurist-hall.md](archives-futurist-hall.md) — high-tech hall, ping-pong close, scale 1 on a tall phone (prompt not stored) | `2158259` | seam MAE 1.813; mid MAE 9.98; 640×1424 cover 1.125 contain scale 1 |
+
+Stone doors and gothic halls are rejected menu backgrounds (2026-10-04/05). Echo Shards stay one shared module; a zone writes a manifest only. [`docs/METHOD/archives.md`](../../docs/METHOD/archives.md).
 
 ## cutout
 

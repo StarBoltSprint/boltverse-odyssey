@@ -1,6 +1,8 @@
 # Hard objects — measured loft (Howl-class frigate)
 
 Back to [METHOD.md](../METHOD.md). This page is the recipe. Status: **VALIDATED** — SmiR 2026-10-03 21:36 Paris, on the phone, after PR #161.
+
+**Scope (owner 2026-10-05, standing rules 1 and 8).** This loft is the official solid for the Gate, the wreck, and later hard props, and for every other visible world object (canyon walls, mesas, rocks, shards, details). Far LOD is a cheaper solid in this family, never a flat card, billboard, or sprite. Near and mid keep this loft. Do not replace a good near rock with a crude box that looks 3D-printed or stair-stepped. Only the sky stays a backdrop.
 The known issues in section 11 are accepted as declared, not blockers. Contradiction 12 in [decisions-log.md](decisions-log.md) is **RESOLVED**:
 [law 59](../../biome/docs/59-invisible-depth-carrier.md#amendment-2026-10-03-lofted-measured-section-hulls) now says lofted measured-section hulls are an approved invisible carrier; every visible pixel stays unlit Imagine.
 

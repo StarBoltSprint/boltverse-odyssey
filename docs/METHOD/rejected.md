@@ -26,3 +26,11 @@ Back to [METHOD.md](../METHOD.md). Do not retry these without a new owner decisi
 | 2026-10-03 | One plain dirt texture for a whole zone | Owner: ugly, "carpet" look. | Several Imagine materials by relief + anti-carpet rules. |
 | 2026-09-18 | Wiping hung masters / replacing the playlist with a new biome | Hang ≠ wipe. | Add beside existing masters. |
 | 2026-10-04 | Pale 7.4 m round arch as the Eclipse Gate | Owner rejected it. It read as a small classical arch. | A 25–30 m monolith, veins, a ring in the arch, a real passage, colliders from the mesh. |
+| 2026-10-05 | Flat cards, billboards, or sprites for canyon walls, mesas, rocks, shards, and details, including at far range | Owner: everything visible is a real solid. Supersedes the "impostors only as far LOD" clause of the 2026-10-02 impostor row. | Frigate / hard-object loft. Far LOD is a cheaper solid. Only the sky is a backdrop. |
+| 2026-10-05 | One Imagine video laid over an already-full still sky | Reads as a moving screen on a picture. | Nearly empty base (gradient + distant stars), then one looping video per animated element. |
+| 2026-10-05 | A planet clip that is drawn, small in the frame, or not checked frame by frame | Upscale and a still planet were called "working". | Highest resolution, planet fills the frame, photoreal, rotation confirmed on the frames. |
+| 2026-10-05 | Invisible walls and keep-out boxes around a gate or a hangar | The player cannot walk the opening that the picture shows. | Colliders from the drawn faces. Walk under the arch. Enter the hangar. |
+| 2026-10-05 | Stone doors and gothic halls as menu backgrounds | Owner rejected the old plate (2026-10-04, "moche"). | High-tech Citadel: dark metal, glass, cyan/violet holograms. |
+| 2026-10-05 | A per-zone Echo Shards / Archives module | Splits progress and the paw. | One shared module. The zone writes a manifest only. Local progress first. |
+| 2026-10-05 | Crude stepped LOD boxes in place of a good near or mid frigate rock | Looks 3D-printed. `stair_crown` is the same class on a silhouette. | Near and mid stay the loft. Cheaper solids are far only. |
+| 2026-10-05 | Another Imagine cook aimed at view drift or specks | Known generator defects. Quota already paid. | Accept them. Stop after 2. |
