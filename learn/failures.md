@@ -560,3 +560,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Green excess, smoothstep 0.08 to 0.22, a one-texel minimum, despill, discard under alpha 0.03, blend on, interior alpha near 1. Key 4 uses the camera up and the camera right. Stop. One image slot was left unused. The dark night limb is the source shading. |
 | Guard | `planetInfo` scale at most 1, and `aspectNative` matches `aspectScreen`. No row grades the remaining limb. The phone pair is the check. |
 | Sources | `packs/zone-b/play/play.js` `planetCover`, `drawCard`. `packs/zone-b/src/sky/planet.json`. |
+
+### 2026-10-05 — the Anchor loft bridges the painted arch
+
+| | |
+| --- | --- |
+| Take | Zone B local harden. No new Imagine. |
+| Defect | A walk through the Anchor mouth is blocked. Signed distance at the placement centre (x 0, z 177.83) is −2.2 m. |
+| Root cause | The shipped loft has opaque triangles across the mouth inside the body band. The face field follows those faces. `sealed` is 0, so the hollow fill did not close a reached opening. A box was not added. |
+| Fix | None in this step. An Anchor redo has to leave a real hole in the body-band mesh. |
+| Guard | `node packs/zone-b/play/hard-collide.test.mjs` asserts the mouth stays negative, `sealed` is 0, and some cell inside the footprint has a positive distance so a solid box cannot replace the field. The plaza arch centre stays at 0.8 m and a north walk passes it. |
+| Sources | `packs/zone-b/src/hard/mesh.bin`. `packs/zone-b/play/hard.js` `buildFaceSolids`. |

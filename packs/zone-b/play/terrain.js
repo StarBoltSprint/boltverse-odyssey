@@ -546,8 +546,6 @@ void main() {
   }
 
   function initPost() {
-    const bw = env.W >> 1;
-    const bh = env.H >> 1;
     const scene = target(env.W, env.H);
     const depth = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, depth);
@@ -568,12 +566,12 @@ void main() {
     if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
       throw new Error("scene fbo");
     }
-    const halfA = target(bw, bh);
-    const halfB = target(bw, bh);
-    const halfFb = gl.createFramebuffer();
+    // Bloom is off. A 1×1 sample keeps the post shader legal without two
+    // half-resolution targets (360×800×4×2 ≈ 2.2 MB that never get drawn).
+    const bloom = target(1, 1);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    post = { scene, depth, fb, halfA, halfB, halfFb, bw, bh, fog: [0.5, 0.5, 0.5] };
-    env.trackTex("post", env.W * env.H * 4 + bw * bh * 8);
+    post = { scene, depth, fb, halfA: bloom, bw: 1, bh: 1, fog: [0.5, 0.5, 0.5] };
+    env.trackTex("post", env.W * env.H * 4 + 4);
   }
 
   function drawQuad(prog) {
@@ -673,32 +671,16 @@ void main() {
       gl.disable(gl.BLEND);
     },
     composite() {
-      if (!post) return;
+      if (!post) return 0;
+      // One fullscreen draw. The half-res bloom chain was three extra draws
+      // (bright + two blurs) on top of a scene that already sat near the
+      // phone cap of 12. Fog and the colour grade stay. Bloom stays off.
       const fogOn = postOn ? 1 : 0;
-      const bloomOn = postOn ? 1 : 0;
-      gl.bindFramebuffer(gl.FRAMEBUFFER, post.halfFb);
-      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, post.halfA, 0);
-      gl.viewport(0, 0, post.bw, post.bh);
-      gl.disable(gl.DEPTH_TEST);
-      gl.disable(gl.BLEND);
-      gl.useProgram(brightProg);
-      gl.uniform1i(gl.getUniformLocation(brightProg, "uScene"), 0);
-      gl.uniform1f(gl.getUniformLocation(brightProg, "uBloomThr"), look.bloomThreshold);
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, post.scene);
-      drawQuad(brightProg);
-      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, post.halfB, 0);
-      gl.useProgram(blurProg);
-      gl.uniform1i(gl.getUniformLocation(blurProg, "uTex"), 0);
-      gl.uniform2f(gl.getUniformLocation(blurProg, "uDir"), 1 / post.bw, 0);
-      gl.bindTexture(gl.TEXTURE_2D, post.halfA);
-      drawQuad(blurProg);
-      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, post.halfA, 0);
-      gl.uniform2f(gl.getUniformLocation(blurProg, "uDir"), 0, 1 / post.bh);
-      gl.bindTexture(gl.TEXTURE_2D, post.halfB);
-      drawQuad(blurProg);
+      const bloomOn = 0;
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       gl.viewport(0, 0, env.W, env.H);
+      gl.disable(gl.DEPTH_TEST);
+      gl.disable(gl.BLEND);
       gl.useProgram(postProg);
       gl.uniform1i(gl.getUniformLocation(postProg, "uScene"), 0);
       gl.uniform1i(gl.getUniformLocation(postProg, "uDepth"), 1);
@@ -720,6 +702,7 @@ void main() {
       gl.bindTexture(gl.TEXTURE_2D, post.halfA);
       drawQuad(postProg);
       gl.enable(gl.DEPTH_TEST);
+      return 1;
     },
     mag(eye) {
       const gy = heightAt(eye[0], eye[2]);

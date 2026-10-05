@@ -1,10 +1,13 @@
 /**
  * Zone B hard objects. One measured loft, one unlit atlas, one draw.
- * Colliders are the solid runs. Openings stay open.
+ * Colliders are the Zone A face field: a wall only where a drawn face crosses
+ * Bolt's body band. The plaza arch stays walkable. The Anchor mouth does not:
+ * the shipped loft bridges it with opaque faces, and this field does not cut a hole.
  * The beacon is a world-locked quad on the landmark, not a camera card.
  */
-const BODY = 2.05;
-const PAD = 0.32;
+import { buildCollider, frameOf } from "./collide.js";
+
+const BODY_R = 0.3;
 
 function program(gl, vs, fs) {
   const p = gl.createProgram();
@@ -41,6 +44,68 @@ function groundAt(env, x, z) {
   return env.heightAt(x, z) + env.skirtLift(x, z);
 }
 
+function colliderOptFor(part) {
+  const span = Math.max(part.worldW || 1, part.worldH || 1, part.depth || 1);
+  // The Anchor is ~60 m. A 0.15 m camera voxel would be millions of cells.
+  // The body grid stays fine enough that a multi-metre arch is not filled in.
+  if (span > 20) return { cellM: 0.25, voxM: 0.85, stepM: 0.25, clearM: 1.3, padM: 1.6 };
+  if (span > 6) return { cellM: 0.15, voxM: 0.35, stepM: 0.25, clearM: 1.3, padM: 1.2 };
+  return { cellM: 0.12, voxM: 0.22, stepM: 0.25, clearM: 1.3, padM: 0.8 };
+}
+
+/** Mirror and tilt baked into the part frame. Yaw and seat stay in frameOf, matching the draw. */
+export function placementGroup(srcV, srcI, part, place) {
+  const mirror = place.mirror ? -1 : 1;
+  const ct = Math.cos(place.tilt || 0);
+  const st = Math.sin(place.tilt || 0);
+  const xyzuv = new Float32Array(part.nv * 5);
+  for (let v = 0; v < part.nv; v++) {
+    const o = (part.v0 + v) * 5;
+    const lx = srcV[o] * mirror;
+    const ly = srcV[o + 1];
+    const lz = srcV[o + 2];
+    const d = v * 5;
+    xyzuv[d] = lx;
+    xyzuv[d + 1] = ly * ct - lz * st;
+    xyzuv[d + 2] = ly * st + lz * ct;
+    xyzuv[d + 3] = srcV[o + 3];
+    xyzuv[d + 4] = srcV[o + 4];
+  }
+  const idx = new Uint32Array(part.ni);
+  for (let k = 0; k < part.ni; k++) idx[k] = srcI[part.i0 + k] - part.v0;
+  return { xyzuv, idx };
+}
+
+/**
+ * One face collider per placed part, including the Anchor (its boxes stay empty:
+ * a box would wall every opening). A cell is open only when no drawn face
+ * crosses the body band. The Anchor mouth is closed because those faces do.
+ */
+export function buildFaceSolids(loft, srcV, srcI, seatOf) {
+  const cols = [];
+  for (let pi = 0; pi < loft.placements.length; pi++) {
+    const p = loft.placements[pi];
+    const part = loft.parts[p.part];
+    if (!part || !part.nv || !part.ni) continue;
+    const base = seatOf(p, part);
+    // Seat is ground - sink + lift. The field uses that same floor, so a
+    // sloping sample cannot drop the lintel into the body band.
+    const floor = base - (p.lift || 0) + (p.sink || 0);
+    const group = placementGroup(srcV, srcI, part, p);
+    const frame = frameOf({ yaw: p.yaw || 0 }, { x: p.x, y: base, z: p.z });
+    const col = buildCollider([group], frame, () => floor, colliderOptFor(part));
+    cols.push({
+      id: p.id || p.part,
+      name: p.name,
+      part: p.part,
+      col,
+      x: p.x,
+      z: p.z,
+    });
+  }
+  return cols;
+}
+
 export async function mountHard(gl, env) {
   let loft;
   try {
@@ -73,7 +138,6 @@ export async function mountHard(gl, env) {
 
   const baked = [];
   const indices = [];
-  const solids = [];
   const bounds = [];
   let anchorBase = 0;
 
@@ -154,38 +218,12 @@ export async function mountHard(gl, env) {
       srcW: part.srcW, srcH: part.srcH,
       worldW: part.worldW, worldH: part.worldH,
     });
-    if (p.solid !== false && part.boxes) {
-      for (let b = 0; b < part.boxes.length; b++) {
-        const box = part.boxes[b];
-        let bx0 = Infinity;
-        let by0 = Infinity;
-        let bz0 = Infinity;
-        let bx1 = -Infinity;
-        let by1 = -Infinity;
-        let bz1 = -Infinity;
-        for (let ix = 0; ix < 2; ix++) {
-          for (let iy = 0; iy < 2; iy++) {
-            for (let iz = 0; iz < 2; iz++) {
-              const w = xform(
-                ix ? box[3] : box[0],
-                iy ? box[4] : box[1],
-                iz ? box[5] : box[2],
-                p,
-                base,
-              );
-              if (w[0] < bx0) bx0 = w[0];
-              if (w[1] < by0) by0 = w[1];
-              if (w[2] < bz0) bz0 = w[2];
-              if (w[0] > bx1) bx1 = w[0];
-              if (w[1] > by1) by1 = w[1];
-              if (w[2] > bz1) bz1 = w[2];
-            }
-          }
-        }
-        solids.push({ x0: bx0, y0: by0, z0: bz0, x1: bx1, y1: by1, z1: bz1 });
-      }
-    }
   }
+
+  const cols = buildFaceSolids(loft, srcV, srcI, (p, part) => {
+    const g = seat(p, part);
+    return g - (p.sink || 0) + (p.lift || 0);
+  });
 
   const prog = program(gl, `#version 300 es
 layout(location=0) in vec3 aPos;
@@ -346,33 +384,37 @@ void main() {
   const api = {
     draws: 1,
     count: loft.placements.length,
-    solids: solids.length,
-    push(x, z, feet, bodyH) {
-      const top = feet + (bodyH || BODY);
-      const bot = feet + 0.05;
-      for (let i = 0; i < solids.length; i++) {
-        const s = solids[i];
-        if (s.y1 < bot || s.y0 > top) continue;
-        if (x < s.x0 - PAD || x > s.x1 + PAD || z < s.z0 - PAD || z > s.z1 + PAD) continue;
-        const px = Math.min(x - (s.x0 - PAD), (s.x1 + PAD) - x);
-        const pz = Math.min(z - (s.z0 - PAD), (s.z1 + PAD) - z);
-        if (px < pz) {
-          const nx = x < (s.x0 + s.x1) * 0.5 ? s.x0 - PAD : s.x1 + PAD;
-          return [nx, z];
+    solids: cols.length,
+    push(x, z) {
+      let cx = x;
+      let cz = z;
+      let hit = false;
+      for (let iter = 0; iter < 4; iter++) {
+        let moved = false;
+        for (let i = 0; i < cols.length; i++) {
+          const col = cols[i].col;
+          if (!col.near(cx, cz, BODY_R)) continue;
+          const d = col.sd(cx, cz);
+          if (d >= BODY_R) continue;
+          const g = col.grad(cx, cz);
+          if (g[0] === 0 && g[1] === 0) continue;
+          cx += g[0] * (BODY_R - d);
+          cz += g[1] * (BODY_R - d);
+          moved = true;
+          hit = true;
         }
-        const nz = z < (s.z0 + s.z1) * 0.5 ? s.z0 - PAD : s.z1 + PAD;
-        return [x, nz];
+        if (!moved) break;
       }
-      return null;
+      return hit ? [cx, cz] : null;
     },
     blocks(eye) {
       const x = eye[0];
       const y = eye[1];
       const z = eye[2];
-      for (let i = 0; i < solids.length; i++) {
-        const s = solids[i];
-        if (x < s.x0 || x > s.x1 || y < s.y0 || y > s.y1 || z < s.z0 || z > s.z1) continue;
-        return true;
+      for (let i = 0; i < cols.length; i++) {
+        const col = cols[i].col;
+        if (!col.near(x, z, 0.6)) continue;
+        if (col.dist(x, y, z) < 0.28) return true;
       }
       return false;
     },
@@ -441,7 +483,12 @@ void main() {
     info() {
       return {
         count: loft.placements.length,
-        solids: solids.length,
+        solids: cols.length,
+        collider: "faces",
+        openings: {
+          arch: cols.filter((c) => c.part === "leg" || c.part === "span").map((c) => c.col.wallCells),
+          anchor: (cols.find((c) => c.part === "anchor") || { col: { wallCells: 0, sealed: 0 } }).col.wallCells,
+        },
         tris: count / 3,
         atlas: [atlasImg.width, atlasImg.height],
         anchorBase,

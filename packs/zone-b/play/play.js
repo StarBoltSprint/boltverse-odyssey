@@ -9,7 +9,8 @@ import { mountMesas } from "./mesas.js";
 import { mountHard } from "./hard.js";
 
 const PACK = "packs/zone-b";
-const DEBUG = new URLSearchParams(location.search).has("debug");
+// Player debug lines (position, mode, perf, GL) only with ?debug=1. playcheck adds that flag and drives tick.
+const SHOW_HUD = /[?&]debug=1(&|$)/.test(location.search);
 const W = 720;
 const H = 1600;
 const HFOV = 22.7 * Math.PI / 180;
@@ -541,7 +542,7 @@ function pumpImages() {
   }
 }
 function loadProgress() {
-  if (!window.__play) hud.textContent = "loading " + imgDone + "/" + imgCache.size;
+  if (SHOW_HUD && !window.__play) hud.textContent = "loading " + imgDone + "/" + imgCache.size;
 }
 function loadImage(url) {
   if (imgCache.has(url)) return imgCache.get(url);
@@ -2034,7 +2035,9 @@ function drawPlanet(mode, eye) {
   const cy = mid[1] - camUp[1] * p.worldH * 0.5;
   const cz = mid[2] - camUp[2] * p.worldH * 0.5;
   const spinning = uploadPlanet();
-  drawCard(mode, p.tex, 4, cx, cy, cz, 0, p.worldW, p.worldH, labelOf("planet"), 1, null, null, spinning ? 1 : 0);
+  const tex = spinning ? planetTex : p.tex;
+  if (!tex) return;
+  drawCard(mode, tex, 4, cx, cy, cz, 0, p.worldW, p.worldH, labelOf("planet"), 1, null, null, spinning ? 1 : 0);
 }
 
 function planetScreenRect() {
@@ -2215,7 +2218,7 @@ function render(mode) {
     drawCard(mode, gateTex, 3, g.x, 0, g.z, 0, sized.gw, sized.gh, labelOf("gate:" + g.gate.id), 1);
   }
   if (!useRelief) drawFog(mode, eye);
-  if (useRelief && mode === 0) terrain.composite();
+  if (useRelief && mode === 0) drawCalls += terrain.composite();
   const active = state.mode === "GALLOP" ? gallopVideo : idleVideo;
   const boltReady = uploadVideo(active, boltTex, "bolt") || videoStamp.has("bolt");
   if (boltReady) {
@@ -2432,6 +2435,12 @@ function snapshot() {
 }
 
 function paintHud() {
+  if (!SHOW_HUD) {
+    if (hud.textContent) hud.textContent = "";
+    hud.style.display = "none";
+    return;
+  }
+  hud.style.display = "block";
   const g = gateInfo();
   const mb = (texBytes / (1024 * 1024)).toFixed(1);
   hud.textContent =
@@ -2780,8 +2789,8 @@ async function loadBand(manifest, id) {
 async function boot() {
   try {
     bootT0 = performance.now();
-    if (!DEBUG) hud.style.display = "none";
-    hud.textContent = "loading";
+    hud.style.display = SHOW_HUD ? "block" : "none";
+    if (SHOW_HUD) hud.textContent = "loading";
     clearing = await (await fetch("/" + PACK + "/clearing.json")).json();
     try {
       const kit = await (await fetch("/biome/kits/" + (clearing.biome || "ember-mesa") + ".json")).json();
@@ -2917,23 +2926,25 @@ async function boot() {
       const planetRes = await fetch(absUrl(PACK + "/src/sky/planet.json"));
       if (planetRes.ok) {
         const man = await planetRes.json();
-        const img = await loadImage(absUrl(PACK + "/src/sky/" + man.file));
         const dist = man.distanceM || 560;
-        const fit = Math.min(1, W / Math.max(1, img.width));
+        const srcW = PLANET_DISK.vidW;
+        const srcH = PLANET_DISK.vidH;
+        const fit = Math.min(1, W / srcW);
         const magCap = Math.min(typeof man.mag === "number" ? man.mag : fit, fit, 1);
-        const worldH = magCap * img.height * dist / FOCAL;
+        const worldH = magCap * srcH * dist / FOCAL;
         planetCard = {
-          tex: makeStill(img, "planet"),
-          srcW: img.width,
-          srcH: img.height,
+          tex: null,
+          srcW,
+          srcH,
           magCap,
           headingDeg: man.headingDeg,
           elevationDeg: man.elevationDeg,
           distanceM: dist,
           worldH,
-          worldW: worldH * (img.width / img.height),
+          worldW: worldH * (srcW / srcH),
+          file: man.file || "",
+          videoFile: man.video || "",
         };
-        releaseImages([img]);
         if (man.video) {
           planetTex = gl.createTexture();
           gl.bindTexture(gl.TEXTURE_2D, planetTex);
@@ -2943,6 +2954,11 @@ async function boot() {
           gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
           planetVideo = videoEl(absUrl(PACK + "/src/sky/" + man.video));
           planetVideo.loop = true;
+        } else if (man.file) {
+          const img = await loadImage(absUrl(PACK + "/src/sky/" + man.file));
+          planetCard.tex = makeStill(img, "planet");
+          fitPlanetSource(img.width, img.height);
+          releaseImages([img]);
         }
       }
     } catch (err) {
@@ -3019,7 +3035,7 @@ async function boot() {
     for (let i = 0; i < skyVideos.length; i++) {
       const v = skyVideos[i];
       if (!v) continue;
-      hud.textContent = "loading sky video " + (i + 1) + "/" + skyVideos.length;
+      if (SHOW_HUD) hud.textContent = "loading sky video " + (i + 1) + "/" + skyVideos.length;
       await new Promise((r) => {
         if (v.readyState >= 2) r();
         else {
@@ -3114,9 +3130,10 @@ async function boot() {
     render(0);
     paintHud();
     const err = gl.getError();
-    if (err) hud.textContent += "\nGL " + err;
+    if (err && SHOW_HUD) hud.textContent += "\nGL " + err;
     requestAnimationFrame(frame);
   } catch (e) {
+    hud.style.display = "block";
     hud.textContent = "BOOT " + (e && e.stack ? e.stack : e);
     window.__play = { ready: false, error: String(e) };
   }

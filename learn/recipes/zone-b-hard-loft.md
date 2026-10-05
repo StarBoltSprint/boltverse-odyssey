@@ -38,6 +38,8 @@ Size each part at the distance the eye actually reaches. Walking through an open
 
 A wide cliff crop is a legal lintel skin and still reads as beds. Stop after two tries on that skin.
 
+The play collider is the Zone A face field (`packs/zone-b/play/collide.js`), not the occupancy boxes. A cell is a wall only where a drawn face crosses the body band. The plaza arch opening stays open (signed distance 0.8 m at the centre; a walk from z 48 passes z 80 on x 0). The Anchor mouth does not. The loft bridges it with opaque faces, so the field at the placement centre is about −2.2 m, and `sealed` is 0. Do not cut a hole in that field to match the painting. An Anchor redo has to leave the hole in the mesh.
+
 Proof stills that call `lookAt` skip the chase solver and can report magnification above 1. Budget poses use `place`.
 
 ## Reuse
