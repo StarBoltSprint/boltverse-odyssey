@@ -1,7 +1,10 @@
 /**
- * Instanced micro-details. One atlas, one draw. Cards do not block.
- * Seated on the drawn relief. World-locked crossed cards.
+ * Instanced micro-details. Ridge and pebble stay crossed cards.
+ * Shard, tuft, and the feature rocks are lofted solids in one merged draw.
+ * Seated on the drawn relief. World-locked. No camera-facing card.
  */
+
+import { drawMerged, fillItems, uploadMerged } from "../../common/archives/solid.js";
 // Cards nearer the eye than magnification 1 allows are culled per instance,
 // so no drawn card is ever stretched. The GPU cut is a hair tighter than
 // the JS check, so the measured magnification can only overstate.
@@ -244,6 +247,16 @@ export async function mountDetails(gl, env) {
   const mq = new Float32Array(magN * 4);
   const counts = {};
   const groundAt = env.drawnHeightAt || env.heightAt;
+  let lofts = null;
+  try {
+    const lr = await fetch(env.absUrl("packs/zone-a/src/solids/lofts.json"));
+    if (lr.ok) lofts = await lr.json();
+  } catch (e) {
+    lofts = null;
+  }
+  const parts = (lofts && lofts.parts) || {};
+  const solidItems = [];
+  const solidRecs = [];
   let w = 0;
   let placed = 0;
   for (let i = 0; i < instances.length; i++) {
@@ -251,6 +264,33 @@ export async function mountDetails(gl, env) {
     const group = byType[inst.type];
     const variant = group && group[inst.variant];
     if (!variant || !variant.contentH) continue;
+    const microPart = parts[inst.type + ":" + (inst.variant || 0)];
+    if (microPart && (inst.type === "shard" || inst.type === "tuft")) {
+      const worldH = inst.heightM * (inst.scale || 1) * (microPart.bodyFrac || 1);
+      const yaw0 = ((inst.yaw || 0) * Math.PI) / 180;
+      const halfW = Math.max(microPart.halfX, microPart.halfZ) * worldH;
+      const base = seatMin(groundAt, inst.x, inst.z, yaw0, 4, halfW);
+      const y = base - Math.min(0.03, worldH * 0.08);
+      solidItems.push({
+        part: microPart,
+        x: inst.x,
+        y,
+        z: inst.z,
+        yaw: yaw0,
+        worldH,
+        contentH: variant.contentH,
+        side: [variant.u0, variant.v0, variant.u1, variant.v1],
+        front: null,
+        slot: 1,
+        mirror: !!inst.mirror,
+      });
+      solidRecs.push({
+        x: inst.x, z: inst.z, y, yaw: yaw0, worldH, contentH: variant.contentH,
+        hx: microPart.halfX * worldH, hz: microPart.halfZ * worldH,
+      });
+      counts[inst.type] = (counts[inst.type] || 0) + 1;
+      continue;
+    }
     const worldH = inst.heightM * (inst.scale || 1);
     const rectH = variant.rectH || variant.contentH;
     const rectW = variant.rectW || variant.contentW;
@@ -370,90 +410,75 @@ export async function mountDetails(gl, env) {
         if (!fBy[v.type]) fBy[v.type] = [];
         fBy[v.type].push(v);
       }
-      const fd = new Float32Array(fists.length * 12);
-      fMx = new Float32Array(fists.length * 3);
-      fMh = new Float32Array(fists.length);
-      fPx = new Float32Array(fists.length);
-      fGeo = new Float32Array(fists.length * 4);
-      fQ = new Float32Array(fists.length * 4);
-      let fw = 0;
       for (let i = 0; i < fists.length; i++) {
         const inst = fists[i];
         const group = fBy[inst.type];
         const variant = group && group[inst.variant];
         if (!variant || !variant.contentH) continue;
-        const worldH = inst.heightM * (inst.scale || 1);
-        const rectH = variant.rectH || variant.contentH;
-        const rectW = variant.rectW || variant.contentW;
-        const quadH = worldH * (rectH / variant.contentH);
-        const quadW = quadH * (rectW / rectH);
-        // The painted dust collar goes under the drawn ground so the body rises out of it.
-        const skirt = (variant.skirtPx || 0) * (fman.skirtBuryFrac == null ? 0.85 : fman.skirtBuryFrac);
-        const sink = worldH * (((variant.padBottom || 0) + skirt) / variant.contentH) + (inst.buryM || 0);
+        const part = parts[inst.type];
+        const worldH = inst.heightM * (inst.scale || 1) * (part && part.bodyFrac ? part.bodyFrac : 1);
         const yaw0 = (inst.yaw || 0) * Math.PI / 180;
-        const planes = inst.planes || 1;
-        const halfW = 0.5 * worldH * ((variant.contentW || rectW) / variant.contentH);
-        const base = seatMin(groundAt, inst.x, inst.z, yaw0, planes, halfW);
-        const y = base - sink;
-        const pi = fPlaced;
-        fMx[pi * 3] = inst.x;
-        fMx[pi * 3 + 1] = y + worldH * 0.5;
-        fMx[pi * 3 + 2] = inst.z;
-        fMh[pi] = worldH;
-        fPx[pi] = variant.contentH;
-        fGeo[pi * 4] = y;
-        fGeo[pi * 4 + 1] = Math.cos(yaw0);
-        fGeo[pi * 4 + 2] = -Math.sin(yaw0);
-        fGeo[pi * 4 + 3] = halfW;
-        fQ[pi * 4] = y;
-        fQ[pi * 4 + 1] = quadW;
-        fQ[pi * 4 + 2] = quadH;
-        fQ[pi * 4 + 3] = yaw0;
-        if (variant.bodyWPx) {
+        const halfW = part ? Math.max(part.halfX, part.halfZ) * worldH : 0.5 * worldH * ((variant.contentW || variant.rectW) / variant.contentH);
+        const base = seatMin(groundAt, inst.x, inst.z, yaw0, 4, halfW);
+        const bury = Math.min(0.05, worldH * 0.08) + (inst.buryM || 0);
+        const y = base - bury;
+        if (part) {
+          solidItems.push({
+            part,
+            x: inst.x,
+            y,
+            z: inst.z,
+            yaw: yaw0,
+            worldH,
+            contentH: variant.contentH,
+            side: [variant.u0, variant.v0, variant.u1, variant.v1],
+            front: null,
+            slot: 0,
+            mirror: !!inst.mirror,
+          });
+          solidRecs.push({
+            x: inst.x, z: inst.z, y, yaw: yaw0, worldH, contentH: variant.contentH,
+            hx: part.halfX * worldH, hz: part.halfZ * worldH,
+          });
+        }
+        // Footprint matches the loft. bodyWPx is the measured card width and
+        // stays the reference so a missing loft cannot invent a wider box.
+        if (variant.bodyWPx && part) {
           const mpp = worldH / variant.contentH;
           const bw = variant.bodyWPx * mpp;
           const off = (variant.bodyCxPx || 0) * mpp * (inst.mirror ? -1 : 1);
           const cy = Math.cos(yaw0);
           const sy = Math.sin(yaw0);
+          const hx = Math.min(part.halfX * worldH, bw * 0.5);
+          const hz = part.halfZ * worldH;
           colliders.push({
             x: inst.x + cy * off,
             z: inst.z - sy * off,
             c: cy,
             s: sy,
-            hx: bw * 0.5,
-            hz: Math.min(COLLIDER_HALF_DEPTH, bw * 0.25),
-            y0: y + sink,
+            hx,
+            hz,
+            y0: y,
             y1: y + worldH,
           });
         }
         fCounts[inst.type] = (fCounts[inst.type] || 0) + 1;
         fPlaced++;
-        for (let k = 0; k < planes; k++) {
-          const o = fw * 12;
-          fd[o] = inst.x;
-          fd[o + 1] = y;
-          fd[o + 2] = inst.z;
-          fd[o + 3] = yaw0 + k * Math.PI / planes;
-          fd[o + 4] = quadW;
-          fd[o + 5] = quadH;
-          fd[o + 6] = worldH / variant.contentH;
-          fd[o + 7] = 1;
-          fd[o + 8] = inst.mirror ? variant.u1 : variant.u0;
-          fd[o + 9] = variant.v0;
-          fd[o + 10] = inst.mirror ? variant.u0 : variant.u1;
-          fd[o + 11] = variant.v1;
-          fw++;
-        }
       }
-      fDrawn = fw;
-      if (fDrawn) fVao = bindInstances(fd, fDrawn);
+      fDrawn = 0;
     }
   } catch (err) {
     fDrawn = 0;
     fPlaced = 0;
   }
+  let solidMesh = null;
+  if (solidItems.length) {
+    const built = fillItems(solidItems);
+    solidMesh = uploadMerged(gl, built.data, built.count);
+  }
   const loadMs = performance.now() - t0;
-  const draws = (drawn ? 1 : 0) + (fDrawn ? 1 : 0);
+  const solidDraw = solidMesh && solidMesh.count ? 1 : 0;
+  const draws = (drawn ? 1 : 0) + solidDraw;
 
   // A card off screen paints no pixel, so it cannot be stretched. With a view
   // matrix, only cards whose bounding sphere meets the frustum count.
@@ -531,6 +556,40 @@ export async function mountDetails(gl, env) {
     return m;
   }
 
+  function boxNear(eye, focal, p) {
+    const c = Math.cos(p.yaw);
+    const s = Math.sin(p.yaw);
+    const dx = eye[0] - p.x;
+    const dz = eye[2] - p.z;
+    const along = dx * c - dz * s;
+    const t = Math.max(-p.hx, Math.min(p.hx, along));
+    const horiz = Math.hypot(dx - c * t, dz + s * t);
+    const yq = Math.max(p.y, Math.min(p.y + p.worldH, eye[1]));
+    return Math.hypot(horiz, eye[1] - yq) * NEAR_CAP_JS < focal * (p.worldH / (p.contentH || 1));
+  }
+
+  function solidMag(eye, focal, vp) {
+    let m = 0;
+    for (let i = 0; i < solidRecs.length; i++) {
+      const p = solidRecs[i];
+      if (boxNear(eye, focal, p)) continue;
+      const r = Math.hypot(p.hx, p.worldH * 0.5);
+      if (!onScreen(vp, focal, p.x, p.y + p.worldH * 0.5, p.z, r)) continue;
+      const c = Math.cos(p.yaw);
+      const s = Math.sin(p.yaw);
+      const dx = eye[0] - p.x;
+      const dz = eye[2] - p.z;
+      const along = dx * c - dz * s;
+      const t = Math.max(-p.hx, Math.min(p.hx, along));
+      const horiz = Math.hypot(dx - c * t, dz + s * t);
+      const yq = Math.max(p.y, Math.min(p.y + p.worldH, eye[1]));
+      const dist = Math.max(0.35, Math.hypot(horiz, eye[1] - yq));
+      const mm = (focal * p.worldH) / (dist * (p.contentH || 1));
+      if (mm > m) m = mm;
+    }
+    return m;
+  }
+
   function paint(vp, batchVao, batchTex, n, eye, focal) {
     if (!n || !batchVao) return;
     gl.useProgram(prog);
@@ -555,13 +614,13 @@ export async function mountDetails(gl, env) {
     colliders,
     draw(vp, eye, focal) {
       paint(vp, vao, tex, drawn, eye, focal);
-      paint(vp, fVao, fTex, fDrawn, eye, focal);
+      if (solidMesh) drawMerged(gl, solidMesh, vp, eye, focal, fTex || tex, tex);
     },
     mag(eye, focal, vp) {
-      return Math.max(worst(eye, focal, placed, mx, mh, mpx, vp, mq), worstCards(eye, focal, fPlaced, fMx, fMh, fPx, fGeo, vp, fQ));
+      return Math.max(worst(eye, focal, placed, mx, mh, mpx, vp, mq), solidMag(eye, focal, vp));
     },
     magFeatures(eye, focal, vp) {
-      return worstCards(eye, focal, fPlaced, fMx, fMh, fPx, fGeo, vp, fQ);
+      return solidMag(eye, focal, vp);
     },
     // Cards hidden by the near cull from this eye (for the snapshot).
     // With vp, only cards whose bounding sphere meets the frustum count.
@@ -571,9 +630,10 @@ export async function mountDetails(gl, env) {
         if (!nearCut(eye, focal, mx, mq, i, mh[i] / (mpx[i] || 1), false)) continue;
         if (onScreen(vp, focal, mx[i * 3], mx[i * 3 + 1], mx[i * 3 + 2], mh[i])) n++;
       }
-      for (let i = 0; i < fPlaced; i++) {
-        if (!nearCut(eye, focal, fMx, fQ, i, fMh[i] / (fPx[i] || 1), true)) continue;
-        if (onScreen(vp, focal, fMx[i * 3], fMx[i * 3 + 1], fMx[i * 3 + 2], Math.hypot(fGeo[i * 4 + 3], fMh[i] * 0.5))) n++;
+      for (let i = 0; i < solidRecs.length; i++) {
+        const p = solidRecs[i];
+        if (!boxNear(eye, focal, p)) continue;
+        if (onScreen(vp, focal, p.x, p.y + p.worldH * 0.5, p.z, Math.hypot(p.hx, p.worldH * 0.5))) n++;
       }
       return n;
     },

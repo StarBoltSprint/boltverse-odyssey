@@ -537,3 +537,25 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | `tools/frames/check.py` and `tools/playcheck/src/premerge.mjs` write progress and accept `--resume`. The report lists Done and Left. Commit each accepted slice. Do not commit `__pycache__` or `.smoke`. |
 | Guard | `tools/frames/README.md` and the pre-merge section of `tools/playcheck/README.md`. A resumed scan skips ids already in the progress file. |
 | Sources | `tools/frames/resume.py`, `tools/frames/check.py`, `tools/playcheck/src/premerge.mjs`. |
+
+### 2026-10-05 — tuft lofts were keyed by the manifest index
+
+| | |
+| --- | --- |
+| Take | Zone A 3d-details. |
+| Defect | Grass tufts stayed crossed cards after the loft. Shard chips became solids. |
+| Root cause | `zonea_loft.py` named each micro part with its index in the whole variant list. Tuft variants sit at 12, 13, and 14. Play looks up `tuft:` plus the type-local variant, which is 0, 1, or 2. |
+| Fix | Key shard and tuft parts by the ordinal inside that type. Re-run the loft only. Do not recook the plates. |
+| Guard | `python3 tools/solids/zonea_loft.py` exits if `tuft:0` is missing or `tuft:12` is present. No playcheck row counts tuft solids. |
+| Sources | `tools/solids/zonea_loft.py`, `packs/zone-a/play/details.js`. |
+
+### 2026-10-05 — a loft cap sampled the collapsed tip column
+
+| | |
+| --- | --- |
+| Take | Zone A 3d-details. |
+| Defect | The end view of a cluster showed a flat grey cap. The sides were the rock plate. |
+| Root cause | Cap triangles used the tip station. That station's u0 and u1 meet, so one source column covered the whole face. The top plate was not uploaded. |
+| Fix | Caps sample the side plate on the rows where the body is widest. X maps across that u span. Z maps across that v span. |
+| Guard | None. `capPatch` in `packs/common/archives/solid.js` is the only check. A playcheck row does not read cap pixels. |
+| Sources | `packs/common/archives/solid.js`. |

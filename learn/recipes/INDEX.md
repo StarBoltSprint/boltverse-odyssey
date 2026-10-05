@@ -28,6 +28,7 @@ World-locked top-down stills, about **0.90 m**, **≥ 4** variants: [`biome/docs
 | --- | --- | --- |
 | [rock-slab-overhang.md](rock-slab-overhang.md) — grey slate slab with an overhang (owner-approved still; orbit only partly validated) | `c4436f2` (local `cli/take10d`) | natural-rock circ 0.464–0.633, bg/fringe/holes clean; objsheet keep 0.452/0.377 FAIL |
 | [zone-a-rocks.md](zone-a-rocks.md) — kit-driven boulder and stone hulls plus pebble cutouts (prompt text stays in the untracked provenance; crest not shipped) | `5aae7e0` | boulder walkaround mag 0.990; stone mag 0.989; chase mag 0.998 |
+| [zone-a-3d-details.md](zone-a-3d-details.md) — Echo Shard and six small-detail lofts, one merged draw (Imagine prompt text not stored) | pending | spawn mag 0.998; proof cameras mag 0.998; drawCalls 12; texMB 254.37 |
 
 Eight views, one every 45°, from one sharp still (V0) plus the previous view: [`biome/docs/60-imagine-relief-panorama-method.md`](../../biome/docs/60-imagine-relief-panorama-method.md) KEEP method. Eight consistent views are not an Imagine feature (max 5 sources): [`biome/docs/64-imagine-build-limits.md`](../../biome/docs/64-imagine-build-limits.md) section C. Before a hull: `python3 tools/assetcheck/check.py` kind `cutout`, then `python3 tools/objsheet/sheet.py`.
 
