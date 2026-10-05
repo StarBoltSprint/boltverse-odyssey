@@ -4,7 +4,7 @@ Fixture for the clearing → corridor → clearing handoff. The plates in `fixtu
 
 Runtime: [`biome/scripts/zone-flow`](../../biome/scripts/zone-flow/README.md).
 
-The tile grid for a straight corridor is [`tools/wfc-path`](../wfc-path/README.md) ([doc 68](../../biome/docs/68-wfc-path-placement.md)). Its `world_corridors` records use the same keys as `fixture/world.json`. That command does not edit this fixture.
+The tile grid for a straight corridor is [`tools/wfc-path`](../wfc-path/README.md) ([doc 68](../../biome/docs/68-wfc-path-placement.md)). Its `world_corridors` records use the same keys as `fixture/world.json`. That command does not edit this fixture. The Imagine hang that copies those records onto a world is [`packs/corridor-ab`](../../packs/corridor-ab/README.md). This fixture stays synthetic.
 
 ```bash
 node tools/zoneflow/selftest.mjs

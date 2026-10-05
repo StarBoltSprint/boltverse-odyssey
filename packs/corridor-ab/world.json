@@ -1,0 +1,38 @@
+{
+  "awaits": [
+    "A scrolling corridor ground video, empty of Bolt, with bakedGroundSpeed measured from that clip.",
+    "A zone B pack (Ember Mesa). The arrival plate reuses a zone A ground still until that pack exists.",
+    "The Eclipse Gate loft on the mouth. It stays in packs/zone-a and is not rebuilt on this strip."
+  ],
+  "corridors": [
+    {
+      "bakedGroundSpeed": 4,
+      "from": {
+        "gate": "out",
+        "zone": "zone-a"
+      },
+      "ground": "packs/zone-a/src/ground/m1.png",
+      "id": "path-ab",
+      "length_m": 15.95,
+      "to": {
+        "gate": "in",
+        "zone": "zone-b"
+      }
+    }
+  ],
+  "draws_pixels": false,
+  "fadeMs": 400,
+  "note": "WFC hang. Corridors are copied from path-layout.json world_corridors. Ground files are already-cooked Imagine stills. No corridor video. No mid-run solve.",
+  "pathLayout": "packs/corridor-ab/path-layout.json",
+  "preloadM": 8,
+  "schema": "world/1",
+  "sky": "packs/zone-a/src/sky/sky-0.jpg",
+  "start": "zone-a",
+  "tile_m": 1.45,
+  "triggerM": 1.5,
+  "when": "load",
+  "zones": {
+    "zone-a": "packs/corridor-ab/clearing-zone-a.json",
+    "zone-b": "packs/corridor-ab/clearing-zone-b.json"
+  }
+}

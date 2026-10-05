@@ -1,0 +1,94 @@
+{
+  "schema": "wfc-path/1",
+  "seed": 68,
+  "when": "load",
+  "note": "Corridor hang. Assets are zone A ground stills already in the repo. Not a new Imagine cook.",
+  "grid": { "cols": 12, "rows": 3, "tile_m": 1.45 },
+  "tiles": [
+    {
+      "id": "fill-a",
+      "role": "fill",
+      "asset": "packs/zone-a/src/ground/m0.png",
+      "mark": ".",
+      "weight": 3,
+      "sockets": { "n": "void", "e": "void", "s": "void", "w": "void" }
+    },
+    {
+      "id": "fill-b",
+      "role": "fill",
+      "asset": "packs/zone-a/src/ground/m2.png",
+      "mark": ",",
+      "weight": 1,
+      "sockets": { "n": "void", "e": "void", "s": "void", "w": "void" }
+    },
+    {
+      "id": "path-a",
+      "role": "path",
+      "asset": "packs/zone-a/src/ground/m1.png",
+      "mark": "=",
+      "weight": 2,
+      "sockets": { "n": "void", "e": "path", "s": "void", "w": "path" }
+    },
+    {
+      "id": "path-b",
+      "role": "path",
+      "asset": "packs/zone-a/src/ground/m4.png",
+      "mark": "-",
+      "weight": 1,
+      "sockets": { "n": "void", "e": "path", "s": "void", "w": "path" }
+    },
+    {
+      "id": "gate-e",
+      "role": "gate",
+      "asset": "packs/zone-a/src/ground/m3.png",
+      "mark": ">",
+      "sockets": { "n": "void", "e": "path", "s": "void", "w": "void" }
+    },
+    {
+      "id": "gate-w",
+      "role": "gate",
+      "asset": "packs/zone-a/src/ground/m5.png",
+      "mark": "<",
+      "sockets": { "n": "void", "e": "void", "s": "void", "w": "path" }
+    }
+  ],
+  "gates": [
+    {
+      "id": "gate-a",
+      "cell": [0, 1],
+      "tile": "gate-e",
+      "zone": "zone-a",
+      "gate": "out"
+    },
+    {
+      "id": "gate-b",
+      "cell": [11, 1],
+      "tile": "gate-w",
+      "zone": "zone-b",
+      "gate": "in"
+    }
+  ],
+  "links": [
+    {
+      "id": "path-ab",
+      "from": "gate-a",
+      "to": "gate-b",
+      "ground": "packs/zone-a/src/ground/m1.png",
+      "bakedGroundSpeed": 4
+    }
+  ],
+  "hang": {
+    "start": "zone-a",
+    "zoneRadiusM": 12,
+    "sky": "packs/zone-a/src/sky/sky-0.jpg",
+    "plates": {
+      "zone-a": "packs/zone-a/src/ground/m0.png",
+      "zone-b": "packs/zone-a/src/ground/m6.png"
+    },
+    "awaits": [
+      "A scrolling corridor ground video, empty of Bolt, with bakedGroundSpeed measured from that clip.",
+      "A zone B pack (Ember Mesa). The arrival plate reuses a zone A ground still until that pack exists.",
+      "The Eclipse Gate loft on the mouth. It stays in packs/zone-a and is not rebuilt on this strip."
+    ]
+  }
+}

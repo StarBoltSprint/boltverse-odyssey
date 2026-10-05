@@ -55,7 +55,7 @@ A play view that crosses a corridor also puts `transition` on `snapshot()` (`bla
 | Path | What |
 | --- | --- |
 | `tools/layout/layout.py` | `generate` writes `clearing.json` from a zone spec. `check` prints PASS/FAIL rows, writes `report.md` and a top-down diagram, exits non-zero on FAIL. |
-| `tools/wfc-path/wfc.py` | Load-time corridor tiles between two gates ([doc 68](68-wfc-path-placement.md)). Writes `path-layout.json`. Copy `world_corridors` into `world.json` when the run is straight. |
+| `tools/wfc-path/wfc.py` | Load-time corridor tiles between two gates ([doc 68](68-wfc-path-placement.md)). Writes `path-layout.json`. `hang.py` copies `world_corridors` into `world.json` when the run is straight. |
 | `tools/layout/schema.json` | JSON Schema for `clearing.json`. No biome-specific words. |
 | `tools/layout/README.md` | How to run it, and what a PASS does not prove. |
 | `<zone>/clearing.json` | One file per zone. Single source of truth. |

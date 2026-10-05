@@ -1,0 +1,468 @@
+{
+  "corridors": [
+    {
+      "bakedGroundSpeed": 4,
+      "from": {
+        "cell": [
+          0,
+          1
+        ],
+        "gate": "out",
+        "zone": "zone-a"
+      },
+      "ground": "packs/zone-a/src/ground/m1.png",
+      "id": "path-ab",
+      "length_m": 15.95,
+      "segments": [
+        {
+          "assets": [
+            "packs/zone-a/src/ground/m3.png",
+            "packs/zone-a/src/ground/m4.png",
+            "packs/zone-a/src/ground/m1.png",
+            "packs/zone-a/src/ground/m5.png"
+          ],
+          "axis": "x",
+          "cells": [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              2,
+              1
+            ],
+            [
+              3,
+              1
+            ],
+            [
+              4,
+              1
+            ],
+            [
+              5,
+              1
+            ],
+            [
+              6,
+              1
+            ],
+            [
+              7,
+              1
+            ],
+            [
+              8,
+              1
+            ],
+            [
+              9,
+              1
+            ],
+            [
+              10,
+              1
+            ],
+            [
+              11,
+              1
+            ]
+          ],
+          "length_m": 15.95,
+          "tiles": [
+            "gate-e",
+            "path-b",
+            "path-a",
+            "path-b",
+            "path-b",
+            "path-b",
+            "path-a",
+            "path-b",
+            "path-b",
+            "path-a",
+            "path-b",
+            "gate-w"
+          ]
+        }
+      ],
+      "straight": true,
+      "to": {
+        "cell": [
+          11,
+          1
+        ],
+        "gate": "in",
+        "zone": "zone-b"
+      },
+      "waypoints": [
+        [
+          0.725,
+          2.175
+        ],
+        [
+          2.175,
+          2.175
+        ],
+        [
+          3.625,
+          2.175
+        ],
+        [
+          5.075,
+          2.175
+        ],
+        [
+          6.525,
+          2.175
+        ],
+        [
+          7.975,
+          2.175
+        ],
+        [
+          9.425,
+          2.175
+        ],
+        [
+          10.875,
+          2.175
+        ],
+        [
+          12.325,
+          2.175
+        ],
+        [
+          13.775,
+          2.175
+        ],
+        [
+          15.225,
+          2.175
+        ],
+        [
+          16.675,
+          2.175
+        ]
+      ]
+    }
+  ],
+  "draws_pixels": false,
+  "grid": {
+    "cells": [
+      {
+        "asset": "packs/zone-a/src/ground/m2.png",
+        "mark": ",",
+        "role": "fill",
+        "tile": "fill-b",
+        "x": 0,
+        "y": 0
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m0.png",
+        "mark": ".",
+        "role": "fill",
+        "tile": "fill-a",
+        "x": 1,
+        "y": 0
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m0.png",
+        "mark": ".",
+        "role": "fill",
+        "tile": "fill-a",
+        "x": 2,
+        "y": 0
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m2.png",
+        "mark": ",",
+        "role": "fill",
+        "tile": "fill-b",
+        "x": 3,
+        "y": 0
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m2.png",
+        "mark": ",",
+        "role": "fill",
+        "tile": "fill-b",
+        "x": 4,
+        "y": 0
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m0.png",
+        "mark": ".",
+        "role": "fill",
+        "tile": "fill-a",
+        "x": 5,
+        "y": 0
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m0.png",
+        "mark": ".",
+        "role": "fill",
+        "tile": "fill-a",
+        "x": 6,
+        "y": 0
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m2.png",
+        "mark": ",",
+        "role": "fill",
+        "tile": "fill-b",
+        "x": 7,
+        "y": 0
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m0.png",
+        "mark": ".",
+        "role": "fill",
+        "tile": "fill-a",
+        "x": 8,
+        "y": 0
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m0.png",
+        "mark": ".",
+        "role": "fill",
+        "tile": "fill-a",
+        "x": 9,
+        "y": 0
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m0.png",
+        "mark": ".",
+        "role": "fill",
+        "tile": "fill-a",
+        "x": 10,
+        "y": 0
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m0.png",
+        "mark": ".",
+        "role": "fill",
+        "tile": "fill-a",
+        "x": 11,
+        "y": 0
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m3.png",
+        "mark": ">",
+        "role": "gate",
+        "tile": "gate-e",
+        "x": 0,
+        "y": 1
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m4.png",
+        "mark": "-",
+        "role": "path",
+        "tile": "path-b",
+        "x": 1,
+        "y": 1
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m1.png",
+        "mark": "=",
+        "role": "path",
+        "tile": "path-a",
+        "x": 2,
+        "y": 1
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m4.png",
+        "mark": "-",
+        "role": "path",
+        "tile": "path-b",
+        "x": 3,
+        "y": 1
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m4.png",
+        "mark": "-",
+        "role": "path",
+        "tile": "path-b",
+        "x": 4,
+        "y": 1
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m4.png",
+        "mark": "-",
+        "role": "path",
+        "tile": "path-b",
+        "x": 5,
+        "y": 1
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m1.png",
+        "mark": "=",
+        "role": "path",
+        "tile": "path-a",
+        "x": 6,
+        "y": 1
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m4.png",
+        "mark": "-",
+        "role": "path",
+        "tile": "path-b",
+        "x": 7,
+        "y": 1
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m4.png",
+        "mark": "-",
+        "role": "path",
+        "tile": "path-b",
+        "x": 8,
+        "y": 1
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m1.png",
+        "mark": "=",
+        "role": "path",
+        "tile": "path-a",
+        "x": 9,
+        "y": 1
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m4.png",
+        "mark": "-",
+        "role": "path",
+        "tile": "path-b",
+        "x": 10,
+        "y": 1
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m5.png",
+        "mark": "<",
+        "role": "gate",
+        "tile": "gate-w",
+        "x": 11,
+        "y": 1
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m2.png",
+        "mark": ",",
+        "role": "fill",
+        "tile": "fill-b",
+        "x": 0,
+        "y": 2
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m0.png",
+        "mark": ".",
+        "role": "fill",
+        "tile": "fill-a",
+        "x": 1,
+        "y": 2
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m0.png",
+        "mark": ".",
+        "role": "fill",
+        "tile": "fill-a",
+        "x": 2,
+        "y": 2
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m0.png",
+        "mark": ".",
+        "role": "fill",
+        "tile": "fill-a",
+        "x": 3,
+        "y": 2
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m0.png",
+        "mark": ".",
+        "role": "fill",
+        "tile": "fill-a",
+        "x": 4,
+        "y": 2
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m0.png",
+        "mark": ".",
+        "role": "fill",
+        "tile": "fill-a",
+        "x": 5,
+        "y": 2
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m0.png",
+        "mark": ".",
+        "role": "fill",
+        "tile": "fill-a",
+        "x": 6,
+        "y": 2
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m0.png",
+        "mark": ".",
+        "role": "fill",
+        "tile": "fill-a",
+        "x": 7,
+        "y": 2
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m0.png",
+        "mark": ".",
+        "role": "fill",
+        "tile": "fill-a",
+        "x": 8,
+        "y": 2
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m2.png",
+        "mark": ",",
+        "role": "fill",
+        "tile": "fill-b",
+        "x": 9,
+        "y": 2
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m2.png",
+        "mark": ",",
+        "role": "fill",
+        "tile": "fill-b",
+        "x": 10,
+        "y": 2
+      },
+      {
+        "asset": "packs/zone-a/src/ground/m2.png",
+        "mark": ",",
+        "role": "fill",
+        "tile": "fill-b",
+        "x": 11,
+        "y": 2
+      }
+    ],
+    "cols": 12,
+    "rows": 3,
+    "tile_m": 1.45
+  },
+  "schema": "wfc-path/1",
+  "seed": 68,
+  "when": "load",
+  "world_corridors": [
+    {
+      "bakedGroundSpeed": 4,
+      "from": {
+        "gate": "out",
+        "zone": "zone-a"
+      },
+      "ground": "packs/zone-a/src/ground/m1.png",
+      "id": "path-ab",
+      "length_m": 15.95,
+      "to": {
+        "gate": "in",
+        "zone": "zone-b"
+      }
+    }
+  ]
+}

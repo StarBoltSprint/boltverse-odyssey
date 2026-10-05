@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <link rel="icon" href="data:," />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Corridor</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: #000; overflow: hidden; touch-action: none; }
+    #view { display: block; width: 100vw; height: 100vh; touch-action: none; }
+    #hud {
+      display: none; position: fixed; left: 10px; top: 10px; z-index: 2;
+      color: rgba(255,255,255,0.86); font: 12px/1.35 ui-monospace, monospace;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="view" width="720" height="1600"></canvas>
+  <div id="hud"></div>
+  <script type="module" src="./play.js"></script>
+</body>
+</html>
