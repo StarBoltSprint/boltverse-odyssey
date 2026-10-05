@@ -31,4 +31,4 @@ Treating the painted Anchor arch as a hole in the mesh. The face field is right 
 - New failure entries: one, dated 2026-10-05, the Anchor loft bridges the painted arch.
 - Geometry: no change.
 - Owner taste: no new row. The owner has not reviewed this step.
-- Preview: freeze after the commit, loopback only.
+- Preview: `python3 tools/preview/freeze.py --zone zone-b --commit d043ca6` exited 0. Page `previews/zone-b/index.html`. Loopback only. `publicUrl` stays null.
