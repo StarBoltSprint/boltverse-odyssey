@@ -27,7 +27,7 @@ Hung citadel recipe (kitchen): https://boltverse-odyssey.grok.me
 
 **HARD / FAIL — details stay Imagine Video.** Rocks, ruins, vapor, crystals, path dressing, terrain relief dressing, and vegetation dressing beyond the sealed herbe/arbres cook are cooked Imagine plates or keyed Imagine layers over densify/sol/ciel. Do not invent mesh or live procedural generators for path, terrain, vegetation, ruins, or details (old Three.js PathGenerator / Terrain / Detail class). Inventing those generators instead of cooking Imagine detail assets is FAIL. Simplex placement of already-cooked herbe/arbres stays.
 
-**HARD / FAIL — simplex places, Imagine draws.** Simplex (and placement noise) places already-cooked Imagine assets only. It does not draw the world. Drawing is Imagine Video. Noise that paints terrain, relief, or details is FAIL.
+**HARD / FAIL — simplex places, Imagine draws.** Simplex (and placement noise) places already-cooked Imagine assets only. It does not draw the world. Drawing is Imagine Video. Noise that paints terrain, relief, or details is FAIL. Wave Function Collapse follows the same rule when it places already-cooked corridor tiles between gates at load time ([`biome/docs/68-wfc-path-placement.md`](biome/docs/68-wfc-path-placement.md), `tools/wfc-path`). Mid-run WFC fails. A solve that draws a pixel fails.
 
 ## Product model — Grok = console, Odyssey = game
 

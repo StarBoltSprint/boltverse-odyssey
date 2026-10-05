@@ -13,7 +13,7 @@ Every zone follows one order:
 1. `python3 tools/assetcheck/check.py` on every Imagine image or video.
 2. `python3 tools/objsheet/sheet.py` on every object's view set.
 3. `tools/walkaround/build.py` only after that sheet exits 0.
-4. `python3 tools/layout/layout.py generate`, then `layout.py check`. One `clearing.json` per zone. Paste that `report.md`. Invisible shape only. A spec may name a validated object by id (`{ "library": "<object-id>" }`, [`biome/library`](../../biome/library/README.md)) instead of recooking it. With a corridor, add `--world <world.json>` so the `transition` row is included. Without `--world` the row set is unchanged.
+4. `python3 tools/layout/layout.py generate`, then `layout.py check`. One `clearing.json` per zone. Paste that `report.md`. Invisible shape only. A spec may name a validated object by id (`{ "library": "<object-id>" }`, [`biome/library`](../../biome/library/README.md)) instead of recooking it. With a corridor, add `--world <world.json>` so the `transition` row is included. Without `--world` the row set is unchanged. A solved tile grid for that straight corridor is a separate kitchen file: `python3 tools/wfc-path/wfc.py generate` ([doc 68](68-wfc-path-placement.md)). It writes `path-layout.json`. It leaves `clearing.json` alone, and it does not run during play.
 5. `tools/playcheck/run` on the rendered 720×1600 play view. `--layout` is that same file.
 6. `python3 tools/reportview/build.py` and deliver the page with the play URL. This is the last step. It only displays the reports above. A missing section is NOT RUN, not PASS. [`tools/reportview/README.md`](../../tools/reportview/README.md).
 
@@ -55,6 +55,7 @@ A play view that crosses a corridor also puts `transition` on `snapshot()` (`bla
 | Path | What |
 | --- | --- |
 | `tools/layout/layout.py` | `generate` writes `clearing.json` from a zone spec. `check` prints PASS/FAIL rows, writes `report.md` and a top-down diagram, exits non-zero on FAIL. |
+| `tools/wfc-path/wfc.py` | Load-time corridor tiles between two gates ([doc 68](68-wfc-path-placement.md)). Writes `path-layout.json`. Copy `world_corridors` into `world.json` when the run is straight. |
 | `tools/layout/schema.json` | JSON Schema for `clearing.json`. No biome-specific words. |
 | `tools/layout/README.md` | How to run it, and what a PASS does not prove. |
 | `<zone>/clearing.json` | One file per zone. Single source of truth. |
