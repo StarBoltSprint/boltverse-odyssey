@@ -1,0 +1,55 @@
+{
+  "schema": "wfc-path/1",
+  "seed": 1,
+  "when": "load",
+  "note": "TEST FIXTURE. Adjacent gates whose sockets cannot meet. Expect FAIL contradiction. Not Imagine.",
+  "grid": { "cols": 2, "rows": 1, "tile_m": 1 },
+  "tiles": [
+    {
+      "id": "empty",
+      "role": "fill",
+      "asset": "testdata/tiles/empty",
+      "mark": ".",
+      "sockets": { "n": "void", "e": "void", "s": "void", "w": "void" }
+    },
+    {
+      "id": "path-ew",
+      "role": "path",
+      "asset": "testdata/tiles/path-ew",
+      "mark": "=",
+      "sockets": { "n": "void", "e": "path", "s": "void", "w": "path" }
+    },
+    {
+      "id": "gate-e",
+      "role": "gate",
+      "asset": "testdata/tiles/gate-e",
+      "mark": ">",
+      "sockets": { "n": "void", "e": "path", "s": "void", "w": "void" }
+    }
+  ],
+  "gates": [
+    {
+      "id": "gate-a",
+      "cell": [0, 0],
+      "tile": "gate-e",
+      "zone": "zone-a",
+      "gate": "out"
+    },
+    {
+      "id": "gate-b",
+      "cell": [1, 0],
+      "tile": "gate-e",
+      "zone": "zone-b",
+      "gate": "in"
+    }
+  ],
+  "links": [
+    {
+      "id": "path-ab",
+      "from": "gate-a",
+      "to": "gate-b",
+      "ground": "testdata/assets/corridor-ground",
+      "bakedGroundSpeed": 4
+    }
+  ]
+}

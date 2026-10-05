@@ -64,6 +64,7 @@ Each zone has its own `clearing.json` (doc 63). The links between zones are the 
 ### Corridor rules
 
 - Straight, one direction. No free 360° turn on a corridor; turning around is a zone job.
+- That straight run may be placed at load time by [`tools/wfc-path`](../../tools/wfc-path/README.md) ([doc 68](68-wfc-path-placement.md)). Neighbor sockets choose already-cooked tile ids. The file is `path-layout.json` (waypoints plus one straight segment). The solve does not draw, and it does not run again during play.
 - Floor = scrolling Imagine ground video, empty of Bolt, locked camera, portrait, at or above on-screen pixels (magnification ≤ 1.0).
 - **Speed-tied:** `rate = boltSpeed / bakedGroundSpeed`. Bolt stops → the video stops and Bolt plays idle. Bolt accelerates → the video accelerates. Ground rolling under an idle Bolt, or a galloping Bolt on frozen ground, is FAIL. Under `0.05` m/s the rate is `0` and the clip is `lock/bolt-idle-breath.mp4`. Otherwise the clip is `lock/bolt-gallop-cycle.mp4`. Neither file is recooked.
 - **Handoff.** [`biome/scripts/zone-flow`](../../biome/scripts/zone-flow/README.md) preloads the next plate within `preloadM` (default 8 m), then crossfades (`fadeMs`, default 400) when the hero is inside `triggerM` (default 1.5 m) of the gate mouth from `clearing.json`. Weights sum to 1. The previous zone's source is cleared only after the fade. If the next plate is not ready, the current plate stays up. A black frame (luma under 12 on at least 92% of sampled pixels) is FAIL. A hitch over 100 ms is FAIL.
