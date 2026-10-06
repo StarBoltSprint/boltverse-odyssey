@@ -2,8 +2,8 @@
   "schema": "wfc-path/1",
   "seed": 68,
   "when": "load",
-  "note": "Corridor hang. Assets are zone A ground stills already in the repo. Not a new Imagine cook.",
-  "grid": { "cols": 12, "rows": 3, "tile_m": 1.45 },
+  "note": "Corridor hang. Assets are zone A ground stills already in the repo. Not a new Imagine cook. One straight run, long enough to walk.",
+  "grid": { "cols": 56, "rows": 3, "tile_m": 1.45 },
   "tiles": [
     {
       "id": "fill-a",
@@ -62,7 +62,7 @@
     },
     {
       "id": "gate-b",
-      "cell": [11, 1],
+      "cell": [55, 1],
       "tile": "gate-w",
       "zone": "zone-b",
       "gate": "in"
@@ -88,7 +88,7 @@
     "awaits": [
       "A scrolling corridor ground video, empty of Bolt, with bakedGroundSpeed measured from that clip.",
       "A zone B pack (Ember Mesa). The arrival plate reuses a zone A ground still until that pack exists.",
-      "The Eclipse Gate loft on the mouth. It stays in packs/zone-a and is not rebuilt on this strip."
+      "Corridor Imagine tiles. The floor is still the zone A ground stills, one file per solved cell."
     ]
   }
 }

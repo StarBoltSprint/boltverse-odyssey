@@ -37,7 +37,7 @@ test("gate mouths sit on the waypoints and leads_to is the corridor", () => {
     const hit = gateMouth(clearing.zone.center, gate.heading_deg, clearing.edge_ring.radius_m);
     assert.ok(Math.abs(hit.x - waypoint[0]) < 1e-4, `${zoneId} x`);
     assert.ok(Math.abs(hit.z - waypoint[1]) < 1e-4, `${zoneId} z`);
-    const centre = cellCenter(gate.id === "out" ? 0 : 11, 1, layout.grid.tile_m);
+    const centre = cellCenter(gate.id === "out" ? 0 : layout.grid.cols - 1, 1, layout.grid.tile_m);
     assert.ok(Math.abs(centre[0] - waypoint[0]) < 1e-6);
     assert.ok(Math.abs(centre[1] - waypoint[1]) < 1e-6);
   }
@@ -54,4 +54,5 @@ test("Bolt's pose walks the waypoint segment", () => {
   assert.ok(Math.abs(end.x - corridor.waypoints.at(-1)[0]) < 1e-6);
   assert.ok(mid.x > start.x && mid.x < end.x);
   assert.ok(Math.abs(mid.heading - 90) < 1e-6);
+  assert.ok(corridor.length_m >= 60 && corridor.length_m <= 120);
 });

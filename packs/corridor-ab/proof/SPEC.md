@@ -1,26 +1,20 @@
-# Step — hang the WFC corridor
+# Step — corridor ground covers the pass start
 
-Goal: copy a load-time WFC `path-layout.json` into a world a player can walk. Bolt moves from the zone A gate, along the placed corridor, to the zone B gate. No new Imagine file. No mid-run solve.
+Goal: the pass clip no longer shows black ground near Bolt. The existing carpet quad reaches past the camera at the pass start, so the floor is the m3 still from frame 0 at every pace. The three nit fixes stay. No new Imagine file.
 
 ## Rails
 
-- WFC stays placement. `when` is `load`. `draws_pixels` is false.
-- `world.json` `corridors` is a copy of `world_corridors`. Waypoints stay in `path-layout.json`.
-- The from-gate `leads_to` is the corridor id.
-- Tile assets and the corridor `ground` are files already under `packs/zone-a/src/ground/`.
-- No corridor video exists. The floor is those stills, one file per solved cell, at the zone A tile step of 1.45 m.
-- Zone B has no pack. The arrival plate reuses one zone A ground still and is labelled as that stand-in.
-- The Eclipse Gate loft stays in `packs/zone-a`. This strip does not build a second gate mesh.
-- Level chase. Horizon at 0.50 of 720×1600. No typed colour. No Three.js mesh. No new pixels.
-- Phone: one Bolt video, stills with mipmaps, draw calls under 12.
+- One ground quad, native m3, the same fog sample, the same draws. Extending the quad does not add a texture or a draw.
+- The west edge stays behind the near ground of the pass shot (Bolt about 118 m before the gate, camera 6.1 m behind him).
+- Horizon seats, rock sink, and the 16 m gate offset stay.
 
 ## Done when
 
-1. `hang.py` writes `world.json` corridors equal to `path-layout.json` `world_corridors`.
-2. Waypoints stay in `path-layout.json`. `draws_pixels` is false. `when` is `load`.
-3. The zone A gate `leads_to` is `path-ab`.
-4. `ground` and every tile asset are existing files under `packs/zone-a/src/ground/`.
-5. `layout.py check --world` prints `PASS  transition` for both zone stubs.
-6. The play page places those files on the solved cells and walks Bolt with zone-flow.
-7. No new Imagine file is added. The solve does not run during play.
-8. `hang_selftest.py` and `place.test.mjs` exit 0.
+1. The carpet west edge is at least 40 m behind the pass-shot Bolt.
+2. Frame 0 of the new pass clip has no pure-black pixels in the bottom 60% of the frame.
+3. Every 6th frame of that clip is the same.
+4. Walk and sprint titles stay at 7 draws and 184.5 MB.
+5. The play tests, `hang_selftest.py`, and `renderlint` exit 0.
+6. A frame-0 still is saved next to the recooked `monolith-pass.mp4`.
+7. No new Imagine file.
+8. The horizon seats, the rock sink, and the gate offset are unchanged.

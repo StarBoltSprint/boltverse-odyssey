@@ -1,6 +1,6 @@
 # Corridor A → B
 
-Bolt walks a load-time WFC corridor from the zone A gate to the zone B gate. The solve is placement only. Every floor texel is a zone A ground still that was already cooked. Nothing in this folder is a new Imagine file.
+Bolt walks one straight load-time WFC corridor from the zone A gate to the zone B gate. The run is 79.75 m. The solve is placement only. Nothing in this folder is a new Imagine file.
 
 ```bash
 python3 tools/wfc-path/hang.py \
@@ -8,7 +8,7 @@ python3 tools/wfc-path/hang.py \
   --out packs/corridor-ab
 
 python3 tools/wfc-path/hang_selftest.py
-node --test packs/corridor-ab/play/place.test.mjs
+node --test packs/corridor-ab/play/*.test.mjs
 ```
 
 Serve the repo root, then open the play page:
@@ -19,31 +19,28 @@ python3 -m http.server 8765 --bind 127.0.0.1
 
 `http://127.0.0.1:8765/packs/corridor-ab/play/`
 
-Hold the screen to walk. Release to stop. Bolt uses `lock/bolt-gallop-cycle.mp4` while moving and `lock/bolt-idle-breath.mp4` when stopped. `?debug=1` shows the handoff line. `?shot=mid` stands on the corridor. The framebuffer from that stand is `proof/walk-mid.png` (zone A stills and the idle lock, not a new painting).
+The stick is on the left, the same control as zone A. Stick right turns right. Stick left turns left. A swipe up on the rest of the screen looks up, then the tilt eases back to level. Holding the stick forward walks. Pushing it hard sprints: speed climbs while the hold lasts and eases back on release. `?debug=1` shows the perf line. `?shot=walk` and `?shot=sprint` stand on the run at that pace. `?shot=film` sprints forward so solids can rise ahead. `?seed=` changes the stream.
 
-## What is hung
+## What is procedural now
 
-| File | Role |
+The floor solve is decided once, when the page loads. The props stream while Bolt runs.
+
+| Piece | How |
 | --- | --- |
-| `path-layout.json` | Grid, waypoints, segments. `when` is `load`. `draws_pixels` is false. |
-| `world.json` | `corridors` copied from `world_corridors`. Same keys `tools/layout` already checks. |
-| `clearing-zone-a.json` | Handoff stub. Gate `out` `leads_to` is `path-ab`. |
-| `clearing-zone-b.json` | Handoff stub for the arrival gate. |
-| `play/` | Places each solved cell's Imagine file on that cell and walks Bolt with zone-flow. |
+| Floor tiles | The WFC solve in `path-layout.json` still decides the link at load (`when` is `load`, `draws_pixels` is false). One quad paints `packs/zone-a/src/ground/m3.png` at its native 1024². The sampler repeats it. Four windows of that same still crossfade so a rim cannot line up into a square. |
+| Where Bolt may walk | Zone-flow, on the straight link, when he stays near it. Yaw is free. Nothing clamps him with an invisible wall. Contact uses the loft faces and each live rock's hull footprint. |
+| Speed | Walk, then a climb toward the sprint cap while the stick stays hard forward. Release eases the speed back. |
+| Arch, Eclipse Gate, wreck | The zone A lofts. One of each is seated ahead of Bolt from the seed and recycled when it falls behind. The arch opening stays walkable. |
+| Boulder and stone hulls | A seeded pool. Slots appear ahead, rise into place, and recycle behind. A faster pace fills more of the pool. The same seed and the same speed history rebuild the same slots. |
 
-`diagram.txt` and `diagram.svg` are the kitchen index picture. They are not the play view.
+The sky is zone A's closed dome: horizon, upper, and high slices, the zenith cap, and the stars, dust, and nebula loops. It follows the eye, so a turn or a tilt stays inside the sky. Sky is the only backdrop.
 
-The ground file on the corridor record is `packs/zone-a/src/ground/m1.png`. Cell assets are `m0`–`m5`. The zone plates are `m0` and `m6`. The sky slice is `packs/zone-a/src/sky/sky-0.jpg`. Tile step is 1.45 m, the step already declared on the zone A ground.
+Zone A's shard and ground-detail cuts are crossed cards. This page does not hang those cards. The small solids are the boulder and stone hulls.
 
-## What Bolt can do
+## What still needs Imagine corridor tiles
 
-From the zone A stub, walk to the gate. Zone-flow preloads the corridor and crossfades. On the corridor, Bolt follows the waypoints. At the far gate the handoff opens the zone B stub.
-
-## What still waits
-
-- A scrolling corridor ground video, empty of Bolt, with `bakedGroundSpeed` measured from that clip. The number `4` is stored so the transition row has a speed. It is not applied to a still.
-- A zone B pack (Ember Mesa). The arrival plate reuses `m6.png` from zone A. It is not Ember Mesa.
-- The Eclipse Gate loft. It stays in `packs/zone-a` and is not rebuilt on this strip.
-- The relief clearing `packs/zone-a/clearing.json` has no `gates[]` entry. These stubs are the handoff, not a rewrite of that pack.
+- A scrolling corridor ground video, empty of Bolt, with `bakedGroundSpeed` measured from that clip. The floor is still the zone A ground stills (`m0`–`m5`), repeated on the 1.45 m step.
+- A zone B pack (Ember Mesa). The arrival plate reuses `m6.png` from zone A.
+- No second gate mesh was built. The Eclipse Gate on this run is the loft already in `packs/zone-a`.
 
 `layout.py check --world` is the transition row only. The stubs are not an organic zone PASS.

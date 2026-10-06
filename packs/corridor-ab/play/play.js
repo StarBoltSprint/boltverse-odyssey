@@ -1,7 +1,6 @@
 /**
- * Walk Bolt along a hung WFC corridor.
- * Every texel is an Imagine file already in the repo, or the locked Bolt video.
- * The solve does not run here. Zone-flow only decides the handoff and the rate.
+ * Walk the hung corridor with zone A's look, sky, and solids.
+ * The corridor solve stays at load. Hulls and lofts stream ahead while Bolt runs.
  */
 
 window.addEventListener("error", (event) => {
@@ -12,22 +11,59 @@ window.addEventListener("unhandledrejection", (event) => {
   document.title = "REJ " + (reason && reason.message ? reason.message : reason);
 });
 
-import { createFlow, BOLT_GALLOP, BOLT_IDLE, boltClip } from "../../../biome/scripts/zone-flow/zoneFlow.mjs";
+import { createFlow, BOLT_GALLOP, BOLT_IDLE } from "../../../biome/scripts/zone-flow/zoneFlow.mjs";
 import { poseOnCorridor } from "./place.js";
+import {
+  CHASE_BOOM,
+  CHASE_EYE,
+  CHASE_SLIDE,
+  chasePitch,
+  chaseViewInto,
+  createLook,
+  endLook,
+  GATE_TOP,
+  PAW_FRAC_FALLBACK,
+  pitchForTall,
+  pitchOf,
+  pushLook,
+  stepLook,
+  TURN_DPS,
+  wrap360,
+} from "./look.js";
+import { pushDiscs, RUN_YAW } from "./scatter.js";
+import { GATE_FIRST, PASS_BACK, POOL, RISE_M, carpetWest, createField, horizonSeats, rockBottom, rockCount, settleField, stepField } from "./stream.js";
+import { DEFAULT_POST, POST_LIMITS } from "../../zone-a/play/biomeblend.js";
+import { mountSky } from "./sky.js";
+import { mountRuins } from "../../zone-a/play/ruins.js";
+import { loadWorldHull } from "../../zone-a/play/hullmesh.js";
 
 const params = new URLSearchParams(location.search);
 const shot = params.get("shot");
 const debug = params.get("debug") === "1";
-const WALK = 4;
-const BOOM = 5.5;
-const EYE = 1.55;
-const FOV = 40 * Math.PI / 180;
+const shotDeg = Number(params.get("deg") || 90);
+const shotAt = Number(params.get("at") || 0.5);
+const shotTilt = shot === "tilt" || params.get("tilt") === "1";
+const HFOV = 22.7 * Math.PI / 180;
+const ASPECT = 720 / 1600;
+const VFOV = 2 * Math.atan(Math.tan(HFOV / 2) / ASPECT);
+const BOLT_H = 2.15;
 
 const canvas = document.getElementById("view");
 const hud = document.getElementById("hud");
+const stick = document.getElementById("stick");
+const nub = document.getElementById("nub");
+canvas.width = 720;
+canvas.height = 1600;
 if (debug) hud.style.display = "block";
+if (shot && stick) stick.style.display = "none";
+
 const gl = canvas.getContext("webgl2", { alpha: false, antialias: false, preserveDrawingBuffer: true });
 if (!gl) throw new Error("webgl2 missing");
+
+function absUrl(path) {
+  const text = String(path || "");
+  return text.startsWith("/") ? text : "/" + text.replace(/^\.\//, "");
+}
 
 const world = await fetch("../world.json").then((r) => r.json());
 const layout = await fetch("../path-layout.json").then((r) => r.json());
@@ -39,203 +75,551 @@ for (const [id, listed] of Object.entries(world.zones)) {
 const flow = createFlow(world, { zones });
 const corridor = layout.corridors[0];
 const tileM = layout.grid.tile_m;
+const seed = Number(params.get("seed") || layout.seed || 1);
 
-const VS = `#version 300 es
-layout(location=0) in vec2 aCorner;
-layout(location=1) in vec3 aOrigin;
-uniform mat4 uViewProj;
-uniform vec3 uOrigin;
-uniform vec3 uAxisU;
-uniform vec3 uAxisV;
-uniform vec2 uSize;
-uniform float uWorldUv;
-uniform float uTileM;
-uniform float uScreen;
-uniform vec4 uScreenBox;
-out vec2 vUv;
-void main() {
-  if (uScreen > 0.5) {
-    vec2 p = mix(uScreenBox.xy, uScreenBox.zw, aCorner);
-    gl_Position = vec4(p, 0.0, 1.0);
-    vUv = aCorner;
-    return;
-  }
-  vec3 worldPos = uOrigin + aOrigin
-    + (aCorner.x - 0.5) * uSize.x * uAxisU
-    + (aCorner.y - 0.5) * uSize.y * uAxisV;
-  gl_Position = uViewProj * vec4(worldPos, 1.0);
-  vec2 tiled = vec2(worldPos.x, worldPos.z) / uTileM;
-  vUv = mix(aCorner, tiled, uWorldUv);
-}`;
-
-const FS = `#version 300 es
-precision mediump float;
-uniform sampler2D uTex;
-uniform float uAlpha;
-uniform float uKey;
-in vec2 vUv;
-out vec4 o;
-void main() {
-  vec4 c = texture(uTex, vUv);
-  if (uKey > 0.5) {
-    float dg = c.g - max(c.r, c.b);
-    if (dg > 0.027) discard;
-  }
-  o = vec4(c.rgb, c.a * uAlpha);
-}`;
-
-function compile(type, source) {
-  const shader = gl.createShader(type);
-  gl.shaderSource(shader, source);
-  gl.compileShader(shader);
-  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    throw new Error(gl.getShaderInfoLog(shader) || "shader");
-  }
-  return shader;
+let texBytes = 0;
+function trackTex(id, bytes) {
+  texBytes += Number(bytes) || 0;
 }
 
-const prog = gl.createProgram();
-gl.attachShader(prog, compile(gl.VERTEX_SHADER, VS));
-gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FS));
-gl.linkProgram(prog);
-if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
-  throw new Error(gl.getProgramInfoLog(prog) || "link");
-}
-gl.useProgram(prog);
-const loc = {
-  view: gl.getUniformLocation(prog, "uViewProj"),
-  origin: gl.getUniformLocation(prog, "uOrigin"),
-  axisU: gl.getUniformLocation(prog, "uAxisU"),
-  axisV: gl.getUniformLocation(prog, "uAxisV"),
-  size: gl.getUniformLocation(prog, "uSize"),
-  worldUv: gl.getUniformLocation(prog, "uWorldUv"),
-  tileM: gl.getUniformLocation(prog, "uTileM"),
-  screen: gl.getUniformLocation(prog, "uScreen"),
-  screenBox: gl.getUniformLocation(prog, "uScreenBox"),
-  alpha: gl.getUniformLocation(prog, "uAlpha"),
-  key: gl.getUniformLocation(prog, "uKey"),
-};
-
-const quad = gl.createBuffer();
-gl.bindBuffer(gl.ARRAY_BUFFER, quad);
-gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 1, 0, 0, 1, 1, 1]), gl.STATIC_DRAW);
-gl.enableVertexAttribArray(0);
-gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
-
-const originBuf = gl.createBuffer();
-gl.bindBuffer(gl.ARRAY_BUFFER, originBuf);
-gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 0]), gl.DYNAMIC_DRAW);
-gl.enableVertexAttribArray(1);
-gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
-gl.vertexAttribDivisor(1, 1);
-
-const textures = new Map();
-const cellGroups = new Map();
-for (const cell of layout.grid.cells) {
-  const list = cellGroups.get(cell.asset) || [];
-  const centre = cellCenter(cell.x, cell.y);
-  list.push(centre[0], 0.01, centre[1]);
-  cellGroups.set(cell.asset, list);
-}
-const groupBufs = new Map();
-for (const [asset, floats] of cellGroups) {
-  const buf = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(floats), gl.STATIC_DRAW);
-  groupBufs.set(asset, { buf, count: floats.length / 3 });
-}
-
-function cellCenter(col, row) {
-  return [(col + 0.5) * tileM, (row + 0.5) * tileM];
-}
+const sky = await mountSky(gl, {
+  absUrl,
+  viewW: 720,
+  viewH: 1600,
+  hfov: HFOV,
+  vfov: VFOV,
+});
+texBytes += sky.texBytes;
 
 function loadImage(url) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => resolve(img);
     img.onerror = () => reject(new Error(url));
-    img.src = url.startsWith("/") ? url : "/" + url.replace(/^\.\//, "");
+    img.src = url;
   });
 }
 
-function makeTexture(img, repeat) {
-  const tex = gl.createTexture();
-  gl.bindTexture(gl.TEXTURE_2D, tex);
-  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, repeat ? gl.REPEAT : gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, repeat ? gl.REPEAT : gl.CLAMP_TO_EDGE);
-  gl.generateMipmap(gl.TEXTURE_2D);
-  return tex;
+// One still for the whole carpet, native 1024², no resize.
+// m0 and m1 are darker at the rim than in the core, so a repeat draws a square.
+// m3 wraps and the rim matches the core (about 1 luma).
+const GROUND_STILL = "packs/zone-a/src/ground/m3.png";
+const images = [await loadImage(absUrl(GROUND_STILL))];
+const maxW = images[0].width;
+const maxH = images[0].height;
+const groundLevels = Math.floor(Math.log2(Math.max(maxW, maxH))) + 1;
+const groundTex = gl.createTexture();
+gl.bindTexture(gl.TEXTURE_2D_ARRAY, groundTex);
+gl.texStorage3D(gl.TEXTURE_2D_ARRAY, groundLevels, gl.RGBA8, maxW, maxH, images.length);
+gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.REPEAT);
+gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.REPEAT);
+const aniso = gl.getExtension("EXT_texture_filter_anisotropic");
+if (aniso) {
+  const maxA = gl.getParameter(aniso.MAX_TEXTURE_MAX_ANISOTROPY_EXT) || 1;
+  gl.texParameterf(gl.TEXTURE_2D_ARRAY, aniso.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(8, maxA));
 }
-
-const urls = new Set([world.sky]);
-for (const zone of Object.values(zones)) urls.add(zone.plate);
-for (const asset of cellGroups.keys()) urls.add(asset);
-const images = new Map();
-for (const url of urls) images.set(url, await loadImage(url));
-for (const [url, img] of images) {
-  const repeat = url !== world.sky;
-  textures.set(url, makeTexture(img, repeat));
-}
-
-function sampleHorizon(img) {
-  const band = Math.max(1, Math.round(img.height * 0.08));
+gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+for (let i = 0; i < images.length; i++) {
+  const img = images[i];
   const scratch = document.createElement("canvas");
   scratch.width = img.width;
-  scratch.height = band;
+  scratch.height = img.height;
   const ctx = scratch.getContext("2d", { willReadFrequently: true });
-  ctx.drawImage(img, 0, img.height - band, img.width, band, 0, 0, img.width, band);
-  const data = ctx.getImageData(0, 0, scratch.width, scratch.height).data;
+  ctx.drawImage(img, 0, 0);
+  const pixels = new Uint8Array(ctx.getImageData(0, 0, img.width, img.height).data.buffer);
+  gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, i, img.width, img.height, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+}
+gl.generateMipmap(gl.TEXTURE_2D_ARRAY);
+texBytes += Math.ceil(maxW * maxH * 4 * images.length * 4 / 3);
+
+const xStart = corridor.waypoints[0][0];
+const xEnd = corridor.waypoints[corridor.waypoints.length - 1][0];
+const pathZ = corridor.waypoints[0][1];
+const passBoltX = xStart + GATE_FIRST - PASS_BACK;
+const ix0 = Math.floor(carpetWest(xStart, passBoltX) / tileM);
+const ix1 = Math.floor((xEnd + 160) / tileM);
+const iz0 = Math.floor((pathZ - 70) / tileM);
+const iz1 = Math.floor((pathZ + 70) / tileM);
+// One quad. The repeat is the sampler, not a grid of meshes, so the tiles do not draw a seam.
+const groundRect = new Float32Array([
+  ix0 * tileM,
+  iz0 * tileM,
+  (ix1 + 1) * tileM,
+  (iz1 + 1) * tileM,
+]);
+
+function clampPost(v, key) {
+  const lim = POST_LIMITS[key];
+  return Math.min(lim[1], Math.max(lim[0], v));
+}
+const fogK = clampPost(DEFAULT_POST.fogDensity, "fogDensity");
+const fogCap = clampPost(DEFAULT_POST.fogCap, "fogCap");
+let fogRgb = [0, 0, 0];
+let fogOn = 0;
+async function sampleSkyFog() {
+  const names = ["sky-0.jpg", "sky-4.jpg", "sky-8.jpg"];
   let r = 0;
   let g = 0;
   let b = 0;
   let n = 0;
-  for (let i = 0; i < data.length; i += 16) {
-    r += data[i];
-    g += data[i + 1];
-    b += data[i + 2];
-    n += 1;
+  for (let i = 0; i < names.length; i++) {
+    let img;
+    try {
+      img = await loadImage(absUrl("packs/zone-a/src/sky/" + names[i]));
+    } catch (err) {
+      return;
+    }
+    const c = document.createElement("canvas");
+    c.width = img.width;
+    c.height = img.height;
+    const g2 = c.getContext("2d", { willReadFrequently: true });
+    g2.drawImage(img, 0, 0);
+    const y0 = Math.max(0, Math.floor(img.height * 0.72));
+    const y1 = Math.min(img.height, Math.ceil(img.height * 0.9));
+    const data = g2.getImageData(0, y0, img.width, Math.max(1, y1 - y0)).data;
+    for (let p = 0; p < data.length; p += 16) {
+      r += data[p];
+      g += data[p + 1];
+      b += data[p + 2];
+      n += 1;
+    }
   }
-  return [r / n / 255, g / n / 255, b / n / 255];
+  if (!n) return;
+  fogRgb = [r / n / 255, g / n / 255, b / n / 255];
+  fogOn = 1;
+}
+await sampleSkyFog();
+
+const GROUND_VS = `#version 300 es
+layout(location=0) in vec2 aCorner;
+uniform mat4 uVP;
+uniform vec4 uRect;
+uniform float uTile;
+out vec2 vUv;
+out vec2 vXz;
+void main() {
+  vec2 xz = vec2(mix(uRect.x, uRect.z, aCorner.x), mix(uRect.y, uRect.w, aCorner.y));
+  gl_Position = uVP * vec4(xz.x, 0.0, xz.y, 1.0);
+  vUv = xz / uTile;
+  vXz = xz;
+}`;
+const GROUND_FS = `#version 300 es
+precision highp float;
+precision highp sampler2DArray;
+uniform sampler2DArray uTex;
+uniform vec2 uEye;
+uniform vec3 uFog;
+uniform float uFogK;
+uniform float uFogCap;
+in vec2 vUv;
+in vec2 vXz;
+out vec4 o;
+float hash12(vec2 p) {
+  vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+  p3 += dot(p3, p3.yzx + 33.33);
+  return fract((p3.x + p3.y) * p3.z);
+}
+vec2 hash22(vec2 p) {
+  return vec2(hash12(p), hash12(p + 17.13));
+}
+void main() {
+  // Four windows of the same still, crossfaded, so the still's own rim
+  // does not line up into a square every 1.45 m. Every sample is that still.
+  vec2 iuv = floor(vUv);
+  vec2 fuv = fract(vUv);
+  vec2 ddx = dFdx(vUv);
+  vec2 ddy = dFdy(vUv);
+  vec2 ofa = hash22(iuv);
+  vec2 ofb = hash22(iuv + vec2(1.0, 0.0));
+  vec2 ofc = hash22(iuv + vec2(0.0, 1.0));
+  vec2 ofd = hash22(iuv + vec2(1.0, 1.0));
+  vec2 b = smoothstep(vec2(0.25), vec2(0.75), fuv);
+  vec3 c00 = textureGrad(uTex, vec3(fuv + ofa, 0.0), ddx, ddy).rgb;
+  vec3 c10 = textureGrad(uTex, vec3(fuv + ofb, 0.0), ddx, ddy).rgb;
+  vec3 c01 = textureGrad(uTex, vec3(fuv + ofc, 0.0), ddx, ddy).rgb;
+  vec3 c11 = textureGrad(uTex, vec3(fuv + ofd, 0.0), ddx, ddy).rgb;
+  vec3 col = mix(mix(c00, c10, b.x), mix(c01, c11, b.x), b.y);
+  float dist = distance(vXz, uEye);
+  float fog = clamp(1.0 - exp(-uFogK * max(0.0, dist - 18.0)), 0.0, uFogCap);
+  o = vec4(mix(col, uFog, fog), 1.0);
+}`;
+const BOLT_VS = `#version 300 es
+layout(location=0) in vec2 aCorner;
+uniform mat4 uVP;
+uniform vec3 uRight;
+uniform vec3 uUp;
+uniform vec3 uCenter;
+uniform vec2 uSize;
+uniform float uY0;
+out vec2 vUv;
+void main() {
+  vec3 p = uCenter + uRight * (aCorner.x - 0.5) * uSize.x + uUp * (uY0 + aCorner.y * uSize.y);
+  gl_Position = uVP * vec4(p, 1.0);
+  vUv = aCorner;
+}`;
+const BOLT_FS = `#version 300 es
+precision highp float;
+uniform sampler2D uTex;
+in vec2 vUv;
+out vec4 o;
+void main() {
+  vec4 c = texture(uTex, vUv);
+  if (c.g - max(c.r, c.b) > 0.027) discard;
+  o = vec4(c.rgb, 1.0);
+}`;
+
+function compile(type, source) {
+  const shader = gl.createShader(type);
+  gl.shaderSource(shader, source);
+  gl.compileShader(shader);
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(shader) || "shader");
+  return shader;
+}
+function link(vs, fs) {
+  const p = gl.createProgram();
+  gl.attachShader(p, compile(gl.VERTEX_SHADER, vs));
+  gl.attachShader(p, compile(gl.FRAGMENT_SHADER, fs));
+  gl.linkProgram(p);
+  if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p) || "link");
+  return p;
+}
+const groundProg = link(GROUND_VS, GROUND_FS);
+const boltProg = link(BOLT_VS, BOLT_FS);
+const gLoc = {
+  vp: gl.getUniformLocation(groundProg, "uVP"),
+  rect: gl.getUniformLocation(groundProg, "uRect"),
+  tile: gl.getUniformLocation(groundProg, "uTile"),
+  tex: gl.getUniformLocation(groundProg, "uTex"),
+  eye: gl.getUniformLocation(groundProg, "uEye"),
+  fog: gl.getUniformLocation(groundProg, "uFog"),
+  fogK: gl.getUniformLocation(groundProg, "uFogK"),
+  fogCap: gl.getUniformLocation(groundProg, "uFogCap"),
+};
+const bLoc = {
+  vp: gl.getUniformLocation(boltProg, "uVP"),
+  right: gl.getUniformLocation(boltProg, "uRight"),
+  up: gl.getUniformLocation(boltProg, "uUp"),
+  center: gl.getUniformLocation(boltProg, "uCenter"),
+  size: gl.getUniformLocation(boltProg, "uSize"),
+  y0: gl.getUniformLocation(boltProg, "uY0"),
+  tex: gl.getUniformLocation(boltProg, "uTex"),
+};
+
+const corners = new Float32Array([0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1]);
+const groundVao = gl.createVertexArray();
+gl.bindVertexArray(groundVao);
+const cornerBuf = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, cornerBuf);
+gl.bufferData(gl.ARRAY_BUFFER, corners, gl.STATIC_DRAW);
+gl.enableVertexAttribArray(0);
+gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 8, 0);
+gl.bindVertexArray(null);
+
+const boltVao = gl.createVertexArray();
+gl.bindVertexArray(boltVao);
+const boltCorners = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, boltCorners);
+gl.bufferData(gl.ARRAY_BUFFER, corners, gl.STATIC_DRAW);
+gl.enableVertexAttribArray(0);
+gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 8, 0);
+gl.bindVertexArray(null);
+
+const field = createField({
+  seed,
+  x0: xStart,
+  pathZ,
+});
+const rockManifest = await fetch(absUrl("packs/zone-a/src/rocks/manifest.json")).then((r) => r.json());
+const hulls = {};
+for (const type of ["boulder", "stone"]) {
+  const spec = rockManifest.types[type];
+  const file = rockManifest.assets[type];
+  hulls[type] = await loadWorldHull(gl, absUrl(file), trackTex, { maxH: spec.maxTex || 512 });
+}
+const poses = {
+  arch: { x: 0, z: pathZ, scale: 0, rise: 0 },
+  gate: { x: 0, z: pathZ, scale: 0, rise: 0 },
+  wreck: { x: 0, z: pathZ, scale: 0, rise: 0 },
+};
+const ruins = await mountRuins(gl, {
+  absUrl,
+  loadImage,
+  trackTex,
+  heightAt: () => 0,
+  placements: {
+    arch: { x: 0, z: pathZ, yaw: RUN_YAW },
+    gate: { x: 0, z: pathZ, yaw: RUN_YAW },
+    wreck: { x: 0, z: pathZ, yaw: RUN_YAW },
+  },
+});
+ruins.setPoses(poses);
+
+function openingClear(mon) {
+  if (!mon || !(mon.scale > 0.85)) return false;
+  const slid = ruins.collide(mon.x - 2.5, mon.z, mon.x + 2.5, mon.z, 0.3);
+  return Math.abs(slid.z - mon.z) < 0.45 && slid.x > mon.x;
+}
+function pierBlocks(mon) {
+  if (!mon || !(mon.scale > 0.85)) return false;
+  const side = mon.z + 1.8;
+  const slid = ruins.collide(mon.x - 1, side, mon.x + 1, side, 0.3);
+  return slid.contact || Math.abs(slid.z - side) > 0.12;
+}
+let archOpen = false;
+let archPier = false;
+
+const discBuf = new Array(POOL);
+for (let i = 0; i < POOL; i++) discBuf[i] = { x: 0, z: 0, r: 0 };
+let discN = 0;
+
+function applyPoses() {
+  const names = ["arch", "gate", "wreck"];
+  for (let i = 0; i < names.length; i++) {
+    const slot = field[names[i]];
+    const pose = poses[names[i]];
+    if (!slot || slot.emerge < 0.02) {
+      pose.scale = 0;
+      pose.rise = -40;
+      continue;
+    }
+    pose.x = slot.x;
+    pose.z = slot.z;
+    pose.scale = slot.emerge;
+    pose.rise = (slot.emerge - 1) * RISE_M;
+  }
 }
 
-const clearColour = sampleHorizon(images.get(world.sky));
-const skyImg = images.get(world.sky);
-const skyFit = Math.min(720 / skyImg.width, 800 / skyImg.height, 1);
-const skyW = (skyImg.width * skyFit) / 720;
-const skyH = (skyImg.height * skyFit) / 1600;
-const skyBox = [-skyW, 0, skyW, skyH * 2];
+function syncRocks() {
+  hulls.boulder.reset();
+  hulls.stone.reset();
+  discN = 0;
+  for (let i = 0; i < field.pool.length; i++) {
+    const slot = field.pool[i];
+    if (!slot.on || slot.kind > 2 || slot.emerge < 0.02) continue;
+    const type = slot.kind === 2 ? "boulder" : "stone";
+    const hull = hulls[type];
+    const spec = rockManifest.types[type];
+    const meshH = Math.max(0.05, hull.maxY - hull.minY);
+    const drawScale = (spec.objectSize[1] * slot.base * slot.emerge) / meshH;
+    const y = rockBottom(slot.emerge) - hull.minY * drawScale;
+    hull.addInstance(slot.x, y, slot.z, slot.yaw, drawScale, 0);
+    if (slot.emerge >= 0.35 && discN < discBuf.length) {
+      const disc = discBuf[discN];
+      disc.x = slot.x;
+      disc.z = slot.z;
+      disc.r = 0.5 * Math.hypot(spec.objectSize[0], spec.objectSize[2]) * drawScale;
+      discN += 1;
+    }
+  }
+  const skyline = horizonSeats(field, x);
+  for (let s = 0; s < skyline.length; s++) {
+    const seat = skyline[s];
+    const type = seat.kind === 2 ? "boulder" : "stone";
+    const hull = hulls[type];
+    const meshH = Math.max(0.05, hull.maxY - hull.minY);
+    const drawScale = seat.height / meshH;
+    const y = rockBottom(1) - hull.minY * drawScale;
+    hull.addInstance(seat.x, y, seat.z, seat.yaw, drawScale, 0);
+  }
+  for (let i = discN; i < discBuf.length; i++) discBuf[i].r = 0;
+  hulls.boulder.upload();
+  hulls.stone.upload();
+}
 
-const bolt = document.createElement("video");
-bolt.muted = true;
-bolt.loop = true;
-bolt.playsInline = true;
-bolt.autoplay = true;
-bolt.preload = "auto";
+const idle = document.createElement("video");
+idle.muted = true;
+idle.loop = true;
+idle.playsInline = true;
+idle.preload = "auto";
+idle.src = absUrl(BOLT_IDLE);
+const gallop = document.createElement("video");
+gallop.muted = true;
+gallop.loop = true;
+gallop.playsInline = true;
+gallop.preload = "auto";
 const boltTex = gl.createTexture();
 gl.bindTexture(gl.TEXTURE_2D, boltTex);
 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-let boltSrc = "";
+let boltStamp = -1;
 let boltReady = false;
+idle.addEventListener("loadeddata", () => { boltReady = true; });
+idle.play().catch(() => {});
 
-function useBolt(src) {
-  const file = src === BOLT_IDLE ? "/" + BOLT_IDLE : "/" + BOLT_GALLOP;
-  if (boltSrc === file) return;
-  boltSrc = file;
-  boltReady = false;
-  bolt.src = file;
-  bolt.play().catch(() => {});
+function videoOn(v) {
+  return !!(v && v.src && !v.paused && v.readyState >= 2);
+}
+function activeBolt() {
+  return videoOn(gallop) ? gallop : idle;
+}
+const paceShot = shot === "walk" || shot === "sprint" || shot === "rocks";
+const filmShot = shot === "film" || shot === "pass";
+function useBolt(moving) {
+  if (shot && !paceShot && !filmShot) return;
+  const want = moving ? gallop : idle;
+  const other = moving ? idle : gallop;
+  if (moving && !gallop.src) gallop.src = absUrl(BOLT_GALLOP);
+  if (!other.paused) other.pause();
+  if (want.paused) want.play().catch(() => {});
 }
 
-bolt.addEventListener("loadeddata", () => {
-  boltReady = true;
-});
+const startZone = zones[world.start];
+let x = startZone.spawn.position[0];
+let z = startZone.spawn.position[1];
+let heading = startZone.spawn.heading_deg;
+let speed = 0;
+let prevMode = "zone";
+const camLook = createLook();
+if (shotTilt) {
+  camLook.cur = 1.05;
+  camLook.goal = 1.05;
+}
+const state = { forward: 0, turn: 0, gallop: false };
+let lastSample = null;
+
+function flowSpeed() {
+  if (!(speed > 0.05)) return 0;
+  const yaw = heading * Math.PI / 180;
+  const along = Math.sin(yaw) * speed;
+  const onPath = Math.abs(z - pathZ) < 8 && x > xStart - 4 && x < xEnd + 4;
+  return onPath && along > 0.2 ? along : 0;
+}
+
+function stepFlow(dt, walk) {
+  const sample = flow.step({
+    dt,
+    x,
+    z,
+    heading,
+    speed: walk,
+    hitchMs: Math.min(1000, dt * 1000),
+    black: false,
+  });
+  if (sample.mode === "zone" && prevMode !== "zone" && sample.zoneId && sample.zoneId !== world.start) {
+    const gate = (zones[sample.zoneId].gates || [])[0];
+    if (gate && gate.position) {
+      x = gate.position[0];
+      z = gate.position[1];
+      heading = wrap360(Number(gate.heading_deg) + 180);
+    }
+  }
+  prevMode = sample.mode;
+  lastSample = sample;
+  return sample;
+}
+
+function moveBody(dt) {
+  const filming = filmShot;
+  if (shot && !filming) return;
+  if (filming) {
+    state.forward = 1;
+    state.gallop = true;
+    state.turn = 0;
+  }
+  stepLook(camLook, dt);
+  const fwdIn = Math.abs(state.forward) < 0.04 ? 0 : state.forward;
+  heading = wrap360(heading + state.turn * TURN_DPS * dt);
+  stepField(field, { x, z, heading, forward: fwdIn, gallop: state.gallop }, dt);
+  speed = field.speed;
+  applyPoses();
+  syncRocks();
+  const yaw = heading * Math.PI / 180;
+  const nx = x + Math.sin(yaw) * speed * dt;
+  const nz = z + Math.cos(yaw) * speed * dt;
+  const slid = ruins.collide(x, z, nx, nz, 0.3);
+  const pushed = pushDiscs(slid.x, slid.z, discBuf, 0.3);
+  x = pushed.x;
+  z = pushed.z;
+  archOpen = openingClear(poses.arch);
+  archPier = pierBlocks(poses.arch);
+  useBolt(speed > 0.05);
+}
+
+function pumpAlong(target) {
+  for (let i = 0; i < 8000; i += 1) {
+    const sample = stepFlow(0.05, 4);
+    if (sample.mode === "corridor") {
+      const pose = poseOnCorridor(corridor.waypoints, corridor.length_m, Math.min(target, sample.along));
+      x = pose.x;
+      z = pose.z;
+      heading = 90;
+      if (sample.along >= target) return;
+    } else {
+      const pose = poseOnCorridor(corridor.waypoints, corridor.length_m, 0);
+      const dx = pose.x - x;
+      const dz = pose.z - z;
+      const dist = Math.hypot(dx, dz) || 1;
+      heading = wrap360((Math.atan2(dx, dz) * 180) / Math.PI);
+      x += (dx / dist) * 0.2;
+      z += (dz / dist) * 0.2;
+    }
+  }
+}
+
+function standForRocks() {
+  settleField(field, { x, z, heading, forward: 1, gallop: true }, "sprint");
+  let best = null;
+  let bestAhead = 1e9;
+  for (let i = 0; i < field.pool.length; i++) {
+    const slot = field.pool[i];
+    if (!slot.on || slot.kind > 2) continue;
+    const ahead = slot.x - x;
+    if (ahead < 6 || ahead > 22) continue;
+    if (ahead < bestAhead) {
+      bestAhead = ahead;
+      best = slot;
+    }
+  }
+  if (!best) return;
+  x = best.x - 5.5;
+  z = best.z;
+  settleField(field, { x, z, heading, forward: 1, gallop: false }, "walk");
+}
+
+if (paceShot || filmShot) {
+  x = xStart + 6;
+  z = pathZ;
+  heading = 90;
+  if (shot === "pass") {
+    settleField(field, { x, z, heading, forward: 1, gallop: true }, "sprint");
+    if (field.gate) x = field.gate.x - PASS_BACK;
+    z = pathZ;
+    settleField(field, { x, z, heading, forward: 1, gallop: true }, "sprint");
+    speed = field.speed;
+    useBolt(true);
+  } else if (shot === "rocks") {
+    standForRocks();
+    speed = field.speed;
+    useBolt(false);
+  } else if (paceShot) {
+    settleField(field, { x, z, heading, forward: 1, gallop: shot === "sprint" }, shot);
+    speed = field.speed;
+    useBolt(shot === "sprint");
+  }
+  applyPoses();
+  syncRocks();
+  archOpen = openingClear(poses.arch);
+  archPier = pierBlocks(poses.arch);
+  stepFlow(0, 0);
+} else if (shot) {
+  pumpAlong(corridor.length_m * Math.min(0.92, Math.max(0.05, shotAt)));
+  heading = wrap360(shotDeg);
+  speed = 0;
+  settleField(field, { x, z, heading, forward: 1, gallop: false }, "walk");
+  applyPoses();
+  syncRocks();
+  stepFlow(0, 0);
+} else {
+  stepFlow(0, 0);
+  stepField(field, { x, z, heading, forward: 0, gallop: false }, 0);
+  applyPoses();
+  syncRocks();
+}
 
 function perspective(fovy, aspect, near, far) {
   const f = 1 / Math.tan(fovy / 2);
@@ -247,229 +631,207 @@ function perspective(fovy, aspect, near, far) {
     0, 0, 2 * far * near * nf, 0,
   ]);
 }
-
 function lookAt(eye, target, up) {
-  const z = norm([eye[0] - target[0], eye[1] - target[1], eye[2] - target[2]]);
-  const x = norm(cross(up, z));
-  const y = cross(z, x);
+  let zx = eye[0] - target[0];
+  let zy = eye[1] - target[1];
+  let zz = eye[2] - target[2];
+  let zl = Math.hypot(zx, zy, zz) || 1;
+  zx /= zl; zy /= zl; zz /= zl;
+  let xx = up[1] * zz - up[2] * zy;
+  let xy = up[2] * zx - up[0] * zz;
+  let xz = up[0] * zy - up[1] * zx;
+  let xl = Math.hypot(xx, xy, xz) || 1;
+  xx /= xl; xy /= xl; xz /= xl;
+  const yx = zy * xz - zz * xy;
+  const yy = zz * xx - zx * xz;
+  const yz = zx * xy - zy * xx;
   return new Float32Array([
-    x[0], y[0], z[0], 0,
-    x[1], y[1], z[1], 0,
-    x[2], y[2], z[2], 0,
-    -dot(x, eye), -dot(y, eye), -dot(z, eye), 1,
+    xx, yx, zx, 0,
+    xy, yy, zy, 0,
+    xz, yz, zz, 0,
+    -(xx * eye[0] + xy * eye[1] + xz * eye[2]),
+    -(yx * eye[0] + yy * eye[1] + yz * eye[2]),
+    -(zx * eye[0] + zy * eye[1] + zz * eye[2]),
+    1,
   ]);
 }
-
-function mul(a, b) {
-  const out = new Float32Array(16);
+const projBuf = new Float32Array(16);
+const viewBuf = new Float32Array(16);
+const vpBuf = new Float32Array(16);
+const eyeBuf = [0, 0, 0];
+const aimBuf = [0, 0, 0];
+function perspectiveInto(fovy, aspect, near, far) {
+  const f = 1 / Math.tan(fovy / 2);
+  const nf = 1 / (near - far);
+  projBuf[0] = f / aspect; projBuf[1] = 0; projBuf[2] = 0; projBuf[3] = 0;
+  projBuf[4] = 0; projBuf[5] = f; projBuf[6] = 0; projBuf[7] = 0;
+  projBuf[8] = 0; projBuf[9] = 0; projBuf[10] = (far + near) * nf; projBuf[11] = -1;
+  projBuf[12] = 0; projBuf[13] = 0; projBuf[14] = 2 * far * near * nf; projBuf[15] = 0;
+  return projBuf;
+}
+function mulInto(a, b) {
   for (let c = 0; c < 4; c += 1) {
     for (let r = 0; r < 4; r += 1) {
-      out[c * 4 + r] = a[r] * b[c * 4] + a[4 + r] * b[c * 4 + 1] + a[8 + r] * b[c * 4 + 2] + a[12 + r] * b[c * 4 + 3];
+      vpBuf[c * 4 + r] = a[r] * b[c * 4] + a[4 + r] * b[c * 4 + 1] + a[8 + r] * b[c * 4 + 2] + a[12 + r] * b[c * 4 + 3];
     }
   }
-  return out;
+  return vpBuf;
 }
 
-function cross(a, b) {
-  return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
-}
-function dot(a, b) {
-  return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-}
-function norm(v) {
-  const n = Math.hypot(v[0], v[1], v[2]) || 1;
-  return [v[0] / n, v[1] / n, v[2] / n];
-}
-
+let playFrames = 0;
 let drawCalls = 0;
+let jsMs = 0;
+let skyTop = 0;
+let skyMid = 0;
+let settled = false;
+let pawFrac = PAW_FRAC_FALLBACK;
+let pawGallop = 0;
+let pawY = 0;
+let pawIdleMeasured = false;
+let pawGallopMeasured = false;
 
-function bindSingle() {
-  gl.bindBuffer(gl.ARRAY_BUFFER, originBuf);
-  gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
-}
-
-function draw(opts) {
-  gl.uniform3f(loc.origin, opts.origin[0], opts.origin[1], opts.origin[2]);
-  gl.uniform3f(loc.axisU, opts.axisU[0], opts.axisU[1], opts.axisU[2]);
-  gl.uniform3f(loc.axisV, opts.axisV[0], opts.axisV[1], opts.axisV[2]);
-  gl.uniform2f(loc.size, opts.size[0], opts.size[1]);
-  gl.uniform1f(loc.worldUv, opts.worldUv || 0);
-  gl.uniform1f(loc.tileM, tileM);
-  gl.uniform1f(loc.screen, opts.screen || 0);
-  gl.uniform4fv(loc.screenBox, opts.screenBox || skyBox);
-  gl.uniform1f(loc.alpha, opts.alpha);
-  gl.uniform1f(loc.key, opts.key || 0);
-  gl.bindTexture(gl.TEXTURE_2D, opts.tex);
-  const count = opts.count || 1;
-  if (opts.instances) {
-    gl.bindBuffer(gl.ARRAY_BUFFER, opts.instances);
-    gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
-  } else {
-    bindSingle();
-  }
-  gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, count);
-  drawCalls += 1;
-}
-
-const X = [1, 0, 0];
-const Y = [0, 1, 0];
-const Z = [0, 0, 1];
-
-function groundQuad(tex, alpha) {
-  if (!(alpha > 0) || !tex) return;
-  draw({
-    tex,
-    alpha,
-    origin: [0, 0, 0],
-    axisU: X,
-    axisV: Z,
-    size: [180, 180],
-    worldUv: 1,
-  });
-}
-
-const startZone = zones[world.start];
-let x = startZone.spawn.position[0];
-let z = startZone.spawn.position[1];
-let heading = startZone.spawn.heading_deg;
-let speed = 0;
-let prevMode = "zone";
-let last = null;
-
-function opacityOf(sample, id) {
-  let value = 0;
-  for (const plate of sample.plates || []) {
-    if (plate.id === id) value = Math.max(value, plate.opacity);
-  }
-  return value;
-}
-
-function advance(dt, walk) {
-  const rad = (heading * Math.PI) / 180;
-  if (prevMode === "zone") {
-    x += Math.sin(rad) * walk * dt;
-    z += Math.cos(rad) * walk * dt;
-  }
-  const sample = flow.step({
-    dt,
-    x,
-    z,
-    heading,
-    speed: walk,
-    hitchMs: Math.min(1000, dt * 1000),
-    black: false,
-  });
-  if (sample.mode === "corridor") {
-    const pose = poseOnCorridor(corridor.waypoints, corridor.length_m, sample.along);
-    x = pose.x;
-    z = pose.z;
-    heading = pose.heading;
-  } else if (sample.mode === "zone" && prevMode !== "zone" && sample.zoneId && sample.zoneId !== world.start) {
-    const gate = (zones[sample.zoneId].gates || [])[0];
-    if (gate && gate.position) {
-      x = gate.position[0];
-      z = gate.position[1];
-      heading = (Number(gate.heading_deg) + 180) % 360;
+function measurePaw(video) {
+  const w = video.videoWidth;
+  const h = video.videoHeight;
+  if (!(w > 2 && h > 2)) return pawFrac;
+  const c = document.createElement("canvas");
+  c.width = w;
+  c.height = h;
+  const g = c.getContext("2d", { willReadFrequently: true });
+  g.drawImage(video, 0, 0);
+  const d = g.getImageData(0, 0, w, h).data;
+  let maxY = 0;
+  for (let y = 0; y < h; y += 2) {
+    for (let x0 = 0; x0 < w; x0 += 4) {
+      const o = (y * w + x0) * 4;
+      const r = d[o];
+      const gg = d[o + 1];
+      const b = d[o + 2];
+      if (gg - Math.max(r, b) > 40 && gg > 70) continue;
+      if (r + gg + b < 30) continue;
+      if (y > maxY) maxY = y;
     }
   }
-  prevMode = sample.mode;
-  last = sample;
-  if (!shot) useBolt(boltClip(walk));
-  return sample;
+  return maxY > 0 ? maxY / h : pawFrac;
 }
 
-function pump(kind) {
-  for (let i = 0; i < 4000; i += 1) {
-    const sample = advance(0.05, WALK);
-    if (kind === "mid" && sample.mode === "corridor" && sample.along >= corridor.length_m * 0.45) return;
-    if (kind === "end" && sample.mode === "zone" && sample.zoneId === world.corridors[0].to.zone) return;
-  }
+function meanLuma(x0, y0, w, h) {
+  const buf = new Uint8Array(w * h * 4);
+  gl.readPixels(x0, y0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, buf);
+  let s = 0;
+  const n = w * h;
+  for (let i = 0; i < buf.length; i += 4) s += buf[i] * 0.299 + buf[i + 1] * 0.587 + buf[i + 2] * 0.114;
+  return s / n;
 }
 
-if (shot === "mid" || shot === "end") pump(shot);
-else advance(0, 0);
-useBolt(boltClip(0));
-
-let holding = false;
-if (!shot) {
-  const down = () => {
-    holding = true;
-  };
-  const up = () => {
-    holding = false;
-  };
-  canvas.addEventListener("pointerdown", down);
-  window.addEventListener("pointerup", up);
-  window.addEventListener("pointercancel", up);
-}
-
-function frame(sample) {
+function frame() {
+  const t0 = performance.now();
   drawCalls = 0;
   gl.viewport(0, 0, canvas.width, canvas.height);
-  gl.clearColor(clearColour[0], clearColour[1], clearColour[2], 1);
-  gl.clear(gl.COLOR_BUFFER_BIT);
-  gl.enable(gl.BLEND);
-  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-  gl.disable(gl.DEPTH_TEST);
-  const aspect = canvas.width / canvas.height;
-  const proj = perspective(FOV, aspect, 0.08, 240);
-  const rad = (heading * Math.PI) / 180;
-  const eye = [x - Math.sin(rad) * BOOM, EYE, z - Math.cos(rad) * BOOM];
-  const view = lookAt(eye, [x, EYE, z], Y);
-  gl.uniformMatrix4fv(loc.view, false, mul(proj, view));
-  gl.uniform1i(gl.getUniformLocation(prog, "uTex"), 0);
-
-  draw({
-    tex: textures.get(world.sky),
-    alpha: 1,
-    origin: [0, 0, 0],
-    axisU: X,
-    axisV: Y,
-    size: [1, 1],
-    screen: 1,
-    screenBox: skyBox,
-  });
-
-  for (const [id, clearing] of Object.entries(zones)) {
-    groundQuad(textures.get(clearing.plate), opacityOf(sample, id));
-  }
-  const corridorAlpha = opacityOf(sample, corridor.id);
-  if (corridorAlpha > 0) {
-    const fill = layout.grid.cells.find((cell) => cell.role === "fill");
-    groundQuad(textures.get(fill.asset), corridorAlpha);
-    for (const [asset, group] of groupBufs) {
-      draw({
-        tex: textures.get(asset),
-        alpha: corridorAlpha,
-        origin: [0, 0, 0],
-        axisU: X,
-        axisV: Z,
-        size: [tileM, tileM],
-        instances: group.buf,
-        count: group.count,
-      });
+  gl.clearColor(0, 0, 0, 1);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  const yaw = heading * Math.PI / 180;
+  const fx = Math.sin(yaw);
+  const fz = Math.cos(yaw);
+  const rx = fz;
+  const rz = -fx;
+  eyeBuf[0] = x - fx * CHASE_BOOM + rx * CHASE_SLIDE;
+  eyeBuf[1] = CHASE_EYE;
+  eyeBuf[2] = z - fz * CHASE_BOOM + rz * CHASE_SLIDE;
+  let pitch = pitchOf(chasePitch(), camLook.cur);
+  if (field.gate && field.gate.emerge > 0.4) {
+    const dx = field.gate.x - eyeBuf[0];
+    const dz = field.gate.z - eyeBuf[2];
+    const ahead = dx * fx + dz * fz;
+    const side = dx * rx + dz * rz;
+    if (ahead > 12 && Math.abs(Math.atan2(side, ahead)) < HFOV * 0.5) {
+      pitch = pitchForTall(pitch, GATE_TOP, Math.hypot(ahead, side), VFOV);
     }
   }
+  const cp = Math.cos(pitch);
+  const sp = Math.sin(pitch);
+  aimBuf[0] = eyeBuf[0] + fx * cp * 12;
+  aimBuf[1] = eyeBuf[1] + sp * 12;
+  aimBuf[2] = eyeBuf[2] + fz * cp * 12;
+  chaseViewInto(viewBuf, eyeBuf, aimBuf);
+  const vp = mulInto(perspectiveInto(VFOV, canvas.width / canvas.height, 0.08, 400), viewBuf);
+  drawCalls += sky.draw(vp, eyeBuf, yaw);
 
-  if (boltReady && bolt.readyState >= 2) {
+  gl.useProgram(groundProg);
+  gl.bindVertexArray(groundVao);
+  gl.uniformMatrix4fv(gLoc.vp, false, vp);
+  gl.uniform4fv(gLoc.rect, groundRect);
+  gl.uniform1f(gLoc.tile, tileM);
+  gl.uniform2f(gLoc.eye, eyeBuf[0], eyeBuf[2]);
+  gl.uniform3f(gLoc.fog, fogRgb[0], fogRgb[1], fogRgb[2]);
+  gl.uniform1f(gLoc.fogK, fogOn ? fogK : 0);
+  gl.uniform1f(gLoc.fogCap, fogCap);
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D_ARRAY, groundTex);
+  gl.uniform1i(gLoc.tex, 0);
+  gl.disable(gl.BLEND);
+  gl.enable(gl.DEPTH_TEST);
+  gl.depthMask(true);
+  gl.drawArrays(gl.TRIANGLES, 0, 6);
+  drawCalls += 1;
+
+  ruins.draw(vp, 0);
+  drawCalls += ruins.draws || 0;
+  hulls.boulder.draw(vp, 0);
+  drawCalls += 1;
+  hulls.stone.draw(vp, 0);
+  drawCalls += 1;
+
+  const clip = activeBolt();
+  if (clip.readyState >= 2) {
+    const stamp = clip.currentTime;
+    if (stamp !== boltStamp) {
+      boltStamp = stamp;
+      gl.bindTexture(gl.TEXTURE_2D, boltTex);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, clip);
+    }
+    const bw = clip.videoWidth || 768;
+    const bh = clip.videoHeight || 1168;
+    const worldH = BOLT_H;
+    const worldW = worldH * (bw / bh);
+    if (clip === idle && !pawIdleMeasured && bw > 2) {
+      pawFrac = measurePaw(clip);
+      pawIdleMeasured = true;
+    }
+    if (clip === gallop && !pawGallopMeasured && bw > 2) {
+      pawGallop = measurePaw(clip);
+      pawGallopMeasured = true;
+    }
+    const frac = clip === gallop && pawGallop > 0 ? pawGallop : pawFrac;
+    const y0 = -(1 - frac) * worldH;
+    pawY = y0 + (1 - frac) * worldH;
+    gl.useProgram(boltProg);
+    gl.bindVertexArray(boltVao);
+    gl.uniformMatrix4fv(bLoc.vp, false, vp);
+    gl.uniform3f(bLoc.right, rx, 0, rz);
+    gl.uniform3f(bLoc.up, 0, 1, 0);
+    gl.uniform3f(bLoc.center, x, 0, z);
+    gl.uniform2f(bLoc.size, worldW, worldH);
+    gl.uniform1f(bLoc.y0, y0);
+    gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, boltTex);
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, bolt);
-    const right = norm(cross(Y, [Math.sin(rad), 0, Math.cos(rad)]));
-    draw({
-      tex: boltTex,
-      alpha: 1,
-      key: 1,
-      origin: [x, 0.645, z],
-      axisU: right,
-      axisV: Y,
-      size: [0.848, 1.29],
-    });
+    gl.uniform1i(bLoc.tex, 0);
+    gl.disable(gl.BLEND);
+    gl.enable(gl.DEPTH_TEST);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+    drawCalls += 1;
+    boltReady = true;
   }
 
+  const sample = lastSample || { mode: "zone", along: 0, rate: 0, bolt: "IDLE", zoneId: world.start };
+  const activeVideos = sky.activeVideos() + (videoOn(idle) ? 1 : 0) + (videoOn(gallop) ? 1 : 0);
+  jsMs = performance.now() - t0;
   const glError = gl.getError();
   window.__corridor = {
-    ready: boltReady || shot === "start" || !shot,
+    ready: boltReady && sky.ready,
     mode: sample.mode,
     zoneId: sample.zoneId,
     along: sample.along,
@@ -479,37 +841,180 @@ function frame(sample) {
     x,
     z,
     heading,
+    look: camLook.cur,
     drawCalls,
+    texMB: Math.round((texBytes / (1024 * 1024)) * 10) / 10,
+    activeVideos,
+    jsMs: Math.round(jsMs * 10) / 10,
     glError,
+    rocks: rockCount(field),
+    live: field.live,
+    speed: Math.round(field.speed * 100) / 100,
+    charge: Math.round(field.charge * 100) / 100,
+    eyeY: eyeBuf[1],
+    pawY: Math.round(pawY * 1000) / 1000,
+    arch: field.arch ? { x: field.arch.x, z: field.arch.z, emerge: field.arch.emerge } : null,
+    gate: field.gate ? { x: field.gate.x, z: field.gate.z, emerge: field.gate.emerge } : null,
+    wreck: field.wreck ? { x: field.wreck.x, z: field.wreck.z, emerge: field.wreck.emerge } : null,
+    archOpen,
+    archPier,
+    seed,
+    lengthM: corridor.length_m,
+    ground: "m3",
+    groundLayers: images.length,
+    groundPx: maxW,
+    fogOn,
+    pitch,
+    gateLat: field.gate ? Math.round((field.gate.z - pathZ) * 10) / 10 : null,
+    frameN: playFrames,
+    skyTop,
+    skyMid,
+    settled,
     black: false,
   };
   document.title = JSON.stringify(window.__corridor);
   if (debug) {
     hud.textContent = [
-      sample.mode,
-      sample.zoneId || corridor.id,
-      "along " + (sample.along || 0).toFixed(1),
-      "rate " + (sample.rate || 0).toFixed(2),
-      sample.bolt,
-      "draws " + drawCalls,
-    ].join(" · ");
+      "Perf: drawCalls=" + drawCalls,
+      "texMB=" + window.__corridor.texMB,
+      "activeVideos=" + activeVideos,
+      "jsMs=" + window.__corridor.jsMs,
+      "spd " + field.speed.toFixed(2),
+      "live " + field.live,
+      "hdg " + heading.toFixed(0),
+      "look " + camLook.cur.toFixed(2),
+    ].join(" ");
   }
 }
 
-frame(last || advance(0, 0));
+function sampleSky() {
+  skyTop = Math.round(meanLuma(0, canvas.height - 24, canvas.width, 24) * 10) / 10;
+  skyMid = Math.round(meanLuma(0, canvas.height - 160, canvas.width, 24) * 10) / 10;
+  settled = true;
+  window.__corridor.skyTop = skyTop;
+  window.__corridor.skyMid = skyMid;
+  window.__corridor.settled = true;
+  document.title = JSON.stringify(window.__corridor);
+}
+
+frame();
+
+let stickOn = false;
+function stickAt(cx, cy) {
+  const r = stick.getBoundingClientRect();
+  const dx = Math.max(-1, Math.min(1, (cx - (r.left + r.width / 2)) / (r.width / 2)));
+  const dy = Math.max(-1, Math.min(1, (cy - (r.top + r.height / 2)) / (r.height / 2)));
+  nub.style.left = 40 + dx * 36 + "px";
+  nub.style.top = 40 + dy * 36 + "px";
+  state.turn = dx;
+  state.forward = Math.max(0, -dy);
+  state.gallop = -dy > 0.72;
+}
+if (stick && !shot) {
+  stick.addEventListener("pointerdown", (e) => {
+    stickOn = true;
+    try { stick.setPointerCapture(e.pointerId); } catch (err) { /* synthetic */ }
+    stickAt(e.clientX, e.clientY);
+  });
+  stick.addEventListener("pointermove", (e) => { if (stickOn) stickAt(e.clientX, e.clientY); });
+  stick.addEventListener("pointerup", () => {
+    stickOn = false;
+    nub.style.left = "40px";
+    nub.style.top = "40px";
+    state.forward = 0;
+    state.turn = 0;
+    state.gallop = false;
+  });
+  stick.addEventListener("pointercancel", () => {
+    stickOn = false;
+    state.forward = 0;
+    state.turn = 0;
+    state.gallop = false;
+  });
+}
+function inStick(cx, cy) {
+  if (!stick || shot) return false;
+  const r = stick.getBoundingClientRect();
+  return cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom;
+}
+canvas.addEventListener("pointerdown", (e) => {
+  if (shot || camLook.ptr >= 0) return;
+  if (e.target === stick || e.target === nub || inStick(e.clientX, e.clientY)) return;
+  camLook.ptr = e.pointerId;
+  camLook.drag = true;
+  camLook.ly = e.clientY;
+  try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* synthetic */ }
+});
+canvas.addEventListener("pointermove", (e) => {
+  if (e.pointerId !== camLook.ptr) return;
+  const dy = camLook.ly - e.clientY;
+  camLook.ly = e.clientY;
+  pushLook(camLook, dy);
+});
+function stopLook(e) {
+  if (e.pointerId !== camLook.ptr) return;
+  endLook(camLook);
+}
+canvas.addEventListener("pointerup", stopLook);
+canvas.addEventListener("pointercancel", stopLook);
+
+const keys = new Set();
+addEventListener("keydown", (e) => {
+  keys.add(e.key.toLowerCase());
+  e.preventDefault();
+});
+addEventListener("keyup", (e) => keys.delete(e.key.toLowerCase()));
+function pollKeys() {
+  if (stickOn || shot) return;
+  let f = 0;
+  let t = 0;
+  if (keys.has("w") || keys.has("arrowup")) f += 1;
+  if (keys.has("s") || keys.has("arrowdown")) f -= 1;
+  if (keys.has("a") || keys.has("arrowleft")) t -= 1;
+  if (keys.has("d") || keys.has("arrowright")) t += 1;
+  state.gallop = keys.has("shift") && f > 0;
+  state.forward = f;
+  state.turn = t;
+}
 
 let then = performance.now();
 let shotFrames = 0;
+function advanceFilm() {
+  const dt = 1 / 24;
+  pollKeys();
+  moveBody(dt);
+  stepFlow(dt, flowSpeed());
+  if (gallop.duration > 0) {
+    const t = (playFrames / 24) % gallop.duration;
+    if (Math.abs(gallop.currentTime - t) > 0.02) {
+      try { gallop.currentTime = t; } catch (err) { /* seek before metadata */ }
+    }
+  }
+  playFrames += 1;
+  frame();
+  return document.title;
+}
+if (filmShot) window.__advance = advanceFilm;
 function tick(now) {
+  if (filmShot) {
+    frame();
+    requestAnimationFrame(tick);
+    return;
+  }
   const dt = Math.min(0.05, (now - then) / 1000);
   then = now;
-  if (!shot) speed = holding ? WALK : 0;
-  else speed = 0;
-  frame(advance(dt, speed));
-  if (shot) {
+  pollKeys();
+  moveBody(dt);
+  stepFlow(dt, flowSpeed());
+  playFrames += 1;
+  frame();
+  if (shot && !filmShot) {
     shotFrames += 1;
-    if (!boltReady && shotFrames < 180) requestAnimationFrame(tick);
-    else if (boltReady && shotFrames < 8) requestAnimationFrame(tick);
+    if ((!boltReady && shotFrames < 180) || shotFrames < 8) {
+      requestAnimationFrame(tick);
+      return;
+    }
+    sampleSky();
     return;
   }
   requestAnimationFrame(tick);

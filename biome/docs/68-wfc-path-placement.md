@@ -14,6 +14,14 @@ Simplex, in [`GROK.md`](../../GROK.md), places already-cooked assets and does no
 
 A spec with any other `when` fails: `FAIL mid-run WFC`. That includes a solve that would rebuild the path while Bolt is running. [`COLD_START-biome-method.md`](COLD_START-biome-method.md) still bans WFC for the next forest chunk during play. This tool does not place herbe, arbres, or a new chunk. It places the corridor that doc 62 already defined: one straight run from a gate to a gate.
 
+## Placement streaming
+
+SmiR, 2026-10-06. The world awakens as Bolt runs. This is not a second `when` for `wfc.py`. The corridor tile solve stays `load`. What changed is placement of solids that were already cooked.
+
+During the run, code may stream those solids ahead of Bolt. The pool is fixed. A slot that falls far behind is recycled onto a later seat. The same seed and the same speed history write the same seats. A faster pace may fill more of the pool. A new seat starts beyond a near radius and eases into place (rise, scale). It does not pop in against the camera.
+
+Still forbidden: drawing or generating a pixel or a mesh in code, a flat card or a billboard, and rebuilding this path layout while Bolt runs. Far objects stay real 3D (a cheaper LOD solid when one already exists). Sky is the only backdrop. Phone caps in law 65 still bind the live pool, the draws, and the textures.
+
 ## Inputs
 
 One JSON spec, schema `wfc-path/1`.
@@ -88,7 +96,7 @@ The fixture `tools/wfc-path/testdata/spec.json` is synthetic. Its asset strings 
 
 Zone interiors, footprints, and colliders stay in `clearing.json` via `tools/layout`. The handoff movie, the preload, and the crossfade stay in [`biome/scripts/zone-flow`](../../biome/scripts/zone-flow/README.md) and the synthetic [`tools/zoneflow`](../../tools/zoneflow/README.md) fixture. This tool does not edit that fixture.
 
-The cook hang is [`tools/wfc-path/hang.py`](../../tools/wfc-path/hang.py). It copies `world_corridors` into `world.json` `corridors` and writes gate stubs whose `leads_to` is the corridor id. The checked-in hang is [`packs/corridor-ab`](../../packs/corridor-ab/README.md). It places zone A ground stills that were already cooked. It does not cook a corridor video, a zone B pack, or a second gate mesh. The synthetic fixture in `testdata/` stays synthetic. This command does not edit [`tools/zoneflow/fixture`](../../tools/zoneflow/fixture/world.json). It does not change a collider. Phone caps in law 65 are unchanged for the solve itself: `wfc.py` adds no draw call. The play page is a separate walk.
+The cook hang is [`tools/wfc-path/hang.py`](../../tools/wfc-path/hang.py). It copies `world_corridors` into `world.json` `corridors` and writes gate stubs whose `leads_to` is the corridor id. The checked-in hang is [`packs/corridor-ab`](../../packs/corridor-ab/README.md). It places zone A ground stills that were already cooked. The play page streams the existing arch, Eclipse Gate, and wreck lofts, plus the boulder and stone hulls, from a seed while Bolt runs. That stream is the placement rule above. It does not cook a corridor video, a zone B pack, or a second gate mesh. It does not solve WFC again. The synthetic fixture in `testdata/` stays synthetic. This command does not edit [`tools/zoneflow/fixture`](../../tools/zoneflow/fixture/world.json). It does not change a collider. Phone caps in law 65 are unchanged for the solve itself: `wfc.py` adds no draw call. The play page is a separate walk.
 
 `layout.py check --world` still checks `bakedGroundSpeed`, `length_m`, the ground file on disk, and the gates named in each `clearing.json`. Point `ground` at the real Imagine file before that check. This command only checks that the string is non-empty.
 

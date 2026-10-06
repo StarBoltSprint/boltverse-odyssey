@@ -333,6 +333,10 @@ export async function loadWorldHull(gl, assetUrl, onBytes, opts) {
     count++;
   }
 
+  function reset() {
+    count = 0;
+  }
+
   function upload() {
     gl.bindBuffer(gl.ARRAY_BUFFER, ibuf);
     gl.bufferSubData(gl.ARRAY_BUFFER, 0, inst);
@@ -381,6 +385,7 @@ export async function loadWorldHull(gl, assetUrl, onBytes, opts) {
 
   return {
     addInstance,
+    reset,
     upload,
     draw,
     solo,

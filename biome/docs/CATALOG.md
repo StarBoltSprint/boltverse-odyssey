@@ -51,7 +51,7 @@ Pages here are **optional**. They are **not** cook gates. Default Bolt remains e
 | [64-imagine-build-limits.md](64-imagine-build-limits.md) | Imagine and Build limits. Read before a long cook. Documented caps (docs.x.ai, 2026-10-01) and the adaptations. One cook = one plate or one extension. Section F is uncertain and is not law. No biome style. |
 | [65-render-quality.md](65-render-quality.md) | Render quality on every play view. Magnification ≤ 1 and sharpness held. Instanced repeats, static upload, mipmapped stills, ≤ 4 decoding videos, the playcheck perf line, world-locked solids. No biome style. |
 | [67-imagine-post-pass.md](67-imagine-post-pass.md) | Light post-pass exception (owner SmiR 2026-10-02). Fog coloured from an Imagine sky or plate, one light grade per biome, subtle capped bloom on bright Imagine highlights. Nothing else. 720×1600 budget, zero quality loss, Bolt readable, fps before/after. Prompts lock one sun, time of day, and palette. No biome style. |
-| [68-wfc-path-placement.md](68-wfc-path-placement.md) | Load-time WFC corridor placement between gates. Neighbor rules, already-cooked asset ids, `path-layout.json`. Tool: [`../../tools/wfc-path`](../../tools/wfc-path/README.md). Mid-run WFC fails. Drawing pixels fails. |
+| [68-wfc-path-placement.md](68-wfc-path-placement.md) | Load-time WFC corridor placement between gates. Neighbor rules, already-cooked asset ids, `path-layout.json`. Tool: [`../../tools/wfc-path`](../../tools/wfc-path/README.md). Mid-run WFC fails. Drawing pixels fails. Seeded streaming of already-cooked solids during the run is allowed (SmiR, 2026-10-06). |
 
 **Look left on a biome you already cooked:** read [COLD_START-shoulder-panorama.md](COLD_START-shoulder-panorama.md).
 

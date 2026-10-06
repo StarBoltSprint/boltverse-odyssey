@@ -625,3 +625,102 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Standing rule 10. Accept view drift and specks. Do not burn quota on them. Stop after 2 still applies to any other repeated defect. |
 | Guard | No new machine row. Workflow §2 in [`docs/METHOD.md`](../docs/METHOD.md). |
 | Sources | [`docs/METHOD.md`](../docs/METHOD.md) standing rule 10. |
+
+### 2026-10-06 — sky array upload passed ten arguments
+
+| | |
+| --- | --- |
+| Take | Corridor look, sky, and props. |
+| Defect | The play page died on boot with `texSubImage3D: 11 arguments required, but only 10 present`. The frame was a 6 KB blank. |
+| Root cause | `texSubImage3D` for a pixel buffer needs x, y, and z offsets, then width, height, and depth. The sky upload omitted the z offset. |
+| Fix | Pass `0, 0, 0, layer` before the size. Ground tiles upload the same way, from pixels, not from an image element. |
+| Guard | A settled `?shot=hdg` title is JSON with `glError` 0. An `ERR` title is not a proof. |
+| Sources | `packs/corridor-ab/play/sky.js` |
+
+### 2026-10-06 — the stream pool filled from behind the camera
+
+| | |
+| --- | --- |
+| Take | Corridor chase, sprint, and streaming props. |
+| Defect | A max-sprint shot showed the same rocks as a walk. The pool was full, and none of those rocks sat inside the portrait cone. |
+| Root cause | Fill walked cells from behind Bolt and across the wide lanes first. The 36 slots were gone before a forward centre rock was seated. The first lanes were also just outside `tan(11.35°)`. |
+| Fix | Seat monuments, then forward centre lanes (`|lateral| < 6`), then other forward lanes, then behind. The inner lanes start at ±2.15 m so a rock ahead of Bolt is inside the 22.7° cone. |
+| Guard | `node --test packs/corridor-ab/play/stream.test.mjs` — "a faster pace streams more rocks than a walk" requires more rocks and more of them inside the cone. |
+| Sources | `packs/corridor-ab/play/stream.js` |
+
+### 2026-10-06 — the paw quad used the image fraction from the top
+
+| | |
+| --- | --- |
+| Take | Corridor chase, sprint, and streaming props. |
+| Defect | Bolt's feet floated about 1.8 m above the ground at `pawFrac` 0.92. |
+| Root cause | The quad offset added `frac * worldH`. Zone A stores the lowest opaque row from the top of the frame. With `UNPACK_FLIP_Y` the paw is at texture `v = 1 - pawFrac`, so the rise from the quad bottom is `(1 - frac) * worldH`. |
+| Fix | `pawLine` and the Bolt quad both use `(1 - frac) * worldH`. The measured paw sits on y = 0. |
+| Guard | `node --test packs/corridor-ab/play/look.test.mjs` — "the paw row sits on the ground". |
+| Sources | `packs/corridor-ab/play/look.js`, `packs/zone-a/play/play.js` |
+
+### 2026-10-06 — the chase aimed at the paws
+
+| | |
+| --- | --- |
+| Take | Corridor horizon and one ground. |
+| Defect | On a 720×1600 phone the frame was almost all floor. The arch was cut off at the top. The sky dome was not in the picture. |
+| Root cause | The aim height was 0.62 m while the eye was 3.5 m, so the pitch was about −25°. The horizon sat above the frame. |
+| Fix | Aim at 2.52 m. The pitch is about −9°. On the 22.7° portrait the horizon lands near 32% from the top. Bolt's body stays in the lower third. |
+| Guard | `node --test packs/corridor-ab/play/look.test.mjs` — "the chase stays high and the horizon sits in the top third". |
+| Sources | `packs/corridor-ab/play/look.js` |
+
+### 2026-10-06 — ground stills drew a square every tile
+
+| | |
+| --- | --- |
+| Take | Corridor horizon and one ground. |
+| Defect | The floor read as a checkerboard. Neighbouring 1.45 m squares were different stills, and a single still with a dark rim drew the same square again. |
+| Root cause | Each cell picked a layer from the WFC set. m0 and m1 are darker at the rim than in the core (about 9 and 10 luma), so a quad per cell lines those rims up. |
+| Fix | One quad covers the carpet. It repeats `m3.png` at native 1024². m3's rim matches its core (about 1 luma). Four windows of that same still crossfade, so a rim cannot line up into a grid. |
+| Guard | No machine row measures the screen grid. The play title records `ground` `m3`, `groundLayers` 1, `groundPx` 1024. The proof crops are the check. |
+| Sources | `packs/corridor-ab/play/play.js`, `packs/zone-a/src/ground/m3.png` |
+
+### 2026-10-06 — the ground met the sky in a straight line
+
+| | |
+| --- | --- |
+| Take | Corridor horizon break, seated rocks, whole monolith. |
+| Defect | The carpet ended in a ruler where it met the sky. |
+| Root cause | A flat quad vanishes in a straight line in this lens. Rocks about 1.3 m tall stay below an eye at 3.5 m, so they never cross that line. No test required a tall solid inside the forward view. |
+| Fix | Eight existing boulder and stone hulls, scaled to at least 8 m, sit on the horizon inside the 22.7° cone and clear of the run. Ground fog uses a colour sampled from the sky slices, density 0.015, cap 0.58. Bolt's draw is not fogged. |
+| Guard | `node --test packs/corridor-ab/play/stream.test.mjs` — "horizon seats are tall, in the forward view, and clear of the run". |
+| Sources | `packs/corridor-ab/play/stream.js`, `packs/corridor-ab/play/play.js` |
+
+### 2026-10-06 — a settled rock sat on the plane and the rise showed a gap
+
+| | |
+| --- | --- |
+| Take | Corridor horizon break, seated rocks, whole monolith. |
+| Defect | Streamed rocks read as floating, including while they rose into place. |
+| Root cause | The lowest vertex was placed at y = 0 when emerge finished, and the rise added a positive gap on the way up. No test required the base to stay under the plane. |
+| Fix | `rockBottom` is −0.18 m when settled and lower while emerging, so the rise starts underground. |
+| Guard | `node --test packs/corridor-ab/play/stream.test.mjs` — "a rock bottom stays under the plane through the rise". |
+| Sources | `packs/corridor-ab/play/stream.js`, `packs/corridor-ab/play/play.js` |
+
+### 2026-10-06 — the 28 m gate was cut off, and a far offset left the lens
+
+| | |
+| --- | --- |
+| Take | Corridor horizon break, seated rocks, whole monolith. |
+| Defect | The monolith was cut at the top when Bolt came close. Moving it 55 m off the run hid it: the 22.7° lens never held it. |
+| Root cause | On the run line the top needs a pitch the chase is not allowed to take. At 55 m of lateral the bearing is outside the lens for the whole approach. The sprint look of about 55 m also dropped the gate before it was inside the cone. No test measured the gate's screen position. |
+| Fix | The gate sits 16 m off the run, alternating sides. A sprint looks out to 150 m so the gate is drawn while it is still in the lens. Pitch may rise by at most 0.22 rad above the rest chase, and never goes below the current pitch. |
+| Guard | `node --test packs/corridor-ab/play/look.test.mjs` — "a tall monolith raises the pitch and a far one does not". `node --test packs/corridor-ab/play/stream.test.mjs` — "a sprint sees the gate while it is still inside the forward view". |
+| Sources | `packs/corridor-ab/play/look.js`, `packs/corridor-ab/play/stream.js`, `packs/corridor-ab/play/play.js` |
+
+### 2026-10-06 — the pass shot started west of the carpet
+
+| | |
+| --- | --- |
+| Take | Corridor ground covers the pass start. |
+| Defect | For the first two thirds of `monolith-pass.mp4`, the ground near Bolt (from about 40% of the frame down) was pure black. The textured floor filled in toward the camera as Bolt ran east. Walk was fine. |
+| Root cause | The carpet west edge was `xStart − 40` (`xmin` −40.6). The pass Bolt starts at −63.275, with the camera 6.1 m further west, so the near ground was past the quad and the clear colour showed. Fog and the m3 crossfade were not the hole. No test placed the carpet behind the pass camera. |
+| Fix | `carpetWest` is the further west of the walk apron and the pass Bolt minus 40 m. The west edge is −103.275. One quad, same texture, same draw. |
+| Guard | `node --test packs/corridor-ab/play/stream.test.mjs` — "the carpet covers the ground under the pass camera". No pixel row measures every 6th frame. The proof clip is that check. |
+| Sources | `packs/corridor-ab/play/stream.js`, `packs/corridor-ab/play/play.js` |
