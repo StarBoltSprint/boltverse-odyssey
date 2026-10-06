@@ -177,7 +177,7 @@ export function xaiShipCard(catalog) {
       question: "What does a lost hull, marked xAI, still ask about the universe?",
       truth: {
         kind: "truth-orb",
-        insight: "Understanding the universe is not a destination. It is an endless becoming.",
+        insight: "The Star Core reveals: Understanding the universe is not a destination. It is an endless becoming.",
       },
       nextQuestion: "If understanding is an endless becoming, what does the next signal ask?",
     },

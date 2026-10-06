@@ -30,3 +30,10 @@ The first Echo Shard placer nudged a point and then clamped it back into the mon
 - New recipes: `learn/recipes/adventure-contract.md`
 - New failure entries: echo positions clamped into a monument
 - Confirmed, not new: the six-beat list is a hint. Seed 1024 does not use it. The Codex Spire and a self-growing catalogue are named and not built.
+
+## Later the same day
+
+- Step: Star Core anchor on the same contract.
+- Accepted because: the truth insight is framed as a Star Core revelation. Offline cards draw from the short canon list. The Grok prompt says the same, and allows a new insight in that style without a new decree number.
+- Recipe appended: the reuse line in `learn/recipes/adventure-contract.md`.
+- Failure appended: none. The shard-clearance entry still stands.

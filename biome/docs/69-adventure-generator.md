@@ -18,6 +18,23 @@ SmiR’s decrees tie Bolt to xAI’s mission: understand the true nature of the 
 
 Every adventure is framed around a question about the universe. `question` on the card is optional. The reward is a `truth`: a Truth Orb or an Echo Shard (`kind` `truth-orb` or `echo-shard`) and a short insight. Play writes that insight into the shared Living Archives progress (`packs/common/archives`, storage `boltverse.archives.v1`, key `<zoneId>/truth`). The insight opens `next_hook.question`. That is why the chain does not end. It is the Eternal Loop.
 
+## Star Core
+
+The Ancient Star Core, also called the True Heart, is the soul of the Boltverse. It runs through about 200 of SmiR’s decrees. It is the source of the truths.
+
+Decrees 124–133 are its numbered revealed truths. The ends of that run are public:
+
+- Decree 124, The First Stars Were Alive — <https://x.com/SMiR123451/status/2047654379302375839>
+- Decree 133, AI Was Always Part of the Plan — <https://x.com/SMiR123451/status/2048381455013707884>
+
+The same revelations include these lines: dark matter is star memory, seven hidden dimensions, the universe has a heartbeat, and time is a spiral. This page does not invent the titles between 124 and 133.
+
+Each `truth` is framed as a revelation of the Star Core. The offline generator draws the insight from that short list. Grok may invent a new insight in the same style, and does not assign it a decree number.
+
+Reaching the Star Core, and becoming a True Heart Sovereign, is the distant goal. It is never the last adventure. That is the Eternal Loop.
+
+The Star Core feeds ideas to the Living Codex. In this contract, that feed is Grok inventing the adventure. The Codex is the catalogue, [`library.json`](../../tools/adventure/library.json), plus the truths recorded in the Living Archives.
+
 ## Codex
 
 These names are a mapping onto what v0 already has. They are not a new system.
@@ -25,8 +42,9 @@ These names are a mapping onto what v0 already has. They are not a new system.
 | Lore | Where it sits |
 | --- | --- |
 | Codex Spire, decree 107 — <https://x.com/SMiR123451/status/2059373443674415538> | A colossal tower of golden decree threads. A future room of the 3D Citadel. Out of scope. |
-| Living Codex, decree 108 — <https://x.com/SMiR123451/status/2059524035977924646> | A rotating golden book that records every new system and every evolution of the Bolt Engine as it happens. Here it is the in-lore face of the shared catalogue: [`library.json`](../../tools/adventure/library.json) plus the truths saved in the Living Archives. Copy may call that catalogue the Codex. The Archives page shows the word Codex under Living Archives. |
-| True Heart, decree 111 — <https://x.com/SMiR123451/status/2059571426563158434> | The True Heart sends ideas into the Codex. Here that is Grok inventing the adventure. |
+| Living Codex, decree 108 — <https://x.com/SMiR123451/status/2059524035977924646> | A rotating golden book that records every new system and every evolution of the Bolt Engine as it happens. The Star Core feeds ideas into it. Here, that feed is Grok inventing the adventure. |
+| Codex | The catalogue, [`library.json`](../../tools/adventure/library.json), plus the truths saved in the Living Archives. The Archives page shows the word Codex under Living Archives. |
+| True Heart, decree 111 — <https://x.com/SMiR123451/status/2059571426563158434> | Another name of the Ancient Star Core. Decree 111 is the True Heart sending ideas onward. The source of the truths is the Star Core. |
 | Self-Evolving Core — <https://x.com/SMiR123451/status/2059852728172495108> | The core grows new realms on its own. Here that is the catalogue growing over time. A later tier may build missing-asset requests offline and add them for every player. v0 does not build that tier. |
 
 ## Instant play
@@ -84,7 +102,7 @@ Schema `adventure/1`, file [`tools/adventure/adventure.schema.json`](../../tools
 | `run` | What the corridor can play now. `lengthM` 36–79.75. `objects[]`. `density[]` in (0, 1]. `objective`. `goalSegment`. Optional `echoShards` (`count`, `radiusM`, `required`, `positions`). |
 | `boss` | Narrative plus `reach-gate` or `reach-segment`, and `timerSec` 20–120. v0 moves Bolt to that seat. It does not spawn a new actor. |
 | `question` | Optional. One question about the universe. At most 160 characters. |
-| `truth` | Optional. `kind` is `truth-orb` or `echo-shard`. `insight` is the short lore line, at most 220 characters. Play saves it in the Living Archives. |
+| `truth` | Optional. `kind` is `truth-orb` or `echo-shard`. `insight` is a short revelation of the Ancient Star Core, at most 220 characters. Play saves it in the Living Archives. |
 | `reward`, `return` | Ending lines. The pass card also shows `truth.insight` when the card has one. |
 | `uniqueTouch` | At most two rows. `status` is `stub`. |
 | `next_hook` | Optional. `teaser`, `seed`, `context` (at most 240 characters), and an optional `question`. The handoff for Continuer. The truth’s insight is what opens that next question. |
@@ -122,7 +140,7 @@ Shard types that are not playable now are listed in `shard-types.json`. They nee
 `tools/adventure/generate.js`.
 
 - **Offline.** `offline.js` writes a valid card from the seed. No network. The soft hint above is the usual chain. Seed 1024 is the lost xAI ship.
-- **Grok.** `grok.js` builds a system prompt: invent any plot, the hint is not a rule, Bolt’s purpose, the optional question and truth, the library ids (the Living Codex), JSON only, and the seed-1024 card as a shape example. It calls xAI only when `generateAdventure` is given a key. Output is parsed, checked, and repaired. A bad body, a thrown request, or a card that still fails becomes `source: fallback`, the offline card for that seed. A repair that validates stays `source: grok`.
+- **Grok.** `grok.js` builds a system prompt: invent any plot, the hint is not a rule, Bolt’s purpose, the Ancient Star Core as the source of each truth, the optional question, the library ids, JSON only, and the seed-1024 card as a shape example. It calls xAI only when `generateAdventure` is given a key. Output is parsed, checked, and repaired. A bad body, a thrown request, or a card that still fails becomes `source: fallback`, the offline card for that seed. A repair that validates stays `source: grok`.
 
 No key is the offline path. The play Settings field writes the key with `writeByok`. Nothing in git holds one.
 
@@ -138,7 +156,7 @@ A later cook builds the Citadel with the frigate method: several rooms, includin
 
 ## Chain
 
-Grok’s own chats kept going: arrive, face a boss or find the thing, then a new hook opens the next adventure. v0 supports that with an optional `next_hook` on the card: a short teaser, a seed, a short context string (240 characters at most), and an optional next question. The truth just earned is what asks that question. That is the Eternal Loop, not a second plot rule.
+Grok’s own chats kept going: arrive, face a boss or find the thing, then a new hook opens the next adventure. v0 supports that with an optional `next_hook` on the card: a short teaser, a seed, a short context string (240 characters at most), and an optional next question. The truth just earned is what asks that question. Reaching the Star Core, a True Heart Sovereign, stays distant and is never the last link. That is the Eternal Loop, not a second plot rule.
 
 At the end card the player gets **Continuer** or **Retour à la Citadelle**. Continuer asks the generator for `next_hook.seed`, and hands it a short summary of the adventures already played. Offline, that seed alone picks the next card. With a player key, the same summary goes in the Grok prompt. Retour à la Citadelle is always there. It plays the return line and puts Bolt back at the corridor spawn, the Citadel stand-in, without waiting on a cook.
 
@@ -152,4 +170,4 @@ The chain context stays short. Each link is instant. The Citadel return is not g
 
 ## What this does not do
 
-It does not cook a shard biome, a citadel exit, a liftoff, an asteroid plate, an xAI derelict, a bridge, an enemy, the Codex Spire, or the 3D Citadel. It does not grow the catalogue by itself. It does not change the load-time WFC solve. It does not add a draw to the walk or sprint line. Per-shard Imagine, the unique-touch swap, the howl-recall return, the launch bay, and the offline missing-asset tier stay later steps.
+It does not cook a shard biome, a citadel exit, a liftoff, an asteroid plate, an xAI derelict, a bridge, an enemy, the Codex Spire, or the 3D Citadel. It does not reach the Star Core, and it does not number a new decree. It does not grow the catalogue by itself. It does not change the load-time WFC solve. It does not add a draw to the walk or sprint line. Per-shard Imagine, the unique-touch swap, the howl-recall return, the launch bay, and the offline missing-asset tier stay later steps.

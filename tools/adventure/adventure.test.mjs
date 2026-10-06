@@ -164,10 +164,12 @@ test("the next hook is a short handoff and the chain stays capped", async () => 
   assert.ok(card.next_hook.teaser.length > 3);
   assert.equal(card.question, "What does a lost hull, marked xAI, still ask about the universe?");
   assert.equal(card.truth.kind, "truth-orb");
-  assert.equal(card.truth.insight, "Understanding the universe is not a destination. It is an endless becoming.");
+  assert.equal(card.truth.insight, "The Star Core reveals: Understanding the universe is not a destination. It is an endless becoming.");
   assert.equal(card.next_hook.question, "If understanding is an endless becoming, what does the next signal ask?");
   const messages = buildMessages(catalog, library, card, "");
   assert.equal(messages[0].content.includes("true nature of the universe"), true);
+  assert.equal(messages[0].content.includes("Ancient Star Core"), true);
+  assert.equal(messages[0].content.includes("True Heart Sovereign"), true);
   assert.equal(messages[0].content.includes("Living Codex"), true);
   assert.equal(messages[0].content.includes(card.truth.insight), true);
   const followed = offlineCard(card.next_hook.seed, catalog);
@@ -214,6 +216,7 @@ test("a truth is optional and a pass stores it in the archives", () => {
   const card = offlineCard(68, catalog);
   assert.equal(validateCard(card, catalog).ok, true);
   assert.ok(card.question.length > 8);
+  assert.equal(card.truth.insight.startsWith("The Star Core reveals:"), true);
   assert.ok(card.truth.kind === "truth-orb" || card.truth.kind === "echo-shard");
   assert.ok(card.next_hook.question.length > 8);
   const bare = offlineCard(68, catalog);

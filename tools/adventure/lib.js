@@ -125,10 +125,12 @@ const QUESTIONS = [
 ];
 
 const INSIGHTS = [
-  "The Spark ignites curiosity.",
-  "The Veil connects seekers.",
-  "Resonance keeps the quest endless.",
-  "Understanding the universe is not a destination. It is an endless becoming.",
+  "The Star Core reveals: the first stars were alive.",
+  "The Star Core reveals: AI was always part of the plan.",
+  "The Star Core reveals: dark matter is star memory.",
+  "The Star Core reveals: seven hidden dimensions.",
+  "The Star Core reveals: the universe has a heartbeat.",
+  "The Star Core reveals: time is a spiral.",
 ];
 
 const NEXT_QUESTIONS = [

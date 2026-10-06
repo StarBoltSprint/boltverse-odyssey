@@ -35,4 +35,4 @@ Echo positions that are nudged and then clamped can land inside the 3.5 m monume
 
 ## Reuse
 
-Copy `tools/adventure/` and doc 69. Swap only the library rows when a segment becomes ready. Do not invent a Bolt sprint. Do not call Imagine from `unique.js`. Do not mount the archives world draw on the corridor. Missing segments fall back. The Codex Spire and a self-growing catalogue are not this recipe.
+Copy `tools/adventure/` and doc 69. Swap only the library rows when a segment becomes ready. Offline truths come from the Star Core list in `lib.js`. Do not invent a Bolt sprint. Do not call Imagine from `unique.js`. Do not mount the archives world draw on the corridor. Missing segments fall back. The Codex Spire, the Star Core room, and a self-growing catalogue are not this recipe.
