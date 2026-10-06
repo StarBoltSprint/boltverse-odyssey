@@ -18,6 +18,9 @@ export const FIELD_HALF = 48;
 export const HORIZON_N = 8;
 export const HORIZON_STEP = 28;
 export const GATE_LAT = 16;
+export const GATE_FIRST = 54;
+export const PASS_BACK = 118;
+export const CARPET_APRON = 40;
 
 const KIND_STONE = 1;
 const KIND_BOULDER = 2;
@@ -34,9 +37,18 @@ const ROCK = {
 
 const MONU = {
   3: { first: 22, gap: 68, lateral: 0 },
-  4: { first: 54, gap: 96, lateral: GATE_LAT },
+  4: { first: GATE_FIRST, gap: 96, lateral: GATE_LAT },
   5: { first: 34, gap: 84, lateral: 3.6 },
 };
+
+/**
+ * West edge of the one ground quad.
+ * The pass shot stands PASS_BACK metres before the gate, which is west of the
+ * corridor apron. The quad has to include that ground or the near floor is black.
+ */
+export function carpetWest(xStart, passBoltX) {
+  return Math.min(xStart - CARPET_APRON, passBoltX - CARPET_APRON);
+}
 
 /** Base of a rock, metres. Settled sits ROCK_SINK below the plane. Rising is lower. */
 export function rockBottom(emerge) {

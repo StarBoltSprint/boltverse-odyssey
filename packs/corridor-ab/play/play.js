@@ -31,7 +31,7 @@ import {
   wrap360,
 } from "./look.js";
 import { pushDiscs, RUN_YAW } from "./scatter.js";
-import { POOL, RISE_M, createField, horizonSeats, rockBottom, rockCount, settleField, stepField } from "./stream.js";
+import { GATE_FIRST, PASS_BACK, POOL, RISE_M, carpetWest, createField, horizonSeats, rockBottom, rockCount, settleField, stepField } from "./stream.js";
 import { DEFAULT_POST, POST_LIMITS } from "../../zone-a/play/biomeblend.js";
 import { mountSky } from "./sky.js";
 import { mountRuins } from "../../zone-a/play/ruins.js";
@@ -138,7 +138,8 @@ texBytes += Math.ceil(maxW * maxH * 4 * images.length * 4 / 3);
 const xStart = corridor.waypoints[0][0];
 const xEnd = corridor.waypoints[corridor.waypoints.length - 1][0];
 const pathZ = corridor.waypoints[0][1];
-const ix0 = Math.floor((xStart - 40) / tileM);
+const passBoltX = xStart + GATE_FIRST - PASS_BACK;
+const ix0 = Math.floor(carpetWest(xStart, passBoltX) / tileM);
 const ix1 = Math.floor((xEnd + 160) / tileM);
 const iz0 = Math.floor((pathZ - 70) / tileM);
 const iz1 = Math.floor((pathZ + 70) / tileM);
@@ -586,7 +587,7 @@ if (paceShot || filmShot) {
   heading = 90;
   if (shot === "pass") {
     settleField(field, { x, z, heading, forward: 1, gallop: true }, "sprint");
-    if (field.gate) x = field.gate.x - 118;
+    if (field.gate) x = field.gate.x - PASS_BACK;
     z = pathZ;
     settleField(field, { x, z, heading, forward: 1, gallop: true }, "sprint");
     speed = field.speed;

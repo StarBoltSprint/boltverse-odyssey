@@ -3,10 +3,14 @@ import { test } from "node:test";
 import { SPRINT_MAX } from "./look.js";
 import {
   FIELD_HALF,
+  CARPET_APRON,
+  GATE_FIRST,
   GATE_LAT,
   HORIZON_N,
   NEAR_M,
+  PASS_BACK,
   ROCK_SINK,
+  carpetWest,
   createField,
   densityOf,
   halfWidth,
@@ -134,6 +138,15 @@ test("a sprint sees the gate while it is still inside the forward view", () => {
   assert.ok(Math.abs(sprint.gate.x - gateX) < 0.2);
   const walk = settleField(field(), body(gateX - 100), "walk");
   assert.equal(walk.gate, null);
+});
+
+test("the carpet covers the ground under the pass camera", () => {
+  const x0 = 0.725;
+  const pass = x0 + GATE_FIRST - PASS_BACK;
+  const west = carpetWest(x0, pass);
+  assert.ok(west <= pass - CARPET_APRON + 1e-9);
+  assert.ok(west <= x0 - CARPET_APRON + 1e-9);
+  assert.ok(pass < x0 - 40);
 });
 
 test("a rock bottom stays under the plane through the rise", () => {
