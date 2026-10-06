@@ -812,3 +812,47 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | After the opening frame, a birth needs 92 m of distance and must sit outside the near portrait frustum. Emerge is 1 at birth. Slots behind Bolt are blanked and reused. Charge climbs over 24 s. `densityOf` and `halfWidth` follow that charge. The pool is 48 and shares one instanced draw with the 8 horizon seats (cap 64). |
 | Guard | `node --test packs/corridor-ab/play/stream.test.mjs` — "a new slot is born beyond the far ring and outside the near frustum", "a turn does not birth a slot inside the near frustum", "a long sprint holds more rocks than a short one, still born far". |
 | Sources | `packs/corridor-ab/play/stream.js`, `packs/corridor-ab/play/look.js` |
+
+### 2026-10-06 — the corridor end teleported Bolt and cleared the field
+
+| | |
+| --- | --- |
+| Take | Phone sprint on main `700d47d`. |
+| Defect | After a few seconds Bolt jumped and every decor piece vanished. |
+| Root cause | Reaching the end of the 79.75 m corridor wrote the body onto zone B’s gate and flipped the heading. The stream then looked the other way. |
+| Fix | `holdBody` keeps the pose. The plate mode may change. The body does not. |
+| Guard | `node --test packs/corridor-ab/play/run.test.mjs` — a 120 s straight sprint and a 120 s sprint with turns stay inside `speed * dt * 1.5`, live decor never hits 0, and a frame never drops more than 4 slots. |
+| Sources | `packs/corridor-ab/play/look.js`, `packs/corridor-ab/play/play.js` |
+
+### 2026-10-06 — portrait y 0.761 sat Bolt too low
+
+| | |
+| --- | --- |
+| Take | Phone sprint on main `700d47d`. |
+| Defect | Bolt’s chest sat at screen y 0.761. The owner asked for zone A’s chase. |
+| Root cause | The corridor rest eye was 3.5 m and the aim sat high, so the body fell into the lower third. |
+| Fix | Rest chase is zone A’s: boom 6 m, eye 1.35 m, aim at 0.45 of Bolt’s height, slide 0. A clearance lift retargets pitch from the eye that is already there, so the chest stays on that row. |
+| Guard | `node --test packs/corridor-ab/play/look.test.mjs` — "the chase matches zone A and stays clear of the joystick" and "a lifted eye keeps the chest on the zone A row". Portrait proof `packs/corridor-ab/proof/density-seam/capture.json` screen-y delta against zone A. |
+| Sources | `packs/corridor-ab/play/look.js`, `packs/corridor-ab/play/play.js` |
+
+### 2026-10-06 — a held sprint stopped at 8.6 m/s
+
+| | |
+| --- | --- |
+| Take | Phone sprint on main `700d47d`. |
+| Defect | The run felt slow. Top speed stayed 8.6 m/s. |
+| Root cause | `SPRINT_MAX` was the cap for the whole charge. |
+| Fix | The cap climbs with charge to 19.35 m/s (2.25×) across the 24 s ramp. Births stay at or beyond 92 m and move further when the speed needs it. |
+| Guard | `node --test packs/corridor-ab/play/look.test.mjs` — "a held sprint climbs past the old top across the charge ramp". |
+| Sources | `packs/corridor-ab/play/look.js`, `packs/corridor-ab/play/stream.js` |
+
+### 2026-10-06 — a skipped proof draw also skipped the chase
+
+| | |
+| --- | --- |
+| Take | Corridor density-seam capture. |
+| Defect | From about 7.5 s the lower half of the portrait was black and Bolt left the frame, while the body x kept climbing. |
+| Root cause | `__nodraw` skipped `frame()`, and `placeCamera` lived only inside `frame()`. The body kept sprinting. The eye stayed put. The ground quad, which rides with Bolt, left the camera behind it. |
+| Fix | `frame()` still steps the chase when the draw is skipped. Only the GL clear and the draws are skipped. |
+| Guard | No unit row steps the page. The proof is `packs/corridor-ab/proof/density-seam/capture.json`: boom stays near 6 and the 60 s clip’s lower half is not empty. |
+| Sources | `packs/corridor-ab/play/play.js`, `packs/corridor-ab/proof/density-seam/capture.mjs` |
