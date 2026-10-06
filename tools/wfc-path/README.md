@@ -64,10 +64,26 @@ Copy those objects into `world.json` `corridors` when the cook hangs the link. K
 
 The fixture's straight solve is one record, `path-ab`, length 5.4 m, from `zone-a` / `out` to `zone-b` / `in`.
 
+## Hang
+
+`wfc.py` does not open the asset files. The hang does, and it refuses a missing file.
+
+```bash
+python3 tools/wfc-path/hang.py \
+  --spec tools/wfc-path/cook/spec.json \
+  --out packs/corridor-ab
+
+python3 tools/wfc-path/hang_selftest.py
+```
+
+That spec points at zone A ground stills already in the repo. `hang.py` copies `world_corridors` into `world.json` `corridors`, writes one clearing stub per gate, and sets the from-gate `leads_to` to the corridor id. Waypoints stay in `path-layout.json`. The play page is `packs/corridor-ab/play/`. Serve the repo root and open `/packs/corridor-ab/play/`. Hold the screen to walk.
+
 ## Honest limits
 
-- Asset paths are strings. A missing file still passes this command.
-- No Zone A / Zone B play wiring. No collider edit. No corridor video cook.
-- Phone caps are outside this command: it adds no draw call.
+- `wfc.py` still treats asset paths as strings. A missing file passes that command and fails `hang.py`.
+- No corridor video is cooked. The hung floor is the zone A ground stills, one file per solved cell. `bakedGroundSpeed` is stored for zone-flow and is not applied to a still.
+- Zone B has no pack. The arrival plate reuses a zone A ground still until Ember Mesa exists.
+- The Eclipse Gate loft stays in `packs/zone-a`. This strip does not build a gate mesh.
+- The clearing stubs are the handoff only. `layout.py check --world` is claimed for the `transition` row. The other zone rows are not a layout PASS.
 - `allow_bends` is a kitchen segment list. Doc 62 play corridors stay one straight run.
 - Determinism uses CPython `random.Random`. Two runs of one seed match on that interpreter.
