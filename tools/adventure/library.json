@@ -1,0 +1,152 @@
+{
+  "schema": "adventure-library/1",
+  "note": "Reusable location segments. v0 plays only the ready rows. A missing id falls back along fallback, then to the nearest ready row. variation is stored on each beat; the corridor stream still uses the card seed. No row draws a pixel.",
+  "segments": [
+    {
+      "id": "corridor-run",
+      "name": "Zone A corridor",
+      "status": "ready",
+      "fallback": null,
+      "objects": ["stone"],
+      "match": ["corridor", "path", "ground", "sprint"],
+      "assets": [
+        "packs/zone-a/src/ground/m3.png",
+        "packs/zone-a/src/sky/sky.json"
+      ],
+      "imagineLater": ""
+    },
+    {
+      "id": "boulder-field",
+      "name": "Boulders and stones",
+      "status": "ready",
+      "fallback": "corridor-run",
+      "objects": ["boulder", "stone"],
+      "match": ["boulder", "stone", "asteroid", "rock"],
+      "assets": ["packs/zone-a/src/rocks/manifest.json"],
+      "imagineLater": ""
+    },
+    {
+      "id": "roman-arch",
+      "name": "Roman arch",
+      "status": "ready",
+      "fallback": "corridor-run",
+      "objects": ["arch"],
+      "match": ["arch", "bridge", "span"],
+      "assets": ["packs/zone-a/src/ruins/arch/arch.ruin", "packs/zone-a/src/ruins/arch/atlas.jpg"],
+      "imagineLater": ""
+    },
+    {
+      "id": "eclipse-gate",
+      "name": "Eclipse Gate monolith",
+      "status": "ready",
+      "fallback": "corridor-run",
+      "objects": ["gate"],
+      "match": ["gate", "eclipse", "monolith"],
+      "assets": ["packs/zone-a/src/ruins/gate/gate.ruin", "packs/zone-a/src/ruins/gate/atlas.jpg"],
+      "imagineLater": ""
+    },
+    {
+      "id": "wreck-hangar",
+      "name": "Wreck",
+      "status": "ready",
+      "fallback": "corridor-run",
+      "objects": ["wreck"],
+      "match": ["wreck", "ship", "hull", "derelict", "xai"],
+      "assets": [
+        "packs/zone-a/src/ruins/wreck/wreck.ruin",
+        "packs/zone-a/src/ruins/wreck/port.jpg"
+      ],
+      "imagineLater": ""
+    },
+    {
+      "id": "zone-b-handoff",
+      "name": "Zone B handoff",
+      "status": "stub",
+      "fallback": "corridor-run",
+      "objects": [],
+      "match": ["ember-mesa", "zone-b"],
+      "assets": ["packs/corridor-ab/clearing-zone-b.json"],
+      "imagineLater": "Ember Mesa pack. The handoff file is a stub. Its plate is zone A m6.png. No zone B solids are on this branch."
+    },
+    {
+      "id": "citadel-exit",
+      "name": "Citadel exit",
+      "status": "missing",
+      "fallback": "corridor-run",
+      "objects": [],
+      "match": ["citadel", "depart"],
+      "assets": [],
+      "imagineLater": "Empty Citadel threshold, no Bolt. First and last stills for a depart. The corridor spawn stands in."
+    },
+    {
+      "id": "liftoff",
+      "name": "Liftoff",
+      "status": "missing",
+      "fallback": "corridor-run",
+      "objects": [],
+      "match": ["liftoff", "ascent", "launch"],
+      "assets": [],
+      "imagineLater": "Empty ascent from the Citadel into open black, no Bolt. The corridor run stands in."
+    },
+    {
+      "id": "space-asteroid-field",
+      "name": "Asteroid field",
+      "status": "missing",
+      "fallback": "boulder-field",
+      "objects": [],
+      "match": ["asteroid", "field"],
+      "assets": [],
+      "imagineLater": "Empty asteroid drift, no Bolt. Boulder and stone hulls stand in."
+    },
+    {
+      "id": "nebula-run",
+      "name": "Nebula run",
+      "status": "missing",
+      "fallback": "corridor-run",
+      "objects": [],
+      "match": ["nebula", "veil"],
+      "assets": [],
+      "imagineLater": "Empty nebula passage, no Bolt. Zone A sky already has nebula loops; a dedicated plate still needs Imagine."
+    },
+    {
+      "id": "derelict-ship",
+      "name": "xAI-stamped derelict",
+      "status": "missing",
+      "fallback": "wreck-hangar",
+      "objects": [],
+      "match": ["derelict", "xai", "ship"],
+      "assets": [],
+      "imagineLater": "Empty derelict with an xAI mark on the hull, no Bolt. The zone A wreck stands in."
+    },
+    {
+      "id": "shard-surface",
+      "name": "Shard surface",
+      "status": "missing",
+      "fallback": "corridor-run",
+      "objects": [],
+      "match": ["shard", "surface", "realm"],
+      "assets": [],
+      "imagineLater": "One empty surface per shard type. The Howling Eclipse uses the corridor. Every other type needs Imagine."
+    },
+    {
+      "id": "bridge",
+      "name": "Bridge",
+      "status": "missing",
+      "fallback": "roman-arch",
+      "objects": [],
+      "match": ["bridge", "span"],
+      "assets": [],
+      "imagineLater": "Empty span between two spaces, no Bolt. The Roman arch stands in."
+    },
+    {
+      "id": "enemy-set",
+      "name": "Enemy set",
+      "status": "missing",
+      "fallback": "boulder-field",
+      "objects": [],
+      "match": ["enemy", "foe", "phantom"],
+      "assets": [],
+      "imagineLater": "Keyed foes, no Bolt, no code mesh. No enemy asset exists. Boulders are only a spacing stand-in, not a foe."
+    }
+  ]
+}

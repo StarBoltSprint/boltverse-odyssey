@@ -724,3 +724,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | `carpetWest` is the further west of the walk apron and the pass Bolt minus 40 m. The west edge is −103.275. One quad, same texture, same draw. |
 | Guard | `node --test packs/corridor-ab/play/stream.test.mjs` — "the carpet covers the ground under the pass camera". No pixel row measures every 6th frame. The proof clip is that check. |
 | Sources | `packs/corridor-ab/play/stream.js`, `packs/corridor-ab/play/play.js` |
+
+### 2026-10-06 — echo positions clamped into a monument
+
+| | |
+| --- | --- |
+| Take | Adventure contract v0. |
+| Defect | Some seeds wrote Echo Shard positions inside the 3.5 m monument clearance. `validateCard` then failed those cards. |
+| Root cause | A nudge away from a monument was clamped back toward the gate seat at `0.9 * length`. |
+| Fix | `placeShards` picks a slot grid: 0.4 m steps, 3.6 m from each monument seat, 2.6 m between shards. A short span returns fewer shards than asked. |
+| Guard | `node --test tools/adventure/adventure.test.mjs` — offline cards for the sample seeds pass `validateCard`, which rejects a position within 3.5 m of a monument. |
+| Sources | `tools/adventure/offline.js`, `tools/adventure/validate.js` |

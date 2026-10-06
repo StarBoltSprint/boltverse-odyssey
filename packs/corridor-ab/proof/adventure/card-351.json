@@ -1,0 +1,146 @@
+{
+  "schema": "adventure/1",
+  "title": "The Shard Symphony",
+  "seed": 351,
+  "source": "offline",
+  "drawsPixels": false,
+  "shard": {
+    "name": "Asteroid",
+    "type": "asteroid",
+    "biomeHint": "Bolt Engine biome",
+    "paletteHint": "",
+    "playableNow": false,
+    "assetNote": "Needs Imagine later. v0 still places the zone A solids."
+  },
+  "beats": [
+    {
+      "id": "signal",
+      "segment": "citadel-exit",
+      "text": "The permanent EMP wave has woken another realm.",
+      "variation": 0
+    },
+    {
+      "id": "sprint",
+      "segment": "shard-surface",
+      "text": "Sprint toward Asteroid.",
+      "variation": 1
+    },
+    {
+      "id": "resonance",
+      "segment": "roman-arch",
+      "text": "Howl at the monuments and gather the Echo Shards.",
+      "variation": 2
+    },
+    {
+      "id": "boss",
+      "segment": "eclipse-gate",
+      "text": "Shadow duplicates gather at the Gate. Reach it before the rift closes.",
+      "variation": 3
+    },
+    {
+      "id": "reward",
+      "segment": "corridor-run",
+      "text": "A Crystal Core fragment.",
+      "variation": 4
+    },
+    {
+      "id": "return",
+      "segment": "citadel-exit",
+      "text": "Return to the Elder.",
+      "variation": 5
+    }
+  ],
+  "run": {
+    "lengthM": 54,
+    "objects": [
+      "stone",
+      "boulder",
+      "gate",
+      "wreck"
+    ],
+    "density": [
+      0.429,
+      0.628,
+      0.801,
+      0.997
+    ],
+    "echoShards": {
+      "count": 7,
+      "radiusM": 2.25,
+      "required": true,
+      "positions": [
+        {
+          "id": "echo-1",
+          "along": 7.6,
+          "lateral": 1.6,
+          "title": "Echo Shard 1",
+          "lore": "When the shards sing the same song, it hits like a cosmic EMP."
+        },
+        {
+          "id": "echo-2",
+          "along": 11.2,
+          "lateral": -1.6,
+          "title": "Echo Shard 2",
+          "lore": "Awaken."
+        },
+        {
+          "id": "echo-3",
+          "along": 21.6,
+          "lateral": 1.6,
+          "title": "Echo Shard 3",
+          "lore": "Each shard is a different sky and a different law."
+        },
+        {
+          "id": "echo-4",
+          "along": 32.4,
+          "lateral": -1.6,
+          "title": "Echo Shard 4",
+          "lore": "No howl of significance shall be lost to time."
+        },
+        {
+          "id": "echo-5",
+          "along": 36,
+          "lateral": 1.6,
+          "title": "Echo Shard 5",
+          "lore": "An Echo Shard carries not only what happened, but how it felt."
+        },
+        {
+          "id": "echo-6",
+          "along": 39.2,
+          "lateral": -1.6,
+          "title": "Echo Shard 6",
+          "lore": "When the shards sing the same song, it hits like a cosmic EMP."
+        },
+        {
+          "id": "echo-7",
+          "along": 42.8,
+          "lateral": 1.6,
+          "title": "Echo Shard 7",
+          "lore": "Awaken."
+        }
+      ]
+    },
+    "objective": "Collect the Echo Shards, then reach the Eclipse Gate.",
+    "goalSegment": "eclipse-gate"
+  },
+  "boss": {
+    "name": "Shadow Duplicates",
+    "text": "Shadow duplicates gather at the Gate. Reach it before the rift closes.",
+    "objective": "reach-gate",
+    "timerSec": 55
+  },
+  "reward": "A Crystal Core fragment.",
+  "return": "Return to the Elder.",
+  "uniqueTouch": [],
+  "next_hook": {
+    "teaser": "The mark points at a second rift.",
+    "seed": 35443,
+    "context": "The Shard Symphony",
+    "question": "What does the Veil ask of the next seeker?"
+  },
+  "question": "What does this signal still ask about the universe?",
+  "truth": {
+    "kind": "echo-shard",
+    "insight": "The Veil connects seekers."
+  }
+}

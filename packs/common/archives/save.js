@@ -84,6 +84,18 @@ export function createSave(storage, opts) {
     return { added: true, doc, key };
   }
 
+  function rememberTruth(zoneId, insight, at) {
+    const text = typeof insight === "string" ? insight.trim() : "";
+    if (!zoneId || !text) return { added: false, doc: load(), key: "" };
+    const doc = load();
+    const key = zoneId + "/truth";
+    if (doc.found[key]) return { added: false, doc, key };
+    const when = at || new Date().toISOString();
+    doc.found[key] = { zoneId, shardId: "truth", at: when, insight: text };
+    write(doc);
+    return { added: true, doc, key };
+  }
+
   function setRemote(remote) {
     const doc = load();
     doc.remote = remote == null ? null : remote;
@@ -91,5 +103,5 @@ export function createSave(storage, opts) {
     return doc;
   }
 
-  return { load, mark, setRemote, key: STORAGE_KEY };
+  return { load, mark, rememberTruth, setRemote, key: STORAGE_KEY };
 }

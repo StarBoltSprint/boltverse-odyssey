@@ -1,0 +1,238 @@
+{
+  "schema": "adventure-shard-types/1",
+  "source": "uploads lore sweep 2026-10-06, plus the zone names already on this corridor",
+  "types": [
+    {
+      "type": "howling-eclipse",
+      "name": "The Howling Eclipse",
+      "biomeHint": "Zone A. Cooked corridor ground, sky, and solids.",
+      "paletteHint": "",
+      "playableNow": true,
+      "assetNote": "Playable now. Zone A plates and solids: boulders, stones, the Roman arch, the Eclipse Gate, the wreck."
+    },
+    {
+      "type": "ember-mesa",
+      "name": "Ember Mesa",
+      "biomeHint": "Zone B name on this corridor. Handoff stub only.",
+      "paletteHint": "",
+      "playableNow": false,
+      "assetNote": "The zone B file is a stub. Its arrival plate is zone A m6. An Ember Mesa pack needs Imagine later. v0 still runs the zone A solids."
+    },
+    {
+      "type": "howling-crucible",
+      "name": "Howling Crucible",
+      "biomeHint": "Realm woken by the permanent EMP wave.",
+      "paletteHint": "",
+      "playableNow": false,
+      "assetNote": "Named in the lore. The cooked zone on this corridor is The Howling Eclipse. A Crucible pack needs Imagine later."
+    },
+    {
+      "type": "crystal-nebula-plains",
+      "name": "Crystal Nebula Plains",
+      "biomeHint": "Jul 2025 biome",
+      "paletteHint": "",
+      "playableNow": false,
+      "assetNote": "Needs Imagine later. v0 still places the zone A solids."
+    },
+    {
+      "type": "ember-void",
+      "name": "Ember Void",
+      "biomeHint": "Jul 2025 biome",
+      "paletteHint": "",
+      "playableNow": false,
+      "assetNote": "Needs Imagine later. v0 still places the zone A solids."
+    },
+    {
+      "type": "whispering-starfields",
+      "name": "Whispering Starfields",
+      "biomeHint": "Jul 2025 biome",
+      "paletteHint": "",
+      "playableNow": false,
+      "assetNote": "Needs Imagine later. v0 still places the zone A solids."
+    },
+    {
+      "type": "jade-canopy",
+      "name": "Jade Canopy",
+      "biomeHint": "Jul 2025 biome",
+      "paletteHint": "",
+      "playableNow": false,
+      "assetNote": "Needs Imagine later. v0 still places the zone A solids."
+    },
+    {
+      "type": "solar-gold",
+      "name": "Solar Gold",
+      "biomeHint": "Jul 2025 biome",
+      "paletteHint": "",
+      "playableNow": false,
+      "assetNote": "Needs Imagine later. v0 still places the zone A solids."
+    },
+    {
+      "type": "frost-glacier",
+      "name": "Frost Glacier",
+      "biomeHint": "Jul 2025 biome",
+      "paletteHint": "",
+      "playableNow": false,
+      "assetNote": "Needs Imagine later. v0 still places the zone A solids."
+    },
+    {
+      "type": "rose-pulse",
+      "name": "Rose Pulse",
+      "biomeHint": "Jul 2025 biome",
+      "paletteHint": "",
+      "playableNow": false,
+      "assetNote": "Needs Imagine later. v0 still places the zone A solids."
+    },
+    {
+      "type": "comet-highways",
+      "name": "Comet Highways",
+      "biomeHint": "Realms of Wonder",
+      "paletteHint": "",
+      "playableNow": false,
+      "assetNote": "Needs Imagine later. v0 still places the zone A solids."
+    },
+    {
+      "type": "gravity-playgrounds",
+      "name": "Gravity Playgrounds",
+      "biomeHint": "Realms of Wonder",
+      "paletteHint": "",
+      "playableNow": false,
+      "assetNote": "Needs Imagine later. v0 still places the zone A solids."
+    },
+    {
+      "type": "heart-crystal-nebula",
+      "name": "Heart Crystal Nebula",
+      "biomeHint": "Realms of Wonder",
+      "paletteHint": "",
+      "playableNow": false,
+      "assetNote": "Needs Imagine later. v0 still places the zone A solids."
+    },
+    {
+      "type": "nebula-convergence",
+      "name": "Nebula Convergence",
+      "biomeHint": "Realms of Wonder",
+      "paletteHint": "",
+      "playableNow": false,
+      "assetNote": "Needs Imagine later. v0 still places the zone A solids."
+    },
+    {
+      "type": "asteroid",
+      "name": "Asteroid",
+      "biomeHint": "Bolt Engine biome",
+      "paletteHint": "",
+      "playableNow": false,
+      "assetNote": "Needs Imagine later. v0 still places the zone A solids."
+    },
+    {
+      "type": "forest",
+      "name": "Forest",
+      "biomeHint": "Bolt Engine biome",
+      "paletteHint": "",
+      "playableNow": false,
+      "assetNote": "Needs Imagine later. v0 still places the zone A solids."
+    },
+    {
+      "type": "canyon",
+      "name": "Canyon",
+      "biomeHint": "Bolt Engine biome",
+      "paletteHint": "",
+      "playableNow": false,
+      "assetNote": "Needs Imagine later. v0 still places the zone A solids."
+    },
+    {
+      "type": "city",
+      "name": "City",
+      "biomeHint": "Bolt Engine biome",
+      "paletteHint": "",
+      "playableNow": false,
+      "assetNote": "Needs Imagine later. v0 still places the zone A solids."
+    },
+    {
+      "type": "ocean",
+      "name": "Ocean",
+      "biomeHint": "Bolt Engine biome",
+      "paletteHint": "",
+      "playableNow": false,
+      "assetNote": "Needs Imagine later. v0 still places the zone A solids."
+    },
+    {
+      "type": "dune",
+      "name": "Dune",
+      "biomeHint": "Bolt Engine biome",
+      "paletteHint": "",
+      "playableNow": false,
+      "assetNote": "Needs Imagine later. v0 still places the zone A solids."
+    },
+    {
+      "type": "ruin",
+      "name": "Ruin",
+      "biomeHint": "Bolt Engine biome",
+      "paletteHint": "",
+      "playableNow": false,
+      "assetNote": "The corridor can place the existing arch, Gate, and wreck. A ruin biome plate needs Imagine later."
+    },
+    {
+      "type": "ember",
+      "name": "Ember",
+      "biomeHint": "Bolt Engine biome",
+      "paletteHint": "",
+      "playableNow": false,
+      "assetNote": "Needs Imagine later. v0 still places the zone A solids."
+    },
+    {
+      "type": "peak",
+      "name": "Peak",
+      "biomeHint": "Bolt Engine biome",
+      "paletteHint": "",
+      "playableNow": false,
+      "assetNote": "Needs Imagine later. v0 still places the zone A solids."
+    },
+    {
+      "type": "luminous-circuit",
+      "name": "Luminous Circuit",
+      "biomeHint": "Living crystal world after the Howling Crucible. Crystal grown, never chrome.",
+      "paletteHint": "violet, cyan, and gold",
+      "playableNow": false,
+      "assetNote": "Needs Imagine later. The hint is the lore label, not a code colour grade. v0 still places the zone A solids."
+    },
+    {
+      "type": "echo-reach",
+      "name": "Echo Reach",
+      "biomeHint": "Named place",
+      "paletteHint": "",
+      "playableNow": false,
+      "assetNote": "Needs Imagine later. v0 still places the zone A solids."
+    },
+    {
+      "type": "threadweaver-canyons",
+      "name": "Threadweaver Canyons",
+      "biomeHint": "Named place",
+      "paletteHint": "",
+      "playableNow": false,
+      "assetNote": "Needs Imagine later. v0 still places the zone A solids."
+    },
+    {
+      "type": "hidden-weave-vaults",
+      "name": "Hidden Weave Vaults",
+      "biomeHint": "Named place",
+      "paletteHint": "",
+      "playableNow": false,
+      "assetNote": "Needs Imagine later. v0 still places the zone A solids."
+    },
+    {
+      "type": "personal-realm",
+      "name": "Personal Realm",
+      "biomeHint": "Inside the Citadel",
+      "paletteHint": "",
+      "playableNow": false,
+      "assetNote": "A Citadel realm, not a corridor pack. Needs Imagine later. v0 still runs the corridor."
+    },
+    {
+      "type": "shared-realm",
+      "name": "Shared Realm",
+      "biomeHint": "Inside the Citadel",
+      "paletteHint": "",
+      "playableNow": false,
+      "assetNote": "A Citadel realm, not a corridor pack. Needs Imagine later. v0 still runs the corridor."
+    }
+  ]
+}

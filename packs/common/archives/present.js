@@ -251,7 +251,21 @@ export function mountPresent(doc, env) {
       menuView = "settings";
       fillSettings();
     });
-    menu.append(resume, archives, citadel, settings);
+    menu.append(resume);
+    const extras = Array.isArray(env.extraItems) ? env.extraItems : [];
+    for (let i = 0; i < extras.length; i++) {
+      const item = extras[i];
+      const button = doc.createElement("button");
+      button.type = "button";
+      button.textContent = item.label;
+      button.addEventListener("pointerdown", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (item.onPress) item.onPress();
+      });
+      menu.append(button);
+    }
+    menu.append(archives, citadel, settings);
   }
 
   function fillSettings() {
@@ -272,7 +286,9 @@ export function mountPresent(doc, env) {
       e.stopPropagation();
       closeMenu();
     });
-    menu.append(a, b, back);
+    menu.append(a, b);
+    if (typeof env.mountSettings === "function") env.mountSettings(menu);
+    menu.append(back);
   }
 
   function openMenu() {
@@ -296,11 +312,13 @@ export function mountPresent(doc, env) {
     list.replaceChildren();
     const title = doc.createElement("h1");
     title.textContent = "Living Archives";
+    const codex = doc.createElement("p");
+    codex.textContent = "Codex";
     const count = doc.createElement("p");
     count.className = "archives-count";
     count.textContent = cat.found + " of " + cat.total;
     countLine = cat.found + " of " + cat.total;
-    list.append(title, count);
+    list.append(title, codex, count);
     for (let i = 0; i < cat.shards.length; i++) {
       const s = cat.shards[i];
       const row = doc.createElement("article");

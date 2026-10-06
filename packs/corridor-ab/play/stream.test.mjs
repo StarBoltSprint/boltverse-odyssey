@@ -10,12 +10,14 @@ import {
   NEAR_M,
   PASS_BACK,
   ROCK_SINK,
+  bindPlan,
   carpetWest,
   createField,
   densityOf,
   halfWidth,
   horizonSeats,
   monumentSeat,
+  planMonument,
   rockBottom,
   rockCount,
   settleField,
@@ -167,4 +169,34 @@ test("horizon seats are tall, in the forward view, and clear of the run", () => 
     assert.ok(Math.abs(seat.lateral) < dist * half);
     assert.ok(seat.kind === 1 || seat.kind === 2);
   }
+});
+
+test("an adventure plan seats the gate at the end and keeps the seed", () => {
+  const plan = {
+    seed: 24,
+    lengthM: 60,
+    objects: ["stone", "arch", "gate"],
+    density: [0.9, 0.9, 0.9, 1],
+  };
+  function replay() {
+    const f = field();
+    bindPlan(f, plan);
+    return slotIds(settleField(f, body(6), "sprint")).join(",");
+  }
+  assert.equal(replay(), replay());
+  const f = field();
+  bindPlan(f, plan);
+  settleField(f, body(6), "sprint");
+  assert.equal(f.seed, 24);
+  assert.equal(f.wreck, null);
+  assert.ok(f.gate);
+  const gate = planMonument(60, "gate");
+  assert.ok(Math.abs(f.gate.x - (0.725 + gate.along)) < 1);
+  const sparse = field();
+  bindPlan(sparse, { seed: 24, lengthM: 60, objects: ["stone", "gate"], density: [0.15, 0.15, 0.15, 0.15] });
+  settleField(sparse, body(6), "sprint");
+  const full = field();
+  bindPlan(full, { seed: 24, lengthM: 60, objects: ["stone", "boulder", "gate"], density: [1, 1, 1, 1] });
+  settleField(full, body(6), "sprint");
+  assert.ok(rockCount(full) > rockCount(sparse));
 });

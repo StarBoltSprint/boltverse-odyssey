@@ -62,6 +62,59 @@ function lateralOf(kind, n) {
   return (n % 2 === 0 ? 1 : -1) * spec.lateral;
 }
 
+const KIND_NAME = {
+  1: "stone",
+  2: "boulder",
+  3: "arch",
+  4: "gate",
+  5: "wreck",
+};
+
+/** One seat along an adventure segment. Default monuments stay on MONU. */
+export function planMonument(lengthM, kind) {
+  const L = Number(lengthM) || 0;
+  if (kind === KIND_ARCH || kind === "arch") return { along: L * 0.28, lateral: 0 };
+  if (kind === KIND_WRECK || kind === "wreck") return { along: L * 0.48, lateral: 3.6 };
+  return { along: Math.max(18, L * 0.9), lateral: 0 };
+}
+
+function specFor(field, kind) {
+  if (!field.plan || !(field.plan.lengthM > 0)) return MONU[kind];
+  const seat = planMonument(field.plan.lengthM, kind);
+  return { first: seat.along, gap: field.plan.lengthM + 40, lateral: seat.lateral };
+}
+
+function allows(field, kind) {
+  if (!field.plan || !Array.isArray(field.plan.objects)) return true;
+  return field.plan.objects.indexOf(KIND_NAME[kind]) >= 0;
+}
+
+export function curveAt(curve, t) {
+  if (!curve || !curve.length) return 1;
+  const u = t < 0 ? 0 : t > 1 ? 1 : t;
+  const x = u * (curve.length - 1);
+  const i = Math.floor(x);
+  const f = x - i;
+  const a = curve[i];
+  const b = curve[Math.min(curve.length - 1, i + 1)];
+  return a + (b - a) * f;
+}
+
+function densityNow(field, x) {
+  if (!field.plan || !field.plan.density) return densityOf(field.charge);
+  const lengthM = field.plan.lengthM > 0 ? field.plan.lengthM : 1;
+  const progress = (x - field.x0) / lengthM;
+  const curve = curveAt(field.plan.density, progress);
+  const c = field.charge < 0 ? 0 : field.charge > 1 ? 1 : field.charge;
+  const d = curve * (0.55 + 0.45 * c);
+  return d < 0 ? 0 : d > 1 ? 1 : d;
+}
+
+function seatLateral(field, kind, n, spec) {
+  if (field.plan && field.plan.lengthM > 0) return spec.lateral;
+  return lateralOf(kind, n);
+}
+
 function hash01(n) {
   let x = n >>> 0;
   x = Math.imul(x ^ (x >>> 16), 0x7feb352d);
@@ -123,7 +176,24 @@ export function createField(opts) {
     arch: null,
     gate: null,
     wreck: null,
+    plan: null,
   };
+}
+
+export function bindPlan(field, plan) {
+  field.plan = plan || null;
+  if (plan && plan.seed) field.seed = normalizeSeed(plan.seed);
+  field.speed = 0;
+  field.charge = 0;
+  clearPool(field);
+  return field;
+}
+
+function normalizeSeed(seed) {
+  const n = Number(seed);
+  if (!Number.isFinite(n)) return 1;
+  const i = Math.floor(Math.abs(n));
+  return i === 0 ? 1 : i;
 }
 
 function findId(pool, id) {
@@ -154,7 +224,7 @@ function seat(field, slot, rec, emerge) {
  * nearM 0 includes a seat that has already come close (used when settling a still).
  */
 export function monumentSeat(field, kind, boltX, look, behind, nearM) {
-  const spec = MONU[kind];
+  const spec = specFor(field, kind);
   let n = Math.ceil((boltX - behind - field.x0 - spec.first) / spec.gap);
   if (n < 0) n = 0;
   const x = field.x0 + spec.first + n * spec.gap;
@@ -164,10 +234,10 @@ export function monumentSeat(field, kind, boltX, look, behind, nearM) {
     const n2 = n + 1;
     const x2 = field.x0 + spec.first + n2 * spec.gap;
     if (x2 <= boltX + look) {
-      return { id: kind * 100000 + n2, x: x2, z: field.pathZ + lateralOf(kind, n2), n: n2, ahead: x2 - boltX };
+      return { id: kind * 100000 + n2, x: x2, z: field.pathZ + seatLateral(field, kind, n2, spec), n: n2, ahead: x2 - boltX };
     }
   }
-  return { id: kind * 100000 + n, x, z: field.pathZ + lateralOf(kind, n), n, ahead };
+  return { id: kind * 100000 + n, x, z: field.pathZ + seatLateral(field, kind, n, spec), n, ahead };
 }
 
 /**
@@ -205,9 +275,13 @@ export function horizonSeats(field, boltX) {
 
 function considerRock(field, slot, ix, lane, charge, emergeNow) {
   const id = (ix + 4000) * 64 + (lane + 8);
+  const x = ix * CELL;
+  if (field.plan && field.plan.lengthM > 0) {
+    if (x < field.x0 - CELL || x > field.x0 + field.plan.lengthM) return false;
+  }
   const h = mix(field.seed, ix + 17, lane + 3);
   const rank = hash01(h);
-  if (rank > densityOf(charge)) return false;
+  if (rank > densityNow(field, x)) return false;
   const have = findId(field.pool, id);
   if (have) {
     have.keep = 1;
@@ -216,7 +290,12 @@ function considerRock(field, slot, ix, lane, charge, emergeNow) {
   }
   const free = findFree(field.pool);
   if (!free) return false;
-  const kind = hash01(h ^ 0x27d4eb2d) > 0.62 ? KIND_BOULDER : KIND_STONE;
+  let kind = hash01(h ^ 0x27d4eb2d) > 0.62 ? KIND_BOULDER : KIND_STONE;
+  if (!allows(field, kind)) {
+    const other = kind === KIND_BOULDER ? KIND_STONE : KIND_BOULDER;
+    if (!allows(field, other)) return false;
+    kind = other;
+  }
   const span = ROCK[kind].scale;
   const base = span[0] + hash01(h ^ 0x165667b1) * (span[1] - span[0]);
   const lateral = LANES[lane];
@@ -294,12 +373,13 @@ function fill(field, body, opt) {
   const rz = -Math.sin(yaw);
   for (let i = 0; i < field.pool.length; i++) field.pool[i].keep = 0;
 
-  considerMonu(field, KIND_ARCH, body.x, look, behind, nearM, emergeNow);
+  if (allows(field, KIND_ARCH)) considerMonu(field, KIND_ARCH, body.x, look, behind, nearM, emergeNow);
   // The 22.7° lens only holds a gate 16 m off the run while it is still far.
   // A sprint looks that far. A walk keeps the shorter window, so the gate still waits.
-  const gateLook = field.charge > 0.8 ? Math.max(look, 150) : look;
-  considerMonu(field, KIND_GATE, body.x, gateLook, behind, nearM, emergeNow);
-  considerMonu(field, KIND_WRECK, body.x, look, behind, nearM, emergeNow);
+  // An adventure plan keeps its own look; the filter above already dropped a gate the card did not ask for.
+  const gateLook = !field.plan && field.charge > 0.8 ? Math.max(look, 150) : look;
+  if (allows(field, KIND_GATE)) considerMonu(field, KIND_GATE, body.x, gateLook, behind, nearM, emergeNow);
+  if (allows(field, KIND_WRECK)) considerMonu(field, KIND_WRECK, body.x, look, behind, nearM, emergeNow);
 
   const reach = look + behind + CELL * 2;
   const ixLo = Math.floor((body.x - reach) / CELL) - 1;

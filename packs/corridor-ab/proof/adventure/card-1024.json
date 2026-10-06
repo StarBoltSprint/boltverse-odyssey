@@ -1,0 +1,118 @@
+{
+  "schema": "adventure/1",
+  "title": "The Lost xAI Ship",
+  "seed": 1024,
+  "source": "offline",
+  "drawsPixels": false,
+  "shard": {
+    "name": "Asteroid",
+    "type": "asteroid",
+    "biomeHint": "Bolt Engine biome",
+    "paletteHint": "",
+    "playableNow": false,
+    "assetNote": "Needs Imagine later. v0 still places the zone A solids."
+  },
+  "beats": [
+    {
+      "id": "depart",
+      "segment": "citadel-exit",
+      "text": "Bolt leaves the Citadel. A faint xAI mark still answers.",
+      "variation": 1
+    },
+    {
+      "id": "rise",
+      "segment": "liftoff",
+      "text": "The path lifts off the sill and into open black.",
+      "variation": 2
+    },
+    {
+      "id": "rocks",
+      "segment": "space-asteroid-field",
+      "text": "Stone drifts where the chart promised a field.",
+      "variation": 3
+    },
+    {
+      "id": "veil",
+      "segment": "nebula-run",
+      "text": "The veil thins. The hull is ahead.",
+      "variation": 4
+    },
+    {
+      "id": "ship",
+      "segment": "derelict-ship",
+      "text": "An old lost ship drifts here, marked xAI.",
+      "variation": 5
+    }
+  ],
+  "run": {
+    "lengthM": 64,
+    "objects": [
+      "stone",
+      "boulder",
+      "wreck"
+    ],
+    "density": [
+      0.42,
+      0.58,
+      0.74,
+      0.9
+    ],
+    "echoShards": {
+      "count": 3,
+      "radiusM": 2.25,
+      "required": false,
+      "positions": [
+        {
+          "id": "echo-1",
+          "along": 11.2,
+          "lateral": 1.6,
+          "title": "Echo Shard 1",
+          "lore": "No howl of significance shall be lost to time."
+        },
+        {
+          "id": "echo-2",
+          "along": 36.8,
+          "lateral": -1.6,
+          "title": "Echo Shard 2",
+          "lore": "An Echo Shard carries not only what happened, but how it felt."
+        },
+        {
+          "id": "echo-3",
+          "along": 48,
+          "lateral": 1.6,
+          "title": "Echo Shard 3",
+          "lore": "When the shards sing the same song, it hits like a cosmic EMP."
+        }
+      ]
+    },
+    "objective": "Reach the lost xAI ship.",
+    "goalSegment": "derelict-ship"
+  },
+  "boss": {
+    "name": "Lost xAI Ship",
+    "text": "The hull is silent. Reach it before the rift closes.",
+    "objective": "reach-segment",
+    "segment": "derelict-ship",
+    "timerSec": 72
+  },
+  "reward": "The Veil Weaver drive.",
+  "return": "Bolt returns to the Citadel.",
+  "uniqueTouch": [
+    {
+      "id": "xai-stamp",
+      "prompt": "Empty derelict hull plate with an xAI mark, no Bolt.",
+      "status": "stub"
+    }
+  ],
+  "next_hook": {
+    "teaser": "Another signal answers from farther in.",
+    "seed": 49080,
+    "context": "The Lost xAI Ship",
+    "question": "If understanding is an endless becoming, what does the next signal ask?"
+  },
+  "question": "What does a lost hull, marked xAI, still ask about the universe?",
+  "truth": {
+    "kind": "truth-orb",
+    "insight": "Understanding the universe is not a destination. It is an endless becoming."
+  }
+}

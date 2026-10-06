@@ -1,0 +1,132 @@
+{
+  "schema": "adventure/1",
+  "title": "The Echoing Fracture",
+  "seed": 68,
+  "source": "offline",
+  "drawsPixels": false,
+  "shard": {
+    "name": "Comet Highways",
+    "type": "comet-highways",
+    "biomeHint": "Realms of Wonder",
+    "paletteHint": "",
+    "playableNow": false,
+    "assetNote": "Needs Imagine later. v0 still places the zone A solids."
+  },
+  "beats": [
+    {
+      "id": "signal",
+      "segment": "citadel-exit",
+      "text": "A signal reaches the Citadel. The shards are singing.",
+      "variation": 0
+    },
+    {
+      "id": "sprint",
+      "segment": "shard-surface",
+      "text": "Sprint toward Comet Highways.",
+      "variation": 1
+    },
+    {
+      "id": "resonance",
+      "segment": "roman-arch",
+      "text": "Howl at the monuments and gather the Echo Shards.",
+      "variation": 2
+    },
+    {
+      "id": "boss",
+      "segment": "eclipse-gate",
+      "text": "Shadow duplicates gather at the Gate. Reach it before the rift closes.",
+      "variation": 3
+    },
+    {
+      "id": "reward",
+      "segment": "corridor-run",
+      "text": "Curiosity Veil.",
+      "variation": 4
+    },
+    {
+      "id": "return",
+      "segment": "citadel-exit",
+      "text": "Bolt returns to the Citadel.",
+      "variation": 5
+    }
+  ],
+  "run": {
+    "lengthM": 75,
+    "objects": [
+      "stone",
+      "arch",
+      "gate",
+      "wreck"
+    ],
+    "density": [
+      0.52,
+      0.699,
+      0.864,
+      1
+    ],
+    "echoShards": {
+      "count": 5,
+      "radiusM": 2.25,
+      "required": true,
+      "positions": [
+        {
+          "id": "echo-1",
+          "along": 10,
+          "lateral": 1.6,
+          "title": "Echo Shard 1",
+          "lore": "Each shard is a different sky and a different law."
+        },
+        {
+          "id": "echo-2",
+          "along": 26,
+          "lateral": -1.6,
+          "title": "Echo Shard 2",
+          "lore": "No howl of significance shall be lost to time."
+        },
+        {
+          "id": "echo-3",
+          "along": 41.6,
+          "lateral": 1.6,
+          "title": "Echo Shard 3",
+          "lore": "An Echo Shard carries not only what happened, but how it felt."
+        },
+        {
+          "id": "echo-4",
+          "along": 50.4,
+          "lateral": -1.6,
+          "title": "Echo Shard 4",
+          "lore": "When the shards sing the same song, it hits like a cosmic EMP."
+        },
+        {
+          "id": "echo-5",
+          "along": 59.2,
+          "lateral": 1.6,
+          "title": "Echo Shard 5",
+          "lore": "Awaken."
+        }
+      ]
+    },
+    "objective": "Collect the Echo Shards, then reach the Eclipse Gate.",
+    "goalSegment": "eclipse-gate"
+  },
+  "boss": {
+    "name": "Shadow Duplicates",
+    "text": "Shadow duplicates gather at the Gate. Reach it before the rift closes.",
+    "objective": "reach-gate",
+    "timerSec": 55
+  },
+  "reward": "Curiosity Veil.",
+  "return": "Bolt returns to the Citadel.",
+  "uniqueTouch": [],
+  "next_hook": {
+    "teaser": "Another signal answers from farther in.",
+    "seed": 77469,
+    "context": "The Echoing Fracture",
+    "question": "What does the Veil ask of the next seeker?"
+  },
+  "question": "What does this signal still ask about the universe?",
+  "truth": {
+    "kind": "truth-orb",
+    "insight": "Understanding the universe is not a destination. It is an endless becoming."
+  }
+}

@@ -21,6 +21,8 @@ python3 -m http.server 8765 --bind 127.0.0.1
 
 The stick is on the left, the same control as zone A. Stick right turns right. Stick left turns left. A swipe up on the rest of the screen looks up, then the tilt eases back to level. Holding the stick forward walks. Pushing it hard sprints: speed climbs while the hold lasts and eases back on release. `?debug=1` shows the perf line. `?shot=walk` and `?shot=sprint` stand on the run at that pace. `?shot=film` sprints forward so solids can rise ahead. `?seed=` changes the stream.
 
+The paw menu has one extra row, **Nouvelle aventure**. It writes an adventure card for a new seed and plays it on this corridor (intro text, then the seeded stream, Echo Shard pickups, the goal timer, ending text). The end card offers **Continuer** (the next hook) or **Retour à la Citadelle** (back to the spawn). `?adventure=1&seed=` opens that card directly. Seed **1024** is the lost xAI ship: the wreck stands in for the hull. `?shot=intro`, `?shot=mid`, and `?shot=adventure` are the proof shots. Walk and sprint shots do not mount the paw. The card contract is [`biome/docs/69-adventure-generator.md`](../../biome/docs/69-adventure-generator.md). The Codex, the segment catalogue, is [`tools/adventure/library.json`](../../tools/adventure/library.json). A passed run stores its truth in the shared Archives progress.
+
 ## What is procedural now
 
 The floor solve is decided once, when the page loads. The props stream while Bolt runs.
