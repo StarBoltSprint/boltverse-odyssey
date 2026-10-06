@@ -27,7 +27,7 @@ The floor solve is decided once, when the page loads. The props stream while Bol
 
 | Piece | How |
 | --- | --- |
-| Floor tiles | The WFC solve in `path-layout.json`. `when` is `load`. `draws_pixels` is false. The carpet around that link uses the same stills, wide enough to steer off the centre line. |
+| Floor tiles | The WFC solve in `path-layout.json` still decides the link at load (`when` is `load`, `draws_pixels` is false). One quad paints `packs/zone-a/src/ground/m3.png` at its native 1024². The sampler repeats it. Four windows of that same still crossfade so a rim cannot line up into a square. |
 | Where Bolt may walk | Zone-flow, on the straight link, when he stays near it. Yaw is free. Nothing clamps him with an invisible wall. Contact uses the loft faces and each live rock's hull footprint. |
 | Speed | Walk, then a climb toward the sprint cap while the stick stays hard forward. Release eases the speed back. |
 | Arch, Eclipse Gate, wreck | The zone A lofts. One of each is seated ahead of Bolt from the seed and recycled when it falls behind. The arch opening stays walkable. |

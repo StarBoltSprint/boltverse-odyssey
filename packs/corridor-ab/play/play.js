@@ -97,30 +97,21 @@ function loadImage(url) {
   });
 }
 
-const assets = [];
-const layerOf = new Map();
-for (const cell of layout.grid.cells) {
-  if (!layerOf.has(cell.asset)) {
-    layerOf.set(cell.asset, assets.length);
-    assets.push(cell.asset);
-  }
-}
-const images = [];
-for (let i = 0; i < assets.length; i++) images.push(await loadImage(absUrl(assets[i])));
-let maxW = 2;
-let maxH = 2;
-for (const img of images) {
-  maxW = Math.max(maxW, img.width);
-  maxH = Math.max(maxH, img.height);
-}
+// One still for the whole carpet, native 1024², no resize.
+// m0 and m1 are darker at the rim than in the core, so a repeat draws a square.
+// m3 wraps and the rim matches the core (about 1 luma).
+const GROUND_STILL = "packs/zone-a/src/ground/m3.png";
+const images = [await loadImage(absUrl(GROUND_STILL))];
+const maxW = images[0].width;
+const maxH = images[0].height;
 const groundLevels = Math.floor(Math.log2(Math.max(maxW, maxH))) + 1;
 const groundTex = gl.createTexture();
 gl.bindTexture(gl.TEXTURE_2D_ARRAY, groundTex);
 gl.texStorage3D(gl.TEXTURE_2D_ARRAY, groundLevels, gl.RGBA8, maxW, maxH, images.length);
 gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
 gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.REPEAT);
+gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.REPEAT);
 const aniso = gl.getExtension("EXT_texture_filter_anisotropic");
 if (aniso) {
   const maxA = gl.getParameter(aniso.MAX_TEXTURE_MAX_ANISOTROPY_EXT) || 1;
@@ -141,23 +132,6 @@ for (let i = 0; i < images.length; i++) {
 gl.generateMipmap(gl.TEXTURE_2D_ARRAY);
 texBytes += Math.ceil(maxW * maxH * 4 * images.length * 4 / 3);
 
-const solved = new Map();
-const fillLayers = [];
-for (const cell of layout.grid.cells) {
-  solved.set(cell.x + "," + cell.y, layerOf.get(cell.asset));
-  if (cell.role === "fill") {
-    const layer = layerOf.get(cell.asset);
-    if (!fillLayers.includes(layer)) fillLayers.push(layer);
-  }
-}
-if (!fillLayers.length) fillLayers.push(0);
-
-function hash2(ix, iz) {
-  let n = (ix * 374761393 + iz * 668265263) | 0;
-  n = Math.imul(n ^ (n >>> 13), 1274126177);
-  return ((n ^ (n >>> 16)) >>> 0) / 4294967296;
-}
-
 const xStart = corridor.waypoints[0][0];
 const xEnd = corridor.waypoints[corridor.waypoints.length - 1][0];
 const pathZ = corridor.waypoints[0][1];
@@ -165,44 +139,56 @@ const ix0 = Math.floor((xStart - 40) / tileM);
 const ix1 = Math.floor((xEnd + 160) / tileM);
 const iz0 = Math.floor((pathZ - 70) / tileM);
 const iz1 = Math.floor((pathZ + 70) / tileM);
-const groundInst = new Float32Array((ix1 - ix0 + 1) * (iz1 - iz0 + 1) * 3);
-let gk = 0;
-for (let iz = iz0; iz <= iz1; iz++) {
-  for (let ix = ix0; ix <= ix1; ix++) {
-    const col = Math.floor(ix);
-    const row = Math.floor(iz);
-    const known = solved.get(col + "," + row);
-    const layer = known == null ? fillLayers[Math.floor(hash2(ix, iz) * fillLayers.length) % fillLayers.length] : known;
-    groundInst[gk++] = (ix + 0.5) * tileM;
-    groundInst[gk++] = (iz + 0.5) * tileM;
-    groundInst[gk++] = layer;
-  }
-}
-const groundCount = gk / 3;
+// One quad. The repeat is the sampler, not a grid of meshes, so the tiles do not draw a seam.
+const groundRect = new Float32Array([
+  ix0 * tileM,
+  iz0 * tileM,
+  (ix1 + 1) * tileM,
+  (iz1 + 1) * tileM,
+]);
 
 const GROUND_VS = `#version 300 es
 layout(location=0) in vec2 aCorner;
-layout(location=1) in vec2 aXZ;
-layout(location=2) in float aLayer;
 uniform mat4 uVP;
+uniform vec4 uRect;
 uniform float uTile;
 out vec2 vUv;
-flat out float vLayer;
 void main() {
-  vec2 xz = aXZ + (aCorner - 0.5) * uTile;
+  vec2 xz = vec2(mix(uRect.x, uRect.z, aCorner.x), mix(uRect.y, uRect.w, aCorner.y));
   gl_Position = uVP * vec4(xz.x, 0.0, xz.y, 1.0);
-  vUv = aCorner;
-  vLayer = aLayer;
+  vUv = xz / uTile;
 }`;
 const GROUND_FS = `#version 300 es
 precision highp float;
 precision highp sampler2DArray;
 uniform sampler2DArray uTex;
 in vec2 vUv;
-flat in float vLayer;
 out vec4 o;
+float hash12(vec2 p) {
+  vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+  p3 += dot(p3, p3.yzx + 33.33);
+  return fract((p3.x + p3.y) * p3.z);
+}
+vec2 hash22(vec2 p) {
+  return vec2(hash12(p), hash12(p + 17.13));
+}
 void main() {
-  o = vec4(texture(uTex, vec3(vUv, vLayer)).rgb, 1.0);
+  // Four windows of the same still, crossfaded, so the still's own rim
+  // does not line up into a square every 1.45 m. Every sample is that still.
+  vec2 iuv = floor(vUv);
+  vec2 fuv = fract(vUv);
+  vec2 ddx = dFdx(vUv);
+  vec2 ddy = dFdy(vUv);
+  vec2 ofa = hash22(iuv);
+  vec2 ofb = hash22(iuv + vec2(1.0, 0.0));
+  vec2 ofc = hash22(iuv + vec2(0.0, 1.0));
+  vec2 ofd = hash22(iuv + vec2(1.0, 1.0));
+  vec2 b = smoothstep(vec2(0.25), vec2(0.75), fuv);
+  vec3 c00 = textureGrad(uTex, vec3(fuv + ofa, 0.0), ddx, ddy).rgb;
+  vec3 c10 = textureGrad(uTex, vec3(fuv + ofb, 0.0), ddx, ddy).rgb;
+  vec3 c01 = textureGrad(uTex, vec3(fuv + ofc, 0.0), ddx, ddy).rgb;
+  vec3 c11 = textureGrad(uTex, vec3(fuv + ofd, 0.0), ddx, ddy).rgb;
+  o = vec4(mix(mix(c00, c10, b.x), mix(c01, c11, b.x), b.y), 1.0);
 }`;
 const BOLT_VS = `#version 300 es
 layout(location=0) in vec2 aCorner;
@@ -248,6 +234,7 @@ const groundProg = link(GROUND_VS, GROUND_FS);
 const boltProg = link(BOLT_VS, BOLT_FS);
 const gLoc = {
   vp: gl.getUniformLocation(groundProg, "uVP"),
+  rect: gl.getUniformLocation(groundProg, "uRect"),
   tile: gl.getUniformLocation(groundProg, "uTile"),
   tex: gl.getUniformLocation(groundProg, "uTex"),
 };
@@ -269,15 +256,6 @@ gl.bindBuffer(gl.ARRAY_BUFFER, cornerBuf);
 gl.bufferData(gl.ARRAY_BUFFER, corners, gl.STATIC_DRAW);
 gl.enableVertexAttribArray(0);
 gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 8, 0);
-const instBuf = gl.createBuffer();
-gl.bindBuffer(gl.ARRAY_BUFFER, instBuf);
-gl.bufferData(gl.ARRAY_BUFFER, groundInst, gl.STATIC_DRAW);
-gl.enableVertexAttribArray(1);
-gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 12, 0);
-gl.vertexAttribDivisor(1, 1);
-gl.enableVertexAttribArray(2);
-gl.vertexAttribPointer(2, 1, gl.FLOAT, false, 12, 8);
-gl.vertexAttribDivisor(2, 1);
 gl.bindVertexArray(null);
 
 const boltVao = gl.createVertexArray();
@@ -598,6 +576,7 @@ function mulInto(a, b) {
   return vpBuf;
 }
 
+let playFrames = 0;
 let drawCalls = 0;
 let jsMs = 0;
 let skyTop = 0;
@@ -670,6 +649,7 @@ function frame() {
   gl.useProgram(groundProg);
   gl.bindVertexArray(groundVao);
   gl.uniformMatrix4fv(gLoc.vp, false, vp);
+  gl.uniform4fv(gLoc.rect, groundRect);
   gl.uniform1f(gLoc.tile, tileM);
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_2D_ARRAY, groundTex);
@@ -677,7 +657,7 @@ function frame() {
   gl.disable(gl.BLEND);
   gl.enable(gl.DEPTH_TEST);
   gl.depthMask(true);
-  gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, groundCount);
+  gl.drawArrays(gl.TRIANGLES, 0, 6);
   drawCalls += 1;
 
   ruins.draw(vp, 0);
@@ -765,6 +745,10 @@ function frame() {
     archPier,
     seed,
     lengthM: corridor.length_m,
+    ground: "m3",
+    groundLayers: images.length,
+    groundPx: maxW,
+    frameN: playFrames,
     skyTop,
     skyMid,
     settled,
@@ -877,12 +861,34 @@ function pollKeys() {
 
 let then = performance.now();
 let shotFrames = 0;
+function advanceFilm() {
+  const dt = 1 / 24;
+  pollKeys();
+  moveBody(dt);
+  stepFlow(dt, flowSpeed());
+  if (gallop.duration > 0) {
+    const t = (playFrames / 24) % gallop.duration;
+    if (Math.abs(gallop.currentTime - t) > 0.02) {
+      try { gallop.currentTime = t; } catch (err) { /* seek before metadata */ }
+    }
+  }
+  playFrames += 1;
+  frame();
+  return document.title;
+}
+if (shot === "film") window.__advance = advanceFilm;
 function tick(now) {
+  if (shot === "film") {
+    frame();
+    requestAnimationFrame(tick);
+    return;
+  }
   const dt = Math.min(0.05, (now - then) / 1000);
   then = now;
   pollKeys();
   moveBody(dt);
   stepFlow(dt, flowSpeed());
+  playFrames += 1;
   frame();
   if (shot && shot !== "film") {
     shotFrames += 1;

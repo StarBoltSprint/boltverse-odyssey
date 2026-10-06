@@ -1,13 +1,16 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  CHASE_BOOM,
   CHASE_EYE,
   SPRINT_MAX,
   WALK_SPD,
   chaseEye,
   chasePitch,
   chaseRight,
+  chaseScreenY,
   chaseViewInto,
+  horizonFromTop,
   createLook,
   forwardOf,
   pawLine,
@@ -42,12 +45,22 @@ test("stick right turns toward camera right", () => {
   assert.ok(Math.abs(view[8] - right[2]) < 1e-4);
 });
 
-test("the chase sits higher and looks down from behind Bolt", () => {
+const PORTRAIT_VFOV = 2 * Math.atan(Math.tan((22.7 * Math.PI) / 180 / 2) / (720 / 1600));
+
+test("the chase stays high and the horizon sits in the top third", () => {
   const eye = chaseEye(90, 10, 4);
-  assert.ok(eye[1] > 2.6);
   assert.equal(eye[1], CHASE_EYE);
+  assert.ok(eye[1] > 2.6 && eye[1] < 3.7);
   assert.ok(eye[0] < 10);
-  assert.ok(chasePitch() < -0.2);
+  const sky = horizonFromTop(PORTRAIT_VFOV);
+  assert.ok(sky > 0.30 && sky < 0.35);
+  assert.ok(chasePitch() < -0.08);
+  const body = chaseScreenY(1.05, CHASE_BOOM, PORTRAIT_VFOV);
+  assert.ok(body > 2 / 3);
+  const archNear = chaseScreenY(7.4, 20 + CHASE_BOOM, PORTRAIT_VFOV);
+  const archFar = chaseScreenY(7.4, 30 + CHASE_BOOM, PORTRAIT_VFOV);
+  assert.ok(archNear > 0.02 && archNear < sky);
+  assert.ok(archFar > 0.02 && archFar < sky);
 });
 
 test("sprint climbs while the stick is held and eases on release", () => {

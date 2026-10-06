@@ -23,7 +23,8 @@ export const SPRINT_EASE = 2.15;
 export const CHASE_BOOM = 6.1;
 export const CHASE_EYE = 3.5;
 export const CHASE_SLIDE = 0.9;
-export const CHASE_AIM_Y = 0.62;
+/** Aim height that puts the horizon near 32% from the top of a 720×1600 view. */
+export const CHASE_AIM_Y = 2.52;
 export const PAW_FRAC_FALLBACK = 0.92;
 
 export function springLim(x, v, goal, dt, w, vmax, amax) {
@@ -110,6 +111,19 @@ export function chaseEye(headingDeg, x, z) {
 
 export function chasePitch() {
   return Math.atan2(CHASE_AIM_Y - CHASE_EYE, CHASE_BOOM);
+}
+
+/** Fraction from the top of the portrait where the eye-level horizon lands. */
+export function horizonFromTop(vfov) {
+  const ndc = Math.tan(-chasePitch()) / Math.tan(vfov * 0.5);
+  return 0.5 - ndc * 0.5;
+}
+
+/** Fraction from the top for a point `dist` metres ahead of the eye at `worldY`. */
+export function chaseScreenY(worldY, dist, vfov) {
+  const ang = Math.atan2(worldY - CHASE_EYE, dist) - chasePitch();
+  const ndc = Math.tan(ang) / Math.tan(vfov * 0.5);
+  return 0.5 - ndc * 0.5;
 }
 
 /**

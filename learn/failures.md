@@ -658,3 +658,25 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | `pawLine` and the Bolt quad both use `(1 - frac) * worldH`. The measured paw sits on y = 0. |
 | Guard | `node --test packs/corridor-ab/play/look.test.mjs` — "the paw row sits on the ground". |
 | Sources | `packs/corridor-ab/play/look.js`, `packs/zone-a/play/play.js` |
+
+### 2026-10-06 — the chase aimed at the paws
+
+| | |
+| --- | --- |
+| Take | Corridor horizon and one ground. |
+| Defect | On a 720×1600 phone the frame was almost all floor. The arch was cut off at the top. The sky dome was not in the picture. |
+| Root cause | The aim height was 0.62 m while the eye was 3.5 m, so the pitch was about −25°. The horizon sat above the frame. |
+| Fix | Aim at 2.52 m. The pitch is about −9°. On the 22.7° portrait the horizon lands near 32% from the top. Bolt's body stays in the lower third. |
+| Guard | `node --test packs/corridor-ab/play/look.test.mjs` — "the chase stays high and the horizon sits in the top third". |
+| Sources | `packs/corridor-ab/play/look.js` |
+
+### 2026-10-06 — ground stills drew a square every tile
+
+| | |
+| --- | --- |
+| Take | Corridor horizon and one ground. |
+| Defect | The floor read as a checkerboard. Neighbouring 1.45 m squares were different stills, and a single still with a dark rim drew the same square again. |
+| Root cause | Each cell picked a layer from the WFC set. m0 and m1 are darker at the rim than in the core (about 9 and 10 luma), so a quad per cell lines those rims up. |
+| Fix | One quad covers the carpet. It repeats `m3.png` at native 1024². m3's rim matches its core (about 1 luma). Four windows of that same still crossfade, so a rim cannot line up into a grid. |
+| Guard | No machine row measures the screen grid. The play title records `ground` `m3`, `groundLayers` 1, `groundPx` 1024. The proof crops are the check. |
+| Sources | `packs/corridor-ab/play/play.js`, `packs/zone-a/src/ground/m3.png` |
