@@ -16,6 +16,7 @@ import {
   GATE_TOP,
   horizonFromTop,
   PITCH_UP_MAX,
+  pitchForEye,
   pitchForTall,
   createLook,
   forwardOf,
@@ -84,6 +85,16 @@ test("the chase matches zone A and stays clear of the joystick", () => {
   assert.ok(paw < 0.88, "paw " + paw);
   const sky = horizonFromTop(PORTRAIT_VFOV);
   assert.ok(sky > 0.2 && sky < 0.8);
+});
+
+test("a lifted eye keeps the chest on the zone A row", () => {
+  const zone = zoneAScreenY(1.05);
+  for (const eyeY of [1.35, 2.4, 3.6, 5.2]) {
+    const pitch = pitchForEye(eyeY, CHASE_BOOM);
+    const ang = Math.atan2(1.05 - eyeY, CHASE_BOOM) - pitch;
+    const y = 0.5 - (Math.tan(ang) / Math.tan(PORTRAIT_VFOV * 0.5)) * 0.5;
+    assert.ok(Math.abs(y - zone) < 0.03, eyeY + " " + y.toFixed(3) + " zone " + zone.toFixed(3));
+  }
 });
 
 test("a tall monolith raises the pitch and a far one does not", () => {

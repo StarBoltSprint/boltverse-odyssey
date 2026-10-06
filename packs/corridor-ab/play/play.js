@@ -24,6 +24,8 @@ import {
   endLook,
   GATE_TOP,
   PAW_FRAC_FALLBACK,
+  CHASE_PITCH_RATE,
+  pitchForEye,
   pitchForTall,
   pitchOf,
   pushLook,
@@ -772,7 +774,32 @@ function placeCamera() {
   }
   const cleared = clearedNow;
   const still = !!(shot && !filmShot && shot !== "adventure");
-  stepChase(chase, rigid, cleared, goal, camDt, camSnap || still, speed, state.turn);
+  const snap = camSnap || still;
+  stepChase(chase, rigid, cleared, goal, camDt, snap, speed, state.turn);
+  const boomNow = Math.hypot(chase.eye[0] - x, chase.eye[2] - z) || CHASE_BOOM;
+  const held = pitchOf(pitchForEye(chase.eye[1], boomNow), camLook.cur);
+  let tall = held;
+  if (field.gate && field.gate.emerge > 0.4) {
+    const dx = field.gate.x - chase.eye[0];
+    const dz = field.gate.z - chase.eye[2];
+    const ahead = dx * fx + dz * fz;
+    const side = dx * rx + dz * rz;
+    if (ahead > 12 && Math.abs(Math.atan2(side, ahead)) < HFOV * 0.5) {
+      tall = pitchForTall(held, GATE_TOP, Math.hypot(ahead, side), VFOV);
+    }
+  }
+  let extra = chase.extra || 0;
+  const want = tall - held;
+  if (snap) extra = want;
+  else {
+    const de = want - extra;
+    const allow = CHASE_PITCH_RATE * (camDt > 0 ? camDt : 1);
+    if (Math.abs(de) <= allow) extra = want;
+    else extra += Math.sign(de) * allow;
+  }
+  chase.extra = extra;
+  chase.pitch = held + extra;
+  chase.tp = chase.pitch;
   eyeBuf[0] = chase.eye[0];
   eyeBuf[1] = chase.eye[1];
   eyeBuf[2] = chase.eye[2];

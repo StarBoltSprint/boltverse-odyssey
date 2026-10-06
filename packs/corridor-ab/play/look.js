@@ -118,6 +118,11 @@ export function chasePitch() {
   return Math.atan2(CHASE_AIM_Y - CHASE_EYE, CHASE_BOOM);
 }
 
+/** Pitch that keeps the aim point on the zone A row at this eye height. */
+export function pitchForEye(eyeY, boom) {
+  return Math.atan2(CHASE_AIM_Y - eyeY, Math.max(0.5, boom || CHASE_BOOM));
+}
+
 /** Tallest cooked monolith, metres. Pitch-up above the rest chase, radians. */
 export const GATE_TOP = 28;
 export const PITCH_UP_MAX = 0.22;
