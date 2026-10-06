@@ -12,8 +12,12 @@ export const NEAR_M = 14;
 export const BEHIND_M = 22;
 export const EMERGE_SEC = 1.15;
 export const RISE_M = 2.2;
+export const ROCK_SINK = 0.18;
 export const POOL = 36;
 export const FIELD_HALF = 48;
+export const HORIZON_N = 8;
+export const HORIZON_STEP = 28;
+export const GATE_LAT = 16;
 
 const KIND_STONE = 1;
 const KIND_BOULDER = 2;
@@ -30,9 +34,21 @@ const ROCK = {
 
 const MONU = {
   3: { first: 22, gap: 68, lateral: 0 },
-  4: { first: 54, gap: 96, lateral: 0 },
+  4: { first: 54, gap: 96, lateral: GATE_LAT },
   5: { first: 34, gap: 84, lateral: 3.6 },
 };
+
+/** Base of a rock, metres. Settled sits ROCK_SINK below the plane. Rising is lower. */
+export function rockBottom(emerge) {
+  const e = emerge < 0 ? 0 : emerge > 1 ? 1 : emerge;
+  return -ROCK_SINK + (e - 1) * RISE_M;
+}
+
+function lateralOf(kind, n) {
+  const spec = MONU[kind];
+  if (kind !== KIND_GATE) return spec.lateral;
+  return (n % 2 === 0 ? 1 : -1) * spec.lateral;
+}
 
 function hash01(n) {
   let x = n >>> 0;
@@ -136,10 +152,43 @@ export function monumentSeat(field, kind, boltX, look, behind, nearM) {
     const n2 = n + 1;
     const x2 = field.x0 + spec.first + n2 * spec.gap;
     if (x2 <= boltX + look) {
-      return { id: kind * 100000 + n2, x: x2, z: field.pathZ + spec.lateral, n: n2, ahead: x2 - boltX };
+      return { id: kind * 100000 + n2, x: x2, z: field.pathZ + lateralOf(kind, n2), n: n2, ahead: x2 - boltX };
     }
   }
-  return { id: kind * 100000 + n, x, z: field.pathZ + spec.lateral, n, ahead };
+  return { id: kind * 100000 + n, x, z: field.pathZ + lateralOf(kind, n), n, ahead };
+}
+
+/**
+ * Tall copies of the cooked boulder and stone hulls along the horizon.
+ * World x is locked to HORIZON_STEP. Same seed and same bolt x rebuild the same seats.
+ * Each seat stays inside the portrait view and clear of the run.
+ */
+export function horizonSeats(field, boltX) {
+  const half = Math.tan((22.7 * Math.PI) / 180 / 2) * 0.82;
+  const first = Math.ceil((boltX + 56) / HORIZON_STEP);
+  const seats = [];
+  for (let rank = 0; rank < HORIZON_N; rank++) {
+    const x = (first + rank) * HORIZON_STEP;
+    const dist = Math.max(1, x - boltX);
+    const h = mix(field.seed, first + rank + 91, rank + 5);
+    const maxLat = dist * half;
+    const maxH = Math.min(14, Math.max(8, (maxLat - 2.4) / 0.8));
+    const height = 8 + hash01(h) * (maxH - 8);
+    const foot = 0.8 * height;
+    const minLat = foot + 2.4;
+    const span = Math.max(0, maxLat - minLat);
+    const lateral = minLat + hash01(h ^ 0x27d4eb2d) * span;
+    const side = hash01(h ^ 0x1b873593) > 0.5 ? 1 : -1;
+    seats.push({
+      x,
+      z: field.pathZ + side * lateral,
+      yaw: hash01(h ^ 0x85ebca6b) * 360,
+      height,
+      kind: hash01(h ^ 0x165667b1) > 0.5 ? KIND_BOULDER : KIND_STONE,
+      lateral: side * lateral,
+    });
+  }
+  return seats;
 }
 
 function considerRock(field, slot, ix, lane, charge, emergeNow) {

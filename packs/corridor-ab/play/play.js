@@ -21,7 +21,9 @@ import {
   chaseViewInto,
   createLook,
   endLook,
+  GATE_TOP,
   PAW_FRAC_FALLBACK,
+  pitchForTall,
   pitchOf,
   pushLook,
   stepLook,
@@ -29,7 +31,8 @@ import {
   wrap360,
 } from "./look.js";
 import { pushDiscs, RUN_YAW } from "./scatter.js";
-import { POOL, RISE_M, createField, rockCount, settleField, stepField } from "./stream.js";
+import { POOL, RISE_M, createField, horizonSeats, rockBottom, rockCount, settleField, stepField } from "./stream.js";
+import { DEFAULT_POST, POST_LIMITS } from "../../zone-a/play/biomeblend.js";
 import { mountSky } from "./sky.js";
 import { mountRuins } from "../../zone-a/play/ruins.js";
 import { loadWorldHull } from "../../zone-a/play/hullmesh.js";
@@ -147,22 +150,71 @@ const groundRect = new Float32Array([
   (iz1 + 1) * tileM,
 ]);
 
+function clampPost(v, key) {
+  const lim = POST_LIMITS[key];
+  return Math.min(lim[1], Math.max(lim[0], v));
+}
+const fogK = clampPost(DEFAULT_POST.fogDensity, "fogDensity");
+const fogCap = clampPost(DEFAULT_POST.fogCap, "fogCap");
+let fogRgb = [0, 0, 0];
+let fogOn = 0;
+async function sampleSkyFog() {
+  const names = ["sky-0.jpg", "sky-4.jpg", "sky-8.jpg"];
+  let r = 0;
+  let g = 0;
+  let b = 0;
+  let n = 0;
+  for (let i = 0; i < names.length; i++) {
+    let img;
+    try {
+      img = await loadImage(absUrl("packs/zone-a/src/sky/" + names[i]));
+    } catch (err) {
+      return;
+    }
+    const c = document.createElement("canvas");
+    c.width = img.width;
+    c.height = img.height;
+    const g2 = c.getContext("2d", { willReadFrequently: true });
+    g2.drawImage(img, 0, 0);
+    const y0 = Math.max(0, Math.floor(img.height * 0.72));
+    const y1 = Math.min(img.height, Math.ceil(img.height * 0.9));
+    const data = g2.getImageData(0, y0, img.width, Math.max(1, y1 - y0)).data;
+    for (let p = 0; p < data.length; p += 16) {
+      r += data[p];
+      g += data[p + 1];
+      b += data[p + 2];
+      n += 1;
+    }
+  }
+  if (!n) return;
+  fogRgb = [r / n / 255, g / n / 255, b / n / 255];
+  fogOn = 1;
+}
+await sampleSkyFog();
+
 const GROUND_VS = `#version 300 es
 layout(location=0) in vec2 aCorner;
 uniform mat4 uVP;
 uniform vec4 uRect;
 uniform float uTile;
 out vec2 vUv;
+out vec2 vXz;
 void main() {
   vec2 xz = vec2(mix(uRect.x, uRect.z, aCorner.x), mix(uRect.y, uRect.w, aCorner.y));
   gl_Position = uVP * vec4(xz.x, 0.0, xz.y, 1.0);
   vUv = xz / uTile;
+  vXz = xz;
 }`;
 const GROUND_FS = `#version 300 es
 precision highp float;
 precision highp sampler2DArray;
 uniform sampler2DArray uTex;
+uniform vec2 uEye;
+uniform vec3 uFog;
+uniform float uFogK;
+uniform float uFogCap;
 in vec2 vUv;
+in vec2 vXz;
 out vec4 o;
 float hash12(vec2 p) {
   vec3 p3 = fract(vec3(p.xyx) * 0.1031);
@@ -188,7 +240,10 @@ void main() {
   vec3 c10 = textureGrad(uTex, vec3(fuv + ofb, 0.0), ddx, ddy).rgb;
   vec3 c01 = textureGrad(uTex, vec3(fuv + ofc, 0.0), ddx, ddy).rgb;
   vec3 c11 = textureGrad(uTex, vec3(fuv + ofd, 0.0), ddx, ddy).rgb;
-  o = vec4(mix(mix(c00, c10, b.x), mix(c01, c11, b.x), b.y), 1.0);
+  vec3 col = mix(mix(c00, c10, b.x), mix(c01, c11, b.x), b.y);
+  float dist = distance(vXz, uEye);
+  float fog = clamp(1.0 - exp(-uFogK * max(0.0, dist - 18.0)), 0.0, uFogCap);
+  o = vec4(mix(col, uFog, fog), 1.0);
 }`;
 const BOLT_VS = `#version 300 es
 layout(location=0) in vec2 aCorner;
@@ -237,6 +292,10 @@ const gLoc = {
   rect: gl.getUniformLocation(groundProg, "uRect"),
   tile: gl.getUniformLocation(groundProg, "uTile"),
   tex: gl.getUniformLocation(groundProg, "uTex"),
+  eye: gl.getUniformLocation(groundProg, "uEye"),
+  fog: gl.getUniformLocation(groundProg, "uFog"),
+  fogK: gl.getUniformLocation(groundProg, "uFogK"),
+  fogCap: gl.getUniformLocation(groundProg, "uFogCap"),
 };
 const bLoc = {
   vp: gl.getUniformLocation(boltProg, "uVP"),
@@ -344,7 +403,7 @@ function syncRocks() {
     const spec = rockManifest.types[type];
     const meshH = Math.max(0.05, hull.maxY - hull.minY);
     const drawScale = (spec.objectSize[1] * slot.base * slot.emerge) / meshH;
-    const y = -hull.minY * drawScale + (slot.emerge - 1) * RISE_M;
+    const y = rockBottom(slot.emerge) - hull.minY * drawScale;
     hull.addInstance(slot.x, y, slot.z, slot.yaw, drawScale, 0);
     if (slot.emerge >= 0.35 && discN < discBuf.length) {
       const disc = discBuf[discN];
@@ -353,6 +412,16 @@ function syncRocks() {
       disc.r = 0.5 * Math.hypot(spec.objectSize[0], spec.objectSize[2]) * drawScale;
       discN += 1;
     }
+  }
+  const skyline = horizonSeats(field, x);
+  for (let s = 0; s < skyline.length; s++) {
+    const seat = skyline[s];
+    const type = seat.kind === 2 ? "boulder" : "stone";
+    const hull = hulls[type];
+    const meshH = Math.max(0.05, hull.maxY - hull.minY);
+    const drawScale = seat.height / meshH;
+    const y = rockBottom(1) - hull.minY * drawScale;
+    hull.addInstance(seat.x, y, seat.z, seat.yaw, drawScale, 0);
   }
   for (let i = discN; i < discBuf.length; i++) discBuf[i].r = 0;
   hulls.boulder.upload();
@@ -387,9 +456,10 @@ function videoOn(v) {
 function activeBolt() {
   return videoOn(gallop) ? gallop : idle;
 }
-const paceShot = shot === "walk" || shot === "sprint";
+const paceShot = shot === "walk" || shot === "sprint" || shot === "rocks";
+const filmShot = shot === "film" || shot === "pass";
 function useBolt(moving) {
-  if (shot && !paceShot && shot !== "film") return;
+  if (shot && !paceShot && !filmShot) return;
   const want = moving ? gallop : idle;
   const other = moving ? idle : gallop;
   if (moving && !gallop.src) gallop.src = absUrl(BOLT_GALLOP);
@@ -443,7 +513,7 @@ function stepFlow(dt, walk) {
 }
 
 function moveBody(dt) {
-  const filming = shot === "film";
+  const filming = filmShot;
   if (shot && !filming) return;
   if (filming) {
     state.forward = 1;
@@ -490,11 +560,42 @@ function pumpAlong(target) {
   }
 }
 
-if (paceShot || shot === "film") {
+function standForRocks() {
+  settleField(field, { x, z, heading, forward: 1, gallop: true }, "sprint");
+  let best = null;
+  let bestAhead = 1e9;
+  for (let i = 0; i < field.pool.length; i++) {
+    const slot = field.pool[i];
+    if (!slot.on || slot.kind > 2) continue;
+    const ahead = slot.x - x;
+    if (ahead < 6 || ahead > 22) continue;
+    if (ahead < bestAhead) {
+      bestAhead = ahead;
+      best = slot;
+    }
+  }
+  if (!best) return;
+  x = best.x - 5.5;
+  z = best.z;
+  settleField(field, { x, z, heading, forward: 1, gallop: false }, "walk");
+}
+
+if (paceShot || filmShot) {
   x = xStart + 6;
   z = pathZ;
   heading = 90;
-  if (paceShot) {
+  if (shot === "pass") {
+    settleField(field, { x, z, heading, forward: 1, gallop: true }, "sprint");
+    if (field.gate) x = field.gate.x - 108;
+    z = pathZ;
+    settleField(field, { x, z, heading, forward: 1, gallop: true }, "sprint");
+    speed = field.speed;
+    useBolt(true);
+  } else if (shot === "rocks") {
+    standForRocks();
+    speed = field.speed;
+    useBolt(false);
+  } else if (paceShot) {
     settleField(field, { x, z, heading, forward: 1, gallop: shot === "sprint" }, shot);
     speed = field.speed;
     useBolt(shot === "sprint");
@@ -636,7 +737,16 @@ function frame() {
   eyeBuf[0] = x - fx * CHASE_BOOM + rx * CHASE_SLIDE;
   eyeBuf[1] = CHASE_EYE;
   eyeBuf[2] = z - fz * CHASE_BOOM + rz * CHASE_SLIDE;
-  const pitch = pitchOf(chasePitch(), camLook.cur);
+  let pitch = pitchOf(chasePitch(), camLook.cur);
+  if (field.gate && field.gate.emerge > 0.4) {
+    const dx = field.gate.x - eyeBuf[0];
+    const dz = field.gate.z - eyeBuf[2];
+    const ahead = dx * fx + dz * fz;
+    const side = dx * rx + dz * rz;
+    if (ahead > 12 && Math.abs(Math.atan2(side, ahead)) < HFOV * 0.5) {
+      pitch = pitchForTall(pitch, GATE_TOP, Math.hypot(ahead, side), VFOV);
+    }
+  }
   const cp = Math.cos(pitch);
   const sp = Math.sin(pitch);
   aimBuf[0] = eyeBuf[0] + fx * cp * 12;
@@ -651,6 +761,10 @@ function frame() {
   gl.uniformMatrix4fv(gLoc.vp, false, vp);
   gl.uniform4fv(gLoc.rect, groundRect);
   gl.uniform1f(gLoc.tile, tileM);
+  gl.uniform2f(gLoc.eye, eyeBuf[0], eyeBuf[2]);
+  gl.uniform3f(gLoc.fog, fogRgb[0], fogRgb[1], fogRgb[2]);
+  gl.uniform1f(gLoc.fogK, fogOn ? fogK : 0);
+  gl.uniform1f(gLoc.fogCap, fogCap);
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_2D_ARRAY, groundTex);
   gl.uniform1i(gLoc.tex, 0);
@@ -748,6 +862,9 @@ function frame() {
     ground: "m3",
     groundLayers: images.length,
     groundPx: maxW,
+    fogOn,
+    pitch,
+    gateLat: field.gate ? Math.round((field.gate.z - pathZ) * 10) / 10 : null,
     frameN: playFrames,
     skyTop,
     skyMid,
@@ -876,9 +993,9 @@ function advanceFilm() {
   frame();
   return document.title;
 }
-if (shot === "film") window.__advance = advanceFilm;
+if (filmShot) window.__advance = advanceFilm;
 function tick(now) {
-  if (shot === "film") {
+  if (filmShot) {
     frame();
     requestAnimationFrame(tick);
     return;
@@ -890,7 +1007,7 @@ function tick(now) {
   stepFlow(dt, flowSpeed());
   playFrames += 1;
   frame();
-  if (shot && shot !== "film") {
+  if (shot && !filmShot) {
     shotFrames += 1;
     if ((!boltReady && shotFrames < 180) || shotFrames < 8) {
       requestAnimationFrame(tick);

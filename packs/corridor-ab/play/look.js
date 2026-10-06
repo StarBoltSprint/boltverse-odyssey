@@ -113,15 +113,36 @@ export function chasePitch() {
   return Math.atan2(CHASE_AIM_Y - CHASE_EYE, CHASE_BOOM);
 }
 
+/** Tallest cooked monolith, metres. Pitch-up above the rest chase, radians. */
+export const GATE_TOP = 28;
+export const PITCH_UP_MAX = 0.22;
+
+/**
+ * Raise the chase so a tall top stays inside the frame.
+ * Never returns a pitch below `current` (never looks further down).
+ * The extra above the rest chase is capped.
+ */
+export function pitchForTall(current, topY, dist, vfov) {
+  const half = vfov * 0.5;
+  const angMax = Math.atan(0.9 * Math.tan(half));
+  const need = Math.atan2(topY - CHASE_EYE, Math.max(1, dist)) - angMax;
+  let pitch = current > need ? current : need;
+  const cap = current > chasePitch() + PITCH_UP_MAX ? current : chasePitch() + PITCH_UP_MAX;
+  if (pitch > cap) pitch = cap;
+  if (pitch < current) pitch = current;
+  return pitch;
+}
+
 /** Fraction from the top of the portrait where the eye-level horizon lands. */
 export function horizonFromTop(vfov) {
   const ndc = Math.tan(-chasePitch()) / Math.tan(vfov * 0.5);
   return 0.5 - ndc * 0.5;
 }
 
-/** Fraction from the top for a point `dist` metres ahead of the eye at `worldY`. */
-export function chaseScreenY(worldY, dist, vfov) {
-  const ang = Math.atan2(worldY - CHASE_EYE, dist) - chasePitch();
+/** Fraction from the top for a point `dist` metres from the eye at `worldY`. */
+export function chaseScreenY(worldY, dist, vfov, pitch) {
+  const p = pitch == null ? chasePitch() : pitch;
+  const ang = Math.atan2(worldY - CHASE_EYE, dist) - p;
   const ndc = Math.tan(ang) / Math.tan(vfov * 0.5);
   return 0.5 - ndc * 0.5;
 }

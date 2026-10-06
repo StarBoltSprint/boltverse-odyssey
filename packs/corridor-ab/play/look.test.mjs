@@ -10,7 +10,10 @@ import {
   chaseRight,
   chaseScreenY,
   chaseViewInto,
+  GATE_TOP,
   horizonFromTop,
+  PITCH_UP_MAX,
+  pitchForTall,
   createLook,
   forwardOf,
   pawLine,
@@ -61,6 +64,21 @@ test("the chase stays high and the horizon sits in the top third", () => {
   const archFar = chaseScreenY(7.4, 30 + CHASE_BOOM, PORTRAIT_VFOV);
   assert.ok(archNear > 0.02 && archNear < sky);
   assert.ok(archFar > 0.02 && archFar < sky);
+});
+
+test("a tall monolith raises the pitch and a far one does not", () => {
+  const base = chasePitch();
+  const far = pitchForTall(base, GATE_TOP, 200, PORTRAIT_VFOV);
+  assert.equal(far, base);
+  const close = pitchForTall(base, GATE_TOP, 80, PORTRAIT_VFOV);
+  assert.ok(close >= base - 1e-9);
+  assert.ok(close <= base + PITCH_UP_MAX + 1e-9);
+  assert.ok(close > base);
+  const top = chaseScreenY(GATE_TOP, 80, PORTRAIT_VFOV, close);
+  assert.ok(top > 0.02 && top < 0.12);
+  const capped = pitchForTall(base, GATE_TOP, 24, PORTRAIT_VFOV);
+  assert.ok(Math.abs(capped - (base + PITCH_UP_MAX)) < 1e-9);
+  assert.ok(capped >= base);
 });
 
 test("sprint climbs while the stick is held and eases on release", () => {

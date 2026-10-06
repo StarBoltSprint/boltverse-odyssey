@@ -3,11 +3,16 @@ import { test } from "node:test";
 import { SPRINT_MAX } from "./look.js";
 import {
   FIELD_HALF,
+  GATE_LAT,
+  HORIZON_N,
   NEAR_M,
+  ROCK_SINK,
   createField,
   densityOf,
   halfWidth,
+  horizonSeats,
   monumentSeat,
+  rockBottom,
   rockCount,
   settleField,
   slotIds,
@@ -117,6 +122,27 @@ test("the arch and the wreck sit on the run and the gate waits for sprint", () =
   assert.ok(Math.abs(walk.wreck.z - 2.175) > 2);
   assert.equal(walk.gate, null);
   assert.ok(sprint.gate);
+  assert.ok(Math.abs(Math.abs(sprint.gate.z - 2.175) - GATE_LAT) < 0.01);
   const seat = monumentSeat(field(), 3, 6, 40, 22, 0);
   assert.ok(seat.x > 6);
+});
+
+test("a rock bottom stays under the plane through the rise", () => {
+  assert.equal(rockBottom(1), -ROCK_SINK);
+  assert.ok(rockBottom(0.4) < -ROCK_SINK);
+  assert.ok(rockBottom(0) < rockBottom(0.4));
+});
+
+test("horizon seats are tall, in the forward view, and clear of the run", () => {
+  const seats = horizonSeats(field(), 6);
+  assert.equal(seats.length, HORIZON_N);
+  const half = Math.tan((22.7 * Math.PI) / 180 / 2);
+  for (let i = 0; i < seats.length; i++) {
+    const seat = seats[i];
+    const dist = seat.x - 6;
+    assert.ok(seat.height >= 8);
+    assert.ok(Math.abs(seat.lateral) > 0.8 * seat.height);
+    assert.ok(Math.abs(seat.lateral) < dist * half);
+    assert.ok(seat.kind === 1 || seat.kind === 2);
+  }
 });
