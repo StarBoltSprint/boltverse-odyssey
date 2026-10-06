@@ -735,3 +735,47 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | `placeShards` picks a slot grid: 0.4 m steps, 3.6 m from each monument seat, 2.6 m between shards. A short span returns fewer shards than asked. |
 | Guard | `node --test tools/adventure/adventure.test.mjs` — offline cards for the sample seeds pass `validateCard`, which rejects a position within 3.5 m of a monument. |
 | Sources | `tools/adventure/offline.js`, `tools/adventure/validate.js` |
+
+### 2026-10-06 — ruin magnification floored the eye at 5 cm inside the box
+
+| | |
+| --- | --- |
+| Take | Corridor magnification sweep. |
+| Defect | The first table reported wreck magnification 512 and arch magnification 230. |
+| Root cause | Distance was `Math.max(0.05, dist)` and an eye inside the ruin AABB was given dist 0. The face was the roof or a pier, about 0.6 m away, and a doorway is empty. |
+| Fix | `ruinFaceDist` uses the surface outside the box, the opening edges inside a doorway, and the nearest face inside a solid. Non-finite magnification is dropped. |
+| Guard | `node --test packs/corridor-ab/play/chase.test.mjs` — headings 82 and 127 stay at or under 1, and the gate row at 16.6 m stays finite and under 1. |
+| Sources | `packs/corridor-ab/play/mag.js`, `packs/corridor-ab/proof/smooth/before.json` |
+
+### 2026-10-06 — the gate elevation stayed up until magnification 3
+
+| | |
+| --- | --- |
+| Take | Corridor magnification sweep. |
+| Defect | At 16.6 m the gate elevation read magnification 2.95 while a closer plate already existed. |
+| Root cause | The plate blend waited until magnification passed about 3 (`CLOSE_LO` 2.5, switch 3). The elevation is 36.6 texels per metre. The plate is 183. |
+| Fix | The blend starts at 0.92 and is fully on the plate at 1.0. `GATE_CLOSE_SWITCH` is 1. Zone A draws the same shader. |
+| Guard | `node --test packs/corridor-ab/play/chase.test.mjs` — "the gate plate takes over at magnification 1" and "the old gate elevation row is on the plate and under the limit". |
+| Sources | `packs/zone-a/play/ruins.js`, `packs/corridor-ab/proof/smooth/before.json` |
+
+### 2026-10-06 — a world-space chase ease collapsed the boom on a turn
+
+| | |
+| --- | --- |
+| Take | Corridor chase smoothness. |
+| Defect | During a 150°/s joystick turn the camera boom fell to 2.21 m. The position step still looked legal because the allow bound included a full orbit. |
+| Root cause | The spring eased the whole eye in world space, so Bolt’s turn was mixed with the cone offset and the eye lagged inside the boom. |
+| Fix | The rigid parent (chase eye of the body) is followed every frame up to one kinematic step. Only a larger shove and the cone offset ease, at 3.4 m/s. Pitch steps ease at 0.85 rad/s. |
+| Guard | `node --test packs/corridor-ab/play/chase.test.mjs` — "scripted run: camera deltas stay inside the continuous bound" (`minBoomWhileStraight` > 5.5, spikes 0). |
+| Sources | `packs/corridor-ab/play/look.js`, `packs/corridor-ab/proof/smooth/camera-trace.json` |
+
+### 2026-10-06 — the sky draw referenced a yaw that the chase move had hidden
+
+| | |
+| --- | --- |
+| Take | Corridor proof stills. |
+| Defect | The play page set the title to `ERR Uncaught ReferenceError: yaw is not defined` and never drew. |
+| Root cause | `placeCamera` kept `yaw` local and `frame` still passed that name into `sky.draw`. |
+| Fix | `placeCamera` returns `yaw` and the sky draw uses `cam.yaw`. |
+| Guard | `node --test packs/corridor-ab/play/chase.test.mjs` — the sampler test matches `sky.draw(vp, eyeBuf, cam.yaw)`. |
+| Sources | `packs/corridor-ab/play/play.js` |

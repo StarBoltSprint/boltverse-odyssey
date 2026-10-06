@@ -1,0 +1,52 @@
+{
+  "count": {
+    "arch": 927,
+    "wreck": 1307,
+    "boulder": 4,
+    "gate": 134
+  },
+  "worst": [
+    {
+      "pace": "walk",
+      "x": 32.7,
+      "heading": 60,
+      "id": "arch",
+      "mag": 34.616,
+      "dist": 0.333,
+      "boom": 7.4,
+      "art": 11.75
+    },
+    {
+      "pace": "sprint",
+      "x": 38.7,
+      "heading": 110,
+      "id": "wreck",
+      "mag": 73.957,
+      "dist": 0.346,
+      "boom": 7.4,
+      "art": 26.13
+    },
+    {
+      "pace": "walk",
+      "x": 40.7,
+      "heading": 120,
+      "id": "boulder:256264",
+      "mag": 1.131,
+      "dist": 3.632,
+      "boom": 7.4,
+      "art": null
+    },
+    {
+      "pace": "sprint",
+      "x": 60.7,
+      "heading": 190,
+      "id": "gate",
+      "mag": 1.737,
+      "dist": 5.641,
+      "boom": 6.166,
+      "art": 10
+    }
+  ],
+  "boomCap": 7.45,
+  "poses": "walk+sprint, 2m, 10deg"
+}

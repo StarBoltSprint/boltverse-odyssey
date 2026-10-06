@@ -26,10 +26,14 @@ import {
   pitchForTall,
   pitchOf,
   pushLook,
+  resetChase,
+  stepChase,
   stepLook,
+  createChase,
   TURN_DPS,
   wrap360,
 } from "./look.js";
+import { clearEye, rockShells } from "./mag.js";
 import { pushDiscs, RUN_YAW } from "./scatter.js";
 import { GATE_FIRST, PASS_BACK, POOL, RISE_M, bindPlan, carpetWest, createField, horizonSeats, rockBottom, rockCount, settleField, stepField } from "./stream.js";
 import { DEFAULT_POST, POST_LIMITS } from "../../zone-a/play/biomeblend.js";
@@ -709,6 +713,40 @@ const viewBuf = new Float32Array(16);
 const vpBuf = new Float32Array(16);
 const eyeBuf = [0, 0, 0];
 const aimBuf = [0, 0, 0];
+const chase = createChase();
+let camDt = 0;
+let camSnap = true;
+
+function placeCamera() {
+  const yaw = heading * Math.PI / 180;
+  const fx = Math.sin(yaw);
+  const fz = Math.cos(yaw);
+  const rx = fz;
+  const rz = -fx;
+  const rigid = [
+    x - fx * CHASE_BOOM + rx * CHASE_SLIDE,
+    CHASE_EYE,
+    z - fz * CHASE_BOOM + rz * CHASE_SLIDE,
+  ];
+  let goal = pitchOf(chasePitch(), camLook.cur);
+  if (field.gate && field.gate.emerge > 0.4) {
+    const dx = field.gate.x - rigid[0];
+    const dz = field.gate.z - rigid[2];
+    const ahead = dx * fx + dz * fz;
+    const side = dx * rx + dz * rz;
+    if (ahead > 12 && Math.abs(Math.atan2(side, ahead)) < HFOV * 0.5) {
+      goal = pitchForTall(goal, GATE_TOP, Math.hypot(ahead, side), VFOV);
+    }
+  }
+  const cleared = clearEye(rigid, x, z, rockShells(field.pool), field);
+  const still = !!(shot && !filmShot && shot !== "adventure");
+  stepChase(chase, rigid, cleared, goal, camDt, camSnap || still, speed, state.turn);
+  eyeBuf[0] = chase.eye[0];
+  eyeBuf[1] = chase.eye[1];
+  eyeBuf[2] = chase.eye[2];
+  if (!still) camSnap = false;
+  return { fx, fz, rx, rz, pitch: chase.pitch, yaw };
+}
 function perspectiveInto(fovy, aspect, near, far) {
   const f = 1 / Math.tan(fovy / 2);
   const nf = 1 / (near - far);
@@ -779,24 +817,12 @@ function frame() {
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.clearColor(0, 0, 0, 1);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-  const yaw = heading * Math.PI / 180;
-  const fx = Math.sin(yaw);
-  const fz = Math.cos(yaw);
-  const rx = fz;
-  const rz = -fx;
-  eyeBuf[0] = x - fx * CHASE_BOOM + rx * CHASE_SLIDE;
-  eyeBuf[1] = CHASE_EYE;
-  eyeBuf[2] = z - fz * CHASE_BOOM + rz * CHASE_SLIDE;
-  let pitch = pitchOf(chasePitch(), camLook.cur);
-  if (field.gate && field.gate.emerge > 0.4) {
-    const dx = field.gate.x - eyeBuf[0];
-    const dz = field.gate.z - eyeBuf[2];
-    const ahead = dx * fx + dz * fz;
-    const side = dx * rx + dz * rz;
-    if (ahead > 12 && Math.abs(Math.atan2(side, ahead)) < HFOV * 0.5) {
-      pitch = pitchForTall(pitch, GATE_TOP, Math.hypot(ahead, side), VFOV);
-    }
-  }
+  const cam = placeCamera();
+  const fx = cam.fx;
+  const fz = cam.fz;
+  const rx = cam.rx;
+  const rz = cam.rz;
+  const pitch = cam.pitch;
   const cp = Math.cos(pitch);
   const sp = Math.sin(pitch);
   aimBuf[0] = eyeBuf[0] + fx * cp * 12;
@@ -804,7 +830,7 @@ function frame() {
   aimBuf[2] = eyeBuf[2] + fz * cp * 12;
   chaseViewInto(viewBuf, eyeBuf, aimBuf);
   const vp = mulInto(perspectiveInto(VFOV, canvas.width / canvas.height, 0.08, 400), viewBuf);
-  drawCalls += sky.draw(vp, eyeBuf, yaw);
+  drawCalls += sky.draw(vp, eyeBuf, cam.yaw);
 
   gl.useProgram(groundProg);
   gl.bindVertexArray(groundVao);
@@ -921,6 +947,7 @@ function frame() {
     groundPx: maxW,
     fogOn,
     pitch,
+    boom: Math.round(Math.hypot(eyeBuf[0] - x, eyeBuf[2] - z) * 1000) / 1000,
     gateLat: field.gate ? Math.round((field.gate.z - pathZ) * 10) / 10 : null,
     frameN: playFrames,
     skyTop,
@@ -960,6 +987,7 @@ function returnHome() {
   speed = 0;
   field.speed = 0;
   field.charge = 0;
+  resetChase(chase);
 }
 
 function stepAdventure(dt) {
@@ -1086,6 +1114,7 @@ let then = performance.now();
 let shotFrames = 0;
 function advanceFilm() {
   const dt = 1 / 24;
+  camDt = dt;
   pollKeys();
   moveBody(dt);
   stepFlow(dt, flowSpeed());
@@ -1101,6 +1130,7 @@ function advanceFilm() {
 }
 function advanceAdventure() {
   const dt = 1 / 24;
+  camDt = dt;
   const held = adventureUi && adventureUi.quest && adventureUi.quest.holdMove;
   if (!held) {
     state.forward = 1;
@@ -1125,6 +1155,7 @@ function tick(now) {
   }
   const dt = Math.min(0.05, (now - then) / 1000);
   then = now;
+  camDt = dt;
   pollKeys();
   moveBody(dt);
   stepAdventure(dt);

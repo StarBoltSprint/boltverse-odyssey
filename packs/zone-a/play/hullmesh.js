@@ -91,7 +91,34 @@ void project(int i, vec3 p, out vec2 uv, out float z) {
   uv.x = (sz.x - 1.0) * 0.5 + uHand * fy * (x / max(z, 1e-4));
   uv.y = (sz.y - 1.0) * 0.5 - fy * (y / max(z, 1e-4));
 }
+void projectGrad(int i, vec3 p, vec3 dpdx, vec3 dpdy, out vec2 tuv, out vec2 ddx, out vec2 ddy) {
+  vec3 rel = p - uCamPos[i];
+  float z = dot(rel, uCamForward[i]);
+  float x = dot(rel, uCamRight[i]);
+  float y = dot(rel, uCamUp[i]);
+  vec2 sz = uViewSize[i];
+  float fy = (sz.y * 0.5) / tan(radians(uFov[i]) * 0.5);
+  float zz = max(z, 1e-4);
+  vec2 uv;
+  uv.x = (sz.x - 1.0) * 0.5 + uHand * fy * (x / zz);
+  uv.y = (sz.y - 1.0) * 0.5 - fy * (y / zz);
+  float dxdx = dot(dpdx, uCamRight[i]);
+  float dydx = dot(dpdx, uCamUp[i]);
+  float dzdx = dot(dpdx, uCamForward[i]);
+  float dxdy = dot(dpdy, uCamRight[i]);
+  float dydy = dot(dpdy, uCamUp[i]);
+  float dzdy = dot(dpdy, uCamForward[i]);
+  float inv2 = 1.0 / (zz * zz);
+  vec2 gdx = vec2(uHand * fy * (dxdx * zz - x * dzdx) * inv2, -fy * (dydx * zz - y * dzdx) * inv2);
+  vec2 gdy = vec2(uHand * fy * (dxdy * zz - x * dzdy) * inv2, -fy * (dydy * zz - y * dzdy) * inv2);
+  vec2 lo = vec2(0.5) / uTexSize;
+  tuv = clamp((uv + 0.5) / uTexSize, lo, (sz - 0.5) / uTexSize);
+  ddx = gdx / uTexSize;
+  ddy = gdy / uTexSize;
+}
 void main() {
+  vec3 lx = dFdx(vLocal);
+  vec3 ly = dFdy(vLocal);
   vec3 n = normalize(vNrm);
   float bestW = -1.0;
   int bestI = 0;
@@ -117,23 +144,19 @@ void main() {
     if (wv > bestW) { bestW = wv; bestI = i; }
   }
   int useI = bestW > 0.0 ? bestI : (anyA > 0.2 ? anyI : faceI);
-  vec2 uv; float z;
-  project(useI, vLocal, uv, z);
-  vec2 sz = uViewSize[useI];
-  vec2 tuv = clamp((uv + 0.5) / uTexSize, vec2(0.5) / uTexSize, (sz - 0.5) / uTexSize);
-  vec4 src = texture(uViews, vec3(tuv, float(useI)));
+  vec2 tuv; vec2 gx; vec2 gy;
+  projectGrad(useI, vLocal, lx, ly, tuv, gx, gy);
+  vec4 src = textureGrad(uViews, vec3(tuv, float(useI)), gx, gy);
   if (src.a < 0.35 && anyA > 0.2 && anyI != useI) {
-    vec2 uvA; float zA;
-    project(anyI, vLocal, uvA, zA);
-    vec2 tuvA = clamp((uvA + 0.5) / uTexSize, vec2(0.5) / uTexSize, (uViewSize[anyI] - 0.5) / uTexSize);
-    vec4 alt = texture(uViews, vec3(tuvA, float(anyI)));
+    vec2 tuvA; vec2 gxA; vec2 gyA;
+    projectGrad(anyI, vLocal, lx, ly, tuvA, gxA, gyA);
+    vec4 alt = textureGrad(uViews, vec3(tuvA, float(anyI)), gxA, gyA);
     if (alt.a > src.a) src = alt;
   }
   if (src.a < 0.2) {
-    vec2 uvF; float zF;
-    project(faceI, vLocal, uvF, zF);
-    vec2 tuvF = clamp((uvF + 0.5) / uTexSize, vec2(0.5) / uTexSize, (uViewSize[faceI] - 0.5) / uTexSize);
-    vec4 altF = texture(uViews, vec3(tuvF, float(faceI)));
+    vec2 tuvF; vec2 gxF; vec2 gyF;
+    projectGrad(faceI, vLocal, lx, ly, tuvF, gxF, gyF);
+    vec4 altF = textureGrad(uViews, vec3(tuvF, float(faceI)), gxF, gyF);
     if (altF.a > src.a) src = altF;
   }
   // A fragment with no Imagine coverage is not a pixel we may invent.
@@ -223,6 +246,11 @@ export async function loadWorldHull(gl, assetUrl, onBytes, opts) {
   gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  const aniso = gl.getExtension("EXT_texture_filter_anisotropic");
+  if (aniso) {
+    const maxA = gl.getParameter(aniso.MAX_TEXTURE_MAX_ANISOTROPY_EXT) || 1;
+    gl.texParameterf(gl.TEXTURE_2D_ARRAY, aniso.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(8, maxA));
+  }
   gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
   for (let i = 0; i < images.length; i++) {
