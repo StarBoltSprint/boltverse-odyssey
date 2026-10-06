@@ -53,12 +53,15 @@ layout(location=6) in vec4 aM3;
 layout(location=7) in float aId;
 uniform mat4 uVP;
 out vec3 vLocal;
+out vec3 vWorld;
 out vec3 vNrm;
 flat out float vId;
 void main() {
   mat4 M = mat4(aM0, aM1, aM2, aM3);
-  gl_Position = uVP * M * vec4(aPos, 1.0);
+  vec4 wp = M * vec4(aPos, 1.0);
+  gl_Position = uVP * wp;
   vLocal = aPos;
+  vWorld = wp.xyz;
   vNrm = aNrm;
   vId = aId;
 }`;
@@ -77,7 +80,12 @@ uniform vec2 uViewSize[8];
 uniform vec2 uTexSize;
 uniform float uHand;
 uniform int uMode;
+uniform vec2 uEye;
+uniform vec3 uFog;
+uniform float uFogK;
+uniform float uFogCap;
 in vec3 vLocal;
+in vec3 vWorld;
 in vec3 vNrm;
 flat in float vId;
 out vec4 o;
@@ -161,8 +169,15 @@ void main() {
   }
   // A fragment with no Imagine coverage is not a pixel we may invent.
   if (src.a < 0.35) discard;
+  vec3 rgb = src.rgb;
+  if (uFogK > 0.0) {
+    float dist = distance(vWorld.xz, uEye);
+    float fog = clamp(1.0 - exp(-uFogK * max(0.0, dist - 18.0)), 0.0, uFogCap);
+    fog = max(fog, smoothstep(78.0, 132.0, dist));
+    rgb = mix(rgb, uFog, fog);
+  }
   if (uMode == 1) o = vec4(vId / 255.0, 0.0, 0.0, 1.0);
-  else o = vec4(src.rgb, 1.0);
+  else o = vec4(rgb, 1.0);
 }`;
   sharedProg = gl.createProgram();
   gl.attachShader(sharedProg, compile(gl, gl.VERTEX_SHADER, vs));
@@ -183,7 +198,21 @@ void main() {
     texSize: u("uTexSize"),
     hand: u("uHand"),
     mode: u("uMode"),
+    eye: u("uEye"),
+    fog: u("uFog"),
+    fogK: u("uFogK"),
+    fogCap: u("uFogCap"),
   };
+}
+
+/** Distance fog for the corridor. Left at 0, a hull draws exactly as before. */
+export function setHullFog(gl, eyeX, eyeZ, fogRgb, fogK, fogCap) {
+  if (!sharedProg || !sharedLoc) return;
+  gl.useProgram(sharedProg);
+  gl.uniform2f(sharedLoc.eye, eyeX, eyeZ);
+  gl.uniform3f(sharedLoc.fog, fogRgb[0], fogRgb[1], fogRgb[2]);
+  gl.uniform1f(sharedLoc.fogK, fogK);
+  gl.uniform1f(sharedLoc.fogCap, fogCap);
 }
 
 function loadImage(url) {

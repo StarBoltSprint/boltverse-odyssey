@@ -22,7 +22,8 @@ export const SPRINT_ACCEL = 1.65;
 export const SPRINT_EASE = 2.15;
 export const CHASE_BOOM = 6.1;
 export const CHASE_EYE = 3.5;
-export const CHASE_SLIDE = 0.9;
+/** Zero keeps the eye on the centreline. A slide looks past Bolt and parks him under the stick. */
+export const CHASE_SLIDE = 0;
 /** Aim height that puts the horizon near 32% from the top of a 720×1600 view. */
 export const CHASE_AIM_Y = 2.52;
 export const PAW_FRAC_FALLBACK = 0.92;
@@ -214,15 +215,20 @@ export function stepSpeed(speed, forward, gallop, dt) {
   return up > target ? target : up;
 }
 
+/** Seconds of a full sprint that take charge from 0 to 1. Density reads charge. */
+export const CHARGE_RAMP_SEC = 24;
+/** Charge lost per second after the sprint stick is released. A tap does not dump the world. */
+export const CHARGE_EASE = 0.05;
+
 /** Charge 0..1 tracks how long sprint has been held. Density reads this. */
 export function stepCharge(charge, forward, gallop, dt) {
   const fwd = forward > 0.04 ? forward : 0;
   if (gallop && fwd > 0) {
     const hold = Math.max(0.35, Math.min(1, (fwd - 0.72) / 0.28));
-    const next = charge + 0.28 * hold * dt;
+    const next = charge + (hold * dt) / CHARGE_RAMP_SEC;
     return next > 1 ? 1 : next;
   }
-  const eased = charge - 0.22 * dt;
+  const eased = charge - CHARGE_EASE * dt;
   return eased < 0 ? 0 : eased;
 }
 

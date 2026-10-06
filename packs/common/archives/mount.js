@@ -67,7 +67,7 @@ export async function mountArchives(gl, env) {
   });
 
   function countText() {
-    return found.size + " of " + manifest.shards.length;
+    return found.size + " sur " + manifest.shards.length;
   }
   present.setCount(countText());
 

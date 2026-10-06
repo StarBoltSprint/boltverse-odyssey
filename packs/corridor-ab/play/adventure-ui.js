@@ -39,7 +39,10 @@ const STYLE = `
 #adventure-card .kicker { letter-spacing: 0.16em; font-size: 12px; color: #9ee7ff; margin: 0; }
 #adventure-card h1 { font-size: 26px; font-weight: 500; margin: 10px 0; }
 #adventure-card p { margin: 8px 0; font-size: 16px; line-height: 1.35; }
-#adventure-line { left: 16px; right: 108px; top: 18px; text-align: left; font-size: 14px; line-height: 1.35; display: none; }
+#adventure-line { left: 16px; right: 16px; top: 18px; text-align: left; font-size: 14px; line-height: 1.35; display: none; }
+#adventure-line .obj { display: block; padding-right: 96px; }
+#adventure-line .meta { display: flex; gap: 12px; margin-top: 2px; padding-right: 96px; }
+#adventure-line .timer { flex: 0 0 auto; }
 `;
 
 export async function loadCatalog(absUrl) {
@@ -65,6 +68,16 @@ export function mountAdventureUi(doc, env) {
   card.id = "adventure-card";
   const line = doc.createElement("div");
   line.id = "adventure-line";
+  const lineObj = doc.createElement("div");
+  lineObj.className = "obj";
+  const lineMeta = doc.createElement("div");
+  lineMeta.className = "meta";
+  const lineCount = doc.createElement("span");
+  lineCount.className = "count";
+  const lineTimer = doc.createElement("span");
+  lineTimer.className = "timer";
+  lineMeta.append(lineCount, lineTimer);
+  line.append(lineObj, lineMeta);
   doc.body.append(card, line);
 
   const save = createSave(globalThis.localStorage);
@@ -140,9 +153,9 @@ export function mountAdventureUi(doc, env) {
       return;
     }
     line.style.display = "block";
-    const bits = [quest.objective, "Echo Shards " + counterText(quest), timerText(quest)];
-    if (quest.notice) bits.push(quest.notice);
-    line.textContent = bits.join("  ");
+    lineObj.textContent = quest.notice ? quest.objective + "  " + quest.notice : quest.objective;
+    lineCount.textContent = "Éclats d'écho " + counterText(quest);
+    lineTimer.textContent = timerText(quest);
   }
 
   function onCitadel() {

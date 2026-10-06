@@ -4,6 +4,7 @@ import { test } from "node:test";
 import {
   CHASE_BOOM,
   CHASE_EYE,
+  chaseEye,
   CHASE_PITCH_RATE,
   CHASE_PUSH_RATE,
   LOOK_V_DRAG,
@@ -34,7 +35,7 @@ import {
 } from "./mag.js";
 import { GATE_CLOSE_SWITCH } from "../../zone-a/play/ruins.js";
 import { pushDiscs } from "./scatter.js";
-import { createField, rockDiscs, settleField, stepField } from "./stream.js";
+import { POOL, createField, rockDiscs, settleField, stepField } from "./stream.js";
 import { sweepPose } from "./measure-mag.mjs";
 
 const layout = JSON.parse(readFileSync(new URL("../path-layout.json", import.meta.url), "utf8"));
@@ -47,7 +48,23 @@ test("the lower-third boom cap still holds Bolt under the line", () => {
   const body = chaseScreenY(1.05, BOOM_CAP, PORTRAIT);
   assert.ok(body > 2 / 3, "body " + body);
   assert.ok(restBoom() < BOOM_CAP);
-  assert.ok(restBoom() > CHASE_BOOM);
+  assert.equal(restBoom(), CHASE_BOOM);
+});
+
+test("clearance stays on the rest ray so Bolt stays centred", () => {
+  const rigid = chaseEye(90, 0, 0);
+  const eye = clearEye(rigid, 0, 0, [{
+    id: "boulder:1",
+    x: 4,
+    y: 1,
+    z: 2.2,
+    rad: 1.2,
+    worldH: 1.4,
+    srcH: 512,
+  }], { arch: null, gate: null, wreck: null });
+  assert.ok(Math.abs(eye[2]) < 1e-6);
+  assert.equal(eye[1], CHASE_EYE);
+  assert.ok(eye[0] < 0);
 });
 
 test("the gate plate takes over at magnification 1", () => {
@@ -133,7 +150,7 @@ test("the old gate elevation row is on the plate and under the limit", () => {
 test("scripted run: camera deltas stay inside the continuous bound", () => {
   const field = createField({ seed: layout.seed || 1, x0, pathZ });
   const discs = [];
-  for (let i = 0; i < 40; i++) discs.push({ x: 0, z: 0, r: 0 });
+  for (let i = 0; i < POOL; i++) discs.push({ x: 0, z: 0, r: 0 });
   let x = x0 + 4;
   let z = pathZ;
   let heading = 90;

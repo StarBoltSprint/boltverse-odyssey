@@ -9,7 +9,17 @@ export const INTRO_MS = 2500;
 export const END_MS = 2500;
 export const GATE_RADIUS_M = 5;
 
+const OBJECTIVE_FR = {
+  "Collect the Echo Shards, then reach the Eclipse Gate.": "Ramasse les Éclats d'écho, puis atteins la Porte de l'Éclipse.",
+};
+
+/** Player line. The card keeps ASCII so the schema stays valid. */
+export function hudObjective(text) {
+  return OBJECTIVE_FR[text] || text;
+}
+
 export function createQuest(plan) {
+  const objective = hudObjective(plan.objective);
   return {
     plan,
     phase: "intro",
@@ -22,9 +32,9 @@ export function createQuest(plan) {
     overlay: {
       kicker: "Boltverse Odyssey",
       title: plan.title,
-      lines: [plan.signal, plan.objective],
+      lines: [plan.signal, objective],
     },
-    objective: plan.objective,
+    objective,
     notice: "",
     noticeT: 0,
   };
@@ -70,7 +80,7 @@ export function chooseQuest(quest, which) {
 }
 
 export function counterText(quest) {
-  return quest.found.size + " of " + quest.plan.shards.length;
+  return quest.found.size + " sur " + quest.plan.shards.length;
 }
 
 export function timerText(quest) {
@@ -111,7 +121,7 @@ function codexOverlay(quest) {
 
 function returnOverlay(quest) {
   return {
-    kicker: "Citadel",
+    kicker: "Citadelle",
     title: quest.plan.title,
     lines: [quest.plan.returnText],
   };

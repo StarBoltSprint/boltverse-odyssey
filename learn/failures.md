@@ -790,3 +790,25 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | `?collect=1` eases toward the next shard only while it is within 6 m, then returns to the path. It does not run for a normal play URL. |
 | Guard | No unit row measures the ease. The proof is `packs/corridor-ab/proof/codex/REPORT.md`: seeds 1024, 68, and 351 passed, and the three truths survived a reload. |
 | Sources | `packs/corridor-ab/play/play.js` |
+
+### 2026-10-06 — the chase slide parked Bolt inside the joystick
+
+| | |
+| --- | --- |
+| Take | Phone frame. |
+| Defect | On a portrait phone Bolt sat in the bottom-left, under the joystick ring. |
+| Root cause | `CHASE_SLIDE` was 0.9 m. At heading 90 that offset put the body near screen x 0.13, inside the stick. |
+| Fix | `CHASE_SLIDE` is 0. Clearance stays on the rest ray behind Bolt. Eye height stays 3.5 m. The 0.2 m boom grid may sit at 6.0 m while `CHASE_BOOM` stays 6.1 m. |
+| Guard | `node --test packs/corridor-ab/play/chase.test.mjs` — "clearance stays on the rest ray so Bolt stays centred". Proof `packs/corridor-ab/proof/phone-frame/capture.json`: body screen x 0.500, y 0.761 on 720×1600, 1080×2400, and 1600×720. |
+| Sources | `packs/corridor-ab/play/look.js`, `packs/corridor-ab/play/mag.js` |
+
+### 2026-10-06 — rocks were born in the near field and rose into view
+
+| | |
+| --- | --- |
+| Take | Phone frame. |
+| Defect | Rocks, the arch, and the wreck appeared suddenly near Bolt. Some rose out of the ground. A longer sprint did not make the far field denser. |
+| Root cause | New slots were planted inside the near radius, and emerge animated a rise and a scale-up. Density did not climb with how long the sprint had been held. |
+| Fix | After the opening frame, a birth needs 92 m of distance and must sit outside the near portrait frustum. Emerge is 1 at birth. Slots behind Bolt are blanked and reused. Charge climbs over 24 s. `densityOf` and `halfWidth` follow that charge. The pool is 48 and shares one instanced draw with the 8 horizon seats (cap 64). |
+| Guard | `node --test packs/corridor-ab/play/stream.test.mjs` — "a new slot is born beyond the far ring and outside the near frustum", "a turn does not birth a slot inside the near frustum", "a long sprint holds more rocks than a short one, still born far". |
+| Sources | `packs/corridor-ab/play/stream.js`, `packs/corridor-ab/play/look.js` |
