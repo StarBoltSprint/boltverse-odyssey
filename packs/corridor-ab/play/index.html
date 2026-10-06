@@ -13,10 +13,20 @@
       color: rgba(255,255,255,0.86); font: 12px/1.35 ui-monospace, monospace;
       pointer-events: none;
     }
+    #stick {
+      position: fixed; left: 18px; bottom: 28px; width: 108px; height: 108px;
+      border-radius: 50%; border: 1px solid rgba(255,255,255,0.28);
+      background: rgba(255,255,255,0.04); touch-action: none; z-index: 3;
+    }
+    #nub {
+      position: absolute; left: 40px; top: 40px; width: 28px; height: 28px;
+      border-radius: 50%; background: rgba(255,255,255,0.22);
+    }
   </style>
 </head>
 <body>
   <canvas id="view" width="720" height="1600"></canvas>
+  <div id="stick"><div id="nub"></div></div>
   <div id="hud"></div>
   <script type="module" src="./play.js"></script>
 </body>

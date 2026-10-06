@@ -1,20 +1,16 @@
-# Corridor hang
+# Report — corridor look, sky, and props
 
 Verdict: PASS
 
-Bolt can walk the hung corridor. The floor is zone A ground stills that were already cooked. No new Imagine file.
-
 | # | Done when | Result |
 | --- | --- | --- |
-| 1 | `world.json` corridors equal `path-layout.json` `world_corridors` | PASS. One record, `path-ab`, length 15.95 m. |
-| 2 | Waypoints stay in `path-layout.json`. `draws_pixels` false. `when` is `load`. | PASS. 12 waypoints. Both files say `when` `load` and `draws_pixels` false. |
-| 3 | Zone A gate `leads_to` is `path-ab` | PASS. |
-| 4 | Ground and tile assets are existing zone A files | PASS. Ground `packs/zone-a/src/ground/m1.png`. Cells use `m0`–`m5`. |
-| 5 | `layout.py check --world` transition row | PASS `transition` corridors=1 speed_bad=0 ground_bad=0 gate_bad=0. Other zone rows fail. The stubs are not an organic clearing. |
-| 6 | Play page places the files and walks Bolt | PASS. `?shot=mid` is corridor mode, along 7.2 m, heading 90, drawCalls 9, glError 0, Bolt idle ready. Proof `proof/walk-mid.png`. |
-| 7 | No new Imagine file. No mid-run solve | PASS. Hang writes json, txt, and svg only. |
-| 8 | Tests exit 0 | PASS `python3 tools/wfc-path/hang_selftest.py` and `node --test packs/corridor-ab/play/place.test.mjs`. |
+| 1 | Stick yaw and a swipe that eases back | `node --test packs/corridor-ab/play/look.test.mjs` pass. The spring returns to level after a drag. |
+| 2 | Sky fills 0°, 90°, 180°, 270° and a tilt | Proof PNGs. Top 40 rows: dark pixels below luma 8 are 0, 2, 0, 0, 0 of 28800. Means 50.6, 107.4, 93.6, 65.1, 95.5. |
+| 3 | Hulls, arch, gate, wreck, seed moves them | `scatter.test.mjs` pass. Play reports rocks 34. Seed 68 places the arch at x 21.75, the gate at x 52.89, the wreck at z 24.18. |
+| 4 | Arch opening walkable, pier blocks | Play `archOpen` true, `archPier` true. |
+| 5 | One straight run, 60–120 m | `length_m` 79.75, `straight` true, cols 56. |
+| 6 | Selftests | `hang_selftest.py` exit 0. `place.test.mjs`, `scatter.test.mjs`, `look.test.mjs` pass. `renderlint` PASS on the four play sources. |
+| 7 | Proof frames | `proof/hdg-0.png`, `hdg-90.png`, `hdg-180.png`, `hdg-270.png`, `tilt-up.png`. 720×1600. |
+| 8 | No new Imagine file, no mid-run WFC | Placement is `placeProps` at load. No image was generated. |
 
-## Still waiting
-
-A scrolling corridor video, a zone B pack, and the Eclipse Gate loft on this mouth. The arrival plate is `m6.png` from zone A. `bakedGroundSpeed` 4 is stored and is not applied to a still. Stopped Bolt reports rate 0.
+Phone line on the settled frames: `drawCalls=7`, `texMB=211.2`, `activeVideos=4`, `glError=0`.

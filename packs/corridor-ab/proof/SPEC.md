@@ -1,26 +1,23 @@
-# Step — hang the WFC corridor
+# Step — corridor look, sky, and props
 
-Goal: copy a load-time WFC `path-layout.json` into a world a player can walk. Bolt moves from the zone A gate, along the placed corridor, to the zone B gate. No new Imagine file. No mid-run solve.
+Goal: on a phone-sized view, Bolt can turn 360° on the hung corridor, the sky covers every heading and tilt, and existing zone A solids stand along a longer straight run. No new Imagine file. No mid-run WFC.
 
 ## Rails
 
-- WFC stays placement. `when` is `load`. `draws_pixels` is false.
-- `world.json` `corridors` is a copy of `world_corridors`. Waypoints stay in `path-layout.json`.
-- The from-gate `leads_to` is the corridor id.
-- Tile assets and the corridor `ground` are files already under `packs/zone-a/src/ground/`.
-- No corridor video exists. The floor is those stills, one file per solved cell, at the zone A tile step of 1.45 m.
-- Zone B has no pack. The arrival plate reuses one zone A ground still and is labelled as that stand-in.
-- The Eclipse Gate loft stays in `packs/zone-a`. This strip does not build a second gate mesh.
-- Level chase. Horizon at 0.50 of 720×1600. No typed colour. No Three.js mesh. No new pixels.
-- Phone: one Bolt video, stills with mipmaps, draw calls under 12.
+- Look reuses the zone A stick and the opposite-side swipe. Yaw turns freely. A vertical swipe tilts, then eases back. The numbers are the zone A look spring.
+- Sky is the zone A dome: horizon, upper, and high slices, the zenith cap, and the stars, dust, and nebula loops. Sky is the only backdrop.
+- Props are already-cooked solids. Rock hulls (boulder, stone). The Roman arch, the Eclipse Gate loft, and the wreck, placed by a load-time seed. No card, no billboard, no new mesh.
+- Colliders for the arch, the gate, and the wreck are the faces those meshes already draw. The openings stay walkable. A rock blocks only its hull footprint.
+- The corridor stays one straight doc-62 link. Length is between 60 m and 120 m. Placement is computed once at load for the whole run.
+- Phone: 720×1600, draw calls ≤ 12, texture memory ≤ 260 MB, at most four videos decoding, stills mipmapped, video linear, DPR ≤ 2.
 
 ## Done when
 
-1. `hang.py` writes `world.json` corridors equal to `path-layout.json` `world_corridors`.
-2. Waypoints stay in `path-layout.json`. `draws_pixels` is false. `when` is `load`.
-3. The zone A gate `leads_to` is `path-ab`.
-4. `ground` and every tile asset are existing files under `packs/zone-a/src/ground/`.
-5. `layout.py check --world` prints `PASS  transition` for both zone stubs.
-6. The play page places those files on the solved cells and walks Bolt with zone-flow.
-7. No new Imagine file is added. The solve does not run during play.
-8. `hang_selftest.py` and `place.test.mjs` exit 0.
+1. The stick turns Bolt through a full yaw, and a swipe tilts then eases back to level.
+2. The sky dome fills the frame at headings 0°, 90°, 180°, 270° and on a tilt-up. No black band above the sky.
+3. Boulder and stone hulls, the arch, the Eclipse Gate, and the wreck are on the corridor. A second seed moves the scatter.
+4. Bolt can pass the arch opening. A pier blocks. Rock contact is the hull footprint.
+5. Corridor length is between 60 m and 120 m and the link is still one straight run.
+6. `hang_selftest.py`, `place.test.mjs`, and `scatter.test.mjs` exit 0.
+7. Proof frames for the four headings and the tilt sit under `packs/corridor-ab/proof/`.
+8. No new Imagine file is added. WFC does not run during play.

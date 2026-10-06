@@ -625,3 +625,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Standing rule 10. Accept view drift and specks. Do not burn quota on them. Stop after 2 still applies to any other repeated defect. |
 | Guard | No new machine row. Workflow §2 in [`docs/METHOD.md`](../docs/METHOD.md). |
 | Sources | [`docs/METHOD.md`](../docs/METHOD.md) standing rule 10. |
+
+### 2026-10-06 — sky array upload passed ten arguments
+
+| | |
+| --- | --- |
+| Take | Corridor look, sky, and props. |
+| Defect | The play page died on boot with `texSubImage3D: 11 arguments required, but only 10 present`. The frame was a 6 KB blank. |
+| Root cause | `texSubImage3D` for a pixel buffer needs x, y, and z offsets, then width, height, and depth. The sky upload omitted the z offset. |
+| Fix | Pass `0, 0, 0, layer` before the size. Ground tiles upload the same way, from pixels, not from an image element. |
+| Guard | A settled `?shot=hdg` title is JSON with `glError` 0. An `ERR` title is not a proof. |
+| Sources | `packs/corridor-ab/play/sky.js` |

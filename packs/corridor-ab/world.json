@@ -2,7 +2,7 @@
   "awaits": [
     "A scrolling corridor ground video, empty of Bolt, with bakedGroundSpeed measured from that clip.",
     "A zone B pack (Ember Mesa). The arrival plate reuses a zone A ground still until that pack exists.",
-    "The Eclipse Gate loft on the mouth. It stays in packs/zone-a and is not rebuilt on this strip."
+    "Corridor Imagine tiles. The floor is still the zone A ground stills, one file per solved cell."
   ],
   "corridors": [
     {
@@ -13,7 +13,7 @@
       },
       "ground": "packs/zone-a/src/ground/m1.png",
       "id": "path-ab",
-      "length_m": 15.95,
+      "length_m": 79.75,
       "to": {
         "gate": "in",
         "zone": "zone-b"

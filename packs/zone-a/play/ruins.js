@@ -541,7 +541,10 @@ export async function mountRuins(gl, env) {
   let gateUnit = -1;
   let slate = null;
   for (let i = 0; i < objects.length; i++) {
-    const obj = objects[i];
+    // A caller may reseat a loft. Absent placements keep the manifest coordinates.
+    let obj = objects[i];
+    const placed = env.placements && env.placements[obj.id];
+    if (placed) obj = { ...obj, x: placed.x, z: placed.z, yaw: placed.yaw };
     const bin = await (await fetch(env.absUrl(obj.mesh))).arrayBuffer();
     const groups = parseRuin(bin);
     const texSize = [];
