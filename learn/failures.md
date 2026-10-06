@@ -636,3 +636,25 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Pass `0, 0, 0, layer` before the size. Ground tiles upload the same way, from pixels, not from an image element. |
 | Guard | A settled `?shot=hdg` title is JSON with `glError` 0. An `ERR` title is not a proof. |
 | Sources | `packs/corridor-ab/play/sky.js` |
+
+### 2026-10-06 — the stream pool filled from behind the camera
+
+| | |
+| --- | --- |
+| Take | Corridor chase, sprint, and streaming props. |
+| Defect | A max-sprint shot showed the same rocks as a walk. The pool was full, and none of those rocks sat inside the portrait cone. |
+| Root cause | Fill walked cells from behind Bolt and across the wide lanes first. The 36 slots were gone before a forward centre rock was seated. The first lanes were also just outside `tan(11.35°)`. |
+| Fix | Seat monuments, then forward centre lanes (`|lateral| < 6`), then other forward lanes, then behind. The inner lanes start at ±2.15 m so a rock ahead of Bolt is inside the 22.7° cone. |
+| Guard | `node --test packs/corridor-ab/play/stream.test.mjs` — "a faster pace streams more rocks than a walk" requires more rocks and more of them inside the cone. |
+| Sources | `packs/corridor-ab/play/stream.js` |
+
+### 2026-10-06 — the paw quad used the image fraction from the top
+
+| | |
+| --- | --- |
+| Take | Corridor chase, sprint, and streaming props. |
+| Defect | Bolt's feet floated about 1.8 m above the ground at `pawFrac` 0.92. |
+| Root cause | The quad offset added `frac * worldH`. Zone A stores the lowest opaque row from the top of the frame. With `UNPACK_FLIP_Y` the paw is at texture `v = 1 - pawFrac`, so the rise from the quad bottom is `(1 - frac) * worldH`. |
+| Fix | `pawLine` and the Bolt quad both use `(1 - frac) * worldH`. The measured paw sits on y = 0. |
+| Guard | `node --test packs/corridor-ab/play/look.test.mjs` — "the paw row sits on the ground". |
+| Sources | `packs/corridor-ab/play/look.js`, `packs/zone-a/play/play.js` |

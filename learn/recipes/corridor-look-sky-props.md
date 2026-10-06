@@ -37,4 +37,4 @@ not stored
 
 ## Reuse
 
-Copy zone A's look numbers and the sky dome. Reseat `mountRuins` with `placements`. Scatter hulls once at load. Do not solve WFC while Bolt runs. Do not hang a crossed card as décor.
+Copy zone A's look numbers and the sky dome. Reseat `mountRuins` with `placements`. Do not solve WFC while Bolt runs. Do not hang a crossed card as décor. The load-time scatter of hulls and lofts is superseded: props now stream while Bolt runs (`learn/recipes/corridor-awaken.md`).

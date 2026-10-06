@@ -1,6 +1,6 @@
 /**
  * Walk the hung corridor with zone A's look, sky, and solids.
- * Placement is computed once at load. The page does not solve WFC.
+ * The corridor solve stays at load. Hulls and lofts stream ahead while Bolt runs.
  */
 
 window.addEventListener("error", (event) => {
@@ -13,8 +13,23 @@ window.addEventListener("unhandledrejection", (event) => {
 
 import { createFlow, BOLT_GALLOP, BOLT_IDLE } from "../../../biome/scripts/zone-flow/zoneFlow.mjs";
 import { poseOnCorridor } from "./place.js";
-import { createLook, endLook, GALLOP_SPD, pitchOf, pushLook, stepLook, TURN_DPS, WALK_SPD, wrap360 } from "./look.js";
-import { placeProps, pushDiscs } from "./scatter.js";
+import {
+  CHASE_BOOM,
+  CHASE_EYE,
+  CHASE_SLIDE,
+  chasePitch,
+  chaseViewInto,
+  createLook,
+  endLook,
+  PAW_FRAC_FALLBACK,
+  pitchOf,
+  pushLook,
+  stepLook,
+  TURN_DPS,
+  wrap360,
+} from "./look.js";
+import { pushDiscs, RUN_YAW } from "./scatter.js";
+import { POOL, RISE_M, createField, rockCount, settleField, stepField } from "./stream.js";
 import { mountSky } from "./sky.js";
 import { mountRuins } from "../../zone-a/play/ruins.js";
 import { loadWorldHull } from "../../zone-a/play/hullmesh.js";
@@ -28,8 +43,6 @@ const shotTilt = shot === "tilt" || params.get("tilt") === "1";
 const HFOV = 22.7 * Math.PI / 180;
 const ASPECT = 720 / 1600;
 const VFOV = 2 * Math.atan(Math.tan(HFOV / 2) / ASPECT);
-const BOOM = 4;
-const EYE = 1.22;
 const BOLT_H = 2.15;
 
 const canvas = document.getElementById("view");
@@ -148,10 +161,10 @@ function hash2(ix, iz) {
 const xStart = corridor.waypoints[0][0];
 const xEnd = corridor.waypoints[corridor.waypoints.length - 1][0];
 const pathZ = corridor.waypoints[0][1];
-const ix0 = Math.floor((xStart - 30) / tileM);
-const ix1 = Math.floor((xEnd + 30) / tileM);
-const iz0 = Math.floor((pathZ - 88) / tileM);
-const iz1 = Math.floor((pathZ + 88) / tileM);
+const ix0 = Math.floor((xStart - 40) / tileM);
+const ix1 = Math.floor((xEnd + 160) / tileM);
+const iz0 = Math.floor((pathZ - 70) / tileM);
+const iz1 = Math.floor((pathZ + 70) / tileM);
 const groundInst = new Float32Array((ix1 - ix0 + 1) * (iz1 - iz0 + 1) * 3);
 let gk = 0;
 for (let iz = iz0; iz <= iz1; iz++) {
@@ -198,9 +211,10 @@ uniform vec3 uRight;
 uniform vec3 uUp;
 uniform vec3 uCenter;
 uniform vec2 uSize;
+uniform float uY0;
 out vec2 vUv;
 void main() {
-  vec3 p = uCenter + uRight * (aCorner.x - 0.5) * uSize.x + uUp * (aCorner.y - 0.5) * uSize.y;
+  vec3 p = uCenter + uRight * (aCorner.x - 0.5) * uSize.x + uUp * (uY0 + aCorner.y * uSize.y);
   gl_Position = uVP * vec4(p, 1.0);
   vUv = aCorner;
 }`;
@@ -243,6 +257,7 @@ const bLoc = {
   up: gl.getUniformLocation(boltProg, "uUp"),
   center: gl.getUniformLocation(boltProg, "uCenter"),
   size: gl.getUniformLocation(boltProg, "uSize"),
+  y0: gl.getUniformLocation(boltProg, "uY0"),
   tex: gl.getUniformLocation(boltProg, "uTex"),
 };
 
@@ -274,10 +289,10 @@ gl.enableVertexAttribArray(0);
 gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 8, 0);
 gl.bindVertexArray(null);
 
-const props = placeProps({
+const field = createField({
   seed,
-  waypoints: corridor.waypoints,
-  lengthM: corridor.length_m,
+  x0: xStart,
+  pathZ,
 });
 const rockManifest = await fetch(absUrl("packs/zone-a/src/rocks/manifest.json")).then((r) => r.json());
 const hulls = {};
@@ -286,40 +301,85 @@ for (const type of ["boulder", "stone"]) {
   const file = rockManifest.assets[type];
   hulls[type] = await loadWorldHull(gl, absUrl(file), trackTex, { maxH: spec.maxTex || 512 });
 }
-for (let i = 0; i < props.rocks.length; i++) {
-  const rock = props.rocks[i];
-  const hull = hulls[rock.type];
-  const meshH = Math.max(0.05, hull.maxY - hull.minY);
-  const spec = rockManifest.types[rock.type];
-  const drawScale = (spec.objectSize[1] * rock.scale) / meshH;
-  rock.drawScale = drawScale;
-  rock.r = 0.5 * Math.hypot(spec.objectSize[0], spec.objectSize[2]) * drawScale;
-  const y = -hull.minY * drawScale;
-  hull.addInstance(rock.x, y, rock.z, rock.yaw, drawScale, 0);
-}
-for (const type of Object.keys(hulls)) hulls[type].upload();
-
+const poses = {
+  arch: { x: 0, z: pathZ, scale: 0, rise: 0 },
+  gate: { x: 0, z: pathZ, scale: 0, rise: 0 },
+  wreck: { x: 0, z: pathZ, scale: 0, rise: 0 },
+};
 const ruins = await mountRuins(gl, {
   absUrl,
   loadImage,
   trackTex,
   heightAt: () => 0,
-  placements: props.monuments,
+  placements: {
+    arch: { x: 0, z: pathZ, yaw: RUN_YAW },
+    gate: { x: 0, z: pathZ, yaw: RUN_YAW },
+    wreck: { x: 0, z: pathZ, yaw: RUN_YAW },
+  },
 });
+ruins.setPoses(poses);
 
 function openingClear(mon) {
+  if (!mon || !(mon.scale > 0.85)) return false;
   const slid = ruins.collide(mon.x - 2.5, mon.z, mon.x + 2.5, mon.z, 0.3);
   return Math.abs(slid.z - mon.z) < 0.45 && slid.x > mon.x;
 }
 function pierBlocks(mon) {
+  if (!mon || !(mon.scale > 0.85)) return false;
   const side = mon.z + 1.8;
   const slid = ruins.collide(mon.x - 1, side, mon.x + 1, side, 0.3);
   return slid.contact || Math.abs(slid.z - side) > 0.12;
 }
-const archOpen = openingClear(props.monuments.arch);
-const archPier = pierBlocks(props.monuments.arch);
+let archOpen = false;
+let archPier = false;
 
-const rockDiscs = props.rocks.map((rock) => ({ x: rock.x, z: rock.z, r: rock.r }));
+const discBuf = new Array(POOL);
+for (let i = 0; i < POOL; i++) discBuf[i] = { x: 0, z: 0, r: 0 };
+let discN = 0;
+
+function applyPoses() {
+  const names = ["arch", "gate", "wreck"];
+  for (let i = 0; i < names.length; i++) {
+    const slot = field[names[i]];
+    const pose = poses[names[i]];
+    if (!slot || slot.emerge < 0.02) {
+      pose.scale = 0;
+      pose.rise = -40;
+      continue;
+    }
+    pose.x = slot.x;
+    pose.z = slot.z;
+    pose.scale = slot.emerge;
+    pose.rise = (slot.emerge - 1) * RISE_M;
+  }
+}
+
+function syncRocks() {
+  hulls.boulder.reset();
+  hulls.stone.reset();
+  discN = 0;
+  for (let i = 0; i < field.pool.length; i++) {
+    const slot = field.pool[i];
+    if (!slot.on || slot.kind > 2 || slot.emerge < 0.02) continue;
+    const type = slot.kind === 2 ? "boulder" : "stone";
+    const hull = hulls[type];
+    const spec = rockManifest.types[type];
+    const meshH = Math.max(0.05, hull.maxY - hull.minY);
+    const drawScale = (spec.objectSize[1] * slot.base * slot.emerge) / meshH;
+    const y = -hull.minY * drawScale + (slot.emerge - 1) * RISE_M;
+    hull.addInstance(slot.x, y, slot.z, slot.yaw, drawScale, 0);
+    if (slot.emerge >= 0.35 && discN < discBuf.length) {
+      const disc = discBuf[discN];
+      disc.x = slot.x;
+      disc.z = slot.z;
+      disc.r = 0.5 * Math.hypot(spec.objectSize[0], spec.objectSize[2]) * drawScale;
+      discN += 1;
+    }
+  }
+  for (let i = discN; i < discBuf.length; i++) discBuf[i].r = 0;
+  hulls.boulder.upload();
+  hulls.stone.upload();
+}
 
 const idle = document.createElement("video");
 idle.muted = true;
@@ -349,8 +409,9 @@ function videoOn(v) {
 function activeBolt() {
   return videoOn(gallop) ? gallop : idle;
 }
+const paceShot = shot === "walk" || shot === "sprint";
 function useBolt(moving) {
-  if (shot) return;
+  if (shot && !paceShot && shot !== "film") return;
   const want = moving ? gallop : idle;
   const other = moving ? idle : gallop;
   if (moving && !gallop.src) gallop.src = absUrl(BOLT_GALLOP);
@@ -404,18 +465,29 @@ function stepFlow(dt, walk) {
 }
 
 function moveBody(dt) {
-  if (shot) return;
+  const filming = shot === "film";
+  if (shot && !filming) return;
+  if (filming) {
+    state.forward = 1;
+    state.gallop = true;
+    state.turn = 0;
+  }
   stepLook(camLook, dt);
   const fwdIn = Math.abs(state.forward) < 0.04 ? 0 : state.forward;
-  speed = fwdIn === 0 ? 0 : (state.gallop ? GALLOP_SPD : WALK_SPD);
   heading = wrap360(heading + state.turn * TURN_DPS * dt);
+  stepField(field, { x, z, heading, forward: fwdIn, gallop: state.gallop }, dt);
+  speed = field.speed;
+  applyPoses();
+  syncRocks();
   const yaw = heading * Math.PI / 180;
-  let nx = x + Math.sin(yaw) * speed * dt;
-  let nz = z + Math.cos(yaw) * speed * dt;
+  const nx = x + Math.sin(yaw) * speed * dt;
+  const nz = z + Math.cos(yaw) * speed * dt;
   const slid = ruins.collide(x, z, nx, nz, 0.3);
-  const pushed = pushDiscs(slid.x, slid.z, rockDiscs, 0.3);
+  const pushed = pushDiscs(slid.x, slid.z, discBuf, 0.3);
   x = pushed.x;
   z = pushed.z;
+  archOpen = openingClear(poses.arch);
+  archPier = pierBlocks(poses.arch);
   useBolt(speed > 0.05);
 }
 
@@ -440,13 +512,33 @@ function pumpAlong(target) {
   }
 }
 
-if (shot) {
+if (paceShot || shot === "film") {
+  x = xStart + 6;
+  z = pathZ;
+  heading = 90;
+  if (paceShot) {
+    settleField(field, { x, z, heading, forward: 1, gallop: shot === "sprint" }, shot);
+    speed = field.speed;
+    useBolt(shot === "sprint");
+  }
+  applyPoses();
+  syncRocks();
+  archOpen = openingClear(poses.arch);
+  archPier = pierBlocks(poses.arch);
+  stepFlow(0, 0);
+} else if (shot) {
   pumpAlong(corridor.length_m * Math.min(0.92, Math.max(0.05, shotAt)));
   heading = wrap360(shotDeg);
   speed = 0;
+  settleField(field, { x, z, heading, forward: 1, gallop: false }, "walk");
+  applyPoses();
+  syncRocks();
   stepFlow(0, 0);
 } else {
   stepFlow(0, 0);
+  stepField(field, { x, z, heading, forward: 0, gallop: false }, 0);
+  applyPoses();
+  syncRocks();
 }
 
 function perspective(fovy, aspect, near, far) {
@@ -483,14 +575,27 @@ function lookAt(eye, target, up) {
     1,
   ]);
 }
-function mul(a, b) {
-  const out = new Float32Array(16);
+const projBuf = new Float32Array(16);
+const viewBuf = new Float32Array(16);
+const vpBuf = new Float32Array(16);
+const eyeBuf = [0, 0, 0];
+const aimBuf = [0, 0, 0];
+function perspectiveInto(fovy, aspect, near, far) {
+  const f = 1 / Math.tan(fovy / 2);
+  const nf = 1 / (near - far);
+  projBuf[0] = f / aspect; projBuf[1] = 0; projBuf[2] = 0; projBuf[3] = 0;
+  projBuf[4] = 0; projBuf[5] = f; projBuf[6] = 0; projBuf[7] = 0;
+  projBuf[8] = 0; projBuf[9] = 0; projBuf[10] = (far + near) * nf; projBuf[11] = -1;
+  projBuf[12] = 0; projBuf[13] = 0; projBuf[14] = 2 * far * near * nf; projBuf[15] = 0;
+  return projBuf;
+}
+function mulInto(a, b) {
   for (let c = 0; c < 4; c += 1) {
     for (let r = 0; r < 4; r += 1) {
-      out[c * 4 + r] = a[r] * b[c * 4] + a[4 + r] * b[c * 4 + 1] + a[8 + r] * b[c * 4 + 2] + a[12 + r] * b[c * 4 + 3];
+      vpBuf[c * 4 + r] = a[r] * b[c * 4] + a[4 + r] * b[c * 4 + 1] + a[8 + r] * b[c * 4 + 2] + a[12 + r] * b[c * 4 + 3];
     }
   }
-  return out;
+  return vpBuf;
 }
 
 let drawCalls = 0;
@@ -498,6 +603,36 @@ let jsMs = 0;
 let skyTop = 0;
 let skyMid = 0;
 let settled = false;
+let pawFrac = PAW_FRAC_FALLBACK;
+let pawGallop = 0;
+let pawY = 0;
+let pawIdleMeasured = false;
+let pawGallopMeasured = false;
+
+function measurePaw(video) {
+  const w = video.videoWidth;
+  const h = video.videoHeight;
+  if (!(w > 2 && h > 2)) return pawFrac;
+  const c = document.createElement("canvas");
+  c.width = w;
+  c.height = h;
+  const g = c.getContext("2d", { willReadFrequently: true });
+  g.drawImage(video, 0, 0);
+  const d = g.getImageData(0, 0, w, h).data;
+  let maxY = 0;
+  for (let y = 0; y < h; y += 2) {
+    for (let x0 = 0; x0 < w; x0 += 4) {
+      const o = (y * w + x0) * 4;
+      const r = d[o];
+      const gg = d[o + 1];
+      const b = d[o + 2];
+      if (gg - Math.max(r, b) > 40 && gg > 70) continue;
+      if (r + gg + b < 30) continue;
+      if (y > maxY) maxY = y;
+    }
+  }
+  return maxY > 0 ? maxY / h : pawFrac;
+}
 
 function meanLuma(x0, y0, w, h) {
   const buf = new Uint8Array(w * h * 4);
@@ -517,16 +652,20 @@ function frame() {
   const yaw = heading * Math.PI / 180;
   const fx = Math.sin(yaw);
   const fz = Math.cos(yaw);
-  const eye = [x - fx * BOOM, EYE, z - fz * BOOM];
-  const base = Math.atan2(BOLT_H * 0.45 - eye[1], Math.max(0.35, BOOM));
-  const pitch = pitchOf(base, camLook.cur);
+  const rx = fz;
+  const rz = -fx;
+  eyeBuf[0] = x - fx * CHASE_BOOM + rx * CHASE_SLIDE;
+  eyeBuf[1] = CHASE_EYE;
+  eyeBuf[2] = z - fz * CHASE_BOOM + rz * CHASE_SLIDE;
+  const pitch = pitchOf(chasePitch(), camLook.cur);
   const cp = Math.cos(pitch);
   const sp = Math.sin(pitch);
-  const fwd = [fx * cp, sp, fz * cp];
-  const up = [-sp * fx, cp, -sp * fz];
-  const target = [eye[0] + fwd[0] * 8, eye[1] + fwd[1] * 8, eye[2] + fwd[2] * 8];
-  const vp = mul(perspective(VFOV, canvas.width / canvas.height, 0.08, 400), lookAt(eye, target, up));
-  drawCalls += sky.draw(vp, eye, yaw);
+  aimBuf[0] = eyeBuf[0] + fx * cp * 12;
+  aimBuf[1] = eyeBuf[1] + sp * 12;
+  aimBuf[2] = eyeBuf[2] + fz * cp * 12;
+  chaseViewInto(viewBuf, eyeBuf, aimBuf);
+  const vp = mulInto(perspectiveInto(VFOV, canvas.width / canvas.height, 0.08, 400), viewBuf);
+  drawCalls += sky.draw(vp, eyeBuf, yaw);
 
   gl.useProgram(groundProg);
   gl.bindVertexArray(groundVao);
@@ -563,14 +702,25 @@ function frame() {
     const bh = clip.videoHeight || 1168;
     const worldH = BOLT_H;
     const worldW = worldH * (bw / bh);
-    const right = [fz, 0, -fx];
+    if (clip === idle && !pawIdleMeasured && bw > 2) {
+      pawFrac = measurePaw(clip);
+      pawIdleMeasured = true;
+    }
+    if (clip === gallop && !pawGallopMeasured && bw > 2) {
+      pawGallop = measurePaw(clip);
+      pawGallopMeasured = true;
+    }
+    const frac = clip === gallop && pawGallop > 0 ? pawGallop : pawFrac;
+    const y0 = -(1 - frac) * worldH;
+    pawY = y0 + (1 - frac) * worldH;
     gl.useProgram(boltProg);
     gl.bindVertexArray(boltVao);
     gl.uniformMatrix4fv(bLoc.vp, false, vp);
-    gl.uniform3f(bLoc.right, right[0], right[1], right[2]);
+    gl.uniform3f(bLoc.right, rx, 0, rz);
     gl.uniform3f(bLoc.up, 0, 1, 0);
-    gl.uniform3f(bLoc.center, x, worldH * 0.5, z);
+    gl.uniform3f(bLoc.center, x, 0, z);
     gl.uniform2f(bLoc.size, worldW, worldH);
+    gl.uniform1f(bLoc.y0, y0);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, boltTex);
     gl.uniform1i(bLoc.tex, 0);
@@ -602,10 +752,15 @@ function frame() {
     activeVideos,
     jsMs: Math.round(jsMs * 10) / 10,
     glError,
-    rocks: props.rocks.length,
-    arch: props.monuments.arch,
-    gate: props.monuments.gate,
-    wreck: props.monuments.wreck,
+    rocks: rockCount(field),
+    live: field.live,
+    speed: Math.round(field.speed * 100) / 100,
+    charge: Math.round(field.charge * 100) / 100,
+    eyeY: eyeBuf[1],
+    pawY: Math.round(pawY * 1000) / 1000,
+    arch: field.arch ? { x: field.arch.x, z: field.arch.z, emerge: field.arch.emerge } : null,
+    gate: field.gate ? { x: field.gate.x, z: field.gate.z, emerge: field.gate.emerge } : null,
+    wreck: field.wreck ? { x: field.wreck.x, z: field.wreck.z, emerge: field.wreck.emerge } : null,
     archOpen,
     archPier,
     seed,
@@ -622,6 +777,8 @@ function frame() {
       "texMB=" + window.__corridor.texMB,
       "activeVideos=" + activeVideos,
       "jsMs=" + window.__corridor.jsMs,
+      "spd " + field.speed.toFixed(2),
+      "live " + field.live,
       "hdg " + heading.toFixed(0),
       "look " + camLook.cur.toFixed(2),
     ].join(" ");
@@ -727,7 +884,7 @@ function tick(now) {
   moveBody(dt);
   stepFlow(dt, flowSpeed());
   frame();
-  if (shot) {
+  if (shot && shot !== "film") {
     shotFrames += 1;
     if ((!boltReady && shotFrames < 180) || shotFrames < 8) {
       requestAnimationFrame(tick);

@@ -15,14 +15,29 @@ layout(location=1) in vec2 aUv;
 layout(location=2) in vec3 aLoc;
 layout(location=3) in float aUnit;
 uniform mat4 uVP;
+uniform vec3 uShift[3];
+uniform vec2 uSeat[3];
+uniform float uScale[3];
+uniform int uObjOfUnit[8];
 out vec2 vUv;
 out vec3 vLoc;
 flat out int vUnit;
 void main() {
   vUv = aUv;
   vLoc = aLoc;
-  vUnit = int(aUnit + 0.5);
-  gl_Position = uVP * vec4(aPos, 1.0);
+  int unit = int(aUnit + 0.5);
+  vUnit = unit;
+  int oi = 0;
+  if (unit >= 0 && unit < 8) oi = uObjOfUnit[unit];
+  float s = uScale[oi];
+  vec2 seat = uSeat[oi];
+  vec3 sh = uShift[oi];
+  vec3 p = vec3(
+    seat.x + (aPos.x - seat.x) * s + sh.x,
+    aPos.y * s + sh.y,
+    seat.y + (aPos.z - seat.y) * s + sh.z
+  );
+  gl_Position = uVP * vec4(p, 1.0);
 }`;
 
 /**
@@ -534,6 +549,10 @@ export async function mountRuins(gl, env) {
   if (!objects.length) return empty();
   const mags = [];
   const solids = [];
+  const POSE_SLOT = { gate: 0, wreck: 1, arch: 2 };
+  const objOfUnit = new Int32Array(8);
+  const bakedXZ = new Float32Array(6);
+  let poses = null;
   const colliderOpt = manifest.collider || {};
   const skinTex = [];
   const texDims = [];
@@ -563,6 +582,7 @@ export async function mountRuins(gl, env) {
       const unit = skinTex.length;
       skinTex.push(packed.tex);
       units.push({ unit, packed });
+      if (unit < objOfUnit.length) objOfUnit[unit] = POSE_SLOT[obj.id] == null ? 0 : POSE_SLOT[obj.id];
       skinImgs.push(close ? null : imageLuma(img));
       if (close && sk === 0) {
         gateUnit = unit;
@@ -600,8 +620,13 @@ export async function mountRuins(gl, env) {
     const col = buildCollider(groups, frame, env.heightAt, colliderOpt);
     const skirt = appendSkirts(parts, groups, obj, seat, env.heightAt, units, skinImgs);
     const openTop = obj.openingTopM || 0;
+    const poseSlot = POSE_SLOT[obj.id] == null ? 0 : POSE_SLOT[obj.id];
+    bakedXZ[poseSlot * 2] = obj.x;
+    bakedXZ[poseSlot * 2 + 1] = obj.z;
     solids.push({
       id: obj.id,
+      bakedX: obj.x,
+      bakedZ: obj.z,
       col,
       groups,
       frame,
@@ -653,12 +678,20 @@ export async function mountRuins(gl, env) {
   const prog = program(gl, VS, fragmentSource(skinTex.length, gateUnit));
   const loc = {
     vp: gl.getUniformLocation(prog, "uVP"),
+    shift: gl.getUniformLocation(prog, "uShift"),
+    seat: gl.getUniformLocation(prog, "uSeat"),
+    scale: gl.getUniformLocation(prog, "uScale"),
+    objOfUnit: gl.getUniformLocation(prog, "uObjOfUnit"),
     slate: gl.getUniformLocation(prog, "uSlate"),
     slatePx: gl.getUniformLocation(prog, "uSlatePx"),
     slateTpm: gl.getUniformLocation(prog, "uSlateTpm"),
     slateMean: gl.getUniformLocation(prog, "uSlateMean"),
     tex: skinTex.map((_, k) => gl.getUniformLocation(prog, "uT" + k)),
   };
+  const shiftU = new Float32Array(9);
+  const seatU = new Float32Array(6);
+  const scaleU = new Float32Array([1, 1, 1]);
+  const poseIds = ["gate", "wreck", "arch"];
   const vao = gl.createVertexArray();
   gl.bindVertexArray(vao);
   const vb = gl.createBuffer();
@@ -678,12 +711,81 @@ export async function mountRuins(gl, env) {
   gl.bindVertexArray(null);
   const loadMs = performance.now() - t0;
   const drawCount = index.length ? 1 : 0;
+  function collidePosed(ox, oz, x, z, r) {
+    let cx = ox;
+    let cz = oz;
+    let contact = false;
+    const dx = x - ox;
+    const dz = z - oz;
+    const len = Math.hypot(dx, dz);
+    const cell = solids[0] ? solids[0].col.cellM : 0.25;
+    const steps = Math.max(1, Math.ceil(len / cell));
+    for (let s = 0; s < steps; s++) {
+      cx += dx / steps;
+      cz += dz / steps;
+      for (let iter = 0; iter < 4; iter++) {
+        let moved = false;
+        for (let i = 0; i < solids.length; i++) {
+          const solid = solids[i];
+          const p = poses[solid.id];
+          if (!p || !(p.scale > 0.35)) continue;
+          const sc = p.scale;
+          const bx = solid.bakedX + (cx - p.x) / sc;
+          const bz = solid.bakedZ + (cz - p.z) / sc;
+          const col = solid.col;
+          const br = r / sc;
+          if (!col.near(bx, bz, br)) continue;
+          const d = col.sd(bx, bz);
+          if (d >= br) continue;
+          const g = col.grad(bx, bz);
+          if (g[0] === 0 && g[1] === 0) continue;
+          const push = (br - d) * sc;
+          cx += g[0] * push;
+          cz += g[1] * push;
+          moved = true;
+          contact = true;
+        }
+        if (!moved) break;
+      }
+    }
+    return { x: cx, z: cz, contact };
+  }
   return {
     draws: drawCount,
     loadMs,
+    setPoses(next) {
+      poses = next || null;
+    },
     draw(vp, mode) {
       if (mode === 1 || !drawCount) return;
       gl.useProgram(prog);
+      scaleU[0] = 1;
+      scaleU[1] = 1;
+      scaleU[2] = 1;
+      shiftU[0] = 0; shiftU[1] = 0; shiftU[2] = 0;
+      shiftU[3] = 0; shiftU[4] = 0; shiftU[5] = 0;
+      shiftU[6] = 0; shiftU[7] = 0; shiftU[8] = 0;
+      seatU[0] = 0; seatU[1] = 0; seatU[2] = 0; seatU[3] = 0; seatU[4] = 0; seatU[5] = 0;
+      if (poses) {
+        for (let i = 0; i < 3; i++) {
+          const p = poses[poseIds[i]];
+          seatU[i * 2] = bakedXZ[i * 2];
+          seatU[i * 2 + 1] = bakedXZ[i * 2 + 1];
+          if (!p || !(p.scale > 0.02)) {
+            scaleU[i] = 0;
+            shiftU[i * 3 + 1] = -40;
+            continue;
+          }
+          scaleU[i] = p.scale;
+          shiftU[i * 3] = p.x - bakedXZ[i * 2];
+          shiftU[i * 3 + 1] = p.rise || 0;
+          shiftU[i * 3 + 2] = p.z - bakedXZ[i * 2 + 1];
+        }
+      }
+      gl.uniform3fv(loc.shift, shiftU);
+      gl.uniform2fv(loc.seat, seatU);
+      gl.uniform1fv(loc.scale, scaleU);
+      gl.uniform1iv(loc.objOfUnit, objOfUnit);
       gl.uniformMatrix4fv(loc.vp, false, vp);
       for (let k = 0; k < skinTex.length; k++) {
         gl.activeTexture(gl.TEXTURE0 + k);
@@ -728,6 +830,7 @@ export async function mountRuins(gl, env) {
      */
     collide(ox, oz, x, z, radius) {
       const r = radius || colliderOpt.bodyRadiusM || 0.3;
+      if (poses) return collidePosed(ox, oz, x, z, r);
       let any = false;
       for (let i = 0; i < solids.length; i++) {
         if (solids[i].col.near(x, z, r + 0.5) || solids[i].col.near(ox, oz, r + 0.5)) any = true;

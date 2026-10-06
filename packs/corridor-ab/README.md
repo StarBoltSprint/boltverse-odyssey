@@ -19,18 +19,19 @@ python3 -m http.server 8765 --bind 127.0.0.1
 
 `http://127.0.0.1:8765/packs/corridor-ab/play/`
 
-The stick is on the left, the same control as zone A. It turns Bolt through a full yaw and walks on that heading. A swipe on the rest of the screen tilts the view, then the tilt eases back to level. `?debug=1` shows the perf line. `?shot=hdg&deg=90` stands on the corridor at that heading. `?shot=tilt` holds a look-up. `?seed=` changes the scatter.
+The stick is on the left, the same control as zone A. Stick right turns right. Stick left turns left. A swipe up on the rest of the screen looks up, then the tilt eases back to level. Holding the stick forward walks. Pushing it hard sprints: speed climbs while the hold lasts and eases back on release. `?debug=1` shows the perf line. `?shot=walk` and `?shot=sprint` stand on the run at that pace. `?shot=film` sprints forward so solids can rise ahead. `?seed=` changes the stream.
 
 ## What is procedural now
 
-All of this is decided once, when the page loads. Nothing is rewritten while Bolt runs.
+The floor solve is decided once, when the page loads. The props stream while Bolt runs.
 
 | Piece | How |
 | --- | --- |
-| Floor tiles | The WFC solve in `path-layout.json`. `when` is `load`. `draws_pixels` is false. |
-| Where Bolt may walk | Zone-flow, on the straight link. Yaw is free. Contact uses the loft faces and each rock's hull footprint. |
-| Arch, Eclipse Gate, wreck | The zone A lofts, reseated on this run by the seed. The arch opening stays walkable. |
-| Boulder and stone hulls | A seeded scatter along the shoulders. A second seed moves them. |
+| Floor tiles | The WFC solve in `path-layout.json`. `when` is `load`. `draws_pixels` is false. The carpet around that link uses the same stills, wide enough to steer off the centre line. |
+| Where Bolt may walk | Zone-flow, on the straight link, when he stays near it. Yaw is free. Nothing clamps him with an invisible wall. Contact uses the loft faces and each live rock's hull footprint. |
+| Speed | Walk, then a climb toward the sprint cap while the stick stays hard forward. Release eases the speed back. |
+| Arch, Eclipse Gate, wreck | The zone A lofts. One of each is seated ahead of Bolt from the seed and recycled when it falls behind. The arch opening stays walkable. |
+| Boulder and stone hulls | A seeded pool. Slots appear ahead, rise into place, and recycle behind. A faster pace fills more of the pool. The same seed and the same speed history rebuild the same slots. |
 
 The sky is zone A's closed dome: horizon, upper, and high slices, the zenith cap, and the stars, dust, and nebula loops. It follows the eye, so a turn or a tilt stays inside the sky. Sky is the only backdrop.
 

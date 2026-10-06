@@ -48,6 +48,7 @@ export function pushDiscs(x, z, discs, bodyR) {
   let contact = false;
   for (let i = 0; i < discs.length; i++) {
     const d = discs[i];
+    if (!(d.r > 0)) continue;
     const dx = cx - d.x;
     const dz = cz - d.z;
     const dist = Math.hypot(dx, dz);

@@ -17,7 +17,14 @@ export const LOOK_A_DRAG = 6;
 export const LOOK_A_BACK = 0.9;
 export const TURN_DPS = 150;
 export const WALK_SPD = 2.85;
-export const GALLOP_SPD = 4.4;
+export const SPRINT_MAX = 8.6;
+export const SPRINT_ACCEL = 1.65;
+export const SPRINT_EASE = 2.15;
+export const CHASE_BOOM = 6.1;
+export const CHASE_EYE = 3.5;
+export const CHASE_SLIDE = 0.9;
+export const CHASE_AIM_Y = 0.62;
+export const PAW_FRAC_FALLBACK = 0.92;
 
 export function springLim(x, v, goal, dt, w, vmax, amax) {
   let a = w * w * (goal - x) - 2 * w * v;
@@ -78,4 +85,115 @@ export function wrap360(deg) {
   let d = deg % 360;
   if (d < 0) d += 360;
   return d;
+}
+
+export function forwardOf(headingDeg) {
+  const y = headingDeg * Math.PI / 180;
+  return [Math.sin(y), 0, Math.cos(y)];
+}
+
+/** Zone A camera right: up × horizontal forward. Stick-right turns toward this axis. */
+export function chaseRight(headingDeg) {
+  const y = headingDeg * Math.PI / 180;
+  return [Math.cos(y), 0, -Math.sin(y)];
+}
+
+export function chaseEye(headingDeg, x, z) {
+  const f = forwardOf(headingDeg);
+  const r = chaseRight(headingDeg);
+  return [
+    x - f[0] * CHASE_BOOM + r[0] * CHASE_SLIDE,
+    CHASE_EYE,
+    z - f[2] * CHASE_BOOM + r[2] * CHASE_SLIDE,
+  ];
+}
+
+export function chasePitch() {
+  return Math.atan2(CHASE_AIM_Y - CHASE_EYE, CHASE_BOOM);
+}
+
+/**
+ * View matrix, column-major. The first row is zone A's camera right, so the
+ * picture is not mirrored and stick-right turns to screen-right.
+ * Writes into `out` (16 floats).
+ */
+export function chaseViewInto(out, eye, target) {
+  let fx = target[0] - eye[0];
+  let fy = target[1] - eye[1];
+  let fz = target[2] - eye[2];
+  const fl = Math.hypot(fx, fy, fz) || 1;
+  fx /= fl;
+  fy /= fl;
+  fz /= fl;
+  const hx = target[0] - eye[0];
+  const hz = target[2] - eye[2];
+  const hl = Math.hypot(hx, hz) || 1;
+  const rx = hz / hl;
+  const ry = 0;
+  const rz = -hx / hl;
+  let ux = fy * rz - fz * ry;
+  let uy = fz * rx - fx * rz;
+  let uz = fx * ry - fy * rx;
+  const ul = Math.hypot(ux, uy, uz) || 1;
+  ux /= ul;
+  uy /= ul;
+  uz /= ul;
+  out[0] = rx;
+  out[1] = ux;
+  out[2] = -fx;
+  out[3] = 0;
+  out[4] = ry;
+  out[5] = uy;
+  out[6] = -fy;
+  out[7] = 0;
+  out[8] = rz;
+  out[9] = uz;
+  out[10] = -fz;
+  out[11] = 0;
+  out[12] = -(rx * eye[0] + ry * eye[1] + rz * eye[2]);
+  out[13] = -(ux * eye[0] + uy * eye[1] + uz * eye[2]);
+  out[14] = fx * eye[0] + fy * eye[1] + fz * eye[2];
+  out[15] = 1;
+  return out;
+}
+
+/**
+ * Held sprint climbs toward SPRINT_MAX. How hard the stick is pushed sets the
+ * acceleration. Releasing eases back to a walk, or to a stop.
+ */
+export function stepSpeed(speed, forward, gallop, dt) {
+  const fwd = Math.abs(forward) < 0.04 ? 0 : Math.max(0, Math.min(1, forward));
+  let target = 0;
+  if (fwd > 0 && !gallop) target = WALK_SPD * (0.45 + 0.55 * Math.min(1, fwd / 0.72));
+  if (gallop && fwd > 0) {
+    const hold = Math.max(0, Math.min(1, (fwd - 0.72) / 0.28));
+    const accel = SPRINT_ACCEL * (0.4 + 0.6 * Math.max(hold, 0.35));
+    const next = speed + accel * dt;
+    return next > SPRINT_MAX ? SPRINT_MAX : next;
+  }
+  if (speed > target) {
+    const eased = speed - SPRINT_EASE * dt;
+    return eased < target ? target : eased;
+  }
+  const up = speed + SPRINT_ACCEL * dt;
+  return up > target ? target : up;
+}
+
+/** Charge 0..1 tracks how long sprint has been held. Density reads this. */
+export function stepCharge(charge, forward, gallop, dt) {
+  const fwd = forward > 0.04 ? forward : 0;
+  if (gallop && fwd > 0) {
+    const hold = Math.max(0.35, Math.min(1, (fwd - 0.72) / 0.28));
+    const next = charge + 0.28 * hold * dt;
+    return next > 1 ? 1 : next;
+  }
+  const eased = charge - 0.22 * dt;
+  return eased < 0 ? 0 : eased;
+}
+
+/** World y of the paw row. The row sits (1 - pawFrac) up the quad, on groundY. */
+export function pawLine(groundY, worldH, pawFrac) {
+  const frac = pawFrac > 0 ? pawFrac : PAW_FRAC_FALLBACK;
+  const y0 = -(1 - frac) * worldH;
+  return groundY + y0 + (1 - frac) * worldH;
 }
