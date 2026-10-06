@@ -1233,7 +1233,13 @@ function advanceAdventure() {
 if (filmShot) window.__advance = advanceFilm;
 if (shot === "adventure") window.__advance = advanceAdventure;
 function tick(now) {
-  if (filmShot || shot === "adventure") return;
+  if (filmShot || shot === "adventure") {
+    if (!window.__corridor || !window.__corridor.ready) {
+      frame();
+      requestAnimationFrame(tick);
+    }
+    return;
+  }
   const dt = Math.min(0.05, (now - then) / 1000);
   then = now;
   camDt = dt;

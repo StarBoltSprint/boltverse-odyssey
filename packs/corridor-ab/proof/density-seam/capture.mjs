@@ -58,8 +58,13 @@ const ctx = await browser.newContext({
   hasTouch: true,
 });
 
+function mark(phase) {
+  writeFileSync("/tmp/corridor-capture-status.json", JSON.stringify({ phase, at: Date.now() }));
+}
+
 const zone = await ctx.newPage();
 zone.on("pageerror", (e) => console.log("zone", e.message));
+mark("zone");
 await zone.goto(`${base}/packs/zone-a/play/index.html`, { waitUntil: "domcontentloaded", timeout: 120000 });
 await zone.waitForFunction(() => window.__play && (window.__play.ready || window.__play.error), null, { timeout: 180000 });
 const zoneErr = await zone.evaluate(() => window.__play.error || null);
@@ -108,6 +113,7 @@ await zone.close();
 
 const page = await ctx.newPage();
 page.on("pageerror", (e) => console.log("corridor", e.message));
+mark("corridor-still");
 await page.goto(`${base}/packs/corridor-ab/play/index.html?shot=sprint`, { waitUntil: "domcontentloaded", timeout: 120000 });
 await page.waitForFunction(() => window.__corridor && window.__corridor.ready, null, { timeout: 180000 });
 await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
@@ -127,8 +133,9 @@ await page.close();
 
 const run = await ctx.newPage();
 run.on("pageerror", (e) => console.log("run", e.message));
+mark("film");
 await run.goto(`${base}/packs/corridor-ab/play/index.html?shot=film`, { waitUntil: "domcontentloaded", timeout: 120000 });
-await run.waitForFunction(() => window.__corridor && window.__corridor.ready && window.__advance, null, { timeout: 180000 });
+await run.waitForFunction(() => window.__corridor && window.__corridor.ready && window.__advance, null, { timeout: 240000 });
 const seconds = 60;
 const fps = 2;
 const sim = 24;
