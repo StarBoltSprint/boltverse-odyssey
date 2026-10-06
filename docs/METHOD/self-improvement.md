@@ -29,7 +29,7 @@ never paid twice.
 7. **Owner phone QC** — the only final KEEP. Every reaction goes into `learn/taste.md`.
 
 Skills for the repeated moves: [`.grok/skills/`](../../.grok/skills/) — `ground-tiles`, `keyed-cutout`, `orbit-views`,
-`sky-panorama`, `visual-judge`, `take-retro`.
+`sky-panorama`, `visual-judge`, `take-retro`, `boltverse-imagine-prompts` (Imagine image/video prompt rules for any Boltverse asset).
 
 ## 3. Tool feedback routine (law 66)
 

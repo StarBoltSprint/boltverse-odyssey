@@ -1,0 +1,62 @@
+{
+ "pass": true,
+ "rows": [
+  {
+   "row": "size",
+   "pass": true,
+   "msg": "shipped 1280x720 vs source 1280x720"
+  },
+  {
+   "row": "fps",
+   "pass": true,
+   "msg": "shipped 24.0 vs source 24.0"
+  },
+  {
+   "row": "pixels",
+   "pass": true,
+   "msg": "all 145 decoded frames identical to the source"
+  },
+  {
+   "row": "bitrate",
+   "pass": true,
+   "msg": "shipped 2337 kb/s vs source 2337 kb/s (bit-identical frames)"
+  },
+  {
+   "row": "magnification",
+   "pass": true,
+   "msg": "mag 0.5625 -> 720 px wide on screen on a 720-px canvas (100% of the width)"
+  },
+  {
+   "row": "phone",
+   "pass": true,
+   "info": true,
+   "msg": "INFO canvas 720 px -> 1080 physical px (browser x1.50); layer drawn at 720 canvas px = 1080 physical px; source px per canvas px 1.78, distinct samples per physical px 0.67"
+  }
+ ],
+ "shipped": {
+  "codec": "h264",
+  "profile": "High",
+  "pixFmt": "yuv420p",
+  "width": 1280,
+  "height": 720,
+  "fps": 24.0,
+  "frames": 145,
+  "videoBitrate": 2337037,
+  "duration": 6.041667,
+  "sha256": "4069252f2c999afb6ea7281784684286268faae6c3d9caee0871bcb3a273cad6",
+  "file": "packs/zone-b/src/sky/planet-body.mp4 (local zone-b-step1-ground-sky @ 0dcb853)"
+ },
+ "source": {
+  "codec": "h264",
+  "profile": "High",
+  "pixFmt": "yuv420p",
+  "width": 1280,
+  "height": 720,
+  "fps": 24.0,
+  "frames": 145,
+  "videoBitrate": 2337037,
+  "duration": 6.041667,
+  "sha256": "0f5d363b8c47fca57bb2079f64a2fc1a1934f2bf911cafea474e7b45b4c585ff",
+  "file": "Imagine session 01a10a82-8e10-7030-9504-1c7eaf76287d videos/1.mp4 (zoneB-planet session, 2026-10-05)"
+ }
+}
