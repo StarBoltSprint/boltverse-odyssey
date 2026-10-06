@@ -1180,7 +1180,10 @@ function advanceFilm() {
     }
   }
   playFrames += 1;
-  frame();
+  window.__pose = {
+    x, z, heading, speed: field.speed, live: field.live, charge: field.charge,
+  };
+  if (!window.__nodraw) frame();
   return document.title;
 }
 function aimCollect() {
@@ -1221,17 +1224,16 @@ function advanceAdventure() {
   stepAdventure(dt);
   if (adventureUi) adventureUi.tick(dt, false);
   playFrames += 1;
-  frame();
+  window.__pose = {
+    x, z, heading, speed: field.speed, live: field.live, charge: field.charge,
+  };
+  if (!window.__nodraw) frame();
   return document.title;
 }
 if (filmShot) window.__advance = advanceFilm;
 if (shot === "adventure") window.__advance = advanceAdventure;
 function tick(now) {
-  if (filmShot || shot === "adventure") {
-    frame();
-    requestAnimationFrame(tick);
-    return;
-  }
+  if (filmShot || shot === "adventure") return;
   const dt = Math.min(0.05, (now - then) / 1000);
   then = now;
   camDt = dt;
