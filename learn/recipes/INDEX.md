@@ -69,6 +69,7 @@ Stone doors and gothic halls are rejected menu backgrounds (2026-10-04/05). Echo
 | --- | --- | --- |
 | [wfc-corridor-hang.md](wfc-corridor-hang.md) — load-time WFC hang onto zone A ground stills (no Imagine prompt) | `a63ac7b` | transition corridors=1 ground_bad=0; play drawCalls 9; along 7.2 m |
 | [corridor-look-sky-props.md](corridor-look-sky-props.md) — zone A look and sky dome, load-time hull and loft scatter (no Imagine prompt) | `be725ee` | length 79.75 m; drawCalls 7; texMB 211.2; activeVideos 4; archOpen true |
+| [corridor-awaken.md](corridor-awaken.md) — higher chase, sprint ramp, seeded streaming of the same lofts and hulls (no Imagine prompt) | `3381adb` | walk rocks 13 / sprint rocks 33; drawCalls 7; texMB 211.2; pawY 0; eyeY 3.5 |
 
 `python3 tools/wfc-path/hang.py --spec tools/wfc-path/cook/spec.json --out packs/corridor-ab`. Placement only. A corridor video and a zone B pack are still uncooked.
 
