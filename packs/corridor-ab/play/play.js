@@ -855,9 +855,6 @@ function frame() {
   const t0 = performance.now();
   drawCalls = 0;
   fitView();
-  gl.viewport(0, 0, canvas.width, canvas.height);
-  gl.clearColor(0, 0, 0, 1);
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   const span = groundRectFor(x, z);
   groundRect[0] = span[0];
   groundRect[1] = span[1];
@@ -876,6 +873,26 @@ function frame() {
   aimBuf[2] = eyeBuf[2] + fz * cp * 12;
   chaseViewInto(viewBuf, eyeBuf, aimBuf);
   const vp = mulInto(perspectiveInto(VFOV, canvas.width / canvas.height, 0.08, 400), viewBuf);
+  const bodyScreen = projectScreen(x, 1.05, z, vp);
+  if (window.__nodraw) {
+    if (window.__corridor) {
+      window.__corridor.boltScreen = bodyScreen;
+      window.__corridor.x = x;
+      window.__corridor.z = z;
+      window.__corridor.heading = heading;
+      window.__corridor.live = field.live;
+      window.__corridor.speed = Math.round(field.speed * 100) / 100;
+      window.__corridor.charge = Math.round(field.charge * 100) / 100;
+      window.__corridor.eyeY = eyeBuf[1];
+      window.__corridor.pitch = pitch;
+      window.__corridor.boom = Math.round(Math.hypot(eyeBuf[0] - x, eyeBuf[2] - z) * 1000) / 1000;
+      window.__corridor.frameN = playFrames;
+    }
+    return;
+  }
+  gl.viewport(0, 0, canvas.width, canvas.height);
+  gl.clearColor(0, 0, 0, 1);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   drawCalls += sky.draw(vp, eyeBuf, cam.yaw);
 
   gl.useProgram(groundProg);
@@ -1004,7 +1021,6 @@ function frame() {
     settled,
     black: false,
   };
-  const bodyScreen = projectScreen(x, 1.05, z, vp);
   window.__corridor.boltScreen = bodyScreen;
   window.__corridor.view = [canvas.width, canvas.height];
   window.__corridor.rockBaseHi = Math.round(rockBaseHi * 1000) / 1000;
@@ -1183,7 +1199,7 @@ function advanceFilm() {
   window.__pose = {
     x, z, heading, speed: field.speed, live: field.live, charge: field.charge,
   };
-  if (!window.__nodraw) frame();
+  frame();
   return document.title;
 }
 function aimCollect() {
@@ -1227,7 +1243,7 @@ function advanceAdventure() {
   window.__pose = {
     x, z, heading, speed: field.speed, live: field.live, charge: field.charge,
   };
-  if (!window.__nodraw) frame();
+  frame();
   return document.title;
 }
 if (filmShot) window.__advance = advanceFilm;

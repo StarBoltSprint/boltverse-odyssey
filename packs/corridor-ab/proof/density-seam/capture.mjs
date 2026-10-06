@@ -161,7 +161,7 @@ for (let sec = 0; sec < seconds; sec++) {
       const c = window.__corridor;
       rows.push({
         x: pose.x, z: pose.z, speed: pose.speed, live: pose.live, charge: pose.charge,
-        drawCalls: draw ? c.drawCalls : 0, texMB: c.texMB, screen: draw ? c.boltScreen : null,
+        drawCalls: draw ? c.drawCalls : 0, texMB: c.texMB, screen: c.boltScreen,
         heading: pose.heading, draw,
       });
       if (draw) urls.push(canvas.toDataURL("image/jpeg", 0.62));
