@@ -43,7 +43,7 @@ void main() {
 /**
  * gateUnit: the gate's unit (or -1). Its faces drop where the elevation's own alpha cut says so
  * (front, back and the seam faces through their front-image spot). Thickness faces, and the
- * elevation where it would be shown magnified past CLOSE_LO..CLOSE_HI, take the surface plate,
+ * elevation where it would be shown magnified past CLOSE_LO..CLOSE_HI (mag 1), take the surface plate,
  * repeated in local metres at its native density: windows of the plate at random offsets that
  * never cross its border, blended with a variance-keeping weight. Pixels are never stretched.
  * A foot skirt (local y under 0.02, hanging to the relief) always takes that plate, on the two
@@ -70,8 +70,8 @@ in vec3 vLoc;
 flat in int vUnit;
 out vec4 o;
 const float CELL = 320.0;
-const float CLOSE_LO = 2.5;
-const float CLOSE_HI = 3.5;
+const float CLOSE_LO = 0.92;
+const float CLOSE_HI = 1.0;
 vec2 hash2(vec2 p) {
   p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));
   return fract(sin(p) * 43758.5453);
@@ -140,7 +140,7 @@ ${pick.join("\n")}
 }
 
 /** Close-up swap the gate shader makes, for the mag metrics: [far tpm, close tpm, switch mag]. */
-export const GATE_CLOSE_SWITCH = 3.0;
+export const GATE_CLOSE_SWITCH = 1.0;
 
 function program(gl, vs, fs) {
   const compile = (type, src) => {
@@ -337,6 +337,11 @@ function packSkin(gl, img, groups, keep, alpha) {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  const aniso = gl.getExtension("EXT_texture_filter_anisotropic");
+  if (aniso) {
+    const maxA = gl.getParameter(aniso.MAX_TEXTURE_MAX_ANISOTROPY_EXT) || 1;
+    gl.texParameterf(gl.TEXTURE_2D, aniso.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(8, maxA));
+  }
   // Only the gate cut reads alpha. Other skins store RGB8.
   const rgb = !alpha;
   if (rgb) {

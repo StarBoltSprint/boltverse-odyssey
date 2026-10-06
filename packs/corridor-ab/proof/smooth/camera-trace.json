@@ -1,0 +1,165 @@
+{
+  "dt": 0.016666666666666666,
+  "frames": 540,
+  "spikes": 0,
+  "maxPosM": 0.599,
+  "maxPitchRad": 0.0615,
+  "maxStepMs": 4.07,
+  "meanStepMs": 0.49,
+  "samples": [
+    {
+      "t": 0.5,
+      "dM": 0.014,
+      "allowM": 0.105,
+      "dPitch": 0,
+      "speed": 0.85,
+      "stepMs": 0.2,
+      "boom": 6.166
+    },
+    {
+      "t": 1,
+      "dM": 0.028,
+      "allowM": 0.123,
+      "dPitch": 0,
+      "speed": 1.68,
+      "stepMs": 0.13,
+      "boom": 6.166
+    },
+    {
+      "t": 1.5,
+      "dM": 0.041,
+      "allowM": 0.139,
+      "dPitch": 0,
+      "speed": 2.48,
+      "stepMs": 0.37,
+      "boom": 6.166
+    },
+    {
+      "t": 2,
+      "dM": 0.042,
+      "allowM": 0.14,
+      "dPitch": 0,
+      "speed": 2.51,
+      "stepMs": 0.28,
+      "boom": 6.166
+    },
+    {
+      "t": 2.5,
+      "dM": 0.056,
+      "allowM": 0.157,
+      "dPitch": 0,
+      "speed": 3.33,
+      "stepMs": 0.25,
+      "boom": 6.166
+    },
+    {
+      "t": 3,
+      "dM": 0.069,
+      "allowM": 0.174,
+      "dPitch": 0,
+      "speed": 4.16,
+      "stepMs": 0.41,
+      "boom": 6.166
+    },
+    {
+      "t": 3.5,
+      "dM": 0.106,
+      "allowM": 0.191,
+      "dPitch": 0,
+      "speed": 4.98,
+      "stepMs": 0.61,
+      "boom": 6.237
+    },
+    {
+      "t": 4,
+      "dM": 0.136,
+      "allowM": 0.209,
+      "dPitch": 0.0142,
+      "speed": 5.81,
+      "stepMs": 0.62,
+      "boom": 5.742
+    },
+    {
+      "t": 4.5,
+      "dM": 0.057,
+      "allowM": 0.226,
+      "dPitch": 0,
+      "speed": 6.63,
+      "stepMs": 0.6,
+      "boom": 5.854
+    },
+    {
+      "t": 5,
+      "dM": 0.124,
+      "allowM": 0.243,
+      "dPitch": 0,
+      "speed": 7.46,
+      "stepMs": 0.55,
+      "boom": 6.166
+    },
+    {
+      "t": 5.5,
+      "dM": 0.231,
+      "allowM": 0.597,
+      "dPitch": 0,
+      "speed": 8.28,
+      "stepMs": 1.03,
+      "boom": 6.169
+    },
+    {
+      "t": 6,
+      "dM": 0.599,
+      "allowM": 0.603,
+      "dPitch": 0.0027,
+      "speed": 8.6,
+      "stepMs": 0.65,
+      "boom": 6.972
+    },
+    {
+      "t": 6.5,
+      "dM": 0.337,
+      "allowM": 0.603,
+      "dPitch": 0,
+      "speed": 8.6,
+      "stepMs": 0.46,
+      "boom": 5.27
+    },
+    {
+      "t": 7,
+      "dM": 0.334,
+      "allowM": 0.603,
+      "dPitch": 0,
+      "speed": 8.6,
+      "stepMs": 0.59,
+      "boom": 6.198
+    },
+    {
+      "t": 7.5,
+      "dM": 0.087,
+      "allowM": 0.267,
+      "dPitch": 0,
+      "speed": 8.6,
+      "stepMs": 0.46,
+      "boom": 6.543
+    },
+    {
+      "t": 8,
+      "dM": 0.17,
+      "allowM": 0.267,
+      "dPitch": 0,
+      "speed": 8.6,
+      "stepMs": 0.68,
+      "boom": 6.817
+    },
+    {
+      "t": 8.5,
+      "dM": 0.176,
+      "allowM": 0.267,
+      "dPitch": 0,
+      "speed": 8.6,
+      "stepMs": 0.59,
+      "boom": 6.403
+    }
+  ],
+  "minBoomWhileStraight": 5.742
+}

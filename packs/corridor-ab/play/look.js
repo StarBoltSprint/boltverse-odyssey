@@ -232,3 +232,96 @@ export function pawLine(groundY, worldH, pawFrac) {
   const y0 = -(1 - frac) * worldH;
   return groundY + y0 + (1 - frac) * worldH;
 }
+
+/** How fast a corrective offset may close, metres per second. A shove is not one frame. */
+export const CHASE_PUSH_RATE = 3.4;
+/** How fast a pitch step may close, radians per second. The tall-monolith snap is 0.22. */
+export const CHASE_PITCH_RATE = 0.85;
+
+export function createChase() {
+  return {
+    eye: [0, CHASE_EYE, 0],
+    rigid: [0, CHASE_EYE, 0],
+    pitch: chasePitch(),
+    tp: chasePitch(),
+    ready: false,
+  };
+}
+
+export function resetChase(cam) {
+  cam.ready = false;
+}
+
+/**
+ * Largest position step a continuous sprint-plus-turn can produce in `dt`.
+ * Anything larger is a shove or a shell correction and is eased.
+ */
+export function kinematicStep(speed, turn, dt) {
+  const orbit = Math.hypot(CHASE_BOOM, CHASE_SLIDE) * Math.abs(turn || 0) * TURN_DPS * Math.PI / 180;
+  return (Math.max(0, speed || 0) + orbit) * dt * 1.25 + 0.03;
+}
+
+/**
+ * `rigid` is the chase parent (it turns and sprints with Bolt).
+ * `target` is that parent after the magnification cone.
+ * The parent delta is followed every frame, unless it is a shove larger than
+ * a continuous sprint-plus-turn. The cone offset and the leftover shove ease
+ * at CHASE_PUSH_RATE. A still passes `snap` and holds the settled target.
+ */
+export function stepChase(cam, rigid, target, pitch, dt, snap, speed, turn) {
+  if (snap || !cam.ready || !(dt > 0)) {
+    cam.eye = [target[0], target[1], target[2]];
+    cam.rigid = [rigid[0], rigid[1], rigid[2]];
+    cam.pitch = pitch;
+    cam.tp = pitch;
+    cam.ready = true;
+    return cam;
+  }
+  const rdx = rigid[0] - cam.rigid[0];
+  const rdy = rigid[1] - cam.rigid[1];
+  const rdz = rigid[2] - cam.rigid[2];
+  const rstep = Math.hypot(rdx, rdy, rdz);
+  const kin = kinematicStep(speed, turn, dt);
+  let fx = rdx;
+  let fy = rdy;
+  let fz = rdz;
+  if (rstep > kin && rstep > 1e-8) {
+    const k = kin / rstep;
+    fx *= k;
+    fy *= k;
+    fz *= k;
+  }
+  let nx = cam.eye[0] + fx;
+  let ny = cam.eye[1] + fy;
+  let nz = cam.eye[2] + fz;
+  const ex = target[0] - nx;
+  const ey = target[1] - ny;
+  const ez = target[2] - nz;
+  const err = Math.hypot(ex, ey, ez);
+  const allow = CHASE_PUSH_RATE * dt;
+  if (err <= allow || err < 1e-8) {
+    nx = target[0];
+    ny = target[1];
+    nz = target[2];
+  } else {
+    const k = allow / err;
+    nx += ex * k;
+    ny += ey * k;
+    nz += ez * k;
+  }
+  cam.eye = [nx, ny, nz];
+  cam.rigid = [rigid[0], rigid[1], rigid[2]];
+
+  const dp = pitch - cam.tp;
+  const pKin = LOOK_V_DRAG * dt + 0.004;
+  let fp = dp;
+  if (Math.abs(dp) > pKin) fp = Math.sign(dp) * pKin;
+  let np = cam.pitch + fp;
+  const pe = pitch - np;
+  const pAllow = CHASE_PITCH_RATE * dt;
+  if (Math.abs(pe) <= pAllow) np = pitch;
+  else np += Math.sign(pe) * pAllow;
+  cam.pitch = np;
+  cam.tp = pitch;
+  return cam;
+}

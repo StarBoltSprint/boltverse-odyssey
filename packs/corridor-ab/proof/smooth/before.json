@@ -1,0 +1,65 @@
+{
+  "focal": 1793.4772620704155,
+  "vfovDeg": 48.079559168505575,
+  "groundAtRest": 0.3969575053464119,
+  "bolt": 0.5412048216723829,
+  "over": 516,
+  "overReal": 334,
+  "worstReal": [
+    {
+      "pace": "walk",
+      "x": 30.7,
+      "heading": 60,
+      "id": "wreck",
+      "mag": 110.302,
+      "dist": 0.232,
+      "pitch": 0.061
+    },
+    {
+      "pace": "sprint",
+      "x": 30.7,
+      "heading": 60,
+      "id": "wreck",
+      "mag": 110.302,
+      "dist": 0.232,
+      "pitch": 0.061
+    },
+    {
+      "pace": "walk",
+      "x": 30.7,
+      "heading": 127,
+      "id": "arch",
+      "mag": 43.07,
+      "dist": 0.267,
+      "pitch": -0.159
+    },
+    {
+      "pace": "sprint",
+      "x": 30.7,
+      "heading": 127,
+      "id": "arch",
+      "mag": 43.07,
+      "dist": 0.267,
+      "pitch": -0.159
+    },
+    {
+      "pace": "walk",
+      "x": 54.7,
+      "heading": 330,
+      "id": "gate",
+      "mag": 2.95,
+      "dist": 16.593,
+      "pitch": -0.159
+    },
+    {
+      "pace": "sprint",
+      "x": 54.7,
+      "heading": 330,
+      "id": "gate",
+      "mag": 2.95,
+      "dist": 16.593,
+      "pitch": -0.159
+    }
+  ],
+  "note": "Pre-fix sweep. dist 0.05 rows are the eye inside a ruin AABB, floored at 0.05 m (metric), not a texel count."
+}
