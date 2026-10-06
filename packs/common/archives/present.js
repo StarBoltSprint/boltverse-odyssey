@@ -150,7 +150,7 @@ export function mountPresent(doc, env) {
   let cardOn = false;
   let cardT = 0;
   let cardTotal = env.cardMs || 2500;
-  let countLine = "0 of 0";
+  let countLine = "0 sur 0";
   const openScreens = new Set();
 
   function viewSize() {
@@ -232,21 +232,21 @@ export function mountPresent(doc, env) {
     menu.replaceChildren();
     const resume = doc.createElement("button");
     resume.type = "button";
-    resume.textContent = "Resume";
+    resume.textContent = "Reprendre";
     const archives = doc.createElement("button");
     archives.type = "button";
     archives.textContent = "Archives";
     const citadel = doc.createElement("button");
     citadel.type = "button";
     citadel.disabled = true;
-    citadel.append("Citadel");
+    citadel.append("Citadelle");
     const soon = doc.createElement("span");
     soon.className = "archives-soon";
-    soon.textContent = "coming soon";
+    soon.textContent = "bientôt";
     citadel.append(soon);
     const settings = doc.createElement("button");
     settings.type = "button";
-    settings.textContent = "Settings";
+    settings.textContent = "Réglages";
     resume.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -302,7 +302,7 @@ export function mountPresent(doc, env) {
     b.style.textAlign = "center";
     const back = doc.createElement("button");
     back.type = "button";
-    back.textContent = "Resume";
+    back.textContent = "Reprendre";
     back.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -333,7 +333,7 @@ export function mountPresent(doc, env) {
   function resumeButton() {
     const back = doc.createElement("button");
     back.type = "button";
-    back.textContent = "Resume";
+    back.textContent = "Reprendre";
     back.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -355,13 +355,13 @@ export function mountPresent(doc, env) {
   function fillArchives(cat) {
     list.replaceChildren();
     const title = doc.createElement("h1");
-    title.textContent = "Living Archives";
+    title.textContent = "Archives vivantes";
     const codexWord = doc.createElement("p");
-    codexWord.textContent = "Codex";
+    codexWord.textContent = "Codex vivant";
     const count = doc.createElement("p");
     count.className = "archives-count";
-    count.textContent = cat.found + " of " + cat.total;
-    countLine = cat.found + " of " + cat.total;
+    count.textContent = cat.found + " sur " + cat.total;
+    countLine = cat.found + " sur " + cat.total;
     list.append(title, codexWord, count);
     const shards = cat.shards || [];
     for (let i = 0; i < shards.length; i++) {

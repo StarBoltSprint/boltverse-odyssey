@@ -1,25 +1,31 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { SPRINT_MAX } from "./look.js";
+import { CHARGE_RAMP_SEC, SPRINT_MAX, WALK_SPD } from "./look.js";
 import {
   FIELD_HALF,
   CARPET_APRON,
   GATE_FIRST,
   GATE_LAT,
+  HORIZON_FAR,
+  HORIZON_NEAR,
   HORIZON_N,
-  NEAR_M,
+  INST_CAP,
   PASS_BACK,
+  POOL,
   ROCK_SINK,
+  SPAWN_M,
   bindPlan,
   carpetWest,
   createField,
   densityOf,
   halfWidth,
   horizonSeats,
+  lookAhead,
   monumentSeat,
   planMonument,
   rockBottom,
   rockCount,
+  seatSink,
   settleField,
   slotIds,
   stepField,
@@ -91,17 +97,84 @@ test("a second seed moves a rock", () => {
   assert.notEqual(rockSig(a), rockSig(b));
 });
 
-test("a new slot is not planted inside the near radius", () => {
+function aheadOf(slot, b) {
+  const yaw = b.heading * Math.PI / 180;
+  const fx = Math.sin(yaw);
+  const fz = Math.cos(yaw);
+  return (slot.x - b.x) * fx + (slot.z - b.z) * fz;
+}
+
+function inNearFrustum(slot, b) {
+  const yaw = b.heading * Math.PI / 180;
+  const fx = Math.sin(yaw);
+  const fz = Math.cos(yaw);
+  const rx = Math.cos(yaw);
+  const rz = -Math.sin(yaw);
+  const dx = slot.x - b.x;
+  const dz = slot.z - b.z;
+  const ahead = dx * fx + dz * fz;
+  const side = dx * rx + dz * rz;
+  const tan = Math.tan((22.7 * Math.PI) / 180 / 2);
+  return ahead >= 0 && ahead < SPAWN_M && Math.abs(side) < ahead * tan + 0.6;
+}
+
+function birthsDuring(seconds, turn) {
   const f = field();
-  const b = body(8);
+  const b = body(6);
   b.gallop = true;
-  stepField(f, b, 1 / 30);
-  for (let i = 0; i < f.pool.length; i++) {
-    const slot = f.pool[i];
-    if (!slot.on || slot.kind > 2 || slot.emerge > 0.2) continue;
-    const ahead = slot.x - b.x;
-    if (ahead < 0) continue;
-    assert.ok(ahead >= NEAR_M - 1.5);
+  const dt = 1 / 30;
+  const born = [];
+  stepField(f, b, dt);
+  b.x += f.speed * dt;
+  const primed = new Set(slotIds(f));
+  const steps = Math.round(seconds / dt);
+  for (let i = 0; i < steps; i++) {
+    if (turn && i === 30) b.heading = 0;
+    const before = new Set(slotIds(f));
+    stepField(f, b, dt);
+    for (let s = 0; s < f.pool.length; s++) {
+      const slot = f.pool[s];
+      if (!slot.on || before.has(slot.id) || primed.has(slot.id)) continue;
+      born.push({ id: slot.id, ahead: aheadOf(slot, b), frustum: inNearFrustum(slot, b), kind: slot.kind });
+    }
+    const yaw = b.heading * Math.PI / 180;
+    b.x += Math.sin(yaw) * f.speed * dt;
+    b.z += Math.cos(yaw) * f.speed * dt;
+  }
+  return { field: f, body: b, born };
+}
+
+test("a new slot is born beyond the far ring and outside the near frustum", () => {
+  const run = birthsDuring(4, false);
+  assert.ok(run.born.length > 0);
+  for (let i = 0; i < run.born.length; i++) {
+    const rec = run.born[i];
+    assert.ok(rec.ahead >= SPAWN_M - 2, "ahead " + rec.ahead);
+    assert.equal(rec.frustum, false);
+  }
+});
+
+test("a turn does not birth a slot inside the near frustum", () => {
+  const run = birthsDuring(3, true);
+  for (let i = 0; i < run.born.length; i++) {
+    const rec = run.born[i];
+    assert.equal(rec.frustum, false);
+    assert.ok(rec.ahead >= SPAWN_M - 2, "ahead " + rec.ahead);
+  }
+});
+
+test("a long sprint holds more rocks than a short one, still born far", () => {
+  const short = birthsDuring(2, false);
+  const long = birthsDuring(22, false);
+  assert.ok(long.field.charge > short.field.charge + 0.5);
+  assert.ok(densityOf(long.field.charge) > densityOf(short.field.charge) + 0.3);
+  assert.ok(rockCount(long.field) > rockCount(short.field));
+  assert.ok(rockCount(long.field) <= POOL);
+  assert.ok(long.born.length > short.born.length);
+  assert.ok(POOL + HORIZON_N <= INST_CAP);
+  for (let i = 0; i < long.born.length; i++) {
+    assert.ok(long.born[i].ahead >= SPAWN_M - 2);
+    assert.equal(long.born[i].frustum, false);
   }
 });
 
@@ -111,12 +184,13 @@ test("easing keeps rocks a sprint already woke", () => {
   b.gallop = true;
   for (let i = 0; i < 150; i++) stepField(woke, b, 1 / 30);
   const full = rockCount(woke);
+  const ids = slotIds(woke).join(",");
   b.gallop = false;
   b.forward = 1;
   for (let i = 0; i < 10; i++) stepField(woke, b, 1 / 30);
-  const walk = settleField(field(), body(b.x), "walk");
-  assert.ok(full > rockCount(walk));
-  assert.ok(rockCount(woke) > rockCount(walk));
+  assert.ok(full > 4);
+  assert.equal(rockCount(woke), full);
+  assert.equal(slotIds(woke).join(","), ids);
 });
 
 test("the arch and the wreck sit on the run and the gate waits for sprint", () => {
@@ -151,24 +225,50 @@ test("the carpet covers the ground under the pass camera", () => {
   assert.ok(pass < x0 - 40);
 });
 
-test("a rock bottom stays under the plane through the rise", () => {
+test("a rock bottom stays under the plane at every emerge", () => {
   assert.equal(rockBottom(1), -ROCK_SINK);
-  assert.ok(rockBottom(0.4) < -ROCK_SINK);
-  assert.ok(rockBottom(0) < rockBottom(0.4));
+  assert.equal(rockBottom(0.4), -ROCK_SINK);
+  assert.equal(rockBottom(0), -ROCK_SINK);
+  assert.ok(rockBottom(1) < 0);
+  assert.ok(seatSink(14) >= 0.7 - 1e-9);
+  assert.ok(seatSink(8) >= ROCK_SINK);
 });
 
-test("horizon seats are tall, in the forward view, and clear of the run", () => {
-  const seats = horizonSeats(field(), 6);
-  assert.equal(seats.length, HORIZON_N);
-  const half = Math.tan((22.7 * Math.PI) / 180 / 2);
-  for (let i = 0; i < seats.length; i++) {
-    const seat = seats[i];
-    const dist = seat.x - 6;
+test("horizon seats are world-locked, tall, and the newest enters far", () => {
+  const a = horizonSeats(field(), 6);
+  const b = horizonSeats(field(), 10);
+  assert.equal(a.length, HORIZON_N);
+  const byX = new Map();
+  for (let i = 0; i < a.length; i++) byX.set(a[i].x, a[i]);
+  let shared = 0;
+  for (let i = 0; i < b.length; i++) {
+    const prev = byX.get(b[i].x);
+    if (!prev) continue;
+    shared += 1;
+    assert.equal(b[i].z, prev.z);
+    assert.equal(b[i].yaw, prev.yaw);
+    assert.equal(b[i].height, prev.height);
+  }
+  assert.ok(shared >= HORIZON_N - 1);
+  const half = Math.tan((22.7 * Math.PI) / 180 / 2) * 0.82;
+  let far = -Infinity;
+  for (let i = 0; i < a.length; i++) {
+    const seat = a[i];
+    if (seat.x > far) far = seat.x;
     assert.ok(seat.height >= 8);
     assert.ok(Math.abs(seat.lateral) > 0.8 * seat.height);
-    assert.ok(Math.abs(seat.lateral) < dist * half);
+    assert.ok(Math.abs(seat.lateral) < HORIZON_FAR * half + 0.01);
     assert.ok(seat.kind === 1 || seat.kind === 2);
+    assert.ok(-seatSink(seat.height) <= -ROCK_SINK);
+    assert.ok(seat.x - 6 >= HORIZON_NEAR - 1e-6);
   }
+  assert.ok(far - 6 > SPAWN_M);
+});
+
+test("walk look stays short of a far gate and a sprint look reaches it", () => {
+  assert.ok(lookAhead(WALK_SPD, 0) < 100);
+  assert.ok(lookAhead(SPRINT_MAX, 1) > 100);
+  assert.ok(CHARGE_RAMP_SEC >= 20);
 });
 
 test("an adventure plan seats the gate at the end and keeps the seed", () => {

@@ -21,6 +21,7 @@ uniform float uScale[3];
 uniform int uObjOfUnit[8];
 out vec2 vUv;
 out vec3 vLoc;
+out vec3 vWorld;
 flat out int vUnit;
 void main() {
   vUv = aUv;
@@ -37,6 +38,7 @@ void main() {
     aPos.y * s + sh.y,
     seat.y + (aPos.z - seat.y) * s + sh.z
   );
+  vWorld = p;
   gl_Position = uVP * vec4(p, 1.0);
 }`;
 
@@ -65,8 +67,13 @@ uniform vec4 uSlate;
 uniform vec2 uSlatePx;
 uniform float uSlateTpm;
 uniform vec3 uSlateMean;
+uniform vec2 uEye;
+uniform vec3 uFog;
+uniform float uFogK;
+uniform float uFogCap;
 in vec2 vUv;
 in vec3 vLoc;
+in vec3 vWorld;
 flat in int vUnit;
 out vec4 o;
 const float CELL = 320.0;
@@ -135,7 +142,14 @@ ${pick.join("\n")}
     }
     if (w > 0.0) c.rgb = mix(c.rgb, plate(p, dpx, dpy), w);
   }
-  o = vec4(c.rgb, 1.0);
+  vec3 rgb = c.rgb;
+  if (uFogK > 0.0) {
+    float dist = distance(vWorld.xz, uEye);
+    float fog = clamp(1.0 - exp(-uFogK * max(0.0, dist - 18.0)), 0.0, uFogCap);
+    fog = max(fog, smoothstep(78.0, 132.0, dist));
+    rgb = mix(rgb, uFog, fog);
+  }
+  o = vec4(rgb, 1.0);
 }`;
 }
 
@@ -163,6 +177,7 @@ function empty() {
     draws: 0,
     loadMs: 0,
     draw() {},
+    setFog() {},
     mag() { return { m: 0, which: "" }; },
     collide(ox, oz, x, z) { return { x, z, contact: false }; },
     lift() { return 0; },
@@ -691,8 +706,13 @@ export async function mountRuins(gl, env) {
     slatePx: gl.getUniformLocation(prog, "uSlatePx"),
     slateTpm: gl.getUniformLocation(prog, "uSlateTpm"),
     slateMean: gl.getUniformLocation(prog, "uSlateMean"),
+    eye: gl.getUniformLocation(prog, "uEye"),
+    fog: gl.getUniformLocation(prog, "uFog"),
+    fogK: gl.getUniformLocation(prog, "uFogK"),
+    fogCap: gl.getUniformLocation(prog, "uFogCap"),
     tex: skinTex.map((_, k) => gl.getUniformLocation(prog, "uT" + k)),
   };
+  const fogState = { x: 0, z: 0, rgb: [0, 0, 0], k: 0, cap: 0 };
   const shiftU = new Float32Array(9);
   const seatU = new Float32Array(6);
   const scaleU = new Float32Array([1, 1, 1]);
@@ -761,6 +781,13 @@ export async function mountRuins(gl, env) {
     setPoses(next) {
       poses = next || null;
     },
+    setFog(eyeX, eyeZ, rgb, k, cap) {
+      fogState.x = eyeX || 0;
+      fogState.z = eyeZ || 0;
+      fogState.rgb = rgb || [0, 0, 0];
+      fogState.k = k || 0;
+      fogState.cap = cap || 0;
+    },
     draw(vp, mode) {
       if (mode === 1 || !drawCount) return;
       gl.useProgram(prog);
@@ -792,6 +819,10 @@ export async function mountRuins(gl, env) {
       gl.uniform1fv(loc.scale, scaleU);
       gl.uniform1iv(loc.objOfUnit, objOfUnit);
       gl.uniformMatrix4fv(loc.vp, false, vp);
+      gl.uniform2f(loc.eye, fogState.x, fogState.z);
+      gl.uniform3f(loc.fog, fogState.rgb[0], fogState.rgb[1], fogState.rgb[2]);
+      gl.uniform1f(loc.fogK, fogState.k);
+      gl.uniform1f(loc.fogCap, fogState.cap);
       for (let k = 0; k < skinTex.length; k++) {
         gl.activeTexture(gl.TEXTURE0 + k);
         gl.bindTexture(gl.TEXTURE_2D, skinTex[k]);

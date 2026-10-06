@@ -55,6 +55,8 @@ test("the chase stays high and the horizon sits in the top third", () => {
   assert.equal(eye[1], CHASE_EYE);
   assert.ok(eye[1] > 2.6 && eye[1] < 3.7);
   assert.ok(eye[0] < 10);
+  assert.ok(Math.abs(eye[2] - 4) < 1e-6);
+  assert.ok(Math.abs(eye[0] - (10 - CHASE_BOOM)) < 1e-9);
   const sky = horizonFromTop(PORTRAIT_VFOV);
   assert.ok(sky > 0.30 && sky < 0.35);
   assert.ok(chasePitch() < -0.08);

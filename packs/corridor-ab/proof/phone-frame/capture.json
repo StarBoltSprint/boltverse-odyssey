@@ -1,0 +1,296 @@
+{
+  "stills": [
+    {
+      "file": "portrait-720.jpg",
+      "query": "shot=sprint&stick=1",
+      "title": "Boltverse Odyssey",
+      "view": [720, 1600],
+      "boltScreen": [0.49999998678108715, 0.7605361187195618],
+      "rockBaseHi": -0.35,
+      "rockBaseLo": -0.682,
+      "rockBaseN": 53,
+      "drawCalls": 7,
+      "texMB": 184.5,
+      "activeVideos": 4,
+      "rocks": 45,
+      "charge": 1,
+      "boom": 6,
+      "line": "",
+      "stick": { "l": 18, "t": 1462, "w": 110, "h": 110, "d": "block" }
+    },
+    {
+      "file": "portrait-1080.jpg",
+      "query": "shot=sprint&stick=1",
+      "title": "Boltverse Odyssey",
+      "view": [1080, 2400],
+      "boltScreen": [0.49999998678108715, 0.7605361187195618],
+      "rockBaseHi": -0.35,
+      "rockBaseLo": -0.682,
+      "rockBaseN": 53,
+      "drawCalls": 7,
+      "texMB": 184.5,
+      "activeVideos": 4,
+      "rocks": 45,
+      "charge": 1,
+      "boom": 6,
+      "line": "",
+      "stick": { "l": 18, "t": 2262, "w": 110, "h": 110, "d": "block" }
+    },
+    {
+      "file": "landscape-1600.jpg",
+      "query": "shot=sprint&stick=1",
+      "title": "Boltverse Odyssey",
+      "view": [1600, 720],
+      "boltScreen": [0.4999999978755319, 0.7605361187195618],
+      "rockBaseHi": -0.35,
+      "rockBaseLo": -0.682,
+      "rockBaseN": 53,
+      "drawCalls": 7,
+      "texMB": 184.5,
+      "activeVideos": 4,
+      "rocks": 45,
+      "charge": 1,
+      "boom": 6,
+      "line": "",
+      "stick": { "l": 18, "t": 582, "w": 110, "h": 110, "d": "block" }
+    },
+    {
+      "file": "hud-720.jpg",
+      "query": "adventure=1&shot=mid&stick=1",
+      "title": "Boltverse Odyssey",
+      "view": [720, 1600],
+      "boltScreen": [0.499999985711975, 1.0392229972194884],
+      "rockBaseHi": -0.35,
+      "rockBaseLo": -0.682,
+      "rockBaseN": 53,
+      "drawCalls": 7,
+      "texMB": 184.5,
+      "activeVideos": 4,
+      "rocks": 45,
+      "charge": 1,
+      "boom": 6,
+      "line": "Ramasse les Éclats d'écho, puis atteins la Porte de l'Éclipse.\nÉclats d'écho 0 sur 5\n55s",
+      "stick": { "l": 18, "t": 1462, "w": 110, "h": 110, "d": "block" }
+    }
+  ],
+  "films": [
+    {
+      "file": "sprint.mp4",
+      "warmup": 12,
+      "frames": 72,
+      "samples": [
+        {
+          "tag": "warmup-0",
+          "rocks": 17,
+          "charge": 0,
+          "speed": 0.07,
+          "drawCalls": 7,
+          "texMB": 184.5,
+          "activeVideos": 3,
+          "boltScreen": [
+            0.49999998678108715,
+            0.7605361077626631
+          ],
+          "rockBaseHi": -0.35
+        },
+        {
+          "tag": "warmup-11",
+          "rocks": 17,
+          "charge": 0.02,
+          "speed": 0.82,
+          "drawCalls": 7,
+          "texMB": 184.5,
+          "activeVideos": 3,
+          "boltScreen": [
+            0.49999998678108715,
+            0.7605360986745852
+          ],
+          "rockBaseHi": -0.35
+        },
+        {
+          "rocks": 17,
+          "charge": 0.02,
+          "speed": 0.89,
+          "drawCalls": 7,
+          "texMB": 184.5,
+          "activeVideos": 4,
+          "boltScreen": [
+            0.49999998678108715,
+            0.7605361079231968
+          ]
+        },
+        {
+          "rocks": 17,
+          "charge": 0.06,
+          "speed": 2.54,
+          "drawCalls": 7,
+          "texMB": 184.5,
+          "activeVideos": 4,
+          "boltScreen": [
+            0.4999999867810871,
+            0.760536083966173
+          ]
+        },
+        {
+          "rocks": 29,
+          "charge": 0.11,
+          "speed": 4.19,
+          "drawCalls": 7,
+          "texMB": 184.5,
+          "activeVideos": 4,
+          "boltScreen": [
+            0.4999999867810873,
+            0.760536116053875
+          ]
+        },
+        {
+          "rocks": 40,
+          "charge": 0.15,
+          "speed": 5.84,
+          "drawCalls": 7,
+          "texMB": 184.5,
+          "activeVideos": 3,
+          "boltScreen": [
+            0.4999999867810875,
+            0.760536136029665
+          ]
+        },
+        {
+          "rocks": 45,
+          "charge": 0.19,
+          "speed": 7.49,
+          "drawCalls": 7,
+          "texMB": 184.5,
+          "activeVideos": 4,
+          "boltScreen": [
+            0.49999998678108815,
+            0.7605361340535302
+          ]
+        },
+        {
+          "rocks": 45,
+          "charge": 0.23,
+          "speed": 8.6,
+          "drawCalls": 7,
+          "texMB": 184.5,
+          "activeVideos": 4,
+          "boltScreen": [
+            0.49999998708410814,
+            0.7504356933872403
+          ]
+        }
+      ]
+    },
+    {
+      "file": "long-sprint.mp4",
+      "warmup": 432,
+      "frames": 48,
+      "samples": [
+        {
+          "tag": "warmup-0",
+          "rocks": 17,
+          "charge": 0,
+          "speed": 0.07,
+          "drawCalls": 7,
+          "texMB": 184.5,
+          "activeVideos": 3,
+          "boltScreen": [
+            0.49999998678108715,
+            0.7605361077626631
+          ],
+          "rockBaseHi": -0.35
+        },
+        {
+          "tag": "warmup-47",
+          "rocks": 20,
+          "charge": 0.08,
+          "speed": 3.3,
+          "drawCalls": 7,
+          "texMB": 184.5,
+          "activeVideos": 3,
+          "boltScreen": [
+            0.4999999867810874,
+            0.7605361299867524
+          ],
+          "rockBaseHi": -0.35
+        },
+        {
+          "tag": "warmup-191",
+          "rocks": 45,
+          "charge": 0.33,
+          "speed": 8.6,
+          "drawCalls": 7,
+          "texMB": 184.5,
+          "activeVideos": 3,
+          "boltScreen": [
+            0.4999999867810894,
+            0.7605362152209997
+          ],
+          "rockBaseHi": -0.35
+        },
+        {
+          "tag": "warmup-431",
+          "rocks": 45,
+          "charge": 0.75,
+          "speed": 8.6,
+          "drawCalls": 7,
+          "texMB": 184.5,
+          "activeVideos": 2,
+          "boltScreen": [
+            0.49999998805749013,
+            0.7179907204037799
+          ],
+          "rockBaseHi": -0.35
+        },
+        {
+          "rocks": 45,
+          "charge": 0.75,
+          "speed": 8.6,
+          "drawCalls": 7,
+          "texMB": 184.5,
+          "activeVideos": 4,
+          "boltScreen": [
+            0.4999999888700505,
+            0.6909062159966266
+          ]
+        },
+        {
+          "rocks": 45,
+          "charge": 0.79,
+          "speed": 8.6,
+          "drawCalls": 7,
+          "texMB": 184.5,
+          "activeVideos": 3,
+          "boltScreen": [
+            0.49999998838572257,
+            0.7070500523675709
+          ]
+        },
+        {
+          "rocks": 45,
+          "charge": 0.84,
+          "speed": 8.6,
+          "drawCalls": 7,
+          "texMB": 184.5,
+          "activeVideos": 2,
+          "boltScreen": [
+            0.49999998922478395,
+            0.6790818969855974
+          ]
+        },
+        {
+          "rocks": 45,
+          "charge": 0.88,
+          "speed": 8.6,
+          "drawCalls": 7,
+          "texMB": 184.5,
+          "activeVideos": 3,
+          "boltScreen": [
+            0.499999986781084,
+            0.7605365970257261
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -3,9 +3,9 @@
   "frames": 540,
   "spikes": 0,
   "maxPosM": 0.599,
-  "maxPitchRad": 0.0615,
-  "maxStepMs": 4.07,
-  "meanStepMs": 0.49,
+  "maxPitchRad": 0,
+  "maxStepMs": 6.14,
+  "meanStepMs": 0.19,
   "samples": [
     {
       "t": 0.5,
@@ -13,8 +13,8 @@
       "allowM": 0.105,
       "dPitch": 0,
       "speed": 0.85,
-      "stepMs": 0.2,
-      "boom": 6.166
+      "stepMs": 0.06,
+      "boom": 6
     },
     {
       "t": 1,
@@ -22,8 +22,8 @@
       "allowM": 0.123,
       "dPitch": 0,
       "speed": 1.68,
-      "stepMs": 0.13,
-      "boom": 6.166
+      "stepMs": 0.06,
+      "boom": 6
     },
     {
       "t": 1.5,
@@ -31,8 +31,8 @@
       "allowM": 0.139,
       "dPitch": 0,
       "speed": 2.48,
-      "stepMs": 0.37,
-      "boom": 6.166
+      "stepMs": 0.06,
+      "boom": 6
     },
     {
       "t": 2,
@@ -40,8 +40,8 @@
       "allowM": 0.14,
       "dPitch": 0,
       "speed": 2.51,
-      "stepMs": 0.28,
-      "boom": 6.166
+      "stepMs": 0.17,
+      "boom": 6
     },
     {
       "t": 2.5,
@@ -49,8 +49,8 @@
       "allowM": 0.157,
       "dPitch": 0,
       "speed": 3.33,
-      "stepMs": 0.25,
-      "boom": 6.166
+      "stepMs": 0.05,
+      "boom": 6
     },
     {
       "t": 3,
@@ -58,35 +58,35 @@
       "allowM": 0.174,
       "dPitch": 0,
       "speed": 4.16,
-      "stepMs": 0.41,
-      "boom": 6.166
+      "stepMs": 0.05,
+      "boom": 6
     },
     {
       "t": 3.5,
-      "dM": 0.106,
+      "dM": 0.083,
       "allowM": 0.191,
       "dPitch": 0,
       "speed": 4.98,
-      "stepMs": 0.61,
-      "boom": 6.237
+      "stepMs": 0.05,
+      "boom": 6
     },
     {
       "t": 4,
-      "dM": 0.136,
+      "dM": 0.097,
       "allowM": 0.209,
-      "dPitch": 0.0142,
+      "dPitch": 0,
       "speed": 5.81,
-      "stepMs": 0.62,
-      "boom": 5.742
+      "stepMs": 0.06,
+      "boom": 6
     },
     {
       "t": 4.5,
-      "dM": 0.057,
+      "dM": 0.111,
       "allowM": 0.226,
       "dPitch": 0,
       "speed": 6.63,
-      "stepMs": 0.6,
-      "boom": 5.854
+      "stepMs": 0.08,
+      "boom": 6
     },
     {
       "t": 5,
@@ -94,72 +94,72 @@
       "allowM": 0.243,
       "dPitch": 0,
       "speed": 7.46,
-      "stepMs": 0.55,
-      "boom": 6.166
+      "stepMs": 0.09,
+      "boom": 6
     },
     {
       "t": 5.5,
-      "dM": 0.231,
-      "allowM": 0.597,
+      "dM": 0.293,
+      "allowM": 0.593,
       "dPitch": 0,
       "speed": 8.28,
-      "stepMs": 1.03,
-      "boom": 6.169
+      "stepMs": 0.1,
+      "boom": 6
     },
     {
       "t": 6,
       "dM": 0.599,
-      "allowM": 0.603,
-      "dPitch": 0.0027,
+      "allowM": 0.6,
+      "dPitch": 0,
       "speed": 8.6,
-      "stepMs": 0.65,
-      "boom": 6.972
+      "stepMs": 0.09,
+      "boom": 6.296
     },
     {
       "t": 6.5,
-      "dM": 0.337,
-      "allowM": 0.603,
+      "dM": 0.306,
+      "allowM": 0.6,
       "dPitch": 0,
       "speed": 8.6,
-      "stepMs": 0.46,
-      "boom": 5.27
+      "stepMs": 0.05,
+      "boom": 6.823
     },
     {
       "t": 7,
-      "dM": 0.334,
-      "allowM": 0.603,
+      "dM": 0.296,
+      "allowM": 0.6,
       "dPitch": 0,
       "speed": 8.6,
-      "stepMs": 0.59,
-      "boom": 6.198
+      "stepMs": 0.1,
+      "boom": 6
     },
     {
       "t": 7.5,
-      "dM": 0.087,
+      "dM": 0.143,
       "allowM": 0.267,
       "dPitch": 0,
       "speed": 8.6,
-      "stepMs": 0.46,
-      "boom": 6.543
+      "stepMs": 0.04,
+      "boom": 6
     },
     {
       "t": 8,
-      "dM": 0.17,
+      "dM": 0.143,
       "allowM": 0.267,
       "dPitch": 0,
       "speed": 8.6,
-      "stepMs": 0.68,
-      "boom": 6.817
+      "stepMs": 0.04,
+      "boom": 7.45
     },
     {
       "t": 8.5,
-      "dM": 0.176,
+      "dM": 0.2,
       "allowM": 0.267,
       "dPitch": 0,
       "speed": 8.6,
-      "stepMs": 0.59,
-      "boom": 6.403
+      "stepMs": 0.07,
+      "boom": 6.827
     }
   ],
-  "minBoomWhileStraight": 5.742
+  "minBoomWhileStraight": 6
 }

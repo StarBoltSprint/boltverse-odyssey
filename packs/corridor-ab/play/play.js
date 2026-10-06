@@ -35,7 +35,7 @@ import {
 } from "./look.js";
 import { clearEye, rockShells } from "./mag.js";
 import { pushDiscs, RUN_YAW } from "./scatter.js";
-import { GATE_FIRST, PASS_BACK, POOL, RISE_M, bindPlan, carpetWest, createField, horizonSeats, rockBottom, rockCount, settleField, stepField } from "./stream.js";
+import { GATE_FIRST, PASS_BACK, POOL, bindPlan, carpetWest, createField, horizonSeats, rockBottom, rockCount, seatSink, settleField, stepField } from "./stream.js";
 import { DEFAULT_POST, POST_LIMITS } from "../../zone-a/play/biomeblend.js";
 import { cardToPlan } from "../../../tools/adventure/playmap.js";
 import { offlineCard } from "../../../tools/adventure/offline.js";
@@ -43,7 +43,7 @@ import { loadCatalog, loadLibrary, mountAdventureUi } from "./adventure-ui.js";
 import { createQuest, skipToRun, stepQuest } from "./quest.js";
 import { mountSky } from "./sky.js";
 import { mountRuins } from "../../zone-a/play/ruins.js";
-import { loadWorldHull } from "../../zone-a/play/hullmesh.js";
+import { loadWorldHull, setHullFog } from "../../zone-a/play/hullmesh.js";
 
 const params = new URLSearchParams(location.search);
 const shot = params.get("shot");
@@ -58,14 +58,25 @@ const ASPECT = 720 / 1600;
 const VFOV = 2 * Math.atan(Math.tan(HFOV / 2) / ASPECT);
 const BOLT_H = 2.15;
 
+const PAGE_TITLE = "Boltverse Odyssey";
 const canvas = document.getElementById("view");
 const hud = document.getElementById("hud");
 const stick = document.getElementById("stick");
 const nub = document.getElementById("nub");
+document.title = PAGE_TITLE;
 canvas.width = 720;
 canvas.height = 1600;
 if (debug) hud.style.display = "block";
-if (shot && stick) stick.style.display = "none";
+if (shot && stick && params.get("stick") !== "1") stick.style.display = "none";
+
+function fitView() {
+  const w = Math.max(2, Math.round(canvas.clientWidth || 720));
+  const h = Math.max(2, Math.round(canvas.clientHeight || 1600));
+  if (canvas.width !== w || canvas.height !== h) {
+    canvas.width = w;
+    canvas.height = h;
+  }
+}
 
 const gl = canvas.getContext("webgl2", { alpha: false, antialias: false, preserveDrawingBuffer: true });
 if (!gl) throw new Error("webgl2 missing");
@@ -254,6 +265,7 @@ void main() {
   vec3 col = mix(mix(c00, c10, b.x), mix(c01, c11, b.x), b.y);
   float dist = distance(vXz, uEye);
   float fog = clamp(1.0 - exp(-uFogK * max(0.0, dist - 18.0)), 0.0, uFogCap);
+  if (uFogK > 0.0) fog = max(fog, smoothstep(78.0, 132.0, dist));
   o = vec4(mix(col, uFog, fog), 1.0);
 }`;
 const BOLT_VS = `#version 300 es
@@ -408,33 +420,49 @@ function applyPoses() {
   for (let i = 0; i < names.length; i++) {
     const slot = field[names[i]];
     const pose = poses[names[i]];
-    if (!slot || slot.emerge < 0.02) {
+    if (!slot) {
       pose.scale = 0;
       pose.rise = -40;
       continue;
     }
     pose.x = slot.x;
     pose.z = slot.z;
-    pose.scale = slot.emerge;
-    pose.rise = (slot.emerge - 1) * RISE_M;
+    pose.scale = 1;
+    pose.rise = 0;
   }
 }
 
+let rockBaseHi = 0;
+let rockBaseLo = 0;
+let rockBaseN = 0;
+function noteBase(y) {
+  if (rockBaseN === 0) {
+    rockBaseHi = y;
+    rockBaseLo = y;
+  } else {
+    if (y > rockBaseHi) rockBaseHi = y;
+    if (y < rockBaseLo) rockBaseLo = y;
+  }
+  rockBaseN += 1;
+}
 function syncRocks() {
   hulls.boulder.reset();
   hulls.stone.reset();
   discN = 0;
+  rockBaseN = 0;
   for (let i = 0; i < field.pool.length; i++) {
     const slot = field.pool[i];
-    if (!slot.on || slot.kind > 2 || slot.emerge < 0.02) continue;
+    if (!slot.on || slot.kind > 2) continue;
     const type = slot.kind === 2 ? "boulder" : "stone";
     const hull = hulls[type];
     const spec = rockManifest.types[type];
     const meshH = Math.max(0.05, hull.maxY - hull.minY);
-    const drawScale = (spec.objectSize[1] * slot.base * slot.emerge) / meshH;
-    const y = rockBottom(slot.emerge) - hull.minY * drawScale;
+    const drawScale = (spec.objectSize[1] * slot.base) / meshH;
+    const base = rockBottom();
+    const y = base - hull.minY * drawScale;
+    noteBase(base);
     hull.addInstance(slot.x, y, slot.z, slot.yaw, drawScale, 0);
-    if (slot.emerge >= 0.35 && discN < discBuf.length) {
+    if (discN < discBuf.length) {
       const disc = discBuf[discN];
       disc.x = slot.x;
       disc.z = slot.z;
@@ -449,7 +477,9 @@ function syncRocks() {
     const hull = hulls[type];
     const meshH = Math.max(0.05, hull.maxY - hull.minY);
     const drawScale = seat.height / meshH;
-    const y = rockBottom(1) - hull.minY * drawScale;
+    const base = -seatSink(seat.height);
+    const y = base - hull.minY * drawScale;
+    noteBase(base);
     hull.addInstance(seat.x, y, seat.z, seat.yaw, drawScale, 0);
   }
   for (let i = discN; i < discBuf.length; i++) discBuf[i].r = 0;
@@ -811,9 +841,18 @@ function meanLuma(x0, y0, w, h) {
   return s / n;
 }
 
+function projectScreen(px, py, pz, vp) {
+  const cx = vp[0] * px + vp[4] * py + vp[8] * pz + vp[12];
+  const cy = vp[1] * px + vp[5] * py + vp[9] * pz + vp[13];
+  const cw = vp[3] * px + vp[7] * py + vp[11] * pz + vp[15];
+  if (!(Math.abs(cw) > 1e-6)) return null;
+  return [(cx / cw + 1) * 0.5, (1 - cy / cw) * 0.5];
+}
+
 function frame() {
   const t0 = performance.now();
   drawCalls = 0;
+  fitView();
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.clearColor(0, 0, 0, 1);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -850,8 +889,11 @@ function frame() {
   gl.drawArrays(gl.TRIANGLES, 0, 6);
   drawCalls += 1;
 
+  const fogKNow = fogOn ? fogK : 0;
+  if (ruins.setFog) ruins.setFog(eyeBuf[0], eyeBuf[2], fogRgb, fogKNow, fogCap);
   ruins.draw(vp, 0);
   drawCalls += ruins.draws || 0;
+  setHullFog(gl, eyeBuf[0], eyeBuf[2], fogRgb, fogKNow, fogCap);
   hulls.boulder.draw(vp, 0);
   drawCalls += 1;
   hulls.stone.draw(vp, 0);
@@ -955,7 +997,13 @@ function frame() {
     settled,
     black: false,
   };
-  document.title = JSON.stringify(window.__corridor);
+  const bodyScreen = projectScreen(x, 1.05, z, vp);
+  window.__corridor.boltScreen = bodyScreen;
+  window.__corridor.view = [canvas.width, canvas.height];
+  window.__corridor.rockBaseHi = Math.round(rockBaseHi * 1000) / 1000;
+  window.__corridor.rockBaseLo = Math.round(rockBaseLo * 1000) / 1000;
+  window.__corridor.rockBaseN = rockBaseN;
+  document.title = PAGE_TITLE;
   if (debug) {
     hud.textContent = [
       "Perf: drawCalls=" + drawCalls,
@@ -977,7 +1025,7 @@ function sampleSky() {
   window.__corridor.skyTop = skyTop;
   window.__corridor.skyMid = skyMid;
   window.__corridor.settled = true;
-  document.title = JSON.stringify(window.__corridor);
+  document.title = PAGE_TITLE;
 }
 
 function returnHome() {
