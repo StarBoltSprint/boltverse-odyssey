@@ -14,6 +14,7 @@ window.addEventListener("unhandledrejection", (event) => {
 import { createFlow, BOLT_GALLOP, BOLT_IDLE } from "../../../biome/scripts/zone-flow/zoneFlow.mjs";
 import { poseOnCorridor } from "./place.js";
 import {
+  CHASE_AIM_Y,
   CHASE_BOOM,
   CHASE_EYE,
   CHASE_SLIDE,
@@ -26,6 +27,7 @@ import {
   pitchForTall,
   pitchOf,
   pushLook,
+  holdBody,
   resetChase,
   stepChase,
   stepLook,
@@ -35,7 +37,8 @@ import {
 } from "./look.js";
 import { clearEye, rockShells } from "./mag.js";
 import { pushDiscs, RUN_YAW } from "./scatter.js";
-import { GATE_FIRST, PASS_BACK, POOL, bindPlan, carpetWest, createField, horizonSeats, rockBottom, rockCount, seatSink, settleField, stepField } from "./stream.js";
+import { PASS_BACK, POOL, bindPlan, createField, horizonSeats, rockBottom, rockCount, seatSink, settleField, stepField } from "./stream.js";
+import { FOG_FAR, FOG_NEAR, groundRectFor } from "./ground.js";
 import { DEFAULT_POST, POST_LIMITS } from "../../zone-a/play/biomeblend.js";
 import { cardToPlan } from "../../../tools/adventure/playmap.js";
 import { offlineCard } from "../../../tools/adventure/offline.js";
@@ -159,18 +162,8 @@ texBytes += Math.ceil(maxW * maxH * 4 * images.length * 4 / 3);
 const xStart = corridor.waypoints[0][0];
 const xEnd = corridor.waypoints[corridor.waypoints.length - 1][0];
 const pathZ = corridor.waypoints[0][1];
-const passBoltX = xStart + GATE_FIRST - PASS_BACK;
-const ix0 = Math.floor(carpetWest(xStart, passBoltX) / tileM);
-const ix1 = Math.floor((xEnd + 160) / tileM);
-const iz0 = Math.floor((pathZ - 70) / tileM);
-const iz1 = Math.floor((pathZ + 70) / tileM);
-// One quad. The repeat is the sampler, not a grid of meshes, so the tiles do not draw a seam.
-const groundRect = new Float32Array([
-  ix0 * tileM,
-  iz0 * tileM,
-  (ix1 + 1) * tileM,
-  (iz1 + 1) * tileM,
-]);
+// One quad, moved with Bolt. The repeat is the sampler, so the tiles do not draw a seam.
+const groundRect = new Float32Array(4);
 
 function clampPost(v, key) {
   const lim = POST_LIMITS[key];
@@ -198,8 +191,8 @@ async function sampleSkyFog() {
     c.height = img.height;
     const g2 = c.getContext("2d", { willReadFrequently: true });
     g2.drawImage(img, 0, 0);
-    const y0 = Math.max(0, Math.floor(img.height * 0.72));
-    const y1 = Math.min(img.height, Math.ceil(img.height * 0.9));
+    const y0 = Math.max(0, Math.floor(img.height * 0.78));
+    const y1 = Math.min(img.height, Math.ceil(img.height * 0.94));
     const data = g2.getImageData(0, y0, img.width, Math.max(1, y1 - y0)).data;
     for (let p = 0; p < data.length; p += 16) {
       r += data[p];
@@ -265,7 +258,7 @@ void main() {
   vec3 col = mix(mix(c00, c10, b.x), mix(c01, c11, b.x), b.y);
   float dist = distance(vXz, uEye);
   float fog = clamp(1.0 - exp(-uFogK * max(0.0, dist - 18.0)), 0.0, uFogCap);
-  if (uFogK > 0.0) fog = max(fog, smoothstep(78.0, 132.0, dist));
+  if (uFogK > 0.0) fog = max(fog, smoothstep(${FOG_NEAR.toFixed(1)}, ${FOG_FAR.toFixed(1)}, dist));
   o = vec4(mix(col, uFog, fog), 1.0);
 }`;
 const BOLT_VS = `#version 300 es
@@ -374,10 +367,12 @@ if (adventureBoot) {
 }
 const rockManifest = await fetch(absUrl("packs/zone-a/src/rocks/manifest.json")).then((r) => r.json());
 const hulls = {};
+const batches = {};
 for (const type of ["boulder", "stone"]) {
   const spec = rockManifest.types[type];
   const file = rockManifest.assets[type];
   hulls[type] = await loadWorldHull(gl, absUrl(file), trackTex, { maxH: spec.maxTex || 512 });
+  batches[type] = [hulls[type], hulls[type].forkBatch()];
 }
 const poses = {
   arch: { x: 0, z: pathZ, scale: 0, rise: 0 },
@@ -445,9 +440,16 @@ function noteBase(y) {
   }
   rockBaseN += 1;
 }
+function placeInstance(type, x, y, z, yaw, scale) {
+  const list = batches[type];
+  if (list[0].addInstance(x, y, z, yaw, scale, 0)) return;
+  list[1].addInstance(x, y, z, yaw, scale, 0);
+}
 function syncRocks() {
-  hulls.boulder.reset();
-  hulls.stone.reset();
+  batches.boulder[0].reset();
+  batches.boulder[1].reset();
+  batches.stone[0].reset();
+  batches.stone[1].reset();
   discN = 0;
   rockBaseN = 0;
   for (let i = 0; i < field.pool.length; i++) {
@@ -461,7 +463,7 @@ function syncRocks() {
     const base = rockBottom();
     const y = base - hull.minY * drawScale;
     noteBase(base);
-    hull.addInstance(slot.x, y, slot.z, slot.yaw, drawScale, 0);
+    placeInstance(type, slot.x, y, slot.z, slot.yaw, drawScale);
     if (discN < discBuf.length) {
       const disc = discBuf[discN];
       disc.x = slot.x;
@@ -480,11 +482,13 @@ function syncRocks() {
     const base = -seatSink(seat.height);
     const y = base - hull.minY * drawScale;
     noteBase(base);
-    hull.addInstance(seat.x, y, seat.z, seat.yaw, drawScale, 0);
+    placeInstance(type, seat.x, y, seat.z, seat.yaw, drawScale);
   }
   for (let i = discN; i < discBuf.length; i++) discBuf[i].r = 0;
-  hulls.boulder.upload();
-  hulls.stone.upload();
+  batches.boulder[0].upload();
+  batches.boulder[1].upload();
+  batches.stone[0].upload();
+  batches.stone[1].upload();
 }
 
 const idle = document.createElement("video");
@@ -559,14 +563,10 @@ function stepFlow(dt, walk) {
     hitchMs: Math.min(1000, dt * 1000),
     black: false,
   });
-  if (sample.mode === "zone" && prevMode !== "zone" && sample.zoneId && sample.zoneId !== world.start) {
-    const gate = (zones[sample.zoneId].gates || [])[0];
-    if (gate && gate.position) {
-      x = gate.position[0];
-      z = gate.position[1];
-      heading = wrap360(Number(gate.heading_deg) + 180);
-    }
-  }
+  const held = holdBody({ x, z, heading }, sample, prevMode, zones, world.start);
+  x = held.x;
+  z = held.z;
+  heading = held.heading;
   prevMode = sample.mode;
   lastSample = sample;
   return sample;
@@ -758,7 +758,9 @@ function placeCamera() {
     CHASE_EYE,
     z - fz * CHASE_BOOM + rz * CHASE_SLIDE,
   ];
-  let goal = pitchOf(chasePitch(), camLook.cur);
+  const clearedNow = clearEye(rigid, x, z, rockShells(field.pool), field);
+  const aimBoom = Math.hypot(clearedNow[0] - x, clearedNow[2] - z) || CHASE_BOOM;
+  let goal = pitchOf(Math.atan2(CHASE_AIM_Y - clearedNow[1], aimBoom), camLook.cur);
   if (field.gate && field.gate.emerge > 0.4) {
     const dx = field.gate.x - rigid[0];
     const dz = field.gate.z - rigid[2];
@@ -768,7 +770,7 @@ function placeCamera() {
       goal = pitchForTall(goal, GATE_TOP, Math.hypot(ahead, side), VFOV);
     }
   }
-  const cleared = clearEye(rigid, x, z, rockShells(field.pool), field);
+  const cleared = clearedNow;
   const still = !!(shot && !filmShot && shot !== "adventure");
   stepChase(chase, rigid, cleared, goal, camDt, camSnap || still, speed, state.turn);
   eyeBuf[0] = chase.eye[0];
@@ -856,6 +858,11 @@ function frame() {
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.clearColor(0, 0, 0, 1);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  const span = groundRectFor(x, z);
+  groundRect[0] = span[0];
+  groundRect[1] = span[1];
+  groundRect[2] = span[2];
+  groundRect[3] = span[3];
   const cam = placeCamera();
   const fx = cam.fx;
   const fz = cam.fz;
@@ -894,10 +901,10 @@ function frame() {
   ruins.draw(vp, 0);
   drawCalls += ruins.draws || 0;
   setHullFog(gl, eyeBuf[0], eyeBuf[2], fogRgb, fogKNow, fogCap);
-  hulls.boulder.draw(vp, 0);
-  drawCalls += 1;
-  hulls.stone.draw(vp, 0);
-  drawCalls += 1;
+  drawCalls += batches.boulder[0].draw(vp, 0);
+  drawCalls += batches.boulder[1].draw(vp, 0);
+  drawCalls += batches.stone[0].draw(vp, 0);
+  drawCalls += batches.stone[1].draw(vp, 0);
 
   const clip = activeBolt();
   if (clip.readyState >= 2) {

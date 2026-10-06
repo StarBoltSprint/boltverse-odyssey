@@ -18,14 +18,18 @@ export const LOOK_A_BACK = 0.9;
 export const TURN_DPS = 150;
 export const WALK_SPD = 2.85;
 export const SPRINT_MAX = 8.6;
+/** Held sprint climbs from SPRINT_MAX to this multiple. 2.25 sits inside 2–2.5×. */
+export const SPRINT_TOP_SCALE = 2.25;
+export const SPRINT_TOP = SPRINT_MAX * SPRINT_TOP_SCALE;
 export const SPRINT_ACCEL = 1.65;
 export const SPRINT_EASE = 2.15;
-export const CHASE_BOOM = 6.1;
-export const CHASE_EYE = 3.5;
+/** Zone A rest chase: boom 6, eye 1.35, slide 0. packs/zone-a/play/play.js camHold. */
+export const CHASE_BOOM = 6;
+export const CHASE_EYE = 1.35;
 /** Zero keeps the eye on the centreline. A slide looks past Bolt and parks him under the stick. */
 export const CHASE_SLIDE = 0;
-/** Aim height that puts the horizon near 32% from the top of a 720×1600 view. */
-export const CHASE_AIM_Y = 2.52;
+/** Zone A looks at feet + 0.45 × Bolt height (2.15 m). */
+export const CHASE_AIM_Y = 0.9675;
 export const PAW_FRAC_FALLBACK = 0.92;
 
 export function springLim(x, v, goal, dt, w, vmax, amax) {
@@ -193,19 +197,27 @@ export function chaseViewInto(out, eye, target) {
   return out;
 }
 
+/** Cap for a sprint that has been held this long. Charge 0 is the old top. Charge 1 is SPRINT_TOP. */
+export function sprintCap(charge) {
+  const c = charge < 0 ? 0 : charge > 1 ? 1 : (charge || 0);
+  return SPRINT_MAX + (SPRINT_TOP - SPRINT_MAX) * c;
+}
+
 /**
- * Held sprint climbs toward SPRINT_MAX. How hard the stick is pushed sets the
- * acceleration. Releasing eases back to a walk, or to a stop.
+ * Held sprint climbs toward sprintCap(charge). How hard the stick is pushed
+ * sets the acceleration. Releasing eases back to a walk, or to a stop.
+ * Charge is 0 when omitted, so a caller that does not pass it stays at SPRINT_MAX.
  */
-export function stepSpeed(speed, forward, gallop, dt) {
+export function stepSpeed(speed, forward, gallop, dt, charge) {
   const fwd = Math.abs(forward) < 0.04 ? 0 : Math.max(0, Math.min(1, forward));
   let target = 0;
   if (fwd > 0 && !gallop) target = WALK_SPD * (0.45 + 0.55 * Math.min(1, fwd / 0.72));
   if (gallop && fwd > 0) {
     const hold = Math.max(0, Math.min(1, (fwd - 0.72) / 0.28));
     const accel = SPRINT_ACCEL * (0.4 + 0.6 * Math.max(hold, 0.35));
+    const cap = sprintCap(charge);
     const next = speed + accel * dt;
-    return next > SPRINT_MAX ? SPRINT_MAX : next;
+    return next > cap ? cap : next;
   }
   if (speed > target) {
     const eased = speed - SPRINT_EASE * dt;
@@ -233,6 +245,18 @@ export function stepCharge(charge, forward, gallop, dt) {
 }
 
 /** World y of the paw row. The row sits (1 - pawFrac) up the quad, on groundY. */
+/**
+ * A corridor end changes the plate mode only.
+ * The body is not moved onto the next gate and the heading is not flipped.
+ */
+export function holdBody(pose) {
+  return {
+    x: pose.x,
+    z: pose.z,
+    heading: pose.heading,
+  };
+}
+
 export function pawLine(groundY, worldH, pawFrac) {
   const frac = pawFrac > 0 ? pawFrac : PAW_FRAC_FALLBACK;
   const y0 = -(1 - frac) * worldH;

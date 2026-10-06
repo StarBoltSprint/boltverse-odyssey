@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { CHARGE_RAMP_SEC, SPRINT_MAX, WALK_SPD } from "./look.js";
+import { CHARGE_RAMP_SEC, SPRINT_MAX, SPRINT_TOP, WALK_SPD } from "./look.js";
 import {
+  DRAW_BATCHES,
   FIELD_HALF,
   CARPET_APRON,
   GATE_FIRST,
@@ -22,6 +23,8 @@ import {
   horizonSeats,
   lookAhead,
   monumentSeat,
+  spawnDistance,
+  visibleDensity,
   planMonument,
   rockBottom,
   rockCount,
@@ -76,8 +79,8 @@ test("a faster pace streams more rocks than a walk", () => {
   assert.ok(inCone(sprint, 6) >= 8);
   assert.ok(sprint.speed === SPRINT_MAX);
   assert.ok(densityOf(1) > densityOf(0));
-  assert.ok(halfWidth(1) > halfWidth(0) + 20);
-  assert.ok(halfWidth(1) > 30);
+  assert.equal(halfWidth(1), halfWidth(0));
+  assert.ok(halfWidth(1) <= 12);
   assert.ok(FIELD_HALF > 40);
 });
 
@@ -171,7 +174,7 @@ test("a long sprint holds more rocks than a short one, still born far", () => {
   assert.ok(rockCount(long.field) > rockCount(short.field));
   assert.ok(rockCount(long.field) <= POOL);
   assert.ok(long.born.length > short.born.length);
-  assert.ok(POOL + HORIZON_N <= INST_CAP);
+  assert.ok(POOL + HORIZON_N <= INST_CAP * DRAW_BATCHES);
   for (let i = 0; i < long.born.length; i++) {
     assert.ok(long.born[i].ahead >= SPAWN_M - 2);
     assert.equal(long.born[i].frustum, false);
@@ -268,7 +271,34 @@ test("horizon seats are world-locked, tall, and the newest enters far", () => {
 test("walk look stays short of a far gate and a sprint look reaches it", () => {
   assert.ok(lookAhead(WALK_SPD, 0) < 100);
   assert.ok(lookAhead(SPRINT_MAX, 1) > 100);
-  assert.ok(CHARGE_RAMP_SEC >= 20);
+  assert.ok(lookAhead(SPRINT_TOP, 1) > spawnDistance(SPRINT_TOP));
+  assert.ok(spawnDistance(SPRINT_TOP) >= SPAWN_M);
+  assert.ok(CHARGE_RAMP_SEC >= 20 && CHARGE_RAMP_SEC <= 30);
+});
+
+test("rocks per visible area rise across a long sprint", () => {
+  function at(seconds) {
+    const f = field();
+    const b = body(6);
+    b.gallop = true;
+    const dt = 1 / 30;
+    const steps = Math.round(seconds / dt);
+    for (let i = 0; i < steps; i++) {
+      stepField(f, b, dt);
+      const yaw = b.heading * Math.PI / 180;
+      b.x += Math.sin(yaw) * f.speed * dt;
+      b.z += Math.cos(yaw) * f.speed * dt;
+    }
+    return { field: f, body: b, vis: visibleDensity(f, b) };
+  }
+  const a = at(8);
+  const b = at(16);
+  const c = at(24);
+  assert.ok(c.vis.density > b.vis.density, c.vis.density + " > " + b.vis.density);
+  assert.ok(b.vis.density > a.vis.density, b.vis.density + " > " + a.vis.density);
+  assert.ok(c.vis.count > b.vis.count);
+  assert.ok(b.vis.count > a.vis.count);
+  assert.equal(a.vis.half, c.vis.half);
 });
 
 test("an adventure plan seats the gate at the end and keeps the seed", () => {

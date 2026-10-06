@@ -1,9 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  CHASE_AIM_Y,
   CHASE_BOOM,
   CHASE_EYE,
+  CHASE_SLIDE,
   SPRINT_MAX,
+  SPRINT_TOP,
   WALK_SPD,
   chaseEye,
   chasePitch,
@@ -18,6 +21,9 @@ import {
   forwardOf,
   pawLine,
   pushLook,
+  holdBody,
+  sprintCap,
+  stepCharge,
   stepLook,
   stepSpeed,
 } from "./look.js";
@@ -50,22 +56,34 @@ test("stick right turns toward camera right", () => {
 
 const PORTRAIT_VFOV = 2 * Math.atan(Math.tan((22.7 * Math.PI) / 180 / 2) / (720 / 1600));
 
-test("the chase stays high and the horizon sits in the top third", () => {
+function zoneAScreenY(worldY) {
+  const boom = 6;
+  const eye = 1.35;
+  const aim = 2.15 * 0.45;
+  const pitch = Math.atan2(aim - eye, boom);
+  const ang = Math.atan2(worldY - eye, boom) - pitch;
+  const ndc = Math.tan(ang) / Math.tan(PORTRAIT_VFOV * 0.5);
+  return 0.5 - ndc * 0.5;
+}
+
+test("the chase matches zone A and stays clear of the joystick", () => {
   const eye = chaseEye(90, 10, 4);
   assert.equal(eye[1], CHASE_EYE);
-  assert.ok(eye[1] > 2.6 && eye[1] < 3.7);
+  assert.equal(CHASE_EYE, 1.35);
+  assert.equal(CHASE_BOOM, 6);
+  assert.equal(CHASE_SLIDE, 0);
+  assert.ok(Math.abs(CHASE_AIM_Y - 2.15 * 0.45) < 1e-9);
   assert.ok(eye[0] < 10);
   assert.ok(Math.abs(eye[2] - 4) < 1e-6);
   assert.ok(Math.abs(eye[0] - (10 - CHASE_BOOM)) < 1e-9);
-  const sky = horizonFromTop(PORTRAIT_VFOV);
-  assert.ok(sky > 0.30 && sky < 0.35);
-  assert.ok(chasePitch() < -0.08);
   const body = chaseScreenY(1.05, CHASE_BOOM, PORTRAIT_VFOV);
-  assert.ok(body > 2 / 3);
-  const archNear = chaseScreenY(7.4, 20 + CHASE_BOOM, PORTRAIT_VFOV);
-  const archFar = chaseScreenY(7.4, 30 + CHASE_BOOM, PORTRAIT_VFOV);
-  assert.ok(archNear > 0.02 && archNear < sky);
-  assert.ok(archFar > 0.02 && archFar < sky);
+  const zone = zoneAScreenY(1.05);
+  assert.ok(Math.abs(body - zone) < 0.03, "body " + body + " zone " + zone);
+  assert.ok(Math.abs(body - 0.5) < 0.08);
+  const paw = chaseScreenY(0, CHASE_BOOM, PORTRAIT_VFOV);
+  assert.ok(paw < 0.88, "paw " + paw);
+  const sky = horizonFromTop(PORTRAIT_VFOV);
+  assert.ok(sky > 0.2 && sky < 0.8);
 });
 
 test("a tall monolith raises the pitch and a far one does not", () => {
@@ -94,6 +112,38 @@ test("sprint climbs while the stick is held and eases on release", () => {
   for (let i = 0; i < 20; i++) speed = stepSpeed(speed, 1, false, 1 / 30);
   assert.ok(speed < SPRINT_MAX - 0.5);
   assert.ok(speed > WALK_SPD);
+});
+
+test("a held sprint climbs past the old top across the charge ramp", () => {
+  let speed = 0;
+  let charge = 0;
+  const dt = 1 / 30;
+  let mid = 0;
+  const midAt = Math.round(8 / dt);
+  const endAt = Math.round(26 / dt);
+  let prev = 0;
+  for (let i = 0; i < endAt; i++) {
+    charge = stepCharge(charge, 1, true, dt);
+    speed = stepSpeed(speed, 1, true, dt, charge);
+    assert.ok(speed + 1e-9 >= prev);
+    prev = speed;
+    if (i + 1 === midAt) mid = speed;
+  }
+  assert.ok(mid > SPRINT_MAX * 0.9, "mid " + mid);
+  assert.ok(mid < SPRINT_TOP * 0.8, "mid " + mid);
+  assert.ok(speed > SPRINT_MAX * 2, "top " + speed);
+  assert.ok(speed < SPRINT_MAX * 2.5 + 1e-6, "top " + speed);
+  assert.ok(Math.abs(speed - SPRINT_TOP) < 0.05);
+  assert.ok(Math.abs(sprintCap(1) - SPRINT_TOP) < 1e-9);
+  assert.equal(sprintCap(0), SPRINT_MAX);
+});
+
+test("a zone handoff does not move the body", () => {
+  const pose = { x: 40.2, z: 2.1, heading: 90 };
+  const held = holdBody(pose, { mode: "zone", zoneId: "zone-b" }, "corridor");
+  assert.equal(held.x, pose.x);
+  assert.equal(held.z, pose.z);
+  assert.equal(held.heading, 90);
 });
 
 test("a harder sprint push accelerates faster than a light one", () => {

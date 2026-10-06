@@ -253,7 +253,10 @@ function eyeCost(eye, bodyX, bodyZ, rocks, field, restA, restB) {
 /**
  * The cleared eye stays on the rest ray behind Bolt. Boom may lengthen up to BOOM_CAP.
  * A yaw search would slide Bolt off the centre of the phone. Ties keep the rest eye.
+ * The rest height is zone A's. A higher eye is only the fallback when that height
+ * would magnify a rock past the limit.
  */
+const EYE_LIFT = [0, 1.05, 2.25, 3.85];
 function worstRock(eye, rocks) {
   let rock = 0;
   for (let i = 0; i < rocks.length; i++) rock = Math.max(rock, rockMag(eye, rocks[i]));
@@ -265,25 +268,28 @@ export function clearEye(eye, bodyX, bodyZ, rocks, field) {
   const restB = Math.hypot(eye[0] - bodyX, eye[2] - bodyZ) || restBoom();
   const sn = Math.sin(restA);
   const cs = Math.cos(restA);
-  let under = null;
-  let underCost = Infinity;
   let fallback = [eye[0], CHASE_EYE, eye[2]];
   let fallbackWorst = worstRock(fallback, rocks);
-  for (let boom = BOOM_MIN; boom <= BOOM_CAP + 1e-6; boom += 0.2) {
-    const trial = [bodyX + sn * boom, CHASE_EYE, bodyZ + cs * boom];
-    const worst = worstRock(trial, rocks);
-    const cost = eyeCost(trial, bodyX, bodyZ, rocks, field, restA, restB);
-    if (worst <= MAG_TARGET && cost < underCost) {
-      under = trial;
-      underCost = cost;
+  for (let ei = 0; ei < EYE_LIFT.length; ei++) {
+    const eyeY = CHASE_EYE + EYE_LIFT[ei];
+    let under = null;
+    let underCost = Infinity;
+    for (let boom = BOOM_MIN; boom <= BOOM_CAP + 1e-6; boom += 0.2) {
+      const trial = [bodyX + sn * boom, eyeY, bodyZ + cs * boom];
+      const worst = worstRock(trial, rocks);
+      const cost = eyeCost(trial, bodyX, bodyZ, rocks, field, restA, restB);
+      if (worst <= MAG_TARGET && cost < underCost) {
+        under = trial;
+        underCost = cost;
+      }
+      if (worst < fallbackWorst - 1e-6 || (Math.abs(worst - fallbackWorst) < 1e-6 && boom > boomOf(fallback, bodyX, bodyZ))) {
+        fallback = trial;
+        fallbackWorst = worst;
+      }
     }
-    if (worst < fallbackWorst - 1e-6 || (Math.abs(worst - fallbackWorst) < 1e-6 && boom > boomOf(fallback, bodyX, bodyZ))) {
-      fallback = trial;
-      fallbackWorst = worst;
-    }
+    if (under) return under;
   }
-  if (under) return under;
-  return [bodyX + sn * BOOM_CAP, CHASE_EYE, bodyZ + cs * BOOM_CAP];
+  return fallback;
 }
 
 export function restEye(heading, x, z) {
