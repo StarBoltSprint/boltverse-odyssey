@@ -54,6 +54,21 @@ test("a pass shows the truth insight", () => {
   assert.equal(quest.overlay.lines.includes(plan.truth.insight), true);
 });
 
+test("a pass inscribes the truth, then offers the choice", () => {
+  const plan = cardToPlan(offlineCard(XAI_SHIP_SEED, catalog), origin, catalog, library);
+  const quest = createQuest(plan);
+  skipToRun(quest);
+  stepQuest(quest, 0.1, plan.goal.x, plan.goal.z);
+  assert.equal(quest.phase, "ending");
+  assert.equal(quest.overlay.kicker, "Codex vivant");
+  assert.equal(quest.overlay.choice, undefined);
+  assert.equal(quest.overlay.lines.includes(plan.truth.insight), true);
+  assert.equal(quest.overlay.lines.includes("Le Codex vivant inscrit cette vérité."), true);
+  stepQuest(quest, 2.6, plan.goal.x, plan.goal.z);
+  assert.equal(quest.phase, "choice");
+  assert.equal(quest.overlay.choice, true);
+});
+
 test("the timer without the gate closes the rift", () => {
   const quest = started();
   stepQuest(quest, quest.plan.boss.timerSec + 1, origin.x0, origin.pathZ);

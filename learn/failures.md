@@ -735,3 +735,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | `placeShards` picks a slot grid: 0.4 m steps, 3.6 m from each monument seat, 2.6 m between shards. A short span returns fewer shards than asked. |
 | Guard | `node --test tools/adventure/adventure.test.mjs` — offline cards for the sample seeds pass `validateCard`, which rejects a position within 3.5 m of a monument. |
 | Sources | `tools/adventure/offline.js`, `tools/adventure/validate.js` |
+
+### 2026-10-06 — proof sprint aimed at the monument seat
+
+| | |
+| --- | --- |
+| Take | Living Codex truths. |
+| Defect | The proof runner that sprints with `?shot=adventure` collected the Echo Shards and then never reached the goal. One 80-frame step stopped returning. |
+| Root cause | Shards sit about 1.6 m off the path. Steering all the way to a wreck or gate seat walks into the hull. The pass radius is 5 m, so the path itself is already close enough. A center-line sprint also misses a required set once the feet drift. |
+| Fix | `?collect=1` eases toward the next shard only while it is within 6 m, then returns to the path. It does not run for a normal play URL. |
+| Guard | No unit row measures the ease. The proof is `packs/corridor-ab/proof/codex/REPORT.md`: seeds 1024, 68, and 351 passed, and the three truths survived a reload. |
+| Sources | `packs/corridor-ab/play/play.js` |

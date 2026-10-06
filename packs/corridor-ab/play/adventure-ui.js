@@ -7,7 +7,7 @@
 import { buildCatalogue } from "../../common/archives/catalogue.js";
 import { nearestUnfound } from "../../common/archives/pickup.js";
 import { mountPresent } from "../../common/archives/present.js";
-import { createSave } from "../../common/archives/save.js";
+import { createSave, listTruths } from "../../common/archives/save.js";
 import { clipChain, nextSeed, readByok, writeByok } from "../../../tools/adventure/lib.js";
 import { generateAdventure } from "../../../tools/adventure/generate.js";
 import { cardToPlan } from "../../../tools/adventure/playmap.js";
@@ -223,11 +223,12 @@ export function mountAdventureUi(doc, env) {
     cardMs: 2500,
     extraItems: [{ label: "Nouvelle aventure", onPress() { beginNew(); } }],
     onArchives() {
-      if (!manifest) {
-        present.openArchives({ found: 0, total: 0, shards: [] });
-        return;
-      }
-      present.openArchives(buildCatalogue(manifest, save.load()));
+      const progress = save.load();
+      const cat = manifest
+        ? buildCatalogue(manifest, progress)
+        : { found: 0, total: 0, shards: [] };
+      cat.codex = listTruths(progress);
+      present.openArchives(cat);
     },
     onHold(open) { if (env.onHold) env.onHold(open); },
     mountSettings(menu) {
@@ -273,10 +274,28 @@ export function mountAdventureUi(doc, env) {
   function archiveTruth() {
     if (!quest || quest.truthSaved || quest.result !== "pass") return;
     quest.truthSaved = true;
-    const insight = plan && plan.truth && plan.truth.insight;
+    const truth = plan && plan.truth;
+    const insight = truth && truth.insight;
     const zoneId = manifest && manifest.zoneId;
-    if (!insight || !zoneId) return;
-    save.rememberTruth(zoneId, insight);
+    if (!insight || !zoneId || !plan || !Number.isInteger(plan.seed)) return;
+    const rec = save.rememberTruth(zoneId, insight, new Date().toISOString(), {
+      question: plan.question || "",
+      kind: truth.kind || "",
+      title: plan.title || "",
+      seed: plan.seed,
+    });
+    if (!rec.order) return;
+    quest.codexOrder = rec.order;
+    if (quest.phase === "ending" && quest.overlay && Array.isArray(quest.overlay.lines)) {
+      const mark = "Vérité #" + rec.order;
+      if (!quest.overlay.lines.includes(mark)) {
+        quest.overlay = {
+          kicker: quest.overlay.kicker,
+          title: quest.overlay.title,
+          lines: quest.overlay.lines.concat(mark),
+        };
+      }
+    }
   }
 
   function tick(dt, blocked) {
