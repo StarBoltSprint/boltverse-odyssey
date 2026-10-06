@@ -7,6 +7,7 @@ No session ndjson was in this cook, so `tools/quota/quota.py` was not run. No qu
 | Item | Kind | Turns or tries | Quota spent | Result |
 | --- | --- | --- | --- | --- |
 | horizon break, seated rocks, whole monolith | other | 1 | n/a | accepted |
+| ground covers the pass start | other | 1 | n/a | accepted |
 
 ## This step
 
@@ -31,3 +32,25 @@ The first pass clip started 108 m before the gate. The sprint look was only abou
 - New failure entries: the three headings above
 
 LOD swaps were requested and then cancelled before any LOD code was added. This step did not change LOD.
+
+## This step
+
+- Step: extend the ground quad so the pass shot is textured from frame 0
+- Accepted because (command, row, numbers): bottom-60% pure black on frames 0, 6, … 66 is 0.36%–1.43% (old frame 0 was 82%). Mean luma of that band on frame 0 is 48.8. Walk and sprint `drawCalls` 7, `texMB` 184.5. Twenty-five node tests pass, including “the carpet covers the ground under the pass camera”. Clip 720×1600, 72 frames, 24 fps, 3.0 s, 2,968,735 bytes. Frame 0 still saved.
+- Recipe appended (path, or `none`): none. The horizon-seat recipe gained a carpet gotcha. The commit field stays `0183819`.
+- Failure appended (heading in `learn/failures.md`, or `none`): `2026-10-06 — the pass shot started west of the carpet`
+
+## Biggest waste
+
+The first recorded pass clip was accepted while the camera stood west of the carpet. The walk still was inside the quad, so it did not catch the hole.
+
+## Reuse next time
+
+- Recipes to copy: `learn/recipes/corridor-horizon-seat.md`
+- Library ids to place (`tools/library`), instead of recooking: the same m3 quad
+- Failures that would have caught this take earlier: `2026-10-06 — the pass shot started west of the carpet`
+
+## Added this take
+
+- New recipes: none
+- New failure entries: `2026-10-06 — the pass shot started west of the carpet`

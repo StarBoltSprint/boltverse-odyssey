@@ -713,3 +713,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | The gate sits 16 m off the run, alternating sides. A sprint looks out to 150 m so the gate is drawn while it is still in the lens. Pitch may rise by at most 0.22 rad above the rest chase, and never goes below the current pitch. |
 | Guard | `node --test packs/corridor-ab/play/look.test.mjs` — "a tall monolith raises the pitch and a far one does not". `node --test packs/corridor-ab/play/stream.test.mjs` — "a sprint sees the gate while it is still inside the forward view". |
 | Sources | `packs/corridor-ab/play/look.js`, `packs/corridor-ab/play/stream.js`, `packs/corridor-ab/play/play.js` |
+
+### 2026-10-06 — the pass shot started west of the carpet
+
+| | |
+| --- | --- |
+| Take | Corridor ground covers the pass start. |
+| Defect | For the first two thirds of `monolith-pass.mp4`, the ground near Bolt (from about 40% of the frame down) was pure black. The textured floor filled in toward the camera as Bolt ran east. Walk was fine. |
+| Root cause | The carpet west edge was `xStart − 40` (`xmin` −40.6). The pass Bolt starts at −63.275, with the camera 6.1 m further west, so the near ground was past the quad and the clear colour showed. Fog and the m3 crossfade were not the hole. No test placed the carpet behind the pass camera. |
+| Fix | `carpetWest` is the further west of the walk apron and the pass Bolt minus 40 m. The west edge is −103.275. One quad, same texture, same draw. |
+| Guard | `node --test packs/corridor-ab/play/stream.test.mjs` — "the carpet covers the ground under the pass camera". No pixel row measures every 6th frame. The proof clip is that check. |
+| Sources | `packs/corridor-ab/play/stream.js`, `packs/corridor-ab/play/play.js` |

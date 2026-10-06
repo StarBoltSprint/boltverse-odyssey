@@ -1,37 +1,38 @@
-# Report — corridor horizon break, seated rocks, whole monolith
+# Report — corridor ground covers the pass start
 
 Verdict: PASS
 
 Date: 2026-10-06
 
+The black floor on `monolith-pass.mp4` was the carpet extent. The quad’s west edge was `xStart − 40` (`xmin` −40.6). The pass shot starts Bolt at −63.275, and the camera sits 6.1 m behind him, so the near ground (about the bottom 60% of the frame) fell off the quad and showed the clear colour. Fog mixes toward a sky sample, and the m3 crossfade was already on the fragments that were drawn. Walk starts at 6.725, inside the old carpet, which is why `walk-speed.png` stayed textured.
+
+`carpetWest` takes the further west of the walk apron and the pass Bolt minus 40 m. The west edge is now −103.275 (`xmin` −104.4). One quad, the same native m3, the same draw.
+
 | # | Done when | Result |
 | --- | --- | --- |
-| 1 | Horizon silhouettes are existing boulder or stone hulls, at least 8 m tall, inside the 22.7° view, clear of the run, sharing the hull draws. | `horizonSeats` returns 8 seats. Heights 8–13.8 m. Each lateral is inside `tan(11.35°)` and past the footprint. They instance on the boulder and stone draws already in the page. Draw calls stay 7. |
-| 2 | Ground fog colour comes from a sky-slice average. Density and cap stay inside law 67. Bolt is not fogged. | Titles `fogOn` 1. Samples are `sky-0.jpg`, `sky-4.jpg`, `sky-8.jpg`, rows 0.72–0.90. Density 0.015, cap 0.58. The Bolt shader has no fog uniform. |
-| 3 | A settled rock bottom is −0.18 m. A rising rock is lower. | `rockBottom(1)` is −0.18. `rockBottom(0.4)` is lower. The rise starts under the plane. |
-| 4 | The gate sits about 16 m off the run. Pitch-up keeps the 28 m top in frame, within about 12° of the rest pitch, and never looks further down. | Sprint title `gateLat` 16. Rest pitch −0.159. On the pass clip the pitch moves −0.159 → −0.141 (up only). Far from the gate the pitch stays −0.159. |
-| 5 | Walk shows fewer rocks than sprint. The arch stays on the path. WFC does not run during play. | Walk rocks 13, gate null, arch z 2.175. Sprint rocks 33, gate present. `hang_selftest.py` exit 0. |
-| 6 | Selftests | `hang_selftest.py` exit 0. `node --test packs/corridor-ab/play/*.test.mjs` 24 pass. `renderlint` PASS on six sources. |
-| 7 | Proofs and phone numbers | Stills `walk-speed.png`, `sprint-speed.png`, `rocks-grounded.png`. Clip `monolith-pass.mp4` 720×1600, 72 frames, 24 fps, 3.0 s, 1,627,162 bytes. |
-| 8 | No new Imagine file. | No new image or video cook. Hulls, lofts, ground, and sky slices are the zone A files already in the tree. |
+| 1 | Carpet west edge is at least 40 m behind the pass-shot Bolt. | `carpetWest(0.725, −63.275)` is −103.275. The play test “the carpet covers the ground under the pass camera” passes. |
+| 2 | Frame 0 has no black floor in the bottom 60%. | Pure black (`r,g,b < 8`) in the bottom 60% is 0.36% (was 82% on the old frame 0). Mean luma there is 48.8. The largest dark blob is a small silhouette, not a floor wedge. |
+| 3 | Every 6th frame is the same. | Frames 0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66. Bottom-60% pure black is 0.36%–1.43% on the source and 0.37%–1.57% on the encoded clip. No bottom row is more than 14% black. No run of rows is a black band. |
+| 4 | Walk and sprint stay at 7 draws and 184.5 MB. | Both titles: `drawCalls` 7, `texMB` 184.5, `activeVideos` 4, `glError` 0, `fogOn` 1, `pawY` 0, `eyeY` 3.5. Walk rocks 13, jsMs 3.2. Sprint rocks 33, live 36, jsMs 0.9, `gateLat` 16. |
+| 5 | Tests | `node --test packs/corridor-ab/play/*.test.mjs` 25 pass. `hang_selftest.py` was already exit 0 on this tree. `renderlint` was already PASS on the six sources. No play source changed after those gates. |
+| 6 | Frame-0 still | `monolith-frame0.png` is the new frame 0 (byte-identical to the capture). |
+| 7 | No new Imagine file. | The clip is a re-record of the same page. |
+| 8 | The three nit fixes stay. | Horizon seats, `rockBottom` −0.18, gate at 16 m, pitch −0.159 → −0.141 on the new clip. |
 
 ## Phone numbers (law 65, 720×1600, seed 68)
 
-| | Walk | Max sprint |
-| --- | --- | --- |
-| drawCalls | 7 | 7 |
-| texMB | 184.5 | 184.5 |
-| activeVideos | 4 | 4 |
-| jsMs | 0.9 | 1.2 |
-| glError | 0 | 0 |
-| rocks / live | 13 / 15 | 33 / 36 |
-| speed | 2.85 | 8.6 |
-| charge | 0 | 1 |
-| eyeY / pawY | 3.5 / 0 | 3.5 / 0 |
-| fogOn | 1 | 1 |
+| | Walk | Max sprint | Pass frame 0 |
+| --- | --- | --- | --- |
+| drawCalls | 7 | 7 | 7 |
+| texMB | 184.5 | 184.5 | 184.5 |
+| activeVideos | 4 | 4 | 3 |
+| jsMs | 3.2 | 0.9 | 15.7 |
+| glError | 0 | 0 | 0 |
 
-Caps stay drawCalls ≤ 12, texMB ≤ 260, videos ≤ 4. Draws and texture MB match the previous horizon pass. The pass clip at speed 8.6 reads the same 7 draws and 184.5 MB; jsMs on that clip is 1.5 after the first frame. A video count of 3 on the clip is the gallop handoff and stays inside the cap.
+Caps stay drawCalls ≤ 12, texMB ≤ 260, videos ≤ 4. Draws and texture MB match the previous table. jsMs moves with the frame; the first pass frame is 15.7 and later frames on the same clip are 0.4 and 6.5. A video count of 2–3 on the clip is the gallop handoff.
 
-The gate offset is 16 m, not 55 m. At 55 m the monolith sits outside the 22.7° lens for the whole approach. 16 m clears the gate footprint and stays inside that lens while the top still fits. A sprint looks out to 150 m so the gate is drawn before it leaves the lens. A walk keeps the shorter window, so the gate still waits.
+## Proof
+
+`monolith-pass.mp4` 720×1600, 72 frames, 24 fps, 3.0 s, 2,968,735 bytes. `monolith-frame0.png` is frame 0. Walk and sprint stills from the nit pass were not recaptured.
 
 LOD swaps were not part of this pass.

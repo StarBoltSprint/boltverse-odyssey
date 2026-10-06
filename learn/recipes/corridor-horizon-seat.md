@@ -25,7 +25,7 @@ not stored
 
 | Command | Row | Numbers |
 | --- | --- | --- |
-| `node --test packs/corridor-ab/play/*.test.mjs` | tests | 24 pass |
+| `node --test packs/corridor-ab/play/*.test.mjs` | tests | 25 pass |
 | `python3 tools/wfc-path/hang_selftest.py` | exit | 0 |
 | `node tools/playcheck/src/renderlint.mjs` on six play sources | render_source | PASS |
 | `?shot=walk` settled title | phone | drawCalls 7, texMB 184.5, activeVideos 4, jsMs 0.9, fogOn 1, rocks 13, speed 2.85, pawY 0 |
@@ -39,6 +39,8 @@ A flat ground meets the sky in a straight line in this lens. Short rocks do not 
 A 55 m gate offset leaves the 22.7° view, so the monolith is not in the picture. 16 m clears the footprint and stays in frame. The sprint look reaches 150 m so the gate is drawn while that is still true. The walk keeps the short look, so the gate still waits. Pitch-up is capped at 0.22 rad above the rest chase and never goes below the current pitch.
 
 The rock base is `−0.18 + (emerge − 1) * 2.2` metres, so the rise comes from below the plane.
+
+The carpet west edge has to sit behind the pass camera, not only behind the walk spawn. `carpetWest` is the further west of `xStart − 40` and the pass Bolt minus 40 m. A walk still inside the old quad does not prove the pass shot.
 
 ## Reuse
 
