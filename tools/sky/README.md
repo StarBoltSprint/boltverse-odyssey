@@ -64,3 +64,23 @@ A layout with no `sky` key does not call this. The playcheck fixture loads the s
 ```bash
 python3 tools/sky/selftest.py
 ```
+
+## Layer source (no pixel loss)
+
+A shipped sky video layer keeps the Imagine original's decoded frames. Record the original once, commit the small record next to the layer, and check the shipped file against it.
+
+```bash
+python3 tools/sky/layer_source.py record --source <session>/videos/N.mp4 --out <layer>.source.json
+python3 tools/sky/layer_source.py check --shipped <layer>.mp4 --record <layer>.source.json --mag <m> --canvas-w 720 [--phone-px 1080]
+python3 tools/sky/layer_source_selftest.py
+```
+
+| Row | FAIL |
+| --- | --- |
+| size | Shipped width or height below the source |
+| fps | Frame rate differs |
+| pixels | A shipped frame (rgb24 md5) is not a frame of the source: re-encode, scale, crop, or colour pass. A stream copy and a frame subset pass. |
+| bitrate | Lower video bitrate on a file whose frames changed |
+| magnification | `--mag` above 1 |
+
+`--phone-px` prints the browser upscale from the canvas to the phone as an INFO row. Exit 0 PASS, 1 FAIL, 2 broken invocation. Method: [`docs/METHOD/sky-video-layers.md`](../../docs/METHOD/sky-video-layers.md).
