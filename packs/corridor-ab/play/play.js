@@ -586,7 +586,7 @@ if (paceShot || filmShot) {
   heading = 90;
   if (shot === "pass") {
     settleField(field, { x, z, heading, forward: 1, gallop: true }, "sprint");
-    if (field.gate) x = field.gate.x - 108;
+    if (field.gate) x = field.gate.x - 118;
     z = pathZ;
     settleField(field, { x, z, heading, forward: 1, gallop: true }, "sprint");
     speed = field.speed;

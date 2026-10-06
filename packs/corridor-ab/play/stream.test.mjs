@@ -127,6 +127,15 @@ test("the arch and the wreck sit on the run and the gate waits for sprint", () =
   assert.ok(seat.x > 6);
 });
 
+test("a sprint sees the gate while it is still inside the forward view", () => {
+  const gateX = 0.725 + 54;
+  const sprint = settleField(field(), body(gateX - 100), "sprint");
+  assert.ok(sprint.gate);
+  assert.ok(Math.abs(sprint.gate.x - gateX) < 0.2);
+  const walk = settleField(field(), body(gateX - 100), "walk");
+  assert.equal(walk.gate, null);
+});
+
 test("a rock bottom stays under the plane through the rise", () => {
   assert.equal(rockBottom(1), -ROCK_SINK);
   assert.ok(rockBottom(0.4) < -ROCK_SINK);

@@ -680,3 +680,36 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | One quad covers the carpet. It repeats `m3.png` at native 1024². m3's rim matches its core (about 1 luma). Four windows of that same still crossfade, so a rim cannot line up into a grid. |
 | Guard | No machine row measures the screen grid. The play title records `ground` `m3`, `groundLayers` 1, `groundPx` 1024. The proof crops are the check. |
 | Sources | `packs/corridor-ab/play/play.js`, `packs/zone-a/src/ground/m3.png` |
+
+### 2026-10-06 — the ground met the sky in a straight line
+
+| | |
+| --- | --- |
+| Take | Corridor horizon break, seated rocks, whole monolith. |
+| Defect | The carpet ended in a ruler where it met the sky. |
+| Root cause | A flat quad vanishes in a straight line in this lens. Rocks about 1.3 m tall stay below an eye at 3.5 m, so they never cross that line. No test required a tall solid inside the forward view. |
+| Fix | Eight existing boulder and stone hulls, scaled to at least 8 m, sit on the horizon inside the 22.7° cone and clear of the run. Ground fog uses a colour sampled from the sky slices, density 0.015, cap 0.58. Bolt's draw is not fogged. |
+| Guard | `node --test packs/corridor-ab/play/stream.test.mjs` — "horizon seats are tall, in the forward view, and clear of the run". |
+| Sources | `packs/corridor-ab/play/stream.js`, `packs/corridor-ab/play/play.js` |
+
+### 2026-10-06 — a settled rock sat on the plane and the rise showed a gap
+
+| | |
+| --- | --- |
+| Take | Corridor horizon break, seated rocks, whole monolith. |
+| Defect | Streamed rocks read as floating, including while they rose into place. |
+| Root cause | The lowest vertex was placed at y = 0 when emerge finished, and the rise added a positive gap on the way up. No test required the base to stay under the plane. |
+| Fix | `rockBottom` is −0.18 m when settled and lower while emerging, so the rise starts underground. |
+| Guard | `node --test packs/corridor-ab/play/stream.test.mjs` — "a rock bottom stays under the plane through the rise". |
+| Sources | `packs/corridor-ab/play/stream.js`, `packs/corridor-ab/play/play.js` |
+
+### 2026-10-06 — the 28 m gate was cut off, and a far offset left the lens
+
+| | |
+| --- | --- |
+| Take | Corridor horizon break, seated rocks, whole monolith. |
+| Defect | The monolith was cut at the top when Bolt came close. Moving it 55 m off the run hid it: the 22.7° lens never held it. |
+| Root cause | On the run line the top needs a pitch the chase is not allowed to take. At 55 m of lateral the bearing is outside the lens for the whole approach. The sprint look of about 55 m also dropped the gate before it was inside the cone. No test measured the gate's screen position. |
+| Fix | The gate sits 16 m off the run, alternating sides. A sprint looks out to 150 m so the gate is drawn while it is still in the lens. Pitch may rise by at most 0.22 rad above the rest chase, and never goes below the current pitch. |
+| Guard | `node --test packs/corridor-ab/play/look.test.mjs` — "a tall monolith raises the pitch and a far one does not". `node --test packs/corridor-ab/play/stream.test.mjs` — "a sprint sees the gate while it is still inside the forward view". |
+| Sources | `packs/corridor-ab/play/look.js`, `packs/corridor-ab/play/stream.js`, `packs/corridor-ab/play/play.js` |

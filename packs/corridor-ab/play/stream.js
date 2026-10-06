@@ -283,7 +283,10 @@ function fill(field, body, opt) {
   for (let i = 0; i < field.pool.length; i++) field.pool[i].keep = 0;
 
   considerMonu(field, KIND_ARCH, body.x, look, behind, nearM, emergeNow);
-  considerMonu(field, KIND_GATE, body.x, look, behind, nearM, emergeNow);
+  // The 22.7° lens only holds a gate 16 m off the run while it is still far.
+  // A sprint looks that far. A walk keeps the shorter window, so the gate still waits.
+  const gateLook = field.charge > 0.8 ? Math.max(look, 150) : look;
+  considerMonu(field, KIND_GATE, body.x, gateLook, behind, nearM, emergeNow);
   considerMonu(field, KIND_WRECK, body.x, look, behind, nearM, emergeNow);
 
   const reach = look + behind + CELL * 2;

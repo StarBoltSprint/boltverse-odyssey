@@ -1,22 +1,37 @@
-# Report — corridor horizon and one ground
+# Report — corridor horizon break, seated rocks, whole monolith
 
 Verdict: PASS
 
+Date: 2026-10-06
+
 | # | Done when | Result |
 | --- | --- | --- |
-| 1 | Horizon between 30% and 35% from the top. Eye 3.5 m, behind Bolt. Stick-right still turns toward camera-right. | `look.test.mjs`. Eye y 3.5. Aim y 2.52. Pitch about −9°. Settled titles `eyeY` 3.5. |
-| 2 | Bolt's body is in the lower third. Paws stay on y = 0. | The same test puts the body below the lower-third line. Titles `pawY` 0. On the walk still the bright body sits from about row 1200 to 1450. |
-| 3 | Arch top inside the frame at 20 m and at 30 m ahead. | The test puts the 7.4 m arch top between the frame top and the horizon at both distances. The walk still shows sky above that arch. |
-| 4 | One ground still, native size, one layer. | Title `ground` `m3`, `groundLayers` 1, `groundPx` 1024. One quad. The sampler repeats it. |
-| 5 | Sprint still climbs. A faster pace still streams more rocks. | Walk speed 2.85, rocks 13. Sprint speed 8.6, rocks 33. The clip climbs 0.07 → 4.95 while rocks go 5 → 33. |
-| 6 | Selftests | `hang_selftest.py` exit 0. `node --test packs/corridor-ab/play/*.test.mjs` 20 pass. `renderlint` PASS on six sources. |
-| 7 | Proofs | `proof/walk-speed.png`, `proof/sprint-speed.png` (720×1600). `proof/sprint-run.mp4` 720×1600, 72 frames, 24 fps, 3.0 s, 2,353,380 bytes. |
-| 8 | No new Imagine file. WFC stays load-time. | The floor still is `packs/zone-a/src/ground/m3.png`. The corridor solve is still `when: load`. |
+| 1 | Horizon silhouettes are existing boulder or stone hulls, at least 8 m tall, inside the 22.7° view, clear of the run, sharing the hull draws. | `horizonSeats` returns 8 seats. Heights 8–13.8 m. Each lateral is inside `tan(11.35°)` and past the footprint. They instance on the boulder and stone draws already in the page. Draw calls stay 7. |
+| 2 | Ground fog colour comes from a sky-slice average. Density and cap stay inside law 67. Bolt is not fogged. | Titles `fogOn` 1. Samples are `sky-0.jpg`, `sky-4.jpg`, `sky-8.jpg`, rows 0.72–0.90. Density 0.015, cap 0.58. The Bolt shader has no fog uniform. |
+| 3 | A settled rock bottom is −0.18 m. A rising rock is lower. | `rockBottom(1)` is −0.18. `rockBottom(0.4)` is lower. The rise starts under the plane. |
+| 4 | The gate sits about 16 m off the run. Pitch-up keeps the 28 m top in frame, within about 12° of the rest pitch, and never looks further down. | Sprint title `gateLat` 16. Rest pitch −0.159. On the pass clip the pitch moves −0.159 → −0.141 (up only). Far from the gate the pitch stays −0.159. |
+| 5 | Walk shows fewer rocks than sprint. The arch stays on the path. WFC does not run during play. | Walk rocks 13, gate null, arch z 2.175. Sprint rocks 33, gate present. `hang_selftest.py` exit 0. |
+| 6 | Selftests | `hang_selftest.py` exit 0. `node --test packs/corridor-ab/play/*.test.mjs` 24 pass. `renderlint` PASS on six sources. |
+| 7 | Proofs and phone numbers | Stills `walk-speed.png`, `sprint-speed.png`, `rocks-grounded.png`. Clip `monolith-pass.mp4` 720×1600, 72 frames, 24 fps, 3.0 s, 1,627,162 bytes. |
+| 8 | No new Imagine file. | No new image or video cook. Hulls, lofts, ground, and sky slices are the zone A files already in the tree. |
 
-Phone line, walk (`?shot=walk`, seed 68): `drawCalls=7`, `texMB=184.5`, `activeVideos=4`, `jsMs=3.6`, `glError=0`, rocks 13, live 15, speed 2.85, charge 0.
+## Phone numbers (law 65, 720×1600, seed 68)
 
-Phone line, max sprint (`?shot=sprint`): `drawCalls=7`, `texMB=184.5`, `activeVideos=4`, `jsMs=3.5`, `glError=0`, rocks 33, live 36, speed 8.6, charge 1.
+| | Walk | Max sprint |
+| --- | --- | --- |
+| drawCalls | 7 | 7 |
+| texMB | 184.5 | 184.5 |
+| activeVideos | 4 | 4 |
+| jsMs | 0.9 | 1.2 |
+| glError | 0 | 0 |
+| rocks / live | 13 / 15 | 33 / 36 |
+| speed | 2.85 | 8.6 |
+| charge | 0 | 1 |
+| eyeY / pawY | 3.5 / 0 | 3.5 / 0 |
+| fogOn | 1 | 1 |
 
-The 28 m Eclipse Gate still rises past the top of a 22.7° portrait when it is 20–30 m ahead. The arch (7.4 m) and the wreck (4.1 m) fit. Opening the lens was not part of this step.
+Caps stay drawCalls ≤ 12, texMB ≤ 260, videos ≤ 4. Draws and texture MB match the previous horizon pass. The pass clip at speed 8.6 reads the same 7 draws and 184.5 MB; jsMs on that clip is 1.5 after the first frame. A video count of 3 on the clip is the gallop handoff and stays inside the cap.
 
-On the sprint clip a video count dips to 2 while the gallop clip hands off. That stays inside the cap of 4.
+The gate offset is 16 m, not 55 m. At 55 m the monolith sits outside the 22.7° lens for the whole approach. 16 m clears the gate footprint and stays inside that lens while the top still fits. A sprint looks out to 150 m so the gate is drawn before it leaves the lens. A walk keeps the shorter window, so the gate still waits.
+
+LOD swaps were not part of this pass.
