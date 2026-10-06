@@ -3,6 +3,8 @@
  * Reaching the Gate is a radius on the seat the loft already uses.
  */
 
+import { CODEX_INSCRIBED } from "../../common/archives/codex.js";
+
 export const INTRO_MS = 2500;
 export const END_MS = 2500;
 export const GATE_RADIUS_M = 5;
@@ -95,6 +97,18 @@ function passOverlay(quest) {
   };
 }
 
+function codexOverlay(quest) {
+  const lines = [];
+  if (quest.plan.question) lines.push(quest.plan.question);
+  lines.push(quest.plan.truth.insight);
+  lines.push(CODEX_INSCRIBED);
+  return {
+    kicker: "Codex vivant",
+    title: quest.plan.title,
+    lines,
+  };
+}
+
 function returnOverlay(quest) {
   return {
     kicker: "Citadel",
@@ -141,7 +155,8 @@ export function stepQuest(quest, dt, x, z) {
       quest.phase = "ending";
       quest.clock = 0;
       quest.holdMove = true;
-      quest.overlay = passOverlay(quest);
+      const insight = quest.plan.truth && quest.plan.truth.insight;
+      quest.overlay = insight ? codexOverlay(quest) : passOverlay(quest);
     }
     return quest;
   }

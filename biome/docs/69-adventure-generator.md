@@ -16,7 +16,7 @@ SmiR’s decrees tie Bolt to xAI’s mission: understand the true nature of the 
 - Decree 72, Truth-Vision — <https://x.com/SMiR123451/status/2041902939438977533>
 - Decree 96, xAI Truth Orbs — <https://x.com/SMiR123451/status/2044755747158794388>
 
-Every adventure is framed around a question about the universe. `question` on the card is optional. The reward is a `truth`: a Truth Orb or an Echo Shard (`kind` `truth-orb` or `echo-shard`) and a short insight. Play writes that insight into the shared Living Archives progress (`packs/common/archives`, storage `boltverse.archives.v1`, key `<zoneId>/truth`). The insight opens `next_hook.question`. That is why the chain does not end. It is the Eternal Loop.
+Every adventure is framed around a question about the universe. `question` on the card is optional. The reward is a `truth`: a Truth Orb or an Echo Shard (`kind` `truth-orb` or `echo-shard`) and a short insight. Play writes that insight into the shared Living Archives progress (`packs/common/archives`, storage `boltverse.archives.v1`). One adventure keeps one row (`codex[]`, keyed by zone and seed). Several adventures in the same zone all stay. An older `<zoneId>/truth` row is still read and is the same truth when that zone is `adv-<seed>`. The Archives page lists them in the order they were gathered. The insight opens `next_hook.question`. That is why the chain does not end. It is the Eternal Loop.
 
 ## Star Core
 
@@ -102,7 +102,7 @@ Schema `adventure/1`, file [`tools/adventure/adventure.schema.json`](../../tools
 | `run` | What the corridor can play now. `lengthM` 36–79.75. `objects[]`. `density[]` in (0, 1]. `objective`. `goalSegment`. Optional `echoShards` (`count`, `radiusM`, `required`, `positions`). |
 | `boss` | Narrative plus `reach-gate` or `reach-segment`, and `timerSec` 20–120. v0 moves Bolt to that seat. It does not spawn a new actor. |
 | `question` | Optional. One question about the universe. At most 160 characters. |
-| `truth` | Optional. `kind` is `truth-orb` or `echo-shard`. `insight` is a short revelation of the Ancient Star Core, at most 220 characters. Play saves it in the Living Archives. |
+| `truth` | Optional. `kind` is `truth-orb` or `echo-shard`. `insight` is a short revelation of the Ancient Star Core, at most 220 characters. Play saves one row per adventure in the Living Archives. |
 | `reward`, `return` | Ending lines. The pass card also shows `truth.insight` when the card has one. |
 | `uniqueTouch` | At most two rows. `status` is `stub`. |
 | `next_hook` | Optional. `teaser`, `seed`, `context` (at most 240 characters), and an optional `question`. The handoff for Continuer. The truth’s insight is what opens that next question. |
@@ -164,7 +164,7 @@ The chain context stays short. Each link is instant. The Citadel return is not g
 
 ## Play
 
-[`packs/corridor-ab`](../../packs/corridor-ab/README.md). The paw menu has one row, **Nouvelle aventure**, after Resume. That row is the temporary launch. It generates a card and plays it: a 2.5 s intro text card, then the seeded stream (length, density, resolved solids), Echo Shard pickups, the goal timer, a 2.5 s ending, then **Continuer** or **Retour à la Citadelle**.
+[`packs/corridor-ab`](../../packs/corridor-ab/README.md). The paw menu has **Nouvelle aventure** after Resume, then **Archives** and **Codex vivant**. Nouvelle aventure is the temporary launch. It generates a card and plays it: a 2.5 s intro text card, then the seeded stream (length, density, resolved solids), Echo Shard pickups, the goal timer, a 2.5 s inscription when the card has a truth, then **Continuer** or **Retour à la Citadelle**. Codex vivant opens the same Archives page, on the truth list.
 
 `?adventure=1&seed=1024` plays the lost ship. `?shot=intro`, `?shot=mid`, and `?shot=adventure` are the proof shots. `?shot=walk` and `?shot=sprint` stay the phone measurement and do not mount the paw.
 

@@ -9,7 +9,7 @@ Owner decision 2026-10-04 18:29: decrees #351 and #352 are unparked for this sys
 Owner-approved UI 2026-10-04 18:36:
 
 - In the zone the shard is an Imagine crystal on the ground. Pickup shows a small card (the Imagine shot and one lore line) for 2–3 seconds, then it fades. The run continues. There is no menu at the moment of pickup.
-- The only always-on control is a small paw button in the top-right corner. It opens Resume, Archives, Citadel (disabled, “coming soon”), and Settings. It does not sit on the joystick or on the camera-tilt swipe.
+- The only always-on control is a small paw button in the top-right corner. It opens Resume, Archives, Codex vivant, Citadel (disabled, “coming soon”), and Settings. It does not sit on the joystick or on the camera-tilt swipe. Codex vivant is the Living Codex list on that same Archives page: one Star Core truth per finished adventure, in the order they were gathered. An older `<zoneId>/truth` save is still read. Echo Shard rows stay on the page.
 - Archives is a page over an Imagine painting of the Citadel Living Archives hall. Found shards are listed with their picture. Unfound shards use the dim Imagine silhouette. Plain words (titles, lore, counts) are HTML text.
 
 ## What a new zone writes

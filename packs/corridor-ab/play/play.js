@@ -1128,9 +1128,33 @@ function advanceFilm() {
   frame();
   return document.title;
 }
+function aimCollect() {
+  if (params.get("collect") !== "1" || !adventureUi || !adventureUi.quest) return;
+  const q = adventureUi.quest;
+  if (q.phase !== "run") return;
+  const shards = q.plan.shards || [];
+  let target = null;
+  let best = 1e9;
+  for (let i = 0; i < shards.length; i++) {
+    const shard = shards[i];
+    if (q.found.has(shard.id)) continue;
+    const ahead = shard.x - x;
+    if (ahead < -0.5) continue;
+    if (ahead < best) {
+      best = ahead;
+      target = shard;
+    }
+  }
+  let targetZ = pathZ;
+  if (target && best <= 6) targetZ = target.z;
+  const dz = targetZ - z;
+  if (Math.abs(dz) > 0.12) z += Math.sign(dz) * Math.min(Math.abs(dz), 0.35);
+}
+
 function advanceAdventure() {
   const dt = 1 / 24;
   camDt = dt;
+  aimCollect();
   const held = adventureUi && adventureUi.quest && adventureUi.quest.holdMove;
   if (!held) {
     state.forward = 1;
