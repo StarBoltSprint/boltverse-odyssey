@@ -9,13 +9,17 @@ Verdict: PASS
 | 3 | Seed 1024 plays the lost xAI ship on the wreck. | `card-1024.json`. Goal kind `wreck`. Gate is not in the object set. |
 | 4 | Endless handoff. | Optional `next_hook`. End card: Continuer, or Retour à la Citadelle. Chain text is capped at 240. A `truth` insight, when present, opens `next_hook.question`. |
 | 5 | Tests | `node --test tools/adventure/adventure.test.mjs packs/corridor-ab/play/*.test.mjs` — 40 pass, 0 fail. `renderlint` PASS, 8 files. Archives hall-loop row still needs PIL; that miss is older than this step. |
-| 6 | Proofs | `intro-card.png`, `mid-adventure.png` (720×1600). `adventure-run.mp4` 720×1600, 79 frames, 24 fps, 3.29 s, 687,657 bytes. |
+| 6 | Proofs | `intro-card.png`, `mid-adventure.png` (720×1600). `adventure-run.mp4` 720×1600, 84 frames, 24 fps, 3.50 s, 676,643 bytes. Every 6th frame of the lower half stays textured (near-black fraction about 0.001). |
 | 7 | No new Imagine file. No key in the repo. | Unique touch returns `imagineCalls` 0. BYOK stays in `localStorage` and is posted only to `api.x.ai`. |
 | 8 | Phone budget columns match the horizon step. | Walk and sprint: `drawCalls` 7, `texMB` 184.5, `activeVideos` 4. |
 
-Phone line, walk (`?shot=walk`, seed 68): `drawCalls=7`, `texMB=184.5`, `activeVideos=4`, `jsMs=5.8`, `glError=0`, rocks 13, live 15, speed 2.85, charge 0. Adventure UI was not mounted.
+Rebased onto main `acc7cdf` (corridor horizon seats, grounded rocks, monolith off the run, carpet past the pass camera). Walk and sprint still do not mount the paw.
 
-Phone line, max sprint (`?shot=sprint`, seed 68): `drawCalls=7`, `texMB=184.5`, `activeVideos=4`, `jsMs=748.6`, `glError=0`, rocks 33, live 36, speed 8.6, charge 1. The sprint `jsMs` is the cold swiftshader frame that stopped the shot, not a steady frame. `drawCalls`, `texMB`, and `activeVideos` match the horizon step (`jsMs` there was 3.5 on a warm frame).
+Phone line, walk (`?shot=walk`, seed 68), after the Bolt video is up: `drawCalls=7`, `texMB=184.5`, `activeVideos=4`, `jsMs=0.8`, `glError=0`, rocks 13.
+
+Phone line, max sprint (`?shot=sprint`, seed 68), same settle: `drawCalls=7`, `texMB=184.5`, `activeVideos=4`, `jsMs=0.4`, `glError=0`, rocks 33.
+
+The adventure clip frames that have the sky videos up read the same budget: `drawCalls` 7, `texMB` 184.5, `activeVideos` 4.
 
 Sample titles: The Lost xAI Ship (1024), The Echoing Fracture (68), The Shard Symphony (351).
 
