@@ -31,14 +31,20 @@ import {
   wrap360,
 } from "./look.js";
 import { pushDiscs, RUN_YAW } from "./scatter.js";
-import { GATE_FIRST, PASS_BACK, POOL, RISE_M, carpetWest, createField, horizonSeats, rockBottom, rockCount, settleField, stepField } from "./stream.js";
+import { GATE_FIRST, PASS_BACK, POOL, RISE_M, bindPlan, carpetWest, createField, horizonSeats, rockBottom, rockCount, settleField, stepField } from "./stream.js";
 import { DEFAULT_POST, POST_LIMITS } from "../../zone-a/play/biomeblend.js";
+import { cardToPlan } from "../../../tools/adventure/playmap.js";
+import { offlineCard } from "../../../tools/adventure/offline.js";
+import { loadCatalog, loadLibrary, mountAdventureUi } from "./adventure-ui.js";
+import { createQuest, skipToRun, stepQuest } from "./quest.js";
 import { mountSky } from "./sky.js";
 import { mountRuins } from "../../zone-a/play/ruins.js";
 import { loadWorldHull } from "../../zone-a/play/hullmesh.js";
 
 const params = new URLSearchParams(location.search);
 const shot = params.get("shot");
+const adventureShot = shot === "intro" || shot === "mid" || shot === "adventure";
+const adventureBoot = params.get("adventure") === "1" || adventureShot;
 const debug = params.get("debug") === "1";
 const shotDeg = Number(params.get("deg") || 90);
 const shotAt = Number(params.get("at") || 0.5);
@@ -332,6 +338,24 @@ const field = createField({
   x0: xStart,
   pathZ,
 });
+let adventureCatalog = null;
+let adventureLibrary = null;
+let adventurePlan = null;
+let adventureQuest = null;
+if (adventureBoot) {
+  adventureCatalog = await loadCatalog(absUrl);
+  adventureLibrary = await loadLibrary(absUrl);
+  const card = offlineCard(seed, adventureCatalog);
+  adventurePlan = cardToPlan(card, { x0: xStart, pathZ, maxLengthM: corridor.length_m }, adventureCatalog, adventureLibrary);
+  bindPlan(field, {
+    seed: adventurePlan.seed,
+    lengthM: adventurePlan.lengthM,
+    objects: adventurePlan.objects,
+    density: adventurePlan.density,
+  });
+  adventureQuest = createQuest(adventurePlan);
+  if (shot === "mid") skipToRun(adventureQuest);
+}
 const rockManifest = await fetch(absUrl("packs/zone-a/src/rocks/manifest.json")).then((r) => r.json());
 const hulls = {};
 for (const type of ["boulder", "stone"]) {
@@ -472,6 +496,7 @@ const startZone = zones[world.start];
 let x = startZone.spawn.position[0];
 let z = startZone.spawn.position[1];
 let heading = startZone.spawn.heading_deg;
+const home = { x, z, heading };
 let speed = 0;
 let prevMode = "zone";
 const camLook = createLook();
@@ -513,9 +538,12 @@ function stepFlow(dt, walk) {
   return sample;
 }
 
+let adventureUi = null;
 function moveBody(dt) {
-  const filming = filmShot;
+  const filming = filmShot || shot === "adventure";
   if (shot && !filming) return;
+  if (adventureUi && adventureUi.blocksPlay()) return;
+  if (adventureUi && adventureUi.quest && adventureUi.quest.holdMove) return;
   if (filming) {
     state.forward = 1;
     state.gallop = true;
@@ -581,7 +609,28 @@ function standForRocks() {
   settleField(field, { x, z, heading, forward: 1, gallop: false }, "walk");
 }
 
-if (paceShot || filmShot) {
+if (shot === "mid" && adventurePlan) {
+  x = xStart + adventurePlan.lengthM * 0.42;
+  z = pathZ;
+  heading = 90;
+  settleField(field, { x, z, heading, forward: 1, gallop: true }, "sprint");
+  speed = field.speed;
+  useBolt(true);
+  applyPoses();
+  syncRocks();
+  stepFlow(0, 0);
+} else if (shot === "intro" || shot === "adventure") {
+  x = xStart + 4;
+  z = pathZ;
+  heading = 90;
+  settleField(field, { x, z, heading, forward: 1, gallop: false }, "walk");
+  speed = 0;
+  field.speed = 0;
+  useBolt(false);
+  applyPoses();
+  syncRocks();
+  stepFlow(0, 0);
+} else if (paceShot || filmShot) {
   x = xStart + 6;
   z = pathZ;
   heading = 90;
@@ -860,6 +909,13 @@ function frame() {
     archPier,
     seed,
     lengthM: corridor.length_m,
+    adventure: adventureUi && adventureUi.quest ? {
+      phase: adventureUi.quest.phase,
+      title: adventureUi.quest.plan.title,
+      found: adventureUi.quest.found.size,
+      total: adventureUi.quest.plan.shards.length,
+      result: adventureUi.quest.result,
+    } : null,
     ground: "m3",
     groundLayers: images.length,
     groundPx: maxW,
@@ -895,6 +951,55 @@ function sampleSky() {
   window.__corridor.skyMid = skyMid;
   window.__corridor.settled = true;
   document.title = JSON.stringify(window.__corridor);
+}
+
+function returnHome() {
+  x = home.x;
+  z = home.z;
+  heading = home.heading;
+  speed = 0;
+  field.speed = 0;
+  field.charge = 0;
+}
+
+function stepAdventure(dt) {
+  if (!adventureUi || !adventureUi.quest) return;
+  if (shot === "intro" || shot === "mid") return;
+  const blocked = adventureUi.blocksPlay();
+  if (!blocked) adventureUi.sense(x, z);
+  const q = adventureUi.quest;
+  stepQuest(q, blocked ? 0 : dt, x, z);
+  if (q.teleport) {
+    q.teleport = false;
+    returnHome();
+  }
+}
+
+if (!shot || adventureBoot) {
+  adventureUi = mountAdventureUi(document, {
+    absUrl,
+    origin: { x0: xStart, pathZ, maxLengthM: corridor.length_m },
+    field,
+    catalog: adventureCatalog,
+    library: adventureLibrary,
+    plan: adventurePlan,
+    quest: adventureQuest,
+    onBegin() {
+      x = xStart + 4;
+      z = pathZ;
+      heading = 90;
+      speed = 0;
+    },
+    onHold(open) {
+      sky.hold(open);
+      if (open) {
+        if (!idle.paused) idle.pause();
+        if (gallop.src && !gallop.paused) gallop.pause();
+      } else {
+        useBolt(speed > 0.05);
+      }
+    },
+  });
 }
 
 frame();
@@ -994,9 +1099,26 @@ function advanceFilm() {
   frame();
   return document.title;
 }
+function advanceAdventure() {
+  const dt = 1 / 24;
+  const held = adventureUi && adventureUi.quest && adventureUi.quest.holdMove;
+  if (!held) {
+    state.forward = 1;
+    state.gallop = true;
+    state.turn = 0;
+    moveBody(dt);
+    stepFlow(dt, flowSpeed());
+  }
+  stepAdventure(dt);
+  if (adventureUi) adventureUi.tick(dt, false);
+  playFrames += 1;
+  frame();
+  return document.title;
+}
 if (filmShot) window.__advance = advanceFilm;
+if (shot === "adventure") window.__advance = advanceAdventure;
 function tick(now) {
-  if (filmShot) {
+  if (filmShot || shot === "adventure") {
     frame();
     requestAnimationFrame(tick);
     return;
@@ -1005,6 +1127,8 @@ function tick(now) {
   then = now;
   pollKeys();
   moveBody(dt);
+  stepAdventure(dt);
+  if (adventureUi) adventureUi.tick(dt, adventureUi.blocksPlay());
   stepFlow(dt, flowSpeed());
   playFrames += 1;
   frame();

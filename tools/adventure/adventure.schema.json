@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "adventure/1",
+  "title": "Boltverse adventure card",
+  "description": "Contract the game reads. It does not decree the plot.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "title", "seed", "source", "drawsPixels", "shard", "beats", "run", "boss", "reward", "return"],
+  "properties": {
+    "schema": { "const": "adventure/1" },
+    "title": { "type": "string", "minLength": 3, "maxLength": 80 },
+    "seed": { "type": "integer", "minimum": 1 },
+    "source": { "enum": ["offline", "grok", "fallback"] },
+    "drawsPixels": { "const": false },
+    "shard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "type", "biomeHint", "paletteHint", "playableNow", "assetNote"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "type": { "type": "string", "minLength": 1 },
+        "biomeHint": { "type": "string", "maxLength": 120 },
+        "paletteHint": { "type": "string", "maxLength": 80 },
+        "playableNow": { "type": "boolean" },
+        "assetNote": { "type": "string", "minLength": 1, "maxLength": 240 }
+      }
+    },
+    "beats": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "segment", "text"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1, "maxLength": 40 },
+          "segment": { "type": "string", "minLength": 1, "maxLength": 64 },
+          "text": { "type": "string", "minLength": 1, "maxLength": 240 },
+          "variation": { "type": "integer", "minimum": 0, "maximum": 999 }
+        }
+      }
+    },
+    "run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lengthM", "objects", "density", "objective", "goalSegment"],
+      "properties": {
+        "lengthM": { "type": "number", "minimum": 36, "maximum": 79.75 },
+        "objects": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 5,
+          "items": { "enum": ["stone", "boulder", "arch", "gate", "wreck"] }
+        },
+        "density": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 8,
+          "items": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 }
+        },
+        "echoShards": { "type": "object" },
+        "objective": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "goalSegment": { "type": "string", "minLength": 1, "maxLength": 64 }
+      }
+    },
+    "boss": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "text", "objective", "timerSec"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "text": { "type": "string", "minLength": 1, "maxLength": 240 },
+        "objective": { "enum": ["reach-gate", "reach-segment"] },
+        "segment": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "timerSec": { "type": "number", "minimum": 20, "maximum": 120 }
+      }
+    },
+    "question": { "type": "string", "minLength": 1, "maxLength": 160 },
+    "truth": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "insight"],
+      "properties": {
+        "kind": { "enum": ["truth-orb", "echo-shard"] },
+        "insight": { "type": "string", "minLength": 1, "maxLength": 220 }
+      }
+    },
+    "reward": { "type": "string", "minLength": 1, "maxLength": 160 },
+    "return": { "type": "string", "minLength": 1, "maxLength": 160 },
+    "next_hook": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["teaser", "seed", "context"],
+      "properties": {
+        "teaser": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "seed": { "type": "integer", "minimum": 1 },
+        "context": { "type": "string", "maxLength": 240 },
+        "question": { "type": "string", "minLength": 1, "maxLength": 160 }
+      }
+    },
+    "uniqueTouch": {
+      "type": "array",
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "prompt", "status"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1, "maxLength": 40 },
+          "prompt": { "type": "string", "minLength": 1, "maxLength": 240 },
+          "status": { "const": "stub" }
+        }
+      }
+    }
+  }
+}

@@ -621,6 +621,7 @@ export async function mountSky(gl, env) {
   const videos = [];
   const videoTex = [];
   const stamps = new Map();
+  let held = false;
   const loops = (manifest.layers || []).map((row) => "packs/zone-a/src/sky/" + row.file);
   for (let i = 0; i < loops.length; i++) {
     const v = document.createElement("video");
@@ -706,7 +707,7 @@ export async function mountSky(gl, env) {
 
     const gain = [0, 0, 0];
     for (let i = 0; i < videos.length; i++) {
-      if (videos[i].paused && videos[i].readyState >= 2) videos[i].play().catch(() => {});
+      if (!held && videos[i].paused && videos[i].readyState >= 2) videos[i].play().catch(() => {});
       if (uploadVideo(videos[i], videoTex[i], "sky-v" + i)) gain[i] = SKY_GAIN[i] || 0;
     }
     if (gain[0] > 0 || gain[1] > 0 || gain[2] > 0) {
@@ -760,5 +761,13 @@ export async function mountSky(gl, env) {
     return n;
   }
 
-  return { draw, texBytes, activeVideos, ready: true };
+  function hold(on) {
+    held = !!on;
+    if (!held) return;
+    for (let i = 0; i < videos.length; i++) {
+      if (!videos[i].paused) videos[i].pause();
+    }
+  }
+
+  return { draw, texBytes, activeVideos, hold, ready: true };
 }
