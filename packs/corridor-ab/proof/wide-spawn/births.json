@@ -1,0 +1,260 @@
+{
+  "born": 254,
+  "table": [
+    {
+      "t": 0,
+      "speed": 0.07,
+      "charge": 0,
+      "stone": 0,
+      "boulder": 0,
+      "arch": 0,
+      "gate": 0,
+      "wreck": 0
+    },
+    {
+      "t": 1,
+      "speed": 1.72,
+      "charge": 0.04,
+      "stone": 4,
+      "boulder": 4,
+      "arch": 1,
+      "gate": 1,
+      "wreck": 1
+    },
+    {
+      "t": 2,
+      "speed": 3.37,
+      "charge": 0.09,
+      "stone": 5,
+      "boulder": 7,
+      "arch": 1,
+      "gate": 1,
+      "wreck": 1
+    },
+    {
+      "t": 3,
+      "speed": 5.02,
+      "charge": 0.13,
+      "stone": 6,
+      "boulder": 7,
+      "arch": 1,
+      "gate": 1,
+      "wreck": 1
+    },
+    {
+      "t": 4,
+      "speed": 6.67,
+      "charge": 0.17,
+      "stone": 8,
+      "boulder": 6,
+      "arch": 1,
+      "gate": 1,
+      "wreck": 1
+    },
+    {
+      "t": 5,
+      "speed": 8.32,
+      "charge": 0.21,
+      "stone": 10,
+      "boulder": 7,
+      "arch": 1,
+      "gate": 1,
+      "wreck": 1
+    },
+    {
+      "t": 6,
+      "speed": 9.97,
+      "charge": 0.25,
+      "stone": 15,
+      "boulder": 8,
+      "arch": 2,
+      "gate": 2,
+      "wreck": 2
+    },
+    {
+      "t": 7,
+      "speed": 11.62,
+      "charge": 0.29,
+      "stone": 14,
+      "boulder": 10,
+      "arch": 2,
+      "gate": 2,
+      "wreck": 2
+    },
+    {
+      "t": 8,
+      "speed": 12.2,
+      "charge": 0.34,
+      "stone": 19,
+      "boulder": 13,
+      "arch": 2,
+      "gate": 2,
+      "wreck": 2
+    },
+    {
+      "t": 9,
+      "speed": 12.65,
+      "charge": 0.38,
+      "stone": 24,
+      "boulder": 15,
+      "arch": 2,
+      "gate": 2,
+      "wreck": 2
+    },
+    {
+      "t": 10,
+      "speed": 13.1,
+      "charge": 0.42,
+      "stone": 29,
+      "boulder": 22,
+      "arch": 2,
+      "gate": 2,
+      "wreck": 2
+    },
+    {
+      "t": 11,
+      "speed": 13.55,
+      "charge": 0.46,
+      "stone": 32,
+      "boulder": 22,
+      "arch": 2,
+      "gate": 2,
+      "wreck": 2
+    },
+    {
+      "t": 12,
+      "speed": 13.99,
+      "charge": 0.5,
+      "stone": 37,
+      "boulder": 24,
+      "arch": 2,
+      "gate": 2,
+      "wreck": 2
+    },
+    {
+      "t": 13,
+      "speed": 14.44,
+      "charge": 0.54,
+      "stone": 41,
+      "boulder": 24,
+      "arch": 2,
+      "gate": 2,
+      "wreck": 2
+    },
+    {
+      "t": 14,
+      "speed": 14.89,
+      "charge": 0.59,
+      "stone": 47,
+      "boulder": 23,
+      "arch": 2,
+      "gate": 2,
+      "wreck": 2
+    },
+    {
+      "t": 15,
+      "speed": 15.34,
+      "charge": 0.63,
+      "stone": 48,
+      "boulder": 29,
+      "arch": 2,
+      "gate": 2,
+      "wreck": 2
+    },
+    {
+      "t": 16,
+      "speed": 15.79,
+      "charge": 0.67,
+      "stone": 53,
+      "boulder": 31,
+      "arch": 2,
+      "gate": 2,
+      "wreck": 2
+    },
+    {
+      "t": 17,
+      "speed": 16.23,
+      "charge": 0.71,
+      "stone": 56,
+      "boulder": 34,
+      "arch": 2,
+      "gate": 2,
+      "wreck": 2
+    },
+    {
+      "t": 18,
+      "speed": 16.68,
+      "charge": 0.75,
+      "stone": 54,
+      "boulder": 35,
+      "arch": 3,
+      "gate": 3,
+      "wreck": 1
+    },
+    {
+      "t": 19,
+      "speed": 17.13,
+      "charge": 0.79,
+      "stone": 48,
+      "boulder": 39,
+      "arch": 3,
+      "gate": 3,
+      "wreck": 3
+    },
+    {
+      "t": 20,
+      "speed": 17.58,
+      "charge": 0.84,
+      "stone": 50,
+      "boulder": 37,
+      "arch": 3,
+      "gate": 3,
+      "wreck": 3
+    },
+    {
+      "t": 21,
+      "speed": 18.02,
+      "charge": 0.88,
+      "stone": 50,
+      "boulder": 37,
+      "arch": 3,
+      "gate": 3,
+      "wreck": 3
+    },
+    {
+      "t": 22,
+      "speed": 18.47,
+      "charge": 0.92,
+      "stone": 45,
+      "boulder": 42,
+      "arch": 3,
+      "gate": 3,
+      "wreck": 3
+    },
+    {
+      "t": 23,
+      "speed": 18.92,
+      "charge": 0.96,
+      "stone": 42,
+      "boulder": 45,
+      "arch": 3,
+      "gate": 3,
+      "wreck": 3
+    },
+    {
+      "t": 24,
+      "speed": 19.35,
+      "charge": 1,
+      "stone": 44,
+      "boulder": 43,
+      "arch": 3,
+      "gate": 3,
+      "wreck": 3
+    }
+  ],
+  "laterals": {
+    "arch": 8,
+    "gate": 14,
+    "wreck": 13
+  }
+}
