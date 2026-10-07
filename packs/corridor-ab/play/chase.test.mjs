@@ -142,10 +142,12 @@ test("headings 82 and 127 at the sprint start stay under the limit", () => {
   }
 });
 
-test("the old gate elevation row is on the plate and under the limit", () => {
-  const row = sweepPose("walk", x0 + 54, 330);
+test("a far sprint gate stays on the plate and under the limit", () => {
+  const row = sweepPose("sprint", x0 + 6, 90);
   const gate = row.hits.find((h) => h.id === "gate");
   assert.ok(gate);
+  assert.ok(gate.visible);
+  assert.ok(gate.dist > 90, "dist " + gate.dist);
   assert.ok(gate.mag <= MAG_LIMIT, "gate " + gate.mag + " at " + gate.dist);
 });
 

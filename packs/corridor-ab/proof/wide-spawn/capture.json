@@ -1,0 +1,359 @@
+{
+  "seconds": 20,
+  "fps": 2,
+  "view": [
+    720,
+    1600
+  ],
+  "plainUrl": true,
+  "sawArch": true,
+  "sawGate": true,
+  "sawWreck": true,
+  "latLo": -24.5,
+  "latHi": 22.7,
+  "maxDraw": 9,
+  "maxTex": 184.5,
+  "maxVideos": 3,
+  "table": [
+    {
+      "t": 1,
+      "x": 7.6,
+      "speed": 1.6500000000000006,
+      "counts": {
+        "stone": 3,
+        "boulder": 4,
+        "arch": 1,
+        "gate": 1,
+        "wreck": 1
+      },
+      "drawCalls": 0,
+      "view": [
+        720,
+        1600
+      ]
+    },
+    {
+      "t": 2,
+      "x": 10.1,
+      "speed": 3.3000000000000025,
+      "counts": {
+        "stone": 6,
+        "boulder": 4,
+        "arch": 1,
+        "gate": 1,
+        "wreck": 1
+      },
+      "drawCalls": 0,
+      "view": [
+        720,
+        1600
+      ]
+    },
+    {
+      "t": 3,
+      "x": 14.3,
+      "speed": 4.949999999999998,
+      "counts": {
+        "stone": 7,
+        "boulder": 5,
+        "arch": 1,
+        "gate": 1,
+        "wreck": 1
+      },
+      "drawCalls": 0,
+      "view": [
+        720,
+        1600
+      ]
+    },
+    {
+      "t": 4,
+      "x": 20.1,
+      "speed": 6.59999999999999,
+      "counts": {
+        "stone": 8,
+        "boulder": 5,
+        "arch": 1,
+        "gate": 1,
+        "wreck": 1
+      },
+      "drawCalls": 0,
+      "view": [
+        720,
+        1600
+      ]
+    },
+    {
+      "t": 5,
+      "x": 27.5,
+      "speed": 8.249999999999982,
+      "counts": {
+        "stone": 12,
+        "boulder": 7,
+        "arch": 1,
+        "gate": 1,
+        "wreck": 1
+      },
+      "drawCalls": 0,
+      "view": [
+        720,
+        1600
+      ]
+    },
+    {
+      "t": 6,
+      "x": 36.6,
+      "speed": 9.899999999999974,
+      "counts": {
+        "stone": 12,
+        "boulder": 11,
+        "arch": 1,
+        "gate": 1,
+        "wreck": 1
+      },
+      "drawCalls": 0,
+      "view": [
+        720,
+        1600
+      ]
+    },
+    {
+      "t": 7,
+      "x": 47.4,
+      "speed": 11.549999999999965,
+      "counts": {
+        "stone": 16,
+        "boulder": 10,
+        "arch": 2,
+        "gate": 2,
+        "wreck": 2
+      },
+      "drawCalls": 0,
+      "view": [
+        720,
+        1600
+      ]
+    },
+    {
+      "t": 8,
+      "x": 59.3,
+      "speed": 12.183333333333323,
+      "counts": {
+        "stone": 21,
+        "boulder": 14,
+        "arch": 2,
+        "gate": 2,
+        "wreck": 2
+      },
+      "drawCalls": 0,
+      "view": [
+        720,
+        1600
+      ]
+    },
+    {
+      "t": 9,
+      "x": 71.8,
+      "speed": 12.631249999999987,
+      "counts": {
+        "stone": 25,
+        "boulder": 20,
+        "arch": 2,
+        "gate": 2,
+        "wreck": 2
+      },
+      "drawCalls": 0,
+      "view": [
+        720,
+        1600
+      ]
+    },
+    {
+      "t": 10,
+      "x": 84.6,
+      "speed": 13.079166666666652,
+      "counts": {
+        "stone": 28,
+        "boulder": 20,
+        "arch": 2,
+        "gate": 2,
+        "wreck": 2
+      },
+      "drawCalls": 0,
+      "view": [
+        720,
+        1600
+      ]
+    },
+    {
+      "t": 11,
+      "x": 97.9,
+      "speed": 13.527083333333318,
+      "counts": {
+        "stone": 34,
+        "boulder": 21,
+        "arch": 2,
+        "gate": 2,
+        "wreck": 2
+      },
+      "drawCalls": 0,
+      "view": [
+        720,
+        1600
+      ]
+    },
+    {
+      "t": 12,
+      "x": 111.7,
+      "speed": 13.974999999999984,
+      "counts": {
+        "stone": 40,
+        "boulder": 23,
+        "arch": 2,
+        "gate": 2,
+        "wreck": 2
+      },
+      "drawCalls": 0,
+      "view": [
+        720,
+        1600
+      ]
+    },
+    {
+      "t": 13,
+      "x": 125.8,
+      "speed": 14.422916666666662,
+      "counts": {
+        "stone": 46,
+        "boulder": 23,
+        "arch": 2,
+        "gate": 2,
+        "wreck": 2
+      },
+      "drawCalls": 0,
+      "view": [
+        720,
+        1600
+      ]
+    },
+    {
+      "t": 14,
+      "x": 140.4,
+      "speed": 14.87083333333334,
+      "counts": {
+        "stone": 48,
+        "boulder": 26,
+        "arch": 2,
+        "gate": 2,
+        "wreck": 2
+      },
+      "drawCalls": 0,
+      "view": [
+        720,
+        1600
+      ]
+    },
+    {
+      "t": 15,
+      "x": 155.5,
+      "speed": 15.31875000000002,
+      "counts": {
+        "stone": 52,
+        "boulder": 30,
+        "arch": 2,
+        "gate": 2,
+        "wreck": 2
+      },
+      "drawCalls": 0,
+      "view": [
+        720,
+        1600
+      ]
+    },
+    {
+      "t": 16,
+      "x": 171.1,
+      "speed": 15.7666666666667,
+      "counts": {
+        "stone": 54,
+        "boulder": 33,
+        "arch": 2,
+        "gate": 2,
+        "wreck": 2
+      },
+      "drawCalls": 0,
+      "view": [
+        720,
+        1600
+      ]
+    },
+    {
+      "t": 17,
+      "x": 187.1,
+      "speed": 16.21458333333338,
+      "counts": {
+        "stone": 54,
+        "boulder": 34,
+        "arch": 2,
+        "gate": 2,
+        "wreck": 2
+      },
+      "drawCalls": 0,
+      "view": [
+        720,
+        1600
+      ]
+    },
+    {
+      "t": 18,
+      "x": 203.5,
+      "speed": 16.66250000000006,
+      "counts": {
+        "stone": 49,
+        "boulder": 39,
+        "arch": 3,
+        "gate": 3,
+        "wreck": 2
+      },
+      "drawCalls": 0,
+      "view": [
+        720,
+        1600
+      ]
+    },
+    {
+      "t": 19,
+      "x": 220.4,
+      "speed": 17.110416666666737,
+      "counts": {
+        "stone": 49,
+        "boulder": 38,
+        "arch": 3,
+        "gate": 3,
+        "wreck": 3
+      },
+      "drawCalls": 0,
+      "view": [
+        720,
+        1600
+      ]
+    },
+    {
+      "t": 20,
+      "x": 237.8,
+      "speed": 17.558333333333415,
+      "counts": {
+        "stone": 51,
+        "boulder": 36,
+        "arch": 3,
+        "gate": 3,
+        "wreck": 3
+      },
+      "drawCalls": 0,
+      "view": [
+        720,
+        1600
+      ]
+    }
+  ]
+}

@@ -856,3 +856,25 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | `frame()` still steps the chase when the draw is skipped. Only the GL clear and the draws are skipped. |
 | Guard | No unit row steps the page. The proof is `packs/corridor-ab/proof/density-seam/capture.json`: boom stays near 6 and the 60 s clip’s lower half is not empty. |
 | Sources | `packs/corridor-ab/play/play.js`, `packs/corridor-ab/proof/density-seam/capture.mjs` |
+
+### 2026-10-07 — only rocks streamed in on the sprint
+
+| | |
+| --- | --- |
+| Take | Phone pass on main `c9b8d07`. |
+| Defect | The Roman arch, the dark slate monolith gate, and the ship wreck did not keep arriving during the sprint. Rocks did. |
+| Root cause | `considerMonu` kept one slot of each kind and blanked the others. The ruin draw shifted that single triple. |
+| Fix | Each anchor in the far band can seat an arch, a gate, and a wreck. At most three live copies of a kind. One ruin draw per triple. Slots behind Bolt are reused. |
+| Guard | `node --test packs/corridor-ab/play/stream.test.mjs` — "a sprint seats arches, the gate, and the wreck across the far band". Capture `packs/corridor-ab/proof/wide-spawn/capture.json`: arch, gate, and wreck are live by 1 s and at 3 copies by 20 s. `maxDraw` 9. |
+| Sources | `packs/corridor-ab/play/stream.js`, `packs/corridor-ab/play/play.js` |
+
+### 2026-10-07 — far spawns sat on one 11 m line
+
+| | |
+| --- | --- |
+| Take | Phone pass on main `c9b8d07`. |
+| Defect | New seats appeared far ahead, but only along the 11 m field. A turn did not fill the width of the view. |
+| Root cause | `halfWidth` was 11. Rocks were chosen from lanes at `pathZ` plus a fixed offset, along world +x. |
+| Fix | A birth has to sit in the heading-relative band `bandHalf(ahead)`, which is the portrait half-width at that distance. The seat is world-locked. The density count uses that half at 92 m, so charge fills the band and does not widen the measurement. |
+| Guard | `node --test packs/corridor-ab/play/stream.test.mjs` — "a turn births across the forward band and stays outside the near frustum" and "rocks per visible area rise across a long sprint". Capture laterals −24.5 m to +22.7 m. |
+| Sources | `packs/corridor-ab/play/stream.js` |

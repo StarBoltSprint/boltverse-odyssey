@@ -33,6 +33,15 @@ export const GATE_FIRST = 54;
 export const PASS_BACK = 118;
 export const CARPET_APRON = 40;
 const FRUSTUM_TAN = Math.tan((22.7 * Math.PI) / 180 / 2);
+/** Portrait half-angle, pulled in slightly so a birth stays inside the fog edge. */
+export const BAND_TAN = FRUSTUM_TAN * 0.92;
+/** Recycled monument copies. One ruin draw shows one arch, one gate, and one wreck. */
+export const MONU_CAP = 3;
+export const MONU_CELL = 36;
+/** Gate and wreck footprints stay off the centre line so a straight sprint is not walled. */
+export const GATE_CLEAR = 14;
+export const WRECK_CLEAR = 5;
+const PLAN_HALF = 11;
 
 const KIND_STONE = 1;
 const KIND_BOULDER = 2;
@@ -153,8 +162,8 @@ export function spawnDistance(speed) {
 }
 
 /**
- * Forward window. A walk stays short of the first gate. A sprint seats past
- * spawnDistance, and charge lengthens that band without widening the field.
+ * Forward window. A walk stays short of the far ring. A sprint seats past
+ * spawnDistance, and charge lengthens that band. Width is bandHalf, not this.
  */
 export function lookAhead(speed, charge) {
   const c = charge < 0 ? 0 : charge > 1 ? 1 : (charge || 0);
@@ -163,13 +172,36 @@ export function lookAhead(speed, charge) {
   return spawnDistance(v) + 28 + c * 96;
 }
 
+/** Half-width of the far band at `ahead` metres. The floor is the birth ring. */
+export function bandHalf(ahead) {
+  const d = ahead > SPAWN_M ? ahead : SPAWN_M;
+  return d * BAND_TAN;
+}
+
 /**
- * The run stays a fixed narrow width. Density rises because more rocks
- * sit in that same band, not because the valley gets wider.
+ * Fixed half used when counting rocks per square metre.
+ * Charge fills this band. It does not widen it.
  */
 export function halfWidth(charge) {
-  if (charge < 0) return 11;
-  return 11;
+  if (charge < -1) return bandHalf(SPAWN_M);
+  return bandHalf(SPAWN_M);
+}
+
+/** How many live copies of one monument kind a charge may hold. */
+export function monumentBudget(charge) {
+  const d = densityOf(charge);
+  const t = (d - 0.34) / 0.66;
+  const u = t < 0 ? 0 : t > 1 ? 1 : t;
+  return Math.round(1 + u * (MONU_CAP - 1));
+}
+
+/**
+ * Sky, ground, Bolt, four rock batches, plus one ruin draw per copy triple.
+ * The phone cap is 12 draws.
+ */
+export function drawBudget(ruinDraws) {
+  const n = ruinDraws > MONU_CAP ? MONU_CAP : ruinDraws < 0 ? 0 : ruinDraws;
+  return 7 + n;
 }
 
 /**
@@ -274,23 +306,42 @@ function findFree(pool) {
   return null;
 }
 
-/** The pool is the phone instance budget. A rock already behind Bolt yields its slot to a far birth. */
-function stealBehind(field, body) {
+function basis(body) {
   const yaw = body.heading * Math.PI / 180;
-  const fx = Math.sin(yaw);
-  const fz = Math.cos(yaw);
+  return {
+    fx: Math.sin(yaw),
+    fz: Math.cos(yaw),
+    rx: Math.cos(yaw),
+    rz: -Math.sin(yaw),
+  };
+}
+
+/**
+ * The pool is the phone instance budget.
+ * A slot already behind Bolt, or sitting outside the far band, yields to a new birth.
+ */
+function stealSlot(field, body) {
+  const b = basis(body);
   let best = null;
-  let bestAhead = -4;
+  let bestScore = 10000;
   for (let i = 0; i < field.pool.length; i++) {
     const slot = field.pool[i];
-    if (!slot.on || slot.kind > KIND_BOULDER) continue;
-    const ahead = (slot.x - body.x) * fx + (slot.z - body.z) * fz;
-    if (ahead < bestAhead) {
-      bestAhead = ahead;
+    if (!slot.on) continue;
+    const dx = slot.x - body.x;
+    const dz = slot.z - body.z;
+    const ahead = dx * b.fx + dz * b.fz;
+    const side = dx * b.rx + dz * b.rz;
+    const limit = bandHalf(ahead > SPAWN_M ? ahead : SPAWN_M);
+    const off = Math.abs(side) - limit;
+    let score = 10000 + ahead;
+    if (ahead < -4) score = ahead;
+    else if (off > 2) score = 1000 - off;
+    if (score < bestScore) {
+      bestScore = score;
       best = slot;
     }
   }
-  if (!best) return null;
+  if (!best || bestScore >= 10000) return null;
   blank(best);
   return best;
 }
@@ -363,13 +414,17 @@ export function horizonSeats(field, boltX) {
   return seats;
 }
 
-function considerRock(field, body, ix, lane, charge, emergeNow) {
-  const id = (ix + 4000) * 64 + (lane + 8);
+function rockId(ix, iz) {
+  return (ix + 8000) * 100003 + (iz + 8000);
+}
+
+function considerRock(field, body, ix, iz, emergeNow) {
+  const id = rockId(ix, iz);
   const x = ix * CELL;
   if (field.plan && field.plan.lengthM > 0) {
     if (x < field.x0 - CELL || x > field.x0 + field.plan.lengthM) return false;
   }
-  const h = mix(field.seed, ix + 17, lane + 3);
+  const h = mix(field.seed, ix + 17, iz + 3);
   const rank = hash01(h);
   if (rank > densityNow(field, x)) return false;
   const have = findId(field.pool, id);
@@ -378,7 +433,7 @@ function considerRock(field, body, ix, lane, charge, emergeNow) {
     if (emergeNow != null) have.emerge = emergeNow;
     return true;
   }
-  const free = findFree(field.pool) || stealBehind(field, body);
+  const free = findFree(field.pool) || stealSlot(field, body);
   if (!free) return false;
   let kind = hash01(h ^ 0x27d4eb2d) > 0.62 ? KIND_BOULDER : KIND_STONE;
   if (!allows(field, kind)) {
@@ -388,18 +443,110 @@ function considerRock(field, body, ix, lane, charge, emergeNow) {
   }
   const span = ROCK[kind].scale;
   const base = span[0] + hash01(h ^ 0x165667b1) * (span[1] - span[0]);
-  const lateral = LANES[lane];
-  const jitter = (hash01(h ^ 0x1b873593) - 0.5) * 1.4;
+  const jitterX = (hash01(h ^ 0x1b873593) - 0.5) * 2.2;
+  const jitterZ = (hash01(h ^ 0x85ebca6b) - 0.5) * 2.2;
   seat(field, free, {
     id,
     kind,
-    x: ix * CELL + jitter,
-    z: field.pathZ + lateral,
-    yaw: hash01(h ^ 0x85ebca6b) * 360,
+    x: x + jitterX,
+    z: iz * CELL + jitterZ,
+    yaw: hash01(h ^ 0xc2b2ae35) * 360,
     base,
     r: footprint(kind, base),
   }, emergeNow == null ? 1 : emergeNow);
   return true;
+}
+
+function monumentXZ(field, ix, iz, kind, h, ox, oz) {
+  let x = ix * MONU_CELL + (ox || 0) + (hash01(h) - 0.5) * 4;
+  let z = iz * MONU_CELL + (oz || 0) + (hash01(h ^ 0x9e3779b1) - 0.5) * 4;
+  const lat = z - field.pathZ;
+  if (kind === KIND_GATE && Math.abs(lat) < GATE_CLEAR) {
+    const sign = lat < 0 ? -1 : lat > 0 ? 1 : (hash01(h ^ 3) > 0.5 ? 1 : -1);
+    z = field.pathZ + sign * GATE_CLEAR;
+  } else if (kind === KIND_WRECK && Math.abs(lat) < WRECK_CLEAR) {
+    const sign = lat < 0 ? -1 : lat > 0 ? 1 : (hash01(h ^ 7) > 0.5 ? 1 : -1);
+    z = field.pathZ + sign * WRECK_CLEAR;
+  } else if (kind === KIND_ARCH && Math.abs(lat) < 18) {
+    const sign = (ix & 1) ? 1 : -1;
+    z = field.pathZ + sign * (8 + hash01(h ^ 11) * 10);
+  }
+  return { x, z };
+}
+
+function monuId(kind, ix, iz) {
+  return 900000000 + kind * 2000003 + (ix + 4000) * 4001 + (iz + 4000);
+}
+
+const KIND_OFF = {
+  3: [0, 0],
+  4: [14, 16],
+  5: [-14, -12],
+};
+
+function wideMonuments(field, body, fx, fz, rx, rz, look, behind, nearM, emergeNow) {
+  const reach = look + behind + MONU_CELL;
+  const ixLo = Math.floor((body.x - reach) / MONU_CELL) - 1;
+  const ixHi = Math.ceil((body.x + reach) / MONU_CELL) + 1;
+  const izLo = Math.floor((body.z - reach) / MONU_CELL) - 1;
+  const izHi = Math.ceil((body.z + reach) / MONU_CELL) + 1;
+  const want = { 3: [], 4: [], 5: [] };
+  const kinds = [KIND_ARCH, KIND_GATE, KIND_WRECK];
+  for (let ix = ixLo; ix <= ixHi; ix++) {
+    for (let iz = izLo; iz <= izHi; iz++) {
+      for (let k = 0; k < kinds.length; k++) {
+        const kind = kinds[k];
+        if (!allows(field, kind)) continue;
+        const h = mix(field.seed, ix * 3 + kind, iz * 5 + 11);
+        const off = KIND_OFF[kind];
+        const placed = monumentXZ(field, ix, iz, kind, h, off[0], off[1]);
+        const dx = placed.x - body.x;
+        const dz = placed.z - body.z;
+        const ahead = dx * fx + dz * fz;
+        const side = dx * rx + dz * rz;
+        if (ahead < -behind || ahead > look) continue;
+        if (Math.abs(side) > bandHalf(ahead > SPAWN_M ? ahead : SPAWN_M)) continue;
+        const id = monuId(kind, ix, iz);
+        const live = findId(field.pool, id);
+        if (!live && nearM > 0 && (ahead < nearM || Math.hypot(dx, dz) < nearM)) continue;
+        if (!live && nearM > 0 && ahead >= 0 && ahead < nearM && Math.abs(side) < ahead * FRUSTUM_TAN + 0.6) continue;
+        want[kind].push({ id, kind, x: placed.x, z: placed.z, ahead, live: !!live });
+      }
+    }
+  }
+  const budget = monumentBudget(field.charge);
+  for (let k = 0; k < kinds.length; k++) {
+    const list = want[kinds[k]];
+    list.sort((a, b) => {
+      if (a.live !== b.live) return a.live ? -1 : 1;
+      return a.ahead - b.ahead;
+    });
+    let n = 0;
+    for (let i = 0; i < list.length && n < budget; i++) {
+      const rec = list[i];
+      const have = findId(field.pool, rec.id);
+      if (have) {
+        have.keep = 1;
+        have.x = rec.x;
+        have.z = rec.z;
+        have.emerge = emergeNow == null ? 1 : emergeNow;
+        n += 1;
+        continue;
+      }
+      const free = findFree(field.pool) || stealSlot(field, body);
+      if (!free) return;
+      seat(field, free, {
+        id: rec.id,
+        kind: rec.kind,
+        x: rec.x,
+        z: rec.z,
+        yaw: 90,
+        base: 1,
+        r: 0,
+      }, emergeNow == null ? 1 : emergeNow);
+      n += 1;
+    }
+  }
 }
 
 function considerMonu(field, kind, boltX, look, behind, nearM, emergeNow) {
@@ -450,13 +597,58 @@ function inWindow(dx, dz, fx, fz, rx, rz, look, behind, half) {
   return ahead;
 }
 
+function considerLane(field, body, ix, lane, emergeNow) {
+  const id = (ix + 4000) * 64 + (lane + 8);
+  const x = ix * CELL;
+  if (field.plan && field.plan.lengthM > 0) {
+    if (x < field.x0 - CELL || x > field.x0 + field.plan.lengthM) return false;
+  }
+  const h = mix(field.seed, ix + 17, lane + 3);
+  if (hash01(h) > densityNow(field, x)) return false;
+  const have = findId(field.pool, id);
+  if (have) {
+    have.keep = 1;
+    if (emergeNow != null) have.emerge = emergeNow;
+    return true;
+  }
+  const free = findFree(field.pool) || stealSlot(field, body);
+  if (!free) return false;
+  let kind = hash01(h ^ 0x27d4eb2d) > 0.62 ? KIND_BOULDER : KIND_STONE;
+  if (!allows(field, kind)) {
+    const other = kind === KIND_BOULDER ? KIND_STONE : KIND_BOULDER;
+    if (!allows(field, other)) return false;
+    kind = other;
+  }
+  const span = ROCK[kind].scale;
+  const base = span[0] + hash01(h ^ 0x165667b1) * (span[1] - span[0]);
+  const jitter = (hash01(h ^ 0x1b873593) - 0.5) * 1.4;
+  seat(field, free, {
+    id,
+    kind,
+    x: x + jitter,
+    z: field.pathZ + LANES[lane],
+    yaw: hash01(h ^ 0x85ebca6b) * 360,
+    base,
+    r: footprint(kind, base),
+  }, emergeNow == null ? 1 : emergeNow);
+  return true;
+}
+
+function nearerSlot(cur, slot, fx, fz, body) {
+  if (!cur) return slot;
+  const ca = (cur.x - body.x) * fx + (cur.z - body.z) * fz;
+  const sa = (slot.x - body.x) * fx + (slot.z - body.z) * fz;
+  if (sa < 0 && ca >= 0) return cur;
+  if (ca < 0 && sa >= 0) return slot;
+  return sa < ca ? slot : cur;
+}
+
 function fill(field, body, opt) {
   const liveLook = opt.look != null ? opt.look : lookAhead(field.speed, field.charge);
   const look = !field.primed && opt.look == null ? Math.min(liveLook, OPEN_M) : liveLook;
   const behind = BEHIND_M;
   const bornAt = spawnDistance(field.speed);
-  const nearM = opt.nearM != null ? opt.nearM : (field.primed ? bornAt : 0);
-  const half = halfWidth(field.charge);
+  const nearM = opt.nearM != null ? opt.nearM : (field.plan ? 0 : bornAt);
   const emergeNow = opt.emerge;
   const yaw = body.heading * Math.PI / 180;
   const fx = Math.sin(yaw);
@@ -465,47 +657,54 @@ function fill(field, body, opt) {
   const rz = -Math.sin(yaw);
   for (let i = 0; i < field.pool.length; i++) field.pool[i].keep = 0;
 
-  if (allows(field, KIND_ARCH)) considerMonu(field, KIND_ARCH, body.x, look, behind, nearM, emergeNow);
-  // The 22.7° lens only holds a gate 16 m off the run while it is still far.
-  // A sprint looks that far. A walk keeps the shorter window, so the gate still waits.
-  // An adventure plan keeps its own look; the filter above already dropped a gate the card did not ask for.
-  const gateLook = !field.plan && field.charge > 0.8 ? Math.max(look, 150) : look;
-  if (allows(field, KIND_GATE)) considerMonu(field, KIND_GATE, body.x, gateLook, behind, nearM, emergeNow);
-  if (allows(field, KIND_WRECK)) considerMonu(field, KIND_WRECK, body.x, look, behind, nearM, emergeNow);
-
-  const reach = look + behind + CELL * 2;
-  const ixLo = Math.floor((body.x - reach) / CELL) - 1;
-  const ixHi = Math.ceil((body.x + reach) / CELL) + 1;
-  // Forward centre lanes first, so the portrait view fills before the shoulders.
-  function scanRocks(mode) {
+  if (field.plan) {
+    if (allows(field, KIND_ARCH)) considerMonu(field, KIND_ARCH, body.x, look, behind, nearM, emergeNow);
+    if (allows(field, KIND_GATE)) considerMonu(field, KIND_GATE, body.x, look, behind, nearM, emergeNow);
+    if (allows(field, KIND_WRECK)) considerMonu(field, KIND_WRECK, body.x, look, behind, nearM, emergeNow);
+    const reach = look + behind + CELL * 2;
+    const ixLo = Math.floor((body.x - reach) / CELL) - 1;
+    const ixHi = Math.ceil((body.x + reach) / CELL) + 1;
     for (let ix = ixLo; ix <= ixHi; ix++) {
       for (let lane = 0; lane < LANES.length; lane++) {
         const lateral = LANES[lane];
-        if (Math.abs(lateral) > half) continue;
+        if (Math.abs(lateral) > PLAN_HALF) continue;
         const x = ix * CELL;
         const z = field.pathZ + lateral;
         const dx = x - body.x;
         const dz = z - body.z;
-        const ahead = inWindow(dx, dz, fx, fz, rx, rz, look, behind, half);
+        const ahead = inWindow(dx, dz, fx, fz, rx, rz, look, behind, PLAN_HALF);
         if (ahead == null) continue;
-        const centre = Math.abs(lateral) < 6;
-        if (mode === 0 && !(ahead >= 0 && centre)) continue;
-        if (mode === 1 && !(ahead >= 0 && !centre)) continue;
-        if (mode === 2 && ahead >= 0) continue;
-        const id = (ix + 4000) * 64 + (lane + 8);
+        considerLane(field, body, ix, lane, emergeNow);
+      }
+    }
+  } else {
+    wideMonuments(field, body, fx, fz, rx, rz, look, behind, nearM, emergeNow);
+    const reach = look + behind + CELL * 2;
+    const ixLo = Math.floor((body.x - reach) / CELL) - 1;
+    const ixHi = Math.ceil((body.x + reach) / CELL) + 1;
+    const izLo = Math.floor((body.z - reach) / CELL) - 1;
+    const izHi = Math.ceil((body.z + reach) / CELL) + 1;
+    for (let ix = ixLo; ix <= ixHi; ix++) {
+      for (let iz = izLo; iz <= izHi; iz++) {
+        const x = ix * CELL;
+        const z = iz * CELL;
+        const dx = x - body.x;
+        const dz = z - body.z;
+        const ahead = dx * fx + dz * fz;
+        const side = dx * rx + dz * rz;
+        if (ahead < -behind || ahead > look) continue;
+        const half = bandHalf(ahead > SPAWN_M ? ahead : SPAWN_M);
+        if (Math.abs(side) > half) continue;
+        const id = rockId(ix, iz);
         if (nearM > 0 && !findId(field.pool, id)) {
-          const side = dx * rx + dz * rz;
           const dist = Math.hypot(dx, dz);
           const inFrustum = ahead >= 0 && ahead < nearM && Math.abs(side) < ahead * FRUSTUM_TAN + 0.6;
-          if (dist < nearM || inFrustum) continue;
+          if (ahead < nearM || dist < nearM || inFrustum) continue;
         }
-        considerRock(field, body, ix, lane, field.charge, emergeNow);
+        considerRock(field, body, ix, iz, emergeNow);
       }
     }
   }
-  scanRocks(0);
-  scanRocks(1);
-  scanRocks(2);
 
   const drop = [];
   for (let i = 0; i < field.pool.length; i++) {
@@ -513,7 +712,9 @@ function fill(field, body, opt) {
     if (!slot.on) continue;
     if (slot.keep) continue;
     const ahead = (slot.x - body.x) * fx + (slot.z - body.z) * fz;
-    if (slot.emerge > 0.45 && ahead > -behind) {
+    const side = (slot.x - body.x) * rx + (slot.z - body.z) * rz;
+    const limit = bandHalf(ahead > SPAWN_M ? ahead : SPAWN_M);
+    if (slot.kind <= KIND_BOULDER && slot.emerge > 0.45 && ahead > -behind && Math.abs(side) <= limit + 2) {
       slot.keep = 1;
       continue;
     }
@@ -533,9 +734,9 @@ function fill(field, body, opt) {
     const slot = field.pool[i];
     if (!slot.on) continue;
     live += 1;
-    if (slot.kind === KIND_ARCH) field.arch = slot;
-    else if (slot.kind === KIND_GATE) field.gate = slot;
-    else if (slot.kind === KIND_WRECK) field.wreck = slot;
+    if (slot.kind === KIND_ARCH) field.arch = nearerSlot(field.arch, slot, fx, fz, body);
+    else if (slot.kind === KIND_GATE) field.gate = nearerSlot(field.gate, slot, fx, fz, body);
+    else if (slot.kind === KIND_WRECK) field.wreck = nearerSlot(field.wreck, slot, fx, fz, body);
   }
   field.live = live;
 }
@@ -568,7 +769,8 @@ export function settleField(field, body, pace) {
   field.speed = sprint ? SPRINT_MAX : WALK_SPD;
   field.charge = sprint ? 1 : 0;
   field.primed = false;
-  fill(field, body, { nearM: 0, emerge: 1, look: lookAhead(field.speed, field.charge) });
+  const nearM = field.plan ? 0 : spawnDistance(field.speed);
+  fill(field, body, { nearM, emerge: 1, look: lookAhead(field.speed, field.charge) });
   field.primed = true;
   return field;
 }
@@ -593,6 +795,19 @@ export function slotIds(field) {
   for (let i = 0; i < field.pool.length; i++) if (field.pool[i].on) ids.push(field.pool[i].id);
   ids.sort((a, b) => a - b);
   return ids;
+}
+
+export function census(field) {
+  const counts = { stone: 0, boulder: 0, arch: 0, gate: 0, wreck: 0 };
+  const seats = [];
+  for (let i = 0; i < field.pool.length; i++) {
+    const slot = field.pool[i];
+    if (!slot.on) continue;
+    const name = KIND_NAME[slot.kind];
+    if (name) counts[name] += 1;
+    if (slot.kind >= KIND_ARCH) seats.push({ kind: name, x: slot.x, z: slot.z });
+  }
+  return { counts, seats };
 }
 
 export function rockCount(field) {

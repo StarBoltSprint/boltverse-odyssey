@@ -39,7 +39,7 @@ import {
 } from "./look.js";
 import { clearEye, rockShells } from "./mag.js";
 import { pushDiscs, RUN_YAW } from "./scatter.js";
-import { PASS_BACK, POOL, bindPlan, createField, horizonSeats, rockBottom, rockCount, seatSink, settleField, stepField } from "./stream.js";
+import { PASS_BACK, POOL, bindPlan, census, createField, horizonSeats, rockBottom, rockCount, seatSink, settleField, stepField } from "./stream.js";
 import { FOG_FAR, FOG_NEAR, groundRectFor } from "./ground.js";
 import { DEFAULT_POST, POST_LIMITS } from "../../zone-a/play/biomeblend.js";
 import { cardToPlan } from "../../../tools/adventure/playmap.js";
@@ -412,21 +412,79 @@ const discBuf = new Array(POOL);
 for (let i = 0; i < POOL; i++) discBuf[i] = { x: 0, z: 0, r: 0 };
 let discN = 0;
 
-function applyPoses() {
-  const names = ["arch", "gate", "wreck"];
-  for (let i = 0; i < names.length; i++) {
-    const slot = field[names[i]];
-    const pose = poses[names[i]];
-    if (!slot) {
-      pose.scale = 0;
-      pose.rise = -40;
-      continue;
-    }
-    pose.x = slot.x;
-    pose.z = slot.z;
-    pose.scale = 1;
-    pose.rise = 0;
+function writePose(pose, slot) {
+  if (!slot) {
+    pose.scale = 0;
+    pose.rise = -40;
+    return;
   }
+  pose.x = slot.x;
+  pose.z = slot.z;
+  pose.scale = 1;
+  pose.rise = 0;
+}
+
+function applyPoses() {
+  writePose(poses.arch, field.arch);
+  writePose(poses.gate, field.gate);
+  writePose(poses.wreck, field.wreck);
+}
+
+function monumentGroups() {
+  const arch = [];
+  const gate = [];
+  const wreck = [];
+  for (let i = 0; i < field.pool.length; i++) {
+    const slot = field.pool[i];
+    if (!slot.on) continue;
+    if (slot.kind === 3) arch.push(slot);
+    else if (slot.kind === 4) gate.push(slot);
+    else if (slot.kind === 5) wreck.push(slot);
+  }
+  const rank = (slot) => Math.hypot(slot.x - x, slot.z - z);
+  arch.sort((a, b) => rank(a) - rank(b));
+  gate.sort((a, b) => rank(a) - rank(b));
+  wreck.sort((a, b) => rank(a) - rank(b));
+  return { arch, gate, wreck };
+}
+
+/** One draw per triple. Three copies of a kind are three draws, still inside the cap of 12. */
+function drawRuins(vp) {
+  const groups = monumentGroups();
+  const n = Math.max(groups.arch.length, groups.gate.length, groups.wreck.length);
+  if (!n) return 0;
+  const batches = n > 3 ? 3 : n;
+  let draws = 0;
+  for (let i = 0; i < batches; i++) {
+    writePose(poses.arch, groups.arch[i]);
+    writePose(poses.gate, groups.gate[i]);
+    writePose(poses.wreck, groups.wreck[i]);
+    ruins.draw(vp, 0);
+    draws += ruins.draws || 0;
+  }
+  applyPoses();
+  return draws;
+}
+
+function collideCopies(ox, oz, nx, nz, radius) {
+  const groups = monumentGroups();
+  const n = Math.max(groups.arch.length, groups.gate.length, groups.wreck.length);
+  if (!n) return { x: nx, z: nz, contact: false };
+  let cx = ox;
+  let cz = oz;
+  let contact = false;
+  const batches = n > 3 ? 3 : n;
+  for (let i = 0; i < batches; i++) {
+    writePose(poses.arch, groups.arch[i]);
+    writePose(poses.gate, groups.gate[i]);
+    writePose(poses.wreck, groups.wreck[i]);
+    const slid = ruins.collide(cx, cz, nx, nz, radius);
+    cx = slid.x;
+    cz = slid.z;
+    if (slid.contact) contact = true;
+  }
+  applyPoses();
+  return { x: cx, z: cz, contact };
 }
 
 let rockBaseHi = 0;
@@ -595,7 +653,7 @@ function moveBody(dt) {
   const yaw = heading * Math.PI / 180;
   const nx = x + Math.sin(yaw) * speed * dt;
   const nz = z + Math.cos(yaw) * speed * dt;
-  const slid = ruins.collide(x, z, nx, nz, 0.3);
+  const slid = collideCopies(x, z, nx, nz, 0.3);
   const pushed = pushDiscs(slid.x, slid.z, discBuf, 0.3);
   x = pushed.x;
   z = pushed.z;
@@ -914,6 +972,9 @@ function frame() {
       window.__corridor.pitch = pitch;
       window.__corridor.boom = Math.round(Math.hypot(eyeBuf[0] - x, eyeBuf[2] - z) * 1000) / 1000;
       window.__corridor.frameN = playFrames;
+      const counted = census(field);
+      window.__corridor.counts = counted.counts;
+      window.__corridor.monuments = counted.seats;
     }
     return;
   }
@@ -942,8 +1003,7 @@ function frame() {
 
   const fogKNow = fogOn ? fogK : 0;
   if (ruins.setFog) ruins.setFog(eyeBuf[0], eyeBuf[2], fogRgb, fogKNow, fogCap);
-  ruins.draw(vp, 0);
-  drawCalls += ruins.draws || 0;
+  drawCalls += drawRuins(vp);
   setHullFog(gl, eyeBuf[0], eyeBuf[2], fogRgb, fogKNow, fogCap);
   drawCalls += batches.boulder[0].draw(vp, 0);
   drawCalls += batches.boulder[1].draw(vp, 0);
@@ -1042,6 +1102,8 @@ function frame() {
     pitch,
     boom: Math.round(Math.hypot(eyeBuf[0] - x, eyeBuf[2] - z) * 1000) / 1000,
     gateLat: field.gate ? Math.round((field.gate.z - pathZ) * 10) / 10 : null,
+    counts: census(field).counts,
+    monuments: census(field).seats,
     frameN: playFrames,
     skyTop,
     skyMid,

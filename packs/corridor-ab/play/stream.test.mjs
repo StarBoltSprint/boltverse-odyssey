@@ -6,7 +6,6 @@ import {
   FIELD_HALF,
   CARPET_APRON,
   GATE_FIRST,
-  GATE_LAT,
   HORIZON_FAR,
   HORIZON_NEAR,
   HORIZON_N,
@@ -19,9 +18,15 @@ import {
   carpetWest,
   createField,
   densityOf,
+  GATE_CLEAR,
+  MONU_CAP,
+  bandHalf,
+  census,
+  drawBudget,
   halfWidth,
   horizonSeats,
   lookAhead,
+  monumentBudget,
   monumentSeat,
   spawnDistance,
   visibleDensity,
@@ -80,8 +85,12 @@ test("a faster pace streams more rocks than a walk", () => {
   assert.ok(sprint.speed === SPRINT_MAX);
   assert.ok(densityOf(1) > densityOf(0));
   assert.equal(halfWidth(1), halfWidth(0));
-  assert.ok(halfWidth(1) <= 12);
+  assert.ok(halfWidth(1) > 12);
+  assert.equal(halfWidth(1), bandHalf(SPAWN_M));
   assert.ok(FIELD_HALF > 40);
+  assert.ok(drawBudget(MONU_CAP) <= 12);
+  assert.equal(monumentBudget(0), 1);
+  assert.equal(monumentBudget(1), MONU_CAP);
 });
 
 function rockSig(f) {
@@ -100,11 +109,24 @@ test("a second seed moves a rock", () => {
   assert.notEqual(rockSig(a), rockSig(b));
 });
 
-function aheadOf(slot, b) {
+function axes(b) {
   const yaw = b.heading * Math.PI / 180;
-  const fx = Math.sin(yaw);
-  const fz = Math.cos(yaw);
-  return (slot.x - b.x) * fx + (slot.z - b.z) * fz;
+  return {
+    fx: Math.sin(yaw),
+    fz: Math.cos(yaw),
+    rx: Math.cos(yaw),
+    rz: -Math.sin(yaw),
+  };
+}
+
+function aheadOf(slot, b) {
+  const a = axes(b);
+  return (slot.x - b.x) * a.fx + (slot.z - b.z) * a.fz;
+}
+
+function sideOf(slot, b) {
+  const a = axes(b);
+  return (slot.x - b.x) * a.rx + (slot.z - b.z) * a.rz;
 }
 
 function inNearFrustum(slot, b) {
@@ -138,7 +160,13 @@ function birthsDuring(seconds, turn) {
     for (let s = 0; s < f.pool.length; s++) {
       const slot = f.pool[s];
       if (!slot.on || before.has(slot.id) || primed.has(slot.id)) continue;
-      born.push({ id: slot.id, ahead: aheadOf(slot, b), frustum: inNearFrustum(slot, b), kind: slot.kind });
+      born.push({
+        id: slot.id,
+        ahead: aheadOf(slot, b),
+        side: sideOf(slot, b),
+        frustum: inNearFrustum(slot, b),
+        kind: slot.kind,
+      });
     }
     const yaw = b.heading * Math.PI / 180;
     b.x += Math.sin(yaw) * f.speed * dt;
@@ -157,13 +185,16 @@ test("a new slot is born beyond the far ring and outside the near frustum", () =
   }
 });
 
-test("a turn does not birth a slot inside the near frustum", () => {
+test("a turn births across the forward band and stays outside the near frustum", () => {
   const run = birthsDuring(3, true);
+  let wide = 0;
   for (let i = 0; i < run.born.length; i++) {
     const rec = run.born[i];
     assert.equal(rec.frustum, false);
     assert.ok(rec.ahead >= SPAWN_M - 2, "ahead " + rec.ahead);
+    if (Math.abs(rec.side) > 12) wide += 1;
   }
+  assert.ok(wide > 0, "wide births " + wide);
 });
 
 test("a long sprint holds more rocks than a short one, still born far", () => {
@@ -196,26 +227,66 @@ test("easing keeps rocks a sprint already woke", () => {
   assert.equal(slotIds(woke).join(","), ids);
 });
 
-test("the arch and the wreck sit on the run and the gate waits for sprint", () => {
+function monumentSides(f) {
+  const sides = [];
+  for (let i = 0; i < f.pool.length; i++) {
+    const slot = f.pool[i];
+    if (!slot.on || slot.kind < 3) continue;
+    sides.push(slot.z - f.pathZ);
+  }
+  return sides;
+}
+
+test("a sprint seats arches, the gate, and the wreck across the far band", () => {
   const walk = settleField(field(), body(6), "walk");
   const sprint = settleField(field(), body(6), "sprint");
-  assert.ok(walk.arch);
-  assert.ok(Math.abs(walk.arch.z - 2.175) < 0.01);
-  assert.ok(walk.wreck);
-  assert.ok(Math.abs(walk.wreck.z - 2.175) > 2);
+  assert.equal(walk.arch, null);
   assert.equal(walk.gate, null);
-  assert.ok(sprint.gate);
-  assert.ok(Math.abs(Math.abs(sprint.gate.z - 2.175) - GATE_LAT) < 0.01);
+  assert.equal(walk.wreck, null);
+  const counted = census(sprint);
+  assert.ok(counted.counts.arch >= 1);
+  assert.ok(counted.counts.gate >= 1);
+  assert.ok(counted.counts.wreck >= 1);
+  assert.ok(counted.counts.arch <= MONU_CAP);
+  assert.ok(counted.counts.gate <= MONU_CAP);
+  assert.ok(counted.counts.wreck <= MONU_CAP);
+  const sides = monumentSides(sprint);
+  let lo = Infinity;
+  let hi = -Infinity;
+  for (let i = 0; i < sides.length; i++) {
+    if (sides[i] < lo) lo = sides[i];
+    if (sides[i] > hi) hi = sides[i];
+  }
+  assert.ok(lo < -8, "left " + lo);
+  assert.ok(hi > 8, "right " + hi);
+  assert.ok(hi - lo > 20);
+  for (let i = 0; i < sprint.pool.length; i++) {
+    const slot = sprint.pool[i];
+    if (!slot.on || slot.kind < 3) continue;
+    const ahead = slot.x - 6;
+    assert.ok(ahead >= SPAWN_M - 2, "monument ahead " + ahead);
+    if (slot.kind === 4) assert.ok(Math.abs(slot.z - sprint.pathZ) >= GATE_CLEAR - 0.01);
+  }
+  let rockLo = Infinity;
+  let rockHi = -Infinity;
+  for (let i = 0; i < sprint.pool.length; i++) {
+    const slot = sprint.pool[i];
+    if (!slot.on || slot.kind > 2) continue;
+    const side = slot.z - sprint.pathZ;
+    if (side < rockLo) rockLo = side;
+    if (side > rockHi) rockHi = side;
+  }
+  assert.ok(rockLo < -12, "rock left " + rockLo);
+  assert.ok(rockHi > 12, "rock right " + rockHi);
   const seat = monumentSeat(field(), 3, 6, 40, 22, 0);
   assert.ok(seat.x > 6);
 });
 
-test("a sprint sees the gate while it is still inside the forward view", () => {
-  const gateX = 0.725 + 54;
-  const sprint = settleField(field(), body(gateX - 100), "sprint");
+test("a sprint sees monuments inside the forward view and a walk does not", () => {
+  const sprint = settleField(field(), body(6), "sprint");
   assert.ok(sprint.gate);
-  assert.ok(Math.abs(sprint.gate.x - gateX) < 0.2);
-  const walk = settleField(field(), body(gateX - 100), "walk");
+  assert.ok(sprint.gate.x - 6 <= lookAhead(SPRINT_MAX, 1) + 1);
+  const walk = settleField(field(), body(6), "walk");
   assert.equal(walk.gate, null);
 });
 
