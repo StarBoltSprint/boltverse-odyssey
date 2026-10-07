@@ -385,9 +385,10 @@ export async function loadWorldHull(gl, assetUrl, onBytes, opts) {
   }
 
   function addInstance(x, y, z, yawDeg, scale, idIndex) {
-    if (count >= MAX_INST) return;
+    if (count >= MAX_INST) return false;
     writeInstance(count, x, y, z, yawDeg, scale, idIndex);
     count++;
+    return true;
   }
 
   function reset() {
@@ -400,7 +401,7 @@ export async function loadWorldHull(gl, assetUrl, onBytes, opts) {
   }
 
   function draw(vp, mode) {
-    if (!count) return;
+    if (!count) return 0;
     const loc = sharedLoc;
     gl.useProgram(sharedProg);
     gl.bindVertexArray(vao);
@@ -426,6 +427,97 @@ export async function loadWorldHull(gl, assetUrl, onBytes, opts) {
     gl.disable(gl.CULL_FACE);
     gl.drawElementsInstanced(gl.TRIANGLES, mesh.ic, gl.UNSIGNED_INT, 0, count);
     gl.bindVertexArray(null);
+    return 1;
+  }
+
+  function forkBatch() {
+    const batchInst = new Float32Array(MAX_INST * 17);
+    const batchBuf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, batchBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, batchInst.byteLength, gl.STATIC_DRAW);
+    const batchVao = gl.createVertexArray();
+    gl.bindVertexArray(batchVao);
+    gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 24, 0);
+    gl.enableVertexAttribArray(1);
+    gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 24, 12);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
+    gl.bindBuffer(gl.ARRAY_BUFFER, batchBuf);
+    const batchStride = 17 * 4;
+    for (let c = 0; c < 4; c++) {
+      gl.enableVertexAttribArray(3 + c);
+      gl.vertexAttribPointer(3 + c, 4, gl.FLOAT, false, batchStride, c * 16);
+      gl.vertexAttribDivisor(3 + c, 1);
+    }
+    gl.enableVertexAttribArray(7);
+    gl.vertexAttribPointer(7, 1, gl.FLOAT, false, batchStride, 64);
+    gl.vertexAttribDivisor(7, 1);
+    gl.bindVertexArray(null);
+    let batchCount = 0;
+    function writeBatch(index, x, y, z, yawDeg, scale, idIndex) {
+      const a = yawDeg * Math.PI / 180;
+      const c = Math.cos(a);
+      const s = Math.sin(a);
+      const o = index * 17;
+      batchInst[o] = c * scale;
+      batchInst[o + 1] = 0;
+      batchInst[o + 2] = -s * scale;
+      batchInst[o + 3] = 0;
+      batchInst[o + 4] = 0;
+      batchInst[o + 5] = scale;
+      batchInst[o + 6] = 0;
+      batchInst[o + 7] = 0;
+      batchInst[o + 8] = s * scale;
+      batchInst[o + 9] = 0;
+      batchInst[o + 10] = c * scale;
+      batchInst[o + 11] = 0;
+      batchInst[o + 12] = x;
+      batchInst[o + 13] = y;
+      batchInst[o + 14] = z;
+      batchInst[o + 15] = 1;
+      batchInst[o + 16] = idIndex;
+    }
+    return {
+      addInstance(x, y, z, yawDeg, scale, idIndex) {
+        if (batchCount >= MAX_INST) return false;
+        writeBatch(batchCount, x, y, z, yawDeg, scale, idIndex);
+        batchCount++;
+        return true;
+      },
+      reset() { batchCount = 0; },
+      upload() {
+        gl.bindBuffer(gl.ARRAY_BUFFER, batchBuf);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, batchInst);
+      },
+      draw(vp, mode) {
+        if (!batchCount) return 0;
+        const loc = sharedLoc;
+        gl.useProgram(sharedProg);
+        gl.bindVertexArray(batchVao);
+        gl.uniformMatrix4fv(loc.vp, false, vp);
+        gl.uniform1i(loc.count, cams.length);
+        gl.uniform3fv(loc.pos, pos);
+        gl.uniform3fv(loc.right, right);
+        gl.uniform3fv(loc.up, up);
+        gl.uniform3fv(loc.fwd, fwd);
+        gl.uniform1fv(loc.fov, fov);
+        gl.uniform2fv(loc.size, sz);
+        gl.uniform2f(loc.texSize, maxW, maxDimH);
+        gl.uniform1f(loc.hand, 1);
+        gl.uniform1i(loc.mode, mode | 0);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D_ARRAY, viewsTex);
+        gl.uniform1i(loc.views, 0);
+        gl.enable(gl.DEPTH_TEST);
+        gl.depthMask(true);
+        gl.disable(gl.BLEND);
+        gl.disable(gl.CULL_FACE);
+        gl.drawElementsInstanced(gl.TRIANGLES, mesh.ic, gl.UNSIGNED_INT, 0, batchCount);
+        gl.bindVertexArray(null);
+        return 1;
+      },
+    };
   }
 
   function solo(vp, x, y, z, yawDeg, scale, idIndex) {
@@ -445,6 +537,7 @@ export async function loadWorldHull(gl, assetUrl, onBytes, opts) {
     reset,
     upload,
     draw,
+    forkBatch,
     solo,
     minY: mesh.minY,
     maxY: mesh.maxY,

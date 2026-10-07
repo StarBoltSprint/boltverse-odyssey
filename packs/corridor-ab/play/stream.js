@@ -17,9 +17,10 @@ export const BEHIND_M = 22;
 export const EMERGE_SEC = 1.15;
 export const RISE_M = 2.2;
 export const ROCK_SINK = 0.35;
-/** One instanced draw per hull holds this many copies. Horizon seats share that buffer. */
+/** One instanced draw per hull holds this many copies. A second batch is a second draw. */
 export const INST_CAP = 64;
-export const POOL = 48;
+export const DRAW_BATCHES = 2;
+export const POOL = 96;
 export const FIELD_HALF = 48;
 export const HORIZON_N = 8;
 export const HORIZON_STEP = 28;
@@ -47,9 +48,9 @@ const ROCK = {
 };
 
 const MONU = {
-  3: { first: 22, gap: 68, lateral: 0 },
-  4: { first: GATE_FIRST, gap: 96, lateral: GATE_LAT },
-  5: { first: 34, gap: 84, lateral: 3.6 },
+  3: { first: 22, gap: 40, lateral: 0 },
+  4: { first: GATE_FIRST, gap: 52, lateral: GATE_LAT },
+  5: { first: 34, gap: 44, lateral: 3.6 },
 };
 
 /**
@@ -143,17 +144,61 @@ function mix(seed, a, b) {
 }
 
 /**
- * Forward window. A walk stays short of the first gate. Charge, not a closer ring,
- * is what pushes the window out past the far spawn during a long sprint.
+ * How far a birth must sit. The floor is SPAWN_M. A faster sprint pushes it out
+ * so the seat is still ahead when Bolt arrives.
+ */
+export function spawnDistance(speed) {
+  const need = 4.5 * Math.max(0, speed || 0) + 8;
+  return need > SPAWN_M ? need : SPAWN_M;
+}
+
+/**
+ * Forward window. A walk stays short of the first gate. A sprint seats past
+ * spawnDistance, and charge lengthens that band without widening the field.
  */
 export function lookAhead(speed, charge) {
   const c = charge < 0 ? 0 : charge > 1 ? 1 : (charge || 0);
-  return 42 + Math.max(0, speed) * 1.15 + c * 640;
+  const v = Math.max(0, speed || 0);
+  if (c < 0.02 && v < SPRINT_MAX * 0.72) return 42 + v * 1.15;
+  return spawnDistance(v) + 28 + c * 96;
 }
 
+/**
+ * The run stays a fixed narrow width. Density rises because more rocks
+ * sit in that same band, not because the valley gets wider.
+ */
 export function halfWidth(charge) {
-  const c = charge < 0 ? 0 : charge > 1 ? 1 : charge;
-  return 10 + 34 * c;
+  if (charge < 0) return 11;
+  return 11;
+}
+
+/**
+ * Rocks inside the portrait band, per square metre of that band.
+ * `near` and `far` are metres ahead of Bolt.
+ */
+export function visibleDensity(field, body, near, far) {
+  const n0 = near == null ? 8 : near;
+  const n1 = far == null ? 80 : far;
+  const half = halfWidth(field.charge);
+  const yaw = (body.heading || 0) * Math.PI / 180;
+  const fx = Math.sin(yaw);
+  const fz = Math.cos(yaw);
+  const rx = Math.cos(yaw);
+  const rz = -Math.sin(yaw);
+  let count = 0;
+  for (let i = 0; i < field.pool.length; i++) {
+    const slot = field.pool[i];
+    if (!slot.on || slot.kind > KIND_BOULDER) continue;
+    const dx = slot.x - body.x;
+    const dz = slot.z - body.z;
+    const ahead = dx * fx + dz * fz;
+    const side = dx * rx + dz * rz;
+    if (ahead < n0 || ahead > n1) continue;
+    if (Math.abs(side) > half) continue;
+    count += 1;
+  }
+  const area = Math.max(1, (n1 - n0) * half * 2);
+  return { count, half, area, density: count / area };
 }
 
 export function densityOf(charge) {
@@ -405,24 +450,12 @@ function inWindow(dx, dz, fx, fz, rx, rz, look, behind, half) {
   return ahead;
 }
 
-function recyclePassed(field, body) {
-  if (!field.primed) return;
-  const yaw = body.heading * Math.PI / 180;
-  const fx = Math.sin(yaw);
-  const fz = Math.cos(yaw);
-  for (let i = 0; i < field.pool.length; i++) {
-    const slot = field.pool[i];
-    if (!slot.on || slot.kind > KIND_BOULDER) continue;
-    const ahead = (slot.x - body.x) * fx + (slot.z - body.z) * fz;
-    if (ahead < -BEHIND_M) blank(slot);
-  }
-}
-
 function fill(field, body, opt) {
   const liveLook = opt.look != null ? opt.look : lookAhead(field.speed, field.charge);
   const look = !field.primed && opt.look == null ? Math.min(liveLook, OPEN_M) : liveLook;
   const behind = BEHIND_M;
-  const nearM = opt.nearM != null ? opt.nearM : (field.primed ? SPAWN_M : 0);
+  const bornAt = spawnDistance(field.speed);
+  const nearM = opt.nearM != null ? opt.nearM : (field.primed ? bornAt : 0);
   const half = halfWidth(field.charge);
   const emergeNow = opt.emerge;
   const yaw = body.heading * Math.PI / 180;
@@ -430,7 +463,6 @@ function fill(field, body, opt) {
   const fz = Math.cos(yaw);
   const rx = Math.cos(yaw);
   const rz = -Math.sin(yaw);
-  recyclePassed(field, body);
   for (let i = 0; i < field.pool.length; i++) field.pool[i].keep = 0;
 
   if (allows(field, KIND_ARCH)) considerMonu(field, KIND_ARCH, body.x, look, behind, nearM, emergeNow);
@@ -475,6 +507,7 @@ function fill(field, body, opt) {
   scanRocks(1);
   scanRocks(2);
 
+  const drop = [];
   for (let i = 0; i < field.pool.length; i++) {
     const slot = field.pool[i];
     if (!slot.on) continue;
@@ -484,7 +517,13 @@ function fill(field, body, opt) {
       slot.keep = 1;
       continue;
     }
-    blank(slot);
+    drop.push({ slot, ahead });
+  }
+  drop.sort((a, b) => a.ahead - b.ahead);
+  const dropCap = 4;
+  for (let i = 0; i < drop.length; i++) {
+    if (i < dropCap) blank(drop[i].slot);
+    else drop[i].slot.keep = 1;
   }
   let live = 0;
   field.arch = null;
@@ -515,8 +554,8 @@ function clearPool(field) {
  */
 export function stepField(field, body, dt) {
   const step = dt > 0 ? dt : 0;
-  field.speed = stepSpeed(field.speed, body.forward || 0, !!body.gallop, step);
   field.charge = stepCharge(field.charge, body.forward || 0, !!body.gallop, step);
+  field.speed = stepSpeed(field.speed, body.forward || 0, !!body.gallop, step, field.charge);
   fill(field, body, {});
   field.primed = true;
   return field;

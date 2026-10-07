@@ -44,11 +44,13 @@ const x0 = corridor.waypoints[0][0];
 const pathZ = corridor.waypoints[0][1];
 const PORTRAIT = VFOV;
 
-test("the lower-third boom cap still holds Bolt under the line", () => {
-  const body = chaseScreenY(1.05, BOOM_CAP, PORTRAIT);
-  assert.ok(body > 2 / 3, "body " + body);
+test("the rest chase matches zone A and the boom cap stays behind Bolt", () => {
+  const body = chaseScreenY(1.05, CHASE_BOOM, PORTRAIT);
+  assert.ok(body > 0.4 && body < 0.6, "body " + body);
   assert.ok(restBoom() < BOOM_CAP);
   assert.equal(restBoom(), CHASE_BOOM);
+  const paw = chaseScreenY(0, CHASE_BOOM, PORTRAIT);
+  assert.ok(paw < 0.88, "paw " + paw);
 });
 
 test("clearance stays on the rest ray so Bolt stays centred", () => {
