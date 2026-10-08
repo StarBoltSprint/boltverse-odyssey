@@ -57,6 +57,15 @@ Straight-alpha RGBA PNGs of **one** object: 4 side views (front, back, left, rig
 - Top lighter and pinker than the sides; top cracks read slightly tiled from above. Fix: colour-match the top to the sides through the LUT.
 - Base talus streaks and a sharp ground line. Hidden in game by the plum contact shadow, sand over the foot and fog; `--bury` 0.8 sinks the foot.
 
+## Next improvements (Grok on X, 2026-10-08)
+
+Choice: **extra views + displacement**, in this order.
+
+1. **More views: 8+** (4 sides + 4 three-quarter). Biggest free lift for silhouettes (tighter hull) and projection (fewer stretched texels). Fixes the mirrored flanks. Script change: accept the 4 diagonal views in the hull and the projection weights.
+2. **Then displacement** derived from the Imagine texture, applied to the ~4k mesh in Blender to cut grooves and cavities into the real geometry. Display is unlit, so a normal map alone shows nothing: displace the vertices (subdivide → displace → decimate back to budget), keep a normal map only if a lit path ever exists.
+
+Rejected for now: CPU depth models (DepthAnything / MiDaS) add real depth but are slow on the box; shape-from-shading is weaker.
+
 ## Recipe B — complex objects (Anchor arch, wrecks, lattice towers, holes, separate parts)
 
 Silhouettes fill holes, so recipe A cannot do these. Use the [frigate measurement method](hard-objects.md): measurement images from Imagine, real cross-sections, separate parts, holes kept. Build those parts **in Blender** (piers, arch, beams, openings), then run the **same projection bake**. Both recipes give real volumes. Giant arch specifics: [giant-arch.md](giant-arch.md).
