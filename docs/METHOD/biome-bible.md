@@ -106,6 +106,9 @@ zone A sky (13 slices per band, shader crossfade) is untouched.
 
 ## 7. Objects
 
+**Sources first (APPROVED 2026-10-08):** the views fed to the bake are edits of crops of the key still, gated on
+silhouette — [`objects-from-key-crops.md`](objects-from-key-crops.md).
+
 `bake_hull.py` (headless Blender 5.2.1, CPU): 4 ortho silhouettes (front/right/back/left, optional top) carve a voxel
 visual hull → voxel remesh + smooth → ~60 k tris → smart UV → bake position / normal → every real view is projected
 per texel, weighted by facing³ × alpha × visibility; the three-quarter plates fill the corners; **no mirrored flank**
