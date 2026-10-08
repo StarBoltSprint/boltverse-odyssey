@@ -107,3 +107,11 @@ Owner-approved. Follow this list when an older row still says cards, impostors, 
 - A candidate is **IN TEST** until SmiR validates it on the phone; then change the word to **APPROVED** (or **VALIDATED**, same force) with the date.
 - When it contradicts an older doc, add a one-line `Superseded by docs/METHOD.md` header to that doc. Never delete it.
 - A rejected idea goes to [`METHOD/rejected.md`](METHOD/rejected.md) with the date and why.
+
+## 4. Biome bible pipeline — IN TEST (2026-10-08)
+
+One biome bible (`biome/1` JSON, numbers tracked, palette / prompt words local) is decided before any asset; prompts,
+QC, sky stitch, hull bake, KTX2 pack and runtime fog / grade are derived from it. Nothing here replaces a VALIDATED
+recipe. [`METHOD/biome-bible.md`](METHOD/biome-bible.md) · [`METHOD/art-direction-aaa.md`](METHOD/art-direction-aaa.md) ·
+[`METHOD/aaa-feel.md`](METHOD/aaa-feel.md) · tools [`tools/biome/`](../tools/biome/README.md) · gate
+`python3 tools/biome/selftest.py`.
