@@ -23,7 +23,7 @@ bible (biome/1 JSON) ─┬─> prompts.py  (35 slots: lock sentence + per-asset
                       └─> runtime/biome-runtime.js (fog bands, grade, sky, camera — read from the same JSON)
 ```
 
-One command: `tools/biome/run-biome.sh <id> [--slots DIR]`. It stops at the Imagine step (exit 10) and lists the
+One command: `bash tools/biome/run-biome.sh <id> [--slots DIR]`. It stops at the Imagine step (exit 10) and lists the
 slots still missing.
 
 ## 2. The key still is the anchor

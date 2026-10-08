@@ -35,7 +35,7 @@ are ignored too. Without the local files the prompts carry visible `<... from th
 
 ```bash
 python3 tools/biome/fill_bible.py --id my-biome --lore "..." --player "I want to explore ..." --split
-tools/biome/run-biome.sh my-biome                 # stops with exit 10 and the list of missing Imagine slots
-tools/biome/run-biome.sh my-biome --slots DIR     # DIR holds <slot>.png/jpg named after prompts.json
+bash tools/biome/run-biome.sh my-biome            # stops with exit 10 and the list of missing Imagine slots
+bash tools/biome/run-biome.sh my-biome --slots DIR # DIR holds <slot>.png/jpg named after prompts.json
 python3 tools/biome/selftest.py                   # ~30 s, Blender optional (--no-bake)
 ```
