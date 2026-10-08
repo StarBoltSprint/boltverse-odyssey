@@ -2,6 +2,8 @@
 
 Method: [`docs/METHOD/biome-bible.md`](../../docs/METHOD/biome-bible.md) ·
 [`art-direction-aaa.md`](../../docs/METHOD/art-direction-aaa.md) · [`aaa-feel.md`](../../docs/METHOD/aaa-feel.md).
+Objects: [`docs/METHOD/objects-from-key-crops.md`](../../docs/METHOD/objects-from-key-crops.md) — cut every object
+out of the key still (APPROVED 2026-10-08, every biome).
 
 One bible per biome → every prompt, bake and runtime setting is derived from it. CPU only; needs Python 3 with
 numpy, scipy, Pillow; Blender 5.x on PATH (or `BLENDER=`) for the bake; node ≥ 18 for the runtime tests.
