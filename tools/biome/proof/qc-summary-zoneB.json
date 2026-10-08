@@ -1,0 +1,37 @@
+{
+ "biome": "ember-mesa",
+ "thresholds": {"deltaE": "2000", "horizonDE": 6, "shadowDE": 10, "shadowLMin": 8, "highlightDE": 12, "satTol": 0.08, "objectLitDE": 14, "seamDE": 8, "bboxMin": 0.7, "grainLapVarMin": 80, "lutMaxFactor": 2.0, "maxFails": 2},
+ "counts": {"pass": 4, "lut": 8, "regenerate": 9},
+ "seams": [
+  {"pair": ["sky-H0", "sky-H1"], "dE": 10.44, "ok": false},
+  {"pair": ["sky-H1", "sky-H2"], "dE": 6.79, "ok": true},
+  {"pair": ["sky-H2", "sky-H3"], "dE": 6.79, "ok": true},
+  {"pair": ["sky-H3", "sky-H4"], "dE": 6.79, "ok": true},
+  {"pair": ["sky-H4", "sky-H5"], "dE": 6.79, "ok": true},
+  {"pair": ["sky-H5", "sky-H0"], "dE": 16.81, "ok": false}
+ ],
+ "duplicates": [["sky-H1", "sky-H2"], ["sky-H1", "sky-H3"], ["sky-H1", "sky-H4"], ["sky-H1", "sky-H5"], ["sky-H2", "sky-H3"], ["sky-H2", "sky-H4"], ["sky-H2", "sky-H5"], ["sky-H3", "sky-H4"], ["sky-H3", "sky-H5"], ["sky-H4", "sky-H5"]],
+ "plates": {
+  "ground-g0": {"decision": "pass", "fails": []},
+  "ground-g1": {"decision": "lut", "fails": ["saturation 0.0875"]},
+  "ground-g2": {"decision": "lut", "fails": ["shadow 13.01"]},
+  "ground-g3": {"decision": "lut", "fails": ["shadow 11.41"]},
+  "ground-g4": {"decision": "regenerate", "why": "colour beyond LUT range", "fails": ["shadow 21.21"]},
+  "ground-g5": {"decision": "lut", "fails": ["shadow 12.54", "saturation 0.1119"]},
+  "ground-g6": {"decision": "pass", "fails": []},
+  "ground-g7": {"decision": "pass", "fails": []},
+  "obj-rock-0-back": {"decision": "lut", "fails": ["shadow 13.58", "saturation 0.2273"]},
+  "obj-rock-0-front": {"decision": "lut", "fails": ["shadow 15.8", "saturation 0.1195"]},
+  "obj-rock-0-right": {"decision": "lut", "fails": ["shadow 16.52", "saturation 0.1548"]},
+  "obj-rock-0-top": {"decision": "lut", "fails": ["saturation 0.1109"]},
+  "obj-rock-1-front": {"decision": "regenerate", "why": "shape/texture/seam", "fails": ["lit 29.95", "shadow 25.17", "bbox 0.637"]},
+  "obj-rock-1-q045": {"decision": "regenerate", "why": "shape/texture/seam", "fails": ["lit 29.74", "shadow 25.07", "bbox 0.648"]},
+  "sky-H0": {"decision": "regenerate", "why": "colour beyond LUT range", "fails": ["horizon 12.2", "saturation 0.0833"]},
+  "sky-H1": {"decision": "regenerate", "why": "seam with sky-H0", "fails": []},
+  "sky-H2": {"decision": "regenerate", "why": "duplicate of sky-H1", "fails": []},
+  "sky-H3": {"decision": "regenerate", "why": "duplicate of sky-H1", "fails": []},
+  "sky-H4": {"decision": "regenerate", "why": "duplicate of sky-H1", "fails": []},
+  "sky-H5": {"decision": "regenerate", "why": "duplicate of sky-H1", "fails": []},
+  "sky-Z": {"decision": "pass", "fails": []}
+ }
+}

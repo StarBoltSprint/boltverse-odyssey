@@ -1,2 +1,6 @@
 .smoke/
 __pycache__/
+# biome bible pipeline: palettes / prompt words / generated outputs stay untracked (rule 2026-10-03)
+*.local.*
+tools/biome/out/
+tools/biome/catalogue/

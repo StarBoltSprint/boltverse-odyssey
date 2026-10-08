@@ -1,0 +1,306 @@
+{
+ "schema": "biome/1",
+ "bibleVersion": 1,
+ "anchor": {
+  "slot": "key",
+  "aspect": "16:9",
+  "horizonRow": 0.52,
+  "subject": "$local"
+ },
+ "exposure": {
+  "ev": 0.0,
+  "whiteBalanceK": 5500
+ },
+ "sky": {
+  "horizonPlates": 6,
+  "plateHFovDeg": 75,
+  "plateAspect": "16:9",
+  "zenith": true,
+  "nadir": true,
+  "capFovDeg": 100,
+  "outSize": [
+   4096,
+   2048
+  ],
+  "bandSize": [
+   8192,
+   1024
+  ],
+  "planetInSky": false,
+  "subject": "$local"
+ },
+ "ground": {
+  "tiles": 8,
+  "tileMeters": 8.0,
+  "heightFromAlbedo": true,
+  "heightMeters": 0.35,
+  "bombing": {
+   "grid": 3,
+   "offset": 0.15,
+   "rotate": true
+  },
+  "macroScale": 0.08,
+  "bigRocks": 20,
+  "materials": [
+   {
+    "id": "g0",
+    "subject": "$local",
+    "weight": 1.0
+   },
+   {
+    "id": "g1",
+    "subject": "$local",
+    "weight": 0.55
+   },
+   {
+    "id": "g2",
+    "subject": "$local",
+    "weight": 0.5
+   },
+   {
+    "id": "g3",
+    "subject": "$local",
+    "weight": 0.45
+   },
+   {
+    "id": "g4",
+    "subject": "$local",
+    "weight": 0.4
+   },
+   {
+    "id": "g5",
+    "subject": "$local",
+    "weight": 0.35
+   },
+   {
+    "id": "g6",
+    "subject": "$local",
+    "weight": 0.3
+   },
+   {
+    "id": "g7",
+    "subject": "$local",
+    "weight": 0.25
+   }
+  ]
+ },
+ "camera": {
+  "fovBase": 58,
+  "fovSprint": 70,
+  "fovDamp": 4,
+  "near": 0.2,
+  "far": 400,
+  "pixelRatioCap": 1.5,
+  "trauma": {
+   "enabled": false,
+   "landing": 0.35,
+   "decayPerSec": 1.6,
+   "rollRad": 0.004,
+   "liftM": 0.02
+  }
+ },
+ "post": {
+  "toneMapping": "none",
+  "runtimeLut": false,
+  "contrast": 1.06,
+  "gamma": 0.95,
+  "grain": 0.04,
+  "vignette": {
+   "start": 0.72,
+   "end": 1.15,
+   "strength": 0.28
+  },
+  "sceneFog": false,
+  "bloom": {
+   "enabled": false,
+   "threshold": 0.85,
+   "radius": 0.4,
+   "strength": 0.25,
+   "skyOnly": true
+  }
+ },
+ "budgets": {
+  "imagineImages": 35,
+  "drawCalls": 12,
+  "trisOnScreen": 150000,
+  "texMB": 64,
+  "attemptsPerSlot": 2
+ },
+ "qc": {
+  "deltaE": "2000",
+  "horizonDE": 6,
+  "shadowDE": 10,
+  "shadowLMin": 8,
+  "highlightDE": 12,
+  "satTol": 0.08,
+  "objectLitDE": 14,
+  "seamDE": 8,
+  "bboxMin": 0.7,
+  "grainLapVarMin": 80,
+  "lutMaxFactor": 2.0,
+  "maxFails": 2
+ },
+ "styleId": "aaa-2026",
+ "id": "ember-mesa",
+ "name": "Ember Mesa",
+ "archetype": "mesa-desert",
+ "seed": 1008,
+ "lore": "$local",
+ "sun": {
+  "azimuthDeg": 90,
+  "elevationDeg": 8,
+  "kelvin": 2900,
+  "hex": "$local",
+  "side": "right",
+  "intensity": 1.0
+ },
+ "palette": "$local",
+ "fog": {
+  "color": "$local",
+  "near": 40,
+  "far": 220,
+  "desat": 0.25,
+  "heightFalloff": 0.06,
+  "bands": [
+   {
+    "dist": 40,
+    "color": "$local",
+    "amount": 0.15
+   },
+   {
+    "dist": 130,
+    "color": "$local",
+    "amount": 0.45
+   },
+   {
+    "dist": 220,
+    "color": "$local",
+    "amount": 0.8
+   }
+  ]
+ },
+ "lut": {
+  "lift": [
+   0.0069,
+   0.0046,
+   0.0074
+  ],
+  "gamma": [
+   1.0,
+   1.0,
+   1.0
+  ],
+  "gain": [
+   1.0286,
+   1.0154,
+   1.0046
+  ],
+  "saturation": 1.0,
+  "contrast": 1.04
+ },
+ "planet": {
+  "subject": "$local",
+  "radius": 80,
+  "distance": 600,
+  "azimuthDeg": 270,
+  "elevationDeg": 22,
+  "spinDegPerSec": 0.86,
+  "ring": {
+   "inner": 108,
+   "outer": 150,
+   "tiltDeg": 17.7,
+   "spinDegPerSec": 2.3
+  }
+ },
+ "objects": [
+  {
+   "id": "hero",
+   "kind": "hero",
+   "subject": "$local",
+   "count": 1,
+   "heightM": 44,
+   "layer": "landmark",
+   "views": {
+    "ortho": [
+     "front",
+     "right",
+     "back",
+     "top"
+    ],
+    "threeQuarter": [
+     45,
+     135,
+     225,
+     315
+    ]
+   },
+   "lods": [
+    4000,
+    800,
+    180
+   ],
+   "tex": 2048,
+   "displaceM": 0.25
+  },
+  {
+   "id": "rock-0",
+   "kind": "mesa",
+   "subject": "$local",
+   "count": 10,
+   "heightM": 30,
+   "layer": "mid",
+   "views": {
+    "ortho": [
+     "front",
+     "right",
+     "top"
+    ],
+    "threeQuarter": [
+     45
+    ]
+   },
+   "lods": [
+    4000,
+    800,
+    180
+   ],
+   "tex": 2048,
+   "displaceM": 0.15
+  },
+  {
+   "id": "rock-1",
+   "kind": "rock",
+   "subject": "$local",
+   "count": 10,
+   "heightM": 3,
+   "layer": "near",
+   "views": {
+    "ortho": [
+     "front",
+     "right",
+     "top"
+    ],
+    "threeQuarter": [
+     45
+    ]
+   },
+   "lods": [
+    4000,
+    800,
+    180
+   ],
+   "tex": 1024,
+   "displaceM": 0.15
+  }
+ ],
+ "ambient": [
+  "heat-shimmer",
+  "drifting-sand",
+  "birds-3d",
+  "dust-gusts"
+ ],
+ "catalogueFallback": "mesa-desert",
+ "tone": "$local",
+ "styleBlock": "$local",
+ "avoid": "$local"
+}
