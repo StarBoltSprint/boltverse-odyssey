@@ -1,0 +1,26 @@
+{
+ "$doc": "Colour-free, tone-free slot clauses (repo rule 2026-10-03). Colours, subjects, style block and avoid list are filled at run time from the untracked <id>.local.json / style/*.local.txt. Placeholders in {CAPS}.",
+ "lock": "Same world and same moment as the anchor still: one sun only, {EL} degrees above the horizon, {SUN_REL}; {KELVIN}K key light {KEY}; fill from the sky {FILL}; shadows {SHADOW}, never black; horizon haze {HORIZON}; zenith {ZENITH}; ground bounce {GROUND}; exposure {EV} EV, white balance {WB}K.",
+ "slots": {
+  "key": {"aspect": "16:9", "px": [1920, 1080], "qc": "anchor",
+          "clause": "{ANCHOR_SUBJECT}. Eye-level camera 1.6 m above the running path, horizon {HORIZON_PCT}% from the top. Near, mid and far layers all readable; fog deepens with distance. This is the anchor image: every later image of this biome must match its light, palette and grain."},
+  "sky-h": {"aspect": "{PLATE_ASPECT}", "px": [1920, 1080], "qc": "sky",
+            "clause": "Sky and far horizon only for {SKY_SUBJECT}. Level camera, horizontal field of view {HFOV} degrees, looking {HEADING_WORDS}, horizon line exactly at mid-height. {SUN_IN_FRAME} Nothing closer than the far horizon. No planet, no moons, no text. The left edge continues into the plate on its left, the right edge into the plate on its right."},
+  "sky-z": {"aspect": "1:1", "px": [1536, 1536], "qc": "skycap",
+            "clause": "Straight-up view of the zenith sky for {SKY_SUBJECT}, {CAPFOV} degree field of view, no horizon visible, no sun disc, no planet, no moons, even falloff to the edges."},
+  "sky-n": {"aspect": "1:1", "px": [1536, 1536], "qc": "skycap",
+            "clause": "Straight-down view of the far ground haze under the horizon for {SKY_SUBJECT}, {CAPFOV} degree field of view, soft and low detail, no objects, no horizon line."},
+  "ground": {"aspect": "1:1", "px": [2048, 2048], "qc": "ground",
+             "clause": "Top-down orthographic seamless tileable ground texture of {MATERIAL}, {TILE_M} m across. No perspective, no horizon, no single object taller than {MAX_CM} cm, even coverage edge to edge, no vignette. Sun from the {SUN_TOPDOWN} of the frame at {EL} degrees, so short shadows fall toward the {SHADOW_TOPDOWN}."},
+  "planet-map": {"aspect": "2:1", "px": [4096, 2048], "qc": "planet",
+                 "clause": "Equirectangular 2:1 surface map of {PLANET_SUBJECT}, the whole globe unwrapped, left edge meets right edge, low detail at the poles, no stars, no background, no ring."},
+  "planet-ring": {"aspect": "4:1", "px": [2048, 512], "qc": "planet",
+                  "clause": "Flat straight strip texture of a planetary ring for {PLANET_SUBJECT}, inner edge at the top, outer edge at the bottom, bands and gaps across the strip, black where the ring is empty."},
+  "obj-ortho": {"aspect": "{OBJ_ASPECT}", "px": [1536, 1536], "qc": "object",
+                "clause": "Orthographic {VIEW} elevation of {SUBJECT}, {HEIGHT} m tall, filling about {FILL}% of the frame, centred, small empty margin. No perspective, no camera tilt, no ground plane, no cast shadow on the background, plain flat empty background the reader can segment. Light {LIGHT_IN_VIEW}. Same object, same proportions as the other views."},
+  "obj-top": {"aspect": "1:1", "px": [1536, 1536], "qc": "object",
+              "clause": "Orthographic top view straight down on {SUBJECT}, filling about {FILL}% of the frame, plain flat empty background, no perspective, no ground. Image-up is the back of the object. Light {LIGHT_IN_VIEW}."},
+  "obj-q": {"aspect": "1:1", "px": [1536, 1536], "qc": "object",
+            "clause": "Three-quarter view of {SUBJECT}, camera {AZ} degrees around it ({AZ_WORDS}), 15 degrees above, near-orthographic long lens, filling about {FILL}% of the frame, plain flat empty background, no ground plane. Light {LIGHT_IN_VIEW}. Not a mirror of another view."}
+ }
+}
