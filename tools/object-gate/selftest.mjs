@@ -4,7 +4,8 @@ import { mkdtempSync, writeFileSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadProfile, loadScene, toMarkdown } from "./gate.mjs";
+import { loadProfile, loadScene, toMarkdown, API_VERSION, listProfiles, checkId, CHECK_IDS, gateObject, gateScene, resolveObject } from "./gate.mjs";
+import { gateAndFix, FIX_ACTIONS } from "./hooks/imagine-to-3d.mjs";
 import { fixPlan } from "./hooks/imagine-to-3d.mjs";
 const HERE = dirname(fileURLToPath(import.meta.url));
 let fails = 0; const ok = (c, m) => { console.log(`${c ? "PASS" : "FAIL"}\t${m}`); if (!c) fails++; };
@@ -13,6 +14,10 @@ for (const f of readdirSync(join(HERE, "profiles")).filter((f) => !f.startsWith(
   const p = loadProfile(f.replace(".yaml", ""));
   ok(p.checks && p.checks.length && p.texel.minPxPerM >= 64 && p.texel.nearPxPerM >= p.texel.minPxPerM, `profile ${f}: checks ${p.checks.length}, px/m ${p.texel.minPxPerM}/${p.texel.nearPxPerM}`);
 }
+// stable API surface used by the imagine-to-3d modules (classify/views/coarse/pbr/compare/fixloop/keyvideo); see API.md
+ok(/^1\./.test(API_VERSION) && [gateObject, gateScene, resolveObject, gateAndFix, fixPlan].every((f) => typeof f === "function") && Array.isArray(FIX_ACTIONS), `API ${API_VERSION} exports present`);
+ok(listProfiles().join(",") === "building,creature,effect,ice,prop,rock,terrain,vegetation,vehicle", `listProfiles: ${listProfiles().join(" ")}`);
+ok(checkId("native Imagine px/m (plates only, unique pixels)") === "texel.unique-px-per-m" && checkId("live preview untouched during the gate run") === "runtime.live-untouched" && new Set(CHECK_IDS.map((c) => c[1])).size === CHECK_IDS.length, "stable check ids unique");
 ok(loadProfile("building").geometry.minReliefM === 0.3 && loadProfile("rock").geometry.maxOpenEdges === null, "profile inheritance + overrides");
 const sc = loadScene(join(HERE, "specs/zone-b/scene.yaml"));
 ok(sc.objects.length === 7 && sc.objects.every((o) => o.cfg && o.select && o.select.names), `zone-b scene: ${sc.objects.length} object specs resolve`);
