@@ -21,25 +21,24 @@ Back to [METHOD.md](../METHOD.md) · tool: [`tools/object-gate`](../../tools/obj
    report prints the effective numbers.
 5. **Never edit live preview files in place** (lesson 2026-10-09 17:14: a job editing the live tree broke SmiR's link).
    Edit a staging copy, gate the staging URL, swap into live only after PASS. The gate treats the live tree as
-   read-only and FAILS the run if any live file changes while it gates.
+   read-only and FAILS the run if any file the live page loads changes while it gates (staging files next to it are
+   listed, not failed).
 6. **Texel policy (SmiR 2026-10-09 20:19):** sharpness is judged as the phone sees it from 8 m and farther, with no
    camera distance limit; closer is exempt. Uniqueness is not required: one shared plate set per type, never the same
    pixels within 30 m, never shared by neighbours. Imagine plates are 1024 × 1024 native. Set in `profiles/_base.yaml`.
    **Material method A/B (2026-10-09):** a layered / hybrid method (tiling Imagine materials + unique macro plates +
    stochastic hex tiling, see `arch-research-1008/q18-answer.md`) is being A/B tested against unique section plates.
-   The gate judges the result, not the method: visible px/m and repetition must be measured on the final render, so
-   the same rows apply to both. Today: repetition is measured on the rendered face views and captures (both methods);
-   tiling materials declared as `tile` / `detail` are not scored on their UV period. The visible px/m row still reads
-   sampling px/m of `plate` textures only, so a layered material whose sharpness comes from the detail layer would
-   FAIL it. Next step: a render-based visible px/m (sharpness measured in the 8 m captures) so both methods are
-   scored the same way.
+   The gate judges the result, not the method: since API 1.3 visible px/m is measured on the final render (an 8 m
+   capture of the surface, optically zoomed to 2 × the needed screen px/m, detail measured in the pixels) and
+   repetition on the rendered face views and captures, so the same rows apply to both. Other tools' screenshots
+   (the A/B sheets) use `tools/object-gate/visible-shot.mjs`, same estimator.
 7. Quality first: the budget rows (draw calls, triangles, texture MB) are reported, never a reason to shrink a texture.
 
 ## What it checks (one row each, FAIL blocks)
 
 | # | Check | How it is measured | Default |
 |---|---|---|---|
-| 1 | **Visible px/m** per object, per surface (policy `visible`, SmiR 2026-10-09 20:19) | For every **plate** texture (role declared in the spec) and every surface (signed normal class) of every placed copy: plate sampling px/m (UV area × texture pixels / world area; projected plates: plate px / metres spanned; pools: layer px / cell m). Required: the phone screen's px/m when that surface is viewed from 8 m, `renderH / (2 d tan(vfov/2))` with `renderH` = 2400 / 2.625 × the game's render pixel ratio (1080 × 2400 phone). Closer views are exempt (slight blur right against a wall is accepted). No camera distance limit: every surface is scored at 8 m unless the spec gives a per-class `viewMinM` with a reason. Detail / tile textures never count. Policy `unique` (unique px/m ≥ 64, ≥ 128 within 30 m of the path) is kept for comparison. | Zone B (pr 1.5, vfov 58°): ≥ 155 px/m; a native 1024² Imagine plate covers ≤ 6.6 m |
+| 1 | **Visible px/m** per object, per surface (policy `visible`, SmiR 2026-10-09 20:19) | **Final render (1.3 default):** an 8 m capture of the hero copy's surface, optically zoomed to 2 × the needed screen px/m; visible px/m = detail really present in the pixels (median over 64 px tiles, `analyze.py visible_px`), so it works for unique plates and for layered materials alike. Info, and the 1.2 rule under `visibleMeasure: sampling`: for every **plate** texture (role declared in the spec) and every surface (signed normal class) of every placed copy: plate sampling px/m (UV area × texture pixels / world area; projected plates: plate px / metres spanned; pools: layer px / cell m). Required: the phone screen's px/m when that surface is viewed from 8 m, `renderH / (2 d tan(vfov/2))` with `renderH` = 2400 / 2.625 × the game's render pixel ratio (1080 × 2400 phone). Closer views are exempt (slight blur right against a wall is accepted). No camera distance limit: every surface is scored at 8 m unless the spec gives a per-class `viewMinM` with a reason. Detail / tile textures never count. Policy `unique` (unique px/m ≥ 64, ≥ 128 within 30 m of the path) is kept for comparison. | Zone B (pr 1.5, vfov 58°): ≥ 155 px/m; a native 1024² Imagine plate covers ≤ 6.6 m |
 | 1b | Plates not downscaled | Served file ≥ the Imagine original (from `tex-manifest.json` or spec `source:`), GPU image = served file, no resized `createImageBitmap`. | — |
 | 1c | Filtering | mipmaps + `LinearMipmapLinear`, anisotropy = renderer max | — |
 | 1d | UV stretch | area-weighted p95 of the per-triangle singular-value ratio | ≤ 1.3 |
@@ -50,7 +49,7 @@ Back to [METHOD.md](../METHOD.md) · tool: [`tools/object-gate`](../../tools/obj
 | 5 | **Grounding** | rays from below on a 9 × 9 grid under the lower 20 % of each copy; lowest hit vs ground height | air ≤ 0.05 m |
 | 6 | **Geometry** | welded non-manifold and open edges; facade relief = median per-metre range of facade offsets on ±x/±z; proportions vs spec | 0 / 0; relief ≥ 0.3 m on 2 faces (building) |
 | 7 | **Key checklist** | per-object list of every visible key feature with capture angles (close, low phone portrait, far). The gate renders the captures, builds `capture-sheet.jpg` next to the key crop and FAILS unless every item has a **recorded pass on a current capture** (dHash within 12 bits) in `records/<id>.verified.yaml`. CIELAB ΔE vs the key crop reported. | all items |
-| 8 | **Runtime** | console / page errors, shader compile, HUD + title text, portrait viewport (412 × 915, 540 × 1200), budgets reported; live tree untouched during the run (size + mtime of every live file) | — |
+| 8 | **Runtime** | console / page errors, shader compile, HUD + title text, portrait viewport (412 × 915, 540 × 1200), budgets reported; files the live page loads untouched during the run (size + mtime; staging files next to them are listed, not failed) | — |
 | 9 | **Effects** | particles / veils / dust: every effect mesh takes its look from an Imagine texture (allow-listed folders); typed colours reported | — |
 
 ## How to run
@@ -63,7 +62,7 @@ node tools/object-gate/cli.mjs --scene <zone>/scene.yaml [--url http://127.0.0.1
 `out/<time>/report.md`, `report.json`, per object `capture-sheet.jpg`, `cap-*.png`, `texel.json`, `morph.json`,
 `grounding.json`, `geometry.json`, `checklist-todo.yaml`.
 
-Programmatic use (Imagine-to-3D modules, other tools): the stable API v1.2 (`gateObject`, `gateScene`, `gateAndFix`,
+Programmatic use (Imagine-to-3D modules, other tools): the stable API v1.3 (`gateObject`, `gateScene`, `gateAndFix`,
 `listProfiles`, `loadProfile`, `screenPxPerM`, row `id`s, report JSON) is specified in [`tools/object-gate/API.md`](../../tools/object-gate/API.md).
 Additions bump the minor; a breaking change needs a major bump, a migration note there and a decisions-log row.
 

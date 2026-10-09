@@ -1,4 +1,4 @@
-# object-gate API: the stable contract (v1.2)
+# object-gate API: the stable contract (v1.3)
 
 Every tool that makes or changes a 3D object calls this API. That includes the Imagine-to-3D modules `classify`, `views`, `coarse`, `pbr`, `compare`, `fixloop` and `keyvideo`. Do not re-implement a check: import it. `API_VERSION` (in `gate.mjs`, also the `version` field in `package.json`) follows two rules:
 
@@ -12,7 +12,7 @@ What counts as API: the exports listed below, the spec and profile fields, the r
 ```js
 import { gateObject, gateScene, loadScene, resolveObject, loadProfile, listProfiles,
          toMarkdown, checkId, CHECK_IDS, API_VERSION,
-         screenPxPerM, scoreVisible, resolveView } from "<repo>/tools/object-gate/gate.mjs";   // 1.2
+         screenPxPerM, scoreVisible, resolveView } from "<repo>/tools/object-gate/gate.mjs";   // 1.2 (scoreVisible takes an 8th arg `render` since 1.3)
 import { gateAndFix, fixPlan, FIX_ACTIONS } from "<repo>/tools/object-gate/hooks/imagine-to-3d.mjs";
 ```
 
@@ -43,7 +43,7 @@ Python pipelines use the CLIs instead: `cli.mjs` and `hooks/imagine-to-3d.mjs`. 
 | `checkId(check)` / `CHECK_IDS` | | Maps a check to its stable row id. |
 | `screenPxPerM(cfg.texel, view, d)` (1.2) | `→ number` | Phone screen px per metre at distance `d`: `phone.h / phone.devicePixelRatio × view.renderPixelRatio / (2 d tan(vfov/2))`. **pbr** uses it at `cfg.texel.minViewM` as its plate px/m target (Zone B: 155 px/m at 8 m). |
 | `resolveView(cfg.texel, adapter.view)` (1.2) | `→ {renderPixelRatio, fovDeg, source}` | The game's render pixel ratio and base vfov (profile override first, then the adapter). |
-| `scoreVisible(t, R, view, texelRows, repRows, footprints, spec)` (1.2) | `→ {rows, perSurface}` | The three policy-`visible` rows from saved measurements (pure, no page). |
+| `scoreVisible(t, R, view, texelRows, repRows, footprints, spec, render?)` (1.2; `render` 1.3) | `→ {rows, perSurface}` | The three policy-`visible` rows from saved measurements (pure, no page). `render` = the 8 m capture result (`visible.json.render`); without it the 1.2 sampling rule applies. |
 | `toMarkdown(report)` | | Renders `report.md`. |
 
 ## Row ids (stable)
@@ -65,7 +65,7 @@ Python pipelines use the CLIs instead: `cli.mjs` and `hooks/imagine-to-3d.mjs`. 
 ## Report JSON (`<out>/report.json`)
 
 ```jsonc
-{ "tool": "object-gate", "version": 1, "apiVersion": "1.2", "url": "...", "adapter": "...", "out": "/abs/dir",
+{ "tool": "object-gate", "version": 1, "apiVersion": "1.3", "url": "...", "adapter": "...", "out": "/abs/dir",
   "startedAt": "ISO", "finishedAt": "ISO", "verdict": "PASS|FAIL",
   "runtime": [ { "id": "runtime.shader", "check": "shader compile 412x915", "status": "PASS|FAIL|INFO", "detail": "...", "hints": [] } ],
   "objects": [ { "id": "mesa", "type": "rock", "verdict": "PASS|FAIL", "hero": "mesa-0",
@@ -74,7 +74,7 @@ Python pipelines use the CLIs instead: `cli.mjs` and `hooks/imagine-to-3d.mjs`. 
                  "rows": [ { "id": "...", "check": "...", "status": "...", "detail": "...", "hints": ["..."] } ] } ] }
 ```
 
-The per-object folder `<out>/<id>/` also holds the raw measurements: `boxes.json` (1.2, copy world boxes), `visible.json` (1.2, view + per-surface need vs visible px/m), `texel.json`, `repetition.json`, `morph.json`, `shadow.json`, `grounding.json`, `geometry.json`, the `cap-*.png` captures with their masks, the `face-*.png` ortho views, `capture-sheet.jpg` and `checklist-todo.yaml`. A **compare** or **keyvideo** module can read these files instead of re-rendering.
+The per-object folder `<out>/<id>/` also holds the raw measurements: `boxes.json` (1.2, copy world boxes), `visible.json` (1.2, view + per-surface need vs visible px/m; 1.3 adds `render`), `cap-visible-8m.png` (1.3), `texel.json`, `repetition.json`, `morph.json`, `shadow.json`, `grounding.json`, `geometry.json`, the `cap-*.png` captures with their masks, the `face-*.png` ortho views, `capture-sheet.jpg` and `checklist-todo.yaml`. A **compare** or **keyvideo** module can read these files instead of re-rendering.
 
 ## Object spec (yaml or object)
 
@@ -94,6 +94,7 @@ record: records/mesa.verified.yaml             # default records/<id>.verified.y
 proportions: {hOverW: [2.9, 5.0]}              # optional
 thresholds: {texel: {minViewM: 6}}             # optional, may only tighten (or add `waivers:` with a reason)
 viewMinM: {"+y": {m: 40, reason: "roof never seen from closer than 40 m"}}   # optional (1.2): per-class closest view
+visibleView: {hero: mesa-L-mid, towardXZ: [-51.1, 9.6], aimHeightM: [4, 6]}   # optional (1.3): which copy / side / height the 8 m render capture aims at
 selfReportKey: m2                              # optional: compare with the scene's own px/m claim
 imagineSources: ["/imagine/"]                  # effects: allow-listed Imagine folders
 ```
@@ -110,7 +111,11 @@ A scene yaml adds `url`, `adapter` (a path), `hud`, `title`, `runtime.viewports`
 
 `unique` keeps the earlier rule (`minPxPerM` 64, `nearPxPerM` 128 within `nearM` of the path) for comparison.
 
-**Material method A/B (2026-10-09).** A layered / hybrid method (tiling Imagine materials + unique macro plates + stochastic hex tiling, per `arch-research-1008/q18-answer.md`) is being A/B tested against unique section plates. Callers do not change: the gate must measure visible px/m and repetition on the final render, so the same rows and ids apply to both methods. Current state: `repetition.*` rows use the rendered face views and captures (`repetition.json`) for both methods, and textures declared `tile` / `detail` are not scored on their UV period. `texel.visible-px-per-m` still uses the sampling px/m of `plate` textures from the in-page probe, so a layered material whose sharpness comes from its detail layer would FAIL that row. Planned (additive, same row id): a render-based visible px/m measured in the 8 m captures.
+**Material method A/B (2026-10-09).** A layered / hybrid method (tiling Imagine materials + unique macro plates + stochastic hex tiling, per `arch-research-1008/q18-answer.md`) is being A/B tested against unique section plates. Callers do not change: the gate measures visible px/m and repetition on the final render, so the same rows and ids apply to both methods.
+
+**Render-based visible px/m (1.3, default `texel.visibleMeasure: render`).** The gate aims at a steep surface of the hero copy (raycast, |normal.y| < 0.6, 2.5–8 m above the ground, on the side facing the player path or `visibleView.towardXZ`) and stands so the eye is exactly `minViewM` (8 m) from that point. It optically zooms the game camera so the capture shows `renderHeadroom` (2) × the needed screen px/m. A zoom at the same distance is the same as a sharper screen: the LOD, the distance fades of a detail layer and the finer mips stay the game's own. Effects are hidden for the shot. `analyze.py visible_px` then measures the detail really present in the pixels: per 64 px tile, the largest down/up-sample factor k that loses under 10 % of the tile's detail energy; visible px/m = screen px/m ÷ k, median over the textured tiles inside the object mask and the central band of the frame (15–85 % across, 30–70 % down). Calibration: 1024² Imagine plates magnified 1.5–2.5× read a median 1.0× their true px/m (p10 0.75, p90 1.35); a soft plate reads lower because it carries less detail. Output: `cap-visible-8m.png` (+ mask) and `visible.json.render`. The plate-sampling numbers stay in the row detail as info. `visibleMeasure: sampling` keeps the 1.2 behaviour. `rescore.mjs --render <dir>` takes `<dir>/<id>/render.json` from a separate capture run.
+
+**Screenshots from other tools (A/B sheets):** `node visible-shot.mjs --img shot.png --dist 8 --fov <deg> [--height H] [--pr 1] [--mask m.png] [--rect x0,y0,x1,y1]` runs the same estimator. A shot proves at most its own screen px/m (`height × pr / (2 dist tan(fov/2))`); a 540 × 1200, dpr 1, 58° shot at 8 m shows 135 px/m and cannot prove 155. The CLI then prints the fov to shoot with (about 27° at 8 m for 1200 px).
 
 ## Adapters
 
@@ -118,7 +123,7 @@ An adapter makes one game page reachable. See the README, section "Writing an ad
 
 ## Rules every caller follows
 
-1. **Gate the staging copy, never the live preview.** Never edit live preview files in place. Work in a staging copy (its own folder or port), point `url` at it, and swap it into live (copy, then rename) only after `verdict === "PASS"`. The `exportFn` of `gateAndFix` is that swap. When an adapter sets `liveDir`, the gate FAILs `runtime.live-untouched` if any live file changes while it runs. This is lesson 2026-10-09 17:14.
+1. **Gate the staging copy, never the live preview.** Never edit live preview files in place. Work in a staging copy (its own folder or port), point `url` at it, and swap it into live (copy, then rename) only after `verdict === "PASS"`. The `exportFn` of `gateAndFix` is that swap. When an adapter sets `liveDir`, the gate FAILs `runtime.live-untouched` if any file the live page actually loads (every same-origin request during the gate) changes while it runs. Since 1.3 other files in the same folder (staging copies, test pages) are listed as ignored, not failed. This is lesson 2026-10-09 17:14.
 2. Thresholds come from `loadProfile`. A module does not hard-code px/m, repeat or IoU limits (the px/m target is `screenPxPerM` at `minViewM`).
 3. Only PASS objects are exported, shown or merged. `NEEDS_REVIEW` means the `checklist.verified` items need a vision or owner pass recorded in `records/<id>.verified.yaml`. Those recorded passes expire when a capture changes (dHash above 12).
 4. If the same defect FAILs twice, stop and report it (`maxSameDefect`). Do not loop.
