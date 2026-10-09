@@ -7,9 +7,11 @@ import { dirname, resolve, join, basename } from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import yaml from "js-yaml";   // npm ci in tools/object-gate
+import { scoreVisible, screenPxPerM, resolveView, footprintsFromBoxes } from "./lib/visible.mjs";
+export { scoreVisible, screenPxPerM, resolveView };
 
 /** Stable API contract (see API.md). Bump the major only with a migration note; additions bump the minor. */
-export const API_VERSION = "1.1";
+export const API_VERSION = "1.2";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PY = join(HERE, "lib/analyze.py");
@@ -183,7 +185,8 @@ export async function gateObject(spec, opts = {}) {
 export const CHECK_IDS = [
   [/^select/, "select"], [/^gate run/, "gate.crash"],
   [/^texture roles/, "textures.roles"], [/^texture filtering/, "textures.filtering"], [/^plates not downscaled/, "textures.native-size"],
-  [/^native Imagine px\/m/, "texel.unique-px-per-m"], [/^repetition \(UV\)/, "repetition.uv"], [/^UV stretch/, "texel.stretch"],
+  [/^native Imagine px\/m/, "texel.unique-px-per-m"], [/^visible px\/m/, "texel.visible-px-per-m"],
+  [/^repetition \(visible\): identical/, "repetition.visible-radius"], [/^repetition \(visible\): neighbours/, "repetition.visible-neighbours"], [/^repetition \(UV\)/, "repetition.uv"], [/^UV stretch/, "texel.stretch"],
   [/^scene self-report/, "texel.self-report"], [/^repetition \(capture/, "repetition.captures"], [/^approach morph/, "morph"],
   [/^shadow light/, "shadow.light"], [/^shadow cast/, "shadow.cast"], [/^shadow world-fixed/, "shadow.world-fixed"], [/^shadow colour/, "shadow.colour"],
   [/^grounding/, "grounding"], [/^mesh sealed/, "geometry.sealed"], [/^facade relief/, "geometry.relief"], [/^proportions/, "geometry.proportions"],
@@ -210,6 +213,7 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
   const boxes = await page.evaluate((s) => window.__og.instanceBoxes(s), sel);
   if (!boxes.length) { row(o, "select", false, `selector ${JSON.stringify(sel)} matched no object`, ["Fix select.names (regex on object names in the scene)."]); return; }
   row(o, "select", true, `${boxes.length} placed copies`);
+  writeFileSync(join(odir, "boxes.json"), JSON.stringify(boxes, null, 1));
   const spawn = await page.evaluate(() => (window.__ogHost.path || [[0, 0]])[0]);
   const dSpawn = (b) => Math.hypot(b.center[0] - spawn[0], b.center[2] - spawn[1]);
   // hero copy: the one the player meets first (closest to the spawn), unless the spec names one
@@ -271,7 +275,8 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
     texelRows = await page.evaluate(([s, p]) => window.__og.texel(s, p), [sel, plates]);
     writeFileSync(join(odir, "texel.json"), JSON.stringify(texelRows, null, 1));
     const t = cfg.texel;
-    const fails = texelRows.filter((r) => r.uniquePxPerM < (r.nearPathM <= t.nearM ? t.nearPxPerM : t.minPxPerM));
+    const visible = t.policy === "visible";
+    const fails = visible ? [] : texelRows.filter((r) => r.uniquePxPerM < (r.nearPathM <= t.nearM ? t.nearPxPerM : t.minPxPerM));
     const worst = texelRows.slice().sort((a, b) => a.uniquePxPerM - b.uniquePxPerM)[0];
     const byCls = {};
     for (const r of texelRows) { const k = r.cls; if (!byCls[k] || r.uniquePxPerM < byCls[k].uniquePxPerM) byCls[k] = r; }
@@ -282,10 +287,10 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
       const px = r.areaM2 * need * need; const plates = Math.ceil(px / (r.texW * r.texH));
       hints.push(`${r.cls} face (${fmt(r.areaM2, 0)} m², ${fmt(r.nearPathM)} m from the path): ${fmt(r.uniquePxPerM)} unique px/m < ${need}. Needs ~${(px / 1e6).toFixed(1)} Mpx of UNIQUE Imagine pixels = ${plates} full-res ${r.texW}x${r.texH} plates (sections), or larger plates. A tiled detail texture does not count.`);
     }
-    row(o, "native Imagine px/m (plates only, unique pixels)", fails.length === 0 && texelRows.length > 0,
+    if (!visible) row(o, "native Imagine px/m (plates only, unique pixels)", fails.length === 0 && texelRows.length > 0,
       texelRows.length ? `worst ${worst.cls} ${fmt(worst.uniquePxPerM)} unique px/m (sampling ${fmt(worst.samplingPxPerM)}, plate repeats x${worst.repeats}) on ${worst.inst}; ${fails.length}/${texelRows.length} surfaces under threshold (${t.minPxPerM}, ${t.nearPxPerM} within ${t.nearM} m)` : "no plate-textured surface measured",
       hints.length ? hints : ["Declare plate textures and give the mesh a uv attribute."]);
-    if (t.maxRepeats != null) {
+    if (t.maxRepeats != null && !visible) {
       const tiled = texelRows.filter((r) => r.repeats > t.maxRepeats);
       const w = tiled.sort((a, b) => b.repeats - a.repeats)[0];
       row(o, "repetition (UV): plates do not tile", tiled.length === 0, tiled.length ? `${tiled.length} surfaces tile their plate; worst ${w.cls} x${w.repeats} (${basename((w.tex || "").split("?")[0])})` : "every plate covers its surface once",
@@ -296,8 +301,9 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
     // cross-check the scene's own claim (the 10-09 lesson: gate-v37 said 256 px/m, real plates were 11-29)
     const claimKey = spec.selfReportKey; const claim = claimKey && ctx.self[claimKey];
     if (claim && worst) {
-      const ok = claim.claimedPxPerM <= worst.uniquePxPerM * t.selfReportTolerance;
-      row(o, "scene self-report vs measured", ok, `scene claims ${claim.claimedPxPerM} px/m; measured unique ${fmt(worst.uniquePxPerM)} px/m${claim.detailPxPerM ? ` (detail tile ${claim.detailPxPerM} px/m does not count)` : ""}`,
+      const meas = visible ? Math.min(...texelRows.map((r) => r.samplingPxPerM)) : worst.uniquePxPerM;
+      const ok = claim.claimedPxPerM <= meas * t.selfReportTolerance;
+      row(o, "scene self-report vs measured", ok, `scene claims ${claim.claimedPxPerM} px/m; measured ${visible ? "visible (sampling)" : "unique"} ${fmt(meas)} px/m${claim.detailPxPerM ? ` (detail tile ${claim.detailPxPerM} px/m does not count)` : ""}`,
         ["The scene's own texel number is misleading: compute it from the plate's unique pixels over the surface's metres, never from a tiled detail texture."]);
     }
   }
@@ -338,6 +344,7 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
   }
 
   // ---------------- 2. repetition (fronto-parallel facade views + phone captures)
+  let repRows = [];
   if (checks.has("repetition")) {
     const res = [];
     for (const axis of ["z", "x"]) {
@@ -358,11 +365,20 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
       res.push({ name, ...r });
     }
     writeFileSync(join(odir, "repetition.json"), JSON.stringify(res, null, 1));
+    repRows = res;
     const R = cfg.repetition;
     const fails = res.filter((r) => !r.ok || r.peak > R.maxPeak || (r.atExpectedLag != null && r.atExpectedLag > R.maxAtTileLag));
     row(o, "repetition (capture autocorrelation)", fails.length === 0 && res.length > 0,
       res.map((r) => (r.ok ? `${r.name} peak ${r.peak} at lag ${r.lagPx} px${r.atExpectedLag != null ? `, at the plate period (${r.tileM} m = ${r.expectLagPx} px) ${r.atExpectedLag}` : ""}` : `${r.name}: ${r.why}`)).join("; ") + ` (max ${R.maxPeak}, at plate period ${R.maxAtTileLag})`,
       ["Visible periodic tiling: replace the tiled plate with unique full-res Imagine sections; break any remaining repeat with a second Imagine variant + low-frequency mask.", "If the capture angle is unusable, fix the spec `hero:` or the object's front axis."]);
+  }
+
+  // ---------------- 1+2 under texel policy "visible" (SmiR 2026-10-09 20:19): visible px/m + no visible repetition
+  if (checks.has("texel") && cfg.texel.policy === "visible") {
+    const view = resolveView(cfg.texel, typeof adapter.view === "function" ? adapter.view() : adapter.view);
+    const v = scoreVisible(cfg.texel, cfg.repetition, view, texelRows, repRows, footprintsFromBoxes(boxes), spec);
+    writeFileSync(join(odir, "visible.json"), JSON.stringify({ view, perSurface: v.perSurface }, null, 1));
+    for (const r of v.rows) row(o, r.check, r.pass, r.detail, r.hints);
   }
 
   // ---------------- 3. approach morph
