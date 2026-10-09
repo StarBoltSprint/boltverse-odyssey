@@ -28,6 +28,8 @@ ok(/^1\./.test(API_VERSION) && [gateObject, gateScene, resolveObject, gateAndFix
   ok(!v.rows[0].pass && v.perSurface[0].ok && !v.perSurface[1].ok, "visible px/m: 160 passes, 100 fails at 8 m");
   ok(!v.rows[1].pass && /10\.2 m/.test(v.rows[1].detail), "plate tiling every 10.2 m < 30 m fails");
   ok(!v.rows[2].pass && /a#0 \/ a#1 5\.0 m/.test(v.rows[2].detail), "neighbours 5 m apart share plates -> FAIL");
+  const v2 = scoreVisible(tb, R, { renderPixelRatio: 1.5, fovDeg: 58, source: "test" }, [{ inst: "a#0", cls: "-y", texW: 1024, texH: 1024, samplingPxPerM: 0, repeats: 1 }, rows[0]], [], [{ inst: "a-lod0", x: 0, z: 0, hw: 10, hd: 10 }, { inst: "a-lod1", x: 0, z: 0, hw: 10, hd: 10 }]);
+  ok(v2.rows[0].pass && v2.rows[2].pass, "-y faces ignored; LOD levels of one copy are not neighbours");
   ok(checkId(v.rows[0].check) === "texel.visible-px-per-m" && checkId(v.rows[1].check) === "repetition.visible-radius" && checkId(v.rows[2].check) === "repetition.visible-neighbours", "visible row ids");
 }
 ok(listProfiles().join(",") === "building,creature,effect,ice,prop,rock,terrain,vegetation,vehicle", `listProfiles: ${listProfiles().join(" ")}`);

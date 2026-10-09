@@ -33,7 +33,9 @@ const f1 = (x) => (x == null || !isFinite(x) ? "?" : (+x).toFixed(1));
 export function scoreVisible(t, R, view, texelRows, repRows, footprints, spec = {}) {
   const rows = [], perSurface = [];
   const viewMin = (cls) => Math.max(t.minViewM, (spec.viewMinM && spec.viewMinM[cls] && spec.viewMinM[cls].m) || 0);
+  const ignore = new Set(t.ignoreClasses || []);
   for (const r of texelRows) {
+    if (ignore.has(r.cls)) continue;   // e.g. -y: downward / buried faces are never seen from a standing phone
     const d = viewMin(r.cls);
     const need = screenPxPerM(t, view, d);
     perSurface.push({ inst: r.inst, cls: r.cls, viewM: d, needPxPerM: +need.toFixed(1), visiblePxPerM: r.samplingPxPerM, ok: r.samplingPxPerM >= need });
@@ -71,6 +73,8 @@ export function scoreVisible(t, R, view, texelRows, repRows, footprints, spec = 
   const near = [];
   for (let i = 0; i < footprints.length; i++) for (let j = i + 1; j < footprints.length; j++) {
     const a = footprints[i], b = footprints[j];
+    // LOD levels (or duplicates) of the SAME copy share a footprint: not neighbours
+    if (Math.hypot(a.x - b.x, a.z - b.z) < 0.5 && Math.abs(a.hw - b.hw) < 0.5 && Math.abs(a.hd - b.hd) < 0.5) continue;
     const gap = Math.max(Math.abs(a.x - b.x) - a.hw - b.hw, Math.abs(a.z - b.z) - a.hd - b.hd);
     if (gap < t.neighbourRadiusM) near.push(`${a.inst} / ${b.inst} ${f1(Math.max(0, gap))} m`);
   }
