@@ -11,12 +11,13 @@ import { scoreVisible, screenPxPerM, resolveView, footprintsFromBoxes } from "./
 export { scoreVisible, screenPxPerM, resolveView };
 
 /** Stable API contract (see API.md). Bump the major only with a migration note; additions bump the minor. */
-export const API_VERSION = "1.2";
+export const API_VERSION = "1.3";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PY = join(HERE, "lib/analyze.py");
 const INJECT = join(HERE, "lib/inject.js");
 const PROBE = readFileSync(join(HERE, "lib/probe.js"), "utf8");
+const PROBE_VIEW = readFileSync(join(HERE, "lib/probe-view.js"), "utf8");   // 1.3: surfaceHit + zoom
 
 // ------------------------------------------------------------------ specs + profiles
 export function readYaml(p) { return yaml.load(readFileSync(p, "utf8")); }
@@ -82,11 +83,26 @@ function treeStamp(dir) {
   return out;
 }
 
+/** request URLs -> live-tree relative paths of the files the page actually loaded (same origin, inside the page's folder) */
+export function loadedLiveFiles(urls, pageUrl, liveDir) {
+  const base = new URL(".", pageUrl), out = new Set();
+  for (const u of urls || []) {
+    let x; try { x = new URL(u); } catch (e) { continue; }
+    if (x.origin !== base.origin || !x.pathname.startsWith(base.pathname)) continue;
+    let rel = decodeURIComponent(x.pathname.slice(base.pathname.length));
+    if (rel === "" || rel.endsWith("/")) rel += "index.html";
+    out.add(rel);
+  }
+  return out;
+}
+
 // ------------------------------------------------------------------ pages
-async function openPage(browser, adapter, url, viewport, query, log) {
+export async function openPage(browser, adapter, url, viewport, query, log) {
   const ctx = await browser.newContext({ viewport: { width: viewport[0], height: viewport[1] }, deviceScaleFactor: 1, isMobile: false });
   await ctx.addInitScript({ path: INJECT });
   const page = await ctx.newPage();
+  // every URL the page really loads: the live guard only watches these files (not staging files in the same folder)
+  if (browser.__ogLoaded) page.on("request", (r) => browser.__ogLoaded.add(r.url()));
   const logs = [];
   page.on("console", (m) => logs.push(`${m.type()} ${m.text()}`));
   page.on("pageerror", (e) => logs.push(`pageerror ${e.message}`));
@@ -97,6 +113,7 @@ async function openPage(browser, adapter, url, viewport, query, log) {
   await page.waitForFunction(adapter.readyExpr, null, { timeout: adapter.readyTimeoutMs || 300000, polling: 500 });
   await adapter.setupInPage(page);
   await page.evaluate(PROBE);
+  await page.evaluate(PROBE_VIEW);
   return { ctx, page, logs, href: u.href };
 }
 const SHADER_RE = /Shader Error|WebGLProgram|ERROR: 0:|VALIDATE_STATUS|could not compile/i;
@@ -118,6 +135,7 @@ export async function gateScene(scene, opts = {}) {
   // live-tree guard: the live preview is read-only; edits go to a staging copy that swaps in only after a PASS
   const liveDir = scene.liveDir || adapter.liveDir;
   const live0 = liveDir ? treeStamp(liveDir) : null;
+  browser.__ogLoaded = new Set();
   const report = { tool: "object-gate", version: 1, apiVersion: API_VERSION, url, adapter: adapter.name, startedAt: new Date().toISOString(), out, runtime: [], objects: [] };
   try {
     // ---------------- 8. runtime (whole page, every phone viewport)
@@ -164,8 +182,12 @@ export async function gateScene(scene, opts = {}) {
   }
   if (live0) {
     const live1 = treeStamp(liveDir);
-    const changed = [...new Set([...Object.keys(live0), ...Object.keys(live1)])].filter((k) => live0[k] !== live1[k]);
-    rowR(report, "live preview untouched during the gate run", changed.length === 0, changed.length ? `${changed.length} live files changed while gating: ${changed.slice(0, 6).join(", ")}` : `${Object.keys(live0).length} files in ${liveDir} unchanged`,
+    const all = [...new Set([...Object.keys(live0), ...Object.keys(live1)])].filter((k) => live0[k] !== live1[k]);
+    const loaded = loadedLiveFiles(browser.__ogLoaded, url, liveDir);
+    const changed = all.filter((k) => loaded.has(k));
+    const other = all.length - changed.length;
+    const note = other ? `; ${other} other files in the folder changed but the live page does not load them (staging copies, tests): ignored` : "";
+    rowR(report, "live preview untouched during the gate run", changed.length === 0, changed.length ? `${changed.length} files the live page loads changed while gating: ${changed.slice(0, 6).join(", ")}${note}` : `${loaded.size} files the live page loads unchanged${note}`,
       ["Never edit live preview files in place: work in a staging copy, gate the staging URL, swap live only after PASS (lesson 2026-10-09 17:14). Re-run the gate on a stable tree."]);
   }
   report.verdict = [...report.runtime, ...report.objects.flatMap((o) => o.rows)].some((r) => r.status === "FAIL") ? "FAIL" : "PASS";
@@ -205,6 +227,92 @@ async function settle(page, ms = 1200) {
   await page.evaluate(() => window.__og.frames(4));
   await page.waitForTimeout(ms);
   await page.evaluate(() => window.__og.frames(2));
+}
+
+/**
+ * Render-based visible px/m: stand minViewM (8 m) in front of the hero copy's surface (raycast), eye height, looking
+ * at it horizontally; zoom the game camera so the capture has `renderHeadroom` x the needed screen px/m (an optical
+ * zoom = a sharper screen at the same distance: same LOD, same distance fades, finer mips); screenshot; measure the
+ * detail really present in the pixels (analyze.py visible_px). Effects (dust, veils) are hidden for the shot.
+ */
+export async function visibleShot(page, adapter, sel, hero, t, view, odir, vv = {}) {
+  const D = t.minViewM, need = screenPxPerM(t, view, D), head = t.renderHeadroom ?? 2;
+  const path0 = await page.evaluate(() => window.__ogHost.path || []);
+  // direction from the copy toward the camera: spec `visibleView.towardXZ` (e.g. the A/B zone side), else the front
+  // face that looks at the player path (same side as the captures)
+  let dir;
+  if (vv.towardXZ) { const dx = vv.towardXZ[0] - hero.center[0], dz = vv.towardXZ[1] - hero.center[2], l = Math.hypot(dx, dz) || 1; dir = [dx / l, dz / l]; }
+  else {
+    const fl = Math.hypot(hero.front[0], hero.front[1]) || 1, f = [hero.front[0] / fl, hero.front[1] / fl];
+    const dP = (x, z) => Math.min(...path0.map((p) => Math.hypot(p[0] - x, p[1] - z)));
+    const s = path0.length && dP(hero.center[0] - f[0] * 50, hero.center[2] - f[1] * 50) < dP(hero.center[0] + f[0] * 50, hero.center[2] + f[1] * 50) ? -1 : 1;
+    dir = [s * f[0], s * f[1]];
+  }
+  const R = Math.hypot(hero.max[0] - hero.min[0], hero.max[2] - hero.min[2]) / 2;
+  // aim at a STEEP surface (|normal.y| < 0.6: a wall, not the sand apron / talus top) at one of these heights above
+  // the ground, then stand so the eye is exactly D metres from that point
+  // stand roughly D m in front first and let the game run: its LOD logic then shows the level the phone sees at 8 m
+  const pre = [hero.center[0] + dir[0] * (hero.halfD + D), hero.center[2] + dir[1] * (hero.halfD + D)];
+  await page.evaluate(([x, z, c]) => window.__ogHost.setPose({ x, z, look: [c[0], c[1], c[2]] }), [pre[0], pre[1], [hero.center[0], hero.min[1] + 5, hero.center[2]]]);
+  await settle(page);
+  const heights = vv.aimHeightM || [4, 5, 3, 6, 7, 8, 2.5];
+  const search = () => page.evaluate(([sel, c, dir, R, D, heights]) => {
+    const h = window.__ogHost, eye = 1.6;
+    const ox = c[0] + dir[0] * (R + 40), oz = c[2] + dir[1] * (R + 40);
+    for (const a of heights) {
+      const hit = window.__og.surfaceHit(sel, [ox, h.groundHeight(ox, oz) + a, oz], [-dir[0], 0, -dir[1]], R + 80);
+      if (!hit || !hit.normal || Math.abs(hit.normal[1]) > 0.6) continue;
+      const P = hit.point, g = h.groundHeight(P[0], P[2]); if (P[1] - g < 1) continue;
+      const nl = Math.hypot(hit.normal[0], hit.normal[2]) || 1, n = [hit.normal[0] / nl, hit.normal[2] / nl];
+      let x = P[0] + n[0] * D, z = P[2] + n[1] * D;
+      for (let i = 0; i < 3; i++) {   // eye height follows the ground under the camera
+        const dy = P[1] - (h.groundHeight(x, z) + eye); if (Math.abs(dy) >= D * 0.95) break;
+        const hz = Math.sqrt(D * D - dy * dy); x = P[0] + n[0] * hz; z = P[2] + n[1] * hz;
+      }
+      return { x, z, look: P, aimM: a, normal: hit.normal, hitName: hit.name };
+    }
+    return null;
+  }, [sel, hero.center, dir, R, D, heights]);
+  let place = await search();
+  if (!place && !vv.towardXZ) {   // the path-facing side has no wall at those heights: try the other three sides
+    const d0 = dir;
+    for (const d of [[-d0[0], -d0[1]], [d0[1], -d0[0]], [-d0[1], d0[0]]]) {
+      dir = d;
+      const p2 = [hero.center[0] + dir[0] * (hero.halfD + D), hero.center[2] + dir[1] * (hero.halfD + D)];
+      await page.evaluate(([x, z, c]) => window.__ogHost.setPose({ x, z, look: c }), [p2[0], p2[1], [hero.center[0], hero.min[1] + 5, hero.center[2]]]);
+      await settle(page);
+      place = await search(); if (place) { place.side = "fallback"; break; }
+    }
+  }
+  if (!place) return { ok: false, why: `no steep surface of ${hero.id} found at ${heights.join("/")} m above the ground on its ${vv.towardXZ ? "requested" : "path-facing"} side` };
+  await page.evaluate((n) => { window.__ogRestoreFx = (() => { const { scene } = window.__ogHost; const re = new RegExp(n); const hid = []; scene.traverse((o) => { if (o.name && re.test(o.name) && o.visible) { o.visible = false; hid.push(o); } }); return () => hid.forEach((o) => (o.visible = true)); })(); }, adapter.fxNames || "^$");
+  try {
+    const pose = await page.evaluate((p) => window.__ogHost.setPose(p), place);
+    await settle(page);
+    const vp = page.viewportSize();
+    const g = await page.evaluate(([sel, P]) => {
+      const c = window.__ogHost.camera, r = window.__ogHost.renderer, p = c.position;
+      const hit = window.__og.surfaceHit(sel, [p.x, p.y, p.z], [P[0] - p.x, P[1] - p.y, P[2] - p.z]);
+      return { d: hit && hit.d, pr: r.getPixelRatio(), cam: [p.x, p.y, p.z].map((v) => +v.toFixed(2)) };
+    }, [sel, place.look]);
+    if (!g.d) return { ok: false, why: "surface lost after placing the 8 m camera (LOD swap at the final pose?)" };
+    const renderH = vp.height * g.pr, target = head * need;
+    const fovZ = (2 * Math.atan(renderH / (2 * g.d * target)) * 180) / Math.PI;
+    const fovReal = await page.evaluate((v) => window.__og.zoom(v), fovZ);
+    await settle(page);
+    const img = join(odir, "cap-visible-8m.png");
+    await page.screenshot({ path: img, timeout: 240000 });
+    const bits = await page.evaluate(([s, w, h]) => window.__og.maskFromGameCamera(s, w, h), [sel, vp.width >> 1, vp.height >> 1]);
+    const m = py("mask_png", { w: vp.width >> 1, h: vp.height >> 1, bits, out: join(odir, "cap-visible-8m-mask.png") });
+    await page.evaluate(() => window.__og.zoom(null));
+    const S = renderH / (2 * g.d * Math.tan((fovReal * Math.PI) / 360));
+    // central band around the aimed point (the surface really at ~D m; the ground below and the sky above stay out), inside the object mask
+    const rect = [Math.round(vp.width * 0.15), Math.round(vp.height * 0.3), Math.round(vp.width * 0.85), Math.round(vp.height * 0.7)];
+    const a = py("visible_px", { img, mask: m.out, rect, screenPxPerM: S });
+    return { ...a, img, mask: m.out, cover: m.cover, distM: +g.d.toFixed(2), needPxPerM: +need.toFixed(1), zoomFovDeg: +fovReal.toFixed(2), wantedFovDeg: +fovZ.toFixed(2), renderH, camera: g.cam, aimM: place.aimM, normal: place.normal && place.normal.map((v) => +v.toFixed(2)), rect, pose };
+  } finally {
+    await page.evaluate(() => window.__ogRestoreFx && window.__ogRestoreFx());
+  }
 }
 
 async function gateOne(cap, adapter, spec, o, odir, ctx) {
@@ -376,8 +484,16 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
   // ---------------- 1+2 under texel policy "visible" (SmiR 2026-10-09 20:19): visible px/m + no visible repetition
   if (checks.has("texel") && cfg.texel.policy === "visible") {
     const view = resolveView(cfg.texel, typeof adapter.view === "function" ? adapter.view() : adapter.view);
-    const v = scoreVisible(cfg.texel, cfg.repetition, view, texelRows, repRows, footprintsFromBoxes(boxes), spec);
-    writeFileSync(join(odir, "visible.json"), JSON.stringify({ view, perSurface: v.perSurface }, null, 1));
+    // measured on the FINAL render (works for any material method: unique plates, or tiling + macro + hex tiling)
+    let render = null;
+    if ((cfg.texel.visibleMeasure || "render") === "render") {
+      try { const vv = spec.visibleView || {}; render = await visibleShot(page, adapter, sel, (vv.hero && boxes.find((b) => b.id === vv.hero)) || hero, cfg.texel, view, odir, vv); }
+      catch (e) { render = { ok: false, why: "8 m capture failed: " + String((e && e.message) || e).slice(0, 200) }; }
+      try { await page.evaluate(() => window.__og.zoom(null)); } catch (e) {}
+    }
+    const v = scoreVisible(cfg.texel, cfg.repetition, view, texelRows, repRows, footprintsFromBoxes(boxes), spec, render);
+    writeFileSync(join(odir, "visible.json"), JSON.stringify({ view, render, perSurface: v.perSurface }, null, 1));
+    if (render && render.img) o.files.captures = { ...(o.files.captures || {}), "visible-8m": { img: render.img, mask: render.mask } };
     for (const r of v.rows) row(o, r.check, r.pass, r.detail, r.hints);
   }
 
