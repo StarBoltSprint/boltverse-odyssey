@@ -17,7 +17,7 @@ or point `OG_PLAYWRIGHT=/path/to/playwright/index.mjs` at an existing install). 
 
 | Path | What |
 |---|---|
-| `gate.mjs` | API: `gateScene(scene, opts)`, `gateObject(spec, opts)`, `loadScene(yaml)`, `resolveObject`, `loadProfile`, `toMarkdown` |
+| `gate.mjs` | API v1.1: `gateScene(scene, opts)`, `gateObject(spec, opts)`, `loadScene(yaml)`, `resolveObject`, `loadProfile`, `listProfiles`, `checkId`, `toMarkdown`. **Stable contract: [`API.md`](API.md)** (used by the Imagine-to-3D modules) |
 | `cli.mjs` | CLI |
 | `lib/inject.js` | init script: tags every decoded image with its URL (fetch → Blob → ImageBitmap, `<img>`) so GPU textures map to files. Read-only. |
 | `lib/probe.js` | in-page measurements on the THREE scene: textures (material props, uniforms and `renderer.properties` uniforms from `onBeforeCompile`), texel density, masks, shadow probe, grounding rays, geometry, effects |
@@ -39,7 +39,8 @@ or point `OG_PLAYWRIGHT=/path/to/playwright/index.mjs` at an existing install). 
 6. **Geometry**: welded non-manifold / open edges, facade relief, proportions vs spec.
 7. **Key checklist**: captures (close, low phone portrait, far) → `capture-sheet.jpg` beside the key crop; FAIL unless
    every item has a recorded pass on a current capture (dHash ≤ 12) in `records/<id>.verified.yaml`. ΔE vs key crop.
-8. **Runtime**: console/page errors, shader compile, HUD/title text, portrait viewports, budgets (report only).
+8. **Runtime**: console/page errors, shader compile, HUD/title text, portrait viewports, budgets (report only), and
+   **live preview untouched** during the run (adapter `liveDir`; never edit live files in place: stage, gate, swap after PASS).
 9. **Effects**: every effect mesh samples an Imagine texture (allow-listed folders).
 
 ## Recording checklist passes

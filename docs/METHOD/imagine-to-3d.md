@@ -35,3 +35,19 @@ node tools/object-gate/hooks/imagine-to-3d.mjs --scene staging/scene.yaml --obje
 - From JS: `import { gateAndFix } from "tools/object-gate/hooks/imagine-to-3d.mjs"`; one object without a loop:
   `gateObject(spec, { adapter, url })` from `tools/object-gate/gate.mjs`.
 - The same defect failing twice stops the loop (workflow §2) and reports; quota is never burned in a blind loop.
+
+## Modules that reuse the gate (stable API v1.1)
+
+The pipeline modules call the gate API in [`tools/object-gate/API.md`](../../tools/object-gate/API.md). They do not copy thresholds or checks.
+
+| Module | Uses |
+|---|---|
+| `classify` | Returns one of `listProfiles()`. That type selects the profile. |
+| `views` | Capture angles from `loadProfile(type).checklist.captures` (close, low-portrait, far). Checklist items come from `checklistTemplate`. |
+| `coarse` | Solid targets: `geometry` (sealed, relief ≥ `minReliefM`, proportions). Gate with `gateObject(spec, {fast: true})` while iterating. |
+| `pbr` | Plate budget from `cfg.texel`: unique px/m ≥ `minPxPerM` (`nearPxPerM` within `nearM`). Plates never tile (`maxRepeats`), and a shared pool counts once. |
+| `compare` | Reads `report.objects[].files.captures`, `capture-sheet.jpg` and the row `checklist.colour`. Records passes in `records/<id>.verified.yaml`. |
+| `fixloop` | `gateAndFix` / `fixPlan`. Switch on `items[].action` or the row `id`, never on the human `check` text. |
+| `keyvideo` | Same staging rule. Effects are gated by `effects.*`; motion stays a checklist item. |
+
+Every module works on the staging copy. Export (the swap into live) runs only after `verdict === "PASS"`.

@@ -52,6 +52,10 @@ node tools/object-gate/cli.mjs --scene <zone>/scene.yaml [--url http://127.0.0.1
 `out/<time>/report.md`, `report.json`, per object `capture-sheet.jpg`, `cap-*.png`, `texel.json`, `morph.json`,
 `grounding.json`, `geometry.json`, `checklist-todo.yaml`.
 
+Programmatic use (Imagine-to-3D modules, other tools): the stable API v1.1 (`gateObject`, `gateScene`, `gateAndFix`,
+`listProfiles`, `loadProfile`, row `id`s, report JSON) is specified in [`tools/object-gate/API.md`](../../tools/object-gate/API.md).
+Additions bump the minor; a breaking change needs a major bump, a migration note there and a decisions-log row.
+
 ## Writing an object spec
 
 ```yaml
