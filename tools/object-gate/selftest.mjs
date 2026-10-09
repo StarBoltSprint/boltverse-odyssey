@@ -16,6 +16,20 @@ for (const f of readdirSync(join(HERE, "profiles")).filter((f) => !f.startsWith(
 }
 // stable API surface used by the imagine-to-3d modules (classify/views/coarse/pbr/compare/fixloop/keyvideo); see API.md
 ok(/^1\./.test(API_VERSION) && [gateObject, gateScene, resolveObject, gateAndFix, fixPlan].every((f) => typeof f === "function") && Array.isArray(FIX_ACTIONS), `API ${API_VERSION} exports present`);
+{
+  const { scoreVisible, screenPxPerM } = await import("./gate.mjs");
+  const tb = loadProfile("building").texel; const R = loadProfile("building").repetition;
+  ok(tb.policy === "visible" && tb.minViewM === 8, "texel policy visible, from 8 m (SmiR 20:19)");
+  const need = screenPxPerM(tb, { renderPixelRatio: 1.5, fovDeg: 58 }, 8);
+  ok(Math.abs(need - 154.6) < 0.5, `phone 1080x2400 @ pr 1.5, fov 58: ${need.toFixed(1)} px/m at 8 m`);
+  const rows = [{ inst: "a#0", cls: "+z", texW: 1024, texH: 1024, samplingPxPerM: 160, repeats: 1 }, { inst: "a#0", cls: "-z", texW: 1024, texH: 1024, samplingPxPerM: 100, repeats: 3 }];
+  const fp = [{ inst: "a#0", x: 0, z: 0, hw: 10, hd: 10 }, { inst: "a#1", x: 25, z: 0, hw: 10, hd: 10 }, { inst: "a#2", x: 100, z: 0, hw: 10, hd: 10 }];
+  const v = scoreVisible(tb, R, { renderPixelRatio: 1.5, fovDeg: 58, source: "test" }, rows, [], fp);
+  ok(!v.rows[0].pass && v.perSurface[0].ok && !v.perSurface[1].ok, "visible px/m: 160 passes, 100 fails at 8 m");
+  ok(!v.rows[1].pass && /10\.2 m/.test(v.rows[1].detail), "plate tiling every 10.2 m < 30 m fails");
+  ok(!v.rows[2].pass && /a#0 \/ a#1 5\.0 m/.test(v.rows[2].detail), "neighbours 5 m apart share plates -> FAIL");
+  ok(checkId(v.rows[0].check) === "texel.visible-px-per-m" && checkId(v.rows[1].check) === "repetition.visible-radius" && checkId(v.rows[2].check) === "repetition.visible-neighbours", "visible row ids");
+}
 ok(listProfiles().join(",") === "building,creature,effect,ice,prop,rock,terrain,vegetation,vehicle", `listProfiles: ${listProfiles().join(" ")}`);
 ok(checkId("native Imagine px/m (plates only, unique pixels)") === "texel.unique-px-per-m" && checkId("live preview untouched during the gate run") === "runtime.live-untouched" && new Set(CHECK_IDS.map((c) => c[1])).size === CHECK_IDS.length, "stable check ids unique");
 ok(loadProfile("building").geometry.minReliefM === 0.3 && loadProfile("rock").geometry.maxOpenEdges === null, "profile inheritance + overrides");

@@ -16,6 +16,9 @@ import { loadScene, gateScene } from "../gate.mjs";
 /** FAIL row -> fix action the pipeline can run without asking. `auto: false` = needs a review (vision/owner). */
 export const FIX_ACTIONS = [
   { re: /^native Imagine px\/m/, action: "plate-sections", auto: true, what: "split the surface into sections; one crop-sourced full-res Imagine edit per section (no tiling, no upscale)" },
+  { re: /^visible px\/m/, action: "plate-sections", auto: true, what: "cut the surface into more sections so each native 1024x1024 Imagine plate covers at most ~6.6 m (phone sharpness from 8 m); one shared plate set per type is fine" },
+  { re: /^repetition \(visible\): identical/, action: "spread-plates", auto: true, what: "section LUT / more pool layers / flips so the same plate pixels never appear within 30 m" },
+  { re: /^repetition \(visible\): neighbours/, action: "spread-plates", auto: true, what: "neighbouring copies (< 7 m) get different plate windows or a mirrored set, or move apart" },
   { re: /^repetition \(UV\)/, action: "unique-plates", auto: true, what: "UV each section 0..1 once; no plate repeats on a surface" },
   { re: /^repetition \(capture/, action: "unique-plates", auto: true, what: "remove visible tiling; second Imagine variant + low-frequency mask if needed" },
   { re: /^UV stretch/, action: "reunwrap", auto: true, what: "surface-aware UV, equal metres per texel on both axes" },

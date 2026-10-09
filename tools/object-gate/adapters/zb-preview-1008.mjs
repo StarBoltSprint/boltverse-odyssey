@@ -67,6 +67,14 @@ export default {
     });
   },
 
+  /** The game's own render pixel ratio and base vertical fov (texel policy "visible"). Read from the live biome.json
+   *  the way main.mjs does: pr = min(devicePixelRatio, camera.pixelRatioCap); fov = camera.fovBase ?? 58. Read-only. */
+  view() {
+    let cam = {};
+    try { cam = JSON.parse(readFileSync(`${PREVIEW_DIR}/biome.json`, "utf8")).camera || {}; } catch {}
+    return { renderPixelRatio: cam.pixelRatioCap ?? 1, fovDeg: cam.fovBase ?? 58, source: "game: biome.json camera.pixelRatioCap, main.mjs fovBase ?? 58" };
+  },
+
   /** Texture originals: served file -> Imagine source (tex-manifest.json written by the texture passes). */
   sources() {
     const p = `${PREVIEW_DIR}/tex-manifest.json`;
