@@ -17,8 +17,10 @@ or point `OG_PLAYWRIGHT=/path/to/playwright/index.mjs` at an existing install). 
 
 | Path | What |
 |---|---|
-| `gate.mjs` | API v1.1: `gateScene(scene, opts)`, `gateObject(spec, opts)`, `loadScene(yaml)`, `resolveObject`, `loadProfile`, `listProfiles`, `checkId`, `toMarkdown`. **Stable contract: [`API.md`](API.md)** (used by the Imagine-to-3D modules) |
+| `gate.mjs` | API v1.2: `gateScene(scene, opts)`, `gateObject(spec, opts)`, `loadScene(yaml)`, `resolveObject`, `loadProfile`, `listProfiles`, `checkId`, `toMarkdown`, `screenPxPerM`, `scoreVisible`. **Stable contract: [`API.md`](API.md)** (used by the Imagine-to-3D modules) |
 | `cli.mjs` | CLI |
+| `rescore.mjs` | re-score a finished run under the current texel policy, no re-render (`--run out/<time> --scene ...`) |
+| `lib/visible.mjs` | texel policy `visible`: phone screen px/m at a distance, visible-repetition rows |
 | `lib/inject.js` | init script: tags every decoded image with its URL (fetch → Blob → ImageBitmap, `<img>`) so GPU textures map to files. Read-only. |
 | `lib/probe.js` | in-page measurements on the THREE scene: textures (material props, uniforms and `renderer.properties` uniforms from `onBeforeCompile`), texel density, masks, shadow probe, grounding rays, geometry, effects |
 | `lib/analyze.py` | numpy/Pillow: repetition autocorrelation, dHash, CIELAB ΔE, capture sheet, mask PNG, image size |
@@ -29,10 +31,13 @@ or point `OG_PLAYWRIGHT=/path/to/playwright/index.mjs` at an existing install). 
 
 ## Checks
 
-1. **Native Imagine px/m** per surface, plates only, **unique pixels** (a plate that tiles counts once); ≥ 64 px/m,
-   ≥ 128 within 30 m of the player path. Plus: served file ≥ Imagine original, GPU = file, mipmaps + trilinear,
+1. **Visible px/m** per surface, plates only (policy `visible`, SmiR 2026-10-09 20:19): plate px/m ≥ the phone
+   screen's px/m when the surface is viewed from 8 m (1080 × 2400 phone at the game's render pixel ratio and fov;
+   Zone B: 155 px/m). Closer views are exempt, no camera distance limit. Imagine plates are 1024² native, so one plate
+   covers at most ~6.6 m. Plus: served file ≥ Imagine original, GPU = file, mipmaps + trilinear,
    anisotropy = max, UV stretch ≤ 1.3, the scene's own px/m claim cross-checked against the measurement.
-2. **Repetition**: plate UV area > 1 on a surface (tiling); autocorrelation on fronto-parallel face views (front + side, lit, object only) and the close / low-portrait captures, including the correlation at the plate's own tile period.
+2. **Repetition**: one shared plate set per object type is allowed, but identical plate pixels never within 30 m
+   (tiling period or pool cell period with ortho correlation) and neighbouring copies (< 7 m) never share; autocorrelation on fronto-parallel face views (front + side, lit, object only) and the close / low-portrait captures, including the correlation at the plate's own tile period.
 3. **Approach morph** 300 → 10 m on the nearest copies with the game's own LOD logic: silhouette IoU jumps.
 4. **Shadows**: cast, world-fixed (mask IoU after moving the player 80 m), neutral colour (not violet).
 5. **Grounding**: rays from below under the lower 20 % of each copy vs ground height.
