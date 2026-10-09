@@ -1,0 +1,51 @@
+# imagine-to-3d type profile: effect (see _README.md). Gate thresholds come from tools/object-gate/profiles/effect.yaml
+type: effect
+desc: sand, dust, veils, smoke, sparks, god-rays (no solid mesh)
+gate:
+  profile: effect
+  tighten: {}
+views:
+  count: 0
+  note: 'no orbit views: Imagine sprite/flipbook sheets (grains, veils) cut from the key region'
+  cameras: []
+geometry:
+  strategy: particles+imagine-sprites
+  coarse: none
+  depthRatio: 0.0
+  hardEdges: false
+  relief:
+    maxM: 0.0
+    minStdFrac: 0.0
+    gradientMax: 0.0
+  bevelM: 0.0
+  notes: colour/alpha sampled from Imagine sheets; motion from the brief and keyvideo motion notes
+texel:
+  targetPxPerM: 128
+  minPxPerM: 64
+  closestApproachM: 2.0
+pbr:
+  maps:
+  - albedo
+  - alpha
+  metalness:
+  - 0.0
+  - 0.0
+  roughness:
+  - 1.0
+  - 1.0
+  heightM: 0.0
+fix:
+  maxIterations: 3
+thresholds:
+  silhouetteIoU: null
+  uvStretch: 1.25
+  lpips: 0.15
+  ssimMin: 0.35
+  deltaE2000Max: 12.0
+  histBhattMax: 0.35
+  checklistMin: 0.9
+  shadowChromaMax: 0.18
+  violetRatio: 1.08
+  depthConsistencyMedian: 0.08
+  depthConsistencyP90: 0.12
+  viewRetries: 3

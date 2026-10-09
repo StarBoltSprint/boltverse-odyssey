@@ -1,0 +1,89 @@
+# imagine-to-3d type profile: wreck (see _README.md). Gate thresholds come from tools/object-gate/profiles/vehicle.yaml
+type: wreck
+desc: wrecks, vehicles, debris, panels, props
+gate:
+  profile: vehicle
+  smallProfile: prop
+  smallBelowM: 6.0
+  tighten:
+    texel:
+      maxStretch: 1.25
+      minPxPerM: 64
+      nearPxPerM: 128
+views:
+  count: 10
+  cameras:
+  - name: y000
+    yaw: 0.0
+    elev: 15
+  - name: y045
+    yaw: 45.0
+    elev: 15
+  - name: y090
+    yaw: 90.0
+    elev: 15
+  - name: y135
+    yaw: 135.0
+    elev: 15
+  - name: y180
+    yaw: 180.0
+    elev: 15
+  - name: y225
+    yaw: 225.0
+    elev: 15
+  - name: y270
+    yaw: 270.0
+    elev: 15
+  - name: y315
+    yaw: 315.0
+    elev: 15
+  - name: h045
+    yaw: 45
+    elev: 40
+  - name: h225
+    yaw: 225
+    elev: 40
+geometry:
+  strategy: extrude+depth-panels+hard-edges
+  coarse: extrude-depth
+  depthRatio: 0.45
+  hardEdges: true
+  relief:
+    maxM: 0.4
+    minStdFrac: 0.08
+    gradientMax: 0.25
+  bevelM: 0.08
+  notes: modular sections, booleans for breaks, interior skinned
+texel:
+  targetPxPerM: 128
+  minPxPerM: 64
+  closestApproachM: 4.0
+pbr:
+  maps:
+  - albedo
+  - normal
+  - roughness
+  - metalness
+  - ao
+  metalness:
+  - 0.0
+  - 1.0
+  roughness:
+  - 0.2
+  - 0.95
+  heightM: 0.4
+fix:
+  maxIterations: 4
+thresholds:
+  silhouetteIoU: 0.87
+  uvStretch: 1.25
+  lpips: 0.15
+  ssimMin: 0.35
+  deltaE2000Max: 12.0
+  histBhattMax: 0.35
+  checklistMin: 0.9
+  shadowChromaMax: 0.18
+  violetRatio: 1.08
+  depthConsistencyMedian: 0.08
+  depthConsistencyP90: 0.12
+  viewRetries: 3

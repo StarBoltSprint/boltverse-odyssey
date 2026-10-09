@@ -1,0 +1,88 @@
+# imagine-to-3d type profile: building (see _README.md). Gate thresholds come from tools/object-gate/profiles/building.yaml
+type: building
+desc: hard-surface towers, halls, ruins, spires
+gate:
+  profile: building
+  tighten:
+    texel:
+      maxStretch: 1.25
+      minPxPerM: 64
+      nearPxPerM: 128
+views:
+  count: 10
+  note: 8 orbit + low phone angle + top (sheared tops)
+  cameras:
+  - name: y000
+    yaw: 0.0
+    elev: 5
+  - name: y045
+    yaw: 45.0
+    elev: 5
+  - name: y090
+    yaw: 90.0
+    elev: 5
+  - name: y135
+    yaw: 135.0
+    elev: 5
+  - name: y180
+    yaw: 180.0
+    elev: 5
+  - name: y225
+    yaw: 225.0
+    elev: 5
+  - name: y270
+    yaw: 270.0
+    elev: 5
+  - name: y315
+    yaw: 315.0
+    elev: 5
+  - name: low000
+    yaw: 0
+    elev: -20
+  - name: top
+    yaw: 0
+    elev: 90
+geometry:
+  strategy: extrude-taper-bevel-boolean
+  coarse: extrude
+  depthRatio: 0.55
+  hardEdges: true
+  relief:
+    maxM: 0.3
+    minStdFrac: 0.08
+    gradientMax: 0.2
+  bevelM: 0.3
+  notes: extrude the front silhouette, thickness from the side view, booleans for visible holes (q15); never a visual hull
+texel:
+  targetPxPerM: 128
+  minPxPerM: 64
+  closestApproachM: 6.0
+pbr:
+  maps:
+  - albedo
+  - normal
+  - roughness
+  - metalness
+  - ao
+  metalness:
+  - 0.0
+  - 1.0
+  roughness:
+  - 0.15
+  - 0.9
+  heightM: 0.3
+fix:
+  maxIterations: 4
+thresholds:
+  silhouetteIoU: 0.87
+  uvStretch: 1.25
+  lpips: 0.15
+  ssimMin: 0.35
+  deltaE2000Max: 12.0
+  histBhattMax: 0.35
+  checklistMin: 0.9
+  shadowChromaMax: 0.18
+  violetRatio: 1.08
+  depthConsistencyMedian: 0.08
+  depthConsistencyP90: 0.12
+  viewRetries: 3

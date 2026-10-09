@@ -1,0 +1,94 @@
+# imagine-to-3d type profile: creature (see _README.md). Gate thresholds come from tools/object-gate/profiles/creature.yaml
+type: creature
+desc: animals, beings (frozen pose / rig later)
+gate:
+  profile: creature
+  tighten:
+    texel:
+      maxStretch: 1.25
+      minPxPerM: 64
+      nearPxPerM: 128
+views:
+  count: 12
+  note: denser equatorial turnaround (q16) + top
+  cameras:
+  - name: y000
+    yaw: 0.0
+    elev: 0
+  - name: y036
+    yaw: 36.0
+    elev: 0
+  - name: y072
+    yaw: 72.0
+    elev: 0
+  - name: y108
+    yaw: 108.0
+    elev: 0
+  - name: y144
+    yaw: 144.0
+    elev: 0
+  - name: y180
+    yaw: 180.0
+    elev: 0
+  - name: y216
+    yaw: 216.0
+    elev: 0
+  - name: y252
+    yaw: 252.0
+    elev: 0
+  - name: y288
+    yaw: 288.0
+    elev: 0
+  - name: y324
+    yaw: 324.0
+    elev: 0
+  - name: h030
+    yaw: 30
+    elev: 35
+  - name: top
+    yaw: 0
+    elev: 90
+geometry:
+  strategy: turnaround-closed-manifold
+  coarse: lathe-ellipsoid
+  depthRatio: 0.6
+  hardEdges: false
+  relief:
+    maxM: 0.15
+    minStdFrac: 0.05
+    gradientMax: 0.3
+  bevelM: 0.0
+  notes: canonical turnaround, closed manifold mesh, clean edge flow for a later rig
+texel:
+  targetPxPerM: 128
+  minPxPerM: 64
+  closestApproachM: 2.0
+pbr:
+  maps:
+  - albedo
+  - normal
+  - roughness
+  - metalness
+  - ao
+  metalness:
+  - 0.0
+  - 0.1
+  roughness:
+  - 0.3
+  - 0.95
+  heightM: 0.15
+fix:
+  maxIterations: 5
+thresholds:
+  silhouetteIoU: 0.87
+  uvStretch: 1.25
+  lpips: 0.15
+  ssimMin: 0.35
+  deltaE2000Max: 12.0
+  histBhattMax: 0.35
+  checklistMin: 0.9
+  shadowChromaMax: 0.18
+  violetRatio: 1.08
+  depthConsistencyMedian: 0.08
+  depthConsistencyP90: 0.12
+  viewRetries: 3
