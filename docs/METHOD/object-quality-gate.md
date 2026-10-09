@@ -25,6 +25,14 @@ Back to [METHOD.md](../METHOD.md) · tool: [`tools/object-gate`](../../tools/obj
 6. **Texel policy (SmiR 2026-10-09 20:19):** sharpness is judged as the phone sees it from 8 m and farther, with no
    camera distance limit; closer is exempt. Uniqueness is not required: one shared plate set per type, never the same
    pixels within 30 m, never shared by neighbours. Imagine plates are 1024 × 1024 native. Set in `profiles/_base.yaml`.
+   **Material method A/B (2026-10-09):** a layered / hybrid method (tiling Imagine materials + unique macro plates +
+   stochastic hex tiling, see `arch-research-1008/q18-answer.md`) is being A/B tested against unique section plates.
+   The gate judges the result, not the method: visible px/m and repetition must be measured on the final render, so
+   the same rows apply to both. Today: repetition is measured on the rendered face views and captures (both methods);
+   tiling materials declared as `tile` / `detail` are not scored on their UV period. The visible px/m row still reads
+   sampling px/m of `plate` textures only, so a layered material whose sharpness comes from the detail layer would
+   FAIL it. Next step: a render-based visible px/m (sharpness measured in the 8 m captures) so both methods are
+   scored the same way.
 7. Quality first: the budget rows (draw calls, triangles, texture MB) are reported, never a reason to shrink a texture.
 
 ## What it checks (one row each, FAIL blocks)

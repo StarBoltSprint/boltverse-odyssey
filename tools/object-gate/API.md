@@ -110,6 +110,8 @@ A scene yaml adds `url`, `adapter` (a path), `hud`, `title`, `runtime.viewports`
 
 `unique` keeps the earlier rule (`minPxPerM` 64, `nearPxPerM` 128 within `nearM` of the path) for comparison.
 
+**Material method A/B (2026-10-09).** A layered / hybrid method (tiling Imagine materials + unique macro plates + stochastic hex tiling, per `arch-research-1008/q18-answer.md`) is being A/B tested against unique section plates. Callers do not change: the gate must measure visible px/m and repetition on the final render, so the same rows and ids apply to both methods. Current state: `repetition.*` rows use the rendered face views and captures (`repetition.json`) for both methods, and textures declared `tile` / `detail` are not scored on their UV period. `texel.visible-px-per-m` still uses the sampling px/m of `plate` textures from the in-page probe, so a layered material whose sharpness comes from its detail layer would FAIL that row. Planned (additive, same row id): a render-based visible px/m measured in the 8 m captures.
+
 ## Adapters
 
 An adapter makes one game page reachable. See the README, section "Writing an adapter". Since 1.2 an adapter may export `view()` → `{renderPixelRatio, fovDeg, source}` (the game's own numbers; Zone B reads `biome.json` `camera.pixelRatioCap` = 1.5 and fov 58). The Imagine-to-3D staging viewer needs its own adapter (one object on a ground plane, `liveDir` unset, `path` around the object).
