@@ -39,9 +39,9 @@ export function fixPlan(report) {
   const items = [];
   for (const o of report.objects) for (const r of o.rows) if (r.status === "FAIL") {
     const a = FIX_ACTIONS.find((f) => f.re.test(r.check)) || { action: "manual", auto: false, what: "no automatic fix known" };
-    items.push({ object: o.id, check: r.check, action: a.action, auto: a.auto, what: a.what, detail: r.detail, hints: r.hints });
+    items.push({ object: o.id, id: r.id, check: r.check, action: a.action, auto: a.auto, what: a.what, detail: r.detail, hints: r.hints });
   }
-  for (const r of report.runtime) if (r.status === "FAIL") items.push({ object: "*", check: r.check, action: /shader/.test(r.check) ? "fix-shader" : "fix-runtime", auto: true, detail: r.detail, hints: r.hints });
+  for (const r of report.runtime) if (r.status === "FAIL") items.push({ object: "*", id: r.id, check: r.check, action: /shader/.test(r.check) ? "fix-shader" : "fix-runtime", auto: true, detail: r.detail, hints: r.hints });
   return { verdict: report.verdict, report: report.out, items };
 }
 
