@@ -1,0 +1,6 @@
+id: sand-fx
+type: effect
+select: {names: "^air-sand-"}
+# Imagine image folders of this preview (ground plates, tower plates, mesa plates, sky layers)
+imagineSources: ["/assets/ground/", "/objects1/tex/", "/mesas/mesaA-", "/sky1/"]
+textures: []

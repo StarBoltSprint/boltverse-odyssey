@@ -1,0 +1,12 @@
+type: rock       # mesas, arches, boulders, cliffs (organic solids)
+extends: _base
+geometry:
+  maxOpenEdges: null     # buried open bottom ring allowed (declared in the report)
+  minReliefM: 0.5
+  minReliefFaces: 2
+repetition: {maxPeak: 0.65}
+checklistTemplate:
+  - {id: volume, feature: "Mass and silhouette match the key crop from the key camera side", captures: [far]}
+  - {id: strata, feature: "Strata / erosion bands in the geometry, not only painted", captures: [close, far]}
+  - {id: colours, feature: "Rock colours as the key under the key light", captures: [close, far]}
+  - {id: base, feature: "Talus / sand at the base, no floating edge", captures: [low-portrait]}

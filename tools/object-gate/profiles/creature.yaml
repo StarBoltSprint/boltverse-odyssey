@@ -1,0 +1,7 @@
+type: creature   # later: animated beings (Bolt stays an Imagine video and is NOT gated here)
+extends: _base
+morph: {instances: 1, fromM: 80, toM: 3}
+geometry: {minReliefM: 0.0}
+checklistTemplate:
+  - {id: volume, feature: "Silhouette matches the key crop in the frozen pose", captures: [far, close]}
+  - {id: colours, feature: "Colours as the key", captures: [close]}

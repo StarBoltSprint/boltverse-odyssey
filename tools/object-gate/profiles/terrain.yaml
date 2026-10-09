@@ -1,0 +1,5 @@
+type: terrain    # ground of a biome (zone): tiles, roads
+extends: _base
+checks: [texel, textures, repetition, runtime]
+texel: {minPxPerM: 64, nearPxPerM: 128, maxRepeats: null}   # ground tiles repeat by design; anti-carpet rules apply
+repetition: {maxPeak: 0.65}

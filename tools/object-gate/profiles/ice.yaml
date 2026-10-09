@@ -1,0 +1,9 @@
+type: ice        # ice, glass, crystal masses
+extends: _base
+texel: {nearPxPerM: 128}
+geometry: {minReliefM: 0.2, minReliefFaces: 1, maxOpenEdges: null}
+shadow: {maxTintChroma: 0.25}   # light through ice may tint the shadow cool
+checklistTemplate:
+  - {id: volume, feature: "Mass matches the key crop", captures: [far]}
+  - {id: facets, feature: "Facets / cracks in the geometry", captures: [close]}
+  - {id: colours, feature: "Translucency and colour as the key", captures: [close, far]}

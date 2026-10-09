@@ -1,0 +1,13 @@
+type: building   # hard-surface towers, halls, ruins, spires
+extends: _base
+geometry:
+  minReliefM: 0.3        # fins, ledges, recessed bays: a flat slab with a plate pasted on reads as an image (SmiR 10-09)
+  minReliefFaces: 2
+checklistTemplate:
+  - {id: volume, feature: "Silhouette and proportions match the key crop (height/width/depth)", captures: [far, close]}
+  - {id: relief, feature: "Facade relief in the geometry (fins, ledges, bays, cornices) readable at avenue distance", captures: [close, low-portrait]}
+  - {id: damage, feature: "Damage in the volume (sheared top, see-through holes, missing chunks)", captures: [far, low-portrait]}
+  - {id: materials, feature: "Materials as the key (graphite body, chrome/silver parts, glass)", captures: [close]}
+  - {id: colours, feature: "Colours as the key under the key light (no pink/orange wash, sand only low)", captures: [close, far]}
+  - {id: details, feature: "Key details present (ladders, balconies, trims...)", captures: [close, low-portrait]}
+  - {id: base, feature: "Seated in the ground with sand drift, no gap, contact shadow", captures: [low-portrait]}

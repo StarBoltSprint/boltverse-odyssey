@@ -1,0 +1,9 @@
+type: prop       # debris, panels, slabs, crates, small ruins seen up close
+extends: _base
+texel: {minPxPerM: 128, nearPxPerM: 256}
+morph: {instances: 3, fromM: 120, toM: 3}
+geometry: {minReliefM: 0.0}
+checklistTemplate:
+  - {id: volume, feature: "Shape matches the key crop", captures: [close]}
+  - {id: materials, feature: "Material and colour as the key", captures: [close]}
+  - {id: base, feature: "Seated flush, no float, no tilted wedge", captures: [low-portrait]}

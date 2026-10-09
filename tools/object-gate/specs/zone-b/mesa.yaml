@@ -1,0 +1,14 @@
+id: mesa
+type: rock
+select: {names: "^mesa-", exclude: "drifts"}
+keyCrop: /workspace/grokcli/wt/mesa-1009/in/crop-L.png
+textures:
+  # Imagine plates projected in the shader (no uv attribute): px/m = plate px / metres the plate spans x copy scale
+  - {match: "mesas/mesaA-(front|side|back)\\.jpg", role: plate, projected: {metresAcross: 107.07}}
+  - {match: "mesas/mesaA-top\\.jpg", role: plate, projected: {metresAcross: 107.07}}
+  - {match: "mesas/mesaA-detail\\.jpg", role: detail}
+checklist:
+  - {id: volume, feature: "Mesa mass and silhouette like the key crop", captures: [far]}
+  - {id: strata, feature: "Sandstone strata in the geometry and the plate", captures: [close, far]}
+  - {id: colours, feature: "Sandstone colours under the key light", captures: [close, far]}
+  - {id: base, feature: "Talus/sand at the foot, no floating edge", captures: [low-portrait]}
