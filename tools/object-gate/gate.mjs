@@ -8,6 +8,9 @@ import { execFileSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import yaml from "js-yaml";   // npm ci in tools/object-gate
 
+/** Stable API contract (see API.md). Bump the major only with a migration note; additions bump the minor. */
+export const API_VERSION = "1.1";
+
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PY = join(HERE, "lib/analyze.py");
 const INJECT = join(HERE, "lib/inject.js");
@@ -20,6 +23,10 @@ function deepMerge(a, b) {
   const out = { ...(a || {}) };
   for (const [k, v] of Object.entries(b)) out[k] = typeof v === "object" && v !== null && !Array.isArray(v) ? deepMerge(out[k], v) : v;
   return out;
+}
+/** Object types that have a profile (for classifiers: pick one of these). */
+export function listProfiles() {
+  return readdirSync(join(HERE, "profiles")).filter((f) => f.endsWith(".yaml") && !f.startsWith("_")).map((f) => f.slice(0, -5)).sort();
 }
 export function loadProfile(type) {
   const p = join(HERE, "profiles", `${type}.yaml`);
@@ -109,7 +116,7 @@ export async function gateScene(scene, opts = {}) {
   // live-tree guard: the live preview is read-only; edits go to a staging copy that swaps in only after a PASS
   const liveDir = scene.liveDir || adapter.liveDir;
   const live0 = liveDir ? treeStamp(liveDir) : null;
-  const report = { tool: "object-gate", version: 1, url, adapter: adapter.name, startedAt: new Date().toISOString(), out, runtime: [], objects: [] };
+  const report = { tool: "object-gate", version: 1, apiVersion: API_VERSION, url, adapter: adapter.name, startedAt: new Date().toISOString(), out, runtime: [], objects: [] };
   try {
     // ---------------- 8. runtime (whole page, every phone viewport)
     const vps = (scene.runtime && scene.runtime.viewports) || [[412, 915], [540, 1200]];
@@ -130,7 +137,7 @@ export async function gateScene(scene, opts = {}) {
       const inner = await h.page.evaluate(() => [innerWidth, innerHeight]);
       rowR(report, `portrait viewport ${vp.join("x")}`, inner[1] > inner[0], `inner ${inner.join("x")}`, ["The page must fill a portrait phone viewport."]);
       stats = await h.page.evaluate(() => window.__og.stats());
-      report.runtime.push({ check: `budgets ${vp.join("x")} (report only, quality first)`, status: "INFO", detail: JSON.stringify(stats), hints: [] });
+      report.runtime.push({ id: "runtime.budgets", check: `budgets ${vp.join("x")} (report only, quality first)`, status: "INFO", detail: JSON.stringify(stats), hints: [] });
       await h.ctx.close();
     }
     // ---------------- capture page (shared by every object)
@@ -172,10 +179,24 @@ export async function gateObject(spec, opts = {}) {
   return gateScene({ adapter: opts.adapter, url: opts.url, dir: opts.dir || process.cwd(), hud: opts.hud, title: opts.title, objects: [resolved] }, opts);
 }
 
+/** Stable machine id per row (check text may be reworded; ids never change). */
+export const CHECK_IDS = [
+  [/^select/, "select"], [/^gate run/, "gate.crash"],
+  [/^texture roles/, "textures.roles"], [/^texture filtering/, "textures.filtering"], [/^plates not downscaled/, "textures.native-size"],
+  [/^native Imagine px\/m/, "texel.unique-px-per-m"], [/^repetition \(UV\)/, "repetition.uv"], [/^UV stretch/, "texel.stretch"],
+  [/^scene self-report/, "texel.self-report"], [/^repetition \(capture/, "repetition.captures"], [/^approach morph/, "morph"],
+  [/^shadow light/, "shadow.light"], [/^shadow cast/, "shadow.cast"], [/^shadow world-fixed/, "shadow.world-fixed"], [/^shadow colour/, "shadow.colour"],
+  [/^grounding/, "grounding"], [/^mesh sealed/, "geometry.sealed"], [/^facade relief/, "geometry.relief"], [/^proportions/, "geometry.proportions"],
+  [/^effects take/, "effects.imagine-texture"], [/^effects: no typed/, "effects.no-colour-literals"],
+  [/^key checklist written/, "checklist.written"], [/^key crop present/, "checklist.key-crop"], [/^key checklist: every/, "checklist.verified"], [/^colour vs key/, "checklist.colour"],
+  [/^console/, "runtime.console"], [/^shader compile/, "runtime.shader"], [/^HUD text/, "runtime.hud"], [/^title/, "runtime.title"],
+  [/^portrait viewport/, "runtime.portrait"], [/^budgets/, "runtime.budgets"], [/^live preview untouched/, "runtime.live-untouched"],
+];
+export const checkId = (check) => (CHECK_IDS.find(([re]) => re.test(check)) || [null, "other"])[1];
 function row(o, check, pass, detail, hints = [], status) {
-  o.rows.push({ check, status: status || (pass ? "PASS" : "FAIL"), detail, hints: pass ? [] : hints });
+  o.rows.push({ id: checkId(check), check, status: status || (pass ? "PASS" : "FAIL"), detail, hints: pass ? [] : hints });
 }
-function rowR(rep, check, pass, detail, hints) { rep.runtime.push({ check, status: pass ? "PASS" : "FAIL", detail, hints: pass ? [] : hints }); }
+function rowR(rep, check, pass, detail, hints) { rep.runtime.push({ id: checkId(check), check, status: pass ? "PASS" : "FAIL", detail, hints: pass ? [] : hints }); }
 
 async function settle(page, ms = 1200) {
   await page.evaluate(() => window.__og.frames(4));
