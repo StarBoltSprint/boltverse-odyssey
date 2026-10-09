@@ -28,7 +28,7 @@ node tools/object-gate/hooks/imagine-to-3d.mjs --scene staging/scene.yaml --obje
 
 - Exit 0: PASS, exported. Exit 1: still FAIL (nothing exported). Exit 3: needs review (checklist verification by
   Grok vision or the owner).
-- `{plan}` is `fix-plan.json`: one item per FAIL row with `action` (`plate-sections`, `unique-plates`, `sink`,
+- `{plan}` is `fix-plan.json`: one item per FAIL row with `action` (`plate-sections`, `spread-plates`, `unique-plates`, `sink`,
   `heal-manifold`, `add-relief`, `rescale`, `single-silhouette-lod`, `static-shadow`, `shadow-tint`,
   `texture-params`, `restore-native`, `imagine-fx-texture`, `verify-captures`…), `auto` (true = the pipeline fixes it
   without asking), the measured detail and the hints. Table: `FIX_ACTIONS` in the hook.
@@ -36,7 +36,7 @@ node tools/object-gate/hooks/imagine-to-3d.mjs --scene staging/scene.yaml --obje
   `gateObject(spec, { adapter, url })` from `tools/object-gate/gate.mjs`.
 - The same defect failing twice stops the loop (workflow §2) and reports; quota is never burned in a blind loop.
 
-## Modules that reuse the gate (stable API v1.1)
+## Modules that reuse the gate (stable API v1.2)
 
 The pipeline modules call the gate API in [`tools/object-gate/API.md`](../../tools/object-gate/API.md). They do not copy thresholds or checks.
 
@@ -45,7 +45,7 @@ The pipeline modules call the gate API in [`tools/object-gate/API.md`](../../too
 | `classify` | Returns one of `listProfiles()`. That type selects the profile. |
 | `views` | Capture angles from `loadProfile(type).checklist.captures` (close, low-portrait, far). Checklist items come from `checklistTemplate`. |
 | `coarse` | Solid targets: `geometry` (sealed, relief ≥ `minReliefM`, proportions). Gate with `gateObject(spec, {fast: true})` while iterating. |
-| `pbr` | Plate budget from `cfg.texel`: unique px/m ≥ `minPxPerM` (`nearPxPerM` within `nearM`). Plates never tile (`maxRepeats`), and a shared pool counts once. |
+| `pbr` | Plate budget from `cfg.texel` (policy `visible`, SmiR 2026-10-09 20:19): plate px/m ≥ `screenPxPerM(cfg.texel, view, cfg.texel.minViewM)` (Zone B 155 px/m at 8 m; closer views exempt). Imagine plates are 1024 × 1024 native, so one plate covers ≤ ~6.6 m. One shared plate set per type; the same pixels never within `repeatRadiusM` (30 m); neighbours (< 7 m) never share. |
 | `compare` | Reads `report.objects[].files.captures`, `capture-sheet.jpg` and the row `checklist.colour`. Records passes in `records/<id>.verified.yaml`. |
 | `fixloop` | `gateAndFix` / `fixPlan`. Switch on `items[].action` or the row `id`, never on the human `check` text. |
 | `keyvideo` | Same staging rule. Effects are gated by `effects.*`; motion stays a checklist item. |

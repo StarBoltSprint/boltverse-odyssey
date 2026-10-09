@@ -22,18 +22,21 @@ Back to [METHOD.md](../METHOD.md) · tool: [`tools/object-gate`](../../tools/obj
 5. **Never edit live preview files in place** (lesson 2026-10-09 17:14: a job editing the live tree broke SmiR's link).
    Edit a staging copy, gate the staging URL, swap into live only after PASS. The gate treats the live tree as
    read-only and FAILS the run if any live file changes while it gates.
-6. Quality first: the budget rows (draw calls, triangles, texture MB) are reported, never a reason to shrink a texture.
+6. **Texel policy (SmiR 2026-10-09 20:19):** sharpness is judged as the phone sees it from 8 m and farther, with no
+   camera distance limit; closer is exempt. Uniqueness is not required: one shared plate set per type, never the same
+   pixels within 30 m, never shared by neighbours. Imagine plates are 1024 × 1024 native. Set in `profiles/_base.yaml`.
+7. Quality first: the budget rows (draw calls, triangles, texture MB) are reported, never a reason to shrink a texture.
 
 ## What it checks (one row each, FAIL blocks)
 
 | # | Check | How it is measured | Default |
 |---|---|---|---|
-| 1 | **Native Imagine px/m** per object, per surface | For every **plate** texture (role declared in the spec) and every surface (signed normal class) of every placed copy: UV area × texture pixels / world area. If the plate's UV area on that surface is > 1 the plate **tiles**, the pixels are not unique, and the score is `sqrt(texture pixels / surface m²)`. Detail / tile textures never count. Shader-projected plates: plate px / metres spanned × copy scale. Plate pools (an array of section plates, one layer per cell, picked by a lookup — TEX4): sampling = layer px / cell m, unique = `sqrt(layers × layer px / wall m² of every object sharing the pool)`. | ≥ 64 px/m, ≥ 128 px/m within 30 m of the player path |
+| 1 | **Visible px/m** per object, per surface (policy `visible`, SmiR 2026-10-09 20:19) | For every **plate** texture (role declared in the spec) and every surface (signed normal class) of every placed copy: plate sampling px/m (UV area × texture pixels / world area; projected plates: plate px / metres spanned; pools: layer px / cell m). Required: the phone screen's px/m when that surface is viewed from 8 m, `renderH / (2 d tan(vfov/2))` with `renderH` = 2400 / 2.625 × the game's render pixel ratio (1080 × 2400 phone). Closer views are exempt (slight blur right against a wall is accepted). No camera distance limit: every surface is scored at 8 m unless the spec gives a per-class `viewMinM` with a reason. Detail / tile textures never count. Policy `unique` (unique px/m ≥ 64, ≥ 128 within 30 m of the path) is kept for comparison. | Zone B (pr 1.5, vfov 58°): ≥ 155 px/m; a native 1024² Imagine plate covers ≤ 6.6 m |
 | 1b | Plates not downscaled | Served file ≥ the Imagine original (from `tex-manifest.json` or spec `source:`), GPU image = served file, no resized `createImageBitmap`. | — |
 | 1c | Filtering | mipmaps + `LinearMipmapLinear`, anisotropy = renderer max | — |
 | 1d | UV stretch | area-weighted p95 of the per-triangle singular-value ratio | ≤ 1.3 |
-| 1e | Scene self-report | the scene's own px/m claim vs the measured unique px/m | claim ≤ 1.25 × measured |
-| 2 | **Repetition** | (UV) a plate repeats on a surface → FAIL. (capture) fronto-parallel orthographic views of the front and side faces of the hero copy (lit as in the game, object only — a tiled plate repeats exactly there) plus the close and low phone portrait captures: unbiased autocorrelation of the high-passed luma inside the object mask, and the correlation at the plate's own tile period. | peak ≤ 0.75 (regular architecture reaches ~0.6), ≤ 0.5 at the plate period |
+| 1e | Scene self-report | the scene's own px/m claim vs the measured px/m (visible, or unique under policy `unique`) | claim ≤ 1.25 × measured |
+| 2 | **Repetition** | **No visible repetition, instead of unique pixels:** one shared plate set per object type is allowed; identical plate pixels never within 30 m (a plate tiling with a period < 30 m, or a pool whose ortho facade view correlates at the cell period); neighbouring copies of the same set (< 7 m apart) never share. Plus (capture) fronto-parallel orthographic views of the front and side faces of the hero copy and the close and low phone portrait captures: unbiased autocorrelation of the high-passed luma inside the object mask, and the correlation at the plate's own tile period. | 30 m, 7 m; peak ≤ 0.75, ≤ 0.5 at the plate period |
 | 3 | **Approach morph** | deterministic approach 300 → 10 m on the N nearest copies, the game's own LOD logic runs at each step, silhouette mask IoU between consecutive frames | no drop < 0.8 or > 0.05 under the neighbours' median |
 | 4 | **Shadows** | probe camera on the ground in the shadow: render with / without this object casting (shadow map forced to re-render). World-fixed = shadow mask IoU after moving the player 80 m. Colour = per-channel shadow multiply, low chroma, never violet. | IoU ≥ 0.9, chroma ≤ 0.18 |
 | 5 | **Grounding** | rays from below on a 9 × 9 grid under the lower 20 % of each copy; lowest hit vs ground height | air ≤ 0.05 m |
@@ -52,8 +55,8 @@ node tools/object-gate/cli.mjs --scene <zone>/scene.yaml [--url http://127.0.0.1
 `out/<time>/report.md`, `report.json`, per object `capture-sheet.jpg`, `cap-*.png`, `texel.json`, `morph.json`,
 `grounding.json`, `geometry.json`, `checklist-todo.yaml`.
 
-Programmatic use (Imagine-to-3D modules, other tools): the stable API v1.1 (`gateObject`, `gateScene`, `gateAndFix`,
-`listProfiles`, `loadProfile`, row `id`s, report JSON) is specified in [`tools/object-gate/API.md`](../../tools/object-gate/API.md).
+Programmatic use (Imagine-to-3D modules, other tools): the stable API v1.2 (`gateObject`, `gateScene`, `gateAndFix`,
+`listProfiles`, `loadProfile`, `screenPxPerM`, row `id`s, report JSON) is specified in [`tools/object-gate/API.md`](../../tools/object-gate/API.md).
 Additions bump the minor; a breaking change needs a major bump, a migration note there and a decisions-log row.
 
 ## Writing an object spec
