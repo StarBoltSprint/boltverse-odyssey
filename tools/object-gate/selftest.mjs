@@ -8,6 +8,7 @@ import { loadProfile, loadScene, toMarkdown, API_VERSION, listProfiles, checkId,
 import { gateAndFix, FIX_ACTIONS } from "./hooks/imagine-to-3d.mjs";
 import { fixPlan } from "./hooks/imagine-to-3d.mjs";
 const HERE = dirname(fileURLToPath(import.meta.url));
+const spec0 = () => ({});
 let fails = 0; const ok = (c, m) => { console.log(`${c ? "PASS" : "FAIL"}\t${m}`); if (!c) fails++; };
 
 for (const f of readdirSync(join(HERE, "profiles")).filter((f) => !f.startsWith("_"))) {
@@ -30,7 +31,16 @@ ok(/^1\./.test(API_VERSION) && [gateObject, gateScene, resolveObject, gateAndFix
   ok(!v.rows[2].pass && /a#0 \/ a#1 5\.0 m/.test(v.rows[2].detail), "neighbours 5 m apart share plates -> FAIL");
   const v2 = scoreVisible(tb, R, { renderPixelRatio: 1.5, fovDeg: 58, source: "test" }, [{ inst: "a#0", cls: "-y", texW: 1024, texH: 1024, samplingPxPerM: 0, repeats: 1 }, rows[0]], [], [{ inst: "a-lod0", x: 0, z: 0, hw: 10, hd: 10 }, { inst: "a-lod1", x: 0, z: 0, hw: 10, hd: 10 }]);
   ok(v2.rows[0].pass && v2.rows[2].pass, "-y faces ignored; LOD levels of one copy are not neighbours");
+  const v3 = scoreVisible(tb, R, { renderPixelRatio: 1.5, fovDeg: 58, source: "test" }, rows, [], fp, spec0(), { ok: true, visiblePxPerM: 140, screenPxPerM: 309, distM: 8, tiles: 40, p25PxPerM: 120 });
+  const v4 = scoreVisible(tb, R, { renderPixelRatio: 1.5, fovDeg: 58, source: "test" }, [rows[1]], [], fp, spec0(), { ok: true, visiblePxPerM: 170, screenPxPerM: 309, distM: 8, tiles: 40, p25PxPerM: 150 });
+  ok(!v3.rows[0].pass && v4.rows[0].pass && checkId(v3.rows[0].check) === "texel.visible-px-per-m", "render-measured visible px/m decides the row (140 FAIL, 170 PASS), same row id");
+  ok(tb.visibleMeasure === "render" && tb.renderHeadroom === 2, "profile: visibleMeasure render, headroom 2");
   ok(checkId(v.rows[0].check) === "texel.visible-px-per-m" && checkId(v.rows[1].check) === "repetition.visible-radius" && checkId(v.rows[2].check) === "repetition.visible-neighbours", "visible row ids");
+}
+{
+  const { loadedLiveFiles } = await import("./gate.mjs");
+  const L = loadedLiveFiles(["http://127.0.0.1:8996/", "http://127.0.0.1:8996/main.mjs?v=54", "http://127.0.0.1:8996/mesas/mesaA.json?v=8", "https://cdn.x/y.js", "data:x"], "http://127.0.0.1:8996/", "/x");
+  ok(L.has("index.html") && L.has("main.mjs") && L.has("mesas/mesaA.json") && L.size === 3, "live guard watches only the files the live page loads");
 }
 ok(listProfiles().join(",") === "building,creature,effect,ice,prop,rock,terrain,vegetation,vehicle", `listProfiles: ${listProfiles().join(" ")}`);
 ok(checkId("native Imagine px/m (plates only, unique pixels)") === "texel.unique-px-per-m" && checkId("live preview untouched during the gate run") === "runtime.live-untouched" && new Set(CHECK_IDS.map((c) => c[1])).size === CHECK_IDS.length, "stable check ids unique");

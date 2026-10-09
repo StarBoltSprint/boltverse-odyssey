@@ -18,6 +18,9 @@ texel:
   fovDeg: null           # null = the game's base vertical fov (adapter `view`; Zone B: 58)
                          # Zone B: 914 x 1.5 = 1371 render px tall -> 155 px/m needed at 8 m
   plateNative: [1024, 1024]   # Imagine plates are 1024 x 1024 native: one plate covers at most ~6.6 x 6.6 m at 155 px/m
+  visibleMeasure: render # 1.3: "render" = measured on the FINAL pixels of an 8 m capture (any material method: unique
+                         # plates, or tiling Imagine materials + macro plates + hex tiling); "sampling" = plate UV px/m only
+  renderHeadroom: 2      # the 8 m capture is optically zoomed to 2 x the needed screen px/m, so 155 px/m is measurable
   ignoreClasses: ["-y"]  # downward faces (buried bottoms, undersides) are never seen from a standing phone
   repeatRadiusM: 30
   neighbourRadiusM: 7

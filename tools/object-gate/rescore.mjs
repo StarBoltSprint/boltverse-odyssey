@@ -11,6 +11,7 @@ import { scoreVisible, resolveView, footprintsFromBoxes } from "./lib/visible.mj
 
 const arg = (k) => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : null; };
 const runDir = arg("--run"), scenePath = arg("--scene");
+const renderDir = arg("--render");   // optional: <dir>/<id>/render.json from a separate 8 m capture run
 if (!runDir || !scenePath) { console.error("usage: rescore.mjs --run <dir> --scene <scene.yaml> [--report report.json]"); process.exit(2); }
 const J = (p) => JSON.parse(readFileSync(p, "utf8"));
 const scene = loadScene(scenePath);
@@ -35,7 +36,11 @@ for (const o of report.objects) {
   const rep = existsSync(join(od, "repetition.json")) ? J(join(od, "repetition.json")) : [];
   const fp = footprints(od);
   const view = resolveView(t, adapterView);
-  const v = scoreVisible(t, spec.cfg.repetition, view, texel, rep, fp || [], spec);
+  // render-based visible px/m (1.3): from this run's visible.json, or a separate 8 m capture run (--render <dir>/<id>/render.json)
+  const vj = existsSync(join(od, "visible.json")) ? J(join(od, "visible.json")) : {};
+  const rj = renderDir && existsSync(join(renderDir, o.id, "render.json")) ? J(join(renderDir, o.id, "render.json")) : null;
+  const render = vj.render || rj || ((t.visibleMeasure || "render") === "render" ? { ok: false, why: "no 8 m render capture in this run (run before API 1.3)" } : null);
+  const v = scoreVisible(t, spec.cfg.repetition, view, texel, rep, fp || [], spec, render);
   if (!fp) v.rows[2] = { ...v.rows[2], pass: false, detail: "copy footprints not saved in this run (no boxes.json / grounding.json): not measured" };
   for (const r of o.rows) r.id = r.id || checkId(r.check);   // runs from before API 1.1 have no row ids
   const at = o.rows.findIndex((r) => REPLACED.has(r.id));
@@ -50,7 +55,7 @@ for (const o of report.objects) {
     Object.assign(sr, { status: ok ? "PASS" : "FAIL", detail: `scene claims ${+claim.toFixed(1)} px/m; measured visible (sampling) ${+meas.toFixed(1)} px/m (policy visible)`, hints: ok ? [] : sr.hints });
   }
   o.verdict = o.rows.some((r) => r.status === "FAIL") ? "FAIL" : "PASS";
-  writeFileSync(join(od, "visible.json"), JSON.stringify({ view, perSurface: v.perSurface }, null, 1));
+  writeFileSync(join(od, "visible.json"), JSON.stringify({ view, render, perSurface: v.perSurface }, null, 1));
 }
 report.verdict = [...report.runtime, ...report.objects.flatMap((o) => o.rows)].some((r) => r.status === "FAIL") ? "FAIL" : "PASS";
 report.rescored = { at: new Date().toISOString(), apiVersion: API_VERSION, policy: "visible (SmiR 2026-10-09 20:19)" };

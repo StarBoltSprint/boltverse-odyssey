@@ -30,7 +30,7 @@ export function resolveView(t, adapterView) {
 const f1 = (x) => (x == null || !isFinite(x) ? "?" : (+x).toFixed(1));
 
 /** -> { rows: [{check, pass, detail, hints}], perSurface } */
-export function scoreVisible(t, R, view, texelRows, repRows, footprints, spec = {}) {
+export function scoreVisible(t, R, view, texelRows, repRows, footprints, spec = {}, render = null) {
   const rows = [], perSurface = [];
   const viewMin = (cls) => Math.max(t.minViewM, (spec.viewMinM && spec.viewMinM[cls] && spec.viewMinM[cls].m) || 0);
   const ignore = new Set(t.ignoreClasses || []);
@@ -44,7 +44,21 @@ export function scoreVisible(t, R, view, texelRows, repRows, footprints, spec = 
   const worst = perSurface.slice().sort((a, b) => a.visiblePxPerM / a.needPxPerM - b.visiblePxPerM / b.needPxPerM)[0];
   const need8 = screenPxPerM(t, view, t.minViewM);
   const [pw, ph] = t.plateNative || [1024, 1024];
-  rows.push({
+  const sampling = perSurface.length
+    ? `plate sampling worst ${worst.cls} ${f1(worst.visiblePxPerM)} px/m on ${worst.inst}, ${fails.length}/${perSurface.length} surfaces under`
+    : "no plate surface sampled";
+  if (render) {
+    // final-render measurement (default since 1.3): the pixels the phone shows, whatever the material method
+    const ok = !!render.ok && render.visiblePxPerM >= need8;
+    rows.push({
+      check: "visible px/m (phone sharpness from >= " + t.minViewM + " m, final render)",
+      pass: ok,
+      detail: render.ok
+        ? `${render.flat ? `the surface shows no detail at all (${render.insideTiles} tiles flat, e.g. black or unlit): ` : ""}${f1(render.visiblePxPerM)} px/m of real detail on screen vs ${f1(need8)} needed (capture at ${render.distM} m, zoomed to ${f1(render.screenPxPerM)} screen px/m${render.capped ? ", at the capture limit" : ""}; median of ${render.tiles} tiles, p25 ${f1(render.p25PxPerM)}; phone ${t.phone.w}x${t.phone.h}, render pixel ratio ${view.renderPixelRatio}, vfov ${view.fovDeg}\u00b0). Info: ${sampling}`
+        : `${render.why}. Info: ${sampling}`,
+      hints: [`Needs >= ${f1(need8)} px/m of visible detail at ${t.minViewM} m. Unique plates: one native ${pw}x${ph} Imagine plate covers at most ${(pw / need8).toFixed(1)} x ${(ph / need8).toFixed(1)} m. Layered materials: raise the detail layer's density or keep its distance fade beyond ${t.minViewM} m. Never upscale.`],
+    });
+  } else rows.push({
     check: "visible px/m (phone sharpness from >= " + t.minViewM + " m, plates only)",
     pass: perSurface.length > 0 && fails.length === 0,
     detail: perSurface.length
