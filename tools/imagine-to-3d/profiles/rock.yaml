@@ -1,0 +1,95 @@
+# imagine-to-3d type profile: rock (see _README.md). Gate thresholds come from tools/object-gate/profiles/rock.yaml
+type: rock
+desc: mesas, buttes, arches, boulders, cliffs (organic solids)
+gate:
+  profile: rock
+  tighten:
+    texel:
+      maxStretch: 1.25
+      minPxPerM: 64
+      nearPxPerM: 128
+views:
+  count: 12
+  note: more top/high views for rocks (q16)
+  cameras:
+  - name: y000
+    yaw: 0.0
+    elev: 10
+  - name: y045
+    yaw: 45.0
+    elev: 10
+  - name: y090
+    yaw: 90.0
+    elev: 10
+  - name: y135
+    yaw: 135.0
+    elev: 10
+  - name: y180
+    yaw: 180.0
+    elev: 10
+  - name: y225
+    yaw: 225.0
+    elev: 10
+  - name: y270
+    yaw: 270.0
+    elev: 10
+  - name: y315
+    yaw: 315.0
+    elev: 10
+  - name: h000
+    yaw: 0
+    elev: 45
+  - name: h120
+    yaw: 120
+    elev: 45
+  - name: h240
+    yaw: 240
+    elev: 45
+  - name: top
+    yaw: 0
+    elev: 90
+geometry:
+  strategy: hull+strata+fused-depth
+  coarse: superellipse-lathe
+  depthRatio: 0.85
+  superellipseP: 3.4
+  hardEdges: false
+  relief:
+    maxM: 1.5
+    minStdFrac: 0.08
+    gradientMax: 0.45
+  bevelM: 0.0
+  notes: strata from the front plate's bedding lines; displace with the fused DA-V2 depth (fuse.py)
+texel:
+  targetPxPerM: 128
+  minPxPerM: 64
+  closestApproachM: 8.0
+pbr:
+  maps:
+  - albedo
+  - normal
+  - roughness
+  - metalness
+  - ao
+  metalness:
+  - 0.0
+  - 0.05
+  roughness:
+  - 0.6
+  - 1.0
+  heightM: 1.5
+fix:
+  maxIterations: 4
+thresholds:
+  silhouetteIoU: 0.87
+  uvStretch: 1.25
+  lpips: 0.15
+  ssimMin: 0.35
+  deltaE2000Max: 12.0
+  histBhattMax: 0.35
+  checklistMin: 0.9
+  shadowChromaMax: 0.18
+  violetRatio: 1.08
+  depthConsistencyMedian: 0.08
+  depthConsistencyP90: 0.12
+  viewRetries: 3
