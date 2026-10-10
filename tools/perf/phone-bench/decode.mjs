@@ -10,6 +10,15 @@ export function decode(s) {
   return JSON.parse(Buffer.from(p + "===".slice((p.length + 3) % 4), "base64").toString("utf8"));
 }
 const res = decode(src), key = res.v >= 2 ? "ms" : "gpu";
+if (res.v >= 4) {   // v4: thermally fair, every row against its own neighbouring base segments
+  if (md) {
+    console.log(`bench v4 ${res.t} · ${res.info.gpu} · DPR ${res.info.dpr} · ${res.info.css} · cool base ${res.base0} ms\n`);
+    console.log("| row | its base | ms | Δ ms | Δ % | norm. | ± |\n|---|---|---|---|---|---|---|");
+    for (const r of res.rows) console.log(`| ${r.n} | ${r.b} | ${r.ms} | ${r.d > 0 ? "+" : ""}${r.d} | ${r.p > 0 ? "+" : ""}${r.p} | ${r.norm ?? ""} | ${r.spread} |`);
+  } else console.log(JSON.stringify({ ...res, baseMs: res.base0 }, null, 1));
+  if (target != null) { const ok = res.base0 <= target; console.error(`base ${res.base0} ms vs target ${target}: ${ok ? "PASS" : "FAIL"}`); process.exit(ok ? 0 : 1); }
+  process.exit(0);
+}
 const mean = (re) => { const a = res.rows.filter((r) => re.test(r.n)); return a.length ? a.reduce((t, r) => t + r[key], 0) / a.length : null; };
 const base = mean(/^base/), down = mean(/^DOWN base/);
 if (md) {
