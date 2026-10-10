@@ -86,3 +86,13 @@ Export `{ name, defaultUrl, captureQuery, readyExpr, fxNames, setupInPage(page),
 `setupInPage` must publish `window.__ogHost = { THREE, scene, camera, renderer, groundHeight(x,z),
 setPose({x,z,look:[x,y,z]}), path: [[x,z],...], freeze?() }`. The Zone B adapter grabs the scene by watching one
 `renderer.render` call and imports the page's own `three.module.js` (same module instance).
+
+## kc-shots.mjs (persistent render driver)
+`node kc-shots.mjs` reads JSON lines on stdin and keeps one headless browser open. Commands:
+- `{"cmd":"open","url","cam","vp","settle"}`
+- `{"cmd":"pose","cam","wait"}`
+- `{"cmd":"shot","path"}`
+- `{"cmd":"probe"}`: the projected avenue vanishing point and the visible spire box (`spire-lod*`)
+- `{"cmd":"quit"}`
+
+`cam` takes x, z, yaw, pitch, eye, fovDeg and dy. Used by `imagine-to-3d/placement_v2.py` and `lighting/light_key.py`. Run one browser at a time.

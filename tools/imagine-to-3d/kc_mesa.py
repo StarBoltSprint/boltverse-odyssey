@@ -52,7 +52,7 @@ class Cam:
         self.p = np.array([c["x"], ground + c["eye"], c["z"]]); p, y = math.radians(c["pitch"]), math.radians(-c["yaw"])
         Rx = np.array([[1, 0, 0], [0, math.cos(p), -math.sin(p)], [0, math.sin(p), math.cos(p)]])
         Ry = np.array([[math.cos(y), 0, math.sin(y)], [0, 1, 0], [-math.sin(y), 0, math.cos(y)]])
-        self.R = Rx @ Ry; self.f = (FH / 2) / math.tan(math.radians(c["fovDeg"]) / 2)
+        self.R = Ry @ Rx; self.f = (FH / 2) / math.tan(math.radians(c["fovDeg"]) / 2)
 
     def project(self, P):
         q = (P - self.p) @ self.R; d = np.maximum(-q[:, 2], 0.5)
