@@ -36,6 +36,7 @@ def main():
         assert st["open"] == 0 and st["nonManifold"] == 0 and st["degenerate"] == 0, row
         assert sil["flat"] is False and sil["enclosed"] >= 3, sil
         assert row["bayMax"] >= 0.30
+        assert row["reliefFaces"] >= 2, row
     print("PASS hard_surface_st", {m: (rep[m]["stats"]["tris"], rep[m]["silhouette"]["enclosed"]) for m in rep})
 
 if __name__ == "__main__":

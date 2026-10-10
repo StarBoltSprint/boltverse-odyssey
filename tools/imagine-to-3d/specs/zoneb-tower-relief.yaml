@@ -8,7 +8,7 @@ heightM: 88
 work: /workspace/i23d-auto/zoneb-tower-relief
 staging: /workspace/zb-preview-1008/objects1-t8
 stagingUrl: http://127.0.0.1:8996/index-t8.html
-shaderMatch: uZbPool
+shaderMatch: uZbA0
 imagine:
   plateDir: /workspace/zb-preview-1008/objects1/tex
   plateGlob: ["sec/*.jpg", "sec5/*.jpg"]

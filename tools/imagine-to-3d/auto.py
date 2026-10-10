@@ -243,6 +243,7 @@ class Run:
             if row["maxStretch"] > lim_st: fails.append("stretch")
             if row["nonManifold"] > 0: fails.append("nonManifold")
             if not row["relief"]: fails.append("relief")
+            if int(d.get("reliefFaces") or 0) < 2: fails.append("facadeSpan")
             if sil.get("flat", True): fails.append("silhouetteFlat")
             if int(sil.get("enclosed") or 0) < 3: fails.append("silhouetteHole")
             if float(d.get("crispness") or 0) < 0.80: fails.append("crisp")

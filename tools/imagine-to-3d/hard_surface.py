@@ -7,6 +7,10 @@ walls. Cell borders stay a single edge (mitered frames) so neighbours weld. The 
 axis-aligned chrome tunnel on those same edges, plus a lintel beam whose ends are a mitered hole in
 the jamb so the beam is not a floating box.
 
+The object gate's facade-relief row bins each triangle by its centroid's metre and takes the median
+span. A rib and a bay that share a cell but not that metre read as a flat wall, so every quad is cut
+on integer metres before the taper. The cut is the same on both sides of an edge, so the weld holds.
+
 python3 hard_surface.py --relief DIR --out DIR [--modules m2,m3,m4,m6]
 """
 import argparse, json, os, struct, zlib
@@ -69,6 +73,61 @@ def permute(seq, seed):
     return a
 
 
+def _lerp_y(p, q, y):
+    dy = q[1] - p[1]
+    t = 0.0 if abs(dy) < 1e-12 else (y - p[1]) / dy
+    t = min(1.0, max(0.0, t))
+    return (p[0] + t * (q[0] - p[0]), float(y), p[2] + t * (q[2] - p[2]))
+
+
+def _clip_half(poly, y, above):
+    """Sutherland–Hodgman against y >= cut (above) or y <= cut."""
+    if len(poly) < 3:
+        return []
+    out = []
+    n = len(poly)
+    for i in range(n):
+        a = poly[i]
+        b = poly[(i + 1) % n]
+        a_in = a[1] >= y - 1e-8 if above else a[1] <= y + 1e-8
+        b_in = b[1] >= y - 1e-8 if above else b[1] <= y + 1e-8
+        if a_in and b_in:
+            out.append(b)
+        elif a_in and not b_in:
+            out.append(_lerp_y(a, b, y))
+        elif (not a_in) and b_in:
+            out.append(_lerp_y(a, b, y))
+            out.append(b)
+    clean = []
+    for p in out:
+        if not clean or max(abs(p[k] - clean[-1][k]) for k in range(3)) > 1e-7:
+            clean.append(p)
+    if len(clean) >= 2 and max(abs(clean[0][k] - clean[-1][k]) for k in range(3)) <= 1e-7:
+        clean.pop()
+    return clean
+
+
+def _y_cuts(y0, y1):
+    """Integer metres strictly inside (y0, y1). Both quads of a shared edge use this grid."""
+    lo = int(y0 + 1e-6) + 1
+    hi = int(y1 - 1e-6)
+    if hi < lo:
+        return []
+    return range(lo, hi + 1)
+
+
+def _poly_normal(poly):
+    nx = ny = nz = 0.0
+    n = len(poly)
+    for i in range(n):
+        x1, y1, z1 = poly[i]
+        x2, y2, z2 = poly[(i + 1) % n]
+        nx += (y1 - y2) * (z1 + z2)
+        ny += (z1 - z2) * (x1 + x2)
+        nz += (x1 - x2) * (y1 + y2)
+    return nx, ny, nz
+
+
 class Mesh:
     def __init__(self):
         self.verts, self.cols, self.tris, self._ix = [], [], [], {}
@@ -83,20 +142,50 @@ class Mesh:
             self.cols.append(tuple(col))
         return i
 
-    def quad(self, pts, col, outward):
-        a, b, c, d = [tuple(p) for p in pts]
-        ax, ay, az = b[0] - a[0], b[1] - a[1], b[2] - a[2]
-        bx, by, bz = c[0] - a[0], c[1] - a[1], c[2] - a[2]
-        nx, ny, nz = ay * bz - az * by, az * bx - ax * bz, ax * by - ay * bx
-        if nx * nx + ny * ny + nz * nz < 1e-12:
+    def _emit(self, poly, col, outward):
+        clean = []
+        for p in poly:
+            t = (float(p[0]), float(p[1]), float(p[2]))
+            if not clean or max(abs(t[k] - clean[-1][k]) for k in range(3)) > 1e-7:
+                clean.append(t)
+        if len(clean) >= 2 and max(abs(clean[0][k] - clean[-1][k]) for k in range(3)) <= 1e-7:
+            clean.pop()
+        if len(clean) < 3:
+            return
+        nx, ny, nz = _poly_normal(clean)
+        if nx * nx + ny * ny + nz * nz < 1e-16:
             return
         if nx * outward[0] + ny * outward[1] + nz * outward[2] < 0:
-            a, b, c, d = a, d, c, b
-        i0, i1, i2, i3 = (self.V(*p, col) for p in (a, b, c, d))
-        if len({i0, i1, i2}) == 3:
-            self.tris.append((i0, i1, i2))
-        if len({i0, i2, i3}) == 3:
-            self.tris.append((i0, i2, i3))
+            clean.reverse()
+        ids = [self.V(*p, col) for p in clean]
+
+        def wid(i):
+            x, y, z = self.verts[i]
+            return (round(x * 1000), round(y * 1000), round(z * 1000))
+
+        for i in range(1, len(ids) - 1):
+            tri = (ids[0], ids[i], ids[i + 1])
+            if len({wid(j) for j in tri}) < 3:
+                continue
+            self.tris.append(tri)
+
+    def quad(self, pts, col, outward):
+        """Cut on each integer metre so a proud rib and a recessed bay share the gate's Y bin."""
+        poly = [tuple(float(x) for x in p) for p in pts]
+        ys = [p[1] for p in poly]
+        parts = [poly]
+        for y in _y_cuts(min(ys), max(ys)):
+            nxt = []
+            for part in parts:
+                lo = _clip_half(part, y, False)
+                hi = _clip_half(part, y, True)
+                if len(lo) >= 3:
+                    nxt.append(lo)
+                if len(hi) >= 3:
+                    nxt.append(hi)
+            parts = nxt or parts
+        for part in parts:
+            self._emit(part, col, outward)
 
     def taper(self, H, k=TAPER):
         for v in self.verts:
@@ -665,6 +754,54 @@ def build_module(mod, relief_dir, variant="A"):
     return tw, mesh
 
 
+def relief_span(mesh):
+    """Median per-metre facade offset span, same rule as tools/object-gate/lib/probe.js geometry()."""
+    V = np.asarray(mesh.verts, np.float64)
+    T = np.asarray(mesh.tris, np.int32)
+    acc = {k: {} for k in ("+x", "-x", "+z", "-z")}
+    for i0, i1, i2 in T:
+        a, b, c = V[i0], V[i1], V[i2]
+        n = np.cross(b - a, c - a)
+        ar = float(np.linalg.norm(n) / 2)
+        if ar < 1e-6:
+            continue
+        n = n / (ar * 2)
+        ax, ay, az = abs(float(n[0])), abs(float(n[1])), abs(float(n[2]))
+        if ay >= ax and ay >= az:
+            continue
+        if az >= ax:
+            key, comp = ("+z" if n[2] > 0 else "-z"), 2
+        else:
+            key, comp = ("+x" if n[0] > 0 else "-x"), 0
+        if abs(float(n[comp])) < 0.7:
+            continue
+        off = float((a[comp] + b[comp] + c[comp]) / 3)
+        yb = int(np.floor(float((a[1] + b[1] + c[1]) / 3)))
+        r = acc[key].get(yb)
+        if r is None:
+            r = [1e9, -1e9, 0.0, []]
+            acc[key][yb] = r
+        r[0] = min(r[0], off)
+        r[1] = max(r[1], off)
+        r[2] += ar
+        r[3].append(off)
+    out = {}
+    for k, bins in acc.items():
+        spans = []
+        for r in bins.values():
+            if r[2] <= 0.2:
+                continue
+            if k[0] == "+":
+                qs = [q for q in r[3] if r[1] - q <= 3]
+            else:
+                qs = [q for q in r[3] if q - r[0] <= 3]
+            if qs:
+                spans.append(max(qs) - min(qs))
+        spans.sort()
+        out[k] = round(spans[len(spans) // 2], 3) if spans else None
+    return out
+
+
 def geo_doc(mod, mesh, relief, glb_bytes, variant_note):
     st = mesh.stats()
     px = 1024 / 12.0
@@ -673,10 +810,13 @@ def geo_doc(mod, mesh, relief, glb_bytes, variant_note):
     bay = relief["bayMax"] if relief["bayN"] else 0.0
     crisp = 1.0 if st["nonManifold"] == 0 else 0.0
     cov = 1.0 if relief["bayN"] >= 4 else relief["bayN"] / 4
+    span = relief_span(mesh)
+    span_faces = sum(1 for v in span.values() if v is not None and v >= 0.30)
     doc = {
         "id": mod, "method": "hard-surface-v1", "generator": "hard_surface.py",
         "lodMode": "same-shell", "variantNote": variant_note,
-        "reliefDepthM": round(bay, 3), "relief": relief, "coverage": cov, "crispness": crisp,
+        "reliefDepthM": round(bay, 3), "facadeSpan": span, "reliefFaces": span_faces,
+        "relief": relief, "coverage": cov, "crispness": crisp,
         "openEdges": st["open"], "nonManifold": st["nonManifold"],
         "lods": [
             {"lod": 0, "tris": st["tris"], "indexCount": st["tris"] * 3, "bytes": glb_bytes, "gzBytes": glb_bytes,
@@ -702,7 +842,8 @@ def build_all(relief_dir, out_dir, modules):
         doc["silhouette"] = sil
         doc["stats"] = st
         json.dump(doc, open(os.path.join(out_dir, f"{mod}-geo.json"), "w"), indent=1)
-        report[mod] = dict(stats=st, silhouette=sil, bayMax=a[0].relief["bayMax"], bayN=a[0].relief["bayN"], bytes=n)
+        report[mod] = dict(stats=st, silhouette=sil, bayMax=a[0].relief["bayMax"], bayN=a[0].relief["bayN"],
+                           facadeSpan=doc["facadeSpan"], reliefFaces=doc["reliefFaces"], bytes=n)
         print(mod, report[mod], flush=True)
     json.dump(report, open(os.path.join(out_dir, "hard-surface-report.json"), "w"), indent=1)
     return report
