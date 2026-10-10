@@ -8,7 +8,7 @@
 #res .bad{color:#b00;font-weight:700}#res .good{color:#070;font-weight:700}#res button{font-size:16px;padding:8px 14px;margin:6px 6px 0 0}</style>
 </head><body>
 <canvas id="view"></canvas>
-<div id="load" style="z-index:5;background:#1d1418">Chargement… (bench ≈ 2 min 30, ne touche pas l'écran)</div>
+<div id="load" style="z-index:5;background:#1d1418">Chargement… (bench ≈ 2 min 15, ne touche pas l'écran)</div>
 <div id="tag" style="display:none"></div><div id="fps" style="display:none"></div><div id="help" style="display:none"></div><button id="run" style="display:none"></button>
 <div id="stick" style="display:none"><div id="knob"></div></div>
 <div id="res"></div>
@@ -17,11 +17,12 @@ window.__benchShow = (res, link) => {
   if (res.v >= 4) {   // v4: each row vs its OWN neighbouring base segments (ABAB), thermally fair
     const el = document.getElementById("res"), i = res.info;
     const tr = (r) => { const cls = r.p <= -5 ? "good" : r.p >= 5 ? "bad" : "";
-      return `<tr><td>${r.n}</td><td>${r.b}</td><td><b>${r.ms}</b></td><td class="${cls}">${r.d > 0 ? "+" : ""}${r.d} (${r.p > 0 ? "+" : ""}${Math.round(r.p)}%)</td><td>${r.norm ?? ""}</td><td>${r.spread}</td></tr>`; };
-    el.innerHTML = `<b>Zone B bench v4</b> ${res.t.slice(0, 16).replace("T", " ")} UTC<br>${i.gpu}<br>DPR ${i.dpr} · ${i.css} · buffer ${i.buf} · max tex ${i.maxTex} · aniso ${i.aniso} · ${i.ua} · calls ${i.calls} · tris ${i.tris}` +
+      return `<tr><td>${r.n}</td><td>${r.b}</td><td><b>${r.ms}</b></td><td class="${cls}">${r.d > 0 ? "+" : ""}${r.d} (${r.p > 0 ? "+" : ""}${Math.round(r.p)}%)</td><td>${r.norm ?? ""}</td><td>${r.spread}</td>${res.v >= 5 ? `<td>${r.bfps} → <b>${r.fps}</b></td>` : ""}</tr>`; };
+    const ad = res.adaptive ? `<br><b>Mode adaptatif réel (36 s, depuis 2) : ratio ${res.adaptive.ratio}${res.adaptive.detail ? "" : " + détail 8-16 m"} · ${res.adaptive.fps} fps médian (8 dernières s) · ${res.adaptive.changes} changements</b> ${JSON.stringify(res.adaptive.trace)}` : "";
+    el.innerHTML = `<b>Zone B bench v${res.v}</b> ${res.t.slice(0, 16).replace("T", " ")} UTC<br>${i.gpu}<br>DPR ${i.dpr} · ${i.css} · buffer ${i.buf} · max tex ${i.maxTex} · aniso ${i.aniso} · ${i.ua} · calls ${i.calls} · tris ${i.tris}` +
       `<br>base froide (1re mesure) : <b>${res.base0} ms</b>` +
-      `<table><tr><th>réglage</th><th>base</th><th>ms</th><th>Δ vs sa base</th><th>norm.</th><th>±</th></tr>${res.rows.map(tr).join("")}</table>
-      <div style="font-size:12px;color:#555">Chaque ligne est mesurée en alternance base/réglage/base/réglage (1,2 s chacun) avec une pause entre les lignes : la chauffe du téléphone ne fausse plus la comparaison. base = sa propre base voisine ; norm. = ramené à la base froide ; ± = écart entre les 2 répétitions. (lossless) = image identique ; [diag] = change le rendu, pas proposé.</div>
+      `<table><tr><th>réglage</th><th>base</th><th>ms</th><th>Δ vs sa base</th><th>norm.</th><th>±</th>${res.v >= 5 ? "<th>fps base → réglage</th>" : ""}</tr>${res.rows.map(tr).join("")}</table>${ad}
+      <div style="font-size:12px;color:#555">Chaque ligne est mesurée en alternance base/réglage/base/réglage (${res.v >= 5 ? "≥ 10 images" : "1,2 s"} chacun) avec une pause entre les lignes : la chauffe du téléphone ne fausse plus la comparaison. base = sa propre base voisine ; norm. = ramené à la base froide ; ± = écart entre les 2 répétitions. (lossless) = image identique ; [diag] = change le rendu, pas proposé ; [look] = presque invisible (écart moyen A/B indiqué), jamais par défaut. fps = 1000 / ms (sans plafond vsync). Base = ratio 2 avec la pré-passe de profondeur du sol.</div>
       <button id="cp">Copier le lien du résultat</button><button id="again">Relancer</button>`;
     el.style.display = "block";
     document.getElementById("cp").onclick = async () => { try { await navigator.clipboard.writeText(link); document.getElementById("cp").textContent = "Lien copié ✓"; } catch { prompt("Lien :", link); } };
@@ -52,8 +53,8 @@ if (h) {
 } else {
   if (!new URLSearchParams(location.search).has("lockq")) location.replace("bench.html?opt=1&cap=2&lockq=1&dyn=0&hud=0&grain=0&cb=" + Date.now());
   else {
-    const s = document.createElement("script"); s.type = "module"; s.src = "./main-bench.mjs?b=9"; document.body.appendChild(s);
-    const w = () => (window.__ready ? import("./bench.mjs?b=9") : setTimeout(w, 200)); w();
+    const s = document.createElement("script"); s.type = "module"; s.src = "./main-bench.mjs?b=11"; document.body.appendChild(s);
+    const w = () => (window.__ready ? import("./bench.mjs?b=11") : setTimeout(w, 200)); w();
   }
 }
 </script>
