@@ -42,15 +42,20 @@ export async function mountMesas({ THREE, biome, field, world, camera, renderer 
     const yaw = (yawDeg * Math.PI) / 180, mx = L.mirror ? -1 : 1;
     const toWorld = ([px, pz]) => { const lx = px * mx, lz = pz; return [x + lx * Math.cos(yaw) + lz * Math.sin(yaw), z - lx * Math.sin(yaw) + lz * Math.cos(yaw)]; };
     const ringLocal = (r) => r.map(([a, b]) => [a, -b]);   // hull z3 -> three local z
-    const base = ringLocal(gi.rings[0].ring);
+    // star-shaped radial envelope of the foot ring (fracture steps can fold the raw ring): collider, drift, gate solid
+    const raw = ringLocal(gi.rings[0].ring), NB = 96, rB = new Array(NB).fill(0);
+    for (const [a, b] of raw) { const k = ((Math.round((Math.atan2(b, a) / (2 * Math.PI)) * NB) % NB) + NB) % NB; rB[k] = Math.max(rB[k], Math.hypot(a, b)); }
+    for (let k = 0; k < NB; k++) if (!rB[k]) { let p = k, q = k; while (!rB[(p + NB) % NB]) p--; while (!rB[q % NB]) q++; rB[k] = Math.max(rB[(p + NB) % NB], rB[q % NB]); }
+    const base = rB.map((r, k) => { const r2 = Math.max(r, rB[(k + 1) % NB], rB[(k + NB - 1) % NB]); const t = (k / NB) * 2 * Math.PI; return [Math.cos(t) * r2, Math.sin(t) * r2]; });
     let maxR = 0; for (const r of gi.rings) for (const [a, b] of r.ring) maxR = Math.max(maxR, Math.hypot(a, b));
     const ringW = base.map(toWorld);
     let minG = Infinity, maxG = -Infinity;
     for (const [wx, wz] of ringW) { const h = field.surfaceHeight(wx, wz); minG = Math.min(minG, h); maxG = Math.max(maxG, h); }
     const baseY = minG - 0.6 * L.scale;
     const meshes = [];
-    gi.lods.forEach((ld, li) => {
-      const n = ld.verts, off = ld.offset;
+    // LOD0 (1 m depth-relief grid, the heaviest) is built lazily near the camera and freed far away (phone memory)
+    const buildGeo = (li) => {
+      const ld = gi.lods[li], n = ld.verts, off = ld.offset;
       const pos = new Float32Array(n * 3), pl = new Float32Array(n), px = new Float32Array(n * 2);
       for (let i = 0; i < n; i++) {
         const k = (off + i) * 6;
@@ -67,15 +72,18 @@ export async function mountMesas({ THREE, biome, field, world, camera, renderer 
       g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
       g.setAttribute("aPl", new THREE.BufferAttribute(pl, 1));
       g.setAttribute("aPx", new THREE.BufferAttribute(px, 2));
-      // standard uv (plate-normalised) so external probes (object-gate) can measure px/m + stretch; caps: 0 (cell mode)
       const uvA = new Float32Array(n * 2); for (let i = 0; i < n; i++) if (pl[i] >= 0) { uvA[i * 2] = px[i * 2] / 1280; uvA[i * 2 + 1] = 1 - px[i * 2 + 1] / 720; }
       g.setAttribute("uv", new THREE.BufferAttribute(uvA, 2));
       g.computeVertexNormals(); g.computeBoundingSphere();
+      return g;
+    };
+    gi.lods.forEach((ld, li) => {
+      const g = li === 0 ? new THREE.BufferGeometry() : buildGeo(li);
       const m = new THREE.Mesh(g, mats[li]); m.name = `mesa-${L.id}-lod${li}`; m.frustumCulled = true;
       m.position.set(x, baseY, z); m.rotation.y = yaw; m.scale.set(mx, 1, 1);
-      m.visible = li === 0;
+      m.visible = false; m.userData.built = li !== 0;
       group.add(m); meshes.push(m);
-      lodTris[li] = (lodTris[li] || 0) + n / 3;
+      lodTris[li] = (lodTris[li] || 0) + ld.verts / 3;
     });
     const caster = new THREE.Mesh(meshes[1].geometry, casterMat);
     caster.layers.set(1); caster.castShadow = true; caster.position.copy(meshes[1].position); caster.rotation.copy(meshes[1].rotation); caster.scale.copy(meshes[1].scale);
@@ -83,7 +91,7 @@ export async function mountMesas({ THREE, biome, field, world, camera, renderer 
     driftGeos.push(buildDrift(THREE, field, ringW, 2.2, 14 * L.scale, 2.0, baseY));
     const hTop = gi.rings[gi.rings.length - 1].y1;
     items.push({ id: L.id, x, z, yaw: yawDeg, scale: L.scale, mirror: !!L.mirror, baseY, minG, maxG, sink: maxG - baseY, heightM: hTop,
-      solid: ringW, collider: offsetPoly(ringW, 1.0), meshes, caster, maxR, gi });
+      solid: ringW, collider: offsetPoly(ringW, 1.0), meshes, caster, maxR, gi, buildGeo });
   }
   world.add(group);
   group.updateMatrixWorld(true);
@@ -137,7 +145,10 @@ export async function mountMesas({ THREE, biome, field, world, camera, renderer 
     const c = (cam || camera).getWorldPosition(cp);
     for (const it of items) {
       const d = Math.hypot(c.x - it.x, c.y - it.baseY, c.z - it.z);
-      it.meshes.forEach((m, li) => { const b = LOD_BANDS[li]; m.visible = d >= b[0] && d <= b[3]; });
+      const m0 = it.meshes[0];
+      if (!m0.userData.built && d < LOD_BANDS[0][3] + 60) { m0.geometry.dispose(); m0.geometry = it.buildGeo(0); m0.userData.built = true; }
+      else if (m0.userData.built && d > LOD_BANDS[0][3] + 200) { m0.geometry.dispose(); m0.geometry = new THREE.BufferGeometry(); m0.userData.built = false; }
+      it.meshes.forEach((m, li) => { const b = LOD_BANDS[li]; m.visible = m.userData.built && d >= b[0] && d <= b[3]; });
     }
   }
   function collide(st) {
