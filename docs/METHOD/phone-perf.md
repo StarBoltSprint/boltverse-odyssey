@@ -8,7 +8,7 @@
 
 ## Measure on the phone, not the box
 - The box has no GPU. SwiftShader timings are relative and noisy (load average 15-30), and they did not predict the phone (box: canvas fix -25 %; phone: still 30 fps).
-- Use `tools/perf/phone-bench/bench.html`: one link, about 4 min, a big table the owner can screenshot, and a result link the agent decodes with `decode.mjs`.
+- Use `tools/perf/phone-bench/bench.html`: one link, about 2.5 min (v4, thermally fair), a big table the owner can screenshot, and a result link the agent decodes with `decode.mjs`.
 - Readback timing (render + `readPixels`) inflates numbers on Chrome Android. Use the pipelined metric (3 renders per rAF, median interval / 3).
 - Fragment counts (`overdraw.mjs`) beat timing for cheap layers. Transparent layers measured ≤ 0.16 screen and 1-2 fetches each: < 1 % of the frame, although a noisy timing had blamed them for 26 %.
 
@@ -23,7 +23,15 @@
    - Ladder: 2 → 1.875 → 1.75 → (detail reach 30 → 16 m) → … → 1.25.
 3. **Draw order (lossless).** The sky dome was drawn first over the whole screen and the ground before the towers and mesas, so every hidden sky and ground pixel was fully shaded and then overwritten. The order is now: opaques → ground → sky dome (far plane, depth-tested) → opaque meshes without depth write → transparents. With depth testing the result does not depend on the order, except where two surfaces have exactly equal depth. A/B vs g13 (order + old POM, 480x900, 8 poses: avenue and side at 1.5/3/8/30 m): 5 poses bit-identical. At 3 poses, 1-2 isolated silhouette pixels flip (depth ties). Worst mean 0.0002/255 against the 1/255 limit, nothing visible in the crops, deterministic self-check 0.
 4. **POM loop (lossless).** cos/sin of the two bombing-variant angles and the rotated gradients were recomputed at every POM step (up to 12 steps × 2 variants + 2 shadow taps). They are now computed once per pixel. Same maths, same fetches, bit-identical. `#define G_OLDPOM` brings the old loop back for A/B.
-5. **Phone numbers (bench v1, S20 FE, sync metric):** base at ratio 2 was 56.8 ms and "ground only" 53.3 ms, so the ground fragment shader is about 94 % of the frame. Bench v2+ separates GPU, CPU and readback. Target: base at ratio 2 ≤ 16.7 ms (60 fps), at least ≤ 22 ms.
+5. **Phone numbers (bench v1, S20 FE, sync metric):** base at ratio 2 was 56.8 ms and "ground only" 53.3 ms, so the ground fragment shader looked like about 94 % of the frame. The v1 readback metric was wrong: bench v3 (pipelined) put the ground at about half of the frame (item 7). Bench v2+ separates GPU, CPU and readback. Target: base at ratio 2 ≤ 16.7 ms (60 fps), at least ≤ 22 ms.
+6. **Thermal throttling hides or invents gains.** Bench v3 on the S20 FE: the same base went from 45.2 to 57.0 ms over 4 min, so a row's value depended on when it ran. Bench v4 measures each row ABAB against its own neighbouring base, adds idle cool-downs and reports the repeat spread.
+7. **A fill / bandwidth-bound ground (bench v3: ground hidden 22.6 vs base 45.2 ms; no single feature dominates).**
+   - **Rejected by measurement:** lower-resolution ground shading. Resampling the A/B captures to half resolution gives a mean of 0.9-1.7/255, and to 0.8× gives 0.5-1.0/255. Both fail the 1/255 rule and soften the 512 px/m detail. Reprojection is not identical while the camera moves.
+   - **`G_HR8`:** POM and its shadow taps (up to 28 height reads per pixel, anisotropic) read an R8 copy of the height bytes instead of the RGBA8 normal array. That is 1/4 of the bytes per read, for about 11 MB more GPU memory.
+   - **Ground depth prepass:** the terrain is one merged mesh in row-major cell order, so it draws back to front in half of the view directions. A depth-only twin using the ground's own vertex code makes every ground pixel shade once. The cost is drawing the terrain vertices twice; the tiled GPU's own early depth rejection (LRZ) may already save part of this.
+   - A/B, both on vs off, 8 poses at 480x900: **bit-identical** (max 0, self-check 0).
+   - Code: `tools/biome/runtime/ground-fill.mjs` (`createHeightArray`, `setHeightR8`, `createGroundPrepass`) + `G_HR8` in `biome-ground.js`.
+   - Real gain: only the phone bench v4 rows can tell; both stay switches (`?hr8=1`, `?pre=1`) until it does.
 
 ## Checks
 - **Decision:** SmiR 2026-10-10 11:40 (hard rule) and 11:42 (write it into the repo). Index entry: [tools.md](tools.md).
