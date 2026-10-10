@@ -5,7 +5,7 @@ offset in/out at vertical fracture faces, caprock layers overhang the softer lay
 top edges. Fallen blocks + scree from the top plate's rubble ring. Every vertex carries plate id + plate pixel coords
 (walls: arc length x height at PXM px/m, blocks: box faces) -> UV stretch 1.0 by construction; caps: shader cell mode.
 Output: <out>.bin (float32) + <out>.json (per LOD offsets, plate windows, gate data)."""
-import json, sys, zlib, numpy as np
+import json, os, sys, zlib, numpy as np
 from scipy import ndimage as ndi
 sys.path.insert(0, __file__.rsplit('/', 1)[0])
 from masks import load, rock_mask
@@ -13,7 +13,9 @@ from masks import load, rock_mask
 WALL_W, WALL_H = 1280, 720          # wall band plates (16 m x 9 m)
 PXM = 80.0                            # wall px/m  (1280 / 16)
 BLOCK_PXM = 320.0                     # b1: 1280 px over 4 m
-VLO = {6: 2.6}                         # usable plate rows: w7's lowest 2.6 m shows sand -> never sampled
+PLATES_JSON = os.environ.get("PLATES_JSON", "/workspace/zb-preview-1008/mesas/plates/plates.json")
+_PJ = json.load(open(PLATES_JSON)); WALLS = _PJ["walls"]; NW = len(WALLS); BLOCK_ID = NW
+VLO = {WALLS.index("w7"): 2.6} if "w7" in WALLS else {}                         # usable plate rows: w7's lowest 2.6 m shows sand -> never sampled
 CAP = -1                              # plate id < 0 -> shader cap cells (c1/c2)
 
 def strata_heights(front_img, meta, hmax, rng):
@@ -32,8 +34,8 @@ def strata_heights(front_img, meta, hmax, rng):
     if hmax - out[-1] > 0.3: out[-1] = hmax
     return out
 
-TIERS = (0.6, 0.85)            # tier tops as a fraction of the mesa height
-TIER_LVL = (0.30, 0.66, 0.90)   # hull level set used for each tier's outline
+TIERS = (0.36, 0.60, 0.80)      # tier tops as a fraction of the mesa height (4 stepped tiers, key-city3)
+TIER_LVL = (0.30, 0.50, 0.68, 0.86)   # hull level set used for each tier's outline
 def clean_mask(m):
     lab, n = ndi.label(m)
     if n > 1:
@@ -41,6 +43,48 @@ def clean_mask(m):
     m = ndi.binary_fill_holes(m)
     st = ndi.generate_binary_structure(2, 1)
     return ndi.binary_opening(m, st, iterations=3)
+
+HSCALE = 1.45                   # key-city3 mesas are taller than the Imagine butte: height x1.45 (outline IoU vs key)
+_II = None; _TARGET = None
+def tone_tables():
+    """per wall plate integral image (linear RGB) -> window mean; target = mean of all wall plates."""
+    global _II, _TARGET
+    if _II is None:
+        from PIL import Image
+        _II = []; ms = []
+        for w in WALLS:
+            a = (np.asarray(Image.open(_PJ["imagine"][w]).convert("RGB"), np.float64) / 255.0) ** 2.2
+            _II.append(np.pad(a.cumsum(0).cumsum(1), ((1, 0), (1, 0), (0, 0)))); ms.append(a.reshape(-1, 3).mean(0))
+        _TARGET = np.mean(ms, 0)
+    return _II, _TARGET
+def window_tone(p, u0, v0, L, h):
+    """seam softening: per-window tone match toward the mesa-wide plate mean (partial, ^0.6), so neighbouring
+    windows don't read as rectangular patches; pixels stay the Imagine pixels (a gain per window only)."""
+    II, T = tone_tables(); I = II[p]
+    c0, c1 = int(u0 * PXM), int(min(1280, (u0 + L) * PXM)); r0, r1 = int(max(0, (9 - v0 - h) * PXM)), int(min(720, (9 - v0) * PXM))
+    if c1 <= c0 or r1 <= r0: return [1.0, 1.0, 1.0]
+    m = (I[r1, c1] - I[r0, c1] - I[r1, c0] + I[r0, c0]) / ((r1 - r0) * (c1 - c0))
+    return [float(x) for x in np.clip((T / np.maximum(m, 1e-4)) ** 0.6, 0.75, 1.33)]
+
+def _box(th, c, w, soft=0.05):
+    d = np.abs((th - c + np.pi) % (2 * np.pi) - np.pi)
+    return np.clip((w / 2 - d) / soft + 0.5, 0, 1)
+def shape_factor(th, tier, y1, hmax, seed):
+    """irregular stepped massif: deep recesses (notches) per tier + a broken skyline (sectors of the upper tiers stop
+    lower). Deterministic per mesa seed and identical for every LOD (silhouette preserved)."""
+    r = np.random.default_rng(seed + 555)
+    f = np.ones_like(th)
+    for t in range(4):
+        for _ in range(2 + min(t, 2)):
+            c, w, dpt = r.uniform(0, 2 * np.pi), r.uniform(0.15, 0.45), r.uniform(0.12, 0.26 + 0.06 * t)
+            if t == tier: f *= 1 - dpt * _box(th, c, w)
+    for t, drops in ((2, (0.0, 0.0, 0.05, 0.09)), (3, (0.0, 0.06, 0.11, 0.16))):
+        k = 5; cuts = np.sort(r.uniform(0, 2 * np.pi, k)); dsel = r.choice(drops, k)
+        if t != tier: continue
+        sec = np.searchsorted(cuts, th % (2 * np.pi)) % k
+        drop = dsel[sec] * hmax
+        f = np.where(y1 > hmax - drop + 1e-3, f * 0.3, f)
+    return f
 
 def radial(mask, ax, cx, cz, n):
     g = ax[1] - ax[0]; R = []
@@ -55,19 +99,30 @@ def radial(mask, ax, cx, cz, n):
 
 class Mesh:
     def __init__(s): s.P = []; s.A = []   # positions (x,y,z) per vertex, attrs (plate, col, row)
-    def tri(s, p, a):
-        s.P += p; s.A += a
+    def tri(s, p, a):   # attrs padded to 9: plate, px, py, tone rgb, relief displacement xyz (applied/faded in the shader)
+        s.P += p; s.A += [list(x) + [1.0] * (6 - len(x)) + [0.0, 0.0, 0.0] if len(x) < 9 else list(x) for x in a]
     def quad(s, p0, p1, p2, p3, a0, a1, a2, a3):       # p0 p1 bottom (left,right), p2 p3 top (right,left), CCW from outside
         s.tri([p0, p1, p2], [a0, a1, a2]); s.tri([p0, p2, p3], [a0, a2, a3])
 
 def build(prefix, front_img, top_img, lod, rng_seed=1008, windows=None, scale=1.0):
+    # NO-MORPH LODs (SmiR 20:52): every LOD is the SAME shell (same tiers, strata cuts, fracture faces, blocks, windows/UVs);
+    # LODs differ only by the relief grid (LOD0: 1 m grid carrying the depth-relief displacement as a vertex attribute
+    # that the shader fades out with distance before the LOD0->LOD1 band). Geometry branches use glod = 0.
+    rlod = lod; lod = 0
     rng = np.random.default_rng(rng_seed)
     H = np.load(prefix + "-H.npy"); meta = json.load(open(prefix + "-meta.json"))
-    H = H * scale; meta = dict(meta); meta["pxm"] = meta["pxm"] / scale; meta["sink_m"] = meta["sink_m"] * scale; meta["tpx"] = meta["tpx"] / scale
+    H = H * scale * HSCALE; meta = dict(meta); meta["pxm"] = meta["pxm"] / scale; meta["sink_m"] = meta["sink_m"] * scale; meta["tpx"] = meta["tpx"] / scale
     n = H.shape[0]; ax = (np.arange(n) - (n - 1) / 2) * meta["grid_m"] * scale
     hmax = float(H.max())
-    ys = strata_heights(front_img, meta, hmax, np.random.default_rng(rng_seed))
-    if lod == 2: ys = ys[::2] if ys[-1] in ys[::2] else ys[::2] + [ys[-1]]
+    ys0 = strata_heights(front_img, meta, hmax / HSCALE, np.random.default_rng(rng_seed))
+    ys = [0.0]
+    for y in [v * HSCALE for v in ys0[1:]]:          # taller mesa (key: tall stepped cliffs): beds keep <= 8 m
+        while y - ys[-1] > 5.5: ys.append(ys[-1] + (y - ys[-1]) / np.ceil((y - ys[-1]) / 4.5))   # beds <= 5.5 m (key: many thin beds)
+        ys.append(y)
+    ys[-1] = hmax
+    if lod == 2:   # far LOD: one prism per tier (same tier outlines -> silhouette kept, no stacked coincident edges)
+        ys = [0.0] + [min(ys, key=lambda y: abs(y - t * hmax)) for t in TIERS] + [ys[-1]]
+        ys = sorted(set(ys))
     iz, ix = np.nonzero(H > 0.5); cx, cz = ax[ix].mean(), ax[iz].mean()
     rays = {0: 160, 1: 160, 2: 64}[lod]
     M = Mesh(); windows = windows if windows is not None else []
@@ -77,12 +132,21 @@ def build(prefix, front_img, top_img, lod, rng_seed=1008, windows=None, scale=1.
         y0, y1 = ys[li], ys[li + 1]
         # steep tiers (key-city3: tall vertical stacked-block cliffs, few big benches, flat top):
         # every layer of a tier shares the tier outline; strata only jut / undercut per face
-        ym = 0.5 * (y0 + y1); tier = 0 if ym < TIERS[0] * hmax else (1 if ym < TIERS[1] * hmax else 2)
+        ym = 0.5 * (y0 + y1); tier = int(sum(ym >= t * hmax for t in TIERS))
         lvl = TIER_LVL[tier] * hmax
-        if tier not in rcache: rcache[tier] = radial(clean_mask(H >= lvl), ax, cx, cz, rays)
+        if tier not in rcache:
+            Rt = radial(clean_mask(H >= lvl), ax, cx, cz, rays)
+            if tier > 0:   # asymmetric staircase (key): benches step back on one side, the other side stays a sheer cliff
+                R0 = radial(clean_mask(H >= TIER_LVL[0] * hmax), ax, cx, cz, rays)
+                thb = np.random.default_rng(rng_seed + 99).uniform(0, 2 * np.pi)
+                w = 0.3 + 0.7 * (1 + np.cos(2 * np.pi * np.arange(rays) / rays - thb)) / 2
+                Rt = np.minimum(R0, R0 + (Rt - R0) * w) if Rt.max() > 1 else Rt
+            rcache[tier] = Rt
         R = rcache[tier].copy()
         if R.max() < 1.0: continue
         R = ndi.median_filter(R, 9, mode="wrap")
+        th = 2 * np.pi * np.arange(rays) / rays
+        R = R * shape_factor(th, tier, y1, hmax, rng_seed)
         hard = (li % 3 == 2) or li == len(ys) - 2          # caprock bands overhang
         layers.append(dict(y0=y0, y1=y1, R=R, hard=hard))
     # undercut below hard layers, overhang of the hard layer itself
@@ -100,7 +164,7 @@ def build(prefix, front_img, top_img, lod, rng_seed=1008, windows=None, scale=1.
         segs = []; i = 0
         while i < rays:
             # walk until 8..14 m of perimeter
-            want = seg_rng.uniform(8.0, 14.0) if lod < 2 else 12.0; j = i; acc = 0.0
+            want = seg_rng.uniform(5.0, 8.0) if lod < 2 else 12.0; j = i; acc = 0.0   # <= 8 m faces: every window border is a real fracture step
             while j < rays and acc < want:
                 acc += np.linalg.norm(pts[(j + 1) % rays] - pts[j % rays]); j += 1
             segs.append((i, min(j, rays))); i = j
@@ -115,14 +179,17 @@ def build(prefix, front_img, top_img, lod, rng_seed=1008, windows=None, scale=1.
             d = pb - pa; nrm = np.array([d[1], -d[0]]); nrm /= np.linalg.norm(nrm) + 1e-9
             c = np.array([cx, cz]); 
             if np.dot(nrm, 0.5 * (pa + pb) - c) < 0: nrm = -nrm
-            push = L["off"] + (seg_rng.uniform(-1.6, 1.6) if lod < 2 else 0.0)
+            pv = seg_rng.uniform(-1.6, 1.6)
+            if lod < 2 and si > 0 and abs(pv - L.get("_pp", 0.0)) < 0.45: pv = L["_pp"] + (0.45 if pv >= L["_pp"] else -0.45) * (1 if abs(L["_pp"]) < 1.15 else -np.sign(L["_pp"]) * np.sign(pv - L["_pp"] + 1e-9))
+            L["_pp"] = pv
+            push = L["off"] + (pv if lod < 2 else 0.0)
             ring.append([p + nrm * push for p in chain])
         L["ring"] = ring
         # --- walls: each face (straight cliff face or fracture connector) gets plate windows keyed by
         #     (layer, face, piece, band) -> LOD0 and LOD1 sample the same Imagine pixels (no texture pop).
         wcache = {"n": -1}
-        def window(face_len, h, centre, key):
-            wr = np.random.default_rng(zlib.crc32(repr((rng_seed,) + key).encode()))
+        def window(face_len, h, centre, key, strict=False):
+            wr = np.random.default_rng(zlib.crc32(repr((rng_seed,) + ((WSALT,) if WSALT else ()) + key).encode()))   # WSALT: window re-roll keeping the shape
             best = None; bscore = 1e9
             if windows:
                 if len(windows) != wcache["n"]:
@@ -130,15 +197,17 @@ def build(prefix, front_img, top_img, lod, rng_seed=1008, windows=None, scale=1.
                 dd = np.linalg.norm(wcache["C"] - np.asarray(centre), axis=1); near = [windows[i] for i in np.nonzero(dd < REPEAT_R)[0]]
             else: near = []
             for _ in range(3000):
-                p = int(wr.integers(0, 8)); vlo = VLO.get(p, 0.0)
+                p = int(wr.integers(0, NW)); vlo = VLO.get(p, 0.0)
                 if 9.0 - h < vlo - 1e-6: continue
                 u0 = wr.uniform(0, max(0.0, 16.0 - face_len)); v0 = wr.uniform(vlo, max(vlo, 9.0 - h)); fl = int(wr.integers(0, 2))
                 cand = dict(p=p, u0=u0, v0=v0, fl=fl, L=face_len, h=h, c=np.array(centre), key=key)
                 sc_ = window_score(cand, near)
                 if sc_ < bscore: best, bscore = cand, sc_
                 if sc_ == 0: break
+            if strict and (best is None or bscore > 0): return None
             if best is None: best = dict(p=0, u0=0.0, v0=max(0.0, 9.0 - h), fl=0, L=face_len, h=h, c=np.array(centre), key=key)
-            windows.append(best); return best["p"], best["u0"], best["v0"], best["fl"]
+            best["tone"] = window_tone(best["p"], best["u0"], best["v0"], best["L"], best["h"])
+            windows.append(best); return best["p"], best["u0"], best["v0"], best["fl"], best["tone"]
         ch = 0.35 if lod < 2 else 0.0
         cc = np.array([cx, cz])
         inset = lambda p: p - (p - cc) / (np.linalg.norm(p - cc) + 1e-9) * ch
@@ -148,14 +217,18 @@ def build(prefix, front_img, top_img, lod, rng_seed=1008, windows=None, scale=1.
             nxt = ring[(k_ + 1) % len(ring)]
             faces.append((("c", li_of[id(L)], k_), [chain[-1], nxt[0]]))
         ytop = y1 - ch
-        nb = max(1, int(np.ceil((ytop + ch * 1.41 - y0) / 5.5)))
+        nb = max(1, int(np.ceil((ytop + ch * 1.41 - y0) / 8.9)))   # one band per bed (beds <= 8 m): horizontal window borders sit on the ledges
         yb = [y0 + (ytop - y0) * r_ / nb for r_ in range(nb + 1)]
-        for key, chain in faces:
+        lastwin = {}
+        for fi_, (key, chain) in enumerate(faces):
+            ext = 0.0
+            if key[0] == "f" and fi_ + 1 < len(faces):
+                cn = faces[fi_ + 1][1]; ext = float(sum(np.linalg.norm(cn[i + 1] - cn[i]) for i in range(len(cn) - 1)))
             # arc length along the face, cut into pieces <= 15.5 m (one window each)
             segl = [np.linalg.norm(chain[i + 1] - chain[i]) for i in range(len(chain) - 1)]
             tot = sum(segl)
             if tot < 1e-3: continue
-            npc = int(np.ceil(tot / 10.5)); plen = tot / npc
+            npc = int(np.ceil(tot / 15.5)); plen = tot / npc   # one window per face (faces <= 8 m + kink)
             ccum = np.concatenate([[0], np.cumsum(segl)])
             def at(sv):
                 i = min(int(np.searchsorted(ccum, sv, side="right") - 1), len(segl) - 1)
@@ -166,12 +239,35 @@ def build(prefix, front_img, top_img, lod, rng_seed=1008, windows=None, scale=1.
                 for r_ in range(nb):
                     ya, yc = yb[r_], yb[r_ + 1]
                     top_band = r_ == nb - 1
-                    pl, u0, v0, fl = window(plen, yc - ya + (ch * 1.41 if top_band else 0), np.append(0.5 * (at(s0) + at(s1)), 0.5 * (ya + yc)), key + (pc, r_, lod == 2))
-                    A = (lambda pl, u0, v0, ya, s0, fl: (lambda sv, y: [pl, (u0 + ((plen - (sv - s0)) if fl else (sv - s0))) * PXM, (9.0 - (v0 + (y - ya))) * PXM]))(pl, u0, v0, ya, s0, fl)
+                    hh = yc - ya + (ch * 1.41 if top_band else 0); cen = np.append(0.5 * (at(s0) + at(s1)), 0.5 * (ya + yc))
+                    lw = lastwin.get(r_) if key[0] == "c" and npc == 1 else None
+                    cont = None
+                    if lw is not None:   # fracture side face continues the preceding face's beds around the corner
+                        lp, lu0, lv0, lfl, lL, ltn, _res = lw
+                        if lfl == 0 and lu0 + lL + plen <= 16.0: cont = (lp, lu0 + lL, lv0, 0, ltn)
+                        elif lfl == 1 and lu0 - plen >= 0.0: cont = (lp, lu0 - plen, lv0, 1, ltn)
+                    if cont is not None and lw[6]:   # the face window already reserved this strip (no separate record)
+                        pl, u0, v0, fl, tn = cont
+                    else:
+                        if cont is not None:
+                            cw = dict(p=cont[0], u0=cont[1], v0=cont[2], fl=cont[3], L=plen, h=hh, c=cen)
+                            nearw = [w for w in windows if np.linalg.norm(w["c"] - cen) < REPEAT_R]
+                            if window_score(cw, nearw) > 0: cont = None
+                        if cont is not None:
+                            pl, u0, v0, fl, tn = cont
+                            windows.append(dict(p=pl, u0=u0, v0=v0, fl=fl, L=plen, h=hh, c=cen, key=key + (pc, r_, lod == 2), tone=tn, cont=True))
+                        elif key[0] == "f" and npc == 1 and ext > 1e-3 and plen + ext <= 16.0:
+                            # reserve the following fracture side face in the same window (beds continue round the corner)
+                            pl, u0, v0, fl, tn = window(plen + ext, hh, cen, key + (pc, r_, lod == 2))
+                            if fl == 1: u0 = u0 + ext
+                        else:
+                            pl, u0, v0, fl, tn = window(plen, hh, cen, key + (pc, r_, lod == 2))
+                    if key[0] == "f": lastwin[r_] = (pl, u0, v0, fl, plen, tn, ext > 1e-3 and plen + ext <= 16.0) if npc == 1 else None
+                    A = (lambda pl, u0, v0, ya, s0, fl, tn: (lambda sv, y: [pl, (u0 + ((plen - (sv - s0)) if fl else (sv - s0))) * PXM, (9.0 - (v0 + (y - ya))) * PXM] + tn))(pl, u0, v0, ya, s0, fl, tn)
                     for ci in range(len(cuts) - 1):
                         sa, sb = cuts[ci], cuts[ci + 1]; p0, p1 = at(sa), at(sb)
-                        if RELIEF is not None and GRID[lod] > 0:
-                            relief_patch(M, p0, p1, sa, sb, ya, yc, A, pl, lod)
+                        if RELIEF is not None and GRID[rlod] > 0:
+                            relief_patch(M, p0, p1, sa, sb, ya, yc, A, pl, rlod)
                         else:
                             M.quad([p1[0], ya, p1[1]], [p0[0], ya, p0[1]], [p0[0], yc, p0[1]], [p1[0], yc, p1[1]], A(sb, ya), A(sa, ya), A(sa, yc), A(sb, yc))   # outward winding (checked: wallWinding)
                         if top_band and ch > 0:
@@ -188,10 +284,10 @@ def build(prefix, front_img, top_img, lod, rng_seed=1008, windows=None, scale=1.
         top_ring = [inset(p) for p in poly] if ch > 0 else poly
         for q in range(len(top_ring)):
             a_, b_ = top_ring[q], top_ring[(q + 1) % len(top_ring)]
-            M.tri([[cx, y1, cz], [b_[0], y1, b_[1]], [a_[0], y1, a_[1]]], [[CAP, 0, 0]] * 3)
+            M.tri([[cx, y1, cz], [b_[0], y1, b_[1]], [a_[0], y1, a_[1]]], [[CAP, 0, 0, 1, 1, 1]] * 3)
             if L["hard"] or L["off"] > 0:   # overhang underside
                 a2, b2 = poly[q], poly[(q + 1) % len(poly)]
-                M.tri([[cx, y0, cz], [a2[0], y0, a2[1]], [b2[0], y0, b2[1]]], [[CAP, 0, 0]] * 3)
+                M.tri([[cx, y0, cz], [a2[0], y0, a2[1]], [b2[0], y0, b2[1]]], [[CAP, 0, 0, 1, 1, 1]] * 3)
         ring_out.append(dict(y0=y0, y1=y1, ring=[[float(p[0]), float(p[1])] for p in poly]))
     # --- fallen blocks + scree around the foot (density from the top plate's rubble ring) and on wide ledges
     block_start = len(M.P)
@@ -221,19 +317,25 @@ def build(prefix, front_img, top_img, lod, rng_seed=1008, windows=None, scale=1.
         Rt = np.array([[1, 0, 0], [0, np.cos(tilt[0]), -np.sin(tilt[0])], [0, np.sin(tilt[0]), np.cos(tilt[0])]])
         W_ = (corners @ Rt.T) @ Rm.T + [q[0], y, q[1]]
         faces = [(0, 1, 3, 2), (4, 6, 7, 5), (0, 4, 5, 1), (2, 3, 7, 6), (0, 2, 6, 4), (1, 5, 7, 3)]
+        quads = []; nwin0 = len(windows); skip = False
         for f in faces:
             a_, b_, c_, d_ = [W_[i] for i in f]
             ex = b_ - a_; ex /= np.linalg.norm(ex); nq = np.cross(b_ - a_, d_ - a_); ey = np.cross(nq, ex); ey /= np.linalg.norm(ey)
             uvq = [(float(np.dot(p_ - a_, ex)), float(np.dot(p_ - a_, ey))) for p_ in (a_, b_, c_, d_)]
             umin = min(u for u, _ in uvq); vmin = min(v for _, v in uvq); uvq = [(u - umin, v - vmin) for u, v in uvq]
             ul = max(u for u, _ in uvq); vl = max(v for _, v in uvq)
-            if s >= 1.2:   # big blocks: a wall plate window
-                pl, u0, v0, _fl = window(min(ul, 16), min(vl, 9), np.append(q, 0.0), ("b", placed_id, tuple(f)))
-                A = lambda u, v: [pl, (u0 + u) * PXM, (9.0 - (v0 + v)) * PXM]
+            if s >= 1.2:   # big blocks: a wall plate window; no clash-free window -> the block is not placed
+                wv = window(min(ul, 16), min(vl, 9), np.append(q, 0.0), ("b", placed_id, tuple(f)), strict=True)
+                if wv is None: skip = True; break
+                pl, u0, v0, _fl, tn = wv
+                A = (lambda pl, u0, v0, tn: (lambda u, v: [pl, (u0 + u) * PXM, (9.0 - (v0 + v)) * PXM] + tn))(pl, u0, v0, tn)
             else:          # small: the block-face plate (320 px/m) window
                 u0 = brng.uniform(0, max(0.01, 4.0 - ul)); v0 = brng.uniform(0.75, max(0.76, 2.25 - vl))   # b1: lowest 0.75 m has sand
-                A = lambda u, v: [8, (u0 + u) * BLOCK_PXM, (2.25 - (v0 + v)) * BLOCK_PXM]
-            M.quad(list(a_), list(b_), list(c_), list(d_), *[A(u, v) for u, v in uvq])
+                A = (lambda u0, v0: (lambda u, v: [BLOCK_ID, (u0 + u) * BLOCK_PXM, (2.25 - (v0 + v)) * BLOCK_PXM, 1.0, 1.0, 1.0]))(u0, v0)
+            quads.append((list(a_), list(b_), list(c_), list(d_), [A(u, v) for u, v in uvq]))
+        if skip:
+            del windows[nwin0:]; placed_id += 1; continue
+        for qd in quads: M.quad(*qd[:4], *qd[4])
         placed += 1; placed_id += 1
     P = np.array(M.P, np.float32); At = np.array(M.A, np.float32)
     # drop degenerate triangles (zero-length fracture connectors / collapsed fan slivers), keep block bookkeeping
@@ -242,13 +344,14 @@ def build(prefix, front_img, top_img, lod, rng_seed=1008, windows=None, scale=1.
     coll = (q[:, 0] == q[:, 1]).all(1) | (q[:, 1] == q[:, 2]).all(1) | (q[:, 0] == q[:, 2]).all(1)
     keep = (ar > 1e-5) & ~coll; nb_ = block_start // 3; keep[nb_:] = True
     block_start = int(keep[:nb_].sum()) * 3
-    P = t3[keep].reshape(-1, 3); At = At.reshape(-1, 3, 3)[keep].reshape(-1, 3)
+    P = t3[keep].reshape(-1, 3); At = At.reshape(-1, 3, At.shape[-1])[keep].reshape(-1, At.shape[-1])
     # hull grid z is hull z3; three local z = -z3
-    P[:, 2] *= -1
+    P[:, 2] *= -1; At[:, 8] *= -1   # relief displacement follows the z mirror
     P = P.reshape(-1, 3, 3)[:, [0, 2, 1]].reshape(-1, 3)     # flip winding to match the z mirror
-    At = At.reshape(-1, 3, 3)[:, [0, 2, 1]].reshape(-1, 3)
+    At = At.reshape(-1, 3, At.shape[-1])[:, [0, 2, 1]].reshape(-1, At.shape[-1])
     return P, At, dict(blockStart=block_start, strata=ys, layers=len(layers), blocks=placed, rings=ring_out), windows
 
+WSALT = int(os.environ.get("WSALT", "0"))
 REPEAT_R = 30.0     # same Imagine pixels (same plate, same flip, >50 % overlap) never twice within this distance
 ADJ_R = 7.0         # neighbouring faces/bands never show any of the same plate pixels
 def overlap(a, b):
@@ -267,7 +370,7 @@ def window_score(c, W):
 def winding(P, At, block_start):
     """fraction of cliff-wall / cap / block triangles whose winding faces outward (walls: away from the mesa axis,
     caps: up for tops; blocks: away from the block centre)."""
-    t = P.reshape(-1, 3, 3); a = At.reshape(-1, 3, 3)[:, 0, 0]
+    t = P.reshape(-1, 3, 3); a = At.reshape(-1, 3, At.shape[-1])[:, 0, 0]
     n = np.cross(t[:, 1] - t[:, 0], t[:, 2] - t[:, 0]); c = t.mean(1)
     nb = block_start // 3
     wall = (a[:nb] >= 0); ar = np.linalg.norm(n, axis=1) > 1e-6
@@ -282,7 +385,7 @@ def winding(P, At, block_start):
 # ---- depth_relief stage hook: per wall plate relief maps (metres, from depth_relief.py), applied as in/out
 #      displacement of the shell only; faded to 0 within FADE_M of every window/face border (watertight seams).
 RELIEF = None; RELIEF_L = {}
-GRID = {0: 1.0, 1: 3.0, 2: 0.0}     # displacement grid (m) per LOD; LOD2 keeps the plain shell
+GRID = {0: 1.0, 1: 0.0, 2: 0.0}     # displacement grid (m) per LOD; LOD2 keeps the plain shell
 FADE_M = 0.75
 def load_relief(dirpath, walls):
     global RELIEF
@@ -304,11 +407,11 @@ def relief_patch(M, p0, p1, sa, sb, ya, yc, A, pl, lod):
     d = sample(RELIEF_L[lod][int(pl)], uv[..., 1], uv[..., 2])
     edge = np.minimum.reduce([S - sa, sb - S, Y - ya, yc - Y])
     t = np.clip(edge / FADE_M, 0, 1); d = d * t * t * (3 - 2 * t)
-    X = p0[0] + (p1[0] - p0[0]) * us[None, :] + n[0] * d; Z = p0[1] + (p1[1] - p0[1]) * us[None, :] + n[1] * d
+    X = p0[0] + (p1[0] - p0[0]) * us[None, :] + 0 * d; Z = p0[1] + (p1[1] - p0[1]) * us[None, :] + 0 * d   # base shell
     for j in range(nv):
         for i in range(nu):
             q = [(j, i + 1), (j, i), (j + 1, i), (j + 1, i + 1)]
-            P4 = [[X[a, b], Y[a, b], Z[a, b]] for a, b in q]; U4 = [list(uv[a, b]) for a, b in q]
+            P4 = [[X[a, b], Y[a, b], Z[a, b]] for a, b in q]; U4 = [list(uv[a, b]) + [n[0] * d[a, b], 0.0, n[1] * d[a, b]] for a, b in q]
             M.quad(*P4, *U4)
 
 def topo(P):
@@ -322,7 +425,7 @@ def topo(P):
 
 def stretch_px(P, At):
     """per triangle: UV px vs 3D metres, for plate>=0 triangles; returns (min px/m, max anisotropic stretch)."""
-    t = P.reshape(-1, 3, 3); a = At.reshape(-1, 3, 3); sel = a[:, 0, 0] >= 0; t = t[sel]; a = a[sel]
+    t = P.reshape(-1, 3, 3); a = At.reshape(-1, 3, At.shape[-1])[:, :, :3]; sel = a[:, 0, 0] >= 0; t = t[sel]; a = a[sel]
     e1 = t[:, 1] - t[:, 0]; e2 = t[:, 2] - t[:, 0]; f1 = a[:, 1, 1:] - a[:, 0, 1:]; f2 = a[:, 2, 1:] - a[:, 0, 1:]
     # local 2D frame of the triangle
     x = e1 / (np.linalg.norm(e1, axis=1, keepdims=True) + 1e-9); nrm = np.cross(e1, e2); y = np.cross(nrm, x); y /= np.linalg.norm(y, axis=1, keepdims=True) + 1e-9
@@ -341,12 +444,15 @@ if __name__ == "__main__":
     prefix, front_img, top_img, out = sys.argv[1:5]
     scale = float(sys.argv[5]) if len(sys.argv) > 5 else 1.0; seed = int(sys.argv[6]) if len(sys.argv) > 6 else 1008
     if len(sys.argv) > 7 and sys.argv[7] != "-":
-        load_relief(sys.argv[7], ["w1", "w2", "w3", "w9", "w5", "w6", "w7", "w8"])
-    blobs = []; info = {"lods": [], "scale": scale, "seed": seed}; off = 0; windows = []
+        load_relief(sys.argv[7], WALLS)
+    blobs = []; info = {"lods": [], "scale": scale, "seed": seed, "stride": 12, "walls": WALLS, "lodMode": "same-shell+relief-attr"}; off = 0; windows = []
     for lod in (0, 1, 2):
         P, At, meta, windows = build(prefix, front_img, top_img, lod, rng_seed=seed, windows=[], scale=scale)
         info.setdefault("windows", []).append([[w["p"], round(w["u0"], 2), round(w["v0"], 2), round(float(w["c"][0]), 1), round(float(w["c"][1]), 1)] for w in windows])
-        st = stretch_px(P, At); st.update(winding(P, At, meta["blockStart"])); st.update(topo(P))
+        Pd = P + At[:, 6:9]   # QC on the fully displaced LOD0 surface
+        st = stretch_px(Pd, At); st.update(winding(Pd, At, meta["blockStart"])); st.update(topo(Pd))
+        if lod > 0:   # same-shell check: every LOD has the same silhouette = same base vertices set (no relief)
+            st["sameShell"] = bool(len(P) == info["lods"][lod - 1]["verts"] or lod == 1)
         st["relief"] = RELIEF is not None and GRID[lod] > 0
         info["lods"].append(dict(lod=lod, tris=len(P) // 3, offset=off, verts=len(P), stretch=st, **{k: meta[k] for k in ("layers", "blocks", "blockStart")}))
         if lod == 0:
