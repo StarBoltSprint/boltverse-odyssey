@@ -30,7 +30,36 @@ PATCHES = [
     ("dp[i * 3] = q[k + 9] / Q[9]; dp[i * 3 + 1] = q[k + 10] / Q[10]; dp[i * 3 + 2] = q[k + 11] / Q[11];",
      "dp[i * 3] = RG * q[k + 9] / Q[9]; dp[i * 3 + 1] = RG * q[k + 10] / Q[10]; dp[i * 3 + 2] = RG * q[k + 11] / Q[11];"),
     ("const [x, z] = avXZ(L.s, L.lat);", "const [x, z] = L.x != null ? [L.x, L.z] : avXZ(L.s, L.lat);"),
+    ("gain: 1.0, fogW: 0.12, hazeW: 0.2,", "gain: 1.0, fogW: KC.fogW ?? 0.12, hazeW: KC.hazeW ?? 0.2,"),   # per-object haze (tools/lighting)
 ]
+# lighting parameters (tools/lighting fit -> <stage>/kc-light.json, read synchronously by the staging index.html into
+# window.__kcLight before any module runs). Live defaults when a key is absent. objects-t7 = staging COPY.
+KL = "(globalThis.__kcLight || {})"
+OBJ_MODULE = "objects-t7.mjs"
+OBJ_PATCHES = [
+    ("const SUN_AZIMUTH = 90;", f"const SUN_AZIMUTH = {KL}.sunAzimuthDeg ?? 90;"),
+    ("const SUN_ELEVATION = 8;", f"const SUN_ELEVATION = {KL}.sunElevationDeg ?? 8;"),
+    ('shader.uniforms.uZbGraphite = { value: new THREE.Vector3(...hexToLinear("#101114")) };',
+     f'shader.uniforms.uZbGraphite = {{ value: new THREE.Vector3(...hexToLinear({KL}.chromeGraphite || "#101114")) }};'),   # USE_ZB_CHROME_BODY dark side
+    ("const sun = new THREE.DirectionalLight(0xffb089, 1.35);", f"const sun = new THREE.DirectionalLight({KL}.sunHex ?? 0xffb089, {KL}.sunIntensity ?? 1.35);"),
+    ("const hemi = new THREE.HemisphereLight(0xc47ad4, 0x3a2420, 0.25);", f"const hemi = new THREE.HemisphereLight({KL}.hemiSky ?? 0xc47ad4, {KL}.hemiGround ?? 0x3a2420, {KL}.hemiIntensity ?? 0.25);"),
+]
+LOADER = ('<script>/* KC STAGING: lighting params (tools/lighting) */ try { var x = new XMLHttpRequest(); x.open("GET", "./kc-light.json?t=" + Date.now(), false); x.send();'
+          ' window.__kcLight = x.status === 200 ? JSON.parse(x.responseText) : {}; } catch (e) { window.__kcLight = {}; }</script>\n')
+
+
+def patch_text(t, patches, what):
+    for a, b in patches:
+        n = t.count(a)
+        if n != 1: raise SystemExit(f"kc_stage: {what} patch anchor found {n}x (expected 1): {a[:70]}")
+        t = t.replace(a, b)
+    return t
+
+
+def deep_set(d, path, v):
+    ks = path.split("."); 
+    for k in ks[:-1]: d = d.setdefault(k, {})
+    d[ks[-1]] = v
 
 
 def _link(src, dst):
@@ -68,7 +97,7 @@ def apply_layout(live_layout, lay):
 def build(live, out, layout=None):
     live = os.path.abspath(live); _refuse_live(out, live); os.makedirs(out, exist_ok=True)
     for e in os.listdir(live):
-        if e in REAL_DIRS or e in ("main-kc.mjs", "kc.html"): continue
+        if e in REAL_DIRS or e in ("main-kc.mjs", "kc.html", "index.html", "biome.json", OBJ_MODULE, "kc-light.json"): continue
         _link(os.path.join(live, e), os.path.join(out, e))
     for dname in REAL_DIRS:
         d = os.path.join(out, dname)
@@ -98,9 +127,25 @@ def build(live, out, layout=None):
         if os.path.lexists(os.path.join(out, f)): os.remove(os.path.join(out, f))
     open(os.path.join(out, "main-kc.mjs"), "w").write("// KC STAGING COPY of main.mjs (+ mesaOnly mask hook)\n" + mm)
     ih = open(os.path.join(live, "index.html")).read(); import re
-    open(os.path.join(out, "kc.html"), "w").write(re.sub(r'src="\./main\.mjs[^"]*"', 'src="./main-kc.mjs"', ih))
+    open(os.path.join(out, "kc.html"), "w").write(re.sub(r'src="\./main\.mjs[^"]*"', 'src="./main-kc.mjs"', ih.replace('<script type="module"', LOADER + '<script type="module"', 1)))
+    write_light_files(live, out)
     open(os.path.join(out, "KC-STAGING.txt"), "w").write(f"staging mirror of {live} (symlinks); built by kc_stage.py; layout {layout}\n")
     return dict(out=out, layout=layout, params=params)
+
+
+def write_light_files(live, out):
+    """staging copies: index.html (+ kc-light loader), objects-t7.mjs (light params), biome.json (+ kc-light biome overrides)"""
+    kl = os.path.join(out, "kc-light.json"); L = json.load(open(kl)) if os.path.exists(kl) else {}
+    for f in ("index.html", "biome.json", OBJ_MODULE):
+        if os.path.lexists(os.path.join(out, f)): os.remove(os.path.join(out, f))
+    ih = open(os.path.join(live, "index.html")).read(); a = '<script type="module"'
+    if a not in ih: raise SystemExit("kc_stage: index.html module script not found")
+    open(os.path.join(out, "index.html"), "w").write(ih.replace(a, LOADER + a, 1))
+    open(os.path.join(out, OBJ_MODULE), "w").write("// KC STAGING COPY (kc_stage.py, light params)\n" + patch_text(open(os.path.join(live, OBJ_MODULE)).read(), OBJ_PATCHES, OBJ_MODULE))
+    B = json.load(open(os.path.join(live, "biome.json")))
+    for k, v in (L.get("biome") or {}).items(): deep_set(B, k, v)
+    json.dump(B, open(os.path.join(out, "biome.json"), "w"))
+    if not os.path.exists(kl): json.dump({}, open(kl, "w"))
 
 
 def _refuse_live(out, live=os.environ.get("I23D_LIVE_ROOT", "/workspace/zb-preview-1008")):
