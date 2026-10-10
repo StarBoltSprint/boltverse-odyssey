@@ -14,3 +14,6 @@ checklistTemplate:
 # render pixel ratio, closer exempt, no camera distance limit; one shared plate set per type, identical pixels never
 # within 30 m, neighbours never share; Imagine plates 1024 x 1024 native) is the default for EVERY type, set in
 # _base.yaml. Rocks and mesas inherit it unchanged.
+keyCompare:   # key-compare.mjs: mesas, arch (outline already searched to >= 0.87 side-on by gen_strata_all; frame IoU is stricter)
+  gate: {iouMin: 0.6, deLitMax: 8, deShadowMax: 10, structureMin: 0.25}
+  target: {iouTarget: 0.95, deLitTarget: 3, deShadowTarget: 4, structureTarget: 0.9}
