@@ -1,6 +1,6 @@
 // Compiles the runtime GLSL chunks in a real WebGL2 context (headless Chromium, SwiftShader).
 //   node tools/biome/runtime/glsl-compile-check.mjs        (needs playwright; set PLAYWRIGHT_MODULE=/path/to/playwright/index.mjs)
-import { FOG_GLSL, GRADE_FRAG, FULLSCREEN_VERT, SKY_EQUIRECT_GLSL } from "./biome-runtime.js";
+import { FOG_GLSL, GRADE_FRAG, FULLSCREEN_VERT, SKY_EQUIRECT_GLSL, GROUND_GLSL } from "./biome-runtime.js";
 const mod = process.env.PLAYWRIGHT_MODULE || "playwright";
 let chromium;
 try { ({ chromium } = await import(mod)); } catch (e) { console.log(`[glsl] SKIP: playwright not found (${mod})`); process.exit(0); }
@@ -16,6 +16,16 @@ precision highp float;
 uniform sampler2D map; in vec3 vW; out vec4 o;
 ${SKY_EQUIRECT_GLSL}
 void main(){ o = vec4(biomeSky(map, vW), 1.0); }`;
+// ground: default path + the A/B switches (G_OLDPOM = per-step sincos POM loop, G_IMPLICIT = bench diagnostic, G_HR8 = R8 height reads)
+const groundFrag = (defs) => `#version 300 es
+precision highp float;
+${defs}
+in vec3 vW; in vec3 vN; uniform vec3 uEye; out vec4 o;
+${GROUND_GLSL}
+${FOG_GLSL}
+void main(){ vec3 toEye = uEye - vW; float dist = length(toEye); o = vec4(biomeFog(biomeGroundV(vW.xz, normalize(vN), toEye, dist), dist, vW.y), 1.0); }`;
+const groundVert = `#version 300 es
+in vec3 p; out vec3 vW; out vec3 vN; void main(){ vW = p; vN = vec3(0.0, 1.0, 0.0); gl_Position = vec4(p, 1.0); }`;
 const b = await chromium.launch({ headless: true, args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"] });
 const p = await b.newPage();
 const res = await p.evaluate(([progs]) => {
@@ -35,7 +45,7 @@ const res = await p.evaluate(([progs]) => {
     out[name] = log || "ok";
   }
   return out;
-}, [[["fog", fogVert, fogFrag], ["grade", FULLSCREEN_VERT, GRADE_FRAG], ["sky", fogVert, skyFrag]]]);
+}, [[["fog", fogVert, fogFrag], ["grade", FULLSCREEN_VERT, GRADE_FRAG], ["sky", fogVert, skyFrag], ["ground", groundVert, groundFrag("")], ["ground G_OLDPOM", groundVert, groundFrag("#define G_OLDPOM 1")], ["ground G_IMPLICIT", groundVert, groundFrag("#define G_IMPLICIT 1")], ["ground G_HR8", groundVert, groundFrag("#define G_HR8 1")]]]);
 await b.close();
 console.log("[glsl]", JSON.stringify(res));
 process.exit(Object.values(res).every((v) => v === "ok") ? 0 : 1);

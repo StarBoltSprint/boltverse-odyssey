@@ -76,5 +76,29 @@ const fake = { verdict: "FAIL", out: dir, runtime: [{ check: "shader compile 412
 const plan = fixPlan(fake);
 ok(plan.items.length === 4 && plan.items[0].action === "plate-sections" && plan.items[1].action === "sink" && plan.items[2].auto === false && plan.items[3].action === "fix-shader", "fix plan actions");
 ok(toMarkdown({ ...fake, url: "u", adapter: "a", startedAt: "t", objects: fake.objects.map((o) => ({ ...o, verdict: "FAIL", files: {} })) }).includes("| tower | undefined | FAIL |"), "markdown renders");
+{ // phone perf rows (docs/METHOD/phone-perf.md)
+  const { perfRows } = await import("./gate.mjs");
+  const run = (pr) => { const r = { runtime: [] }; perfRows(r, pr, [412, 915]); return r.runtime; };
+  const good = run({ canvasRatio: 2, dpr: 3, cap: 2, adaptive: true, skyOrder: 2, groundOrder: 1, maxOpaqueOrder: 0, skyDepthTest: true, adaptiveCanDropDetail: false, sprintDip: false });
+  ok(good.length === 6 && good.every((x) => x.status === "PASS") && good.every((x) => x.id.startsWith("perf.")), "perf rows PASS on the v61 report shape");
+  const bad = run({ canvasRatio: 3, dpr: 3, cap: 2, adaptive: false, skyOrder: 0, groundOrder: 0, maxOpaqueOrder: 0, skyDepthTest: true });
+  ok(bad.filter((x) => x.status === "FAIL").length === 5, "perf rows FAIL: full-DPR canvas, sky first, ground first, no adaptive, default ratio unproven");
+  const dropper = run({ canvasRatio: 2, dpr: 3, cap: 2, adaptive: true, adaptiveCanDropDetail: true, sprintDip: false });
+  ok(dropper.find((x) => x.id === "perf.quality-kept").status === "FAIL", "perf row FAIL: an adaptive controller that can drop the detail layer");
+  const old = run({ canvasRatio: 2, dpr: 3, cap: 2, adaptive: true });
+  ok(old.find((x) => x.id === "perf.quality-kept").status === "FAIL" && old.find((x) => x.id === "perf.default-ratio").status === "FAIL", "perf rows FAIL on the v59 shape (no quality-first proof)");
+  const low = run({ canvasRatio: 1.5, dpr: 3, cap: 1.5, adaptive: true, adaptiveCanDropDetail: false, sprintDip: false });
+  ok(low.find((x) => x.id === "perf.default-ratio").status === "FAIL", "perf row FAIL: default ratio 1.5 on a DPR-3 phone (native, no upscaler)");
+  const v62 = { canvasRatio: 2, dpr: 2.625, cap: 1.5, canvasCap: 2, upscale: "easu-rcas", rcas: 0.8, adaptive: true, adaptiveCanDropDetail: false, sprintDip: false, detailOn: true, skyOrder: 2, groundOrder: 1, maxOpaqueOrder: 0.5, skyDepthTest: true };
+  const ups = run(v62);
+  ok(ups.length === 6 && ups.every((x) => x.status === "PASS"), "perf rows PASS on the v62 shape (internal 1.5 + EASU/RCAS to canvas 2)");
+  ok(run({ ...v62, upscale: "bilinear-rcas" }).find((x) => x.id === "perf.default-ratio").status === "FAIL", "perf row FAIL: internal 1.5 with the plain bilinear upscale");
+  ok(run({ ...v62, cap: 1.25 }).find((x) => x.id === "perf.default-ratio").status === "FAIL", "perf row FAIL: default internal 1.25 even with EASU/RCAS");
+  ok(run({ ...v62, canvasRatio: 1.5 }).find((x) => x.id === "perf.default-ratio").status === "FAIL", "perf row FAIL: EASU/RCAS but the canvas is not min(2, device)");
+  ok(run({ ...v62, detailOn: false }).find((x) => x.id === "perf.quality-kept").status === "FAIL", "perf row FAIL: detail layer off");
+  ok(run({ ...v62, adaptiveCanDropDetail: true }).find((x) => x.id === "perf.quality-kept").status === "FAIL", "perf row FAIL: v62 shape with a detail-dropping controller");
+  const none = run(null);
+  ok(none.length === 1 && none[0].status === "INFO" && none[0].id === "perf.report", "page without __perfReport: INFO only");
+}
 console.log(fails ? `FAIL ${fails}` : "PASS selftest");
 process.exit(fails ? 1 : 0);

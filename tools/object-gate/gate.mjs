@@ -11,7 +11,7 @@ import { scoreVisible, screenPxPerM, resolveView, footprintsFromBoxes } from "./
 export { scoreVisible, screenPxPerM, resolveView };
 
 /** Stable API contract (see API.md). Bump the major only with a migration note; additions bump the minor. */
-export const API_VERSION = "1.3";
+export const API_VERSION = "1.6";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PY = join(HERE, "lib/analyze.py");
@@ -158,6 +158,7 @@ export async function gateScene(scene, opts = {}) {
       rowR(report, `portrait viewport ${vp.join("x")}`, inner[1] > inner[0], `inner ${inner.join("x")}`, ["The page must fill a portrait phone viewport."]);
       stats = await h.page.evaluate(() => window.__og.stats());
       report.runtime.push({ id: "runtime.budgets", check: `budgets ${vp.join("x")} (report only, quality first)`, status: "INFO", detail: JSON.stringify(stats), hints: [] });
+      perfRows(report, await h.page.evaluate(() => (typeof window.__perfReport === "function" ? window.__perfReport() : null)).catch(() => null), vp);
       await h.ctx.close();
     }
     // ---------------- capture page (shared by every object)
@@ -216,10 +217,41 @@ export const CHECK_IDS = [
   [/^key checklist written/, "checklist.written"], [/^key crop present/, "checklist.key-crop"], [/^key checklist: every/, "checklist.verified"], [/^colour vs key/, "checklist.colour"],
   [/^console/, "runtime.console"], [/^shader compile/, "runtime.shader"], [/^HUD text/, "runtime.hud"], [/^title/, "runtime.title"],
   [/^portrait viewport/, "runtime.portrait"], [/^budgets/, "runtime.budgets"], [/^live preview untouched/, "runtime.live-untouched"],
+  [/^perf: canvas ratio/, "perf.canvas-ratio"], [/^perf: sky dome/, "perf.sky-order"], [/^perf: ground/, "perf.ground-order"], [/^perf: adaptive/, "perf.adaptive"], [/^perf: quality kept/, "perf.quality-kept"], [/^perf: default ratio/, "perf.default-ratio"], [/^perf: report/, "perf.report"],
 ];
 export const checkId = (check) => (CHECK_IDS.find(([re]) => re.test(check)) || [null, "other"])[1];
 function row(o, check, pass, detail, hints = [], status) {
   o.rows.push({ id: checkId(check), check, status: status || (pass ? "PASS" : "FAIL"), detail, hints: pass ? [] : hints });
+}
+/**
+ * Phone perf rows (docs/METHOD/phone-perf.md). They read the page's window.__perfReport():
+ * { canvasRatio, dpr, cap, adaptive, skyOrder, groundOrder, maxOpaqueOrder, skyDepthTest, adaptiveCanDropDetail, sprintDip,
+ *   canvasCap, upscale, rcas, detailOn }. A page without it gets an INFO row. `cap` = the default internal (scene) ratio.
+ * 1.5 (SmiR 2026-10-10 14:02): quality first. The adaptive controller may only lower the ratio as an emergency floor and
+ * must never drop the detail layer or another quality feature.
+ * 1.6 (SmiR 2026-10-10 14:38): the default may also be internal ratio >= 1.5 upscaled to the canvas (min(2, device)) with
+ * the EASU-style + RCAS upscaler (`upscale: "easu-rcas"`, tools/biome/runtime/upscale-easu.mjs); never the plain bilinear path.
+ * Every row checks work that never reaches the screen (full-DPR canvas, overdraw a depth test would reject); none of them lowers the look.
+ */
+export function perfRows(rep, pr, vp) {
+  const tag = vp.join("x");
+  if (!pr) { rep.runtime.push({ id: "perf.report", check: `perf: report ${tag}`, status: "INFO", detail: "page has no window.__perfReport(); phone perf rows skipped", hints: ["Expose window.__perfReport() (see tools/perf/phone-bench/README.md) so the gate can check canvas ratio and draw order."] }); return; }
+  const lim = Math.min(pr.canvasCap ?? pr.cap ?? 2, 2, pr.dpr ?? 2) + 1e-6;
+  rowR(rep, `perf: canvas ratio <= cap ${tag}`, pr.canvasRatio <= lim, `canvas ratio ${pr.canvasRatio} (cap ${pr.canvasCap ?? pr.cap}, device ${pr.dpr})`,
+    ["Size the canvas at the adaptive render ratio (cap 2), not the device ratio: a DPR-3 canvas pays a fixed full-screen grade/upsample/compositor pass every frame (phone lesson 2026-10-10)."]);
+  if (pr.skyOrder != null) rowR(rep, `perf: sky dome drawn after the opaques ${tag}`, pr.skyDepthTest && pr.skyOrder > pr.maxOpaqueOrder, `sky renderOrder ${pr.skyOrder}, max opaque ${pr.maxOpaqueOrder}, depthTest ${pr.skyDepthTest}`,
+    ["Draw the far-plane sky dome after every depth-writing opaque, depth-tested: the hidden sky pixels are then never shaded (bit-identical result)."]);
+  if (pr.groundOrder != null) rowR(rep, `perf: ground after the other opaques ${tag}`, pr.groundOrder > pr.maxOpaqueOrder, `ground renderOrder ${pr.groundOrder}, max opaque ${pr.maxOpaqueOrder}`,
+    ["Draw the expensive ground shader after towers / mesas / props so occluded ground pixels fail the early depth test (bit-identical result)."]);
+  rowR(rep, `perf: adaptive controller on ${tag}`, !!pr.adaptive, `adaptive ${!!pr.adaptive}`, ["Use tools/biome/runtime/adaptive-res.mjs (quality-first: default ratio, emergency floor only)."]);
+  rowR(rep, `perf: quality kept: adaptive never drops the detail layer ${tag}`, (!pr.adaptive || pr.adaptiveCanDropDetail === false) && pr.detailOn !== false,
+    `adaptiveCanDropDetail ${pr.adaptiveCanDropDetail} detailOn ${pr.detailOn}`,
+    ["Use tools/biome/runtime/adaptive-res.mjs >= 2026-10-10 14:02 (every level detail: true, canDropDetail false) and report adaptiveCanDropDetail: false (and detailOn: true) in __perfReport. Owner rule: no quality feature is ever turned off for fps."]);
+  const want = Math.min(2, pr.dpr ?? 2), native = (pr.cap ?? 0) >= want - 1e-6;
+  const easu = pr.upscale === "easu-rcas" && (pr.cap ?? 0) >= Math.min(1.5, pr.dpr ?? 2) - 1e-6 && pr.rcas > 0 && Math.abs((pr.canvasRatio ?? 0) - want) < 1e-6;
+  rowR(rep, `perf: default ratio = min(2, device) native, or >= 1.5 + EASU/RCAS to the canvas, no sprint dip ${tag}`, (native || easu) && pr.sprintDip === false,
+    `internal ${pr.cap} canvas ${pr.canvasRatio} device ${pr.dpr} upscale ${pr.upscale ?? "native"} rcas ${pr.rcas ?? "-"} sprintDip ${pr.sprintDip}`,
+    ["Default: canvas min(2, device), scene at internal 1.5 upscaled with tools/biome/runtime/upscale-easu.mjs (EASU-style + RCAS 0.8), or native ratio 2 (SmiR 2026-10-10 14:38). Never the plain bilinear upscale, never below 1.5 by default, no sprint dip; lower only as the adaptive emergency floor (< 15 fps for > 5 s)."]);
 }
 function rowR(rep, check, pass, detail, hints) { rep.runtime.push({ id: checkId(check), check, status: pass ? "PASS" : "FAIL", detail, hints: pass ? [] : hints }); }
 

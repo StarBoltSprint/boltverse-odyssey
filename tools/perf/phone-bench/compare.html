@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Zone B — ratio 2 natif vs 1.5 upscalé</title>
+<style>html,body{margin:0;height:100%;background:#000;overflow:hidden;touch-action:none}canvas#view{position:fixed;inset:0;width:100vw;height:100vh;display:block}
+#load{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font:16px system-ui;text-align:center;padding:20px}
+#tap{position:fixed;inset:0;z-index:50}
+#lab{position:fixed;left:0;right:0;top:0;z-index:60;padding:8px 10px;font:700 16px/1.3 system-ui,sans-serif;color:#fff;background:rgba(0,0,0,.5);pointer-events:none}
+#bar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;gap:6px;padding:8px;background:rgba(0,0,0,.45)}
+#bar button{flex:1;font:600 15px system-ui;padding:10px 4px;border-radius:8px;border:0}
+#bar button.on{background:#ffb089}</style>
+<script>
+// frozen view: the scene's own clocks read a fixed time once the page is ready (same pose, same sky, same sand)
+window.__realNow = performance.now.bind(performance);
+performance.now = () => (window.__tFreeze ?? window.__realNow());
+</script>
+</head><body>
+<canvas id="view"></canvas>
+<div id="load" style="z-index:5;background:#1d1418">Chargement… puis 15 s de mesure (ne touche pas l'écran)</div>
+<div id="tag" style="display:none"></div><div id="fps" style="display:none"></div><div id="help" style="display:none"></div><button id="run" style="display:none"></button>
+<div id="stick" style="display:none"><div id="knob"></div></div>
+<script>
+if (!new URLSearchParams(location.search).has("lockq")) location.replace("compare.html?opt=1&cap=2&lockq=1&dyn=0&hud=0&grain=0&cb=" + Date.now());
+else {
+  const s = document.createElement("script"); s.type = "module"; s.src = "./main-bench.mjs?b=12"; document.body.appendChild(s);
+  const w = () => (window.__ready ? import("./cmp.mjs?c=2") : setTimeout(w, 200)); w();
+}
+</script>
+</body></html>
