@@ -1,0 +1,9 @@
+type: vehicle    # ships, wrecks, rovers, mag-rails
+extends: _base
+texel: {nearPxPerM: 128}
+geometry: {minReliefM: 0.15, minReliefFaces: 1}
+checklistTemplate:
+  - {id: volume, feature: "Hull silhouette matches the key crop", captures: [far, close]}
+  - {id: damage, feature: "Damage / breaks in the geometry, interior skinned (no black faces)", captures: [close, low-portrait]}
+  - {id: materials, feature: "Hull materials and colours as the key", captures: [close]}
+  - {id: base, feature: "Nose-buried / seated, no gap", captures: [low-portrait]}

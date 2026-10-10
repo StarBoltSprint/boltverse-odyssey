@@ -1,0 +1,8 @@
+type: effect     # particles, sand, dust, veils, god-rays, smoke
+extends: _base
+checks: [effects, runtime]
+effects:
+  requireImagineTexture: true     # the visual source is an Imagine image, never a typed colour
+  forbidColourLiterals: false     # literals are reported; set true to FAIL on them
+checklistTemplate:
+  - {id: motion, feature: "Motion as briefed (from the ground, gusts, height)", captures: [clip]}

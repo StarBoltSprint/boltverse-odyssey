@@ -1,0 +1,9 @@
+type: vegetation # trees, shrubs, crystals-as-plants
+extends: _base
+texel: {nearPxPerM: 128}
+geometry: {maxOpenEdges: null, maxNonManifold: null}   # leaf shells are open; trunks must still pass grounding
+shadow: {maxTintChroma: 0.22}
+checklistTemplate:
+  - {id: volume, feature: "Crown/trunk silhouette matches the key crop", captures: [far, close]}
+  - {id: leaves, feature: "Leaves are Imagine pixels with real depth, no flat card from any angle", captures: [close, low-portrait]}
+  - {id: colours, feature: "Colours as the key", captures: [close]}

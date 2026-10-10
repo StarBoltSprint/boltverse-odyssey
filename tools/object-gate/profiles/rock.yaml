@@ -1,0 +1,16 @@
+type: rock       # mesas, arches, boulders, cliffs (organic solids)
+extends: _base
+geometry:
+  maxOpenEdges: null     # buried open bottom ring allowed (declared in the report)
+  minReliefM: 0.5
+  minReliefFaces: 2
+repetition: {maxPeak: 0.65}
+checklistTemplate:
+  - {id: volume, feature: "Mass and silhouette match the key crop from the key camera side", captures: [far]}
+  - {id: strata, feature: "Strata / erosion bands in the geometry, not only painted", captures: [close, far]}
+  - {id: colours, feature: "Rock colours as the key under the key light", captures: [close, far]}
+  - {id: base, feature: "Talus / sand at the base, no floating edge", captures: [low-portrait]}
+# 2026-10-09 20:19 (SmiR): texel policy "visible" (visible px/m from >= 8 m on a 1080 x 2400 phone at the game's
+# render pixel ratio, closer exempt, no camera distance limit; one shared plate set per type, identical pixels never
+# within 30 m, neighbours never share; Imagine plates 1024 x 1024 native) is the default for EVERY type, set in
+# _base.yaml. Rocks and mesas inherit it unchanged.

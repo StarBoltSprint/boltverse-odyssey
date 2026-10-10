@@ -878,3 +878,113 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | A birth has to sit in the heading-relative band `bandHalf(ahead)`, which is the portrait half-width at that distance. The seat is world-locked. The density count uses that half at 92 m, so charge fills the band and does not widen the measurement. |
 | Guard | `node --test packs/corridor-ab/play/stream.test.mjs` — "a turn births across the forward band and stays outside the near frustum" and "rocks per visible area rise across a long sprint". Capture laterals −24.5 m to +22.7 m. |
 | Sources | `packs/corridor-ab/play/stream.js` |
+
+### 2026-10-09 — texel gate counted a tiled detail texture (misleading 256 px/m)
+
+| | |
+| --- | --- |
+| Take | Zone B preview, towers stage B (`?v=19`) to `?v=45` (agent workspace `zb-preview-1008`). |
+| Defect | SmiR saw blurry, "cheap" facades up close while the preview gate printed PASS 52/52 with "texel 256 px/m". |
+| Root cause | The texel row scored the 512 px/m **detail tile** (a tiled grain blended under 20 m), not the Imagine plates. The real plates were 720 × 1280 on a 31 × 113 m tower: 11–29 native px/m. A second row computed px/m from the scene's own numbers (circular). |
+| Fix | Native px/m = unique plate pixels / surface metres, per surface, plates only (`role: plate` declared per texture); tiled pixels count once; the scene's own claim is cross-checked. |
+| Guard | `node tools/object-gate/cli.mjs --scene tools/object-gate/specs/zone-b/scene.yaml` rows `native Imagine px/m (plates only, unique pixels)` (< 64, < 128 within 30 m FAILS) and `scene self-report vs measured` (claim > 1.25 × measured FAILS). On `?v=51` tower-m2 measures 15.4 unique px/m vs a claimed 79.9. |
+| Sources | `tools/object-gate/gate.mjs`, `lib/probe.js` `texel()`; agent workspace `zb-preview-1008-tools/CORRECTIONS-zoneb-towers.md` rows 9, 22b, 55, 56. |
+
+### 2026-10-09 — plates tiled into a repeating "carrelage"
+
+| | |
+| --- | --- |
+| Take | Zone B towers, texture pass TEX3 (`?v=48`–`51`). |
+| Defect | The tower facade at the foot showed a very visible repeated pattern, like floor tiles. |
+| Root cause | To reach a px/m number, a 1024 px plate was made seamless and repeated every 12.8 m over ~100 m facades (×10–22 per surface). The px/m number went up; the unique pixels did not. |
+| Fix | One full-resolution Imagine plate per facade section, UV 0..1 once per section. |
+| Guard | object-gate rows `repetition (UV): plates do not tile` (plate UV area > 1.05 on a surface FAILS) and `repetition (capture autocorrelation)` (autocorrelation peak > 0.75, or > 0.5 at the plate's own tile period, on the fronto-parallel face views or the close / low-portrait captures FAILS). |
+| Sources | `tools/object-gate/gate.mjs`; `lib/analyze.py repetition`. |
+
+### 2026-10-09 — towers morphed on approach
+
+| | |
+| --- | --- |
+| Take | Zone B preview, SmiR on the phone 16:10. |
+| Defect | Towers changed shape as the player walked toward them. |
+| Root cause | LOD1 was a separate cook with other damage cuts; variant-1 copies swapped to the variant-0 LOD1 at 120 m. |
+| Fix | Every copy keeps its own LOD0 variant at every distance (no swap). |
+| Guard | object-gate row `approach morph 300->10 m` (consecutive silhouette IoU < 0.8, or > 0.05 under the neighbours' median, FAILS); runs the game's own LOD logic at each step. |
+| Sources | agent workspace `zb-preview-1008/objects.mjs` `lodOf`, `zb-preview-1008-tools/lod-morph-gate.mjs`. |
+
+### 2026-10-09 — violet ground slab, then sliding shadows
+
+| | |
+| --- | --- |
+| Take | Zone B preview `?v=15`. |
+| Defect | A big flat violet slab on the sand; after a first fix, shadows slid and shimmered while walking. |
+| Root cause | Ground shadow lookup unpacked RGBA depth in reverse byte order and added a second 0.5 bias; tint mixed 78 % to violet. Then the shadow camera followed the player and snapped in world xz. |
+| Fix | three r160 unpack, no double bias, neutral cool multiply; one static world-fixed shadow map. |
+| Guard | object-gate rows `shadow colour neutral (not violet)` (r and b both > 1.08 × g, or chroma > 0.18, FAILS) and `shadow world-fixed` (shadow mask IoU < 0.9 after moving the player 80 m FAILS). |
+| Sources | CORRECTIONS rows 15, 16. |
+
+### 2026-10-09 — floating towers, flat facades, clumped towers, white spire
+
+| | |
+| --- | --- |
+| Take | Zone B preview `?v=8`–`?v=31`. |
+| Defect | Far towers floating above dunes; facades read as an image pasted on a flat slab; 14 slabs 7 m apart as one wall; the spire washed out pale lilac. |
+| Root cause | Seated on the centre height with concave base notches; extruded profiles with plates on flat faces; no spacing rule; spire on the chrome material mirroring the sky. |
+| Fix | Sink below the lowest footprint corner + base fill; real relief geometry; spacing ≥ 1.5 × width; spire dark basalt with silver facets. |
+| Guard | object-gate rows `grounding (no floating)` (air > 0.05 m FAILS), `facade relief >= 0.3 m` (building profile), `proportions vs spec`, and the key checklist items `colours` / `materials` that need a recorded pass on a current capture. Spacing stays in `preview-gate.mjs` (scene layout, not one object). |
+| Sources | CORRECTIONS rows 6, 18, 26, 50. |
+
+### 2026-10-09 — shader stopped compiling after a `?v=` bump; capture angles unusable
+
+| | |
+| --- | --- |
+| Take | Zone B preview `?v=28`, gate captures `?v=13`. |
+| Defect | The ground shader failed to compile live; gate captures showed empty sky ("low-up") or a black wall ("close-up"). |
+| Root cause | A variable used before its declaration, bumped without a local compile check; gate cameras at the origin / 2.5 m inside a slab. |
+| Fix | Compile check before every bump; capture poses computed from each object's own box, front axis and the player path. |
+| Guard | object-gate runtime rows `shader compile <viewport>` and `console <viewport>`; the repetition row FAILS when the object covers < 2 % of a capture ("capture angle unusable"). |
+| Sources | CORRECTIONS rows 11, 46. |
+
+### 2026-10-09 — sand read like rain; effects drawn with typed colours
+
+| | |
+| --- | --- |
+| Take | Zone B preview `?v=45`–`48` (SmiR 12:34, 15:3x). |
+| Defect | Sand looked like regular rain falling from the sky; then grains were barely visible, and their colour was a typed constant, not Imagine pixels. |
+| Root cause | Continuous per-grain gusts at all heights + a vertical-streak height-sampling bug; grain colour hard-coded in the shader. |
+| Fix | Episodic gusts from the ground (separate pass); grain and veil look sampled from Imagine plates. |
+| Guard | object-gate effect profile row `effects take their look from Imagine textures` (an effect mesh with no allow-listed Imagine texture FAILS). Motion itself is still judged on a clip (checklist item `motion`). |
+| Sources | CORRECTIONS rows 54, 57, 58; `zb-preview-1008/air.mjs`. |
+
+### 2026-10-09 — the gate itself was a step the agent could skip
+
+| | |
+| --- | --- |
+| Take | Whole Zone B day. |
+| Defect | Results were shown to SmiR with features missing or broken while gates said PASS ("ça fait cinquante mille fois qu'on réessaye"). |
+| Root cause | Per-scene, hand-grown gate rows that measured what the scene reported about itself; no per-object checklist tied to captures; showing was not conditional on a gate. |
+| Fix | One universal gate for every object type (profiles), a mandatory stage before showing and the final stage of Imagine-to-3D (fix loop, export on PASS only). |
+| Guard | [`docs/METHOD/object-quality-gate.md`](../docs/METHOD/object-quality-gate.md) and METHOD standing rule 11. |
+| Sources | SmiR 2026-10-09 16:27 and 16:29. |
+
+### 2026-10-09 — live preview edited in place broke the shared link
+
+| | |
+| --- | --- |
+| Take | Zone B preview, mesa job, 17:14. |
+| Defect | The playable link SmiR uses stopped working while a job was still editing. |
+| Root cause | The job edited the live preview files (`main.mjs`, module imports, `?v=`) in place, so the served page mixed half-finished edits; several jobs share that one live tree. |
+| Fix | Never edit live preview files in place. Work in a staging copy (own folder / port), gate the staging URL, and swap it into live only after the gate PASSES (atomic swap: copy then rename). |
+| Guard | object-gate runtime row `live preview untouched during the gate run` (size + mtime of every live file before and after the run; any change FAILS). The Imagine-to-3D hook's export step is the swap and runs only on PASS. Rule in [`docs/METHOD/object-quality-gate.md`](../docs/METHOD/object-quality-gate.md). |
+| Sources | `tools/object-gate/gate.mjs` `treeStamp`; adapter `liveDir`. |
+
+### 2026-10-09 — section pool (TEX4) looked like unique plates but is shared by every tower
+
+| | |
+| --- | --- |
+| Take | Zone B preview `?v=54` (towers, texture array `uZbPool` + lookup `uZbLut`). |
+| Defect | The facades were reported as "one full-res Imagine section per 12 m cell" (85 px/m), yet the towers still read as repeated tiles. |
+| Root cause | The pool holds 32 layers of 1024 × 1024 for 1057 cells of 12 m across all copies of m2/m3/m4/m6, so each layer is reused about 33 times. Sampling density is 85 px/m; unique Imagine density is 14.85 px/m. A per-object texel row that scores sampling density would PASS it. |
+| Fix | Score a pool as unique = min(W / cellM, sqrt(layers × W × H / wall area of every object sharing the pool)); repeats = cells / layers. Spend unique sections (or larger plates) until each surface reaches the threshold. |
+| Guard | `node tools/object-gate/cli.mjs --scene tools/object-gate/specs/zone-b/scene.yaml` row `native Imagine px/m` (pool row, `pool.sharedSelect` in the spec) and row `repetition (UV)` (repeats > 1 FAILS); ortho facade autocorrelation at the 12 m period 0.84 / 0.91 (max 0.5). |
+| Sources | `tools/object-gate/lib/probe.js` `texel()` pool branch; `specs/zone-b/tower-m*.yaml`; gate run on `?v=54`, 2026-10-09 17:3x. |

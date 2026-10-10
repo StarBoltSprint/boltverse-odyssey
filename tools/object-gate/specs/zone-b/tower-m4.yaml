@@ -1,0 +1,34 @@
+id: tower-m4
+type: building
+# every placed copy of module m4 (InstancedMesh batches inst-m4-lod*-v*)
+select: {names: "^inst-m4-"}
+# closest key-city3 crop for this module (objects1-redo/crops); the checklist is judged against it
+keyCrop: /workspace/zb-bible-1008/objects1-redo/crops/tC-sheared-top.png
+selfReportKey: m4          # window.__objectsGate.texel.m4 (cross-checked, never trusted)
+textures:
+  # TEX4 (live v54): 32 Imagine section plates (objects1/tex/sec/1..32.jpg, 1024^2) in one array, one layer per 12 m cell,
+  # layer chosen per cell by uZbLut. The 32 layers are SHARED by every wall of every tower, so unique px/m is pool pixels
+  # over the walls of all towers, not the 85 px/m sampling of one cell.
+  - match: "uZbPool"
+    role: plate
+    classes: ["+x", "-x", "+z", "-z"]
+    pool:
+      cellM: 12
+      sharedSelect: {names: "^inst-m[2346]-lod0-"}
+      files: [objects1/tex/sec/1.jpg, objects1/tex/sec/2.jpg, objects1/tex/sec/3.jpg, objects1/tex/sec/4.jpg, objects1/tex/sec/5.jpg, objects1/tex/sec/6.jpg, objects1/tex/sec/7.jpg, objects1/tex/sec/8.jpg, objects1/tex/sec/9.jpg, objects1/tex/sec/10.jpg, objects1/tex/sec/11.jpg, objects1/tex/sec/12.jpg, objects1/tex/sec/13.jpg, objects1/tex/sec/14.jpg, objects1/tex/sec/15.jpg, objects1/tex/sec/16.jpg, objects1/tex/sec/17.jpg, objects1/tex/sec/18.jpg, objects1/tex/sec/19.jpg, objects1/tex/sec/20.jpg, objects1/tex/sec/21.jpg, objects1/tex/sec/22.jpg, objects1/tex/sec/23.jpg, objects1/tex/sec/24.jpg, objects1/tex/sec/25.jpg, objects1/tex/sec/26.jpg, objects1/tex/sec/27.jpg, objects1/tex/sec/28.jpg, objects1/tex/sec/29.jpg, objects1/tex/sec/30.jpg, objects1/tex/sec/31.jpg, objects1/tex/sec/32.jpg]
+  - {match: "uZbLut", role: mask}          # layer lookup (nearest, no colour)
+  - {match: "^ map$", role: mask}          # 1x1 white placeholder bound to map
+  - {match: "objects1/tex/detail\\.webp", role: detail}     # tiled grain: never counts as native px/m
+  - {match: "objects1/tex/trim\\.webp", role: tile}          # bevel strip tile
+  - {match: "objects1/tex/chrome\\.webp", role: tile}        # brushed chrome tile on the silver inserts
+proportions:
+  hOverW: [3.0, 5.0]
+  dOverW: [0.9, 1.1]
+checklist:
+  - {id: volume, feature: "Wide slab (depth = width), tapered, height/width like the key crop", captures: [far, close]}
+  - {id: relief, feature: "Fins, ledges, cornices, recessed bays, ladder cage readable in the geometry", captures: [close, low-portrait]}
+  - {id: damage, feature: "Sheared/stepped top and see-through holes in the volume", captures: [far, low-portrait]}
+  - {id: materials, feature: "Graphite matte body with chrome/silver strips and inserts", captures: [close]}
+  - {id: colours, feature: "Black graphite + silver; orange only as the sun rim and low sand fading upward", captures: [close, far]}
+  - {id: facade-sharp, feature: "Facade sharp up close, no blur, no repeating 'carrelage'", captures: [close, low-portrait]}
+  - {id: base, feature: "Seated in the sand with drift, no gap, contact shadow", captures: [low-portrait]}

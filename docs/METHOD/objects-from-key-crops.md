@@ -91,9 +91,28 @@ Regular modules and background objects skip this step.
   ground's warm bounce on the lower façades, so nothing looks pasted on.
 - Repeated modules and props are drawn with **GPU instancing**; phone caps stay standing rule 9.
 
+## 6b. Object quality gate — MANDATORY (2026-10-09)
+
+Before the review below, and again on the build that will be shown, run the
+[object quality gate](object-quality-gate.md) on every object:
+
+```bash
+node tools/object-gate/cli.mjs --scene <zone>/scene.yaml
+```
+
+Write the object spec first (type, selector, every texture with its role, proportions, and the **key checklist**: one
+item per visible feature of the key crop with its capture angles). Any FAIL blocks; fix from the hints and re-run. The
+review sheet of §7 is the gate's `capture-sheet.jpg` (key crop beside the close, low phone portrait and far
+captures). In the Imagine-to-3D pipeline this is the final stage ([imagine-to-3d.md](imagine-to-3d.md)): only PASS
+objects are exported.
+
+Lessons that made it mandatory (zone B, 2026-10-09): a texel row that counted a tiled detail texture (256 px/m) while
+the real Imagine plates were 11–29 px/m; plates tiled into a "carrelage"; towers morphing on approach; violet and
+sliding shadows; floating towers; flat facades. See [`learn/failures.md`](../../learn/failures.md).
+
 ## 7. Review before integration
 
-Show the user, before anything goes into the game or the preview:
+Show the user, before anything goes into the game or the preview, and only after the object gate (§6b) says PASS:
 
 1. A **sheet**: for each object, the key crop (and the detail key, if any) beside an 8-angle **turntable** of the
    solid, with tris per LOD.

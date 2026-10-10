@@ -1,0 +1,66 @@
+# Defaults every profile inherits. A profile or an object spec may only TIGHTEN a threshold unless the spec
+# gives a written reason in `waivers:` (the reason is printed in the report). Quality first: no budget row ever
+# asks for a smaller texture.
+checks: [texel, textures, repetition, morph, shadow, grounding, geometry, checklist, runtime]
+texel:
+  # SmiR 2026-10-09 20:19: policy "visible" = visible px/m + no visible repetition (lib/visible.mjs).
+  #  - A plate surface must be as sharp as the phone screen when viewed from >= minViewM: plate sampling px/m >=
+  #    screen px/m at that distance on a 1080 x 2400 phone at the game's render pixel ratio. Closer views are exempt
+  #    (slight blur right against a wall is accepted). No camera distance limit: every surface is scored at minViewM
+  #    (a spec may raise it per surface class under `viewMinM: {"+y": {m: 40, reason: "..."}}`).
+  #  - Uniqueness is not required: one shared plate set per object type; identical plate pixels never within
+  #    repeatRadiusM; neighbouring copies (< neighbourRadiusM) never share plates.
+  # policy "unique" = the earlier rule (unique px/m >= minPxPerM, >= nearPxPerM near the path); kept for comparison.
+  policy: visible
+  minViewM: 8
+  phone: {w: 1080, h: 2400, devicePixelRatio: 2.625}   # CSS 411 x 914, the gate's 412 x 915 viewport
+  renderPixelRatio: null # null = the game's own (adapter `view`; Zone B: biome.json camera.pixelRatioCap 1.5)
+  fovDeg: null           # null = the game's base vertical fov (adapter `view`; Zone B: 58)
+                         # Zone B: 914 x 1.5 = 1371 render px tall -> 155 px/m needed at 8 m
+  plateNative: [1024, 1024]   # Imagine plates are 1024 x 1024 native: one plate covers at most ~6.6 x 6.6 m at 155 px/m
+  visibleMeasure: render # 1.3: "render" = measured on the FINAL pixels of an 8 m capture (any material method: unique
+                         # plates, or tiling Imagine materials + macro plates + hex tiling); "sampling" = plate UV px/m only
+  renderHeadroom: 2      # the 8 m capture is optically zoomed to 2 x the needed screen px/m, so 155 px/m is measurable
+  ignoreClasses: ["-y"]  # downward faces (buried bottoms, undersides) are never seen from a standing phone
+  repeatRadiusM: 30
+  neighbourRadiusM: 7
+  minPxPerM: 64          # policy unique only: unique native Imagine px per metre, everywhere
+  nearPxPerM: 128        # policy unique only: ... on surfaces within nearM of the player path
+  nearM: 30
+  maxStretch: 1.3        # area-weighted p95 of the per-triangle singular-value ratio
+  maxRepeats: 1.05       # a plate's UV area on one surface; > 1 means the plate tiles (visible: then its period must be >= repeatRadiusM)
+  selfReportTolerance: 1.25   # scene-claimed px/m may exceed the measured (visible or unique) px/m by at most 25 %
+textures:
+  requireSourceForPlates: true
+  trilinear: true
+  anisotropyMax: true
+repetition:
+  maxPeak: 0.75          # strongest autocorrelation peak (unbiased, high-passed luma) on the fronto-parallel face views and
+                         # the close / low-portrait captures. Regular architecture (ladder rungs, floor lines) reaches ~0.6.
+  maxAtTileLag: 0.5      # correlation AT the plate's own tile period (when the plate tiles): visible 'carrelage'
+  captures: [close, low-portrait]
+morph:
+  instances: 2
+  fromM: 300
+  toM: 10
+  step: 0.95             # distance factor per frame
+  minIoU: 0.8
+  maxDropVsNeighbours: 0.05
+shadow:
+  mustCast: true
+  minWorldFixedIoU: 0.9  # shadow mask overlap after moving the player 80 m
+  maxTintChroma: 0.18    # spread of the per-channel shadow ratio (on/off), normalised
+  violetRatio: 1.08      # r and b both above g by this factor = violet/magenta -> FAIL
+grounding:
+  maxAirM: 0.05
+geometry:
+  maxNonManifold: 0
+  maxOpenEdges: 0
+  minReliefM: 0.0
+  minReliefFaces: 0      # how many of the 4 facade directions must carry the relief
+checklist:
+  captures: [close, low-portrait, far]
+  maxHashDistance: 12    # recorded capture vs current capture (dHash bits); above = re-verify
+  maxDeltaE: null        # colour vs key crop; null = report only
+runtime:
+  viewports: [[412, 915], [540, 1200]]

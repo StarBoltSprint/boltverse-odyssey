@@ -1,0 +1,15 @@
+id: spire
+type: building
+select: {names: "^spire-lod\\d$"}          # body only; rings + beam are emissive effects
+keyCrop: /workspace/zb-bible-1008/objects1-redo/crops/spire.png
+textures:
+  - {match: "\\bmap\\b", role: plate}        # GLB-embedded albedo (no Imagine original recorded -> FAIL until declared)
+thresholds:
+  geometry: {minReliefFaces: 1}
+proportions:
+  hOverW: [3.0, 7.0]
+checklist:
+  - {id: volume, feature: "Dark basalt + metal blade, faceted, key silhouette", captures: [far, close]}
+  - {id: rings, feature: "Two amber rings around the head and a beam above", captures: [far]}
+  - {id: materials, feature: "Dark basalt body with silver facets, not washed lilac", captures: [close]}
+  - {id: base, feature: "Seated, no floating parts", captures: [low-portrait]}
