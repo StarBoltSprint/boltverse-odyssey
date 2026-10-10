@@ -5,6 +5,7 @@ ops:
   repetition  {img, mask?, rect?}            periodic tiling score of a capture crop (autocorrelation of the high-pass luma)
   phash       {img}                          64-bit difference hash (hex) for checklist records
   colour      {img, mask?, key}              mean CIELAB of the object pixels vs the key crop, deltaE76
+  visible_px  {img, mask?, rect?, screenPxPerM, tau?}  render-based visible px/m (detail actually present on screen)
   sheet       {out, key?, tiles:[{img,label}], title}   capture sheet next to the key crop
 """
 import json, sys
@@ -143,7 +144,62 @@ def mask_png(a):
     Image.fromarray((arr * 255).astype(np.uint8)).save(a["out"])
     return {"out": a["out"], "cover": round(float(arr.mean()), 4)}
 
+KS = [round(1.06 ** i, 3) for i in range(0, 49)]   # 1 .. 16.4, 6 % steps
+
+def _resample(L, k):
+    h, w = L.shape
+    im = Image.fromarray(L.astype(np.float32), mode="F")
+    d = im.resize((max(2, int(round(w / k))), max(2, int(round(h / k)))), Image.BOX)
+    return np.asarray(d.resize((w, h), Image.BILINEAR), dtype=np.float32)
+
+def visible_px(a):
+    """Render-based visible px/m. The surface is captured at a known screen px/m S (`screenPxPerM`, camera at the
+    real view distance, zoomed so S has headroom over the target). If the material carries real detail at P px/m on
+    screen, the capture is band-limited at P: down-sampling it by k <= S/P loses (almost) nothing. Per 64 px tile:
+    k_eff = largest k whose down/up-sample loss stays under `tau` of the tile's detail energy; visible px/m = S / k_eff.
+    Median over textured tiles inside the mask (geometry edges only move a few tiles). Same estimator for any material
+    method (unique plates, tiling + macro + hex tiling): it only looks at the final pixels."""
+    im = Image.open(a["img"])
+    L = luma(im) * 255.0
+    h, w = L.shape
+    m = load_mask(a.get("mask"), (w, h))
+    if m is None:
+        m = np.ones((h, w), bool)
+    if a.get("rect"):
+        x0, y0, x1, y1 = a["rect"]; mm = np.zeros_like(m); mm[y0:y1, x0:x1] = True; m &= mm
+    S = float(a["screenPxPerM"]); T = int(a.get("tile", 64))
+    tau = float(a.get("tau", 0.10))   # calibrated: Imagine 1024 plates magnified 1.5-2.5x read median 1.0x their true px/m (p10 0.75, p90 1.35)
+    ref = (L - _resample(L, 16.0)) ** 2
+    errs = {k: (L - _resample(L, k)) ** 2 for k in KS[1:]}
+    ks, used, inside = [], 0, 0
+    for y in range(0, h - T + 1, T):
+        for x in range(0, w - T + 1, T):
+            if not m[y:y + T, x:x + T].all():
+                continue
+            inside += 1
+            e0 = ref[y:y + T, x:x + T].mean()
+            if e0 < float(a.get("minEnergy", 1.0)):   # flat tile (< 1 grey level of detail): no information (dark walls still count: checked, 8-bit quantisation does not inflate the result)
+                continue
+            used += 1
+            kk = 1.0
+            for k in KS[1:]:
+                if errs[k][y:y + T, x:x + T].mean() / e0 <= tau:
+                    kk = k
+                else:
+                    break
+            ks.append(kk)
+    if not ks:
+        if inside:   # the surface is there but shows no detail at all (flat / black): nothing visible
+            return {"ok": True, "flat": True, "screenPxPerM": round(S, 1), "tiles": 0, "insideTiles": int(inside), "kMedian": None,
+                    "visiblePxPerM": 0.0, "p25PxPerM": 0.0, "capped": False, "tau": tau}
+        return {"ok": False, "why": "the surface is not inside the measured part of the frame", "screenPxPerM": S}
+    ks = np.array(ks)
+    med = float(np.median(ks))
+    return {"ok": True, "screenPxPerM": round(S, 1), "tiles": int(used), "kMedian": round(med, 3),
+            "visiblePxPerM": round(S / med, 1), "p25PxPerM": round(S / float(np.percentile(ks, 75)), 1),
+            "capped": bool(med <= 1.0), "tau": tau}
+
 if __name__ == "__main__":
     arg = json.loads(sys.argv[2]) if len(sys.argv) > 2 else json.load(sys.stdin)
     op = sys.argv[1]
-    print(json.dumps({"repetition": repetition, "phash": phash, "colour": colour, "sheet": sheet, "mask_png": mask_png, "size": size}[op](arg)))
+    print(json.dumps({"repetition": repetition, "phash": phash, "colour": colour, "sheet": sheet, "mask_png": mask_png, "size": size, "visible_px": visible_px}[op](arg)))

@@ -7,11 +7,17 @@ import { dirname, resolve, join, basename } from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import yaml from "js-yaml";   // npm ci in tools/object-gate
+import { scoreVisible, screenPxPerM, resolveView, footprintsFromBoxes } from "./lib/visible.mjs";
+export { scoreVisible, screenPxPerM, resolveView };
+
+/** Stable API contract (see API.md). Bump the major only with a migration note; additions bump the minor. */
+export const API_VERSION = "1.3";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PY = join(HERE, "lib/analyze.py");
 const INJECT = join(HERE, "lib/inject.js");
 const PROBE = readFileSync(join(HERE, "lib/probe.js"), "utf8");
+const PROBE_VIEW = readFileSync(join(HERE, "lib/probe-view.js"), "utf8");   // 1.3: surfaceHit + zoom
 
 // ------------------------------------------------------------------ specs + profiles
 export function readYaml(p) { return yaml.load(readFileSync(p, "utf8")); }
@@ -20,6 +26,10 @@ function deepMerge(a, b) {
   const out = { ...(a || {}) };
   for (const [k, v] of Object.entries(b)) out[k] = typeof v === "object" && v !== null && !Array.isArray(v) ? deepMerge(out[k], v) : v;
   return out;
+}
+/** Object types that have a profile (for classifiers: pick one of these). */
+export function listProfiles() {
+  return readdirSync(join(HERE, "profiles")).filter((f) => f.endsWith(".yaml") && !f.startsWith("_")).map((f) => f.slice(0, -5)).sort();
 }
 export function loadProfile(type) {
   const p = join(HERE, "profiles", `${type}.yaml`);
@@ -73,11 +83,26 @@ function treeStamp(dir) {
   return out;
 }
 
+/** request URLs -> live-tree relative paths of the files the page actually loaded (same origin, inside the page's folder) */
+export function loadedLiveFiles(urls, pageUrl, liveDir) {
+  const base = new URL(".", pageUrl), out = new Set();
+  for (const u of urls || []) {
+    let x; try { x = new URL(u); } catch (e) { continue; }
+    if (x.origin !== base.origin || !x.pathname.startsWith(base.pathname)) continue;
+    let rel = decodeURIComponent(x.pathname.slice(base.pathname.length));
+    if (rel === "" || rel.endsWith("/")) rel += "index.html";
+    out.add(rel);
+  }
+  return out;
+}
+
 // ------------------------------------------------------------------ pages
-async function openPage(browser, adapter, url, viewport, query, log) {
+export async function openPage(browser, adapter, url, viewport, query, log) {
   const ctx = await browser.newContext({ viewport: { width: viewport[0], height: viewport[1] }, deviceScaleFactor: 1, isMobile: false });
   await ctx.addInitScript({ path: INJECT });
   const page = await ctx.newPage();
+  // every URL the page really loads: the live guard only watches these files (not staging files in the same folder)
+  if (browser.__ogLoaded) page.on("request", (r) => browser.__ogLoaded.add(r.url()));
   const logs = [];
   page.on("console", (m) => logs.push(`${m.type()} ${m.text()}`));
   page.on("pageerror", (e) => logs.push(`pageerror ${e.message}`));
@@ -88,6 +113,7 @@ async function openPage(browser, adapter, url, viewport, query, log) {
   await page.waitForFunction(adapter.readyExpr, null, { timeout: adapter.readyTimeoutMs || 300000, polling: 500 });
   await adapter.setupInPage(page);
   await page.evaluate(PROBE);
+  await page.evaluate(PROBE_VIEW);
   return { ctx, page, logs, href: u.href };
 }
 const SHADER_RE = /Shader Error|WebGLProgram|ERROR: 0:|VALIDATE_STATUS|could not compile/i;
@@ -109,7 +135,8 @@ export async function gateScene(scene, opts = {}) {
   // live-tree guard: the live preview is read-only; edits go to a staging copy that swaps in only after a PASS
   const liveDir = scene.liveDir || adapter.liveDir;
   const live0 = liveDir ? treeStamp(liveDir) : null;
-  const report = { tool: "object-gate", version: 1, url, adapter: adapter.name, startedAt: new Date().toISOString(), out, runtime: [], objects: [] };
+  browser.__ogLoaded = new Set();
+  const report = { tool: "object-gate", version: 1, apiVersion: API_VERSION, url, adapter: adapter.name, startedAt: new Date().toISOString(), out, runtime: [], objects: [] };
   try {
     // ---------------- 8. runtime (whole page, every phone viewport)
     const vps = (scene.runtime && scene.runtime.viewports) || [[412, 915], [540, 1200]];
@@ -130,7 +157,7 @@ export async function gateScene(scene, opts = {}) {
       const inner = await h.page.evaluate(() => [innerWidth, innerHeight]);
       rowR(report, `portrait viewport ${vp.join("x")}`, inner[1] > inner[0], `inner ${inner.join("x")}`, ["The page must fill a portrait phone viewport."]);
       stats = await h.page.evaluate(() => window.__og.stats());
-      report.runtime.push({ check: `budgets ${vp.join("x")} (report only, quality first)`, status: "INFO", detail: JSON.stringify(stats), hints: [] });
+      report.runtime.push({ id: "runtime.budgets", check: `budgets ${vp.join("x")} (report only, quality first)`, status: "INFO", detail: JSON.stringify(stats), hints: [] });
       await h.ctx.close();
     }
     // ---------------- capture page (shared by every object)
@@ -155,8 +182,12 @@ export async function gateScene(scene, opts = {}) {
   }
   if (live0) {
     const live1 = treeStamp(liveDir);
-    const changed = [...new Set([...Object.keys(live0), ...Object.keys(live1)])].filter((k) => live0[k] !== live1[k]);
-    rowR(report, "live preview untouched during the gate run", changed.length === 0, changed.length ? `${changed.length} live files changed while gating: ${changed.slice(0, 6).join(", ")}` : `${Object.keys(live0).length} files in ${liveDir} unchanged`,
+    const all = [...new Set([...Object.keys(live0), ...Object.keys(live1)])].filter((k) => live0[k] !== live1[k]);
+    const loaded = loadedLiveFiles(browser.__ogLoaded, url, liveDir);
+    const changed = all.filter((k) => loaded.has(k));
+    const other = all.length - changed.length;
+    const note = other ? `; ${other} other files in the folder changed but the live page does not load them (staging copies, tests): ignored` : "";
+    rowR(report, "live preview untouched during the gate run", changed.length === 0, changed.length ? `${changed.length} files the live page loads changed while gating: ${changed.slice(0, 6).join(", ")}${note}` : `${loaded.size} files the live page loads unchanged${note}`,
       ["Never edit live preview files in place: work in a staging copy, gate the staging URL, swap live only after PASS (lesson 2026-10-09 17:14). Re-run the gate on a stable tree."]);
   }
   report.verdict = [...report.runtime, ...report.objects.flatMap((o) => o.rows)].some((r) => r.status === "FAIL") ? "FAIL" : "PASS";
@@ -172,15 +203,116 @@ export async function gateObject(spec, opts = {}) {
   return gateScene({ adapter: opts.adapter, url: opts.url, dir: opts.dir || process.cwd(), hud: opts.hud, title: opts.title, objects: [resolved] }, opts);
 }
 
+/** Stable machine id per row (check text may be reworded; ids never change). */
+export const CHECK_IDS = [
+  [/^select/, "select"], [/^gate run/, "gate.crash"],
+  [/^texture roles/, "textures.roles"], [/^texture filtering/, "textures.filtering"], [/^plates not downscaled/, "textures.native-size"],
+  [/^native Imagine px\/m/, "texel.unique-px-per-m"], [/^visible px\/m/, "texel.visible-px-per-m"],
+  [/^repetition \(visible\): identical/, "repetition.visible-radius"], [/^repetition \(visible\): neighbours/, "repetition.visible-neighbours"], [/^repetition \(UV\)/, "repetition.uv"], [/^UV stretch/, "texel.stretch"],
+  [/^scene self-report/, "texel.self-report"], [/^repetition \(capture/, "repetition.captures"], [/^approach morph/, "morph"],
+  [/^shadow light/, "shadow.light"], [/^shadow cast/, "shadow.cast"], [/^shadow world-fixed/, "shadow.world-fixed"], [/^shadow colour/, "shadow.colour"],
+  [/^grounding/, "grounding"], [/^mesh sealed/, "geometry.sealed"], [/^facade relief/, "geometry.relief"], [/^proportions/, "geometry.proportions"],
+  [/^effects take/, "effects.imagine-texture"], [/^effects: no typed/, "effects.no-colour-literals"],
+  [/^key checklist written/, "checklist.written"], [/^key crop present/, "checklist.key-crop"], [/^key checklist: every/, "checklist.verified"], [/^colour vs key/, "checklist.colour"],
+  [/^console/, "runtime.console"], [/^shader compile/, "runtime.shader"], [/^HUD text/, "runtime.hud"], [/^title/, "runtime.title"],
+  [/^portrait viewport/, "runtime.portrait"], [/^budgets/, "runtime.budgets"], [/^live preview untouched/, "runtime.live-untouched"],
+];
+export const checkId = (check) => (CHECK_IDS.find(([re]) => re.test(check)) || [null, "other"])[1];
 function row(o, check, pass, detail, hints = [], status) {
-  o.rows.push({ check, status: status || (pass ? "PASS" : "FAIL"), detail, hints: pass ? [] : hints });
+  o.rows.push({ id: checkId(check), check, status: status || (pass ? "PASS" : "FAIL"), detail, hints: pass ? [] : hints });
 }
-function rowR(rep, check, pass, detail, hints) { rep.runtime.push({ check, status: pass ? "PASS" : "FAIL", detail, hints: pass ? [] : hints }); }
+function rowR(rep, check, pass, detail, hints) { rep.runtime.push({ id: checkId(check), check, status: pass ? "PASS" : "FAIL", detail, hints: pass ? [] : hints }); }
 
 async function settle(page, ms = 1200) {
   await page.evaluate(() => window.__og.frames(4));
   await page.waitForTimeout(ms);
   await page.evaluate(() => window.__og.frames(2));
+}
+
+/**
+ * Render-based visible px/m: stand minViewM (8 m) in front of the hero copy's surface (raycast), eye height, looking
+ * at it horizontally; zoom the game camera so the capture has `renderHeadroom` x the needed screen px/m (an optical
+ * zoom = a sharper screen at the same distance: same LOD, same distance fades, finer mips); screenshot; measure the
+ * detail really present in the pixels (analyze.py visible_px). Effects (dust, veils) are hidden for the shot.
+ */
+export async function visibleShot(page, adapter, sel, hero, t, view, odir, vv = {}) {
+  const D = t.minViewM, need = screenPxPerM(t, view, D), head = t.renderHeadroom ?? 2;
+  const path0 = await page.evaluate(() => window.__ogHost.path || []);
+  // direction from the copy toward the camera: spec `visibleView.towardXZ` (e.g. the A/B zone side), else the front
+  // face that looks at the player path (same side as the captures)
+  let dir;
+  if (vv.towardXZ) { const dx = vv.towardXZ[0] - hero.center[0], dz = vv.towardXZ[1] - hero.center[2], l = Math.hypot(dx, dz) || 1; dir = [dx / l, dz / l]; }
+  else {
+    const fl = Math.hypot(hero.front[0], hero.front[1]) || 1, f = [hero.front[0] / fl, hero.front[1] / fl];
+    const dP = (x, z) => Math.min(...path0.map((p) => Math.hypot(p[0] - x, p[1] - z)));
+    const s = path0.length && dP(hero.center[0] - f[0] * 50, hero.center[2] - f[1] * 50) < dP(hero.center[0] + f[0] * 50, hero.center[2] + f[1] * 50) ? -1 : 1;
+    dir = [s * f[0], s * f[1]];
+  }
+  const R = Math.hypot(hero.max[0] - hero.min[0], hero.max[2] - hero.min[2]) / 2;
+  // aim at a STEEP surface (|normal.y| < 0.6: a wall, not the sand apron / talus top) at one of these heights above
+  // the ground, then stand so the eye is exactly D metres from that point
+  // stand roughly D m in front first and let the game run: its LOD logic then shows the level the phone sees at 8 m
+  const pre = [hero.center[0] + dir[0] * (hero.halfD + D), hero.center[2] + dir[1] * (hero.halfD + D)];
+  await page.evaluate(([x, z, c]) => window.__ogHost.setPose({ x, z, look: [c[0], c[1], c[2]] }), [pre[0], pre[1], [hero.center[0], hero.min[1] + 5, hero.center[2]]]);
+  await settle(page);
+  const heights = vv.aimHeightM || [4, 5, 3, 6, 7, 8, 2.5];
+  const search = () => page.evaluate(([sel, c, dir, R, D, heights]) => {
+    const h = window.__ogHost, eye = 1.6;
+    const ox = c[0] + dir[0] * (R + 40), oz = c[2] + dir[1] * (R + 40);
+    for (const a of heights) {
+      const hit = window.__og.surfaceHit(sel, [ox, h.groundHeight(ox, oz) + a, oz], [-dir[0], 0, -dir[1]], R + 80);
+      if (!hit || !hit.normal || Math.abs(hit.normal[1]) > 0.6) continue;
+      const P = hit.point, g = h.groundHeight(P[0], P[2]); if (P[1] - g < 1) continue;
+      const nl = Math.hypot(hit.normal[0], hit.normal[2]) || 1, n = [hit.normal[0] / nl, hit.normal[2] / nl];
+      let x = P[0] + n[0] * D, z = P[2] + n[1] * D;
+      for (let i = 0; i < 3; i++) {   // eye height follows the ground under the camera
+        const dy = P[1] - (h.groundHeight(x, z) + eye); if (Math.abs(dy) >= D * 0.95) break;
+        const hz = Math.sqrt(D * D - dy * dy); x = P[0] + n[0] * hz; z = P[2] + n[1] * hz;
+      }
+      return { x, z, look: P, aimM: a, normal: hit.normal, hitName: hit.name };
+    }
+    return null;
+  }, [sel, hero.center, dir, R, D, heights]);
+  let place = await search();
+  if (!place && !vv.towardXZ) {   // the path-facing side has no wall at those heights: try the other three sides
+    const d0 = dir;
+    for (const d of [[-d0[0], -d0[1]], [d0[1], -d0[0]], [-d0[1], d0[0]]]) {
+      dir = d;
+      const p2 = [hero.center[0] + dir[0] * (hero.halfD + D), hero.center[2] + dir[1] * (hero.halfD + D)];
+      await page.evaluate(([x, z, c]) => window.__ogHost.setPose({ x, z, look: c }), [p2[0], p2[1], [hero.center[0], hero.min[1] + 5, hero.center[2]]]);
+      await settle(page);
+      place = await search(); if (place) { place.side = "fallback"; break; }
+    }
+  }
+  if (!place) return { ok: false, why: `no steep surface of ${hero.id} found at ${heights.join("/")} m above the ground on its ${vv.towardXZ ? "requested" : "path-facing"} side` };
+  await page.evaluate((n) => { window.__ogRestoreFx = (() => { const { scene } = window.__ogHost; const re = new RegExp(n); const hid = []; scene.traverse((o) => { if (o.name && re.test(o.name) && o.visible) { o.visible = false; hid.push(o); } }); return () => hid.forEach((o) => (o.visible = true)); })(); }, adapter.fxNames || "^$");
+  try {
+    const pose = await page.evaluate((p) => window.__ogHost.setPose(p), place);
+    await settle(page);
+    const vp = page.viewportSize();
+    const g = await page.evaluate(([sel, P]) => {
+      const c = window.__ogHost.camera, r = window.__ogHost.renderer, p = c.position;
+      const hit = window.__og.surfaceHit(sel, [p.x, p.y, p.z], [P[0] - p.x, P[1] - p.y, P[2] - p.z]);
+      return { d: hit && hit.d, pr: r.getPixelRatio(), cam: [p.x, p.y, p.z].map((v) => +v.toFixed(2)) };
+    }, [sel, place.look]);
+    if (!g.d) return { ok: false, why: "surface lost after placing the 8 m camera (LOD swap at the final pose?)" };
+    const renderH = vp.height * g.pr, target = head * need;
+    const fovZ = (2 * Math.atan(renderH / (2 * g.d * target)) * 180) / Math.PI;
+    const fovReal = await page.evaluate((v) => window.__og.zoom(v), fovZ);
+    await settle(page);
+    const img = join(odir, "cap-visible-8m.png");
+    await page.screenshot({ path: img, timeout: 240000 });
+    const bits = await page.evaluate(([s, w, h]) => window.__og.maskFromGameCamera(s, w, h), [sel, vp.width >> 1, vp.height >> 1]);
+    const m = py("mask_png", { w: vp.width >> 1, h: vp.height >> 1, bits, out: join(odir, "cap-visible-8m-mask.png") });
+    await page.evaluate(() => window.__og.zoom(null));
+    const S = renderH / (2 * g.d * Math.tan((fovReal * Math.PI) / 360));
+    // central band around the aimed point (the surface really at ~D m; the ground below and the sky above stay out), inside the object mask
+    const rect = [Math.round(vp.width * 0.15), Math.round(vp.height * 0.3), Math.round(vp.width * 0.85), Math.round(vp.height * 0.7)];
+    const a = py("visible_px", { img, mask: m.out, rect, screenPxPerM: S });
+    return { ...a, img, mask: m.out, cover: m.cover, distM: +g.d.toFixed(2), needPxPerM: +need.toFixed(1), zoomFovDeg: +fovReal.toFixed(2), wantedFovDeg: +fovZ.toFixed(2), renderH, camera: g.cam, aimM: place.aimM, normal: place.normal && place.normal.map((v) => +v.toFixed(2)), rect, pose };
+  } finally {
+    await page.evaluate(() => window.__ogRestoreFx && window.__ogRestoreFx());
+  }
 }
 
 async function gateOne(cap, adapter, spec, o, odir, ctx) {
@@ -189,6 +321,7 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
   const boxes = await page.evaluate((s) => window.__og.instanceBoxes(s), sel);
   if (!boxes.length) { row(o, "select", false, `selector ${JSON.stringify(sel)} matched no object`, ["Fix select.names (regex on object names in the scene)."]); return; }
   row(o, "select", true, `${boxes.length} placed copies`);
+  writeFileSync(join(odir, "boxes.json"), JSON.stringify(boxes, null, 1));
   const spawn = await page.evaluate(() => (window.__ogHost.path || [[0, 0]])[0]);
   const dSpawn = (b) => Math.hypot(b.center[0] - spawn[0], b.center[2] - spawn[1]);
   // hero copy: the one the player meets first (closest to the spawn), unless the spec names one
@@ -250,7 +383,8 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
     texelRows = await page.evaluate(([s, p]) => window.__og.texel(s, p), [sel, plates]);
     writeFileSync(join(odir, "texel.json"), JSON.stringify(texelRows, null, 1));
     const t = cfg.texel;
-    const fails = texelRows.filter((r) => r.uniquePxPerM < (r.nearPathM <= t.nearM ? t.nearPxPerM : t.minPxPerM));
+    const visible = t.policy === "visible";
+    const fails = visible ? [] : texelRows.filter((r) => r.uniquePxPerM < (r.nearPathM <= t.nearM ? t.nearPxPerM : t.minPxPerM));
     const worst = texelRows.slice().sort((a, b) => a.uniquePxPerM - b.uniquePxPerM)[0];
     const byCls = {};
     for (const r of texelRows) { const k = r.cls; if (!byCls[k] || r.uniquePxPerM < byCls[k].uniquePxPerM) byCls[k] = r; }
@@ -261,10 +395,10 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
       const px = r.areaM2 * need * need; const plates = Math.ceil(px / (r.texW * r.texH));
       hints.push(`${r.cls} face (${fmt(r.areaM2, 0)} m², ${fmt(r.nearPathM)} m from the path): ${fmt(r.uniquePxPerM)} unique px/m < ${need}. Needs ~${(px / 1e6).toFixed(1)} Mpx of UNIQUE Imagine pixels = ${plates} full-res ${r.texW}x${r.texH} plates (sections), or larger plates. A tiled detail texture does not count.`);
     }
-    row(o, "native Imagine px/m (plates only, unique pixels)", fails.length === 0 && texelRows.length > 0,
+    if (!visible) row(o, "native Imagine px/m (plates only, unique pixels)", fails.length === 0 && texelRows.length > 0,
       texelRows.length ? `worst ${worst.cls} ${fmt(worst.uniquePxPerM)} unique px/m (sampling ${fmt(worst.samplingPxPerM)}, plate repeats x${worst.repeats}) on ${worst.inst}; ${fails.length}/${texelRows.length} surfaces under threshold (${t.minPxPerM}, ${t.nearPxPerM} within ${t.nearM} m)` : "no plate-textured surface measured",
       hints.length ? hints : ["Declare plate textures and give the mesh a uv attribute."]);
-    if (t.maxRepeats != null) {
+    if (t.maxRepeats != null && !visible) {
       const tiled = texelRows.filter((r) => r.repeats > t.maxRepeats);
       const w = tiled.sort((a, b) => b.repeats - a.repeats)[0];
       row(o, "repetition (UV): plates do not tile", tiled.length === 0, tiled.length ? `${tiled.length} surfaces tile their plate; worst ${w.cls} x${w.repeats} (${basename((w.tex || "").split("?")[0])})` : "every plate covers its surface once",
@@ -275,8 +409,9 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
     // cross-check the scene's own claim (the 10-09 lesson: gate-v37 said 256 px/m, real plates were 11-29)
     const claimKey = spec.selfReportKey; const claim = claimKey && ctx.self[claimKey];
     if (claim && worst) {
-      const ok = claim.claimedPxPerM <= worst.uniquePxPerM * t.selfReportTolerance;
-      row(o, "scene self-report vs measured", ok, `scene claims ${claim.claimedPxPerM} px/m; measured unique ${fmt(worst.uniquePxPerM)} px/m${claim.detailPxPerM ? ` (detail tile ${claim.detailPxPerM} px/m does not count)` : ""}`,
+      const meas = visible ? Math.min(...texelRows.map((r) => r.samplingPxPerM)) : worst.uniquePxPerM;
+      const ok = claim.claimedPxPerM <= meas * t.selfReportTolerance;
+      row(o, "scene self-report vs measured", ok, `scene claims ${claim.claimedPxPerM} px/m; measured ${visible ? "visible (sampling)" : "unique"} ${fmt(meas)} px/m${claim.detailPxPerM ? ` (detail tile ${claim.detailPxPerM} px/m does not count)` : ""}`,
         ["The scene's own texel number is misleading: compute it from the plate's unique pixels over the surface's metres, never from a tiled detail texture."]);
     }
   }
@@ -317,6 +452,7 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
   }
 
   // ---------------- 2. repetition (fronto-parallel facade views + phone captures)
+  let repRows = [];
   if (checks.has("repetition")) {
     const res = [];
     for (const axis of ["z", "x"]) {
@@ -337,11 +473,28 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
       res.push({ name, ...r });
     }
     writeFileSync(join(odir, "repetition.json"), JSON.stringify(res, null, 1));
+    repRows = res;
     const R = cfg.repetition;
     const fails = res.filter((r) => !r.ok || r.peak > R.maxPeak || (r.atExpectedLag != null && r.atExpectedLag > R.maxAtTileLag));
     row(o, "repetition (capture autocorrelation)", fails.length === 0 && res.length > 0,
       res.map((r) => (r.ok ? `${r.name} peak ${r.peak} at lag ${r.lagPx} px${r.atExpectedLag != null ? `, at the plate period (${r.tileM} m = ${r.expectLagPx} px) ${r.atExpectedLag}` : ""}` : `${r.name}: ${r.why}`)).join("; ") + ` (max ${R.maxPeak}, at plate period ${R.maxAtTileLag})`,
       ["Visible periodic tiling: replace the tiled plate with unique full-res Imagine sections; break any remaining repeat with a second Imagine variant + low-frequency mask.", "If the capture angle is unusable, fix the spec `hero:` or the object's front axis."]);
+  }
+
+  // ---------------- 1+2 under texel policy "visible" (SmiR 2026-10-09 20:19): visible px/m + no visible repetition
+  if (checks.has("texel") && cfg.texel.policy === "visible") {
+    const view = resolveView(cfg.texel, typeof adapter.view === "function" ? adapter.view() : adapter.view);
+    // measured on the FINAL render (works for any material method: unique plates, or tiling + macro + hex tiling)
+    let render = null;
+    if ((cfg.texel.visibleMeasure || "render") === "render") {
+      try { const vv = spec.visibleView || {}; render = await visibleShot(page, adapter, sel, (vv.hero && boxes.find((b) => b.id === vv.hero)) || hero, cfg.texel, view, odir, vv); }
+      catch (e) { render = { ok: false, why: "8 m capture failed: " + String((e && e.message) || e).slice(0, 200) }; }
+      try { await page.evaluate(() => window.__og.zoom(null)); } catch (e) {}
+    }
+    const v = scoreVisible(cfg.texel, cfg.repetition, view, texelRows, repRows, footprintsFromBoxes(boxes), spec, render);
+    writeFileSync(join(odir, "visible.json"), JSON.stringify({ view, render, perSurface: v.perSurface }, null, 1));
+    if (render && render.img) o.files.captures = { ...(o.files.captures || {}), "visible-8m": { img: render.img, mask: render.mask } };
+    for (const r of v.rows) row(o, r.check, r.pass, r.detail, r.hints);
   }
 
   // ---------------- 3. approach morph
