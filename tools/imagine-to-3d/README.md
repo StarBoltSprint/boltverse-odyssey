@@ -87,3 +87,14 @@ live target; `selftest/kc_consumers_st.py` checks the live hashes).
 `fixloop.py keyloop` corrections show up in the key-camera render. `shapeSeed` (gen_strata_all) output is reported, not
 auto-staged.
 
+
+## Placement v2 + lighting (2026-10-10, phase 2)
+- `placement_v2.py camera` solves yaw, pitch, fov and eye lift on real renders against the composition `camera` targets (avenue vanishing point and spire tip) → `camera-v2.json`.
+- `placement_v2.py place` runs a budget-capped greedy loop on real renders: one element at a time, accepted only if its owner element gains IoU and no other element drops, with the street, spacing and 50/50 rules kept.
+- Lighting lives in `tools/lighting/light_key.py`.
+- `kc_stage.py` now writes staging copies of index.html (kc-light.json loader), objects-t7.mjs (sun, hemi and chromeGraphite exposed) and biome.json (sun and fog overrides).
+- See `docs/METHOD/placement-v2.md` and `docs/METHOD/lighting-atmosphere.md`.
+- Ember-mesa outputs:
+  - `layouts/ember-mesa-camera-v2.json`
+  - `layouts/ember-mesa-v2-placed.json`
+  - `tools/lighting/ember-mesa-*.json`
