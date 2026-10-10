@@ -652,6 +652,160 @@ def execute(spec, work):
     return dict(status=status, minutes=minutes, rounds=rounds, iou=round(iou2, 4), summary=f"vision IoU {iou2:.3f}, sealed {brep.get('open')}/{brep.get('nonManifold')}, {minutes} min")
 
 
+def _relief_estimate(V, F):
+    """Same median the object-gate uses, on the numpy frame (glTF Y-up)."""
+    acc = {k: {} for k in ("+x", "-x", "+z", "-z")}
+    for tri in F:
+        p0, p1, p2 = V[int(tri[0])], V[int(tri[1])], V[int(tri[2])]
+        n = np.cross(p1 - p0, p2 - p0)
+        ar = float(np.linalg.norm(n)) * 0.5
+        if ar < 1e-6:
+            continue
+        n = n / (ar * 2.0)
+        ax, ay, az = abs(float(n[0])), abs(float(n[1])), abs(float(n[2]))
+        if ay >= ax and ay >= az:
+            continue
+        if az >= ax:
+            if abs(float(n[2])) < 0.7:
+                continue
+            k = "+z" if n[2] > 0 else "-z"
+            off = float((p0[2] + p1[2] + p2[2]) / 3.0)
+        else:
+            if abs(float(n[0])) < 0.7:
+                continue
+            k = "+x" if n[0] > 0 else "-x"
+            off = float((p0[0] + p1[0] + p2[0]) / 3.0)
+        yb = int(np.floor(float((p0[1] + p1[1] + p2[1]) / 3.0)))
+        r = acc[k].get(yb) or [1e9, -1e9, 0.0, []]
+        r[0] = min(r[0], off)
+        r[1] = max(r[1], off)
+        r[2] += ar
+        r[3].append(off)
+        acc[k][yb] = r
+    out = {}
+    for k, m in acc.items():
+        rs = []
+        for r in m.values():
+            if r[2] <= 0.2:
+                continue
+            if k[0] == "+":
+                qs = [q for q in r[3] if r[1] - q <= 3.0]
+            else:
+                qs = [q for q in r[3] if q - r[0] <= 3.0]
+            if qs:
+                rs.append(max(qs) - min(qs))
+        rs.sort()
+        out[k] = None if not rs else round(rs[len(rs) // 2], 3)
+        out[k + "_bins"] = len(rs)
+    return out
+
+
+def _pick_steps(disp, xy, y0, y1, h, thr):
+    """Longest disparity run per 2 m band. Row 0 of disp is the top of the facade."""
+    steps = []
+    y = y0
+    H = disp.shape[0]
+    while y < y1 - 0.8:
+        yb = min(y1, y + 2.0)
+        r0 = int(round((y1 - yb) / h * H))
+        r1 = int(round((y1 - y) / h * H))
+        r0 = max(0, min(H - 1, r0))
+        r1 = max(r0 + 1, min(H, r1))
+        sl = VB._x_at(xy, (y + yb) * 0.5)
+        if sl is None:
+            y = yb
+            continue
+        c1 = max(4, int(round((sl[1] - sl[0]) / h * disp.shape[1])))
+        c1 = min(disp.shape[1], c1)
+        col = disp[r0:r1, :c1].mean(0)
+        med = float(np.median(col))
+        scale = float(np.percentile(np.abs(col - med), 90) + 1e-6)
+        z = (col - med) / scale
+        mask = np.abs(z) > thr
+        best = None
+        i = 0
+        n = len(mask)
+        while i < n:
+            if not mask[i]:
+                i += 1
+                continue
+            j = i
+            while j < n and mask[j]:
+                j += 1
+            if best is None or j - i > best[1] - best[0]:
+                best = (i, j, float(z[i:j].mean()))
+            i = j
+        if best is not None:
+            i0, i1, zm = best
+            span = (i1 - i0) / float(n)
+            if 0.08 <= span <= 0.70 and abs(zm) >= thr:
+                steps.append({
+                    "y0": float(y), "y1": float(yb), "u0": i0 / float(n), "u1": i1 / float(n),
+                    "proud": bool(zm > 0), "depth": 0.48, "z": round(zm, 3),
+                })
+        y = yb
+    return steps
+
+
+def facade_steps(albedo_path, doc):
+    """Depth Anything on the painted front strip of the albedo. No quantise, no V flip.
+
+    Columns past that row's facade width are filled with the row's painted colour
+    so the pull-push gutter is not a recess. Larger disparity = nearer = proud.
+    """
+    import depth_relief as DR
+    img = np.asarray(Image.open(albedo_path).convert("RGB"))
+    H, W = img.shape[:2]
+    xy = np.asarray(doc["silhouette"]["localXY_m"], np.float64)
+    y0, y1 = float(xy[:, 1].min()), float(xy[:, 1].max())
+    h = max(1e-6, y1 - y0)
+    painted = img.copy()
+    max_w = 0.0
+    for row in range(H):
+        y = y1 - (row + 0.5) / H * h
+        sl = VB._x_at(xy, float(y))
+        if sl is None:
+            painted[row] = painted[row].mean(axis=0)
+            continue
+        max_w = max(max_w, float(sl[1] - sl[0]))
+        cols = int(round((sl[1] - sl[0]) / h * W))
+        cols = max(1, min(W, cols))
+        if cols < W:
+            painted[row, cols:] = painted[row, :cols].mean(axis=0)
+    cols = max(8, int(round(max_w / h * W)))
+    sess, kind = _da_session()
+    disp = DR.disparity(sess, "dav2" if kind == "dav2" else kind, Image.fromarray(painted[:, :cols]))
+    steps = _pick_steps(disp, xy, y0, y1, h, 0.35)
+    if len(steps) < 8:
+        steps = _pick_steps(disp, xy, y0, y1, h, 0.22)
+    return steps
+
+
+def rebuild_mesh(work="/workspace/i23d-auto/zoneb-tower-vision"):
+    """One rebuild from the existing JSON + albedo. Does not rerun the vision loop."""
+    vis = os.path.join(work, "vision")
+    doc = json.load(open(os.path.join(vis, "tower.json")))
+    # Upright gate: apron bottom world y 0.16, worst air 13.43 m at the centre.
+    # Sink 36 puts the plug bottom near world y -16, under that ground.
+    doc["sand"]["sinkBelowBase_m"] = 36.0
+    doc["sand"]["source"] = "grounding probe: world bottom was 0.16 and worst air was 13.43 m, so the plug is sunk to 36 m"
+    steps = facade_steps(os.path.join(vis, "albedo.png"), doc)
+    json.dump(steps, open(os.path.join(vis, "da-steps.json"), "w"), indent=1)
+    mesh_doc = _doc_for_mesh(doc, doc["features"]["front"])
+    mesh_doc["sand"]["drift_m"] = doc["sand"].get("drift_m")
+    (V, F, M), meta = VB.massing(mesh_doc, da_steps=steps)
+    est = _relief_estimate(V, F)
+    print("DA_STEPS", len(steps), "RELIEF_EST", json.dumps(est), flush=True)
+    glb = os.path.join(vis, "tower.glb")
+    rep = blender_seal(V, F, meta.get("hole"), glb, os.path.join(vis, "mesh.json"))
+    print("MESH", json.dumps(rep), flush=True)
+    json.dump(doc, open(os.path.join(vis, "tower.json"), "w"), indent=1)
+    scratch = "/workspace/zb-tower-vision-1010/tower.json"
+    if os.path.isdir(os.path.dirname(scratch)):
+        shutil.copy(os.path.join(vis, "tower.json"), scratch)
+    return rep, est, steps
+
+
 def stage_page(spec):
     """kc_stage mirror into the vision staging dir only. Drops t0-m2 and t2-m3."""
     import kc_stage

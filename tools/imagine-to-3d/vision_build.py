@@ -495,7 +495,96 @@ def _x_at(xy, y):
     return min(xs), max(xs)
 
 
-def massing(doc):
+def _overlaps_hole(hole, xa, xb, ya, yb):
+    if not hole:
+        return False
+    hx0, hy0, hx1, hy1 = [float(v) for v in hole[:4]]
+    return not (xb < hx0 or xa > hx1 or yb < hy0 or ya > hy1)
+
+
+def _xz_span(parts):
+    xs, zs = [], []
+    for v, f, mat in parts:
+        if len(v) == 0:
+            continue
+        xs.append(float(v[:, 0].min())); xs.append(float(v[:, 0].max()))
+        zs.append(float(v[:, 2].min())); zs.append(float(v[:, 2].max()))
+    return min(xs), max(xs), min(zs), max(zs)
+
+
+def _add_da_steps(parts, xy, depth, steps, hole):
+    """Two flat +z planes (and the same on the back) per Depth Anything band.
+
+    The band is a run measured on the painted front strip. Proud runs sit on
+    the outer plane; recessed runs sit on the inner plane. Depths are fixed
+    so the crispness bins stay at two planes. No bay grid.
+    """
+    outer = (0.12, 0.58)
+    inner = (0.02, 0.10)
+    for st in steps:
+        ya, yb = float(st["y0"]), float(st["y1"])
+        if yb - ya < 0.6:
+            continue
+        u0, u1 = float(st["u0"]), float(st["u1"])
+        sl = _x_at(xy, (ya + yb) * 0.5)
+        if sl is None:
+            continue
+        w = sl[1] - sl[0]
+        if w < 1.0:
+            continue
+        a, b = sl[0] + u0 * w, sl[0] + u1 * w
+        ok = True
+        for y in (ya, (ya + yb) * 0.5, yb):
+            s2 = _x_at(xy, float(y))
+            if s2 is None:
+                ok = False
+                break
+            a = max(a, s2[0] + 0.15)
+            b = min(b, s2[1] - 0.15)
+        if not ok or b - a < 0.4 or _overlaps_hole(hole, a, b, ya, yb):
+            continue
+        left = (sl[0] + 0.25, a - 0.08)
+        right = (b + 0.08, sl[1] - 0.25)
+
+        def place(xa, xb, z0, z1, z_back0, z_back1):
+            if xb - xa < 0.4:
+                return
+            if _overlaps_hole(hole, xa, xb, ya, yb):
+                return
+            _append(parts, *_box([xa, ya, z0], [xb, yb, z1]), 0)
+            _append(parts, *_box([xa, ya, -depth + z_back0], [xb, yb, -depth + z_back1]), 0)
+
+        # back offsets are negative (outward is -Z). Same u as the front image.
+        if st.get("proud"):
+            place(a, b, outer[0], outer[1], -0.58, -0.12)
+            place(left[0], left[1], inner[0], inner[1], -0.10, -0.02)
+            place(right[0], right[1], inner[0], inner[1], -0.10, -0.02)
+        else:
+            place(a, b, inner[0], inner[1], -0.10, -0.02)
+            place(left[0], left[1], outer[0], outer[1], -0.58, -0.12)
+            place(right[0], right[1], outer[0], outer[1], -0.58, -0.12)
+
+
+def _add_sand(parts, xy_y0, y1, sink, drift_m):
+    """Plug under the whole lower footprint, plus a shallow drift at the foot.
+
+    The plug bottom is y0 - sink. Its xz is every solid already built, plus a
+    margin (2 m on a tower, 5 cm on the selftest box) so a corner ray cannot
+    miss it. The drift stays inside that xz.
+    """
+    xmin, xmax, zmin, zmax = _xz_span(parts)
+    height = float(y1 - xy_y0)
+    margin = 0.05 if height < 30.0 else 2.0
+    _append(parts, *_box(
+        [xmin - margin, xy_y0 - sink, zmin - margin],
+        [xmax + margin, xy_y0 - 0.02, zmax + margin]), 2)
+    drift = min(1.2, float(drift_m or 1.0))
+    _append(parts, *_box(
+        [xmin - margin + 0.08, xy_y0 - 0.35, max(zmin + 0.4, -2.0)],
+        [xmax + margin - 0.08, xy_y0 + drift, -0.06]), 2)
+
+
+def massing(doc, da_steps=None):
     """Silhouette prism + wedge back + buried sand apron + feature shells.
 
     Damage is a cutter box (Blender boolean). Chrome / ladder / cable shells
@@ -529,11 +618,6 @@ def massing(doc):
         pf.append([i, n + j, n + i])
     _append(parts, pv, np.array(pf, np.int32), 0)
 
-    # sand apron hangs off the underside, behind the front skin, full footprint
-    sp = _x_at(xy, y0 + 0.15) or (x0, x1)
-    apron_top = y0 - 0.02
-    _append(parts, *_box([sp[0] + 0.4, y0 - sink, -depth + 0.4], [sp[1] - 0.4, apron_top, -0.55]), 2)
-
     hole = None
     for feat in doc.get("features", {}).get("front", []):
         kind = feat.get("type")
@@ -557,6 +641,9 @@ def massing(doc):
             continue
         if kind not in ("chrome", "ladder", "cable"):
             continue
+        # Region relief from the painted plate replaces the one-box shells.
+        if da_steps is not None:
+            continue
         proud = float(feat.get("depth_m", 0.35)) if float(feat.get("relative_depth", 0.5)) >= 0.5 else 0.0
         if proud <= 0 or yb - ya < 0.3:
             continue
@@ -576,6 +663,13 @@ def massing(doc):
         if b - a < 0.12:
             continue
         _append(parts, *_box([a, ya, 0.02], [b, yb, proud]), 1)
+    if da_steps:
+        _add_da_steps(parts, xy, depth, da_steps, hole)
+    drift = 1.0
+    sand = doc.get("sand") or {}
+    if isinstance(sand.get("drift_m"), dict):
+        drift = float(sand["drift_m"].get("front") or 1.0)
+    _add_sand(parts, y0, y1, sink, drift)
     V, F, M = _merge(parts)
     meta = dict(x=[x0, x1], y=[y0, y1], depth=depth, sink=sink, taper=taper, hole=hole,
                 tris=int(len(F)))

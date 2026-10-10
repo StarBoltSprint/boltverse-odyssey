@@ -9,8 +9,8 @@ proportions:
   hOverW: [3.0, 5.0]
   dOverW: [0.45, 0.70]
 textures:
-  - {match: "vision/albedo", role: plate}
-  - {match: "vision/normal", role: plate}
+  - {match: "vision/albedo", role: plate, source: /workspace/i23d-auto/zoneb-tower-vision/vision/key-crop.jpg}
+  - {match: "vision/normal", role: plate, source: /workspace/i23d-auto/zoneb-tower-vision/vision/key-crop.jpg}
   - {match: "gdet-|detail-hp", role: detail}
 checklist:
   - {id: wedge, feature: "Tapered planar blade, depth at least 0.45 of the width, sheared crown kept in the volume", captures: [far, low-portrait]}

@@ -45,6 +45,13 @@ def counts(ob):
 
 
 def assign_uv(ob, xspan, yspan, depth):
+    """Front and back stay on the projection UV (1 unit = tower height).
+
+    Every other face uses an orthonormal frame in the polygon, also in metres
+    per tower-height. The old side map stored only -z, so the tapered wedge
+    stretched in X (gate p95 1.312 on +x).
+    """
+    import mathutils
     me = ob.data
     x0, x1 = xspan
     y0, y1 = yspan
@@ -52,19 +59,30 @@ def assign_uv(ob, xspan, yspan, depth):
     if not me.uv_layers:
         me.uv_layers.new(name="UV")
     uv = me.uv_layers.active.data
-    me.calc_loop_triangles()
     for poly in me.polygons:
         n = poly.normal
-        for li in poly.loop_indices:
-            vi = me.loops[li].vertex_index
-            p = me.vertices[vi].co
-            # 1 uv unit = tower height, so the front is not stretched to a square.
-            if abs(n.z) >= abs(n.x) and abs(n.z) >= abs(n.y):
+        if abs(n.z) >= abs(n.x) and abs(n.z) >= abs(n.y):
+            for li in poly.loop_indices:
+                p = me.vertices[me.loops[li].vertex_index].co
                 uv[li].uv = ((p.x - x0) / h, (p.y - y0) / h)
-            elif abs(n.x) >= abs(n.y):
-                uv[li].uv = (0.40 + max(0.0, min(0.25, -p.z / h)), (p.y - y0) / h)
-            else:
-                uv[li].uv = (0.70 + (p.x - x0) / h, max(0.0, min(0.25, -p.z / h)))
+            continue
+        up = mathutils.Vector((0.0, 1.0, 0.0))
+        if abs(n.y) > 0.85:
+            up = mathutils.Vector((1.0, 0.0, 0.0))
+        t = up.cross(n)
+        if t.length < 1e-8:
+            t = mathutils.Vector((1.0, 0.0, 0.0))
+        t.normalize()
+        b = n.cross(t)
+        b.normalize()
+        coords = []
+        for li in poly.loop_indices:
+            p = me.vertices[me.loops[li].vertex_index].co
+            coords.append((t.dot(p), b.dot(p)))
+        s0 = min(c[0] for c in coords)
+        t0 = min(c[1] for c in coords)
+        for li, (s, tt) in zip(poly.loop_indices, coords):
+            uv[li].uv = (0.42 + (s - s0) / h, (tt - t0) / h)
 
 
 def main():

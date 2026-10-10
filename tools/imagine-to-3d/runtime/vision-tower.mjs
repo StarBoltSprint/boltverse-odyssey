@@ -34,15 +34,18 @@ if (!scene) throw new Error("vision tower: no scene");
 const gltf = await new GLTFLoader().loadAsync("./objects1/vision/tower.glb");
 let src = null;
 gltf.scene.traverse((o) => { if (!src && o.isMesh) src = o; });
+const aniso = renderer.capabilities.getMaxAnisotropy();
 const albedo = new THREE.TextureLoader().load("./objects1/vision/albedo.png");
 albedo.colorSpace = THREE.SRGBColorSpace;
-albedo.anisotropy = 8;
+albedo.anisotropy = aniso;
 albedo.minFilter = THREE.LinearMipmapLinearFilter;
 albedo.magFilter = THREE.LinearFilter;
 albedo.generateMipmaps = true;
 const normal = new THREE.TextureLoader().load("./objects1/vision/normal.png");
 normal.colorSpace = THREE.NoColorSpace || THREE.LinearSRGBColorSpace;
+normal.anisotropy = aniso;
 normal.minFilter = THREE.LinearMipmapLinearFilter;
+normal.magFilter = THREE.LinearFilter;
 normal.generateMipmaps = true;
 
 const lit = new THREE.MeshStandardMaterial({
@@ -68,6 +71,46 @@ M.setPosition(...meta.origin);
 mesh.setMatrixAt(0, M);
 mesh.instanceMatrix.needsUpdate = true;
 scene.add(mesh);
+// The static shadow fit ran before this mesh existed, so the hero cast nothing.
+// Expand that ortho to the tower, and add a layer-1 caster the colour camera does not draw.
+const caster = new THREE.Mesh(src.geometry, new THREE.MeshBasicMaterial({ color: 0xffffff }));
+caster.name = "vision-shadow-caster";
+caster.layers.set(1);
+caster.castShadow = true;
+caster.frustumCulled = false;
+caster.matrixAutoUpdate = false;
+caster.matrix.copy(M);
+caster.matrixWorld.copy(M);
+scene.add(caster);
+{
+  let light = null;
+  scene.traverse((o) => { if (!light && o.isDirectionalLight && o.castShadow && o.name === "zb-shadow") light = o; });
+  if (light && light.shadow && light.shadow.camera) {
+    const cam = light.shadow.camera;
+    cam.layers.enable(1);
+    mesh.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(mesh);
+    const inv = cam.matrixWorldInverse;
+    const v = new THREE.Vector3();
+    let z0 = Infinity, z1 = -Infinity;
+    for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y]) for (const z of [box.min.z, box.max.z]) {
+      v.set(x, y, z).applyMatrix4(inv);
+      cam.left = Math.min(cam.left, v.x - 4);
+      cam.right = Math.max(cam.right, v.x + 4);
+      cam.bottom = Math.min(cam.bottom, v.y - 4);
+      cam.top = Math.max(cam.top, v.y + 4);
+      z0 = Math.min(z0, v.z); z1 = Math.max(z1, v.z);
+    }
+    cam.near = Math.min(cam.near, Math.max(1, -z1 - 20));
+    cam.far = Math.max(cam.far, -z0 + 900);
+    cam.updateProjectionMatrix();
+    scene.traverse((o) => {
+      const u = o.material && o.material.uniforms && o.material.uniforms.uShadowDepthM;
+      if (u) u.value = cam.far - cam.near;
+    });
+    renderer.shadowMap.needsUpdate = true;
+  }
+}
 
 const hidden = [];
 window.__setShade = (mode) => {
