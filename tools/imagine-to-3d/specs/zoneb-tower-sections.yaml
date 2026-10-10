@@ -1,0 +1,10 @@
+# Zone B tower facade sections (TEX6): offline grading into R8 brightness atlases + low-res chroma, then the budget.
+object: zoneb-tower-sections
+type: building
+work: /workspace/i23d-auto/zoneb-sections
+grade:
+  rawDir: /workspace/zb-preview-1008-tools/bake      # the 36 decoded 1024² Imagine section cells (TEX6 step 3)
+  runtimeModule: /workspace/zb-preview-1008/objects-stage.mjs
+  compareTo: /workspace/zb-preview-1008/objects1/tex/sec6
+  dEmeanMax: 1.0
+  dEp99Max: 6.0

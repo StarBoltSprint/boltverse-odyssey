@@ -71,3 +71,10 @@ Self-tests on Zone B assets: [`selftest/RESULTS.md`](../../tools/imagine-to-3d/s
 
 Imagine access is the Grok Build CLI (`imagine.py` writes one batch per step; outputs are copied byte-for-byte and
 recorded with sha256 + native size). Quality rule unchanged: nothing lowers texture resolution or geometry for the phone.
+
+## Auto (2026-10-10): one command end to end
+
+[`imagine-to-3d-auto.md`](imagine-to-3d-auto.md): `python3 tools/imagine-to-3d/auto.py run <spec.yaml>`. It runs
+continuous strata, same-shell LODs with the approach-morph test, hybrid texturing (unique Imagine plates plus a
+512 px/m tiling Imagine detail layer), offline R8 grading, the full-pixel-ratio performance budget and the object-gate
+with zero FAILs. It never generates Imagine images.

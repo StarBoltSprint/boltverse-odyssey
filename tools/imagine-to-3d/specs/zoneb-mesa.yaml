@@ -1,0 +1,42 @@
+# Zone B mesas (key-city3 crop L): the reference run of imagine-to-3d auto. Reuses the existing Imagine images and the
+# mesa worker's latest outputs read-only (shape = fused hull mesaF, geometry = strata5raw v10, packed = strata5).
+object: zoneb-mesas
+type: rock
+key: /workspace/zb-bible-1008/key-city3.jpg
+crop: /workspace/grokcli/wt/mesa-1009/in/crop-L.png
+heightM: 45
+work: /workspace/i23d-auto/zoneb-mesa
+staging: /workspace/i23d-auto/zoneb-mesa/staging
+imagine:
+  views: {front: /workspace/mesa-1009/work/views/front.jpg, top: /workspace/mesa-1009/work/views/top.jpg}
+  plates: /workspace/zb-preview-1008/mesas/plates/plates.json
+  excludePlates: [w6]              # v10 review: brick grid
+  detailSrc: /workspace/zb-preview-1008/mesas/hybrid
+geometry:
+  generator: strata2               # continuous strata (v10)
+  hull: /workspace/mesa-1009/work/mesaA
+  fusedHull: /workspace/mesa-1009/work/mesaF
+  reliefDir: /workspace/mesa-1009/work/depth
+  reuseShape: true
+  reuseGeometry: /workspace/zb-preview-1008/mesas/strata5raw
+  reusePacked: /workspace/zb-preview-1008/mesas/strata5
+  placements: [[L-mid, 1.25], [L-mid2, 1.05], [L-far, 1.6], [R-butte, 1.7], [R-mid, 1.35], [R-band, 2.0], [B-left, 1.7], [B-right, 1.5], [B-far, 2.2]]
+  iouMin: 0.87
+  minPxPerM: 64
+  maxStretch: 1.3
+  minDistinctWallPlates: 9         # no-repetition rule needs ~9 distinct wall images for 9 mesas (PROGRESS-mesas 07:41)
+detail:
+  pxPerM: 512
+  nearM: 15
+  farM: 30
+  rotDeg: 180
+  slices:                          # [name, src stem in detailSrc, low-pass sigma px, height amp m, [band lo, hi] px]
+  - [grit, m_face, 48, 0.010, [1.0, 60]]
+  - [scree, m_scree, 64, 0.025, [1.0, 90]]
+  - [sand, m_sand, 40, 0.006, [1.0, 60]]
+morph:
+  targets: [[L-mid, 216], [R-mid, 311]]
+  farM: 300
+  nearM: 10
+gate: {scene: /workspace/grokcli/wt/object-gate/tools/object-gate/specs/zone-b/scene.yaml, object: mesa}
+# stagingUrl: http://127.0.0.1:8996/mesatest.html   # set once the staging page mounts this staging dir

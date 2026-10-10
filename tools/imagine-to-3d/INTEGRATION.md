@@ -90,3 +90,10 @@ Exact insertion points in today's `run.py`:
 - compare needs captures from the matched camera (key camera for the key crop, plan camera for each accepted view).
   Use the object-gate adapter `setPose()`; the capture step itself is not in this PR.
 - LPIPS weights: torchvision AlexNet (downloaded once to ~/.cache/torch) + lpips 0.1.4 linear layers, CPU.
+
+## 2026-10-10: auto.py runs this whole order
+
+`python3 auto.py run <spec.yaml>` runs these stages and the lessons of 10-09/10 as hard checks: continuous strata,
+same-shell LODs + approach-morph, hybrid detail layer, offline R8 grading, full-pixel-ratio perf budget, object-gate
+zero FAIL. See `docs/METHOD/imagine-to-3d-auto.md` and `selftest/RESULTS-auto.md`. The `run.py full` hook above becomes
+`auto.py`; `run.py` itself is still not edited (mesa worker).

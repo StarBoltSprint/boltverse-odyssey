@@ -1,0 +1,166 @@
+=== zoneb-sections
+inputs    PASS          36 Imagine files, 0 bad, 0 distinct wall plates (need 0)
+classify  SKIP          type fixed by spec: building
+shape     SKIP          no geometry in spec
+geometry  SKIP          no geometry in spec
+pack      SKIP          no geometry in spec
+detail    SKIP          no detail layer in spec
+grade     PASS          R8 luma + chroma atlases 60.0 MiB, dE mean 0.62 p99 5.21
+stage     SKIP          no staging dir in spec
+shaders   MANUAL        skipped (--no-browser)
+perf      PASS          texture GPU memory (decoded, mips)=60.0 PASS
+morph     MANUAL        skipped (--no-browser)
+gate      MANUAL        skipped (--no-browser)
+report    PASS          blocking: ['shaders', 'morph', 'gate']
+=== zoneb-mesa
+inputs    NEEDS_IMAGINE 33 Imagine files, 0 bad, 5 distinct wall plates (need 9)
+classify  SKIP          type fixed by spec: rock
+shape     PASS          reused fused hull mesaF, consistency {'voxelsSeen2plus': 26736, 'medianPct': 4.52, 'p90Pct': 10.14, 'ok': True}
+geometry  FAIL          9 placements, failing rows: ['neighbours', 'pxPerM', 'repetition', 'stretch']
+pack      PASS          int16 + gzip, LOD0 on demand
+detail    PASS          3 slices at 512.0 px/m, hex lattice peaks [0.004, 0.003, 0.002]
+grade     SKIP          no section atlas in spec
+stage     PASS          staged ['geo', 'detail'] -> /workspace/i23d-auto/zoneb-mesa/staging
+shaders   MANUAL        skipped (--no-browser)
+perf      PASS          geometry download at start (LOD1, shipped)=6.37 PASS; LOD0 per object (fetched on demand)=3.62 PASS; resident triangles (all LOD1 + 2 LOD0)=1070840 INFO; texture GPU memory (decoded, mips)=13.1 PASS
+morph     MANUAL        skipped (--no-browser)
+gate      MANUAL        skipped (--no-browser)
+report    PASS          blocking: ['inputs', 'geometry', 'shaders', 'morph', 'gate']
+=== zoneb-mesa-build
+inputs    PASS          15 Imagine files, 0 bad, 6 distinct wall plates (need 0)
+classify  SKIP          type fixed by spec: rock
+shape     PASS          reused fused hull mesaF, consistency {'voxelsSeen2plus': 26736, 'medianPct': 4.52, 'p90Pct': 10.14, 'ok': True}
+geometry  FAIL          1 placements, failing rows: ['neighbours', 'pxPerM', 'relief', 'repetition', 'stretch']
+report    PASS          blocking: ['geometry']
+=== zoneb-mesa REPORT.md
+# imagine-to-3d auto report: zoneb-mesas (rock)
+
+spec `/workspace/grokcli/wt/i23d-upgrade/tools/imagine-to-3d/specs/zoneb-mesa.yaml`, work `/workspace/i23d-auto/zoneb-mesa`
+
+| stage | status | summary |
+|---|---|---|
+| inputs | **NEEDS_IMAGINE** | 33 Imagine files, 0 bad, 5 distinct wall plates (need 9) |
+| classify | **SKIP** | type fixed by spec: rock |
+| shape | **PASS** | reused fused hull mesaF, consistency {'voxelsSeen2plus': 26736, 'medianPct': 4.52, 'p90Pct': 10.14, 'ok': True} |
+| geometry | **FAIL** | 9 placements, failing rows: ['neighbours', 'pxPerM', 'repetition', 'stretch'] |
+| pack | **PASS** | int16 + gzip, LOD0 on demand |
+| detail | **PASS** | 3 slices at 512.0 px/m, hex lattice peaks [0.004, 0.003, 0.002] |
+| grade | **SKIP** | no section atlas in spec |
+| stage | **PASS** | staged ['geo', 'detail'] -> /workspace/i23d-auto/zoneb-mesa/staging |
+| shaders | **MANUAL** | skipped (--no-browser) |
+| perf | **PASS** | geometry download at start (LOD1, shipped)=6.37 PASS; LOD0 per object (fetched on demand)=3.62 PASS; resident triangles (all LOD1 + 2 LOD0)=1070840 INFO; texture GPU memory (decoded, mips)=13.1 PASS |
+| morph | **MANUAL** | skipped (--no-browser) |
+| gate | **MANUAL** | skipped (--no-browser) |
+
+## geometry rows
+
+| id | IoU | clash groups | adj groups | min px/m | max stretch | non-manifold | tris | fails |
+|---|---|---|---|---|---|---|---|---|
+| L-mid | 0.892 | 444 | 69 | 52.2 | 1.697 | 0 | [104789, 31443, 31443] | repetition, neighbours, pxPerM, stretch |
+| L-mid2 | 0.886 | 330 | 58 | 35.0 | 9.138 | 0 | [74165, 23659, 23659] | repetition, neighbours, pxPerM, stretch |
+| L-far | 0.875 | 617 | 130 | 57.7 | 1.895 | 0 | [170455, 47943, 47943] | repetition, neighbours, pxPerM, stretch |
+| R-butte | 0.891 | 826 | 146 | 41.5 | 2.688 | 0 | [189662, 52968, 52968] | repetition, neighbours, pxPerM, stretch |
+| R-mid | 0.888 | 506 | 60 | 46.8 | 2.968 | 0 | [119292, 35244, 35244] | repetition, neighbours, pxPerM, stretch |
+| R-band | 0.887 | 922 | 193 | 61.0 | 2.602 | 0 | [255090, 65656, 65656] | repetition, neighbours, pxPerM, stretch |
+| B-left | 0.874 | 665 | 119 | 53.2 | 1.778 | 0 | [182354, 51056, 51056] | repetition, neighbours, pxPerM, stretch |
+| B-right | 0.882 | 560 | 101 | 59.4 | 2.085 | 0 | [147789, 41379, 41379] | repetition, neighbours, pxPerM, stretch |
+| B-far | 0.889 | 1050 | 197 | 54.7 | 1.851 | 0 | [320950, 79592, 79592] | repetition, neighbours, pxPerM, stretch |
+
+**Verdict: NOT READY** (blocking: inputs, geometry, shaders, morph, gate)
+
+## still manual
+
+- **imagine**: New Imagine images (views, wall plates, detail crops) are never generated by this tool: it writes the request batch, a human/agent runs imagine.py with approval.
+- **mount**: First mount of a NEW object type into the game page (one import + one call in the biome main module) is a code change reviewed by hand; afterwards the staging page reloads the assets by itself.
+- **swap**: Staging -> live swap + ?v bump stays a human decision after the report (gate PASS is required, not sufficient).
+- **phone**: Real-phone fps (S20 FE) is measured by SmiR; the box has no GPU (SwiftShader timings are relative only).
+- **checklist**: Key checklist items need a Grok-vision or owner pass record (object-gate records/); NEEDS_REVIEW otherwise.
+
+Imagine request batch written (NOT run): `/workspace/i23d-auto/zoneb-mesa/imagine-req/batch-walls.json`
+=== zoneb-mesa detail rows
+[
+{
+"slice": "grit",
+"tileM": 1.8125,
+"pxPerM": 512.0,
+"latticePeakHex": 0.004,
+"latticePeakPlain": 1.0,
+"bgP99": 0.004,
+"contrastKept": 0.94,
+"seam": [
+1.02,
+1.24
+],
+"ok": true
+},
+{
+"slice": "scree",
+"tileM": 1.8125,
+"pxPerM": 512.0,
+"latticePeakHex": 0.003,
+"latticePeakPlain": 1.0,
+"bgP99": 0.007,
+"contrastKept": 0.94,
+"seam": [
+1.29,
+1.19
+],
+"ok": true
+},
+{
+"slice": "sand",
+"tileM": 1.8125,
+"pxPerM": 512.0,
+"latticePeakHex": 0.002,
+"latticePeakPlain": 1.0,
+"bgP99": 0.003,
+"contrastKept": 0.94,
+"seam": [
+1.0,
+1.09
+],
+"ok": true
+}
+]
+=== zoneb-mesa-build geometry
+[
+{
+"id": "L-mid2",
+"method": "continuous-strata-v10",
+"sameShell": true,
+"iou": 0.894,
+"clashGroups": 252,
+"adjGroups": 61,
+"minPxPerM": 51.9,
+"p01PxPerM": 75.6,
+"maxStretch": 2.294,
+"blendMaxStretch": 1.258,
+"nonManifold": 0,
+"relief": false,
+"tris": [
+24116,
+24116,
+24116
+],
+"fails": [
+"repetition",
+"neighbours",
+"pxPerM",
+"stretch",
+"relief"
+]
+}
+]
+=== perf (strata5 + sec6 + detail chunk)
+PASS geometry download at start (LOD1, shipped) 6.37 limit 8
+PASS LOD0 per object (fetched on demand) 3.62 limit 12
+INFO resident triangles (all LOD1 + 2 LOD0) 1070840 limit 750000
+PASS texture GPU memory (decoded, mips) 60.0 limit 64
+PASS fragment instructions (detail-only.frag, static SPIR-V) 457 limit 900
+PASS fragment fetch sites (detail-only.frag) 3 limit 16
+PASS fragment loops (detail-only.frag) 0 limit 2
+PASS
+=== morph_iou (strata4 L-mid captures)
+{'frames': 143, 'minIoU': 0.685, 'jumps': [], 'cameraInsideHull': [], 'verdict': 'PASS'}
+=== grade vs live sec6
+{'gpuMiB': 60.0, 'identicalToReference': True} {'dEmean': 0.624, 'dEp99worst': 5.213, 'cells': 36, 'grid': 6}

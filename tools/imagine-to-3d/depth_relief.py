@@ -11,7 +11,7 @@ MODELS = "/workspace/models/depth"
 DA_URL = "https://huggingface.co/onnx-community/depth-anything-v2-small/resolve/main/onnx/model.onnx?download=true"
 MIDAS_URL = "https://github.com/isl-org/MiDaS/releases/download/v2_1/model-small.onnx"
 # band-pass (fineM..sigmaM): finer detail stays in the Imagine albedo, coarser shape stays the hull's
-PROFILE = {"mesa": dict(amp=1.5, sigmaM=4.0, fineM=0.25, maxGrad=0.83), "tower": dict(amp=0.3, sigmaM=1.0, fineM=0.06, maxGrad=0.5), "rock": dict(amp=0.6, sigmaM=1.5, fineM=0.1, maxGrad=0.83)}
+PROFILE = {"mesa": dict(amp=1.5, sigmaM=4.0, fineM=0.25, maxGrad=0.7), "tower": dict(amp=0.3, sigmaM=1.0, fineM=0.06, maxGrad=0.5), "rock": dict(amp=0.6, sigmaM=1.5, fineM=0.1, maxGrad=0.83)}
 
 def session():
     import onnxruntime as ort
@@ -50,12 +50,13 @@ def relief(disp, pxm, prof):
         r = r * 0.97
     gy, gx = np.gradient(r); g = np.hypot(gx, gy) * pxm
     r = r * min(1.0, prof["maxGrad"] / max(g.max(), 1e-6)) ** 0.5   # last spikes
+    r = ndi.median_filter(r, 5)                               # isolated spikes (single-pixel depth outliers)
     return np.clip(r, -prof["amp"], prof["amp"]).astype(np.float32)
 
 def check(r, pxm, prof):
     gy, gx = np.gradient(r); g = np.hypot(gx, gy) * pxm
-    lap = np.abs(ndi.laplace(r)) * pxm * pxm
-    spikes = float((lap > 4.0 * prof["amp"]).mean())
+    # spike = a point standing out of its 5x5 neighbourhood median by > 7 % of the amplitude (ledges/creases are not spikes)
+    spikes = float((np.abs(r - ndi.median_filter(r, 5)) > 0.07 * prof["amp"]).mean())
     return dict(stdM=round(float(r.std()), 3), p99M=round(float(np.percentile(np.abs(r), 99)), 3), maxGrad=round(float(g.max()), 3),
                 p999Grad=round(float(np.percentile(g, 99.9)), 3), spikeFrac=round(spikes, 5),
                 ok=bool(r.std() > 0.08 * prof["amp"] and spikes < 0.001 and np.percentile(g, 99.9) <= prof["maxGrad"] * 1.05))

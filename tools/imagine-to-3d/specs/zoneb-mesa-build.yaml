@@ -1,0 +1,20 @@
+# Same mesa, but the geometry is BUILT by the tool (one placement, 1 seed x 1 window salt: a smoke run of the generator path).
+object: zoneb-mesa-build
+type: rock
+crop: /workspace/grokcli/wt/mesa-1009/in/crop-L.png
+heightM: 45
+work: /workspace/i23d-auto/zoneb-mesa-build
+imagine:
+  views: {front: /workspace/mesa-1009/work/views/front.jpg, top: /workspace/mesa-1009/work/views/top.jpg}
+  plates: /workspace/zb-preview-1008/mesas/plates/plates.json
+  excludePlates: [w6]
+geometry:
+  generator: strata2
+  hull: /workspace/mesa-1009/work/mesaA
+  fusedHull: /workspace/mesa-1009/work/mesaF
+  reliefDir: /workspace/mesa-1009/work/depth
+  reuseShape: true
+  placements: [[L-mid2, 1.05]]
+  maxSeeds: 1
+  salts: 1
+  iouMin: 0.87
