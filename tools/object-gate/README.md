@@ -57,6 +57,9 @@ or point `OG_PLAYWRIGHT=/path/to/playwright/index.mjs` at an existing install). 
    wreck, debris...): outline IoU (frame), CIEDE2000 of the lit and the shadow half, SSIM structure after alignment.
    FAIL beyond the type's `keyCompare.gate`; gaps to `keyCompare.target` drive `imagine-to-3d/fixloop.py keyloop`.
    Missing elements FAIL. Writes `key-compare/sheet.jpg` on every run. Method: `docs/METHOD/key-compare-and-consistency.md`.
+   Mask rules (lib/keycompare.py): `rocktex` = rock without smooth sand (texture split; `rock` alone counted the dunes),
+   `skycore` + `{tophat: dL, k}` = thin bright lines (ring arcs) by local contrast, `thin: px` tolerance band for 1-2 px
+   structures. `lib/kc_diff.py before.json after.json` = before / after table of two runs.
 
 ```bash
 node tools/object-gate/key-compare.mjs --spec tools/object-gate/specs/zone-b/key-compare.yaml --solve --out out/kc   # find the key camera

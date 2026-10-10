@@ -69,3 +69,21 @@ Spec keys: `palette: {file, materials, keyRect, strength, useGraded}` and `keyCo
 maxRounds, stallRounds, colourGain, plates, apply: {colour, shapeSeed, silhouetteWarp, plateRepick, relief, detail}}`
 (see `specs/zoneb-mesa.yaml`). Method: `docs/METHOD/key-compare-and-consistency.md`.
 
+## Keyloop consumers, staging mirror, layout correction (2026-10-10 afternoon)
+
+Everything below writes into a **KC staging mirror** only; live files are read, never written (each tool refuses a
+live target; `selftest/kc_consumers_st.py` checks the live hashes).
+
+| Module | What |
+|---|---|
+| `kc_stage.py build / serve / params` | staging mirror of a live game dir made of symlinks (`/workspace/kc-staging/zb`, port 8997): patched copy of `mesas-v11.mjs` that reads `mesas/kc-params.json` (`layout`, `strata`, `plates`, `reliefGain`), `objects1/layout.json` with the biome layout file applied, `kc.html` / `main-kc.mjs` mask page (`?mesaMask=1&mesaOnly=1`). GLB overrides marked `KC-OVERRIDE` survive rebuilds |
+| `kc_mesa.py warp` | **silhouette warp** consumer: per key-frame column, vertical stretch (0.7-1.3, base fixed, fallen blocks untouched) of the mesa that owns the skyline there, toward the key's top edge (9-column smoothing rounds the stepped outline); writes `mesas/strata-kc` (raw bins + geo.json) |
+| `kc_mesa.py plates` | **colour** (Lab offsets from the loop or linear lit / shadow gains measured key vs render, `--gain-from key-compare.json`), **plate re-pick** (wall slots refilled from the ranked existing Imagine plates, most used slot first, `--exclude w6`), **detail layer** (`--detail G`, high-pass gain of the Imagine pixels). Cumulative state in `plates-kc/kc-state.json`, always rebuilt from the live plates |
+| `kc_mesa.py relief` / `detail` | relief strength (LOD0 displacement gain via `kc-params.reliefGain`) / detail value sweep for `fixloop` |
+| `kc_glb.py grade` | lit / shadow albedo grade of an image embedded in a GLB (e.g. the spire), staging copy |
+| `layout_fit.py fit` | **layout correction**: moves / rotates towers, spire and mesas so the key camera reproduces the key composition (`layouts/<biome>-composition.json`, slots measured on the key) under the city rules (v16 spacing = real streets, avenue clear, 50/50 sides, cameras clear, mesas outside the city). Writes the biome layout file `layouts/<biome>.json` (staging only) + `-fit.png`. Wreck / arch: `status: no-model` |
+
+`specs/zoneb-mesa.yaml` wires every `keyCompare.apply` step to these consumers and sets `stagingUrl` (8997), so
+`fixloop.py keyloop` corrections show up in the key-camera render. `shapeSeed` (gen_strata_all) output is reported, not
+auto-staged.
+
