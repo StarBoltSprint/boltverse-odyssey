@@ -8,7 +8,7 @@
 
 ## Measure on the phone, not the box
 - The box has no GPU. SwiftShader timings are relative and noisy (load average 15-30), and they did not predict the phone (box: canvas fix -25 %; phone: still 30 fps).
-- Use `tools/perf/phone-bench/bench.html`: one link, about 2.5 min (v4, thermally fair), a big table the owner can screenshot, and a result link the agent decodes with `decode.mjs`.
+- Use `tools/perf/phone-bench/bench.html`: one link, about 2 min 15 (v5, thermally fair), a big table the owner can screenshot, and a result link the agent decodes with `decode.mjs`.
 - Readback timing (render + `readPixels`) inflates numbers on Chrome Android. Use the pipelined metric (3 renders per rAF, median interval / 3).
 - Fragment counts (`overdraw.mjs`) beat timing for cheap layers. Transparent layers measured ≤ 0.16 screen and 1-2 fetches each: < 1 % of the frame, although a noisy timing had blamed them for 26 %.
 
@@ -31,7 +31,12 @@
    - **Ground depth prepass:** the terrain is one merged mesh in row-major cell order, so it draws back to front in half of the view directions. A depth-only twin using the ground's own vertex code makes every ground pixel shade once. The cost is drawing the terrain vertices twice; the tiled GPU's own early depth rejection (LRZ) may already save part of this.
    - A/B, both on vs off, 8 poses at 480x900: **bit-identical** (max 0, self-check 0).
    - Code: `tools/biome/runtime/ground-fill.mjs` (`createHeightArray`, `setHeightR8`, `createGroundPrepass`) + `G_HR8` in `biome-ground.js`.
-   - Real gain: only the phone bench v4 rows can tell; both stay switches (`?hr8=1`, `?pre=1`) until it does.
+   - **Phone bench v4 (S20 FE, cool base 45 ms):** prepass **-5.8 ms (-12.8 %, spread 0.5)**, so it is real and is now on by default in the Zone B staging (`?pre=0` turns it off). `G_HR8` read +5.7 ms with spread 11.3: no gain shown, so it stays an off switch (`?hr8=1`). Reference rows: ratio 1.5 = 28.0 ms (-16.8, spread 0.2), POM off -11.1, detail layer off -13.7, tower shadow +0.4, simple sky 0.
+8. **Bench v5: fps per ratio, the adaptive steady state, `[look]` candidates.** All rows run with the prepass on: ratio 1.75 and 1.5 against ratio 2, a `G_HR8` retest, and two candidates the owner asked to price, never default:
+   - (a) POM only below 8 m (fade 6-8 m instead of 6-10 m), with the adaptive 3-6 steps. A/B mean ≤ 0.21/255 (max 43 on isolated pixels, 6-17 % of pixels move by a small amount).
+   - (b) The 512 px/m detail layer fades out over 10-20 m instead of 15-30 m. A/B mean ≤ 0.05/255 (max 9, 0-9 % of pixels).
+   - a+b: mean ≤ 0.26/255.
+   - All under 1/255 at 1.5/3/8/30 m, self-check 0, no change visible in the crops. They still change pixels, so they are labelled `[look]` and the owner decides from the phone fps.
 
 ## Checks
 - **Decision:** SmiR 2026-10-10 11:40 (hard rule) and 11:42 (write it into the repo). Index entry: [tools.md](tools.md).
