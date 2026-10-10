@@ -79,10 +79,16 @@ ok(toMarkdown({ ...fake, url: "u", adapter: "a", startedAt: "t", objects: fake.o
 { // phone perf rows (docs/METHOD/phone-perf.md)
   const { perfRows } = await import("./gate.mjs");
   const run = (pr) => { const r = { runtime: [] }; perfRows(r, pr, [412, 915]); return r.runtime; };
-  const good = run({ canvasRatio: 2, dpr: 3, cap: 2, adaptive: true, skyOrder: 2, groundOrder: 1, maxOpaqueOrder: 0, skyDepthTest: true });
-  ok(good.length === 4 && good.every((x) => x.status === "PASS") && good.every((x) => x.id.startsWith("perf.")), "perf rows PASS on the v59 report shape");
+  const good = run({ canvasRatio: 2, dpr: 3, cap: 2, adaptive: true, skyOrder: 2, groundOrder: 1, maxOpaqueOrder: 0, skyDepthTest: true, adaptiveCanDropDetail: false, sprintDip: false });
+  ok(good.length === 6 && good.every((x) => x.status === "PASS") && good.every((x) => x.id.startsWith("perf.")), "perf rows PASS on the v61 report shape");
   const bad = run({ canvasRatio: 3, dpr: 3, cap: 2, adaptive: false, skyOrder: 0, groundOrder: 0, maxOpaqueOrder: 0, skyDepthTest: true });
-  ok(bad.filter((x) => x.status === "FAIL").length === 4, "perf rows FAIL: full-DPR canvas, sky first, ground first, no adaptive");
+  ok(bad.filter((x) => x.status === "FAIL").length === 5, "perf rows FAIL: full-DPR canvas, sky first, ground first, no adaptive, default ratio unproven");
+  const dropper = run({ canvasRatio: 2, dpr: 3, cap: 2, adaptive: true, adaptiveCanDropDetail: true, sprintDip: false });
+  ok(dropper.find((x) => x.id === "perf.quality-kept").status === "FAIL", "perf row FAIL: an adaptive controller that can drop the detail layer");
+  const old = run({ canvasRatio: 2, dpr: 3, cap: 2, adaptive: true });
+  ok(old.find((x) => x.id === "perf.quality-kept").status === "FAIL" && old.find((x) => x.id === "perf.default-ratio").status === "FAIL", "perf rows FAIL on the v59 shape (no quality-first proof)");
+  const low = run({ canvasRatio: 1.5, dpr: 3, cap: 1.5, adaptive: true, adaptiveCanDropDetail: false, sprintDip: false });
+  ok(low.find((x) => x.id === "perf.default-ratio").status === "FAIL", "perf row FAIL: default ratio 1.5 on a DPR-3 phone");
   const none = run(null);
   ok(none.length === 1 && none[0].status === "INFO" && none[0].id === "perf.report", "page without __perfReport: INFO only");
 }
