@@ -57,7 +57,14 @@ def check(imgs, key, palette, material, key_rect=None, out=None, obj_type=None):
     T = thresholds(obj_type); P = json.load(open(palette)) if isinstance(palette, str) else palette
     k = C.load_rgb(key)
     if key_rect:
-        H, W = k.shape[:2]; x0, y0, x1, y1 = key_rect; k = k[int(y0 * H):int(y1 * H), int(x0 * W):int(x1 * W)]
+        H, W = k.shape[:2]; x0, y0, x1, y1 = [float(v) for v in key_rect]
+        # Values above 1 are pixels (metrics.py). Fractions stay 0..1.
+        if max(x0, y0, x1, y1) > 1.5:
+            k = k[int(y0):int(y1), int(x0):int(x1)]
+        else:
+            k = k[int(y0 * H):int(y1 * H), int(x0 * W):int(x1 * W)]
+        if k.size == 0:
+            raise ValueError(f"keyRect {key_rect} is empty on {W}x{H}")
     rows, req = [], []
     for p in imgs:
         a = C.load_rgb(p); m = PAL.measure(a, P, material); s = style_score(a, k)

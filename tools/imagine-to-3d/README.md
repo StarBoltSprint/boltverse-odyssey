@@ -4,6 +4,9 @@ Turns Imagine view plates (edits of ONE key crop) into a real 3D object + runtim
 Design: Grok chat Q15 (/workspace/arch-research-1008/q15-imagine-to-3d.md), method docs/METHOD/objects-from-key-crops.md.
 The code never paints rock: colour = Imagine plates byte-for-byte; geometry = silhouettes of the Imagine plates.
 
+objects = Grok vision JSON → generated geometry → render/compare loop → projection, by the tool.
+Relief comes only from the image painted on that face; never invent it.
+
 ## Stages (run.py)
 1. **plates** (Grok Build, `/workspace/grokcli/kit/run-step.sh`, own worktree): front = edit of the key crop; side/back/top =
    edits of the front ("same object, one axis change"); detail = edit of a rock-only crop. Plain flat background.

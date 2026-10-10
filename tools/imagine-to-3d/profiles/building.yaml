@@ -104,3 +104,14 @@ thresholds:
   depthConsistencyMedian: 0.08
   depthConsistencyP90: 0.12
   viewRetries: 3
+vision:
+  silhouetteIoU: 0.90
+  keyIoU: 0.87
+  keyDeltaE: 5
+  reliefAlignMin: 0.70
+  edgeRingMin: 0.55
+  nonObjectTexelMax: 0.02
+  phone:
+    drawCallsMax: 3
+    texGpuMiBMax: 16
+    trisMax: 60000

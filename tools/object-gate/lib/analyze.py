@@ -199,7 +199,18 @@ def visible_px(a):
             "visiblePxPerM": round(S / med, 1), "p25PxPerM": round(S / float(np.percentile(ks, 75)), 1),
             "capped": bool(med <= 1.0), "tau": tau}
 
+def relief_align(a):
+    import os, sys as _sys
+    root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "imagine-to-3d"))
+    if root not in _sys.path:
+        _sys.path.insert(0, root)
+    from checks.relief_align import overlap, save_overlay
+    sc = overlap(a["relief"], a["albedo"])
+    if a.get("overlay"):
+        save_overlay(a["overlay"], a["relief"], a["albedo"])
+    return sc
+
 if __name__ == "__main__":
     arg = json.loads(sys.argv[2]) if len(sys.argv) > 2 else json.load(sys.stdin)
     op = sys.argv[1]
-    print(json.dumps({"repetition": repetition, "phash": phash, "colour": colour, "sheet": sheet, "mask_png": mask_png, "size": size, "visible_px": visible_px}[op](arg)))
+    print(json.dumps({"repetition": repetition, "phash": phash, "colour": colour, "sheet": sheet, "mask_png": mask_png, "size": size, "visible_px": visible_px, "relief_align": relief_align}[op](arg)))

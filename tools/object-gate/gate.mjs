@@ -212,6 +212,7 @@ export const CHECK_IDS = [
   [/^scene self-report/, "texel.self-report"], [/^repetition \(capture/, "repetition.captures"], [/^approach morph/, "morph"],
   [/^shadow light/, "shadow.light"], [/^shadow cast/, "shadow.cast"], [/^shadow world-fixed/, "shadow.world-fixed"], [/^shadow colour/, "shadow.colour"],
   [/^grounding/, "grounding"], [/^mesh sealed/, "geometry.sealed"], [/^facade relief/, "geometry.relief"], [/^facade crisp/, "geometry.crisp"], [/^proportions/, "geometry.proportions"],
+  [/^relief-texture alignment/, "relief.align"],
   [/^effects take/, "effects.imagine-texture"], [/^effects: no typed/, "effects.no-colour-literals"],
   [/^key checklist written/, "checklist.written"], [/^key crop present/, "checklist.key-crop"], [/^key checklist: every/, "checklist.verified"], [/^colour vs key/, "checklist.colour"],
   [/^console/, "runtime.console"], [/^shader compile/, "runtime.shader"], [/^HUD text/, "runtime.hud"], [/^title/, "runtime.title"],
@@ -620,6 +621,42 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
         for (const [k, [lo, hi]] of Object.entries(P)) if (r[k] < lo || r[k] > hi) bad.push(`${s.inst} ${k} ${fmt(r[k], 2)} not in ${lo}-${hi}`);
       }
       row(o, "proportions vs spec", bad.length === 0, bad.slice(0, 6).join("; ") || `${Object.keys(P).join(", ")} in range on every copy`, ["Scale the solid in Blender to the spec ratios (never by spending more images)."]);
+    }
+    const hasShade = await page.evaluate(() => typeof window.__setShade === "function");
+    if (!hasShade) {
+      row(o, "relief-texture alignment", false, "no shade switch", ["Expose window.__setShade('relief'|'albedo'|'lit') and render relief and albedo from the same cameras."]);
+    } else {
+      const fx = hero.front; const fl = Math.hypot(fx[0], fx[1]) || 1; const f0 = fx[0] / fl, f1 = fx[1] / fl;
+      const poses = {
+        hero: { d: Math.max(40, hero.halfD + 30), lat: 0 },
+        "30m": { d: 30 + hero.halfD, lat: 0 },
+        "8m": { d: 8 + Math.max(2, hero.halfW * 0.2), lat: hero.halfW * 0.25 },
+        side: { d: 20 + hero.halfD, lat: hero.halfW + 10 },
+      };
+      const scores = [];
+      for (const [name, P] of Object.entries(poses)) {
+        const x = hero.center[0] + f0 * P.d - f1 * P.lat;
+        const z = hero.center[2] + f1 * P.d + f0 * P.lat;
+        const ty = hero.min[1] + Math.min(hero.height * 0.45, 50);
+        await page.evaluate(([x, z, look]) => window.__ogHost.setPose({ x, z, look }), [x, z, [hero.center[0], ty, hero.center[2]]]);
+        await settle(page, 300);
+        const rp = join(odir, `relief-${name}.png`);
+        const ap = join(odir, `albedo-${name}.png`);
+        await page.evaluate(() => window.__setShade("relief"));
+        await settle(page, 200);
+        await page.screenshot({ path: rp, timeout: 240000 });
+        await page.evaluate(() => window.__setShade("albedo"));
+        await settle(page, 200);
+        await page.screenshot({ path: ap, timeout: 240000 });
+        const sc = py("relief_align", { relief: rp, albedo: ap, overlay: join(odir, `align-${name}.jpg`) });
+        scores.push({ name, ...sc });
+      }
+      await page.evaluate(() => window.__setShade("lit"));
+      writeFileSync(join(odir, "relief-align.json"), JSON.stringify(scores, null, 1));
+      const badA = scores.filter((s) => !s.ok);
+      row(o, "relief-texture alignment", badA.length === 0 && scores.length >= 4,
+        scores.map((s) => `${s.name} ${s.overlap ?? s.reason}`).join("; "),
+        ["A relief edge must lie on a painted edge. Move the feature box in the vision JSON. Do not invent bars."]);
     }
   }
 
