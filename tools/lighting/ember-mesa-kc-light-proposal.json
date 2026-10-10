@@ -1,0 +1,51 @@
+{
+ "sun": {
+  "sunAzimuthDeg": 106.98,
+  "sunElevationDeg": 15.95,
+  "sunHex": "#fef4d9",
+  "biome": {
+   "sun.azimuthDeg": 106.98,
+   "sun.elevationDeg": 15.95,
+   "sun.hex": "#fef4d9"
+  }
+ },
+ "hemi": {
+  "hemiSky": "#735e7b",
+  "hemiGround": "#251a1d"
+ },
+ "fog": {
+  "biome": {
+   "fog.color": "#ae6f58",
+   "fog.bands": [
+    {
+     "dist": 40,
+     "color": "#ae6f58",
+     "amount": 0.024
+    },
+    {
+     "dist": 130,
+     "color": "#ae6f58",
+     "amount": 0.076
+    },
+    {
+     "dist": 220,
+     "color": "#ae6f58",
+     "amount": 0.125
+    }
+   ]
+  }
+ },
+ "graphite": {
+  "chromeGraphite": "#050607",
+  "gain": [
+   0.25,
+   0.187,
+   0.215
+  ]
+ },
+ "checks": {
+  "shadowNeutralCool": true,
+  "haloImagine": "sky1/sky7-atlas.png sprite (Imagine), tint untouched",
+  "note": "all colours sampled from the key image; none typed"
+ }
+}
