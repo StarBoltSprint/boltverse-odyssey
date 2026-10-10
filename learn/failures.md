@@ -1021,3 +1021,25 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Not applied. Widening the plinth was left alone because extra pixels beside the key mask can drop the rect IoU. |
 | Guard | object-gate rows `grounding (no floating)`, `facade relief >= 0.3 m`, and `facade crispness` in `/tmp/og-tower-hero/report.md`. Same rows as the 2026-10-09 entry. |
 | Sources | `/tmp/og-tower-hero/tower-hero/grounding.json`, `geometry.json`. |
+
+### 2026-10-10 — side-view fit stays under 0.8 IoU on the wedge
+
+| | |
+| --- | --- |
+| Take | SPEC-I23D-PROJECT-1010. Branch `cursor/i23d-project-stage-36f5`. |
+| Defect | The three accepted Imagine views were rejected. After one fit that mattes first, then searches yaw, pitch, fov, distance, a free vertical scale, and an ortho camera, the full-resolution IoUs are left 0.661, back 0.754, right 0.736. All under 0.80. Flanks and back show the key photo's grazing colour, pull-pushed. |
+| Root cause | The views are three-quarter photos (taper, ladder cage, rings). The shell is an extrusion of the key silhouette. Ladder pixels are in the matte and not on the wedge, so the hull IoU caps under 0.8. |
+| Fix | Not applied a second time. Views stay rejected. Requests remain the sheet, the top, and the under-ledges. |
+| Guard | `project` log line `reject view-* iou` and `project-report.json` `rejected`. Threshold 0.80. |
+| Sources | `tools/imagine-to-3d/project.py` `fit_view_camera`. Work `/workspace/i23d-auto/zoneb-tower-hero/project-report.json`. |
+
+### 2026-10-10 — a full albedo grade matches the lit key, then the sun darkens it
+
+| | |
+| --- | --- |
+| Take | SPEC-I23D-PROJECT-1010. Same branch. |
+| Defect | Strength 0.35 after delight left atlas deLit 18.35 (delight had moved it to 29.57). One full Lab transfer reached atlas deLit 1.27 and deShadow 0.99. The key-camera render is still dark: tower-row deLit 11.43, prototype rect ΔE 26.81, IoU 0.103 / 0.561. |
+| Root cause | Delight divides out the low-frequency light, then the grade copies the lit key's Lab onto the albedo. The game sun lights that albedo again. |
+| Fix | Not applied a second time. The strength-1 transfer is the one attempt. The shader stays MeshStandard, emissive 0. |
+| Guard | `project-report.json` `grade`. key-compare row `towers` deLit and IoU. Prototype rect 398,27,561,446. |
+| Sources | `tools/imagine-to-3d/project.py` grade block. `/workspace/i23d-auto/zoneb-tower-hero/keycompare/key-compare.json`. |

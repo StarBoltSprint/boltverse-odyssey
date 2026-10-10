@@ -35,6 +35,18 @@ Consistent scale and alignment so the panels can be cut and used as face texture
 
 Preserve every visible detail from the reference; invent only what is necessary for the hidden faces while matching style exactly."""
 IDENTITY_LOCK = "tall dark metallic/glass tower with the same broken/open sections and cable details as the reference"
+# Top and single-face requests must NOT reuse the four-panel sheet text.
+TOP_PROMPT = """Create a clean orthographic top-down view of the exact same tower shown in the reference image.
+
+One panel, camera looking straight down on the roof and the crown, on a plain neutral light-gray background.
+
+Same materials, surface details, weathering, lighting direction and intensity, colour, and the exact roof silhouette as the reference.
+
+Orthographic camera, no perspective distortion, no tilt, no scene, no dunes, no arches, no extra objects, no text.
+
+This is a separate top view, conditioned on the key and the side panels. Plain background.
+
+Preserve every visible detail from the reference; invent only the roof plan while matching style exactly."""
 SHEET_FACES = ("front", "left", "back", "right")
 SIDE_FACES = ("left", "back", "right")
 ALL_FACES = ("front", "left", "right", "back", "top", "under-ledges")
@@ -111,9 +123,11 @@ def load_keycam(path, w, h):
     return Camera(k["mw"], k["pm"], w, h, pos=k.get("pos"), fov=k.get("fov"), name="key")
 
 
-def look_camera(target, yaw_deg, pitch_deg, dist, fov_deg, w, h, name="view"):
-    """Y-up camera looking at target. yaw 0 looks +X (key side), 90 looks +Z (left when facing +X? ).
-    yaw is degrees about Y from the +X axis toward -Z, matching a turntable around the tower."""
+def look_camera(target, yaw_deg, pitch_deg, dist, fov_deg, w, h, name="view", ortho=False, vscale=1.0):
+    """Y-up camera looking at target. yaw 0 looks +X (key side).
+    yaw is degrees about Y from the +X axis toward -Z.
+    vscale is an extra vertical magnification (free per view). ortho uses a frustum
+    whose size at `dist` matches the perspective fov, then the same vscale."""
     yaw = np.deg2rad(yaw_deg)
     pitch = np.deg2rad(pitch_deg)
     fwd = np.array([
@@ -130,22 +144,34 @@ def look_camera(target, yaw_deg, pitch_deg, dist, fov_deg, w, h, name="view"):
         x = np.array([1.0, 0.0, 0.0])
     x /= np.linalg.norm(x)
     y = np.cross(z, x)
-    # camera-to-world: columns are the camera axes, translation is the eye
     R = np.stack([x, y, z], 1)
     mw = np.eye(4)
     mw[:3, :3] = R
     mw[:3, 3] = eye
     aspect = w / float(h)
-    f = 1.0 / np.tan(np.deg2rad(fov_deg) / 2)
+    vs = float(vscale) if float(vscale) > 1e-3 else 1.0
     near, far = 0.2, 800.0
     pm = np.zeros((4, 4))
-    pm[0, 0] = f / aspect
-    pm[1, 1] = f
-    pm[2, 2] = (far + near) / (near - far)
-    pm[2, 3] = (2 * far * near) / (near - far)
-    pm[3, 2] = -1
-    # Camera() expects column-major arrays
-    return Camera(mw.T.reshape(-1), pm.T.reshape(-1), w, h, pos=eye, fov=fov_deg, name=name)
+    if not ortho:
+        f = 1.0 / np.tan(np.deg2rad(fov_deg) / 2)
+        pm[0, 0] = f / aspect
+        pm[1, 1] = f * vs
+        pm[2, 2] = (far + near) / (near - far)
+        pm[2, 3] = (2 * far * near) / (near - far)
+        pm[3, 2] = -1
+    else:
+        hy0 = float(dist) * np.tan(np.deg2rad(float(fov_deg)) / 2.0)
+        hx = hy0 * aspect
+        hy = hy0 / vs
+        pm[0, 0] = 1.0 / max(hx, 1e-6)
+        pm[1, 1] = 1.0 / max(hy, 1e-6)
+        pm[2, 2] = -2.0 / (far - near)
+        pm[2, 3] = -(far + near) / (far - near)
+        pm[3, 3] = 1.0
+    cam = Camera(mw.T.reshape(-1), pm.T.reshape(-1), w, h, pos=eye, fov=fov_deg, name=name)
+    cam.ortho = bool(ortho)
+    cam.vscale = vs
+    return cam
 
 
 # ---------------------------------------------------------------- masks
@@ -306,14 +332,30 @@ def cut_sheet(rgb):
 
 
 # ---------------------------------------------------------------- requests
+def _prompt_for(kind, faces, note):
+    """Sheet text stays on the sheet. A top view and a single face get their own prompt."""
+    if kind == "sheet":
+        return sheet_prompt()
+    if kind == "top":
+        return TOP_PROMPT
+    face = ", ".join(faces) if faces else "hidden face"
+    return (
+        "Create one orthographic view of the %s of the exact same tower shown in the reference image.\n\n"
+        "One panel on a plain neutral light-gray background. Same materials, surface details, weathering, "
+        "lighting direction and intensity, colour, and silhouette proportions as the reference.\n\n"
+        "Orthographic camera, no perspective distortion, no scene, no dunes, no arches, no sky, no extra objects, no text.\n\n"
+        "%s"
+    ) % (face, note)
+
+
 def _req(rid, kind, faces, yaw, pitch, fov, note):
     return dict(
         id=rid, status="NEEDS_APPROVAL", tool="image_edit",
-        prompt=sheet_prompt() if kind == "sheet" else sheet_prompt() + "\n\n" + note,
+        prompt=_prompt_for(kind, faces, note),
         identityLock=IDENTITY_LOCK,
         references=["key-crop", "full-key"],
         kind=kind, faces=list(faces),
-        camera=dict(yaw=yaw, pitch=pitch, fov=fov, ortho=(kind == "sheet")),
+        camera=dict(yaw=yaw, pitch=pitch, fov=fov, ortho=(kind in ("sheet", "top"))),
         expectedSize=[1600, 800] if kind == "sheet" else [800, 1200],
         output="imagine/in/%s.jpg" % rid,
         note=note,
@@ -1287,9 +1329,24 @@ def run(spec, work, matte_fn=None, relief_fn=None, log=print):
         P = json.load(open(pc["file"]))
         mat = (pc.get("materials") or {}).get("crop") or "sandstone"
         try:
-            rec = PAL.grade(tmp, P, mat, os.path.join(work, "_albedo_graded.png"), float(pc.get("strength") or 0.35), os.path.join(work, "palette-log.jsonl"))
-            rgb = np.asarray(Image.open(os.path.join(work, "_albedo_graded.png")).convert("RGB")).astype(np.float32) / 255.0
-            report["grade"] = dict(before=rec["before"], after=rec["after"])
+            strength = float(pc.get("strength") or 0.35)
+            outp = os.path.join(work, "_albedo_graded.png")
+            plog = os.path.join(work, "palette-log.jsonl")
+            rec = PAL.grade(tmp, P, mat, outp, strength, plog)
+            why = None
+            used = strength
+            # Delight divides out low-frequency light first, so the atlas starts far from the
+            # key's lit entry (deLit ~30 here). strength 0.35 keeps most of that gap (~18).
+            # One full transfer on the same delighted pixels. Do not loop this.
+            if rec["after"]["deLit"] > 6 and strength < 1.0:
+                weak = rec["after"]
+                rec = PAL.grade(tmp, P, mat, outp, 1.0, plog)
+                used = 1.0
+                why = ("delight moved the atlas to deLit %.2f before the grade; strength %.2f left deLit %.2f "
+                       "(a partial Lab blend cannot close it). One full transfer applied."
+                       % (rec["before"]["deLit"], strength, weak["deLit"]))
+            rgb = np.asarray(Image.open(outp).convert("RGB")).astype(np.float32) / 255.0
+            report["grade"] = dict(before=rec["before"], after=rec["after"], strengthUsed=used, why=why)
         except Exception as e:
             report["gradeError"] = str(e)[:200]
     ring = edge_ring(rgb, wsum > 0.05, ring=3)
@@ -1337,11 +1394,97 @@ def run(spec, work, matte_fn=None, relief_fn=None, log=print):
         report["reliefError"] = str(e)[:300]
         fails.append("relief")
     report["status"] = "PASS" if not fails else "FAIL"
-    report["summary"] = "project %s iou %.3f nonobj %.4f requests %d faces %s fails %s" % (
-        report["status"], iou, share, len(reqs), sorted(cov), fails or "none")
+    covered = sorted(cov)
+    hidden = [f for f in ALL_FACES if f not in cov]
+    report["coveredFaces"] = covered
+    report["hiddenFaces"] = hidden
+    if accepted:
+        report["flanks"] = "Imagine " + ", ".join("%s iou %s" % (a.get("face"), a.get("iou")) for a in accepted)
+    else:
+        report["flanks"] = ("no Imagine view passed fit IoU %.2f. Flanks and back show the key photo's grazing edge, "
+                            "pull-pushed across those charts: purple sky-side glass and tan dune-side colour, not a masked side plate."
+                            % iou_min)
+    report["summary"] = "project %s iou %.3f nonobj %.4f requests %d covered %s hidden %s fails %s" % (
+        report["status"], iou, share, len(reqs), covered, hidden, fails or "none")
     json.dump(report, open(os.path.join(work, "project-report.json"), "w"), indent=1, default=str)
     log(report["summary"])
     return report
+
+
+def _visible_pts(cam, V):
+    xy, w = cam.project(V)
+    vis = w > 0.05
+    if int(vis.sum()) < 12:
+        return None
+    return xy[vis]
+
+
+def _hull_iou(pts, mask):
+    """Fast ranker. The accept/reject number is still the filled-triangle IoU."""
+    import cv2
+    H, W = mask.shape
+    hull = cv2.convexHull(np.asarray(pts, np.float32))
+    sil = np.zeros((H, W), np.uint8)
+    cv2.fillConvexPoly(sil, np.round(hull.reshape(-1, 2)).astype(np.int32), 1)
+    s = sil.astype(bool)
+    m = np.asarray(mask, bool)
+    inter = np.logical_and(m, s).sum()
+    union = np.logical_or(m, s).sum()
+    return float(inter) / float(max(1, union))
+
+
+def fit_view_camera(V, F, centre, dist0, mask, yaw0, pitch0, fov0, name="view"):
+    """One fit. Matte is already applied. Search yaw, pitch, fov, distance, a free
+    vertical scale, and perspective vs ortho. Rank with the convex hull, then
+    confirm the neighbourhood with the filled silhouette. Returns the full-res IoU."""
+    H, W = mask.shape
+    my, mx = np.where(mask)
+    if len(mx) < 30:
+        return None
+    mh = float(my.max() - my.min())
+    mw = float(mx.max() - mx.min())
+    best = None
+
+    def rank(yaw, pitch, fov, dist, vscale, ortho):
+        nonlocal best
+        cam = look_camera(centre, yaw, pitch, dist, fov, W, H, name=name, ortho=ortho, vscale=vscale)
+        pts = _visible_pts(cam, V)
+        if pts is None:
+            return
+        score = _hull_iou(pts, mask)
+        if best is None or score > best[0]:
+            best = (score, float(yaw), float(pitch), float(fov), float(dist), float(vscale), bool(ortho))
+
+    for ortho in (False, True):
+        for yaw in np.linspace(yaw0 - 75, yaw0 + 75, 11):
+            for pitch in np.linspace(pitch0 - 28, pitch0 + 28, 5):
+                for fov in (max(16.0, fov0 - 10), fov0, fov0 + 12):
+                    cam = look_camera(centre, float(yaw), float(pitch), dist0, float(fov), W, H, ortho=ortho, vscale=1.0)
+                    pts = _visible_pts(cam, V)
+                    if pts is None:
+                        continue
+                    pw = float(np.ptp(pts[:, 0]))
+                    ph = float(np.ptp(pts[:, 1]))
+                    if pw < 2 or ph < 2:
+                        continue
+                    us = mw / pw
+                    dist = float(np.clip(dist0 / us, dist0 * 0.35, dist0 * 3.5))
+                    vs = float(np.clip((mh / ph) / us, 0.45, 2.2))
+                    for vtry in (vs, 1.0):
+                        rank(float(yaw), float(pitch), float(fov), dist, vtry, ortho)
+    if best is None:
+        return None
+    _, yaw, pitch, fov, dist, vs, ortho = best
+    gate = None
+    for yaw_i in (yaw - 8, yaw, yaw + 8):
+        for pitch_i in (pitch - 8, pitch, pitch + 8):
+            for dist_i in (dist * 0.88, dist, dist * 1.12):
+                for vs_i in (max(0.45, vs * 0.9), vs, min(2.2, vs * 1.12)):
+                    cam = look_camera(centre, yaw_i, pitch_i, dist_i, fov, W, H, name=name, ortho=ortho, vscale=vs_i)
+                    iou, sil = silhouette_iou(V, F, cam, mask, stride=1)
+                    if gate is None or iou > gate[0]:
+                        gate = (float(iou), cam, sil, float(yaw_i), float(pitch_i), float(fov), float(dist_i), float(vs_i), bool(ortho))
+    return gate
 
 
 def _consider(item, built, centre, dist, iou_min, masks_dir, accepted, rejected, matte_fn, log):
@@ -1349,44 +1492,34 @@ def _consider(item, built, centre, dist, iou_min, masks_dir, accepted, rejected,
     if matte_fn:
         alpha = matte_fn(rgb, item)
     else:
-        # write a temp file for rembg
+        # Matte first, then fit. The silhouette match never sees sky or dunes.
         tmp = os.path.join(masks_dir, "_src-%s.jpg" % item.get("id", "v"))
         Image.fromarray((np.clip(rgb, 0, 1) * 255).astype(np.uint8)).save(tmp, quality=95)
         try:
             alpha = matte_rembg(tmp)
         except Exception as e:
-            rejected.append(dict(item, reason="matte: " + str(e)[:160]))
+            rejected.append(dict(id=item.get("id"), face=item.get("face"), reason="matte: " + str(e)[:160]))
             return
     H, W = rgb.shape[:2]
+    if alpha.shape[:2] != (H, W):
+        alpha = np.asarray(Image.fromarray((np.clip(alpha, 0, 1) * 255).astype(np.uint8)).resize((W, H), Image.BILINEAR), np.float32) / 255.0
+    mask0 = alpha > 0.5
     yaw = float(item.get("yaw") or 0)
     pitch = float(item.get("pitch") or 0)
     fov0 = float(item.get("fov") or 40)
-    best = None
-    # Coarse search only. The key outline IoU stays full resolution in run().
-    stride = max(1, len(built["F"]) // 1500)
-    for yaw_i in np.linspace(yaw - 18, yaw + 18, 4):
-        for pitch_i in np.linspace(pitch - 8, pitch + 8, 3):
-            for fov_i in (max(15.0, fov0 - 6), fov0 + 6):
-                for dist_k in (1.0, 1.35):
-                    cam = look_camera(centre, yaw_i, pitch_i, dist * dist_k, fov_i, W, H, name=str(item.get("id")))
-                    iou, sil = silhouette_iou(built["V"], built["F"], cam, alpha > 0.5, stride=stride)
-                    if best is None or iou > best[0]:
-                        best = (iou, yaw_i, pitch_i, fov_i, dist_k)
-    if best is not None:
-        yaw_i, pitch_i, fov_i, dist_k = best[1], best[2], best[3], best[4]
-        cam = look_camera(centre, yaw_i, pitch_i, dist * dist_k, fov_i, W, H, name=str(item.get("id")))
-        iou, sil = silhouette_iou(built["V"], built["F"], cam, alpha > 0.5, stride=1)
-        best = (iou, cam, sil, yaw_i, pitch_i, fov_i)
-    if best is None or best[0] < iou_min:
-        rejected.append(dict(id=item.get("id"), face=item.get("face"), reason="fit IoU %.3f < %.2f" % (0 if not best else best[0], iou_min)))
-        log("reject %s iou %s" % (item.get("id"), None if not best else round(best[0], 3)))
+    gate = fit_view_camera(built["V"], built["F"], centre, dist, mask0, yaw, pitch, fov0, name=str(item.get("id")))
+    if gate is None or gate[0] < iou_min:
+        iou = 0 if gate is None else gate[0]
+        rejected.append(dict(id=item.get("id"), face=item.get("face"), reason="fit IoU %.3f < %.2f" % (iou, iou_min), iou=round(float(iou), 3)))
+        log("reject %s iou %s" % (item.get("id"), None if gate is None else round(gate[0], 3)))
         return
-    iou, cam, sil, yaw_i, pitch_i, fov_i = best
+    iou, cam, sil, yaw_i, pitch_i, fov_i, dist_i, vs_i, ortho = gate
     mask = mask_from_alpha(alpha, sil)
     Image.fromarray((mask.astype(np.uint8) * 255)).save(os.path.join(masks_dir, "%s.png" % item.get("id")))
     _save_mask_overlay(os.path.join(masks_dir, "%s-overlay.jpg" % item.get("id")), rgb, mask)
-    accepted.append(dict(item, cam=cam, rgb=rgb, mask=mask, iou=round(float(iou), 3), yaw=yaw_i, pitch=pitch_i, fov=fov_i))
-    log("accept %s face %s iou %.3f" % (item.get("id"), item.get("face"), iou))
+    accepted.append(dict(item, cam=cam, rgb=rgb, mask=mask, iou=round(float(iou), 3), yaw=yaw_i, pitch=pitch_i, fov=fov_i,
+                         dist=dist_i, vscale=vs_i, ortho=ortho))
+    log("accept %s face %s iou %.3f ortho %s vscale %.2f" % (item.get("id"), item.get("face"), iou, ortho, vs_i))
 
 
 def _trim_boxes(V):
@@ -1488,11 +1621,32 @@ def _run_selftest(work, report, feather_px, log):
     report["checks"]["defaultIsSheet"] = any(r["kind"] == "sheet" for r in none_reqs) and sum(1 for r in none_reqs if r["kind"] == "panel" and set(r["faces"]) <= set(SIDE_FACES)) == 0
     sheet_req = next(r for r in none_reqs if r["kind"] == "sheet")
     report["checks"]["sheetPromptVerbatim"] = SHEET_PROMPT in sheet_req["prompt"] and IDENTITY_LOCK == sheet_req["identityLock"]
-    # remove the back only
+    top_req = next(r for r in none_reqs if r["id"] == "view-top")
+    report["checks"]["topPromptOwn"] = ("Four equal panels" not in top_req["prompt"]) and ("top" in top_req["prompt"].lower()) and (SHEET_PROMPT not in top_req["prompt"])
+    # remove the back only -> exactly that request
     back_reqs = plan_requests({"front", "left", "right"})
     side_only = [r for r in back_reqs if set(r["faces"]) & set(SIDE_FACES)]
     report["checks"]["backRequest"] = len(side_only) == 1 and side_only[0]["faces"] == ["back"]
-    # restore the back
+    # answered image of the back -> ingested, hole closes
+    centre = (V.min(0) + V.max(0)) / 2
+    size = V.max(0) - V.min(0)
+    dist = float(np.linalg.norm(size)) * 1.4
+    Hh, Ww = 160, 90
+    true = look_camera(centre, 180, 0, dist, 35, Ww, Hh, name="back-true")
+    _, sil = silhouette_iou(V, F, true, np.ones((Hh, Ww), bool))
+    rgb = np.full((Hh, Ww, 3), 0.78, np.float32)
+    rgb[sil.astype(bool)] = (0.22, 0.24, 0.26)
+    os.makedirs(os.path.join(work, "masks"), exist_ok=True)
+    accepted, rejected = [], []
+    item = dict(id="view-back", face="back", yaw=180, pitch=0, fov=35, kind="panel", _rgb=rgb)
+    _consider(item, dict(V=V, F=F), centre, dist, 0.8, os.path.join(work, "masks"), accepted, rejected,
+              lambda _rgb, _item: sil.astype(np.float32), log)
+    ingested = bool(accepted) and accepted[0].get("face") == "back" and accepted[0].get("iou", 0) >= 0.8
+    closed_after = plan_requests(_coverage([a["face"] for a in accepted], key=True) | {"left", "right"})
+    hole = not any("back" in r["faces"] for r in closed_after)
+    report["checks"]["backIngested"] = bool(ingested and hole)
+    report["checks"]["backIngestIoU"] = None if not accepted else accepted[0].get("iou")
+    # restore the back on the planner too
     closed = plan_requests({"front", "left", "right", "back"})
     report["checks"]["backClosed"] = not any(set(r["faces"]) & set(SIDE_FACES) for r in closed)
     # joint blend
@@ -1500,13 +1654,14 @@ def _run_selftest(work, report, feather_px, log):
     report["checks"]["joint"] = [round(float(x), 3) for x in mix]
     ok = (sim["ok"] and report["checks"]["edgeFail"]["ok"] is False and report["checks"]["edgePass"]["ok"] is True
           and report["checks"]["sheetScaleEqual"] and report["checks"]["defaultIsSheet"]
-          and report["checks"]["sheetPromptVerbatim"]
+          and report["checks"]["sheetPromptVerbatim"] and report["checks"]["topPromptOwn"]
           and report["checks"]["backRequest"] and report["checks"]["backClosed"]
+          and report["checks"]["backIngested"]
           and abs(mix[0] - 0.25) < 1e-5)
     report["status"] = "PASS" if ok else "FAIL"
     report["summary"] = "selftest " + report["status"]
     json.dump(report, open(os.path.join(work, "project-report.json"), "w"), indent=1, default=str)
-    log(report["summary"] + " " + json.dumps({k: report["checks"][k] for k in ("defaultIsSheet", "backRequest", "backClosed", "sheetScaleEqual")}))
+    log(report["summary"] + " " + json.dumps({k: report["checks"][k] for k in ("defaultIsSheet", "backRequest", "backClosed", "backIngested", "sheetScaleEqual", "topPromptOwn")}))
     return report
 
 
