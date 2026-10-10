@@ -1,0 +1,41 @@
+# Zone B key-compare: key-city3 vs the in-game view from the key camera, element by element (object-gate key-compare.mjs).
+# Rects are fractions of the frame [x0, y0, x1, y1]. The GAME side uses the SAME rect by default: the camera is matched,
+# so the frame IoU is honest (position + shape). Masks: see lib/keycompare.py RULE.
+title: "Zone B : image clé vs jeu (même caméra)"
+key: /workspace/zb-bible-1008/key-city3.jpg
+url: http://127.0.0.1:8996/index.html
+viewport: [1280, 720]          # the key's 16:9
+settleMs: 10000
+camera: {x: -51.1, z: 9.6, yaw: 84, pitch: -1.16, eye: 3.15, fovDeg: 66}   # --solve 2026-10-10 (v58, 44 shots): score 0.47, sky IoU 0.54,
+#   dark IoU 0.21 -> the v58 layout does not reproduce the key composition (spawn camera on a mound; the towers, spire
+#   and sun do not line up as in the key); re-run --solve after layout changes (`--camera camera.json` overrides this)
+solve:                          # key-camera search (stage 1: positions x yaws; 2: yaw/pitch/fov/eye; 3: position nudge)
+  eye: 3.15
+  positions: [[-51.1, 9.6], [-51.1, 30], [-51.1, -10], [-40, 10]]   # along the avenue around the spawn
+  yaws: [36, 50, 60, 70, 80, 90]   # (best 2026-10-10 at the edge: 84)  36 = spawn -> spire (tower-id hero); sun azimuth 90 sits ~20 deg right of centre in the key -> ~70
+  fovs: [50, 58, 66, 74]        # best 2026-10-10 at the edge: 66
+  dys: [-1.4, 0]
+  refineTop: 1
+  waitMs: 1000
+  viewport: [384, 216]
+maskRenders:                    # same camera, other pages (staging only, never live edits)
+  mesa: mesatest.html?mesaStrata=strata6
+  mesamask: mesatest.html?mesaStrata=strata6&mesaMask=1&mesaOnly=1
+elements:
+  - {id: towers, name: "Tours (corps)", type: building, key: {rect: [0.137, 0.05, 0.47, 0.63], mask: dark}}
+  - {id: tower-right, name: "Tour de droite", type: building, key: {rect: [0.84, 0.12, 0.935, 0.5], mask: dark}}
+  - {id: tower-edges, name: "Tours : arêtes et dégâts", type: building, metrics: [colour, structure], key: {rect: [0.327, 0.066, 0.41, 0.23], mask: all}}
+  - {id: facade, name: "Détail des façades", type: building, metrics: [colour, structure], key: {rect: [0.335, 0.25, 0.40, 0.5], mask: dark}, game: {mask: notsky}}   # colour + structure of whatever facade stands there
+  - {id: avenue, name: "Avenue pavée et rail enfoui", type: terrain, key: {rect: [0.40, 0.65, 0.62, 1.0], mask: {lumBelow: 85}}}
+  - {id: sand, name: "Sable et dunes", type: terrain, key: {rect: [0.62, 0.6, 1.0, 1.0], mask: sand}}
+  - {id: mesas, name: "Mesas (nouvelles, strata6)", type: rock, gameRender: mesa, key: {rect: [0.0, 0.21, 0.24, 0.58], mask: rock}, game: {mask: {render: mesamask}, visible: rock}}   # silhouette = magenta mask render (no occluders); visible = rock pixels of the beauty render
+  - {id: arch, name: "Arche", type: rock, key: {rect: [0.66, 0.38, 0.85, 0.53], mask: rock}}
+  - {id: spire, name: "Flèche, anneaux et faisceau", type: building, key: {rect: [0.57, 0.0, 0.68, 0.6], mask: {not: sky}}}
+  - {id: sky, name: "Dégradé du ciel", type: sky, metrics: [colour, structure], key: {rect: [0.0, 0.0, 1.0, 0.3], mask: sky}}
+  - {id: rings, name: "Arcs d'anneaux", type: celestial, key: {rect: [0.45, 0.0, 1.0, 0.35], mask: {and: [sky, {lumAbove: 175}]}}}
+  - {id: moon, name: "Lune", type: celestial, key: {rect: [0.71, 0.13, 0.77, 0.26], mask: {lumAbove: 165}}}
+  - {id: planet, name: "Planète", type: celestial, notInKey: true, note: "hors du cadre de la clé (azimut 270, opposé au soleil)", key: {rect: [0.0, 0.0, 0.3, 0.3]}}
+  - {id: sun, name: "Soleil et rayons", type: light, key: {rect: [0.62, 0.32, 0.76, 0.5], mask: {lumAbove: 200}}}
+  - {id: haze, name: "Brume à l'horizon", type: atmosphere, metrics: [colour, structure], key: {rect: [0.47, 0.42, 0.56, 0.6], mask: all}}
+  - {id: wreck, name: "Épave du vaisseau", type: vehicle, key: {rect: [0.58, 0.47, 1.0, 0.72], mask: {and: [{not: sand}, {not: sky}, {lumBelow: 150}]}}}
+  - {id: debris, name: "Débris et rail cassé", type: prop, key: {rect: [0.0, 0.56, 0.45, 1.0], mask: {lumBelow: 80}}}

@@ -64,3 +64,19 @@ checklist:
   maxDeltaE: null        # colour vs key crop; null = report only
 runtime:
   viewports: [[412, 915], [540, 1200]]
+keyCompare:
+  # key-compare.mjs (SmiR 2026-10-10): key image vs the in-game view from the key camera, per element of the key. MANDATORY when
+  # the scene yaml has `keyCompare:` (cli.mjs / gateSceneKC / gateAndFix) and in imagine-to-3d auto.py (stage keycompare) + fixloop.py.
+  # gate   = FAIL limits (an element out of bounds blocks the delivery).   target = where the fix loop drives every
+  # element (a gap is reported, never a FAIL). Metrics: iou = outline IoU in frame coordinates (camera matched);
+  # deLit / deShadow = CIEDE2000 of the mean colour of the lit / shadow half of the element; structure = SSIM of
+  # luminance after alignment. Colour limits derive from biome.json qc (horizonDE 6, shadowDE 10, highlightDE 12,
+  # objectLitDE 14) tightened for lit object faces. A 3D object seen from one angle cannot reach 100 % against a 2D
+  # painting: see key-compare.json `ceiling` per element (measurement ceiling) and fixloop's best-achieved report.
+  gate: {iouMin: 0.5, deLitMax: 10, deShadowMax: 10, structureMin: 0.2}
+  target: {iouTarget: 0.95, deLitTarget: 3, deShadowTarget: 4, structureTarget: 0.9}
+  types:              # scene-only element types (no object profile)
+    sky: {gate: {deLitMax: 6, deShadowMax: 8, structureMin: 0.5}, target: {deLitTarget: 2, deShadowTarget: 3, structureTarget: 0.95}}
+    atmosphere: {gate: {deLitMax: 6, deShadowMax: 8, structureMin: 0.3}, target: {deLitTarget: 2, deShadowTarget: 3, structureTarget: 0.9}}
+    celestial: {gate: {iouMin: 0.3, deLitMax: 12, deShadowMax: 12, structureMin: 0.2}, target: {iouTarget: 0.9, deLitTarget: 4, deShadowTarget: 5, structureTarget: 0.85}}
+    light: {gate: {iouMin: 0.3, deLitMax: 12, deShadowMax: 12, structureMin: 0.2}, target: {iouTarget: 0.9, deLitTarget: 4, deShadowTarget: 5, structureTarget: 0.85}}
