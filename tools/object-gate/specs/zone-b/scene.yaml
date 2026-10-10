@@ -4,6 +4,7 @@ scene: zone-b-preview-1008
 url: http://127.0.0.1:8996/
 adapter: ../../adapters/zb-preview-1008.mjs
 key: /workspace/zb-bible-1008/key-city3.jpg
+keyCompare: key-compare.yaml   # MANDATORY key image vs key-camera render, per element (sheet on every run)
 hud: {selector: "#tag", text: "Zone B — aperçu (tours phase 1, sans Bolt)"}
 title: "Zone B — aperçu"
 runtime:

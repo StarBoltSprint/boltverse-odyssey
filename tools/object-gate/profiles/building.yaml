@@ -11,3 +11,6 @@ checklistTemplate:
   - {id: colours, feature: "Colours as the key under the key light (no pink/orange wash, sand only low)", captures: [close, far]}
   - {id: details, feature: "Key details present (ladders, balconies, trims...)", captures: [close, low-portrait]}
   - {id: base, feature: "Seated in the ground with sand drift, no gap, contact shadow", captures: [low-portrait]}
+keyCompare:   # key-compare.mjs: towers, spire, facades (see _base.yaml keyCompare)
+  gate: {iouMin: 0.5, deLitMax: 8, deShadowMax: 10, structureMin: 0.25}
+  target: {iouTarget: 0.95, deLitTarget: 3, deShadowTarget: 4, structureTarget: 0.9}

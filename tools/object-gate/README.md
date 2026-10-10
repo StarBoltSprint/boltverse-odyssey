@@ -29,6 +29,8 @@ or point `OG_PLAYWRIGHT=/path/to/playwright/index.mjs` at an existing install). 
 | `profiles/*.yaml` | per-type thresholds + checklist templates: `building rock vehicle prop vegetation ice creature effect terrain` (all extend `_base`) |
 | `adapters/*.mjs` | how to reach one game page (scene, camera, renderer, THREE, player pose, ground height, player path). `zb-preview-1008.mjs` = Zone B preview. |
 | `specs/<zone>/` | scene.yaml + one yaml per object + `records/<id>.verified.yaml` (checklist passes) |
+| `key-compare.mjs` | **key image vs the key-camera render, per key element**: outline IoU, lit / shadow ΔE2000, structure SSIM, per-type `keyCompare` thresholds, sheet on every run; `--solve` finds the key camera. Spec: `specs/<zone>/key-compare.yaml` |
+| `lib/keycompare.py` | masks, metrics, measurement ceiling, sheet (`sheet.jpg` 1080 px + `sheet-small.jpg`), camera-solver score |
 | `hooks/imagine-to-3d.mjs` | Imagine-to-3D final stage: `gateAndFix()` / CLI: gate → fix plan → fix → re-gate → export on PASS |
 
 ## Checks
@@ -50,6 +52,16 @@ or point `OG_PLAYWRIGHT=/path/to/playwright/index.mjs` at an existing install). 
 8. **Runtime**: console/page errors, shader compile, HUD/title text, portrait viewports, budgets (report only), and
    **live preview untouched** during the run (adapter `liveDir`; only files the live page loads count, staging files beside them are listed; never edit live files in place: stage, gate, swap after PASS).
 9. **Effects**: every effect mesh samples an Imagine texture (allow-listed folders).
+10. **Key-compare (2026-10-10, mandatory when the scene has `keyCompare:`; `cli.mjs` / `gateAndFix` / `gateSceneKC`)**: the game rendered from the key camera next to
+   the key; per element of the key (towers, facades, avenue, sand, mesas, arch, spire, sky, rings, moon, sun, haze,
+   wreck, debris...): outline IoU (frame), CIEDE2000 of the lit and the shadow half, SSIM structure after alignment.
+   FAIL beyond the type's `keyCompare.gate`; gaps to `keyCompare.target` drive `imagine-to-3d/fixloop.py keyloop`.
+   Missing elements FAIL. Writes `key-compare/sheet.jpg` on every run. Method: `docs/METHOD/key-compare-and-consistency.md`.
+
+```bash
+node tools/object-gate/key-compare.mjs --spec tools/object-gate/specs/zone-b/key-compare.yaml --solve --out out/kc   # find the key camera
+node tools/object-gate/key-compare.mjs --spec tools/object-gate/specs/zone-b/key-compare.yaml --camera out/kc/camera.json --out out/kc
+```
 
 ## Recording checklist passes
 

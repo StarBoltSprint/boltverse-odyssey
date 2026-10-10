@@ -12,6 +12,7 @@ import { execSync } from "node:child_process";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { loadScene, gateScene } from "../gate.mjs";
+import { withKeyCompare } from "../key-compare.mjs";
 
 /** FAIL row -> fix action the pipeline can run without asking. `auto: false` = needs a review (vision/owner). */
 export const FIX_ACTIONS = [
@@ -34,6 +35,12 @@ export const FIX_ACTIONS = [
   { re: /^facade relief/, action: "add-relief", auto: true, what: "model relief from the key crop (fins/ledges/bays or strata)" },
   { re: /^proportions/, action: "rescale", auto: true, what: "scale the solid to the spec ratios in Blender" },
   { re: /^effects/, action: "imagine-fx-texture", auto: true, what: "sample the effect colour/alpha from an Imagine plate" },
+  // key-compare rows (2026-10-10) -> imagine-to-3d fixloop.py classes kc-shape / kc-colour / kc-detail (never an Imagine generation)
+  { re: /^key-compare .*: iou/, action: "kc-shape", auto: true, what: "shape-seed search + silhouette warp toward the key mask of the element (fixloop.py keyloop)" },
+  { re: /^key-compare .*: (deLit|deShadow)/, action: "kc-colour", auto: true, what: "grade-match the element toward the key, lit and shadow separately (render-measured Lab offset on the Imagine plates)" },
+  { re: /^key-compare .*: structure/, action: "kc-detail", auto: true, what: "plate re-pick from the closest key-style plates, relief strength and detail-layer sweep (fixloop.py keyloop)" },
+  { re: /^key-compare .*: present/, action: "build-element", auto: false, what: "the key element is missing in game: build / mount it (Imagine requests need approval)" },
+  { re: /^key-compare run/, action: "fix-runtime", auto: true, what: "key-compare crashed: fix the spec or the staging URL" },
   { re: /^key checklist: every item/, action: "verify-captures", auto: false, what: "Grok vision / owner reviews the capture sheet next to the key crop and records pass/fail per item" },
   { re: /^key checklist written|^key crop present/, action: "write-checklist", auto: false, what: "write the per-object checklist from the key crop" },
 ];
@@ -43,6 +50,10 @@ export function fixPlan(report) {
   for (const o of report.objects) for (const r of o.rows) if (r.status === "FAIL") {
     const a = FIX_ACTIONS.find((f) => f.re.test(r.check)) || { action: "manual", auto: false, what: "no automatic fix known" };
     items.push({ object: o.id, id: r.id, check: r.check, action: a.action, auto: a.auto, what: a.what, detail: r.detail, hints: r.hints });
+  }
+  for (const r of (report.keyCompare && report.keyCompare.rows) || []) if (r.status === "FAIL") {
+    const a = FIX_ACTIONS.find((f) => f.re.test(r.check)) || { action: "manual", auto: false, what: "no automatic fix known" };
+    items.push({ object: "key-compare:" + (r.element || "*"), id: r.id, check: r.check, action: a.action, auto: a.auto, what: a.what, detail: r.detail, hints: r.hints });
   }
   for (const r of report.runtime) if (r.status === "FAIL") items.push({ object: "*", id: r.id, check: r.check, action: /shader/.test(r.check) ? "fix-shader" : "fix-runtime", auto: true, detail: r.detail, hints: r.hints });
   return { verdict: report.verdict, report: report.out, items };
@@ -58,7 +69,7 @@ export async function gateAndFix({ scene, object, fix, exportFn, maxRounds = 3, 
   const base = resolve(out || join(sc.dir, "out", "i23d-" + new Date().toISOString().replace(/[:.]/g, "-")));
   const seen = new Map(); const rounds = [];
   for (let round = 1; round <= maxRounds; round++) {
-    const rep = await gateScene(sc, { url, out: join(base, "round-" + round), only: object ? [object] : null, fast, log });
+    const rep = await withKeyCompare(await gateScene(sc, { url, out: join(base, "round-" + round), only: object ? [object] : null, fast, log }), sc, { log });
     const plan = fixPlan(rep); rounds.push({ round, verdict: rep.verdict, fails: plan.items.length, report: rep.out });
     writeFileSync(join(rep.out, "fix-plan.json"), JSON.stringify(plan, null, 2));
     if (rep.verdict === "PASS") {

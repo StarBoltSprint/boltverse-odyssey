@@ -46,6 +46,27 @@ Python pipelines use the CLIs instead: `cli.mjs` and `hooks/imagine-to-3d.mjs`. 
 | `scoreVisible(t, R, view, texelRows, repRows, footprints, spec, render?)` (1.2; `render` 1.3) | `→ {rows, perSurface}` | The three policy-`visible` rows from saved measurements (pure, no page). `render` = the 8 m capture result (`visible.json.render`); without it the 1.2 sampling rule applies. |
 | `toMarkdown(report)` | | Renders `report.md`. |
 
+## key-compare (2026-10-10, additive: new module `key-compare.mjs`, `gate.mjs` unchanged)
+
+```js
+import { gateSceneKC, withKeyCompare, keyCompare, renderKeyView, solveCamera, keyCompareThresholds, loadKeySpec, KC_CHECK_IDS } from "<repo>/tools/object-gate/key-compare.mjs";
+```
+
+| Export | Use |
+|---|---|
+| `loadKeySpec(yaml)` | key-compare spec: `key`, `url`, `viewport`, `camera {x,z,yaw,pitch,eye,fovDeg}`, `solve`, `maskRenders`, `elements[] {id,name,type,key:{rect,mask},game?,gameRender?,metrics?,notInKey?,reportOnly?}` |
+| `keyCompareThresholds(type)` | `{gate:{iouMin,deLitMax,deShadowMax,structureMin}, target:{iouTarget,deLitTarget,deShadowTarget,structureTarget}}` from `profiles/<type>.yaml` `keyCompare` (object types) or `_base.yaml keyCompare.types` (sky, atmosphere, celestial, light) |
+| `renderKeyView(spec, {out,url})` | renders the key camera (fov + eye offset applied to the game camera in page, no file edit) + mask renders |
+| `solveCamera(spec, {out,url})` | camera search → `<out>/camera.json` |
+| `keyCompare(spec, {out,url,only,game,masks})` | → `{verdict, rows, elements, sheet, sheetSmall, summary}`; writes `key-compare.json`, `key-compare.md`, `report.json`, `sheet.jpg`, `sheet-small.jpg`, `crops/` |
+
+**Mandatory path:** `gateSceneKC(scene, opts)` = `gateScene()` + `withKeyCompare(report, scene, opts)`; `cli.mjs` and
+`hooks/imagine-to-3d.mjs gateAndFix()` use it. When the scene yaml has `keyCompare: <spec>` (opts `keyCompareOnly`,
+`keyCompareUrl`, `keyCamera`; `noKeyCompare` for iteration only) it adds `report.keyCompare = {verdict, sheet,
+sheetSmall, report, rows, summary}`, a FAIL there makes `report.verdict` FAIL, and `report.json` / `report.md` are
+rewritten with the key-compare section. A caller that uses `gateScene()` directly must call `withKeyCompare()`. `fixPlan()` maps them to actions `kc-shape`, `kc-colour`, `kc-detail`,
+`build-element` (imagine-to-3d `fixloop.py` classes of the same names).
+
 ## Row ids (stable)
 
 | Group | Row ids |
@@ -60,6 +81,7 @@ Python pipelines use the CLIs instead: `cli.mjs` and `hooks/imagine-to-3d.mjs`. 
 | Geometry | `geometry.sealed`, `geometry.relief`, `geometry.proportions` |
 | Effects | `effects.imagine-texture`, `effects.no-colour-literals` |
 | Checklist | `checklist.written`, `checklist.key-crop`, `checklist.verified`, `checklist.colour` |
+| Key-compare (`KC_CHECK_IDS`) | `key-compare.iou`, `key-compare.lit-de`, `key-compare.shadow-de`, `key-compare.structure`, `key-compare.missing`, `key-compare.crash` (each row also carries `element`) |
 | Runtime | `runtime.console`, `runtime.shader`, `runtime.hud`, `runtime.title`, `runtime.portrait`, `runtime.budgets` (INFO), `runtime.live-untouched` |
 
 ## Report JSON (`<out>/report.json`)

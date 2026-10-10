@@ -76,5 +76,27 @@ const fake = { verdict: "FAIL", out: dir, runtime: [{ check: "shader compile 412
 const plan = fixPlan(fake);
 ok(plan.items.length === 4 && plan.items[0].action === "plate-sections" && plan.items[1].action === "sink" && plan.items[2].auto === false && plan.items[3].action === "fix-shader", "fix plan actions");
 ok(toMarkdown({ ...fake, url: "u", adapter: "a", startedAt: "t", objects: fake.objects.map((o) => ({ ...o, verdict: "FAIL", files: {} })) }).includes("| tower | undefined | FAIL |"), "markdown renders");
+// key-compare (2026-10-10): thresholds per type, identical image = MATCH everywhere, shifted/darkened image = FAIL rows + kc fix actions
+{
+  const KC = await import("./key-compare.mjs");
+  const tb = KC.keyCompareThresholds("building"), ts = KC.keyCompareThresholds("sky");
+  ok(tb.gate.iouMin > 0 && tb.target.iouTarget >= tb.gate.iouMin && ts.gate.deLitMax > 0, "key-compare thresholds resolve per type (profile + _base types)");
+  const d = mkdtempSync(join(tmpdir(), "kc-"));
+  execFileSync("python3", ["-c", `
+import numpy as np; from PIL import Image
+y,x=np.mgrid[0:180,0:320]; a=np.zeros((180,320,3),np.uint8)
+a[...,0]=120+y//3; a[...,1]=90+y//4; a[...,2]=170-y//3            # sky-like gradient (b > g)
+a[60:180,40:90]=(30,28,32); a[100:180,200:320]=(190,130,95)        # dark tower, warm sand
+Image.fromarray(a).save('${d}/key.png')
+b=np.roll(a,40,axis=1).astype(int); b[100:180,200:320]=(120,80,60); Image.fromarray(b.clip(0,255).astype(np.uint8)).save('${d}/bad.png')`]);
+  const spec = { dir: d, key: join(d, "key.png"), camera: {}, elements: [
+    { id: "tower", type: "building", key: { rect: [0.1, 0.3, 0.35, 1], mask: "dark" } },
+    { id: "sand", type: "terrain", key: { rect: [0.6, 0.55, 1, 1], mask: "sand" } }] };
+  const same = await KC.keyCompare(spec, { out: join(d, "same"), game: join(d, "key.png"), log: () => {} });
+  ok(same.verdict === "PASS" && same.elements.every((e) => e.iou === 1 && e.deLit === 0), `key-compare identical image: ${same.verdict}`);
+  const bad = await KC.keyCompare(spec, { out: join(d, "bad"), game: join(d, "bad.png"), log: () => {} });
+  const fp = fixPlan({ verdict: "FAIL", out: d, runtime: [], objects: [], keyCompare: bad });
+  ok(bad.verdict === "FAIL" && fp.items.some((i) => i.action === "kc-shape") && fp.items.some((i) => i.action === "kc-colour"), `key-compare shifted/darkened: ${bad.verdict}, actions ${[...new Set(fp.items.map((i) => i.action))]}`);
+}
 console.log(fails ? `FAIL ${fails}` : "PASS selftest");
 process.exit(fails ? 1 : 0);
