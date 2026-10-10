@@ -61,3 +61,13 @@ Append-only.
 - Rule: never edit live preview files in place. Work in a staging copy (mesas/mesas-v9.mjs, loaded only by
   mesatest.html / main-mesatest.mjs). Swap the live file only after the gate PASSES and close/low/far phone captures are checked, then bump ?v=.
 - Guard: imagine-to-3d/runtime/build.py assembles the staging module and refuses to write a path ending in /mesas.mjs.
+
+## 2026-10-09 evening - v2 strata mesas (staging)
+- Pagoda of thin plates + spikes: one level set per stratum on a dome hull steps every layer; noisy masks made radial spikes. Fix: 3 steep tiers, cleaned masks (largest component, fill, opening, median 9).
+- Wall winding was inward (5408 in / 890 out), so back faces showed and the walls read as a soft dome. Fix: quad order; strata.py now reports wallOut/blockOut.
+- Repetition rule over-strict at first (same plate within 7 m counted even with no shared pixels). Final rule: no shared plate pixels within 7 m, no same pixels (>50 % overlap, same flip) within 30 m. Re-seeding auto-fix.
+- Depth relief pushed px/m under 64 (stretch 1.28). Fix: gradient limit 0.7 (stretch <= 1.22). "Spikes" metric flagged real creases. Fix: median-residual spike test.
+- Far LOD merged coincident stacked layers -> non-manifold edges. Fix: one prism per tier on LOD2; degenerate tris dropped.
+- Collider from a radial offset of the raw foot ring self-intersected at fracture steps, so the walker ended inside the rock. Fix: star-shaped radial envelope.
+- Gate page crashed ("Target crashed") with every LOD0 relief mesh resident. Fix: LOD0 built lazily near the camera and freed far away.
+- The object-gate's "unique px/m" (a reused plate counts once) can't reach 64 px/m on ~25k m2 mesa walls with any feasible Imagine budget. Decision needed (see report).
