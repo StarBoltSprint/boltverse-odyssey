@@ -100,6 +100,17 @@ export const GROUND_GLSL = /* glsl */ `
 
 uniform mediump sampler2DArray uGroundTex;
 uniform mediump sampler2DArray uGroundNrm;   // derived normals, same layout as uGroundTex (flipY false, row 0 = v 0)
+// G_HR8 (lossless): POM / height reads come from an R8 copy of the height channel (uGroundNrm.b, same bytes, 1/4 the
+// bandwidth of the RGBA8 normal array). Up to 28 height fetches per pixel in the POM loop; colour/normal reads unchanged.
+// Build and bind the copy with createHeightArray() / setHeightR8() (ground-fill.mjs).
+#ifdef G_HR8
+uniform mediump sampler2DArray uGroundH;
+#define G_HTEX uGroundH
+#define G_HCH r
+#else
+#define G_HTEX uGroundNrm
+#define G_HCH b
+#endif
 uniform float uGroundTileM, uGroundCells, uGroundOffset, uGroundBomb, uGroundSeed, uGroundSplatM, uGroundEdge;
 uniform float uGroundMacro, uGroundMacroAmt, uGroundRelief, uGroundNrmStr, uGroundSunAmb;
 uniform float uGroundPacked, uGroundPom, uGroundPomDepth, uGroundPomFade, uGroundPomSteps, uGroundShadow;
@@ -154,7 +165,7 @@ void gVariantXf(float L, float mode, float k, out float a, out vec2 off) {
   off = (h.yz * 2.0 - 1.0) * uGroundOffset;
 }
 float gHeight(float L, vec2 uvb, float a, vec2 off, vec2 rgx, vec2 rgy) {
-  return GTG(uGroundNrm, vec3(gRot(uvb - 0.5, a) + 0.5 + off, L), rgx, rgy).b;
+  return GTG(G_HTEX, vec3(gRot(uvb - 0.5, a) + 0.5 + off, L), rgx, rgy).G_HCH;
 }
 // one variant of layer L: hashed offset + rotation about the tile centre. Normal fetch only when relief is on.
 GroundSample gVariant(float L, float mode, float k, vec2 uv, vec2 gx, vec2 gy) {
@@ -198,9 +209,9 @@ float gHeight2(float L, vec2 uvb, float a1, vec2 o1, float a2, vec2 o2, float b,
 // step (gRot = cos/sin + the same 2x2 formula). Bit-identical inputs to the same fetches. #define G_OLDPOM = old path (A/B).
 vec2 gRotC(vec2 v, vec2 cs) { return vec2(cs.x * v.x - cs.y * v.y, cs.y * v.x + cs.x * v.y); }
 float gHeight2C(float L, vec2 uvb, vec2 c1, vec2 o1, vec2 c2, vec2 o2, float b, vec2 g1x, vec2 g1y, vec2 g2x, vec2 g2y) {
-  float h1 = GTG(uGroundNrm, vec3(gRotC(uvb - 0.5, c1) + 0.5 + o1, L), g1x, g1y).b;
+  float h1 = GTG(G_HTEX, vec3(gRotC(uvb - 0.5, c1) + 0.5 + o1, L), g1x, g1y).G_HCH;
   if (b < 0.01) return h1;
-  float h2 = GTG(uGroundNrm, vec3(gRotC(uvb - 0.5, c2) + 0.5 + o2, L), g2x, g2y).b;
+  float h2 = GTG(G_HTEX, vec3(gRotC(uvb - 0.5, c2) + 0.5 + o2, L), g2x, g2y).G_HCH;
   return mix(h1, h2, b);
 }
 vec2 gPom(float L, float mode, vec2 uv, vec2 gx, vec2 gy, vec2 wxz, vec3 Vt, vec3 Lt, float fade, out float sh) {

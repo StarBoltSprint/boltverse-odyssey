@@ -16,7 +16,7 @@ precision highp float;
 uniform sampler2D map; in vec3 vW; out vec4 o;
 ${SKY_EQUIRECT_GLSL}
 void main(){ o = vec4(biomeSky(map, vW), 1.0); }`;
-// ground: default path + the A/B switches (G_OLDPOM = per-step sincos POM loop, G_IMPLICIT = bench diagnostic)
+// ground: default path + the A/B switches (G_OLDPOM = per-step sincos POM loop, G_IMPLICIT = bench diagnostic, G_HR8 = R8 height reads)
 const groundFrag = (defs) => `#version 300 es
 precision highp float;
 ${defs}
@@ -45,7 +45,7 @@ const res = await p.evaluate(([progs]) => {
     out[name] = log || "ok";
   }
   return out;
-}, [[["fog", fogVert, fogFrag], ["grade", FULLSCREEN_VERT, GRADE_FRAG], ["sky", fogVert, skyFrag], ["ground", groundVert, groundFrag("")], ["ground G_OLDPOM", groundVert, groundFrag("#define G_OLDPOM 1")], ["ground G_IMPLICIT", groundVert, groundFrag("#define G_IMPLICIT 1")]]]);
+}, [[["fog", fogVert, fogFrag], ["grade", FULLSCREEN_VERT, GRADE_FRAG], ["sky", fogVert, skyFrag], ["ground", groundVert, groundFrag("")], ["ground G_OLDPOM", groundVert, groundFrag("#define G_OLDPOM 1")], ["ground G_IMPLICIT", groundVert, groundFrag("#define G_IMPLICIT 1")], ["ground G_HR8", groundVert, groundFrag("#define G_HR8 1")]]]);
 await b.close();
 console.log("[glsl]", JSON.stringify(res));
 process.exit(Object.values(res).every((v) => v === "ok") ? 0 : 1);
