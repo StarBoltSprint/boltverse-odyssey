@@ -46,7 +46,7 @@ or point `OG_PLAYWRIGHT=/path/to/playwright/index.mjs` at an existing install). 
 3. **Approach morph** 300 → 10 m on the nearest copies with the game's own LOD logic: silhouette IoU jumps.
 4. **Shadows**: cast, world-fixed (mask IoU after moving the player 80 m), neutral colour (not violet).
 5. **Grounding**: rays from below under the lower 20 % of each copy vs ground height.
-6. **Geometry**: welded non-manifold / open edges, facade relief, proportions vs spec.
+6. **Geometry**: welded non-manifold / open edges, facade relief, proportions vs spec. A buffer that stacks variant shells on `aZbPart` is welded per part (the union is non-manifold even when each shell is closed). An empty LOD buffer (no position) is not an instance. The morph mask parks sibling copies of the same module. A data LUT is not scored for anisotropy. A shadow probe also toggles an unnamed sibling that already casts. Neighbour footprints use the oriented half-extents and skip LOD levels of the same copy.
 7. **Key checklist**: captures (close, low phone portrait, far) → `capture-sheet.jpg` beside the key crop; FAIL unless
    every item has a recorded pass on a current capture (dHash ≤ 12) in `records/<id>.verified.yaml`. ΔE vs key crop.
 8. **Runtime**: console/page errors, shader compile, HUD/title text, portrait viewports, budgets (report only), and

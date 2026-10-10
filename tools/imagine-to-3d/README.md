@@ -47,6 +47,9 @@ Stages, in order (each writes its report next to the outputs):
    per-plate p99 normalisation, amplitude per type (mesa +-1.5 m, tower +-0.3 m, rock +-0.6 m), gradient-limited so the
    texture stretch on the displaced surface stays <= 1.3. Used ONLY to displace the shell in/out; the volume is never
    rebuilt from depth (Grok q15). Check: relief std > 8 % of amplitude, spikes < 0.1 %, p99.9 gradient <= limit.
+   **Building facades = this same depth, quantised to hard planes** (`python3 depth_relief.py building <pxm> <out> plates…`,
+   selected by `profiles/building.yaml` `relief.mode: hard-surface`). `hard_surface.py` welds those planes into the tower
+   shell (bays, slabs, ribs, chrome frames, damage). Flat and blobby maps FAIL. Mesa `relief()` is unchanged.
 4. `strata.py` (+ `gen_strata_all.py` auto-fix loop) - blocky stratified cliffs on the fused outline: strata from the
    front plate's bedding lines, 3 steep tiers, angular faces <= 10.5 m with fracture steps, caprock overhang/undercut,
    chamfered ledges, fallen blocks + scree; per-vertex plate id + native plate px (walls 80 px/m, caps 64, block faces 320);

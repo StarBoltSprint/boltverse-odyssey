@@ -33,6 +33,7 @@ export const FIX_ACTIONS = [
   { re: /^grounding/, action: "sink", auto: true, what: "sink below the lowest footprint corner + base fill + drift" },
   { re: /^mesh sealed/, action: "heal-manifold", auto: true, what: "weld, drop coincident faces, cap loops" },
   { re: /^facade relief/, action: "add-relief", auto: true, what: "model relief from the key crop (fins/ledges/bays or strata)" },
+  { re: /^facade crisp/, action: "quantise-planes", auto: true, what: "quantise the depth relief into a few flat planes and crisp right-angle steps" },
   { re: /^proportions/, action: "rescale", auto: true, what: "scale the solid to the spec ratios in Blender" },
   { re: /^effects/, action: "imagine-fx-texture", auto: true, what: "sample the effect colour/alpha from an Imagine plate" },
   // key-compare rows (2026-10-10) -> imagine-to-3d fixloop.py classes kc-shape / kc-colour / kc-detail (never an Imagine generation)

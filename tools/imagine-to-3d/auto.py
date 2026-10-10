@@ -61,6 +61,7 @@ class Run:
         self.sp = os.path.join(self.work, "state.json")
         self.state = json.load(open(self.sp)) if os.path.exists(self.sp) else dict(object=self.spec["object"], stages={})
         self.type = self.spec.get("type", "auto")
+        self.no_browser = False
 
     def save(self): C.dump(self.state, self.sp)
 
@@ -81,6 +82,15 @@ class Run:
             for w, p in pj.get("imagine", {}).items(): files.append(("plate" if (w in walls or not walls) else "plate-unused", w, p))
         for p in sorted(glob.glob(os.path.join(im.get("detailSrc", "/nonexistent"), "*.png"))): files.append(("detail", os.path.basename(p), p))
         for p in im.get("sectionTex", []): files.append(("section", os.path.basename(p), os.path.join(im.get("sectionTexDir", ""), p)))
+        ex = set(str(x) for x in (im.get("excludePlates") or []))
+        if im.get("plateDir"):
+            globs_ = im.get("plateGlob") or ["*.jpg", "*.png"]
+            if isinstance(globs_, str): globs_ = [globs_]
+            for gpat in globs_:
+                for p in sorted(glob.glob(os.path.join(im["plateDir"], gpat))):
+                    name = os.path.splitext(os.path.basename(p))[0]
+                    if name in ex: continue
+                    files.append(("plate", name, p))
         raw = sorted(glob.glob(os.path.join((sp.get("grade") or {}).get("rawDir") or "/nonexistent", "raw*.rgba")))
         for p in raw:   # decoded Imagine section cells: must be exactly 1024² (never resized)
             if os.path.getsize(p) != 1024 * 1024 * 4: bad.append(dict(kind="section-raw", id=os.path.basename(p), why="not a 1024² RGBA cell"))
@@ -188,8 +198,60 @@ class Run:
         self.type = r["type"]; self.state["type"] = self.type
         return self.done("classify", "NEEDS_REVIEW" if r["needsVision"] else "PASS", type=r["type"], margin=r["margin"], summary=f"type {r['type']} margin {r['margin']}")
 
+    def _hs(self):
+        """Building profile of this module: quantise DA-V2 into flat planes. Rock/mesa never enter.
+        A building spec with no geometry block (grade only) stays on the skip path."""
+        if self.type != "building" or not self.spec.get("geometry"):
+            return False
+        g = self.spec["geometry"]
+        mode = ((g.get("relief") or {}).get("mode")) or g.get("generator") or ""
+        if mode in ("hard-surface", "hard_surface"):
+            return True
+        try:
+            prof = C.load_profile("building")
+        except Exception:
+            return False
+        return (((prof.get("geometry") or {}).get("relief") or {}).get("mode") == "hard-surface")
+
+    def _plate_paths(self):
+        im = self.spec.get("imagine") or {}
+        ex = set(str(x) for x in (im.get("excludePlates") or []))
+        out = []
+        if im.get("plateDir"):
+            globs_ = im.get("plateGlob") or ["*.jpg", "*.png"]
+            if isinstance(globs_, str): globs_ = [globs_]
+            for gpat in globs_:
+                for p in sorted(glob.glob(os.path.join(im["plateDir"], gpat))):
+                    if os.path.splitext(os.path.basename(p))[0] in ex:
+                        continue
+                    out.append(p)
+        return out
+
+    def s_shape_building(self):
+        g = self.spec["geometry"]
+        out = g.get("reliefDir") or os.path.join(self.work, "relief")
+        os.makedirs(out, exist_ok=True)
+        plates = self._plate_paths()
+        if not plates:
+            return self.done("shape", "FAIL", reason="hard-surface shape needs imagine.plateDir (existing Imagine plates)")
+        rep_path = os.path.join(out, "depth-report.json")
+        names = [os.path.splitext(os.path.basename(p))[0] for p in plates]
+        fresh = os.path.exists(rep_path) and all(os.path.exists(os.path.join(out, n + "-inset.npy")) for n in names)
+        rep = json.load(open(rep_path)) if fresh else {}
+        if fresh and rep.get("ok"):
+            return self.done("shape", "PASS", dir=out, reused=True, passPlates=rep.get("passPlates"), platesN=rep.get("platesN"),
+                             summary=f"reused hard-surface depth {rep.get('passPlates')}/{rep.get('platesN')} plates")
+        r = sh("nice", "-n", "10", PY, f"{HERE}/depth_relief.py", "building", str(g.get("pxm", 85)), out, *plates)
+        if r.returncode != 0:
+            tail = ((r.stdout or "") + (r.stderr or ""))[-500:]
+            return self.done("shape", "FAIL", dir=out, reason=f"depth_relief building exit {r.returncode}: {tail}")
+        rep = json.load(open(rep_path))
+        return self.done("shape", "PASS" if rep.get("ok") else "FAIL", dir=out, passPlates=rep.get("passPlates"), platesN=rep.get("platesN"),
+                         summary=f"hard-surface depth {rep.get('passPlates')}/{rep.get('platesN')} plates")
+
     def s_shape(self):
         if not self.spec.get("geometry"): return self.done("shape", "SKIP", summary="no geometry in spec")
+        if self._hs(): return self.s_shape_building()
         g = self.spec["geometry"]; pre = g["hull"]; fused = g.get("fusedHull", pre + "F")
         if g.get("reuseShape") and os.path.exists(fused + "-H.npy"):
             fz = json.load(open(fused + "-fuse-report.json")) if os.path.exists(fused + "-fuse-report.json") else {}
@@ -204,8 +266,54 @@ class Run:
         sh(PY, f"{HERE}/depth_relief.py", self.type, g.get("pxm", 80), g["reliefDir"], *[secs[k] for k in secs["walls"]], check=True)
         return self.done("shape", "PASS", consistency=fz["consistency"], summary="hull + fused depth + relief")
 
+    def s_geometry_building(self):
+        """Quantised planes, not continuous strata. Fail a flat shell, a blobby shell, an open shell, stretch, px/m."""
+        g = self.spec["geometry"]
+        out = os.path.join(self.work, "geo-raw")
+        relief = g.get("reliefDir") or os.path.join(self.work, "relief")
+        mods = list(g.get("modules") or ["m2", "m3", "m4", "m6"])
+        if g.get("reuseGeometry"):
+            out = g["reuseGeometry"]
+        else:
+            os.makedirs(out, exist_ok=True)
+            sh("nice", "-n", "10", PY, f"{HERE}/hard_surface.py", "--relief", relief, "--out", out, "--modules", ",".join(mods), check=True)
+        lim_px = float(g.get("minPxPerM", 85))
+        lim_st = float(g.get("maxStretch", 1.25))
+        rows = []
+        for pid in mods:
+            d = json.load(open(os.path.join(out, f"{pid}-geo.json")))
+            L = d["lods"]; stch = [l["stretch"] for l in L]
+            sil = d.get("silhouette") or {}
+            depth = float(d.get("reliefDepthM") or 0)
+            row = dict(id=pid, method=d.get("method"), sameShell=str(d.get("lodMode", "")).startswith("same-shell"),
+                       iou=None, clashGroups=0, adjGroups=0,
+                       minPxPerM=round(min(s["minPxPerM"] for s in stch), 1),
+                       p01PxPerM=round(min(s.get("p01PxPerM", s["minPxPerM"]) for s in stch), 1),
+                       maxStretch=round(max(s["maxStretch"] for s in stch), 3),
+                       blendMaxStretch=round(max(s.get("blendMaxStretch", s["maxStretch"]) for s in stch), 3),
+                       nonManifold=int(d.get("nonManifold") or 0) + int(d.get("openEdges") or 0),
+                       relief=depth >= 0.30, reliefDepthM=depth, crispness=d.get("crispness"),
+                       coverage=d.get("coverage"), tris=[l["tris"] for l in L], silhouette=sil)
+            fails = []
+            if row["method"] != "hard-surface-v1": fails.append("hard-surface")
+            if not row["sameShell"]: fails.append("sameShellLOD")
+            if row["minPxPerM"] < lim_px: fails.append("pxPerM")
+            if row["maxStretch"] > lim_st: fails.append("stretch")
+            if row["nonManifold"] > 0: fails.append("nonManifold")
+            if not row["relief"]: fails.append("relief")
+            if int(d.get("reliefFaces") or 0) < 2: fails.append("facadeSpan")
+            if sil.get("flat", True): fails.append("silhouetteFlat")
+            if int(sil.get("enclosed") or 0) < 3: fails.append("silhouetteHole")
+            if float(d.get("crispness") or 0) < 0.80: fails.append("crisp")
+            row["fails"] = fails
+            rows.append(row)
+        fails = sorted({f for r in rows for f in r["fails"]})
+        return self.done("geometry", "PASS" if not fails else "FAIL", dir=out, rows=rows, failRows=fails,
+                         summary=f"{len(rows)} modules, failing rows: {fails or 'none'}")
+
     def s_geometry(self):
         if not self.spec.get("geometry"): return self.done("geometry", "SKIP", summary="no geometry in spec")
+        if self._hs(): return self.s_geometry_building()
         g = self.spec["geometry"]; out = os.path.join(self.work, "geo-raw")
         rows = []
         if g.get("reuseGeometry"):
@@ -242,8 +350,26 @@ class Run:
         return self.done("geometry", st, dir=out, rows=rows, failRows=fails, limits=lim,
                          summary=f"{len(rows)} placements, failing rows: {fails or 'none'}")
 
+    def s_pack_building(self):
+        src = self.state["stages"]["geometry"]["dir"]
+        dst = os.path.join(self.work, "geo-packed")
+        mods = list(self.spec["geometry"].get("modules") or ["m2", "m3", "m4", "m6"])
+        if self.spec["geometry"].get("reusePacked"):
+            dst = self.spec["geometry"]["reusePacked"]
+        else:
+            if os.path.isdir(dst): shutil.rmtree(dst)
+            os.makedirs(dst, exist_ok=True)
+            for m in mods:
+                os.makedirs(os.path.join(dst, m), exist_ok=True)
+                shutil.copy(os.path.join(src, m, m + ".glb"), os.path.join(dst, m, m + ".glb"))
+                shutil.copy(os.path.join(src, f"{m}-geo.json"), os.path.join(dst, f"{m}-geo.json"))
+            C.dump(dict(generator="hard-surface-v1", modules=mods), os.path.join(dst, "gen-summary.json"))
+        ok = os.path.exists(os.path.join(dst, "gen-summary.json")) and all(os.path.exists(os.path.join(dst, m, m + ".glb")) for m in mods)
+        return self.done("pack", "PASS" if ok else "FAIL", dir=dst, summary="hard-surface GLBs + gen-summary" + ("" if ok else " (missing)"))
+
     def s_pack(self):
         if not self.spec.get("geometry"): return self.done("pack", "SKIP", summary="no geometry in spec")
+        if self._hs(): return self.s_pack_building()
         src = self.state["stages"]["geometry"]["dir"]; dst = os.path.join(self.work, "geo-packed")
         ids = [p[0] for p in self.spec["geometry"]["placements"]]
         if self.spec["geometry"].get("reusePacked"):
@@ -311,6 +437,16 @@ class Run:
             if not d or not os.path.isdir(d): continue
             t = os.path.join(dst, sub); shutil.rmtree(t, ignore_errors=True)
             shutil.copytree(d, t, ignore=shutil.ignore_patterns("*.log", "slices.json")); copied.append(sub)
+        if self._hs():
+            # The staging page loads <mod>/<mod>.glb from this folder (spire stays on the live objects1).
+            pack = S.get("pack", {}).get("dir")
+            mods = list((self.spec.get("geometry") or {}).get("modules") or ["m2", "m3", "m4", "m6"])
+            for m in mods:
+                src = os.path.join(pack or "", m, m + ".glb")
+                if not os.path.exists(src): continue
+                os.makedirs(os.path.join(dst, m), exist_ok=True)
+                shutil.copy(src, os.path.join(dst, m, m + ".glb"))
+                copied.append(m)
         return self.done("stage", "PASS", dir=dst, copied=copied, summary=f"staged {copied} -> {dst}")
 
     def s_shaders(self):
@@ -326,15 +462,45 @@ class Run:
         S = self.state["stages"]
         tex = glob.glob(os.path.join(S.get("grade", {}).get("dir") or "/nonexistent", "*.png"))
         tex += glob.glob(os.path.join(os.path.dirname(S.get("detail", {}).get("config") or "/nonexistent/x"), "gdet-*.jpg"))
-        tex += self.spec.get("perf", {}).get("extraTex", [])
+        tex += self.spec.get("perf", {}).get("extraTex", []) or []
+        for pat in self.spec.get("perf", {}).get("extraTexGlob", []) or []:
+            tex += sorted(glob.glob(pat))
         frag = S.get("shaders", {}).get("files") or self.spec.get("perf", {}).get("frag", [])
-        r = perf(self.type if self.type != "auto" else "rock", S.get("pack", {}).get("dir"), tex, frag, self.spec.get("perf", {}).get("probe"),
+        probe = self.spec.get("perf", {}).get("probe")
+        if not probe and self._hs() and self.spec.get("stagingUrl") and not self.no_browser:
+            pr = sh("node", f"{HERE}/checks/perf-probe.mjs", self.spec["stagingUrl"], timeout=900)
+            if pr.returncode == 0 and pr.stdout.strip():
+                data = json.loads(pr.stdout.strip().splitlines()[-1])
+                perfj = data.get("perf") or {}
+                dc = perfj.get("objectsCalls", perfj.get("calls"))
+                probe = os.path.join(self.work, "perf-probe.json")
+                C.dump(dict(drawCalls=dc, perf=perfj), probe)
+        r = perf(self.type if self.type != "auto" else "rock", S.get("pack", {}).get("dir"), tex, frag, probe,
                  os.path.join(self.work, "perf-report.json"))
         return self.done("perf", r["verdict"], rows=r["rows"], summary="; ".join(f"{x['check']}={x['value']} {x['status']}" for x in r["rows"]))
 
     def s_morph(self):
         u = self.spec.get("stagingUrl"); m = self.spec.get("morph", {})
         if not u: return self.done("morph", "MANUAL", summary="no stagingUrl")
+        if m.get("gate") == "lod" or (self._hs() and not m.get("targets")):
+            out = os.path.join(self.work, "morph")
+            r = sh("node", f"{HERE}/checks/lod-morph-gate.mjs", u, out, timeout=7200)
+            text = ((r.stdout or "") + "\n" + (r.stderr or "")).strip()
+            # A Node deprecation warning is printed after the verdict, on process exit. The verdict
+            # line is the one that starts with PASS or FAIL, not whatever landed last.
+            verdict = ""
+            vf = os.path.join(out, "verdict.txt")
+            if os.path.exists(vf):
+                verdict = open(vf).read().strip().splitlines()[-1]
+            if not verdict:
+                for ln in reversed(text.splitlines()):
+                    if ln.startswith("PASS") or ln.startswith("FAIL"):
+                        verdict = ln
+                        break
+            if not verdict:
+                verdict = text.splitlines()[-1] if text else f"exit {r.returncode}"
+            st = "PASS" if r.returncode == 0 and verdict.startswith("PASS") else "FAIL"
+            return self.done("morph", st, summary=verdict[:240])
         res = []
         for pid, heading in m.get("targets", []):
             out = os.path.join(self.work, "morph", pid)
@@ -347,7 +513,10 @@ class Run:
         g = self.spec.get("gate")
         if not g or not self.spec.get("stagingUrl"): return self.done("gate", "MANUAL", summary="no gate scene / stagingUrl")
         out = os.path.join(self.work, "gate"); cli = os.path.join(C.OBJECT_GATE_DIR, "cli.mjs")
-        r = sh("node", cli, "--scene", g["scene"], "--only", g["object"], "--out", out, timeout=14400)
+        cmd = ["node", cli, "--scene", g["scene"], "--out", out]
+        if self.spec.get("stagingUrl"): cmd += ["--url", self.spec["stagingUrl"]]
+        if not g.get("full"): cmd += ["--only", g["object"]]
+        r = sh(*cmd, timeout=14400)
         st = {0: "PASS", 1: "FAIL"}.get(r.returncode, "ERROR")
         fix = None
         if st == "FAIL" and os.path.exists(os.path.join(out, "fix-plan.json")):
@@ -391,7 +560,7 @@ def main():
         return
     if a.cmd == "report":
         st = json.load(open(os.path.join(a.target, "state.json"))); print(json.dumps({k: v["status"] for k, v in st["stages"].items()}, indent=1)); return
-    R = Run(a.target)
+    R = Run(a.target); R.no_browser = bool(a.no_browser)
     todo = a.stages.split(",") if a.stages else STAGES[STAGES.index(a.frm):] if a.frm else STAGES
     for s in todo:
         if a.no_browser and s in BROWSER: R.done(s, "MANUAL", summary="skipped (--no-browser)"); continue

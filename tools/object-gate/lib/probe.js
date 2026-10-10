@@ -27,6 +27,12 @@
     for (const r of roots) r.traverse((o) => { if (o.isMesh || o.isPoints || o.isLine) out.push(o); });
     return out;
   }
+  /** A mesh the page has unloaded (empty BufferGeometry) has no surface. Scoring it crashes on `.count`. */
+  function hasSurface(geo) {
+    if (!geo || !geo.getAttribute) return false;
+    const pos = geo.getAttribute("position");
+    return !!(pos && pos.count >= 3);
+  }
   /** One record per placed copy: InstancedMesh index, LOD (level 0 geometry), or plain mesh. */
   function instancesOf(sel) {
     const { THREE } = H();
@@ -34,6 +40,7 @@
     for (const r of matchRoots(sel)) {
       r.updateWorldMatrix(true, true);
       if (r.isInstancedMesh) {
+        if (!hasSurface(r.geometry)) continue;
         const m = new THREE.Matrix4();
         for (let i = 0; i < r.count; i++) {
           r.getMatrixAt(i, m);
@@ -42,9 +49,9 @@
       } else if (r.isLOD) {
         const lvl = r.levels[0] && r.levels[0].object;
         let mesh = null; if (lvl) lvl.traverse((o) => { if (!mesh && o.isMesh) mesh = o; });
-        if (mesh) { mesh.updateWorldMatrix(true, false); out.push({ id: r.name, mesh, geo: mesh.geometry, matrix: mesh.matrixWorld.clone(), lod: r }); }
+        if (mesh && hasSurface(mesh.geometry)) { mesh.updateWorldMatrix(true, false); out.push({ id: r.name, mesh, geo: mesh.geometry, matrix: mesh.matrixWorld.clone(), lod: r }); }
       } else {
-        const ms = []; r.traverse((o) => { if (o.isMesh) ms.push(o); });
+        const ms = []; r.traverse((o) => { if (o.isMesh && hasSurface(o.geometry)) ms.push(o); });
         for (const mesh of ms) out.push({ id: r.name + (ms.length > 1 ? "/" + (mesh.name || mesh.id) : ""), mesh, geo: mesh.geometry, matrix: mesh.matrixWorld.clone() });
       }
     }
@@ -67,10 +74,15 @@
   function texInfo(slot, t) {
     const img = t.image || {};
     const url = urlOf(img) || (img.currentSrc || img.src) || null;
+    // A loader may ImageBitmap.close() after upload. The CPU image then reports 0, while userData
+    // still holds the size that was uploaded (sec6 atlases do this).
+    const udW = t.userData && t.userData.w, udH = t.userData && t.userData.h;
+    const w0 = img.width || (t.source && t.source.data && t.source.data.width) || 0;
+    const h0 = img.height || (t.source && t.source.data && t.source.data.height) || 0;
     return {
       slot, url, uuid: t.uuid,
-      w: img.width || (t.source && t.source.data && t.source.data.width) || 0,
-      h: img.height || (t.source && t.source.data && t.source.data.height) || 0,
+      w: w0 || udW || 0,
+      h: h0 || udH || 0,
       depth: img.depth || 1,
       fileW: t.userData && t.userData.w, fileH: t.userData && t.userData.h,
       kind: t.isRenderTargetTexture ? "rendertarget" : t.isDepthTexture ? "depth" : t.isDataArrayTexture ? "array" : t.isDataTexture ? "data" : t.isCubeTexture ? "cube" : t.isVideoTexture ? "video" : "image",
@@ -275,6 +287,26 @@
     let s = ""; for (let i = 0; i < w * h; i++) s += px[i * 4] > 127 ? "1" : "0";
     return s;
   }
+  /** Silhouette of one placed copy. Sibling copies of the same module stay out of the mask,
+   *  so walking past another tower is not scored as a silhouette jump of this copy. */
+  function maskInstance(sel, instId, p, t, w = 135, h = 240, fov = 58) {
+    const { THREE } = H();
+    const saved = [];
+    for (const i of instancesOf(sel)) {
+      if (i.id === instId || !i.mesh.isInstancedMesh) continue;
+      const idx = +String(i.id).slice(String(i.id).lastIndexOf("#") + 1);
+      if (!Number.isFinite(idx)) continue;
+      const m = new THREE.Matrix4();
+      i.mesh.getMatrixAt(idx, m);
+      saved.push([i.mesh, idx, m]);
+      i.mesh.setMatrixAt(idx, new THREE.Matrix4().makeTranslation(0, -1e6, 0));
+      i.mesh.instanceMatrix.needsUpdate = true;
+    }
+    try { return mask(sel, p, t, w, h, fov); }
+    finally {
+      for (const [mesh, idx, m] of saved) { mesh.setMatrixAt(idx, m); mesh.instanceMatrix.needsUpdate = true; }
+    }
+  }
   /** Mask from the LIVE game camera (after a game frame), for cropping a screenshot to the object. */
   function maskFromGameCamera(sel, w, h) {
     const { camera } = H();
@@ -340,7 +372,13 @@
     const { THREE, scene, renderer } = H();
     const cam = new THREE.PerspectiveCamera(); placeCam(cam, p, t, 58, w, h);
     const restoreFx = hideFx(fxNames);
+    // The drawn shell is often not the caster. Mesa rocks cast from an unnamed sibling on the shadow layer.
     const meshes = meshesOf(matchRoots(sel));
+    const seen = new Set(meshes);
+    for (const m of meshes) {
+      const p = m.parent; if (!p) continue;
+      for (const c of p.children) if (c.isMesh && c.castShadow && !seen.has(c)) { meshes.push(c); seen.add(c); }
+    }
     const prevCast = meshes.map((m) => m.castShadow);
     const om = mask(sel, p, t, w, h, 58);
     const draw = () => { renderer.shadowMap.needsUpdate = true; renderer.render(scene, cam); };
@@ -396,36 +434,45 @@
     return out;
   }
 
-  /** Per unique geometry: non-manifold / open edges (welded), facade relief, oriented size per instance. */
+  /** Per unique geometry: non-manifold / open edges (welded), facade relief, oriented size per instance.
+   *  A merged draw (aZbPart) stacks closed variant shells in one buffer. Welding that union marks every
+   *  edge non-manifold, so each part is scored on its own. One shell, or no part attribute, stays one row. */
   function geometry(sel) {
     const { THREE } = H();
     const insts = instancesOf(sel);
     const geos = new Map();
-    for (const i of insts) if (!geos.has(i.geo.uuid)) geos.set(i.geo.uuid, { geo: i.geo, insts: [] }), 0;
+    for (const i of insts) if (!geos.has(i.geo.uuid)) geos.set(i.geo.uuid, { geo: i.geo, insts: [] });
     for (const i of insts) geos.get(i.geo.uuid).insts.push(i);
-    const out = [];
-    for (const { geo, insts: list } of geos.values()) {
+    const measure = (geo, list, partId) => {
       const pos = geo.getAttribute("position"); const idx = geo.getIndex();
-      const nTri = idx ? idx.count / 3 : pos.count / 3;
+      const partAttr = partId == null ? null : geo.getAttribute("aZbPart");
+      const nAll = idx ? idx.count / 3 : pos.count / 3;
       const key = (i) => `${Math.round(pos.getX(i) * 1e3)},${Math.round(pos.getY(i) * 1e3)},${Math.round(pos.getZ(i) * 1e3)}`;
       const vid = new Map(); const id = (i) => { const k = key(i); if (!vid.has(k)) vid.set(k, vid.size); return vid.get(k); };
       const edges = new Map();
       const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
+      const box = new THREE.Box3();
       const relief = { "+x": new Map(), "-x": new Map(), "+z": new Map(), "-z": new Map() };
-      let degenerate = 0;
-      for (let t = 0; t < nTri; t++) {
+      const crispAcc = { "+x": [], "-x": [], "+z": [], "-z": [] };
+      let degenerate = 0, nTri = 0;
+      for (let t = 0; t < nAll; t++) {
         const i = [0, 1, 2].map((k) => (idx ? idx.getX(3 * t + k) : 3 * t + k));
+        if (partAttr && Math.round(partAttr.getX(i[0])) !== partId) continue;
+        nTri++;
         const v = i.map(id);
+        a.fromBufferAttribute(pos, i[0]); b.fromBufferAttribute(pos, i[1]); c.fromBufferAttribute(pos, i[2]);
+        box.expandByPoint(a); box.expandByPoint(b); box.expandByPoint(c);
         if (v[0] === v[1] || v[1] === v[2] || v[0] === v[2]) { degenerate++; continue; }
         for (let k = 0; k < 3; k++) { const e = v[k] < v[(k + 1) % 3] ? v[k] + "_" + v[(k + 1) % 3] : v[(k + 1) % 3] + "_" + v[k]; edges.set(e, (edges.get(e) || 0) + 1); }
-        a.fromBufferAttribute(pos, i[0]); b.fromBufferAttribute(pos, i[1]); c.fromBufferAttribute(pos, i[2]);
         const n = new THREE.Vector3().subVectors(b, a).cross(new THREE.Vector3().subVectors(c, a));
         const ar = n.length() / 2; if (ar < 1e-6) continue; n.normalize();
         const k = classOf([n.x, n.y, n.z]);
         if (!relief[k] || Math.abs(k[1] === "x" ? n.x : n.z) < 0.7) continue;
         const off = k[1] === "x" ? (a.x + b.x + c.x) / 3 : (a.z + b.z + c.z) / 3;
-        const yb = Math.floor((a.y + b.y + c.y) / 3);
+        const y = (a.y + b.y + c.y) / 3;
+        const yb = Math.floor(y);
         const m = relief[k]; const r = m.get(yb) || [Infinity, -Infinity, 0, []]; r[0] = Math.min(r[0], off); r[1] = Math.max(r[1], off); r[2] += ar; r[3].push(off); m.set(yb, r);
+        crispAcc[k].push({ off, ar, y, axis: Math.max(Math.abs(n.x), Math.abs(n.y), Math.abs(n.z)) > 0.92 });
       }
       let open = 0, nonManifold = 0; for (const n of edges.values()) { if (n === 1) open++; else if (n > 2) nonManifold++; }
       const reliefM = {};
@@ -434,14 +481,51 @@
         const rs = [...m.values()].filter((r) => r[2] > 0.2).map((r) => r[3].filter((q) => (k[0] === "+" ? r[1] - q : q - r[0]) <= 3)).map((qs) => Math.max(...qs) - Math.min(...qs)).sort((x, y) => x - y);
         reliefM[k] = rs.length ? +rs[rs.length >> 1].toFixed(3) : null;
       }
-      if (!geo.boundingBox) geo.computeBoundingBox();
-      const s = geo.boundingBox.getSize(new THREE.Vector3());
+      const crisp = {};
+      for (const [k, faces] of Object.entries(crispAcc)) {
+        // Outermost offset per metre of height. A designed taper moves that shell; the step depth is the
+        // residual, scaled back by the shell so one bay plane stays one bin. A flat slab has one residual.
+        const env = new Map();
+        for (const f of faces) {
+          const yb = Math.floor(f.y);
+          const e = env.get(yb);
+          env.set(yb, e == null ? f.off : (k[0] === "+" ? Math.max(e, f.off) : Math.min(e, f.off)));
+        }
+        let eBase = null;
+        for (const e of env.values()) eBase = eBase == null ? e : (k[0] === "+" ? Math.max(eBase, e) : Math.min(eBase, e));
+        const keptF = [];
+        for (const f of faces) {
+          const e = env.get(Math.floor(f.y));
+          if (e == null || Math.abs(e) < 0.25 || eBase == null) continue;
+          const inward = (k[0] === "+" ? e - f.off : f.off - e) * (eBase / e);
+          if (inward <= 3.2 && inward >= -0.08) keptF.push({ ar: f.ar, axis: f.axis, res: Math.max(0, inward) });
+        }
+        const area = keptF.reduce((s, f) => s + f.ar, 0);
+        const bins = new Map();
+        for (const f of keptF) { const b = Math.round(f.res / 0.05); bins.set(b, (bins.get(b) || 0) + f.ar); }
+        const planes = [...bins.values()].filter((a) => area > 0 && a / area >= 0.02).length;
+        const axis = keptF.reduce((s, f) => s + (f.axis ? f.ar : 0), 0);
+        crisp[k] = { axisFrac: area > 0 ? +(axis / area).toFixed(3) : 0, planes };
+      }
+      let s;
+      if (partId == null) {
+        if (!geo.boundingBox) geo.computeBoundingBox();
+        s = geo.boundingBox.getSize(new THREE.Vector3());
+      } else s = box.isEmpty() ? new THREE.Vector3() : box.getSize(new THREE.Vector3());
       const sizes = list.slice(0, 64).map((i) => {
         const e = i.matrix.elements;
         const sc = [Math.hypot(e[0], e[1], e[2]), Math.hypot(e[4], e[5], e[6]), Math.hypot(e[8], e[9], e[10])];
         return { inst: i.id, w: +(s.x * sc[0]).toFixed(2), h: +(s.y * sc[1]).toFixed(2), d: +(s.z * sc[2]).toFixed(2) };
       });
-      out.push({ geo: geo.uuid.slice(0, 8), usedBy: list[0].mesh.name, instances: list.length, tris: nTri, verts: vid.size, open, nonManifold, degenerate, reliefM, local: { w: +s.x.toFixed(2), h: +s.y.toFixed(2), d: +s.z.toFixed(2) }, sizes });
+      return { geo: geo.uuid.slice(0, 8), usedBy: partId == null ? list[0].mesh.name : list[0].mesh.name + "#part" + partId, part: partId, instances: list.length, tris: nTri, verts: vid.size, open, nonManifold, degenerate, reliefM, crisp, local: { w: +s.x.toFixed(2), h: +s.y.toFixed(2), d: +s.z.toFixed(2) }, sizes };
+    };
+    const out = [];
+    for (const { geo, insts: list } of geos.values()) {
+      const partAttr = geo.getAttribute("aZbPart");
+      const ids = new Set();
+      if (partAttr) for (let i = 0; i < partAttr.count; i++) ids.add(Math.round(partAttr.getX(i)));
+      if (ids.size > 1) for (const pid of [...ids].sort((x, y) => x - y)) out.push(measure(geo, list, pid));
+      else out.push(measure(geo, list, null));
     }
     return out;
   }
@@ -492,5 +576,5 @@
   }
   async function frames(n = 2) { for (let i = 0; i < n; i++) await new Promise((r) => requestAnimationFrame(() => r())); }
 
-  window.__og = { orthoFace, matchRoots, instancesOf, texturesOf, texel, mask, maskFromGameCamera, shadow, grounding, geometry, effects, instanceBoxes, lights, stats, frames, LIN_MIP };
+  window.__og = { orthoFace, matchRoots, instancesOf, texturesOf, texel, mask, maskInstance, maskFromGameCamera, shadow, grounding, geometry, effects, instanceBoxes, lights, stats, frames, LIN_MIP };
 })();

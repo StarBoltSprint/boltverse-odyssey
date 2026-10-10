@@ -211,7 +211,7 @@ export const CHECK_IDS = [
   [/^repetition \(visible\): identical/, "repetition.visible-radius"], [/^repetition \(visible\): neighbours/, "repetition.visible-neighbours"], [/^repetition \(UV\)/, "repetition.uv"], [/^UV stretch/, "texel.stretch"],
   [/^scene self-report/, "texel.self-report"], [/^repetition \(capture/, "repetition.captures"], [/^approach morph/, "morph"],
   [/^shadow light/, "shadow.light"], [/^shadow cast/, "shadow.cast"], [/^shadow world-fixed/, "shadow.world-fixed"], [/^shadow colour/, "shadow.colour"],
-  [/^grounding/, "grounding"], [/^mesh sealed/, "geometry.sealed"], [/^facade relief/, "geometry.relief"], [/^proportions/, "geometry.proportions"],
+  [/^grounding/, "grounding"], [/^mesh sealed/, "geometry.sealed"], [/^facade relief/, "geometry.relief"], [/^facade crisp/, "geometry.crisp"], [/^proportions/, "geometry.proportions"],
   [/^effects take/, "effects.imagine-texture"], [/^effects: no typed/, "effects.no-colour-literals"],
   [/^key checklist written/, "checklist.written"], [/^key crop present/, "checklist.key-crop"], [/^key checklist: every/, "checklist.verified"], [/^colour vs key/, "checklist.colour"],
   [/^console/, "runtime.console"], [/^shader compile/, "runtime.shader"], [/^HUD text/, "runtime.hud"], [/^title/, "runtime.title"],
@@ -339,7 +339,8 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
     for (const t of usedTex) {
       const r = roleOf(spec, t) || {};
       if (cfg.textures.trilinear && (t.kind === "image" || (t.kind === "array" && r.role && r.role.startsWith("plate"))) && !(t.mipmaps && t.minFilter === 1008)) bad.push(`${basename(t.url || t.slots[0])}: mipmaps ${t.mipmaps} minFilter ${t.minFilter}`);
-      if (cfg.textures.anisotropyMax && t.anisotropy < tx.anisoMax) bad.push(`${basename(t.url || t.slots[0])}: anisotropy ${t.anisotropy} < max ${tx.anisoMax}`);
+      // A data LUT is sampled with texelFetch. Anisotropy needs mipmaps and would blend the indices.
+      if (cfg.textures.anisotropyMax && t.kind !== "data" && t.kind !== "depth" && t.anisotropy < tx.anisoMax) bad.push(`${basename(t.url || t.slots[0])}: anisotropy ${t.anisotropy} < max ${tx.anisoMax}`);
       if (t.url && t.url.includes("#resized")) bad.push(`${basename(t.url)}: decoded with a resize/crop`);
       if (r.role === "plate" && t.kind === "image" && t.fileW && (t.w !== t.fileW || t.h !== t.fileH)) bad.push(`${basename(t.url)}: GPU ${t.w}x${t.h} != file ${t.fileW}x${t.fileH}`);
     }
@@ -424,10 +425,21 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
     const fx = hero.front, fl = Math.hypot(fx[0], fx[1]) || 1; const f = [fx[0] / fl, fx[1] / fl];
     const dP = (x, z) => Math.min(...path0.map((p) => Math.hypot(p[0] - x, p[1] - z)));
     const s = dP(hero.center[0] + f[0] * 50, hero.center[2] + f[1] * 50) <= dP(hero.center[0] - f[0] * 50, hero.center[2] - f[1] * 50) ? 1 : -1;
+    // Close and low stand on the sunlit side, a step off the corner, so bays and holes are in the frame.
+    // Far stays on the player path. A head-on shot of the shadow face is a black wall and cannot be checked.
+    const lights = await page.evaluate(() => window.__og.lights());
+    const sun = (lights || []).find((l) => /sun/i.test(l.name || "")) || (lights || [])[0];
+    let sLit = s;
+    if (sun && sun.dir) {
+      const L = Math.hypot(sun.dir[0], sun.dir[2]) || 1;
+      const faceDot = (s * f[0]) * sun.dir[0] / L + (s * f[1]) * sun.dir[2] / L;
+      if (faceDot < 0) sLit = -s;
+    }
     const base = hero.min[1], H = hero.height, hd = hero.halfD;
     const poses = {
       close: { d: hd + Math.max(12, 0.15 * H), ty: base + Math.min(0.4 * H, 20) },
-      "low-portrait": { d: hd + 6, ty: base + 1.6 + 6 * Math.tan((42 * Math.PI) / 180) },
+      // From the foot, look up the shaft so the crown and the holes are in the frame.
+      "low-portrait": { d: hd + 6, ty: base + Math.min(0.55 * H, 70) },
       far: { d: hd + Math.max(2.2 * H, 120), ty: base + 0.45 * H },
     };
     await page.evaluate((n) => { window.__ogRestoreFx = (() => { const { scene } = window.__ogHost; const re = new RegExp(n); const hid = []; scene.traverse((o) => { if (o.name && re.test(o.name) && o.visible) { o.visible = false; hid.push(o); } }); return () => hid.forEach((o) => (o.visible = true)); })(); }, adapter.fxNames || "^$");
@@ -435,7 +447,10 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
     const farPt = path0.slice().sort((p, q) => Math.abs(Math.hypot(p[0] - hero.center[0], p[1] - hero.center[2]) - poses.far.d) - Math.abs(Math.hypot(q[0] - hero.center[0], q[1] - hero.center[2]) - poses.far.d))[0];
     for (const name of wanted) {
       const P = poses[name]; if (!P) continue;
-      let x = hero.center[0] + s * f[0] * P.d, z = hero.center[2] + s * f[1] * P.d;
+      const side = name === "far" ? s : sLit;
+      // About a 3/4 view: a small offset stays on the middle of the face and hides the edge bays.
+      const lat = name === "far" ? 0 : Math.max(hero.halfW, hero.halfD, 4) * 1.15;
+      let x = hero.center[0] + side * f[0] * P.d + (-f[1]) * lat, z = hero.center[2] + side * f[1] * P.d + f[0] * lat;
       if (name === "far" && farPt) { x = farPt[0]; z = farPt[1]; }
       const pose = await page.evaluate(([x, z, t]) => window.__ogHost.setPose({ x, z, look: t }), [x, z, [hero.center[0], P.ty, hero.center[2]]]);
       await settle(page);
@@ -512,7 +527,9 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
           const H = window.__ogHost; H.setPose({ x, z, look: [b.center[0], b.min[1] + Math.min(40, d * 0.35 + 8), b.center[2]] });
           await window.__og.frames(2);
           const gy = H.groundHeight(x, z);
-          return window.__og.mask(s, [x, gy + 2, z], [b.center[0], b.min[1] + Math.min(b.height * 0.5, 40, d * 0.35 + 8), b.center[2]], 135, 240, 58);
+          const look = [b.center[0], b.min[1] + Math.min(b.height * 0.5, 40, d * 0.35 + 8), b.center[2]];
+          const cam = [x, gy + 2, z];
+          return window.__og.maskInstance ? window.__og.maskInstance(s, b.id, cam, look, 135, 240, 58) : window.__og.mask(s, cam, look, 135, 240, 58);
         }, [sel, x, z, b, d]);
         if (prev) ious.push({ d: +d.toFixed(1), iou: iou(m, prev) });
         prev = m; strip.push(m);
@@ -584,6 +601,17 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
       const flat = geo.filter((g) => Object.values(g.reliefM).filter((v) => v != null && v >= G.minReliefM).length < G.minReliefFaces);
       row(o, `facade relief >= ${G.minReliefM} m`, flat.length === 0, geo.map((g) => `${g.usedBy} ${Object.entries(g.reliefM).map(([k, v]) => k + " " + v).join(" ")}`).join("; "),
         ["Model the relief (fins, ledges, recessed bays, cornices, strata) in the geometry; a plate on a flat face reads as a picture."]);
+    }
+    if (G.minCrisp != null) {
+      const lo = G.minOffsetPlanes ?? 2, hi = G.maxOffsetPlanes ?? 12;
+      const bad = geo.filter((g) => {
+        const dirs = Object.values(g.crisp || {});
+        const ok = dirs.filter((d) => d && d.axisFrac >= G.minCrisp && d.planes >= lo && d.planes <= hi);
+        return ok.length < (G.minReliefFaces || 1);
+      });
+      row(o, `facade crispness (axis-aligned >= ${G.minCrisp}, ${lo}-${hi} offset planes)`, bad.length === 0,
+        geo.map((g) => `${g.usedBy} ${Object.entries(g.crisp || {}).map(([k, d]) => k + " axis " + (d && d.axisFrac) + " planes " + (d && d.planes)).join(" ")}`).join("; ") || "no crisp measure",
+        ["Quantise the facade into a few flat planes with vertical steps. One plane is a flat slab; many offset bins is a blobby rock."]);
     }
     if (spec.proportions) {
       const P = spec.proportions; const bad = [];
