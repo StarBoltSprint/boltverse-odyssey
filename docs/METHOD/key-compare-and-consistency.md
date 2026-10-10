@@ -61,3 +61,12 @@ hidden behind a tower from this camera (`visible` rule), lit side too pale (ΔE 
 `/workspace/zb-bible-1008/compare/report.md`.
 Known metric limits: the `rock` colour rule also catches sand (arch IoU inflated); the key's ring arcs are fainter than
 `lumAbove: 175` (key mask empty), so the rings row needs its own rule.
+
+## Keyloop consumers, staging and layout correction (Oct 2026)
+
+- **Staging only.** `tools/imagine-to-3d/kc_stage.py build` makes a symlink mirror of the live preview (default `/workspace/kc-staging/zb`, served on :8997) with a patched `mesas-v11.mjs` that reads `mesas/kc-params.json` (layout, strata, plates, reliefGain). All writers refuse live paths.
+- **Mesa steps** (`kc_mesa.py`): `warp` (skyline toward the key silhouette, `strata-kc`), `plates` (lit/shadow gain from key-compare, re-pick by ranking, `--detail` high-pass), `relief`, `detail`. Spec `specs/zoneb-mesa.yaml` has `stagingUrl` so fixloop renders through the key camera.
+- **GLB grade** (`kc_glb.py`): lit or shadow texel gain on an embedded image, written as a staging `objects1/<name>/` override (`KC-OVERRIDE`). Note: the spire uses `USE_ZB_CHROME_BODY`, which replaces diffuse with a graphite/silver constant, so albedo grading cannot move its dark side.
+- **Layout correction** (`layout_fit.py`): per-biome file `layouts/<biome>.json`, analytic projection toward the composition slots (`layouts/<biome>-composition.json`) under the spacing / avenue / 6-6 side / camera-clearance rules. Wreck and arch have no model (`status: no-model`).
+- **Metrics:** `rocktex` mask (arch: rock texture, not flat sand), ring top-hat + `skycore`, `thin` dilation. `lib/kc_diff.py` prints before/after tables.
+- Always compare at the same camera and metric version (render a no-params mirror as baseline).

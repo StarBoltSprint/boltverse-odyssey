@@ -39,7 +39,7 @@ morph:
   farM: 300
   nearM: 10
 gate: {scene: /workspace/grokcli/wt/object-gate/tools/object-gate/specs/zone-b/scene.yaml, object: mesa}
-# stagingUrl: http://127.0.0.1:8996/mesatest.html   # set once the staging page mounts this staging dir
+stagingUrl: http://127.0.0.1:8997/index.html   # KC staging mirror (kc_stage.py build --layout layouts/ember-mesa.json; serve --port 8997)
 # 2026-10-10 (SmiR): locked palette + image consistency (stage consistency) and key-compare loop (stage keycompare).
 palette:
   file: palettes/ember-mesa.json      # palette.py sample (key-city3 + object-gate key-compare masks + biome.json sampled)
@@ -50,14 +50,18 @@ palette:
 keyCompare:
   spec: ../../object-gate/specs/zone-b/key-compare.yaml
   elements: [mesas, arch]
-  camera: /workspace/zb-bible-1008/compare/run/camera.json   # key camera solved by key-compare.mjs --solve
+  camera: /workspace/zb-bible-1008/compare/run2/camera-key.json   # key camera = hero spawn, fov 58, heading 78 (layout fit 2026-10-10)
   maxRounds: 6
   stallRounds: 2
   colourGain: 0.8
   plates: {mesas: /workspace/zb-preview-1008/mesas/plates11/w*.jpg}
-  apply:                              # run from tools/imagine-to-3d; {work} {element} {offsets} {warp} {ranking} {value} {job}
-    colour: "python3 palette.py shift /workspace/zb-preview-1008/mesas/plates11 --offsets {offsets} --element {element} --out /workspace/i23d-auto/zoneb-mesa/staging/plates-kc"
+  apply:                              # run from tools/imagine-to-3d; {work} {element} {offsets} {warp} {ranking} {value} {job} {round}
+    # every consumer writes into the KC STAGING mirror only (mesas/strata-kc, mesas/plates-kc, mesas/kc-params.json)
+    colour: "python3 kc_mesa.py plates --stage /workspace/kc-staging/zb --offsets {offsets} --element {element}"
     shapeSeed: "ONLY=L-mid,L-mid2,L-far GEN=strata2.py KEY_CROP=/workspace/grokcli/wt/mesa-1009/in/crop-L.png IOU_MIN=0.9 MAX_SEEDS=20 RELIEF_DIR=/workspace/mesa-1009/work/depth python3 gen_strata_all.py /workspace/mesa-1009/work /workspace/mesa-1009/work/views/front.jpg /workspace/mesa-1009/work/views/top.jpg {work}/strata-kc-{round}"
-    # silhouetteWarp / plateRepick / relief / detail: no consumer in strata2 yet -> keyloop reports NOT_WIRED (nothing faked).
-    # Corrections only show in the key-camera render once `stagingUrl` mounts the staging dir; until then keyloop
-    # re-renders the configured page and reports STALLED honestly.
+    silhouetteWarp: "python3 kc_mesa.py warp --stage /workspace/kc-staging/zb --warp {warp} --camera /workspace/zb-bible-1008/compare/run2/camera-key.json --gain 0.8"
+    plateRepick: "python3 kc_mesa.py plates --stage /workspace/kc-staging/zb --ranking {ranking} --element {element} --exclude w6"
+    relief: {cmd: "python3 kc_mesa.py relief --stage /workspace/kc-staging/zb --value {value}", values: [1.5, 2.0, 0.6]}
+    detail: {cmd: "python3 kc_mesa.py detail --stage /workspace/kc-staging/zb --value {value}", values: [1.3, 1.6, 0.8]}
+    # shapeSeed regenerates strata (gen_strata_all) into {work}; it is NOT re-staged automatically (the strata-kc dir is
+    # owned by the warp step) - its output is reported for review.
