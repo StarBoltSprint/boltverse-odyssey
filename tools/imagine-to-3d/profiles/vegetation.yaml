@@ -1,0 +1,88 @@
+# imagine-to-3d type profile: vegetation (see _README.md). Gate thresholds come from tools/object-gate/profiles/vegetation.yaml
+type: vegetation
+desc: trees, shrubs, grasses, crystal-plants
+gate:
+  profile: vegetation
+  tighten:
+    texel:
+      maxStretch: 1.25
+      minPxPerM: 64
+      nearPxPerM: 128
+views:
+  count: 10
+  cameras:
+  - name: y000
+    yaw: 0.0
+    elev: 5
+  - name: y045
+    yaw: 45.0
+    elev: 5
+  - name: y090
+    yaw: 90.0
+    elev: 5
+  - name: y135
+    yaw: 135.0
+    elev: 5
+  - name: y180
+    yaw: 180.0
+    elev: 5
+  - name: y225
+    yaw: 225.0
+    elev: 5
+  - name: y270
+    yaw: 270.0
+    elev: 5
+  - name: y315
+    yaw: 315.0
+    elev: 5
+  - name: low000
+    yaw: 0
+    elev: -25
+  - name: top
+    yaw: 0
+    elev: 90
+geometry:
+  strategy: trunk-lathe+leaf-shells+alpha
+  coarse: lathe
+  depthRatio: 1.0
+  hardEdges: false
+  relief:
+    maxM: 0.5
+    minStdFrac: 0.08
+    gradientMax: 0.5
+  bevelM: 0.0
+  notes: alpha from Imagine (plain background key-out), leaf shells with real depth, no flat cards from any angle
+texel:
+  targetPxPerM: 128
+  minPxPerM: 64
+  closestApproachM: 3.0
+pbr:
+  maps:
+  - albedo
+  - normal
+  - roughness
+  - ao
+  - alpha
+  - transmission
+  metalness:
+  - 0.0
+  - 0.0
+  roughness:
+  - 0.5
+  - 1.0
+  heightM: 0.5
+fix:
+  maxIterations: 4
+thresholds:
+  silhouetteIoU: 0.87
+  uvStretch: 1.25
+  lpips: 0.15
+  ssimMin: 0.35
+  deltaE2000Max: 12.0
+  histBhattMax: 0.35
+  checklistMin: 0.9
+  shadowChromaMax: 0.18
+  violetRatio: 1.08
+  depthConsistencyMedian: 0.08
+  depthConsistencyP90: 0.12
+  viewRetries: 3

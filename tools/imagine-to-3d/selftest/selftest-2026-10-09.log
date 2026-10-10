@@ -1,0 +1,150 @@
+=== classify_st
+tuning OK  rock rock rock-mesaL.png margin 0.991 vision? False
+tuning XX  rock building rock-mesaR-arch.png margin 0.482 vision? False
+tuning OK  rock rock crop-L-strata.png margin 0.997 vision? False
+tuning OK  building building tA-ladder-slab.png margin 0.999 vision? False
+tuning OK  building building tB-tall-cable-slab.png margin 0.999 vision? False
+tuning OK  building building tC-sheared-top.png margin 1.0 vision? False
+tuning OK  building building tD-right-ladder-slab.png margin 0.999 vision? False
+tuning OK  building building tE-stub-antenna.png margin 0.947 vision? False
+tuning OK  building building spire.png margin 0.989 vision? False
+tuning OK  wreck wreck wreck-ship.png margin 0.962 vision? False
+tuning OK  wreck wreck wreck-panel.png margin 0.398 vision? False
+tuning OK  wreck wreck wreck-rail.png margin 0.975 vision? False
+tuning OK  wreck wreck prop-tablet.png margin 0.435 vision? False
+tuning OK  effect effect veil-a.jpg margin 0.995 vision? False
+tuning OK  effect effect grains.jpg margin 0.998 vision? False
+tuning OK  effect effect veil-b.jpg margin 0.991 vision? False
+held-out OK  building building ho-tower-right.png margin 0.999 vision? False
+held-out OK  building building ho-tower-mid.png margin 1.0 vision? False
+held-out OK  building building ho-tower-far.png margin 0.998 vision? False
+held-out OK  rock rock ho-mesa-right.png margin 0.931 vision? False
+held-out OK  rock rock ho-mesa-left-top.png margin 0.992 vision? False
+held-out OK  wreck wreck ho-debris-bottom.png margin 0.406 vision? False
+held-out OK  wreck wreck ho-truss-left.png margin 0.208 vision? False
+{'tuning': (15, 16), 'held-out': (7, 7)}
+=== views_real
+mesaA plan totals {'views': 5, 'sectionPlates': 481, 'surfaceM2': 20128.0, 'imagineCallsMin': 486, 'imagineCallsMax': 496} required px/m 135.3
+  OK  y000 mesaA-front.jpg {'view': 'y000', 'status': 'accepted', 'gate': 'vs key silhouette', 'iou': 0.9331, 'iouMin': 0.87, 'nativeOk': True, 'attempts': 1, 'expected': 'accept', 'ok': True}
+  OK  y090 mesaA-side.jpg {'view': 'y090', 'status': 'accepted', 'gate': "axis-defining side: {'ok': True, 'iouVsFront': 0.9875, 'widthRatio': 0.998}", 'iou': 0.9875, 'iouMin': 0.87, 'nativeOk': True, 'attempts': 1, 'expected': 'accept', 'ok': True}
+  OK  top mesaA-top.jpg {'view': 'top', 'status': 'accepted', 'gate': "axis-defining top: {'ok': True, 'iouVsFront': 0.4437, 'widthRatio': 1.0}", 'iou': 0.4437, 'iouMin': 0.87, 'nativeOk': True, 'attempts': 1, 'expected': 'accept', 'ok': True}
+  OK  y180 mesaA-back.jpg {'view': 'y180', 'status': 'pending', 'gate': 'vs coarse render', 'iou': 0.7582, 'iouMin': 0.87, 'nativeOk': True, 'attempts': 1, 'expected': 'finding', 'ok': True}
+  OK  y270 m2-side.jpg {'view': 'y270', 'status': 'pending', 'gate': 'vs coarse render', 'iou': 0.0903, 'iouMin': 0.87, 'nativeOk': True, 'attempts': 1, 'expected': 'reject', 'ok': True}
+m2 plan totals {'views': 4, 'sectionPlates': 229, 'surfaceM2': 8284.0, 'imagineCallsMin': 233, 'imagineCallsMax': 241} required px/m 180.4
+  OK  y000 m2-front.jpg {'view': 'y000', 'status': 'accepted', 'gate': 'vs key silhouette', 'iou': 0.9995, 'iouMin': 0.87, 'nativeOk': True, 'attempts': 1, 'expected': 'accept', 'ok': True}
+  OK  y090 m2-side.jpg {'view': 'y090', 'status': 'accepted', 'gate': "axis-defining side: {'ok': True, 'iouVsFront': 0.4942, 'widthRatio': 0.512}", 'iou': 0.4942, 'iouMin': 0.87, 'nativeOk': True, 'attempts': 1, 'expected': 'accept', 'ok': True}
+  OK  top m2-top.jpg {'view': 'top', 'status': 'accepted', 'gate': "axis-defining top: {'ok': True, 'iouVsFront': 0.7948, 'widthRatio': 1.0}", 'iou': 0.7948, 'iouMin': 0.87, 'nativeOk': True, 'attempts': 1, 'expected': 'accept', 'ok': True}
+  OK  y045 m2-q45.jpg {'view': 'y045', 'status': 'accepted', 'gate': 'vs coarse render', 'iou': 0.8859, 'iouMin': 0.87, 'nativeOk': True, 'attempts': 1, 'expected': 'accept', 'ok': True}
+m4 plan totals {'views': 2, 'sectionPlates': 187, 'surfaceM2': 7815.0, 'imagineCallsMin': 189, 'imagineCallsMax': 193} required px/m 180.4
+  OK  y000 m4-front.jpg {'view': 'y000', 'status': 'accepted', 'gate': 'vs key silhouette', 'iou': 0.9998, 'iouMin': 0.87, 'nativeOk': True, 'attempts': 1, 'expected': 'accept', 'ok': True}
+  OK  y090 m4-side.jpg {'view': 'y090', 'status': 'pending', 'gate': "axis-defining side: {'ok': False, 'iouVsFront': 0.9794, 'widthRatio': 0.985}", 'iou': 0.9794, 'iouMin': 0.87, 'nativeOk': True, 'attempts': 1, 'expected': 'reject', 'ok': True}
+ALL OK
+=== pbr_st
+w1 fallback (colour plate only)
+    map byte-identical to Imagine ('PASS', '01a330f83db0')
+    map native size ('PASS', [1280, 720])
+    normal native size ('PASS', [1280, 720])
+    orm native size ('PASS', [1280, 720])
+    normals unit length ('PASS', 0.0)
+    albedo delit (baked-light corr) ('FAIL', 0.228)
+    dark areas not violet ('PASS', [0.246, 0.124, 0.075])
+    relight response ('PASS', 0.0633)
+m2 tower view fallback
+    map byte-identical to Imagine ('PASS', '28e741934c4a')
+    map native size ('PASS', [624, 1648])
+    normal native size ('PASS', [624, 1648])
+    orm native size ('PASS', [624, 1648])
+    normals unit length ('PASS', 0.0)
+    albedo delit (baked-light corr) ('FAIL', 0.205)
+    dark areas not violet ('PASS', [0.117, 0.116, 0.112])
+    relight response ('PASS', 0.034)
+w1 + real Imagine albedo/height plates
+    map byte-identical to Imagine ('PASS', '7b3792c8fd01')
+    map native size ('PASS', [1280, 720])
+    normal native size ('PASS', [1280, 720])
+    orm native size ('PASS', [1280, 720])
+    normals unit length ('PASS', 0.0)
+    albedo delit (baked-light corr) ('FAIL', 0.301)
+    dark areas not violet ('PASS', [0.247, 0.123, 0.076])
+    relight response ('PASS', 0.0862)
+=== compare_st
+identity PASS expected PASS*
+    LPIPS (alex) ('PASS', 0.0)
+    SSIM (object) ('PASS', 1.0)
+    colour mean dE2000 ('PASS', 0.0)
+    colour a*b* histogram (Bhattacharyya) ('PASS', 0.0)
+    silhouette IoU ('PASS', 1.0)
+    shadow neutral (capture) ('PASS', 'no cast shadow found in the capture')
+    feature checklist ('PASS', 1.0)
+violet-perturbed FAIL expected FAIL
+    LPIPS (alex) ('PASS', 0.0691)
+    SSIM (object) ('PASS', 0.9984)
+    colour mean dE2000 ('PASS', 6.71)
+    colour a*b* histogram (Bhattacharyya) ('FAIL', 0.805)
+    silhouette IoU ('PASS', 1.0)
+    shadow neutral (capture) ('FAIL', [0.732, 0.427, 0.628])
+    feature checklist ('PASS', 1.0)
+mesa-v1-ingame (SmiR: dome) FAIL expected FAIL
+    LPIPS (alex) ('FAIL', 0.5264)
+    SSIM (object) ('FAIL', 0.3484)
+    colour mean dE2000 ('PASS', 7.08)
+    colour a*b* histogram (Bhattacharyya) ('FAIL', 0.477)
+    silhouette IoU ('FAIL', 0.7129)
+    shadow neutral (capture) ('FAIL', [0.085, 0.055, 0.079])
+    feature checklist ('FAIL', 0.0)
+wrong object (tower) FAIL expected FAIL
+    LPIPS (alex) ('FAIL', 0.5892)
+    SSIM (object) ('FAIL', 0.3239)
+    colour mean dE2000 ('FAIL', 20.71)
+    colour a*b* histogram (Bhattacharyya) ('FAIL', 0.986)
+    silhouette IoU ('FAIL', 0.1794)
+    shadow neutral (capture) ('PASS', 'no cast shadow found in the capture')
+    feature checklist ('FAIL', 0.0)
+=== fixloop_st
+coverage 18 missing []
+{
+ "native Imagine px/m (plates only, unique pixels)": "regen_section",
+ "repetition (capture autocorrelation)": "regen_section",
+ "shadow colour neutral (not violet)": "regen_albedo",
+ "approach morph 300->10 m": "pipeline:single-silhouette-lod",
+ "grounding (no floating)": "pipeline:sink",
+ "key checklist: every item verified on a current capture": "vision"
+}
+[('colour a*b* histogram (Bhattacharyya)', 'regen_albedo'), ('shadow neutral (capture)', 'regen_albedo')]
+iteration 1: 1 failures -> regen_section
+iteration 2: PASS
+sharpness loop PASS 2 {'m': 8.0}
+iteration 1: 1 failures -> regen_view
+iteration 2: 1 failures -> refine_depth
+iteration 3: 1 failures -> regen_view
+HARD FAIL after 4 iterations: ['compare|mesa|silhouette IoU']
+stuck loop FAIL 4 ['regen_view', 'refine_depth', 'regen_view']
+iteration 1: 1 failures -> vision
+vision-only NEEDS_REVIEW
+ALL OK
+=== keyvideo_st
+{
+ "stub request": {
+  "ok": true,
+  "batch": "/workspace/i23d-upgrade-work/st-kv/stub/batch-keyvideo.json"
+ },
+ "analyze real Imagine key video": {
+  "ok": true,
+  "motion": {
+   "frames": 20,
+   "everyS": 0.5,
+   "activityMean": 0.0301,
+   "gustPeriodS": 9.5,
+   "gustContrast": 2.86,
+   "residualTiles": 308,
+   "flowDirDeg": 22.4,
+   "upwardShare": 0.416
+  },
+  "candidates": 12
+ },
+ "guard: coarse refuses a video frame": {
+  "ok": true,
+  "error": "/workspace/i23d-upgrade-work/st-kv/real/frames/f0001.png: Imagine video frame (keyvideo) - never a geometry or plate sou"
+ }
+}
+ALLDONE

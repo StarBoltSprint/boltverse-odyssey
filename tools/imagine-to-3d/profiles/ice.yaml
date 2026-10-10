@@ -1,0 +1,89 @@
+# imagine-to-3d type profile: ice (see _README.md). Gate thresholds come from tools/object-gate/profiles/ice.yaml
+type: ice
+desc: ice, glass, crystal masses (transparent/specular)
+gate:
+  profile: ice
+  tighten:
+    texel:
+      maxStretch: 1.25
+      minPxPerM: 64
+      nearPxPerM: 128
+views:
+  count: 10
+  cameras:
+  - name: y000
+    yaw: 0.0
+    elev: 10
+  - name: y045
+    yaw: 45.0
+    elev: 10
+  - name: y090
+    yaw: 90.0
+    elev: 10
+  - name: y135
+    yaw: 135.0
+    elev: 10
+  - name: y180
+    yaw: 180.0
+    elev: 10
+  - name: y225
+    yaw: 225.0
+    elev: 10
+  - name: y270
+    yaw: 270.0
+    elev: 10
+  - name: y315
+    yaw: 315.0
+    elev: 10
+  - name: h000
+    yaw: 0
+    elev: 45
+  - name: top
+    yaw: 0
+    elev: 90
+geometry:
+  strategy: faceted-hull+fused-depth
+  coarse: superellipse-lathe
+  depthRatio: 0.8
+  superellipseP: 2.2
+  hardEdges: true
+  relief:
+    maxM: 0.6
+    minStdFrac: 0.08
+    gradientMax: 0.6
+  bevelM: 0.05
+  notes: facets/cracks in geometry; MeshPhysicalMaterial transmission optional on top of the standard maps
+texel:
+  targetPxPerM: 128
+  minPxPerM: 64
+  closestApproachM: 5.0
+pbr:
+  maps:
+  - albedo
+  - normal
+  - roughness
+  - metalness
+  - ao
+  - transmission
+  metalness:
+  - 0.0
+  - 0.05
+  roughness:
+  - 0.0
+  - 0.35
+  heightM: 0.6
+fix:
+  maxIterations: 4
+thresholds:
+  silhouetteIoU: 0.87
+  uvStretch: 1.25
+  lpips: 0.15
+  ssimMin: 0.35
+  deltaE2000Max: 12.0
+  histBhattMax: 0.35
+  checklistMin: 0.9
+  shadowChromaMax: 0.25
+  violetRatio: 1.08
+  depthConsistencyMedian: 0.08
+  depthConsistencyP90: 0.12
+  viewRetries: 3
