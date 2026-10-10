@@ -988,3 +988,36 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Score a pool as unique = min(W / cellM, sqrt(layers × W × H / wall area of every object sharing the pool)); repeats = cells / layers. Spend unique sections (or larger plates) until each surface reaches the threshold. |
 | Guard | `node tools/object-gate/cli.mjs --scene tools/object-gate/specs/zone-b/scene.yaml` row `native Imagine px/m` (pool row, `pool.sharedSelect` in the spec) and row `repetition (UV)` (repeats > 1 FAILS); ortho facade autocorrelation at the 12 m period 0.84 / 0.91 (max 0.5). |
 | Sources | `tools/object-gate/lib/probe.js` `texel()` pool branch; `specs/zone-b/tower-m*.yaml`; gate run on `?v=54`, 2026-10-09 17:3x. |
+
+### 2026-10-10 — close plates left the key crop
+
+| | |
+| --- | --- |
+| Take | SPEC-ZB-TOWER-HYBRID-1010. Branch `cursor/tower-hybrid-1010-36f5`, commits `c0e5529` and `47810f3`. |
+| Defect | Two close facade plates, both 864×1200, became a new corner. Luma NCC against the source crop was 0.774, then 0.715. Stop-after-2. The near front stays the key crop, about 3 px/m. |
+| Root cause | The image edit did not hold the crop framing. The six-image cap was then full. |
+| Fix | Not applied. The near front uses the registered key crop plus `detail-hp`. Do not spend a third close cook. |
+| Guard | `imagine/log.md` records the NCC. object-gate row `visible px/m` on this run printed 0.0 against 154.6. No new row was added. |
+| Sources | `/workspace/zb-tower-hybrid-1010/imagine/out/01-close.jpg`, `02-close.jpg`, `imagine/log.md`. |
+
+### 2026-10-10 — isolation hide cleared the v62 upscale quad
+
+| | |
+| --- | --- |
+| Take | SPEC-ZB-TOWER-HYBRID-1010. Same branch. |
+| Defect | The first isolation shot was a black PNG, 4250 bytes, max channel 0. |
+| Root cause | v62 draws the world with a perspective camera and then blits with an orthographic quad. A hook that hid every mesh except the tower also hid that quad. |
+| Fix | Hide only when the camera is perspective. The recapture is `caps/hero-iso.png`, 656020 bytes, only `tower-hero` and `tower-hero-trim` visible, rect IoU 0.936. |
+| Guard | No repo row. The check used here is the isolation PNG size and the visible-name list. |
+| Sources | `tools/imagine-to-3d/hybrid/tower.mjs`. Staging copy `/workspace/kc-staging/zb-tower1/tower.mjs`. |
+
+### 2026-10-10 — plinth covers the key strip and still fails the air probe
+
+| | |
+| --- | --- |
+| Take | SPEC-ZB-TOWER-HYBRID-1010. Same branch. Cites the 2026-10-09 floating-tower entry; the cause here is different. |
+| Defect | One key-view column and the side shot show the maroon plinth meeting the sand. The grounding probe still reports 9.119 m of air under the body at xz (81.2, −82.8), and 14.368 m under the trim. Relief on the body is 0. Each axis has one plane. |
+| Root cause | The plinth does not cover every column of the facade footprint, so some rays hit the silhouette base while the ground is lower. A planar blade has no offset planes, so the building profile fails relief and crispness. The cage starts at the facade base, not at the sand. |
+| Fix | Not applied. Widening the plinth was left alone because extra pixels beside the key mask can drop the rect IoU. |
+| Guard | object-gate rows `grounding (no floating)`, `facade relief >= 0.3 m`, and `facade crispness` in `/tmp/og-tower-hero/report.md`. Same rows as the 2026-10-09 entry. |
+| Sources | `/tmp/og-tower-hero/tower-hero/grounding.json`, `geometry.json`. |
