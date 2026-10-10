@@ -11,7 +11,7 @@ import { scoreVisible, screenPxPerM, resolveView, footprintsFromBoxes } from "./
 export { scoreVisible, screenPxPerM, resolveView };
 
 /** Stable API contract (see API.md). Bump the major only with a migration note; additions bump the minor. */
-export const API_VERSION = "1.4";
+export const API_VERSION = "1.5";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PY = join(HERE, "lib/analyze.py");
@@ -217,7 +217,7 @@ export const CHECK_IDS = [
   [/^key checklist written/, "checklist.written"], [/^key crop present/, "checklist.key-crop"], [/^key checklist: every/, "checklist.verified"], [/^colour vs key/, "checklist.colour"],
   [/^console/, "runtime.console"], [/^shader compile/, "runtime.shader"], [/^HUD text/, "runtime.hud"], [/^title/, "runtime.title"],
   [/^portrait viewport/, "runtime.portrait"], [/^budgets/, "runtime.budgets"], [/^live preview untouched/, "runtime.live-untouched"],
-  [/^perf: canvas ratio/, "perf.canvas-ratio"], [/^perf: sky dome/, "perf.sky-order"], [/^perf: ground/, "perf.ground-order"], [/^perf: adaptive/, "perf.adaptive"], [/^perf: report/, "perf.report"],
+  [/^perf: canvas ratio/, "perf.canvas-ratio"], [/^perf: sky dome/, "perf.sky-order"], [/^perf: ground/, "perf.ground-order"], [/^perf: adaptive/, "perf.adaptive"], [/^perf: quality kept/, "perf.quality-kept"], [/^perf: default ratio/, "perf.default-ratio"], [/^perf: report/, "perf.report"],
 ];
 export const checkId = (check) => (CHECK_IDS.find(([re]) => re.test(check)) || [null, "other"])[1];
 function row(o, check, pass, detail, hints = [], status) {
@@ -225,7 +225,9 @@ function row(o, check, pass, detail, hints = [], status) {
 }
 /**
  * Phone perf rows (docs/METHOD/phone-perf.md). They read the page's window.__perfReport():
- * { canvasRatio, dpr, cap, adaptive, skyOrder, groundOrder, maxOpaqueOrder, skyDepthTest }. A page without it gets an INFO row.
+ * { canvasRatio, dpr, cap, adaptive, skyOrder, groundOrder, maxOpaqueOrder, skyDepthTest, adaptiveCanDropDetail, sprintDip }. A page without it gets an INFO row.
+ * 1.5 (SmiR 2026-10-10 14:02): quality first. The phone default is ratio 2 at full quality; the adaptive controller may only
+ * lower the ratio as an emergency floor and must never drop the detail layer or another quality feature.
  * Every row checks work that never reaches the screen (full-DPR canvas, overdraw a depth test would reject); none of them lowers the look.
  */
 export function perfRows(rep, pr, vp) {
@@ -238,7 +240,13 @@ export function perfRows(rep, pr, vp) {
     ["Draw the far-plane sky dome after every depth-writing opaque, depth-tested: the hidden sky pixels are then never shaded (bit-identical result)."]);
   if (pr.groundOrder != null) rowR(rep, `perf: ground after the other opaques ${tag}`, pr.groundOrder > pr.maxOpaqueOrder, `ground renderOrder ${pr.groundOrder}, max opaque ${pr.maxOpaqueOrder}`,
     ["Draw the expensive ground shader after towers / mesas / props so occluded ground pixels fail the early depth test (bit-identical result)."]);
-  rowR(rep, `perf: adaptive controller on ${tag}`, !!pr.adaptive, `adaptive ${!!pr.adaptive}`, ["Use tools/biome/runtime/adaptive-res.mjs (median frame time, warm-up, 44/50 fps hysteresis)."]);
+  rowR(rep, `perf: adaptive controller on ${tag}`, !!pr.adaptive, `adaptive ${!!pr.adaptive}`, ["Use tools/biome/runtime/adaptive-res.mjs (quality-first: ratio 2, emergency floor only)."]);
+  rowR(rep, `perf: quality kept: adaptive never drops the detail layer ${tag}`, !pr.adaptive || pr.adaptiveCanDropDetail === false,
+    `adaptiveCanDropDetail ${pr.adaptiveCanDropDetail}`,
+    ["Use tools/biome/runtime/adaptive-res.mjs >= 2026-10-10 14:02 (every level detail: true, canDropDetail false) and report adaptiveCanDropDetail: false in __perfReport. Owner rule: no quality feature is ever turned off for fps."]);
+  rowR(rep, `perf: default ratio = min(2, device), no sprint dip ${tag}`, (pr.cap ?? 0) >= Math.min(2, pr.dpr ?? 2) - 1e-6 && pr.sprintDip === false,
+    `cap ${pr.cap} device ${pr.dpr} sprintDip ${pr.sprintDip}`,
+    ["The phone default is ratio 2 at full quality, even at 22-25 fps (SmiR 2026-10-10). Below 2 only as the adaptive emergency floor (< 15 fps for > 5 s). Report sprintDip: false."]);
 }
 function rowR(rep, check, pass, detail, hints) { rep.runtime.push({ id: checkId(check), check, status: pass ? "PASS" : "FAIL", detail, hints: pass ? [] : hints }); }
 
