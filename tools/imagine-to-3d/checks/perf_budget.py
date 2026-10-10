@@ -51,8 +51,10 @@ def geo_cost(d):
     return out
 
 
-def run(typ="rock", geo=None, tex=(), frag=(), probe=None, out=None, resident_lod0=2):
+def run(typ="rock", geo=None, tex=(), frag=(), probe=None, out=None, resident_lod0=2, budgets=None):
     prof = C.load_profile(typ); B = dict(DEFAULT); B.update(prof.get("perf", {}) or {})
+    if budgets:
+        B.update({k: v for k, v in budgets.items() if not isinstance(v, (dict, list))})
     rows = []
     def row(check, value, limit, ok, info=None):
         rows.append(dict(check=check, value=value, limit=limit, status="INFO" if ok is None else ("PASS" if ok else "FAIL"), info=info))
@@ -78,6 +80,8 @@ def run(typ="rock", geo=None, tex=(), frag=(), probe=None, out=None, resident_lo
         P = json.load(open(probe)); dc = P.get("drawCalls")
         if dc is None: dc = (P.get("perf") or {}).get("drawCalls")
         if dc is not None: row("draw calls for this object type (merged / instanced)", dc, B["drawCallsMax"], dc <= B["drawCallsMax"])
+        if P.get("tris") is not None and B.get("trisMax"):
+            row("tower triangles", P["tris"], B["trisMax"], P["tris"] <= B["trisMax"])
     res = dict(type=typ, device=DEVICE, pixelRatio=DEVICE["dpr"], budgets=B, rows=rows,
                verdict="PASS" if rows and all(r["status"] != "FAIL" for r in rows) else ("FAIL" if rows else "NO-INPUT"))
     if out: C.dump(res, out)

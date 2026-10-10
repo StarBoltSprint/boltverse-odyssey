@@ -66,7 +66,7 @@ Stages, in order (each writes its report next to the outputs):
 | `palette.py` | `sample` the locked biome palette from the key (→ `palettes/<biome>.json`), `grade` every new Imagine image toward its material at import (Imagine pixels only, ΔE before/after in `palette-log.jsonl`), `shift` (keyloop colour correction), `measure` |
 | `consistency.py` | `check`: new reference image vs the key (palette ΔE + style score) → ACCEPT / FLAG / REJECT; `views`: views of one object on their overlap, SSIM ≥ 0.92 and ΔE < 3.5 (q17). Writes Imagine requests, never runs them |
 | `fixloop.py keyloop spec.yaml` | key-compare closed loop: shape / colour / detail corrections until the targets are met or progress stalls; `KEYLOOP.md` = first / best / last / target / gap / ceiling per element and metric |
-| `auto.py` stages | `consistency` (after `inputs`, blocks on REJECT) and `keycompare` (after `gate`, runs keyloop when below target) |
+| `auto.py` stages | `consistency` (after `inputs`, blocks on REJECT), `project` (masked multi-camera projection on DA relief; hidden faces write one turnaround-sheet request by default and never generate it), `keycompare` (after `gate`, runs keyloop when below target) |
 
 Spec keys: `palette: {file, materials, keyRect, strength, useGraded}` and `keyCompare: {spec, elements, camera,
 maxRounds, stallRounds, colourGain, plates, apply: {colour, shapeSeed, silhouetteWarp, plateRepick, relief, detail}}`

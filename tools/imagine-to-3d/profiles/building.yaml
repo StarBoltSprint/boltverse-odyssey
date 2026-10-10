@@ -60,6 +60,18 @@ geometry:
     snapTolPx: 8
     maxPlanes: 6
     chromeM: 0.02
+project:
+  # Masked multi-camera projection (project.py). Thresholds only. The Q22 sheet prompt
+  # stays verbatim in project.SHEET_PROMPT so a profile edit cannot drift it.
+  featherPx: 12
+  fitIoUMin: 0.8
+  nonObjectMax: 0.02
+  coverageMin: 0.15
+  hiddenFaceFrac: 0.10
+  keyDistanceM: 40
+  facingPower: 2
+  sheetDefault: true
+  seamPoisson: false
 perf:
   # Live tower shader + merged LOD0 draws. Rock stays on the 900-instr / 2-draw default.
   drawCallsMax: 12

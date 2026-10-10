@@ -7,11 +7,11 @@ proportions:
   hOverW: [3.0, 5.0]
   dOverW: [0.45, 0.70]
 textures:
-  - {match: "albedo-key\\.png", role: plate}
-  - {match: "atlas-key\\.png", role: plate}
+  - {match: "albedo\\.png", role: plate, source: /workspace/zb-tower-hybrid-1010/imagine/src/crop-tower.jpg}
+  - {match: "trim\\.png", role: plate, source: /workspace/zb-tower-hybrid-1010/imagine/src/crop-tower.jpg}
   - {match: "detail-hp\\.png", role: detail}
-  - {match: "-(y)\\.bin|u[LRB]Y", role: plate}
-  - {match: "-(c)\\.bin|u[LRB]C", role: mask}
+  - {match: "weight\\.png", role: mask}
+  - {match: "sand\\.png", role: tile, source: /workspace/zb-bible-1008/key-city3.jpg}
 checklist:
   - {id: wedge, feature: "Tapered planar blade, depth at least 0.45 of the width, sheared crown kept in the volume", captures: [far, low-portrait]}
   - {id: ladder, feature: "Ladder cage readable as rails, rungs and hoops", captures: [close, low-portrait]}

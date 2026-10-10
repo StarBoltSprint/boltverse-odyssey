@@ -1,0 +1,54 @@
+# Zone B hero tower. Built by auto.py project stage. No hand mesh. No new Imagine calls.
+object: tower-hero
+type: building
+key: /workspace/zb-bible-1008/key-city3.jpg
+crop: /workspace/zb-tower-hybrid-1010/imagine/src/crop-tower.jpg
+heightM: 150
+work: /workspace/i23d-auto/zoneb-tower-hero
+staging: /workspace/kc-staging/zb-tower2
+stagingUrl: http://127.0.0.1:8996/tower2-1010/index-tower2.html
+imagine:
+  views: {}
+palette:
+  file: palettes/ember-mesa.json
+  materials: {crop: tower}
+  strength: 0.35
+  useGraded: false
+project:
+  keycam: /workspace/proj-1010/keycam.json
+  keyMask: /workspace/proj-1010/out/mask.png
+  keyImage: /workspace/zb-bible-1008/key-city3.jpg
+  stepPx: 6
+  featherPx: 12
+  iouMin: 0.8
+  nonObjectMax: 0.02
+  coverageMin: 0.15
+  hiddenFrac: 0.10
+  keyDistM: 40
+  facingPower: 2
+  pxPerM: 6
+  delightExp: 0.55
+  delightTarget: 0.42
+  dropTowers: [t0-m2, t2-m3]
+  answered:
+    - {id: view-left, face: left, path: /workspace/zb-tower-hybrid-1010/imagine/out/view-4.jpg, yaw: 90, pitch: 0, fov: 40, kind: panel}
+    - {id: view-back, face: back, path: /workspace/zb-tower-hybrid-1010/imagine/out/view-5.jpg, yaw: 180, pitch: 0, fov: 40, kind: panel}
+    - {id: view-right, face: right, path: /workspace/zb-tower-hybrid-1010/imagine/out/view-6.jpg, yaw: 270, pitch: 0, fov: 40, kind: panel}
+detail:
+  reuse: /workspace/zb-preview-1008/objects1/tex/detail-hp.png
+  pxPerM: 512
+morph:
+  gate: lod
+gate:
+  scene: /workspace/grokcli/wt/tower-project-1010/tools/object-gate/specs/zone-b/tower-hero-scene.yaml
+  object: tower-hero
+  full: true
+keyCompare:
+  spec: ../../object-gate/specs/zone-b/key-compare.yaml
+  elements: [towers]
+  autoFix: false
+  url: http://127.0.0.1:8996/tower2-1010/index-tower2.html?cam=key
+perf:
+  drawCallsMax: 3
+  texGpuMiBMax: 16
+  trisMax: 60000

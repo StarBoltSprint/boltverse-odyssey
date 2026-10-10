@@ -5,5 +5,9 @@ const p = await (await b.newContext({ viewport: { width: 270, height: 600 } })).
 await p.goto(url, { timeout: 300000 });
 await p.waitForFunction(() => window.__ready === true, null, { timeout: 600000, polling: 1000 });
 await p.waitForTimeout(1500);
-console.log(JSON.stringify(await p.evaluate(() => { const g = window.__objectsGate || {}; return { v: g.version, perf: window.__perf || null }; })));
+console.log(JSON.stringify(await p.evaluate(() => {
+  const g = window.__objectsGate || {};
+  const t = (window.__tower && window.__tower.stats) ? window.__tower.stats() : null;
+  return { v: g.version, perf: window.__perf || null, tower: t };
+})));
 await b.close();

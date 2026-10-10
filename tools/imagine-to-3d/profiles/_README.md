@@ -8,4 +8,5 @@ One file per object type (classify.py output). Each profile:
 - `texel` = native Imagine px/m targets used by views.py to precompute the metres each plate covers.
 - `thresholds` = upgrade-stage thresholds (views IoU, compare.py LPIPS/SSIM/dE/checklist, fix loop).
 - `pbr` = maps pbr.py bakes and the expected metal/roughness ranges.
+- `project` (buildings) = masked multi-camera projection: feather, fit IoU, non-object share, hidden-face coverage. The turnaround sheet is the default Imagine request. `seamPoisson: false` (the seam is `strata2.joint_blend`, a linear ramp).
 Quality rule (SmiR): nothing here ever lowers texture resolution or geometry for phone performance.

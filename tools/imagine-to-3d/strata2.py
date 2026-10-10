@@ -50,6 +50,17 @@ ROW_MAXV = 7.6       # window row height (surface arc, m) <= plate 9 m minus mar
 COLW = 2.6           # max column spacing of the base shell (m)
 CAPNY = 0.45         # |normal.y| above this: ledge top / underside -> cap plates
 
+def joint_blend(c0, c1, w):
+    """Joint-to-joint colour continuity (v10 lesson, exported). w=0 keeps c0, w=1 keeps c1.
+    Linear across the overlap. Do not call build() for this — build() is the mesa generator."""
+    c0 = np.asarray(c0, np.float32)
+    c1 = np.asarray(c1, np.float32)
+    w = np.clip(np.asarray(w, np.float32), 0.0, 1.0)
+    if w.ndim == c0.ndim - 1:
+        w = w[..., None]
+    return (1.0 - w) * c0 + w * c1
+
+
 def pnoise(rng, Ptot, waves, amps):
     """periodic smooth noise of theta: integer harmonics chosen per section radius Rs so the physical wavelengths
     stay ~waves (m) on every tier; f(theta, Rs)."""

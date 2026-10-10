@@ -16,6 +16,8 @@ Stages (order; each writes WORK/<stage>.json and updates WORK/state.json):
   geometry  CONTINUOUS strata/surfaces (strata2.py: one wall per section, joint-blended plate windows, smooth welded
             normals, rotated/toned fallen blocks) + shape-seed search to outline IoU >= iouMin and window salts until
             no repetition (gen_strata_all.py, GEN=strata2.py). Same shell at every LOD, relief as an attribute.
+  project   masked multi-camera projection on DA hard-surface relief (project.py). Objects = masked multi-camera
+            projection on DA relief, by the tool. Hidden faces -> one turnaround sheet request by default (owner go).
   pack      int16 + index + gzip, LOD2 dropped, LOD0 on demand, gen-summary.json copied (pack_strata.py)
   detail    tiling Imagine detail layer (~512 px/m, hex 3-tap, DA-V2 normals) from EXISTING seamless Imagine crops
             (detail/bake_detail.py) + texture-space no-repetition check (detail/repeat_check.py) -> detail.json
@@ -35,7 +37,7 @@ import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 import i23d_common as C
 PY = sys.executable
-STAGES = ["inputs", "consistency", "classify", "shape", "geometry", "pack", "detail", "grade", "stage", "shaders", "perf", "morph", "gate", "keycompare", "report"]
+STAGES = ["inputs", "consistency", "classify", "shape", "geometry", "project", "pack", "detail", "grade", "stage", "shaders", "perf", "morph", "gate", "keycompare", "report"]
 BROWSER = {"shaders", "morph", "gate", "keycompare"}
 LIVE_GUARD = [os.environ.get("I23D_LIVE_ROOT", "/workspace/zb-preview-1008")]   # files the live page loads live here
 MANUAL = {   # honest list, printed in every plan/report
@@ -180,7 +182,8 @@ class Run:
         base = os.path.dirname(self.spec_path); spec_abs = kc["spec"] if os.path.isabs(kc["spec"]) else os.path.join(base, kc["spec"])
         out = os.path.join(self.work, "keycompare")
         cmd = ["node", os.path.join(C.OBJECT_GATE_DIR, "key-compare.mjs"), "--spec", spec_abs, "--out", out, "--only", ",".join(kc["elements"])]
-        if self.spec.get("stagingUrl") or kc.get("url"): cmd += ["--url", self.spec.get("stagingUrl") or kc.get("url")]
+        url = kc.get("url") or self.spec.get("stagingUrl")
+        if url: cmd += ["--url", url]
         if kc.get("camera"): cmd += ["--camera", kc["camera"]]
         r = sh(*cmd, timeout=7200); st = {0: "PASS", 1: "FAIL"}.get(r.returncode, "ERROR")
         loop = None
@@ -200,7 +203,10 @@ class Run:
 
     def _hs(self):
         """Building profile of this module: quantise DA-V2 into flat planes. Rock/mesa never enter.
-        A building spec with no geometry block (grade only) stays on the skip path."""
+        A building spec with no geometry block (grade only) stays on the skip path.
+        A project: spec builds its own shell and must not fall through to the plate generator."""
+        if self.spec.get("project"):
+            return False
         if self.type != "building" or not self.spec.get("geometry"):
             return False
         g = self.spec["geometry"]
@@ -249,7 +255,19 @@ class Run:
         return self.done("shape", "PASS" if rep.get("ok") else "FAIL", dir=out, passPlates=rep.get("passPlates"), platesN=rep.get("platesN"),
                          summary=f"hard-surface depth {rep.get('passPlates')}/{rep.get('platesN')} plates")
 
+    def s_project(self):
+        if not self.spec.get("project"):
+            return self.done("project", "SKIP", summary="no project: block")
+        import project as PJ
+        rep = PJ.run(self.spec, self.work, log=print)
+        st = rep.get("status") or "FAIL"
+        return self.done("project", st, requests=rep.get("requestCount"), requestIds=rep.get("requestIds"),
+                         accepted=rep.get("accepted"), rejected=rep.get("rejected"), checks=rep.get("checks"),
+                         summary=rep.get("summary") or st)
+
     def s_shape(self):
+        if self.spec.get("project"):
+            return self.done("shape", "SKIP", summary="project stage owns the shell")
         if not self.spec.get("geometry"): return self.done("shape", "SKIP", summary="no geometry in spec")
         if self._hs(): return self.s_shape_building()
         g = self.spec["geometry"]; pre = g["hull"]; fused = g.get("fusedHull", pre + "F")
@@ -312,6 +330,8 @@ class Run:
                          summary=f"{len(rows)} modules, failing rows: {fails or 'none'}")
 
     def s_geometry(self):
+        if self.spec.get("project"):
+            return self.done("geometry", "SKIP", summary="project stage owns the shell")
         if not self.spec.get("geometry"): return self.done("geometry", "SKIP", summary="no geometry in spec")
         if self._hs(): return self.s_geometry_building()
         g = self.spec["geometry"]; out = os.path.join(self.work, "geo-raw")
@@ -368,6 +388,11 @@ class Run:
         return self.done("pack", "PASS" if ok else "FAIL", dir=dst, summary="hard-surface GLBs + gen-summary" + ("" if ok else " (missing)"))
 
     def s_pack(self):
+        if self.spec.get("project"):
+            need = ["tower.bin", "albedo.png", "trim.png", "weight.png", "tower-meta.json"]
+            missing = [n for n in need if not os.path.exists(os.path.join(self.work, n))]
+            return self.done("pack", "FAIL" if missing else "PASS", dir=self.work, missing=missing,
+                             summary="project tower.bin + albedo + trim" if not missing else "missing " + ",".join(missing))
         if not self.spec.get("geometry"): return self.done("pack", "SKIP", summary="no geometry in spec")
         if self._hs(): return self.s_pack_building()
         src = self.state["stages"]["geometry"]["dir"]; dst = os.path.join(self.work, "geo-packed")
@@ -381,6 +406,8 @@ class Run:
 
     def s_detail(self):
         d = self.spec.get("detail");
+        if d and d.get("reuse"):
+            return self.done("detail", "PASS", config=d["reuse"], summary="reused existing Imagine detail layer (no new bake)")
         if not d: return self.done("detail", "SKIP", summary="no detail layer in spec")
         out = os.path.join(self.work, "detail"); os.makedirs(out, exist_ok=True)
         sl = os.path.join(out, "slices.json"); json.dump(d["slices"], open(sl, "w"))
@@ -402,6 +429,8 @@ class Run:
 
     def s_grade(self):
         g = self.spec.get("grade")
+        if self.spec.get("project") and not g:
+            return self.done("grade", "SKIP", summary="project already delighted and palette-graded the atlas")
         if not g: return self.done("grade", "SKIP", summary="no section atlas in spec")
         w = os.path.join(self.work, "grade"); os.makedirs(w, exist_ok=True)
         if g.get("rawDir"):
@@ -422,6 +451,13 @@ class Run:
                          summary=f"R8 luma + chroma atlases {round(mib, 1)} MiB, dE mean {de['dEmean']:.2f} p99 {de['dEp99worst']:.2f}")
 
     def s_stage(self):
+        if self.spec.get("project"):
+            import project as PJ
+            try:
+                info = PJ.stage_page(self.spec, self.work)
+            except SystemExit as e:
+                return self.done("stage", "FAIL", reason=str(e))
+            return self.done("stage", "PASS", dir=info.get("dir"), page=info.get("page"), summary=info.get("summary"))
         dst = self.spec.get("staging")
         if not dst: return self.done("stage", "SKIP", summary="no staging dir in spec")
         dst = os.path.abspath(dst)
@@ -475,8 +511,28 @@ class Run:
                 dc = perfj.get("objectsCalls", perfj.get("calls"))
                 probe = os.path.join(self.work, "perf-probe.json")
                 C.dump(dict(drawCalls=dc, perf=perfj), probe)
-        r = perf(self.type if self.type != "auto" else "rock", S.get("pack", {}).get("dir"), tex, frag, probe,
-                 os.path.join(self.work, "perf-report.json"))
+        budgets = None
+        if self.spec.get("project"):
+            # Score the tower, not the whole page and not the building-profile 64 MiB cap.
+            budgets = dict(self.spec.get("perf") or {})
+            tex = []
+            for name in ("albedo.png", "trim.png", "weight.png", "sand.png"):
+                pth = os.path.join(self.work, name)
+                if os.path.exists(pth):
+                    tex.append(pth)
+            det = (self.spec.get("detail") or {}).get("reuse")
+            if det and os.path.exists(det):
+                tex.append(det)
+            frag = []
+            if self.spec.get("stagingUrl") and not self.no_browser:
+                pr = sh("node", f"{HERE}/checks/perf-probe.mjs", self.spec["stagingUrl"], timeout=900)
+                if pr.returncode == 0 and pr.stdout.strip():
+                    data = json.loads(pr.stdout.strip().splitlines()[-1])
+                    tower = data.get("tower") or {}
+                    probe = os.path.join(self.work, "perf-probe.json")
+                    C.dump(dict(drawCalls=tower.get("draws"), tris=tower.get("tris"), texMiB=tower.get("texMiB"), tower=tower), probe)
+        r = perf(self.type if self.type != "auto" else "rock", None if self.spec.get("project") else S.get("pack", {}).get("dir"), tex, frag, probe,
+                 os.path.join(self.work, "perf-report.json"), budgets=budgets)
         return self.done("perf", r["verdict"], rows=r["rows"], summary="; ".join(f"{x['check']}={x['value']} {x['status']}" for x in r["rows"]))
 
     def s_morph(self):
@@ -567,7 +623,7 @@ def main():
         try: rec = getattr(R, "s_" + s)()
         except Exception as e:
             rec = R.done(s, "ERROR", reason=f"{type(e).__name__}: {e}"[:600])
-        if rec["status"] in ("FAIL", "ERROR") and s in ("inputs", "consistency", "shape", "pack", "stage"):
+        if rec["status"] in ("FAIL", "ERROR") and s in ("inputs", "consistency", "shape", "project", "pack", "stage"):
             print(f"stop: {s} {rec['status']}"); R.s_report(); sys.exit(1)
     blocking = R.state["stages"]["report"].get("blocking", []) if "report" in R.state["stages"] else []
     sys.exit(0 if not blocking else 1)
