@@ -427,10 +427,22 @@ class Run:
         if m.get("gate") == "lod" or (self._hs() and not m.get("targets")):
             out = os.path.join(self.work, "morph")
             r = sh("node", f"{HERE}/checks/lod-morph-gate.mjs", u, out, timeout=7200)
-            text = ((r.stdout or "") + (r.stderr or "")).strip()
-            last = text.splitlines()[-1] if text else f"exit {r.returncode}"
-            st = "PASS" if r.returncode == 0 and last.startswith("PASS") else "FAIL"
-            return self.done("morph", st, summary=last[:240])
+            text = ((r.stdout or "") + "\n" + (r.stderr or "")).strip()
+            # A Node deprecation warning is printed after the verdict, on process exit. The verdict
+            # line is the one that starts with PASS or FAIL, not whatever landed last.
+            verdict = ""
+            vf = os.path.join(out, "verdict.txt")
+            if os.path.exists(vf):
+                verdict = open(vf).read().strip().splitlines()[-1]
+            if not verdict:
+                for ln in reversed(text.splitlines()):
+                    if ln.startswith("PASS") or ln.startswith("FAIL"):
+                        verdict = ln
+                        break
+            if not verdict:
+                verdict = text.splitlines()[-1] if text else f"exit {r.returncode}"
+            st = "PASS" if r.returncode == 0 and verdict.startswith("PASS") else "FAIL"
+            return self.done("morph", st, summary=verdict[:240])
         res = []
         for pid, heading in m.get("targets", []):
             out = os.path.join(self.work, "morph", pid)

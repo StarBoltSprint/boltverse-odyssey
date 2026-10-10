@@ -67,6 +67,9 @@ for (const [ti, [tx, tz]] of targets.entries()) {
   fs.writeFileSync(`${out}/strip-t${ti}.pgm`, Buffer.concat([Buffer.from(`P5 ${cw} ${H} 255\n`), buf]));
 }
 for (const r of rows) console.log(JSON.stringify(r));
-console.log(fail ? "FAIL lod-morph" : "PASS lod-morph (no silhouette jump 300 m -> 2 m outside the footprint, 2 towers)");
+const verdict = fail ? "FAIL lod-morph" : "PASS lod-morph (no silhouette jump 300 m -> 2 m outside the footprint, 2 towers)";
+fs.writeFileSync(`${out}/verdict.txt`, verdict + "\n");
+console.log(verdict);
 await b.close();
+console.log(verdict);
 process.exit(fail ? 1 : 0);
