@@ -2,6 +2,7 @@
 # imagine-to-3d auto selftest on the Zone B assets (box paths, read-only inputs; outputs under /workspace/i23d-auto).
 # --no-browser: the shaders / morph / gate stages need a staging page and one free headless browser.
 set -u; cd "$(dirname "$0")/.."
+python3 selftest/hard_surface_st.py
 python3 auto.py run specs/zoneb-tower-sections.yaml --no-browser
 python3 auto.py run specs/zoneb-mesa.yaml --no-browser
 python3 auto.py run specs/zoneb-mesa-build.yaml --stages inputs,classify,shape,geometry,report

@@ -211,7 +211,7 @@ export const CHECK_IDS = [
   [/^repetition \(visible\): identical/, "repetition.visible-radius"], [/^repetition \(visible\): neighbours/, "repetition.visible-neighbours"], [/^repetition \(UV\)/, "repetition.uv"], [/^UV stretch/, "texel.stretch"],
   [/^scene self-report/, "texel.self-report"], [/^repetition \(capture/, "repetition.captures"], [/^approach morph/, "morph"],
   [/^shadow light/, "shadow.light"], [/^shadow cast/, "shadow.cast"], [/^shadow world-fixed/, "shadow.world-fixed"], [/^shadow colour/, "shadow.colour"],
-  [/^grounding/, "grounding"], [/^mesh sealed/, "geometry.sealed"], [/^facade relief/, "geometry.relief"], [/^proportions/, "geometry.proportions"],
+  [/^grounding/, "grounding"], [/^mesh sealed/, "geometry.sealed"], [/^facade relief/, "geometry.relief"], [/^facade crisp/, "geometry.crisp"], [/^proportions/, "geometry.proportions"],
   [/^effects take/, "effects.imagine-texture"], [/^effects: no typed/, "effects.no-colour-literals"],
   [/^key checklist written/, "checklist.written"], [/^key crop present/, "checklist.key-crop"], [/^key checklist: every/, "checklist.verified"], [/^colour vs key/, "checklist.colour"],
   [/^console/, "runtime.console"], [/^shader compile/, "runtime.shader"], [/^HUD text/, "runtime.hud"], [/^title/, "runtime.title"],
@@ -584,6 +584,17 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
       const flat = geo.filter((g) => Object.values(g.reliefM).filter((v) => v != null && v >= G.minReliefM).length < G.minReliefFaces);
       row(o, `facade relief >= ${G.minReliefM} m`, flat.length === 0, geo.map((g) => `${g.usedBy} ${Object.entries(g.reliefM).map(([k, v]) => k + " " + v).join(" ")}`).join("; "),
         ["Model the relief (fins, ledges, recessed bays, cornices, strata) in the geometry; a plate on a flat face reads as a picture."]);
+    }
+    if (G.minCrisp != null) {
+      const lo = G.minOffsetPlanes ?? 2, hi = G.maxOffsetPlanes ?? 12;
+      const bad = geo.filter((g) => {
+        const dirs = Object.values(g.crisp || {});
+        const ok = dirs.filter((d) => d && d.axisFrac >= G.minCrisp && d.planes >= lo && d.planes <= hi);
+        return ok.length < (G.minReliefFaces || 1);
+      });
+      row(o, `facade crispness (axis-aligned >= ${G.minCrisp}, ${lo}-${hi} offset planes)`, bad.length === 0,
+        geo.map((g) => `${g.usedBy} ${Object.entries(g.crisp || {}).map(([k, d]) => k + " axis " + (d && d.axisFrac) + " planes " + (d && d.planes)).join(" ")}`).join("; ") || "no crisp measure",
+        ["Quantise the facade into a few flat planes with vertical steps. One plane is a flat slab; many offset bins is a blobby rock."]);
     }
     if (spec.proportions) {
       const P = spec.proportions; const bad = [];

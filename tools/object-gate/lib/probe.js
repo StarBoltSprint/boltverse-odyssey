@@ -412,6 +412,7 @@
       const edges = new Map();
       const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
       const relief = { "+x": new Map(), "-x": new Map(), "+z": new Map(), "-z": new Map() };
+      const crispAcc = { "+x": [], "-x": [], "+z": [], "-z": [] };
       let degenerate = 0;
       for (let t = 0; t < nTri; t++) {
         const i = [0, 1, 2].map((k) => (idx ? idx.getX(3 * t + k) : 3 * t + k));
@@ -424,8 +425,10 @@
         const k = classOf([n.x, n.y, n.z]);
         if (!relief[k] || Math.abs(k[1] === "x" ? n.x : n.z) < 0.7) continue;
         const off = k[1] === "x" ? (a.x + b.x + c.x) / 3 : (a.z + b.z + c.z) / 3;
-        const yb = Math.floor((a.y + b.y + c.y) / 3);
+        const y = (a.y + b.y + c.y) / 3;
+        const yb = Math.floor(y);
         const m = relief[k]; const r = m.get(yb) || [Infinity, -Infinity, 0, []]; r[0] = Math.min(r[0], off); r[1] = Math.max(r[1], off); r[2] += ar; r[3].push(off); m.set(yb, r);
+        crispAcc[k].push({ off, ar, y, axis: Math.max(Math.abs(n.x), Math.abs(n.y), Math.abs(n.z)) > 0.92 });
       }
       let open = 0, nonManifold = 0; for (const n of edges.values()) { if (n === 1) open++; else if (n > 2) nonManifold++; }
       const reliefM = {};
@@ -434,6 +437,32 @@
         const rs = [...m.values()].filter((r) => r[2] > 0.2).map((r) => r[3].filter((q) => (k[0] === "+" ? r[1] - q : q - r[0]) <= 3)).map((qs) => Math.max(...qs) - Math.min(...qs)).sort((x, y) => x - y);
         reliefM[k] = rs.length ? +rs[rs.length >> 1].toFixed(3) : null;
       }
+      const crisp = {};
+      for (const [k, faces] of Object.entries(crispAcc)) {
+        // Outermost offset per metre of height. A designed taper moves that shell; the step depth is the
+        // residual, scaled back by the shell so one bay plane stays one bin. A flat slab has one residual.
+        const env = new Map();
+        for (const f of faces) {
+          const yb = Math.floor(f.y);
+          const e = env.get(yb);
+          env.set(yb, e == null ? f.off : (k[0] === "+" ? Math.max(e, f.off) : Math.min(e, f.off)));
+        }
+        let eBase = null;
+        for (const e of env.values()) eBase = eBase == null ? e : (k[0] === "+" ? Math.max(eBase, e) : Math.min(eBase, e));
+        const keptF = [];
+        for (const f of faces) {
+          const e = env.get(Math.floor(f.y));
+          if (e == null || Math.abs(e) < 0.25 || eBase == null) continue;
+          const inward = (k[0] === "+" ? e - f.off : f.off - e) * (eBase / e);
+          if (inward <= 3.2 && inward >= -0.08) keptF.push({ ar: f.ar, axis: f.axis, res: Math.max(0, inward) });
+        }
+        const area = keptF.reduce((s, f) => s + f.ar, 0);
+        const bins = new Map();
+        for (const f of keptF) { const b = Math.round(f.res / 0.05); bins.set(b, (bins.get(b) || 0) + f.ar); }
+        const planes = [...bins.values()].filter((a) => area > 0 && a / area >= 0.02).length;
+        const axis = keptF.reduce((s, f) => s + (f.axis ? f.ar : 0), 0);
+        crisp[k] = { axisFrac: area > 0 ? +(axis / area).toFixed(3) : 0, planes };
+      }
       if (!geo.boundingBox) geo.computeBoundingBox();
       const s = geo.boundingBox.getSize(new THREE.Vector3());
       const sizes = list.slice(0, 64).map((i) => {
@@ -441,7 +470,7 @@
         const sc = [Math.hypot(e[0], e[1], e[2]), Math.hypot(e[4], e[5], e[6]), Math.hypot(e[8], e[9], e[10])];
         return { inst: i.id, w: +(s.x * sc[0]).toFixed(2), h: +(s.y * sc[1]).toFixed(2), d: +(s.z * sc[2]).toFixed(2) };
       });
-      out.push({ geo: geo.uuid.slice(0, 8), usedBy: list[0].mesh.name, instances: list.length, tris: nTri, verts: vid.size, open, nonManifold, degenerate, reliefM, local: { w: +s.x.toFixed(2), h: +s.y.toFixed(2), d: +s.z.toFixed(2) }, sizes });
+      out.push({ geo: geo.uuid.slice(0, 8), usedBy: list[0].mesh.name, instances: list.length, tris: nTri, verts: vid.size, open, nonManifold, degenerate, reliefM, crisp, local: { w: +s.x.toFixed(2), h: +s.y.toFixed(2), d: +s.z.toFixed(2) }, sizes });
     }
     return out;
   }
