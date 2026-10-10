@@ -4,7 +4,7 @@ applies it to a staging mirror, never to live files).
 
     python3 layout_fit.py fit --biome ember-mesa --live /workspace/zb-preview-1008 --out layouts/ember-mesa.json
 
-Model (analytic, no browser): three.js camera (rotation XYZ = (pitch, -yaw, 0), vertical fov, 16:9, y = ground + eye),
+Model (analytic, no browser): three.js camera (rotation order YXZ as main.mjs, (pitch, -yaw, 0), vertical fov, 16:9, y = ground + eye),
 towers = yawed square prisms (module base width x scale, layout height), spire = 12 m prism, skyline slabs fixed,
 mesas = their real strata rings (strata geo.json, every ring extruded y0..y1). Targets: the key COMPOSITION file
 (layouts/<biome>-composition.json: tower / spire slots and mesa polygons measured on the key; colour masks cannot split
@@ -39,7 +39,7 @@ class Cam:
         self.p = np.array([c["x"], ground + c["eye"], c["z"]]); p, y = math.radians(c["pitch"]), math.radians(-c["yaw"])
         Rx = np.array([[1, 0, 0], [0, math.cos(p), -math.sin(p)], [0, math.sin(p), math.cos(p)]])
         Ry = np.array([[math.cos(y), 0, math.sin(y)], [0, 1, 0], [-math.sin(y), 0, math.cos(y)]])
-        self.R = Rx @ Ry; self.f = (H / 2) / math.tan(math.radians(c["fovDeg"]) / 2)
+        self.R = Ry @ Rx; self.f = (H / 2) / math.tan(math.radians(c["fovDeg"]) / 2)
 
     def project(self, P):
         """world points (N,3) -> pixel (N,2) at 320x180 and camera-space depth (positive in front)"""
