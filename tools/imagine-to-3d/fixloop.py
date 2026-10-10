@@ -244,7 +244,8 @@ def _sub(cmd, **kw):
 def _skyline_warp(job_dir, el):
     """Per-column top edge (fraction of the frame) of the key mask vs the game mask: the silhouette warp target."""
     import numpy as np
-    km = C.load_mask(os.path.join(job_dir, "crops", f"{el}-keymask.png")); gm = C.load_mask(os.path.join(job_dir, "crops", f"{el}-gamemask.png"))
+    sil = os.path.join(job_dir, "crops", f"{el}-gamesil.png")   # occlusion-free silhouette when the element has one (mask render)
+    km = C.load_mask(os.path.join(job_dir, "crops", f"{el}-keymask.png")); gm = C.load_mask(sil if os.path.exists(sil) else os.path.join(job_dir, "crops", f"{el}-gamemask.png"))
     H = km.shape[0]
     top = lambda m: [float(np.argmax(m[:, x]) / H) if m[:, x].any() else None for x in range(0, m.shape[1], 4)]
     k, g = top(km), top(gm)
