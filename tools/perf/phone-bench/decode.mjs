@@ -17,6 +17,7 @@ if (res.v >= 4) {   // v4+: thermally fair, every row against its own neighbouri
     console.log("| row | its base | ms | Δ ms | Δ % | norm. | ± |" + (v5 ? " fps (base → row) | n |" : "") + "\n|---|---|---|---|---|---|---|" + (v5 ? "---|---|" : ""));
     for (const r of res.rows) console.log(`| ${r.n} | ${r.b} | ${r.ms} | ${r.d > 0 ? "+" : ""}${r.d} | ${r.p > 0 ? "+" : ""}${r.p} | ${r.norm ?? ""} | ${r.spread} |` + (v5 ? ` ${r.bfps} → ${r.fps} | ${r.k} |` : ""));
     if (res.adaptive) console.log(`\nAdaptive (real controller, vsync frames): ratio ${res.adaptive.ratio}, detail ${res.adaptive.detail ? "full" : "8-16 m"}, ${res.adaptive.fps} fps median (last 8 s), ${res.adaptive.changes} changes`);
+    if (res.segs) console.log(`Segments: ${res.segs.length}, retried ${res.segs.filter((x) => x[1] > 0).length}, empty (< 4 intervals) ${res.segs.filter((x) => x[2] < 4).length}`);
   } else console.log(JSON.stringify({ ...res, baseMs: res.base0 }, null, 1));
   if (target != null) { const ok = res.base0 <= target; console.error(`base ${res.base0} ms vs target ${target}: ${ok ? "PASS" : "FAIL"}`); process.exit(ok ? 0 : 1); }
   process.exit(0);

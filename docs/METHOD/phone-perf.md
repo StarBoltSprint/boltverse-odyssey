@@ -5,25 +5,24 @@
 - An optimisation ships only if phone-shaped captures at 1.5, 3, 8 and 30 m are identical to the previous build: mean |diff| ≤ 1/255 and no visible change in the A/B crops (`tools/perf/phone-bench/ab-identity.mjs` + `ab_sheet.py`). Bit-identical (max 0) is the norm.
 - Allowed: overdraw that depth testing throws away anyway (draw order), loop-invariant maths hoisted out of loops, fetches skipped where their weight is 0 or beyond a fade, invisible geometry, per-frame recomputation, duplicate fetches.
 - Not allowed as a "perf fix": lower aniso, fewer POM steps, shorter detail reach, no bombing, a single splat layer, implicit derivatives, half-res layers. Measure them as `[diag]` rows to locate the cost, never ship them.
+- Not allowed at runtime either: the adaptive controller only lowers the render ratio, only as an emergency floor (< 15 fps for > 5 s), and never touches the detail layer, POM, shadows or any other feature (decision 2026-10-10 14:02).
 
 ## Measure on the phone, not the box
 - The box has no GPU. SwiftShader timings are relative and noisy (load average 15-30), and they did not predict the phone (box: canvas fix -25 %; phone: still 30 fps).
-- Use `tools/perf/phone-bench/bench.html`: one link, about 2 min 15 (v5, thermally fair), a big table the owner can screenshot, and a result link the agent decodes with `decode.mjs`.
+- Use `tools/perf/phone-bench/bench.html`: one link, about 1 min 30 (v6, thermally fair), a big table the owner can screenshot, and a result link the agent decodes with `decode.mjs`.
 - Readback timing (render + `readPixels`) inflates numbers on Chrome Android. Use the pipelined metric (3 renders per rAF, median interval / 3).
 - Fragment counts (`overdraw.mjs`) beat timing for cheap layers. Transparent layers measured ≤ 0.16 screen and 1-2 fetches each: < 1 % of the frame, although a noisy timing had blamed them for 26 %.
 
 ## Lessons from the Zone B pass
-1. **Canvas at the device ratio = fixed full-screen cost.** With the scene in an offscreen target at the internal ratio, a canvas at DPR 2.6-3 still paid a 2.6 Mpx grade + upsample + compositor pass every frame. The canvas follows the adaptive level (cap 2) and the scene renders 1:1 (1 fetch grade). Only the short sprint dip upsamples with RCAS.
-2. **Adaptive ratio controller** (`tools/biome/runtime/adaptive-res.mjs`, tests in `adaptive-res.test.mjs`):
-   - Starts at the cap.
-   - Ignores 8 s of warm-up after ready and any 1 s window with an outlier stall (> 250 ms and > 3× median).
-   - Decides on the window's median frame time.
-   - Drops one rung after 3 s under 44 fps and never while the median is ≥ 44. Climbs one rung after 3 s at ≥ 50 fps (vsync-friendly).
-   - Each change is followed by a settle window. A rung that fails is blocked 20/40/80/120 s, then closed for the session after its 3rd failure, so it cannot oscillate.
-   - Ladder: 2 → 1.875 → 1.75 → (detail reach 30 → 16 m) → … → 1.25.
+1. **Canvas at the device ratio = fixed full-screen cost.** With the scene in an offscreen target at the internal ratio, a canvas at DPR 2.6-3 still paid a 2.6 Mpx grade + upsample + compositor pass every frame. The canvas follows the adaptive level (cap 2) and the scene renders 1:1 (1 fetch grade). The old sprint dip (0.85× with an RCAS upsample) is off since the quality-first decision (item 2).
+2. **Adaptive ratio controller = emergency floor only** (`tools/biome/runtime/adaptive-res.mjs`, tests in `adaptive-res.test.mjs`). **Decision SmiR 2026-10-10 14:02: the phone default is ratio 2 at full quality, even at 22-25 fps.**
+   - Starts at the cap (2) and stays there. It never turns off the ground detail layer or any quality feature: every level has `detail: true`, `canDropDetail` is false, and the old sprint dip (0.85× while running) is off (`?sprintdip=1` for tests only).
+   - Emergency only: 1 s windows on the median frame time (warm-up and outlier-hitch windows ignored). Under 15 fps for more than 5 s drops one 0.25 step (floor 1.25).
+   - Climbs back as soon as the next step up is predicted (fps × ratio²) to hold 18 fps, after 2 windows. A step that fails again within 15 s of the climb waits 10 s, doubling, max 60 s; it is never closed for the session.
+   - The previous controller (44/50 fps hysteresis, detail-reach rung at 1.75) settled on the S20 FE at ratio 1.375 with the detail layer off (57 fps, bench v5). That trade is refused: quality first.
 3. **Draw order (lossless).** The sky dome was drawn first over the whole screen and the ground before the towers and mesas, so every hidden sky and ground pixel was fully shaded and then overwritten. The order is now: opaques → ground → sky dome (far plane, depth-tested) → opaque meshes without depth write → transparents. With depth testing the result does not depend on the order, except where two surfaces have exactly equal depth. A/B vs g13 (order + old POM, 480x900, 8 poses: avenue and side at 1.5/3/8/30 m): 5 poses bit-identical. At 3 poses, 1-2 isolated silhouette pixels flip (depth ties). Worst mean 0.0002/255 against the 1/255 limit, nothing visible in the crops, deterministic self-check 0.
 4. **POM loop (lossless).** cos/sin of the two bombing-variant angles and the rotated gradients were recomputed at every POM step (up to 12 steps × 2 variants + 2 shadow taps). They are now computed once per pixel. Same maths, same fetches, bit-identical. `#define G_OLDPOM` brings the old loop back for A/B.
-5. **Phone numbers (bench v1, S20 FE, sync metric):** base at ratio 2 was 56.8 ms and "ground only" 53.3 ms, so the ground fragment shader looked like about 94 % of the frame. The v1 readback metric was wrong: bench v3 (pipelined) put the ground at about half of the frame (item 7). Bench v2+ separates GPU, CPU and readback. Target: base at ratio 2 ≤ 16.7 ms (60 fps), at least ≤ 22 ms.
+5. **Phone numbers (bench v1, S20 FE, sync metric):** base at ratio 2 was 56.8 ms and "ground only" 53.3 ms, so the ground fragment shader looked like about 94 % of the frame. The v1 readback metric was wrong: bench v3 (pipelined) put the ground at about half of the frame (item 7). Bench v2+ separates GPU, CPU and readback. Target: base at ratio 2 ≤ 16.7 ms (60 fps), at least ≤ 22 ms, reached only by lossless work: a target never justifies a quality cut (item 9).
 6. **Thermal throttling hides or invents gains.** Bench v3 on the S20 FE: the same base went from 45.2 to 57.0 ms over 4 min, so a row's value depended on when it ran. Bench v4 measures each row ABAB against its own neighbouring base, adds idle cool-downs and reports the repeat spread.
 7. **A fill / bandwidth-bound ground (bench v3: ground hidden 22.6 vs base 45.2 ms; no single feature dominates).**
    - **Rejected by measurement:** lower-resolution ground shading. Resampling the A/B captures to half resolution gives a mean of 0.9-1.7/255, and to 0.8× gives 0.5-1.0/255. Both fail the 1/255 rule and soften the 512 px/m detail. Reprojection is not identical while the camera moves.
@@ -37,8 +36,11 @@
    - (b) The 512 px/m detail layer fades out over 10-20 m instead of 15-30 m. A/B mean ≤ 0.05/255 (max 9, 0-9 % of pixels).
    - a+b: mean ≤ 0.26/255.
    - All under 1/255 at 1.5/3/8/30 m, self-check 0, no change visible in the crops. They still change pixels, so they are labelled `[look]` and the owner decides from the phone fps.
+   - **Phone v5 result: no gain** ([look] a+b 45.0 vs its base 44.4 ms, spread 0.5). Both candidates are dropped.
+   - v5 bug: the ratio 1.75 / 1.5 / HR8 rows came back empty (a segment got no interval within its 5 s cap, and the NaN also blanked base0). Bench v6 waits up to 12 s for 12 intervals, retries a segment up to 3 times, logs every segment (count, elapsed, raw median, rAF calls) into the result and takes base0 from the first valid base.
+9. **Quality first (SmiR 2026-10-10 14:02).** Ratio 2 at full quality is the phone default (item 2). Live v61 = the perf path (canvas = render ratio, draw order, POM hoist, ground depth prepass) + the ground detail layer + the emergency-only controller. Ratio 1.5 is only an option the owner can judge on the comparison page: the same frozen view, tap to toggle, native ratio 2 vs 1.5 upscaled with de-ringed Catmull-Rom + RCAS (FSR1-style) vs 1.5 with the game's bilinear + RCAS, each with its measured fps.
 
 ## Checks
-- **Decision:** SmiR 2026-10-10 11:40 (hard rule) and 11:42 (write it into the repo). Index entry: [tools.md](tools.md).
-- **object gate:** runtime rows "perf: canvas ratio <= cap", "perf: sky dome drawn after the opaques", "perf: ground after the other opaques", "perf: adaptive controller on". They read the page's `window.__perfReport()`. A page without it gets an INFO row.
+- **Decision:** SmiR 2026-10-10 11:40 (hard rule), 11:42 (write it into the repo) and 14:02 (ratio 2 at full quality by default; adaptive = emergency floor only, never drops detail). Index entry: [tools.md](tools.md).
+- **object gate:** runtime rows "perf: canvas ratio <= cap", "perf: sky dome drawn after the opaques", "perf: ground after the other opaques", "perf: adaptive controller on", and since 1.5 "perf: quality kept: adaptive never drops the detail layer" (FAIL unless `__perfReport().adaptiveCanDropDetail === false`) and "perf: default ratio = min(2, device), no sprint dip". They read the page's `window.__perfReport()`. A page without it gets an INFO row.
 - **imagine-to-3d auto.py `perf` stage:** when `perf.phoneBench` (a result link or a decoded JSON file) is in the spec, the base row is scored against `perf.phoneTargetMs` (default 22). Without a phone bench the row is NEEDS_PHONE (owner action). The box never claims phone fps.
