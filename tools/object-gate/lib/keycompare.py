@@ -4,7 +4,8 @@ python3 keycompare.py <job.json>
 job = {key, game, out, elements:[...], thresholds:{type: {...}}, masks:{name: png}, title}
 Element: {id, name, type, key:{rect:[x0,y0,x1,y1] (0..1 of the frame), mask:RULE}, game:{rect?, mask:RULE|{img,png}},
           metrics:[iou, colour, structure], missing?:bool, note?}
-RULE = "all" | "sky" | "notsky" | "dark" | "bright" | "warm" | "sand" | "rock" | "magenta" | {"lumAbove": L} | {"lumBelow": L}
+RULE = "all" | "sky" | "skycore" | "notsky" | "dark" | "bright" | "warm" | "sand" | "rock" | "rocktex" | "magenta" | {"lumAbove": L}
+       | {"lumBelow": L} | {"tophat": dL, "k": px} | {"and": [...]} | {"not": RULE};  side.thin: px = thin-structure tolerance band
 Writes <out>/key-compare.json, key-compare.md, sheet.jpg (phone width 1080), sheet-small.jpg (540), crops/*.png.
 Metrics (per element):
   iou          outline IoU of the element masks in FRAME coordinates (position + shape); also iouAligned = best IoU
@@ -48,6 +49,9 @@ def rule_mask(a, rule, masks=None, H=None, W=None):
             for x in rule["and"]: m &= rule_mask(a, x, masks)
             return m
         if "not" in rule: return ~rule_mask(a, rule["not"], masks)
+        if "tophat" in rule:   # thin bright lines (ring arcs, beams): brighter than the local background by >= t (L 0..255)
+            k = int(rule.get("k", 9)); Lf = L.astype(np.float32)
+            return (Lf - cv2.morphologyEx(Lf, cv2.MORPH_OPEN, np.ones((k, k), np.uint8))) > rule["tophat"]
     sky = (b > 1.03 * g) & (L > 40)
     if rule == "all": return np.ones(a.shape[:2], bool)
     if rule == "sky": return sky
@@ -57,6 +61,14 @@ def rule_mask(a, rule, masks=None, H=None, W=None):
     if rule == "warm": return (r > g * 1.08) & (g > b * 1.02) & (L > 45)
     if rule == "sand": return (r > g * 1.08) & (g > b * 1.05) & (L > 70)
     if rule == "rock": return (r > g * 1.05) & ~sky & (L > 25) & (L < 200)
+    if rule == "rocktex":   # rock WITHOUT smooth sand (2026-10-10): sand and lit rock share hue in key-city3, so split on
+        # texture: blurred local std of L (9 px window, 15 px smoothing) >= 3.2 (key: sand dunes 0.29, arch 0.81, mesas 0.72 kept)
+        rk = (r > g * 1.05) & ~sky & (L > 25) & (L < 200); Lf = L.astype(np.float32)
+        m = cv2.blur(Lf, (9, 9)); S = cv2.blur(np.sqrt(np.maximum(cv2.blur(Lf * Lf, (9, 9)) - m * m, 0)), (15, 15))
+        return cv2.morphologyEx((rk & (S >= 3.2)).astype(np.uint8), cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8)).astype(bool) & rk
+    if rule == "skycore":   # sky away from any structure edge (closed 5 px, eroded 15 px): ring arcs, not tower rims
+        sk = cv2.morphologyEx(sky.astype(np.uint8), cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8))
+        return cv2.erode(sk, np.ones((15, 15), np.uint8)).astype(bool)
     if rule == "magenta": return (r > 200) & (g < 60) & (b > 200)
     raise ValueError(f"unknown mask rule {rule}")
 
@@ -66,6 +78,10 @@ def rect_px(rc, W, H):
 def elem_mask(a, side, W, H):
     m = np.zeros((H, W), bool); x0, y0, x1, y1 = rect_px(side["rect"], W, H)
     m[y0:y1, x0:x1] = rule_mask(a, side.get("mask", "all"))[y0:y1, x0:x1]
+    if side.get("thin"):   # thin structures (ring arcs): keep 1-2 px lines, then widen to a tolerance band (both images)
+        m = cv2.dilate(m.astype(np.uint8), np.ones((int(side["thin"]), int(side["thin"])), np.uint8)).astype(bool)
+        m[:y0] = False; m[y1:] = False; m[:, :x0] = False; m[:, x1:] = False
+        return m
     m = cv2.morphologyEx(m.astype(np.uint8), cv2.MORPH_OPEN, np.ones((3, 3), np.uint8)).astype(bool)
     return m
 
@@ -152,6 +168,7 @@ def verdict_of(row, th, tg):
         if bad(tar): gaps.append(dict(metric=k, value=round(v, 3), target=tar, gap=round(abs(v - tar), 3)))
     return fails, gaps
 
+
 def main():
     job = json.load(open(sys.argv[1])); out = job["out"]; os.makedirs(out + "/crops", exist_ok=True)
     key = load(job["key"]); H, W = key.shape[:2]; game = load(job["game"], (W, H))
@@ -170,6 +187,7 @@ def main():
         gm = np.zeros_like(km) if r["missing"] else elem_mask(gimg, gside, W, H)
         if gside.get("visible") and gm.any():   # silhouette from a mask render (no occluders) -> keep only what the beauty render shows
             sil = gm; gm = sil & rule_mask(gimg, gside["visible"])
+            Image.fromarray((sil * 255).astype(np.uint8)).save(f"{out}/crops/{e['id']}-gamesil.png")   # silhouette (fixloop warp)
             r["iouSilhouette"] = round(iou(km, sil), 3); r["visibleOfSilhouette"] = round(float(gm.sum() / max(1, sil.sum())), 3)
             if r["visibleOfSilhouette"] < 0.5: r["note"] = (r["note"] + " · " if r["note"] else "") + f"occulté: {int(100 * (1 - r['visibleOfSilhouette']))} % de la silhouette caché"
         r["keyCover"] = round(float(km.mean()), 4); r["gameCover"] = round(float(gm.mean()), 4)
