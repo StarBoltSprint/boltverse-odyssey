@@ -13,7 +13,7 @@ Imagine images are never generated here.
   - `vp`: the vanishing point of the main avenue.
   - `spireTop`: the tip of the hero landmark.
   - Read both off the key on a 5 % grid. If a biome has no spire, use its tallest hero object, and point `kc-shots probe` at that mesh name (`spire-lod*` today).
-- A staging mirror, built with `python3 kc_stage.py build --stage S` and served with
+- A staging mirror, built with `python3 kc_stage.py build --out S [--layout L]` and served with
   `cd S && python3 -m http.server 8997`.
 
 ## Step 1: camera solve (real renders)
