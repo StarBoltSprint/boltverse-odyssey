@@ -163,7 +163,16 @@ await send("Emulation.setDeviceMetricsOverride", {
   width, height, deviceScaleFactor: 1, mobile: height > width,
 }, session);
 await send("Page.navigate", { url }, session);
-await new Promise((r) => setTimeout(r, 80));
+// The first paint is sometimes still blank. Wait until Chargement is in the DOM
+// (cap 1.2 s) so the loading frame is the screen, not an empty buffer.
+{
+  const tLoad = Date.now();
+  while (Date.now() - tLoad < 1200) {
+    const text = await domText();
+    if (/chargement/i.test(text)) break;
+    await new Promise((r) => setTimeout(r, 40));
+  }
+}
 
 async function shot(name) {
   const ev = await send("Page.captureScreenshot", {

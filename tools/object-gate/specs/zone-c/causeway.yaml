@@ -2,8 +2,13 @@ id: causeway
 type: terrain
 select: {names: "^causeway"}
 keyCrop: steps/zone-c/03-terrain/key-zc1.jpg
+visibleView: {ground: true}
 textures:
-  - {match: "albedo.png", role: plate}
+  - {match: "moss-top-", role: plate}
+  - {match: "key-zc1", role: detail}
+  - {match: "uWeight", role: mask}
+  - {match: "uTint", role: detail}
+  - {match: "uTile", role: mask}
 checklist:
   - {id: ribbon, feature: "Walkable moss ribbon matches the key causeway", captures: [close, far]}
   - {id: flat-cliffs, feature: "Cliff footprints stay flat; no grown cliffs", captures: [far]}

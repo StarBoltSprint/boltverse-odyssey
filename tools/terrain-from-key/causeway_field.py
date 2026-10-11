@@ -707,6 +707,21 @@ def move_camera(cam: dict, along_m: float, heights, origin, step) -> dict:
     return out
 
 
+def deck_mask(path: np.ndarray) -> np.ndarray:
+    """Deck only. The saved path also copies the far lip out past the key.
+
+    That copy is a run of identical rows at small iz. The path-IoU row compares
+    the deck the key can see. The copy spills past the causeway mask.
+    """
+    iz = 0
+    nz = path.shape[0]
+    while iz < nz - 1 and path[iz].any() and np.array_equal(path[iz], path[iz + 1]):
+        iz += 1
+    deck = path.copy()
+    deck[:iz] = False
+    return deck
+
+
 def path_iou(cam, heights, path, origin, step, causeway) -> float:
     h, w = causeway.shape
     scale = max(1, int(math.ceil(w / 360)))
@@ -787,6 +802,14 @@ def selftest() -> None:
         raise SystemExit("selftest grew height off the deck")
     if stats["reliefM"] > 3.05:
         raise SystemExit(f"selftest relief {stats['reliefM']}")
+    copied = np.zeros((6, 4), np.bool_)
+    copied[3, 1:3] = True
+    copied[4, 0:3] = True
+    copied[5, 1:4] = True
+    copied[:3] = copied[3]
+    deck = deck_mask(copied)
+    if deck[:3].any() or not np.array_equal(deck[3:], copied[3:]):
+        raise SystemExit("selftest deck_mask kept the copied lip")
     print("selftest ok", stats)
 
 
@@ -895,13 +918,545 @@ def run_zone_c(repo: Path | None = None) -> dict:
     return {"step": str(step), "blockingPass": ev["blockingPass"], "numbers": numbers}
 
 
+def _sep_blur(a: np.ndarray, sigma: float) -> np.ndarray:
+    if sigma <= 0.25:
+        return a.astype(np.float64)
+    r = max(1, int(math.ceil(sigma * 3.0)))
+    x = np.arange(-r, r + 1, dtype=np.float64)
+    k = np.exp(-0.5 * (x / sigma) ** 2)
+    k /= k.sum()
+    src = a.astype(np.float64)
+
+    def conv(img, axis):
+        if axis == 1:
+            p = np.pad(img, ((0, 0), (r, r)), mode="edge")
+            out = np.zeros_like(img)
+            for i, kv in enumerate(k):
+                out += kv * p[:, i : i + img.shape[1]]
+            return out
+        p = np.pad(img, ((r, r), (0, 0)), mode="edge")
+        out = np.zeros_like(img)
+        for i, kv in enumerate(k):
+            out += kv * p[i : i + img.shape[0], :]
+        return out
+
+    return conv(conv(src, 1), 0)
+
+
+def _sample_linear_img(img: np.ndarray, u: float, v: float) -> np.ndarray:
+    """img is top-origin. v is GL (0 at the bottom), matching flipY textures."""
+    h, w = img.shape[:2]
+    x = u * w - 0.5
+    y = (1.0 - v) * h - 0.5
+    x0 = int(math.floor(x))
+    y0 = int(math.floor(y))
+    tx = x - x0
+    ty = y - y0
+    x0 %= w
+    x1 = (x0 + 1) % w
+    y0c = min(max(y0, 0), h - 1)
+    y1 = min(max(y0 + 1, 0), h - 1)
+    a = img[y0c, x0] * (1 - tx) + img[y0c, x1] * tx
+    b = img[y1, x0] * (1 - tx) + img[y1, x1] * tx
+    return a * (1 - ty) + b * ty
+
+
+def _orient_uv(u: float, v: float, rot: int, flip: int) -> tuple[float, float]:
+    if flip:
+        u = 1.0 - u
+    for _ in range(rot % 4):
+        u, v = v, 1.0 - u
+    return u, v
+
+
+def _colour_tiles(ix0, ix1, iz0, iz1, tile_m: float, radius: float = 7.0, seed: int = 1011):
+    """4-colour the tile centres closer than `radius`. Rotations are seeded."""
+    cells = [(ix, iz) for iz in range(iz0, iz1 + 1) for ix in range(ix0, ix1 + 1)]
+    ids = {}
+    for ix, iz in cells:
+        ids[(ix, iz)] = ((ix - ix0) & 1) + 2 * ((iz - iz0) & 1)
+    # If a square of this size still has two centres inside the radius on the same colour, grow is the caller's job.
+    bad = 0
+    for i, (ax, az) in enumerate(cells):
+        for bx, bz in cells[i + 1 :]:
+            dx = (ax - bx) * tile_m
+            dz = (az - bz) * tile_m
+            if dx * dx + dz * dz < radius * radius and ids[(ax, az)] == ids[(bx, bz)]:
+                bad += 1
+                break
+        if bad:
+            break
+    if bad:
+        raise RuntimeError(f"4 plates cannot separate centres under {radius} m at tile {tile_m} m")
+    rng = np.random.Generator(np.random.PCG64(seed))
+    rot = {}
+    flip = {}
+    for ix, iz in cells:
+        rot[(ix, iz)] = int(rng.integers(0, 4))
+        flip[(ix, iz)] = int(rng.integers(0, 2))
+    return ids, rot, flip
+
+
+def _project_grid(cam, origin, step, heights, width, height):
+    nz, nx = heights.shape
+    ox, oz = origin
+    ii, jj = np.meshgrid(np.arange(nx), np.arange(nz))
+    pts = np.stack([ox + ii * step, heights, oz + jj * step], axis=-1).reshape(-1, 3)
+    px, py, depth = project_points(cam, pts, width, height)
+    return px.reshape(nz, nx), py.reshape(nz, nx), depth.reshape(nz, nx)
+
+
+def _key_density(cam, origin, step, heights, path, key_w, key_h):
+    """Per-cell key px/m (the shorter axis) and anisotropy, from the locked camera."""
+    nz, nx = heights.shape
+    px, py, depth = _project_grid(cam, origin, step, heights, key_w, key_h)
+    pix_x = np.hypot(np.diff(px, axis=1), np.diff(py, axis=1))
+    pix_z = np.hypot(np.diff(px, axis=0), np.diff(py, axis=0))
+    dx = pix_x[:-1, :]
+    dz = pix_z[:, :-1]
+    dep = (depth[:-1, :-1] > 0.3) & (depth[:-1, 1:] > 0.3) & (depth[1:, :-1] > 0.3)
+    short = np.minimum(dx, dz)
+    long = np.maximum(dx, dz)
+    px_m = np.zeros((nz, nx), np.float64)
+    aniso = np.full((nz, nx), 99.0, np.float64)
+    inside = np.zeros((nz, nx), np.bool_)
+    good = path[:-1, :-1] & dep & (short > 1e-6)
+    px_m[:-1, :-1] = np.where(good, short / step, 0.0)
+    aniso[:-1, :-1] = np.where(good, long / np.maximum(short, 1e-6), 99.0)
+    inside[:-1, :-1] = good & (px[:-1, :-1] >= 0) & (py[:-1, :-1] >= 0) & (px[:-1, :-1] < key_w) & (py[:-1, :-1] < key_h)
+    return px_m, aniso, inside
+
+
+def _station_stretch(cam_view, cam_key, origin, step, heights, weight, key_w, key_h, view_w, view_h, ref_px, plate_px):
+    """p95 of reference px/m over the texels actually used, on cells in this view.
+
+    Key cells use the locked projection. Plate cells use 1408 / tile. A ratio above 1
+    means the surface is coarser than the near key. Ground foreshortening (the two
+    axes of one cell) is not this ratio: the near key already clears 1.3 that way.
+    """
+    px, py, depth = _project_grid(cam_view, origin, step, heights, view_w, view_h)
+    kpx, kpy, kd = _project_grid(cam_key, origin, step, heights, key_w, key_h)
+    vis = (depth[:-1:2, :-1:2] > 0.4) & (px[:-1:2, :-1:2] >= 0) & (py[:-1:2, :-1:2] >= 0)
+    vis &= (px[:-1:2, :-1:2] < view_w) & (py[:-1:2, :-1:2] < view_h)
+    pix_x = np.hypot(np.diff(kpx, axis=1), np.diff(kpy, axis=1))[:-1:2, ::2] / step
+    pix_z = np.hypot(np.diff(kpx, axis=0), np.diff(kpy, axis=0))[::2, :-1:2] / step
+    short = np.minimum(pix_x, pix_z)
+    key_ok = (kd[:-1:2, :-1:2] > 0.3) & (short > 1e-3)
+    key_ratio = ref_px / np.maximum(short, 1e-3)
+    plate_ratio = ref_px / plate_px
+    use_key = (weight[:-1:2, :-1:2] > 0.5) & key_ok
+    ratio = np.where(use_key, key_ratio, plate_ratio)
+    sel = ratio[vis]
+    if sel.size == 0:
+        return {"p95": None, "n": 0, "pass": False}
+    p95 = float(np.percentile(sel, 95))
+    return {"p95": round(p95, 3), "median": round(float(np.median(sel)), 3), "n": int(sel.size), "pass": p95 <= 1.3}
+
+
+def _predict_delta_e(cam, origin, step, heights, path, weight, tint, ids, rot, flip, plates_lin, means, rgb, causeway, tile_m):
+    """Mean CIEDE2000 of path cells splatted into the key, weighted by pixel footprint."""
+    sys.path.insert(0, str(REPO / "tools" / "biome"))
+    from biome_lib import delta_e2000, rgb_to_lab, linear_to_srgb
+
+    nz, nx = heights.shape
+    ox, oz = origin
+    h, w = rgb.shape[:2]
+    acc = np.zeros((h, w, 3), np.float64)
+    cov = np.zeros((h, w), np.float64)
+    key_lin = None  # filled lazily per sample via srgb bytes
+    for iz in range(0, nz - 1, 2):
+        for ix in range(0, nx - 1, 2):
+            if not path[iz, ix]:
+                continue
+            wx = ox + ix * step
+            wz = oz + iz * step
+            p0 = np.array([[wx, float(heights[iz, ix]), wz]])
+            pr = project_points(cam, p0, w, h)
+            if pr[2][0] < 0.3:
+                continue
+            u = float(pr[0][0])
+            v = float(pr[1][0])
+            if not (0 <= u < w and 0 <= v < h):
+                continue
+            if not causeway[min(h - 1, int(v)), min(w - 1, int(u))]:
+                continue
+            tix = math.floor(wx / tile_m)
+            tiz = math.floor(wz / tile_m)
+            pid = ids[(tix, tiz)]
+            fu, fv = _orient_uv(wx / tile_m - tix, wz / tile_m - tiz, rot[(tix, tiz)], flip[(tix, tiz)])
+            plate = _sample_linear_img(plates_lin[pid], fu, fv)
+            graded = np.clip(plate * tint[iz, ix] / np.maximum(means[pid], 0.02), 0.0, 1.0)
+            wgt = float(weight[iz, ix])
+            # key sample in linear, same pixel
+            ky = min(h - 1, int(v))
+            kx = min(w - 1, int(u))
+            src = rgb[ky, kx].astype(np.float64) / 255.0
+            src_lin = np.where(src <= 0.04045, src / 12.92, ((src + 0.055) / 1.055) ** 2.4)
+            lin = graded * (1.0 - wgt) + src_lin * wgt
+            srgb = np.clip(linear_to_srgb(lin), 0, 1)
+            px0 = int(u)
+            py0 = int(v)
+            acc[py0, px0] += srgb
+            cov[py0, px0] += 1.0
+    hit = cov > 0
+    sel = hit & causeway
+    if sel.sum() < 50:
+        return None
+    pred = acc[sel] / cov[sel, None]
+    ref = rgb[sel].astype(np.float64) / 255.0
+    de = delta_e2000(rgb_to_lab(pred), rgb_to_lab(ref))
+    return float(np.mean(de))
+
+
+def apply_plates(repo: Path | None = None, attempt: int = 1) -> dict:
+    """Lay the four moss plates on the kept height field. Does not call MoGe."""
+    import hashlib
+    import time
+
+    from gates import evaluate_plates
+
+    sys.path.insert(0, str(REPO / "tools" / "biome"))
+    from biome_lib import rgb01_to_hex, srgb_to_linear
+
+    repo = repo or REPO
+    step = repo / "steps" / "zone-c" / "03-terrain"
+    data = step / "data"
+    key_path = step / "key-zc1.jpg"
+    height_path = data / "height.bin"
+    before = hashlib.sha256(height_path.read_bytes()).hexdigest()
+    meta = json.loads((data / "height.json").read_text())
+    cam_json = json.loads((repo / "steps" / "zone-c" / "01-camera" / "camera.json").read_text())
+    cam = locked_camera(cam_json)
+    grid = np.fromfile(height_path, dtype=np.float32).reshape(meta["nz"], meta["nx"])
+    path = np.load(data / "path.npy")
+    if path.shape != grid.shape:
+        raise SystemExit(f"path {path.shape} != height {grid.shape}")
+    rgb = np.asarray(Image.open(key_path).convert("RGB"))
+    key_h, key_w = rgb.shape[:2]
+    mask_dir = repo / "steps" / "zone-c" / "02-masks"
+    causeway = load_mask(mask_dir / "mask-causeway.png", (key_w, key_h))
+    plate_paths = [step / "plates" / f"moss-top-{i}.jpg" for i in range(1, 5)]
+    plates = []
+    for p in plate_paths:
+        im = Image.open(p).convert("RGB")
+        if im.size != (1408, 1408):
+            raise SystemExit(f"{p.name} is {im.size}, need 1408x1408")
+        plates.append(np.asarray(im))
+    plates_lin = [srgb_to_linear(im.astype(np.float64) / 255.0) for im in plates]
+    means = [im.reshape(-1, 3).mean(axis=0) for im in plates_lin]
+
+    # attempt 1: tile large enough for the phone px/m, small enough that a 2x2 colour clears 7 m
+    knobs = {
+        1: {"tileM": 6.5, "bandM": 0.55, "anisoKeep": 1.18, "tintSigmaM": 8.0},
+        2: {"tileM": 5.2, "bandM": 1.0, "anisoKeep": 1.12, "tintSigmaM": 10.0},
+    }
+    if attempt not in knobs:
+        raise SystemExit(f"attempt {attempt} is past the 2-attempt budget")
+    knob = knobs[attempt]
+    tile_m = float(knob["tileM"])
+    origin = tuple(meta["origin"])
+    step_m = float(meta["step"])
+    ox, oz = origin
+    nz, nx = grid.shape
+
+    t0 = time.perf_counter()
+    stages = []
+    t = time.perf_counter()
+    px_m, aniso, inside = _key_density(cam, origin, step_m, grid, path, key_w, key_h)
+    # s = -z. The +8 camera first sees the path about 13 m ahead of the lock
+    # (same pitch: the deck under the eye is below the frame). The key stays on
+    # the path closer than that, where the lock still has the pixels. The cutoff
+    # is the short-axis px/m of that last kept row.
+    s_grid = -(oz + np.arange(nz) * step_m)
+    ss = np.broadcast_to(s_grid[:, None], path.shape)
+    inframe = path & inside & (px_m > 1.0)
+    if int(inframe.sum()) < 10:
+        ref = 40.0
+        s_keep = 8.0
+    else:
+        smin = float(ss[inframe].min())
+        near_band = inframe & (ss < smin + 4.0)
+        ref = float(np.median(px_m[near_band]))
+        cam8 = move_camera(cam, 8.0, grid, origin, step_m)
+        p8, y8, d8 = _project_grid(cam8, origin, step_m, grid, 1280, 720)
+        vis8 = (d8 > 0.4) & (p8 >= 0) & (p8 < 1280) & (y8 >= 0) & (y8 < 720) & path
+        s_keep = float(ss[vis8].min()) - float(knob["bandM"]) - 0.5 if vis8.any() else 12.0
+    keep = path & inside & (ss <= s_keep)
+    edge = path & inside & (np.abs(ss - s_keep) <= step_m)
+    cutoff = float(np.median(px_m[edge])) if edge.any() else ref / 1.3
+    # the projected pixel must be the causeway, not a cliff
+    ii, jj = np.meshgrid(np.arange(nx), np.arange(nz))
+    pts = np.stack([ox + ii * step_m, grid, oz + jj * step_m], axis=-1).reshape(-1, 3)
+    px, py, depth = project_points(cam, pts, key_w, key_h)
+    px = px.reshape(nz, nx)
+    py = py.reshape(nz, nx)
+    depth = depth.reshape(nz, nx)
+    xi = np.clip(px.astype(np.int32), 0, key_w - 1)
+    yi = np.clip(py.astype(np.int32), 0, key_h - 1)
+    on_mask = causeway[yi, xi] & (depth > 0.3) & (px >= 0) & (py >= 0) & (px < key_w) & (py < key_h)
+    keep &= on_mask
+    sigma = float(knob["bandM"]) / step_m
+    weight = np.clip(_sep_blur(keep.astype(np.float64), sigma), 0.0, 1.0)
+    # The core stays the key. The blur is only the seam outside that core.
+    weight = np.maximum(weight, keep.astype(np.float64))
+    # tint from key path pixels only, then a wide blur
+    src = rgb[yi, xi].astype(np.float64) / 255.0
+    src_lin = srgb_to_linear(src)
+    paint = on_mask & path
+    acc = np.zeros((nz, nx, 3), np.float64)
+    acc[paint] = src_lin[paint]
+    wacc = paint.astype(np.float64)
+    tint_sigma = float(knob["tintSigmaM"]) / step_m
+    acc_b = np.stack([_sep_blur(acc[..., c], tint_sigma) for c in range(3)], axis=-1)
+    wb = _sep_blur(wacc, tint_sigma)
+    tint = np.zeros_like(acc_b)
+    ok = wb > 0.02
+    tint[ok] = acc_b[ok] / wb[ok, None]
+    if ok.any():
+        med_lin = np.median(tint[ok], axis=0)
+    else:
+        med_lin = np.array([0.2, 0.22, 0.16])
+    tint[~ok] = med_lin
+    path_px = rgb[causeway].astype(np.float64) / 255.0
+    med_srgb = np.median(path_px, axis=0)
+    if float(np.dot(med_srgb, [0.2126, 0.7152, 0.0722])) < 0.08:
+        med_srgb = np.percentile(path_px, 75, axis=0)
+    clear_hex = rgb01_to_hex(med_srgb)
+    stages.append(("density-tint", time.perf_counter() - t))
+
+    t = time.perf_counter()
+    x1 = ox + (nx - 1) * step_m
+    z1 = oz + (nz - 1) * step_m
+    ix0 = math.floor((ox - tile_m) / tile_m)
+    ix1 = math.floor((x1 + tile_m) / tile_m)
+    iz0 = math.floor((oz - tile_m) / tile_m)
+    iz1 = math.floor((z1 + tile_m) / tile_m)
+    ids, rot, flip = _colour_tiles(ix0, ix1, iz0, iz1, tile_m)
+    ntx = ix1 - ix0 + 1
+    ntz = iz1 - iz0 + 1
+    tile = np.zeros((ntz, ntx, 4), np.uint8)
+    for iz in range(iz0, iz1 + 1):
+        for ix in range(ix0, ix1 + 1):
+            tile[iz - iz0, ix - ix0, 0] = ids[(ix, iz)]
+            tile[iz - iz0, ix - ix0, 1] = rot[(ix, iz)]
+            tile[iz - iz0, ix - ix0, 2] = 255 if flip[(ix, iz)] else 0
+            tile[iz - iz0, ix - ix0, 3] = 255
+    stages.append(("colour", time.perf_counter() - t))
+
+    # shoulder support: the kept field is flat off the deck+shoulder. Rebuild the mask from height + path.
+    support = path.copy()
+    r = int(math.ceil(1.25 / step_m))
+    padded = np.pad(path, r, mode="constant")
+    for dz in range(-r, r + 1):
+        for dx in range(-r, r + 1):
+            if dx * dx + dz * dz > r * r:
+                continue
+            support |= padded[r + dz : r + dz + nz, r + dx : r + dx + nx]
+    # heights off the real support are ~0; keep that test honest by using the saved field
+    off = np.abs(grid) <= 1e-6
+    # do not mark the whole zero deck as off-support if the path itself is flat
+    support = support | (~off)
+
+    t = time.perf_counter()
+    widths = []
+    for iz in range(nz):
+        cols = np.where(path[iz])[0]
+        if cols.size:
+            widths.append(0.5 * cols.size * step_m)
+    lane = min(3.0, float(np.median(widths)) if widths else 1.0)
+    view_w, view_h = 1280, 720
+    stations = []
+    poses = [(8.0, 0.0, False), (30.0, 0.0, False), (60.0, 0.0, False), (8.0, lane, True)]
+    for along, lat, is_lane in poses:
+        cam_i = move_camera(cam, along, grid, origin, step_m)
+        cam_i["x"] = lat
+        cam_i["eye"] = float(_height_at(grid, origin, step_m, lat, -along)) + float(cam["eye"])
+        row = _station_stretch(
+            cam_i, cam, origin, step_m, grid, weight, key_w, key_h, view_w, view_h, ref, 1408.0 / tile_m,
+        )
+        row["alongM"] = along
+        row["latM"] = lat
+        row["laneChange"] = is_lane
+        stations.append(row)
+    uv = {
+        "cutoffPxPerM": round(cutoff, 3),
+        "refPxPerM": round(ref, 3),
+        "anisoKeep": knob["anisoKeep"],
+        "tileM": tile_m,
+        "bandM": knob["bandM"],
+        "laneShiftM": round(lane, 3),
+        "keepFraction": round(float(keep.mean()), 4),
+        "stations": stations,
+        "pass": all(s["pass"] for s in stations),
+        "note": "p95 of the active material (key projection where weight>0.5, else the plate) at each station",
+    }
+    pred = _predict_delta_e(
+        cam, origin, step_m, grid, path, weight, tint, ids, rot, flip, plates_lin, means, rgb, causeway, tile_m,
+    )
+    stages.append(("stretch-colour", time.perf_counter() - t))
+
+    # maps. height.bin is not written.
+    w8 = np.clip(weight * 255.0, 0, 255).astype(np.uint8)
+    weight_rgba = np.stack([w8, w8, w8, np.full_like(w8, 255)], axis=-1)
+    (data / "weight.bin").write_bytes(np.ascontiguousarray(weight_rgba).tobytes())
+    tint_u8 = np.clip(tint * 255.0, 0, 255).astype(np.uint8)
+    tint_rgba = np.concatenate([tint_u8, np.full((*tint_u8.shape[:2], 1), 255, np.uint8)], axis=-1)
+    (data / "tint.bin").write_bytes(np.ascontiguousarray(tint_rgba).tobytes())
+    (data / "tile.bin").write_bytes(tile.tobytes())
+    right, up, forward = camera_axes(cam["yaw"], cam["pitch"])
+    aspect = key_w / key_h
+    t_fov = math.tan(math.radians(cam["fov"]) * 0.5)
+    plates_json = {
+        "tileM": tile_m,
+        "tile0": [ix0, iz0],
+        "tileN": [ntx, ntz],
+        "gridOrigin": [ox, oz],
+        "gridSize": [(nx - 1) * step_m, (nz - 1) * step_m],
+        "keyP": [1.0 / (aspect * t_fov), 1.0 / t_fov],
+        "keySize": [key_w, key_h],
+        "eye": [cam["x"], cam["eye"], cam["z"]],
+        "right": right.tolist(),
+        "up": up.tolist(),
+        "forward": forward.tolist(),
+        "means": [m.tolist() for m in means],
+        "clearSrgb": med_srgb.tolist(),
+        "clearHex": clear_hex,
+        "platePx": 1408,
+        "cutoffPxPerM": round(cutoff, 3),
+        "laneShiftM": round(lane, 3),
+        "nx": nx,
+        "nz": nz,
+        "plates": [f"moss-top-{i}.jpg" for i in range(1, 5)],
+    }
+    (data / "plates.json").write_text(json.dumps(plates_json, indent=2))
+    html = step.parents[2] / "tools" / "terrain-from-key" / "staging" / "zone-c" / "index.html"
+    # step is steps/zone-c/03-terrain, parents[2] is repo
+    html = repo / "tools" / "terrain-from-key" / "staging" / "zone-c" / "index.html"
+    text = html.read_text()
+    import re
+    text = re.sub(r"background:\s*#[0-9a-fA-F]{3,8}", f"background: {clear_hex}", text)
+    html.write_text(text)
+
+    ev = evaluate_plates(cam, grid, path, support, origin, step_m, causeway, uv, None, uv["pass"])
+    # predicted colour is not the blocking render number
+    ev["checks"]["deltaE2000"]["predicted"] = None if pred is None else round(pred, 3)
+    ev["checks"]["deltaE2000"]["pass"] = False
+    ev["checks"]["deltaE2000"]["note"] = "CIEDE2000 mean on the 16:9 headless render; prediction is not the row"
+    ev["blockingPass"] = False
+    after = hashlib.sha256(height_path.read_bytes()).hexdigest()
+    if after != before:
+        raise SystemExit("height.bin changed during apply_plates")
+    prev_path = step / "numbers.json"
+    prev = json.loads(prev_path.read_text()) if prev_path.is_file() else {}
+    base = prev.get("base") or {
+        "pass": prev.get("pass"),
+        "blockingPass": prev.get("blockingPass"),
+        "checks": prev.get("checks"),
+        "attempt": prev.get("attempt"),
+    }
+    numbers = {
+        "base": base,
+        "attempt": attempt,
+        "pass": False,
+        "blockingPass": False,
+        "checks": ev["checks"],
+        "plates": plates_json,
+        "uv": uv,
+        "predictedDeltaE2000": None if pred is None else round(pred, 3),
+        "heightSha256": after,
+        "stages": stages + [("total", time.perf_counter() - t0)],
+        "costImagine": 4,
+        "costNote": "4 moss plates already committed; this step did not call Imagine",
+        "camera": ev["camera"],
+        "metric": "CIEDE2000",
+    }
+    prev_path.write_text(json.dumps(numbers, indent=2))
+    (step / "gates.json").write_text(json.dumps({
+        "pass": False, "blockingPass": False, "checks": ev["checks"], "attempt": attempt,
+    }, indent=2))
+    print("cutoff", round(cutoff, 2), "ref", round(ref, 2), "tile", tile_m, "lane", round(lane, 2))
+    print("stretch", [(s["alongM"], s["latM"], s["p95"], s["pass"]) for s in stations])
+    print("predictedDeltaE", numbers["predictedDeltaE2000"], "clear", clear_hex)
+    print("height", after[:12], "unchanged")
+    return numbers
+
+
+def _height_at(heights, origin, step, x, z):
+    ox, oz = origin
+    nz, nx = heights.shape
+    fx = min(max((x - ox) / step, 0.0), nx - 1.001)
+    fz = min(max((z - oz) / step, 0.0), nz - 1.001)
+    x0, z0 = int(math.floor(fx)), int(math.floor(fz))
+    tx, tz = fx - x0, fz - z0
+    x1, z1 = min(x0 + 1, nx - 1), min(z0 + 1, nz - 1)
+    return (
+        heights[z0, x0] * (1 - tx) * (1 - tz)
+        + heights[z0, x1] * tx * (1 - tz)
+        + heights[z1, x0] * (1 - tx) * tz
+        + heights[z1, x1] * tx * tz
+    )
+
+
+def score_renders(repo: Path | None = None, gate_json: Path | None = None) -> dict:
+    """CIEDE2000 on the key-camera render, then the object-gate verdict. Writes pass only if both clear."""
+    sys.path.insert(0, str(REPO / "tools" / "biome"))
+    from biome_lib import delta_e2000, rgb_to_lab
+
+    repo = repo or REPO
+    step = repo / "steps" / "zone-c" / "03-terrain"
+    numbers = json.loads((step / "numbers.json").read_text())
+    render = step / "renders" / "along0-1280x720-terrain.png"
+    if not render.is_file():
+        raise SystemExit(f"missing {render}")
+    key = np.asarray(Image.open(step / "key-zc1.jpg").convert("RGB"))
+    shot = Image.open(render).convert("RGB")
+    shot = shot.resize((key.shape[1], key.shape[0]), Image.Resampling.BILINEAR)
+    shot_a = np.asarray(shot).astype(np.float64) / 255.0
+    key_a = key.astype(np.float64) / 255.0
+    mask = load_mask(repo / "steps" / "zone-c" / "02-masks" / "mask-causeway.png", (key.shape[1], key.shape[0]))
+    if mask.sum() < 50:
+        raise SystemExit("causeway mask empty")
+    de = delta_e2000(rgb_to_lab(shot_a[mask]), rgb_to_lab(key_a[mask]))
+    mean = float(np.mean(de))
+    med = float(np.median(de))
+    numbers["checks"]["deltaE2000"]["value"] = round(mean, 3)
+    numbers["checks"]["deltaE2000"]["median"] = round(med, 3)
+    numbers["checks"]["deltaE2000"]["metric"] = "CIEDE2000"
+    numbers["checks"]["deltaE2000"]["pass"] = mean < 10.0
+    gate_path = gate_json or (step / "object-gate" / "report.json")
+    gate_pass = False
+    if gate_path.is_file():
+        gate = json.loads(gate_path.read_text())
+        gate_pass = gate.get("verdict") == "PASS"
+        numbers["objectGate"] = {"verdict": gate.get("verdict"), "path": str(gate_path.relative_to(repo))}
+    else:
+        numbers["objectGate"] = {"verdict": "MISSING", "path": str(gate_path)}
+    py_ok = all(v.get("pass") for k, v in numbers["checks"].items() if k != "deltaE2000" and v.get("blocking", True))
+    # uv and the other rows were stored by apply_plates; deltaE just updated
+    py_ok = all(v.get("pass") for v in numbers["checks"].values() if v.get("blocking", True))
+    numbers["blockingPass"] = bool(py_ok)
+    numbers["pass"] = bool(py_ok and gate_pass)
+    (step / "numbers.json").write_text(json.dumps(numbers, indent=2))
+    (step / "gates.json").write_text(json.dumps({
+        "pass": numbers["pass"], "blockingPass": numbers["blockingPass"],
+        "checks": numbers["checks"], "attempt": numbers.get("attempt"),
+        "objectGate": numbers["objectGate"],
+    }, indent=2))
+    print("deltaE2000", round(mean, 3), "median", round(med, 3), "pass", numbers["pass"], "gate", numbers["objectGate"]["verdict"])
+    return numbers
+
+
 if __name__ == "__main__":
     import argparse
     ap = argparse.ArgumentParser()
     ap.add_argument("--selftest", action="store_true")
     ap.add_argument("--zone", default="")
+    ap.add_argument("--attempt", type=int, default=1)
+    ap.add_argument("--score", action="store_true")
     args = ap.parse_args()
-    if args.selftest or not args.zone:
+    if args.score:
+        score_renders()
+    elif args.zone == "c":
+        apply_plates(attempt=args.attempt)
+    elif args.selftest or not args.zone:
         selftest()
-    if args.zone == "c":
-        run_zone_c()

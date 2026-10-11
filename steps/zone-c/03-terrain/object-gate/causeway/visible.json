@@ -5,8 +5,44 @@
   "source": "steps/zone-c/01-camera/camera.json fov"
  },
  "render": {
-  "ok": false,
-  "why": "no steep surface of causeway found at 4/5/3/6/7/8/2.5 m above the ground on its path-facing side"
+  "ok": true,
+  "screenPxPerM": 237.1,
+  "tiles": 20,
+  "kMedian": 1,
+  "visiblePxPerM": 237.1,
+  "p25PxPerM": 223.7,
+  "capped": true,
+  "tau": 0.1,
+  "img": "/workspace/grokcli/wt/zc-terrain-1011/steps/zone-c/03-terrain/object-gate/causeway/cap-visible-8m.png",
+  "mask": "/workspace/grokcli/wt/zc-terrain-1011/steps/zone-c/03-terrain/object-gate/causeway/cap-visible-8m-mask.png",
+  "cover": 0.8547,
+  "distM": 9.02,
+  "needPxPerM": 118.5,
+  "zoomFovDeg": 24.16,
+  "wantedFovDeg": 24.16,
+  "renderH": 915,
+  "camera": [
+   0,
+   1.35,
+   -12
+  ],
+  "aimM": 0,
+  "normal": [
+   0,
+   1,
+   0
+  ],
+  "rect": [
+   62,
+   275,
+   350,
+   641
+  ],
+  "pose": {
+   "x": 0,
+   "y": 1.350500001192093,
+   "z": -12
+  }
  },
  "perSurface": [
   {
@@ -14,8 +50,8 @@
    "cls": "+y",
    "viewM": 8,
    "needPxPerM": 118.5,
-   "visiblePxPerM": 2.01,
-   "ok": false
+   "visiblePxPerM": 216.47,
+   "ok": true
   }
  ]
 }

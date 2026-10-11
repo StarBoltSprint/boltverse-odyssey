@@ -411,18 +411,23 @@ def main():
     print("report", OUT / "REPORT.md")
 
 
-def main_zone_c():
-    """Causeway deck. Does not run the Zone B dune composer."""
-    from causeway_field import run_zone_c
-    run_zone_c(REPO)
+def main_zone_c(attempt=1, score=False):
+    """Moss plates on the kept causeway. Does not re-infer MoGe or rewrite height.bin."""
+    from causeway_field import apply_plates, score_renders
+    if score:
+        score_renders(REPO)
+    else:
+        apply_plates(REPO, attempt=attempt)
 
 
 if __name__ == "__main__":
     import argparse
     ap = argparse.ArgumentParser()
     ap.add_argument("--zone", default="b", choices=("b", "c"))
+    ap.add_argument("--attempt", type=int, default=1)
+    ap.add_argument("--score", action="store_true")
     args = ap.parse_args()
     if args.zone == "c":
-        main_zone_c()
+        main_zone_c(attempt=args.attempt, score=args.score)
     else:
         main()

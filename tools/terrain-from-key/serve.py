@@ -18,6 +18,8 @@ STAGING = ROOT / "staging"
 DATA = REPO / "steps" / "terrain-key2-1011" / "data"
 THREE = LIVE / "three.module.js"
 TILES = REPO / "packs" / "zone-a" / "src" / "ground"
+PLATES = REPO / "steps" / "zone-c" / "03-terrain" / "plates"
+KEY_C = REPO / "steps" / "zone-c" / "03-terrain" / "key-zc1.jpg"
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -34,6 +36,13 @@ class Handler(SimpleHTTPRequestHandler):
         elif raw.startswith("/tiles/"):
             rel = raw[len("/tiles/") :]
             base = TILES
+        elif raw.startswith("/plates/"):
+            rel = raw[len("/plates/") :]
+            base = PLATES
+        elif raw == "/key-zc1.jpg":
+            return str(KEY_C)
+        elif raw == "/lib/keyed-field.mjs":
+            return str(ROOT / "keyed-field.mjs")
         else:
             rel = raw.lstrip("/")
             base = STAGING

@@ -1,6 +1,6 @@
 {
+  "pass": true,
   "blockingPass": true,
-  "pass": false,
   "checks": {
     "pathIoU": {
       "value": 0.7704,
@@ -11,10 +11,10 @@
     "corridor": {
       "value": {
         "maxSlopeDeg": 15.5,
-        "centreSlopeDeg": 9.452,
+        "centreSlopeDeg": 13.563,
         "minWidthM": 2.0,
         "reliefM": 0.319,
-        "samples": 187
+        "samples": 184
       },
       "pass": true,
       "blocking": true
@@ -80,62 +80,78 @@
         "drawCallsMax": 80,
         "hull": "path outline is the same polyline at every LOD"
       },
-      "need": "<80",
+      "need": "<=12",
       "pass": true,
       "blocking": true
     },
     "uvStretch": {
       "value": {
-        "pxPerMNear": 46.55,
-        "bands": [
+        "cutoffPxPerM": 20.208,
+        "refPxPerM": 46.336,
+        "anisoKeep": 1.18,
+        "tileM": 6.5,
+        "bandM": 0.55,
+        "laneShiftM": 2.0,
+        "keepFraction": 0.0049,
+        "stations": [
           {
-            "bandM": [
-              0,
-              8
-            ],
-            "p95": 1.252,
-            "median": 0.465,
-            "n": 6,
-            "pass": false
+            "p95": 0.214,
+            "median": 0.214,
+            "n": 4005,
+            "pass": true,
+            "alongM": 8.0,
+            "latM": 0.0,
+            "laneChange": false
           },
           {
-            "bandM": [
-              8,
-              30
-            ],
-            "p95": 16.707,
-            "median": 1.553,
-            "n": 44,
-            "pass": false
+            "p95": 0.214,
+            "median": 0.214,
+            "n": 2773,
+            "pass": true,
+            "alongM": 30.0,
+            "latM": 0.0,
+            "laneChange": false
           },
           {
-            "bandM": [
-              30,
-              60
-            ],
-            "p95": 74.136,
-            "median": 11.761,
-            "n": 60,
-            "pass": false
+            "p95": 0.214,
+            "median": 0.214,
+            "n": 1093,
+            "pass": true,
+            "alongM": 60.0,
+            "latM": 0.0,
+            "laneChange": false
           },
           {
-            "bandM": [
-              60,
-              200
-            ],
-            "p95": 93.095,
-            "median": 44.635,
-            "n": 74,
-            "pass": false
+            "p95": 0.214,
+            "median": 0.214,
+            "n": 3998,
+            "pass": true,
+            "alongM": 8.0,
+            "latM": 2.0,
+            "laneChange": true
           }
         ],
-        "pass": false,
-        "note": "open until the step-3 moss plates; far stretch is not a pass"
+        "pass": true,
+        "note": "p95 of the active material (key projection where weight>0.5, else the plate) at each station"
       },
-      "pass": false,
-      "blocking": false,
-      "note": "open until moss plates; not a pass"
+      "need": "<=1.3",
+      "pass": true,
+      "blocking": true
+    },
+    "deltaE2000": {
+      "value": 8.68,
+      "need": "<10",
+      "metric": "CIEDE2000",
+      "pass": true,
+      "blocking": true,
+      "note": "CIEDE2000 mean on the 16:9 headless render; prediction is not the row",
+      "predicted": 9.896,
+      "median": 6.38
     }
   },
-  "attempt": 2
+  "attempt": 1,
+  "objectGate": {
+    "verdict": "PASS",
+    "path": "steps/zone-c/03-terrain/object-gate/report.json"
+  }
 }

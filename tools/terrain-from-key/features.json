@@ -33,7 +33,13 @@
     "source": "steps/zone-c/03-terrain/key-zc1.jpg",
     "note": "Walkable mask is the causeway only. Cliffs, arches, gorge rock, foliage, falls and the planet are not relief.",
     "camera": "steps/zone-c/01-camera/camera.json",
-    "masks": "steps/zone-c/02-masks/masks.json"
+    "masks": "steps/zone-c/02-masks/masks.json",
+    "plates": [
+      "steps/zone-c/03-terrain/plates/moss-top-1.jpg",
+      "steps/zone-c/03-terrain/plates/moss-top-2.jpg",
+      "steps/zone-c/03-terrain/plates/moss-top-3.jpg",
+      "steps/zone-c/03-terrain/plates/moss-top-4.jpg"
+    ]
   },
   "exclude": [
     { "id": "sky", "box": [0.00, 0.00, 1.00, 0.34] },

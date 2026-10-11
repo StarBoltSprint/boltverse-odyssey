@@ -1,26 +1,67 @@
 [
  {
-  "name": "face z",
-  "ok": false,
-  "why": "no object area >= 48x48 px in the capture",
-  "pxPerM": 9.94,
-  "tileM": null
- },
- {
-  "name": "face x",
-  "ok": false,
-  "why": "no object area >= 48x48 px in the capture",
-  "pxPerM": 5.46,
-  "tileM": null
+  "name": "face y",
+  "ok": true,
+  "atExpectedLag": 0.0149,
+  "expectLagPx": 278,
+  "rect": [
+   0,
+   0,
+   512,
+   1024
+  ],
+  "peak": 0.1147,
+  "lagPx": [
+   0,
+   -555
+  ],
+  "crop": [
+   512,
+   1024
+  ],
+  "pxPerM": 42.67,
+  "tileM": 6.5
  },
  {
   "name": "close",
-  "ok": false,
-  "why": "object covers 0.0% of the close capture (capture angle unusable)"
+  "ok": true,
+  "atExpectedLag": null,
+  "expectLagPx": null,
+  "rect": [
+   0,
+   310,
+   412,
+   915
+  ],
+  "peak": 0.0758,
+  "lagPx": [
+   -33,
+   -1
+  ],
+  "crop": [
+   412,
+   605
+  ]
  },
  {
   "name": "low-portrait",
-  "ok": false,
-  "why": "object covers 0.4% of the low-portrait capture (capture angle unusable)"
+  "ok": true,
+  "atExpectedLag": null,
+  "expectLagPx": null,
+  "rect": [
+   0,
+   373,
+   412,
+   915
+  ],
+  "peak": 0.0642,
+  "lagPx": [
+   -109,
+   -299
+  ],
+  "crop": [
+   412,
+   542
+  ]
  }
 ]

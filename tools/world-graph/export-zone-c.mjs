@@ -30,8 +30,13 @@ const target = [
   position[2] + forward[2],
 ];
 
+const plateFiles = (numbers.plates && numbers.plates.plates) || ["moss-top-1.jpg", "moss-top-2.jpg", "moss-top-3.jpg", "moss-top-4.jpg"];
+const plateSources = plateFiles.map((name) => ({
+  file: "steps/zone-c/03-terrain/plates/" + name,
+  role: "terrain-plate",
+}));
+const uvOpen = !(numbers.checks && numbers.checks.uvStretch && numbers.checks.uvStretch.pass);
 const todo = [
-  "moss slab plates are step 3; UV stretch on the continuation stays open",
   "cliffs, arches, gorge rock, foliage, falls and the planet are not in this heightfield",
   "no sun, fog, or halo is stored for Zone C yet",
   "the causeway has no GLB; the mesh is the height grid",
@@ -69,8 +74,9 @@ const zone = {
       asset: { glb: null, lods: [] },
       sources: [
         { file: height.keyImage, role: "key" },
-        { file: "steps/zone-c/03-terrain/data/albedo.png", role: "baked-albedo" },
-        { file: "packs/zone-a/src/ground", role: "base-tiles" },
+        ...plateSources,
+        { file: "steps/zone-c/03-terrain/data/weight.bin", role: "key-weight" },
+        { file: "steps/zone-c/03-terrain/data/tint.bin", role: "key-tint" },
       ],
       cameras: [{ fov: cam.fov, position, target }],
       transform: {
@@ -102,11 +108,11 @@ const zone = {
     laneWidth: null,
   },
   qualityGates: {
-    maxDrawCalls: 80,
+    maxDrawCalls: 12,
     pathIoU: numbers.checks.pathIoU.value,
     blockingPass: numbers.blockingPass,
     pass: numbers.pass,
-    uvStretchOpen: true,
+    uvStretchOpen: uvOpen,
   },
   todo,
   wakeDefaults: { type: "placeholder", enabled: false },
@@ -122,8 +128,10 @@ const zone = {
       nz: height.nz,
     },
     groundDetail: {
-      albedo: "steps/zone-c/03-terrain/data/albedo.png",
-      tiles: "packs/zone-a/src/ground",
+      plates: plateSources.map((s) => s.file),
+      weight: "steps/zone-c/03-terrain/data/weight.bin",
+      tint: "steps/zone-c/03-terrain/data/tint.bin",
+      tile: "steps/zone-c/03-terrain/data/tile.bin",
     },
     pins: {},
   },

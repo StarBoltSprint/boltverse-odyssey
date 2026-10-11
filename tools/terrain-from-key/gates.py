@@ -290,3 +290,56 @@ def evaluate_causeway(cam, built, causeway_mask, stations=(0.0, 8.0, 30.0, 60.0)
         "checks": checks,
         "camera": {k: cam[k] for k in ("x", "z", "yaw", "pitch", "eye", "fov")},
     }
+
+
+def evaluate_plates(cam, heights, path, support, origin, step, causeway_mask, uv, delta_e, stations_ok):
+    """Plate step rows. pass stays false until the headless object-gate agrees.
+
+    Draw calls use the plate budget (<= 12). The older causeway row (< 80) is unchanged.
+    """
+    from causeway_field import corridor_slope, deck_mask, lod_counts, lod_pop_iou, move_camera, path_iou
+
+    iou = path_iou(cam, heights, deck_mask(path), origin, step, causeway_mask)
+    slope = corridor_slope(heights, path, step)
+    slope_ok = slope["maxSlopeDeg"] <= 16.0 and slope["minWidthM"] >= 0.8
+    relief_ok = slope["reliefM"] <= 3.0 + 1e-3
+    outside = heights[~support]
+    cliff = float(np.max(np.abs(outside))) if outside.size else 0.0
+    cliff_ok = cliff <= 1e-3
+    pops = []
+    for along in (0.0, 8.0, 30.0, 60.0):
+        cam_i = move_camera(cam, along, heights, origin, step)
+        pops.append({
+            "alongM": along,
+            "lodPopIoU": round(lod_pop_iou(cam_i, heights, path, origin, step, causeway_mask), 4),
+        })
+    pop_ok = all(p["lodPopIoU"] >= 0.90 for p in pops)
+    lod = lod_counts(step)
+    draws_ok = lod["drawCalls"] <= 12
+    uv_ok = bool(uv.get("pass")) and stations_ok
+    colour_ok = delta_e is not None and delta_e < 10.0
+    checks = {
+        "pathIoU": {"value": round(iou, 4), "need": 0.75, "pass": iou >= 0.75, "blocking": True},
+        "corridor": {"value": slope, "pass": slope_ok, "blocking": True},
+        "reliefM": {"value": slope["reliefM"], "need": "<=3", "pass": relief_ok, "blocking": True},
+        "cliffsFlat": {"value": round(cliff, 4), "pass": cliff_ok, "blocking": True},
+        "lodPopIoU": {"value": pops[0]["lodPopIoU"], "need": 0.90, "pass": pops[0]["lodPopIoU"] >= 0.90, "blocking": True},
+        "approachLod": {"value": pops, "need": 0.90, "pass": pop_ok, "blocking": True},
+        "drawCalls": {"value": lod, "need": "<=12", "pass": draws_ok, "blocking": True},
+        "uvStretch": {"value": uv, "need": "<=1.3", "pass": uv_ok, "blocking": True},
+        "deltaE2000": {
+            "value": None if delta_e is None else round(float(delta_e), 3),
+            "need": "<10",
+            "metric": "CIEDE2000",
+            "pass": colour_ok,
+            "blocking": True,
+            "note": "mean CIEDE2000 of causeway-mask pixels, key camera, 16:9 render vs key",
+        },
+    }
+    blocking = all(v["pass"] for v in checks.values() if v.get("blocking"))
+    return {
+        "pass": False,
+        "blockingPass": blocking,
+        "checks": checks,
+        "camera": {k: cam[k] for k in ("x", "z", "yaw", "pitch", "eye", "fov")},
+    }

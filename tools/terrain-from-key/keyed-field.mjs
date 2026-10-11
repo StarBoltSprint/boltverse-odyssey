@@ -121,3 +121,77 @@ export function createKeyedField(biome, grid) {
     hHi: grid.hHi,
   };
 }
+
+// Zone C causeway plates. One unlit material: key projection where the key
+// still has density, four native moss plates beyond it. Staging imports these
+// strings so the page and the Python bake share one recipe.
+export const PLATE_VERT = `
+varying vec3 vW;
+void main() {
+  vec4 w = modelMatrix * vec4(position, 1.0);
+  vW = w.xyz;
+  gl_Position = projectionMatrix * viewMatrix * w;
+}
+`;
+
+export const PLATE_FRAG = `
+precision highp float;
+varying vec3 vW;
+uniform sampler2D uKey;
+uniform sampler2D uP0;
+uniform sampler2D uP1;
+uniform sampler2D uP2;
+uniform sampler2D uP3;
+uniform sampler2D uWeight;
+uniform sampler2D uTint;
+uniform sampler2D uTile;
+uniform vec3 uEye;
+uniform vec3 uRight;
+uniform vec3 uUp;
+uniform vec3 uFwd;
+uniform vec2 uKeyP;
+uniform vec2 uGridOrigin;
+uniform vec2 uGridSize;
+uniform vec2 uTile0;
+uniform vec2 uTileN;
+uniform float uTileM;
+uniform vec3 uMean0;
+uniform vec3 uMean1;
+uniform vec3 uMean2;
+uniform vec3 uMean3;
+
+vec2 orientUv(vec2 p, float rot, float flip) {
+  if (flip > 0.5) p.x = 1.0 - p.x;
+  if (rot > 0.5) p = vec2(p.y, 1.0 - p.x);
+  if (rot > 1.5) p = vec2(p.y, 1.0 - p.x);
+  if (rot > 2.5) p = vec2(p.y, 1.0 - p.x);
+  return p;
+}
+
+void main() {
+  vec3 rel = vW - uEye;
+  float depth = dot(rel, uFwd);
+  float ndcX = (dot(rel, uRight) / depth) * uKeyP.x;
+  float ndcY = (dot(rel, uUp) / depth) * uKeyP.y;
+  vec2 keyUv = vec2(ndcX * 0.5 + 0.5, ndcY * 0.5 + 0.5);
+  vec2 gUv = (vW.xz - uGridOrigin) / uGridSize;
+  float wgt = texture2D(uWeight, gUv).r;
+  vec3 tint = texture2D(uTint, gUv).rgb;
+  vec2 cell = floor(vW.xz / uTileM);
+  vec4 info = texture2D(uTile, (cell - uTile0 + 0.5) / uTileN);
+  float id = floor(info.r * 255.0 + 0.5);
+  float rot = floor(info.g * 255.0 + 0.5);
+  float flip = step(0.5, info.b);
+  vec2 p = orientUv(fract(vW.xz / uTileM), rot, flip);
+  vec3 col = texture2D(uP0, p).rgb;
+  vec3 mean = uMean0;
+  if (id > 0.5) { col = texture2D(uP1, p).rgb; mean = uMean1; }
+  if (id > 1.5) { col = texture2D(uP2, p).rgb; mean = uMean2; }
+  if (id > 2.5) { col = texture2D(uP3, p).rgb; mean = uMean3; }
+  vec3 graded = clamp(col * tint / max(mean, vec3(0.02)), 0.0, 1.0);
+  float onKey = step(0.2, depth) * step(0.0, keyUv.x) * step(keyUv.x, 1.0) * step(0.0, keyUv.y) * step(keyUv.y, 1.0);
+  vec3 key = texture2D(uKey, keyUv).rgb;
+  gl_FragColor = vec4(mix(graded, key, wgt * onKey), 1.0);
+  #include <colorspace_fragment>
+}
+`;

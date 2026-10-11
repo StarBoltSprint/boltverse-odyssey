@@ -297,6 +297,32 @@
   function orthoFace(sel, instId, axis = "z", w = 512, h = 1024) {
     const { THREE, scene, renderer } = H();
     const inst = instancesOf(sel).find((i) => i.id === instId) || instancesOf(sel)[0];
+    if (axis === "y") {
+      const frame = (window.__terrain && window.__terrain.plateFrame) ? window.__terrain.plateFrame() : { cx: 0, cz: 0, half: 6 };
+      const half = frame.half || 6;
+      const cx = frame.cx || 0, cz = frame.cz || 0;
+      const gy = H().groundHeight(cx, cz);
+      const viewW = half * 2, viewH = viewW * (h / w);
+      const cam = new THREE.OrthographicCamera(-viewW / 2, viewW / 2, viewH / 2, -viewH / 2, 0.05, 80);
+      cam.up.set(0, 0, -1);
+      cam.position.set(cx, gy + 40, cz);
+      cam.lookAt(cx, gy, cz);
+      cam.updateMatrixWorld(true);
+      const restoreFx = hideFx(null);
+      const out = withOnly(sel, () => {
+        const fg = scene.fog; scene.fog = null;
+        try {
+          const col = readRT(w, h, () => renderer.render(scene, cam));
+          const white = new THREE.MeshBasicMaterial({ color: 0xffffff, fog: false, side: THREE.DoubleSide });
+          const bg = scene.background, ov = scene.overrideMaterial; scene.background = null; scene.overrideMaterial = white;
+          const m = readRT(w, h, () => renderer.render(scene, cam));
+          scene.background = bg; scene.overrideMaterial = ov; white.dispose();
+          return { png: toPng(col, w, h), mask: toPng(m, w, h), pxPerM: +(w / viewW).toFixed(2), viewM: [+viewW.toFixed(1), +viewH.toFixed(1)] };
+        } finally { scene.fog = fg; }
+      });
+      restoreFx();
+      return out;
+    }
     if (!inst.geo.boundingBox) inst.geo.computeBoundingBox();
     const bb = inst.geo.boundingBox; const e = inst.matrix.elements;
     const sc = [Math.hypot(e[0], e[1], e[2]), Math.hypot(e[4], e[5], e[6]), Math.hypot(e[8], e[9], e[10])];

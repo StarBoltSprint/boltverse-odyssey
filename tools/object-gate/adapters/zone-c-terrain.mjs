@@ -31,12 +31,14 @@ export default {
   },
 
   sources() {
-    const key = new URL("steps/zone-c/03-terrain/key-zc1.jpg", REPO);
-    if (!existsSync(key)) return [];
-    return [{
-      file: "albedo.png",
-      source: key.pathname,
-      note: "baked from the key; moss plates are a later step",
-    }];
+    const dir = new URL("steps/zone-c/03-terrain/plates/", REPO);
+    const out = [];
+    for (let i = 1; i <= 4; i++) {
+      const file = `moss-top-${i}.jpg`;
+      const src = new URL(file, dir);
+      if (!existsSync(src)) continue;
+      out.push({ file, source: src.pathname, note: "Imagine moss slab, native 1408" });
+    }
+    return out;
   },
 };

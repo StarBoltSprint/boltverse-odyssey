@@ -336,8 +336,10 @@ export async function visibleShot(page, adapter, sel, hero, t, view, odir, vv = 
     }
     return null;
   }, [sel, hero.center, dir, R, D, heights]);
-  let place = await search();
-  if (!place && !vv.towardXZ) {   // the path-facing side has no wall at those heights: try the other three sides
+  let place = vv.ground
+    ? await page.evaluate((D) => (window.__terrain && window.__terrain.groundVisiblePose) ? window.__terrain.groundVisiblePose(D) : null, D)
+    : await search();
+  if (!place && !vv.ground && !vv.towardXZ) {   // the path-facing side has no wall at those heights: try the other three sides
     const d0 = dir;
     for (const d of [[-d0[0], -d0[1]], [d0[1], -d0[0]], [-d0[1], d0[0]]]) {
       dir = d;
@@ -484,8 +486,11 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
   const captures = {};
   if (wanted.size && checks.has("checklist") | checks.has("repetition")) {
     const front = hero.front.length === 2 ? [hero.front[0], hero.front[1]] : hero.front;
+    const ground = !!(spec.visibleView && spec.visibleView.ground);
     for (const name of wanted) {
-      const pose = pyFile(FRAME_PY, { min: hero.min, max: hero.max, view: name, width: 412, height: 915, front });
+      const pose = ground
+        ? await page.evaluate((n) => window.__terrain.groundPose(n), name)
+        : pyFile(FRAME_PY, { min: hero.min, max: hero.max, view: name, width: 412, height: 915, front });
       const shot = await page.evaluate((spec) => window.__og.renderPose(spec), { ...pose, sel });
       if (!shot || !shot.png) throw new Error(`renderPose ${name} returned no image`);
       const img = join(odir, `cap-${name}.png`), msk = join(odir, `cap-${name}-mask.png`);
@@ -505,7 +510,8 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
   let repRows = [];
   if (checks.has("repetition")) {
     const res = [];
-    for (const axis of ["z", "x"]) {
+    const ground = !!(spec.visibleView && spec.visibleView.ground);
+    for (const axis of (ground ? ["y"] : ["z", "x"])) {
       const v = await page.evaluate(([s, id, ax]) => window.__og.orthoFace(s, id, ax, 512, 1024), [sel, hero.id, axis]);
       const img = join(odir, `face-${axis}.png`), msk = join(odir, `face-${axis}-mask.png`);
       writeFileSync(img, Buffer.from(v.png.split(",")[1], "base64")); writeFileSync(msk, Buffer.from(v.mask.split(",")[1], "base64"));

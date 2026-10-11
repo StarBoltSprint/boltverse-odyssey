@@ -3,7 +3,7 @@
  "width": 720,
  "height": 1600,
  "ready": true,
- "waitedMs": 2385,
+ "waitedMs": 2414,
  "before": {
   "ok": false,
   "kind": "frame",
@@ -17,7 +17,7 @@
  "after": {
   "ok": true,
   "kind": "frame",
-  "cover": 0.0608,
+  "cover": 1,
   "minCover": null,
   "loading": false,
   "empty": false,

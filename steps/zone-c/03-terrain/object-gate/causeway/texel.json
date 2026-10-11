@@ -1,16 +1,16 @@
 [
  {
   "inst": "causeway",
-  "plate": "albedo.png",
-  "tex": "http://127.0.0.1:8771/data/albedo.png",
-  "texW": 113,
-  "texH": 205,
+  "plate": "moss-top-",
+  "tex": "http://127.0.0.1:8771/plates/moss-top-1.jpg",
+  "texW": 1408,
+  "texH": 1408,
   "cls": "+y",
   "areaM2": 5719.6,
-  "samplingPxPerM": 2.01,
-  "repeats": 1,
-  "uniquePxPerM": 2.01,
-  "stretchP95": 1.004,
+  "samplingPxPerM": 216.47,
+  "repeats": 135.2,
+  "uniquePxPerM": 18.62,
+  "stretchP95": 1.005,
   "nearPathM": 0.2
  }
 ]

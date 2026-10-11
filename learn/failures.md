@@ -1053,3 +1053,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | `resolveRoute` uses the path after the `/ref/`, `/zone/`, or `/wg/` prefix with no extra dot. |
 | Guard | `node tools/world-graph/selftest.mjs` row `compare route serves main.mjs` (resolved path equals the preview `main.mjs`). |
 | Sources | `tools/world-graph/serve.mjs`, `tools/world-graph/selftest.mjs`. |
+
+### 2026-10-11 — plate stretch used foreshortening, and the 8 m camera sat under the deck
+
+| | |
+| --- | --- |
+| Take | zc/03-terrain plates |
+| Defect | Two-axis pixel anisotropy on this ground is about 3.4, so a 1.3 stretch row cannot pass while the key stays. Path IoU fell from 0.7704 to 0.7106 when the far lip copy was rasterized with the deck. The 8 m camera, placed back along the pitched view, went under the mesh. Aimed at s=10 it then measured the key photo at 73.9 px/m. A capture at 80 ms also shot a blank frame and missed Chargement. |
+| Root cause | The open UV row was one reused pixel row of the key, not mesh-UV anisotropy. `path.npy` includes the continuation past the mask. The key pitch looks up, so that ray drops the eye below the deck, and a front-face ray misses. The key band's short-axis density is about 20 px/m. |
+| Fix | Station stretch is the near-key px/m divided by the px/m of the material in use (plates where the key weight is at most 0.5). Path IoU uses `deck_mask`. The sharpness pose stands at eye height on the plate field (`s = 12 + D`). The loading shot waits until Chargement is in the DOM. |
+| Guard | `steps/zone-c/03-terrain/numbers.json`: path IoU 0.7704, UV p95 0.214, CIEDE2000 8.68, pass true. Object-gate visible px/m 237.1 against 118.5, verdict PASS. |
+| Sources | `tools/terrain-from-key/causeway_field.py`, `tools/terrain-from-key/gates.py`, `tools/terrain-from-key/staging/zone-c/main.mjs`, `tools/terrain-from-key/capture_play.mjs`. |
