@@ -35,7 +35,7 @@ import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 import i23d_common as C
 PY = sys.executable
-STAGES = ["inputs", "consistency", "classify", "shape", "geometry", "pack", "detail", "grade", "stage", "shaders", "perf", "morph", "gate", "keycompare", "report"]
+STAGES = ["inputs", "consistency", "classify", "shape", "geometry", "pack", "detail", "grade", "stage", "shaders", "perf", "morph", "gate", "keycompare", "look", "report"]
 BROWSER = {"shaders", "morph", "gate", "keycompare"}
 LIVE_GUARD = [os.environ.get("I23D_LIVE_ROOT", "/workspace/zb-preview-1008")]   # files the live page loads live here
 MANUAL = {   # honest list, printed in every plan/report
@@ -355,6 +355,25 @@ class Run:
             fix = fixloop.plan(gate_plan=os.path.join(out, "fix-plan.json"), obj_type=self.type, out=os.path.join(out, "actions.json"))
         return self.done("gate", st, dir=out, fixActions=[(a["action"], a["failure"]["key"]) for a in (fix or {}).get("actions", [])],
                          summary=f"object-gate exit {r.returncode}")
+
+    def s_look(self):
+        """Unreal-look pack for this biome (grade, and any later feature module that is present). No Imagine call."""
+        key = self.spec.get("key") or (self.spec.get("keyCompare") or {}).get("key")
+        if not key or not os.path.exists(str(key)):
+            return self.done("look", "SKIP", summary="no key image; unreal-look skipped")
+        out = os.path.join(self.work, "look")
+        look_py = os.path.join(os.path.dirname(HERE), "look", "look.py")
+        cmd = [PY, look_py, "build", "--key", key, "--out", out]
+        root = LIVE_GUARD[0]
+        sky = os.path.join(root, "assets", "sky", "sky-equirect.jpg")
+        plates = os.path.join(root, "assets", "ground")
+        if os.path.exists(sky):
+            cmd += ["--sky", sky]
+        if os.path.isdir(plates):
+            cmd += ["--plates", plates]
+        r = sh(*cmd, timeout=180)
+        tail = ((r.stdout or r.stderr) or "").strip().splitlines()
+        return self.done("look", "PASS" if r.returncode == 0 else "FAIL", dir=out, summary=(tail[-1] if tail else "look build")[:240])
 
     def s_report(self):
         S = self.state["stages"]; L = [f"# imagine-to-3d auto report: {self.spec['object']} ({self.state.get('type', self.type)})", "",

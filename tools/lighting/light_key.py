@@ -160,6 +160,26 @@ def apply(a):
             if k == "biome": cur["biome"].update(v)
             elif k not in ("gain", "ratio") and v is not None: cur[k] = v
     C.dump(cur, kl); kc_stage.write_light_files(LIVE, a.stage); print(json.dumps(cur))
+    _hook_unreal_look(a)
+
+
+def _hook_unreal_look(a):
+    """Fail-soft. The biome that just received a light key also receives look.json. Never touches the live tree."""
+    look_py = os.path.join(os.path.dirname(HERE), "look", "look.py")
+    key = getattr(a, "key", "") or ""
+    if not os.path.exists(look_py) or not key or not os.path.exists(key) or not getattr(a, "stage", None):
+        print("look hook skip")
+        return
+    out = os.path.join(a.stage, "look")
+    cmd = [sys.executable, look_py, "build", "--key", key, "--out", out]
+    measure = getattr(a, "measure", None)
+    if measure and os.path.exists(measure):
+        cmd += ["--light", measure]
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
+        print("look hook", r.returncode, ((r.stdout or r.stderr) or "")[-240:])
+    except Exception as e:
+        print("look hook", e)
 
 
 def test(a):

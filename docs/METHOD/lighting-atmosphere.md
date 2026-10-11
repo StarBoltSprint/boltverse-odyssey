@@ -60,3 +60,7 @@ Each needs a version bump. `chromeGraphite` and the mesa haze weights are shared
 - The sun elevation depends on the solved camera pitch. A camera stuck at a bound (fov 80) biases it.
 - Fog density from a painted key is weak evidence. The key keeps backlit silhouettes dark at 280 m, so D comes out around 1.6-2 km, far lighter than the game bands (0.45 at 130 m). Apply fog last, and only if the mesas lit ΔE improves.
 - `fit --kc` corrections (graphite, mesa haze) are one proportional step, clipped to ×0.3..×3. Re-run them once after applying.
+
+## Unreal look
+
+`apply` also runs [`tools/look`](unreal-look.md) into `<stage>/look/` (fail-soft). That pack is the filmic grade, the bake, the environment, the height fog, the mover shadows, and the god-ray cap. It does not replace this module and it does not generate an image.

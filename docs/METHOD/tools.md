@@ -1,6 +1,6 @@
 # Tools and scripts — what each does, when to use it
 
-Back to [METHOD.md](../METHOD.md). Every tool **measures**; none draws, regrades or replaces a game pixel. Exit 0 = PASS,
+Back to [METHOD.md](../METHOD.md). Every tool **measures**; none draws, regrades or replaces a game pixel, except [`tools/look`](unreal-look.md), which writes a LUT and bake plates whose colours are sampled from Imagine images. Exit 0 = PASS,
 1 = FAIL (stop the cook), 2 = cannot run. A hand-written PASS is not a PASS: paste the tool's `report.md` / `report.json`.
 
 ## Open-zone tools (`tools/`) — the current game
@@ -25,6 +25,7 @@ Order per object (doc 62): `assetcheck` → `objsheet` (+ `preflight`) → `walk
 | [`tools/playcheck`](../../tools/playcheck/README.md) | Rendered-pixel test in headless Chrome: scripted walk, framebuffer rows (mag, hero, gates, no_pop, handedness, WebGL errors, foot gap, untextured faces, mag hotspots, stair crown), `walk.mp4`. `src/renderlint.mjs` = static NEAREST / quality lint. `node tools/playcheck/src/premerge.mjs` audits walk passages and runs the unit tests before a details branch lands. | Every play build (≈ 40 min: start it early). Before merging details onto a gate. |
 | [`tools/frames`](../../tools/frames/README.md) | Proof-shot gates for any biome: foot contact, black or untextured faces, sky seams and zenith bands, hard ground lines and voids, stair crowns, brief heroes, magnification hotspots. `--resume` rewrites the report after each image. | After a proof still, before a person looks. |
 | [`tools/perf`](../../tools/perf/README.md) | `?perf=1` overlay + the `Perf:` numbers (drawCalls, texMB, activeVideos, jsMs). | Every perf report. |
+| [`tools/look`](unreal-look.md) | Filmic grade, baked light, environment, height fog, mover shadows, god-ray cap. Writes `look.json` from the key. Does not generate Imagine images. | After `tools/lighting` on a biome. Automatic from `light_key.py apply` and the imagine-to-3d `look` stage. |
 | [`tools/zoneflow`](../../tools/zoneflow/README.md) | Selftest fixture of clearing → corridor → clearing (preload, crossfade, speed-tied rate). Runtime: `biome/scripts/zone-flow`. | Paths between zones. |
 | [`tools/relief`](../../tools/relief/README.md) | Redo of the relief panorama (plate 0, depth, 138° outpaint, 360° ring). Review only. | Depth-relief plates / far backdrop reference. |
 | [`tools/judge`](../../tools/judge/README.md) | Local Grok vision judge of a candidate vs 1–3 refs + taste log; pass = score ≥ 7, keep, matches refs. | Before showing a still / hull / plate to the owner. Never replaces the owner. |
