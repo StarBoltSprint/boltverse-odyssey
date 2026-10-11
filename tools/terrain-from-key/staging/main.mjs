@@ -198,14 +198,15 @@ let objs = { collide() {}, update() {} };
 try {
   objs = await mountObjects({ THREE, R, biome, field, world, camera, renderer });
 } catch (err) {
+  window.__objError = String(err && err.stack ? err.stack : err);
   console.warn("objects", err);
 }
 // mesas (2026-10-09): guarded, the scene runs unchanged on failure
 try {
-  const mz = await (await import("/live/mesas/mesas-v11.mjs?v=11")).mountMesas({ THREE, R, biome, field, world, camera, renderer });
+  const mz = await (await import("./mesas/mesas-v11.mjs?v=scene-strict")).mountMesas({ THREE, R, biome, field, world, camera, renderer });
   const o0 = objs, c0 = o0.collide.bind(o0), u0 = o0.update.bind(o0);
   objs = Object.assign({}, o0, { collide: (s) => { c0(s); mz.collide(s); c0(s); }, update: (c) => { u0(c); mz.update(c); } });
-} catch (err) { console.warn("mesas", err); }
+} catch (err) { window.__mesaError = String(err && err.stack ? err.stack : err); console.warn("mesas", err); }
 
 // staging step 3 (2026-10-10): big soft transparent sheets (sand veils, god-rays) at half resolution, composited in the
 // grade pass (opt path only). OFF by default: measured coverage is tiny (veils <= 0.16 screen, god-rays <= 0.05), so the
@@ -393,11 +394,15 @@ window.__measurePasses = () => {
     return { calls: info.render.calls, tris: info.render.triangles };
   };
   renderer.shadowMap.enabled = false;
+  info.reset();
+  renderer.render(world, camera);
+  const scenePass = { calls: info.render.calls, tris: info.render.triangles };
   const mainPass = shot();
   renderer.shadowMap.enabled = true;
   const both = shot();
   renderer.shadowMap.enabled = was;
   return {
+    scene: scenePass,
     main: mainPass,
     both,
     shadow: {
@@ -429,10 +434,12 @@ function frame(now) {
   requestTerrain(st.x, st.z);
 
   const cam = rig.update(dt, Math.min(1, speed / RUN));
-  camera.fov = cam.fovDeg; camera.updateProjectionMatrix();
+  const fovQ = (QD.get("fov") && isFinite(+QD.get("fov"))) ? +QD.get("fov") : cam.fovDeg;
+  camera.fov = fovQ; camera.updateProjectionMatrix();
   camera.position.set(st.x, st.y, st.z);
   sky.position.copy(camera.position);   // no black sky beyond 300 m from the origin
-  camera.rotation.set((st.pitch * Math.PI) / 180, (-st.yaw * Math.PI) / 180, 0);
+  const rollQ = (QD.get("roll") && isFinite(+QD.get("roll"))) ? +QD.get("roll") : 0;
+  camera.rotation.set((st.pitch * Math.PI) / 180, (-st.yaw * Math.PI) / 180, (rollQ * Math.PI) / 180);
 
   objs.update(camera);
   if (dynOn) {   // sprint / fast motion: a little lower; standing and walking: the cap (if the fps allows)
@@ -475,6 +482,54 @@ requestTerrain(st.x, st.z, true);
 // wait for the first terrain mesh before showing the scene
 await new Promise((res) => { const w = () => (window.__terrain ? res() : setTimeout(w, 30)); w(); });
 loadEl.style.display = "none";
+// Staging only. Live objects bury a plinth 3–6 m. Feet sit 0.2 m in the keyed field.
+function flushSeats() {
+  const rows = [];
+  const m4 = new THREE.Matrix4();
+  const p = new THREE.Vector3(), q = new THREE.Quaternion(), sc = new THREE.Vector3();
+  const note = (name, sink) => rows.push({ name, sink: Math.round(sink * 1000) / 1000 });
+  world.traverse((o) => {
+    const n = o.name || "";
+    if (o.isInstancedMesh && n.startsWith("inst-")) {
+      for (let i = 0; i < o.count; i++) {
+        o.getMatrixAt(i, m4);
+        m4.decompose(p, q, sc);
+        const g = field.surfaceHeight(p.x, p.z);
+        const sink = g - p.y;
+        if (sink > 0.5 || sink < -0.5) {
+          p.y = g - 0.2;
+          m4.compose(p, q, sc);
+          o.setMatrixAt(i, m4);
+        }
+        note(n + "#" + i, g - p.y);
+      }
+      o.instanceMatrix.needsUpdate = true;
+    } else if (o.isMesh && (n.startsWith("spire") || n.startsWith("mesa-"))) {
+      o.updateWorldMatrix(true, false);
+      const e = o.matrixWorld.elements;
+      const g = field.surfaceHeight(e[12], e[14]);
+      const sink = g - e[13];
+      if (sink > 0.5 || sink < -0.5) {
+        if (o.matrixAutoUpdate === false) {
+          o.matrix.elements[13] += (g - 0.2) - e[13];
+          o.matrixWorld.elements[13] += (g - 0.2) - e[13];
+        } else {
+          o.position.y += (g - 0.2) - e[13];
+        }
+      }
+      o.updateWorldMatrix(true, false);
+      const e2 = o.matrixWorld.elements;
+      note(n, field.surfaceHeight(e2[12], e2[14]) - e2[13]);
+    }
+  });
+  const sinks = rows.map((r) => r.sink);
+  window.__seat = {
+    n: rows.length,
+    maxAbs: sinks.length ? Math.round(Math.max(...sinks.map((v) => Math.abs(v))) * 1000) / 1000 : null,
+    rows: rows.slice(0, 40),
+  };
+}
+flushSeats();
 window.__ready = true;
 if (ares) ares.markReady(performance.now());
 requestAnimationFrame(frame);

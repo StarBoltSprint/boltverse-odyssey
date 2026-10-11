@@ -19,7 +19,7 @@ if PLACE not in sys.path:
     sys.path.insert(0, PLACE)
 
 from align.camera import constrained_focal, render_box, solve
-from align.metrics import score
+from align.metrics import apply_vision, score, strict_score
 from align.search import search
 
 
@@ -40,6 +40,51 @@ def test_metrics():
     moved = score(b, a)
     ok = check("identical frames score near 1", ok, f"iou {same['silhouette_iou']} align {same['alignment']}") and ok
     ok = check("a 6 px shift lowers IoU", moved["silhouette_iou"] < same["silhouette_iou"] - 0.05, f"{moved['silhouette_iou']}") and ok
+    return ok
+
+
+def _hero_crop():
+    key_path = "/workspace/zb-bible-1008/key-city3.jpg"
+    mask_path = os.path.join(HERE, "..", "..", "..", "steps", "fusion-fix5-1011", "work", "sam-hero.npy")
+    sheet_path = os.path.join(HERE, "..", "..", "..", "steps", "week2-1011", "sheet-phone.jpg")
+    key = np.asarray(Image.open(key_path).convert("RGB"))
+    mask = np.load(os.path.abspath(mask_path)) > 0
+    if mask.shape[:2] != key.shape[:2]:
+        mask = cv2.resize(mask.astype(np.uint8), (key.shape[1], key.shape[0]), interpolation=cv2.INTER_NEAREST) > 0
+    ys, xs = np.where(mask)
+    pad = 8
+    y0, y1 = max(0, int(ys.min()) - pad), min(key.shape[0], int(ys.max()) + 1 + pad)
+    x0, x1 = max(0, int(xs.min()) - pad), min(key.shape[1], int(xs.max()) + 1 + pad)
+    crop = key[y0:y1, x0:x1]
+    cm = mask[y0:y1, x0:x1]
+    sheet = np.asarray(Image.open(os.path.abspath(sheet_path)).convert("RGB"))
+    grok = sheet[36:533]
+    moge = sheet[569:1066]
+    return crop, cm, grok, moge
+
+
+def test_strict():
+    crop, cm, grok, moge = _hero_crop()
+    same = strict_score(crop, crop, {"render": cm, "key": cm})
+    ext = np.zeros_like(crop)
+    ext[cm] = np.array([148, 138, 128], np.uint8)
+    filled = strict_score(ext, crop, {"render": cm, "key": cm})
+    striped = strict_score(grok, crop, {"key": cm})
+    pieces = strict_score(moge, crop, {"key": cm})
+    stairs = np.zeros_like(crop)
+    step = max(4, crop.shape[0] // 36)
+    yy = np.arange(cm.shape[0])[:, None]
+    on = cm & (((yy // step) % 2) == 0)
+    stairs[on] = np.array([148, 138, 128], np.uint8)
+    stair = strict_score(stairs, crop, {"render": on, "key": cm})
+    blocked = apply_vision(dict(same), False)
+    ok = check("key crop passes strict", same["strict"] >= 0.70 and same["strict_ok"], f"{same['strict']}")
+    ok = check("extruded key mask passes strict", filled["strict"] >= 0.70 and filled["strict_ok"], f"{filled['strict']}") and ok
+    ok = check("week-2 striped Grok render fails strict", striped["strict"] < 0.70 and not striped["strict_ok"], f"{striped['strict']} stripe {striped['stripe']}") and ok
+    ok = check("week-2 fragmented MoGe render fails strict", pieces["strict"] < 0.70 and not pieces["strict_ok"], f"{pieces['strict']} cont {pieces['continuity']}") and ok
+    ok = check("stair stack fails strict", stair["strict"] < 0.70, f"{stair['strict']}") and ok
+    ok = check("vision no caps a passing crop under 0.70", blocked["strict"] < 0.70 and blocked["vision"] is False, f"{blocked['strict']}") and ok
+    ok = check("old alignment stays on the strict result", "alignment" in same and same["score"]["alignment"] >= 0.7, str(same.get("alignment"))) and ok
     return ok
 
 
@@ -165,6 +210,24 @@ def test_relief_uses_painted_pixels():
     )
 
 
+def test_relight_is_not_a_side_plate():
+    from align.relief import plate_is_side_view
+    key = np.zeros((32, 48, 3), np.uint8)
+    key[4:28, 16:32] = (180, 170, 160)
+    key[8:14, 18:30] = (40, 40, 50)
+    same = key.copy()
+    same = np.clip(same.astype(np.int16) + 12, 0, 255).astype(np.uint8)
+    side = np.zeros_like(key)
+    side[:, :] = (20, 30, 40)
+    side[4:28, 4:10] = (200, 190, 180)
+    named = plate_is_side_view(side, key, name="relight-left.jpg")
+    return check(
+        "same-camera relight is not a side plate",
+        plate_is_side_view(same, key) is False and plate_is_side_view(side, key) is True and named is False,
+        "ncc gate plus relight filename",
+    )
+
+
 def test_search():
     # A rectangle's left edge is the unknown. Loss is the absolute pixel error.
     target = 22.0
@@ -270,10 +333,12 @@ def test_refine_pose_only():
 def main():
     ok = True
     ok = test_metrics() and ok
+    ok = test_strict() and ok
     ok = test_camera() and ok
     ok = test_constrained() and ok
     ok = test_raster_matches_three() and ok
     ok = test_relief_uses_painted_pixels() and ok
+    ok = test_relight_is_not_a_side_plate() and ok
     ok = test_search() and ok
     ok = test_symmetry() and ok
     ok = test_sun() and ok

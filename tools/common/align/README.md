@@ -8,11 +8,11 @@ Shared by `tools/imagine-to-3d` and `tools/placement-from-key`. Neither tool cop
 
 ## Pieces
 
-- `metrics.py` — `score(render, key, masks, weights)`. Soft silhouette IoU, symmetric edge Chamfer (px and normalised by the diagonal), edge precision/recall at 2 px, optional Lab residual, heatmap jpgs.
+- `metrics.py` — `score(render, key, masks, weights)`. Soft silhouette IoU, symmetric edge Chamfer (px and normalised by the diagonal), edge precision/recall at 2 px, optional Lab residual, heatmap jpgs. `strict_score` adds the blocking structure score: outline components, solidity, row-run count, and hole fraction against the key crop; row-profile FFT stripe energy; edge-component count; edge-orientation histogram. `alignment` stays in the result and does not raise `strict`. A Grok vision yes/no (`vision='ask'`, cached by image hash) caps a no under 0.70. The call is logged. One call per view.
 - `camera.py` — LSD via `cv2.createLineSegmentDetector` (OpenCV 5 has no `ximgproc`). RANSAC vanishing points, horizon, FOV, pitch, roll, yaw. Ground height from a metric depth plane (MoGe-2 when a depth map is not passed). `camera.json` is Y-up, camera looks down −Z, metres. Usable by three.js and by Blender.
 - `search.py` — CMA-ES (`cmaes`, MIT) in the unit box, bounds, early stop, parallel population, jsonl log. SciPy differential evolution, then L-BFGS-B, if CMA-ES is missing. Trials use the caller's cheap raster.
 - `apply_facade.py` / `apply_placement.py` — the two jobs. No new Imagine calls.
-- `relief.py` — painted MoGe residual along the vertex normal. Stretch uses the 99th percentile of real edges, then a 6 px blur on a 720-row key.
+- `relief.py` — painted MoGe residual along the vertex normal. Stretch uses the 99th percentile of real edges, then a 6 px blur on a 720-row key. `plate_is_side_view` rejects the photometric relight set (same camera; left/right name the light) and any plate whose NCC against the key is above 0.40. Those pixels are not projected onto a side axis.
 - `symmetry.py` — mirror and 180° scores on a mask. A pass drops degrees of freedom.
 - `sunlight.py` — cast-shadow sun via ray-plane on y = 0. Same heading as `geom.dir_to_heading`.
 - `stepcache.py` — sha256 cache of a stage, plus nearest library params.

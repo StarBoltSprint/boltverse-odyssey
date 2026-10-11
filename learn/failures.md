@@ -1167,3 +1167,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | `DEFAULT_DEPTH = "moge-2"` in `tools/common/vision_models.py`. `load_default_depth` / `depth_default` refuse any other name. `depth_relief.session` and `bake_depth.py` call MoGe-2. A Large `.pth` still runs only when the path is passed on purpose, and that map is not saved into the step folder. |
 | Guard | `DEFAULT_DEPTH == "moge-2"`. `bake_depth.py` default file is `moge-2-vitl.pt`. The shipped `steps/terrain-key2-1011/height.bin` was composed with `disp=None`. |
 | Sources | `tools/common/vision_models.py`, `tools/imagine-to-3d/depth_relief.py`, `tools/relief/bake_depth.py`, `SPEC-TERRAIN-KEY2-1011.md`. |
+
+### 2026-10-11 — strict score fails the striped tower; avenue search still misses the masks
+
+| | |
+| --- | --- |
+| Take | scene-strict-1011 |
+| Defect | Week-2 alignment 0.704–0.743. The same renders score strict 0.000–0.307. Placement framebuffer IoU 0.2909, skyTop 0.3676 vs key 0.5741, 14 depth inversions, 17 draw calls. Browser float 44.834 m after a 60.393 m seat. Side axes stay 0. |
+| Root cause | `metrics.score` is edge overlap and lets horizontal stripes pass 0.70. The relight files are one camera, so no side face has painted pixels. CMA-ES loss weights inversions enough to walk the eye up the dune. The hero footprint covers a dune pit the median seat does not. |
+| Fix | `strict_score` is blocking and the selftest fails the striped sheet. `plate_is_side_view` refuses the relight set. Search stopped at 3 rounds. The mesh was not dropped another 44 m into the dune. No dataset export. |
+| Guard | `python3 tools/common/align/selftest.py` PASS. `steps/scene-strict-1011/numbers.json` facade strict max 0.3073, placement IoU 0.2909, gate5 12 fails, browser float 44.834. |
+| Sources | `tools/common/align/metrics.py`, `tools/common/align/relief.py`, `tools/common/align/apply_scene.py`, `steps/scene-strict-1011/REPORT.md`. |

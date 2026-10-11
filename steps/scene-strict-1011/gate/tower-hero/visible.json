@@ -1,0 +1,93 @@
+{
+ "view": {
+  "renderPixelRatio": 1.5,
+  "fovDeg": 58,
+  "source": "game: biome.json camera.pixelRatioCap, main.mjs fovBase ?? 58"
+ },
+ "render": {
+  "ok": false,
+  "why": "no steep surface of inst-tower-hero#0 found at 4/5/3/6/7/8/2.5 m above the ground on its path-facing side"
+ },
+ "perSurface": [
+  {
+   "inst": "inst-tower-hero#0",
+   "cls": "-z",
+   "viewM": 8,
+   "needPxPerM": 154.6,
+   "visiblePxPerM": 3.95,
+   "ok": false
+  },
+  {
+   "inst": "inst-tower-hero#0",
+   "cls": "+z",
+   "viewM": 8,
+   "needPxPerM": 154.6,
+   "visiblePxPerM": 3.73,
+   "ok": false
+  },
+  {
+   "inst": "inst-tower-hero#0",
+   "cls": "-x",
+   "viewM": 8,
+   "needPxPerM": 154.6,
+   "visiblePxPerM": 0.53,
+   "ok": false
+  },
+  {
+   "inst": "inst-tower-hero#0",
+   "cls": "+x",
+   "viewM": 8,
+   "needPxPerM": 154.6,
+   "visiblePxPerM": 0.12,
+   "ok": false
+  },
+  {
+   "inst": "inst-tower-hero#0",
+   "cls": "+y",
+   "viewM": 8,
+   "needPxPerM": 154.6,
+   "visiblePxPerM": 0.83,
+   "ok": false
+  },
+  {
+   "inst": "inst-tower-hero#0",
+   "cls": "-z",
+   "viewM": 8,
+   "needPxPerM": 154.6,
+   "visiblePxPerM": 2.98,
+   "ok": false
+  },
+  {
+   "inst": "inst-tower-hero#0",
+   "cls": "+z",
+   "viewM": 8,
+   "needPxPerM": 154.6,
+   "visiblePxPerM": 2.81,
+   "ok": false
+  },
+  {
+   "inst": "inst-tower-hero#0",
+   "cls": "-x",
+   "viewM": 8,
+   "needPxPerM": 154.6,
+   "visiblePxPerM": 0.4,
+   "ok": false
+  },
+  {
+   "inst": "inst-tower-hero#0",
+   "cls": "+x",
+   "viewM": 8,
+   "needPxPerM": 154.6,
+   "visiblePxPerM": 0.09,
+   "ok": false
+  },
+  {
+   "inst": "inst-tower-hero#0",
+   "cls": "+y",
+   "viewM": 8,
+   "needPxPerM": 154.6,
+   "visiblePxPerM": 0.63,
+   "ok": false
+  }
+ ]
+}

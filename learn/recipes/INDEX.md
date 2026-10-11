@@ -12,6 +12,7 @@ Skills: [`.grok/skills/`](../../.grok/skills/). Failures already paid for: [`../
 | --- | --- | --- |
 | [align-solve-metrics.md](align-solve-metrics.md) — shared render-vs-key score, vanishing-point camera, CMA-ES | this step | synthetic FOV ±2° and pitch ±1°; both key jobs still FAIL (`steps/align-solve-1011/numbers.json`) |
 | [week2-constrained-focal.md](week2-constrained-focal.md) — focal grid when no VP pair is orthogonal | week2-1011 | FOV 88 fallback false; box IoU vs three.js 1.0; facade min alignment 0.704; placement framebuffer 0.3226 FAIL |
+| [scene-strict-1011.md](scene-strict-1011.md) — strict score plus relight-is-not-a-side-plate | scene-strict-1011 | strict selftest PASS; week-2 views strict 0.000–0.307 FAIL; placement IoU 0.2909 FAIL |
 
 ## sky
 

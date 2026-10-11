@@ -7,8 +7,50 @@ added on an axis the picture does not cover.
 """
 from __future__ import annotations
 
+import os
+
 import cv2
 import numpy as np
+
+
+# Photometric set in tools/grok-native/normals.py. Same camera, different light.
+# "left" and "right" name the light, not the face.
+SAME_CAMERA_PLATES = {
+    "relight-left.jpg",
+    "relight-right.jpg",
+    "relight-top.jpg",
+    "relight-front.jpg",
+    "clay.jpg",
+    "seg.jpg",
+}
+
+
+def plate_is_side_view(plate_bgr, key_bgr, name="", ncc_max=0.40):
+    """True only when the plate is a different camera from the key.
+
+    The relight / clay / seg files are one camera. A filename in that set is
+    never a side face. Otherwise NCC above 0.40 is the same view (the front
+    relight scores 0.48 and is still the key camera). Those pixels must not
+    be projected onto +x / -x / +z.
+    """
+    if os.path.basename(str(name)) in SAME_CAMERA_PLATES:
+        return False
+    plate = np.asarray(plate_bgr)
+    key = np.asarray(key_bgr)
+    if plate.ndim != 3 or key.ndim != 3:
+        return False
+    h, w = key.shape[:2]
+    if plate.shape[0] != h or plate.shape[1] != w:
+        plate = cv2.resize(plate, (w, h), interpolation=cv2.INTER_AREA)
+    def gray(im):
+        b, g, r = im[..., 0], im[..., 1], im[..., 2]
+        return 0.114 * b + 0.587 * g + 0.299 * r
+    a = gray(plate).astype(np.float64).ravel()
+    b = gray(key).astype(np.float64).ravel()
+    a -= a.mean()
+    b -= b.mean()
+    ncc = float((a * b).sum() / (np.linalg.norm(a) * np.linalg.norm(b) + 1e-9))
+    return ncc <= float(ncc_max)
 
 
 def plane_residual(depth, mask):

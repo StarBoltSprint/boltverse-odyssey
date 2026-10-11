@@ -23,3 +23,4 @@ Append-only. One row per step. `python3 tools/quota/quota.py` adds the row. Do n
 | 2026-10-11 | align-solve-1011 | 80bd09ad | 0 | 250 | 0 | 0 | 894168 | 207312 | n/a | 20261011-132508-tower-vision-1010.ndjson |
 | 2026-10-11 | week2-1011 | n/a | 0 | 0 | 0 | 0 | n/a | n/a | 2614.7 | events.jsonl |
 | 2026-10-11 | terrain-key2-1011 | 45e55fe7 | 0 | 0 | 0 | 0 | n/a | n/a | 2581.2 | events.jsonl |
+| 2026-10-11 | scene-strict-1011 | n/a | 0 | 0 | 0 | 0 | n/a | n/a | 3097.5 | events.jsonl |

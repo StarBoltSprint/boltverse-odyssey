@@ -88,6 +88,9 @@ try {
       textures: mem.textures ?? null,
       passes,
       visible: names,
+      seat: window.__seat || null,
+      objError: window.__objError || null,
+      mesaError: window.__mesaError || null,
     };
   });
   data.loadingText = earlyText;

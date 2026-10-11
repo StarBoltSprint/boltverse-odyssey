@@ -1,0 +1,19 @@
+{
+ "heading": 252.0,
+ "axisDeg": 72.0,
+ "contrastM": 10.786,
+ "laneHeight": 1.676,
+ "storedAvenueDeg": 78,
+ "scoreAhead": 11.903,
+ "scoreBack": 8.765,
+ "seat": [
+  -53.879,
+  9.434
+ ],
+ "seatHeight": 0.021,
+ "centroid": [
+  -55.115,
+  5.63
+ ],
+ "copiedStoredYaw": false
+}

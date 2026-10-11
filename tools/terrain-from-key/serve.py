@@ -8,6 +8,7 @@ existing preview, read only, so the before shot can load it.
 from __future__ import annotations
 
 import argparse
+import os
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -16,6 +17,8 @@ REPO = ROOT.parents[1]
 LIVE = Path("/workspace/zb-preview-1008")
 STAGING = ROOT / "staging"
 DATA = REPO / "steps" / "terrain-key2-1011" / "data"
+KC = Path(os.environ.get("PLACEMENT_STAGE", "/workspace/kc-staging/zb"))
+KC_ROOTS = ("objects1/", "mesas/", "runtime/", "sky1/", "assets/", "air.mjs")
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -27,12 +30,17 @@ class Handler(SimpleHTTPRequestHandler):
         elif raw.startswith("/data/"):
             rel = raw[len("/data/") :]
             base = DATA
+        elif any(raw.lstrip("/").startswith(root) for root in KC_ROOTS):
+            rel = raw.lstrip("/")
+            base = KC
         else:
             rel = raw.lstrip("/")
             base = STAGING
         target = (base / rel).resolve()
-        if not str(target).startswith(str(base.resolve())):
-            return str(base / "index.html")
+        allowed = [LIVE.resolve(), STAGING.resolve(), DATA.resolve(), KC.resolve()]
+        ok = any(target == root or str(target).startswith(str(root) + os.sep) for root in allowed)
+        if not ok:
+            return str(STAGING / "index.html")
         return str(target)
 
     def log_message(self, fmt, *args):
