@@ -15,7 +15,7 @@ Shared helpers for the cooks that failed on 11 Oct (fusion-fix2, terrain, placem
 
 `ensure` checks free space and keeps a 4 GiB reserve before a download. A short file is deleted and fetched again. Each process loads a model once. Depth and masks are cached by the sha256 of the image bytes under `cache/`. The second call on the same image is a disk read.
 
-Relief and fuse stay on Depth Anything V2 **Small** (`load_depth_session("dav2-small")`). Large is an extra shared model. It does not replace the small ONNX disparity.
+Relief and fuse call Depth Anything V2 **Large** (`depth_dav2_rgb`, cached). The small ONNX remains for an explicit `dav2-small` session. It is no longer the relief default.
 
 Run the loaders with the environment that has torch (`/workspace/.venv-sam2/bin/python` on this box). `status`, the frame math, the capture gate, and the stage clock run on system Python.
 

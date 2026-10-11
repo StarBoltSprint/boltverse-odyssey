@@ -1,5 +1,5 @@
 """Stage 'depth_fuse' (q16): Depth Anything V2-Small on EVERY accepted view (front/side/back/top, native res) ->
-each view's relative disparity aligned to the visual hull seen from that camera (robust affine fit, sign/side
+each view's Depth Anything V2 Large disparity aligned to the visual hull seen from that camera (robust affine fit, sign/side
 auto-checked) -> TSDF fusion on a voxel grid with silhouette carving -> fused height field (the hull carved/pushed
 by the fused depth, bounded by +-maxDev) + cross-view depth consistency report.
 python3 fuse.py <hullPrefix> <plates.json> <outPrefix> [voxel_m=0.8] [maxDev=6]"""

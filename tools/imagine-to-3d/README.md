@@ -38,12 +38,11 @@ SwiftShader runs at ~0.3 fps: wait for frames, not milliseconds.
 ## v2 pipeline (2026-10-09 evening): blocky strata + depth (`python3 run.py strata ...`)
 Stages, in order (each writes its report next to the outputs):
 1. `hull.py` - visual hull height field from the accepted Imagine views (front/side/back/top).
-2. `fuse.py` - **depth_fuse**: Depth Anything V2-Small (ONNX, onnxruntime CPU, `/workspace/models/depth/dav2-small.onnx`;
-   MiDaS v2.1 small fallback) on EVERY accepted view at native resolution; each view's relative disparity is affine-aligned
+2. `fuse.py` - **depth_fuse**: Depth Anything V2 Large (`depth_relief.session` → `depth_dav2_rgb`, cached torch weights) on EVERY accepted view at native resolution; each view's relative depth is affine-aligned
    to the hull seen from that camera (camera side auto-checked by the correlation sign), fused in a TSDF (0.8 m voxels)
    with silhouette carving -> fused height field `<name>F-H.npy` (bounded to hull +-6 m). Check: cross-view depth
    consistency median < 8 %, p90 < 12 % of the object extent (mesaA: 4.52 % / 10.14 %).
-3. `depth_relief.py` - **depth_relief**: DA-V2 on each section plate (native res) -> band-pass (0.25-4 m) relief in metres,
+3. `depth_relief.py` - **depth_relief**: DA V2 Large on each section plate (native res) -> band-pass (0.25-4 m) relief in metres,
    per-plate p99 normalisation, amplitude per type (mesa +-1.5 m, tower +-0.3 m, rock +-0.6 m), gradient-limited so the
    texture stretch on the displaced surface stays <= 1.3. Used ONLY to displace the shell in/out; the volume is never
    rebuilt from depth (Grok q15). Check: relief std > 8 % of amplitude, spikes < 0.1 %, p99.9 gradient <= limit.

@@ -656,28 +656,28 @@
    "cameras": [],
    "transform": {
     "position": [
-     3.4167783000000016,
+     -21.09075505,
      null,
-     -32.0242538
+     -25.0889944
     ],
     "rotationDeg": {
-     "yaw": 2.0,
+     "yaw": 352.0,
      "leanDeg": 0,
      "leanAxisDeg": 90
     },
     "scale": [
-     0.896,
-     0.896,
-     0.896
+     0.448,
+     0.448,
+     0.448
     ]
    },
    "layout": {
     "module": "m2",
     "lod": 0,
-    "s": 10.0,
-    "lateral": -32.01,
+    "s": -15.414,
+    "lateral": -30.179,
     "sinkWant": 4.31,
-    "height": 88.39
+    "height": 44.19
    },
    "fidelity": {},
    "wake": {
@@ -685,13 +685,13 @@
     "enabled": false
    },
    "placementFromKey": {
-    "from": "tower-l3",
+    "from": "tower-l2",
     "raw": {
-     "s": -26.475,
-     "lateral": -14.612,
-     "Z": 25.49,
-     "heightM": 24.57,
-     "yaw": 232.46
+     "s": -15.414,
+     "lateral": -30.179,
+     "Z": 36.57,
+     "heightM": 22.35,
+     "yaw": 220.85
     }
    }
   },
@@ -706,43 +706,33 @@
    "cameras": [],
    "transform": {
     "position": [
-     141.93533151,
+     166.2736645212773,
      null,
-     13.602548440000007
+     12.7011605363336
     ],
     "rotationDeg": {
-     "yaw": 10.0,
+     "yaw": 40,
      "leanDeg": 3.44,
      "leanAxisDeg": 90
     },
     "scale": [
-     1.308,
-     1.308,
-     1.308
+     1.09,
+     1.09,
+     1.09
     ]
    },
    "layout": {
     "module": "m4",
     "lod": 0,
-    "s": 136.006,
-    "lateral": 40.609,
+    "s": 160,
+    "lateral": 44.64555181475382,
     "sinkWant": 4.72,
-    "height": 111.18
+    "height": 92.65
    },
    "fidelity": {},
    "wake": {
     "type": "placeholder",
     "enabled": false
-   },
-   "placementFromKey": {
-    "from": "tower-r2",
-    "raw": {
-     "s": -33.452,
-     "lateral": 21.559,
-     "Z": 18.54,
-     "heightM": 13.08,
-     "yaw": 310.28
-    }
    }
   },
   {
@@ -756,28 +746,28 @@
    "cameras": [],
    "transform": {
     "position": [
-     64.91228606000001,
+     -8.51952828,
      null,
-     -53.98595326
+     -19.32410372
     ],
     "rotationDeg": {
-     "yaw": 78.0,
+     "yaw": 8.0,
      "leanDeg": 0,
      "leanAxisDeg": 90
     },
     "scale": [
-     0.896,
-     0.896,
-     0.896
+     0.448,
+     0.448,
+     0.448
     ]
    },
    "layout": {
     "module": "m3",
     "lod": 0,
-    "s": 74.718,
-    "lateral": -41.064,
+    "s": -4.316,
+    "lateral": -22.0,
     "sinkWant": 5.27,
-    "height": 103.75
+    "height": 51.88
    },
    "fidelity": {},
    "wake": {
@@ -785,13 +775,13 @@
     "enabled": false
    },
    "placementFromKey": {
-    "from": "tower-l1",
+    "from": "tower-l4",
     "raw": {
-     "s": -25.627,
-     "lateral": -29.609,
-     "Z": 26.41,
-     "heightM": 20.1,
-     "yaw": 212.11
+     "s": -4.316,
+     "lateral": -9.119,
+     "Z": 47.9,
+     "heightM": 13.84,
+     "yaw": 250.16
     }
    }
   },
@@ -806,28 +796,28 @@
    "cameras": [],
    "transform": {
     "position": [
-     211.55096991,
+     93.594038,
      null,
-     10.691121039999999
+     4.564261999999999
     ],
     "rotationDeg": {
-     "yaw": 26.0,
+     "yaw": 16.0,
      "leanDeg": 0,
      "leanAxisDeg": 90
     },
     "scale": [
-     1.304,
-     1.304,
-     1.304
+     0.884,
+     0.884,
+     0.884
     ]
    },
    "layout": {
     "module": "m6",
     "lod": 0,
-    "s": 204.706,
-    "lateral": 51.829,
+    "s": 90.6,
+    "lateral": 22.0,
     "sinkWant": 3.68,
-    "height": 78.26
+    "height": 53.06
    },
    "fidelity": {},
    "wake": {
@@ -835,13 +825,13 @@
     "enabled": false
    },
    "placementFromKey": {
-    "from": "tower-r1",
+    "from": "tower-mid",
     "raw": {
-     "s": 50.353,
-     "lateral": 74.537,
-     "Z": 102.33,
-     "heightM": 58.56,
-     "yaw": 295.13
+     "s": 90.6,
+     "lateral": 0.191,
+     "Z": 142.54,
+     "heightM": 53.06,
+     "yaw": 259.32
     }
    }
   },
@@ -856,43 +846,33 @@
    "cameras": [],
    "transform": {
     "position": [
-     153.63421350000002,
+     176.29765593479095,
      null,
-     -74.06422520000001
+     -82.87366982116178
     ],
     "rotationDeg": {
-     "yaw": 2.0,
+     "yaw": 32,
      "leanDeg": 0,
      "leanAxisDeg": 90
     },
     "scale": [
-     1.276,
-     1.276,
-     1.276
+     1.12,
+     1.12,
+     1.12
     ]
    },
    "layout": {
     "module": "m2",
     "lod": 0,
-    "s": 165.676,
-    "lateral": -42.774,
+    "s": 189.6758584802157,
+    "lateral": -46.810791903918535,
     "sinkWant": 5.44,
-    "height": 133.62
+    "height": 117.32500029927697
    },
    "fidelity": {},
    "wake": {
     "type": "placeholder",
     "enabled": false
-   },
-   "placementFromKey": {
-    "from": "tower-l2",
-    "raw": {
-     "s": -22.864,
-     "lateral": -24.58,
-     "Z": 29.12,
-     "heightM": 17.88,
-     "yaw": 220.75
-    }
    }
   },
   {
@@ -906,33 +886,43 @@
    "cameras": [],
    "transform": {
     "position": [
-     297.8240272032018,
+     19.47816526,
      null,
-     -21.571866937762433
+     44.24218434
     ],
     "rotationDeg": {
-     "yaw": 40,
+     "yaw": 0.0,
      "leanDeg": 4.96,
      "leanAxisDeg": 90
     },
     "scale": [
-     0.859,
-     0.859,
-     0.859
+     0.344,
+     0.344,
+     0.344
     ]
    },
    "layout": {
     "module": "m3",
     "lod": 0,
-    "s": 295.8019447378707,
-    "lateral": 37.70624327743159,
+    "s": 9.854,
+    "lateral": 45.832,
     "sinkWant": 4.26,
-    "height": 94.49000000724301
+    "height": 37.8
    },
    "fidelity": {},
    "wake": {
     "type": "placeholder",
     "enabled": false
+   },
+   "placementFromKey": {
+    "from": "tower-r1",
+    "raw": {
+     "s": 9.854,
+     "lateral": 45.832,
+     "Z": 61.84,
+     "heightM": 28.34,
+     "yaw": 296.12
+    }
    }
   },
   {
@@ -946,28 +936,28 @@
    "cameras": [],
    "transform": {
     "position": [
-     231.57673591000002,
+     -28.78468583,
      null,
-     -85.98459456
+     -25.64132787
     ],
     "rotationDeg": {
-     "yaw": 18.0,
+     "yaw": 88.0,
      "leanDeg": 0,
      "leanAxisDeg": 90
     },
     "scale": [
-     1.344,
-     1.344,
-     1.344
+     0.448,
+     0.448,
+     0.448
     ]
    },
    "layout": {
     "module": "m4",
     "lod": 0,
-    "s": 244.394,
-    "lateral": -38.683,
+    "s": -22.825,
+    "lateral": -32.274,
     "sinkWant": 4.03,
-    "height": 115.16
+    "height": 38.39
    },
    "fidelity": {},
    "wake": {
@@ -975,13 +965,13 @@
     "enabled": false
    },
    "placementFromKey": {
-    "from": "tower-l4",
+    "from": "tower-l1",
     "raw": {
-     "s": -12.578,
-     "lateral": -12.995,
-     "Z": 39.4,
-     "heightM": 22.77,
-     "yaw": 243.09
+     "s": -22.825,
+     "lateral": -32.274,
+     "Z": 29.21,
+     "heightM": 22.23,
+     "yaw": 212.34
     }
    }
   },
@@ -1116,33 +1106,43 @@
    "cameras": [],
    "transform": {
     "position": [
-     429.00081750409896,
+     -27.55476549,
      null,
-     -126.41191825811298
+     -15.39141551
     ],
     "rotationDeg": {
-     "yaw": 48,
+     "yaw": 8.0,
      "leanDeg": 0,
      "leanAxisDeg": 90
     },
     "scale": [
-     1.12,
-     1.12,
-     1.12
+     0.448,
+     0.448,
+     0.448
     ]
    },
    "layout": {
     "module": "m4",
     "lod": 0,
-    "s": 445.90999974491103,
-    "lateral": -38.33031919145288,
+    "s": -23.753,
+    "lateral": -22.0,
     "sinkWant": 4.18,
-    "height": 95.795
+    "height": 38.32
    },
    "fidelity": {},
    "wake": {
     "type": "placeholder",
     "enabled": false
+   },
+   "placementFromKey": {
+    "from": "tower-l3",
+    "raw": {
+     "s": -23.753,
+     "lateral": -15.693,
+     "Z": 28.21,
+     "heightM": 27.19,
+     "yaw": 232.85
+    }
    }
   },
   {
@@ -1156,33 +1156,43 @@
    "cameras": [],
    "transform": {
     "position": [
-     488.7508178349529,
+     -28.431459329999996,
      null,
-     -62.967220925621994
+     29.77478233
     ],
     "rotationDeg": {
-     "yaw": 56,
+     "yaw": 16.0,
      "leanDeg": 2.65,
      "leanAxisDeg": 90
     },
     "scale": [
-     0.997,
-     0.997,
-     0.997
+     0.399,
+     0.399,
+     0.399
     ]
    },
    "layout": {
     "module": "m6",
     "lod": 0,
-    "s": 491.16386743993314,
-    "lateral": 35.79914269588892,
+    "s": -34.001,
+    "lateral": 22.0,
     "sinkWant": 4.01,
-    "height": 59.82
+    "height": 23.93
    },
    "fidelity": {},
    "wake": {
     "type": "placeholder",
     "enabled": false
+   },
+   "placementFromKey": {
+    "from": "tower-r2",
+    "raw": {
+     "s": -39.972,
+     "lateral": 12.937,
+     "Z": 12.02,
+     "heightM": 8.55,
+     "yaw": 309.85
+    }
    }
   },
   {
@@ -1596,26 +1606,26 @@
    "cameras": [],
    "transform": {
     "position": [
-     73.15138251,
+     6.55473067,
      -5.147794418336001,
-     36.29916244
+     16.41229233
     ],
     "rotationDeg": {
-     "yaw": 37.0,
+     "yaw": 27.0,
      "leanDeg": 0,
      "leanAxisDeg": 90
     },
     "scale": [
-     0.87,
-     0.87,
-     0.87
+     0.45,
+     0.45,
+     0.45
     ]
    },
    "layout": {
-    "s": 64.006,
-    "lateral": 48.909,
+    "s": 2.999,
+    "lateral": 16.0,
     "sinkWant": 4.2,
-    "height": 130.53,
+    "height": 67.5,
     "baseY": -5.147794418336001
    },
    "fidelity": {},
@@ -1626,11 +1636,11 @@
    "placementFromKey": {
     "from": "spire",
     "raw": {
-     "s": -30.355,
-     "lateral": 6.946,
-     "Z": 21.58,
-     "heightM": 24.28,
-     "yaw": 281.4
+     "s": -24.705,
+     "lateral": 9.733,
+     "Z": 27.22,
+     "heightM": 31.15,
+     "yaw": 282.07
     }
    }
   },
@@ -1646,31 +1656,42 @@
    "cameras": [],
    "transform": {
     "position": [
-     76.78780000000002,
+     14.60284,
      null,
-     -167.8143
+     -114.07134
     ],
     "rotationDeg": {
-     "yaw": -35.34293794438635
+     "yaw": 207.2
     },
     "scale": [
-     1,
-     1,
-     1
+     1.25,
+     1.25,
+     1.25
     ],
     "layoutScale": 1.25
    },
    "layout": {
-    "s": 110,
+    "s": 38.0,
     "lat": -150,
     "face": true,
     "mirror": false,
-    "scale": 1.25
+    "scale": 1.25,
+    "lateral": -110.0
    },
    "fidelity": {},
    "wake": {
     "type": "placeholder",
     "enabled": false
+   },
+   "placementFromKey": {
+    "from": "mesa-left",
+    "raw": {
+     "s": -33.491,
+     "lateral": -25.091,
+     "Z": 18.5,
+     "heightM": 12.33,
+     "yaw": 207.16
+    }
    }
   },
   {
@@ -1724,42 +1745,31 @@
    "cameras": [],
    "transform": {
     "position": [
-     195.80084680000002,
+     251.8368,
      null,
-     -329.3615448
+     -306.2183
     ],
     "rotationDeg": {
-     "yaw": 330.0
+     "yaw": -43.558730779751855
     },
     "scale": [
-     1.6,
-     1.6,
-     1.6
+     -1,
+     1,
+     1
     ],
     "layoutScale": 1.6
    },
    "layout": {
-    "s": 260.0,
+    "s": 310,
     "lat": -250,
     "face": true,
     "mirror": true,
-    "scale": 1.6,
-    "lateral": -283.96
+    "scale": 1.6
    },
    "fidelity": {},
    "wake": {
     "type": "placeholder",
     "enabled": false
-   },
-   "placementFromKey": {
-    "from": "mesa-left",
-    "raw": {
-     "s": -36.109,
-     "lateral": -21.822,
-     "Z": 15.88,
-     "heightM": 10.59,
-     "yaw": 207.22
-    }
    }
   },
   {
@@ -1813,42 +1823,31 @@
    "cameras": [],
    "transform": {
     "position": [
-     120.0606965,
+     152.76985000000002,
      null,
-     180.01802150000003
+     189.6594
     ],
     "rotationDeg": {
-     "yaw": 230.0
+     "yaw": 200
     },
     "scale": [
-     1.35,
-     1.35,
-     1.35
+     -1,
+     1,
+     1
     ],
     "layoutScale": 1.35
    },
    "layout": {
-    "s": 80.01,
+    "s": 110,
     "lat": 215,
     "face": false,
     "mirror": true,
-    "scale": 1.35,
-    "lateral": 198.96
+    "scale": 1.35
    },
    "fidelity": {},
    "wake": {
     "type": "placeholder",
     "enabled": false
-   },
-   "placementFromKey": {
-    "from": "mesa-right",
-    "raw": {
-     "s": -25.644,
-     "lateral": 42.527,
-     "Z": 26.33,
-     "heightM": 11.78,
-     "yaw": 317.65
-    }
    }
   },
   {
@@ -1980,31 +1979,42 @@
    "cameras": [],
    "transform": {
     "position": [
-     -506.8829,
+     60.40024,
      null,
-     116.35440000000001
+     101.39226000000001
     ],
     "rotationDeg": {
-     "yaw": 80
+     "yaw": 40.0
     },
     "scale": [
-     1,
-     1,
-     1
+     2.2,
+     2.2,
+     2.2
     ],
     "layoutScale": 2.2
    },
    "layout": {
-    "s": -520,
+    "s": 38.0,
     "lat": 10,
     "face": false,
     "mirror": false,
-    "scale": 2.2
+    "scale": 2.2,
+    "lateral": 110.0
    },
    "fidelity": {},
    "wake": {
     "type": "placeholder",
     "enabled": false
+   },
+   "placementFromKey": {
+    "from": "mesa-right",
+    "raw": {
+     "s": -20.245,
+     "lateral": 51.609,
+     "Z": 31.73,
+     "heightM": 14.28,
+     "yaw": 317.61
+    }
    }
   },
   {
@@ -2190,12 +2200,12 @@
    "reason": "no wreck mesh in objects1 or the live layout",
    "transform": {
     "position": [
-     -39.695,
-     6.352,
-     13.138
+     -36.639,
+     -1.614,
+     13.713
     ],
     "rotationDeg": {
-     "yaw": 287.08,
+     "yaw": 285.75,
      "leanDeg": 0,
      "leanAxisDeg": 90
     },
@@ -2206,19 +2216,19 @@
     ]
    },
    "layout": {
-    "s": -41.56,
-    "lateral": 3.452,
-    "height": 4.78
+    "s": -38.689,
+    "lateral": 4.631,
+    "height": 6.06
    },
    "imageBase": [
-    854.0,
-    504.0
+    843.0,
+    503.0
    ],
    "rawLift": {
-    "s": -41.56,
-    "lateral": 3.452,
-    "Z": 10.37,
-    "heightM": 4.78
+    "s": -38.689,
+    "lateral": 4.631,
+    "Z": 13.22,
+    "heightM": 6.06
    }
   },
   {
@@ -2228,12 +2238,12 @@
    "reason": "no arch mesh in objects1 or the live layout",
    "transform": {
     "position": [
-     2.807,
-     6.903,
-     40.526
+     14.737,
+     -0.885,
+     46.811
     ],
     "rotationDeg": {
-     "yaw": 299.81,
+     "yaw": 299.45,
      "leanDeg": 0,
      "leanAxisDeg": 90
     },
@@ -2244,19 +2254,19 @@
     ]
    },
    "layout": {
-    "s": -5.681,
-    "lateral": 38.828,
-    "height": 14.01
+    "s": 4.683,
+    "lateral": 47.386,
+    "height": 13.68
    },
    "imageBase": [
-    964.0,
-    370.0
+    960.0,
+    371.0
    ],
    "rawLift": {
-    "s": -5.681,
-    "lateral": 38.828,
-    "Z": 46.27,
-    "heightM": 14.01
+    "s": 4.683,
+    "lateral": 47.386,
+    "Z": 56.62,
+    "heightM": 13.68
    }
   }
  ],
@@ -3594,15 +3604,15 @@
   "applied": true,
   "sky": {
    "sun": {
-    "azimuthDeg": 112.7,
-    "elevationDeg": 7.76,
+    "azimuthDeg": 113.77,
+    "elevationDeg": 6.33,
     "pixel": [
-     883.0,
-     286.5
+     894.0,
+     296.0
     ]
    },
    "planet": {
-    "azimuthDeg": 292.7,
+    "azimuthDeg": 293.77,
     "elevationDeg": 22.0,
     "radiusDeg": 13,
     "inKeyFrame": false
@@ -3627,16 +3637,16 @@
      0.46,
      0.86
     ],
-    "score": 0.7009,
-    "pixels": 31519,
+    "score": 0.8381,
+    "pixels": 21269,
     "maskBox": [
      0,
      408,
-     542,
+     546,
      620
     ],
     "status": "depth-reject",
-    "Z": 5.592543377171691
+    "Z": 5.563718795776367
    },
    {
     "id": "wreck",
@@ -3644,27 +3654,27 @@
     "label": 2,
     "status": "lifted",
     "imageBase": [
-     854.0,
-     504.0
+     843.0,
+     503.0
     ],
     "maskBox": [
-     736,
+     738,
      338,
      1268,
-     513
+     512
     ],
-    "pixels": 38807,
-    "Z": 10.37,
+    "pixels": 38207,
+    "Z": 13.22,
     "position": [
-     -39.695,
-     6.352,
-     13.138
+     -36.639,
+     -1.614,
+     13.713
     ],
-    "s": -41.56,
-    "lateral": 3.452,
-    "yaw": 287.08,
-    "heightM": 4.78,
-    "widthPx": 532.0
+    "s": -38.689,
+    "lateral": 4.631,
+    "yaw": 285.75,
+    "heightM": 6.06,
+    "widthPx": 530.0
    },
    {
     "id": "mesa-right",
@@ -3672,26 +3682,26 @@
     "label": 3,
     "status": "lifted",
     "imageBase": [
-     1257.0,
-     356.0
+     1256.0,
+     357.0
     ],
     "maskBox": [
-     998,
-     145,
+     1006,
+     195,
      1279,
-     368
+     379
     ],
-    "pixels": 33191,
-    "Z": 26.33,
+    "pixels": 24971,
+    "Z": 31.73,
     "position": [
-     -15.974,
-     7.838,
-     48.188
+     -8.796,
+     0.34,
+     55.99
     ],
-    "s": -25.644,
-    "lateral": 42.527,
-    "yaw": 317.65,
-    "heightM": 11.78,
+    "s": -20.245,
+    "lateral": 51.609,
+    "yaw": 317.61,
+    "heightM": 14.28,
     "widthPx": 257.0
    },
    {
@@ -3700,26 +3710,26 @@
     "label": 4,
     "status": "lifted",
     "imageBase": [
-     801.0,
+     806.0,
      414.0
     ],
     "maskBox": [
-     745,
-     9,
-     860,
+     748,
+     2,
+     863,
      418
     ],
-    "pixels": 21944,
-    "Z": 21.58,
+    "pixels": 20736,
+    "Z": 27.22,
     "position": [
-     -27.995,
-     7.165,
-     14.294
+     -21.881,
+     -0.627,
+     15.879
     ],
-    "s": -30.355,
-    "lateral": 6.946,
-    "yaw": 281.4,
-    "heightM": 24.28,
+    "s": -24.705,
+    "lateral": 9.733,
+    "yaw": 282.07,
+    "heightM": 31.15,
     "widthPx": 115.0
    },
    {
@@ -3728,26 +3738,26 @@
     "label": 5,
     "status": "lifted",
     "imageBase": [
-     200.0,
+     199.0,
      398.0
     ],
     "maskBox": [
      0,
      158,
      231,
-     413
+     415
     ],
-    "pixels": 36018,
-    "Z": 15.88,
+    "pixels": 36822,
+    "Z": 18.5,
     "position": [
-     -39.618,
-     11.02,
-     -12.717
+     -37.735,
+     4.249,
+     -16.449
     ],
-    "s": -36.109,
-    "lateral": -21.822,
-    "yaw": 207.22,
-    "heightM": 10.59,
+    "s": -33.491,
+    "lateral": -25.091,
+    "yaw": 207.16,
+    "heightM": 12.33,
     "widthPx": 231.0
    },
    {
@@ -3756,27 +3766,27 @@
     "label": 6,
     "status": "lifted",
     "imageBase": [
-     470.0,
+     473.0,
      397.0
     ],
     "maskBox": [
      413,
      50,
-     528,
+     533,
      404
     ],
-    "pixels": 29320,
-    "Z": 25.49,
+    "pixels": 30674,
+    "Z": 28.21,
     "position": [
-     -28.683,
-     9.64,
-     -7.605
+     -26.242,
+     2.686,
+     -9.214
     ],
-    "s": -26.475,
-    "lateral": -14.612,
-    "yaw": 232.46,
-    "heightM": 24.57,
-    "widthPx": 115.0
+    "s": -23.753,
+    "lateral": -15.693,
+    "yaw": 232.85,
+    "heightM": 27.19,
+    "widthPx": 120.0
    },
    {
     "id": "slab-l",
@@ -3795,8 +3805,8 @@
      0.24,
      0.99
     ],
-    "score": 1.0235,
-    "pixels": 35720,
+    "score": 1.0182,
+    "pixels": 35865,
     "maskBox": [
      12,
      532,
@@ -3804,7 +3814,7 @@
      713
     ],
     "status": "depth-reject",
-    "Z": 3.348784191175169
+    "Z": 1.914341926574707
    },
    {
     "id": "tower-l1",
@@ -3812,26 +3822,26 @@
     "label": 8,
     "status": "lifted",
     "imageBase": [
-     267.0,
-     353.0
+     270.0,
+     354.0
     ],
     "maskBox": [
      185,
-     79,
+     80,
      327,
      360
     ],
-    "pixels": 22873,
-    "Z": 26.41,
+    "pixels": 22193,
+    "Z": 29.21,
     "position": [
-     -30.974,
-     14.043,
-     -22.464
+     -28.785,
+     7.475,
+     -25.641
     ],
-    "s": -25.627,
-    "lateral": -29.609,
-    "yaw": 212.11,
-    "heightM": 20.1,
+    "s": -22.825,
+    "lateral": -32.274,
+    "yaw": 212.34,
+    "heightM": 22.23,
     "widthPx": 142.0
    },
    {
@@ -3840,26 +3850,26 @@
     "label": 9,
     "status": "lifted",
     "imageBase": [
-     1106.0,
-     349.0
+     1099.0,
+     351.0
     ],
     "maskBox": [
-     1081,
+     1080,
      95,
-     1187,
-     361
+     1186,
+     366
     ],
-    "pixels": 21079,
-    "Z": 18.54,
+    "pixels": 21307,
+    "Z": 12.02,
     "position": [
-     -27.986,
-     9.718,
-     29.232
+     -36.165,
+     3.245,
+     22.107
     ],
-    "s": -33.452,
-    "lateral": 21.559,
-    "yaw": 310.28,
-    "heightM": 13.08,
+    "s": -39.972,
+    "lateral": 12.937,
+    "yaw": 309.85,
+    "heightM": 8.55,
     "widthPx": 106.0
    },
    {
@@ -3879,8 +3889,8 @@
      0.93,
      0.97
     ],
-    "score": 0.939,
-    "pixels": 31290,
+    "score": 0.9492,
+    "pixels": 31429,
     "maskBox": [
      972,
      532,
@@ -3888,7 +3898,7 @@
      699
     ],
     "status": "depth-reject",
-    "Z": 3.874284230721539
+    "Z": 3.06796932220459
    },
    {
     "id": "tower-l2",
@@ -3896,27 +3906,27 @@
     "label": 11,
     "status": "lifted",
     "imageBase": [
-     367.0,
+     368.0,
      385.0
     ],
     "maskBox": [
      329,
-     164,
-     406,
+     165,
+     409,
      389
     ],
-    "pixels": 12554,
-    "Z": 29.12,
+    "pixels": 12481,
+    "Z": 36.57,
     "position": [
-     -27.222,
-     11.128,
-     -18.098
+     -21.091,
+     4.391,
+     -25.089
     ],
-    "s": -22.864,
-    "lateral": -24.58,
-    "yaw": 220.75,
-    "heightM": 17.88,
-    "widthPx": 77.0
+    "s": -15.414,
+    "lateral": -30.179,
+    "yaw": 220.85,
+    "heightM": 22.35,
+    "widthPx": 80.0
    },
    {
     "id": "tower-r1",
@@ -3924,27 +3934,27 @@
     "label": 12,
     "status": "lifted",
     "imageBase": [
-     913.0,
-     356.0
+     923.0,
+     357.0
     ],
     "maskBox": [
-     845,
-     115,
+     847,
+     161,
      960,
      360
     ],
-    "pixels": 10620,
-    "Z": 102.33,
+    "pixels": 9534,
+    "Z": 61.84,
     "position": [
-     65.116,
-     7.333,
-     64.161
+     19.478,
+     1.586,
+     44.242
     ],
-    "s": 50.353,
-    "lateral": 74.537,
-    "yaw": 295.13,
-    "heightM": 58.56,
-    "widthPx": 115.0
+    "s": 9.854,
+    "lateral": 45.832,
+    "yaw": 296.12,
+    "heightM": 28.34,
+    "widthPx": 113.0
    },
    {
     "id": "arch",
@@ -3952,55 +3962,55 @@
     "label": 13,
     "status": "lifted",
     "imageBase": [
-     964.0,
-     370.0
+     960.0,
+     371.0
     ],
     "maskBox": [
      870,
-     261,
+     284,
      1076,
      379
     ],
-    "pixels": 13843,
-    "Z": 46.27,
+    "pixels": 13193,
+    "Z": 56.62,
     "position": [
-     2.807,
-     6.903,
-     40.526
+     14.737,
+     -0.885,
+     46.811
     ],
-    "s": -5.681,
-    "lateral": 38.828,
-    "yaw": 299.81,
-    "heightM": 14.01,
+    "s": 4.683,
+    "lateral": 47.386,
+    "yaw": 299.45,
+    "heightM": 13.68,
     "widthPx": 206.0
    },
    {
     "id": "tower-mid",
     "kind": "tower",
-    "lift": true,
     "label": 14,
-    "box": [
-     588,
-     201,
-     704,
-     404
+    "status": "lifted",
+    "imageBase": [
+     649.0,
+     371.0
     ],
-    "boxFrac": [
-     0.46,
-     0.28,
-     0.55,
-     0.56
-    ],
-    "score": 0.9181,
-    "pixels": 13704,
     "maskBox": [
      588,
-     223,
+     237,
      704,
-     402
+     398
     ],
-    "status": "depth-reject",
-    "Z": 279161.8507062128
+    "pixels": 7305,
+    "Z": 142.54,
+    "position": [
+     89.054,
+     1.866,
+     -16.795
+    ],
+    "s": 90.6,
+    "lateral": 0.191,
+    "yaw": 259.32,
+    "heightM": 53.06,
+    "widthPx": 116.0
    },
    {
     "id": "tower-l4",
@@ -4008,27 +4018,27 @@
     "label": 15,
     "status": "lifted",
     "imageBase": [
-     545.0,
-     378.0
+     583.0,
+     273.0
     ],
     "maskBox": [
      522,
-     170,
-     594,
-     389
+     169,
+     598,
+     346
     ],
-    "pixels": 8488,
-    "Z": 39.4,
+    "pixels": 1787,
+    "Z": 47.9,
     "position": [
-     -14.736,
-     10.396,
-     -8.833
+     -5.838,
+     17.001,
+     -6.709
     ],
-    "s": -12.578,
-    "lateral": -12.995,
-    "yaw": 243.09,
-    "heightM": 22.77,
-    "widthPx": 72.0
+    "s": -4.316,
+    "lateral": -9.119,
+    "yaw": 250.16,
+    "heightM": 13.84,
+    "widthPx": 76.0
    },
    {
     "id": "sun",
@@ -4047,13 +4057,13 @@
      0.76,
      0.48
     ],
-    "score": 0.412,
-    "pixels": 2810,
+    "score": 0.7066,
+    "pixels": 6434,
     "maskBox": [
-     793,
-     244,
+     815,
+     246,
      973,
-     329
+     346
     ],
     "status": "sky-sample"
    },
@@ -4074,217 +4084,264 @@
      0.78,
      0.26
     ],
-    "score": 0.8216,
-    "pixels": 5339,
+    "score": 0.8803,
+    "pixels": 4953,
     "maskBox": [
-     902,
-     89,
-     990,
-     186
+     912,
+     88,
+     989,
+     185
     ],
     "status": "sky-sample"
    }
   ],
   "placed": [
    {
-    "id": "R-mid",
+    "id": "B-far",
     "from": "mesa-right",
     "kind": "mesa",
-    "s": 80.01,
-    "lateral": 198.96,
-    "scale": 1.35,
-    "yaw": 230.0,
-    "originS": 110.0,
-    "originLat": 215.0,
-    "originScale": 1.35,
-    "originYaw": 200.0,
+    "s": 38.0,
+    "lateral": 110.0,
+    "scale": 2.2,
+    "yaw": 40.0,
+    "imageU": 1256.0,
+    "imageV": 357.0,
+    "originS": -520.0,
+    "originLat": 10.0,
+    "originScale": 2.2,
+    "originYaw": 80.0,
     "raw": {
-     "s": -25.644,
-     "lateral": 42.527,
-     "Z": 26.33,
-     "heightM": 11.78,
-     "yaw": 317.65
+     "s": -20.245,
+     "lateral": 51.609,
+     "Z": 31.73,
+     "heightM": 14.28,
+     "yaw": 317.61
     }
    },
    {
     "id": "spire",
     "from": "spire",
     "kind": "spire",
-    "s": 64.006,
-    "lateral": 48.909,
-    "scale": 0.87,
-    "yaw": 37.0,
-    "height": 130.53,
+    "s": 2.999,
+    "lateral": 16.0,
+    "scale": 0.45,
+    "yaw": 27.0,
+    "height": 67.5,
+    "imageU": 806.0,
+    "imageV": 414.0,
     "originS": 88.0,
     "originLat": 53.01538505554201,
     "originScale": 1.0,
     "originYaw": 67.0,
     "raw": {
-     "s": -30.355,
-     "lateral": 6.946,
-     "Z": 21.58,
-     "heightM": 24.28,
-     "yaw": 281.4
+     "s": -24.705,
+     "lateral": 9.733,
+     "Z": 27.22,
+     "heightM": 31.15,
+     "yaw": 282.07
     }
    },
    {
-    "id": "L-far",
+    "id": "L-mid",
     "from": "mesa-left",
     "kind": "mesa",
-    "s": 260.0,
-    "lateral": -283.96,
-    "scale": 1.6,
-    "yaw": 330.0,
-    "originS": 290.0,
-    "originLat": -300.0,
-    "originScale": 1.6,
-    "originYaw": 0.0,
+    "s": 38.0,
+    "lateral": -110.0,
+    "scale": 1.25,
+    "yaw": 207.2,
+    "imageU": 199.0,
+    "imageV": 398.0,
+    "originS": 50.0,
+    "originLat": -170.0,
+    "originScale": 1.25,
+    "originYaw": 180.0,
     "raw": {
-     "s": -36.109,
-     "lateral": -21.822,
-     "Z": 15.88,
-     "heightM": 10.59,
-     "yaw": 207.22
+     "s": -33.491,
+     "lateral": -25.091,
+     "Z": 18.5,
+     "heightM": 12.33,
+     "yaw": 207.16
     }
    },
    {
-    "id": "t0-m2",
+    "id": "t10-m4",
     "from": "tower-l3",
     "kind": "tower",
-    "s": 10.0,
-    "lateral": -32.01,
-    "scale": 0.896,
-    "yaw": 2.0,
-    "height": 88.39,
-    "originS": 10.0,
-    "originLat": -43.56763099211062,
-    "originScale": 1.12,
-    "originYaw": 32.0,
-    "raw": {
-     "s": -26.475,
-     "lateral": -14.612,
-     "Z": 25.49,
-     "heightM": 24.57,
-     "yaw": 232.46
-    }
-   },
-   {
-    "id": "t2-m3",
-    "from": "tower-l1",
-    "kind": "tower",
-    "s": 74.718,
-    "lateral": -41.064,
-    "scale": 0.896,
-    "yaw": 78.0,
-    "height": 103.75,
-    "originS": 98.71808075912435,
-    "originLat": -45.101253946678526,
+    "s": -23.753,
+    "lateral": -22.0,
+    "scale": 0.448,
+    "yaw": 8.0,
+    "height": 38.32,
+    "imageU": 473.0,
+    "imageV": 397.0,
+    "originS": 445.90999974491103,
+    "originLat": -38.33031919145288,
     "originScale": 1.12,
     "originYaw": 48.0,
     "raw": {
-     "s": -25.627,
-     "lateral": -29.609,
-     "Z": 26.41,
-     "heightM": 20.1,
-     "yaw": 212.11
-    }
-   },
-   {
-    "id": "t1-m4",
-    "from": "tower-r2",
-    "kind": "tower",
-    "s": 136.006,
-    "lateral": 40.609,
-    "scale": 1.308,
-    "yaw": 10.0,
-    "height": 111.18,
-    "originS": 160.0,
-    "originLat": 44.64555181475382,
-    "originScale": 1.09,
-    "originYaw": 40.0,
-    "raw": {
-     "s": -33.452,
-     "lateral": 21.559,
-     "Z": 18.54,
-     "heightM": 13.08,
-     "yaw": 310.28
-    }
-   },
-   {
-    "id": "t4-m2",
-    "from": "tower-l2",
-    "kind": "tower",
-    "s": 165.676,
-    "lateral": -42.774,
-    "scale": 1.276,
-    "yaw": 2.0,
-    "height": 133.62,
-    "originS": 189.6758584802157,
-    "originLat": -46.810791903918535,
-    "originScale": 1.12,
-    "originYaw": 32.0,
-    "raw": {
-     "s": -22.864,
-     "lateral": -24.58,
-     "Z": 29.12,
-     "heightM": 17.88,
-     "yaw": 220.75
-    }
-   },
-   {
-    "id": "t3-m6",
-    "from": "tower-r1",
-    "kind": "tower",
-    "s": 204.706,
-    "lateral": 51.829,
-    "scale": 1.304,
-    "yaw": 26.0,
-    "height": 78.26,
-    "originS": 228.70047163846684,
-    "originLat": 39.829451668763035,
-    "originScale": 1.087,
-    "originYaw": 56.0,
-    "raw": {
-     "s": 50.353,
-     "lateral": 74.537,
-     "Z": 102.33,
-     "heightM": 58.56,
-     "yaw": 295.13
+     "s": -23.753,
+     "lateral": -15.693,
+     "Z": 28.21,
+     "heightM": 27.19,
+     "yaw": 232.85
     }
    },
    {
     "id": "t6-m4",
-    "from": "tower-l4",
+    "from": "tower-l1",
     "kind": "tower",
-    "s": 244.394,
-    "lateral": -38.683,
-    "scale": 1.344,
-    "yaw": 18.0,
-    "height": 115.16,
+    "s": -22.825,
+    "lateral": -32.274,
+    "scale": 0.448,
+    "yaw": 88.0,
+    "height": 38.39,
+    "imageU": 270.0,
+    "imageV": 354.0,
     "originS": 268.39393923934006,
     "originLat": -42.7197617616411,
     "originScale": 1.12,
     "originYaw": 48.0,
     "raw": {
-     "s": -12.578,
-     "lateral": -12.995,
-     "Z": 39.4,
-     "heightM": 22.77,
-     "yaw": 243.09
+     "s": -22.825,
+     "lateral": -32.274,
+     "Z": 29.21,
+     "heightM": 22.23,
+     "yaw": 212.34
+    }
+   },
+   {
+    "id": "t11-m6",
+    "from": "tower-r2",
+    "kind": "tower",
+    "s": -34.001,
+    "lateral": 22.0,
+    "scale": 0.399,
+    "yaw": 16.0,
+    "height": 23.93,
+    "imageU": 1099.0,
+    "imageV": 351.0,
+    "originS": 491.16386743993314,
+    "originLat": 35.79914269588892,
+    "originScale": 0.997,
+    "originYaw": 56.0,
+    "raw": {
+     "s": -39.972,
+     "lateral": 12.937,
+     "Z": 12.02,
+     "heightM": 8.55,
+     "yaw": 309.85
+    }
+   },
+   {
+    "id": "t0-m2",
+    "from": "tower-l2",
+    "kind": "tower",
+    "s": -15.414,
+    "lateral": -30.179,
+    "scale": 0.448,
+    "yaw": 352.0,
+    "height": 44.19,
+    "imageU": 368.0,
+    "imageV": 385.0,
+    "originS": 10.0,
+    "originLat": -43.56763099211062,
+    "originScale": 1.12,
+    "originYaw": 32.0,
+    "raw": {
+     "s": -15.414,
+     "lateral": -30.179,
+     "Z": 36.57,
+     "heightM": 22.35,
+     "yaw": 220.85
+    }
+   },
+   {
+    "id": "t5-m3",
+    "from": "tower-r1",
+    "kind": "tower",
+    "s": 9.854,
+    "lateral": 45.832,
+    "scale": 0.344,
+    "yaw": 0.0,
+    "height": 37.8,
+    "imageU": 923.0,
+    "imageV": 357.0,
+    "originS": 295.8019447378707,
+    "originLat": 37.70624327743159,
+    "originScale": 0.859,
+    "originYaw": 40.0,
+    "raw": {
+     "s": 9.854,
+     "lateral": 45.832,
+     "Z": 61.84,
+     "heightM": 28.34,
+     "yaw": 296.12
+    }
+   },
+   {
+    "id": "t3-m6",
+    "from": "tower-mid",
+    "kind": "tower",
+    "s": 90.6,
+    "lateral": 22.0,
+    "scale": 0.884,
+    "yaw": 16.0,
+    "height": 53.06,
+    "imageU": 649.0,
+    "imageV": 371.0,
+    "originS": 228.70047163846684,
+    "originLat": 39.829451668763035,
+    "originScale": 1.087,
+    "originYaw": 56.0,
+    "raw": {
+     "s": 90.6,
+     "lateral": 0.191,
+     "Z": 142.54,
+     "heightM": 53.06,
+     "yaw": 259.32
+    }
+   },
+   {
+    "id": "t2-m3",
+    "from": "tower-l4",
+    "kind": "tower",
+    "s": -4.316,
+    "lateral": -22.0,
+    "scale": 0.448,
+    "yaw": 8.0,
+    "height": 51.88,
+    "imageU": 583.0,
+    "imageV": 273.0,
+    "originS": 98.71808075912435,
+    "originLat": -45.101253946678526,
+    "originScale": 1.12,
+    "originYaw": 48.0,
+    "raw": {
+     "s": -4.316,
+     "lateral": -9.119,
+     "Z": 47.9,
+     "heightM": 13.84,
+     "yaw": 250.16
     }
    }
   ],
   "notes": [
-   "camera avenue s=-52.00. Applied moves are clamped nudges. Raw lifts stay on each row.",
+   "camera avenue s=-52.00. Seats are MoGe metres, guarded. Repeated towers stay instanced per module.",
    "wreck: TODO, no asset",
    "arch: TODO, no asset",
-   "t5-m3: unmatched, left in place",
-   "t7-m6: unmatched, left in place",
-   "t8-m3: unmatched, left in place",
-   "t9-m2: unmatched, left in place",
-   "t10-m4: unmatched, left in place",
-   "t11-m6: unmatched, left in place"
+   "t1-m4: parked behind the camera",
+   "t4-m2: parked behind the camera",
+   "t7-m6: parked behind the camera",
+   "t8-m3: parked behind the camera",
+   "t9-m2: parked behind the camera",
+   "L-mid2: parked behind the camera",
+   "L-far: parked behind the camera",
+   "R-butte: parked behind the camera",
+   "R-mid: parked behind the camera",
+   "R-band: parked behind the camera",
+   "B-left: parked behind the camera",
+   "B-right: parked behind the camera"
   ],
-  "clamp": "Moves are nudges. A raw disparity lift is stored and is not applied when it would put a mesh inside the lens."
+  "clamp": "MoGe metres are applied. Mesas that would enter the lens are pushed out. Extra towers park behind the camera."
  }
 }

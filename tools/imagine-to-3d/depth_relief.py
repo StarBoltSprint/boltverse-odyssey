@@ -1,5 +1,5 @@
-"""Stage 'depth_relief': monocular depth (Depth Anything V2 Small, ONNX on CPU via onnxruntime; MiDaS v2.1 small fallback)
-on each Imagine plate at native resolution -> per-plate RELIEF map in metres used ONLY to displace the shell in/out
+"""Stage 'depth_relief': monocular depth (Depth Anything V2 Large, CPU torch, shared vision cache)
+on each Imagine plate -> per-plate RELIEF map in metres used ONLY to displace the shell in/out
 (cracks, ledges, overhang depth, holes, panel lines). The volume is never rebuilt from depth (Grok q15).
   relief = high-pass(disparity) normalised per plate (robust p99) * amplitude(type), gradient-limited so the plate's
   texture stretch on the displaced surface stays <= 1.3, clamped to +-amplitude.
@@ -14,28 +14,18 @@ MIDAS_URL = "https://github.com/isl-org/MiDaS/releases/download/v2_1/model-small
 PROFILE = {"mesa": dict(amp=1.5, sigmaM=4.0, fineM=0.25, maxGrad=0.7), "tower": dict(amp=0.3, sigmaM=1.0, fineM=0.06, maxGrad=0.5), "rock": dict(amp=0.6, sigmaM=1.5, fineM=0.1, maxGrad=0.83)}
 
 def session():
-    """Small relief net. Prefer the shared load-once session; fall back to the local file."""
-    try:
-        tools = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        if tools not in sys.path:
-            sys.path.insert(0, tools)
-        from common.vision_models import load_depth_session
-        return load_depth_session("dav2-small")
-    except Exception as e:
-        print("shared depth session unavailable:", e, file=sys.stderr)
-    import onnxruntime as ort
-    os.makedirs(MODELS, exist_ok=True)
-    for name, url, kind in (("dav2-small.onnx", DA_URL, "dav2"), ("midas-small.onnx", MIDAS_URL, "midas")):
-        p = f"{MODELS}/{name}"
-        try:
-            if not os.path.exists(p): urllib.request.urlretrieve(url, p)
-            return ort.InferenceSession(p, providers=["CPUExecutionProvider"]), kind
-        except Exception as e:
-            print("depth model failed:", name, e, file=sys.stderr)
-    raise SystemExit("no depth model")
+    """Depth Anything V2 Large. The array path does not need an ONNX session."""
+    return (None, "dav2-large")
 
 def disparity(sess, kind, img):
     a = np.asarray(img.convert("RGB"), np.float32) / 255.0; H, W = a.shape[:2]
+    if kind == "dav2-large":
+        tools = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        if tools not in sys.path:
+            sys.path.insert(0, tools)
+        from common.vision_models import depth_dav2_rgb
+        rgb = np.asarray(img.convert("RGB"))
+        return np.asarray(depth_dav2_rgb(rgb), np.float32)
     if kind == "dav2":
         h, w = (H // 14) * 14, (W // 14) * 14          # native resolution (multiple of the ViT patch)
     else:

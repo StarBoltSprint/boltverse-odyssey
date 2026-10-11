@@ -6,6 +6,7 @@ torchvision in that venv does not register nms. The stub is only what SAM2 impor
 from __future__ import annotations
 
 import json
+import os
 import sys
 import types
 
@@ -104,15 +105,16 @@ def main():
     rgb_path, boxes_path, out_npy, out_json = sys.argv[1:5]
     _install_torchvision_stub()
     from PIL import Image
-    from sam2.build_sam import build_sam2
-    from sam2.sam2_image_predictor import SAM2ImagePredictor
 
     rgb = np.asarray(Image.open(rgb_path).convert("RGB"))
     spec = json.load(open(boxes_path))
     boxes = spec["instances"] if isinstance(spec, dict) else spec
-    ckpt = "/workspace/.venv-sam2/sam2_hiera_tiny.pt"
-    model = build_sam2("configs/sam2/sam2_hiera_t.yaml", ckpt, device="cpu")
-    predictor = SAM2ImagePredictor(model)
+    root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    tools = os.path.join(root, "tools")
+    if tools not in sys.path:
+        sys.path.insert(0, tools)
+    from common.vision_models import load_sam2
+    predictor = load_sam2("small")
     predictor.set_image(rgb)
     h, w = rgb.shape[:2]
     labels = np.zeros((h, w), np.int32)
@@ -153,7 +155,7 @@ def main():
             "maskBox": [int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1],
         })
     np.save(out_npy, labels)
-    json.dump({"width": w, "height": h, "instances": report, "model": "sam2_hiera_tiny"}, open(out_json, "w"), indent=1)
+    json.dump({"width": w, "height": h, "instances": report, "model": "sam2.1_hiera_small"}, open(out_json, "w"), indent=1)
     print(json.dumps({"ok": True, "n": len(report), "out": out_json}))
 
 

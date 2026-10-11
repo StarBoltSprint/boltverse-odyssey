@@ -31,16 +31,52 @@ page.on("pageerror", (err) => logs.push(String(err && err.message ? err.message 
 page.on("console", (msg) => { if (msg.type() === "error") logs.push(msg.text().slice(0, 240)); });
 page.on("response", (res) => { if (res.status() >= 400) logs.push(res.status() + " " + res.url()); });
 let data = { ok: false };
+const visibleChargement = () => page.evaluate(() => {
+  for (const el of document.querySelectorAll("body *")) {
+    const s = getComputedStyle(el);
+    if (s.display === "none" || s.visibility === "hidden" || Number(s.opacity) === 0) continue;
+    const r = el.getBoundingClientRect();
+    if (r.width < 4 || r.height < 4) continue;
+    let direct = "";
+    for (const n of el.childNodes) if (n.nodeType === 3) direct += n.textContent || "";
+    if (/chargement/i.test(direct)) return direct.trim().slice(0, 80);
+  }
+  return "";
+});
 try {
   await page.goto(url, { waitUntil: "domcontentloaded", timeout: 180000 });
-  await page.waitForFunction(() => window.__ready === true, null, { timeout: 180000 });
-  await page.waitForTimeout(2200);
+  await page.waitForTimeout(350);
+  const earlyText = await visibleChargement();
+  const earlyPath = out.replace(/\.png$/, "-loading.png");
+  if (earlyText) await page.screenshot({ path: earlyPath, type: "png" });
+  await page.waitForFunction(() => {
+    if (window.__ready !== true) return false;
+    for (const el of document.querySelectorAll("body *")) {
+      const s = getComputedStyle(el);
+      if (s.display === "none" || s.visibility === "hidden" || Number(s.opacity) === 0) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width < 4 || r.height < 4) continue;
+      let direct = "";
+      for (const n of el.childNodes) if (n.nodeType === 3) direct += n.textContent || "";
+      if (/chargement/i.test(direct)) return false;
+    }
+    return true;
+  }, null, { timeout: 180000 });
+  await page.waitForTimeout(800);
   await page.screenshot({ path: out, type: "png" });
   data = await page.evaluate(() => {
     const st = window.__st || {};
     const r = window.__gdProf && window.__gdProf.renderer;
     const info = r && r.info && r.info.render ? r.info.render : {};
     const mem = r && r.info && r.info.memory ? r.info.memory : {};
+    const names = {};
+    const world = window.__gdProf && window.__gdProf.world;
+    if (world) world.traverse((o) => {
+      if (!o.visible || !(o.isMesh || o.isInstancedMesh)) return;
+      const key = o.name || o.type;
+      names[key] = (names[key] || 0) + 1;
+    });
+    const passes = window.__measurePasses ? window.__measurePasses() : null;
     return {
       ok: true,
       dpr: window.devicePixelRatio,
@@ -50,8 +86,12 @@ try {
       triangles: info.triangles ?? null,
       geometries: mem.geometries ?? null,
       textures: mem.textures ?? null,
+      passes,
+      visible: names,
     };
   });
+  data.loadingText = earlyText;
+  data.loadingShot = earlyText ? earlyPath : null;
 } catch (err) {
   data = { ok: false, reason: String(err && err.message ? err.message : err) };
 }

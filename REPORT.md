@@ -15,7 +15,7 @@ Shared tools only. No Imagine images. The live preview was not opened or edited.
 | SAM 2.1 small | `sam2.1_hiera_small.pt` | 184,416,285 | yes |
 | SAM 2.1 base+ | `sam2.1_hiera_base_plus.pt` | 323,606,802 | yes |
 
-Free space at status time: 11,132,260,352 bytes. Relief and fuse still use Depth Anything V2 Small (`load_depth_session`).
+Free space at status time: 11,132,260,352 bytes. Relief and fuse now call Depth Anything V2 Large (`depth_dav2_rgb`). The small ONNX remains for an explicit dav2-small session.
 
 ## 2. Cache demo
 

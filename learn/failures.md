@@ -1008,4 +1008,15 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Root cause | `openPage` returned after `readyExpr` and a fixed wait. The screenshot did not check the overlay text or the pixels. Checklist poses used `setPose`, which clamps pitch and parks the eye at ground + 1.6 m. |
 | Fix | Wait until no visible node says Chargement, then fail the frame in `tools/common/capture_gate.py` if it is a loading plate or empty. Frame close (8 m), low portrait, far, and ortho faces on the target AABB (`tools/common/frame_bbox.py`, `renderPose`). Perspective cover ≥ 25%. Ortho ≥ 60% and not black. |
 | Guard | `node tools/common/render_harness.mjs` (early shot FAIL, late shot PASS). `python3 tools/common/selftest.py`. Object-gate rows `capture ready` and `checklist camera framed on the target`. |
-| Sources | `tools/common/capture_gate.py`, `tools/common/frame_bbox.py`, `tools/common/render_harness.mjs`, `tools/object-gate/gate.mjs`. |
+| Sources | `tools/common/capture_gate.py`, `tools/common/frame_bbox.py`, `tools/common/render_harness.mjs`, `tools/object-gate/gate.mjs`.
+
+### 2026-10-11 — metric seats still miss the blade rows
+
+| | |
+| --- | --- |
+| Take | placement-key2-1011 |
+| Defect | Two key-camera renders left the flanking blade rows unmatched. Placed IoU 0.3763 (round 1, kept) and 0.4049 (round 2, rejected for a collapsed sky). Eleven depth inversions. Phone `passes.main.calls` 24 against a cap of 12. |
+| Root cause | MoGe metres plus the mesa floor (`cam_s+90`, lateral ±110) and the spire floor (`cam_s+55`) put those masses farther than towers the key paints in front of them. The tower modules are chunky blocks, so a height scale cannot become a thin blade. Parking unused towers and mesas along negative avenue s did not drop the phone batches: each mesa is still its own mesh and stayed visible. |
+| Fix | Stop after the two rounds. Do not treat wreck or arch TODOs as a placement miss. Do not run a third cook on the same silhouette gap. |
+| Guard | `steps/placement-key2-1011/REPORT.md` verdict FAIL, placed IoU 0.3763, depth inversions 11, phone draws 24. `python3 tools/placement-from-key/selftest.py` still checks the floors. The capture proof is `before-16x9-loading.png` FAIL and `before-16x9.png` PASS. |
+| Sources | `tools/placement-from-key/place.py`, `depth_lift.py`, `steps/placement-key2-1011/sheet-16x9.jpg`, `sheet-phone.jpg`. Cites the 2026-10-11 rock-wall entry above. | |

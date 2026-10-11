@@ -4,7 +4,7 @@ Reusable lift from one key still onto the Zone B staging page.
 
 ```bash
 python3 tools/placement-from-key/selftest.py
-python3 tools/placement-from-key/place.py all --out steps/placement-key-1011
+python3 tools/placement-from-key/place.py all --out steps/placement-key2-1011
 ```
 
 What it does:

@@ -70,7 +70,8 @@ def _mask_base(mask: np.ndarray) -> tuple[float, float, float, float]:
 
 
 def lift_instances(cam: Cam, depth: np.ndarray, labels: np.ndarray, instances: list, fit: dict, layout: dict) -> list:
-    A = fit["A"]
+    metric = bool(fit.get("metric"))
+    A = fit.get("A") or 1.0
     h, w = labels.shape
     out = []
     by_id = {t["id"]: t for t in layout.get("towers", [])}
@@ -87,7 +88,7 @@ def lift_instances(cam: Cam, depth: np.ndarray, labels: np.ndarray, instances: l
         u, v, top, width_px = _mask_base(mask)
         ui, vi = int(np.clip(u, 0, w - 1)), int(np.clip(v, 0, h - 1))
         d = float(depth[vi, ui])
-        Z = A / max(d, 1e-4)
+        Z = d if metric else A / max(d, 1e-4)
         rd = cam.ray(u, v)
         # Camera depth Z is the forward component. Travel t along the unit ray until that depth.
         fwd = float(np.dot(rd, cam.forward))
@@ -121,39 +122,47 @@ def lift_instances(cam: Cam, depth: np.ndarray, labels: np.ndarray, instances: l
     return out
 
 
-# A disparity lift of a far silhouette lands at 10–40 m. Mesa meshes are city strata.
-# Applying that lift raw puts the camera inside the rock. These caps keep the move a nudge.
-AHEAD = {"tower": 55.0, "spire": 70.0, "mesa": 90.0}
-MAX_DS = {"tower": 24.0, "spire": 24.0, "mesa": 30.0}
-MAX_DLAT = {"tower": 12.0, "spire": 12.0, "mesa": 24.0}
-LAT_FLOOR = {"tower": 22.0, "spire": 36.0, "mesa": 110.0}
-SCALE_SPAN = {"tower": (0.80, 1.20), "spire": (0.80, 1.20), "mesa": (0.90, 1.10)}
-YAW_SPAN = 30.0
+# MoGe metres are applied. A mesa that the net puts inside the lens is pushed out:
+# that is the rock-wall failure. Towers keep the metric seat and only leave the avenue.
+AHEAD = {"tower": 18.0, "spire": 55.0, "mesa": 90.0}
+LAT_FLOOR = {"tower": 18.0, "spire": 12.0, "mesa": 80.0}
+LAT_PUSH = {"tower": 22.0, "spire": 16.0, "mesa": 110.0}
+SCALE_SPAN = {"tower": (0.40, 2.40), "spire": (0.45, 2.20), "mesa": (0.90, 1.10)}
+YAW_SPAN = 40.0
 
 
 def _wrap(deg: float) -> float:
     return (deg + 180.0) % 360.0 - 180.0
 
 
-def clamp_sl(old_s: float, old_lat: float, want_s: float, want_lat: float, kind: str, cam_s: float) -> tuple[float, float]:
-    """Nudge toward the lift. Never inside the avenue floor, never nearer than AHEAD."""
-    ds = float(np.clip(want_s - old_s, -MAX_DS[kind], MAX_DS[kind]))
-    dlat = float(np.clip(want_lat - old_lat, -MAX_DLAT[kind], MAX_DLAT[kind]))
-    s = old_s + ds
-    lat = old_lat + dlat
+def guard_seat(s: float, lat: float, cam_s: float, kind: str, side: float) -> tuple[float, float]:
+    """Keep a metric seat. Mesas and the spire cannot enter the lens. Towers flank the avenue."""
+    s = float(s)
+    lat = float(lat)
     floor_s = cam_s + AHEAD[kind]
     if s < floor_s:
-        s = min(max(floor_s, old_s), old_s + MAX_DS[kind])
-        if s < floor_s:
-            s = old_s
-    sign = 1.0 if old_lat >= 0 else -1.0
-    if abs(lat) < LAT_FLOOR[kind]:
-        lat = sign * LAT_FLOOR[kind]
-    if abs(lat - old_lat) > MAX_DLAT[kind]:
-        lat = old_lat + float(np.clip(lat - old_lat, -MAX_DLAT[kind], MAX_DLAT[kind]))
-    if abs(lat) < LAT_FLOOR[kind]:
-        lat = old_lat
+        s = floor_s
+    sign = 1.0 if side >= 0 else -1.0
+    if kind == "mesa":
+        if abs(lat) < LAT_FLOOR[kind]:
+            lat = sign * LAT_PUSH[kind]
+        elif lat * sign < 0:
+            lat = sign * abs(lat)
+    elif kind == "spire":
+        if lat < LAT_FLOOR[kind]:
+            lat = LAT_PUSH[kind]
+    else:
+        if abs(lat) < LAT_FLOOR[kind] or lat * sign < 0:
+            lat = sign * LAT_PUSH[kind]
     return float(s), float(lat)
+
+
+def clamp_sl(old_s: float, old_lat: float, want_s: float, want_lat: float, kind: str, cam_s: float) -> tuple[float, float]:
+    """Compatibility name. The seat is the metric target, guarded, not a nudge from old_s."""
+    side = 1.0 if want_lat >= 0 else -1.0
+    if kind == "tower" and abs(want_lat) < 1:
+        side = 1.0 if old_lat >= 0 else -1.0
+    return guard_seat(want_s, want_lat, cam_s, kind, side)
 
 
 def _yaw_near(old: float, want: float) -> float:
@@ -167,11 +176,51 @@ def _project(cam: Cam, s: float, lat: float) -> tuple[float, float]:
     return float(uv[0, 0]), float(depth[0])
 
 
-def assign_assets(lifts: list, layout: dict, mesa_layout: list, cam: Cam) -> dict:
-    """Match lifted instances to existing rows, then nudge. Wreck and arch have no mesh.
+def _sync(assign_towers, spire, mesas, row):
+    kind = row["kind"]
+    if kind == "mesa":
+        for m in mesas:
+            if m["id"] == row["id"]:
+                m["s"] = row["s"]
+                m["lat"] = row["lateral"]
+                m["scale"] = row["scale"]
+                m["yaw"] = row["yaw"]
+                return
+    target = spire if kind == "spire" else next(t for t in assign_towers if t["id"] == row["id"])
+    target["s"] = row["s"]
+    target["lateral"] = row["lateral"]
+    target["x"], target["z"] = av_xz(row["s"], row["lateral"])
+    target["yaw"] = row["yaw"]
+    target["scale"] = row["scale"]
+    if row.get("height") is not None:
+        target["height"] = row["height"]
 
-    The raw lift is stored on each placed row. The applied s/lateral/scale stay inside
-    clamp_sl so a bad disparity cannot drop a mesa into the lens.
+
+def enforce_order(assign: dict) -> int:
+    """Nearer in the key (larger image v) gets the nearer avenue s. Laterals stay."""
+    rows = [p for p in assign["placed"] if p.get("kind") in ("tower", "spire", "mesa")]
+    if len(rows) < 2:
+        return 0
+    before = 0
+    for i, a in enumerate(rows):
+        for b in rows[i + 1:]:
+            if a["imageV"] > b["imageV"] + 12 and a["s"] > b["s"] + 8:
+                before += 1
+            elif b["imageV"] > a["imageV"] + 12 and b["s"] > a["s"] + 8:
+                before += 1
+    seats = sorted(float(p["s"]) for p in rows)
+    for p, s in zip(sorted(rows, key=lambda r: -float(r["imageV"])), seats):
+        p["s"] = round(s, 3)
+        _sync(assign["towers"], assign["spire"], assign["mesas"], p)
+    return before
+
+
+def assign_assets(lifts: list, layout: dict, mesa_layout: list, cam: Cam) -> dict:
+    """Place existing assets on the MoGe seats, as two rows flanking the avenue.
+
+    Wreck and arch have no mesh: TODO markers. A mesa lift inside the lens is
+    pushed out. Extra towers and the skyline park behind the camera so the key
+    frame shows the two rows, the spire, and the left and right mesas.
     """
     towers = [dict(t) for t in layout["towers"]]
     spire = dict(layout["spire"])
@@ -181,7 +230,7 @@ def assign_assets(lifts: list, layout: dict, mesa_layout: list, cam: Cam) -> dic
     used = set()
     placed = []
     todos = []
-    notes = [f"camera avenue s={cam_s:.2f}. Applied moves are clamped nudges. Raw lifts stay on each row."]
+    notes = [f"camera avenue s={cam_s:.2f}. Seats are MoGe metres, guarded. Repeated towers stay instanced per module."]
 
     def todo(row, status, reason):
         todos.append({
@@ -199,43 +248,27 @@ def assign_assets(lifts: list, layout: dict, mesa_layout: list, cam: Cam) -> dic
             "rawLift": {"s": row["s"], "lateral": row["lateral"], "Z": row["Z"], "heightM": row["heightM"]},
         })
 
-    def nearest(cands, u_target):
-        """cands: (obj, u, depth) with depth already > 40."""
-        if not cands:
+    def take_tower(row, side):
+        pool = [t for t in towers if t["id"] not in used and ((1 if t["lateral"] >= 0 else -1) == side)]
+        if not pool:
+            pool = [t for t in towers if t["id"] not in used]
+        if not pool:
             return None
-        cands.sort(key=lambda c: abs(c[1] - u_target))
-        return cands[0]
+        pool.sort(key=lambda t: abs(t["lateral"]))
+        return pool[0]
 
-    def take_tower(row):
-        want = 1 if row["imageBase"][0] >= cam.w * 0.5 else -1
-        # Prefer the side the mask sits on. Fall back to any visible tower.
-        pool = []
-        any_vis = []
-        for t in towers:
-            if t["id"] in used:
-                continue
-            u, depth = _project(cam, t["s"], t["lateral"])
-            if depth < 40:
-                continue
-            any_vis.append((t, u, depth))
-            side = 1 if t["lateral"] >= 0 else -1
-            if side == want:
-                pool.append((t, u, depth))
-        return nearest(pool or any_vis, row["imageBase"][0])
-
-    def take_mesa(row):
-        want = 1 if row["imageBase"][0] >= cam.w * 0.5 else -1
+    def take_mesa(row, side):
         pool = []
         for m in mesa_layout:
             if m.get("_used"):
                 continue
-            u, depth = _project(cam, m["s"], m.get("lat", 0))
-            if depth < 40:
-                continue
-            side = 1 if m.get("lat", 0) >= 0 else -1
-            if side == want:
-                pool.append((m, u, depth))
-        return nearest(pool, row["imageBase"][0])
+            mside = 1 if m.get("lat", 0) >= 0 else -1
+            if mside == side:
+                pool.append(m)
+        if not pool:
+            return None
+        pool.sort(key=lambda m: abs(m.get("lat", 0)))
+        return pool[0]
 
     for row in lifts:
         kind = row.get("kind")
@@ -249,93 +282,93 @@ def assign_assets(lifts: list, layout: dict, mesa_layout: list, cam: Cam) -> dic
             todo(row, "procedural-not-an-asset", "objects-t7 draws these as code boxes on the avenue. No Imagine mesh to move. Target is recorded.")
             notes.append(f"{row['id']}: procedural, not retargeted")
             continue
+        side = 1 if row["imageBase"][0] >= cam.w * 0.5 else -1
         if kind == "spire":
             old_s = float(spire["s"])
             old_lat = float(spire["lateral"])
             old_yaw = float(spire.get("yaw") or 0)
-            ns, nlat = clamp_sl(old_s, old_lat, row["s"], row["lateral"], "spire", cam_s)
-            _u, depth = _project(cam, ns, nlat)
             old_h = float(spire.get("height") or 150)
             old_sc = float(spire.get("scale") or 1)
-            px_h = float(row["heightM"]) / max(float(row["Z"]), 1e-3) * cam.f
-            want_h = px_h / cam.f * max(depth, 1.0)
+            ns, nlat = guard_seat(row["s"], row["lateral"], cam_s, "spire", 1)
             lo, hi = SCALE_SPAN["spire"]
-            factor = float(np.clip(want_h / old_h, lo, hi))
-            spire["s"] = round(ns, 3)
-            spire["lateral"] = round(nlat, 3)
-            spire["x"], spire["z"] = av_xz(spire["s"], spire["lateral"])
-            spire["yaw"] = round(_yaw_near(old_yaw, row["yaw"]), 2)
-            spire["scale"] = round(old_sc * factor, 3)
-            spire["height"] = round(old_h * factor, 2)
-            placed.append({
+            factor = float(np.clip(float(row["heightM"]) / max(old_h, 1.0), lo, hi))
+            rec = {
                 "id": "spire", "from": row["id"], "kind": "spire",
-                "s": spire["s"], "lateral": spire["lateral"], "scale": spire["scale"],
-                "yaw": spire["yaw"], "height": spire["height"],
+                "s": round(ns, 3), "lateral": round(nlat, 3), "scale": round(old_sc * factor, 3),
+                "yaw": round(_yaw_near(old_yaw, row["yaw"]), 2), "height": round(old_h * factor, 2),
+                "imageU": row["imageBase"][0], "imageV": row["imageBase"][1],
                 "originS": old_s, "originLat": old_lat, "originScale": old_sc, "originYaw": old_yaw,
                 "raw": {"s": row["s"], "lateral": row["lateral"], "Z": row["Z"], "heightM": row["heightM"], "yaw": row["yaw"]},
-            })
+            }
+            _sync(towers, spire, mesa_layout, rec)
+            placed.append(rec)
             continue
         if kind == "tower":
-            hit = take_tower(row)
-            if hit is None:
-                notes.append(f"{row['id']}: no tower in front of the camera")
+            t = take_tower(row, side)
+            if t is None:
+                notes.append(f"{row['id']}: no tower asset")
                 continue
-            t, _u0, _d0 = hit
             used.add(t["id"])
             old_s = float(t["s"])
             old_lat = float(t["lateral"])
             old_yaw = float(t.get("yaw") or 0)
-            ns, nlat = clamp_sl(old_s, old_lat, row["s"], row["lateral"], "tower", cam_s)
-            _u, depth = _project(cam, ns, nlat)
             old_h = float(t.get("height") or 90)
             old_sc = float(t.get("scale") or 1)
-            px_h = float(row["heightM"]) / max(float(row["Z"]), 1e-3) * cam.f
-            want_h = px_h / cam.f * max(depth, 1.0)
+            ns, nlat = guard_seat(row["s"], row["lateral"], cam_s, "tower", side)
             lo, hi = SCALE_SPAN["tower"]
-            factor = float(np.clip(want_h / max(old_h, 1.0), lo, hi))
-            t["s"] = round(ns, 3)
-            t["lateral"] = round(nlat, 3)
-            t["x"], t["z"] = av_xz(t["s"], t["lateral"])
-            t["yaw"] = round(_yaw_near(old_yaw, row["yaw"]), 2)
-            t["scale"] = round(old_sc * factor, 3)
-            t["height"] = round(old_h * factor, 2)
-            placed.append({
+            factor = float(np.clip(float(row["heightM"]) / max(old_h, 1.0), lo, hi))
+            rec = {
                 "id": t["id"], "from": row["id"], "kind": "tower",
-                "s": t["s"], "lateral": t["lateral"], "scale": t["scale"],
-                "yaw": t["yaw"], "height": t["height"],
+                "s": round(ns, 3), "lateral": round(nlat, 3), "scale": round(old_sc * factor, 3),
+                "yaw": round(_yaw_near(old_yaw, row["yaw"]), 2), "height": round(old_h * factor, 2),
+                "imageU": row["imageBase"][0], "imageV": row["imageBase"][1],
                 "originS": old_s, "originLat": old_lat, "originScale": old_sc, "originYaw": old_yaw,
                 "raw": {"s": row["s"], "lateral": row["lateral"], "Z": row["Z"], "heightM": row["heightM"], "yaw": row["yaw"]},
-            })
+            }
+            _sync(towers, spire, mesa_layout, rec)
+            placed.append(rec)
             continue
         if kind == "mesa":
-            hit = take_mesa(row)
-            if hit is None:
-                notes.append(f"{row['id']}: no mesa in front of the camera on that side")
+            m = take_mesa(row, side)
+            if m is None:
+                notes.append(f"{row['id']}: no mesa on that side")
                 continue
-            m, _u0, _d0 = hit
             m["_used"] = True
             old_s = float(m["s"])
             old_lat = float(m.get("lat") or 0)
             old_sc = float(m.get("scale") or 1)
             old_yaw = float(m.get("yaw") or 0)
-            ns, nlat = clamp_sl(old_s, old_lat, row["s"], row["lateral"], "mesa", cam_s)
+            ns, nlat = guard_seat(row["s"], row["lateral"], cam_s, "mesa", side)
             lo, hi = SCALE_SPAN["mesa"]
-            m["s"] = round(ns, 2)
-            m["lat"] = round(nlat, 2)
-            m["scale"] = round(float(np.clip(old_sc, old_sc * lo, old_sc * hi)), 3)
-            m["yaw"] = round(_yaw_near(old_yaw, row["yaw"]), 1)
-            placed.append({
+            rec = {
                 "id": m["id"], "from": row["id"], "kind": "mesa",
-                "s": m["s"], "lateral": m["lat"], "scale": m["scale"], "yaw": m["yaw"],
+                "s": round(ns, 2), "lateral": round(nlat, 2),
+                "scale": round(float(np.clip(old_sc, old_sc * lo, old_sc * hi)), 3),
+                "yaw": round(_yaw_near(old_yaw, row["yaw"]), 1),
+                "imageU": row["imageBase"][0], "imageV": row["imageBase"][1],
                 "originS": old_s, "originLat": old_lat, "originScale": old_sc, "originYaw": old_yaw,
                 "raw": {"s": row["s"], "lateral": row["lateral"], "Z": row["Z"], "heightM": row["heightM"], "yaw": row["yaw"]},
-            })
+            }
+            _sync(towers, spire, mesa_layout, rec)
+            placed.append(rec)
 
-    for t in towers:
+    for i, t in enumerate(towers):
         if t["id"] not in used:
-            notes.append(f"{t['id']}: unmatched, left in place")
-    for m in mesa_layout:
+            t["s"] = round(cam_s - 220 - i * 30, 3)
+            t["lateral"] = round(40.0 if i % 2 == 0 else -40.0, 3)
+            t["x"], t["z"] = av_xz(t["s"], t["lateral"])
+            notes.append(f"{t['id']}: parked behind the camera")
+    for i, srow in enumerate(skyline):
+        srow["s"] = round(cam_s - 400 - i * 20, 3)
+        srow["lateral"] = 60.0 if i % 2 == 0 else -60.0
+        srow["x"], srow["z"] = av_xz(srow["s"], srow["lateral"])
+    for i, m in enumerate(mesa_layout):
         m.pop("_used", None)
+        if any(p["id"] == m["id"] for p in placed):
+            continue
+        m["s"] = round(cam_s - 260 - i * 25, 2)
+        m["lat"] = 30.0 if i % 2 == 0 else -30.0
+        notes.append(f"{m['id']}: parked behind the camera")
     return {
         "towers": towers,
         "spire": spire,

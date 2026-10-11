@@ -7,7 +7,7 @@ import sys
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from depth_lift import assign_assets, clamp_sl
+from depth_lift import assign_assets, clamp_sl, enforce_order
 from geom import Cam, av_xz, dir_to_heading, heading_to_dir, iou, xz_av
 
 
@@ -46,13 +46,13 @@ def main():
     ns, nlat = clamp_sl(50.0, -170.0, -36.0, -22.0, "mesa", cam_s)
     ok &= check(
         "mesa lift cannot enter the lens",
-        ns >= cam_s + 90 and abs(nlat) >= 110 and abs(nlat - (-170)) <= 24,
+        ns >= cam_s + 90 - 1e-6 and abs(nlat) >= 110 - 1e-6,
         f"s={ns:.2f} lat={nlat:.2f} cam_s={cam_s:.2f}",
     )
     ts, tlat = clamp_sl(10.0, -43.57, -26.0, -14.0, "tower", cam_s)
     ok &= check(
-        "tower lift stays ahead of the camera",
-        ts >= cam_s + 55 and abs(tlat) >= 22,
+        "tower lift keeps the metric row",
+        abs(ts - (-26)) < 1e-6 and tlat <= -18,
         f"s={ts:.2f} lat={tlat:.2f}",
     )
     layout = {
@@ -78,8 +78,14 @@ def main():
     placed = assign_assets(lifts, layout, mesas, cam)
     mesa_row = next(p for p in placed["placed"] if p["kind"] == "mesa")
     tower_row = next(p for p in placed["placed"] if p["kind"] == "tower")
-    ok &= check("assignment picks the foreground mesa", mesa_row["id"] == "L-mid" and abs(mesa_row["lateral"]) >= 110, str(mesa_row))
-    ok &= check("assignment does not teleport the tower", tower_row["s"] >= cam_s + 55 and tower_row["scale"] >= 1.12 * 0.8 - 1e-6, str(tower_row))
+    ok &= check("assignment picks the foreground mesa", mesa_row["id"] == "L-mid" and abs(mesa_row["lateral"]) >= 110 and mesa_row["s"] >= cam_s + 90 - 1e-6, str(mesa_row))
+    ok &= check(
+        "tower sits on the key row",
+        tower_row["id"] == "t0-m2" and abs(tower_row["s"] - (-26)) < 1e-6 and tower_row["lateral"] <= -18,
+        str(tower_row),
+    )
+    swapped = enforce_order(placed)
+    ok &= check("depth order sorts nearer s first", swapped >= 1 and mesa_row["s"] <= tower_row["s"], f"swaps {swapped} tower {tower_row['s']} mesa {mesa_row['s']}")
     ok &= check("wreck is a TODO", any(td["status"] == "TODO" and td["kind"] == "wreck" for td in placed["todos"]))
     print("PASS" if ok else "FAIL")
     return 0 if ok else 1
