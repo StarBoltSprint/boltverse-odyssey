@@ -211,7 +211,8 @@ async function sceneReady() {
   return ev.result?.result?.value === true;
 }
 
-const beforePath = await shot(`${tag}-loading.png`);
+const stem = `${tag}-${width}x${height}`;
+const beforePath = await shot(`${stem}-loading.png`);
 const beforeDom = await domText();
 const before = gate(beforePath, beforeDom);
 const waitStart = Date.now();
@@ -221,18 +222,26 @@ while (Date.now() - waitStart < 90000) {
   await new Promise((r) => setTimeout(r, 250));
 }
 await new Promise((r) => setTimeout(r, 1200));
-const afterPath = await shot(`${tag}-terrain.png`);
+const afterPath = await shot(`${stem}-terrain.png`);
 const afterDom = await domText();
 const after = gate(afterPath, afterDom);
+const statsEv = await send("Runtime.evaluate", {
+  expression: `(() => {
+    const t = window.__terrain || {};
+    return { drawCalls: t.drawCalls, triangles: t.triangles, lod: t.lod || null };
+  })()`,
+  returnByValue: true,
+}, session);
+const terrain = statsEv.result?.result?.value || null;
 browser.close();
 chrome.kill();
 const report = {
   url, width, height, ready, waitedMs: Date.now() - waitStart,
-  before, after, beforeDom: String(beforeDom).slice(0, 240), afterDom: String(afterDom).slice(0, 240),
+  before, after, terrain, beforeDom: String(beforeDom).slice(0, 240), afterDom: String(afterDom).slice(0, 240),
   beforePath, afterPath,
 };
 writeFileSync(join(outDir, `${tag}-${width}x${height}.json`), JSON.stringify(report, null, 1));
 const okLoad = before.ok === false;
 const okTerrain = after.ok === true && ready;
-console.log(JSON.stringify({ tag, width, height, okLoad, okTerrain, ready, before: before.why, after: after.why || "pass", beforeDom: report.beforeDom }));
+console.log(JSON.stringify({ tag, width, height, okLoad, okTerrain, ready, terrain, before: before.why, after: after.why || "pass", beforeDom: report.beforeDom }));
 process.exit(okLoad && okTerrain ? 0 : 1);

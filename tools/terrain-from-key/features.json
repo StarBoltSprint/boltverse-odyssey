@@ -29,6 +29,12 @@
       "expect": "broken dark slabs in the avenue"
     }
   ],
+  "zoneC": {
+    "source": "steps/zone-c/03-terrain/key-zc1.jpg",
+    "note": "Walkable mask is the causeway only. Cliffs, arches, gorge rock, foliage, falls and the planet are not relief.",
+    "camera": "steps/zone-c/01-camera/camera.json",
+    "masks": "steps/zone-c/02-masks/masks.json"
+  },
   "exclude": [
     { "id": "sky", "box": [0.00, 0.00, 1.00, 0.34] },
     { "id": "mesa_left", "box": [0.00, 0.30, 0.20, 0.28] },

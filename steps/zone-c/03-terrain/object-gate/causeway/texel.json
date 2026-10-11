@@ -1,0 +1,16 @@
+[
+ {
+  "inst": "causeway",
+  "plate": "albedo.png",
+  "tex": "http://127.0.0.1:8771/data/albedo.png",
+  "texW": 113,
+  "texH": 205,
+  "cls": "+y",
+  "areaM2": 5719.6,
+  "samplingPxPerM": 2.01,
+  "repeats": 1,
+  "uniquePxPerM": 2.01,
+  "stretchP95": 1.004,
+  "nearPathM": 0.2
+ }
+]

@@ -1,0 +1,41 @@
+{
+  "origin": [
+    -28.0,
+    -96.0
+  ],
+  "step": 0.5,
+  "nx": 113,
+  "nz": 205,
+  "hLo": -0.1607046127319336,
+  "hHi": 0.1580589860677719,
+  "camera": {
+    "x": 0.0,
+    "z": 0.0,
+    "yaw": 0.0,
+    "pitch": 7.95,
+    "eye": 1.508,
+    "fov": 51.47
+  },
+  "avenue": {
+    "headingDeg": 0,
+    "forward": "-Z"
+  },
+  "grid": {
+    "origin": [
+      -28.0,
+      -96.0
+    ],
+    "step": 0.5,
+    "s0": -6.0,
+    "s1": 96.0,
+    "lat0": -28.0,
+    "izFarIsSmall": true,
+    "sOfIz": "s = s1 - iz * step",
+    "shoulderM": 1.25,
+    "reliefGain": 0.35,
+    "mogeMedianYM": -4.0819
+  },
+  "keyImage": "steps/zone-c/03-terrain/key-zc1.jpg",
+  "masks": "steps/zone-c/02-masks/masks.json",
+  "attempt": 2
+}

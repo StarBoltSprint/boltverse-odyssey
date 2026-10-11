@@ -1,0 +1,40 @@
+{
+ "url": "http://127.0.0.1:8771/?along=0",
+ "width": 1280,
+ "height": 720,
+ "ready": true,
+ "waitedMs": 2856,
+ "before": {
+  "ok": false,
+  "kind": "frame",
+  "cover": 1,
+  "minCover": null,
+  "loading": true,
+  "empty": false,
+  "black": false,
+  "why": "loading screen"
+ },
+ "after": {
+  "ok": true,
+  "kind": "frame",
+  "cover": 0.1618,
+  "minCover": null,
+  "loading": false,
+  "empty": false,
+  "black": false,
+  "why": ""
+ },
+ "terrain": {
+  "drawCalls": 1,
+  "triangles": 45696,
+  "lod": {
+   "baseCell": 0.5,
+   "triangles": 45696,
+   "rows": 204
+  }
+ },
+ "beforeDom": "Chargement…",
+ "afterDom": "",
+ "beforePath": "steps/zone-c/03-terrain/renders/along0-1280x720-loading.png",
+ "afterPath": "steps/zone-c/03-terrain/renders/along0-1280x720-terrain.png"
+}

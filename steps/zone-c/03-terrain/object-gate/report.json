@@ -1,0 +1,275 @@
+{
+  "tool": "object-gate",
+  "version": 1,
+  "apiVersion": "1.7",
+  "url": "http://127.0.0.1:8771/?along=0",
+  "adapter": "zone-c-terrain",
+  "startedAt": "2026-10-11T17:27:57.384Z",
+  "out": "/workspace/grokcli/wt/zc-terrain-1011/steps/zone-c/03-terrain/object-gate",
+  "runtime": [
+    {
+      "id": "runtime.console",
+      "check": "console 720x1600",
+      "status": "PASS",
+      "detail": "no console / page errors",
+      "hints": []
+    },
+    {
+      "id": "runtime.shader",
+      "check": "shader compile 720x1600",
+      "status": "PASS",
+      "detail": "all programs compiled",
+      "hints": []
+    },
+    {
+      "id": "runtime.title",
+      "check": "title 720x1600",
+      "status": "PASS",
+      "detail": "\"Zone C causeway\"",
+      "hints": []
+    },
+    {
+      "id": "runtime.portrait",
+      "check": "portrait viewport 720x1600",
+      "status": "PASS",
+      "detail": "inner 720x1600",
+      "hints": []
+    },
+    {
+      "id": "runtime.capture-ready",
+      "check": "capture ready 720x1600",
+      "status": "PASS",
+      "detail": "loaded, cover 0.3045",
+      "hints": []
+    },
+    {
+      "id": "runtime.budgets",
+      "check": "budgets 720x1600 (report only, quality first)",
+      "status": "INFO",
+      "detail": "{\"renderInfo\":{\"calls\":1,\"triangles\":45696,\"textures\":1,\"geometries\":1,\"programs\":1},\"visibleMeshes\":1,\"sceneTris\":45696,\"pixelRatio\":1}",
+      "hints": []
+    },
+    {
+      "id": "perf.report",
+      "check": "perf: report 720x1600",
+      "status": "INFO",
+      "detail": "page has no window.__perfReport(); phone perf rows skipped",
+      "hints": [
+        "Expose window.__perfReport() (see tools/perf/phone-bench/README.md) so the gate can check canvas ratio and draw order."
+      ]
+    },
+    {
+      "id": "runtime.console",
+      "check": "console 412x915",
+      "status": "PASS",
+      "detail": "no console / page errors",
+      "hints": []
+    },
+    {
+      "id": "runtime.shader",
+      "check": "shader compile 412x915",
+      "status": "PASS",
+      "detail": "all programs compiled",
+      "hints": []
+    },
+    {
+      "id": "runtime.title",
+      "check": "title 412x915",
+      "status": "PASS",
+      "detail": "\"Zone C causeway\"",
+      "hints": []
+    },
+    {
+      "id": "runtime.portrait",
+      "check": "portrait viewport 412x915",
+      "status": "PASS",
+      "detail": "inner 412x915",
+      "hints": []
+    },
+    {
+      "id": "runtime.capture-ready",
+      "check": "capture ready 412x915",
+      "status": "PASS",
+      "detail": "loaded, cover 0.3046",
+      "hints": []
+    },
+    {
+      "id": "runtime.budgets",
+      "check": "budgets 412x915 (report only, quality first)",
+      "status": "INFO",
+      "detail": "{\"renderInfo\":{\"calls\":1,\"triangles\":45696,\"textures\":1,\"geometries\":1,\"programs\":1},\"visibleMeshes\":1,\"sceneTris\":45696,\"pixelRatio\":1}",
+      "hints": []
+    },
+    {
+      "id": "perf.report",
+      "check": "perf: report 412x915",
+      "status": "INFO",
+      "detail": "page has no window.__perfReport(); phone perf rows skipped",
+      "hints": [
+        "Expose window.__perfReport() (see tools/perf/phone-bench/README.md) so the gate can check canvas ratio and draw order."
+      ]
+    }
+  ],
+  "objects": [
+    {
+      "id": "causeway",
+      "type": "terrain",
+      "rows": [
+        {
+          "id": "select",
+          "check": "select",
+          "status": "PASS",
+          "detail": "1 placed copies",
+          "hints": []
+        },
+        {
+          "id": "textures.roles",
+          "check": "texture roles declared",
+          "status": "PASS",
+          "detail": "albedo.png=plate",
+          "hints": []
+        },
+        {
+          "id": "textures.filtering",
+          "check": "texture filtering (mips, trilinear, anisotropy = max, no resize)",
+          "status": "FAIL",
+          "detail": "albedo.png: anisotropy 8 < max 16",
+          "hints": [
+            "tex.generateMipmaps = true; tex.minFilter = LinearMipmapLinearFilter; tex.anisotropy = renderer.capabilities.getMaxAnisotropy(). Never draw a plate through a resized canvas."
+          ]
+        },
+        {
+          "id": "textures.native-size",
+          "check": "plates not downscaled vs Imagine originals",
+          "status": "FAIL",
+          "detail": "albedo.png: served 113x205 < Imagine original 1792x1008 (downscaled); albedo.png gpu 113x205 served 113x205 original 1792x1008",
+          "hints": [
+            "Ship the Imagine output at its native size (lossless or q>=95). Record the original path in tex-manifest.json / spec `source:`."
+          ]
+        },
+        {
+          "id": "texel.stretch",
+          "check": "UV stretch <= 1.3",
+          "status": "PASS",
+          "detail": "max 1.004",
+          "hints": []
+        },
+        {
+          "id": "repetition.captures",
+          "check": "repetition (capture autocorrelation)",
+          "status": "FAIL",
+          "detail": "face z: no object area >= 48x48 px in the capture; face x: no object area >= 48x48 px in the capture; close: object covers 0.0% of the close capture (capture angle unusable); low-portrait: object covers 0.4% of the low-portrait capture (capture angle unusable) (max 0.65, at plate period 0.5)",
+          "hints": [
+            "Visible periodic tiling: replace the tiled plate with unique full-res Imagine sections; break any remaining repeat with a second Imagine variant + low-frequency mask.",
+            "If the capture angle is unusable, fix the spec `hero:` or the object's front axis."
+          ]
+        },
+        {
+          "id": "texel.visible-px-per-m",
+          "check": "visible px/m (phone sharpness from >= 8 m, final render)",
+          "status": "FAIL",
+          "detail": "no steep surface of causeway found at 4/5/3/6/7/8/2.5 m above the ground on its path-facing side. Info: plate sampling worst +y 2.0 px/m on causeway, 1/1 surfaces under",
+          "hints": [
+            "Needs >= 118.5 px/m of visible detail at 8 m. Unique plates: one native 1024x1024 Imagine plate covers at most 8.6 x 8.6 m. Layered materials: raise the detail layer's density or keep its distance fade beyond 8 m. Never upscale."
+          ]
+        },
+        {
+          "id": "repetition.visible-radius",
+          "check": "repetition (visible): identical plate pixels never within 30 m",
+          "status": "PASS",
+          "detail": "no plate repeats inside the radius (one shared plate set per type allowed)",
+          "hints": []
+        },
+        {
+          "id": "repetition.visible-neighbours",
+          "check": "repetition (visible): neighbours never share plates (< 7 m)",
+          "status": "PASS",
+          "detail": "1 copies, none within 7 m of another",
+          "hints": []
+        }
+      ],
+      "files": {
+        "captures": {
+          "close": {
+            "img": "/workspace/grokcli/wt/zc-terrain-1011/steps/zone-c/03-terrain/object-gate/causeway/cap-close.png",
+            "mask": "/workspace/grokcli/wt/zc-terrain-1011/steps/zone-c/03-terrain/object-gate/causeway/cap-close-mask.png",
+            "cover": 0,
+            "gate": {
+              "ok": false,
+              "kind": "close",
+              "cover": 0,
+              "minCover": 0.25,
+              "loading": false,
+              "empty": true,
+              "black": true,
+              "why": "empty frame; target covers 0.0% < 25%"
+            },
+            "pose": {
+              "camera": [
+                0,
+                0,
+                14
+              ],
+              "fovY": 167.6645,
+              "distanceM": 8
+            },
+            "hash": "0000000000000000"
+          },
+          "low-portrait": {
+            "img": "/workspace/grokcli/wt/zc-terrain-1011/steps/zone-c/03-terrain/object-gate/causeway/cap-low-portrait.png",
+            "mask": "/workspace/grokcli/wt/zc-terrain-1011/steps/zone-c/03-terrain/object-gate/causeway/cap-low-portrait-mask.png",
+            "cover": 0.0039,
+            "gate": {
+              "ok": false,
+              "kind": "low-portrait",
+              "cover": 0.0039,
+              "minCover": 0.25,
+              "loading": false,
+              "empty": true,
+              "black": true,
+              "why": "empty frame; target covers 0.4% < 25%"
+            },
+            "pose": {
+              "camera": [
+                0,
+                1.44,
+                14
+              ],
+              "fovY": 167.6203,
+              "distanceM": 8
+            },
+            "hash": "0000000000000000"
+          },
+          "face-z": {
+            "img": "/workspace/grokcli/wt/zc-terrain-1011/steps/zone-c/03-terrain/object-gate/causeway/face-z.png",
+            "mask": "/workspace/grokcli/wt/zc-terrain-1011/steps/zone-c/03-terrain/object-gate/causeway/face-z-mask.png",
+            "pose": {
+              "camera": [
+                "ortho",
+                "z"
+              ]
+            },
+            "cover": 0,
+            "hash": "0000000000000000"
+          },
+          "face-x": {
+            "img": "/workspace/grokcli/wt/zc-terrain-1011/steps/zone-c/03-terrain/object-gate/causeway/face-x.png",
+            "mask": "/workspace/grokcli/wt/zc-terrain-1011/steps/zone-c/03-terrain/object-gate/causeway/face-x-mask.png",
+            "pose": {
+              "camera": [
+                "ortho",
+                "x"
+              ]
+            },
+            "cover": 0,
+            "hash": "0000000000000000"
+          }
+        }
+      },
+      "hero": "causeway",
+      "verdict": "FAIL"
+    }
+  ],
+  "verdict": "FAIL",
+  "finishedAt": "2026-10-11T17:28:28.916Z"
+}

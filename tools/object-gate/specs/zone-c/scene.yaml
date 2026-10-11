@@ -1,0 +1,10 @@
+# Zone C causeway staging. Cliffs are not in this scene.
+scene: zone-c-terrain
+url: http://127.0.0.1:8771/?along=0
+adapter: ../../adapters/zone-c-terrain.mjs
+key: steps/zone-c/03-terrain/key-zc1.jpg
+title: "Zone C causeway"
+runtime:
+  viewports: [[720, 1600], [412, 915]]
+objects:
+  - causeway.yaml

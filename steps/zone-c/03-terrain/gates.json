@@ -1,0 +1,141 @@
+{
+  "blockingPass": true,
+  "pass": false,
+  "checks": {
+    "pathIoU": {
+      "value": 0.7704,
+      "need": 0.75,
+      "pass": true,
+      "blocking": true
+    },
+    "corridor": {
+      "value": {
+        "maxSlopeDeg": 15.5,
+        "centreSlopeDeg": 9.452,
+        "minWidthM": 2.0,
+        "reliefM": 0.319,
+        "samples": 187
+      },
+      "pass": true,
+      "blocking": true
+    },
+    "reliefM": {
+      "value": 0.319,
+      "need": "<=3",
+      "pass": true,
+      "blocking": true
+    },
+    "cliffsFlat": {
+      "value": 0.0,
+      "pass": true,
+      "blocking": true
+    },
+    "lodPopIoU": {
+      "value": 0.9248,
+      "need": 0.9,
+      "pass": true,
+      "blocking": true
+    },
+    "approachLod": {
+      "value": [
+        {
+          "alongM": 0.0,
+          "lodPopIoU": 0.9248
+        },
+        {
+          "alongM": 8.0,
+          "lodPopIoU": 0.9591
+        },
+        {
+          "alongM": 30.0,
+          "lodPopIoU": 0.9527
+        },
+        {
+          "alongM": 60.0,
+          "lodPopIoU": 0.9525
+        }
+      ],
+      "need": 0.9,
+      "pass": true,
+      "blocking": true
+    },
+    "drawCalls": {
+      "value": {
+        "near": {
+          "cellM": 0.5,
+          "triangles": 45696,
+          "note": "base 0.5 m, path outline 0.5 m"
+        },
+        "mid": {
+          "cellM": 1.0,
+          "triangles": 14720,
+          "note": "base 1 m, path outline 0.5 m"
+        },
+        "far": {
+          "cellM": 2.0,
+          "triangles": 5900,
+          "note": "base 2 m, path outline 0.5 m"
+        },
+        "drawCalls": 1,
+        "drawCallsMax": 80,
+        "hull": "path outline is the same polyline at every LOD"
+      },
+      "need": "<80",
+      "pass": true,
+      "blocking": true
+    },
+    "uvStretch": {
+      "value": {
+        "pxPerMNear": 46.55,
+        "bands": [
+          {
+            "bandM": [
+              0,
+              8
+            ],
+            "p95": 1.252,
+            "median": 0.465,
+            "n": 6,
+            "pass": false
+          },
+          {
+            "bandM": [
+              8,
+              30
+            ],
+            "p95": 16.707,
+            "median": 1.553,
+            "n": 44,
+            "pass": false
+          },
+          {
+            "bandM": [
+              30,
+              60
+            ],
+            "p95": 74.136,
+            "median": 11.761,
+            "n": 60,
+            "pass": false
+          },
+          {
+            "bandM": [
+              60,
+              200
+            ],
+            "p95": 93.095,
+            "median": 44.635,
+            "n": 74,
+            "pass": false
+          }
+        ],
+        "pass": false,
+        "note": "open until the step-3 moss plates; far stretch is not a pass"
+      },
+      "pass": false,
+      "blocking": false,
+      "note": "open until moss plates; not a pass"
+    }
+  },
+  "attempt": 2
+}
