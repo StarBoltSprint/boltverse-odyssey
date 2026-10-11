@@ -988,3 +988,25 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Score a pool as unique = min(W / cellM, sqrt(layers × W × H / wall area of every object sharing the pool)); repeats = cells / layers. Spend unique sections (or larger plates) until each surface reaches the threshold. |
 | Guard | `node tools/object-gate/cli.mjs --scene tools/object-gate/specs/zone-b/scene.yaml` row `native Imagine px/m` (pool row, `pool.sharedSelect` in the spec) and row `repetition (UV)` (repeats > 1 FAILS); ortho facade autocorrelation at the 12 m period 0.84 / 0.91 (max 0.5). |
 | Sources | `tools/object-gate/lib/probe.js` `texel()` pool branch; `specs/zone-b/tower-m*.yaml`; gate run on `?v=54`, 2026-10-09 17:3x. |
+
+### 2026-10-11 — curve module read process.argv in the browser
+
+| | |
+| --- | --- |
+| Take | Unreal look 1011. |
+| Defect | The staging page set `__ready` and then never installed the look. `__look` stayed null and the bench collected no samples. |
+| Root cause | `tools/look/curves.mjs` touched `process.argv` at load. The browser import threw `ReferenceError`, so `look.mjs` never finished. |
+| Fix | The file reads `process` only when `typeof process !== "undefined"`. |
+| Guard | No browser row. `node tools/look/curves.mjs` still prints the mid-grey JSON. `python3 tools/look/selftest.py` checks the Python and JS curve numbers, and it does not import the module in a page. |
+| Sources | `tools/look/curves.mjs` |
+
+### 2026-10-11 — grade distance was the synthetic pregrade, not the key view
+
+| | |
+| --- | --- |
+| Take | Unreal look 1011. |
+| Defect | The key-view frame went darker (mean luma 0.440 to 0.227) and the god rays crushed, while `look.json` reported distance 3.9932. |
+| Root cause | `grade.fit` minimises CIEDE2000 against a synthetic pregrade of the key unless `--game` is a real render. That 3.9932 is not the framebuffer. |
+| Fix | The report states both numbers. The fit was not re-run: the key-view distance still improved (23.6038 to 22.7188). |
+| Guard | No row compares `features.grade.distance` to a key-camera screenshot before the pack is written. |
+| Sources | `tools/look/grade.py`; `/workspace/zb-unreal-look-1011/pack/look.json`; `/workspace/zb-unreal-look-1011/REPORT.md` |

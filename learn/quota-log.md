@@ -14,3 +14,4 @@ Append-only. One row per step. `python3 tools/quota/quota.py` adds the row. Do n
 | 2026-10-04 | archives-futurist | 2158259 | 0 | 223 | 0 | 0 | 339018 | 101368 | n/a | archives-futurist-20261004-2155.jsonl |
 | 2026-10-04 | zone-a-perf | e70c6d3 | 0 | 0 | 0 | 0 | n/a | n/a | 3246.7 | events.jsonl |
 | 2026-10-04 | tools-learn-20261004 | ece3195 | 0 | 0 | 0 | 0 | n/a | n/a | 2684.8 | events.jsonl |
+| 2026-10-11 | unreal-look-1011 | 0bbb7f40 | 0 | 292 | 0 | 0 | 713020 | 165978 | n/a | 20261011-081246-unreal-look-1011.ndjson |
