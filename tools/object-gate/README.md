@@ -96,3 +96,11 @@ setPose({x,z,look:[x,y,z]}), path: [[x,z],...], freeze?() }`. The Zone B adapter
 - `{"cmd":"quit"}`
 
 `cam` takes x, z, yaw, pitch, eye, fovDeg and dy. Used by `imagine-to-3d/placement_v2.py` and `lighting/light_key.py`. Run one browser at a time.
+
+## Camera framing and vision order (2026-10-11)
+
+Checklist cameras must frame the target AABB: perspective coverage ≥ 25 %, ortho faces ≥ 60 % and not black, no grazing
+angle on a facade grid, hero and 30 m are different cameras. Run Grok vision only after every capture passes the
+non-black (L\*) check; a black frame is a capture bug (`lib/probe.js` `readRT` must read `SRGBColorSpace`), not a
+vision verdict. See `docs/METHOD.md` §5.
+

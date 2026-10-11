@@ -1211,3 +1211,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | `resolveRoute` uses the path after the `/ref/`, `/zone/`, or `/wg/` prefix with no extra dot. |
 | Guard | `node tools/world-graph/selftest.mjs` row `compare route serves main.mjs` (resolved path equals the preview `main.mjs`). |
 | Sources | `tools/world-graph/serve.mjs`, `tools/world-graph/selftest.mjs`. |
+
+### 2026-10-11 — hero tower lessons of the day (consolidated, SmiR rules)
+
+| | |
+| --- | --- |
+| Take | fusion-fix1..5, scene-strict, multiview-tower, hires-tower (all 2026-10-11). Cites the entries above; nothing above is rewritten. |
+| Defect | All day the tower missed the bars: relief off the painted pixels, black/red captures, float 2.45 m, back face carrying the old panel, sides 4× paler than their plate, UV stretch 4.6–10 on sides/top, visible px/m 0 at 8 m, and Grok vision saying no on grazing or black frames. |
+| Root cause | (1) Relief taken from depth outside the painted feature. (2) Hidden faces filled from low-res sheet crops. (3) `face-back-1024.jpg` is a second front (NCC 0.801), not a back. (4) Lit `MeshStandard` on a pre-lit albedo + `readRT` reading linear bytes as sRGB → black/red capture. (5) Foot lip read as air (no full-footprint plinth / inset at the foot). (6) Gate hero / 30 m cameras grazing the glass grid with low coverage. (7) Vision paid for on frames that were black. |
+| Fix | Rules for every next object: relief ONLY from SAM2 masks of features painted in the exact Imagine plate (MoGe-2 depth inside the mask). Hidden faces from the 1024 Imagine face plates at native res; left = right mirrored; back = right mirrored too (the "back" plate was a second front; `face-left-REJECTED.jpg` never used). Plates are UNLIT skins (`MeshBasicMaterial`, `toneMapped: false`, sRGB map). Captures read with `readRT` in `SRGBColorSpace`. Grounding: inset 0 on the bottom 4 % of height so the foot chord meets the ground, float < 0.05 m measured. Gate cameras must frame the object: perspective coverage ≥ 25 %, ortho ≥ 60 % and not black, no grazing views, hero and 30 m are different cameras. Grok vision runs only after every capture is non-black (L\* check first). |
+| Guard | `node tools/object-gate/selftest.mjs`; gate.mjs camera-framing row (cover ≥ 25 %, ortho ≥ 60 % not black); `steps/hires-tower-1011/gate/report.md` colour L\* 42.1, grounding 0.00 m. Open: sides ΔE 40–43 (Reinhard seam match lifts the body), UV stretch, visible px/m 0, d/w 0.86 vs bar 0.70 → step tower-sides-fix-1011. |
+| Sources | `tools/imagine-to-3d/multiview_tower.py`, `runtime/vision-tower.mjs`, `moge_depth.py`, `tools/object-gate/gate.mjs`, `lib/probe.js`, `tools/common/align/metrics.py`, `steps/hires-tower-1011/REPORT.md`. |
