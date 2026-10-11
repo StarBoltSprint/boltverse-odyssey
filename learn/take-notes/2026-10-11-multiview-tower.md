@@ -2,11 +2,15 @@
 
 ## Quota and turns
 
-The quota row is appended by `python3 tools/quota/quota.py` after the step commit. Copy that row into the table below. Do not invent it.
+`python3 tools/quota/quota.py` read this session's `events.jsonl`. That file did not carry turn, tool, or token fields, so those cells are 0 / n/a. Wall time is the span of timestamps in the log.
+
+| Date | Step | Commit | Turns | Tool calls | Image gens | Video gens | Tokens in | Tokens out | Wall s | Log |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-10-11 | multiview-tower-1011 | 1a455361 | 0 | 0 | 0 | 0 | n/a | n/a | 4020.1 | events.jsonl |
 
 | Item | Kind | Turns or tries | Quota spent | Result |
 | --- | --- | --- | --- | --- |
-| hero tower solid from the 10 Oct sheet | other | 2 gate rounds | see quota-log row for multiview-tower-1011 | rejected |
+| hero tower solid from the 10 Oct sheet | other | 2 gate rounds | wall 4020.1 s; images 0 | rejected |
 
 ## This step
 
