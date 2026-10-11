@@ -1010,3 +1010,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | The report states both numbers. The fit was not re-run: the key-view distance still improved (23.6038 to 22.7188). |
 | Guard | No row compares `features.grade.distance` to a key-camera screenshot before the pack is written. |
 | Sources | `tools/look/grade.py`; `/workspace/zb-unreal-look-1011/pack/look.json`; `/workspace/zb-unreal-look-1011/REPORT.md` |
+
+### 2026-10-11 — matched luma ramp still missed the darkest histogram bin on the screenshot
+
+| | |
+| --- | --- |
+| Take | Unreal look fix 1011. |
+| Defect | Round 1 mean luma was already inside ±10% (0.3186 vs 0.3211) and the Python ramp passed every histogram bin. The real screenshot's darkest bin was 0.0339 against the key's 0.0308, tolerance 0.0031. |
+| Root cause | The CDF match is exact on the identity image. The SwiftShader readback shifts a few dark pixels across the first bin edge. |
+| Fix | Round 2 adds `toe` 0.02 on the dark end of the ramp. The reshoot passed (mean 0.3194, rel −0.0053). |
+| Guard | `python3 tools/look/look.py gate` fails the pack when `reference` is `synthetic-pregrade`, and it fails a real frame whose mean or 16-bin histogram is outside ±10% of the key. God-ray sky p98 must clear 0.50 and 80% of the scene. At least two tower feet need a contact delta of 0.03. |
+| Sources | `tools/look/gates.py`; `tools/look/grade.py`; `/workspace/zb-unreal-look-fix-1011/gate-r1.json`; `/workspace/zb-unreal-look-fix-1011/gate-r2.json` |

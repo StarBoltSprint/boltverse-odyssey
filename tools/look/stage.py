@@ -66,7 +66,7 @@ if (QD.get("bench") === "1") {
   window.__benchOrigin = { x: st.x, z: st.z };
   window.__benchDts = [];
 }
-try { await import("./look/look.mjs").then((m) => m.attach(window.__lookCtx)); }
+try { await import("./look/look.mjs?v=fix1").then((m) => m.attach(window.__lookCtx)); }
 catch (err) { console.warn("look", err); }
 requestAnimationFrame(frame);
 """

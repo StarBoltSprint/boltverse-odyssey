@@ -13,6 +13,7 @@ def build(key_path, out_dir, sky=None, light=None, plates=None, game=None):
         "type": "PCFSoftShadowMap",
         "autoUpdate": False,
         "staticCast": False,
+        "staticContact": True,
         "movers": ["player", "npc", "drone", "bolt", "hero"],
         "neutral": True,
         "requests": [],
@@ -23,5 +24,6 @@ def selftest(check):
     feat = build("k", "o")
     check(feat["mapSize"] <= 1024, "map")
     check(feat["autoUpdate"] is False and feat["staticCast"] is False, "static")
+    check(feat["staticContact"] is True, "contact")
     check(feat["neutral"] is True, "neutral")
     check("rgb" not in feat and "requests" in feat, "no tint")

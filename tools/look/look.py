@@ -37,7 +37,7 @@ def build(a):
         "key": os.path.abspath(a.key),
         "sky": os.path.abspath(a.sky) if a.sky else None,
         "light": os.path.abspath(a.light) if a.light else None,
-        "features": {"grade": grade.build(a.key, a.out, a.game)},
+        "features": {"grade": grade.build(a.key, a.out, a.game, protect=a.protect, round_n=a.round, toe=a.toe)},
     }
     requests = []
     kw = dict(key_path=a.key, out_dir=a.out, sky=a.sky, light=a.light, plates=a.plates, game=a.game)
@@ -68,8 +68,17 @@ def main():
     b.add_argument("--out", required=True)
     b.add_argument("--sky")
     b.add_argument("--light")
-    b.add_argument("--game")
+    b.add_argument("--game", help="Identity framebuffer of the matched key camera. Required for a game-referenced grade.")
+    b.add_argument("--protect", type=float, default=0.0, help="Shoulder blend back toward identity, 0..1. Round 2 uses this to keep god rays.")
+    b.add_argument("--round", type=int, default=1)
+    b.add_argument("--toe", type=float, default=0.0, help="Lift applied to the dark end of the match ramp.")
     b.add_argument("--plates")
+    g = sub.add_parser("gate")
+    g.add_argument("--key", required=True)
+    g.add_argument("--frame", required=True)
+    g.add_argument("--scene")
+    g.add_argument("--pack")
+    g.add_argument("--out")
     i = sub.add_parser("install")
     i.add_argument("--live", required=True)
     i.add_argument("--stage", required=True)
@@ -80,6 +89,9 @@ def main():
         build(a)
     elif a.cmd == "install":
         print(json.dumps(stage.install(a.live, a.stage, os.path.join(HERE, "runtime"))))
+    elif a.cmd == "gate":
+        import gates
+        sys.exit(gates.main(["--key", a.key, "--frame", a.frame] + (["--scene", a.scene] if a.scene else []) + (["--pack", a.pack] if a.pack else []) + (["--out", a.out] if a.out else [])))
     elif a.cmd == "check":
         sys.exit(colour_check.main([None, HERE]))
     elif a.cmd == "selftest":

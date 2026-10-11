@@ -61,7 +61,7 @@ def main():
     if os.path.exists(live):
         patched = stage.patch_main(open(live, encoding="utf-8").read())
         check(patched.count("LOOK-UNREAL") >= 2, "markers")
-        check("await import(\"./look/look.mjs\")" in patched, "import")
+        check("await import(\"./look/look.mjs?v=fix1\")" in patched, "import")
         stage.patch_main(patched)
     row = budget.summarise([16.6] * 50 + [40])
     check(row["fpsAvg"] > 50, "fps")
@@ -76,6 +76,33 @@ def main():
             continue
         if hasattr(mod, "selftest"):
             mod.selftest(check)
+    import gates
+    same = np.tile(np.linspace(0.05, 0.9, 64, dtype=np.float32), (36, 1))
+    rgb = np.stack([same, same * 0.8, same * 0.6], axis=2)
+    luma = gates.luma_rows(rgb, rgb)
+    check(luma["pass"], "luma same " + str(luma["meanRel"]))
+    dark = np.clip(rgb * 0.55, 0, 1)
+    dark_row = gates.luma_rows(dark, rgb)
+    check(not dark_row["pass"], "dark luma must fail")
+    pack = {"features": {"grade": {"reference": "synthetic-pregrade"}}}
+    blocked = gates.evaluate(rgb, rgb, rgb, pack)
+    check(not blocked["pass"], "synthetic reference must fail")
+    sky = np.zeros((80, 120, 3), np.float32)
+    sky[:40] = 0.45
+    sky[:40, 20:24] = 0.85
+    sky[:40, 70:74] = 0.8
+    foot = np.full((100, 160, 3), 0.55, np.float32)
+    foot[30:70, 30:48] = 0.08
+    foot[70:76, 30:48] = 0.30
+    foot[30:68, 90:108] = 0.08
+    foot[68:74, 90:108] = 0.28
+    feet = gates.contact_rows(foot)
+    check(feet["pass"], "contact " + str(feet))
+    bare = np.full((100, 160, 3), 0.55, np.float32)
+    bare[30:70, 40:55] = 0.08
+    bare[30:68, 100:118] = 0.08
+    check(not gates.contact_rows(bare)["pass"], "missing contact must fail")
+    check(gates.godray_score(sky) >= gates.GODRAY_FLOOR, "godray floor")
     print("PASS look selftest")
     return 0
 

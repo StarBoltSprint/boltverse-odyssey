@@ -127,6 +127,7 @@ export function installShadows(ctx, feat) {
     light.color.setRGB(1, 1, 1);
   }
   const movers = new RegExp(feat.movers.join("|"), "i");
+  const contact = feat.staticContact !== false;
   let moving = 0;
   let frozen = 0;
   world.traverse((o) => {
@@ -135,15 +136,17 @@ export function installShadows(ctx, feat) {
       o.castShadow = true;
       moving++;
     } else if (o.castShadow) {
-      o.castShadow = false;
+      // One-shot contact. The map does not follow the mesh. Static casters stay in this bake.
+      if (!contact) o.castShadow = false;
       frozen++;
     }
   });
-  const on = moving > 0;
+  const on = moving > 0 || (contact && frozen > 0);
   renderer.shadowMap.enabled = on;
+  renderer.shadowMap.autoUpdate = false;
   if (light) light.castShadow = on;
   if (on) renderer.shadowMap.needsUpdate = true;
-  return { ok: true, movers: moving, staticOff: frozen, map: on, size };
+  return { ok: true, movers: moving, staticOff: frozen, staticContact: contact && frozen > 0, map: on, size };
 }
 
 export function installSprites(ctx, feat) {

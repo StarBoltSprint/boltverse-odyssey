@@ -47,4 +47,4 @@ That bench is one headless Chrome at 540×1200 with deviceScaleFactor 2. `sheet.
 
 ## Budget and the key
 
-`budget.py` is the v62 mode B table. `grade.py` `distance` is mean CIEDE2000 at width 96. Layout IoU is a different gate; this pack is scored on colour distance to the key.
+`budget.py` is the v62 mode B table. `grade.py` `distance` is mean CIEDE2000 at width 96. That number is a real framebuffer only when `reference` is `game`. `synthetic-pregrade` is not a pass. `look.py gate` blocks on luma, the histogram, god-ray brightness, and tower-foot contact, measured on the matched key camera.

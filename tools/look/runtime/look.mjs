@@ -97,16 +97,29 @@ function installGrade(ctx, feat, bloomOn) {
     uLut: { value: feat.lutStrength },
     uBloom: { value: Math.min(feat.bloom.strength, feat.bloom.strengthCap) },
     uBloomOn: { value: 0 },
-    uLutN: { value: feat.lut.n },
+    uLutN: { value: (feat.lut && feat.lut.n) || 16 },
+    tMatch: { value: null },
   });
+  const ramp = new Uint8Array(256 * 4);
+  for (let i = 0; i < 256; i++) ramp.set([i, i, i, 255], i * 4);
+  const placeholder = new THREE.DataTexture(ramp, 256, 1);
+  placeholder.colorSpace = THREE.NoColorSpace;
+  placeholder.magFilter = THREE.LinearFilter;
+  placeholder.minFilter = THREE.LinearFilter;
+  placeholder.needsUpdate = true;
+  filmic.m.uniforms.tMatch.value = placeholder;
   const bloom = pass(THREE, BLOOM_FRAG, {
     tSrc: { value: null },
     uThreshold: { value: feat.bloom.threshold.value },
     uMode: { value: 0 },
     uTexel: { value: new THREE.Vector2(1, 1) },
   });
+  const qGrade = new URLSearchParams(location.search).get("grade");
+  const curveId = qGrade === "id" ? 2 : feat.curve === "match" ? 3 : feat.curve === "agx" ? 1 : 0;
+  filmic.m.uniforms.uCurve.value = curveId;
+  if (qGrade === "id") filmic.m.uniforms.uBloom.value = 0;
   const loader = new THREE.TextureLoader();
-  loader.load("./look/" + feat.lut.file, (tex) => {
+  if (feat.lut && feat.lut.file) loader.load("./look/" + feat.lut.file, (tex) => {
     tex.colorSpace = THREE.NoColorSpace;
     tex.flipY = false;
     tex.magFilter = THREE.LinearFilter;
@@ -115,6 +128,18 @@ function installGrade(ctx, feat, bloomOn) {
     tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
     filmic.m.uniforms.tLut.value = tex;
   });
+  const matchFile = feat.match && feat.match.file;
+  if (matchFile) {
+    loader.load("./look/" + matchFile, (tex) => {
+      tex.colorSpace = THREE.NoColorSpace;
+      tex.flipY = false;
+      tex.magFilter = THREE.LinearFilter;
+      tex.minFilter = THREE.LinearFilter;
+      tex.generateMipmaps = false;
+      tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+      filmic.m.uniforms.tMatch.value = tex;
+    });
+  }
   let bloomRT = null, blurRT = null;
   const useBloom = bloomOn && feat.bloom.strength > 0;
   const inner = grade.render.bind(grade);

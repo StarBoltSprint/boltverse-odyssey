@@ -133,10 +133,84 @@ def write_lut(path, bands, strength):
     return {"file": os.path.basename(path), "n": n, "layout": "height=N, width=N*N, slice b, row g, column r"}
 
 
-def build(key_path, out_dir, game_path=None):
+def display_luma(img):
+    img = np.asarray(img, np.float32)
+    return 0.2126 * img[..., 0] + 0.7152 * img[..., 1] + 0.0722 * img[..., 2]
+
+
+def match_lut(scene, key, protect=0.0, n=256):
+    """Map the scene's display luma onto the key's luma. protect blends the shoulder back toward identity."""
+    ys = display_luma(scene).ravel()
+    yk = display_luma(key).ravel()
+    qs = np.linspace(0.0, 1.0, 1024)
+    src_q = np.quantile(ys, qs)
+    key_q = np.quantile(yk, qs)
+    src_q = np.maximum.accumulate(src_q + np.linspace(0.0, 1e-5, src_q.size))
+    xs = (np.arange(n) + 0.5) / n
+    rank = np.interp(xs, src_q, qs)
+    out = np.interp(rank, qs, key_q).astype(np.float32)
+    if protect > 0:
+        w = np.clip((xs - 0.50) / 0.35, 0.0, 1.0) * float(protect)
+        out = out * (1.0 - w) + xs.astype(np.float32) * w
+    out = np.maximum.accumulate(np.clip(out, 0.0, 1.0))
+    return out
+
+
+def toe_lift(lut, amount, knee=0.18):
+    """Lift the darkest luma so the first histogram bin is not one screenshot step over the key."""
+    if amount <= 0:
+        return lut
+    xs = (np.arange(lut.size) + 0.5) / lut.size
+    w = np.clip(1.0 - xs / knee, 0.0, 1.0)
+    return np.maximum.accumulate(np.clip(lut + float(amount) * w, 0.0, 1.0)).astype(np.float32)
+
+
+def apply_match(scene, lut):
+    """Same scale the match shader uses: display rgb times (lut(y) / y)."""
+    y = display_luma(scene)
+    xs = (np.arange(lut.size) + 0.5) / lut.size
+    y2 = np.interp(y, xs, lut).astype(np.float32)
+    scale = (y2 / np.maximum(y, 1e-4))[..., None]
+    return np.clip(scene * scale, 0.0, 1.0).astype(np.float32)
+
+
+def write_match(path, lut):
+    n = int(lut.size)
+    img = np.repeat(lut.reshape(1, n, 1), 3, axis=2)
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    Image.fromarray(np.clip(img * 255.0, 0, 255).astype(np.uint8)).save(path)
+    return {"file": os.path.basename(path), "n": n, "method": "luma-cdf"}
+
+
+def build(key_path, out_dir, game_path=None, protect=0.0, round_n=1, toe=0.0):
     key = sample.load_rgb(key_path)
-    game = sample.load_rgb(game_path) if game_path else None
-    feat = fit(key, os.path.abspath(key_path), game)
+    if game_path:
+        scene = sample.load_rgb(game_path)
+        lut = toe_lift(match_lut(scene, key, protect=protect), toe)
+        graded = apply_match(scene, lut)
+        match = write_match(os.path.join(out_dir, "match.png"), lut)
+        # Identity 3D LUT so an old shader that still samples lut.png stays neutral.
+        bands = sample.lab_bands(key, os.path.abspath(key_path))
+        lut3 = write_lut(os.path.join(out_dir, "lut.png"), bands, 0.0)
+        thr = sample.luma_percentile(key, 99.5, os.path.abspath(key_path))
+        return {
+            "id": "grade",
+            "enabled": True,
+            "flag": "grade",
+            "curve": "match",
+            "exposure": 1.0,
+            "lutStrength": 0.0,
+            "distance": distance(graded, key),
+            "reference": "game",
+            "game": os.path.abspath(game_path),
+            "round": int(round_n),
+            "protect": float(protect),
+            "toe": float(toe),
+            "match": match,
+            "lut": lut3,
+            "bloom": {"strength": 0.0, "strengthCap": BLOOM_CAP, "scale": 0.25, "threshold": thr, "enabled": False},
+        }
+    feat = fit(key, os.path.abspath(key_path), None)
     lut = write_lut(os.path.join(out_dir, "lut.png"), feat["bands"], feat["lutStrength"])
     feat["lut"] = lut
     return feat
