@@ -36,6 +36,8 @@ Relief comes only from the image painted on that face; never invent it.
 
 Blender's glTF exporter stores `v' = 1 - v`. `vision_mesh.py` writes that complement so the runtime `flipY: false` samples the png the way the atlas was packed.
 
+`python3 tools/imagine-to-3d/multiview_tower.py --faces --work <dir>` skins that solid from the 11 Oct face plates at native crop size. `face-left-1024.jpg` is the right plate mirrored. `face-left-REJECTED.jpg` is never opened. A plate whose picture is the front stays off the back face. The bottom 4% of height keeps inset 0 so a grounding column hits the foot chord. The runtime seats on `right/up/toward/origin` when that basis exists and does not apply `meta.cameraSpace`. Lit draws are `MeshBasicMaterial` on the Imagine albedo (`toneMapped: false`). `tools/object-gate/lib/probe.js` `readRT` writes sRGB. MoGe-2 remains the relief. A phone overrun is reported; the plates are not downscaled.
+
 ## Align-solve
 
 `python3 tools/imagine-to-3d/auto.py run <spec> --method fusion5 --solve-camera --search cmaes` reframes the existing fusion5 mesh with `tools/common/align` (vanishing-point camera, then CMA-ES). The object gate's relief row reads `overlap`, which is that module's `alignment` (min of Canny edge precision and recall at 2 px, bar 0.70, blocking). Licences are in `tools/common/align/README.md`.

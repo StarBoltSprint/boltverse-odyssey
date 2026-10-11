@@ -8,11 +8,13 @@ Relief is MoGe-2 metres on that face, high-pass, then the measured cell median.
 No new Imagine image. Placement layout is not written.
 
   python3 tools/imagine-to-3d/multiview_tower.py --work steps/multiview-tower-1011/work
+  python3 tools/imagine-to-3d/multiview_tower.py --faces --work steps/hires-tower-1011/work
 """
 from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 import time
@@ -41,6 +43,13 @@ OLD_CUTS = {
     "right": "/workspace/i23d-auto/zoneb-tower-hero/masks/_src-view-right.jpg",
 }
 NAMES = ("front", "left", "back", "right")
+HIRES_FILES = {
+    "front": "face-front-1024.jpg",
+    "back": "face-back-1024.jpg",
+    "right": "face-right-1024.jpg",
+    "left": "face-left-1024.jpg",
+}
+REJECTED_LEFT = "face-left-REJECTED.jpg"
 
 
 def split_sheet(rgb):
@@ -104,6 +113,117 @@ def mask_widths(mask):
         xs = np.where(mask[y])[0]
         out[y] = 0 if len(xs) == 0 else float(xs[-1] - xs[0] + 1)
     return out
+
+
+def width_over_height(mask, n=64):
+    """Subject width / subject height, foot (index 0) to crown.
+
+    Empty margin rows are not the foot. A zero-width row there clipped the
+    depth ratio to 0.15 and stretched the back face to the 1.4 cap.
+    """
+    w = mask_widths(mask)
+    rows_nz = np.flatnonzero(w > 1)
+    if len(rows_nz) < 4:
+        return np.full(n, 0.3, np.float32)
+    y0, y1 = int(rows_nz[0]), int(rows_nz[-1])
+    h = max(1, y1 - y0)
+    lo = y0 + 0.02 * h
+    hi = y1 - 0.02 * h
+    rows = np.linspace(hi, lo, n)
+    ww = np.interp(rows, np.arange(len(w)), w)
+    return ww / float(h)
+
+
+def crop_subject(rgb, margin=2):
+    """Tight crop. No resample, so the plate is not downscaled."""
+    m, bg = subject_mask(rgb)
+    ys, xs = np.where(m)
+    if len(xs) == 0:
+        return rgb, m, bg
+    y0 = max(0, int(ys.min()) - margin)
+    y1 = min(rgb.shape[0], int(ys.max()) + 1 + margin)
+    x0 = max(0, int(xs.min()) - margin)
+    x1 = min(rgb.shape[1], int(xs.max()) + 1 + margin)
+    return rgb[y0:y1, x0:x1].copy(), m[y0:y1, x0:x1].copy(), bg
+
+
+def pier_side(rgb, mask):
+    g = cv2.cvtColor(rgb, cv2.COLOR_RGB2GRAY).astype(np.float32)
+    ys, xs = np.where(mask)
+    if len(xs) < 10:
+        return "empty"
+    x0, x1 = int(xs.min()), int(xs.max())
+    y0, y1 = int(ys.min()), int(ys.max())
+    ya, yb = int(y0 + 0.25 * (y1 - y0)), int(y0 + 0.75 * (y1 - y0))
+    w = max(1, x1 - x0 + 1)
+    def mean(x_a, x_b):
+        sl = g[ya:yb, x_a:x_b]
+        sm = mask[ya:yb, x_a:x_b]
+        if sm.sum() < 8:
+            return 0.0
+        return float(sl[sm].mean())
+    left = mean(x0, x0 + w // 3)
+    right = mean(x1 - w // 3, x1 + 1)
+    if right > left + 8:
+        return "pier-on-viewer-right"
+    if left > right + 8:
+        return "pier-on-viewer-left"
+    return "balanced"
+
+
+FACE_DIR = "/workspace/i23d-auto/zoneb-tower-hero/imagine/in"
+
+
+def apply_hires(panels, masks, report):
+    """Front, left, and right take the 1024 plates at native crop.
+
+    face-back-1024 is measured and then left unused when it does not show the
+    back. face-left-REJECTED is never opened. No resample.
+    """
+    verdicts = {}
+    back_rgb = np.asarray(Image.open(os.path.join(FACE_DIR, HIRES_FILES["back"])).convert("RGB"))
+    back_crop, back_m, _bg = crop_subject(back_rgb)
+    nccs = {n: round(ncc_resize(back_crop, panels[i]), 3) for i, n in enumerate(NAMES)}
+    best = max(nccs, key=nccs.get)
+    verdicts["back_file"] = {
+        "file": HIRES_FILES["back"],
+        "file_px": [int(back_rgb.shape[1]), int(back_rgb.shape[0])],
+        "crop_px": [int(back_crop.shape[1]), int(back_crop.shape[0])],
+        "pier": pier_side(back_crop, back_m),
+        "ncc_vs_sheet": nccs,
+        "best_sheet": best,
+        "used": False,
+        "reason": "pier sits on the viewer's right, the same side as the front. Best NCC is not the sheet back. The old sheet panel stays on this face.",
+    }
+    right_rgb = np.asarray(Image.open(os.path.join(FACE_DIR, HIRES_FILES["right"])).convert("RGB"))
+    for name in ("front", "right", "left"):
+        rgb = right_rgb if name == "right" else np.asarray(Image.open(os.path.join(FACE_DIR, HIRES_FILES[name])).convert("RGB"))
+        crop, m, _bg = crop_subject(rgb)
+        nccs = {n: round(ncc_resize(crop, panels[j]), 3) for j, n in enumerate(NAMES)}
+        best = max(nccs, key=nccs.get)
+        mirror = None
+        if name == "left":
+            right_crop, _, _ = crop_subject(np.ascontiguousarray(right_rgb[:, ::-1]))
+            mirror = round(ncc_resize(crop, right_crop), 3)
+        i = NAMES.index(name)
+        panels[i] = crop
+        masks[i] = m
+        verdicts[name] = {
+            "file": HIRES_FILES[name],
+            "record": "mirrored right" if name == "left" else "own plate",
+            "file_px": [int(rgb.shape[1]), int(rgb.shape[0])],
+            "crop_px": [int(crop.shape[1]), int(crop.shape[0])],
+            "pier": pier_side(crop, m),
+            "ncc_vs_sheet": nccs,
+            "best_sheet": best,
+            "ncc_vs_flipped_right": mirror,
+            "used": True,
+            "resampled": False,
+        }
+    verdicts["ladder"] = "ladder not painted"
+    verdicts["rejected_left"] = "not opened"
+    report["hires"] = verdicts
+    return panels, masks
 
 
 def silhouette_iou(a, b):
@@ -296,28 +416,34 @@ def build_mesh(poly, y0, y1, depth_ratio, back_ratio, insets, ny=96):
     # index of ring vertex. layout per ring: front nxf, right nz-1, back nxf, left nz-1
     stride = nxf + (nz - 1) + nxf + (nz - 1)
     for y, xmin, xmax, bx0, bx1, depth in rings:
+        # t from the loft loop is the crown. Bind it to this ring or the
+        # foot band never fires and the lip stays in the air.
+        t = (float(y) - y0) / max(1e-6, y1 - y0)
+        # Relief on the first rings overhangs the foot. A column under that
+        # lip misses the base and the grounding probe reads the lip as air.
+        foot_band = t < 0.04
         for i in range(nxf):
             u = i / (nxf - 1)
             x = xmin + u * (xmax - xmin)
-            off = sample_inset(insets["front"], u, (y - y0) / (y1 - y0))
+            off = 0.0 if foot_band else sample_inset(insets["front"], u, t)
             verts.append((x, y, 0.0 + off))
         for i in range(1, nz):
             u = i / nz
             x = xmax + u * (bx1 - xmax)
             z = 0.0 + u * (-depth)
-            off = sample_inset(insets["right"], u, (y - y0) / (y1 - y0))
+            off = 0.0 if foot_band else sample_inset(insets["right"], u, t)
             # outward is roughly +x; a positive outward moves +x
             verts.append((x + off, y, z))
         for i in range(nxf):
             u = i / (nxf - 1)
             x = bx1 + u * (bx0 - bx1)
-            off = sample_inset(insets["back"], u, (y - y0) / (y1 - y0))
+            off = 0.0 if foot_band else sample_inset(insets["back"], u, t)
             verts.append((x, y, -depth - off))
         for i in range(1, nz):
             u = i / nz
             x = bx0 + u * (xmin - bx0)
             z = -depth + u * depth
-            off = sample_inset(insets["left"], u, (y - y0) / (y1 - y0))
+            off = 0.0 if foot_band else sample_inset(insets["left"], u, t)
             verts.append((x - off, y, z))
     V = np.asarray(verts, np.float64)
     faces = []
@@ -403,13 +529,26 @@ def build_mesh(poly, y0, y1, depth_ratio, back_ratio, insets, ny=96):
     V = np.vstack([V, foot_c, top_c])
     ic_foot = len(V) - 2
     ic_top = len(V) - 1
+    # Foot ring stays wide. Collapsing it to one vertex leaves the real base
+    # one ring up (~2 m) and the grounding probe reads that air as float.
+    # Caps are unpainted. UVs span the footprint at the face px/m (see "cap").
+    xs = V[:stride, 0]
+    zs = V[:stride, 2]
+    x0, x1 = float(xs.min()), float(xs.max())
+    z0, z1 = float(zs.min()), float(zs.max())
+
+    def cap_uv(idx):
+        x, z = float(V[idx, 0]), float(V[idx, 2])
+        u = (x - x0) / max(1e-6, x1 - x0)
+        v = (z - z0) / max(1e-6, z1 - z0)
+        return ("cap", float(np.clip(u, 0, 1)), float(np.clip(v, 0, 1)))
+
     for i in range(stride):
         j = (i + 1) % stride
-        # bottom outward -Y: foot ring order seen from above is CCW-ish; flip
         faces.append((ic_foot, foot + j, foot + i))
-        uvs.append([(0.02, 0.02), (0.02, 0.02), (0.02, 0.02)])
+        uvs.append([cap_uv(ic_foot), cap_uv(foot + j), cap_uv(foot + i)])
         faces.append((ic_top, top + i, top + j))
-        uvs.append([(0.02, 0.98), (0.02, 0.98), (0.02, 0.98)])
+        uvs.append([cap_uv(ic_top), cap_uv(top + i), cap_uv(top + j)])
     F = np.asarray(faces, np.int32)
     # fix winding so front faces point +Z
     front = F[0]
@@ -418,11 +557,11 @@ def build_mesh(poly, y0, y1, depth_ratio, back_ratio, insets, ny=96):
     if n[2] < 0:
         F = F[:, ::-1]
         uvs = [[u[2], u[1], u[0]] for u in uvs]
-    V, F, uvs = weld_closed(V, F, uvs, y0, y1)
+    V, F, uvs = weld_closed(V, F, uvs, y0, y1, weld_foot=False)
     return V, F, uvs, rings
 
 
-def weld_closed(V, F, uvs, y0, y1, tol=0.002, tip=0.05):
+def weld_closed(V, F, uvs, y0, y1, tol=0.002, tip=0.05, weld_foot=True):
     """The key crown and foot are points. Every vertex on that row becomes one vertex.
 
     Relief must not leave a ring of copies there: those copies share edges and
@@ -430,7 +569,7 @@ def weld_closed(V, F, uvs, y0, y1, tol=0.002, tip=0.05):
     triangle with one tip vertex and two vertices on the next ring stays.
     """
     def key_of(p):
-        if abs(float(p[1]) - y0) <= tip:
+        if weld_foot and abs(float(p[1]) - y0) <= tip:
             return ("foot",)
         if abs(float(p[1]) - y1) <= tip:
             return ("crown",)
@@ -646,6 +785,15 @@ def main():
         Image.fromarray((m.astype(np.uint8) * 255)).save(os.path.join(work, f"mask-{name}.png"))
         h, w = panels[i].shape[:2]
         report["plates"][name] = {"px": [w, h], "hw": round(h / max(1, w), 3), "bg": [round(float(x), 1) for x in bg]}
+    use_faces = "--faces" in sys.argv
+    if use_faces:
+        panels, masks = apply_hires(panels, masks, report)
+        for i, name in enumerate(NAMES):
+            Image.fromarray(panels[i]).save(os.path.join(work, f"panel-{name}.jpg"), quality=92)
+            Image.fromarray((masks[i].astype(np.uint8) * 255)).save(os.path.join(work, f"mask-{name}.png"))
+            h, w = panels[i].shape[:2]
+            report["plates"][name]["hires_px"] = [w, h]
+            report["plates"][name]["hires_hw"] = round(h / max(1, w), 3)
     # what each panel shows, from the measured aspect and the prompt order
     report["plates"]["faces"] = {
         "front": "broad glass elevation, concrete pier on the viewer's right, sheared crown, two damage bands. Check only.",
@@ -683,12 +831,11 @@ def main():
     poly, y0, y1 = key_spans(doc)
     height = y1 - y0
     # ratios along the normalised height, foot -> crown. Image row 0 is the crown.
-    front_w = mask_widths(masks[0])[::-1]
+    front_wh = width_over_height(masks[0])
     def ratio(mask):
-        w = mask_widths(mask)[::-1]
-        n = min(len(w), len(front_w))
-        src = np.linspace(0, 1, n)
-        r = w[:n] / np.maximum(front_w[:n], 1.0)
+        w = width_over_height(mask)
+        src = np.linspace(0, 1, len(w))
+        r = w / np.maximum(front_wh, 1e-6)
         r = np.clip(r, 0.15, 1.4)
         return src, r
     depth_l = ratio(masks[1])
@@ -707,9 +854,19 @@ def main():
         "h_over_w": round(h_over_w, 3),
         "source": "width and height from the key silhouette; depth/width from left and right panel widths at the same height",
     }
-    # Front first, then colour-match each hidden face's shared edge to that key projection.
-    ppm_front = 419.0 / height
-    front_img = project_front(HOMO, KEY, poly, y0, y1, ppm_front)
+    # Front first, then colour-match each hidden face's shared edge to that front.
+    if use_faces:
+        front_img = panels[0].copy()
+        plate_ppm = front_img.shape[0] / height
+        report["key_composite"] = {
+            "applied": False,
+            "reason": "The front plate is finer than the key crop (~3.7 px/m). Copying key pixels onto it would enlarge one source pixel. The plate fills the front. The key stays the silhouette.",
+            "plate_ppm": round(float(plate_ppm), 3),
+        }
+    else:
+        ppm_front = 419.0 / height
+        front_img = project_front(HOMO, KEY, poly, y0, y1, ppm_front)
+        report["key_composite"] = {"applied": True, "reason": "sheet path: key projection, one source pixel never enlarged"}
     front_m = front_img.sum(2) > 8
     seam = {}
     for idx, side in ((1, "left"), (3, "right")):
@@ -764,7 +921,7 @@ def main():
         Image.fromarray(im).save(os.path.join(work, f"grade-{name}.jpg"), quality=90)
     # masks for graded images: front is the projected tower (nonzero), others are the sheet masks
     face_mask = {
-        "front": front_img.sum(2) > 8,
+        "front": masks[0] if use_faces else (front_img.sum(2) > 8),
         "left": masks[1],
         "back": masks[2],
         "right": masks[3],
@@ -824,21 +981,14 @@ def main():
     report["cheap"]["stripe"] = geo["stripe"]
 
     V, F, raw_uv, rings = build_mesh(poly, y0, y1, depth_ratio, back_ratio, insets, ny=80)
+    # Grey cap island at the front face px/m. view-top and view-under are not plans.
+    ppm_cap = face_img["front"].shape[0] / max(1e-6, y1 - y0)
+    cap_w = max(8, int(round(float(V[:, 0].max() - V[:, 0].min()) * ppm_cap)))
+    cap_d = max(8, int(round(float(V[:, 2].max() - V[:, 2].min()) * ppm_cap)))
+    face_img["cap"] = np.full((cap_d, cap_w, 3), 180, np.uint8)
+    report["cap"] = {"px": [cap_w, cap_d], "ppm": round(float(ppm_cap), 3), "paint": "unpainted grey", "view_top_projected": False}
     atlas, rects = pack_atlas(face_img)
     UV = bake_uv(raw_uv, rects)
-    # Caps are unpainted (view-top is not a roof plan). Give them grey-padding
-    # UVs at the front face's px/m so the jacobian is finite.
-    ah, aw = atlas.shape[:2]
-    ppm_cap = ah / max(1e-6, y1 - y0) if False else (face_img["front"].shape[0] / max(1e-6, y1 - y0))
-    x0 = float(V[:, 0].min())
-    z0 = float(V[:, 2].min())
-    for i, f in enumerate(F):
-        if abs(float(UV[i, 0, 0]) - 0.02) > 1e-6:
-            continue
-        for k in range(3):
-            x, z = float(V[f[k], 0]), float(V[f[k], 2])
-            UV[i, k, 0] = float(np.clip(0.002 + (x - x0) * ppm_cap / aw, 0, 0.12))
-            UV[i, k, 1] = float(np.clip(0.002 + (z - z0) * ppm_cap / ah, 0, 0.45))
     Image.fromarray(atlas).save(os.path.join(work, "albedo.png"))
     # flat normal; the geometry holds the relief. A mismatched old normal would invent shading.
     normal = np.zeros((*atlas.shape[:2], 3), np.uint8)

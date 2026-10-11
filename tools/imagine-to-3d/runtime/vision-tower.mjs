@@ -79,11 +79,11 @@ renderer.render = function (s, c) {
 for (let i = 0; i < 4; i++) await new Promise((r) => requestAnimationFrame(r));
 if (!scene) throw new Error("vision tower: no scene");
 
-const gltf = await new GLTFLoader().loadAsync("./objects1/vision/tower.glb?v=fusion5");
+const gltf = await new GLTFLoader().loadAsync("./objects1/vision/tower.glb?v=fusion8");
 let src = null;
 gltf.scene.traverse((o) => { if (!src && o.isMesh) src = o; });
 const aniso = renderer.capabilities.getMaxAnisotropy();
-const albedo = new THREE.TextureLoader().load("./objects1/vision/albedo.png?v=fusion5");
+const albedo = new THREE.TextureLoader().load("./objects1/vision/albedo.png?v=fusion8");
 albedo.colorSpace = THREE.SRGBColorSpace;
 albedo.anisotropy = aniso;
 albedo.flipY = false;
@@ -92,7 +92,7 @@ albedo.wrapT = THREE.ClampToEdgeWrapping;
 albedo.minFilter = THREE.LinearMipmapLinearFilter;
 albedo.magFilter = THREE.LinearFilter;
 albedo.generateMipmaps = true;
-const normal = new THREE.TextureLoader().load("./objects1/vision/normal.png?v=fusion5");
+const normal = new THREE.TextureLoader().load("./objects1/vision/normal.png?v=fusion8");
 normal.colorSpace = THREE.NoColorSpace || THREE.LinearSRGBColorSpace;
 normal.anisotropy = aniso;
 normal.flipY = false;
@@ -102,8 +102,10 @@ normal.minFilter = THREE.LinearMipmapLinearFilter;
 normal.magFilter = THREE.LinearFilter;
 normal.generateMipmaps = true;
 
-// Unlit Imagine plate. A standard material on this page read L* 0.1 and hid the facade.
-const lit = new THREE.MeshBasicMaterial({ map: albedo });
+// Unlit Imagine plate. MeshStandard multiplied this pre-lit albedo by the page
+// sun. The front normal faces away from that sun, so the lit ortho was a
+// near-black maroon (gate Lab L* 0.1) while the albedo shade stayed bright.
+const lit = new THREE.MeshBasicMaterial({ map: albedo, toneMapped: false });
 const relief = new THREE.MeshStandardMaterial({
   color: 0x8a8a8a, normalMap: normal, metalness: 0, roughness: 1,
   emissive: new THREE.Color(0x000000),
@@ -112,11 +114,11 @@ const unlit = new THREE.MeshBasicMaterial({ map: albedo });
 // Phase 2 only. A missing or unready plate must not touch the lit shader.
 let nearDoc = { ready: false };
 try {
-  const nr = await fetch("./objects1/vision/near.json?v=fusion5");
+  const nr = await fetch("./objects1/vision/near.json?v=fusion7");
   if (nr.ok) nearDoc = await nr.json();
 } catch (e) { nearDoc = { ready: false }; }
 if (nearDoc && nearDoc.ready) {
-  const nearTex = new THREE.TextureLoader().load("./objects1/vision/near-atlas.png?v=fusion5");
+  const nearTex = new THREE.TextureLoader().load("./objects1/vision/near-atlas.png?v=fusion7");
   nearTex.flipY = false;
   nearTex.colorSpace = THREE.SRGBColorSpace;
   nearTex.wrapS = THREE.ClampToEdgeWrapping;
@@ -161,20 +163,71 @@ mesh.castShadow = true;
 mesh.receiveShadow = true;
 mesh.frustumCulled = false;
 const M = new THREE.Matrix4();
-if (meta.cameraSpace && meta.keycam && meta.keycam.mw) {
-  // Mesh is in the key camera frame (X right, Y up, Z toward the camera, negative).
-  M.fromArray(meta.keycam.mw);
-} else {
+// This solid is local metres. The staged hero uses right/up/toward/origin.
+// meta.cameraSpace on this file is the key camera. Applying it moves the
+// tower off the staged footprint (placement is out of scope).
+if (meta.right && meta.up && meta.toward && meta.origin) {
   M.makeBasis(
     new THREE.Vector3(...meta.right),
     new THREE.Vector3(...meta.up),
     new THREE.Vector3(...meta.toward),
   );
   M.setPosition(...meta.origin);
+} else if (meta.cameraSpace && meta.keycam && meta.keycam.mw) {
+  M.fromArray(meta.keycam.mw);
+} else {
+  throw new Error("vision tower: no basis and no camera matrix");
 }
 mesh.setMatrixAt(0, M);
 mesh.instanceMatrix.needsUpdate = true;
 mesh.updateMatrixWorld(true);
+// Seat the AABB on the median ground under the footprint. A pit column inside
+// that footprint is lifted to the median. Outside it, the dune stays.
+if (window.__zbField && typeof window.__zbField.surfaceHeight === "function") {
+  const box0 = new THREE.Box3().setFromObject(mesh);
+  const samples = [];
+  const n = 5;
+  const sx = box0.max.x - box0.min.x;
+  const sz = box0.max.z - box0.min.z;
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+    const x = box0.min.x + ((i + 0.5) / n) * sx;
+    const z = box0.min.z + ((j + 0.5) / n) * sz;
+    samples.push(window.__zbField.surfaceHeight(x, z));
+  }
+  samples.sort((a, b) => a - b);
+  const median = samples[(samples.length / 2) | 0];
+  // Seat on the highest sample. A median through a pit sinks the whole tower
+  // and leaves the deep columns in the air. The plinth then lifts every
+  // footprint column up to that floor, so the base is not buried either.
+  const floor = samples[samples.length - 1];
+  const lift = floor - box0.min.y;
+  M.elements[13] += lift;
+  mesh.setMatrixAt(0, M);
+  mesh.instanceMatrix.needsUpdate = true;
+  mesh.updateMatrixWorld(true);
+  if (mesh.geometry.boundingBox) mesh.geometry.boundingBox = null;
+  window.__visionSeat = {
+    lift: +lift.toFixed(3),
+    baseY: +(box0.min.y + lift).toFixed(3),
+    groundMin: +samples[0].toFixed(3),
+    groundMedian: +median.toFixed(3),
+    groundMax: +floor.toFixed(3),
+  };
+  const rawH = window.__zbField.surfaceHeight.bind(window.__zbField);
+  const minX = box0.min.x, maxX = box0.max.x, minZ = box0.min.z, maxZ = box0.max.z;
+  window.__zbField.surfaceHeight = (x, z) => {
+    const h = rawH(x, z);
+    if (x < minX || x > maxX || z < minZ || z > maxZ) return h;
+    return Math.max(h, floor);
+  };
+  window.__visionPlinth = {
+    floor: +floor.toFixed(3),
+    median: +median.toFixed(3),
+    minX: +minX.toFixed(2), maxX: +maxX.toFixed(2),
+    minZ: +minZ.toFixed(2), maxZ: +maxZ.toFixed(2),
+    rule: "footprint columns raised to the max sampled ground",
+  };
+}
 const fitBox = new THREE.Box3().setFromObject(mesh);
 window.__fusionFit = { min: fitBox.min.toArray(), max: fitBox.max.toArray() };
 scene.add(mesh);

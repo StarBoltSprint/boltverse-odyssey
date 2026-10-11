@@ -263,6 +263,9 @@
   function readRT(w, h, draw) {
     const { THREE, renderer } = H();
     const rt = new THREE.WebGLRenderTarget(w, h);
+    // Default RT stores linear bytes. The gate reads them as sRGB, so a lit
+    // facade of linear ~0.03 became Lab L* 0.1. Encode on write.
+    if (THREE.SRGBColorSpace) rt.texture.colorSpace = THREE.SRGBColorSpace;
     const prevT = renderer.getRenderTarget(), prevC = renderer.getClearColor(new THREE.Color()), prevA = renderer.getClearAlpha();
     const auto = renderer.info.autoReset;
     renderer.setRenderTarget(rt); renderer.setClearColor(0x000000, 1); renderer.clear();

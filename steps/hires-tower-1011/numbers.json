@@ -1,0 +1,209 @@
+{
+  "verdict": "FAIL",
+  "facade": "FAIL",
+  "placement": "out of scope",
+  "vision_cost_usd": 0.00748055,
+  "vision_api_called": true,
+  "dataset_exported": false,
+  "dataset_reason": "strict_score with a vision yes is under 0.70 on every view and gate5 has 9 fails. Nothing written under dataset/i23d.",
+  "before": {
+    "source": "steps/multiview-tower-1011/numbers.json",
+    "facade_strict": {
+      "key": 0.69,
+      "hero": 0.69,
+      "30m": 0.69,
+      "8m": 0.69,
+      "side": 0.6667
+    },
+    "facade_strict_before_vision_cap": {
+      "key": 0.8917,
+      "hero": 0.9165,
+      "30m": 0.9165,
+      "8m": 0.8794,
+      "side": 0.6667
+    },
+    "facade_alignment": {
+      "key": 0.1207,
+      "hero": 0.073,
+      "30m": 0.073,
+      "8m": 0.0181,
+      "side": 0.0258
+    },
+    "strict_vision": "no on key, hero, 30m, 8m, side",
+    "relief_axes_m": {"+x": 0.517, "-x": 0.443, "+z": 0.163, "-z": 0.32},
+    "proportions": {"h_over_w_mesh": 3.699, "d_over_w_mesh": 0.792, "d_over_w_plate": 0.761},
+    "browser_float_m": 2.45,
+    "browser_float_at": [87.8, -98.7],
+    "gate5": {"exit": 1, "fails": 11, "rows": 21},
+    "colour_lab": [0.1, 0.5, -0.1],
+    "colour_delta_e_vs_key": 36.5
+  },
+  "after": {
+    "facade_strict": {
+      "key": 0.69,
+      "hero": 0.0,
+      "30m": 0.0,
+      "8m": 0.69,
+      "side": 0.69
+    },
+    "facade_strict_before_vision_cap": {
+      "key": 0.8916,
+      "hero": 0.0,
+      "30m": 0.0,
+      "8m": 0.8992,
+      "side": 0.915
+    },
+    "facade_alignment": {
+      "key": 0.1024,
+      "hero": 0.1663,
+      "30m": 0.1663,
+      "8m": 0.0057,
+      "side": 0.1611
+    },
+    "facade_strict_note": "vision no caps key and side at 0.69. Hero and 30m are the same png and already 0 on stripe. The 8 m albedo frame is black (L* 0.48); vision was not called on it and the reported strict is the no-cap. The phone 8 m capture cap-visible-8m is not black (L* 48.92) and is flat, so visible px/m stays 0.",
+    "strict_vision": "no on key, hero, side. 30m is the same file as hero. 8m albedo not sent (black).",
+    "stripe": {"key": 1.0, "hero": 0.0, "30m": 0.0, "8m": 1.0, "side": 1.0},
+    "front_vs_key_strict_geometry": 0.4557,
+    "relief_axes_m": {"+x": 0.393, "-x": 0.405, "+z": 0.457, "-z": 0.002, "+y": null},
+    "relief_note": "Gate row printed PASS because minReliefFaces is 2. Spec wants non-zero relief on every visible axis. -z is 0.002 m because face-back-1024 was not used. Levels were not scaled.",
+    "relief_faces_span_m": {"front": 0.6851, "left": 0.4014, "back": 0.0, "right": 0.7807},
+    "proportions": {
+      "height_m": 173.821,
+      "width_m": 45.744,
+      "h_over_w_plate": 3.8,
+      "h_over_w_mesh": 3.711,
+      "d_over_w_plate_foot": 0.86,
+      "d_over_w_mesh": 0.859,
+      "gate_d_over_w": 0.86
+    },
+    "size_m": [46.837, 173.821, 40.211],
+    "browser_float_m": 0.0,
+    "browser_float_at": [88.6, -100.2],
+    "base_y": 7.74,
+    "round1_float_m": 25.563,
+    "round1_float_note": "cameraSpace matrix, not a pit under the staged footprint",
+    "round2_float_m": 1.536,
+    "round2_float_at": [102.6, -113.6],
+    "uv_stretch": {"+z": 1.388, "+x": 4.627, "-x": 6.145, "-z": 1.422, "+y": 10.148, "-y": 1.001},
+    "colour_delta_e_play_vs_key": 12.45,
+    "colour_lab_play": [42.1, 1.3, 0.5],
+    "phone_draw_calls_scene": 19,
+    "phone_tris_scene": 245253
+  },
+  "px_per_m": {
+    "front": 6.932,
+    "left": 10.033,
+    "back": 5.391,
+    "right": 10.033,
+    "target": 9.6,
+    "note": "4 times the multiview 2.4 px/m is 9.6. The front file is 720x1280 and was not upscaled. The back number is the old sheet panel."
+  },
+  "delta_e_ortho_vs_plate": {
+    "front_face_z": 7.73,
+    "front_ortho": 9.81,
+    "side_face_x": 40.59,
+    "side_ortho": 43.15,
+    "back": null,
+    "left": null,
+    "unit": "CIE76 of mean Lab, same conversion as the object gate",
+    "bar": 10,
+    "visible_8m_L": 48.92,
+    "albedo_8m_L": 0.48
+  },
+  "faces": {
+    "front": {
+      "plate": "face-front-1024.jpg",
+      "file_px": [720, 1280],
+      "showed": "broad glass, concrete pier on the viewer's right, sheared crown, two damage bands, full height, light-grey isolation. No ladder.",
+      "used": true,
+      "resampled": false,
+      "ppm": 6.932,
+      "span_m": 0.6851,
+      "ncc_best_sheet": "front",
+      "ncc": 0.806
+    },
+    "left": {
+      "plate": "face-left-1024.jpg",
+      "record": "mirrored right",
+      "file_px": [1008, 1792],
+      "showed": "same narrow stone side as face-right, flipped. Pier on the viewer's right. Cables, no ladder rails.",
+      "used": true,
+      "resampled": false,
+      "ppm": 10.033,
+      "span_m": 0.4014,
+      "ncc_vs_flipped_right": 1.0
+    },
+    "back": {
+      "plate": "face-back-1024.jpg",
+      "file_px": [1008, 1792],
+      "showed": "second broad elevation, pier on the viewer's right, same family as the front. Not the sheet back.",
+      "used": false,
+      "reason": "NCC vs the sheet prefers the front (0.801). The old sheet panel stays on -z.",
+      "ppm": 5.391,
+      "span_m": 0.0
+    },
+    "right": {
+      "plate": "face-right-1024.jpg",
+      "file_px": [1008, 1792],
+      "showed": "narrow stone side, hanging cables, glass sliver, damage near the crown and mid-height. No ladder.",
+      "used": true,
+      "resampled": false,
+      "ppm": 10.033,
+      "span_m": 0.7807,
+      "ncc_best_sheet": "front",
+      "ncc_note": "64x128 NCC is a weak tie (0.544 front vs 0.496 right). The picture is the right face."
+    },
+    "top": {"plate": "view-top.jpg", "used": false},
+    "under": {"plate": "view-under.jpg", "used": false},
+    "rejected_left": "face-left-REJECTED.jpg not opened"
+  },
+  "seams_delta_e": {
+    "left": {"before": 98.392, "after": 0.593, "reference": "key-front"},
+    "right": {"before": 99.736, "after": 0.577, "reference": "key-front"},
+    "back": {"before": 117.161, "after": 0.899, "reference": "graded-right"}
+  },
+  "colour_root_cause": "MeshStandard multiplied a pre-lit Imagine albedo by a sun that misses the front (front·sun about -0.84), and readRT stored linear bytes that the gate scored as sRGB. Lit material is now MeshBasic, toneMapped false. readRT sets SRGBColorSpace. Play Lab L* is 42.1.",
+  "ladder": "ladder not painted",
+  "plinth": {
+    "rule": "runtime: every footprint column of surfaceHeight is raised to the max of a 5x5 sample, then the mesh seats on that floor",
+    "terrain_tile_edited": false,
+    "float_m": 0.0
+  },
+  "camera": {
+    "fov_y_deg": 88,
+    "pitch_three_deg": -7.674,
+    "eye_m": 1.77,
+    "roll_deg": 0.17,
+    "heading_deg": 248.531,
+    "copied_stored_yaw": false,
+    "note": "unchanged from multiview. meta.cameraSpace is ignored when right/up/toward/origin exist."
+  },
+  "mask_method": "grey-distance silhouette (border median, distance > 16). SAM2 features only when the helper returns them. rembg is not installed.",
+  "mesh": {
+    "open": 0,
+    "nonManifold": 0,
+    "tris": 9796,
+    "sha256": "5a4993fc2878450bdf49cbdd76b59783c540409d407993cd3fd24ed07d0f5166"
+  },
+  "phone_budget_mesh": {
+    "triangles": 9796,
+    "drawCalls": 1,
+    "texMB_decoded_albedo_plus_normal": 30.42,
+    "atlas_px": [2286, 1744],
+    "pass": false,
+    "note": "One material, under the 260 MB cap. The visible px/m row is 0 versus 154.6 because the 8 m tiles are flat. The front plate cannot reach 154 px/m without an upscale."
+  },
+  "gate5": {
+    "url": "http://127.0.0.1:8996/tower3-1010/index-fusion.html?visionKey=1",
+    "exit": 1,
+    "fails": 9,
+    "rows": 21,
+    "report": "steps/hires-tower-1011/gate/report.md"
+  },
+  "rounds": 3,
+  "builder_seconds_last": 30.812,
+  "placement_rounds": 0,
+  "fusion_py_depth": "moge-2 via moge_depth.py; dav2 only with --dav2, not requested",
+  "glb": "steps/hires-tower-1011/work/tower.glb",
+  "installed": "/workspace/kc-staging/zb-tower3/objects1/vision/tower.glb"
+}

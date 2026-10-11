@@ -1189,3 +1189,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Stop after two gate rounds. Do not shrink depth. Do not scale relief. Do not invent a ladder or a roof. Do not export dataset/i23d. |
 | Guard | `steps/multiview-tower-1011/gate/report.md` rows proportions, grounding, UV stretch, visible px/m, key checklist. Numbers in `steps/multiview-tower-1011/numbers.json`. The relief row can still print PASS when only two axes clear 0.3 m (`minReliefFaces` 2); the spec target on +z stays missed. |
 | Sources | `tools/imagine-to-3d/multiview_tower.py`, `moge_depth.py`, `vision_mesh.py`, `steps/multiview-tower-1011/REPORT.md`. |
+
+### 2026-10-11 — hires plates, lit captures black, then a lip above the foot
+
+| | |
+| --- | --- |
+| Take | hires-tower-1011 |
+| Defect | Play and lit ortho Lab L\* 0.1 on the multiview solid. After the colour fix, gate float was 25.56 m, then 1.54 m. Final gate is 9 FAIL / 21. Side ortho ΔE versus the right plate is 40.6. −z relief is 0.002 m. |
+| Root cause | `MeshStandard` times a pre-lit albedo by a sun that misses the front, and `readRT` scored linear bytes as sRGB. The runtime then applied `meta.cameraSpace` and left the staged basis. With the basis restored, ring-1 relief overhangs the foot, so a column misses the base and reads the lip as air. `face-back-1024.jpg` is a second front (NCC 0.801 vs the sheet front), so −z kept the old panel. Reinhard onto the key front lifts the stone side off its own plate. |
+| Fix | Lit material is `MeshBasicMaterial`, `toneMapped: false`. `readRT` sets `SRGBColorSpace`. Placement uses `right/up/toward/origin` when that basis exists. Inset is 0 for t < 0.04, and that `t` is bound per ring (the loft loop's `t` is the crown). Back plate not used. No further round on d/w, UV, 154 px/m, or the side ΔE. |
+| Guard | `steps/hires-tower-1011/gate/report.md`: colour L\* 42.1, grounding 0.00 m, d/w 0.86 FAIL, visible px/m 0 vs 154.6. Relief row can still print PASS with −z 0.002 because `minReliefFaces` is 2. |
+| Sources | `tools/imagine-to-3d/runtime/vision-tower.mjs`, `tools/imagine-to-3d/multiview_tower.py`, `tools/object-gate/lib/probe.js`, `steps/hires-tower-1011/REPORT.md`. |

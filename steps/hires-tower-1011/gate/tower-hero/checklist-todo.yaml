@@ -1,0 +1,50 @@
+object: tower-hero
+sheet: /workspace/grokcli/wt/tower-vision-1010/steps/hires-tower-1011/gate/tower-hero/capture-sheet.jpg
+captures:
+  close: '0000303030300000'
+  low-portrait: '0000003070700000'
+  far: 3070684848d8d878
+  face-z: 0c2c3c0c0c1c1d1d
+  face-x: 30101018181c161e
+  ortho-front: 78c8c8c8c8d8d8d8
+  ortho-side: 1c18383838387868
+items:
+  wedge:
+    feature: Tapered planar blade, depth at least 0.45 of the width, sheared crown kept in the volume
+    captures:
+      - far
+      - low-portrait
+    pass: false
+    note: >-
+      gate5 far (0000081010100000) and low-portrait (0000000000000000) are near-black. The blade, the shear, and the bite are not readable.
+      Not marked pass.
+  ladder:
+    feature: Ladder cage readable as rails, rungs and hoops
+    captures:
+      - close
+      - low-portrait
+    pass: false
+    note: gate5 close and low-portrait are black. Rails and rungs are not readable. The build kept 1 ladder part (rail px 90, rung px 20).
+  chrome:
+    feature: Chrome or silver edge strips and floor bands readable as geometry
+    captures:
+      - close
+      - low-portrait
+    pass: false
+    note: gate5 close and low-portrait do not show a silver strip. The play surface reads unlit (colour L* 0.1).
+  damage:
+    feature: Sheared damaged crown kept in the silhouette
+    captures:
+      - far
+      - low-portrait
+    pass: false
+    note: gate5 far is a dark sliver. The jagged bite is not visible. Not marked pass.
+  sand:
+    feature: Sand on the lower part, base seated, no floating gap
+    captures:
+      - low-portrait
+      - far
+    pass: false
+    note: >-
+      gate5 close and low-portrait do not show the base seated in the sand. Grounding row still passes at -21.88 m. The picture does not
+      show the joint.
