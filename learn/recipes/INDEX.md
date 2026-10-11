@@ -21,6 +21,7 @@ Chained slices, not one wide file: [`biome/docs/64-imagine-build-limits.md`](../
 | Recipe | Commit | QC |
 | --- | --- | --- |
 | [zone-a-relief-mesh.md](zone-a-relief-mesh.md) — irregular relief mesh, eight still slots, per-image depth, low cards (prompt not stored in the tracked file) | `6afb2a2` | seam ratio 0.000; walk mag_max 0.912; proof mag 0.910 |
+| [zone-c-moss-plates.md](zone-c-moss-plates.md) — four 1408 moss slabs on the kept Zone C causeway (prompt not stored; this step did not call Imagine) | `fa2d6e61` | path IoU 0.7704; UV p95 0.214; CIEDE2000 8.68; visible 237.1 px/m; object-gate PASS |
 
 World-locked top-down stills, about **0.90 m**, **≥ 4** variants: [`biome/docs/61-free-clearing-walk.md`](../../biome/docs/61-free-clearing-walk.md), [`biome/docs/62-open-world-zones-process.md`](../../biome/docs/62-open-world-zones-process.md). This step used **1.45 m**. The phone mag row still passed. Gate the set together: `python3 tools/assetcheck/check.py` kind `tile` (wrap seam, exposure, magnification ≤ 1 at 720×1600). Placement is `python3 tools/layout/layout.py generate` then `layout.py check`. The layout tool does not draw the tile.
 
