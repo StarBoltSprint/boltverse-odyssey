@@ -1,0 +1,193 @@
+{
+ "$schema": "schema/zone.v1.schema.json",
+ "schema": "zone.v1",
+ "version": "1.0",
+ "id": "zone-c",
+ "keyImage": "steps/zone-c/03-terrain/key-zc1.jpg",
+ "keyCamera": {
+  "fov": 51.47,
+  "position": [
+   0,
+   1.508,
+   0
+  ],
+  "target": [
+   0,
+   1.646308876162719,
+   -0.9903891431021473
+  ],
+  "previewPose": {
+   "yaw": 0,
+   "pitch": 7.95,
+   "eye": 1.508,
+   "horizonRow": 0.6449
+  }
+ },
+ "biome": {
+  "id": "cascade-verdance",
+  "kit": "biome/kits/cascade-verdance.json"
+ },
+ "lighting": {
+  "sun": {
+   "stored": false
+  },
+  "fog": {
+   "stored": false
+  },
+  "halo": {
+   "stored": false
+  }
+ },
+ "objects": [
+  {
+   "id": "causeway",
+   "asset": {
+    "glb": null,
+    "lods": []
+   },
+   "sources": [
+    {
+     "file": "steps/zone-c/03-terrain/key-zc1.jpg",
+     "role": "key"
+    },
+    {
+     "file": "steps/zone-c/03-terrain/data/albedo.png",
+     "role": "baked-albedo"
+    },
+    {
+     "file": "packs/zone-a/src/ground",
+     "role": "base-tiles"
+    }
+   ],
+   "cameras": [
+    {
+     "fov": 51.47,
+     "position": [
+      0,
+      1.508,
+      0
+     ],
+     "target": [
+      0,
+      1.646308876162719,
+      -0.9903891431021473
+     ]
+    }
+   ],
+   "transform": {
+    "position": [
+     -28,
+     0,
+     -96
+    ],
+    "rotationDeg": [
+     0,
+     0,
+     0
+    ],
+    "scale": [
+     1,
+     1,
+     1
+    ]
+   },
+   "fidelity": {
+    "pathIoU": 0.7704,
+    "reliefM": 0.319,
+    "maxSlopeDeg": 15.5
+   },
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   },
+   "terrain": {
+    "height": "steps/zone-c/03-terrain/data/height.bin",
+    "step": 0.5,
+    "nx": 113,
+    "nz": 205,
+    "hLo": -0.1607046127319336,
+    "hHi": 0.1580589860677719
+   }
+  }
+ ],
+ "gameplay": {
+  "avenue": {
+   "headingDeg": 0,
+   "forward": "-Z"
+  },
+  "spawn": {
+   "position": [
+    0,
+    1.508,
+    0
+   ],
+   "eye": 1.508
+  },
+  "path": [
+   [
+    0,
+    0
+   ],
+   [
+    0,
+    -8
+   ],
+   [
+    0,
+    -30
+   ],
+   [
+    0,
+    -60
+   ],
+   [
+    0,
+    -90
+   ]
+  ],
+  "lanes": null,
+  "laneWidth": null
+ },
+ "qualityGates": {
+  "maxDrawCalls": 80,
+  "pathIoU": 0.7704,
+  "blockingPass": true,
+  "pass": false,
+  "uvStretchOpen": true
+ },
+ "todo": [
+  "moss slab plates are step 3; UV stretch on the continuation stays open",
+  "cliffs, arches, gorge rock, foliage, falls and the planet are not in this heightfield",
+  "no sun, fog, or halo is stored for Zone C yet",
+  "the causeway has no GLB; the mesh is the height grid"
+ ],
+ "wakeDefaults": {
+  "type": "placeholder",
+  "enabled": false
+ },
+ "runtime": {
+  "previewRoot": null,
+  "modules": {
+   "main": "tools/terrain-from-key/staging/zone-c/main.mjs"
+  },
+  "biome": {
+   "id": "cascade-verdance",
+   "source": "biome/kits/cascade-verdance.json"
+  },
+  "layout": {
+   "terrain": "steps/zone-c/03-terrain/data/height.bin",
+   "origin": [
+    -28,
+    -96
+   ],
+   "step": 0.5,
+   "nx": 113,
+   "nz": 205
+  },
+  "groundDetail": {
+   "albedo": "steps/zone-c/03-terrain/data/albedo.png",
+   "tiles": "packs/zone-a/src/ground"
+  },
+  "pins": {}
+ }
+}

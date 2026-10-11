@@ -233,3 +233,60 @@ def evaluate(cam, built, key_ground, tower_cols, features, lods, cell_m, heading
     }
     hard = all(checks[k]["pass"] for k in checks)
     return {"pass": hard, "checks": checks, "features": rows, "cost": cost}
+
+
+def evaluate_causeway(cam, built, causeway_mask, stations=(0.0, 8.0, 30.0, 60.0)):
+    """Zone C blocking rows. UV stretch is reported and is not a pass.
+
+    The dune rows (banks, sink, colour skyline) do not apply: cliffs are not terrain.
+    """
+    from causeway_field import corridor_slope, lod_counts, lod_pop_iou, move_camera, path_iou
+
+    heights = built["heights"]
+    path = built["deck"]
+    origin = built["origin"]
+    step = built["step"]
+    iou = path_iou(cam, heights, path, origin, step, causeway_mask)
+    slope = corridor_slope(heights, built["support"], step)
+    slope_ok = slope["maxSlopeDeg"] <= 16.0 and slope["minWidthM"] >= 0.8
+    relief_ok = slope["reliefM"] <= 3.0 + 1e-3
+    outside = built["heights"][~built["support"]]
+    cliff = float(np.max(np.abs(outside))) if outside.size else 0.0
+    cliff_ok = cliff <= 1e-3
+    pop = lod_pop_iou(cam, heights, built["path"], origin, step, causeway_mask)
+    pops = []
+    for along in stations:
+        cam_i = move_camera(cam, along, heights, origin, step)
+        pops.append({
+            "alongM": along,
+            "lodPopIoU": round(lod_pop_iou(cam_i, heights, built["path"], origin, step, causeway_mask), 4),
+        })
+    pop_ok = pop >= 0.90 and all(p["lodPopIoU"] >= 0.90 for p in pops)
+    lod = lod_counts(step)
+    draws_ok = lod["drawCalls"] < 80
+    # continuous: every station has a finite deck under the eye
+    gaps = []
+    for along in stations:
+        cam_i = move_camera(cam, along, heights, origin, step)
+        if not math.isfinite(cam_i["eye"]):
+            gaps.append(along)
+    continuous = not gaps
+    uv = built["uv"]
+    checks = {
+        "pathIoU": {"value": round(iou, 4), "need": 0.75, "pass": iou >= 0.75, "blocking": True},
+        "corridor": {"value": slope, "pass": slope_ok and continuous, "blocking": True},
+        "reliefM": {"value": slope["reliefM"], "need": "<=3", "pass": relief_ok, "blocking": True},
+        "cliffsFlat": {"value": round(cliff, 4), "pass": cliff_ok, "blocking": True},
+        "lodPopIoU": {"value": round(pop, 4), "need": 0.90, "pass": pop >= 0.90, "blocking": True},
+        "approachLod": {"value": pops, "need": 0.90, "pass": pop_ok, "blocking": True},
+        "drawCalls": {"value": lod, "need": "<80", "pass": draws_ok, "blocking": True},
+        "uvStretch": {"value": uv, "pass": False, "blocking": False,
+                      "note": "open until moss plates; not a pass"},
+    }
+    blocking = all(v["pass"] for v in checks.values() if v.get("blocking", True))
+    return {
+        "pass": False,  # UV stretch is open, so the step is not a PASS
+        "blockingPass": blocking,
+        "checks": checks,
+        "camera": {k: cam[k] for k in ("x", "z", "yaw", "pitch", "eye", "fov")},
+    }

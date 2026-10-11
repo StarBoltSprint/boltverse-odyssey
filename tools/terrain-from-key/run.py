@@ -411,5 +411,18 @@ def main():
     print("report", OUT / "REPORT.md")
 
 
+def main_zone_c():
+    """Causeway deck. Does not run the Zone B dune composer."""
+    from causeway_field import run_zone_c
+    run_zone_c(REPO)
+
+
 if __name__ == "__main__":
-    main()
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--zone", default="b", choices=("b", "c"))
+    args = ap.parse_args()
+    if args.zone == "c":
+        main_zone_c()
+    else:
+        main()

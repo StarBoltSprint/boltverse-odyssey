@@ -1032,6 +1032,17 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | `DEFAULT_DEPTH = "moge-2"` in `tools/common/vision_models.py`. `load_default_depth` / `depth_default` refuse any other name. `depth_relief.session` and `bake_depth.py` call MoGe-2. A Large `.pth` still runs only when the path is passed on purpose, and that map is not saved into the step folder. |
 | Guard | `DEFAULT_DEPTH == "moge-2"`. `bake_depth.py` default file is `moge-2-vitl.pt`. The shipped `steps/terrain-key2-1011/height.bin` was composed with `disp=None`. |
 | Sources | `tools/common/vision_models.py`, `tools/imagine-to-3d/depth_relief.py`, `tools/relief/bake_depth.py`, `SPEC-TERRAIN-KEY2-1011.md`. |
+### 2026-10-11 — Zone C full MoGe relief and a strided path mask miss the causeway
+
+| | |
+| --- | --- |
+| Take | zc/03-terrain |
+| Defect | Gain 1.0 put the key-camera path IoU at 0.5044 and the same-hull LOD pop at 0.8302. An earlier LOD that strided the path mask moved the outline (factor 2 about 0.71, factor 4 about 0.53) even when the heights were almost flat. |
+| Root cause | Grazing lip pixels in the MoGe cloud are metres off the deck plane. Treating that camera-Y as terrain lifts the silhouette. A coarser path mask is a different hull, so the pop test fails for a reason that is not height. |
+| Fix | Clip the residual, then keep the gain that clears the blocking rows (0.35: path IoU 0.7704, LOD pop 0.9248). LOD coarsens heights inside the same path outline. The flat base steps down; the corridor outline stays at 0.5 m. |
+| Guard | `steps/zone-c/03-terrain/gates.json` blockingPass true, pass false (UV open). Attempt 1 stays in `numbers.json`. |
+| Sources | `tools/terrain-from-key/causeway_field.py`. |
+
 ### 2026-10-11 — compare server joined /ref/main.mjs onto .main.mjs
 
 | | |

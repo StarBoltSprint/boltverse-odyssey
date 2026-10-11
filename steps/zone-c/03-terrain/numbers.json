@@ -1,0 +1,474 @@
+{
+  "attempt": 2,
+  "attempts": [
+    {
+      "gain": 1.0,
+      "blockingPass": false,
+      "checks": {
+        "pathIoU": {
+          "value": 0.5044,
+          "need": 0.75,
+          "pass": false,
+          "blocking": true
+        },
+        "corridor": {
+          "value": {
+            "maxSlopeDeg": 15.5,
+            "centreSlopeDeg": 13.088,
+            "minWidthM": 2.0,
+            "reliefM": 0.909,
+            "samples": 188
+          },
+          "pass": true,
+          "blocking": true
+        },
+        "reliefM": {
+          "value": 0.909,
+          "need": "<=3",
+          "pass": true,
+          "blocking": true
+        },
+        "cliffsFlat": {
+          "value": 0.0,
+          "pass": true,
+          "blocking": true
+        },
+        "lodPopIoU": {
+          "value": 0.8302,
+          "need": 0.9,
+          "pass": false,
+          "blocking": true
+        },
+        "approachLod": {
+          "value": [
+            {
+              "alongM": 0.0,
+              "lodPopIoU": 0.8302
+            },
+            {
+              "alongM": 8.0,
+              "lodPopIoU": 0.918
+            },
+            {
+              "alongM": 30.0,
+              "lodPopIoU": 0.9501
+            },
+            {
+              "alongM": 60.0,
+              "lodPopIoU": 0.9493
+            }
+          ],
+          "need": 0.9,
+          "pass": false,
+          "blocking": true
+        },
+        "drawCalls": {
+          "value": {
+            "near": {
+              "cellM": 0.5,
+              "triangles": 45696,
+              "note": "base 0.5 m, path outline 0.5 m"
+            },
+            "mid": {
+              "cellM": 1.0,
+              "triangles": 14720,
+              "note": "base 1 m, path outline 0.5 m"
+            },
+            "far": {
+              "cellM": 2.0,
+              "triangles": 5900,
+              "note": "base 2 m, path outline 0.5 m"
+            },
+            "drawCalls": 1,
+            "drawCallsMax": 80,
+            "hull": "path outline is the same polyline at every LOD"
+          },
+          "need": "<80",
+          "pass": true,
+          "blocking": true
+        },
+        "uvStretch": {
+          "value": {
+            "pxPerMNear": 46.55,
+            "bands": [
+              {
+                "bandM": [
+                  0,
+                  8
+                ],
+                "p95": 2.699,
+                "median": 0.544,
+                "n": 6,
+                "pass": false
+              },
+              {
+                "bandM": [
+                  8,
+                  30
+                ],
+                "p95": 14.742,
+                "median": 1.372,
+                "n": 44,
+                "pass": false
+              },
+              {
+                "bandM": [
+                  30,
+                  60
+                ],
+                "p95": 65.515,
+                "median": 10.532,
+                "n": 60,
+                "pass": false
+              },
+              {
+                "bandM": [
+                  60,
+                  200
+                ],
+                "p95": 93.095,
+                "median": 39.692,
+                "n": 74,
+                "pass": false
+              }
+            ],
+            "pass": false,
+            "note": "open until the step-3 moss plates; far stretch is not a pass"
+          },
+          "pass": false,
+          "blocking": false,
+          "note": "open until moss plates; not a pass"
+        }
+      }
+    },
+    {
+      "gain": 0.35,
+      "blockingPass": true,
+      "checks": {
+        "pathIoU": {
+          "value": 0.7704,
+          "need": 0.75,
+          "pass": true,
+          "blocking": true
+        },
+        "corridor": {
+          "value": {
+            "maxSlopeDeg": 15.5,
+            "centreSlopeDeg": 9.452,
+            "minWidthM": 2.0,
+            "reliefM": 0.319,
+            "samples": 187
+          },
+          "pass": true,
+          "blocking": true
+        },
+        "reliefM": {
+          "value": 0.319,
+          "need": "<=3",
+          "pass": true,
+          "blocking": true
+        },
+        "cliffsFlat": {
+          "value": 0.0,
+          "pass": true,
+          "blocking": true
+        },
+        "lodPopIoU": {
+          "value": 0.9248,
+          "need": 0.9,
+          "pass": true,
+          "blocking": true
+        },
+        "approachLod": {
+          "value": [
+            {
+              "alongM": 0.0,
+              "lodPopIoU": 0.9248
+            },
+            {
+              "alongM": 8.0,
+              "lodPopIoU": 0.9591
+            },
+            {
+              "alongM": 30.0,
+              "lodPopIoU": 0.9527
+            },
+            {
+              "alongM": 60.0,
+              "lodPopIoU": 0.9525
+            }
+          ],
+          "need": 0.9,
+          "pass": true,
+          "blocking": true
+        },
+        "drawCalls": {
+          "value": {
+            "near": {
+              "cellM": 0.5,
+              "triangles": 45696,
+              "note": "base 0.5 m, path outline 0.5 m"
+            },
+            "mid": {
+              "cellM": 1.0,
+              "triangles": 14720,
+              "note": "base 1 m, path outline 0.5 m"
+            },
+            "far": {
+              "cellM": 2.0,
+              "triangles": 5900,
+              "note": "base 2 m, path outline 0.5 m"
+            },
+            "drawCalls": 1,
+            "drawCallsMax": 80,
+            "hull": "path outline is the same polyline at every LOD"
+          },
+          "need": "<80",
+          "pass": true,
+          "blocking": true
+        },
+        "uvStretch": {
+          "value": {
+            "pxPerMNear": 46.55,
+            "bands": [
+              {
+                "bandM": [
+                  0,
+                  8
+                ],
+                "p95": 1.252,
+                "median": 0.465,
+                "n": 6,
+                "pass": false
+              },
+              {
+                "bandM": [
+                  8,
+                  30
+                ],
+                "p95": 16.707,
+                "median": 1.553,
+                "n": 44,
+                "pass": false
+              },
+              {
+                "bandM": [
+                  30,
+                  60
+                ],
+                "p95": 74.136,
+                "median": 11.761,
+                "n": 60,
+                "pass": false
+              },
+              {
+                "bandM": [
+                  60,
+                  200
+                ],
+                "p95": 93.095,
+                "median": 44.635,
+                "n": 74,
+                "pass": false
+              }
+            ],
+            "pass": false,
+            "note": "open until the step-3 moss plates; far stretch is not a pass"
+          },
+          "pass": false,
+          "blocking": false,
+          "note": "open until moss plates; not a pass"
+        }
+      }
+    }
+  ],
+  "blockingPass": true,
+  "pass": false,
+  "checks": {
+    "pathIoU": {
+      "value": 0.7704,
+      "need": 0.75,
+      "pass": true,
+      "blocking": true
+    },
+    "corridor": {
+      "value": {
+        "maxSlopeDeg": 15.5,
+        "centreSlopeDeg": 9.452,
+        "minWidthM": 2.0,
+        "reliefM": 0.319,
+        "samples": 187
+      },
+      "pass": true,
+      "blocking": true
+    },
+    "reliefM": {
+      "value": 0.319,
+      "need": "<=3",
+      "pass": true,
+      "blocking": true
+    },
+    "cliffsFlat": {
+      "value": 0.0,
+      "pass": true,
+      "blocking": true
+    },
+    "lodPopIoU": {
+      "value": 0.9248,
+      "need": 0.9,
+      "pass": true,
+      "blocking": true
+    },
+    "approachLod": {
+      "value": [
+        {
+          "alongM": 0.0,
+          "lodPopIoU": 0.9248
+        },
+        {
+          "alongM": 8.0,
+          "lodPopIoU": 0.9591
+        },
+        {
+          "alongM": 30.0,
+          "lodPopIoU": 0.9527
+        },
+        {
+          "alongM": 60.0,
+          "lodPopIoU": 0.9525
+        }
+      ],
+      "need": 0.9,
+      "pass": true,
+      "blocking": true
+    },
+    "drawCalls": {
+      "value": {
+        "near": {
+          "cellM": 0.5,
+          "triangles": 45696,
+          "note": "base 0.5 m, path outline 0.5 m"
+        },
+        "mid": {
+          "cellM": 1.0,
+          "triangles": 14720,
+          "note": "base 1 m, path outline 0.5 m"
+        },
+        "far": {
+          "cellM": 2.0,
+          "triangles": 5900,
+          "note": "base 2 m, path outline 0.5 m"
+        },
+        "drawCalls": 1,
+        "drawCallsMax": 80,
+        "hull": "path outline is the same polyline at every LOD"
+      },
+      "need": "<80",
+      "pass": true,
+      "blocking": true
+    },
+    "uvStretch": {
+      "value": {
+        "pxPerMNear": 46.55,
+        "bands": [
+          {
+            "bandM": [
+              0,
+              8
+            ],
+            "p95": 1.252,
+            "median": 0.465,
+            "n": 6,
+            "pass": false
+          },
+          {
+            "bandM": [
+              8,
+              30
+            ],
+            "p95": 16.707,
+            "median": 1.553,
+            "n": 44,
+            "pass": false
+          },
+          {
+            "bandM": [
+              30,
+              60
+            ],
+            "p95": 74.136,
+            "median": 11.761,
+            "n": 60,
+            "pass": false
+          },
+          {
+            "bandM": [
+              60,
+              200
+            ],
+            "p95": 93.095,
+            "median": 44.635,
+            "n": 74,
+            "pass": false
+          }
+        ],
+        "pass": false,
+        "note": "open until the step-3 moss plates; far stretch is not a pass"
+      },
+      "pass": false,
+      "blocking": false,
+      "note": "open until moss plates; not a pass"
+    }
+  },
+  "stages": [
+    [
+      "moge-2",
+      14.098650504995021
+    ],
+    [
+      "attempt-1",
+      1.3653395299916156
+    ],
+    [
+      "attempt-2",
+      1.2646989179920638
+    ],
+    [
+      "dav2-compare",
+      0.0341404880018672
+    ],
+    [
+      "total-build",
+      16.76932341499196
+    ]
+  ],
+  "dav2": {
+    "n": 29554,
+    "spearmanFar": 0.9979,
+    "cached": true,
+    "seconds": 0.008,
+    "note": "DA V2 Large, internal only, not shipped"
+  },
+  "costImagine": 0,
+  "masks": {
+    "causeway": 0.0653567843967014,
+    "arch-left": 0.061228434244791664,
+    "arch-right": 0.046956380208333336,
+    "cliff-left": 0.03649563259548611,
+    "falls-water": 0.014600965711805556,
+    "gorge-rock": 0.025241427951388888,
+    "cliff-right": 0.011052449544270834,
+    "foliage-left": 0.0828280978732639,
+    "foliage-right": 0.0773807101779514,
+    "planet": 0.057623969184027776
+  },
+  "camera": {
+    "x": 0.0,
+    "z": 0.0,
+    "yaw": 0.0,
+    "pitch": 7.95,
+    "eye": 1.508,
+    "fov": 51.47
+  },
+  "keyImage": "steps/zone-c/03-terrain/key-zc1.jpg"
+}

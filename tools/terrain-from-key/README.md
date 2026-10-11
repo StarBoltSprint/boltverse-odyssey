@@ -16,5 +16,16 @@ Zone B heightfield from the key image. Method and steps: [`docs/METHOD/terrain-f
 | `features.json` | Named features the gate checks. |
 | `height-splat.mjs`, `keyed-field.mjs` | Runtime pieces copied into `staging/`. |
 | `staging/` | Staging page served beside the live preview (live `index.html` untouched). |
-| `serve.py` | Local server for staging (`--port 8767`). |
-| `capture_play.mjs` | Loading-then-terrain play captures through the capture gate. |
+| `serve.py` | Local server for staging (`--port 8767`). `--zone c --port 8771` serves the causeway page. |
+| `capture_play.mjs` | Loading-then-terrain play captures through the capture gate. PNG names include the pixel size. |
+| `sheet.py` | Key still beside one terrain frame. |
+
+Zone C:
+
+```bash
+/workspace/.venv-sam2/bin/python tools/terrain-from-key/run.py --zone c
+python3 tools/terrain-from-key/serve.py --zone c --port 8771
+node tools/terrain-from-key/capture_play.mjs http://127.0.0.1:8771/?along=0 steps/zone-c/03-terrain/renders along0 1280 720
+```
+
+The system `python3` has no torch. The venv above is the one that loads MoGe-2. Depth Anything V2 Large is a cached comparison number only.

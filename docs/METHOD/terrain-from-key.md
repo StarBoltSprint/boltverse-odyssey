@@ -2,6 +2,8 @@
 
 Builds a Zone B heightfield from one key image (`key-city3.jpg`) and its camera prior, then gates it. No Imagine images. The live preview `index.html` is not edited; the result is served from `tools/terrain-from-key/staging/`.
 
+Zone C does not use this skyline composer. The causeway is `causeway_field.py` (`python3 tools/terrain-from-key/run.py --zone c`). Cliffs stay flat. A strided path mask is not an LOD. Full MoGe relief on grazing lip pixels drops the key-camera path IoU; the shipped field is the gain that still clears the blocking rows. Far UV stretch stays open until the moss plates exist.
+
 Worked take: [`steps/terrain-key2-1011/REPORT.md`](../../steps/terrain-key2-1011/REPORT.md) (PASS). Earlier failed take: [`steps/terrain-key-1011/REPORT.md`](../../steps/terrain-key-1011/REPORT.md). Recipe: [`learn/recipes/terrain-key2-skyline.md`](../../learn/recipes/terrain-key2-skyline.md).
 
 ## Why not unproject depth

@@ -1,0 +1,26 @@
+[
+ {
+  "name": "face z",
+  "ok": false,
+  "why": "no object area >= 48x48 px in the capture",
+  "pxPerM": 9.94,
+  "tileM": null
+ },
+ {
+  "name": "face x",
+  "ok": false,
+  "why": "no object area >= 48x48 px in the capture",
+  "pxPerM": 5.46,
+  "tileM": null
+ },
+ {
+  "name": "close",
+  "ok": false,
+  "why": "object covers 0.0% of the close capture (capture angle unusable)"
+ },
+ {
+  "name": "low-portrait",
+  "ok": false,
+  "why": "object covers 0.4% of the low-portrait capture (capture angle unusable)"
+ }
+]

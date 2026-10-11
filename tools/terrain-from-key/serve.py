@@ -16,6 +16,8 @@ REPO = ROOT.parents[1]
 LIVE = Path("/workspace/zb-preview-1008")
 STAGING = ROOT / "staging"
 DATA = REPO / "steps" / "terrain-key2-1011" / "data"
+THREE = LIVE / "three.module.js"
+TILES = REPO / "packs" / "zone-a" / "src" / "ground"
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -27,6 +29,11 @@ class Handler(SimpleHTTPRequestHandler):
         elif raw.startswith("/data/"):
             rel = raw[len("/data/") :]
             base = DATA
+        elif raw in ("/three.module.js", "/three/three.module.js"):
+            return str(THREE)
+        elif raw.startswith("/tiles/"):
+            rel = raw[len("/tiles/") :]
+            base = TILES
         else:
             rel = raw.lstrip("/")
             base = STAGING
@@ -44,8 +51,12 @@ def main():
     p.add_argument("--port", type=int, default=8767)
     p.add_argument("--host", default="127.0.0.1")
     p.add_argument("--data", type=Path, default=None)
+    p.add_argument("--zone", default="b", choices=("b", "c"))
     args = p.parse_args()
-    global DATA
+    global DATA, STAGING
+    if args.zone == "c":
+        DATA = REPO / "steps" / "zone-c" / "03-terrain" / "data"
+        STAGING = ROOT / "staging" / "zone-c"
     if args.data is not None:
         DATA = args.data.resolve()
     if args.host not in ("127.0.0.1", "localhost"):

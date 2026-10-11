@@ -5,6 +5,7 @@ One zone = one JSON file (`zone.v1`). Method: [`docs/METHOD/world-graph.md`](../
 ## Steps
 
 1. `node tools/world-graph/export-zone-b.mjs` — writes `zone-b.zone.json` from the current Zone B preview. Copies stored numbers only; anything the preview does not store goes in `todo`.
+   `node tools/world-graph/export-zone-c.mjs` — writes `steps/zone-c/03-terrain/zone-c.zone.json` from the causeway step. Same rule: stored numbers only.
 2. `node tools/world-graph/selftest.mjs` — schema name, export round-trip, the three runtime payloads (`biome.json`, `layout.json`, `ground-detail.json`), placeholder wake, live preview untouched.
 3. `node tools/world-graph/serve.mjs` — local compare server: `/ref` is the live preview, `/zone` the same files booted from the zone file (frozen clock). Prints the port.
 4. `python3 tools/world-graph/capture.py --port N --out report.json` — headless shots from the hero, street and 8 m poses on both pages; pixel rule: mean abs channel difference ≤ 1/255.
