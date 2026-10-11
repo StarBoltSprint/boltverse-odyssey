@@ -988,3 +988,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Score a pool as unique = min(W / cellM, sqrt(layers × W × H / wall area of every object sharing the pool)); repeats = cells / layers. Spend unique sections (or larger plates) until each surface reaches the threshold. |
 | Guard | `node tools/object-gate/cli.mjs --scene tools/object-gate/specs/zone-b/scene.yaml` row `native Imagine px/m` (pool row, `pool.sharedSelect` in the spec) and row `repetition (UV)` (repeats > 1 FAILS); ortho facade autocorrelation at the 12 m period 0.84 / 0.91 (max 0.5). |
 | Sources | `tools/object-gate/lib/probe.js` `texel()` pool branch; `specs/zone-b/tower-m*.yaml`; gate run on `?v=54`, 2026-10-09 17:3x. |
+
+### 2026-10-11 — compare server joined /ref/main.mjs onto .main.mjs
+
+| | |
+| --- | --- |
+| Take | world-graph-1011 |
+| Defect | The headless page stayed on "Chargement…" with an empty error list. `main.mjs` came back HTTP 404. |
+| Root cause | `tools/world-graph/serve.mjs` joined the preview root to `"." + "main.mjs"`, which is the hidden name `.main.mjs`. The index shell was a special case, so the HTML loaded and the module did not. |
+| Fix | `resolveRoute` uses the path after the `/ref/`, `/zone/`, or `/wg/` prefix with no extra dot. |
+| Guard | `node tools/world-graph/selftest.mjs` row `compare route serves main.mjs` (resolved path equals the preview `main.mjs`). |
+| Sources | `tools/world-graph/serve.mjs`, `tools/world-graph/selftest.mjs`. |
