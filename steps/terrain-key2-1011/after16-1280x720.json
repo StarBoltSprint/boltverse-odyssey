@@ -1,0 +1,31 @@
+{
+ "url": "http://127.0.0.1:8767/?x=-51.115&z=9.63&yaw=78&pitch=-5.995&eye=2.3&hud=0",
+ "width": 1280,
+ "height": 720,
+ "ready": true,
+ "waitedMs": 9041,
+ "before": {
+  "ok": false,
+  "kind": "frame",
+  "cover": 1,
+  "minCover": null,
+  "loading": true,
+  "empty": true,
+  "black": false,
+  "why": "loading screen; empty frame"
+ },
+ "after": {
+  "ok": true,
+  "kind": "frame",
+  "cover": 0.9965,
+  "minCover": null,
+  "loading": false,
+  "empty": false,
+  "black": false,
+  "why": ""
+ },
+ "beforeDom": "Zone B — terrain key (staging) (tours phase 1, sans Bolt)\nGauche : marcher · Droite : regarder · ⚡ : courir\n⚡ Courir\nChargement… 1/20",
+ "afterDom": "",
+ "beforePath": "steps/terrain-key2-1011/after16-loading.png",
+ "afterPath": "steps/terrain-key2-1011/after16-terrain.png"
+}

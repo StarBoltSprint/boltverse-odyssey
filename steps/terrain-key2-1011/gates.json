@@ -1,0 +1,156 @@
+{
+  "pass": true,
+  "checks": {
+    "silhouetteIoU": {
+      "value": 0.8481,
+      "need": 0.8,
+      "pass": true
+    },
+    "depthOrder": {
+      "value": true,
+      "pass": true
+    },
+    "features": {
+      "value": {
+        "present": true,
+        "banksAboveAvenue": true,
+        "slabsInLane": true,
+        "pass": true
+      },
+      "pass": true
+    },
+    "lodPopIoU": {
+      "value": 0.9729,
+      "need": 0.9,
+      "pass": true
+    },
+    "approachIoU": {
+      "value": 0.971,
+      "need": 0.85,
+      "pass": true
+    },
+    "repetition": {
+      "value": 0.1499,
+      "need": "<0.75",
+      "pass": true
+    },
+    "corridor": {
+      "value": {
+        "maxSlopeDeg": 6.269,
+        "medianSinkM": 1.986,
+        "minSinkM": 0.397
+      },
+      "pass": true
+    },
+    "vertexCost": {
+      "value": {
+        "now": {
+          "verts": 38997,
+          "tris": 69632,
+          "cells": 289
+        },
+        "live": {
+          "verts": 38997,
+          "tris": 69632,
+          "cells": 289
+        }
+      },
+      "pass": true
+    }
+  },
+  "features": [
+    {
+      "id": "dune_left",
+      "role": "crest",
+      "hit": true,
+      "image": [
+        0.14084507042253522,
+        0.65
+      ],
+      "distanceM": 6.0,
+      "heightM": 0.9094571646612266,
+      "box": [
+        0.0,
+        0.5,
+        0.42,
+        0.5
+      ]
+    },
+    {
+      "id": "mound_right",
+      "role": "crest",
+      "hit": true,
+      "image": [
+        0.7605633802816901,
+        0.55
+      ],
+      "distanceM": 6.0,
+      "heightM": 1.3990236627758417,
+      "box": [
+        0.55,
+        0.46,
+        0.45,
+        0.54
+      ]
+    },
+    {
+      "id": "sunken_avenue",
+      "role": "trough",
+      "hit": true,
+      "image": [
+        0.47183098591549294,
+        0.8125
+      ],
+      "distanceM": 6.0,
+      "heightM": -0.4868399274992177,
+      "box": [
+        0.34,
+        0.5,
+        0.3,
+        0.5
+      ]
+    },
+    {
+      "id": "slab_field",
+      "role": "trough",
+      "hit": true,
+      "image": [
+        0.6338028169014085,
+        0.8375
+      ],
+      "distanceM": 6.0,
+      "heightM": -0.5226188644258247,
+      "box": [
+        0.33,
+        0.6,
+        0.34,
+        0.38
+      ]
+    }
+  ],
+  "attempt": 1,
+  "outline": "colour",
+  "clock": [
+    {
+      "stage": "silhouette",
+      "kind": "cheap",
+      "seconds": 0.0,
+      "ok": true,
+      "detail": "iou 0.8481 min 0.8"
+    },
+    {
+      "stage": "colour",
+      "kind": "cheap",
+      "seconds": 0.0003,
+      "ok": true,
+      "detail": "mean abs 0.0000 max 0.12"
+    },
+    {
+      "stage": "sam2-dav2-large",
+      "kind": "heavy",
+      "seconds": 18.1315,
+      "ok": true,
+      "detail": "ran"
+    }
+  ]
+}
