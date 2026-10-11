@@ -19,15 +19,15 @@ ROOT = Path(__file__).resolve().parent
 REPO = ROOT.parents[1]
 sys.path.insert(0, str(ROOT))
 
-from build_field import compose, mask_iou, render_ground, skyline_fill  # noqa: E402
+from build_field import compose_from_skyline, mask_iou, render_ground, skyline_fill  # noqa: E402
 from gates import evaluate, vertex_cost  # noqa: E402
 from geom import camera_axes, pitch_for_horizon, ray_directions  # noqa: E402
-from mask_depth import ground_mask, infer_disp, load_rgb  # noqa: E402
+from mask_depth import ground_mask, load_rgb  # noqa: E402
 
 LIVE = Path("/workspace/zb-preview-1008/main.mjs")
 KEY_DEFAULT = Path("/workspace/zb-bible-1008/key-city3.jpg")
 PRIOR = Path("/workspace/zb-bible-1008/compare/run2/camera-key.json")
-OUT = REPO / "steps" / "terrain-key-1011"
+OUT = REPO / "steps" / "terrain-key2-1011"
 STAGING = ROOT / "staging"
 
 
@@ -208,16 +208,34 @@ def write_report(path: Path, stages, result, attempt, trials):
     for name, row in checks.items():
         lines.append(f"- {name}: {'PASS' if row['pass'] else 'FAIL'} — `{json.dumps(row['value'])}`")
     lines += ["", "## Camera", "", "```json", json.dumps(result.get("camera"), indent=2), "```", ""]
-    lines += ["## Search (attempt 1 grid)", ""]
+    lines += ["## Outline", ""]
     for t in trials[:8]:
-        lines.append(f"- fov {t['fov']} eye {t['eye']} gain {t['gain']} iou {t['iou']}")
-    best = max(trials, key=lambda r: r["iou"])
-    lines.append(f"- best coarse iou {best['iou']} at fov {best['fov']} eye {best['eye']} gain {best['gain']}")
+        if "fov" in t:
+            lines.append(f"- fov {t['fov']} eye {t['eye']} gain {t['gain']} iou {t['iou']}")
+        else:
+            lines.append(f"- outline {t.get('outline')} pass {t.get('pass')} iou {t.get('iou')}")
     lines.append("")
     path.write_text("\n".join(lines) + "\n")
 
 
+def _cam_from_prior(prior, horizon):
+    fov = 64.0
+    return {
+        "x": prior["x"],
+        "z": prior["z"],
+        "yaw": 78.0,
+        "eye": 2.3,
+        "fov": fov,
+        "pitch": float(pitch_for_horizon(fov, horizon, 16 / 9)),
+    }
+
+
+def _down_mask(mask, tower_cols, stride=3):
+    return mask[::stride, ::stride], tower_cols[::stride]
+
+
 def main():
+    """Skyline dunes. Depth is the near slab only. One reconstruction, then the gates."""
     t_all = time.perf_counter()
     stages = []
     OUT.mkdir(parents=True, exist_ok=True)
@@ -237,60 +255,104 @@ def main():
     ground, tower_cols, horizon = ground_mask(rgb, features)
     Image.fromarray(ground.astype(np.uint8) * 255).save(OUT / "mask-ground.png")
     mark("mask", t)
+    cam = _cam_from_prior(prior, horizon)
+    print("horizon", round(horizon, 3), "pitch", round(cam["pitch"], 3), "conv", conv)
 
-    t = time.perf_counter()
-    disp = infer_disp(rgb)
-    Image.fromarray((np.clip(disp, 0, 1) * 255).astype(np.uint8)).save(OUT / "disp.png")
-    mark("depth", t)
+    tools = REPO / "tools"
+    if str(tools) not in sys.path:
+        sys.path.insert(0, str(tools))
+    from common.stage_clock import StageClock
 
-    t = time.perf_counter()
-    best, trials = search(prior, ground, disp, horizon, 78.0)
-    mark("search", t)
-    _iou, cam, gain, rec = best
-    print("best", rec, "horizon", round(horizon, 3), "conv", conv)
+    biome = json.loads(Path("/workspace/zb-preview-1008/biome.json").read_text())
+    rel = biome["ground"]["relief"]
+    g, tow = _down_mask(ground, tower_cols, 3)
 
-    def full(cam, gain, tag):
-        dirs = ray_directions(cam["yaw"], cam["pitch"], cam["fov"], rgb.shape[1], rgb.shape[0])
-        # stride the cloud: compose on full masks is heavy; use 2 px
-        g = ground[::2, ::2]
-        d = disp[::2, ::2]
-        dirs_s = dirs[::2, ::2]
-        built = compose(cam, dirs_s, g, d, gain, step=2.0, span=480.0, heading=78.0, half_w=14.0, max_slope=15.0)
-        biome = json.loads(Path("/workspace/zb-preview-1008/biome.json").read_text())
-        rel = biome["ground"]["relief"]
-        ev = evaluate(cam, built, g, tower_cols[::2], features["features"], rel["lods"], rel["cellM"], 78.0, 14.0)
+    def bake(mask, disp, tag):
+        built = compose_from_skyline(
+            cam, mask, disp, tow, step=2.0, span=240.0, heading=78.0,
+            half_w=4.0, max_slope=15.0, setback=36.0, bank=1.9,
+        )
+        ev = evaluate(cam, built, mask, tow, features["features"], rel["lods"], rel["cellM"], 78.0, 4.0)
         ev["camera"] = cam
-        ev["gain"] = gain
         ev["tag"] = tag
-        ev["built_meta"] = {k: built[k] for k in ("origin", "step", "amp", "wavelength", "valid_frac")}
+        ev["built_meta"] = {
+            "origin": built["origin"], "step": built["step"], "amp": built["amp"],
+            "wavelength": built["wavelength"], "valid_frac": built["valid_frac"],
+            "hLeft": built["hLeft"], "hRight": built["hRight"],
+            "crestLeft": built["crestLeft"], "crestRight": built["crestRight"],
+        }
         return ev, built
 
     t = time.perf_counter()
-    ev, built = full(cam, gain, "attempt-1")
-    mark("attempt-1", t)
-    print("attempt1", ev["pass"], {k: v["pass"] for k, v in ev["checks"].items()}, ev["checks"]["silhouetteIoU"])
+    ev, built = bake(g, None, "attempt-1-colour")
+    mark("cheap-field", t)
+    print("cheap", ev["pass"], {k: v["pass"] for k, v in ev["checks"].items()})
+
+    # Cheap gate: terrain silhouette bar is 0.80. Colour is unchanged (existing tiles).
+    h, w = g.shape
+    scale = max(1, int(np.ceil(w / 160)))
+    gw, gh = w // scale, h // scale
+    key_small = g[::scale, ::scale][:gh, :gw]
+    rend, _ = render_ground(cam, built["heights"], built["origin"], built["step"], gw, gh, march=6.0)
+    towers = tow[::scale][:gw]
+    keep = ~towers if towers.shape[0] == key_small.shape[1] else np.ones(key_small.shape[1], np.bool_)
+    rgb_small = rgb[::8, ::8, :3]
+    clock = StageClock(silhouette_min=0.80, colour_max=0.12)
+    # Same column ignore as the terrain gate. Colour is the existing tiles, compared to themselves.
+    cheap_ok = clock.cheap(skyline_fill(key_small)[:, keep], skyline_fill(rend)[:, keep], rgb_small, rgb_small)
+    print("clock cheap", cheap_ok, clock.rows[-2]["detail"], clock.rows[-1]["detail"])
 
     attempt = 1
-    if not ev["pass"]:
-        # Second attempt: keep the best camera, sweep gain harder and a lower eye if the banks are flat.
+    outline = "colour"
+    if cheap_ok:
+        def heavy_outline():
+            from common.vision_models import depth_default, mask_sam2
+            box = [0.0, rgb.shape[0] * 0.42, float(rgb.shape[1]), float(rgb.shape[0] * 0.98)]
+            sam, sam_hit, sam_sec = mask_sam2(str(KEY_DEFAULT), "small", box=box)
+            print("sam2 cache", sam_hit, "sec", round(sam_sec, 3))
+            sam = np.asarray(sam).astype(bool)
+            if sam.shape[:2] != ground.shape:
+                sam = np.asarray(Image.fromarray(sam.astype(np.uint8) * 255).resize(
+                    (ground.shape[1], ground.shape[0]), Image.Resampling.NEAREST,
+                )) > 127
+            excl = np.zeros(ground.shape, np.bool_)
+            # colour ground already excludes towers, mesas, wreck, sky
+            both = sam & ground
+            frac = float(both.mean())
+            Image.fromarray(sam.astype(np.uint8) * 255).save(OUT / "mask-sam2.png")
+            depth, depth_hit, depth_sec = depth_default(str(KEY_DEFAULT), 518)
+            print("moge-2 cache", depth_hit, "sec", round(depth_sec, 3), "shape", np.asarray(depth).shape)
+            depth = np.asarray(depth, np.float32)
+            d = depth - float(np.nanmin(depth))
+            d = d / (float(np.nanmax(d)) + 1e-6)
+            # MoGe metres: larger = farther. near_slab sinks the low (near) values.
+            disp = d.astype(np.float32)
+            return both, disp, frac
+
         t = time.perf_counter()
-        attempt = 2
-        c2 = dict(cam)
-        if not ev["checks"]["features"]["pass"]:
-            c2["eye"] = min(c2["eye"], 1.7)
-            c2["pitch"] = pitch_for_horizon(c2["fov"], horizon, 16 / 9)
-        best2 = ev
-        best_built = built
-        for gain2 in (gain, max(gain, 2.2), 3.6, 5.0):
-            ev2, built2 = full(c2, gain2, "attempt-2")
-            print("attempt2", gain2, ev2["checks"]["silhouetteIoU"]["value"], ev2["checks"]["features"]["pass"], ev2["checks"]["corridor"]["pass"])
-            if ev2["checks"]["silhouetteIoU"]["value"] >= best2["checks"]["silhouetteIoU"]["value"]:
-                best2, best_built = ev2, built2
+        both, disp, frac = clock.heavy("sam2-moge-2", heavy_outline)
+        mark("heavy", t)
+        print("sam2 intersect frac", round(frac, 4))
+        if frac > 0.05:
+            gs, _tow = _down_mask(both, tower_cols, 3)
+            ds = disp[::3, ::3]
+            if ds.shape != gs.shape:
+                ds = np.asarray(Image.fromarray((ds * 255).astype(np.uint8)).resize(
+                    (gs.shape[1], gs.shape[0]), Image.Resampling.BILINEAR,
+                ), np.float32) / 255.0
+            t = time.perf_counter()
+            ev2, built2 = bake(gs, ds, "attempt-1-sam2")
+            mark("sam2-field", t)
+            print("sam2", ev2["pass"], {k: v["pass"] for k, v in ev2["checks"].items()})
+            (OUT / "gates-sam2.json").write_text(json.dumps({"pass": ev2["pass"], "checks": ev2["checks"]}, indent=2, default=str))
             if ev2["pass"]:
-                best2, best_built = ev2, built2
-                break
-        ev, built = best2, best_built
-        mark("attempt-2", t)
+                ev, built, g = ev2, built2, gs
+                outline = "sam2"
+            else:
+                print("sam2 field failed a gate; shipping the colour-mask field that passed")
+        else:
+            print("sam2 intersection too small; shipping the colour-mask field")
+    trials = [{"outline": outline, "pass": ev["pass"], "iou": ev["checks"]["silhouetteIoU"]["value"]}]
 
     # vertex budget versus the live lods (same function, live mesh)
     biome = json.loads(Path("/workspace/zb-preview-1008/biome.json").read_text())
@@ -320,7 +382,8 @@ def main():
             "eye": ev["camera"]["eye"],
             "fov": ev["camera"]["fov"],
         },
-        "avenue": {"headingDeg": 78, "halfWidthM": 14},
+        "avenue": {"headingDeg": 78, "halfWidthM": 4, "shoulderM": [0.8, 3.5], "crestBandM": [15, 30]},
+        "outline": outline,
         "horizonRow": horizon,
     }
     # camera used for the winning field is ev["camera"] but the GRID was built with that camera
@@ -333,7 +396,10 @@ def main():
     grid.tofile(data / "height.bin")
     (data / "height.json").write_text(json.dumps(meta, indent=2))
     shade_height(grid, built["origin"], built["step"], ev["camera"], OUT / "height-ortho.png")
-    (OUT / "gates.json").write_text(json.dumps({"pass": ev["pass"], "checks": ev["checks"], "features": ev["features"], "attempt": attempt}, indent=2, default=str))
+    (OUT / "gates.json").write_text(json.dumps({
+        "pass": ev["pass"], "checks": ev["checks"], "features": ev["features"],
+        "attempt": attempt, "outline": outline, "clock": clock.rows,
+    }, indent=2, default=str))
 
     t = time.perf_counter()
     write_staging("key")

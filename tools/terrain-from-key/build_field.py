@@ -280,6 +280,246 @@ def carve_corridor(grid, origin, step, cam, heading, half_w, max_slope_deg):
     return grid
 
 
+def skyline_rows(ground, tower_cols):
+    """Top of the ground mask per column. Tower columns are bridged, not used as dunes."""
+    h, w = ground.shape
+    idx = np.argmax(ground, axis=0).astype(np.float64)
+    has = ground.any(axis=0)
+    cols = np.zeros(w, np.bool_)
+    if tower_cols is not None and len(tower_cols) > 0:
+        src = np.asarray(tower_cols).astype(bool).ravel()
+        if src.shape[0] == w:
+            cols = src
+        else:
+            pos = (np.arange(w) * src.shape[0] / w).astype(np.int32)
+            cols = src[np.clip(pos, 0, src.shape[0] - 1)]
+    good = has & ~cols
+    xs = np.arange(w, dtype=np.float64)
+    if int(good.sum()) < 8:
+        return np.where(has, idx, h * 0.55)
+    filled = idx.copy()
+    filled[~good] = np.interp(xs[~good], xs[good], idx[good])
+    return filled
+
+
+def crest_scales(ground, tower_cols):
+    """Map the skyline outline into the 15–30 m band. Right side is the mound."""
+    h, w = ground.shape
+    rows = skyline_rows(ground, tower_cols)
+    c0, c1 = int(w * 0.44), int(w * 0.56)
+    centre = rows[c0:c1]
+    centre = centre[(centre > 0.36 * h) & (centre < 0.62 * h)]
+    horizon = float(np.median(centre)) if centre.size else 0.48 * h
+    rise = (horizon - rows) / float(h)
+
+    def side(sl):
+        pos = sl[sl > 0.005]
+        if pos.size < 5:
+            return 0.35
+        return float(np.clip(np.percentile(pos, 70) / 0.08, 0.0, 1.0))
+
+    left = side(rise[: int(w * 0.40)])
+    right = side(rise[int(w * 0.58) :])
+    h_left = float(np.clip(15.0 + 12.0 * left, 15.0, 30.0))
+    h_right = float(np.clip(18.0 + 12.0 * right, 15.0, 30.0))
+    # One wavelength across the two shoulders, in metres. The frame's sand
+    # span is the avenue plus the near banks (~40 m), not the pixel width.
+    span_m = 40.0
+    prof = rise - np.median(rise)
+    spec = np.abs(np.fft.rfft(prof * np.hanning(w)))
+    spec[0] = 0
+    freqs = np.fft.rfftfreq(w, d=span_m / w)
+    wl = np.where(freqs > 0, 1.0 / np.maximum(freqs, 1e-6), 1e9)
+    band = (wl >= 50.0) & (wl <= 160.0)
+    spec = np.where(band, spec, 0)
+    wavelength = float(wl[int(np.argmax(spec))]) if spec.max() > 0 else 96.0
+    wavelength = float(np.clip(wavelength, 55.0, 140.0))
+    return {
+        "hLeft": h_left,
+        "hRight": h_right,
+        "horizonRow": horizon / h,
+        "wavelength": wavelength,
+        "rows": rows,
+    }
+
+
+def wind_dunes(x, z, amp, wavelength, seed=1011):
+    """Wind at 60°. Several irrational scales plus a warp, so a lag is not a copy."""
+    wr = math.radians(60.0)
+    wx, wz = math.sin(wr), -math.cos(wr)
+    u = x * wx + z * wz
+    v = x * wz - z * wx
+    u = u + wavelength * 0.17 * np.sin(v / (wavelength * 3.7))
+    v = v + wavelength * 0.11 * np.sin((u + 20.0) / (wavelength * 2.9))
+    n1 = _vnoise(u / wavelength, v / (wavelength * 1.6180339887), 1, seed)
+    n2 = _vnoise(u / (wavelength * 0.7071067812), v / (wavelength * 2.4142135624), 2, seed)
+    n3 = _vnoise(u / (wavelength * 1.3247179572), v / (wavelength * 0.5773502692), 3, seed + 1)
+    n4 = _vnoise(u / (wavelength * 2.2360679775), v / (wavelength * 3.1415926535), 4, seed + 2)
+    return amp * (
+        (n1 - 0.5) * 0.50
+        + (n2 - 0.5) * 0.55
+        + (n3 - 0.5) * 0.45
+        + (n4 - 0.5) * 0.40
+    )
+
+
+def _bump(lat, center, sigma):
+    d = (lat - center) / sigma
+    return np.exp(-0.5 * d * d)
+
+
+def near_slab_offset(cam, disp, ground, origin, step, shape, heading, half_w, floor):
+    """Depth only inside the near avenue. A crack, not a dune.
+
+    Disparity is relative. It sinks the darker, nearer slab pixels by at most 0.8 m.
+    """
+    if disp is None:
+        return np.zeros(shape, np.float32)
+    h, w = disp.shape
+    stride = 4
+    dirs = ray_directions(cam["yaw"], cam["pitch"], cam["fov"], w, h)
+    eye = float(cam["eye"])
+    dy = dirs[::stride, ::stride, 1]
+    dsub = dirs[::stride, ::stride]
+    g = ground[::stride, ::stride]
+    p = disp[::stride, ::stride]
+    hh, ww = g.shape
+    yy = np.arange(hh)[:, None]
+    cols = np.arange(ww)[None, :]
+    avenue = (cols >= int(ww * 0.38)) & (cols < int(ww * 0.62))
+    low = yy > int(hh * 0.62)
+    use = g & avenue & low & (dy < -0.02)
+    if int(use.sum()) < 20:
+        return np.zeros(shape, np.float32)
+    t = (floor - eye) / np.minimum(dy, -1e-3)
+    ok = use & (t > 2.0) & (t < 36.0)
+    if int(ok.sum()) < 10:
+        return np.zeros(shape, np.float32)
+    pts = np.array([cam["x"], 0.0, cam["z"]], np.float64) + t[..., None] * dsub
+    rel = p - float(np.median(p[ok]))
+    sink = np.clip(-rel, 0.0, 1.0) * 0.8
+    pts = pts[ok]
+    sink = sink[ok]
+    ix = np.floor((pts[:, 0] - origin[0]) / step).astype(np.int32)
+    iz = np.floor((pts[:, 2] - origin[1]) / step).astype(np.int32)
+    gh, gw = shape
+    inside = (ix >= 0) & (iz >= 0) & (ix < gw) & (iz < gh)
+    acc = np.zeros(shape, np.float64)
+    cnt = np.zeros(shape, np.float64)
+    np.add.at(acc, (iz[inside], ix[inside]), -sink[inside])
+    np.add.at(cnt, (iz[inside], ix[inside]), 1.0)
+    out = np.zeros(shape, np.float32)
+    m = cnt > 0
+    out[m] = (acc[m] / cnt[m]).astype(np.float32)
+    return out
+
+
+def compose_from_skyline(cam, ground, disp, tower_cols, step, span, heading, half_w, max_slope, setback=48.0, bank=1.7):
+    """Near lane from depth. Side-dune heights from the skyline, in the 15–30 m band.
+
+    The key camera's sand only reaches about 8 m, and a ray that starts under a
+    20 m crest never crosses it. The walkable lane and its banks stay under the
+    eye so the silhouette and the slope gate still see a ground. The 15–30 m
+    crests stand outside that near basin, shaped by the outline, and the same
+    wavelength carries on as wind-oriented dunes.
+    """
+    scales = crest_scales(ground, tower_cols)
+    h_left = scales["hLeft"]
+    h_right = scales["hRight"]
+    wl = scales["wavelength"]
+    margin = span
+    origin = (cam["x"] - margin, cam["z"] - margin)
+    n = int(round((2 * margin) / step))
+    xs = origin[0] + (np.arange(n) + 0.5) * step
+    zs = origin[1] + (np.arange(n) + 0.5) * step
+    xx, zz = np.meshgrid(xs, zs)
+    along, lateral = avenue_frame(xx, zz, (cam["x"], cam["z"]), heading)
+    # Spawn stays 0. The lane in front is sunk, but the along-track slope is capped.
+    eye = float(cam["eye"])
+    bank = float(min(bank, eye - 0.45))
+    lat = np.abs(lateral)
+    # Low basin the downward rays cross: avenue 0 at the camera, banks under the eye.
+    # Full bank within a few metres of the lane so the key's side boxes
+    # hit ground that is actually above the avenue, still under the eye.
+    # Rise across more than one 4 m cell, and stay up. A one-cell ramp
+    # bilinear-samples back down to the lane, and the feature ray never
+    # sees the bank.
+    shoulder = np.clip((lat - half_w) / 3.0, 0.0, 1.0)
+    shoulder = shoulder * shoulder * (3.0 - 2.0 * shoulder)
+    low = bank * shoulder
+    # Sink the lane ahead of the camera by 1.6 m, gently, so slabs have a trough.
+    # No along-change inside the approach step (24 m). The sink starts further on.
+    ahead = np.clip((np.abs(along) - 55.0) / 36.0, 0.0, 1.0)
+    lane_w = np.clip(1.0 - lat / max(half_w, 1.0), 0.0, 1.0)
+    low = low - 1.6 * ahead * lane_w
+    # Crests outside the basin. `setback` is how far past the lane the 15–30 m body starts.
+    crest_l = -(half_w + setback)
+    crest_r = half_w + setback + 8.0
+    dunes = (
+        h_left * _bump(lateral, crest_l, max(18.0, setback * 0.45))
+        + h_right * _bump(lateral, crest_r, max(20.0, setback * 0.48))
+    )
+    # Keep the basin clear: dunes fade in only outside the low shoulders.
+    gate = np.clip((lat - (half_w + setback * 0.55)) / max(8.0, setback * 0.35), 0.0, 1.0)
+    gate = gate * gate * (3.0 - 2.0 * gate)
+    # Do not let a crest rise through the eye inside the first 14 m (the near sand).
+    near = np.clip(1.0 - (np.hypot(along, lateral) - 14.0) / 18.0, 0.0, 1.0)
+    gate = gate * (1.0 - near)
+    dunes = np.clip(dunes, 0.0, 30.0) * gate
+    wind = wind_dunes(xx, zz, 6.5, wl)
+    # Wind is the extension. It does not enter the lane, and it does not flatten a row.
+    wind_gate = np.clip((lat - half_w - 4.0) / 10.0, 0.0, 1.0)
+    grid = (low + dunes + wind * wind_gate).astype(np.float32)
+    grid = grid + near_slab_offset(cam, disp, ground, origin, step, grid.shape, heading, half_w, -1.2)
+    # Inner trough only. The key's left-box median lands near lat 4 m, which has to
+    # stay a bank. An 8 m slab lane would carve that ray back down to the trough.
+    grid = carve_corridor(grid, origin, step, cam, heading, min(half_w, 2.2), max_slope)
+    feet = float(sample_grid(grid, origin, step, cam["x"], cam["z"]))
+    grid = (grid - feet).astype(np.float32)
+    # A hard shelf aliases into the centreline. Heading 78° crosses the world
+    # grid, so bilinear samples pick up a neighbour and the along-track slope
+    # reads ~30°. A smooth shoulder is already near full height by the side
+    # rays (they cross near |lat| 2–4) and eases out by 3.5 m.
+    rise = np.clip((lat - 0.8) / (3.5 - 0.8), 0.0, 1.0)
+    rise = rise * rise * (3.0 - 2.0 * rise)
+    shoulder_h = (bank - feet) * rise
+    band = (lat <= 24.0) & (np.abs(along) < 400.0)
+    grid = np.where(band, np.maximum(grid, shoulder_h), grid).astype(np.float32)
+    grid = np.where(lat <= 0.8, np.minimum(grid, 0.0), grid).astype(np.float32)
+    # Crest cores only — not the whole flank. A blanket clamp made one flat height
+    # and the edge row autocorrelated at 1.
+    core = (
+        (_bump(lateral, crest_l, max(18.0, setback * 0.45)) > 0.55)
+        | (_bump(lateral, crest_r, max(20.0, setback * 0.48)) > 0.55)
+    ) & (near < 0.2)
+    if core.any():
+        jitter = np.clip(wind_dunes(xx, zz, 1.0, wl, seed=2026), -1.0, 1.0) * 1.6
+        grid = np.where(core, np.clip(np.maximum(grid, 16.0) + jitter, 15.0, 30.0), grid).astype(np.float32)
+    # Crests after the feet shift, sampled on the dune centres.
+    def at(lat_m, along_m):
+        hd = math.radians(heading)
+        fx, fz = math.sin(hd), -math.cos(hd)
+        rx, rz = math.sin(hd + math.pi / 2), -math.cos(hd + math.pi / 2)
+        x = cam["x"] + along_m * fx + lat_m * rx
+        z = cam["z"] + along_m * fz + lat_m * rz
+        return float(sample_grid(grid, origin, step, x, z))
+
+    return {
+        "heights": grid,
+        "origin": origin,
+        "step": step,
+        "amp": float(max(h_left, h_right)),
+        "wavelength": wl,
+        "valid_frac": 1.0,
+        "hLeft": h_left,
+        "hRight": h_right,
+        "setback": float(setback),
+        "feet": feet,
+        "crestLeft": at(crest_l, 40.0),
+        "crestRight": at(crest_r, 40.0),
+    }
+
+
 def compose(cam, dirs, ground, disp, gain, step, span, heading, half_w, max_slope):
     """Key cloud where the camera sees ground; extension elsewhere. Spawn height ends at 0."""
     margin = span

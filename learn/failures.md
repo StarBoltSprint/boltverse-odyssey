@@ -1010,3 +1010,25 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Wait until no visible node says Chargement, then fail the frame in `tools/common/capture_gate.py` if it is a loading plate or empty. Frame close (8 m), low portrait, far, and ortho faces on the target AABB (`tools/common/frame_bbox.py`, `renderPose`). Perspective cover ≥ 25%. Ortho ≥ 60% and not black. |
 | Guard | `node tools/common/render_harness.mjs` (early shot FAIL, late shot PASS). `python3 tools/common/selftest.py`. Object-gate rows `capture ready` and `checklist camera framed on the target`. |
 | Sources | `tools/common/capture_gate.py`, `tools/common/frame_bbox.py`, `tools/common/render_harness.mjs`, `tools/object-gate/gate.mjs`. |
+
+### 2026-10-11 — SAM2 sand mask is too holey to be the dune silhouette
+
+| | |
+| --- | --- |
+| Take | terrain-key2-1011 |
+| Defect | The SAM2 ground mask, intersected with the colour sand, dropped the column silhouette to IoU 0.5486. |
+| Root cause | One box prompt on the lower frame returns the sand with holes (slabs, shadows, the wreck). Filling each column from the first white pixel then misses the colour skyline. |
+| Fix | Keep the colour ground outline when that IoU is under 0.80. SAM2 still runs. It does not replace a passing outline. |
+| Guard | `steps/terrain-key2-1011/gates-sam2.json` silhouetteIoU 0.5486. Shipped row is `gates.json` 0.8481. |
+| Sources | `tools/terrain-from-key/run.py`, `steps/terrain-key2-1011/mask-sam2.png`. |
+
+### 2026-10-11 — Depth Anything V2 Large was left as the relief default
+
+| | |
+| --- | --- |
+| Take | terrain-key2-1011, licence line 12:25. |
+| Defect | Relief, fuse, and `bake_depth.py` defaulted to Depth Anything V2 Large. That weight is non-commercial and must not land in a shipped or posted output. |
+| Root cause | The morning line of the spec said to switch relief and fuse to Large. The 12:25 licence line names MoGe-2 as the default and keeps Large as an internal comparison only. The first wiring followed the morning line. |
+| Fix | `DEFAULT_DEPTH = "moge-2"` in `tools/common/vision_models.py`. `load_default_depth` / `depth_default` refuse any other name. `depth_relief.session` and `bake_depth.py` call MoGe-2. A Large `.pth` still runs only when the path is passed on purpose, and that map is not saved into the step folder. |
+| Guard | `DEFAULT_DEPTH == "moge-2"`. `bake_depth.py` default file is `moge-2-vitl.pt`. The shipped `steps/terrain-key2-1011/height.bin` was composed with `disp=None`. |
+| Sources | `tools/common/vision_models.py`, `tools/imagine-to-3d/depth_relief.py`, `tools/relief/bake_depth.py`, `SPEC-TERRAIN-KEY2-1011.md`. |

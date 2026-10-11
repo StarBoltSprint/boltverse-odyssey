@@ -6,7 +6,6 @@ import os
 from pathlib import Path
 
 import numpy as np
-import onnxruntime as ort
 from PIL import Image
 
 MEAN = np.array([0.485, 0.456, 0.406], np.float32)
@@ -81,7 +80,8 @@ def ground_mask(rgb: np.ndarray, features: dict) -> tuple[np.ndarray, np.ndarray
 
 
 def infer_disp(rgb: np.ndarray) -> np.ndarray:
-    """Relative disparity, larger = closer, full image size. CPU ORT."""
+    """Relative disparity, larger = closer, full image size. CPU ORT. Not used by the skyline bake."""
+    import onnxruntime as ort
     sess = ort.InferenceSession(str(MODEL), providers=["CPUExecutionProvider"])
     h, w = rgb.shape[:2]
     # 14-pixel grid keeps the ONNX output aligned; 672x378 is the small model at ~half key.
