@@ -186,7 +186,7 @@ void main() {
 }
 `;
 
-const isMain = process.argv[1] && process.argv[1].endsWith("curves.mjs");
+const isMain = typeof process !== "undefined" && process.argv[1] && process.argv[1].endsWith("curves.mjs");
 if (isMain) {
   const a = srgbEncode(aces([0.18, 0.18, 0.18], 1));
   const g = agx([0.18, 0.18, 0.18], 1);

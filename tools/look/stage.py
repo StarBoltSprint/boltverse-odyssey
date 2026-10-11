@@ -16,6 +16,10 @@ def _symlink_tree(live, stage):
 
 
 def patch_main(text):
+    fov_old = "  camera.fov = cam.fovDeg; camera.updateProjectionMatrix();"
+    fov_new = "  camera.fov = (QD.get(\"fov\") && isFinite(+QD.get(\"fov\"))) ? +QD.get(\"fov\") : cam.fovDeg; camera.updateProjectionMatrix();"
+    if fov_old in text:
+        text = text.replace(fov_old, fov_new, 1)
     if MARKER in text:
         return text
     needle = "window.__gdProf = { world, grade, sky, ground, renderer, camera, render: drawScene };"
