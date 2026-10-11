@@ -2,7 +2,7 @@
 
 Verdict: FAIL
 
-The solid is watertight, the play frame is no longer black, and the worst float is 0.00 m. Gate5 is 9 FAIL / 21. No view reaches strict 0.70 with a vision yes. Nothing was written under `dataset/i23d`. Bars were not loosened. The solid is watertight, the play frame is no longer black, and the worst float is 0.00 m. Gate5 is 9 FAIL / 21. No view reaches strict 0.70 with a vision yes. Nothing was written under `dataset/i23d`. Bars were not loosened.
+The solid is watertight, the play frame is no longer black, and the worst float is 0.00 m. Gate5 is 9 FAIL / 21. No view reaches strict 0.70 with a vision yes. Nothing was written under `dataset/i23d`. Bars were not loosened.
 
 Placement was not moved. `meta.cameraSpace` is ignored when `right` / `up` / `toward` / `origin` exist. The staged basis stays.
 

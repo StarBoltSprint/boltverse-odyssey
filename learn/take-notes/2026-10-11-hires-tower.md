@@ -2,11 +2,15 @@
 
 ## Quota and turns
 
-The quota row is appended by `python3 tools/quota/quota.py` after this note. Copy that row into the next edit of this file. Do not invent the numbers.
+| Date | Step | Commit | Turns | Tool calls | Image gens | Video gens | Tokens in | Tokens out | Wall s | Log |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-10-11 | steps/hires-tower-1011 | 5ac1d217 | 0 | 0 | 0 | 0 | n/a | n/a | 4288.7 | events.jsonl |
+
+The session log did not carry turn or token counts. Wall time is 4288.7 s. Image gens in that log are 0. The three Grok vision calls are outside that counter and cost $0.007481 (`steps/hires-tower-1011/vision.ndjson`).
 
 | Item | Kind | Turns or tries | Quota spent | Result |
 | --- | --- | --- | --- | --- |
-| hires tower skin | hull/ship | 3 builds, 3 gates | see quota-log | rejected (bars FAIL, tools kept) |
+| hires tower skin | hull/ship | 3 builds, 3 gates | wall 4288.7 s, vision $0.007481 | rejected (bars FAIL, tools kept) |
 
 ## This step
 
