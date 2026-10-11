@@ -66,7 +66,7 @@ if (QD.get("bench") === "1") {
   window.__benchOrigin = { x: st.x, z: st.z };
   window.__benchDts = [];
 }
-try { await import("./look/look.mjs?v=fix1").then((m) => m.attach(window.__lookCtx)); }
+try { await import("./look/look.mjs?v=fix2").then((m) => m.attach(window.__lookCtx)); }
 catch (err) { console.warn("look", err); }
 requestAnimationFrame(frame);
 """
@@ -76,7 +76,11 @@ requestAnimationFrame(frame);
 
 
 def patch_index(text):
-    return text.replace("./main.mjs?v=62", "./main.mjs?v=look1")
+    text = text.replace("./main.mjs?v=62", "./main.mjs?v=look1")
+    icon = '<link rel="icon" href="./sky1/sky7-atlas.png">'
+    if icon not in text and "<head>" in text:
+        text = text.replace("<head>", "<head>\n" + icon, 1)
+    return text
 
 
 def install(live, stage, runtime_dir):
@@ -101,4 +105,8 @@ def install(live, stage, runtime_dir):
     curves = os.path.join(os.path.dirname(runtime_dir), "curves.mjs")
     if os.path.exists(curves):
         shutil.copy(curves, os.path.join(look_dir, "curves.mjs"))
+    icon = os.path.join(stage, "favicon.ico")
+    atlas = os.path.join(stage, "sky1", "sky7-atlas.png")
+    if not os.path.lexists(icon) and os.path.exists(atlas):
+        os.symlink("sky1/sky7-atlas.png", icon)
     return {"main": main_dest, "index": index_dest, "look": look_dir}

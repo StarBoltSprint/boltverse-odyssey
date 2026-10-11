@@ -1,0 +1,14 @@
+{
+ "status": "NEEDS_APPROVAL",
+ "count": 1,
+ "requests": [
+  {
+   "id": "bake-sand",
+   "purpose": "Relight the shadowed grains so the sand bounce matches the key avenue.",
+   "feature": "bake",
+   "source": "/workspace/zb-preview-1008/assets/ground/ground-g0.jpg",
+   "prompt": "Edit this ground plate. Keep the same sand and the same sun direction already in the picture. In the shadowed grains only, add the warm light that has bounced off the avenue floor in the key. Leave the lit grains as they are. Do not add an object, a person, or a new light source.",
+   "count": 1
+  }
+ ]
+}

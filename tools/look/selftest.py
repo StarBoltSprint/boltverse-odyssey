@@ -61,7 +61,8 @@ def main():
     if os.path.exists(live):
         patched = stage.patch_main(open(live, encoding="utf-8").read())
         check(patched.count("LOOK-UNREAL") >= 2, "markers")
-        check("await import(\"./look/look.mjs?v=fix1\")" in patched, "import")
+        check("await import(\"./look/look.mjs?v=fix2\")" in patched, "import")
+        check("sky7-atlas.png" in stage.patch_index("<head></head>"), "icon")
         stage.patch_main(patched)
     row = budget.summarise([16.6] * 50 + [40])
     check(row["fpsAvg"] > 50, "fps")
@@ -69,7 +70,7 @@ def main():
     check(enabled, why)
     enabled, why = budget.ship_default("grade", {"frameMs": 20}, {"frameMs": 30}, True)
     check(not enabled and "frame" in why, why)
-    for name in ("bake", "envmap", "fog", "shadows", "sprites"):
+    for name in ("bake", "envmap", "fog", "shadows", "sprites", "sun"):
         try:
             mod = __import__(name)
         except ModuleNotFoundError:
@@ -103,6 +104,20 @@ def main():
     bare[30:68, 100:118] = 0.08
     check(not gates.contact_rows(bare)["pass"], "missing contact must fail")
     check(gates.godray_score(sky) >= gates.GODRAY_FLOOR, "godray floor")
+    check(gates.region_rows(rgb, rgb)[0]["detail"]["deltaE"] == 0.0, "region identity")
+    shafts = np.full((100, 160, 3), 0.5, np.float32)
+    shafts[:, 20:40] = 0.05
+    shafts[:, 100:120] = 0.05
+    for x in range(48, 92):
+        peak = max(0.0, 1.0 - abs(x - 70) / 12.0)
+        shafts[30:55, x] = 0.45 + 0.4 * peak
+    shafts[48:54, 118:128] = 1.0
+    check(gates.shaft_rows(shafts)["pass"], "shafts " + str(gates.shaft_rows(shafts)))
+    flat = np.full((100, 160, 3), 0.5, np.float32)
+    flat[:, 20:40] = 0.05
+    flat[:, 100:120] = 0.05
+    flat[48:54, 118:128] = 1.0
+    check(not gates.shaft_rows(flat)["pass"], "flat gaps are not shafts")
     print("PASS look selftest")
     return 0
 

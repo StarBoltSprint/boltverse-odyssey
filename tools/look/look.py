@@ -20,6 +20,7 @@ EXTRAS = (
     ("fog", "fog", "build"),
     ("shadows", "shadows", "build"),
     ("sprites", "sprites", "build"),
+    ("sun", "sun", "build"),
 )
 
 

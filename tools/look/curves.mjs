@@ -90,6 +90,8 @@ uniform float uBloom;
 uniform float uBloomOn;
 uniform float uLutN;
 uniform sampler2D tMatch;
+uniform sampler2D tShaft;
+uniform float uShaft;
 
 vec3 srgbEncode(vec3 lin) {
   return mix(lin * 12.92, 1.055 * pow(max(lin, vec3(0.0)), vec3(1.0 / 2.4)) - 0.055, step(0.0031308, lin));
@@ -156,9 +158,10 @@ vec3 lutLookup(vec3 c) {
 }
 void main() {
   vec3 lin = texture(tScene, vUv).rgb;
+  vec3 shaft = uShaft > 0.0 ? texture(tShaft, vUv).rgb : vec3(0.0);
   // uCurve 2: identity encode of the linear target (the real scene the grade fits).
   if (uCurve > 1.5 && uCurve < 2.5) {
-    outColor = vec4(srgbEncode(lin), 1.0);
+    outColor = vec4(clamp(srgbEncode(lin) + shaft * uShaft, 0.0, 1.0), 1.0);
     return;
   }
   // uCurve 3: luma CDF match. The 256-wide ramp is sampled from the key and from this scene.
@@ -168,13 +171,13 @@ void main() {
     float y2 = texture(tMatch, vec2(clamp(y, 0.0, 1.0), 0.5)).r;
     float s = y2 / max(y, 1e-4);
     vec3 bloom = uBloomOn > 0.5 ? texture(tBloom, vUv).rgb : vec3(0.0);
-    outColor = vec4(clamp(disp * s + bloom * uBloom, 0.0, 1.0), 1.0);
+    outColor = vec4(clamp(disp * s + bloom * uBloom + shaft * uShaft, 0.0, 1.0), 1.0);
     return;
   }
   vec3 disp = uCurve < 0.5 ? acesFilmic(lin) : agxFilmic(lin);
   vec3 graded = mix(disp, lutLookup(disp), uLut);
   vec3 bloom = uBloomOn > 0.5 ? texture(tBloom, vUv).rgb : vec3(0.0);
-  outColor = vec4(clamp(graded + bloom * uBloom, 0.0, 1.0), 1.0);
+  outColor = vec4(clamp(graded + bloom * uBloom + shaft * uShaft, 0.0, 1.0), 1.0);
 }
 `;
 

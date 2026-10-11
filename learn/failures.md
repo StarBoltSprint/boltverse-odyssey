@@ -1021,3 +1021,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Round 2 adds `toe` 0.02 on the dark end of the ramp. The reshoot passed (mean 0.3194, rel −0.0053). |
 | Guard | `python3 tools/look/look.py gate` fails the pack when `reference` is `synthetic-pregrade`, and it fails a real frame whose mean or 16-bin histogram is outside ±10% of the key. God-ray sky p98 must clear 0.50 and 80% of the scene. At least two tower feet need a contact delta of 0.03. |
 | Sources | `tools/look/gates.py`; `tools/look/grade.py`; `/workspace/zb-unreal-look-fix-1011/gate-r1.json`; `/workspace/zb-unreal-look-fix-1011/gate-r2.json` |
+
+### 2026-10-11 — avenue yaw still shows the gas giant, so a screen-space sun cannot match the key horizon
+
+| | |
+| --- | --- |
+| Take | Unreal look fix 2, 11 Oct. |
+| Defect | After a low camera (eye 4 m, fov 90) and an atlas sun on the key UV, the frame still fails the key. Horizon ΔE 27.0191 (limit 6). Sky ΔE 14.4988 (limit 12). Towers ΔE 19.469 (limit 14). Shaft hit 0 (need 1, lift 0.045). The purple planet and rings stay in yaw 78. |
+| Root cause | The Imagine sky plate at that yaw is the gas giant. Placement and intensity of the existing sun/halo atlas do not replace those pixels. The radial-blur shafts are too weak to lift a tower gap by 0.045. Eye 4 m is the top of the asked 2–4 m band, so the solve cannot go lower inside the spec. |
+| Fix | Stopped after round 2. No third capture. No new sky. `bake-sand` stays uncooked. |
+| Guard | `python3 tools/look/look.py gate` rows `shafts` (lift 0.045, at least one gap) and `colour-sky` / `colour-horizon` / `colour-sand` / `colour-towers` (bible ΔE limits). Round 2 is `steps/unreal-look-fix2-1011/gate-r2.json`. |
+| Sources | `tools/look/gates.py`; `tools/look/runtime/look.mjs`; `steps/unreal-look-fix2-1011/camera/camera-v2.json`; `steps/unreal-look-fix2-1011/REPORT.md` |

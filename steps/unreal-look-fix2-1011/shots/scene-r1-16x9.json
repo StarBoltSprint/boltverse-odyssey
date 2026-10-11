@@ -1,0 +1,73 @@
+{
+ "ok": true,
+ "look": {
+  "ok": true,
+  "on": {
+   "grade": true,
+   "sun": false,
+   "bloom": false,
+   "bake": true,
+   "env": true,
+   "fog": true,
+   "shadows": true,
+   "sprites": true
+  },
+  "applied": {
+   "grade": {
+    "curve": "match",
+    "exposure": 1,
+    "lut": 0,
+    "bloom": false
+   },
+   "bake": {
+    "ok": true,
+    "layers": 8,
+    "size": 1024
+   },
+   "env": {
+    "ok": true,
+    "metal": 2,
+    "dimmed": 9,
+    "seam": {
+     "seam": 0.00217,
+     "pinch": 0.10593,
+     "pass": true
+    }
+   },
+   "fog": {
+    "ok": true,
+    "materials": 21,
+    "heightFalloff": 0.0741
+   },
+   "shadows": {
+    "ok": true,
+    "movers": 0,
+    "staticOff": 20,
+    "staticContact": true,
+    "map": true,
+    "size": 1024
+   },
+   "sprites": {
+    "ok": true,
+    "keep": 10,
+    "overdraw": 0.0752,
+    "cap": 0.08
+   }
+  }
+ },
+ "dpr": 1,
+ "size": [
+  1280,
+  720
+ ],
+ "cam": {
+  "x": -51.115,
+  "z": 9.63,
+  "yaw": 78,
+  "pitch": 4.84,
+  "y": 10.809591927440971
+ },
+ "fov": 90,
+ "logs": [],
+ "shot": "steps/unreal-look-fix2-1011/shots/scene-r1-16x9.png"
+}

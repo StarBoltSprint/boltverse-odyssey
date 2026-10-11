@@ -1,0 +1,263 @@
+{
+ "schema": "unreal-look/1",
+ "key": "/workspace/zb-bible-1008/key-city3.jpg",
+ "sky": "/workspace/zb-preview-1008/assets/sky/sky-equirect.jpg",
+ "light": "/workspace/zb-bible-1008/compare/run3/light/key-light.json",
+ "features": {
+  "grade": {
+   "id": "grade",
+   "enabled": true,
+   "flag": "grade",
+   "curve": "match",
+   "exposure": 1.0,
+   "lutStrength": 0.0,
+   "distance": 14.2446,
+   "reference": "game",
+   "game": "/workspace/grokcli/wt/unreal-look-1011/steps/unreal-look-fix2-1011/shots/scene-r1-16x9.png",
+   "round": 2,
+   "protect": 0.0,
+   "toe": 0.02,
+   "match": {
+    "file": "match.png",
+    "n": 256,
+    "method": "luma-cdf"
+   },
+   "lut": {
+    "file": "lut.png",
+    "n": 16,
+    "layout": "height=N, width=N*N, slice b, row g, column r"
+   },
+   "bloom": {
+    "strength": 0.0,
+    "strengthCap": 0.35,
+    "scale": 0.25,
+    "threshold": {
+     "value": 0.70941,
+     "source": {
+      "image": "/workspace/zb-bible-1008/key-city3.jpg",
+      "method": "luma-percentile",
+      "p": 99.5
+     }
+    },
+    "enabled": false
+   }
+  },
+  "bake": {
+   "id": "bake",
+   "enabled": true,
+   "flag": "bake",
+   "sun": {
+    "azimuthDeg": 106.98,
+    "elevationDeg": 15.95,
+    "dir": [
+     0.919587,
+     0.274798,
+     0.280795
+    ],
+    "source": "/workspace/zb-bible-1008/compare/run3/light/key-light.json"
+   },
+   "bounce": {
+    "rgb": [
+     0.391394,
+     0.262204,
+     0.24091
+    ],
+    "linear": [
+     0.126917,
+     0.055899,
+     0.047313
+    ],
+    "source": {
+     "image": "/workspace/zb-bible-1008/key-city3.jpg",
+     "method": "mean-rect",
+     "rect": [
+      0.3,
+      0.62,
+      0.7,
+      0.82
+     ]
+    }
+   },
+   "size": 1024,
+   "plates": [
+    "bake/g0.png",
+    "bake/g1.png",
+    "bake/g2.png",
+    "bake/g3.png",
+    "bake/g4.png",
+    "bake/g5.png",
+    "bake/g6.png",
+    "bake/g7.png"
+   ],
+   "ao": "normal-blue",
+   "cycles": "tools/look/cycles_bake.py",
+   "requests": [
+    {
+     "id": "bake-sand",
+     "purpose": "Relight the shadowed grains so the sand bounce matches the key avenue.",
+     "feature": "bake",
+     "source": "/workspace/zb-preview-1008/assets/ground/ground-g0.jpg",
+     "prompt": "Edit this ground plate. Keep the same sand and the same sun direction already in the picture. In the shadowed grains only, add the warm light that has bounced off the avenue floor in the key. Leave the lit grains as they are. Do not add an object, a person, or a new light source.",
+     "count": 1
+    }
+   ]
+  },
+  "env": {
+   "id": "env",
+   "enabled": true,
+   "flag": "env",
+   "image": "assets/sky/sky-equirect.jpg",
+   "source": "/workspace/zb-preview-1008/assets/sky/sky-equirect.jpg",
+   "intensity": 0.15,
+   "seam": {
+    "seam": 0.00217,
+    "pinch": 0.10593,
+    "pass": true
+   },
+   "assign": "metalness>=0.5 or transmission>0 or name glass/chrome",
+   "requests": []
+  },
+  "fog": {
+   "id": "fog",
+   "enabled": true,
+   "flag": "fog",
+   "bands": [
+    {
+     "rgb": [
+      0.386422,
+      0.256751,
+      0.234651
+     ],
+     "linear": [
+      0.12355,
+      0.053621,
+      0.044946
+     ],
+     "source": {
+      "image": "/workspace/zb-bible-1008/key-city3.jpg",
+      "method": "mean-rect",
+      "rect": [
+       0.25,
+       0.62,
+       0.75,
+       0.8
+      ]
+     },
+     "name": "near"
+    },
+    {
+     "rgb": [
+      0.457133,
+      0.303221,
+      0.259966
+     ],
+     "linear": [
+      0.176487,
+      0.074844,
+      0.054957
+     ],
+     "source": {
+      "image": "/workspace/zb-bible-1008/key-city3.jpg",
+      "method": "mean-rect",
+      "rect": [
+       0.2,
+       0.42,
+       0.8,
+       0.56
+      ]
+     },
+     "name": "horizon"
+    },
+    {
+     "rgb": [
+      0.571781,
+      0.456816,
+      0.508612
+     ],
+     "linear": [
+      0.286597,
+      0.176225,
+      0.222099
+     ],
+     "source": {
+      "image": "/workspace/zb-bible-1008/key-city3.jpg",
+      "method": "mean-rect",
+      "rect": [
+       0.2,
+       0.12,
+       0.8,
+       0.28
+      ]
+     },
+     "name": "far"
+    }
+   ],
+   "heightFalloff": 0.0741,
+   "requests": []
+  },
+  "shadows": {
+   "id": "shadows",
+   "enabled": true,
+   "flag": "shadows",
+   "mapSize": 1024,
+   "type": "PCFSoftShadowMap",
+   "autoUpdate": false,
+   "staticCast": false,
+   "staticContact": true,
+   "movers": [
+    "player",
+    "npc",
+    "drone",
+    "bolt",
+    "hero"
+   ],
+   "neutral": true,
+   "requests": []
+  },
+  "sprites": {
+   "id": "sprites",
+   "enabled": true,
+   "flag": "sprites",
+   "sunDir": [
+    0.919587,
+    0.274798,
+    0.280795
+   ],
+   "sunSource": "/workspace/zb-bible-1008/compare/run3/light/key-light.json",
+   "count": 16,
+   "keep": 10,
+   "eachOverdraw": 0.00752,
+   "overdrawCap": 0.08,
+   "overdraw": 0.0752,
+   "atlas": "/workspace/zb-preview-1008/sky1/sky7-atlas.png",
+   "requests": []
+  },
+  "sun": {
+   "id": "sun",
+   "enabled": true,
+   "flag": "sun",
+   "uv": [
+    0.6887,
+    0.4146
+   ],
+   "intensity": 0.42,
+   "rim": 0.4,
+   "atlas": "sky1/sky7-atlas.png",
+   "atlasFile": "/workspace/zb-preview-1008/sky1/sky7-atlas.png",
+   "sunRect": [
+    0.0,
+    0.0,
+    0.4560124934929724,
+    1.0
+   ],
+   "rayRect": [
+    0.797501301405518,
+    0.0,
+    1.0,
+    0.9315068493150684
+   ],
+   "source": "/workspace/zb-bible-1008/key-city3.jpg",
+   "requests": []
+  }
+ }
+}

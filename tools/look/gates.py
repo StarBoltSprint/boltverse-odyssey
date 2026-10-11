@@ -21,6 +21,18 @@ GODRAY_FLOOR = 0.50
 GODRAY_KEEP = 0.80
 CONTACT_DELTA = 0.03
 CONTACT_MIN = 2
+# Bible qc (biome.json): highlight ΔE 12, horizon ΔE 6, object lit ΔE 14.
+# Rects are frame fractions on the matched 16:9 camera. horizon sits on the key's sun.
+REGION_LIMITS = {"sky": 12.0, "horizon": 6.0, "sand": 14.0, "towers": 14.0}
+REGION_RECTS = {
+    "sky": (0.02, 0.02, 0.42, 0.24),
+    "horizon": (0.58, 0.34, 0.80, 0.52),
+    "sand": (0.55, 0.72, 0.96, 0.96),
+    "towers": (0.14, 0.12, 0.42, 0.58),
+}
+# A shaft is a bright core inside a gap between two dark towers, not a flat bright sky.
+SHAFT_LIFT = 0.045
+SHAFT_MIN = 1
 
 
 def display_luma(img):
@@ -94,6 +106,101 @@ def _runs(mask):
     return runs
 
 
+def _fit(img, shape):
+    if img.shape[:2] == shape[:2]:
+        return img
+    im = Image.fromarray(np.clip(img * 255.0, 0, 255).astype(np.uint8))
+    im = im.resize((shape[1], shape[0]), Image.Resampling.BOX)
+    return np.asarray(im).astype(np.float32) / 255.0
+
+
+def _delta_e(a, b):
+    from skimage.color import rgb2lab, deltaE_ciede2000
+    h, w = min(a.shape[0], b.shape[0]), min(a.shape[1], b.shape[1])
+    if h < 2 or w < 2:
+        return None
+    la = rgb2lab(np.clip(a[:h, :w], 0, 1).astype(np.float64))
+    lb = rgb2lab(np.clip(b[:h, :w], 0, 1).astype(np.float64))
+    return float(deltaE_ciede2000(la, lb).mean())
+
+
+def region_rows(frame, key):
+    """Per-region CIEDE2000 on the matched frame. Each region has its own bible limit."""
+    key_r = _fit(key, frame.shape)
+    out = []
+    for name, rect in REGION_RECTS.items():
+        de = _delta_e(sample_crop(frame, rect), sample_crop(key_r, rect))
+        limit = REGION_LIMITS[name]
+        out.append({
+            "id": "colour-" + name,
+            "pass": de is not None and de <= limit + 1e-9,
+            "detail": {
+                "deltaE": None if de is None else round(de, 4),
+                "limit": limit,
+                "rect": [round(float(v), 4) for v in rect],
+            },
+        })
+    return out
+
+
+def sample_crop(img, rect):
+    h, w = img.shape[:2]
+    x0, y0, x1, y1 = rect
+    xa, xb = int(x0 * w), max(int(x1 * w), int(x0 * w) + 1)
+    ya, yb = int(y0 * h), max(int(y1 * h), int(y0 * h) + 1)
+    return img[ya:min(h, yb), xa:min(w, xb)]
+
+
+def shaft_rows(img):
+    """Visible shafts between towers: the gap's centre is brighter than its own edges.
+
+    A flat bright sky between two silhouettes does not pass. The radial-blur mask does,
+    because samples near a tower hit the occluder and the open centre does not.
+    """
+    h, w = img.shape[:2]
+    y = display_luma(img)
+    y0, y1 = int(0.28 * h), int(0.62 * h)
+    x0 = int(0.35 * w)
+    band = y[y0:y1, x0:]
+    if band.size == 0:
+        return {"pass": False, "hit": 0, "need": SHAFT_MIN, "reason": "empty"}
+    iy, ix = np.unravel_index(int(np.argmax(band)), band.shape)
+    sx, sy = x0 + int(ix), y0 + int(iy)
+    gaps = []
+    for frac in (0.10, 0.16, 0.22):
+        row = sy - int(frac * h)
+        if row < 1 or row >= h:
+            continue
+        line = y[row]
+        towers = [run for run in _runs(line < 0.22) if run[1] - run[0] + 1 >= max(3, w // 100)]
+        for i in range(len(towers) - 1):
+            a = towers[i][1] + 1
+            b = towers[i + 1][0] - 1
+            if b - a + 1 < max(4, w // 80):
+                continue
+            span = line[a:b + 1]
+            inset = max(1, int((b - a) / 6))
+            core = span[inset:-inset] if span.size > inset * 2 + 2 else span
+            if core.size < 3:
+                continue
+            mid = float(core[len(core) // 2])
+            edge = float(core[0] + core[-1]) * 0.5
+            lift = mid - edge
+            gaps.append({
+                "row": int(row), "x0": int(a), "x1": int(b),
+                "lift": round(lift, 4), "pass": bool(lift >= SHAFT_LIFT),
+            })
+    hit = sum(1 for g in gaps if g["pass"])
+    return {
+        "pass": hit >= SHAFT_MIN,
+        "sun": [round(sx / w, 4), round(sy / h, 4)],
+        "hit": hit,
+        "need": SHAFT_MIN,
+        "lift": SHAFT_LIFT,
+        "gaps": gaps[:8],
+    }
+
+
 def contact_rows(img):
     """A tower foot is a dark vertical mass whose sand just underneath is darker than the sand beside it."""
     h, w = img.shape[:2]
@@ -161,6 +268,9 @@ def evaluate(frame, key, scene=None, pack=None):
     rows.append({"id": "godrays", "pass": rays["pass"], "detail": rays})
     feet = contact_rows(frame)
     rows.append({"id": "contact", "pass": feet["pass"], "detail": feet})
+    shafts = shaft_rows(frame)
+    rows.append({"id": "shafts", "pass": shafts["pass"], "detail": shafts})
+    rows.extend(region_rows(frame, key))
     return {"pass": all(r["pass"] for r in rows), "rows": rows}
 
 
@@ -192,6 +302,11 @@ def main(argv):
         if r["id"] == "contact":
             item["hit"] = r["detail"].get("hit")
             item["towers"] = r["detail"].get("towers")
+        if r["id"] == "shafts":
+            item["hit"] = r["detail"].get("hit")
+        if r["id"].startswith("colour-"):
+            item["deltaE"] = r["detail"].get("deltaE")
+            item["limit"] = r["detail"].get("limit")
         summary.append(item)
     print(json.dumps({"pass": bool(doc["pass"]), "rows": summary}))
     return 0 if doc["pass"] else 1

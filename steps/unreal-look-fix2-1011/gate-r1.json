@@ -1,0 +1,260 @@
+{
+ "pass": false,
+ "rows": [
+  {
+   "id": "frame",
+   "pass": true,
+   "detail": "real framebuffer"
+  },
+  {
+   "id": "luma",
+   "pass": false,
+   "detail": {
+    "pass": false,
+    "meanFrame": 0.439,
+    "meanKey": 0.3211,
+    "meanRel": 0.3674,
+    "meanTol": 0.1,
+    "bins": [
+     {
+      "i": 0,
+      "frame": 0.0263,
+      "key": 0.0308,
+      "tol": 0.0031,
+      "pass": false
+     },
+     {
+      "i": 1,
+      "frame": 0.0867,
+      "key": 0.0924,
+      "tol": 0.0092,
+      "pass": true
+     },
+     {
+      "i": 2,
+      "frame": 0.1084,
+      "key": 0.1018,
+      "tol": 0.0102,
+      "pass": true
+     },
+     {
+      "i": 3,
+      "frame": 0.1083,
+      "key": 0.1148,
+      "tol": 0.0115,
+      "pass": true
+     },
+     {
+      "i": 4,
+      "frame": 0.1217,
+      "key": 0.1974,
+      "tol": 0.0197,
+      "pass": false
+     },
+     {
+      "i": 5,
+      "frame": 0.0814,
+      "key": 0.1313,
+      "tol": 0.0131,
+      "pass": false
+     },
+     {
+      "i": 6,
+      "frame": 0.0542,
+      "key": 0.1119,
+      "tol": 0.0112,
+      "pass": false
+     },
+     {
+      "i": 7,
+      "frame": 0.0463,
+      "key": 0.0792,
+      "tol": 0.0079,
+      "pass": false
+     },
+     {
+      "i": 8,
+      "frame": 0.0506,
+      "key": 0.0495,
+      "tol": 0.005,
+      "pass": true
+     },
+     {
+      "i": 9,
+      "frame": 0.0432,
+      "key": 0.0354,
+      "tol": 0.0035,
+      "pass": false
+     },
+     {
+      "i": 10,
+      "frame": 0.0301,
+      "key": 0.027,
+      "tol": 0.0027,
+      "pass": false
+     },
+     {
+      "i": 11,
+      "frame": 0.0325,
+      "key": 0.0181,
+      "tol": 0.01,
+      "pass": false
+     },
+     {
+      "i": 12,
+      "frame": 0.0542,
+      "key": 0.0034,
+      "tol": 0.01,
+      "pass": false
+     },
+     {
+      "i": 13,
+      "frame": 0.0464,
+      "key": 0.0031,
+      "tol": 0.01,
+      "pass": false
+     },
+     {
+      "i": 14,
+      "frame": 0.0279,
+      "key": 0.0024,
+      "tol": 0.01,
+      "pass": false
+     },
+     {
+      "i": 15,
+      "frame": 0.082,
+      "key": 0.0015,
+      "tol": 0.01,
+      "pass": false
+     }
+    ]
+   }
+  },
+  {
+   "id": "godrays",
+   "pass": true,
+   "detail": {
+    "pass": true,
+    "score": 1.0,
+    "floor": 0.5,
+    "scene": 0.6627,
+    "keep": 0.5302,
+    "key": 0.766
+   }
+  },
+  {
+   "id": "contact",
+   "pass": true,
+   "detail": {
+    "pass": true,
+    "towers": 3,
+    "hit": 2,
+    "need": 2,
+    "delta": 0.03,
+    "feet": [
+     {
+      "x0": 824,
+      "x1": 863,
+      "row": 649,
+      "delta": 0.0719,
+      "pass": true
+     },
+     {
+      "x0": 867,
+      "x1": 889,
+      "row": 649,
+      "delta": 0.0058,
+      "pass": false
+     },
+     {
+      "x0": 972,
+      "x1": 1279,
+      "row": 393,
+      "delta": 0.0745,
+      "pass": true
+     }
+    ]
+   }
+  },
+  {
+   "id": "shafts",
+   "pass": false,
+   "detail": {
+    "pass": false,
+    "sun": [
+     0.3719,
+     0.2792
+    ],
+    "hit": 0,
+    "need": 1,
+    "lift": 0.045,
+    "gaps": [
+     {
+      "row": 129,
+      "x0": 463,
+      "x1": 775,
+      "lift": -0.0337,
+      "pass": false
+     }
+    ]
+   }
+  },
+  {
+   "id": "colour-sky",
+   "pass": false,
+   "detail": {
+    "deltaE": 24.2443,
+    "limit": 12.0,
+    "rect": [
+     0.02,
+     0.02,
+     0.42,
+     0.24
+    ]
+   }
+  },
+  {
+   "id": "colour-horizon",
+   "pass": false,
+   "detail": {
+    "deltaE": 31.5002,
+    "limit": 6.0,
+    "rect": [
+     0.58,
+     0.34,
+     0.8,
+     0.52
+    ]
+   }
+  },
+  {
+   "id": "colour-sand",
+   "pass": true,
+   "detail": {
+    "deltaE": 11.8669,
+    "limit": 14.0,
+    "rect": [
+     0.55,
+     0.72,
+     0.96,
+     0.96
+    ]
+   }
+  },
+  {
+   "id": "colour-towers",
+   "pass": false,
+   "detail": {
+    "deltaE": 24.2437,
+    "limit": 14.0,
+    "rect": [
+     0.14,
+     0.12,
+     0.42,
+     0.58
+    ]
+   }
+  }
+ ]
+}

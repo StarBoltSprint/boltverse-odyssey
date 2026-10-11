@@ -30,7 +30,13 @@ const page = await context.newPage();
 page.setDefaultTimeout(180000);
 const logs = [];
 page.on("pageerror", (err) => logs.push(String(err && err.message ? err.message : err)));
-page.on("console", (msg) => { if (msg.type() === "error") logs.push(msg.text().slice(0, 240)); });
+page.on("console", (msg) => {
+  if (msg.type() !== "error") return;
+  const loc = msg.location();
+  const where = loc && loc.url ? " @ " + loc.url : "";
+  logs.push((msg.text().slice(0, 180) + where).slice(0, 300));
+});
+page.on("response", (res) => { if (res.status() >= 400) logs.push(res.status() + " " + res.url()); });
 let data = { ok: false };
 try {
   await page.goto(url, { waitUntil: "domcontentloaded", timeout: 180000 });

@@ -79,11 +79,28 @@ def cam_err(pr, hz, K, khz):
     return e, parts
 
 
+def camera_limits(a, base_eye):
+    """fov and eye clamps. Defaults stay the 2026-10-10 bounds. A low eye and a wider fov are opt-in."""
+    fov_lo = float(getattr(a, "fov_min", None) if getattr(a, "fov_min", None) is not None else 40.0)
+    fov_hi = float(getattr(a, "fov_max", None) if getattr(a, "fov_max", None) is not None else 80.0)
+    pitch_lo = float(getattr(a, "pitch_min", None) if getattr(a, "pitch_min", None) is not None else -12.0)
+    pitch_hi = float(getattr(a, "pitch_max", None) if getattr(a, "pitch_max", None) is not None else 15.0)
+    eye_lo, eye_hi = getattr(a, "eye_min", None), getattr(a, "eye_max", None)
+    if eye_lo is not None and eye_hi is not None:
+        dy = (float(eye_lo) - base_eye, float(eye_hi) - base_eye)
+    else:
+        dy = (0.0, 25.0)
+    return {"dy": dy, "fovDeg": (fov_lo, fov_hi), "pitch": (pitch_lo, pitch_hi)}
+
+
 def camera(a):
     K = comp_targets(a.composition); key = json.load(open(a.composition)).get("key") or "/workspace/zb-bible-1008/key-city3.jpg"
     khz = visible_horizon(key); os.makedirs(a.out, exist_ok=True)
     c0 = dict(json.load(open(a.init_camera))["camera"]) if a.init_camera else dict(x=-51.115, z=9.63, yaw=78, pitch=-1.16, eye=3.15, fovDeg=58)
     c0.setdefault("dy", 0.0); url = a.url
+    lim = camera_limits(a, c0["eye"])
+    if not a.init_camera and lim["fovDeg"][1] > 80:
+        c0["fovDeg"] = round(min(lim["fovDeg"][1], max(c0["fovDeg"], sum(lim["fovDeg"]) / 2.0)), 3)
     S = Shots(); log = []; n = 0
     try:
         t0 = time.time(); S(cmd="open", url=url, cam=c0, vp=[480, 270], settle=6000); log.append(f"open {time.time() - t0:.0f}s")
@@ -93,8 +110,10 @@ def camera(a):
             hz = visible_horizon(p); e, parts = cam_err(pr, hz, K, khz)
             log.append(dict(cam={k: c[k] for k in ("yaw", "pitch", "fovDeg", "dy")}, err=round(e, 5), parts=parts, shot=p)); return e, parts, pr
         best = dict(c0); be, bp, bpr = evaluate(best)
-        steps = dict(yaw=3.0, pitch=2.0, fovDeg=6.0, dy=3.0); lim = dict(dy=(0.0, 25.0), fovDeg=(40.0, 80.0), pitch=(-12.0, 15.0))
-        while n < a.budget and max(steps.values()) > 0.4:
+        wide = (lim["fovDeg"][1] - lim["fovDeg"][0]) > 50
+        short_eye = (lim["dy"][1] - lim["dy"][0]) < 8
+        steps = dict(yaw=3.0, pitch=2.0, fovDeg=10.0 if wide else 6.0, dy=0.5 if short_eye else 3.0)
+        while n < a.budget and max(steps.values()) > 0.25:
             moved = False
             for k in ("yaw", "pitch", "fovDeg", "dy"):
                 for sgn in (1, -1):
@@ -109,7 +128,8 @@ def camera(a):
     first = log[1] if len(log) > 1 else None
     res = dict(camera={**{k: round(v, 3) if isinstance(v, float) else v for k, v in best.items()}, "eye": round(best["eye"] + best.get("dy", 0), 3), "dy": 0.0},
                cameraRaw=best, error=round(be, 5), parts=bp, probe=bpr, first=first, keyTargets=dict(K, visibleHorizon=khz), renders=n, log=log,
-               note="eye already includes the solved height offset (dy folded in)")
+               limits={k: list(v) for k, v in lim.items()},
+               note="eye already includes the solved height offset (dy folded in). A parameter on its limit is not exact.")
     C.dump(res, os.path.join(a.out, "camera-v2.json")); print(json.dumps(dict(camera=res["camera"], error=res["error"], parts=bp, first=first and first["parts"], renders=n)))
 
 
@@ -213,6 +233,9 @@ if __name__ == "__main__":
     ap.add_argument("--composition", default=os.path.join(HERE, "layouts", "ember-mesa-composition.json"))
     ap.add_argument("--init-camera"); ap.add_argument("--camera"); ap.add_argument("--init"); ap.add_argument("--elements", default="towers,spire")
     ap.add_argument("--max-s", type=float, default=320); ap.add_argument("--settle", type=int, default=5000)
+    ap.add_argument("--fov-min", type=float, default=40.0); ap.add_argument("--fov-max", type=float, default=80.0)
+    ap.add_argument("--eye-min", type=float); ap.add_argument("--eye-max", type=float)
+    ap.add_argument("--pitch-min", type=float, default=-12.0); ap.add_argument("--pitch-max", type=float, default=15.0)
     a = ap.parse_args(); _ = kc_stage._refuse_live(a.stage)
     if a.cmd == "camera": a.budget = a.budget or 28; camera(a)
     else: a.budget = a.budget or 12; place(a)

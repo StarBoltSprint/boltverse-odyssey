@@ -1,0 +1,372 @@
+{
+ "camera": {
+  "x": -51.115,
+  "z": 9.63,
+  "yaw": 78.0,
+  "pitch": 4.84,
+  "eye": 4.0,
+  "fovDeg": 90.0,
+  "dy": 0.0
+ },
+ "cameraRaw": {
+  "x": -51.115,
+  "z": 9.63,
+  "yaw": 78.0,
+  "pitch": 4.84,
+  "eye": 3.15,
+  "fovDeg": 90.0,
+  "dy": 0.8500000000000001
+ },
+ "error": 0.00308,
+ "parts": {
+  "vp": 0.0477,
+  "spireTop": 0.0283,
+  "visibleHorizon": 0.2
+ },
+ "probe": {
+  "ok": true,
+  "cam": {
+   "x": -51.12,
+   "y": 10.81,
+   "z": 9.63,
+   "fov": 90
+  },
+  "spireTop": [
+   0.6047,
+   0.0945,
+   true
+  ],
+  "spireBase": [
+   0.6143,
+   0.5981,
+   true
+  ],
+  "spireWorld": [
+   97.50425270701218,
+   145.46158752853282,
+   35.466167815696735,
+   -4.53841247146718
+  ],
+  "vp": [
+   0.5016,
+   0.5423,
+   false
+  ]
+ },
+ "first": {
+  "cam": {
+   "yaw": 78,
+   "pitch": -1.16,
+   "fovDeg": 80.0,
+   "dy": 0.0
+  },
+  "err": 0.05069,
+  "parts": {
+   "vp": 0.1021,
+   "spireTop": 0.2007,
+   "visibleHorizon": 0.1889
+  },
+  "shot": "/workspace/grokcli/wt/unreal-look-1011/steps/unreal-look-fix2-1011/camera/cam000.jpg"
+ },
+ "keyTargets": {
+  "vp": [
+   0.5,
+   0.59
+  ],
+  "spireTop": [
+   0.6325,
+   0.1
+  ],
+  "note": "key features read on a 5 % grid (2026-10-10): the avenue vanishes at the frame centre just above the far tower bases (y 0.59); spire tip at the top of the spire slot. The visible horizon is measured automatically (placement_v2.visible_horizon).",
+  "visibleHorizon": 0.28888888888888886
+ },
+ "renders": 18,
+ "log": [
+  "open 11s",
+  {
+   "cam": {
+    "yaw": 78,
+    "pitch": -1.16,
+    "fovDeg": 80.0,
+    "dy": 0.0
+   },
+   "err": 0.05069,
+   "parts": {
+    "vp": 0.1021,
+    "spireTop": 0.2007,
+    "visibleHorizon": 0.1889
+   },
+   "shot": "/workspace/grokcli/wt/unreal-look-1011/steps/unreal-look-fix2-1011/camera/cam000.jpg"
+  },
+  {
+   "cam": {
+    "yaw": 81.0,
+    "pitch": -1.16,
+    "fovDeg": 80.0,
+    "dy": 0.0
+   },
+   "err": 0.04664,
+   "parts": {
+    "vp": 0.1033,
+    "spireTop": 0.1897,
+    "visibleHorizon": 0.1167
+   },
+   "shot": "/workspace/grokcli/wt/unreal-look-1011/steps/unreal-look-fix2-1011/camera/cam001.jpg"
+  },
+  {
+   "cam": {
+    "yaw": 81.0,
+    "pitch": 0.84,
+    "fovDeg": 80.0,
+    "dy": 0.0
+   },
+   "err": 0.0295,
+   "parts": {
+    "vp": 0.0828,
+    "spireTop": 0.1505,
+    "visibleHorizon": 0.1278
+   },
+   "shot": "/workspace/grokcli/wt/unreal-look-1011/steps/unreal-look-fix2-1011/camera/cam002.jpg"
+  },
+  {
+   "cam": {
+    "yaw": 81.0,
+    "pitch": 0.84,
+    "fovDeg": 90.0,
+    "dy": 0.0
+   },
+   "err": 0.01214,
+   "parts": {
+    "vp": 0.0837,
+    "spireTop": 0.0716,
+    "visibleHorizon": 0.1806
+   },
+   "shot": "/workspace/grokcli/wt/unreal-look-1011/steps/unreal-look-fix2-1011/camera/cam003.jpg"
+  },
+  {
+   "cam": {
+    "yaw": 81.0,
+    "pitch": 0.84,
+    "fovDeg": 90.0,
+    "dy": 0.5
+   },
+   "err": 0.01194,
+   "parts": {
+    "vp": 0.0837,
+    "spireTop": 0.0702,
+    "visibleHorizon": 0.1611
+   },
+   "shot": "/workspace/grokcli/wt/unreal-look-1011/steps/unreal-look-fix2-1011/camera/cam004.jpg"
+  },
+  {
+   "cam": {
+    "yaw": 84.0,
+    "pitch": 0.84,
+    "fovDeg": 90.0,
+    "dy": 0.5
+   },
+   "err": 0.01317,
+   "parts": {
+    "vp": 0.0873,
+    "spireTop": 0.0745,
+    "visibleHorizon": 0.1361
+   },
+   "shot": "/workspace/grokcli/wt/unreal-look-1011/steps/unreal-look-fix2-1011/camera/cam005.jpg"
+  },
+  {
+   "cam": {
+    "yaw": 78.0,
+    "pitch": 0.84,
+    "fovDeg": 90.0,
+    "dy": 0.5
+   },
+   "err": 0.01194,
+   "parts": {
+    "vp": 0.0827,
+    "spireTop": 0.0714,
+    "visibleHorizon": 0.1944
+   },
+   "shot": "/workspace/grokcli/wt/unreal-look-1011/steps/unreal-look-fix2-1011/camera/cam006.jpg"
+  },
+  {
+   "cam": {
+    "yaw": 81.0,
+    "pitch": 2.84,
+    "fovDeg": 90.0,
+    "dy": 0.5
+   },
+   "err": 0.00686,
+   "parts": {
+    "vp": 0.0665,
+    "spireTop": 0.0493,
+    "visibleHorizon": 0.1722
+   },
+   "shot": "/workspace/grokcli/wt/unreal-look-1011/steps/unreal-look-fix2-1011/camera/cam007.jpg"
+  },
+  {
+   "cam": {
+    "yaw": 81.0,
+    "pitch": 2.84,
+    "fovDeg": 100.0,
+    "dy": 0.5
+   },
+   "err": 0.00965,
+   "parts": {
+    "vp": 0.0701,
+    "spireTop": 0.0689,
+    "visibleHorizon": 0.2167
+   },
+   "shot": "/workspace/grokcli/wt/unreal-look-1011/steps/unreal-look-fix2-1011/camera/cam008.jpg"
+  },
+  {
+   "cam": {
+    "yaw": 81.0,
+    "pitch": 2.84,
+    "fovDeg": 80.0,
+    "dy": 0.5
+   },
+   "err": 0.01655,
+   "parts": {
+    "vp": 0.0624,
+    "spireTop": 0.1125,
+    "visibleHorizon": 0.1611
+   },
+   "shot": "/workspace/grokcli/wt/unreal-look-1011/steps/unreal-look-fix2-1011/camera/cam009.jpg"
+  },
+  {
+   "cam": {
+    "yaw": 81.0,
+    "pitch": 2.84,
+    "fovDeg": 90.0,
+    "dy": 0.8500000000000001
+   },
+   "err": 0.00679,
+   "parts": {
+    "vp": 0.0665,
+    "spireTop": 0.0487,
+    "visibleHorizon": 0.1778
+   },
+   "shot": "/workspace/grokcli/wt/unreal-look-1011/steps/unreal-look-fix2-1011/camera/cam010.jpg"
+  },
+  {
+   "cam": {
+    "yaw": 84.0,
+    "pitch": 2.84,
+    "fovDeg": 90.0,
+    "dy": 0.8500000000000001
+   },
+   "err": 0.00857,
+   "parts": {
+    "vp": 0.071,
+    "spireTop": 0.0594,
+    "visibleHorizon": 0.15
+   },
+   "shot": "/workspace/grokcli/wt/unreal-look-1011/steps/unreal-look-fix2-1011/camera/cam011.jpg"
+  },
+  {
+   "cam": {
+    "yaw": 78.0,
+    "pitch": 2.84,
+    "fovDeg": 90.0,
+    "dy": 0.8500000000000001
+   },
+   "err": 0.00611,
+   "parts": {
+    "vp": 0.0652,
+    "spireTop": 0.0431,
+    "visibleHorizon": 0.1861
+   },
+   "shot": "/workspace/grokcli/wt/unreal-look-1011/steps/unreal-look-fix2-1011/camera/cam012.jpg"
+  },
+  {
+   "cam": {
+    "yaw": 78.0,
+    "pitch": 4.84,
+    "fovDeg": 90.0,
+    "dy": 0.8500000000000001
+   },
+   "err": 0.00308,
+   "parts": {
+    "vp": 0.0477,
+    "spireTop": 0.0283,
+    "visibleHorizon": 0.2
+   },
+   "shot": "/workspace/grokcli/wt/unreal-look-1011/steps/unreal-look-fix2-1011/camera/cam013.jpg"
+  },
+  {
+   "cam": {
+    "yaw": 78.0,
+    "pitch": 4.84,
+    "fovDeg": 100.0,
+    "dy": 0.8500000000000001
+   },
+   "err": 0.00853,
+   "parts": {
+    "vp": 0.0545,
+    "spireTop": 0.0745,
+    "visibleHorizon": 0.1944
+   },
+   "shot": "/workspace/grokcli/wt/unreal-look-1011/steps/unreal-look-fix2-1011/camera/cam014.jpg"
+  },
+  {
+   "cam": {
+    "yaw": 78.0,
+    "pitch": 4.84,
+    "fovDeg": 80.0,
+    "dy": 0.8500000000000001
+   },
+   "err": 0.00856,
+   "parts": {
+    "vp": 0.0395,
+    "spireTop": 0.0837,
+    "visibleHorizon": 0.1972
+   },
+   "shot": "/workspace/grokcli/wt/unreal-look-1011/steps/unreal-look-fix2-1011/camera/cam015.jpg"
+  },
+  {
+   "cam": {
+    "yaw": 78.0,
+    "pitch": 4.84,
+    "fovDeg": 90.0,
+    "dy": 0.35
+   },
+   "err": 0.0031,
+   "parts": {
+    "vp": 0.0477,
+    "spireTop": 0.0287,
+    "visibleHorizon": 0.2278
+   },
+   "shot": "/workspace/grokcli/wt/unreal-look-1011/steps/unreal-look-fix2-1011/camera/cam016.jpg"
+  },
+  {
+   "cam": {
+    "yaw": 81.0,
+    "pitch": 4.84,
+    "fovDeg": 90.0,
+    "dy": 0.8500000000000001
+   },
+   "err": 0.00432,
+   "parts": {
+    "vp": 0.0495,
+    "spireTop": 0.0433,
+    "visibleHorizon": 0.2056
+   },
+   "shot": "/workspace/grokcli/wt/unreal-look-1011/steps/unreal-look-fix2-1011/camera/cam017.jpg"
+  }
+ ],
+ "limits": {
+  "dy": [
+   -1.15,
+   0.8500000000000001
+  ],
+  "fovDeg": [
+   40.0,
+   120.0
+  ],
+  "pitch": [
+   -12.0,
+   15.0
+  ]
+ },
+ "note": "eye already includes the solved height offset (dy folded in). A parameter on its limit is not exact."
+}

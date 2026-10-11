@@ -1,0 +1,192 @@
+{
+ "tool": "object-gate key-compare",
+ "key": "/workspace/zb-bible-1008/key-city3.jpg",
+ "game": "steps/unreal-look-fix2-1011/shots/scene-r1-16x9.png",
+ "verdict": "PASS",
+ "elements": [
+  {
+   "id": "towers",
+   "name": "Tours (corps)",
+   "type": "building",
+   "note": "",
+   "missing": false,
+   "reportOnly": false,
+   "keyCover": 0.0662,
+   "gameCover": 0.0983,
+   "keyBox": [
+    124,
+    25,
+    640,
+    482
+   ],
+   "gameBox": [
+    124,
+    8,
+    638,
+    482
+   ],
+   "iou": 0.322,
+   "iouAligned": 0.35,
+   "deLit": 4.01,
+   "deShadow": 2.79,
+   "labKeyLit": [
+    20.6,
+    10.0,
+    4.8
+   ],
+   "labGameLit": [
+    22.1,
+    6.4,
+    2.2
+   ],
+   "labKeyShadow": [
+    9.7,
+    4.6,
+    -2.9
+   ],
+   "labGameShadow": [
+    12.4,
+    5.4,
+    -0.5
+   ],
+   "structure": 0.482,
+   "lpips": null,
+   "ceiling": {
+    "structure": 0.965,
+    "iou": 0.88,
+    "deLit": 0.0,
+    "deShadow": 0.0
+   },
+   "fails": [],
+   "gaps": [],
+   "verdict": "MATCH",
+   "gate": {},
+   "target": {}
+  },
+  {
+   "id": "tower-right",
+   "name": "Tour de droite",
+   "type": "building",
+   "note": "",
+   "missing": false,
+   "reportOnly": false,
+   "keyCover": 0.0213,
+   "gameCover": 0.0182,
+   "keyBox": [
+    1024,
+    69,
+    1248,
+    388
+   ],
+   "gameBox": [
+    1024,
+    180,
+    1248,
+    388
+   ],
+   "iou": 0.484,
+   "iouAligned": 0.491,
+   "deLit": 7.34,
+   "deShadow": 11.33,
+   "labKeyLit": [
+    17.3,
+    7.6,
+    1.9
+   ],
+   "labGameLit": [
+    26.6,
+    8.3,
+    5.8
+   ],
+   "labKeyShadow": [
+    9.1,
+    4.6,
+    -1.6
+   ],
+   "labGameShadow": [
+    23.3,
+    7.9,
+    4.9
+   ],
+   "structure": 0.548,
+   "lpips": null,
+   "ceiling": {
+    "structure": 0.96,
+    "iou": 0.87,
+    "deLit": 0.0,
+    "deShadow": 0.0
+   },
+   "fails": [],
+   "gaps": [],
+   "verdict": "MATCH",
+   "gate": {},
+   "target": {}
+  },
+  {
+   "id": "spire",
+   "name": "Fl\u00e8che, anneaux et faisceau",
+   "type": "building",
+   "note": "",
+   "missing": false,
+   "reportOnly": false,
+   "keyCover": 0.0361,
+   "gameCover": 0.0306,
+   "keyBox": [
+    679,
+    35,
+    921,
+    460
+   ],
+   "gameBox": [
+    679,
+    0,
+    921,
+    460
+   ],
+   "iou": 0.595,
+   "iouAligned": 0.595,
+   "deLit": 10.32,
+   "deShadow": 9.75,
+   "labKeyLit": [
+    65.8,
+    15.4,
+    13.9
+   ],
+   "labGameLit": [
+    54.3,
+    12.8,
+    12.1
+   ],
+   "labKeyShadow": [
+    16.3,
+    8.8,
+    4.6
+   ],
+   "labGameShadow": [
+    28.9,
+    7.1,
+    8.2
+   ],
+   "structure": 0.555,
+   "lpips": null,
+   "ceiling": {
+    "structure": 0.97,
+    "iou": 0.921,
+    "deLit": 0.0,
+    "deShadow": 0.0
+   },
+   "fails": [],
+   "gaps": [],
+   "verdict": "MATCH",
+   "gate": {},
+   "target": {}
+  }
+ ],
+ "summary": {
+  "MATCH": 3,
+  "CLOSE": 0,
+  "FAIL": 0,
+  "MISSING": 0,
+  "N/A": 0
+ }
+}

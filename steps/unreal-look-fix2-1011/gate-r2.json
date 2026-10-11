@@ -1,0 +1,288 @@
+{
+ "pass": false,
+ "rows": [
+  {
+   "id": "frame",
+   "pass": true,
+   "detail": "real framebuffer"
+  },
+  {
+   "id": "luma",
+   "pass": false,
+   "detail": {
+    "pass": false,
+    "meanFrame": 0.3357,
+    "meanKey": 0.3211,
+    "meanRel": 0.0454,
+    "meanTol": 0.1,
+    "bins": [
+     {
+      "i": 0,
+      "frame": 0.0254,
+      "key": 0.0308,
+      "tol": 0.0031,
+      "pass": false
+     },
+     {
+      "i": 1,
+      "frame": 0.084,
+      "key": 0.0924,
+      "tol": 0.0092,
+      "pass": true
+     },
+     {
+      "i": 2,
+      "frame": 0.1153,
+      "key": 0.1018,
+      "tol": 0.0102,
+      "pass": false
+     },
+     {
+      "i": 3,
+      "frame": 0.1168,
+      "key": 0.1148,
+      "tol": 0.0115,
+      "pass": true
+     },
+     {
+      "i": 4,
+      "frame": 0.1926,
+      "key": 0.1974,
+      "tol": 0.0197,
+      "pass": true
+     },
+     {
+      "i": 5,
+      "frame": 0.1196,
+      "key": 0.1313,
+      "tol": 0.0131,
+      "pass": true
+     },
+     {
+      "i": 6,
+      "frame": 0.1002,
+      "key": 0.1119,
+      "tol": 0.0112,
+      "pass": false
+     },
+     {
+      "i": 7,
+      "frame": 0.0757,
+      "key": 0.0792,
+      "tol": 0.0079,
+      "pass": true
+     },
+     {
+      "i": 8,
+      "frame": 0.0456,
+      "key": 0.0495,
+      "tol": 0.005,
+      "pass": true
+     },
+     {
+      "i": 9,
+      "frame": 0.0365,
+      "key": 0.0354,
+      "tol": 0.0035,
+      "pass": true
+     },
+     {
+      "i": 10,
+      "frame": 0.0327,
+      "key": 0.027,
+      "tol": 0.0027,
+      "pass": false
+     },
+     {
+      "i": 11,
+      "frame": 0.0214,
+      "key": 0.0181,
+      "tol": 0.01,
+      "pass": true
+     },
+     {
+      "i": 12,
+      "frame": 0.0121,
+      "key": 0.0034,
+      "tol": 0.01,
+      "pass": true
+     },
+     {
+      "i": 13,
+      "frame": 0.0104,
+      "key": 0.0031,
+      "tol": 0.01,
+      "pass": true
+     },
+     {
+      "i": 14,
+      "frame": 0.0076,
+      "key": 0.0024,
+      "tol": 0.01,
+      "pass": true
+     },
+     {
+      "i": 15,
+      "frame": 0.0039,
+      "key": 0.0015,
+      "tol": 0.01,
+      "pass": true
+     }
+    ]
+   }
+  },
+  {
+   "id": "godrays",
+   "pass": true,
+   "detail": {
+    "pass": true,
+    "score": 0.8737,
+    "floor": 0.5,
+    "scene": 0.6627,
+    "keep": 0.5302,
+    "key": 0.766
+   }
+  },
+  {
+   "id": "contact",
+   "pass": false,
+   "detail": {
+    "pass": false,
+    "towers": 2,
+    "hit": 1,
+    "need": 2,
+    "delta": 0.03,
+    "feet": [
+     {
+      "x0": 824,
+      "x1": 889,
+      "row": 649,
+      "delta": 0.0487,
+      "pass": true
+     },
+     {
+      "x0": 971,
+      "x1": 1279,
+      "row": 392,
+      "delta": 0.0162,
+      "pass": false
+     }
+    ]
+   }
+  },
+  {
+   "id": "shafts",
+   "pass": false,
+   "detail": {
+    "pass": false,
+    "sun": [
+     0.6844,
+     0.4083
+    ],
+    "hit": 0,
+    "need": 1,
+    "lift": 0.045,
+    "gaps": [
+     {
+      "row": 222,
+      "x0": 478,
+      "x1": 525,
+      "lift": 0.0073,
+      "pass": false
+     },
+     {
+      "row": 222,
+      "x0": 566,
+      "x1": 770,
+      "lift": 0.001,
+      "pass": false
+     },
+     {
+      "row": 222,
+      "x0": 813,
+      "x1": 1121,
+      "lift": -0.0182,
+      "pass": false
+     },
+     {
+      "row": 179,
+      "x0": 473,
+      "x1": 531,
+      "lift": -0.0941,
+      "pass": false
+     },
+     {
+      "row": 179,
+      "x0": 562,
+      "x1": 772,
+      "lift": -0.0013,
+      "pass": false
+     },
+     {
+      "row": 136,
+      "x0": 468,
+      "x1": 775,
+      "lift": -0.0132,
+      "pass": false
+     }
+    ]
+   }
+  },
+  {
+   "id": "colour-sky",
+   "pass": false,
+   "detail": {
+    "deltaE": 14.4988,
+    "limit": 12.0,
+    "rect": [
+     0.02,
+     0.02,
+     0.42,
+     0.24
+    ]
+   }
+  },
+  {
+   "id": "colour-horizon",
+   "pass": false,
+   "detail": {
+    "deltaE": 27.0191,
+    "limit": 6.0,
+    "rect": [
+     0.58,
+     0.34,
+     0.8,
+     0.52
+    ]
+   }
+  },
+  {
+   "id": "colour-sand",
+   "pass": true,
+   "detail": {
+    "deltaE": 10.3551,
+    "limit": 14.0,
+    "rect": [
+     0.55,
+     0.72,
+     0.96,
+     0.96
+    ]
+   }
+  },
+  {
+   "id": "colour-towers",
+   "pass": false,
+   "detail": {
+    "deltaE": 19.469,
+    "limit": 14.0,
+    "rect": [
+     0.14,
+     0.12,
+     0.42,
+     0.58
+    ]
+   }
+  }
+ ]
+}
