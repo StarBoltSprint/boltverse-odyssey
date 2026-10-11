@@ -39,6 +39,12 @@ python3 tools/look/selftest.py
 
 The page reads `./look/look.json`. Flags: `?hud=0&lockq=1&dyn=0` keep the phone bench on one camera path (`?bench=1`).
 
+```
+node tools/look/bench.mjs <url> <out.json> [shot.png]
+```
+
+That bench is one headless Chrome at 540×1200 with deviceScaleFactor 2. `sheet.py` composes the phone contact sheet from the stills.
+
 ## Budget and the key
 
 `budget.py` is the v62 mode B table. `grade.py` `distance` is mean CIEDE2000 at width 96. Layout IoU is a different gate; this pack is scored on colour distance to the key.
