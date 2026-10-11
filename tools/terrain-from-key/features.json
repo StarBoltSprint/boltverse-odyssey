@@ -1,0 +1,38 @@
+{
+  "source": "key-city3.jpg",
+  "size": [1280, 720],
+  "note": "Grok vision priors, 2026-10-11. Boxes are x,y,w,h in 0..1, origin top-left. Ground features are the checklist. Excludes are masked out of the heightfield (sky, towers, mesas, the wreck hull).",
+  "cameraPrior": "/workspace/zb-bible-1008/compare/run2/camera-key.json",
+  "features": [
+    {
+      "id": "dune_left",
+      "role": "crest",
+      "box": [0.00, 0.50, 0.42, 0.50],
+      "expect": "higher than the avenue, image left"
+    },
+    {
+      "id": "mound_right",
+      "role": "crest",
+      "box": [0.55, 0.46, 0.45, 0.54],
+      "expect": "sand mound on the right, higher than the avenue"
+    },
+    {
+      "id": "sunken_avenue",
+      "role": "trough",
+      "box": [0.34, 0.50, 0.30, 0.50],
+      "expect": "sunk lane down the middle"
+    },
+    {
+      "id": "slab_field",
+      "role": "trough",
+      "box": [0.33, 0.60, 0.34, 0.38],
+      "expect": "broken dark slabs in the avenue"
+    }
+  ],
+  "exclude": [
+    { "id": "sky", "box": [0.00, 0.00, 1.00, 0.34] },
+    { "id": "mesa_left", "box": [0.00, 0.30, 0.20, 0.28] },
+    { "id": "mesa_right", "box": [0.78, 0.28, 0.22, 0.26] },
+    { "id": "wreck", "box": [0.70, 0.47, 0.26, 0.14] }
+  ]
+}

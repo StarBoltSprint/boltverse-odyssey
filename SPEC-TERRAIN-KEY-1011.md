@@ -1,0 +1,11 @@
+# Zone B terrain from the key image (11 Oct): a new stage of tools/imagine-to-3d (or tools/terrain-from-key)
+Problem (SmiR): the ground is almost flat and doesn't look like key-city3.jpg (/workspace/zb-bible-1008/key-city3.jpg). The key has big dunes rising on the sides, a sand mound on the right, an avenue sunk in the middle with broken slabs, and half-buried debris and a mag-rail.
+Read GROK.md, docs/METHOD, /workspace/zb-preview-1008 (main.mjs, biome.json ground, GROUND_GLSL, the ground relief tools gen_relief.py) and the world graph spec if present (/workspace/grokcli/wt/world-graph-1011/zone-b.zone.json).
+1. Depth Anything V2 (CPU) on the key's GROUND region only (mask out sky, towers and mesas), calibrated with the key camera (camera match: low eye, find the fov; reuse the existing matcher if there is one) to give a metric heightfield. Grok vision lists the ground features (dune left, mound right, sunken avenue, slab field) as JSON with their approximate image boxes, used as priors and as a checklist.
+2. Build the terrain heightfield in world space: the visible part comes from the key, and the rest is extended with the same dune character (seamless, no repetition). The runner corridor stays playable (slopes and collision OK); the avenue is a sunken lane.
+3. Pixels: existing Imagine ground tiles + macro splat only (no hand-typed colours). The height drives the blending (crests, slopes, troughs).
+4. BLOCKING gates: from the key camera, a ground-profile comparison (horizon line / dune silhouette IoU of at least 0.80, depth-order agreement), every Grok-vision feature present in the right place, no LOD pop on approach, phone budget (terrain vertex cost no worse than today: Zone B's ground was already the fps bottleneck), towers and objects still grounded (re-seat baseY).
+5. Staging page only (don't touch the live index.html). Before/after/key sheet (16:9 + phone). Local commits. Generate no Imagine images (if a new tile is truly needed, write imagine-requests.json and stop).
+Stop at PASS or after 2 attempts, with an honest report (REPORT.md with times per stage).
+
+## Addendum 10:18: read q29-answer.md (Grok chat terrain + placement recipe) and follow it where it improves the plan (MoGe-2/DA V2 Large, SAM2 ground masks, scale targets, clipmaps with morphing, wind-oriented extension).

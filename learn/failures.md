@@ -988,3 +988,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Score a pool as unique = min(W / cellM, sqrt(layers × W × H / wall area of every object sharing the pool)); repeats = cells / layers. Spend unique sections (or larger plates) until each surface reaches the threshold. |
 | Guard | `node tools/object-gate/cli.mjs --scene tools/object-gate/specs/zone-b/scene.yaml` row `native Imagine px/m` (pool row, `pool.sharedSelect` in the spec) and row `repetition (UV)` (repeats > 1 FAILS); ortho facade autocorrelation at the 12 m period 0.84 / 0.91 (max 0.5). |
 | Sources | `tools/object-gate/lib/probe.js` `texel()` pool branch; `specs/zone-b/tower-m*.yaml`; gate run on `?v=54`, 2026-10-09 17:3x. |
+
+### 2026-10-11 — key-camera dunes collapse into the lane
+
+| | |
+| --- | --- |
+| Take | Zone B terrain from key-city3, SPEC-TERRAIN-KEY-1011. |
+| Defect | The baked ground still does not show the key's side dunes from the key camera. Crest-line medians sit about 1.1 m above the avenue. A max-versus-min feature check scored a dug hole as a dune. |
+| Root cause | From the low eye, ground pixels below the horizon hit the plane within about 8 m of the lane, so image-left and image-centre land in the same cells. A downward ray cannot carry a 15–40 m crest. Calibrating inverse depth on every avenue pixel let the foreground set the scale to about 2 m. Depth Anything V2 Large, MoGe-2, and SAM2 weights are not on disk; the small model was used. |
+| Fix | Stopped after two reconstructions. Do not median-mix those rays and call the result a dune. Place crests only from pixels above the horizon, and score the crest line's median against the avenue median. |
+| Guard | `python3 tools/terrain-from-key/run.py` then `steps/terrain-key-1011/gates.json`. Final row: silhouette IoU 0.8373 (need 0.80), banksAboveAvenue false (dune_left −2.07 m, avenue −3.22 m), repetition 0.7576 (need < 0.75), corridor max slope 17.145° (need ≤ 16). |
+| Sources | `tools/terrain-from-key/build_field.py`, `gates.py`, `steps/terrain-key-1011/REPORT.md`. |
