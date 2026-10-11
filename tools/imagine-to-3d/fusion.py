@@ -602,12 +602,33 @@ def paint_overlay(rgb, labels, mask, out_dir):
 
 
 def depth_inside(rgb, labels, mask, image_path=None):
-    """DA V2 Large on this same raster. Per segment: subtract the median, scale by p99, clamp."""
-    import depth_relief as DR
+    """MoGe-2 metric inverse-depth on this same raster. DA V2 Large is computed only as a comparison."""
+    img = Image.open(image_path).convert("RGB") if image_path and os.path.isfile(image_path) else Image.fromarray(rgb)
+    # MoGe lives in the SAM2 venv (torch). This process keeps OpenCV.
+    tmp = image_path if image_path and os.path.isfile(image_path) else None
+    if tmp is None:
+        tmp = os.path.join("/tmp", "fusion-depth-rgb.png")
+        img.save(tmp)
+    npy = tmp + ".moge.npy"
+    py = "/workspace/.venv-sam2/bin/python"
+    script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "moge_depth.py")
+    if not os.path.isfile(npy):
+        import subprocess
+        r = subprocess.run([py, script, tmp, npy], capture_output=True, text=True, timeout=300)
+        if r.returncode != 0:
+            raise RuntimeError((r.stderr or r.stdout or "moge failed")[-800:])
+    depth_m = np.load(npy).astype(np.float32)
+    disp = 1.0 / np.clip(depth_m, 1e-3, None)
     if image_path and os.path.isfile(image_path):
-        disp = DR.disparity(None, "dav2-large", Image.open(image_path).convert("RGB"))
-    else:
-        disp = DR.disparity(None, "dav2-large", Image.fromarray(rgb))
+        side = os.path.join(os.path.dirname(image_path), "front-disp-dav2-compare.npy")
+        if not os.path.isfile(side):
+            import subprocess
+            r = subprocess.run(
+                [py, script, tmp, npy, "--dav2", side],
+                capture_output=True, text=True, timeout=300,
+            )
+            if r.returncode != 0:
+                print("dav2 comparison skipped:", (r.stderr or r.stdout or "")[-400:])
     if disp.shape[:2] != rgb.shape[:2]:
         disp = np.asarray(Image.fromarray(disp.astype(np.float32), mode="F").resize((rgb.shape[1], rgb.shape[0]), Image.BILINEAR))
     fine = np.zeros(disp.shape, np.float32)
@@ -627,7 +648,7 @@ def depth_inside(rgb, labels, mask, image_path=None):
     show[..., 1] = 40
     show[..., 2] = ((1 - n) * 255).astype(np.uint8)
     show[~mask] = 0
-    return fine, amps, show, "dav2-large", disp.astype(np.float32)
+    return fine, amps, show, "moge-2", disp.astype(np.float32)
 
 
 def _slice_segs(segs, band=2.0):

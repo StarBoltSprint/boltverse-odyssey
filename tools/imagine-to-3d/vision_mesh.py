@@ -28,11 +28,12 @@ def mesh_from(V, F, name):
     return ob
 
 
-def counts(ob):
+def counts(ob, weld=True):
     bm = bmesh.new()
     bm.from_mesh(ob.data)
-    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.001)
-    bm.to_mesh(ob.data)
+    if weld:
+        bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.001)
+        bm.to_mesh(ob.data)
     bm.free()
     bm = bmesh.new()
     bm.from_mesh(ob.data)
@@ -151,8 +152,22 @@ def main():
     x0, x1 = float(V[:, 0].min()), float(V[:, 0].max())
     y0, y1 = float(V[:, 1].min()), float(V[:, 1].max())
     depth = float(-V[:, 2].min()) or 1.0
-    assign_uv(ob, (x0, x1), (y0, y1), depth, span=span)
-    open_e, nm, tris = counts(ob)
+    open_e, nm, tris = counts(ob, weld="UV" not in z.files)
+    if "UV" in z.files:
+        uv_in = np.asarray(z["UV"], np.float64)
+        me = ob.data
+        if not me.uv_layers:
+            me.uv_layers.new(name="UV")
+        uv = me.uv_layers.active.data
+        if len(me.polygons) != len(uv_in):
+            raise RuntimeError(f"UV faces {len(uv_in)} != mesh faces {len(me.polygons)}")
+        for pi, poly in enumerate(me.polygons):
+            for k, li in enumerate(poly.loop_indices):
+                # Baked v is glTF v (0 at the top of the png, flipY false).
+                # The exporter writes glTF v = 1 - Blender v, so store the complement.
+                uv[li].uv = (float(uv_in[pi, k, 0]), 1.0 - float(uv_in[pi, k, 1]))
+    else:
+        assign_uv(ob, (x0, x1), (y0, y1), depth, span=span)
     # UVs are already written in the numpy frame (Y up, +Z toward). Blender is Z-up
     # and the glTF exporter maps (x, y, z) -> (x, z, -y). Rewrite the coordinates
     # so the file the runtime loads is still (width, up, toward). A missing rewrite
@@ -178,5 +193,6 @@ def main():
         sys.exit(2)
 
 
-if __name__ == "__main__":
+# blender -P loads this file as a module, so __name__ is not __main__.
+if __name__ == "__main__" or "--" in sys.argv:
     main()

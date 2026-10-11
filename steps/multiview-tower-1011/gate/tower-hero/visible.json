@@ -1,0 +1,133 @@
+{
+ "view": {
+  "renderPixelRatio": 1.5,
+  "fovDeg": 58,
+  "source": "game: biome.json camera.pixelRatioCap, main.mjs fovBase ?? 58"
+ },
+ "render": {
+  "ok": true,
+  "flat": true,
+  "screenPxPerM": 309.3,
+  "tiles": 0,
+  "insideTiles": 20,
+  "kMedian": null,
+  "visiblePxPerM": 0,
+  "p25PxPerM": 0,
+  "capped": false,
+  "tau": 0.1,
+  "img": "/workspace/grokcli/wt/tower-vision-1010/steps/multiview-tower-1011/gate/tower-hero/cap-visible-8m.png",
+  "mask": "/workspace/grokcli/wt/tower-vision-1010/steps/multiview-tower-1011/gate/tower-hero/cap-visible-8m-mask.png",
+  "cover": 0.9764,
+  "distM": 8,
+  "needPxPerM": 154.6,
+  "zoomFovDeg": 20.95,
+  "wantedFovDeg": 20.95,
+  "renderH": 915,
+  "camera": [
+   91.45,
+   8.51,
+   -77.55
+  ],
+  "aimM": 7,
+  "normal": [
+   -0.75,
+   0.29,
+   0.59
+  ],
+  "rect": [
+   62,
+   275,
+   350,
+   641
+  ],
+  "pose": {
+   "x": 91.45000918703924,
+   "y": 8.512594222723644,
+   "z": -77.54693909865534,
+   "yaw": 52.076963011995666,
+   "pitch": 6.144973561102571
+  }
+ },
+ "perSurface": [
+  {
+   "inst": "inst-tower-hero#0",
+   "cls": "-z",
+   "viewM": 8,
+   "needPxPerM": 154.6,
+   "visiblePxPerM": 5.86,
+   "ok": false
+  },
+  {
+   "inst": "inst-tower-hero#0",
+   "cls": "+z",
+   "viewM": 8,
+   "needPxPerM": 154.6,
+   "visiblePxPerM": 2.43,
+   "ok": false
+  },
+  {
+   "inst": "inst-tower-hero#0",
+   "cls": "+x",
+   "viewM": 8,
+   "needPxPerM": 154.6,
+   "visiblePxPerM": 7.09,
+   "ok": false
+  },
+  {
+   "inst": "inst-tower-hero#0",
+   "cls": "-x",
+   "viewM": 8,
+   "needPxPerM": 154.6,
+   "visiblePxPerM": 7.37,
+   "ok": false
+  },
+  {
+   "inst": "inst-tower-hero#0",
+   "cls": "+y",
+   "viewM": 8,
+   "needPxPerM": 154.6,
+   "visiblePxPerM": 6.38,
+   "ok": false
+  },
+  {
+   "inst": "inst-tower-hero#0",
+   "cls": "-z",
+   "viewM": 8,
+   "needPxPerM": 154.6,
+   "visiblePxPerM": 5.86,
+   "ok": false
+  },
+  {
+   "inst": "inst-tower-hero#0",
+   "cls": "+z",
+   "viewM": 8,
+   "needPxPerM": 154.6,
+   "visiblePxPerM": 2.43,
+   "ok": false
+  },
+  {
+   "inst": "inst-tower-hero#0",
+   "cls": "+x",
+   "viewM": 8,
+   "needPxPerM": 154.6,
+   "visiblePxPerM": 7.09,
+   "ok": false
+  },
+  {
+   "inst": "inst-tower-hero#0",
+   "cls": "-x",
+   "viewM": 8,
+   "needPxPerM": 154.6,
+   "visiblePxPerM": 7.37,
+   "ok": false
+  },
+  {
+   "inst": "inst-tower-hero#0",
+   "cls": "+y",
+   "viewM": 8,
+   "needPxPerM": 154.6,
+   "visiblePxPerM": 6.38,
+   "ok": false
+  }
+ ]
+}

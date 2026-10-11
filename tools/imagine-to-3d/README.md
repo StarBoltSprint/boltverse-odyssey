@@ -28,6 +28,14 @@ Relief comes only from the image painted on that face; never invent it.
    **Only PASS is packaged.** `--force-export` exists for previews and is recorded as `exportedOnFail` in the json.
 8. **package.py** copies plates byte-identical, writes `<name>.json` (plate cameras, spans, gains, footprints, qc, gate).
 
+## Multi-view tower (2026-10-11)
+
+`python3 tools/imagine-to-3d/multiview_tower.py --work <dir>` builds one watertight solid from the 10 Oct sheet. The front colour is the key sampled through the stored facade homography (week-2 lens in `tools/common/align/camera.py`: FOV 88°, pitch −7.674°, eye 1.77 m, roll 0.17°). Left, back and right colour are the sheet panels after a Reinhard match onto the key front. `view-top` is not a roof plan and is not painted on. `view-under` is not a footprint and is not painted on.
+
+`fusion.depth_inside` no longer calls DA V2 for the relief. It runs `moge_depth.py` with `/workspace/.venv-sam2/bin/python` (MoGe-2, MIT, metric metres, larger = farther). Pass `--dav2 compare.npy` on that helper when a DA V2 Large comparison file is required. The comparison is not the displacement.
+
+Blender's glTF exporter stores `v' = 1 - v`. `vision_mesh.py` writes that complement so the runtime `flipY: false` samples the png the way the atlas was packed.
+
 ## Align-solve
 
 `python3 tools/imagine-to-3d/auto.py run <spec> --method fusion5 --solve-camera --search cmaes` reframes the existing fusion5 mesh with `tools/common/align` (vanishing-point camera, then CMA-ES). The object gate's relief row reads `overlap`, which is that module's `alignment` (min of Canny edge precision and recall at 2 px, bar 0.70, blocking). Licences are in `tools/common/align/README.md`.

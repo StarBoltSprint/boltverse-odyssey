@@ -1178,3 +1178,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | `strict_score` is blocking and the selftest fails the striped sheet. `plate_is_side_view` refuses the relight set. Search stopped at 3 rounds. The mesh was not dropped another 44 m into the dune. No dataset export. |
 | Guard | `python3 tools/common/align/selftest.py` PASS. `steps/scene-strict-1011/numbers.json` facade strict max 0.3073, placement IoU 0.2909, gate5 12 fails, browser float 44.834. |
 | Sources | `tools/common/align/metrics.py`, `tools/common/align/relief.py`, `tools/common/align/apply_scene.py`, `steps/scene-strict-1011/REPORT.md`. |
+
+### 2026-10-11 — multi-view sheet builds a sealed tower and still misses the bars
+
+| | |
+| --- | --- |
+| Take | multiview-tower-1011 |
+| Defect | Gate round 2 is 11 FAIL / 21. d/w 0.792 (plate foot 0.761, bar ≤ 0.70). Gate relief +z 0.163 m. Float 2.45 m. UV stretch −y 20.99, −z 1.391, +x 2.785, −x 4.372. strict_score with vision no is 0.69 / 0.69 / 0.69 / 0.69 / 0.6667. |
+| Root cause | Left and right profile widths at the key height are already 0.761 of the front width, so the bar cannot be met without shrinking the plates. view-top is an elevation (bbox h/w 2.895), so +y has no painted roof. The key outline closes on one vertex at the foot, and a centre probe reads 2.45 m of air. The sheet paints cables and does not paint the ladder cage. Lit ortho and the play frame stay near black, so visible px/m is 0. |
+| Fix | Stop after two gate rounds. Do not shrink depth. Do not scale relief. Do not invent a ladder or a roof. Do not export dataset/i23d. |
+| Guard | `steps/multiview-tower-1011/gate/report.md` rows proportions, grounding, UV stretch, visible px/m, key checklist. Numbers in `steps/multiview-tower-1011/numbers.json`. The relief row can still print PASS when only two axes clear 0.3 m (`minReliefFaces` 2); the spec target on +z stays missed. |
+| Sources | `tools/imagine-to-3d/multiview_tower.py`, `moge_depth.py`, `vision_mesh.py`, `steps/multiview-tower-1011/REPORT.md`. |
