@@ -1,8 +1,7 @@
-"""Stage 'depth_relief': monocular depth (Depth Anything V2 Large via tools/common/vision_models.py)
-on each Imagine plate -> per-plate RELIEF map in metres. The small ONNX net remains a fallback.
-
-Mesa / rock / legacy tower: relief displaces the shell in/out (cracks, ledges). The volume is never rebuilt
-from depth (Grok q15).
+"""Stage 'depth_relief': monocular depth (MoGe-2, the default in tools/common/vision_models.py)
+on each Imagine plate -> per-plate RELIEF map in metres used ONLY to displace the shell in/out
+(cracks, ledges, overhang depth, holes, panel lines). The volume is never rebuilt from depth (Grok q15).
+Depth Anything V2 Large is an explicit internal comparison only (kind 'dav2-large').
   relief = high-pass(disparity) normalised per plate (robust p99) * amplitude(type), gradient-limited so the plate's
   texture stretch on the displaced surface stays <= 1.3, clamped to +-amplitude.
 
@@ -30,53 +29,51 @@ HARD = dict(amp=1.2, sigmaM=3.5, fineM=0.15, minFeatureM=0.40, snapTolPx=8, maxP
             bayMin=0.35, bayMax=1.15, fieldMin=0.28, fieldMax=0.42)
 
 def session():
-    """DA V2 Large. The small ONNX session is only the fallback."""
-    try:
-        tools = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        if tools not in sys.path:
-            sys.path.insert(0, tools)
-        from common.vision_models import ensure
-        ensure("dav2-large", download=False)
-        return None, "dav2-large"
-    except Exception as e:
-        print("DA V2 Large unavailable, falling back to small:", e, file=sys.stderr)
-        try:
-            tools = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            if tools not in sys.path:
-                sys.path.insert(0, tools)
-            from common.vision_models import load_depth_session
-            return load_depth_session("dav2-small")
-        except Exception as e2:
-            print("shared depth session unavailable:", e2, file=sys.stderr)
-    import onnxruntime as ort
-    os.makedirs(MODELS, exist_ok=True)
-    for name, url, kind in (("dav2-small.onnx", DA_URL, "dav2"), ("midas-small.onnx", MIDAS_URL, "midas")):
-        p = f"{MODELS}/{name}"
-        try:
-            if not os.path.exists(p): urllib.request.urlretrieve(url, p)
-            return ort.InferenceSession(p, providers=["CPUExecutionProvider"]), kind
-        except Exception as e:
-            print("depth model failed:", name, e, file=sys.stderr)
-    raise SystemExit("no depth model")
+    """MoGe-2, loaded once. Returns (model, kind). Large is not the default."""
+    tools = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if tools not in sys.path:
+        sys.path.insert(0, tools)
+    from common.vision_models import load_default_depth
+    return load_default_depth()
 
 def disparity(sess, kind, img):
     a = np.asarray(img.convert("RGB"), np.float32) / 255.0; H, W = a.shape[:2]
+    if kind == "moge-2":
+        import torch
+        im = img.convert("RGB")
+        im.thumbnail((518, 518))
+        rgb = np.asarray(im, np.float32) / 255.0
+        tensor = torch.from_numpy(rgb.transpose(2, 0, 1).copy())
+        with torch.inference_mode():
+            out = sess.infer(tensor, resolution_level=0, use_fp16=False, force_projection=False, apply_mask=False)
+        depth = out["depth"]
+        if depth.ndim == 3:
+            depth = depth[0]
+        depth = depth.detach().cpu().numpy().astype(np.float32)
+        # metres, larger = farther. Relief wants inverse depth: larger = nearer.
+        inv = 1.0 / np.clip(depth, 1e-3, None)
+        if inv.shape != (H, W):
+            inv = np.asarray(Image.fromarray(inv).resize((W, H), Image.BILINEAR), np.float32)
+        return inv
     if kind == "dav2-large":
-        import tempfile
+        import torch
         tools = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         if tools not in sys.path:
             sys.path.insert(0, tools)
-        from common.vision_models import depth_dav2
-        fd, path = tempfile.mkstemp(suffix=".png")
-        os.close(fd)
-        img.convert("RGB").save(path)
-        try:
-            d, _hit, _sec = depth_dav2(path, size=518)
-        finally:
-            os.remove(path)
-        if d.shape != (H, W):
-            d = np.asarray(Image.fromarray(d.astype(np.float32), mode="F").resize((W, H), Image.BILINEAR))
-        return d.astype(np.float32)
+        rgb = np.asarray(img.convert("RGB"))
+        if sess is None:  # internal comparison via the cached helper (HEAD callers pass None)
+            from common.vision_models import depth_dav2_rgb
+            d = depth_dav2_rgb(rgb, 518)
+            d = d[0] if isinstance(d, tuple) else d
+            if d.shape != (H, W):
+                d = np.asarray(Image.fromarray(np.asarray(d, np.float32), mode="F").resize((W, H), Image.BILINEAR))
+            return np.asarray(d, np.float32)
+        from common.vision_models import _prep_dav2
+        tensor, (h0, w0) = _prep_dav2(rgb, 518)
+        with torch.inference_mode():
+            pred = sess(tensor)
+        pred = torch.nn.functional.interpolate(pred[:, None], (h0, w0), mode="bilinear", align_corners=True)[0, 0]
+        return pred.cpu().numpy().astype(np.float32)  # inverse depth: larger = nearer = outward
     if kind == "dav2":
         h, w = (H // 14) * 14, (W // 14) * 14          # native resolution (multiple of the ViT patch)
     else:

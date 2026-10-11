@@ -96,6 +96,9 @@ Stone doors and gothic halls are rejected menu backgrounds (2026-10-04/05). Echo
 | [grok-native-proposal-pick.md](grok-native-proposal-pick.md) — numbered seg boxes, vision returns an id (no new Imagine image) | `e7116fe1` | pick id 2; fusion bbox IoU 0.4169; selftest PASS |
 
 The mask after that pick is not a single slab. Failure: `learn/failures.md` 2026-10-11.
+## terrain
+
+| [terrain-key2-skyline.md](terrain-key2-skyline.md) — colour skyline heightfield, MoGe-2 default, no Imagine prompt | `45e55fe7` | silhouette 0.8481; repetition 0.1499; slope 6.269°; SAM2 silhouette 0.5486 not shipped |
 
 ## cutout
 
