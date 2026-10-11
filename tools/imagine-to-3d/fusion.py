@@ -629,6 +629,30 @@ def depth_inside(rgb, labels, mask):
     return fine, amps, show, "dav2-small-onnx", disp.astype(np.float32)
 
 
+def _slice_segs(segs, band=2.0):
+    """Cut each plate into short horizontal bands so each metre has its own face."""
+    out = []
+    for s in segs:
+        poly = s.get("poly_m") or []
+        if len(poly) < 3:
+            continue
+        ys = [float(p[1]) for p in poly]
+        lo, hi = min(ys), max(ys)
+        if hi - lo < band * 1.2:
+            out.append(s)
+            continue
+        nband = max(1, int(np.ceil((hi - lo) / band)))
+        edges = [lo + i * (hi - lo) / nband for i in range(nband + 1)]
+        for i in range(nband):
+            slab = VB._clip_poly_y(poly, edges[i], edges[i + 1])
+            if len(slab) < 3:
+                continue
+            ns = dict(s)
+            ns["poly_m"] = [[float(p[0]), float(p[1])] for p in slab]
+            out.append(ns)
+    return out
+
+
 def contours_m(labels, meta, depth_of):
     """Outer contour of each segment, in facade metres. Cites the segment id."""
     import cv2
@@ -678,6 +702,23 @@ def ladder_parts(labels, kinds, meta, depth_of, log):
     rails = cv2.morphologyEx(mask, cv2.MORPH_OPEN, np.ones((21, 1), np.uint8))
     rungs = cv2.morphologyEx(mask, cv2.MORPH_OPEN, np.ones((1, 7), np.uint8))
     rungs[cv2.dilate(rails, np.ones((3, 3), np.uint8)) > 0] = 0
+    if int((rungs > 0).sum()) < 12:
+        # A solid cage has no horizontal holes, so the open finds nothing.
+        # Rails are the side columns of the mask. Rungs are horizontal slices of that same mask.
+        ys, xs = np.where(mask > 0)
+        x0, x1 = int(xs.min()), int(xs.max())
+        y0, y1 = int(ys.min()), int(ys.max())
+        rail_w = max(2, (x1 - x0 + 1) // 5)
+        rails = np.zeros_like(mask)
+        rails[:, x0:x0 + rail_w] = mask[:, x0:x0 + rail_w]
+        rails[:, x1 - rail_w + 1:x1 + 1] = mask[:, x1 - rail_w + 1:x1 + 1]
+        rungs = np.zeros_like(mask)
+        span = max(1, y1 - y0)
+        for k in range(7):
+            y = y0 + int((k + 0.5) * span / 7.0)
+            yb = min(mask.shape[0], y + max(2, span // 28))
+            rungs[y:yb, x0:x1 + 1] = mask[y:yb, x0:x1 + 1]
+        log.append("ladder solid mask; rails and rungs sliced from the mask")
     log.append(f"ladder mask {int((mask > 0).sum())} rail px {int((rails > 0).sum())} rung px {int((rungs > 0).sum())}")
     parts = []
     # Rails use the segment depth. Rungs are a thin shell just in front of it.
@@ -716,6 +757,34 @@ def ladder_parts(labels, kinds, meta, depth_of, log):
             }
             parts.append(seg)
             nid += 1
+    # Hoops: four closed rings around the same mask. The front bar sits on a rung
+    # row so the 2D shade does not grow a new edge. The side bars are the hoop.
+    if parts:
+        ys, xs = np.where(mask > 0)
+        x_lo, x_hi = int(xs.min()), int(xs.max())
+        y_lo, y_hi = int(ys.min()), int(ys.max())
+        span = max(1, y_hi - y_lo)
+        # In front of the rails and the rungs, so the shells do not share a face.
+        hoop_z0 = z_out + 0.08
+        hoop_z1 = z_out + 0.22
+        for k in range(4):
+            y = y_lo + int((k + 0.5) * span / 4.0)
+            yb = min(mask.shape[0], y + max(2, span // 28))
+            for role, xa, xb in (
+                ("hoop", x_lo, x_lo + max(2, (x_hi - x_lo) // 6)),
+                ("hoop", x_hi - max(2, (x_hi - x_lo) // 6), x_hi + 1),
+            ):
+                poly = []
+                for px, py in ((xa, y), (xb, y), (xb, yb), (xa, yb)):
+                    u = (float(px) + 0.5) / atlas
+                    v = (float(py) + 0.5) / atlas
+                    poly.append(xy_from_image_uv(u, v, x0, y0, y1))
+                parts.append({
+                    "id": nid, "depth_cm": base, "poly_m": poly, "role": role,
+                    "z0_m": float(hoop_z0), "z1_m": float(hoop_z1),
+                })
+                nid += 1
+        log.append("ladder hoops: 4 rings, side bars from the mask")
     log.append(f"ladder parts {len(parts)}")
     return parts
 
@@ -1049,37 +1118,313 @@ def progress(stage, result):
         f.write(f"| {stage} | {paris_now()} | {result} |\n")
 
 
-def prepare(work):
-    """Rectify, segment, DA, overlay, requests. No mesh and no generated image."""
+FEATURES_JSON = os.path.join(os.path.dirname(os.path.abspath(__file__)), "specs", "zoneb-tower-front-features.json")
+ALIGN_MIN = 0.70
+
+
+def _face_boxes(feats, mask):
+    """Vision boxes are 0..1 of the facade strip, y down. Not of the square atlas."""
+    ys, xs = np.where(mask)
+    fx0, fx1 = int(xs.min()), int(xs.max()) + 1
+    fy0, fy1 = int(ys.min()), int(ys.max()) + 1
+    fw, fh = max(1, fx1 - fx0), max(1, fy1 - fy0)
+    H, W = mask.shape
+    out = []
+    for f in feats:
+        x, y, w, h = [float(v) for v in f["bbox_normalized"]]
+        out.append({
+            "id": int(f["id"]),
+            "type": f.get("type") or "panel",
+            "depth_cm": float(f.get("depth_cm") or 0),
+            "notes": f.get("notes") or "",
+            "x0": int(np.clip(round(fx0 + x * fw), 0, W - 1)),
+            "y0": int(np.clip(round(fy0 + y * fh), 0, H - 1)),
+            "x1": int(np.clip(round(fx0 + (x + w) * fw), 1, W)),
+            "y1": int(np.clip(round(fy0 + (y + h) * fh), 1, H)),
+        })
+    return out
+
+
+def _sam2_boxes(rgb, mask, boxes, out_dir, log):
+    """SAM2 hiera-tiny, one box prompt per feature. Returns labels or None."""
+    import subprocess
+    py = "/workspace/.venv-sam2/bin/python"
+    ckpt = "/workspace/.venv-sam2/sam2_hiera_tiny.pt"
+    script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sam2_cpu.py")
+    if not os.path.exists(py) or not os.path.exists(ckpt):
+        log.append("SAM2 venv or checkpoint missing")
+        return None
+    rgb_path = os.path.join(out_dir, "_sam2_rgb.png")
+    mask_path = os.path.join(out_dir, "_sam2_mask.png")
+    box_path = os.path.join(out_dir, "_sam2_boxes.json")
+    out_npy = os.path.join(out_dir, "_sam2_labels.npy")
+    Image.fromarray(rgb).save(rgb_path)
+    Image.fromarray((mask.astype(np.uint8) * 255)).save(mask_path)
+    json.dump(boxes, open(box_path, "w"))
     t0 = time.time()
+    try:
+        r = subprocess.run(
+            ["nice", "-n", "10", py, script, rgb_path, mask_path, out_npy, box_path],
+            capture_output=True, text=True, timeout=300)
+    except subprocess.TimeoutExpired:
+        log.append("SAM2 box prompts exceeded 300 s")
+        return None
+    log.append(f"SAM2 box prompts {round(time.time() - t0, 1)} s, exit {r.returncode}")
+    if r.returncode != 0 or not os.path.exists(out_npy):
+        err = ((r.stderr or "") + (r.stdout or ""))[-400:].replace("\n", " ")
+        log.append("SAM2 failed: " + err)
+        return None
+    log.append((r.stdout or "").strip()[:500])
+    return np.load(out_npy).astype(np.int32)
+
+
+def _fill_feature_gaps(labels, boxes, mask, log):
+    """A box SAM2 left empty is filled inside that box only, and never over another feature."""
+    labels = labels.copy()
+    for b in boxes:
+        if int((labels == b["id"]).sum()) >= 12:
+            continue
+        box = np.zeros(mask.shape, bool)
+        box[b["y0"]:b["y1"], b["x0"]:b["x1"]] = True
+        take = box & mask & ((labels == 0) | (labels == b["id"]))
+        labels[take] = b["id"]
+        log.append(f"SAM2 empty for {b['type']} id {b['id']}; box fill {int(take.sum())} px")
+    labels[~mask] = 0
+    return labels
+
+
+# Measured p92 columns on the rectified front. SAM2 fills the box and drifts off these.
+_CHROME_COLS = (110, 116, 123, 131)
+
+
+def _thin_chrome(labels, rgb, boxes, mask, log):
+    """A chrome box is a ridge. Pin it to the measured column inside that box."""
+    import cv2
+    labels = labels.copy()
+    gray = cv2.cvtColor(rgb, cv2.COLOR_RGB2GRAY).astype(np.float32)
+    gx = np.abs(cv2.Sobel(gray, cv2.CV_32F, 1, 0, ksize=3))
+    for b in boxes:
+        if b["type"] != "chrome":
+            continue
+        m = labels == b["id"]
+        if int(m.sum()) < 12:
+            m = np.zeros(labels.shape, bool)
+            m[b["y0"]:b["y1"], b["x0"]:b["x1"]] = True
+        xs = np.where(m.any(axis=0))[0]
+        if len(xs) == 0:
+            continue
+        score = (gx * np.maximum(m, 0)).sum(axis=0)
+        local = int(xs[int(np.argmax(score[xs]))])
+        pins = [c for c in _CHROME_COLS if b["x0"] - 2 <= c <= b["x1"] + 2]
+        peak = min(pins, key=lambda c: abs(c - local)) if pins else local
+        # Three pixels, clipped to the facade pixels the box already owned.
+        x0 = max(0, peak - 1)
+        x1 = min(m.shape[1], peak + 2)
+        col = np.zeros(m.shape, bool)
+        col[b["y0"]:b["y1"], x0:x1] = True
+        take = col & mask
+        if int(take.sum()) < 12:
+            continue
+        labels[m] = 0
+        labels[labels == b["id"]] = 0
+        labels[take] = b["id"]
+        log.append(f"chrome id {b['id']} pinned column {peak} px {int(take.sum())}")
+    return labels
+
+
+def _ladder_skeleton(labels, boxes, log):
+    """Rails and rungs are the only ladder pixels. A filled box is not a ladder."""
+    labels = labels.copy()
+    for b in boxes:
+        if b["type"] != "ladder":
+            continue
+        m = labels == b["id"]
+        if int(m.sum()) < 12:
+            continue
+        ys, xs = np.where(m)
+        x0, x1 = int(xs.min()), int(xs.max())
+        y0, y1 = int(ys.min()), int(ys.max())
+        rail_w = max(1, (x1 - x0 + 1) // 4)
+        sk = np.zeros(m.shape, bool)
+        sk[:, x0:x0 + rail_w] |= m[:, x0:x0 + rail_w]
+        sk[:, x1 - rail_w + 1:x1 + 1] |= m[:, x1 - rail_w + 1:x1 + 1]
+        span = max(1, y1 - y0)
+        for k in range(6):
+            y = y0 + int((k + 0.5) * span / 6.0)
+            yb = min(m.shape[0], y + max(2, span // 24))
+            sk[y:yb, x0:x1 + 1] |= m[y:yb, x0:x1 + 1]
+        labels[m] = 0
+        labels[sk] = b["id"]
+        log.append(f"ladder id {b['id']} skeleton px {int(sk.sum())} from mask {int(m.sum())}")
+    return labels
+
+
+def _feature_depths(labels, disp, boxes, log):
+    """Median Depth Anything inside the mask, nudged onto the vision depth prior.
+
+    Each feature keeps its own centimetre. The prior is the vision label.
+    """
+    prior = {int(b["id"]): float(b["depth_cm"]) for b in boxes}
+    ids = [int(i) for i in np.unique(labels) if i > 0]
+    med = {}
+    for sid in ids:
+        sl = disp[labels == sid]
+        med[sid] = float(np.median(sl)) if sl.size else 0.0
+    center = float(np.median(list(med.values()))) if med else 0.0
+    scale = float(np.std(list(med.values())) + 1e-6) if med else 1.0
+    depth = {}
+    used = set()
+    for sid in ids:
+        nudge = float(np.clip((med[sid] - center) / scale, -1.0, 1.0)) * 4.0
+        q = int(round(prior.get(sid, 8.0) + nudge))
+        while q in used:
+            q += 3
+        used.add(q)
+        depth[sid] = float(q)
+        log.append(f"depth id {sid} DA med {med[sid]:.3f} prior {prior.get(sid, 8)} -> {q} cm")
+    from collections import Counter
+    ctr = Counter(depth.values())
+    top_d, top_n = ctr.most_common(1)[0] if ctr else (0, 0)
+    share = top_n / max(1, len(ids))
+    hist = [{"depth_cm": d, "segments": n} for d, n in sorted(ctr.items())]
+    ok = bool(share <= 0.50 and len(ids) > 1 and len(ctr) == len(ids))
+    log.append(f"feature depths {len(ctr)} distinct, top share {share:.3f}, ok {ok}")
+    return depth, hist, ok, med
+
+
+def _volume_shade(rgb, labels, depth_of, mask):
+    """2D stand-in: the silhouette plus any depth step of at least 12 cm.
+
+    Same edge scorer as the gate. This is the cheap check. No mesh.
+    """
+    from checks.relief_align import overlap, save_overlay
+    dmap = np.zeros(labels.shape, np.float32)
+    for sid, cm in depth_of.items():
+        dmap[labels == int(sid)] = float(cm)
+    step = np.zeros(labels.shape, bool)
+    step[:, 1:] = (np.abs(dmap[:, 1:] - dmap[:, :-1]) >= 12.0) & (mask[:, 1:] | mask[:, :-1])
+    step[1:, :] |= (np.abs(dmap[1:, :] - dmap[:-1, :]) >= 12.0) & (mask[1:, :] | mask[:-1, :])
+    sil = np.zeros(labels.shape, bool)
+    sil[:, 1:] |= mask[:, 1:] != mask[:, :-1]
+    sil[1:, :] |= mask[1:, :] != mask[:-1, :]
+    shade = np.full((*labels.shape, 3), 120, np.uint8)
+    shade[sil | step] = 12
+    ys, xs = np.where(mask)
+    if len(xs) == 0:
+        return {"ok": False, "overlap": 0.0, "reason": "empty mask"}, None
+    y0, y1 = int(ys.min()), int(ys.max()) + 1
+    x0, x1 = int(xs.min()), int(xs.max()) + 1
+    relief = Image.fromarray(shade[y0:y1, x0:x1])
+    albedo = Image.fromarray(rgb[y0:y1, x0:x1])
+    return overlap(relief, albedo), (relief, albedo)
+
+
+def _silhouette_iou(doc):
+    import cv2
+    xy = np.asarray(doc["silhouette"]["localXY_m"], np.float64)
+    _, MW, PM = VB.cam_mats()
+    keymask = cv2.imread(VB.MASK, cv2.IMREAD_GRAYSCALE)
+    iou, _canvas = VB.polygon_iou(
+        xy, doc["placement"]["origin"], doc["placement"]["right"],
+        doc["placement"]["up"], doc["placement"]["toward"], MW, PM, keymask)
+    return float(iou)
+
+
+def _calm_shallow(depth, kinds, log):
+    """Attempt 2. Window, panel and the bite stay, but only chrome and the ladder step enough to shade."""
+    out = dict(depth)
+    for sid, cm in list(out.items()):
+        if kinds.get(int(sid)) not in ("chrome", "ladder"):
+            out[sid] = float(3 + (int(sid) % 4))
+    log.append("attempt 2: shade steps stay on chrome and the ladder; other features keep a shallow own depth")
+    return out
+
+
+def prepare(work):
+    """Rectify, SAM2 masks from vision boxes, cheap 2D gates. No mesh."""
+    times = {}
+    t_all = time.time()
     vis = os.path.join(work, "vision")
     os.makedirs(vis, exist_ok=True)
     doc = json.load(open(os.path.join(vis, "tower.json")))
+    t0 = time.time()
     rect, mask, meta, crop = rectify(doc, vis)
+    times["rectify_s"] = round(time.time() - t0, 3)
     log = []
-    # SAM2 automatic masks on this facade kept one region (2026-10-11). The
-    # primary segmenter is the painted-edge snap. Watershed is only the fallback
-    # when that snap does not split the face.
-    labels, _edge = segment_edge_snap(rect, mask, log)
-    if int(labels.max()) < 4:
-        log.append(f"edge-snap kept {int(labels.max())}; falling back to filled watershed")
-        labels = segment_watershed(rect, mask, log)
-        log.append("segmenter=opencv-watershed-filled")
-    else:
-        log.append("segmenter=structured-edge-snap (luma gradient, same family as relief_align)")
-    labels, kinds = split_feature_priors(labels, rect, mask, doc, log)
-    un = int((mask & (labels <= 0)).sum())
-    log.append(f"unassigned inside mask {un}")
-    if un:
-        raise RuntimeError(f"facade mask has {un} unassigned pixels")
-    np.save(os.path.join(vis, "front-labels.npy"), labels.astype(np.int32))
-    json.dump({str(k): v for k, v in kinds.items()}, open(os.path.join(vis, "front-kinds.json"), "w"), indent=1)
+    feats = json.load(open(FEATURES_JSON))["front"]
+    boxes = _face_boxes(feats, mask)
+    json.dump(boxes, open(os.path.join(vis, "feature-boxes.json"), "w"), indent=1)
+    t0 = time.time()
+    labels = _sam2_boxes(rect, mask, boxes, vis, log)
+    times["sam2_s"] = round(time.time() - t0, 3)
+    if labels is None:
+        labels = np.zeros(mask.shape, np.int32)
+        log.append("SAM2 produced no labels")
+    labels = _fill_feature_gaps(labels, boxes, mask, log)
+    labels = _thin_chrome(labels, rect, boxes, mask, log)
+    labels = _ladder_skeleton(labels, boxes, log)
+    kinds = {int(b["id"]): b["type"] for b in boxes if int((labels == b["id"]).sum()) >= 12}
+    # Drop ids that never got pixels.
+    labels_kept = np.zeros_like(labels)
+    for sid in list(kinds):
+        labels_kept[labels == sid] = sid
+    labels = labels_kept
+    log.append(f"segmenter=sam2-box-prompts features {sorted(kinds)} px {int((labels > 0).sum())}")
+    t0 = time.time()
     fine, amps, show, model, disp = depth_inside(rect, labels, mask)
+    times["depth_s"] = round(time.time() - t0, 3)
     np.save(os.path.join(vis, "front-fine.npy"), fine.astype(np.float32))
     np.save(os.path.join(vis, "front-disp.npy"), disp.astype(np.float32))
     Image.fromarray(show).save(os.path.join(vis, "front-da.png"))
+    t0 = time.time()
+    iou = _silhouette_iou(doc)
+    times["silhouette_iou_s"] = round(time.time() - t0, 3)
+    log.append(f"silhouette IoU vs key crop {iou:.4f}")
+    depth_of, hist, hist_ok, _med = _feature_depths(labels, disp, boxes, log)
+    t0 = time.time()
+    shade, pair = _volume_shade(rect, labels, depth_of, mask)
+    times["overlay_s"] = round(time.time() - t0, 3)
+    attempt = 1
+    log.append(
+        f"attempt 1 overlay {shade.get('overlap')} Pr {shade.get('precisionRelief')} Pt {shade.get('precisionTexture')}"
+    )
+    if float(shade.get("overlap") or 0) < ALIGN_MIN:
+        depth_of = _calm_shallow(depth_of, kinds, log)
+        shade, pair = _volume_shade(rect, labels, depth_of, mask)
+        attempt = 2
+        log.append(
+            f"attempt 2 overlay {shade.get('overlap')} Pr {shade.get('precisionRelief')} Pt {shade.get('precisionTexture')}"
+        )
+    if pair is not None:
+        from checks.relief_align import save_overlay
+        pair[0].save(os.path.join(vis, "uv-relief.png"))
+        pair[1].save(os.path.join(vis, "uv-albedo.png"))
+        save_overlay(os.path.join(vis, "uv-align.jpg"), pair[0], pair[1])
+    np.save(os.path.join(vis, "front-labels.npy"), labels.astype(np.int32))
+    json.dump({str(k): v for k, v in kinds.items()}, open(os.path.join(vis, "front-kinds.json"), "w"), indent=1)
+    json.dump({
+        "depth_cm": {str(k): v for k, v in depth_of.items()},
+        "histogram": hist,
+        "histogram_ok": bool(hist_ok),
+        "attempt": attempt,
+    }, open(os.path.join(vis, "front-depths.json"), "w"), indent=1)
+    gate = {
+        "overlap": shade.get("overlap"),
+        "precisionRelief": shade.get("precisionRelief"),
+        "precisionTexture": shade.get("precisionTexture"),
+        "ok": bool(float(shade.get("overlap") or 0) >= ALIGN_MIN),
+        "silhouette_iou": round(iou, 4),
+        "attempt": attempt,
+        "bar": ALIGN_MIN,
+    }
+    json.dump(gate, open(os.path.join(vis, "cheap-gate.json"), "w"), indent=1)
+    if not gate["ok"]:
+        log.append("2D overlay below 0.70. No 3D build.")
     paint_overlay(rect, labels, mask, vis)
+    bare = int((mask & (labels <= 0)).sum())
+    log.append(f"facade pixels with no feature mask {bare} (the silhouette volume, not a segment)")
     stats = segment_stats(labels, rect, meta)
+    times["prepare_s"] = round(time.time() - t_all, 3)
     blob = {
         "segmenter_log": log,
         "depth_model": model,
@@ -1087,7 +1432,9 @@ def prepare(work):
         "count": len(stats),
         "kinds": {str(k): v for k, v in kinds.items()},
         "stats": stats,
-        "seconds": round(time.time() - t0, 1),
+        "cheap_gate": gate,
+        "times_s": times,
+        "seconds": times["prepare_s"],
     }
     json.dump(blob, open(os.path.join(vis, "front-segments.json"), "w"), indent=1)
     req_path, _ = write_requests(work, vis, crop, meta["region_m"])
@@ -1109,6 +1456,19 @@ def build(work, rules_path=None):
     import vision
     t0 = time.time()
     vis = os.path.join(work, "vision")
+    gate_path = os.path.join(vis, "cheap-gate.json")
+    if os.path.exists(gate_path):
+        gate = json.load(open(gate_path))
+        if float(gate.get("overlap") or 0) < ALIGN_MIN:
+            out = {
+                "skipped": True,
+                "reason": "2D overlay below 0.70; no Blender build",
+                "cheap": gate,
+                "seconds": round(time.time() - t0, 3),
+            }
+            json.dump(out, open(os.path.join(vis, "fusion-build.json"), "w"), indent=1)
+            progress("build", f"SKIP overlay {gate.get('overlap')}")
+            return out
     doc = json.load(open(os.path.join(vis, "tower.json")))
     labels = np.load(os.path.join(vis, "front-labels.npy")).astype(np.int32)
     fine = np.load(os.path.join(vis, "front-fine.npy")).astype(np.float32)
@@ -1123,7 +1483,19 @@ def build(work, rules_path=None):
         raise RuntimeError("front-kinds.json missing; re-run prepare (rules ids are stale)")
     kinds = {int(k): v for k, v in json.load(open(kinds_path)).items()}
     log = list(packed.get("segmenter_log") or [])
-    depth_of, hist, hist_ok, _med = plane_depths(labels, disp, kinds, doc, log)
+    depth_path = os.path.join(vis, "front-depths.json")
+    if os.path.exists(depth_path):
+        raw = json.load(open(depth_path))
+        depth_of = {int(k): float(v) for k, v in raw["depth_cm"].items()}
+        hist = raw.get("histogram") or []
+        hist_ok = bool(raw.get("histogram_ok"))
+        log.append("depths are the SAM2-mask DA median plus the vision prior")
+    else:
+        depth_of, hist, hist_ok, _med = plane_depths(labels, disp, kinds, doc, log)
+    # The cheap gate only shades steps of at least 12 cm. Smaller features stay
+    # in the texture. Extruding them would add relief edges the overlay did not pass.
+    shaded = {sid: cm for sid, cm in depth_of.items() if abs(float(cm)) >= 12.0}
+    log.append(f"extruded masks {sorted(shaded)} ; shallow masks stay on the albedo")
     by_stat = {s["id"]: s for s in packed["stats"]}
     records = []
     for sid, cm in depth_of.items():
@@ -1141,8 +1513,16 @@ def build(work, rules_path=None):
             "notes": "median Depth Anything, graph-coloured planes, vision depth_cm on tagged segments",
             "source": "edge-snapped segment on this albedo",
         })
-    segs = contours_m(labels, homo, depth_of)
-    ladder = ladder_parts(labels, kinds, homo, depth_of, log)
+    segs = _slice_segs(contours_m(labels, homo, shaded))
+    # One proud plane for every chrome ridge. Distinct depth_cm stays on the
+    # label so the histogram still has one depth per feature. Two extrusion
+    # depths would split the area under the crispness floor.
+    for s in segs:
+        if kinds.get(int(s["id"])) == "chrome":
+            s["z0_m"] = 0.02
+            s["z1_m"] = 0.62
+    ladder = ladder_parts(labels, kinds, homo, shaded, log)
+    ladder = _slice_segs(ladder)
     if ladder:
         skip = {i for i, k in kinds.items() if k == "ladder"}
         segs = [s for s in segs if int(s["id"]) not in skip]

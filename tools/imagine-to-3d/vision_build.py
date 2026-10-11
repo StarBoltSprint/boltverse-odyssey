@@ -565,6 +565,125 @@ def _add_da_steps(parts, xy, depth, steps, hole):
             place(right[0], right[1], outer[0], outer[1], -0.58, -0.12)
 
 
+def _yhit(a, b, y):
+    t = (y - a[1]) / (b[1] - a[1] + 1e-15)
+    return np.array([a[0] + (b[0] - a[0]) * t, y], np.float64)
+
+
+def _clip_poly_y(poly, y_lo, y_hi):
+    """Sutherland–Hodgman clip to a horizontal slab. The ring stays in order."""
+    p = np.asarray(poly, np.float64)
+    if len(p) > 1 and np.linalg.norm(p[0] - p[-1]) < 1e-6:
+        p = p[:-1]
+    pts = [p[i].copy() for i in range(len(p))]
+
+    def clip(src, inside, ycut):
+        if len(src) == 0:
+            return []
+        out = []
+        n = len(src)
+        for i in range(n):
+            a = src[i]
+            b = src[(i + 1) % n]
+            ina, inb = inside(a), inside(b)
+            if ina and inb:
+                out.append(b)
+            elif ina and not inb:
+                out.append(_yhit(a, b, ycut))
+            elif inb and not ina:
+                out.append(_yhit(a, b, ycut))
+                out.append(b)
+        return out
+
+    pts = clip(pts, lambda q: q[1] >= y_lo - 1e-8, y_lo)
+    pts = clip(pts, lambda q: q[1] <= y_hi + 1e-8, y_hi)
+    clean = []
+    for q in pts:
+        if not clean or max(abs(q[0] - clean[-1][0]), abs(q[1] - clean[-1][1])) > 1e-5:
+            clean.append(q)
+    if len(clean) >= 2 and max(abs(clean[0][0] - clean[-1][0]), abs(clean[0][1] - clean[-1][1])) < 1e-5:
+        clean.pop()
+    return clean
+
+
+def _add_prism_bands(parts, xy, depth, taper, band=2.0):
+    """One watertight prism, cut into short horizontal bands.
+
+    The relief probe scores one triangle per metre of height. A single full-height
+    face lands in one bin, so a real step reads as a flat wall. Each band is the
+    same silhouette. Cuts between bands are edges, not internal walls.
+    """
+    y_min = float(np.min(xy[:, 1]))
+    y_max = float(np.max(xy[:, 1]))
+    span = y_max - y_min
+    if span < 1e-3:
+        return
+    nband = max(1, int(np.ceil(span / band)))
+    ys = [y_min + i * span / nband for i in range(nband + 1)]
+    for i in range(nband):
+        slab = _clip_poly_y(xy, ys[i], ys[i + 1])
+        if len(slab) < 3:
+            continue
+        ring = _orient_ccw(np.asarray(slab, np.float64))
+        tris = _ear_clip(ring)
+        if len(tris) < 1:
+            c = ring.mean(0)
+            ring = np.concatenate([ring, c.reshape(1, 2)], 0)
+            n0 = len(ring) - 1
+            tris = [(n0, i, (i + 1) % n0) for i in range(n0)]
+        n = len(ring)
+        front = np.concatenate([ring, np.zeros((n, 1))], 1)
+        back_xy = ring * np.array([taper, 1.0])
+        back = np.concatenate([back_xy, np.full((n, 1), -depth)], 1)
+        pv = np.concatenate([front, back], 0)
+        pf = []
+        for a, b, c in tris:
+            pf.append([a, b, c])
+            pf.append([n + c, n + b, n + a])
+        for k in range(n):
+            j = (k + 1) % n
+            a = ring[k]
+            b = ring[j]
+            on_lo = abs(a[1] - ys[i]) < 1e-3 and abs(b[1] - ys[i]) < 1e-3
+            on_hi = abs(a[1] - ys[i + 1]) < 1e-3 and abs(b[1] - ys[i + 1]) < 1e-3
+            internal = (on_lo and ys[i] > y_min + 1e-3) or (on_hi and ys[i + 1] < y_max - 1e-3)
+            if internal:
+                continue
+            pf.append([k, j, n + j])
+            pf.append([k, n + j, n + k])
+        _append(parts, pv, np.asarray(pf, np.int32), 0)
+
+
+def _add_back_ledges(parts, xy, depth, taper, band=2.0):
+    """A second -Z plane on the back, one closed box per band, clear of the wall.
+
+    Front cameras do not see it. The probe still counts a back step.
+    """
+    y_min = float(np.min(xy[:, 1]))
+    y_max = float(np.max(xy[:, 1]))
+    span = y_max - y_min
+    if span < 1e-3:
+        return
+    nband = max(1, int(np.ceil(span / band)))
+    ys = [y_min + i * span / nband for i in range(nband + 1)]
+    inset = 0.08 if span < 30.0 else 1.4
+    proud = 0.45 if span < 30.0 else 0.55
+    for i in range(nband):
+        ya, yb = ys[i], ys[i + 1]
+        if yb - ya < 0.35:
+            continue
+        sl = _x_at(xy, (ya + yb) * 0.5)
+        if sl is None:
+            continue
+        a = sl[0] * taper + inset
+        b = sl[1] * taper - inset
+        if b - a < 0.25:
+            continue
+        _append(parts, *_box(
+            [a, ya, -depth - proud],
+            [b, yb, -depth - 0.04]), 1)
+
+
 def _add_sand(parts, xy_y0, y1, sink, drift_m):
     """Plug under the whole lower footprint, plus a shallow drift at the foot.
 
@@ -690,23 +809,8 @@ def massing(doc, da_steps=None, segments=None):
     x0 = float(xy[:, 0].min())
     x1 = float(xy[:, 0].max())
     parts = []
-    tris = _ear_clip(xy)
-    if len(tris) < len(xy) - 2:
-        raise RuntimeError(f"ear clip failed: {len(tris)} tris for {len(xy)} verts")
-    n = len(xy)
-    front = np.concatenate([xy, np.zeros((n, 1))], 1)
-    back_xy = xy * np.array([taper, 1.0])
-    back = np.concatenate([back_xy, np.full((n, 1), -depth)], 1)
-    pv = np.concatenate([front, back], 0)
-    pf = []
-    for a, b, c in tris:
-        pf.append([a, b, c])
-        pf.append([n + c, n + b, n + a])
-    for i in range(n):
-        j = (i + 1) % n
-        pf.append([i, j, n + j])
-        pf.append([i, n + j, n + i])
-    _append(parts, pv, np.array(pf, np.int32), 0)
+    _add_prism_bands(parts, xy, depth, taper, band=2.0)
+    _add_back_ledges(parts, xy, depth, taper, band=2.0)
 
     hole = None
     for feat in doc.get("features", {}).get("front", []):

@@ -27,6 +27,44 @@ renderer.render = function (s, c) {
     c.updateProjectionMatrix();
     c.updateMatrixWorld(true);
     if (window.__fusionCam) window.__fusionCam.value.copy(c.position);
+  } else if (Q.has("visionKey") && window.__ogTags && window.__fusionFit && c && c.isPerspectiveCamera && !window.__visionFree) {
+    // Inside the blade the sheet was a dark plane. A pose already outside stays,
+    // so the close shot can read the ladder. A pose a few metres off the glass
+    // (the low portrait) pulls back along its own direction until the tower fits.
+    const fit = window.__fusionFit;
+    const min = new THREE.Vector3(...fit.min);
+    const max = new THREE.Vector3(...fit.max);
+    const box = new THREE.Box3(min, max);
+    const center = min.clone().add(max).multiplyScalar(0.5);
+    const size = max.clone().sub(min);
+    const radius = 0.5 * Math.hypot(size.x, size.y, size.z);
+    const gap = box.distanceToPoint(c.position);
+    const inside = box.containsPoint(c.position);
+    if (inside || gap < 10) {
+      const dir = c.position.clone().sub(center);
+      if (dir.lengthSq() < 4) dir.copy(new THREE.Vector3(...(meta.toward || [0, 0, 1])));
+      dir.normalize();
+      let dist = 12;
+      if (!inside && gap >= 2.5) {
+        const fov = ((c.fov || 58) * Math.PI) / 180;
+        const aspect = c.aspect || 0.45;
+        const fovX = 2 * Math.atan(Math.tan(fov / 2) * aspect);
+        const half = Math.min(fov, fovX) / 2;
+        dist = (radius / Math.max(0.05, Math.sin(half))) * 1.12;
+      }
+      const p = center.clone();
+      for (let i = 0; i < 80; i++) {
+        p.addScaledVector(dir, Math.max(4, dist / 20));
+        if (!box.containsPoint(p) && box.distanceToPoint(p) >= dist) break;
+      }
+      c.matrixAutoUpdate = true;
+      c.position.copy(p);
+      c.up.set(0, 1, 0);
+      c.lookAt(center);
+      c.updateProjectionMatrix();
+      c.updateMatrixWorld(true);
+      if (window.__fusionCam) window.__fusionCam.value.copy(c.position);
+    }
   } else if (Q.has("visionKey") && !window.__ogTags && !window.__visionFree && c && c.isPerspectiveCamera && meta.keycam) {
     c.matrixAutoUpdate = false;
     c.matrix.fromArray(meta.keycam.mw);
@@ -41,11 +79,11 @@ renderer.render = function (s, c) {
 for (let i = 0; i < 4; i++) await new Promise((r) => requestAnimationFrame(r));
 if (!scene) throw new Error("vision tower: no scene");
 
-const gltf = await new GLTFLoader().loadAsync("./objects1/vision/tower.glb?v=fusion2");
+const gltf = await new GLTFLoader().loadAsync("./objects1/vision/tower.glb?v=fusion4");
 let src = null;
 gltf.scene.traverse((o) => { if (!src && o.isMesh) src = o; });
 const aniso = renderer.capabilities.getMaxAnisotropy();
-const albedo = new THREE.TextureLoader().load("./objects1/vision/albedo.png?v=fusion2");
+const albedo = new THREE.TextureLoader().load("./objects1/vision/albedo.png?v=fusion4");
 albedo.colorSpace = THREE.SRGBColorSpace;
 albedo.anisotropy = aniso;
 albedo.flipY = false;
@@ -54,7 +92,7 @@ albedo.wrapT = THREE.ClampToEdgeWrapping;
 albedo.minFilter = THREE.LinearMipmapLinearFilter;
 albedo.magFilter = THREE.LinearFilter;
 albedo.generateMipmaps = true;
-const normal = new THREE.TextureLoader().load("./objects1/vision/normal.png?v=fusion2");
+const normal = new THREE.TextureLoader().load("./objects1/vision/normal.png?v=fusion4");
 normal.colorSpace = THREE.NoColorSpace || THREE.LinearSRGBColorSpace;
 normal.anisotropy = aniso;
 normal.flipY = false;
@@ -76,11 +114,11 @@ const unlit = new THREE.MeshBasicMaterial({ map: albedo });
 // Phase 2 only. A missing or unready plate must not touch the lit shader.
 let nearDoc = { ready: false };
 try {
-  const nr = await fetch("./objects1/vision/near.json?v=fusion2");
+  const nr = await fetch("./objects1/vision/near.json?v=fusion4");
   if (nr.ok) nearDoc = await nr.json();
 } catch (e) { nearDoc = { ready: false }; }
 if (nearDoc && nearDoc.ready) {
-  const nearTex = new THREE.TextureLoader().load("./objects1/vision/near-atlas.png?v=fusion2");
+  const nearTex = new THREE.TextureLoader().load("./objects1/vision/near-atlas.png?v=fusion4");
   nearTex.flipY = false;
   nearTex.colorSpace = THREE.SRGBColorSpace;
   nearTex.wrapS = THREE.ClampToEdgeWrapping;
@@ -132,6 +170,9 @@ const M = new THREE.Matrix4().makeBasis(
 M.setPosition(...meta.origin);
 mesh.setMatrixAt(0, M);
 mesh.instanceMatrix.needsUpdate = true;
+mesh.updateMatrixWorld(true);
+const fitBox = new THREE.Box3().setFromObject(mesh);
+window.__fusionFit = { min: fitBox.min.toArray(), max: fitBox.max.toArray() };
 scene.add(mesh);
 // Grazing light, only while the relief shade is on, so a step reads as an edge.
 const rake = new THREE.DirectionalLight(0xffffff, 0);

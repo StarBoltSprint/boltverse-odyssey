@@ -95,8 +95,56 @@ def _install_torchvision_stub():
     sys.modules["torchvision.transforms"] = transforms
 
 
+def _boxes(rgb, mask, boxes, out_npy):
+    """One SAM2 mask per vision box. Small features are painted last so they keep their pixels."""
+    import sam2
+    from sam2.build_sam import build_sam2
+    from sam2.sam2_image_predictor import SAM2ImagePredictor
+
+    ckpt = "/workspace/.venv-sam2/sam2_hiera_tiny.pt"
+    model = build_sam2("configs/sam2/sam2_hiera_t.yaml", ckpt, device="cpu")
+    predictor = SAM2ImagePredictor(model)
+    predictor.set_image(rgb)
+    labels = np.zeros(mask.shape, np.int32)
+    report = []
+    order = sorted(boxes, key=lambda b: -float((b["x1"] - b["x0"]) * (b["y1"] - b["y0"])))
+    for b in order:
+        box = np.array([b["x0"], b["y0"], b["x1"], b["y1"]], np.float32)
+        masks, scores, _ = predictor.predict(box=box, multimask_output=True)
+        best_i, best_s, best = None, -1.0, None
+        x0 = max(0, int(np.floor(b["x0"])) - 6)
+        y0 = max(0, int(np.floor(b["y0"])) - 6)
+        x1 = min(mask.shape[1], int(np.ceil(b["x1"])) + 6)
+        y1 = min(mask.shape[0], int(np.ceil(b["y1"])) + 6)
+        window = np.zeros(mask.shape, bool)
+        window[y0:y1, x0:x1] = True
+        window &= mask
+        for i, sc in enumerate(scores):
+            seg = (np.asarray(masks[i]) > 0.5) & window
+            area = int(seg.sum())
+            if area < 12:
+                continue
+            if float(sc) > best_s:
+                best_s, best_i, best = float(sc), int(i), seg
+        if best is None:
+            report.append({"id": int(b["id"]), "ok": False, "score": 0, "px": 0})
+            continue
+        labels[best] = int(b["id"])
+        report.append({"id": int(b["id"]), "ok": True, "score": round(best_s, 4), "px": int(best.sum())})
+    labels[~mask] = 0
+    np.save(out_npy, labels.astype(np.int32))
+    print(json.dumps({
+        "ok": True,
+        "mode": "boxes",
+        "kept": int(labels.max()) if labels.size else 0,
+        "boxes": report,
+        "sam2": getattr(sam2, "__file__", ""),
+    }))
+
+
 def main():
     rgb_path, mask_path, out_npy = sys.argv[1:4]
+    boxes_path = sys.argv[4] if len(sys.argv) > 4 else None
     _install_torchvision_stub()
     from PIL import Image
     import sam2
@@ -105,6 +153,10 @@ def main():
 
     rgb = np.asarray(Image.open(rgb_path).convert("RGB"))
     mask = np.asarray(Image.open(mask_path).convert("L")) > 0
+    if boxes_path:
+        boxes = json.load(open(boxes_path))
+        _boxes(rgb, mask, boxes, out_npy)
+        return
     ckpt = "/workspace/.venv-sam2/sam2_hiera_tiny.pt"
     model = build_sam2("configs/sam2/sam2_hiera_t.yaml", ckpt, device="cpu")
     gen = SAM2AutomaticMaskGenerator(

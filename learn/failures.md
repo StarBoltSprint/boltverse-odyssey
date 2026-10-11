@@ -1043,3 +1043,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Not applied further. Two fix attempts spent. Do not run a third mesh on this same alignment miss. |
 | Guard | object-gate `relief-texture alignment` and `mesh sealed` in `/workspace/zb-tower-fusion-1011/gate/report.md`. Facade shade overlap 0.6276 in `vision/fusion-build.json`. |
 | Sources | `tools/imagine-to-3d/fusion.py` (`segment_edge_snap`, `split_feature_priors`, `plane_depths`). |
+
+### 2026-10-11 — SAM2 box masks pass the cheap gate, then hero alignment or the checklist fails
+
+| | |
+| --- | --- |
+| Take | SPEC-I23D-FUSION-FIX2-1011. Two mesh attempts, then stop. |
+| Defect | Attempt 1 (gate3): alignment hero 0.9439, 30 m 0.9439, 8 m 0.9636, side 0.9647, but facade relief 0 on every axis and the key checklist captures do not show the blade. Attempt 2 (gate4): relief +z 0.62 m and −z 0.54 m, crispness 2 planes on those axes, mesh open 0, but hero and 30 m alignment fall to 0.5574. 8 m is 0.7426 and side is 0.7296. The checklist images still do not show rails, rungs, hoops, the sheared crown, or this tower's sand seat. |
+| Root cause | The relief probe bins each triangle at one metre of height, so a full-height strip scored as a flat wall until the prism was sliced into 2 m bands. Those band edges are lit in the relief shade and are not painted edges, so a camera ~30 m off the glass fails alignment. Pulling every gate camera out to fit the whole tower (about 510 m) made the earlier sheet a distant silhouette and hid the ladder. Leaving the gate's close and far poses shows the foot of a wall, a neighbouring tower, and a far block. The record was not edited. |
+| Fix | Not applied further. Two attempts spent. Do not run a third mesh on this tower for this spec. Do not mark the checklist from these captures. |
+| Guard | object-gate rows `relief-texture alignment`, `facade relief >= 0.3 m`, and `key checklist` in `/workspace/zb-tower-fusion-1011/gate4/report.md`. Cheap 2D overlay 0.7332 in `vision/cheap-gate.json` (bar 0.70, before Blender). |
+| Sources | `tools/imagine-to-3d/fusion.py`, `vision_build.py` (`_add_prism_bands`), `runtime/vision-tower.mjs`. |
