@@ -1,0 +1,23 @@
+{
+ "ok": true,
+ "dpr": 1,
+ "size": [
+  540,
+  1200
+ ],
+ "cam": {
+  "x": -51.115,
+  "y": 10.809591927440971,
+  "z": 9.63,
+  "yaw": 78,
+  "pitch": 4.84
+ },
+ "drawCalls": 23,
+ "triangles": 309627,
+ "geometries": 20,
+ "textures": 37,
+ "logs": [
+  "Failed to load resource: the server responded with a status of 404 (File not found)"
+ ],
+ "shot": "/workspace/grokcli/wt/placement-key-1011/steps/placement-key-1011/before-phone.png"
+}

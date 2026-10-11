@@ -1,0 +1,155 @@
+{
+  "verdict": "FAIL",
+  "facade": "FAIL",
+  "placement": "out of scope",
+  "vision_cost_usd": 0.0,
+  "vision_api_called": false,
+  "dataset_exported": false,
+  "dataset_reason": "Facade strict with vision yes/no is under 0.70 on every view and gate5 has 11 fails. Nothing written under dataset/i23d.",
+  "before": {
+    "source": "steps/scene-strict-1011/numbers.json",
+    "facade_strict": {
+      "key": 0.0421,
+      "hero": 0.3073,
+      "30m": 0.0,
+      "8m": 0.0,
+      "side": 0.2501
+    },
+    "strict_vision": "no on key, hero, 30m, 8m, side",
+    "relief_axes_m": {"+x": 0.0, "-x": 0.0, "+z": 0.0, "-z": 0.591},
+    "proportions": {"h_over_w": 1.91, "d_over_w": 0.25},
+    "browser_float_m": 44.834,
+    "browser_float_at": [458.5, -507.5],
+    "gate5": {"exit": 1, "fails": 12, "rows": 21}
+  },
+  "after": {
+    "facade_strict": {
+      "key": 0.69,
+      "hero": 0.69,
+      "30m": 0.69,
+      "8m": 0.69,
+      "side": 0.6667
+    },
+    "facade_strict_before_vision_cap": {
+      "key": 0.8917,
+      "hero": 0.9165,
+      "30m": 0.9165,
+      "8m": 0.8794,
+      "side": 0.6667
+    },
+    "facade_alignment": {
+      "key": 0.1207,
+      "hero": 0.073,
+      "30m": 0.073,
+      "8m": 0.0181,
+      "side": 0.0258
+    },
+    "facade_strict_note": "vision=False caps a score at 0.69. The API was not called. Play and lit ortho are near black (deltaE 36.5). Side is under 0.70 before the cap.",
+    "strict_vision": "no on key, hero, 30m, 8m, side",
+    "stripe": 1.0,
+    "front_vs_key_strict_geometry": 0.7618,
+    "relief_axes_m": {"+x": 0.517, "-x": 0.443, "+z": 0.163, "-z": 0.32, "+y": null},
+    "relief_note": "Gate row printed PASS because minReliefFaces is 2. Spec target is >= 0.3 m on features. +z is 0.163 m. +y is unpainted because view-top is not a roof plan. Levels were not scaled.",
+    "relief_faces_span_m": {"front": 0.2159, "left": 0.8903, "back": 0.7814, "right": 1.556},
+    "proportions": {
+      "height_m": 173.821,
+      "width_m": 45.744,
+      "h_over_w_plate": 3.8,
+      "h_over_w_mesh": 3.699,
+      "d_over_w_plate": 0.761,
+      "d_over_w_mesh": 0.792,
+      "gate_d_over_w": 0.79
+    },
+    "size_m": [46.994, 173.821, 37.204],
+    "browser_float_m": 2.45,
+    "browser_float_at": [87.8, -98.7],
+    "round1_float_m": 2.53,
+    "round1_float_at": [94, -104.9],
+    "uv_stretch": {"-y": 20.99, "-z": 1.391, "+x": 2.785, "-x": 4.372},
+    "colour_delta_e_play_vs_key": 36.5,
+    "phone_draw_calls_scene": 19,
+    "phone_tris_scene": 245129
+  },
+  "faces": {
+    "front": {
+      "plate": "key-city3 via stored homography; sheet panel 1 is a check",
+      "showed": "broad glass, pier on the viewer's right, sheared crown, two damage bands",
+      "px": [303, 939],
+      "sam2_features": false,
+      "ppm": 2.411,
+      "span_m": 0.2159
+    },
+    "left": {
+      "plate": "sheet-turnaround panel 2",
+      "showed": "profile, pier and cables, glass sliver on the viewer's left",
+      "px": [238, 940],
+      "sam2_features": true,
+      "ppm": 5.408,
+      "span_m": 0.8903
+    },
+    "back": {
+      "plate": "sheet-turnaround panel 3",
+      "showed": "second elevation, pier on the viewer's left",
+      "px": [302, 937],
+      "sam2_features": false,
+      "ppm": 5.391,
+      "span_m": 0.7814
+    },
+    "right": {
+      "plate": "sheet-turnaround panel 4",
+      "showed": "profile, pier on the viewer's left, glass on the viewer's right, cables",
+      "px": [223, 933],
+      "sam2_features": true,
+      "ppm": 5.368,
+      "span_m": 1.556
+    },
+    "top": {
+      "plate": "view-top.jpg",
+      "showed": "tall elevation, bbox h/w 2.895, shows_roof_plan false",
+      "used": false
+    },
+    "under": {
+      "plate": "view-under.jpg",
+      "showed": "one band, soffit content, not a base plan",
+      "used": false
+    }
+  },
+  "seams_delta_e": {
+    "left": {"before": 108.256, "after": 0.694, "reference": "key-front"},
+    "right": {"before": 76.493, "after": 0.842, "reference": "key-front"},
+    "back": {"before": 36.504, "after": 0.929, "reference": "graded-right"}
+  },
+  "camera": {
+    "fov_y_deg": 88,
+    "pitch_three_deg": -7.674,
+    "eye_m": 1.77,
+    "roll_deg": 0.17,
+    "heading_deg": 248.531,
+    "copied_stored_yaw": false,
+    "front_sample": "stored facade homography under this lens"
+  },
+  "mask_method": "grey-distance silhouette. SAM2 hiera-tiny for features when it returns at least 4 regions. rembg is not installed.",
+  "old_cuts_reused": false,
+  "mesh": {"open": 0, "nonManifold": 0, "tris": 9672, "sha256": "5f4c25dab480e0c509468a2ddd0283bab03fea8bfa2d62bceae822da5413e05f"},
+  "phone_budget_mesh": {
+    "triangles": 9672,
+    "drawCalls": 1,
+    "texMB_decoded_albedo_plus_normal": 6.56,
+    "atlas_px": [872, 940],
+    "pass": false,
+    "note": "Hero mesh is one material and 9672 tris. The gate visible-px/m row is 0.0 versus 154.6 because the 8 m lit capture is black. Scene budgets (19 draws, 245129 tris) are the staging page."
+  },
+  "gate5": {
+    "url": "http://127.0.0.1:8996/tower3-1010/index-fusion.html?visionKey=1",
+    "exit": 1,
+    "fails": 11,
+    "rows": 21,
+    "round1_fails": 10,
+    "report": "steps/multiview-tower-1011/gate/report.md"
+  },
+  "rounds": 2,
+  "builder_seconds_last": 35.305,
+  "placement_rounds": 0,
+  "fusion_py_depth": "moge-2 via moge_depth.py; dav2 only with --dav2, not requested by this builder",
+  "glb": "steps/multiview-tower-1011/work/tower.glb"
+}

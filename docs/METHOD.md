@@ -117,3 +117,17 @@ QC, sky stitch, hull bake, KTX2 pack and runtime fog / grade are derived from it
 recipe. [`METHOD/biome-bible.md`](METHOD/biome-bible.md) · [`METHOD/art-direction-aaa.md`](METHOD/art-direction-aaa.md) ·
 [`METHOD/aaa-feel.md`](METHOD/aaa-feel.md) · tools [`tools/biome/`](../tools/biome/README.md) · gate
 `python3 tools/biome/selftest.py`.
+
+## 5. Hero objects from Imagine face plates — IN TEST (2026-10-11)
+
+Lessons of the 11 Oct tower runs (fusion → multiview → hires). Apply to every hero object; tools
+[`tools/imagine-to-3d/`](../tools/imagine-to-3d/README.md), [`tools/object-gate/`](../tools/object-gate/README.md),
+[`tools/common/align/`](../tools/common/align/README.md). Failures: [`learn/failures.md`](../learn/failures.md) (2026-10-11 entries).
+
+1. **Relief only from painted pixels:** SAM2 masks of features painted on the exact Imagine plate; MoGe-2 depth inside the mask. No relief where nothing is painted.
+2. **Hidden faces = 1024 Imagine face plates at native res.** Left = right mirrored. Back = right mirrored too when the "back" plate is a second front (check NCC vs the front first). Rejected plates are never opened.
+3. **Plates are unlit skins:** `MeshBasicMaterial`, `toneMapped: false`, sRGB map. Seam colour matching may only touch a feathered edge strip, never the face body.
+4. **Captures:** `readRT` reads in `SRGBColorSpace` (linear-as-sRGB gave black/red frames).
+5. **Grounding:** full-footprint foot (inset 0 on the bottom 4 % of height); float measured < 0.05 m.
+6. **Gate cameras frame the object:** perspective coverage ≥ 25 %, ortho ≥ 60 % and not black, no grazing angle, hero ≠ 30 m camera.
+7. **Grok vision only after captures are non-black** (L\* check first), cached by image hash, cost logged in `learn/quota-log.md`.

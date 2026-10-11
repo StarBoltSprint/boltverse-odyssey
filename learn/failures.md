@@ -989,10 +989,73 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Guard | `node tools/object-gate/cli.mjs --scene tools/object-gate/specs/zone-b/scene.yaml` row `native Imagine px/m` (pool row, `pool.sharedSelect` in the spec) and row `repetition (UV)` (repeats > 1 FAILS); ortho facade autocorrelation at the 12 m period 0.84 / 0.91 (max 0.5). |
 | Sources | `tools/object-gate/lib/probe.js` `texel()` pool branch; `specs/zone-b/tower-m*.yaml`; gate run on `?v=54`, 2026-10-09 17:3x. |
 
-### 2026-10-11 — key-camera dunes collapse into the lane
+### 2026-10-10 — close plates left the key crop
 
 | | |
 | --- | --- |
+| Take | SPEC-ZB-TOWER-HYBRID-1010. Branch `cursor/tower-hybrid-1010-36f5`, commits `c0e5529` and `47810f3`. |
+| Defect | Two close facade plates, both 864×1200, became a new corner. Luma NCC against the source crop was 0.774, then 0.715. Stop-after-2. The near front stays the key crop, about 3 px/m. |
+| Root cause | The image edit did not hold the crop framing. The six-image cap was then full. |
+| Fix | Not applied. The near front uses the registered key crop plus `detail-hp`. Do not spend a third close cook. |
+| Guard | `imagine/log.md` records the NCC. object-gate row `visible px/m` on this run printed 0.0 against 154.6. No new row was added. |
+| Sources | `/workspace/zb-tower-hybrid-1010/imagine/out/01-close.jpg`, `02-close.jpg`, `imagine/log.md`. |
+
+### 2026-10-10 — isolation hide cleared the v62 upscale quad
+
+| | |
+| --- | --- |
+| Take | SPEC-ZB-TOWER-HYBRID-1010. Same branch. |
+| Defect | The first isolation shot was a black PNG, 4250 bytes, max channel 0. |
+| Root cause | v62 draws the world with a perspective camera and then blits with an orthographic quad. A hook that hid every mesh except the tower also hid that quad. |
+| Fix | Hide only when the camera is perspective. The recapture is `caps/hero-iso.png`, 656020 bytes, only `tower-hero` and `tower-hero-trim` visible, rect IoU 0.936. |
+| Guard | No repo row. The check used here is the isolation PNG size and the visible-name list. |
+| Sources | `tools/imagine-to-3d/hybrid/tower.mjs`. Staging copy `/workspace/kc-staging/zb-tower1/tower.mjs`. |
+
+### 2026-10-10 — plinth covers the key strip and still fails the air probe
+
+| | |
+| --- | --- |
+| Take | SPEC-ZB-TOWER-HYBRID-1010. Same branch. Cites the 2026-10-09 floating-tower entry; the cause here is different. |
+| Defect | One key-view column and the side shot show the maroon plinth meeting the sand. The grounding probe still reports 9.119 m of air under the body at xz (81.2, −82.8), and 14.368 m under the trim. Relief on the body is 0. Each axis has one plane. |
+| Root cause | The plinth does not cover every column of the facade footprint, so some rays hit the silhouette base while the ground is lower. A planar blade has no offset planes, so the building profile fails relief and crispness. The cage starts at the facade base, not at the sand. |
+| Fix | Not applied. Widening the plinth was left alone because extra pixels beside the key mask can drop the rect IoU. |
+| Guard | object-gate rows `grounding (no floating)`, `facade relief >= 0.3 m`, and `facade crispness` in `/tmp/og-tower-hero/report.md`. Same rows as the 2026-10-09 entry. |
+| Sources | `/tmp/og-tower-hero/tower-hero/grounding.json`, `geometry.json`. |
+
+### 2026-10-11 — watershed dams leave the facade on one 8 cm plane
+
+| | |
+| --- | --- |
+| Take | SPEC-I23D-FUSION-1011, front facade only. |
+| Defect | Relief edges miss the painted window lines. UV F 0.5228. Gate hero overlap 0.421. Sheet 8 m F 0.661, 30 m F 0.427, raking min precision 0.635. |
+| Root cause | OpenCV watershed keeps a label-0 dam between regions. `fusion._adjacency` only links two positive labels, and only across columns. The dams break the link, so graph colour assigned 8 cm to 97 of 102 segments. Depth Anything is normal tilt only. The one rebake flattened the atlas gutter and the same miss remained. |
+| Fix | Not applied. Stop after two failures of this alignment miss. No second mesh. |
+| Guard | object-gate row `relief-texture alignment` (min of the two precisions, bar 0.70) in `/workspace/zb-tower-fusion-1011/gate/report.md`. UV score in `/workspace/zb-tower-fusion-1011/REPORT.md`. No new check id. |
+| Sources | `tools/imagine-to-3d/fusion.py` (`_adjacency`, `graph_color`). `vision/tower.json` depth counts. `sheet-phone.jpg`. |
+
+### 2026-10-11 — edge-snap fusion still misses 0.70 and the cutter opens the mesh
+
+| | |
+| --- | --- |
+| Take | SPEC-I23D-FUSION-FIX-1011. Cites the watershed entry above. This was the authorized geometry pass. |
+| Defect | Alignment stays under 0.70 on hero (0.3635), 30 m (0.3635), 8 m (0.419), side (0.6092), and raking (0.6421). The mesh is open (124) and non-manifold (121). Ladder rungs are 0 px. Facade relief on +z is 0.13 m. |
+| Root cause | The first run mapped face bboxes across the square atlas, so chrome and the ladder missed the blade. The second run mapped them onto the mask strip (chrome 3, ladder 7, damage 10) and the histogram share was 0.258. Depth steps still do not sit on the painted window lines. The vision damage prior of −250 cm, cut as a boolean, opened the shell. Horizontal opening on the ladder mask found no rungs. |
+| Fix | Not applied further. Two fix attempts spent. Do not run a third mesh on this same alignment miss. |
+| Guard | object-gate `relief-texture alignment` and `mesh sealed` in `/workspace/zb-tower-fusion-1011/gate/report.md`. Facade shade overlap 0.6276 in `vision/fusion-build.json`. |
+| Sources | `tools/imagine-to-3d/fusion.py` (`segment_edge_snap`, `split_feature_priors`, `plane_depths`). |
+
+### 2026-10-11 — SAM2 box masks pass the cheap gate, then hero alignment or the checklist fails
+
+| | |
+| --- | --- |
+| Take | SPEC-I23D-FUSION-FIX2-1011. Two mesh attempts, then stop. |
+| Defect | Attempt 1 (gate3): alignment hero 0.9439, 30 m 0.9439, 8 m 0.9636, side 0.9647, but facade relief 0 on every axis and the key checklist captures do not show the blade. Attempt 2 (gate4): relief +z 0.62 m and −z 0.54 m, crispness 2 planes on those axes, mesh open 0, but hero and 30 m alignment fall to 0.5574. 8 m is 0.7426 and side is 0.7296. The checklist images still do not show rails, rungs, hoops, the sheared crown, or this tower's sand seat. |
+| Root cause | The relief probe bins each triangle at one metre of height, so a full-height strip scored as a flat wall until the prism was sliced into 2 m bands. Those band edges are lit in the relief shade and are not painted edges, so a camera ~30 m off the glass fails alignment. Pulling every gate camera out to fit the whole tower (about 510 m) made the earlier sheet a distant silhouette and hid the ladder. Leaving the gate's close and far poses shows the foot of a wall, a neighbouring tower, and a far block. The record was not edited. |
+| Fix | Not applied further. Two attempts spent. Do not run a third mesh on this tower for this spec. Do not mark the checklist from these captures. |
+| Guard | object-gate rows `relief-texture alignment`, `facade relief >= 0.3 m`, and `key checklist` in `/workspace/zb-tower-fusion-1011/gate4/report.md`. Cheap 2D overlay 0.7332 in `vision/cheap-gate.json` (bar 0.70, before Blender). |
+| Sources | `tools/imagine-to-3d/fusion.py`, `vision_build.py` (`_add_prism_bands`), `runtime/vision-tower.mjs`. |
+### 2026-10-11 — key-camera dunes collapse into the lane
+
 | Take | Zone B terrain from key-city3, SPEC-TERRAIN-KEY-1011. |
 | Defect | The baked ground still does not show the key's side dunes from the key camera. Crest-line medians sit about 1.1 m above the avenue. A max-versus-min feature check scored a dug hole as a dune. |
 | Root cause | From the low eye, ground pixels below the horizon hit the plane within about 8 m of the lane, so image-left and image-centre land in the same cells. A downward ray cannot carry a 15–40 m crest. Calibrating inverse depth on every avenue pixel let the foreground set the scale to about 2 m. Depth Anything V2 Large, MoGe-2, and SAM2 weights are not on disk; the small model was used. |
@@ -1011,10 +1074,84 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Guard | `node tools/common/render_harness.mjs` (early shot FAIL, late shot PASS). `python3 tools/common/selftest.py`. Object-gate rows `capture ready` and `checklist camera framed on the target`. |
 | Sources | `tools/common/capture_gate.py`, `tools/common/frame_bbox.py`, `tools/common/render_harness.mjs`, `tools/object-gate/gate.mjs`. |
 
-### 2026-10-11 — SAM2 sand mask is too holey to be the dune silhouette
+### 2026-10-11 — SAM2 ridges clear the cheap overlay and miss the view gate
 
 | | |
 | --- | --- |
+| Take | SPEC-I23D-FUSION-FIX3-1011. Cites the SAM2 box-mask entry above. Two attempts, then stop. |
+| Defect | Attempt 1 cheap overlay 0.5436, no mesh. Attempt 2 cheap overlay 0.7395, mesh open 0, non-manifold 0, 112 tris. Gate5 alignment hero 0.5282, 30 m 0.5282, 8 m 0.5331, side 0.8118. Facade relief 0 on +x, −x, +z, −z. Checklist captures are black. Items stay fail. |
+| Root cause | Depth Anything on this photo is a shading gradient, so chrome and the ladder were ordered by their mask medians and mapped to 0.32–0.55 m. The relief probe stores one centroid per triangle per metre. A 112-triangle prism puts one offset in each bin, so the median span stays 0. The play shader draws that mesh nearly black (L* 0.1), so the framed checklist covers 3–44% and reads empty. The post-build shade ignores a step against the unlabelled wall and reported 0 relief edges. |
+| Fix | Not applied further. Two attempts spent. Do not run a third mesh on this alignment and relief miss. |
+| Guard | object-gate rows `relief-texture alignment`, `facade relief >= 0.3 m`, and `key checklist` in `/workspace/i23d-auto/zoneb-tower-vision/gate5/report.md`. Cheap overlay 0.7395 in `vision/cheap-gate.json`. |
+| Sources | `tools/imagine-to-3d/fusion.py` (`_feature_depths`, `shade_facade`), `depth_relief.py`, `vision_build.py`. |
+
+### 2026-10-11 — free-form vision box and erosion miss the one slab
+
+| | |
+| --- | --- |
+| Take | grok-native-1011 |
+| Defect | The first vision box sat on the left cliff. After a numbered proposal picked the right cluster, GrabCut still painted the neighbour blades. Two erode checks did not split them. |
+| Root cause | A free-form box drifts to the nearest dark tower. The three blades are one connected component, so a 3×3 erode cannot separate them. |
+| Fix | Ask vision for an id on classic structure boxes. Stop after the second mask miss. Do not spend a third erode. |
+| Guard | `steps/grok-native-1011/numbers.json`: mask IoU vs SAM2 0.749, vs the fusion reference mask 0.4983. SAM2 vs that reference 0.5518. |
+| Sources | `tools/grok-native/masks.py`, `tools/grok-native/vision_api.py`, `steps/grok-native-1011/work/pick.json`, `steps/grok-native-1011/REPORT.md`. |
+
+### 2026-10-11 — fusion5 neighbour cut and one-axis relief miss the gate
+
+| | |
+| --- | --- |
+| Take | SPEC-I23D-FUSION-FIX5-1011. Three judge rounds, then stop. |
+| Defect | Cheap overlay stayed 0.62. Round 2 mesh is watertight, 264684 tris, relief only on −z (0.591 m). Gate alignment hero 0.0948, 30 m 0.0948, 8 m 0.1385, side 0.2116. The solid floats 74 m. Glass median depth 0.746 m; chrome, ladder, damage, cables, and ledges median 0. The play view still shows a second blade. |
+| Root cause | Neighbour boxes missed the attached blade, so a leak count of 0 left IoU vs the uncut SAM hero at 0.9358. Photometric relief was kept only inside feature boxes, and only the glass box covered enough of one axis for a non-zero median. Vision z0 places the camera-space solid off the avenue pad. A Blender glTF Y-up export also laid the first GLB on its side; the inverse feed fixed that orientation and was re-gated once. |
+| Fix | Not applied further. Round 3 is the stop. Do not export `dataset/i23d`. Do not mark the checklist. |
+| Guard | `steps/fusion-fix5-1011/gate/report.md` rows `relief-texture alignment`, `facade relief`, `grounding`, `key checklist`. Mask IoU in `steps/fusion-fix5-1011/numbers.json`. |
+| Sources | `tools/imagine-to-3d/fusion5.py`, `fusion5_blender.py`, `steps/fusion-fix5-1011/REPORT.md`. |
+
+### 2026-10-11 — disparity lift scored a rock wall as a better silhouette
+
+| | |
+| --- | --- |
+| Take | placement-key-1011 |
+| Defect | The first two key-camera renders put the camera inside a mesa. Weighted IoU rose from 0.2413 to 0.4923, and the tool kept that frame. |
+| Root cause | Depth Anything V2, scaled from one near ground pixel, placed far silhouettes at 10–40 m. `assign_assets` then clamped mesa scale to a floor of 0.6 and lateral to 48 m, so a city-scale mesa filled the lens. The IoU proxy treats any non-sky, non-sand pixel as structure, so rock inside the mask box counted as the object. `order_ok` was hardcoded true. |
+| Fix | Restore the staging layout from `stage-before-*`. Apply only a nudge: towers stay ≥ 55 m ahead and outside lateral 22, the spire ≥ 70 m and lateral 36, mesas ≥ 90 m and lateral 110. Scale stays within 0.80–1.20 of the original for a tower or the spire, and 0.90–1.10 for a mesa. Reject a frame whose sky fraction falls under 0.45 of the before frame, or whose luma falls under 0.55. Decision IoU counts tower, spire, and mesa only. |
+| Guard | `python3 tools/placement-from-key/selftest.py` rows `mesa lift cannot enter the lens`, `tower lift stays ahead of the camera`, `assignment picks the foreground mesa`. The kept pass is in `steps/placement-key-1011/REPORT.md`: placed IoU 0.351, verdict FAIL, two rounds, then stop. |
+| Sources | `tools/placement-from-key/depth_lift.py`, `score.py`, `place.py`. Discarded frames `steps/placement-key-1011/discarded-rockwall-after-16x9.png`. |
+
+### 2026-10-11 — metric seats still miss the blade rows
+
+| | |
+| --- | --- |
+| Take | placement-key2-1011 |
+| Defect | Two key-camera renders left the flanking blade rows unmatched. Placed IoU 0.3763 (round 1, kept) and 0.4049 (round 2, rejected for a collapsed sky). Eleven depth inversions. Phone `passes.main.calls` 24 against a cap of 12. |
+| Root cause | MoGe metres plus the mesa floor (`cam_s+90`, lateral ±110) and the spire floor (`cam_s+55`) put those masses farther than towers the key paints in front of them. The tower modules are chunky blocks, so a height scale cannot become a thin blade. Parking unused towers and mesas along negative avenue s did not drop the phone batches: each mesa is still its own mesh and stayed visible. |
+| Fix | Stop after the two rounds. Do not treat wreck or arch TODOs as a placement miss. Do not run a third cook on the same silhouette gap. |
+| Guard | `steps/placement-key2-1011/REPORT.md` verdict FAIL, placed IoU 0.3763, depth inversions 11, phone draws 24. `python3 tools/placement-from-key/selftest.py` still checks the floors. The capture proof is `before-16x9-loading.png` FAIL and `before-16x9.png` PASS. |
+| Sources | `tools/placement-from-key/place.py`, `depth_lift.py`, `steps/placement-key2-1011/sheet-16x9.jpg`, `sheet-phone.jpg`. Cites the 2026-10-11 rock-wall entry above. | |
+
+### 2026-10-11 — align-solve fills the empty frames and still misses both bars
+
+| | |
+| --- | --- |
+| Take | align-solve-1011 |
+| Defect | Facade software alignment after three CMA-ES rounds is 0.73 / 0.77 / 0.77 / 0.71 / 0.82 (key, hero, 30 m, 8 m, side) on a stride-12 raster, and relief is still only −z (2.08 m). Placement framebuffer placed IoU fell from 0.3763 to 0.2859. |
+| Root cause | The facade crop's vanishing points give FOV 117° and pitch −30°, so the fit-distance frames are small silhouettes whose shade and albedo share an outline. Scaling the existing Z field cannot create +x / −x / +z relief. The city plate's three vanishing points fail the focal-length check, so placement searched around a FOV 40° fallback and the boxes never matched the SAM masks. |
+| Fix | Stop. Three rounds each. Do not export `dataset/i23d`. Do not invent side relief. The staging layout was put back to placed-r1 after the shot. |
+| Guard | `python3 tools/common/align/selftest.py`. Numbers in `steps/align-solve-1011/numbers.json`. Gate field is `overlap` = `alignment`, bar 0.70. |
+| Sources | `tools/common/align/`, `steps/align-solve-1011/REPORT.md`. |
+
+### 2026-10-11 — week-2 camera clears the facade views and the placement bar stays missed
+
+| | |
+| --- | --- |
+| Take | week2-1011 |
+| Defect | Facade alignment is 0.704 / 0.706 / 0.737 / 0.705 / 0.743 and −z relief is 2.02 m. +x, −x, and +z stay 0. Placement framebuffer IoU is 0.3226. |
+| Root cause | The city plate has no orthogonal vanishing pair, so the old solver fell back to FOV 40°. The constrained grid fixes that camera. The fusion mesh is still a front sheet. Tilting front triangles does not make a side ridge, and the relight plates are the same camera. Box seats under the new camera still miss the SAM masks (software 0.30, framebuffer 0.32). |
+| Fix | Stop after 3 search rounds and one labelled SciPy pose refine. Do not write the cast-shadow sun (elevation 70° versus the key sun at 6°) into the staging biome. Do not export `dataset/i23d`. |
+| Guard | `python3 tools/common/align/selftest.py` PASS. Numbers in `steps/week2-1011/numbers.json`. |
+| Sources | `tools/common/align/`, `steps/week2-1011/REPORT.md`. |
+### 2026-10-11 — SAM2 sand mask is too holey to be the dune silhouette
+
 | Take | terrain-key2-1011 |
 | Defect | The SAM2 ground mask, intersected with the colour sand, dropped the column silhouette to IoU 0.5486. |
 | Root cause | One box prompt on the lower frame returns the sand with holes (slabs, shadows, the wreck). Filling each column from the first white pixel then misses the colour skyline. |
@@ -1024,14 +1161,46 @@ Leave a field blank when the repo does not say it. Do not fill it.
 
 ### 2026-10-11 — Depth Anything V2 Large was left as the relief default
 
-| | |
-| --- | --- |
 | Take | terrain-key2-1011, licence line 12:25. |
 | Defect | Relief, fuse, and `bake_depth.py` defaulted to Depth Anything V2 Large. That weight is non-commercial and must not land in a shipped or posted output. |
 | Root cause | The morning line of the spec said to switch relief and fuse to Large. The 12:25 licence line names MoGe-2 as the default and keeps Large as an internal comparison only. The first wiring followed the morning line. |
 | Fix | `DEFAULT_DEPTH = "moge-2"` in `tools/common/vision_models.py`. `load_default_depth` / `depth_default` refuse any other name. `depth_relief.session` and `bake_depth.py` call MoGe-2. A Large `.pth` still runs only when the path is passed on purpose, and that map is not saved into the step folder. |
 | Guard | `DEFAULT_DEPTH == "moge-2"`. `bake_depth.py` default file is `moge-2-vitl.pt`. The shipped `steps/terrain-key2-1011/height.bin` was composed with `disp=None`. |
 | Sources | `tools/common/vision_models.py`, `tools/imagine-to-3d/depth_relief.py`, `tools/relief/bake_depth.py`, `SPEC-TERRAIN-KEY2-1011.md`. |
+
+### 2026-10-11 — strict score fails the striped tower; avenue search still misses the masks
+
+| | |
+| --- | --- |
+| Take | scene-strict-1011 |
+| Defect | Week-2 alignment 0.704–0.743. The same renders score strict 0.000–0.307. Placement framebuffer IoU 0.2909, skyTop 0.3676 vs key 0.5741, 14 depth inversions, 17 draw calls. Browser float 44.834 m after a 60.393 m seat. Side axes stay 0. |
+| Root cause | `metrics.score` is edge overlap and lets horizontal stripes pass 0.70. The relight files are one camera, so no side face has painted pixels. CMA-ES loss weights inversions enough to walk the eye up the dune. The hero footprint covers a dune pit the median seat does not. |
+| Fix | `strict_score` is blocking and the selftest fails the striped sheet. `plate_is_side_view` refuses the relight set. Search stopped at 3 rounds. The mesh was not dropped another 44 m into the dune. No dataset export. |
+| Guard | `python3 tools/common/align/selftest.py` PASS. `steps/scene-strict-1011/numbers.json` facade strict max 0.3073, placement IoU 0.2909, gate5 12 fails, browser float 44.834. |
+| Sources | `tools/common/align/metrics.py`, `tools/common/align/relief.py`, `tools/common/align/apply_scene.py`, `steps/scene-strict-1011/REPORT.md`. |
+
+### 2026-10-11 — multi-view sheet builds a sealed tower and still misses the bars
+
+| | |
+| --- | --- |
+| Take | multiview-tower-1011 |
+| Defect | Gate round 2 is 11 FAIL / 21. d/w 0.792 (plate foot 0.761, bar ≤ 0.70). Gate relief +z 0.163 m. Float 2.45 m. UV stretch −y 20.99, −z 1.391, +x 2.785, −x 4.372. strict_score with vision no is 0.69 / 0.69 / 0.69 / 0.69 / 0.6667. |
+| Root cause | Left and right profile widths at the key height are already 0.761 of the front width, so the bar cannot be met without shrinking the plates. view-top is an elevation (bbox h/w 2.895), so +y has no painted roof. The key outline closes on one vertex at the foot, and a centre probe reads 2.45 m of air. The sheet paints cables and does not paint the ladder cage. Lit ortho and the play frame stay near black, so visible px/m is 0. |
+| Fix | Stop after two gate rounds. Do not shrink depth. Do not scale relief. Do not invent a ladder or a roof. Do not export dataset/i23d. |
+| Guard | `steps/multiview-tower-1011/gate/report.md` rows proportions, grounding, UV stretch, visible px/m, key checklist. Numbers in `steps/multiview-tower-1011/numbers.json`. The relief row can still print PASS when only two axes clear 0.3 m (`minReliefFaces` 2); the spec target on +z stays missed. |
+| Sources | `tools/imagine-to-3d/multiview_tower.py`, `moge_depth.py`, `vision_mesh.py`, `steps/multiview-tower-1011/REPORT.md`. |
+
+### 2026-10-11 — hires plates, lit captures black, then a lip above the foot
+
+| | |
+| --- | --- |
+| Take | hires-tower-1011 |
+| Defect | Play and lit ortho Lab L\* 0.1 on the multiview solid. After the colour fix, gate float was 25.56 m, then 1.54 m. Final gate is 9 FAIL / 21. Side ortho ΔE versus the right plate is 40.6. −z relief is 0.002 m. |
+| Root cause | `MeshStandard` times a pre-lit albedo by a sun that misses the front, and `readRT` scored linear bytes as sRGB. The runtime then applied `meta.cameraSpace` and left the staged basis. With the basis restored, ring-1 relief overhangs the foot, so a column misses the base and reads the lip as air. `face-back-1024.jpg` is a second front (NCC 0.801 vs the sheet front), so −z kept the old panel. Reinhard onto the key front lifts the stone side off its own plate. |
+| Fix | Lit material is `MeshBasicMaterial`, `toneMapped: false`. `readRT` sets `SRGBColorSpace`. Placement uses `right/up/toward/origin` when that basis exists. Inset is 0 for t < 0.04, and that `t` is bound per ring (the loft loop's `t` is the crown). Back plate not used. No further round on d/w, UV, 154 px/m, or the side ΔE. |
+| Guard | `steps/hires-tower-1011/gate/report.md`: colour L\* 42.1, grounding 0.00 m, d/w 0.86 FAIL, visible px/m 0 vs 154.6. Relief row can still print PASS with −z 0.002 because `minReliefFaces` is 2. |
+| Sources | `tools/imagine-to-3d/runtime/vision-tower.mjs`, `tools/imagine-to-3d/multiview_tower.py`, `tools/object-gate/lib/probe.js`, `steps/hires-tower-1011/REPORT.md`. |
+
 ### 2026-10-11 — compare server joined /ref/main.mjs onto .main.mjs
 
 | | |
@@ -1042,3 +1211,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | `resolveRoute` uses the path after the `/ref/`, `/zone/`, or `/wg/` prefix with no extra dot. |
 | Guard | `node tools/world-graph/selftest.mjs` row `compare route serves main.mjs` (resolved path equals the preview `main.mjs`). |
 | Sources | `tools/world-graph/serve.mjs`, `tools/world-graph/selftest.mjs`. |
+
+### 2026-10-11 — hero tower lessons of the day (consolidated, SmiR rules)
+
+| | |
+| --- | --- |
+| Take | fusion-fix1..5, scene-strict, multiview-tower, hires-tower (all 2026-10-11). Cites the entries above; nothing above is rewritten. |
+| Defect | All day the tower missed the bars: relief off the painted pixels, black/red captures, float 2.45 m, back face carrying the old panel, sides 4× paler than their plate, UV stretch 4.6–10 on sides/top, visible px/m 0 at 8 m, and Grok vision saying no on grazing or black frames. |
+| Root cause | (1) Relief taken from depth outside the painted feature. (2) Hidden faces filled from low-res sheet crops. (3) `face-back-1024.jpg` is a second front (NCC 0.801), not a back. (4) Lit `MeshStandard` on a pre-lit albedo + `readRT` reading linear bytes as sRGB → black/red capture. (5) Foot lip read as air (no full-footprint plinth / inset at the foot). (6) Gate hero / 30 m cameras grazing the glass grid with low coverage. (7) Vision paid for on frames that were black. |
+| Fix | Rules for every next object: relief ONLY from SAM2 masks of features painted in the exact Imagine plate (MoGe-2 depth inside the mask). Hidden faces from the 1024 Imagine face plates at native res; left = right mirrored; back = right mirrored too (the "back" plate was a second front; `face-left-REJECTED.jpg` never used). Plates are UNLIT skins (`MeshBasicMaterial`, `toneMapped: false`, sRGB map). Captures read with `readRT` in `SRGBColorSpace`. Grounding: inset 0 on the bottom 4 % of height so the foot chord meets the ground, float < 0.05 m measured. Gate cameras must frame the object: perspective coverage ≥ 25 %, ortho ≥ 60 % and not black, no grazing views, hero and 30 m are different cameras. Grok vision runs only after every capture is non-black (L\* check first). |
+| Guard | `node tools/object-gate/selftest.mjs`; gate.mjs camera-framing row (cover ≥ 25 %, ortho ≥ 60 % not black); `steps/hires-tower-1011/gate/report.md` colour L\* 42.1, grounding 0.00 m. Open: sides ΔE 40–43 (Reinhard seam match lifts the body), UV stretch, visible px/m 0, d/w 0.86 vs bar 0.70 → step tower-sides-fix-1011. |
+| Sources | `tools/imagine-to-3d/multiview_tower.py`, `runtime/vision-tower.mjs`, `moge_depth.py`, `tools/object-gate/gate.mjs`, `lib/probe.js`, `tools/common/align/metrics.py`, `steps/hires-tower-1011/REPORT.md`. |

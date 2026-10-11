@@ -1,0 +1,58 @@
+[
+ {
+  "name": "hero",
+  "ok": false,
+  "overlap": 0.0483,
+  "alignment": 0.0483,
+  "precisionRelief": 0.4932,
+  "precisionTexture": 0.0483,
+  "reliefEdges": 2064,
+  "textureEdges": 25962,
+  "tolPx": 2,
+  "silhouette_iou": 0.9917,
+  "chamfer_px": 51.542,
+  "colour_lab": 8.951
+ },
+ {
+  "name": "30m",
+  "ok": false,
+  "overlap": 0.0483,
+  "alignment": 0.0483,
+  "precisionRelief": 0.4932,
+  "precisionTexture": 0.0483,
+  "reliefEdges": 2064,
+  "textureEdges": 25962,
+  "tolPx": 2,
+  "silhouette_iou": 0.9917,
+  "chamfer_px": 51.542,
+  "colour_lab": 8.951
+ },
+ {
+  "name": "8m",
+  "ok": false,
+  "overlap": 0.6067,
+  "alignment": 0.6067,
+  "precisionRelief": 0.6067,
+  "precisionTexture": 0.9267,
+  "reliefEdges": 511,
+  "textureEdges": 341,
+  "tolPx": 2,
+  "silhouette_iou": 1,
+  "chamfer_px": 5.641,
+  "colour_lab": 3.579
+ },
+ {
+  "name": "side",
+  "ok": false,
+  "overlap": 0.0831,
+  "alignment": 0.0831,
+  "precisionRelief": 0.452,
+  "precisionTexture": 0.0831,
+  "reliefEdges": 3436,
+  "textureEdges": 19607,
+  "tolPx": 2,
+  "silhouette_iou": 0.9947,
+  "chamfer_px": 38.712,
+  "colour_lab": 15.706
+ }
+]

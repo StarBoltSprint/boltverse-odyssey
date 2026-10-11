@@ -7,3 +7,6 @@ checklistTemplate:
   - {id: damage, feature: "Damage / breaks in the geometry, interior skinned (no black faces)", captures: [close, low-portrait]}
   - {id: materials, feature: "Hull materials and colours as the key", captures: [close]}
   - {id: base, feature: "Nose-buried / seated, no gap", captures: [low-portrait]}
+keyCompare:   # key-compare.mjs: wrecks / hulls
+  gate: {iouMin: 0.4, deLitMax: 10, deShadowMax: 10, structureMin: 0.2}
+  target: {iouTarget: 0.95, deLitTarget: 3, deShadowTarget: 4, structureTarget: 0.9}

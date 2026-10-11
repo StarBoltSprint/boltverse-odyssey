@@ -87,8 +87,9 @@ export function scoreVisible(t, R, view, texelRows, repRows, footprints, spec = 
   const near = [];
   for (let i = 0; i < footprints.length; i++) for (let j = i + 1; j < footprints.length; j++) {
     const a = footprints[i], b = footprints[j];
-    // LOD levels (or duplicates) of the SAME copy share a footprint: not neighbours
-    if (Math.hypot(a.x - b.x, a.z - b.z) < 0.5 && Math.abs(a.hw - b.hw) < 0.5 && Math.abs(a.hd - b.hd) < 0.5) continue;
+    // LOD levels of the SAME copy share a centre. A decimated LOD can differ in size and still is not a neighbour.
+    const stem = (id) => String(id).replace(/-lod\d+.*/, "").replace(/#\d+$/, "");
+    if (Math.hypot(a.x - b.x, a.z - b.z) < 1 && stem(a.inst) === stem(b.inst)) continue;
     const gap = Math.max(Math.abs(a.x - b.x) - a.hw - b.hw, Math.abs(a.z - b.z) - a.hd - b.hd);
     if (gap < t.neighbourRadiusM) near.push(`${a.inst} / ${b.inst} ${f1(Math.max(0, gap))} m`);
   }
@@ -101,5 +102,7 @@ export function scoreVisible(t, R, view, texelRows, repRows, footprints, spec = 
   return { rows, perSurface };
 }
 
-/** footprints from instanceBoxes (world AABB) */
-export const footprintsFromBoxes = (boxes) => boxes.map((b) => ({ inst: b.id, x: (b.min[0] + b.max[0]) / 2, z: (b.min[2] + b.max[2]) / 2, hw: (b.max[0] - b.min[0]) / 2, hd: (b.max[2] - b.min[2]) / 2 }));
+/** Footprints from instanceBoxes. Use the oriented size (halfW/halfD), not the yawed world AABB:
+ *  a rotated mesa's axis-aligned box overlaps neighbours that the rock itself does not touch.
+ *  An unloaded LOD (empty geometry) has no size and is not a copy. */
+export const footprintsFromBoxes = (boxes) => (boxes || []).filter((b) => b && b.center && ((b.halfW || 0) > 0.05 || (b.halfD || 0) > 0.05)).map((b) => ({ inst: b.id, x: b.center[0], z: b.center[2], hw: b.halfW, hd: b.halfD }));

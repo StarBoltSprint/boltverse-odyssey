@@ -1,0 +1,27 @@
+object: tower-hero
+items:
+  wedge:
+    pass: false
+    by: "grok-vision 2026-10-11 fusion-fix4"
+    note: "gate5 far (0000081010100000) and low-portrait (0000000000000000) are near-black. The blade, the shear, and the bite are not readable. Not marked pass."
+    captures: {far: "0000081010100000", low-portrait: "0000000000000000"}
+  ladder:
+    pass: false
+    by: "grok-vision 2026-10-11 fusion-fix4"
+    note: "gate5 close and low-portrait are black. Rails and rungs are not readable. The build kept 1 ladder part (rail px 90, rung px 20)."
+    captures: {close: "0000000000000000", low-portrait: "0000000000000000"}
+  chrome:
+    pass: false
+    by: "grok-vision 2026-10-11 fusion-fix4"
+    note: "gate5 close and low-portrait do not show a silver strip. The play surface reads unlit (colour L* 0.1)."
+    captures: {close: "0000000000000000", low-portrait: "0000000000000000"}
+  damage:
+    pass: false
+    by: "grok-vision 2026-10-11 fusion-fix4"
+    note: "gate5 far is a dark sliver. The jagged bite is not visible. Not marked pass."
+    captures: {far: "0000081010100000", low-portrait: "0000000000000000"}
+  sand:
+    pass: false
+    by: "grok-vision 2026-10-11 fusion-fix4"
+    note: "gate5 close and low-portrait do not show the base seated in the sand. Grounding row still passes at -21.88 m. The picture does not show the joint."
+    captures: {low-portrait: "0000000000000000", far: "0000081010100000"}

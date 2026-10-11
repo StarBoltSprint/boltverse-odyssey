@@ -1,0 +1,20 @@
+id: tower-hero
+type: building
+# The one hybrid hero. Not an instanced m2 shell.
+select: {names: "^tower-hero"}
+keyCrop: /workspace/zb-tower-hybrid-1010/imagine/src/crop-tower.jpg
+proportions:
+  hOverW: [3.0, 5.0]
+  dOverW: [0.45, 0.70]
+textures:
+  - {match: "albedo-key\\.png", role: plate}
+  - {match: "atlas-key\\.png", role: plate}
+  - {match: "detail-hp\\.png", role: detail}
+  - {match: "-(y)\\.bin|u[LRB]Y", role: plate}
+  - {match: "-(c)\\.bin|u[LRB]C", role: mask}
+checklist:
+  - {id: wedge, feature: "Tapered planar blade, depth at least 0.45 of the width, sheared crown kept in the volume", captures: [far, low-portrait]}
+  - {id: ladder, feature: "Ladder cage readable as rails, rungs and hoops", captures: [close, low-portrait]}
+  - {id: chrome, feature: "Chrome or silver edge strips and floor bands readable as geometry", captures: [close, low-portrait]}
+  - {id: damage, feature: "Sheared damaged crown kept in the silhouette", captures: [far, low-portrait]}
+  - {id: sand, feature: "Sand on the lower part, base seated, no floating gap", captures: [low-portrait, far]}

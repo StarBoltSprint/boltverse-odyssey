@@ -1,0 +1,438 @@
+{
+ "register_ncc": {
+  "clay.jpg": 0.7853,
+  "seg.jpg": 0.7347,
+  "relight-left.jpg": 0.7108,
+  "relight-right.jpg": 0.8577,
+  "relight-top.jpg": 0.6748,
+  "relight-front.jpg": 0.452
+ },
+ "vision": {
+  "fov_y_deg": 42.0,
+  "pitch_deg": -3.0,
+  "horizon_frac": 0.52,
+  "hero": {
+   "box": [
+    0.13,
+    0.21,
+    0.37,
+    0.51
+   ],
+   "height_m": 240.0,
+   "width_m": 38.0,
+   "depth_m": 32.0,
+   "dune_crest_m": 175.0
+  },
+  "freeform_box": [
+   0.13,
+   0.21,
+   0.37,
+   0.51
+  ],
+  "freeform_reused": true,
+  "pick_id": 2,
+  "pick_note": "broad slab left of road, slanted cap",
+  "picked_box": [
+   0.25625,
+   0.075,
+   0.47265625,
+   0.6861111111111111
+  ],
+  "fusion_reference": {
+   "iou": 0.4169,
+   "fusion_bbox_px": [
+    413,
+    42,
+    546,
+    441
+   ],
+   "proposal_bbox_px": [
+    328,
+    54,
+    605,
+    494
+   ],
+   "role": "sanity reference, not the mask"
+  },
+  "identity_ok": true,
+  "height_used_m": 240.0,
+  "height_flag": "vision",
+  "fusion_spec_height_m": 150.0,
+  "feature_count": 6,
+  "features_on_mask": 0
+ },
+ "parametric": {
+  "ran": true,
+  "measures": {
+   "y0": 46,
+   "y1": 482,
+   "pix_h": 437,
+   "top_px": 45.5,
+   "bottom_px": 205.0,
+   "taper_deg": 10.34,
+   "bite_frac": 0.851,
+   "bite_side": "left",
+   "bite_depth_px": 49.0,
+   "height_m": 240.0,
+   "depth_m": 32.0,
+   "m_per_px": 0.5491990846681922
+  },
+  "scene_graph": {
+   "taper_deg": 10.34,
+   "bite_frac": 0.851,
+   "bite_side": "left",
+   "depth_m": 32.0,
+   "height_m": 240.0,
+   "note": "Hero slab left of road centre, classic mask measurements"
+  },
+  "depth_m": 32.0,
+  "silhouette_iou_vs_mask": 0.7894,
+  "watertight": true,
+  "verts": 1246,
+  "front_colour_mae": 0.0126,
+  "silhouette_iou_vs_sam2": 0.7238
+ },
+ "mask": {
+  "px": 62149,
+  "snap": {
+   "snapped": true,
+   "iou_vs_seed": 0.9663,
+   "moved": 211
+  },
+  "vision_rounds": [
+   {
+    "only_hero": false,
+    "leak": "neighbor",
+    "miss": "none",
+    "action": "erode",
+    "note": "wrong red objects"
+   },
+   {
+    "only_hero": false,
+    "leak": "neighbor",
+    "miss": "none",
+    "action": "erode",
+    "note": "multiple slabs masked"
+   }
+  ],
+  "iou_vs_sam2": 0.749,
+  "iou_vs_fusion_reference": 0.4983
+ },
+ "normals": {
+  "blend_face_weight": "0.35+0.55*nz",
+  "metres_per_px": 0.5491990846681922,
+  "relief_p5_m": -10.489276658522225,
+  "relief_p95_m": 6.21421055626235,
+  "relief_span_m": 16.703487214784577,
+  "lights": [
+   "relight-left.jpg",
+   "relight-right.jpg",
+   "relight-top.jpg",
+   "relight-front.jpg"
+  ],
+  "median_residual": 0.07302403256031909,
+  "relief_gain_cap": 0.862095430423312
+ },
+ "geometry": [
+  {
+   "stats": {
+    "edges": 3732,
+    "open_or_nonmanifold": 0,
+    "watertight": true,
+    "blender_validate_changed": false,
+    "blender_boundary_edges": 0,
+    "blender_nonmanifold_edges": 0,
+    "verts": 1246,
+    "faces": 2488,
+    "checksum": 125368038
+   },
+   "node": {
+    "ok": true,
+    "verts": 1246,
+    "max_abs": 0.0,
+    "match": true
+   },
+   "python_checksum": 125368038,
+   "checksum_match": true,
+   "silhouette_iou_vs_mask": 0.7894,
+   "front_colour_mae": 0.0171,
+   "Z0": 515.056510731223,
+   "fx": 937.8320632897686,
+   "yaw_path": "/workspace/grokcli/wt/grok-native-1011/steps/grok-native-1011/work/round-0/yaw.jpg",
+   "judge": {
+    "score": 0.55,
+    "silhouette": "narrow",
+    "relief": "flat",
+    "depth": "shallow",
+    "action": "wider",
+    "note": "too thin vs original slab",
+    "usage": {
+     "model": "grok-4.3",
+     "seconds": 9.756,
+     "token_source": "auth.json",
+     "prompt_tokens": 1048,
+     "completion_tokens": 54,
+     "reasoning_tokens": 951,
+     "image_tokens": 676,
+     "cost_in_usd_ticks": 36881000,
+     "cost_usd": 0.0036881
+    }
+   },
+   "state": {
+    "fov_y": 42.0,
+    "height_m": 240.0,
+    "depth_m": 32.0,
+    "relief_gain": 0.862095430423312,
+    "width_scale": 1.0
+   },
+   "features_used": []
+  },
+  {
+   "stats": {
+    "edges": 3732,
+    "open_or_nonmanifold": 0,
+    "watertight": true,
+    "blender_validate_changed": false,
+    "blender_boundary_edges": 0,
+    "blender_nonmanifold_edges": 0,
+    "verts": 1246,
+    "faces": 2488,
+    "checksum": 241669775
+   },
+   "node": {
+    "ok": true,
+    "verts": 1246,
+    "max_abs": 0.0,
+    "match": true
+   },
+   "python_checksum": 241669775,
+   "checksum_match": true,
+   "silhouette_iou_vs_mask": 0.7412,
+   "front_colour_mae": 0.0165,
+   "Z0": 515.056510731223,
+   "fx": 937.8320632897686,
+   "yaw_path": "/workspace/grokcli/wt/grok-native-1011/steps/grok-native-1011/work/round-1/yaw.jpg",
+   "judge": {
+    "score": 0.65,
+    "silhouette": "narrow",
+    "relief": "flat",
+    "depth": "shallow",
+    "action": "more_relief",
+    "note": "side slab too planar vs orig",
+    "usage": {
+     "model": "grok-4.3",
+     "seconds": 8.351,
+     "token_source": "auth.json",
+     "prompt_tokens": 1048,
+     "completion_tokens": 37,
+     "reasoning_tokens": 798,
+     "image_tokens": 676,
+     "cost_in_usd_ticks": 32631000,
+     "cost_usd": 0.0032631
+    }
+   },
+   "state": {
+    "fov_y": 42.0,
+    "height_m": 240.0,
+    "depth_m": 32.0,
+    "relief_gain": 0.862095430423312,
+    "width_scale": 1.08
+   },
+   "features_used": []
+  },
+  {
+   "stats": {
+    "edges": 3732,
+    "open_or_nonmanifold": 0,
+    "watertight": true,
+    "blender_validate_changed": false,
+    "blender_boundary_edges": 0,
+    "blender_nonmanifold_edges": 0,
+    "verts": 1246,
+    "faces": 2488,
+    "checksum": 161693329
+   },
+   "node": {
+    "ok": true,
+    "verts": 1246,
+    "max_abs": 0.0,
+    "match": true
+   },
+   "python_checksum": 161693329,
+   "checksum_match": true,
+   "silhouette_iou_vs_mask": 0.7412,
+   "front_colour_mae": 0.0165,
+   "Z0": 515.056510731223,
+   "fx": 937.8320632897686,
+   "yaw_path": "/workspace/grokcli/wt/grok-native-1011/steps/grok-native-1011/work/round-2/yaw.jpg",
+   "judge": {
+    "action": "stopped",
+    "note": "round cap",
+    "score": null
+   },
+   "state": {
+    "fov_y": 42.0,
+    "height_m": 240.0,
+    "depth_m": 32.0,
+    "relief_gain": 1.1638288310714713,
+    "width_scale": 1.08
+   },
+   "features_used": []
+  }
+ ],
+ "baseline": {
+  "sam": {
+   "task": "sam",
+   "which": "small",
+   "box": [
+    320.0,
+    46.0,
+    613.0,
+    502.0
+   ],
+   "shape": [
+    720,
+    1280
+   ],
+   "cache_hit": false,
+   "model_seconds": 3.3406,
+   "wall_seconds": 3.3412,
+   "finite": 63403
+  },
+  "moge": {
+   "task": "moge",
+   "side": 384,
+   "shape": [
+    216,
+    384
+   ],
+   "cache_hit": true,
+   "model_seconds": 0.0005,
+   "wall_seconds": 0.001,
+   "finite": 82944
+  },
+  "mask_iou": 0.749,
+  "silhouette_iou_vs_mask": 0.7412,
+  "silhouette_iou_vs_sam2": 0.7108,
+  "depth_affine_on_facade": {
+   "scale": 0.062737872223066,
+   "offset": 0.03859893730286752,
+   "median_abs": 3.00193336404908,
+   "span_p95_p5": 18.63438932700015,
+   "median_over_span": 0.1610964175627399
+  },
+  "normal_angle_deg": {
+   "median_deg": 26.159275588920046,
+   "p90_deg": 37.60976774662655
+  },
+  "relief_texture_corr_native": 0.2196,
+  "relief_texture_corr_moge": 0.077,
+  "front_colour_mae": 0.0165,
+  "sam_iou_vs_fusion_reference": 0.5518
+ },
+ "timings_s": {
+  "register_s": 1.999,
+  "vision_s": 0.0,
+  "pick_s": 6.632,
+  "mask_seed_s": 2.261,
+  "mask_judge_0_s": 10.576,
+  "mask_judge_1_s": 11.841,
+  "normals_s": 0.402,
+  "geometry_0_s": 1.808,
+  "render_judge_0_s": 9.789,
+  "geometry_1_s": 1.461,
+  "render_judge_1_s": 8.385,
+  "geometry_2_s": 1.678,
+  "parametric_s": 7.473,
+  "sam2_s": 3.853,
+  "moge_s": 0.1
+ },
+ "cost": {
+  "calls": [
+   {
+    "stage": "pick-hero",
+    "model": "grok-4.3",
+    "seconds": 6.591,
+    "token_source": "auth.json",
+    "prompt_tokens": 1080,
+    "completion_tokens": 18,
+    "reasoning_tokens": 623,
+    "image_tokens": 578,
+    "cost_in_usd_ticks": 28181000,
+    "cost_usd": 0.0028181
+   },
+   {
+    "stage": "mask-judge-0",
+    "model": "grok-4.3",
+    "seconds": 10.555,
+    "token_source": "auth.json",
+    "prompt_tokens": 649,
+    "completion_tokens": 34,
+    "reasoning_tokens": 1127,
+    "image_tokens": 338,
+    "cost_in_usd_ticks": 35793500,
+    "cost_usd": 0.00357935
+   },
+   {
+    "stage": "mask-judge-1",
+    "model": "grok-4.3",
+    "seconds": 11.823,
+    "token_source": "auth.json",
+    "prompt_tokens": 649,
+    "completion_tokens": 34,
+    "reasoning_tokens": 1195,
+    "image_tokens": 338,
+    "cost_in_usd_ticks": 37493500,
+    "cost_usd": 0.00374935
+   },
+   {
+    "stage": "render-judge-0",
+    "model": "grok-4.3",
+    "seconds": 9.756,
+    "token_source": "auth.json",
+    "prompt_tokens": 1048,
+    "completion_tokens": 54,
+    "reasoning_tokens": 951,
+    "image_tokens": 676,
+    "cost_in_usd_ticks": 36881000,
+    "cost_usd": 0.0036881
+   },
+   {
+    "stage": "render-judge-1",
+    "model": "grok-4.3",
+    "seconds": 8.351,
+    "token_source": "auth.json",
+    "prompt_tokens": 1048,
+    "completion_tokens": 37,
+    "reasoning_tokens": 798,
+    "image_tokens": 676,
+    "cost_in_usd_ticks": 32631000,
+    "cost_usd": 0.0032631
+   },
+   {
+    "stage": "scene-graph",
+    "model": "grok-4.3",
+    "seconds": 5.964,
+    "token_source": "auth.json",
+    "prompt_tokens": 1111,
+    "completion_tokens": 67,
+    "reasoning_tokens": 552,
+    "image_tokens": 676,
+    "cost_in_usd_ticks": 28018500,
+    "cost_usd": 0.00280185
+   }
+  ],
+  "usd": 0.01989985
+ },
+ "mesh": {
+  "edges": 3732,
+  "open_or_nonmanifold": 0,
+  "watertight": true,
+  "blender_validate_changed": false,
+  "blender_boundary_edges": 0,
+  "blender_nonmanifold_edges": 0,
+  "verts": 1246,
+  "faces": 2488,
+  "checksum": 161693329
+ }
+}

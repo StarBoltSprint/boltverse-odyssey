@@ -1,0 +1,264 @@
+{
+ "biome": "ember-mesa",
+ "source": "imagine-to-3d/layout_fit.py",
+ "key": "/workspace/zb-bible-1008/key-city3.jpg",
+ "live": "/workspace/zb-preview-1008",
+ "stagingOnly": true,
+ "camera": {
+  "x": -51.115,
+  "z": 9.63,
+  "yaw": 78,
+  "pitch": -1.16,
+  "eye": 3.15,
+  "fovDeg": 58
+ },
+ "heightCal": 0.82,
+ "cameraNote": "key camera = the game's hero spawn position / pitch / eye (objects-t7 spawn) at the bible fovBase 58, heading 78 = the avenue heading (the key's avenue vanishes at the frame centre)",
+ "rules": {
+  "spacing": "centre distance >= r1 + r2 + 1.5*max(w1,w2) (v16)",
+  "avenue": "|lateral| >= 14.0 + 6.0 + r",
+  "sides": "50/50 per avenue side (side changes only as left/right swaps)",
+  "camerasClear": "35 m + r from key/hero/chase/street cameras",
+  "mesas": "|lateral| >= 110, >= 30 m from tower footprints, >= 70 m apart"
+ },
+ "checks": {
+  "sides": {
+   "left": 6,
+   "right": 6
+  },
+  "worstGapOverWidth": 1.503,
+  "spacingMin": 1.5,
+  "avenueClearMin": 20.0
+ },
+ "score": {
+  "before": {
+   "score": 1.1597,
+   "cityIoU": 0.4811,
+   "mesaVisibleIoU": 0.6136
+  },
+  "after": {
+   "score": 1.1697,
+   "cityIoU": 0.4901,
+   "mesaVisibleIoU": 0.6136
+  }
+ },
+ "towers": [
+  {
+   "id": "t0-m2",
+   "module": "m2",
+   "x": -35.877,
+   "z": -43.739,
+   "s": -26.0,
+   "lateral": -51.409,
+   "yaw": 32,
+   "scale": 1.12
+  },
+  {
+   "id": "t1-m4",
+   "module": "m4",
+   "x": 44.613,
+   "z": 46.355,
+   "s": 34.0,
+   "lateral": 52.978,
+   "yaw": 28,
+   "scale": 1.09
+  },
+  {
+   "id": "t2-m3",
+   "module": "m3",
+   "x": 58.81,
+   "z": -82.696,
+   "s": 74.718,
+   "lateral": -70.379,
+   "yaw": 48,
+   "scale": 1.12
+  },
+  {
+   "id": "t3-m6",
+   "module": "m6",
+   "x": 142.305,
+   "z": 60.101,
+   "s": 126.7,
+   "lateral": 86.164,
+   "yaw": 80,
+   "scale": 1.087
+  },
+  {
+   "id": "t4-m2",
+   "module": "m2",
+   "x": 150.171,
+   "z": -90.356,
+   "s": 165.676,
+   "lateral": -59.409,
+   "yaw": 44,
+   "scale": 1.12
+  },
+  {
+   "id": "t5-m3",
+   "module": "m3",
+   "x": 298.573,
+   "z": -18.049,
+   "s": 295.802,
+   "lateral": 41.304,
+   "yaw": -8,
+   "scale": 0.859
+  },
+  {
+   "id": "t6-m4",
+   "module": "m4",
+   "x": 233.796,
+   "z": -85.161,
+   "s": 246.394,
+   "lateral": -37.429,
+   "yaw": 48,
+   "scale": 1.12
+  },
+  {
+   "id": "t7-m6",
+   "module": "m6",
+   "x": 367.143,
+   "z": -32.329,
+   "s": 365.843,
+   "lateral": 41.193,
+   "yaw": 56,
+   "scale": 1.12
+  },
+  {
+   "id": "t8-m3",
+   "module": "m3",
+   "x": 337.626,
+   "z": -118.817,
+   "s": 354.952,
+   "lateral": -49.367,
+   "yaw": 32,
+   "scale": 1.12
+  },
+  {
+   "id": "t9-m2",
+   "module": "m2",
+   "x": 428.439,
+   "z": -45.997,
+   "s": 428.642,
+   "lateral": 40.21,
+   "yaw": 40,
+   "scale": 0.886
+  },
+  {
+   "id": "t10-m4",
+   "module": "m4",
+   "x": 429.001,
+   "z": -126.412,
+   "s": 445.91,
+   "lateral": -38.33,
+   "yaw": 48,
+   "scale": 1.12
+  },
+  {
+   "id": "t11-m6",
+   "module": "m6",
+   "x": 488.751,
+   "z": -62.967,
+   "s": 491.164,
+   "lateral": 35.799,
+   "yaw": 56,
+   "scale": 0.997
+  }
+ ],
+ "spire": {
+  "id": "spire",
+  "x": 97.258,
+  "z": 15.069,
+  "s": 92,
+  "lateral": 33.015,
+  "yaw": 82,
+  "scale": 1
+ },
+ "mesas": [
+  {
+   "id": "L-mid",
+   "s": 50.0,
+   "lat": -170,
+   "scale": 1.25,
+   "mirror": false,
+   "yaw": 180
+  },
+  {
+   "id": "L-mid2",
+   "s": 175.0,
+   "lat": -190,
+   "scale": 1.05,
+   "mirror": true,
+   "yaw": 270
+  },
+  {
+   "id": "L-far",
+   "s": 290.0,
+   "lat": -300,
+   "scale": 1.6,
+   "mirror": true,
+   "face": true
+  },
+  {
+   "id": "R-butte",
+   "s": 270.0,
+   "lat": 340,
+   "scale": 1.7,
+   "mirror": false,
+   "face": true
+  },
+  {
+   "id": "R-mid",
+   "s": 110.0,
+   "lat": 215.0,
+   "scale": 1.35,
+   "mirror": true,
+   "yaw": 200.0
+  },
+  {
+   "id": "R-band",
+   "s": 600.0,
+   "lat": 320.0,
+   "scale": 2.0,
+   "mirror": false,
+   "yaw": 25.0
+  },
+  {
+   "id": "B-left",
+   "s": -290.0,
+   "lat": -175.0,
+   "scale": 1.7,
+   "mirror": false,
+   "yaw": 140.0
+  },
+  {
+   "id": "B-right",
+   "s": -320.0,
+   "lat": 185.0,
+   "scale": 1.5,
+   "mirror": true,
+   "yaw": 300.0
+  },
+  {
+   "id": "B-far",
+   "s": -520.0,
+   "lat": 10.0,
+   "scale": 2.2,
+   "mirror": false,
+   "yaw": 80.0
+  }
+ ],
+ "wreck": {
+  "status": "no-model",
+  "note": "no wreck object exists in the game (objects-t7 / main / mesas-v11); key: large crashed ship, frame x 0.58-1.0, y 0.47-0.72 (sand right of the avenue, ~60-120 m). Needs a model: request, not faked."
+ },
+ "arch": {
+  "status": "no-model",
+  "note": "no rock arch exists in the game; key: arch spanning frame x 0.66-0.85, y 0.38-0.53, behind the spire base (~250-400 m). Needs a model: request, not faked."
+ },
+ "log": [
+  "r0 t4-m2 -> s 166 lat -59 yaw 44: 1.1684",
+  "r0 t6-m4 -> s 246 lat -37 yaw 48: 1.1690",
+  "r0 t5-m3 -> s 296 lat 41 yaw 4: 1.1695",
+  "r1 t5-m3 -> s 296 lat 41 yaw -8: 1.1697"
+ ]
+}

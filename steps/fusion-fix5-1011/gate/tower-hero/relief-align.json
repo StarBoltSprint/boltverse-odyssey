@@ -1,0 +1,42 @@
+[
+ {
+  "name": "hero",
+  "ok": false,
+  "overlap": 0.0948,
+  "precisionRelief": 0.5416,
+  "precisionTexture": 0.0948,
+  "reliefEdges": 6423,
+  "textureEdges": 30245,
+  "tolPx": 2
+ },
+ {
+  "name": "30m",
+  "ok": false,
+  "overlap": 0.0948,
+  "precisionRelief": 0.5416,
+  "precisionTexture": 0.0948,
+  "reliefEdges": 6423,
+  "textureEdges": 30245,
+  "tolPx": 2
+ },
+ {
+  "name": "8m",
+  "ok": false,
+  "overlap": 0.1385,
+  "precisionRelief": 0.6851,
+  "precisionTexture": 0.1385,
+  "reliefEdges": 9275,
+  "textureEdges": 30161,
+  "tolPx": 2
+ },
+ {
+  "name": "side",
+  "ok": false,
+  "overlap": 0.2116,
+  "precisionRelief": 0.4597,
+  "precisionTexture": 0.2116,
+  "reliefEdges": 18418,
+  "textureEdges": 30206,
+  "tolPx": 2
+ }
+]

@@ -317,6 +317,27 @@ def _prep_dav2(rgb_u8, size=518):
     return t, (h, w)
 
 
+def depth_dav2_rgb(rgb_u8, size=518):
+    """Relative depth for an RGB uint8 array. Larger is nearer. Cached by the pixel bytes."""
+    digest = hashlib.sha256(np.ascontiguousarray(rgb_u8).tobytes()).hexdigest()
+    folder = os.path.join(CACHE, digest[:2], digest)
+    os.makedirs(folder, exist_ok=True)
+    path = os.path.join(folder, f"depth-dav2-large-rgb-s{size}.npy")
+    if os.path.isfile(path):
+        return np.load(path)
+    import torch
+    model = load_dav2_large()
+    tensor, (h, w) = _prep_dav2(np.asarray(rgb_u8), size)
+    with torch.inference_mode():
+        pred = model(tensor)
+    pred = torch.nn.functional.interpolate(pred[:, None], (h, w), mode="bilinear", align_corners=True)[0, 0]
+    arr = pred.cpu().numpy().astype(np.float32)
+    tmp = path + ".writing.npy"
+    np.save(tmp, arr)
+    os.replace(tmp, path)
+    return arr
+
+
 def depth_dav2(image_path, size=518):
     def compute():
         import torch
@@ -346,23 +367,39 @@ def load_moge2():
     return model
 
 
-def depth_moge(image_path, side=256):
+def depth_moge(image_path, side=256, fov_x=None, resolution_level=0, full=False):
+    """MoGe-2 metric camera-Z in metres. full=True resamples to the source pixel size."""
     def compute():
         import torch
         from PIL import Image
         model = load_moge2()
         im = Image.open(image_path).convert("RGB")
+        w0, h0 = im.size
         im.thumbnail((side, side))
         rgb = np.asarray(im, np.float32) / 255.0
         tensor = torch.from_numpy(rgb.transpose(2, 0, 1).copy())
         with torch.inference_mode():
-            out = model.infer(tensor, resolution_level=0, use_fp16=False, force_projection=False, apply_mask=False)
+            out = model.infer(
+                tensor,
+                resolution_level=resolution_level,
+                use_fp16=False,
+                force_projection=False,
+                apply_mask=False,
+                fov_x=fov_x,
+            )
         depth = out["depth"]
         if depth.ndim == 3:
             depth = depth[0]
-        return depth.detach().cpu().numpy().astype(np.float32)
+        arr = depth.detach().cpu().numpy().astype(np.float32)
+        if full and arr.shape != (h0, w0):
+            arr = np.asarray(
+                Image.fromarray(arr).resize((w0, h0), Image.Resampling.BILINEAR),
+                np.float32,
+            )
+        return arr
 
-    return cached_array("depth", "moge-2", image_path, f"side{side}", compute)
+    tag = f"side{side}-lv{resolution_level}-fov{fov_x}-full{int(full)}"
+    return cached_array("depth", "moge-2", image_path, tag, compute)
 
 
 def load_default_depth():

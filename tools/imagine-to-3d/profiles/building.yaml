@@ -48,9 +48,27 @@ geometry:
   depthRatio: 0.55
   hardEdges: true
   relief:
-    maxM: 0.3
+    mode: hard-surface          # quantise DA-V2 into flat planes (depth_relief.quantise_hard). Mesas stay on relief().
+    maxM: 0.3                   # object-gate shallow cap stays; the quantise uses bay 0.55/0.80/1.05 and field 0.36
     minStdFrac: 0.08
     gradientMax: 0.2
+    bayMin: 0.35
+    bayMax: 1.15
+    fieldLevel: 0.36
+    bayLevels: [0.55, 0.80, 1.05]
+    minFeatureM: 0.40
+    snapTolPx: 8
+    maxPlanes: 6
+    chromeM: 0.02
+perf:
+  # Live tower shader + merged LOD0 draws. Rock stays on the 900-instr / 2-draw default.
+  drawCallsMax: 12
+  texGpuMiBMax: 64
+  fragInstrMax: 24000
+  fragFetchSitesMax: 80
+  fragLoopsMax: 12
+  startDownloadMBMax: 8
+  lod0ResidentMBMax: 12
   bevelM: 0.3
   notes: extrude the front silhouette, thickness from the side view, booleans for visible holes (q15); never a visual hull
 texel:
@@ -86,3 +104,14 @@ thresholds:
   depthConsistencyMedian: 0.08
   depthConsistencyP90: 0.12
   viewRetries: 3
+vision:
+  silhouetteIoU: 0.90
+  keyIoU: 0.87
+  keyDeltaE: 5
+  reliefAlignMin: 0.70
+  edgeRingMin: 0.55
+  nonObjectTexelMax: 0.02
+  phone:
+    drawCallsMax: 3
+    texGpuMiBMax: 16
+    trisMax: 60000

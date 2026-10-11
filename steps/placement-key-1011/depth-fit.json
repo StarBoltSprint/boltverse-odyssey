@@ -1,0 +1,11 @@
+{
+ "A": 27.91618507062128,
+ "anchorZ": 4.881248449461316,
+ "anchorD": 5.719066619873047,
+ "checkZ": 9.503697687595945,
+ "checkPred": 13.109932914311196,
+ "checkRel": 0.3794560123079298,
+ "planeY": 6.809591927440971,
+ "model": "depth-anything-v2-small",
+ "moge": "not installed"
+}

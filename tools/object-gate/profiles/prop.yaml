@@ -7,3 +7,6 @@ checklistTemplate:
   - {id: volume, feature: "Shape matches the key crop", captures: [close]}
   - {id: materials, feature: "Material and colour as the key", captures: [close]}
   - {id: base, feature: "Seated flush, no float, no tilted wedge", captures: [low-portrait]}
+keyCompare:   # key-compare.mjs: debris, broken rail, small props (placement is loose: shape-only IoU is reported beside)
+  gate: {iouMin: 0.25, deLitMax: 10, deShadowMax: 10, structureMin: 0.15}
+  target: {iouTarget: 0.9, deLitTarget: 3, deShadowTarget: 4, structureTarget: 0.85}

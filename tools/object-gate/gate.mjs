@@ -241,7 +241,8 @@ export const CHECK_IDS = [
   [/^repetition \(visible\): identical/, "repetition.visible-radius"], [/^repetition \(visible\): neighbours/, "repetition.visible-neighbours"], [/^repetition \(UV\)/, "repetition.uv"], [/^UV stretch/, "texel.stretch"],
   [/^scene self-report/, "texel.self-report"], [/^repetition \(capture/, "repetition.captures"], [/^approach morph/, "morph"],
   [/^shadow light/, "shadow.light"], [/^shadow cast/, "shadow.cast"], [/^shadow world-fixed/, "shadow.world-fixed"], [/^shadow colour/, "shadow.colour"],
-  [/^grounding/, "grounding"], [/^mesh sealed/, "geometry.sealed"], [/^facade relief/, "geometry.relief"], [/^proportions/, "geometry.proportions"],
+  [/^grounding/, "grounding"], [/^mesh sealed/, "geometry.sealed"], [/^facade relief/, "geometry.relief"], [/^facade crisp/, "geometry.crisp"], [/^proportions/, "geometry.proportions"],
+  [/^relief-texture alignment/, "relief.align"],
   [/^effects take/, "effects.imagine-texture"], [/^effects: no typed/, "effects.no-colour-literals"],
   [/^key checklist written/, "checklist.written"], [/^key crop present/, "checklist.key-crop"], [/^key checklist: every/, "checklist.verified"], [/^colour vs key/, "checklist.colour"],
   [/^checklist camera framed/, "checklist.camera"],
@@ -402,7 +403,8 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
     for (const t of usedTex) {
       const r = roleOf(spec, t) || {};
       if (cfg.textures.trilinear && (t.kind === "image" || (t.kind === "array" && r.role && r.role.startsWith("plate"))) && !(t.mipmaps && t.minFilter === 1008)) bad.push(`${basename(t.url || t.slots[0])}: mipmaps ${t.mipmaps} minFilter ${t.minFilter}`);
-      if (cfg.textures.anisotropyMax && t.anisotropy < tx.anisoMax) bad.push(`${basename(t.url || t.slots[0])}: anisotropy ${t.anisotropy} < max ${tx.anisoMax}`);
+      // A data LUT is sampled with texelFetch. Anisotropy needs mipmaps and would blend the indices.
+      if (cfg.textures.anisotropyMax && t.kind !== "data" && t.kind !== "depth" && t.anisotropy < tx.anisoMax) bad.push(`${basename(t.url || t.slots[0])}: anisotropy ${t.anisotropy} < max ${tx.anisoMax}`);
       if (t.url && t.url.includes("#resized")) bad.push(`${basename(t.url)}: decoded with a resize/crop`);
       if (r.role === "plate" && t.kind === "image" && t.fileW && (t.w !== t.fileW || t.h !== t.fileH)) bad.push(`${basename(t.url)}: GPU ${t.w}x${t.h} != file ${t.fileW}x${t.fileH}`);
     }
@@ -563,7 +565,9 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
           const H = window.__ogHost; H.setPose({ x, z, look: [b.center[0], b.min[1] + Math.min(40, d * 0.35 + 8), b.center[2]] });
           await window.__og.frames(2);
           const gy = H.groundHeight(x, z);
-          return window.__og.mask(s, [x, gy + 2, z], [b.center[0], b.min[1] + Math.min(b.height * 0.5, 40, d * 0.35 + 8), b.center[2]], 135, 240, 58);
+          const look = [b.center[0], b.min[1] + Math.min(b.height * 0.5, 40, d * 0.35 + 8), b.center[2]];
+          const cam = [x, gy + 2, z];
+          return window.__og.maskInstance ? window.__og.maskInstance(s, b.id, cam, look, 135, 240, 58) : window.__og.mask(s, cam, look, 135, 240, 58);
         }, [sel, x, z, b, d]);
         if (prev) ious.push({ d: +d.toFixed(1), iou: iou(m, prev) });
         prev = m; strip.push(m);
@@ -636,6 +640,17 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
       row(o, `facade relief >= ${G.minReliefM} m`, flat.length === 0, geo.map((g) => `${g.usedBy} ${Object.entries(g.reliefM).map(([k, v]) => k + " " + v).join(" ")}`).join("; "),
         ["Model the relief (fins, ledges, recessed bays, cornices, strata) in the geometry; a plate on a flat face reads as a picture."]);
     }
+    if (G.minCrisp != null) {
+      const lo = G.minOffsetPlanes ?? 2, hi = G.maxOffsetPlanes ?? 12;
+      const bad = geo.filter((g) => {
+        const dirs = Object.values(g.crisp || {});
+        const ok = dirs.filter((d) => d && d.axisFrac >= G.minCrisp && d.planes >= lo && d.planes <= hi);
+        return ok.length < (G.minReliefFaces || 1);
+      });
+      row(o, `facade crispness (axis-aligned >= ${G.minCrisp}, ${lo}-${hi} offset planes)`, bad.length === 0,
+        geo.map((g) => `${g.usedBy} ${Object.entries(g.crisp || {}).map(([k, d]) => k + " axis " + (d && d.axisFrac) + " planes " + (d && d.planes)).join(" ")}`).join("; ") || "no crisp measure",
+        ["Quantise the facade into a few flat planes with vertical steps. One plane is a flat slab; many offset bins is a blobby rock."]);
+    }
     if (spec.proportions) {
       const P = spec.proportions; const bad = [];
       for (const g of geo) for (const s of g.sizes) {
@@ -643,6 +658,42 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
         for (const [k, [lo, hi]] of Object.entries(P)) if (r[k] < lo || r[k] > hi) bad.push(`${s.inst} ${k} ${fmt(r[k], 2)} not in ${lo}-${hi}`);
       }
       row(o, "proportions vs spec", bad.length === 0, bad.slice(0, 6).join("; ") || `${Object.keys(P).join(", ")} in range on every copy`, ["Scale the solid in Blender to the spec ratios (never by spending more images)."]);
+    }
+    const hasShade = await page.evaluate(() => typeof window.__setShade === "function");
+    if (!hasShade) {
+      row(o, "relief-texture alignment", false, "no shade switch", ["Expose window.__setShade('relief'|'albedo'|'lit') and render relief and albedo from the same cameras."]);
+    } else {
+      const fx = hero.front; const fl = Math.hypot(fx[0], fx[1]) || 1; const f0 = fx[0] / fl, f1 = fx[1] / fl;
+      const poses = {
+        hero: { d: Math.max(40, hero.halfD + 30), lat: 0 },
+        "30m": { d: 30 + hero.halfD, lat: 0 },
+        "8m": { d: 8 + Math.max(2, hero.halfW * 0.2), lat: hero.halfW * 0.25 },
+        side: { d: 20 + hero.halfD, lat: hero.halfW + 10 },
+      };
+      const scores = [];
+      for (const [name, P] of Object.entries(poses)) {
+        const x = hero.center[0] + f0 * P.d - f1 * P.lat;
+        const z = hero.center[2] + f1 * P.d + f0 * P.lat;
+        const ty = hero.min[1] + Math.min(hero.height * 0.45, 50);
+        await page.evaluate(([x, z, look]) => window.__ogHost.setPose({ x, z, look }), [x, z, [hero.center[0], ty, hero.center[2]]]);
+        await settle(page, 300);
+        const rp = join(odir, `relief-${name}.png`);
+        const ap = join(odir, `albedo-${name}.png`);
+        await page.evaluate(() => window.__setShade("relief"));
+        await settle(page, 200);
+        await page.screenshot({ path: rp, timeout: 240000 });
+        await page.evaluate(() => window.__setShade("albedo"));
+        await settle(page, 200);
+        await page.screenshot({ path: ap, timeout: 240000 });
+        const sc = py("relief_align", { relief: rp, albedo: ap, overlay: join(odir, `align-${name}.jpg`) });
+        scores.push({ name, ...sc });
+      }
+      await page.evaluate(() => window.__setShade("lit"));
+      writeFileSync(join(odir, "relief-align.json"), JSON.stringify(scores, null, 1));
+      const badA = scores.filter((s) => !s.ok);
+      row(o, "relief-texture alignment", badA.length === 0 && scores.length >= 4,
+        scores.map((s) => `${s.name} ${s.overlap ?? s.reason}`).join("; "),
+        ["A relief edge must lie on a painted edge. Move the feature box in the vision JSON. Do not invent bars."]);
     }
   }
 

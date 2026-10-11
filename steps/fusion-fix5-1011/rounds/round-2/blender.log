@@ -1,0 +1,15 @@
+00:00.100  system.path      | WARNING Could not get a list of mounted file-systems
+INFO Draco is available, use library at /home/box/apps/blender-5.2.1-linux-x64/lib/libbf_intern_draco_bridge.so
+INFO MeshOptimizer is available, use library at /home/box/apps/blender-5.2.1-linux-x64/lib/libbf_intern_meshopt_bridge.so
+13:51:56 | INFO: Starting glTF 2.0 export
+13:51:56 | INFO: Extracting primitive: tower-hero
+13:51:56 | INFO: Primitives created: 1
+13:51:56 | INFO: Finished glTF 2.0 export in 0.5616624355316162 s
+
+MESH {"verts": 132344, "faces": 264684, "watertight": true, "blender_boundary_edges": 0}
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:12:34)
+
+Blender quit
+
+/workspace/grokcli/wt/tower-vision-1010/tools/imagine-to-3d/fusion5_blender.py:101: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  mat.use_nodes = True

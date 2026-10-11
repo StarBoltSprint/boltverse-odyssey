@@ -1,0 +1,218 @@
+{
+ "job": "placement",
+ "verdict": "FAIL",
+ "before_placedWeighted": 0.3763,
+ "camera_only_software": 0.1714,
+ "after_search_software": 0.3007,
+ "perObject": [
+  {
+   "id": "B-far",
+   "kind": "mesa",
+   "iou": 0.166,
+   "pixels": 19218,
+   "alignment": 0.0,
+   "chamfer_px": 1468.605
+  },
+  {
+   "id": "spire",
+   "kind": "spire",
+   "iou": 0.2897,
+   "pixels": 20570,
+   "alignment": 0.0,
+   "chamfer_px": 1468.605
+  },
+  {
+   "id": "L-mid",
+   "kind": "mesa",
+   "iou": 0.2846,
+   "pixels": 36821,
+   "alignment": 0.0,
+   "chamfer_px": 1468.605
+  },
+  {
+   "id": "t10-m4",
+   "kind": "tower",
+   "iou": 0.4391,
+   "pixels": 30674,
+   "alignment": 0.0,
+   "chamfer_px": 1468.605
+  },
+  {
+   "id": "t6-m4",
+   "kind": "tower",
+   "iou": 0.2418,
+   "pixels": 22193,
+   "alignment": 0.0,
+   "chamfer_px": 1468.605
+  },
+  {
+   "id": "t11-m6",
+   "kind": "tower",
+   "iou": 0.2704,
+   "pixels": 21307,
+   "alignment": 0.0,
+   "chamfer_px": 1468.605
+  },
+  {
+   "id": "t0-m2",
+   "kind": "tower",
+   "iou": 0.4722,
+   "pixels": 12481,
+   "alignment": 0.0,
+   "chamfer_px": 1468.605
+  },
+  {
+   "id": "t5-m3",
+   "kind": "tower",
+   "iou": 0.2812,
+   "pixels": 3653,
+   "alignment": 0.0,
+   "chamfer_px": 1468.605
+  },
+  {
+   "id": "t3-m6",
+   "kind": "tower",
+   "iou": 0.2319,
+   "pixels": 7305,
+   "alignment": 0.0,
+   "chamfer_px": 1468.605
+  },
+  {
+   "id": "t2-m3",
+   "kind": "tower",
+   "iou": 0.0445,
+   "pixels": 1787,
+   "alignment": 0.0,
+   "chamfer_px": 1468.605
+  }
+ ],
+ "inversions": 15,
+ "floors": {
+  "ahead": {
+   "tower": 18.0,
+   "spire": 55.0,
+   "mesa": 90.0
+  },
+  "lat_floor": {
+   "tower": 18.0,
+   "spire": 12.0,
+   "mesa": 80.0
+  },
+  "lat_push": {
+   "tower": 22.0,
+   "spire": 16.0,
+   "mesa": 110.0
+  }
+ },
+ "camera": {
+  "fov_y_deg": 88.0,
+  "pitch_deg": -7.674,
+  "roll_deg": 0.173,
+  "yaw_deg_image": 0.0,
+  "yaw_deg_world": 78,
+  "height_m": 1.7665526355903505,
+  "eye_m": 1.767,
+  "fallback": false,
+  "lines": 1399
+ },
+ "trials": 1188,
+ "timing_s": {
+  "camera_s": 6.53,
+  "search_r0_s": 0.117,
+  "search_r1_s": 0.463,
+  "search_r2_s": 0.791
+ },
+ "seconds_total": 65.891,
+ "vision_cost_usd": 0.0,
+ "shot": "staging shot on 127.0.0.1:8997",
+ "why": "software placed IoU under 0.75 or depth order inverted",
+ "note": "Decision IoU is tower, spire, and mesa. Wreck and arch stay TODO. The number is the cheap box raster, then a staging shot when the server answers.",
+ "shot_camera": {
+  "x": -51.115,
+  "y": 8.576144563031322,
+  "z": 9.63,
+  "yaw": 78,
+  "pitch": -7.674048935340019
+ },
+ "software_iou_at_shot_camera": 0.2705,
+ "software_inversions_at_shot_camera": 15,
+ "framebuffer_placedWeighted": 0.3226,
+ "framebuffer_skyTop": 0.2675,
+ "framebuffer_depthOrder": [
+  {
+   "id": "slab-l",
+   "kind": "slab",
+   "bottom": 713
+  },
+  {
+   "id": "slab-r",
+   "kind": "slab",
+   "bottom": 699
+  },
+  {
+   "id": "rail",
+   "kind": "rail",
+   "bottom": 620
+  },
+  {
+   "id": "wreck",
+   "kind": "wreck",
+   "bottom": 512
+  },
+  {
+   "id": "spire",
+   "kind": "spire",
+   "bottom": 418
+  },
+  {
+   "id": "mesa-left",
+   "kind": "mesa",
+   "bottom": 415
+  },
+  {
+   "id": "tower-l3",
+   "kind": "tower",
+   "bottom": 404
+  },
+  {
+   "id": "tower-mid",
+   "kind": "tower",
+   "bottom": 398
+  },
+  {
+   "id": "tower-l2",
+   "kind": "tower",
+   "bottom": 389
+  },
+  {
+   "id": "mesa-right",
+   "kind": "mesa",
+   "bottom": 379
+  },
+  {
+   "id": "arch",
+   "kind": "arch",
+   "bottom": 379
+  },
+  {
+   "id": "tower-r2",
+   "kind": "tower",
+   "bottom": 366
+  },
+  {
+   "id": "tower-r1",
+   "kind": "tower",
+   "bottom": 360
+  },
+  {
+   "id": "tower-l1",
+   "kind": "tower",
+   "bottom": 360
+  },
+  {
+   "id": "tower-l4",
+   "kind": "tower",
+   "bottom": 346
+  }
+ ]
+}

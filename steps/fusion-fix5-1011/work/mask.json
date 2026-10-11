@@ -1,0 +1,31 @@
+{
+ "leak": {
+  "0": 0,
+  "1": 0
+ },
+ "leak_ok": true,
+ "iou": {
+  "vs_old_mask": 0.6831,
+  "vs_fusion_reference": 0.6077,
+  "vs_sam_hero": 0.9358
+ },
+ "sam": {
+  "task": "sam",
+  "which": "small",
+  "box": [
+   328.0,
+   54.0,
+   605.0,
+   494.0
+  ],
+  "shape": [
+   720,
+   1280
+  ],
+  "cache_hit": false,
+  "model_seconds": 4.2777,
+  "wall_seconds": 4.2784,
+  "finite": 61170
+ },
+ "pixels": 57240
+}

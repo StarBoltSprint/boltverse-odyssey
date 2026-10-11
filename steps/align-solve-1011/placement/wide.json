@@ -1,0 +1,68 @@
+{
+ "ok": true,
+ "dpr": 1,
+ "size": [
+  1280,
+  720
+ ],
+ "cam": {
+  "x": -51.115,
+  "y": 7.439713975931692,
+  "z": 9.63,
+  "yaw": 78,
+  "pitch": 0
+ },
+ "drawCalls": 20,
+ "triangles": 671624,
+ "geometries": 21,
+ "textures": 37,
+ "passes": {
+  "main": {
+   "calls": 20,
+   "tris": 671624
+  },
+  "both": {
+   "calls": 20,
+   "tris": 671624
+  },
+  "shadow": {
+   "calls": 0,
+   "tris": 0
+  }
+ },
+ "visible": {
+  "Mesh": 12,
+  "sky1-ring": 1,
+  "sky1-sprites": 1,
+  "sky1-godrays": 1,
+  "sand-drifts": 1,
+  "air-sand-veils": 1,
+  "avenue-slabs": 1,
+  "mag-rail": 1,
+  "spire-lod0": 1,
+  "spire-emit-lod0": 1,
+  "spire-beam": 1,
+  "inst-m2-lod0-AB": 1,
+  "inst-m3-lod0-AB": 1,
+  "inst-m4-lod0-AB": 1,
+  "inst-m6-lod0-AB": 1,
+  "mesa-L-mid-lod0": 1,
+  "mesa-L-mid2-lod0": 1,
+  "mesa-L-mid2-lod1": 1,
+  "mesa-L-far-lod0": 1,
+  "mesa-L-far-lod1": 1,
+  "mesa-R-butte-lod1": 1,
+  "mesa-R-mid-lod1": 1,
+  "mesa-R-band-lod1": 1,
+  "mesa-B-left-lod1": 1,
+  "mesa-B-right-lod1": 1,
+  "mesa-B-far-lod0": 1,
+  "mesa-drifts": 1
+ },
+ "loadingText": "Chargement… 20/20",
+ "loadingShot": "/workspace/grokcli/wt/tower-vision-1010/steps/align-solve-1011/placement/wide-loading.png",
+ "logs": [
+  "Failed to load resource: the server responded with a status of 404 (File not found)"
+ ],
+ "shot": "/workspace/grokcli/wt/tower-vision-1010/steps/align-solve-1011/placement/wide.png"
+}

@@ -1,0 +1,10 @@
+{
+ "edges": 397026,
+ "open_or_nonmanifold": 0,
+ "watertight": true,
+ "blender_validate_changed": false,
+ "blender_boundary_edges": 0,
+ "blender_nonmanifold_edges": 0,
+ "verts": 132344,
+ "faces": 264684
+}

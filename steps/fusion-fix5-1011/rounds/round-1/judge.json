@@ -1,0 +1,74 @@
+{
+ "round": 1,
+ "cheap": {
+  "ok": false,
+  "overlap": 0.619,
+  "precisionRelief": 0.7525,
+  "precisionTexture": 0.619,
+  "reliefEdges": 11287,
+  "textureEdges": 13668,
+  "tolPx": 2
+ },
+ "clamp": {
+  "px": 27623,
+  "p90_before": 0.748771511918969,
+  "scale": 1.0,
+  "strong_px": 13812,
+  "depth_p50": 0.3812741428092148,
+  "depth_p90": 0.748771511918969
+ },
+ "levels": [
+  0.386,
+  0.493,
+  0.621,
+  0.764
+ ],
+ "features": [
+  {
+   "id": "glass",
+   "px": 8059,
+   "depth_m": 0.621
+  },
+  {
+   "id": "chrome",
+   "px": 4130,
+   "depth_m": 0.0
+  },
+  {
+   "id": "ladder",
+   "px": 0,
+   "depth_m": 0.0
+  },
+  {
+   "id": "damage",
+   "px": 5735,
+   "depth_m": 0.0
+  },
+  {
+   "id": "cables",
+   "px": 13202,
+   "depth_m": 0.0
+  },
+  {
+   "id": "ledges",
+   "px": 2905,
+   "depth_m": 0.0
+  }
+ ],
+ "state": {
+  "relief_scale": 1.2,
+  "width_scale": 1.0,
+  "uv_dx": 0.0,
+  "m_per_px": 0.5333333333333333,
+  "depth_m": 32.0
+ },
+ "spacing": {
+  "rows": 233,
+  "cols": 284,
+  "fine_step_m": 0.22,
+  "lower_60m_step_m": 0.22,
+  "m_per_px": 0.5333333333333333
+ },
+ "built": false,
+ "edit": "relief_scale up; overlay under 0.70"
+}

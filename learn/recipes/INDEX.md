@@ -6,6 +6,14 @@ Filled so far: take 10d hero ship and slab rock (below). The methods below are t
 
 Skills: [`.grok/skills/`](../../.grok/skills/). Failures already paid for: [`../failures.md`](../failures.md). Image geometry (horizon, slices, turnaround, sun, scale, texel density) is [`../geometry.md`](../geometry.md). That page is a lock, not a recipe. No cook was stored for it.
 
+## align
+
+| Recipe | Commit | QC |
+| --- | --- | --- |
+| [align-solve-metrics.md](align-solve-metrics.md) — shared render-vs-key score, vanishing-point camera, CMA-ES | this step | synthetic FOV ±2° and pitch ±1°; both key jobs still FAIL (`steps/align-solve-1011/numbers.json`) |
+| [week2-constrained-focal.md](week2-constrained-focal.md) — focal grid when no VP pair is orthogonal | week2-1011 | FOV 88 fallback false; box IoU vs three.js 1.0; facade min alignment 0.704; placement framebuffer 0.3226 FAIL |
+| [scene-strict-1011.md](scene-strict-1011.md) — strict score plus relight-is-not-a-side-plate | scene-strict-1011 | strict selftest PASS; week-2 views strict 0.000–0.307 FAIL; placement IoU 0.2909 FAIL |
+
 ## sky
 
 | Recipe | Commit | QC |
@@ -23,6 +31,12 @@ Chained slices, not one wide file: [`biome/docs/64-imagine-build-limits.md`](../
 | [zone-a-relief-mesh.md](zone-a-relief-mesh.md) — irregular relief mesh, eight still slots, per-image depth, low cards (prompt not stored in the tracked file) | `6afb2a2` | seam ratio 0.000; walk mag_max 0.912; proof mag 0.910 |
 
 World-locked top-down stills, about **0.90 m**, **≥ 4** variants: [`biome/docs/61-free-clearing-walk.md`](../../biome/docs/61-free-clearing-walk.md), [`biome/docs/62-open-world-zones-process.md`](../../biome/docs/62-open-world-zones-process.md). This step used **1.45 m**. The phone mag row still passed. Gate the set together: `python3 tools/assetcheck/check.py` kind `tile` (wrap seam, exposure, magnification ≤ 1 at 720×1600). Placement is `python3 tools/layout/layout.py generate` then `layout.py check`. The layout tool does not draw the tile.
+
+## other
+
+| Recipe | Commit | QC |
+| --- | --- | --- |
+| [fusion5-gltf-y-up.md](fusion5-gltf-y-up.md) — inverse of Blender's glTF Y-up conversion so a three.js camera-space mesh stays upright | this step | crispness pass after the inverse; tower gate still FAIL |
 
 ## rock
 
@@ -76,10 +90,15 @@ Stone doors and gothic halls are rejected menu backgrounds (2026-10-04/05). Echo
 
 `python3 tools/wfc-path/hang.py --spec tools/wfc-path/cook/spec.json --out packs/corridor-ab`. Placement only. A corridor video and a zone B pack are still uncooked.
 
-## terrain
+## measure
 
 | Recipe | Commit | QC |
 | --- | --- | --- |
+| [grok-native-proposal-pick.md](grok-native-proposal-pick.md) — numbered seg boxes, vision returns an id (no new Imagine image) | `e7116fe1` | pick id 2; fusion bbox IoU 0.4169; selftest PASS |
+
+The mask after that pick is not a single slab. Failure: `learn/failures.md` 2026-10-11.
+## terrain
+
 | [terrain-key2-skyline.md](terrain-key2-skyline.md) — colour skyline heightfield, MoGe-2 default, no Imagine prompt | `45e55fe7` | silhouette 0.8481; repetition 0.1499; slope 6.269°; SAM2 silhouette 0.5486 not shipped |
 
 ## cutout

@@ -11,7 +11,7 @@ export default {
   liveDir: PREVIEW_DIR,
   // capture pages: no HUD, fixed quality, eye 1.6 m (phone held by a standing player)
   captureQuery: { hud: "0", lockq: "1", eye: "1.6", grain: "0" },
-  readyExpr: "window.__ready === true && !!window.__renderer && !!window.__zbField",
+  readyExpr: "window.__ready === true && !!window.__renderer && !!window.__zbField && (location.search.indexOf('visionKey') < 0 || !!window.__visionTower)",
   readyTimeoutMs: 300000,
   hud: { selector: "#tag" },
   // Fx (particles, sand veils, sky sprites) are hidden for object captures and shown for the effects check.

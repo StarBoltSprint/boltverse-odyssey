@@ -1,0 +1,132 @@
+{
+ "job": "facade",
+ "verdict": "FAIL",
+ "bar": 0.7,
+ "before": {
+  "key": 0.3342,
+  "hero": 0.3727,
+  "30m": 0.3635,
+  "8m": 0.0,
+  "side": 0.0
+ },
+ "camera_only": {
+  "key": 0.8656,
+  "hero": 0.8973,
+  "30m": 0.9602,
+  "8m": 0.7966,
+  "side": 0.906
+ },
+ "after_search": {
+  "key": 0.8342,
+  "hero": 0.8669,
+  "30m": 0.8485,
+  "8m": 0.7933,
+  "side": 0.8156
+ },
+ "pixels": {
+  "key": 3115,
+  "hero": 2569,
+  "30m": 2287,
+  "8m": 1974,
+  "side": 1072
+ },
+ "contains_tower": {
+  "key": true,
+  "hero": true,
+  "30m": true,
+  "8m": true,
+  "side": true
+ },
+ "view_distance_m": {
+  "key": 87.97,
+  "hero": 89.73,
+  "30m": 87.97,
+  "8m": 125.62,
+  "side": 95.01
+ },
+ "camera": {
+  "fov_y_deg": 117.002,
+  "pitch_deg": -30.369,
+  "roll_deg": 0.0,
+  "yaw_deg": -74.385,
+  "height_m": null,
+  "fallback": false,
+  "lines": 1320,
+  "vanishing_points": 3
+ },
+ "best_x": {
+  "yaw_extra": -11.802,
+  "scale": 1.047,
+  "relief_scale": 0.506,
+  "uv_dx": -5.781,
+  "uv_dy": 17.546
+ },
+ "relief_axes_m": {
+  "+x": 0.0,
+  "-x": 0.0,
+  "+z": 0.0,
+  "-z": 2.081
+ },
+ "float_m_local": 0.0,
+ "float_note": "Render-frame base is seated at Y=0. The old 74 m figure is the staged world instance. This step did not remeasure that browser row.",
+ "trials": 48,
+ "search_rounds": [
+  {
+   "x": [
+    -3.0715202095617755,
+    1.1429589833312142,
+    0.5073407083727071,
+    -5.788827821441,
+    3.308065605808018
+   ],
+   "loss": 0.32013699999999995,
+   "evals": 16,
+   "seconds": 9.643,
+   "solver": "cmaes",
+   "seed": 0
+  },
+  {
+   "x": [
+    -11.802488067022969,
+    1.0470697722761475,
+    0.5055945045759236,
+    -5.781213260130041,
+    17.545603149673745
+   ],
+   "loss": 0.3097445,
+   "evals": 16,
+   "seconds": 10.464,
+   "solver": "cmaes",
+   "seed": 1
+  },
+  {
+   "x": [
+    -9.78623435083401,
+    1.0844439514113495,
+    0.5842145764578567,
+    16.500855207786067,
+    -9.983675399777816
+   ],
+   "loss": 0.3148966875,
+   "evals": 16,
+   "seconds": 10.304,
+   "solver": "cmaes",
+   "seed": 2
+  }
+ ],
+ "timing_s": {
+  "camera_s": 4.529,
+  "mesh_load_s": 0.302,
+  "camera_only_s": 2.237,
+  "search_r0_s": 10.01,
+  "search_r1_s": 10.465,
+  "search_r2_s": 10.304,
+  "final_s": 4.796
+ },
+ "seconds_total": 44.228,
+ "vision_cost_usd": 0.0,
+ "dataset_exported": false,
+ "gate5": "not re-run: the blocking software number is the shared alignment metric on these frames",
+ "phone_budget": "unchanged from fusion-fix5 round 2 (264684 tris, texMB 9.38, passed)",
+ "why": "alignment or relief axes missed 0.70 / 0.3 m"
+}

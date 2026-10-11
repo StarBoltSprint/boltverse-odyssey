@@ -29,6 +29,8 @@ or point `OG_PLAYWRIGHT=/path/to/playwright/index.mjs` at an existing install). 
 | `profiles/*.yaml` | per-type thresholds + checklist templates: `building rock vehicle prop vegetation ice creature effect terrain` (all extend `_base`) |
 | `adapters/*.mjs` | how to reach one game page (scene, camera, renderer, THREE, player pose, ground height, player path). `zb-preview-1008.mjs` = Zone B preview. |
 | `specs/<zone>/` | scene.yaml + one yaml per object + `records/<id>.verified.yaml` (checklist passes) |
+| `key-compare.mjs` | **key image vs the key-camera render, per key element**: outline IoU, lit / shadow ΔE2000, structure SSIM, per-type `keyCompare` thresholds, sheet on every run; `--solve` finds the key camera. Spec: `specs/<zone>/key-compare.yaml` |
+| `lib/keycompare.py` | masks, metrics, measurement ceiling, sheet (`sheet.jpg` 1080 px + `sheet-small.jpg`), camera-solver score |
 | `hooks/imagine-to-3d.mjs` | Imagine-to-3D final stage: `gateAndFix()` / CLI: gate → fix plan → fix → re-gate → export on PASS |
 
 ## Checks
@@ -44,12 +46,25 @@ or point `OG_PLAYWRIGHT=/path/to/playwright/index.mjs` at an existing install). 
 3. **Approach morph** 300 → 10 m on the nearest copies with the game's own LOD logic: silhouette IoU jumps.
 4. **Shadows**: cast, world-fixed (mask IoU after moving the player 80 m), neutral colour (not violet).
 5. **Grounding**: rays from below under the lower 20 % of each copy vs ground height.
-6. **Geometry**: welded non-manifold / open edges, facade relief, proportions vs spec.
+6. **Geometry**: welded non-manifold / open edges, facade relief, proportions vs spec. A buffer that stacks variant shells on `aZbPart` is welded per part (the union is non-manifold even when each shell is closed). An empty LOD buffer (no position) is not an instance. The morph mask parks sibling copies of the same module. A data LUT is not scored for anisotropy. A shadow probe also toggles an unnamed sibling that already casts. Neighbour footprints use the oriented half-extents and skip LOD levels of the same copy.
 7. **Key checklist**: captures (close, low phone portrait, far) → `capture-sheet.jpg` beside the key crop; FAIL unless
    every item has a recorded pass on a current capture (dHash ≤ 12) in `records/<id>.verified.yaml`. ΔE vs key crop.
 8. **Runtime**: console/page errors, shader compile, HUD/title text, portrait viewports, budgets (report only), and
    **live preview untouched** during the run (adapter `liveDir`; only files the live page loads count, staging files beside them are listed; never edit live files in place: stage, gate, swap after PASS).
 9. **Effects**: every effect mesh samples an Imagine texture (allow-listed folders).
+10. **Key-compare (2026-10-10, mandatory when the scene has `keyCompare:`; `cli.mjs` / `gateAndFix` / `gateSceneKC`)**: the game rendered from the key camera next to
+   the key; per element of the key (towers, facades, avenue, sand, mesas, arch, spire, sky, rings, moon, sun, haze,
+   wreck, debris...): outline IoU (frame), CIEDE2000 of the lit and the shadow half, SSIM structure after alignment.
+   FAIL beyond the type's `keyCompare.gate`; gaps to `keyCompare.target` drive `imagine-to-3d/fixloop.py keyloop`.
+   Missing elements FAIL. Writes `key-compare/sheet.jpg` on every run. Method: `docs/METHOD/key-compare-and-consistency.md`.
+   Mask rules (lib/keycompare.py): `rocktex` = rock without smooth sand (texture split; `rock` alone counted the dunes),
+   `skycore` + `{tophat: dL, k}` = thin bright lines (ring arcs) by local contrast, `thin: px` tolerance band for 1-2 px
+   structures. `lib/kc_diff.py before.json after.json` = before / after table of two runs.
+
+```bash
+node tools/object-gate/key-compare.mjs --spec tools/object-gate/specs/zone-b/key-compare.yaml --solve --out out/kc   # find the key camera
+node tools/object-gate/key-compare.mjs --spec tools/object-gate/specs/zone-b/key-compare.yaml --camera out/kc/camera.json --out out/kc
+```
 
 ## Recording checklist passes
 
@@ -71,3 +86,21 @@ Export `{ name, defaultUrl, captureQuery, readyExpr, fxNames, setupInPage(page),
 `setupInPage` must publish `window.__ogHost = { THREE, scene, camera, renderer, groundHeight(x,z),
 setPose({x,z,look:[x,y,z]}), path: [[x,z],...], freeze?() }`. The Zone B adapter grabs the scene by watching one
 `renderer.render` call and imports the page's own `three.module.js` (same module instance).
+
+## kc-shots.mjs (persistent render driver)
+`node kc-shots.mjs` reads JSON lines on stdin and keeps one headless browser open. Commands:
+- `{"cmd":"open","url","cam","vp","settle"}`
+- `{"cmd":"pose","cam","wait"}`
+- `{"cmd":"shot","path"}`
+- `{"cmd":"probe"}`: the projected avenue vanishing point and the visible spire box (`spire-lod*`)
+- `{"cmd":"quit"}`
+
+`cam` takes x, z, yaw, pitch, eye, fovDeg and dy. Used by `imagine-to-3d/placement_v2.py` and `lighting/light_key.py`. Run one browser at a time.
+
+## Camera framing and vision order (2026-10-11)
+
+Checklist cameras must frame the target AABB: perspective coverage ≥ 25 %, ortho faces ≥ 60 % and not black, no grazing
+angle on a facade grid, hero and 30 m are different cameras. Run Grok vision only after every capture passes the
+non-black (L\*) check; a black frame is a capture bug (`lib/probe.js` `readRT` must read `SRGBColorSpace`), not a
+vision verdict. See `docs/METHOD.md` §5.
+

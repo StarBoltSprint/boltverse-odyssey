@@ -1,0 +1,12 @@
+{
+ "task": "moge",
+ "side": 384,
+ "shape": [
+  216,
+  384
+ ],
+ "cache_hit": true,
+ "model_seconds": 0.0005,
+ "wall_seconds": 0.001,
+ "finite": 82944
+}

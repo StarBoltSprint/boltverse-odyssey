@@ -1,0 +1,325 @@
+{
+ "job": "placement",
+ "verdict": "FAIL",
+ "avenue": {
+  "heading": 252.0,
+  "axisDeg": 72.0,
+  "contrastM": 10.786,
+  "laneHeight": 1.676,
+  "storedAvenueDeg": 78,
+  "scoreAhead": 11.903,
+  "scoreBack": 8.765,
+  "seat": [
+   -53.879,
+   9.434
+  ],
+  "seatHeight": 0.021,
+  "centroid": [
+   -55.115,
+   5.63
+  ],
+  "copiedStoredYaw": false
+ },
+ "keySkyTop": 0.5741,
+ "best": {
+  "tag": "r0-2",
+  "loss": 2.7021,
+  "iou": 0.2909,
+  "sky": 0.3676,
+  "keySky": 0.5741,
+  "inversions": 14,
+  "drawCalls": 17,
+  "float": 0.409,
+  "cam": {
+   "x": -52.905358750775385,
+   "z": 10.856133297687155,
+   "yaw": 248.53139705112252,
+   "y": 2.7004095531280834
+  },
+  "phoneDrawCalls": 17,
+  "phoneSeat": {
+   "n": 46,
+   "maxAbs": 0.409,
+   "rows": [
+    {
+     "name": "spire-lod0",
+     "sink": 0.2
+    },
+    {
+     "name": "spire-lod1",
+     "sink": 0.2
+    },
+    {
+     "name": "spire-emit-lod0",
+     "sink": 0.2
+    },
+    {
+     "name": "spire-emit-lod1",
+     "sink": 0.2
+    },
+    {
+     "name": "spire-beam",
+     "sink": 0.2
+    },
+    {
+     "name": "inst-m2-lod0-AB#0",
+     "sink": 0.2
+    },
+    {
+     "name": "inst-m2-lod0-AB#1",
+     "sink": 0.2
+    },
+    {
+     "name": "inst-m2-lod0-AB#2",
+     "sink": 0.2
+    },
+    {
+     "name": "inst-m3-lod0-AB#0",
+     "sink": 0.2
+    },
+    {
+     "name": "inst-m3-lod0-AB#1",
+     "sink": 0.2
+    },
+    {
+     "name": "inst-m3-lod0-AB#2",
+     "sink": 0.2
+    },
+    {
+     "name": "inst-m4-lod0-AB#0",
+     "sink": 0.2
+    },
+    {
+     "name": "inst-m4-lod0-AB#1",
+     "sink": 0.2
+    },
+    {
+     "name": "inst-m4-lod0-AB#2",
+     "sink": 0.2
+    },
+    {
+     "name": "inst-m4-lod0-AB#3",
+     "sink": 0.2
+    },
+    {
+     "name": "inst-m4-lod0-AB#4",
+     "sink": 0.2
+    },
+    {
+     "name": "inst-m4-lod0-AB#5",
+     "sink": 0.2
+    },
+    {
+     "name": "inst-m4-lod0-AB#6",
+     "sink": 0.2
+    },
+    {
+     "name": "inst-m4-lod0-AB#7",
+     "sink": 0.2
+    },
+    {
+     "name": "inst-m4-lod0-AB#8",
+     "sink": 0.2
+    },
+    {
+     "name": "inst-m4-lod0-AB#9",
+     "sink": 0.2
+    },
+    {
+     "name": "inst-m4-lod0-AB#10",
+     "sink": 0.2
+    },
+    {
+     "name": "inst-m4-lod0-AB#11",
+     "sink": 0.2
+    },
+    {
+     "name": "inst-m4-lod0-AB#12",
+     "sink": 0.2
+    },
+    {
+     "name": "inst-m6-lod0-AB#0",
+     "sink": 0.2
+    },
+    {
+     "name": "inst-m6-lod0-AB#1",
+     "sink": 0.2
+    },
+    {
+     "name": "inst-m6-lod0-AB#2",
+     "sink": 0.2
+    },
+    {
+     "name": "mesa-L-mid-lod0",
+     "sink": 0.2
+    },
+    {
+     "name": "mesa-L-mid-lod1",
+     "sink": 0.2
+    },
+    {
+     "name": "mesa-L-mid2-lod0",
+     "sink": 0.2
+    },
+    {
+     "name": "mesa-L-mid2-lod1",
+     "sink": 0.2
+    },
+    {
+     "name": "mesa-L-far-lod0",
+     "sink": 0.2
+    },
+    {
+     "name": "mesa-L-far-lod1",
+     "sink": 0.2
+    },
+    {
+     "name": "mesa-R-butte-lod0",
+     "sink": 0.2
+    },
+    {
+     "name": "mesa-R-butte-lod1",
+     "sink": 0.2
+    },
+    {
+     "name": "mesa-R-mid-lod0",
+     "sink": 0.2
+    },
+    {
+     "name": "mesa-R-mid-lod1",
+     "sink": 0.2
+    },
+    {
+     "name": "mesa-R-band-lod0",
+     "sink": 0.2
+    },
+    {
+     "name": "mesa-R-band-lod1",
+     "sink": 0.2
+    },
+    {
+     "name": "mesa-B-left-lod0",
+     "sink": 0.2
+    }
+   ]
+  }
+ },
+ "depthPairs": [
+  {
+   "a": "mesa-right",
+   "b": "tower-r1",
+   "mogeA": 41.06,
+   "mogeB": 57.27,
+   "distA": 143.35,
+   "distB": 29.27
+  },
+  {
+   "a": "mesa-right",
+   "b": "tower-mid",
+   "mogeA": 41.06,
+   "mogeB": 56.98,
+   "distA": 143.35,
+   "distB": 29.27
+  },
+  {
+   "a": "spire",
+   "b": "mesa-left",
+   "mogeA": 27.78,
+   "mogeB": 18.44,
+   "distA": 57.18,
+   "distB": 140.3
+  },
+  {
+   "a": "spire",
+   "b": "tower-l2",
+   "mogeA": 27.78,
+   "mogeB": 37.31,
+   "distA": 57.18,
+   "distB": 26.83
+  },
+  {
+   "a": "spire",
+   "b": "tower-r1",
+   "mogeA": 27.78,
+   "mogeB": 57.27,
+   "distA": 57.18,
+   "distB": 29.27
+  },
+  {
+   "a": "spire",
+   "b": "tower-mid",
+   "mogeA": 27.78,
+   "mogeB": 56.98,
+   "distA": 57.18,
+   "distB": 29.27
+  },
+  {
+   "a": "spire",
+   "b": "tower-l4",
+   "mogeA": 27.78,
+   "mogeB": 38.98,
+   "distA": 57.18,
+   "distB": 26.83
+  },
+  {
+   "a": "mesa-left",
+   "b": "tower-l3",
+   "mogeA": 18.44,
+   "mogeB": 28.44,
+   "distA": 140.3,
+   "distB": 26.83
+  },
+  {
+   "a": "mesa-left",
+   "b": "tower-l1",
+   "mogeA": 18.44,
+   "mogeB": 28.03,
+   "distA": 140.3,
+   "distB": 26.83
+  },
+  {
+   "a": "mesa-left",
+   "b": "tower-r2",
+   "mogeA": 18.44,
+   "mogeB": 23.28,
+   "distA": 140.3,
+   "distB": 29.27
+  },
+  {
+   "a": "mesa-left",
+   "b": "tower-l2",
+   "mogeA": 18.44,
+   "mogeB": 37.31,
+   "distA": 140.3,
+   "distB": 26.83
+  },
+  {
+   "a": "mesa-left",
+   "b": "tower-r1",
+   "mogeA": 18.44,
+   "mogeB": 57.27,
+   "distA": 140.3,
+   "distB": 29.27
+  },
+  {
+   "a": "mesa-left",
+   "b": "tower-mid",
+   "mogeA": 18.44,
+   "mogeB": 56.98,
+   "distA": 140.3,
+   "distB": 29.27
+  },
+  {
+   "a": "mesa-left",
+   "b": "tower-l4",
+   "mogeA": 18.44,
+   "mogeB": 38.98,
+   "distA": 140.3,
+   "distB": 26.83
+  }
+ ],
+ "trials": 13,
+ "seconds": 316.358,
+ "port": 8767,
+ "note": "Framebuffer on the terrain-key2 page. Layout left on kc-staging. Live main.mjs untouched."
+}

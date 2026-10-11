@@ -6,10 +6,19 @@ select: {names: "^mesa-", exclude: "drifts"}
 visibleView: {hero: mesa-L-mid, towardXZ: [-51.115, 9.63]}
 keyCrop: /workspace/grokcli/wt/mesa-1009/in/crop-L.png
 textures:
-  # Imagine plates projected in the shader (no uv attribute): px/m = plate px / metres the plate spans x copy scale
-  - {match: "mesas/mesaA-(front|side|back)\\.jpg", role: plate, projected: {metresAcross: 107.07}}
-  - {match: "mesas/mesaA-top\\.jpg", role: plate, projected: {metresAcross: 107.07}}
-  - {match: "mesas/mesaA-detail\\.jpg", role: detail}
+  # Live v11 projects these Imagine plates in the shader (no uv). Sources match the served files byte for byte.
+  - {match: "mesas/plates/b1\\.jpg|uB\\b", role: plate, projected: {metresAcross: 107.07}, source: "/workspace/grokcli/wt/mesa-1009/out2/b1.jpg"}
+  - {match: "mesas/plates/c3\\.jpg|uC0\\b", role: plate, projected: {metresAcross: 107.07}, source: "/workspace/grokcli/wt/mesa-1009/out2/c3.jpg"}
+  - {match: "mesas/plates/c4\\.jpg|uC1\\b", role: plate, projected: {metresAcross: 107.07}, source: "/workspace/grokcli/wt/mesa-1009/out2/c4.jpg"}
+  - {match: "mesas/plates/w1\\.jpg", role: plate, projected: {metresAcross: 107.07}, source: "/workspace/grokcli/wt/mesa-1009/out2/w1.jpg"}
+  - {match: "mesas/plates/w2\\.jpg", role: plate, projected: {metresAcross: 107.07}, source: "/workspace/grokcli/wt/mesa-1009/out2/w2.jpg"}
+  - {match: "mesas/plates/w3\\.jpg", role: plate, projected: {metresAcross: 107.07}, source: "/workspace/grokcli/wt/mesa-1009/out2/w3.jpg"}
+  - {match: "mesas/plates/w5\\.jpg", role: plate, projected: {metresAcross: 107.07}, source: "/workspace/grokcli/wt/mesa-1009/out2/w5.jpg"}
+  - {match: "mesas/plates/w6\\.jpg", role: plate, projected: {metresAcross: 107.07}, source: "/workspace/grokcli/wt/mesa-1009/out2/w6.jpg"}
+  - {match: "mesas/plates/w7\\.jpg", role: plate, projected: {metresAcross: 107.07}, source: "/workspace/grokcli/wt/mesa-1009/out2/w7.jpg"}
+  - {match: "mesas/plates/w9\\.jpg", role: plate, projected: {metresAcross: 107.07}, source: "/workspace/grokcli/wt/mesa-1009/out2/w9.jpg"}
+  - {match: "mesas/plates/w10\\.jpg", role: plate, projected: {metresAcross: 107.07}, source: "/workspace/grokcli/wt/mesa-1009/out2/w10.jpg"}
+  - {match: "mesas/plates/w12\\.jpg", role: plate, projected: {metresAcross: 107.07}, source: "/workspace/grokcli/wt/mesa-1009/out2/w12.jpg"}
 checklist:
   - {id: volume, feature: "Mesa mass and silhouette like the key crop", captures: [far]}
   - {id: strata, feature: "Sandstone strata in the geometry and the plate", captures: [close, far]}

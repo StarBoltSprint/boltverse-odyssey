@@ -1,0 +1,448 @@
+{
+  "tool": "object-gate",
+  "version": 1,
+  "apiVersion": "1.7",
+  "url": "http://127.0.0.1:8996/tower3-1010/index-tower3.html?visionKey=1",
+  "adapter": "zb-preview-1008",
+  "startedAt": "2026-10-11T12:04:12.032Z",
+  "out": "/workspace/grokcli/wt/tower-vision-1010/steps/fusion-fix5-1011/gate",
+  "runtime": [
+    {
+      "id": "runtime.console",
+      "check": "console 540x1200",
+      "status": "PASS",
+      "detail": "no console / page errors",
+      "hints": []
+    },
+    {
+      "id": "runtime.shader",
+      "check": "shader compile 540x1200",
+      "status": "PASS",
+      "detail": "all programs compiled",
+      "hints": []
+    },
+    {
+      "id": "runtime.hud",
+      "check": "HUD text 540x1200",
+      "status": "PASS",
+      "detail": "\"Zone B — aperçu (tours phase 1, sans Bolt)\" vs \"Zone B — aperçu (tours phase 1, sans Bolt)\"",
+      "hints": []
+    },
+    {
+      "id": "runtime.title",
+      "check": "title 540x1200",
+      "status": "PASS",
+      "detail": "\"Zone B — aperçu\"",
+      "hints": []
+    },
+    {
+      "id": "runtime.portrait",
+      "check": "portrait viewport 540x1200",
+      "status": "PASS",
+      "detail": "inner 540x1200",
+      "hints": []
+    },
+    {
+      "id": "runtime.capture-ready",
+      "check": "capture ready 540x1200",
+      "status": "PASS",
+      "detail": "loaded, cover 0.9828",
+      "hints": []
+    },
+    {
+      "id": "runtime.budgets",
+      "check": "budgets 540x1200 (report only, quality first)",
+      "status": "INFO",
+      "detail": "{\"renderInfo\":{\"calls\":19,\"triangles\":500141,\"textures\":26,\"geometries\":18,\"programs\":21},\"visibleMeshes\":40,\"sceneTris\":2034965,\"pixelRatio\":1}",
+      "hints": []
+    },
+    {
+      "id": "perf.canvas-ratio",
+      "check": "perf: canvas ratio <= cap 540x1200",
+      "status": "PASS",
+      "detail": "canvas ratio 1 (cap 1, device 1)",
+      "hints": []
+    },
+    {
+      "id": "perf.sky-order",
+      "check": "perf: sky dome drawn after the opaques 540x1200",
+      "status": "PASS",
+      "detail": "sky renderOrder 2, max opaque 0.5, depthTest true",
+      "hints": []
+    },
+    {
+      "id": "perf.ground-order",
+      "check": "perf: ground after the other opaques 540x1200",
+      "status": "PASS",
+      "detail": "ground renderOrder 1, max opaque 0.5",
+      "hints": []
+    },
+    {
+      "id": "perf.adaptive",
+      "check": "perf: adaptive controller on 540x1200",
+      "status": "PASS",
+      "detail": "adaptive true",
+      "hints": []
+    },
+    {
+      "id": "perf.quality-kept",
+      "check": "perf: quality kept: adaptive never drops the detail layer 540x1200",
+      "status": "PASS",
+      "detail": "adaptiveCanDropDetail false detailOn true",
+      "hints": []
+    },
+    {
+      "id": "perf.default-ratio",
+      "check": "perf: default ratio = min(2, device) native, or >= 1.5 + EASU/RCAS to the canvas, no sprint dip 540x1200",
+      "status": "PASS",
+      "detail": "internal 1 canvas 1 device 1 upscale native rcas 0.8 sprintDip false",
+      "hints": []
+    },
+    {
+      "id": "runtime.live-untouched",
+      "check": "live preview untouched during the gate run",
+      "status": "PASS",
+      "detail": "108 files the live page loads unchanged",
+      "hints": []
+    }
+  ],
+  "objects": [
+    {
+      "id": "tower-hero",
+      "type": "building",
+      "rows": [
+        {
+          "id": "select",
+          "check": "select",
+          "status": "PASS",
+          "detail": "1 placed copies",
+          "hints": []
+        },
+        {
+          "id": "textures.roles",
+          "check": "texture roles declared",
+          "status": "PASS",
+          "detail": "albedo.png=plate",
+          "hints": []
+        },
+        {
+          "id": "textures.filtering",
+          "check": "texture filtering (mips, trilinear, anisotropy = max, no resize)",
+          "status": "PASS",
+          "detail": "1 textures trilinear + aniso 16",
+          "hints": []
+        },
+        {
+          "id": "textures.native-size",
+          "check": "plates not downscaled vs Imagine originals",
+          "status": "PASS",
+          "detail": "albedo.png gpu 2560x720 served 2560x720 original 163x419",
+          "hints": []
+        },
+        {
+          "id": "texel.stretch",
+          "check": "UV stretch <= 1.3",
+          "status": "FAIL",
+          "detail": "-z 7.846, +z 7.846, -y 99, -x 99",
+          "hints": [
+            "Re-unwrap with equal metres per texel on both axes (surface-aware UV)."
+          ]
+        },
+        {
+          "id": "texel.self-report",
+          "check": "scene self-report vs measured",
+          "status": "FAIL",
+          "detail": "scene claims 5.89 px/m; measured visible (sampling) 0.1 px/m (detail tile 512 px/m does not count)",
+          "hints": [
+            "The scene's own texel number is misleading: compute it from the plate's unique pixels over the surface's metres, never from a tiled detail texture."
+          ]
+        },
+        {
+          "id": "repetition.captures",
+          "check": "repetition (capture autocorrelation)",
+          "status": "FAIL",
+          "detail": "face z peak 0.3909 at lag -1,35 px; face x peak 0.7692 at lag -41,-2 px; close peak 0.3028 at lag 34,1 px; low-portrait: object covers 1.0% of the low-portrait capture (capture angle unusable) (max 0.75, at plate period 0.5)",
+          "hints": [
+            "Visible periodic tiling: replace the tiled plate with unique full-res Imagine sections; break any remaining repeat with a second Imagine variant + low-frequency mask.",
+            "If the capture angle is unusable, fix the spec `hero:` or the object's front axis."
+          ]
+        },
+        {
+          "id": "texel.visible-px-per-m",
+          "check": "visible px/m (phone sharpness from >= 8 m, final render)",
+          "status": "FAIL",
+          "detail": "no steep surface of inst-tower-hero#0 found at 4/5/3/6/7/8/2.5 m above the ground on its path-facing side. Info: plate sampling worst +x 0.1 px/m on inst-tower-hero#0, 5/5 surfaces under",
+          "hints": [
+            "Needs >= 154.6 px/m of visible detail at 8 m. Unique plates: one native 1024x1024 Imagine plate covers at most 6.6 x 6.6 m. Layered materials: raise the detail layer's density or keep its distance fade beyond 8 m. Never upscale."
+          ]
+        },
+        {
+          "id": "repetition.visible-radius",
+          "check": "repetition (visible): identical plate pixels never within 30 m",
+          "status": "PASS",
+          "detail": "no plate repeats inside the radius (one shared plate set per type allowed)",
+          "hints": []
+        },
+        {
+          "id": "repetition.visible-neighbours",
+          "check": "repetition (visible): neighbours never share plates (< 7 m)",
+          "status": "PASS",
+          "detail": "1 copies, none within 7 m of another",
+          "hints": []
+        },
+        {
+          "id": "shadow.cast",
+          "check": "shadow cast",
+          "status": "PASS",
+          "detail": "15062 ground pixels in this object's shadow (26.1% of the probe view)",
+          "hints": []
+        },
+        {
+          "id": "shadow.world-fixed",
+          "check": "shadow world-fixed",
+          "status": "PASS",
+          "detail": "shadow mask IoU 1.000 after moving the player 18 m (min 0.9)",
+          "hints": []
+        },
+        {
+          "id": "shadow.colour",
+          "check": "shadow colour neutral (not violet)",
+          "status": "PASS",
+          "detail": "shadow multiply r 0.725 g 0.756 b 0.792, chroma 0.089 (max 0.18)",
+          "hints": []
+        },
+        {
+          "id": "grounding",
+          "check": "grounding (no floating)",
+          "status": "FAIL",
+          "detail": "1/1 copies float; worst inst-tower-hero#0 74.23 m at 419.6,-263.8",
+          "hints": [
+            "Sink each copy below its LOWEST footprint corner (worst needs 74.53 m), fill concave bases, add sand drift."
+          ]
+        },
+        {
+          "id": "geometry.sealed",
+          "check": "mesh sealed (non-manifold / open edges)",
+          "status": "PASS",
+          "detail": "inst-tower-hero tris 264684 nonManifold 0 open 0",
+          "hints": []
+        },
+        {
+          "id": "geometry.relief",
+          "check": "facade relief >= 0.3 m",
+          "status": "FAIL",
+          "detail": "inst-tower-hero +x 0 -x 0 +z 0 -z 0.591",
+          "hints": [
+            "Model the relief (fins, ledges, recessed bays, cornices, strata) in the geometry; a plate on a flat face reads as a picture."
+          ]
+        },
+        {
+          "id": "geometry.crisp",
+          "check": "facade crispness (axis-aligned >= 0.72, 2-8 offset planes)",
+          "status": "PASS",
+          "detail": "inst-tower-hero +x axis 0.736 planes 6 -x axis 0.862 planes 1 +z axis 1 planes 1 -z axis 0.979 planes 5",
+          "hints": []
+        },
+        {
+          "id": "geometry.proportions",
+          "check": "proportions vs spec",
+          "status": "FAIL",
+          "detail": "inst-tower-hero#0 hOverW 1.91 not in 3-5; inst-tower-hero#0 dOverW 0.25 not in 0.45-0.7",
+          "hints": [
+            "Scale the solid in Blender to the spec ratios (never by spending more images)."
+          ]
+        },
+        {
+          "id": "relief.align",
+          "check": "relief-texture alignment",
+          "status": "FAIL",
+          "detail": "hero 0.0948; 30m 0.0948; 8m 0.1385; side 0.2116",
+          "hints": [
+            "A relief edge must lie on a painted edge. Move the feature box in the vision JSON. Do not invent bars."
+          ]
+        },
+        {
+          "id": "checklist.camera",
+          "check": "checklist camera framed on the target",
+          "status": "FAIL",
+          "detail": "close: empty frame; target covers 2.5% < 25%; low-portrait: empty frame; target covers 1.0% < 25%; far: target covers 23.0% < 25%; ortho-front: target covers 47.1% < 60%; ortho-side: target covers 22.9% < 60%",
+          "hints": [
+            "Frame each checklist camera on the target AABB (close 8 m, low portrait, far, ortho faces). Perspective cover >= 25%. Ortho faces >= 60% and not black."
+          ]
+        },
+        {
+          "id": "checklist.verified",
+          "check": "key checklist: every item verified on a current capture",
+          "status": "FAIL",
+          "detail": "wedge: recorded FAIL; ladder: recorded FAIL; chrome: recorded FAIL; damage: recorded FAIL; sand: recorded FAIL",
+          "hints": [
+            "Look at /workspace/grokcli/wt/tower-vision-1010/steps/fusion-fix5-1011/gate/tower-hero/capture-sheet.jpg next to the key crop. For each item write pass/fail + note in /workspace/grokcli/wt/tower-vision-1010/tools/object-gate/specs/zone-b/records/tower-hero-vision.verified.yaml (copy /workspace/grokcli/wt/tower-vision-1010/steps/fusion-fix5-1011/gate/tower-hero/checklist-todo.yaml: it has the current capture hashes). Fix every fail first."
+          ]
+        },
+        {
+          "id": "checklist.colour",
+          "check": "colour vs key crop (CIELAB)",
+          "status": "INFO",
+          "detail": "deltaE 18.74 object L*a*b* 16.2,11.5,1.7 key 34.9,11.4,0.6 (report only)",
+          "hints": []
+        }
+      ],
+      "files": {
+        "captures": {
+          "close": {
+            "img": "/workspace/grokcli/wt/tower-vision-1010/steps/fusion-fix5-1011/gate/tower-hero/cap-close.png",
+            "mask": "/workspace/grokcli/wt/tower-vision-1010/steps/fusion-fix5-1011/gate/tower-hero/cap-close-mask.png",
+            "cover": 0.0254,
+            "gate": {
+              "ok": false,
+              "kind": "close",
+              "cover": 0.0254,
+              "minCover": 0.25,
+              "loading": false,
+              "empty": true,
+              "black": false,
+              "why": "empty frame; target covers 2.5% < 25%"
+            },
+            "pose": {
+              "camera": [
+                347.86,
+                154.68,
+                -185.5
+              ],
+              "fovY": 170,
+              "distanceM": 8
+            },
+            "hash": "0000103030000000"
+          },
+          "low-portrait": {
+            "img": "/workspace/grokcli/wt/tower-vision-1010/steps/fusion-fix5-1011/gate/tower-hero/cap-low-portrait.png",
+            "mask": "/workspace/grokcli/wt/tower-vision-1010/steps/fusion-fix5-1011/gate/tower-hero/cap-low-portrait-mask.png",
+            "cover": 0.0097,
+            "gate": {
+              "ok": false,
+              "kind": "low-portrait",
+              "cover": 0.0097,
+              "minCover": 0.25,
+              "loading": false,
+              "empty": true,
+              "black": false,
+              "why": "empty frame; target covers 1.0% < 25%"
+            },
+            "pose": {
+              "camera": [
+                347.86,
+                27.87,
+                -185.5
+              ],
+              "fovY": 170,
+              "distanceM": 8
+            },
+            "hash": "0000003030000000"
+          },
+          "far": {
+            "img": "/workspace/grokcli/wt/tower-vision-1010/steps/fusion-fix5-1011/gate/tower-hero/cap-far.png",
+            "mask": "/workspace/grokcli/wt/tower-vision-1010/steps/fusion-fix5-1011/gate/tower-hero/cap-far-mask.png",
+            "cover": 0.2301,
+            "gate": {
+              "ok": false,
+              "kind": "far",
+              "cover": 0.2301,
+              "minCover": 0.25,
+              "loading": false,
+              "empty": false,
+              "black": false,
+              "why": "target covers 23.0% < 25%"
+            },
+            "pose": {
+              "camera": [
+                -196.97,
+                154.68,
+                -69.69
+              ],
+              "fovY": 39.6498,
+              "distanceM": 565.0017162792801
+            },
+            "hash": "0018f8f0f0cc2c00"
+          },
+          "face-z": {
+            "img": "/workspace/grokcli/wt/tower-vision-1010/steps/fusion-fix5-1011/gate/tower-hero/face-z.png",
+            "mask": "/workspace/grokcli/wt/tower-vision-1010/steps/fusion-fix5-1011/gate/tower-hero/face-z-mask.png",
+            "pose": {
+              "camera": [
+                "ortho",
+                "z"
+              ]
+            },
+            "cover": 0.8265,
+            "hash": "f8f8f0e0e09e8ede"
+          },
+          "face-x": {
+            "img": "/workspace/grokcli/wt/tower-vision-1010/steps/fusion-fix5-1011/gate/tower-hero/face-x.png",
+            "mask": "/workspace/grokcli/wt/tower-vision-1010/steps/fusion-fix5-1011/gate/tower-hero/face-x-mask.png",
+            "pose": {
+              "camera": [
+                "ortho",
+                "x"
+              ]
+            },
+            "cover": 0.9995,
+            "hash": "240000d47f000080"
+          },
+          "ortho-front": {
+            "img": "/workspace/grokcli/wt/tower-vision-1010/steps/fusion-fix5-1011/gate/tower-hero/cap-ortho-front.png",
+            "mask": "/workspace/grokcli/wt/tower-vision-1010/steps/fusion-fix5-1011/gate/tower-hero/cap-ortho-front-mask.png",
+            "cover": 0.4711,
+            "gate": {
+              "ok": false,
+              "kind": "ortho-front",
+              "cover": 0.4711,
+              "minCover": 0.6,
+              "loading": false,
+              "empty": false,
+              "black": false,
+              "why": "target covers 47.1% < 60%"
+            },
+            "pose": {
+              "camera": [
+                "ortho",
+                "ortho-front"
+              ],
+              "fovY": null,
+              "distanceM": null
+            },
+            "hash": "1cf8f8f0f0fccccc"
+          },
+          "ortho-side": {
+            "img": "/workspace/grokcli/wt/tower-vision-1010/steps/fusion-fix5-1011/gate/tower-hero/cap-ortho-side.png",
+            "mask": "/workspace/grokcli/wt/tower-vision-1010/steps/fusion-fix5-1011/gate/tower-hero/cap-ortho-side-mask.png",
+            "cover": 0.229,
+            "gate": {
+              "ok": false,
+              "kind": "ortho-side",
+              "cover": 0.229,
+              "minCover": 0.6,
+              "loading": false,
+              "empty": false,
+              "black": false,
+              "why": "target covers 22.9% < 60%"
+            },
+            "pose": {
+              "camera": [
+                "ortho",
+                "ortho-side"
+              ],
+              "fovY": null,
+              "distanceM": null
+            },
+            "hash": "18383030706060e0"
+          }
+        },
+        "sheet": "/workspace/grokcli/wt/tower-vision-1010/steps/fusion-fix5-1011/gate/tower-hero/capture-sheet.jpg"
+      },
+      "hero": "inst-tower-hero#0",
+      "verdict": "FAIL"
+    }
+  ],
+  "verdict": "FAIL",
+  "finishedAt": "2026-10-11T12:08:29.249Z"
+}
