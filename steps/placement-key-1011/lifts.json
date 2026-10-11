@@ -1,0 +1,476 @@
+[
+ {
+  "id": "rail",
+  "kind": "rail",
+  "lift": true,
+  "label": 1,
+  "box": [
+   0,
+   396,
+   589,
+   620
+  ],
+  "boxFrac": [
+   0.0,
+   0.55,
+   0.46,
+   0.86
+  ],
+  "score": 0.7009,
+  "pixels": 31519,
+  "maskBox": [
+   0,
+   408,
+   542,
+   620
+  ],
+  "status": "depth-reject",
+  "Z": 5.592543377171691
+ },
+ {
+  "id": "wreck",
+  "kind": "wreck",
+  "label": 2,
+  "status": "lifted",
+  "imageBase": [
+   854.0,
+   504.0
+  ],
+  "maskBox": [
+   736,
+   338,
+   1268,
+   513
+  ],
+  "pixels": 38807,
+  "Z": 10.37,
+  "position": [
+   -39.695,
+   6.352,
+   13.138
+  ],
+  "s": -41.56,
+  "lateral": 3.452,
+  "yaw": 287.08,
+  "heightM": 4.78,
+  "widthPx": 532.0
+ },
+ {
+  "id": "mesa-right",
+  "kind": "mesa",
+  "label": 3,
+  "status": "lifted",
+  "imageBase": [
+   1257.0,
+   356.0
+  ],
+  "maskBox": [
+   998,
+   145,
+   1279,
+   368
+  ],
+  "pixels": 33191,
+  "Z": 26.33,
+  "position": [
+   -15.974,
+   7.838,
+   48.188
+  ],
+  "s": -25.644,
+  "lateral": 42.527,
+  "yaw": 317.65,
+  "heightM": 11.78,
+  "widthPx": 257.0
+ },
+ {
+  "id": "spire",
+  "kind": "spire",
+  "label": 4,
+  "status": "lifted",
+  "imageBase": [
+   801.0,
+   414.0
+  ],
+  "maskBox": [
+   745,
+   9,
+   860,
+   418
+  ],
+  "pixels": 21944,
+  "Z": 21.58,
+  "position": [
+   -27.995,
+   7.165,
+   14.294
+  ],
+  "s": -30.355,
+  "lateral": 6.946,
+  "yaw": 281.4,
+  "heightM": 24.28,
+  "widthPx": 115.0
+ },
+ {
+  "id": "mesa-left",
+  "kind": "mesa",
+  "label": 5,
+  "status": "lifted",
+  "imageBase": [
+   200.0,
+   398.0
+  ],
+  "maskBox": [
+   0,
+   158,
+   231,
+   413
+  ],
+  "pixels": 36018,
+  "Z": 15.88,
+  "position": [
+   -39.618,
+   11.02,
+   -12.717
+  ],
+  "s": -36.109,
+  "lateral": -21.822,
+  "yaw": 207.22,
+  "heightM": 10.59,
+  "widthPx": 231.0
+ },
+ {
+  "id": "tower-l3",
+  "kind": "tower",
+  "label": 6,
+  "status": "lifted",
+  "imageBase": [
+   470.0,
+   397.0
+  ],
+  "maskBox": [
+   413,
+   50,
+   528,
+   404
+  ],
+  "pixels": 29320,
+  "Z": 25.49,
+  "position": [
+   -28.683,
+   9.64,
+   -7.605
+  ],
+  "s": -26.475,
+  "lateral": -14.612,
+  "yaw": 232.46,
+  "heightM": 24.57,
+  "widthPx": 115.0
+ },
+ {
+  "id": "slab-l",
+  "kind": "slab",
+  "lift": true,
+  "label": 7,
+  "box": [
+   12,
+   532,
+   308,
+   713
+  ],
+  "boxFrac": [
+   0.01,
+   0.74,
+   0.24,
+   0.99
+  ],
+  "score": 1.0235,
+  "pixels": 35720,
+  "maskBox": [
+   12,
+   532,
+   308,
+   713
+  ],
+  "status": "depth-reject",
+  "Z": 3.348784191175169
+ },
+ {
+  "id": "tower-l1",
+  "kind": "tower",
+  "label": 8,
+  "status": "lifted",
+  "imageBase": [
+   267.0,
+   353.0
+  ],
+  "maskBox": [
+   185,
+   79,
+   327,
+   360
+  ],
+  "pixels": 22873,
+  "Z": 26.41,
+  "position": [
+   -30.974,
+   14.043,
+   -22.464
+  ],
+  "s": -25.627,
+  "lateral": -29.609,
+  "yaw": 212.11,
+  "heightM": 20.1,
+  "widthPx": 142.0
+ },
+ {
+  "id": "tower-r2",
+  "kind": "tower",
+  "label": 9,
+  "status": "lifted",
+  "imageBase": [
+   1106.0,
+   349.0
+  ],
+  "maskBox": [
+   1081,
+   95,
+   1187,
+   361
+  ],
+  "pixels": 21079,
+  "Z": 18.54,
+  "position": [
+   -27.986,
+   9.718,
+   29.232
+  ],
+  "s": -33.452,
+  "lateral": 21.559,
+  "yaw": 310.28,
+  "heightM": 13.08,
+  "widthPx": 106.0
+ },
+ {
+  "id": "slab-r",
+  "kind": "slab",
+  "lift": true,
+  "label": 10,
+  "box": [
+   972,
+   532,
+   1191,
+   699
+  ],
+  "boxFrac": [
+   0.76,
+   0.74,
+   0.93,
+   0.97
+  ],
+  "score": 0.939,
+  "pixels": 31290,
+  "maskBox": [
+   972,
+   532,
+   1191,
+   699
+  ],
+  "status": "depth-reject",
+  "Z": 3.874284230721539
+ },
+ {
+  "id": "tower-l2",
+  "kind": "tower",
+  "label": 11,
+  "status": "lifted",
+  "imageBase": [
+   367.0,
+   385.0
+  ],
+  "maskBox": [
+   329,
+   164,
+   406,
+   389
+  ],
+  "pixels": 12554,
+  "Z": 29.12,
+  "position": [
+   -27.222,
+   11.128,
+   -18.098
+  ],
+  "s": -22.864,
+  "lateral": -24.58,
+  "yaw": 220.75,
+  "heightM": 17.88,
+  "widthPx": 77.0
+ },
+ {
+  "id": "tower-r1",
+  "kind": "tower",
+  "label": 12,
+  "status": "lifted",
+  "imageBase": [
+   913.0,
+   356.0
+  ],
+  "maskBox": [
+   845,
+   115,
+   960,
+   360
+  ],
+  "pixels": 10620,
+  "Z": 102.33,
+  "position": [
+   65.116,
+   7.333,
+   64.161
+  ],
+  "s": 50.353,
+  "lateral": 74.537,
+  "yaw": 295.13,
+  "heightM": 58.56,
+  "widthPx": 115.0
+ },
+ {
+  "id": "arch",
+  "kind": "arch",
+  "label": 13,
+  "status": "lifted",
+  "imageBase": [
+   964.0,
+   370.0
+  ],
+  "maskBox": [
+   870,
+   261,
+   1076,
+   379
+  ],
+  "pixels": 13843,
+  "Z": 46.27,
+  "position": [
+   2.807,
+   6.903,
+   40.526
+  ],
+  "s": -5.681,
+  "lateral": 38.828,
+  "yaw": 299.81,
+  "heightM": 14.01,
+  "widthPx": 206.0
+ },
+ {
+  "id": "tower-mid",
+  "kind": "tower",
+  "lift": true,
+  "label": 14,
+  "box": [
+   588,
+   201,
+   704,
+   404
+  ],
+  "boxFrac": [
+   0.46,
+   0.28,
+   0.55,
+   0.56
+  ],
+  "score": 0.9181,
+  "pixels": 13704,
+  "maskBox": [
+   588,
+   223,
+   704,
+   402
+  ],
+  "status": "depth-reject",
+  "Z": 279161.8507062128
+ },
+ {
+  "id": "tower-l4",
+  "kind": "tower",
+  "label": 15,
+  "status": "lifted",
+  "imageBase": [
+   545.0,
+   378.0
+  ],
+  "maskBox": [
+   522,
+   170,
+   594,
+   389
+  ],
+  "pixels": 8488,
+  "Z": 39.4,
+  "position": [
+   -14.736,
+   10.396,
+   -8.833
+  ],
+  "s": -12.578,
+  "lateral": -12.995,
+  "yaw": 243.09,
+  "heightM": 22.77,
+  "widthPx": 72.0
+ },
+ {
+  "id": "sun",
+  "kind": "sun",
+  "lift": false,
+  "label": 16,
+  "box": [
+   793,
+   244,
+   973,
+   346
+  ],
+  "boxFrac": [
+   0.62,
+   0.34,
+   0.76,
+   0.48
+  ],
+  "score": 0.412,
+  "pixels": 2810,
+  "maskBox": [
+   793,
+   244,
+   973,
+   329
+  ],
+  "status": "sky-sample"
+ },
+ {
+  "id": "moon",
+  "kind": "moon",
+  "lift": false,
+  "label": 17,
+  "box": [
+   896,
+   86,
+   999,
+   188
+  ],
+  "boxFrac": [
+   0.7,
+   0.12,
+   0.78,
+   0.26
+  ],
+  "score": 0.8216,
+  "pixels": 5339,
+  "maskBox": [
+   902,
+   89,
+   990,
+   186
+  ],
+  "status": "sky-sample"
+ }
+]

@@ -1,0 +1,725 @@
+{
+ "times": {
+  "staging page": 0.00041985511779785156,
+  "before render": 0.0,
+  "before phone": 11.35670018196106,
+  "sam2 masks": 0.0,
+  "depth lift": 0.07058954238891602,
+  "sky apply": 0.0010023117065429688,
+  "round 1 render": 15.966822147369385,
+  "round 2 render": 15.572344779968262,
+  "phone and runners": 41.20884966850281
+ },
+ "scores": {
+  "before": {
+   "perObject": [
+    {
+     "id": "rail",
+     "kind": "rail",
+     "iou": 0.1411,
+     "pixels": 31519
+    },
+    {
+     "id": "wreck",
+     "kind": "wreck",
+     "iou": 0.2033,
+     "pixels": 38777
+    },
+    {
+     "id": "mesa-right",
+     "kind": "mesa",
+     "iou": 0.3397,
+     "pixels": 18384
+    },
+    {
+     "id": "spire",
+     "kind": "spire",
+     "iou": 0.1086,
+     "pixels": 20340
+    },
+    {
+     "id": "mesa-left",
+     "kind": "mesa",
+     "iou": 0.6599,
+     "pixels": 36018
+    },
+    {
+     "id": "tower-l3",
+     "kind": "tower",
+     "iou": 0.0314,
+     "pixels": 29320
+    },
+    {
+     "id": "slab-l",
+     "kind": "slab",
+     "iou": 0.1328,
+     "pixels": 35720
+    },
+    {
+     "id": "tower-l1",
+     "kind": "tower",
+     "iou": 0.3435,
+     "pixels": 22873
+    },
+    {
+     "id": "tower-r2",
+     "kind": "tower",
+     "iou": 0.4736,
+     "pixels": 21079
+    },
+    {
+     "id": "slab-r",
+     "kind": "slab",
+     "iou": 0.0907,
+     "pixels": 31290
+    },
+    {
+     "id": "tower-l2",
+     "kind": "tower",
+     "iou": 0.0701,
+     "pixels": 12554
+    },
+    {
+     "id": "tower-r1",
+     "kind": "tower",
+     "iou": 0.1954,
+     "pixels": 7729
+    },
+    {
+     "id": "arch",
+     "kind": "arch",
+     "iou": 0.466,
+     "pixels": 13843
+    },
+    {
+     "id": "tower-mid",
+     "kind": "tower",
+     "iou": 0.1927,
+     "pixels": 13704
+    },
+    {
+     "id": "tower-l4",
+     "kind": "tower",
+     "iou": 0.0089,
+     "pixels": 8488
+    }
+   ],
+   "overallWeighted": 0.2413,
+   "placedWeighted": 0.2944,
+   "union": 0.3052,
+   "depthOrder": [
+    {
+     "id": "slab-l",
+     "kind": "slab",
+     "bottom": 713
+    },
+    {
+     "id": "slab-r",
+     "kind": "slab",
+     "bottom": 699
+    },
+    {
+     "id": "rail",
+     "kind": "rail",
+     "bottom": 620
+    },
+    {
+     "id": "wreck",
+     "kind": "wreck",
+     "bottom": 513
+    },
+    {
+     "id": "spire",
+     "kind": "spire",
+     "bottom": 418
+    },
+    {
+     "id": "mesa-left",
+     "kind": "mesa",
+     "bottom": 413
+    },
+    {
+     "id": "tower-l3",
+     "kind": "tower",
+     "bottom": 404
+    },
+    {
+     "id": "tower-mid",
+     "kind": "tower",
+     "bottom": 402
+    },
+    {
+     "id": "tower-l4",
+     "kind": "tower",
+     "bottom": 389
+    },
+    {
+     "id": "tower-l2",
+     "kind": "tower",
+     "bottom": 389
+    },
+    {
+     "id": "arch",
+     "kind": "arch",
+     "bottom": 379
+    },
+    {
+     "id": "mesa-right",
+     "kind": "mesa",
+     "bottom": 368
+    },
+    {
+     "id": "tower-r2",
+     "kind": "tower",
+     "bottom": 361
+    },
+    {
+     "id": "tower-r1",
+     "kind": "tower",
+     "bottom": 360
+    },
+    {
+     "id": "tower-l1",
+     "kind": "tower",
+     "bottom": 360
+    }
+   ],
+   "frame": {
+    "luma": 91.45,
+    "skyTop": 0.8002
+   }
+  },
+  "round1": {
+   "perObject": [
+    {
+     "id": "rail",
+     "kind": "rail",
+     "iou": 0.1446,
+     "pixels": 31519
+    },
+    {
+     "id": "wreck",
+     "kind": "wreck",
+     "iou": 0.2177,
+     "pixels": 38777
+    },
+    {
+     "id": "mesa-right",
+     "kind": "mesa",
+     "iou": 0.3883,
+     "pixels": 18384
+    },
+    {
+     "id": "spire",
+     "kind": "spire",
+     "iou": 0.0535,
+     "pixels": 20340
+    },
+    {
+     "id": "mesa-left",
+     "kind": "mesa",
+     "iou": 0.66,
+     "pixels": 36018
+    },
+    {
+     "id": "tower-l3",
+     "kind": "tower",
+     "iou": 0.1952,
+     "pixels": 29320
+    },
+    {
+     "id": "slab-l",
+     "kind": "slab",
+     "iou": 0.1211,
+     "pixels": 35720
+    },
+    {
+     "id": "tower-l1",
+     "kind": "tower",
+     "iou": 0.333,
+     "pixels": 22873
+    },
+    {
+     "id": "tower-r2",
+     "kind": "tower",
+     "iou": 0.5428,
+     "pixels": 21079
+    },
+    {
+     "id": "slab-r",
+     "kind": "slab",
+     "iou": 0.114,
+     "pixels": 31290
+    },
+    {
+     "id": "tower-l2",
+     "kind": "tower",
+     "iou": 0.2795,
+     "pixels": 12554
+    },
+    {
+     "id": "tower-r1",
+     "kind": "tower",
+     "iou": 0.1997,
+     "pixels": 7729
+    },
+    {
+     "id": "arch",
+     "kind": "arch",
+     "iou": 0.3903,
+     "pixels": 13843
+    },
+    {
+     "id": "tower-mid",
+     "kind": "tower",
+     "iou": 0.1938,
+     "pixels": 13704
+    },
+    {
+     "id": "tower-l4",
+     "kind": "tower",
+     "iou": 0.1566,
+     "pixels": 8488
+    }
+   ],
+   "overallWeighted": 0.2696,
+   "placedWeighted": 0.3455,
+   "union": 0.3354,
+   "depthOrder": [
+    {
+     "id": "slab-l",
+     "kind": "slab",
+     "bottom": 713
+    },
+    {
+     "id": "slab-r",
+     "kind": "slab",
+     "bottom": 699
+    },
+    {
+     "id": "rail",
+     "kind": "rail",
+     "bottom": 620
+    },
+    {
+     "id": "wreck",
+     "kind": "wreck",
+     "bottom": 513
+    },
+    {
+     "id": "spire",
+     "kind": "spire",
+     "bottom": 418
+    },
+    {
+     "id": "mesa-left",
+     "kind": "mesa",
+     "bottom": 413
+    },
+    {
+     "id": "tower-l3",
+     "kind": "tower",
+     "bottom": 404
+    },
+    {
+     "id": "tower-mid",
+     "kind": "tower",
+     "bottom": 402
+    },
+    {
+     "id": "tower-l4",
+     "kind": "tower",
+     "bottom": 389
+    },
+    {
+     "id": "tower-l2",
+     "kind": "tower",
+     "bottom": 389
+    },
+    {
+     "id": "arch",
+     "kind": "arch",
+     "bottom": 379
+    },
+    {
+     "id": "mesa-right",
+     "kind": "mesa",
+     "bottom": 368
+    },
+    {
+     "id": "tower-r2",
+     "kind": "tower",
+     "bottom": 361
+    },
+    {
+     "id": "tower-r1",
+     "kind": "tower",
+     "bottom": 360
+    },
+    {
+     "id": "tower-l1",
+     "kind": "tower",
+     "bottom": 360
+    }
+   ],
+   "frame": {
+    "luma": 89.65,
+    "skyTop": 0.7676
+   },
+   "reject": null
+  },
+  "round2": {
+   "perObject": [
+    {
+     "id": "rail",
+     "kind": "rail",
+     "iou": 0.2667,
+     "pixels": 31519
+    },
+    {
+     "id": "wreck",
+     "kind": "wreck",
+     "iou": 0.2103,
+     "pixels": 38777
+    },
+    {
+     "id": "mesa-right",
+     "kind": "mesa",
+     "iou": 0.3902,
+     "pixels": 18384
+    },
+    {
+     "id": "spire",
+     "kind": "spire",
+     "iou": 0.1275,
+     "pixels": 20340
+    },
+    {
+     "id": "mesa-left",
+     "kind": "mesa",
+     "iou": 0.6515,
+     "pixels": 36018
+    },
+    {
+     "id": "tower-l3",
+     "kind": "tower",
+     "iou": 0.206,
+     "pixels": 29320
+    },
+    {
+     "id": "slab-l",
+     "kind": "slab",
+     "iou": 0.4156,
+     "pixels": 35720
+    },
+    {
+     "id": "tower-l1",
+     "kind": "tower",
+     "iou": 0.336,
+     "pixels": 22873
+    },
+    {
+     "id": "tower-r2",
+     "kind": "tower",
+     "iou": 0.5284,
+     "pixels": 21079
+    },
+    {
+     "id": "slab-r",
+     "kind": "slab",
+     "iou": 0.1139,
+     "pixels": 31290
+    },
+    {
+     "id": "tower-l2",
+     "kind": "tower",
+     "iou": 0.2637,
+     "pixels": 12554
+    },
+    {
+     "id": "tower-r1",
+     "kind": "tower",
+     "iou": 0.1997,
+     "pixels": 7729
+    },
+    {
+     "id": "arch",
+     "kind": "arch",
+     "iou": 0.3278,
+     "pixels": 13843
+    },
+    {
+     "id": "tower-mid",
+     "kind": "tower",
+     "iou": 0.1696,
+     "pixels": 13704
+    },
+    {
+     "id": "tower-l4",
+     "kind": "tower",
+     "iou": 0.1881,
+     "pixels": 8488
+    }
+   ],
+   "overallWeighted": 0.3114,
+   "placedWeighted": 0.351,
+   "union": 0.3943,
+   "depthOrder": [
+    {
+     "id": "slab-l",
+     "kind": "slab",
+     "bottom": 713
+    },
+    {
+     "id": "slab-r",
+     "kind": "slab",
+     "bottom": 699
+    },
+    {
+     "id": "rail",
+     "kind": "rail",
+     "bottom": 620
+    },
+    {
+     "id": "wreck",
+     "kind": "wreck",
+     "bottom": 513
+    },
+    {
+     "id": "spire",
+     "kind": "spire",
+     "bottom": 418
+    },
+    {
+     "id": "mesa-left",
+     "kind": "mesa",
+     "bottom": 413
+    },
+    {
+     "id": "tower-l3",
+     "kind": "tower",
+     "bottom": 404
+    },
+    {
+     "id": "tower-mid",
+     "kind": "tower",
+     "bottom": 402
+    },
+    {
+     "id": "tower-l4",
+     "kind": "tower",
+     "bottom": 389
+    },
+    {
+     "id": "tower-l2",
+     "kind": "tower",
+     "bottom": 389
+    },
+    {
+     "id": "arch",
+     "kind": "arch",
+     "bottom": 379
+    },
+    {
+     "id": "mesa-right",
+     "kind": "mesa",
+     "bottom": 368
+    },
+    {
+     "id": "tower-r2",
+     "kind": "tower",
+     "bottom": 361
+    },
+    {
+     "id": "tower-r1",
+     "kind": "tower",
+     "bottom": 360
+    },
+    {
+     "id": "tower-l1",
+     "kind": "tower",
+     "bottom": 360
+    }
+   ],
+   "frame": {
+    "luma": 87.1,
+    "skyTop": 0.7733
+   },
+   "reject": null
+  }
+ },
+ "keep": "round2",
+ "verdict": "FAIL",
+ "budget": {
+  "before16x9": {
+   "drawCalls": 29,
+   "triangles": 732443
+  },
+  "beforePhone": {
+   "drawCalls": 23,
+   "triangles": 309627,
+   "size": [
+    540,
+    1200
+   ]
+  },
+  "afterPhone": {
+   "drawCalls": 23,
+   "triangles": 313549,
+   "size": [
+    540,
+    1200
+   ]
+  },
+  "cap": {
+   "drawCalls": 12,
+   "note": "standing phone cap. Flag when the kept phone frame is over the cap or over the before phone frame."
+  },
+  "overCap": true,
+  "overBefore": false
+ },
+ "checks": {
+  "key": {
+   "corridorBlocked": [],
+   "overlaps": [],
+   "n": 13
+  },
+  "depthInversions": [
+   {
+    "nearerInKey": "mesa-left",
+    "butFartherThan": "mesa-right",
+    "depth": [
+     311.7,
+     132.1
+    ]
+   },
+   {
+    "nearerInKey": "tower-l2",
+    "butFartherThan": "mesa-right",
+    "depth": [
+     217.6,
+     132.1
+    ]
+   },
+   {
+    "nearerInKey": "tower-l4",
+    "butFartherThan": "mesa-right",
+    "depth": [
+     296.3,
+     132.1
+    ]
+   },
+   {
+    "nearerInKey": "mesa-left",
+    "butFartherThan": "tower-l1",
+    "depth": [
+     311.7,
+     126.7
+    ]
+   },
+   {
+    "nearerInKey": "mesa-left",
+    "butFartherThan": "tower-r2",
+    "depth": [
+     311.7,
+     188.0
+    ]
+   },
+   {
+    "nearerInKey": "mesa-left",
+    "butFartherThan": "tower-r1",
+    "depth": [
+     311.7,
+     256.7
+    ]
+   },
+   {
+    "nearerInKey": "tower-l2",
+    "butFartherThan": "tower-l1",
+    "depth": [
+     217.6,
+     126.7
+    ]
+   },
+   {
+    "nearerInKey": "tower-l4",
+    "butFartherThan": "tower-l1",
+    "depth": [
+     296.3,
+     126.7
+    ]
+   },
+   {
+    "nearerInKey": "tower-l2",
+    "butFartherThan": "tower-r2",
+    "depth": [
+     217.6,
+     188.0
+    ]
+   },
+   {
+    "nearerInKey": "tower-l4",
+    "butFartherThan": "tower-r2",
+    "depth": [
+     296.3,
+     188.0
+    ]
+   },
+   {
+    "nearerInKey": "tower-l4",
+    "butFartherThan": "tower-r1",
+    "depth": [
+     296.3,
+     256.7
+    ]
+   }
+  ],
+  "missing": [
+   "todo-wreck",
+   "todo-arch"
+  ],
+  "runners": {
+   "street": {
+    "pose": {
+     "x": -7.45,
+     "z": 3.44,
+     "yaw": 81
+    },
+    "shot": "/workspace/grokcli/wt/placement-key-1011/steps/placement-key-1011/runner-street.png"
+   },
+   "chase": {
+    "pose": {
+     "x": -35.31,
+     "z": 45.51,
+     "yaw": 30
+    },
+    "shot": "/workspace/grokcli/wt/placement-key-1011/steps/placement-key-1011/runner-chase.png"
+   },
+   "runner": {
+    "pose": {
+     "x": -19.3,
+     "z": 5.4,
+     "yaw": 78
+    },
+    "shot": "/workspace/grokcli/wt/placement-key-1011/steps/placement-key-1011/runner-runner.png"
+   },
+   "geometry": {
+    "corridorBlocked": [],
+    "overlaps": [],
+    "n": 13
+   }
+  }
+ },
+ "fit": {
+  "A": 27.91618507062128,
+  "anchorZ": 4.881248449461316,
+  "anchorD": 5.719066619873047,
+  "checkZ": 9.503697687595945,
+  "checkPred": 13.109932914311196,
+  "checkRel": 0.3794560123079298,
+  "planeY": 6.809591927440971,
+  "model": "depth-anything-v2-small",
+  "moge": "not installed"
+ },
+ "restoredFromBackup": true
+}

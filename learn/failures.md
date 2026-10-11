@@ -1097,3 +1097,25 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Not applied further. Round 3 is the stop. Do not export `dataset/i23d`. Do not mark the checklist. |
 | Guard | `steps/fusion-fix5-1011/gate/report.md` rows `relief-texture alignment`, `facade relief`, `grounding`, `key checklist`. Mask IoU in `steps/fusion-fix5-1011/numbers.json`. |
 | Sources | `tools/imagine-to-3d/fusion5.py`, `fusion5_blender.py`, `steps/fusion-fix5-1011/REPORT.md`. |
+
+### 2026-10-11 — disparity lift scored a rock wall as a better silhouette
+
+| | |
+| --- | --- |
+| Take | placement-key-1011 |
+| Defect | The first two key-camera renders put the camera inside a mesa. Weighted IoU rose from 0.2413 to 0.4923, and the tool kept that frame. |
+| Root cause | Depth Anything V2, scaled from one near ground pixel, placed far silhouettes at 10–40 m. `assign_assets` then clamped mesa scale to a floor of 0.6 and lateral to 48 m, so a city-scale mesa filled the lens. The IoU proxy treats any non-sky, non-sand pixel as structure, so rock inside the mask box counted as the object. `order_ok` was hardcoded true. |
+| Fix | Restore the staging layout from `stage-before-*`. Apply only a nudge: towers stay ≥ 55 m ahead and outside lateral 22, the spire ≥ 70 m and lateral 36, mesas ≥ 90 m and lateral 110. Scale stays within 0.80–1.20 of the original for a tower or the spire, and 0.90–1.10 for a mesa. Reject a frame whose sky fraction falls under 0.45 of the before frame, or whose luma falls under 0.55. Decision IoU counts tower, spire, and mesa only. |
+| Guard | `python3 tools/placement-from-key/selftest.py` rows `mesa lift cannot enter the lens`, `tower lift stays ahead of the camera`, `assignment picks the foreground mesa`. The kept pass is in `steps/placement-key-1011/REPORT.md`: placed IoU 0.351, verdict FAIL, two rounds, then stop. |
+| Sources | `tools/placement-from-key/depth_lift.py`, `score.py`, `place.py`. Discarded frames `steps/placement-key-1011/discarded-rockwall-after-16x9.png`. |
+
+### 2026-10-11 — metric seats still miss the blade rows
+
+| | |
+| --- | --- |
+| Take | placement-key2-1011 |
+| Defect | Two key-camera renders left the flanking blade rows unmatched. Placed IoU 0.3763 (round 1, kept) and 0.4049 (round 2, rejected for a collapsed sky). Eleven depth inversions. Phone `passes.main.calls` 24 against a cap of 12. |
+| Root cause | MoGe metres plus the mesa floor (`cam_s+90`, lateral ±110) and the spire floor (`cam_s+55`) put those masses farther than towers the key paints in front of them. The tower modules are chunky blocks, so a height scale cannot become a thin blade. Parking unused towers and mesas along negative avenue s did not drop the phone batches: each mesa is still its own mesh and stayed visible. |
+| Fix | Stop after the two rounds. Do not treat wreck or arch TODOs as a placement miss. Do not run a third cook on the same silhouette gap. |
+| Guard | `steps/placement-key2-1011/REPORT.md` verdict FAIL, placed IoU 0.3763, depth inversions 11, phone draws 24. `python3 tools/placement-from-key/selftest.py` still checks the floors. The capture proof is `before-16x9-loading.png` FAIL and `before-16x9.png` PASS. |
+| Sources | `tools/placement-from-key/place.py`, `depth_lift.py`, `steps/placement-key2-1011/sheet-16x9.jpg`, `sheet-phone.jpg`. Cites the 2026-10-11 rock-wall entry above. | |

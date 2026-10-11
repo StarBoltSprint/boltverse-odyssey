@@ -1,0 +1,13 @@
+{
+ "model": "moge-2-vitl",
+ "metric": true,
+ "shape": [
+  720,
+  1280
+ ],
+ "hit": false,
+ "seconds": 10.46,
+ "fovX": 121.28449291441746,
+ "finite": 921600,
+ "p50": 11.4
+}
