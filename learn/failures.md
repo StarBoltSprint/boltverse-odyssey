@@ -988,3 +988,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Score a pool as unique = min(W / cellM, sqrt(layers × W × H / wall area of every object sharing the pool)); repeats = cells / layers. Spend unique sections (or larger plates) until each surface reaches the threshold. |
 | Guard | `node tools/object-gate/cli.mjs --scene tools/object-gate/specs/zone-b/scene.yaml` row `native Imagine px/m` (pool row, `pool.sharedSelect` in the spec) and row `repetition (UV)` (repeats > 1 FAILS); ortho facade autocorrelation at the 12 m period 0.84 / 0.91 (max 0.5). |
 | Sources | `tools/object-gate/lib/probe.js` `texel()` pool branch; `specs/zone-b/tower-m*.yaml`; gate run on `?v=54`, 2026-10-09 17:3x. |
+
+### 2026-10-11 — disparity lift scored a rock wall as a better silhouette
+
+| | |
+| --- | --- |
+| Take | placement-key-1011 |
+| Defect | The first two key-camera renders put the camera inside a mesa. Weighted IoU rose from 0.2413 to 0.4923, and the tool kept that frame. |
+| Root cause | Depth Anything V2, scaled from one near ground pixel, placed far silhouettes at 10–40 m. `assign_assets` then clamped mesa scale to a floor of 0.6 and lateral to 48 m, so a city-scale mesa filled the lens. The IoU proxy treats any non-sky, non-sand pixel as structure, so rock inside the mask box counted as the object. `order_ok` was hardcoded true. |
+| Fix | Restore the staging layout from `stage-before-*`. Apply only a nudge: towers stay ≥ 55 m ahead and outside lateral 22, the spire ≥ 70 m and lateral 36, mesas ≥ 90 m and lateral 110. Scale stays within 0.80–1.20 of the original for a tower or the spire, and 0.90–1.10 for a mesa. Reject a frame whose sky fraction falls under 0.45 of the before frame, or whose luma falls under 0.55. Decision IoU counts tower, spire, and mesa only. |
+| Guard | `python3 tools/placement-from-key/selftest.py` rows `mesa lift cannot enter the lens`, `tower lift stays ahead of the camera`, `assignment picks the foreground mesa`. The kept pass is in `steps/placement-key-1011/REPORT.md`: placed IoU 0.351, verdict FAIL, two rounds, then stop. |
+| Sources | `tools/placement-from-key/depth_lift.py`, `score.py`, `place.py`. Discarded frames `steps/placement-key-1011/discarded-rockwall-after-16x9.png`. |

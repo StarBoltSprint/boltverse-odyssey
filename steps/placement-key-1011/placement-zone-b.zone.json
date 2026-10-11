@@ -1,0 +1,4290 @@
+{
+ "$schema": "schema/zone.v1.schema.json",
+ "schema": "zone.v1",
+ "version": "1.0",
+ "id": "zone-b",
+ "keyImage": "/workspace/zb-bible-1008/key-city3.jpg",
+ "keyCamera": {
+  "fov": 58,
+  "position": [
+   -51.115,
+   9.959591927440972,
+   9.63
+  ],
+  "target": [
+   -50.14927213016303,
+   9.939347491193436,
+   9.371233997168956
+  ],
+  "previewPose": {
+   "x": -51.115,
+   "z": 9.63,
+   "yaw": 78,
+   "pitch": 4.84,
+   "eye": 4.0,
+   "fov": 90,
+   "source": "unreal-look-fix2 matched camera"
+  }
+ },
+ "cameras": {
+  "hero": {
+   "name": "hero",
+   "fov": 58,
+   "position": [
+    -51.115,
+    9.959591927440972,
+    9.63
+   ],
+   "target": [
+    -50.14927213016303,
+    9.939347491193436,
+    9.371233997168956
+   ],
+   "forward": [
+    0.9657278698369757,
+    -0.020244436247535143,
+    -0.2587660028310459
+   ],
+   "previewPose": {
+    "name": "hero",
+    "x": -51.115,
+    "z": 9.63,
+    "yaw": 75,
+    "pitch": -1.16,
+    "eye": 3.15,
+    "fov": 58,
+    "source": "objects-t7.mjs spawn literal (applied when the URL has no x/z)"
+   }
+  },
+  "street": {
+   "name": "street",
+   "fov": 58,
+   "position": [
+    -7.4485346997279205,
+    2.263251934362105,
+    3.4352741381180083
+   ],
+   "target": [
+    -6.494501023222483,
+    2.5220709794646257,
+    3.2841700482139347
+   ],
+   "forward": [
+    0.954033676505437,
+    0.25881904510252074,
+    -0.15110408990407354
+   ],
+   "previewPose": {
+    "name": "street",
+    "x": -7.4485346997279205,
+    "z": 3.4352741381180083,
+    "yaw": 81,
+    "pitch": 15,
+    "eye": 1.6,
+    "fov": 58,
+    "source": "layout.street angles; world xz from bible avenue2At(standS, lateral); viewer pitch is -pitchDownDeg"
+   }
+  },
+  "m8": {
+   "name": "8m",
+   "fov": 58,
+   "position": [
+    -51.115,
+    9.809591927440971,
+    9.63
+   ],
+   "target": [
+    -50.16561837069892,
+    9.625303392390785,
+    9.375613959119834
+   ],
+   "forward": [
+    0.9493816293010784,
+    -0.18428853505018533,
+    -0.2543860408801675
+   ],
+   "previewPose": {
+    "name": "8m",
+    "x": -51.115,
+    "z": 9.63,
+    "yaw": 75,
+    "pitch": -10.619655276155134,
+    "eye": null,
+    "resolvedEye": 3,
+    "eyeSource": "main.mjs default when the URL sets x or z and omits eye",
+    "fov": 58,
+    "frame": {
+     "W": 480,
+     "H": 900
+    },
+    "source": "/workspace/gd/ab-look/a/meta.json avenue-8m"
+   }
+  }
+ },
+ "biome": {
+  "schema": "biome/1",
+  "bibleVersion": 1,
+  "anchor": {
+   "slot": "key",
+   "aspect": "16:9",
+   "horizonRow": 0.52,
+   "subject": "cinematic grandiose hero shot of Ember Mesa at dusk, movie-poster composition, a sand desert first: big salmon dunes spill over the half-buried ruins of an abandoned futuristic mega-city. Foreground: sand-drifted debris, a broken mag-rail beam and the crest of a dune. Down the middle runs Bolt's path, a ruined avenue drifted with rippled sand, cracked dark paving and a collapsed mag-rail line half under the sand, its leading lines converging on the landmark spire. Mid-ground: colossal broken towers and skyscraper shells dwarf the avenue on both sides, a broken sky-bridge spans it, a giant fallen starship hull lies buried in a dune, dead holographic sign frames, a few small amber lights still flickering; layered sandstone mesas and a natural sandstone arch still frame the city. At the end of the avenue the city's landmark beacon: a tall dark basalt and brushed-metal signal spire behind the arch, two thin floating rings glowing warm amber, a faint beam to the sky. Far: the ruined city stretches to the horizon, tower silhouettes fading layer after layer into warm atmospheric haze. The low sun on the right backlights the ruins with bright rim light on every edge and long god-rays through the gaps between the towers. In the violet sky thin planetary ring arcs, a small pale second moon and faint stars near the zenith",
+   "sampled": {
+    "horizon": [
+     74.504,
+     15.77,
+     19.693
+    ],
+    "sky": [
+     44.846,
+     15.466,
+     -13.064
+    ],
+    "ground": [
+     30.468,
+     14.209,
+     11.178
+    ],
+    "shadow": [
+     7.084,
+     5.317,
+     0.08
+    ],
+    "highlight": [
+     76.847,
+     15.115,
+     16.104
+    ],
+    "lit": [
+     41.041,
+     18.886,
+     15.38
+    ],
+    "saturation": 0.3516,
+    "horizonRow": 0.48,
+    "file": "key.jpg",
+    "horizonRowPlanned": 0.52,
+    "horizonFullWidth": [
+     23.605,
+     13.664,
+     10.584
+    ],
+    "$horizonNote": "horizon = median haze at the vanishing-point gap (x 600-680, rows 0.44-0.47); full-width band hits the towers (L 23.6)"
+   }
+  },
+  "exposure": {
+   "ev": 0,
+   "whiteBalanceK": 5500
+  },
+  "sky": {
+   "horizonPlates": 6,
+   "plateHFovDeg": 75,
+   "plateAspect": "16:9",
+   "zenith": true,
+   "nadir": true,
+   "capFovDeg": 100,
+   "outSize": [
+    4096,
+    2048
+   ],
+   "bandSize": [
+    8192,
+    1024
+   ],
+   "planetInSky": false,
+   "subject": "Ember Mesa dusk sky: dusty rose and salmon haze at the horizon rising into violet and indigo, thin high streaks of cloud"
+  },
+  "ground": {
+   "tiles": 8,
+   "tileMeters": 8,
+   "heightFromAlbedo": true,
+   "heightMeters": 0.35,
+   "bombing": {
+    "grid": 3,
+    "offset": 0.15,
+    "rotate": true,
+    "enabled": true,
+    "method": "2-sample stochastic variants, variance-preserving blend (runtime GROUND_GLSL)"
+   },
+   "macroScale": 0.08,
+   "bigRocks": 20,
+   "materials": [
+    {
+     "id": "g0",
+     "subject": "fine rippled salmon sand drifted over buried paving",
+     "weight": 1,
+     "bomb": "r180"
+    },
+    {
+     "id": "g1",
+     "subject": "wind-packed sand with small rust pebbles and shards of dark glass",
+     "weight": 0.55,
+     "bomb": "free"
+    },
+    {
+     "id": "g2",
+     "subject": "cracked dark composite street paving half covered by drifted sand",
+     "weight": 0.15,
+     "bomb": "r180"
+    },
+    {
+     "id": "g3",
+     "subject": "sand-drifted rubble of broken concrete, sandstone and brushed-metal fragments",
+     "weight": 0.45,
+     "bomb": "free"
+    },
+    {
+     "id": "g4",
+     "subject": "sharp dune crest sand with a slip face",
+     "weight": 0.4,
+     "bomb": "r180"
+    },
+    {
+     "id": "g5",
+     "subject": "worn hexagonal metal floor plates with sand in the seams",
+     "weight": 0.35,
+     "bomb": "r180"
+    },
+    {
+     "id": "g6",
+     "subject": "a buried mag-rail track: two worn metal rails and sleepers under drifting sand",
+     "weight": 0.3,
+     "bomb": "none"
+    },
+    {
+     "id": "g7",
+     "subject": "talus of broken sandstone blocks and fallen tower debris with bent metal struts",
+     "weight": 0.25,
+     "bomb": "free"
+    }
+   ],
+   "splat": {
+    "seed": 1008,
+    "scaleM": 60,
+    "edge": 0.12,
+    "macroAmount": 0.35
+   },
+   "relief": {
+    "enabled": true,
+    "seed": 1008,
+    "cellM": 64,
+    "lods": [
+     [
+      96,
+      32
+     ],
+     [
+      192,
+      16
+     ],
+     [
+      400,
+      8
+     ]
+    ],
+    "skirtM": 1.5,
+    "dunes": {
+     "ampM": 9,
+     "wavelengthM": 160,
+     "windDeg": 60,
+     "windwardFrac": 0.75,
+     "smallAmpM": 1.8,
+     "smallWavelengthM": 46,
+     "swellAmpM": 4,
+     "swellWavelengthM": 620
+    },
+    "avenue": {
+     "halfWidthM": 14,
+     "blendM": 30,
+     "meanderM": 6,
+     "meanderWavelengthM": 1380,
+     "ampM": 1.2,
+     "wavelengthM": 90
+    },
+    "hollows": {
+     "cellM": 140,
+     "chance": 0.5,
+     "depthM": [
+      1.5,
+      3.5
+     ],
+     "radiusM": [
+      18,
+      34
+     ]
+    },
+    "drifts": {
+     "heightM": [
+      2,
+      4.5
+     ],
+     "radiusM": [
+      16,
+      26
+     ],
+     "anchors": "placeholder: tower canyon both sides of the avenue every ~80 m (x = +-34..58 m); replaced by the objects-group placements"
+    },
+    "maxSlopeDeg": 32,
+    "normalStrength": 1,
+    "sunAmbient": 0.55,
+    "normalPacking": "xyh",
+    "pom": {
+     "enabled": true,
+     "depthM": 0.035,
+     "fadeM": 15,
+     "steps": 10,
+     "shadow": 0.35,
+     "$note": "2026-10-08 preview: plates raised from the plate itself (gen_relief.py), POM + sun-side contact shade"
+    }
+   }
+  },
+  "camera": {
+   "fovBase": 58,
+   "fovSprint": 70,
+   "fovDamp": 4,
+   "near": 0.2,
+   "far": 400,
+   "pixelRatioCap": 1.5,
+   "trauma": {
+    "enabled": false,
+    "landing": 0.35,
+    "decayPerSec": 1.6,
+    "rollRad": 0.004,
+    "liftM": 0.02
+   }
+  },
+  "post": {
+   "toneMapping": "none",
+   "runtimeLut": false,
+   "contrast": 1.06,
+   "gamma": 0.95,
+   "grain": 0.04,
+   "vignette": {
+    "start": 0.72,
+    "end": 1.15,
+    "strength": 0.28
+   },
+   "sceneFog": false,
+   "bloom": {
+    "enabled": false,
+    "threshold": 0.85,
+    "radius": 0.4,
+    "strength": 0.25,
+    "skyOnly": true
+   }
+  },
+  "budgets": {
+   "imagineImages": 35,
+   "drawCalls": 12,
+   "trisOnScreen": 150000,
+   "texMB": 64,
+   "attemptsPerSlot": 2
+  },
+  "qc": {
+   "deltaE": "2000",
+   "horizonDE": 6,
+   "shadowDE": 10,
+   "shadowLMin": 8,
+   "highlightDE": 12,
+   "satTol": 0.08,
+   "objectLitDE": 14,
+   "seamDE": 8,
+   "bboxMin": 0.7,
+   "grainLapVarMin": 80,
+   "lutMaxFactor": 2,
+   "maxFails": 2,
+   "horizonAntiSunDL": 12
+  },
+  "styleId": "aaa-2026",
+  "id": "ember-mesa",
+  "name": "Ember Mesa",
+  "archetype": "mesa-desert",
+  "seed": 1008,
+  "lore": {
+   "row": "Ember Mesa: a sand desert swallowing an abandoned futuristic mega-city at dusk: dunes over ruined towers and avenues, collapsed mag-rails, fallen starship hulls, a few amber lights still flickering, sandstone mesas and the Anchor arch with the city's signal spire; ring arcs, a second moon and stars in the violet sky; a ringed gas giant hangs opposite the sun",
+   "playerLine": "I want to explore the red mesas"
+  },
+  "sun": {
+   "azimuthDeg": 90,
+   "elevationDeg": 8,
+   "kelvin": 2900,
+   "hex": "#ffb089",
+   "side": "right",
+   "intensity": 1
+  },
+  "palette": {
+   "key": "#ffb089",
+   "fill": "#c47ad4",
+   "shadow": "#4a2048",
+   "horizon": "#e8a0b4",
+   "zenith": "#3a2468",
+   "ground": "#a85a48",
+   "accent": "#c49c6f",
+   "rim": "#ffb089",
+   "horizonSampled": "#c79680"
+  },
+  "fog": {
+   "color": "#c79680",
+   "near": 40,
+   "far": 220,
+   "desat": 0.25,
+   "heightFalloff": 0.06,
+   "bands": [
+    {
+     "dist": 40,
+     "color": "#bd8c7f",
+     "amount": 0.15
+    },
+    {
+     "dist": 130,
+     "color": "#c79680",
+     "amount": 0.45
+    },
+    {
+     "dist": 220,
+     "color": "#b78981",
+     "amount": 0.8
+    }
+   ]
+  },
+  "lut": {
+   "lift": [
+    0.0069,
+    0.0046,
+    0.0074
+   ],
+   "gamma": [
+    1,
+    1,
+    1
+   ],
+   "gain": [
+    1.0286,
+    1.0154,
+    1.0046
+   ],
+   "saturation": 1,
+   "contrast": 1.04
+  },
+  "planet": {
+   "subject": "a pink-violet ringed gas giant with soft banded clouds",
+   "radius": 80,
+   "distance": 600,
+   "azimuthDeg": 270,
+   "elevationDeg": 22,
+   "spinDegPerSec": 0.86,
+   "ring": {
+    "inner": 108,
+    "outer": 150,
+    "tiltDeg": 17.7,
+    "spinDegPerSec": 2.3
+   }
+  },
+  "objects": [
+   {
+    "id": "hero",
+    "kind": "hero",
+    "subject": "the Anchor: one giant natural sandstone arch 22 m wide and 20 m to the crown with the city's landmark beacon behind it, a tall dark basalt and brushed-metal signal spire with chamfered edges, engraved lines and two thin floating brushed-metal rings glowing warm amber",
+    "count": 1,
+    "heightM": 44,
+    "layer": "landmark",
+    "views": {
+     "ortho": [
+      "front",
+      "right",
+      "back",
+      "top"
+     ],
+     "threeQuarter": [
+      45,
+      135,
+      225,
+      315
+     ]
+    },
+    "lods": [
+     4000,
+     800,
+     180
+    ],
+    "tex": 2048,
+    "displaceM": 0.25
+   },
+   {
+    "id": "rock-0",
+    "kind": "mesa",
+    "subject": "colossal broken skyscraper shell of dark composite and brushed metal, half buried in a sand dune, empty window bays, exposed bent girders, sand spilling through it",
+    "count": 10,
+    "heightM": 30,
+    "layer": "mid",
+    "views": {
+     "ortho": [
+      "front",
+      "right",
+      "top"
+     ],
+     "threeQuarter": [
+      45
+     ]
+    },
+    "lods": [
+     4000,
+     800,
+     180
+    ],
+    "tex": 2048,
+    "displaceM": 0.15
+   },
+   {
+    "id": "rock-1",
+    "kind": "rock",
+    "subject": "fallen section of a mag-rail beam of dark brushed metal half buried in drifted sand",
+    "count": 10,
+    "heightM": 3,
+    "layer": "near",
+    "views": {
+     "ortho": [
+      "front",
+      "right",
+      "top"
+     ],
+     "threeQuarter": [
+      45
+     ]
+    },
+    "lods": [
+     4000,
+     800,
+     180
+    ],
+    "tex": 1024,
+    "displaceM": 0.15
+   }
+  ],
+  "ambient": [
+   "heat-shimmer",
+   "drifting-sand",
+   "birds-3d",
+   "dust-gusts"
+  ],
+  "catalogueFallback": "mesa-desert",
+  "tone": {
+   "$note": "free tone words for this biome (local only)",
+   "layoutNote": "SmiR 2026-10-08: zone B is a FREE-ROAM 360 degree mega-city, not a corridor. The avenue is only the main street. Districts (dune-buried avenue, tower canyon, fallen spaceport, mesa gate, spire plaza) connect in all directions; no invisible walls, collisions follow real geometry; the spire is the landmark seen from everywhere.",
+   "skyNote": "2026-10-08 (SmiR via review of sky v1): sky plates are SKY ONLY (gradient, clouds, sun at azimuth 90, faint stars near the zenith, a haze band at the horizon in the key's haze colour; below the horizon a flat haze band hidden by the ground mesh). The city skyline at the horizon is real 3D low-LOD tower solids from the city kit placed in the fog band (objects group). The ring arc and the small second moon are 3D meshes like the planet (a ring band mesh + a moon sphere, Imagine or plate-derived textures later). Never paint towers, rings or moons into sky plates.",
+   "skyV2Note": "2026-10-08 sky v2 built (not baked, not wired): plates tools/biome/out/ember-mesa/sky-in3 (H1-H5) + sky-in4/sky-H0 (sun-up retry), Z/N reused from v1 (sky-final-norm/sky-Z, sky-final/sky-N). Imagine kept the sun on the horizon twice although asked for 8 deg up, so H0's own sun glow was moved up 8 deg in post (zb-bible-1008/tools/sun_lift.py, Imagine pixels only) -> sky-in5. Clean-up zb-bible-1008/tools/sky_prep.py -> sky-final2: re-level horizons to mid-height, common gradient profile, per-plate L-R flatten (no domes), haze band graded onto the key haze with the anti-sun drop qc.horizonAntiSunDL, overlap seam match, below-horizon = flat haze band, Z flat-fielded to the plate tops, N flat sand haze. Stitch: stitch_sky.py --no-flatten --no-align -> out/ember-mesa/sky2. Fog write-back NOT done yet (sampled horizon #c79680, nearHaze #bd8c7f, farCool #8a7791).",
+   "groundNote": "2026-10-08 ground group v1 (not baked, not wired): Imagine plates ground-in (g1,g5,g6,g7), ground-in2 (g3, g4 v2 'slope below the crest', the first g4 had one diagonal crest band), ground-in3 (g0 v2 calm base layer), ground-in4 (g2 v2, the first had diagonal sand bands that read as a grid). Seamless by torus quilting of the wrap seams (zb-bible-1008/tools/tile_make.py, no mirroring; g6 seed 2, g2 band 0.09) -> ground-tile; exposure/white-balance grade onto the key (lit L* 44, tools/ground_grade.py) -> ground-final. Prompts: no cast shadows (tiles are unlit in game), ground lock without sun direction (slots.local.json lockByTemplate). Texture bombing (bible grid 3 / offset 0.15 / rotate) is NOT in biome-runtime.js yet and is needed: plain repeat shows the 8 m motifs."
+  },
+  "styleBlock": "$local",
+  "avoid": "$local"
+ },
+ "lighting": {
+  "sun": {
+   "azimuthDeg": 90,
+   "elevationDeg": 8,
+   "requestedAzimuthDeg": 75,
+   "color": "#ffb089",
+   "intensity": 1.35,
+   "castShadow": false,
+   "bible": {
+    "azimuthDeg": 90,
+    "elevationDeg": 8,
+    "kelvin": 2900,
+    "hex": "#ffb089",
+    "side": "right",
+    "intensity": 1
+   }
+  },
+  "fog": {
+   "color": "#c79680",
+   "near": 40,
+   "far": 220,
+   "desat": 0.25,
+   "heightFalloff": 0.06,
+   "bands": [
+    {
+     "dist": 40,
+     "color": "#bd8c7f",
+     "amount": 0.15
+    },
+    {
+     "dist": 130,
+     "color": "#c79680",
+     "amount": 0.45
+    },
+    {
+     "dist": 220,
+     "color": "#b78981",
+     "amount": 0.8
+    }
+   ]
+  },
+  "halo": {
+   "atlas": "sky1/sky7-atlas.png",
+   "widthDeg": 18,
+   "pixels": "Imagine atlas; no stored colour"
+  },
+  "hemi": {
+   "sky": "#c47ad4",
+   "ground": "#3a2420",
+   "intensity": 0.25
+  },
+  "shadow": {
+   "elevationDeg": 30,
+   "color": "#ffffff",
+   "intensity": 0,
+   "mapSize": 2048,
+   "bias": -0.0002,
+   "normalBias": 0.08
+  },
+  "shade": {
+   "graphite": "#101114",
+   "sand": "#c47a48",
+   "sun": "#ffb089"
+  },
+  "probes": []
+ },
+ "objects": [
+  {
+   "id": "t0-m2",
+   "kind": "tower",
+   "asset": {
+    "glb": "objects1/m2/m2.glb",
+    "lods": []
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     3.4167783000000016,
+     null,
+     -32.0242538
+    ],
+    "rotationDeg": {
+     "yaw": 2.0,
+     "leanDeg": 0,
+     "leanAxisDeg": 90
+    },
+    "scale": [
+     0.896,
+     0.896,
+     0.896
+    ]
+   },
+   "layout": {
+    "module": "m2",
+    "lod": 0,
+    "s": 10.0,
+    "lateral": -32.01,
+    "sinkWant": 4.31,
+    "height": 88.39
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   },
+   "placementFromKey": {
+    "from": "tower-l3",
+    "raw": {
+     "s": -26.475,
+     "lateral": -14.612,
+     "Z": 25.49,
+     "heightM": 24.57,
+     "yaw": 232.46
+    }
+   }
+  },
+  {
+   "id": "t1-m4",
+   "kind": "tower",
+   "asset": {
+    "glb": "objects1/m4/m4.glb",
+    "lods": []
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     141.93533151,
+     null,
+     13.602548440000007
+    ],
+    "rotationDeg": {
+     "yaw": 10.0,
+     "leanDeg": 3.44,
+     "leanAxisDeg": 90
+    },
+    "scale": [
+     1.308,
+     1.308,
+     1.308
+    ]
+   },
+   "layout": {
+    "module": "m4",
+    "lod": 0,
+    "s": 136.006,
+    "lateral": 40.609,
+    "sinkWant": 4.72,
+    "height": 111.18
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   },
+   "placementFromKey": {
+    "from": "tower-r2",
+    "raw": {
+     "s": -33.452,
+     "lateral": 21.559,
+     "Z": 18.54,
+     "heightM": 13.08,
+     "yaw": 310.28
+    }
+   }
+  },
+  {
+   "id": "t2-m3",
+   "kind": "tower",
+   "asset": {
+    "glb": "objects1/m3/m3.glb",
+    "lods": []
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     64.91228606000001,
+     null,
+     -53.98595326
+    ],
+    "rotationDeg": {
+     "yaw": 78.0,
+     "leanDeg": 0,
+     "leanAxisDeg": 90
+    },
+    "scale": [
+     0.896,
+     0.896,
+     0.896
+    ]
+   },
+   "layout": {
+    "module": "m3",
+    "lod": 0,
+    "s": 74.718,
+    "lateral": -41.064,
+    "sinkWant": 5.27,
+    "height": 103.75
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   },
+   "placementFromKey": {
+    "from": "tower-l1",
+    "raw": {
+     "s": -25.627,
+     "lateral": -29.609,
+     "Z": 26.41,
+     "heightM": 20.1,
+     "yaw": 212.11
+    }
+   }
+  },
+  {
+   "id": "t3-m6",
+   "kind": "tower",
+   "asset": {
+    "glb": "objects1/m6/m6.glb",
+    "lods": []
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     211.55096991,
+     null,
+     10.691121039999999
+    ],
+    "rotationDeg": {
+     "yaw": 26.0,
+     "leanDeg": 0,
+     "leanAxisDeg": 90
+    },
+    "scale": [
+     1.304,
+     1.304,
+     1.304
+    ]
+   },
+   "layout": {
+    "module": "m6",
+    "lod": 0,
+    "s": 204.706,
+    "lateral": 51.829,
+    "sinkWant": 3.68,
+    "height": 78.26
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   },
+   "placementFromKey": {
+    "from": "tower-r1",
+    "raw": {
+     "s": 50.353,
+     "lateral": 74.537,
+     "Z": 102.33,
+     "heightM": 58.56,
+     "yaw": 295.13
+    }
+   }
+  },
+  {
+   "id": "t4-m2",
+   "kind": "tower",
+   "asset": {
+    "glb": "objects1/m2/m2.glb",
+    "lods": []
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     153.63421350000002,
+     null,
+     -74.06422520000001
+    ],
+    "rotationDeg": {
+     "yaw": 2.0,
+     "leanDeg": 0,
+     "leanAxisDeg": 90
+    },
+    "scale": [
+     1.276,
+     1.276,
+     1.276
+    ]
+   },
+   "layout": {
+    "module": "m2",
+    "lod": 0,
+    "s": 165.676,
+    "lateral": -42.774,
+    "sinkWant": 5.44,
+    "height": 133.62
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   },
+   "placementFromKey": {
+    "from": "tower-l2",
+    "raw": {
+     "s": -22.864,
+     "lateral": -24.58,
+     "Z": 29.12,
+     "heightM": 17.88,
+     "yaw": 220.75
+    }
+   }
+  },
+  {
+   "id": "t5-m3",
+   "kind": "tower",
+   "asset": {
+    "glb": "objects1/m3/m3.glb",
+    "lods": []
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     297.8240272032018,
+     null,
+     -21.571866937762433
+    ],
+    "rotationDeg": {
+     "yaw": 40,
+     "leanDeg": 4.96,
+     "leanAxisDeg": 90
+    },
+    "scale": [
+     0.859,
+     0.859,
+     0.859
+    ]
+   },
+   "layout": {
+    "module": "m3",
+    "lod": 0,
+    "s": 295.8019447378707,
+    "lateral": 37.70624327743159,
+    "sinkWant": 4.26,
+    "height": 94.49000000724301
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   }
+  },
+  {
+   "id": "t6-m4",
+   "kind": "tower",
+   "asset": {
+    "glb": "objects1/m4/m4.glb",
+    "lods": []
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     231.57673591000002,
+     null,
+     -85.98459456
+    ],
+    "rotationDeg": {
+     "yaw": 18.0,
+     "leanDeg": 0,
+     "leanAxisDeg": 90
+    },
+    "scale": [
+     1.344,
+     1.344,
+     1.344
+    ]
+   },
+   "layout": {
+    "module": "m4",
+    "lod": 0,
+    "s": 244.394,
+    "lateral": -38.683,
+    "sinkWant": 4.03,
+    "height": 115.16
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   },
+   "placementFromKey": {
+    "from": "tower-l4",
+    "raw": {
+     "s": -12.578,
+     "lateral": -12.995,
+     "Z": 39.4,
+     "heightM": 22.77,
+     "yaw": 243.09
+    }
+   }
+  },
+  {
+   "id": "t7-m6",
+   "kind": "tower",
+   "asset": {
+    "glb": "objects1/m6/m6.glb",
+    "lods": []
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     367.14305895433836,
+     null,
+     -32.32872740488136
+    ],
+    "rotationDeg": {
+     "yaw": 56,
+     "leanDeg": 0,
+     "leanAxisDeg": 90
+    },
+    "scale": [
+     1.12,
+     1.12,
+     1.12
+    ]
+   },
+   "layout": {
+    "module": "m6",
+    "lod": 0,
+    "s": 365.8429546150291,
+    "lateral": 41.19267046741558,
+    "sinkWant": 4.9,
+    "height": 68.88
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   }
+  },
+  {
+   "id": "t8-m3",
+   "kind": "tower",
+   "asset": {
+    "glb": "objects1/m3/m3.glb",
+    "lods": []
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     337.6256608141068,
+     null,
+     -118.81739623780346
+    ],
+    "rotationDeg": {
+     "yaw": 32,
+     "leanDeg": 0,
+     "leanAxisDeg": 90
+    },
+    "scale": [
+     1.12,
+     1.12,
+     1.12
+    ]
+   },
+   "layout": {
+    "module": "m3",
+    "lod": 0,
+    "s": 354.95222202381973,
+    "lateral": -49.36685776279281,
+    "sinkWant": 4.4,
+    "height": 135.85000001041342
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   }
+  },
+  {
+   "id": "t9-m2",
+   "kind": "tower",
+   "asset": {
+    "glb": "objects1/m2/m2.glb",
+    "lods": []
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     428.4389634199361,
+     null,
+     -45.99745501830039
+    ],
+    "rotationDeg": {
+     "yaw": 40,
+     "leanDeg": 0,
+     "leanAxisDeg": 90
+    },
+    "scale": [
+     0.886,
+     0.886,
+     0.886
+    ]
+   },
+   "layout": {
+    "module": "m2",
+    "lod": 0,
+    "s": 428.6415285536973,
+    "lateral": 40.2097096673091,
+    "sinkWant": 3.7,
+    "height": 84.17000021470396
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   }
+  },
+  {
+   "id": "t10-m4",
+   "kind": "tower",
+   "asset": {
+    "glb": "objects1/m4/m4.glb",
+    "lods": []
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     429.00081750409896,
+     null,
+     -126.41191825811298
+    ],
+    "rotationDeg": {
+     "yaw": 48,
+     "leanDeg": 0,
+     "leanAxisDeg": 90
+    },
+    "scale": [
+     1.12,
+     1.12,
+     1.12
+    ]
+   },
+   "layout": {
+    "module": "m4",
+    "lod": 0,
+    "s": 445.90999974491103,
+    "lateral": -38.33031919145288,
+    "sinkWant": 4.18,
+    "height": 95.795
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   }
+  },
+  {
+   "id": "t11-m6",
+   "kind": "tower",
+   "asset": {
+    "glb": "objects1/m6/m6.glb",
+    "lods": []
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     488.7508178349529,
+     null,
+     -62.967220925621994
+    ],
+    "rotationDeg": {
+     "yaw": 56,
+     "leanDeg": 2.65,
+     "leanAxisDeg": 90
+    },
+    "scale": [
+     0.997,
+     0.997,
+     0.997
+    ]
+   },
+   "layout": {
+    "module": "m6",
+    "lod": 0,
+    "s": 491.16386743993314,
+    "lateral": 35.79914269588892,
+    "sinkWant": 4.01,
+    "height": 59.82
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   }
+  },
+  {
+   "id": "far-0",
+   "kind": "skyline",
+   "asset": {
+    "glb": "objects1/m4/m4.glb",
+    "lods": []
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     550.4047612808597,
+     null,
+     -25.432212479867363
+    ],
+    "rotationDeg": {
+     "yaw": 32,
+     "leanDeg": 0,
+     "leanAxisDeg": 90
+    },
+    "scale": [
+     0.95,
+     0.95,
+     0.95
+    ]
+   },
+   "layout": {
+    "module": "m4",
+    "lod": 2,
+    "s": 543.6669393041204,
+    "lateral": 84.97102181945243,
+    "sinkWant": 3.501856802403927,
+    "height": 90.27000000000001
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   }
+  },
+  {
+   "id": "far-1",
+   "kind": "skyline",
+   "asset": {
+    "glb": "objects1/m4/m4.glb",
+    "lods": []
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     618.4035611145638,
+     null,
+     -206.8715750512418
+    ],
+    "rotationDeg": {
+     "yaw": 40,
+     "leanDeg": 0,
+     "leanAxisDeg": 90
+    },
+    "scale": [
+     0.95,
+     0.95,
+     0.95
+    ]
+   },
+   "layout": {
+    "module": "m4",
+    "lod": 2,
+    "s": 647.9029935283174,
+    "lateral": -78.75427553212981,
+    "sinkWant": 3.407920307666063,
+    "height": 105.14500000000001
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   }
+  },
+  {
+   "id": "far-2",
+   "kind": "skyline",
+   "asset": {
+    "glb": "objects1/m4/m4.glb",
+    "lods": []
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     539.2870118529635,
+     null,
+     -179.40442990723034
+    ],
+    "rotationDeg": {
+     "yaw": 48,
+     "leanDeg": 0,
+     "leanAxisDeg": 90
+    },
+    "scale": [
+     0.95,
+     0.95,
+     0.95
+    ]
+   },
+   "layout": {
+    "module": "m4",
+    "lod": 2,
+    "s": 564.8043016654714,
+    "lateral": -67.87618243302445,
+    "sinkWant": 3.999068246409297,
+    "height": 97.83500000000001
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   }
+  },
+  {
+   "id": "far-3",
+   "kind": "skyline",
+   "asset": {
+    "glb": "objects1/m4/m4.glb",
+    "lods": []
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     540.613847908776,
+     null,
+     -296.3925554636756
+    ],
+    "rotationDeg": {
+     "yaw": 56,
+     "leanDeg": 0,
+     "leanAxisDeg": 90
+    },
+    "scale": [
+     0.95,
+     0.95,
+     0.95
+    ]
+   },
+   "layout": {
+    "module": "m4",
+    "lod": 2,
+    "s": 590.4250359937018,
+    "lateral": -182.03440741190335,
+    "sinkWant": 4.700109891593456,
+    "height": 92.82000000000001
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   }
+  },
+  {
+   "id": "far-4",
+   "kind": "skyline",
+   "asset": {
+    "glb": "objects1/m4/m4.glb",
+    "lods": []
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     661.484623029974,
+     null,
+     33.35998054080083
+    ],
+    "rotationDeg": {
+     "yaw": 32,
+     "leanDeg": 0,
+     "leanAxisDeg": 90
+    },
+    "scale": [
+     0.916,
+     0.916,
+     0.916
+    ]
+   },
+   "layout": {
+    "module": "m4",
+    "lod": 2,
+    "s": 640.0965201069084,
+    "lateral": 164.92240953872002,
+    "sinkWant": 3.7606382589787244,
+    "height": 77.86
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   }
+  },
+  {
+   "id": "far-5",
+   "kind": "skyline",
+   "asset": {
+    "glb": "objects1/m4/m4.glb",
+    "lods": []
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     569.2183242295696,
+     null,
+     -241.39617789229277
+    ],
+    "rotationDeg": {
+     "yaw": 40,
+     "leanDeg": 0,
+     "leanAxisDeg": 90
+    },
+    "scale": [
+     0.95,
+     0.95,
+     0.95
+    ]
+   },
+   "layout": {
+    "module": "m4",
+    "lod": 2,
+    "s": 606.9703235966442,
+    "lateral": -122.46203957502064,
+    "sinkWant": 3.6621772114187476,
+    "height": 97.41
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   }
+  },
+  {
+   "id": "far-6",
+   "kind": "skyline",
+   "asset": {
+    "glb": "objects1/m4/m4.glb",
+    "lods": []
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     660.4084029744813,
+     null,
+     -267.8567276153821
+    ],
+    "rotationDeg": {
+     "yaw": 48,
+     "leanDeg": 0,
+     "leanAxisDeg": 90
+    },
+    "scale": [
+     0.95,
+     0.95,
+     0.95
+    ]
+   },
+   "layout": {
+    "module": "m4",
+    "lod": 2,
+    "s": 701.669484290182,
+    "lateral": -129.9158047529555,
+    "sinkWant": 3.625496708974242,
+    "height": 100.215
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   }
+  },
+  {
+   "id": "far-7",
+   "kind": "skyline",
+   "asset": {
+    "glb": "objects1/m4/m4.glb",
+    "lods": []
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     699.1490270046954,
+     null,
+     -88.99282110231971
+    ],
+    "rotationDeg": {
+     "yaw": 56,
+     "leanDeg": 0,
+     "leanAxisDeg": 90
+    },
+    "scale": [
+     0.95,
+     0.95,
+     0.95
+    ]
+   },
+   "layout": {
+    "module": "m4",
+    "lod": 2,
+    "s": 702.3762900151224,
+    "lateral": 52.85994573754827,
+    "sinkWant": 4.763758490234613,
+    "height": 82.78999999999999
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   }
+  },
+  {
+   "id": "far-8",
+   "kind": "skyline",
+   "asset": {
+    "glb": "objects1/m4/m4.glb",
+    "lods": []
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     563.1074530649322,
+     null,
+     40.54827726244533
+    ],
+    "rotationDeg": {
+     "yaw": 32,
+     "leanDeg": 0,
+     "leanAxisDeg": 90
+    },
+    "scale": [
+     0.95,
+     0.95,
+     0.95
+    ]
+   },
+   "layout": {
+    "module": "m4",
+    "lod": 2,
+    "s": 542.3741657898411,
+    "lateral": 152.07359985572901,
+    "sinkWant": 4.524147891998291,
+    "height": 99.96
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   }
+  },
+  {
+   "id": "far-9",
+   "kind": "skyline",
+   "asset": {
+    "glb": "objects1/m4/m4.glb",
+    "lods": []
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     618.9736803217644,
+     null,
+     -321.32152088853485
+    ],
+    "rotationDeg": {
+     "yaw": 40,
+     "leanDeg": 0,
+     "leanAxisDeg": 90
+    },
+    "scale": [
+     0.95,
+     0.95,
+     0.95
+    ]
+   },
+   "layout": {
+    "module": "m4",
+    "lod": 2,
+    "s": 672.2558331639331,
+    "lateral": -190.5828158268254,
+    "sinkWant": 4.082484485581517,
+    "height": 85.76499999999999
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   }
+  },
+  {
+   "id": "spire",
+   "kind": "spire",
+   "asset": {
+    "glb": "objects1/spire/spire.glb",
+    "lods": []
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     73.15138251,
+     -5.147794418336001,
+     36.29916244
+    ],
+    "rotationDeg": {
+     "yaw": 37.0,
+     "leanDeg": 0,
+     "leanAxisDeg": 90
+    },
+    "scale": [
+     0.87,
+     0.87,
+     0.87
+    ]
+   },
+   "layout": {
+    "s": 64.006,
+    "lateral": 48.909,
+    "sinkWant": 4.2,
+    "height": 130.53,
+    "baseY": -5.147794418336001
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   },
+   "placementFromKey": {
+    "from": "spire",
+    "raw": {
+     "s": -30.355,
+     "lateral": 6.946,
+     "Z": 21.58,
+     "heightM": 24.28,
+     "yaw": 281.4
+    }
+   }
+  },
+  {
+   "id": "mesa-L-mid",
+   "kind": "mesa",
+   "asset": {
+    "glb": null,
+    "lods": [],
+    "geo": "mesas/strata6/L-mid-geo.json"
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     76.78780000000002,
+     null,
+     -167.8143
+    ],
+    "rotationDeg": {
+     "yaw": -35.34293794438635
+    },
+    "scale": [
+     1,
+     1,
+     1
+    ],
+    "layoutScale": 1.25
+   },
+   "layout": {
+    "s": 110,
+    "lat": -150,
+    "face": true,
+    "mirror": false,
+    "scale": 1.25
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   }
+  },
+  {
+   "id": "mesa-L-mid2",
+   "kind": "mesa",
+   "asset": {
+    "glb": null,
+    "lods": [],
+    "geo": "mesas/strata6/L-mid2-geo.json"
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     154.82660000000004,
+     null,
+     -209.49685000000002
+    ],
+    "rotationDeg": {
+     "yaw": 250
+    },
+    "scale": [
+     -1,
+     1,
+     1
+    ],
+    "layoutScale": 1.05
+   },
+   "layout": {
+    "s": 195,
+    "lat": -175,
+    "face": false,
+    "mirror": true,
+    "scale": 1.05
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   }
+  },
+  {
+   "id": "mesa-L-far",
+   "kind": "mesa",
+   "asset": {
+    "glb": null,
+    "lods": [],
+    "geo": "mesas/strata6/L-far-geo.json"
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     195.80084680000002,
+     null,
+     -329.3615448
+    ],
+    "rotationDeg": {
+     "yaw": 330.0
+    },
+    "scale": [
+     1.6,
+     1.6,
+     1.6
+    ],
+    "layoutScale": 1.6
+   },
+   "layout": {
+    "s": 260.0,
+    "lat": -250,
+    "face": true,
+    "mirror": true,
+    "scale": 1.6,
+    "lateral": -283.96
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   },
+   "placementFromKey": {
+    "from": "mesa-left",
+    "raw": {
+     "s": -36.109,
+     "lateral": -21.822,
+     "Z": 15.88,
+     "heightM": 10.59,
+     "yaw": 207.22
+    }
+   }
+  },
+  {
+   "id": "mesa-R-butte",
+   "kind": "mesa",
+   "asset": {
+    "glb": null,
+    "lods": [],
+    "geo": "mesas/strata6/R-butte-geo.json"
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     336.76085,
+     null,
+     141.42289999999997
+    ],
+    "rotationDeg": {
+     "yaw": -108.49080127774218
+    },
+    "scale": [
+     1,
+     1,
+     1
+    ],
+    "layoutScale": 1.7
+   },
+   "layout": {
+    "s": 300,
+    "lat": 205,
+    "face": true,
+    "mirror": false,
+    "scale": 1.7
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   }
+  },
+  {
+   "id": "mesa-R-mid",
+   "kind": "mesa",
+   "asset": {
+    "glb": null,
+    "lods": [],
+    "geo": "mesas/strata6/R-mid-geo.json"
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     120.0606965,
+     null,
+     180.01802150000003
+    ],
+    "rotationDeg": {
+     "yaw": 230.0
+    },
+    "scale": [
+     1.35,
+     1.35,
+     1.35
+    ],
+    "layoutScale": 1.35
+   },
+   "layout": {
+    "s": 80.01,
+    "lat": 215,
+    "face": false,
+    "mirror": true,
+    "scale": 1.35,
+    "lateral": 198.96
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   },
+   "placementFromKey": {
+    "from": "mesa-right",
+    "raw": {
+     "s": -25.644,
+     "lateral": 42.527,
+     "Z": 26.33,
+     "heightM": 11.78,
+     "yaw": 317.65
+    }
+   }
+  },
+  {
+   "id": "mesa-R-band",
+   "kind": "mesa",
+   "asset": {
+    "glb": null,
+    "lods": [],
+    "geo": "mesas/strata6/R-band-geo.json"
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     654.4994000000002,
+     null,
+     193.35260000000002
+    ],
+    "rotationDeg": {
+     "yaw": 25
+    },
+    "scale": [
+     1,
+     1,
+     1
+    ],
+    "layoutScale": 2
+   },
+   "layout": {
+    "s": 600,
+    "lat": 320,
+    "face": false,
+    "mirror": false,
+    "scale": 2
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   }
+  },
+  {
+   "id": "mesa-B-left",
+   "kind": "mesa",
+   "asset": {
+    "glb": null,
+    "lods": [],
+    "geo": "mesas/strata6/B-left-geo.json"
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     -320.14845,
+     null,
+     -111.36680000000001
+    ],
+    "rotationDeg": {
+     "yaw": 140
+    },
+    "scale": [
+     1,
+     1,
+     1
+    ],
+    "layoutScale": 1.7
+   },
+   "layout": {
+    "s": -290,
+    "lat": -175,
+    "face": false,
+    "mirror": false,
+    "scale": 1.7
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   }
+  },
+  {
+   "id": "mesa-B-right",
+   "kind": "mesa",
+   "asset": {
+    "glb": null,
+    "lods": [],
+    "geo": "mesas/strata6/B-right-geo.json"
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     -274.58715000000007,
+     null,
+     247.2799
+    ],
+    "rotationDeg": {
+     "yaw": 300
+    },
+    "scale": [
+     -1,
+     1,
+     1
+    ],
+    "layoutScale": 1.5
+   },
+   "layout": {
+    "s": -320,
+    "lat": 185,
+    "face": false,
+    "mirror": true,
+    "scale": 1.5
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   }
+  },
+  {
+   "id": "mesa-B-far",
+   "kind": "mesa",
+   "asset": {
+    "glb": null,
+    "lods": [],
+    "geo": "mesas/strata6/B-far-geo.json"
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     -506.8829,
+     null,
+     116.35440000000001
+    ],
+    "rotationDeg": {
+     "yaw": 80
+    },
+    "scale": [
+     1,
+     1,
+     1
+    ],
+    "layoutScale": 2.2
+   },
+   "layout": {
+    "s": -520,
+    "lat": 10,
+    "face": false,
+    "mirror": false,
+    "scale": 2.2
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   }
+  },
+  {
+   "id": "cable-t0-m2-t2-m3",
+   "kind": "cable",
+   "asset": {
+    "glb": null,
+    "lods": []
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     13.083278732854176,
+     65.76741859342306,
+     -37.62414410453238
+    ],
+    "rotationDeg": null,
+    "scale": [
+     1,
+     1,
+     1
+    ],
+    "endpoints": {
+     "a": [
+      -18.675595744503326,
+      62.55163829322331,
+      -30.165067835172472
+     ],
+     "b": [
+      44.84215321021168,
+      68.98319889362281,
+      -45.083220373892274
+     ]
+    }
+   },
+   "layout": {
+    "from": "t0-m2",
+    "to": "t2-m3"
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   }
+  },
+  {
+   "id": "cable-t2-m3-t4-m2",
+   "kind": "cable",
+   "asset": {
+    "glb": null,
+    "lods": []
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     87.19202809035912,
+     67.7925156857911,
+     -51.65223145541817
+    ],
+    "rotationDeg": null,
+    "scale": [
+     1,
+     1,
+     1
+    ],
+    "endpoints": {
+     "a": [
+      44.84215321021168,
+      74.17079889402046,
+      -45.083220373892274
+     ],
+     "b": [
+      129.54190297050656,
+      61.414232477561754,
+      -58.22124253694406
+     ]
+    }
+   },
+   "layout": {
+    "from": "t2-m3",
+    "to": "t4-m2"
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   }
+  },
+  {
+   "id": "cable-t1-m4-t3-m6",
+   "kind": "cable",
+   "asset": {
+    "glb": null,
+    "lods": []
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     65.46052771983493,
+     43.53065764569136,
+     29.635589052053703
+    ],
+    "rotationDeg": null,
+    "scale": [
+     1,
+     1,
+     1
+    ],
+    "endpoints": {
+     "a": [
+      25.179873369827092,
+      52.05766344107286,
+      25.73370261962154
+     ],
+     "b": [
+      105.74118206984276,
+      35.003651850309865,
+      33.53747548448587
+     ]
+    }
+   },
+   "layout": {
+    "from": "t1-m4",
+    "to": "t3-m6"
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   }
+  },
+  {
+   "id": "cable-t3-m6-t5-m3",
+   "kind": "cable",
+   "asset": {
+    "glb": null,
+    "lods": []
+   },
+   "sources": [],
+   "cameras": [],
+   "transform": {
+    "position": [
+     143.098518644453,
+     43.45220135989791,
+     15.285826167959705
+    ],
+    "rotationDeg": null,
+    "scale": [
+     1,
+     1,
+     1
+    ],
+    "endpoints": {
+     "a": [
+      105.74118206984276,
+      37.61245185030987,
+      33.53747548448587
+     ],
+     "b": [
+      180.45585521906327,
+      49.29195086948595,
+      -2.9658231485664572
+     ]
+    }
+   },
+   "layout": {
+    "from": "t3-m6",
+    "to": "t5-m3"
+   },
+   "fidelity": {},
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   }
+  },
+  {
+   "id": "todo-wreck",
+   "kind": "wreck",
+   "status": "TODO",
+   "reason": "no wreck mesh in objects1 or the live layout",
+   "transform": {
+    "position": [
+     -39.695,
+     6.352,
+     13.138
+    ],
+    "rotationDeg": {
+     "yaw": 287.08,
+     "leanDeg": 0,
+     "leanAxisDeg": 90
+    },
+    "scale": [
+     1,
+     1,
+     1
+    ]
+   },
+   "layout": {
+    "s": -41.56,
+    "lateral": 3.452,
+    "height": 4.78
+   },
+   "imageBase": [
+    854.0,
+    504.0
+   ],
+   "rawLift": {
+    "s": -41.56,
+    "lateral": 3.452,
+    "Z": 10.37,
+    "heightM": 4.78
+   }
+  },
+  {
+   "id": "todo-arch",
+   "kind": "arch",
+   "status": "TODO",
+   "reason": "no arch mesh in objects1 or the live layout",
+   "transform": {
+    "position": [
+     2.807,
+     6.903,
+     40.526
+    ],
+    "rotationDeg": {
+     "yaw": 299.81,
+     "leanDeg": 0,
+     "leanAxisDeg": 90
+    },
+    "scale": [
+     1,
+     1,
+     1
+    ]
+   },
+   "layout": {
+    "s": -5.681,
+    "lateral": 38.828,
+    "height": 14.01
+   },
+   "imageBase": [
+    964.0,
+    370.0
+   ],
+   "rawLift": {
+    "s": -5.681,
+    "lateral": 38.828,
+    "Z": 46.27,
+    "heightM": 14.01
+   }
+  }
+ ],
+ "gameplay": {
+  "avenue": {
+   "headingDeg": 78,
+   "halfWidthM": 14
+  },
+  "hero": {
+   "standS": -52,
+   "lateral": 0,
+   "eyeM": 3.15,
+   "heading": 75,
+   "fov": 58,
+   "pitchDownDeg": 1.16,
+   "horizonRow": 0.48,
+   "far": 1800,
+   "avenueHeading": 78,
+   "sunColumn": 0.6364,
+   "sunRow": 0.3501,
+   "hfovDeg": 89.16
+  },
+  "street": {
+   "standS": -8,
+   "lateral": 2,
+   "eyeM": 1.6,
+   "heading": 81,
+   "fov": 58,
+   "pitchDownDeg": -15,
+   "horizonRow": 0.7586,
+   "far": 1800,
+   "avenueHeading": 78,
+   "clearanceM": 19.78,
+   "lookClearM": 100
+  },
+  "chase": {
+   "standS": -44,
+   "lateral": 36,
+   "eyeM": 3.05,
+   "heading": 30,
+   "fov": 58,
+   "pitchDownDeg": 2.4,
+   "horizonRow": 0.4586,
+   "far": 1800,
+   "avenueHeading": 78,
+   "clearanceM": 59.95,
+   "lookClearM": 100
+  },
+  "spawn": {
+   "name": "hero",
+   "x": -51.115,
+   "z": 9.63,
+   "yaw": 75,
+   "pitch": -1.16,
+   "eye": 3.15,
+   "fov": 58,
+   "source": "objects-t7.mjs spawn literal (applied when the URL has no x/z)"
+  },
+  "lanes": null,
+  "laneWidth": null
+ },
+ "qualityGates": {
+  "maxDrawCalls": 12,
+  "maxTrisOnScreen": 150000,
+  "maxTexMB": 64,
+  "maxLpipsKeyView": null,
+  "maxSsimKeyView": null
+ },
+ "wakeDefaults": {
+  "type": "placeholder",
+  "enabled": false
+ },
+ "sources": {
+  "vision": [
+   {
+    "file": "objects1/vision/albedo.png",
+    "source": "/workspace/i23d-auto/zoneb-tower-vision/vision/key-crop.jpg",
+    "note": "key crop of key-city3.jpg rect 398,27,561,446; atlas is larger"
+   },
+   {
+    "file": "objects1/vision/normal.png",
+    "source": "/workspace/i23d-auto/zoneb-tower-vision/vision/key-crop.jpg",
+    "note": "normal baked from the same key crop"
+   }
+  ]
+ },
+ "runtime": {
+  "previewRoot": "/workspace/zb-preview-1008",
+  "modules": {
+   "main": "main.mjs",
+   "biomeRuntime": "runtime/biome-runtime-v61.js",
+   "objects": "objects-t7.mjs",
+   "mesas": "mesas/mesas-v11.mjs",
+   "sky": "sky1/sky-t7.mjs"
+  },
+  "pins": {
+   "indexMain": "62",
+   "biomeRuntime": "61",
+   "objects": "58",
+   "sky": "58",
+   "mesas": "11"
+  },
+  "biome": {
+   "schema": "biome/1",
+   "bibleVersion": 1,
+   "anchor": {
+    "slot": "key",
+    "aspect": "16:9",
+    "horizonRow": 0.52,
+    "subject": "cinematic grandiose hero shot of Ember Mesa at dusk, movie-poster composition, a sand desert first: big salmon dunes spill over the half-buried ruins of an abandoned futuristic mega-city. Foreground: sand-drifted debris, a broken mag-rail beam and the crest of a dune. Down the middle runs Bolt's path, a ruined avenue drifted with rippled sand, cracked dark paving and a collapsed mag-rail line half under the sand, its leading lines converging on the landmark spire. Mid-ground: colossal broken towers and skyscraper shells dwarf the avenue on both sides, a broken sky-bridge spans it, a giant fallen starship hull lies buried in a dune, dead holographic sign frames, a few small amber lights still flickering; layered sandstone mesas and a natural sandstone arch still frame the city. At the end of the avenue the city's landmark beacon: a tall dark basalt and brushed-metal signal spire behind the arch, two thin floating rings glowing warm amber, a faint beam to the sky. Far: the ruined city stretches to the horizon, tower silhouettes fading layer after layer into warm atmospheric haze. The low sun on the right backlights the ruins with bright rim light on every edge and long god-rays through the gaps between the towers. In the violet sky thin planetary ring arcs, a small pale second moon and faint stars near the zenith",
+    "sampled": {
+     "horizon": [
+      74.504,
+      15.77,
+      19.693
+     ],
+     "sky": [
+      44.846,
+      15.466,
+      -13.064
+     ],
+     "ground": [
+      30.468,
+      14.209,
+      11.178
+     ],
+     "shadow": [
+      7.084,
+      5.317,
+      0.08
+     ],
+     "highlight": [
+      76.847,
+      15.115,
+      16.104
+     ],
+     "lit": [
+      41.041,
+      18.886,
+      15.38
+     ],
+     "saturation": 0.3516,
+     "horizonRow": 0.48,
+     "file": "key.jpg",
+     "horizonRowPlanned": 0.52,
+     "horizonFullWidth": [
+      23.605,
+      13.664,
+      10.584
+     ],
+     "$horizonNote": "horizon = median haze at the vanishing-point gap (x 600-680, rows 0.44-0.47); full-width band hits the towers (L 23.6)"
+    }
+   },
+   "exposure": {
+    "ev": 0,
+    "whiteBalanceK": 5500
+   },
+   "sky": {
+    "horizonPlates": 6,
+    "plateHFovDeg": 75,
+    "plateAspect": "16:9",
+    "zenith": true,
+    "nadir": true,
+    "capFovDeg": 100,
+    "outSize": [
+     4096,
+     2048
+    ],
+    "bandSize": [
+     8192,
+     1024
+    ],
+    "planetInSky": false,
+    "subject": "Ember Mesa dusk sky: dusty rose and salmon haze at the horizon rising into violet and indigo, thin high streaks of cloud"
+   },
+   "ground": {
+    "tiles": 8,
+    "tileMeters": 8,
+    "heightFromAlbedo": true,
+    "heightMeters": 0.35,
+    "bombing": {
+     "grid": 3,
+     "offset": 0.15,
+     "rotate": true,
+     "enabled": true,
+     "method": "2-sample stochastic variants, variance-preserving blend (runtime GROUND_GLSL)"
+    },
+    "macroScale": 0.08,
+    "bigRocks": 20,
+    "materials": [
+     {
+      "id": "g0",
+      "subject": "fine rippled salmon sand drifted over buried paving",
+      "weight": 1,
+      "bomb": "r180"
+     },
+     {
+      "id": "g1",
+      "subject": "wind-packed sand with small rust pebbles and shards of dark glass",
+      "weight": 0.55,
+      "bomb": "free"
+     },
+     {
+      "id": "g2",
+      "subject": "cracked dark composite street paving half covered by drifted sand",
+      "weight": 0.15,
+      "bomb": "r180"
+     },
+     {
+      "id": "g3",
+      "subject": "sand-drifted rubble of broken concrete, sandstone and brushed-metal fragments",
+      "weight": 0.45,
+      "bomb": "free"
+     },
+     {
+      "id": "g4",
+      "subject": "sharp dune crest sand with a slip face",
+      "weight": 0.4,
+      "bomb": "r180"
+     },
+     {
+      "id": "g5",
+      "subject": "worn hexagonal metal floor plates with sand in the seams",
+      "weight": 0.35,
+      "bomb": "r180"
+     },
+     {
+      "id": "g6",
+      "subject": "a buried mag-rail track: two worn metal rails and sleepers under drifting sand",
+      "weight": 0.3,
+      "bomb": "none"
+     },
+     {
+      "id": "g7",
+      "subject": "talus of broken sandstone blocks and fallen tower debris with bent metal struts",
+      "weight": 0.25,
+      "bomb": "free"
+     }
+    ],
+    "splat": {
+     "seed": 1008,
+     "scaleM": 60,
+     "edge": 0.12,
+     "macroAmount": 0.35
+    },
+    "relief": {
+     "enabled": true,
+     "seed": 1008,
+     "cellM": 64,
+     "lods": [
+      [
+       96,
+       32
+      ],
+      [
+       192,
+       16
+      ],
+      [
+       400,
+       8
+      ]
+     ],
+     "skirtM": 1.5,
+     "dunes": {
+      "ampM": 9,
+      "wavelengthM": 160,
+      "windDeg": 60,
+      "windwardFrac": 0.75,
+      "smallAmpM": 1.8,
+      "smallWavelengthM": 46,
+      "swellAmpM": 4,
+      "swellWavelengthM": 620
+     },
+     "avenue": {
+      "halfWidthM": 14,
+      "blendM": 30,
+      "meanderM": 6,
+      "meanderWavelengthM": 1380,
+      "ampM": 1.2,
+      "wavelengthM": 90
+     },
+     "hollows": {
+      "cellM": 140,
+      "chance": 0.5,
+      "depthM": [
+       1.5,
+       3.5
+      ],
+      "radiusM": [
+       18,
+       34
+      ]
+     },
+     "drifts": {
+      "heightM": [
+       2,
+       4.5
+      ],
+      "radiusM": [
+       16,
+       26
+      ],
+      "anchors": "placeholder: tower canyon both sides of the avenue every ~80 m (x = +-34..58 m); replaced by the objects-group placements"
+     },
+     "maxSlopeDeg": 32,
+     "normalStrength": 1,
+     "sunAmbient": 0.55,
+     "normalPacking": "xyh",
+     "pom": {
+      "enabled": true,
+      "depthM": 0.035,
+      "fadeM": 15,
+      "steps": 10,
+      "shadow": 0.35,
+      "$note": "2026-10-08 preview: plates raised from the plate itself (gen_relief.py), POM + sun-side contact shade"
+     }
+    }
+   },
+   "camera": {
+    "fovBase": 58,
+    "fovSprint": 70,
+    "fovDamp": 4,
+    "near": 0.2,
+    "far": 400,
+    "pixelRatioCap": 1.5,
+    "trauma": {
+     "enabled": false,
+     "landing": 0.35,
+     "decayPerSec": 1.6,
+     "rollRad": 0.004,
+     "liftM": 0.02
+    }
+   },
+   "post": {
+    "toneMapping": "none",
+    "runtimeLut": false,
+    "contrast": 1.06,
+    "gamma": 0.95,
+    "grain": 0.04,
+    "vignette": {
+     "start": 0.72,
+     "end": 1.15,
+     "strength": 0.28
+    },
+    "sceneFog": false,
+    "bloom": {
+     "enabled": false,
+     "threshold": 0.85,
+     "radius": 0.4,
+     "strength": 0.25,
+     "skyOnly": true
+    }
+   },
+   "budgets": {
+    "imagineImages": 35,
+    "drawCalls": 12,
+    "trisOnScreen": 150000,
+    "texMB": 64,
+    "attemptsPerSlot": 2
+   },
+   "qc": {
+    "deltaE": "2000",
+    "horizonDE": 6,
+    "shadowDE": 10,
+    "shadowLMin": 8,
+    "highlightDE": 12,
+    "satTol": 0.08,
+    "objectLitDE": 14,
+    "seamDE": 8,
+    "bboxMin": 0.7,
+    "grainLapVarMin": 80,
+    "lutMaxFactor": 2,
+    "maxFails": 2,
+    "horizonAntiSunDL": 12
+   },
+   "styleId": "aaa-2026",
+   "id": "ember-mesa",
+   "name": "Ember Mesa",
+   "archetype": "mesa-desert",
+   "seed": 1008,
+   "lore": {
+    "row": "Ember Mesa: a sand desert swallowing an abandoned futuristic mega-city at dusk: dunes over ruined towers and avenues, collapsed mag-rails, fallen starship hulls, a few amber lights still flickering, sandstone mesas and the Anchor arch with the city's signal spire; ring arcs, a second moon and stars in the violet sky; a ringed gas giant hangs opposite the sun",
+    "playerLine": "I want to explore the red mesas"
+   },
+   "sun": {
+    "azimuthDeg": 90,
+    "elevationDeg": 8,
+    "kelvin": 2900,
+    "hex": "#ffb089",
+    "side": "right",
+    "intensity": 1
+   },
+   "palette": {
+    "key": "#ffb089",
+    "fill": "#c47ad4",
+    "shadow": "#4a2048",
+    "horizon": "#e8a0b4",
+    "zenith": "#3a2468",
+    "ground": "#a85a48",
+    "accent": "#c49c6f",
+    "rim": "#ffb089",
+    "horizonSampled": "#c79680"
+   },
+   "fog": {
+    "color": "#c79680",
+    "near": 40,
+    "far": 220,
+    "desat": 0.25,
+    "heightFalloff": 0.06,
+    "bands": [
+     {
+      "dist": 40,
+      "color": "#bd8c7f",
+      "amount": 0.15
+     },
+     {
+      "dist": 130,
+      "color": "#c79680",
+      "amount": 0.45
+     },
+     {
+      "dist": 220,
+      "color": "#b78981",
+      "amount": 0.8
+     }
+    ]
+   },
+   "lut": {
+    "lift": [
+     0.0069,
+     0.0046,
+     0.0074
+    ],
+    "gamma": [
+     1,
+     1,
+     1
+    ],
+    "gain": [
+     1.0286,
+     1.0154,
+     1.0046
+    ],
+    "saturation": 1,
+    "contrast": 1.04
+   },
+   "planet": {
+    "subject": "a pink-violet ringed gas giant with soft banded clouds",
+    "radius": 80,
+    "distance": 600,
+    "azimuthDeg": 270,
+    "elevationDeg": 22,
+    "spinDegPerSec": 0.86,
+    "ring": {
+     "inner": 108,
+     "outer": 150,
+     "tiltDeg": 17.7,
+     "spinDegPerSec": 2.3
+    }
+   },
+   "objects": [
+    {
+     "id": "hero",
+     "kind": "hero",
+     "subject": "the Anchor: one giant natural sandstone arch 22 m wide and 20 m to the crown with the city's landmark beacon behind it, a tall dark basalt and brushed-metal signal spire with chamfered edges, engraved lines and two thin floating brushed-metal rings glowing warm amber",
+     "count": 1,
+     "heightM": 44,
+     "layer": "landmark",
+     "views": {
+      "ortho": [
+       "front",
+       "right",
+       "back",
+       "top"
+      ],
+      "threeQuarter": [
+       45,
+       135,
+       225,
+       315
+      ]
+     },
+     "lods": [
+      4000,
+      800,
+      180
+     ],
+     "tex": 2048,
+     "displaceM": 0.25
+    },
+    {
+     "id": "rock-0",
+     "kind": "mesa",
+     "subject": "colossal broken skyscraper shell of dark composite and brushed metal, half buried in a sand dune, empty window bays, exposed bent girders, sand spilling through it",
+     "count": 10,
+     "heightM": 30,
+     "layer": "mid",
+     "views": {
+      "ortho": [
+       "front",
+       "right",
+       "top"
+      ],
+      "threeQuarter": [
+       45
+      ]
+     },
+     "lods": [
+      4000,
+      800,
+      180
+     ],
+     "tex": 2048,
+     "displaceM": 0.15
+    },
+    {
+     "id": "rock-1",
+     "kind": "rock",
+     "subject": "fallen section of a mag-rail beam of dark brushed metal half buried in drifted sand",
+     "count": 10,
+     "heightM": 3,
+     "layer": "near",
+     "views": {
+      "ortho": [
+       "front",
+       "right",
+       "top"
+      ],
+      "threeQuarter": [
+       45
+      ]
+     },
+     "lods": [
+      4000,
+      800,
+      180
+     ],
+     "tex": 1024,
+     "displaceM": 0.15
+    }
+   ],
+   "ambient": [
+    "heat-shimmer",
+    "drifting-sand",
+    "birds-3d",
+    "dust-gusts"
+   ],
+   "catalogueFallback": "mesa-desert",
+   "tone": {
+    "$note": "free tone words for this biome (local only)",
+    "layoutNote": "SmiR 2026-10-08: zone B is a FREE-ROAM 360 degree mega-city, not a corridor. The avenue is only the main street. Districts (dune-buried avenue, tower canyon, fallen spaceport, mesa gate, spire plaza) connect in all directions; no invisible walls, collisions follow real geometry; the spire is the landmark seen from everywhere.",
+    "skyNote": "2026-10-08 (SmiR via review of sky v1): sky plates are SKY ONLY (gradient, clouds, sun at azimuth 90, faint stars near the zenith, a haze band at the horizon in the key's haze colour; below the horizon a flat haze band hidden by the ground mesh). The city skyline at the horizon is real 3D low-LOD tower solids from the city kit placed in the fog band (objects group). The ring arc and the small second moon are 3D meshes like the planet (a ring band mesh + a moon sphere, Imagine or plate-derived textures later). Never paint towers, rings or moons into sky plates.",
+    "skyV2Note": "2026-10-08 sky v2 built (not baked, not wired): plates tools/biome/out/ember-mesa/sky-in3 (H1-H5) + sky-in4/sky-H0 (sun-up retry), Z/N reused from v1 (sky-final-norm/sky-Z, sky-final/sky-N). Imagine kept the sun on the horizon twice although asked for 8 deg up, so H0's own sun glow was moved up 8 deg in post (zb-bible-1008/tools/sun_lift.py, Imagine pixels only) -> sky-in5. Clean-up zb-bible-1008/tools/sky_prep.py -> sky-final2: re-level horizons to mid-height, common gradient profile, per-plate L-R flatten (no domes), haze band graded onto the key haze with the anti-sun drop qc.horizonAntiSunDL, overlap seam match, below-horizon = flat haze band, Z flat-fielded to the plate tops, N flat sand haze. Stitch: stitch_sky.py --no-flatten --no-align -> out/ember-mesa/sky2. Fog write-back NOT done yet (sampled horizon #c79680, nearHaze #bd8c7f, farCool #8a7791).",
+    "groundNote": "2026-10-08 ground group v1 (not baked, not wired): Imagine plates ground-in (g1,g5,g6,g7), ground-in2 (g3, g4 v2 'slope below the crest', the first g4 had one diagonal crest band), ground-in3 (g0 v2 calm base layer), ground-in4 (g2 v2, the first had diagonal sand bands that read as a grid). Seamless by torus quilting of the wrap seams (zb-bible-1008/tools/tile_make.py, no mirroring; g6 seed 2, g2 band 0.09) -> ground-tile; exposure/white-balance grade onto the key (lit L* 44, tools/ground_grade.py) -> ground-final. Prompts: no cast shadows (tiles are unlit in game), ground lock without sun direction (slots.local.json lockByTemplate). Texture bombing (bible grid 3 / offset 0.15 / rotate) is NOT in biome-runtime.js yet and is needed: plain repeat shows the 8 m motifs."
+   },
+   "styleBlock": "$local",
+   "avoid": "$local"
+  },
+  "layout": {
+   "seed": 1008,
+   "avenue": {
+    "headingDeg": 78,
+    "halfWidthM": 14
+   },
+   "avenue2": {
+    "maxSlopeDeg": 8.716,
+    "heightMin": -1.875,
+    "heightMax": 0.415,
+    "heightRange": 2.29,
+    "maxAbsLateral": 12
+   },
+   "crestM": {
+    "hero120": 0.564,
+    "chase120": 0.584,
+    "street80": 0.354
+   },
+   "skipped": {
+    "m1": "9.1 x 18.2 x 7.2 m plinth, too short to read as an avenue tower",
+    "m5": "9.1 x 18.2 x 17.5 m tip, too short to read as an avenue tower"
+   },
+   "hero": {
+    "standS": -52,
+    "lateral": 0,
+    "eyeM": 3.15,
+    "heading": 75,
+    "fov": 58,
+    "pitchDownDeg": 1.16,
+    "horizonRow": 0.48,
+    "far": 1800,
+    "avenueHeading": 78,
+    "sunColumn": 0.6364,
+    "sunRow": 0.3501,
+    "hfovDeg": 89.16
+   },
+   "chase": {
+    "standS": -44,
+    "lateral": 36,
+    "eyeM": 3.05,
+    "heading": 30,
+    "fov": 58,
+    "pitchDownDeg": 2.4,
+    "horizonRow": 0.4586,
+    "far": 1800,
+    "avenueHeading": 78,
+    "clearanceM": 59.95,
+    "lookClearM": 100
+   },
+   "street": {
+    "standS": -8,
+    "lateral": 2,
+    "eyeM": 1.6,
+    "heading": 81,
+    "fov": 58,
+    "pitchDownDeg": -15,
+    "horizonRow": 0.7586,
+    "far": 1800,
+    "avenueHeading": 78,
+    "clearanceM": 19.78,
+    "lookClearM": 100
+   },
+   "towers": [
+    {
+     "id": "t0-m2",
+     "module": "m2",
+     "lod": 0,
+     "x": 1.010826256372332,
+     "z": -43.343566441053305,
+     "s": 10,
+     "lateral": -43.56763099211062,
+     "depth": 40,
+     "yaw": 32,
+     "leanDeg": 0,
+     "leanAxisDeg": 90,
+     "scale": 1.12,
+     "sinkWant": 4.31,
+     "height": 110.48500028182923
+    },
+    {
+     "id": "t1-m4",
+     "module": "m4",
+     "lod": 0,
+     "x": 166.2736645212773,
+     "z": 12.7011605363336,
+     "s": 160,
+     "lateral": 44.64555181475382,
+     "depth": 72,
+     "yaw": 40,
+     "leanDeg": 3.44,
+     "leanAxisDeg": 90,
+     "scale": 1.09,
+     "sinkWant": 4.72,
+     "height": 92.65
+    },
+    {
+     "id": "t2-m3",
+     "module": "m3",
+     "lod": 0,
+     "x": 87.57584999575319,
+     "z": -62.79589537029165,
+     "s": 98.71808075912435,
+     "lateral": -45.101253946678526,
+     "depth": 108,
+     "yaw": 48,
+     "leanDeg": 0,
+     "leanAxisDeg": 90,
+     "scale": 1.12,
+     "sinkWant": 5.27,
+     "height": 129.69000000994123
+    },
+    {
+     "id": "t3-m6",
+     "module": "m6",
+     "lod": 0,
+     "x": 232.55152984358614,
+     "z": -5.915798051257855,
+     "s": 228.70047163846684,
+     "lateral": 39.829451668763035,
+     "depth": 148,
+     "yaw": 56,
+     "leanDeg": 0,
+     "leanAxisDeg": 90,
+     "scale": 1.087,
+     "sinkWant": 3.68,
+     "height": 65.22
+    },
+    {
+     "id": "t4-m2",
+     "module": "m2",
+     "lod": 0,
+     "x": 176.29765593479095,
+     "z": -82.87366982116178,
+     "s": 189.6758584802157,
+     "lateral": -46.810791903918535,
+     "depth": 188,
+     "yaw": 32,
+     "leanDeg": 0,
+     "leanAxisDeg": 90,
+     "scale": 1.12,
+     "sinkWant": 5.44,
+     "height": 117.32500029927697
+    },
+    {
+     "id": "t5-m3",
+     "module": "m3",
+     "lod": 0,
+     "x": 297.8240272032018,
+     "z": -21.571866937762433,
+     "s": 295.8019447378707,
+     "lateral": 37.70624327743159,
+     "depth": 230,
+     "yaw": 40,
+     "leanDeg": 4.96,
+     "leanAxisDeg": 90,
+     "scale": 0.859,
+     "sinkWant": 4.26,
+     "height": 94.49000000724301
+    },
+    {
+     "id": "t6-m4",
+     "module": "m4",
+     "lod": 0,
+     "x": 254.24026370934206,
+     "z": -94.79402600041173,
+     "s": 268.39393923934006,
+     "lateral": -42.7197617616411,
+     "depth": 274,
+     "yaw": 48,
+     "leanDeg": 0,
+     "leanAxisDeg": 90,
+     "scale": 1.12,
+     "sinkWant": 4.03,
+     "height": 95.965
+    },
+    {
+     "id": "t7-m6",
+     "module": "m6",
+     "lod": 0,
+     "x": 367.14305895433836,
+     "z": -32.32872740488136,
+     "s": 365.8429546150291,
+     "lateral": 41.19267046741558,
+     "depth": 318,
+     "yaw": 56,
+     "leanDeg": 0,
+     "leanAxisDeg": 90,
+     "scale": 1.12,
+     "sinkWant": 4.9,
+     "height": 68.88
+    },
+    {
+     "id": "t8-m3",
+     "module": "m3",
+     "lod": 0,
+     "x": 337.6256608141068,
+     "z": -118.81739623780346,
+     "s": 354.95222202381973,
+     "lateral": -49.36685776279281,
+     "depth": 360,
+     "yaw": 32,
+     "leanDeg": 0,
+     "leanAxisDeg": 90,
+     "scale": 1.12,
+     "sinkWant": 4.4,
+     "height": 135.85000001041342
+    },
+    {
+     "id": "t9-m2",
+     "module": "m2",
+     "lod": 0,
+     "x": 428.4389634199361,
+     "z": -45.99745501830039,
+     "s": 428.6415285536973,
+     "lateral": 40.2097096673091,
+     "depth": 398,
+     "yaw": 40,
+     "leanDeg": 0,
+     "leanAxisDeg": 90,
+     "scale": 0.886,
+     "sinkWant": 3.7,
+     "height": 84.17000021470396
+    },
+    {
+     "id": "t10-m4",
+     "module": "m4",
+     "lod": 0,
+     "x": 429.00081750409896,
+     "z": -126.41191825811298,
+     "s": 445.90999974491103,
+     "lateral": -38.33031919145288,
+     "depth": 432,
+     "yaw": 48,
+     "leanDeg": 0,
+     "leanAxisDeg": 90,
+     "scale": 1.12,
+     "sinkWant": 4.18,
+     "height": 95.795
+    },
+    {
+     "id": "t11-m6",
+     "module": "m6",
+     "lod": 0,
+     "x": 488.7508178349529,
+     "z": -62.967220925621994,
+     "s": 491.16386743993314,
+     "lateral": 35.79914269588892,
+     "depth": 462,
+     "yaw": 56,
+     "leanDeg": 2.65,
+     "leanAxisDeg": 90,
+     "scale": 0.997,
+     "sinkWant": 4.01,
+     "height": 59.82
+    }
+   ],
+   "skyline": [
+    {
+     "id": "far-0",
+     "module": "m4",
+     "lod": 2,
+     "x": 550.4047612808597,
+     "z": -25.432212479867363,
+     "s": 543.6669393041204,
+     "lateral": 84.97102181945243,
+     "depth": 400,
+     "yaw": 32,
+     "leanDeg": 0,
+     "leanAxisDeg": 90,
+     "scale": 0.95,
+     "sinkWant": 3.501856802403927,
+     "height": 90.27000000000001
+    },
+    {
+     "id": "far-1",
+     "module": "m4",
+     "lod": 2,
+     "x": 618.4035611145638,
+     "z": -206.8715750512418,
+     "s": 647.9029935283174,
+     "lateral": -78.75427553212981,
+     "depth": 407.2,
+     "yaw": 40,
+     "leanDeg": 0,
+     "leanAxisDeg": 90,
+     "scale": 0.95,
+     "sinkWant": 3.407920307666063,
+     "height": 105.14500000000001
+    },
+    {
+     "id": "far-2",
+     "module": "m4",
+     "lod": 2,
+     "x": 539.2870118529635,
+     "z": -179.40442990723034,
+     "s": 564.8043016654714,
+     "lateral": -67.87618243302445,
+     "depth": 414.4,
+     "yaw": 48,
+     "leanDeg": 0,
+     "leanAxisDeg": 90,
+     "scale": 0.95,
+     "sinkWant": 3.999068246409297,
+     "height": 97.83500000000001
+    },
+    {
+     "id": "far-3",
+     "module": "m4",
+     "lod": 2,
+     "x": 540.613847908776,
+     "z": -296.3925554636756,
+     "s": 590.4250359937018,
+     "lateral": -182.03440741190335,
+     "depth": 421.6,
+     "yaw": 56,
+     "leanDeg": 0,
+     "leanAxisDeg": 90,
+     "scale": 0.95,
+     "sinkWant": 4.700109891593456,
+     "height": 92.82000000000001
+    },
+    {
+     "id": "far-4",
+     "module": "m4",
+     "lod": 2,
+     "x": 661.484623029974,
+     "z": 33.35998054080083,
+     "s": 640.0965201069084,
+     "lateral": 164.92240953872002,
+     "depth": 428.8,
+     "yaw": 32,
+     "leanDeg": 0,
+     "leanAxisDeg": 90,
+     "scale": 0.916,
+     "sinkWant": 3.7606382589787244,
+     "height": 77.86
+    },
+    {
+     "id": "far-5",
+     "module": "m4",
+     "lod": 2,
+     "x": 569.2183242295696,
+     "z": -241.39617789229277,
+     "s": 606.9703235966442,
+     "lateral": -122.46203957502064,
+     "depth": 436,
+     "yaw": 40,
+     "leanDeg": 0,
+     "leanAxisDeg": 90,
+     "scale": 0.95,
+     "sinkWant": 3.6621772114187476,
+     "height": 97.41
+    },
+    {
+     "id": "far-6",
+     "module": "m4",
+     "lod": 2,
+     "x": 660.4084029744813,
+     "z": -267.8567276153821,
+     "s": 701.669484290182,
+     "lateral": -129.9158047529555,
+     "depth": 443.2,
+     "yaw": 48,
+     "leanDeg": 0,
+     "leanAxisDeg": 90,
+     "scale": 0.95,
+     "sinkWant": 3.625496708974242,
+     "height": 100.215
+    },
+    {
+     "id": "far-7",
+     "module": "m4",
+     "lod": 2,
+     "x": 699.1490270046954,
+     "z": -88.99282110231971,
+     "s": 702.3762900151224,
+     "lateral": 52.85994573754827,
+     "depth": 450.4,
+     "yaw": 56,
+     "leanDeg": 0,
+     "leanAxisDeg": 90,
+     "scale": 0.95,
+     "sinkWant": 4.763758490234613,
+     "height": 82.78999999999999
+    },
+    {
+     "id": "far-8",
+     "module": "m4",
+     "lod": 2,
+     "x": 563.1074530649322,
+     "z": 40.54827726244533,
+     "s": 542.3741657898411,
+     "lateral": 152.07359985572901,
+     "depth": 457.6,
+     "yaw": 32,
+     "leanDeg": 0,
+     "leanAxisDeg": 90,
+     "scale": 0.95,
+     "sinkWant": 4.524147891998291,
+     "height": 99.96
+    },
+    {
+     "id": "far-9",
+     "module": "m4",
+     "lod": 2,
+     "x": 618.9736803217644,
+     "z": -321.32152088853485,
+     "s": 672.2558331639331,
+     "lateral": -190.5828158268254,
+     "depth": 464.8,
+     "yaw": 40,
+     "leanDeg": 0,
+     "leanAxisDeg": 90,
+     "scale": 0.95,
+     "sinkWant": 4.082484485581517,
+     "height": 85.76499999999999
+    }
+   ],
+   "spire": {
+    "id": "spire",
+    "x": 85.72286732370408,
+    "z": 37.75457248137101,
+    "s": 76,
+    "lateral": 53.01538505554201,
+    "yaw": 82,
+    "leanDeg": 0,
+    "leanAxisDeg": 90,
+    "scale": 1,
+    "sinkWant": 4.2,
+    "height": 150,
+    "sunNudges": 7,
+    "baseY": -5.147794418336001,
+    "sink": 4.2,
+    "grounding": {
+     "minGround": -0.948,
+     "maxGround": 3.021,
+     "sink": 4.2,
+     "maxGap": -0.0472,
+     "range": 3.969
+    },
+    "visible": {
+     "hero": {
+      "visible": 0.5217391304347826,
+      "n": 23,
+      "shot": "hero"
+     },
+     "chase": {
+      "visible": 1,
+      "n": 23,
+      "shot": "chase"
+     },
+     "street": {
+      "visible": 1,
+      "n": 23,
+      "shot": "street"
+     }
+    }
+   },
+   "cables": [
+    {
+     "a": [
+      -18.675595744503326,
+      62.55163829322331,
+      -30.165067835172472
+     ],
+     "b": [
+      44.84215321021168,
+      68.98319889362281,
+      -45.083220373892274
+     ],
+     "from": "t0-m2",
+     "to": "t2-m3"
+    },
+    {
+     "a": [
+      44.84215321021168,
+      74.17079889402046,
+      -45.083220373892274
+     ],
+     "b": [
+      129.54190297050656,
+      61.414232477561754,
+      -58.22124253694406
+     ],
+     "from": "t2-m3",
+     "to": "t4-m2"
+    },
+    {
+     "a": [
+      25.179873369827092,
+      52.05766344107286,
+      25.73370261962154
+     ],
+     "b": [
+      105.74118206984276,
+      35.003651850309865,
+      33.53747548448587
+     ],
+     "from": "t1-m4",
+     "to": "t3-m6"
+    },
+    {
+     "a": [
+      105.74118206984276,
+      37.61245185030987,
+      33.53747548448587
+     ],
+     "b": [
+      180.45585521906327,
+      49.29195086948595,
+      -2.9658231485664572
+     ],
+     "from": "t3-m6",
+     "to": "t5-m3"
+    }
+   ],
+   "anchors": [
+    {
+     "x": -18.675595744503326,
+     "z": -30.165067835172472,
+     "r": 9.822635636091233,
+     "h": 0.85
+    },
+    {
+     "x": 25.179873369827092,
+     "z": 25.73370261962154,
+     "r": 9.395867943763733,
+     "h": 0.85
+    },
+    {
+     "x": 44.84215321021168,
+     "z": -45.083220373892274,
+     "r": 10.861105715990067,
+     "h": 0.85
+    },
+    {
+     "x": 105.74118206984276,
+     "z": 33.53747548448587,
+     "r": 10.934354862213134,
+     "h": 0.85
+    },
+    {
+     "x": 129.54190297050656,
+     "z": -58.22124253694406,
+     "r": 10.059290636777877,
+     "h": 0.85
+    },
+    {
+     "x": 180.45585521906327,
+     "z": -2.9658231485664572,
+     "r": 9.541721637010575,
+     "h": 0.85
+    },
+    {
+     "x": 210.84006550541537,
+     "z": -71.54859558966544,
+     "r": 9.517371475696564,
+     "h": 0.85
+    },
+    {
+     "x": 269.19965679333745,
+     "z": -12.963944042020486,
+     "r": 11,
+     "h": 0.85
+    },
+    {
+     "x": 292.64019611668095,
+     "z": -96.96995793603384,
+     "r": 11,
+     "h": 0.85
+    },
+    {
+     "x": 345.4478706498306,
+     "z": -38.9371573162184,
+     "r": 8.912171258449554,
+     "h": 0.85
+    },
+    {
+     "x": 366.339226627113,
+     "z": -105.41564402955035,
+     "r": 9.511140525341034,
+     "h": 0.85
+    },
+    {
+     "x": 407.2138689193643,
+     "z": -46.840592438147695,
+     "r": 10.525806621551514,
+     "h": 0.85
+    },
+    {
+     "x": 85.72286732370408,
+     "z": 37.75457248137101,
+     "r": 12,
+     "h": 0.85
+    },
+    {
+     "x": 336.24371569192175,
+     "z": -91.88524300382932,
+     "r": 8,
+     "h": 0.85
+    },
+    {
+     "x": 344.136114457935,
+     "z": -89.38451341539064,
+     "r": 8,
+     "h": 0.85
+    },
+    {
+     "x": 352.5140963398696,
+     "z": -84.59929487913394,
+     "r": 8,
+     "h": 0.85
+    },
+    {
+     "x": 360.9485017308465,
+     "z": -79.54862460335433,
+     "r": 8,
+     "h": 0.85
+    },
+    {
+     "x": 368.4990421093475,
+     "z": -78.65621227798329,
+     "r": 8,
+     "h": 0.85
+    },
+    {
+     "x": 377.20229044843984,
+     "z": -72.34073537377901,
+     "r": 8,
+     "h": 0.85
+    },
+    {
+     "x": 385.0405351489716,
+     "z": -70.09478063235473,
+     "r": 8,
+     "h": 0.85
+    },
+    {
+     "x": 393.4743884743421,
+     "z": -65.04670762104946,
+     "r": 8,
+     "h": 0.85
+    },
+    {
+     "x": 401.64146548899845,
+     "z": -61.253718473626144,
+     "r": 8,
+     "h": 0.85
+    },
+    {
+     "x": 399.4109465467291,
+     "z": -106.37757233134606,
+     "r": 8,
+     "h": 0.85
+    },
+    {
+     "x": 408.19627260581603,
+     "z": -99.6759501143374,
+     "r": 8,
+     "h": 0.85
+    },
+    {
+     "x": 416.38416351081787,
+     "z": -95.78503931169872,
+     "r": 8,
+     "h": 0.85
+    },
+    {
+     "x": 424.0214711753328,
+     "z": -94.48441900002912,
+     "r": 8,
+     "h": 0.85
+    },
+    {
+     "x": 344.87658194370835,
+     "z": -68.58584414565266,
+     "r": 8,
+     "h": 0.85
+    }
+   ],
+   "counts": {
+    "towers": 12,
+    "skyline": 14,
+    "cables": 4,
+    "leans": 3
+   },
+   "spacingRule": "centre distance >= r1 + r2 + 1.5*max(w1,w2); r = yawed-square circumradius + 0.6 m"
+  },
+  "groundDetail": {
+   "$note": "2026-10-10 staging: close-range Imagine detail layer (hex tiling, 3 taps). Slices: 0 sand (m_sand), 1 scree (m_scree), 2 grit (m_face); 928 px native over 1.8125 m = 512 px/m.",
+   "enabled": true,
+   "tileM": 1.8125,
+   "nearM": 15,
+   "farM": 30,
+   "slices": [
+    "sand",
+    "scree",
+    "grit"
+   ],
+   "sliceLum": [
+    1,
+    0.45,
+    0.8
+   ],
+   "sliceNrm": [
+    1,
+    0.8,
+    0.9
+   ],
+   "sliceRotDeg": [
+    12,
+    180,
+    180
+   ],
+   "hardSlice": [
+    2,
+    1,
+    2,
+    1,
+    2,
+    2,
+    2,
+    1
+   ],
+   "hardStr": [
+    0.6,
+    1,
+    1,
+    1,
+    0.6,
+    0.6,
+    0.7,
+    1
+   ],
+   "hardFloor": [
+    0,
+    0.2,
+    0,
+    0.25,
+    0,
+    0,
+    0,
+    0.25
+   ],
+   "sandMask": [
+    0.55,
+    0.85
+   ],
+   "macroVar": 0.5,
+   "$tune": "07:42 v2: scree no longer covers sand (floor 0.5/0.6 -> 0.2/0.25), scree luma 0.55 -> 0.45 (8 m view read as cobbles)"
+  },
+  "capture": {
+   "query": "lockq=1&dyn=0&hud=0&grain=0",
+   "clock": {
+    "performanceNow": 100000,
+    "skyT": 120,
+    "airT": 10
+   }
+  }
+ },
+ "todo": [
+  "mesa asset is a geo json, not a GLB",
+  "mesa and tower baseY are seated at runtime from surfaceHeight; y is null except the spire, which stores baseY",
+  "cables have no GLB; the preview builds them in code from layout endpoints",
+  "layout.counts.skyline is 14 and the skyline array length is 10",
+  "no separate LOD glb files; LODs are meshes inside the single module glb (layout.lod is the index)",
+  "per-object Imagine source images and the cameras that produced them are not stored; tex-manifest only lists objects1/vision",
+  "no per-object fidelity thresholds are stored",
+  "lane count and lane width are not stored",
+  "a segment recycler is not in the current Zone B preview",
+  "no stored LPIPS or SSIM threshold; qualityGates copy biome.budgets only",
+  "halo is Imagine atlas pixels; no halo colour is stored",
+  "biome.anchor.sampled.file is \"key.jpg\"; the key still on disk used here is /workspace/zb-bible-1008/key-city3.jpg"
+ ],
+ "placementFromKey": {
+  "applied": true,
+  "sky": {
+   "sun": {
+    "azimuthDeg": 112.7,
+    "elevationDeg": 7.76,
+    "pixel": [
+     883.0,
+     286.5
+    ]
+   },
+   "planet": {
+    "azimuthDeg": 292.7,
+    "elevationDeg": 22.0,
+    "radiusDeg": 13,
+    "inKeyFrame": false
+   },
+   "note": "Sun direction is the ray through the key sun. Planet heading is opposite that ray so the gas giant leaves the key frame. Existing atlas and planet still only."
+  },
+  "lifts": [
+   {
+    "id": "rail",
+    "kind": "rail",
+    "lift": true,
+    "label": 1,
+    "box": [
+     0,
+     396,
+     589,
+     620
+    ],
+    "boxFrac": [
+     0.0,
+     0.55,
+     0.46,
+     0.86
+    ],
+    "score": 0.7009,
+    "pixels": 31519,
+    "maskBox": [
+     0,
+     408,
+     542,
+     620
+    ],
+    "status": "depth-reject",
+    "Z": 5.592543377171691
+   },
+   {
+    "id": "wreck",
+    "kind": "wreck",
+    "label": 2,
+    "status": "lifted",
+    "imageBase": [
+     854.0,
+     504.0
+    ],
+    "maskBox": [
+     736,
+     338,
+     1268,
+     513
+    ],
+    "pixels": 38807,
+    "Z": 10.37,
+    "position": [
+     -39.695,
+     6.352,
+     13.138
+    ],
+    "s": -41.56,
+    "lateral": 3.452,
+    "yaw": 287.08,
+    "heightM": 4.78,
+    "widthPx": 532.0
+   },
+   {
+    "id": "mesa-right",
+    "kind": "mesa",
+    "label": 3,
+    "status": "lifted",
+    "imageBase": [
+     1257.0,
+     356.0
+    ],
+    "maskBox": [
+     998,
+     145,
+     1279,
+     368
+    ],
+    "pixels": 33191,
+    "Z": 26.33,
+    "position": [
+     -15.974,
+     7.838,
+     48.188
+    ],
+    "s": -25.644,
+    "lateral": 42.527,
+    "yaw": 317.65,
+    "heightM": 11.78,
+    "widthPx": 257.0
+   },
+   {
+    "id": "spire",
+    "kind": "spire",
+    "label": 4,
+    "status": "lifted",
+    "imageBase": [
+     801.0,
+     414.0
+    ],
+    "maskBox": [
+     745,
+     9,
+     860,
+     418
+    ],
+    "pixels": 21944,
+    "Z": 21.58,
+    "position": [
+     -27.995,
+     7.165,
+     14.294
+    ],
+    "s": -30.355,
+    "lateral": 6.946,
+    "yaw": 281.4,
+    "heightM": 24.28,
+    "widthPx": 115.0
+   },
+   {
+    "id": "mesa-left",
+    "kind": "mesa",
+    "label": 5,
+    "status": "lifted",
+    "imageBase": [
+     200.0,
+     398.0
+    ],
+    "maskBox": [
+     0,
+     158,
+     231,
+     413
+    ],
+    "pixels": 36018,
+    "Z": 15.88,
+    "position": [
+     -39.618,
+     11.02,
+     -12.717
+    ],
+    "s": -36.109,
+    "lateral": -21.822,
+    "yaw": 207.22,
+    "heightM": 10.59,
+    "widthPx": 231.0
+   },
+   {
+    "id": "tower-l3",
+    "kind": "tower",
+    "label": 6,
+    "status": "lifted",
+    "imageBase": [
+     470.0,
+     397.0
+    ],
+    "maskBox": [
+     413,
+     50,
+     528,
+     404
+    ],
+    "pixels": 29320,
+    "Z": 25.49,
+    "position": [
+     -28.683,
+     9.64,
+     -7.605
+    ],
+    "s": -26.475,
+    "lateral": -14.612,
+    "yaw": 232.46,
+    "heightM": 24.57,
+    "widthPx": 115.0
+   },
+   {
+    "id": "slab-l",
+    "kind": "slab",
+    "lift": true,
+    "label": 7,
+    "box": [
+     12,
+     532,
+     308,
+     713
+    ],
+    "boxFrac": [
+     0.01,
+     0.74,
+     0.24,
+     0.99
+    ],
+    "score": 1.0235,
+    "pixels": 35720,
+    "maskBox": [
+     12,
+     532,
+     308,
+     713
+    ],
+    "status": "depth-reject",
+    "Z": 3.348784191175169
+   },
+   {
+    "id": "tower-l1",
+    "kind": "tower",
+    "label": 8,
+    "status": "lifted",
+    "imageBase": [
+     267.0,
+     353.0
+    ],
+    "maskBox": [
+     185,
+     79,
+     327,
+     360
+    ],
+    "pixels": 22873,
+    "Z": 26.41,
+    "position": [
+     -30.974,
+     14.043,
+     -22.464
+    ],
+    "s": -25.627,
+    "lateral": -29.609,
+    "yaw": 212.11,
+    "heightM": 20.1,
+    "widthPx": 142.0
+   },
+   {
+    "id": "tower-r2",
+    "kind": "tower",
+    "label": 9,
+    "status": "lifted",
+    "imageBase": [
+     1106.0,
+     349.0
+    ],
+    "maskBox": [
+     1081,
+     95,
+     1187,
+     361
+    ],
+    "pixels": 21079,
+    "Z": 18.54,
+    "position": [
+     -27.986,
+     9.718,
+     29.232
+    ],
+    "s": -33.452,
+    "lateral": 21.559,
+    "yaw": 310.28,
+    "heightM": 13.08,
+    "widthPx": 106.0
+   },
+   {
+    "id": "slab-r",
+    "kind": "slab",
+    "lift": true,
+    "label": 10,
+    "box": [
+     972,
+     532,
+     1191,
+     699
+    ],
+    "boxFrac": [
+     0.76,
+     0.74,
+     0.93,
+     0.97
+    ],
+    "score": 0.939,
+    "pixels": 31290,
+    "maskBox": [
+     972,
+     532,
+     1191,
+     699
+    ],
+    "status": "depth-reject",
+    "Z": 3.874284230721539
+   },
+   {
+    "id": "tower-l2",
+    "kind": "tower",
+    "label": 11,
+    "status": "lifted",
+    "imageBase": [
+     367.0,
+     385.0
+    ],
+    "maskBox": [
+     329,
+     164,
+     406,
+     389
+    ],
+    "pixels": 12554,
+    "Z": 29.12,
+    "position": [
+     -27.222,
+     11.128,
+     -18.098
+    ],
+    "s": -22.864,
+    "lateral": -24.58,
+    "yaw": 220.75,
+    "heightM": 17.88,
+    "widthPx": 77.0
+   },
+   {
+    "id": "tower-r1",
+    "kind": "tower",
+    "label": 12,
+    "status": "lifted",
+    "imageBase": [
+     913.0,
+     356.0
+    ],
+    "maskBox": [
+     845,
+     115,
+     960,
+     360
+    ],
+    "pixels": 10620,
+    "Z": 102.33,
+    "position": [
+     65.116,
+     7.333,
+     64.161
+    ],
+    "s": 50.353,
+    "lateral": 74.537,
+    "yaw": 295.13,
+    "heightM": 58.56,
+    "widthPx": 115.0
+   },
+   {
+    "id": "arch",
+    "kind": "arch",
+    "label": 13,
+    "status": "lifted",
+    "imageBase": [
+     964.0,
+     370.0
+    ],
+    "maskBox": [
+     870,
+     261,
+     1076,
+     379
+    ],
+    "pixels": 13843,
+    "Z": 46.27,
+    "position": [
+     2.807,
+     6.903,
+     40.526
+    ],
+    "s": -5.681,
+    "lateral": 38.828,
+    "yaw": 299.81,
+    "heightM": 14.01,
+    "widthPx": 206.0
+   },
+   {
+    "id": "tower-mid",
+    "kind": "tower",
+    "lift": true,
+    "label": 14,
+    "box": [
+     588,
+     201,
+     704,
+     404
+    ],
+    "boxFrac": [
+     0.46,
+     0.28,
+     0.55,
+     0.56
+    ],
+    "score": 0.9181,
+    "pixels": 13704,
+    "maskBox": [
+     588,
+     223,
+     704,
+     402
+    ],
+    "status": "depth-reject",
+    "Z": 279161.8507062128
+   },
+   {
+    "id": "tower-l4",
+    "kind": "tower",
+    "label": 15,
+    "status": "lifted",
+    "imageBase": [
+     545.0,
+     378.0
+    ],
+    "maskBox": [
+     522,
+     170,
+     594,
+     389
+    ],
+    "pixels": 8488,
+    "Z": 39.4,
+    "position": [
+     -14.736,
+     10.396,
+     -8.833
+    ],
+    "s": -12.578,
+    "lateral": -12.995,
+    "yaw": 243.09,
+    "heightM": 22.77,
+    "widthPx": 72.0
+   },
+   {
+    "id": "sun",
+    "kind": "sun",
+    "lift": false,
+    "label": 16,
+    "box": [
+     793,
+     244,
+     973,
+     346
+    ],
+    "boxFrac": [
+     0.62,
+     0.34,
+     0.76,
+     0.48
+    ],
+    "score": 0.412,
+    "pixels": 2810,
+    "maskBox": [
+     793,
+     244,
+     973,
+     329
+    ],
+    "status": "sky-sample"
+   },
+   {
+    "id": "moon",
+    "kind": "moon",
+    "lift": false,
+    "label": 17,
+    "box": [
+     896,
+     86,
+     999,
+     188
+    ],
+    "boxFrac": [
+     0.7,
+     0.12,
+     0.78,
+     0.26
+    ],
+    "score": 0.8216,
+    "pixels": 5339,
+    "maskBox": [
+     902,
+     89,
+     990,
+     186
+    ],
+    "status": "sky-sample"
+   }
+  ],
+  "placed": [
+   {
+    "id": "R-mid",
+    "from": "mesa-right",
+    "kind": "mesa",
+    "s": 80.01,
+    "lateral": 198.96,
+    "scale": 1.35,
+    "yaw": 230.0,
+    "originS": 110.0,
+    "originLat": 215.0,
+    "originScale": 1.35,
+    "originYaw": 200.0,
+    "raw": {
+     "s": -25.644,
+     "lateral": 42.527,
+     "Z": 26.33,
+     "heightM": 11.78,
+     "yaw": 317.65
+    }
+   },
+   {
+    "id": "spire",
+    "from": "spire",
+    "kind": "spire",
+    "s": 64.006,
+    "lateral": 48.909,
+    "scale": 0.87,
+    "yaw": 37.0,
+    "height": 130.53,
+    "originS": 88.0,
+    "originLat": 53.01538505554201,
+    "originScale": 1.0,
+    "originYaw": 67.0,
+    "raw": {
+     "s": -30.355,
+     "lateral": 6.946,
+     "Z": 21.58,
+     "heightM": 24.28,
+     "yaw": 281.4
+    }
+   },
+   {
+    "id": "L-far",
+    "from": "mesa-left",
+    "kind": "mesa",
+    "s": 260.0,
+    "lateral": -283.96,
+    "scale": 1.6,
+    "yaw": 330.0,
+    "originS": 290.0,
+    "originLat": -300.0,
+    "originScale": 1.6,
+    "originYaw": 0.0,
+    "raw": {
+     "s": -36.109,
+     "lateral": -21.822,
+     "Z": 15.88,
+     "heightM": 10.59,
+     "yaw": 207.22
+    }
+   },
+   {
+    "id": "t0-m2",
+    "from": "tower-l3",
+    "kind": "tower",
+    "s": 10.0,
+    "lateral": -32.01,
+    "scale": 0.896,
+    "yaw": 2.0,
+    "height": 88.39,
+    "originS": 10.0,
+    "originLat": -43.56763099211062,
+    "originScale": 1.12,
+    "originYaw": 32.0,
+    "raw": {
+     "s": -26.475,
+     "lateral": -14.612,
+     "Z": 25.49,
+     "heightM": 24.57,
+     "yaw": 232.46
+    }
+   },
+   {
+    "id": "t2-m3",
+    "from": "tower-l1",
+    "kind": "tower",
+    "s": 74.718,
+    "lateral": -41.064,
+    "scale": 0.896,
+    "yaw": 78.0,
+    "height": 103.75,
+    "originS": 98.71808075912435,
+    "originLat": -45.101253946678526,
+    "originScale": 1.12,
+    "originYaw": 48.0,
+    "raw": {
+     "s": -25.627,
+     "lateral": -29.609,
+     "Z": 26.41,
+     "heightM": 20.1,
+     "yaw": 212.11
+    }
+   },
+   {
+    "id": "t1-m4",
+    "from": "tower-r2",
+    "kind": "tower",
+    "s": 136.006,
+    "lateral": 40.609,
+    "scale": 1.308,
+    "yaw": 10.0,
+    "height": 111.18,
+    "originS": 160.0,
+    "originLat": 44.64555181475382,
+    "originScale": 1.09,
+    "originYaw": 40.0,
+    "raw": {
+     "s": -33.452,
+     "lateral": 21.559,
+     "Z": 18.54,
+     "heightM": 13.08,
+     "yaw": 310.28
+    }
+   },
+   {
+    "id": "t4-m2",
+    "from": "tower-l2",
+    "kind": "tower",
+    "s": 165.676,
+    "lateral": -42.774,
+    "scale": 1.276,
+    "yaw": 2.0,
+    "height": 133.62,
+    "originS": 189.6758584802157,
+    "originLat": -46.810791903918535,
+    "originScale": 1.12,
+    "originYaw": 32.0,
+    "raw": {
+     "s": -22.864,
+     "lateral": -24.58,
+     "Z": 29.12,
+     "heightM": 17.88,
+     "yaw": 220.75
+    }
+   },
+   {
+    "id": "t3-m6",
+    "from": "tower-r1",
+    "kind": "tower",
+    "s": 204.706,
+    "lateral": 51.829,
+    "scale": 1.304,
+    "yaw": 26.0,
+    "height": 78.26,
+    "originS": 228.70047163846684,
+    "originLat": 39.829451668763035,
+    "originScale": 1.087,
+    "originYaw": 56.0,
+    "raw": {
+     "s": 50.353,
+     "lateral": 74.537,
+     "Z": 102.33,
+     "heightM": 58.56,
+     "yaw": 295.13
+    }
+   },
+   {
+    "id": "t6-m4",
+    "from": "tower-l4",
+    "kind": "tower",
+    "s": 244.394,
+    "lateral": -38.683,
+    "scale": 1.344,
+    "yaw": 18.0,
+    "height": 115.16,
+    "originS": 268.39393923934006,
+    "originLat": -42.7197617616411,
+    "originScale": 1.12,
+    "originYaw": 48.0,
+    "raw": {
+     "s": -12.578,
+     "lateral": -12.995,
+     "Z": 39.4,
+     "heightM": 22.77,
+     "yaw": 243.09
+    }
+   }
+  ],
+  "notes": [
+   "camera avenue s=-52.00. Applied moves are clamped nudges. Raw lifts stay on each row.",
+   "wreck: TODO, no asset",
+   "arch: TODO, no asset",
+   "t5-m3: unmatched, left in place",
+   "t7-m6: unmatched, left in place",
+   "t8-m3: unmatched, left in place",
+   "t9-m2: unmatched, left in place",
+   "t10-m4: unmatched, left in place",
+   "t11-m6: unmatched, left in place"
+  ],
+  "clamp": "Moves are nudges. A raw disparity lift is stored and is not applied when it would put a mesh inside the lens."
+ }
+}

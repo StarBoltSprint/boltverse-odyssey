@@ -1,0 +1,23 @@
+{
+ "ok": true,
+ "dpr": 1,
+ "size": [
+  640,
+  360
+ ],
+ "cam": {
+  "x": -19.2996,
+  "y": 3.1403455755041865,
+  "z": 5.3956,
+  "yaw": 78,
+  "pitch": 0
+ },
+ "drawCalls": 24,
+ "triangles": 708266,
+ "geometries": 26,
+ "textures": 37,
+ "logs": [
+  "Failed to load resource: the server responded with a status of 404 (File not found)"
+ ],
+ "shot": "/workspace/grokcli/wt/placement-key-1011/steps/placement-key-1011/runner-runner.png"
+}
