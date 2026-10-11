@@ -1119,3 +1119,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Stop after the two rounds. Do not treat wreck or arch TODOs as a placement miss. Do not run a third cook on the same silhouette gap. |
 | Guard | `steps/placement-key2-1011/REPORT.md` verdict FAIL, placed IoU 0.3763, depth inversions 11, phone draws 24. `python3 tools/placement-from-key/selftest.py` still checks the floors. The capture proof is `before-16x9-loading.png` FAIL and `before-16x9.png` PASS. |
 | Sources | `tools/placement-from-key/place.py`, `depth_lift.py`, `steps/placement-key2-1011/sheet-16x9.jpg`, `sheet-phone.jpg`. Cites the 2026-10-11 rock-wall entry above. | |
+
+### 2026-10-11 — align-solve fills the empty frames and still misses both bars
+
+| | |
+| --- | --- |
+| Take | align-solve-1011 |
+| Defect | Facade software alignment after three CMA-ES rounds is 0.73 / 0.77 / 0.77 / 0.71 / 0.82 (key, hero, 30 m, 8 m, side) on a stride-12 raster, and relief is still only −z (2.08 m). Placement framebuffer placed IoU fell from 0.3763 to 0.2859. |
+| Root cause | The facade crop's vanishing points give FOV 117° and pitch −30°, so the fit-distance frames are small silhouettes whose shade and albedo share an outline. Scaling the existing Z field cannot create +x / −x / +z relief. The city plate's three vanishing points fail the focal-length check, so placement searched around a FOV 40° fallback and the boxes never matched the SAM masks. |
+| Fix | Stop. Three rounds each. Do not export `dataset/i23d`. Do not invent side relief. The staging layout was put back to placed-r1 after the shot. |
+| Guard | `python3 tools/common/align/selftest.py`. Numbers in `steps/align-solve-1011/numbers.json`. Gate field is `overlap` = `alignment`, bar 0.70. |
+| Sources | `tools/common/align/`, `steps/align-solve-1011/REPORT.md`. |

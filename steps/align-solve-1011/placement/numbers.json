@@ -1,0 +1,130 @@
+{
+ "job": "placement",
+ "verdict": "FAIL",
+ "before_placedWeighted": 0.3763,
+ "camera_only_software": 0.0281,
+ "after_search_software": 0.4516,
+ "perObject": [
+  {
+   "id": "B-far",
+   "kind": "mesa",
+   "iou": 0.4267,
+   "pixels": 19218,
+   "alignment": 0.0,
+   "chamfer_px": 1468.605
+  },
+  {
+   "id": "spire",
+   "kind": "spire",
+   "iou": 0.0,
+   "pixels": 20570,
+   "alignment": 0.0,
+   "chamfer_px": 1468.605
+  },
+  {
+   "id": "L-mid",
+   "kind": "mesa",
+   "iou": 0.5874,
+   "pixels": 36821,
+   "alignment": 0.0,
+   "chamfer_px": 1468.605
+  },
+  {
+   "id": "t10-m4",
+   "kind": "tower",
+   "iou": 0.542,
+   "pixels": 30674,
+   "alignment": 0.0,
+   "chamfer_px": 1468.605
+  },
+  {
+   "id": "t6-m4",
+   "kind": "tower",
+   "iou": 0.6497,
+   "pixels": 22193,
+   "alignment": 0.0,
+   "chamfer_px": 1468.605
+  },
+  {
+   "id": "t11-m6",
+   "kind": "tower",
+   "iou": 0.4266,
+   "pixels": 21307,
+   "alignment": 0.0,
+   "chamfer_px": 1468.605
+  },
+  {
+   "id": "t0-m2",
+   "kind": "tower",
+   "iou": 0.6637,
+   "pixels": 12481,
+   "alignment": 0.0,
+   "chamfer_px": 1468.605
+  },
+  {
+   "id": "t5-m3",
+   "kind": "tower",
+   "iou": 0.2952,
+   "pixels": 3653,
+   "alignment": 0.0,
+   "chamfer_px": 1468.605
+  },
+  {
+   "id": "t3-m6",
+   "kind": "tower",
+   "iou": 0.0,
+   "pixels": 7305,
+   "alignment": 0.0,
+   "chamfer_px": 1468.605
+  },
+  {
+   "id": "t2-m3",
+   "kind": "tower",
+   "iou": 0.0969,
+   "pixels": 1787,
+   "alignment": 0.0,
+   "chamfer_px": 1468.605
+  }
+ ],
+ "inversions": 10,
+ "floors": {
+  "ahead": {
+   "tower": 18.0,
+   "spire": 55.0,
+   "mesa": 90.0
+  },
+  "lat_floor": {
+   "tower": 18.0,
+   "spire": 12.0,
+   "mesa": 80.0
+  },
+  "lat_push": {
+   "tower": 22.0,
+   "spire": 16.0,
+   "mesa": 110.0
+  }
+ },
+ "camera": {
+  "fov_y_deg": 40.0,
+  "pitch_deg": 0.0,
+  "roll_deg": 0.0,
+  "yaw_deg_image": 0.0,
+  "yaw_deg_world": 78,
+  "height_m": 0.6301220484907205,
+  "eye_m": 0.63,
+  "fallback": true,
+  "lines": 1314
+ },
+ "trials": 912,
+ "timing_s": {
+  "camera_s": 4.777,
+  "search_r0_s": 0.573,
+  "search_r1_s": 0.12,
+  "search_r2_s": 0.857
+ },
+ "seconds_total": 46.084,
+ "vision_cost_usd": 0.0,
+ "shot": "staging shot on 127.0.0.1:8997",
+ "why": "software placed IoU under 0.75 or depth order inverted",
+ "note": "Decision IoU is tower, spire, and mesa. Wreck and arch stay TODO. The number is the cheap box raster, then a staging shot when the server answers."
+}

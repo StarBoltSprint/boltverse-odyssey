@@ -6,6 +6,12 @@ Filled so far: take 10d hero ship and slab rock (below). The methods below are t
 
 Skills: [`.grok/skills/`](../../.grok/skills/). Failures already paid for: [`../failures.md`](../failures.md). Image geometry (horizon, slices, turnaround, sun, scale, texel density) is [`../geometry.md`](../geometry.md). That page is a lock, not a recipe. No cook was stored for it.
 
+## align
+
+| Recipe | Commit | QC |
+| --- | --- | --- |
+| [align-solve-metrics.md](align-solve-metrics.md) — shared render-vs-key score, vanishing-point camera, CMA-ES | this step | synthetic FOV ±2° and pitch ±1°; both key jobs still FAIL (`steps/align-solve-1011/numbers.json`) |
+
 ## sky
 
 | Recipe | Commit | QC |

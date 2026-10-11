@@ -28,6 +28,10 @@ Relief comes only from the image painted on that face; never invent it.
    **Only PASS is packaged.** `--force-export` exists for previews and is recorded as `exportedOnFail` in the json.
 8. **package.py** copies plates byte-identical, writes `<name>.json` (plate cameras, spans, gains, footprints, qc, gate).
 
+## Align-solve
+
+`python3 tools/imagine-to-3d/auto.py run <spec> --method fusion5 --solve-camera --search cmaes` reframes the existing fusion5 mesh with `tools/common/align` (vanishing-point camera, then CMA-ES). The object gate's relief row reads `overlap`, which is that module's `alignment` (min of Canny edge precision and recall at 2 px, bar 0.70, blocking). Licences are in `tools/common/align/README.md`.
+
 ```
 python3 run.py --plates plates-all.json --type mesa --height 45 --name mesaA \
   --work /workspace/mesa-1009/work --dest /workspace/zb-preview-1008/mesas --placements placements.json --blender '{"sharpDeg":62}'

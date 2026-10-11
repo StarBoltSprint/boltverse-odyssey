@@ -1027,7 +1027,13 @@ def write_report(step, numbers, rounds, ninfo):
     open(os.path.join(step, "REPORT.md"), "w").write("\n".join(lines) + "\n")
 
 
-def run_cli(target):
+def run_cli(target, solve_camera=False, search=""):
+    if solve_camera or search:
+        common = os.path.abspath(os.path.join(HERE, "..", "common"))
+        if common not in sys.path:
+            sys.path.insert(0, common)
+        from align.apply_facade import run as run_align
+        return run_align(target, search_solver=search or "cmaes", solve_camera=True)
     step = os.path.join(REPO, "steps", "fusion-fix5-1011")
     return run(target, step)
 

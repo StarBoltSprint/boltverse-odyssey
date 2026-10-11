@@ -29,28 +29,39 @@ def _dilate(b, tol):
 
 
 def overlap(relief_img, albedo_img, tol=2, min_score=0.70):
-    """relief_img / albedo_img are paths or arrays. Returns score and counts."""
+    """Edge agreement of a relief render against the albedo (or the key).
+
+    The number is tools/common/align/metrics.py `alignment`: min of Canny
+    edge precision and recall at 2 px. The object gate reads `overlap`,
+    which is that alignment, and keeps the bar at 0.70.
+    """
+    import os
+    import sys
+    common = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "common"))
+    if common not in sys.path:
+        sys.path.insert(0, common)
+    from align.metrics import score as metric_score
+
     if isinstance(relief_img, str):
-        r = Image.open(relief_img)
+        r = Image.open(relief_img).convert("RGB")
     else:
-        r = relief_img
+        r = relief_img.convert("RGB")
     if isinstance(albedo_img, str):
-        a = Image.open(albedo_img)
+        a = Image.open(albedo_img).convert("RGB")
     else:
-        a = albedo_img
+        a = albedo_img.convert("RGB")
     if a.size != r.size:
         a = a.resize(r.size, Image.BILINEAR)
-    er = _edges(r)
-    ea = _edges(a)
-    if int(er.sum()) < 8 or int(ea.sum()) < 8:
-        return dict(ok=False, overlap=0.0, reason="too few edges", reliefEdges=int(er.sum()), textureEdges=int(ea.sum()))
-    dr = _dilate(er, tol)
-    da = _dilate(ea, tol)
-    prec_r = float((er & da).sum()) / float(er.sum())
-    prec_a = float((ea & dr).sum()) / float(ea.sum())
-    score = float(min(prec_r, prec_a))
-    return dict(ok=bool(score >= min_score), overlap=round(score, 4), precisionRelief=round(prec_r, 4),
-                precisionTexture=round(prec_a, 4), reliefEdges=int(er.sum()), textureEdges=int(ea.sum()), tolPx=tol)
+    sc = metric_score(np.asarray(r), np.asarray(a))
+    if sc["render_edges"] < 8 or sc["key_edges"] < 8:
+        return dict(ok=False, overlap=0.0, reason="too few edges",
+                    reliefEdges=sc["render_edges"], textureEdges=sc["key_edges"], tolPx=tol,
+                    alignment=0.0, silhouette_iou=sc["silhouette_iou"], chamfer_px=sc["chamfer_px"])
+    align = float(sc["alignment"])
+    return dict(ok=bool(align >= min_score), overlap=round(align, 4), alignment=round(align, 4),
+                precisionRelief=sc["edge_precision_2px"], precisionTexture=sc["edge_recall_2px"],
+                reliefEdges=sc["render_edges"], textureEdges=sc["key_edges"], tolPx=tol,
+                silhouette_iou=sc["silhouette_iou"], chamfer_px=sc["chamfer_px"], colour_lab=sc["colour_lab"])
 
 
 def save_overlay(path, relief_img, albedo_img, tol=2):
