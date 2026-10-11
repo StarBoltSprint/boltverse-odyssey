@@ -1,4 +1,4 @@
-"""Stage 'depth_fuse' (q16): Depth Anything V2-Small on EVERY accepted view (front/side/back/top, native res) ->
+"""Stage 'depth_fuse' (q16): Depth Anything V2 Large on EVERY accepted view (front/side/back/top) ->
 each view's relative disparity aligned to the visual hull seen from that camera (robust affine fit, sign/side
 auto-checked) -> TSDF fusion on a voxel grid with silhouette carving -> fused height field (the hull carved/pushed
 by the fused depth, bounded by +-maxDev) + cross-view depth consistency report.

@@ -809,8 +809,9 @@ def massing(doc, da_steps=None, segments=None):
     x0 = float(xy[:, 0].min())
     x1 = float(xy[:, 0].max())
     parts = []
-    _add_prism_bands(parts, xy, depth, taper, band=2.0)
-    _add_back_ledges(parts, xy, depth, taper, band=2.0)
+    # One prism of the key silhouette, including the jagged bite. A 2 m height
+    # band draws edges the paint does not have. Back ledges are the same cut.
+    _add_prism_bands(parts, xy, depth, taper, band=max(y1 - y0, 1.0) + 1.0)
 
     hole = None
     for feat in doc.get("features", {}).get("front", []):

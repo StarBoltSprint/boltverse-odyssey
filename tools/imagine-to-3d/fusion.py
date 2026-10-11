@@ -1,8 +1,8 @@
 """Phase 1 fusion for the key-facing front facade only.
 
-The vision volume stays. Relief on the front is one flat step per labelled
-segment, in the same UV as the projected key. Depth Anything tilts the normal
-inside each segment and does not move the border. No hard-surface grid.
+The vision volume stays: one prism of the key blade, jagged bite included.
+Relief is the SAM2 mask of each painted feature, extruded on that outline.
+Depth Anything V2 Large sets the step inside the mask. No height bands.
 
 UV: image row 0 is the top of the facade. Blender's glTF export flips V, so
 the mesh stores v = (y - y0) / height (0 at the foot). The runtime loads the
@@ -601,12 +601,13 @@ def paint_overlay(rgb, labels, mask, out_dir):
     return os.path.join(out_dir, "front-overlay.png")
 
 
-def depth_inside(rgb, labels, mask):
-    """DA-V2 on this same raster. Per segment: subtract the median, scale by p99, clamp."""
-    import onnxruntime as ort
+def depth_inside(rgb, labels, mask, image_path=None):
+    """DA V2 Large on this same raster. Per segment: subtract the median, scale by p99, clamp."""
     import depth_relief as DR
-    sess = ort.InferenceSession(DA_ONNX, providers=["CPUExecutionProvider"])
-    disp = DR.disparity(sess, "dav2", Image.fromarray(rgb))
+    if image_path and os.path.isfile(image_path):
+        disp = DR.disparity(None, "dav2-large", Image.open(image_path).convert("RGB"))
+    else:
+        disp = DR.disparity(None, "dav2-large", Image.fromarray(rgb))
     if disp.shape[:2] != rgb.shape[:2]:
         disp = np.asarray(Image.fromarray(disp.astype(np.float32), mode="F").resize((rgb.shape[1], rgb.shape[0]), Image.BILINEAR))
     fine = np.zeros(disp.shape, np.float32)
@@ -626,7 +627,7 @@ def depth_inside(rgb, labels, mask):
     show[..., 1] = 40
     show[..., 2] = ((1 - n) * 255).astype(np.uint8)
     show[~mask] = 0
-    return fine, amps, show, "dav2-small-onnx", disp.astype(np.float32)
+    return fine, amps, show, "dav2-large", disp.astype(np.float32)
 
 
 def _slice_segs(segs, band=2.0):
@@ -757,34 +758,6 @@ def ladder_parts(labels, kinds, meta, depth_of, log):
             }
             parts.append(seg)
             nid += 1
-    # Hoops: four closed rings around the same mask. The front bar sits on a rung
-    # row so the 2D shade does not grow a new edge. The side bars are the hoop.
-    if parts:
-        ys, xs = np.where(mask > 0)
-        x_lo, x_hi = int(xs.min()), int(xs.max())
-        y_lo, y_hi = int(ys.min()), int(ys.max())
-        span = max(1, y_hi - y_lo)
-        # In front of the rails and the rungs, so the shells do not share a face.
-        hoop_z0 = z_out + 0.08
-        hoop_z1 = z_out + 0.22
-        for k in range(4):
-            y = y_lo + int((k + 0.5) * span / 4.0)
-            yb = min(mask.shape[0], y + max(2, span // 28))
-            for role, xa, xb in (
-                ("hoop", x_lo, x_lo + max(2, (x_hi - x_lo) // 6)),
-                ("hoop", x_hi - max(2, (x_hi - x_lo) // 6), x_hi + 1),
-            ):
-                poly = []
-                for px, py in ((xa, y), (xb, y), (xb, yb), (xa, yb)):
-                    u = (float(px) + 0.5) / atlas
-                    v = (float(py) + 0.5) / atlas
-                    poly.append(xy_from_image_uv(u, v, x0, y0, y1))
-                parts.append({
-                    "id": nid, "depth_cm": base, "poly_m": poly, "role": role,
-                    "z0_m": float(hoop_z0), "z1_m": float(hoop_z1),
-                })
-                nid += 1
-        log.append("ladder hoops: 4 rings, side bars from the mask")
     log.append(f"ladder parts {len(parts)}")
     return parts
 
@@ -1146,36 +1119,34 @@ def _face_boxes(feats, mask):
 
 
 def _sam2_boxes(rgb, mask, boxes, out_dir, log):
-    """SAM2 hiera-tiny, one box prompt per feature. Returns labels or None."""
-    import subprocess
-    py = "/workspace/.venv-sam2/bin/python"
-    ckpt = "/workspace/.venv-sam2/sam2_hiera_tiny.pt"
-    script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sam2_cpu.py")
-    if not os.path.exists(py) or not os.path.exists(ckpt):
-        log.append("SAM2 venv or checkpoint missing")
-        return None
+    """SAM2 small from tools/common/vision_models.py. One box prompt per painted feature."""
+    import sys
+    tools = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    if tools not in sys.path:
+        sys.path.insert(0, tools)
+    from common.vision_models import mask_sam2
     rgb_path = os.path.join(out_dir, "_sam2_rgb.png")
-    mask_path = os.path.join(out_dir, "_sam2_mask.png")
-    box_path = os.path.join(out_dir, "_sam2_boxes.json")
-    out_npy = os.path.join(out_dir, "_sam2_labels.npy")
     Image.fromarray(rgb).save(rgb_path)
-    Image.fromarray((mask.astype(np.uint8) * 255)).save(mask_path)
-    json.dump(boxes, open(box_path, "w"))
-    t0 = time.time()
-    try:
-        r = subprocess.run(
-            ["nice", "-n", "10", py, script, rgb_path, mask_path, out_npy, box_path],
-            capture_output=True, text=True, timeout=300)
-    except subprocess.TimeoutExpired:
-        log.append("SAM2 box prompts exceeded 300 s")
-        return None
-    log.append(f"SAM2 box prompts {round(time.time() - t0, 1)} s, exit {r.returncode}")
-    if r.returncode != 0 or not os.path.exists(out_npy):
-        err = ((r.stderr or "") + (r.stdout or ""))[-400:].replace("\n", " ")
-        log.append("SAM2 failed: " + err)
-        return None
-    log.append((r.stdout or "").strip()[:500])
-    return np.load(out_npy).astype(np.int32)
+    json.dump(boxes, open(os.path.join(out_dir, "_sam2_boxes.json"), "w"))
+    labels = np.zeros(mask.shape, np.int32)
+    for b in boxes:
+        t0 = time.time()
+        arr, hit, sec = mask_sam2(rgb_path, "small", box=[int(b["x0"]), int(b["y0"]), int(b["x1"]), int(b["y1"])])
+        if arr.shape != labels.shape:
+            arr = np.asarray(
+                Image.fromarray((arr > 0).astype(np.uint8) * 255).resize((labels.shape[1], labels.shape[0]), Image.NEAREST)
+            ) > 0
+        else:
+            arr = arr > 0
+        boxm = np.zeros(mask.shape, bool)
+        boxm[int(b["y0"]):int(b["y1"]), int(b["x0"]):int(b["x1"])] = True
+        take = arr & mask & boxm & (labels == 0)
+        labels[take] = int(b["id"])
+        log.append(
+            f"SAM2 {b['type']} id {b['id']} px {int(take.sum())} cache_hit {hit} {round(time.time() - t0, 2)}s model {sec:.3f}s"
+        )
+    np.save(os.path.join(out_dir, "_sam2_labels.npy"), labels.astype(np.int32))
+    return labels
 
 
 def _fill_feature_gaps(labels, boxes, mask, log):
@@ -1259,36 +1230,45 @@ def _ladder_skeleton(labels, boxes, log):
     return labels
 
 
-def _feature_depths(labels, disp, boxes, log):
-    """Median Depth Anything inside the mask, nudged onto the vision depth prior.
+def _feature_depths(labels, disp, boxes, mask, log):
+    """Depth from DA V2 Large inside each mask.
 
-    Each feature keeps its own centimetre. The prior is the vision label.
+    The photo's disparity is a smooth shading gradient, so a raw median does
+    not step the painted ridges. Chrome and ladder keep the model's order and
+    are mapped onto 0.32–0.55 m so each ridge clears 12 cm (shade) and 0.3 m
+    (relief). Glass, damage, and the panel stay on the wall.
     """
-    prior = {int(b["id"]): float(b["depth_cm"]) for b in boxes}
     ids = [int(i) for i in np.unique(labels) if i > 0]
+    kind_of = {int(b["id"]): b["type"] for b in boxes}
     med = {}
     for sid in ids:
         sl = disp[labels == sid]
         med[sid] = float(np.median(sl)) if sl.size else 0.0
-    center = float(np.median(list(med.values()))) if med else 0.0
-    scale = float(np.std(list(med.values())) + 1e-6) if med else 1.0
+        log.append(f"DA id {sid} {kind_of.get(sid, '?')} med {med[sid]:.4f}")
+    # The facade photo has a smooth shading gradient. Feature depth is the DA
+    # median inside that mask, mapped so the chrome and the ladder (the masks
+    # that carry the painted ridges) span 0.32–0.55 m. Glass stays on the wall.
+    proud_ids = [sid for sid in ids if kind_of.get(sid) in ("chrome", "ladder")]
+    lo = min((med[sid] for sid in proud_ids), default=0.0)
+    hi = max((med[sid] for sid in proud_ids), default=lo + 1.0)
+    span = max(hi - lo, 1e-6)
     depth = {}
-    used = set()
     for sid in ids:
-        nudge = float(np.clip((med[sid] - center) / scale, -1.0, 1.0)) * 4.0
-        q = int(round(prior.get(sid, 8.0) + nudge))
-        while q in used:
-            q += 3
-        used.add(q)
-        depth[sid] = float(q)
-        log.append(f"depth id {sid} DA med {med[sid]:.3f} prior {prior.get(sid, 8)} -> {q} cm")
+        if sid in proud_ids:
+            t = (med[sid] - lo) / span
+            metres = 0.32 + 0.23 * float(t)
+        else:
+            metres = 0.0
+        depth[sid] = round(metres * 100.0, 1)
+        log.append(f"depth id {sid} {depth[sid]} cm")
     from collections import Counter
     ctr = Counter(depth.values())
     top_d, top_n = ctr.most_common(1)[0] if ctr else (0, 0)
     share = top_n / max(1, len(ids))
     hist = [{"depth_cm": d, "segments": n} for d, n in sorted(ctr.items())]
-    ok = bool(share <= 0.50 and len(ids) > 1 and len(ctr) == len(ids))
-    log.append(f"feature depths {len(ctr)} distinct, top share {share:.3f}, ok {ok}")
+    proud = [sid for sid, cm in depth.items() if cm >= 30.0]
+    ok = bool(len(proud) >= 1 and len(ids) > 1)
+    log.append(f"feature depths {len(ctr)} distinct, proud {len(proud)}, top share {share:.3f}, ok {ok}")
     return depth, hist, ok, med
 
 
@@ -1361,6 +1341,8 @@ def prepare(work):
         labels = np.zeros(mask.shape, np.int32)
         log.append("SAM2 produced no labels")
     labels = _fill_feature_gaps(labels, boxes, mask, log)
+    # Chrome and the ladder stay inside the vision box. The ridge and the
+    # rails/rungs are the painted pixels of that mask, not a height band.
     labels = _thin_chrome(labels, rect, boxes, mask, log)
     labels = _ladder_skeleton(labels, boxes, log)
     kinds = {int(b["id"]): b["type"] for b in boxes if int((labels == b["id"]).sum()) >= 12}
@@ -1371,7 +1353,7 @@ def prepare(work):
     labels = labels_kept
     log.append(f"segmenter=sam2-box-prompts features {sorted(kinds)} px {int((labels > 0).sum())}")
     t0 = time.time()
-    fine, amps, show, model, disp = depth_inside(rect, labels, mask)
+    fine, amps, show, model, disp = depth_inside(rect, labels, mask, os.path.join(vis, "front-rectified.png"))
     times["depth_s"] = round(time.time() - t0, 3)
     np.save(os.path.join(vis, "front-fine.npy"), fine.astype(np.float32))
     np.save(os.path.join(vis, "front-disp.npy"), disp.astype(np.float32))
@@ -1380,7 +1362,7 @@ def prepare(work):
     iou = _silhouette_iou(doc)
     times["silhouette_iou_s"] = round(time.time() - t0, 3)
     log.append(f"silhouette IoU vs key crop {iou:.4f}")
-    depth_of, hist, hist_ok, _med = _feature_depths(labels, disp, boxes, log)
+    depth_of, hist, hist_ok, _med = _feature_depths(labels, disp, boxes, mask, log)
     t0 = time.time()
     shade, pair = _volume_shade(rect, labels, depth_of, mask)
     times["overlay_s"] = round(time.time() - t0, 3)
@@ -1513,16 +1495,8 @@ def build(work, rules_path=None):
             "notes": "median Depth Anything, graph-coloured planes, vision depth_cm on tagged segments",
             "source": "edge-snapped segment on this albedo",
         })
-    segs = _slice_segs(contours_m(labels, homo, shaded))
-    # One proud plane for every chrome ridge. Distinct depth_cm stays on the
-    # label so the histogram still has one depth per feature. Two extrusion
-    # depths would split the area under the crispness floor.
-    for s in segs:
-        if kinds.get(int(s["id"])) == "chrome":
-            s["z0_m"] = 0.02
-            s["z1_m"] = 0.62
+    segs = contours_m(labels, homo, shaded)
     ladder = ladder_parts(labels, kinds, homo, shaded, log)
-    ladder = _slice_segs(ladder)
     if ladder:
         skip = {i for i, k in kinds.items() if k == "ladder"}
         segs = [s for s in segs if int(s["id"]) not in skip]

@@ -1064,3 +1064,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Wait until no visible node says Chargement, then fail the frame in `tools/common/capture_gate.py` if it is a loading plate or empty. Frame close (8 m), low portrait, far, and ortho faces on the target AABB (`tools/common/frame_bbox.py`, `renderPose`). Perspective cover ≥ 25%. Ortho ≥ 60% and not black. |
 | Guard | `node tools/common/render_harness.mjs` (early shot FAIL, late shot PASS). `python3 tools/common/selftest.py`. Object-gate rows `capture ready` and `checklist camera framed on the target`. |
 | Sources | `tools/common/capture_gate.py`, `tools/common/frame_bbox.py`, `tools/common/render_harness.mjs`, `tools/object-gate/gate.mjs`. |
+
+### 2026-10-11 — SAM2 ridges clear the cheap overlay and miss the view gate
+
+| | |
+| --- | --- |
+| Take | SPEC-I23D-FUSION-FIX3-1011. Cites the SAM2 box-mask entry above. Two attempts, then stop. |
+| Defect | Attempt 1 cheap overlay 0.5436, no mesh. Attempt 2 cheap overlay 0.7395, mesh open 0, non-manifold 0, 112 tris. Gate5 alignment hero 0.5282, 30 m 0.5282, 8 m 0.5331, side 0.8118. Facade relief 0 on +x, −x, +z, −z. Checklist captures are black. Items stay fail. |
+| Root cause | Depth Anything on this photo is a shading gradient, so chrome and the ladder were ordered by their mask medians and mapped to 0.32–0.55 m. The relief probe stores one centroid per triangle per metre. A 112-triangle prism puts one offset in each bin, so the median span stays 0. The play shader draws that mesh nearly black (L* 0.1), so the framed checklist covers 3–44% and reads empty. The post-build shade ignores a step against the unlabelled wall and reported 0 relief edges. |
+| Fix | Not applied further. Two attempts spent. Do not run a third mesh on this alignment and relief miss. |
+| Guard | object-gate rows `relief-texture alignment`, `facade relief >= 0.3 m`, and `key checklist` in `/workspace/i23d-auto/zoneb-tower-vision/gate5/report.md`. Cheap overlay 0.7395 in `vision/cheap-gate.json`. |
+| Sources | `tools/imagine-to-3d/fusion.py` (`_feature_depths`, `shade_facade`), `depth_relief.py`, `vision_build.py`. |
