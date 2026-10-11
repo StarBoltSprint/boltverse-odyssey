@@ -1200,3 +1200,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Lit material is `MeshBasicMaterial`, `toneMapped: false`. `readRT` sets `SRGBColorSpace`. Placement uses `right/up/toward/origin` when that basis exists. Inset is 0 for t < 0.04, and that `t` is bound per ring (the loft loop's `t` is the crown). Back plate not used. No further round on d/w, UV, 154 px/m, or the side ΔE. |
 | Guard | `steps/hires-tower-1011/gate/report.md`: colour L\* 42.1, grounding 0.00 m, d/w 0.86 FAIL, visible px/m 0 vs 154.6. Relief row can still print PASS with −z 0.002 because `minReliefFaces` is 2. |
 | Sources | `tools/imagine-to-3d/runtime/vision-tower.mjs`, `tools/imagine-to-3d/multiview_tower.py`, `tools/object-gate/lib/probe.js`, `steps/hires-tower-1011/REPORT.md`. |
+
+### 2026-10-11 — compare server joined /ref/main.mjs onto .main.mjs
+
+| | |
+| --- | --- |
+| Take | world-graph-1011 |
+| Defect | The headless page stayed on "Chargement…" with an empty error list. `main.mjs` came back HTTP 404. |
+| Root cause | `tools/world-graph/serve.mjs` joined the preview root to `"." + "main.mjs"`, which is the hidden name `.main.mjs`. The index shell was a special case, so the HTML loaded and the module did not. |
+| Fix | `resolveRoute` uses the path after the `/ref/`, `/zone/`, or `/wg/` prefix with no extra dot. |
+| Guard | `node tools/world-graph/selftest.mjs` row `compare route serves main.mjs` (resolved path equals the preview `main.mjs`). |
+| Sources | `tools/world-graph/serve.mjs`, `tools/world-graph/selftest.mjs`. |

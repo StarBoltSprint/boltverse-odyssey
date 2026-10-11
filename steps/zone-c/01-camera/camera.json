@@ -1,0 +1,15 @@
+{
+  "model": "moge-2",
+  "licence": "MIT",
+  "vfovDeg": 51.47,
+  "hfovDeg": 81.19,
+  "eyeHeightM": 1.508,
+  "pitchDeg": 7.95,
+  "horizonRow": 0.6449,
+  "deckPlaneRmsM": 0.014,
+  "deckDepthM": 7.36,
+  "convention": "OpenCV camera for the fit; pitch positive looks up, matching geom.pitch_for_horizon.",
+  "lipsRejected": "LSD and causeway-lip lines did not lock (left residual 77 px). Not used.",
+  "cliffs": "imagine-to-3d solids, not terrain relief",
+  "masks": "SAM2.1 small, Apache-2.0. Planet disk only; rings excluded."
+}

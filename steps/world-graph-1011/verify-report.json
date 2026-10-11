@@ -1,0 +1,304 @@
+{
+ "pixelDiff": {
+  "hero": {
+   "meanAbs": 0.0,
+   "meanAbsOver255": 0.0,
+   "refLuma": 0.3676062063743646,
+   "zoneLuma": 0.3676062063743646,
+   "size": [
+    900,
+    480,
+    3
+   ]
+  },
+  "street": {
+   "meanAbs": 0.0,
+   "meanAbsOver255": 0.0,
+   "refLuma": 0.43127061763616553,
+   "zoneLuma": 0.43127061763616553,
+   "size": [
+    900,
+    480,
+    3
+   ]
+  },
+  "m8": {
+   "meanAbs": 0.0,
+   "meanAbsOver255": 0.0,
+   "refLuma": 0.322579355399419,
+   "zoneLuma": 0.322579355399419,
+   "size": [
+    900,
+    480,
+    3
+   ]
+  }
+ },
+ "heroDiffersFromStreet": true,
+ "keyImage": "/workspace/zb-bible-1008/key-city3.jpg",
+ "keyCamera": {
+  "ssim": 0.5196171205629567,
+  "lpips": 0.6006526947021484,
+  "drawCalls": 25,
+  "triangles": 734347,
+  "passes": {
+   "main": {
+    "calls": 25,
+    "tris": 734347
+   },
+   "both": {
+    "calls": 25,
+    "tris": 734347
+   },
+   "shadow": {
+    "calls": 0,
+    "tris": 0
+   }
+  },
+  "size": [
+   1280,
+   720
+  ]
+ },
+ "qualityGates": {
+  "maxDrawCalls": 12,
+  "maxTrisOnScreen": 150000,
+  "maxTexMB": 64,
+  "maxLpipsKeyView": null,
+  "maxSsimKeyView": null
+ },
+ "shots": {
+  "hero-ref": {
+   "passes": {
+    "main": {
+     "calls": 18,
+     "tris": 245875
+    },
+    "both": {
+     "calls": 18,
+     "tris": 245875
+    },
+    "shadow": {
+     "calls": 0,
+     "tris": 0
+    }
+   },
+   "errors": [],
+   "st": {
+    "x": -51.115,
+    "z": 9.63,
+    "yaw": 75,
+    "pitch": -1.16,
+    "y": 9.959591927440972
+   },
+   "size": [
+    480,
+    900
+   ]
+  },
+  "hero-zone": {
+   "passes": {
+    "main": {
+     "calls": 18,
+     "tris": 245875
+    },
+    "both": {
+     "calls": 18,
+     "tris": 245875
+    },
+    "shadow": {
+     "calls": 0,
+     "tris": 0
+    }
+   },
+   "errors": [],
+   "st": {
+    "x": -51.115,
+    "z": 9.63,
+    "yaw": 75,
+    "pitch": -1.16,
+    "y": 9.959591927440972
+   },
+   "size": [
+    480,
+    900
+   ]
+  },
+  "street-ref": {
+   "passes": {
+    "main": {
+     "calls": 20,
+     "tris": 365523
+    },
+    "both": {
+     "calls": 20,
+     "tris": 365523
+    },
+    "shadow": {
+     "calls": 0,
+     "tris": 0
+    }
+   },
+   "errors": [],
+   "st": {
+    "x": -7.4485346997279205,
+    "z": 3.4352741381180083,
+    "yaw": 81,
+    "pitch": 15,
+    "y": 2.263251934362105
+   },
+   "size": [
+    480,
+    900
+   ]
+  },
+  "street-zone": {
+   "passes": {
+    "main": {
+     "calls": 20,
+     "tris": 365523
+    },
+    "both": {
+     "calls": 20,
+     "tris": 365523
+    },
+    "shadow": {
+     "calls": 0,
+     "tris": 0
+    }
+   },
+   "errors": [],
+   "st": {
+    "x": -7.4485346997279205,
+    "z": 3.4352741381180083,
+    "yaw": 81,
+    "pitch": 15,
+    "y": 2.263251934362105
+   },
+   "size": [
+    480,
+    900
+   ]
+  },
+  "m8-ref": {
+   "passes": {
+    "main": {
+     "calls": 18,
+     "tris": 245875
+    },
+    "both": {
+     "calls": 18,
+     "tris": 245875
+    },
+    "shadow": {
+     "calls": 0,
+     "tris": 0
+    }
+   },
+   "errors": [],
+   "st": {
+    "x": -51.115,
+    "z": 9.63,
+    "yaw": 75,
+    "pitch": -10.619655276155134,
+    "y": 9.809591927440971
+   },
+   "size": [
+    480,
+    900
+   ]
+  },
+  "m8-zone": {
+   "passes": {
+    "main": {
+     "calls": 18,
+     "tris": 245875
+    },
+    "both": {
+     "calls": 18,
+     "tris": 245875
+    },
+    "shadow": {
+     "calls": 0,
+     "tris": 0
+    }
+   },
+   "errors": [],
+   "st": {
+    "x": -51.115,
+    "z": 9.63,
+    "yaw": 75,
+    "pitch": -10.619655276155134,
+    "y": 9.809591927440971
+   },
+   "size": [
+    480,
+    900
+   ]
+  },
+  "key-ref": {
+   "passes": {
+    "main": {
+     "calls": 25,
+     "tris": 734347
+    },
+    "both": {
+     "calls": 25,
+     "tris": 734347
+    },
+    "shadow": {
+     "calls": 0,
+     "tris": 0
+    }
+   },
+   "errors": [],
+   "st": {
+    "x": -51.115,
+    "z": 9.63,
+    "yaw": 75,
+    "pitch": -1.16,
+    "y": 9.959591927440972
+   },
+   "size": [
+    1280,
+    720
+   ]
+  },
+  "key-zone": {
+   "passes": {
+    "main": {
+     "calls": 25,
+     "tris": 734347
+    },
+    "both": {
+     "calls": 25,
+     "tris": 734347
+    },
+    "shadow": {
+     "calls": 0,
+     "tris": 0
+    }
+   },
+   "errors": [],
+   "st": {
+    "x": -51.115,
+    "z": 9.63,
+    "yaw": 75,
+    "pitch": -1.16,
+    "y": 9.959591927440972
+   },
+   "size": [
+    1280,
+    720
+   ]
+  }
+ },
+ "qualityGatesCheck": {
+  "drawCalls": 25,
+  "triangles": 734347,
+  "maxDrawCalls": 12,
+  "maxTrisOnScreen": 150000,
+  "drawCallsOk": false,
+  "trisOk": false
+ }
+}
