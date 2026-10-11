@@ -1,0 +1,107 @@
+{
+ "glb": "/workspace/i23d-auto/zoneb-tower-vision/vision/tower.glb",
+ "min": [
+  -24.433900833129883,
+  -36.03850173950195,
+  -26.530000686645508
+ ],
+ "max": [
+  25.988800048828125,
+  173.77200317382812,
+  2.6500000953674316
+ ],
+ "front": [
+  0.0,
+  0.0,
+  1.0
+ ],
+ "sheet": "steps/foundation-1011/tower-checklist-sheet.png",
+ "views": [
+  {
+   "view": "close",
+   "distanceM": 8.0,
+   "fovY": 170.0,
+   "size": [
+    206,
+    458
+   ],
+   "ok": true,
+   "kind": "close",
+   "cover": 0.3531,
+   "minCover": 0.25,
+   "loading": false,
+   "empty": false,
+   "black": false,
+   "why": ""
+  },
+  {
+   "view": "low-portrait",
+   "distanceM": 8.0,
+   "fovY": 170.0,
+   "size": [
+    206,
+    458
+   ],
+   "ok": true,
+   "kind": "low-portrait",
+   "cover": 0.4729,
+   "minCover": 0.25,
+   "loading": false,
+   "empty": false,
+   "black": false,
+   "why": ""
+  },
+  {
+   "view": "far",
+   "distanceM": 461.58311080932623,
+   "fovY": 30.2792,
+   "size": [
+    206,
+    458
+   ],
+   "ok": true,
+   "kind": "far",
+   "cover": 0.2764,
+   "minCover": 0.25,
+   "loading": false,
+   "empty": false,
+   "black": false,
+   "why": ""
+  },
+  {
+   "view": "ortho-front",
+   "distanceM": null,
+   "fovY": null,
+   "size": [
+    246,
+    1024
+   ],
+   "ok": true,
+   "kind": "ortho-front",
+   "cover": 0.6724,
+   "minCover": 0.6,
+   "loading": false,
+   "empty": false,
+   "black": false,
+   "why": ""
+  },
+  {
+   "view": "ortho-side",
+   "distanceM": null,
+   "fovY": null,
+   "size": [
+    142,
+    1024
+   ],
+   "ok": true,
+   "kind": "ortho-side",
+   "cover": 0.8206,
+   "minCover": 0.6,
+   "loading": false,
+   "empty": false,
+   "black": false,
+   "why": ""
+  }
+ ],
+ "ok": true
+}

@@ -999,3 +999,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Stopped after two reconstructions. Do not median-mix those rays and call the result a dune. Place crests only from pixels above the horizon, and score the crest line's median against the avenue median. |
 | Guard | `python3 tools/terrain-from-key/run.py` then `steps/terrain-key-1011/gates.json`. Final row: silhouette IoU 0.8373 (need 0.80), banksAboveAvenue false (dune_left −2.07 m, avenue −3.22 m), repetition 0.7576 (need < 0.75), corridor max slope 17.145° (need ≤ 16). |
 | Sources | `tools/terrain-from-key/build_field.py`, `gates.py`, `steps/terrain-key-1011/REPORT.md`. |
+
+### 2026-10-11 — checklist capture shot the loading overlay
+
+| | |
+| --- | --- |
+| Take | foundation-1011 |
+| Defect | Headless captures were saved while the page still said `Chargement… 17/20`. Checklist cameras also missed a tall tower: the walker eye stays near the ground and cannot frame a ~210 m box, and ortho cover was hardcoded to 1. |
+| Root cause | `openPage` returned after `readyExpr` and a fixed wait. The screenshot did not check the overlay text or the pixels. Checklist poses used `setPose`, which clamps pitch and parks the eye at ground + 1.6 m. |
+| Fix | Wait until no visible node says Chargement, then fail the frame in `tools/common/capture_gate.py` if it is a loading plate or empty. Frame close (8 m), low portrait, far, and ortho faces on the target AABB (`tools/common/frame_bbox.py`, `renderPose`). Perspective cover ≥ 25%. Ortho ≥ 60% and not black. |
+| Guard | `node tools/common/render_harness.mjs` (early shot FAIL, late shot PASS). `python3 tools/common/selftest.py`. Object-gate rows `capture ready` and `checklist camera framed on the target`. |
+| Sources | `tools/common/capture_gate.py`, `tools/common/frame_bbox.py`, `tools/common/render_harness.mjs`, `tools/object-gate/gate.mjs`. |

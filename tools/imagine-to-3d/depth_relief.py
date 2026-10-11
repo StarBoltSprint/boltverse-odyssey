@@ -14,6 +14,15 @@ MIDAS_URL = "https://github.com/isl-org/MiDaS/releases/download/v2_1/model-small
 PROFILE = {"mesa": dict(amp=1.5, sigmaM=4.0, fineM=0.25, maxGrad=0.7), "tower": dict(amp=0.3, sigmaM=1.0, fineM=0.06, maxGrad=0.5), "rock": dict(amp=0.6, sigmaM=1.5, fineM=0.1, maxGrad=0.83)}
 
 def session():
+    """Small relief net. Prefer the shared load-once session; fall back to the local file."""
+    try:
+        tools = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        if tools not in sys.path:
+            sys.path.insert(0, tools)
+        from common.vision_models import load_depth_session
+        return load_depth_session("dav2-small")
+    except Exception as e:
+        print("shared depth session unavailable:", e, file=sys.stderr)
     import onnxruntime as ort
     os.makedirs(MODELS, exist_ok=True)
     for name, url, kind in (("dav2-small.onnx", DA_URL, "dav2"), ("midas-small.onnx", MIDAS_URL, "midas")):

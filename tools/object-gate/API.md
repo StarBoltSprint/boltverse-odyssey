@@ -1,4 +1,4 @@
-# object-gate API: the stable contract (v1.6)
+# object-gate API: the stable contract (v1.7)
 
 Every tool that makes or changes a 3D object calls this API. That includes the Imagine-to-3D modules `classify`, `views`, `coarse`, `pbr`, `compare`, `fixloop` and `keyvideo`. Do not re-implement a check: import it. `API_VERSION` (in `gate.mjs`, also the `version` field in `package.json`) follows two rules:
 
@@ -61,14 +61,14 @@ Python pipelines use the CLIs instead: `cli.mjs` and `hooks/imagine-to-3d.mjs`. 
 | Grounding | `grounding` |
 | Geometry | `geometry.sealed`, `geometry.relief`, `geometry.proportions` |
 | Effects | `effects.imagine-texture`, `effects.no-colour-literals` |
-| Checklist | `checklist.written`, `checklist.key-crop`, `checklist.verified`, `checklist.colour` |
-| Runtime | `runtime.console`, `runtime.shader`, `runtime.hud`, `runtime.title`, `runtime.portrait`, `runtime.budgets` (INFO), `runtime.live-untouched` |
+| Checklist | `checklist.written`, `checklist.key-crop`, `checklist.verified`, `checklist.colour`, `checklist.camera` (1.7: close 8 m, low portrait, far, ortho faces framed on the target AABB; perspective cover ≥ 25%, ortho ≥ 60% and not black) |
+| Runtime | `runtime.console`, `runtime.shader`, `runtime.hud`, `runtime.title`, `runtime.portrait`, `runtime.budgets` (INFO), `runtime.live-untouched`, `runtime.capture-ready` (1.7: screenshot after the Chargement overlay is gone; fails a loading screen or an empty frame) |
 | Phone perf (from `window.__perfReport()`, INFO `perf.report` when absent) | `perf.canvas-ratio`, `perf.sky-order`, `perf.ground-order`, `perf.adaptive`, `perf.quality-kept` (FAIL if the adaptive controller can drop the detail layer, or `detailOn` is false), `perf.default-ratio` (PASS: native min(2, device), or internal ≥ 1.5 upscaled with `upscale: "easu-rcas"` to a canvas at min(2, device); FAIL otherwise or with a sprint dip), see [phone-perf.md](../../docs/METHOD/phone-perf.md) |
 
 ## Report JSON (`<out>/report.json`)
 
 ```jsonc
-{ "tool": "object-gate", "version": 1, "apiVersion": "1.6", "url": "...", "adapter": "...", "out": "/abs/dir",
+{ "tool": "object-gate", "version": 1, "apiVersion": "1.7", "url": "...", "adapter": "...", "out": "/abs/dir",
   "startedAt": "ISO", "finishedAt": "ISO", "verdict": "PASS|FAIL",
   "runtime": [ { "id": "runtime.shader", "check": "shader compile 412x915", "status": "PASS|FAIL|INFO", "detail": "...", "hints": [] } ],
   "objects": [ { "id": "mesa", "type": "rock", "verdict": "PASS|FAIL", "hero": "mesa-0",
