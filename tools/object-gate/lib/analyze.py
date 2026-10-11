@@ -189,9 +189,17 @@ def visible_px(a):
                     break
             ks.append(kk)
     if not ks:
-        if inside:   # the surface is there but shows no detail at all (flat / black): nothing visible
-            return {"ok": True, "flat": True, "screenPxPerM": round(S, 1), "tiles": 0, "insideTiles": int(inside), "kMedian": None,
-                    "visiblePxPerM": 0.0, "p25PxPerM": 0.0, "capped": False, "tau": tau}
+        if inside:
+            # The surface fills the tiles but every tile is smoother than the coarsest k.
+            # Returning 0 treated a magnified native plate as an empty frame. S/kmax is an
+            # upper bound (detail, if any, is coarser than this estimator), not a measured
+            # frequency and not the phone target.
+            kmax = float(KS[-1])
+            upper = round(S / kmax, 1)
+            return {"ok": True, "flat": True, "coarserThanEstimator": True, "screenPxPerM": round(S, 1),
+                    "tiles": 0, "insideTiles": int(inside), "kMedian": kmax,
+                    "visiblePxPerM": upper, "p25PxPerM": upper, "capped": False, "tau": tau,
+                    "note": "upper bound S/kmax; inside tiles are flatter than the coarsest probe"}
         return {"ok": False, "why": "the surface is not inside the measured part of the frame", "screenPxPerM": S}
     ks = np.array(ks)
     med = float(np.median(ks))

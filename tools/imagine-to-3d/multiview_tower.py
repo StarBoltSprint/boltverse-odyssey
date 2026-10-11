@@ -175,10 +175,10 @@ FACE_DIR = "/workspace/i23d-auto/zoneb-tower-hero/imagine/in"
 
 
 def apply_hires(panels, masks, report):
-    """Front, left, and right take the 1024 plates at native crop.
+    """Front and right take their own plates. Left and back are the right plate mirrored.
 
-    face-back-1024 is measured and then left unused when it does not show the
-    back. face-left-REJECTED is never opened. No resample.
+    face-back-1024 is measured and never painted (it is a second front).
+    face-left-REJECTED is never opened. No resample.
     """
     verdicts = {}
     back_rgb = np.asarray(Image.open(os.path.join(FACE_DIR, HIRES_FILES["back"])).convert("RGB"))
@@ -193,18 +193,21 @@ def apply_hires(panels, masks, report):
         "ncc_vs_sheet": nccs,
         "best_sheet": best,
         "used": False,
-        "reason": "pier sits on the viewer's right, the same side as the front. Best NCC is not the sheet back. The old sheet panel stays on this face.",
+        "reason": "second front (pier on the viewer's right, same family as the front). Not painted. -z is the right plate mirrored.",
     }
     right_rgb = np.asarray(Image.open(os.path.join(FACE_DIR, HIRES_FILES["right"])).convert("RGB"))
+    right_crop, right_m, _bg = crop_subject(right_rgb)
     for name in ("front", "right", "left"):
         rgb = right_rgb if name == "right" else np.asarray(Image.open(os.path.join(FACE_DIR, HIRES_FILES[name])).convert("RGB"))
-        crop, m, _bg = crop_subject(rgb)
+        if name == "right":
+            crop, m = right_crop, right_m
+        else:
+            crop, m, _bg = crop_subject(rgb)
         nccs = {n: round(ncc_resize(crop, panels[j]), 3) for j, n in enumerate(NAMES)}
         best = max(nccs, key=nccs.get)
         mirror = None
         if name == "left":
-            right_crop, _, _ = crop_subject(np.ascontiguousarray(right_rgb[:, ::-1]))
-            mirror = round(ncc_resize(crop, right_crop), 3)
+            mirror = round(ncc_resize(crop, np.ascontiguousarray(right_crop[:, ::-1])), 3)
         i = NAMES.index(name)
         panels[i] = crop
         masks[i] = m
@@ -220,6 +223,19 @@ def apply_hires(panels, masks, report):
             "used": True,
             "resampled": False,
         }
+    i = NAMES.index("back")
+    panels[i] = np.ascontiguousarray(right_crop[:, ::-1])
+    masks[i] = np.ascontiguousarray(right_m[:, ::-1])
+    verdicts["back"] = {
+        "file": HIRES_FILES["right"],
+        "record": "mirrored right",
+        "file_px": [int(right_rgb.shape[1]), int(right_rgb.shape[0])],
+        "crop_px": [int(panels[i].shape[1]), int(panels[i].shape[0])],
+        "pier": pier_side(panels[i], masks[i]),
+        "used": True,
+        "resampled": False,
+        "source": "face-right-1024.jpg mirrored",
+    }
     verdicts["ladder"] = "ladder not painted"
     verdicts["rejected_left"] = "not opened"
     report["hires"] = verdicts
@@ -286,6 +302,120 @@ def edge_strip(rgb, mask, side, frac=0.08):
     else:
         m[:, -n:] = mask[:, -n:]
     return m
+
+
+def grade_strip(src, src_mask, ref, ref_mask, src_side, ref_side, n=12):
+    """Reinhard-match a feathered edge only. Body pixels stay the plate.
+
+    The outer column of the strip takes the graded colour. The inner column
+    stays the plate. A whole-image grade lifts the stone body off its plate.
+    """
+    src_edge = edge_strip(src, src_mask, src_side)
+    ref_edge = edge_strip(ref, ref_mask, ref_side)
+    before = delta_e(src, src_edge, ref, ref_edge)
+    graded = reinhard(src, src_edge, ref, ref_edge)
+    out = src.copy()
+    n = min(n, src.shape[1] // 3)
+    if src_side == "left":
+        g = graded[:, :n].astype(np.float32)
+        s = out[:, :n].astype(np.float32)
+        ramp = np.linspace(1.0, 0.0, n, dtype=np.float32)[None, :, None]
+        out[:, :n] = np.clip(g * ramp + s * (1.0 - ramp), 0, 255).astype(np.uint8)
+    else:
+        g = graded[:, -n:].astype(np.float32)
+        s = out[:, -n:].astype(np.float32)
+        ramp = np.linspace(0.0, 1.0, n, dtype=np.float32)[None, :, None]
+        out[:, -n:] = np.clip(g * ramp + s * (1.0 - ramp), 0, 255).astype(np.uint8)
+    after = delta_e(out, src_edge, ref, ref_edge)
+    body = src_mask.copy()
+    body[:, :n] = False
+    body[:, -n:] = False
+    return out, before, after, delta_e(out, body, src, body)
+
+
+def map_u(masks, name, t, u, chord_m=None, height_m=None):
+    """Map a 0..1 chord onto this image row, at the plate's vertical px/m.
+
+    v/t 0 is the foot (image bottom). A tapered row must not span the whole
+    mask: that packs more horizontal pixels than the height, and the gate
+    stretch (singular-value ratio) goes over 1.3. The window is the mask
+    row, cropped to 1.22 times the isotropic pixel span and centred on the
+    mask. Native pixels only. No resample.
+    """
+    u = float(u)
+    if not masks or name not in masks or masks[name] is None:
+        return u
+    mask = masks[name]
+    h, w = mask.shape
+    row = int(np.clip(round((1.0 - float(t)) * (h - 1)), 0, h - 1))
+    xs = np.where(mask[row])[0]
+    if xs.size < 2:
+        for d in range(1, 24):
+            found = False
+            for rr in (row - d, row + d):
+                if 0 <= rr < h:
+                    xs = np.where(mask[rr])[0]
+                    if xs.size >= 2:
+                        found = True
+                        break
+            if found:
+                break
+    if xs.size < 2:
+        return u
+    a = float(xs[0])
+    b = float(xs[-1])
+    if chord_m and height_m and float(height_m) > 1.0:
+        budget = (h - 1) * float(chord_m) / float(height_m) * 1.22
+        span = b - a
+        if span > budget >= 2.0:
+            mid = 0.5 * (a + b)
+            a = mid - 0.5 * budget
+            b = mid + 0.5 * budget
+            if a < 0:
+                b -= a
+                a = 0.0
+            if b > w - 1:
+                a -= b - (w - 1)
+                b = float(w - 1)
+            a = max(0.0, a)
+    denom = max(1, w - 1)
+    return (a + u * (b - a)) / denom
+
+
+def roof_from_front(front_img, front_mask, cap_w, cap_d, rows=32):
+    """Native roof-edge band pasted into a footprint canvas. Never resampled.
+
+    A band larger than the canvas is center-cropped. The rest of the canvas is
+    one native pixel colour, not a stretched row.
+    """
+    h, w = front_mask.shape
+    ys = np.flatnonzero(front_mask.any(1))
+    if ys.size == 0:
+        return np.full((cap_d, cap_w, 3), 180, np.uint8), "no mask"
+    y_top = int(ys[0])
+    band = front_img[y_top:min(h, y_top + rows)]
+    bm = front_mask[y_top:min(h, y_top + rows)]
+    xs = np.flatnonzero(bm.any(0))
+    if xs.size == 0:
+        return np.full((cap_d, cap_w, 3), 180, np.uint8), "no span"
+    x0, x1 = int(xs[0]), int(xs[-1]) + 1
+    band = np.ascontiguousarray(band[:, x0:x1])
+    bm = bm[:, x0:x1]
+    pix = band[bm]
+    fill = pix[len(pix) // 2] if len(pix) else band.reshape(-1, 3)[0]
+    canvas = np.empty((cap_d, cap_w, 3), np.uint8)
+    canvas[:] = fill
+    src = band
+    bh, bw = src.shape[:2]
+    if bh > cap_d or bw > cap_w:
+        y0c = max(0, (bh - cap_d) // 2)
+        x0c = max(0, (bw - cap_w) // 2)
+        src = src[y0c:y0c + cap_d, x0c:x0c + cap_w]
+        bh, bw = src.shape[:2]
+    yo = max(0, (cap_d - bh) // 2)
+    xo = max(0, (cap_w - bw) // 2)
+    canvas[yo:yo + bh, xo:xo + bw] = src
+    return canvas, "front roof-edge band, native pixels, one fill colour, no resample"
 
 
 def metric_outward(path, mask, ppm):
@@ -388,7 +518,7 @@ def sample_inset(inset, u, v):
     return float(inset[row, col])
 
 
-def build_mesh(poly, y0, y1, depth_ratio, back_ratio, insets, ny=96):
+def build_mesh(poly, y0, y1, depth_ratio, back_ratio, insets, ny=96, masks=None):
     """Loft. Front at z=0, body toward -z, up +y. Shared vertices, per-loop UVs later."""
     ys = np.linspace(y0, y1, ny)
     rings = []
@@ -459,53 +589,65 @@ def build_mesh(poly, y0, y1, depth_ratio, back_ratio, insets, ny=96):
     def uv_of(face, u, v):
         return (face, u, v)  # placeholder, packed later
 
-    gx0 = min(min(r[1], r[3]) for r in rings)
-    gx1 = max(max(r[2], r[4]) for r in rings)
-    gw = max(1e-3, gx1 - gx0)
+    height_m = max(1e-6, y1 - y0)
 
-    def gu(x):
-        return float(np.clip((x - gx0) / gw, 0, 1))
+    def chord_of(ring, kind):
+        _y, xmin, xmax, bx0, bx1, depth = ring
+        if kind == "front":
+            return max(1e-3, xmax - xmin)
+        if kind == "back":
+            return max(1e-3, abs(bx1 - bx0))
+        if kind == "right":
+            return max(1e-3, float(np.hypot(bx1 - xmax, depth)))
+        return max(1e-3, float(np.hypot(xmin - bx0, depth)))
 
     for r in range(ny - 1):
         y = rings[r][0]
         v0 = (y - y0) / (y1 - y0)
         v1 = (rings[r + 1][0] - y0) / (y1 - y0)
+        c0 = {k: chord_of(rings[r], k) for k in ("front", "right", "back", "left")}
+        c1 = {k: chord_of(rings[r + 1], k) for k in ("front", "right", "back", "left")}
         base = r * stride
         nxt = (r + 1) * stride
-        # front u follows metres, the same map as the key projection
+        # Each row uses a pixel window matched to that row's world width.
         for i in range(nxf - 1):
-            def xu(ring, i):
-                xmin, xmax = ring[1], ring[2]
-                return xmin + (i / (nxf - 1)) * (xmax - xmin)
-            u0, u1 = gu(xu(rings[r], i)), gu(xu(rings[r], i + 1))
-            u0b, u1b = gu(xu(rings[r + 1], i)), gu(xu(rings[r + 1], i + 1))
+            u0 = map_u(masks, "front", v0, i / (nxf - 1), c0["front"], height_m)
+            u1 = map_u(masks, "front", v0, (i + 1) / (nxf - 1), c0["front"], height_m)
+            u0b = map_u(masks, "front", v1, i / (nxf - 1), c1["front"], height_m)
+            u1b = map_u(masks, "front", v1, (i + 1) / (nxf - 1), c1["front"], height_m)
             quad(base + i, base + i + 1, nxt + i + 1, nxt + i,
                  [uv_of("front", u0, v0), uv_of("front", u1, v0), uv_of("front", u1b, v1), uv_of("front", u0b, v1)])
         # right: indices nxf .. nxf+nz-2, plus corners front last and back first
         right_idx = [base + nxf - 1] + [base + nxf + i for i in range(nz - 1)] + [base + nxf + (nz - 1)]
         right_idx_n = [nxt + nxf - 1] + [nxt + nxf + i for i in range(nz - 1)] + [nxt + nxf + (nz - 1)]
-        for i in range(len(right_idx) - 1):
-            u0, u1 = i / (len(right_idx) - 1), (i + 1) / (len(right_idx) - 1)
+        nu = len(right_idx) - 1
+        for i in range(nu):
+            u0 = map_u(masks, "right", v0, i / nu, c0["right"], height_m)
+            u1 = map_u(masks, "right", v0, (i + 1) / nu, c0["right"], height_m)
+            u0b = map_u(masks, "right", v1, i / nu, c1["right"], height_m)
+            u1b = map_u(masks, "right", v1, (i + 1) / nu, c1["right"], height_m)
             quad(right_idx[i], right_idx[i + 1], right_idx_n[i + 1], right_idx_n[i],
-                 [uv_of("right", u0, v0), uv_of("right", u1, v0), uv_of("right", u1, v1), uv_of("right", u0, v1)])
+                 [uv_of("right", u0, v0), uv_of("right", u1, v0), uv_of("right", u1b, v1), uv_of("right", u0b, v1)])
         # back starts at nxf + (nz - 1)
         b0 = nxf + (nz - 1)
         for i in range(nxf - 1):
-            # back panel u=0 is the viewer's left, which is the high-x side of this ring
-            def xback(ring, i):
-                bx0, bx1 = ring[3], ring[4]
-                return bx1 + (i / (nxf - 1)) * (bx0 - bx1)
-            u0, u1 = gu(xback(rings[r], i)), gu(xback(rings[r], i + 1))
-            u0b, u1b = gu(xback(rings[r + 1], i)), gu(xback(rings[r + 1], i + 1))
+            u0 = map_u(masks, "back", v0, i / (nxf - 1), c0["back"], height_m)
+            u1 = map_u(masks, "back", v0, (i + 1) / (nxf - 1), c0["back"], height_m)
+            u0b = map_u(masks, "back", v1, i / (nxf - 1), c1["back"], height_m)
+            u1b = map_u(masks, "back", v1, (i + 1) / (nxf - 1), c1["back"], height_m)
             quad(base + b0 + i, base + b0 + i + 1, nxt + b0 + i + 1, nxt + b0 + i,
                  [uv_of("back", u0, v0), uv_of("back", u1, v0), uv_of("back", u1b, v1), uv_of("back", u0b, v1)])
         l0 = b0 + nxf
         left_idx = [base + b0 + nxf - 1] + [base + l0 + i for i in range(nz - 1)] + [base + 0]
         left_idx_n = [nxt + b0 + nxf - 1] + [nxt + l0 + i for i in range(nz - 1)] + [nxt + 0]
-        for i in range(len(left_idx) - 1):
-            u0, u1 = i / (len(left_idx) - 1), (i + 1) / (len(left_idx) - 1)
+        nu = len(left_idx) - 1
+        for i in range(nu):
+            u0 = map_u(masks, "left", v0, i / nu, c0["left"], height_m)
+            u1 = map_u(masks, "left", v0, (i + 1) / nu, c0["left"], height_m)
+            u0b = map_u(masks, "left", v1, i / nu, c1["left"], height_m)
+            u1b = map_u(masks, "left", v1, (i + 1) / nu, c1["left"], height_m)
             quad(left_idx[i], left_idx[i + 1], left_idx_n[i + 1], left_idx_n[i],
-                 [uv_of("left", u0, v0), uv_of("left", u1, v0), uv_of("left", u1, v1), uv_of("left", u0, v1)])
+                 [uv_of("left", u0, v0), uv_of("left", u1, v0), uv_of("left", u1b, v1), uv_of("left", u0b, v1)])
     # caps from the first and last ring, no invented roof paint
     foot = 0
     top = (ny - 1) * stride
@@ -568,10 +710,18 @@ def weld_closed(V, F, uvs, y0, y1, tol=0.002, tip=0.05, weld_foot=True):
     the cap is non-manifold. A face that collapses is dropped. The wall
     triangle with one tip vertex and two vertices on the next ring stays.
     """
+    crown_pts = [p for p in V if abs(float(p[1]) - y1) <= tip]
+    collapse_crown = False
+    if crown_pts:
+        cxz = np.mean([[float(p[0]), float(p[2])] for p in crown_pts], axis=0)
+        crown_r = max(float(np.hypot(float(p[0]) - cxz[0], float(p[2]) - cxz[1])) for p in crown_pts)
+        # A real point crown collapses. A ring with extent stays, so the cap is a face.
+        collapse_crown = crown_r < 0.5
+
     def key_of(p):
         if weld_foot and abs(float(p[1]) - y0) <= tip:
             return ("foot",)
-        if abs(float(p[1]) - y1) <= tip:
+        if collapse_crown and abs(float(p[1]) - y1) <= tip:
             return ("crown",)
         return tuple(np.round(p / tol).astype(np.int64))
 
@@ -798,12 +948,13 @@ def main():
     report["plates"]["faces"] = {
         "front": "broad glass elevation, concrete pier on the viewer's right, sheared crown, two damage bands. Check only.",
         "left": "profile: concrete pier and cables, glass sliver on the viewer's left.",
-        "back": "broad glass elevation, concrete pier on the viewer's left, damage not a copy of the front.",
+        "back": "right plate mirrored (cables and stone). face-back-1024 is a second front and is not painted.",
         "right": "profile: concrete pier and cables, glass on the viewer's right.",
     }
     top = np.asarray(Image.open(VIEW_TOP).convert("RGB"))
     und = np.asarray(Image.open(VIEW_UNDER).convert("RGB"))
     report["plates"]["view_top"] = classify_top(top)
+    report["plates"]["view_top"]["decision"] = "not a roof plan (tall elevation). +y is a roof-edge band of the front plate, native pixels."
     report["plates"]["view_under"] = classify_under(und)
     report["plates"]["old_cuts"] = {}
     for name, path in OLD_CUTS.items():
@@ -854,7 +1005,7 @@ def main():
         "h_over_w": round(h_over_w, 3),
         "source": "width and height from the key silhouette; depth/width from left and right panel widths at the same height",
     }
-    # Front first, then colour-match each hidden face's shared edge to that front.
+    # Front first. Seam match is a feathered strip. The face body stays the plate.
     if use_faces:
         front_img = panels[0].copy()
         plate_ppm = front_img.shape[0] / height
@@ -867,52 +1018,29 @@ def main():
         ppm_front = 419.0 / height
         front_img = project_front(HOMO, KEY, poly, y0, y1, ppm_front)
         report["key_composite"] = {"applied": True, "reason": "sheet path: key projection, one source pixel never enlarged"}
-    front_m = front_img.sum(2) > 8
+    front_m = masks[0] if use_faces and masks[0].shape[:2] == front_img.shape[:2] else (front_img.sum(2) > 8)
     seam = {}
-    for idx, side in ((1, "left"), (3, "right")):
-        src_edge = edge_strip(panels[idx], masks[idx], "right" if side == "left" else "left")
-        ref_edge = edge_strip(front_img, front_m, side)
-        before = delta_e(panels[idx], src_edge, front_img, ref_edge)
-        img = reinhard(panels[idx], src_edge, front_img, ref_edge)
-        after = delta_e(img, src_edge, front_img, ref_edge)
-        if side == "left":
-            left_img = img
-        else:
-            right_img = img
-        seam[side] = {"delta_e_before": before, "delta_e_after": after, "reference": "key-front"}
-    back_edge = edge_strip(panels[2], masks[2], "left")
-    ref_edge = edge_strip(right_img, masks[3], "right")
-    before = delta_e(panels[2], back_edge, right_img, ref_edge)
-    back_img = reinhard(panels[2], back_edge, right_img, ref_edge)
-    after = delta_e(back_img, back_edge, right_img, ref_edge)
-    seam["back"] = {"delta_e_before": before, "delta_e_after": after, "reference": "graded-right, itself matched to the key front"}
+
+    def one_seam(src, src_m, ref, ref_m, src_side, ref_side, label, reference):
+        img, before, after, body = grade_strip(src, src_m, ref, ref_m, src_side, ref_side)
+        seam[label] = {
+            "delta_e_before": before,
+            "delta_e_after": after,
+            "body_delta_e": body,
+            "reference": reference,
+            "feather_px": 12,
+            "body": "native plate",
+        }
+        return img
+
+    left_img = one_seam(panels[1], masks[1], front_img, front_m, "right", "left", "left", "front edge, feather only")
+    right_img = one_seam(panels[3], masks[3], front_img, front_m, "left", "right", "right", "front edge, feather only")
+    back_img = one_seam(panels[2], masks[2], right_img, masks[3], "left", "right", "back", "right edge, feather only")
     report["seams"] = {
         k: {kk: (None if vv is None else round(vv, 3) if isinstance(vv, float) else vv) for kk, vv in d.items()}
         for k, d in seam.items()
     }
-
-    # feather 12 px at the shared corners
-    def feather(a, b, a_side, b_side, n=12):
-        if a_side == "right":
-            aa = a[:, -n:].astype(np.float32)
-        else:
-            aa = a[:, :n].astype(np.float32)
-        if b_side == "left":
-            bb = b[:, :n].astype(np.float32)
-        else:
-            bb = b[:, -n:].astype(np.float32)
-        bb = cv2.resize(bb, (n, a.shape[0]))
-        ramp = np.linspace(0, 1, n, dtype=np.float32)[None, :, None]
-        mixed = aa * (1 - ramp) + bb * ramp if a_side == "left" else aa * ramp + bb * (1 - ramp)
-        if a_side == "right":
-            a[:, -n:] = mixed.astype(np.uint8)
-        else:
-            a[:, :n] = mixed.astype(np.uint8)
-        return a
-    # left panel's right edge meets the key front's left edge
-    left_img = feather(left_img, front_img, "right", "left")
-    right_img = feather(right_img, front_img, "left", "right")
-    back_img = feather(back_img, right_img, "left", "left")
+    report["colour_root_cause"] = "reinhard() used to shift the whole side image onto the front edge's Lab mean. The stone body left its plate. The material was already unlit MeshBasic. The grade now stops at a 12 px feather."
 
     # MoGe on each painted face. One process, one weight load.
     Image.fromarray(front_img).save(os.path.join(work, "front-key.jpg"), quality=92)
@@ -980,13 +1108,20 @@ def main():
     report["cheap"]["front_vs_key_strict_geometry"] = geo["strict"]
     report["cheap"]["stripe"] = geo["stripe"]
 
-    V, F, raw_uv, rings = build_mesh(poly, y0, y1, depth_ratio, back_ratio, insets, ny=80)
-    # Grey cap island at the front face px/m. view-top and view-under are not plans.
+    face_masks = {"front": masks[0], "left": masks[1], "back": masks[2], "right": masks[3]}
+    V, F, raw_uv, rings = build_mesh(poly, y0, y1, depth_ratio, back_ratio, insets, ny=80, masks=face_masks)
+    # Roof band at the front face px/m. view-top is not a plan and is not projected.
     ppm_cap = face_img["front"].shape[0] / max(1e-6, y1 - y0)
     cap_w = max(8, int(round(float(V[:, 0].max() - V[:, 0].min()) * ppm_cap)))
     cap_d = max(8, int(round(float(V[:, 2].max() - V[:, 2].min()) * ppm_cap)))
-    face_img["cap"] = np.full((cap_d, cap_w, 3), 180, np.uint8)
-    report["cap"] = {"px": [cap_w, cap_d], "ppm": round(float(ppm_cap), 3), "paint": "unpainted grey", "view_top_projected": False}
+    face_img["cap"], cap_how = roof_from_front(face_img["front"], masks[0], cap_w, cap_d)
+    report["cap"] = {
+        "px": [cap_w, cap_d],
+        "ppm": round(float(ppm_cap), 3),
+        "paint": cap_how,
+        "view_top_projected": False,
+        "resampled": False,
+    }
     atlas, rects = pack_atlas(face_img)
     UV = bake_uv(raw_uv, rects)
     Image.fromarray(atlas).save(os.path.join(work, "albedo.png"))

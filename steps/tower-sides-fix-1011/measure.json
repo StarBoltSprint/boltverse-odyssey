@@ -1,0 +1,236 @@
+{
+ "delta_e": [
+  {
+   "axis": "+z",
+   "capture": "ortho-front",
+   "deltaE": 1.16,
+   "capture_lab": [
+    31.68,
+    1.36,
+    -0.09
+   ],
+   "plate_lab": [
+    32.69,
+    1.56,
+    0.44
+   ],
+   "capture_cover": 0.6006,
+   "plate_cover": 0.5897,
+   "bar": 10,
+   "under_10": true
+  },
+  {
+   "axis": "+z",
+   "capture": "face-z",
+   "deltaE": 0.94,
+   "capture_lab": [
+    33.45,
+    1.65,
+    0.98
+   ],
+   "plate_lab": [
+    32.69,
+    1.56,
+    0.44
+   ],
+   "capture_cover": 0.8769,
+   "plate_cover": 0.5897,
+   "bar": 10,
+   "under_10": true
+  },
+  {
+   "axis": "+x",
+   "capture": "ortho-side",
+   "deltaE": 1.85,
+   "capture_lab": [
+    39.86,
+    1.88,
+    4.17
+   ],
+   "plate_lab": [
+    41.68,
+    2.03,
+    4.47
+   ],
+   "capture_cover": 0.6042,
+   "plate_cover": 0.4472,
+   "bar": 10,
+   "under_10": true
+  },
+  {
+   "axis": "+x",
+   "capture": "face-x",
+   "deltaE": 0.35,
+   "capture_lab": [
+    42.02,
+    2.09,
+    4.41
+   ],
+   "plate_lab": [
+    41.68,
+    2.03,
+    4.47
+   ],
+   "capture_cover": 0.7905,
+   "plate_cover": 0.4472,
+   "bar": 10,
+   "under_10": true
+  },
+  {
+   "axis": "-x",
+   "capture": "face-mx",
+   "deltaE": 6.59,
+   "capture_lab": [
+    35.44,
+    1.47,
+    2.43
+   ],
+   "plate_lab": [
+    41.68,
+    2.05,
+    4.47
+   ],
+   "capture_cover": 0.6678,
+   "plate_cover": 0.4472,
+   "bar": 10,
+   "under_10": true
+  },
+  {
+   "axis": "-z",
+   "capture": "face-mz",
+   "deltaE": 3.3,
+   "capture_lab": [
+    38.51,
+    1.77,
+    3.57
+   ],
+   "plate_lab": [
+    41.68,
+    2.04,
+    4.46
+   ],
+   "capture_cover": 0.5149,
+   "plate_cover": 0.4472,
+   "bar": 10,
+   "under_10": true
+  },
+  {
+   "axis": "+z",
+   "capture": "face-pz",
+   "deltaE": 0.99,
+   "capture_lab": [
+    32.86,
+    1.49,
+    -0.53
+   ],
+   "plate_lab": [
+    32.69,
+    1.56,
+    0.44
+   ],
+   "capture_cover": 0.9054,
+   "plate_cover": 0.5897,
+   "bar": 10,
+   "under_10": true
+  },
+  {
+   "axis": "+x",
+   "capture": "face-px",
+   "deltaE": 6.11,
+   "capture_lab": [
+    35.81,
+    1.5,
+    2.86
+   ],
+   "plate_lab": [
+    41.68,
+    2.03,
+    4.47
+   ],
+   "capture_cover": 0.5645,
+   "plate_cover": 0.4472,
+   "bar": 10,
+   "under_10": true
+  }
+ ],
+ "strict": {
+  "key": {
+   "strict": 0.69,
+   "vision": false,
+   "vision_cost_usd": 0.00274935,
+   "vision_cached": false,
+   "alignment": 0.1,
+   "stripe": 1.0,
+   "continuity": 1.0,
+   "strict_ok": false,
+   "strict_before_vision": 0.8905,
+   "alignment_raw": 0.1
+  },
+  "hero": {
+   "strict": 0.69,
+   "vision": false,
+   "vision_cost_usd": 0.0027406,
+   "vision_cached": false,
+   "alignment": 0.159,
+   "stripe": 1.0,
+   "continuity": 0.8741,
+   "strict_ok": false,
+   "strict_before_vision": 0.8741,
+   "alignment_raw": 0.159
+  },
+  "30m": {
+   "strict": 0.69,
+   "vision": false,
+   "vision_cost_usd": 0.0020981,
+   "vision_cached": false,
+   "alignment": 0.0889,
+   "stripe": 0.7857,
+   "continuity": 1.0,
+   "strict_ok": false,
+   "strict_before_vision": 0.7857,
+   "alignment_raw": 0.0889
+  },
+  "8m": {
+   "strict": 0.69,
+   "vision": false,
+   "vision_cost_usd": 0.0017756,
+   "vision_cached": false,
+   "alignment": 0.0,
+   "stripe": 1.0,
+   "continuity": 1.0,
+   "strict_ok": false,
+   "strict_before_vision": 0.8334,
+   "alignment_raw": 0.0
+  },
+  "side": {
+   "strict": 0.5,
+   "vision": false,
+   "vision_cost_usd": 0.0021206,
+   "vision_cached": false,
+   "alignment": 0.1603,
+   "stripe": 1.0,
+   "continuity": 0.6667,
+   "strict_ok": false,
+   "strict_before_vision": 0.5,
+   "alignment_raw": 0.1603
+  }
+ },
+ "vision_cost_usd": 0.011484,
+ "hashes": {
+  "key": "2d9be8b1eeb8d043d96b657bb97d05abd1ac5fad45cef4a0641c36c873ee9e2d",
+  "hero": "4a66c49de3de3ad8a38bf804ef19eeb5ec02b5d08633e6bc0e26a90319ac807b",
+  "30m": "429e6385a29f8fa7fe7843f1045b651459eaf4bf854ee930e479cc3a1e4bd56a",
+  "8m": "e368875822fd8c138467e9dbc04b9b57e83dc84d9616ef0276731397e7163bc1",
+  "side": "8c0cb1ebfa5e893865ef7bf238c9ff1b7ae2e7d360b37dc25cac56d97fd92907"
+ },
+ "hero_ne_30m": true,
+ "glb_sha256": "1470bd7b4c972992e9320544036463dc92712f72766918508a1d2e3ddc554726",
+ "installed_sha256": "1470bd7b4c972992e9320544036463dc92712f72766918508a1d2e3ddc554726",
+ "atlas_px": [
+  2583,
+  1744
+ ],
+ "atlas_bytes": 2985206,
+ "normal_bytes": 16369,
+ "texMB_decoded_albedo_plus_normal": 34.37
+}

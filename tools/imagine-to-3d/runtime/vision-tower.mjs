@@ -79,11 +79,11 @@ renderer.render = function (s, c) {
 for (let i = 0; i < 4; i++) await new Promise((r) => requestAnimationFrame(r));
 if (!scene) throw new Error("vision tower: no scene");
 
-const gltf = await new GLTFLoader().loadAsync("./objects1/vision/tower.glb?v=fusion8");
+const gltf = await new GLTFLoader().loadAsync("./objects1/vision/tower.glb?v=fusion10");
 let src = null;
 gltf.scene.traverse((o) => { if (!src && o.isMesh) src = o; });
 const aniso = renderer.capabilities.getMaxAnisotropy();
-const albedo = new THREE.TextureLoader().load("./objects1/vision/albedo.png?v=fusion8");
+const albedo = new THREE.TextureLoader().load("./objects1/vision/albedo.png?v=fusion10");
 albedo.colorSpace = THREE.SRGBColorSpace;
 albedo.anisotropy = aniso;
 albedo.flipY = false;
@@ -92,7 +92,7 @@ albedo.wrapT = THREE.ClampToEdgeWrapping;
 albedo.minFilter = THREE.LinearMipmapLinearFilter;
 albedo.magFilter = THREE.LinearFilter;
 albedo.generateMipmaps = true;
-const normal = new THREE.TextureLoader().load("./objects1/vision/normal.png?v=fusion8");
+const normal = new THREE.TextureLoader().load("./objects1/vision/normal.png?v=fusion10");
 normal.colorSpace = THREE.NoColorSpace || THREE.LinearSRGBColorSpace;
 normal.anisotropy = aniso;
 normal.flipY = false;
@@ -246,7 +246,8 @@ rake.name = "vision-rake";
 }
 scene.add(rake);
 // The static shadow fit ran before this mesh existed, so the hero cast nothing.
-// Expand that ortho to the tower, and add a layer-1 caster the colour camera does not draw.
+// A tight contact ortho (not an expanded city frustum) plus a neutral multiply.
+// The colour camera does not draw the layer-1 caster. The darkening is not in the albedo.
 const caster = new THREE.Mesh(src.geometry, new THREE.MeshBasicMaterial({ color: 0xffffff }));
 caster.name = "vision-shadow-caster";
 caster.layers.set(1);
@@ -259,30 +260,87 @@ scene.add(caster);
 {
   let light = null;
   scene.traverse((o) => { if (!light && o.isDirectionalLight && o.castShadow && o.name === "zb-shadow") light = o; });
+  scene.traverse((o) => {
+    const mat = o.material;
+    if (!mat || typeof mat.fragmentShader !== "string") return;
+    if (mat.fragmentShader.includes("vec3(0.34, 0.36, 0.42)")) {
+      mat.fragmentShader = mat.fragmentShader.replace("vec3(0.34, 0.36, 0.42)", "vec3(0.40, 0.40, 0.40)");
+      mat.needsUpdate = true;
+    }
+  });
   if (light && light.shadow && light.shadow.camera) {
     const cam = light.shadow.camera;
+    cam.layers.enable(0);
     cam.layers.enable(1);
-    mesh.updateMatrixWorld(true);
-    const box = new THREE.Box3().setFromObject(mesh);
-    const inv = cam.matrixWorldInverse;
-    const v = new THREE.Vector3();
-    let z0 = Infinity, z1 = -Infinity;
-    for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y]) for (const z of [box.min.z, box.max.z]) {
-      v.set(x, y, z).applyMatrix4(inv);
-      cam.left = Math.min(cam.left, v.x - 4);
-      cam.right = Math.max(cam.right, v.x + 4);
-      cam.bottom = Math.min(cam.bottom, v.y - 4);
-      cam.top = Math.max(cam.top, v.y + 4);
-      z0 = Math.min(z0, v.z); z1 = Math.max(z1, v.z);
-    }
-    cam.near = Math.min(cam.near, Math.max(1, -z1 - 20));
-    cam.far = Math.max(cam.far, -z0 + 900);
-    cam.updateProjectionMatrix();
-    scene.traverse((o) => {
-      const u = o.material && o.material.uniforms && o.material.uniforms.uShadowDepthM;
-      if (u) u.value = cam.far - cam.near;
-    });
+    const applyFit = () => {
+      mesh.updateMatrixWorld(true);
+      light.updateMatrixWorld(true);
+      light.target.updateMatrixWorld(true);
+      const box = new THREE.Box3().setFromObject(mesh);
+      const down = new THREE.Vector3().subVectors(light.target.position, light.position);
+      down.y = 0;
+      if (down.lengthSq() < 1e-8) down.set(0, 0, 1);
+      down.normalize();
+      // The gate looks ~60 m down-sun of the footprint. Spill past that so the
+      // contact is on open ground, not hidden under the tower mask.
+      box.expandByVector(down.clone().multiplyScalar(140));
+      box.expandByVector(down.clone().multiplyScalar(-16));
+      box.min.y -= 8;
+      cam.position.copy(light.position);
+      cam.up.set(0, 1, 0);
+      cam.lookAt(light.target.position);
+      cam.updateMatrixWorld(true);
+      const inv = cam.matrixWorldInverse;
+      const v = new THREE.Vector3();
+      let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity, z0 = Infinity, z1 = -Infinity;
+      const xs = [box.min.x, box.max.x], ys = [box.min.y, box.max.y], zs = [box.min.z, box.max.z];
+      for (const x of xs) for (const y of ys) for (const z of zs) {
+        v.set(x, y, z).applyMatrix4(inv);
+        x0 = Math.min(x0, v.x); x1 = Math.max(x1, v.x);
+        y0 = Math.min(y0, v.y); y1 = Math.max(y1, v.y);
+        z0 = Math.min(z0, v.z); z1 = Math.max(z1, v.z);
+      }
+      const pad = 8;
+      cam.left = x0 - pad; cam.right = x1 + pad;
+      cam.bottom = y0 - pad; cam.top = y1 + pad;
+      cam.near = Math.max(0.5, -z1 - 30);
+      cam.far = Math.max(cam.near + 10, -z0 + 80);
+      scene.traverse((o) => {
+        const u = o.material && o.material.uniforms && o.material.uniforms.uShadowDepthM;
+        if (u) u.value = cam.far - cam.near;
+        const on = o.material && o.material.uniforms && o.material.uniforms.uShadowOn;
+        if (on) on.value = 1;
+      });
+      window.__visionShadow = {
+        left: +cam.left.toFixed(1), right: +cam.right.toFixed(1),
+        bottom: +cam.bottom.toFixed(1), top: +cam.top.toFixed(1),
+        near: +cam.near.toFixed(1), far: +cam.far.toFixed(1),
+        tint: [0.4, 0.4, 0.4],
+      };
+    };
+    // The city fit runs after this module and would drop the hero from the map.
+    // Re-apply whenever that fit writes the projection, then for a few frames.
+    const origUpdate = cam.updateProjectionMatrix.bind(cam);
+    let fitting = false;
+    cam.updateProjectionMatrix = function () {
+      if (fitting) return origUpdate();
+      fitting = true;
+      try { applyFit(); return origUpdate(); }
+      finally { fitting = false; }
+    };
+    applyFit();
+    origUpdate();
+    light.shadow.needsUpdate = true;
     renderer.shadowMap.needsUpdate = true;
+    let frames = 0;
+    const tick = () => {
+      applyFit();
+      origUpdate();
+      light.shadow.needsUpdate = true;
+      renderer.shadowMap.needsUpdate = true;
+      if (++frames < 12) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
   }
 }
 

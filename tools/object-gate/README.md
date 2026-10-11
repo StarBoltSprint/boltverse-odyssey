@@ -38,6 +38,9 @@ or point `OG_PLAYWRIGHT=/path/to/playwright/index.mjs` at an existing install). 
 1. **Visible px/m** (policy `visible`, SmiR 2026-10-09 20:19), measured on the **final render** since 1.3 (8 m capture,
    optical zoom to 2 × the need, detail measured in the pixels; works for unique plates and layered materials):
    visible px/m ≥ the phone screen's px/m when the surface is viewed from 8 m (1080 × 2400 phone at the game's render pixel ratio and fov;
+   a magnified plate whose tiles are all flatter than the coarsest probe reports `S/kmax` as an upper bound, `coarserThanEstimator`, not 0;
+   hero and 30 m relief cameras are different distances and look heights; the 8 m albedo camera is the visible-shot camera;
+   checklist `renderPose` zooms until cover is ≥ 25% perspective or ≥ 60% ortho;
    Zone B: 155 px/m). Closer views are exempt, no camera distance limit. Imagine plates are 1024² native, so one plate
    covers at most ~6.6 m. Plus: served file ≥ Imagine original, GPU = file, mipmaps + trilinear,
    anisotropy = max, UV stretch ≤ 1.3, the scene's own px/m claim cross-checked against the measurement.

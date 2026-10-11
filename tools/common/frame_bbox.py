@@ -171,11 +171,18 @@ def frame_view(mn, mx, view, width, height, front=(0.0, 0.0, 1.0)):
     eye = _add(c, _mul(fwd, depth + dist))
     eye[1] = eye_y
     fov_y, cover, *_ = _fit_fov(eye, c, up, corners, aspect)
+    target = c
+    if view in ("close", "low-portrait") and fov_y > 70.0:
+        # Fitting a tall AABB from 8 m caps the fov near 170 deg and the solid
+        # shrinks to a few percent of the frame. Frame the wall at a normal fov.
+        fov_y = 55.0
+        target = _add(c, _mul(fwd, depth))
+        target[1] = eye_y
     return {
         "view": view,
         "kind": "persp",
         "eye": eye,
-        "target": c,
+        "target": target,
         "up": up,
         "orthoW": None,
         "orthoH": None,

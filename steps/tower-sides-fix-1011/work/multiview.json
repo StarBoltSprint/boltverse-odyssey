@@ -1,0 +1,385 @@
+{
+ "plates": {
+  "sheet_gutters": [
+   [
+    421,
+    577
+   ],
+   [
+    816,
+    951
+   ],
+   [
+    1254,
+    1418
+   ]
+  ],
+  "panel_count": 4,
+  "front": {
+   "px": [
+    303,
+    939
+   ],
+   "hw": 3.099,
+   "bg": [
+    193.0,
+    193.0,
+    193.0
+   ],
+   "hires_px": [
+    449,
+    1205
+   ],
+   "hires_hw": 2.684,
+   "sam2": false
+  },
+  "left": {
+   "px": [
+    238,
+    940
+   ],
+   "hw": 3.95,
+   "bg": [
+    193.0,
+    193.0,
+    193.0
+   ],
+   "hires_px": [
+    605,
+    1744
+   ],
+   "hires_hw": 2.883,
+   "sam2": true
+  },
+  "back": {
+   "px": [
+    302,
+    937
+   ],
+   "hw": 3.103,
+   "bg": [
+    192.0,
+    192.0,
+    192.0
+   ],
+   "hires_px": [
+    605,
+    1744
+   ],
+   "hires_hw": 2.883,
+   "sam2": true
+  },
+  "right": {
+   "px": [
+    223,
+    933
+   ],
+   "hw": 4.184,
+   "bg": [
+    193.0,
+    193.0,
+    193.0
+   ],
+   "hires_px": [
+    605,
+    1744
+   ],
+   "hires_hw": 2.883,
+   "sam2": true
+  },
+  "faces": {
+   "front": "broad glass elevation, concrete pier on the viewer's right, sheared crown, two damage bands. Check only.",
+   "left": "profile: concrete pier and cables, glass sliver on the viewer's left.",
+   "back": "right plate mirrored (cables and stone). face-back-1024 is a second front and is not painted.",
+   "right": "profile: concrete pier and cables, glass on the viewer's right."
+  },
+  "view_top": {
+   "shows_roof_plan": false,
+   "bbox_hw": 2.895,
+   "bands": 1,
+   "used_for": null,
+   "decision": "not a roof plan (tall elevation). +y is a roof-edge band of the front plate, native pixels."
+  },
+  "view_under": {
+   "bands": 1,
+   "shows_soffit": true,
+   "used_for": "not a base plan; no ledge shelf was cut, so the pixels are not projected"
+  },
+  "old_cuts": {
+   "left": {
+    "px": [
+     720,
+     1280
+    ],
+    "ncc_vs_sheet_panel": 0.594,
+    "reused": false,
+    "reason": "desert perspective with sky and dunes, not the grey sheet"
+   },
+   "back": {
+    "px": [
+     720,
+     1280
+    ],
+    "ncc_vs_sheet_panel": 0.549,
+    "reused": false,
+    "reason": "desert perspective with sky and dunes, not the grey sheet"
+   },
+   "right": {
+    "px": [
+     720,
+     1280
+    ],
+    "ncc_vs_sheet_panel": 0.468,
+    "reused": false,
+    "reason": "desert perspective with sky and dunes, not the grey sheet"
+   }
+  },
+  "sam2_log": [
+   "SAM2 hiera-tiny CPU, points_per_side 8, crop_n_layers 0. {\"ok\": true, \"raw\": 3, \"kept\": 2, \"sam2\": \"/workspace/.venv-sam2/lib/python3.13/site-packages/sam2/__init__.py\"}",
+   "SAM2 kept only 2 regions. Watershed is the segmenter.",
+   "SAM2 hiera-tiny CPU, points_per_side 8, crop_n_layers 0. {\"ok\": true, \"raw\": 9, \"kept\": 8, \"sam2\": \"/workspace/.venv-sam2/lib/python3.13/site-packages/sam2/__init__.py\"}",
+   "SAM2 hiera-tiny CPU, points_per_side 8, crop_n_layers 0. {\"ok\": true, \"raw\": 8, \"kept\": 7, \"sam2\": \"/workspace/.venv-sam2/lib/python3.13/site-packages/sam2/__init__.py\"}",
+   "SAM2 hiera-tiny CPU, points_per_side 8, crop_n_layers 0. {\"ok\": true, \"raw\": 7, \"kept\": 6, \"sam2\": \"/workspace/.venv-sam2/lib/python3.13/site-packages/sam2/__init__.py\"}"
+  ],
+  "mask_method": "grey-distance silhouette (flat plate). SAM2 hiera-tiny for features when it returns. rembg is not installed."
+ },
+ "rounds": [],
+ "camera": {
+  "module": "tools/common/align/camera.py",
+  "project": "align.camera.project",
+  "fov_y_deg": 88.0,
+  "pitch_three_deg": -7.674,
+  "eye_m": 1.77,
+  "roll_deg": 0.17,
+  "heading_deg": 248.531,
+  "copied_stored_yaw": false,
+  "front_sample": "key-city3 through the stored facade homography (solved under this lens). One source pixel is never enlarged."
+ },
+ "hires": {
+  "back_file": {
+   "file": "face-back-1024.jpg",
+   "file_px": [
+    1008,
+    1792
+   ],
+   "crop_px": [
+    601,
+    1775
+   ],
+   "pier": "pier-on-viewer-right",
+   "ncc_vs_sheet": {
+    "front": 0.801,
+    "left": 0.476,
+    "back": 0.396,
+    "right": 0.453
+   },
+   "best_sheet": "front",
+   "used": false,
+   "reason": "second front (pier on the viewer's right, same family as the front). Not painted. -z is the right plate mirrored."
+  },
+  "front": {
+   "file": "face-front-1024.jpg",
+   "record": "own plate",
+   "file_px": [
+    720,
+    1280
+   ],
+   "crop_px": [
+    449,
+    1205
+   ],
+   "pier": "pier-on-viewer-right",
+   "ncc_vs_sheet": {
+    "front": 0.806,
+    "left": 0.497,
+    "back": 0.383,
+    "right": 0.401
+   },
+   "best_sheet": "front",
+   "ncc_vs_flipped_right": null,
+   "used": true,
+   "resampled": false
+  },
+  "right": {
+   "file": "face-right-1024.jpg",
+   "record": "own plate",
+   "file_px": [
+    1008,
+    1792
+   ],
+   "crop_px": [
+    605,
+    1744
+   ],
+   "pier": "pier-on-viewer-left",
+   "ncc_vs_sheet": {
+    "front": 0.544,
+    "left": 0.447,
+    "back": 0.501,
+    "right": 0.496
+   },
+   "best_sheet": "front",
+   "ncc_vs_flipped_right": null,
+   "used": true,
+   "resampled": false
+  },
+  "left": {
+   "file": "face-left-1024.jpg",
+   "record": "mirrored right",
+   "file_px": [
+    1008,
+    1792
+   ],
+   "crop_px": [
+    605,
+    1744
+   ],
+   "pier": "pier-on-viewer-right",
+   "ncc_vs_sheet": {
+    "front": 0.632,
+    "left": 0.445,
+    "back": 0.397,
+    "right": 0.632
+   },
+   "best_sheet": "front",
+   "ncc_vs_flipped_right": 1.0,
+   "used": true,
+   "resampled": false
+  },
+  "back": {
+   "file": "face-right-1024.jpg",
+   "record": "mirrored right",
+   "file_px": [
+    1008,
+    1792
+   ],
+   "crop_px": [
+    605,
+    1744
+   ],
+   "pier": "pier-on-viewer-right",
+   "used": true,
+   "resampled": false,
+   "source": "face-right-1024.jpg mirrored"
+  },
+  "ladder": "ladder not painted",
+  "rejected_left": "not opened"
+ },
+ "proportions": {
+  "height_m": 173.821,
+  "width_m": 45.744,
+  "depth_over_w_base": 0.86,
+  "h_over_w": 3.8,
+  "source": "width and height from the key silhouette; depth/width from left and right panel widths at the same height"
+ },
+ "key_composite": {
+  "applied": false,
+  "reason": "The front plate is finer than the key crop (~3.7 px/m). Copying key pixels onto it would enlarge one source pixel. The plate fills the front. The key stays the silhouette.",
+  "plate_ppm": 6.932
+ },
+ "seams": {
+  "left": {
+   "delta_e_before": 7.673,
+   "delta_e_after": 7.441,
+   "body_delta_e": 0.0,
+   "reference": "front edge, feather only",
+   "feather_px": 12,
+   "body": "native plate"
+  },
+  "right": {
+   "delta_e_before": 40.171,
+   "delta_e_after": 38.659,
+   "body_delta_e": 0.0,
+   "reference": "front edge, feather only",
+   "feather_px": 12,
+   "body": "native plate"
+  },
+  "back": {
+   "delta_e_before": 0.0,
+   "delta_e_after": 0.002,
+   "body_delta_e": 0.0,
+   "reference": "right edge, feather only",
+   "feather_px": 12,
+   "body": "native plate"
+  }
+ },
+ "colour_root_cause": "reinhard() used to shift the whole side image onto the front edge's Lab mean. The stone body left its plate. The material was already unlit MeshBasic. The grade now stops at a 12 px feather.",
+ "relief_faces": {
+  "front": {
+   "p99_m": 1.136,
+   "planes": 8,
+   "level_min_m": -1.9163,
+   "level_max_m": 1.1144,
+   "per_metre_median_span_m": 0.6851,
+   "ppm": 6.932
+  },
+  "left": {
+   "p99_m": 1.1328,
+   "planes": 8,
+   "level_min_m": -2.071,
+   "level_max_m": 0.847,
+   "per_metre_median_span_m": 0.4027,
+   "ppm": 10.033
+  },
+  "back": {
+   "p99_m": 1.3109,
+   "planes": 8,
+   "level_min_m": -2.4814,
+   "level_max_m": 0.6918,
+   "per_metre_median_span_m": 0.6297,
+   "ppm": 10.033
+  },
+  "right": {
+   "p99_m": 1.3434,
+   "planes": 8,
+   "level_min_m": -2.189,
+   "level_max_m": 0.7021,
+   "per_metre_median_span_m": 0.5314,
+   "ppm": 10.033
+  }
+ },
+ "cheap": {
+  "front_panel_vs_key_chord_iou": 1.0,
+  "note": "The front panel is a check. The solid outline is the key chord.",
+  "front_vs_key_strict_geometry": 0.4557,
+  "stripe": 0.4557
+ },
+ "cap": {
+  "px": [
+   319,
+   279
+  ],
+  "ppm": 6.932,
+  "paint": "front roof-edge band, native pixels, one fill colour, no resample",
+  "view_top_projected": false,
+  "resampled": false
+ },
+ "mesh_preview": {
+  "verts": 4900,
+  "faces": 9796,
+  "size_m": [
+   46.024,
+   173.821,
+   40.211
+  ],
+  "h_over_w": 3.777,
+  "d_over_w": 0.874
+ },
+ "relief_axes_note": "Per-face median span is in relief_faces. World axes are scored by the object gate on the glb.",
+ "blender_rc": 0,
+ "blender_tail": "00:00.105  system.path      | WARNING Could not get a list of mounted file-systems\nINFO Draco is available, use library at /home/box/apps/blender-5.2.1-linux-x64/lib/libbf_intern_draco_bridge.so\nINFO MeshOptimizer is available, use library at /home/box/apps/blender-5.2.1-linux-x64/lib/libbf_intern_meshopt_bridge.so\n20:49:51 | INFO: Starting glTF 2.0 export\n20:49:51 | INFO: Extracting primitive: tower-hero\n20:49:51 | INFO: Primitives created: 1\n20:49:51 | INFO: Finished glTF 2.0 export in 0.02268695831298828 s\n\nVISION_MESH {\"open\": 0, \"nonManifold\": 0, \"tris\": 9796, \"cut\": false, \"note\": \"\", \"glb\": \"steps/tower-sides-fix-1011/work/tower.glb\", \"gltfSize\": [46.024, 173.821, 40.211]}\nBlender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:12:34)\n\nBlender quit\n\n",
+ "vision_mesh": {
+  "open": 0,
+  "nonManifold": 0,
+  "tris": 9796,
+  "cut": false,
+  "note": "",
+  "glb": "steps/tower-sides-fix-1011/work/tower.glb",
+  "gltfSize": [
+   46.024,
+   173.821,
+   40.211
+  ]
+ },
+ "seconds": 37.003
+}

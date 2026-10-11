@@ -1,0 +1,251 @@
+{
+  "verdict": "FAIL",
+  "facade": "FAIL",
+  "placement": "out of scope",
+  "vision_cost_usd": 0.011484,
+  "vision_api_called": true,
+  "vision_rounds": 1,
+  "dataset_exported": false,
+  "dataset_reason": "strict_score with a vision yes is under 0.70 on every view and gate5 has 7 fails. Nothing written under dataset/i23d.",
+  "before": {
+    "source": "steps/hires-tower-1011/numbers.json",
+    "facade_strict": {
+      "key": 0.69,
+      "hero": 0.0,
+      "30m": 0.0,
+      "8m": 0.69,
+      "side": 0.69
+    },
+    "facade_strict_before_vision_cap": {
+      "key": 0.8916,
+      "hero": 0.0,
+      "30m": 0.0,
+      "8m": 0.8992,
+      "side": 0.915
+    },
+    "uv_stretch": {"+z": 1.388, "+x": 4.627, "-x": 6.145, "-z": 1.422, "+y": 10.148, "-y": 1.001},
+    "delta_e_ortho_vs_plate": {
+      "front_face_z": 7.73,
+      "front_ortho": 9.81,
+      "side_face_x": 40.59,
+      "side_ortho": 43.15
+    },
+    "visible_px_per_m_8m": 0,
+    "relief_axes_m": {"+x": 0.393, "-x": 0.405, "+z": 0.457, "-z": 0.002},
+    "proportions": {"h_over_w_mesh": 3.711, "d_over_w_mesh": 0.859, "d_over_w_plate_foot": 0.86},
+    "browser_float_m": 0.0,
+    "gate5": {"exit": 1, "fails": 9, "rows": 21},
+    "shadow_px": 0
+  },
+  "after": {
+    "facade_strict": {
+      "key": 0.69,
+      "hero": 0.69,
+      "30m": 0.69,
+      "8m": 0.69,
+      "side": 0.5
+    },
+    "facade_strict_before_vision_cap": {
+      "key": 0.8905,
+      "hero": 0.8741,
+      "30m": 0.7857,
+      "8m": 0.8334,
+      "side": 0.5
+    },
+    "facade_alignment": {
+      "key": 0.1,
+      "hero": 0.159,
+      "30m": 0.0889,
+      "8m": 0.0,
+      "side": 0.1603
+    },
+    "relief_alignment": {
+      "hero": 0.1501,
+      "30m": 0.2488,
+      "8m": 0,
+      "side": 0.1027
+    },
+    "facade_strict_note": "vision no on every view. Hero and 30 m are different pngs. Side raw strict is 0.5, so the 0.69 cap does not move it.",
+    "strict_vision": "no on key, hero, 30m, 8m, side",
+    "hero_png_ne_30m": true,
+    "relief_axes_m": {"+x": 2.7, "-x": 2.709, "+z": 0.457, "-z": 0.234},
+    "relief_faces_span_m": {"front": 0.6851, "left": 0.4027, "back": 0.6297, "right": 0.5314},
+    "proportions": {
+      "height_m": 173.821,
+      "width_m": 45.744,
+      "h_over_w_plate": 3.8,
+      "h_over_w_mesh": 3.777,
+      "d_over_w_plate_foot": 0.86,
+      "d_over_w_mesh": 0.874,
+      "gate_d_over_w": 0.87,
+      "proposal": "Relax the 0.45-0.70 bar to the plate foot, about 0.86. Not applied. Mesh not squashed."
+    },
+    "size_m": [46.024, 173.821, 40.211],
+    "browser_float_m": 0.0,
+    "browser_float_at": [88.5, -98.5],
+    "uv_stretch": {"+z": 1.516, "+x": 1.429, "-z": 1.701, "-x": 1.539, "+y": 2.056, "-y": 1.017},
+    "uv_stretch_attempt1": {"+z": 1.639, "+x": 1.727, "-z": 2.009, "-x": 1.793, "+y": 2.078, "-y": 1.017},
+    "colour_delta_e_play_vs_key": 11.41,
+    "colour_lab_play": [30, 1.3, -1.3],
+    "phone_draw_calls_scene": 19,
+    "phone_tris_scene": 245253,
+    "shadow_px": 0
+  },
+  "px_per_m": {
+    "front": 6.932,
+    "+z": 7.3,
+    "+x": 10.4,
+    "-z": 10.45,
+    "-x": 10.37,
+    "+y": 8.22,
+    "-y": 6.97,
+    "left": 10.033,
+    "back": 10.033,
+    "right": 10.033,
+    "target_note": "texture sampling from the gate texel row. 4x the old 2.4 px/m is 9.6. Front file was not upscaled."
+  },
+  "visible_px_per_m": {
+    "official_upper_bound": 18.9,
+    "coarserThanEstimator": true,
+    "screen_px_per_m_official": 309.3,
+    "need": 154.6,
+    "per_face": {"+z": 50.8, "-z": 57.0, "+x": 53.8, "-x": 46.5},
+    "per_face_screen_px_per_m": 85.8,
+    "per_face_dist_m": 8,
+    "zero_was_measuring_bug": true,
+    "note": "0 in hires was the flat-tile branch plus a Playwright arity error. 18.9 is S/kmax on the zoomed cover-1 shot. Per-face numbers are real detail at screen 85.8. 154.6 needs an upscale, which was not done."
+  },
+  "delta_e_ortho_vs_plate": {
+    "+z_ortho_front": 1.16,
+    "+z_face_z": 0.94,
+    "+x_ortho_side": 1.85,
+    "+x_face_x": 0.35,
+    "-x_face_mx": 6.59,
+    "-z_face_mz": 3.3,
+    "unit": "CIE76 of mean Lab, tools/object-gate/lib/analyze.py srgb_to_lab",
+    "bar": 10,
+    "body_delta_e": 0.0,
+    "right_edge_strip_after": 38.659
+  },
+  "faces": {
+    "front": {
+      "plate": "face-front-1024.jpg",
+      "file_px": [720, 1280],
+      "showed": "broad glass, concrete pier on the viewer's right, sheared crown, two damage bands, light-grey isolation. No ladder.",
+      "used": true,
+      "axis": "+z",
+      "resampled": false,
+      "ppm": 6.932
+    },
+    "left": {
+      "plate": "face-left-1024.jpg",
+      "record": "mirrored right",
+      "file_px": [1008, 1792],
+      "showed": "horizontal flip of face-right. Cables on the viewer's right, glass on the viewer's left. No ladder.",
+      "used": true,
+      "axis": "-x",
+      "resampled": false,
+      "ppm": 10.033,
+      "ncc_vs_flipped_right": 1.0
+    },
+    "back": {
+      "plate": "face-right-1024.jpg",
+      "record": "mirrored right",
+      "file_px": [1008, 1792],
+      "showed": "the right plate mirrored. Cables and stone. Not face-back-1024.",
+      "used": true,
+      "axis": "-z",
+      "resampled": false,
+      "ppm": 10.033,
+      "span_m": 0.6297
+    },
+    "right": {
+      "plate": "face-right-1024.jpg",
+      "file_px": [1008, 1792],
+      "showed": "narrow stone side, hanging cables left of centre, glass sliver on the viewer's right, damage near the crown and mid-height. No ladder.",
+      "used": true,
+      "axis": "+x",
+      "resampled": false,
+      "ppm": 10.033
+    },
+    "face_back_unused": {
+      "plate": "face-back-1024.jpg",
+      "file_px": [1008, 1792],
+      "showed": "second front, pier on the viewer's right.",
+      "used": false,
+      "best_sheet_ncc": 0.801,
+      "best_sheet": "front"
+    },
+    "top": {
+      "plate": "view-top.jpg",
+      "showed": "worm's-eye elevation, not a roof plan",
+      "used": false,
+      "view_top_projected": false,
+      "paint": "front roof-edge band, native pixels, 319x279 at 6.932 px/m"
+    },
+    "rejected_left": "face-left-REJECTED.jpg not opened"
+  },
+  "seams_delta_e": {
+    "left": {"before": 7.673, "after": 7.441, "body": 0.0, "feather_px": 12},
+    "right": {"before": 40.171, "after": 38.659, "body": 0.0, "feather_px": 12},
+    "back": {"before": 0.0, "after": 0.002, "body": 0.0, "feather_px": 12}
+  },
+  "colour_root_cause": "reinhard() shifted the whole side image onto the front edge Lab mean. The material was already unlit MeshBasic. grade_strip blends only 12 columns. Body delta E is 0.",
+  "ladder": "FAIL, not N/A. No plate paints a ladder. key-compare skips verdict N/A only. gate.mjs has no plate-evidence N/A.",
+  "shadow": {
+    "px": 0,
+    "attempts": 2,
+    "tint": [0.4, 0.4, 0.4],
+    "note": "one-shot refit, then projection wrap and 12 reticks. Both measured 0. Stop."
+  },
+  "plinth": {
+    "rule": "runtime: every footprint column of surfaceHeight is raised to the max of a 5x5 sample, then the mesh seats on that floor",
+    "terrain_tile_edited": false,
+    "float_m": 0.0
+  },
+  "camera": {
+    "fov_y_deg": 88,
+    "pitch_three_deg": -7.674,
+    "eye_m": 1.77,
+    "roll_deg": 0.17,
+    "heading_deg": 248.531,
+    "copied_stored_yaw": false,
+    "note": "unchanged. meta.cameraSpace is ignored when right/up/toward/origin exist."
+  },
+  "mesh": {
+    "open": 0,
+    "nonManifold": 0,
+    "tris": 9796,
+    "sha256": "1470bd7b4c972992e9320544036463dc92712f72766918508a1d2e3ddc554726"
+  },
+  "phone_budget_mesh": {
+    "triangles": 9796,
+    "drawCalls": 1,
+    "texMB_decoded_albedo_plus_normal": 34.37,
+    "atlas_px": [2583, 1744],
+    "pass": false,
+    "note": "One material, under the 260 MB cap. The visible px/m row is 18.9 versus 154.6. Per-face screen detail is about 47-57 px/m."
+  },
+  "gate5": {
+    "url": "http://127.0.0.1:8996/tower3-1010/index-fusion.html?visionKey=1",
+    "exit": 1,
+    "fails": 7,
+    "report": "steps/tower-sides-fix-1011/gate/report.md",
+    "fail_rows": [
+      "UV stretch <= 1.3",
+      "visible px/m",
+      "approach morph 300->10 m",
+      "shadow cast",
+      "proportions vs spec",
+      "relief-texture alignment",
+      "key checklist"
+    ]
+  },
+  "attempts": 2,
+  "builder_seconds": {"attempt1": 62.104, "attempt2": 37.003},
+  "gate_attempt2_wall_s": 516,
+  "placement_rounds": 0,
+  "fusion_py_depth": "moge-2 via moge_depth.py on the mirrored right plate for -z; dav2 not requested",
+  "glb": "steps/tower-sides-fix-1011/work/tower.glb",
+  "installed": "/workspace/kc-staging/zb-tower3/objects1/vision/tower.glb"
+}

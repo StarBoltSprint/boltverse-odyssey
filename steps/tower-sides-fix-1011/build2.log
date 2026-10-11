@@ -1,0 +1,55 @@
+{
+ "proportions": {
+  "height_m": 173.821,
+  "width_m": 45.744,
+  "depth_over_w_base": 0.86,
+  "h_over_w": 3.8,
+  "source": "width and height from the key silhouette; depth/width from left and right panel widths at the same height"
+ },
+ "mesh_preview": {
+  "verts": 4900,
+  "faces": 9796,
+  "size_m": [
+   46.024,
+   173.821,
+   40.211
+  ],
+  "h_over_w": 3.777,
+  "d_over_w": 0.874
+ },
+ "seams": {
+  "left": {
+   "delta_e_before": 7.673,
+   "delta_e_after": 7.441,
+   "body_delta_e": 0.0,
+   "reference": "front edge, feather only",
+   "feather_px": 12,
+   "body": "native plate"
+  },
+  "right": {
+   "delta_e_before": 40.171,
+   "delta_e_after": 38.659,
+   "body_delta_e": 0.0,
+   "reference": "front edge, feather only",
+   "feather_px": 12,
+   "body": "native plate"
+  },
+  "back": {
+   "delta_e_before": 0.0,
+   "delta_e_after": 0.002,
+   "body_delta_e": 0.0,
+   "reference": "right edge, feather only",
+   "feather_px": 12,
+   "body": "native plate"
+  }
+ },
+ "cheap": {
+  "front_panel_vs_key_chord_iou": 1.0,
+  "note": "The front panel is a check. The solid outline is the key chord.",
+  "front_vs_key_strict_geometry": 0.4557,
+  "stripe": 0.4557
+ },
+ "blender_rc": 0,
+ "seconds": 37.003
+}
+EXIT:0

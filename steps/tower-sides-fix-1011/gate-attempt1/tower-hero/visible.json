@@ -1,0 +1,97 @@
+{
+ "view": {
+  "renderPixelRatio": 1.5,
+  "fovDeg": 58,
+  "source": "game: biome.json camera.pixelRatioCap, main.mjs fovBase ?? 58"
+ },
+ "render": {
+  "ok": true,
+  "screenPxPerM": 309.3,
+  "tiles": 1,
+  "kMedian": 6.088,
+  "visiblePxPerM": 50.8,
+  "p25PxPerM": 50.8,
+  "capped": false,
+  "tau": 0.1,
+  "img": "/workspace/grokcli/wt/tower-vision-1010/steps/tower-sides-fix-1011/gate/tower-hero/cap-visible-8m.png",
+  "mask": "/workspace/grokcli/wt/tower-vision-1010/steps/tower-sides-fix-1011/gate/tower-hero/cap-visible-8m-mask.png",
+  "cover": 1,
+  "distM": 8,
+  "needPxPerM": 154.6,
+  "zoomFovDeg": 20.95,
+  "wantedFovDeg": 20.95,
+  "renderH": 915,
+  "camera": [
+   90.88,
+   9.33,
+   -78.7
+  ],
+  "look": [
+   97.6484606610601,
+   9.50921259513875,
+   -82.96175639722428
+  ],
+  "aimM": 7,
+  "normal": [
+   -0.85,
+   0,
+   0.53
+  ],
+  "rect": [
+   62,
+   275,
+   350,
+   641
+  ],
+  "pose": {
+   "x": 90.88087119613834,
+   "y": 9.32873735349431,
+   "z": -78.69946106238021,
+   "yaw": 57.7968671839309,
+   "pitch": 1.2926683680064255
+  },
+  "visibleFacesError": "Too many arguments. If you need to pass more than 1 argument to the function wrap them in an object."
+ },
+ "perSurface": [
+  {
+   "inst": "inst-tower-hero#0",
+   "cls": "+z",
+   "viewM": 8,
+   "needPxPerM": 154.6,
+   "visiblePxPerM": 7.35,
+   "ok": false
+  },
+  {
+   "inst": "inst-tower-hero#0",
+   "cls": "+x",
+   "viewM": 8,
+   "needPxPerM": 154.6,
+   "visiblePxPerM": 10.45,
+   "ok": false
+  },
+  {
+   "inst": "inst-tower-hero#0",
+   "cls": "-z",
+   "viewM": 8,
+   "needPxPerM": 154.6,
+   "visiblePxPerM": 10.52,
+   "ok": false
+  },
+  {
+   "inst": "inst-tower-hero#0",
+   "cls": "-x",
+   "viewM": 8,
+   "needPxPerM": 154.6,
+   "visiblePxPerM": 10.42,
+   "ok": false
+  },
+  {
+   "inst": "inst-tower-hero#0",
+   "cls": "+y",
+   "viewM": 8,
+   "needPxPerM": 154.6,
+   "visiblePxPerM": 8.32,
+   "ok": false
+  }
+ ]
+}

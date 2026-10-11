@@ -1200,3 +1200,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Lit material is `MeshBasicMaterial`, `toneMapped: false`. `readRT` sets `SRGBColorSpace`. Placement uses `right/up/toward/origin` when that basis exists. Inset is 0 for t < 0.04, and that `t` is bound per ring (the loft loop's `t` is the crown). Back plate not used. No further round on d/w, UV, 154 px/m, or the side ΔE. |
 | Guard | `steps/hires-tower-1011/gate/report.md`: colour L\* 42.1, grounding 0.00 m, d/w 0.86 FAIL, visible px/m 0 vs 154.6. Relief row can still print PASS with −z 0.002 because `minReliefFaces` is 2. |
 | Sources | `tools/imagine-to-3d/runtime/vision-tower.mjs`, `tools/imagine-to-3d/multiview_tower.py`, `tools/object-gate/lib/probe.js`, `steps/hires-tower-1011/REPORT.md`. |
+
+### 2026-10-11 — whole-image Reinhard, visible px/m printed 0, UV and shadow still miss after two
+
+| | |
+| --- | --- |
+| Take | tower-sides-fix-1011 |
+| Defect | Side orthos were about 4× paler than their plates (hires ΔE 40.6). Visible px/m at 8 m printed 0. After the colour fix the gate is still 7 FAIL: UV p95 1.43–1.70, visible px/m 18.9 vs 154.6, morph drop at 11.3 m, shadow 0 px, d/w 0.87, relief alignment, checklist. |
+| Root cause | `reinhard()` graded the entire side image from the front-edge Lab mean, so the stone body left its plate. The material was already unlit. Visible px/m returned 0 when every inside tile was flatter than the coarsest probe, and `faceCaptures` was invoked with two Playwright arguments. UV used the full mask width on every row. The contact ortho is overwritten or ignored by the probe; two shadow wraps still measured 0. |
+| Fix | `grade_strip` blends 12 columns only (body ΔE 0). Ortho ΔE is now +z 1.16, +x 1.85, −x 6.59, −z 3.30. The estimator reports `S/kmax` (`coarserThanEstimator`) instead of 0, and face captures run as one argument. Official row 18.9; per-face about 47–57. UV crop to 1.22× isotropic span lowered stretch and did not clear 1.3. Shadow still 0. Stop. d/w proposal only: relax the bar to the plate foot 0.86. Ladder stays FAIL, not N/A. |
+| Guard | `steps/tower-sides-fix-1011/gate/report.md` rows UV stretch, visible px/m, shadow, proportions, relief-texture alignment, key checklist. Numbers in `steps/tower-sides-fix-1011/numbers.json`. Body ΔE is logged in `multiview.json` seams. The relief row can still PASS with a small −z (0.234 m here, above 0.3 on enough faces). |
+| Sources | `tools/imagine-to-3d/multiview_tower.py` (`grade_strip`, `map_u`), `tools/imagine-to-3d/runtime/vision-tower.mjs`, `tools/object-gate/gate.mjs`, `tools/object-gate/lib/analyze.py`, `steps/tower-sides-fix-1011/REPORT.md`. |

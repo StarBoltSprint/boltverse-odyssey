@@ -1,0 +1,45 @@
+  open http://127.0.0.1:8996/tower3-1010/index-fusion.html?visionKey=1 @540x1200
+(node:1125834) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  open http://127.0.0.1:8996/tower3-1010/index-fusion.html?visionKey=1&hud=0&lockq=1&eye=1.6&grain=0 @412x915
+object tower-hero (building)
+  -> FAIL (6 FAIL / 18)
+PASS	runtime	console 540x1200	no console / page errors
+PASS	runtime	shader compile 540x1200	all programs compiled
+PASS	runtime	HUD text 540x1200	"Zone B — aperçu (tours phase 1, sans Bolt)" vs "Zone B — aperçu (tours phase 1, sans Bolt)"
+PASS	runtime	title 540x1200	"Zone B — aperçu"
+PASS	runtime	portrait viewport 540x1200	inner 540x1200
+PASS	runtime	capture ready 540x1200	loaded, cover 0.9832
+INFO	runtime	budgets 540x1200 (report only, quality first)	{"renderInfo":{"calls":19,"triangles":245253,"textures":26,"geometries":18,"programs":22},"visibleMeshes":40,"sceneTris":1525189,"pixelRatio":1}
+PASS	runtime	perf: canvas ratio <= cap 540x1200	canvas ratio 1 (cap 1, device 1)
+PASS	runtime	perf: sky dome drawn after the opaques 540x1200	sky renderOrder 2, max opaque 0.5, depthTest true
+PASS	runtime	perf: ground after the other opaques 540x1200	ground renderOrder 1, max opaque 0.5
+PASS	runtime	perf: adaptive controller on 540x1200	adaptive true
+PASS	runtime	perf: quality kept: adaptive never drops the detail layer 540x1200	adaptiveCanDropDetail false detailOn true
+PASS	runtime	perf: default ratio = min(2, device) native, or >= 1.5 + EASU/RCAS to the canvas, no sprint dip 540x1200	internal 1 canvas 1 device 1 upscale native rcas 0.8 sprintDip false
+PASS	runtime	live preview untouched during the gate run	108 files the live page loads unchanged
+PASS	tower-hero	select	1 placed copies
+PASS	tower-hero	texture roles declared	albedo.png=plate
+PASS	tower-hero	texture filtering (mips, trilinear, anisotropy = max, no resize)	1 textures trilinear + aniso 16
+PASS	tower-hero	plates not downscaled vs Imagine originals	albedo.png gpu 2583x1744 served 2583x1744 original 163x419
+FAIL	tower-hero	UV stretch <= 1.3	+z 1.639, +x 1.727, -z 2.009, -x 1.793
+PASS	tower-hero	scene self-report vs measured	scene claims 5.39 px/m; measured visible (sampling) 7.0 px/m (detail tile 5.39 px/m does not count)
+PASS	tower-hero	repetition (capture autocorrelation)	face z peak 0.4413 at lag 0,33 px; face x peak 0.2963 at lag -2,-27 px; close peak 0.4764 at lag -32,610 px; low-portrait peak 0.5734 at lag -33,0 px (max 0.75, at plate period 0.5)
+FAIL	tower-hero	visible px/m (phone sharpness from >= 8 m, final render)	50.8 px/m of real detail on screen vs 154.6 needed (capture at 8 m, zoomed to 309.3 screen px/m; median of 1 tiles, p25 50.8; phone 1080x2400, render pixel ratio 1.5, vfov 58°). Info: plate sampling worst +z 7.3 px/m on inst-tower-hero#0, 5/5 surfaces under
+PASS	tower-hero	repetition (visible): identical plate pixels never within 30 m	no plate repeats inside the radius (one shared plate set per type allowed)
+PASS	tower-hero	repetition (visible): neighbours never share plates (< 7 m)	1 copies, none within 7 m of another
+FAIL	tower-hero	approach morph 300->10 m	inst-tower-hero#0: 67 frames, min IoU 0.911, jumps at 11.3 m (0.92)
+FAIL	tower-hero	shadow cast	0 ground pixels in this object's shadow (0.0% of the probe view)
+PASS	tower-hero	grounding (no floating)	0/1 copies float; worst inst-tower-hero#0 0.00 m at 88.5,-98.5
+PASS	tower-hero	mesh sealed (non-manifold / open edges)	inst-tower-hero tris 9796 nonManifold 0 open 0
+PASS	tower-hero	facade relief >= 0.3 m	inst-tower-hero +x 2.7 -x 2.709 +z 0.457 -z 0.234
+PASS	tower-hero	facade crispness (axis-aligned >= 0.72, 2-8 offset planes)	inst-tower-hero +x axis 0.973 planes 8 -x axis 0.956 planes 8 +z axis 1 planes 4 -z axis 0.902 planes 6
+FAIL	tower-hero	proportions vs spec	inst-tower-hero#0 dOverW 0.87 not in 0.45-0.7
+FAIL	tower-hero	gate run	gate crashed: ReferenceError: render is not defined
+    at gateOne (file:///workspace/grokcli/wt/tower-vision-1010/tools/object-gate/gate.mjs:694:41)
+    at async gateScene (file:///workspace/grokcli/wt/tower-vision-1010/tools/object-gate/gate.mjs:204:13)
+    at async gateSceneKC (file:///workspace/grokcli/wt/tower-vision-1010/tools/object-gate/key-compare.mjs:220:25)
+    at async file:///workspace/grokcli/wt/t
+---
+FAIL  report /workspace/grokcli/wt/tower-vision-1010/steps/tower-sides-fix-1011/gate/report.md
+EXIT:1

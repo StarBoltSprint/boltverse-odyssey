@@ -382,8 +382,9 @@
     cam.position.set(eye[0], eye[1], eye[2]);
     cam.lookAt(target[0], target[1], target[2]);
     cam.updateMatrixWorld(true);
+    const minCover = (spec.kind === "ortho" || spec.orthoW) ? 0.60 : 0.25;
     const restoreFx = hideFx(null);
-    const out = withOnly(spec.sel, () => {
+    const shoot = () => withOnly(spec.sel, () => {
       const fg = scene.fog, bg = scene.background, ov = scene.overrideMaterial;
       scene.fog = null;
       try {
@@ -394,10 +395,86 @@
         scene.background = bg; scene.overrideMaterial = ov; white.dispose();
         let on = 0;
         for (let i = 0; i < w * h; i++) if (m[i * 4] > 127) on++;
-        return { png: toPng(col, w, h), mask: toPng(m, w, h), cover: on / (w * h) };
+        return { png: toPng(col, w, h), mask: toPng(m, w, h), cover: on / (w * h), px: m };
       } finally { scene.fog = fg; scene.background = bg; scene.overrideMaterial = ov; }
     });
+    let out = shoot();
+    if (out.cover + 1e-6 < minCover && out.cover > 0.002) {
+      const ortho = !!(spec.kind === "ortho" || spec.orthoW);
+      const base = ortho ? { l: cam.left, r: cam.right, t: cam.top, b: cam.bottom } : null;
+      const fov0 = cam.fov;
+      let lo = ortho ? 0.08 : 12;
+      let hi = ortho ? 1 : Math.max(12.1, fov0);
+      let best = null;
+      const apply = (s) => {
+        if (ortho) {
+          cam.left = base.l * s; cam.right = base.r * s; cam.top = base.t * s; cam.bottom = base.b * s;
+        } else cam.fov = s;
+        cam.updateProjectionMatrix();
+      };
+      for (let i = 0; i < 8; i++) {
+        const s = (lo + hi) / 2;
+        apply(s);
+        const trial = shoot();
+        if (trial.cover + 1e-6 >= minCover) { best = trial; lo = s; }
+        else hi = s;
+      }
+      if (best) out = best;
+      else apply(ortho ? 1 : fov0);
+    }
+    delete out.px;
     restoreFx();
+    return out;
+  }
+  /**
+   * One 8 m head-on capture per facade axis, for the visible px/m log.
+   * The eye sits in the air in front of that face. This is not the gate's
+   * optical-zoom phone shot; that shot stays cap-visible-8m.
+   */
+  function faceCaptures(sel, instId, dist = 8, fov = 50, w = 360, h = 640) {
+    const { THREE, scene, renderer } = H();
+    const inst = instancesOf(sel).find((i) => i.id === instId) || instancesOf(sel)[0];
+    if (!inst) return [];
+    if (!inst.geo.boundingBox) inst.geo.computeBoundingBox();
+    const bb = inst.geo.boundingBox;
+    const e = inst.matrix.elements;
+    const axisLen = (i) => Math.hypot(e[i], e[i + 1], e[i + 2]) || 1;
+    const X = new THREE.Vector3(e[0], e[1], e[2]).multiplyScalar(1 / axisLen(0));
+    const Y = new THREE.Vector3(e[4], e[5], e[6]).multiplyScalar(1 / axisLen(4));
+    const Z = new THREE.Vector3(e[8], e[9], e[10]).multiplyScalar(1 / axisLen(8));
+    const half = {
+      x: (bb.max.x - bb.min.x) * axisLen(0) / 2,
+      y: (bb.max.y - bb.min.y) * axisLen(4) / 2,
+      z: (bb.max.z - bb.min.z) * axisLen(8) / 2,
+    };
+    const c = new THREE.Vector3(); bb.getCenter(c).applyMatrix4(inst.matrix);
+    const faces = [["+z", Z, half.z], ["-z", Z.clone().negate(), half.z], ["+x", X, half.x], ["-x", X.clone().negate(), half.x]];
+    const S = h / (2 * dist * Math.tan((fov * Math.PI) / 360));
+    const restoreFx = hideFx(null);
+    const out = [];
+    try {
+      for (const [cls, fwd, halfD] of faces) {
+        const look = c.clone().addScaledVector(Y, -half.y * 0.25);
+        const eye = look.clone().addScaledVector(fwd, halfD + dist);
+        const cam = new THREE.PerspectiveCamera(fov, w / h, 0.3, 6000);
+        cam.up.copy(Y); cam.position.copy(eye); cam.lookAt(look); cam.updateMatrixWorld(true);
+        const shot = withOnly(sel, () => {
+          const fg = scene.fog; scene.fog = null;
+          try {
+            const col = readRT(w, h, () => renderer.render(scene, cam));
+            const white = new THREE.MeshBasicMaterial({ color: 0xffffff, fog: false, side: THREE.DoubleSide });
+            const bg = scene.background, ov = scene.overrideMaterial;
+            scene.background = null; scene.overrideMaterial = white;
+            const m = readRT(w, h, () => renderer.render(scene, cam));
+            scene.background = bg; scene.overrideMaterial = ov; white.dispose();
+            let on = 0;
+            for (let i = 0; i < w * h; i++) if (m[i * 4] > 127) on++;
+            return { png: toPng(col, w, h), mask: toPng(m, w, h), cover: on / (w * h) };
+          } finally { scene.fog = fg; }
+        });
+        out.push({ cls, distM: dist, screenPxPerM: +S.toFixed(2), ...shot });
+      }
+    } finally { restoreFx(); }
     return out;
   }
   function hideFx(fxNames) {
@@ -617,5 +694,5 @@
   }
   async function frames(n = 2) { for (let i = 0; i < n; i++) await new Promise((r) => requestAnimationFrame(() => r())); }
 
-  window.__og = { orthoFace, renderPose, matchRoots, instancesOf, texturesOf, texel, mask, maskInstance, maskFromGameCamera, shadow, grounding, geometry, effects, instanceBoxes, lights, stats, frames, LIN_MIP };
+  window.__og = { orthoFace, renderPose, faceCaptures, matchRoots, instancesOf, texturesOf, texel, mask, maskInstance, maskFromGameCamera, shadow, grounding, geometry, effects, instanceBoxes, lights, stats, frames, LIN_MIP };
 })();

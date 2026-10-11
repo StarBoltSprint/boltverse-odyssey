@@ -373,7 +373,7 @@ export async function visibleShot(page, adapter, sel, hero, t, view, odir, vv = 
     // central band around the aimed point (the surface really at ~D m; the ground below and the sky above stay out), inside the object mask
     const rect = [Math.round(vp.width * 0.15), Math.round(vp.height * 0.3), Math.round(vp.width * 0.85), Math.round(vp.height * 0.7)];
     const a = py("visible_px", { img, mask: m.out, rect, screenPxPerM: S });
-    return { ...a, img, mask: m.out, cover: m.cover, distM: +g.d.toFixed(2), needPxPerM: +need.toFixed(1), zoomFovDeg: +fovReal.toFixed(2), wantedFovDeg: +fovZ.toFixed(2), renderH, camera: g.cam, aimM: place.aimM, normal: place.normal && place.normal.map((v) => +v.toFixed(2)), rect, pose };
+    return { ...a, img, mask: m.out, cover: m.cover, distM: +g.d.toFixed(2), needPxPerM: +need.toFixed(1), zoomFovDeg: +fovReal.toFixed(2), wantedFovDeg: +fovZ.toFixed(2), renderH, camera: g.cam, look: place.look, aimM: place.aimM, normal: place.normal && place.normal.map((v) => +v.toFixed(2)), rect, pose };
   } finally {
     await page.evaluate(() => window.__ogRestoreFx && window.__ogRestoreFx());
   }
@@ -381,6 +381,7 @@ export async function visibleShot(page, adapter, sel, hero, t, view, odir, vv = 
 
 async function gateOne(cap, adapter, spec, o, odir, ctx) {
   const { page } = cap; const cfg = spec.cfg; const checks = new Set(cfg.checks);
+  let visibleRender = null;
   const sel = spec.select;
   const boxes = await page.evaluate((s) => window.__og.instanceBoxes(s), sel);
   if (!boxes.length) { row(o, "select", false, `selector ${JSON.stringify(sel)} matched no object`, ["Fix select.names (regex on object names in the scene)."]); return; }
@@ -542,7 +543,25 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
     if ((cfg.texel.visibleMeasure || "render") === "render") {
       try { const vv = spec.visibleView || {}; render = await visibleShot(page, adapter, sel, (vv.hero && boxes.find((b) => b.id === vv.hero)) || hero, cfg.texel, view, odir, vv); }
       catch (e) { render = { ok: false, why: "8 m capture failed: " + String((e && e.message) || e).slice(0, 200) }; }
+      visibleRender = render;
       try { await page.evaluate(() => window.__og.zoom(null)); } catch (e) {}
+      try {
+        const shots = await page.evaluate(([s, id]) => window.__og.faceCaptures ? window.__og.faceCaptures(s, id) : [], [sel, hero.id]);
+        const visibleFaces = [];
+        for (const f of shots || []) {
+          if (!f || !f.png) continue;
+          const tag = String(f.cls).replace("+", "p").replace("-", "m");
+          const img = join(odir, `cap-face-${tag}.png`);
+          const msk = join(odir, `cap-face-${tag}-mask.png`);
+          writeFileSync(img, Buffer.from(f.png.split(",")[1], "base64"));
+          writeFileSync(msk, Buffer.from(f.mask.split(",")[1], "base64"));
+          const measured = py("visible_px", { img, mask: msk, screenPxPerM: f.screenPxPerM });
+          visibleFaces.push({ cls: f.cls, cover: f.cover, distM: f.distM, screenPxPerM: f.screenPxPerM, ...measured });
+        }
+        if (render) render.visibleFaces = visibleFaces;
+        else render = { ok: false, why: "no 8 m shot", visibleFaces };
+        visibleRender = render;
+      } catch (e) { if (render) render.visibleFacesError = String((e && e.message) || e).slice(0, 200); }
     }
     const v = scoreVisible(cfg.texel, cfg.repetition, view, texelRows, repRows, footprintsFromBoxes(boxes), spec, render);
     writeFileSync(join(odir, "visible.json"), JSON.stringify({ view, render, perSurface: v.perSurface }, null, 1));
@@ -664,18 +683,24 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
       row(o, "relief-texture alignment", false, "no shade switch", ["Expose window.__setShade('relief'|'albedo'|'lit') and render relief and albedo from the same cameras."]);
     } else {
       const fx = hero.front; const fl = Math.hypot(fx[0], fx[1]) || 1; const f0 = fx[0] / fl, f1 = fx[1] / fl;
+      // Hero and 30 m used to share one distance and a look height capped at 50 m,
+      // so both frames were the same worm's-eye shot up the glass. 8 m must be
+      // the visible-shot camera, including its optical zoom.
       const poses = {
-        hero: { d: Math.max(40, hero.halfD + 30), lat: 0 },
-        "30m": { d: 30 + hero.halfD, lat: 0 },
-        "8m": { d: 8 + Math.max(2, hero.halfW * 0.2), lat: hero.halfW * 0.25 },
-        side: { d: 20 + hero.halfD, lat: hero.halfW + 10 },
+        hero: { d: Math.max(160, hero.halfD + 140), lat: hero.halfW * 0.35, lookFrac: 0.55 },
+        "30m": { d: hero.halfD + 30, lat: -hero.halfW * 0.22, lookFrac: 0.08 },
+        "8m": { d: hero.halfD + 8, lat: 0, lookFrac: 0.08 },
+        side: { d: hero.halfD + 48, lat: hero.halfW + 28, lookFrac: 0.4 },
       };
       const scores = [];
       for (const [name, P] of Object.entries(poses)) {
-        const x = hero.center[0] + f0 * P.d - f1 * P.lat;
-        const z = hero.center[2] + f1 * P.d + f0 * P.lat;
-        const ty = hero.min[1] + Math.min(hero.height * 0.45, 50);
-        await page.evaluate(([x, z, look]) => window.__ogHost.setPose({ x, z, look }), [x, z, [hero.center[0], ty, hero.center[2]]]);
+        const reuse8 = name === "8m" && visibleRender && visibleRender.camera && visibleRender.look;
+        if (!reuse8) { try { await page.evaluate(() => window.__og.zoom(null)); } catch (e) {} }
+        const x = reuse8 ? visibleRender.camera[0] : hero.center[0] + f0 * P.d - f1 * P.lat;
+        const z = reuse8 ? visibleRender.camera[2] : hero.center[2] + f1 * P.d + f0 * P.lat;
+        const look = reuse8 ? visibleRender.look : [hero.center[0], hero.min[1] + hero.height * P.lookFrac, hero.center[2]];
+        await page.evaluate(([x, z, look]) => window.__ogHost.setPose({ x, z, look }), [x, z, look]);
+        if (reuse8 && visibleRender.zoomFovDeg) await page.evaluate((fov) => window.__og.zoom(fov), visibleRender.zoomFovDeg);
         await settle(page, 300);
         const rp = join(odir, `relief-${name}.png`);
         const ap = join(odir, `albedo-${name}.png`);
