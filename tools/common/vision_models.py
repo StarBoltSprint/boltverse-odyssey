@@ -3,8 +3,11 @@
 are cached on disk by the image bytes hash, so the next caller does not run the net again.
 
 Weights live outside the git repo (default /workspace/models/vision). The module checks
-free disk before a download and refuses to fill the volume. Relief code keeps using the
-small Depth Anything ONNX; this module is where Large, MoGe-2, and SAM2 small + base live.
+free disk before a download and refuses to fill the volume.
+
+DEFAULT_DEPTH is MoGe-2 (MIT). Depth Anything V2 Large is an explicit internal
+comparison (`depth_dav2` / `load_dav2_large`). Do not write that map into a shipped
+or posted output. SAM2 small + base live here too.
 
   python3 tools/common/vision_models.py status
   python3 tools/common/vision_models.py ensure
@@ -26,6 +29,8 @@ SRC = os.path.join(WEIGHTS, "src")
 CACHE = os.path.join(WEIGHTS, "cache")
 # Leave this much free after a download. The four nets together are about 3 GB.
 RESERVE_BYTES = 4 * 1024 ** 3
+# Licence 2026-10-11 12:25: MoGe-2 is the default depth. Large is internal only.
+DEFAULT_DEPTH = "moge-2"
 
 # Sizes checked against the publishers (2026-10-11). A short file is not a model.
 CATALOG = {
@@ -358,6 +363,20 @@ def depth_moge(image_path, side=256):
         return depth.detach().cpu().numpy().astype(np.float32)
 
     return cached_array("depth", "moge-2", image_path, f"side{side}", compute)
+
+
+def load_default_depth():
+    """The depth model relief, fuse, and terrain may ship. MoGe-2 only."""
+    if DEFAULT_DEPTH != "moge-2":
+        raise RuntimeError(f"default depth must stay moge-2, got {DEFAULT_DEPTH}")
+    return load_moge2(), DEFAULT_DEPTH
+
+
+def depth_default(image_path, side=256):
+    """Cached MoGe-2 depth. Larger values are farther (metres)."""
+    if DEFAULT_DEPTH != "moge-2":
+        raise RuntimeError(f"default depth must stay moge-2, got {DEFAULT_DEPTH}")
+    return depth_moge(image_path, side)
 
 
 def _patch_sam2_transforms():

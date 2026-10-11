@@ -15,7 +15,7 @@ Shared helpers for the cooks that failed on 11 Oct (fusion-fix2, terrain, placem
 
 `ensure` checks free space and keeps a 4 GiB reserve before a download. A short file is deleted and fetched again. Each process loads a model once. Depth and masks are cached by the sha256 of the image bytes under `cache/`. The second call on the same image is a disk read.
 
-Relief and fuse stay on Depth Anything V2 **Small** (`load_depth_session("dav2-small")`). Large is an extra shared model. It does not replace the small ONNX disparity.
+The default depth model is **MoGe-2** (`vision_models.DEFAULT_DEPTH`, `load_default_depth()`). Relief and fuse call that (`depth_relief.session()`). `tools/relief/bake_depth.py` defaults to `moge-2-vitl.pt` and runs one tile through MoGe-2. A `.onnx` model path still uses the small ONNX tile blend. Depth Anything V2 Large stays on disk for an explicit internal comparison (`depth_dav2`, a `.pth` passed to `bake_depth`). Do not write that map into a shipped or posted output. This step does not rebake the 3916 panorama.
 
 Run the loaders with the environment that has torch (`/workspace/.venv-sam2/bin/python` on this box). `status`, the frame math, the capture gate, and the stage clock run on system Python.
 

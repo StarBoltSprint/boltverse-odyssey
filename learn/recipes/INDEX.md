@@ -76,6 +76,12 @@ Stone doors and gothic halls are rejected menu backgrounds (2026-10-04/05). Echo
 
 `python3 tools/wfc-path/hang.py --spec tools/wfc-path/cook/spec.json --out packs/corridor-ab`. Placement only. A corridor video and a zone B pack are still uncooked.
 
+## terrain
+
+| Recipe | Commit | QC |
+| --- | --- | --- |
+| [terrain-key2-skyline.md](terrain-key2-skyline.md) — colour skyline heightfield, MoGe-2 default, no Imagine prompt | `45e55fe7` | silhouette 0.8481; repetition 0.1499; slope 6.269°; SAM2 silhouette 0.5486 not shipped |
+
 ## cutout
 
 | Recipe | Commit | QC |
