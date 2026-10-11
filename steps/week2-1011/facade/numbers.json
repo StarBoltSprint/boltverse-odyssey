@@ -1,0 +1,176 @@
+{
+ "job": "facade",
+ "verdict": "FAIL",
+ "bar": 0.7,
+ "before": {
+  "key": 0.3342,
+  "hero": 0.3727,
+  "30m": 0.3635,
+  "8m": 0.0,
+  "side": 0.0
+ },
+ "camera_only": {
+  "key": 0.704,
+  "hero": 0.7056,
+  "30m": 0.7365,
+  "8m": 0.7045,
+  "side": 0.7431
+ },
+ "after_search": {
+  "key": 0.704,
+  "hero": 0.7056,
+  "30m": 0.7365,
+  "8m": 0.7045,
+  "side": 0.7431
+ },
+ "pixels": {
+  "key": 4873,
+  "hero": 4848,
+  "30m": 5277,
+  "8m": 6868,
+  "side": 3595
+ },
+ "contains_tower": {
+  "key": true,
+  "hero": true,
+  "30m": true,
+  "8m": true,
+  "side": true
+ },
+ "view_distance_m": {
+  "key": 318.0,
+  "hero": 324.36,
+  "30m": 318.0,
+  "8m": 268.7,
+  "side": 343.44
+ },
+ "camera": {
+  "fov_y_deg": 88.0,
+  "pitch_deg": 7.674,
+  "roll_deg": 0.173,
+  "yaw_deg": 0.0,
+  "height_m": 1.7665526355903505,
+  "fallback": false,
+  "method": "constrained-focal",
+  "pitch_three_deg": -7.674048935340019,
+  "lines": 1399,
+  "vanishing_points": 3,
+  "horizon": {
+   "v": 309.26861591720683,
+   "roll_deg": 0.1730828150562344,
+   "source": "dune-sky",
+   "inliers": 75
+  }
+ },
+ "seat": {
+  "seated": true,
+  "scale": 2.1387,
+  "dx": -157.589,
+  "dy": 101.643
+ },
+ "relief_displace": {
+  "hit_vertices": 107040,
+  "median_edge_m": 1.2136,
+  "stretch_gain": 0.8067,
+  "max_move_m": 2.0169,
+  "moved_vertices": 92395
+ },
+ "best_x": {
+  "yaw_extra": 0.0,
+  "scale": 1.0,
+  "relief_scale": 1.0,
+  "uv_dx": 0.0,
+  "uv_dy": 0.0
+ },
+ "relief_axes_m": {
+  "+x": 0.0,
+  "-x": 0.0,
+  "+z": 0.0,
+  "-z": 2.017
+ },
+ "relief_axes_posed_m": {
+  "+x": 0.0,
+  "-x": 0.0,
+  "+z": 0.0,
+  "-z": 1.999
+ },
+ "relief_axes_present": [
+  "+x",
+  "-x",
+  "+z",
+  "-z"
+ ],
+ "relief_axis_area_m2": {
+  "+x": 2664.68,
+  "-x": 2776.03,
+  "+z": 440.79,
+  "-z": 20858.38
+ },
+ "float_m_local": 0.0,
+ "float_note": "Render-frame base is seated at Y=0. The old 74 m figure is the staged world instance. This step did not remeasure that browser row.",
+ "trials": 48,
+ "search_rounds": [
+  {
+   "x": [
+    1.8306277283188628,
+    1.0597064965588092,
+    1.6432592332840419,
+    3.6532975490101762,
+    -10.485102691308274
+   ],
+   "loss": 0.14906333333333333,
+   "evals": 16,
+   "seconds": 4.965,
+   "solver": "cmaes",
+   "seed": 0,
+   "min_alignment": 0.6548
+  },
+  {
+   "x": [
+    -10.126048313146512,
+    1.103248994544106,
+    1.5223027764769514,
+    -5.89540382752455,
+    7.026569046207243
+   ],
+   "loss": 0.14872687499999998,
+   "evals": 16,
+   "seconds": 4.65,
+   "solver": "cmaes",
+   "seed": 1,
+   "min_alignment": 0.6005
+  },
+  {
+   "x": [
+    1.96832614430161,
+    1.1329146183089134,
+    1.7182911363288682,
+    -24.360208532137186,
+    -6.0981130488712445
+   ],
+   "loss": 0.14236658333333332,
+   "evals": 16,
+   "seconds": 4.79,
+   "solver": "cmaes",
+   "seed": 2,
+   "min_alignment": 0.6637
+  }
+ ],
+ "timing_s": {
+  "camera_s": 6.833,
+  "mesh_load_s": 0.309,
+  "relief_s": 0.326,
+  "camera_only_s": 0.501,
+  "search_r0_s": 5.491,
+  "search_r1_s": 4.65,
+  "search_r2_s": 4.79,
+  "final_s": 0.461
+ },
+ "seconds_total": 25.491,
+ "vision_cost_usd": 0.0,
+ "dataset_exported": false,
+ "gate5": "not re-run: the blocking software number is the shared alignment metric on these frames",
+ "phone_budget": "unchanged from fusion-fix5 round 2 (264684 tris, texMB 9.38, passed)",
+ "relief_axis_note": "The painted MoGe residual is on the front. -z carries that relief. +x/-x/+z area after the move is tilted front triangles, and the thickness metric stays 0 there: the relight plates are the same camera, so no side pixel paints a ridge on those axes.",
+ "why": "alignment or relief axes missed 0.70 / 0.3 m"
+}

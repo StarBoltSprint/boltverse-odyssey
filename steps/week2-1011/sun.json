@@ -1,0 +1,45 @@
+{
+ "current_sun_from_key": {
+  "azimuthDeg": 113.77,
+  "elevationDeg": 6.33,
+  "pixel": [
+   894.0,
+   296.0
+  ]
+ },
+ "hero_symmetry": {
+  "mirror_x": 0.4259,
+  "mirror_y": 0.5612,
+  "rot180": 0.3729,
+  "mirror_axis": null,
+  "rotational_order": 1,
+  "dof_drop": 0
+ },
+ "shadow_tip_px": [
+  406.0,
+  504.0
+ ],
+ "shadow_sun": {
+  "ok": true,
+  "azimuthDeg": 70.08,
+  "elevationDeg": 69.98,
+  "contact_m": [
+   -28.698,
+   0.0,
+   -6.429
+  ],
+  "shadow_m": [
+   -36.357,
+   0.0,
+   -3.654
+  ],
+  "method": "ray-plane"
+ },
+ "height_m_used": 22.35,
+ "contact_px": [
+  464.0,
+  453.0
+ ],
+ "delta_azimuth_deg": -43.69,
+ "delta_elevation_deg": 63.65
+}

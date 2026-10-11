@@ -1130,3 +1130,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Stop. Three rounds each. Do not export `dataset/i23d`. Do not invent side relief. The staging layout was put back to placed-r1 after the shot. |
 | Guard | `python3 tools/common/align/selftest.py`. Numbers in `steps/align-solve-1011/numbers.json`. Gate field is `overlap` = `alignment`, bar 0.70. |
 | Sources | `tools/common/align/`, `steps/align-solve-1011/REPORT.md`. |
+
+### 2026-10-11 — week-2 camera clears the facade views and the placement bar stays missed
+
+| | |
+| --- | --- |
+| Take | week2-1011 |
+| Defect | Facade alignment is 0.704 / 0.706 / 0.737 / 0.705 / 0.743 and −z relief is 2.02 m. +x, −x, and +z stay 0. Placement framebuffer IoU is 0.3226. |
+| Root cause | The city plate has no orthogonal vanishing pair, so the old solver fell back to FOV 40°. The constrained grid fixes that camera. The fusion mesh is still a front sheet. Tilting front triangles does not make a side ridge, and the relight plates are the same camera. Box seats under the new camera still miss the SAM masks (software 0.30, framebuffer 0.32). |
+| Fix | Stop after 3 search rounds and one labelled SciPy pose refine. Do not write the cast-shadow sun (elevation 70° versus the key sun at 6°) into the staging biome. Do not export `dataset/i23d`. |
+| Guard | `python3 tools/common/align/selftest.py` PASS. Numbers in `steps/week2-1011/numbers.json`. |
+| Sources | `tools/common/align/`, `steps/week2-1011/REPORT.md`. |

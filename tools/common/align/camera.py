@@ -245,6 +245,162 @@ def _dir_from_vp(vp, f, cx, cy):
     return d / n
 
 
+def _sun_row(bgr):
+    """Warm brightest pixel on the sky side of the frame. None when there is no sun."""
+    h, w = bgr.shape[:2]
+    y0, y1 = int(0.22 * h), int(0.58 * h)
+    x0, x1 = int(0.35 * w), int(0.92 * w)
+    band = bgr[y0:y1, x0:x1].astype(np.int32)
+    if band.size == 0:
+        return None
+    # Red channel leads a sunset; the blue channel leads a grey card.
+    score = band[:, :, 2] * 2 + band[:, :, 1] - band[:, :, 0]
+    if int(score.max()) < 280:
+        return None
+    iy, ix = np.unravel_index(int(score.argmax()), score.shape)
+    pix = bgr[y0 + iy, x0 + ix].astype(np.int32)
+    if int(pix[2]) < int(pix[0]) + 25:
+        return None
+    return float(y0 + iy), float(x0 + ix)
+
+
+def horizon_from_image(bgr):
+    """Dune / sky line. Returns v at the principal x, roll, and inlier count.
+
+    The sun, when it sits in the sky, anchors the row. Column votes are the
+    strongest darkening from a bright sky into the ground, kept only when they
+    agree with that anchor. Roll stays near level: a dune face is not the horizon.
+    """
+    if bgr is None or getattr(bgr, "ndim", 0) != 3:
+        return None
+    gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY).astype(np.float64)
+    h, w = gray.shape
+    sun = _sun_row(bgr)
+    y0, y1 = int(0.18 * h), int(0.72 * h)
+    blur = cv2.GaussianBlur(gray, (1, 9), 0)
+    votes = []
+    for x in range(0, w, 4):
+        col = blur[y0:y1, x]
+        if col.size < 8:
+            continue
+        grad = np.diff(col)
+        i = int(np.argmin(grad))
+        y = y0 + i
+        above = float(blur[max(0, y - 8):y, x].mean()) if y > 8 else float(blur[y, x])
+        below = float(blur[y:min(h, y + 10), x].mean())
+        if above < below + 8 or above < 70:
+            continue
+        votes.append((float(x), float(y)))
+    anchor = None if sun is None else sun[0]
+    if anchor is not None and votes:
+        near = [v for v in votes if abs(v[1] - anchor) <= 0.06 * h]
+        if len(near) >= 8:
+            votes = near
+        else:
+            votes = [(0.0, anchor), (float(w - 1), anchor)]
+    elif anchor is not None:
+        votes = [(0.0, anchor), (float(w - 1), anchor)]
+    if len(votes) < 8:
+        return None
+    pts = np.asarray(votes, np.float64)
+    A = np.stack([pts[:, 0], np.ones(len(pts))], 1)
+    slope, intercept = np.linalg.lstsq(A, pts[:, 1], rcond=None)[0]
+    roll = float(np.rad2deg(np.arctan(slope)))
+    cx = (w - 1) / 2.0
+    v = float(intercept + slope * cx)
+    if abs(roll) > 4.0:
+        roll = 0.0
+        v = float(np.median(pts[:, 1]))
+    if anchor is not None:
+        # The sun is on the horizon in this key. Do not let a dune vote pull it.
+        v = 0.65 * float(anchor) + 0.35 * v
+    return {"v": float(v), "roll_deg": float(roll), "inliers": int(len(pts)),
+            "sun_v": None if anchor is None else float(anchor)}
+
+
+def _focal_metrics(gray, fov_y, pitch_deg, roll_deg, prior_fov_y):
+    """Ground-grid edges against the photo, scored by metrics.score.
+
+    The prior pulls toward the focal length the metric depth was built with
+    when that depth exists. It does not replace the metrics number.
+    """
+    from align.metrics import score
+
+    h, w = gray.shape[:2]
+    f = (h * 0.5) / np.tan(np.deg2rad(fov_y) * 0.5)
+    cx, cy = (w - 1) / 2.0, (h - 1) / 2.0
+    img = np.zeros((h, w), np.uint8)
+    cam = np.array([0.0, 1.6, 0.0])
+    for t in np.linspace(-30, 30, 13):
+        for seg in (
+            np.array([[t, 0, -3], [t, 0, -60]], np.float64),
+            np.array([[-30, 0, -8 - abs(t)], [30, 0, -8 - abs(t)]], np.float64),
+        ):
+            uv, depth, _ = project(seg, cam, 0.0, pitch_deg, roll_deg, f, f, cx, cy)
+            if np.all(depth > 0.3):
+                p0 = tuple(np.clip(np.round(uv[0]), -20, w + 20).astype(int))
+                p1 = tuple(np.clip(np.round(uv[1]), -20, w + 20).astype(int))
+                cv2.line(img, p0, p1, 255, 1, cv2.LINE_8)
+    edges = cv2.Canny(gray, 60, 140)
+    band = np.zeros_like(edges)
+    hv = int(np.clip(cy - f * np.tan(np.deg2rad(pitch_deg)), 0, h - 1))
+    band[hv:] = edges[hv:]
+    sc = score(
+        cv2.cvtColor(img, cv2.COLOR_GRAY2RGB),
+        cv2.cvtColor(band, cv2.COLOR_GRAY2RGB),
+    )
+    objective = float(sc["objective"])
+    if prior_fov_y is not None:
+        objective -= abs(float(fov_y) - float(prior_fov_y)) / 180.0
+    return objective, sc
+
+
+def constrained_focal(width, height, horizon_v, roll_deg=0.0, gray=None, prior_fov_y=None, scorer=None):
+    """Grid a sane vertical FOV. Pitch comes from the horizon. Never a 40° fallback.
+
+    `scorer(intr) -> float` (higher is better) overrides the metrics grid score.
+    """
+    cx, cy = (width - 1) / 2.0, (height - 1) / 2.0
+    best = None
+    for fov in np.linspace(48.0, 100.0, 14):
+        f = (height * 0.5) / np.tan(np.deg2rad(fov) * 0.5)
+        pitch = float(np.rad2deg(np.arctan2(cy - float(horizon_v), f)))
+        intr = {
+            "fx": float(f), "fy": float(f), "cx": cx, "cy": cy,
+            "fov_y_deg": float(fov),
+            "fov_x_deg": float(np.rad2deg(2 * np.arctan((width * 0.5) / f))),
+            "pitch_deg": pitch,
+            "roll_deg": float(roll_deg),
+            "yaw_deg": 0.0,
+            "horizon_v": float(horizon_v),
+            "vertical_vp": None,
+            "horizontal_vps": [],
+            "fallback": False,
+            "method": "constrained-focal",
+        }
+        if scorer is not None:
+            value = float(scorer(intr))
+            detail = None
+        elif gray is not None:
+            value, detail = _focal_metrics(gray, fov, pitch, roll_deg, prior_fov_y)
+        else:
+            # No picture to score. Stay on the depth prior, else the middle of the grid.
+            center = 70.0 if prior_fov_y is None else float(prior_fov_y)
+            value = -abs(float(fov) - center)
+            detail = None
+        if best is None or value > best[0]:
+            best = (value, intr, detail)
+    intr = best[1]
+    intr["focal_score"] = float(best[0])
+    if best[2] is not None:
+        intr["focal_metrics"] = {
+            "objective": best[2]["objective"],
+            "alignment": best[2]["alignment"],
+            "silhouette_iou": best[2]["silhouette_iou"],
+        }
+    return intr
+
+
 def solve_from_vps(vps, width, height):
     cx, cy = (width - 1) / 2.0, (height - 1) / 2.0
     if len(vps) < 2:
@@ -395,8 +551,16 @@ def ground_from_depth(depth, fx, fy, cx, cy, pitch_deg, horizon_v=None):
     return plane
 
 
-def solve(image, depth=None, image_path=None):
-    """image is gray/RGB array or a path. depth is metric camera-forward metres or None (MoGe-2)."""
+def solve(image, depth=None, image_path=None, scorer=None, depth_fov_y=None):
+    """image is a gray array, an OpenCV BGR array, or a path. depth is metric camera-Z metres or None (MoGe-2).
+
+    When the orthogonal vanishing-point focal is missing or absurd, a constrained
+    FOV grid uses the dune/sky horizon and metrics.score. That path is not a fallback.
+    `depth_fov_y` is the vertical field the metric depth was inferred with.
+    Pitch is positive looking down. `pitch_three_deg` is the opposite sign, which
+    is what three.js `rotation.x` and placement `Cam` use (positive looks up).
+    """
+    bgr = None
     if isinstance(image, str):
         image_path = image
         bgr = cv2.imread(image, cv2.IMREAD_COLOR)
@@ -405,21 +569,48 @@ def solve(image, depth=None, image_path=None):
         gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
     else:
         arr = np.asarray(image)
-        gray = arr if arr.ndim == 2 else cv2.cvtColor(arr, cv2.COLOR_RGB2GRAY)
+        if arr.ndim == 3:
+            bgr = arr[:, :, :3]
+            gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
+        else:
+            gray = arr
     h, w = gray.shape[:2]
     lines = detect_lines(gray)
     vps = vanishing_points(lines, w, h)
     intr = solve_from_vps(vps, w, h)
-    if intr is None:
-        # Level fallback so callers still get a file. The selftest treats this as a miss.
-        fy = (h * 0.5) / np.tan(np.deg2rad(40) * 0.5)
-        intr = {
-            "fx": fy, "fy": fy, "cx": (w - 1) / 2, "cy": (h - 1) / 2,
-            "fov_y_deg": 40.0, "fov_x_deg": float(np.rad2deg(2 * np.arctan((w * 0.5) / fy))),
-            "pitch_deg": 0.0, "roll_deg": 0.0, "yaw_deg": 0.0,
-            "horizon_v": (h - 1) / 2, "vertical_vp": None, "horizontal_vps": [],
-            "fallback": True,
-        }
+    horizon = horizon_from_image(bgr)
+    plausible = (
+        intr is not None
+        and 32.0 <= float(intr["fov_y_deg"]) <= 100.0
+        and (horizon is None or abs(float(intr["horizon_v"]) - float(horizon["v"])) <= 0.12 * h)
+    )
+    if not plausible:
+        if horizon is not None:
+            hv = float(horizon["v"])
+            roll = float(horizon["roll_deg"])
+        elif intr is not None and intr.get("horizon_v") is not None:
+            hv = float(intr["horizon_v"])
+            roll = float(intr.get("roll_deg") or 0.0)
+        else:
+            hv = (h - 1) / 2.0
+            roll = 0.0
+        if horizon is None and intr is None and scorer is None and gray.max() == gray.min():
+            fy = (h * 0.5) / np.tan(np.deg2rad(40) * 0.5)
+            intr = {
+                "fx": fy, "fy": fy, "cx": (w - 1) / 2, "cy": (h - 1) / 2,
+                "fov_y_deg": 40.0, "fov_x_deg": float(np.rad2deg(2 * np.arctan((w * 0.5) / fy))),
+                "pitch_deg": 0.0, "roll_deg": 0.0, "yaw_deg": 0.0,
+                "horizon_v": (h - 1) / 2, "vertical_vp": None, "horizontal_vps": [],
+                "fallback": True, "method": "fallback-40",
+            }
+        else:
+            intr = constrained_focal(
+                w, h, hv, roll, gray=gray, prior_fov_y=depth_fov_y, scorer=scorer,
+            )
+    else:
+        intr = dict(intr)
+        intr["fallback"] = False
+        intr["method"] = "vanishing-points"
     depth_src = "given"
     if depth is None and image_path:
         depth_src = "moge-2"
@@ -459,13 +650,23 @@ def solve(image, depth=None, image_path=None):
         "extrinsics": {
             "yaw_deg": intr["yaw_deg"],
             "pitch_deg": intr["pitch_deg"],
+            "pitch_three_deg": -float(intr["pitch_deg"]),
             "roll_deg": intr["roll_deg"],
             "height_m": height,
             "position_m": position,
             "R_world_to_camera": R.tolist(),
             "t_world_to_camera": t,
         },
-        "horizon": {"v": intr.get("horizon_v"), "roll_deg": intr["roll_deg"]},
+        "horizon": {
+            "v": intr.get("horizon_v"),
+            "roll_deg": intr["roll_deg"],
+            "source": None if horizon is None else "dune-sky",
+            "inliers": None if horizon is None else horizon.get("inliers"),
+        },
+        "method": intr.get("method", "vanishing-points"),
+        "focal_score": intr.get("focal_score"),
+        "focal_metrics": intr.get("focal_metrics"),
+        "depth_fov_y": None if depth_fov_y is None else float(depth_fov_y),
         "vanishing_points": vps,
         "ground": plane,
         "depth_source": depth_src,

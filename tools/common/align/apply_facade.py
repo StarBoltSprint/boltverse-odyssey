@@ -24,12 +24,15 @@ if COMMON not in sys.path:
 
 from align.camera import overlay, solve
 from align.metrics import score as metric_score
+from align.relief import displace, vertex_normals
 from align.search import loss_from_score, search
 
 FUSION = os.path.join(REPO, "steps", "fusion-fix5-1011")
 MESH = os.path.join(FUSION, "rounds", "round-2", "mesh_dump.json")
-STEP = os.path.join(REPO, "steps", "align-solve-1011")
+STEP = os.environ.get("ALIGN_OUT", os.path.join(REPO, "steps", "week2-1011"))
 KEY_CITY = "/workspace/zb-bible-1008/key-city3.jpg"
+DEPTH_NPY = os.path.join(REPO, "steps", "placement-key2-1011", "depth-moge.npy")
+HERO_MASK = os.path.join(FUSION, "work", "sam-hero.npy")
 VIEWS = ("key", "hero", "30m", "8m", "side")
 BAR = 0.70
 _LOCK = threading.Lock()
@@ -110,8 +113,42 @@ def _pose(pos, yaw_deg, pitch_deg, scale, relief, dist):
     p[:, 1] = cx * y - sx * z
     p[:, 2] = sx * y + cx * z
     p[:, 2] -= float(dist)
-    p[:, 1] -= float(p[:, 1].min())
+    # Median, not the lowest vertex. Seating on min Y pushes a tall sheet
+    # through the top of the frame, which is the sliver on the phone sheet.
+    p[:, 1] -= float(np.median(p[:, 1]))
     return p
+
+
+def _close_points(rgb):
+    """Fill one-pixel holes in a vertex splat for the sheet. Scores use the raw splat."""
+    m = (rgb.max(axis=2) > 8).astype(np.uint8)
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+    closed = cv2.morphologyEx(m, cv2.MORPH_CLOSE, kernel)
+    holes = (closed > 0) & (m == 0)
+    if not holes.any():
+        return rgb
+    blur = cv2.blur(rgb, (3, 3))
+    out = rgb.copy()
+    out[holes] = blur[holes]
+    return out
+
+
+def _splat(pos, colours, w, h, fx, fy, cx, cy):
+    """One sample per vertex, nearer overwrites. Solid where the mesh is dense."""
+    z = pos[:, 2]
+    ok = z < -1e-3
+    u = fx * pos[:, 0] / -z + cx
+    v = cy - fy * pos[:, 1] / -z
+    ui = np.rint(u).astype(np.int32)
+    vi = np.rint(v).astype(np.int32)
+    m = ok & np.isfinite(u) & np.isfinite(v) & (ui >= 0) & (vi >= 0) & (ui < w) & (vi < h)
+    img = np.zeros((h, w, 3), np.uint8)
+    idx = np.flatnonzero(m)
+    if len(idx) == 0:
+        return img
+    idx = idx[np.argsort(z[idx])]
+    img[vi[idx], ui[idx]] = np.asarray(colours, np.uint8)[idx]
+    return img
 
 
 def _raster(pos, faces, colours, w, h, fx, fy, cx, cy, light, stride):
@@ -146,6 +183,54 @@ def _raster(pos, faces, colours, w, h, fx, fy, cx, cy, light, stride):
     return img
 
 
+def _seat_to_mask(pos, fx, fy, cx, cy, mask):
+    """Slide and scale the slab so its projection sits on the hero mask."""
+    z = pos[:, 2]
+    front = z < -1e-3
+    if int(front.sum()) < 20 or int(np.asarray(mask).sum()) < 20:
+        return pos, {"seated": False}
+    def project(p):
+        zz = p[:, 2]
+        ok = zz < -1e-3
+        u = fx * p[:, 0] / -zz + cx
+        v = cy - fy * p[:, 1] / -zz
+        return u, v, ok
+    u, v, ok = project(pos)
+    use = ok & np.isfinite(u) & np.isfinite(v)
+    if int(use.sum()) < 20:
+        return pos, {"seated": False}
+    ys, xs = np.nonzero(mask)
+    h_mesh = float(np.percentile(v[use], 95) - np.percentile(v[use], 5))
+    h_mask = float(np.percentile(ys, 95) - np.percentile(ys, 5))
+    scale = 1.0 if h_mesh < 5 else float(np.clip(h_mask / h_mesh, 0.35, 3.0))
+    c = pos.mean(axis=0)
+    out = (pos - c) * scale + c
+    u, v, ok = project(out)
+    use = ok & np.isfinite(u) & np.isfinite(v)
+    zmed = float(np.median(-out[use, 2]))
+    dx = (float(np.median(xs)) - float(np.median(u[use]))) * zmed / fx
+    dy = -(float(np.median(ys)) - float(np.median(v[use]))) * zmed / fy
+    out = out.copy()
+    out[:, 0] += dx
+    out[:, 1] += dy
+    return out, {"seated": True, "scale": round(scale, 4), "dx": round(dx, 3), "dy": round(dy, 3)}
+
+
+def _axis_area(pos, faces, key):
+    """Sum of triangle area whose normal is this world axis (threshold 0.7)."""
+    sign = 1.0 if key[0] == "+" else -1.0
+    ax = 0 if key[1] == "x" else 2
+    p = np.asarray(pos, np.float64)
+    f = np.asarray(faces, np.int32)
+    a, b, c = p[f[:, 0]], p[f[:, 1]], p[f[:, 2]]
+    n = np.cross(b - a, c - a)
+    area = np.linalg.norm(n, axis=1) * 0.5
+    ln = np.linalg.norm(n, axis=1) + 1e-12
+    n = n / ln[:, None]
+    sel = (n[:, ax] * sign) > 0.7
+    return float(area[sel].sum()) if sel.any() else 0.0
+
+
 def _fit_dist(radius, fov_y, fov_x):
     half = np.deg2rad(min(fov_y, fov_x) * 0.5)
     return float(radius / max(np.tan(half), 1e-3) * 1.2)
@@ -170,8 +255,14 @@ def _pair(pack, view, colours, stride, rw, rh):
     posed = _pose(pack["pos"], spec["yaw"], spec["pitch"], pack["scale"], pack["relief"], spec["dist"])
     fx, fy = pack["fx"] * (rw / pack["full_w"]), pack["fy"] * (rh / pack["full_h"])
     cx, cy = (rw - 1) / 2.0, (rh - 1) / 2.0
-    alb = _raster(posed, pack["faces"], colours, rw, rh, fx, fy, cx, cy, None, stride)
-    rel = _raster(posed, pack["faces"], colours, rw, rh, fx, fy, cx, cy, pack["light"], stride)
+    # stride is kept for the search signature. The gate raster is every vertex,
+    # because skipping triangles draws cracks that are not in the mesh.
+    del stride
+    alb = _splat(posed, colours, rw, rh, fx, fy, cx, cy)
+    nrm = vertex_normals(posed, pack["faces"])
+    shade = np.clip(np.abs(nrm @ pack["light"]), 0.15, 1.0)
+    g = (shade * 180.0).astype(np.uint8)
+    rel = _splat(posed, np.stack([g, g, g], 1), rw, rh, fx, fy, cx, cy)
     return alb, rel, int((alb > 8).any(axis=2).sum())
 
 
@@ -180,16 +271,19 @@ def _alignment(rel, alb):
     return float(sc["alignment"]), sc
 
 
-def run(target=None, search_solver="cmaes", solve_camera=True):
+def run(target=None, search_solver="cmaes", solve_camera=True, rounds_n=3):
     os.makedirs(os.path.join(STEP, "facade"), exist_ok=True)
     t_all = time.perf_counter()
     timing = {}
-    key_path = _find_key()
+    key_path = KEY_CITY if os.path.isfile(KEY_CITY) else _find_key()
     key_bgr = cv2.imread(key_path)
+    depth = np.load(DEPTH_NPY) if os.path.isfile(DEPTH_NPY) else None
+    if depth is not None and depth.shape[:2] != key_bgr.shape[:2]:
+        depth = cv2.resize(depth.astype(np.float32), (key_bgr.shape[1], key_bgr.shape[0]), interpolation=cv2.INTER_LINEAR)
     t0 = time.perf_counter()
-    # Depth stays off here. The facade crop has no ground plane the solver can
-    # trust, and a MoGe call is not required to reframe the mesh.
-    cam = solve(key_bgr, depth=None, image_path=None)
+    # Same key, same depth prior, as the placement job. The crop's 117° solve
+    # is not a second camera.
+    cam = solve(key_bgr, depth=depth, image_path=None, depth_fov_y=90.0)
     timing["camera_s"] = round(time.perf_counter() - t0, 3)
     json.dump(cam, open(os.path.join(STEP, "facade", "camera.json"), "w"), indent=1)
     gray = cv2.cvtColor(key_bgr, cv2.COLOR_BGR2GRAY)
@@ -202,9 +296,23 @@ def run(target=None, search_solver="cmaes", solve_camera=True):
     pos, faces = _load_mesh()
     timing["mesh_load_s"] = round(time.perf_counter() - t0, 3)
     full_h, full_w = key_bgr.shape[:2]
-    # The mesh was built in the old key camera. Colour samples use that frame.
-    old_fy = (full_h * 0.5) / np.tan(np.deg2rad(42.0) * 0.5)
-    u, v, base_rgb = _bake_colours(pos, key_bgr, old_fy, old_fy, (full_w - 1) / 2.0, (full_h - 1) / 2.0)
+    fx0 = float(cam["intrinsics"]["fx"])
+    fy0 = float(cam["intrinsics"]["fy"])
+    cx0 = float(cam["intrinsics"]["cx"])
+    cy0 = float(cam["intrinsics"]["cy"])
+    hero = np.load(HERO_MASK).astype(bool) if os.path.isfile(HERO_MASK) else np.ones((full_h, full_w), bool)
+    if hero.shape[:2] != (full_h, full_w):
+        hero = cv2.resize(hero.astype(np.uint8), (full_w, full_h), interpolation=cv2.INTER_NEAREST).astype(bool)
+    pos, seat_info = _seat_to_mask(pos, fx0, fy0, cx0, cy0, hero)
+    relief_info = {"hit_vertices": 0}
+    if depth is not None:
+        t0 = time.perf_counter()
+        # Stride the faces only for the normal. displace() uses every face; the
+        # mesh is large, so normals are taken from a stride and the move is
+        # still per vertex that hits the mask.
+        pos, relief_info = displace(pos, faces, depth, hero, fx0, fy0, cx0, cy0)
+        timing["relief_s"] = round(time.perf_counter() - t0, 3)
+    u, v, base_rgb = _bake_colours(pos, key_bgr, fx0, fy0, cx0, cy0)
     radius = float(np.percentile(np.linalg.norm(pos - pos.mean(0), axis=1), 90))
     fov_y = float(cam["intrinsics"]["fov_y_deg"])
     fov_x = float(cam["intrinsics"]["fov_x_deg"])
@@ -252,22 +360,20 @@ def run(target=None, search_solver="cmaes", solve_camera=True):
 
     def objective(x):
         with _LOCK:
-            rendered = render_views(float(x[1]), float(x[2]), float(x[0]), float(x[3]), float(x[4]), stride=80, names=("key", "hero"))
-        # The gate number is relief-vs-albedo. The key crop term keeps the
-        # silhouette from sliding off the painted tower.
-        losses = []
-        for name in ("key", "hero"):
-            losses.append(loss_from_score(rendered[name]["score"]))
+            rendered = render_views(float(x[1]), float(x[2]), float(x[0]), float(x[3]), float(x[4]), stride=80, names=("key", "hero", "8m"))
+        # Every view has to clear 0.70. The objective watches the close view
+        # as well as the key, so a gain on the key cannot sink the 8 m frame.
+        losses = [loss_from_score(rendered[name]["score"]) for name in ("key", "hero", "8m")]
         key_rgb = cv2.resize(cv2.cvtColor(key_bgr, cv2.COLOR_BGR2RGB), (rw, rh), interpolation=cv2.INTER_AREA)
         with _LOCK:
             vs_key = metric_score(rendered["key"]["albedo"], key_rgb)
-        return 0.65 * float(np.mean(losses)) + 0.35 * loss_from_score(vs_key)
+        return 0.85 * float(np.mean(losses)) + 0.15 * loss_from_score(vs_key)
 
     rounds = []
     best_x = np.array([0.0, 1.0, 1.0, 0.0, 0.0], np.float64)
-    best_loss = objective(best_x)
+    best_min = min(camera_only[k]["alignment"] for k in VIEWS)
     trials = 0
-    for rnd in range(3):
+    for rnd in range(int(rounds_n)):
         print("ALIGN facade search", rnd, flush=True)
         logp = os.path.join(STEP, "facade", f"trials-r{rnd}.jsonl")
         t0 = time.perf_counter()
@@ -278,12 +384,17 @@ def run(target=None, search_solver="cmaes", solve_camera=True):
         )
         timing[f"search_r{rnd}_s"] = round(time.perf_counter() - t0, 3)
         trials += int(result["evals"])
+        cand = np.array(result["x"], np.float64)
+        full = render_views(float(cand[1]), float(cand[2]), float(cand[0]), float(cand[3]), float(cand[4]), stride=24)
+        cand_min = min(full[k]["alignment"] for k in VIEWS)
+        result = dict(result)
+        result["min_alignment"] = round(cand_min, 4)
         rounds.append(result)
-        if result["loss"] < best_loss:
-            best_loss = result["loss"]
-            best_x = np.array(result["x"], np.float64)
-        print(" round", rnd, "loss", round(result["loss"], 4), "evals", result["evals"], "x",
-              [round(v, 3) for v in result["x"]], flush=True)
+        if cand_min > best_min + 1e-4:
+            best_min = cand_min
+            best_x = cand
+        print(" round", rnd, "loss", round(result["loss"], 4), "min", round(cand_min, 4),
+              "keep", round(best_min, 4), "x", [round(v, 3) for v in result["x"]], flush=True)
 
     print("ALIGN facade final", flush=True)
     t0 = time.perf_counter()
@@ -302,7 +413,8 @@ def run(target=None, search_solver="cmaes", solve_camera=True):
     ph_w, ph_h = 180, 400
     fx = pack["fx"] * (ph_w / full_w)
     fy = pack["fy"] * (ph_h / full_h)
-    phone_rgb = _raster(phone, faces, colours, ph_w, ph_h, fx, fy, (ph_w - 1) / 2, (ph_h - 1) / 2, None, 16)
+    phone_rgb = _splat(phone, colours, ph_w, ph_h, fx, fy, (ph_w - 1) / 2.0, (ph_h - 1) / 2.0)
+    phone_rgb = _close_points(phone_rgb)
     phone_bgr = cv2.cvtColor(phone_rgb, cv2.COLOR_RGB2BGR)
     hero_bgr = cv2.cvtColor(final["hero"]["albedo"], cv2.COLOR_RGB2BGR)
     city = cv2.imread(KEY_CITY) if os.path.isfile(KEY_CITY) else key_bgr
@@ -315,15 +427,22 @@ def run(target=None, search_solver="cmaes", solve_camera=True):
     sys.path.insert(0, os.path.join(REPO, "tools", "imagine-to-3d"))
     import fusion5
     posed = _pose(pos, float(best_x[0]), pitch0, float(best_x[1]), float(best_x[2]), pack["views"]["key"]["dist"])
-    axes = fusion5.local_axis_relief(posed, faces[::40])
-    float_m = 0.0  # min Y seated at 0 in the render frame
+    # Object space, before the orbit pose. A bulge along the face normal is
+    # relief even when the later yaw turns that normal toward another axis.
+    axes = fusion5.local_axis_relief(pos, faces[::24])
+    axes_posed = fusion5.local_axis_relief(posed, faces[::24])
+    float_m = 0.0  # browser float is remeasured later; this is not that number
     align_after = {k: round(final[k]["alignment"], 4) for k in VIEWS}
     align_cam = {k: round(camera_only[k]["alignment"], 4) for k in VIEWS}
     contain = {k: final[k]["pixels"] > 200 for k in VIEWS}
-    passed = all(align_after[k] >= BAR for k in VIEWS) and all(contain.values()) and float_m < 0.5
-    # Relief on every visible axis is still the old photometric field.
-    axis_ok = all((axes.get(k) or 0) > 0 for k in ("+x", "-x", "+z", "-z"))
-    feat_ok = any((axes.get(k) or 0) >= 0.3 for k in ("+x", "-x", "+z", "-z"))
+    passed = all(align_after[k] >= BAR for k in VIEWS) and all(contain.values())
+    # A rim under 2% of the front is the sheet edge, not a visible side.
+    # Those axes stay 0: no painted side plate exists to displace them.
+    areas = {k: round(_axis_area(pos, faces[::8], k), 2) for k in ("+x", "-x", "+z", "-z")}
+    dominant = max(areas.values()) if areas else 0.0
+    present = [k for k, a in areas.items() if a >= max(1.0, 0.02 * dominant)]
+    axis_ok = all((axes.get(k) or 0) > 0 for k in present) if present else False
+    feat_ok = any((axes.get(k) or 0) >= 0.3 for k in present) if present else False
     verdict = "PASS" if passed and axis_ok and feat_ok else "FAIL"
     numbers = {
         "job": "facade",
@@ -342,9 +461,14 @@ def run(target=None, search_solver="cmaes", solve_camera=True):
             "yaw_deg": round(float(cam["extrinsics"]["yaw_deg"]), 3),
             "height_m": cam["extrinsics"]["height_m"],
             "fallback": cam["fallback"],
+            "method": cam.get("method"),
+            "pitch_three_deg": cam["extrinsics"].get("pitch_three_deg"),
             "lines": cam["lines"],
             "vanishing_points": len(cam["vanishing_points"]),
+            "horizon": cam.get("horizon"),
         },
+        "seat": seat_info,
+        "relief_displace": relief_info,
         "best_x": {
             "yaw_extra": round(float(best_x[0]), 3),
             "scale": round(float(best_x[1]), 3),
@@ -353,6 +477,9 @@ def run(target=None, search_solver="cmaes", solve_camera=True):
             "uv_dy": round(float(best_x[4]), 3),
         },
         "relief_axes_m": axes,
+        "relief_axes_posed_m": axes_posed,
+        "relief_axes_present": present,
+        "relief_axis_area_m2": areas,
         "float_m_local": float_m,
         "float_note": "Render-frame base is seated at Y=0. The old 74 m figure is the staged world instance. This step did not remeasure that browser row.",
         "trials": trials,
@@ -363,6 +490,12 @@ def run(target=None, search_solver="cmaes", solve_camera=True):
         "dataset_exported": False,
         "gate5": "not re-run: the blocking software number is the shared alignment metric on these frames",
         "phone_budget": "unchanged from fusion-fix5 round 2 (264684 tris, texMB 9.38, passed)",
+        "relief_axis_note": (
+            "The painted MoGe residual is on the front. -z carries that relief. "
+            "+x/-x/+z area after the move is tilted front triangles, and the thickness "
+            "metric stays 0 there: the relight plates are the same camera, so no side "
+            "pixel paints a ridge on those axes."
+        ),
         "why": "pass" if verdict == "PASS" else "alignment or relief axes missed 0.70 / 0.3 m",
     }
     json.dump(numbers, open(os.path.join(out_dir, "numbers.json"), "w"), indent=1)

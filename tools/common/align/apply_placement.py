@@ -31,22 +31,31 @@ from geom import Cam, av_xz, iou, xz_av
 from score import placed_iou_from_rows
 
 PREV = os.path.join(REPO, "steps", "placement-key2-1011")
-STEP = os.path.join(REPO, "steps", "align-solve-1011", "placement")
+STEP = os.environ.get("ALIGN_PLACE_OUT", os.path.join(REPO, "steps", "week2-1011", "placement"))
 KEY = "/workspace/zb-bible-1008/key-city3.jpg"
 KINDS = ("tower", "spire", "mesa")
 BEFORE_IOU = 0.3763
 
 
 def _cam_from_solve(cam_json, fallback):
+    """Intrinsics and pitch from the shared solve. World x/yaw/z stay the key seat.
+
+    placement Cam pitch matches three.js (positive looks up). The solve stores
+    that on pitch_three_deg. Eye height is the MoGe ground plane when it is sane.
+    """
     intr = cam_json["intrinsics"]
     ext = cam_json["extrinsics"]
     h = ext.get("height_m")
     eye = float(fallback["eye"])
-    if h is not None and 0.5 <= float(h) <= 40:
+    if h is not None and 0.4 <= float(h) <= 40:
         eye = float(h)
+    if ext.get("pitch_three_deg") is not None:
+        pitch = float(ext["pitch_three_deg"])
+    else:
+        pitch = -float(ext["pitch_deg"])
     return Cam(
         fallback["x"], eye, fallback["z"],
-        fallback["yaw"], float(ext["pitch_deg"]),
+        fallback["yaw"], pitch,
         float(intr["fov_y_deg"]), 1280, 720,
     )
 
@@ -139,7 +148,13 @@ def run():
     by_mask = {i["id"]: i for i in masks["instances"]}
     bgr = cv2.imread(KEY)
     t0 = time.perf_counter()
-    cam_json = solve(bgr, depth=depth, image_path=None)
+    depth_fov_y = 90.0
+    meta_path = os.path.join(PREV, "depth-moge.json")
+    if os.path.isfile(meta_path):
+        fov_x = float(json.load(open(meta_path)).get("fovX") or 0.0)
+        if fov_x > 1.0:
+            depth_fov_y = float(np.rad2deg(2 * np.arctan(np.tan(np.deg2rad(fov_x) * 0.5) * (720.0 / 1280.0))))
+    cam_json = solve(bgr, depth=depth, image_path=None, depth_fov_y=depth_fov_y)
     timing["camera_s"] = round(time.perf_counter() - t0, 3)
     json.dump(cam_json, open(os.path.join(STEP, "camera.json"), "w"), indent=1)
     overlay(cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY), cam_json, os.path.join(STEP, "vp-overlay.jpg"))
@@ -226,11 +241,22 @@ def run():
               open(os.path.join(STEP, "placed.json"), "w"), indent=1)
 
     shot_note = "not taken"
-    phone_path = os.path.join(REPO, "steps", "align-solve-1011", "placement-sheet-phone.jpg")
+    phone_path = os.path.join(REPO, "steps", "week2-1011", "placement-sheet-phone.jpg")
+    layout_path = None
+    params_path = None
+    backups = []
     try:
         import place
+        import shutil
         place._refuse_live(place.STAGE)
-        layout = place.load_json(os.path.join(place.STAGE, "objects1", "layout.json"))
+        layout_path = os.path.join(place.STAGE, "objects1", "layout.json")
+        params_path = os.path.join(place.STAGE, "mesas", "kc-params.json")
+        for src in (layout_path, params_path):
+            if os.path.isfile(src):
+                bak = src + ".week2-bak"
+                shutil.copy(src, bak)
+                backups.append((src, bak))
+        layout = place.load_json(layout_path)
         # Patch seats that exist on the staged layout. Unknown ids stay.
         by_id = {r["id"]: r for r in rows}
         for t in layout.get("towers", []):
@@ -246,7 +272,6 @@ def run():
             layout["spire"]["lateral"] = r["lateral"]
             layout["spire"]["yaw"] = r["yaw"]
             layout["spire"]["scale"] = r["scale"]
-        params_path = os.path.join(place.STAGE, "mesas", "kc-params.json")
         if os.path.isfile(params_path):
             params = place.load_json(params_path)
             for m in params.get("layout", []):
@@ -270,16 +295,49 @@ def run():
         phone = cv2.imread(png)
         wide_bgr = cv2.imread(wide)
         cv2.imwrite(phone_path, gn_sheet.sheet_phone(phone, wide_bgr, bgr))
+        from score import score_render
+        from geom import Cam as ShotCam
+        wide_meta = json.load(open(wide.replace(".png", ".json")))
+        st = wide_meta.get("cam") or {}
+        used = ShotCam(
+            float(st.get("x", shot_cam["x"])),
+            float(st.get("y", shot_cam["eye"])),
+            float(st.get("z", shot_cam["z"])),
+            float(st.get("yaw", shot_cam["yaw"])),
+            float(st.get("pitch", shot_cam["pitch"])),
+            float(shot_cam["fov"]), 1280, 720,
+        )
+        software_used = _score_objects(used, rows, labels)
+        framebuffer = score_render(wide, labels, masks["instances"])
+        numbers_extra = {
+            "shot_camera": st,
+            "software_iou_at_shot_camera": round(software_used["placedWeighted"], 4),
+            "software_inversions_at_shot_camera": software_used["inversions"],
+            "framebuffer_placedWeighted": framebuffer.get("placedWeighted"),
+            "framebuffer_skyTop": (framebuffer.get("frame") or {}).get("skyTop"),
+            "framebuffer_depthOrder": framebuffer.get("depthOrder"),
+        }
         shot_note = "staging shot on 127.0.0.1:8997"
     except Exception as exc:
+        numbers_extra = {}
         shot_note = "shot failed: " + str(exc)[:400]
         sys.path.insert(0, os.path.join(REPO, "tools", "grok-native"))
         import sheet as gn_sheet
         paint = cv2.cvtColor(final["paint"], cv2.COLOR_GRAY2BGR)
         cv2.imwrite(phone_path, gn_sheet.sheet_phone(paint, paint, bgr))
         print("ALIGN placement shot", shot_note, flush=True)
+    finally:
+        import shutil as _shutil
+        for src, bak in backups:
+            if os.path.isfile(bak):
+                _shutil.copy(bak, src)
+                os.remove(bak)
 
-    verdict = "PASS" if final["placedWeighted"] >= 0.75 and final["inversions"] == 0 else "FAIL"
+    fb_iou = numbers_extra.get("framebuffer_placedWeighted")
+    shot_inv = numbers_extra.get("software_inversions_at_shot_camera", final["inversions"])
+    verdict = "PASS" if (
+        fb_iou is not None and fb_iou >= 0.75 and final["inversions"] == 0 and shot_inv == 0
+    ) else "FAIL"
     numbers = {
         "job": "placement",
         "verdict": verdict,
@@ -310,6 +368,7 @@ def run():
     }
     # fix the silly yaw line
     numbers["camera"]["yaw_deg_world"] = KEY_CAM["yaw"]
+    numbers.update(numbers_extra)
     json.dump(numbers, open(os.path.join(STEP, "numbers.json"), "w"), indent=1)
     print("ALIGN placement", verdict, round(final["placedWeighted"], 4), shot_note, flush=True)
     return 0 if verdict == "PASS" else 1
