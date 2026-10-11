@@ -584,7 +584,83 @@ def _add_sand(parts, xy_y0, y1, sink, drift_m):
         [xmax + margin - 0.08, xy_y0 + drift, -0.06]), 2)
 
 
-def massing(doc, da_steps=None):
+def _inset_poly(poly, dist=0.003):
+    p = np.asarray(poly, np.float64)
+    if len(p) > 1 and np.linalg.norm(p[0] - p[-1]) < 1e-4:
+        p = p[:-1]
+    c = p.mean(axis=0)
+    d = p - c
+    n = np.linalg.norm(d, axis=1, keepdims=True) + 1e-9
+    step = np.minimum(dist, (n * 0.25).ravel())
+    return p - d / n * step[:, None]
+
+
+def _orient_ccw(p):
+    area = 0.0
+    for i in range(len(p)):
+        x1, y1 = p[i]
+        x2, y2 = p[(i + 1) % len(p)]
+        area += x1 * y2 - x2 * y1
+    if area < 0:
+        return p[::-1]
+    return p
+
+
+def _extrude_poly(poly, z0, z1):
+    """Closed shell. Top faces +Z. A 3 mm inset is applied by the caller so a weld stays manifold."""
+    p = np.asarray(poly, np.float64)
+    if len(p) > 1 and np.linalg.norm(p[0] - p[-1]) < 1e-4:
+        p = p[:-1]
+    if len(p) < 3 or z1 - z0 < 0.01:
+        return np.zeros((0, 3)), np.zeros((0, 3), np.int32)
+    p = _orient_ccw(p)
+    tris = _ear_clip(p)
+    if len(tris) < 1:
+        c = p.mean(0)
+        if not _pip(float(c[0]), float(c[1]), p):
+            return np.zeros((0, 3)), np.zeros((0, 3), np.int32)
+        p = np.concatenate([p, c.reshape(1, 2)], 0)
+        n0 = len(p) - 1
+        tris = [(n0, i, (i + 1) % n0) for i in range(n0)]
+    n = len(p)
+    bot = np.concatenate([p, np.full((n, 1), z0)], 1)
+    top = np.concatenate([p, np.full((n, 1), z1)], 1)
+    V = np.concatenate([bot, top], 0)
+    F = []
+    for a, b, c in tris:
+        F.append([a, c, b])
+        F.append([n + a, n + b, n + c])
+    for i in range(n):
+        j = (i + 1) % n
+        F.append([i, j, n + j])
+        F.append([i, n + j, n + i])
+    return V, np.asarray(F, np.int32)
+
+
+def _add_segments(parts, segments):
+    """Proud plates for positive depth_cm. Negative depth_cm is one cutter, cited by segment id."""
+    cutter_V, cutter_F, off = [], [], 0
+    for seg in segments:
+        cm = float(seg["depth_cm"])
+        poly = seg["poly_m"]
+        if cm <= -1.0:
+            V, F = _extrude_poly(poly, cm / 100.0, 0.9)
+            if len(F) == 0:
+                continue
+            cutter_V.append(V)
+            cutter_F.append(F + off)
+            off += len(V)
+            continue
+        if cm < 2.0:
+            continue
+        V, F = _extrude_poly(_inset_poly(poly), 0.02, cm / 100.0)
+        _append(parts, V, F, 1)
+    if not cutter_V:
+        return None
+    return np.concatenate(cutter_V, 0), np.concatenate(cutter_F, 0)
+
+
+def massing(doc, da_steps=None, segments=None):
     """Silhouette prism + wedge back + buried sand apron + feature shells.
 
     Damage is a cutter box (Blender boolean). Chrome / ladder / cable shells
@@ -641,8 +717,8 @@ def massing(doc, da_steps=None):
             continue
         if kind not in ("chrome", "ladder", "cable"):
             continue
-        # Region relief from the painted plate replaces the one-box shells.
-        if da_steps is not None:
+        # Segment plates replace the one-box shells and the 2 m depth bands.
+        if da_steps is not None or segments is not None:
             continue
         proud = float(feat.get("depth_m", 0.35)) if float(feat.get("relative_depth", 0.5)) >= 0.5 else 0.0
         if proud <= 0 or yb - ya < 0.3:
@@ -663,7 +739,10 @@ def massing(doc, da_steps=None):
         if b - a < 0.12:
             continue
         _append(parts, *_box([a, ya, 0.02], [b, yb, proud]), 1)
-    if da_steps:
+    cutter = None
+    if segments:
+        cutter = _add_segments(parts, segments)
+    elif da_steps:
         _add_da_steps(parts, xy, depth, da_steps, hole)
     drift = 1.0
     sand = doc.get("sand") or {}
@@ -672,7 +751,7 @@ def massing(doc, da_steps=None):
     _add_sand(parts, y0, y1, sink, drift)
     V, F, M = _merge(parts)
     meta = dict(x=[x0, x1], y=[y0, y1], depth=depth, sink=sink, taper=taper, hole=hole,
-                tris=int(len(F)))
+                tris=int(len(F)), cutter=cutter, span=[float(x0), float(y0), float(y1)])
     return (V, F, M), meta
 
 

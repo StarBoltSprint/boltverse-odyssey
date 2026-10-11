@@ -44,17 +44,25 @@ def counts(ob):
     return open_e, nm, tris
 
 
-def assign_uv(ob, xspan, yspan, depth):
+def assign_uv(ob, xspan, yspan, depth, span=None):
     """Front and back stay on the projection UV (1 unit = tower height).
 
     Every other face uses an orthonormal frame in the polygon, also in metres
     per tower-height. The old side map stored only -z, so the tapered wedge
     stretched in X (gate p95 1.312 on +x).
+
+    Blender's glTF exporter writes glTF v = 1 - blender v. Blender v = 0 at the
+    foot therefore becomes glTF v = 1, and glTF v = 0 is the top of the facade.
+    The runtime must load the atlas with flipY false. span is the facade
+    (x0, y0, y1), not the sand AABB.
     """
     import mathutils
     me = ob.data
-    x0, x1 = xspan
-    y0, y1 = yspan
+    if span is not None:
+        x0, y0, y1 = [float(v) for v in span]
+    else:
+        x0, x1 = xspan
+        y0, y1 = yspan
     h = max(1e-6, y1 - y0)
     if not me.uv_layers:
         me.uv_layers.new(name="UV")
@@ -90,11 +98,27 @@ def main():
     V = np.asarray(z["V"], np.float64)
     F = np.asarray(z["F"], np.int32)
     hole = z["hole"] if "hole" in z.files else None
+    span = z["span"] if "span" in z.files else None
     clear()
     ob = mesh_from(V, F, "tower-hero")
     cut = False
     note = ""
-    if hole is not None and len(hole) == 5 and float(hole[4]) > 0:
+    if "cutterV" in z.files and len(z["cutterV"]):
+        c = mesh_from(np.asarray(z["cutterV"], np.float64), np.asarray(z["cutterF"], np.int32), "cutter")
+        bpy.context.view_layer.objects.active = ob
+        ob.select_set(True)
+        mod = ob.modifiers.new("damage", "BOOLEAN")
+        mod.operation = "DIFFERENCE"
+        mod.object = c
+        mod.solver = "FLOAT"
+        try:
+            bpy.ops.object.modifier_apply(modifier="damage")
+            cut = True
+        except Exception as e:
+            note = f"segment cutter failed: {e}"
+            ob.modifiers.remove(mod)
+        bpy.data.objects.remove(c, do_unlink=True)
+    elif hole is not None and len(hole) == 5 and float(hole[4]) > 0:
         xa, ya, xb, yb, depth = [float(v) for v in hole]
         # cutter enters through the front skin and stops inside the volume
         c = mesh_from(
@@ -127,7 +151,7 @@ def main():
     x0, x1 = float(V[:, 0].min()), float(V[:, 0].max())
     y0, y1 = float(V[:, 1].min()), float(V[:, 1].max())
     depth = float(-V[:, 2].min()) or 1.0
-    assign_uv(ob, (x0, x1), (y0, y1), depth)
+    assign_uv(ob, (x0, x1), (y0, y1), depth, span=span)
     open_e, nm, tris = counts(ob)
     # UVs are already written in the numpy frame (Y up, +Z toward). Blender is Z-up
     # and the glTF exporter maps (x, y, z) -> (x, z, -y). Rewrite the coordinates

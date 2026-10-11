@@ -1021,3 +1021,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Not applied. Widening the plinth was left alone because extra pixels beside the key mask can drop the rect IoU. |
 | Guard | object-gate rows `grounding (no floating)`, `facade relief >= 0.3 m`, and `facade crispness` in `/tmp/og-tower-hero/report.md`. Same rows as the 2026-10-09 entry. |
 | Sources | `/tmp/og-tower-hero/tower-hero/grounding.json`, `geometry.json`. |
+
+### 2026-10-11 — watershed dams leave the facade on one 8 cm plane
+
+| | |
+| --- | --- |
+| Take | SPEC-I23D-FUSION-1011, front facade only. |
+| Defect | Relief edges miss the painted window lines. UV F 0.5228. Gate hero overlap 0.421. Sheet 8 m F 0.661, 30 m F 0.427, raking min precision 0.635. |
+| Root cause | OpenCV watershed keeps a label-0 dam between regions. `fusion._adjacency` only links two positive labels, and only across columns. The dams break the link, so graph colour assigned 8 cm to 97 of 102 segments. Depth Anything is normal tilt only. The one rebake flattened the atlas gutter and the same miss remained. |
+| Fix | Not applied. Stop after two failures of this alignment miss. No second mesh. |
+| Guard | object-gate row `relief-texture alignment` (min of the two precisions, bar 0.70) in `/workspace/zb-tower-fusion-1011/gate/report.md`. UV score in `/workspace/zb-tower-fusion-1011/REPORT.md`. No new check id. |
+| Sources | `tools/imagine-to-3d/fusion.py` (`_adjacency`, `graph_color`). `vision/tower.json` depth counts. `sheet-phone.jpg`. |

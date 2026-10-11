@@ -232,11 +232,16 @@ def _apply_hole(img, doc, hole):
     return out
 
 
-def blender_seal(V, F, hole, glb, report):
+def blender_seal(V, F, hole, glb, report, cutters=None, span=None):
     npz = glb + ".npz"
     kw = dict(V=np.asarray(V, np.float64), F=np.asarray(F, np.int32))
-    if hole is not None:
+    if hole is not None and cutters is None:
         kw["hole"] = np.asarray(hole, np.float64)
+    if cutters is not None:
+        kw["cutterV"] = np.asarray(cutters[0], np.float64)
+        kw["cutterF"] = np.asarray(cutters[1], np.int32)
+    if span is not None:
+        kw["span"] = np.asarray(span, np.float64)
     np.savez(npz, **kw)
     r = subprocess.run(["nice", "-n", "10", BLENDER, "-b", "-P", os.path.join(HERE, "vision_mesh.py"), "--", npz, glb, report],
                        capture_output=True, text=True)
@@ -837,3 +842,27 @@ def stage_page(spec):
     open(os.path.join(out, "index-tower3.html"), "w").write(idx)
     open(os.path.join(out, ".i23d-staging"), "w").write("vision stage staging; the live page must not load this folder\n")
     return dict(dir=out, page="index-tower3.html", dropped=sorted(drop))
+
+
+def fusion_phase1(work="/workspace/i23d-auto/zoneb-tower-vision", rules_path=None):
+    """Front facade only. Does not call execute() and does not rebuild the other faces.
+
+    Prepare writes the overlay. Build runs once segment-rules.json exists.
+    A dropped near plate is registered by phase 2 and is not generated here.
+    """
+    import fusion
+    vis = os.path.join(work, "vision")
+    os.makedirs(vis, exist_ok=True)
+    prep = None
+    if not os.path.exists(os.path.join(vis, "front-labels.npy")):
+        prep = fusion.prepare(work)
+    rules_path = rules_path or os.path.join(vis, "segment-rules.json")
+    if not os.path.exists(rules_path):
+        return {"stage": "prepared", "prep": prep, "awaiting": rules_path}
+    built = fusion.build(work, rules_path)
+    return {"stage": "built", "prep": prep, "built": built}
+
+
+if __name__ == "__main__":
+    work = sys.argv[1] if len(sys.argv) > 1 else "/workspace/i23d-auto/zoneb-tower-vision"
+    print(json.dumps(fusion_phase1(work), default=str)[:4000])

@@ -54,7 +54,12 @@ def main():
     c = Image.new("RGB", (64, 64), (30, 30, 30)); d3 = ImageDraw.Draw(c); d3.rectangle((40, 8, 44, 56), fill=(220, 220, 220))
     off = overlap(a, c)
     assert off["ok"] is False, off
-    print("PASS vision_st", json.dumps({"tris": rep["tris"], "align": good["overlap"], "offset": off["overlap"]}))
+    import fusion
+    marker = fusion.vflip_marker()
+    assert marker["ok"], marker
+    mjs = open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "runtime", "vision-tower.mjs")).read()
+    assert "albedo.flipY = false" in mjs and "normal.flipY = false" in mjs, "runtime flipY"
+    print("PASS vision_st", json.dumps({"tris": rep["tris"], "align": good["overlap"], "offset": off["overlap"], "vflip": marker["top"]}))
 
 if __name__ == "__main__":
     main()

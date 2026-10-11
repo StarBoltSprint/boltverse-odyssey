@@ -16,8 +16,18 @@ let scene = null;
 const orig = renderer.render.bind(renderer);
 renderer.render = function (s, c) {
   if (s && s.isScene && !scene) scene = s;
-  // Object-gate sets __ogTags before any script. Key-compare does not. Lock only the key shot.
-  if (Q.has("visionKey") && !window.__ogTags && !window.__visionFree && c && c.isPerspectiveCamera && meta.keycam) {
+  if (window.__fusionCam && c && c.isPerspectiveCamera) window.__fusionCam.value.copy(c.position);
+  if (window.__fusionPose && c && c.isPerspectiveCamera) {
+    const p = window.__fusionPose;
+    c.matrixAutoUpdate = true;
+    c.position.set(p.x, p.y, p.z);
+    c.up.set(0, 1, 0);
+    c.lookAt(p.tx, p.ty, p.tz);
+    if (p.fov) c.fov = p.fov;
+    c.updateProjectionMatrix();
+    c.updateMatrixWorld(true);
+    if (window.__fusionCam) window.__fusionCam.value.copy(c.position);
+  } else if (Q.has("visionKey") && !window.__ogTags && !window.__visionFree && c && c.isPerspectiveCamera && meta.keycam) {
     c.matrixAutoUpdate = false;
     c.matrix.fromArray(meta.keycam.mw);
     c.matrix.decompose(c.position, c.quaternion, c.scale);
@@ -31,19 +41,25 @@ renderer.render = function (s, c) {
 for (let i = 0; i < 4; i++) await new Promise((r) => requestAnimationFrame(r));
 if (!scene) throw new Error("vision tower: no scene");
 
-const gltf = await new GLTFLoader().loadAsync("./objects1/vision/tower.glb");
+const gltf = await new GLTFLoader().loadAsync("./objects1/vision/tower.glb?v=fusion");
 let src = null;
 gltf.scene.traverse((o) => { if (!src && o.isMesh) src = o; });
 const aniso = renderer.capabilities.getMaxAnisotropy();
-const albedo = new THREE.TextureLoader().load("./objects1/vision/albedo.png");
+const albedo = new THREE.TextureLoader().load("./objects1/vision/albedo.png?v=fusion");
 albedo.colorSpace = THREE.SRGBColorSpace;
 albedo.anisotropy = aniso;
+albedo.flipY = false;
+albedo.wrapS = THREE.ClampToEdgeWrapping;
+albedo.wrapT = THREE.ClampToEdgeWrapping;
 albedo.minFilter = THREE.LinearMipmapLinearFilter;
 albedo.magFilter = THREE.LinearFilter;
 albedo.generateMipmaps = true;
-const normal = new THREE.TextureLoader().load("./objects1/vision/normal.png");
+const normal = new THREE.TextureLoader().load("./objects1/vision/normal.png?v=fusion");
 normal.colorSpace = THREE.NoColorSpace || THREE.LinearSRGBColorSpace;
 normal.anisotropy = aniso;
+normal.flipY = false;
+normal.wrapS = THREE.ClampToEdgeWrapping;
+normal.wrapT = THREE.ClampToEdgeWrapping;
 normal.minFilter = THREE.LinearMipmapLinearFilter;
 normal.magFilter = THREE.LinearFilter;
 normal.generateMipmaps = true;
@@ -57,6 +73,52 @@ const relief = new THREE.MeshStandardMaterial({
   emissive: new THREE.Color(0x000000),
 });
 const unlit = new THREE.MeshBasicMaterial({ map: albedo });
+// Phase 2 only. A missing or unready plate must not touch the lit shader.
+let nearDoc = { ready: false };
+try {
+  const nr = await fetch("./objects1/vision/near.json?v=fusion");
+  if (nr.ok) nearDoc = await nr.json();
+} catch (e) { nearDoc = { ready: false }; }
+if (nearDoc && nearDoc.ready) {
+  const nearTex = new THREE.TextureLoader().load("./objects1/vision/near-atlas.png?v=fusion");
+  nearTex.flipY = false;
+  nearTex.colorSpace = THREE.SRGBColorSpace;
+  nearTex.wrapS = THREE.ClampToEdgeWrapping;
+  nearTex.wrapT = THREE.ClampToEdgeWrapping;
+  const fade = nearDoc.crossfade_m || [40, 15];
+  const uCam = { value: new THREE.Vector3() };
+  window.__fusionCam = uCam;
+  lit.onBeforeCompile = (sh) => {
+    sh.uniforms.uNear = { value: nearTex };
+    sh.uniforms.uCam = uCam;
+    sh.uniforms.uFade0 = { value: fade[0] };
+    sh.uniforms.uFade1 = { value: fade[1] };
+    sh.vertexShader = sh.vertexShader
+      .replace("#include <common>", "#include <common>\nvarying vec3 vFusionWorld;")
+      .replace("#include <project_vertex>", `#include <project_vertex>
+vec4 fusionWp = vec4( transformed, 1.0 );
+#ifdef USE_INSTANCING
+fusionWp = instanceMatrix * fusionWp;
+#endif
+fusionWp = modelMatrix * fusionWp;
+vFusionWorld = fusionWp.xyz;`);
+    sh.fragmentShader = sh.fragmentShader
+      .replace("#include <common>", `#include <common>
+uniform sampler2D uNear;
+uniform vec3 uCam;
+uniform float uFade0;
+uniform float uFade1;
+varying vec3 vFusionWorld;`)
+      .replace("#include <map_fragment>", `#include <map_fragment>
+{
+  float fusionDist = distance(uCam, vFusionWorld);
+  float fusionK = smoothstep(uFade0, uFade1, fusionDist);
+  vec4 fusionNear = texture2D(uNear, vMapUv);
+  diffuseColor.rgb = mix(diffuseColor.rgb, fusionNear.rgb, fusionK);
+}`);
+  };
+  lit.needsUpdate = true;
+}
 const mesh = new THREE.InstancedMesh(src.geometry, lit, 1);
 mesh.name = "inst-tower-hero";
 mesh.castShadow = true;
@@ -71,6 +133,19 @@ M.setPosition(...meta.origin);
 mesh.setMatrixAt(0, M);
 mesh.instanceMatrix.needsUpdate = true;
 scene.add(mesh);
+// Grazing light, only while the relief shade is on, so a step reads as an edge.
+const rake = new THREE.DirectionalLight(0xffffff, 0);
+rake.name = "vision-rake";
+{
+  const right = new THREE.Vector3(...meta.right);
+  const up = new THREE.Vector3(...meta.up);
+  const toward = new THREE.Vector3(...meta.toward);
+  const origin = new THREE.Vector3(...meta.origin);
+  rake.position.copy(origin).addScaledVector(right, 90).addScaledVector(up, 50).addScaledVector(toward, 8);
+  rake.target.position.copy(origin).addScaledVector(up, 70);
+  scene.add(rake.target);
+}
+scene.add(rake);
 // The static shadow fit ran before this mesh existed, so the hero cast nothing.
 // Expand that ortho to the tower, and add a layer-1 caster the colour camera does not draw.
 const caster = new THREE.Mesh(src.geometry, new THREE.MeshBasicMaterial({ color: 0xffffff }));
@@ -115,6 +190,7 @@ scene.add(caster);
 const hidden = [];
 window.__setShade = (mode) => {
   mesh.material = mode === "relief" ? relief : mode === "albedo" ? unlit : lit;
+  rake.intensity = mode === "relief" ? 4.2 : 0;
   const isolate = mode === "relief" || mode === "albedo";
   if (isolate && !hidden.length) {
     scene.traverse((o) => {
