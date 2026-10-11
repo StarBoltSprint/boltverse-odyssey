@@ -24,7 +24,7 @@ From the key camera the sand only reaches about 8 m, and a downward ray never cr
 ```bash
 python3 tools/terrain-from-key/run.py            # build + gates, writes steps/terrain-key2-1011/
 python3 tools/terrain-from-key/serve.py --port 8767   # staging page beside the live preview
-node tools/terrain-from-key/capture_play.mjs <page-url> <out-dir>
+node tools/terrain-from-key/capture_play.mjs <page-url> <out-dir> [tag] [width] [height]
 ```
 
 Inputs are box paths (`/workspace/zb-bible-1008/key-city3.jpg`, `.../compare/run2/camera-key.json`, the live preview `main.mjs`). Swap them for another zone.
