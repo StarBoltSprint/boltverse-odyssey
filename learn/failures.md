@@ -999,3 +999,13 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Restore the staging layout from `stage-before-*`. Apply only a nudge: towers stay ≥ 55 m ahead and outside lateral 22, the spire ≥ 70 m and lateral 36, mesas ≥ 90 m and lateral 110. Scale stays within 0.80–1.20 of the original for a tower or the spire, and 0.90–1.10 for a mesa. Reject a frame whose sky fraction falls under 0.45 of the before frame, or whose luma falls under 0.55. Decision IoU counts tower, spire, and mesa only. |
 | Guard | `python3 tools/placement-from-key/selftest.py` rows `mesa lift cannot enter the lens`, `tower lift stays ahead of the camera`, `assignment picks the foreground mesa`. The kept pass is in `steps/placement-key-1011/REPORT.md`: placed IoU 0.351, verdict FAIL, two rounds, then stop. |
 | Sources | `tools/placement-from-key/depth_lift.py`, `score.py`, `place.py`. Discarded frames `steps/placement-key-1011/discarded-rockwall-after-16x9.png`. |
+### 2026-10-11 — checklist capture shot the loading overlay
+
+| | |
+| --- | --- |
+| Take | foundation-1011 |
+| Defect | Headless captures were saved while the page still said `Chargement… 17/20`. Checklist cameras also missed a tall tower: the walker eye stays near the ground and cannot frame a ~210 m box, and ortho cover was hardcoded to 1. |
+| Root cause | `openPage` returned after `readyExpr` and a fixed wait. The screenshot did not check the overlay text or the pixels. Checklist poses used `setPose`, which clamps pitch and parks the eye at ground + 1.6 m. |
+| Fix | Wait until no visible node says Chargement, then fail the frame in `tools/common/capture_gate.py` if it is a loading plate or empty. Frame close (8 m), low portrait, far, and ortho faces on the target AABB (`tools/common/frame_bbox.py`, `renderPose`). Perspective cover ≥ 25%. Ortho ≥ 60% and not black. |
+| Guard | `node tools/common/render_harness.mjs` (early shot FAIL, late shot PASS). `python3 tools/common/selftest.py`. Object-gate rows `capture ready` and `checklist camera framed on the target`. |
+| Sources | `tools/common/capture_gate.py`, `tools/common/frame_bbox.py`, `tools/common/render_harness.mjs`, `tools/object-gate/gate.mjs`. |
