@@ -999,3 +999,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Wait until no visible node says Chargement, then fail the frame in `tools/common/capture_gate.py` if it is a loading plate or empty. Frame close (8 m), low portrait, far, and ortho faces on the target AABB (`tools/common/frame_bbox.py`, `renderPose`). Perspective cover ≥ 25%. Ortho ≥ 60% and not black. |
 | Guard | `node tools/common/render_harness.mjs` (early shot FAIL, late shot PASS). `python3 tools/common/selftest.py`. Object-gate rows `capture ready` and `checklist camera framed on the target`. |
 | Sources | `tools/common/capture_gate.py`, `tools/common/frame_bbox.py`, `tools/common/render_harness.mjs`, `tools/object-gate/gate.mjs`. |
+
+### 2026-10-11 — free-form vision box and erosion miss the one slab
+
+| | |
+| --- | --- |
+| Take | grok-native-1011 |
+| Defect | The first vision box sat on the left cliff. After a numbered proposal picked the right cluster, GrabCut still painted the neighbour blades. Two erode checks did not split them. |
+| Root cause | A free-form box drifts to the nearest dark tower. The three blades are one connected component, so a 3×3 erode cannot separate them. |
+| Fix | Ask vision for an id on classic structure boxes. Stop after the second mask miss. Do not spend a third erode. |
+| Guard | `steps/grok-native-1011/numbers.json`: mask IoU vs SAM2 0.749, vs the fusion reference mask 0.4983. SAM2 vs that reference 0.5518. |
+| Sources | `tools/grok-native/masks.py`, `tools/grok-native/vision_api.py`, `steps/grok-native-1011/work/pick.json`, `steps/grok-native-1011/REPORT.md`. |
