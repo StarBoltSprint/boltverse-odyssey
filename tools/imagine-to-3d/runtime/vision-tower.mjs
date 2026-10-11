@@ -79,11 +79,11 @@ renderer.render = function (s, c) {
 for (let i = 0; i < 4; i++) await new Promise((r) => requestAnimationFrame(r));
 if (!scene) throw new Error("vision tower: no scene");
 
-const gltf = await new GLTFLoader().loadAsync("./objects1/vision/tower.glb?v=fusion4");
+const gltf = await new GLTFLoader().loadAsync("./objects1/vision/tower.glb?v=fusion5");
 let src = null;
 gltf.scene.traverse((o) => { if (!src && o.isMesh) src = o; });
 const aniso = renderer.capabilities.getMaxAnisotropy();
-const albedo = new THREE.TextureLoader().load("./objects1/vision/albedo.png?v=fusion4");
+const albedo = new THREE.TextureLoader().load("./objects1/vision/albedo.png?v=fusion5");
 albedo.colorSpace = THREE.SRGBColorSpace;
 albedo.anisotropy = aniso;
 albedo.flipY = false;
@@ -92,7 +92,7 @@ albedo.wrapT = THREE.ClampToEdgeWrapping;
 albedo.minFilter = THREE.LinearMipmapLinearFilter;
 albedo.magFilter = THREE.LinearFilter;
 albedo.generateMipmaps = true;
-const normal = new THREE.TextureLoader().load("./objects1/vision/normal.png?v=fusion4");
+const normal = new THREE.TextureLoader().load("./objects1/vision/normal.png?v=fusion5");
 normal.colorSpace = THREE.NoColorSpace || THREE.LinearSRGBColorSpace;
 normal.anisotropy = aniso;
 normal.flipY = false;
@@ -102,10 +102,8 @@ normal.minFilter = THREE.LinearMipmapLinearFilter;
 normal.magFilter = THREE.LinearFilter;
 normal.generateMipmaps = true;
 
-const lit = new THREE.MeshStandardMaterial({
-  map: albedo, normalMap: normal, metalness: 0.08, roughness: 0.72,
-  emissive: new THREE.Color(0x000000), emissiveIntensity: 0,
-});
+// Unlit Imagine plate. A standard material on this page read L* 0.1 and hid the facade.
+const lit = new THREE.MeshBasicMaterial({ map: albedo });
 const relief = new THREE.MeshStandardMaterial({
   color: 0x8a8a8a, normalMap: normal, metalness: 0, roughness: 1,
   emissive: new THREE.Color(0x000000),
@@ -114,11 +112,11 @@ const unlit = new THREE.MeshBasicMaterial({ map: albedo });
 // Phase 2 only. A missing or unready plate must not touch the lit shader.
 let nearDoc = { ready: false };
 try {
-  const nr = await fetch("./objects1/vision/near.json?v=fusion4");
+  const nr = await fetch("./objects1/vision/near.json?v=fusion5");
   if (nr.ok) nearDoc = await nr.json();
 } catch (e) { nearDoc = { ready: false }; }
 if (nearDoc && nearDoc.ready) {
-  const nearTex = new THREE.TextureLoader().load("./objects1/vision/near-atlas.png?v=fusion4");
+  const nearTex = new THREE.TextureLoader().load("./objects1/vision/near-atlas.png?v=fusion5");
   nearTex.flipY = false;
   nearTex.colorSpace = THREE.SRGBColorSpace;
   nearTex.wrapS = THREE.ClampToEdgeWrapping;
@@ -162,18 +160,25 @@ mesh.name = "inst-tower-hero";
 mesh.castShadow = true;
 mesh.receiveShadow = true;
 mesh.frustumCulled = false;
-const M = new THREE.Matrix4().makeBasis(
-  new THREE.Vector3(...meta.right),
-  new THREE.Vector3(...meta.up),
-  new THREE.Vector3(...meta.toward),
-);
-M.setPosition(...meta.origin);
+const M = new THREE.Matrix4();
+if (meta.cameraSpace && meta.keycam && meta.keycam.mw) {
+  // Mesh is in the key camera frame (X right, Y up, Z toward the camera, negative).
+  M.fromArray(meta.keycam.mw);
+} else {
+  M.makeBasis(
+    new THREE.Vector3(...meta.right),
+    new THREE.Vector3(...meta.up),
+    new THREE.Vector3(...meta.toward),
+  );
+  M.setPosition(...meta.origin);
+}
 mesh.setMatrixAt(0, M);
 mesh.instanceMatrix.needsUpdate = true;
 mesh.updateMatrixWorld(true);
 const fitBox = new THREE.Box3().setFromObject(mesh);
 window.__fusionFit = { min: fitBox.min.toArray(), max: fitBox.max.toArray() };
 scene.add(mesh);
+window.__visionTower = mesh;
 // Grazing light, only while the relief shade is on, so a step reads as an edge.
 const rake = new THREE.DirectionalLight(0xffffff, 0);
 rake.name = "vision-rake";

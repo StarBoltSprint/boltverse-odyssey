@@ -24,6 +24,12 @@ Chained slices, not one wide file: [`biome/docs/64-imagine-build-limits.md`](../
 
 World-locked top-down stills, about **0.90 m**, **≥ 4** variants: [`biome/docs/61-free-clearing-walk.md`](../../biome/docs/61-free-clearing-walk.md), [`biome/docs/62-open-world-zones-process.md`](../../biome/docs/62-open-world-zones-process.md). This step used **1.45 m**. The phone mag row still passed. Gate the set together: `python3 tools/assetcheck/check.py` kind `tile` (wrap seam, exposure, magnification ≤ 1 at 720×1600). Placement is `python3 tools/layout/layout.py generate` then `layout.py check`. The layout tool does not draw the tile.
 
+## other
+
+| Recipe | Commit | QC |
+| --- | --- | --- |
+| [fusion5-gltf-y-up.md](fusion5-gltf-y-up.md) — inverse of Blender's glTF Y-up conversion so a three.js camera-space mesh stays upright | this step | crispness pass after the inverse; tower gate still FAIL |
+
 ## rock
 
 | Recipe | Commit | QC |

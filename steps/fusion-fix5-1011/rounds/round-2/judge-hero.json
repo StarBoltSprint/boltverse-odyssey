@@ -1,0 +1,24 @@
+{
+ "view": "hero",
+ "errors": [
+  {
+   "feature": "window_3",
+   "type": "offset",
+   "dx_m": 0.3,
+   "dy_m": 0.1,
+   "depth_m": null
+  }
+ ],
+ "score": 0.7,
+ "usage": {
+  "model": "grok-4.3",
+  "seconds": 7.772,
+  "token_source": "auth.json",
+  "prompt_tokens": 1050,
+  "completion_tokens": 43,
+  "reasoning_tokens": 957,
+  "image_tokens": 676,
+  "cost_in_usd_ticks": 36781000,
+  "cost_usd": 0.0036781
+ }
+}

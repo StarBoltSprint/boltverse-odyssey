@@ -1,0 +1,244 @@
+{
+ "method": "fusion5",
+ "front_light": [
+  {
+   "name": "relight-front.jpg",
+   "ncc": 0.4549,
+   "action": "dropped"
+  }
+ ],
+ "iou": {
+  "vs_old_mask": 0.6831,
+  "vs_fusion_reference": 0.6077,
+  "vs_sam_hero": 0.9358
+ },
+ "leak_ok": true,
+ "leak": {
+  "0": 0,
+  "1": 0
+ },
+ "measures": {
+  "y0": 45,
+  "y1": 494,
+  "pix_h": 450,
+  "top_px": 49.5,
+  "bottom_px": 116.5,
+  "taper_deg": 4.26,
+  "bite_frac": 0.898,
+  "bite_side": "left",
+  "bite_depth_px": 42.0,
+  "height_m": 240.0,
+  "depth_m": 32.0,
+  "m_per_px": 0.5333333333333333
+ },
+ "moge": {
+  "scale": 0.11608114450836857,
+  "offset": 0.07073193876934006,
+  "cache_hit": true,
+  "model": "moge-2",
+  "licence": "MIT",
+  "da_v2": "not used in shipped output"
+ },
+ "rounds": [
+  {
+   "round": 0,
+   "cheap": {
+    "ok": false,
+    "overlap": 0.6158,
+    "precisionRelief": 0.7608,
+    "precisionTexture": 0.6158,
+    "reliefEdges": 11018,
+    "textureEdges": 13687,
+    "tolPx": 2
+   },
+   "align": null,
+   "relief_axes": null,
+   "built": false,
+   "mesh": null
+  },
+  {
+   "round": 1,
+   "cheap": {
+    "ok": false,
+    "overlap": 0.619,
+    "precisionRelief": 0.7525,
+    "precisionTexture": 0.619,
+    "reliefEdges": 11287,
+    "textureEdges": 13668,
+    "tolPx": 2
+   },
+   "align": null,
+   "relief_axes": null,
+   "built": false,
+   "mesh": null
+  },
+  {
+   "round": 2,
+   "cheap": {
+    "ok": false,
+    "overlap": 0.6195,
+    "precisionRelief": 0.7299,
+    "precisionTexture": 0.6195,
+    "reliefEdges": 11726,
+    "textureEdges": 13665,
+    "tolPx": 2
+   },
+   "align": {
+    "key": 0.5718,
+    "hero": 0.4803,
+    "30m": 0.4823,
+    "8m": 0.0,
+    "side": 0.0
+   },
+   "relief_axes": {
+    "+x": 0.0,
+    "-x": 0.0,
+    "+z": 0.0,
+    "-z": 0.591
+   },
+   "built": true,
+   "mesh": {
+    "edges": 397026,
+    "open_or_nonmanifold": 0,
+    "watertight": true,
+    "blender_validate_changed": false,
+    "blender_boundary_edges": 0,
+    "blender_nonmanifold_edges": 0,
+    "verts": 132344,
+    "faces": 264684
+   }
+  }
+ ],
+ "timing_s": {
+  "register_s": 0.0,
+  "vision_split_s": 7.744,
+  "sam_hero_s": 4.842,
+  "normals_s": 0.652,
+  "moge_s": 0.013,
+  "cheap_0_s": 21.018,
+  "cheap_1_s": 20.625,
+  "cheap_2_s": 20.954,
+  "blender_2_s": 5.315,
+  "render_2_s": 160.338
+ },
+ "vision_cost_usd": 0.021849,
+ "vision_calls": [
+  {
+   "model": "grok-4.3",
+   "seconds": 7.702,
+   "token_source": "auth.json",
+   "prompt_tokens": 970,
+   "completion_tokens": 197,
+   "reasoning_tokens": 982,
+   "image_tokens": 578,
+   "cost_in_usd_ticks": 40256000,
+   "cost_usd": 0.0040256
+  },
+  {
+   "model": "grok-4.3",
+   "seconds": 9.259,
+   "token_source": "auth.json",
+   "prompt_tokens": 1050,
+   "completion_tokens": 41,
+   "reasoning_tokens": 953,
+   "image_tokens": 676,
+   "cost_in_usd_ticks": 36631000,
+   "cost_usd": 0.0036631
+  },
+  {
+   "model": "grok-4.3",
+   "seconds": 7.772,
+   "token_source": "auth.json",
+   "prompt_tokens": 1050,
+   "completion_tokens": 43,
+   "reasoning_tokens": 957,
+   "image_tokens": 676,
+   "cost_in_usd_ticks": 36781000,
+   "cost_usd": 0.0036781
+  },
+  {
+   "model": "grok-4.3",
+   "seconds": 8.332,
+   "token_source": "auth.json",
+   "prompt_tokens": 1052,
+   "completion_tokens": 42,
+   "reasoning_tokens": 963,
+   "image_tokens": 676,
+   "cost_in_usd_ticks": 36931000,
+   "cost_usd": 0.0036931
+  },
+  {
+   "model": "grok-4.3",
+   "seconds": 5.436,
+   "token_source": "auth.json",
+   "prompt_tokens": 1052,
+   "completion_tokens": 42,
+   "reasoning_tokens": 784,
+   "image_tokens": 676,
+   "cost_in_usd_ticks": 32456000,
+   "cost_usd": 0.0032456
+  },
+  {
+   "model": "grok-4.3",
+   "seconds": 6.993,
+   "token_source": "auth.json",
+   "prompt_tokens": 1050,
+   "completion_tokens": 41,
+   "reasoning_tokens": 905,
+   "image_tokens": 676,
+   "cost_in_usd_ticks": 35431000,
+   "cost_usd": 0.0035431
+  }
+ ],
+ "phone": {
+  "device": "Galaxy S20 FE",
+  "triangles": 264684,
+  "drawCalls": 1,
+  "texMB": 9.38,
+  "fps_estimate": 43.2,
+  "limits": {
+   "drawCalls": 12,
+   "texMB": 260,
+   "residentTrisInfo": 750000
+  },
+  "pass": true
+ },
+ "python_bars": false,
+ "verdict": "FAIL",
+ "why": "align/relief/leak/mesh missed the bar",
+ "staging": {
+  "staged": true,
+  "dir": "/workspace/kc-staging/zb-tower3/objects1/vision",
+  "fov": 42.0
+ },
+ "dataset": {
+  "exported": false,
+  "count": 0,
+  "reason": "object gate FAIL (alignment and relief). Nothing written under dataset/i23d."
+ },
+ "gate": {
+  "verdict": "FAIL",
+  "report": "steps/fusion-fix5-1011/gate/report.md",
+  "align": {
+   "hero": 0.0948,
+   "30m": 0.0948,
+   "8m": 0.1385,
+   "side": 0.2116
+  },
+  "relief_m": {
+   "+x": 0,
+   "-x": 0,
+   "+z": 0,
+   "-z": 0.591
+  },
+  "crisp_pass": true,
+  "watertight": true,
+  "ground_float_m": 74.23,
+  "triangles": 264684,
+  "checklist": "records left fail; captures do not show wedge, ladder, chrome, damage, sand"
+ },
+ "sheets": [
+  "steps/fusion-fix5-1011/sheet-16x9.jpg",
+  "steps/fusion-fix5-1011/sheet-phone.jpg"
+ ]
+}

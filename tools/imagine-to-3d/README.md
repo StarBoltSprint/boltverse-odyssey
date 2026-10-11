@@ -104,3 +104,7 @@ auto-staged.
   - `layouts/ember-mesa-camera-v2.json`
   - `layouts/ember-mesa-v2-placed.json`
   - `tools/lighting/ember-mesa-*.json`
+
+## Dataset export, for training our own depth model later
+
+`fusion5.py` (`python3 tools/imagine-to-3d/auto.py run <spec> --method fusion5`) builds the zone B hero from the grok-native prism, a SAM2 mask cut against neighbour blades, and photometric relief fitted to MoGe-2. When that object passes the object gate, the same tool writes `dataset/i23d/<object-id>/<view>/`: `image.png`, metric `depth.npy` from the mesh, `normal.npy` / `normal.png`, `mask.png`, and `camera.json` (intrinsics, object-to-camera extrinsics, near, far, units m). `meta.json` names the key image, the method, and the licence of every model (MoGe-2 MIT, SAM2 Apache-2.0, Imagine plates). Views are the key camera, the gate cameras, and a 24-view orbit at two lights. A failed gate exports nothing and the report says why. Selftest: `python3 tools/imagine-to-3d/selftest/fusion5_st.py`.

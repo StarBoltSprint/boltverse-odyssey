@@ -677,7 +677,11 @@ def C_tex_mib(p):
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("cmd", choices=["run", "plan", "report"]); ap.add_argument("target")
     ap.add_argument("--stages"); ap.add_argument("--from", dest="frm"); ap.add_argument("--no-browser", action="store_true")
+    ap.add_argument("--method", default="", help="fusion5 runs the grok-native solid + SAM2 cut + photometric relief")
     a = ap.parse_args()
+    if a.method == "fusion5":
+        import fusion5
+        sys.exit(fusion5.run_cli(a.target))
     if a.cmd == "plan":
         R = Run(a.target); print("stages:", " -> ".join(STAGES)); print("browser stages:", sorted(BROWSER))
         for k, v in MANUAL.items(): print(f"manual[{k}]: {v}")

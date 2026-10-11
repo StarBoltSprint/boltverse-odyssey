@@ -1086,3 +1086,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Ask vision for an id on classic structure boxes. Stop after the second mask miss. Do not spend a third erode. |
 | Guard | `steps/grok-native-1011/numbers.json`: mask IoU vs SAM2 0.749, vs the fusion reference mask 0.4983. SAM2 vs that reference 0.5518. |
 | Sources | `tools/grok-native/masks.py`, `tools/grok-native/vision_api.py`, `steps/grok-native-1011/work/pick.json`, `steps/grok-native-1011/REPORT.md`. |
+
+### 2026-10-11 — fusion5 neighbour cut and one-axis relief miss the gate
+
+| | |
+| --- | --- |
+| Take | SPEC-I23D-FUSION-FIX5-1011. Three judge rounds, then stop. |
+| Defect | Cheap overlay stayed 0.62. Round 2 mesh is watertight, 264684 tris, relief only on −z (0.591 m). Gate alignment hero 0.0948, 30 m 0.0948, 8 m 0.1385, side 0.2116. The solid floats 74 m. Glass median depth 0.746 m; chrome, ladder, damage, cables, and ledges median 0. The play view still shows a second blade. |
+| Root cause | Neighbour boxes missed the attached blade, so a leak count of 0 left IoU vs the uncut SAM hero at 0.9358. Photometric relief was kept only inside feature boxes, and only the glass box covered enough of one axis for a non-zero median. Vision z0 places the camera-space solid off the avenue pad. A Blender glTF Y-up export also laid the first GLB on its side; the inverse feed fixed that orientation and was re-gated once. |
+| Fix | Not applied further. Round 3 is the stop. Do not export `dataset/i23d`. Do not mark the checklist. |
+| Guard | `steps/fusion-fix5-1011/gate/report.md` rows `relief-texture alignment`, `facade relief`, `grounding`, `key checklist`. Mask IoU in `steps/fusion-fix5-1011/numbers.json`. |
+| Sources | `tools/imagine-to-3d/fusion5.py`, `fusion5_blender.py`, `steps/fusion-fix5-1011/REPORT.md`. |

@@ -1,0 +1,58 @@
+{
+ "normals": {
+  "blend_face_weight": "0.35+0.55*nz",
+  "metres_per_px": 0.5333333333333333,
+  "relief_p5_m": -8.9351776278803,
+  "relief_p95_m": 5.606170988717147,
+  "relief_span_m": 14.541348616597446,
+  "lights": [
+   "relight-left.jpg",
+   "relight-right.jpg",
+   "relight-top.jpg"
+  ],
+  "dropped": [
+   {
+    "name": "relight-front.jpg",
+    "ncc": 0.4549,
+    "action": "dropped"
+   }
+  ],
+  "ncc": [
+   {
+    "name": "relight-left.jpg",
+    "ncc": 0.6853
+   },
+   {
+    "name": "relight-right.jpg",
+    "ncc": 0.8452
+   },
+   {
+    "name": "relight-top.jpg",
+    "ncc": 0.6641
+   }
+  ],
+  "median_residual": 1.1102230246251565e-16
+ },
+ "moge": {
+  "scale": 0.11608114450836857,
+  "offset": 0.07073193876934006,
+  "cache_hit": true,
+  "model": "moge-2",
+  "licence": "MIT",
+  "da_v2": "not used in shipped output"
+ },
+ "measures": {
+  "y0": 45,
+  "y1": 494,
+  "pix_h": 450,
+  "top_px": 49.5,
+  "bottom_px": 116.5,
+  "taper_deg": 4.26,
+  "bite_frac": 0.898,
+  "bite_side": "left",
+  "bite_depth_px": 42.0,
+  "height_m": 240.0,
+  "depth_m": 32.0,
+  "m_per_px": 0.5333333333333333
+ }
+}
