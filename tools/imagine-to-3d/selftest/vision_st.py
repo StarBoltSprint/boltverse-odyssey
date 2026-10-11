@@ -59,7 +59,33 @@ def main():
     assert marker["ok"], marker
     mjs = open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "runtime", "vision-tower.mjs")).read()
     assert "albedo.flipY = false" in mjs and "normal.flipY = false" in mjs, "runtime flipY"
-    print("PASS vision_st", json.dumps({"tris": rep["tris"], "align": good["overlap"], "offset": off["overlap"], "vflip": marker["top"]}))
+    # Two-tone facade: every mask pixel is labelled, and one depth cannot hold the set.
+    tone = np.zeros((48, 64, 3), np.uint8)
+    tone[:, :32] = (30, 30, 30)
+    tone[:, 32:] = (210, 210, 210)
+    tmask = np.ones((48, 64), bool)
+    tlog = []
+    tlab, _ = fusion.segment_edge_snap(tone, tmask, tlog, pct=80, min_area=8)
+    un = int((tmask & (tlab <= 0)).sum())
+    assert un == 0, (un, tlog)
+    assert int(tlab.max()) >= 2, tlog
+    disp = np.where(tlab == 1, 1.0, 2.0).astype(np.float32)
+    q, hist, ok, _med = fusion.plane_depths(tlab, disp, {}, {"features": {"front": []}}, tlog)
+    top = max(h["segments"] for h in hist)
+    assert ok and top / max(1, len(q)) <= 0.50, (hist, tlog)
+    # A face-normalized box must hit the facade strip, not the empty atlas.
+    strip = np.zeros((40, 80, 3), np.uint8)
+    strip[:, :20] = 40
+    strip[:, 16:20] = 220
+    sm = np.zeros((40, 80), bool)
+    sm[:, :20] = True
+    slab = np.ones((40, 80), np.int32)
+    slab[~sm] = 0
+    sdoc = {"features": {"front": [{"type": "chrome", "bbox_normalized": [0.70, 0.05, 0.25, 0.9], "depth_cm": 85}]}}
+    slog = []
+    _so, sk = fusion.split_feature_priors(slab, strip, sm, sdoc, slog)
+    assert any(v == "chrome" for v in sk.values()), slog
+    print("PASS vision_st", json.dumps({"tris": rep["tris"], "align": good["overlap"], "offset": off["overlap"], "vflip": marker["top"], "tone_segs": int(tlab.max()), "tone_share": round(top / len(q), 3)}))
 
 if __name__ == "__main__":
     main()

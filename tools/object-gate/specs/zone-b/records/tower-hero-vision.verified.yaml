@@ -2,26 +2,26 @@ object: tower-hero
 items:
   wedge:
     pass: false
-    by: "grok-vision 2026-10-11"
-    note: "Far (d0d0c04040cfe4e1) is a stack of orange axis-aligned boxes beside the dark neighbours, not a tapered planar blade. The crown is a stair of blocks. Low-portrait (8303010207c30383) is one broad lit face with horizontal shelves and a jagged painted seam; a second plane recedes, but the volume does not read as a blade. The proportions row passed d/w in range. This visual item does not."
-    captures: {far: "d0d0c04040cfe4e1", low-portrait: "8303010207c30383"}
+    by: "grok-vision 2026-10-11 fusion-fix"
+    note: "Far (d0d0c84000cfe4e1) is a tapered copper slab with a clean top. Proportions passed d/w, but the crown is not the key's shear. Low-portrait (838b081800000080) is inside a brown shell; only a sliver of window grid shows. Not the painted blade."
+    captures: {far: "d0d0c84000cfe4e1", low-portrait: "838b081800000080"}
   ladder:
     pass: false
-    by: "grok-vision 2026-10-11"
-    note: "Close (000086982362fce0) is sand and the dark underside of an overhang. Low-portrait has no rails, rungs, or hoops. The shelves are facade steps, not a cage. With da_steps set, the ladder shell was left out."
-    captures: {close: "000086982362fce0", low-portrait: "8303010207c30383"}
+    by: "grok-vision 2026-10-11 fusion-fix"
+    note: "Close (00009e3806c4ccf0) is sand under a brown plane. Low-portrait shows no rails, rungs, or hoops. The build logged 3 rail polygons and 0 rung pixels. The cage is not readable."
+    captures: {close: "00009e3806c4ccf0", low-portrait: "838b081800000080"}
   chrome:
     pass: false
-    by: "grok-vision 2026-10-11"
-    note: "No silver edge strip or chrome floor band reads as its own geometry. Close and low-portrait are warm orange and brown. A bright rim is a light edge, not chrome."
-    captures: {close: "000086982362fce0", low-portrait: "8303010207c30383"}
+    by: "grok-vision 2026-10-11 fusion-fix"
+    note: "Close and low-portrait do not show a silver edge strip or a chrome floor band as its own solid. The sliver of facade is painted windows."
+    captures: {close: "00009e3806c4ccf0", low-portrait: "838b081800000080"}
   damage:
     pass: false
-    by: "grok-vision 2026-10-11"
-    note: "The item is the sheared damaged crown kept in the silhouette. Far's orange mass ends in offset boxes, not the key's single shear, and the mid-shaft hole is not visible. Low-portrait crops the top into a few protruding blocks and a painted crack. No hole through the volume."
-    captures: {far: "d0d0c04040cfe4e1", low-portrait: "8303010207c30383"}
+    by: "grok-vision 2026-10-11 fusion-fix"
+    note: "Far's crown is a flat cut. The key's jagged bite is not in the silhouette. Low-portrait does not show a hole through the volume."
+    captures: {far: "d0d0c84000cfe4e1", low-portrait: "838b081800000080"}
   sand:
     pass: false
-    by: "grok-vision 2026-10-11"
-    note: "Low-portrait does not include the base. Far shows foreground sand; the hero's foot is hidden behind the nearer dark tower and does not meet the sand in frame. The close cell on the same sheet shows open dark air between the overhang and the sand. The grounding probe is -21.88 m (the mesh penetrates). The picture still has a gap."
-    captures: {low-portrait: "8303010207c30383", far: "d0d0c04040cfe4e1"}
+    by: "grok-vision 2026-10-11 fusion-fix"
+    note: "Low-portrait does not show the base. Far hides the foot behind the nearer tower. Close is sand under a brown slab with a hard horizon, not a seated joint. Grounding is -21.88 m (the mesh penetrates). The picture does not show the base seated."
+    captures: {low-portrait: "838b081800000080", far: "d0d0c84000cfe4e1"}

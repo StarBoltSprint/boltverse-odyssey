@@ -2,6 +2,7 @@
 object: tower-hero
 type: building
 vision: true
+fusionFront: true
 crop: /workspace/zb-bible-1008/key-city3.jpg
 key: /workspace/zb-bible-1008/key-city3.jpg
 heightM: 173.82

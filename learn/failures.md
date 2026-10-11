@@ -1032,3 +1032,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Not applied. Stop after two failures of this alignment miss. No second mesh. |
 | Guard | object-gate row `relief-texture alignment` (min of the two precisions, bar 0.70) in `/workspace/zb-tower-fusion-1011/gate/report.md`. UV score in `/workspace/zb-tower-fusion-1011/REPORT.md`. No new check id. |
 | Sources | `tools/imagine-to-3d/fusion.py` (`_adjacency`, `graph_color`). `vision/tower.json` depth counts. `sheet-phone.jpg`. |
+
+### 2026-10-11 — edge-snap fusion still misses 0.70 and the cutter opens the mesh
+
+| | |
+| --- | --- |
+| Take | SPEC-I23D-FUSION-FIX-1011. Cites the watershed entry above. This was the authorized geometry pass. |
+| Defect | Alignment stays under 0.70 on hero (0.3635), 30 m (0.3635), 8 m (0.419), side (0.6092), and raking (0.6421). The mesh is open (124) and non-manifold (121). Ladder rungs are 0 px. Facade relief on +z is 0.13 m. |
+| Root cause | The first run mapped face bboxes across the square atlas, so chrome and the ladder missed the blade. The second run mapped them onto the mask strip (chrome 3, ladder 7, damage 10) and the histogram share was 0.258. Depth steps still do not sit on the painted window lines. The vision damage prior of −250 cm, cut as a boolean, opened the shell. Horizontal opening on the ladder mask found no rungs. |
+| Fix | Not applied further. Two fix attempts spent. Do not run a third mesh on this same alignment miss. |
+| Guard | object-gate `relief-texture alignment` and `mesh sealed` in `/workspace/zb-tower-fusion-1011/gate/report.md`. Facade shade overlap 0.6276 in `vision/fusion-build.json`. |
+| Sources | `tools/imagine-to-3d/fusion.py` (`segment_edge_snap`, `split_feature_priors`, `plane_depths`). |

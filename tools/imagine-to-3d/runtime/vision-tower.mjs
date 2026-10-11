@@ -41,11 +41,11 @@ renderer.render = function (s, c) {
 for (let i = 0; i < 4; i++) await new Promise((r) => requestAnimationFrame(r));
 if (!scene) throw new Error("vision tower: no scene");
 
-const gltf = await new GLTFLoader().loadAsync("./objects1/vision/tower.glb?v=fusion");
+const gltf = await new GLTFLoader().loadAsync("./objects1/vision/tower.glb?v=fusion2");
 let src = null;
 gltf.scene.traverse((o) => { if (!src && o.isMesh) src = o; });
 const aniso = renderer.capabilities.getMaxAnisotropy();
-const albedo = new THREE.TextureLoader().load("./objects1/vision/albedo.png?v=fusion");
+const albedo = new THREE.TextureLoader().load("./objects1/vision/albedo.png?v=fusion2");
 albedo.colorSpace = THREE.SRGBColorSpace;
 albedo.anisotropy = aniso;
 albedo.flipY = false;
@@ -54,7 +54,7 @@ albedo.wrapT = THREE.ClampToEdgeWrapping;
 albedo.minFilter = THREE.LinearMipmapLinearFilter;
 albedo.magFilter = THREE.LinearFilter;
 albedo.generateMipmaps = true;
-const normal = new THREE.TextureLoader().load("./objects1/vision/normal.png?v=fusion");
+const normal = new THREE.TextureLoader().load("./objects1/vision/normal.png?v=fusion2");
 normal.colorSpace = THREE.NoColorSpace || THREE.LinearSRGBColorSpace;
 normal.anisotropy = aniso;
 normal.flipY = false;
@@ -76,11 +76,11 @@ const unlit = new THREE.MeshBasicMaterial({ map: albedo });
 // Phase 2 only. A missing or unready plate must not touch the lit shader.
 let nearDoc = { ready: false };
 try {
-  const nr = await fetch("./objects1/vision/near.json?v=fusion");
+  const nr = await fetch("./objects1/vision/near.json?v=fusion2");
   if (nr.ok) nearDoc = await nr.json();
 } catch (e) { nearDoc = { ready: false }; }
 if (nearDoc && nearDoc.ready) {
-  const nearTex = new THREE.TextureLoader().load("./objects1/vision/near-atlas.png?v=fusion");
+  const nearTex = new THREE.TextureLoader().load("./objects1/vision/near-atlas.png?v=fusion2");
   nearTex.flipY = false;
   nearTex.colorSpace = THREE.SRGBColorSpace;
   nearTex.wrapS = THREE.ClampToEdgeWrapping;

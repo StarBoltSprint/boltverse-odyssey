@@ -638,11 +638,25 @@ def _extrude_poly(poly, z0, z1):
 
 
 def _add_segments(parts, segments):
-    """Proud plates for positive depth_cm. Negative depth_cm is one cutter, cited by segment id."""
+    """Proud plates for positive depth_cm. Negative depth_cm is one cutter, cited by segment id.
+
+    Optional z0_m / z1_m (metres, +Z out of the facade) override the default
+    2 cm to depth_cm shell. Ladder rungs use that so they sit proud of the rails.
+    """
     cutter_V, cutter_F, off = [], [], 0
     for seg in segments:
         cm = float(seg["depth_cm"])
         poly = seg["poly_m"]
+        if "z0_m" in seg or "z1_m" in seg:
+            z0 = float(seg.get("z0_m", 0.02))
+            z1 = float(seg.get("z1_m", cm / 100.0))
+            if z1 < z0:
+                z0, z1 = z1, z0
+            V, F = _extrude_poly(_inset_poly(poly), z0, z1)
+            if len(F) == 0:
+                continue
+            _append(parts, V, F, 1)
+            continue
         if cm <= -1.0:
             V, F = _extrude_poly(poly, cm / 100.0, 0.9)
             if len(F) == 0:

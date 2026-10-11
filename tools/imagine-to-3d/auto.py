@@ -202,6 +202,36 @@ class Run:
     def s_vision(self):
         if not self.spec.get("vision"):
             return self.done("vision", "SKIP", summary="no vision: block")
+        if self.spec.get("fusionFront"):
+            import fusion
+            t0 = time.time()
+            prep = fusion.prepare(self.work)
+            built = fusion.build(self.work)
+            vis = os.path.join(self.work, "vision")
+            staging = self.spec.get("staging")
+            copied = []
+            if staging:
+                dest = os.path.join(staging, "objects1", "vision")
+                os.makedirs(dest, exist_ok=True)
+                for name in ("tower.glb", "albedo.png", "normal.png", "tower.json", "near.json"):
+                    src = os.path.join(vis, name)
+                    if os.path.exists(src):
+                        shutil.copy(src, os.path.join(dest, name))
+                        copied.append(name)
+                mjs = os.path.join(HERE, "runtime", "vision-tower.mjs")
+                if os.path.exists(mjs):
+                    shutil.copy(mjs, os.path.join(staging, "tower-fusion.mjs"))
+                    copied.append("tower-fusion.mjs")
+            ok = bool(built.get("histogram_ok"))
+            return self.done(
+                "vision", "PASS" if ok else "FAIL",
+                prep_segments=prep.get("count"), segmenter=prep.get("segmenter_log"),
+                histogram=built.get("histogram"), histogram_ok=ok,
+                shade=built.get("shade"), ladder_parts=built.get("ladder_parts"),
+                planes_cm=built.get("planes_cm"), mesh=built.get("mesh"),
+                copied=copied, minutes=round((time.time() - t0) / 60, 3),
+                summary=f"fusion front segments {prep.get('count')} shade {((built.get('shade') or {}).get('overlap'))} hist_ok {ok}",
+            )
         import vision
         t0 = time.time()
         r = vision.execute(self.spec, self.work)
@@ -475,6 +505,8 @@ class Run:
                          summary=f"R8 luma + chroma atlases {round(mib, 1)} MiB, dE mean {de['dEmean']:.2f} p99 {de['dEp99worst']:.2f}")
 
     def s_stage(self):
+        if self.spec.get("fusionFront"):
+            return self.done("stage", "PASS", summary="fusion front copied by the vision stage; index-fusion.html left in place")
         if self.spec.get("vision"):
             import vision
             info = vision.stage_page(self.spec)
