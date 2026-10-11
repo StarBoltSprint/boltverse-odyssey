@@ -1032,3 +1032,13 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | `DEFAULT_DEPTH = "moge-2"` in `tools/common/vision_models.py`. `load_default_depth` / `depth_default` refuse any other name. `depth_relief.session` and `bake_depth.py` call MoGe-2. A Large `.pth` still runs only when the path is passed on purpose, and that map is not saved into the step folder. |
 | Guard | `DEFAULT_DEPTH == "moge-2"`. `bake_depth.py` default file is `moge-2-vitl.pt`. The shipped `steps/terrain-key2-1011/height.bin` was composed with `disp=None`. |
 | Sources | `tools/common/vision_models.py`, `tools/imagine-to-3d/depth_relief.py`, `tools/relief/bake_depth.py`, `SPEC-TERRAIN-KEY2-1011.md`. |
+### 2026-10-11 — compare server joined /ref/main.mjs onto .main.mjs
+
+| | |
+| --- | --- |
+| Take | world-graph-1011 |
+| Defect | The headless page stayed on "Chargement…" with an empty error list. `main.mjs` came back HTTP 404. |
+| Root cause | `tools/world-graph/serve.mjs` joined the preview root to `"." + "main.mjs"`, which is the hidden name `.main.mjs`. The index shell was a special case, so the HTML loaded and the module did not. |
+| Fix | `resolveRoute` uses the path after the `/ref/`, `/zone/`, or `/wg/` prefix with no extra dot. |
+| Guard | `node tools/world-graph/selftest.mjs` row `compare route serves main.mjs` (resolved path equals the preview `main.mjs`). |
+| Sources | `tools/world-graph/serve.mjs`, `tools/world-graph/selftest.mjs`. |

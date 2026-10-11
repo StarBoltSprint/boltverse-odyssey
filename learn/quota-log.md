@@ -16,3 +16,4 @@ Append-only. One row per step. `python3 tools/quota/quota.py` adds the row. Do n
 | 2026-10-04 | tools-learn-20261004 | ece3195 | 0 | 0 | 0 | 0 | n/a | n/a | 2684.8 | events.jsonl |
 | 2026-10-11 | foundation-1011 | 3c066b73 | 0 | 0 | 0 | 0 | n/a | n/a | 1706.0 | events.jsonl |
 | 2026-10-11 | terrain-key2-1011 | 45e55fe7 | 0 | 0 | 0 | 0 | n/a | n/a | 2581.2 | events.jsonl |
+| 2026-10-11 | world-graph-1011 | n/a | 0 | 0 | 0 | 0 | n/a | n/a | 1557.5 | events.jsonl |
