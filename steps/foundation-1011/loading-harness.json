@@ -1,0 +1,27 @@
+{
+ "ready": true,
+ "before": {
+  "ok": false,
+  "kind": "frame",
+  "cover": 1,
+  "minCover": null,
+  "loading": true,
+  "empty": true,
+  "black": false,
+  "why": "loading screen; empty frame"
+ },
+ "after": {
+  "ok": true,
+  "kind": "frame",
+  "cover": 1,
+  "minCover": null,
+  "loading": false,
+  "empty": false,
+  "black": false,
+  "why": ""
+ },
+ "beforeDom": "Chargement… 17/20",
+ "afterDom": "",
+ "beforePath": "steps/foundation-1011/loading-before.png",
+ "afterPath": "steps/foundation-1011/loading-after.png"
+}

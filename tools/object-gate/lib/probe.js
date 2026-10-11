@@ -359,6 +359,44 @@
     restoreFx();
     return out;
   }
+  /**
+   * Checklist camera. spec comes from tools/common/frame_bbox.py:
+   * { sel, eye, target, up, fovY, orthoW, orthoH, near, far, width, height, kind }.
+   * Renders the TARGET only (other meshes hidden). Returns colour PNG, white mask PNG, cover.
+   */
+  function renderPose(spec) {
+    const { THREE, scene, renderer } = H();
+    const w = spec.width | 0, h = spec.height | 0;
+    const eye = spec.eye, target = spec.target, up = spec.up || [0, 1, 0];
+    let cam;
+    if (spec.kind === "ortho" || spec.orthoW) {
+      const hw = spec.orthoW / 2, hh = spec.orthoH / 2;
+      cam = new THREE.OrthographicCamera(-hw, hw, hh, -hh, spec.near || 0.05, spec.far || 8000);
+    } else {
+      cam = new THREE.PerspectiveCamera(spec.fovY, w / h, spec.near || 0.05, spec.far || 8000);
+    }
+    cam.up.set(up[0], up[1], up[2]);
+    cam.position.set(eye[0], eye[1], eye[2]);
+    cam.lookAt(target[0], target[1], target[2]);
+    cam.updateMatrixWorld(true);
+    const restoreFx = hideFx(null);
+    const out = withOnly(spec.sel, () => {
+      const fg = scene.fog, bg = scene.background, ov = scene.overrideMaterial;
+      scene.fog = null;
+      try {
+        const col = readRT(w, h, () => renderer.render(scene, cam));
+        const white = new THREE.MeshBasicMaterial({ color: 0xffffff, fog: false, side: THREE.DoubleSide });
+        scene.background = null; scene.overrideMaterial = white;
+        const m = readRT(w, h, () => renderer.render(scene, cam));
+        scene.background = bg; scene.overrideMaterial = ov; white.dispose();
+        let on = 0;
+        for (let i = 0; i < w * h; i++) if (m[i * 4] > 127) on++;
+        return { png: toPng(col, w, h), mask: toPng(m, w, h), cover: on / (w * h) };
+      } finally { scene.fog = fg; scene.background = bg; scene.overrideMaterial = ov; }
+    });
+    restoreFx();
+    return out;
+  }
   function hideFx(fxNames) {
     const { scene } = H(); const re = fxNames ? new RegExp(fxNames) : null; const hidden = [];
     scene.traverse((o) => { if ((o.isPoints || o.isLine || (re && o.name && re.test(o.name))) && o.visible) { o.visible = false; hidden.push(o); } });
@@ -576,5 +614,5 @@
   }
   async function frames(n = 2) { for (let i = 0; i < n; i++) await new Promise((r) => requestAnimationFrame(() => r())); }
 
-  window.__og = { orthoFace, matchRoots, instancesOf, texturesOf, texel, mask, maskInstance, maskFromGameCamera, shadow, grounding, geometry, effects, instanceBoxes, lights, stats, frames, LIN_MIP };
+  window.__og = { orthoFace, renderPose, matchRoots, instancesOf, texturesOf, texel, mask, maskInstance, maskFromGameCamera, shadow, grounding, geometry, effects, instanceBoxes, lights, stats, frames, LIN_MIP };
 })();

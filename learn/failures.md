@@ -1054,3 +1054,13 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Not applied further. Two attempts spent. Do not run a third mesh on this tower for this spec. Do not mark the checklist from these captures. |
 | Guard | object-gate rows `relief-texture alignment`, `facade relief >= 0.3 m`, and `key checklist` in `/workspace/zb-tower-fusion-1011/gate4/report.md`. Cheap 2D overlay 0.7332 in `vision/cheap-gate.json` (bar 0.70, before Blender). |
 | Sources | `tools/imagine-to-3d/fusion.py`, `vision_build.py` (`_add_prism_bands`), `runtime/vision-tower.mjs`. |
+### 2026-10-11 — checklist capture shot the loading overlay
+
+| | |
+| --- | --- |
+| Take | foundation-1011 |
+| Defect | Headless captures were saved while the page still said `Chargement… 17/20`. Checklist cameras also missed a tall tower: the walker eye stays near the ground and cannot frame a ~210 m box, and ortho cover was hardcoded to 1. |
+| Root cause | `openPage` returned after `readyExpr` and a fixed wait. The screenshot did not check the overlay text or the pixels. Checklist poses used `setPose`, which clamps pitch and parks the eye at ground + 1.6 m. |
+| Fix | Wait until no visible node says Chargement, then fail the frame in `tools/common/capture_gate.py` if it is a loading plate or empty. Frame close (8 m), low portrait, far, and ortho faces on the target AABB (`tools/common/frame_bbox.py`, `renderPose`). Perspective cover ≥ 25%. Ortho ≥ 60% and not black. |
+| Guard | `node tools/common/render_harness.mjs` (early shot FAIL, late shot PASS). `python3 tools/common/selftest.py`. Object-gate rows `capture ready` and `checklist camera framed on the target`. |
+| Sources | `tools/common/capture_gate.py`, `tools/common/frame_bbox.py`, `tools/common/render_harness.mjs`, `tools/object-gate/gate.mjs`. |

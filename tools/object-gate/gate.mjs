@@ -11,10 +11,12 @@ import { scoreVisible, screenPxPerM, resolveView, footprintsFromBoxes } from "./
 export { scoreVisible, screenPxPerM, resolveView };
 
 /** Stable API contract (see API.md). Bump the major only with a migration note; additions bump the minor. */
-export const API_VERSION = "1.3";
+export const API_VERSION = "1.7";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PY = join(HERE, "lib/analyze.py");
+const CAP_PY = join(HERE, "../common/capture_gate.py");
+const FRAME_PY = join(HERE, "../common/frame_bbox.py");
 const INJECT = join(HERE, "lib/inject.js");
 const PROBE = readFileSync(join(HERE, "lib/probe.js"), "utf8");
 const PROBE_VIEW = readFileSync(join(HERE, "lib/probe-view.js"), "utf8");   // 1.3: surfaceHit + zoom
@@ -60,6 +62,7 @@ export function loadScene(p) {
 
 // ------------------------------------------------------------------ helpers
 function py(op, arg) { return JSON.parse(execFileSync("python3", [PY, op, JSON.stringify(arg)], { encoding: "utf8", maxBuffer: 1 << 26 }).trim()); }
+function pyFile(script, arg) { return JSON.parse(execFileSync("python3", [script, JSON.stringify(arg)], { encoding: "utf8", maxBuffer: 1 << 26 }).trim()); }
 const iou = (a, b) => { let i = 0, u = 0; for (let k = 0; k < a.length; k++) { const x = a.charCodeAt(k) === 49, y = b.charCodeAt(k) === 49; if (x && y) i++; if (x || y) u++; } return u ? i / u : 1; };
 const ham = (a, b) => { let n = 0; let x = BigInt("0x" + a) ^ BigInt("0x" + b); while (x) { n += Number(x & 1n); x >>= 1n; } return n; };
 const fmt = (x, d = 1) => (x == null || !isFinite(x) ? String(x) : Number(x).toFixed(d));
@@ -114,7 +117,26 @@ export async function openPage(browser, adapter, url, viewport, query, log) {
   await adapter.setupInPage(page);
   await page.evaluate(PROBE);
   await page.evaluate(PROBE_VIEW);
+  page.__foundationReady = true;
+  try { await waitSceneReady(page); }
+  catch (e) { page.__foundationReady = false; log(`  scene still loading after wait: ${e.message || e}`); }
   return { ctx, page, logs, href: u.href };
+}
+/** Block until no visible node says "Chargement…". A timeout is a failed capture, not a pass. */
+export async function waitSceneReady(page) {
+  await page.waitForFunction(() => {
+    if (window.__sceneReady === false) return false;
+    for (const el of document.querySelectorAll("body *")) {
+      const s = getComputedStyle(el);
+      if (s.display === "none" || s.visibility === "hidden" || Number(s.opacity) === 0) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width < 4 || r.height < 4) continue;
+      let direct = "";
+      for (const n of el.childNodes) if (n.nodeType === 3) direct += n.textContent || "";
+      if (/chargement/i.test(direct)) return false;
+    }
+    return true;
+  }, null, { timeout: 120000, polling: 200 });
 }
 const SHADER_RE = /Shader Error|WebGLProgram|ERROR: 0:|VALIDATE_STATUS|could not compile/i;
 
@@ -156,8 +178,16 @@ export async function gateScene(scene, opts = {}) {
       if (scene.title) { const t = await h.page.title(); rowR(report, `title ${vp.join("x")}`, t === scene.title, JSON.stringify(t), ["Update <title>."]); }
       const inner = await h.page.evaluate(() => [innerWidth, innerHeight]);
       rowR(report, `portrait viewport ${vp.join("x")}`, inner[1] > inner[0], `inner ${inner.join("x")}`, ["The page must fill a portrait phone viewport."]);
+      const readyShot = join(out, `ready-${vp.join("x")}.png`);
+      await h.page.screenshot({ path: readyShot, timeout: 240000 });
+      const readyDom = await h.page.evaluate(() => (document.body && document.body.innerText || "").slice(0, 800));
+      const readyCap = pyFile(CAP_PY, { img: readyShot, kind: "frame", dom: readyDom });
+      rowR(report, `capture ready ${vp.join("x")}`, h.page.__foundationReady && readyCap.ok && !readyCap.loading && !readyCap.empty,
+        readyCap.why || `loaded, cover ${readyCap.cover}`,
+        ["Wait until the Chargement overlay is gone and the framebuffer is not empty before any capture."]);
       stats = await h.page.evaluate(() => window.__og.stats());
       report.runtime.push({ id: "runtime.budgets", check: `budgets ${vp.join("x")} (report only, quality first)`, status: "INFO", detail: JSON.stringify(stats), hints: [] });
+      perfRows(report, await h.page.evaluate(() => (typeof window.__perfReport === "function" ? window.__perfReport() : null)).catch(() => null), vp);
       await h.ctx.close();
     }
     // ---------------- capture page (shared by every object)
@@ -215,12 +245,45 @@ export const CHECK_IDS = [
   [/^relief-texture alignment/, "relief.align"],
   [/^effects take/, "effects.imagine-texture"], [/^effects: no typed/, "effects.no-colour-literals"],
   [/^key checklist written/, "checklist.written"], [/^key crop present/, "checklist.key-crop"], [/^key checklist: every/, "checklist.verified"], [/^colour vs key/, "checklist.colour"],
+  [/^checklist camera framed/, "checklist.camera"],
   [/^console/, "runtime.console"], [/^shader compile/, "runtime.shader"], [/^HUD text/, "runtime.hud"], [/^title/, "runtime.title"],
+  [/^capture ready/, "runtime.capture-ready"],
   [/^portrait viewport/, "runtime.portrait"], [/^budgets/, "runtime.budgets"], [/^live preview untouched/, "runtime.live-untouched"],
+  [/^perf: canvas ratio/, "perf.canvas-ratio"], [/^perf: sky dome/, "perf.sky-order"], [/^perf: ground/, "perf.ground-order"], [/^perf: adaptive/, "perf.adaptive"], [/^perf: quality kept/, "perf.quality-kept"], [/^perf: default ratio/, "perf.default-ratio"], [/^perf: report/, "perf.report"],
 ];
 export const checkId = (check) => (CHECK_IDS.find(([re]) => re.test(check)) || [null, "other"])[1];
 function row(o, check, pass, detail, hints = [], status) {
   o.rows.push({ id: checkId(check), check, status: status || (pass ? "PASS" : "FAIL"), detail, hints: pass ? [] : hints });
+}
+/**
+ * Phone perf rows (docs/METHOD/phone-perf.md). They read the page's window.__perfReport():
+ * { canvasRatio, dpr, cap, adaptive, skyOrder, groundOrder, maxOpaqueOrder, skyDepthTest, adaptiveCanDropDetail, sprintDip,
+ *   canvasCap, upscale, rcas, detailOn }. A page without it gets an INFO row. `cap` = the default internal (scene) ratio.
+ * 1.5 (SmiR 2026-10-10 14:02): quality first. The adaptive controller may only lower the ratio as an emergency floor and
+ * must never drop the detail layer or another quality feature.
+ * 1.6 (SmiR 2026-10-10 14:38): the default may also be internal ratio >= 1.5 upscaled to the canvas (min(2, device)) with
+ * the EASU-style + RCAS upscaler (`upscale: "easu-rcas"`, tools/biome/runtime/upscale-easu.mjs); never the plain bilinear path.
+ * Every row checks work that never reaches the screen (full-DPR canvas, overdraw a depth test would reject); none of them lowers the look.
+ */
+export function perfRows(rep, pr, vp) {
+  const tag = vp.join("x");
+  if (!pr) { rep.runtime.push({ id: "perf.report", check: `perf: report ${tag}`, status: "INFO", detail: "page has no window.__perfReport(); phone perf rows skipped", hints: ["Expose window.__perfReport() (see tools/perf/phone-bench/README.md) so the gate can check canvas ratio and draw order."] }); return; }
+  const lim = Math.min(pr.canvasCap ?? pr.cap ?? 2, 2, pr.dpr ?? 2) + 1e-6;
+  rowR(rep, `perf: canvas ratio <= cap ${tag}`, pr.canvasRatio <= lim, `canvas ratio ${pr.canvasRatio} (cap ${pr.canvasCap ?? pr.cap}, device ${pr.dpr})`,
+    ["Size the canvas at the adaptive render ratio (cap 2), not the device ratio: a DPR-3 canvas pays a fixed full-screen grade/upsample/compositor pass every frame (phone lesson 2026-10-10)."]);
+  if (pr.skyOrder != null) rowR(rep, `perf: sky dome drawn after the opaques ${tag}`, pr.skyDepthTest && pr.skyOrder > pr.maxOpaqueOrder, `sky renderOrder ${pr.skyOrder}, max opaque ${pr.maxOpaqueOrder}, depthTest ${pr.skyDepthTest}`,
+    ["Draw the far-plane sky dome after every depth-writing opaque, depth-tested: the hidden sky pixels are then never shaded (bit-identical result)."]);
+  if (pr.groundOrder != null) rowR(rep, `perf: ground after the other opaques ${tag}`, pr.groundOrder > pr.maxOpaqueOrder, `ground renderOrder ${pr.groundOrder}, max opaque ${pr.maxOpaqueOrder}`,
+    ["Draw the expensive ground shader after towers / mesas / props so occluded ground pixels fail the early depth test (bit-identical result)."]);
+  rowR(rep, `perf: adaptive controller on ${tag}`, !!pr.adaptive, `adaptive ${!!pr.adaptive}`, ["Use tools/biome/runtime/adaptive-res.mjs (quality-first: default ratio, emergency floor only)."]);
+  rowR(rep, `perf: quality kept: adaptive never drops the detail layer ${tag}`, (!pr.adaptive || pr.adaptiveCanDropDetail === false) && pr.detailOn !== false,
+    `adaptiveCanDropDetail ${pr.adaptiveCanDropDetail} detailOn ${pr.detailOn}`,
+    ["Use tools/biome/runtime/adaptive-res.mjs >= 2026-10-10 14:02 (every level detail: true, canDropDetail false) and report adaptiveCanDropDetail: false (and detailOn: true) in __perfReport. Owner rule: no quality feature is ever turned off for fps."]);
+  const want = Math.min(2, pr.dpr ?? 2), native = (pr.cap ?? 0) >= want - 1e-6;
+  const easu = pr.upscale === "easu-rcas" && (pr.cap ?? 0) >= Math.min(1.5, pr.dpr ?? 2) - 1e-6 && pr.rcas > 0 && Math.abs((pr.canvasRatio ?? 0) - want) < 1e-6;
+  rowR(rep, `perf: default ratio = min(2, device) native, or >= 1.5 + EASU/RCAS to the canvas, no sprint dip ${tag}`, (native || easu) && pr.sprintDip === false,
+    `internal ${pr.cap} canvas ${pr.canvasRatio} device ${pr.dpr} upscale ${pr.upscale ?? "native"} rcas ${pr.rcas ?? "-"} sprintDip ${pr.sprintDip}`,
+    ["Default: canvas min(2, device), scene at internal 1.5 upscaled with tools/biome/runtime/upscale-easu.mjs (EASU-style + RCAS 0.8), or native ratio 2 (SmiR 2026-10-10 14:38). Never the plain bilinear upscale, never below 1.5 by default, no sprint dip; lower only as the adaptive emergency floor (< 15 fps for > 5 s)."]);
 }
 function rowR(rep, check, pass, detail, hints) { rep.runtime.push({ id: checkId(check), check, status: pass ? "PASS" : "FAIL", detail, hints: pass ? [] : hints }); }
 
@@ -422,48 +485,21 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
   const wanted = new Set([...(checks.has("repetition") ? cfg.repetition.captures : []), ...(checks.has("checklist") ? cfg.checklist.captures : [])]);
   const captures = {};
   if (wanted.size && checks.has("checklist") | checks.has("repetition")) {
-    const path0 = await page.evaluate(() => window.__ogHost.path || []);
-    const fx = hero.front, fl = Math.hypot(fx[0], fx[1]) || 1; const f = [fx[0] / fl, fx[1] / fl];
-    const dP = (x, z) => Math.min(...path0.map((p) => Math.hypot(p[0] - x, p[1] - z)));
-    const s = dP(hero.center[0] + f[0] * 50, hero.center[2] + f[1] * 50) <= dP(hero.center[0] - f[0] * 50, hero.center[2] - f[1] * 50) ? 1 : -1;
-    // Close and low stand on the sunlit side, a step off the corner, so bays and holes are in the frame.
-    // Far stays on the player path. A head-on shot of the shadow face is a black wall and cannot be checked.
-    const lights = await page.evaluate(() => window.__og.lights());
-    const sun = (lights || []).find((l) => /sun/i.test(l.name || "")) || (lights || [])[0];
-    let sLit = s;
-    if (sun && sun.dir) {
-      const L = Math.hypot(sun.dir[0], sun.dir[2]) || 1;
-      const faceDot = (s * f[0]) * sun.dir[0] / L + (s * f[1]) * sun.dir[2] / L;
-      if (faceDot < 0) sLit = -s;
-    }
-    const base = hero.min[1], H = hero.height, hd = hero.halfD;
-    const poses = {
-      close: { d: hd + Math.max(12, 0.15 * H), ty: base + Math.min(0.4 * H, 20) },
-      // From the foot, look up the shaft so the crown and the holes are in the frame.
-      "low-portrait": { d: hd + 6, ty: base + Math.min(0.55 * H, 70) },
-      far: { d: hd + Math.max(2.2 * H, 120), ty: base + 0.45 * H },
-    };
-    await page.evaluate((n) => { window.__ogRestoreFx = (() => { const { scene } = window.__ogHost; const re = new RegExp(n); const hid = []; scene.traverse((o) => { if (o.name && re.test(o.name) && o.visible) { o.visible = false; hid.push(o); } }); return () => hid.forEach((o) => (o.visible = true)); })(); }, adapter.fxNames || "^$");
-    // far: stand ON the player path, at the path point whose distance to the object is closest to P.d
-    const farPt = path0.slice().sort((p, q) => Math.abs(Math.hypot(p[0] - hero.center[0], p[1] - hero.center[2]) - poses.far.d) - Math.abs(Math.hypot(q[0] - hero.center[0], q[1] - hero.center[2]) - poses.far.d))[0];
+    const front = hero.front.length === 2 ? [hero.front[0], hero.front[1]] : hero.front;
     for (const name of wanted) {
-      const P = poses[name]; if (!P) continue;
-      const side = name === "far" ? s : sLit;
-      // About a 3/4 view: a small offset stays on the middle of the face and hides the edge bays.
-      const lat = name === "far" ? 0 : Math.max(hero.halfW, hero.halfD, 4) * 1.15;
-      let x = hero.center[0] + side * f[0] * P.d + (-f[1]) * lat, z = hero.center[2] + side * f[1] * P.d + f[0] * lat;
-      if (name === "far" && farPt) { x = farPt[0]; z = farPt[1]; }
-      const pose = await page.evaluate(([x, z, t]) => window.__ogHost.setPose({ x, z, look: t }), [x, z, [hero.center[0], P.ty, hero.center[2]]]);
-      await settle(page);
-      const real = await page.evaluate(() => { const c = window.__ogHost.camera; return [c.position.x, c.position.y, c.position.z].map((v) => +v.toFixed(2)); });
-      const img = join(odir, `cap-${name}.png`);
-      await page.screenshot({ path: img, timeout: 240000 });
-      const vp = page.viewportSize();
-      const bits = await page.evaluate(([s, w, h]) => window.__og.maskFromGameCamera(s, w, h), [sel, vp.width >> 1, vp.height >> 1]);
-      const m = py("mask_png", { w: vp.width >> 1, h: vp.height >> 1, bits, out: join(odir, `cap-${name}-mask.png`) });
-      captures[name] = { img, mask: m.out, cover: m.cover, pose: { ...pose, camera: real }, hash: py("phash", { img }).hash };
+      const pose = pyFile(FRAME_PY, { min: hero.min, max: hero.max, view: name, width: 412, height: 915, front });
+      const shot = await page.evaluate((spec) => window.__og.renderPose(spec), { ...pose, sel });
+      if (!shot || !shot.png) throw new Error(`renderPose ${name} returned no image`);
+      const img = join(odir, `cap-${name}.png`), msk = join(odir, `cap-${name}-mask.png`);
+      writeFileSync(img, Buffer.from(shot.png.split(",")[1], "base64"));
+      writeFileSync(msk, Buffer.from(shot.mask.split(",")[1], "base64"));
+      const gate = pyFile(CAP_PY, { img, kind: name, mask: msk });
+      captures[name] = {
+        img, mask: msk, cover: gate.cover, gate,
+        pose: { camera: pose.eye.map((v) => +Number(v).toFixed(2)), fovY: pose.fovY, distanceM: pose.distanceM },
+        hash: py("phash", { img }).hash,
+      };
     }
-    await page.evaluate(() => window.__ogRestoreFx && window.__ogRestoreFx());
     o.files.captures = captures;
   }
 
@@ -480,7 +516,8 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
       const lag = tr ? Math.round((tr.texW / tr.samplingPxPerM) * v.pxPerM) : null;
       const r = py("repetition", { img, mask: msk, expectLagPx: lag && lag < 900 ? lag : null });
       res.push({ name: `face ${axis}`, ...r, pxPerM: v.pxPerM, tileM: tr ? +(tr.texW / tr.samplingPxPerM).toFixed(2) : null });
-      captures[`face-${axis}`] = { img, mask: msk, pose: { camera: ["ortho", axis] }, cover: 1 };
+      const faceGate = pyFile(CAP_PY, { img, kind: "frame", mask: msk });
+      captures[`face-${axis}`] = { img, mask: msk, pose: { camera: ["ortho", axis] }, cover: faceGate.cover, hash: py("phash", { img }).hash };
     }
     for (const name of cfg.repetition.captures) {
       const c = captures[name]; if (!c) continue;
@@ -675,8 +712,29 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
 
   // ---------------- 7. key-image checklist + capture sheet
   if (checks.has("checklist")) {
+    const front = hero.front.length === 2 ? [hero.front[0], hero.front[1]] : hero.front;
+    for (const view of ["ortho-front", "ortho-side"]) {
+      const pose = pyFile(FRAME_PY, { min: hero.min, max: hero.max, view, width: 412, height: 915, front });
+      const shot = await page.evaluate((spec) => window.__og.renderPose(spec), { ...pose, sel });
+      const img = join(odir, `cap-${view}.png`), msk = join(odir, `cap-${view}-mask.png`);
+      writeFileSync(img, Buffer.from(shot.png.split(",")[1], "base64"));
+      writeFileSync(msk, Buffer.from(shot.mask.split(",")[1], "base64"));
+      const gate = pyFile(CAP_PY, { img, kind: view, mask: msk });
+      captures[view] = {
+        img, mask: msk, cover: gate.cover, gate,
+        pose: { camera: ["ortho", view], fovY: null, distanceM: null },
+        hash: py("phash", { img }).hash,
+      };
+    }
+    const framedNames = ["close", "low-portrait", "far", "ortho-front", "ortho-side"];
+    const bad = framedNames.filter((n) => !captures[n] || !captures[n].gate || !captures[n].gate.ok)
+      .map((n) => `${n}: ${captures[n] && captures[n].gate ? captures[n].gate.why : "missing"}`);
+    const detail = bad.length ? bad.join("; ") : framedNames.map((n) => `${n} cover ${fmt(captures[n].cover * 100)}%`).join(", ");
+    row(o, "checklist camera framed on the target", bad.length === 0,
+      detail,
+      ["Frame each checklist camera on the target AABB (close 8 m, low portrait, far, ortho faces). Perspective cover >= 25%. Ortho faces >= 60% and not black."]);
     const items = spec.checklist || [];
-    const tiles = Object.entries(captures).map(([k, c]) => ({ img: c.img, label: `${k} ${c.pose.camera.join(",")}` }));
+    const tiles = Object.entries(captures).map(([k, c]) => ({ img: c.img, label: `${k} ${(c.pose.camera || []).join(",")} cover ${c.cover}` }));
     const sheetPath = join(odir, "capture-sheet.jpg");
     py("sheet", { out: sheetPath, key: spec.keyCrop && existsSync(spec.keyCrop) ? spec.keyCrop : null, tiles, title: `${spec.id} (${spec.type}) vs key crop - object-gate` });
     o.files.sheet = sheetPath;

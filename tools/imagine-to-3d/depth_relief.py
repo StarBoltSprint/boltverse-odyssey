@@ -30,6 +30,15 @@ HARD = dict(amp=1.2, sigmaM=3.5, fineM=0.15, minFeatureM=0.40, snapTolPx=8, maxP
             bayMin=0.35, bayMax=1.15, fieldMin=0.28, fieldMax=0.42)
 
 def session():
+    """Small relief net. Prefer the shared load-once session; fall back to the local file."""
+    try:
+        tools = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        if tools not in sys.path:
+            sys.path.insert(0, tools)
+        from common.vision_models import load_depth_session
+        return load_depth_session("dav2-small")
+    except Exception as e:
+        print("shared depth session unavailable:", e, file=sys.stderr)
     import onnxruntime as ort
     os.makedirs(MODELS, exist_ok=True)
     for name, url, kind in (("dav2-small.onnx", DA_URL, "dav2"), ("midas-small.onnx", MIDAS_URL, "midas")):
