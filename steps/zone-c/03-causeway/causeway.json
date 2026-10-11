@@ -1,0 +1,26 @@
+{
+  "what": "walkable causeway only",
+  "not": "Zone B dune composer is not run. Cliffs stay solids.",
+  "camera": {
+    "vfovDeg": 51.47,
+    "pitchDeg": 7.95,
+    "pitchFromHorizonDeg": 7.952156649105937,
+    "eyeYM": 1.508,
+    "horizonRow": 0.6449,
+    "yawDeg": 0.0
+  },
+  "maskPixels": 38549,
+  "planeHits": 38549,
+  "silhouetteIoU": 1.0,
+  "widthMedianM": 3.202,
+  "widthP10M": 1.769,
+  "widthP90M": 6.448,
+  "nearDepthM": 4.73,
+  "farDepthM": 16.31,
+  "spanXM": 6.997,
+  "spanZM": 11.53,
+  "vertices": 2393,
+  "triangles": 4498,
+  "maxSlopeDeg": 0.0,
+  "heightM": 0.0
+}
