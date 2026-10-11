@@ -76,6 +76,14 @@ Stone doors and gothic halls are rejected menu backgrounds (2026-10-04/05). Echo
 
 `python3 tools/wfc-path/hang.py --spec tools/wfc-path/cook/spec.json --out packs/corridor-ab`. Placement only. A corridor video and a zone B pack are still uncooked.
 
+## measure
+
+| Recipe | Commit | QC |
+| --- | --- | --- |
+| [grok-native-proposal-pick.md](grok-native-proposal-pick.md) — numbered seg boxes, vision returns an id (no new Imagine image) | `e7116fe1` | pick id 2; fusion bbox IoU 0.4169; selftest PASS |
+
+The mask after that pick is not a single slab. Failure: `learn/failures.md` 2026-10-11.
+
 ## cutout
 
 | Recipe | Commit | QC |

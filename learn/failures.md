@@ -1075,3 +1075,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Not applied further. Two attempts spent. Do not run a third mesh on this alignment and relief miss. |
 | Guard | object-gate rows `relief-texture alignment`, `facade relief >= 0.3 m`, and `key checklist` in `/workspace/i23d-auto/zoneb-tower-vision/gate5/report.md`. Cheap overlay 0.7395 in `vision/cheap-gate.json`. |
 | Sources | `tools/imagine-to-3d/fusion.py` (`_feature_depths`, `shade_facade`), `depth_relief.py`, `vision_build.py`. |
+
+### 2026-10-11 — free-form vision box and erosion miss the one slab
+
+| | |
+| --- | --- |
+| Take | grok-native-1011 |
+| Defect | The first vision box sat on the left cliff. After a numbered proposal picked the right cluster, GrabCut still painted the neighbour blades. Two erode checks did not split them. |
+| Root cause | A free-form box drifts to the nearest dark tower. The three blades are one connected component, so a 3×3 erode cannot separate them. |
+| Fix | Ask vision for an id on classic structure boxes. Stop after the second mask miss. Do not spend a third erode. |
+| Guard | `steps/grok-native-1011/numbers.json`: mask IoU vs SAM2 0.749, vs the fusion reference mask 0.4983. SAM2 vs that reference 0.5518. |
+| Sources | `tools/grok-native/masks.py`, `tools/grok-native/vision_api.py`, `steps/grok-native-1011/work/pick.json`, `steps/grok-native-1011/REPORT.md`. |

@@ -17,3 +17,4 @@ Append-only. One row per step. `python3 tools/quota/quota.py` adds the row. Do n
 | 2026-10-11 | fusion-1011 | fee89850 | 0 | 0 | 0 | 0 | n/a | n/a | 3740.6 | events.jsonl |
 | 2026-10-11 | foundation-1011 | 3c066b73 | 0 | 0 | 0 | 0 | n/a | n/a | 1706.0 | events.jsonl |
 | 2026-10-11 | fusion-fix3-1011 | n/a | 0 | 0 | 0 | 0 | n/a | n/a | 1431.0 | events.jsonl |
+| 2026-10-11 | grok-native-1011 | n/a | 0 | 0 | 0 | 0 | n/a | n/a | 1606.7 | events.jsonl |
