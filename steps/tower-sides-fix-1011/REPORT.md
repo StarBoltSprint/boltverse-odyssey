@@ -128,4 +128,4 @@ Hero mesh: 1 draw, 9796 tris. Atlas 2583×1744. Decoded albedo + normal **34.37 
 
 The gate crash and the Playwright arity were tool bugs. They are fixed. They were not a third mesh. UV and shadow each failed twice. Stop.
 
-`tools/preview/freeze.py` refuses a FAIL verdict. No preview was frozen. No public URL.
+`tools/preview/freeze.py` on commit `bdc3ee8b` exited 1: the report verdict is FAIL. No preview was frozen. No public URL. Local commit `bdc3ee8b`. Not pushed.

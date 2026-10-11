@@ -2,9 +2,11 @@
 
 ## Quota and turns
 
-The quota row is appended by `python3 tools/quota/quota.py` after the commit. Copy that row here in the follow-up if the log has numbers. Do not invent turns or tokens.
+| Date | Step | Commit | Turns | Tool calls | Image gens | Video gens | Tokens in | Tokens out | Wall s | Log |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-10-11 | tower-sides-fix-1011 | bdc3ee8b | 0 | 0 | 0 | 0 | n/a | n/a | 3881.7 | events.jsonl |
 
-Vision cost is outside that counter: **$0.011484**, five calls, one round, cache `steps/tower-sides-fix-1011/vision-cache`, log `steps/tower-sides-fix-1011/vision.ndjson`.
+The session log did not carry turn or token counts. Wall time is 3881.7 s for that events.jsonl span. Image gens in that log are 0. Vision is outside that counter: **$0.011484**, five calls, one round, cache `steps/tower-sides-fix-1011/vision-cache`, log `steps/tower-sides-fix-1011/vision.ndjson`. Preview freeze exited 1 because the report verdict is FAIL.
 
 | Item | Kind | Turns or tries | Quota spent | Result |
 | --- | --- | --- | --- | --- |
