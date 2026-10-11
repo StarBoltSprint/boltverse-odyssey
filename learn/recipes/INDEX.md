@@ -81,7 +81,7 @@ Stone doors and gothic halls are rejected menu backgrounds (2026-10-04/05). Echo
 | Recipe | Commit | QC |
 | --- | --- | --- |
 | [terrain-key2-skyline.md](terrain-key2-skyline.md) — colour skyline heightfield, MoGe-2 default, no Imagine prompt | `45e55fe7` | silhouette 0.8481; repetition 0.1499; slope 6.269°; SAM2 silhouette 0.5486 not shipped |
-| [zone-c-causeway.md](zone-c-causeway.md) — causeway ribbon plus a flat base, MoGe-2 only, no Imagine prompt | this step | path IoU 0.7704; slope 15.5°; relief 0.319 m; LOD pop 0.9248; UV stretch open |
+| [zone-c-causeway.md](zone-c-causeway.md) — causeway ribbon plus a flat base, MoGe-2 only, no Imagine prompt | `fbd65e61` | path IoU 0.7704; slope 15.5°; relief 0.319 m; LOD pop 0.9248; UV stretch open |
 
 ## cutout
 

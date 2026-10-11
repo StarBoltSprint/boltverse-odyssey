@@ -6,7 +6,7 @@ Status: blocking rows cleared. The step verdict is OPEN. Far UV stretch is not a
 | --- | --- |
 | Asset kind | terrain |
 | Take | zc/03-terrain |
-| Commit | filled in the index when the cook commit exists |
+| Commit | `fbd65e61` |
 | Date | 2026-10-11 |
 | Size | key 1792×1008; grid 113×205 at 0.5 m |
 | Tries | 2 relief gains inside one tool run |
