@@ -10,6 +10,7 @@ Zone B heightfield from the key image. Method and steps: [`docs/METHOD/terrain-f
 | `geom.py` | Camera axes and rays (convention checked at start). |
 | `moge_ground.py` | MoGe-2 metric plane on the causeway: eye height, pitch, field of view. |
 | `sam_masks.py` | SAM2 small masks for the solids in one key still. |
+| `causeway_field.py` | Zone C deck only. Does not run the dune composer. |
 | `camera_solve.py` | LSD / lip attempt. Rejected on Zone C (moss breaks the lips). MoGe is the lock. |
 | `gates.py` | Terrain gates (silhouette, depth order, features, LOD pop, approach, repetition, corridor, vertex cost). |
 | `features.json` | Named features the gate checks. |
