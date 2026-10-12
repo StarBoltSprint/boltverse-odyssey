@@ -202,6 +202,44 @@
         717,
         717
       ]
+    },
+    "crop-arch-right-band.jpg": {
+      "frac": [
+        0.9286,
+        0.2738,
+        1.0,
+        0.4008
+      ],
+      "box_xyxy": [
+        1664,
+        276,
+        1792,
+        404
+      ],
+      "size": [
+        128,
+        128
+      ],
+      "note": "redo 2026-10-12 tighter stone band"
+    },
+    "crop-wall-right-tight.jpg": {
+      "frac": [
+        0.7143,
+        0.2976,
+        0.8705,
+        0.5754
+      ],
+      "box_xyxy": [
+        1280,
+        300,
+        1560,
+        580
+      ],
+      "size": [
+        280,
+        280
+      ],
+      "note": "redo 2026-10-12 right cliff face, sky excluded"
     }
   }
 }

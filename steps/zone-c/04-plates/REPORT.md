@@ -32,3 +32,16 @@ Imagine calls: **13** (11 first plates + 1 retry on #6 + 1 retry on #8). Moss #1
 8. Preview — not frozen. This step has no play tree, and the plates stay out of any 3D build.
 
 Known misses for the owner: #6 is the inside of the ring, not an unrolled soffit. #8 still has cliff depth. The planet plate fills the frame in the key’s cream, tan, and gold, with thin rings.
+
+## Redo 06:38
+
+SmiR kept plates 5, 7, and 9–15. This pass replaces only #6 and #8. Those nine files keep the hashes in the previous `SHA256SUMS`.
+
+Calls this pass: **3** `image_edit` (2 on #6, 1 on #8). Running total `imagine_calls` **16** (previous 13 + these 3). No `image_gen`. The sheet was rebuilt in PIL.
+
+| # | Approach | Calls | Winner |
+| --- | --- | --- | --- |
+| 6 | Tight square crop of the right-arch stone band (`crops/crop-arch-right-band.jpg`, 128×128), then one straighten edit of that result | 2 | Second file. Level courses of the same stone and moss. The first redo still carried a curved shadow. |
+| 8 | `plate-07-wall-left.jpg` plus a sky-free right-cliff crop (`crops/crop-wall-right-tight.jpg`, 280×280), aspect 1:1 | 1 | That file. Face-on strata. No mirror pass. |
+
+Both replacements are native 1024×1024. Sheet `1760×1686`, key on top, eleven labelled thumbs. `SHA256SUMS` rewritten for the eleven plates, the sheet, and the key copy. `python3 steps/zone-c/04-plates/check-plates.py` PASS. Preview was not frozen: there is no play tree, and these plates stay out of any 3D build. No session ndjson was in the worktree, so `tools/quota/quota.py` was not run.

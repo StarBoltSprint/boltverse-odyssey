@@ -1,6 +1,6 @@
 {
   "plates": 11,
-  "imagine_calls": 13,
+  "imagine_calls": 16,
   "tool": "image_edit",
   "retries": {
     "plate-06-arch-right-inner.jpg": 1,
@@ -23,7 +23,7 @@
       "note": "kept first"
     },
     "plate-06-arch-right-inner.jpg": {
-      "source_image": "8.jpg",
+      "source_image": "redo-3.jpg",
       "native_size": [
         1024,
         1024
@@ -32,10 +32,11 @@
         1024,
         1024
       ],
-      "bytes": 621800,
-      "imagine_calls": 2,
+      "bytes": 510937,
+      "imagine_calls": 4,
       "fit": "native",
-      "note": "retry was a full canyon; kept the through-ring attempt"
+      "note": "redo: stone-band edit, then straighten; kept the level-course file",
+      "redo_calls": 2
     },
     "plate-07-wall-left.jpg": {
       "source_image": "3.jpg",
@@ -53,7 +54,7 @@
       "note": "kept first"
     },
     "plate-08-wall-right.jpg": {
-      "source_image": "9.jpg",
+      "source_image": "redo-2.jpg",
       "native_size": [
         1024,
         1024
@@ -62,10 +63,11 @@
         1024,
         1024
       ],
-      "bytes": 558087,
-      "imagine_calls": 2,
+      "bytes": 519497,
+      "imagine_calls": 3,
       "fit": "native",
-      "note": "still has depth; stop after 2"
+      "note": "redo: face-on from plate 07 plus tight right-cliff crop; kept the first",
+      "redo_calls": 1
     },
     "plate-09-waterfall.jpg": {
       "source_image": "6.jpg",
@@ -172,5 +174,10 @@
       "fit": "native",
       "note": "kept first"
     }
+  },
+  "redo_0638": {
+    "calls": 3,
+    "plate_06": "straighten pass on the stone-band edit; flat courses kept",
+    "plate_08": "face-on edit from plate 07 plus the tight right-cliff crop; one call"
   }
 }
