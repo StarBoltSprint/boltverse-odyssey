@@ -567,7 +567,9 @@
   /** Per unique geometry: non-manifold / open edges (welded), facade relief, oriented size per instance.
    *  A merged draw (aZbPart) stacks closed variant shells in one buffer. Welding that union marks every
    *  edge non-manifold, so each part is scored on its own. One shell, or no part attribute, stays one row. */
-  function geometry(sel) {
+  function geometry(sel, opts) {
+    opts = opts || {};
+    const fromPlane = !!(opts && opts.reliefFromPlane);
     const { THREE } = H();
     const insts = instancesOf(sel);
     const geos = new Map();
@@ -600,16 +602,69 @@
         if (!relief[k] || Math.abs(k[1] === "x" ? n.x : n.z) < 0.7) continue;
         const off = k[1] === "x" ? (a.x + b.x + c.x) / 3 : (a.z + b.z + c.z) / 3;
         const y = (a.y + b.y + c.y) / 3;
-        const yb = Math.floor(y);
-        const m = relief[k]; const r = m.get(yb) || [Infinity, -Infinity, 0, []]; r[0] = Math.min(r[0], off); r[1] = Math.max(r[1], off); r[2] += ar; r[3].push(off); m.set(yb, r);
+        const ys = [a.y, b.y, c.y];
+        const yLo = Math.min(ys[0], ys[1], ys[2]), yHi = Math.max(ys[0], ys[1], ys[2]);
+        const span = Math.max(1e-4, yHi - yLo);
+        const m = relief[k];
+        // Spread a tall cap across every metre it covers. A centroid-only bin
+        // hides a stud that does not share a metre with the wall sample.
+        for (let yb = Math.floor(yLo); yb <= Math.floor(yHi - 1e-6); yb++) {
+          const seg0 = Math.max(yLo, yb), seg1 = Math.min(yHi, yb + 1);
+          const frac = Math.max(0, seg1 - seg0) / span;
+          if (frac <= 0) continue;
+          const r = m.get(yb) || [Infinity, -Infinity, 0, [], []];
+          r[0] = Math.min(r[0], off); r[1] = Math.max(r[1], off); r[2] += ar * frac;
+          r[3].push(off); r[4].push(ar * frac); m.set(yb, r);
+        }
+        void y;
         crispAcc[k].push({ off, ar, y, axis: Math.max(Math.abs(n.x), Math.abs(n.y), Math.abs(n.z)) > 0.92 });
       }
       let open = 0, nonManifold = 0; for (const n of edges.values()) { if (n === 1) open++; else if (n > 2) nonManifold++; }
       const reliefM = {};
       for (const [k, m] of Object.entries(relief)) {
-        // outer shell only: faces within 3 m of the outermost face of that metre (hole walls / inner faces excluded)
-        const rs = [...m.values()].filter((r) => r[2] > 0.2).map((r) => r[3].filter((q) => (k[0] === "+" ? r[1] - q : q - r[0]) <= 3)).map((qs) => Math.max(...qs) - Math.min(...qs)).sort((x, y) => x - y);
-        reliefM[k] = rs.length ? +rs[rs.length >> 1].toFixed(3) : null;
+        if (fromPlane) {
+          // Per metre: area-weighted modal offset (5 cm) of faces within 3 m of
+          // the outermost shell. reliefM is the max outward gap from that modal
+          // plane to any other bin that holds >= 2% of the metre. A flat wall
+          // is 0. Same bins as tools/object-gate/lib/oblique.py plane_relief.
+          // The old median of the per-metre AABB span passed a pasted plate.
+          let best = 0; let any = false;
+          for (const r of m.values()) {
+            if (r[2] <= 0.2 || !r[3] || !r[3].length) continue;
+            const outer = k[0] === "+" ? r[1] : r[0];
+            const kept = [];
+            for (let i = 0; i < r[3].length; i++) {
+              const q = r[3][i];
+              const inward = k[0] === "+" ? outer - q : q - outer;
+              if (inward <= 3 && inward >= -0.05) kept.push([q, r[4][i]]);
+            }
+            if (!kept.length) continue;
+            const area = kept.reduce((s, p) => s + p[1], 0);
+            if (area <= 0) continue;
+            any = true;
+            const bins = new Map();
+            for (const [q, a] of kept) {
+              const b = Math.round(q / 0.05);
+              bins.set(b, (bins.get(b) || 0) + a);
+            }
+            let modeB = null, modeA = -1;
+            for (const [b, a] of bins) if (a > modeA) { modeA = a; modeB = b; }
+            const modal = modeB * 0.05;
+            let gap = 0;
+            for (const [b, a] of bins) {
+              if (a / area < 0.02) continue;
+              const plane = b * 0.05;
+              const protr = k[0] === "+" ? plane - modal : modal - plane;
+              if (protr > gap) gap = protr;
+            }
+            if (gap > best) best = gap;
+          }
+          reliefM[k] = any ? +best.toFixed(3) : null;
+        } else {
+          // outer shell only: faces within 3 m of the outermost face of that metre (hole walls / inner faces excluded)
+          const rs = [...m.values()].filter((r) => r[2] > 0.2).map((r) => r[3].filter((q) => (k[0] === "+" ? r[1] - q : q - r[0]) <= 3)).map((qs) => Math.max(...qs) - Math.min(...qs)).sort((x, y) => x - y);
+          reliefM[k] = rs.length ? +rs[rs.length >> 1].toFixed(3) : null;
+        }
       }
       const crisp = {};
       for (const [k, faces] of Object.entries(crispAcc)) {
@@ -706,5 +761,19 @@
   }
   async function frames(n = 2) { for (let i = 0; i < n; i++) await new Promise((r) => requestAnimationFrame(() => r())); }
 
-  window.__og = { orthoFace, renderPose, faceCaptures, matchRoots, instancesOf, texturesOf, texel, mask, maskInstance, maskFromGameCamera, shadow, grounding, geometry, effects, instanceBoxes, lights, stats, frames, LIN_MIP };
+  function meshLocal(sel) {
+    const insts = instancesOf(sel);
+    if (!insts.length) return { positions: [], indices: [] };
+    const geo = insts[0].geo;
+    const pos = geo.getAttribute("position");
+    const idx = geo.getIndex();
+    const P = new Array(pos.count * 3);
+    for (let i = 0; i < pos.count; i++) { P[3 * i] = pos.getX(i); P[3 * i + 1] = pos.getY(i); P[3 * i + 2] = pos.getZ(i); }
+    const I = [];
+    if (idx) for (let i = 0; i < idx.count; i++) I.push(idx.getX(i));
+    else for (let i = 0; i < pos.count; i++) I.push(i);
+    return { positions: P, indices: I };
+  }
+
+  window.__og = { orthoFace, renderPose, faceCaptures, matchRoots, instancesOf, texturesOf, texel, mask, maskInstance, maskFromGameCamera, shadow, grounding, geometry, effects, instanceBoxes, lights, stats, frames, meshLocal, LIN_MIP };
 })();

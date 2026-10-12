@@ -1,0 +1,88 @@
+{
+  "step": "tower-volumes-1012",
+  "date": "2026-10-12",
+  "verdict": "FAIL",
+  "gate": {
+    "command": "node tools/object-gate/cli.mjs --scene tools/object-gate/specs/zone-b/tower-hero-vision-scene.yaml --out steps/tower-volumes-1012/gate",
+    "exit": 1,
+    "seconds": 816.17,
+    "fail_count": 5,
+    "report": "steps/tower-volumes-1012/gate/report.md"
+  },
+  "mesh": {
+    "tris": 28988,
+    "verts": 14568,
+    "open": 0,
+    "nonManifold": 0,
+    "size_m": { "w": 46.02, "h": 173.82, "d": 39.57 },
+    "d_over_w": 0.86,
+    "heightM": 173.821
+  },
+  "keep": {
+    "morph_min_iou": 0.914,
+    "float_m": 0.0,
+    "uv_stretch_p95_max": 1.113,
+    "shadow_ground_px": 0,
+    "proportions": "PASS from plates"
+  },
+  "relief_plane_m": { "+x": 3, "-x": 3, "+z": 1.05, "-z": 2.95, "bar_m": 0.521 },
+  "crispness": {
+    "+x": { "axis": 0.955, "planes": 10 },
+    "-x": { "axis": 0.905, "planes": 10 },
+    "+z": { "axis": 0.99, "planes": 1 },
+    "-z": { "axis": 0.951, "planes": 6 },
+    "need_planes": [2, 8],
+    "need_axis": 0.72
+  },
+  "oblique": {
+    "pass": true,
+    "bar_m": 0.521,
+    "rule": "max(0.5, 0.003*H)",
+    "blocking": "8 m and 30 m, 45 deg and 75 deg, every face",
+    "hero_distance_m": 182.8,
+    "cells": [
+      { "face": "+z", "angle": 45, "dist": 8, "range_m": 0.8, "rough_m": 0 },
+      { "face": "+z", "angle": 45, "dist": 30, "range_m": 1.2, "rough_m": 0.16 },
+      { "face": "+z", "angle": 75, "dist": 8, "range_m": 0.6, "rough_m": 0.07 },
+      { "face": "+z", "angle": 75, "dist": 30, "range_m": 0.85, "rough_m": 0.139 },
+      { "face": "-z", "angle": 45, "dist": 8, "range_m": 2.9, "rough_m": 0 },
+      { "face": "-z", "angle": 45, "dist": 30, "range_m": 2.55, "rough_m": 0.278 },
+      { "face": "-z", "angle": 75, "dist": 8, "range_m": 2.95, "rough_m": 0.173 },
+      { "face": "-z", "angle": 75, "dist": 30, "range_m": 4.5, "rough_m": 0.247 },
+      { "face": "+x", "angle": 45, "dist": 8, "range_m": 2.25, "rough_m": 0.034 },
+      { "face": "+x", "angle": 45, "dist": 30, "range_m": 3.55, "rough_m": 0.374 },
+      { "face": "+x", "angle": 75, "dist": 8, "range_m": 2.2, "rough_m": 0.308 },
+      { "face": "+x", "angle": 75, "dist": 30, "range_m": 3.55, "rough_m": 0.398 },
+      { "face": "-x", "angle": 45, "dist": 8, "range_m": 1.45, "rough_m": 0.03 },
+      { "face": "-x", "angle": 45, "dist": 30, "range_m": 2.3, "rough_m": 0.146 },
+      { "face": "-x", "angle": 75, "dist": 8, "range_m": 1.45, "rough_m": 0 },
+      { "face": "-x", "angle": 75, "dist": 30, "range_m": 1.7, "rough_m": 0.033 }
+    ]
+  },
+  "alignment_overlap": { "hero": 0.1446, "30m": 0.0934, "8m": 0, "side": 0.1513 },
+  "visible_px_per_m": { "measured": 50.8, "needed": 154.6, "warn": false },
+  "deltaE": 17.51,
+  "checklist": {
+    "wedge": "FAIL",
+    "chrome": "FAIL",
+    "damage": "FAIL",
+    "sand": "FAIL",
+    "ladder": "N/A"
+  },
+  "volumes": {
+    "count": 36,
+    "wall_inset_m": 1.2,
+    "shell_keep_m": 0.08,
+    "protrusion_m": [0.35, 1.05],
+    "classes": { "window": 22, "cable": 8, "chrome": 3, "damage": 3, "cornice": 0 },
+    "shape": "closed axis-aligned boxes; window and damage are proud of the wall",
+    "features": "steps/tower-volumes-1012/work/features.json"
+  },
+  "selftest": "steps/tower-volumes-1012/selftest-object-gate.txt PASS oblique flat FAIL/FAIL studs PASS/PASS",
+  "sheets": {
+    "phone": "steps/tower-volumes-1012/sheet-phone.jpg",
+    "phone_px": [720, 1600],
+    "turnaround": "steps/tower-volumes-1012/turnaround.jpg",
+    "oblique": "steps/tower-volumes-1012/oblique-sheet.jpg"
+  }
+}

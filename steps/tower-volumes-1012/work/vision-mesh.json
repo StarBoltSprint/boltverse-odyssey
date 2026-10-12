@@ -1,0 +1,13 @@
+{
+ "open": 0,
+ "nonManifold": 0,
+ "tris": 28988,
+ "cut": false,
+ "note": "",
+ "glb": "steps/tower-volumes-1012/work/tower.glb",
+ "gltfSize": [
+  46.024,
+  173.821,
+  39.575
+ ]
+}

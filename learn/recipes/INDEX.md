@@ -108,3 +108,9 @@ The mask after that pick is not a single slab. Failure: `learn/failures.md` 2026
 | — | — | — |
 
 `python3 tools/assetcheck/check.py` kind `cutout` with a declared `onScreen` size and `key` (`alpha`, `black`, or `green`). Cook at or above the on-screen pixels. Compositor `scale` stays ≤ 1 ([`biome/docs/56-cutout-native-scale.md`](../../biome/docs/56-cutout-native-scale.md)). Bolt motion stays `lock/bolt-gallop-cycle.mp4`. An `assetcheck` WARN on a `lock/` file is not a recook.
+
+## object-gate
+
+| Recipe | Commit | QC |
+| --- | --- | --- |
+| [oblique-profile-metre.md](oblique-profile-metre.md) — plane-distance oblique profile, bar max(0.5 m, 0.003·H). No Imagine prompt. The tower mesh is FAIL. | this step | selftest flat FAIL/FAIL, studs PASS/PASS; tower oblique ranges 0.60–4.50 m at bar 0.521 m; gate 5 FAIL |

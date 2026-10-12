@@ -179,6 +179,33 @@ def quantise_hard(disp, luma, pxm, hs=None):
     return inset, rep
 
 
+def scale_facade_metres(depth, mask, height_m):
+    """MoGe-2 metres on a facade. Positive residual = nearer than the wall median.
+
+    A centimetre high-pass (p99 under 0.45 m) is scaled so p99 reaches
+    max(0.80 m, 0.004·H). An already-metric map is not inflated. Ratios stay
+    MoGe's. Callers clip to a class floor / face cap; this function does not
+    invent a second relief. PROFILE amp for mesa/tower/rock is untouched.
+    """
+    d = np.asarray(depth, np.float32)
+    m = np.asarray(mask, bool)
+    if d.shape[:2] != m.shape[:2]:
+        raise ValueError(f"depth {d.shape} != mask {m.shape}")
+    if not m.any():
+        return np.zeros_like(d), {"p99_m": 0.0, "scale": 1.0, "wall_m": 0.0}
+    wall = float(np.median(d[m]))
+    res = wall - d
+    res = res.astype(np.float32)
+    res[~m] = 0.0
+    p99 = float(np.percentile(np.abs(res[m]), 99))
+    target = max(0.80, 0.004 * float(height_m))
+    if p99 < 0.45:
+        scale = float(np.clip(target / max(p99, 1e-4), 0.25, 80.0))
+    else:
+        scale = 1.0
+    return res * scale, {"p99_m": round(p99, 4), "scale": round(scale, 4), "wall_m": round(wall, 4), "target_m": round(target, 4)}
+
+
 def check_hard(inset, hs=None):
     """Flat (one plane, or p99 < 0.3 m) and blobby (too many planes, energy off the steps) both FAIL."""
     hs = dict(HARD, **(hs or {}))

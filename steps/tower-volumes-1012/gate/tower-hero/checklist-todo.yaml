@@ -1,0 +1,60 @@
+object: tower-hero
+sheet: /workspace/grokcli/wt/tower-vision-1010/steps/tower-volumes-1012/gate/tower-hero/capture-sheet.jpg
+captures:
+  close: 86000481a121a107
+  low-portrait: 79f9f8f8f1000000
+  far: 307060487878d858
+  face-z: 4c4c4c0c8c1c3a3b
+  face-x: 1010909898180c4b
+  ortho-front: 88989888a8b8c8d8
+  ortho-side: '3737373736767676'
+items:
+  wedge:
+    feature: Tapered planar blade, depth at least 0.45 of the width, sheared crown kept in the volume
+    captures:
+      - far
+      - low-portrait
+    pass: false
+    plateEvidence: null
+    note: >-
+      gate5 far (0000081010100000) and low-portrait (0000000000000000) are near-black. The blade, the shear, and the bite are not readable.
+      Not marked pass.
+    status: FAIL
+  ladder:
+    feature: Ladder cage readable as rails, rungs and hoops
+    captures:
+      - close
+      - low-portrait
+    pass: false
+    plateEvidence: absent
+    note: No plate paints a ladder. Cables on the right plate are not rails.
+    status: N/A
+  chrome:
+    feature: Chrome or silver edge strips and floor bands readable as geometry
+    captures:
+      - close
+      - low-portrait
+    pass: false
+    plateEvidence: null
+    note: gate5 close and low-portrait do not show a silver strip. The play surface reads unlit (colour L* 0.1).
+    status: FAIL
+  damage:
+    feature: Sheared damaged crown kept in the silhouette
+    captures:
+      - far
+      - low-portrait
+    pass: false
+    plateEvidence: null
+    note: gate5 far is a dark sliver. The jagged bite is not visible. Not marked pass.
+    status: FAIL
+  sand:
+    feature: Sand on the lower part, base seated, no floating gap
+    captures:
+      - low-portrait
+      - far
+    pass: false
+    plateEvidence: null
+    note: >-
+      gate5 close and low-portrait do not show the base seated in the sand. Grounding row still passes at -21.88 m. The picture does not
+      show the joint.
+    status: FAIL

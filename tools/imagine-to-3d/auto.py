@@ -36,7 +36,7 @@ import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 import i23d_common as C
 PY = sys.executable
-STAGES = ["inputs", "consistency", "classify", "vision", "shape", "geometry", "pack", "detail", "grade", "stage", "shaders", "perf", "morph", "gate", "keycompare", "report"]
+STAGES = ["inputs", "consistency", "classify", "vision", "shape", "geometry", "volumes", "pack", "detail", "grade", "stage", "shaders", "perf", "morph", "gate", "keycompare", "report"]
 BROWSER = {"shaders", "morph", "gate", "keycompare"}
 LIVE_GUARD = [os.environ.get("I23D_LIVE_ROOT", "/workspace/zb-preview-1008")]   # files the live page loads live here
 MANUAL = {   # honest list, printed in every plan/report
@@ -373,7 +373,7 @@ class Run:
             fails.append("stretch")
         if float(d.get("minPxPerM") or 0) < 64:
             fails.append("pxPerM")
-        if float(d.get("reliefDepthM") or 0) < 0.30:
+        if float(d.get("reliefDepthM") or 0) < 0.50:
             fails.append("relief")
         if iou is not None and float(iou) < 0.90:
             fails.append("silhouetteIoU")
@@ -423,6 +423,29 @@ class Run:
         st = "PASS" if not fails else ("NEEDS_IMAGINE" if set(fails) <= {"repetition", "neighbours"} and self.state["stages"].get("inputs", {}).get("imagineBatch") else "FAIL")
         return self.done("geometry", st, dir=out, rows=rows, failRows=fails, limits=lim,
                          summary=f"{len(rows)} placements, failing rows: {fails or 'none'}")
+
+    def s_volumes(self):
+        """Real facade boxes (tubes, bands, frames). The vision tower cooks them in multiview_tower --volumes."""
+        if not self.spec.get("vision"):
+            return self.done("volumes", "SKIP", summary="volumes apply to the vision tower; other kinds keep their own loft")
+        feat = os.path.join(self.work, "features.json")
+        alt = os.path.join(self.work, "vision", "features.json")
+        path = feat if os.path.isfile(feat) else (alt if os.path.isfile(alt) else None)
+        if path is None:
+            return self.done("volumes", "FAIL",
+                             summary="features.json missing — cook with multiview_tower.py --volumes (facade_volumes.attach)")
+        feats = json.load(open(path))
+        rows = feats if isinstance(feats, list) else (feats.get("features") or [])
+        by = {}
+        for f in rows:
+            by[f.get("class") or "?"] = by.get(f.get("class") or "?", 0) + 1
+        deep = [f for f in rows if float(f.get("protrusion_m") or 0) >= 0.50]
+        fails = []
+        if len(deep) < 1:
+            fails.append("metricProtrusion")
+        return self.done("volumes", "PASS" if not fails else "FAIL", features=len(rows), byClass=by,
+                         metric=len(deep), path=path, failRows=fails,
+                         summary=f"{len(rows)} volumes, {len(deep)} at >= 0.50 m, classes {by}")
 
     def s_pack_building(self):
         src = self.state["stages"]["geometry"]["dir"]

@@ -2,7 +2,7 @@
 // API:   import { gateScene, gateObject, loadScene } from "tools/object-gate/gate.mjs"
 // CLI:   node tools/object-gate/cli.mjs --scene <scene.yaml> [--url ...] [--only id,id] [--out dir]
 // Every FAIL blocks the delivery. Every FAIL carries fix hints. Nothing here edits the game.
-import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync, copyFileSync } from "node:fs";
 import { dirname, resolve, join, basename } from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -11,10 +11,11 @@ import { scoreVisible, screenPxPerM, resolveView, footprintsFromBoxes } from "./
 export { scoreVisible, screenPxPerM, resolveView };
 
 /** Stable API contract (see API.md). Bump the major only with a migration note; additions bump the minor. */
-export const API_VERSION = "1.7";
+export const API_VERSION = "1.8";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PY = join(HERE, "lib/analyze.py");
+const OBLIQUE_PY = join(HERE, "lib/oblique.py");
 const CAP_PY = join(HERE, "../common/capture_gate.py");
 const FRAME_PY = join(HERE, "../common/frame_bbox.py");
 const INJECT = join(HERE, "lib/inject.js");
@@ -241,7 +242,7 @@ export const CHECK_IDS = [
   [/^repetition \(visible\): identical/, "repetition.visible-radius"], [/^repetition \(visible\): neighbours/, "repetition.visible-neighbours"], [/^repetition \(UV\)/, "repetition.uv"], [/^UV stretch/, "texel.stretch"],
   [/^scene self-report/, "texel.self-report"], [/^repetition \(capture/, "repetition.captures"], [/^approach morph/, "morph"],
   [/^shadow light/, "shadow.light"], [/^shadow cast/, "shadow.cast"], [/^shadow world-fixed/, "shadow.world-fixed"], [/^shadow colour/, "shadow.colour"],
-  [/^grounding/, "grounding"], [/^mesh sealed/, "geometry.sealed"], [/^facade relief/, "geometry.relief"], [/^facade crisp/, "geometry.crisp"], [/^proportions/, "geometry.proportions"],
+  [/^grounding/, "grounding"], [/^mesh sealed/, "geometry.sealed"], [/^facade relief/, "geometry.relief"], [/^oblique-profile/, "oblique.profile"], [/^facade crisp/, "geometry.crisp"], [/^proportions/, "geometry.proportions"],
   [/^relief-texture alignment/, "relief.align"],
   [/^effects take/, "effects.imagine-texture"], [/^effects: no typed/, "effects.no-colour-literals"],
   [/^key checklist written/, "checklist.written"], [/^key crop present/, "checklist.key-crop"], [/^key checklist: every/, "checklist.verified"], [/^colour vs key/, "checklist.colour"],
@@ -594,7 +595,15 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
     for (const b of targets) {
       const sp = await page.evaluate(() => (window.__ogHost.path || [[0, 0]])[0]);
       let dx = sp[0] - b.center[0], dz = sp[1] - b.center[2]; const L = Math.hypot(dx, dz) || 1; dx /= L; dz /= L;
-      const r0 = Math.max(b.halfW, b.halfD);
+      // halfW/halfD is the local face. A rotated footprint's world AABB sticks out
+      // past that circle, so center+(halfW+d) can sit inside the solid. The 11.3 m
+      // step was that crossing (gap 0.37 m, then inside) and the mask clipped.
+      // r0 is the AABB support along the approach, and never inside the old circle.
+      // d stays metres outside the solid. The drop bar is unchanged.
+      const hx = (b.max[0] - b.min[0]) * 0.5, hz = (b.max[2] - b.min[2]) * 0.5;
+      const ax = Math.abs(dx), az = Math.abs(dz);
+      const rBox = Math.min(ax > 1e-6 ? hx / ax : Infinity, az > 1e-6 ? hz / az : Infinity);
+      const r0 = Math.max(b.halfW, b.halfD, Number.isFinite(rBox) ? rBox : 0);
       let prev = null; const ious = []; const strip = [];
       for (let d = M.fromM; d >= M.toM; d *= M.step) {
         const x = b.center[0] + dx * (r0 + d), z = b.center[2] + dz * (r0 + d);
@@ -669,16 +678,18 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
 
   // ---------------- 6. geometry
   if (checks.has("geometry")) {
-    const geo = await page.evaluate((s) => window.__og.geometry(s), sel);
-    writeFileSync(join(odir, "geometry.json"), JSON.stringify(geo, null, 1));
     const G = cfg.geometry;
+    const geo = await page.evaluate(({ s, plane }) => window.__og.geometry(s, plane ? { reliefFromPlane: true } : {}), { s: sel, plane: !!G.reliefFromPlane });
+    writeFileSync(join(odir, "geometry.json"), JSON.stringify(geo, null, 1));
     const nm = geo.filter((g) => G.maxNonManifold != null && g.nonManifold > G.maxNonManifold);
     const op = geo.filter((g) => G.maxOpenEdges != null && g.open > G.maxOpenEdges);
     row(o, "mesh sealed (non-manifold / open edges)", nm.length + op.length === 0, geo.map((g) => `${g.usedBy} tris ${g.tris} nonManifold ${g.nonManifold} open ${g.open}`).join("; "), ["Weld, heal coincident faces, cap open loops in Blender (heal_manifold) before export."]);
     if (G.minReliefM > 0) {
-      const flat = geo.filter((g) => Object.values(g.reliefM).filter((v) => v != null && v >= G.minReliefM).length < G.minReliefFaces);
-      row(o, `facade relief >= ${G.minReliefM} m`, flat.length === 0, geo.map((g) => `${g.usedBy} ${Object.entries(g.reliefM).map(([k, v]) => k + " " + v).join(" ")}`).join("; "),
-        ["Model the relief (fins, ledges, recessed bays, cornices, strata) in the geometry; a plate on a flat face reads as a picture."]);
+      const Hh = Math.max(0, ...geo.map((g) => (g.local && g.local.h) || 0));
+      const bar = Math.max(G.minReliefM, (G.reliefDepthFrac || 0) * Hh);
+      const flat = geo.filter((g) => Object.values(g.reliefM).filter((v) => v != null && v >= bar).length < G.minReliefFaces);
+      row(o, `facade relief >= ${fmt(bar, 3)} m`, flat.length === 0, geo.map((g) => `${g.usedBy} ${Object.entries(g.reliefM).map(([k, v]) => k + " " + v).join(" ")}`).join("; ") + ` (bar ${fmt(bar, 3)} m = max(minReliefM, reliefDepthFrac·H))`,
+        ["Model the relief (fins, ledges, recessed bays, cornices, strata) as real protrusion from the wall plane. A per-metre AABB span is not enough; a plate on a flat face reads as a picture."]);
     }
     if (G.minCrisp != null) {
       const lo = G.minOffsetPlanes ?? 2, hi = G.maxOffsetPlanes ?? 12;
@@ -742,6 +753,37 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
       row(o, "relief-texture alignment", badA.length === 0 && scores.length >= 4,
         scores.map((s) => `${s.name} ${s.overlap ?? s.reason}`).join("; "),
         ["A relief edge must lie on a painted edge. Move the feature box in the vision JSON. Do not invent bars."]);
+    }
+    if (cfg.obliqueProfile && cfg.obliqueProfile.enabled) {
+      const mesh = await page.evaluate((s) => window.__og.meshLocal(s), sel);
+      const meshPath = join(odir, "oblique-mesh.json");
+      writeFileSync(meshPath, JSON.stringify({ positions: mesh.positions, indices: mesh.indices }));
+      const sheet = join(odir, "oblique-sheet.jpg");
+      // odir is <out>/<objectId>. The step sheet sits beside the gate directory.
+      const gateRoot = basename(dirname(odir)) === "gate" ? dirname(odir) : (basename(odir) === "gate" ? odir : null);
+      const sheetCopy = gateRoot ? join(dirname(gateRoot), "oblique-sheet.jpg") : null;
+      let sc = null;
+      try {
+        sc = pyFile(OBLIQUE_PY, { mesh: meshPath, out: odir, sheet, sheetCopy, cfg: cfg.obliqueProfile });
+      } catch (e) {
+        row(o, "oblique-profile 45°/grazing", false, String(e && e.stderr ? e.stderr : e).slice(0, 500),
+          ["The oblique raster failed. Fix tools/object-gate/lib/oblique.py. A flat face must still fail this row."]);
+      }
+      if (sc) {
+        if (gateRoot && gateRoot !== odir) {
+          for (const name of readdirSync(odir)) {
+            if (name.startsWith("oblique-") && (name.endsWith(".png") || name.endsWith(".jpg"))) {
+              copyFileSync(join(odir, name), join(gateRoot, name));
+            }
+          }
+        }
+        writeFileSync(join(odir, "oblique.json"), JSON.stringify(sc, null, 1));
+        const bad = (sc.cells || []).filter((c) => c.blocking && !c.pass);
+        const detail = (sc.cells || []).map((c) => `${c.face} ${c.angleDeg}° @${c.distM}m range ${c.rangeM} rough ${c.roughM}${c.kind === "hero" ? " hero" : ""}`).join("; ");
+        row(o, "oblique-profile 45°/grazing", bad.length === 0 && !!sc.pass,
+          `bar ${fmt(sc.barM, 3)} m (max(0.5, 0.003·H)); ${detail}`,
+          ["Extrude real tubes, ledges and recesses of at least the metre bar. A centimetre heightfield and a pasted plate both fail this row."]);
+      }
     }
   }
 

@@ -55,7 +55,11 @@ ok(/^1\./.test(API_VERSION) && [gateObject, gateScene, resolveObject, gateAndFix
 }
 ok(listProfiles().join(",") === "building,creature,effect,ice,prop,rock,terrain,vegetation,vehicle", `listProfiles: ${listProfiles().join(" ")}`);
 ok(checkId("native Imagine px/m (plates only, unique pixels)") === "texel.unique-px-per-m" && checkId("live preview untouched during the gate run") === "runtime.live-untouched" && new Set(CHECK_IDS.map((c) => c[1])).size === CHECK_IDS.length, "stable check ids unique");
-ok(loadProfile("building").geometry.minReliefM === 0.3 && loadProfile("rock").geometry.maxOpenEdges === null, "profile inheritance + overrides");
+ok(loadProfile("building").geometry.minReliefM === 0.5 && loadProfile("building").geometry.reliefDepthFrac === 0.003 && loadProfile("building").obliqueProfile.enabled === true && loadProfile("rock").geometry.maxOpenEdges === null, "profile inheritance + overrides");
+{
+  const st = JSON.parse(execFileSync("python3", [join(HERE, "lib/oblique.py"), "selftest"], { encoding: "utf8", maxBuffer: 1 << 24 }));
+  ok(st.ok === true && st.flat.oblique === "FAIL" && st.flat.relief === "FAIL" && st.studs.oblique === "PASS" && st.studs.relief === "PASS", `oblique selftest flat ${st.flat.oblique}/${st.flat.relief} studs ${st.studs.oblique}/${st.studs.relief}`);
+}
 const sc = loadScene(join(HERE, "specs/zone-b/scene.yaml"));
 ok(sc.objects.length === 7 && sc.objects.every((o) => o.cfg && o.select && o.select.names), `zone-b scene: ${sc.objects.length} object specs resolve`);
 ok(sc.objects.filter((o) => o.type !== "effect").every((o) => (o.textures || []).some((t) => t.role === "plate")), "every non-effect spec declares at least one plate");

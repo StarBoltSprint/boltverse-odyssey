@@ -1222,3 +1222,36 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Pull only `__ogHost.camera`, and use `1 - smoothstep(gap, 0.4, 6)`. Zero relief for `t < 0.22` (float returned to 0.00 m). SAM2 `points_per_side` 24 and a 48×120 loft raised hero overlap from 0.15 to 0.19 and did not clear 0.70. Stop. Do not upscale. Do not loosen the bars. |
 | Guard | `steps/tower-fix3-1012/gate/report.md` rows approach morph, shadow cast, relief-texture alignment, visible px/m, key checklist. UV max 1.298, float 0.00 m, d/w 0.871 stay PASS. Numbers in `steps/tower-fix3-1012/numbers.json`. |
 | Sources | `tools/imagine-to-3d/runtime/vision-tower.mjs`, `tools/imagine-to-3d/multiview_tower.py`, `tools/imagine-to-3d/sam2_cpu.py`, `steps/tower-fix3-1012/REPORT.md`. |
+
+### 2026-10-12 — centimetre AABB relief passed a flat painted facade
+
+| | |
+| --- | --- |
+| Take | tower-volumes-1012 |
+| Defect | Phone capture 09:43: Zone B hero facades are flat planes with the Imagine plate pasted on. Cables, the chrome strip, and recesses are only painted. `facade relief >= 0.3 m` still passed (fix4 +x 2.851, −x 2.848, +z 0.496, −z 0.496). |
+| Root cause | The old relief number is an AABB span, including centimetre displacement. It does not measure the silhouette from 45° or from a grazing angle. |
+| Fix | Building relief is the outward gap from the modal wall plane. Bar is max(0.5 m, 0.003·H) (0.521 m at 173.821 m). New blocking row `oblique-profile 45°/grazing` uses that bar on plane-distance bins at 8 m and 30 m. Volumes are SAM2 boxes at 0.35–1.05 m. The tower gate still FAILs on visible px/m, shadow (0 px), crispness (+x/−x 10 planes, +z 1 plane), alignment, and the checklist. |
+| Guard | `python3 tools/object-gate/lib/oblique.py selftest` (flat FAIL/FAIL, studs PASS/PASS). Gate row `oblique-profile 45°/grazing` and `facade relief >= 0.521 m` in `steps/tower-volumes-1012/gate/report.md`. |
+| Sources | `tools/object-gate/lib/oblique.py`, `tools/object-gate/profiles/building.yaml`, `tools/imagine-to-3d/facade_volumes.py`, `steps/tower-volumes-1012/REPORT.md`. |
+
+### 2026-10-12 — shadow map is filled and the probe colour stays identical
+
+| | |
+| --- | --- |
+| Take | tower-volumes-1012 |
+| Defect | Shadow row stays `s1.n = 0` after a plain `vision-shadow-caster` and a far plane of 2216.7 m. |
+| Root cause | A headless probe saw the caster and the instanced mesh enter the shadow pass, and a contact texel whose unpacked depth would cross 0.45 m, while the colour mean of the probe view stayed bit-identical with every caster off. The gate row is still 0. Albedo was not darkened. |
+| Fix | None in this step. Stop. |
+| Guard | `steps/tower-volumes-1012/gate/report.md` row `shadow cast`. `steps/tower-volumes-1012/gate/tower-hero/shadow.json` `s1.n`. |
+| Sources | `tools/imagine-to-3d/runtime/vision-tower.mjs`, `tools/object-gate/lib/probe.js`, `steps/tower-volumes-1012/REPORT.md`. |
+
+### 2026-10-12 — crispness 2–8 planes rejects a multi-depth facade and a single front ledge
+
+| | |
+| --- | --- |
+| Take | tower-volumes-1012 |
+| Defect | Oblique profile passes (ranges 0.60–4.50 m) and crispness fails: +x planes 10, −x planes 10, +z planes 1, −z planes 6. |
+| Root cause | Class depths (0.35, 0.45, 0.50, 0.55, 0.60, 0.65, 0.80, 1.05) plus the inset wall exceed `maxOffsetPlanes` 8 on the sides. The front boxes share one offset, so +z has a single plane. fix4 printed crispness PASS with −z planes 14 under the old relief path. |
+| Fix | Not quantized. Another mesh cook is past the attempt cap. |
+| Guard | `steps/tower-volumes-1012/gate/report.md` row `facade crispness (axis-aligned >= 0.72, 2-8 offset planes)`. |
+| Sources | `tools/object-gate/profiles/building.yaml`, `tools/imagine-to-3d/facade_volumes.py`, `steps/tower-volumes-1012/numbers.json`. |

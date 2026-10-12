@@ -1,0 +1,50 @@
+kit-gate exit=1 ok=False cmd=node tools/object-gate/cli.mjs --scene tools/object-gate/specs/zone-b/tower-hero-vision-scene.yaml --out steps/tower-volumes-1012/gate
+--- stdout ---
+  open http://127.0.0.1:8996/tower3-1010/index-fusion.html?visionKey=1 @540x1200
+(node:1392945) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  open http://127.0.0.1:8996/tower3-1010/index-fusion.html?visionKey=1&hud=0&lockq=1&eye=1.6&grain=0 @412x915
+object tower-hero (building)
+  -> FAIL (5 FAIL / 22)
+PASS	runtime	console 540x1200	no console / page errors
+PASS	runtime	shader compile 540x1200	all programs compiled
+PASS	runtime	HUD text 540x1200	"Zone B — aperçu (tours phase 1, sans Bolt)" vs "Zone B — aperçu (tours phase 1, sans Bolt)"
+PASS	runtime	title 540x1200	"Zone B — aperçu"
+PASS	runtime	portrait viewport 540x1200	inner 540x1200
+PASS	runtime	capture ready 540x1200	loaded, cover 0.9832
+INFO	runtime	budgets 540x1200 (report only, quality first)	{"renderInfo":{"calls":27,"triangles":416751,"textures":26,"geometries":18,"programs":26},"visibleMeshes":40,"sceneTris":1563573,"pixelRatio":1}
+PASS	runtime	perf: canvas ratio <= cap 540x1200	canvas ratio 1 (cap 1, device 1)
+PASS	runtime	perf: sky dome drawn after the opaques 540x1200	sky renderOrder 2, max opaque 0.5, depthTest true
+PASS	runtime	perf: ground after the other opaques 540x1200	ground renderOrder 1, max opaque 0.5
+PASS	runtime	perf: adaptive controller on 540x1200	adaptive true
+PASS	runtime	perf: quality kept: adaptive never drops the detail layer 540x1200	adaptiveCanDropDetail false detailOn true
+PASS	runtime	perf: default ratio = min(2, device) native, or >= 1.5 + EASU/RCAS to the canvas, no sprint dip 540x1200	internal 1 canvas 1 device 1 upscale native rcas 0.8 sprintDip false
+PASS	runtime	live preview untouched during the gate run	108 files the live page loads unchanged
+PASS	tower-hero	select	1 placed copies
+PASS	tower-hero	texture roles declared	albedo.png=plate
+PASS	tower-hero	texture filtering (mips, trilinear, anisotropy = max, no resize)	1 textures trilinear + aniso 16
+PASS	tower-hero	plates not downscaled vs Imagine originals	albedo.png gpu 6679x1744 served 6679x1744 original 163x419
+PASS	tower-hero	UV stretch <= 1.3	max 1.113
+PASS	tower-hero	scene self-report vs measured	scene claims 5.39 px/m; measured visible (sampling) 8.2 px/m (detail tile 5.39 px/m does not count)
+PASS	tower-hero	repetition (capture autocorrelation)	face z peak 0.2715 at lag 2,-33 px; face x peak 0.2918 at lag 0,-25 px; close peak 0.5912 at lag 3,-54 px; low-portrait peak 0.2014 at lag 3,-40 px (max 0.75, at plate period 0.5)
+FAIL	tower-hero	visible px/m (phone sharpness from >= 8 m, final render)	50.8 px/m of real detail on screen vs 154.6 needed (capture at 8 m, zoomed to 309.3 screen px/m; median of 20 tiles, p25 47.9; phone 1080x2400, render pixel ratio 1.5, vfov 58°). Info: plate sampling worst +z 13.9 px/m on inst-tower-hero#0, 5/5 surfaces under
+PASS	tower-hero	repetition (visible): identical plate pixels never within 30 m	no plate repeats inside the radius (one shared plate set per type allowed)
+PASS	tower-hero	repetition (visible): neighbours never share plates (< 7 m)	1 copies, none within 7 m of another
+PASS	tower-hero	approach morph 300->10 m	inst-tower-hero#0: 67 frames, min IoU 0.914
+FAIL	tower-hero	shadow cast	0 ground pixels outside the object mask (0.0% of the probe view); inside-mask darkened 0; any darkened 0
+PASS	tower-hero	grounding (no floating)	0/1 copies float; worst inst-tower-hero#0 0.00 m at 88.5,-98.5
+PASS	tower-hero	mesh sealed (non-manifold / open edges)	inst-tower-hero tris 28988 nonManifold 0 open 0
+PASS	tower-hero	facade relief >= 0.521 m	inst-tower-hero +x 3 -x 3 +z 1.05 -z 2.95 (bar 0.521 m = max(minReliefM, reliefDepthFrac·H))
+FAIL	tower-hero	facade crispness (axis-aligned >= 0.72, 2-8 offset planes)	inst-tower-hero +x axis 0.955 planes 10 -x axis 0.905 planes 10 +z axis 0.99 planes 1 -z axis 0.951 planes 6
+PASS	tower-hero	proportions vs spec	hOverW, dOverW in range on every copy reason from plates
+FAIL	tower-hero	relief-texture alignment	hero 0.1446; 30m 0.0934; 8m 0; side 0.1513
+PASS	tower-hero	oblique-profile 45°/grazing	bar 0.521 m (max(0.5, 0.003·H)); +z 45° @8m range 0.8 rough 0; +z 45° @30m range 1.2 rough 0.16; +z 45° @182.8m range 1.2 rough 0.317 hero; +z 75° @8m range 0.6 rough 0.07; +z 75° @30m range 0.85 rough 0.139; +z 75° @182.8m range 1.2 rough 0.329 hero; -z 45° @8m range 2.9 rough 0; -z 45° @30m range 2.55 rough 0.278; -z 45° @182.8m range 4.9 rough 0.645 hero; -z 75° @8m range 2.95 rough 0.173; -z 75° @30m range 4.5 rough 0.247; -z 75° @182.8m range 4.9 rough 0.672 hero; +x 45° @8m range 2.25 rough 0.034; +x 45° @30m range 3.55 rough 0.374; +x 45° @182.8m range 4.8 rough 0.321 hero; +x 75° @8m range 2.2 rough 0.308; +x 75° @30m range 3.55 rough 0.398; +x 75° @182.8m range 4.75 rough 0.305 hero; -x 45° @8m range 1.45 rough 0.03; -x 45° @30m range 2.3 rough 0.146; -x 45° @182.8m range 2.65 rough 0.239 hero; -x 75° @8m range 1.45 rough 0; -x 75° @30m range 1.7 rough 0.033; -x 75° @182.8m range 2.55 rough 0.185 hero
+PASS	tower-hero	checklist camera framed on the target	close cover 100.0%, low-portrait cover 55.3%, far cover 28.1%, ortho-front cover 60.1%, ortho-side cover 60.0%
+FAIL	tower-hero	key checklist: every item verified on a current capture	wedge: recorded FAIL; chrome: recorded FAIL; damage: recorded FAIL; sand: recorded FAIL; N/A ladder: absent from every plate (No plate paints a ladder. Cables on the right plate are not rails.)
+INFO	tower-hero	colour vs key crop (CIELAB)	deltaE 17.51 object L*a*b* 21.2,1,-2.4 key 34.9,11.4,0.6 (report only)
+---
+FAIL  report /workspace/grokcli/wt/tower-vision-1010/steps/tower-volumes-1012/gate/report.md
+GATE_EXIT:1
+
+--- stderr ---
+(node) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.

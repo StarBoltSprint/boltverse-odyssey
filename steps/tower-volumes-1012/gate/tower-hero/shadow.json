@@ -1,0 +1,96 @@
+{
+ "light": {
+  "name": "zb-shadow",
+  "cast": true,
+  "dir": [
+   0.8660254037844386,
+   0.5,
+   -5.684341886080802e-17
+  ],
+  "intensity": 0,
+  "mapSize": 2048,
+  "autoUpdate": false
+ },
+ "at": {
+  "P": [
+   51.38013696610549,
+   0,
+   -173.50687151653398
+  ],
+  "T": [
+   51.380136966105496,
+   0,
+   -93.50687151653398
+  ]
+ },
+ "visionShadow": {
+  "left": 12.1,
+  "right": 138.1,
+  "bottom": 79.6,
+  "top": 355.4,
+  "near": 1532.6,
+  "far": 2216.7,
+  "tint": [
+   0.4,
+   0.4,
+   0.4
+  ],
+  "downSunM": 70,
+  "sticky": true,
+  "caster": "vision-shadow-caster plain mesh, colourWrite off, sibling so the probe toggles it",
+  "hypotheses": {
+   "instancedDepth": "InstancedMesh left nAny at 0; a plain mesh with the same matrix writes the shadow map",
+   "castShadowReset": "applyFit no longer sets castShadow, so the probe off pass stays off",
+   "contactOrtho": "map includes the probe ground and 120 m past it, far = -z0+400, without moving the probe camera",
+   "bias": "normalBias 0 so a short base shadow is not pushed off the receiver"
+  }
+ },
+ "s1": {
+  "n": 0,
+  "nInside": 0,
+  "nAny": 0,
+  "shadowCam": {
+   "name": "zb-shadow",
+   "left": 12.07803977981861,
+   "right": 138.09478702566318,
+   "near": 1532.5905373876108,
+   "far": 2216.683284518169,
+   "map": true
+  },
+  "frac": 0,
+  "meanOn": [
+   0,
+   0,
+   0
+  ],
+  "meanOff": [
+   0,
+   0,
+   0
+  ]
+ },
+ "s2": {
+  "n": 0,
+  "nInside": 0,
+  "nAny": 0,
+  "shadowCam": {
+   "name": "zb-shadow",
+   "left": 12.07803977981861,
+   "right": 138.09478702566318,
+   "near": 1532.5905373876108,
+   "far": 2216.683284518169,
+   "map": true
+  },
+  "frac": 0,
+  "meanOn": [
+   0,
+   0,
+   0
+  ],
+  "meanOff": [
+   0,
+   0,
+   0
+  ]
+ }
+}

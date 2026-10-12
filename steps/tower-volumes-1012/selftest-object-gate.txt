@@ -1,0 +1,53 @@
+PASS	profile building.yaml: checks 9, px/m 64/128
+PASS	profile creature.yaml: checks 9, px/m 64/128
+PASS	profile effect.yaml: checks 2, px/m 64/128
+PASS	profile ice.yaml: checks 9, px/m 64/128
+PASS	profile prop.yaml: checks 9, px/m 128/256
+PASS	profile rock.yaml: checks 9, px/m 64/128
+PASS	profile terrain.yaml: checks 4, px/m 64/128
+PASS	profile vegetation.yaml: checks 9, px/m 64/128
+PASS	profile vehicle.yaml: checks 9, px/m 64/128
+PASS	API 1.8 exports present
+PASS	texel policy visible, from 8 m (SmiR 20:19)
+PASS	phone 1080x2400 @ pr 1.5, fov 58: 154.6 px/m at 8 m
+PASS	visible px/m: 160 passes, 100 fails at 8 m
+PASS	plate tiling every 10.2 m < 30 m fails
+PASS	neighbours 5 m apart share plates -> FAIL
+PASS	-y faces ignored; LOD levels of one copy are not neighbours
+PASS	render-measured visible px/m decides the row (140 FAIL, 170 PASS), same row id
+PASS	140 and 170 without nativePlateLimit keep the default status
+PASS	native plate limit + coarserThanEstimator is WARN and still prints the number
+PASS	a measured 140 with the flag but without coarserThanEstimator stays FAIL
+PASS	plate-evidence absent with a note is N/A
+PASS	absent without a note is FAIL
+PASS	a present item recorded FAIL stays FAIL
+PASS	a present item with pass true is PASS
+PASS	profile: visibleMeasure render, headroom 2
+PASS	visible row ids
+PASS	live guard watches only the files the live page loads
+PASS	listProfiles: building creature effect ice prop rock terrain vegetation vehicle
+PASS	stable check ids unique
+PASS	profile inheritance + overrides
+PASS	oblique selftest flat FAIL/FAIL studs PASS/PASS
+PASS	zone-b scene: 7 object specs resolve
+PASS	every non-effect spec declares at least one plate
+PASS	tiled texture peak 1.0004 > 0.75 (lag 0,-96)
+PASS	unique texture peak 0.0345 < 0.75
+PASS	fix plan actions
+PASS	markdown renders
+PASS	key-compare thresholds resolve per type (profile + _base types)
+PASS	key-compare identical image: PASS
+PASS	key-compare shifted/darkened: FAIL, actions kc-shape,kc-colour
+PASS	perf rows PASS on the v61 report shape
+PASS	perf rows FAIL: full-DPR canvas, sky first, ground first, no adaptive, default ratio unproven
+PASS	perf row FAIL: an adaptive controller that can drop the detail layer
+PASS	perf rows FAIL on the v59 shape (no quality-first proof)
+PASS	perf row FAIL: default ratio 1.5 on a DPR-3 phone (native, no upscaler)
+PASS	perf rows PASS on the v62 shape (internal 1.5 + EASU/RCAS to canvas 2)
+PASS	perf row FAIL: internal 1.5 with the plain bilinear upscale
+PASS	perf row FAIL: default internal 1.25 even with EASU/RCAS
+PASS	perf row FAIL: EASU/RCAS but the canvas is not min(2, device)
+PASS	perf row FAIL: detail layer off
+PASS	perf row FAIL: v62 shape with a detail-dropping controller
+PASS	page without __perfReport: INFO only
+PASS selftest

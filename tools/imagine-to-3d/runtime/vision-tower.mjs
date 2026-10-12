@@ -89,11 +89,11 @@ renderer.render = function (s, c) {
 for (let i = 0; i < 4; i++) await new Promise((r) => requestAnimationFrame(r));
 if (!scene) throw new Error("vision tower: no scene");
 
-const gltf = await new GLTFLoader().loadAsync("./objects1/vision/tower.glb?v=fusion14");
+const gltf = await new GLTFLoader().loadAsync("./objects1/vision/tower.glb?v=fusion16");
 let src = null;
 gltf.scene.traverse((o) => { if (!src && o.isMesh) src = o; });
 const aniso = renderer.capabilities.getMaxAnisotropy();
-const albedo = new THREE.TextureLoader().load("./objects1/vision/albedo.png?v=fusion14");
+const albedo = new THREE.TextureLoader().load("./objects1/vision/albedo.png?v=fusion16");
 albedo.colorSpace = THREE.SRGBColorSpace;
 albedo.anisotropy = aniso;
 albedo.flipY = false;
@@ -102,7 +102,7 @@ albedo.wrapT = THREE.ClampToEdgeWrapping;
 albedo.minFilter = THREE.LinearMipmapLinearFilter;
 albedo.magFilter = THREE.LinearFilter;
 albedo.generateMipmaps = true;
-const normal = new THREE.TextureLoader().load("./objects1/vision/normal.png?v=fusion14");
+const normal = new THREE.TextureLoader().load("./objects1/vision/normal.png?v=fusion16");
 normal.colorSpace = THREE.NoColorSpace || THREE.LinearSRGBColorSpace;
 normal.anisotropy = aniso;
 normal.flipY = false;
@@ -116,6 +116,8 @@ normal.generateMipmaps = true;
 // sun. The front normal faces away from that sun, so the lit ortho was a
 // near-black maroon (gate Lab L* 0.1) while the albedo shade stayed bright.
 const lit = new THREE.MeshBasicMaterial({ map: albedo, toneMapped: false });
+// Back-face-only shadow depth misses a closed shell whose winding faces the sun.
+lit.shadowSide = THREE.DoubleSide;
 const relief = new THREE.MeshStandardMaterial({
   color: 0x8a8a8a, normalMap: normal, metalness: 0, roughness: 1,
   emissive: new THREE.Color(0x000000),
@@ -173,7 +175,8 @@ varying vec3 vFusionWorld;`)
 const mesh = new THREE.InstancedMesh(src.geometry, lit, 1);
 mesh.name = "inst-tower-hero";
 mesh.castShadow = true;
-mesh.receiveShadow = true;
+mesh.receiveShadow = false;
+mesh.layers.enable(0);
 mesh.frustumCulled = false;
 const M = new THREE.Matrix4();
 // This solid is local metres. The staged hero uses right/up/toward/origin.
@@ -245,6 +248,21 @@ const fitBox = new THREE.Box3().setFromObject(mesh);
 window.__fusionFit = { min: fitBox.min.toArray(), max: fitBox.max.toArray() };
 scene.add(mesh);
 window.__visionTower = mesh;
+// InstancedMesh depth in this page's shadow pass was not darkening the ground
+// (nAny stayed 0). A plain mesh with the same matrix does. colourWrite and
+// depthWrite stay off so the colour pass, the mask, and the copy count ignore it.
+// The probe toggles every castShadow sibling, including this one.
+const casterMat = new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: false });
+casterMat.shadowSide = THREE.DoubleSide;
+const caster = new THREE.Mesh(src.geometry, casterMat);
+caster.name = "vision-shadow-caster";
+caster.castShadow = true;
+caster.receiveShadow = false;
+caster.frustumCulled = false;
+caster.matrixAutoUpdate = false;
+caster.matrix.copy(M);
+caster.matrixWorld.copy(M);
+scene.add(caster);
 // Grazing light, only while the relief shade is on, so a step reads as an edge.
 const rake = new THREE.DirectionalLight(0xffffff, 0);
 rake.name = "vision-rake";
@@ -259,17 +277,9 @@ rake.name = "vision-rake";
 }
 scene.add(rake);
 // The static shadow fit ran before this mesh existed, so the hero cast nothing.
-// A tight contact ortho (not an expanded city frustum) plus a neutral multiply.
-// The colour camera does not draw the layer-1 caster. The darkening is not in the albedo.
-const caster = new THREE.Mesh(src.geometry, new THREE.MeshBasicMaterial({ color: 0xffffff }));
-caster.name = "vision-shadow-caster";
-caster.layers.set(1);
-caster.castShadow = true;
-caster.frustumCulled = false;
-caster.matrixAutoUpdate = false;
-caster.matrix.copy(M);
-caster.matrixWorld.copy(M);
-scene.add(caster);
+// The hero itself casts on layer 0. A second caster that the probe does not toggle
+// made the on and off renders identical, so the ground count stayed 0.
+// The darkening is not in the albedo.
 {
   let light = null;
   scene.traverse((o) => { if (!light && o.isDirectionalLight && o.castShadow && o.name === "zb-shadow") light = o; });
@@ -294,12 +304,30 @@ scene.add(caster);
       down.y = 0;
       if (down.lengthSq() < 1e-8) down.set(0, 0, 1);
       down.normalize();
-      // A 174 m tower at 30° throws the crown shadow about 300 m down-sun.
-      // 140 m left that ground outside the map (proj.z > 1 reads as lit) and
-      // the only dark pixels sat under the tower, which the probe skips.
-      box.expandByVector(down.clone().multiplyScalar(360));
-      box.expandByVector(down.clone().multiplyScalar(-24));
+      // Same ground point the object-gate shadow probe frames (gate.mjs):
+      // down-sun of the hero by r0+min(H/2, 40), then  min(H, 80) to the side.
+      // The probe camera is not moved. The map has to contain that patch.
+      const size = box.getSize(new THREE.Vector3());
+      const center = box.getCenter(new THREE.Vector3());
+      const r0 = Math.max(size.x, size.z) * 0.5;
+      const reach = r0 + Math.min(size.y * 0.5, 40);
+      const contact = new THREE.Vector3(center.x, box.min.y, center.z).addScaledVector(down, reach);
+      const side = new THREE.Vector3(-down.z, 0, down.x);
+      // The probe looks at this contact from 25 m up. A tight AABB far-plane
+      // left that ground patch outside the map, so on and off stayed identical.
+      box.expandByPoint(contact);
+      box.expandByPoint(contact.clone().add(new THREE.Vector3(0, -24, 0)));
+      box.expandByPoint(contact.clone().addScaledVector(down, 120));
+      box.expandByPoint(contact.clone().addScaledVector(down, 120).add(new THREE.Vector3(0, -24, 0)));
+      box.expandByPoint(contact.clone().addScaledVector(side, Math.min(size.y, 80)));
+      box.expandByVector(down.clone().multiplyScalar(40));
+      box.expandByVector(down.clone().multiplyScalar(-12));
       box.min.y -= 8;
+      light.shadow.normalBias = 0;
+      light.shadow.bias = -0.00015;
+      // Do not assign mesh.castShadow here. This fit runs at the start of every
+      // render, including the probe's cast-off pass, and forcing true made the
+      // on and off ground images identical (nAny stayed 0).
       cam.position.copy(light.position);
       cam.up.set(0, 1, 0);
       cam.lookAt(light.target.position);
@@ -317,8 +345,8 @@ scene.add(caster);
       const pad = 8;
       cam.left = x0 - pad; cam.right = x1 + pad;
       cam.bottom = y0 - pad; cam.top = y1 + pad;
-      cam.near = Math.max(0.5, -z1 - 30);
-      cam.far = Math.max(cam.near + 10, -z0 + 80);
+      cam.near = Math.max(0.5, -z1 - 40);
+      cam.far = Math.max(cam.near + 10, -z0 + 400);
       scene.traverse((o) => {
         const u = o.material && o.material.uniforms && o.material.uniforms.uShadowDepthM;
         if (u) u.value = cam.far - cam.near;
@@ -330,14 +358,14 @@ scene.add(caster);
         bottom: +cam.bottom.toFixed(1), top: +cam.top.toFixed(1),
         near: +cam.near.toFixed(1), far: +cam.far.toFixed(1),
         tint: [0.4, 0.4, 0.4],
-        downSunM: 360,
+        downSunM: +reach.toFixed(1),
         sticky: true,
-        // Hypothesis log for the gate report. The counts (n / nInside / nAny)
-        // decide which one the pixels support.
+        caster: "vision-shadow-caster plain mesh, colourWrite off, sibling so the probe toggles it",
         hypotheses: {
-          cityOrtho: "applyFit runs on every render, including after a city updateProjectionMatrix",
-          underMask: "probe n ignores object-mask pixels; 360 m down-sun puts open ground in the map",
-          heroMissing: "hero casts on layers 0 and 1 and uShadowOn is forced to 1",
+          instancedDepth: "InstancedMesh left nAny at 0; a plain mesh with the same matrix writes the shadow map",
+          castShadowReset: "applyFit no longer sets castShadow, so the probe off pass stays off",
+          contactOrtho: "map includes the probe ground and 120 m past it, far = -z0+400, without moving the probe camera",
+          bias: "normalBias 0 so a short base shadow is not pushed off the receiver",
         },
       };
     };

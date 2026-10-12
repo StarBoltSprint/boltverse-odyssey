@@ -1,0 +1,50 @@
+[
+ {
+  "geo": "2bfcf4cc",
+  "usedBy": "inst-tower-hero",
+  "part": null,
+  "instances": 1,
+  "tris": 28988,
+  "verts": 14568,
+  "open": 0,
+  "nonManifold": 0,
+  "degenerate": 0,
+  "reliefM": {
+   "+x": 3,
+   "-x": 3,
+   "+z": 1.05,
+   "-z": 2.95
+  },
+  "crisp": {
+   "+x": {
+    "axisFrac": 0.955,
+    "planes": 10
+   },
+   "-x": {
+    "axisFrac": 0.905,
+    "planes": 10
+   },
+   "+z": {
+    "axisFrac": 0.99,
+    "planes": 1
+   },
+   "-z": {
+    "axisFrac": 0.951,
+    "planes": 6
+   }
+  },
+  "local": {
+   "w": 46.02,
+   "h": 173.82,
+   "d": 39.57
+  },
+  "sizes": [
+   {
+    "inst": "inst-tower-hero#0",
+    "w": 46.02,
+    "h": 173.82,
+    "d": 39.57
+   }
+  ]
+ }
+]

@@ -849,6 +849,41 @@ def build_all(relief_dir, out_dir, modules):
     return report
 
 
+def axis_box(lo, hi):
+    """Closed outward box. lo/hi are (x, y, z) metres. 8 verts, 12 tris.
+
+    Winding is outward (+z is 4-5-6). Used by facade volumes and the oblique
+    self-test. Does not weld to a neighbour.
+    """
+    x0, y0, z0 = (float(v) for v in lo)
+    x1, y1, z1 = (float(v) for v in hi)
+    if x1 < x0:
+        x0, x1 = x1, x0
+    if y1 < y0:
+        y0, y1 = y1, y0
+    if z1 < z0:
+        z0, z1 = z1, z0
+    if x1 - x0 < 1e-4 or y1 - y0 < 1e-4 or z1 - z0 < 1e-4:
+        return None
+    V = np.array([
+        [x0, y0, z0], [x1, y0, z0], [x1, y1, z0], [x0, y1, z0],
+        [x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1],
+    ], np.float64)
+    quads = [
+        (0, 3, 2, 1),  # -z
+        (4, 5, 6, 7),  # +z
+        (0, 1, 5, 4),  # -y
+        (3, 7, 6, 2),  # +y
+        (0, 4, 7, 3),  # -x
+        (1, 2, 6, 5),  # +x
+    ]
+    F = []
+    for a, b, c, d in quads:
+        F.append((a, b, c))
+        F.append((a, c, d))
+    return V, np.asarray(F, np.int32), quads
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--relief", default="")

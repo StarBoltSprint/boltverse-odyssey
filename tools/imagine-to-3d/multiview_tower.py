@@ -21,7 +21,7 @@ import time
 
 import cv2
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
@@ -373,7 +373,7 @@ def planar_window(mask, world_w, world_h):
         row = yb + float(t) * (yt - yb)
         return (h - 1 - row) / max(1, h - 1)
 
-    return {"u": u_of, "v": v_of, "ppm": float(ppm), "window_px": [round(xb - xa, 1), round(yb - yt, 1)]}
+    return {"u": u_of, "v": v_of, "ppm": float(ppm), "image_px": [int(w), int(h)], "window_px": [round(xb - xa, 1), round(yb - yt, 1)]}
 
 
 def prepare_planar(masks, chords, height_m):
@@ -389,20 +389,77 @@ def prepare_planar(masks, chords, height_m):
             _PLANAR[name] = win
 
 
+# Bottom band. t <= _T_CUT reads the native lower plate (name-lower). The
+# upper plate keeps its full-height window, so a far shot still samples it.
+_T_CUT = 1.0
+_UV_BAND = "upper"
+_LOWER_M = 25.0
+
+
+def _window(name):
+    if _UV_BAND == "lower":
+        win = _PLANAR.get(name + "-lower")
+        if win is not None:
+            return win, True
+    return _PLANAR.get(name), False
+
+
 def map_u(masks, name, t, u, chord_m=None, height_m=None):
-    """Image-u of a foot-plane parameter. One window for every row. `t` is unused."""
-    win = _PLANAR.get(name)
+    """Image-u of a foot-plane parameter. One window for the active band. `t` is unused."""
+    win, _lower = _window(name)
     if win is None:
         return float(u)
     return float(win["u"](float(np.clip(u, 0.0, 1.0))))
 
 
 def map_v(name, t):
-    """Image-v of the height parameter. v 0 is the foot. Same window as map_u."""
-    win = _PLANAR.get(name)
+    """Image-v of the height parameter. v 0 is the foot. Lower band remaps t into its own plate."""
+    win, lower = _window(name)
     if win is None:
         return float(t)
-    return float(win["v"](t))
+    tt = float(t) / max(1e-6, _T_CUT) if lower else float(t)
+    return float(win["v"](float(np.clip(tt, 0.0, 1.0))))
+
+
+def grade_row(src, ref, ref_t, n=12):
+    """Feather the top n rows of a lower plate toward the upper plate at ref_t.
+
+    ref_t is 0 at the foot. The colour match is the upper row's median, not a
+    resample of either plate. Rows under the feather stay the lower plate.
+    """
+    out = src.copy()
+    h, w = out.shape[:2]
+    rh = ref.shape[0]
+    row = int(np.clip(round((1.0 - float(ref_t)) * (rh - 1)), 0, rh - 1))
+    band = ref[max(0, row - 1):row + 2]
+    med = np.median(band.reshape(-1, 3), 0)
+    ref_img = np.broadcast_to(med.astype(np.uint8), out.shape).copy()
+    n = min(int(n), max(1, h // 5))
+    top = np.zeros((h, w), bool)
+    top[:n, :] = True
+    before = delta_e(out, top, ref_img, top)
+    graded = reinhard(out, top, ref_img, top)
+    ramp = np.linspace(1.0, 0.0, n, dtype=np.float32)[:, None, None]
+    out[:n] = np.clip(graded[:n].astype(np.float32) * ramp + out[:n].astype(np.float32) * (1.0 - ramp), 0, 255).astype(np.uint8)
+    body = np.ones((h, w), bool)
+    body[:n, :] = False
+    return out, before, delta_e(out, body, src, body)
+
+
+def write_contact(images, path):
+    """2×2 grid. The sheet is a preview; the plates themselves are not resampled onto the mesh."""
+    order = ["front", "right", "back", "left"]
+    cell = 512
+    sheet = Image.new("RGB", (cell * 2, cell * 2), (176, 176, 176))
+    draw = ImageDraw.Draw(sheet)
+    for i, name in enumerate(order):
+        im = Image.fromarray(images[name]).convert("RGB")
+        im.thumbnail((cell - 8, cell - 28))
+        x = (i % 2) * cell + (cell - im.size[0]) // 2
+        y = (i // 2) * cell + 24
+        sheet.paste(im, (x, y))
+        draw.text(((i % 2) * cell + 8, (i // 2) * cell + 4), name, fill=(20, 20, 20))
+    sheet.save(path, quality=90)
 
 
 def roof_from_front(front_img, front_mask, cap_w, cap_d, rows=32):
@@ -593,9 +650,23 @@ def sample_inset(inset, u, v):
     return float(inset[row, col])
 
 
-def build_mesh(poly, y0, y1, depth_ratio, back_ratio, insets, ny=96, masks=None):
+def build_mesh(poly, y0, y1, depth_ratio, back_ratio, insets, ny=96, masks=None, insets_lower=None, lower_masks=None, wall_inset=0.0):
     """Loft. Front at z=0, body toward -z, up +y. Shared vertices, per-loop UVs later."""
-    ys = np.linspace(y0, y1, ny)
+    global _UV_BAND
+    insets_lower = insets_lower or {}
+    lower_masks = lower_masks or {}
+    ys = list(np.linspace(y0, y1, ny))
+    if _T_CUT < 0.98:
+        ys.append(y0 + float(_T_CUT) * (y1 - y0))
+    ys = sorted(float(y) for y in ys)
+    cleaned = [ys[0]]
+    for y in ys[1:]:
+        if y - cleaned[-1] > 1e-3:
+            cleaned.append(y)
+    ys = cleaned
+    ys[0] = float(y0)
+    ys[-1] = float(y1)
+    ny = len(ys)
     rings = []
     for y in ys:
         chord = span_at(poly, float(y))
@@ -702,6 +773,14 @@ def build_mesh(poly, y0, y1, depth_ratio, back_ratio, insets, ny=96, masks=None)
     chord_for_window = {k: span[k][1] - span[k][0] for k in span}
     if masks:
         prepare_planar(masks, chord_for_window, height_m)
+    if lower_masks and _T_CUT < 0.98:
+        for lname, lmask in lower_masks.items():
+            chord = chord_for_window.get(lname)
+            if chord is None or lmask is None:
+                continue
+            lwin = planar_window(lmask, chord, _LOWER_M)
+            if lwin:
+                _PLANAR[lname + "-lower"] = lwin
 
     def planar_s(kind, x, z):
         """0..1 across every ring of that face. A narrower ring stays inside the window."""
@@ -727,16 +806,44 @@ def build_mesh(poly, y0, y1, depth_ratio, back_ratio, insets, ny=96, masks=None)
         # flatten the whole shaft.
         fw = max(1e-3, xmax - xmin)
         narrow = fw < 12.0
-        # The grounding probe rays the lower fifth of the box. Relief on a
-        # ring just above the foot (t ≈ 0.05) overhangs the base and reads
-        # as metres of air. Keep that whole band on the face plane.
-        foot_band = t < 0.22 or t > 0.96 or narrow
 
         def face_off(name, x, z):
-            if foot_band or name not in insets:
+            # The contact ring and the crown stay on the face plane. Through
+            # the old air band the step is inward, so the foot stays the
+            # widest surface the grounding rays hit. Above that, the step is
+            # outward. The lower plate supplies the steps the 8 m shot sees.
+            # Volumes mode insets the whole shaft so boxes can stand proud of
+            # the wall and still finish inside the original shell. The foot
+            # and the crown stay put. The ramp is a few metres, under the
+            # stretch area cut.
+            if wall_inset > 0:
+                if t < 0.012 or t > 0.96 or narrow:
+                    return 0.0
+                if t < 0.05:
+                    return -wall_inset * ((t - 0.012) / 0.038)
+                if t > 0.90:
+                    return -wall_inset * ((0.96 - t) / 0.06)
+                return -wall_inset
+            if t < 0.012 or t > 0.96 or narrow:
                 return 0.0
             s = float(np.clip(planar_s(name, x, z), 0.0, 1.0))
-            return sample_inset(insets[name], map_u(masks, name, t, s), map_v(name, t))
+            if t <= _T_CUT and name in insets_lower and (name + "-lower") in _PLANAR:
+                win = _PLANAR[name + "-lower"]
+                off = sample_inset(
+                    insets_lower[name],
+                    float(win["u"](s)),
+                    float(win["v"](t / max(1e-6, _T_CUT))),
+                )
+                return -abs(off)
+            if name not in insets:
+                return 0.0
+            win = _PLANAR.get(name)
+            if win is None:
+                uu, vv = s, t
+            else:
+                uu, vv = float(win["u"](s)), float(win["v"](t))
+            off = sample_inset(insets[name], uu, vv)
+            return -abs(off) if t < 0.22 else abs(off)
 
         for i in range(nxf):
             u = i / (nxf - 1)
@@ -773,7 +880,8 @@ def build_mesh(poly, y0, y1, depth_ratio, back_ratio, insets, ny=96, masks=None)
         uvs.append((uv[0], uv[2], uv[3]))
 
     def uv_of(face, u, v):
-        return (face, u, v)  # placeholder, packed later
+        name = face + "-lower" if _UV_BAND == "lower" and (face + "-lower") in _PLANAR else face
+        return (name, u, v)
 
     def chord_of(ring, kind):
         return chord_of_ring(ring, kind)
@@ -782,6 +890,8 @@ def build_mesh(poly, y0, y1, depth_ratio, back_ratio, insets, ny=96, masks=None)
         y = rings[r][0]
         v0 = (y - y0) / (y1 - y0)
         v1 = (rings[r + 1][0] - y0) / (y1 - y0)
+        # A ring sits on the cut, so each quad is entirely in one plate.
+        _UV_BAND = "lower" if v1 <= _T_CUT + 1e-4 else "upper"
         base = r * stride
         nxt = (r + 1) * stride
         # One planar window. u follows the foot-plane metre, not the row fraction.
@@ -1184,8 +1294,28 @@ def main():
     if work is None:
         work = os.path.join(ROOT, "steps", "multiview-tower-1011", "work")
     os.makedirs(work, exist_ok=True)
+
+    def _arg(flag):
+        for i, a in enumerate(sys.argv):
+            if a == flag and i + 1 < len(sys.argv):
+                return sys.argv[i + 1]
+        return None
+
+    cache_from = _arg("--cache-from")
+    if cache_from and os.path.isdir(cache_from):
+        import shutil, glob
+        for src in glob.glob(os.path.join(cache_from, "sam-*")):
+            dest = os.path.join(work, os.path.basename(src))
+            if os.path.isdir(src) and not os.path.isdir(dest):
+                shutil.copytree(src, dest)
+        for src in glob.glob(os.path.join(cache_from, "*.moge.npy")):
+            dest = os.path.join(work, os.path.basename(src))
+            if not os.path.isfile(dest):
+                shutil.copy(src, dest)
     from common.align import camera as align_camera
     report = {"plates": {}, "rounds": []}
+    if cache_from:
+        report["cache_from"] = cache_from
     # Week-2 / scene-strict lens. Stored avenue yaw is not copied into the layout.
     report["camera"] = {
         "module": "tools/common/align/camera.py",
@@ -1335,6 +1465,67 @@ def main():
         k: {kk: (None if vv is None else round(vv, 3) if isinstance(vv, float) else vv) for kk, vv in d.items()}
         for k, d in seam.items()
     }
+    lower_dir = None
+    plates_out = None
+    for i, a in enumerate(sys.argv):
+        if a == "--lower" and i + 1 < len(sys.argv):
+            lower_dir = sys.argv[i + 1]
+        if a == "--plates-out" and i + 1 < len(sys.argv):
+            plates_out = sys.argv[i + 1]
+    lower_imgs = {}
+    lower_masks = {}
+    global _T_CUT, _LOWER_M
+    _LOWER_M = 25.0
+    _T_CUT = float(min(0.30, _LOWER_M / max(1e-6, height)))
+    if lower_dir:
+        raw = {}
+        for name, fname in (("front", "lower-front.jpg"), ("right", "lower-right.jpg"), ("back", "lower-back.jpg")):
+            raw[name] = np.asarray(Image.open(os.path.join(lower_dir, fname)).convert("RGB"))
+        raw["left"] = np.ascontiguousarray(raw["right"][:, ::-1])
+        upper_for = {"front": front_img, "right": right_img, "back": back_img, "left": left_img}
+        for name, im in raw.items():
+            graded, before, body = grade_row(im, upper_for[name], _T_CUT, n=12)
+            lower_imgs[name] = graded
+            m, _bg = subject_mask(graded)
+            lower_masks[name] = m
+            report.setdefault("lower_band", {})
+            report["lower_band"][name] = {
+                "px": [int(graded.shape[1]), int(graded.shape[0])],
+                "record": "horizontal mirror of lower-right" if name == "left" else "own plate",
+                "seam_delta_e_before": None if before is None else round(before, 3),
+                "body_delta_e": None if body is None else round(body, 3),
+                "feather_px": 12,
+                "resampled": False,
+                "band_m": _LOWER_M,
+                "t_cut": round(_T_CUT, 4),
+            }
+        report["lower_band"]["left_source"] = "code mirror of the right lower plate (same rule as face-left-1024.jpg)"
+        report["lower_band"]["ladder"] = "not painted"
+        if plates_out:
+            os.makedirs(plates_out, exist_ok=True)
+            pdir = os.path.join(plates_out, "plates")
+            os.makedirs(pdir, exist_ok=True)
+            for name, im in lower_imgs.items():
+                Image.fromarray(im).save(os.path.join(pdir, f"lower-{name}.jpg"), quality=95)
+            write_contact(lower_imgs, os.path.join(plates_out, "sheet-lower-plates.jpg"))
+            report["lower_band"]["sheet"] = os.path.join(plates_out, "sheet-lower-plates.jpg")
+        for name, im in lower_imgs.items():
+            sam_dir = os.path.join(work, f"sam-lower-{name}")
+            os.makedirs(sam_dir, exist_ok=True)
+            cached = os.path.join(sam_dir, "_sam2_labels.npy")
+            labels = None
+            if os.path.isfile(cached):
+                labels = np.load(cached).astype(np.int32)
+                sam_log.append(f"lower-{name}: reused SAM2 labels, max id {int(labels.max())}")
+            else:
+                labels = fusion._try_sam2(im, lower_masks[name], sam_log, sam_dir)
+            if labels is not None and int(labels.max()) >= 1:
+                np.save(os.path.join(work, f"feat-lower-{name}.npy"), labels)
+                face_labels[name + "-lower"] = labels
+                report["lower_band"][name]["sam2_regions"] = int(labels.max())
+            else:
+                report["lower_band"][name]["sam2_regions"] = 0
+        report["plates"]["sam2_log"] = sam_log
     report["colour_root_cause"] = "reinhard() used to shift the whole side image onto the front edge's Lab mean. The stone body left its plate. The material was already unlit MeshBasic. The grade now stops at a 12 px feather."
 
     # MoGe on each painted face. One process, one weight load.
@@ -1350,11 +1541,22 @@ def main():
         "right": masks[3],
     }
     # left/right/back masks match the original panel size, which the graded images kept
+    for name, im in lower_imgs.items():
+        face_img[name + "-lower"] = im
+        Image.fromarray(im).save(os.path.join(work, f"grade-{name}-lower.jpg"), quality=92)
     insets = {}
+    insets_lower = {}
     relief_report = {}
     batch = []
     for name, im in face_img.items():
+        if name == "cap" or name.endswith("-lower"):
+            continue
         path = os.path.join(work, f"grade-{name}.jpg")
+        npy = path + ".moge.npy"
+        if not os.path.isfile(npy):
+            batch.extend([path, npy])
+    for name in lower_imgs:
+        path = os.path.join(work, f"grade-{name}-lower.jpg")
         npy = path + ".moge.npy"
         if not os.path.isfile(npy):
             batch.extend([path, npy])
@@ -1366,6 +1568,8 @@ def main():
         if r.returncode != 0:
             raise RuntimeError((r.stderr or r.stdout or "moge batch failed")[-800:])
     for name, im in face_img.items():
+        if name.endswith("-lower"):
+            continue
         m = face_mask[name]
         if m.shape[:2] != im.shape[:2]:
             m = cv2.resize(m.astype(np.uint8), (im.shape[1], im.shape[0]), interpolation=cv2.INTER_NEAREST) > 0
@@ -1390,6 +1594,26 @@ def main():
         meta["ppm"] = round(ppm, 3)
         relief_report[name] = meta
         np.save(os.path.join(work, f"inset-{name}.npy"), q)
+    for name, im in lower_imgs.items():
+        m = lower_masks[name]
+        path = os.path.join(work, f"grade-{name}-lower.jpg")
+        npy = path + ".moge.npy"
+        depth = np.load(npy).astype(np.float32)
+        if depth.shape[:2] != m.shape[:2]:
+            depth = np.asarray(Image.fromarray(depth).resize((m.shape[1], m.shape[0]), Image.BILINEAR), np.float32)
+        labels = face_labels.get(name + "-lower")
+        if labels is None:
+            labels, _edge = fusion.segment_edge_snap(im, m, sam_log)
+            report["lower_band"][name]["relief_fallback"] = "segment_edge_snap"
+        q, meta = relief_from_feature_masks(labels, depth, m, max_planes=24, quant_m=0.4)
+        np.clip(q, 0.0, 1.2, out=q)
+        meta["clamped_m"] = 1.2
+        meta["sign"] = "inward on the foot band"
+        insets_lower[name] = q
+        meta["per_metre_median_span_m"] = round(per_metre_span(q, m), 4)
+        meta["ppm"] = round(im.shape[0] / _LOWER_M, 3)
+        relief_report[name + "-lower"] = meta
+        np.save(os.path.join(work, f"inset-{name}-lower.npy"), q)
     report["relief_faces"] = relief_report
     report["relief_axes_note"] = "Relief is one MoGe median per SAM2 mask. The edge is the mask outline. UVs are one planar window per face, written before the offset."
 
@@ -1418,19 +1642,52 @@ def main():
 
     face_masks = {"front": masks[0], "left": masks[1], "back": masks[2], "right": masks[3]}
 
+    use_volumes = "--volumes" in sys.argv
+    # Shaft inset leaves room for metre-scale boxes inside the original shell.
+    WALL_INSET = 1.20 if use_volumes else 0.0
+
     def build_scaled(scale):
         scaled = {k: np.asarray(v, np.float32) * float(scale) for k, v in insets.items()}
-        return build_mesh(poly, y0, y1, depth_ratio, back_ratio, scaled, ny=120, masks=face_masks)
+        scaled_lo = {k: np.asarray(v, np.float32) * float(scale) for k, v in insets_lower.items()}
+        return build_mesh(
+            poly, y0, y1, depth_ratio, back_ratio, scaled, ny=120, masks=face_masks,
+            insets_lower=scaled_lo, lower_masks=lower_masks, wall_inset=WALL_INSET,
+        )
 
     # Relief changes world edge lengths after the planar UV is written. The
     # stretch ratio is not linear in the step, so scale down and remeasure
     # until every finite class is ≤ 1.3, or the step would fall under 0.30 m.
-    scale = 1.0
+    # Volumes mode does not use that centimetre shrink. The wall is flat
+    # (inset only) and the boxes carry the metres.
+    scale = 0.0 if use_volumes else 1.0
     stretch = {}
     atlas = rects = None
     cap_how = ""
-    for _shot in range(6):
+    shots = 1 if use_volumes else 6
+    for _shot in range(shots):
         V, F, raw_uv, rings = build_scaled(scale)
+        if use_volumes and _shot == 0:
+            import facade_volumes
+            depths = {}
+            for name in list(face_img):
+                npy = os.path.join(work, f"grade-{name}.jpg.moge.npy")
+                if os.path.isfile(npy):
+                    depths[name] = np.load(npy)
+            V, F, raw_uv, vol_feats = facade_volumes.attach(
+                V, F, raw_uv, rings,
+                dict(y0=y0, y1=y1, wall_inset=WALL_INSET, images=face_img, masks=face_masks,
+                     lower_masks=lower_masks, labels=face_labels, depths=depths, t_cut=_T_CUT,
+                     lower_m=_LOWER_M, out=work),
+            )
+            by = {}
+            for f in vol_feats:
+                by[f["class"]] = by.get(f["class"], 0) + 1
+            report["volumes"] = {
+                "n": len(vol_feats),
+                "by_class": by,
+                "wall_inset_m": WALL_INSET,
+                "note": "Boxes sit on the inset wall and stop inside the original shell. Depth is MoGe scaled to metres, clipped to the class floor.",
+            }
         ppm_cap = face_img["front"].shape[0] / max(1e-6, y1 - y0)
         cap_w = max(8, int(round(float(V[:, 0].max() - V[:, 0].min()) * ppm_cap)))
         cap_d = max(8, int(round(float(V[:, 2].max() - V[:, 2].min()) * ppm_cap)))
@@ -1499,11 +1756,12 @@ def main():
         html = os.path.join(staging, "index-fusion.html")
         text = open(html).read()
         text2 = text
-        for old in ("v=10", "v=11", "v=12", "v=13"):
-            text2 = text2.replace("tower-fusion.mjs?" + old, "tower-fusion.mjs?v=14")
+        for old in ("v=10", "v=11", "v=12", "v=13", "v=14", "v=15", "v=16", "v=17"):
+            text2 = text2.replace("tower-fusion.mjs?" + old, "tower-fusion.mjs?v=18")
         if text2 != text:
             open(html, "w").write(text2)
         report["installed"] = dest
+        report["fusion"] = "tower-fusion.mjs?v=18"
     json.dump(report, open(os.path.join(work, "multiview.json"), "w"), indent=1)
     print(json.dumps({k: report[k] for k in ("proportions", "mesh_preview", "seams", "cheap", "uv_stretch_p95", "uv_relief_scale", "relief_faces", "blender_rc", "seconds") if k in report}, indent=1))
     if r.returncode not in (0, 2):
@@ -1511,5 +1769,23 @@ def main():
         raise SystemExit(r.returncode or 1)
 
 
+def install_runtime():
+    """Copy the fusion runtime only. Does not recook the mesh."""
+    import shutil
+    staging = "/workspace/kc-staging/zb-tower3"
+    shutil.copy(os.path.join(HERE, "runtime", "vision-tower.mjs"), os.path.join(staging, "tower-fusion.mjs"))
+    html = os.path.join(staging, "index-fusion.html")
+    text = open(html).read()
+    text2 = text
+    for old in ("v=10", "v=11", "v=12", "v=13", "v=14", "v=15", "v=16", "v=17"):
+        text2 = text2.replace("tower-fusion.mjs?" + old, "tower-fusion.mjs?v=18")
+    if text2 != text:
+        open(html, "w").write(text2)
+    print(json.dumps({"installed": staging, "fusion": "tower-fusion.mjs?v=18"}))
+
+
 if __name__ == "__main__":
-    main()
+    if "--install-runtime" in sys.argv:
+        install_runtime()
+    else:
+        main()

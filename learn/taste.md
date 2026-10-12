@@ -22,6 +22,7 @@ Short summary of the log below. When a new reaction changes a rule, add a senten
 - A sky video laid on an already-full still is a FAIL. A planet that is drawn, small in the frame, or not actually rotating is a FAIL.
 - A collision that is not the drawn face is a FAIL. A near rock replaced by a stepped box is a FAIL.
 - View drift and specks stay. Another cook spent on them is a FAIL.
+- A facade whose cables, chrome, and recesses are only paint on a flat plane is a FAIL. The readable depth is the oblique profile in metres.
 
 ## How to append
 
@@ -67,3 +68,4 @@ Append a row at the bottom. Do not rewrite an old row. Verdict is KEEP, FAIL, or
 | 2026-10-06 | Corridor sprint speed on main `700d47d` | FAIL | The sprint is too slow and boring. | A held sprint accelerates and reaches about 2–2.5× the old 8.6 m/s top over 20–30 s. The camera stays smooth. Far births stay far. |
 | 2026-10-07 | Sprint stream on main `c9b8d07` | FAIL | It works, but only rocks stream in. He wants the arches (Roman arch + dark slate monolith gate) and the ship/wreck to stream in too, far ahead, repeatedly during the sprint. | Existing monument meshes, placement only, recycled copies, inside 12 draws, 260 MB, and 4 videos. |
 | 2026-10-07 | Sprint spawn width on main `c9b8d07` | FAIL | Spawns only appear far away along one straight line (the 11 m wide field). They must appear far away across the whole zone, a wide arc near the fog covering the full visible width, including when he turns. Never in the near or mid range. Never popping near Bolt. All grounded. Density keeps rising with sprint time. | The far band is the portrait width at the birth distance. Seats stay world-locked. New births stay outside the near frustum. |
+| 2026-10-12 | Zone B hero tower facades, phone capture 09:43 (fix4) | FAIL | facades are flat planes with the Imagine image pasted on; cables, chrome strip, recesses are only painted. | An AABB span and a centimetre heightfield are not a facade. The phone reads depth at 45° and at a grazing angle, in metres. |

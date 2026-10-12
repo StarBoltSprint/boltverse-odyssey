@@ -1,11 +1,31 @@
 type: building   # hard-surface towers, halls, ruins, spires
 extends: _base
 geometry:
-  minReliefM: 0.3        # fins, ledges, recessed bays: a flat slab with a plate pasted on reads as an image (SmiR 10-09)
+  # 2026-10-12: 0.3 m was a per-metre AABB span. A flat plate passed it.
+  # reliefM is now the max protrusion from the wall's modal plane.
+  # Bar = max(minReliefM, reliefDepthFrac · H). A 174 m tower needs >= 0.522 m.
+  minReliefM: 0.5
+  reliefDepthFrac: 0.003
+  reliefFromPlane: true
   minReliefFaces: 2
   minCrisp: 0.72         # share of facade area whose normal is axis-aligned. A blobby displacement fails.
   minOffsetPlanes: 2     # one offset bin = a flat slab. Set only on hard surfaces so rock/mesa rows stay put.
   maxOffsetPlanes: 8     # more bins than this = blobby, not a quantised step facade
+obliqueProfile:
+  enabled: true
+  anglesDeg: [45, 75]
+  distancesM: [8, 30]
+  hero: true
+  heroDistanceM: 160
+  depthFloorM: 0.5
+  depthFracOfHeight: 0.003
+  roughnessAbsM: 0.12
+  roughnessRatio: 1.35
+  roughnessMarginM: 0.08
+  blockingDistancesM: [8, 30]
+  normalDotMin: 0.57
+  binM: 0.05
+  minBinFrac: 0.01
 checklistTemplate:
   - {id: volume, feature: "Silhouette and proportions match the key crop (height/width/depth)", captures: [far, close]}
   - {id: relief, feature: "Facade relief in the geometry (fins, ledges, bays, cornices) readable at avenue distance", captures: [close, low-portrait]}
