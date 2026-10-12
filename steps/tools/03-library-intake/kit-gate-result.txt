@@ -1,0 +1,12 @@
+kit-gate exit=0 ok=True cmd=python3 tools/library/selftest.py
+--- stdout ---
+PASS fixture-solid
+PASS add fixture-solid /tmp/tmpzq5w0uxn/lib/fixture-solid/manifest.json
+PASS library intake selftest
+PASS add lock-warn-solid /tmp/tmptpvefxro/lib/lock-warn-solid/manifest.json
+PASS lock-warn-solid
+fixture-solid  shape=surface-nets  assetcheck=PASS  objsheet=PASS  walkaround=PASS  asset=tools/walkaround/testdata/synthetic-rock/out/asset.json
+PASS fixture-solid
+PASS library selftest
+--- stderr ---
+FAIL assetcheck: FAIL views/yaw-000.png resolution

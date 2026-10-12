@@ -1,8 +1,36 @@
 {
+  "art_director": "KEEP",
   "asset": "tools/walkaround/testdata/synthetic-rock/out/asset.json",
+  "camera_layer": {
+    "id": "approach",
+    "kind": "approach"
+  },
   "collider": {
     "radius_m": 0.7366173380262299,
     "type": "circle"
+  },
+  "collision": {
+    "boxes": [
+      {
+        "max": [
+          1,
+          2,
+          1
+        ],
+        "min": [
+          0,
+          0,
+          0
+        ],
+        "space": "local"
+      }
+    ],
+    "ground_anchor": [
+      0,
+      0,
+      0
+    ],
+    "min_clearance_m": 0.5
   },
   "fixture": true,
   "id": "fixture-solid",
@@ -17,6 +45,21 @@
       "yaw-270.png",
       "yaw-315.png"
     ],
+    "chain": {
+      "lod0": {
+        "triangles": 1200
+      },
+      "lod1": {
+        "triangles": 400
+      },
+      "lod2": {
+        "triangles": 80
+      },
+      "outlineDiffPx": {
+        "15": 0,
+        "40": 0
+      }
+    },
     "impostor": true
   },
   "reports": {
@@ -36,6 +79,10 @@
       "verdict": "PASS"
     }
   },
+  "run": {
+    "tool": "object-gate",
+    "verdict": "PASS"
+  },
   "scale": {
     "default": 1.0,
     "max": 1.2,
@@ -52,6 +99,12 @@
     ],
     "promptRef": "biome/library/fixture-solid/prompt-ref.txt"
   },
+  "textures": [
+    {
+      "mipmaps": true,
+      "nativePx": 1024
+    }
+  ],
   "views": {
     "dir": "tools/walkaround/testdata/synthetic-rock/views",
     "files": [
