@@ -11,7 +11,7 @@ node tools/object-gate/selftest.mjs                                             
 ```
 
 Setup: `cd tools/object-gate && npm ci` (js-yaml; Playwright is optional: `npm i playwright && npx playwright install chromium`,
-or point `OG_PLAYWRIGHT=/path/to/playwright/index.mjs` at an existing install). Python 3 with numpy + Pillow. Renders with SwiftShader (headless, deterministic, no GPU needed).
+or point `OG_PLAYWRIGHT=/path/to/playwright/index.mjs` at an existing install). `loadPlaywright` skips a package whose `chromium.executablePath()` is not on disk and tries the next one, including `/workspace/playtest/node_modules/playwright/index.mjs`. Python 3 with numpy + Pillow. Renders with SwiftShader (headless, deterministic, no GPU needed). Geometry welds positions to 1 mm before the open-edge and non-manifold counts.
 
 ## Layout
 

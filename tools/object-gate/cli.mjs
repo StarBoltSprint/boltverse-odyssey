@@ -11,4 +11,4 @@ const rep = await gateScene(scene, { url: opt.url, out: opt.out, only: opt.only 
 for (const r of rep.runtime) console.log(`${r.status}\truntime\t${r.check}\t${r.detail}`);
 for (const o of rep.objects) for (const r of o.rows) console.log(`${r.status}\t${o.id}\t${r.check}\t${r.detail}`);
 console.log(`---\n${rep.verdict}  report ${rep.out}/report.md`);
-process.exit(rep.verdict === "PASS" ? 0 : 1);
+process.exit(rep.verdict === "PASS" ? 0 : rep.verdict === "PENDING" ? 3 : 1);

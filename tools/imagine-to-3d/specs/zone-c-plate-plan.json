@@ -1,0 +1,18 @@
+{
+  "zone": "c",
+  "note": "Plates 1-4 are the committed moss slabs. Plates 5-15 are the approved hidden-face set. They are not on disk. The tool must not generate them.",
+  "keyPlate": "key-zc1.jpg",
+  "plates": [
+    {"n": 5, "id": "arch-left-back", "object": "arch-left", "faces": ["back"]},
+    {"n": 6, "id": "arch-left-sides", "object": "arch-left", "faces": ["side", "grazing"]},
+    {"n": 7, "id": "arch-right-back", "object": "arch-right", "faces": ["back"]},
+    {"n": 8, "id": "arch-right-sides", "object": "arch-right", "faces": ["side", "grazing"]},
+    {"n": 9, "id": "cliff-left-back", "object": "cliff-left", "faces": ["back"]},
+    {"n": 10, "id": "cliff-left-sides", "object": "cliff-left", "faces": ["side", "grazing"]},
+    {"n": 11, "id": "gorge-rock-back", "object": "gorge-rock", "faces": ["back"]},
+    {"n": 12, "id": "gorge-rock-sides", "object": "gorge-rock", "faces": ["side", "grazing"]},
+    {"n": 13, "id": "cliff-right-back", "object": "cliff-right", "faces": ["back"]},
+    {"n": 14, "id": "cliff-right-sides", "object": "cliff-right", "faces": ["side", "grazing"]},
+    {"n": 15, "id": "solids-contact", "object": "*", "faces": ["bottom", "skirt"]}
+  ]
+}

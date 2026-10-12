@@ -182,8 +182,19 @@
             nearPathM: +distToPath(cc.x, cc.z, path).toFixed(1), note: `${depth} layers of ${tex.w}x${tex.h} for ${(shared / (cellM * cellM)).toFixed(0)} cells of ${cellM} m` });
           continue;
         }
+        // Only triangles whose material group actually samples this plate. A second group
+        // (hidden faces waiting on a plate) must not be scored as if it wore this texture.
+        const usesTex = (mat) => mat && texturesOfMaterial(mat).some(({ t }) => t.uuid === tex.uuid);
+        const groups = geo.groups && geo.groups.length ? geo.groups : null;
+        const ranges = [];
+        if (!groups) { if (usesTex(mats[0])) ranges.push([0, nTri]); }
+        else for (let gi = 0; gi < groups.length; gi++) {
+          const g = groups[gi];
+          if (!usesTex(mats[g.materialIndex != null ? g.materialIndex : gi])) continue;
+          ranges.push([g.start / 3, (g.start + g.count) / 3]);
+        }
         const cls = {};
-        for (let t = 0; t < nTri; t++) {
+        for (const range of ranges) for (let t = range[0]; t < range[1]; t++) {
           const i0 = idx ? idx.getX(3 * t) : 3 * t, i1 = idx ? idx.getX(3 * t + 1) : 3 * t + 1, i2 = idx ? idx.getX(3 * t + 2) : 3 * t + 2;
           a.fromBufferAttribute(pos, i0); b.fromBufferAttribute(pos, i1); c.fromBufferAttribute(pos, i2);
           const ln = new THREE.Vector3().subVectors(b, a).cross(new THREE.Vector3().subVectors(c, a));

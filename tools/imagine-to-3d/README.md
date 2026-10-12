@@ -35,6 +35,22 @@ sun+hemi, static shadow map refit incl. mesa casters, fog/haze weights tuned to 
 Check scripts: ../mesa-shots.mjs (poses in one load), ../mesa-tune.mjs (uniform sweep), ../console-check.mjs, ../mesa-collide-check.mjs.
 SwiftShader runs at ~0.3 fps: wait for frames, not milliseconds.
 
+## Zone C solids (`python3 run.py zone-c`)
+
+Five solids from the key, camera #199, SAM2 masks, and MoGe-2. Key-visible faces use `key-zc1.jpg`. Hidden faces are tagged pending-plate from `specs/zone-c-plate-plan.json` (plates 5–15). This command does not generate those plates.
+
+```
+/workspace/.venv-sam2/bin/python tools/imagine-to-3d/run.py zone-c build --attempt 1
+python3 tools/imagine-to-3d/serve_zone_c.py
+node tools/imagine-to-3d/capture_zone_c.mjs
+/workspace/.venv-sam2/bin/python tools/imagine-to-3d/run.py zone-c score
+node tools/object-gate/cli.mjs --scene tools/object-gate/specs/zone-c/solids-scene.yaml --out steps/zone-c/05-solids/object-gate
+```
+
+Staging is `http://127.0.0.1:8772/`. The texel probe scores only the material group that samples the plate, so a pending group is not counted as the key.
+
+MoGe-2's `points` tensor has come back with x = y = z = depth. The builder ignores that tensor and rebuilds the OpenCV point map from metric depth and the normalised intrinsics (`points_from_depth`). A cache is reused only when x and y differ. A quad whose edge is longer than twice the pixel's angle is a depth tear and is not meshed. A front triangle with UV stretch above 1.3 is tagged grazing and waits on that object's side plate. The object-gate welds vertices to 1 mm, so two struts that share a position still count as one non-manifold edge. `score` writes `kit-gate-result.json` from `object-gate/report.json` when that file is already there, and it leaves `pass` false.
+
 ## v2 pipeline (2026-10-09 evening): blocky strata + depth (`python3 run.py strata ...`)
 Stages, in order (each writes its report next to the outputs):
 1. `hull.py` - visual hull height field from the accepted Imagine views (front/side/back/top).

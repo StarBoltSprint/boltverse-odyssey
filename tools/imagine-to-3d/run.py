@@ -93,6 +93,16 @@ def main_strata():
     print("next: runtime gate (preview-gate.mjs mesa rows + object-gate CLI on the STAGING page), export only on PASS")
     sys.exit(0 if ok else 1)
 
+def main_zone_c():
+    """Zone C solids. MoGe-2 depth, key projection, hidden faces left pending.
+    python3 tools/imagine-to-3d/run.py zone-c build [--attempt N]
+    python3 tools/imagine-to-3d/run.py zone-c score
+    """
+    sys.argv = [sys.argv[0]] + sys.argv[2:]
+    from zone_c_solids import main as zone_main
+    zone_main()
+
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "strata": main_strata()
+    elif len(sys.argv) > 1 and sys.argv[1] == "zone-c": main_zone_c()
     else: main()

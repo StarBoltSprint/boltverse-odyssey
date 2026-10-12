@@ -4,13 +4,23 @@
  * solids stay in todo. Does not invent a colour, a lane count, or a GLB.
  *
  *   node tools/world-graph/export-zone-c.mjs [out.json]
+ *   node tools/world-graph/export-zone-c.mjs --solids [out.json]
+ *
+ * Default writes the causeway record only. --solids appends the five solids
+ * and writes steps/zone-c/05-solids/zone-c.zone.json. It does not rewrite the
+ * terrain file.
  */
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 const STEP = new URL("../../steps/zone-c/03-terrain/", import.meta.url);
-const OUT = process.argv[2]
-  ? process.argv[2]
-  : new URL("zone-c.zone.json", STEP);
+const SOLIDS_STEP = new URL("../../steps/zone-c/05-solids/", import.meta.url);
+const solidsMode = process.argv.includes("--solids");
+const args = process.argv.slice(2).filter((a) => a !== "--solids");
+const OUT = args[0]
+  ? args[0]
+  : solidsMode
+    ? new URL("zone-c.zone.json", SOLIDS_STEP)
+    : new URL("zone-c.zone.json", STEP);
 
 function readJson(url) {
   return JSON.parse(readFileSync(url, "utf8"));
@@ -136,6 +146,49 @@ const zone = {
     pins: {},
   },
 };
+
+if (solidsMode) {
+  const packPath = new URL("data/solids.json", SOLIDS_STEP);
+  if (!existsSync(packPath)) throw new Error("missing solids pack " + packPath.pathname);
+  const pack = JSON.parse(readFileSync(packPath, "utf8"));
+  const numbersPath = new URL("numbers.json", SOLIDS_STEP);
+  const solidNumbers = existsSync(numbersPath) ? JSON.parse(readFileSync(numbersPath, "utf8")) : null;
+  for (const o of pack.objects) {
+    const plates = Object.keys(o.pending || {}).map((n) => Number(n)).sort((a, b) => a - b);
+    const geomPath = new URL("object-gate/" + o.name + "/geometry.json", SOLIDS_STEP);
+    let welded = null;
+    if (existsSync(geomPath)) {
+      const rows = JSON.parse(readFileSync(geomPath, "utf8"));
+      welded = Array.isArray(rows) ? rows[0] : rows;
+    }
+    zone.objects.push({
+      id: o.name,
+      asset: { glb: null, lods: [] },
+      sources: [
+        { file: pack.key, role: "key-visible" },
+        ...plates.map((n) => ({ file: null, role: "pending-plate", plate: n })),
+      ],
+      cameras: [{ fov: cam.fov, position, target }],
+      transform: { position: [0, 0, 0], rotationDeg: [0, 0, 0], scale: [1, 1, 1] },
+      fidelity: {
+        stretchP95: o.stretchP95,
+        keyTris: o.keyTris,
+        sameHull: o.sameHull,
+        pendingPlates: plates,
+        openEdges: welded && welded.open != null ? welded.open : o.edges.open,
+        nonManifold: welded && welded.nonManifold != null ? welded.nonManifold : o.edges.nonManifold,
+        indexNonManifold: o.edges.nonManifold,
+      },
+      wake: { type: "placeholder", enabled: false },
+    });
+  }
+  zone.qualityGates.pass = !!(solidNumbers && solidNumbers.pass === true);
+  zone.qualityGates.solidsPass = zone.qualityGates.pass;
+  zone.todo = zone.todo.filter((t) => !/cliffs, arches/.test(t));
+  zone.todo.push("hidden faces of the five solids wait on Imagine plates 5-15");
+  zone.runtime.modules.solids = "tools/imagine-to-3d/staging/zone-c-solids/main.mjs";
+  zone.runtime.layout.solids = "steps/zone-c/05-solids/data/solids.bin";
+}
 
 const { validateZone } = await import(new URL("../../runtime/zone-loader.mjs", import.meta.url).href);
 validateZone(zone);

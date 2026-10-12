@@ -4,7 +4,7 @@ import { mkdtempSync, writeFileSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadProfile, loadScene, toMarkdown, API_VERSION, listProfiles, checkId, CHECK_IDS, gateObject, gateScene, resolveObject } from "./gate.mjs";
+import { loadProfile, loadScene, toMarkdown, API_VERSION, listProfiles, checkId, CHECK_IDS, gateObject, gateScene, resolveObject, foldVerdict } from "./gate.mjs";
 import { gateAndFix, FIX_ACTIONS } from "./hooks/imagine-to-3d.mjs";
 import { fixPlan } from "./hooks/imagine-to-3d.mjs";
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -100,5 +100,10 @@ ok(toMarkdown({ ...fake, url: "u", adapter: "a", startedAt: "t", objects: fake.o
   const none = run(null);
   ok(none.length === 1 && none[0].status === "INFO" && none[0].id === "perf.report", "page without __perfReport: INFO only");
 }
+ok(foldVerdict([{ status: "PASS" }, { status: "PENDING" }]) === "PENDING", "PENDING is not PASS");
+ok(foldVerdict([{ status: "FAIL" }, { status: "PENDING" }]) === "FAIL", "FAIL beats PENDING");
+ok(foldVerdict([{ status: "PASS" }]) === "PASS", "PASS stays PASS");
+ok(checkId("hidden face pending-plate #5 arch-left-back") === "hidden.pending-plate", "pending-plate row id");
+ok(checkId("draw calls 720x1600") === "runtime.draw-calls", "draw-calls row id");
 console.log(fails ? `FAIL ${fails}` : "PASS selftest");
 process.exit(fails ? 1 : 0);

@@ -1,0 +1,15 @@
+# Zone C solids. Hidden faces stay PENDING until plates 5-15 exist.
+scene: zone-c-solids
+url: http://127.0.0.1:8772/?along=0
+adapter: ../../adapters/zone-c-solids.mjs
+key: ../../../../steps/zone-c/03-terrain/key-zc1.jpg
+title: "Zone C solids"
+drawCallsMax: 12
+runtime:
+  viewports: [[720, 1600], [412, 915]]
+objects:
+  - arch-left.yaml
+  - arch-right.yaml
+  - cliff-left.yaml
+  - gorge-rock.yaml
+  - cliff-right.yaml

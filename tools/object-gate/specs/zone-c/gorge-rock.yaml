@@ -1,0 +1,13 @@
+id: gorge-rock
+type: rock
+select: {names: "^gorge-rock$"}
+keyCrop: ../../../../steps/zone-c/03-terrain/key-zc1.jpg
+# Shadow is off this list: law 67, unlit Imagine, no real-time shadow.
+# Checklist is off this list: no vision record. Colour is CIEDE2000 in numbers.json.
+thresholds:
+  checks: [texel, textures, repetition, morph, grounding, geometry, runtime, pending]
+  geometry:
+    maxOpenEdges: 0
+    maxNonManifold: 0
+textures:
+  - {match: "key-zc1", role: plate}

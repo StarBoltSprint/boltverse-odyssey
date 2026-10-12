@@ -67,10 +67,16 @@ const iou = (a, b) => { let i = 0, u = 0; for (let k = 0; k < a.length; k++) { c
 const ham = (a, b) => { let n = 0; let x = BigInt("0x" + a) ^ BigInt("0x" + b); while (x) { n += Number(x & 1n); x >>= 1n; } return n; };
 const fmt = (x, d = 1) => (x == null || !isFinite(x) ? String(x) : Number(x).toFixed(d));
 async function loadPlaywright() {
+  const tried = [];
   for (const p of [process.env.OG_PLAYWRIGHT, "playwright", "/workspace/playtest/node_modules/playwright/index.mjs"].filter(Boolean)) {
-    try { return await import(p); } catch (e) {}
+    try {
+      const mod = await import(p);
+      const exe = mod.chromium.executablePath();
+      if (!existsSync(exe)) { tried.push(p + " missing " + exe); continue; }
+      return mod;
+    } catch (e) { tried.push(p + " " + (e && e.message ? e.message : e)); }
   }
-  throw new Error("playwright not found: npm i playwright, or set OG_PLAYWRIGHT=/path/to/playwright/index.mjs");
+  throw new Error("playwright not found: " + tried.join("; ") + ". npm i playwright, or set OG_PLAYWRIGHT=/path/to/playwright/index.mjs");
 }
 function roleOf(spec, t) {
   const hay = `${t.url || ""} ${t.slots.join(" ")}`;
@@ -187,6 +193,10 @@ export async function gateScene(scene, opts = {}) {
         ["Wait until the Chargement overlay is gone and the framebuffer is not empty before any capture."]);
       stats = await h.page.evaluate(() => window.__og.stats());
       report.runtime.push({ id: "runtime.budgets", check: `budgets ${vp.join("x")} (report only, quality first)`, status: "INFO", detail: JSON.stringify(stats), hints: [] });
+      if (scene.drawCallsMax != null) {
+        const draws = await h.page.evaluate(() => (window.__solids && window.__solids.drawCalls) || (window.__terrain && window.__terrain.drawCalls) || null);
+        rowR(report, `draw calls ${vp.join("x")}`, draws != null && draws <= scene.drawCallsMax, `${draws} draws (max ${scene.drawCallsMax})`, ["Keep the solids on shared materials. Do not add a draw per triangle."]);
+      }
       perfRows(report, await h.page.evaluate(() => (typeof window.__perfReport === "function" ? window.__perfReport() : null)).catch(() => null), vp);
       await h.ctx.close();
     }
@@ -203,7 +213,7 @@ export async function gateScene(scene, opts = {}) {
       const odir = join(out, spec.id); mkdirSync(odir, { recursive: true });
       try { await gateOne(cap, adapter, spec, o, odir, { self, sources, fast: opts.fast, log }); }
       catch (e) { row(o, "gate run", false, "gate crashed: " + (e && e.stack || e).toString().slice(0, 400), ["Fix the spec selector / adapter; a crash is a FAIL."]); }
-      o.verdict = o.rows.some((r) => r.status === "FAIL") ? "FAIL" : "PASS";
+      o.verdict = foldVerdict(o.rows);
       log(`  -> ${o.verdict} (${o.rows.filter((r) => r.status === "FAIL").length} FAIL / ${o.rows.length})`);
     }
     await cap.ctx.close();
@@ -220,7 +230,7 @@ export async function gateScene(scene, opts = {}) {
     rowR(report, "live preview untouched during the gate run", changed.length === 0, changed.length ? `${changed.length} files the live page loads changed while gating: ${changed.slice(0, 6).join(", ")}${note}` : `${loaded.size} files the live page loads unchanged${note}`,
       ["Never edit live preview files in place: work in a staging copy, gate the staging URL, swap live only after PASS (lesson 2026-10-09 17:14). Re-run the gate on a stable tree."]);
   }
-  report.verdict = [...report.runtime, ...report.objects.flatMap((o) => o.rows)].some((r) => r.status === "FAIL") ? "FAIL" : "PASS";
+  report.verdict = foldVerdict([...report.runtime, ...report.objects.flatMap((o) => o.rows)]);
   report.finishedAt = new Date().toISOString();
   writeFileSync(join(out, "report.json"), JSON.stringify(report, null, 2));
   writeFileSync(join(out, "report.md"), toMarkdown(report));
@@ -245,12 +255,20 @@ export const CHECK_IDS = [
   [/^effects take/, "effects.imagine-texture"], [/^effects: no typed/, "effects.no-colour-literals"],
   [/^key checklist written/, "checklist.written"], [/^key crop present/, "checklist.key-crop"], [/^key checklist: every/, "checklist.verified"], [/^colour vs key/, "checklist.colour"],
   [/^checklist camera framed/, "checklist.camera"],
+  [/^hidden face pending-plate/, "hidden.pending-plate"],
+  [/^draw calls/, "runtime.draw-calls"],
   [/^console/, "runtime.console"], [/^shader compile/, "runtime.shader"], [/^HUD text/, "runtime.hud"], [/^title/, "runtime.title"],
   [/^capture ready/, "runtime.capture-ready"],
   [/^portrait viewport/, "runtime.portrait"], [/^budgets/, "runtime.budgets"], [/^live preview untouched/, "runtime.live-untouched"],
   [/^perf: canvas ratio/, "perf.canvas-ratio"], [/^perf: sky dome/, "perf.sky-order"], [/^perf: ground/, "perf.ground-order"], [/^perf: adaptive/, "perf.adaptive"], [/^perf: quality kept/, "perf.quality-kept"], [/^perf: default ratio/, "perf.default-ratio"], [/^perf: report/, "perf.report"],
 ];
 export const checkId = (check) => (CHECK_IDS.find(([re]) => re.test(check)) || [null, "other"])[1];
+/** FAIL wins. PENDING is not a pass. */
+export function foldVerdict(rows) {
+  if (rows.some((r) => r.status === "FAIL")) return "FAIL";
+  if (rows.some((r) => r.status === "PENDING")) return "PENDING";
+  return "PASS";
+}
 function row(o, check, pass, detail, hints = [], status) {
   o.rows.push({ id: checkId(check), check, status: status || (pass ? "PASS" : "FAIL"), detail, hints: pass ? [] : hints });
 }
@@ -629,6 +647,19 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
     writeFileSync(join(odir, "grounding.json"), JSON.stringify(g, null, 1));
   }
 
+  if (checks.has("pending")) {
+    const listed = await page.evaluate((name) => {
+      const bag = window.__solids && window.__solids.pending && window.__solids.pending[name];
+      return bag || null;
+    }, spec.id);
+    if (!listed) row(o, "hidden face pending-plate", false, "staging page did not list hidden faces", ["Publish window.__solids.pending from the plate plan. Do not mark a missing plate PASS."], "PENDING");
+    else if (!listed.length) row(o, "hidden face pending-plate", true, "no hidden triangles on this solid");
+    else for (const r of listed) {
+      const kinds = r.kinds && typeof r.kinds === "object" ? Object.entries(r.kinds).map(([k, n]) => `${k} ${n}`).join(", ") : "";
+      row(o, `hidden face pending-plate #${r.n} ${r.id || ""}`.trim(), false, `${r.tris} tris ${kinds}; plate file not on disk`, [`Cook Imagine plate #${r.n} before this face can pass. Do not invent the pixels.`], "PENDING");
+    }
+  }
+
   // ---------------- 6. geometry
   if (checks.has("geometry")) {
     const geo = await page.evaluate((s) => window.__og.geometry(s), sel);
@@ -728,8 +759,8 @@ export function toMarkdown(rep) {
   L.push(`# object-gate report — ${rep.verdict}`, "", `URL ${rep.url} · adapter ${rep.adapter} · ${rep.startedAt}`, "");
   const tbl = (rows) => { L.push("| Check | Status | Detail | Fix hints |", "|---|---|---|---|"); for (const r of rows) L.push(`| ${r.check} | ${r.status} | ${String(r.detail).replace(/\|/g, "/").slice(0, 600)} | ${(r.hints || []).join("<br>").replace(/\|/g, "/").slice(0, 900)} |`); L.push(""); };
   L.push("## Runtime"); tbl(rep.runtime);
-  L.push("## Objects", "", "| Object | Type | Verdict | FAIL rows |", "|---|---|---|---|");
-  for (const o of rep.objects) L.push(`| ${o.id} | ${o.type} | ${o.verdict} | ${o.rows.filter((r) => r.status === "FAIL").map((r) => r.check).join(", ")} |`);
+  L.push("## Objects", "", "| Object | Type | Verdict | FAIL rows | PENDING rows |", "|---|---|---|---|---|");
+  for (const o of rep.objects) L.push(`| ${o.id} | ${o.type} | ${o.verdict} | ${o.rows.filter((r) => r.status === "FAIL").map((r) => r.check).join(", ")} | ${o.rows.filter((r) => r.status === "PENDING").map((r) => r.check).join(", ")} |`);
   L.push("");
   for (const o of rep.objects) { L.push(`### ${o.id} (${o.type}) — ${o.verdict}`, "", `hero copy ${o.hero || "-"}${o.files.sheet ? ` · sheet \`${o.files.sheet}\`` : ""}`, ""); tbl(o.rows); }
   return L.join("\n");
