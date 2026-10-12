@@ -1,0 +1,50 @@
+{
+ "oblique-profile": {
+  "oblique45": {
+   "stepFrac": 0.2111,
+   "normSpread": 0.5914,
+   "hitPx": 6845,
+   "pass": true
+  },
+  "grazing": {
+   "stepFrac": 0.2973,
+   "normSpread": 0.5854,
+   "hitPx": 3651,
+   "pass": true
+  }
+ },
+ "untextured-area": {
+  "phone": {
+   "greyFrac": 0.0,
+   "pass": true
+  },
+  "oblique45": {
+   "greyFrac": 0.0,
+   "pass": true
+  },
+  "grazing": {
+   "greyFrac": 0.0,
+   "pass": true
+  },
+  "close8m": {
+   "greyFrac": 0.0,
+   "pass": true
+  },
+  "close3m": {
+   "greyFrac": 0.0,
+   "pass": true
+  }
+ },
+ "triangle-quality": {
+  "tris": 82208,
+  "degenerate": 0,
+  "sliverFrac": 0.2506,
+  "minAngleP5": 1.84,
+  "aspectP99": 115.15,
+  "pass": false
+ },
+ "errors": [
+  "triangle-quality: {'tris': 82208, 'degenerate': 0, 'sliverFrac': 0.2506, 'minAngleP5': 1.84, 'aspectP99': 115.15, 'pass': False}"
+ ],
+ "verdict": "FAIL"
+}

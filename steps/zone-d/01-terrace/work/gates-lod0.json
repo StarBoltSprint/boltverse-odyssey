@@ -1,0 +1,94 @@
+{
+ "oblique-profile": {
+  "oblique45": {
+   "stepFrac": 0.0354,
+   "normSpread": 0.2496,
+   "hitPx": 31993,
+   "pass": true
+  },
+  "grazing": {
+   "stepFrac": 0.1912,
+   "normSpread": 0.3801,
+   "hitPx": 14688,
+   "pass": true
+  }
+ },
+ "untextured-area": {
+  "phone": {
+   "greyFrac": 0.0012,
+   "uncoveredFrac": 0.0325,
+   "pass": false
+  },
+  "oblique45": {
+   "greyFrac": 0.0024,
+   "uncoveredFrac": 0.0239,
+   "pass": false
+  },
+  "grazing": {
+   "greyFrac": 0.0044,
+   "uncoveredFrac": 0.1584,
+   "pass": false
+  },
+  "close8m": {
+   "greyFrac": 0.0,
+   "uncoveredFrac": 0.0403,
+   "pass": false
+  },
+  "close3m": {
+   "greyFrac": 0.0,
+   "uncoveredFrac": 0.0305,
+   "pass": false
+  }
+ },
+ "uv-stretch-visible": {
+  "phone": {
+   "p95": 1.077,
+   "over13Frac": 0.0247,
+   "pass": false
+  },
+  "oblique45": {
+   "p95": 1.068,
+   "over13Frac": 0.0176,
+   "pass": false
+  },
+  "grazing": {
+   "p95": 1.419,
+   "over13Frac": 0.0577,
+   "pass": false
+  },
+  "close8m": {
+   "p95": 1.072,
+   "over13Frac": 0.0151,
+   "pass": false
+  },
+  "close3m": {
+   "p95": 1.077,
+   "over13Frac": 0.001,
+   "pass": true
+  }
+ },
+ "uv-stretch-mesh": {
+  "p50": 1.001,
+  "over13Frac": 0.047
+ },
+ "triangle-quality": {
+  "tris": 64474,
+  "degenerate": 0,
+  "sliverFrac": 0.0016,
+  "minAngleP5": 29.82,
+  "aspectP99": 2.01,
+  "pass": true
+ },
+ "errors": [
+  "untextured-area phone: {'greyFrac': 0.0012, 'uncoveredFrac': 0.0325, 'pass': False}",
+  "untextured-area oblique45: {'greyFrac': 0.0024, 'uncoveredFrac': 0.0239, 'pass': False}",
+  "untextured-area grazing: {'greyFrac': 0.0044, 'uncoveredFrac': 0.1584, 'pass': False}",
+  "untextured-area close8m: {'greyFrac': 0.0, 'uncoveredFrac': 0.0403, 'pass': False}",
+  "untextured-area close3m: {'greyFrac': 0.0, 'uncoveredFrac': 0.0305, 'pass': False}",
+  "uv-stretch phone: {'p95': 1.077, 'over13Frac': 0.0247, 'pass': False}",
+  "uv-stretch oblique45: {'p95': 1.068, 'over13Frac': 0.0176, 'pass': False}",
+  "uv-stretch grazing: {'p95': 1.419, 'over13Frac': 0.0577, 'pass': False}",
+  "uv-stretch close8m: {'p95': 1.072, 'over13Frac': 0.0151, 'pass': False}"
+ ],
+ "verdict": "FAIL"
+}
