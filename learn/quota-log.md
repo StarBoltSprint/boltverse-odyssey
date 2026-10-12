@@ -29,3 +29,4 @@ Append-only. One row per step. `python3 tools/quota/quota.py` adds the row. Do n
 | 2026-10-11 | tower-sides-fix-1011 | bdc3ee8b89abce83f690cd7c2f86eb325c4b8eca | 0 | 0 | 0 | 0 | n/a | n/a | 3881.7 | events.jsonl |
 
 Vision for tower-sides-fix-1011, commit bdc3ee8b: $0.011484, five calls, one round, cache `steps/tower-sides-fix-1011/vision-cache`, log `steps/tower-sides-fix-1011/vision.ndjson`. The session log did not carry token counts. Wall 3881.7 s is the events.jsonl span.
+| 2026-10-12 | tower-fix3-1012 | n/a | 0 | 0 | 0 | 0 | n/a | n/a | 5230.2 | events.jsonl |

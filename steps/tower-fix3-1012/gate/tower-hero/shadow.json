@@ -1,0 +1,94 @@
+{
+ "light": {
+  "name": "zb-shadow",
+  "cast": true,
+  "dir": [
+   0.8660254037844386,
+   0.5,
+   -5.684341886080802e-17
+  ],
+  "intensity": 0,
+  "mapSize": 2048,
+  "autoUpdate": false
+ },
+ "at": {
+  "P": [
+   51.1704053671779,
+   0,
+   -173.37478046397945
+  ],
+  "T": [
+   51.170405367177906,
+   0,
+   -93.37478046397945
+  ]
+ },
+ "visionShadow": {
+  "left": 11.8,
+  "right": 88.1,
+  "bottom": -52.4,
+  "top": 427.9,
+  "near": 1278,
+  "far": 2010.2,
+  "tint": [
+   0.4,
+   0.4,
+   0.4
+  ],
+  "downSunM": 360,
+  "sticky": true,
+  "hypotheses": {
+   "cityOrtho": "applyFit runs on every render, including after a city updateProjectionMatrix",
+   "underMask": "probe n ignores object-mask pixels; 360 m down-sun puts open ground in the map",
+   "heroMissing": "hero casts on layers 0 and 1 and uShadowOn is forced to 1"
+  }
+ },
+ "s1": {
+  "n": 0,
+  "nInside": 0,
+  "nAny": 0,
+  "shadowCam": {
+   "name": "zb-shadow",
+   "left": 11.813857674709524,
+   "right": 88.11153427150776,
+   "near": 1277.9617319863085,
+   "far": 2010.2366133408473,
+   "map": true
+  },
+  "frac": 0,
+  "meanOn": [
+   0,
+   0,
+   0
+  ],
+  "meanOff": [
+   0,
+   0,
+   0
+  ]
+ },
+ "s2": {
+  "n": 0,
+  "nInside": 0,
+  "nAny": 0,
+  "shadowCam": {
+   "name": "zb-shadow",
+   "left": 11.813857674709524,
+   "right": 88.11153427150776,
+   "near": 1277.9617319863085,
+   "far": 2010.2366133408473,
+   "map": true
+  },
+  "frac": 0,
+  "meanOn": [
+   0,
+   0,
+   0
+  ],
+  "meanOff": [
+   0,
+   0,
+   0
+  ]
+ }
+}

@@ -161,8 +161,8 @@ def main():
     model = build_sam2("configs/sam2/sam2_hiera_t.yaml", ckpt, device="cpu")
     gen = SAM2AutomaticMaskGenerator(
         model,
-        points_per_side=8,
-        points_per_batch=8,
+        points_per_side=24,
+        points_per_batch=16,
         pred_iou_thresh=0.72,
         stability_score_thresh=0.85,
         crop_n_layers=0,

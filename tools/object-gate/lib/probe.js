@@ -522,14 +522,14 @@
     }
     // n is the gate count (open ground only). nInside is hypothesis 2 (contact hidden under the mask).
     // nAny === 0 means the on and off renders match: the hero is not darkening the ground (hypothesis 1 or 3).
-    let cam = null;
+    let shadowCam = null;
     scene.traverse((o) => {
-      if (cam || !o.isDirectionalLight || !o.castShadow) return;
+      if (shadowCam || !o.isDirectionalLight || !o.castShadow) return;
       const c = o.shadow && o.shadow.camera;
       if (!c) return;
-      cam = { name: o.name || "", left: c.left, right: c.right, near: c.near, far: c.far, map: !!(o.shadow.map) };
+      shadowCam = { name: o.name || "", left: c.left, right: c.right, near: c.near, far: c.far, map: !!(o.shadow.map) };
     });
-    return { n, nInside, nAny, shadowCam: cam, frac: n / (w * h), meanOn: sum.map((x) => x / Math.max(1, n)), meanOff: sumOff.map((x) => x / Math.max(1, n)), mask: Array.from(sm).join("") };
+    return { n, nInside, nAny, shadowCam, frac: n / (w * h), meanOn: sum.map((x) => x / Math.max(1, n)), meanOff: sumOff.map((x) => x / Math.max(1, n)), mask: Array.from(sm).join("") };
   }
 
   /** Columns under the lower 20% of the object: lowest object hit from below vs ground height. */

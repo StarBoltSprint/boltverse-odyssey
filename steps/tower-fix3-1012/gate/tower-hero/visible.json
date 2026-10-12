@@ -1,0 +1,150 @@
+{
+ "view": {
+  "renderPixelRatio": 1.5,
+  "fovDeg": 58,
+  "source": "game: biome.json camera.pixelRatioCap, main.mjs fovBase ?? 58"
+ },
+ "render": {
+  "ok": true,
+  "screenPxPerM": 309.3,
+  "tiles": 4,
+  "kMedian": 7.494,
+  "visiblePxPerM": 41.3,
+  "p25PxPerM": 38,
+  "capped": false,
+  "tau": 0.1,
+  "img": "/workspace/grokcli/wt/tower-vision-1010/steps/tower-fix3-1012/gate/tower-hero/cap-visible-8m.png",
+  "mask": "/workspace/grokcli/wt/tower-vision-1010/steps/tower-fix3-1012/gate/tower-hero/cap-visible-8m-mask.png",
+  "cover": 1,
+  "distM": 8,
+  "needPxPerM": 154.6,
+  "zoomFovDeg": 20.95,
+  "wantedFovDeg": 20.95,
+  "renderH": 915,
+  "camera": [
+   90.88,
+   9.33,
+   -78.7
+  ],
+  "look": [
+   97.64846066106008,
+   9.525306057087025,
+   -82.96175639722428
+  ],
+  "aimM": 7,
+  "normal": [
+   -0.85,
+   0,
+   0.53
+  ],
+  "rect": [
+   62,
+   275,
+   350,
+   641
+  ],
+  "pose": {
+   "x": 90.88114972453087,
+   "y": 9.330789940854283,
+   "z": -78.69963648233946,
+   "yaw": 57.796867183930885,
+   "pitch": 1.3932563676051366
+  },
+  "visibleFaces": [
+   {
+    "cls": "+z",
+    "cover": 1,
+    "distM": 8,
+    "screenPxPerM": 85.8,
+    "ok": true,
+    "tiles": 34,
+    "kMedian": 5.581,
+    "visiblePxPerM": 15.4,
+    "p25PxPerM": 14.1,
+    "capped": false,
+    "tau": 0.1
+   },
+   {
+    "cls": "-z",
+    "cover": 1,
+    "distM": 8,
+    "screenPxPerM": 85.8,
+    "ok": true,
+    "tiles": 50,
+    "kMedian": 3.82,
+    "visiblePxPerM": 22.5,
+    "p25PxPerM": 20,
+    "capped": false,
+    "tau": 0.1
+   },
+   {
+    "cls": "+x",
+    "cover": 0.9899826388888889,
+    "distM": 8,
+    "screenPxPerM": 85.8,
+    "ok": true,
+    "tiles": 50,
+    "kMedian": 3.712,
+    "visiblePxPerM": 23.1,
+    "p25PxPerM": 21.2,
+    "capped": false,
+    "tau": 0.1
+   },
+   {
+    "cls": "-x",
+    "cover": 1,
+    "distM": 8,
+    "screenPxPerM": 85.8,
+    "ok": true,
+    "tiles": 50,
+    "kMedian": 4.549,
+    "visiblePxPerM": 18.9,
+    "p25PxPerM": 16.8,
+    "capped": false,
+    "tau": 0.1
+   }
+  ]
+ },
+ "perSurface": [
+  {
+   "inst": "inst-tower-hero#0",
+   "cls": "+z",
+   "viewM": 8,
+   "needPxPerM": 154.6,
+   "visiblePxPerM": 6.89,
+   "ok": false
+  },
+  {
+   "inst": "inst-tower-hero#0",
+   "cls": "+x",
+   "viewM": 8,
+   "needPxPerM": 154.6,
+   "visiblePxPerM": 9.8,
+   "ok": false
+  },
+  {
+   "inst": "inst-tower-hero#0",
+   "cls": "-z",
+   "viewM": 8,
+   "needPxPerM": 154.6,
+   "visiblePxPerM": 9.83,
+   "ok": false
+  },
+  {
+   "inst": "inst-tower-hero#0",
+   "cls": "-x",
+   "viewM": 8,
+   "needPxPerM": 154.6,
+   "visiblePxPerM": 9.84,
+   "ok": false
+  },
+  {
+   "inst": "inst-tower-hero#0",
+   "cls": "+y",
+   "viewM": 8,
+   "needPxPerM": 154.6,
+   "visiblePxPerM": 6.96,
+   "ok": false
+  }
+ ]
+}

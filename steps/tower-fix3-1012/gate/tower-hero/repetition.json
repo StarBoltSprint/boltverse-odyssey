@@ -1,0 +1,90 @@
+[
+ {
+  "name": "face z",
+  "ok": true,
+  "atExpectedLag": null,
+  "expectLagPx": null,
+  "rect": [
+   0,
+   0,
+   412,
+   1024
+  ],
+  "peak": 0.3993,
+  "lagPx": [
+   3,
+   -45
+  ],
+  "crop": [
+   412,
+   1024
+  ],
+  "pxPerM": 12.09,
+  "tileM": null
+ },
+ {
+  "name": "face x",
+  "ok": true,
+  "atExpectedLag": null,
+  "expectLagPx": null,
+  "rect": [
+   0,
+   0,
+   334,
+   1024
+  ],
+  "peak": 0.3721,
+  "lagPx": [
+   1,
+   27
+  ],
+  "crop": [
+   334,
+   1024
+  ],
+  "pxPerM": 13.89,
+  "tileM": null
+ },
+ {
+  "name": "close",
+  "ok": true,
+  "atExpectedLag": null,
+  "expectLagPx": null,
+  "rect": [
+   0,
+   0,
+   412,
+   915
+  ],
+  "peak": 0.5652,
+  "lagPx": [
+   3,
+   -55
+  ],
+  "crop": [
+   412,
+   915
+  ]
+ },
+ {
+  "name": "low-portrait",
+  "ok": true,
+  "atExpectedLag": null,
+  "expectLagPx": null,
+  "rect": [
+   0,
+   0,
+   412,
+   506
+  ],
+  "peak": 0.6075,
+  "lagPx": [
+   -33,
+   0
+  ],
+  "crop": [
+   412,
+   506
+  ]
+ }
+]

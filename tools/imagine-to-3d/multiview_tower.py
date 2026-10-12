@@ -520,12 +520,13 @@ def quantise_measured(outward, mask, ppm):
     }
 
 
-def relief_from_feature_masks(labels, depth, mask, max_planes=4):
+def relief_from_feature_masks(labels, depth, mask, max_planes=4, quant_m=0.0):
     """One outward metre per SAM2 region: that region's own MoGe median.
 
     The step sits on the mask outline. There is no blur and no per-cell
     median that would walk the edge off the paint. Pixels outside the kept
-    regions stay on the far plane (offset 0).
+    regions stay on the far plane (offset 0). quant_m snaps that median
+    onto a few depths so the crispness bins stay a handful of planes.
     """
     depth = np.asarray(depth, np.float32)
     if labels is None:
@@ -556,6 +557,8 @@ def relief_from_feature_masks(labels, depth, mask, max_planes=4):
     levels = []
     for area, i, med in stats:
         off = float(far - med)
+        if quant_m and quant_m > 0:
+            off = round(off / quant_m) * quant_m
         levels.append(off)
         q[labels == i] = off
     uniq = sorted({round(v, 2) for v in levels})
@@ -638,7 +641,9 @@ def build_mesh(poly, y0, y1, depth_ratio, back_ratio, insets, ny=96, masks=None)
             bx0, _ = lim_xz(bx0, -depth, pbx0, -pdepth)
             bx1, _ = lim_xz(bx1, -depth, pbx1, -pdepth)
         rings.append((float(y), float(xmin), float(xmax), float(bx0), float(bx1), float(depth)))
-    nxf, nz = 24, 8
+    # Painted bays are about a metre wide. A 2 m quad cannot put a mask
+    # outline on the paint, so the relief render misses those edges.
+    nxf, nz = 48, 12
     verts = []
     # index of ring vertex. layout per ring: front nxf, right nz-1, back nxf, left nz-1
     stride = nxf + (nz - 1) + nxf + (nz - 1)
@@ -722,7 +727,10 @@ def build_mesh(poly, y0, y1, depth_ratio, back_ratio, insets, ny=96, masks=None)
         # flatten the whole shaft.
         fw = max(1e-3, xmax - xmin)
         narrow = fw < 12.0
-        foot_band = t < 0.04 or t > 0.96 or narrow
+        # The grounding probe rays the lower fifth of the box. Relief on a
+        # ring just above the foot (t ≈ 0.05) overhangs the base and reads
+        # as metres of air. Keep that whole band on the face plane.
+        foot_band = t < 0.22 or t > 0.96 or narrow
 
         def face_off(name, x, z):
             if foot_band or name not in insets:
@@ -1371,7 +1379,7 @@ def main():
         if labels is None:
             labels, _edge = fusion.segment_edge_snap(im, m, sam_log)
             report["plates"][name]["relief_fallback"] = "segment_edge_snap"
-        q, meta = relief_from_feature_masks(labels, depth, m)
+        q, meta = relief_from_feature_masks(labels, depth, m, max_planes=24, quant_m=0.4)
         # A step taller than 1.2 m on a ~2 m ring pushes the singular-value
         # ratio over 1.3. The edge stays on the mask. The metres stay the
         # region's own median, clamped.
@@ -1412,7 +1420,7 @@ def main():
 
     def build_scaled(scale):
         scaled = {k: np.asarray(v, np.float32) * float(scale) for k, v in insets.items()}
-        return build_mesh(poly, y0, y1, depth_ratio, back_ratio, scaled, ny=80, masks=face_masks)
+        return build_mesh(poly, y0, y1, depth_ratio, back_ratio, scaled, ny=120, masks=face_masks)
 
     # Relief changes world edge lengths after the planar UV is written. The
     # stretch ratio is not linear in the step, so scale down and remeasure
@@ -1490,7 +1498,9 @@ def main():
         shutil.copy(os.path.join(HERE, "runtime", "vision-tower.mjs"), os.path.join(staging, "tower-fusion.mjs"))
         html = os.path.join(staging, "index-fusion.html")
         text = open(html).read()
-        text2 = text.replace("tower-fusion.mjs?v=10", "tower-fusion.mjs?v=12").replace("tower-fusion.mjs?v=11", "tower-fusion.mjs?v=12")
+        text2 = text
+        for old in ("v=10", "v=11", "v=12", "v=13"):
+            text2 = text2.replace("tower-fusion.mjs?" + old, "tower-fusion.mjs?v=14")
         if text2 != text:
             open(html, "w").write(text2)
         report["installed"] = dest

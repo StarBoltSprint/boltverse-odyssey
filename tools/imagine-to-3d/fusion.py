@@ -185,16 +185,16 @@ def _try_sam2(rgb, mask, log, out_dir):
     try:
         r = subprocess.run(
             ["nice", "-n", "10", py, script, rgb_path, mask_path, out_npy],
-            capture_output=True, text=True, timeout=240)
+            capture_output=True, text=True, timeout=900)
     except subprocess.TimeoutExpired:
-        log.append("SAM2 CPU automatic masks exceeded 240 s. Watershed is the segmenter.")
+        log.append("SAM2 CPU automatic masks exceeded 900 s. Watershed is the segmenter.")
         return None
     if r.returncode != 0 or not os.path.exists(out_npy):
         err = ((r.stderr or "") + (r.stdout or ""))[-500:]
         log.append("SAM2 failed (" + err.replace("\n", " ") + "). Watershed is the segmenter.")
         return None
     labels = np.load(out_npy).astype(np.int32)
-    log.append("SAM2 hiera-tiny CPU, points_per_side 8, crop_n_layers 0. " + (r.stdout or "").strip()[:300])
+    log.append("SAM2 hiera-tiny CPU, points_per_side 24, crop_n_layers 0. " + (r.stdout or "").strip()[:300])
     if int(labels.max()) < 4:
         log.append(f"SAM2 kept only {int(labels.max())} regions. Watershed is the segmenter.")
         return None

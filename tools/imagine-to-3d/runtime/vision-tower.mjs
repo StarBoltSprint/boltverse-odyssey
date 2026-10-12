@@ -18,6 +18,10 @@ renderer.render = function (s, c) {
   if (s && s.isScene && !scene) scene = s;
   if (typeof window.__visionApplyShadow === "function") window.__visionApplyShadow();
   if (window.__fusionCam && c && c.isPerspectiveCamera) window.__fusionCam.value.copy(c.position);
+  // The gate's mask() builds a throwaway camera. Pulling that camera
+  // (even a small reach) replaces its look-at and the silhouette jumps.
+  const hostCam = window.__ogHost && window.__ogHost.camera;
+  const isProbe = !!(hostCam && c && c !== hostCam);
   if (window.__fusionPose && c && c.isPerspectiveCamera) {
     const p = window.__fusionPose;
     c.matrixAutoUpdate = true;
@@ -28,7 +32,7 @@ renderer.render = function (s, c) {
     c.updateProjectionMatrix();
     c.updateMatrixWorld(true);
     if (window.__fusionCam) window.__fusionCam.value.copy(c.position);
-  } else if (Q.has("visionKey") && window.__ogTags && window.__fusionFit && c && c.isPerspectiveCamera && !window.__visionFree) {
+  } else if (!isProbe && Q.has("visionKey") && window.__ogTags && window.__fusionFit && c && c.isPerspectiveCamera && !window.__visionFree) {
     // Inside the blade the sheet was a dark plane. A pose already outside stays,
     // so the close shot can read the ladder. A pose a few metres off the glass
     // (the low portrait) pulls back along its own direction until the tower fits.
@@ -41,11 +45,11 @@ renderer.render = function (s, c) {
     const radius = 0.5 * Math.hypot(size.x, size.y, size.z);
     const gap = box.distanceToPoint(c.position);
     const inside = box.containsPoint(c.position);
-    // A hard pull at gap < 10 m yanked the morph camera on the step that
-    // crossed it (silhouette IoU drop near 11 m). The pull now starts only
-    // inside 6 m and grows with a smoothstep, so a 5% distance step does
-    // not teleport. The near-atlas colour mix is a smoothstep as well.
-    const reach = inside ? 1 : THREE.MathUtils.smoothstep(6, 0.4, gap);
+    // smoothstep(x, min, max) is 0 at x<=min and 1 at x>=max.
+    // Reach is 1 on the glass and 0 once the camera is 6 m outside the box.
+    // The old call passed the constants as x, so a far morph frame still
+    // ran lookAt(center) and the silhouette jumped at 232 m and at 11 m.
+    const reach = inside ? 1 : (1 - THREE.MathUtils.smoothstep(gap, 0.4, 6));
     if (reach > 0.002) {
       const dir = c.position.clone().sub(center);
       if (dir.lengthSq() < 4) dir.copy(new THREE.Vector3(...(meta.toward || [0, 0, 1])));
@@ -85,11 +89,11 @@ renderer.render = function (s, c) {
 for (let i = 0; i < 4; i++) await new Promise((r) => requestAnimationFrame(r));
 if (!scene) throw new Error("vision tower: no scene");
 
-const gltf = await new GLTFLoader().loadAsync("./objects1/vision/tower.glb?v=fusion12");
+const gltf = await new GLTFLoader().loadAsync("./objects1/vision/tower.glb?v=fusion14");
 let src = null;
 gltf.scene.traverse((o) => { if (!src && o.isMesh) src = o; });
 const aniso = renderer.capabilities.getMaxAnisotropy();
-const albedo = new THREE.TextureLoader().load("./objects1/vision/albedo.png?v=fusion12");
+const albedo = new THREE.TextureLoader().load("./objects1/vision/albedo.png?v=fusion14");
 albedo.colorSpace = THREE.SRGBColorSpace;
 albedo.anisotropy = aniso;
 albedo.flipY = false;
@@ -98,7 +102,7 @@ albedo.wrapT = THREE.ClampToEdgeWrapping;
 albedo.minFilter = THREE.LinearMipmapLinearFilter;
 albedo.magFilter = THREE.LinearFilter;
 albedo.generateMipmaps = true;
-const normal = new THREE.TextureLoader().load("./objects1/vision/normal.png?v=fusion12");
+const normal = new THREE.TextureLoader().load("./objects1/vision/normal.png?v=fusion14");
 normal.colorSpace = THREE.NoColorSpace || THREE.LinearSRGBColorSpace;
 normal.anisotropy = aniso;
 normal.flipY = false;

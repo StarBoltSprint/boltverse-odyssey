@@ -1211,3 +1211,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | `grade_strip` blends 12 columns only (body ΔE 0). Ortho ΔE is now +z 1.16, +x 1.85, −x 6.59, −z 3.30. The estimator reports `S/kmax` (`coarserThanEstimator`) instead of 0, and face captures run as one argument. Official row 18.9; per-face about 47–57. UV crop to 1.22× isotropic span lowered stretch and did not clear 1.3. Shadow still 0. Stop. d/w proposal only: relax the bar to the plate foot 0.86. Ladder stays FAIL, not N/A. |
 | Guard | `steps/tower-sides-fix-1011/gate/report.md` rows UV stretch, visible px/m, shadow, proportions, relief-texture alignment, key checklist. Numbers in `steps/tower-sides-fix-1011/numbers.json`. Body ΔE is logged in `multiview.json` seams. The relief row can still PASS with a small −z (0.234 m here, above 0.3 on enough faces). |
 | Sources | `tools/imagine-to-3d/multiview_tower.py` (`grade_strip`, `map_u`), `tools/imagine-to-3d/runtime/vision-tower.mjs`, `tools/object-gate/gate.mjs`, `tools/object-gate/lib/analyze.py`, `steps/tower-sides-fix-1011/REPORT.md`. |
+
+### 2026-10-12 — fit pull rewrote probe cameras; relief grid still misses 0.70
+
+| | |
+| --- | --- |
+| Take | tower-fix3-1012 |
+| Defect | Attempt 2 gate is 5 FAIL / 21. Morph still drops at 11.3 m (IoU 0.917, min 0.911). Shadow n is 0 on the probe's own pose. Relief overlap is 0.1945 / 0.2655 / 0 / 0.0978. Visible px/m is 41.3 vs 154.6 and is not `coarserThanEstimator`. |
+| Root cause | `smoothstep(6, 0.4, gap)` treats 6 as x, so a far camera still got `lookAt(center)`. That rewrote the morph mask and the shadow probe. Attempt 1's shadow count of 1676 and its 232 m IoU of 0.40 are that rewrite. With probe cameras left alone, the sticky 360 m ortho still darkens no pixel in the specified shadow view, and one silhouette step remains at 11.3 m. Painted mullions outnumber SAM2 steps, and the 8 m crop has no edge above the 0.02 floor. A real 8 m zoom measures frequency, so the native-plate WARN (flat upper bound only) does not apply. |
+| Fix | Pull only `__ogHost.camera`, and use `1 - smoothstep(gap, 0.4, 6)`. Zero relief for `t < 0.22` (float returned to 0.00 m). SAM2 `points_per_side` 24 and a 48×120 loft raised hero overlap from 0.15 to 0.19 and did not clear 0.70. Stop. Do not upscale. Do not loosen the bars. |
+| Guard | `steps/tower-fix3-1012/gate/report.md` rows approach morph, shadow cast, relief-texture alignment, visible px/m, key checklist. UV max 1.298, float 0.00 m, d/w 0.871 stay PASS. Numbers in `steps/tower-fix3-1012/numbers.json`. |
+| Sources | `tools/imagine-to-3d/runtime/vision-tower.mjs`, `tools/imagine-to-3d/multiview_tower.py`, `tools/imagine-to-3d/sam2_cpu.py`, `steps/tower-fix3-1012/REPORT.md`. |

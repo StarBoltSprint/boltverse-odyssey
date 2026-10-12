@@ -1,0 +1,56 @@
+[
+ {
+  "name": "hero",
+  "ok": false,
+  "overlap": 0.1945,
+  "alignment": 0.1945,
+  "precisionRelief": 0.4876,
+  "precisionTexture": 0.1945,
+  "reliefEdges": 6378,
+  "textureEdges": 16995,
+  "tolPx": 2,
+  "silhouette_iou": 0.9896,
+  "chamfer_px": 23.251,
+  "colour_lab": 7.423
+ },
+ {
+  "name": "30m",
+  "ok": false,
+  "overlap": 0.2655,
+  "alignment": 0.2655,
+  "precisionRelief": 0.9888,
+  "precisionTexture": 0.2655,
+  "reliefEdges": 2047,
+  "textureEdges": 7621,
+  "tolPx": 2,
+  "silhouette_iou": 1,
+  "chamfer_px": 98.039,
+  "colour_lab": 7.267
+ },
+ {
+  "name": "8m",
+  "ok": false,
+  "overlap": 0,
+  "reason": "too few edges",
+  "reliefEdges": 0,
+  "textureEdges": 0,
+  "tolPx": 2,
+  "alignment": 0,
+  "silhouette_iou": 1,
+  "chamfer_px": 1003.478
+ },
+ {
+  "name": "side",
+  "ok": false,
+  "overlap": 0.0978,
+  "alignment": 0.0978,
+  "precisionRelief": 0.8121,
+  "precisionTexture": 0.0978,
+  "reliefEdges": 3710,
+  "textureEdges": 35747,
+  "tolPx": 2,
+  "silhouette_iou": 0.9904,
+  "chamfer_px": 24.687,
+  "colour_lab": 12.201
+ }
+]
