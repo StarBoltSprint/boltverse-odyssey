@@ -162,6 +162,7 @@ def _build_walkaround_manifest(intake: dict, base: Path) -> dict:
 
     _check_id(object_id)
     recorded = require_intake(intake, base)
+    _refuse_pending_shot(intake, base)
     reports_in = intake["reports"]
     judged = {}
     for kind in ("assetcheck", "objsheet", "walkaround"):
@@ -408,6 +409,29 @@ def _stored_path(rel) -> Path | None:
     if cand.is_file():
         return cand
     return path
+
+def _refuse_pending_shot(intake: dict, base: Path) -> None:
+    """Optional shot-sheet hook. Absent sheet keeps the old add path.
+
+    A present sheet that is still PENDING, or whose verdict is FAIL, does not
+    enter the library. KEEP with empty defects is the only shot sheet that passes.
+    """
+    raw = intake.get("shotSheet")
+    if not raw:
+        return
+    path = _abs(str(raw), base)
+    if not path.is_file():
+        raise LibraryError(f"shot sheet missing: {path}")
+    sheet = json.loads(path.read_text(encoding="utf-8"))
+    from tools.objsheet.verdict import IntakeRefused, library_intake
+
+    try:
+        decision = library_intake(sheet)
+    except IntakeRefused as exc:
+        raise LibraryError(f"shot sheet: {exc}") from exc
+    if not decision["allow"]:
+        listed = "; ".join(decision["defects"]) or decision["verdict"]
+        raise LibraryError(f"shot sheet {decision['verdict']} blocks library intake: {listed}")
 
 
 def _abs(value: str, base: Path) -> Path:

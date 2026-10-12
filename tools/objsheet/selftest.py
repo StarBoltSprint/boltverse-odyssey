@@ -382,6 +382,216 @@ def contact_sheet(tmp: Path) -> None:
         raise SystemExit("key camera was not first when it was named")
     print("selftest contact sheet plate|render " + " ".join(report["order"]))
 
+def shot_verdict(tmp: Path) -> None:
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
+    if str(TOOL) not in sys.path:
+        sys.path.insert(0, str(TOOL))
+    from tools.library.library import build_manifest
+    from tools.library.resolve import LibraryError
+    from verdict import (
+        CELL_KEYS,
+        SHOT_VIEWS,
+        IntakeRefused,
+        apply_art_director,
+        emit_sheet,
+        library_intake,
+        load_sheet,
+        shape_errors,
+    )
+
+    sheet = emit_sheet(
+        "terrace-block",
+        plates={"key": "plates/key.jpg", "45°": "plates/yaw45.jpg"},
+        renders={"key": "renders/key.png"},
+    )
+    errors = shape_errors(sheet)
+    if errors:
+        raise SystemExit("shot shape: " + "; ".join(errors))
+    if sheet["schema"] != "objsheet-shot-verdict/1" or sheet["verdict"] != "PENDING":
+        raise SystemExit(f"fresh sheet is not PENDING: {sheet['verdict']}")
+    if [cell["view"] for cell in sheet["cells"]] != list(SHOT_VIEWS):
+        raise SystemExit("shot views drifted")
+    for cell in sheet["cells"]:
+        for key in CELL_KEYS:
+            if key not in cell:
+                raise SystemExit(f"cell missing {key}")
+        if cell["status"] != "PENDING" or cell["defects"] != []:
+            raise SystemExit(f"fresh cell not empty PENDING: {cell}")
+    key = sheet["cells"][0]
+    yaw = sheet["cells"][1]
+    grazing = sheet["cells"][2]
+    if key["plate_path"] != "plates/key.jpg" or key["render_path"] != "renders/key.png":
+        raise SystemExit("key cell is not plate | render side by side")
+    if yaw["plate_path"] != "plates/yaw45.jpg" or yaw["render_path"] is not None:
+        raise SystemExit("45° cell should keep a plate and a null render")
+    if grazing["plate_path"] is not None or grazing["render_path"] is not None:
+        raise SystemExit("grazing cell should be empty until files exist")
+    try:
+        library_intake(sheet)
+        raise SystemExit("PENDING did not block the intake stub")
+    except IntakeRefused as exc:
+        if "PENDING" not in str(exc):
+            raise SystemExit(f"PENDING refusal lost its reason: {exc}")
+
+    kept = apply_art_director(sheet, "KEEP")
+    if any(cell["defects"] or cell["status"] != "KEEP" for cell in kept["cells"]):
+        raise SystemExit("KEEP wrote defects or left a cell open")
+    allowed = library_intake(kept)
+    if allowed != {"allow": True, "verdict": "KEEP", "defects": []}:
+        raise SystemExit(f"KEEP with empty defects was not allowed: {allowed}")
+    try:
+        apply_art_director(sheet, "KEEP", {"key": ["halo"]})
+        raise SystemExit("KEEP accepted a defect")
+    except ValueError as exc:
+        if "empty defects" not in str(exc):
+            raise
+
+    failed = apply_art_director(
+        sheet,
+        "FAIL",
+        {"8 m": ["texel mush at the cornice"], "key": ["door void too deep"]},
+    )
+    if failed["verdict"] != "FAIL":
+        raise SystemExit("FAIL verdict was not stored")
+    listed = [item for cell in failed["cells"] if cell["status"] == "FAIL" for item in cell["defects"]]
+    if listed != ["door void too deep", "texel mush at the cornice"]:
+        raise SystemExit(f"FAIL defects not listed in view order: {listed}")
+    quiet = next(cell for cell in failed["cells"] if cell["view"] == "grazing")
+    if quiet["status"] != "KEEP" or quiet["defects"]:
+        raise SystemExit("a cell without a defect was not left KEEP")
+    blocked = library_intake(failed)
+    if blocked["allow"] or blocked["defects"] != listed:
+        raise SystemExit(f"FAIL intake did not list defects: {blocked}")
+    try:
+        apply_art_director(sheet, "FAIL", {})
+        raise SystemExit("FAIL with no defects was accepted")
+    except ValueError as exc:
+        if "defects listed" not in str(exc):
+            raise
+
+    out = tmp / "shot-verdict.json"
+    emit = subprocess.run(
+        [
+            PY,
+            str(TOOL / "verdict.py"),
+            "emit",
+            "--build",
+            "cli-build",
+            "--out",
+            str(out),
+            "--plate",
+            "key=plates/key.jpg",
+            "--render",
+            "8m=renders/close8m.png",
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+    )
+    if emit.returncode != 0:
+        raise SystemExit(emit.stdout + emit.stderr)
+    cli_sheet = load_sheet(out)
+    if shape_errors(cli_sheet) or cli_sheet["cells"][3]["render_path"] != "renders/close8m.png":
+        raise SystemExit("CLI emit lost the 8 m render")
+    pending = subprocess.run(
+        [PY, str(TOOL / "verdict.py"), "intake", "--sheet", str(out)],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+    )
+    if pending.returncode != 1 or "PENDING" not in pending.stderr:
+        raise SystemExit("CLI intake did not refuse PENDING\n" + pending.stdout + pending.stderr)
+    filled = tmp / "shot-verdict-keep.json"
+    keep_cli = subprocess.run(
+        [PY, str(TOOL / "verdict.py"), "fill", "--sheet", str(out), "--verdict", "KEEP", "--out", str(filled)],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+    )
+    if keep_cli.returncode != 0:
+        raise SystemExit(keep_cli.stdout + keep_cli.stderr)
+    allow_cli = subprocess.run(
+        [PY, str(TOOL / "verdict.py"), "intake", "--sheet", str(filled)],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+    )
+    if allow_cli.returncode != 0 or "ALLOW KEEP" not in allow_cli.stdout:
+        raise SystemExit("CLI KEEP was not allowed\n" + allow_cli.stdout + allow_cli.stderr)
+    fail_path = tmp / "shot-verdict-fail.json"
+    fail_cli = subprocess.run(
+        [
+            PY,
+            str(TOOL / "verdict.py"),
+            "fill",
+            "--sheet",
+            str(out),
+            "--verdict",
+            "FAIL",
+            "--defect",
+            "grazing=horizon clipped",
+            "--out",
+            str(fail_path),
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+    )
+    if fail_cli.returncode != 0:
+        raise SystemExit(fail_cli.stdout + fail_cli.stderr)
+    fail_sheet = load_sheet(fail_path)
+    fail_cell = next(cell for cell in fail_sheet["cells"] if cell["view"] == "grazing")
+    if fail_cell["defects"] != ["horizon clipped"] or fail_cell["status"] != "FAIL":
+        raise SystemExit(f"CLI FAIL did not list the defect: {fail_cell}")
+    help_sheet = subprocess.run([PY, str(TOOL / "sheet.py"), "--help"], cwd=ROOT, text=True, capture_output=True)
+    if help_sheet.returncode != 0 or "--build" not in help_sheet.stdout:
+        raise SystemExit("sheet.py does not offer --build")
+
+    pending_path = tmp / "library-pending.json"
+    pending_path.write_text(json.dumps(sheet) + "\n", encoding="utf-8")
+    try:
+        build_manifest(_library_intake(str(pending_path)), tmp)
+        raise SystemExit("library add accepted a PENDING shot sheet")
+    except LibraryError as exc:
+        if "PENDING" not in str(exc):
+            raise SystemExit(f"library hook did not say PENDING: {exc}")
+    keep_path = tmp / "library-keep.json"
+    keep_path.write_text(json.dumps(kept) + "\n", encoding="utf-8")
+    manifest = build_manifest(_library_intake(str(keep_path)), tmp)
+    if manifest["id"] != "shot-gate" or "shotSheet" in manifest:
+        raise SystemExit("KEEP shot sheet changed the library manifest")
+    fail_lib = tmp / "library-fail.json"
+    fail_lib.write_text(json.dumps(failed) + "\n", encoding="utf-8")
+    try:
+        build_manifest(_library_intake(str(fail_lib)), tmp)
+        raise SystemExit("library add accepted a FAIL shot sheet")
+    except LibraryError as exc:
+        if "texel mush at the cornice" not in str(exc):
+            raise SystemExit(f"library FAIL did not list defects: {exc}")
+    print("selftest shot-verdict PENDING blocks, KEEP allows, FAIL lists defects")
+
+
+def _library_intake(shot_sheet: str) -> dict:
+    return {
+        "id": "shot-gate",
+        "fixture": True,
+        "source": {"imagineIds": ["fixture-synthetic-solid"], "promptRef": "biome/library/fixture-solid/prompt-ref.txt"},
+        "viewsDir": "tools/walkaround/testdata/synthetic-rock/views",
+        "shapeMethod": "surface-nets",
+        "walkaroundDir": "tools/walkaround/testdata/synthetic-rock/out",
+        "asset": "tools/walkaround/testdata/synthetic-rock/out/asset.json",
+        "reports": {
+            "assetcheck": "tools/assetcheck/samples/good-cutout/report.json",
+            "objsheet": "tools/objsheet/samples/repo-synthetic-rock/report.json",
+            "walkaround": "tools/walkaround/testdata/synthetic-rock/out/qc/report.json",
+        },
+        "scale": {"min": 0.85, "max": 1.2, "default": 1.0},
+        "collider": {"type": "circle", "radius_m": 0.7366173380262299},
+        "lod": {"billboardViews": [f"yaw-{yaw:03d}.png" for yaw in range(0, 360, 45)]},
+        "shotSheet": shot_sheet,
+    }
+
 
 def main() -> None:
     tmp = Path("/tmp/objsheet-selftest")
@@ -389,6 +599,7 @@ def main() -> None:
         shutil.rmtree(tmp)
     tmp.mkdir()
     SAMPLES.mkdir(parents=True, exist_ok=True)
+    shot_verdict(tmp)
     repo_rock(tmp)
     consistent_with_guides(tmp)
     inconsistent(tmp)
