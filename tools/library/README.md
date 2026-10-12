@@ -28,6 +28,8 @@ A layout spec lists `{ "library": "<id>" }` where it would list an `asset.json` 
 | LOD chain | lod0/1/2 triangle counts are missing, or outline diff at 15 m or 40 m is not 0 px |
 | Textures | a texture is under 1024 native pixels, or `mipmaps` is not true |
 
+An intake may name `shotSheet` (a `tools/objsheet` shot-verdict JSON). While that verdict is `PENDING`, or the Art Director marked it `FAIL`, `add` refuses. `KEEP` with empty defects is the only sheet that passes. Omitting `shotSheet` leaves the previous add path unchanged. The manifest schema does not gain a field.
+
 ## Block KEEP
 
 `kind: "block"` registers a block-builder KEEP into the same library. The manifest (`library-block/1`) stores:
