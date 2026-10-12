@@ -100,5 +100,36 @@ ok(toMarkdown({ ...fake, url: "u", adapter: "a", startedAt: "t", objects: fake.o
   const none = run(null);
   ok(none.length === 1 && none[0].status === "INFO" && none[0].id === "perf.report", "page without __perfReport: INFO only");
 }
+{ // v3.2 approach morph: mask resolution + scale-free world-grid IoU (py/morph_selftest.py replays the gate path)
+  const r = JSON.parse(execFileSync("python3", [join(HERE, "py/morph_selftest.py")]).toString().trim().split("\n").pop());
+  ok(r.rigidBox.passed, `morph: rigid box passes at ${r.mask.join("x")} norm ${r.normPx} (min IoU ${r.rigidBox.minIoU})`);
+  ok(!r.shiftedLod.passed, `morph: shifted LOD (top tier dropped at 60 m) still FAILS (jumps ${JSON.stringify(r.shiftedLod.jumps)})`);
+  const old = JSON.parse(execFileSync("python3", [join(HERE, "py/morph_selftest.py"), "135", "240"], { env: { ...process.env } }).toString().trim().split("\n").pop());
+  ok(old.rigidBox.passed, "morph: scale-free IoU also passes the rigid box at the old 135x240 mask");
+  const { morphNorm } = await import("./gate.mjs");
+  const W = 40, H = 60; let m = ""; for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) m += Math.abs(x - 20) < 6 && Math.abs(y - 30) < 9 ? "1" : "0";
+  ok(morphNorm(m, 10, W, H, 0, 5) === m && morphNorm(m, 10, W, H, 16, 5).length === 256, "morphNorm: off = identity, on = NP x NP grid");
+}
+{ // v3.2 checklist framing on the visible silhouette (lib/probe.js silhouetteRect, copied verbatim into lib/frame-fit.mjs)
+  const { silhouetteRect } = await import("./lib/frame-fit.mjs");
+  const src = (await import("node:fs")).readFileSync(join(HERE, "lib/probe.js"), "utf8"), mod = (await import("node:fs")).readFileSync(join(HERE, "lib/frame-fit.mjs"), "utf8");
+  const body = (t) => t.slice(t.indexOf("function silhouetteRect"), t.indexOf("\n  }\n", t.indexOf("function silhouetteRect")));
+  ok(body(src).replace(/\s+/g, "") === body(mod).replace(/\s+/g, ""), "frame-fit.mjs is the same function as in probe.js");
+  const w = 412, h = 915, px = new Uint8Array(w * h * 4); let on = 0;   // stepped block: 3 tiers, 13 % cover (as the v3.1 close shot)
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const ty = h - 1 - y, tier = ty > 600 ? 0 : ty > 520 ? 1 : ty > 450 ? 2 : -1, hw = [150, 130, 105][tier] || 0;
+    if (tier >= 0 && ty < 700 && Math.abs(x - 206) < hw) { px[(y * w + x) * 4] = 255; on++; } }
+  const r = silhouetteRect(px, w, h, 0.06), cover0 = on / (w * h);
+  const cover1 = on * (w / r.w) * (h / r.h) / (w * h);
+  ok(cover0 < 0.25 && cover1 >= 0.25 && Math.abs(r.w / r.h - w / h) < 1e-6, `framing: stepped silhouette ${(cover0 * 100).toFixed(1)}% -> ${(cover1 * 100).toFixed(1)}% after the silhouette fit (frame aspect kept)`);
+  // wide block at 8 m (fills the frame width, sky above, snow below): "contain" cannot zoom, "height" crops the sides
+  const pw = new Uint8Array(w * h * 4); let onw = 0;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const ty = h - 1 - y; if (ty > 480 && ty < 640 && x > 3 && x < w - 3) { pw[(y * w + x) * 4] = 255; onw++; } }
+  const rc = silhouetteRect(pw, w, h, 0.06), rh = silhouetteRect(pw, w, h, 0.06, "height");
+  let inR = 0; for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const ty = h - 1 - y; if (pw[(y * w + x) * 4] && x >= rh.x && x < rh.x + rh.w && ty >= rh.y && ty < rh.y + rh.h) inR++; }
+  const covH = inR / (rh.w * rh.h);
+  ok(rc === null && covH >= 0.25, `framing: wide block ${(onw / (w * h) * 100).toFixed(1)}% -> contain: no zoom, height mode: ${(covH * 100).toFixed(1)}% of the zoomed frame`);
+  ok(silhouetteRect(new Uint8Array(w * h * 4), w, h, 0.06) === null, "framing: empty mask -> no fit (row still fails on cover)");
+  ok(silhouetteRect(new Uint8Array(w * h * 4).fill(255), w, h, 0.06) === null, "framing: full-frame mask -> no zoom");
+}
 console.log(fails ? `FAIL ${fails}` : "PASS selftest");
 process.exit(fails ? 1 : 0);

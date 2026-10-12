@@ -1,6 +1,6 @@
 set -e
 RV=../../../tools/object-gate/py/render_views.py
-M=front=work/plate-front-mask.png,side=work/plate-side-mask.png,top=work/top-mask.png
+M=front=work/plate-front-mask.png,front2=work/t1-right-mask.png,side=work/plate-side-mask.png,top=work/top-mask.png
 B="blender -b -P $RV --"; O=work/terrace-lod0.obj
 $B $O renders --masks $M --ground 1 --unlit 0.8 > work/r.log 2>&1
 $B $O work/upview --views work/up-view.json --masks $M --ground 1 --unlit 0.8 > work/ru.log 2>&1

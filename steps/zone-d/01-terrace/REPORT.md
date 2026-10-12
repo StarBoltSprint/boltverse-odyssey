@@ -24,3 +24,11 @@ Preview harness: /workspace/zd-preview-1012 (served on 127.0.0.1:8971), adapter 
 - Sky: key-B crop x0-430,y0-270 only (no Frostspire); fills alpha-0 of a lit+ground transparent render (work/sky_composite.py).
 - Tier 3: stubs <0.3 m dropped; clearance 2.643 m (front), 2.987 m (left) over tier-2 top 10.21 m. Only 2 tier-3 icicles remain.
 - Repetition under cornice: now FAIL 0.677 (v3 0.421 measured wrongly-oriented faces; the face-normal selection is correct only after the winding fix).
+
+## v3.2
+- 3 Imagine plates (plates/v32, low effort, refs key B + key crop + plate-front). Only t1-right (frontal centre door) projected; t1-centre (oblique corner) and t1-left (whole block) did not match their standpoints, unused. Colour: plates/v32/colour-compare.png.
+- Tier-1 front centre panel (x -6.07..4.23 m) at 98.2 px/m from t1-right; door widened to the plate's 2.50 m; 42 cones from its drips (16 raised).
+- Jamb Rorschach root cause: negative u scale on the jamb island (608/608 mirrored) + GLB sampler had no wrap (= REPEAT). Fixed: translated strip, 0 mirrored; CLAMP_TO_EDGE in GLB and page.
+- Side relief from side-plate MoGe-2 (1 m high-pass, +-0.26 m, all LODs).
+- Gate: morph mask 540x960 + world-grid IoU (py/morph_selftest.py); checklist cameras fit the visible silhouette (lib/probe.js silhouetteRect, height mode for close views). Self-tests in selftest.mjs.
+- Play page: /workspace/zd-play-1012 (copy: tools/object-gate/specs/zone-d/play-index.html).

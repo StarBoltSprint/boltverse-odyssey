@@ -39,6 +39,11 @@ bmesh.ops.dissolve_degenerate(bm, edges=bm.edges, dist=1e-6)
 bmesh.ops.triangulate(bm, faces=[f for f in bm.faces if len(f.verts) > 3])
 o1 = counts()
 bm.to_mesh(ob.data); bm.free()
+# v3.2: plates are single unique images -> sampler CLAMP_TO_EDGE (v3.1 GLBs had no wrap = glTF default REPEAT)
+for m in ob.data.materials:
+    if m and m.node_tree:
+        for n in m.node_tree.nodes:
+            if n.type == 'TEX_IMAGE': n.extension = 'EXTEND'
 bpy.ops.export_scene.gltf(filepath=a[1], export_format='GLB')
 json.dump(dict(openBefore=o0[0], openAfter=o1[0], nonManifoldAfter=o1[1], tjunctionSplits=splits, tris=len(ob.data.polygons)), open(a[2], 'w'))
 print('WELD', o0, o1, splits)

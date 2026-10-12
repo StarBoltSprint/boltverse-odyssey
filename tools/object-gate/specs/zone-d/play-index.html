@@ -1,0 +1,106 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Zone D — terrace block v3.2 (play)</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<style>html,body{margin:0;height:100%;overflow:hidden;background:#000;touch-action:none;-webkit-user-select:none;user-select:none}
+#hud{position:fixed;left:8px;top:8px;color:#fff;font:12px/1.35 monospace;background:rgba(0,0,0,.45);padding:5px 7px;border-radius:5px;pointer-events:none;white-space:pre}
+#stick{position:fixed;left:22px;bottom:30px;width:120px;height:120px;border-radius:60px;border:2px solid rgba(255,255,255,.35);pointer-events:none}
+#knob{position:absolute;left:40px;top:40px;width:40px;height:40px;border-radius:20px;background:rgba(255,255,255,.45)}
+#bar{position:fixed;right:8px;top:8px;display:flex;gap:6px}#bar button{font:13px sans-serif;padding:7px 9px;border-radius:6px;border:0;background:rgba(255,255,255,.8)}</style></head>
+<body><div id="hud">loading…</div><div id="stick"><div id="knob"></div></div>
+<div id="bar"><button id="b30">30 m</button><button id="b8">8 m</button><button id="b3">3 m</button><button id="bup">3 m ↑</button></div>
+<script type="module">
+// Zone D v3.2 playable preview: mode B (internal ratio 1.5 -> EASU-style bicubic + RCAS 0.8 to canvas min(2, device)),
+// chase camera = corridor-ab runtime (look.js CHASE_BOOM 6 m, CHASE_EYE 1.35 m, aim 0.9675 m), Level Designer placement.
+import * as THREE from './three.module.js';
+import { GLTFLoader } from './jsm/loaders/GLTFLoader.js';
+import { mergeGeometries } from './jsm/utils/BufferGeometryUtils.js';
+import { createEasuRcas } from './upscale-easu.mjs';
+const BOOM = 6, EYE = 1.35, AIM = 0.9675, R_PLAYER = 0.4, SPEED = 4.2;
+const P = await (await fetch('./placement.json')).json();
+const dpr = devicePixelRatio || 1, CANVAS = Math.min(2, dpr), INTERNAL = Math.min(1.5, CANVAS);
+const r = new THREE.WebGLRenderer({ antialias: false }); r.setPixelRatio(CANVAS); r.setSize(innerWidth, innerHeight);
+r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap; r.outputColorSpace = THREE.SRGBColorSpace; document.body.appendChild(r.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x1c2433);
+const cam = new THREE.PerspectiveCamera(58, innerWidth / innerHeight, 0.2, 600);
+scene.add(new THREE.HemisphereLight(0xb8c8e0, 0x6a7890, 1.4));
+const sun = new THREE.DirectionalLight(0xdfe8ff, 1.6); sun.position.set(-60, 13, 25); sun.target.position.set(0, 0, -8);
+sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -40, right: 40, top: 40, bottom: -40, near: 1, far: 200 });
+sun.shadow.bias = -0.0005; sun.shadow.normalBias = 0.04; scene.add(sun, sun.target);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(800, 800), new THREE.MeshStandardMaterial({ color: 0xc8d4e2, roughness: 1 }));
+ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+const TL = new THREE.TextureLoader(), TEX = {};
+for (const [n, f] of [['front', 'plate-front.jpg'], ['front2', 't1-right.jpg'], ['side', 'plate-side.jpg'], ['top', 'top.jpg']]) {
+  const t = await TL.loadAsync(`./assets/${f}`); t.colorSpace = THREE.SRGBColorSpace; t.flipY = false; t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
+  t.anisotropy = r.capabilities.getMaxAnisotropy(); t.minFilter = THREE.LinearMipmapLinearFilter; TEX[n] = t; }
+const lod = new THREE.LOD(); const sw = [0, ...P.object.lod_switch_m]; const loader = new GLTFLoader();
+for (let i = 0; i < 3; i++) {
+  const g = await loader.loadAsync(`./assets/terrace-lod${i}.glb`); g.scene.updateMatrixWorld(true); const geos = [], mats = [];
+  g.scene.traverse((o) => { if (o.isMesh) { const ge = o.geometry.clone().applyMatrix4(o.matrixWorld); for (const k of Object.keys(ge.attributes)) if (!['position', 'normal', 'uv'].includes(k)) ge.deleteAttribute(k); geos.push(ge); mats.push(o.material.name); } });
+  const m = new THREE.Mesh(mergeGeometries(geos, true), mats.map((n) => new THREE.MeshStandardMaterial({ map: TEX[n], roughness: 1, metalness: 0 })));
+  m.castShadow = m.receiveShadow = true; lod.addLevel(m, sw[i]);
+}
+lod.position.fromArray(P.object.position_m); lod.rotation.y = (P.object.yaw_deg || 0) * Math.PI / 180; scene.add(lod); scene.updateMatrixWorld(true);
+const bb = new THREE.Box3().setFromObject(lod.levels[0].object); lod.position.y -= bb.min.y;
+// marks: rings on the snow at 8 m and 3 m in front of the centre doorway (placement approach.camera_marks_m), + 30 m start
+const DOOR = { x: -0.86, z: 0 };   // tier-1 door centre (builder DOORS[0]), facade z = 0
+const marks = [];
+for (const d of [30, 8, 3]) { const pos = d === 30 ? [DOOR.x - d * 0.7071, DOOR.z + d * 0.7071] : [DOOR.x, DOOR.z + d];
+  const ring = new THREE.Mesh(new THREE.RingGeometry(0.55, 0.75, 40), new THREE.MeshBasicMaterial({ color: d === 3 ? 0xffb347 : 0x47d1ff }));
+  ring.rotation.x = -Math.PI / 2; ring.position.set(pos[0], 0.02, pos[1]); scene.add(ring); marks.push({ d, pos }); }
+// collision: tier-1 footprint box except the door recess (placement: collider on the doorway BACK face 1.5 m in)
+const HW = 7.955, BACK = -16, X0 = -2.1075, X1 = 0.387, DD = 1.5;
+function collide(p) {
+  const inDoor = p.x > X0 + R_PLAYER && p.x < X1 - R_PLAYER && p.z > -DD + R_PLAYER;
+  if (inDoor) return;
+  if (p.x > -HW - R_PLAYER && p.x < HW + R_PLAYER && p.z < R_PLAYER && p.z > BACK - R_PLAYER) {
+    const dx = [p.x - (-HW - R_PLAYER), (HW + R_PLAYER) - p.x], dz = [R_PLAYER - p.z, p.z - (BACK - R_PLAYER)]; const m = Math.min(...dx, ...dz);
+    if (m === dz[0]) p.z = R_PLAYER; else if (m === dx[0]) p.x = -HW - R_PLAYER; else if (m === dx[1]) p.x = HW + R_PLAYER; else p.z = BACK - R_PLAYER;
+  }
+}
+const bolt = new THREE.Mesh(new THREE.CapsuleGeometry(0.35, 1.4, 4, 10), new THREE.MeshStandardMaterial({ color: 0xf0c040, roughness: 0.6 }));
+bolt.castShadow = true; scene.add(bolt);
+const pl = { x: marks[0].pos[0], z: marks[0].pos[1], heading: 135, pitch: 0 };   // heading deg: 0 = -z ... facing the door from the 30 m start
+function place(d, up) { const m = marks.find((q) => q.d === d); pl.x = m.pos[0]; pl.z = m.pos[1] + 0; pl.heading = d === 30 ? 45 : 0; pl.pitch = up ? 35 : 0; }
+for (const [id, d, up] of [['b30', 30], ['b8', 8], ['b3', 3], ['bup', 3, 1]]) document.getElementById(id).onclick = () => place(d, up);
+const q = new URLSearchParams(location.search); if (q.get('at')) place(+q.get('at'), q.get('up') === '1'); else place(30);
+// input: left half = stick (move), right half = drag (turn / pitch); keyboard WASD + arrows
+const keys = {}; addEventListener('keydown', (e) => (keys[e.code] = true)); addEventListener('keyup', (e) => (keys[e.code] = false));
+const stick = { id: null, x: 0, y: 0, ox: 0, oy: 0 }, look = { id: null, lx: 0, ly: 0 }; const knob = document.getElementById('knob');
+addEventListener('pointerdown', (e) => { if (e.target.tagName === 'BUTTON') return;
+  if (e.clientX < innerWidth / 2 && stick.id === null) { stick.id = e.pointerId; stick.ox = e.clientX; stick.oy = e.clientY; }
+  else if (look.id === null) { look.id = e.pointerId; look.lx = e.clientX; look.ly = e.clientY; } });
+addEventListener('pointermove', (e) => {
+  if (e.pointerId === stick.id) { stick.x = Math.max(-1, Math.min(1, (e.clientX - stick.ox) / 50)); stick.y = Math.max(-1, Math.min(1, (e.clientY - stick.oy) / 50)); knob.style.transform = `translate(${stick.x * 40}px,${stick.y * 40}px)`; }
+  if (e.pointerId === look.id) { pl.heading -= (e.clientX - look.lx) * 0.25; pl.pitch = Math.max(-10, Math.min(45, pl.pitch + (e.clientY - look.ly) * 0.15)); look.lx = e.clientX; look.ly = e.clientY; } });
+const up_ = (e) => { if (e.pointerId === stick.id) { stick.id = null; stick.x = stick.y = 0; knob.style.transform = ''; } if (e.pointerId === look.id) look.id = null; };
+addEventListener('pointerup', up_); addEventListener('pointercancel', up_);
+// mode B: internal 1.5 -> bicubic de-ringed + RCAS 0.8 -> canvas; final pass encodes linear -> sRGB
+const MODEB = q.get('modeb') !== '0';
+const ups = createEasuRcas(THREE, { sharp: 0.8 });
+// grade: RCAS output (linear) -> half-float target -> final pass encodes linear -> sRGB to the canvas
+const outRT = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
+const fin = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({ uniforms: { t: { value: outRT.texture } }, depthTest: false, depthWrite: false,
+  vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
+  fragmentShader: 'uniform sampler2D t; varying vec2 vUv; void main(){ gl_FragColor = vec4(texture2D(t, vUv).rgb, 1.0);\n#include <colorspace_fragment>\n}' }));
+fin.frustumCulled = false; const finS = new THREE.Scene(); finS.add(fin); const finC = new THREE.Camera();
+const grade = { scale: 1, render(rr, s, c) { const z = rr.getDrawingBufferSize(new THREE.Vector2()); if (outRT.width !== z.x || outRT.height !== z.y) outRT.setSize(z.x, z.y);
+  rr.setRenderTarget(outRT); rr.render(s, c); rr.setRenderTarget(null); rr.render(finS, finC); } };
+window.__perfReport = () => ({ canvasRatio: CANVAS, dpr, cap: INTERNAL, canvasCap: 2, upscale: MODEB ? 'easu-rcas' : 'native', rcas: 0.8, adaptive: false, sprintDip: false, detailOn: true });
+const hud = document.getElementById('hud'); let last = performance.now(), acc = 0, n = 0, fps = 0;
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now; acc += dt; n++; if (acc > 0.5) { fps = n / acc; acc = 0; n = 0; }
+  let mx = stick.x + ((keys.KeyD || keys.ArrowRight) ? 1 : 0) - ((keys.KeyA || keys.ArrowLeft) ? 1 : 0), mz = stick.y + ((keys.KeyS || keys.ArrowDown) ? 1 : 0) - ((keys.KeyW || keys.ArrowUp) ? 1 : 0);
+  const h = pl.heading * Math.PI / 180, f = [Math.sin(h), -Math.cos(h)], rt = [Math.cos(h), Math.sin(h)];
+  pl.x += (f[0] * -mz + rt[0] * mx) * SPEED * dt; pl.z += (f[1] * -mz + rt[1] * mx) * SPEED * dt; collide(pl);
+  bolt.position.set(pl.x, 1.05, pl.z); bolt.rotation.y = -h;
+  const pitch = Math.atan2(AIM - EYE, BOOM) + pl.pitch * Math.PI / 180;
+  cam.position.set(pl.x - f[0] * BOOM, EYE, pl.z - f[1] * BOOM);
+  cam.lookAt(pl.x + f[0] * 10 * Math.cos(pitch), EYE + 10 * Math.sin(pitch) + (AIM - EYE) * 0, pl.z + f[1] * 10 * Math.cos(pitch));
+  lod.update(cam);
+  if (MODEB) ups.render(r, scene, cam, grade, INTERNAL / CANVAS); else { r.setRenderTarget(null); r.render(scene, cam); }
+  const dDoor = Math.hypot(pl.x - DOOR.x, pl.z - DOOR.z), dCam = cam.position.distanceTo(new THREE.Vector3(DOOR.x, 1.5, DOOR.z));
+  hud.textContent = `fps ${fps.toFixed(0)}  LOD${lod.getCurrentLevel()} (switch ${P.object.lod_switch_m.join('/')} m)\nmode B: internal ${INTERNAL} -> canvas ${CANVAS} (dpr ${dpr}) EASU+RCAS 0.8\nplayer ${dDoor.toFixed(1)} m / camera ${dCam.toFixed(1)} m from centre door\nchase boom ${BOOM} m, eye ${EYE} m (corridor-ab look.js)`;
+  window.__ready = true; requestAnimationFrame(frame);
+}
+addEventListener('resize', () => { r.setSize(innerWidth, innerHeight); cam.aspect = innerWidth / innerHeight; cam.updateProjectionMatrix(); });
+requestAnimationFrame(frame);
+</script></body></html>

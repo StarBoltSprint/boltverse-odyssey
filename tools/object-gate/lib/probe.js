@@ -332,6 +332,19 @@
    * { sel, eye, target, up, fovY, orthoW, orthoH, near, far, width, height, kind }.
    * Renders the TARGET only (other meshes hidden). Returns colour PNG, white mask PNG, cover.
    */
+  /** Sub-rectangle (top-left origin, frame aspect) around the mask's on-pixels + margin; null when empty or no zoom.
+   *  mode "contain": the whole silhouette stays in frame (far views). mode "height": fit the silhouette HEIGHT and centre on
+   *  its centroid, cropping the sides of a wide object (close / low-portrait detail views of a block wider than a portrait frame). */
+  function silhouetteRect(m, w, h, margin, mode) {
+    let x0 = w, y0 = h, x1 = -1, y1 = -1, sx = 0, n = 0;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (m[(y * w + x) * 4] > 127) { const ty = h - 1 - y; if (x < x0) x0 = x; if (x > x1) x1 = x; if (ty < y0) y0 = ty; if (ty > y1) y1 = ty; sx += x; n++; }
+    if (x1 < 0) return null;
+    let bw = (x1 - x0 + 1) * (1 + 2 * margin), bh = (y1 - y0 + 1) * (1 + 2 * margin); const a = w / h;
+    if (mode === "height") bw = bh * a; else if (bw / bh > a) bh = bw / a; else bw = bh * a;
+    if (bw >= w * 0.98 || bh >= h * 0.98) { if (mode !== "height" || bh >= h * 0.98) return null; }
+    const cx = mode === "height" ? Math.min(w - bw / 2, Math.max(bw / 2, sx / n + 0.5)) : (x0 + x1 + 1) / 2, cy = (y0 + y1 + 1) / 2;
+    return { x: cx - bw / 2, y: cy - bh / 2, w: bw, h: bh, mode: mode || "contain" };
+  }
   function renderPose(spec) {
     const { THREE, scene, renderer } = H();
     const w = spec.width | 0, h = spec.height | 0;
@@ -352,6 +365,14 @@
       const fg = scene.fog, bg = scene.background, ov = scene.overrideMaterial;
       scene.fog = null;
       try {
+        let fit = null;
+        if (spec.fitSilhouette && cam.isPerspectiveCamera) {   // v3.2: frame on the VISIBLE silhouette, not the AABB (same eye, off-axis zoom)
+          const white0 = new THREE.MeshBasicMaterial({ color: 0xffffff, fog: false, side: THREE.DoubleSide });
+          scene.background = null; scene.overrideMaterial = white0;
+          const m0 = readRT(w, h, () => renderer.render(scene, cam)); scene.background = bg; scene.overrideMaterial = ov; white0.dispose();
+          fit = silhouetteRect(m0, w, h, spec.fitMargin ?? 0.06, spec.fitMode);
+          if (fit) { cam.setViewOffset(w, h, fit.x, fit.y, fit.w, fit.h); cam.updateProjectionMatrix(); }
+        }
         const col = readRT(w, h, () => renderer.render(scene, cam));
         const white = new THREE.MeshBasicMaterial({ color: 0xffffff, fog: false, side: THREE.DoubleSide });
         scene.background = null; scene.overrideMaterial = white;
@@ -359,7 +380,8 @@
         scene.background = bg; scene.overrideMaterial = ov; white.dispose();
         let on = 0;
         for (let i = 0; i < w * h; i++) if (m[i * 4] > 127) on++;
-        return { png: toPng(col, w, h), mask: toPng(m, w, h), cover: on / (w * h) };
+        if (fit) cam.clearViewOffset();
+        return { png: toPng(col, w, h), mask: toPng(m, w, h), cover: on / (w * h), fit: fit && { ...fit, zoom: +(w / fit.w).toFixed(3) } };
       } finally { scene.fog = fg; scene.background = bg; scene.overrideMaterial = ov; }
     });
     restoreFx();

@@ -1,0 +1,22 @@
+{
+ "perMaterial": {
+  "front": {
+   "mirroredTris": 1334,
+   "tris": 35224
+  },
+  "front2": {
+   "mirroredTris": 378,
+   "tris": 8920
+  },
+  "side": {
+   "mirroredTris": 11660,
+   "tris": 23320
+  },
+  "top": {
+   "mirroredTris": 748,
+   "tris": 1836
+  }
+ },
+ "tier1JambTris": 608,
+ "tier1JambMirrored": 0
+}

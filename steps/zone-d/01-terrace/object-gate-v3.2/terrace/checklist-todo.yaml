@@ -1,0 +1,45 @@
+object: terrace
+sheet: /workspace/grokcli/wt/zd-terrace-1012/steps/zone-d/01-terrace/object-gate-v3.2/terrace/capture-sheet.jpg
+captures:
+  close: 060b0908010e0e62
+  low-portrait: 03c108800b0f0f0b
+  far: 00008c8e8e0a0000
+  face-z: 140808060a0b0a22
+  face-x: 300042c808080e08
+  ortho-front: 9c8c8e0e8a060b0c
+  ortho-side: b0308c488fc60e0a
+items:
+  volume:
+    feature: Three stepped basalt tiers with real step depth, like the key-B crop
+    captures:
+      - far
+      - close
+    pass: null
+    note: ''
+  doorways:
+    feature: Three dark deep recessed doorways (real 1.5 m recess)
+    captures:
+      - close
+      - low-portrait
+    pass: null
+    note: ''
+  cornices:
+    feature: Thick snow cornices with rounded lip and icicle fringe
+    captures:
+      - close
+      - low-portrait
+    pass: null
+    note: ''
+  colours:
+    feature: Cold blue-grey basalt, white snow, low light from the left
+    captures:
+      - close
+      - far
+    pass: null
+    note: ''
+  base:
+    feature: Seated on the snow at 0 m, no gap
+    captures:
+      - low-portrait
+    pass: null
+    note: ''

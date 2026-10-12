@@ -2,67 +2,55 @@
  {
   "tier": 1,
   "side": "front",
-  "count": 59,
-  "lipBottomY": 4.945,
-  "walkY": 0.0,
-  "lowestTipY": 4.47,
-  "clearanceM": 4.47,
-  "raisedTo03": 57,
-  "lenP50": 0.3
+  "count": 52,
+  "fromNewPlate": 42,
+  "raisedTo03": 24,
+  "lowestTipY": 3.784,
+  "clearanceM": 3.784
  },
  {
   "tier": 1,
   "side": "left",
   "count": 6,
-  "lipBottomY": 4.945,
-  "walkY": 0.0,
-  "lowestTipY": 4.665,
-  "clearanceM": 4.665,
+  "fromNewPlate": 0,
   "raisedTo03": 6,
-  "lenP50": 0.3
+  "lowestTipY": 4.665,
+  "clearanceM": 4.665
  },
  {
   "tier": 2,
   "side": "front",
   "count": 27,
-  "lipBottomY": 9.46,
-  "walkY": 5.805,
-  "lowestTipY": 8.792,
-  "clearanceM": 2.987,
+  "fromNewPlate": 0,
   "raisedTo03": 19,
-  "lenP50": 0.3
+  "lowestTipY": 8.792,
+  "clearanceM": 2.987
  },
  {
   "tier": 2,
   "side": "left",
   "count": 21,
-  "lipBottomY": 9.46,
-  "walkY": 5.805,
-  "lowestTipY": 9.007,
-  "clearanceM": 3.202,
+  "fromNewPlate": 0,
   "raisedTo03": 17,
-  "lenP50": 0.3
+  "lowestTipY": 9.007,
+  "clearanceM": 3.202
  },
  {
   "tier": 3,
   "side": "front",
   "count": 1,
-  "lipBottomY": 13.545,
-  "walkY": 10.212,
-  "lowestTipY": 12.855,
-  "clearanceM": 2.643,
+  "fromNewPlate": 0,
   "raisedTo03": 0,
-  "lenP50": 0.709
+  "lowestTipY": 12.855,
+  "clearanceM": 2.643
  },
  {
   "tier": 3,
   "side": "left",
   "count": 1,
-  "lipBottomY": 13.545,
-  "walkY": 10.212,
-  "lowestTipY": 13.199,
-  "clearanceM": 2.987,
+  "fromNewPlate": 0,
   "raisedTo03": 0,
-  "lenP50": 0.365
+  "lowestTipY": 13.199,
+  "clearanceM": 2.987
  }
 ]

@@ -46,6 +46,9 @@ morph:
   step: 0.95             # distance factor per frame
   minIoU: 0.8
   maxDropVsNeighbours: 0.05
+  maskW: 540            # v3.2: was 135x240; a 17 m block at 285 m was ~11 px tall = rounding noise (rigid box failed)
+  maskH: 960
+  normPx: 128           # IoU on each silhouette's own bbox resampled to 128x128 (scale-free)
 shadow:
   mustCast: true
   minWorldFixedIoU: 0.9  # shadow mask overlap after moving the player 80 m

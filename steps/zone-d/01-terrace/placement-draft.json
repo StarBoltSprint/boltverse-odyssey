@@ -29,7 +29,8 @@
     "body": "convex pieces per tier from LOD2 (8k), not the render mesh",
     "doorways": "collider face on each doorway BACK face (1.5 m in), never on the facade plane",
     "cornices": "one box per cornice at lip height; extra boxes only under real icicle clusters (start/end from Tools Engineer's v3 report), down to cluster tips; no blocking where there are no icicles",
-    "no_invisible_walls": true
+    "no_invisible_walls": true,
+    "icicle_clusters_src": "work/icicle-report.json"
   },
   "approach": {
     "path_width_m": 4,
@@ -43,6 +44,39 @@
       "at_m": 3,
       "pitch_deg": 35
     },
-    "camera_clearance": "3rd-person camera keeps >=0.5 m from icicle tips on the 3 m up view"
+    "camera_clearance": "3rd-person camera keeps >=0.5 m from icicle tips on the 3 m up view",
+    "walkable_tiers": "tier 1 walkway only in v1 (icicle clearance 4.47 m); tiers 2-3 are not walkable (clearance 2.47 / 2.15 m), blocked at the step edge by a visible lip collider"
+  },
+  "plateCamera_v32_toolsEngineer": {
+    "note": "ADDED by Tools Engineer for v3.2 plates; Level Designer data above unchanged. Values read from the follow-camera runtime source packs/corridor-ab/play/look.js (rest chase = zone A camHold): CHASE_BOOM 6, CHASE_EYE 1.35, CHASE_AIM_Y 0.9675; mag.js BOOM_MIN 4.8 / BOOM_CAP 7.45; play.js HFOV 22.7 deg at 720x1600 (vfov 48.1 deg). Measured in the v3.2 play page: player on the 8 m mark -> camera 14.0 m from the centre door.",
+    "at8mMark": {
+      "playerFromDoorM": 8,
+      "cameraSetbackM": 6.0,
+      "cameraHeightM": 1.35,
+      "cameraFromFacadeM": 14.0,
+      "aimHeightM": 0.9675,
+      "restPitchDeg": -1.83
+    },
+    "plates": {
+      "centre": {
+        "xM": -0.86,
+        "distM": 14.0,
+        "heightM": 1.35,
+        "tiltUpDeg": 15
+      },
+      "left": {
+        "xM": -6.86,
+        "distM": 14.0,
+        "heightM": 1.35,
+        "tiltUpDeg": 15
+      },
+      "right": {
+        "xM": 5.14,
+        "distM": 14.0,
+        "heightM": 1.35,
+        "tiltUpDeg": 15
+      }
+    },
+    "imagineResult": "standpoints were prompt text only; Imagine did not follow them: t1-right came out as the frontal centre-door shot (used, projected), t1-centre as an oblique left-corner close-up and t1-left as a whole-block elevation (both unused)"
   }
 }

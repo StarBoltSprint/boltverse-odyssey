@@ -63,6 +63,14 @@ export function loadScene(p) {
 // ------------------------------------------------------------------ helpers
 function py(op, arg) { return JSON.parse(execFileSync("python3", [PY, op, JSON.stringify(arg)], { encoding: "utf8", maxBuffer: 1 << 26 }).trim()); }
 function pyFile(script, arg) { return JSON.parse(execFileSync("python3", [script, JSON.stringify(arg)], { encoding: "utf8", maxBuffer: 1 << 26 }).trim()); }
+// v3.2 morph: resample a '0/1' mask (W x H, vfov 58) onto one world grid at the target plane (NP x NP over +-ext m), so the
+// approach's own scale change is not scored as a morph (py/morph_selftest.py: rigid box passes, a bad LOD swap fails)
+export function morphNorm(m, D, W, H, NP, ext) {
+  if (!NP) return m; const k = H / 2 / Math.tan((29 * Math.PI) / 180); let o = "";
+  for (let j = 0; j < NP; j++) { const g = ((j + 0.5) / NP) * 2 - 1, py = Math.min(H - 1, Math.max(0, Math.floor(H / 2 - (g * ext * k) / D)));
+    for (let i = 0; i < NP; i++) { const h = ((i + 0.5) / NP) * 2 - 1, px = Math.min(W - 1, Math.max(0, Math.floor(W / 2 + (h * ext * k) / D))); o += m[py * W + px]; } }
+  return o;
+}
 const iou = (a, b) => { let i = 0, u = 0; for (let k = 0; k < a.length; k++) { const x = a.charCodeAt(k) === 49, y = b.charCodeAt(k) === 49; if (x && y) i++; if (x || y) u++; } return u ? i / u : 1; };
 const ham = (a, b) => { let n = 0; let x = BigInt("0x" + a) ^ BigInt("0x" + b); while (x) { n += Number(x & 1n); x >>= 1n; } return n; };
 const fmt = (x, d = 1) => (x == null || !isFinite(x) ? String(x) : Number(x).toFixed(d));
@@ -486,7 +494,8 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
     const front = hero.front.length === 2 ? [hero.front[0], hero.front[1]] : hero.front;
     for (const name of wanted) {
       const pose = pyFile(FRAME_PY, { min: hero.min, max: hero.max, view: name, width: 412, height: 915, front });
-      const shot = await page.evaluate((spec) => window.__og.renderPose(spec), { ...pose, sel });
+      // v3.2: perspective checklist cameras zoom onto the visible silhouette (same eye; a stepped block fills ~50% of its AABB)
+      const shot = await page.evaluate((spec) => window.__og.renderPose(spec), { ...pose, sel, fitSilhouette: cfg.checklist?.fitSilhouette ?? true, fitMode: name === "far" ? "contain" : "height" });
       if (!shot || !shot.png) throw new Error(`renderPose ${name} returned no image`);
       const img = join(odir, `cap-${name}.png`), msk = join(odir, `cap-${name}-mask.png`);
       writeFileSync(img, Buffer.from(shot.png.split(",")[1], "base64"));
@@ -494,7 +503,7 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
       const gate = pyFile(CAP_PY, { img, kind: name, mask: msk });
       captures[name] = {
         img, mask: msk, cover: gate.cover, gate,
-        pose: { camera: pose.eye.map((v) => +Number(v).toFixed(2)), fovY: pose.fovY, distanceM: pose.distanceM },
+        pose: { camera: pose.eye.map((v) => +Number(v).toFixed(2)), fovY: pose.fovY, distanceM: pose.distanceM, fit: shot.fit || null },
         hash: py("phash", { img }).hash,
       };
     }
@@ -550,7 +559,7 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
 
   // ---------------- 3. approach morph
   if (checks.has("morph") && !ctx.fast) {
-    const M = cfg.morph; const targets = boxes.slice().sort((a, b) => a.nearPathM - b.nearPathM).slice(0, M.instances);
+    const M = cfg.morph, MW = M.maskW ?? 135, MH = M.maskH ?? 240, NP = M.normPx ?? 0; const targets = boxes.slice().sort((a, b) => a.nearPathM - b.nearPathM).slice(0, M.instances);
     const res = [];
     for (const b of targets) {
       const sp = await page.evaluate(() => (window.__ogHost.path || [[0, 0]])[0]);
@@ -559,12 +568,13 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
       let prev = null; const ious = []; const strip = [];
       for (let d = M.fromM; d >= M.toM; d *= M.step) {
         const x = b.center[0] + dx * (r0 + d), z = b.center[2] + dz * (r0 + d);
-        const m = await page.evaluate(async ([s, x, z, b, d]) => {
+        const m = await page.evaluate(async ([s, x, z, b, d, MW, MH]) => {
           const H = window.__ogHost; H.setPose({ x, z, look: [b.center[0], b.min[1] + Math.min(40, d * 0.35 + 8), b.center[2]] });
           await window.__og.frames(2);
           const gy = H.groundHeight(x, z);
-          return window.__og.mask(s, [x, gy + 2, z], [b.center[0], b.min[1] + Math.min(b.height * 0.5, 40, d * 0.35 + 8), b.center[2]], 135, 240, 58);
-        }, [sel, x, z, b, d]);
+          const eye = [x, gy + 2, z], tgt = [b.center[0], b.min[1] + Math.min(b.height * 0.5, 40, d * 0.35 + 8), b.center[2]];
+          return { m: window.__og.mask(s, eye, tgt, MW, MH, 58), D: Math.hypot(tgt[0] - eye[0], tgt[1] - eye[1], tgt[2] - eye[2]) };
+        }, [sel, x, z, b, d, MW, MH]).then((r) => morphNorm(r.m, r.D, MW, MH, NP, 1.25 * Math.max(b.halfW, b.halfD, b.height / 2)));
         if (prev) ious.push({ d: +d.toFixed(1), iou: iou(m, prev) });
         prev = m; strip.push(m);
       }

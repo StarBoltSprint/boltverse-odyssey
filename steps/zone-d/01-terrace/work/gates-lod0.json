@@ -1,22 +1,22 @@
 {
  "oblique-profile": {
   "oblique45": {
-   "stepFrac": 0.0335,
-   "normSpread": 0.5735,
-   "hitPx": 32349,
+   "stepFrac": 0.0415,
+   "normSpread": 0.5738,
+   "hitPx": 32328,
    "pass": true
   },
   "grazing": {
-   "stepFrac": 0.1954,
-   "normSpread": 0.3303,
-   "hitPx": 10986,
+   "stepFrac": 0.1957,
+   "normSpread": 0.3255,
+   "hitPx": 10987,
    "pass": true
   }
  },
  "untextured-area": {
   "phone": {
    "greyFrac": 0.0006,
-   "uncoveredFrac": 0.0011,
+   "uncoveredFrac": 0.0009,
    "pass": true
   },
   "oblique45": {
@@ -52,84 +52,84 @@
    "pass": true
   },
   "oblique45": {
-   "p95": 1.233,
-   "over13Frac": 0.0038,
+   "p95": 1.267,
+   "over13Frac": 0.0044,
    "pass": true
   },
   "grazing": {
-   "p95": 1.233,
-   "over13Frac": 0.0043,
+   "p95": 1.272,
+   "over13Frac": 0.0041,
    "pass": true
   },
   "close8m": {
    "p95": 1.113,
-   "over13Frac": 0.0006,
+   "over13Frac": 0.0001,
    "pass": true
   },
   "close3m": {
    "p95": 1.099,
-   "over13Frac": 0.0013,
+   "over13Frac": 0.0,
    "pass": true
   },
   "close3m-up": {
    "p95": 1.099,
-   "over13Frac": 0.0022,
+   "over13Frac": 0.0,
    "pass": true
   }
  },
  "uv-stretch-mesh": {
   "p50": 1.097,
-  "over13Frac": 0.0431
+  "over13Frac": 0.0416
  },
  "texel-density": {
   "phone": {
-   "medianMag": 0.84,
+   "medianMag": 0.78,
    "platePxPerMp50": 46.5,
    "over3Frac": 0.0,
    "pass": true
   },
   "oblique45": {
-   "medianMag": 1.53,
+   "medianMag": 1.44,
    "platePxPerMp50": 42.2,
    "over3Frac": 0.0,
    "pass": true
   },
   "grazing": {
    "medianMag": 1.22,
-   "platePxPerMp50": 39.5,
+   "platePxPerMp50": 38.7,
    "over3Frac": 0.0,
    "pass": true
   },
   "close8m": {
-   "medianMag": 2.24,
-   "platePxPerMp50": 46.5,
-   "over3Frac": 0.008,
+   "medianMag": 1.23,
+   "platePxPerMp50": 98.2,
+   "over3Frac": 0.0,
    "pass": true
   },
   "close3m": {
-   "medianMag": 4.65,
-   "platePxPerMp50": 46.5,
-   "over3Frac": 1.0,
+   "medianMag": 2.13,
+   "platePxPerMp50": 98.2,
+   "over3Frac": 0.1576,
    "pass": false
   },
   "close3m-up": {
-   "medianMag": 7.41,
-   "platePxPerMp50": 46.5,
-   "over3Frac": 1.0,
+   "medianMag": 3.91,
+   "platePxPerMp50": 98.2,
+   "over3Frac": 0.992,
    "pass": false
   }
  },
  "triangle-quality": {
-  "tris": 69924,
+  "tris": 69948,
   "degenerate": 0,
-  "sliverFrac": 0.0043,
+  "sliverFrac": 0.0064,
   "minAngleP5": 29.68,
-  "aspectP99": 4.48,
+  "aspectP99": 4.62,
   "pass": true
  },
  "errors": [
-  "texel-density close3m: {'medianMag': 4.65, 'platePxPerMp50': 46.5, 'over3Frac': 1.0, 'pass': False}",
-  "texel-density close3m-up: {'medianMag': 7.41, 'platePxPerMp50': 46.5, 'over3Frac': 1.0, 'pass': False}"
+  "texel-density close3m: {'medianMag': 2.13, 'platePxPerMp50': 98.2, 'over3Frac': 0.1576, 'pass': False}",
+  "texel-density close3m-up: {'medianMag': 3.91, 'platePxPerMp50': 98.2, 'over3Frac': 0.992, 'pass': False}"
  ],
  "verdict": "FAIL"
 }
