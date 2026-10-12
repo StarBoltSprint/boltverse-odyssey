@@ -1064,3 +1064,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Station stretch is the near-key px/m divided by the px/m of the material in use (plates where the key weight is at most 0.5). Path IoU uses `deck_mask`. The sharpness pose stands at eye height on the plate field (`s = 12 + D`). The loading shot waits until Chargement is in the DOM. |
 | Guard | `steps/zone-c/03-terrain/numbers.json`: path IoU 0.7704, UV p95 0.214, CIEDE2000 8.68, pass true. Object-gate visible px/m 237.1 against 118.5, verdict PASS. |
 | Sources | `tools/terrain-from-key/causeway_field.py`, `tools/terrain-from-key/gates.py`, `tools/terrain-from-key/staging/zone-c/main.mjs`, `tools/terrain-from-key/capture_play.mjs`. |
+
+### 2026-10-12 — arch inner edit stays a scene, and a 1 px crop misses 1024
+
+| | |
+| --- | --- |
+| Take | zc/04-plates |
+| Defect | The right-arch plate is still the ring seen in perspective after two edits. The second edit put the whole canyon back. The right-wall plate still has cliff depth after two edits. Four other plates came back 1008×1024, under the 1024 short-side gate. |
+| Root cause | `image_edit` does not unroll a curved opening into a flat soffit. A source crop one pixel taller than wide is returned as 1008×1024. Single-image edits keep that aspect. There is no resolution argument on the tool. |
+| Fix | Keep the closer of the two arch files (the through-ring wall) and the second wall file. Stop. Do not cook a third time. Mirror-pad the 1008-wide files by 8 px each side so the Imagine pixels are not resampled. Next cook: trim every crop to an exact square before the call. |
+| Guard | `python3 steps/zone-c/04-plates/check-plates.py` (min side 1024). `steps/zone-c/04-plates/numbers.json` records native 1008×1024 on plates 5, 7, 9, and 10, and `imagine_calls` 13. |
+| Sources | `steps/zone-c/04-plates/REPORT.md`, `steps/zone-c/04-plates/crops.json`. |

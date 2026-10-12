@@ -88,6 +88,6 @@ Stone doors and gothic halls are rejected menu backgrounds (2026-10-04/05). Echo
 
 | Recipe | Commit | QC |
 | --- | --- | --- |
-| — | — | — |
+| [zone-c-face-plates.md](zone-c-face-plates.md) — eleven face plates edited from square crops of key-zc1 (prompt not stored) | `ee823769` | `check-plates.py` PASS; 1024×1024; sheet 1760×1686; 13 Imagine calls |
 
 `python3 tools/assetcheck/check.py` kind `cutout` with a declared `onScreen` size and `key` (`alpha`, `black`, or `green`). Cook at or above the on-screen pixels. Compositor `scale` stays ≤ 1 ([`biome/docs/56-cutout-native-scale.md`](../../biome/docs/56-cutout-native-scale.md)). Bolt motion stays `lock/bolt-gallop-cycle.mp4`. An `assetcheck` WARN on a `lock/` file is not a recook.
