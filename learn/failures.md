@@ -1242,3 +1242,13 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | `require_intake` refuses the part unless all six guards hold. A KEEP flag with a run verdict other than PASS is refused. A run PASS with no KEEP is refused. |
 | Guard | `python3 tools/library/selftest_intake.py`. Bad fixtures exit 1: run verdict FAIL, missing KEEP, world-space boxes, missing `ground_anchor`, missing `min_clearance_m`, camera layer `gallop`, outline diff 4 px at 15 m, outline diff 2 px at 40 m, missing lod1 triangles, nativePx 512, mipmaps false. A complete fixture exits 0. |
 | Sources | `tools/library/intake.py`, `tools/library/library.py`, `tools/library/selftest_intake.py`. |
+### 2026-10-12 — LOD meshes had no offline outline, budget, or mipmap gate
+
+| | |
+| --- | --- |
+| Take | tools/06-lod-streaming |
+| Defect | lod0/1/2 could change silhouette at the 15 m and 40 m switches, exceed the triangle budget, or stream a plate with no mipmaps, and no tools-side command refused the set. |
+| Root cause | `tools/object-gate/py/lod_gate.py` compares rendered depth passes and allows xorFrac 0.0005 plus a 4 px blob. It does not take the three meshes, count triangles against a profile budget, or check the texture streaming checklist. |
+| Fix | `tools/lodstream` rasterises the three meshes at the switch distances and refuses a non-zero outline difference, an over-budget lod0 (default 80000), a coarser LOD with more triangles, a plate under 1024 px, or missing mipmaps. |
+| Guard | `node tools/lodstream/selftest.mjs`. Outline-diff fixture exits 1 (15 m diffPx 46128). Over-budget lod0 80001 exits 1. Missing mipmaps exits 1. Good tiny fixture exits 0 (diffPx 0, tris 13/12/12). |
+| Sources | `steps/tools/06-lod-streaming/spec.md`, `tools/lodstream/gate.mjs`, `tools/object-gate/py/lod_gate.py`. |
