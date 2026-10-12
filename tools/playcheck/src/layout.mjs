@@ -4,6 +4,7 @@
  * Organic files (schema clearing/2) add route and probe fields. Circle files do not.
  */
 
+import { readPlacement } from "./approach.mjs";
 import { buildRoute, planBoundaryProbes, readOrganic } from "./organic.mjs";
 
 const GATE_LABEL = (id) => `gate:${id}`;
@@ -53,6 +54,8 @@ export function normalizeLayout(raw) {
     spawn: raw.spawn || { position: [0, 0] },
     hasBackdrop: !!(raw.backdrop && (raw.backdrop.ring || raw.backdrop.asset)),
   };
+  const placement = readPlacement(raw);
+  if (placement) layout.placement = placement;
   if (!isOrganicLayout(raw)) return layout;
   const shape = readOrganic(raw);
   layout.organic = true;

@@ -1222,3 +1222,13 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Rules for every next object: relief ONLY from SAM2 masks of features painted in the exact Imagine plate (MoGe-2 depth inside the mask). Hidden faces from the 1024 Imagine face plates at native res; left = right mirrored; back = right mirrored too (the "back" plate was a second front; `face-left-REJECTED.jpg` never used). Plates are UNLIT skins (`MeshBasicMaterial`, `toneMapped: false`, sRGB map). Captures read with `readRT` in `SRGBColorSpace`. Grounding: inset 0 on the bottom 4 % of height so the foot chord meets the ground, float < 0.05 m measured. Gate cameras must frame the object: perspective coverage ≥ 25 %, ortho ≥ 60 % and not black, no grazing views, hero and 30 m are different cameras. Grok vision runs only after every capture is non-black (L\* check first). |
 | Guard | `node tools/object-gate/selftest.mjs`; gate.mjs camera-framing row (cover ≥ 25 %, ortho ≥ 60 % not black); `steps/hires-tower-1011/gate/report.md` colour L\* 42.1, grounding 0.00 m. Open: sides ΔE 40–43 (Reinhard seam match lifts the body), UV stretch, visible px/m 0, d/w 0.86 vs bar 0.70 → step tower-sides-fix-1011. |
 | Sources | `tools/imagine-to-3d/multiview_tower.py`, `runtime/vision-tower.mjs`, `moge_depth.py`, `tools/object-gate/gate.mjs`, `lib/probe.js`, `tools/common/align/metrics.py`, `steps/hires-tower-1011/REPORT.md`. |
+### 2026-10-12 — a zone part collider that is not the library box
+
+| | |
+| --- | --- |
+| Take | tools/04-playcheck-log |
+| Defect | A placed part could float off its ground anchor, leave no clearance under hanging detail, or stop the body on a keep-out that is not a library box. |
+| Root cause | Playcheck judged ring stops and ruin faces. It did not scale, yaw, and ground-snap library local boxes from the zone placement, and it did not write the approach run. |
+| Fix | `tools/playcheck/src/approach.mjs` places those boxes and writes `approach.jsonl`. A circle clearing without `parts` does not grow the rows. |
+| Guard | `node --test tools/playcheck/src/approach.test.mjs`. Good fixture PASS (21 samples, all miss). Shifted `world_boxes` and a min-above-max box fail `bad_collision`. Anchor at y 1.5, or a missing anchor, fails `ground_anchor`. A hanging part with no clearance box, or a path with no `min_clearance_m`, fails `hanging_clearance`. A lintel at 1.0 m under a 2.0 m requirement fails tight. A `keepout` in the opening fails `part_colliders` with `invisibleHits` > 0. A log line that drops `fps`, uses `cameraLayer` `hud`, or sets `collision` `blocked` fails the schema. |
+| Sources | `tools/playcheck/src/approach.mjs`, `tools/playcheck/fixture/approach/good.json`, `steps/tools/04-playcheck-log/REPORT.md`. |
