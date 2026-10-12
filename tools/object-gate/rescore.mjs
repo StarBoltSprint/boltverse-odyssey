@@ -6,7 +6,7 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
-import { loadScene, toMarkdown, checkId, API_VERSION } from "./gate.mjs";
+import { loadScene, toMarkdown, checkId, API_VERSION, applyFailureFields, annotateObjectRows } from "./gate.mjs";
 import { scoreVisible, resolveView, footprintsFromBoxes } from "./lib/visible.mjs";
 
 const arg = (k) => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : null; };
@@ -45,9 +45,9 @@ for (const o of report.objects) {
   for (const r of o.rows) r.id = r.id || checkId(r.check);   // runs from before API 1.1 have no row ids
   const at = o.rows.findIndex((r) => REPLACED.has(r.id));
   const kept = o.rows.filter((r) => !REPLACED.has(r.id));
-  const fresh = v.rows.map((r) => ({ id: checkId(r.check), check: r.check, status: r.pass ? "PASS" : "FAIL", detail: r.detail, hints: r.pass ? [] : r.hints }));
+  const fresh = v.rows.map((r) => applyFailureFields({ id: checkId(r.check), check: r.check, status: r.pass ? "PASS" : "FAIL", detail: r.detail, hints: r.pass ? [] : r.hints }));
   kept.splice(at < 0 ? kept.length : Math.min(at, kept.length), 0, ...fresh);
-  o.rows = kept;
+  o.rows = annotateObjectRows(kept.map((r) => applyFailureFields({ ...r, id: r.id || checkId(r.check) })), od);
   // the self-report row compares the scene's claim with the measured px/m of the active policy
   const sr = o.rows.find((r) => r.id === "texel.self-report"); const m = sr && /scene claims ([\d.]+) px\/m/.exec(sr.detail);
   if (m && texel.length) {

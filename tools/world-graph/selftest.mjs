@@ -6,7 +6,8 @@ import { readFileSync, statSync, mkdtempSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { validateZone, feedForUrl, materialize } from "../../runtime/zone-loader.mjs";
+import { validateZone, feedForUrl, materialize, loadPlayableScene, bootZone } from "../../runtime/zone-loader.mjs";
+import { nodeLibraryResolver } from "./library-resolver.mjs";
 import { resolveRoute } from "./serve.mjs";
 
 const ROOT = new URL("../..", import.meta.url).pathname;
@@ -27,10 +28,14 @@ const before = ["index.html", "main.mjs"].map((f) => {
 
 const out = join(mkdtempSync(join(tmpdir(), "wg-")), "zone.json");
 const exp = spawnSync(process.execPath, [ROOT + "tools/world-graph/export-zone-b.mjs", out], { encoding: "utf8" });
-check("export exit 0", exp.status === 0, exp.stderr && exp.stderr.slice(0, 200));
-const fresh = JSON.parse(readFileSync(out, "utf8"));
+check("export exit 0", exp.status === 0, exp.status === 0 ? "" : (exp.stderr || exp.stdout || "").slice(0, 240));
 const disk = JSON.parse(readFileSync(ROOT + "zone-b.zone.json", "utf8"));
-check("fresh export matches zone-b.zone.json", JSON.stringify(fresh) === JSON.stringify(disk));
+if (exp.status === 0) {
+  const fresh = JSON.parse(readFileSync(out, "utf8"));
+  check("fresh export matches zone-b.zone.json", JSON.stringify(fresh) === JSON.stringify(disk));
+} else {
+  check("fresh export matches zone-b.zone.json", false, "export did not write " + out);
+}
 
 let threw = false;
 try { validateZone({ schema: "nope" }); } catch { threw = true; }
@@ -69,6 +74,47 @@ const after = ["index.html", "main.mjs"].map((f) => {
 check("live preview mtimes unchanged", JSON.stringify(before) === JSON.stringify(after));
 const routed = resolveRoute(PREVIEW, "/ref/main.mjs", "/ref/");
 check("compare route serves main.mjs", routed === PREVIEW + "/main.mjs");
+
+const playedB = loadPlayableScene(disk);
+check("zone-b scene ids match the zone file", JSON.stringify(playedB.objects.map((o) => o.id)) === JSON.stringify(disk.objects.map((o) => o.id)));
+check("zone-b keyCamera and lighting come from the zone", playedB.keyCamera === disk.keyCamera && playedB.lighting === disk.lighting);
+
+const miniPath = ROOT + "tools/world-graph/fixtures/mini-zone.v1.json";
+const miniBytes = statSync(miniPath).size;
+const mini = JSON.parse(readFileSync(miniPath, "utf8"));
+check("mini fixture is zone.v1 and under 200 KB", mini.schema === "zone.v1" && miniBytes <= 200 * 1024, miniBytes + " bytes");
+const played = loadPlayableScene(mini);
+check("mini objects match zone.objects ids", JSON.stringify(played.objects.map((o) => o.id)) === JSON.stringify(mini.objects.map((o) => o.id)));
+check("mini keyCamera and lighting come from the zone", played.keyCamera.fov === 50 && played.lighting.sun.intensity === 1);
+check("path-string asset stays a path", played.objects.find((o) => o.id === "marker").asset === "assets/marker.glb");
+check("glb asset stays the stored object", played.objects.find((o) => o.id === "rock-a").asset.glb === "assets/rock-a.glb");
+const unresolved = played.objects.find((o) => o.id === "lib-solid");
+check("library ref kept when no resolver is passed", unresolved.library === "fixture-solid" && unresolved.asset.library === "fixture-solid");
+const resolved = loadPlayableScene(mini, { resolveLibrary: nodeLibraryResolver(ROOT) });
+const lib = resolved.objects.find((o) => o.id === "lib-solid");
+const manifest = JSON.parse(readFileSync(ROOT + "biome/library/fixture-solid/manifest.json", "utf8"));
+check("library ref resolves to the manifest asset path", lib.library === "fixture-solid" && lib.asset === manifest.asset);
+check("listed present ids are accepted", loadPlayableScene(mini, { present: mini.objects.map((o) => o.id) }).objects.length === mini.objects.length);
+
+let injected = false;
+try { loadPlayableScene(mini, { injected: [{ id: "hardcoded-extra" }] }); }
+catch (e) { injected = e.status === "FAIL" && /not listed in the zone JSON/.test(e.message) && /hardcoded-extra/.test(e.message); }
+check("injected object outside the zone JSON is refused", injected);
+
+let bootRefused = false;
+try { await bootZone(mini, "file:///tmp/zone-loader-should-not-import.mjs", { injected: [{ id: "hardcoded-extra" }] }); }
+catch (e) { bootRefused = e.status === "FAIL" && /not listed/.test(e.message); }
+check("bootZone refuses an injected object before import", bootRefused);
+
+let missingCam = false;
+try { const z = structuredClone(mini); delete z.keyCamera; validateZone(z); }
+catch (e) { missingCam = /keyCamera/.test(e.message); }
+check("missing keyCamera fails validation", missingCam);
+
+let missingSchema = false;
+try { const z = structuredClone(mini); delete z.schema; validateZone(z); }
+catch (e) { missingSchema = /schema/.test(e.message); }
+check("missing schema fails validation", missingSchema);
 
 if (failed) {
   console.log("FAIL " + failed);

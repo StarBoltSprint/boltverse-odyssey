@@ -55,12 +55,26 @@
       }
     },
     "asset": {
-      "type": "object",
-      "required": ["glb", "lods"],
-      "properties": {
-        "glb": { "type": ["string", "null"] },
-        "lods": { "type": "array", "items": { "type": "string" } }
-      }
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["library"],
+          "properties": {
+            "library": { "type": "string", "minLength": 1 }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["glb", "lods"],
+          "properties": {
+            "glb": { "type": ["string", "null"] },
+            "lods": { "type": "array", "items": { "type": "string" } },
+            "library": { "type": "string" }
+          }
+        }
+      ]
     },
     "object": {
       "type": "object",

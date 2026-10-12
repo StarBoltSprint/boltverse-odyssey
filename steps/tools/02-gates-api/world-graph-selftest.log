@@ -1,0 +1,40 @@
+PASS schema file names zone.v1
+PASS export exit 0
+PASS fresh export matches zone-b.zone.json
+PASS validateZone rejects a bad schema
+PASS validateZone accepts zone-b
+PASS runtime biome round-trip
+PASS runtime layout round-trip
+PASS runtime ground detail round-trip
+PASS zone biome is the bible file
+PASS hero xz is the spawn literal
+PASS gameplay has no invented lanes
+PASS todo is a non-empty string list
+PASS every wake is the placeholder
+PASS key image path is set
+PASS street xz matches avenue2At
+PASS feed biome.json
+PASS feed layout.json
+PASS feed ground-detail
+PASS feed ignores other urls
+PASS quality gates are the bible budgets
+PASS live preview mtimes unchanged
+PASS compare route serves main.mjs
+PASS zone-b scene ids match the zone file
+PASS zone-b keyCamera and lighting come from the zone
+PASS mini fixture is zone.v1 and under 200 KB 1309 bytes
+PASS mini objects match zone.objects ids
+PASS mini keyCamera and lighting come from the zone
+PASS path-string asset stays a path
+PASS glb asset stays the stored object
+PASS library ref kept when no resolver is passed
+PASS library ref resolves to the manifest asset path
+PASS listed present ids are accepted
+PASS injected object outside the zone JSON is refused
+PASS bootZone refuses an injected object before import
+PASS missing keyCamera fails validation
+PASS missing schema fails validation
+PASS selftest
+(node:1560910) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+WORLD_EXIT:0
