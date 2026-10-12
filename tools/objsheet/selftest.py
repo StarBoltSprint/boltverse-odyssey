@@ -313,6 +313,76 @@ def preflight_views(tmp: Path) -> None:
     print("selftest preflight red luma then green match")
 
 
+def _swatch(path: Path, rgb: tuple[int, int, int], size: tuple[int, int] = (24, 24)) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    Image.new("RGB", size, rgb).save(path)
+
+
+def contact_sheet(tmp: Path) -> None:
+    """Fixed order, plate beside render, missing key camera is not invented."""
+    base = tmp / "contact"
+    colors = {
+        "oblique45": ((180, 40, 40), (40, 80, 180)),
+        "grazing": ((40, 160, 60), (200, 180, 40)),
+        "approach8m": ((120, 40, 160), (40, 160, 160)),
+        "up3m": ((200, 100, 40), (80, 80, 200)),
+    }
+    cells = {}
+    for slot, (plate_rgb, render_rgb) in colors.items():
+        plate = base / f"{slot}-plate.png"
+        render = base / f"{slot}-render.png"
+        _swatch(plate, plate_rgb)
+        _swatch(render, render_rgb, (24, 16))
+        cells[slot] = {"plate": plate.name, "render": render.name}
+    spec = {"cells": cells}
+    (base / "sheet.json").write_text(json.dumps(spec), encoding="utf-8")
+    proc = subprocess.run(
+        [PY, str(TOOL / "contact.py"), "--spec", str(base / "sheet.json"), "--out", str(base / "out")],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+    )
+    report = json.loads((base / "out" / "report.json").read_text(encoding="utf-8"))
+    if proc.returncode != 0 or report.get("ok") is not True:
+        raise SystemExit(proc.stdout + proc.stderr)
+    if report["order"] != ["oblique45", "grazing", "approach8m", "up3m"]:
+        raise SystemExit(f"contact order {report['order']}")
+    if "key" not in report["skipped"]:
+        raise SystemExit("missing key camera was not skipped")
+    sheet = np.array(Image.open(base / "out" / "sheet.png").convert("RGB"))
+    for cell, (plate_rgb, render_rgb) in zip(report["cells"], colors.values()):
+        if cell["frame"] != [64, 64]:
+            raise SystemExit("plate and render are not in the same frame")
+        px, py, pw, ph = cell["plateBox"]
+        rx, ry, rw, rh = cell["renderBox"]
+        if (pw, ph) != (rw, rh):
+            raise SystemExit("plate frame differs from the render frame")
+        plate_pix = sheet[py + ph // 2, px + pw // 2]
+        render_pix = sheet[ry + rh // 2, rx + rw // 2]
+        if tuple(int(v) for v in plate_pix) != plate_rgb:
+            raise SystemExit(f"{cell['slot']} plate pixel {plate_pix} != {plate_rgb}")
+        if tuple(int(v) for v in render_pix) != render_rgb:
+            raise SystemExit(f"{cell['slot']} render pixel {render_pix} != {render_rgb}")
+        if not (px < rx):
+            raise SystemExit(f"{cell['slot']} plate is not beside the render")
+    key_plate = base / "key-plate.png"
+    key_render = base / "key-render.png"
+    _swatch(key_plate, (255, 255, 255))
+    _swatch(key_render, (0, 0, 0))
+    with_key = {"cells": {"key": {"plate": key_plate.name, "render": key_render.name}, **cells}}
+    (base / "with-key.json").write_text(json.dumps(with_key), encoding="utf-8")
+    proc = subprocess.run(
+        [PY, str(TOOL / "contact.py"), "--spec", str(base / "with-key.json"), "--out", str(base / "with-key")],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+    )
+    keyed = json.loads((base / "with-key" / "report.json").read_text(encoding="utf-8"))
+    if proc.returncode != 0 or keyed["order"][0] != "key":
+        raise SystemExit("key camera was not first when it was named")
+    print("selftest contact sheet plate|render " + " ".join(report["order"]))
+
+
 def main() -> None:
     tmp = Path("/tmp/objsheet-selftest")
     if tmp.exists():
@@ -328,6 +398,7 @@ def main() -> None:
     interior_holes(tmp)
     void_orbit(tmp)
     preflight_views(tmp)
+    contact_sheet(tmp)
     print("PASS objsheet selftest")
 
 

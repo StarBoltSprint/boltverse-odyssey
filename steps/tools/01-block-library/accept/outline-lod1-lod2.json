@@ -1,0 +1,41 @@
+{
+ "measure": "ray",
+ "pair": "lod1-lod2",
+ "cameras": "steps/zone-d/01-terrace/work/switch-views.json",
+ "res": "720x1280",
+ "fovY": 60,
+ "acceptance": "xorPx == 0 at switch15m and switch40m",
+ "switch15m": {
+  "view": "switch15m",
+  "hitPx": 454805,
+  "xorPx": 0,
+  "xorFrac": 0.0,
+  "focusPx": 50528,
+  "focusXorPx": 0,
+  "focusXorFrac": 0.0,
+  "maxBlobPx": 0,
+  "pass": true
+ },
+ "switch40m": {
+  "view": "switch40m",
+  "hitPx": 167984,
+  "xorPx": 0,
+  "xorFrac": 0.0,
+  "focusPx": 42548,
+  "focusXorPx": 0,
+  "focusXorFrac": 0.0,
+  "maxBlobPx": 0,
+  "pass": true
+ },
+ "xorPx": 0,
+ "pass": true,
+ "binary28m": {
+  "note": "Documented residual. Not the acceptance row. Same score as KEEP.",
+  "xorPx": 29,
+  "hitPx": 40406,
+  "xorFrac": 0.000718,
+  "pass": false,
+  "width": 180,
+  "height": 320
+ }
+}

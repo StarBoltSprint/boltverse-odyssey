@@ -1,5 +1,7 @@
 # imagine-to-3d type profiles
 
+`terrace-zd.json` is a block-builder profile (plate constants for `block_builder.py`). It is not a classify type profile.
+
 One file per object type (classify.py output). Each profile:
 - `gate.profile` = the tools/object-gate profile it is gated with (read-only reuse, merged over `_base.yaml`);
   `gate.tighten` may only make a gate threshold STRICTER (load_profile() raises otherwise).

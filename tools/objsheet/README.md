@@ -70,6 +70,24 @@ A failing orbit prints the fallback: 3–4 views for a hero ship (front, 3/4, si
 
 `--kind hero-ship` makes 3–4 views the default even when the pixels match. Any other count fails. The pack is [`learn/ship-turnaround.md`](../../learn/ship-turnaround.md).
 
+## Contact sheet
+
+One fixed sheet per block build. Cells stay in this order, and only when that pair exists:
+
+1. key camera (skipped when the step or the profile does not name one; the sheet does not invent it)
+2. 45° oblique
+3. grazing
+4. 8 m approach
+5. 3 m up
+
+Each cell is the plate beside its render. Both are nearest-fit into the same frame. The PNG is a proof. It is not an asset.
+
+```bash
+python3 tools/objsheet/contact.py --spec <sheet.json> --out <dir>
+```
+
+`sheet.json` lists `cells.<slot>.plate` and `cells.<slot>.render`. The self-test builds a tiny fixture (no Imagine) and checks the order, the skip, and that each frame's pixels are that pair.
+
 ## Self-test
 
 ```bash
