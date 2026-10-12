@@ -28,7 +28,7 @@ sun.shadow.bias = -0.0005; sun.shadow.normalBias = 0.04; scene.add(sun, sun.targ
 const ground = new THREE.Mesh(new THREE.PlaneGeometry(800, 800), new THREE.MeshStandardMaterial({ color: 0xc8d4e2, roughness: 1 }));
 ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
 const TL = new THREE.TextureLoader(), TEX = {};
-for (const [n, f] of [['front', 'plate-front.jpg'], ['front2', 't1-right-v33.jpg'], ['side', 'plate-side.jpg'], ['top', 'top.jpg']]) {
+for (const [n, f] of [['front', 'plate-front-v34.jpg'], ['front2', 't1-right-v34.jpg'], ['side', 'plate-side-v34.jpg'], ['top', 'top.jpg']]) {
   const t = await TL.loadAsync(`./assets/${f}`); t.colorSpace = THREE.SRGBColorSpace; t.flipY = false; t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
   t.anisotropy = r.capabilities.getMaxAnisotropy(); t.minFilter = THREE.LinearMipmapLinearFilter; TEX[n] = t; }
 const lod = new THREE.LOD(); const sw = [0, ...P.object.lod_switch_m]; const loader = new GLTFLoader();

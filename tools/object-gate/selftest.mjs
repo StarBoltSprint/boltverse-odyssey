@@ -149,5 +149,18 @@ Image.fromarray(np.full((576,384),255,np.uint8)).save('${d}/m.png')`]);
   const sharp = vis("sharp.png"), soft = vis("soft.png");
   ok(sharp.visiblePxPerM >= need58 && soft.visiblePxPerM < need58, `mode-B target: sharp plate ${sharp.visiblePxPerM} px/m PASS, softened (down x3, re-up) ${soft.visiblePxPerM} px/m FAIL vs ${need58.toFixed(1)}`);
 }
+{ // v3.4 ghost icicles: painted streaks without cones. The v3.3 ship (t1-right-v33 + v3.3 cones; the 1.67 m left curtain and the
+  // free-hanging wall icicle at x 0.72 m had no geometry) MUST fail; the same plates with a cone at every streak MUST pass.
+  const F = join(HERE, "fixtures/ghost-v33"), tex = ["--tex", `t1-right=${F}/t1-right-v33.jpg`, `plate-front=${F}/plate-front.jpg`, `plate-side=${F}/plate-side.jpg`];
+  const g = (ici) => JSON.parse(execFileSync("python3", [join(HERE, "py/ghost_streaks.py"), join(F, "bands.json"), ici, ...tex], { encoding: "utf8" }));
+  const bad = g(join(F, "icicles-v33.json"));
+  const d = mkdtempSync(join(tmpdir(), "og-ghost-")), all = [];
+  execFileSync("python3", ["-c", `
+import json,sys; sys.path.insert(0,'${join(HERE, "py")}'); import ghost_streaks as G
+b=json.load(open('${F}/bands.json')); t={'t1-right':'${F}/t1-right-v33.jpg','plate-front':'${F}/plate-front.jpg','plate-side':'${F}/plate-side.jpg'}
+r=G.run(b,[],t); c=[dict(tier=x['tier'],side=x['side'],x=x['coord'],z=x['coord']) for x in r['list']]; json.dump(c,open('${d}/all.json','w'))`]);
+  const good = g(join(d, "all.json"));
+  ok(!bad.pass_ && bad.ghostStreaks > 0 && good.pass_, `ghost icicles: v3.3 ship ${bad.ghostStreaks} painted streaks without cones -> FAIL; cone on every streak -> ${good.pass_ ? "PASS" : "FAIL"}`);
+}
 console.log(fails ? `FAIL ${fails}` : "PASS selftest");
 process.exit(fails ? 1 : 0);

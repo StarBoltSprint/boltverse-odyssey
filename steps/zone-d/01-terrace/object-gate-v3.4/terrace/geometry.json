@@ -1,0 +1,89 @@
+[
+ {
+  "geo": "1b740a89",
+  "usedBy": "zd-terrace-lod0",
+  "instances": 1,
+  "tris": 77752,
+  "verts": 39250,
+  "open": 0,
+  "nonManifold": 0,
+  "degenerate": 38,
+  "reliefM": {
+   "+x": 0.497,
+   "-x": 0.498,
+   "+z": 1.556,
+   "-z": 0
+  },
+  "local": {
+   "w": 17.31,
+   "h": 14.73,
+   "d": 17
+  },
+  "sizes": [
+   {
+    "inst": "zd-terrace-lod0",
+    "w": 17.31,
+    "h": 14.73,
+    "d": 17
+   }
+  ]
+ },
+ {
+  "geo": "f8d47151",
+  "usedBy": "zd-terrace-lod1",
+  "instances": 1,
+  "tris": 28658,
+  "verts": 14720,
+  "open": 0,
+  "nonManifold": 0,
+  "degenerate": 4,
+  "reliefM": {
+   "+x": 0.463,
+   "-x": 0.478,
+   "+z": 1.545,
+   "-z": 0
+  },
+  "local": {
+   "w": 17.31,
+   "h": 14.73,
+   "d": 17
+  },
+  "sizes": [
+   {
+    "inst": "zd-terrace-lod1",
+    "w": 17.31,
+    "h": 14.73,
+    "d": 17
+   }
+  ]
+ },
+ {
+  "geo": "a16022cc",
+  "usedBy": "zd-terrace-lod2",
+  "instances": 1,
+  "tris": 14422,
+  "verts": 7604,
+  "open": 0,
+  "nonManifold": 0,
+  "degenerate": 0,
+  "reliefM": {
+   "+x": 0.345,
+   "-x": 0.38,
+   "+z": 1.5,
+   "-z": 0
+  },
+  "local": {
+   "w": 17.31,
+   "h": 14.73,
+   "d": 17
+  },
+  "sizes": [
+   {
+    "inst": "zd-terrace-lod2",
+    "w": 17.31,
+    "h": 14.73,
+    "d": 17
+   }
+  ]
+ }
+]

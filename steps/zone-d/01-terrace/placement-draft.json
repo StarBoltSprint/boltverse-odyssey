@@ -30,7 +30,18 @@
     "doorways": "collider face on each doorway BACK face (1.5 m in), never on the facade plane",
     "cornices": "one box per cornice at lip height; extra boxes only under real icicle clusters (start/end from Tools Engineer's v3 report), down to cluster tips; no blocking where there are no icicles",
     "no_invisible_walls": true,
-    "icicle_clusters_src": "work/icicle-report.json"
+    "icicle_clusters_src": "work/icicle-report.json",
+    "icicle_clearance_v33": {
+      "tier1_front_lowest_tip_m": 3.743,
+      "tier1_left_lowest_tip_m": 4.665,
+      "walkway": "tier 1 only; all tips above camera"
+    },
+    "icicle_cluster_boxes": "pending x start/end per cluster (not in icicle-report v3.3)",
+    "layers": {
+      "icicle_cluster_boxes": "player only (not camera)",
+      "cornice_lip_boxes": "player + camera",
+      "icicle_cones": "none"
+    }
   },
   "approach": {
     "path_width_m": 4,

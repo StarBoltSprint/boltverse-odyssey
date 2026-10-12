@@ -1,83 +1,412 @@
 {
- "version": "v3.3",
+ "version": "v3.4",
+ "note": "tier numbers 1-3 (bottom..top); x/z in model metres (front: x along the cornice, left end: z); cluster = cones closer than 0.4 m; start/end include root half-width",
+ "ghostGate": {
+  "pass_": true,
+  "ghosts": 0
+ },
  "groups": [
   {
-   "tier": 0,
+   "tier": 1,
    "side": "front",
-   "count": 55,
-   "fromNewPlate": 45,
-   "raisedTo03": 24,
-   "lenM_geom": [
-    0.3,
-    1.22
+   "axis": "x",
+   "count": 82,
+   "fromCentrePlate": 55,
+   "fromV34Detector": 10,
+   "raisedTo03": 15,
+   "lenM": [
+    0.1,
+    2.37
    ],
-   "geomEqualsPixelLen": 31,
-   "lowestTipY": 3.743
+   "rootWm": [
+    0.02,
+    0.295
+   ],
+   "lowestTipY": 2.6,
+   "clusters": [
+    {
+     "start": -8.7,
+     "end": -8.05,
+     "cones": 2,
+     "maxLenM": 2.37
+    },
+    {
+     "start": -7.92,
+     "end": -7.23,
+     "cones": 4,
+     "maxLenM": 2.11
+    },
+    {
+     "start": -6.8,
+     "end": -3.75,
+     "cones": 20,
+     "maxLenM": 1.08
+    },
+    {
+     "start": -2.25,
+     "end": -1.88,
+     "cones": 2,
+     "maxLenM": 0.18
+    },
+    {
+     "start": -1.31,
+     "end": -1.26,
+     "cones": 1,
+     "maxLenM": 0.19
+    },
+    {
+     "start": 0.72,
+     "end": 0.94,
+     "cones": 1,
+     "maxLenM": 0.1
+    },
+    {
+     "start": 1.32,
+     "end": 1.76,
+     "cones": 2,
+     "maxLenM": 0.22
+    },
+    {
+     "start": 2.27,
+     "end": 7.26,
+     "cones": 46,
+     "maxLenM": 1.57
+    },
+    {
+     "start": 7.56,
+     "end": 8.21,
+     "cones": 3,
+     "maxLenM": 2.13
+    },
+    {
+     "start": 8.42,
+     "end": 8.61,
+     "cones": 1,
+     "maxLenM": 2.36
+    }
+   ]
   },
   {
-   "tier": 0,
+   "tier": 1,
    "side": "left",
-   "count": 6,
-   "fromNewPlate": 0,
-   "raisedTo03": 6,
-   "lenM_geom": [
-    0.3,
+   "axis": "z",
+   "count": 21,
+   "fromCentrePlate": 0,
+   "fromV34Detector": 18,
+   "raisedTo03": 3,
+   "lenM": [
+    0.26,
+    1.55
+   ],
+   "rootWm": [
+    0.1,
     0.3
    ],
-   "geomEqualsPixelLen": 0,
-   "lowestTipY": 4.665
-  },
-  {
-   "tier": 1,
-   "side": "front",
-   "count": 27,
-   "fromNewPlate": 0,
-   "raisedTo03": 19,
-   "lenM_geom": [
-    0.3,
-    0.69
-   ],
-   "geomEqualsPixelLen": 8,
-   "lowestTipY": 8.792
-  },
-  {
-   "tier": 1,
-   "side": "left",
-   "count": 21,
-   "fromNewPlate": 0,
-   "raisedTo03": 17,
-   "lenM_geom": [
-    0.3,
-    0.47
-   ],
-   "geomEqualsPixelLen": 4,
-   "lowestTipY": 9.007
+   "lowestTipY": 3.417,
+   "clusters": [
+    {
+     "start": -14.71,
+     "end": -13.78,
+     "cones": 3,
+     "maxLenM": 0.41
+    },
+    {
+     "start": -12.36,
+     "end": -12.26,
+     "cones": 1,
+     "maxLenM": 0.97
+    },
+    {
+     "start": -10.85,
+     "end": -10.29,
+     "cones": 3,
+     "maxLenM": 1.42
+    },
+    {
+     "start": -9.43,
+     "end": -8.3,
+     "cones": 4,
+     "maxLenM": 1.12
+    },
+    {
+     "start": -7.37,
+     "end": -7.27,
+     "cones": 1,
+     "maxLenM": 0.75
+    },
+    {
+     "start": -5.91,
+     "end": -5.81,
+     "cones": 1,
+     "maxLenM": 0.73
+    },
+    {
+     "start": -3.09,
+     "end": -2.99,
+     "cones": 1,
+     "maxLenM": 0.88
+    },
+    {
+     "start": -2.55,
+     "end": -2.45,
+     "cones": 1,
+     "maxLenM": 0.95
+    },
+    {
+     "start": -2.1,
+     "end": -1.35,
+     "cones": 3,
+     "maxLenM": 1.55
+    },
+    {
+     "start": -0.44,
+     "end": -0.17,
+     "cones": 2,
+     "maxLenM": 0.3
+    },
+    {
+     "start": 0.08,
+     "end": 0.33,
+     "cones": 1,
+     "maxLenM": 0.3
+    }
+   ]
   },
   {
    "tier": 2,
    "side": "front",
-   "count": 1,
-   "fromNewPlate": 0,
+   "axis": "x",
+   "count": 67,
+   "fromCentrePlate": 0,
+   "fromV34Detector": 16,
+   "raisedTo03": 28,
+   "lenM": [
+    0.3,
+    2.06
+   ],
+   "rootWm": [
+    0.1,
+    0.3
+   ],
+   "lowestTipY": 7.416,
+   "clusters": [
+    {
+     "start": -7.34,
+     "end": -6.57,
+     "cones": 6,
+     "maxLenM": 0.45
+    },
+    {
+     "start": -6.26,
+     "end": -6.07,
+     "cones": 1,
+     "maxLenM": 0.82
+    },
+    {
+     "start": -5.86,
+     "end": -5.55,
+     "cones": 2,
+     "maxLenM": 1.2
+    },
+    {
+     "start": -5.31,
+     "end": -4.22,
+     "cones": 4,
+     "maxLenM": 2.06
+    },
+    {
+     "start": -3.99,
+     "end": -3.19,
+     "cones": 3,
+     "maxLenM": 0.3
+    },
+    {
+     "start": -2.24,
+     "end": -1.87,
+     "cones": 2,
+     "maxLenM": 0.86
+    },
+    {
+     "start": -1.45,
+     "end": -0.35,
+     "cones": 5,
+     "maxLenM": 0.84
+    },
+    {
+     "start": -0.05,
+     "end": 0.05,
+     "cones": 1,
+     "maxLenM": 1.01
+    },
+    {
+     "start": 3.06,
+     "end": 3.16,
+     "cones": 1,
+     "maxLenM": 1.12
+    },
+    {
+     "start": 3.5,
+     "end": 3.9,
+     "cones": 2,
+     "maxLenM": 1.01
+    },
+    {
+     "start": 4.12,
+     "end": 4.22,
+     "cones": 1,
+     "maxLenM": 0.86
+    },
+    {
+     "start": 4.66,
+     "end": 7.41,
+     "cones": 39,
+     "maxLenM": 0.69
+    }
+   ]
+  },
+  {
+   "tier": 2,
+   "side": "left",
+   "axis": "z",
+   "count": 43,
+   "fromCentrePlate": 0,
+   "fromV34Detector": 10,
+   "raisedTo03": 20,
+   "lenM": [
+    0.15,
+    1.2
+   ],
+   "rootWm": [
+    0.1,
+    0.301
+   ],
+   "lowestTipY": 8.276,
+   "clusters": [
+    {
+     "start": -12.81,
+     "end": -11.93,
+     "cones": 4,
+     "maxLenM": 0.49
+    },
+    {
+     "start": -10.88,
+     "end": -10.64,
+     "cones": 1,
+     "maxLenM": 1.07
+    },
+    {
+     "start": -10.3,
+     "end": -8.43,
+     "cones": 8,
+     "maxLenM": 1.2
+    },
+    {
+     "start": -7.84,
+     "end": -7.74,
+     "cones": 1,
+     "maxLenM": 0.15
+    },
+    {
+     "start": -6.72,
+     "end": -6.62,
+     "cones": 1,
+     "maxLenM": 0.39
+    },
+    {
+     "start": -5.58,
+     "end": -3.34,
+     "cones": 28,
+     "maxLenM": 0.45
+    }
+   ]
+  },
+  {
+   "tier": 3,
+   "side": "front",
+   "axis": "x",
+   "count": 3,
+   "fromCentrePlate": 0,
+   "fromV34Detector": 2,
    "raisedTo03": 0,
-   "lenM_geom": [
-    0.71,
+   "lenM": [
+    0.41,
     0.71
    ],
-   "geomEqualsPixelLen": 1,
-   "lowestTipY": 12.855
+   "rootWm": [
+    0.1,
+    0.236
+   ],
+   "lowestTipY": 12.855,
+   "clusters": [
+    {
+     "start": -6.46,
+     "end": -6.22,
+     "cones": 1,
+     "maxLenM": 0.41
+    },
+    {
+     "start": -1.99,
+     "end": -1.89,
+     "cones": 1,
+     "maxLenM": 0.71
+    },
+    {
+     "start": 3.73,
+     "end": 3.97,
+     "cones": 1,
+     "maxLenM": 0.71
+    }
+   ]
   },
   {
-   "tier": 2,
+   "tier": 3,
    "side": "left",
-   "count": 1,
-   "fromNewPlate": 0,
+   "axis": "z",
+   "count": 5,
+   "fromCentrePlate": 0,
+   "fromV34Detector": 4,
    "raisedTo03": 0,
-   "lenM_geom": [
-    0.36,
+   "lenM": [
+    0.15,
     0.36
    ],
-   "geomEqualsPixelLen": 1,
-   "lowestTipY": 13.199
+   "rootWm": [
+    0.065,
+    0.3
+   ],
+   "lowestTipY": 13.199,
+   "clusters": [
+    {
+     "start": -12.52,
+     "end": -12.22,
+     "cones": 1,
+     "maxLenM": 0.26
+    },
+    {
+     "start": -11.94,
+     "end": -11.64,
+     "cones": 1,
+     "maxLenM": 0.28
+    },
+    {
+     "start": -11.07,
+     "end": -10.97,
+     "cones": 1,
+     "maxLenM": 0.34
+    },
+    {
+     "start": -9.87,
+     "end": -9.8,
+     "cones": 1,
+     "maxLenM": 0.36
+    },
+    {
+     "start": -9.41,
+     "end": -9.31,
+     "cones": 1,
+     "maxLenM": 0.15
+    }
+   ]
   }
  ]
 }

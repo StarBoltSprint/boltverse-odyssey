@@ -7,6 +7,7 @@ python3 terrace_block.py <stepdir> [--lod 0|1|2]  -> work/terrace-lodN.obj (+ .m
 import sys, json, numpy as np
 from PIL import Image
 from scipy import ndimage as ndi
+import os; sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '../object-gate/py')); import ghost_streaks as GS
 step = sys.argv[1]; LOD = int(sys.argv[sys.argv.index('--lod') + 1]) if '--lod' in sys.argv else 0
 S = 0.0215                        # m per plate px (front height 685 px <-> 14.7 m; doors ~2.4 m)
 FX0, FY0 = 535, 870               # front plate: x=0 column, ground row
@@ -35,6 +36,7 @@ X2A, X2B = XC2 - 512 / K2, XC2 + 500 / K2                  # facade x range cove
 def f2uv(x, y): return ((C2 + (x - XC2) * K2) / 1024, 1 - (G2 - y * K2) / 1024)
 V, UVs, F = [], [], {'front': [], 'front2': [], 'side': [], 'top': []}
 ICI = []
+BANDS = []; GHOST = []   # v3.4: detected streaks that get NO cone -> cleaned out of the texture (work/clean_streaks.py)
 NRM = {'front': [], 'front2': [], 'side': [], 'top': []}   # intended outward normal per triangle (winding fix)
 TS, TX0 = 0.029, 525          # top plate: m per px across, centre column
 TOPROWS = [(720, 665), (520, 484), (340, 116)]   # per tier: (front-lip row, row at next tier front / back)   # faces: (v idx tri), uv per vertex-in-face
@@ -126,13 +128,19 @@ for k, t in enumerate(T):
     # cornice slab: overhang CORN_OUT front, CORN_SIDE sides; rounded front-bottom lip (quarter cylinder)
     c0, c1 = y1, t['c1']; cz = z0 + CORN_OUT; cw = hw + CORN_SIDE; R = min(LIP_R, (c1 - c0) * 0.5)
     nx = n_(2 * cw, GRID)
-    box_quad((-cw, c0 + R, cz), (2 * cw, 0, 0), (0, c1 - c0 - R, 0), nx, n_(c1 - c0 - R, GRID), 'front', lambda p, hw=hw, cw=cw: fuv(p[0] * hw / cw * 0.98, p[1]), (0, 0, 1))
-    seg = 8
-    for s in range(seg):
-        a0, a1 = np.pi / 2 * s / seg, np.pi / 2 * (s + 1) / seg
-        P0 = lambda a: (0, c0 + R - R * np.cos(a), cz - R + R * np.sin(a))
-        p0, p1 = P0(a0), P0(a1)
-        box_quad((-cw, p1[1], p1[2]), (2 * cw, 0, 0), (0, p0[1] - p1[1], p0[2] - p1[2]), nx, 1, 'front', lambda p, c0=c0, R=R, hw=hw, cw=cw: fuv(p[0] * hw / cw * 0.98, c0 + R - R * (np.pi / 2 - np.arccos(np.clip((c0 + R - p[1]) / R, -1, 1)))), (0, 0, 1))
+    # v3.4: tier-1 cornice front + rounded lip inside the close plate's span take their pixels from t1-right (the plate that
+    # actually sees them frontally at 98 px/m) instead of plate-front's 46 px/m snow band (the soft horizontal smear at 8 m)
+    scx = hw / cw * 0.98
+    spans = [(-cw, cw, 'front', fuv)] if k else [(-cw, X2A / scx, 'front', fuv), (X2A / scx, X2B / scx, 'front2', f2uv), (X2B / scx, cw, 'front', fuv)]
+    for (sa, sb, mm, uvf) in spans:
+        nxs = n_(sb - sa, GRID)
+        box_quad((sa, c0 + R, cz), (sb - sa, 0, 0), (0, c1 - c0 - R, 0), nxs, n_(c1 - c0 - R, GRID), mm, lambda p, scx=scx, uvf=uvf: uvf(p[0] * scx, p[1]), (0, 0, 1))
+        seg = 8
+        for s in range(seg):
+            a0, a1 = np.pi / 2 * s / seg, np.pi / 2 * (s + 1) / seg
+            P0 = lambda a: (0, c0 + R - R * np.cos(a), cz - R + R * np.sin(a))
+            p0, p1 = P0(a0), P0(a1)
+            box_quad((sa, p1[1], p1[2]), (sb - sa, 0, 0), (0, p0[1] - p1[1], p0[2] - p1[2]), nxs, 1, mm, lambda p, c0=c0, R=R, scx=scx, uvf=uvf: uvf(p[0] * scx, c0 + R - R * (np.pi / 2 - np.arccos(np.clip((c0 + R - p[1]) / R, -1, 1)))), (0, 0, 1))
     # underside (-Y) behind the lip back to the wall: cornice snow pixels continued (stretch measured by the gate)
     sc_ = hw / cw * 0.98; xa_, xb_ = (X0 - 0.25) / sc_, (X1 + 0.25) / sc_
     for (ua, ub) in ((-cw, xa_), (xa_, xb_), (xb_, cw)):   # split at the door-shift seam so no quad straddles it
@@ -163,7 +171,7 @@ for k, t in enumerate(T):
     # icicles (v3): one irregular cone under each white drip streak of the plate (front: plate-front under the lip;
     # left end: plate-side). Same cones (count, length, position) in every LOD; only radial segments drop 6 -> 4 -> 3.
     ns = 6; sc_c = hw / cw * 0.98   # 6 radial segments in every LOD: 6->4->3 failed the LOD outline gate (15 m: 725 px, blob 12)
-    def drips(img, r0, c_lo, c_hi, win=110, thr=135):
+    def drips(img, r0, c_lo, c_hi, win=110, thr=135, mpp=S):
         # per column: tip = end of the bright run that starts in the snow body (r0-20); drip = tip below the fringe baseline
         sub = img[r0 - 20:r0 + win, c_lo:c_hi] > thr; sub = sub | (np.roll(sub, 1, 0) & np.roll(sub, -1, 0))
         tips = np.array([np.argmin(np.r_[c, False]) if c[0] else 0 for c in sub.T], float)
@@ -171,7 +179,24 @@ for k, t in enumerate(T):
         L = ndi.median_filter(np.clip(tips - base, 0, None), 3); out = []
         for j in range(len(L)):
             if L[j] >= 3 and L[j] == L[max(0, j - 2):j + 3].max() and (not out or j - out[-1][0] >= 4): out.append((j, L[j]))
-        return [(c_lo + j, l) for j, l in out], int(r0 - 20 + base)
+        # v3.4: root width = contiguous columns whose drip reaches >= 1/3 of this streak's length (real pixel width)
+        res = []
+        for j, l in out:
+            a_ = j; b_ = j
+            while a_ > 0 and L[a_ - 1] >= l / 3: a_ -= 1
+            while b_ < len(L) - 1 and L[b_ + 1] >= l / 3: b_ += 1
+            res.append((c_lo + j, l, b_ - a_ + 1, a_, b_))
+        # v3.4 curtains: a root wider than ~0.3 m is a fused curtain -> one cone per `step` px across it, each at its own
+        # column's real pixel length (only where that column itself is a drip, L >= 3 px); peaks already inside a curtain merge
+        out2, done = [], set()
+        for c, l, w, a_, b_ in res:
+            if (a_, b_) in done: continue
+            done.add((a_, b_))
+            if w * mpp <= 0.3: out2.append((c, l, w)); continue
+            n = max(2, int(round(w * mpp / 0.25))); cols = np.linspace(a_, b_, n).round().astype(int)
+            for jj in cols:
+                if L[jj] >= 3: out2.append((c_lo + int(jj), float(L[jj]), max(1, int(round(w / n)))))
+        return out2, int(r0 - 20 + base)
     def cone(base, Lm, r, uvc, seed, mat='front'):
         rng = np.random.default_rng(seed); tipdx, tipdz = rng.uniform(-0.3, 0.3, 2) * r; mid = 0.55 + rng.uniform(-0.1, 0.1)
         rings = []
@@ -193,36 +218,73 @@ for k, t in enumerate(T):
     img = np.asarray(Image.open(f'{step}/plates/plate-front.jpg').convert('L'), np.float32)
     r0 = int(round(FY0 - c0 / S)); cl = int(FX0 - hw * 0.98 / S); ch = int(FX0 + hw * 0.98 / S)
     dr, brow = drips(img, r0, cl, ch); ytop = FY0 * S - brow * S   # plate row of the fringe baseline -> metres
+    spans = [(cl, ch)] if k else [(cl, int(FX0 + X2A / S)), (int(FX0 + X2B / S), ch)]
+    for c_a, c_b in spans: BANDS.append(dict(plate='plate-front', tex='plates/v34/plate-front-v34.jpg', tier=k, side='front', row0=int(brow), rows=110, c_lo=c_a, c_hi=c_b, a=-FX0 * S / sc_c, b=S / sc_c))
     if k == 0:   # v3.2: drips inside the close plate's span come from its own pixels (98 px/m: real lengths, fewer raised stubs)
         img2 = np.asarray(Image.open(f'{step}/plates/v32/t1-right.jpg').convert('L'), np.float32)   # drips on the ORIGINAL pixels (the v3.3 grade only changes colour)
-        r2 = 220; dr2_, _b2 = drips(img2, r2, 2, 1022, win=200, thr=100)   # this plate's own snow-body row and (darker) snow level
+        r2 = 220; dr2_, _b2 = drips(img2, r2, 2, 1022, win=200, thr=100, mpp=1 / K2)   # this plate's own snow-body row and (darker) snow level
         ytop2 = (G2 - _b2) / K2   # cone UVs start at the plate's own fringe baseline
-        for px, L in dr2_:
+        pa, pb = int(C2 + (X2A + 0.1 - XC2) * K2), int(C2 + (X2B - 0.1 - XC2) * K2)
+        BANDS.append(dict(plate='t1-right', tex='plates/v34/t1-right-v34.jpg', tier=k, side='front', row0=int(_b2), rows=200, c_lo=max(2, pa), c_hi=min(1022, pb), a=(XC2 - C2 / K2) / sc_c, b=1 / (K2 * sc_c)))
+        for px, L, wpx in dr2_:
             xm = XC2 + (px - C2) / K2; x = xm / sc_c; Lr = L / K2
-            if Lr > 1.6 or Lr < 0.2 or not (X2A + 0.1 < xm < X2B - 0.1): continue   # < 0.2 m = fringe texture, not raised into a cone
-            Lm = float(max(Lr, 0.3)); r = float(np.clip(0.04 + 0.06 * Lm, 0.05, 0.11))
+            if Lr > 1.6 or Lr < 0.1 or not (X2A + 0.1 < xm < X2B - 0.1):
+                GHOST.append(dict(plate='t1-right', col=int(px), row=int(_b2), lenPx=float(L), wPx=int(wpx))); continue
+            # v3.4: true pixel length (no raise on this plate), root radius from the streak's real pixel width (key B: 10-30 cm roots)
+            Lm = float(Lr); r = float(np.clip(wpx / K2 / 2, 0.05, 0.15)); rootW = round(wpx / K2, 3)
             cone((x, c0 + 0.02, cz - R * 0.5), Lm, r, lambda t, h, sc=1.0, xm=xm, r=r: f2uv(xm + np.pi * r * sc * (t - 0.5), ytop2 - h), px * 11 + 5, 'front2')
-            ICI.append(dict(tier=k, side='front', plate='t1-right', rawLenM=round(Lr, 3), x=round(x, 3), z=round(cz - R * 0.5, 3), lenM=round(Lm, 3), tipY=round(c0 + 0.02 - Lm, 3)))
-    for px, L in dr:
+            ICI.append(dict(tier=k, side='front', plate='t1-right', rootWm=rootW, rawLenM=round(Lr, 3), x=round(x, 3), z=round(cz - R * 0.5, 3), lenM=round(Lm, 3), tipY=round(c0 + 0.02 - Lm, 3)))
+    for px, L, wpx in dr:
         xp = (px - FX0) * S; x = xp / sc_c
-        if k == 0 and X2A < xp < X2B: continue   # covered by the close plate
-        Lm = float(np.clip(L * S, 0.3, 1.2)); r = float(np.clip(0.04 + 0.06 * Lm, 0.05, 0.11))
-        if k == 2 and L * S < 0.3: continue   # tier 3: no raised stubs (clearance over the tier-2 top)
-        if L * S > 1.2: continue   # a bright run longer than 1.2 m is snow/wall, not a drip: never clamp it into a cone
+        if (k == 0 and X2A < xp < X2B) or (k == 2 and L * S < 0.3) or L * S > 1.2:   # close-plate span / tier-3 clearance / snow run
+            GHOST.append(dict(plate='plate-front', col=int(px), row=int(brow), lenPx=float(L), wPx=int(wpx))); continue
+        Lm = float(np.clip(L * S, 0.3, 1.2)); r = float(np.clip(wpx * S / 2, 0.05, 0.15)); rootW = round(wpx * S, 3)
         cone((x, c0 + 0.02, cz - R * 0.5), Lm, r, lambda t, h, sc=1.0, xp=xp, r=r, ytop=ytop: fuv(xp + np.pi * r * sc * (t - 0.5), ytop - h), px * 7 + k)
-        ICI.append(dict(tier=k, side='front', rawLenM=round(L * S, 3), x=round(x, 3), z=round(cz - R * 0.5, 3), lenM=round(Lm, 3), tipY=round(c0 + 0.02 - Lm, 3)))
+        ICI.append(dict(tier=k, side='front', rootWm=rootW, rawLenM=round(L * S, 3), x=round(x, 3), z=round(cz - R * 0.5, 3), lenM=round(Lm, 3), tipY=round(c0 + 0.02 - Lm, 3)))
     # left cornice end (path side): drips from the side plate rows under this tier's cornice
     simg = np.asarray(Image.open(f'{step}/plates/plate-side.jpg').convert('L'), np.float32)
     b_, t_ = SIDEROWS[k]; srow = int(round(b_ + (t_ - b_) * (c0 - y0) / (c1 - y0)))
     dr2, _ = drips(simg, srow, int(SX0 + (BACK - CORN_OUT) / S) + 4, int(SX0) - 2)
-    for px, L in dr2:
-        z = (px - SX0) * S + CORN_OUT; Lm = float(np.clip(L * S, 0.3, 1.2)); r = float(np.clip(0.04 + 0.06 * Lm, 0.05, 0.11))
-        if k == 2 and L * S < 0.3: continue
-        if L * S > 1.2: continue
-        if z > cz - 0.15 or z < BACK + 0.2: continue
+    BANDS.append(dict(plate='plate-side', tex='plates/v34/plate-side-v34.jpg', tier=k, side='left', row0=int(_), rows=110, c_lo=int(SX0 + (BACK + 0.2 - CORN_OUT) / S), c_hi=int(SX0 + (cz - 0.15 - CORN_OUT) / S), a=-SX0 * S + CORN_OUT, b=S))
+    for px, L, wpx in dr2:
+        z = (px - SX0) * S + CORN_OUT; Lm = float(np.clip(L * S, 0.3, 1.2)); r = float(np.clip(wpx * S / 2, 0.05, 0.15)); rootW = round(wpx * S, 3)
+        if (k == 2 and L * S < 0.3) or L * S > 1.2 or z > cz - 0.15 or z < BACK + 0.2:
+            GHOST.append(dict(plate='plate-side', col=int(px), row=int(_), lenPx=float(L), wPx=int(wpx))); continue
         zp = z - CORN_OUT
         cone((-cw + 0.12, c0 + 0.02, z), Lm, r, lambda t, h, sc=1.0, zp=zp, r=r: suv(zp + np.pi * r * sc * (t - 0.5), c0 - h), px * 13 + k)
-        ICI.append(dict(tier=k, side='left', rawLenM=round(L * S, 3), x=round(-cw + 0.12, 3), z=round(z, 3), lenM=round(Lm, 3), tipY=round(c0 + 0.02 - Lm, 3)))
+        ICI.append(dict(tier=k, side='left', rootWm=rootW, rawLenM=round(L * S, 3), x=round(-cw + 0.12, 3), z=round(z, 3), lenM=round(Lm, 3), tipY=round(c0 + 0.02 - Lm, 3)))
+    # v3.4: every painted streak the gate's detector sees on this tier's ORIGINAL plates either gets real cones (it hangs from the
+    # fringe line: curtain/drip -> one cone per ~0.25 m across its real width, each at its own column's pixel length, root = real
+    # width / n) or is listed as a ghost and cleaned out of the texture by work/clean_streaks.py (free-hanging / too long / clearance).
+    tipmin = [0.3, T[0]['c1'] + 0.3, T[1]['c1'] + 2.5][k]   # tier 3 keeps the 2.5 m clearance over the tier-2 top; tier 2 tips stay above the tier-1 top
+    for b in [b for b in BANDS if b['tier'] == k]:
+        src = {'t1-right': img2 if k == 0 else None, 'plate-front': img, 'plate-side': simg}[b['plate']]
+        key = 'x' if b['side'] == 'front' else 'z'; mpp = abs(b['b']) * (sc_c if b['side'] == 'front' else 1)   # metres of PLATE per px
+        for st in GS.detect(src, b, mpp):
+            have = np.array([c[key] for c in ICI if c['tier'] == k and c['side'] == b['side']] or [1e9])
+            xg = b['a'] + b['b'] * st['col']
+            if np.min(np.abs(have - xg)) <= max(0.2, st['widthM'] / 2): continue
+            colpx = src[min(b['row0'], st['r0']):st['r0'] + 1, st['col']]   # hangs from the fringe = bright pixels connect it to the snow body
+            attached = (ndi.binary_closing(colpx > 60, iterations=2) | (colpx > 60)).all() if len(colpx) else True
+            near = (st['r0'] - b['row0']) * mpp <= (1.5 if attached else 0.35)   # starts at the fringe line (not a free-hanging painted streak lower on the wall)
+            Lfr = (st['r1'] - min(b['row0'], st['r0'])) * mpp   # real length from the fringe line to the streak tip
+            hang = (attached or st['r0'] - b['row0'] <= 8) and near and Lfr <= 2.5 and c0 + 0.02 - Lfr >= tipmin
+            if not hang:
+                GHOST.append(dict(plate=b['plate'], tier=k, side=b['side'], c0=st['c0'], c1=st['c1'], r0=st['r0'], r1=st['r1'], lenM=st['lenM'], why='free-hanging/long/clearance')); continue
+            n = max(1, int(round(st['widthM'] / 0.25))); cols = st['cols']; pick = [cols[int(i)] for i in np.linspace(0, len(cols) - 1, n).round()]
+            rr = float(np.clip(st['widthM'] / n / 2, 0.05, 0.15))
+            for col, Lc, r0c in pick:
+                Lm = float((r0c - min(b['row0'], r0c)) * mpp + Lc)   # fringe -> this column's tip
+                if Lc < 0.15 or Lm > 2.5 or c0 + 0.02 - Lm < tipmin: continue
+                g = b['a'] + b['b'] * col
+                if b['plate'] == 't1-right':
+                    xm = g * sc_c; uvf = lambda t, h, sc=1.0, xm=xm, r=rr: f2uv(xm + np.pi * r * sc * (t - 0.5), ytop2 - h); mat = 'front2'; base = (g, c0 + 0.02, cz - R * 0.5)
+                elif b['plate'] == 'plate-front':
+                    xp = g * sc_c; uvf = lambda t, h, sc=1.0, xp=xp, r=rr, ytop=ytop: fuv(xp + np.pi * r * sc * (t - 0.5), ytop - h); mat = 'front'; base = (g, c0 + 0.02, cz - R * 0.5)
+                else:
+                    zp = g - CORN_OUT; uvf = lambda t, h, sc=1.0, zp=zp, r=rr: suv(zp + np.pi * r * sc * (t - 0.5), c0 - h); mat = 'side'; base = (-cw + 0.12, c0 + 0.02, g)
+                cone(base, Lm, rr, uvf, col * 17 + k, mat)
+                ICI.append(dict(tier=k, side=b['side'], plate=b['plate'], src='v34-detector', rootWm=round(2 * rr, 3), rawLenM=round(Lm, 3), x=round(base[0], 3), z=round(base[2], 3), lenM=round(Lm, 3), tipY=round(c0 + 0.02 - Lm, 3)))
 # ground skirt hidden 0.3 m below 0 (grounded: lowest visible y = 0)
 V = np.array(V); UVs = np.array(UVs)
 flipped = 0
@@ -241,7 +303,7 @@ with open(o + '.obj', 'w') as f:
         f.write(f'usemtl {m}\n')
         for a, b, c in F[m]: f.write(f'f {a+1}/{a+1} {b+1}/{b+1} {c+1}/{c+1}\n')
 with open(o + '.mtl', 'w') as f:
-    f.write('newmtl front\nmap_Kd ../plates/plate-front.jpg\nnewmtl front2\nmap_Kd ../plates/v32/t1-right-v33.jpg\nnewmtl side\nmap_Kd ../plates/plate-side.jpg\nnewmtl top\nmap_Kd ../plates/top.jpg\n')
+    f.write('newmtl front\nmap_Kd ../plates/v34/plate-front-v34.jpg\nnewmtl front2\nmap_Kd ../plates/v34/t1-right-v34.jpg\nnewmtl side\nmap_Kd ../plates/v34/plate-side-v34.jpg\nnewmtl top\nmap_Kd ../plates/top.jpg\n')
 ntri = sum(len(v) for v in F.values())
 # per-triangle texel stretch (OBJ face order): metres per nominal plate px along both principal axes
 st = []
@@ -254,7 +316,7 @@ for m in ('front', 'front2', 'side', 'top'):
         try: J = A @ np.linalg.inv(B); sv = np.linalg.svd(J, compute_uv=False); st.append(float(sv[0] / max(sv[1], 1e-9))); dens.append(float(sv[0]))
         except np.linalg.LinAlgError: st.append(1e9); dens.append(1e9)
 np.save(f'{step}/work/terrace-lod{LOD}-stretch.npy', np.array(st, np.float32)); np.save(f'{step}/work/terrace-lod{LOD}-density.npy', np.array(dens, np.float32))
-json.dump(ICI, open(o + '-icicles.json', 'w'))
+json.dump(ICI, open(o + '-icicles.json', 'w')); json.dump(GHOST, open(o + '-ghosts.json', 'w')); json.dump(BANDS, open(o + '-bands.json', 'w'))
 json.dump(dict(lod=LOD, tris=ntri, flippedForWinding=flipped, icicles=len(ICI), verts=len(V), aabb=[V.min(0).tolist(), V.max(0).tolist()], doorDepthM=DOOR_D, corniceOutM=CORN_OUT,
                mPerPx=S, tiers=T, back=BACK), open(o + '.json', 'w'), indent=1)
 print(o, ntri, V.min(0).round(2), V.max(0).round(2))

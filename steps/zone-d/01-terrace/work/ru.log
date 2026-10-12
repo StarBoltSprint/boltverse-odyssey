@@ -3,8 +3,8 @@
   if not m or not m.use_nodes: continue
 /workspace/grokcli/wt/zd-terrace-1012/tools/object-gate/py/render_views.py:41: DeprecationWarning: 'World.use_nodes' is expected to be removed in Blender 6.0
   w = bpy.data.worlds.new('w'); sc.world = w; w.use_nodes = True
-00:10.258  render           | Saved: 'work/upview/close3m-up.png'
+00:10.291  render           | Saved: 'work/upview/close3m-up.png'
 Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:12:34)
-OBJ import of 'terrace-lod0.obj' took 38.54 ms
+OBJ import of 'terrace-lod0.obj' took 37.44 ms
 
 Blender quit

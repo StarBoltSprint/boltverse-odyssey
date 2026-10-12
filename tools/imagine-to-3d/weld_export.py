@@ -44,6 +44,13 @@ for m in ob.data.materials:
     if m and m.node_tree:
         for n in m.node_tree.nodes:
             if n.type == 'TEX_IMAGE': n.extension = 'EXTEND'
+# v3.4: smooth shading by angle (35 deg): the rounded cornice lip and the cones were flat-shaded strips (stepped horizontal
+# bands = the 'snow smear' at 8 m); box corners (90 deg) stay hard
+import math
+for o_ in bpy.context.scene.objects:
+    if o_.type == 'MESH':
+        bpy.context.view_layer.objects.active = o_; o_.select_set(True)
+bpy.ops.object.shade_smooth_by_angle(angle=math.radians(35))
 bpy.ops.export_scene.gltf(filepath=a[1], export_format='GLB')
 json.dump(dict(openBefore=o0[0], openAfter=o1[0], nonManifoldAfter=o1[1], tjunctionSplits=splits, tris=len(ob.data.polygons)), open(a[2], 'w'))
 print('WELD', o0, o1, splits)
