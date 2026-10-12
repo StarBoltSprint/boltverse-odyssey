@@ -27,3 +27,4 @@ Append-only. One row per step. `python3 tools/quota/quota.py` adds the row. Do n
 | 2026-10-11 | multiview-tower-1011 | 1a455361 | 0 | 0 | 0 | 0 | n/a | n/a | 4020.1 | events.jsonl |
 | 2026-10-11 | steps/hires-tower-1011 | 5ac1d217 | 0 | 0 | 0 | 0 | n/a | n/a | 4288.7 | events.jsonl |
 | 2026-10-11 | world-graph-1011 | n/a | 0 | 0 | 0 | 0 | n/a | n/a | 1557.5 | events.jsonl |
+| 2026-10-12 | tools-06-lod-streaming | n/a | 0 | 0 | 0 | 0 | n/a | n/a | 628.5 | events.jsonl |

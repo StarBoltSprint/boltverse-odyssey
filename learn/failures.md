@@ -1222,3 +1222,13 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Rules for every next object: relief ONLY from SAM2 masks of features painted in the exact Imagine plate (MoGe-2 depth inside the mask). Hidden faces from the 1024 Imagine face plates at native res; left = right mirrored; back = right mirrored too (the "back" plate was a second front; `face-left-REJECTED.jpg` never used). Plates are UNLIT skins (`MeshBasicMaterial`, `toneMapped: false`, sRGB map). Captures read with `readRT` in `SRGBColorSpace`. Grounding: inset 0 on the bottom 4 % of height so the foot chord meets the ground, float < 0.05 m measured. Gate cameras must frame the object: perspective coverage ≥ 25 %, ortho ≥ 60 % and not black, no grazing views, hero and 30 m are different cameras. Grok vision runs only after every capture is non-black (L\* check first). |
 | Guard | `node tools/object-gate/selftest.mjs`; gate.mjs camera-framing row (cover ≥ 25 %, ortho ≥ 60 % not black); `steps/hires-tower-1011/gate/report.md` colour L\* 42.1, grounding 0.00 m. Open: sides ΔE 40–43 (Reinhard seam match lifts the body), UV stretch, visible px/m 0, d/w 0.86 vs bar 0.70 → step tower-sides-fix-1011. |
 | Sources | `tools/imagine-to-3d/multiview_tower.py`, `runtime/vision-tower.mjs`, `moge_depth.py`, `tools/object-gate/gate.mjs`, `lib/probe.js`, `tools/common/align/metrics.py`, `steps/hires-tower-1011/REPORT.md`. |
+### 2026-10-12 — LOD meshes had no offline outline, budget, or mipmap gate
+
+| | |
+| --- | --- |
+| Take | tools/06-lod-streaming |
+| Defect | lod0/1/2 could change silhouette at the 15 m and 40 m switches, exceed the triangle budget, or stream a plate with no mipmaps, and no tools-side command refused the set. |
+| Root cause | `tools/object-gate/py/lod_gate.py` compares rendered depth passes and allows xorFrac 0.0005 plus a 4 px blob. It does not take the three meshes, count triangles against a profile budget, or check the texture streaming checklist. |
+| Fix | `tools/lodstream` rasterises the three meshes at the switch distances and refuses a non-zero outline difference, an over-budget lod0 (default 80000), a coarser LOD with more triangles, a plate under 1024 px, or missing mipmaps. |
+| Guard | `node tools/lodstream/selftest.mjs`. Outline-diff fixture exits 1 (15 m diffPx 46128). Over-budget lod0 80001 exits 1. Missing mipmaps exits 1. Good tiny fixture exits 0 (diffPx 0, tris 13/12/12). |
+| Sources | `steps/tools/06-lod-streaming/spec.md`, `tools/lodstream/gate.mjs`, `tools/object-gate/py/lod_gate.py`. |

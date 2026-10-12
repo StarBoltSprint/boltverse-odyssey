@@ -1,0 +1,10 @@
+{
+  "id": "default",
+  "lod0Max": 80000,
+  "switchesM": [15, 40],
+  "nativeMinPx": 1024,
+  "maskW": 540,
+  "maskH": 960,
+  "fovDeg": 58,
+  "views": [0, 90, 180, 270]
+}
