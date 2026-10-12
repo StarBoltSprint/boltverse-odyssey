@@ -4,7 +4,7 @@ import { mkdtempSync, writeFileSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadProfile, loadScene, toMarkdown, API_VERSION, listProfiles, checkId, CHECK_IDS, gateObject, gateScene, resolveObject } from "./gate.mjs";
+import { loadProfile, loadScene, toMarkdown, API_VERSION, listProfiles, checkId, CHECK_IDS, gateObject, gateScene, resolveObject, checklistEvidence } from "./gate.mjs";
 import { gateAndFix, FIX_ACTIONS } from "./hooks/imagine-to-3d.mjs";
 import { fixPlan } from "./hooks/imagine-to-3d.mjs";
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -34,6 +34,17 @@ ok(/^1\./.test(API_VERSION) && [gateObject, gateScene, resolveObject, gateAndFix
   const v3 = scoreVisible(tb, R, { renderPixelRatio: 1.5, fovDeg: 58, source: "test" }, rows, [], fp, spec0(), { ok: true, visiblePxPerM: 140, screenPxPerM: 309, distM: 8, tiles: 40, p25PxPerM: 120 });
   const v4 = scoreVisible(tb, R, { renderPixelRatio: 1.5, fovDeg: 58, source: "test" }, [rows[1]], [], fp, spec0(), { ok: true, visiblePxPerM: 170, screenPxPerM: 309, distM: 8, tiles: 40, p25PxPerM: 150 });
   ok(!v3.rows[0].pass && v4.rows[0].pass && checkId(v3.rows[0].check) === "texel.visible-px-per-m", "render-measured visible px/m decides the row (140 FAIL, 170 PASS), same row id");
+  ok(v3.rows[0].status == null && v4.rows[0].status == null, "140 and 170 without nativePlateLimit keep the default status");
+  const coarse = { ok: true, visiblePxPerM: 18.9, coarserThanEstimator: true, screenPxPerM: 309, distM: 8, tiles: 40, p25PxPerM: 12, insideTiles: 40 };
+  const v5 = scoreVisible(tb, R, { renderPixelRatio: 1.5, fovDeg: 58, source: "test" }, rows, [], fp, { nativePlateLimit: { reason: "from plates" } }, coarse);
+  ok(!v5.rows[0].pass && v5.rows[0].status === "WARN" && /18\.9/.test(v5.rows[0].detail), "native plate limit + coarserThanEstimator is WARN and still prints the number");
+  const v6 = scoreVisible(tb, R, { renderPixelRatio: 1.5, fovDeg: 58, source: "test" }, rows, [], fp, { nativePlateLimit: { reason: "from plates" } }, { ok: true, visiblePxPerM: 140, screenPxPerM: 309, distM: 8, tiles: 40, p25PxPerM: 120 });
+  ok(!v6.rows[0].pass && v6.rows[0].status == null, "a measured 140 with the flag but without coarserThanEstimator stays FAIL");
+  const ladder = { id: "ladder", plateEvidence: "absent", note: "No plate paints a ladder. Cables on the right plate are not rails." };
+  ok(checklistEvidence(ladder, { plateEvidence: "absent", note: ladder.note }).status === "N/A", "plate-evidence absent with a note is N/A");
+  ok(!checklistEvidence({ id: "ladder", plateEvidence: "absent" }, { pass: false }).ok, "absent without a note is FAIL");
+  ok(!checklistEvidence({ id: "wedge" }, { pass: false, note: "not on this capture" }).ok, "a present item recorded FAIL stays FAIL");
+  ok(checklistEvidence({ id: "damage" }, { pass: true, note: "shear is in the capture" }).status === "PASS", "a present item with pass true is PASS");
   ok(tb.visibleMeasure === "render" && tb.renderHeadroom === 2, "profile: visibleMeasure render, headroom 2");
   ok(checkId(v.rows[0].check) === "texel.visible-px-per-m" && checkId(v.rows[1].check) === "repetition.visible-radius" && checkId(v.rows[2].check) === "repetition.visible-neighbours", "visible row ids");
 }

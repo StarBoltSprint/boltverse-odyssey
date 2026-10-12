@@ -510,14 +510,26 @@
       renderer.shadowMap.needsUpdate = true; renderer.render(scene, cam); // map back to the real casters
       restoreFx();
     }
-    const sm = new Uint8Array(w * h); let n = 0; const sum = [0, 0, 0], sumOff = [0, 0, 0];
+    const sm = new Uint8Array(w * h); let n = 0, nInside = 0, nAny = 0; const sum = [0, 0, 0], sumOff = [0, 0, 0];
     for (let i = 0; i < w * h; i++) {
-      if (om[i] === "1") continue;
       const lOn = on[4 * i] * 0.2126 + on[4 * i + 1] * 0.7152 + on[4 * i + 2] * 0.0722;
       const lOff = off[4 * i] * 0.2126 + off[4 * i + 1] * 0.7152 + off[4 * i + 2] * 0.0722;
-      if (lOff > 8 && lOn < lOff * 0.8) { sm[i] = 1; n++; for (let k = 0; k < 3; k++) { sum[k] += on[4 * i + k]; sumOff[k] += off[4 * i + k]; } }
+      const dark = lOff > 8 && lOn < lOff * 0.8;
+      if (!dark) continue;
+      nAny++;
+      if (om[i] === "1") { nInside++; continue; }
+      sm[i] = 1; n++; for (let k = 0; k < 3; k++) { sum[k] += on[4 * i + k]; sumOff[k] += off[4 * i + k]; }
     }
-    return { n, frac: n / (w * h), meanOn: sum.map((x) => x / Math.max(1, n)), meanOff: sumOff.map((x) => x / Math.max(1, n)), mask: Array.from(sm).join("") };
+    // n is the gate count (open ground only). nInside is hypothesis 2 (contact hidden under the mask).
+    // nAny === 0 means the on and off renders match: the hero is not darkening the ground (hypothesis 1 or 3).
+    let cam = null;
+    scene.traverse((o) => {
+      if (cam || !o.isDirectionalLight || !o.castShadow) return;
+      const c = o.shadow && o.shadow.camera;
+      if (!c) return;
+      cam = { name: o.name || "", left: c.left, right: c.right, near: c.near, far: c.far, map: !!(o.shadow.map) };
+    });
+    return { n, nInside, nAny, shadowCam: cam, frac: n / (w * h), meanOn: sum.map((x) => x / Math.max(1, n)), meanOff: sumOff.map((x) => x / Math.max(1, n)), mask: Array.from(sm).join("") };
   }
 
   /** Columns under the lower 20% of the object: lowest object hit from below vs ground height. */

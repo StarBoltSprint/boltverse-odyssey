@@ -42,16 +42,23 @@ or point `OG_PLAYWRIGHT=/path/to/playwright/index.mjs` at an existing install). 
    hero and 30 m relief cameras are different distances and look heights; the 8 m albedo camera is the visible-shot camera;
    checklist `renderPose` zooms until cover is ≥ 25% perspective or ≥ 60% ortho;
    Zone B: 155 px/m). Closer views are exempt, no camera distance limit. Imagine plates are 1024² native, so one plate
-   covers at most ~6.6 m. Plus: served file ≥ Imagine original, GPU = file, mipmaps + trilinear,
+   covers at most ~6.6 m. **SmiR 2026-10-12:** when the object spec sets `nativePlateLimit` and the 8 m render is
+   `coarserThanEstimator` (the plate itself is the density limit), that row is **WARN, not FAIL**. The measured number
+   is still printed (upper bound `S/kmax` versus the phone need). Do not upscale. A render that is under the need and
+   is not `coarserThanEstimator` stays FAIL even if the flag is set. Plus: served file ≥ Imagine original, GPU = file, mipmaps + trilinear,
    anisotropy = max, UV stretch ≤ 1.3, the scene's own px/m claim cross-checked against the measurement.
 2. **Repetition**: one shared plate set per object type is allowed, but identical plate pixels never within 30 m
    (tiling period or pool cell period with ortho correlation) and neighbouring copies (< 7 m) never share; autocorrelation on fronto-parallel face views (front + side, lit, object only) and the close / low-portrait captures, including the correlation at the plate's own tile period.
 3. **Approach morph** 300 → 10 m on the nearest copies with the game's own LOD logic: silhouette IoU jumps.
 4. **Shadows**: cast, world-fixed (mask IoU after moving the player 80 m), neutral colour (not violet).
 5. **Grounding**: rays from below under the lower 20 % of each copy vs ground height.
-6. **Geometry**: welded non-manifold / open edges, facade relief, proportions vs spec. A buffer that stacks variant shells on `aZbPart` is welded per part (the union is non-manifold even when each shell is closed). An empty LOD buffer (no position) is not an instance. The morph mask parks sibling copies of the same module. A data LUT is not scored for anisotropy. A shadow probe also toggles an unnamed sibling that already casts. Neighbour footprints use the oriented half-extents and skip LOD levels of the same copy.
+6. **Geometry**: welded non-manifold / open edges, facade relief, proportions vs spec. A `proportions` value that is not a `[lo, hi]` pair (the string `reason`, for example `from plates`) is not scored. A buffer that stacks variant shells on `aZbPart` is welded per part (the union is non-manifold even when each shell is closed). An empty LOD buffer (no position) is not an instance. The morph mask parks sibling copies of the same module. A data LUT is not scored for anisotropy. A shadow probe also toggles an unnamed sibling that already casts. Neighbour footprints use the oriented half-extents and skip LOD levels of the same copy.
 7. **Key checklist**: captures (close, low phone portrait, far) → `capture-sheet.jpg` beside the key crop; FAIL unless
    every item has a recorded pass on a current capture (dHash ≤ 12) in `records/<id>.verified.yaml`. ΔE vs key crop.
+   **Plate-evidence N/A (SmiR 2026-10-12):** an item with `plateEvidence: absent` and a written `note` (on the spec item
+   or the record) is **N/A**. It is documented in the row and it is not a FAIL. Absent with no note is FAIL. An item
+   that is painted on a plate is never N/A: it needs a fresh capture hash, not a stale black hash. `checklistEvidence`
+   in `gate.mjs` is the predicate; `selftest.mjs` covers absent+note, absent without a note, a recorded FAIL, and a pass.
 8. **Runtime**: console/page errors, shader compile, HUD/title text, portrait viewports, budgets (report only), and
    **live preview untouched** during the run (adapter `liveDir`; only files the live page loads count, staging files beside them are listed; never edit live files in place: stage, gate, swap after PASS).
 9. **Effects**: every effect mesh samples an Imagine texture (allow-listed folders).

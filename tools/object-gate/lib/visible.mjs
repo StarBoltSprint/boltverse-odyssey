@@ -50,9 +50,15 @@ export function scoreVisible(t, R, view, texelRows, repRows, footprints, spec = 
   if (render) {
     // final-render measurement (default since 1.3): the pixels the phone shows, whatever the material method
     const ok = !!render.ok && render.visiblePxPerM >= need8;
+    // SmiR 2026-10-12: when the spec says the native plate is the density limit and the
+    // render is coarser than the estimator, the row is WARN. The number stays in the detail.
+    // A measured render under the need, without that flag, stays FAIL. Never upscale.
+    const nativeLimit = !!(spec && spec.nativePlateLimit);
+    const status = !ok && nativeLimit && render.ok && render.coarserThanEstimator ? "WARN" : undefined;
     rows.push({
       check: "visible px/m (phone sharpness from >= " + t.minViewM + " m, final render)",
       pass: ok,
+      status,
       detail: render.ok
         ? `${render.flat ? (render.coarserThanEstimator ? `detail is coarser than the estimator (upper bound, ${render.insideTiles} tiles flatter than the coarsest k): ` : `the surface shows no detail at all (${render.insideTiles} tiles flat, e.g. black or unlit): `) : ""}${f1(render.visiblePxPerM)} px/m of real detail on screen vs ${f1(need8)} needed (capture at ${render.distM} m, zoomed to ${f1(render.screenPxPerM)} screen px/m${render.capped ? ", at the capture limit" : ""}; median of ${render.tiles} tiles, p25 ${f1(render.p25PxPerM)}; phone ${t.phone.w}x${t.phone.h}, render pixel ratio ${view.renderPixelRatio}, vfov ${view.fovDeg}\u00b0). Info: ${sampling}`
         : `${render.why}. Info: ${sampling}`,

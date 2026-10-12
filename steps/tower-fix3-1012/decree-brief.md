@@ -1,0 +1,9 @@
+# Decree brief
+
+Spec: `SPEC-TOWER-FIX3-1012.md`
+Decrees: `/workspace/grokcli/wt/tower-vision-1010/decrees/decrees.jsonl`
+Keywords: tower, fix3, planar, unwrap, contact, shadow, relief, align, morph, fade, smir, approved, director, default, override, base, steps, sides, 1011, report, gate, fails, attempts, read, first, numbers, json, turnaround, sheet, phone, spec, grok, docs, method, learn, failures, tools, imagine, readme, object, common, workspace, bible, 1008, city3, extend, repo, hand, recipe, never, push, merge, reset, hard, node, scene, specs, hero, vision, yaml, 1012, outdir, decisions, apply, foot, value, record, under, proportions, reason, plates, squash, mesh, visible, becomes, warn, fail, when, native, density, limit, still, number, document, keep, measuring, printing, kept, watertight, 9796, tris, float, side, bodies, body, ortho, face, gate5, stretch, approach, jump, ground, texture, 1501, 2488, 1027, checklist, wedge, ladder, chrome, damage, sand, painted, fixes, blocking, faces, remove, shear, projection, plane, mask, displacement, does, measure, test, hypotheses, city, wins, probe, ignores, pixels, real, path, supported, evidence, item, absent, every, documented, selftest, same, otherwise, verify, fresh, placeholders, captures, stale, black, hashes, alignment, bars, target, previous, were, sam2, masks, features, edges, snapped, outline, make, near, atlas, continuous, maxdropvsneighbours, stays, within, loosen, fusion, page, existing, 8996, serve, zero, allowed, case, uses, improved, reported, verified, rendered, final, installed, 1600, beside, placement, staging, layout, scope, pass, deliver, honest, which, hypothesis, note, tool, updates, always, improve, local, commits, branch
+
+No local decrees file. Nothing was invented.
+
+No decree matched these keywords.

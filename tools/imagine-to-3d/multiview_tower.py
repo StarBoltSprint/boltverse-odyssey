@@ -333,53 +333,76 @@ def grade_strip(src, src_mask, ref, ref_mask, src_side, ref_side, n=12):
     return out, before, after, delta_e(out, body, src, body)
 
 
-def map_u(masks, name, t, u, chord_m=None, height_m=None):
-    """Map a 0..1 chord onto this image row, at the plate's vertical px/m.
+# One window per face. Filled by prepare_planar before the loft writes UVs.
+_PLANAR = {}
 
-    v/t 0 is the foot (image bottom). A tapered row must not span the whole
-    mask: that packs more horizontal pixels than the height, and the gate
-    stretch (singular-value ratio) goes over 1.3. The window is the mask
-    row, cropped to 1.22 times the isotropic pixel span and centred on the
-    mask. Native pixels only. No resample.
+
+def planar_window(mask, world_w, world_h):
+    """One axis-aligned window for the whole face. Same px/m on both axes.
+
+    The window is the mask bbox, letterboxed to the face's world aspect and
+    centred. Native pixels only. No per-row crop and no resample. u and v
+    are image fractions: v 0 is the foot (image bottom), which bake_uv expects.
     """
-    u = float(u)
-    if not masks or name not in masks or masks[name] is None:
-        return u
-    mask = masks[name]
-    h, w = mask.shape
-    row = int(np.clip(round((1.0 - float(t)) * (h - 1)), 0, h - 1))
-    xs = np.where(mask[row])[0]
-    if xs.size < 2:
-        for d in range(1, 24):
-            found = False
-            for rr in (row - d, row + d):
-                if 0 <= rr < h:
-                    xs = np.where(mask[rr])[0]
-                    if xs.size >= 2:
-                        found = True
-                        break
-            if found:
-                break
-    if xs.size < 2:
-        return u
-    a = float(xs[0])
-    b = float(xs[-1])
-    if chord_m and height_m and float(height_m) > 1.0:
-        budget = (h - 1) * float(chord_m) / float(height_m) * 1.22
-        span = b - a
-        if span > budget >= 2.0:
-            mid = 0.5 * (a + b)
-            a = mid - 0.5 * budget
-            b = mid + 0.5 * budget
-            if a < 0:
-                b -= a
-                a = 0.0
-            if b > w - 1:
-                a -= b - (w - 1)
-                b = float(w - 1)
-            a = max(0.0, a)
-    denom = max(1, w - 1)
-    return (a + u * (b - a)) / denom
+    h, w = mask.shape[:2]
+    ys = np.flatnonzero(mask.any(1))
+    xs = np.flatnonzero(mask.any(0))
+    if ys.size < 2 or xs.size < 2:
+        return None
+    x0, x1 = float(xs[0]), float(xs[-1])
+    y_top, y_bot = float(ys[0]), float(ys[-1])
+    bw = max(2.0, x1 - x0)
+    bh = max(2.0, y_bot - y_top)
+    ppm = min(bw / max(float(world_w), 1e-3), bh / max(float(world_h), 1e-3))
+    use_w = min(bw, max(2.0, float(world_w) * ppm))
+    use_h = min(bh, max(2.0, float(world_h) * ppm))
+    cx = 0.5 * (x0 + x1)
+    cy = 0.5 * (y_top + y_bot)
+    xa = float(np.clip(cx - 0.5 * use_w, 0, w - 1))
+    xb = float(np.clip(cx + 0.5 * use_w, 0, w - 1))
+    yt = float(np.clip(cy - 0.5 * use_h, 0, h - 1))
+    yb = float(np.clip(cy + 0.5 * use_h, 0, h - 1))
+    if xb - xa < 1.0 or yb - yt < 1.0:
+        return None
+
+    def u_of(s):
+        col = xa + float(s) * (xb - xa)
+        return col / max(1, w - 1)
+
+    def v_of(t):
+        row = yb + float(t) * (yt - yb)
+        return (h - 1 - row) / max(1, h - 1)
+
+    return {"u": u_of, "v": v_of, "ppm": float(ppm), "window_px": [round(xb - xa, 1), round(yb - yt, 1)]}
+
+
+def prepare_planar(masks, chords, height_m):
+    _PLANAR.clear()
+    if not masks:
+        return
+    for name, chord in chords.items():
+        mask = masks.get(name)
+        if mask is None:
+            continue
+        win = planar_window(mask, chord, height_m)
+        if win:
+            _PLANAR[name] = win
+
+
+def map_u(masks, name, t, u, chord_m=None, height_m=None):
+    """Image-u of a face parameter. One window for every row. `t` is unused."""
+    win = _PLANAR.get(name)
+    if win is None:
+        return float(u)
+    return float(win["u"](u))
+
+
+def map_v(name, t):
+    """Image-v of the height parameter. v 0 is the foot. Same window as map_u."""
+    win = _PLANAR.get(name)
+    if win is None:
+        return float(t)
+    return float(win["v"](t))
 
 
 def roof_from_front(front_img, front_mask, cap_w, cap_d, rows=32):
@@ -497,6 +520,55 @@ def quantise_measured(outward, mask, ppm):
     }
 
 
+def relief_from_feature_masks(labels, depth, mask, max_planes=4):
+    """One outward metre per SAM2 region: that region's own MoGe median.
+
+    The step sits on the mask outline. There is no blur and no per-cell
+    median that would walk the edge off the paint. Pixels outside the kept
+    regions stay on the far plane (offset 0).
+    """
+    depth = np.asarray(depth, np.float32)
+    if labels is None:
+        q = np.zeros(depth.shape, np.float32)
+        return q, {"planes": 0, "source": "none", "regions": 0}
+    if labels.shape[:2] != depth.shape[:2]:
+        labels = cv2.resize(labels.astype(np.int32), (depth.shape[1], depth.shape[0]), interpolation=cv2.INTER_NEAREST)
+    if mask.shape[:2] != depth.shape[:2]:
+        mask = cv2.resize(mask.astype(np.uint8), (depth.shape[1], depth.shape[0]), interpolation=cv2.INTER_NEAREST) > 0
+    labels = labels.astype(np.int32).copy()
+    labels[~mask] = 0
+    stats = []
+    for i in np.unique(labels):
+        i = int(i)
+        if i <= 0:
+            continue
+        m = labels == i
+        area = int(m.sum())
+        if area < 80:
+            continue
+        stats.append((area, i, float(np.median(depth[m]))))
+    stats.sort(reverse=True)
+    stats = stats[:max_planes]
+    q = np.zeros(depth.shape, np.float32)
+    if not stats:
+        return q, {"planes": 0, "source": "sam2-mask-median", "regions": 0}
+    far = max(s[2] for s in stats)
+    levels = []
+    for area, i, med in stats:
+        off = float(far - med)
+        levels.append(off)
+        q[labels == i] = off
+    uniq = sorted({round(v, 2) for v in levels})
+    return q.astype(np.float32), {
+        "planes": len(uniq),
+        "level_min_m": round(min(levels), 4),
+        "level_max_m": round(max(levels), 4),
+        "source": "sam2-mask-median",
+        "regions": len(stats),
+        "p99_m": round(float(np.percentile(q[mask], 99)) if mask.any() else 0.0, 4),
+    }
+
+
 def per_metre_span(inset, mask):
     h = inset.shape[0]
     spans = []
@@ -545,35 +617,57 @@ def build_mesh(poly, y0, y1, depth_ratio, back_ratio, insets, ny=96, masks=None)
     verts = []
     # index of ring vertex. layout per ring: front nxf, right nz-1, back nxf, left nz-1
     stride = nxf + (nz - 1) + nxf + (nz - 1)
+
+    def chord_of_ring(ring, kind):
+        _y, xmin, xmax, bx0, bx1, depth = ring
+        if kind == "front":
+            return max(1e-3, xmax - xmin)
+        if kind == "back":
+            return max(1e-3, abs(bx1 - bx0))
+        if kind == "right":
+            return max(1e-3, float(np.hypot(bx1 - xmax, depth)))
+        return max(1e-3, float(np.hypot(xmin - bx0, depth)))
+
+    height_m = max(1e-6, y1 - y0)
+    if masks:
+        prepare_planar(masks, {k: chord_of_ring(rings[0], k) for k in ("front", "right", "back", "left")}, height_m)
     for y, xmin, xmax, bx0, bx1, depth in rings:
         # t from the loft loop is the crown. Bind it to this ring or the
         # foot band never fires and the lip stays in the air.
         t = (float(y) - y0) / max(1e-6, y1 - y0)
         # Relief on the first rings overhangs the foot. A column under that
         # lip misses the base and the grounding probe reads the lip as air.
-        foot_band = t < 0.04
+        # Relief is applied to the vertex after the planar UV is chosen.
+        # The foot and the crown stay on the face plane so the caps do not tilt.
+        foot_band = t < 0.04 or t > 0.96
+
+        def face_off(name, u):
+            if foot_band or name not in insets:
+                return 0.0
+            return sample_inset(insets[name], map_u(masks, name, t, u), map_v(name, t))
+
         for i in range(nxf):
             u = i / (nxf - 1)
             x = xmin + u * (xmax - xmin)
-            off = 0.0 if foot_band else sample_inset(insets["front"], u, t)
+            off = face_off("front", u)
             verts.append((x, y, 0.0 + off))
         for i in range(1, nz):
             u = i / nz
             x = xmax + u * (bx1 - xmax)
             z = 0.0 + u * (-depth)
-            off = 0.0 if foot_band else sample_inset(insets["right"], u, t)
+            off = face_off("right", u)
             # outward is roughly +x; a positive outward moves +x
             verts.append((x + off, y, z))
         for i in range(nxf):
             u = i / (nxf - 1)
             x = bx1 + u * (bx0 - bx1)
-            off = 0.0 if foot_band else sample_inset(insets["back"], u, t)
+            off = face_off("back", u)
             verts.append((x, y, -depth - off))
         for i in range(1, nz):
             u = i / nz
             x = bx0 + u * (xmin - bx0)
             z = -depth + u * depth
-            off = 0.0 if foot_band else sample_inset(insets["left"], u, t)
+            off = face_off("left", u)
             verts.append((x - off, y, z))
     V = np.asarray(verts, np.float64)
     faces = []
@@ -589,65 +683,50 @@ def build_mesh(poly, y0, y1, depth_ratio, back_ratio, insets, ny=96, masks=None)
     def uv_of(face, u, v):
         return (face, u, v)  # placeholder, packed later
 
-    height_m = max(1e-6, y1 - y0)
-
     def chord_of(ring, kind):
-        _y, xmin, xmax, bx0, bx1, depth = ring
-        if kind == "front":
-            return max(1e-3, xmax - xmin)
-        if kind == "back":
-            return max(1e-3, abs(bx1 - bx0))
-        if kind == "right":
-            return max(1e-3, float(np.hypot(bx1 - xmax, depth)))
-        return max(1e-3, float(np.hypot(xmin - bx0, depth)))
+        return chord_of_ring(ring, kind)
 
     for r in range(ny - 1):
         y = rings[r][0]
         v0 = (y - y0) / (y1 - y0)
         v1 = (rings[r + 1][0] - y0) / (y1 - y0)
-        c0 = {k: chord_of(rings[r], k) for k in ("front", "right", "back", "left")}
-        c1 = {k: chord_of(rings[r + 1], k) for k in ("front", "right", "back", "left")}
         base = r * stride
         nxt = (r + 1) * stride
-        # Each row uses a pixel window matched to that row's world width.
+        # One planar window for the whole face. Both rows share it.
+        fv0, fv1 = map_v("front", v0), map_v("front", v1)
         for i in range(nxf - 1):
-            u0 = map_u(masks, "front", v0, i / (nxf - 1), c0["front"], height_m)
-            u1 = map_u(masks, "front", v0, (i + 1) / (nxf - 1), c0["front"], height_m)
-            u0b = map_u(masks, "front", v1, i / (nxf - 1), c1["front"], height_m)
-            u1b = map_u(masks, "front", v1, (i + 1) / (nxf - 1), c1["front"], height_m)
+            u0 = map_u(masks, "front", v0, i / (nxf - 1))
+            u1 = map_u(masks, "front", v0, (i + 1) / (nxf - 1))
             quad(base + i, base + i + 1, nxt + i + 1, nxt + i,
-                 [uv_of("front", u0, v0), uv_of("front", u1, v0), uv_of("front", u1b, v1), uv_of("front", u0b, v1)])
+                 [uv_of("front", u0, fv0), uv_of("front", u1, fv0), uv_of("front", u1, fv1), uv_of("front", u0, fv1)])
         # right: indices nxf .. nxf+nz-2, plus corners front last and back first
         right_idx = [base + nxf - 1] + [base + nxf + i for i in range(nz - 1)] + [base + nxf + (nz - 1)]
         right_idx_n = [nxt + nxf - 1] + [nxt + nxf + i for i in range(nz - 1)] + [nxt + nxf + (nz - 1)]
         nu = len(right_idx) - 1
+        rv0, rv1 = map_v("right", v0), map_v("right", v1)
         for i in range(nu):
-            u0 = map_u(masks, "right", v0, i / nu, c0["right"], height_m)
-            u1 = map_u(masks, "right", v0, (i + 1) / nu, c0["right"], height_m)
-            u0b = map_u(masks, "right", v1, i / nu, c1["right"], height_m)
-            u1b = map_u(masks, "right", v1, (i + 1) / nu, c1["right"], height_m)
+            u0 = map_u(masks, "right", v0, i / nu)
+            u1 = map_u(masks, "right", v0, (i + 1) / nu)
             quad(right_idx[i], right_idx[i + 1], right_idx_n[i + 1], right_idx_n[i],
-                 [uv_of("right", u0, v0), uv_of("right", u1, v0), uv_of("right", u1b, v1), uv_of("right", u0b, v1)])
+                 [uv_of("right", u0, rv0), uv_of("right", u1, rv0), uv_of("right", u1, rv1), uv_of("right", u0, rv1)])
         # back starts at nxf + (nz - 1)
         b0 = nxf + (nz - 1)
+        bv0, bv1 = map_v("back", v0), map_v("back", v1)
         for i in range(nxf - 1):
-            u0 = map_u(masks, "back", v0, i / (nxf - 1), c0["back"], height_m)
-            u1 = map_u(masks, "back", v0, (i + 1) / (nxf - 1), c0["back"], height_m)
-            u0b = map_u(masks, "back", v1, i / (nxf - 1), c1["back"], height_m)
-            u1b = map_u(masks, "back", v1, (i + 1) / (nxf - 1), c1["back"], height_m)
+            u0 = map_u(masks, "back", v0, i / (nxf - 1))
+            u1 = map_u(masks, "back", v0, (i + 1) / (nxf - 1))
             quad(base + b0 + i, base + b0 + i + 1, nxt + b0 + i + 1, nxt + b0 + i,
-                 [uv_of("back", u0, v0), uv_of("back", u1, v0), uv_of("back", u1b, v1), uv_of("back", u0b, v1)])
+                 [uv_of("back", u0, bv0), uv_of("back", u1, bv0), uv_of("back", u1, bv1), uv_of("back", u0, bv1)])
         l0 = b0 + nxf
         left_idx = [base + b0 + nxf - 1] + [base + l0 + i for i in range(nz - 1)] + [base + 0]
         left_idx_n = [nxt + b0 + nxf - 1] + [nxt + l0 + i for i in range(nz - 1)] + [nxt + 0]
         nu = len(left_idx) - 1
+        lv0, lv1 = map_v("left", v0), map_v("left", v1)
         for i in range(nu):
-            u0 = map_u(masks, "left", v0, i / nu, c0["left"], height_m)
-            u1 = map_u(masks, "left", v0, (i + 1) / nu, c0["left"], height_m)
-            u0b = map_u(masks, "left", v1, i / nu, c1["left"], height_m)
-            u1b = map_u(masks, "left", v1, (i + 1) / nu, c1["left"], height_m)
+            u0 = map_u(masks, "left", v0, i / nu)
+            u1 = map_u(masks, "left", v0, (i + 1) / nu)
             quad(left_idx[i], left_idx[i + 1], left_idx_n[i + 1], left_idx_n[i],
-                 [uv_of("left", u0, v0), uv_of("left", u1, v0), uv_of("left", u1b, v1), uv_of("left", u0b, v1)])
+                 [uv_of("left", u0, lv0), uv_of("left", u1, lv0), uv_of("left", u1, lv1), uv_of("left", u0, lv1)])
     # caps from the first and last ring, no invented roof paint
     foot = 0
     top = (ny - 1) * stride
@@ -781,6 +860,76 @@ def pack_atlas(images):
         rects[name] = (u0, v_top, u1, v_bot)
         x += iw
     return atlas, rects
+
+
+def uv_stretch_p95(V, F, UV, tw, th, min_area=4.0):
+    """Area-weighted p95 of the world-to-texel singular-value ratio, per normal class.
+
+    Same bar the object gate uses. Triangles in a class whose area is under
+    min_area are ignored, matching the probe.
+    """
+    V = np.asarray(V, np.float64)
+    F = np.asarray(F, np.int32)
+    UV = np.asarray(UV, np.float64)
+    buckets = {}
+    for t in range(len(F)):
+        i0, i1, i2 = F[t]
+        a, b, c = V[i0], V[i1], V[i2]
+        e1 = b - a
+        e2 = c - a
+        n = np.cross(e1, e2)
+        area = float(np.linalg.norm(n) * 0.5)
+        if area < 1e-6:
+            continue
+        n = n / max(np.linalg.norm(n), 1e-12)
+        ax = int(np.argmax(np.abs(n)))
+        sign = "+" if n[ax] >= 0 else "-"
+        cls = f"{sign}{'xyz'[ax]}"
+        L1 = float(np.linalg.norm(e1))
+        if L1 < 1e-9:
+            continue
+        ex = e1 / L1
+        ey = np.cross(n, ex)
+        el = float(np.linalg.norm(ey))
+        if el < 1e-9:
+            continue
+        ey = ey / el
+        x2 = float(np.dot(e2, ex))
+        y2 = float(np.dot(e2, ey))
+        det = L1 * y2
+        u0, v0 = UV[t, 0]
+        u1, v1 = UV[t, 1]
+        u2, v2 = UV[t, 2]
+        du1, dv1 = (u1 - u0) * tw, (v1 - v0) * th
+        du2, dv2 = (u2 - u0) * tw, (v2 - v0) * th
+        sv = 99.0
+        if abs(det) > 1e-9:
+            j00 = (du1 * y2) / det
+            j01 = (du2 * L1 - du1 * x2) / det
+            j10 = (dv1 * y2) / det
+            j11 = (dv2 * L1 - dv1 * x2) / det
+            Tm = j00 * j00 + j01 * j01 + j10 * j10 + j11 * j11
+            D = abs(j00 * j11 - j01 * j10)
+            disc = max(0.0, Tm * Tm - 4 * D * D)
+            s1 = ((Tm + disc ** 0.5) / 2) ** 0.5
+            s2 = D / (s1 or 1)
+            sv = s1 / s2 if s2 > 1e-9 else 99.0
+        buckets.setdefault(cls, []).append((sv, area))
+    out = {}
+    for cls, rows in buckets.items():
+        tot = sum(w for _, w in rows)
+        if tot < min_area:
+            continue
+        rows.sort(key=lambda r: r[0])
+        acc = 0.0
+        p95 = rows[-1][0]
+        for s, w in rows:
+            acc += w
+            if acc >= 0.95 * tot:
+                p95 = s
+                break
+        out[cls] = round(float(p95), 3)
+    return out
 
 
 def bake_uv(raw_uvs, rects):
@@ -968,13 +1117,29 @@ def main():
     # SAM2 feature masks. The silhouette stays the grey-distance mask.
     import fusion
     sam_log = []
+    face_labels = {}
     for i, name in enumerate(NAMES):
         sam_dir = os.path.join(work, f"sam-{name}")
         os.makedirs(sam_dir, exist_ok=True)
-        labels = fusion._try_sam2(panels[i], masks[i], sam_log, sam_dir)
+        cached = os.path.join(sam_dir, "_sam2_labels.npy")
+        labels = None
+        if os.path.isfile(cached):
+            labels = np.load(cached).astype(np.int32)
+            sam_log.append(f"{name}: reused SAM2 labels, max id {int(labels.max())}")
+        else:
+            labels = fusion._try_sam2(panels[i], masks[i], sam_log, sam_dir)
+            if labels is None and os.path.isfile(cached):
+                labels = np.load(cached).astype(np.int32)
+                sam_log.append(f"{name}: SAM2 file kept {int(labels.max())} regions below the old 4-region cut")
+        # Two regions are enough for a hard step. The old cut required four and
+        # threw the front plate away.
+        if labels is not None and int(labels.max()) < 1:
+            labels = None
         report["plates"][name]["sam2"] = labels is not None
+        report["plates"][name]["sam2_regions"] = int(labels.max()) if labels is not None else 0
         if labels is not None:
             np.save(os.path.join(work, f"feat-{name}.npy"), labels)
+            face_labels[name] = labels
     report["plates"]["sam2_log"] = sam_log
     report["plates"]["mask_method"] = "grey-distance silhouette (flat plate). SAM2 hiera-tiny for features when it returns. rembg is not installed."
 
@@ -1076,14 +1241,22 @@ def main():
             m = cv2.resize(m.astype(np.uint8), (im.shape[1], im.shape[0]), interpolation=cv2.INTER_NEAREST) > 0
         path = os.path.join(work, f"grade-{name}.jpg")
         ppm = im.shape[0] / height
-        outward = metric_outward(path, m, ppm)
-        q, meta = quantise_measured(outward, m, ppm)
+        npy = path + ".moge.npy"
+        depth = np.load(npy).astype(np.float32)
+        if depth.shape[:2] != m.shape[:2]:
+            depth = np.asarray(Image.fromarray(depth).resize((m.shape[1], m.shape[0]), Image.BILINEAR), np.float32)
+        labels = face_labels.get(name)
+        if labels is None:
+            labels, _edge = fusion.segment_edge_snap(im, m, sam_log)
+            report["plates"][name]["relief_fallback"] = "segment_edge_snap"
+        q, meta = relief_from_feature_masks(labels, depth, m)
         insets[name] = q
         meta["per_metre_median_span_m"] = round(per_metre_span(q, m), 4)
         meta["ppm"] = round(ppm, 3)
         relief_report[name] = meta
         np.save(os.path.join(work, f"inset-{name}.npy"), q)
     report["relief_faces"] = relief_report
+    report["relief_axes_note"] = "Relief is one MoGe median per SAM2 mask. The edge is the mask outline. UVs are one planar window per face, written before the offset."
 
     # cheap 2D: silhouette of the loft profile vs the panel, stripe on the front
     from common.align.metrics import strict_geometry
@@ -1109,7 +1282,12 @@ def main():
     report["cheap"]["stripe"] = geo["stripe"]
 
     face_masks = {"front": masks[0], "left": masks[1], "back": masks[2], "right": masks[3]}
-    V, F, raw_uv, rings = build_mesh(poly, y0, y1, depth_ratio, back_ratio, insets, ny=80, masks=face_masks)
+
+    def build_scaled(scale):
+        scaled = {k: np.asarray(v, np.float32) * float(scale) for k, v in insets.items()}
+        return build_mesh(poly, y0, y1, depth_ratio, back_ratio, scaled, ny=80, masks=face_masks)
+
+    V, F, raw_uv, rings = build_scaled(1.0)
     # Roof band at the front face px/m. view-top is not a plan and is not projected.
     ppm_cap = face_img["front"].shape[0] / max(1e-6, y1 - y0)
     cap_w = max(8, int(round(float(V[:, 0].max() - V[:, 0].min()) * ppm_cap)))
@@ -1124,6 +1302,24 @@ def main():
     }
     atlas, rects = pack_atlas(face_img)
     UV = bake_uv(raw_uv, rects)
+    stretch = uv_stretch_p95(V, F, UV, atlas.shape[1], atlas.shape[0])
+    report["uv_stretch_p95"] = stretch
+    worst = max(stretch.values()) if stretch else 1.0
+    if worst > 1.3:
+        scale = max(0.15, min(1.0, 1.25 / worst))
+        V, F, raw_uv, rings = build_scaled(scale)
+        ppm_cap = face_img["front"].shape[0] / max(1e-6, y1 - y0)
+        cap_w = max(8, int(round(float(V[:, 0].max() - V[:, 0].min()) * ppm_cap)))
+        cap_d = max(8, int(round(float(V[:, 2].max() - V[:, 2].min()) * ppm_cap)))
+        face_img["cap"], cap_how = roof_from_front(face_img["front"], masks[0], cap_w, cap_d)
+        report["cap"]["px"] = [cap_w, cap_d]
+        report["cap"]["paint"] = cap_how
+        atlas, rects = pack_atlas(face_img)
+        UV = bake_uv(raw_uv, rects)
+        stretch = uv_stretch_p95(V, F, UV, atlas.shape[1], atlas.shape[0])
+        report["uv_stretch_p95"] = stretch
+        report["uv_relief_scale"] = round(scale, 4)
+        report["uv_stretch_before_scale"] = round(worst, 3)
     Image.fromarray(atlas).save(os.path.join(work, "albedo.png"))
     # flat normal; the geometry holds the relief. A mismatched old normal would invent shading.
     normal = np.zeros((*atlas.shape[:2], 3), np.uint8)
@@ -1140,8 +1336,21 @@ def main():
         "h_over_w": round(float(sizes[1] / max(1e-6, sizes[0])), 3),
         "d_over_w": round(float(sizes[2] / max(1e-6, sizes[0])), 3),
     }
-    # axis relief from vertex offsets vs the unmoved hull is the inset span already logged
-    report["relief_axes_note"] = "Per-face median span is in relief_faces. World axes are scored by the object gate on the glb."
+    report["relief_axes_note"] = "SAM2 mask medians are in relief_faces. UVs are one planar window per face. The gate scores the world axes."
+    if "--install" in sys.argv:
+        import shutil
+        staging = "/workspace/kc-staging/zb-tower3"
+        dest = os.path.join(staging, "objects1", "vision")
+        os.makedirs(dest, exist_ok=True)
+        for name in ("tower.glb", "albedo.png", "normal.png"):
+            shutil.copy(os.path.join(work, name), os.path.join(dest, name))
+        shutil.copy(os.path.join(HERE, "runtime", "vision-tower.mjs"), os.path.join(staging, "tower-fusion.mjs"))
+        html = os.path.join(staging, "index-fusion.html")
+        text = open(html).read()
+        text2 = text.replace("tower-fusion.mjs?v=10", "tower-fusion.mjs?v=12").replace("tower-fusion.mjs?v=11", "tower-fusion.mjs?v=12")
+        if text2 != text:
+            open(html, "w").write(text2)
+        report["installed"] = dest
     blender = "/home/box/.local/bin/blender"
     script = os.path.join(HERE, "vision_mesh.py")
     glb = os.path.join(work, "tower.glb")
@@ -1156,7 +1365,7 @@ def main():
         report["vision_mesh"] = json.load(open(rep_path))
     report["seconds"] = round(time.time() - t0, 3)
     json.dump(report, open(os.path.join(work, "multiview.json"), "w"), indent=1)
-    print(json.dumps({k: report[k] for k in ("proportions", "mesh_preview", "seams", "cheap", "blender_rc", "seconds")}, indent=1))
+    print(json.dumps({k: report[k] for k in ("proportions", "mesh_preview", "seams", "cheap", "uv_stretch_p95", "uv_relief_scale", "relief_faces", "blender_rc", "seconds") if k in report}, indent=1))
     if r.returncode not in (0, 2):
         print(r.stderr[-1500:])
         raise SystemExit(r.returncode or 1)

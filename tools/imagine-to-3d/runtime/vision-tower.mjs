@@ -16,6 +16,7 @@ let scene = null;
 const orig = renderer.render.bind(renderer);
 renderer.render = function (s, c) {
   if (s && s.isScene && !scene) scene = s;
+  if (typeof window.__visionApplyShadow === "function") window.__visionApplyShadow();
   if (window.__fusionCam && c && c.isPerspectiveCamera) window.__fusionCam.value.copy(c.position);
   if (window.__fusionPose && c && c.isPerspectiveCamera) {
     const p = window.__fusionPose;
@@ -40,7 +41,12 @@ renderer.render = function (s, c) {
     const radius = 0.5 * Math.hypot(size.x, size.y, size.z);
     const gap = box.distanceToPoint(c.position);
     const inside = box.containsPoint(c.position);
-    if (inside || gap < 10) {
+    // A hard pull at gap < 10 m yanked the morph camera on the step that
+    // crossed it (silhouette IoU drop near 11 m). The pull now starts only
+    // inside 6 m and grows with a smoothstep, so a 5% distance step does
+    // not teleport. The near-atlas colour mix is a smoothstep as well.
+    const reach = inside ? 1 : THREE.MathUtils.smoothstep(6, 0.4, gap);
+    if (reach > 0.002) {
       const dir = c.position.clone().sub(center);
       if (dir.lengthSq() < 4) dir.copy(new THREE.Vector3(...(meta.toward || [0, 0, 1])));
       dir.normalize();
@@ -58,7 +64,7 @@ renderer.render = function (s, c) {
         if (!box.containsPoint(p) && box.distanceToPoint(p) >= dist) break;
       }
       c.matrixAutoUpdate = true;
-      c.position.copy(p);
+      c.position.lerp(p, reach);
       c.up.set(0, 1, 0);
       c.lookAt(center);
       c.updateProjectionMatrix();
@@ -79,11 +85,11 @@ renderer.render = function (s, c) {
 for (let i = 0; i < 4; i++) await new Promise((r) => requestAnimationFrame(r));
 if (!scene) throw new Error("vision tower: no scene");
 
-const gltf = await new GLTFLoader().loadAsync("./objects1/vision/tower.glb?v=fusion10");
+const gltf = await new GLTFLoader().loadAsync("./objects1/vision/tower.glb?v=fusion12");
 let src = null;
 gltf.scene.traverse((o) => { if (!src && o.isMesh) src = o; });
 const aniso = renderer.capabilities.getMaxAnisotropy();
-const albedo = new THREE.TextureLoader().load("./objects1/vision/albedo.png?v=fusion10");
+const albedo = new THREE.TextureLoader().load("./objects1/vision/albedo.png?v=fusion12");
 albedo.colorSpace = THREE.SRGBColorSpace;
 albedo.anisotropy = aniso;
 albedo.flipY = false;
@@ -92,7 +98,7 @@ albedo.wrapT = THREE.ClampToEdgeWrapping;
 albedo.minFilter = THREE.LinearMipmapLinearFilter;
 albedo.magFilter = THREE.LinearFilter;
 albedo.generateMipmaps = true;
-const normal = new THREE.TextureLoader().load("./objects1/vision/normal.png?v=fusion10");
+const normal = new THREE.TextureLoader().load("./objects1/vision/normal.png?v=fusion12");
 normal.colorSpace = THREE.NoColorSpace || THREE.LinearSRGBColorSpace;
 normal.anisotropy = aniso;
 normal.flipY = false;
@@ -123,7 +129,10 @@ if (nearDoc && nearDoc.ready) {
   nearTex.colorSpace = THREE.SRGBColorSpace;
   nearTex.wrapS = THREE.ClampToEdgeWrapping;
   nearTex.wrapT = THREE.ClampToEdgeWrapping;
-  const fade = nearDoc.crossfade_m || [40, 15];
+  // Continuous ramp. A span under 25 m is widened so the mix does not sit
+  // fully on the near plate across a single morph step.
+  const fadeIn = nearDoc.crossfade_m || [80, 10];
+  const fade = (fadeIn[0] - fadeIn[1] >= 25) ? fadeIn : [fadeIn[1] + 40, fadeIn[1]];
   const uCam = { value: new THREE.Vector3() };
   window.__fusionCam = uCam;
   lit.onBeforeCompile = (sh) => {
@@ -281,10 +290,11 @@ scene.add(caster);
       down.y = 0;
       if (down.lengthSq() < 1e-8) down.set(0, 0, 1);
       down.normalize();
-      // The gate looks ~60 m down-sun of the footprint. Spill past that so the
-      // contact is on open ground, not hidden under the tower mask.
-      box.expandByVector(down.clone().multiplyScalar(140));
-      box.expandByVector(down.clone().multiplyScalar(-16));
+      // A 174 m tower at 30° throws the crown shadow about 300 m down-sun.
+      // 140 m left that ground outside the map (proj.z > 1 reads as lit) and
+      // the only dark pixels sat under the tower, which the probe skips.
+      box.expandByVector(down.clone().multiplyScalar(360));
+      box.expandByVector(down.clone().multiplyScalar(-24));
       box.min.y -= 8;
       cam.position.copy(light.position);
       cam.up.set(0, 1, 0);
@@ -316,10 +326,17 @@ scene.add(caster);
         bottom: +cam.bottom.toFixed(1), top: +cam.top.toFixed(1),
         near: +cam.near.toFixed(1), far: +cam.far.toFixed(1),
         tint: [0.4, 0.4, 0.4],
+        downSunM: 360,
+        sticky: true,
+        // Hypothesis log for the gate report. The counts (n / nInside / nAny)
+        // decide which one the pixels support.
+        hypotheses: {
+          cityOrtho: "applyFit runs on every render, including after a city updateProjectionMatrix",
+          underMask: "probe n ignores object-mask pixels; 360 m down-sun puts open ground in the map",
+          heroMissing: "hero casts on layers 0 and 1 and uShadowOn is forced to 1",
+        },
       };
     };
-    // The city fit runs after this module and would drop the hero from the map.
-    // Re-apply whenever that fit writes the projection, then for a few frames.
     const origUpdate = cam.updateProjectionMatrix.bind(cam);
     let fitting = false;
     cam.updateProjectionMatrix = function () {
@@ -328,19 +345,13 @@ scene.add(caster);
       try { applyFit(); return origUpdate(); }
       finally { fitting = false; }
     };
-    applyFit();
-    origUpdate();
-    light.shadow.needsUpdate = true;
-    renderer.shadowMap.needsUpdate = true;
-    let frames = 0;
-    const tick = () => {
+    window.__visionApplyShadow = () => {
       applyFit();
       origUpdate();
       light.shadow.needsUpdate = true;
       renderer.shadowMap.needsUpdate = true;
-      if (++frames < 12) requestAnimationFrame(tick);
     };
-    requestAnimationFrame(tick);
+    window.__visionApplyShadow();
   }
 }
 

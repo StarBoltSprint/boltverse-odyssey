@@ -255,6 +255,24 @@ export const checkId = (check) => (CHECK_IDS.find(([re]) => re.test(check)) || [
 function row(o, check, pass, detail, hints = [], status) {
   o.rows.push({ id: checkId(check), check, status: status || (pass ? "PASS" : "FAIL"), detail, hints: pass ? [] : hints });
 }
+
+/**
+ * Checklist item vs a recorded pass.
+ * plateEvidence "absent" plus a written note is N/A (the item is not on any plate).
+ * Absent with no note is FAIL. A present item still needs pass:true and fresh capture hashes.
+ */
+export function checklistEvidence(item, record) {
+  const rec = record || null;
+  const absent = (item && item.plateEvidence === "absent") || (rec && rec.plateEvidence === "absent");
+  const note = String((rec && rec.note) || (item && item.note) || "").trim();
+  const id = (item && item.id) || "item";
+  if (absent) {
+    if (note.length >= 12) return { status: "N/A", ok: true, detail: `${id}: absent from every plate (${note})` };
+    return { status: "FAIL", ok: false, detail: `${id}: plateEvidence absent without a documented note` };
+  }
+  if (!rec || rec.pass !== true) return { status: "FAIL", ok: false, detail: `${id}: ${rec ? "recorded FAIL" : "no recorded pass"}` };
+  return { status: "PASS", ok: true, detail: `${id}: pass` };
+}
 /**
  * Phone perf rows (docs/METHOD/phone-perf.md). They read the page's window.__perfReport():
  * { canvasRatio, dpr, cap, adaptive, skyOrder, groundOrder, maxOpaqueOrder, skyDepthTest, adaptiveCanDropDetail, sprintDip,
@@ -566,7 +584,7 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
     const v = scoreVisible(cfg.texel, cfg.repetition, view, texelRows, repRows, footprintsFromBoxes(boxes), spec, render);
     writeFileSync(join(odir, "visible.json"), JSON.stringify({ view, render, perSurface: v.perSurface }, null, 1));
     if (render && render.img) o.files.captures = { ...(o.files.captures || {}), "visible-8m": { img: render.img, mask: render.mask } };
-    for (const r of v.rows) row(o, r.check, r.pass, r.detail, r.hints);
+    for (const r of v.rows) row(o, r.check, r.pass, r.detail, r.hints, r.status);
   }
 
   // ---------------- 3. approach morph
@@ -621,7 +639,11 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
       const path0 = await page.evaluate(() => window.__ogHost.path || [[0, 0]]);
       const A = path0[0], B = path0[Math.min(path0.length - 1, 9)];
       const s1 = await probe(A[0], A[1]); const s2 = await probe(B[0], B[1]);
-      if (cfg.shadow.mustCast) row(o, "shadow cast", s1.n > 30, `${s1.n} ground pixels in this object's shadow (${fmt(s1.frac * 100)}% of the probe view)`, ["castShadow = true on every LOD; the ground must receive (receiveShadow / ground shader lookup)."]);
+      const shadowDetail = `${s1.n} ground pixels outside the object mask (${fmt(s1.frac * 100)}% of the probe view); inside-mask darkened ${s1.nInside == null ? "?" : s1.nInside}; any darkened ${s1.nAny == null ? "?" : s1.nAny}`;
+      if (cfg.shadow.mustCast) row(o, "shadow cast", s1.n > 30, shadowDetail, ["castShadow = true on every LOD; the ground must receive (receiveShadow / ground shader lookup). The probe ignores pixels under the object mask, so the contact has to fall on open ground."]);
+      let visionShadow = null;
+      try { visionShadow = await page.evaluate(() => window.__visionShadow || null); } catch (e) { visionShadow = null; }
+      writeFileSync(join(odir, "shadow.json"), JSON.stringify({ light: L, at: { P, T }, visionShadow, s1: { ...s1, mask: undefined }, s2: { ...s2, mask: undefined } }, null, 1));
       if (s1.n > 30) {
         const fixedIoU = iou(s1.mask, s2.mask);
         row(o, "shadow world-fixed", fixedIoU >= cfg.shadow.minWorldFixedIoU, `shadow mask IoU ${fmt(fixedIoU, 3)} after moving the player ${fmt(Math.hypot(A[0] - B[0], A[1] - B[1]), 0)} m (min ${cfg.shadow.minWorldFixedIoU})`,
@@ -632,7 +654,6 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
         const violet = ratio[0] > ratio[1] * cfg.shadow.violetRatio && ratio[2] > ratio[1] * cfg.shadow.violetRatio;
         row(o, "shadow colour neutral (not violet)", !violet && chroma <= cfg.shadow.maxTintChroma, `shadow multiply r ${fmt(ratio[0], 3)} g ${fmt(ratio[1], 3)} b ${fmt(ratio[2], 3)}, chroma ${fmt(chroma, 3)} (max ${cfg.shadow.maxTintChroma})${violet ? ", VIOLET" : ""}`,
           ["Shadow tint must be dark neutral (slight cool OK). Check the shadow lookup (depth unpack order, double bias) and the tint constant."]);
-        writeFileSync(join(odir, "shadow.json"), JSON.stringify({ light: L, at: { P, T }, s1: { ...s1, mask: undefined }, s2: { ...s2, mask: undefined } }, null, 1));
       }
     }
   }
@@ -672,11 +693,13 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
     }
     if (spec.proportions) {
       const P = spec.proportions; const bad = [];
+      const ranges = Object.entries(P).filter(([, range]) => Array.isArray(range) && range.length >= 2);
       for (const g of geo) for (const s of g.sizes) {
         const r = { hOverW: s.h / s.w, dOverW: s.d / s.w, heightM: s.h };
-        for (const [k, [lo, hi]] of Object.entries(P)) if (r[k] < lo || r[k] > hi) bad.push(`${s.inst} ${k} ${fmt(r[k], 2)} not in ${lo}-${hi}`);
+        for (const [k, [lo, hi]] of ranges) if (r[k] < lo || r[k] > hi) bad.push(`${s.inst} ${k} ${fmt(r[k], 2)} not in ${lo}-${hi}`);
       }
-      row(o, "proportions vs spec", bad.length === 0, bad.slice(0, 6).join("; ") || `${Object.keys(P).join(", ")} in range on every copy`, ["Scale the solid in Blender to the spec ratios (never by spending more images)."]);
+      const why = typeof P.reason === "string" && P.reason ? ` reason ${P.reason}` : "";
+      row(o, "proportions vs spec", bad.length === 0, (bad.slice(0, 6).join("; ") || `${ranges.map(([k]) => k).join(", ")} in range on every copy`) + why, ["Scale the solid in Blender to the spec ratios (never by spending more images)."]);
     }
     const hasShade = await page.evaluate(() => typeof window.__setShade === "function");
     if (!hasShade) {
@@ -769,10 +792,13 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
     const recItems = rec.items || {};
     const todo = { object: spec.id, sheet: sheetPath, captures: Object.fromEntries(Object.entries(captures).map(([k, c]) => [k, c.hash])), items: {} };
     const missing = [];
+    const noted = [];
     for (const it of items) {
       const r = recItems[it.id];
-      todo.items[it.id] = { feature: it.feature, captures: it.captures, pass: r ? r.pass : null, note: r ? r.note : "" };
-      if (!r || r.pass !== true) { missing.push(`${it.id}: ${r ? "recorded FAIL" : "no recorded pass"}`); continue; }
+      const ev = checklistEvidence(it, r);
+      todo.items[it.id] = { feature: it.feature, captures: it.captures, pass: r ? r.pass : null, plateEvidence: (r && r.plateEvidence) || it.plateEvidence || null, note: (r && r.note) || it.note || "", status: ev.status };
+      if (ev.status === "N/A") { noted.push(ev.detail); continue; }
+      if (!ev.ok) { missing.push(ev.detail); continue; }
       for (const a of it.captures || []) {
         if (a === "clip") continue;
         const now = captures[a] && captures[a].hash, then = r.captures && r.captures[a];
@@ -782,7 +808,8 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
       }
     }
     writeFileSync(join(odir, "checklist-todo.yaml"), yaml.dump(todo, { lineWidth: 140 }));
-    if (items.length) row(o, "key checklist: every item verified on a current capture", missing.length === 0, missing.slice(0, 8).join("; ") || `${items.length}/${items.length} items pass on current captures`,
+    const na = noted.length ? `; N/A ${noted.join(" | ")}` : "";
+    if (items.length) row(o, "key checklist: every item verified on a current capture", missing.length === 0, (missing.slice(0, 8).join("; ") || `${items.length - noted.length}/${items.length} items pass on current captures`) + na,
       [`Look at ${sheetPath} next to the key crop. For each item write pass/fail + note in ${spec.record} (copy ${join(odir, "checklist-todo.yaml")}: it has the current capture hashes). Fix every fail first.`]);
     if (spec.keyCrop && existsSync(spec.keyCrop) && captures.close) {
       const c = py("colour", { img: captures.close.img, mask: captures.close.mask, key: spec.keyCrop });
