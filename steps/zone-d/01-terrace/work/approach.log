@@ -1,17 +1,17 @@
-00:00.087  system.path      | WARNING Could not get a list of mounted file-systems
+00:00.084  system.path      | WARNING Could not get a list of mounted file-systems
 /workspace/grokcli/wt/zd-terrace-1012/tools/object-gate/py/render_views.py:19: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
   if not m or not m.use_nodes: continue
 /workspace/grokcli/wt/zd-terrace-1012/tools/object-gate/py/render_views.py:41: DeprecationWarning: 'World.use_nodes' is expected to be removed in Blender 6.0
   w = bpy.data.worlds.new('w'); sc.world = w; w.use_nodes = True
 /workspace/grokcli/wt/zd-terrace-1012/tools/object-gate/py/render_views.py:48: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
   gm = bpy.data.materials.new('snow'); gm.use_nodes = True; gm.node_tree.nodes['Principled BSDF'].inputs[0].default_value = (0.78, 0.84, 0.9, 1)
-00:08.376  render           | Saved: 'renders/approach/approach30m.png'
-00:17.393  render           | Saved: 'renders/approach/approach20m.png'
-00:29.257  render           | Saved: 'renders/approach/approach12m.png'
-00:43.514  render           | Saved: 'renders/approach/approach08m.png'
-00:59.121  render           | Saved: 'renders/approach/approach05m.png'
-01:15.532  render           | Saved: 'renders/approach/approach03m.png'
+00:08.854  render           | Saved: 'renders/approach/approach30m.png'
+00:18.437  render           | Saved: 'renders/approach/approach20m.png'
+00:32.236  render           | Saved: 'renders/approach/approach12m.png'
+00:48.070  render           | Saved: 'renders/approach/approach08m.png'
+01:05.116  render           | Saved: 'renders/approach/approach05m.png'
+01:22.291  render           | Saved: 'renders/approach/approach03m.png'
 Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:12:34)
-OBJ import of 'terrace-lod0.obj' took 37.77 ms
+OBJ import of 'terrace-lod0.obj' took 44.63 ms
 
 Blender quit

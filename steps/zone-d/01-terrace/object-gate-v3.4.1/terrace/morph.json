@@ -1,0 +1,14 @@
+[
+ {
+  "inst": "zd-terrace-lod0",
+  "frames": 67,
+  "minIoU": 0.972,
+  "jumps": []
+ },
+ {
+  "inst": "zd-terrace-lod1",
+  "frames": 67,
+  "minIoU": 0.972,
+  "jumps": []
+ }
+]

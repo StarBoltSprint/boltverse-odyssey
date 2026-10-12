@@ -32,3 +32,10 @@ Preview harness: /workspace/zd-preview-1012 (served on 127.0.0.1:8971), adapter 
 - Side relief from side-plate MoGe-2 (1 m high-pass, +-0.26 m, all LODs).
 - Gate: morph mask 540x960 + world-grid IoU (py/morph_selftest.py); checklist cameras fit the visible silhouette (lib/probe.js silhouetteRect, height mode for close views). Self-tests in selftest.mjs.
 - Play page: /workspace/zd-play-1012 (copy: tools/object-gate/specs/zone-d/play-index.html).
+
+## v3.4.1 (2026-10-12 ~15:13 Paris). object-gate FAIL 2/19. Not for SmiR yet.
+Rebuild via work/all341.sh (terrace_block LODs + clean_streaks + ghost gate pass 0 ghosts + weld GLB + copy to zd-preview/zd-play).
+LOD silhouette switch 15/40 m: xorFrac 0.0 all pairs (work/lod-outline-v341.txt).
+object-gate report: object-gate-v3.4.1/report.md. Same two FAILs as v3.4: visible px/m 108.4 vs 154.6 at 8 m; key checklist unverified (records empty).
+Play tunnel live: https://reverse-monroe-thereby-calculate.trycloudflare.com (127.0.0.1:8972).
+Next: Art Director fills checklist + KEEP on sheet; then ask SmiR for ~6 front Imagine detail plates for 8 m sharpness (planned after v3.4 visual validate).

@@ -198,34 +198,51 @@ for k, t in enumerate(T):
                 if L[jj] >= 3: out2.append((c_lo + int(jj), float(L[jj]), max(1, int(round(w / n)))))
         return out2, int(r0 - 20 + base)
     def cone(base, Lm, r, uvc, seed, mat='front'):
+        # v3.4.1: root ring has 10 sides and is SUNK into the snow lip (its highest point under the lip surface + 3 cm, so no cap
+        # or root rim is visible); the root's UVs continue up into the plate's snow rows above the fringe, so the visible root
+        # carries lip-snow pixels and grades into the streak pixels below. Down the cone: 6 sides (12 -> 6 bridge). 34 tris/cone.
+        # Visible length below the lip is unchanged (Lm); every LOD gets the identical cone.
+        n0, n1 = 12, 6   # Engine Core: 12 sides only on the buried root ring, 6 down the cone (old 6-side tip outline)
+        def lip_y(z): return c0 if z <= cz - R else c0 + R - np.sqrt(max(0.0, R * R - (z - (cz - R)) ** 2))
+        a0s = 2 * np.pi * np.arange(n0) / n0
+        top = max(lip_y(base[2] + r * np.sin(a)) for a in a0s) + 0.03
+        sink = top - (c0 + 0.02); Lt = Lm + sink; by = top
         rng = np.random.default_rng(seed); tipdx, tipdz = rng.uniform(-0.3, 0.3, 2) * r; mid = 0.55 + rng.uniform(-0.1, 0.1)
-        rings = []
-        for (h, rr) in ((0.0, r), (0.45, r * mid)):
-            ring = []
-            for q in range(ns):
-                a_ = 2 * np.pi * q / ns; p = (base[0] + rr * np.cos(a_) + tipdx * h, base[1] - Lm * h, base[2] + rr * np.sin(a_) + tipdz * h)
-                ring.append(addv(p, uvc(abs(((a_ + np.pi) % (2 * np.pi)) - np.pi) / np.pi, Lm * h, rr / r)))
-            rings.append(ring)
-        tip = addv((base[0] + tipdx, base[1] - Lm, base[2] + tipdz), uvc(0.5, Lm, 0.0))
-        cap = addv((base[0], base[1], base[2]), uvc(0.5, r, 1.0))
-        # v3.3: cap ring = same positions, isotropic disc UVs (was a degenerate line = infinite stretch on the hidden +y caps)
-        capring = [addv(tuple(V[A_]), uvc(0.5 + np.cos(2 * np.pi * q / ns) / np.pi, r * (1 + np.sin(2 * np.pi * q / ns)), 1.0)) for q, A_ in enumerate(rings[0])]
-        for q in range(ns):
-            q1 = (q + 1) % ns; A, B = rings[0], rings[1]
-            for tri in ((A[q], A[q1], B[q1]), (A[q], B[q1], B[q]), (B[q], B[q1], tip)):
-                F[mat].append(tri); cpt = np.mean([V[i] for i in tri], 0); NRM[mat].append(('radial', base[0] + tipdx * 0.5, base[2] + tipdz * 0.5, cpt))
-            F[mat].append((capring[q], capring[q1], cap)); NRM[mat].append((0, 1, 0))   # sealed base cap (inside the lip)
+        h1 = sink + 0.45 * Lm; f1 = h1 / Lt
+        # per-face isotropic unwrap: each triangle gets its own UV copies, arc length measured from the face's centre angle, so
+        # every face samples the streak's own plate column (no conical-unwrap shear); positions are shared after the weld
+        P0 = [(base[0] + r * np.cos(a), by, base[2] + r * np.sin(a), a, r, -sink) for a in a0s]
+        a1s = 2 * np.pi * np.arange(n1) / n1 + np.pi / n1
+        P1 = [(base[0] + r * mid * np.cos(a) + tipdx * f1, by - h1, base[2] + r * mid * np.sin(a) + tipdz * f1, a, r * mid, 0.45 * Lm) for a in a1s]
+        PT = (base[0] + tipdx, by - Lt, base[2] + tipdz, None, 0.0, Lm)
+        rad = lambda tri: ('radial', base[0] + tipdx * 0.5, base[2] + tipdz * 0.5, np.mean([V[i] for i in tri], 0))
+        def face(*ps):
+            angs = [p[3] for p in ps if p[3] is not None]; ac = np.angle(np.mean(np.exp(1j * np.array(angs))))
+            ids = []
+            for p in ps:
+                da = 0.0 if p[3] is None else (p[3] - ac + np.pi) % (2 * np.pi) - np.pi
+                ids.append(addv(p[:3], uvc(0.5 + p[4] * da / (np.pi * r), p[5], 1.0)))
+            tri = tuple(ids); F[mat].append(tri); NRM[mat].append(rad(tri))
+        for q in range(n0):   # 12 -> 6 bridge (ring1[j] sits over ring0[2j+1])
+            face(P0[q], P0[(q + 1) % n0], P1[q // 2])
+        for j in range(n1):
+            face(P1[j], P0[(2 * j + 2) % n0], P1[(j + 1) % n1])
+            face(P1[j], P1[(j + 1) % n1], PT)
+        ring0 = [None] * n0
+        capr = [addv(P0[q][:3], uvc(0.5 + np.cos(a) / np.pi, -sink - r * (1 + np.sin(a)), 1.0)) for q, a in enumerate(a0s)]   # isotropic disc UVs
+        for q in range(1, n0 - 1):   # sealed root cap (fan, inside the lip)
+            F[mat].append((capr[0], capr[q], capr[q + 1])); NRM[mat].append((0, 1, 0))
     img = np.asarray(Image.open(f'{step}/plates/plate-front.jpg').convert('L'), np.float32)
     r0 = int(round(FY0 - c0 / S)); cl = int(FX0 - hw * 0.98 / S); ch = int(FX0 + hw * 0.98 / S)
     dr, brow = drips(img, r0, cl, ch); ytop = FY0 * S - brow * S   # plate row of the fringe baseline -> metres
     spans = [(cl, ch)] if k else [(cl, int(FX0 + X2A / S)), (int(FX0 + X2B / S), ch)]
-    for c_a, c_b in spans: BANDS.append(dict(plate='plate-front', tex='plates/v34/plate-front-v34.jpg', tier=k, side='front', row0=int(brow), rows=110, c_lo=c_a, c_hi=c_b, a=-FX0 * S / sc_c, b=S / sc_c))
+    for c_a, c_b in spans: BANDS.append(dict(plate='plate-front', mask='work/plate-front-mask.png', tex='plates/v34/plate-front-v34.jpg', tier=k, side='front', row0=int(brow), rows=110, c_lo=c_a, c_hi=c_b, a=-FX0 * S / sc_c, b=S / sc_c))
     if k == 0:   # v3.2: drips inside the close plate's span come from its own pixels (98 px/m: real lengths, fewer raised stubs)
         img2 = np.asarray(Image.open(f'{step}/plates/v32/t1-right.jpg').convert('L'), np.float32)   # drips on the ORIGINAL pixels (the v3.3 grade only changes colour)
         r2 = 220; dr2_, _b2 = drips(img2, r2, 2, 1022, win=200, thr=100, mpp=1 / K2)   # this plate's own snow-body row and (darker) snow level
         ytop2 = (G2 - _b2) / K2   # cone UVs start at the plate's own fringe baseline
         pa, pb = int(C2 + (X2A + 0.1 - XC2) * K2), int(C2 + (X2B - 0.1 - XC2) * K2)
-        BANDS.append(dict(plate='t1-right', tex='plates/v34/t1-right-v34.jpg', tier=k, side='front', row0=int(_b2), rows=200, c_lo=max(2, pa), c_hi=min(1022, pb), a=(XC2 - C2 / K2) / sc_c, b=1 / (K2 * sc_c)))
+        BANDS.append(dict(plate='t1-right', mask='work/t1-right-mask.png', tex='plates/v34/t1-right-v34.jpg', tier=k, side='front', row0=int(_b2), rows=200, c_lo=max(2, pa), c_hi=min(1022, pb), a=(XC2 - C2 / K2) / sc_c, b=1 / (K2 * sc_c)))
         for px, L, wpx in dr2_:
             xm = XC2 + (px - C2) / K2; x = xm / sc_c; Lr = L / K2
             if Lr > 1.6 or Lr < 0.1 or not (X2A + 0.1 < xm < X2B - 0.1):
@@ -245,14 +262,14 @@ for k, t in enumerate(T):
     simg = np.asarray(Image.open(f'{step}/plates/plate-side.jpg').convert('L'), np.float32)
     b_, t_ = SIDEROWS[k]; srow = int(round(b_ + (t_ - b_) * (c0 - y0) / (c1 - y0)))
     dr2, _ = drips(simg, srow, int(SX0 + (BACK - CORN_OUT) / S) + 4, int(SX0) - 2)
-    BANDS.append(dict(plate='plate-side', tex='plates/v34/plate-side-v34.jpg', tier=k, side='left', row0=int(_), rows=110, c_lo=int(SX0 + (BACK + 0.2 - CORN_OUT) / S), c_hi=int(SX0 + (cz - 0.15 - CORN_OUT) / S), a=-SX0 * S + CORN_OUT, b=S))
+    BANDS.append(dict(plate='plate-side', mask='work/plate-side-mask.png', tex='plates/v34/plate-side-v34.jpg', tier=k, side='left', row0=int(_), rows=110, c_lo=int(SX0 + (BACK + 0.2 - CORN_OUT) / S), c_hi=int(SX0 + (cz - 0.15 - CORN_OUT) / S), a=-SX0 * S + CORN_OUT, b=S))
     for px, L, wpx in dr2:
         z = (px - SX0) * S + CORN_OUT; Lm = float(np.clip(L * S, 0.3, 1.2)); r = float(np.clip(wpx * S / 2, 0.05, 0.15)); rootW = round(wpx * S, 3)
         if (k == 2 and L * S < 0.3) or L * S > 1.2 or z > cz - 0.15 or z < BACK + 0.2:
             GHOST.append(dict(plate='plate-side', col=int(px), row=int(_), lenPx=float(L), wPx=int(wpx))); continue
         zp = z - CORN_OUT
-        cone((-cw + 0.12, c0 + 0.02, z), Lm, r, lambda t, h, sc=1.0, zp=zp, r=r: suv(zp + np.pi * r * sc * (t - 0.5), c0 - h), px * 13 + k)
-        ICI.append(dict(tier=k, side='left', rootWm=rootW, rawLenM=round(L * S, 3), x=round(-cw + 0.12, 3), z=round(z, 3), lenM=round(Lm, 3), tipY=round(c0 + 0.02 - Lm, 3)))
+        cone((-cw + r + 0.04, c0 + 0.02, z), Lm, r, lambda t, h, sc=1.0, zp=zp, r=r: suv(zp + np.pi * r * sc * (t - 0.5), c0 - h), px * 13 + k)
+        ICI.append(dict(tier=k, side='left', rootWm=rootW, rawLenM=round(L * S, 3), x=round(-cw + r + 0.04, 3), z=round(z, 3), lenM=round(Lm, 3), tipY=round(c0 + 0.02 - Lm, 3)))
     # v3.4: every painted streak the gate's detector sees on this tier's ORIGINAL plates either gets real cones (it hangs from the
     # fringe line: curtain/drip -> one cone per ~0.25 m across its real width, each at its own column's pixel length, root = real
     # width / n) or is listed as a ghost and cleaned out of the texture by work/clean_streaks.py (free-hanging / too long / clearance).
@@ -282,7 +299,7 @@ for k, t in enumerate(T):
                 elif b['plate'] == 'plate-front':
                     xp = g * sc_c; uvf = lambda t, h, sc=1.0, xp=xp, r=rr, ytop=ytop: fuv(xp + np.pi * r * sc * (t - 0.5), ytop - h); mat = 'front'; base = (g, c0 + 0.02, cz - R * 0.5)
                 else:
-                    zp = g - CORN_OUT; uvf = lambda t, h, sc=1.0, zp=zp, r=rr: suv(zp + np.pi * r * sc * (t - 0.5), c0 - h); mat = 'side'; base = (-cw + 0.12, c0 + 0.02, g)
+                    zp = g - CORN_OUT; uvf = lambda t, h, sc=1.0, zp=zp, r=rr: suv(zp + np.pi * r * sc * (t - 0.5), c0 - h); mat = 'side'; base = (-cw + rr + 0.04, c0 + 0.02, g)
                 cone(base, Lm, rr, uvf, col * 17 + k, mat)
                 ICI.append(dict(tier=k, side=b['side'], plate=b['plate'], src='v34-detector', rootWm=round(2 * rr, 3), rawLenM=round(Lm, 3), x=round(base[0], 3), z=round(base[2], 3), lenM=round(Lm, 3), tipY=round(c0 + 0.02 - Lm, 3)))
 # ground skirt hidden 0.3 m below 0 (grounded: lowest visible y = 0)

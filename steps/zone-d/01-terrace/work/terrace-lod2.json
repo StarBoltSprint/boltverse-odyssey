@@ -1,9 +1,9 @@
 {
  "lod": 2,
- "tris": 13204,
- "flippedForWinding": 3660,
+ "tris": 15414,
+ "flippedForWinding": 4544,
  "icicles": 221,
- "verts": 10973,
+ "verts": 25117,
  "aabb": [
   [
    -8.698812396580253,

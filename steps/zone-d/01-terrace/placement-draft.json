@@ -36,12 +36,126 @@
       "tier1_left_lowest_tip_m": 4.665,
       "walkway": "tier 1 only; all tips above camera"
     },
-    "icicle_cluster_boxes": "pending x start/end per cluster (not in icicle-report v3.3)",
+    "icicle_cluster_boxes": [
+      {
+        "side": "front",
+        "axis": "x",
+        "from": -8.7,
+        "to": -8.05,
+        "tip_drop_m": 2.37,
+        "layer": "player"
+      },
+      {
+        "side": "front",
+        "axis": "x",
+        "from": -7.92,
+        "to": -7.23,
+        "tip_drop_m": 2.11,
+        "layer": "player"
+      },
+      {
+        "side": "front",
+        "axis": "x",
+        "from": -6.8,
+        "to": -3.75,
+        "tip_drop_m": 1.08,
+        "layer": "player"
+      },
+      {
+        "side": "front",
+        "axis": "x",
+        "from": 2.27,
+        "to": 7.26,
+        "tip_drop_m": 1.57,
+        "layer": "player"
+      },
+      {
+        "side": "front",
+        "axis": "x",
+        "from": 7.56,
+        "to": 8.21,
+        "tip_drop_m": 2.13,
+        "layer": "player"
+      },
+      {
+        "side": "front",
+        "axis": "x",
+        "from": 8.42,
+        "to": 8.61,
+        "tip_drop_m": 2.36,
+        "layer": "player"
+      },
+      {
+        "side": "left",
+        "axis": "z",
+        "from": -12.36,
+        "to": -12.26,
+        "tip_drop_m": 0.97,
+        "layer": "player"
+      },
+      {
+        "side": "left",
+        "axis": "z",
+        "from": -10.85,
+        "to": -10.29,
+        "tip_drop_m": 1.42,
+        "layer": "player"
+      },
+      {
+        "side": "left",
+        "axis": "z",
+        "from": -9.43,
+        "to": -8.3,
+        "tip_drop_m": 1.12,
+        "layer": "player"
+      },
+      {
+        "side": "left",
+        "axis": "z",
+        "from": -7.37,
+        "to": -7.27,
+        "tip_drop_m": 0.75,
+        "layer": "player"
+      },
+      {
+        "side": "left",
+        "axis": "z",
+        "from": -5.91,
+        "to": -5.81,
+        "tip_drop_m": 0.73,
+        "layer": "player"
+      },
+      {
+        "side": "left",
+        "axis": "z",
+        "from": -3.09,
+        "to": -2.99,
+        "tip_drop_m": 0.88,
+        "layer": "player"
+      },
+      {
+        "side": "left",
+        "axis": "z",
+        "from": -2.55,
+        "to": -2.45,
+        "tip_drop_m": 0.95,
+        "layer": "player"
+      },
+      {
+        "side": "left",
+        "axis": "z",
+        "from": -2.1,
+        "to": -1.35,
+        "tip_drop_m": 1.55,
+        "layer": "player"
+      }
+    ],
     "layers": {
       "icicle_cluster_boxes": "player only (not camera)",
       "cornice_lip_boxes": "player + camera",
       "icicle_cones": "none"
-    }
+    },
+    "icicle_note": "v3.4: tier-1 front corner curtains (x<-7.2, x>7.5) tip at 2.6 m; approach line stays centred (|x|<4) so the camera never passes under them"
   },
   "approach": {
     "path_width_m": 4,

@@ -5,39 +5,39 @@
   w = bpy.data.worlds.new('w'); sc.world = w; w.use_nodes = True
 /workspace/grokcli/wt/zd-terrace-1012/tools/object-gate/py/render_views.py:48: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
   gm = bpy.data.materials.new('snow'); gm.use_nodes = True; gm.node_tree.nodes['Principled BSDF'].inputs[0].default_value = (0.78, 0.84, 0.9, 1)
-00:09.340  render           | Saved: 'renders/trg/phone.png'
-00:20.317  render           | Saved: 'renders/trg/oblique45.png'
-00:26.795  render           | Saved: 'renders/trg/grazing.png'
-00:39.358  render           | Saved: 'renders/trg/close8m.png'
-00:54.925  render           | Saved: 'renders/trg/close3m.png'
+00:09.295  render           | Saved: 'renders/trg/phone.png'
+00:19.351  render           | Saved: 'renders/trg/oblique45.png'
+00:25.580  render           | Saved: 'renders/trg/grazing.png'
+00:37.780  render           | Saved: 'renders/trg/close8m.png'
+00:52.344  render           | Saved: 'renders/trg/close3m.png'
 Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:12:34)
-OBJ import of 'terrace-lod0.obj' took 39.71 ms
+OBJ import of 'terrace-lod0.obj' took 42.45 ms
 
 Blender quit
-00:00.107  system.path      | WARNING Could not get a list of mounted file-systems
+00:00.089  system.path      | WARNING Could not get a list of mounted file-systems
 /workspace/grokcli/wt/zd-terrace-1012/tools/object-gate/py/render_views.py:19: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
   if not m or not m.use_nodes: continue
 /workspace/grokcli/wt/zd-terrace-1012/tools/object-gate/py/render_views.py:41: DeprecationWarning: 'World.use_nodes' is expected to be removed in Blender 6.0
   w = bpy.data.worlds.new('w'); sc.world = w; w.use_nodes = True
-00:09.139  render           | Saved: 'work/upview/trg/close3m-up.png'
+00:09.074  render           | Saved: 'work/upview/trg/close3m-up.png'
 Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:12:34)
-OBJ import of 'terrace-lod0.obj' took 38.35 ms
+OBJ import of 'terrace-lod0.obj' took 46.36 ms
 
 Blender quit
-00:00.096  system.path      | WARNING Could not get a list of mounted file-systems
+00:00.104  system.path      | WARNING Could not get a list of mounted file-systems
 /workspace/grokcli/wt/zd-terrace-1012/tools/object-gate/py/render_views.py:19: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
   if not m or not m.use_nodes: continue
 /workspace/grokcli/wt/zd-terrace-1012/tools/object-gate/py/render_views.py:41: DeprecationWarning: 'World.use_nodes' is expected to be removed in Blender 6.0
   w = bpy.data.worlds.new('w'); sc.world = w; w.use_nodes = True
 /workspace/grokcli/wt/zd-terrace-1012/tools/object-gate/py/render_views.py:48: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
   gm = bpy.data.materials.new('snow'); gm.use_nodes = True; gm.node_tree.nodes['Principled BSDF'].inputs[0].default_value = (0.78, 0.84, 0.9, 1)
-00:07.799  render           | Saved: 'renders/approach/trg/approach30m.png'
-00:17.027  render           | Saved: 'renders/approach/trg/approach20m.png'
-00:29.244  render           | Saved: 'renders/approach/trg/approach12m.png'
-00:43.321  render           | Saved: 'renders/approach/trg/approach08m.png'
-01:00.894  render           | Saved: 'renders/approach/trg/approach05m.png'
-01:16.789  render           | Saved: 'renders/approach/trg/approach03m.png'
+00:07.929  render           | Saved: 'renders/approach/trg/approach30m.png'
+00:16.930  render           | Saved: 'renders/approach/trg/approach20m.png'
+00:28.516  render           | Saved: 'renders/approach/trg/approach12m.png'
+00:42.555  render           | Saved: 'renders/approach/trg/approach08m.png'
+00:57.926  render           | Saved: 'renders/approach/trg/approach05m.png'
+01:13.910  render           | Saved: 'renders/approach/trg/approach03m.png'
 Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:12:34)
-OBJ import of 'terrace-lod0.obj' took 39.05 ms
+OBJ import of 'terrace-lod0.obj' took 67.21 ms
 
 Blender quit

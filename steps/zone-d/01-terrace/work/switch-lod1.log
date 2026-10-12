@@ -1,9 +1,9 @@
-00:00.090  system.path      | WARNING Could not get a list of mounted file-systems
+00:00.086  system.path      | WARNING Could not get a list of mounted file-systems
 /workspace/grokcli/wt/zd-terrace-1012/tools/object-gate/py/render_views.py:19: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
   if not m or not m.use_nodes: continue
 /workspace/grokcli/wt/zd-terrace-1012/tools/object-gate/py/render_views.py:41: DeprecationWarning: 'World.use_nodes' is expected to be removed in Blender 6.0
   w = bpy.data.worlds.new('w'); sc.world = w; w.use_nodes = True
 Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:12:34)
-OBJ import of 'terrace-lod1.obj' took 15.39 ms
+OBJ import of 'terrace-lod1.obj' took 18.79 ms
 
 Blender quit

@@ -12,6 +12,9 @@ def detect(img, band, mpp):
     top = max(0, r0 - 6); sub = img[top:r0 + rows, c_lo:c_hi]
     ref = np.percentile(sub, 30, axis=1, keepdims=True)   # basalt level of each row across the whole band
     br = (sub > 80) & (sub > ref + 40); br = br | (np.roll(br, 1, 0) & np.roll(br, -1, 0))
+    if band.get('mask'):   # only pixels on the object (SAM2 mask of that plate): sky / background is not texture on the model
+        mk = np.asarray(Image.open(band['mask']).convert('L').resize((img.shape[1], img.shape[0]))) > 127
+        br &= ndi.binary_erosion(mk, iterations=2)[max(0, r0 - 6):r0 + rows, c_lo:c_hi]
     run = np.zeros(sub.shape[1]); st = np.zeros(sub.shape[1], int)
     for j in range(sub.shape[1]):   # longest vertical bright run anywhere in the band (fringe drips AND free-hanging painted ones)
         col = np.r_[False, br[:, j], False].astype(int); d = np.diff(col); s_, e_ = np.flatnonzero(d == 1), np.flatnonzero(d == -1)
