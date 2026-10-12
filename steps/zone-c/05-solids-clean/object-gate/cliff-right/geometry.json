@@ -1,0 +1,31 @@
+[
+ {
+  "geo": "685d2450",
+  "usedBy": "cliff-right",
+  "instances": 1,
+  "tris": 6756,
+  "verts": 3380,
+  "open": 0,
+  "nonManifold": 0,
+  "degenerate": 0,
+  "reliefM": {
+   "+x": 1.2,
+   "-x": 1.6,
+   "+z": 1.2,
+   "-z": 0.4
+  },
+  "local": {
+   "w": 2.8,
+   "h": 20,
+   "d": 10.4
+  },
+  "sizes": [
+   {
+    "inst": "cliff-right",
+    "w": 2.8,
+    "h": 20,
+    "d": 10.4
+   }
+  ]
+ }
+]

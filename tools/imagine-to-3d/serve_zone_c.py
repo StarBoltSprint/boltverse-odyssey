@@ -51,16 +51,22 @@ class Handler(SimpleHTTPRequestHandler):
 
 
 def main():
+    global DATA
     p = argparse.ArgumentParser()
     p.add_argument("--port", type=int, default=8772)
     p.add_argument("--host", default="127.0.0.1")
+    p.add_argument("--data", default=None, help="solids data dir (default steps/zone-c/05-solids/data)")
     args = p.parse_args()
-    if args.port != 8772:
+    if args.data:
+        DATA = Path(args.data).resolve()
+        if not DATA.is_dir():
+            raise SystemExit(f"missing data dir {DATA}")
+    if args.port != 8772 and not args.data:
         raise SystemExit("Zone C solids staging is port 8772")
     if args.host not in ("127.0.0.1", "localhost"):
         raise SystemExit("bind 127.0.0.1 only")
-    httpd = ThreadingHTTPServer(("127.0.0.1", 8772), Handler)
-    print("http://127.0.0.1:8772/  zone-c solids staging")
+    httpd = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
+    print(f"http://127.0.0.1:{args.port}/  zone-c solids staging  data={DATA}")
     httpd.serve_forever()
 
 

@@ -13,6 +13,7 @@ from __future__ import annotations
 import hashlib
 from pathlib import Path
 
+import cv2
 import numpy as np
 from PIL import Image
 
@@ -481,8 +482,111 @@ def key_luma_disp(key_path: Path, shape, forward: np.ndarray) -> np.ndarray:
     return amp[:, :, None] * forward.reshape(1, 1, 3)
 
 
-def build_solid(name, mask, world, depth, cam_forward, plan, ground, key_wh, atlas_info):
-    step = GRID_STEP
+def enclosed_holes(mask: np.ndarray) -> np.ndarray:
+    """Pixels inside the silhouette that do not touch the frame. The arch opening stays here."""
+    inv = (~mask).astype(np.uint8)
+    h, w = mask.shape
+    painted = inv.copy()
+    flood = np.zeros((h + 2, w + 2), np.uint8)
+    for x, y in ((0, 0), (w - 1, 0), (0, h - 1), (w - 1, h - 1)):
+        if painted[y, x] == 1:
+            cv2.floodFill(painted, flood, (x, y), 2)
+    return (inv == 1) & (painted != 2)
+
+
+def grow_until(mask, z_fwd, max_radius, span_ok) -> tuple[np.ndarray, np.ndarray, int]:
+    """One dilation pass. span_ok(mask, z) stops the grow. Holes stay open."""
+    m = mask.astype(bool).copy()
+    z = np.asarray(z_fwd, np.float64).copy()
+    holes = enclosed_holes(m)
+    kernel = np.ones((3, 3), np.uint8)
+    h, w = m.shape
+    radius = 0
+    if span_ok(m, z):
+        return m, z, 0
+    for radius in range(1, int(max_radius) + 1):
+        dil = cv2.dilate(m.astype(np.uint8), kernel) > 0
+        fresh = dil & ~m & ~holes
+        if not np.any(fresh):
+            break
+        pad = np.pad(np.where(m, z, np.inf), 1, constant_values=np.inf)
+        near = np.full((h, w), np.inf, np.float64)
+        for dy in (-1, 0, 1):
+            for dx in (-1, 0, 1):
+                near = np.minimum(near, pad[1 + dy : 1 + dy + h, 1 + dx : 1 + dx + w])
+        good = fresh & np.isfinite(near)
+        z = np.where(good, near, z)
+        m = m | good
+        if radius % 4 == 0 and span_ok(m, z):
+            break
+    return m, z, radius
+
+
+def grow_mask_depth(mask: np.ndarray, z_fwd: np.ndarray, radius: int) -> tuple[np.ndarray, np.ndarray]:
+    """Dilate the outer silhouette. New pixels copy the nearest mask forward-depth.
+
+    Sky MoGe depth is never copied. Enclosed holes (arch openings) are not filled.
+    """
+    m = mask.astype(bool).copy()
+    z = np.asarray(z_fwd, np.float64).copy()
+    holes = enclosed_holes(m)
+    kernel = np.ones((3, 3), np.uint8)
+    h, w = m.shape
+    for _ in range(int(radius)):
+        dil = cv2.dilate(m.astype(np.uint8), kernel) > 0
+        fresh = dil & ~m & ~holes
+        if not np.any(fresh):
+            break
+        pad = np.pad(np.where(m, z, np.inf), 1, constant_values=np.inf)
+        near = np.full((h, w), np.inf, np.float64)
+        for dy in (-1, 0, 1):
+            for dx in (-1, 0, 1):
+                near = np.minimum(near, pad[1 + dy : 1 + dy + h, 1 + dx : 1 + dx + w])
+        good = fresh & np.isfinite(near)
+        z = np.where(good, near, z)
+        m = m | good
+    return m, z
+
+
+def _smooth_front(front, step, iters, lam=0.45):
+    """Interior-only Laplacian. Boundary vertices stay so the SAM2 outline holds."""
+    keys = list(front)
+    ks = set(keys)
+    nbr = {k: [] for k in keys}
+    for i, j in keys:
+        for di, dj in ((step, 0), (-step, 0), (0, step), (0, -step)):
+            n = (i + di, j + dj)
+            if n in ks:
+                nbr[(i, j)].append(n)
+    cur = {k: np.asarray(v, np.float64).copy() for k, v in front.items()}
+    for _ in range(int(iters)):
+        nxt = {}
+        for k, p in cur.items():
+            ns = nbr[k]
+            if len(ns) < 3:
+                nxt[k] = p
+                continue
+            avg = sum(cur[n] for n in ns) / float(len(ns))
+            nxt[k] = (1.0 - lam) * p + lam * avg
+        cur = nxt
+    return cur
+
+
+def denoise_world(world: np.ndarray, mask: np.ndarray, sigma: float = 9.0) -> np.ndarray:
+    """Median + Gaussian on the metric point map. Kills MoGe spikes before the hull."""
+    out = np.array(world, np.float32, copy=True)
+    for c in range(3):
+        ch = out[..., c]
+        ch = cv2.medianBlur(ch, 5)
+        ch = cv2.GaussianBlur(ch, (0, 0), float(sigma))
+        out[..., c] = np.where(mask, ch, world[..., c])
+    return out
+
+
+def build_solid(name, mask, world, depth, cam_forward, plan, ground, key_wh, atlas_info, step_px=None,
+                shell_m=None, relief=None, smooth_iters=0, drape=False):
+    step = int(step_px or GRID_STEP)
+    shell = float(SHELL_M if shell_m is None else shell_m)
     mask = _binary_close(fill_small_holes(mask, MIN_HOLE_PX), 1)
     forward = np.asarray(cam_forward, np.float64)
     forward = forward / (np.linalg.norm(forward) + 1e-12)
@@ -544,7 +648,9 @@ def build_solid(name, mask, world, depth, cam_forward, plan, ground, key_wh, atl
         front = {}
         taken = set()
         for (i, j), p in nodes.items():
-            q = p + nudge
+            q = np.asarray(p, np.float64) + nudge
+            if relief is not None:
+                q = q - forward * float(relief[min(j, h - 1), min(i, w - 1)])
             # Two mask corners with the same XYZ would weld into one vertical.
             ntry = 0
             while tuple(np.round(q * 1e6).astype(np.int64).tolist()) in taken and ntry < 8:
@@ -553,33 +659,63 @@ def build_solid(name, mask, world, depth, cam_forward, plan, ground, key_wh, atl
                 ntry += 1
             taken.add(tuple(np.round(q * 1e6).astype(np.int64).tolist()))
             front[(i, j)] = q
+        if smooth_iters:
+            front = _smooth_front(front, step, smooth_iters)
         ys = np.array([p[1] for p in front.values()], np.float64)
-        y0 = float(ys.min())
         y1 = float(ys.max())
         yc = (min(gy) if gy else 0.0) - SINK_M
-        # The gate's lower 20% is measured after the floor sets ymin. Drop every
-        # back vertex at or below that line, but never more than the bottom 40%
-        # of the vertices, and never the arch-hole ring (the opening stays open).
-        t_line = yc + 0.20 * (y1 - yc)
-        if y0 > t_line:
-            order = np.sort(ys)
-            t_line = float(order[max(0, int(len(order) * 0.18) - 1)])
-        order = np.sort(ys)
-        t_line = min(t_line, float(order[max(0, int(len(order) * 0.40) - 1)]))
+        # The grounding probe rays the lower 20% AFTER ymin is seated. The old
+        # 40% cap left overhang columns (cliff-left 0.69 m, gorge 2.63 m) in
+        # that band. Seat the whole band. A high arch-hole ring stays open;
+        # a hole node within 1 m of the floor is the sill and sits down.
+        t_line = yc + 0.20 * max(y1 - yc, 0.0)
         outer, holes = exterior_edges(qset, step)
         hole_nodes = set()
         for e in holes:
             hole_nodes.add(e[0])
             hole_nodes.add(e[1])
-        low_keys = {k for k, p in front.items() if p[1] <= t_line and k not in hole_nodes}
+        low_keys = set()
+        for k, p in front.items():
+            if p[1] > t_line:
+                continue
+            if k not in hole_nodes:
+                low_keys.add(k)
+                continue
+            if p[1] < ground(float(p[0]), float(p[2])) + 1.0:
+                low_keys.add(k)
         if len(low_keys) < 4:
             lowest = sorted(front, key=lambda k: front[k][1])[: max(4, len(front) // 5)]
             low_keys = {k for k in lowest if k not in hole_nodes}
-        # Seat the lower band on the terrain. Front and back move together, so the
-        # foot is one sheet of shell thickness, not a fringe of edge-on spikes.
+        if drape:
+            # Seat every foot vertex on its own terrain sample. A global yc left
+            # cliff-left at 0.69 m and the gorge at 2.63 m where the floor slopes.
+            seated = set()
+            for k, p in list(front.items()):
+                g = float(ground(float(p[0]), float(p[2])))
+                clearance = float(p[1]) - g
+                if k in hole_nodes and clearance > 2.5:
+                    continue
+                if clearance < 4.0 or k in low_keys:
+                    q = np.array(p, np.float64, copy=True)
+                    q[1] = g - 0.12
+                    front[k] = q
+                    seated.add(k)
+            if len(seated) >= 4:
+                low_keys = seated
+            clears = [float(p[1]) - float(ground(float(p[0]), float(p[2]))) for p in front.values()]
+            if clears and min(clears) > 0.02:
+                delta = -0.12 - min(clears)
+                for k, p in list(front.items()):
+                    q = np.array(p, np.float64, copy=True)
+                    q[1] += delta
+                    front[k] = q
+        else:
+            for k in low_keys:
+                front[k][1] = yc
+        back = {k: np.asarray(p, np.float64) + forward * shell for k, p in front.items()}
         for k in low_keys:
-            front[k][1] = yc
-        back = {k: p + forward * SHELL_M for k, p in front.items()}
+            back[k] = np.array(back[k], np.float64, copy=True)
+            back[k][1] = float(front[k][1])
         fmap = {}
         bmap = {}
 

@@ -1,0 +1,89 @@
+{
+ "view": {
+  "renderPixelRatio": 1,
+  "fovDeg": 51.47,
+  "source": "steps/zone-c/01-camera/camera.json fov"
+ },
+ "render": {
+  "ok": true,
+  "screenPxPerM": 237.1,
+  "tiles": 18,
+  "kMedian": 2.617,
+  "visiblePxPerM": 90.6,
+  "p25PxPerM": 79.5,
+  "capped": false,
+  "tau": 0.1,
+  "img": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/arch-right/cap-visible-8m.png",
+  "mask": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/arch-right/cap-visible-8m-mask.png",
+  "cover": 0.7487,
+  "distM": 8.03,
+  "needPxPerM": 118.5,
+  "zoomFovDeg": 27.03,
+  "wantedFovDeg": 27.03,
+  "renderH": 915,
+  "camera": [
+   8,
+   1.51,
+   -22.43
+  ],
+  "aimM": 4,
+  "normal": [
+   0,
+   0,
+   -1
+  ],
+  "rect": [
+   62,
+   275,
+   350,
+   641
+  ],
+  "pose": {
+   "x": 8.000000238418579,
+   "y": 1.508,
+   "z": -22.431513802070427
+  }
+ },
+ "perSurface": [
+  {
+   "inst": "arch-right",
+   "cls": "+z",
+   "viewM": 8,
+   "needPxPerM": 118.5,
+   "visiblePxPerM": 144.57,
+   "ok": true
+  },
+  {
+   "inst": "arch-right",
+   "cls": "+x",
+   "viewM": 8,
+   "needPxPerM": 118.5,
+   "visiblePxPerM": 99.8,
+   "ok": false
+  },
+  {
+   "inst": "arch-right",
+   "cls": "-z",
+   "viewM": 8,
+   "needPxPerM": 118.5,
+   "visiblePxPerM": 121.67,
+   "ok": true
+  },
+  {
+   "inst": "arch-right",
+   "cls": "-x",
+   "viewM": 8,
+   "needPxPerM": 118.5,
+   "visiblePxPerM": 104,
+   "ok": false
+  },
+  {
+   "inst": "arch-right",
+   "cls": "+y",
+   "viewM": 8,
+   "needPxPerM": 118.5,
+   "visiblePxPerM": 104.47,
+   "ok": false
+  }
+ ]
+}

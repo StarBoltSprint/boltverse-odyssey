@@ -1,0 +1,822 @@
+{
+  "model": "zone-b-mesa-hull",
+  "hull": "hull.py clean_profile silhouette + voxel solidify (blender_mesa voxel class 0.40 m). MoGe-2 median depth places the solid. Raw per-pixel displacement is banned.",
+  "cellM": 0.4,
+  "slopePerM": 0.2,
+  "stairM": 1.2,
+  "stairEveryM": 3.2,
+  "features": [
+    {
+      "id": "arch-left-cornice",
+      "object": "arch-left",
+      "kind": "cornice",
+      "xy": [
+        98,
+        99,
+        226,
+        117
+      ],
+      "protrusionM": 1.6,
+      "depthStepM": 0.457,
+      "mask": "SAM2 step #200 object mask",
+      "placedBy": "key horizontal edge snapped inside the SAM2 outline; metres from MoGe-2",
+      "decision": "kept",
+      "worldY": [
+        9.18,
+        9.58
+      ],
+      "reason": "kept as a whole-voxel terrace on the Zone B hull (not a depth displace)"
+    },
+    {
+      "id": "arch-left-ledge",
+      "object": "arch-left",
+      "kind": "ledge",
+      "xy": [
+        132,
+        152,
+        249,
+        168
+      ],
+      "protrusionM": 1.2,
+      "depthStepM": 0.595,
+      "mask": "SAM2 step #200 object mask",
+      "placedBy": "key horizontal edge snapped inside the SAM2 outline; metres from MoGe-2",
+      "decision": "kept",
+      "worldY": [
+        7.21,
+        7.61
+      ],
+      "reason": "kept as a whole-voxel terrace on the Zone B hull (not a depth displace)"
+    },
+    {
+      "id": "arch-left-talus",
+      "object": "arch-left",
+      "kind": "talus",
+      "xy": [
+        196,
+        261,
+        320,
+        275
+      ],
+      "protrusionM": 0.8,
+      "depthStepM": 0.264,
+      "mask": "SAM2 step #200 object mask",
+      "placedBy": "key horizontal edge snapped inside the SAM2 outline; metres from MoGe-2",
+      "decision": "kept",
+      "worldY": [
+        3.28,
+        3.67
+      ],
+      "reason": "kept as a whole-voxel terrace on the Zone B hull (not a depth displace)"
+    },
+    {
+      "id": "arch-left-frame",
+      "object": "arch-left",
+      "kind": "carved-frame",
+      "xy": [
+        128,
+        83,
+        262,
+        272
+      ],
+      "protrusionM": 0.8,
+      "depthStepM": null,
+      "mask": "SAM2 hole ring inside the object mask",
+      "placedBy": "extruded frame on the arch opening",
+      "decision": "kept",
+      "worldY": [
+        3.67,
+        9.97
+      ],
+      "reason": "kept as a whole-voxel terrace on the Zone B hull (not a depth displace)"
+    },
+    {
+      "id": "arch-right-cornice",
+      "object": "arch-right",
+      "kind": "cornice",
+      "xy": [
+        837,
+        115,
+        894,
+        133
+      ],
+      "protrusionM": 2.4,
+      "depthStepM": 3.235,
+      "mask": "SAM2 step #200 object mask",
+      "placedBy": "key horizontal edge snapped inside the SAM2 outline; metres from MoGe-2",
+      "decision": "kept",
+      "worldY": [
+        5.44,
+        5.44
+      ],
+      "reason": "kept as a whole-voxel terrace on the Zone B hull (not a depth displace)"
+    },
+    {
+      "id": "arch-right-ledge",
+      "object": "arch-right",
+      "kind": "ledge",
+      "xy": [
+        786,
+        180,
+        894,
+        196
+      ],
+      "protrusionM": 1.2,
+      "depthStepM": 0.568,
+      "mask": "SAM2 step #200 object mask",
+      "placedBy": "key horizontal edge snapped inside the SAM2 outline; metres from MoGe-2",
+      "decision": "kept",
+      "worldY": [
+        4.27,
+        4.27
+      ],
+      "reason": "kept as a whole-voxel terrace on the Zone B hull (not a depth displace)"
+    },
+    {
+      "id": "arch-right-talus",
+      "object": "arch-right",
+      "kind": "talus",
+      "xy": [
+        753,
+        258,
+        894,
+        272
+      ],
+      "protrusionM": 0.8,
+      "depthStepM": 0.014,
+      "mask": "SAM2 step #200 object mask",
+      "placedBy": "key horizontal edge snapped inside the SAM2 outline; metres from MoGe-2",
+      "decision": "kept",
+      "worldY": [
+        2.71,
+        2.71
+      ],
+      "reason": "kept as a whole-voxel terrace on the Zone B hull (not a depth displace)"
+    },
+    {
+      "id": "arch-right-frame",
+      "object": "arch-right",
+      "kind": "carved-frame",
+      "xy": [
+        833,
+        184,
+        876,
+        264
+      ],
+      "protrusionM": 0.8,
+      "depthStepM": null,
+      "mask": "SAM2 hole ring inside the object mask",
+      "placedBy": "extruded frame on the arch opening",
+      "decision": "kept",
+      "worldY": [
+        3.1,
+        4.27
+      ],
+      "reason": "kept as a whole-voxel terrace on the Zone B hull (not a depth displace)"
+    },
+    {
+      "id": "cliff-left-cornice",
+      "object": "cliff-left",
+      "kind": "cornice",
+      "xy": [
+        280,
+        106,
+        369,
+        118
+      ],
+      "protrusionM": 1.6,
+      "depthStepM": 0.454,
+      "mask": "SAM2 step #200 object mask",
+      "placedBy": "key horizontal edge snapped inside the SAM2 outline; metres from MoGe-2",
+      "decision": "kept",
+      "worldY": [
+        18.25,
+        18.65
+      ],
+      "reason": "kept as a whole-voxel terrace on the Zone B hull (not a depth displace)"
+    },
+    {
+      "id": "cliff-left-ledge",
+      "object": "cliff-left",
+      "kind": "ledge",
+      "xy": [
+        281,
+        159,
+        401,
+        171
+      ],
+      "protrusionM": 1.2,
+      "depthStepM": 0.298,
+      "mask": "SAM2 step #200 object mask",
+      "placedBy": "key horizontal edge snapped inside the SAM2 outline; metres from MoGe-2",
+      "decision": "kept",
+      "worldY": [
+        13.86,
+        14.66
+      ],
+      "reason": "kept as a whole-voxel terrace on the Zone B hull (not a depth displace)"
+    },
+    {
+      "id": "cliff-left-talus",
+      "object": "cliff-left",
+      "kind": "talus",
+      "xy": [
+        319,
+        223,
+        408,
+        233
+      ],
+      "protrusionM": 0.8,
+      "depthStepM": 0.823,
+      "mask": "SAM2 step #200 object mask",
+      "placedBy": "key horizontal edge snapped inside the SAM2 outline; metres from MoGe-2",
+      "decision": "kept",
+      "worldY": [
+        9.06,
+        9.46
+      ],
+      "reason": "kept as a whole-voxel terrace on the Zone B hull (not a depth displace)"
+    },
+    {
+      "id": "cliff-left-vegetation",
+      "object": "cliff-left",
+      "kind": "vegetation-mass",
+      "xy": [
+        379,
+        163,
+        411,
+        237
+      ],
+      "protrusionM": 1.35,
+      "depthStepM": null,
+      "mask": "SAM2 object mask, outer third",
+      "placedBy": "extruded mass under the side foliage plates",
+      "decision": "dropped",
+      "reason": "vegetation mass left a sticker block; dropped so the hull stays the clean terrace"
+    },
+    {
+      "id": "gorge-rock-cornice",
+      "object": "gorge-rock",
+      "kind": "cornice",
+      "xy": [
+        399,
+        157,
+        462,
+        165
+      ],
+      "protrusionM": 1.6,
+      "depthStepM": 1.0,
+      "mask": "SAM2 step #200 object mask",
+      "placedBy": "key horizontal edge snapped inside the SAM2 outline; metres from MoGe-2",
+      "decision": "kept",
+      "worldY": [
+        22.66,
+        23.46
+      ],
+      "reason": "kept as a whole-voxel terrace on the Zone B hull (not a depth displace)"
+    },
+    {
+      "id": "gorge-rock-ledge",
+      "object": "gorge-rock",
+      "kind": "ledge",
+      "xy": [
+        410,
+        224,
+        493,
+        232
+      ],
+      "protrusionM": 1.2,
+      "depthStepM": 0.284,
+      "mask": "SAM2 step #200 object mask",
+      "placedBy": "key horizontal edge snapped inside the SAM2 outline; metres from MoGe-2",
+      "decision": "kept",
+      "worldY": [
+        13.91,
+        14.71
+      ],
+      "reason": "kept as a whole-voxel terrace on the Zone B hull (not a depth displace)"
+    },
+    {
+      "id": "gorge-rock-talus",
+      "object": "gorge-rock",
+      "kind": "talus",
+      "xy": [
+        409,
+        259,
+        506,
+        269
+      ],
+      "protrusionM": 2.4,
+      "depthStepM": 22.594,
+      "mask": "SAM2 step #200 object mask",
+      "placedBy": "key horizontal edge snapped inside the SAM2 outline; metres from MoGe-2",
+      "decision": "kept",
+      "worldY": [
+        9.14,
+        9.93
+      ],
+      "reason": "kept as a whole-voxel terrace on the Zone B hull (not a depth displace)"
+    },
+    {
+      "id": "gorge-rock-vegetation",
+      "object": "gorge-rock",
+      "kind": "vegetation-mass",
+      "xy": [
+        483,
+        203,
+        511,
+        260
+      ],
+      "protrusionM": 1.35,
+      "depthStepM": null,
+      "mask": "SAM2 object mask, outer third",
+      "placedBy": "extruded mass under the side foliage plates",
+      "decision": "dropped",
+      "reason": "vegetation mass left a sticker block; dropped so the hull stays the clean terrace"
+    },
+    {
+      "id": "cliff-right-cornice",
+      "object": "cliff-right",
+      "kind": "cornice",
+      "xy": [
+        658,
+        17,
+        697,
+        23
+      ],
+      "protrusionM": 1.6,
+      "depthStepM": 0.202,
+      "mask": "SAM2 step #200 object mask",
+      "placedBy": "key horizontal edge snapped inside the SAM2 outline; metres from MoGe-2",
+      "decision": "kept",
+      "worldY": [
+        18.11,
+        18.11
+      ],
+      "reason": "kept as a whole-voxel terrace on the Zone B hull (not a depth displace)"
+    },
+    {
+      "id": "cliff-right-ledge",
+      "object": "cliff-right",
+      "kind": "ledge",
+      "xy": [
+        657,
+        63,
+        708,
+        69
+      ],
+      "protrusionM": 1.2,
+      "depthStepM": 0.023,
+      "mask": "SAM2 step #200 object mask",
+      "placedBy": "key horizontal edge snapped inside the SAM2 outline; metres from MoGe-2",
+      "decision": "kept",
+      "worldY": [
+        15.82,
+        15.82
+      ],
+      "reason": "kept as a whole-voxel terrace on the Zone B hull (not a depth displace)"
+    },
+    {
+      "id": "cliff-right-talus",
+      "object": "cliff-right",
+      "kind": "talus",
+      "xy": [
+        658,
+        86,
+        715,
+        90
+      ],
+      "protrusionM": 0.75,
+      "depthStepM": 0.063,
+      "mask": "SAM2 step #200 object mask",
+      "placedBy": "key horizontal edge snapped inside the SAM2 outline; metres from MoGe-2",
+      "decision": "dropped",
+      "reason": "band missed the silhouette"
+    },
+    {
+      "id": "cliff-right-vegetation",
+      "object": "cliff-right",
+      "kind": "vegetation-mass",
+      "xy": [
+        656,
+        48,
+        670,
+        88
+      ],
+      "protrusionM": 1.35,
+      "depthStepM": null,
+      "mask": "SAM2 object mask, outer third",
+      "placedBy": "extruded mass under the side foliage plates",
+      "decision": "dropped",
+      "reason": "vegetation mass left a sticker block; dropped so the hull stays the clean terrace"
+    }
+  ],
+  "kept": [
+    {
+      "id": "arch-left-cornice",
+      "object": "arch-left",
+      "kind": "cornice",
+      "xy": [
+        98,
+        99,
+        226,
+        117
+      ],
+      "protrusionM": 1.6,
+      "depthStepM": 0.457,
+      "mask": "SAM2 step #200 object mask",
+      "placedBy": "key horizontal edge snapped inside the SAM2 outline; metres from MoGe-2",
+      "decision": "kept",
+      "worldY": [
+        9.18,
+        9.58
+      ],
+      "reason": "kept as a whole-voxel terrace on the Zone B hull (not a depth displace)"
+    },
+    {
+      "id": "arch-left-ledge",
+      "object": "arch-left",
+      "kind": "ledge",
+      "xy": [
+        132,
+        152,
+        249,
+        168
+      ],
+      "protrusionM": 1.2,
+      "depthStepM": 0.595,
+      "mask": "SAM2 step #200 object mask",
+      "placedBy": "key horizontal edge snapped inside the SAM2 outline; metres from MoGe-2",
+      "decision": "kept",
+      "worldY": [
+        7.21,
+        7.61
+      ],
+      "reason": "kept as a whole-voxel terrace on the Zone B hull (not a depth displace)"
+    },
+    {
+      "id": "arch-left-talus",
+      "object": "arch-left",
+      "kind": "talus",
+      "xy": [
+        196,
+        261,
+        320,
+        275
+      ],
+      "protrusionM": 0.8,
+      "depthStepM": 0.264,
+      "mask": "SAM2 step #200 object mask",
+      "placedBy": "key horizontal edge snapped inside the SAM2 outline; metres from MoGe-2",
+      "decision": "kept",
+      "worldY": [
+        3.28,
+        3.67
+      ],
+      "reason": "kept as a whole-voxel terrace on the Zone B hull (not a depth displace)"
+    },
+    {
+      "id": "arch-left-frame",
+      "object": "arch-left",
+      "kind": "carved-frame",
+      "xy": [
+        128,
+        83,
+        262,
+        272
+      ],
+      "protrusionM": 0.8,
+      "depthStepM": null,
+      "mask": "SAM2 hole ring inside the object mask",
+      "placedBy": "extruded frame on the arch opening",
+      "decision": "kept",
+      "worldY": [
+        3.67,
+        9.97
+      ],
+      "reason": "kept as a whole-voxel terrace on the Zone B hull (not a depth displace)"
+    },
+    {
+      "id": "arch-right-cornice",
+      "object": "arch-right",
+      "kind": "cornice",
+      "xy": [
+        837,
+        115,
+        894,
+        133
+      ],
+      "protrusionM": 2.4,
+      "depthStepM": 3.235,
+      "mask": "SAM2 step #200 object mask",
+      "placedBy": "key horizontal edge snapped inside the SAM2 outline; metres from MoGe-2",
+      "decision": "kept",
+      "worldY": [
+        5.44,
+        5.44
+      ],
+      "reason": "kept as a whole-voxel terrace on the Zone B hull (not a depth displace)"
+    },
+    {
+      "id": "arch-right-ledge",
+      "object": "arch-right",
+      "kind": "ledge",
+      "xy": [
+        786,
+        180,
+        894,
+        196
+      ],
+      "protrusionM": 1.2,
+      "depthStepM": 0.568,
+      "mask": "SAM2 step #200 object mask",
+      "placedBy": "key horizontal edge snapped inside the SAM2 outline; metres from MoGe-2",
+      "decision": "kept",
+      "worldY": [
+        4.27,
+        4.27
+      ],
+      "reason": "kept as a whole-voxel terrace on the Zone B hull (not a depth displace)"
+    },
+    {
+      "id": "arch-right-talus",
+      "object": "arch-right",
+      "kind": "talus",
+      "xy": [
+        753,
+        258,
+        894,
+        272
+      ],
+      "protrusionM": 0.8,
+      "depthStepM": 0.014,
+      "mask": "SAM2 step #200 object mask",
+      "placedBy": "key horizontal edge snapped inside the SAM2 outline; metres from MoGe-2",
+      "decision": "kept",
+      "worldY": [
+        2.71,
+        2.71
+      ],
+      "reason": "kept as a whole-voxel terrace on the Zone B hull (not a depth displace)"
+    },
+    {
+      "id": "arch-right-frame",
+      "object": "arch-right",
+      "kind": "carved-frame",
+      "xy": [
+        833,
+        184,
+        876,
+        264
+      ],
+      "protrusionM": 0.8,
+      "depthStepM": null,
+      "mask": "SAM2 hole ring inside the object mask",
+      "placedBy": "extruded frame on the arch opening",
+      "decision": "kept",
+      "worldY": [
+        3.1,
+        4.27
+      ],
+      "reason": "kept as a whole-voxel terrace on the Zone B hull (not a depth displace)"
+    },
+    {
+      "id": "cliff-left-cornice",
+      "object": "cliff-left",
+      "kind": "cornice",
+      "xy": [
+        280,
+        106,
+        369,
+        118
+      ],
+      "protrusionM": 1.6,
+      "depthStepM": 0.454,
+      "mask": "SAM2 step #200 object mask",
+      "placedBy": "key horizontal edge snapped inside the SAM2 outline; metres from MoGe-2",
+      "decision": "kept",
+      "worldY": [
+        18.25,
+        18.65
+      ],
+      "reason": "kept as a whole-voxel terrace on the Zone B hull (not a depth displace)"
+    },
+    {
+      "id": "cliff-left-ledge",
+      "object": "cliff-left",
+      "kind": "ledge",
+      "xy": [
+        281,
+        159,
+        401,
+        171
+      ],
+      "protrusionM": 1.2,
+      "depthStepM": 0.298,
+      "mask": "SAM2 step #200 object mask",
+      "placedBy": "key horizontal edge snapped inside the SAM2 outline; metres from MoGe-2",
+      "decision": "kept",
+      "worldY": [
+        13.86,
+        14.66
+      ],
+      "reason": "kept as a whole-voxel terrace on the Zone B hull (not a depth displace)"
+    },
+    {
+      "id": "cliff-left-talus",
+      "object": "cliff-left",
+      "kind": "talus",
+      "xy": [
+        319,
+        223,
+        408,
+        233
+      ],
+      "protrusionM": 0.8,
+      "depthStepM": 0.823,
+      "mask": "SAM2 step #200 object mask",
+      "placedBy": "key horizontal edge snapped inside the SAM2 outline; metres from MoGe-2",
+      "decision": "kept",
+      "worldY": [
+        9.06,
+        9.46
+      ],
+      "reason": "kept as a whole-voxel terrace on the Zone B hull (not a depth displace)"
+    },
+    {
+      "id": "gorge-rock-cornice",
+      "object": "gorge-rock",
+      "kind": "cornice",
+      "xy": [
+        399,
+        157,
+        462,
+        165
+      ],
+      "protrusionM": 1.6,
+      "depthStepM": 1.0,
+      "mask": "SAM2 step #200 object mask",
+      "placedBy": "key horizontal edge snapped inside the SAM2 outline; metres from MoGe-2",
+      "decision": "kept",
+      "worldY": [
+        22.66,
+        23.46
+      ],
+      "reason": "kept as a whole-voxel terrace on the Zone B hull (not a depth displace)"
+    },
+    {
+      "id": "gorge-rock-ledge",
+      "object": "gorge-rock",
+      "kind": "ledge",
+      "xy": [
+        410,
+        224,
+        493,
+        232
+      ],
+      "protrusionM": 1.2,
+      "depthStepM": 0.284,
+      "mask": "SAM2 step #200 object mask",
+      "placedBy": "key horizontal edge snapped inside the SAM2 outline; metres from MoGe-2",
+      "decision": "kept",
+      "worldY": [
+        13.91,
+        14.71
+      ],
+      "reason": "kept as a whole-voxel terrace on the Zone B hull (not a depth displace)"
+    },
+    {
+      "id": "gorge-rock-talus",
+      "object": "gorge-rock",
+      "kind": "talus",
+      "xy": [
+        409,
+        259,
+        506,
+        269
+      ],
+      "protrusionM": 2.4,
+      "depthStepM": 22.594,
+      "mask": "SAM2 step #200 object mask",
+      "placedBy": "key horizontal edge snapped inside the SAM2 outline; metres from MoGe-2",
+      "decision": "kept",
+      "worldY": [
+        9.14,
+        9.93
+      ],
+      "reason": "kept as a whole-voxel terrace on the Zone B hull (not a depth displace)"
+    },
+    {
+      "id": "cliff-right-cornice",
+      "object": "cliff-right",
+      "kind": "cornice",
+      "xy": [
+        658,
+        17,
+        697,
+        23
+      ],
+      "protrusionM": 1.6,
+      "depthStepM": 0.202,
+      "mask": "SAM2 step #200 object mask",
+      "placedBy": "key horizontal edge snapped inside the SAM2 outline; metres from MoGe-2",
+      "decision": "kept",
+      "worldY": [
+        18.11,
+        18.11
+      ],
+      "reason": "kept as a whole-voxel terrace on the Zone B hull (not a depth displace)"
+    },
+    {
+      "id": "cliff-right-ledge",
+      "object": "cliff-right",
+      "kind": "ledge",
+      "xy": [
+        657,
+        63,
+        708,
+        69
+      ],
+      "protrusionM": 1.2,
+      "depthStepM": 0.023,
+      "mask": "SAM2 step #200 object mask",
+      "placedBy": "key horizontal edge snapped inside the SAM2 outline; metres from MoGe-2",
+      "decision": "kept",
+      "worldY": [
+        15.82,
+        15.82
+      ],
+      "reason": "kept as a whole-voxel terrace on the Zone B hull (not a depth displace)"
+    }
+  ],
+  "dropped": [
+    {
+      "id": "cliff-left-vegetation",
+      "object": "cliff-left",
+      "kind": "vegetation-mass",
+      "xy": [
+        379,
+        163,
+        411,
+        237
+      ],
+      "protrusionM": 1.35,
+      "depthStepM": null,
+      "mask": "SAM2 object mask, outer third",
+      "placedBy": "extruded mass under the side foliage plates",
+      "decision": "dropped",
+      "reason": "vegetation mass left a sticker block; dropped so the hull stays the clean terrace"
+    },
+    {
+      "id": "gorge-rock-vegetation",
+      "object": "gorge-rock",
+      "kind": "vegetation-mass",
+      "xy": [
+        483,
+        203,
+        511,
+        260
+      ],
+      "protrusionM": 1.35,
+      "depthStepM": null,
+      "mask": "SAM2 object mask, outer third",
+      "placedBy": "extruded mass under the side foliage plates",
+      "decision": "dropped",
+      "reason": "vegetation mass left a sticker block; dropped so the hull stays the clean terrace"
+    },
+    {
+      "id": "cliff-right-talus",
+      "object": "cliff-right",
+      "kind": "talus",
+      "xy": [
+        658,
+        86,
+        715,
+        90
+      ],
+      "protrusionM": 0.75,
+      "depthStepM": 0.063,
+      "mask": "SAM2 step #200 object mask",
+      "placedBy": "key horizontal edge snapped inside the SAM2 outline; metres from MoGe-2",
+      "decision": "dropped",
+      "reason": "band missed the silhouette"
+    },
+    {
+      "id": "cliff-right-vegetation",
+      "object": "cliff-right",
+      "kind": "vegetation-mass",
+      "xy": [
+        656,
+        48,
+        670,
+        88
+      ],
+      "protrusionM": 1.35,
+      "depthStepM": null,
+      "mask": "SAM2 object mask, outer third",
+      "placedBy": "extruded mass under the side foliage plates",
+      "decision": "dropped",
+      "reason": "vegetation mass left a sticker block; dropped so the hull stays the clean terrace"
+    }
+  ]
+}

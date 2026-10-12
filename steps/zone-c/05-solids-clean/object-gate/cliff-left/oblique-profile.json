@@ -1,0 +1,45 @@
+{
+ "views": [
+  {
+   "dist": 8,
+   "yawDeg": 45,
+   "heightM": 20.8,
+   "needM": 0.5,
+   "residualM": 0.217,
+   "pixels": 15360,
+   "roughness": 1,
+   "pass": false
+  },
+  {
+   "dist": 8,
+   "yawDeg": 75,
+   "heightM": 20.8,
+   "needM": 0.5,
+   "residualM": 0.239,
+   "pixels": 15360,
+   "roughness": 1,
+   "pass": false
+  },
+  {
+   "dist": 30,
+   "yawDeg": 45,
+   "heightM": 20.8,
+   "needM": 0.5,
+   "residualM": 1.784,
+   "pixels": 12496,
+   "roughness": 0.969,
+   "pass": true
+  },
+  {
+   "dist": 30,
+   "yawDeg": 75,
+   "heightM": 20.8,
+   "needM": 0.5,
+   "residualM": 1.478,
+   "pixels": 12128,
+   "roughness": 0.962,
+   "pass": true
+  }
+ ],
+ "pass": false
+}

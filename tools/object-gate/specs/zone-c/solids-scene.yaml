@@ -1,4 +1,5 @@
-# Zone C solids. Hidden faces stay PENDING until plates 5-15 exist.
+# Zone C solids. Plates 5-15 are wired. triangle-quality, untextured-area, and
+# oblique-profile are blocking (see each object yaml and profiles/rock.yaml).
 scene: zone-c-solids
 url: http://127.0.0.1:8772/?along=0
 adapter: ../../adapters/zone-c-solids.mjs

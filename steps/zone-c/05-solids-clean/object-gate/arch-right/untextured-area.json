@@ -1,0 +1,20 @@
+{
+ "limits": {
+  "maxFraction": 0.005,
+  "greyChroma": 12,
+  "greyLuma": [
+   60,
+   210
+  ],
+  "blackLuma": 14,
+  "whiteLuma": 248,
+  "whiteChroma": 8
+ },
+ "bits": [
+  "8m bad 40.10% of 1141013px",
+  "30m bad 50.17% of 96808px",
+  "hero bad 95.68% of 475886px",
+  "orbit bad 30.15% of 906637px"
+ ],
+ "pass": false
+}

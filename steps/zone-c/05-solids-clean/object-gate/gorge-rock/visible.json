@@ -1,0 +1,89 @@
+{
+ "view": {
+  "renderPixelRatio": 1,
+  "fovDeg": 51.47,
+  "source": "steps/zone-c/01-camera/camera.json fov"
+ },
+ "render": {
+  "ok": true,
+  "screenPxPerM": 237.1,
+  "tiles": 19,
+  "kMedian": 3.82,
+  "visiblePxPerM": 62.1,
+  "p25PxPerM": 43.8,
+  "capped": false,
+  "tau": 0.1,
+  "img": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/gorge-rock/cap-visible-8m.png",
+  "mask": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/gorge-rock/cap-visible-8m-mask.png",
+  "cover": 1,
+  "distM": 8.03,
+  "needPxPerM": 118.5,
+  "zoomFovDeg": 27.04,
+  "wantedFovDeg": 27.04,
+  "renderH": 915,
+  "camera": [
+   1.4,
+   1.5,
+   -47.12
+  ],
+  "aimM": 4,
+  "normal": [
+   0,
+   0,
+   1
+  ],
+  "rect": [
+   62,
+   275,
+   350,
+   641
+  ],
+  "pose": {
+   "x": 1.3999998569488525,
+   "y": 1.50423245206946,
+   "z": -47.12183004787498
+  }
+ },
+ "perSurface": [
+  {
+   "inst": "gorge-rock",
+   "cls": "+z",
+   "viewM": 8,
+   "needPxPerM": 118.5,
+   "visiblePxPerM": 17.84,
+   "ok": false
+  },
+  {
+   "inst": "gorge-rock",
+   "cls": "-z",
+   "viewM": 8,
+   "needPxPerM": 118.5,
+   "visiblePxPerM": 40.56,
+   "ok": false
+  },
+  {
+   "inst": "gorge-rock",
+   "cls": "+y",
+   "viewM": 8,
+   "needPxPerM": 118.5,
+   "visiblePxPerM": 48.21,
+   "ok": false
+  },
+  {
+   "inst": "gorge-rock",
+   "cls": "-x",
+   "viewM": 8,
+   "needPxPerM": 118.5,
+   "visiblePxPerM": 40.56,
+   "ok": false
+  },
+  {
+   "inst": "gorge-rock",
+   "cls": "+x",
+   "viewM": 8,
+   "needPxPerM": 118.5,
+   "visiblePxPerM": 40.56,
+   "ok": false
+  }
+ ]
+}

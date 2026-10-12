@@ -143,8 +143,44 @@ scene.add(causeway);
 
 const packBuf = await (await fetch("/data/solids.bin")).arrayBuffer();
 const packBytes = new Uint8Array(packBuf);
+const keyVP = new THREE.Matrix4();
+const keyPos = new THREE.Vector3();
+function installKeyProj(mat) {
+  mat.onBeforeCompile = (shader) => {
+    shader.uniforms.uKeyProj = { value: uKey };
+    shader.uniforms.uKeyVP = { value: keyVP };
+    shader.uniforms.uKeyPos = { value: keyPos };
+    shader.vertexShader = shader.vertexShader
+      .replace("#include <common>", "#include <common>\nvarying vec3 vSolWorld;")
+      .replace("#include <project_vertex>", "#include <project_vertex>\nvSolWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;");
+    shader.fragmentShader = shader.fragmentShader
+      .replace("#include <common>", "#include <common>\nvarying vec3 vSolWorld;\nuniform sampler2D uKeyProj;\nuniform mat4 uKeyVP;\nuniform vec3 uKeyPos;")
+      .replace("#include <map_fragment>", `#include <map_fragment>
+{
+  vec3 nGeo = cross(dFdx(vSolWorld), dFdy(vSolWorld));
+  float nLen = length(nGeo);
+  if (nLen > 1e-5) {
+    vec3 n = nGeo / nLen;
+    vec3 toKey = uKeyPos - vSolWorld;
+    float tLen = length(toKey);
+    if (tLen > 1e-4 && dot(n, toKey / tLen) > 0.25) {
+      vec4 clip = uKeyVP * vec4(vSolWorld, 1.0);
+      vec2 ndc = clip.xy / clip.w;
+      if (clip.w > 0.0 && abs(ndc.x) < 1.0 && abs(ndc.y) < 1.0) {
+        diffuseColor.rgb = texture2D(uKeyProj, ndc * 0.5 + 0.5).rgb;
+      }
+    }
+  }
+}`);
+  };
+  mat.customProgramCacheKey = () => "zone-c-keyproj";
+}
 const keyMat = new THREE.MeshBasicMaterial({ map: uKey, toneMapped: false });
 const plateMat = new THREE.MeshBasicMaterial({ map: uAtlas, toneMapped: false });
+// Key projection stays on the key group only. Putting the key sampler on the
+// plate material made the gate score atlas UVs against the 16:9 key (stretch
+// 1.333) and painted black key-corners over side faces.
+installKeyProj(keyMat);
 const solidMeshes = [];
 for (const o of solids.objects) {
   const floats = o.verts * o.floats;
@@ -240,6 +276,18 @@ function heightAt(x, z) {
   return h00 * (1 - tx) * (1 - tz) + h10 * tx * (1 - tz) + h01 * (1 - tx) * tz + h11 * tx * tz;
 }
 
+function snapKeyCamera() {
+  const keyCam = new THREE.PerspectiveCamera(meta.camera.fov, 1792 / 1008, 0.05, 400);
+  keyCam.up.set(0, 1, 0);
+  keyCam.rotation.order = "YXZ";
+  keyCam.position.set(0, heightAt(0, 0) + meta.camera.eye, 0);
+  keyCam.rotation.set(meta.camera.pitch * Math.PI / 180, -(meta.camera.yaw || 0) * Math.PI / 180, 0);
+  keyCam.updateMatrixWorld(true);
+  keyCam.updateProjectionMatrix();
+  keyVP.multiplyMatrices(keyCam.projectionMatrix, keyCam.matrixWorldInverse);
+  keyPos.copy(keyCam.position);
+}
+
 function place(alongM, latM = 0) {
   const pitch = meta.camera.pitch * Math.PI / 180;
   const yaw = (meta.camera.yaw || 0) * Math.PI / 180;
@@ -283,6 +331,7 @@ window.__solids = {
   instanced: false,
 };
 
+snapKeyCamera();
 place(along0, lat0);
 window.__sceneReady = false;
 const bootAt = performance.now();

@@ -1,9 +1,20 @@
 // Headless captures of the Zone C solids page after Chargement is gone.
 //   node tools/imagine-to-3d/capture_zone_c.mjs
 import { mkdirSync, writeFileSync } from "node:fs";
+import { isAbsolute, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import { chromium } from "/workspace/playtest/node_modules/playwright/index.mjs";
 
-const OUT = new URL("../../steps/zone-c/05-solids/renders/", import.meta.url);
+function flag(name, fallback) {
+  const i = process.argv.indexOf(name);
+  return i >= 0 && process.argv[i + 1] ? process.argv[i + 1] : fallback;
+}
+const PORT = flag("--port", "8772");
+const rawOut = flag("--out", "");
+const OUT = rawOut
+  ? pathToFileURL(isAbsolute(rawOut) ? rawOut : resolve(rawOut))
+  : new URL("../../steps/zone-c/05-solids/renders/", import.meta.url);
+if (!OUT.pathname.endsWith("/")) OUT.pathname += "/";
 mkdirSync(OUT, { recursive: true });
 
 const browser = await chromium.launch({
@@ -15,7 +26,7 @@ const shots = [];
 
 async function ready(width, height) {
   await page.setViewportSize({ width, height });
-  await page.goto("http://127.0.0.1:8772/?along=0", { waitUntil: "load", timeout: 120000 });
+  await page.goto(`http://127.0.0.1:${PORT}/?along=0`, { waitUntil: "load", timeout: 120000 });
   await page.waitForFunction(() => {
     if (window.__sceneReady !== true) return false;
     for (const el of document.querySelectorAll("body *")) {
@@ -45,7 +56,7 @@ for (const along of [8, 30, 60]) {
   await page.screenshot({ path: new URL(file, OUT).pathname, timeout: 120000 });
   shots.push({ name: `+${along}`, along, width: 720, height: 1600, drawCalls: draws, file: "renders/" + file });
 }
-const phone = new URL("../../steps/zone-c/05-solids/renders/phone-720x1600.png", import.meta.url);
+const phone = new URL("phone-720x1600.png", OUT);
 await page.evaluate(() => window.__terrain.place(8, 0));
 await page.screenshot({ path: phone.pathname, timeout: 120000 });
 

@@ -4,6 +4,25 @@ geometry:
   maxOpenEdges: null     # buried open bottom ring allowed (declared in the report)
   minReliefM: 0.5
   minReliefFaces: 2
+# Zone C solids (2026-10-12) turn these on in specs/zone-c/*.yaml. Other scenes leave them off.
+# triangle-quality: shredded depth soup fails; a voxel hull passes.
+triangleQuality:
+  maxAspectP95: 8          # longest/shortest edge, area-weighted p95
+  sliverAspect: 20
+  maxSliverFrac: 0.02      # share of triangles with aspect above sliverAspect
+  maxFacingTinyFrac: 0.05  # facing tris (n·view>0.35) under 1 px at 30 m, 720×1600, vfov 51.47
+  maxSpikeFrac: 0.03       # edges whose normals differ by more than 140°
+  maxNormalP90Deg: 42      # p90 angle vs near-coplanar neighbours (dot>0.7); 90° cube corners excluded
+# untextured-area: phone renders at 8 m, 30 m, hero, orbit. Flat grey / black pad / white default.
+untextured:
+  maxFraction: 0.005
+  greyChroma: 12
+  blackLuma: 14
+  whiteLuma: 248
+# oblique-profile: lib/oblique.mjs (same name as tower-volumes). Residual after a plane fit.
+obliqueProfile:
+  minResidualM: 0.5
+  heightFactor: 0.003
 repetition: {maxPeak: 0.65}
 checklistTemplate:
   - {id: volume, feature: "Mass and silhouette match the key crop from the key camera side", captures: [far]}

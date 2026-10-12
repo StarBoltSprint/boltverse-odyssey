@@ -1,0 +1,37 @@
+{
+  "shots": [
+    {
+      "name": "key",
+      "along": 0,
+      "width": 1792,
+      "height": 1008,
+      "drawCalls": 11,
+      "file": "renders/key-1792x1008.png"
+    },
+    {
+      "name": "+8",
+      "along": 8,
+      "width": 720,
+      "height": 1600,
+      "drawCalls": 11,
+      "file": "renders/plus-8.png"
+    },
+    {
+      "name": "+30",
+      "along": 30,
+      "width": 720,
+      "height": 1600,
+      "drawCalls": 11,
+      "file": "renders/plus-30.png"
+    },
+    {
+      "name": "+60",
+      "along": 60,
+      "width": 720,
+      "height": 1600,
+      "drawCalls": 11,
+      "file": "renders/plus-60.png"
+    }
+  ],
+  "phone": "renders/phone-720x1600.png"
+}

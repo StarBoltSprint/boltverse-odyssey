@@ -35,6 +35,26 @@ sun+hemi, static shadow map refit incl. mesa casters, fog/haze weights tuned to 
 Check scripts: ../mesa-shots.mjs (poses in one load), ../mesa-tune.mjs (uniform sweep), ../console-check.mjs, ../mesa-collide-check.mjs.
 SwiftShader runs at ~0.3 fps: wait for frames, not milliseconds.
 
+## Zone C clean hulls (`--out steps/zone-c/05-solids-clean`)
+
+The phone rejected the MoGe-2 per-pixel shell (triangle soup, grey walls). The clean
+step uses the Zone B mesa base instead: `hull.clean_profile` on the SAM2 silhouette,
+then a voxel solidify at 0.40 m (the `blender_mesa.py` VOXEL class, 0.35 m) with a
+3×3×3 close and a pinch fill. MoGe-2 supplies one median depth that places the slab.
+It does not displace vertices. Thickness is 5.6 m along the camera forward. A batter
+of 0.70 m and 1.20 m stairs every 3.20 m (slope 0.20 m/m) are whole-voxel terraces.
+Vegetation masses are dropped. ±Z quads wind outward so the camera-facing wall is
+FrontSide. Key projection is installed on the key material only; the plate atlas is
+scored against itself. Plates project with the same UV pack as `proj.py` (stretch ≤ 1.3).
+`zone_c_solids.py score` writes `sheet-phone.jpg` and `oblique-sheet.jpg` from the
+gate orbit captures. The 2026-10-12 gate on this hull is FAIL (approach IoU, oblique
+8 m, untextured area). Do not treat a sealed weld as a phone pass.
+
+```
+python3 tools/imagine-to-3d/auto.py zone-c build --attempt 1 --out steps/zone-c/05-solids-clean
+python3 tools/imagine-to-3d/serve_zone_c.py --data steps/zone-c/05-solids-clean/data
+```
+
 ## Zone C solids (`python3 run.py zone-c`)
 
 Five solids from the key, camera #199, SAM2 masks, and MoGe-2. Key-visible faces use `key-zc1.jpg`. Hidden faces sample the 11 validated plates pasted native into `steps/zone-c/05-solids/data/plate-atlas.jpg` (`specs/zone-c-plate-plan.json`). The mesh is a thin shell (back face one `SHELL_M` behind the MoGe front). The lower band of that shell, excluding the arch-hole ring, is seated on the terrain. Do not extrude the whole silhouette down to the cap: that curtain aliases on approach and reads as repeated stripes. Relief is the key luminance high-pass. This command does not generate plates.

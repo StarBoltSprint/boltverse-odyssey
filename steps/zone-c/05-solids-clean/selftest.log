@@ -1,0 +1,58 @@
+PASS	profile building.yaml: checks 9, px/m 64/128
+PASS	profile creature.yaml: checks 9, px/m 64/128
+PASS	profile effect.yaml: checks 2, px/m 64/128
+PASS	profile ice.yaml: checks 9, px/m 64/128
+PASS	profile prop.yaml: checks 9, px/m 128/256
+PASS	profile rock.yaml: checks 9, px/m 64/128
+PASS	profile terrain.yaml: checks 4, px/m 64/128
+PASS	profile vegetation.yaml: checks 9, px/m 64/128
+PASS	profile vehicle.yaml: checks 9, px/m 64/128
+PASS	API 1.7 exports present
+PASS	texel policy visible, from 8 m (SmiR 20:19)
+PASS	phone 1080x2400 @ pr 1.5, fov 58: 154.6 px/m at 8 m
+PASS	visible px/m: 160 passes, 100 fails at 8 m
+PASS	plate tiling every 10.2 m < 30 m fails
+PASS	neighbours 5 m apart share plates -> FAIL
+PASS	-y faces ignored; LOD levels of one copy are not neighbours
+PASS	render-measured visible px/m decides the row (140 FAIL, 170 PASS), same row id
+PASS	profile: visibleMeasure render, headroom 2
+PASS	visible row ids
+PASS	live guard watches only the files the live page loads
+PASS	listProfiles: building creature effect ice prop rock terrain vegetation vehicle
+PASS	stable check ids unique
+PASS	profile inheritance + overrides
+PASS	zone-b scene: 7 object specs resolve
+PASS	every non-effect spec declares at least one plate
+PASS	tiled texture peak 1.0004 > 0.75 (lag 0,-96)
+PASS	unique texture peak 0.0345 < 0.75
+PASS	fix plan actions
+PASS	markdown renders
+PASS	perf rows PASS on the v61 report shape
+PASS	perf rows FAIL: full-DPR canvas, sky first, ground first, no adaptive, default ratio unproven
+PASS	perf row FAIL: an adaptive controller that can drop the detail layer
+PASS	perf rows FAIL on the v59 shape (no quality-first proof)
+PASS	perf row FAIL: default ratio 1.5 on a DPR-3 phone (native, no upscaler)
+PASS	perf rows PASS on the v62 shape (internal 1.5 + EASU/RCAS to canvas 2)
+PASS	perf row FAIL: internal 1.5 with the plain bilinear upscale
+PASS	perf row FAIL: default internal 1.25 even with EASU/RCAS
+PASS	perf row FAIL: EASU/RCAS but the canvas is not min(2, device)
+PASS	perf row FAIL: detail layer off
+PASS	perf row FAIL: v62 shape with a detail-dropping controller
+PASS	page without __perfReport: INFO only
+PASS	PENDING is not PASS
+PASS	FAIL beats PENDING
+PASS	PASS stays PASS
+PASS	WARN stays PASS
+PASS	pending-plate row id
+PASS	plate row id
+PASS	draw-calls row id
+PASS	triangle-quality clean hull PASS aspect 1.414
+PASS	triangle-quality noisy depth FAIL aspect 80.012
+PASS	triangle-quality row id
+PASS	untextured-area plated mesh PASS fraction 0
+PASS	untextured-area grey wall FAIL fraction 0.45833
+PASS	untextured-area row id
+PASS	oblique-profile flat quad FAIL
+PASS	oblique-profile ledged quad PASS
+PASS	oblique-profile row id
+PASS selftest

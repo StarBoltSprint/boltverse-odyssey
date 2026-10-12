@@ -8,6 +8,9 @@ import { execFileSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import yaml from "js-yaml";   // npm ci in tools/object-gate
 import { scoreVisible, screenPxPerM, resolveView, footprintsFromBoxes } from "./lib/visible.mjs";
+import { scoreTriangles, TRI_LIMITS } from "./lib/triangle-quality.mjs";
+import { scoreUntextured, UNTEX_LIMITS } from "./lib/untextured.mjs";
+import { scoreOblique } from "./lib/oblique.mjs";
 export { scoreVisible, screenPxPerM, resolveView };
 
 /** Stable API contract (see API.md). Bump the major only with a migration note; additions bump the minor. */
@@ -66,6 +69,43 @@ function pyFile(script, arg) { return JSON.parse(execFileSync("python3", [script
 const iou = (a, b) => { let i = 0, u = 0; for (let k = 0; k < a.length; k++) { const x = a.charCodeAt(k) === 49, y = b.charCodeAt(k) === 49; if (x && y) i++; if (x || y) u++; } return u ? i / u : 1; };
 const ham = (a, b) => { let n = 0; let x = BigInt("0x" + a) ^ BigInt("0x" + b); while (x) { n += Number(x & 1n); x >>= 1n; } return n; };
 const fmt = (x, d = 1) => (x == null || !isFinite(x) ? String(x) : Number(x).toFixed(d));
+
+function untexturedPoses(hero) {
+  const c = hero.center;
+  const pose = (d, yaw) => ({
+    eye: [c[0] + Math.sin(yaw) * d, c[1] + Math.min(8, d * 0.12), c[2] + Math.cos(yaw) * d],
+    target: [c[0], c[1], c[2]],
+    up: [0, 1, 0],
+    fovY: 51.47,
+    width: 720,
+    height: 1600,
+    kind: "persp",
+    near: 0.05,
+    far: 8000,
+  });
+  const reach = Math.max(12, (hero.height || 8) * 0.8);
+  return [
+    ["8m", pose(8, 0.35)],
+    ["30m", pose(30, 0.35)],
+    ["hero", { ...pose(Math.max(10, hero.halfD || 8), 0.05), eye: [c[0], Math.max(c[1], (hero.min ? hero.min[1] : c[1]) + 2.2), c[2] + Math.max(14, (hero.halfD || 6) + 8)] }],
+    ["orbit", pose(reach, Math.PI / 4)],
+  ];
+}
+
+function scorePng(img, msk, limits) {
+  const raw = execFileSync("python3", ["-c", `
+import sys
+from PIL import Image
+im = Image.open(sys.argv[1]).convert("RGBA")
+ms = Image.open(sys.argv[2]).convert("L")
+sys.stdout.buffer.write(im.tobytes())
+sys.stdout.buffer.write(ms.tobytes())
+`, img, msk], { maxBuffer: 64 << 20 });
+  const w = 720, h = 1600;
+  const rgba = raw.subarray(0, w * h * 4);
+  const mask = raw.subarray(w * h * 4);
+  return scoreUntextured(rgba, mask, limits);
+}
 async function loadPlaywright() {
   const tried = [];
   for (const p of [process.env.OG_PLAYWRIGHT, "playwright", "/workspace/playtest/node_modules/playwright/index.mjs"].filter(Boolean)) {
@@ -252,6 +292,9 @@ export const CHECK_IDS = [
   [/^scene self-report/, "texel.self-report"], [/^repetition \(capture/, "repetition.captures"], [/^approach morph/, "morph"],
   [/^shadow light/, "shadow.light"], [/^shadow cast/, "shadow.cast"], [/^shadow world-fixed/, "shadow.world-fixed"], [/^shadow colour/, "shadow.colour"],
   [/^grounding/, "grounding"], [/^mesh sealed/, "geometry.sealed"], [/^facade relief/, "geometry.relief"], [/^proportions/, "geometry.proportions"],
+  [/^triangle-quality/, "geometry.triangle-quality"],
+  [/^untextured-area/, "geometry.untextured-area"],
+  [/^oblique-profile/, "geometry.oblique-profile"],
   [/^effects take/, "effects.imagine-texture"], [/^effects: no typed/, "effects.no-colour-literals"],
   [/^key checklist written/, "checklist.written"], [/^key crop present/, "checklist.key-crop"], [/^key checklist: every/, "checklist.verified"], [/^colour vs key/, "checklist.colour"],
   [/^checklist camera framed/, "checklist.camera"],
@@ -683,6 +726,59 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
       const flat = geo.filter((g) => Object.values(g.reliefM).filter((v) => v != null && v >= G.minReliefM).length < G.minReliefFaces);
       row(o, `facade relief >= ${G.minReliefM} m`, flat.length === 0, geo.map((g) => `${g.usedBy} ${Object.entries(g.reliefM).map(([k, v]) => k + " " + v).join(" ")}`).join("; "),
         ["Model the relief (fins, ledges, recessed bays, cornices, strata) in the geometry; a plate on a flat face reads as a picture."]);
+    }
+    if (checks.has("triangle-quality") || checks.has("oblique-profile")) {
+      const mesh = await page.evaluate((s) => {
+        const inst = window.__og.instancesOf(s)[0];
+        if (!inst) return null;
+        const posA = inst.geo.getAttribute("position");
+        const idxA = inst.geo.getIndex();
+        const pos = new Array(posA.count * 3);
+        for (let i = 0; i < posA.count; i++) { pos[i * 3] = posA.getX(i); pos[i * 3 + 1] = posA.getY(i); pos[i * 3 + 2] = posA.getZ(i); }
+        const idx = [];
+        if (idxA) for (let i = 0; i < idxA.count; i++) idx.push(idxA.getX(i));
+        else for (let i = 0; i < posA.count; i++) idx.push(i);
+        return { pos, idx };
+      }, sel);
+      if (!mesh) row(o, "triangle-quality", false, "no geometry", ["The selector matched a box but no mesh."]);
+      else {
+        if (checks.has("triangle-quality")) {
+          const limits = { ...TRI_LIMITS, ...(cfg.triangleQuality || {}) };
+          const tq = scoreTriangles(mesh.pos, mesh.idx, limits);
+          writeFileSync(join(odir, "triangle-quality.json"), JSON.stringify(tq, null, 1));
+          row(o, "triangle-quality", tq.pass,
+            `tris ${tq.tris} aspect p95 ${tq.aspectP95} (max ${limits.maxAspectP95}) sliver ${tq.sliverFrac} (max ${limits.maxSliverFrac}) facing<1px ${tq.facingTinyFrac} (max ${limits.maxFacingTinyFrac}) spike ${tq.spikeFrac} (max ${limits.maxSpikeFrac}) normal p90 ${tq.normalP90Deg}° (max ${limits.maxNormalP90Deg})`,
+            ["The hull is shredded depth soup. Rebuild it as a voxel-remeshed silhouette (Zone B mesa: hull.py + blender_mesa class), not a per-pixel displace."]);
+        }
+        if (checks.has("oblique-profile")) {
+          const ob = scoreOblique(mesh.pos, mesh.idx);
+          writeFileSync(join(odir, "oblique-profile.json"), JSON.stringify(ob, null, 1));
+          row(o, "oblique-profile", ob.pass,
+            ob.views.map((v) => `${v.dist}m yaw ${v.yawDeg} residual ${v.residualM} m (need ${v.needM})`).join("; "),
+            ["A face that is a flat card fails the oblique profile. Keep a real ledge (residual ≥ 0.5 m) or drop the view from the blocking list only when the face cannot be walked around."]);
+        }
+      }
+    }
+    if (checks.has("untextured-area")) {
+      const limits = { ...UNTEX_LIMITS, ...(cfg.untextured || {}) };
+      const views = untexturedPoses(hero);
+      const bits = [];
+      let allPass = true;
+      for (const [label, pose] of views) {
+        const shot = await page.evaluate((spec) => window.__og.renderPose(spec), { ...pose, sel });
+        const img = join(odir, `untextured-${label}.png`);
+        const msk = join(odir, `untextured-${label}-mask.png`);
+        writeFileSync(img, Buffer.from(shot.png.split(",")[1], "base64"));
+        writeFileSync(msk, Buffer.from(shot.mask.split(",")[1], "base64"));
+        const flat = join(dirname(odir), `untextured-${spec.id}-${label}.png`);
+        writeFileSync(flat, Buffer.from(shot.png.split(",")[1], "base64"));
+        const scored = scorePng(img, msk, limits);
+        bits.push(`${label} bad ${(scored.fraction * 100).toFixed(2)}% of ${scored.objectPx}px`);
+        if (!scored.pass) allPass = false;
+      }
+      writeFileSync(join(odir, "untextured-area.json"), JSON.stringify({ limits, bits, pass: allPass }, null, 1));
+      row(o, "untextured-area", allPass, bits.join("; ") + ` (max ${(limits.maxFraction * 100).toFixed(2)}% grey/black/white)`,
+        ["Every visible face needs an Imagine plate. A flat grey wall is a missing map or a UV that misses the atlas cell."]);
     }
     if (spec.proportions) {
       const P = spec.proportions; const bad = [];

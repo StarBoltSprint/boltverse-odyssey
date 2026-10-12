@@ -1,0 +1,31 @@
+[
+ {
+  "geo": "0ca6ff51",
+  "usedBy": "arch-left",
+  "instances": 1,
+  "tris": 6120,
+  "verts": 3062,
+  "open": 0,
+  "nonManifold": 0,
+  "degenerate": 0,
+  "reliefM": {
+   "+x": 2.8,
+   "-x": 2.8,
+   "+z": 2.8,
+   "-z": 1.2
+  },
+  "local": {
+   "w": 6.8,
+   "h": 12.8,
+   "d": 12.8
+  },
+  "sizes": [
+   {
+    "inst": "arch-left",
+    "w": 6.8,
+    "h": 12.8,
+    "d": 12.8
+   }
+  ]
+ }
+]

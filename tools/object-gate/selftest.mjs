@@ -107,5 +107,28 @@ ok(foldVerdict([{ status: "WARN" }, { status: "PASS" }]) === "PASS", "WARN stays
 ok(checkId("hidden face pending-plate #5 arch-left-back") === "hidden.pending-plate", "pending-plate row id");
 ok(checkId("hidden face plate #5 arch-left-inner") === "hidden.plate", "plate row id");
 ok(checkId("draw calls 720x1600") === "runtime.draw-calls", "draw-calls row id");
+{
+  const { scoreTriangles, cleanHullFixture, noisyDepthFixture, TRI_LIMITS } = await import("./lib/triangle-quality.mjs");
+  const clean = scoreTriangles(...Object.values(cleanHullFixture()));
+  const noisy = scoreTriangles(...Object.values(noisyDepthFixture()));
+  ok(clean.pass && clean.aspectP95 <= TRI_LIMITS.maxAspectP95, `triangle-quality clean hull PASS aspect ${clean.aspectP95}`);
+  ok(!noisy.pass && noisy.aspectP95 > TRI_LIMITS.maxAspectP95, `triangle-quality noisy depth FAIL aspect ${noisy.aspectP95}`);
+  ok(checkId("triangle-quality") === "geometry.triangle-quality", "triangle-quality row id");
+}
+{
+  const { scoreUntextured, texturedFixture, greyWallFixture } = await import("./lib/untextured.mjs");
+  const good = scoreUntextured(texturedFixture().rgba, texturedFixture().mask);
+  const grey = scoreUntextured(greyWallFixture().rgba, greyWallFixture().mask);
+  ok(good.pass && good.fraction <= 0.005, `untextured-area plated mesh PASS fraction ${good.fraction}`);
+  ok(!grey.pass && grey.fraction > 0.005, `untextured-area grey wall FAIL fraction ${grey.fraction}`);
+  ok(checkId("untextured-area") === "geometry.untextured-area", "untextured-area row id");
+}
+{
+  const { scoreOblique, fixtures } = await import("./lib/oblique.mjs");
+  const fx = fixtures();
+  ok(!scoreOblique(fx.flat.pos, fx.flat.idx).pass, "oblique-profile flat quad FAIL");
+  ok(scoreOblique(fx.proud.pos, fx.proud.idx).pass, "oblique-profile ledged quad PASS");
+  ok(checkId("oblique-profile") === "geometry.oblique-profile", "oblique-profile row id");
+}
 console.log(fails ? `FAIL ${fails}` : "PASS selftest");
 process.exit(fails ? 1 : 0);

@@ -13,9 +13,12 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 const STEP = new URL("../../steps/zone-c/03-terrain/", import.meta.url);
-const SOLIDS_STEP = new URL("../../steps/zone-c/05-solids/", import.meta.url);
-const solidsMode = process.argv.includes("--solids");
-const args = process.argv.slice(2).filter((a) => a !== "--solids");
+const solidsArg = process.argv.find((a) => a.startsWith("--solids="));
+const solidsMode = process.argv.includes("--solids") || !!solidsArg;
+const SOLIDS_STEP = solidsArg
+  ? new URL(solidsArg.slice("--solids=".length).endsWith("/") ? solidsArg.slice("--solids=".length) : solidsArg.slice("--solids=".length) + "/", import.meta.url.startsWith("file:") ? new URL("../../", import.meta.url) : undefined)
+  : new URL("../../steps/zone-c/05-solids/", import.meta.url);
+const args = process.argv.slice(2).filter((a) => a !== "--solids" && !a.startsWith("--solids="));
 const OUT = args[0]
   ? args[0]
   : solidsMode
@@ -193,7 +196,10 @@ if (solidsMode) {
   const waiting = zone.objects.some((o) => (o.sources || []).some((s) => s.role === "pending-plate"));
   if (waiting) zone.todo.push("hidden faces of the five solids wait on Imagine plates 5-15");
   zone.runtime.modules.solids = "tools/imagine-to-3d/staging/zone-c-solids/main.mjs";
-  zone.runtime.layout.solids = "steps/zone-c/05-solids/data/solids.bin";
+  const solidsDir = solidsArg
+    ? solidsArg.slice("--solids=".length).replace(/^\.\//, "").replace(/\/$/, "")
+    : "steps/zone-c/05-solids";
+  zone.runtime.layout.solids = solidsDir + "/data/solids.bin";
 }
 
 const { validateZone } = await import(new URL("../../runtime/zone-loader.mjs", import.meta.url).href);

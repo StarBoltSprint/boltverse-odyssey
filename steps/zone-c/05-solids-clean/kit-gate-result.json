@@ -1,0 +1,6 @@
+{
+  "tool": "object-gate",
+  "scene": "tools/object-gate/specs/zone-c/solids-scene.yaml",
+  "verdict": "FAIL",
+  "report": "steps/zone-c/05-solids-clean/object-gate/report.json"
+}

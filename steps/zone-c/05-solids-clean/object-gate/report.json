@@ -1,0 +1,1289 @@
+{
+  "tool": "object-gate",
+  "version": 1,
+  "apiVersion": "1.7",
+  "url": "http://127.0.0.1:8772/?along=0",
+  "adapter": "zone-c-solids",
+  "startedAt": "2026-10-12T08:35:07.272Z",
+  "out": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate",
+  "runtime": [
+    {
+      "id": "runtime.console",
+      "check": "console 720x1600",
+      "status": "PASS",
+      "detail": "no console / page errors",
+      "hints": []
+    },
+    {
+      "id": "runtime.shader",
+      "check": "shader compile 720x1600",
+      "status": "PASS",
+      "detail": "all programs compiled",
+      "hints": []
+    },
+    {
+      "id": "runtime.title",
+      "check": "title 720x1600",
+      "status": "PASS",
+      "detail": "\"Zone C solids\"",
+      "hints": []
+    },
+    {
+      "id": "runtime.portrait",
+      "check": "portrait viewport 720x1600",
+      "status": "PASS",
+      "detail": "inner 720x1600",
+      "hints": []
+    },
+    {
+      "id": "runtime.capture-ready",
+      "check": "capture ready 720x1600",
+      "status": "PASS",
+      "detail": "loaded, cover 0.9976",
+      "hints": []
+    },
+    {
+      "id": "runtime.budgets",
+      "check": "budgets 720x1600 (report only, quality first)",
+      "status": "INFO",
+      "detail": "{\"renderInfo\":{\"calls\":11,\"triangles\":100864,\"textures\":9,\"geometries\":6,\"programs\":3},\"visibleMeshes\":6,\"sceneTris\":100864,\"pixelRatio\":1}",
+      "hints": []
+    },
+    {
+      "id": "runtime.draw-calls",
+      "check": "draw calls 720x1600",
+      "status": "PASS",
+      "detail": "11 draws (max 12)",
+      "hints": []
+    },
+    {
+      "id": "perf.report",
+      "check": "perf: report 720x1600",
+      "status": "INFO",
+      "detail": "page has no window.__perfReport(); phone perf rows skipped",
+      "hints": [
+        "Expose window.__perfReport() (see tools/perf/phone-bench/README.md) so the gate can check canvas ratio and draw order."
+      ]
+    },
+    {
+      "id": "runtime.console",
+      "check": "console 412x915",
+      "status": "PASS",
+      "detail": "no console / page errors",
+      "hints": []
+    },
+    {
+      "id": "runtime.shader",
+      "check": "shader compile 412x915",
+      "status": "PASS",
+      "detail": "all programs compiled",
+      "hints": []
+    },
+    {
+      "id": "runtime.title",
+      "check": "title 412x915",
+      "status": "PASS",
+      "detail": "\"Zone C solids\"",
+      "hints": []
+    },
+    {
+      "id": "runtime.portrait",
+      "check": "portrait viewport 412x915",
+      "status": "PASS",
+      "detail": "inner 412x915",
+      "hints": []
+    },
+    {
+      "id": "runtime.capture-ready",
+      "check": "capture ready 412x915",
+      "status": "PASS",
+      "detail": "loaded, cover 0.9982",
+      "hints": []
+    },
+    {
+      "id": "runtime.budgets",
+      "check": "budgets 412x915 (report only, quality first)",
+      "status": "INFO",
+      "detail": "{\"renderInfo\":{\"calls\":11,\"triangles\":100864,\"textures\":9,\"geometries\":6,\"programs\":3},\"visibleMeshes\":6,\"sceneTris\":100864,\"pixelRatio\":1}",
+      "hints": []
+    },
+    {
+      "id": "runtime.draw-calls",
+      "check": "draw calls 412x915",
+      "status": "PASS",
+      "detail": "11 draws (max 12)",
+      "hints": []
+    },
+    {
+      "id": "perf.report",
+      "check": "perf: report 412x915",
+      "status": "INFO",
+      "detail": "page has no window.__perfReport(); phone perf rows skipped",
+      "hints": [
+        "Expose window.__perfReport() (see tools/perf/phone-bench/README.md) so the gate can check canvas ratio and draw order."
+      ]
+    }
+  ],
+  "objects": [
+    {
+      "id": "arch-left",
+      "type": "rock",
+      "rows": [
+        {
+          "id": "select",
+          "check": "select",
+          "status": "PASS",
+          "detail": "1 placed copies",
+          "hints": []
+        },
+        {
+          "id": "textures.roles",
+          "check": "texture roles declared",
+          "status": "PASS",
+          "detail": "key-zc1.jpg=plate plate-atlas.jpg=plate",
+          "hints": []
+        },
+        {
+          "id": "textures.filtering",
+          "check": "texture filtering (mips, trilinear, anisotropy = max, no resize)",
+          "status": "PASS",
+          "detail": "2 textures trilinear + aniso 16",
+          "hints": []
+        },
+        {
+          "id": "textures.native-size",
+          "check": "plates not downscaled vs Imagine originals",
+          "status": "PASS",
+          "detail": "key-zc1.jpg gpu 1792x1008 served 1792x1008 original 1792x1008; plate-atlas.jpg gpu 4096x3072 served 4096x3072 original 4096x3072",
+          "hints": []
+        },
+        {
+          "id": "texel.stretch",
+          "check": "UV stretch <= 1.3",
+          "status": "PASS",
+          "detail": "max 1.148",
+          "hints": []
+        },
+        {
+          "id": "repetition.captures",
+          "check": "repetition (capture autocorrelation)",
+          "status": "PASS",
+          "detail": "face z peak 0.0819 at lag -29,-33 px; face x peak 0.1223 at lag 2,200 px; close peak 0.4817 at lag 0,-300 px; low-portrait peak 0.1508 at lag -4,103 px (max 0.65, at plate period 0.5)",
+          "hints": []
+        },
+        {
+          "id": "texel.visible-px-per-m",
+          "check": "visible px/m (phone sharpness from >= 8 m, final render)",
+          "status": "FAIL",
+          "detail": "78.4 px/m of real detail on screen vs 118.5 needed (capture at 8.87 m, zoomed to 237.1 screen px/m; median of 20 tiles, p25 65.8; phone 1080x2400, render pixel ratio 1, vfov 51.47°). Info: plate sampling worst +z 77.1 px/m on arch-left, 5/5 surfaces under",
+          "hints": [
+            "Needs >= 118.5 px/m of visible detail at 8 m. Unique plates: one native 1024x1024 Imagine plate covers at most 8.6 x 8.6 m. Layered materials: raise the detail layer's density or keep its distance fade beyond 8 m. Never upscale."
+          ]
+        },
+        {
+          "id": "repetition.visible-radius",
+          "check": "repetition (visible): identical plate pixels never within 30 m",
+          "status": "PASS",
+          "detail": "no plate repeats inside the radius (one shared plate set per type allowed)",
+          "hints": []
+        },
+        {
+          "id": "repetition.visible-neighbours",
+          "check": "repetition (visible): neighbours never share plates (< 7 m)",
+          "status": "PASS",
+          "detail": "1 copies, none within 7 m of another",
+          "hints": []
+        },
+        {
+          "id": "morph",
+          "check": "approach morph 300->10 m",
+          "status": "FAIL",
+          "detail": "arch-left: 67 frames, min IoU 0.836, jumps at 244.4 m (0.88), 232.1 m (0.86), 199 m (0.84), 170.6 m (0.87)",
+          "hints": [
+            "A LOD swap or variant swap changes the silhouette. Keep one silhouette at every distance (LOD1 = decimated LOD0 with the same cuts, or no swap), crossfade if a swap is unavoidable."
+          ]
+        },
+        {
+          "id": "grounding",
+          "check": "grounding (no floating)",
+          "status": "PASS",
+          "detail": "0/1 copies float; worst arch-left -0.80 m at -11.2,-16.6",
+          "hints": []
+        },
+        {
+          "id": "hidden.plate",
+          "check": "hidden face plate #5 arch-left-inner",
+          "status": "PASS",
+          "detail": "3080 tris inner 2290, back 790; /workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-05-arch-left-inner.jpg",
+          "hints": []
+        },
+        {
+          "id": "hidden.plate",
+          "check": "hidden face plate #11 leaf",
+          "status": "PASS",
+          "detail": "1494 tris side 1494; /workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-11-leaf.jpg",
+          "hints": []
+        },
+        {
+          "id": "hidden.plate",
+          "check": "hidden face plate #13 causeway-underside",
+          "status": "PASS",
+          "detail": "756 tris bottom 756; /workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-13-causeway-underside.jpg",
+          "hints": []
+        },
+        {
+          "id": "geometry.sealed",
+          "check": "mesh sealed (non-manifold / open edges)",
+          "status": "PASS",
+          "detail": "arch-left tris 6120 nonManifold 0 open 0",
+          "hints": []
+        },
+        {
+          "id": "geometry.relief",
+          "check": "facade relief >= 0.5 m",
+          "status": "PASS",
+          "detail": "arch-left +x 2.8 -x 2.8 +z 2.8 -z 1.2",
+          "hints": []
+        },
+        {
+          "id": "geometry.triangle-quality",
+          "check": "triangle-quality",
+          "status": "PASS",
+          "detail": "tris 6120 aspect p95 1.414 (max 8) sliver 0 (max 0.02) facing<1px 0 (max 0.05) spike 0 (max 0.03) normal p90 0° (max 42)",
+          "hints": []
+        },
+        {
+          "id": "geometry.oblique-profile",
+          "check": "oblique-profile",
+          "status": "FAIL",
+          "detail": "8m yaw 45 residual 0.798 m (need 0.5); 8m yaw 75 residual 0.4 m (need 0.5); 30m yaw 45 residual 1.809 m (need 0.5); 30m yaw 75 residual 1.548 m (need 0.5)",
+          "hints": [
+            "A face that is a flat card fails the oblique profile. Keep a real ledge (residual ≥ 0.5 m) or drop the view from the blocking list only when the face cannot be walked around."
+          ]
+        },
+        {
+          "id": "geometry.untextured-area",
+          "check": "untextured-area",
+          "status": "FAIL",
+          "detail": "8m bad 65.42% of 993350px; 30m bad 70.77% of 352063px; hero bad 81.08% of 870059px; orbit bad 58.95% of 944321px (max 0.50% grey/black/white)",
+          "hints": [
+            "Every visible face needs an Imagine plate. A flat grey wall is a missing map or a UV that misses the atlas cell."
+          ]
+        }
+      ],
+      "files": {
+        "captures": {
+          "close": {
+            "img": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/arch-left/cap-close.png",
+            "mask": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/arch-left/cap-close-mask.png",
+            "cover": 0.2969,
+            "gate": {
+              "ok": false,
+              "kind": "close",
+              "cover": 0.2969,
+              "minCover": 0.25,
+              "loading": false,
+              "empty": true,
+              "black": false,
+              "why": "empty frame"
+            },
+            "pose": {
+              "camera": [
+                -8.2,
+                5.6,
+                -3.6
+              ],
+              "fovY": 96.6649,
+              "distanceM": 8
+            },
+            "hash": "0020e0e0f8fca000"
+          },
+          "low-portrait": {
+            "img": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/arch-left/cap-low-portrait.png",
+            "mask": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/arch-left/cap-low-portrait-mask.png",
+            "cover": 0.2021,
+            "gate": {
+              "ok": false,
+              "kind": "low-portrait",
+              "cover": 0.2021,
+              "minCover": 0.25,
+              "loading": false,
+              "empty": true,
+              "black": false,
+              "why": "empty frame; target covers 20.2% < 25%"
+            },
+            "pose": {
+              "camera": [
+                -8.2,
+                0.8,
+                -3.6
+              ],
+              "fovY": 103.524,
+              "distanceM": 8
+            },
+            "hash": "000060f0f8bc0000"
+          },
+          "face-z": {
+            "img": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/arch-left/face-z.png",
+            "mask": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/arch-left/face-z-mask.png",
+            "pose": {
+              "camera": [
+                "ortho",
+                "z"
+              ]
+            },
+            "cover": 0.5917,
+            "hash": "c080a0f0f87eebf6"
+          },
+          "face-x": {
+            "img": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/arch-left/face-x.png",
+            "mask": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/arch-left/face-x-mask.png",
+            "pose": {
+              "camera": [
+                "ortho",
+                "x"
+              ]
+            },
+            "cover": 0.6271,
+            "hash": "8040606030706055"
+          },
+          "visible-8m": {
+            "img": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/arch-left/cap-visible-8m.png",
+            "mask": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/arch-left/cap-visible-8m-mask.png"
+          }
+        }
+      },
+      "hero": "arch-left",
+      "verdict": "FAIL"
+    },
+    {
+      "id": "arch-right",
+      "type": "rock",
+      "rows": [
+        {
+          "id": "select",
+          "check": "select",
+          "status": "PASS",
+          "detail": "1 placed copies",
+          "hints": []
+        },
+        {
+          "id": "textures.roles",
+          "check": "texture roles declared",
+          "status": "PASS",
+          "detail": "key-zc1.jpg=plate plate-atlas.jpg=plate",
+          "hints": []
+        },
+        {
+          "id": "textures.filtering",
+          "check": "texture filtering (mips, trilinear, anisotropy = max, no resize)",
+          "status": "PASS",
+          "detail": "2 textures trilinear + aniso 16",
+          "hints": []
+        },
+        {
+          "id": "textures.native-size",
+          "check": "plates not downscaled vs Imagine originals",
+          "status": "PASS",
+          "detail": "key-zc1.jpg gpu 1792x1008 served 1792x1008 original 1792x1008; plate-atlas.jpg gpu 4096x3072 served 4096x3072 original 4096x3072",
+          "hints": []
+        },
+        {
+          "id": "texel.stretch",
+          "check": "UV stretch <= 1.3",
+          "status": "PASS",
+          "detail": "max 1.268",
+          "hints": []
+        },
+        {
+          "id": "repetition.captures",
+          "check": "repetition (capture autocorrelation)",
+          "status": "FAIL",
+          "detail": "face z peak 0.638 at lag 21,0 px; face x peak 0.1466 at lag -17,-2 px; close peak 0.7249 at lag 0,-14 px; low-portrait peak 0.7563 at lag 0,-13 px (max 0.65, at plate period 0.5)",
+          "hints": [
+            "Visible periodic tiling: replace the tiled plate with unique full-res Imagine sections; break any remaining repeat with a second Imagine variant + low-frequency mask.",
+            "If the capture angle is unusable, fix the spec `hero:` or the object's front axis."
+          ]
+        },
+        {
+          "id": "texel.visible-px-per-m",
+          "check": "visible px/m (phone sharpness from >= 8 m, final render)",
+          "status": "FAIL",
+          "detail": "90.6 px/m of real detail on screen vs 118.5 needed (capture at 8.03 m, zoomed to 237.1 screen px/m; median of 18 tiles, p25 79.5; phone 1080x2400, render pixel ratio 1, vfov 51.47°). Info: plate sampling worst +x 99.8 px/m on arch-right, 3/5 surfaces under",
+          "hints": [
+            "Needs >= 118.5 px/m of visible detail at 8 m. Unique plates: one native 1024x1024 Imagine plate covers at most 8.6 x 8.6 m. Layered materials: raise the detail layer's density or keep its distance fade beyond 8 m. Never upscale."
+          ]
+        },
+        {
+          "id": "repetition.visible-radius",
+          "check": "repetition (visible): identical plate pixels never within 30 m",
+          "status": "PASS",
+          "detail": "no plate repeats inside the radius (one shared plate set per type allowed)",
+          "hints": []
+        },
+        {
+          "id": "repetition.visible-neighbours",
+          "check": "repetition (visible): neighbours never share plates (< 7 m)",
+          "status": "PASS",
+          "detail": "1 copies, none within 7 m of another",
+          "hints": []
+        },
+        {
+          "id": "morph",
+          "check": "approach morph 300->10 m",
+          "status": "FAIL",
+          "detail": "arch-right: 67 frames, min IoU 0.819, jumps at 285 m (0.94), 257.2 m (0.87), 244.4 m (0.91), 232.1 m (0.86)",
+          "hints": [
+            "A LOD swap or variant swap changes the silhouette. Keep one silhouette at every distance (LOD1 = decimated LOD0 with the same cuts, or no swap), crossfade if a swap is unavoidable."
+          ]
+        },
+        {
+          "id": "grounding",
+          "check": "grounding (no floating)",
+          "status": "PASS",
+          "detail": "0/1 copies float; worst arch-right -0.80 m at 6.6,-15.4",
+          "hints": []
+        },
+        {
+          "id": "hidden.plate",
+          "check": "hidden face plate #6 arch-right-inner",
+          "status": "PASS",
+          "detail": "1244 tris inner 992, back 252; /workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-06-arch-right-inner.jpg",
+          "hints": []
+        },
+        {
+          "id": "hidden.plate",
+          "check": "hidden face plate #12 fern",
+          "status": "PASS",
+          "detail": "1068 tris side 1068; /workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-12-fern.jpg",
+          "hints": []
+        },
+        {
+          "id": "hidden.plate",
+          "check": "hidden face plate #13 causeway-underside",
+          "status": "PASS",
+          "detail": "296 tris bottom 296; /workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-13-causeway-underside.jpg",
+          "hints": []
+        },
+        {
+          "id": "geometry.sealed",
+          "check": "mesh sealed (non-manifold / open edges)",
+          "status": "PASS",
+          "detail": "arch-right tris 2860 nonManifold 0 open 0",
+          "hints": []
+        },
+        {
+          "id": "geometry.relief",
+          "check": "facade relief >= 0.5 m",
+          "status": "PASS",
+          "detail": "arch-right +x 2 -x 2 +z 2.8 -z 2.8",
+          "hints": []
+        },
+        {
+          "id": "geometry.triangle-quality",
+          "check": "triangle-quality",
+          "status": "PASS",
+          "detail": "tris 2860 aspect p95 1.414 (max 8) sliver 0 (max 0.02) facing<1px 0 (max 0.05) spike 0 (max 0.03) normal p90 0° (max 42)",
+          "hints": []
+        },
+        {
+          "id": "geometry.oblique-profile",
+          "check": "oblique-profile",
+          "status": "FAIL",
+          "detail": "8m yaw 45 residual 0.227 m (need 0.5); 8m yaw 75 residual 0.05 m (need 0.5); 30m yaw 45 residual 0.931 m (need 0.5); 30m yaw 75 residual 0.264 m (need 0.5)",
+          "hints": [
+            "A face that is a flat card fails the oblique profile. Keep a real ledge (residual ≥ 0.5 m) or drop the view from the blocking list only when the face cannot be walked around."
+          ]
+        },
+        {
+          "id": "geometry.untextured-area",
+          "check": "untextured-area",
+          "status": "FAIL",
+          "detail": "8m bad 40.10% of 1141013px; 30m bad 50.17% of 96808px; hero bad 95.68% of 475886px; orbit bad 30.15% of 906637px (max 0.50% grey/black/white)",
+          "hints": [
+            "Every visible face needs an Imagine plate. A flat grey wall is a missing map or a UV that misses the atlas cell."
+          ]
+        }
+      ],
+      "files": {
+        "captures": {
+          "close": {
+            "img": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/arch-right/cap-close.png",
+            "mask": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/arch-right/cap-close-mask.png",
+            "cover": 0.2899,
+            "gate": {
+              "ok": false,
+              "kind": "close",
+              "cover": 0.2899,
+              "minCover": 0.25,
+              "loading": false,
+              "empty": true,
+              "black": false,
+              "why": "empty frame"
+            },
+            "pose": {
+              "camera": [
+                8,
+                3.4,
+                2.4
+              ],
+              "fovY": 64.0108,
+              "distanceM": 8
+            },
+            "hash": "0008183878583808"
+          },
+          "low-portrait": {
+            "img": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/arch-right/cap-low-portrait.png",
+            "mask": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/arch-right/cap-low-portrait-mask.png",
+            "cover": 0.2377,
+            "gate": {
+              "ok": false,
+              "kind": "low-portrait",
+              "cover": 0.2377,
+              "minCover": 0.25,
+              "loading": false,
+              "empty": true,
+              "black": false,
+              "why": "empty frame; target covers 23.8% < 25%"
+            },
+            "pose": {
+              "camera": [
+                8,
+                0.8,
+                2.4
+              ],
+              "fovY": 67.3213,
+              "distanceM": 8
+            },
+            "hash": "0000183878581800"
+          },
+          "face-z": {
+            "img": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/arch-right/face-z.png",
+            "mask": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/arch-right/face-z-mask.png",
+            "pose": {
+              "camera": [
+                "ortho",
+                "z"
+              ]
+            },
+            "cover": 0.3835,
+            "hash": "000206021820c0c8"
+          },
+          "face-x": {
+            "img": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/arch-right/face-x.png",
+            "mask": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/arch-right/face-x-mask.png",
+            "pose": {
+              "camera": [
+                "ortho",
+                "x"
+              ]
+            },
+            "cover": 0.4995,
+            "hash": "0004f4f0c88c1818"
+          },
+          "visible-8m": {
+            "img": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/arch-right/cap-visible-8m.png",
+            "mask": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/arch-right/cap-visible-8m-mask.png"
+          }
+        }
+      },
+      "hero": "arch-right",
+      "verdict": "FAIL"
+    },
+    {
+      "id": "cliff-left",
+      "type": "rock",
+      "rows": [
+        {
+          "id": "select",
+          "check": "select",
+          "status": "PASS",
+          "detail": "1 placed copies",
+          "hints": []
+        },
+        {
+          "id": "textures.roles",
+          "check": "texture roles declared",
+          "status": "PASS",
+          "detail": "key-zc1.jpg=plate plate-atlas.jpg=plate",
+          "hints": []
+        },
+        {
+          "id": "textures.filtering",
+          "check": "texture filtering (mips, trilinear, anisotropy = max, no resize)",
+          "status": "PASS",
+          "detail": "2 textures trilinear + aniso 16",
+          "hints": []
+        },
+        {
+          "id": "textures.native-size",
+          "check": "plates not downscaled vs Imagine originals",
+          "status": "PASS",
+          "detail": "key-zc1.jpg gpu 1792x1008 served 1792x1008 original 1792x1008; plate-atlas.jpg gpu 4096x3072 served 4096x3072 original 4096x3072",
+          "hints": []
+        },
+        {
+          "id": "texel.stretch",
+          "check": "UV stretch <= 1.3",
+          "status": "PASS",
+          "detail": "max 1.078",
+          "hints": []
+        },
+        {
+          "id": "repetition.captures",
+          "check": "repetition (capture autocorrelation)",
+          "status": "PASS",
+          "detail": "face z peak 0.0862 at lag 5,34 px; face x peak 0.3053 at lag 0,24 px; close peak 0.3279 at lag 0,-15 px; low-portrait peak 0.2179 at lag -3,16 px (max 0.65, at plate period 0.5)",
+          "hints": []
+        },
+        {
+          "id": "texel.visible-px-per-m",
+          "check": "visible px/m (phone sharpness from >= 8 m, final render)",
+          "status": "WARN",
+          "detail": "58.6 px/m of real detail on screen vs 118.5 needed (capture at 8.03 m, zoomed to 237.1 screen px/m; median of 20 tiles, p25 48.4; phone 1080x2400, render pixel ratio 1, vfov 51.47°). Info: plate sampling worst +z 32.1 px/m on cliff-left, 5/5 surfaces under",
+          "hints": [
+            "Needs >= 118.5 px/m of visible detail at 8 m. Unique plates: one native 1024x1024 Imagine plate covers at most 8.6 x 8.6 m. Layered materials: raise the detail layer's density or keep its distance fade beyond 8 m. Never upscale."
+          ]
+        },
+        {
+          "id": "repetition.visible-radius",
+          "check": "repetition (visible): identical plate pixels never within 30 m",
+          "status": "PASS",
+          "detail": "no plate repeats inside the radius (one shared plate set per type allowed)",
+          "hints": []
+        },
+        {
+          "id": "repetition.visible-neighbours",
+          "check": "repetition (visible): neighbours never share plates (< 7 m)",
+          "status": "PASS",
+          "detail": "1 copies, none within 7 m of another",
+          "hints": []
+        },
+        {
+          "id": "morph",
+          "check": "approach morph 300->10 m",
+          "status": "FAIL",
+          "detail": "cliff-left: 67 frames, min IoU 0.848, jumps at 285 m (0.88), 270.8 m (0.87), 257.2 m (0.89), 232.1 m (0.87)",
+          "hints": [
+            "A LOD swap or variant swap changes the silhouette. Keep one silhouette at every distance (LOD1 = decimated LOD0 with the same cuts, or no swap), crossfade if a swap is unavoidable."
+          ]
+        },
+        {
+          "id": "grounding",
+          "check": "grounding (no floating)",
+          "status": "PASS",
+          "detail": "0/1 copies float; worst cliff-left -0.80 m at -12.2,-38.8",
+          "hints": []
+        },
+        {
+          "id": "hidden.plate",
+          "check": "hidden face plate #7 wall-left",
+          "status": "PASS",
+          "detail": "2168 tris back 2168; /workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-07-wall-left.jpg",
+          "hints": []
+        },
+        {
+          "id": "hidden.plate",
+          "check": "hidden face plate #9 waterfall",
+          "status": "PASS",
+          "detail": "8666 tris side 8666; /workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-09-waterfall.jpg",
+          "hints": []
+        },
+        {
+          "id": "hidden.plate",
+          "check": "hidden face plate #13 causeway-underside",
+          "status": "PASS",
+          "detail": "1750 tris bottom 1750; /workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-13-causeway-underside.jpg",
+          "hints": []
+        },
+        {
+          "id": "geometry.sealed",
+          "check": "mesh sealed (non-manifold / open edges)",
+          "status": "PASS",
+          "detail": "cliff-left tris 14752 nonManifold 0 open 0",
+          "hints": []
+        },
+        {
+          "id": "geometry.relief",
+          "check": "facade relief >= 0.5 m",
+          "status": "PASS",
+          "detail": "cliff-left +x 2.4 -x 2 +z 2.8 -z 2.4",
+          "hints": []
+        },
+        {
+          "id": "geometry.triangle-quality",
+          "check": "triangle-quality",
+          "status": "PASS",
+          "detail": "tris 14752 aspect p95 1.414 (max 8) sliver 0 (max 0.02) facing<1px 0 (max 0.05) spike 0 (max 0.03) normal p90 0° (max 42)",
+          "hints": []
+        },
+        {
+          "id": "geometry.oblique-profile",
+          "check": "oblique-profile",
+          "status": "FAIL",
+          "detail": "8m yaw 45 residual 0.217 m (need 0.5); 8m yaw 75 residual 0.239 m (need 0.5); 30m yaw 45 residual 1.784 m (need 0.5); 30m yaw 75 residual 1.478 m (need 0.5)",
+          "hints": [
+            "A face that is a flat card fails the oblique profile. Keep a real ledge (residual ≥ 0.5 m) or drop the view from the blocking list only when the face cannot be walked around."
+          ]
+        },
+        {
+          "id": "geometry.untextured-area",
+          "check": "untextured-area",
+          "status": "FAIL",
+          "detail": "8m bad 0.02% of 1152000px; 30m bad 13.12% of 767604px; hero bad 9.51% of 1145474px; orbit bad 7.13% of 1097002px (max 0.50% grey/black/white)",
+          "hints": [
+            "Every visible face needs an Imagine plate. A flat grey wall is a missing map or a UV that misses the atlas cell."
+          ]
+        }
+      ],
+      "files": {
+        "captures": {
+          "close": {
+            "img": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/cliff-left/cap-close.png",
+            "mask": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/cliff-left/cap-close-mask.png",
+            "cover": 0.3755,
+            "gate": {
+              "ok": true,
+              "kind": "close",
+              "cover": 0.3755,
+              "minCover": 0.25,
+              "loading": false,
+              "empty": false,
+              "black": false,
+              "why": ""
+            },
+            "pose": {
+              "camera": [
+                -7.8,
+                9.6,
+                -22
+              ],
+              "fovY": 117.6381,
+              "distanceM": 8
+            },
+            "hash": "80c0e0e0a0b8d0c0"
+          },
+          "low-portrait": {
+            "img": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/cliff-left/cap-low-portrait.png",
+            "mask": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/cliff-left/cap-low-portrait-mask.png",
+            "cover": 0.1509,
+            "gate": {
+              "ok": false,
+              "kind": "low-portrait",
+              "cover": 0.1509,
+              "minCover": 0.25,
+              "loading": false,
+              "empty": false,
+              "black": false,
+              "why": "target covers 15.1% < 25%"
+            },
+            "pose": {
+              "camera": [
+                -7.8,
+                0.8,
+                -22
+              ],
+              "fovY": 128.7258,
+              "distanceM": 8
+            },
+            "hash": "000060f0d0c80000"
+          },
+          "face-z": {
+            "img": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/cliff-left/face-z.png",
+            "mask": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/cliff-left/face-z-mask.png",
+            "pose": {
+              "camera": [
+                "ortho",
+                "z"
+              ]
+            },
+            "cover": 0.8888,
+            "hash": "98c8ea6ce7673b79"
+          },
+          "face-x": {
+            "img": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/cliff-left/face-x.png",
+            "mask": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/cliff-left/face-x-mask.png",
+            "pose": {
+              "camera": [
+                "ortho",
+                "x"
+              ]
+            },
+            "cover": 0.7524,
+            "hash": "c0c0d0d0d052d2d2"
+          },
+          "visible-8m": {
+            "img": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/cliff-left/cap-visible-8m.png",
+            "mask": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/cliff-left/cap-visible-8m-mask.png"
+          }
+        }
+      },
+      "hero": "cliff-left",
+      "verdict": "FAIL"
+    },
+    {
+      "id": "gorge-rock",
+      "type": "rock",
+      "rows": [
+        {
+          "id": "select",
+          "check": "select",
+          "status": "PASS",
+          "detail": "1 placed copies",
+          "hints": []
+        },
+        {
+          "id": "textures.roles",
+          "check": "texture roles declared",
+          "status": "PASS",
+          "detail": "key-zc1.jpg=plate plate-atlas.jpg=plate",
+          "hints": []
+        },
+        {
+          "id": "textures.filtering",
+          "check": "texture filtering (mips, trilinear, anisotropy = max, no resize)",
+          "status": "PASS",
+          "detail": "2 textures trilinear + aniso 16",
+          "hints": []
+        },
+        {
+          "id": "textures.native-size",
+          "check": "plates not downscaled vs Imagine originals",
+          "status": "PASS",
+          "detail": "key-zc1.jpg gpu 1792x1008 served 1792x1008 original 1792x1008; plate-atlas.jpg gpu 4096x3072 served 4096x3072 original 4096x3072",
+          "hints": []
+        },
+        {
+          "id": "texel.stretch",
+          "check": "UV stretch <= 1.3",
+          "status": "PASS",
+          "detail": "max 1.041",
+          "hints": []
+        },
+        {
+          "id": "repetition.captures",
+          "check": "repetition (capture autocorrelation)",
+          "status": "PASS",
+          "detail": "face z peak 0.1235 at lag -1,-24 px; face x peak 0.1025 at lag -55,-47 px; close peak 0.2564 at lag 1,13 px; low-portrait peak 0.242 at lag 1,12 px (max 0.65, at plate period 0.5)",
+          "hints": []
+        },
+        {
+          "id": "texel.visible-px-per-m",
+          "check": "visible px/m (phone sharpness from >= 8 m, final render)",
+          "status": "WARN",
+          "detail": "62.1 px/m of real detail on screen vs 118.5 needed (capture at 8.03 m, zoomed to 237.1 screen px/m; median of 19 tiles, p25 43.8; phone 1080x2400, render pixel ratio 1, vfov 51.47°). Info: plate sampling worst +z 17.8 px/m on gorge-rock, 5/5 surfaces under",
+          "hints": [
+            "Needs >= 118.5 px/m of visible detail at 8 m. Unique plates: one native 1024x1024 Imagine plate covers at most 8.6 x 8.6 m. Layered materials: raise the detail layer's density or keep its distance fade beyond 8 m. Never upscale."
+          ]
+        },
+        {
+          "id": "repetition.visible-radius",
+          "check": "repetition (visible): identical plate pixels never within 30 m",
+          "status": "PASS",
+          "detail": "no plate repeats inside the radius (one shared plate set per type allowed)",
+          "hints": []
+        },
+        {
+          "id": "repetition.visible-neighbours",
+          "check": "repetition (visible): neighbours never share plates (< 7 m)",
+          "status": "PASS",
+          "detail": "1 copies, none within 7 m of another",
+          "hints": []
+        },
+        {
+          "id": "morph",
+          "check": "approach morph 300->10 m",
+          "status": "FAIL",
+          "detail": "gorge-rock: 67 frames, min IoU 0.822, jumps at 285 m (0.82), 244.4 m (0.85), 232.1 m (0.91), 209.5 m (0.88)",
+          "hints": [
+            "A LOD swap or variant swap changes the silhouette. Keep one silhouette at every distance (LOD1 = decimated LOD0 with the same cuts, or no swap), crossfade if a swap is unavoidable."
+          ]
+        },
+        {
+          "id": "grounding",
+          "check": "grounding (no floating)",
+          "status": "PASS",
+          "detail": "0/1 copies float; worst gorge-rock -0.69 m at -0.2,-74.4",
+          "hints": []
+        },
+        {
+          "id": "hidden.plate",
+          "check": "hidden face plate #10 mist",
+          "status": "PASS",
+          "detail": "13448 tris side 13448; /workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-10-mist.jpg",
+          "hints": []
+        },
+        {
+          "id": "hidden.plate",
+          "check": "hidden face plate #13 causeway-underside",
+          "status": "PASS",
+          "detail": "3312 tris bottom 3312; /workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-13-causeway-underside.jpg",
+          "hints": []
+        },
+        {
+          "id": "hidden.plate",
+          "check": "hidden face plate #14 gorge-closure",
+          "status": "PASS",
+          "detail": "3960 tris back 3960; /workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-14-gorge-closure.jpg",
+          "hints": []
+        },
+        {
+          "id": "geometry.sealed",
+          "check": "mesh sealed (non-manifold / open edges)",
+          "status": "PASS",
+          "detail": "gorge-rock tris 24680 nonManifold 0 open 0",
+          "hints": []
+        },
+        {
+          "id": "geometry.relief",
+          "check": "facade relief >= 0.5 m",
+          "status": "PASS",
+          "detail": "gorge-rock +x 2.4 -x 1.6 +z 1.6 -z 2.4",
+          "hints": []
+        },
+        {
+          "id": "geometry.triangle-quality",
+          "check": "triangle-quality",
+          "status": "PASS",
+          "detail": "tris 24680 aspect p95 1.414 (max 8) sliver 0 (max 0.02) facing<1px 0 (max 0.05) spike 0 (max 0.03) normal p90 0° (max 42)",
+          "hints": []
+        },
+        {
+          "id": "geometry.oblique-profile",
+          "check": "oblique-profile",
+          "status": "FAIL",
+          "detail": "8m yaw 45 residual 0.299 m (need 0.5); 8m yaw 75 residual 0.403 m (need 0.5); 30m yaw 45 residual 1.492 m (need 0.5); 30m yaw 75 residual 1.647 m (need 0.5)",
+          "hints": [
+            "A face that is a flat card fails the oblique profile. Keep a real ledge (residual ≥ 0.5 m) or drop the view from the blocking list only when the face cannot be walked around."
+          ]
+        },
+        {
+          "id": "geometry.untextured-area",
+          "check": "untextured-area",
+          "status": "FAIL",
+          "detail": "8m bad 1.78% of 1152000px; 30m bad 31.03% of 923108px; hero bad 0.79% of 1096615px; orbit bad 32.71% of 1034997px (max 0.50% grey/black/white)",
+          "hints": [
+            "Every visible face needs an Imagine plate. A flat grey wall is a missing map or a UV that misses the atlas cell."
+          ]
+        }
+      ],
+      "files": {
+        "captures": {
+          "close": {
+            "img": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/gorge-rock/cap-close.png",
+            "mask": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/gorge-rock/cap-close-mask.png",
+            "cover": 0.2933,
+            "gate": {
+              "ok": true,
+              "kind": "close",
+              "cover": 0.2933,
+              "minCover": 0.25,
+              "loading": false,
+              "empty": false,
+              "black": false,
+              "why": ""
+            },
+            "pose": {
+              "camera": [
+                1.4,
+                11.8,
+                -46.4
+              ],
+              "fovY": 133.246,
+              "distanceM": 8
+            },
+            "hash": "00e0e0b0b090c080"
+          },
+          "low-portrait": {
+            "img": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/gorge-rock/cap-low-portrait.png",
+            "mask": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/gorge-rock/cap-low-portrait-mask.png",
+            "cover": 0.0972,
+            "gate": {
+              "ok": false,
+              "kind": "low-portrait",
+              "cover": 0.0972,
+              "minCover": 0.25,
+              "loading": false,
+              "empty": false,
+              "black": false,
+              "why": "target covers 9.7% < 25%"
+            },
+            "pose": {
+              "camera": [
+                1.4,
+                0.8,
+                -46.4
+              ],
+              "fovY": 143.675,
+              "distanceM": 8
+            },
+            "hash": "000060e0d0d00000"
+          },
+          "face-z": {
+            "img": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/gorge-rock/face-z.png",
+            "mask": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/gorge-rock/face-z-mask.png",
+            "pose": {
+              "camera": [
+                "ortho",
+                "z"
+              ]
+            },
+            "cover": 0.863,
+            "hash": "b070785c73333e12"
+          },
+          "face-x": {
+            "img": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/gorge-rock/face-x.png",
+            "mask": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/gorge-rock/face-x-mask.png",
+            "pose": {
+              "camera": [
+                "ortho",
+                "x"
+              ]
+            },
+            "cover": 0.7428,
+            "hash": "0000c08008307838"
+          },
+          "visible-8m": {
+            "img": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/gorge-rock/cap-visible-8m.png",
+            "mask": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/gorge-rock/cap-visible-8m-mask.png"
+          }
+        }
+      },
+      "hero": "gorge-rock",
+      "verdict": "FAIL"
+    },
+    {
+      "id": "cliff-right",
+      "type": "rock",
+      "rows": [
+        {
+          "id": "select",
+          "check": "select",
+          "status": "PASS",
+          "detail": "1 placed copies",
+          "hints": []
+        },
+        {
+          "id": "textures.roles",
+          "check": "texture roles declared",
+          "status": "PASS",
+          "detail": "key-zc1.jpg=plate plate-atlas.jpg=plate",
+          "hints": []
+        },
+        {
+          "id": "textures.filtering",
+          "check": "texture filtering (mips, trilinear, anisotropy = max, no resize)",
+          "status": "PASS",
+          "detail": "2 textures trilinear + aniso 16",
+          "hints": []
+        },
+        {
+          "id": "textures.native-size",
+          "check": "plates not downscaled vs Imagine originals",
+          "status": "PASS",
+          "detail": "key-zc1.jpg gpu 1792x1008 served 1792x1008 original 1792x1008; plate-atlas.jpg gpu 4096x3072 served 4096x3072 original 4096x3072",
+          "hints": []
+        },
+        {
+          "id": "texel.stretch",
+          "check": "UV stretch <= 1.3",
+          "status": "PASS",
+          "detail": "max 1.116",
+          "hints": []
+        },
+        {
+          "id": "repetition.captures",
+          "check": "repetition (capture autocorrelation)",
+          "status": "PASS",
+          "detail": "face z peak 0.3218 at lag -143,28 px; face x peak 0.2065 at lag 36,-18 px; close peak 0.1255 at lag -49,-28 px; low-portrait peak 0.1641 at lag 46,-3 px (max 0.65, at plate period 0.5)",
+          "hints": []
+        },
+        {
+          "id": "texel.visible-px-per-m",
+          "check": "visible px/m (phone sharpness from >= 8 m, final render)",
+          "status": "FAIL",
+          "detail": "55.2 px/m of real detail on screen vs 118.5 needed (capture at 8.03 m, zoomed to 237.1 screen px/m; median of 20 tiles, p25 52.1; phone 1080x2400, render pixel ratio 1, vfov 51.47°). Info: plate sampling worst +z 42.8 px/m on cliff-right, 5/5 surfaces under",
+          "hints": [
+            "Needs >= 118.5 px/m of visible detail at 8 m. Unique plates: one native 1024x1024 Imagine plate covers at most 8.6 x 8.6 m. Layered materials: raise the detail layer's density or keep its distance fade beyond 8 m. Never upscale."
+          ]
+        },
+        {
+          "id": "repetition.visible-radius",
+          "check": "repetition (visible): identical plate pixels never within 30 m",
+          "status": "PASS",
+          "detail": "no plate repeats inside the radius (one shared plate set per type allowed)",
+          "hints": []
+        },
+        {
+          "id": "repetition.visible-neighbours",
+          "check": "repetition (visible): neighbours never share plates (< 7 m)",
+          "status": "PASS",
+          "detail": "1 copies, none within 7 m of another",
+          "hints": []
+        },
+        {
+          "id": "morph",
+          "check": "approach morph 300->10 m",
+          "status": "FAIL",
+          "detail": "cliff-right: 67 frames, min IoU 0.757, jumps at 270.8 m (0.76), 232.1 m (0.84), 220.5 m (0.90), 179.6 m (0.81)",
+          "hints": [
+            "A LOD swap or variant swap changes the silhouette. Keep one silhouette at every distance (LOD1 = decimated LOD0 with the same cuts, or no swap), crossfade if a swap is unavoidable."
+          ]
+        },
+        {
+          "id": "grounding",
+          "check": "grounding (no floating)",
+          "status": "PASS",
+          "detail": "0/1 copies float; worst cliff-right -0.80 m at 12.2,-32.2",
+          "hints": []
+        },
+        {
+          "id": "hidden.plate",
+          "check": "hidden face plate #8 wall-right",
+          "status": "PASS",
+          "detail": "628 tris back 628; /workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-08-wall-right.jpg",
+          "hints": []
+        },
+        {
+          "id": "hidden.plate",
+          "check": "hidden face plate #13 causeway-underside",
+          "status": "PASS",
+          "detail": "314 tris bottom 314; /workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-13-causeway-underside.jpg",
+          "hints": []
+        },
+        {
+          "id": "hidden.plate",
+          "check": "hidden face plate #15 planet",
+          "status": "PASS",
+          "detail": "5186 tris side 5186; /workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-15-planet.jpg",
+          "hints": []
+        },
+        {
+          "id": "geometry.sealed",
+          "check": "mesh sealed (non-manifold / open edges)",
+          "status": "PASS",
+          "detail": "cliff-right tris 6756 nonManifold 0 open 0",
+          "hints": []
+        },
+        {
+          "id": "geometry.relief",
+          "check": "facade relief >= 0.5 m",
+          "status": "PASS",
+          "detail": "cliff-right +x 1.2 -x 1.6 +z 1.2 -z 0.4",
+          "hints": []
+        },
+        {
+          "id": "geometry.triangle-quality",
+          "check": "triangle-quality",
+          "status": "PASS",
+          "detail": "tris 6756 aspect p95 1.414 (max 8) sliver 0 (max 0.02) facing<1px 0 (max 0.05) spike 0 (max 0.03) normal p90 0° (max 42)",
+          "hints": []
+        },
+        {
+          "id": "geometry.oblique-profile",
+          "check": "oblique-profile",
+          "status": "FAIL",
+          "detail": "8m yaw 45 residual 0.246 m (need 0.5); 8m yaw 75 residual 0.18 m (need 0.5); 30m yaw 45 residual 1.073 m (need 0.5); 30m yaw 75 residual 0.572 m (need 0.5)",
+          "hints": [
+            "A face that is a flat card fails the oblique profile. Keep a real ledge (residual ≥ 0.5 m) or drop the view from the blocking list only when the face cannot be walked around."
+          ]
+        },
+        {
+          "id": "geometry.untextured-area",
+          "check": "untextured-area",
+          "status": "FAIL",
+          "detail": "8m bad 34.09% of 1152000px; 30m bad 25.16% of 348881px; hero bad 61.48% of 643240px; orbit bad 6.48% of 1139740px (max 0.50% grey/black/white)",
+          "hints": [
+            "Every visible face needs an Imagine plate. A flat grey wall is a missing map or a UV that misses the atlas cell."
+          ]
+        }
+      ],
+      "files": {
+        "captures": {
+          "close": {
+            "img": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/cliff-right/cap-close.png",
+            "mask": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/cliff-right/cap-close-mask.png",
+            "cover": 0.1389,
+            "gate": {
+              "ok": false,
+              "kind": "close",
+              "cover": 0.1389,
+              "minCover": 0.25,
+              "loading": false,
+              "empty": false,
+              "black": false,
+              "why": "target covers 13.9% < 25%"
+            },
+            "pose": {
+              "camera": [
+                13.4,
+                9.2,
+                -14.4
+              ],
+              "fovY": 112.1978,
+              "distanceM": 8
+            },
+            "hash": "0030303030303030"
+          },
+          "low-portrait": {
+            "img": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/cliff-right/cap-low-portrait.png",
+            "mask": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/cliff-right/cap-low-portrait-mask.png",
+            "cover": 0.1585,
+            "gate": {
+              "ok": false,
+              "kind": "low-portrait",
+              "cover": 0.1585,
+              "minCover": 0.25,
+              "loading": false,
+              "empty": true,
+              "black": false,
+              "why": "empty frame; target covers 15.9% < 25%"
+            },
+            "pose": {
+              "camera": [
+                13.4,
+                0.8,
+                -14.4
+              ],
+              "fovY": 97.5295,
+              "distanceM": 8
+            },
+            "hash": "0030303030606020"
+          },
+          "face-z": {
+            "img": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/cliff-right/face-z.png",
+            "mask": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/cliff-right/face-z-mask.png",
+            "pose": {
+              "camera": [
+                "ortho",
+                "z"
+              ]
+            },
+            "cover": 1,
+            "hash": "0432202024ace8c9"
+          },
+          "face-x": {
+            "img": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/cliff-right/face-x.png",
+            "mask": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/cliff-right/face-x-mask.png",
+            "pose": {
+              "camera": [
+                "ortho",
+                "x"
+              ]
+            },
+            "cover": 0.9823,
+            "hash": "f81c0e4603020600"
+          },
+          "visible-8m": {
+            "img": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/cliff-right/cap-visible-8m.png",
+            "mask": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/cliff-right/cap-visible-8m-mask.png"
+          }
+        }
+      },
+      "hero": "cliff-right",
+      "verdict": "FAIL"
+    }
+  ],
+  "verdict": "FAIL",
+  "finishedAt": "2026-10-12T08:40:33.359Z"
+}

@@ -5,8 +5,11 @@ Key-visible front faces keep the key projection. Hidden faces use the 11
 validated plates pasted into data/plate-atlas.jpg (specs/zone-c-plate-plan.json).
 This file does not call Imagine and does not invent pixels.
 
-  python3 tools/imagine-to-3d/zone_c_solids.py build [--attempt 1]
-  python3 tools/imagine-to-3d/zone_c_solids.py score
+  python3 tools/imagine-to-3d/zone_c_solids.py build [--attempt 1] [--out steps/zone-c/05-solids-v3]
+  python3 tools/imagine-to-3d/zone_c_solids.py score [--out steps/zone-c/05-solids-v3]
+
+--out is required for a new step. The default directory is the solids2 tree and
+is refused when --out names it, so a v3 run cannot overwrite a live preview.
 """
 
 from __future__ import annotations
@@ -25,12 +28,39 @@ sys.path.insert(0, str(REPO / "tools" / "terrain-from-key"))
 sys.path.insert(0, str(REPO / "tools" / "common"))
 sys.path.insert(0, str(REPO / "tools" / "biome"))
 
-from geom import camera_axes  # noqa: E402
+from geom import camera_axes, ray_directions  # noqa: E402
 from zone_c_mesh import GRID_STEP as MESH_STEP  # noqa: E402
-from zone_c_mesh import build_atlas, build_solid as build_closed, key_luma_disp  # noqa: E402
+from volume_features import feature_field  # noqa: E402
+from zone_c_mesh import MIN_HOLE_PX, _binary_close, build_atlas, build_solid as build_closed, denoise_world, fill_small_holes, grow_until, key_luma_disp  # noqa: E402
 
 STEP = REPO / "steps" / "zone-c" / "05-solids"
 DATA = STEP / "data"
+# Full width / height the far morph raster needs so a 5% scale step stays
+# inside maxDrop 0.05 (tower fix4 bar: min IoU 0.8, neighbour drop 0.05).
+# Measured on the object-gate camera: 135×240, vfov 58, 300 m → 10 m.
+SPAN_M = {
+    "arch-left": (28.0, 36.0),
+    "arch-right": (28.0, 36.0),
+    "cliff-left": (28.0, 36.0),
+    "gorge-rock": (24.0, 36.0),
+    "cliff-right": (34.0, 36.0),
+}
+
+
+def configure(out: str | None) -> None:
+    """Point STEP/DATA at the step directory. Refuses the solids2 tree."""
+    global STEP, DATA
+    if not out:
+        return
+    path = Path(out)
+    if not path.is_absolute():
+        path = REPO / path
+    path = path.resolve()
+    if path == (REPO / "steps" / "zone-c" / "05-solids").resolve():
+        raise SystemExit("refuse --out steps/zone-c/05-solids (preview may be reading it)")
+    STEP = path
+    DATA = STEP / "data"
+    DATA.mkdir(parents=True, exist_ok=True)
 KEY = REPO / "steps" / "zone-c" / "03-terrain" / "key-zc1.jpg"
 MASK_DIR = REPO / "steps" / "zone-c" / "02-masks"
 CAM_JSON = REPO / "steps" / "zone-c" / "01-camera" / "camera.json"
@@ -508,17 +538,18 @@ def write_pack(solids, timings, attempt, plan, atlas):
     (DATA / "solids.bin").write_bytes(b"".join(blobs))
     cam = json.loads(CAM_JSON.read_text())
     pack = {
-        "model": "moge-2",
+        "model": "zone-b-mesa-hull" if STEP.name == "05-solids-clean" else "moge-2",
         "licence": "MIT",
         "camera": "steps/zone-c/01-camera/camera.json",
         "masks": "steps/zone-c/02-masks/masks.json",
         "key": "steps/zone-c/03-terrain/key-zc1.jpg",
         "attempt": attempt,
-        "thicknessM": 0.0,
-        "sinkM": 1.0,
+        "thicknessM": 5.6 if STEP.name == "05-solids-clean" else 0.0,
+        "hull": "zone-b-voxel" if STEP.name == "05-solids-clean" else "shell",
+        "sinkM": 0.45 if STEP.name == "05-solids-clean" else 0.30,
         "gridStep": MESH_STEP,
         "stretchMax": STRETCH_MAX,
-        "atlas": "steps/zone-c/05-solids/data/plate-atlas.jpg",
+        "atlas": str((DATA / "plate-atlas.jpg").relative_to(REPO)),
         "atlasPx": [atlas["width"], atlas["height"]],
         "plates": atlas["plates"],
         "objects": meta_objs,
@@ -541,11 +572,15 @@ def build(attempt: int):
     plan = load_plan()
     t = time.perf_counter()
     cache = DATA / "moge-cache.npz"
+    legacy = REPO / "steps" / "zone-c" / "05-solids" / "data" / "moge-cache.npz"
     cached = None
-    if cache.exists():
-        z = np.load(cache)
+    for candidate in (cache, legacy):
+        if not candidate.exists():
+            continue
+        z = np.load(candidate)
         if points_ok(z["points"]):
             cached = z
+            break
     if cached is not None:
         points = cached["points"]
         depth = cached["depth"]
@@ -557,22 +592,85 @@ def build(attempt: int):
         np.savez_compressed(cache, points=points, depth=depth, wh=np.array(wh))
         stages["moge-2"] = round(time.perf_counter() - t, 3)
     world = world_from_points(points, cam)
+    z_fwd = points[..., 2].astype(np.float64)
     h, origin, step = load_ground()
 
     def ground(x, z, _h=h, _o=origin, _s=step):
         return ground_y(_h, _o, _s, float(x), float(z))
 
-    _right, _up, forward = camera_axes(cam["yaw"], cam["pitch"])
-    world = world + key_luma_disp(KEY, world.shape[:2], forward)
+    right, up, forward = camera_axes(cam["yaw"], cam["pitch"])
+    volume = STEP.name == "05-solids-clean"
+    if not volume:
+        world = world + key_luma_disp(KEY, world.shape[:2], forward)
+    rays = ray_directions(cam["yaw"], cam["pitch"], cam["fov"], wh[0], wh[1])
+    eye = np.array([cam["x"], cam["eye"], cam["z"]], np.float64)
+    cos_f = np.clip(np.sum(rays * forward.reshape(1, 1, 3), axis=-1), 0.05, None)
     key = Image.open(KEY)
     t = time.perf_counter()
     atlas = build_atlas(plan, DATA / "plate-atlas.jpg")
     stages["atlas"] = round(time.perf_counter() - t, 3)
     solids = []
+    feature_rows = []
     t = time.perf_counter()
+    key_rgb = np.asarray(Image.open(KEY).convert("RGB").resize(wh, Image.Resampling.BILINEAR))
+    if volume:
+        # Zone B mesa base. Depth is the median placement of the silhouette.
+        # Per-pixel MoGe displacement is the soup SmiR rejected. Do not call it.
+        from zone_c_clean_hull import CELL, build_clean_solid
+        atlas["keyWh"] = key.size
     for name, mask_name in SOLIDS:
         m = np.asarray(Image.open(MASK_DIR / mask_name).convert("L").resize(wh, Image.Resampling.NEAREST)) > 127
-        solid = build_closed(name, m, world, depth, forward, plan, ground, key.size, atlas)
+        if volume:
+            m = _binary_close(fill_small_holes(m, MIN_HOLE_PX), 1)
+            _field, rows = feature_field(name, m, key_rgb, depth)
+            print(name, "feature bands", [(r["id"], r["protrusionM"]) for r in rows], flush=True)
+            solid = build_clean_solid(
+                name, m, depth, rays, eye, forward, right, up, cam, plan, ground,
+                key.size, atlas, rows,
+            )
+            feature_rows.extend(solid.pop("featuresKept"))
+            feature_rows.extend(solid.pop("featuresDropped"))
+            weld = solid["weld"]
+            print(name, "quads", solid["quads"], "tris", solid["idx"].size // 3,
+                  "stretch", solid["stretchP95"], "max", solid["stretchMax"],
+                  "weld", weld, "cell", CELL, "depth", solid.get("placementDepthM"), flush=True)
+            if weld["open"] or weld["nonManifold"]:
+                raise RuntimeError(f"{name} not sealed after weld: {weld}")
+            solids.append(solid)
+            continue
+        want_w, want_h = SPAN_M[name]
+
+        def span_ok(mask_i, z_i, _w=want_w, _h=want_h):
+            sel = mask_i & np.isfinite(z_i)
+            if int(sel.sum()) < 32:
+                return False
+            dist = z_i / cos_f
+            pts = eye + rays * dist[..., None]
+            return float(pts[sel, 0].max() - pts[sel, 0].min()) >= _w and float(pts[sel, 1].max() - pts[sel, 1].min()) >= _h
+
+        z_seed = np.where(m, z_fwd, np.nan)
+        grown, z_use, radius = grow_until(m, z_seed, 160, span_ok)
+        grown = _binary_close(fill_small_holes(grown, MIN_HOLE_PX), 1)
+        # Pixels the close just added still hold sky depth. Copy forward-depth inward.
+        hh, ww = grown.shape
+        for _ in range(3):
+            need = grown & ~np.isfinite(z_use)
+            if not np.any(need):
+                break
+            pad = np.pad(np.where(np.isfinite(z_use), z_use, np.inf), 1, constant_values=np.inf)
+            near = np.full((hh, ww), np.inf)
+            for dy in (-1, 0, 1):
+                for dx in (-1, 0, 1):
+                    near = np.minimum(near, pad[1 + dy : 1 + dy + hh, 1 + dx : 1 + dx + ww])
+            z_use = np.where(need & np.isfinite(near), near, z_use)
+        fresh = grown & ~m
+        if np.any(fresh):
+            dist = np.where(fresh, z_use / cos_f, 0.0)
+            world = np.where(fresh[..., None], eye + rays * dist[..., None], world)
+        px = int(grown.sum())
+        step_px = 4 if px > 90000 else 3 if px > 45000 else MESH_STEP
+        print(name, "grow_px", radius, "mask_px", px, "step", step_px, flush=True)
+        solid = build_closed(name, grown, world, depth, forward, plan, ground, key.size, atlas, step_px=step_px)
         weld = solid["weld"]
         print(name, "quads", solid["quads"], "tris", solid["idx"].size // 3,
               "stretch", solid["stretchP95"], "max", solid["stretchMax"],
@@ -582,6 +680,20 @@ def build(attempt: int):
         solids.append(solid)
     stages["mesh"] = round(time.perf_counter() - t, 3)
     stages["total"] = round(time.perf_counter() - t0, 3)
+    if volume:
+        work = STEP / "work"
+        work.mkdir(parents=True, exist_ok=True)
+        (work / "features.json").write_text(json.dumps({
+            "model": "zone-b-mesa-hull",
+            "hull": "hull.py clean_profile silhouette + voxel solidify (blender_mesa voxel class 0.40 m). MoGe-2 median depth places the solid. Raw per-pixel displacement is banned.",
+            "cellM": 0.40,
+            "slopePerM": 0.20,
+            "stairM": 1.20,
+            "stairEveryM": 3.20,
+            "features": feature_rows,
+            "kept": [r for r in feature_rows if r.get("decision") == "kept"],
+            "dropped": [r for r in feature_rows if r.get("decision") != "kept"],
+        }, indent=2))
     pack = write_pack(solids, stages, attempt, plan, atlas)
     print("wrote", DATA / "solids.json", "sec", stages)
     return pack
@@ -609,7 +721,41 @@ def write_sheet():
     canvas.paste(phone, (key.width, (height - phone.height) // 2))
     out = STEP / "sheet-phone.jpg"
     canvas.save(out, quality=95)
-    return "steps/zone-c/05-solids/sheet-phone.jpg"
+    return str((STEP / "sheet-phone.jpg").relative_to(REPO))
+
+
+def write_oblique_sheet():
+    """45° orbit captures from the untextured-area gate, one column per solid."""
+    names = [n for n, _ in SOLIDS]
+    paths = []
+    for name in names:
+        for cand in (
+            STEP / "object-gate" / f"untextured-{name}-orbit.png",
+            STEP / "object-gate" / name / "untextured-orbit.png",
+        ):
+            if cand.exists():
+                paths.append(cand)
+                break
+    if len(paths) < len(names):
+        fallback = STEP / "renders" / "plus-30.png"
+        if not paths and fallback.exists():
+            paths = [fallback]
+        elif not paths:
+            return None
+    ims = [Image.open(p).convert("RGB") for p in paths]
+    h = 640
+    cols = []
+    for im in ims:
+        w = max(1, int(im.width * h / im.height))
+        cols.append(im.resize((w, h), Image.Resampling.BILINEAR))
+    canvas = Image.new("RGB", (sum(c.width for c in cols), h), (12, 14, 12))
+    x = 0
+    for c in cols:
+        canvas.paste(c, (x, 0))
+        x += c.width
+    out = STEP / "oblique-sheet.jpg"
+    canvas.save(out, quality=90)
+    return str(out.relative_to(REPO))
 
 
 def score():
@@ -638,6 +784,7 @@ def score():
             "pixels": int(mask.sum()),
         }
     sheet = write_sheet()
+    write_oblique_sheet()
     gate_path = STEP / "object-gate" / "report.json"
     gate = None
     if gate_path.exists():
@@ -646,7 +793,7 @@ def score():
             "tool": "object-gate",
             "scene": "tools/object-gate/specs/zone-c/solids-scene.yaml",
             "verdict": gate.get("verdict"),
-            "report": "steps/zone-c/05-solids/object-gate/report.json",
+            "report": str((STEP / "object-gate" / "report.json").relative_to(REPO)),
         }
         (STEP / "kit-gate-result.json").write_text(json.dumps(kit, indent=2))
     stretches = {o["name"]: o["stretchP95"] for o in pack["objects"]}
@@ -672,15 +819,23 @@ def score():
     return numbers
 
 
+def _flag(name: str) -> str | None:
+    if name not in sys.argv:
+        return None
+    i = sys.argv.index(name)
+    if i + 1 >= len(sys.argv):
+        raise SystemExit(f"missing value for {name}")
+    return sys.argv[i + 1]
+
+
 def main():
     if len(sys.argv) < 2 or sys.argv[1] not in ("build", "score"):
-        raise SystemExit("usage: zone_c_solids.py build [--attempt N] | score")
+        raise SystemExit("usage: zone_c_solids.py build|score [--attempt N] [--out DIR]")
+    configure(_flag("--out"))
     if sys.argv[1] == "score":
         score()
         return
-    attempt = 1
-    if "--attempt" in sys.argv:
-        attempt = int(sys.argv[sys.argv.index("--attempt") + 1])
+    attempt = int(_flag("--attempt") or 1)
     build(attempt)
 
 

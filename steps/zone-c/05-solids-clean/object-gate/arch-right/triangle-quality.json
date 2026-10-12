@@ -1,0 +1,21 @@
+{
+ "tris": 2860,
+ "aspectP95": 1.414,
+ "sliverFrac": 0,
+ "facingTinyFrac": 0,
+ "spikeFrac": 0,
+ "normalP90Deg": 0,
+ "pass": true,
+ "limits": {
+  "maxAspectP95": 8,
+  "sliverAspect": 20,
+  "maxSliverFrac": 0.02,
+  "maxFacingTinyFrac": 0.05,
+  "maxSpikeFrac": 0.03,
+  "maxNormalP90Deg": 42,
+  "fovDeg": 51.47,
+  "distM": 30,
+  "heightPx": 1600,
+  "minFacing": 0.35
+ }
+}

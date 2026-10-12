@@ -5,7 +5,8 @@ keyCrop: ../../../../steps/zone-c/03-terrain/key-zc1.jpg
 # Shadow is off this list: law 67, unlit Imagine, no real-time shadow.
 # Checklist is off this list: no vision record. Colour is CIEDE2000 in numbers.json.
 thresholds:
-  checks: [texel, textures, repetition, morph, grounding, geometry, runtime, pending]
+  checks: [texel, textures, repetition, morph, grounding, geometry, runtime, pending, triangle-quality, untextured-area, oblique-profile]
+  morph: {minIoU: 0.91}
   geometry:
     maxOpenEdges: 0
     maxNonManifold: 0

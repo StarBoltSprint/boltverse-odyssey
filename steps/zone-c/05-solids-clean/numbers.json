@@ -1,0 +1,206 @@
+{
+  "attempt": 2,
+  "costImagine": 0,
+  "stretchP95": {
+    "arch-left": 1.1226,
+    "arch-right": 1.1469,
+    "cliff-left": 1.0561,
+    "gorge-rock": 1.0203,
+    "cliff-right": 1.0876
+  },
+  "stretchWorst": 1.1469,
+  "stretchPass": true,
+  "drawCallsPlanned": 11,
+  "sameHull": true,
+  "edges": {
+    "arch-left": {
+      "open": 0,
+      "nonManifold": 0,
+      "degenerate": 0
+    },
+    "arch-right": {
+      "open": 0,
+      "nonManifold": 0,
+      "degenerate": 0
+    },
+    "cliff-left": {
+      "open": 0,
+      "nonManifold": 0,
+      "degenerate": 0
+    },
+    "gorge-rock": {
+      "open": 0,
+      "nonManifold": 0,
+      "degenerate": 0
+    },
+    "cliff-right": {
+      "open": 0,
+      "nonManifold": 0,
+      "degenerate": 0
+    }
+  },
+  "pending": {
+    "arch-left": {
+      "13": {
+        "tris": 756,
+        "kinds": {
+          "bottom": 756
+        },
+        "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-13-causeway-underside.jpg",
+        "id": "causeway-underside",
+        "bound": true
+      },
+      "5": {
+        "tris": 3080,
+        "kinds": {
+          "inner": 2290,
+          "back": 790
+        },
+        "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-05-arch-left-inner.jpg",
+        "id": "arch-left-inner",
+        "bound": true
+      },
+      "11": {
+        "tris": 1494,
+        "kinds": {
+          "side": 1494
+        },
+        "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-11-leaf.jpg",
+        "id": "leaf",
+        "bound": true
+      }
+    },
+    "arch-right": {
+      "12": {
+        "tris": 1068,
+        "kinds": {
+          "side": 1068
+        },
+        "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-12-fern.jpg",
+        "id": "fern",
+        "bound": true
+      },
+      "6": {
+        "tris": 1244,
+        "kinds": {
+          "inner": 992,
+          "back": 252
+        },
+        "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-06-arch-right-inner.jpg",
+        "id": "arch-right-inner",
+        "bound": true
+      },
+      "13": {
+        "tris": 296,
+        "kinds": {
+          "bottom": 296
+        },
+        "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-13-causeway-underside.jpg",
+        "id": "causeway-underside",
+        "bound": true
+      }
+    },
+    "cliff-left": {
+      "7": {
+        "tris": 2168,
+        "kinds": {
+          "back": 2168
+        },
+        "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-07-wall-left.jpg",
+        "id": "wall-left",
+        "bound": true
+      },
+      "9": {
+        "tris": 8666,
+        "kinds": {
+          "side": 8666
+        },
+        "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-09-waterfall.jpg",
+        "id": "waterfall",
+        "bound": true
+      },
+      "13": {
+        "tris": 1750,
+        "kinds": {
+          "bottom": 1750
+        },
+        "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-13-causeway-underside.jpg",
+        "id": "causeway-underside",
+        "bound": true
+      }
+    },
+    "gorge-rock": {
+      "14": {
+        "tris": 3960,
+        "kinds": {
+          "back": 3960
+        },
+        "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-14-gorge-closure.jpg",
+        "id": "gorge-closure",
+        "bound": true
+      },
+      "10": {
+        "tris": 13448,
+        "kinds": {
+          "side": 13448
+        },
+        "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-10-mist.jpg",
+        "id": "mist",
+        "bound": true
+      },
+      "13": {
+        "tris": 3312,
+        "kinds": {
+          "bottom": 3312
+        },
+        "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-13-causeway-underside.jpg",
+        "id": "causeway-underside",
+        "bound": true
+      }
+    },
+    "cliff-right": {
+      "15": {
+        "tris": 5186,
+        "kinds": {
+          "side": 5186
+        },
+        "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-15-planet.jpg",
+        "id": "planet",
+        "bound": true
+      },
+      "8": {
+        "tris": 628,
+        "kinds": {
+          "back": 628
+        },
+        "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-08-wall-right.jpg",
+        "id": "wall-right",
+        "bound": true
+      },
+      "13": {
+        "tris": 314,
+        "kinds": {
+          "bottom": 314
+        },
+        "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-13-causeway-underside.jpg",
+        "id": "causeway-underside",
+        "bound": true
+      }
+    }
+  },
+  "colour": {
+    "metric": "CIEDE2000",
+    "mean": 10.122,
+    "median": 0.463,
+    "pixels": 327147
+  },
+  "timingsSec": {
+    "moge-2": 0.0,
+    "atlas": 0.192,
+    "mesh": 11.547,
+    "total": 12.02
+  },
+  "sheet": "steps/zone-c/05-solids-clean/sheet-phone.jpg",
+  "gateVerdict": "FAIL",
+  "pass": false
+}

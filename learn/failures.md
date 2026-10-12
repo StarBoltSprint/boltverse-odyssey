@@ -1086,3 +1086,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Stopped after the second gated rebuild. `numbers.json` `pass` is false. Do not bring back the full-height skirt. A later cook has to keep one silhouette and still put a surface under the lower 20% of cliff-left and the gorge without a second shape. |
 | Guard | Object-gate verdict FAIL in `steps/zone-c/05-solids/object-gate/report.md`. Builder refuses a pack whose weld is open or non-manifold. |
 | Sources | `tools/imagine-to-3d/zone_c_mesh.py`, `steps/zone-c/05-solids/REPORT.md`. |
+
+### 2026-10-12 — Zone C clean hull is sealed and still grey up close
+
+| | |
+| --- | --- |
+| Take | zc/05-solids (SPEC-ZC-SOLIDS-CLEAN-1012) |
+| Defect | Attempt 2 voxel hulls are sealed, UV max is 1.041–1.268, and triangle-quality aspect p95 is 1.414. The phone gate still FAILs. Approach min IoU is 0.836, 0.819, 0.848, 0.822, 0.757. Every solid fails oblique-profile on at least one 8 m yaw (residuals 0.05–0.40 m, need 0.5 m). Untextured fractions stay far above 0.50% (arch-left 8 m 65.42%). The grounding row PASSes a mesh sunk 0.69–0.80 m. |
+| Root cause | A 0.40 m axis-aligned hull removes the MoGe soup and still reads as a slab at 8 m, so the plane residual stays under 0.5 m. Stair gaps and dark plate samples stay inside the untextured mask. `sameHull` does not keep a thin arch hole stable in the 300 m raster. The grounding row treats a negative float as success. |
+| Fix | Stopped after attempt 2. `numbers.json` `pass` is false. Vegetation masses and the cliff-right talus were already dropped. Do not displace MoGe per pixel to chase the oblique row. Do not lower min IoU or the 0.5% untextured cap. |
+| Guard | `node tools/object-gate/cli.mjs --scene tools/object-gate/specs/zone-c/solids-scene.yaml --out steps/zone-c/05-solids-clean/object-gate` verdict FAIL. Self-test: noisy depth aspect 80.012 FAILs triangle-quality; a grey wall fraction 0.458 FAILs untextured-area; a flat quad FAILs oblique-profile. |
+| Sources | `tools/imagine-to-3d/zone_c_clean_hull.py`, `tools/object-gate/lib/triangle-quality.mjs`, `tools/object-gate/lib/untextured.mjs`, `tools/object-gate/lib/oblique.mjs`, `steps/zone-c/05-solids-clean/REPORT.md`. |
