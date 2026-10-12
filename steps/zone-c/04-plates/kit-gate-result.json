@@ -1,0 +1,17 @@
+{
+  "pass": true,
+  "plates": [
+    "plate-05-arch-left-inner.jpg",
+    "plate-06-arch-right-inner.jpg",
+    "plate-07-wall-left.jpg",
+    "plate-08-wall-right.jpg",
+    "plate-09-waterfall.jpg",
+    "plate-10-mist.jpg",
+    "plate-11-leaf.jpg",
+    "plate-12-fern.jpg",
+    "plate-13-causeway-underside.jpg",
+    "plate-14-gorge-closure.jpg",
+    "plate-15-planet.jpg"
+  ],
+  "fails": []
+}

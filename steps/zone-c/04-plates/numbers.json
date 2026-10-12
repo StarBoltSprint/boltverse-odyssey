@@ -1,0 +1,176 @@
+{
+  "plates": 11,
+  "imagine_calls": 13,
+  "tool": "image_edit",
+  "retries": {
+    "plate-06-arch-right-inner.jpg": 1,
+    "plate-08-wall-right.jpg": 1
+  },
+  "per_plate": {
+    "plate-05-arch-left-inner.jpg": {
+      "source_image": "1.jpg",
+      "native_size": [
+        1008,
+        1024
+      ],
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 646716,
+      "imagine_calls": 1,
+      "fit": "mirror-pad 1008x1024 -> 1024x1024",
+      "note": "kept first"
+    },
+    "plate-06-arch-right-inner.jpg": {
+      "source_image": "8.jpg",
+      "native_size": [
+        1024,
+        1024
+      ],
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 621800,
+      "imagine_calls": 2,
+      "fit": "native",
+      "note": "retry was a full canyon; kept the through-ring attempt"
+    },
+    "plate-07-wall-left.jpg": {
+      "source_image": "3.jpg",
+      "native_size": [
+        1008,
+        1024
+      ],
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 529236,
+      "imagine_calls": 1,
+      "fit": "mirror-pad 1008x1024 -> 1024x1024",
+      "note": "kept first"
+    },
+    "plate-08-wall-right.jpg": {
+      "source_image": "9.jpg",
+      "native_size": [
+        1024,
+        1024
+      ],
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 558087,
+      "imagine_calls": 2,
+      "fit": "native",
+      "note": "still has depth; stop after 2"
+    },
+    "plate-09-waterfall.jpg": {
+      "source_image": "6.jpg",
+      "native_size": [
+        1008,
+        1024
+      ],
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 251245,
+      "imagine_calls": 1,
+      "fit": "mirror-pad 1008x1024 -> 1024x1024",
+      "note": "kept first"
+    },
+    "plate-10-mist.jpg": {
+      "source_image": "5.jpg",
+      "native_size": [
+        1008,
+        1024
+      ],
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 90090,
+      "imagine_calls": 1,
+      "fit": "mirror-pad 1008x1024 -> 1024x1024",
+      "note": "kept first"
+    },
+    "plate-11-leaf.jpg": {
+      "source_image": "2.jpg",
+      "native_size": [
+        1024,
+        1024
+      ],
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 219220,
+      "imagine_calls": 1,
+      "fit": "native",
+      "note": "kept first"
+    },
+    "plate-12-fern.jpg": {
+      "source_image": "7.jpg",
+      "native_size": [
+        1024,
+        1024
+      ],
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 325357,
+      "imagine_calls": 1,
+      "fit": "native",
+      "note": "kept first"
+    },
+    "plate-13-causeway-underside.jpg": {
+      "source_image": "11.jpg",
+      "native_size": [
+        1024,
+        1024
+      ],
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 486793,
+      "imagine_calls": 1,
+      "fit": "native",
+      "note": "kept first"
+    },
+    "plate-14-gorge-closure.jpg": {
+      "source_image": "10.jpg",
+      "native_size": [
+        1024,
+        1024
+      ],
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 602179,
+      "imagine_calls": 1,
+      "fit": "native",
+      "note": "kept first"
+    },
+    "plate-15-planet.jpg": {
+      "source_image": "12.jpg",
+      "native_size": [
+        1024,
+        1024
+      ],
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 226369,
+      "imagine_calls": 1,
+      "fit": "native",
+      "note": "kept first"
+    }
+  }
+}
