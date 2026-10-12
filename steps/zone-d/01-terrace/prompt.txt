@@ -1,1 +1,1 @@
-Read spec.md in .grok/kit-spec-path and do exactly that. Only 3 image_edit calls.
+Read spec.md in .grok/kit-spec-path and do exactly that. Only 1 image_edit call.

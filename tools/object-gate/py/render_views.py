@@ -62,9 +62,10 @@ def look(pos, tgt):
 meta = {}
 for name, v in views.items():
     look(v['pos'], v['tgt']); bpy.context.view_layer.update()
-    sc.render.filepath = os.path.join(out, name + '.png'); bpy.ops.render.render(write_still=True)
+    if '--nocolor' not in opt:
+        sc.render.filepath = os.path.join(out, name + '.png'); bpy.ops.render.render(write_still=True)
     # ray-cast passes at 1/4 res
-    rw, rh = W // 4, H // 4; D = np.full((rh, rw), np.nan, np.float32); N = np.zeros((rh, rw, 3), np.float32)
+    rw, rh = W // int(opt.get('--raydiv', 4)), H // int(opt.get('--raydiv', 4)); D = np.full((rh, rw), np.nan, np.float32); N = np.zeros((rh, rw, 3), np.float32)
     FID = np.full((rh, rw), -1, np.int32); COV = np.full((rh, rw), -1, np.int8)
     fr = cam.data.view_frame(scene=sc); mw = cam.matrix_world
     tr, tl, bl = [mw @ p for p in (fr[0], fr[3], fr[2])]

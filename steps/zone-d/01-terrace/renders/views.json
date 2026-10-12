@@ -64,6 +64,19 @@
     2.6
    ],
    "png": "close3m.png"
+  },
+  "close3m-up": {
+   "pos": [
+    0.5,
+    -1.8,
+    1.7
+   ],
+   "tgt": [
+    0.3,
+    -0.2,
+    6.5
+   ],
+   "png": "close3m-up.png"
   }
  },
  "bbox": [

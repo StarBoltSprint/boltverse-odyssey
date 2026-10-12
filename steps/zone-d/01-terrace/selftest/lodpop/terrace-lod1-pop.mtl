@@ -1,0 +1,6 @@
+newmtl front
+map_Kd ../plates/plate-front.jpg
+newmtl side
+map_Kd ../plates/plate-side.jpg
+newmtl top
+map_Kd ../plates/top.jpg

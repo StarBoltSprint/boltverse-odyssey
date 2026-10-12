@@ -1,0 +1,17 @@
+00:00.080  system.path      | WARNING Could not get a list of mounted file-systems
+/workspace/grokcli/wt/zd-terrace-1012/tools/object-gate/py/render_views.py:19: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  if not m or not m.use_nodes: continue
+/workspace/grokcli/wt/zd-terrace-1012/tools/object-gate/py/render_views.py:41: DeprecationWarning: 'World.use_nodes' is expected to be removed in Blender 6.0
+  w = bpy.data.worlds.new('w'); sc.world = w; w.use_nodes = True
+/workspace/grokcli/wt/zd-terrace-1012/tools/object-gate/py/render_views.py:48: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  gm = bpy.data.materials.new('snow'); gm.use_nodes = True; gm.node_tree.nodes['Principled BSDF'].inputs[0].default_value = (0.78, 0.84, 0.9, 1)
+00:28.073  render           | Saved: 'renders/phone.png'
+00:54.284  render           | Saved: 'renders/oblique45.png'
+01:08.293  render           | Saved: 'renders/grazing.png'
+01:32.472  render           | Saved: 'renders/close8m.png'
+02:02.572  render           | Saved: 'renders/close3m.png'
+02:23.370  render           | Saved: 'renders/close3m-up.png'
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:12:34)
+OBJ import of 'terrace-lod0.obj' took 38.67 ms
+
+Blender quit

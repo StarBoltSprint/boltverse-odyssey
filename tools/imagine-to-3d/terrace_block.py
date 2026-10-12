@@ -23,12 +23,28 @@ DOORS = [(496, 579, 691), (468, 568, 479), (461, 551, 270)]   # plate px x0,x1,t
 fd = np.load(f'{step}/work/plate-front-depth.npy'); sd = np.load(f'{step}/work/plate-side-depth.npy')
 def hp(d, sig):
     r = d - ndi.gaussian_filter(d, sig); return np.clip(r, -0.6, 0.6)
-FREL, SREL = hp(fd, 12), hp(sd, 12)
-AMP = 0.12
-V, UVs, F = [], [], {'front': [], 'side': []}   # faces: (v idx tri), uv per vertex-in-face
+FREL, SREL = ndi.gaussian_filter(hp(fd, 12), 2.5), ndi.gaussian_filter(hp(sd, 12), 2.5)   # slope-limited so UV stretch stays <= 1.3
+AMP = 0.06
+UNDER_OFF = [64 * S, 16 * S, 8 * S]   # first shadowed-basalt row below each cornice in the front plate (measured)
+V, UVs, F = [], [], {'front': [], 'side': [], 'top': []}
+TS, TX0 = 0.029, 525          # top plate: m per px across, centre column
+TOPROWS = [(720, 665), (520, 484), (340, 116)]   # per tier: (front-lip row, row at next tier front / back)   # faces: (v idx tri), uv per vertex-in-face
 def addv(p, uv): V.append(p); UVs.append(uv); return len(V) - 1
 def fuv(x, y): return ((FX0 + x / S) / 1024, 1 - (FY0 - y / S) / 1024)
-def suv(z, y): return ((SX0 + z / S) / 1024, 1 - (SY0 - y / S) / 1024)
+SIDEROWS = [(864, 645), (656, 480), (480, 288)]
+def suv(z, y):
+    k = 0 if y < T[0]['c1'] - 1e-6 else (1 if y < T[1]['c1'] - 1e-6 else 2)
+    if abs(y - T[0]['c1']) < 1e-6 or abs(y - T[1]['c1']) < 1e-6: k = SIDE_K[0] if SIDE_K else k
+    b, t = SIDEROWS[k]; f = (y - T[k]['y0']) / (T[k]['c1'] - T[k]['y0'])
+    return ((SX0 + z / S) / 1024, 1 - (b + (t - b) * f) / 1024)
+SIDE_K = []
+def tuv(k, cz, p):
+    r0, r1 = TOPROWS[k]; zend = T[k + 1]['z'] if k < 2 else BACK
+    row = r0 + (cz - p[2]) / (cz - zend) * (r1 - r0)
+    return ((TX0 + p[0] / TS) / 1024, 1 - row / 1024)
+def under_x(x, X0, X1, m=0.25):
+    # door columns carry the door's black top, not basalt: read the adjacent basalt instead (pure translation, no stretch)
+    return x - (X1 - X0 + 2 * m) if X0 - m < x < X1 + m else x
 def samp(a, uv):
     px = int(np.clip(uv[0] * 1024, 0, 1023)); py = int(np.clip((1 - uv[1]) * 1024, 0, 1023)); return float(a[py, px])
 def ticks(a, b, step, must=()):
@@ -61,16 +77,17 @@ def box_quad(c0, du, dv, nu, nv, mat, uvf, normal):  # plain quad grid on a rect
 def n_(L, g): return max(1, int(round(L / g)))
 for k, t in enumerate(T):
     hw, z0, y0, y1 = t['hw'], t['z'], t['y0'], t['y1']
+    SIDE_K[:] = [k]
     dx0, dx1, dtop = DOORS[k]; X0, X1 = (dx0 - FX0) * S, (dx1 - FX0) * S; DY = ym(dtop)
     inside = lambda u, v, X0=X0, X1=X1, y0=y0, DY=DY: X0 < u < X1 and y0 <= v < DY
     xs = ticks(-hw, hw, GRID, (X0, X1)); ys = ticks(y0, y1, GRID, (DY,))
     # front facade (+Z) with the doorway hole, MoGe relief except at borders and door jambs (relief locked there)
     quadgrid(lambda u, v: (u, v, z0), xs, ys, 'front', lambda p: fuv(p[0], p[1]), (0, 0, 1), keep=lambda u, v: not inside(u, v),
-             relief=FREL if LOD < 2 else None, lock=lambda u, v, X0=X0, X1=X1, DY=DY: max(X0 - u, u - X1, v - DY, 0) if not inside(u, v) else 0)
+             relief=FREL if LOD < 2 else None, lock=lambda u, v, X0=X0, X1=X1, DY=DY: 0.5 * max(X0 - u, u - X1, v - DY, 0) if not inside(u, v) else 0)
     # doorway recess: back wall, jambs, lintel underside, floor
     box_quad((X0, y0, z0 - DOOR_D), (X1 - X0, 0, 0), (0, DY - y0, 0), n_(X1 - X0, GRID), n_(DY - y0, GRID), 'front', lambda p: fuv(p[0], p[1]), (0, 0, 1))
-    box_quad((X0, y0, z0), (0, 0, -DOOR_D), (0, DY - y0, 0), n_(DOOR_D, SGRID), n_(DY - y0, SGRID), 'side', lambda p, z0=z0: suv(p[2] - z0 - 3.0, p[1]), (1, 0, 0))
-    box_quad((X1, y0, z0 - DOOR_D), (0, 0, DOOR_D), (0, DY - y0, 0), n_(DOOR_D, SGRID), n_(DY - y0, SGRID), 'side', lambda p, z0=z0: suv(p[2] - z0 - 3.0, p[1]), (-1, 0, 0))
+    box_quad((X0, y0, z0), (0, 0, -DOOR_D), (0, DY - y0, 0), n_(DOOR_D, SGRID), n_(DY - y0, SGRID), 'front', lambda p, z0=z0, X0=X0: fuv(X0 - (z0 - p[2]), p[1]), (1, 0, 0))
+    box_quad((X1, y0, z0 - DOOR_D), (0, 0, DOOR_D), (0, DY - y0, 0), n_(DOOR_D, SGRID), n_(DY - y0, SGRID), 'front', lambda p, z0=z0, X1=X1: fuv(X1 + (z0 - p[2]), p[1]), (-1, 0, 0))
     box_quad((X0, DY, z0 - DOOR_D), (X1 - X0, 0, 0), (0, 0, DOOR_D), n_(X1 - X0, GRID), n_(DOOR_D, GRID), 'front', lambda p, DY=DY, z0=z0: fuv(p[0], DY - 0.02 - (z0 - p[2])), (0, -1, 0))
     box_quad((X0, y0 + 0.001, z0), (X1 - X0, 0, 0), (0, 0, -DOOR_D), n_(X1 - X0, GRID), n_(DOOR_D, GRID), 'front', lambda p, y0=y0, z0=z0: fuv(p[0], y0 + 0.05 + (z0 - p[2])), (0, 1, 0))
     # sides (+-X) from the side plate (right side = mirror of the left plate, declared)
@@ -82,33 +99,44 @@ for k, t in enumerate(T):
     # cornice slab: overhang CORN_OUT front, CORN_SIDE sides; rounded front-bottom lip (quarter cylinder)
     c0, c1 = y1, t['c1']; cz = z0 + CORN_OUT; cw = hw + CORN_SIDE; R = min(LIP_R, (c1 - c0) * 0.5)
     nx = n_(2 * cw, GRID)
-    box_quad((-cw, c0 + R, cz), (2 * cw, 0, 0), (0, c1 - c0 - R, 0), nx, n_(c1 - c0 - R, GRID), 'front', lambda p: fuv(p[0], p[1]), (0, 0, 1))
+    box_quad((-cw, c0 + R, cz), (2 * cw, 0, 0), (0, c1 - c0 - R, 0), nx, n_(c1 - c0 - R, GRID), 'front', lambda p, hw=hw, cw=cw: fuv(p[0] * hw / cw * 0.98, p[1]), (0, 0, 1))
     seg = 8
     for s in range(seg):
         a0, a1 = np.pi / 2 * s / seg, np.pi / 2 * (s + 1) / seg
         P0 = lambda a: (0, c0 + R - R * np.cos(a), cz - R + R * np.sin(a))
         p0, p1 = P0(a0), P0(a1)
-        box_quad((-cw, p1[1], p1[2]), (2 * cw, 0, 0), (0, p0[1] - p1[1], p0[2] - p1[2]), nx, 1, 'front', lambda p, c0=c0, R=R: fuv(p[0], c0 + R - R * (np.pi / 2 - np.arccos(np.clip((c0 + R - p[1]) / R, -1, 1)))), (0, 0, 1))
+        box_quad((-cw, p1[1], p1[2]), (2 * cw, 0, 0), (0, p0[1] - p1[1], p0[2] - p1[2]), nx, 1, 'front', lambda p, c0=c0, R=R, hw=hw, cw=cw: fuv(p[0] * hw / cw * 0.98, c0 + R - R * (np.pi / 2 - np.arccos(np.clip((c0 + R - p[1]) / R, -1, 1)))), (0, 0, 1))
     # underside (-Y) behind the lip back to the wall: cornice snow pixels continued (stretch measured by the gate)
-    box_quad((-cw, c0, z0), (2 * cw, 0, 0), (0, 0, cz - R - z0), nx, n_(cz - R - z0, GRID), 'front', lambda p, c0=c0: fuv(p[0], c0 + R - R * np.pi / 2 - ((cz - R) - p[2])), (0, -1, 0))
+    sc_ = hw / cw * 0.98; xa_, xb_ = (X0 - 0.25) / sc_, (X1 + 0.25) / sc_
+    for (ua, ub) in ((-cw, xa_), (xa_, xb_), (xb_, cw)):   # split at the door-shift seam so no quad straddles it
+        box_quad((ua, c0, z0), (ub - ua, 0, 0), (0, 0, cz - R - z0), n_(ub - ua, GRID), n_(cz - R - z0, GRID), 'front',
+                 lambda p, c0=c0, k=k, X0=X0, X1=X1, sc_=sc_, ua=ua, ub=ub: fuv(under_x(np.clip(p[0], ua + 1e-6, ub - 1e-6) * sc_, X0, X1), c0 - UNDER_OFF[k] - ((cz - R) - p[2])), (0, -1, 0))
+    for sgn in (-1, 1):
+        xa, xb = (hw, cw) if sgn > 0 else (-cw, -hw)
+        box_quad((xa, c0, BACK), (xb - xa, 0, 0), (0, 0, z0 - BACK), n_(cw - hw, GRID), n_(z0 - BACK, SGRID), 'side',
+                 lambda p, c0=c0, hw=hw: suv(p[2], c0 - 0.02 - (abs(p[0]) - hw)), (0, -1, 0))
+    box_quad((cw, c0, BACK), (-2 * cw, 0, 0), (0, c1 - c0, 0), n_(2 * cw, 0.8), n_(c1 - c0, 0.3), 'front', lambda p, hw=hw, cw=cw: fuv(-p[0] * hw / cw * 0.98, p[1]), (0, 0, -1))
     # cornice ends (+-X) and top (+Y, no top plate: front cornice band stretched, declared)
     for sgn in (-1, 1):
         box_quad((sgn * cw, c0, BACK), (0, 0, cz - BACK), (0, c1 - c0, 0), n_(cz - BACK, SGRID), n_(c1 - c0, SGRID), 'side', lambda p: suv(p[2] - CORN_OUT, p[1]), (sgn, 0, 0))
-    box_quad((-cw, c1, cz), (2 * cw, 0, 0), (0, 0, BACK - cz), n_(2 * cw, 0.8), n_(cz - BACK, 0.8), 'front', lambda p, c1=c1, c0=c0, cz=cz: fuv(p[0], c1 - 0.02 - (cz - p[2]) / (cz - BACK) * (c1 - c0 - 0.04)), (0, 1, 0))
+    box_quad((-cw, c1, cz), (2 * cw, 0, 0), (0, 0, BACK - cz), n_(2 * cw, 0.8), n_(cz - BACK, 0.8), 'top', lambda p, k=k, cz=cz: tuv(k, cz, p), (0, 1, 0))
     # icicles: cones under the front lip at the plate's own bright drip columns (rows just below the cornice)
     if True:
         img = np.asarray(Image.open(f'{step}/plates/plate-front.jpg').convert('L'), np.float32)
         r0 = int(FY0 - c0 / S)
         band = img[r0:r0 + 70]; xs_px = np.arange(int(FX0 - cw / S), int(FX0 + cw / S))
-        for px in xs_px[::6]:
-            col = band[:, px] > 150; L = 0
+        for px in xs_px[::int(__import__("os").environ.get("ICI_STRIDE", 6))]:
+            col = band[:, px] > 120; L = 0
             while L < len(col) and col[L]: L += 1
             if L < 6: continue
             x = (px - FX0) * S; Lm = L * S; r = 0.07; ns = 6
-            tip = addv((x, c0 - Lm, cz - R * 0.5), fuv(x, c0 - Lm)); ring = []
+            ring = []; circ = 2 * np.pi * r
+            for q in range(ns + 1):
+                a = 2 * np.pi * q / ns; p = (x + r * np.cos(a), c0 + 0.02, cz - R * 0.5 + r * np.sin(a))
+                ring.append(addv(p, fuv(x - circ / 2 + circ * q / ns, p[1])))
             for q in range(ns):
-                a = 2 * np.pi * q / ns; p = (x + r * np.cos(a), c0 + 0.02, cz - R * 0.5 + r * np.sin(a)); ring.append(addv(p, fuv(p[0], p[1])))
-            for q in range(ns): F['front'].append((ring[q], ring[(q + 1) % ns], tip))
+                tip = addv((x, c0 - Lm, cz - R * 0.5), fuv(x - circ / 2 + circ * (q + 0.5) / ns, c0 - np.hypot(Lm, r)))
+                F['front'].append((ring[q], ring[q + 1], tip))
 # ground skirt hidden 0.3 m below 0 (grounded: lowest visible y = 0)
 V = np.array(V); UVs = np.array(UVs)
 o = f'{step}/work/terrace-lod{LOD}'
@@ -116,22 +144,23 @@ with open(o + '.obj', 'w') as f:
     f.write(f'mtllib terrace-lod{LOD}.mtl\n')
     for p in V: f.write('v %.4f %.4f %.4f\n' % tuple(p))
     for t in UVs: f.write('vt %.5f %.5f\n' % tuple(t))
-    for m in ('front', 'side'):
+    for m in ('front', 'side', 'top'):
         f.write(f'usemtl {m}\n')
         for a, b, c in F[m]: f.write(f'f {a+1}/{a+1} {b+1}/{b+1} {c+1}/{c+1}\n')
 with open(o + '.mtl', 'w') as f:
-    f.write('newmtl front\nmap_Kd ../plates/plate-front.jpg\nnewmtl side\nmap_Kd ../plates/plate-side.jpg\n')
+    f.write('newmtl front\nmap_Kd ../plates/plate-front.jpg\nnewmtl side\nmap_Kd ../plates/plate-side.jpg\nnewmtl top\nmap_Kd ../plates/top.jpg\n')
 ntri = sum(len(v) for v in F.values())
 # per-triangle texel stretch (OBJ face order): metres per nominal plate px along both principal axes
 st = []
-for m in ('front', 'side'):
+dens = []
+for m in ('front', 'side', 'top'):
     for a_, b_, c_ in F[m]:
         P = V[[a_, b_, c_]]; Q = UVs[[a_, b_, c_]] * 1024 * S
         e1, e2 = P[1] - P[0], P[2] - P[0]; t1 = e1 / max(np.linalg.norm(e1), 1e-12); nn = np.cross(e1, e2); nn /= max(np.linalg.norm(nn), 1e-12); t2 = np.cross(nn, t1)
         A = np.array([[e1 @ t1, e2 @ t1], [e1 @ t2, e2 @ t2]]); B = np.array([Q[1] - Q[0], Q[2] - Q[0]]).T
-        try: J = A @ np.linalg.inv(B); sv = np.linalg.svd(J, compute_uv=False); st.append(float(max(sv[0], 1 / max(sv[1], 1e-9))))
-        except np.linalg.LinAlgError: st.append(1e9)
-np.save(f'{step}/work/terrace-lod{LOD}-stretch.npy', np.array(st, np.float32))
+        try: J = A @ np.linalg.inv(B); sv = np.linalg.svd(J, compute_uv=False); st.append(float(sv[0] / max(sv[1], 1e-9))); dens.append(float(sv[0]))
+        except np.linalg.LinAlgError: st.append(1e9); dens.append(1e9)
+np.save(f'{step}/work/terrace-lod{LOD}-stretch.npy', np.array(st, np.float32)); np.save(f'{step}/work/terrace-lod{LOD}-density.npy', np.array(dens, np.float32))
 json.dump(dict(lod=LOD, tris=ntri, verts=len(V), aabb=[V.min(0).tolist(), V.max(0).tolist()], doorDepthM=DOOR_D, corniceOutM=CORN_OUT,
                mPerPx=S, tiers=T, back=BACK), open(o + '.json', 'w'), indent=1)
 print(o, ntri, V.min(0).round(2), V.max(0).round(2))
