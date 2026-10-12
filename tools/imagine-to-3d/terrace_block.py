@@ -27,6 +27,7 @@ FREL, SREL = ndi.gaussian_filter(hp(fd, 12), 2.5), ndi.gaussian_filter(hp(sd, 12
 AMP = 0.06
 UNDER_OFF = [64 * S, 16 * S, 8 * S]   # first shadowed-basalt row below each cornice in the front plate (measured)
 V, UVs, F = [], [], {'front': [], 'side': [], 'top': []}
+ICI = []
 TS, TX0 = 0.029, 525          # top plate: m per px across, centre column
 TOPROWS = [(720, 665), (520, 484), (340, 116)]   # per tier: (front-lip row, row at next tier front / back)   # faces: (v idx tri), uv per vertex-in-face
 def addv(p, uv): V.append(p); UVs.append(uv); return len(V) - 1
@@ -44,7 +45,7 @@ def tuv(k, cz, p):
     return ((TX0 + p[0] / TS) / 1024, 1 - row / 1024)
 def under_x(x, X0, X1, m=0.25):
     # door columns carry the door's black top, not basalt: read the adjacent basalt instead (pure translation, no stretch)
-    return x - (X1 - X0 + 2 * m) if X0 - m < x < X1 + m else x
+    return (X1 + m + 4.5) - (x - (X0 - m)) if X0 - m < x < X1 + m else x   # flipped real basalt 4.5 m further along the same rows
 def samp(a, uv):
     px = int(np.clip(uv[0] * 1024, 0, 1023)); py = int(np.clip((1 - uv[1]) * 1024, 0, 1023)); return float(a[py, px])
 def ticks(a, b, step, must=()):
@@ -120,23 +121,49 @@ for k, t in enumerate(T):
     for sgn in (-1, 1):
         box_quad((sgn * cw, c0, BACK), (0, 0, cz - BACK), (0, c1 - c0, 0), n_(cz - BACK, SGRID), n_(c1 - c0, SGRID), 'side', lambda p: suv(p[2] - CORN_OUT, p[1]), (sgn, 0, 0))
     box_quad((-cw, c1, cz), (2 * cw, 0, 0), (0, 0, BACK - cz), n_(2 * cw, 0.8), n_(cz - BACK, 0.8), 'top', lambda p, k=k, cz=cz: tuv(k, cz, p), (0, 1, 0))
-    # icicles: cones under the front lip at the plate's own bright drip columns (rows just below the cornice)
-    if True:
-        img = np.asarray(Image.open(f'{step}/plates/plate-front.jpg').convert('L'), np.float32)
-        r0 = int(FY0 - c0 / S)
-        band = img[r0:r0 + 70]; xs_px = np.arange(int(FX0 - cw / S), int(FX0 + cw / S))
-        for px in xs_px[::int(__import__("os").environ.get("ICI_STRIDE", 6))]:
-            col = band[:, px] > 120; L = 0
-            while L < len(col) and col[L]: L += 1
-            if L < 6: continue
-            x = (px - FX0) * S; Lm = L * S; r = 0.07; ns = 6
-            ring = []; circ = 2 * np.pi * r
-            for q in range(ns + 1):
-                a = 2 * np.pi * q / ns; p = (x + r * np.cos(a), c0 + 0.02, cz - R * 0.5 + r * np.sin(a))
-                ring.append(addv(p, fuv(x - circ / 2 + circ * q / ns, p[1])))
+    # icicles (v3): one irregular cone under each white drip streak of the plate (front: plate-front under the lip;
+    # left end: plate-side). Same cones (count, length, position) in every LOD; only radial segments drop 6 -> 4 -> 3.
+    ns = 6; sc_c = hw / cw * 0.98   # 6 radial segments in every LOD: 6->4->3 failed the LOD outline gate (15 m: 725 px, blob 12)
+    def drips(img, r0, c_lo, c_hi):
+        # per column: tip = end of the bright run that starts in the snow body (r0-20); drip = tip below the fringe baseline
+        sub = img[r0 - 20:r0 + 110, c_lo:c_hi] > 135; sub = sub | (np.roll(sub, 1, 0) & np.roll(sub, -1, 0))
+        tips = np.array([np.argmin(np.r_[c, False]) if c[0] else 0 for c in sub.T], float)
+        base = np.percentile(tips[tips > 0], 30) if (tips > 0).any() else 0
+        L = ndi.median_filter(np.clip(tips - base, 0, None), 3); out = []
+        for j in range(len(L)):
+            if L[j] >= 3 and L[j] == L[max(0, j - 2):j + 3].max() and (not out or j - out[-1][0] >= 4): out.append((j, L[j]))
+        return [(c_lo + j, l) for j, l in out], int(r0 - 20 + base)
+    def cone(base, Lm, r, uvc, seed):
+        rng = np.random.default_rng(seed); tipdx, tipdz = rng.uniform(-0.3, 0.3, 2) * r; mid = 0.55 + rng.uniform(-0.1, 0.1)
+        rings = []
+        for (h, rr) in ((0.0, r), (0.45, r * mid)):
+            ring = []
             for q in range(ns):
-                tip = addv((x, c0 - Lm, cz - R * 0.5), fuv(x - circ / 2 + circ * (q + 0.5) / ns, c0 - np.hypot(Lm, r)))
-                F['front'].append((ring[q], ring[q + 1], tip))
+                a_ = 2 * np.pi * q / ns; p = (base[0] + rr * np.cos(a_) + tipdx * h, base[1] - Lm * h, base[2] + rr * np.sin(a_) + tipdz * h)
+                ring.append(addv(p, uvc(abs(((a_ + np.pi) % (2 * np.pi)) - np.pi) / np.pi, Lm * h, rr / r)))
+            rings.append(ring)
+        tip = addv((base[0] + tipdx, base[1] - Lm, base[2] + tipdz), uvc(0.5, Lm, 0.0))
+        for q in range(ns):
+            q1 = (q + 1) % ns; A, B = rings[0], rings[1]
+            F['front'].append((A[q], A[q1], B[q1])); F['front'].append((A[q], B[q1], B[q]))
+            F['front'].append((B[q], B[q1], tip))
+    img = np.asarray(Image.open(f'{step}/plates/plate-front.jpg').convert('L'), np.float32)
+    r0 = int(round(FY0 - c0 / S)); cl = int(FX0 - hw * 0.98 / S); ch = int(FX0 + hw * 0.98 / S)
+    dr, brow = drips(img, r0, cl, ch); ytop = FY0 * S - brow * S   # plate row of the fringe baseline -> metres
+    for px, L in dr:
+        xp = (px - FX0) * S; x = xp / sc_c; Lm = float(np.clip(L * S, 0.3, 1.2)); r = float(np.clip(0.04 + 0.06 * Lm, 0.05, 0.11))
+        cone((x, c0 + 0.02, cz - R * 0.5), Lm, r, lambda t, h, sc=1.0, xp=xp, r=r, ytop=ytop: fuv(xp + np.pi * r * sc * (t - 0.5), ytop - h), px * 7 + k)
+        ICI.append(dict(tier=k, side='front', x=round(x, 3), z=round(cz - R * 0.5, 3), lenM=round(Lm, 3), tipY=round(c0 + 0.02 - Lm, 3)))
+    # left cornice end (path side): drips from the side plate rows under this tier's cornice
+    simg = np.asarray(Image.open(f'{step}/plates/plate-side.jpg').convert('L'), np.float32)
+    b_, t_ = SIDEROWS[k]; srow = int(round(b_ + (t_ - b_) * (c0 - y0) / (c1 - y0)))
+    dr2, _ = drips(simg, srow, int(SX0 + (BACK - CORN_OUT) / S) + 4, int(SX0) - 2)
+    for px, L in dr2:
+        z = (px - SX0) * S + CORN_OUT; Lm = float(np.clip(L * S, 0.3, 1.2)); r = float(np.clip(0.04 + 0.06 * Lm, 0.05, 0.11))
+        if z > cz - 0.15 or z < BACK + 0.2: continue
+        zp = z - CORN_OUT
+        cone((-cw + 0.12, c0 + 0.02, z), Lm, r, lambda t, h, sc=1.0, zp=zp, r=r: suv(zp + np.pi * r * sc * (t - 0.5), c0 - h), px * 13 + k)
+        ICI.append(dict(tier=k, side='left', x=round(-cw + 0.12, 3), z=round(z, 3), lenM=round(Lm, 3), tipY=round(c0 + 0.02 - Lm, 3)))
 # ground skirt hidden 0.3 m below 0 (grounded: lowest visible y = 0)
 V = np.array(V); UVs = np.array(UVs)
 o = f'{step}/work/terrace-lod{LOD}'
@@ -161,6 +188,7 @@ for m in ('front', 'side', 'top'):
         try: J = A @ np.linalg.inv(B); sv = np.linalg.svd(J, compute_uv=False); st.append(float(sv[0] / max(sv[1], 1e-9))); dens.append(float(sv[0]))
         except np.linalg.LinAlgError: st.append(1e9); dens.append(1e9)
 np.save(f'{step}/work/terrace-lod{LOD}-stretch.npy', np.array(st, np.float32)); np.save(f'{step}/work/terrace-lod{LOD}-density.npy', np.array(dens, np.float32))
-json.dump(dict(lod=LOD, tris=ntri, verts=len(V), aabb=[V.min(0).tolist(), V.max(0).tolist()], doorDepthM=DOOR_D, corniceOutM=CORN_OUT,
+json.dump(ICI, open(o + '-icicles.json', 'w'))
+json.dump(dict(lod=LOD, tris=ntri, icicles=len(ICI), verts=len(V), aabb=[V.min(0).tolist(), V.max(0).tolist()], doorDepthM=DOOR_D, corniceOutM=CORN_OUT,
                mPerPx=S, tiers=T, back=BACK), open(o + '.json', 'w'), indent=1)
 print(o, ntri, V.min(0).round(2), V.max(0).round(2))

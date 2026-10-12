@@ -1,0 +1,25 @@
+{
+ "textures": [
+  {
+   "file": "assets/plate-front.jpg",
+   "source": "/workspace/grokcli/wt/zd-terrace-1012/steps/zone-d/01-terrace/plates/plate-front.jpg",
+   "nativeW": 1024,
+   "nativeH": 1024,
+   "note": "Imagine plate, served byte-identical"
+  },
+  {
+   "file": "assets/plate-side.jpg",
+   "source": "/workspace/grokcli/wt/zd-terrace-1012/steps/zone-d/01-terrace/plates/plate-side.jpg",
+   "nativeW": 1024,
+   "nativeH": 1024,
+   "note": "Imagine plate, served byte-identical"
+  },
+  {
+   "file": "assets/top.jpg",
+   "source": "/workspace/grokcli/wt/zd-terrace-1012/steps/zone-d/01-terrace/plates/top.jpg",
+   "nativeW": 1024,
+   "nativeH": 1024,
+   "note": "Imagine plate, served byte-identical"
+  }
+ ]
+}

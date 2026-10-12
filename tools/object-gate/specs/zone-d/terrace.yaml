@@ -1,0 +1,14 @@
+id: terrace
+type: building
+select: {names: "^zd-terrace-lod[0-2]$"}
+keyCrop: /workspace/grokcli/wt/zd-terrace-1012/steps/zone-d/01-terrace/plates/key-b-crop.png
+textures:
+  - {match: "assets/plate-front\\.jpg", role: plate}
+  - {match: "assets/plate-side\\.jpg", role: plate}
+  - {match: "assets/top\\.jpg", role: plate}
+checklist:
+  - {id: volume, feature: "Three stepped basalt tiers with real step depth, like the key-B crop", captures: [far, close]}
+  - {id: doorways, feature: "Three dark deep recessed doorways (real 1.5 m recess)", captures: [close, low-portrait]}
+  - {id: cornices, feature: "Thick snow cornices with rounded lip and icicle fringe", captures: [close, low-portrait]}
+  - {id: colours, feature: "Cold blue-grey basalt, white snow, low light from the left", captures: [close, far]}
+  - {id: base, feature: "Seated on the snow at 0 m, no gap", captures: [low-portrait]}

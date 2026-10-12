@@ -48,7 +48,7 @@ if '--ground' in opt:
     gm = bpy.data.materials.new('snow'); gm.use_nodes = True; gm.node_tree.nodes['Principled BSDF'].inputs[0].default_value = (0.78, 0.84, 0.9, 1)
     gm.node_tree.nodes['Principled BSDF'].inputs['Roughness'].default_value = 1; g.data.materials.append(gm); g.name = 'ground'
 sc.render.engine = 'CYCLES'; sc.cycles.samples = int(opt.get('--samples', 16)); sc.cycles.use_denoising = True
-sc.render.resolution_x, sc.render.resolution_y = W, H; sc.view_settings.view_transform = 'Standard'
+sc.render.film_transparent = '--transparent' in opt; sc.render.resolution_x, sc.render.resolution_y = W, H; sc.view_settings.view_transform = 'Standard'
 cam = bpy.data.objects.new('cam', bpy.data.cameras.new('cam')); sc.collection.objects.link(cam); sc.camera = cam
 cam.data.sensor_fit = 'VERTICAL'; cam.data.angle = math.radians(60)
 masks = {}

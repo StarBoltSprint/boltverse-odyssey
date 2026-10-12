@@ -1,0 +1,50 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Zone D — terrace block preview</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0;height:100%;overflow:hidden;background:#000}#tag{position:fixed;left:8px;top:8px;color:#fff;font:12px sans-serif}</style></head>
+<body><div id="tag">Zone D — terrace block preview</div><script type="module">
+import * as THREE from './three.module.js';
+import { GLTFLoader } from './jsm/loaders/GLTFLoader.js';
+import { mergeGeometries } from './jsm/utils/BufferGeometryUtils.js';
+const q = new URLSearchParams(location.search); if (q.get('hud') === '0') document.getElementById('tag').style.display = 'none';
+const cfg = await (await fetch('./biome.json')).json();
+const r = new THREE.WebGLRenderer({ antialias: true }); r.setPixelRatio(Math.min(devicePixelRatio, cfg.camera.pixelRatioCap));
+r.setSize(innerWidth, innerHeight); r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap; r.outputColorSpace = THREE.SRGBColorSpace;
+document.body.appendChild(r.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x1c2433); scene.fog = new THREE.Fog(0x2a3550, 120, 400);
+const cam = new THREE.PerspectiveCamera(cfg.camera.fovBase, innerWidth / innerHeight, cfg.camera.near, cfg.camera.far);
+// key-B light: low cold sun from the left (~12 deg), world-fixed shadow frustum, neutral-cool fill
+scene.add(new THREE.HemisphereLight(0xb8c8e0, 0x6a7890, 1.4));
+const sun = new THREE.DirectionalLight(0xdfe8ff, 1.6); sun.position.set(-60, 13, 25); sun.target.position.set(0, 0, -8);
+sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -40, right: 40, top: 40, bottom: -40, near: 1, far: 200 });
+sun.shadow.bias = -0.0005; sun.shadow.normalBias = 0.04; scene.add(sun, sun.target);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(800, 800), new THREE.MeshStandardMaterial({ color: 0xc8d4e2, roughness: 1, metalness: 0 }));
+ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; ground.name = 'ground'; scene.add(ground);
+const P = await (await fetch('./placement.json')).json();
+const TL = new THREE.TextureLoader(); const TEX = {};
+for (const [n, f] of [['front', 'plate-front.jpg'], ['side', 'plate-side.jpg'], ['top', 'top.jpg']]) {
+  const t = await TL.loadAsync(`./assets/${f}`); t.colorSpace = THREE.SRGBColorSpace; t.flipY = false; t.anisotropy = r.capabilities.getMaxAnisotropy();
+  t.generateMipmaps = true; t.minFilter = THREE.LinearMipmapLinearFilter; t.magFilter = THREE.LinearFilter; TEX[n] = t; }
+const lod = new THREE.LOD(); lod.name = 'zd-terrace-block-01';
+const loader = new GLTFLoader(); const sw = [0, ...P.object.lod_switch_m];
+for (let i = 0; i < 3; i++) {
+  const g = await loader.loadAsync(`./assets/terrace-lod${i}.glb`); g.scene.updateMatrixWorld(true);
+  // one mesh per LOD (material groups), plates bound by their own served file so the gate can trace them
+  const geos = [], mats = [];
+  g.scene.traverse((o) => { if (o.isMesh) { const ge = o.geometry.clone().applyMatrix4(o.matrixWorld); for (const k of Object.keys(ge.attributes)) if (!['position','normal','uv'].includes(k)) ge.deleteAttribute(k); geos.push(ge); mats.push(o.material.name); } });
+  const geo = mergeGeometries(geos, true);
+  const M = mats.map((n) => { const t = TEX[n]; return new THREE.MeshStandardMaterial({ map: t, roughness: 1, metalness: 0, name: n, side: THREE.DoubleSide }); });
+  const root = new THREE.Mesh(geo, M); root.name = `zd-terrace-lod${i}`; root.castShadow = root.receiveShadow = true;
+  lod.addLevel(root, sw[i]);
+}
+lod.position.fromArray(P.object.position_m); lod.rotation.y = (P.object.yaw_deg || 0) * Math.PI / 180;
+scene.add(lod); scene.updateMatrixWorld(true);
+const bb = new THREE.Box3().setFromObject(lod.levels[0].object); lod.position.y -= bb.min.y; // ground snap: lowest vertex at 0 m
+const st = { x: -21, z: 21, y: 1.6, yaw: 45, pitch: 8 };
+function frame() {
+  cam.position.set(st.x, st.y, st.z); cam.rotation.order = 'YXZ'; cam.rotation.y = -st.yaw * Math.PI / 180; cam.rotation.x = st.pitch * Math.PI / 180;
+  lod.update(cam); r.render(scene, cam); requestAnimationFrame(frame);
+}
+addEventListener('resize', () => { r.setSize(innerWidth, innerHeight); cam.aspect = innerWidth / innerHeight; cam.updateProjectionMatrix(); });
+// approach path: 45 deg run toward the centre doorway (placement-draft approach line), 300 m -> 3 m
+const path = []; for (let d = 300; d >= 3; d -= 3) path.push([-d * 0.7071, d * 0.7071]);
+window.__renderer = r; window.__st = st; window.__scene = scene; window.__camera = cam; window.__THREE = THREE; window.__path = path;
+window.__zdOrbit = { lod }; requestAnimationFrame(frame); setTimeout(() => (window.__ready = true), 300);
+</script></body></html>

@@ -1,0 +1,83 @@
+[
+ {
+  "inst": "zd-terrace-lod0/zd-terrace-lod0-terrace-lod0_1",
+  "cols": 1,
+  "maxAirM": 0.001,
+  "at": [
+   0,
+   -0.8
+  ],
+  "baseY": 0
+ },
+ {
+  "inst": "zd-terrace-lod0/zd-terrace-lod0-terrace-lod0_2",
+  "cols": 0,
+  "maxAirM": null,
+  "at": null,
+  "baseY": 0
+ },
+ {
+  "inst": "zd-terrace-lod0/zd-terrace-lod0-terrace-lod0_3",
+  "cols": 81,
+  "maxAirM": 5.805,
+  "at": [
+   -7.6,
+   -15.1
+  ],
+  "baseY": 5.81
+ },
+ {
+  "inst": "zd-terrace-lod1/zd-terrace-lod1-terrace-lod1_1",
+  "cols": 1,
+  "maxAirM": 0.001,
+  "at": [
+   0,
+   -0.8
+  ],
+  "baseY": 0
+ },
+ {
+  "inst": "zd-terrace-lod1/zd-terrace-lod1-terrace-lod1_2",
+  "cols": 0,
+  "maxAirM": null,
+  "at": null,
+  "baseY": 0
+ },
+ {
+  "inst": "zd-terrace-lod1/zd-terrace-lod1-terrace-lod1_3",
+  "cols": 81,
+  "maxAirM": 5.805,
+  "at": [
+   -7.6,
+   -15.1
+  ],
+  "baseY": 5.81
+ },
+ {
+  "inst": "zd-terrace-lod2/zd-terrace-lod2-terrace-lod2_1",
+  "cols": 1,
+  "maxAirM": 0.001,
+  "at": [
+   0,
+   -0.9
+  ],
+  "baseY": 0
+ },
+ {
+  "inst": "zd-terrace-lod2/zd-terrace-lod2-terrace-lod2_2",
+  "cols": 0,
+  "maxAirM": null,
+  "at": null,
+  "baseY": 0
+ },
+ {
+  "inst": "zd-terrace-lod2/zd-terrace-lod2-terrace-lod2_3",
+  "cols": 81,
+  "maxAirM": 5.805,
+  "at": [
+   -7.6,
+   -15.1
+  ],
+  "baseY": 5.81
+ }
+]

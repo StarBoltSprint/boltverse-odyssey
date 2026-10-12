@@ -11,3 +11,7 @@ Tops come from top.jpg (they are seen at most from above, never from the path). 
 Door returns now use the facade pixels next to each door. Side plate rows are remapped per tier, the wall relief is slope-limited, and the icicle UVs are unwrapped.
 UV stretch is now measured as anisotropy σmax/σmin (it was max(σ, 1/σ) in v1). LOD switches at 15 m and 40 m, checked by tools/object-gate/py/lod_gate.py.
 Dimensions are unchanged from v1. The triangle count changed from the added faces: 69016 / 21732 / 8642.
+
+## v3 (2026-10-12 ~11:45 Paris). FAIL: texel density at 8 m/3 m, plus the existing object-gate (sealed mesh, approach morph, relief, framing, checklist, title)
+131 icicle cones placed from plate drip streaks (113 raised to the 0.3 m minimum). 6 radial segments in every LOD. Texel-density gate added (v2 self-test FAILs).
+Preview harness: /workspace/zd-preview-1012 (served on 127.0.0.1:8971), adapter tools/object-gate/adapters/zd-preview-1012.mjs, specs/zone-d.

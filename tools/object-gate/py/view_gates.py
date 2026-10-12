@@ -71,6 +71,20 @@ if '--stretch' in opt:
         res.setdefault('uv-stretch-visible', {})[v] = r
         if not r['pass']: errors.append(f'uv-stretch {v}: {r}')
     res['uv-stretch-mesh'] = dict(p50=round(float(np.median(STv)), 3), over13Frac=round(float((STv > 1.3).mean()), 4))
+# texel density vs native (blocking): magnification = screen px/m (phone render, fov 60 vertical) / plate px/m on that face.
+# > 3 screen px per plate texel reads as soft smear on the phone. FAIL if > 10 % of visible px are magnified > 3x.
+if '--density' in opt:
+    DN = np.load(opt['--density']); Sm = float(opt.get('--mpp', 0.0215))
+    for v in V:
+        z = np.load(os.path.join(R, v + '-pass.npz')); fid = z['face']; d = z['depth']; h = fid >= 0
+        Hfull = Image.open(os.path.join(R, V[v]['png'])).size[1] if os.path.exists(os.path.join(R, V[v]['png'])) else 1280
+        scr = Hfull / (2 * d[h] * np.tan(np.radians(30))); tex = 1.0 / (Sm * DN[np.clip(fid[h], 0, len(DN) - 1)])
+        mag = scr / tex
+        r = dict(medianMag=round(float(np.median(mag)), 2) if h.any() else 0, platePxPerMp50=round(float(np.median(tex)), 1) if h.any() else 0,
+                 over3Frac=round(float((mag > 3).mean()), 4) if h.any() else 0)
+        r['pass'] = r['over3Frac'] <= 0.10
+        res.setdefault('texel-density', {})[v] = r
+        if not r['pass']: errors.append(f'texel-density {v}: {r}')
 # triangle quality
 def load_mesh(p):
     if p.startswith('zc:'):

@@ -1,0 +1,10 @@
+scene: zone-d-terrace-preview-1012
+url: http://127.0.0.1:8971/
+adapter: ../../adapters/zd-preview-1012.mjs
+key: /workspace/zd-bible-1012/key-zd1-b.jpg
+hud: {selector: "#tag", text: "Zone D — terrace block preview"}
+title: "Zone D — terrace block"
+runtime:
+  viewports: [[412, 915], [540, 1200]]
+objects:
+  - terrace.yaml

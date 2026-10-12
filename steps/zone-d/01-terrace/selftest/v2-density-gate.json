@@ -1,0 +1,128 @@
+{
+ "oblique-profile": {
+  "oblique45": {
+   "stepFrac": 0.0527,
+   "normSpread": 0.2314,
+   "hitPx": 31993,
+   "pass": true
+  },
+  "grazing": {
+   "stepFrac": 0.1602,
+   "normSpread": 0.3536,
+   "hitPx": 14681,
+   "pass": true
+  }
+ },
+ "untextured-area": {
+  "phone": {
+   "greyFrac": 0.0011,
+   "uncoveredFrac": 0.0,
+   "pass": true
+  },
+  "oblique45": {
+   "greyFrac": 0.0023,
+   "uncoveredFrac": 0.0,
+   "pass": true
+  },
+  "grazing": {
+   "greyFrac": 0.0003,
+   "uncoveredFrac": 0.0,
+   "pass": true
+  },
+  "close8m": {
+   "greyFrac": 0.0,
+   "uncoveredFrac": 0.0,
+   "pass": true
+  },
+  "close3m": {
+   "greyFrac": 0.0,
+   "uncoveredFrac": 0.0,
+   "pass": true
+  },
+  "close3m-up": {
+   "greyFrac": 0.0,
+   "uncoveredFrac": 0.0,
+   "pass": true
+  }
+ },
+ "uv-stretch-visible": {
+  "phone": {
+   "p95": 1.115,
+   "over13Frac": 0.0001,
+   "pass": true
+  },
+  "oblique45": {
+   "p95": 1.113,
+   "over13Frac": 0.0,
+   "pass": true
+  },
+  "grazing": {
+   "p95": 1.233,
+   "over13Frac": 0.0,
+   "pass": true
+  },
+  "close8m": {
+   "p95": 1.105,
+   "over13Frac": 0.0,
+   "pass": true
+  },
+  "close3m": {
+   "p95": 1.005,
+   "over13Frac": 0.0,
+   "pass": true
+  },
+  "close3m-up": {
+   "p95": 1.099,
+   "over13Frac": 0.0,
+   "pass": true
+  }
+ },
+ "uv-stretch-mesh": {
+  "p50": 1.097,
+  "over13Frac": 0.0308
+ },
+ "texel-density": {
+  "phone": {
+   "medianMag": 0.98,
+   "platePxPerMp50": 46.5,
+   "over3Frac": 0.0,
+   "pass": true
+  },
+  "oblique45": {
+   "medianMag": 1.47,
+   "platePxPerMp50": 46.5,
+   "over3Frac": 0.0,
+   "pass": true
+  },
+  "grazing": {
+   "medianMag": 1.93,
+   "platePxPerMp50": 37.7,
+   "over3Frac": 0.0,
+   "pass": true
+  },
+  "close8m": {
+   "medianMag": 2.54,
+   "platePxPerMp50": 46.5,
+   "over3Frac": 0.1128,
+   "pass": false
+  },
+  "close3m": {
+   "medianMag": 5.33,
+   "platePxPerMp50": 46.5,
+   "over3Frac": 1.0,
+   "pass": false
+  },
+  "close3m-up": {
+   "medianMag": 7.41,
+   "platePxPerMp50": 46.5,
+   "over3Frac": 1.0,
+   "pass": false
+  }
+ },
+ "errors": [
+  "texel-density close8m: {'medianMag': 2.54, 'platePxPerMp50': 46.5, 'over3Frac': 0.1128, 'pass': False}",
+  "texel-density close3m: {'medianMag': 5.33, 'platePxPerMp50': 46.5, 'over3Frac': 1.0, 'pass': False}",
+  "texel-density close3m-up: {'medianMag': 7.41, 'platePxPerMp50': 46.5, 'over3Frac': 1.0, 'pass': False}"
+ ],
+ "verdict": "FAIL"
+}

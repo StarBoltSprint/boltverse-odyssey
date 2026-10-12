@@ -4,9 +4,9 @@
   262,
   714
  ],
- "secondaryPeak": 0.45,
+ "secondaryPeak": 0.421,
  "threshold": 0.5,
  "verdict": "PASS",
- "selftestTiledPeak": 0.992,
+ "selftestTiledPeak": 0.996,
  "selftest": "FAIL as expected"
 }

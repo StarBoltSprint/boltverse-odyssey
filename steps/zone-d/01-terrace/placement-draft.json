@@ -5,21 +5,44 @@
     "id": "zd-terrace-block-01",
     "source": "key-zd1-b.jpg + steps/zone-d/01-terrace/plates",
     "glb": "steps/zone-d/01-terrace/<v2>.glb",
-    "position_m": [0, 0, 0],
-    "ground_snap": { "mode": "lowest-vertex", "max_gap_m": 0.0 },
+    "position_m": [
+      0,
+      0,
+      0
+    ],
+    "ground_snap": {
+      "mode": "lowest-vertex",
+      "max_gap_m": 0.0
+    },
     "yaw_deg": 0,
-    "lod_switch_m": [12, 30]
+    "lod_switch_m": [
+      15,
+      40
+    ],
+    "footprint_m": [
+      17.1,
+      14.7,
+      17.0
+    ]
   },
   "collision": {
     "body": "convex pieces per tier from LOD2 (8k), not the render mesh",
     "doorways": "collider face on each doorway BACK face (1.5 m in), never on the facade plane",
-    "cornices": "one box per cornice, underside matching the real lip, so the player can stand under it without hitting air",
+    "cornices": "one box per cornice at lip height; extra boxes only under real icicle clusters (start/end from Tools Engineer's v3 report), down to cluster tips; no blocking where there are no icicles",
     "no_invisible_walls": true
   },
   "approach": {
     "path_width_m": 4,
     "line": "straight 30 m run toward the facade at 45 deg yaw, then a turn to face it at 8 m, ending 3 m from the centre doorway",
-    "camera_marks_m": [30, 8, 3],
-    "cornice_up_view": { "at_m": 3, "pitch_deg": 35 }
+    "camera_marks_m": [
+      30,
+      8,
+      3
+    ],
+    "cornice_up_view": {
+      "at_m": 3,
+      "pitch_deg": 35
+    },
+    "camera_clearance": "3rd-person camera keeps >=0.5 m from icicle tips on the 3 m up view"
   }
 }

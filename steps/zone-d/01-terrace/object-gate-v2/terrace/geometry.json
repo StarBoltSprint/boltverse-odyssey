@@ -1,0 +1,263 @@
+[
+ {
+  "geo": "b6d898df",
+  "usedBy": "zd-terrace-lod0-terrace-lod0_1",
+  "instances": 1,
+  "tris": 43614,
+  "verts": 23939,
+  "open": 4170,
+  "nonManifold": 0,
+  "degenerate": 0,
+  "reliefM": {
+   "+x": 0,
+   "-x": 0,
+   "+z": 0,
+   "-z": 0
+  },
+  "local": {
+   "w": 17.11,
+   "h": 17,
+   "d": 14.73
+  },
+  "sizes": [
+   {
+    "inst": "zd-terrace-lod0/zd-terrace-lod0-terrace-lod0_1",
+    "w": 17.11,
+    "h": 17,
+    "d": 14.73
+   }
+  ]
+ },
+ {
+  "geo": "ae1ca63a",
+  "usedBy": "zd-terrace-lod0-terrace-lod0_2",
+  "instances": 1,
+  "tris": 23332,
+  "verts": 12480,
+  "open": 1664,
+  "nonManifold": 0,
+  "degenerate": 0,
+  "reliefM": {
+   "+x": 1.356,
+   "-x": 1.938,
+   "+z": 0,
+   "-z": null
+  },
+  "local": {
+   "w": 17.11,
+   "h": 17,
+   "d": 14.73
+  },
+  "sizes": [
+   {
+    "inst": "zd-terrace-lod0/zd-terrace-lod0-terrace-lod0_2",
+    "w": 17.11,
+    "h": 17,
+    "d": 14.73
+   }
+  ]
+ },
+ {
+  "geo": "0bdbdc45",
+  "usedBy": "zd-terrace-lod0-terrace-lod0_3",
+  "instances": 1,
+  "tris": 2070,
+  "verts": 1149,
+  "open": 222,
+  "nonManifold": 0,
+  "degenerate": 0,
+  "reliefM": {
+   "+x": null,
+   "-x": null,
+   "+z": null,
+   "-z": 0
+  },
+  "local": {
+   "w": 17.11,
+   "h": 17,
+   "d": 8.92
+  },
+  "sizes": [
+   {
+    "inst": "zd-terrace-lod0/zd-terrace-lod0-terrace-lod0_3",
+    "w": 17.11,
+    "h": 17,
+    "d": 8.92
+   }
+  ]
+ },
+ {
+  "geo": "83623f57",
+  "usedBy": "zd-terrace-lod1-terrace-lod1_1",
+  "instances": 1,
+  "tris": 13830,
+  "verts": 8230,
+  "open": 2504,
+  "nonManifold": 0,
+  "degenerate": 0,
+  "reliefM": {
+   "+x": 0,
+   "-x": 0,
+   "+z": 0,
+   "-z": 0
+  },
+  "local": {
+   "w": 17.11,
+   "h": 17,
+   "d": 14.73
+  },
+  "sizes": [
+   {
+    "inst": "zd-terrace-lod1/zd-terrace-lod1-terrace-lod1_1",
+    "w": 17.11,
+    "h": 17,
+    "d": 14.73
+   }
+  ]
+ },
+ {
+  "geo": "3f2b1671",
+  "usedBy": "zd-terrace-lod1-terrace-lod1_2",
+  "instances": 1,
+  "tris": 5832,
+  "verts": 3408,
+  "open": 972,
+  "nonManifold": 0,
+  "degenerate": 0,
+  "reliefM": {
+   "+x": 1.347,
+   "-x": 1.935,
+   "+z": 0,
+   "-z": null
+  },
+  "local": {
+   "w": 17.11,
+   "h": 17,
+   "d": 14.73
+  },
+  "sizes": [
+   {
+    "inst": "zd-terrace-lod1/zd-terrace-lod1-terrace-lod1_2",
+    "w": 17.11,
+    "h": 17,
+    "d": 14.73
+   }
+  ]
+ },
+ {
+  "geo": "b5b47be0",
+  "usedBy": "zd-terrace-lod1-terrace-lod1_3",
+  "instances": 1,
+  "tris": 2070,
+  "verts": 1149,
+  "open": 222,
+  "nonManifold": 0,
+  "degenerate": 0,
+  "reliefM": {
+   "+x": null,
+   "-x": null,
+   "+z": null,
+   "-z": 0
+  },
+  "local": {
+   "w": 17.11,
+   "h": 17,
+   "d": 8.92
+  },
+  "sizes": [
+   {
+    "inst": "zd-terrace-lod1/zd-terrace-lod1-terrace-lod1_3",
+    "w": 17.11,
+    "h": 17,
+    "d": 8.92
+   }
+  ]
+ },
+ {
+  "geo": "d4bd3560",
+  "usedBy": "zd-terrace-lod2-terrace-lod2_1",
+  "instances": 1,
+  "tris": 5180,
+  "verts": 3478,
+  "open": 1646,
+  "nonManifold": 0,
+  "degenerate": 0,
+  "reliefM": {
+   "+x": 0,
+   "-x": 0,
+   "+z": 0,
+   "-z": 0
+  },
+  "local": {
+   "w": 17.11,
+   "h": 17,
+   "d": 14.73
+  },
+  "sizes": [
+   {
+    "inst": "zd-terrace-lod2/zd-terrace-lod2-terrace-lod2_1",
+    "w": 17.11,
+    "h": 17,
+    "d": 14.73
+   }
+  ]
+ },
+ {
+  "geo": "6e7fa531",
+  "usedBy": "zd-terrace-lod2-terrace-lod2_2",
+  "instances": 1,
+  "tris": 1392,
+  "verts": 944,
+  "open": 484,
+  "nonManifold": 0,
+  "degenerate": 0,
+  "reliefM": {
+   "+x": 1.333,
+   "-x": 1.933,
+   "+z": 0,
+   "-z": null
+  },
+  "local": {
+   "w": 17.11,
+   "h": 17,
+   "d": 14.73
+  },
+  "sizes": [
+   {
+    "inst": "zd-terrace-lod2/zd-terrace-lod2-terrace-lod2_2",
+    "w": 17.11,
+    "h": 17,
+    "d": 14.73
+   }
+  ]
+ },
+ {
+  "geo": "0ac06496",
+  "usedBy": "zd-terrace-lod2-terrace-lod2_3",
+  "instances": 1,
+  "tris": 2070,
+  "verts": 1149,
+  "open": 222,
+  "nonManifold": 0,
+  "degenerate": 0,
+  "reliefM": {
+   "+x": null,
+   "-x": null,
+   "+z": null,
+   "-z": 0
+  },
+  "local": {
+   "w": 17.11,
+   "h": 17,
+   "d": 8.92
+  },
+  "sizes": [
+   {
+    "inst": "zd-terrace-lod2/zd-terrace-lod2-terrace-lod2_3",
+    "w": 17.11,
+    "h": 17,
+    "d": 8.92
+   }
+  ]
+ }
+]
