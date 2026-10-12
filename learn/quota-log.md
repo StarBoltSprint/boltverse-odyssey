@@ -30,3 +30,4 @@ Append-only. One row per step. `python3 tools/quota/quota.py` adds the row. Do n
 | 2026-10-12 | tools-06-lod-streaming | n/a | 0 | 0 | 0 | 0 | n/a | n/a | 628.5 | events.jsonl |
 | 2026-10-12 | 04-playcheck-log | n/a | 0 | 0 | 0 | 0 | n/a | n/a | 995.5 | events.jsonl |
 | 2026-10-12 | tools-03-library-intake | n/a | 0 | 0 | 0 | 0 | n/a | n/a | 838.9 | events.jsonl |
+| 2026-10-12 | tools/07-painted-duplicate | n/a | 0 | 102 | 0 | 0 | 204676 | 60486 | n/a | 20261012-171249-tools-07-painted-duplicate.ndjson |

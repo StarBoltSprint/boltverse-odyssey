@@ -174,3 +174,46 @@ An adapter makes one game page reachable. See the README, section "Writing an ad
 2. Thresholds come from `loadProfile`. A module does not hard-code px/m, repeat or IoU limits (the px/m target is `screenPxPerM` at `minViewM`).
 3. Only PASS objects are exported, shown or merged. `NEEDS_REVIEW` means the `checklist.verified` items need a vision or owner pass recorded in `records/<id>.verified.yaml`. Those recorded passes expire when a capture changes (dHash above 12).
 4. If the same defect FAILs twice, stop and report it (`maxSameDefect`). Do not loop.
+
+| Group | Row ids |
+|---|---|
+| Selection | `select`, `gate.crash` |
+| Textures | `textures.roles`, `textures.filtering`, `textures.native-size` |
+| Texel density | `texel.visible-px-per-m` (policy `visible`, default since 1.2), `texel.unique-px-per-m` (policy `unique`), `texel.stretch`, `texel.self-report` |
+| Repetition | `repetition.visible-radius`, `repetition.visible-neighbours` (policy `visible`), `repetition.uv` (policy `unique`), `repetition.captures` |
+| Morph | `morph` |
+| Shadows | `shadow.light`, `shadow.cast`, `shadow.world-fixed`, `shadow.colour` |
+| Grounding | `grounding` |
+| Geometry | `geometry.sealed`, `geometry.relief`, `geometry.proportions`, `painted_duplicate` (1.8, only when the spec sets `paintedDuplicate`) |
+| Effects | `effects.imagine-texture`, `effects.no-colour-literals` |
+| Checklist | `checklist.written`, `checklist.key-crop`, `checklist.verified`, `checklist.colour`, `checklist.camera` (1.7: close 8 m, low portrait, far, ortho faces framed on the target AABB; perspective cover ≥ 25%, ortho ≥ 60% and not black) |
+| Runtime | `runtime.console`, `runtime.shader`, `runtime.hud`, `runtime.title`, `runtime.portrait`, `runtime.budgets` (INFO), `runtime.live-untouched`, `runtime.capture-ready` (1.7: screenshot after the Chargement overlay is gone; fails a loading screen or an empty frame) |
+| Phone perf (from `window.__perfReport()`, INFO `perf.report` when absent) | `perf.canvas-ratio`, `perf.sky-order`, `perf.ground-order`, `perf.adaptive`, `perf.quality-kept` (FAIL if the adaptive controller can drop the detail layer, or `detailOn` is false), `perf.default-ratio` (PASS: native min(2, device), or internal ≥ 1.5 upscaled with `upscale: "easu-rcas"` to a canvas at min(2, device); FAIL otherwise or with a sprint dip), see [phone-perf.md](../../docs/METHOD/phone-perf.md) |
+
+
+```yaml
+id: mesa                      # unique in the scene
+type: rock                    # one of listProfiles()
+select: {names: "^mesa-", exclude: "drifts"}   # regex on scene object names (InstancedMesh / LOD / Mesh roots)
+hero: mesa-0                  # optional: copy used for captures (default: nearest to spawn)
+keyCrop: /abs/or/relative/crop.png             # the object's crop of the biome key still
+textures:                     # EVERY texture the object samples, with a role
+  - {match: "regex on url or uniform name", role: plate|detail|tile|normal|mask|emit|env, source: "/imagine/original.png"}
+  - {match: "uZbPool", role: plate, classes: ["+x","-x","+z","-z"], pool: {cellM: 12, sharedSelect: {names: "^inst-m[2346]-lod0-"}, files: [...]}}
+  - {match: "mesaA-front\\.jpg", role: plate, projected: {metresAcross: 107.07}}
+checklist:                    # one item per visible key feature (copy the profile's checklistTemplate)
+  - {id: volume, feature: "...", captures: [far, close]}
+record: records/mesa.verified.yaml             # default records/<id>.verified.yaml
+paintedDuplicate: plates/painted.json          # optional (1.8): offline plate + cone spec for py/painted_duplicate.py
+proportions: {hOverW: [2.9, 5.0]}              # optional
+thresholds: {texel: {minViewM: 6}}             # optional, may only tighten (or add `waivers:` with a reason)
+viewMinM: {"+y": {m: 40, reason: "roof never seen from closer than 40 m"}}   # optional (1.2): per-class closest view
+visibleView: {hero: mesa-L-mid, towardXZ: [-51.1, 9.6], aimHeightM: [4, 6]}   # optional (1.3): which copy / side / height the 8 m render capture aims at
+selfReportKey: m2                              # optional: compare with the scene's own px/m claim
+imagineSources: ["/imagine/"]                  # effects: allow-listed Imagine folders
+```
+
+
+**Painted duplicate (1.8).** `paintedDuplicate` is a JSON file of `plates` (image, metres per pixel, UV affine) and `features` (cone root `world`, `lengthM`, `radiusM`, `faces`). The gate projects each cone, grows the mask by 0.05 m, and looks 0.04 m past that edge. A tapering ice-coloured streak on that mask of at least 0.08 m FAILs. A pale smear with no cone within `ghost_streaks` range FAILs the same check. The JSON is the gates-API record: `{check: "painted_duplicate", status, failing_face_ids, world_position, suggested_fix}`. On FAIL, `suggested_fix` is `inpaint painted feature with neighbouring basalt`. On PASS it is `""`, `failing_face_ids` is `[]`, and `world_position` is null. CLI exit 1 on FAIL. The row runs only when the field is set.
+
+

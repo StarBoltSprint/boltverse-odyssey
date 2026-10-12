@@ -23,6 +23,7 @@ export const FIX_ACTIONS = [
   { re: /^shadow cast/, action: "cast-shadow", auto: true, what: "castShadow on every LOD, ground receives" },
   { re: /^grounding/, action: "sink", auto: true, what: "sink below the lowest footprint corner + base fill + drift" },
   { re: /^mesh sealed/, action: "heal-manifold", auto: true, what: "weld, drop coincident faces, cap loops" },
+  { re: /^painted duplicate/, action: "inpaint-basalt", auto: false, what: "inpaint painted feature with neighbouring basalt" },
   { re: /^facade relief/, action: "add-relief", auto: true, what: "model relief from the key crop (fins/ledges/bays or strata)" },
   { re: /^proportions/, action: "rescale", auto: true, what: "scale the solid to the spec ratios in Blender" },
   { re: /^effects/, action: "imagine-fx-texture", auto: true, what: "sample the effect colour/alpha from an Imagine plate" },
