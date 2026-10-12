@@ -1252,3 +1252,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | `require_intake` refuses the part unless all six guards hold. A KEEP flag with a run verdict other than PASS is refused. A run PASS with no KEEP is refused. |
 | Guard | `python3 tools/library/selftest_intake.py`. Bad fixtures exit 1: run verdict FAIL, missing KEEP, world-space boxes, missing `ground_anchor`, missing `min_clearance_m`, camera layer `gallop`, outline diff 4 px at 15 m, outline diff 2 px at 40 m, missing lod1 triangles, nativePx 512, mipmaps false. A complete fixture exits 0. |
 | Sources | `tools/library/intake.py`, `tools/library/library.py`, `tools/library/selftest_intake.py`. |
+
+### 2026-10-12 — painted icicle still on the plate under a real cone
+
+| | |
+| --- | --- |
+| Take | tools/07-painted-duplicate |
+| Defect | A plate can still show the painted icicle after the cone for that icicle exists, so the feature is drawn twice. An inpaint that only smears the streak into a pale column leaves a ghost the eye still reads as an icicle. |
+| Root cause | `ghost_streaks.py` FAILs a bright drip that has no cone nearby. A cone on the painted column makes that check PASS, so the duplicate is invisible to it. |
+| Fix | Project each cone into the plate, mask it with a 0.05 m margin plus 0.04 m beside the mask, and FAIL when a tapering ice-coloured streak covers at least 0.08 m of that mask. Keep the ghost check for a pale smear that does not meet a cone. The fix line is `inpaint painted feature with neighbouring basalt`. |
+| Guard | `node tools/object-gate/selftest.mjs` rows for `painted_duplicate`. Painted-under-cone overlap 1.4 m, faces 101, 102, 103, world [1.28, 0.0, -0.4], ghosts 0, status FAIL, CLI exit 1. Pale smear ghosts 1, world x 3.6, overlap 0, status FAIL, CLI exit 1. Clean plate with the cone overlap 0, ghosts 0, status PASS, CLI exit 0. |
+| Sources | `tools/object-gate/py/painted_duplicate.py`, `tools/object-gate/py/ghost_streaks.py`, `tools/object-gate/selftest.mjs`. |

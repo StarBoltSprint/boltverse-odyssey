@@ -155,6 +155,26 @@ b=np.roll(a,40,axis=1).astype(int); b[100:180,200:320]=(120,80,60); Image.fromar
   const legacyPass = adaptLegacyRow({ check: "UV stretch <= 1.3", status: "PASS", detail: "" });
   ok(legacyPass.failing_face_ids.length === 0 && legacyPass.world_position === null && legacyPass.suggested_fix === "", "legacy PASS row: empty suggested_fix");
 }
+{ // painted feature still on the plate where the cone already exists, and a pale inpaint smear
+  const FIX = "inpaint painted feature with neighbouring basalt";
+  let raw = "", code = 0;
+  try { raw = execFileSync("python3", [join(HERE, "py/painted_duplicate.py"), "--selftest"], { encoding: "utf8" }); }
+  catch (e) { raw = `${e.stdout || ""}`; code = e.status ?? 1; }
+  const r = JSON.parse(raw.trim().split("\n").pop());
+  const a = r.painted_under_geometry, b = r.pale_smear, c = r.clean;
+  ok(code === 0 && r.ok && a.status === "FAIL" && b.status === "FAIL" && c.status === "PASS",
+    `painted duplicate: painted overlap ${a.overlap_m} m faces ${(a.failing_face_ids || []).join(",")} FAIL; pale ghosts ${b.ghosts} at world ${(b.world_position || []).join(",")} FAIL; clean overlap ${c.overlap_m} ghosts ${c.ghosts} PASS`);
+  ok(a.check === "painted_duplicate" && a.causes.join() === "overlap" && a.ghosts === 0 && a.failing_face_ids.join() === "101,102,103" && a.world_position[0] === 1.28 && a.suggested_fix === FIX,
+    "painted icicle under its cone fails on overlap, with the cone's faces and world position");
+  ok(b.causes.join() === "ghost_streak" && b.ghosts >= 1 && b.failing_face_ids.length === 0 && b.overlap_m < 0.08 && b.suggested_fix === FIX,
+    "pale-smear inpaint fails the ghost-streak check");
+  ok(c.failing_face_ids.length === 0 && c.world_position === null && c.suggested_fix === "" && c.status === "PASS",
+    "clean inpainted plate with geometry passes");
+  ok(checkId("painted duplicate of geometric feature") === "painted_duplicate", "painted_duplicate row id");
+  const planP = fixPlan({ verdict: "FAIL", out: dir, runtime: [], objects: [{ id: "terrace", rows: [{ check: "painted duplicate of geometric feature", status: "FAIL", detail: "faces 101", hints: [] }] }] });
+  ok(planP.items.length === 1 && planP.items[0].action === "inpaint-basalt" && planP.items[0].what === FIX && planP.items[0].auto === false,
+    "fix plan: painted duplicate -> inpaint neighbouring basalt");
+}
 
 console.log(fails ? `FAIL ${fails}` : "PASS selftest");
 process.exit(fails ? 1 : 0);

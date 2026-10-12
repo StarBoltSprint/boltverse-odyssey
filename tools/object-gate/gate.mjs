@@ -47,7 +47,7 @@ export function resolveObject(spec, specDir = process.cwd()) {
   const prof = loadProfile(spec.type);
   const cfg = deepMerge(prof, spec.thresholds || {});
   const abs = (p) => (p && !p.startsWith("/") ? resolve(specDir, p) : p);
-  return { ...spec, keyCrop: abs(spec.keyCrop), record: abs(spec.record || `records/${spec.id}.verified.yaml`), cfg, specDir };
+  return { ...spec, keyCrop: abs(spec.keyCrop), record: abs(spec.record || `records/${spec.id}.verified.yaml`), paintedDuplicate: abs(spec.paintedDuplicate), cfg, specDir };
 }
 export function loadScene(p) {
   const dir = dirname(resolve(p));
@@ -243,7 +243,7 @@ export const CHECK_IDS = [
   [/^repetition \(visible\): identical/, "repetition.visible-radius"], [/^repetition \(visible\): neighbours/, "repetition.visible-neighbours"], [/^repetition \(UV\)/, "repetition.uv"], [/^UV stretch/, "texel.stretch"],
   [/^scene self-report/, "texel.self-report"], [/^repetition \(capture/, "repetition.captures"], [/^approach morph/, "morph"],
   [/^shadow light/, "shadow.light"], [/^shadow cast/, "shadow.cast"], [/^shadow world-fixed/, "shadow.world-fixed"], [/^shadow colour/, "shadow.colour"],
-  [/^grounding/, "grounding"], [/^mesh sealed/, "geometry.sealed"], [/^facade relief/, "geometry.relief"], [/^facade crisp/, "geometry.crisp"], [/^proportions/, "geometry.proportions"],
+  [/^grounding/, "grounding"], [/^painted duplicate/, "painted_duplicate"], [/^mesh sealed/, "geometry.sealed"], [/^facade relief/, "geometry.relief"], [/^facade crisp/, "geometry.crisp"], [/^proportions/, "geometry.proportions"],
   [/^relief-texture alignment/, "relief.align"],
   [/^effects take/, "effects.imagine-texture"], [/^effects: no typed/, "effects.no-colour-literals"],
   [/^key checklist written/, "checklist.written"], [/^key crop present/, "checklist.key-crop"], [/^key checklist: every/, "checklist.verified"], [/^colour vs key/, "checklist.colour"],
@@ -383,9 +383,27 @@ export async function visibleShot(page, adapter, sel, hero, t, view, odir, vv = 
   }
 }
 
+
+const PAINTED_FIX = "inpaint painted feature with neighbouring basalt";
+function paintedDuplicateReport(specPath) {
+  const fail = (detail) => ({ check: "painted_duplicate", status: "FAIL", failing_face_ids: [], world_position: null, suggested_fix: PAINTED_FIX, detail });
+  if (!existsSync(specPath)) return fail(`missing ${specPath}`);
+  const parse = (text) => { const line = `${text || ""}`.trim().split("\n").filter(Boolean).pop(); return line && line.startsWith("{") ? JSON.parse(line) : null; };
+  try { return parse(execFileSync("python3", [join(HERE, "py/painted_duplicate.py"), specPath], { encoding: "utf8" })) || fail("empty painted_duplicate report"); }
+  catch (e) { return parse(e.stdout) || fail(String(e.stderr || e.message).slice(0, 400)); }
+}
 async function gateOne(cap, adapter, spec, o, odir, ctx) {
   try {
   const { page } = cap; const cfg = spec.cfg; const checks = new Set(cfg.checks);
+  if (spec.paintedDuplicate) {
+    const rep = paintedDuplicateReport(spec.paintedDuplicate);
+    const pass = rep.status === "PASS";
+    const faces = (rep.failing_face_ids || []).join(",");
+    row(o, "painted duplicate of geometric feature", pass,
+      pass ? "no painted feature on the projected geometry" : `faces ${faces || "—"} world ${JSON.stringify(rep.world_position)} ${(rep.causes || []).join("+") || rep.detail || ""}`.trim(),
+      pass ? [] : [rep.suggested_fix || PAINTED_FIX]);
+    writeFileSync(join(odir, "painted-duplicate.json"), JSON.stringify(rep, null, 1));
+  }
   const sel = spec.select;
   const boxes = await page.evaluate((s) => window.__og.instanceBoxes(s), sel);
   if (!boxes.length) { row(o, "select", false, `selector ${JSON.stringify(sel)} matched no object`, ["Fix select.names (regex on object names in the scene)."]); return; }

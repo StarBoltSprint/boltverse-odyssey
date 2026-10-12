@@ -104,3 +104,23 @@ angle on a facade grid, hero and 30 m are different cameras. Run Grok vision onl
 non-black (L\*) check; a black frame is a capture bug (`lib/probe.js` `readRT` must read `SRGBColorSpace`), not a
 vision verdict. See `docs/METHOD.md` §5.
 
+1. **Visible px/m** (policy `visible`, SmiR 2026-10-09 20:19), measured on the **final render** since 1.3 (8 m capture,
+   optical zoom to 2 × the need, detail measured in the pixels; works for unique plates and layered materials):
+   visible px/m ≥ the phone screen's px/m when the surface is viewed from 8 m (1080 × 2400 phone at the game's render pixel ratio and fov;
+   Zone B: 155 px/m). Closer views are exempt, no camera distance limit. Imagine plates are 1024² native, so one plate
+   covers at most ~6.6 m. Plus: served file ≥ Imagine original, GPU = file, mipmaps + trilinear,
+   anisotropy = max, UV stretch ≤ 1.3, the scene's own px/m claim cross-checked against the measurement.
+2. **Repetition**: one shared plate set per object type is allowed, but identical plate pixels never within 30 m
+   (tiling period or pool cell period with ortho correlation) and neighbouring copies (< 7 m) never share; autocorrelation on fronto-parallel face views (front + side, lit, object only) and the close / low-portrait captures, including the correlation at the plate's own tile period.
+3. **Approach morph** 300 → 10 m on the nearest copies with the game's own LOD logic: silhouette IoU jumps.
+4. **Shadows**: cast, world-fixed (mask IoU after moving the player 80 m), neutral colour (not violet).
+5. **Grounding**: rays from below under the lower 20 % of each copy vs ground height.
+6. **Geometry**: welded non-manifold / open edges, facade relief, proportions vs spec.
+7. **Key checklist**: captures (close, low phone portrait, far) → `capture-sheet.jpg` beside the key crop; FAIL unless
+   every item has a recorded pass on a current capture (dHash ≤ 12) in `records/<id>.verified.yaml`. ΔE vs key crop.
+8. **Runtime**: console/page errors, shader compile, HUD/title text, portrait viewports, budgets (report only), and
+   **live preview untouched** during the run (adapter `liveDir`; only files the live page loads count, staging files beside them are listed; never edit live files in place: stage, gate, swap after PASS).
+9. **Effects**: every effect mesh samples an Imagine texture (allow-listed folders).
+10. **Painted duplicate** (1.8, only when the object spec sets `paintedDuplicate`): project each cone into its plate, and FAIL when a tapering ice-coloured streak still sits on that geometry. A pale smear left off the cone FAILs through `py/ghost_streaks.py`. The fix line is `inpaint painted feature with neighbouring basalt`. `python3 tools/object-gate/py/painted_duplicate.py <spec.json>` (exit 1 on FAIL).
+
+
