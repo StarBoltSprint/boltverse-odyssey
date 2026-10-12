@@ -6,7 +6,7 @@ Status: validated for the check. The tower cook in this take is FAIL overall. Do
 | --- | --- |
 | Asset kind | `hull/ship` |
 | Take | tower-volumes-1012 |
-| Commit | filled after the step commit |
+| Commit | `61e56a9a` |
 | Date | 2026-10-12 |
 | Size | tower local 46.02 × 173.82 × 39.57 m |
 | Tries | one completed gate (816 s). Two earlier launches died in the tool before geometry. |
