@@ -1232,3 +1232,13 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | `tools/playcheck/src/approach.mjs` places those boxes and writes `approach.jsonl`. A circle clearing without `parts` does not grow the rows. |
 | Guard | `node --test tools/playcheck/src/approach.test.mjs`. Good fixture PASS (21 samples, all miss). Shifted `world_boxes` and a min-above-max box fail `bad_collision`. Anchor at y 1.5, or a missing anchor, fails `ground_anchor`. A hanging part with no clearance box, or a path with no `min_clearance_m`, fails `hanging_clearance`. A lintel at 1.0 m under a 2.0 m requirement fails tight. A `keepout` in the opening fails `part_colliders` with `invisibleHits` > 0. A log line that drops `fps`, uses `cameraLayer` `hud`, or sets `collision` `blocked` fails the schema. |
 | Sources | `tools/playcheck/src/approach.mjs`, `tools/playcheck/fixture/approach/good.json`, `steps/tools/04-playcheck-log/REPORT.md`. |
+### 2026-10-12 — library add accepted a part with no run PASS
+
+| | |
+| --- | --- |
+| Take | tools/03-library-intake |
+| Defect | `tools/library` add stored a part when assetcheck, objsheet, and walkaround were PASS. It did not require Art Director KEEP, an object-gate run PASS, local collision boxes, a camera layer, a lod0/1/2 chain, or a 1024 mipmapped texture. |
+| Root cause | Intake stopped at those three report files. |
+| Fix | `require_intake` refuses the part unless all six guards hold. A KEEP flag with a run verdict other than PASS is refused. A run PASS with no KEEP is refused. |
+| Guard | `python3 tools/library/selftest_intake.py`. Bad fixtures exit 1: run verdict FAIL, missing KEEP, world-space boxes, missing `ground_anchor`, missing `min_clearance_m`, camera layer `gallop`, outline diff 4 px at 15 m, outline diff 2 px at 40 m, missing lod1 triangles, nativePx 512, mipmaps false. A complete fixture exits 0. |
+| Sources | `tools/library/intake.py`, `tools/library/library.py`, `tools/library/selftest_intake.py`. |

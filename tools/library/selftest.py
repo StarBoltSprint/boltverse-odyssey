@@ -66,8 +66,23 @@ def intake(assetcheck: str) -> dict:
                 "yaw-225.png",
                 "yaw-270.png",
                 "yaw-315.png",
-            ]
+            ],
+            "chain": {
+                "lod0": {"triangles": 1200},
+                "lod1": {"triangles": 400},
+                "lod2": {"triangles": 80},
+                "outlineDiffPx": {"15": 0, "40": 0},
+            },
         },
+        "art_director": "KEEP",
+        "run": {"tool": "object-gate", "verdict": "PASS"},
+        "collision": {
+            "boxes": [{"min": [0, 0, 0], "max": [1, 2, 1], "space": "local"}],
+            "ground_anchor": [0, 0, 0],
+            "min_clearance_m": 0.5,
+        },
+        "camera_layer": "approach",
+        "textures": [{"nativePx": 1024, "mipmaps": True}],
     }
 
 
@@ -241,6 +256,9 @@ def test_cli_help() -> None:
 
 
 def main_test() -> None:
+    from tools.library.selftest_intake import main as intake_main
+
+    intake_main()
     test_reject_fail()
     test_lock_warn()
     test_fixture_roundtrip()

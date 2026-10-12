@@ -17,6 +17,17 @@ Exit **0** when `add` writes a manifest or `check` finds every object still PASS
 
 A layout spec lists `{ "library": "<id>" }` where it would list an `asset.json` path. Path strings keep the previous behaviour. `resolve_spec_entry` returns that same string, or the registered paths for an id. Law and the reuse steps: [`biome/library/README.md`](../../biome/library/README.md). Schema: [`biome/library/schema.json`](../../biome/library/schema.json).
 
+`add` also refuses the part unless all six intake guards hold. Visual KEEP alone is not enough. A fixture may stub the fields; this command does not open the PNGs or the meshes.
+
+| Guard | Refuse when |
+| --- | --- |
+| Art Director KEEP | `art_director` is not `KEEP`, and no gate report carries a KEEP flag |
+| Run PASS | `run.verdict` is not `PASS` from `object-gate` or `tools/gate` |
+| Collision | no box with `space: "local"`, or `ground_anchor` / `min_clearance_m` is missing |
+| Camera layer | `camera_layer` is not `key` or `approach` (play-check shot kinds) |
+| LOD chain | lod0/1/2 triangle counts are missing, or outline diff at 15 m or 40 m is not 0 px |
+| Textures | a texture is under 1024 native pixels, or `mipmaps` is not true |
+
 ## Block KEEP
 
 `kind: "block"` registers a block-builder KEEP into the same library. The manifest (`library-block/1`) stores:
@@ -31,7 +42,7 @@ A layout spec lists `{ "library": "<id>" }` where it would list an `asset.json` 
 
 ## Honest limits
 
-- Verdicts are the JSON you point at. This command does not open the PNGs.
+- Verdicts, texture sizes, and LOD outline diffs are the JSON you point at. This command does not open the PNGs or the meshes.
 - `check` confirms the paths exist and the reports still pass. It does not rebuild the hull.
 - An empty library `check` exits 0. That is not a zone.
 
@@ -39,7 +50,10 @@ A layout spec lists `{ "library": "<id>" }` where it would list an `asset.json` 
 
 ```bash
 python3 tools/library/selftest.py
+python3 tools/library/selftest_intake.py
 python3 tools/layout/selftest.py
 ```
+
+`selftest_intake.py` proves each bad fixture is refused: KEEP with a run FAIL, run PASS with no KEEP, missing local boxes / `ground_anchor` / `min_clearance_m`, missing camera layer, outline diff above 0 at 15 m or 40 m, missing per-LOD triangle counts, texture under 1024 or without mipmaps. A complete fixture is accepted.
 
 The layout self-test must stay green: a spec that still uses path strings writes the same `clearing.json`.

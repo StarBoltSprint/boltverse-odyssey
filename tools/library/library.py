@@ -16,6 +16,7 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from tools.library.intake import refusals, require_intake
 from tools.library.resolve import LIBRARY, LibraryError, iter_manifests
 from tools.library.verdict import ReportRejected, accept, load_report, rel_to_repo
 
@@ -160,6 +161,7 @@ def _build_walkaround_manifest(intake: dict, base: Path) -> dict:
     from tools.library.resolve import _check_id
 
     _check_id(object_id)
+    recorded = require_intake(intake, base)
     reports_in = intake["reports"]
     judged = {}
     for kind in ("assetcheck", "objsheet", "walkaround"):
@@ -219,9 +221,17 @@ def _build_walkaround_manifest(intake: dict, base: Path) -> dict:
         "lod": {
             "billboardViews": list(lod_in),
             "impostor": True,
+            "chain": recorded["lod_chain"],
         },
         "asset": rel_to_repo(asset, ROOT),
+        "art_director": recorded["art_director"],
+        "run": recorded["run"],
+        "collision": recorded["collision"],
+        "camera_layer": recorded["camera_layer"],
+        "textures": recorded["textures"],
     }
+    if recorded.get("art_director_report"):
+        manifest["art_director_report"] = recorded["art_director_report"]
     if not manifest["shape"]["method"]:
         raise LibraryError("shapeMethod is required")
     if manifest["collider"]["type"] != "circle":
@@ -317,6 +327,7 @@ def _check_one(library: Path, object_id: str, data: dict) -> list[str]:
         problems.append("collider must be a circle with radius_m")
     if float(collider.get("radius_m") or 0) <= 0:
         problems.append("collider radius must be > 0")
+    problems.extend(refusals(data, ROOT))
     return problems
 
 
@@ -435,6 +446,10 @@ _HELP = """tools/library — reuse a validated object by id
 add refuses a report that is not PASS. A WARN on a lock/ path, or locked: true, is allowed.
 A block intake (kind=block) stores glb lod0/1/2, native 1024 plates, the profile id and path,
 the gate report, and a content hash of those bytes. It does not copy the files.
+add also refuses a part unless art-director KEEP, an object-gate run PASS, local collision
+boxes with ground_anchor and min_clearance_m, a key or approach camera layer, a lod0/1/2
+chain with 0 px outline difference at 15 m and 40 m, per-LOD triangle counts, and textures
+at or above 1024 native pixels with mipmaps are all recorded.
 The manifest records paths. It does not copy pixels and it does not recook.
 """
 

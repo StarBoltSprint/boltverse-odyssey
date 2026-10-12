@@ -11,7 +11,7 @@ This folder holds no biome style. Ids, paths, and report verdicts only. Prompt p
    - `python3 tools/objsheet/sheet.py` on the view set
    - `python3 tools/walkaround/build.py` after that sheet exits 0
 2. `python3 tools/library/library.py add --intake <intake.json>`
-   `add` accepts the object only when assetcheck, objsheet, and the walkaround `qc/report.json` are PASS. A WARN on a `lock/` file, or `locked: true`, is allowed. Anything else is refused. Bolt stays `lock/bolt-gallop-cycle.mp4` and `lock/bolt-idle-breath.mp4`. A WARN is not a recook.
+   `add` accepts the object only when assetcheck, objsheet, and the walkaround `qc/report.json` are PASS, and the six intake guards hold (Art Director KEEP, object-gate run PASS, local collision boxes with `ground_anchor` and `min_clearance_m`, a `key` or `approach` camera layer, lod0/1/2 with 0 px outline difference at 15 m and 40 m plus triangle counts, textures at least 1024 native pixels with mipmaps). A WARN on a `lock/` file, or `locked: true`, is allowed. Anything else is refused. Visual KEEP alone is not enough. Bolt stays `lock/bolt-gallop-cycle.mp4` and `lock/bolt-idle-breath.mp4`. A WARN is not a recook.
 3. Later zones name the id. They do not name a new cook.
 
 ```json
@@ -42,6 +42,12 @@ Schema: [`schema.json`](schema.json) (`library-object/1`). One folder per id: `b
 | `scale` | Min, max, and default. Layout uses this only when the zone spec omits `scale`. |
 | `collider` | Circle radius in metres. Invisible shape. |
 | `lod.billboardViews` | Far impostor view file names. Not drawn by this tool. |
+| `lod.chain` | lod0/1/2 triangle counts and outline diff in px at 15 m and 40 m. Both diffs must be 0. |
+| `art_director` | `KEEP`. A gate report may carry the flag. The manifest stores the word. |
+| `run` | `object-gate` or `tools/gate` verdict `PASS`. |
+| `collision` | Local boxes (`space: "local"`), `ground_anchor`, `min_clearance_m`. |
+| `camera_layer` | `key` or `approach`, the play-check shot kinds for a part. |
+| `textures` | Native side at least 1024, `mipmaps: true`. |
 | `asset` | `asset.json` the layout places. |
 
 `fixture-solid` is a synthetic test object. Its pixels are not Imagine. Do not hang it. See that folder's README.
