@@ -51,6 +51,20 @@ for o_ in bpy.context.scene.objects:
     if o_.type == 'MESH':
         bpy.context.view_layer.objects.active = o_; o_.select_set(True)
 bpy.ops.object.shade_smooth_by_angle(angle=math.radians(35))
+# v3.4.2: icicle root rings (buried in the lip): their vertex normals = the lip normal there, so shading continues from lip into ice
+import json, os, mathutils
+rj = a[0].replace('.obj', '-roots.json')
+if os.path.exists(rj):
+    R_ = json.load(open(rj))
+    for o_ in [o for o in bpy.context.scene.objects if o.type == 'MESH']:
+        me = o_.data; kd = mathutils.kdtree.KDTree(len(R_))
+        for i, r_ in enumerate(R_): kd.insert((r_['x'], -r_['z'], r_['y']), i)   # OBJ Y-up -> Blender Z-up
+        kd.balance(); cn = [tuple(c.vector) for c in me.corner_normals]; hit = 0
+        for li, lp in enumerate(me.loops):
+            v = me.vertices[lp.vertex_index].co; (co, i, d) = kd.find(v)
+            if d < 0.4 and abs(v.z - co.z) < 0.005:
+                n_ = R_[i]['n']; cn[li] = (n_[0], -n_[2], n_[1]); hit += 1
+        me.normals_split_custom_set(cn); print('ROOTNORMALS', hit)
 bpy.ops.export_scene.gltf(filepath=a[1], export_format='GLB')
 json.dump(dict(openBefore=o0[0], openAfter=o1[0], nonManifoldAfter=o1[1], tjunctionSplits=splits, tris=len(ob.data.polygons)), open(a[2], 'w'))
 print('WELD', o0, o1, splits)

@@ -1,11 +1,11 @@
 {
  "passes": {
   "pass1": 23,
-  "pass2": 20,
-  "pass3": 24,
+  "pass2": 19,
+  "pass3": 23,
   "pass4": 27,
-  "pass5": 18,
-  "pass6": 7,
+  "pass5": 16,
+  "pass6": 4,
   "pass7": 1,
   "pass8": 1,
   "pass9": 0
@@ -151,8 +151,8 @@
     266,
     337
    ],
-   "donorDx": 44,
-   "method": "footprint-feather"
+   "donorDx": 76,
+   "method": "frost-matched feather 6px"
   },
   {
    "plate": "plate-front",
@@ -417,14 +417,14 @@
   {
    "plate": "plate-front",
    "pass_": 1,
-   "footprintPx": 301,
+   "footprintPx": 2258,
    "bbox": [
     229,
     228,
-    240,
-    258
+    269,
+    297
    ],
-   "donorDx": 12,
+   "donorDx": 44,
    "method": "poisson"
   },
   {
@@ -437,7 +437,7 @@
     346,
     292
    ],
-   "donorDx": -72,
+   "donorDx": 80,
    "method": "poisson"
   },
   {
@@ -703,40 +703,27 @@
   {
    "plate": "plate-front",
    "pass_": 2,
-   "footprintPx": 289,
+   "footprintPx": 1607,
    "bbox": [
     229,
     228,
-    239,
-    258
+    264,
+    281
    ],
-   "donorDx": 12,
+   "donorDx": 44,
    "method": "poisson"
   },
   {
    "plate": "plate-front",
    "pass_": 2,
-   "footprintPx": 1577,
+   "footprintPx": 1882,
    "bbox": [
     303,
-    243,
-    340,
+    244,
+    346,
     296
    ],
-   "donorDx": -68,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-front",
-   "pass_": 2,
-   "footprintPx": 253,
-   "bbox": [
-    334,
-    260,
-    344,
-    286
-   ],
-   "donorDx": -60,
+   "donorDx": 80,
    "method": "poisson"
   },
   {
@@ -976,40 +963,27 @@
   {
    "plate": "plate-front",
    "pass_": 3,
-   "footprintPx": 238,
+   "footprintPx": 1601,
    "bbox": [
     229,
-    233,
-    239,
-    258
+    228,
+    264,
+    281
    ],
-   "donorDx": 12,
+   "donorDx": 44,
    "method": "footprint-feather"
   },
   {
    "plate": "plate-front",
    "pass_": 3,
-   "footprintPx": 1145,
+   "footprintPx": 1838,
    "bbox": [
     303,
-    253,
-    334,
-    299
+    245,
+    346,
+    295
    ],
    "donorDx": -44,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-front",
-   "pass_": 3,
-   "footprintPx": 284,
-   "bbox": [
-    332,
-    260,
-    344,
-    286
-   ],
-   "donorDx": -56,
    "method": "footprint-feather"
   },
   {
@@ -1184,66 +1158,66 @@
   {
    "plate": "plate-front",
    "pass_": 4,
-   "footprintPx": 252,
+   "footprintPx": 315,
+   "bbox": [
+    229,
+    228,
+    244,
+    256
+   ],
+   "donorDx": 56,
+   "method": "footprint-feather"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 4,
+   "footprintPx": 102,
+   "bbox": [
+    254,
+    279,
+    261,
+    293
+   ],
+   "donorDx": 24,
+   "method": "footprint-feather"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 4,
+   "footprintPx": 778,
    "bbox": [
     303,
     228,
-    314,
-    252
+    332,
+    262
    ],
-   "donorDx": -16,
+   "donorDx": 40,
    "method": "footprint-feather"
   },
   {
    "plate": "plate-front",
    "pass_": 4,
-   "footprintPx": 113,
+   "footprintPx": 169,
    "bbox": [
-    313,
-    246,
-    320,
-    261
-   ],
-   "donorDx": 32,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-front",
-   "pass_": 4,
-   "footprintPx": 39,
-   "bbox": [
-    318,
-    249,
-    323,
-    255
-   ],
-   "donorDx": 28,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-front",
-   "pass_": 4,
-   "footprintPx": 143,
-   "bbox": [
-    331,
+    326,
     228,
-    340,
-    243
+    337,
+    244
    ],
-   "donorDx": -28,
+   "donorDx": -40,
    "method": "footprint-feather"
   },
   {
    "plate": "plate-front",
    "pass_": 4,
-   "footprintPx": 148,
+   "footprintPx": 127,
    "bbox": [
-    339,
-    237,
-    348,
-    254
+    334,
+    229,
+    342,
+    244
    ],
-   "donorDx": -36,
+   "donorDx": -48,
    "method": "footprint-feather"
   },
   {
@@ -1374,17 +1348,17 @@
     327
    ],
    "donorDx": 52,
-   "method": "footprint-feather"
+   "method": "frost-matched feather 6px"
   },
   {
    "plate": "plate-side",
    "pass_": 4,
-   "footprintPx": 103,
+   "footprintPx": 108,
    "bbox": [
     465,
     312,
     475,
-    321
+    322
    ],
    "donorDx": 36,
    "method": "footprint-feather"
@@ -1494,6 +1468,19 @@
    "method": "footprint-feather"
   },
   {
+   "plate": "plate-front",
+   "pass_": 5,
+   "footprintPx": 145,
+   "bbox": [
+    233,
+    280,
+    242,
+    297
+   ],
+   "donorDx": 44,
+   "method": "footprint-feather"
+  },
+  {
    "plate": "plate-side",
    "pass_": 5,
    "footprintPx": 168,
@@ -1561,20 +1548,20 @@
   {
    "plate": "plate-side",
    "pass_": 5,
-   "footprintPx": 259,
+   "footprintPx": 177,
    "bbox": [
-    449,
+    454,
     349,
     462,
     370
    ],
-   "donorDx": -16,
+   "donorDx": -20,
    "method": "footprint-feather"
   },
   {
    "plate": "plate-side",
    "pass_": 5,
-   "footprintPx": 182,
+   "footprintPx": 170,
    "bbox": [
     459,
     332,
@@ -1587,9 +1574,9 @@
   {
    "plate": "plate-side",
    "pass_": 5,
-   "footprintPx": 603,
+   "footprintPx": 585,
    "bbox": [
-    465,
+    468,
     312,
     492,
     344
@@ -1678,45 +1665,6 @@
   {
    "plate": "plate-side",
    "pass_": 6,
-   "footprintPx": 126,
-   "bbox": [
-    442,
-    313,
-    449,
-    330
-   ],
-   "donorDx": 36,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 6,
-   "footprintPx": 58,
-   "bbox": [
-    449,
-    334,
-    455,
-    342
-   ],
-   "donorDx": -40,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 6,
-   "footprintPx": 65,
-   "bbox": [
-    452,
-    334,
-    461,
-    342
-   ],
-   "donorDx": 48,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 6,
    "footprintPx": 135,
    "bbox": [
     469,
@@ -1737,18 +1685,18 @@
     545,
     361
    ],
-   "donorDx": -24,
+   "donorDx": -76,
    "method": "footprint-feather"
   },
   {
    "plate": "plate-side",
    "pass_": 6,
-   "footprintPx": 81,
+   "footprintPx": 51,
    "bbox": [
-    541,
+    543,
     347,
     549,
-    357
+    354
    ],
    "donorDx": -80,
    "method": "footprint-feather"

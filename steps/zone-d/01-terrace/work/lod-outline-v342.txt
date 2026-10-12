@@ -1,0 +1,4 @@
+{"view": "switch15m", "hitPx": 453764, "xorPx": 0, "xorFrac": 0.0, "focusPx": 49086, "focusXorPx": 0, "focusXorFrac": 0.0, "maxBlobPx": 0, "pass": true}
+{"view": "switch15m", "hitPx": 453764, "xorPx": 0, "xorFrac": 0.0, "focusPx": 49012, "focusXorPx": 0, "focusXorFrac": 0.0, "maxBlobPx": 0, "pass": true}
+{"view": "switch40m", "hitPx": 167769, "xorPx": 0, "xorFrac": 0.0, "focusPx": 41769, "focusXorPx": 0, "focusXorFrac": 0.0, "maxBlobPx": 0, "pass": true}
+{"view": "switch40m", "hitPx": 167769, "xorPx": 0, "xorFrac": 0.0, "focusPx": 41490, "focusXorPx": 0, "focusXorFrac": 0.0, "maxBlobPx": 0, "pass": true}

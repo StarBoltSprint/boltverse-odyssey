@@ -36,7 +36,7 @@ X2A, X2B = XC2 - 512 / K2, XC2 + 500 / K2                  # facade x range cove
 def f2uv(x, y): return ((C2 + (x - XC2) * K2) / 1024, 1 - (G2 - y * K2) / 1024)
 V, UVs, F = [], [], {'front': [], 'front2': [], 'side': [], 'top': []}
 ICI = []
-BANDS = []; GHOST = []   # v3.4: detected streaks that get NO cone -> cleaned out of the texture (work/clean_streaks.py)
+ROOTS = []; BANDS = []; GHOST = []   # v3.4: detected streaks that get NO cone -> cleaned out of the texture (work/clean_streaks.py)
 NRM = {'front': [], 'front2': [], 'side': [], 'top': []}   # intended outward normal per triangle (winding fix)
 TS, TX0 = 0.029, 525          # top plate: m per px across, centre column
 TOPROWS = [(720, 665), (520, 484), (340, 116)]   # per tier: (front-lip row, row at next tier front / back)   # faces: (v idx tri), uv per vertex-in-face
@@ -205,16 +205,23 @@ for k, t in enumerate(T):
         n0, n1 = 12, 6   # Engine Core: 12 sides only on the buried root ring, 6 down the cone (old 6-side tip outline)
         def lip_y(z): return c0 if z <= cz - R else c0 + R - np.sqrt(max(0.0, R * R - (z - (cz - R)) ** 2))
         a0s = 2 * np.pi * np.arange(n0) / n0
-        top = max(lip_y(base[2] + r * np.sin(a)) for a in a0s) + 0.03
+        # v3.4.2: root ring buried 9 cm into the lip; width at the lip surface = streak width (r), then a short taper to the cone
+        # body within ~7 cm (ring1, no constant-width neck); buried ring radius set so the line ring0->ring1 crosses the lip at r
+        lipt = max(lip_y(base[2] + r * np.sin(a)) for a in a0s); top = lipt + 0.09
         sink = top - (c0 + 0.02); Lt = Lm + sink; by = top
-        rng = np.random.default_rng(seed); tipdx, tipdz = rng.uniform(-0.3, 0.3, 2) * r; mid = 0.55 + rng.uniform(-0.1, 0.1)
-        h1 = sink + 0.45 * Lm; f1 = h1 / Lt
+        rng = np.random.default_rng(seed); tipdx, tipdz = rng.uniform(-0.3, 0.3, 2) * r
+        rb = float(np.clip(0.35 * r + 0.02, 0.03, 0.07)); h1 = (by - lipt) + 0.07; f1 = h1 / Lt
+        r0 = min(rb + (r - rb) * h1 / 0.07, max(r, (cz - 0.03) - base[2]) if mat != 'side' else r * 1.6); mid = rb / r0; r_lip = r   # buried ring stays inside the lip
+        lipt = max(lipt, max(lip_y(base[2] + r0 * np.sin(a)) for a in a0s)); by = max(by, lipt + 0.09); sink = by - (c0 + 0.02); Lt = Lm + sink; h1 = (by - lipt) + 0.07; f1 = h1 / Lt
+        dv = by - lipt   # UV v = metres below the lip surface (isotropic: buried ring sits on snow rows, lip line = streak top)
+        ROOTS.append(dict(y=by, x=base[0], z=base[2], n=[0.0, -0.87, 0.5] if base[2] > cz - R - 0.05 else [0.0, -1.0, 0.0]))
+        r = r0
         # per-face isotropic unwrap: each triangle gets its own UV copies, arc length measured from the face's centre angle, so
         # every face samples the streak's own plate column (no conical-unwrap shear); positions are shared after the weld
-        P0 = [(base[0] + r * np.cos(a), by, base[2] + r * np.sin(a), a, r, -sink) for a in a0s]
+        P0 = [(base[0] + r * np.cos(a), by, base[2] + r * np.sin(a), a, r, -dv) for a in a0s]   # root UVs on the streak (icy grey), not the white lip snow
         a1s = 2 * np.pi * np.arange(n1) / n1 + np.pi / n1
-        P1 = [(base[0] + r * mid * np.cos(a) + tipdx * f1, by - h1, base[2] + r * mid * np.sin(a) + tipdz * f1, a, r * mid, 0.45 * Lm) for a in a1s]
-        PT = (base[0] + tipdx, by - Lt, base[2] + tipdz, None, 0.0, Lm)
+        P1 = [(base[0] + r * mid * np.cos(a) + tipdx * f1, by - h1, base[2] + r * mid * np.sin(a) + tipdz * f1, a, r * mid, h1 - dv) for a in a1s]
+        PT = (base[0] + tipdx, by - Lt, base[2] + tipdz, None, 0.0, Lt - dv)
         rad = lambda tri: ('radial', base[0] + tipdx * 0.5, base[2] + tipdz * 0.5, np.mean([V[i] for i in tri], 0))
         def face(*ps):
             angs = [p[3] for p in ps if p[3] is not None]; ac = np.angle(np.mean(np.exp(1j * np.array(angs))))
@@ -229,7 +236,7 @@ for k, t in enumerate(T):
             face(P1[j], P0[(2 * j + 2) % n0], P1[(j + 1) % n1])
             face(P1[j], P1[(j + 1) % n1], PT)
         ring0 = [None] * n0
-        capr = [addv(P0[q][:3], uvc(0.5 + np.cos(a) / np.pi, -sink - r * (1 + np.sin(a)), 1.0)) for q, a in enumerate(a0s)]   # isotropic disc UVs
+        capr = [addv(P0[q][:3], uvc(0.5 + np.cos(a) / np.pi, -dv - r * (1 + np.sin(a)), 1.0)) for q, a in enumerate(a0s)]   # isotropic disc UVs
         for q in range(1, n0 - 1):   # sealed root cap (fan, inside the lip)
             F[mat].append((capr[0], capr[q], capr[q + 1])); NRM[mat].append((0, 1, 0))
     img = np.asarray(Image.open(f'{step}/plates/plate-front.jpg').convert('L'), np.float32)
@@ -333,7 +340,7 @@ for m in ('front', 'front2', 'side', 'top'):
         try: J = A @ np.linalg.inv(B); sv = np.linalg.svd(J, compute_uv=False); st.append(float(sv[0] / max(sv[1], 1e-9))); dens.append(float(sv[0]))
         except np.linalg.LinAlgError: st.append(1e9); dens.append(1e9)
 np.save(f'{step}/work/terrace-lod{LOD}-stretch.npy', np.array(st, np.float32)); np.save(f'{step}/work/terrace-lod{LOD}-density.npy', np.array(dens, np.float32))
-json.dump(ICI, open(o + '-icicles.json', 'w')); json.dump(GHOST, open(o + '-ghosts.json', 'w')); json.dump(BANDS, open(o + '-bands.json', 'w'))
+json.dump(ICI, open(o + '-icicles.json', 'w')); json.dump(GHOST, open(o + '-ghosts.json', 'w')); json.dump(BANDS, open(o + '-bands.json', 'w')); json.dump(ROOTS, open(o + '-roots.json', 'w'))
 json.dump(dict(lod=LOD, tris=ntri, flippedForWinding=flipped, icicles=len(ICI), verts=len(V), aabb=[V.min(0).tolist(), V.max(0).tolist()], doorDepthM=DOOR_D, corniceOutM=CORN_OUT,
                mPerPx=S, tiers=T, back=BACK), open(o + '.json', 'w'), indent=1)
 print(o, ntri, V.min(0).round(2), V.max(0).round(2))

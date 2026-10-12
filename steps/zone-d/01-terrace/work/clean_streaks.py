@@ -31,6 +31,13 @@ def clean(p, c0, c1, r0, r1, it):
         out = cv2.seamlessClone(s8[y0:y1 + 1, x0:x1 + 1].copy(), dst, m[y0:y1 + 1, x0:x1 + 1].copy(), ((x0 + x1 + 1) // 2, (y0 + y1 + 1) // 2), cv2.NORMAL_CLONE)
         A[p] = out[..., ::-1].astype(np.float32); how = 'poisson'
     else:
+        if fused and w > 10:   # v3.4.2: wide fused curtain (tier-3 corner): donor = nearby REAL frost-covered basalt whose level matches
+            # the wall just below the footprint (keeps the frost texture, not plain dark basalt); 6 px feather against the snow bulge
+            tgt = Lm[min(1023, rb + 2):min(1024, rb + 30), c0:c1 + 1].mean()
+            ok_ = [(abs(Lm[ra:rb, c0 + o:c1 + o + 1].mean() - tgt), o) for o in range(-80, 81, 4) if abs(o) >= w + 4 and c0 + o >= 0 and c1 + o < 1024 and Lm[ra:rb, c0 + o:c1 + o + 1].mean() < ref - 15]
+            if ok_: off = min(ok_)[1]; src = np.roll(a, -off, axis=1)
+            wg = cv2.GaussianBlur((m > 0).astype(np.float32), (0, 0), 6.0)[..., None]; wg = np.maximum(wg, (m > 0)[..., None] * 0.85)
+            A[p] = src * wg + a * (1 - wg); LOG.append(dict(plate=p, pass_=it, footprintPx=int((m > 0).sum()), bbox=[int(x0), int(y0), int(x1), int(y1)], donorDx=int(off), method='frost-matched feather 6px')); return
         wg = cv2.GaussianBlur((m > 0).astype(np.float32), (0, 0), (3.0 if w > 10 else 1.0) if it < 8 else 0.5)[..., None]; A[p] = src * wg + a * (1 - wg); how = 'footprint-feather'
     LOG.append(dict(plate=p, pass_=it, footprintPx=int((m > 0).sum()), bbox=[int(x0), int(y0), int(x1), int(y1)], donorDx=int(off), method=how))
 for g in [g for g in json.load(open('work/terrace-lod0-ghosts.json')) if 'c0' in g]:
