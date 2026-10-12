@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Zone C solids from the key, the #199 camera, #200 SAM2 masks, and MoGe-2.
 
-Key-visible front faces keep the key projection. Every other face is tagged
-pending-plate from specs/zone-c-plate-plan.json (plates 5-15). This file does
-not call Imagine and does not invent those plates.
+Key-visible front faces keep the key projection. Hidden faces use the 11
+validated plates pasted into data/plate-atlas.jpg (specs/zone-c-plate-plan.json).
+This file does not call Imagine and does not invent pixels.
 
   python3 tools/imagine-to-3d/zone_c_solids.py build [--attempt 1]
   python3 tools/imagine-to-3d/zone_c_solids.py score
@@ -26,6 +26,8 @@ sys.path.insert(0, str(REPO / "tools" / "common"))
 sys.path.insert(0, str(REPO / "tools" / "biome"))
 
 from geom import camera_axes  # noqa: E402
+from zone_c_mesh import GRID_STEP as MESH_STEP  # noqa: E402
+from zone_c_mesh import build_atlas, build_solid as build_closed, key_luma_disp  # noqa: E402
 
 STEP = REPO / "steps" / "zone-c" / "05-solids"
 DATA = STEP / "data"
@@ -71,12 +73,13 @@ def world_from_points(points: np.ndarray, cam: dict) -> np.ndarray:
     return eye + x[..., None] * right + (-y)[..., None] * up + z[..., None] * forward
 
 
-def load_plan() -> list:
-    return json.loads(PLAN_PATH.read_text())["plates"]
+def load_plan() -> dict:
+    return json.loads(PLAN_PATH.read_text())
 
 
 def plate_for(plan, obj: str, kind: str) -> int:
-    for row in plan:
+    rows = plan["plates"] if isinstance(plan, dict) else plan
+    for row in rows:
         if kind in row["faces"] and row["object"] in (obj, "*"):
             return int(row["n"])
     raise KeyError(f"no plate for {obj} {kind}")
@@ -454,7 +457,7 @@ def clear_from_key(mask_path: Path) -> list:
     return [round(float(v), 4) for v in med]
 
 
-def write_pack(solids, timings, attempt):
+def write_pack(solids, timings, attempt, plan, atlas):
     DATA.mkdir(parents=True, exist_ok=True)
     blobs = []
     meta_objs = []
@@ -471,6 +474,18 @@ def write_pack(solids, timings, attempt):
         idx_off = byte_at
         blobs.append(idx.tobytes())
         byte_at += idx.nbytes
+        files = {str(p["n"]): p for p in plan["plates"]}
+        plated = {}
+        for key, rec in s["pending"].items():
+            src = files.get(str(key))
+            path = None if src is None else str(Path(plan["plateDir"]) / src["file"])
+            plated[str(key)] = {
+                "tris": rec["tris"],
+                "kinds": rec["kinds"],
+                "file": path,
+                "id": None if src is None else src["id"],
+                "bound": path is not None and rec["tris"] > 0,
+            }
         meta_objs.append({
             "name": s["name"],
             "vertByteOffset": vert_off,
@@ -481,7 +496,8 @@ def write_pack(solids, timings, attempt):
             "keyTris": s["keyTris"],
             "indexBytes": int(s["idx"].nbytes),
             "aabb": s["aabb"],
-            "pending": s["pending"],
+            "pending": plated,
+            "plated": plated,
             "edges": s["edges"],
             "stretchP95": s["stretchP95"],
             "stretchMax": s["stretchMax"],
@@ -498,9 +514,13 @@ def write_pack(solids, timings, attempt):
         "masks": "steps/zone-c/02-masks/masks.json",
         "key": "steps/zone-c/03-terrain/key-zc1.jpg",
         "attempt": attempt,
-        "thicknessM": THICKNESS_M,
-        "gridStep": GRID_STEP,
+        "thicknessM": 0.0,
+        "sinkM": 1.0,
+        "gridStep": MESH_STEP,
         "stretchMax": STRETCH_MAX,
+        "atlas": "steps/zone-c/05-solids/data/plate-atlas.jpg",
+        "atlasPx": [atlas["width"], atlas["height"]],
+        "plates": atlas["plates"],
         "objects": meta_objs,
         "timingsSec": timings,
         "clearSrgb": clear_from_key(MASK_DIR / "mask-causeway.png"),
@@ -508,7 +528,7 @@ def write_pack(solids, timings, attempt):
         "eye": [0.0, cam["eyeHeightM"], 0.0],
         "pitchDeg": cam["pitchDeg"],
         "drawCalls": 1 + sum((1 if o["keyTris"] else 0) + (1 if o["tris"] > o["keyTris"] else 0) for o in meta_objs),
-        "note": "One causeway draw plus two draws per solid (key group, pending group). Pending fragments do not write colour.",
+        "note": "One causeway draw plus two draws per solid (key group, plate-atlas group). Hidden faces sample the 11 validated plates. No pending colour.",
     }
     (DATA / "solids.json").write_text(json.dumps(pack, indent=2))
     return pack
@@ -537,19 +557,32 @@ def build(attempt: int):
         np.savez_compressed(cache, points=points, depth=depth, wh=np.array(wh))
         stages["moge-2"] = round(time.perf_counter() - t, 3)
     world = world_from_points(points, cam)
-    ground = load_ground()
+    h, origin, step = load_ground()
+
+    def ground(x, z, _h=h, _o=origin, _s=step):
+        return ground_y(_h, _o, _s, float(x), float(z))
+
+    _right, _up, forward = camera_axes(cam["yaw"], cam["pitch"])
+    world = world + key_luma_disp(KEY, world.shape[:2], forward)
     key = Image.open(KEY)
+    t = time.perf_counter()
+    atlas = build_atlas(plan, DATA / "plate-atlas.jpg")
+    stages["atlas"] = round(time.perf_counter() - t, 3)
     solids = []
     t = time.perf_counter()
     for name, mask_name in SOLIDS:
         m = np.asarray(Image.open(MASK_DIR / mask_name).convert("L").resize(wh, Image.Resampling.NEAREST)) > 127
-        solids.append(build_solid(name, m, world, depth, cam, plan, ground, key.size))
-        print(name, "quads", solids[-1]["quads"], "tris", solids[-1]["idx"].size // 3,
-              "stretch", solids[-1]["stretchP95"], "max", solids[-1]["stretchMax"],
-              "edges", solids[-1]["edges"], flush=True)
+        solid = build_closed(name, m, world, depth, forward, plan, ground, key.size, atlas)
+        weld = solid["weld"]
+        print(name, "quads", solid["quads"], "tris", solid["idx"].size // 3,
+              "stretch", solid["stretchP95"], "max", solid["stretchMax"],
+              "weld", weld, flush=True)
+        if weld["open"] or weld["nonManifold"]:
+            raise RuntimeError(f"{name} not sealed after weld: {weld}")
+        solids.append(solid)
     stages["mesh"] = round(time.perf_counter() - t, 3)
     stages["total"] = round(time.perf_counter() - t0, 3)
-    pack = write_pack(solids, stages, attempt)
+    pack = write_pack(solids, stages, attempt, plan, atlas)
     print("wrote", DATA / "solids.json", "sec", stages)
     return pack
 
@@ -632,7 +665,7 @@ def score():
         "timingsSec": pack["timingsSec"],
         "sheet": sheet,
         "gateVerdict": None if gate is None else gate.get("verdict"),
-        "pass": False,
+        "pass": bool(gate is not None and gate.get("verdict") == "PASS"),
     }
     (STEP / "numbers.json").write_text(json.dumps(numbers, indent=2))
     print(json.dumps({k: numbers[k] for k in ("stretchWorst", "stretchPass", "colour", "sameHull")}, indent=2))

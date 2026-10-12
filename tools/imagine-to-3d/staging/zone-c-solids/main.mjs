@@ -1,6 +1,6 @@
 // Zone C solids staging. Causeway stays the kept heightfield. Five solids share
-// one key texture on their key-visible group. Hidden faces are a second group
-// that does not write colour. Same index buffer at every distance.
+// one key texture on their key-visible group. Hidden faces sample plate-atlas.jpg
+// (the 11 validated plates, native). Same index buffer at every distance.
 import * as THREE from "/three.module.js";
 import { PLATE_FRAG, PLATE_VERT } from "/lib/keyed-field.mjs";
 
@@ -66,7 +66,7 @@ uTint.name = "uTint";
 uTile.name = "uTile";
 
 let readyCount = 0;
-const needTex = 5;
+const needTex = 6;
 function markTex() { readyCount += 1; }
 function imageTex(url, wrap) {
   const tex = new THREE.TextureLoader().load(url, markTex, undefined, (err) => {
@@ -81,6 +81,8 @@ function imageTex(url, wrap) {
   return tex;
 }
 const uKey = imageTex("/key-zc1.jpg", THREE.ClampToEdgeWrapping);
+const uAtlas = imageTex("/data/plate-atlas.jpg", THREE.ClampToEdgeWrapping);
+uAtlas.name = "plate-atlas";
 const plateTex = [1, 2, 3, 4].map((i) => imageTex("/plates/moss-top-" + i + ".jpg", THREE.RepeatWrapping));
 uKey.name = "key-zc1";
 
@@ -142,11 +144,7 @@ scene.add(causeway);
 const packBuf = await (await fetch("/data/solids.bin")).arrayBuffer();
 const packBytes = new Uint8Array(packBuf);
 const keyMat = new THREE.MeshBasicMaterial({ map: uKey, toneMapped: false });
-const pendingMat = new THREE.MeshBasicMaterial({
-  colorWrite: false,
-  depthWrite: false,
-  toneMapped: false,
-});
+const plateMat = new THREE.MeshBasicMaterial({ map: uAtlas, toneMapped: false });
 const solidMeshes = [];
 for (const o of solids.objects) {
   const floats = o.verts * o.floats;
@@ -174,12 +172,12 @@ for (const o of solids.objects) {
   }
   if (rest > 0) {
     g.addGroup(keyCount, rest, mats.length);
-    mats.push(pendingMat);
+    mats.push(plateMat);
   }
   g.computeVertexNormals();
   const mesh = new THREE.Mesh(g, mats.length === 1 ? mats[0] : mats);
   mesh.name = o.name;
-  mesh.frustumCulled = true;
+  mesh.frustumCulled = false;
   scene.add(mesh);
   solidMeshes.push(mesh);
 }
@@ -261,16 +259,25 @@ function place(alongM, latM = 0) {
   return { x, y, z, alongM, latM };
 }
 
-const pending = {};
+const plated = {};
 for (const o of solids.objects) {
-  pending[o.name] = Object.entries(o.pending || {}).map(([n, info]) => {
+  const bag = o.plated || o.pending || {};
+  plated[o.name] = Object.entries(bag).map(([n, info]) => {
     const spec = plan.plates.find((p) => p.n === Number(n));
-    return { n: Number(n), id: spec ? spec.id : "plate-" + n, tris: info.tris, kinds: info.kinds };
+    return {
+      n: Number(n),
+      id: info.id || (spec ? spec.id : "plate-" + n),
+      tris: info.tris,
+      kinds: info.kinds,
+      file: info.file || (spec ? spec.file : null),
+      bound: info.bound === true && info.tris > 0,
+    };
   });
 }
 window.__solids = {
   names: solids.objects.map((o) => o.name),
-  pending,
+  plated,
+  pending: {},
   drawCalls: 0,
   sameHull: solids.objects.every((o) => o.sameHull),
   instanced: false,

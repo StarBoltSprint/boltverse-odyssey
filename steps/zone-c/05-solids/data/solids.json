@@ -5,305 +5,620 @@
   "masks": "steps/zone-c/02-masks/masks.json",
   "key": "steps/zone-c/03-terrain/key-zc1.jpg",
   "attempt": 2,
-  "thicknessM": 3.0,
-  "gridStep": 4,
+  "thicknessM": 0.0,
+  "sinkM": 1.0,
+  "gridStep": 2,
   "stretchMax": 1.3,
+  "atlas": "steps/zone-c/05-solids/data/plate-atlas.jpg",
+  "atlasPx": [
+    4096,
+    3072
+  ],
+  "plates": [
+    {
+      "n": 5,
+      "id": "arch-left-inner",
+      "file": "plate-05-arch-left-inner.jpg",
+      "sha256": "fcad9033ad4cc3d2251cc6c23b124f94f2fd3a0e93a224dddf0fccd42501076d",
+      "cell": [
+        0,
+        0
+      ]
+    },
+    {
+      "n": 6,
+      "id": "arch-right-inner",
+      "file": "plate-06-arch-right-inner.jpg",
+      "sha256": "7e7254a2103a6b680d795e902334f5113b388a89757d4a364a6dbd37d54409a3",
+      "cell": [
+        1024,
+        0
+      ]
+    },
+    {
+      "n": 7,
+      "id": "wall-left",
+      "file": "plate-07-wall-left.jpg",
+      "sha256": "77762ba6979027091269e6266cf4bd08d2c2b2ac571925213e5a7324e06a9d7d",
+      "cell": [
+        2048,
+        0
+      ]
+    },
+    {
+      "n": 8,
+      "id": "wall-right",
+      "file": "plate-08-wall-right.jpg",
+      "sha256": "ebbf9e3c2837fd251c91f9b791c85d6fbc71ff4c861bf75e52a7a8314cdffbec",
+      "cell": [
+        3072,
+        0
+      ]
+    },
+    {
+      "n": 9,
+      "id": "waterfall",
+      "file": "plate-09-waterfall.jpg",
+      "sha256": "40e2610a4693f7685f4b6aec2026ba73a6ce8015ffc19ba8fa63648f7fd6d319",
+      "cell": [
+        0,
+        1024
+      ]
+    },
+    {
+      "n": 10,
+      "id": "mist",
+      "file": "plate-10-mist.jpg",
+      "sha256": "e69329111a5044acaaf8707210a9197d8c02da0a8d4cf7f2d8c97b1aa737d35e",
+      "cell": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "n": 11,
+      "id": "leaf",
+      "file": "plate-11-leaf.jpg",
+      "sha256": "e03de8fa89b7bdb28e113d4c90d75c6a2f91b5e34e7f0b89ff30dbb43f7a5864",
+      "cell": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "n": 12,
+      "id": "fern",
+      "file": "plate-12-fern.jpg",
+      "sha256": "86181accf8d9210db05f1385629b627b1f8fbcccea0beeb8d4815ffbe0d7909a",
+      "cell": [
+        3072,
+        1024
+      ]
+    },
+    {
+      "n": 13,
+      "id": "causeway-underside",
+      "file": "plate-13-causeway-underside.jpg",
+      "sha256": "b959d2f26006dc5177d4abedeba32662c0f21a7754f76fc72053e4fd291ff865",
+      "cell": [
+        0,
+        2048
+      ]
+    },
+    {
+      "n": 14,
+      "id": "gorge-closure",
+      "file": "plate-14-gorge-closure.jpg",
+      "sha256": "37c9c6ea567b784e81294251f71356038feca005aff02d4b656a2f786fb48686",
+      "cell": [
+        1024,
+        2048
+      ]
+    },
+    {
+      "n": 15,
+      "id": "planet",
+      "file": "plate-15-planet.jpg",
+      "sha256": "2a8e7bc6db5c5e220306549692d8ccbac0afac02744d02b026a1e84da7d9992b",
+      "cell": [
+        2048,
+        2048
+      ]
+    }
+  ],
   "objects": [
     {
       "name": "arch-left",
       "vertByteOffset": 0,
-      "indexByteOffset": 66912,
-      "verts": 2788,
+      "indexByteOffset": 1965912,
+      "verts": 81913,
       "floats": 6,
-      "tris": 5520,
-      "keyTris": 1103,
-      "indexBytes": 66240,
+      "tris": 27764,
+      "keyTris": 1049,
+      "indexBytes": 333168,
       "aabb": {
         "min": [
-          -12.264803886413574,
-          0.5108606219291687,
-          -26.83016014099121
+          -17.464950561523438,
+          -0.30000001192092896,
+          -40.99589538574219
         ],
         "max": [
-          -4.992715835571289,
-          13.393961906433105,
-          -16.025789260864258
+          -4.943929195404053,
+          13.1649751663208,
+          -15.91268539428711
         ]
       },
       "pending": {
         "5": {
-          "tris": 2144,
+          "tris": 11748,
           "kinds": {
-            "back": 2144
-          }
+            "back": 11568,
+            "inner": 180
+          },
+          "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-05-arch-left-inner.jpg",
+          "id": "arch-left-inner",
+          "bound": true
         },
-        "6": {
-          "tris": 2003,
+        "13": {
+          "tris": 1816,
           "kinds": {
-            "side": 962,
-            "grazing": 1041
-          }
+            "bottom": 1816
+          },
+          "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-13-causeway-underside.jpg",
+          "id": "causeway-underside",
+          "bound": true
         },
-        "15": {
-          "tris": 270,
+        "11": {
+          "tris": 13151,
           "kinds": {
-            "bottom": 270
-          }
+            "grazing": 12059,
+            "side": 1092
+          },
+          "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-11-leaf.jpg",
+          "id": "leaf",
+          "bound": true
+        }
+      },
+      "plated": {
+        "5": {
+          "tris": 11748,
+          "kinds": {
+            "back": 11568,
+            "inner": 180
+          },
+          "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-05-arch-left-inner.jpg",
+          "id": "arch-left-inner",
+          "bound": true
+        },
+        "13": {
+          "tris": 1816,
+          "kinds": {
+            "bottom": 1816
+          },
+          "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-13-causeway-underside.jpg",
+          "id": "causeway-underside",
+          "bound": true
+        },
+        "11": {
+          "tris": 13151,
+          "kinds": {
+            "grazing": 12059,
+            "side": 1092
+          },
+          "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-11-leaf.jpg",
+          "id": "leaf",
+          "bound": true
         }
       },
       "edges": {
         "open": 0,
         "nonManifold": 0,
-        "edges": 8280,
-        "sample": null
+        "degenerate": 0
       },
-      "stretchP95": 1.2878,
-      "stretchMax": 1.2997,
-      "quads": 1072,
+      "stretchP95": 1.2417,
+      "stretchMax": 1.3,
+      "quads": 6554,
       "lodTris": [
-        5520,
-        5520,
-        5520
+        27764,
+        27764,
+        27764
       ],
       "sameHull": true
     },
     {
       "name": "arch-right",
-      "vertByteOffset": 133152,
-      "indexByteOffset": 175104,
-      "verts": 1748,
+      "vertByteOffset": 2299080,
+      "indexByteOffset": 3820872,
+      "verts": 63408,
       "floats": 6,
-      "tris": 3468,
-      "keyTris": 705,
-      "indexBytes": 41616,
+      "tris": 21168,
+      "keyTris": 210,
+      "indexBytes": 254016,
       "aabb": {
         "min": [
-          7.567061901092529,
-          0.900379478931427,
-          -18.852487564086914
+          7.560234069824219,
+          -0.30000001192092896,
+          -24.14270782470703
         ],
         "max": [
-          14.531557083129883,
-          9.620845794677734,
-          -8.4567289352417
+          18.53458023071289,
+          10.628390312194824,
+          -8.217751502990723
         ]
       },
       "pending": {
-        "8": {
-          "tris": 1261,
+        "6": {
+          "tris": 9538,
           "kinds": {
-            "grazing": 647,
-            "side": 614
-          }
+            "back": 9314,
+            "inner": 224
+          },
+          "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-06-arch-right-inner.jpg",
+          "id": "arch-right-inner",
+          "bound": true
         },
-        "7": {
-          "tris": 1352,
+        "13": {
+          "tris": 1144,
           "kinds": {
-            "back": 1352
-          }
+            "bottom": 1144
+          },
+          "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-13-causeway-underside.jpg",
+          "id": "causeway-underside",
+          "bound": true
         },
-        "15": {
-          "tris": 150,
+        "12": {
+          "tris": 10276,
           "kinds": {
-            "bottom": 150
-          }
+            "grazing": 9770,
+            "side": 506
+          },
+          "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-12-fern.jpg",
+          "id": "fern",
+          "bound": true
+        }
+      },
+      "plated": {
+        "6": {
+          "tris": 9538,
+          "kinds": {
+            "back": 9314,
+            "inner": 224
+          },
+          "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-06-arch-right-inner.jpg",
+          "id": "arch-right-inner",
+          "bound": true
+        },
+        "13": {
+          "tris": 1144,
+          "kinds": {
+            "bottom": 1144
+          },
+          "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-13-causeway-underside.jpg",
+          "id": "causeway-underside",
+          "bound": true
+        },
+        "12": {
+          "tris": 10276,
+          "kinds": {
+            "grazing": 9770,
+            "side": 506
+          },
+          "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-12-fern.jpg",
+          "id": "fern",
+          "bound": true
         }
       },
       "edges": {
         "open": 0,
         "nonManifold": 0,
-        "edges": 5202,
-        "sample": null
+        "degenerate": 0
       },
-      "stretchP95": 1.2904,
-      "stretchMax": 1.2989,
-      "quads": 676,
+      "stretchP95": 1.2466,
+      "stretchMax": 1.2999,
+      "quads": 4990,
       "lodTris": [
-        3468,
-        3468,
-        3468
+        21168,
+        21168,
+        21168
       ],
       "sameHull": true
     },
     {
       "name": "cliff-left",
-      "vertByteOffset": 216720,
-      "indexByteOffset": 254640,
-      "verts": 1580,
+      "vertByteOffset": 4074888,
+      "indexByteOffset": 5143392,
+      "verts": 44521,
       "floats": 6,
-      "tris": 3112,
-      "keyTris": 884,
-      "indexBytes": 37344,
+      "tris": 16768,
+      "keyTris": 2641,
+      "indexBytes": 201216,
       "aabb": {
         "min": [
-          -13.654152870178223,
-          2.4614124298095703,
-          -53.493167877197266
+          -14.453707695007324,
+          -0.30000001192092896,
+          -57.97628402709961
         ],
         "max": [
-          -3.875152111053467,
-          21.911611557006836,
-          -37.15604019165039
+          -3.705592632293701,
+          24.11919403076172,
+          -29.433900833129883
         ]
       },
       "pending": {
+        "7": {
+          "tris": 7938,
+          "kinds": {
+            "back": 7938
+          },
+          "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-07-wall-left.jpg",
+          "id": "wall-left",
+          "bound": true
+        },
+        "13": {
+          "tris": 500,
+          "kinds": {
+            "bottom": 500
+          },
+          "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-13-causeway-underside.jpg",
+          "id": "causeway-underside",
+          "bound": true
+        },
         "9": {
-          "tris": 1214,
+          "tris": 5689,
           "kinds": {
-            "back": 1214
-          }
+            "grazing": 5131,
+            "side": 558
+          },
+          "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-09-waterfall.jpg",
+          "id": "waterfall",
+          "bound": true
+        }
+      },
+      "plated": {
+        "7": {
+          "tris": 7938,
+          "kinds": {
+            "back": 7938
+          },
+          "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-07-wall-left.jpg",
+          "id": "wall-left",
+          "bound": true
         },
-        "10": {
-          "tris": 852,
+        "13": {
+          "tris": 500,
           "kinds": {
-            "side": 522,
-            "grazing": 330
-          }
+            "bottom": 500
+          },
+          "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-13-causeway-underside.jpg",
+          "id": "causeway-underside",
+          "bound": true
         },
-        "15": {
-          "tris": 162,
+        "9": {
+          "tris": 5689,
           "kinds": {
-            "bottom": 162
-          }
+            "grazing": 5131,
+            "side": 558
+          },
+          "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-09-waterfall.jpg",
+          "id": "waterfall",
+          "bound": true
         }
       },
       "edges": {
         "open": 0,
         "nonManifold": 0,
-        "edges": 4668,
-        "sample": null
+        "degenerate": 0
       },
-      "stretchP95": 1.271,
-      "stretchMax": 1.2998,
-      "quads": 607,
+      "stretchP95": 1.2519,
+      "stretchMax": 1.3,
+      "quads": 3886,
       "lodTris": [
-        3112,
-        3112,
-        3112
+        16768,
+        16768,
+        16768
       ],
       "sameHull": true
     },
     {
       "name": "gorge-rock",
-      "vertByteOffset": 291984,
-      "indexByteOffset": 315312,
-      "verts": 972,
+      "vertByteOffset": 5344608,
+      "indexByteOffset": 6087000,
+      "verts": 30933,
       "floats": 6,
-      "tris": 1900,
-      "keyTris": 441,
-      "indexBytes": 22800,
+      "tris": 11504,
+      "keyTris": 1632,
+      "indexBytes": 138048,
       "aabb": {
         "min": [
-          -4.760293483734131,
-          1.8366076946258545,
-          -90.29765319824219
+          -5.936050891876221,
+          -0.45749014616012573,
+          -103.94793701171875
         ],
         "max": [
-          8.933774948120117,
-          30.677690505981445,
-          -51.4499397277832
+          12.308836936950684,
+          30.368906021118164,
+          -51.18659591674805
         ]
       },
       "pending": {
-        "11": {
-          "tris": 686,
+        "14": {
+          "tris": 4970,
           "kinds": {
-            "back": 686
-          }
+            "back": 4826,
+            "inner": 144
+          },
+          "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-14-gorge-closure.jpg",
+          "id": "gorge-closure",
+          "bound": true
         },
-        "12": {
-          "tris": 675,
+        "13": {
+          "tris": 874,
           "kinds": {
-            "side": 430,
-            "grazing": 245
-          }
+            "bottom": 874
+          },
+          "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-13-causeway-underside.jpg",
+          "id": "causeway-underside",
+          "bound": true
         },
-        "15": {
-          "tris": 98,
+        "10": {
+          "tris": 4028,
           "kinds": {
-            "bottom": 98
-          }
+            "grazing": 3696,
+            "side": 332
+          },
+          "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-10-mist.jpg",
+          "id": "mist",
+          "bound": true
+        }
+      },
+      "plated": {
+        "14": {
+          "tris": 4970,
+          "kinds": {
+            "back": 4826,
+            "inner": 144
+          },
+          "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-14-gorge-closure.jpg",
+          "id": "gorge-closure",
+          "bound": true
+        },
+        "13": {
+          "tris": 874,
+          "kinds": {
+            "bottom": 874
+          },
+          "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-13-causeway-underside.jpg",
+          "id": "causeway-underside",
+          "bound": true
+        },
+        "10": {
+          "tris": 4028,
+          "kinds": {
+            "grazing": 3696,
+            "side": 332
+          },
+          "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-10-mist.jpg",
+          "id": "mist",
+          "bound": true
         }
       },
       "edges": {
         "open": 0,
         "nonManifold": 0,
-        "edges": 2850,
-        "sample": null
+        "degenerate": 0
       },
-      "stretchP95": 1.2814,
-      "stretchMax": 1.2995,
-      "quads": 343,
+      "stretchP95": 1.247,
+      "stretchMax": 1.2998,
+      "quads": 2664,
       "lodTris": [
-        1900,
-        1900,
-        1900
+        11504,
+        11504,
+        11504
       ],
       "sameHull": true
     },
     {
       "name": "cliff-right",
-      "vertByteOffset": 338112,
-      "indexByteOffset": 350592,
-      "verts": 520,
+      "vertByteOffset": 6225048,
+      "indexByteOffset": 6573264,
+      "verts": 14509,
       "floats": 6,
-      "tris": 1028,
-      "keyTris": 245,
-      "indexBytes": 12336,
+      "tris": 5004,
+      "keyTris": 317,
+      "indexBytes": 60048,
       "aabb": {
         "min": [
-          13.046553611755371,
-          12.740692138671875,
-          -31.137758255004883
+          12.716039657592773,
+          -0.30000001192092896,
+          -32.82762145996094
         ],
         "max": [
-          15.951034545898438,
-          20.873489379882812,
-          -26.484519958496094
+          18.632373809814453,
+          20.740947723388672,
+          -26.146339416503906
         ]
       },
       "pending": {
-        "14": {
-          "tris": 337,
+        "8": {
+          "tris": 2076,
           "kinds": {
-            "grazing": 171,
-            "side": 166
-          }
+            "back": 2076
+          },
+          "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-08-wall-right.jpg",
+          "id": "wall-right",
+          "bound": true
         },
         "13": {
-          "tris": 416,
+          "tris": 360,
           "kinds": {
-            "back": 416
-          }
+            "bottom": 360
+          },
+          "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-13-causeway-underside.jpg",
+          "id": "causeway-underside",
+          "bound": true
         },
         "15": {
-          "tris": 30,
+          "tris": 2251,
           "kinds": {
-            "bottom": 30
-          }
+            "grazing": 1991,
+            "side": 260
+          },
+          "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-15-planet.jpg",
+          "id": "planet",
+          "bound": true
+        }
+      },
+      "plated": {
+        "8": {
+          "tris": 2076,
+          "kinds": {
+            "back": 2076
+          },
+          "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-08-wall-right.jpg",
+          "id": "wall-right",
+          "bound": true
+        },
+        "13": {
+          "tris": 360,
+          "kinds": {
+            "bottom": 360
+          },
+          "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-13-causeway-underside.jpg",
+          "id": "causeway-underside",
+          "bound": true
+        },
+        "15": {
+          "tris": 2251,
+          "kinds": {
+            "grazing": 1991,
+            "side": 260
+          },
+          "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-15-planet.jpg",
+          "id": "planet",
+          "bound": true
         }
       },
       "edges": {
         "open": 0,
         "nonManifold": 0,
-        "edges": 1542,
-        "sample": null
+        "degenerate": 0
       },
-      "stretchP95": 1.2857,
-      "stretchMax": 1.2976,
-      "quads": 208,
+      "stretchP95": 1.2669,
+      "stretchMax": 1.2999,
+      "quads": 1154,
       "lodTris": [
-        1028,
-        1028,
-        1028
+        5004,
+        5004,
+        5004
       ],
       "sameHull": true
     }
   ],
   "timingsSec": {
     "moge-2": 0.0,
-    "mesh": 0.841,
-    "total": 0.977
+    "atlas": 0.343,
+    "mesh": 18.116,
+    "total": 18.666
   },
   "clearSrgb": [
     0.1686,
@@ -318,5 +633,5 @@
   ],
   "pitchDeg": 7.95,
   "drawCalls": 11,
-  "note": "One causeway draw plus two draws per solid (key group, pending group). Pending fragments do not write colour."
+  "note": "One causeway draw plus two draws per solid (key group, plate-atlas group). Hidden faces sample the 11 validated plates. No pending colour."
 }

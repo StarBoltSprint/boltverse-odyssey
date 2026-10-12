@@ -1,12 +1,12 @@
 [
  {
   "inst": "arch-right",
-  "cols": 36,
-  "maxAirM": 2.545,
+  "cols": 7,
+  "maxAirM": -0.246,
   "at": [
-   8.2,
-   -10.6
+   13.8,
+   -23.4
   ],
-  "baseY": 0.9
+  "baseY": -0.3
  }
 ]

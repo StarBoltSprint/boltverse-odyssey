@@ -5,21 +5,21 @@
   "atExpectedLag": null,
   "expectLagPx": null,
   "rect": [
+   30,
    0,
-   486,
-   208,
+   253,
    1024
   ],
-  "peak": 0.2702,
+  "peak": 0.8779,
   "lagPx": [
-   9,
-   322
+   0,
+   -18
   ],
   "crop": [
-   208,
-   538
+   223,
+   1024
   ],
-  "pxPerM": 191.61,
+  "pxPerM": 94.07,
   "tileM": null
  },
  {
@@ -28,21 +28,21 @@
   "atExpectedLag": null,
   "expectLagPx": null,
   "rect": [
-   13,
-   250,
-   406,
-   681
+   51,
+   0,
+   182,
+   1024
   ],
-  "peak": 0,
+  "peak": 0.4497,
   "lagPx": [
-   -2,
-   -301
+   0,
+   21
   ],
   "crop": [
-   393,
-   431
+   131,
+   1024
   ],
-  "pxPerM": 119.6,
+  "pxPerM": 83.3,
   "tileM": null
  },
  {
@@ -51,19 +51,19 @@
   "atExpectedLag": null,
   "expectLagPx": null,
   "rect": [
-   127,
-   357,
-   234,
-   645
+   136,
+   167,
+   205,
+   798
   ],
-  "peak": 0.4151,
+  "peak": 0.7679,
   "lagPx": [
-   -1,
-   -12
+   0,
+   -13
   ],
   "crop": [
-   107,
-   288
+   69,
+   631
   ]
  },
  {
@@ -72,19 +72,19 @@
   "atExpectedLag": null,
   "expectLagPx": null,
   "rect": [
-   106,
-   316,
-   234,
-   592
+   145,
+   460,
+   205,
+   805
   ],
-  "peak": 0.3978,
+  "peak": 0.8836,
   "lagPx": [
-   1,
+   -1,
    12
   ],
   "crop": [
-   128,
-   276
+   60,
+   345
   ]
  }
 ]

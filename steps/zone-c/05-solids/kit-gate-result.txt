@@ -1,0 +1,69 @@
+kit-gate exit=1 ok=False cmd=node tools/object-gate/cli.mjs --scene tools/object-gate/specs/zone-c/solids-scene.yaml --out steps/zone-c/05-solids/object-gate
+--- stdout ---
+ -z 2.079
+PASS	arch-right	select	1 placed copies
+PASS	arch-right	texture roles declared	key-zc1.jpg=plate
+PASS	arch-right	texture filtering (mips, trilinear, anisotropy = max, no resize)	1 textures trilinear + aniso 16
+PASS	arch-right	plates not downscaled vs Imagine originals	key-zc1.jpg gpu 1792x1008 served 1792x1008 original 1792x1008
+PASS	arch-right	UV stretch <= 1.3	max 1.000
+FAIL	arch-right	repetition (capture autocorrelation)	face z: no object area >= 48x48 px in the capture; face x: no object area >= 48x48 px in the capture; close peak 0.169 at lag -15,-19 px; low-portrait peak 0.2096 at lag -15,-23 px (max 0.65, at plate period 0.5)
+FAIL	arch-right	visible px/m (phone sharpness from >= 8 m, final render)	the surface shows no detail at all (9 tiles flat, e.g. black or unlit): 0.0 px/m of real detail on screen vs 118.5 needed (capture at 8.04 m, zoomed to 237.1 screen px/m; median of 0 tiles, p25 0.0; phone 1080x2400, render pixel ratio 1, vfov 51.47°). Info: no plate surface sampled
+PASS	arch-right	repetition (visible): identical plate pixels never within 30 m	no plate repeats inside the radius (one shared plate set per type allowed)
+PASS	arch-right	repetition (visible): neighbours never share plates (< 7 m)	1 copies, none within 7 m of another
+FAIL	arch-right	approach morph 300->10 m	arch-right: 67 frames, min IoU 0.7, jumps at 270.8 m (0.70), 244.4 m (0.77), 232.1 m (0.79), 199 m (0.79)
+FAIL	arch-right	grounding (no floating)	1/1 copies float; worst arch-right 2.54 m at 8.2,-10.6
+PENDING	arch-right	hidden face pending-plate #7 arch-right-back	1352 tris back 1352; plate file not on disk
+PENDING	arch-right	hidden face pending-plate #8 arch-right-sides	1261 tris grazing 647, side 614; plate file not on disk
+PENDING	arch-right	hidden face pending-plate #15 solids-contact	150 tris bottom 150; plate file not on disk
+FAIL	arch-right	mesh sealed (non-manifold / open edges)	arch-right tris 3468 nonManifold 6 open 0
+PASS	arch-right	facade relief >= 0.5 m	arch-right +x 0.61 -x 0.489 +z 0.882 -z 2.986
+PASS	cliff-left	select	1 placed copies
+PASS	cliff-left	texture roles declared	key-zc1.jpg=plate
+PASS	cliff-left	texture filtering (mips, trilinear, anisotropy = max, no resize)	1 textures trilinear + aniso 16
+PASS	cliff-left	plates not downscaled vs Imagine originals	key-zc1.jpg gpu 1792x1008 served 1792x1008 original 1792x1008
+PASS	cliff-left	UV stretch <= 1.3	max 1.257
+PASS	cliff-left	repetition (capture autocorrelation)	face z peak 0.1253 at lag 0,44 px; face x peak 0.1164 at lag 16,-94 px; close peak 0.1099 at lag 13,31 px; low-portrait peak 0.1716 at lag 14,-42 px (max 0.65, at plate period 0.5)
+PASS	cliff-left	visible px/m (phone sharpness from >= 8 m, final render)	132.4 px/m of real detail on screen vs 118.5 needed (capture at 8.04 m, zoomed to 237.1 screen px/m; median of 17 tiles, p25 46.4; phone 1080x2400, render pixel ratio 1, vfov 51.47°). Info: plate sampling worst +z 22.2 px/m on cliff-left, 1/1 surfaces under
+PASS	cliff-left	repetition (visible): identical plate pixels never within 30 m	no plate repeats inside the radius (one shared plate set per type allowed)
+PASS	cliff-left	repetition (visible): neighbours never share plates (< 7 m)	1 copies, none within 7 m of another
+FAIL	cliff-left	approach morph 300->10 m	cliff-left: 67 frames, min IoU 0.724, jumps at 270.8 m (0.76), 257.2 m (0.72), 244.4 m (0.80), 232.1 m (0.79)
+FAIL	cliff-left	grounding (no floating)	1/1 copies float; worst cliff-left 5.91 m at -9.7,-44.2
+PENDING	cliff-left	hidden face pending-plate #9 cliff-left-back	1214 tris back 1214; plate file not on disk
+PENDING	cliff-left	hidden face pending-plate #10 cliff-left-sides	852 tris side 522, grazing 330; plate file not on disk
+PENDING	cliff-left	hidden face pending-plate #15 solids-contact	162 tris bottom 162; plate file not on disk
+PASS	cliff-left	mesh sealed (non-manifold / open edges)	cliff-left tris 3112 nonManifold 0 open 0
+PASS	cliff-left	facade relief >= 0.5 m	cliff-left +x 1.777 -x 1.498 +z 1.286 -z 1.076
+PASS	gorge-rock	select	1 placed copies
+PASS	gorge-rock	texture roles declared	key-zc1.jpg=plate
+PASS	gorge-rock	texture filtering (mips, trilinear, anisotropy = max, no resize)	1 textures trilinear + aniso 16
+PASS	gorge-rock	plates not downscaled vs Imagine originals	key-zc1.jpg gpu 1792x1008 served 1792x1008 original 1792x1008
+PASS	gorge-rock	UV stretch <= 1.3	max 1.281
+FAIL	gorge-rock	repetition (capture autocorrelation)	face z peak 0.625 at lag 56,184 px; face x peak 0.2617 at lag -22,-71 px; close peak 0.2327 at lag -21,-50 px; low-portrait: no object area >= 48x48 px in the capture (max 0.65, at plate period 0.5)
+PASS	gorge-rock	visible px/m (phone sharpness from >= 8 m, final render)	157.6 px/m of real detail on screen vs 118.5 needed (capture at 8.03 m, zoomed to 237.1 screen px/m; median of 1 tiles, p25 157.6; phone 1080x2400, render pixel ratio 1, vfov 51.47°). Info: plate sampling worst +z 12.6 px/m on gorge-rock, 1/1 surfaces under
+PASS	gorge-rock	repetition (visible): identical plate pixels never within 30 m	no plate repeats inside the radius (one shared plate set per type allowed)
+PASS	gorge-rock	repetition (visible): neighbours never share plates (< 7 m)	1 copies, none within 7 m of another
+FAIL	gorge-rock	approach morph 300->10 m	gorge-rock: 67 frames, min IoU 0.738, jumps at 270.8 m (0.79), 257.2 m (0.79), 209.5 m (0.75), 199 m (0.76)
+FAIL	gorge-rock	grounding (no floating)	1/1 copies float; worst gorge-rock 6.21 m at -3.5,-56.6
+PENDING	gorge-rock	hidden face pending-plate #11 gorge-rock-back	686 tris back 686; plate file not on disk
+PENDING	gorge-rock	hidden face pending-plate #12 gorge-rock-sides	675 tris side 430, grazing 245; plate file not on disk
+PENDING	gorge-rock	hidden face pending-plate #15 solids-contact	98 tris bottom 98; plate file not on disk
+FAIL	gorge-rock	mesh sealed (non-manifold / open edges)	gorge-rock tris 1900 nonManifold 4 open 0
+PASS	gorge-rock	facade relief >= 0.5 m	gorge-rock +x 0.689 -x 0.71 +z 0.879 -z 0.868
+PASS	cliff-right	select	1 placed copies
+PASS	cliff-right	texture roles declared	key-zc1.jpg=plate
+PASS	cliff-right	texture filtering (mips, trilinear, anisotropy = max, no resize)	1 textures trilinear + aniso 16
+PASS	cliff-right	plates not downscaled vs Imagine originals	key-zc1.jpg gpu 1792x1008 served 1792x1008 original 1792x1008
+PASS	cliff-right	UV stretch <= 1.3	max 1.284
+PASS	cliff-right	repetition (capture autocorrelation)	face z peak 0.2702 at lag 9,322 px; face x peak 0 at lag -2,-301 px; close peak 0.4151 at lag -1,-12 px; low-portrait peak 0.3978 at lag 1,12 px (max 0.65, at plate period 0.5)
+FAIL	cliff-right	visible px/m (phone sharpness from >= 8 m, final render)	no steep surface of cliff-right found at 4/5/3/6/7/8/2.5 m above the ground on its path-facing side. Info: plate sampling worst +z 32.7 px/m on cliff-right, 1/1 surfaces under
+PASS	cliff-right	repetition (visible): identical plate pixels never within 30 m	no plate repeats inside the radius (one shared plate set per type allowed)
+PASS	cliff-right	repetition (visible): neighbours never share plates (< 7 m)	1 copies, none within 7 m of another
+FAIL	cliff-right	approach morph 300->10 m	cliff-right: 67 frames, min IoU 0.824, jumps at 244.4 m (0.82), 179.6 m (0.85), 125.4 m (0.87), 107.5 m (0.88)
+FAIL	cliff-right	grounding (no floating)	1/1 copies float; worst cliff-right 14.36 m at 14,-29.6
+PENDING	cliff-right	hidden face pending-plate #13 cliff-right-back	416 tris back 416; plate file not on disk
+PENDING	cliff-right	hidden face pending-plate #14 cliff-right-sides	337 tris grazing 171, side 166; plate file not on disk
+PENDING	cliff-right	hidden face pending-plate #15 solids-contact	30 tris bottom 30; plate file not on disk
+FAIL	cliff-right	mesh sealed (non-manifold / open edges)	cliff-right tris 1028 nonManifold 2 open 0
+PASS	cliff-right	facade relief >= 0.5 m	cliff-right +x 1.836 -x 0.931 +z 0.433 -z 0.433
+---
+FAIL  report /workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids/object-gate/report.md

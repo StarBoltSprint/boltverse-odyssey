@@ -1,18 +1,20 @@
 {
   "zone": "c",
-  "note": "Plates 1-4 are the committed moss slabs. Plates 5-15 are the approved hidden-face set. They are not on disk. The tool must not generate them.",
+  "note": "Hidden faces use the 11 SmiR-validated plates (2026-10-12). Pixels are copied into the atlas. Nothing is generated.",
   "keyPlate": "key-zc1.jpg",
+  "plateDir": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates",
+  "atlas": {"cell": 1024, "cols": 4, "rows": 3},
   "plates": [
-    {"n": 5, "id": "arch-left-back", "object": "arch-left", "faces": ["back"]},
-    {"n": 6, "id": "arch-left-sides", "object": "arch-left", "faces": ["side", "grazing"]},
-    {"n": 7, "id": "arch-right-back", "object": "arch-right", "faces": ["back"]},
-    {"n": 8, "id": "arch-right-sides", "object": "arch-right", "faces": ["side", "grazing"]},
-    {"n": 9, "id": "cliff-left-back", "object": "cliff-left", "faces": ["back"]},
-    {"n": 10, "id": "cliff-left-sides", "object": "cliff-left", "faces": ["side", "grazing"]},
-    {"n": 11, "id": "gorge-rock-back", "object": "gorge-rock", "faces": ["back"]},
-    {"n": 12, "id": "gorge-rock-sides", "object": "gorge-rock", "faces": ["side", "grazing"]},
-    {"n": 13, "id": "cliff-right-back", "object": "cliff-right", "faces": ["back"]},
-    {"n": 14, "id": "cliff-right-sides", "object": "cliff-right", "faces": ["side", "grazing"]},
-    {"n": 15, "id": "solids-contact", "object": "*", "faces": ["bottom", "skirt"]}
+    {"n": 5, "id": "arch-left-inner", "file": "plate-05-arch-left-inner.jpg", "object": "arch-left", "faces": ["back", "inner"]},
+    {"n": 6, "id": "arch-right-inner", "file": "plate-06-arch-right-inner.jpg", "object": "arch-right", "faces": ["back", "inner"]},
+    {"n": 7, "id": "wall-left", "file": "plate-07-wall-left.jpg", "object": "cliff-left", "faces": ["back"]},
+    {"n": 8, "id": "wall-right", "file": "plate-08-wall-right.jpg", "object": "cliff-right", "faces": ["back"]},
+    {"n": 9, "id": "waterfall", "file": "plate-09-waterfall.jpg", "object": "cliff-left", "faces": ["side", "grazing"]},
+    {"n": 10, "id": "mist", "file": "plate-10-mist.jpg", "object": "gorge-rock", "faces": ["side", "grazing"]},
+    {"n": 11, "id": "leaf", "file": "plate-11-leaf.jpg", "object": "arch-left", "faces": ["side", "grazing"]},
+    {"n": 12, "id": "fern", "file": "plate-12-fern.jpg", "object": "arch-right", "faces": ["side", "grazing"]},
+    {"n": 13, "id": "causeway-underside", "file": "plate-13-causeway-underside.jpg", "object": "*", "faces": ["bottom"]},
+    {"n": 14, "id": "gorge-closure", "file": "plate-14-gorge-closure.jpg", "object": "gorge-rock", "faces": ["back", "inner"]},
+    {"n": 15, "id": "planet", "file": "plate-15-planet.jpg", "object": "cliff-right", "faces": ["side", "grazing"]}
   ]
 }

@@ -1,12 +1,12 @@
 [
  {
   "inst": "gorge-rock",
-  "cols": 13,
-  "maxAirM": 6.214,
+  "cols": 12,
+  "maxAirM": 2.629,
   "at": [
-   -3.5,
-   -56.6
+   2.1,
+   -67.7
   ],
-  "baseY": 1.84
+  "baseY": -0.46
  }
 ]

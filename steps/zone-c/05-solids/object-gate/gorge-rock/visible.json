@@ -6,31 +6,33 @@
  },
  "render": {
   "ok": true,
+  "flat": true,
   "screenPxPerM": 237.1,
-  "tiles": 1,
-  "kMedian": 1.504,
-  "visiblePxPerM": 157.6,
-  "p25PxPerM": 157.6,
+  "tiles": 0,
+  "insideTiles": 20,
+  "kMedian": null,
+  "visiblePxPerM": 0,
+  "p25PxPerM": 0,
   "capped": false,
   "tau": 0.1,
   "img": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids/object-gate/gorge-rock/cap-visible-8m.png",
   "mask": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids/object-gate/gorge-rock/cap-visible-8m-mask.png",
-  "cover": 0.9353,
+  "cover": 1,
   "distM": 8.03,
   "needPxPerM": 118.5,
-  "zoomFovDeg": 27.03,
-  "wantedFovDeg": 27.03,
+  "zoomFovDeg": 27.04,
+  "wantedFovDeg": 27.04,
   "renderH": 915,
   "camera": [
-   13.98,
+   6.4,
    1.51,
-   -70.86
+   -62.98
   ],
   "aimM": 4,
   "normal": [
-   1,
-   0.01,
-   0
+   0.42,
+   0.03,
+   0.91
   ],
   "rect": [
    62,
@@ -39,9 +41,9 @@
    641
   ],
   "pose": {
-   "x": 13.97519601150416,
+   "x": 6.4029800640427545,
    "y": 1.508,
-   "z": -70.86185066047756
+   "z": -62.983231926682805
   }
  },
  "perSurface": [
@@ -50,7 +52,55 @@
    "cls": "+z",
    "viewM": 8,
    "needPxPerM": 118.5,
-   "visiblePxPerM": 12.62,
+   "visiblePxPerM": 11.99,
+   "ok": false
+  },
+  {
+   "inst": "gorge-rock",
+   "cls": "+x",
+   "viewM": 8,
+   "needPxPerM": 118.5,
+   "visiblePxPerM": 1.23,
+   "ok": false
+  },
+  {
+   "inst": "gorge-rock",
+   "cls": "-z",
+   "viewM": 8,
+   "needPxPerM": 118.5,
+   "visiblePxPerM": 29.98,
+   "ok": false
+  },
+  {
+   "inst": "gorge-rock",
+   "cls": "-x",
+   "viewM": 8,
+   "needPxPerM": 118.5,
+   "visiblePxPerM": 14.7,
+   "ok": false
+  },
+  {
+   "inst": "gorge-rock",
+   "cls": "+x",
+   "viewM": 8,
+   "needPxPerM": 118.5,
+   "visiblePxPerM": 15.93,
+   "ok": false
+  },
+  {
+   "inst": "gorge-rock",
+   "cls": "+y",
+   "viewM": 8,
+   "needPxPerM": 118.5,
+   "visiblePxPerM": 21.28,
+   "ok": false
+  },
+  {
+   "inst": "gorge-rock",
+   "cls": "+z",
+   "viewM": 8,
+   "needPxPerM": 118.5,
+   "visiblePxPerM": 32.04,
    "ok": false
   }
  ]

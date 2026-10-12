@@ -11,3 +11,4 @@ thresholds:
     maxNonManifold: 0
 textures:
   - {match: "key-zc1", role: plate}
+  - {match: "plate-atlas", role: plate}

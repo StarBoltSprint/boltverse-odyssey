@@ -27,6 +27,11 @@ Stages (order; each writes WORK/<stage>.json and updates WORK/state.json):
 import argparse, glob, json, os, shutil, subprocess, sys, time
 import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
+if __name__ == "__main__" and len(sys.argv) > 1 and sys.argv[1] == "zone-c":
+    sys.argv = [sys.argv[0]] + sys.argv[2:]
+    from zone_c_solids import main as zone_main
+    zone_main()
+    raise SystemExit(0)
 import i23d_common as C
 PY = sys.executable
 STAGES = ["inputs", "classify", "shape", "geometry", "pack", "detail", "grade", "stage", "shaders", "perf", "morph", "gate", "report"]

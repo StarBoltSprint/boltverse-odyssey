@@ -137,19 +137,19 @@
      "role": "key-visible"
     },
     {
-     "file": null,
-     "role": "pending-plate",
+     "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-05-arch-left-inner.jpg",
+     "role": "plate",
      "plate": 5
     },
     {
-     "file": null,
-     "role": "pending-plate",
-     "plate": 6
+     "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-11-leaf.jpg",
+     "role": "plate",
+     "plate": 11
     },
     {
-     "file": null,
-     "role": "pending-plate",
-     "plate": 15
+     "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-13-causeway-underside.jpg",
+     "role": "plate",
+     "plate": 13
     }
    ],
    "cameras": [
@@ -185,16 +185,16 @@
     ]
    },
    "fidelity": {
-    "stretchP95": 1.2878,
-    "keyTris": 1103,
+    "stretchP95": 1.2417,
+    "keyTris": 1049,
     "sameHull": true,
     "pendingPlates": [
      5,
-     6,
-     15
+     11,
+     13
     ],
     "openEdges": 0,
-    "nonManifold": 6,
+    "nonManifold": 0,
     "indexNonManifold": 0
    },
    "wake": {
@@ -214,19 +214,19 @@
      "role": "key-visible"
     },
     {
-     "file": null,
-     "role": "pending-plate",
-     "plate": 7
+     "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-06-arch-right-inner.jpg",
+     "role": "plate",
+     "plate": 6
     },
     {
-     "file": null,
-     "role": "pending-plate",
-     "plate": 8
+     "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-12-fern.jpg",
+     "role": "plate",
+     "plate": 12
     },
     {
-     "file": null,
-     "role": "pending-plate",
-     "plate": 15
+     "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-13-causeway-underside.jpg",
+     "role": "plate",
+     "plate": 13
     }
    ],
    "cameras": [
@@ -262,16 +262,16 @@
     ]
    },
    "fidelity": {
-    "stretchP95": 1.2904,
-    "keyTris": 705,
+    "stretchP95": 1.2466,
+    "keyTris": 210,
     "sameHull": true,
     "pendingPlates": [
-     7,
-     8,
-     15
+     6,
+     12,
+     13
     ],
     "openEdges": 0,
-    "nonManifold": 6,
+    "nonManifold": 0,
     "indexNonManifold": 0
    },
    "wake": {
@@ -291,19 +291,19 @@
      "role": "key-visible"
     },
     {
-     "file": null,
-     "role": "pending-plate",
+     "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-07-wall-left.jpg",
+     "role": "plate",
+     "plate": 7
+    },
+    {
+     "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-09-waterfall.jpg",
+     "role": "plate",
      "plate": 9
     },
     {
-     "file": null,
-     "role": "pending-plate",
-     "plate": 10
-    },
-    {
-     "file": null,
-     "role": "pending-plate",
-     "plate": 15
+     "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-13-causeway-underside.jpg",
+     "role": "plate",
+     "plate": 13
     }
    ],
    "cameras": [
@@ -339,13 +339,13 @@
     ]
    },
    "fidelity": {
-    "stretchP95": 1.271,
-    "keyTris": 884,
+    "stretchP95": 1.2519,
+    "keyTris": 2641,
     "sameHull": true,
     "pendingPlates": [
+     7,
      9,
-     10,
-     15
+     13
     ],
     "openEdges": 0,
     "nonManifold": 0,
@@ -368,19 +368,19 @@
      "role": "key-visible"
     },
     {
-     "file": null,
-     "role": "pending-plate",
-     "plate": 11
+     "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-10-mist.jpg",
+     "role": "plate",
+     "plate": 10
     },
     {
-     "file": null,
-     "role": "pending-plate",
-     "plate": 12
+     "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-13-causeway-underside.jpg",
+     "role": "plate",
+     "plate": 13
     },
     {
-     "file": null,
-     "role": "pending-plate",
-     "plate": 15
+     "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-14-gorge-closure.jpg",
+     "role": "plate",
+     "plate": 14
     }
    ],
    "cameras": [
@@ -416,16 +416,16 @@
     ]
    },
    "fidelity": {
-    "stretchP95": 1.2814,
-    "keyTris": 441,
+    "stretchP95": 1.247,
+    "keyTris": 1632,
     "sameHull": true,
     "pendingPlates": [
-     11,
-     12,
-     15
+     10,
+     13,
+     14
     ],
     "openEdges": 0,
-    "nonManifold": 4,
+    "nonManifold": 0,
     "indexNonManifold": 0
    },
    "wake": {
@@ -445,18 +445,18 @@
      "role": "key-visible"
     },
     {
-     "file": null,
-     "role": "pending-plate",
+     "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-08-wall-right.jpg",
+     "role": "plate",
+     "plate": 8
+    },
+    {
+     "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-13-causeway-underside.jpg",
+     "role": "plate",
      "plate": 13
     },
     {
-     "file": null,
-     "role": "pending-plate",
-     "plate": 14
-    },
-    {
-     "file": null,
-     "role": "pending-plate",
+     "file": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-15-planet.jpg",
+     "role": "plate",
      "plate": 15
     }
    ],
@@ -493,16 +493,16 @@
     ]
    },
    "fidelity": {
-    "stretchP95": 1.2857,
-    "keyTris": 245,
+    "stretchP95": 1.2669,
+    "keyTris": 317,
     "sameHull": true,
     "pendingPlates": [
+     8,
      13,
-     14,
      15
     ],
     "openEdges": 0,
-    "nonManifold": 2,
+    "nonManifold": 0,
     "indexNonManifold": 0
    },
    "wake": {
@@ -559,8 +559,7 @@
  },
  "todo": [
   "no sun, fog, or halo is stored for Zone C yet",
-  "the causeway has no GLB; the mesh is the height grid",
-  "hidden faces of the five solids wait on Imagine plates 5-15"
+  "the causeway has no GLB; the mesh is the height grid"
  ],
  "wakeDefaults": {
   "type": "placeholder",

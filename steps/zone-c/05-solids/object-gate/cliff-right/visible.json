@@ -11,10 +11,42 @@
  "perSurface": [
   {
    "inst": "cliff-right",
+   "cls": "+x",
+   "viewM": 8,
+   "needPxPerM": 118.5,
+   "visiblePxPerM": 46,
+   "ok": false
+  },
+  {
+   "inst": "cliff-right",
+   "cls": "-x",
+   "viewM": 8,
+   "needPxPerM": 118.5,
+   "visiblePxPerM": 45.12,
+   "ok": false
+  },
+  {
+   "inst": "cliff-right",
+   "cls": "-z",
+   "viewM": 8,
+   "needPxPerM": 118.5,
+   "visiblePxPerM": 42.66,
+   "ok": false
+  },
+  {
+   "inst": "cliff-right",
+   "cls": "+y",
+   "viewM": 8,
+   "needPxPerM": 118.5,
+   "visiblePxPerM": 129.1,
+   "ok": true
+  },
+  {
+   "inst": "cliff-right",
    "cls": "+z",
    "viewM": 8,
    "needPxPerM": 118.5,
-   "visiblePxPerM": 32.67,
+   "visiblePxPerM": 46.94,
    "ok": false
   }
  ]

@@ -31,8 +31,11 @@ export default {
   },
 
   sources() {
+    const out = [];
     const src = new URL("steps/zone-c/03-terrain/key-zc1.jpg", REPO);
-    if (!existsSync(src)) return [];
-    return [{ file: "key-zc1.jpg", source: src.pathname, note: "key-visible faces, native key" }];
+    if (existsSync(src)) out.push({ file: "key-zc1.jpg", source: src.pathname, note: "key-visible faces, native key" });
+    const atlas = new URL("steps/zone-c/05-solids/data/plate-atlas.jpg", REPO);
+    if (existsSync(atlas)) out.push({ file: "plate-atlas.jpg", source: atlas.pathname, note: "hidden faces, 11 validated plates pasted native" });
+    return out;
   },
 };

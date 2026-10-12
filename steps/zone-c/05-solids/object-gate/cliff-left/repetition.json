@@ -5,21 +5,21 @@
   "atExpectedLag": null,
   "expectLagPx": null,
   "rect": [
-   195,
-   481,
-   397,
-   775
+   246,
+   504,
+   450,
+   885
   ],
-  "peak": 0.1253,
+  "peak": 0.1175,
   "lagPx": [
-   0,
-   44
+   -64,
+   -198
   ],
   "crop": [
-   202,
-   294
+   204,
+   381
   ],
-  "pxPerM": 56.91,
+  "pxPerM": 51.78,
   "tileM": null
  },
  {
@@ -28,21 +28,21 @@
   "atExpectedLag": null,
   "expectLagPx": null,
   "rect": [
-   73,
-   85,
-   156,
-   433
+   177,
+   198,
+   391,
+   256
   ],
-  "peak": 0.1164,
+  "peak": 0.1456,
   "lagPx": [
-   16,
-   -94
+   3,
+   -38
   ],
   "crop": [
-   83,
-   348
+   214,
+   58
   ],
-  "pxPerM": 34.06,
+  "pxPerM": 19.5,
   "tileM": null
  },
  {
@@ -51,40 +51,24 @@
   "atExpectedLag": null,
   "expectLagPx": null,
   "rect": [
-   176,
-   474,
-   266,
-   607
+   193,
+   457,
+   244,
+   535
   ],
-  "peak": 0.1099,
+  "peak": 0.1293,
   "lagPx": [
-   13,
-   31
+   7,
+   42
   ],
   "crop": [
-   90,
-   133
+   51,
+   78
   ]
  },
  {
   "name": "low-portrait",
-  "ok": true,
-  "atExpectedLag": null,
-  "expectLagPx": null,
-  "rect": [
-   187,
-   423,
-   246,
-   540
-  ],
-  "peak": 0.1716,
-  "lagPx": [
-   14,
-   -42
-  ],
-  "crop": [
-   59,
-   117
-  ]
+  "ok": false,
+  "why": "no object area >= 48x48 px in the capture"
  }
 ]

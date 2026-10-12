@@ -1075,3 +1075,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Stopped after attempt 2. Plates 5–15 stay pending. `numbers.json` `pass` is false. The zone export copies the welded non-manifold count from `object-gate/<id>/geometry.json`. |
 | Guard | `node tools/object-gate/cli.mjs --scene tools/object-gate/specs/zone-c/solids-scene.yaml --out steps/zone-c/05-solids/object-gate` verdict FAIL. Builder stretch worst 1.2904. Gate welded non-manifold on arch-left is 6. |
 | Sources | `tools/imagine-to-3d/zone_c_solids.py`, `tools/object-gate/lib/probe.js`, `steps/zone-c/05-solids/REPORT.md`. |
+
+### 2026-10-12 — Zone C solids2: a full-height skirt seals and grounds, then the foot band still pops
+
+| | |
+| --- | --- |
+| Take | zc/05-solids (SPEC-ZC-SOLIDS2-1012) |
+| Defect | Rebuild attempt 2 is sealed (open 0, non-manifold 0) and plates 5–15 are PASS. Approach min IoU is 0.773, 0.684, 0.779, 0.846, 0.662. cliff-left floats 0.69 m and gorge-rock 2.63 m. cliff-right repetition peaks at 0.878. Arch visible px/m does pass (136.3 and 124.9). |
+| Root cause | Extruding every silhouette edge down to a cap makes a lace curtain. The morph mask includes it, so IoU jumps at 200 m, and cliff-right’s ortho face autocorrelates as vertical stripes. Seating only the lower band (hole ring excluded) removes the lace and the arch px/m fail, but the band is a new pedestal. Cliff-right’s MoGe bottom is already 12.65 m up, so that pedestal is a column with no steep face in the 2.5–8 m probe band. cliff-left and the gorge still have columns the grounding grid hits above the floor. |
+| Fix | Stopped after the second gated rebuild. `numbers.json` `pass` is false. Do not bring back the full-height skirt. A later cook has to keep one silhouette and still put a surface under the lower 20% of cliff-left and the gorge without a second shape. |
+| Guard | Object-gate verdict FAIL in `steps/zone-c/05-solids/object-gate/report.md`. Builder refuses a pack whose weld is open or non-manifold. |
+| Sources | `tools/imagine-to-3d/zone_c_mesh.py`, `steps/zone-c/05-solids/REPORT.md`. |

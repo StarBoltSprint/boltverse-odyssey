@@ -7,30 +7,30 @@
  "render": {
   "ok": true,
   "screenPxPerM": 237.1,
-  "tiles": 17,
-  "kMedian": 1.791,
-  "visiblePxPerM": 132.4,
-  "p25PxPerM": 46.4,
+  "tiles": 16,
+  "kMedian": 4.549,
+  "visiblePxPerM": 52.1,
+  "p25PxPerM": 40.7,
   "capped": false,
   "tau": 0.1,
   "img": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids/object-gate/cliff-left/cap-visible-8m.png",
   "mask": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids/object-gate/cliff-left/cap-visible-8m-mask.png",
-  "cover": 0.7835,
-  "distM": 8.04,
+  "cover": 0.9236,
+  "distM": 2.97,
   "needPxPerM": 118.5,
-  "zoomFovDeg": 26.99,
-  "wantedFovDeg": 26.99,
+  "zoomFovDeg": 66.05,
+  "wantedFovDeg": 66.05,
   "renderH": 915,
   "camera": [
-   -9.13,
+   -2.51,
    1.51,
-   -34.28
+   -46.06
   ],
-  "aimM": 5,
+  "aimM": 4,
   "normal": [
-   -0.05,
-   -0.2,
-   0.98
+   0.86,
+   -0.02,
+   -0.51
   ],
   "rect": [
    62,
@@ -39,9 +39,9 @@
    641
   ],
   "pose": {
-   "x": -9.1316590677574,
+   "x": -2.512839439062284,
    "y": 1.508,
-   "z": -34.27957402705235
+   "z": -46.05909160740851
   }
  },
  "perSurface": [
@@ -50,7 +50,47 @@
    "cls": "+z",
    "viewM": 8,
    "needPxPerM": 118.5,
-   "visiblePxPerM": 22.21,
+   "visiblePxPerM": 22.05,
+   "ok": false
+  },
+  {
+   "inst": "cliff-left",
+   "cls": "-z",
+   "viewM": 8,
+   "needPxPerM": 118.5,
+   "visiblePxPerM": 39.45,
+   "ok": false
+  },
+  {
+   "inst": "cliff-left",
+   "cls": "-x",
+   "viewM": 8,
+   "needPxPerM": 118.5,
+   "visiblePxPerM": 25.85,
+   "ok": false
+  },
+  {
+   "inst": "cliff-left",
+   "cls": "+x",
+   "viewM": 8,
+   "needPxPerM": 118.5,
+   "visiblePxPerM": 26.02,
+   "ok": false
+  },
+  {
+   "inst": "cliff-left",
+   "cls": "+y",
+   "viewM": 8,
+   "needPxPerM": 118.5,
+   "visiblePxPerM": 34.11,
+   "ok": false
+  },
+  {
+   "inst": "cliff-left",
+   "cls": "+z",
+   "viewM": 8,
+   "needPxPerM": 118.5,
+   "visiblePxPerM": 38.7,
    "ok": false
   }
  ]

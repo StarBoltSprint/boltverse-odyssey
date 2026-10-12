@@ -6,33 +6,31 @@
  },
  "render": {
   "ok": true,
-  "flat": true,
   "screenPxPerM": 237.1,
-  "tiles": 0,
-  "insideTiles": 13,
-  "kMedian": null,
-  "visiblePxPerM": 0,
-  "p25PxPerM": 0,
+  "tiles": 8,
+  "kMedian": 1.74,
+  "visiblePxPerM": 136.3,
+  "p25PxPerM": 132.4,
   "capped": false,
   "tau": 0.1,
   "img": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids/object-gate/arch-left/cap-visible-8m.png",
   "mask": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids/object-gate/arch-left/cap-visible-8m-mask.png",
-  "cover": 0.6935,
-  "distM": 8.06,
+  "cover": 0.6345,
+  "distM": 8.04,
   "needPxPerM": 118.5,
-  "zoomFovDeg": 26.92,
-  "wantedFovDeg": 26.92,
+  "zoomFovDeg": 26.99,
+  "wantedFovDeg": 26.99,
   "renderH": 915,
   "camera": [
-   -7.62,
+   -4.79,
    1.51,
-   -26.8
+   -30.83
   ],
-  "aimM": 7,
+  "aimM": 5,
   "normal": [
-   0.16,
-   0.39,
-   -0.91
+   0.71,
+   -0.59,
+   -0.37
   ],
   "rect": [
    62,
@@ -41,18 +39,50 @@
    641
   ],
   "pose": {
-   "x": -7.623076287030853,
+   "x": -4.786886104095904,
    "y": 1.508,
-   "z": -26.79910578270392
+   "z": -30.833754757419918
   }
  },
  "perSurface": [
   {
    "inst": "arch-left",
+   "cls": "-x",
+   "viewM": 8,
+   "needPxPerM": 118.5,
+   "visiblePxPerM": 28.22,
+   "ok": false
+  },
+  {
+   "inst": "arch-left",
+   "cls": "+x",
+   "viewM": 8,
+   "needPxPerM": 118.5,
+   "visiblePxPerM": 27.33,
+   "ok": false
+  },
+  {
+   "inst": "arch-left",
+   "cls": "-z",
+   "viewM": 8,
+   "needPxPerM": 118.5,
+   "visiblePxPerM": 59.93,
+   "ok": false
+  },
+  {
+   "inst": "arch-left",
+   "cls": "+y",
+   "viewM": 8,
+   "needPxPerM": 118.5,
+   "visiblePxPerM": 39.89,
+   "ok": false
+  },
+  {
+   "inst": "arch-left",
    "cls": "+z",
    "viewM": 8,
    "needPxPerM": 118.5,
-   "visiblePxPerM": 50.56,
+   "visiblePxPerM": 61.36,
    "ok": false
   }
  ]

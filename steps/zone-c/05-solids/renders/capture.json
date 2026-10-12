@@ -13,7 +13,7 @@
       "along": 8,
       "width": 720,
       "height": 1600,
-      "drawCalls": 7,
+      "drawCalls": 11,
       "file": "renders/plus-8.png"
     },
     {
@@ -21,7 +21,7 @@
       "along": 30,
       "width": 720,
       "height": 1600,
-      "drawCalls": 5,
+      "drawCalls": 11,
       "file": "renders/plus-30.png"
     },
     {
@@ -29,7 +29,7 @@
       "along": 60,
       "width": 720,
       "height": 1600,
-      "drawCalls": 3,
+      "drawCalls": 11,
       "file": "renders/plus-60.png"
     }
   ],

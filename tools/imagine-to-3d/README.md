@@ -37,7 +37,9 @@ SwiftShader runs at ~0.3 fps: wait for frames, not milliseconds.
 
 ## Zone C solids (`python3 run.py zone-c`)
 
-Five solids from the key, camera #199, SAM2 masks, and MoGe-2. Key-visible faces use `key-zc1.jpg`. Hidden faces are tagged pending-plate from `specs/zone-c-plate-plan.json` (plates 5–15). This command does not generate those plates.
+Five solids from the key, camera #199, SAM2 masks, and MoGe-2. Key-visible faces use `key-zc1.jpg`. Hidden faces sample the 11 validated plates pasted native into `steps/zone-c/05-solids/data/plate-atlas.jpg` (`specs/zone-c-plate-plan.json`). The mesh is a thin shell (back face one `SHELL_M` behind the MoGe front). The lower band of that shell, excluding the arch-hole ring, is seated on the terrain. Do not extrude the whole silhouette down to the cap: that curtain aliases on approach and reads as repeated stripes. Relief is the key luminance high-pass. This command does not generate plates.
+
+`python3 tools/imagine-to-3d/auto.py zone-c build` is the same entry.
 
 ```
 /workspace/.venv-sam2/bin/python tools/imagine-to-3d/run.py zone-c build --attempt 1

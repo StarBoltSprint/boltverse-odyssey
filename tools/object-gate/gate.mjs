@@ -255,6 +255,7 @@ export const CHECK_IDS = [
   [/^effects take/, "effects.imagine-texture"], [/^effects: no typed/, "effects.no-colour-literals"],
   [/^key checklist written/, "checklist.written"], [/^key crop present/, "checklist.key-crop"], [/^key checklist: every/, "checklist.verified"], [/^colour vs key/, "checklist.colour"],
   [/^checklist camera framed/, "checklist.camera"],
+  [/^hidden face plate\b/, "hidden.plate"],
   [/^hidden face pending-plate/, "hidden.pending-plate"],
   [/^draw calls/, "runtime.draw-calls"],
   [/^console/, "runtime.console"], [/^shader compile/, "runtime.shader"], [/^HUD text/, "runtime.hud"], [/^title/, "runtime.title"],
@@ -569,7 +570,7 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
     const v = scoreVisible(cfg.texel, cfg.repetition, view, texelRows, repRows, footprintsFromBoxes(boxes), spec, render);
     writeFileSync(join(odir, "visible.json"), JSON.stringify({ view, render, perSurface: v.perSurface }, null, 1));
     if (render && render.img) o.files.captures = { ...(o.files.captures || {}), "visible-8m": { img: render.img, mask: render.mask } };
-    for (const r of v.rows) row(o, r.check, r.pass, r.detail, r.hints);
+    for (const r of v.rows) row(o, r.check, r.pass, r.detail, r.hints, !r.pass && r.nativeLimit ? "WARN" : undefined);
   }
 
   // ---------------- 3. approach morph
@@ -649,12 +650,22 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
 
   if (checks.has("pending")) {
     const listed = await page.evaluate((name) => {
-      const bag = window.__solids && window.__solids.pending && window.__solids.pending[name];
-      return bag || null;
+      const s = window.__solids || {};
+      if (s.plated && s.plated[name]) return { mode: "plated", rows: s.plated[name] };
+      const bag = s.pending && s.pending[name];
+      if (bag) return { mode: "pending", rows: bag };
+      return null;
     }, spec.id);
-    if (!listed) row(o, "hidden face pending-plate", false, "staging page did not list hidden faces", ["Publish window.__solids.pending from the plate plan. Do not mark a missing plate PASS."], "PENDING");
-    else if (!listed.length) row(o, "hidden face pending-plate", true, "no hidden triangles on this solid");
-    else for (const r of listed) {
+    if (!listed) row(o, "hidden face pending-plate", false, "staging page did not list hidden faces", ["Publish window.__solids.plated from the plate plan. Do not mark a missing plate PASS."], "PENDING");
+    else if (listed.mode === "plated") {
+      if (!listed.rows.length) row(o, "hidden face plate", false, "no plated faces on this solid", ["Bind each hidden face to a validated plate file."]);
+      else for (const r of listed.rows) {
+        const kinds = r.kinds && typeof r.kinds === "object" ? Object.entries(r.kinds).map(([k, n]) => `${k} ${n}`).join(", ") : "";
+        const ok = !!(r.bound && r.file && r.tris > 0);
+        row(o, `hidden face plate #${r.n} ${r.id || ""}`.trim(), ok, ok ? `${r.tris} tris ${kinds}; ${r.file}` : `${r.tris || 0} tris ${kinds}; plate not bound`, ok ? [] : ["The face must sample an on-disk validated plate. Do not invent pixels."]);
+      }
+    } else if (!listed.rows.length) row(o, "hidden face pending-plate", true, "no hidden triangles on this solid");
+    else for (const r of listed.rows) {
       const kinds = r.kinds && typeof r.kinds === "object" ? Object.entries(r.kinds).map(([k, n]) => `${k} ${n}`).join(", ") : "";
       row(o, `hidden face pending-plate #${r.n} ${r.id || ""}`.trim(), false, `${r.tris} tris ${kinds}; plate file not on disk`, [`Cook Imagine plate #${r.n} before this face can pass. Do not invent the pixels.`], "PENDING");
     }

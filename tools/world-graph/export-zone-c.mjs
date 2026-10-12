@@ -154,7 +154,12 @@ if (solidsMode) {
   const numbersPath = new URL("numbers.json", SOLIDS_STEP);
   const solidNumbers = existsSync(numbersPath) ? JSON.parse(readFileSync(numbersPath, "utf8")) : null;
   for (const o of pack.objects) {
-    const plates = Object.keys(o.pending || {}).map((n) => Number(n)).sort((a, b) => a - b);
+    const bag = o.plated || o.pending || {};
+    const plates = Object.keys(bag).map((n) => Number(n)).sort((a, b) => a - b);
+    const plateSources = plates.map((n) => {
+      const rec = bag[String(n)] || {};
+      return { file: rec.file || null, role: rec.bound ? "plate" : "pending-plate", plate: n };
+    });
     const geomPath = new URL("object-gate/" + o.name + "/geometry.json", SOLIDS_STEP);
     let welded = null;
     if (existsSync(geomPath)) {
@@ -166,7 +171,7 @@ if (solidsMode) {
       asset: { glb: null, lods: [] },
       sources: [
         { file: pack.key, role: "key-visible" },
-        ...plates.map((n) => ({ file: null, role: "pending-plate", plate: n })),
+        ...plateSources,
       ],
       cameras: [{ fov: cam.fov, position, target }],
       transform: { position: [0, 0, 0], rotationDeg: [0, 0, 0], scale: [1, 1, 1] },
@@ -184,8 +189,9 @@ if (solidsMode) {
   }
   zone.qualityGates.pass = !!(solidNumbers && solidNumbers.pass === true);
   zone.qualityGates.solidsPass = zone.qualityGates.pass;
-  zone.todo = zone.todo.filter((t) => !/cliffs, arches/.test(t));
-  zone.todo.push("hidden faces of the five solids wait on Imagine plates 5-15");
+  zone.todo = zone.todo.filter((t) => !/cliffs, arches/.test(t) && !/wait on Imagine plates/.test(t));
+  const waiting = zone.objects.some((o) => (o.sources || []).some((s) => s.role === "pending-plate"));
+  if (waiting) zone.todo.push("hidden faces of the five solids wait on Imagine plates 5-15");
   zone.runtime.modules.solids = "tools/imagine-to-3d/staging/zone-c-solids/main.mjs";
   zone.runtime.layout.solids = "steps/zone-c/05-solids/data/solids.bin";
 }

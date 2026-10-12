@@ -1,12 +1,12 @@
 [
  {
   "inst": "cliff-right",
-  "cols": 72,
-  "maxAirM": 14.36,
+  "cols": 35,
+  "maxAirM": -0.224,
   "at": [
-   14,
-   -29.6
+   13.3,
+   -28.2
   ],
-  "baseY": 12.74
+  "baseY": -0.3
  }
 ]

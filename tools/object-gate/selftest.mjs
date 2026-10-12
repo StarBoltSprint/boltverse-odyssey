@@ -103,7 +103,9 @@ ok(toMarkdown({ ...fake, url: "u", adapter: "a", startedAt: "t", objects: fake.o
 ok(foldVerdict([{ status: "PASS" }, { status: "PENDING" }]) === "PENDING", "PENDING is not PASS");
 ok(foldVerdict([{ status: "FAIL" }, { status: "PENDING" }]) === "FAIL", "FAIL beats PENDING");
 ok(foldVerdict([{ status: "PASS" }]) === "PASS", "PASS stays PASS");
+ok(foldVerdict([{ status: "WARN" }, { status: "PASS" }]) === "PASS", "WARN stays PASS");
 ok(checkId("hidden face pending-plate #5 arch-left-back") === "hidden.pending-plate", "pending-plate row id");
+ok(checkId("hidden face plate #5 arch-left-inner") === "hidden.plate", "plate row id");
 ok(checkId("draw calls 720x1600") === "runtime.draw-calls", "draw-calls row id");
 console.log(fails ? `FAIL ${fails}` : "PASS selftest");
 process.exit(fails ? 1 : 0);

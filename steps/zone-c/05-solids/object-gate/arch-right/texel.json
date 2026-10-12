@@ -1,1 +1,86 @@
-[]
+[
+ {
+  "inst": "arch-right",
+  "plate": "plate-atlas",
+  "tex": "http://127.0.0.1:8772/data/plate-atlas.jpg",
+  "texW": 4096,
+  "texH": 3072,
+  "cls": "-z",
+  "areaM2": 7.4,
+  "samplingPxPerM": 47.05,
+  "repeats": 0,
+  "uniquePxPerM": 47.05,
+  "stretchP95": 1.26,
+  "nearPathM": 7.9
+ },
+ {
+  "inst": "arch-right",
+  "plate": "plate-atlas",
+  "tex": "http://127.0.0.1:8772/data/plate-atlas.jpg",
+  "texW": 4096,
+  "texH": 3072,
+  "cls": "-y",
+  "areaM2": 236.7,
+  "samplingPxPerM": 60.01,
+  "repeats": 0.07,
+  "uniquePxPerM": 60.01,
+  "stretchP95": 1.215,
+  "nearPathM": 7.6
+ },
+ {
+  "inst": "arch-right",
+  "plate": "plate-atlas",
+  "tex": "http://127.0.0.1:8772/data/plate-atlas.jpg",
+  "texW": 4096,
+  "texH": 3072,
+  "cls": "-x",
+  "areaM2": 69.7,
+  "samplingPxPerM": 39.62,
+  "repeats": 0.01,
+  "uniquePxPerM": 39.62,
+  "stretchP95": 1.285,
+  "nearPathM": 7.6
+ },
+ {
+  "inst": "arch-right",
+  "plate": "plate-atlas",
+  "tex": "http://127.0.0.1:8772/data/plate-atlas.jpg",
+  "texW": 4096,
+  "texH": 3072,
+  "cls": "+y",
+  "areaM2": 323.8,
+  "samplingPxPerM": 62.89,
+  "repeats": 0.1,
+  "uniquePxPerM": 62.89,
+  "stretchP95": 1.193,
+  "nearPathM": 7.9
+ },
+ {
+  "inst": "arch-right",
+  "plate": "plate-atlas",
+  "tex": "http://127.0.0.1:8772/data/plate-atlas.jpg",
+  "texW": 4096,
+  "texH": 3072,
+  "cls": "+x",
+  "areaM2": 68.4,
+  "samplingPxPerM": 39.81,
+  "repeats": 0.01,
+  "uniquePxPerM": 39.81,
+  "stretchP95": 1.286,
+  "nearPathM": 7.6
+ },
+ {
+  "inst": "arch-right",
+  "plate": "plate-atlas",
+  "tex": "http://127.0.0.1:8772/data/plate-atlas.jpg",
+  "texW": 4096,
+  "texH": 3072,
+  "cls": "+z",
+  "areaM2": 7.4,
+  "samplingPxPerM": 47.87,
+  "repeats": 0,
+  "uniquePxPerM": 47.87,
+  "stretchP95": 1.26,
+  "nearPathM": 7.9
+ }
+]

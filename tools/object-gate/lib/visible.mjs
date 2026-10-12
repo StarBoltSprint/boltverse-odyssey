@@ -50,9 +50,14 @@ export function scoreVisible(t, R, view, texelRows, repRows, footprints, spec = 
   if (render) {
     // final-render measurement (default since 1.3): the pixels the phone shows, whatever the material method
     const ok = !!render.ok && render.visiblePxPerM >= need8;
+    // Native ceiling: one Imagine plate cannot cover a large face at phone density.
+    // WARN only when the plate is actually visible and the area needs more pixels than the file holds.
+    const overNative = texelRows.some((r) => !ignore.has(r.cls) && (r.areaM2 || 0) >= 4 && r.texW && r.texH && r.areaM2 * need8 * need8 > r.texW * r.texH && r.samplingPxPerM < need8);
+    const nativeLimit = !ok && !!render.ok && !render.flat && render.visiblePxPerM > 1 && overNative;
     rows.push({
       check: "visible px/m (phone sharpness from >= " + t.minViewM + " m, final render)",
       pass: ok,
+      nativeLimit,
       detail: render.ok
         ? `${render.flat ? `the surface shows no detail at all (${render.insideTiles} tiles flat, e.g. black or unlit): ` : ""}${f1(render.visiblePxPerM)} px/m of real detail on screen vs ${f1(need8)} needed (capture at ${render.distM} m, zoomed to ${f1(render.screenPxPerM)} screen px/m${render.capped ? ", at the capture limit" : ""}; median of ${render.tiles} tiles, p25 ${f1(render.p25PxPerM)}; phone ${t.phone.w}x${t.phone.h}, render pixel ratio ${view.renderPixelRatio}, vfov ${view.fovDeg}\u00b0). Info: ${sampling}`
         : `${render.why}. Info: ${sampling}`,

@@ -94,7 +94,7 @@ def main_strata():
     sys.exit(0 if ok else 1)
 
 def main_zone_c():
-    """Zone C solids. MoGe-2 depth, key projection, hidden faces left pending.
+    """Zone C solids. MoGe-2 depth, key projection, 11 validated plates on hidden faces.
     python3 tools/imagine-to-3d/run.py zone-c build [--attempt N]
     python3 tools/imagine-to-3d/run.py zone-c score
     """

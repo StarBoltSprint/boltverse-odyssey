@@ -1,16 +1,48 @@
 [
  {
   "name": "face z",
-  "ok": false,
-  "why": "no object area >= 48x48 px in the capture",
-  "pxPerM": 79.91,
+  "ok": true,
+  "atExpectedLag": null,
+  "expectLagPx": null,
+  "rect": [
+   11,
+   339,
+   94,
+   388
+  ],
+  "peak": 0.2021,
+  "lagPx": [
+   12,
+   -4
+  ],
+  "crop": [
+   83,
+   49
+  ],
+  "pxPerM": 50.71,
   "tileM": null
  },
  {
   "name": "face x",
-  "ok": false,
-  "why": "no object area >= 48x48 px in the capture",
-  "pxPerM": 53.53,
+  "ok": true,
+  "atExpectedLag": null,
+  "expectLagPx": null,
+  "rect": [
+   5,
+   184,
+   140,
+   252
+  ],
+  "peak": 0.1498,
+  "lagPx": [
+   70,
+   -25
+  ],
+  "crop": [
+   135,
+   68
+  ],
+  "pxPerM": 34.95,
   "tileM": null
  },
  {
@@ -19,18 +51,18 @@
   "atExpectedLag": null,
   "expectLagPx": null,
   "rect": [
-   71,
-   483,
-   119,
-   562
+   90,
+   470,
+   146,
+   549
   ],
-  "peak": 0.169,
+  "peak": 0.1829,
   "lagPx": [
-   -15,
-   -19
+   22,
+   -6
   ],
   "crop": [
-   48,
+   56,
    79
   ]
  },
@@ -40,19 +72,19 @@
   "atExpectedLag": null,
   "expectLagPx": null,
   "rect": [
-   80,
-   445,
-   129,
-   534
+   89,
+   396,
+   144,
+   470
   ],
-  "peak": 0.2096,
+  "peak": 0.1559,
   "lagPx": [
-   -15,
-   -23
+   -38,
+   -2
   ],
   "crop": [
-   49,
-   89
+   55,
+   74
   ]
  }
 ]
