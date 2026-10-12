@@ -1232,3 +1232,23 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | `tools/lodstream` rasterises the three meshes at the switch distances and refuses a non-zero outline difference, an over-budget lod0 (default 80000), a coarser LOD with more triangles, a plate under 1024 px, or missing mipmaps. |
 | Guard | `node tools/lodstream/selftest.mjs`. Outline-diff fixture exits 1 (15 m diffPx 46128). Over-budget lod0 80001 exits 1. Missing mipmaps exits 1. Good tiny fixture exits 0 (diffPx 0, tris 13/12/12). |
 | Sources | `steps/tools/06-lod-streaming/spec.md`, `tools/lodstream/gate.mjs`, `tools/object-gate/py/lod_gate.py`. |
+### 2026-10-12 — a zone part collider that is not the library box
+
+| | |
+| --- | --- |
+| Take | tools/04-playcheck-log |
+| Defect | A placed part could float off its ground anchor, leave no clearance under hanging detail, or stop the body on a keep-out that is not a library box. |
+| Root cause | Playcheck judged ring stops and ruin faces. It did not scale, yaw, and ground-snap library local boxes from the zone placement, and it did not write the approach run. |
+| Fix | `tools/playcheck/src/approach.mjs` places those boxes and writes `approach.jsonl`. A circle clearing without `parts` does not grow the rows. |
+| Guard | `node --test tools/playcheck/src/approach.test.mjs`. Good fixture PASS (21 samples, all miss). Shifted `world_boxes` and a min-above-max box fail `bad_collision`. Anchor at y 1.5, or a missing anchor, fails `ground_anchor`. A hanging part with no clearance box, or a path with no `min_clearance_m`, fails `hanging_clearance`. A lintel at 1.0 m under a 2.0 m requirement fails tight. A `keepout` in the opening fails `part_colliders` with `invisibleHits` > 0. A log line that drops `fps`, uses `cameraLayer` `hud`, or sets `collision` `blocked` fails the schema. |
+| Sources | `tools/playcheck/src/approach.mjs`, `tools/playcheck/fixture/approach/good.json`, `steps/tools/04-playcheck-log/REPORT.md`. |
+### 2026-10-12 — library add accepted a part with no run PASS
+
+| | |
+| --- | --- |
+| Take | tools/03-library-intake |
+| Defect | `tools/library` add stored a part when assetcheck, objsheet, and walkaround were PASS. It did not require Art Director KEEP, an object-gate run PASS, local collision boxes, a camera layer, a lod0/1/2 chain, or a 1024 mipmapped texture. |
+| Root cause | Intake stopped at those three report files. |
+| Fix | `require_intake` refuses the part unless all six guards hold. A KEEP flag with a run verdict other than PASS is refused. A run PASS with no KEEP is refused. |
+| Guard | `python3 tools/library/selftest_intake.py`. Bad fixtures exit 1: run verdict FAIL, missing KEEP, world-space boxes, missing `ground_anchor`, missing `min_clearance_m`, camera layer `gallop`, outline diff 4 px at 15 m, outline diff 2 px at 40 m, missing lod1 triangles, nativePx 512, mipmaps false. A complete fixture exits 0. |
+| Sources | `tools/library/intake.py`, `tools/library/library.py`, `tools/library/selftest_intake.py`. |

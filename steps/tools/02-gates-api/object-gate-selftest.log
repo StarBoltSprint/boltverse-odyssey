@@ -1,0 +1,64 @@
+PASS	profile building.yaml: checks 9, px/m 64/128
+PASS	profile creature.yaml: checks 9, px/m 64/128
+PASS	profile effect.yaml: checks 2, px/m 64/128
+PASS	profile ice.yaml: checks 9, px/m 64/128
+PASS	profile prop.yaml: checks 9, px/m 128/256
+PASS	profile rock.yaml: checks 9, px/m 64/128
+PASS	profile terrain.yaml: checks 4, px/m 64/128
+PASS	profile vegetation.yaml: checks 9, px/m 64/128
+PASS	profile vehicle.yaml: checks 9, px/m 64/128
+PASS	API 1.8 exports present
+PASS	texel policy visible, from 8 m (SmiR 20:19)
+PASS	phone 1080x2400 @ pr 1.5, fov 58: 154.6 px/m at 8 m
+PASS	visible px/m: 160 passes, 100 fails at 8 m
+PASS	plate tiling every 10.2 m < 30 m fails
+PASS	neighbours 5 m apart share plates -> FAIL
+PASS	-y faces ignored; LOD levels of one copy are not neighbours
+PASS	render-measured visible px/m decides the row (140 FAIL, 170 PASS), same row id
+PASS	profile: visibleMeasure render, headroom 2
+PASS	visible row ids
+PASS	live guard watches only the files the live page loads
+PASS	listProfiles: building creature effect ice prop rock terrain vegetation vehicle
+PASS	stable check ids unique
+PASS	profile inheritance + overrides
+PASS	zone-b scene: 7 object specs resolve
+PASS	every non-effect spec declares at least one plate
+PASS	tiled texture peak 1.0004 > 0.75 (lag 0,-96)
+PASS	unique texture peak 0.0345 < 0.75
+PASS	fix plan actions
+PASS	fix plan FAIL items carry the shared failure record
+PASS	markdown renders
+PASS	perf rows PASS on the v61 report shape
+PASS	perf rows FAIL: full-DPR canvas, sky first, ground first, no adaptive, default ratio unproven
+PASS	perf row FAIL: an adaptive controller that can drop the detail layer
+PASS	perf rows FAIL on the v59 shape (no quality-first proof)
+PASS	perf row FAIL: default ratio 1.5 on a DPR-3 phone (native, no upscaler)
+PASS	perf rows PASS on the v62 shape (internal 1.5 + EASU/RCAS to canvas 2)
+PASS	perf row FAIL: internal 1.5 with the plain bilinear upscale
+PASS	perf row FAIL: default internal 1.25 even with EASU/RCAS
+PASS	perf row FAIL: EASU/RCAS but the canvas is not min(2, device)
+PASS	perf row FAIL: detail layer off
+PASS	perf row FAIL: v62 shape with a detail-dropping controller
+PASS	page without __perfReport: INFO only
+PASS	morph: rigid box passes at 540x960 norm 128 (min IoU 0.978)
+PASS	morph: shifted LOD (top tier dropped at 60 m) still FAILS (jumps [[58.1,0.699]])
+PASS	morph: scale-free IoU also passes the rigid box at the old 135x240 mask
+PASS	morphNorm: off = identity, on = NP x NP grid
+(node:1560773) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+PASS	frame-fit.mjs is the same function as in probe.js
+PASS	framing: stepped silhouette 17.2% -> 26.1% after the silhouette fit (frame aspect kept)
+PASS	framing: wide block 17.1% -> contain: no zoom, height mode: 89.1% of the zoomed frame
+PASS	framing: empty mask -> no fit (row still fails on cover)
+PASS	framing: full-frame mask -> no zoom
+PASS	mode-B target: 154.6 px/m at fov 58 (gate), 192.2 px/m at the game vfov 48.1 (provisional, not lowered)
+PASS	mode-B target: sharp plate 309.3 px/m PASS, softened (down x3, re-up) 149.2 px/m FAIL vs 154.6
+PASS	ghost icicles: v3.3 ship 84 painted streaks without cones -> FAIL; cone on every streak -> PASS
+PASS	synthetic sealed-mesh FAIL: faces, world position, suggested_fix
+PASS	ghost-v33 geometry has no face ids: empty faces, null position, suggested_fix set
+PASS	synthetic PASS row clears faces, position, and suggested_fix
+PASS	legacy FAIL row: adapter fills defaults
+PASS	self-test fails if a FAIL lacks suggested_fix
+PASS	legacy PASS row: empty suggested_fix
+PASS selftest
+OBJECT_EXIT:0

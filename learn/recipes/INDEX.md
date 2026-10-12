@@ -108,3 +108,9 @@ The mask after that pick is not a single slab. Failure: `learn/failures.md` 2026
 | — | — | — |
 
 `python3 tools/assetcheck/check.py` kind `cutout` with a declared `onScreen` size and `key` (`alpha`, `black`, or `green`). Cook at or above the on-screen pixels. Compositor `scale` stays ≤ 1 ([`biome/docs/56-cutout-native-scale.md`](../../biome/docs/56-cutout-native-scale.md)). Bolt motion stays `lock/bolt-gallop-cycle.mp4`. An `assetcheck` WARN on a `lock/` file is not a recook.
+
+## tool
+
+| Recipe | Commit | QC |
+| --- | --- | --- |
+| [shotsheet-verdict.md](shotsheet-verdict.md) — Art Director shot-sheet JSON on `tools/objsheet` (no Imagine prompt) | not committed; parent `a0676f9f` | selftest exit 0; PENDING blocks; KEEP allows; FAIL lists defects; pixel keepMin 0.9939 |

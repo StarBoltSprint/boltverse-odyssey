@@ -19,7 +19,7 @@ if str(ROOT) not in sys.path:
 from tools.layout.generate import build_clearing
 from tools.layout.model import dump_json, load_json
 from tools.library.library import build_manifest, main
-from tools.library.resolve import load_library_asset
+from tools.library.resolve import load_library_asset, resolve_registered, resolve_spec_entry
 
 PY = sys.executable
 SPEC = ROOT / "tools" / "layout" / "testdata" / "spec.json"
@@ -66,8 +66,23 @@ def intake(assetcheck: str) -> dict:
                 "yaw-225.png",
                 "yaw-270.png",
                 "yaw-315.png",
-            ]
+            ],
+            "chain": {
+                "lod0": {"triangles": 1200},
+                "lod1": {"triangles": 400},
+                "lod2": {"triangles": 80},
+                "outlineDiffPx": {"15": 0, "40": 0},
+            },
         },
+        "art_director": "KEEP",
+        "run": {"tool": "object-gate", "verdict": "PASS"},
+        "collision": {
+            "boxes": [{"min": [0, 0, 0], "max": [1, 2, 1], "space": "local"}],
+            "ground_anchor": [0, 0, 0],
+            "min_clearance_m": 0.5,
+        },
+        "camera_layer": "approach",
+        "textures": [{"nativePx": 1024, "mipmaps": True}],
     }
 
 
@@ -157,6 +172,83 @@ def test_layout_id_and_paths() -> None:
         fail("variants stored a library object instead of a path")
 
 
+def _solid_png(path: Path, rgb: tuple[int, int, int]) -> None:
+    from PIL import Image
+
+    Image.new("RGB", (1024, 1024), rgb).save(path)
+
+
+def test_block_keep_resolve_and_fail() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        plates = tmp_path / "plates"
+        plates.mkdir()
+        _solid_png(plates / "front.png", (20, 40, 60))
+        _solid_png(plates / "side.png", (60, 40, 20))
+        for lod in ("lod0", "lod1", "lod2"):
+            (tmp_path / f"{lod}.glb").write_bytes(f"fixture-{lod}".encode("ascii"))
+        profile = {"id": "fixture-block", "name": "fixture-block", "nativePx": 1024}
+        (tmp_path / "profile.json").write_text(json.dumps(profile) + "\n", encoding="utf-8")
+        (tmp_path / "gate-pass.json").write_text(
+            json.dumps({"tool": "gate", "ok": True, "verdict": "PASS", "rows": []}) + "\n",
+            encoding="utf-8",
+        )
+        (tmp_path / "gate-fail.json").write_text(
+            json.dumps({"tool": "gate", "ok": False, "verdict": "FAIL", "rows": [{"check": "volume", "status": "FAIL"}]})
+            + "\n",
+            encoding="utf-8",
+        )
+        small = tmp_path / "small.png"
+        from PIL import Image
+
+        Image.new("RGB", (32, 32), (1, 2, 3)).save(small)
+        lib = tmp_path / "biome" / "library"
+        body = {
+            "id": "fixture-block",
+            "kind": "block",
+            "fixture": True,
+            "glbs": {"lod0": "lod0.glb", "lod1": "lod1.glb", "lod2": "lod2.glb"},
+            "plates": {"front": "plates/front.png", "side": "plates/side.png"},
+            "profile": {"id": "fixture-block", "path": "profile.json"},
+            "gate": "gate-pass.json",
+        }
+        write_json(tmp_path / "intake.json", body)
+        if main(["add", "--intake", str(tmp_path / "intake.json"), "--library", str(lib)]) != 0:
+            fail("add refused a block KEEP")
+        if main(["check", "--library", str(lib), "--id", "fixture-block"]) != 0:
+            fail("check --id failed the block KEEP")
+        resolved = resolve_registered("fixture-block", library=lib)
+        if resolved["kind"] != "block" or resolved["profile"]["id"] != "fixture-block":
+            fail(f"resolve did not return the block paths: {resolved}")
+        if set(resolved["glbs"]) != {"lod0", "lod1", "lod2"}:
+            fail("resolve dropped a glb lod")
+        if resolved["plates"].get("front") is None or resolved["nativePx"] != 1024:
+            fail("resolve dropped plates")
+        if not resolved["contentHash"] or len(resolved["contentHash"]) != 64:
+            fail("content hash missing")
+        if resolve_spec_entry("tools/layout/testdata/spec.json") != "tools/layout/testdata/spec.json":
+            fail("path string was rewritten")
+        if resolve_spec_entry({"library": "fixture-block"}, library=lib)["contentHash"] != resolved["contentHash"]:
+            fail("spec entry did not resolve the block id")
+        bad = json.loads(json.dumps(body))
+        bad["id"] = "fixture-block-fail"
+        bad["gate"] = "gate-fail.json"
+        write_json(tmp_path / "intake-fail.json", bad)
+        if main(["add", "--intake", str(tmp_path / "intake-fail.json"), "--library", str(lib)]) == 0:
+            fail("add accepted a FAIL gate")
+        if (lib / "fixture-block-fail").exists():
+            fail("FAIL intake wrote a manifest")
+        small_body = json.loads(json.dumps(body))
+        small_body["id"] = "fixture-block-small"
+        small_body["plates"] = {"front": "small.png"}
+        write_json(tmp_path / "intake-small.json", small_body)
+        if main(["add", "--intake", str(tmp_path / "intake-small.json"), "--library", str(lib)]) == 0:
+            fail("add accepted a plate that is not native 1024")
+        (tmp_path / "lod0.glb").write_bytes(b"fixture-lod0-tampered")
+        if main(["check", "--library", str(lib), "--id", "fixture-block"]) == 0:
+            fail("check passed after the registered bytes changed")
+
+
 def test_cli_help() -> None:
     proc = subprocess.run([PY, str(ROOT / "tools" / "library" / "library.py")], capture_output=True, text=True)
     if proc.returncode != 2:
@@ -164,10 +256,14 @@ def test_cli_help() -> None:
 
 
 def main_test() -> None:
+    from tools.library.selftest_intake import main as intake_main
+
+    intake_main()
     test_reject_fail()
     test_lock_warn()
     test_fixture_roundtrip()
     test_layout_id_and_paths()
+    test_block_keep_resolve_and_fail()
     test_cli_help()
     print("PASS library selftest")
 

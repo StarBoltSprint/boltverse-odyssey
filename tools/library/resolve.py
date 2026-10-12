@@ -1,4 +1,9 @@
-"""Resolve a library id to the walkaround asset a layout spec can place."""
+"""Resolve a library id to the paths a zone spec can place.
+
+A walkaround id still loads asset.json. A block KEEP returns the registered
+glb LODs, native 1024 plates, profile, gate report, and content hash.
+A path string is not rewritten.
+"""
 
 from __future__ import annotations
 
@@ -8,6 +13,7 @@ from pathlib import Path
 from tools.layout.model import REPO, load_asset
 
 LIBRARY = REPO / "biome" / "library"
+SCHEMAS = ("library-object/1", "library-block/1")
 
 
 class LibraryError(RuntimeError):
@@ -30,22 +36,65 @@ def manifest_path(object_id: str, roots: list[Path] | None = None) -> Path:
     return path
 
 
-def read_manifest(object_id: str, roots: list[Path] | None = None) -> dict:
-    path = manifest_path(object_id, roots)
+def read_manifest(object_id: str, roots: list[Path] | None = None, library: Path | None = None) -> dict:
+    if library is not None:
+        _check_id(object_id)
+        path = Path(library) / object_id / "manifest.json"
+        if not path.is_file():
+            raise LibraryError(f"library object not found: {object_id}")
+    else:
+        path = manifest_path(object_id, roots)
     with path.open(encoding="utf-8") as f:
         data = json.load(f)
     if not isinstance(data, dict):
         raise LibraryError(f"{object_id} manifest is not an object")
-    if data.get("schema") != "library-object/1":
-        raise LibraryError(f"{object_id} schema is not library-object/1")
+    if data.get("schema") not in SCHEMAS:
+        raise LibraryError(f"{object_id} schema is not a library manifest")
     if data.get("id") != object_id:
         raise LibraryError(f"{object_id} manifest id is {data.get('id')}")
     return data
 
 
+def resolve_registered(object_id: str, roots: list[Path] | None = None, library: Path | None = None) -> dict:
+    """Registered paths for `{ "library": "<id>" }`. Does not move files."""
+    data = read_manifest(object_id, roots, library)
+    if data.get("schema") == "library-block/1" or data.get("kind") == "block":
+        return {
+            "id": object_id,
+            "kind": "block",
+            "glbs": dict(data.get("glbs") or {}),
+            "plates": dict(data.get("plates") or {}),
+            "profile": dict(data.get("profile") or {}),
+            "gate": dict(data.get("gate") or {}),
+            "contentHash": data.get("contentHash"),
+            "nativePx": data.get("nativePx"),
+        }
+    return {
+        "id": object_id,
+        "kind": "walkaround",
+        "asset": data.get("asset"),
+        "views": data.get("views"),
+        "shape": data.get("shape"),
+    }
+
+
+def resolve_spec_entry(entry, roots: list[Path] | None = None, library: Path | None = None):
+    """A path string stays that string. `{ "library": "<id>" }` returns registered paths."""
+    if isinstance(entry, str):
+        return entry
+    if isinstance(entry, dict) and isinstance(entry.get("library"), str) and len(entry) == 1:
+        return resolve_registered(entry["library"], roots, library)
+    raise LibraryError("an asset entry must be a path string or {\"library\": \"<id>\"}")
+
+
 def load_library_asset(object_id: str, roots: list[Path]):
-    """Same Asset as a path string. Adds library_id and library_scale. Does not move the file."""
+    """Same Asset as a path string. Adds library_id and library_scale. Does not move the file.
+
+    Block KEEPs have no walkaround asset.json. Call resolve_registered for those paths.
+    """
     data = read_manifest(object_id, roots)
+    if data.get("schema") == "library-block/1" or data.get("kind") == "block":
+        raise LibraryError(f"{object_id} is a block KEEP; use resolve_registered")
     asset_rel = data.get("asset")
     if not isinstance(asset_rel, str) or not asset_rel:
         raise LibraryError(f"{object_id} has no asset path")

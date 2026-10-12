@@ -6,10 +6,14 @@
  *   node tools/world-graph/export-zone-b.mjs [out.json]
  */
 import { readFileSync, existsSync, statSync, writeFileSync } from "node:fs";
-import { pathToFileURL } from "node:url";
+import { pathToFileURL, fileURLToPath } from "node:url";
 
 const PREVIEW = "/workspace/zb-preview-1008";
-const BIBLE_RT = "/workspace/grokcli/wt/zoneb-bible-1008/tools/biome/runtime/biome-runtime.js";
+const BIBLE_WT = "/workspace/grokcli/wt/zoneb-bible-1008/tools/biome/runtime/biome-runtime.js";
+const BIBLE_FALLBACK = fileURLToPath(new URL("./fixtures/bible-av2.js", import.meta.url));
+// Street xz is parsed from `const av2` in the zoneb-bible runtime. This checkout
+// keeps that literal beside the exporter when the worktree path is absent.
+const BIBLE_RT = existsSync(BIBLE_WT) ? BIBLE_WT : BIBLE_FALLBACK;
 const KEY_IMAGE = "/workspace/zb-bible-1008/key-city3.jpg";
 const META_8M = "/workspace/gd/ab-look/a/meta.json";
 const OUT = process.argv[2] || new URL("../../zone-b.zone.json", import.meta.url);
