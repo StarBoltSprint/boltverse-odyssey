@@ -8,10 +8,12 @@ import { execFileSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import yaml from "js-yaml";   // npm ci in tools/object-gate
 import { scoreVisible, screenPxPerM, resolveView, footprintsFromBoxes } from "./lib/visible.mjs";
+import { applyFailureFields, annotateObjectRows } from "./lib/failure.mjs";
 export { scoreVisible, screenPxPerM, resolveView };
+export { applyFailureFields, adaptLegacyRow, annotateObjectRows, suggestedFix, evidenceFromDir } from "./lib/failure.mjs";
 
 /** Stable API contract (see API.md). Bump the major only with a migration note; additions bump the minor. */
-export const API_VERSION = "1.7";
+export const API_VERSION = "1.8";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PY = join(HERE, "lib/analyze.py");
@@ -186,7 +188,7 @@ export async function gateScene(scene, opts = {}) {
         readyCap.why || `loaded, cover ${readyCap.cover}`,
         ["Wait until the Chargement overlay is gone and the framebuffer is not empty before any capture."]);
       stats = await h.page.evaluate(() => window.__og.stats());
-      report.runtime.push({ id: "runtime.budgets", check: `budgets ${vp.join("x")} (report only, quality first)`, status: "INFO", detail: JSON.stringify(stats), hints: [] });
+      report.runtime.push(applyFailureFields({ id: "runtime.budgets", check: `budgets ${vp.join("x")} (report only, quality first)`, status: "INFO", detail: JSON.stringify(stats), hints: [] }));
       perfRows(report, await h.page.evaluate(() => (typeof window.__perfReport === "function" ? window.__perfReport() : null)).catch(() => null), vp);
       await h.ctx.close();
     }
@@ -253,7 +255,7 @@ export const CHECK_IDS = [
 ];
 export const checkId = (check) => (CHECK_IDS.find(([re]) => re.test(check)) || [null, "other"])[1];
 function row(o, check, pass, detail, hints = [], status) {
-  o.rows.push({ id: checkId(check), check, status: status || (pass ? "PASS" : "FAIL"), detail, hints: pass ? [] : hints });
+  o.rows.push(applyFailureFields({ id: checkId(check), check, status: status || (pass ? "PASS" : "FAIL"), detail, hints: pass ? [] : hints }));
 }
 /**
  * Phone perf rows (docs/METHOD/phone-perf.md). They read the page's window.__perfReport():
@@ -267,7 +269,7 @@ function row(o, check, pass, detail, hints = [], status) {
  */
 export function perfRows(rep, pr, vp) {
   const tag = vp.join("x");
-  if (!pr) { rep.runtime.push({ id: "perf.report", check: `perf: report ${tag}`, status: "INFO", detail: "page has no window.__perfReport(); phone perf rows skipped", hints: ["Expose window.__perfReport() (see tools/perf/phone-bench/README.md) so the gate can check canvas ratio and draw order."] }); return; }
+  if (!pr) { rep.runtime.push(applyFailureFields({ id: "perf.report", check: `perf: report ${tag}`, status: "INFO", detail: "page has no window.__perfReport(); phone perf rows skipped", hints: ["Expose window.__perfReport() (see tools/perf/phone-bench/README.md) so the gate can check canvas ratio and draw order."] })); return; }
   const lim = Math.min(pr.canvasCap ?? pr.cap ?? 2, 2, pr.dpr ?? 2) + 1e-6;
   rowR(rep, `perf: canvas ratio <= cap ${tag}`, pr.canvasRatio <= lim, `canvas ratio ${pr.canvasRatio} (cap ${pr.canvasCap ?? pr.cap}, device ${pr.dpr})`,
     ["Size the canvas at the adaptive render ratio (cap 2), not the device ratio: a DPR-3 canvas pays a fixed full-screen grade/upsample/compositor pass every frame (phone lesson 2026-10-10)."]);
@@ -285,7 +287,9 @@ export function perfRows(rep, pr, vp) {
     `internal ${pr.cap} canvas ${pr.canvasRatio} device ${pr.dpr} upscale ${pr.upscale ?? "native"} rcas ${pr.rcas ?? "-"} sprintDip ${pr.sprintDip}`,
     ["Default: canvas min(2, device), scene at internal 1.5 upscaled with tools/biome/runtime/upscale-easu.mjs (EASU-style + RCAS 0.8), or native ratio 2 (SmiR 2026-10-10 14:38). Never the plain bilinear upscale, never below 1.5 by default, no sprint dip; lower only as the adaptive emergency floor (< 15 fps for > 5 s)."]);
 }
-function rowR(rep, check, pass, detail, hints) { rep.runtime.push({ id: checkId(check), check, status: pass ? "PASS" : "FAIL", detail, hints: pass ? [] : hints }); }
+function rowR(rep, check, pass, detail, hints) {
+  rep.runtime.push(applyFailureFields({ id: checkId(check), check, status: pass ? "PASS" : "FAIL", detail, hints: pass ? [] : hints }));
+}
 
 async function settle(page, ms = 1200) {
   await page.evaluate(() => window.__og.frames(4));
@@ -380,6 +384,7 @@ export async function visibleShot(page, adapter, sel, hero, t, view, odir, vv = 
 }
 
 async function gateOne(cap, adapter, spec, o, odir, ctx) {
+  try {
   const { page } = cap; const cfg = spec.cfg; const checks = new Set(cfg.checks);
   const sel = spec.select;
   const boxes = await page.evaluate((s) => window.__og.instanceBoxes(s), sel);
@@ -764,6 +769,9 @@ async function gateOne(cap, adapter, spec, o, odir, ctx) {
       const lim = cfg.checklist.maxDeltaE;
       row(o, "colour vs key crop (CIELAB)", lim == null || c.deltaE <= lim, `deltaE ${c.deltaE} object L*a*b* ${c.labObject} key ${c.labKey}${lim == null ? " (report only)" : ""}`, ["Re-grade the plate or the lighting toward the key."], lim == null ? "INFO" : undefined);
     }
+  }
+  } finally {
+    o.rows = annotateObjectRows(o.rows, odir);
   }
 }
 

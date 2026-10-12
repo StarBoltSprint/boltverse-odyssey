@@ -1,4 +1,4 @@
-# object-gate API: the stable contract (v1.7)
+# object-gate API: the stable contract (v1.8)
 
 Every tool that makes or changes a 3D object calls this API. That includes the Imagine-to-3D modules `classify`, `views`, `coarse`, `pbr`, `compare`, `fixloop` and `keyvideo`. Do not re-implement a check: import it. `API_VERSION` (in `gate.mjs`, also the `version` field in `package.json`) follows two rules:
 
@@ -13,7 +13,8 @@ What counts as API: the exports listed below, the spec and profile fields, the r
 import { gateObject, gateScene, loadScene, resolveObject, loadProfile, listProfiles,
          toMarkdown, checkId, CHECK_IDS, API_VERSION,
          screenPxPerM, scoreVisible, resolveView,             // 1.2 (scoreVisible takes an 8th arg `render` since 1.3)
-         perfRows } from "<repo>/tools/object-gate/gate.mjs";   // 1.4
+         perfRows,                                            // 1.4
+         applyFailureFields, adaptLegacyRow, annotateObjectRows, suggestedFix } from "<repo>/tools/object-gate/gate.mjs";
 import { gateAndFix, fixPlan, FIX_ACTIONS } from "<repo>/tools/object-gate/hooks/imagine-to-3d.mjs";
 ```
 
@@ -38,7 +39,7 @@ Python pipelines use the CLIs instead: `cli.mjs` and `hooks/imagine-to-3d.mjs`. 
 | `loadScene(yamlPath)` | `(string) → scene` | Reads a scene yaml and resolves every object spec in it. |
 | `gateScene(scene, opts)` | `async → report` | Runs the full gate on one page. `opts` takes `{url, out, only:[ids], fast, log}`. `fast` skips the 300→10 m morph and is for iteration only: the final gate always runs without it. |
 | `gateObject(spec, opts)` | `async → report` | Gates one object. `opts` takes `{adapter (abs path), url, out, fast, specDir, dir, hud, title, log}`. |
-| `fixPlan(report)` | `report → {verdict, report, items[]}` | Turns each FAIL row into a fix action: `{object, id, check, action, auto, what, detail, hints}`. |
+| `fixPlan(report)` | `report → {verdict, report, items[]}` | Turns each FAIL row into a fix action: `{object, id, check, action, auto, what, detail, hints, status, failing_face_ids, world_position, suggested_fix}`. The last four are the shared failure record (1.8). |
 | `gateAndFix({...})` | `async → {status, exported, rounds, stuck?, review?, plan?}` | The mandatory final stage: gate, run the fix loop, re-gate, and export on PASS only. Arguments: `scene`, `object`, `fix(plan, planPath)`, `exportFn(report)`, `maxRounds` (3), `maxSameDefect` (2), `url`, `out`, `fast`. `status` is `PASS`, `FAIL` or `NEEDS_REVIEW`. |
 | `FIX_ACTIONS` | `[{re, action, auto, what}]` | The table from check to action. A **fixloop** module switches on `action` (or on the row `id`), never on the check text. |
 | `checkId(check)` / `CHECK_IDS` | | Maps a check to its stable row id. |
@@ -90,14 +91,35 @@ rewritten with the key-compare section. A caller that uses `gateScene()` directl
 ## Report JSON (`<out>/report.json`)
 
 ```jsonc
-{ "tool": "object-gate", "version": 1, "apiVersion": "1.7", "url": "...", "adapter": "...", "out": "/abs/dir",
+{ "tool": "object-gate", "version": 1, "apiVersion": "1.8", "url": "...", "adapter": "...", "out": "/abs/dir",
   "startedAt": "ISO", "finishedAt": "ISO", "verdict": "PASS|FAIL",
-  "runtime": [ { "id": "runtime.shader", "check": "shader compile 412x915", "status": "PASS|FAIL|INFO", "detail": "...", "hints": [] } ],
+  "runtime": [ { "id": "runtime.shader", "check": "shader compile 412x915", "status": "PASS|FAIL|INFO|WARN", "detail": "...", "hints": [],
+                 "failing_face_ids": [], "world_position": null, "suggested_fix": "" } ],
   "objects": [ { "id": "mesa", "type": "rock", "verdict": "PASS|FAIL", "hero": "mesa-0",
                  "files": { "captures": { "close": { "img": "...png", "mask": "...png", "cover": 0.31, "hash": "dHash hex", "pose": {} } },
                             "sheet": ".../capture-sheet.jpg" },
-                 "rows": [ { "id": "...", "check": "...", "status": "...", "detail": "...", "hints": ["..."] } ] } ] }
+                 "rows": [ { "id": "geometry.sealed", "check": "mesh sealed (non-manifold / open edges)", "status": "FAIL", "detail": "...", "hints": ["..."],
+                            "failing_face_ids": ["face-12", "face-77"], "world_position": [1.2, 0.4, 3.1],
+                            "suggested_fix": "weld, drop coincident faces, cap loops" } ] } ] }
 ```
+
+## Shared failure record (1.8)
+
+Every row (`runtime[]` and `objects[].rows`) and every `fixPlan` item carries this record. `id`, `detail`, and `hints` stay. `check` stays the check string. `id` is the stable `CHECK_IDS` value when the check is known. `tools/gate/` is not in this repo; object-gate is the shared emitter.
+
+```jsonc
+{
+  "check": "mesh sealed (non-manifold / open edges)", // check string; id is "geometry.sealed"
+  "status": "FAIL",                                   // PASS | FAIL | INFO | WARN
+  "failing_face_ids": ["face-12", "face-77"],         // [] when the measurement has no face ids
+  "world_position": [1.2, 0.4, 3.1],                  // metres, world space; null when not stored
+  "suggested_fix": "weld, drop coincident faces, cap loops"
+}
+```
+
+- `failing_face_ids` and `world_position` are copied from files already written for that object (`geometry.json`, `boxes.json`, `morph.json`, `grounding.json`). A face id is used only when the file stores one (`id`, `faceId`, `face`, or a string in `failing_face_ids` / `failingFaces` / `openFaces` / `nonManifoldFaces`). In a mixed `faces` list, only entries flagged `fail`, `failing`, `nonManifold`, `open`, or `kind` of `open` / `nonManifold` / `degenerate` count. A world position is a stored 3-number array (`world`, `world_position`, `center`, …) or the `center` of the one box the row names. Nothing is invented.
+- `suggested_fix` is one sentence from `FIX_ACTIONS` (the `what` of the matching action), else the first hint, else one runtime sentence. It is `""` when status is not FAIL. A FAIL never leaves it empty.
+- `adaptLegacyRow(row, dir?)` fills the fields on a row that predates 1.8. `annotateObjectRows(rows, dir)` re-reads the measurement files. CLI exit codes are unchanged.
 
 The per-object folder `<out>/<id>/` also holds the raw measurements: `boxes.json` (1.2, copy world boxes), `visible.json` (1.2, view + per-surface need vs visible px/m; 1.3 adds `render`), `cap-visible-8m.png` (1.3), `texel.json`, `repetition.json`, `morph.json`, `shadow.json`, `grounding.json`, `geometry.json`, the `cap-*.png` captures with their masks, the `face-*.png` ortho views, `capture-sheet.jpg` and `checklist-todo.yaml`. A **compare** or **keyvideo** module can read these files instead of re-rendering.
 

@@ -75,6 +75,7 @@ const fake = { verdict: "FAIL", out: dir, runtime: [{ check: "shader compile 412
     { check: "UV stretch <= 1.3", status: "PASS", detail: "", hints: [] }] }] };
 const plan = fixPlan(fake);
 ok(plan.items.length === 4 && plan.items[0].action === "plate-sections" && plan.items[1].action === "sink" && plan.items[2].auto === false && plan.items[3].action === "fix-shader", "fix plan actions");
+ok(plan.items.every((i) => i.status === "FAIL" && typeof i.suggested_fix === "string" && i.suggested_fix.length > 0 && Array.isArray(i.failing_face_ids) && (i.world_position === null || Array.isArray(i.world_position))), "fix plan FAIL items carry the shared failure record");
 ok(toMarkdown({ ...fake, url: "u", adapter: "a", startedAt: "t", objects: fake.objects.map((o) => ({ ...o, verdict: "FAIL", files: {} })) }).includes("| tower | undefined | FAIL |"), "markdown renders");
 // key-compare (2026-10-10): thresholds per type, identical image = MATCH everywhere, shifted/darkened image = FAIL rows + kc fix actions
 {
@@ -122,5 +123,38 @@ b=np.roll(a,40,axis=1).astype(int); b[100:180,200:320]=(120,80,60); Image.fromar
   const none = run(null);
   ok(none.length === 1 && none[0].status === "INFO" && none[0].id === "perf.report", "page without __perfReport: INFO only");
 }
+{ // API 1.8 shared failure record. ghost-v33 has no face ids (do not invent). A synthetic sealed mesh that stores faces does.
+  const { adaptLegacyRow } = await import("./lib/failure.mjs");
+  const sealed = mkdtempSync(join(tmpdir(), "og-sealed-"));
+  writeFileSync(join(sealed, "geometry.json"), JSON.stringify([{
+    usedBy: "terrace-lod0", nonManifold: 2, open: 1,
+    faces: [
+      { id: "face-12", world: [1.25, 0.4, 3.1], nonManifold: true },
+      { id: "face-77", world: [1.5, 0.42, 3.4], open: true },
+      { id: "face-1", world: [0, 1, 0] },
+    ],
+  }]));
+  const failRow = adaptLegacyRow({
+    id: "geometry.sealed", check: "mesh sealed (non-manifold / open edges)", status: "FAIL",
+    detail: "terrace-lod0 nonManifold 2 open 1",
+    hints: ["Weld, heal coincident faces, cap open loops in Blender (heal_manifold) before export."],
+  }, sealed);
+  ok(failRow.status === "FAIL" && failRow.failing_face_ids.length === 2 && failRow.failing_face_ids[0] === "face-12" && failRow.failing_face_ids[1] === "face-77"
+    && failRow.world_position && failRow.world_position[0] === 1.25 && failRow.world_position[1] === 0.4 && failRow.world_position[2] === 3.1
+    && /weld/.test(failRow.suggested_fix), "synthetic sealed-mesh FAIL: faces, world position, suggested_fix");
+  const ghostDir = mkdtempSync(join(tmpdir(), "og-ghost-row-"));
+  writeFileSync(join(ghostDir, "geometry.json"), JSON.stringify([{ usedBy: "ghost-v33", nonManifold: 4, open: 2 }]));
+  const ghostRow = adaptLegacyRow({ id: "geometry.sealed", check: "mesh sealed (non-manifold / open edges)", status: "FAIL", detail: "ghost-v33 fixture has cones and streaks, no face ids", hints: [] }, ghostDir);
+  ok(ghostRow.failing_face_ids.length === 0 && ghostRow.world_position === null && ghostRow.suggested_fix.length > 0, "ghost-v33 geometry has no face ids: empty faces, null position, suggested_fix set");
+  const passRow = adaptLegacyRow({ id: "geometry.sealed", check: "mesh sealed (non-manifold / open edges)", status: "PASS", detail: "sealed", hints: ["ignored"], failing_face_ids: ["face-1"], world_position: [9, 9, 9], suggested_fix: "nope" });
+  ok(passRow.status === "PASS" && passRow.failing_face_ids.length === 0 && passRow.world_position === null && passRow.suggested_fix === "", "synthetic PASS row clears faces, position, and suggested_fix");
+  const legacy = adaptLegacyRow({ check: "grounding (no floating)", status: "FAIL", detail: "0.4 m", hints: ["Sink the copy."] });
+  ok(Array.isArray(legacy.failing_face_ids) && legacy.failing_face_ids.length === 0 && legacy.world_position === null && legacy.suggested_fix.length > 0, "legacy FAIL row: adapter fills defaults");
+  const orphan = adaptLegacyRow({ check: "some new check", status: "FAIL", detail: "x", hints: [] });
+  ok(orphan.suggested_fix.length > 0, "self-test fails if a FAIL lacks suggested_fix");
+  const legacyPass = adaptLegacyRow({ check: "UV stretch <= 1.3", status: "PASS", detail: "" });
+  ok(legacyPass.failing_face_ids.length === 0 && legacyPass.world_position === null && legacyPass.suggested_fix === "", "legacy PASS row: empty suggested_fix");
+}
+
 console.log(fails ? `FAIL ${fails}` : "PASS selftest");
 process.exit(fails ? 1 : 0);

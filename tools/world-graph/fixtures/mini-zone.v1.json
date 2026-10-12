@@ -1,0 +1,43 @@
+{
+  "schema": "zone.v1",
+  "version": "1.0",
+  "id": "mini-gates",
+  "keyImage": "mini-key",
+  "keyCamera": { "fov": 50, "position": [0, 2, 8], "target": [0, 1, 0] },
+  "biome": { "id": "mini" },
+  "lighting": { "sun": { "intensity": 1 }, "fog": {}, "halo": {} },
+  "objects": [
+    {
+      "id": "rock-a",
+      "asset": { "glb": "assets/rock-a.glb", "lods": [] },
+      "sources": [],
+      "cameras": [],
+      "transform": { "position": [1, 0, 2], "rotationDeg": 0, "scale": 1 },
+      "fidelity": {},
+      "wake": { "type": "placeholder", "enabled": false }
+    },
+    {
+      "id": "marker",
+      "asset": "assets/marker.glb",
+      "sources": [],
+      "cameras": [],
+      "transform": { "position": [2, 0, 3], "rotationDeg": 0, "scale": 1 },
+      "fidelity": {},
+      "wake": { "type": "placeholder", "enabled": false }
+    },
+    {
+      "id": "lib-solid",
+      "asset": { "library": "fixture-solid" },
+      "sources": [],
+      "cameras": [],
+      "transform": { "position": [4, 0, 1], "rotationDeg": 0, "scale": 1 },
+      "fidelity": {},
+      "wake": { "type": "placeholder", "enabled": false }
+    }
+  ],
+  "gameplay": {},
+  "qualityGates": {},
+  "todo": [],
+  "wakeDefaults": { "type": "placeholder", "enabled": false },
+  "runtime": { "biome": {}, "layout": {}, "groundDetail": {} }
+}
