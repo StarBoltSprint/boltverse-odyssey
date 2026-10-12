@@ -73,6 +73,41 @@ def judge_walkaround(report: dict) -> tuple[str, list[str]]:
     return "PASS", []
 
 
+def judge_gate(report: dict) -> tuple[str, list[str]]:
+    """PASS, or WARN when the only misses are a grandfathered lock. FAIL rejects the add.
+
+    A headline PASS does not hide a FAIL row. Lock WARN grandfathering matches assetcheck:
+    locked: true, or a lock/ path, may store WARN. Any other FAIL is refused.
+    """
+    locked = _gate_locked(report)
+    notes: list[str] = []
+    fails: list[str] = []
+    for row in _gate_rows(report):
+        status = str(row.get("status") or row.get("verdict") or "")
+        label = str(row.get("check") or row.get("id") or row.get("name") or "row")
+        row_locked = locked or row.get("locked") is True or _locked(row)
+        if status == "FAIL" and row_locked:
+            notes.append(f"WARN {label} (lock)")
+        elif status == "FAIL":
+            fails.append(f"FAIL {label}")
+        elif status == "WARN" and not row_locked:
+            notes.append(f"WARN {label}")
+    verdict = str(report.get("verdict") or "")
+    if report.get("ok") is False and not locked:
+        fails.append("ok is false")
+    if verdict == "FAIL" and not locked:
+        fails.append("verdict FAIL")
+    if fails:
+        return "FAIL", fails
+    if locked and (verdict == "WARN" or notes or report.get("ok") is not True):
+        return "WARN", notes or ["lock grandfather"]
+    if report.get("ok") is True or verdict == "PASS":
+        return ("WARN", notes) if notes else ("PASS", [])
+    if verdict == "WARN" and locked:
+        return "WARN", notes or ["lock grandfather"]
+    return "FAIL", ["gate report has no PASS"]
+
+
 def accept(kind: str, report: dict) -> tuple[str, list[str]]:
     if kind == "assetcheck":
         verdict, notes = judge_assetcheck(report)
@@ -80,11 +115,36 @@ def accept(kind: str, report: dict) -> tuple[str, list[str]]:
         verdict, notes = judge_objsheet(report)
     elif kind == "walkaround":
         verdict, notes = judge_walkaround(report)
+    elif kind == "gate":
+        verdict, notes = judge_gate(report)
     else:
         raise ReportRejected(f"unknown report kind {kind}")
     if verdict == "FAIL":
         raise ReportRejected(kind + ": " + "; ".join(notes))
     return verdict, notes
+
+
+def _gate_locked(report: dict) -> bool:
+    if report.get("locked") is True:
+        return True
+    return _locked(report)
+
+
+def _gate_rows(report: dict) -> list[dict]:
+    rows = report.get("rows")
+    if rows is None:
+        rows = report.get("checks")
+    if isinstance(rows, dict):
+        out = []
+        for key, value in rows.items():
+            if isinstance(value, dict):
+                out.append({"name": key, **value})
+            else:
+                out.append({"name": key, "status": value})
+        return out
+    if isinstance(rows, list):
+        return [row for row in rows if isinstance(row, dict)]
+    return []
 
 
 def _locked(asset: dict) -> bool:

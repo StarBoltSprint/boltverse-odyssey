@@ -15,7 +15,19 @@ Exit **0** when `add` writes a manifest or `check` finds every object still PASS
 
 `add` refuses any FAIL that is not a grandfathered `lock/` WARN (`locked: true` or a `lock/` path). Objsheet and walkaround must have `"ok": true`. Walkaround magnification above 1.0 is refused.
 
-A layout spec lists `{ "library": "<id>" }` where it would list an `asset.json` path. Path strings keep the previous behaviour. Law and the reuse steps: [`biome/library/README.md`](../../biome/library/README.md). Schema: [`biome/library/schema.json`](../../biome/library/schema.json).
+A layout spec lists `{ "library": "<id>" }` where it would list an `asset.json` path. Path strings keep the previous behaviour. `resolve_spec_entry` returns that same string, or the registered paths for an id. Law and the reuse steps: [`biome/library/README.md`](../../biome/library/README.md). Schema: [`biome/library/schema.json`](../../biome/library/schema.json).
+
+## Block KEEP
+
+`kind: "block"` registers a block-builder KEEP into the same library. The manifest (`library-block/1`) stores:
+
+- `glbs.lod0` / `lod1` / `lod2`
+- `plates` (front, side, and any other named view), each file native **1024×1024**
+- `profile.id` and `profile.path` (the block-builder JSON profile)
+- `gate.path` and the stored verdict
+- `contentHash`, SHA-256 of those glb, plate, profile, and gate bytes
+
+`add` refuses a gate report that is not PASS. A lock WARN (`locked: true`, or a `lock/` path) is stored as WARN. `check --id` re-reads the files, re-checks the gate, and re-hashes the bytes. `resolve_registered` returns those paths. It does not copy them and it does not call Imagine.
 
 ## Honest limits
 
