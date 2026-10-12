@@ -1,0 +1,57 @@
+{
+ "view": {
+  "renderPixelRatio": 1,
+  "fovDeg": 51.47,
+  "source": "steps/zone-c/01-camera/camera.json fov"
+ },
+ "render": {
+  "ok": true,
+  "screenPxPerM": 237.1,
+  "tiles": 17,
+  "kMedian": 1.791,
+  "visiblePxPerM": 132.4,
+  "p25PxPerM": 46.4,
+  "capped": false,
+  "tau": 0.1,
+  "img": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids/object-gate/cliff-left/cap-visible-8m.png",
+  "mask": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids/object-gate/cliff-left/cap-visible-8m-mask.png",
+  "cover": 0.7835,
+  "distM": 8.04,
+  "needPxPerM": 118.5,
+  "zoomFovDeg": 26.99,
+  "wantedFovDeg": 26.99,
+  "renderH": 915,
+  "camera": [
+   -9.13,
+   1.51,
+   -34.28
+  ],
+  "aimM": 5,
+  "normal": [
+   -0.05,
+   -0.2,
+   0.98
+  ],
+  "rect": [
+   62,
+   275,
+   350,
+   641
+  ],
+  "pose": {
+   "x": -9.1316590677574,
+   "y": 1.508,
+   "z": -34.27957402705235
+  }
+ },
+ "perSurface": [
+  {
+   "inst": "cliff-left",
+   "cls": "+z",
+   "viewM": 8,
+   "needPxPerM": 118.5,
+   "visiblePxPerM": 22.21,
+   "ok": false
+  }
+ ]
+}

@@ -1,0 +1,16 @@
+[
+ {
+  "inst": "arch-left",
+  "plate": "key-zc1",
+  "tex": "http://127.0.0.1:8772/key-zc1.jpg",
+  "texW": 1792,
+  "texH": 1008,
+  "cls": "+z",
+  "areaM2": 11.2,
+  "samplingPxPerM": 50.56,
+  "repeats": 0.02,
+  "uniquePxPerM": 50.56,
+  "stretchP95": 1.284,
+  "nearPathM": 5.2
+ }
+]

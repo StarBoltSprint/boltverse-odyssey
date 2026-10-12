@@ -1,0 +1,57 @@
+{
+ "view": {
+  "renderPixelRatio": 1,
+  "fovDeg": 51.47,
+  "source": "steps/zone-c/01-camera/camera.json fov"
+ },
+ "render": {
+  "ok": true,
+  "screenPxPerM": 237.1,
+  "tiles": 1,
+  "kMedian": 1.504,
+  "visiblePxPerM": 157.6,
+  "p25PxPerM": 157.6,
+  "capped": false,
+  "tau": 0.1,
+  "img": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids/object-gate/gorge-rock/cap-visible-8m.png",
+  "mask": "/workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids/object-gate/gorge-rock/cap-visible-8m-mask.png",
+  "cover": 0.9353,
+  "distM": 8.03,
+  "needPxPerM": 118.5,
+  "zoomFovDeg": 27.03,
+  "wantedFovDeg": 27.03,
+  "renderH": 915,
+  "camera": [
+   13.98,
+   1.51,
+   -70.86
+  ],
+  "aimM": 4,
+  "normal": [
+   1,
+   0.01,
+   0
+  ],
+  "rect": [
+   62,
+   275,
+   350,
+   641
+  ],
+  "pose": {
+   "x": 13.97519601150416,
+   "y": 1.508,
+   "z": -70.86185066047756
+  }
+ },
+ "perSurface": [
+  {
+   "inst": "gorge-rock",
+   "cls": "+z",
+   "viewM": 8,
+   "needPxPerM": 118.5,
+   "visiblePxPerM": 12.62,
+   "ok": false
+  }
+ ]
+}

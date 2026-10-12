@@ -1,0 +1,603 @@
+{
+ "$schema": "schema/zone.v1.schema.json",
+ "schema": "zone.v1",
+ "version": "1.0",
+ "id": "zone-c",
+ "keyImage": "steps/zone-c/03-terrain/key-zc1.jpg",
+ "keyCamera": {
+  "fov": 51.47,
+  "position": [
+   0,
+   1.508,
+   0
+  ],
+  "target": [
+   0,
+   1.646308876162719,
+   -0.9903891431021473
+  ],
+  "previewPose": {
+   "yaw": 0,
+   "pitch": 7.95,
+   "eye": 1.508,
+   "horizonRow": 0.6449
+  }
+ },
+ "biome": {
+  "id": "cascade-verdance",
+  "kit": "biome/kits/cascade-verdance.json"
+ },
+ "lighting": {
+  "sun": {
+   "stored": false
+  },
+  "fog": {
+   "stored": false
+  },
+  "halo": {
+   "stored": false
+  }
+ },
+ "objects": [
+  {
+   "id": "causeway",
+   "asset": {
+    "glb": null,
+    "lods": []
+   },
+   "sources": [
+    {
+     "file": "steps/zone-c/03-terrain/key-zc1.jpg",
+     "role": "key"
+    },
+    {
+     "file": "steps/zone-c/03-terrain/plates/moss-top-1.jpg",
+     "role": "terrain-plate"
+    },
+    {
+     "file": "steps/zone-c/03-terrain/plates/moss-top-2.jpg",
+     "role": "terrain-plate"
+    },
+    {
+     "file": "steps/zone-c/03-terrain/plates/moss-top-3.jpg",
+     "role": "terrain-plate"
+    },
+    {
+     "file": "steps/zone-c/03-terrain/plates/moss-top-4.jpg",
+     "role": "terrain-plate"
+    },
+    {
+     "file": "steps/zone-c/03-terrain/data/weight.bin",
+     "role": "key-weight"
+    },
+    {
+     "file": "steps/zone-c/03-terrain/data/tint.bin",
+     "role": "key-tint"
+    }
+   ],
+   "cameras": [
+    {
+     "fov": 51.47,
+     "position": [
+      0,
+      1.508,
+      0
+     ],
+     "target": [
+      0,
+      1.646308876162719,
+      -0.9903891431021473
+     ]
+    }
+   ],
+   "transform": {
+    "position": [
+     -28,
+     0,
+     -96
+    ],
+    "rotationDeg": [
+     0,
+     0,
+     0
+    ],
+    "scale": [
+     1,
+     1,
+     1
+    ]
+   },
+   "fidelity": {
+    "pathIoU": 0.7704,
+    "reliefM": 0.319,
+    "maxSlopeDeg": 15.5
+   },
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   },
+   "terrain": {
+    "height": "steps/zone-c/03-terrain/data/height.bin",
+    "step": 0.5,
+    "nx": 113,
+    "nz": 205,
+    "hLo": -0.1607046127319336,
+    "hHi": 0.1580589860677719
+   }
+  },
+  {
+   "id": "arch-left",
+   "asset": {
+    "glb": null,
+    "lods": []
+   },
+   "sources": [
+    {
+     "file": "steps/zone-c/03-terrain/key-zc1.jpg",
+     "role": "key-visible"
+    },
+    {
+     "file": null,
+     "role": "pending-plate",
+     "plate": 5
+    },
+    {
+     "file": null,
+     "role": "pending-plate",
+     "plate": 6
+    },
+    {
+     "file": null,
+     "role": "pending-plate",
+     "plate": 15
+    }
+   ],
+   "cameras": [
+    {
+     "fov": 51.47,
+     "position": [
+      0,
+      1.508,
+      0
+     ],
+     "target": [
+      0,
+      1.646308876162719,
+      -0.9903891431021473
+     ]
+    }
+   ],
+   "transform": {
+    "position": [
+     0,
+     0,
+     0
+    ],
+    "rotationDeg": [
+     0,
+     0,
+     0
+    ],
+    "scale": [
+     1,
+     1,
+     1
+    ]
+   },
+   "fidelity": {
+    "stretchP95": 1.2878,
+    "keyTris": 1103,
+    "sameHull": true,
+    "pendingPlates": [
+     5,
+     6,
+     15
+    ],
+    "openEdges": 0,
+    "nonManifold": 6,
+    "indexNonManifold": 0
+   },
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   }
+  },
+  {
+   "id": "arch-right",
+   "asset": {
+    "glb": null,
+    "lods": []
+   },
+   "sources": [
+    {
+     "file": "steps/zone-c/03-terrain/key-zc1.jpg",
+     "role": "key-visible"
+    },
+    {
+     "file": null,
+     "role": "pending-plate",
+     "plate": 7
+    },
+    {
+     "file": null,
+     "role": "pending-plate",
+     "plate": 8
+    },
+    {
+     "file": null,
+     "role": "pending-plate",
+     "plate": 15
+    }
+   ],
+   "cameras": [
+    {
+     "fov": 51.47,
+     "position": [
+      0,
+      1.508,
+      0
+     ],
+     "target": [
+      0,
+      1.646308876162719,
+      -0.9903891431021473
+     ]
+    }
+   ],
+   "transform": {
+    "position": [
+     0,
+     0,
+     0
+    ],
+    "rotationDeg": [
+     0,
+     0,
+     0
+    ],
+    "scale": [
+     1,
+     1,
+     1
+    ]
+   },
+   "fidelity": {
+    "stretchP95": 1.2904,
+    "keyTris": 705,
+    "sameHull": true,
+    "pendingPlates": [
+     7,
+     8,
+     15
+    ],
+    "openEdges": 0,
+    "nonManifold": 6,
+    "indexNonManifold": 0
+   },
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   }
+  },
+  {
+   "id": "cliff-left",
+   "asset": {
+    "glb": null,
+    "lods": []
+   },
+   "sources": [
+    {
+     "file": "steps/zone-c/03-terrain/key-zc1.jpg",
+     "role": "key-visible"
+    },
+    {
+     "file": null,
+     "role": "pending-plate",
+     "plate": 9
+    },
+    {
+     "file": null,
+     "role": "pending-plate",
+     "plate": 10
+    },
+    {
+     "file": null,
+     "role": "pending-plate",
+     "plate": 15
+    }
+   ],
+   "cameras": [
+    {
+     "fov": 51.47,
+     "position": [
+      0,
+      1.508,
+      0
+     ],
+     "target": [
+      0,
+      1.646308876162719,
+      -0.9903891431021473
+     ]
+    }
+   ],
+   "transform": {
+    "position": [
+     0,
+     0,
+     0
+    ],
+    "rotationDeg": [
+     0,
+     0,
+     0
+    ],
+    "scale": [
+     1,
+     1,
+     1
+    ]
+   },
+   "fidelity": {
+    "stretchP95": 1.271,
+    "keyTris": 884,
+    "sameHull": true,
+    "pendingPlates": [
+     9,
+     10,
+     15
+    ],
+    "openEdges": 0,
+    "nonManifold": 0,
+    "indexNonManifold": 0
+   },
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   }
+  },
+  {
+   "id": "gorge-rock",
+   "asset": {
+    "glb": null,
+    "lods": []
+   },
+   "sources": [
+    {
+     "file": "steps/zone-c/03-terrain/key-zc1.jpg",
+     "role": "key-visible"
+    },
+    {
+     "file": null,
+     "role": "pending-plate",
+     "plate": 11
+    },
+    {
+     "file": null,
+     "role": "pending-plate",
+     "plate": 12
+    },
+    {
+     "file": null,
+     "role": "pending-plate",
+     "plate": 15
+    }
+   ],
+   "cameras": [
+    {
+     "fov": 51.47,
+     "position": [
+      0,
+      1.508,
+      0
+     ],
+     "target": [
+      0,
+      1.646308876162719,
+      -0.9903891431021473
+     ]
+    }
+   ],
+   "transform": {
+    "position": [
+     0,
+     0,
+     0
+    ],
+    "rotationDeg": [
+     0,
+     0,
+     0
+    ],
+    "scale": [
+     1,
+     1,
+     1
+    ]
+   },
+   "fidelity": {
+    "stretchP95": 1.2814,
+    "keyTris": 441,
+    "sameHull": true,
+    "pendingPlates": [
+     11,
+     12,
+     15
+    ],
+    "openEdges": 0,
+    "nonManifold": 4,
+    "indexNonManifold": 0
+   },
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   }
+  },
+  {
+   "id": "cliff-right",
+   "asset": {
+    "glb": null,
+    "lods": []
+   },
+   "sources": [
+    {
+     "file": "steps/zone-c/03-terrain/key-zc1.jpg",
+     "role": "key-visible"
+    },
+    {
+     "file": null,
+     "role": "pending-plate",
+     "plate": 13
+    },
+    {
+     "file": null,
+     "role": "pending-plate",
+     "plate": 14
+    },
+    {
+     "file": null,
+     "role": "pending-plate",
+     "plate": 15
+    }
+   ],
+   "cameras": [
+    {
+     "fov": 51.47,
+     "position": [
+      0,
+      1.508,
+      0
+     ],
+     "target": [
+      0,
+      1.646308876162719,
+      -0.9903891431021473
+     ]
+    }
+   ],
+   "transform": {
+    "position": [
+     0,
+     0,
+     0
+    ],
+    "rotationDeg": [
+     0,
+     0,
+     0
+    ],
+    "scale": [
+     1,
+     1,
+     1
+    ]
+   },
+   "fidelity": {
+    "stretchP95": 1.2857,
+    "keyTris": 245,
+    "sameHull": true,
+    "pendingPlates": [
+     13,
+     14,
+     15
+    ],
+    "openEdges": 0,
+    "nonManifold": 2,
+    "indexNonManifold": 0
+   },
+   "wake": {
+    "type": "placeholder",
+    "enabled": false
+   }
+  }
+ ],
+ "gameplay": {
+  "avenue": {
+   "headingDeg": 0,
+   "forward": "-Z"
+  },
+  "spawn": {
+   "position": [
+    0,
+    1.508,
+    0
+   ],
+   "eye": 1.508
+  },
+  "path": [
+   [
+    0,
+    0
+   ],
+   [
+    0,
+    -8
+   ],
+   [
+    0,
+    -30
+   ],
+   [
+    0,
+    -60
+   ],
+   [
+    0,
+    -90
+   ]
+  ],
+  "lanes": null,
+  "laneWidth": null
+ },
+ "qualityGates": {
+  "maxDrawCalls": 12,
+  "pathIoU": 0.7704,
+  "blockingPass": true,
+  "pass": false,
+  "uvStretchOpen": false,
+  "solidsPass": false
+ },
+ "todo": [
+  "no sun, fog, or halo is stored for Zone C yet",
+  "the causeway has no GLB; the mesh is the height grid",
+  "hidden faces of the five solids wait on Imagine plates 5-15"
+ ],
+ "wakeDefaults": {
+  "type": "placeholder",
+  "enabled": false
+ },
+ "runtime": {
+  "previewRoot": null,
+  "modules": {
+   "main": "tools/terrain-from-key/staging/zone-c/main.mjs",
+   "solids": "tools/imagine-to-3d/staging/zone-c-solids/main.mjs"
+  },
+  "biome": {
+   "id": "cascade-verdance",
+   "source": "biome/kits/cascade-verdance.json"
+  },
+  "layout": {
+   "terrain": "steps/zone-c/03-terrain/data/height.bin",
+   "origin": [
+    -28,
+    -96
+   ],
+   "step": 0.5,
+   "nx": 113,
+   "nz": 205,
+   "solids": "steps/zone-c/05-solids/data/solids.bin"
+  },
+  "groundDetail": {
+   "plates": [
+    "steps/zone-c/03-terrain/plates/moss-top-1.jpg",
+    "steps/zone-c/03-terrain/plates/moss-top-2.jpg",
+    "steps/zone-c/03-terrain/plates/moss-top-3.jpg",
+    "steps/zone-c/03-terrain/plates/moss-top-4.jpg"
+   ],
+   "weight": "steps/zone-c/03-terrain/data/weight.bin",
+   "tint": "steps/zone-c/03-terrain/data/tint.bin",
+   "tile": "steps/zone-c/03-terrain/data/tile.bin"
+  },
+  "pins": {}
+ }
+}

@@ -1,0 +1,16 @@
+[
+ {
+  "inst": "cliff-right",
+  "plate": "key-zc1",
+  "tex": "http://127.0.0.1:8772/key-zc1.jpg",
+  "texW": 1792,
+  "texH": 1008,
+  "cls": "+z",
+  "areaM2": 6.8,
+  "samplingPxPerM": 32.67,
+  "repeats": 0,
+  "uniquePxPerM": 32.67,
+  "stretchP95": 1.284,
+  "nearPathM": 13.3
+ }
+]

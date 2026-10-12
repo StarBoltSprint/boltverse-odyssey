@@ -1,0 +1,168 @@
+{
+  "attempt": 2,
+  "costImagine": 0,
+  "stretchP95": {
+    "arch-left": 1.2878,
+    "arch-right": 1.2904,
+    "cliff-left": 1.271,
+    "gorge-rock": 1.2814,
+    "cliff-right": 1.2857
+  },
+  "stretchWorst": 1.2904,
+  "stretchPass": true,
+  "drawCallsPlanned": 11,
+  "sameHull": true,
+  "edges": {
+    "arch-left": {
+      "open": 0,
+      "nonManifold": 0,
+      "edges": 8280,
+      "sample": null
+    },
+    "arch-right": {
+      "open": 0,
+      "nonManifold": 0,
+      "edges": 5202,
+      "sample": null
+    },
+    "cliff-left": {
+      "open": 0,
+      "nonManifold": 0,
+      "edges": 4668,
+      "sample": null
+    },
+    "gorge-rock": {
+      "open": 0,
+      "nonManifold": 0,
+      "edges": 2850,
+      "sample": null
+    },
+    "cliff-right": {
+      "open": 0,
+      "nonManifold": 0,
+      "edges": 1542,
+      "sample": null
+    }
+  },
+  "pending": {
+    "arch-left": {
+      "5": {
+        "tris": 2144,
+        "kinds": {
+          "back": 2144
+        }
+      },
+      "6": {
+        "tris": 2003,
+        "kinds": {
+          "side": 962,
+          "grazing": 1041
+        }
+      },
+      "15": {
+        "tris": 270,
+        "kinds": {
+          "bottom": 270
+        }
+      }
+    },
+    "arch-right": {
+      "8": {
+        "tris": 1261,
+        "kinds": {
+          "grazing": 647,
+          "side": 614
+        }
+      },
+      "7": {
+        "tris": 1352,
+        "kinds": {
+          "back": 1352
+        }
+      },
+      "15": {
+        "tris": 150,
+        "kinds": {
+          "bottom": 150
+        }
+      }
+    },
+    "cliff-left": {
+      "9": {
+        "tris": 1214,
+        "kinds": {
+          "back": 1214
+        }
+      },
+      "10": {
+        "tris": 852,
+        "kinds": {
+          "side": 522,
+          "grazing": 330
+        }
+      },
+      "15": {
+        "tris": 162,
+        "kinds": {
+          "bottom": 162
+        }
+      }
+    },
+    "gorge-rock": {
+      "11": {
+        "tris": 686,
+        "kinds": {
+          "back": 686
+        }
+      },
+      "12": {
+        "tris": 675,
+        "kinds": {
+          "side": 430,
+          "grazing": 245
+        }
+      },
+      "15": {
+        "tris": 98,
+        "kinds": {
+          "bottom": 98
+        }
+      }
+    },
+    "cliff-right": {
+      "14": {
+        "tris": 337,
+        "kinds": {
+          "grazing": 171,
+          "side": 166
+        }
+      },
+      "13": {
+        "tris": 416,
+        "kinds": {
+          "back": 416
+        }
+      },
+      "15": {
+        "tris": 30,
+        "kinds": {
+          "bottom": 30
+        }
+      }
+    }
+  },
+  "colour": {
+    "metric": "CIEDE2000",
+    "mean": 15.55,
+    "median": 10.08,
+    "pixels": 327147
+  },
+  "timingsSec": {
+    "moge-2": 0.0,
+    "mesh": 0.841,
+    "total": 0.977
+  },
+  "sheet": "steps/zone-c/05-solids/sheet-phone.jpg",
+  "gateVerdict": "FAIL",
+  "pass": false
+}

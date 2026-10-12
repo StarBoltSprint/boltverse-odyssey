@@ -1,0 +1,322 @@
+{
+  "model": "moge-2",
+  "licence": "MIT",
+  "camera": "steps/zone-c/01-camera/camera.json",
+  "masks": "steps/zone-c/02-masks/masks.json",
+  "key": "steps/zone-c/03-terrain/key-zc1.jpg",
+  "attempt": 2,
+  "thicknessM": 3.0,
+  "gridStep": 4,
+  "stretchMax": 1.3,
+  "objects": [
+    {
+      "name": "arch-left",
+      "vertByteOffset": 0,
+      "indexByteOffset": 66912,
+      "verts": 2788,
+      "floats": 6,
+      "tris": 5520,
+      "keyTris": 1103,
+      "indexBytes": 66240,
+      "aabb": {
+        "min": [
+          -12.264803886413574,
+          0.5108606219291687,
+          -26.83016014099121
+        ],
+        "max": [
+          -4.992715835571289,
+          13.393961906433105,
+          -16.025789260864258
+        ]
+      },
+      "pending": {
+        "5": {
+          "tris": 2144,
+          "kinds": {
+            "back": 2144
+          }
+        },
+        "6": {
+          "tris": 2003,
+          "kinds": {
+            "side": 962,
+            "grazing": 1041
+          }
+        },
+        "15": {
+          "tris": 270,
+          "kinds": {
+            "bottom": 270
+          }
+        }
+      },
+      "edges": {
+        "open": 0,
+        "nonManifold": 0,
+        "edges": 8280,
+        "sample": null
+      },
+      "stretchP95": 1.2878,
+      "stretchMax": 1.2997,
+      "quads": 1072,
+      "lodTris": [
+        5520,
+        5520,
+        5520
+      ],
+      "sameHull": true
+    },
+    {
+      "name": "arch-right",
+      "vertByteOffset": 133152,
+      "indexByteOffset": 175104,
+      "verts": 1748,
+      "floats": 6,
+      "tris": 3468,
+      "keyTris": 705,
+      "indexBytes": 41616,
+      "aabb": {
+        "min": [
+          7.567061901092529,
+          0.900379478931427,
+          -18.852487564086914
+        ],
+        "max": [
+          14.531557083129883,
+          9.620845794677734,
+          -8.4567289352417
+        ]
+      },
+      "pending": {
+        "8": {
+          "tris": 1261,
+          "kinds": {
+            "grazing": 647,
+            "side": 614
+          }
+        },
+        "7": {
+          "tris": 1352,
+          "kinds": {
+            "back": 1352
+          }
+        },
+        "15": {
+          "tris": 150,
+          "kinds": {
+            "bottom": 150
+          }
+        }
+      },
+      "edges": {
+        "open": 0,
+        "nonManifold": 0,
+        "edges": 5202,
+        "sample": null
+      },
+      "stretchP95": 1.2904,
+      "stretchMax": 1.2989,
+      "quads": 676,
+      "lodTris": [
+        3468,
+        3468,
+        3468
+      ],
+      "sameHull": true
+    },
+    {
+      "name": "cliff-left",
+      "vertByteOffset": 216720,
+      "indexByteOffset": 254640,
+      "verts": 1580,
+      "floats": 6,
+      "tris": 3112,
+      "keyTris": 884,
+      "indexBytes": 37344,
+      "aabb": {
+        "min": [
+          -13.654152870178223,
+          2.4614124298095703,
+          -53.493167877197266
+        ],
+        "max": [
+          -3.875152111053467,
+          21.911611557006836,
+          -37.15604019165039
+        ]
+      },
+      "pending": {
+        "9": {
+          "tris": 1214,
+          "kinds": {
+            "back": 1214
+          }
+        },
+        "10": {
+          "tris": 852,
+          "kinds": {
+            "side": 522,
+            "grazing": 330
+          }
+        },
+        "15": {
+          "tris": 162,
+          "kinds": {
+            "bottom": 162
+          }
+        }
+      },
+      "edges": {
+        "open": 0,
+        "nonManifold": 0,
+        "edges": 4668,
+        "sample": null
+      },
+      "stretchP95": 1.271,
+      "stretchMax": 1.2998,
+      "quads": 607,
+      "lodTris": [
+        3112,
+        3112,
+        3112
+      ],
+      "sameHull": true
+    },
+    {
+      "name": "gorge-rock",
+      "vertByteOffset": 291984,
+      "indexByteOffset": 315312,
+      "verts": 972,
+      "floats": 6,
+      "tris": 1900,
+      "keyTris": 441,
+      "indexBytes": 22800,
+      "aabb": {
+        "min": [
+          -4.760293483734131,
+          1.8366076946258545,
+          -90.29765319824219
+        ],
+        "max": [
+          8.933774948120117,
+          30.677690505981445,
+          -51.4499397277832
+        ]
+      },
+      "pending": {
+        "11": {
+          "tris": 686,
+          "kinds": {
+            "back": 686
+          }
+        },
+        "12": {
+          "tris": 675,
+          "kinds": {
+            "side": 430,
+            "grazing": 245
+          }
+        },
+        "15": {
+          "tris": 98,
+          "kinds": {
+            "bottom": 98
+          }
+        }
+      },
+      "edges": {
+        "open": 0,
+        "nonManifold": 0,
+        "edges": 2850,
+        "sample": null
+      },
+      "stretchP95": 1.2814,
+      "stretchMax": 1.2995,
+      "quads": 343,
+      "lodTris": [
+        1900,
+        1900,
+        1900
+      ],
+      "sameHull": true
+    },
+    {
+      "name": "cliff-right",
+      "vertByteOffset": 338112,
+      "indexByteOffset": 350592,
+      "verts": 520,
+      "floats": 6,
+      "tris": 1028,
+      "keyTris": 245,
+      "indexBytes": 12336,
+      "aabb": {
+        "min": [
+          13.046553611755371,
+          12.740692138671875,
+          -31.137758255004883
+        ],
+        "max": [
+          15.951034545898438,
+          20.873489379882812,
+          -26.484519958496094
+        ]
+      },
+      "pending": {
+        "14": {
+          "tris": 337,
+          "kinds": {
+            "grazing": 171,
+            "side": 166
+          }
+        },
+        "13": {
+          "tris": 416,
+          "kinds": {
+            "back": 416
+          }
+        },
+        "15": {
+          "tris": 30,
+          "kinds": {
+            "bottom": 30
+          }
+        }
+      },
+      "edges": {
+        "open": 0,
+        "nonManifold": 0,
+        "edges": 1542,
+        "sample": null
+      },
+      "stretchP95": 1.2857,
+      "stretchMax": 1.2976,
+      "quads": 208,
+      "lodTris": [
+        1028,
+        1028,
+        1028
+      ],
+      "sameHull": true
+    }
+  ],
+  "timingsSec": {
+    "moge-2": 0.0,
+    "mesh": 0.841,
+    "total": 0.977
+  },
+  "clearSrgb": [
+    0.1686,
+    0.1882,
+    0.1294
+  ],
+  "vfovDeg": 51.47,
+  "eye": [
+    0.0,
+    1.508,
+    0.0
+  ],
+  "pitchDeg": 7.95,
+  "drawCalls": 11,
+  "note": "One causeway draw plus two draws per solid (key group, pending group). Pending fragments do not write colour."
+}

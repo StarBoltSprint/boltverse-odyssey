@@ -1,0 +1,21 @@
+{
+ "view": {
+  "renderPixelRatio": 1,
+  "fovDeg": 51.47,
+  "source": "steps/zone-c/01-camera/camera.json fov"
+ },
+ "render": {
+  "ok": false,
+  "why": "no steep surface of cliff-right found at 4/5/3/6/7/8/2.5 m above the ground on its path-facing side"
+ },
+ "perSurface": [
+  {
+   "inst": "cliff-right",
+   "cls": "+z",
+   "viewM": 8,
+   "needPxPerM": 118.5,
+   "visiblePxPerM": 32.67,
+   "ok": false
+  }
+ ]
+}

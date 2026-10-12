@@ -1,0 +1,74 @@
+[
+ {
+  "name": "face z",
+  "ok": true,
+  "atExpectedLag": null,
+  "expectLagPx": null,
+  "rect": [
+   90,
+   0,
+   255,
+   340
+  ],
+  "peak": 0.625,
+  "lagPx": [
+   56,
+   184
+  ],
+  "crop": [
+   165,
+   340
+  ],
+  "pxPerM": 40.64,
+  "tileM": null
+ },
+ {
+  "name": "face x",
+  "ok": true,
+  "atExpectedLag": null,
+  "expectLagPx": null,
+  "rect": [
+   354,
+   1,
+   425,
+   127
+  ],
+  "peak": 0.2617,
+  "lagPx": [
+   -22,
+   -71
+  ],
+  "crop": [
+   71,
+   126
+  ],
+  "pxPerM": 14.33,
+  "tileM": null
+ },
+ {
+  "name": "close",
+  "ok": true,
+  "atExpectedLag": null,
+  "expectLagPx": null,
+  "rect": [
+   92,
+   565,
+   165,
+   662
+  ],
+  "peak": 0.2327,
+  "lagPx": [
+   -21,
+   -50
+  ],
+  "crop": [
+   73,
+   97
+  ]
+ },
+ {
+  "name": "low-portrait",
+  "ok": false,
+  "why": "no object area >= 48x48 px in the capture"
+ }
+]

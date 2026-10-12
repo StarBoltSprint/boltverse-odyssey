@@ -1,0 +1,16 @@
+[
+ {
+  "inst": "gorge-rock",
+  "plate": "key-zc1",
+  "tex": "http://127.0.0.1:8772/key-zc1.jpg",
+  "texW": 1792,
+  "texH": 1008,
+  "cls": "+z",
+  "areaM2": 88.5,
+  "samplingPxPerM": 12.62,
+  "repeats": 0.01,
+  "uniquePxPerM": 12.62,
+  "stretchP95": 1.281,
+  "nearPathM": 0.2
+ }
+]

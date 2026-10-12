@@ -1064,3 +1064,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Station stretch is the near-key px/m divided by the px/m of the material in use (plates where the key weight is at most 0.5). Path IoU uses `deck_mask`. The sharpness pose stands at eye height on the plate field (`s = 12 + D`). The loading shot waits until Chargement is in the DOM. |
 | Guard | `steps/zone-c/03-terrain/numbers.json`: path IoU 0.7704, UV p95 0.214, CIEDE2000 8.68, pass true. Object-gate visible px/m 237.1 against 118.5, verdict PASS. |
 | Sources | `tools/terrain-from-key/causeway_field.py`, `tools/terrain-from-key/gates.py`, `tools/terrain-from-key/staging/zone-c/main.mjs`, `tools/terrain-from-key/capture_play.mjs`. |
+
+### 2026-10-12 — Zone C solids: a 1 mm weld undoes a split strut, and stretch filtering shreds the mask
+
+| | |
+| --- | --- |
+| Take | zc/05-solids |
+| Defect | Attempt 2 index edges are open 0 and non-manifold 0, and key-face stretch p95 is 1.271–1.290. The object-gate still reports non-manifold 6, 6, 0, 4, 2, every solid floats, and the approach IoU drops below 0.8. The key render is a scatter of key fragments on the clear colour. CIEDE2000 mean on the five masks is 15.55. |
+| Root cause | `probe.js` `geometry()` welds positions rounded to 1 mm, so two thickness struts that share a pixel corner become one edge with four triangles. Dropping quads longer than twice the pixel angle, and moving fronts with stretch above 1.3 onto the pending side plate, leaves only the frontal patches in the colour buffer. Those patches do not hold a stable silhouette at 200 m and do not meet the ground. |
+| Fix | Stopped after attempt 2. Plates 5–15 stay pending. `numbers.json` `pass` is false. The zone export copies the welded non-manifold count from `object-gate/<id>/geometry.json`. |
+| Guard | `node tools/object-gate/cli.mjs --scene tools/object-gate/specs/zone-c/solids-scene.yaml --out steps/zone-c/05-solids/object-gate` verdict FAIL. Builder stretch worst 1.2904. Gate welded non-manifold on arch-left is 6. |
+| Sources | `tools/imagine-to-3d/zone_c_solids.py`, `tools/object-gate/lib/probe.js`, `steps/zone-c/05-solids/REPORT.md`. |
