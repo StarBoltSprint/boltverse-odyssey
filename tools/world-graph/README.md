@@ -5,7 +5,7 @@ One zone = one JSON file (`zone.v1`). Method: [`docs/METHOD/world-graph.md`](../
 ## Steps
 
 1. `node tools/world-graph/export-zone-b.mjs` — writes `zone-b.zone.json` from the current Zone B preview. Copies stored numbers only; anything the preview does not store goes in `todo`.
-2. `node tools/world-graph/selftest.mjs` — schema name, export round-trip, the three runtime payloads (`biome.json`, `layout.json`, `ground-detail.json`), placeholder wake, live preview untouched.
+2. `node tools/world-graph/selftest.mjs` — schema name, export round-trip, the three runtime payloads (`biome.json`, `layout.json`, `ground-detail.json`), placeholder wake, live preview untouched. Also loads `fixtures/mini-zone.v1.json` through `loadPlayableScene`: object ids match the file, a library ref resolves only when `library-resolver.mjs` is passed, and an object id that is not in the zone is refused.
 3. `node tools/world-graph/serve.mjs` — local compare server: `/ref` is the live preview, `/zone` the same files booted from the zone file (frozen clock). Prints the port.
 4. `python3 tools/world-graph/capture.py --port N --out report.json` — headless shots from the hero, street and 8 m poses on both pages; pixel rule: mean abs channel difference ≤ 1/255.
 5. `node tools/world-graph/verify.mjs` — runs the compare end to end, renders `keyCamera` at the key size, writes SSIM, LPIPS (Alex), draw calls and triangles to `steps/world-graph-1011/verify-report.json`.

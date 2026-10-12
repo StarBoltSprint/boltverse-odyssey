@@ -11,52 +11,43 @@
 import { execSync } from "node:child_process";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { loadScene, gateScene } from "../gate.mjs";
+import { loadScene, gateScene, checkId } from "../gate.mjs";
 import { withKeyCompare } from "../key-compare.mjs";
+import { FIX_ACTIONS, applyFailureFields } from "../lib/failure.mjs";
 
 /** FAIL row -> fix action the pipeline can run without asking. `auto: false` = needs a review (vision/owner). */
-export const FIX_ACTIONS = [
-  { re: /^native Imagine px\/m/, action: "plate-sections", auto: true, what: "split the surface into sections; one crop-sourced full-res Imagine edit per section (no tiling, no upscale)" },
-  { re: /^visible px\/m/, action: "plate-sections", auto: true, what: "cut the surface into more sections so each native 1024x1024 Imagine plate covers at most ~6.6 m (phone sharpness from 8 m); one shared plate set per type is fine" },
-  { re: /^repetition \(visible\): identical/, action: "spread-plates", auto: true, what: "section LUT / more pool layers / flips so the same plate pixels never appear within 30 m" },
-  { re: /^repetition \(visible\): neighbours/, action: "spread-plates", auto: true, what: "neighbouring copies (< 7 m) get different plate windows or a mirrored set, or move apart" },
-  { re: /^repetition \(UV\)/, action: "unique-plates", auto: true, what: "UV each section 0..1 once; no plate repeats on a surface" },
-  { re: /^repetition \(capture/, action: "unique-plates", auto: true, what: "remove visible tiling; second Imagine variant + low-frequency mask if needed" },
-  { re: /^UV stretch/, action: "reunwrap", auto: true, what: "surface-aware UV, equal metres per texel on both axes" },
-  { re: /^plates not downscaled/, action: "restore-native", auto: true, what: "copy the Imagine output byte-for-byte (package.py already does), no resize" },
-  { re: /^texture filtering/, action: "texture-params", auto: true, what: "mipmaps + LinearMipmapLinear + anisotropy = renderer max" },
-  { re: /^texture roles/, action: "declare-roles", auto: true, what: "write every texture's role in the object spec" },
-  { re: /^approach morph/, action: "single-silhouette-lod", auto: true, what: "LOD1 = decimated LOD0 with the same cuts (or no swap); crossfade" },
-  { re: /^shadow world-fixed/, action: "static-shadow", auto: true, what: "static world-fixed shadow map over all casters" },
-  { re: /^shadow colour/, action: "shadow-tint", auto: true, what: "neutral dark shadow multiply, fix the lookup" },
-  { re: /^shadow cast/, action: "cast-shadow", auto: true, what: "castShadow on every LOD, ground receives" },
-  { re: /^grounding/, action: "sink", auto: true, what: "sink below the lowest footprint corner + base fill + drift" },
-  { re: /^mesh sealed/, action: "heal-manifold", auto: true, what: "weld, drop coincident faces, cap loops" },
-  { re: /^facade relief/, action: "add-relief", auto: true, what: "model relief from the key crop (fins/ledges/bays or strata)" },
-  { re: /^facade crisp/, action: "quantise-planes", auto: true, what: "quantise the depth relief into a few flat planes and crisp right-angle steps" },
-  { re: /^proportions/, action: "rescale", auto: true, what: "scale the solid to the spec ratios in Blender" },
-  { re: /^effects/, action: "imagine-fx-texture", auto: true, what: "sample the effect colour/alpha from an Imagine plate" },
-  // key-compare rows (2026-10-10) -> imagine-to-3d fixloop.py classes kc-shape / kc-colour / kc-detail (never an Imagine generation)
-  { re: /^key-compare .*: iou/, action: "kc-shape", auto: true, what: "shape-seed search + silhouette warp toward the key mask of the element (fixloop.py keyloop)" },
-  { re: /^key-compare .*: (deLit|deShadow)/, action: "kc-colour", auto: true, what: "grade-match the element toward the key, lit and shadow separately (render-measured Lab offset on the Imagine plates)" },
-  { re: /^key-compare .*: structure/, action: "kc-detail", auto: true, what: "plate re-pick from the closest key-style plates, relief strength and detail-layer sweep (fixloop.py keyloop)" },
-  { re: /^key-compare .*: present/, action: "build-element", auto: false, what: "the key element is missing in game: build / mount it (Imagine requests need approval)" },
-  { re: /^key-compare run/, action: "fix-runtime", auto: true, what: "key-compare crashed: fix the spec or the staging URL" },
-  { re: /^key checklist: every item/, action: "verify-captures", auto: false, what: "Grok vision / owner reviews the capture sheet next to the key crop and records pass/fail per item" },
-  { re: /^key checklist written|^key crop present/, action: "write-checklist", auto: false, what: "write the per-object checklist from the key crop" },
-];
+export { FIX_ACTIONS };
+
+function failureItem(row, extra) {
+  const stamped = applyFailureFields({ ...row, id: row.id || checkId(row.check || ""), status: "FAIL" });
+  return {
+    ...extra,
+    id: stamped.id,
+    check: stamped.check,
+    detail: row.detail,
+    hints: row.hints,
+    status: "FAIL",
+    failing_face_ids: stamped.failing_face_ids,
+    world_position: stamped.world_position,
+    suggested_fix: stamped.suggested_fix,
+  };
+}
 
 export function fixPlan(report) {
   const items = [];
-  for (const o of report.objects) for (const r of o.rows) if (r.status === "FAIL") {
+  for (const o of report.objects || []) for (const r of o.rows || []) if (r.status === "FAIL") {
     const a = FIX_ACTIONS.find((f) => f.re.test(r.check)) || { action: "manual", auto: false, what: "no automatic fix known" };
-    items.push({ object: o.id, id: r.id, check: r.check, action: a.action, auto: a.auto, what: a.what, detail: r.detail, hints: r.hints });
+    items.push(failureItem(r, { object: o.id, action: a.action, auto: a.auto, what: a.what }));
   }
   for (const r of (report.keyCompare && report.keyCompare.rows) || []) if (r.status === "FAIL") {
     const a = FIX_ACTIONS.find((f) => f.re.test(r.check)) || { action: "manual", auto: false, what: "no automatic fix known" };
-    items.push({ object: "key-compare:" + (r.element || "*"), id: r.id, check: r.check, action: a.action, auto: a.auto, what: a.what, detail: r.detail, hints: r.hints });
+    items.push(failureItem(r, { object: "key-compare:" + (r.element || "*"), action: a.action, auto: a.auto, what: a.what }));
   }
-  for (const r of report.runtime) if (r.status === "FAIL") items.push({ object: "*", id: r.id, check: r.check, action: /shader/.test(r.check) ? "fix-shader" : "fix-runtime", auto: true, detail: r.detail, hints: r.hints });
+  for (const r of report.runtime || []) if (r.status === "FAIL") {
+    const action = /shader/.test(r.check) ? "fix-shader" : "fix-runtime";
+    items.push(failureItem(r, { object: "*", action, auto: true, what: undefined }));
+  }
+  for (const item of items) if (!item.what) item.what = item.suggested_fix;
   return { verdict: report.verdict, report: report.out, items };
 }
 
