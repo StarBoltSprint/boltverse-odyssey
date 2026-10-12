@@ -1,0 +1,33 @@
+{
+  "schema": "zone-placement/1",
+  "id": "approach-good",
+  "fixture": true,
+  "note": "TEST FIXTURE - not Imagine. Library local boxes, one arch on a straight path.",
+  "ground_y": 0,
+  "path": {
+    "width_m": 2,
+    "min_clearance_m": 2,
+    "points": [[0, 0], [10, 0]]
+  },
+  "library": {
+    "arch": {
+      "id": "arch",
+      "ground_anchor": [0, 0, 0],
+      "boxes": [
+        { "id": "jamb-l", "min": [-0.3, 0, -2], "max": [0.3, 3, -1.2], "role": "solid" },
+        { "id": "jamb-r", "min": [-0.3, 0, 1.2], "max": [0.3, 3, 2], "role": "solid" },
+        { "id": "lintel", "min": [-0.3, 2.4, -2], "max": [0.3, 3, 2], "role": "hanging" }
+      ]
+    }
+  },
+  "parts": [
+    {
+      "id": "gate-arch",
+      "library": "arch",
+      "position": [5, 0.4, 0],
+      "yaw_deg": 0,
+      "scale": 1,
+      "ground_snap": true
+    }
+  ]
+}

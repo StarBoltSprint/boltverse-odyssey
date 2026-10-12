@@ -1,0 +1,210 @@
+kit-gate exit=0 ok=True cmd=cd tools/playcheck && npm test
+--- stdout ---
+ible fails an invisible stop and a stop past 0.5 m
+ok 29 - boundary_visible fails an invisible stop and a stop past 0.5 m
+  ---
+  duration_ms: 0.459733
+  ...
+# Subtest: discovery fails a hidden poi seen at spawn, a miss on the route, and a weak landmark
+ok 30 - discovery fails a hidden poi seen at spawn, a miss on the route, and a weak landmark
+  ---
+  duration_ms: 0.583986
+  ...
+# Subtest: no_pop fails a large in-frustum drop and ignores a leave and a small object
+ok 31 - no_pop fails a large in-frustum drop and ignores a leave and a small object
+  ---
+  duration_ms: 0.579532
+  ...
+# Subtest: cells line prints n/a for a missing field and fails triVisible over 300000
+ok 32 - cells line prints n/a for a missing field and fails triVisible over 300000
+  ---
+  duration_ms: 0.5913
+  ...
+# Subtest: organic-good is walked as a route, not a ring
+ok 33 - organic-good is walked as a route, not a ring
+  ---
+  duration_ms: 891.671059
+  ...
+# Subtest: circle layout does not emit organic rows
+ok 34 - circle layout does not emit organic rows
+  ---
+  duration_ms: 2.092255
+  ...
+# Subtest: organic judge: passing capture passes the four rows; each break fails its named row
+ok 35 - organic judge: passing capture passes the four rows; each break fails its named row
+  ---
+  duration_ms: 26.295625
+  ...
+# Subtest: a gate opening and a hangar mouth exclude a disc
+ok 36 - a gate opening and a hangar mouth exclude a disc
+  ---
+  duration_ms: 2.143382
+  ...
+# Subtest: existing playcheck rows stay, and perf rows are additive
+ok 37 - existing playcheck rows stay, and perf rows are additive
+  ---
+  duration_ms: 7.07686
+  ...
+# Subtest: report.json keeps the previous keys and adds perf
+ok 38 - report.json keeps the previous keys and adds perf
+  ---
+  duration_ms: 4.107436
+  ...
+# Subtest: flat black rectangle is a hit, a top night band is not
+ok 39 - flat black rectangle is a hit, a top night band is not
+  ---
+  duration_ms: 26.730718
+  ...
+# Subtest: checker repeats and noise does not
+ok 40 - checker repeats and noise does not
+  ---
+  duration_ms: 15.917529
+  ...
+# Subtest: a flat object is visible when unlabeled ground is a different colour
+ok 41 - a flat object is visible when unlabeled ground is a different colour
+  ---
+  duration_ms: 3.572875
+  ...
+# Subtest: a smooth ramp is not tile repetition
+ok 42 - a smooth ramp is not tile repetition
+  ---
+  duration_ms: 0.500689
+  ...
+# Subtest: a wide checker is repetition even when neighbours mostly match
+ok 43 - a wide checker is repetition even when neighbours mostly match
+  ---
+  duration_ms: 1.185794
+  ...
+# Subtest: take10c patterns fail and the id buffer is not a world texture
+ok 44 - take10c patterns fail and the id buffer is not a world texture
+  ---
+  duration_ms: 7.847704
+  ...
+# Subtest: instanced static upload with mipmaps passes
+ok 45 - instanced static upload with mipmaps passes
+  ---
+  duration_ms: 0.236021
+  ...
+# Subtest: a comment that names NEAREST is not a finding
+ok 46 - a comment that names NEAREST is not a finding
+  ---
+  duration_ms: 0.162105
+  ...
+# Subtest: ruin walk: arch, hangar, walls, slides, sweeps; no invisible wall, no camera jump
+    # Subtest: arch gate: full gallop through the opening
+    ok 1 - arch gate: full gallop through the opening
+      ---
+      duration_ms: 6137.844834
+      ...
+    # Subtest: arch arch: full gallop through the opening
+    ok 2 - arch arch: full gallop through the opening
+      ---
+      duration_ms: 2598.101969
+      ...
+    # Subtest: hangar: in under the deck, turn round, back out
+    ok 3 - hangar: in under the deck, turn round, back out
+      ---
+      duration_ms: 5618.326177
+      ...
+    # Subtest: walls: piers and closed hull stop Bolt at the drawn face
+    ok 4 - walls: piers and closed hull stop Bolt at the drawn face
+      ---
+      duration_ms: 11107.723541
+      ...
+    # Subtest: slides: a shallow run slides along the face
+    ok 5 - slides: a shallow run slides along the face
+      ---
+      duration_ms: 7502.636672
+      ...
+# {"arches":{"gate":{"maxStep":0.201072035559493,"maxJerk":0.033333333333333916,"shake":0,"minNear":null,"topSpeed":4.4},"arch":{"maxStep":0.28735122730675594,"maxJerk":0.033333333333336275,"shake":0,"minNear":null,"topSpeed":4.4}},"hangar":{"turnBoomFlips":0,"turnJitterFrames":0,"depth":3.2536570500135706,"maxStep":0.4111916545246617,"maxJerk":0.12891943805460485,"shake":0,"minNear":0.4908189276102366,"maxBoltMag":3.960500009054478},"sweeps":{"runs":77,"invisible":0,"minFace":0.2915602842846575,"free":[{"phase":"gate-pass-front","contact":0},{"phase":"gate-pass-back","contact":0},{"phase":"gate-pass-left","contact":0},{"phase":"gate-pass-right","contact":0},{"phase":"arch-pass-front","contact":0},{"phase":"arch-pass-back","contact":0},{"phase":"arch-pass-left","contact":0},{"phase":"arch-pass-right","contact":0}]}}
+    # Subtest: sweeps: every contact sits on a drawn face; near-misses touch nothing
+    ok 6 - sweeps: every contact sits on a drawn face; near-misses touch nothing
+      ---
+      duration_ms: 146615.935833
+      ...
+    1..6
+ok 47 - ruin walk: arch, hangar, walls, slides, sweeps; no invisible wall, no camera jump
+  ---
+  duration_ms: 200720.335101
+  ...
+# FAIL fade_in pop result=FAIL worst_jump=1 worst_ramp_ms=16
+# PASS fade_in ramp result=PASS count=1 worst_ramp_ms=450 worst_jump=0.11111111111111116
+# FAIL fade_in vanish result=FAIL vanished=1 worst_id=obj-a
+# FAIL preload_ahead early result=FAIL misses=1 worst_lead_ms=null
+# PASS preload_ahead lead result=PASS misses=0 worst_lead_ms=100
+# PASS fade_in crossfade result=PASS vanished=0 worst_ramp_ms=450
+# FAIL judge fade_in=FAIL preload_ahead=FAIL
+# Subtest: fade_in fails an object that pops from 0 to 100 percent in one frame
+ok 48 - fade_in fails an object that pops from 0 to 100 percent in one frame
+  ---
+  duration_ms: 2.787996
+  ...
+# Subtest: fade_in passes a 450 ms monotonic ramp
+ok 49 - fade_in passes a 450 ms monotonic ramp
+  ---
+  duration_ms: 0.473633
+  ...
+# Subtest: fade_in fails a far representation that vanishes before the fade
+ok 50 - fade_in fails a far representation that vanishes before the fade
+  ---
+  duration_ms: 0.36531
+  ...
+# Subtest: preload_ahead fails a cell entered before it was resident
+ok 51 - preload_ahead fails a cell entered before it was resident
+  ---
+  duration_ms: 1.325941
+  ...
+# Subtest: preload_ahead passes a cell that is resident at least one frame ahead
+ok 52 - preload_ahead passes a cell that is resident at least one frame ahead
+  ---
+  duration_ms: 0.395265
+  ...
+# Subtest: declared streaming missing residentIds fails
+ok 53 - declared streaming missing residentIds fails
+  ---
+  duration_ms: 0.270003
+  ...
+# Subtest: missing resident ids stay n/a when streaming is not declared
+ok 54 - missing resident ids stay n/a when streaming is not declared
+  ---
+  duration_ms: 0.442626
+  ...
+# Subtest: page streaming flag missing residentIds fails
+ok 55 - page streaming flag missing residentIds fails
+  ---
+  duration_ms: 0.325844
+  ...
+# Subtest: declared streaming cells missing resident fails
+ok 56 - declared streaming cells missing resident fails
+  ---
+  duration_ms: 0.376175
+  ...
+# Subtest: fade_in passes a far representation that crossfades and never vanishes
+ok 57 - fade_in passes a far representation that crossfades and never vanishes
+  ---
+  duration_ms: 0.528273
+  ...
+# Subtest: judge fails cells and preload_ahead when the page declares streaming
+ok 58 - judge fails cells and preload_ahead when the page declares streaming
+  ---
+  duration_ms: 5.469612
+  ...
+# Subtest: judge emits fade_in and preload_ahead for a streaming layout
+ok 59 - judge emits fade_in and preload_ahead for a streaming layout
+  ---
+  duration_ms: 2.116453
+  ...
+# Subtest: circle layout and organic layout without streaming omit the new rows
+ok 60 - circle layout and organic layout without streaming omit the new rows
+  ---
+  duration_ms: 3.329055
+  ...
+1..60
+# tests 66
+# suites 0
+# pass 66
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 201906.439077
