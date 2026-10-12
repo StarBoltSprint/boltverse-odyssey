@@ -3,152 +3,66 @@
   "tier": 1,
   "side": "front",
   "count": 59,
-  "lipBottomY": 4.94,
+  "lipBottomY": 4.945,
   "walkY": 0.0,
   "lowestTipY": 4.47,
   "clearanceM": 4.47,
-  "lenP50": 0.3,
-  "clusters": [
-   [
-    -6.7,
-    -6.42,
-    4
-   ],
-   [
-    -4.67,
-    -3.87,
-    8
-   ],
-   [
-    -2.97,
-    0.49,
-    31
-   ],
-   [
-    1.39,
-    2.22,
-    7
-   ],
-   [
-    5.03,
-    6.44,
-    8
-   ]
-  ]
+  "raisedTo03": 57,
+  "lenP50": 0.3
  },
  {
   "tier": 1,
   "side": "left",
   "count": 6,
-  "lipBottomY": 4.94,
+  "lipBottomY": 4.945,
   "walkY": 0.0,
-  "lowestTipY": 4.67,
-  "clearanceM": 4.67,
-  "lenP50": 0.3,
-  "clusters": [
-   [
-    -0.31,
-    0.16,
-    6
-   ]
-  ]
+  "lowestTipY": 4.665,
+  "clearanceM": 4.665,
+  "raisedTo03": 6,
+  "lenP50": 0.3
  },
  {
   "tier": 2,
   "side": "front",
-  "count": 28,
+  "count": 27,
   "lipBottomY": 9.46,
-  "walkY": 5.8,
-  "lowestTipY": 8.28,
-  "clearanceM": 2.47,
-  "lenP50": 0.3,
-  "clusters": [
-   [
-    -7.61,
-    -6.83,
-    5
-   ],
-   [
-    -3.87,
-    -3.42,
-    5
-   ],
-   [
-    4.88,
-    5.12,
-    3
-   ],
-   [
-    5.88,
-    7.28,
-    12
-   ]
-  ]
+  "walkY": 5.805,
+  "lowestTipY": 8.792,
+  "clearanceM": 2.987,
+  "raisedTo03": 19,
+  "lenP50": 0.3
  },
  {
   "tier": 2,
   "side": "left",
   "count": 21,
   "lipBottomY": 9.46,
-  "walkY": 5.8,
-  "lowestTipY": 9.01,
-  "clearanceM": 3.2,
-  "lenP50": 0.3,
-  "clusters": [
-   [
-    -10.14,
-    -9.54,
-    7
-   ],
-   [
-    -5.34,
-    -3.62,
-    13
-   ]
-  ]
+  "walkY": 5.805,
+  "lowestTipY": 9.007,
+  "clearanceM": 3.202,
+  "raisedTo03": 17,
+  "lenP50": 0.3
  },
  {
   "tier": 3,
   "side": "front",
-  "count": 4,
-  "lipBottomY": 13.54,
-  "walkY": 10.21,
-  "lowestTipY": 12.37,
-  "clearanceM": 2.15,
-  "lenP50": 0.5,
-  "clusters": [
-   [
-    3.37,
-    3.85,
-    3
-   ]
-  ]
+  "count": 1,
+  "lipBottomY": 13.545,
+  "walkY": 10.212,
+  "lowestTipY": 12.855,
+  "clearanceM": 2.643,
+  "raisedTo03": 0,
+  "lenP50": 0.709
  },
  {
   "tier": 3,
   "side": "left",
-  "count": 13,
-  "lipBottomY": 13.54,
-  "walkY": 10.21,
-  "lowestTipY": 13.2,
-  "clearanceM": 2.99,
-  "lenP50": 0.3,
-  "clusters": [
-   [
-    -12.37,
-    -11.86,
-    5
-   ],
-   [
-    -9.11,
-    -8.72,
-    4
-   ],
-   [
-    -7.56,
-    -7.36,
-    2
-   ]
-  ]
+  "count": 1,
+  "lipBottomY": 13.545,
+  "walkY": 10.212,
+  "lowestTipY": 13.199,
+  "clearanceM": 2.987,
+  "raisedTo03": 0,
+  "lenP50": 0.365
  }
 ]

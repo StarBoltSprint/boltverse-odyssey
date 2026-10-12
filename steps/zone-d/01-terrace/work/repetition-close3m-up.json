@@ -1,12 +1,12 @@
 {
- "undersideShare": 0.466,
+ "undersideShare": 0.515,
  "cropPx": [
-  262,
+  302,
   714
  ],
- "secondaryPeak": 0.421,
+ "secondaryPeak": 0.677,
  "threshold": 0.5,
- "verdict": "PASS",
+ "verdict": "FAIL",
  "selftestTiledPeak": 0.996,
  "selftest": "FAIL as expected"
 }

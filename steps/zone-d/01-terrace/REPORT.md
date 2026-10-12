@@ -15,3 +15,12 @@ Dimensions are unchanged from v1. The triangle count changed from the added face
 ## v3 (2026-10-12 ~11:45 Paris). FAIL: texel density at 8 m/3 m, plus the existing object-gate (sealed mesh, approach morph, relief, framing, checklist, title)
 131 icicle cones placed from plate drip streaks (113 raised to the 0.3 m minimum). 6 radial segments in every LOD. Texel-density gate added (v2 self-test FAILs).
 Preview harness: /workspace/zd-preview-1012 (served on 127.0.0.1:8971), adapter tools/object-gate/adapters/zd-preview-1012.mjs, specs/zone-d.
+
+## v3.1 (no new plates)
+- Sealed: builder caps (tier-1 bottom with door hole, holed cornice tops = upper door floors, arc-profiled cornice ends, capped cone bases), winding pass; weld_export.py. object-gate "mesh sealed" PASS: 0 open / 0 non-manifold on all LODs; 0 inconsistent edges, signed volume +2942 m³. Page now FrontSide.
+- Title: "Zone D — terrace block" (row passes). Fog removed from the preview (it was invented).
+- Approach morph: still FAIL with fog off (identical numbers) -> fog not the cause. work/morph_control.py replays the gate path on a rigid plain box of the same AABB: it FAILS the same rule (jumps 285, 244, 210, 113, 102 m; 228-401 px silhouettes in a 135x240 mask). Pixel quantisation of the gate, not a shape change; LOD swap is at 15/40 m.
+- Framing: gate-owned (common/frame_bbox.py fits AABB corners); stepped block fills 13.6/8.5/22.7 %. Not changed (shared tool).
+- Sky: key-B crop x0-430,y0-270 only (no Frostspire); fills alpha-0 of a lit+ground transparent render (work/sky_composite.py).
+- Tier 3: stubs <0.3 m dropped; clearance 2.643 m (front), 2.987 m (left) over tier-2 top 10.21 m. Only 2 tier-3 icicles remain.
+- Repetition under cornice: now FAIL 0.677 (v3 0.421 measured wrongly-oriented faces; the face-normal selection is correct only after the winding fix).

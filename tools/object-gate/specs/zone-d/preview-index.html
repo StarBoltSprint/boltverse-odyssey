@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset="utf-8"><title>Zone D — terrace block preview</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0;height:100%;overflow:hidden;background:#000}#tag{position:fixed;left:8px;top:8px;color:#fff;font:12px sans-serif}</style></head>
+<!doctype html><html><head><meta charset="utf-8"><title>Zone D — terrace block</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0;height:100%;overflow:hidden;background:#000}#tag{position:fixed;left:8px;top:8px;color:#fff;font:12px sans-serif}</style></head>
 <body><div id="tag">Zone D — terrace block preview</div><script type="module">
 import * as THREE from './three.module.js';
 import { GLTFLoader } from './jsm/loaders/GLTFLoader.js';
@@ -8,7 +8,7 @@ const cfg = await (await fetch('./biome.json')).json();
 const r = new THREE.WebGLRenderer({ antialias: true }); r.setPixelRatio(Math.min(devicePixelRatio, cfg.camera.pixelRatioCap));
 r.setSize(innerWidth, innerHeight); r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap; r.outputColorSpace = THREE.SRGBColorSpace;
 document.body.appendChild(r.domElement);
-const scene = new THREE.Scene(); scene.background = new THREE.Color(0x1c2433); scene.fog = new THREE.Fog(0x2a3550, 120, 400);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x1c2433); /* no fog: zone D has no fog spec yet (v3.1; fog fade was the 199-285 m morph cause under test) */
 const cam = new THREE.PerspectiveCamera(cfg.camera.fovBase, innerWidth / innerHeight, cfg.camera.near, cfg.camera.far);
 // key-B light: low cold sun from the left (~12 deg), world-fixed shadow frustum, neutral-cool fill
 scene.add(new THREE.HemisphereLight(0xb8c8e0, 0x6a7890, 1.4));
@@ -30,7 +30,7 @@ for (let i = 0; i < 3; i++) {
   const geos = [], mats = [];
   g.scene.traverse((o) => { if (o.isMesh) { const ge = o.geometry.clone().applyMatrix4(o.matrixWorld); for (const k of Object.keys(ge.attributes)) if (!['position','normal','uv'].includes(k)) ge.deleteAttribute(k); geos.push(ge); mats.push(o.material.name); } });
   const geo = mergeGeometries(geos, true);
-  const M = mats.map((n) => { const t = TEX[n]; return new THREE.MeshStandardMaterial({ map: t, roughness: 1, metalness: 0, name: n, side: THREE.DoubleSide }); });
+  const M = mats.map((n) => { const t = TEX[n]; return new THREE.MeshStandardMaterial({ map: t, roughness: 1, metalness: 0, name: n }); });
   const root = new THREE.Mesh(geo, M); root.name = `zd-terrace-lod${i}`; root.castShadow = root.receiveShadow = true;
   lod.addLevel(root, sw[i]);
 }

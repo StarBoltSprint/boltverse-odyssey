@@ -1,0 +1,32 @@
+[
+ {
+  "inst": "zd-terrace-lod0",
+  "cols": 80,
+  "maxAirM": 0,
+  "at": [
+   1.8,
+   -15.1
+  ],
+  "baseY": 0
+ },
+ {
+  "inst": "zd-terrace-lod1",
+  "cols": 80,
+  "maxAirM": 0,
+  "at": [
+   -7.1,
+   -15.1
+  ],
+  "baseY": 0
+ },
+ {
+  "inst": "zd-terrace-lod2",
+  "cols": 80,
+  "maxAirM": 0,
+  "at": [
+   0,
+   -15.1
+  ],
+  "baseY": 0
+ }
+]

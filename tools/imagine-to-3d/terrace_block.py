@@ -28,6 +28,7 @@ AMP = 0.06
 UNDER_OFF = [64 * S, 16 * S, 8 * S]   # first shadowed-basalt row below each cornice in the front plate (measured)
 V, UVs, F = [], [], {'front': [], 'side': [], 'top': []}
 ICI = []
+NRM = {'front': [], 'side': [], 'top': []}   # intended outward normal per triangle (winding fix)
 TS, TX0 = 0.029, 525          # top plate: m per px across, centre column
 TOPROWS = [(720, 665), (520, 484), (340, 116)]   # per tier: (front-lip row, row at next tier front / back)   # faces: (v idx tri), uv per vertex-in-face
 def addv(p, uv): V.append(p); UVs.append(uv); return len(V) - 1
@@ -71,7 +72,7 @@ def quadgrid(P, us, vs, mat, uvf, normal, keep=lambda u, v: True, relief=None, b
         for j in range(len(vs) - 1):
             if not keep((us[i] + us[i + 1]) / 2, (vs[j] + vs[j + 1]) / 2): continue
             a, b, c, d = idx[i, j], idx[i + 1, j], idx[i + 1, j + 1], idx[i, j + 1]
-            F[mat] += [(a, b, c), (a, c, d)]
+            F[mat] += [(a, b, c), (a, c, d)]; NRM[mat] += [tuple(normal), tuple(normal)]
 def box_quad(c0, du, dv, nu, nv, mat, uvf, normal):  # plain quad grid on a rectangle
     us = np.linspace(0, 1, nu + 1); vs = np.linspace(0, 1, nv + 1)
     quadgrid(lambda u, v: np.add(np.add(c0, np.multiply(du, u)), np.multiply(dv, v)), us, vs, mat, uvf, normal)
@@ -90,7 +91,11 @@ for k, t in enumerate(T):
     box_quad((X0, y0, z0), (0, 0, -DOOR_D), (0, DY - y0, 0), n_(DOOR_D, SGRID), n_(DY - y0, SGRID), 'front', lambda p, z0=z0, X0=X0: fuv(X0 - (z0 - p[2]), p[1]), (1, 0, 0))
     box_quad((X1, y0, z0 - DOOR_D), (0, 0, DOOR_D), (0, DY - y0, 0), n_(DOOR_D, SGRID), n_(DY - y0, SGRID), 'front', lambda p, z0=z0, X1=X1: fuv(X1 + (z0 - p[2]), p[1]), (-1, 0, 0))
     box_quad((X0, DY, z0 - DOOR_D), (X1 - X0, 0, 0), (0, 0, DOOR_D), n_(X1 - X0, GRID), n_(DOOR_D, GRID), 'front', lambda p, DY=DY, z0=z0: fuv(p[0], DY - 0.02 - (z0 - p[2])), (0, -1, 0))
-    box_quad((X0, y0 + 0.001, z0), (X1 - X0, 0, 0), (0, 0, -DOOR_D), n_(X1 - X0, GRID), n_(DOOR_D, GRID), 'front', lambda p, y0=y0, z0=z0: fuv(p[0], y0 + 0.05 + (z0 - p[2])), (0, 1, 0))
+    # (v3.1) no separate door floor: tier 1 = bottom cap hole (ground shows), tiers 2/3 = the lower top face kept there (sealed)
+    if k == 0:
+        bx = ticks(-hw, hw, 0.8, (X0, X1)); bz = ticks(BACK, z0, 0.8, (z0 - DOOR_D,))
+        quadgrid(lambda u, v: (u, 0.0, v), bx, bz, 'top', lambda p: tuv(0, T[0]['z'] + CORN_OUT, p), (0, -1, 0),
+                 keep=lambda u, v, X0=X0, X1=X1, z0=z0: not (X0 < u < X1 and v > z0 - DOOR_D))
     # sides (+-X) from the side plate (right side = mirror of the left plate, declared)
     zs = ticks(BACK, z0, SGRID); ys2 = ticks(y0, y1, SGRID)
     quadgrid(lambda u, v: (-hw, v, u), zs, ys2, 'side', lambda p: suv(p[2], p[1]), (-1, 0, 0), relief=SREL if LOD < 2 else None)
@@ -119,8 +124,21 @@ for k, t in enumerate(T):
     box_quad((cw, c0, BACK), (-2 * cw, 0, 0), (0, c1 - c0, 0), n_(2 * cw, 0.8), n_(c1 - c0, 0.3), 'front', lambda p, hw=hw, cw=cw: fuv(-p[0] * hw / cw * 0.98, p[1]), (0, 0, -1))
     # cornice ends (+-X) and top (+Y, no top plate: front cornice band stretched, declared)
     for sgn in (-1, 1):
-        box_quad((sgn * cw, c0, BACK), (0, 0, cz - BACK), (0, c1 - c0, 0), n_(cz - BACK, SGRID), n_(c1 - c0, SGRID), 'side', lambda p: suv(p[2] - CORN_OUT, p[1]), (sgn, 0, 0))
-    box_quad((-cw, c1, cz), (2 * cw, 0, 0), (0, 0, BACK - cz), n_(2 * cw, 0.8), n_(cz - BACK, 0.8), 'top', lambda p, k=k, cz=cz: tuv(k, cz, p), (0, 1, 0))
+        uvE = lambda p: suv(p[2] - CORN_OUT, p[1])
+        box_quad((sgn * cw, c0, BACK), (0, 0, cz - R - BACK), (0, c1 - c0, 0), n_(cz - R - BACK, SGRID), n_(c1 - c0, SGRID), 'side', uvE, (sgn, 0, 0))
+        box_quad((sgn * cw, c0 + R, cz - R), (0, 0, R), (0, c1 - c0 - R, 0), 1, n_(c1 - c0 - R, SGRID), 'side', uvE, (sgn, 0, 0))
+        # quarter-disc end cap that follows the rounded lip (same 8 arc points as the lip strips)
+        ctr = addv((sgn * cw, c0 + R, cz - R), uvE((0, c0 + R, cz - R))); arc = []
+        for sg in range(9):
+            a_ = np.pi / 2 * sg / 8; p = (sgn * cw, c0 + R - R * np.cos(a_), cz - R + R * np.sin(a_)); arc.append(addv(p, uvE(p)))
+        for sg in range(8): F['side'].append((ctr, arc[sg], arc[sg + 1])); NRM['side'].append((sgn, 0, 0))
+    if k < 2:   # top face with a hole exactly under the next tier (minus its doorway notch, which stays as that door's floor)
+        tn = T[k + 1]; nx0, nx1, _ = DOORS[k + 1]; NX0, NX1 = (nx0 - FX0) * S, (nx1 - FX0) * S
+        tx = ticks(-cw, cw, 0.8, (-tn['hw'], tn['hw'], NX0, NX1)); tz = ticks(BACK, cz, 0.8, (tn['z'], tn['z'] - DOOR_D))
+        hole = lambda u, v, tn=tn, NX0=NX0, NX1=NX1: (-tn['hw'] < u < tn['hw'] and v < tn['z']) and not (NX0 < u < NX1 and v > tn['z'] - DOOR_D)
+        quadgrid(lambda u, v: (u, c1, v), tx, tz, 'top', lambda p, k=k, cz=cz: tuv(k, cz, p), (0, 1, 0), keep=lambda u, v, hole=hole: not hole(u, v))
+    else:
+        box_quad((-cw, c1, cz), (2 * cw, 0, 0), (0, 0, BACK - cz), n_(2 * cw, 0.8), n_(cz - BACK, 0.8), 'top', lambda p, k=k, cz=cz: tuv(k, cz, p), (0, 1, 0))
     # icicles (v3): one irregular cone under each white drip streak of the plate (front: plate-front under the lip;
     # left end: plate-side). Same cones (count, length, position) in every LOD; only radial segments drop 6 -> 4 -> 3.
     ns = 6; sc_c = hw / cw * 0.98   # 6 radial segments in every LOD: 6->4->3 failed the LOD outline gate (15 m: 725 px, blob 12)
@@ -143,29 +161,42 @@ for k, t in enumerate(T):
                 ring.append(addv(p, uvc(abs(((a_ + np.pi) % (2 * np.pi)) - np.pi) / np.pi, Lm * h, rr / r)))
             rings.append(ring)
         tip = addv((base[0] + tipdx, base[1] - Lm, base[2] + tipdz), uvc(0.5, Lm, 0.0))
+        cap = addv((base[0], base[1], base[2]), uvc(0.5, 0.0, 0.0))
         for q in range(ns):
             q1 = (q + 1) % ns; A, B = rings[0], rings[1]
-            F['front'].append((A[q], A[q1], B[q1])); F['front'].append((A[q], B[q1], B[q]))
-            F['front'].append((B[q], B[q1], tip))
+            for tri in ((A[q], A[q1], B[q1]), (A[q], B[q1], B[q]), (B[q], B[q1], tip)):
+                F['front'].append(tri); cpt = np.mean([V[i] for i in tri], 0); NRM['front'].append(('radial', base[0] + tipdx * 0.5, base[2] + tipdz * 0.5, cpt))
+            F['front'].append((A[q], A[q1], cap)); NRM['front'].append((0, 1, 0))   # sealed base cap (inside the lip)
     img = np.asarray(Image.open(f'{step}/plates/plate-front.jpg').convert('L'), np.float32)
     r0 = int(round(FY0 - c0 / S)); cl = int(FX0 - hw * 0.98 / S); ch = int(FX0 + hw * 0.98 / S)
     dr, brow = drips(img, r0, cl, ch); ytop = FY0 * S - brow * S   # plate row of the fringe baseline -> metres
     for px, L in dr:
         xp = (px - FX0) * S; x = xp / sc_c; Lm = float(np.clip(L * S, 0.3, 1.2)); r = float(np.clip(0.04 + 0.06 * Lm, 0.05, 0.11))
+        if k == 2 and L * S < 0.3: continue   # tier 3: no raised stubs (clearance over the tier-2 top)
+        if L * S > 1.2: continue   # a bright run longer than 1.2 m is snow/wall, not a drip: never clamp it into a cone
         cone((x, c0 + 0.02, cz - R * 0.5), Lm, r, lambda t, h, sc=1.0, xp=xp, r=r, ytop=ytop: fuv(xp + np.pi * r * sc * (t - 0.5), ytop - h), px * 7 + k)
-        ICI.append(dict(tier=k, side='front', x=round(x, 3), z=round(cz - R * 0.5, 3), lenM=round(Lm, 3), tipY=round(c0 + 0.02 - Lm, 3)))
+        ICI.append(dict(tier=k, side='front', rawLenM=round(L * S, 3), x=round(x, 3), z=round(cz - R * 0.5, 3), lenM=round(Lm, 3), tipY=round(c0 + 0.02 - Lm, 3)))
     # left cornice end (path side): drips from the side plate rows under this tier's cornice
     simg = np.asarray(Image.open(f'{step}/plates/plate-side.jpg').convert('L'), np.float32)
     b_, t_ = SIDEROWS[k]; srow = int(round(b_ + (t_ - b_) * (c0 - y0) / (c1 - y0)))
     dr2, _ = drips(simg, srow, int(SX0 + (BACK - CORN_OUT) / S) + 4, int(SX0) - 2)
     for px, L in dr2:
         z = (px - SX0) * S + CORN_OUT; Lm = float(np.clip(L * S, 0.3, 1.2)); r = float(np.clip(0.04 + 0.06 * Lm, 0.05, 0.11))
+        if k == 2 and L * S < 0.3: continue
+        if L * S > 1.2: continue
         if z > cz - 0.15 or z < BACK + 0.2: continue
         zp = z - CORN_OUT
         cone((-cw + 0.12, c0 + 0.02, z), Lm, r, lambda t, h, sc=1.0, zp=zp, r=r: suv(zp + np.pi * r * sc * (t - 0.5), c0 - h), px * 13 + k)
-        ICI.append(dict(tier=k, side='left', x=round(-cw + 0.12, 3), z=round(z, 3), lenM=round(Lm, 3), tipY=round(c0 + 0.02 - Lm, 3)))
+        ICI.append(dict(tier=k, side='left', rawLenM=round(L * S, 3), x=round(-cw + 0.12, 3), z=round(z, 3), lenM=round(Lm, 3), tipY=round(c0 + 0.02 - Lm, 3)))
 # ground skirt hidden 0.3 m below 0 (grounded: lowest visible y = 0)
 V = np.array(V); UVs = np.array(UVs)
+flipped = 0
+for m in F:
+    for i, (a_, b_, c_) in enumerate(F[m]):
+        d = NRM[m][i]
+        if d[0] == 'radial': d = (d[3][0] - d[1], 0.0, d[3][2] - d[2])
+        n = np.cross(V[b_] - V[a_], V[c_] - V[a_])
+        if np.dot(n, d) < 0: F[m][i] = (a_, c_, b_); flipped += 1
 o = f'{step}/work/terrace-lod{LOD}'
 with open(o + '.obj', 'w') as f:
     f.write(f'mtllib terrace-lod{LOD}.mtl\n')
@@ -189,6 +220,6 @@ for m in ('front', 'side', 'top'):
         except np.linalg.LinAlgError: st.append(1e9); dens.append(1e9)
 np.save(f'{step}/work/terrace-lod{LOD}-stretch.npy', np.array(st, np.float32)); np.save(f'{step}/work/terrace-lod{LOD}-density.npy', np.array(dens, np.float32))
 json.dump(ICI, open(o + '-icicles.json', 'w'))
-json.dump(dict(lod=LOD, tris=ntri, icicles=len(ICI), verts=len(V), aabb=[V.min(0).tolist(), V.max(0).tolist()], doorDepthM=DOOR_D, corniceOutM=CORN_OUT,
+json.dump(dict(lod=LOD, tris=ntri, flippedForWinding=flipped, icicles=len(ICI), verts=len(V), aabb=[V.min(0).tolist(), V.max(0).tolist()], doorDepthM=DOOR_D, corniceOutM=CORN_OUT,
                mPerPx=S, tiers=T, back=BACK), open(o + '.json', 'w'), indent=1)
 print(o, ntri, V.min(0).round(2), V.max(0).round(2))
