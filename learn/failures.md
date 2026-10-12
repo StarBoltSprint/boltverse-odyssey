@@ -1075,3 +1075,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Keep the closer of the two arch files (the through-ring wall) and the second wall file. Stop. Do not cook a third time. Mirror-pad the 1008-wide files by 8 px each side so the Imagine pixels are not resampled. Next cook: trim every crop to an exact square before the call. |
 | Guard | `python3 steps/zone-c/04-plates/check-plates.py` (min side 1024). `steps/zone-c/04-plates/numbers.json` records native 1008×1024 on plates 5, 7, 9, and 10, and `imagine_calls` 13. |
 | Sources | `steps/zone-c/04-plates/REPORT.md`, `steps/zone-c/04-plates/crops.json`. |
+
+### 2026-10-12 — a stone-band edit keeps the arch curve as a shadow
+
+| | |
+| --- | --- |
+| Take | zc/04-plates redo of plates #6 and #8 |
+| Defect | The first redo of the right-arch plate, from a tight square of the carved stone, filled the frame with stone and moss and still drew the arch curve as a dark arc. |
+| Root cause | The crop still contained the curve of the ring. The edit copied that curve onto the flat wall. |
+| Fix | A second edit of that result turned the arc into a level joint. That file is plate 6. Plate 8 used the validated left wall plus a sky-free right-cliff crop and stayed face-on on the first call. |
+| Guard | No row detects an arch curve. `python3 steps/zone-c/04-plates/check-plates.py` checks size, variance, and the sheet. The curve is a visual miss. |
+| Sources | `steps/zone-c/04-plates/REPORT.md` redo section, `steps/zone-c/04-plates/crops/crop-arch-right-band.jpg`, commit `e1043bb4`. |

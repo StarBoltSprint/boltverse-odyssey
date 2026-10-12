@@ -1,6 +1,6 @@
 # cutout — Zone C face plates #5–#15
 
-Status: kit-gate passed 2026-10-12. Owner validation of `sheet-plates.jpg` is still open. Do not build 3D from these files until SmiR keeps the sheet.
+Status: kit-gate passed 2026-10-12. SmiR kept nine of these plates on 2026-10-12 06:38. Plates #6 and #8 were redone after that (`e1043bb4`, [`zone-c-face-plates-redo.md`](zone-c-face-plates-redo.md)). Do not build 3D from these files.
 
 | Field | Value |
 | --- | --- |
