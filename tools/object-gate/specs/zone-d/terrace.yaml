@@ -4,7 +4,7 @@ select: {names: "^zd-terrace-lod[0-2]$"}
 keyCrop: /workspace/grokcli/wt/zd-terrace-1012/steps/zone-d/01-terrace/plates/key-b-crop.png
 textures:
   - {match: "assets/plate-front\\.jpg", role: plate}
-  - {match: "assets/t1-right\\.jpg", role: plate}
+  - {match: "assets/t1-right(-v33)?\\.jpg", role: plate}
   - {match: "assets/plate-side\\.jpg", role: plate}
   - {match: "assets/top\\.jpg", role: plate}
 checklist:

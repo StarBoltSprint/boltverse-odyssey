@@ -1,0 +1,24 @@
+00:00.076  system.path      | WARNING Could not get a list of mounted file-systems
+/workspace/grokcli/wt/zd-terrace-1012/tools/object-gate/py/render_views.py:19: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  if not m or not m.use_nodes: continue
+/workspace/grokcli/wt/zd-terrace-1012/tools/object-gate/py/render_views.py:41: DeprecationWarning: 'World.use_nodes' is expected to be removed in Blender 6.0
+  w = bpy.data.worlds.new('w'); sc.world = w; w.use_nodes = True
+00:05.936  render           | Saved: 'renders/tr/phone.png'
+00:13.109  render           | Saved: 'renders/tr/oblique45.png'
+00:16.989  render           | Saved: 'renders/tr/grazing.png'
+00:25.591  render           | Saved: 'renders/tr/close8m.png'
+00:36.733  render           | Saved: 'renders/tr/close3m.png'
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:12:34)
+OBJ import of 'terrace-lod0.obj' took 34.11 ms
+
+Blender quit
+00:00.083  system.path      | WARNING Could not get a list of mounted file-systems
+/workspace/grokcli/wt/zd-terrace-1012/tools/object-gate/py/render_views.py:19: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  if not m or not m.use_nodes: continue
+/workspace/grokcli/wt/zd-terrace-1012/tools/object-gate/py/render_views.py:41: DeprecationWarning: 'World.use_nodes' is expected to be removed in Blender 6.0
+  w = bpy.data.worlds.new('w'); sc.world = w; w.use_nodes = True
+00:08.739  render           | Saved: 'work/upview/tr/close3m-up.png'
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:12:34)
+OBJ import of 'terrace-lod0.obj' took 32.86 ms
+
+Blender quit

@@ -1,7 +1,7 @@
 newmtl front
 map_Kd ../plates/plate-front.jpg
 newmtl front2
-map_Kd ../plates/v32/t1-right.jpg
+map_Kd ../plates/v32/t1-right-v33.jpg
 newmtl side
 map_Kd ../plates/plate-side.jpg
 newmtl top

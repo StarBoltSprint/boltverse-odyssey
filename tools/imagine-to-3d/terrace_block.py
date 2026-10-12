@@ -50,7 +50,10 @@ SIDE_K = []
 def tuv(k, cz, p):
     r0, r1 = TOPROWS[k]; zend = T[k + 1]['z'] if k < 2 else BACK
     row = r0 + (cz - p[2]) / (cz - zend) * (r1 - r0)
-    return ((TX0 + p[0] / TS) / 1024, 1 - row / 1024)
+    # v3.3: isotropic planar projection: the top plate is oblique (rows foreshortened), so x uses the SAME px/m as this
+    # tier's row band (was 1/TS across = 2.4-4.7x stretch); centre band of real top-plate pixels, nothing invented
+    spm = abs(r1 - r0) / abs(cz - zend)
+    return ((TX0 + p[0] * spm) / 1024, 1 - row / 1024)
 def under_x(x, X0, X1, m=0.25):
     # door columns carry the door's black top, not basalt: read the adjacent basalt instead (pure translation, no stretch)
     return (X1 + m + 4.5) - (x - (X0 - m)) if X0 - m < x < X1 + m else x   # flipped real basalt 4.5 m further along the same rows
@@ -179,22 +182,24 @@ for k, t in enumerate(T):
                 ring.append(addv(p, uvc(abs(((a_ + np.pi) % (2 * np.pi)) - np.pi) / np.pi, Lm * h, rr / r)))
             rings.append(ring)
         tip = addv((base[0] + tipdx, base[1] - Lm, base[2] + tipdz), uvc(0.5, Lm, 0.0))
-        cap = addv((base[0], base[1], base[2]), uvc(0.5, 0.0, 0.0))
+        cap = addv((base[0], base[1], base[2]), uvc(0.5, r, 1.0))
+        # v3.3: cap ring = same positions, isotropic disc UVs (was a degenerate line = infinite stretch on the hidden +y caps)
+        capring = [addv(tuple(V[A_]), uvc(0.5 + np.cos(2 * np.pi * q / ns) / np.pi, r * (1 + np.sin(2 * np.pi * q / ns)), 1.0)) for q, A_ in enumerate(rings[0])]
         for q in range(ns):
             q1 = (q + 1) % ns; A, B = rings[0], rings[1]
             for tri in ((A[q], A[q1], B[q1]), (A[q], B[q1], B[q]), (B[q], B[q1], tip)):
                 F[mat].append(tri); cpt = np.mean([V[i] for i in tri], 0); NRM[mat].append(('radial', base[0] + tipdx * 0.5, base[2] + tipdz * 0.5, cpt))
-            F[mat].append((A[q], A[q1], cap)); NRM[mat].append((0, 1, 0))   # sealed base cap (inside the lip)
+            F[mat].append((capring[q], capring[q1], cap)); NRM[mat].append((0, 1, 0))   # sealed base cap (inside the lip)
     img = np.asarray(Image.open(f'{step}/plates/plate-front.jpg').convert('L'), np.float32)
     r0 = int(round(FY0 - c0 / S)); cl = int(FX0 - hw * 0.98 / S); ch = int(FX0 + hw * 0.98 / S)
     dr, brow = drips(img, r0, cl, ch); ytop = FY0 * S - brow * S   # plate row of the fringe baseline -> metres
     if k == 0:   # v3.2: drips inside the close plate's span come from its own pixels (98 px/m: real lengths, fewer raised stubs)
-        img2 = np.asarray(Image.open(f'{step}/plates/v32/t1-right.jpg').convert('L'), np.float32)
+        img2 = np.asarray(Image.open(f'{step}/plates/v32/t1-right.jpg').convert('L'), np.float32)   # drips on the ORIGINAL pixels (the v3.3 grade only changes colour)
         r2 = 220; dr2_, _b2 = drips(img2, r2, 2, 1022, win=200, thr=100)   # this plate's own snow-body row and (darker) snow level
         ytop2 = (G2 - _b2) / K2   # cone UVs start at the plate's own fringe baseline
         for px, L in dr2_:
             xm = XC2 + (px - C2) / K2; x = xm / sc_c; Lr = L / K2
-            if Lr > 1.2 or Lr < 0.2 or not (X2A + 0.1 < xm < X2B - 0.1): continue   # < 0.2 m = fringe texture, not raised into a cone
+            if Lr > 1.6 or Lr < 0.2 or not (X2A + 0.1 < xm < X2B - 0.1): continue   # < 0.2 m = fringe texture, not raised into a cone
             Lm = float(max(Lr, 0.3)); r = float(np.clip(0.04 + 0.06 * Lm, 0.05, 0.11))
             cone((x, c0 + 0.02, cz - R * 0.5), Lm, r, lambda t, h, sc=1.0, xm=xm, r=r: f2uv(xm + np.pi * r * sc * (t - 0.5), ytop2 - h), px * 11 + 5, 'front2')
             ICI.append(dict(tier=k, side='front', plate='t1-right', rawLenM=round(Lr, 3), x=round(x, 3), z=round(cz - R * 0.5, 3), lenM=round(Lm, 3), tipY=round(c0 + 0.02 - Lm, 3)))
@@ -236,7 +241,7 @@ with open(o + '.obj', 'w') as f:
         f.write(f'usemtl {m}\n')
         for a, b, c in F[m]: f.write(f'f {a+1}/{a+1} {b+1}/{b+1} {c+1}/{c+1}\n')
 with open(o + '.mtl', 'w') as f:
-    f.write('newmtl front\nmap_Kd ../plates/plate-front.jpg\nnewmtl front2\nmap_Kd ../plates/v32/t1-right.jpg\nnewmtl side\nmap_Kd ../plates/plate-side.jpg\nnewmtl top\nmap_Kd ../plates/top.jpg\n')
+    f.write('newmtl front\nmap_Kd ../plates/plate-front.jpg\nnewmtl front2\nmap_Kd ../plates/v32/t1-right-v33.jpg\nnewmtl side\nmap_Kd ../plates/plate-side.jpg\nnewmtl top\nmap_Kd ../plates/top.jpg\n')
 ntri = sum(len(v) for v in F.values())
 # per-triangle texel stretch (OBJ face order): metres per nominal plate px along both principal axes
 st = []

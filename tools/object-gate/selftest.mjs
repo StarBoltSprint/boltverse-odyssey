@@ -131,5 +131,23 @@ ok(toMarkdown({ ...fake, url: "u", adapter: "a", startedAt: "t", objects: fake.o
   ok(silhouetteRect(new Uint8Array(w * h * 4), w, h, 0.06) === null, "framing: empty mask -> no fit (row still fails on cover)");
   ok(silhouetteRect(new Uint8Array(w * h * 4).fill(255), w, h, 0.06) === null, "framing: full-frame mask -> no zoom");
 }
+{ // v3.3 mode-B target (PROVISIONAL until the Art Director's ?at=8 phone-frame check matches the key crop): the gate's
+  // 154.6 px/m = phone 2400 px / DPR 2.625 x render ratio 1.5 (mode-B internal) / (2 x 8 m x tan(58/2)). The game's own camera
+  // (corridor-ab play.js HFOV 22.7 deg at 720x1600 -> vfov 48.1) needs MORE: never lowered. Softened plate must FAIL.
+  const { screenPxPerM } = await import("./lib/visible.mjs");
+  const t = { phone: { w: 1080, h: 2400, devicePixelRatio: 2.625 } };
+  const need58 = screenPxPerM(t, { renderPixelRatio: 1.5, fovDeg: 58 }, 8), vfovGame = 2 * Math.atan(Math.tan((22.7 * Math.PI) / 360) / (720 / 1600)) * 180 / Math.PI;
+  const needGame = screenPxPerM(t, { renderPixelRatio: 1.5, fovDeg: vfovGame }, 8);
+  ok(Math.abs(need58 - 154.6) < 0.1 && needGame > need58, `mode-B target: ${need58.toFixed(1)} px/m at fov 58 (gate), ${needGame.toFixed(1)} px/m at the game vfov ${vfovGame.toFixed(1)} (provisional, not lowered)`);
+  const d = mkdtempSync(join(tmpdir(), "og-soft-"));
+  execFileSync("python3", ["-c", `
+import numpy as np; from PIL import Image
+rng=np.random.default_rng(3); a=(rng.random((576,384))*255).astype(np.uint8); Image.fromarray(a).convert('RGB').save('${d}/sharp.png')
+s=Image.fromarray(a).resize((128,192),Image.BILINEAR).resize((384,576),Image.BICUBIC); s.convert('RGB').save('${d}/soft.png')
+Image.fromarray(np.full((576,384),255,np.uint8)).save('${d}/m.png')`]);
+  const vis = (f) => JSON.parse(execFileSync("python3", [join(HERE, "lib/analyze.py"), "visible_px", JSON.stringify({ img: join(d, f), mask: join(d, "m.png"), screenPxPerM: 2 * need58 })], { encoding: "utf8" }));
+  const sharp = vis("sharp.png"), soft = vis("soft.png");
+  ok(sharp.visiblePxPerM >= need58 && soft.visiblePxPerM < need58, `mode-B target: sharp plate ${sharp.visiblePxPerM} px/m PASS, softened (down x3, re-up) ${soft.visiblePxPerM} px/m FAIL vs ${need58.toFixed(1)}`);
+}
 console.log(fails ? `FAIL ${fails}` : "PASS selftest");
 process.exit(fails ? 1 : 0);
