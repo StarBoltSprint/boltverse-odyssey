@@ -1,0 +1,2 @@
+{"task": "sam", "which": "small", "box": [320.0, 46.0, 613.0, 502.0], "shape": [720, 1280], "cache_hit": false, "model_seconds": 3.3406, "wall_seconds": 3.3412, "finite": 63403}
+
