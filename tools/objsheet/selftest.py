@@ -588,7 +588,24 @@ def _library_intake(shot_sheet: str) -> dict:
         },
         "scale": {"min": 0.85, "max": 1.2, "default": 1.0},
         "collider": {"type": "circle", "radius_m": 0.7366173380262299},
-        "lod": {"billboardViews": [f"yaw-{yaw:03d}.png" for yaw in range(0, 360, 45)]},
+        "lod": {
+            "billboardViews": [f"yaw-{yaw:03d}.png" for yaw in range(0, 360, 45)],
+            "chain": {
+                "lod0": {"triangles": 1200},
+                "lod1": {"triangles": 400},
+                "lod2": {"triangles": 80},
+                "outlineDiffPx": {"15": 0, "40": 0},
+            },
+        },
+        "art_director": "KEEP",
+        "run": {"tool": "object-gate", "verdict": "PASS"},
+        "collision": {
+            "boxes": [{"min": [0, 0, 0], "max": [1, 2, 1], "space": "local"}],
+            "ground_anchor": [0, 0, 0],
+            "min_clearance_m": 0.5,
+        },
+        "camera_layer": "approach",
+        "textures": [{"nativePx": 1024, "mipmaps": True}],
         "shotSheet": shot_sheet,
     }
 

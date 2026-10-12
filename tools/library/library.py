@@ -161,8 +161,8 @@ def _build_walkaround_manifest(intake: dict, base: Path) -> dict:
     from tools.library.resolve import _check_id
 
     _check_id(object_id)
-    recorded = require_intake(intake, base)
     _refuse_pending_shot(intake, base)
+    recorded = require_intake(intake, base)
     reports_in = intake["reports"]
     judged = {}
     for kind in ("assetcheck", "objsheet", "walkaround"):
