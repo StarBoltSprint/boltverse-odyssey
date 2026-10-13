@@ -67,6 +67,16 @@ def star_check(base, mip1, mag, region, max_px=2.0, min_ratio=0.85, phase=0.25):
                 bg_median_base=round(bg, 4), bg_median_screen=round(sbg, 4),
                 limits=dict(median_peak_ratio_min=min_ratio, median_size_px_max=max_px)), scr
 
+def compare(base, mip1, mag, region, ref=None, min_rel=0.97, max_px=2.0, max_bg_drift=0.01):
+    """Director rule (2026-10-13): measure against the no-mip render, not the base plate."""
+    if ref is None: ref = star_check(base, None, mag, region)[0]
+    r, scr = star_check(base, mip1, mag, region)
+    rel = r['median_peak_ratio'] / ref['median_peak_ratio']; drift = abs(r['bg_mean_screen'] - ref['bg_mean_screen'])
+    ok = rel >= min_rel and r['median_size_px'] <= max_px and drift <= max_bg_drift
+    r.update(verdict="PASS" if ok else "FAIL", peak_vs_nomip=round(rel, 4), bg_drift_vs_nomip=round(drift, 4),
+             limits=dict(peak_vs_nomip_min=min_rel, median_size_px_max=max_px, bg_drift_max=max_bg_drift))
+    return r, scr
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument('--plate', default='/workspace/zd-bible-1012/zd-plates/sky12/zd-sky12-S00-final5.jpg')
@@ -77,14 +87,15 @@ def main(argv=None):
     base = np.asarray(Image.open(a.plate).convert('RGB'), np.float32) / 255
     reg = tuple(int(v) for v in a.region.split(','))
     rep = dict(gate="sky-star-mip1", plate=a.plate, region_texels=reg, methods={})
-    for name, mip in (("base-only", None), ("box", mip1_box(base)), ("star-preserving", mip1_star(base))):
-        r, scr = star_check(base, mip, a.mag, reg); rep['methods'][name] = r
-        if mip is not None:
+    ref = star_check(base, None, a.mag, reg)[0]; ref['verdict'] = 'REFERENCE'; rep['methods']['no-mip'] = ref
+    for name, mip in (("box", mip1_box(base)), ("star-preserving", mip1_star(base))):
+        r, scr = compare(base, mip, a.mag, reg, ref); rep['methods'][name] = r
+        if True:
             p = f"{a.out}/S00-0736x-{name}.jpg"
             Image.fromarray((np.clip(scr, 0, 1) * 255).astype(np.uint8)).save(p, quality=88); r['crop'] = p
     json.dump(rep, open(f"{a.out}/zd-sky-star-mip1.json", 'w'), indent=1)
     for k, v in rep['methods'].items():
-        print(k, v['verdict'], 'peak', v['median_peak_ratio'], 'size', v['median_size_px'], 'bg', v['bg_mean_screen'], 'n', v['n_stars'])
+        print(k, v['verdict'], 'vs-nomip', v.get('peak_vs_nomip'), 'drift', v.get('bg_drift_vs_nomip'), 'peak', v['median_peak_ratio'], 'size', v['median_size_px'], 'bg', v['bg_mean_screen'], 'n', v['n_stars'])
     return 0 if rep['methods']['star-preserving']['verdict'] == 'PASS' else 1
 
 if __name__ == '__main__': sys.exit(main())

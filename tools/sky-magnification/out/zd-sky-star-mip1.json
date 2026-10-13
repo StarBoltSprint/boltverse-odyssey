@@ -8,8 +8,8 @@
   715
  ],
  "methods": {
-  "base-only": {
-   "verdict": "FAIL",
+  "no-mip": {
+   "verdict": "REFERENCE",
    "mag": 0.7359,
    "lod": 0.4424,
    "lod_frac": 0.4424,
@@ -42,13 +42,16 @@
    "bg_median_base": 0.2478,
    "bg_median_screen": 0.2527,
    "limits": {
-    "median_peak_ratio_min": 0.85,
-    "median_size_px_max": 2.0
+    "peak_vs_nomip_min": 0.97,
+    "median_size_px_max": 2.0,
+    "bg_drift_max": 0.01
    },
+   "peak_vs_nomip": 0.7866,
+   "bg_drift_vs_nomip": 0.0001,
    "crop": "out/S00-0736x-box.jpg"
   },
   "star-preserving": {
-   "verdict": "FAIL",
+   "verdict": "PASS",
    "mag": 0.7359,
    "lod": 0.4424,
    "lod_frac": 0.4424,
@@ -62,9 +65,12 @@
    "bg_median_base": 0.2478,
    "bg_median_screen": 0.2533,
    "limits": {
-    "median_peak_ratio_min": 0.85,
-    "median_size_px_max": 2.0
+    "peak_vs_nomip_min": 0.97,
+    "median_size_px_max": 2.0,
+    "bg_drift_max": 0.01
    },
+   "peak_vs_nomip": 1.0014,
+   "bg_drift_vs_nomip": 0.0019,
    "crop": "out/S00-0736x-star-preserving.jpg"
   }
  }
