@@ -309,14 +309,13 @@ def step_depthmeasure(b, ctx):
         for m in over:
             Vm = m["V"]
             pts = []
+            zlo, zhi = Vm[:, 2].min(), Vm[:, 2].max()
+            # probe 0.3 m behind the supports' front face (the visible seat line), inside the overhang's depth
+            zw = float(np.clip(zfront - 0.3, zlo + 0.05, zhi - 0.05))
             for x in np.arange(Vm[:, 0].min() + 0.25, Vm[:, 0].max() - 0.2, 0.5):   # one probe per 0.5 m of run
-                sel = Vm[np.abs(Vm[:, 0] - x) < 0.25]
-                if len(sel) < 4:
-                    continue
-                # probe 0.3 m behind the supports' front face (the visible seat line), inside the overhang's depth
-                zw = float(np.clip(zfront - 0.3, sel[:, 2].min() + 0.05, sel[:, 2].max() - 0.05))
-                ss = sel[sel[:, 2] <= zw + 0.15]
-                pts.append([x, ss[:, 1].min() - 0.03, zw])
+                hy = _vhits([[x, 0.0, zw]], Vm, m["F"])[0]                  # the overhang's own underside here
+                if len(hy):
+                    pts.append([x, float(hy.min()) - 0.03, zw])
             pts = np.array(pts)
             gap = _support_gap(pts, others) if len(pts) else np.zeros(0)
             n += len(pts); n_float += int((gap > 0.02).sum())
