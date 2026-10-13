@@ -1,0 +1,143 @@
+{
+  "schema": "ticket.v1",
+  "object_id": "zd-terrace",
+  "plates": [
+    {
+      "id": "plate-front-v34",
+      "path": "plates/v34/plate-front-v34.jpg",
+      "ad_precheck": "KEEP",
+      "notes": "v3.4 front; v3.5 builds on its inpainted copy plates/v35/plate-front-v35.jpg"
+    },
+    {
+      "id": "plate-side-v34",
+      "path": "plates/v34/plate-side-v34.jpg",
+      "ad_precheck": "KEEP",
+      "notes": "v3.4 side; v3.5 inpainted copy plates/v35/plate-side-v35.jpg"
+    },
+    {
+      "id": "t1-right-v34",
+      "path": "plates/v34/t1-right-v34.jpg",
+      "ad_precheck": "KEEP",
+      "notes": "v3.4 centre-door detail; v3.5 inpainted copy plates/v35/t1-right-v35.jpg"
+    },
+    {
+      "id": "top",
+      "path": "plates/top.jpg",
+      "ad_precheck": "KEEP",
+      "notes": "tops only (oblique from above, not true top-down). Excluded: plate-front.jpg, plate-side.jpg, v32/t1-right.jpg, v32/t1-centre.jpg, v32/t1-left.jpg, side.jpg, key-b-crop.png (style ref)."
+    }
+  ],
+  "placement": {
+    "path": [
+      "zone-d/spine/beat-3-terrace-climb",
+      "approach-8m",
+      "approach-3m"
+    ],
+    "min_clearances": {
+      "headroom_m": 2.2,
+      "width_m": 2.0
+    },
+    "ground_m": 0,
+    "colliders": [
+      "terrace-hull-player",
+      "door-back-flush-plane",
+      "tier-path-switchback"
+    ],
+    "budget": {
+      "lod0_tri_cap": 90000,
+      "texture_mb_share": 48
+    }
+  },
+  "build": {
+    "commit": "dd80963fca060d9bc352469d46228f2ef30ef357"
+  },
+  "gates": {
+    "status": "pass",
+    "commit": "dd80963fca060d9bc352469d46228f2ef30ef357",
+    "object_gate": {
+      "report": "object-gate-v3.5/report.json",
+      "summary": "REPORT-v35.md",
+      "raw_verdict": "FAIL (2 rows)",
+      "waivers": [
+        {
+          "row": "visible px/m at 8 m",
+          "value": 153.7,
+          "threshold": 154.6,
+          "by": "Art Director",
+          "when": "2026-10-13T09:33:00+02:00",
+          "note": "0.6% shortfall, invisible; accepted, no rebake"
+        }
+      ],
+      "open": [
+        {
+          "row": "key checklist",
+          "note": "records/terrace.verified.yaml not filled; Art Director KEEP 09:33 judged against the key image"
+        }
+      ],
+      "head_note": "HEAD c18e5f80 is past build dd80963f by two report-only commits (b1075fb2 renders/gates/REPORT-v35, c18e5f80 evidence name/quota/take note); no mesh change. Validated with --commit dd80963f."
+    },
+    "clearance": {
+      "measured": {
+        "headroom_m": 2.643,
+        "width_m": 2.987,
+        "ground_m": 0
+      }
+    },
+    "budget_check": {
+      "lod0_tris": 78160,
+      "texture_mb": 5.66
+    }
+  },
+  "play": {
+    "status": "FAIL",
+    "commit": "dd80963fca060d9bc352469d46228f2ef30ef357",
+    "timecodes": [
+      {
+        "t": "0:00-0:30",
+        "note": "black screen while loading (download-bound, 12.4 MB sequential)"
+      },
+      {
+        "t": "3:00",
+        "note": "door 3 m: flat near-black rectangle on ground in front of door (AD FAIL)"
+      },
+      {
+        "t": "3:00",
+        "note": "wall ends: see-through pale blue slabs with hard vertical edges (AD FAIL)"
+      },
+      {
+        "t": "3:30",
+        "note": "3 m up view: cornice and icicles OK, no camera clip"
+      }
+    ],
+    "notes": "Box run, 20 fps, 1024x594, old 58deg camera; static views at 30/19.7/8/3 m: textured, no float, no grey, no icicle ghost streaks, no invisible walls seen. Not tested: movement LOD pops 15/40 m, corners, climb, sprint, 90deg turn. Screenshot: /workspace/playtest-terrace-v35/door-3m.png"
+  },
+  "shots": {
+    "status": "FAIL",
+    "commit": "dd80963fca060d9bc352469d46228f2ef30ef357",
+    "sheet_paths": [
+      "object-gate-v3.5/reviews/far19.7.jpg",
+      "object-gate-v3.5/reviews/close8m.jpg",
+      "object-gate-v3.5/reviews/close3m-up.jpg",
+      "object-gate-v3.5/reviews/oblique45.jpg",
+      "object-gate-v3.5/reviews/grazing.jpg",
+      "object-gate-v3.5/phone/8m.jpg",
+      "object-gate-v3.5/phone/3m-up.jpg",
+      "object-gate-v3.5/phone/30m.jpg"
+    ],
+    "ad_verdict": "KEEP",
+    "notes": "Art Director KEEP of 09:33 withdrawn: it was given on offline renders and withdrawn after SmiR's 10:35 rejection."
+  },
+  "phone": {
+    "status": "fail",
+    "commit": "dd80963fca060d9bc352469d46228f2ef30ef357",
+    "perf_report": {
+      "device": "SmiR S20 FE",
+      "fps": 59,
+      "verdict": "FAIL",
+      "when": "2026-10-13 ~10:00 Europe/Paris",
+      "source": "Director relay",
+      "note": "old 58deg page camera, no sky dome; rerun on spine-camera build | 2026-10-13 10:35 SmiR rejected on phone: facades with no depth (relief only pasted, blurry), untextured dark blue walls, blurry pasted snow, magenta patch in the sky. 59 fps stays as the perf figure."
+    }
+  },
+  "go": "pending"
+}

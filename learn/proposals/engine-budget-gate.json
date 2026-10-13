@@ -1,0 +1,21 @@
+{
+  "id": "engine-budget-gate",
+  "owner": "Bolt Engine Core",
+  "status": "proposal",
+  "stage": "oneshot: after mesh, before layout",
+  "inputs": ["zone perfbudget json (e.g. zd-bible-1012/zone-d-perfbudget.v1.json)", "object GLBs LOD0/1/2", "spine.json"],
+  "checks": {
+    "lod_generate": "LOD1 from 15 m (~7k tris for pillar class), LOD2 from 40 m (~2.5k); normal bake from final LOD0 only",
+    "lod_silhouette": "render each switch pose at 412x915 spine camera; outline pixel diff must be 0 px",
+    "object_lod0": "each object LOD0 <= objectBudgetsLOD0[id]",
+    "frame_triangles": "walk spine every 5 m: visible tris <= 600k typical, <= 850k peak (peak only in declared segments); ground <= groundMax 150k",
+    "draw_calls": "<= 150 typical, <= 200 peak",
+    "texture_memory": "<= 384 MB total; textures at native Imagine res, mipmaps + aniso; sky KTX2 ASTC 4x4 with star-keeping mip1",
+    "uv_stretch": "<= 1.3",
+    "packing": "meshopt (gltfpack, MIT), texcoord >= 14 bits, tri count unchanged, render diff ~0 at 3 m/8 m",
+    "load": "LOD2-first, parallel fetch; log time-to-first-playable-frame",
+    "bench": "play build with &bench=1 writes BENCH json line next to the timer; real fps only from SmiR's S20 FE"
+  },
+  "must_fail_fixtures": ["pillar v1 (LOD1/LOD2 copies of LOD0)", "terrace at 79.7k vs 80k old budget is a pass at 90k, fail at 80k", "box-filter sky mip1"],
+  "not_implemented_reports": "not implemented, never pass"
+}

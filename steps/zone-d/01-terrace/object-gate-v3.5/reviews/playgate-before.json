@@ -1,0 +1,379 @@
+{
+ "gate": "play-build",
+ "url": "http://127.0.0.1:8935",
+ "scene": {
+  "errors": [
+   "LOD0 material 'front': GLB doubleSided but page side=0 (back faces culled -> see-through)",
+   "LOD0 material 'front2': GLB doubleSided but page side=0 (back faces culled -> see-through)",
+   "LOD0 material 'icefront': GLB doubleSided but page side=0 (back faces culled -> see-through)",
+   "LOD0 material 'icefront2': GLB doubleSided but page side=0 (back faces culled -> see-through)",
+   "LOD0 material 'iceside': GLB doubleSided but page side=0 (back faces culled -> see-through)",
+   "LOD0 material 'side': GLB doubleSided but page side=0 (back faces culled -> see-through)",
+   "LOD0 material 'top': GLB doubleSided but page side=0 (back faces culled -> see-through)",
+   "LOD1 material 'front': GLB doubleSided but page side=0 (back faces culled -> see-through)",
+   "LOD1 material 'front2': GLB doubleSided but page side=0 (back faces culled -> see-through)",
+   "LOD1 material 'icefront': GLB doubleSided but page side=0 (back faces culled -> see-through)",
+   "LOD1 material 'icefront2': GLB doubleSided but page side=0 (back faces culled -> see-through)",
+   "LOD1 material 'iceside': GLB doubleSided but page side=0 (back faces culled -> see-through)",
+   "LOD1 material 'side': GLB doubleSided but page side=0 (back faces culled -> see-through)",
+   "LOD1 material 'top': GLB doubleSided but page side=0 (back faces culled -> see-through)",
+   "LOD2 material 'front': GLB doubleSided but page side=0 (back faces culled -> see-through)",
+   "LOD2 material 'front2': GLB doubleSided but page side=0 (back faces culled -> see-through)",
+   "LOD2 material 'icefront': GLB doubleSided but page side=0 (back faces culled -> see-through)",
+   "LOD2 material 'icefront2': GLB doubleSided but page side=0 (back faces culled -> see-through)",
+   "LOD2 material 'iceside': GLB doubleSided but page side=0 (back faces culled -> see-through)",
+   "LOD2 material 'side': GLB doubleSided but page side=0 (back faces culled -> see-through)",
+   "LOD2 material 'top': GLB doubleSided but page side=0 (back faces culled -> see-through)",
+   "ground node 'ground' uses object plate top.jpg (pictures the object: doorway shadows land on the ground)"
+  ],
+  "pass": false
+ },
+ "nogrey": {
+  "door-3m": {
+   "pass": true,
+   "worst": 0.0,
+   "flat": 0.012
+  },
+  "threshold-3m-30d": {
+   "pass": true,
+   "worst": 0.0,
+   "flat": 0.0
+  },
+  "threshold-8m-30d": {
+   "pass": true,
+   "worst": 0.0,
+   "flat": 0.0
+  },
+  "wall-end-left": {
+   "pass": true,
+   "worst": 0.0,
+   "flat": 0.0108
+  },
+  "wall-end-right": {
+   "pass": true,
+   "worst": 0.0,
+   "flat": 0.0
+  }
+ },
+ "camera": {
+  "page": {
+   "fov_deg": 58,
+   "boom_m": 6,
+   "height_m": 1.35,
+   "pitch_deg": -3.648
+  },
+  "spine": {
+   "fov_deg": 48,
+   "boom_m": 4.5,
+   "height_m": 2.6,
+   "pitch_deg": -8
+  },
+  "tolerance": {
+   "fov_deg": 1.0,
+   "boom_m": 0.25,
+   "height_m": 0.25,
+   "pitch_deg": 1.0
+  },
+  "diffs": {
+   "fov_deg": {
+    "page": 58,
+    "spine": 48
+   },
+   "boom_m": {
+    "page": 6,
+    "spine": 4.5
+   },
+   "height_m": {
+    "page": 1.35,
+    "spine": 2.6
+   },
+   "pitch_deg": {
+    "page": -3.648,
+    "spine": -8
+   }
+  },
+  "pass": false
+ },
+ "renders": {
+  "door-3m": "/tmp/pg-before/door-3m.png",
+  "threshold-3m-30d": "/tmp/pg-before/threshold-3m-30d.png",
+  "threshold-8m-30d": "/tmp/pg-before/threshold-8m-30d.png",
+  "wall-end-left": "/tmp/pg-before/wall-end-left.png",
+  "wall-end-right": "/tmp/pg-before/wall-end-right.png"
+ },
+ "inventory": [
+  {
+   "name": "ground",
+   "type": "PlaneGeometry",
+   "lodLevel": null,
+   "visible": true,
+   "materials": [
+    {
+     "name": "",
+     "type": "MeshStandardMaterial",
+     "side": 0,
+     "transparent": false,
+     "opacity": 1,
+     "map": "top.jpg"
+    }
+   ]
+  },
+  {
+   "name": "",
+   "type": "BufferGeometry",
+   "lodLevel": 0,
+   "visible": true,
+   "materials": [
+    {
+     "name": "front",
+     "type": "MeshStandardMaterial",
+     "side": 0,
+     "transparent": false,
+     "opacity": 1,
+     "map": "plate-front-v35.jpg"
+    },
+    {
+     "name": "front2",
+     "type": "MeshStandardMaterial",
+     "side": 0,
+     "transparent": false,
+     "opacity": 1,
+     "map": "t1-right-v35.jpg"
+    },
+    {
+     "name": "side",
+     "type": "MeshStandardMaterial",
+     "side": 0,
+     "transparent": false,
+     "opacity": 1,
+     "map": "plate-side-v35.jpg"
+    },
+    {
+     "name": "top",
+     "type": "MeshStandardMaterial",
+     "side": 0,
+     "transparent": false,
+     "opacity": 1,
+     "map": "top.jpg"
+    },
+    {
+     "name": "icefront",
+     "type": "MeshStandardMaterial",
+     "side": 0,
+     "transparent": false,
+     "opacity": 1,
+     "map": "plate-front.jpg"
+    },
+    {
+     "name": "icefront2",
+     "type": "MeshStandardMaterial",
+     "side": 0,
+     "transparent": false,
+     "opacity": 1,
+     "map": "t1-right.jpg"
+    },
+    {
+     "name": "iceside",
+     "type": "MeshStandardMaterial",
+     "side": 0,
+     "transparent": false,
+     "opacity": 1,
+     "map": "plate-side.jpg"
+    }
+   ]
+  },
+  {
+   "name": "",
+   "type": "BufferGeometry",
+   "lodLevel": 1,
+   "visible": false,
+   "materials": [
+    {
+     "name": "front",
+     "type": "MeshStandardMaterial",
+     "side": 0,
+     "transparent": false,
+     "opacity": 1,
+     "map": "plate-front-v35.jpg"
+    },
+    {
+     "name": "front2",
+     "type": "MeshStandardMaterial",
+     "side": 0,
+     "transparent": false,
+     "opacity": 1,
+     "map": "t1-right-v35.jpg"
+    },
+    {
+     "name": "side",
+     "type": "MeshStandardMaterial",
+     "side": 0,
+     "transparent": false,
+     "opacity": 1,
+     "map": "plate-side-v35.jpg"
+    },
+    {
+     "name": "top",
+     "type": "MeshStandardMaterial",
+     "side": 0,
+     "transparent": false,
+     "opacity": 1,
+     "map": "top.jpg"
+    },
+    {
+     "name": "icefront",
+     "type": "MeshStandardMaterial",
+     "side": 0,
+     "transparent": false,
+     "opacity": 1,
+     "map": "plate-front.jpg"
+    },
+    {
+     "name": "icefront2",
+     "type": "MeshStandardMaterial",
+     "side": 0,
+     "transparent": false,
+     "opacity": 1,
+     "map": "t1-right.jpg"
+    },
+    {
+     "name": "iceside",
+     "type": "MeshStandardMaterial",
+     "side": 0,
+     "transparent": false,
+     "opacity": 1,
+     "map": "plate-side.jpg"
+    }
+   ]
+  },
+  {
+   "name": "",
+   "type": "BufferGeometry",
+   "lodLevel": 2,
+   "visible": false,
+   "materials": [
+    {
+     "name": "front",
+     "type": "MeshStandardMaterial",
+     "side": 0,
+     "transparent": false,
+     "opacity": 1,
+     "map": "plate-front-v35.jpg"
+    },
+    {
+     "name": "front2",
+     "type": "MeshStandardMaterial",
+     "side": 0,
+     "transparent": false,
+     "opacity": 1,
+     "map": "t1-right-v35.jpg"
+    },
+    {
+     "name": "side",
+     "type": "MeshStandardMaterial",
+     "side": 0,
+     "transparent": false,
+     "opacity": 1,
+     "map": "plate-side-v35.jpg"
+    },
+    {
+     "name": "top",
+     "type": "MeshStandardMaterial",
+     "side": 0,
+     "transparent": false,
+     "opacity": 1,
+     "map": "top.jpg"
+    },
+    {
+     "name": "icefront",
+     "type": "MeshStandardMaterial",
+     "side": 0,
+     "transparent": false,
+     "opacity": 1,
+     "map": "plate-front.jpg"
+    },
+    {
+     "name": "icefront2",
+     "type": "MeshStandardMaterial",
+     "side": 0,
+     "transparent": false,
+     "opacity": 1,
+     "map": "t1-right.jpg"
+    },
+    {
+     "name": "iceside",
+     "type": "MeshStandardMaterial",
+     "side": 0,
+     "transparent": false,
+     "opacity": 1,
+     "map": "plate-side.jpg"
+    }
+   ]
+  },
+  {
+   "name": "",
+   "type": "RingGeometry",
+   "lodLevel": null,
+   "visible": true,
+   "materials": [
+    {
+     "name": "",
+     "type": "MeshBasicMaterial",
+     "side": 0,
+     "transparent": false,
+     "opacity": 1,
+     "map": null
+    }
+   ]
+  },
+  {
+   "name": "",
+   "type": "RingGeometry",
+   "lodLevel": null,
+   "visible": true,
+   "materials": [
+    {
+     "name": "",
+     "type": "MeshBasicMaterial",
+     "side": 0,
+     "transparent": false,
+     "opacity": 1,
+     "map": null
+    }
+   ]
+  },
+  {
+   "name": "",
+   "type": "RingGeometry",
+   "lodLevel": null,
+   "visible": true,
+   "materials": [
+    {
+     "name": "",
+     "type": "MeshBasicMaterial",
+     "side": 0,
+     "transparent": false,
+     "opacity": 1,
+     "map": null
+    }
+   ]
+  },
+  {
+   "name": "",
+   "type": "CapsuleGeometry",
+   "lodLevel": null,
+   "visible": true,
+   "materials": [
+    {
+     "name": "",
+     "type": "MeshStandardMaterial",
+     "side": 0,
+     "transparent": false,
+     "opacity": 1,
+     "map": null
+    }
+   ]
+  }
+ ],
+ "pass": false
+}

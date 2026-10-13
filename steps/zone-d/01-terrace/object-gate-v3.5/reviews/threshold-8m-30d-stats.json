@@ -1,0 +1,56 @@
+{
+ "view": "threshold-8m-30d",
+ "image": "/workspace/grokcli/wt/zd-terrace-1012/steps/zone-d/01-terrace/object-gate-v3.5/reviews/threshold-8m-30d.jpg",
+ "size": [
+  618,
+  1373
+ ],
+ "recess_floor": {
+  "what": "terrace-lod0 mesh, material 'top' (top.jpg), y=0, z -1.5..0",
+  "px": 33572,
+  "meanRgb": [
+   10.300000190734863,
+   16.600000381469727,
+   29.0
+  ],
+  "meanLuma": 18.7,
+  "localStd5": 0.31,
+  "lowSatFrac": 0.0,
+  "flatGreyFrac": 0.0,
+  "darkFrac_luma_lt25": 0.91
+ },
+ "ground_strip_0_3m": {
+  "what": "zd-play ground PlaneGeometry 96x96, MeshStandardMaterial map top.jpg, y=-0.01",
+  "px": 135068,
+  "meanRgb": [
+   11.100000381469727,
+   14.100000381469727,
+   21.600000381469727
+  ],
+  "meanLuma": 15.6,
+  "localStd5": 0.0,
+  "lowSatFrac": 0.891,
+  "flatGreyFrac": 0.0,
+  "darkFrac_luma_lt25": 0.996
+ },
+ "nogrey": {
+  "image": "/tmp/thr/threshold-8m-30d.png",
+  "subjectPx": 800369,
+  "flatGreyFrac": 0.0,
+  "worstRegionFrac": 0.0,
+  "regionMin": 0.01,
+  "failingRegions": [],
+  "nFailing": 0,
+  "pass": true
+ },
+ "recess_edge_px": [
+  [
+   75.2,
+   358.9
+  ],
+  [
+   542.7,
+   358.9
+  ]
+ ]
+}

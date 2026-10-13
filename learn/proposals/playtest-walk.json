@@ -1,0 +1,20 @@
+{
+  "id": "playtest-walk",
+  "owner": "Playtester",
+  "date": "2026-10-13",
+  "stage": "tools/14-oneshot, after play-build gate + bench, before final contact sheet",
+  "input": {"play_url": "served play build", "spine": "spine.json v1.2+ (camera + route from file)"},
+  "drive": "scripted input along full spine at sprint speed incl. every beat change and 90deg turn; deterministic fixed timestep so result is independent of fps (box 20 fps OK)",
+  "checks": {
+    "lod_pop": "outline pixel diff in frames either side of each LOD switch and each streamed LOD swap; FAIL > 0 px",
+    "invisible_wall_or_snag": "actual player xy vs spine each frame with input held; FAIL any stop or lateral push > 5 cm; log s, xy, nearest collider id",
+    "float_sink": "player foot vs ground |dz| > 2 cm FAIL",
+    "camera_snap": "camera pitch/yaw delta between frames > 1 deg FAIL; camera must match spine camera block",
+    "camera_clip": "near plane inside any mesh FAIL",
+    "stream_hitch": "frame-time log during LOD swaps; flag frames > 33 ms (reference only off-phone)"
+  },
+  "output": {"events": "JSON list: timecode, s, xy, check, value, collider/node id", "clips": "2 s clip per event", "summary": "PASS/FAIL per check", "timer": "own step time"},
+  "must_fail": ["terrace dd80963f: door dark plane + wall-end pale slabs (drawn node outside mesh list)", "spine v1.1 pitch snap at 670 m"],
+  "must_pass": ["terrace after fix-door-ghost on spine camera"],
+  "not_covered": "control feel (manual Playtester run) and real fps (SmiR S20 FE bench)"
+}

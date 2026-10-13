@@ -1,0 +1,28 @@
+{
+  "name": "plate-precheck",
+  "version": 1,
+  "owner": "Art Director",
+  "stage": "after plate gates, before depth (tools/14-oneshot stage: plate sheet)",
+  "auto_checks": [
+    {"id": "native_res", "rule": "plate is at native Imagine resolution (1024 long side for objects, 1280x720 per sky section); no upscale", "fail": "any resample or upscale detected"},
+    {"id": "grey_untextured", "rule": "region-by-region no-grey (tools/13)", "fail": "any patch >= 1% of plate area flat grey or near-black with no texture"},
+    {"id": "sky_band", "rule": "sky gate tools/10 incl. off-centre haze and diagonal star stripes", "fail": "any Milky Way band or stripe left in a sky still"},
+    {"id": "star_size", "rule": "stars >= 2 px across at mip 0 and >= 0.97 of no-mip peak at mip 1", "fail": "smaller or dimmer"},
+    {"id": "painted_duplicate", "rule": "features that will be real geometry (icicles, cables, runes, cornices) must not also be painted into the plate outside their geometry footprint", "fail": "painted feature outside geometry mask"},
+    {"id": "seams", "rule": "adjacent sky sections and tiling ground plates join with no brightness step", "fail": "mean step > 2/255 across seam"},
+    {"id": "style_match", "rule": "palette and lighting match the zone key image (key-zd1-b.jpg for Zone D)", "fail": "flagged for eye check"},
+    {"id": "ice_material", "rule": "ice reads matte pale ice-blue, never chrome or white-clipped", "fail": "specular hot spots or clipped white on ice"},
+    {"id": "hard_dark_shapes", "rule": "no hard-edged flat dark rectangles (stray shadow or floor planes)", "fail": "straight-edged near-black region with no texture"}
+  ],
+  "sheet": "only plates passing auto_checks go on one contact sheet at 100% crops for Art Director KEEP/FAIL; depth starts only after KEEP",
+  "must_fail_fixtures": [
+    "S04 final4 (Milky Way trace)",
+    "S05 final2 (band)",
+    "S09 final3 (diagonal stripe), S09 strong clean (blotchy)",
+    "S11 final2 and final4 (low haze)",
+    "box-filtered sky mip 1 (stars 0.787)",
+    "terrace wall plate with painted icicles under geometric icicles",
+    "door-3m.png dark band (dd80963f)"
+  ],
+  "must_pass_fixtures": ["sky12 final5 KEEP set", "terrace v3.5 plates (dd80963f)"]
+}

@@ -1,0 +1,135 @@
+{
+  "perfBudget": {
+    "version": 1,
+    "zone": "D-frostspire-basin",
+    "status": "DRAFT - starting targets, to be calibrated by the first S20 FE bench run",
+    "author": "Boltverse Perf",
+    "date": "2026-10-13",
+    "device": "SmiR's S20 FE only; render mode B (ratio 1.5 + EASU/RCAS sharpening)",
+    "sources": [
+      "zone-d-runsheet.v1.json",
+      "BIBLE.md#zone-d-extent-and-layout"
+    ],
+    "rules": [
+      "Triangles go where the eye is: the 0-60 m ring gets most of the budget; cut only hidden faces, off-screen geometry and extra far detail.",
+      "LOD swaps keep an identical silhouette (no pop, no morph); far ring is one ridge silhouette mesh.",
+      "Wake effects prefer emissive/material ramps over new dynamic lights; no shadow-casting point lights.",
+      "Budgets are per camera frame at each spine segment, including Bolt, wake FX and HUD."
+    ],
+    "global": {
+      "frameTimeMs": {
+        "target": 16.7,
+        "p95Max": 20.0,
+        "hitchMaxMs": 50,
+        "hitchesPerMin": 1
+      },
+      "sustain": "30 min continuous spine loop with no thermal throttle step and fps median >= 55",
+      "drawCalls": {
+        "typical": 150,
+        "peak": 200
+      },
+      "visibleTriangles": {
+        "typical": 600000,
+        "peak": 850000,
+        "groundMax": 150000,
+        "note": "Settled 2026-10-13 by Engine Core + Perf: 600k typical / 850k peak is the whole frame; the 150k figure is the ground sub-budget (0-60 m chunks + rings + far mesh). Object LOD0 budgets come out of the rest."
+      },
+      "nearRingShare": ">= 60% of visible triangles inside 0-60 m",
+      "textureMemoryMB": 384,
+      "geometryMemoryMB": 128,
+      "jsHeapMB": 250,
+      "lights": {
+        "directional": 1,
+        "hemisphere": 1,
+        "dynamicPointMax": 4,
+        "shadowMaps": "1 directional cascade set only"
+      },
+      "postFx": "bloom at half resolution; film grade single pass",
+      "audio": {
+        "concurrentVoicesMax": 16,
+        "decodedMemoryMB": 24,
+        "streamedBedsMax": 2,
+        "audioCpuMsMax": 1.0
+      }
+    },
+    "segments": [
+      {
+        "beat": "B1-causeway",
+        "s": [
+          0,
+          250
+        ],
+        "drawCalls": 140,
+        "visibleTriangles": 600000,
+        "dynamicPoints": 1,
+        "note": "basin reveal at s=40 sees the whole basin plus Frostspire: far-ring and mid-ring LODs carry it, not near detail"
+      },
+      {
+        "beat": "B2-falls-tunnel",
+        "s": [
+          250,
+          370
+        ],
+        "drawCalls": 160,
+        "visibleTriangles": 650000,
+        "dynamicPoints": 2,
+        "note": "curtain glow is an emissive ramp on the curtain material; occluder culls the basin while inside the tunnel"
+      },
+      {
+        "beat": "B3-terrace-climb",
+        "s": [
+          370,
+          670
+        ],
+        "drawCalls": 160,
+        "visibleTriangles": 800000,
+        "dynamicPoints": 2,
+        "note": "terrace hero at s=520 seen at 3-8 m: full relief allowed here, spend the peak budget on it"
+      },
+      {
+        "beat": "B4-machine-graveyard",
+        "s": [
+          670,
+          1070
+        ],
+        "drawCalls": 180,
+        "visibleTriangles": 750000,
+        "dynamicPoints": 2,
+        "note": "machines instanced per type; panel flicker is emissive only, sequenced, max 6 panels animating at once"
+      },
+      {
+        "beat": "B5-spire-plaza",
+        "s": [
+          1070,
+          1100
+        ],
+        "drawCalls": 200,
+        "visibleTriangles": 850000,
+        "dynamicPoints": 4,
+        "note": "howl peak: spire runes + pillar + aurora; aurora is a shader sky layer, not particles; this is the only segment allowed at peak"
+      }
+    ],
+    "gate": {
+      "blocking": true,
+      "measuredOn": "S20 FE via the daily bench link only",
+      "fails": [
+        "any segment over its drawCalls or visibleTriangles cap",
+        "frame time p95 over 20 ms on any segment",
+        "more than 1 hitch over 50 ms per minute",
+        "thermal throttle step or fps median under 55 during the 30 min loop",
+        "texture, geometry or JS heap over budget",
+        "audio over voice, memory or CPU caps",
+        "near-ring share under 60% at hero points (s=40, 520, 1090)"
+      ],
+      "selfTest": "a deliberately over-budget build must FAIL before the gate is trusted"
+    },
+    "openQuestions": [
+      "B5 plaza length (Gamify asks 60 m): peak budget holds either way, but a longer plaza means longer time at peak load; the 30 min loop will show heat.",
+      "New B1 slabs / B3 gap / B4 gears: if confirmed, count them inside the segment caps above."
+    ],
+    "objectBudgetsLOD0": {
+      "01-terrace": 90000,
+      "02-rune-pillar": 25000
+    }
+  }
+}

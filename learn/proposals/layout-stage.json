@@ -1,0 +1,13 @@
+{
+  "stage": "layout",
+  "owner": "Level Designer",
+  "position": "after World Graph zone JSON, before play build",
+  "steps": {
+    "spine": {"format": "spine.json v1.2", "step_m": 5, "fields": ["s","xy","y","cam_pitch_deg"], "max_grade": 0.14, "pitch_blend_m": 10, "max_pitch_step_deg_per_5m": 4, "camera": {"back_m": 4.5, "up_m": 2.6, "vfov_deg": 48}, "rule": "play page reads camera and route from spine.json only"},
+    "colliders": {"source": "fitted to visible mesh", "inset_m": 0.02, "fail_if_face_outside_visible_m": 0.05, "doorway": "collision plane flush with door back face"},
+    "placement_gate": {"float_m": 0.0, "sink_tolerance_m": 0.02, "min_clear_lane_m": 2.5},
+    "collider_visibility": {"rule": "colliders are physics data only, never in render scene", "fail_if": "any collider node drawn or any unexpected see-through material"}
+  },
+  "must_fail": ["terrace dd80963f wall-end pale blue slabs if they are drawn colliders", "spine with grade > 14% or pitch snap > 4 deg per 5 m"],
+  "status": "spec; terrace is the test case"
+}
