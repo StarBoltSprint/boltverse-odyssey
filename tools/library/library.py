@@ -32,6 +32,8 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if cmd == "add":
             return add(rest)
+        if cmd == "add-wip":
+            return add_wip(rest)
         if cmd == "list":
             return list_cmd(rest)
         if cmd == "check":
@@ -447,6 +449,33 @@ def _abs(value: str, base: Path) -> Path:
     return cand
 
 
+WIP_STATUSES = ("WIP", "FAIL")
+
+
+def add_wip(argv: list[str]) -> int:
+    """Record a work-in-progress object under <library>/_wip/<id>/manifest.json.
+
+    It is never placeable: resolve/list/check only read <library>/*/manifest.json, one level deep.
+    KEEP is refused here; a kept object goes through `add --intake` and all six intake guards.
+    """
+    args = _parse(argv, {"--wip": 1, "--library": 1})
+    wip_path = Path(args["--wip"])
+    library = Path(args["--library"]) if "--library" in args else LIBRARY
+    data = json.loads(wip_path.read_text(encoding="utf-8"))
+    for key in ("id", "status", "kind", "kit_spec", "metrics", "reason"):
+        if key not in data:
+            raise LibraryError(f"wip {key} is required")
+    if data["status"] not in WIP_STATUSES:
+        raise LibraryError(f"wip status must be one of {WIP_STATUSES}, got {data['status']} (KEEP goes through add --intake)")
+    data["schema"] = "library-wip/1"
+    dest = library / "_wip" / str(data["id"])
+    dest.mkdir(parents=True, exist_ok=True)
+    out = dest / "manifest.json"
+    out.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    print(f"PASS add-wip {data['id']} status={data['status']} {out} (not placeable)")
+    return 0
+
+
 def _parse(argv: list[str], spec: dict[str, int]) -> dict[str, str]:
     out: dict[str, str] = {}
     i = 0
@@ -464,6 +493,7 @@ def _parse(argv: list[str], spec: dict[str, int]) -> dict[str, str]:
 _HELP = """tools/library — reuse a validated object by id
 
   python3 tools/library/library.py add --intake <intake.json> [--library biome/library]
+  python3 tools/library/library.py add-wip --wip <wip.json> [--library biome/library]
   python3 tools/library/library.py list [--library biome/library]
   python3 tools/library/library.py check [--id <object-id>] [--library biome/library]
 

@@ -1,0 +1,68 @@
+{
+  "id": "zd-tier-terrace",
+  "key": "zd-bible-1012/key-zd1-b.jpg",
+  "_camera_note": "Key camera of alt3d-1013 (MoGe-2 intrinsics, F=0.5957*1024, height 15.94 m) in kit space: x along the wall (left to right in the key), y into the wall, z up, origin at tier-1 base left. Verified: legacy proj() and kit project() agree to the pixel on kit3.json tier-1 points.",
+  "camera": {
+    "pos": [
+      -3.0598,
+      -30.3214,
+      16.073
+    ],
+    "target": [
+      9.9346,
+      -4.916,
+      6.8148
+    ],
+    "up": [
+      0.1304,
+      0.2799,
+      0.9511
+    ],
+    "fov_deg": 80.017
+  },
+  "outline": {
+    "tier_mask": "zd/tier.png",
+    "door_mask": "zd/door.png",
+    "cornice_mask": "zd/cornice.png",
+    "snow_mask": "zd/snow.png",
+    "cell_m": 0.13,
+    "blocks": true,
+    "block_m": [
+      0.9,
+      0.55
+    ],
+    "block_depth_m": 0.3,
+    "upper_tiers": false
+  },
+  "tiers": {
+    "count": 3,
+    "rise_m": 2.5,
+    "tread_m": 2.5,
+    "width_m": 20.23
+  },
+  "recess": {
+    "depth_m": 2.5
+  },
+  "cornice": {
+    "overhang_m": 1.0
+  },
+  "drifts": {
+    "thick_m": 0.6,
+    "outline_k": 0.0,
+    "_note": "outline_k=0: in outline mode the key mask already holds the drift volume; lifting past it grew the silhouette (0.775->0.787 raw when removed). Snow look comes from the per-vertex _SNOW attribute."
+  },
+  "materials": {
+    "stone": "basalt-zd-frost",
+    "snow": "snow-zd-windpacked"
+  },
+  "relief": {
+    "res_m": [
+      0.5,
+      1.0,
+      2.0
+    ]
+  },
+  "budget": {
+    "lod0_tris": 90000
+  }
+}

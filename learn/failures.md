@@ -1264,6 +1264,49 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Guard | `node tools/object-gate/selftest.mjs` rows for `painted_duplicate`. Painted-under-cone overlap 1.4 m, faces 101, 102, 103, world [1.28, 0.0, -0.4], ghosts 0, status FAIL, CLI exit 1. Pale smear ghosts 1, world x 3.6, overlap 0, status FAIL, CLI exit 1. Clean plate with the cone overlap 0, ghosts 0, status PASS, CLI exit 0. |
 | Sources | `tools/object-gate/py/painted_duplicate.py`, `tools/object-gate/py/ghost_streaks.py`, `tools/object-gate/selftest.mjs`. |
 
+### 2026-10-13 — kit depths taken from monocular depth
+
+| | |
+| --- | --- |
+| Take | zd tier v1–v3 (alt3d-1013) |
+| Defect | Two plain boxes scored IoU 0.45 against the key; treads read 5.3–8.0 m deep from MoGe, so the terrace read as a cliff, not steps. |
+| Root cause | Pieces ignored the key outline (recess, band, icicle fringe) and depths came straight from monocular depth, which inflates. |
+| Fix | Fit pieces to SAM outlines + key step lines; clamp rise/tread/recess with rules (2.5 m). |
+| Guard | `python3 tools/kit/selftest.py` row "rule clamps MoGe tread 5.3 m -> 3.5 m"; `kit build` IoU gates (closed ≥ 0.85, raw ≥ 0.75). |
+| Sources | `tools/kit/fit.py`, `tools/kit/legacy/kitfit3.py`, `docs/METHOD/kit-relief-materials.md`. |
+
+### 2026-10-13 — snow by surface angle reads dark; uniform decimation spikes blocks
+
+| | |
+| --- | --- |
+| Take | zd tier v5 (alt3d-1013) |
+| Defect | Snow looked dark and the stone blocks looked spiky ("hérissés"); shape match dropped. |
+| Root cause | Snow cover came from the face angle, not the key snow mask; LOD was made by uniformly decimating the displaced mesh, which collapses block edges into spikes. |
+| Fix | Snow layer = key snow mask × up-facing (`tools/scatter/detail.py`); each LOD tessellated on its own `res_m`, block push only on LOD0 (`tools/kit/build.py`). |
+| Guard | `python3 tools/scatter/selftest.py` rows "snow follows key mask", "snow avoids steep block edges"; `python3 tools/kit/selftest.py` "lod0 has real relief, lod2 flat". |
+| Sources | `tools/scatter/detail.py`, `tools/kit/build.py`. |
+
+### 2026-10-13 — texel density measured offline, not live
+
+| | |
+| --- | --- |
+| Take | zd tier v4 viewer |
+| Defect | Offline renders said 512 px/m; the phone viewer ran ~200 px/m (Critic + Art Director FAIL). |
+| Root cause | The viewer shipped downscaled textures; px/m was computed from the source tile, not the screen. |
+| Fix | `metrics.json` keeps `px_per_m_live: null` until `shader/hexTriplanar.js` `probePxPerM()` fills it from the running page. |
+| Guard | Material gate px/m ≥ 500 (`tools/materials/selftest.py` "low px/m refused"); live probe required before review. |
+| Sources | `tools/kit/shader/hexTriplanar.js`, `tools/kit/render.py`. |
+
+## 2026-10-13 cornice float stayed >0 after the wedge fix
+The seat wedges were only added where the slab bottom stood above the wall top. Taubin smoothing rounds the wall top below
+the slab, so the skipped segments floated. Also, the float check had no list of the solid names for the new pieces.
+Fix: add a seat wedge on every segment, overlap it into both the wall and the slab, and list every support solid name in the check.
+
+## 2026-10-13 wall base gap was the key's snow bank, not a modelling slip
+In the key the tier foot at x 3.8–9 m is buried, so the visible bottom is 1.0–1.3 m above the ground. Extending the
+wall down plus a uniform 1.25 m skirt cut IoU from 0.887 to 0.865, because the skirt hid wall that the key shows where the wall meets the ground.
+Fix: size the skirt per stretch from the key-visible bottom, and score the skirt as terrain (z-buffered).
+
 ### 2026-10-13 — door ghost: dark ground rectangle + see-through ice slabs, play build only
 | | |
 | --- | --- |

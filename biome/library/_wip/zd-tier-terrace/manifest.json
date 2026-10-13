@@ -1,0 +1,233 @@
+{
+ "date": "2026-10-13",
+ "id": "zd-tier-terrace",
+ "kind": "kit-relief",
+ "kit_spec": "tools/kit/specs/zd-tier-outline.json",
+ "materials": {
+  "snow": "snow-zd-windpacked",
+  "stone": "basalt-zd-frost"
+ },
+ "metrics": {
+  "cli_outline_2026-10-13": {
+   "iou_closed": 0.882,
+   "iou_closed15_legacy": 0.871,
+   "iou_raw": 0.787,
+   "nonmanifold_edges": 230,
+   "open_edges": 0,
+   "snow_ratio": {
+    "key": 0.395,
+    "model": 0.38,
+    "rel_diff": 0.038
+   },
+   "triangles": {
+    "lod0": 82328,
+    "lod1": 23764,
+    "lod2": 8420
+   }
+  },
+  "cli_parametric_2026-10-13": {
+   "dE_flat_vs_key": 6.15,
+   "iou_closed": 0.547,
+   "iou_raw": 0.463,
+   "open_edges": 0,
+   "triangles": {
+    "lod0": 83580,
+    "lod1": 17328,
+    "lod2": 2196
+   }
+  },
+  "v4_blender_outline": {
+   "dE_cornice": 3.48,
+   "dE_tier": 2.37,
+   "iou_closed": 0.869,
+   "iou_raw": 0.747,
+   "lod0_tris": 195500,
+   "open_edges": 0,
+   "px_per_m_live": 512
+  }
+ },
+ "reason": "Art Director and Critic FAIL on v4/v5 (snow identity, icicle material, block depth, ground, budget). v6 in progress. Not KEEP, not placeable.",
+ "reviews": [
+  "Bolt Army Critic v4: FAIL",
+  "Boltverse Art Director v4: FAIL"
+ ],
+ "schema": "library-wip/1",
+ "source": {
+  "key_image": "zd-bible-1012/key-zd1-b.jpg",
+  "zone": "D"
+ },
+ "status": "WIP",
+ "v7": {
+  "triangles": {
+   "lod0": 62426,
+   "lod1": 24346,
+   "lod2": 4592
+  },
+  "open_edges": 0,
+  "nonmanifold_edges": 0,
+  "iou_raw": 0.814,
+  "iou_closed": 0.921,
+  "iou_vs_tier_cornice_only": {
+   "raw": 0.541,
+   "closed": 0.617
+  },
+  "snow_ratio": {
+   "key": 0.2766,
+   "model": 0.2765,
+   "rel_diff": 0.0006
+  },
+  "cornice_float": {
+   "checked": 33,
+   "floating": 0,
+   "fraction": 0.0,
+   "worst": []
+  },
+  "px_per_m_texture": {
+   "stone": 512.0,
+   "snow": 853.3
+  },
+  "px_per_m_live_screen": {
+   "key": 23,
+   "3m": 492,
+   "chase": 194,
+   "45": 369,
+   "grazing": 132,
+   "side": 425
+  },
+  "spec": "tools/kit/specs/zd-tier-v7.json"
+ },
+ "v8": {
+  "triangles": {
+   "lod0": 61124,
+   "lod1": 27034,
+   "lod2": 8340
+  },
+  "open_edges": 0,
+  "nonmanifold_edges": 0,
+  "iou_raw": 0.797,
+  "iou_closed": 0.897,
+  "iou_vs_tier_cornice_only": {
+   "raw": 0.526,
+   "closed": 0.596
+  },
+  "iou_vs_tier_cornice_band_ignored": {
+   "raw": 0.723,
+   "closed": 0.801
+  },
+  "snow_ratio": {
+   "key": 0.2766,
+   "model": 0.2767,
+   "rel_diff": 0.0003
+  },
+  "cornice_float": {
+   "checked": 33,
+   "floating": 0,
+   "fraction": 0.0,
+   "worst": []
+  },
+  "px_per_m_texture": {
+   "stone": 512.0,
+   "snow": 853.3
+  },
+  "px_per_m_live_screen": {
+   "key": 23,
+   "3m": 492,
+   "chase": 192,
+   "45": 369,
+   "grazing": 130,
+   "side": 425
+  },
+  "spec": "tools/kit/specs/zd-tier-v8.json"
+ },
+ "v9": {
+  "triangles": {
+   "lod0": 79294,
+   "lod1": 30572,
+   "lod2": 8698
+  },
+  "open_edges": 0,
+  "nonmanifold_edges": 0,
+  "iou_raw": 0.954,
+  "iou_closed": 0.969,
+  "iou_vs_tier_cornice_only": {
+   "raw": 0.954,
+   "closed": 0.969
+  },
+  "iou_vs_old_tier_cornice": {
+   "raw": 0.211,
+   "closed": 0.247
+  },
+  "iou_vs_old_tier_band_cornice": {
+   "raw": 0.32,
+   "closed": 0.372
+  },
+  "snow_ratio": {
+   "key": 0.2484,
+   "model": 0.2484,
+   "rel_diff": 0.0002
+  },
+  "cornice_float": {
+   "checked": 33,
+   "floating": 0,
+   "fraction": 0.0,
+   "worst": []
+  },
+  "px_per_m_texture": {
+   "stone": 512.0,
+   "snow": 853.3
+  },
+  "px_per_m_live_screen": {
+   "key": 23,
+   "3m": 487,
+   "chase": 198,
+   "45": 364,
+   "grazing": 124,
+   "side": 159
+  },
+  "spec": "tools/kit/specs/zd-tier-v9.json"
+ },
+ "v10": {
+  "triangles": {
+   "lod0": 79294,
+   "lod1": 30572,
+   "lod2": 8698
+  },
+  "open_edges": 0,
+  "nonmanifold_edges": 0,
+  "iou_raw": 0.955,
+  "iou_closed": 0.97,
+  "iou_vs_tier_cornice_only": {
+   "raw": 0.955,
+   "closed": 0.97
+  },
+  "iou_vs_old_tier_cornice": {
+   "raw": 0.211,
+   "closed": 0.247
+  },
+  "snow_ratio": {
+   "key": 0.2484,
+   "model": 0.2488,
+   "rel_diff": 0.0015
+  },
+  "cornice_float": {
+   "checked": 33,
+   "floating": 0,
+   "fraction": 0.0,
+   "worst": []
+  },
+  "px_per_m": {
+   "stone_tex": 539,
+   "snow_tex": 853,
+   "screen": {
+    "key": 17,
+    "3m": 487,
+    "chase": 144,
+    "45": 365,
+    "grazing": 135,
+    "side": 162,
+    "side4m": 479
+   }
+  },
+  "spec": "tools/kit/specs/zd-tier-v10.json"
+ }
+}
