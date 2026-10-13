@@ -114,3 +114,4 @@ The mask after that pick is not a single slab. Failure: `learn/failures.md` 2026
 | Recipe | Commit | QC |
 | --- | --- | --- |
 | [shotsheet-verdict.md](shotsheet-verdict.md) — Art Director shot-sheet JSON on `tools/objsheet` (no Imagine prompt) | not committed; parent `a0676f9f` | selftest exit 0; PENDING blocks; KEEP allows; FAIL lists defects; pixel keepMin 0.9939 |
+| [recipe-improve.md](recipe-improve.md) — A/B a METHOD recipe against one proposal (no Imagine prompt) | not committed; parent `99346a47` | selftest exit 0; regression 30/32 rejected on `perf.quality-kept`; tie 28/32 rejected; adopt 30/32 writes `proven: true` |
