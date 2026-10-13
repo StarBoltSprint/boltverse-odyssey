@@ -1,0 +1,14 @@
+PASS S03-final3-fail want=FAIL band_fail= True ['dense_band glow_mw dens=1.361 soft=0.55 nn=8.7', 'narrow_diagonal abs_ex=2.00 er=1.14 ang=30', 'dark_lanes lane_frac=0.2052']
+PASS S11-final2-fail want=FAIL band_fail= True ['dense_band tight_mw densR=1.330 starR=2.26 nnR=1.2', 'windowed_haze score=1.260 soft_pos=1.34 box=[0.16, 0.46, 0.75, 1.0]', 'dark_lanes lane_frac=0.2084']
+PASS S05-final2-fail want=FAIL band_fail= True ['windowed_haze score=1.169 soft_pos=1.03 box=[0.16, 0.46, 0.2, 0.5]']
+PASS S09-final3-fail want=FAIL band_fail= True ['narrow_diagonal abs_ex=2.33 er=1.18 ang=25']
+PASS S11-final4-fail want=FAIL band_fail= True ['windowed_haze score=1.243 soft_pos=1.16 box=[0.16, 0.46, 0.75, 1.0]']
+PASS S01-final2-pass want=PASS band band_fail= False []
+PASS S02-final2-pass want=PASS band band_fail= False []
+PASS S06-final3-pass want=PASS band band_fail= False []
+PASS S07-final3-pass want=PASS band band_fail= False []
+PASS S08-final5-pass want=PASS band band_fail= False []
+PASS S10-final3-pass want=PASS band band_fail= False []
+{"status": "PASS", "n": 12, "edge_line_plates": []}
+LIVE {"status": "PASS", "edge": [], "band_fails": []}
+SELFTEST PASS []

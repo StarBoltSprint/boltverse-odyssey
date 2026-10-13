@@ -20,9 +20,32 @@ def interior(hit):
     return ndi.binary_erosion(hit, iterations=2)
 
 
-def oblique_view(npz_path):
+RELIEF_K = 0.5  # relief mode: a step is a residual >= 0.5 x declared relief depth
+
+
+def relief_steps(Df, hit, relief_depth_m):
+    """Relief-scaled step mask. Uses the second difference (residual from the
+    local plane), so a tilted flat face reads ~0 at any view angle, and a
+    3-6 cm groove reads as a step when its residual >= RELIEF_K * depth."""
+    thr = RELIEF_K * float(relief_depth_m)
+    res = np.zeros_like(Df)
+    for ax in (0, 1):
+        nb = (np.roll(Df, 1, ax) + np.roll(Df, -1, ax)) / 2
+        ok = hit & np.roll(hit, 1, ax) & np.roll(hit, -1, ax)
+        res = np.maximum(res, np.where(ok, np.abs(Df - nb), 0))
+        nb2 = (np.roll(Df, 2, ax) + np.roll(Df, -2, ax)) / 2
+        ok2 = hit & np.roll(hit, 2, ax) & np.roll(hit, -2, ax)
+        res = np.maximum(res, np.where(ok2, np.abs(Df - nb2), 0))
+    return res >= thr, thr
+
+
+def oblique_view(npz_path, relief_depth_m=None):
     z = np.load(npz_path)
     D, N = z["depth"], z["normal"]
+    return oblique_arrays(D, N, relief_depth_m)
+
+
+def oblique_arrays(D, N, relief_depth_m=None):
     hit = ~np.isnan(D)
     I = interior(hit)
     Df = np.where(hit, D, 0)
@@ -31,8 +54,12 @@ def oblique_view(npz_path):
     for ax in (0, 1):
         for sh in (1, -1):
             jump = np.maximum(jump, np.abs(Df - np.roll(Df, sh, ax)))
-    thr = max(JUMP_M, JUMP_RANGE_FRAC * rng)
-    step = (jump > thr) & I
+    if relief_depth_m:
+        st, thr = relief_steps(Df, hit, relief_depth_m)
+        step = st & I
+    else:
+        thr = max(JUMP_M, JUMP_RANGE_FRAC * rng)
+        step = (jump > thr) & I
     n = N[I]
     n = n / np.maximum(np.linalg.norm(n, axis=1, keepdims=True), 1e-6)
     if len(n):
@@ -46,19 +73,21 @@ def oblique_view(npz_path):
         stepFrac=round(float(step.sum() / max(1, I.sum())), 4),
         normSpread=round(spread, 4),
         hitPx=int(hit.sum()),
+        mode="relief" if relief_depth_m else "absolute",
+        stepThrM=round(float(thr), 4),
     )
     r["pass"] = bool(I.sum() > MIN_INTERIOR and r["stepFrac"] >= STEP_FRAC_MIN and r["normSpread"] >= NORM_SPREAD_MIN)
     return r
 
 
-def oblique_profile(renderdir):
+def oblique_profile(renderdir, relief_depth_m=None):
     res = {}
     errors = []
     for name in ("oblique45", "grazing"):
         p = os.path.join(renderdir, name + "-pass.npz")
         if not os.path.exists(p):
             continue
-        r = oblique_view(p)
+        r = oblique_view(p, relief_depth_m)
         res[name] = r
         if not r["pass"]:
             errors.append(f"oblique-profile {name}: stepFrac {r['stepFrac']} normSpread {r['normSpread']}")
