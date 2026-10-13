@@ -26,6 +26,7 @@ RATIO_MIN, RATIO_MAX, STRETCH_MAX = 0.7, 1.3, 1.3
 _IMG = {}
 CACHE = {}
 PAPP = {}
+EDGE = {}
 PLATES = [None]
 _HP = {}
 def HPL(L):
@@ -55,7 +56,7 @@ def column_edges(L, c0, c1, r0, r1, min_gap=10):
     else: e.append(c1)
     return e
 
-def find_door(L, box, thr=0.09):
+def find_door(L, box, thr=0.09, min_area_px=0, min_h_px=0):
     x0, y0, x1, y1 = box; m = nd.binary_opening(nd.gaussian_filter(L, 1)[y0:y1, x0:x1] < thr, iterations=2)
     lab, n = nd.label(m)
     if not n: return None
@@ -63,6 +64,7 @@ def find_door(L, box, thr=0.09):
     R = lab == k; R = R[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
     cols = xs.min() + np.nonzero(R.mean(0) > 0.5)[0]; rows = ys.min() + np.nonzero(R.mean(1) > 0.5)[0]
     if not len(cols) or not len(rows): return None
+    if len(cols) * len(rows) < min_area_px or len(rows) < min_h_px: return None
     return dict(c0=x0 + int(cols.min()), c1=x0 + int(cols.max()) + 1, top=y0 + int(rows.min()))
 
 def drip_streaks(L, c0, c1, row0, maxlen=60, thr=0.55, minlen=8):
@@ -123,7 +125,7 @@ def build_face(m, F, grid, opts, meta):
             doors = []
             for D in sp.get("doors", []):
                 if D.get("band", 0) != bi: continue
-                fd = find_door(L, D["search"])
+                fd = find_door(L, D["search"], min_area_px=D.get("min_area_m2", 0) * F.k * F.k, min_h_px=D.get("min_h_m", 0) * F.k)
                 if fd: doors.append(dict(u0=F.ucol(fd["c0"] if F.cs > 0 else fd["c1"]), u1=F.ucol(fd["c1"] if F.cs > 0 else fd["c0"]),
                                          vtop=F.vrow(fd["top"], B), depth=D.get("depth", 1.5), px=fd))
             ck_ = (sp["name"], bi)
@@ -156,36 +158,45 @@ def build_face(m, F, grid, opts, meta):
                 a_, b_ = max(spans, key=lambda t: t[1] - t[0]); sbox = [a_, r_lo + 18, b_, r_hi - 10]
             if F.depth: app, _ = moge_reads(F.depth, L, sbox)
             else: app = opts.get("stone_default_m", 0.05)
+            fb = None
+            if app >= 0.2 - 1e-6 and opts.get("stone_fallback_m"):   # MoGe read hit its 0.2 m cap = noise, not a reading
+                fb = app; app = opts["stone_fallback_m"]
             if ("K",) + ck_ not in CACHE:
                 sample = [raw(r, c) for r in range(sbox[1], sbox[3], 3) for c in range(sbox[0], sbox[2], 2)]
                 CACHE[("K",) + ck_] = SCALE * app / max(1e-6, np.percentile(sample, 95) - np.percentile(sample, 5))
             K = CACHE[("K",) + ck_]
             du, dv = grid["stone"]
             umust = [F.ucol(e) for e in edges] + [x for d in doors for x in (d["u0"], d["u1"])]
-            us = ticks(F.u0, F.u1, du, umust); vs = ticks(vb, vt, dv, [d["vtop"] for d in doors])
+            us = ticks(F.u0, F.u1, du, umust); vs = ticks(vb, vt, dv, [d["vtop"] for d in doors] + list(B.get("vmust", [])))
+            CR = opts.get("corner_rule", True)   # corner rule: relief is NOT locked at the u edges; corner strips close the gap
+            WLOCK = (lambda u, v: np.clip(min(v - vb, vt - v) / lock, 0, 1)) if CR else (lambda u, v: np.clip(min(u - F.u0, F.u1 - u, v - vb, vt - v) / lock, 0, 1))
             idx = {}
             for i, u in enumerate(us):
                 for j, v in enumerate(vs):
                     c, r = F.col(u), F.row(v, B)
-                    w = np.clip(min(u - F.u0, F.u1 - u, v - vb, vt - v) / lock, 0, 1)
+                    w = WLOCK(u, v)
                     d = K * raw(r, c) * w; idx[i, j] = m.v(F.P(u, v, d), F.uv(c, r))
             inside = lambda u, v: any(D["u0"] < u < D["u1"] and v < D["vtop"] for D in doors)
             for i in range(len(us) - 1):
                 for j in range(len(vs) - 1):
                     if inside((us[i] + us[i + 1]) / 2, (vs[j] + vs[j + 1]) / 2): continue
                     m.quad(F.mat, "stone", (idx[i, j], idx[i + 1, j], idx[i + 1, j + 1], idx[i, j + 1]))
-            dz = lambda u, v: K * raw(F.row(v, B), F.col(u)) * np.clip(min(u - F.u0, F.u1 - u, v - vb, vt - v) / lock, 0, 1)
+            dz = lambda u, v: K * raw(F.row(v, B), F.col(u)) * WLOCK(u, v)
+            EDGE[(sp["name"], bi)] = (F, B, dz, vs)
             for D in doors: door_recess(m, F, B, D, us, vs, dz, cb if F.cs > 0 else ca, fm)
             stone_boxes.append(sbox)
-            fm["features"].setdefault("stone", []).append(dict(box=sbox, apparent_m=round(app, 3), built_p95p5_m=round(SCALE * app, 3), edges=edges))
-            B["_dz"] = dz
+            fm["features"].setdefault("stone", []).append(dict(box=sbox, apparent_m=round(app, 3), built_p95p5_m=round(SCALE * app, 3), edges=edges,
+                                                               moge_capped_read_m=fb, fallback_m=(app if fb else None)))
+            B["_dz"] = dz; B["_sbox"] = sbox
         else:   # cornice + snow cap
             r_lo, r_hi = int(min(rb, rt)), int(max(rb, rt))
             below = bands[bi - 1] if bi > 0 else None
             app = None
             if F.depth and below:
-                wb = below["rows"]; _, app = moge_reads(F.depth, L, [ca + 4, int(min(wb)) + 6, cb - 4, int(max(wb)) - 4], [ca + 4, r_lo + 4, cb - 4, r_hi - 4])
+                wbox = below.get("_sbox") if below.get("_sbox") and F is F0 else [ca + 4, int(min(below["rows"])) + 6, cb - 4, int(max(below["rows"])) - 4]
+                _, app = moge_reads(F.depth, L, wbox, [ca + 4, r_lo + 4, cb - 4, r_hi - 4])
             app = app or opts.get("cornice_default_m", 0.43)
+            if sp.get("cornice_override_m"): app = sp["cornice_override_m"]
             if sp.get("cornice_from") in PAPP: app = PAPP[sp["cornice_from"]]   # shared slab depth -> mitred corners meet
             PAPP[sp["name"]] = app
             prof = lambda v: app * (0.85 + 0.25 * np.sin(np.pi * np.clip(0.15 + 0.8 * (vt - v) / (vt - vb), 0, 1)) ** 0.5)
@@ -274,6 +285,22 @@ def build_flat(m, spec, plates):
             if any(h[0] < a < h[2] and h[1] < b < h[3] for h in spec.get("holes", [])): continue
             m.quad(mat, spec.get("cat", "reserve"), (idx[i, j], idx[i + 1, j], idx[i + 1, j + 1], idx[i, j + 1]))
 
+def build_corner(m, cr):
+    """corner strip between the u-edge of face a (stone band) and the u-edge of face b: both keep their relief at the
+    corner, the strip joins the two relief edges (chamfer) so the outline keeps the stone depth. Texture: face a's own edge
+    pixels, translated by the strip width (isotropic)."""
+    if (cr["a"], cr.get("band", 0)) not in EDGE or (cr["b"], cr.get("band", 0)) not in EDGE: return
+    Fa, Ba, dza, vsa = EDGE[(cr["a"], cr.get("band", 0))]; Fb, Bb, dzb, vsb = EDGE[(cr["b"], cr.get("band", 0))]
+    ua = Fa.u1 if cr["a_end"] == "u1" else Fa.u0; ub = Fb.u1 if cr["b_end"] == "u1" else Fb.u0
+    vs = sorted(set(np.round(list(vsa) + list(vsb), 6))); sgn = 1 if cr["a_end"] == "u1" else -1
+    for v0, v1 in zip(vs, vs[1:]):
+        pa0, pa1 = Fa.P(ua, v0, dza(ua, v0)), Fa.P(ua, v1, dza(ua, v1)); pb0, pb1 = Fb.P(ub, v0, dzb(ub, v0)), Fb.P(ub, v1, dzb(ub, v1))
+        c = Fa.col(ua); w0 = np.linalg.norm(pa0 - pb0) * Fa.k; w1 = np.linalg.norm(pa1 - pb1) * Fa.k
+        r0, r1 = Fa.row(v0, Ba), Fa.row(v1, Ba); cs = -Fa.cs * sgn
+        ids = [m.v(pa0, Fa.uv(c, r0)), m.v(pb0, Fa.uv(c + cs * w0, r0)), m.v(pb1, Fa.uv(c + cs * w1, r1)), m.v(pa1, Fa.uv(c, r1))]
+        q = [np.array(m.V[i]) for i in ids]; nrm = np.cross(q[1] - q[0], q[2] - q[0]) + np.cross(q[2] - q[0], q[3] - q[0])
+        m.quad(Fa.mat, "stone", ids if nrm @ (Fa.out + Fb.out) > 0 else ids[::-1])
+
 def build_ledge(m, lg, plates):
     """snow ledge / roof on top of a tier: outer rect = footprint + the cornice top protrusion (PAPP x 1.02, same as the
     lip edge), minus the next tier's footprint. top.jpg at spm px/m, isotropic: front strip rows by depth from the lip,
@@ -303,6 +330,7 @@ def build(scene, lod_budget):
             w = fs.get("weight", 1.0); g = dict(stone=(gs[0] / np.sqrt(w), gs[1] / np.sqrt(w)), cornice=(gc[0] / np.sqrt(w), gc[1] / np.sqrt(w)))
             build_face(m, Face(json.loads(json.dumps(fs)), plates), g, scene.get("opts", {}), md)
         for fl in scene.get("flats", []): build_flat(m, fl, plates)
+        for cr in scene.get("corners", []): build_corner(m, cr)
         for lg in scene.get("ledges", []): build_ledge(m, dict(lg, cell=B.get("ledge_cell", lg.get("cell", 0.35))), plates)
         return m, md
     gs, gc = [0.06, 0.15], [0.10, 0.20]
@@ -330,20 +358,31 @@ def write_obj(m, path):
 
 BL_STAGE = r'''
 import bpy, sys
-a = sys.argv[sys.argv.index("--") + 1:]
+a = sys.argv[sys.argv.index("--") + 1:]; SEAL = a[2] == "1"; THICK = float(a[3]); OFFS = float(a[4]) if len(a) > 4 else 0.0
 bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.ops.wm.obj_import(filepath=a[0], forward_axis="NEGATIVE_Z", up_axis="Y")
-for ob in bpy.context.selected_objects:
-    bpy.context.view_layer.objects.active = ob
+ob = bpy.context.selected_objects[0]; bpy.context.view_layer.objects.active = ob
+if SEAL:
+    bpy.ops.object.mode_set(mode="EDIT"); bpy.ops.mesh.select_all(action="SELECT"); bpy.ops.mesh.separate(type="MATERIAL"); bpy.ops.object.mode_set(mode="OBJECT")
+for ob in list(bpy.context.scene.objects):
+    if ob.type != "MESH": continue
+    bpy.ops.object.select_all(action="DESELECT"); ob.select_set(True); bpy.context.view_layer.objects.active = ob
+    if SEAL:
+        bpy.ops.object.mode_set(mode="EDIT"); bpy.ops.mesh.select_all(action="SELECT"); bpy.ops.mesh.remove_doubles(threshold=0.00002)
+        bpy.ops.mesh.dissolve_degenerate(threshold=0.0005); bpy.ops.mesh.delete_loose(); bpy.ops.object.mode_set(mode="OBJECT")
+        so = ob.modifiers.new("seal", "SOLIDIFY"); so.thickness = THICK; so.offset = OFFS; so.use_rim = True; so.use_even_offset = False
+        bpy.ops.object.modifier_apply(modifier="seal")
+        bpy.ops.object.modifier_add(type="TRIANGULATE"); bpy.ops.object.modifier_apply(modifier="Triangulate")
     bpy.ops.object.shade_smooth_by_angle(angle=1.05)
+bpy.ops.object.select_all(action="SELECT")
 for mt in bpy.data.materials: mt.name = mt.name.split(".")[0]
 bpy.ops.export_scene.gltf(filepath=a[1], export_format="GLB", export_yup=True, export_normals=True, export_texcoords=True, export_materials="EXPORT", export_image_format="NONE")
 '''
 
-def export_glb(m, out_glb):
+def export_glb(m, out_glb, seal=True, thick=0.03, offs=0.0):
     obj = out_glb[:-4] + ".obj"; write_obj(m, obj)
     st = os.path.join(os.path.dirname(out_glb), "_bl_stage.py"); open(st, "w").write(BL_STAGE)
-    subprocess.run([BLENDER, "-b", "-P", st, "--", obj, out_glb], check=True, capture_output=True)
+    subprocess.run([BLENDER, "-b", "-P", st, "--", obj, out_glb, "1" if seal else "0", str(thick), str(offs)], check=True, capture_output=True)
     os.remove(obj); return out_glb
 
 GLTFPACK = os.environ.get("GLTFPACK", "/tmp/gp/node_modules/gltfpack/cli.js")
@@ -401,6 +440,17 @@ def read_glb(path):
             P.append(p); UV.append(uv); F.append(idx + base); MAT += [name] * len(idx); base += len(p)
     return np.vstack(P), np.vstack(UV), np.vstack(F), np.array(MAT), J
 
+def sealed(glb):
+    """object-gate 'mesh sealed' rule (lib/probe.js): per glTF primitive, vertices welded at 1 mm, every edge used by
+    exactly 2 triangles (open = 1, non-manifold > 2)."""
+    P, UV, F, MAT, J = read_glb(glb); out = {}
+    for mat in sorted(set(MAT)):
+        T = F[MAT == mat]; key = np.round(P * 1e3).astype(np.int64); _, vid = np.unique(key, axis=0, return_inverse=True); vid = vid.ravel()
+        t = vid[T]; t = t[(t[:, 0] != t[:, 1]) & (t[:, 1] != t[:, 2]) & (t[:, 0] != t[:, 2])]
+        e = np.sort(np.vstack([t[:, [0, 1]], t[:, [1, 2]], t[:, [2, 0]]]), 1); _, cnt = np.unique(e, axis=0, return_counts=True)
+        out[mat] = dict(tris=int(len(T)), open=int((cnt == 1).sum()), nonManifold=int((cnt > 2).sum()))
+    return dict(per_material=out, pass_=all(v["open"] == 0 and v["nonManifold"] == 0 for v in out.values()))
+
 def check(glb, ck):
     """ck: {plate, depth(moge), k (px/m), material, stone_box, cornice_box?, door_box?, wall_box} (plate px).
     real depth from the mesh vertices whose uv falls in each box, vs the wall plane fitted under wall_box (facing ck.facing)."""
@@ -410,12 +460,16 @@ def check(glb, ck):
     nn = n / np.maximum(1e-12, 2 * area[:, None]); cpx = px[tri].mean(1); cen = tp.mean(1)
     inbox = lambda b: (cpx[:, 0] >= b[0]) & (cpx[:, 0] < b[2]) & (cpx[:, 1] >= b[1]) & (cpx[:, 1] < b[3])
     facing = np.array(ck.get("facing", [0, 0, 1]), float)
-    w = inbox(ck["wall_box"]) & (np.abs(nn @ facing) > 0.3)
+    mid = (P.min(0) + P.max(0)) / 2; outer = (cen - mid) @ facing > 0   # sealed shells: the inner skin of the OPPOSITE face also faces this way
+    nn = np.where(outer[:, None], nn, 0.0)
+    w = inbox(ck["wall_box"]) & (nn @ facing > 0.3)
     if w.sum() < 6: return dict(pass_=False, error="no wall triangles under wall_box")
     c = np.average(cen[w], 0, area[w]); _, _, vt = np.linalg.svd((cen[w] - c) * np.sqrt(area[w])[:, None], full_matrices=False); nrm = vt[2]
     if nrm @ facing < 0: nrm = -nrm
     z = (cen - c) @ nrm
     stone_app, cap_app = moge_reads(ck["depth"], L, ck["stone_box"], ck.get("cornice_box"))
+    if stone_app >= 0.2 - 1e-6 and ck.get("stone_fallback_m"): stone_app = ck["stone_fallback_m"]
+
     res = dict(features={})
     def feat(name, sel, kind, app):
         if sel.sum() < 6: res["features"][name] = None; return
@@ -426,9 +480,17 @@ def check(glb, ck):
         else: real = float(-np.percentile(zz, 50))
         r = real / app; res["features"][name] = dict(real_m=round(real, 3), apparent_m=round(app, 3), ratio=round(r, 2),
                                                      pass_=bool(RATIO_MIN <= r <= (RATIO_MAX if kind == "texture" else 1.6)))
-    feat("stone", inbox(ck["stone_box"]), "texture", stone_app)
+    fw = nn @ facing > 0.3   # outer skin only (sealed builds carry an inner shell facing the other way)
+    feat("stone", inbox(ck["stone_box"]) & fw, "texture", stone_app)
     if ck.get("cornice_box"): feat("cornice", inbox(ck["cornice_box"]) & (nn @ facing > 0.2), "protrusion", cap_app)
-    if ck.get("door_box"): feat("door", inbox(ck["door_box"]) & (np.abs(nn @ facing) > 0.7), "recess", ck.get("door_apparent_m", 1.5))
+    if ck.get("door_box"): feat("door", inbox(ck["door_box"]) & (nn @ facing > 0.7), "recess", ck.get("door_apparent_m", 1.5))
+    if ck.get("edge_cols") and res["features"].get("stone"):   # corner rule: relief survives within 6 px of the face edges
+        sb = ck["stone_box"]; rows = (cpx[:, 1] >= sb[1]) & (cpx[:, 1] < sb[3]) & (nn @ facing > 0.3)
+        near = rows & np.any([np.abs(cpx[:, 0] - e) < 6 for e in ck["edge_cols"]], 0)
+        if near.sum() >= 6:
+            zz = z[near]; er = float(np.percentile(zz, 95) - np.percentile(zz, 5)); ir = res["features"]["stone"]["real_m"]
+            res["corner"] = dict(edge_p95p5_m=round(er, 3), interior_m=ir, ratio=round(er / max(ir, 1e-6), 2), pass_=er >= 0.5 * ir)
+        else: res["corner"] = dict(error="no edge triangles", pass_=False)
     # texel stretch: plate px per metre along each triangle's two principal directions vs the plate's own px/m
     e1, e2 = tp[:, 1] - tp[:, 0], tp[:, 2] - tp[:, 0]; t1, t2 = px[tri][:, 1] - px[tri][:, 0], px[tri][:, 2] - px[tri][:, 0]
     Mg = np.stack([np.stack([np.einsum("ij,ij->i", e1, e1), np.einsum("ij,ij->i", e1, e2)], 1), np.stack([np.einsum("ij,ij->i", e1, e2), np.einsum("ij,ij->i", e2, e2)], 1)], 1)
@@ -443,10 +505,11 @@ def check(glb, ck):
     sfrac = float(area[bad & vis].sum() / max(1e-9, area[vis].sum()))
     res["stretch"] = dict(bad_area_frac=round(sfrac, 3), pass_=sfrac <= ck.get("stretch_frac_max", 0.05))
     # facets: share of stone-box area in big flat triangles (> 0.01 m2) = decimation facets at 3 m
-    sb = inbox(ck["stone_box"]); ff = float(area[sb & (area > 0.01)].sum() / max(1e-9, area[sb].sum()))
+    sb = inbox(ck["stone_box"]) & fw; ff = float(area[sb & (area > 0.01)].sum() / max(1e-9, area[sb].sum()))
     res["facets"] = dict(big_tri_area_frac=round(ff, 3), pass_=ff <= 0.2)
     res["tris"] = int(len(F))
     res["pass_"] = bool(all(v is None or v["pass_"] for v in res["features"].values()) and res["stretch"]["pass_"] and res["facets"]["pass_"]
+                        and res.get("corner", {}).get("pass_", True)
                         and res["features"].get("stone") is not None)
     return res
 
@@ -470,7 +533,80 @@ def selftest():
         rep.append(dict(case=name, want="PASS" if want else "FAIL", got="PASS" if got else "FAIL", detail=r))
         print(("ok  " if got == want else "BAD ") + f"{name}: want {'PASS' if want else 'FAIL'} got {'PASS' if got else 'FAIL'} | "
               + json.dumps({k: v for k, v in r.items() if k != 'tris'}))
+    # ---- 0-credit fix cases (each fix: a FAIL case and its PASS case), on a small terrace build of the real scene
+    TS = os.path.join(HERE, "../../steps/zone-d/01-terrace/wall/terrace.wall.json"); out = f"{W}/tool/selftest"; os.makedirs(out, exist_ok=True)
+    small = dict(stone=6000, cornice=4000, ledge_cell=1.0)
+    def tb(tag, mut):
+        sc = json.load(open(TS)); mut(sc); CACHE.clear(); PAPP.clear(); EDGE.clear(); m, meta = build(sc, small)
+        g = f"{out}/{tag}.glb"; export_glb(m, g); return g, meta
+    def fface(meta, name): return [f for f in meta["faces"] if f["face"] == name][0]
+    def ckface(meta, name, plate, depth, facing, fb=None, door=True):
+        f = fface(meta, name); st = f["features"]["stone"][0]
+        c = dict(plate=plate, depth=depth, k=1 / 0.0215, material=("side" if "side" in plate else "front"), wall_box=st["box"], stone_box=st["box"], facing=facing, stone_fallback_m=fb, stretch_frac_max=1.0)
+        if door and f["features"].get("door"): c["door_box"] = f["features"]["door"][0]["box"]
+        return c
+    sc0 = json.load(open(TS)); FP = sc0["plates"]["front"]; SPl = sc0["plates"]["side"]
+    good, gmeta = tb("good", lambda s_: None)
+    cases2 = []
+    # corner rule
+    g0, _ = tb("corner-locked", lambda s_: s_["opts"].update(corner_rule=False))
+    cf = lambda meta: dict(ckface(meta, "t1-front", FP["img"], FP["depth"], [0, 0, 1], door=False), edge_cols=[166], stone_box=[166, 770, 450, 860], wall_box=[180, 770, 450, 860])
+    cases2 += [("corner relief locked to 0 at face edges", g0, cf(gmeta), False), ("corner rule (relief kept at edges)", good, cf(gmeta), True)]
+    # fallback when MoGe hits the 0.2 m cap
+    g1, m1 = tb("no-fallback", lambda s_: s_["opts"].update(stone_fallback_m=None))
+    cases2 += [("side stone built from the capped 0.2 m MoGe read", g1, ckface(gmeta, "t3-left", SPl["img"], SPl["depth"], [-1, 0, 0], fb=0.096, door=False), False),
+               ("side stone built from the 0.096 m fallback", good, ckface(gmeta, "t3-left", SPl["img"], SPl["depth"], [-1, 0, 0], fb=0.096, door=False), True)]
+    # per-tier cornice slab depth
+    def shallow(s_):
+        for f in s_["faces"]:
+            if f["name"].startswith("t2"): f["cornice_override_m"] = 0.2
+    g2, _ = tb("t2-shallow-slab", shallow)
+    cc = lambda meta: dict(ckface(meta, "t2-front", FP["img"], FP["depth"], [0, 0, 1], fb=0.096, door=False), cornice_box=fface(meta, "t2-front")["features"]["cornice"][0]["box"])
+    cases2 += [("t2 cornice slab 0.2 m (shallower than its pixels)", g2, cc(gmeta), False), ("t2 cornice slab from its own MoGe read", good, cc(gmeta), True)]
+    # side doorway: painted vs real recess
+    def nodoor(s_):
+        for f in s_["faces"]:
+            if f["name"] in ("t1-left", "t1-right"): f["doors"] = []
+    g3, _ = tb("side-door-painted", nodoor)
+    sd = lambda: dict(ckface(gmeta, "t1-left", SPl["img"], SPl["depth"], [-1, 0, 0], fb=0.096), material="side")
+    cases2 += [("t1 left doorway painted on a flat wall", g3, sd(), False), ("t1 left doorway as a real 1.5 m recess", good, sd(), True)]
+    for name, glb, ck, want in cases2:
+        r = check(glb, ck); got = r["pass_"]
+        if name.startswith("corner"): got = r.get("corner", {}).get("pass_", False)
+        elif "slab" in name: got = bool(r["features"].get("cornice") and r["features"]["cornice"]["pass_"])
+        elif "doorway" in name: got = bool(r["features"].get("door") and r["features"]["door"]["pass_"])
+        else: got = bool(r["features"].get("stone") and r["features"]["stone"]["pass_"])
+        ok &= (got == want); print(("ok  " if got == want else "BAD ") + f"{name}: want {'PASS' if want else 'FAIL'} got {'PASS' if got else 'FAIL'} | "
+                                   + json.dumps({k: v for k, v in r.items() if k in ("features", "corner")}))
+    # door-aimed views: every door in the build must have a door spec
+    specs = door_specs(gmeta, sc0)
+    miss = door_specs_missing(gmeta, specs[:-1]); ok &= bool(miss); print(("ok  " if miss else "BAD ") + f"door spec set missing one door: want FAIL got {'FAIL' if miss else 'PASS'} ({miss})")
+    miss = door_specs_missing(gmeta, specs); ok &= not miss; print(("ok  " if not miss else "BAD ") + f"door spec for every door: want PASS got {'PASS' if not miss else 'FAIL'}")
+    # sealed (object-gate rule): the unsealed v1 terrace must FAIL. The sealed build is REPORTED, not asserted (known open).
+    old = f"{W}/terrace/glb/terrace-lod0.glb"
+    if os.path.exists(old):
+        r = sealed(old); ok &= not r["pass_"]; print(("ok  " if not r["pass_"] else "BAD ") + f"unsealed v1 terrace: want FAIL got {'PASS' if r['pass_'] else 'FAIL'} {json.dumps(r['per_material'])}")
+    r = sealed(good); print(f"INFO sealed build (known open, not asserted): {'PASS' if r['pass_'] else 'FAIL'} {json.dumps(r['per_material'])}")
     print("SELFTEST", "PASS" if ok else "FAIL"); return ok, rep
+
+def door_specs(meta, scene):
+    """one depthmeasure spec per door: wall plane on the stone strip beside the door, views aimed at the door."""
+    out = []; faces = {f["name"]: f for f in scene["faces"]}
+    for f in meta["faces"]:
+        sf = faces[f["face"]]; P = scene["plates"][sf["plate"]]
+        for i, d in enumerate(f["features"].get("door", [])):
+            x0, y0, x1, y1 = d["box"]; w = 40
+            wb = [max(0, x0 - 10 - w - 14), y0, x0 - 24, y1 - 6] if x0 - 10 - w - 14 > 0 else [x1 + 24, y0, min(1023, x1 + 24 + w), y1 - 6]
+            n = np.cross(sf["frame"]["right"], sf["frame"]["up"]).round().astype(int).tolist()
+            out.append(dict(face=f["face"], door=i, plate=P["img"], plates={P["mat"]: P["img"]}, material=P["mat"], moge_depth=P.get("depth"),
+                            wall_box=wb, facing=n, auto_frame=True, outline_break_m=0.3,
+                            reliefs=[dict(name="door", kind="recess", box=d["box"], luma_below=30, cap_m=1.5)],
+                            views=[dict(name="door-60-8m", dist=8, angle=60, grazing=False), dict(name="door-75-5m", dist=5, angle=75, grazing=False)]))
+    return out
+
+def door_specs_missing(meta, specs):
+    have = {(s_["face"], s_["door"]) for s_ in specs}
+    return [(f["face"], i) for f in meta["faces"] for i, _ in enumerate(f["features"].get("door", [])) if (f["face"], i) not in have]
 
 if __name__ == "__main__":
     cmd = sys.argv[1]

@@ -1065,3 +1065,9 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Guard | `python3 tools/imagine-to-3d/blender_wall.py selftest`: flat v3.5 piece FAIL, stretched-jamb v1 FAIL, over-deep v2 FAIL, hand v4 FAIL (stretched top/underside found by the check), tool-built v4 PASS. `check` = per-feature real/apparent in [0.7, 1.3] (stone) / [0.7, 1.6] (cornice, door), stretch <= 1.3 on <= 5 % of area, big-flat-triangle share <= 20 %. |
 | Known gaps | facet check is weak (v2 decimation passes it; v2 fails on depth + stretch instead); mesh is not sealed (separate pieces, open back corners); side cornices are textured from the front cap pixels (declared) and are not measured by depthmeasure. |
 | Sources | `/workspace/wall-proof-1013/{v2,v3,v4}`, `steps/zone-d/01-terrace/wall/make_scene.py`. |
+
+## 2026-10-13 blender_wall fixes (step 2)
+- Corner rule, MoGe-cap stone fallback (0.096 m = mean of uncapped front reads), per-tier cornice slab from own read, side door recesses, door-aimed specs, solidify sealing: all self-tested with FAIL cases.
+- Sealing still FAILS: T-junction/shared-boundary vertices between pieces leave non-manifold edges (LOD0 front 61 / side 26 / top 4). Needs single-surface topology with shared ticks.
+- Sealing doubles triangles: LOD budgets lowered to fit (83,340 / 28,636 / 7,220).
+- t1-right-v35 not used: tier heights disagree with plate-front (cornice underside 4.6 vs 3.8 m).

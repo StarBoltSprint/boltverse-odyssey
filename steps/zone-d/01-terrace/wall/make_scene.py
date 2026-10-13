@@ -28,16 +28,23 @@ for i, T in enumerate(TIERS):
             fr = dict(o=[-T["hw"], 0, 0], right=[0, 0, 1], up=[0, 1, 0]); u = [BACK, T["z"]]; cs = 1; ext = [0, 1]
         else:
             fr = dict(o=[T["hw"], 0, 0], right=[0, 0, -1], up=[0, 1, 0]); u = [-T["z"], -BACK]; cs = -1; ext = [1, 0]
+        # side doorways: only where the side plate's own pixels show one (dark, >= 1.5 m2, >= 1.8 m tall); else no recess
+        sdoor = dict(search=[160, int(min(srows)) + 4, 880, int(max(srows))], band=0, depth=1.5, min_area_m2=1.5, min_h_m=1.8)
         faces.append(dict(name=f"t{i+1}-{side}", plate="side", cornice_from=f"t{i+1}-front", k=k, c0=890, cs=cs, u=u, weight=w * (0.6 if side == "left" else 0.35),
-                          frame=fr, bands=[sb, cb], cornice_ext=ext, doors=[]))
+                          frame=fr, bands=[sb, cb], cornice_ext=ext, doors=[sdoor]))
     # back (never on the path): flat, front plate reused (declared)
     hw = T["hw"]; y0 = sv[0]; y1 = cv[1]
     flats.append(dict(plate="front", o=[hw, y0, BACK], U=[-2 * hw, 0, 0], V=[0, y1 - y0, 0], n=[6, 3], c0=535 + hw / S, cu=[k, 0, 0], r0=870 - y0 / S, cr=[0, -k, 0], cat="reserve"))
 R0 = {2: 16, 1: 490, 0: 709}
+corners = []
+for i in range(3):
+    corners += [dict(a=f"t{i+1}-front", a_end="u1", b=f"t{i+1}-right", b_end="u0"), dict(a=f"t{i+1}-front", a_end="u0", b=f"t{i+1}-left", b_end="u1")]
 ledges = [dict(front=f"t{i+1}-front", hw=T["hw"], z=T["z"], back=BACK, y=y(T["cap"][1]), plate="top", r0=R0[i], spm=48,
                next=(dict(hw=TIERS[i + 1]["hw"], z=TIERS[i + 1]["z"]) if i < 2 else None)) for i, T in enumerate(TIERS)]
-json.dump(dict(name="terrace", plates=plates, faces=faces, flats=flats, ledges=ledges, opts=dict(scale=1.15),
-               budgets=[dict(stone=30000, cornice=20000, ledge_cell=0.35), dict(stone=13000, cornice=9000, ledge_cell=0.6), dict(stone=3200, cornice=2400, ledge_cell=1.3)]),
+# stone fallback when MoGe-2 hits its 0.2 m cap (side plate, t2 front): mean of the two UNCAPPED front reads of the same
+# basalt (t1 front 0.119 m, t3 front 0.073 m) = 0.096 m. Same material, same lighting, read where MoGe is not saturated.
+json.dump(dict(name="terrace", plates=plates, faces=faces, flats=flats, ledges=ledges, corners=corners, opts=dict(scale=1.15, stone_fallback_m=0.096, corner_rule=True),
+               budgets=[dict(stone=21000, cornice=13000, ledge_cell=0.5), dict(stone=5800, cornice=4100, ledge_cell=0.9), dict(stone=900, cornice=650, ledge_cell=3.0)]),
           open(os.path.join(os.path.dirname(__file__), "terrace.wall.json"), "w"), indent=1)
 # v4 proof piece (self-test good case built BY THE TOOL)
 v4 = dict(name="v4piece", plates=dict(front=plates["front"]), opts=dict(scale=1.15),
