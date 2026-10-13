@@ -2,7 +2,8 @@
 Checks on the SERVED page: (1) scene inventory vs declared nodes; (2) object material side vs GLB doubleSided and
 unexpected transparency; (3) per-region no-grey on door-3m / threshold / wall-end renders; (4) camera vs spine.json."""
 import json, os, struct, subprocess, sys
-from tools.gate import nogrey
+from tools.gate import nogrey, flatregion, playchecks
+from PIL import Image
 HERE = os.path.dirname(__file__)
 CFG = json.load(open(os.path.join(HERE, "playgate.views.json")))
 SPINE = "/workspace/grokcli/wt/zd-terrace-1012/steps/zone-d/01-terrace/spine.json"
@@ -48,14 +49,30 @@ def run(url, out, spine=SPINE, glb_dir=None, views=None):
     sc = scene_checks(r["inventory"], glb_materials(glb)) + [f"page error in {n}: {e}" for n, v in r["views"].items() for e in v["errors"]]
     ng = {n: nogrey.check(v["png"]) for n, v in r["views"].items()}
     cam = camera_check(r["camera"], spine)
-    rep = dict(gate="play-build", url=url, scene=dict(errors=sc, pass_=not sc), nogrey={n: dict(pass_=g["pass_"], worst=g["worstRegionFrac"], flat=g["flatGreyFrac"]) for n, g in ng.items()},
-               camera=cam, renders={n: v["png"] for n, v in r["views"].items()}, inventory=r["inventory"])
-    rep["pass_"] = rep["scene"]["pass_"] and all(g["pass_"] for g in rep["nogrey"].values()) and cam["pass_"]
+    cam["aim"] = r["camera"].get("aim"); cam["spineFile"] = r["camera"].get("spineFile")
+    if not cam["aim"]: cam["diffs"]["aim"] = dict(page="ignored (no camera.aim; page reads %s)" % cam["spineFile"], spine=json.load(open(spine))["camera"].get("aim")); cam["pass_"] = False
+    V = {}
+    for n, v in r["views"].items():
+        pr, cv = v["probe"], CFG["views"][n]; d = dict(dist=dict(camToDoor_m=pr["camToDoor_m"], playerToDoor_m=pr["playerToDoor_m"], camToPlayer_m=pr["camToPlayer_m"], cam=pr["camPos"], player=pr["playerPos"]),
+            lod=pr["lodLevel"], renderScale=pr["renderScale"], buffer=pr["buffer"])
+        d["flat"] = flatregion.check(v["png"]); d["materials"] = playchecks.materials(pr["materials"], CFG["material_exempt"], v["png"])
+        if cv.get("texel"): d["texel"] = playchecks.texel(pr["samples"], CFG["texel"]); d["texel"]["uvStep"] = pr["uvStep"]; d["texel"]["textures"] = pr["textures"]
+        if cv.get("framing"): d["framing"] = playchecks.framing(pr["framing"], CFG["framing"])
+        if cv.get("oblique"): d["oblique"] = playchecks.oblique(pr["oblique"], CFG["oblique"])
+        im = Image.open(v["png"]).convert("RGB")
+        if cv.get("crop"): x, y, w, h = cv["crop"]; im.crop((x, y, x + w, y + h)).save(v["png"][:-4] + "-crop100.jpg", quality=95)
+        jp = v["png"][:-4] + ".jpg"; im.save(jp, quality=92); d["render"] = jp
+        d["pass_"] = all(d[k]["pass_"] for k in ("flat", "materials", "texel", "framing", "oblique") if k in d)
+        V[n] = d
+    rep = dict(gate="play-build", url=url, viewErrors=r.get("failed", {}), scene=dict(errors=sc, pass_=not sc), nogrey={n: dict(pass_=g["pass_"], worst=g["worstRegionFrac"], flat=g["flatGreyFrac"]) for n, g in ng.items()},
+               camera=cam, views=V, renders={n: v["png"] for n, v in r["views"].items()}, inventory=r["inventory"])
+    rep["pass_"] = rep["scene"]["pass_"] and all(g["pass_"] for g in rep["nogrey"].values()) and not r.get("failed") and cam["pass_"] and all(d["pass_"] for d in V.values())
+    for v in r["views"].values(): os.remove(v["png"])   # JPG/JSON only
     return rep
 
 if __name__ == "__main__":
     a = sys.argv[1:]; sp = a[a.index("--spine") + 1] if "--spine" in a else SPINE
     rep = run(a[0], a[1], sp)
     s = json.dumps(rep, indent=1).replace('"pass_"', '"pass"'); open(os.path.join(a[1], "playgate.json"), "w").write(s)
-    print(json.dumps(dict(scene=rep["scene"], nogrey=rep["nogrey"], camera={k: rep["camera"][k] for k in ("diffs", "pass_")}, pass_=rep["pass_"]), indent=1))
+    print(json.dumps(dict(scene=rep["scene"]["pass_"], camera=rep["camera"]["diffs"], views={n: {k: (d[k]["pass_"] if isinstance(d.get(k), dict) and "pass_" in d[k] else d.get(k)) for k in ("flat", "materials", "texel", "framing", "oblique")} for n, d in rep["views"].items()}, pass_=rep["pass_"])).replace('"pass_"', '"pass"'))
     sys.exit(0 if rep["pass_"] else 1)
