@@ -2,12 +2,29 @@
   "date": "2026-10-13",
   "id": "zd-tier-terrace",
   "kind": "kit-relief",
-  "kit_spec": "tools/kit/specs/zd-tier-v5.json",
+  "kit_spec": "tools/kit/specs/zd-tier-outline.json",
   "materials": {
     "snow": "snow-zd-windpacked",
     "stone": "basalt-zd-frost"
   },
   "metrics": {
+    "cli_outline_2026-10-13": {
+      "iou_closed": 0.882,
+      "iou_closed15_legacy": 0.871,
+      "iou_raw": 0.787,
+      "nonmanifold_edges": 230,
+      "open_edges": 0,
+      "snow_ratio": {
+        "key": 0.395,
+        "model": 0.38,
+        "rel_diff": 0.038
+      },
+      "triangles": {
+        "lod0": 82328,
+        "lod1": 23764,
+        "lod2": 8420
+      }
+    },
     "cli_parametric_2026-10-13": {
       "dE_flat_vs_key": 6.15,
       "iou_closed": 0.547,

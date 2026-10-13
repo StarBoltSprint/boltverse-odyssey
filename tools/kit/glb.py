@@ -36,8 +36,11 @@ def write_glb(path, meshes, extras=None):
         N = np.stack([N[:, 0], N[:, 2], -N[:, 1]], 1).astype(np.float32)
         UV = np.stack([m.V[:, 0], m.V[:, 2]], 1).astype(np.float32)  # world-metre UV; shader is triplanar anyway
         I = m.F.astype(np.uint32).reshape(-1)
-        prim = {"attributes": {"POSITION": add(V, 34962, 5126, "VEC3", True), "NORMAL": add(N, 34962, 5126, "VEC3"),
-                               "TEXCOORD_0": add(UV, 34962, 5126, "VEC2")},
+        attrs = {"POSITION": add(V, 34962, 5126, "VEC3", True), "NORMAL": add(N, 34962, 5126, "VEC3"),
+                 "TEXCOORD_0": add(UV, 34962, 5126, "VEC2")}
+        for k, v in sorted(m.attrs.items()):  # custom glTF attributes: _SNOW, _ICE (0..1)
+            attrs[k if k.startswith("_") else "_" + k.upper()] = add(np.asarray(v, np.float32).reshape(-1), 34962, 5126, "SCALAR")
+        prim = {"attributes": attrs,
                 "indices": add(I, 34963, 5125, "SCALAR"), "material": mat_idx[m.material]}
         gl_meshes.append({"name": m.name, "primitives": [prim]})
         nodes.append({"name": m.name, "mesh": len(gl_meshes) - 1})

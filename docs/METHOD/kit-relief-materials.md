@@ -34,7 +34,10 @@ Every colour pixel is Imagine. Light and shadows are computed live.
 - **Uniform decimation spikes blocks.** Decimating displaced lod0 uniformly turned stone blocks into spikes (v5 "hérissé"). Build each LOD from its own tessellation (`res_m`) and drop the block push below LOD0.
 - **Offline px/m lies.** v4 measured 512 offline but the viewer ran ~200 px/m (downscaled textures). Only the live probe counts.
 - **Floating cornice.** A slab with nothing under it reads as floating from the side. Seat it on a support block (v4 fix).
+- **Mirrored key camera.** A kit frame with det = -1 mirrors the image; check `project()` against the legacy camera on known points before trusting IoU.
+- **Even-odd raster.** `cv2.fillPoly` on a list of triangles cancels overlaps and speckles the silhouette; rasterise triangle by triangle.
+- **Relief that grows the outline.** Blocks or drifts pushed in front of the key outline cost IoU; step blocks back from the outline plane.
 - **Grey cones.** Icicles with no material read as grey cones in the sky; they need the ice material and must grow out of the drift.
 
 ## Status 2026-10-13
-Tier kit = **WIP** (`biome/library/_wip/zd-tier-terrace`). v4: IoU 0.747/0.869, dE 2.37/3.48, 0 open edges, but Critic + Art Director FAIL (snow identity, icicles, block depth 8 cm vs 20–40 cm, ground, 195.5k tris). The CLI's parametric tiers score 0.46/0.55 until the SAM-outline extrusion is ported from `tools/kit/legacy/relief6.py`.
+Tier kit = **WIP** (`biome/library/_wip/zd-tier-terrace`). v4: IoU 0.747/0.869, dE 2.37/3.48, 0 open edges, but Critic + Art Director FAIL (snow identity, icicles, block depth 8 cm vs 20–40 cm, ground, 195.5k tris). Outline-mask mode (ported 2026-10-13, `tools/kit/outline.py`) reaches **0.787 raw / 0.882 closed** on Zone D (v4 0.747/0.869), 0 open edges, 82.3k lod0 tris, snow ratio within 3.8% of the key.

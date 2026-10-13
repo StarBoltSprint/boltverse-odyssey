@@ -21,8 +21,22 @@ Exit 0 PASS, 1 a gate failed (files still written), 2 usage.
 
 Gates: `iou_closed ≥ 0.85`, `iou_raw ≥ 0.75`, `open_edges == 0`, lod0 ≤ budget (90k), texture ≥ 500 px/m. `px_per_m_live` is `null` here on purpose: it is only filled by the viewer probe.
 
+## Outline-mask mode (v4 shaping port + v6 snow)
+`specs/zd-tier-outline.json` + `specs/zd/*.png` (SAM tier, door, cornice, key snow masks):
+```bash
+python3 tools/kit/kit.py build --key zd-bible-1012/key-zd1-b.jpg --spec tools/kit/specs/zd-tier-outline.json --out out/zd-tier
+```
+`outline.py`: masks are back-projected through the **key camera** (alt3d-1013 MoGe camera, verified to the pixel against `legacy/kitfit3.py`) onto the wall plane (tier) and the overhang plane (cornice), then extruded as **clean 2.5-D cells**: each cell has its own front and back depth, walls are split at every depth level, so the solid is watertight (0 open edges). The door recess is cells at 2.5 m; stone blocks are running-bond cells stepped **behind** the outline (0–0.3 m, joints deeper), so relief never grows the silhouette and never spikes. `carve_depth` keeps each cell only as deep as the key mask still covers its top (visual-hull carving), so tread tops do not show where the key shows none. The cornice is seated on a support block, limited to columns the key shows as wall. Per-vertex `_SNOW` (v6 rule: key snow mask seen from the key camera, or a lifted up face) and `_ICE` (down faces of the cornice) go into the GLB; `shader/hexTriplanar.js` mixes the snow tile by `_snow`.
+
+Zone D 2026-10-13: **IoU 0.787 raw / 0.882 closed (0.871 with the v4 `iou4.py` definition)**, 0 open edges, lod0 82.3k / lod1 23.8k / lod2 8.4k tris, snow ratio key 0.395 vs model 0.380 (3.8%, gate 10%). v4 was 0.747 / 0.869; v6 0.741 / 0.849 with snow off by 62%.
+
 ## Honest limits (2026-10-13)
-- The parametric box tiers give **IoU 0.46 raw / 0.55 closed** on Zone D. The v4 Blender build reached 0.75/0.87 because it extruded the **SAM outline** of tier 1; that outline extrusion is still only in `legacy/relief5.py`–`relief6.py`. Port it next (`pieces()` → polygon extrude from `fit.hit_plane`).
+- Parametric box mode (no `outline`) is still 0.46 / 0.55 on Zone D; use outline mode when masks exist.
+- Outline mode leaves upper tiers off (`upper_tiers: false`), as the v4 key-cam match did; they add ~2x extra area at the key camera. Turning them on is a play-build choice.
+- Close views read as stepped cells (0.13 m) with flat cells at the outline edge; there is no texture displacement on top yet. Art Director has not seen it.
+- `drifts.outline_k` is 0: lifting drifts past the key outline cost 0.03 IoU; the drift volume comes from the mask.
+- 230 non-manifold edges (cells meeting at one edge after carving) are reported, not gated; 0 open edges.
+- The shader snow mix is string-tested in node, not compiled in WebGL here.
 - The contact sheet is flat-shaded mean colour, not the textured shader. Art judgement still needs the play build.
 - Adaptive tessellation is per-LOD, not per-face: lod0 is uniform `res_m[0]`, so budget is controlled by `res_m` (0.22 m → 83.6k tris on Zone D).
 

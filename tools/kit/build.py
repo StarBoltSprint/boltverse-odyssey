@@ -49,6 +49,7 @@ def displace(m: Mesh, h, tile_m, amp, focus, f0, f1, block=None) -> Mesh:
     if block is not None and amp > 0:  # per-block push in metres (stones protrude unevenly)
         off = off + block(m.V)
     out = Mesh(m.V + N * (off * fade(m.V, focus, f0, f1))[:, None], m.F, m.name, m.material)
+    out.attrs = dict(m.attrs)
     return out
 
 
@@ -148,8 +149,36 @@ def icicles(spec: dict) -> list[Mesh]:
     return out
 
 
-def build(spec: dict, matlib: Path = MATLIB) -> dict:
+def build_outline(spec: dict, cam, masks: dict) -> dict:
+    """Outline-mask mode (v4 shaping + v6 snow): tier 1 + cornice from key masks, clean block cells."""
+    from outline import drift_lift, outline_pieces, snow_attr
+    o = spec["outline"]
+    rel = spec.get("relief", {})
+    focus = rel.get("focus")
+    lods = {}
+    for li, k in enumerate((1, 2, 4)):
+        sub = dict(spec)
+        sub["outline"] = {**o, "cell_m": o.get("cell_m", 0.1) * k, "blocks": o.get("blocks", True) and li == 0}
+        parts = []
+        for p in outline_pieces(sub, cam, masks, rel.get("res_m", [0.5, 1.0, 2.0])[li]):
+            lift = None
+            if spec.get("drifts") and li < 2:
+                p, lift = drift_lift(p, spec["drifts"].get("thick_m", 0.6) * spec["drifts"].get("outline_k", 0.25))
+            if masks.get("snow") is not None:
+                p.attrs["_SNOW"] = snow_attr(p, cam, masks["snow"], lift)
+            if p.name == "cornice":
+                N = vertex_normals(p)
+                p.attrs["_ICE"] = (N[:, 2] < -0.3).astype(float)
+                p.attrs["_SNOW"] = np.where(p.attrs["_ICE"] > 0, 0.0, p.attrs.get("_SNOW", np.zeros(len(p.V))))
+            parts.append(p)
+        lods[f"lod{li}"] = parts
+    return lods
+
+
+def build(spec: dict, matlib: Path = MATLIB, cam=None, masks=None) -> dict:
     """Returns {'lod0': [Mesh...], 'lod1': ..., 'lod2': ...}."""
+    if spec.get("outline") and cam is not None and masks:
+        return build_outline(spec, cam, masks)
     rel = spec.get("relief", {})
     mats = spec.get("materials", {"stone": "basalt-zd-frost", "snow": "snow-zd-windpacked"})
     hs, ms = load_height(mats["stone"], matlib)

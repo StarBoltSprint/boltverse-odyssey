@@ -5,19 +5,28 @@
 //   import { applyHexTriplanar } from './hexTriplanar.js';
 //   applyHexTriplanar(mat, { tileM: 2.0, rotate: false, keyGain: [1,1,1] });   // mat.map / normalMap set
 // px/m on screen = tile_px / tileM. Measure it live with probePxPerM(), never offline.
-export function applyHexTriplanar(material, { tileM = 2.0, rotate = false, keyGain = [1, 1, 1], sharp = 3.0 } = {}) {
+// snowMap (optional): second Imagine tile mixed in by the per-vertex _SNOW attribute that tools/kit writes
+// (GLTFLoader exposes glTF "_SNOW" as geometry attribute "_snow").
+export function applyHexTriplanar(material, { tileM = 2.0, rotate = false, keyGain = [1, 1, 1], sharp = 3.0, snowMap = null, snowTileM = 1.2, snowGain = [1, 1, 1] } = {}) {
   material.userData.hex = { tileM, rotate, keyGain, sharp };
   material.onBeforeCompile = (shader) => {
     shader.uniforms.uTileM = { value: tileM };
     shader.uniforms.uRot = { value: rotate ? 1 : 0 };
     shader.uniforms.uGain = { value: keyGain };
     shader.uniforms.uSharp = { value: sharp };
+    shader.uniforms.uSnowMap = { value: snowMap };
+    shader.uniforms.uSnowTileM = { value: snowTileM };
+    shader.uniforms.uSnowGain = { value: snowGain };
+    const SNOW = snowMap ? '#define HEX_SNOW\n' : '';
     shader.vertexShader = shader.vertexShader
-      .replace('#include <common>', '#include <common>\nvarying vec3 vWP; varying vec3 vWN;')
-      .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWP = (modelMatrix * vec4(transformed,1.0)).xyz; vWN = normalize(mat3(modelMatrix) * objectNormal);');
+      .replace('#include <common>', SNOW + '#include <common>\nvarying vec3 vWP; varying vec3 vWN;\n#ifdef HEX_SNOW\nattribute float _snow; varying float vSnow;\n#endif')
+      .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWP = (modelMatrix * vec4(transformed,1.0)).xyz; vWN = normalize(mat3(modelMatrix) * objectNormal);\n#ifdef HEX_SNOW\nvSnow = _snow;\n#endif');
     shader.fragmentShader = shader.fragmentShader
-      .replace('#include <common>', `#include <common>
+      .replace('#include <common>', SNOW + `#include <common>
 varying vec3 vWP; varying vec3 vWN;
+#ifdef HEX_SNOW
+varying float vSnow; uniform sampler2D uSnowMap; uniform float uSnowTileM; uniform vec3 uSnowGain;
+#endif
 uniform float uTileM; uniform int uRot; uniform vec3 uGain; uniform float uSharp;
 vec2 h2(vec2 c){ float h = fract(sin(dot(c, vec2(127.1,311.7))) * 43758.5453); return vec2(fract(h*0.6180339*7.0), fract(h*0.4142135*13.0)); }
 vec4 hexSample(sampler2D t, vec2 uv){
@@ -35,16 +44,22 @@ vec4 hexSample(sampler2D t, vec2 uv){
   }
   return acc / max(sqrt(w2), 1e-5) + mean;  // == normalise by sum, divide by sqrt(sum w^2)
 }
-vec4 triHex(sampler2D t){
+vec4 triHexT(sampler2D t, float tileM){
   vec3 w = pow(abs(normalize(vWN)), vec3(4.0)); w /= (w.x + w.y + w.z);
-  vec3 p = vWP / uTileM;
+  vec3 p = vWP / tileM;
   return hexSample(t, p.zy) * w.x + hexSample(t, p.xy * vec2(1.0,-1.0)) * w.z + hexSample(t, p.xz) * w.y;
-}`)
+}
+vec4 triHex(sampler2D t){ return triHexT(t, uTileM); }`)
       .replace('#include <map_fragment>', `#ifdef USE_MAP
-  vec4 sampledDiffuseColor = triHex(map); sampledDiffuseColor.rgb *= uGain; diffuseColor *= sampledDiffuseColor;
+  vec4 sampledDiffuseColor = triHex(map); sampledDiffuseColor.rgb *= uGain;
+#ifdef HEX_SNOW
+  vec4 snowC = triHexT(uSnowMap, uSnowTileM); snowC.rgb *= uSnowGain;
+  sampledDiffuseColor = mix(sampledDiffuseColor, snowC, clamp(vSnow, 0.0, 1.0));
+#endif
+  diffuseColor *= sampledDiffuseColor;
 #endif`);
   };
-  material.customProgramCacheKey = () => `hexTri:${tileM}:${rotate}`;
+  material.customProgramCacheKey = () => `hexTri:${tileM}:${rotate}:${snowMap ? 1 : 0}`;
   return material;
 }
 

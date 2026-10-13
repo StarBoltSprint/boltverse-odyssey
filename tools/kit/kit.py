@@ -42,7 +42,7 @@ def views(spec):
     c = spec["camera"]
     mid = np.array([W / 2, 1.0, H / 2])
     return {
-        "keycam": look_at(c["pos"], c["target"], c.get("fov_deg", 60), c.get("w", 1024), c.get("h", 1024)),
+        "keycam": look_at(c["pos"], c["target"], c.get("fov_deg", 60), c.get("w", 1024), c.get("h", 1024), c.get("up", (0, 0, 1))),
         "near3m": look_at(mid + [0, -3.0, -H / 2 + 1.6], mid + [0, 0, -H / 2 + 1.6], 60, 512, 512),
         "oblique45": look_at(mid + [-4.0, -4.0, -H / 2 + 1.6], mid + [0, 0, -H / 2 + 1.6], 60, 512, 512),
         "grazing": look_at([-1.5, -0.6, 1.6], [W, 0.2, 1.6], 60, 512, 512),
@@ -89,7 +89,15 @@ def cmd_build(a) -> int:
     colours = {"stone": mats["stone"]["mean_bgr"] if "mean_bgr" in mats["stone"] else (110, 80, 60),
                "snow": (225, 205, 195), "ice": (235, 215, 200)}
     colours.update({k: tuple(v) for k, v in spec.get("flat_colours_bgr", {}).items()})
-    lods = build(spec, matlib)
+    masks = None
+    if spec.get("outline"):
+        base = Path(a.spec).resolve().parent
+        rd = lambda q: load_mask(q if Path(q).is_absolute() else base / q, shape) if q else None
+        o = spec["outline"]
+        masks = {k: rd(o.get(f"{k}_mask")) for k in ("tier", "door", "cornice", "snow")}
+        if target is None and masks["tier"] is not None:
+            target = masks["tier"] | (masks["cornice"] if masks["cornice"] is not None else False)
+    lods = build(spec, matlib, cams["keycam"] if cams else None, masks)
     if a.fit_camera and target is not None:
         from fit import fit_camera
         from render import iou as _iou
@@ -100,7 +108,8 @@ def cmd_build(a) -> int:
     out.mkdir(parents=True, exist_ok=True)
     for k, v in lods.items():
         write_glb(out / f"kit-{k}.glb", v, {"spec": spec.get("id", "kit"), "lod": k, "materials": spec["materials"]})
-    m = metrics(lods, cams["keycam"], target, key, colours, mats, spec.get("budget", {}).get("lod0_tris", 90000))
+    m = metrics(lods, cams["keycam"], target, key, colours, mats, spec.get("budget", {}).get("lod0_tris", 90000),
+                snow_mask=(masks or {}).get("snow"))
     fails = []
     if "iou_closed" in m and m["iou_closed"] < GATES["iou_closed"]:
         fails.append(f"iou_closed {m['iou_closed']} < {GATES['iou_closed']}")
@@ -113,6 +122,8 @@ def cmd_build(a) -> int:
     for k, v in m.get("px_per_m_texture", {}).items():
         if v < GATES["ppm"]:
             fails.append(f"{k} texture {v} px/m < {GATES['ppm']}")
+    if m.get("snow_ratio") and m["snow_ratio"]["rel_diff"] > 0.10:
+        fails.append(f"snow/stone ratio off by {m['snow_ratio']['rel_diff']:.0%} (> 10%)")
     m["verdict"] = "PASS" if not fails else "FAIL"
     m["fails"] = fails
     m["spec"] = spec
