@@ -1,0 +1,58 @@
+kit-gate exit=1 ok=False cmd=node tools/object-gate/cli.mjs --scene tools/object-gate/specs/zone-c/solids-scene.yaml --out steps/zone-c/05-solids-clean/object-gate
+--- stdout ---
+es not downscaled vs Imagine originals	key-zc1.jpg gpu 1792x1008 served 1792x1008 original 1792x1008; plate-atlas.jpg gpu 4096x3072 served 4096x3072 original 4096x3072
+PASS	cliff-left	UV stretch <= 1.3	max 1.078
+PASS	cliff-left	repetition (capture autocorrelation)	face z peak 0.0862 at lag 5,34 px; face x peak 0.3053 at lag 0,24 px; close peak 0.3279 at lag 0,-15 px; low-portrait peak 0.2179 at lag -3,16 px (max 0.65, at plate period 0.5)
+WARN	cliff-left	visible px/m (phone sharpness from >= 8 m, final render)	58.6 px/m of real detail on screen vs 118.5 needed (capture at 8.03 m, zoomed to 237.1 screen px/m; median of 20 tiles, p25 48.4; phone 1080x2400, render pixel ratio 1, vfov 51.47°). Info: plate sampling worst +z 32.1 px/m on cliff-left, 5/5 surfaces under
+PASS	cliff-left	repetition (visible): identical plate pixels never within 30 m	no plate repeats inside the radius (one shared plate set per type allowed)
+PASS	cliff-left	repetition (visible): neighbours never share plates (< 7 m)	1 copies, none within 7 m of another
+FAIL	cliff-left	approach morph 300->10 m	cliff-left: 67 frames, min IoU 0.848, jumps at 285 m (0.88), 270.8 m (0.87), 257.2 m (0.89), 232.1 m (0.87)
+PASS	cliff-left	grounding (no floating)	0/1 copies float; worst cliff-left -0.80 m at -12.2,-38.8
+PASS	cliff-left	hidden face plate #7 wall-left	2168 tris back 2168; /workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-07-wall-left.jpg
+PASS	cliff-left	hidden face plate #9 waterfall	8666 tris side 8666; /workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-09-waterfall.jpg
+PASS	cliff-left	hidden face plate #13 causeway-underside	1750 tris bottom 1750; /workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-13-causeway-underside.jpg
+PASS	cliff-left	mesh sealed (non-manifold / open edges)	cliff-left tris 14752 nonManifold 0 open 0
+PASS	cliff-left	facade relief >= 0.5 m	cliff-left +x 2.4 -x 2 +z 2.8 -z 2.4
+PASS	cliff-left	triangle-quality	tris 14752 aspect p95 1.414 (max 8) sliver 0 (max 0.02) facing<1px 0 (max 0.05) spike 0 (max 0.03) normal p90 0° (max 42)
+FAIL	cliff-left	oblique-profile	8m yaw 45 residual 0.217 m (need 0.5); 8m yaw 75 residual 0.239 m (need 0.5); 30m yaw 45 residual 1.784 m (need 0.5); 30m yaw 75 residual 1.478 m (need 0.5)
+FAIL	cliff-left	untextured-area	8m bad 0.02% of 1152000px; 30m bad 13.12% of 767604px; hero bad 9.51% of 1145474px; orbit bad 7.13% of 1097002px (max 0.50% grey/black/white)
+PASS	gorge-rock	select	1 placed copies
+PASS	gorge-rock	texture roles declared	key-zc1.jpg=plate plate-atlas.jpg=plate
+PASS	gorge-rock	texture filtering (mips, trilinear, anisotropy = max, no resize)	2 textures trilinear + aniso 16
+PASS	gorge-rock	plates not downscaled vs Imagine originals	key-zc1.jpg gpu 1792x1008 served 1792x1008 original 1792x1008; plate-atlas.jpg gpu 4096x3072 served 4096x3072 original 4096x3072
+PASS	gorge-rock	UV stretch <= 1.3	max 1.041
+PASS	gorge-rock	repetition (capture autocorrelation)	face z peak 0.1235 at lag -1,-24 px; face x peak 0.1025 at lag -55,-47 px; close peak 0.2564 at lag 1,13 px; low-portrait peak 0.242 at lag 1,12 px (max 0.65, at plate period 0.5)
+WARN	gorge-rock	visible px/m (phone sharpness from >= 8 m, final render)	62.1 px/m of real detail on screen vs 118.5 needed (capture at 8.03 m, zoomed to 237.1 screen px/m; median of 19 tiles, p25 43.8; phone 1080x2400, render pixel ratio 1, vfov 51.47°). Info: plate sampling worst +z 17.8 px/m on gorge-rock, 5/5 surfaces under
+PASS	gorge-rock	repetition (visible): identical plate pixels never within 30 m	no plate repeats inside the radius (one shared plate set per type allowed)
+PASS	gorge-rock	repetition (visible): neighbours never share plates (< 7 m)	1 copies, none within 7 m of another
+FAIL	gorge-rock	approach morph 300->10 m	gorge-rock: 67 frames, min IoU 0.822, jumps at 285 m (0.82), 244.4 m (0.85), 232.1 m (0.91), 209.5 m (0.88)
+PASS	gorge-rock	grounding (no floating)	0/1 copies float; worst gorge-rock -0.69 m at -0.2,-74.4
+PASS	gorge-rock	hidden face plate #10 mist	13448 tris side 13448; /workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-10-mist.jpg
+PASS	gorge-rock	hidden face plate #13 causeway-underside	3312 tris bottom 3312; /workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-13-causeway-underside.jpg
+PASS	gorge-rock	hidden face plate #14 gorge-closure	3960 tris back 3960; /workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-14-gorge-closure.jpg
+PASS	gorge-rock	mesh sealed (non-manifold / open edges)	gorge-rock tris 24680 nonManifold 0 open 0
+PASS	gorge-rock	facade relief >= 0.5 m	gorge-rock +x 2.4 -x 1.6 +z 1.6 -z 2.4
+PASS	gorge-rock	triangle-quality	tris 24680 aspect p95 1.414 (max 8) sliver 0 (max 0.02) facing<1px 0 (max 0.05) spike 0 (max 0.03) normal p90 0° (max 42)
+FAIL	gorge-rock	oblique-profile	8m yaw 45 residual 0.299 m (need 0.5); 8m yaw 75 residual 0.403 m (need 0.5); 30m yaw 45 residual 1.492 m (need 0.5); 30m yaw 75 residual 1.647 m (need 0.5)
+FAIL	gorge-rock	untextured-area	8m bad 1.78% of 1152000px; 30m bad 31.03% of 923108px; hero bad 0.79% of 1096615px; orbit bad 32.71% of 1034997px (max 0.50% grey/black/white)
+PASS	cliff-right	select	1 placed copies
+PASS	cliff-right	texture roles declared	key-zc1.jpg=plate plate-atlas.jpg=plate
+PASS	cliff-right	texture filtering (mips, trilinear, anisotropy = max, no resize)	2 textures trilinear + aniso 16
+PASS	cliff-right	plates not downscaled vs Imagine originals	key-zc1.jpg gpu 1792x1008 served 1792x1008 original 1792x1008; plate-atlas.jpg gpu 4096x3072 served 4096x3072 original 4096x3072
+PASS	cliff-right	UV stretch <= 1.3	max 1.116
+PASS	cliff-right	repetition (capture autocorrelation)	face z peak 0.3218 at lag -143,28 px; face x peak 0.2065 at lag 36,-18 px; close peak 0.1255 at lag -49,-28 px; low-portrait peak 0.1641 at lag 46,-3 px (max 0.65, at plate period 0.5)
+FAIL	cliff-right	visible px/m (phone sharpness from >= 8 m, final render)	55.2 px/m of real detail on screen vs 118.5 needed (capture at 8.03 m, zoomed to 237.1 screen px/m; median of 20 tiles, p25 52.1; phone 1080x2400, render pixel ratio 1, vfov 51.47°). Info: plate sampling worst +z 42.8 px/m on cliff-right, 5/5 surfaces under
+PASS	cliff-right	repetition (visible): identical plate pixels never within 30 m	no plate repeats inside the radius (one shared plate set per type allowed)
+PASS	cliff-right	repetition (visible): neighbours never share plates (< 7 m)	1 copies, none within 7 m of another
+FAIL	cliff-right	approach morph 300->10 m	cliff-right: 67 frames, min IoU 0.757, jumps at 270.8 m (0.76), 232.1 m (0.84), 220.5 m (0.90), 179.6 m (0.81)
+PASS	cliff-right	grounding (no floating)	0/1 copies float; worst cliff-right -0.80 m at 12.2,-32.2
+PASS	cliff-right	hidden face plate #8 wall-right	628 tris back 628; /workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-08-wall-right.jpg
+PASS	cliff-right	hidden face plate #13 causeway-underside	314 tris bottom 314; /workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-13-causeway-underside.jpg
+PASS	cliff-right	hidden face plate #15 planet	5186 tris side 5186; /workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/plate-15-planet.jpg
+PASS	cliff-right	mesh sealed (non-manifold / open edges)	cliff-right tris 6756 nonManifold 0 open 0
+PASS	cliff-right	facade relief >= 0.5 m	cliff-right +x 1.2 -x 1.6 +z 1.2 -z 0.4
+PASS	cliff-right	triangle-quality	tris 6756 aspect p95 1.414 (max 8) sliver 0 (max 0.02) facing<1px 0 (max 0.05) spike 0 (max 0.03) normal p90 0° (max 42)
+FAIL	cliff-right	oblique-profile	8m yaw 45 residual 0.246 m (need 0.5); 8m yaw 75 residual 0.18 m (need 0.5); 30m yaw 45 residual 1.073 m (need 0.5); 30m yaw 75 residual 0.572 m (need 0.5)
+FAIL	cliff-right	untextured-area	8m bad 34.09% of 1152000px; 30m bad 25.16% of 348881px; hero bad 61.48% of 643240px; orbit bad 6.48% of 1139740px (max 0.50% grey/black/white)
+---
+FAIL  report /workspace/grokcli/wt/zc-solids-1012/steps/zone-c/05-solids-clean/object-gate/report.md

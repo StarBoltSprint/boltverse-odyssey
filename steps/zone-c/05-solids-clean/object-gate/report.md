@@ -1,6 +1,6 @@
 # object-gate report — FAIL
 
-URL http://127.0.0.1:8772/?along=0 · adapter zone-c-solids · 2026-10-12T08:35:07.272Z
+URL http://127.0.0.1:8772/?along=0 · adapter zone-c-solids · 2026-10-12T08:44:30.079Z
 
 ## Runtime
 | Check | Status | Detail | Fix hints |
