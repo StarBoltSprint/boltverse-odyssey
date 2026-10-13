@@ -1,0 +1,100 @@
+[
+ [
+  "sky12 final5 KEEP set (12)",
+  "PASS",
+  "FAIL",
+  "MISMATCH",
+  "zd-sky12-S00-final5.jpg:seams;zd-sky12-S01-final2.jpg:seams;zd-sky12-S04-final5.jpg:star_size;zd-sky12-S05-final5.jpg:star_size;zd-sky12-S07-final3.jpg:sky_band,star_size,seams;zd-sky12-S08-final5.jpg:star_size;zd-sky12-S10-final3.jpg:seams;zd-sky12-S11-final5.jpg:seams"
+ ],
+ [
+  "terrace v3.5 plates (3)",
+  "PASS",
+  "PASS",
+  "ok",
+  ""
+ ],
+ [
+  "S04 final4 (Milky Way trace)",
+  "FAIL",
+  "MISSING",
+  "fixture file not on box",
+  ""
+ ],
+ [
+  "S04 final (MW band, stand-in)",
+  "FAIL",
+  "FAIL",
+  "ok",
+  "sky_band,star_size"
+ ],
+ [
+  "S05 final2 (band)",
+  "FAIL",
+  "FAIL",
+  "ok",
+  "sky_band,star_size"
+ ],
+ [
+  "S09 final3 (diagonal stripe)",
+  "FAIL",
+  "FAIL",
+  "ok",
+  "sky_band,star_size"
+ ],
+ [
+  "S09 strong clean (blotchy)",
+  "FAIL",
+  "MISSING",
+  "fixture file not on box",
+  ""
+ ],
+ [
+  "S11 final2 (low haze)",
+  "FAIL",
+  "FAIL",
+  "ok",
+  "sky_band,seams"
+ ],
+ [
+  "S11 final4 (low haze)",
+  "FAIL",
+  "FAIL",
+  "ok",
+  "sky_band,seams"
+ ],
+ [
+  "box-filtered sky mip 1",
+  "FAIL",
+  "FAIL",
+  "ok",
+  "{\"peak_vs_nomip\": 0.8359, \"median_size_px\": 1.954, \"bg_drift_vs_nomip\": 0.0001}"
+ ],
+ [
+  "star-preserving mip 1 (shipped)",
+  "PASS",
+  "PASS",
+  "ok",
+  "{\"peak_vs_nomip\": 0.9733, \"median_size_px\": 1.954, \"bg_drift_vs_nomip\": 0.0078}"
+ ],
+ [
+  "wall plate v3.4 with painted icicles",
+  "FAIL",
+  "FAIL",
+  "ok",
+  ""
+ ],
+ [
+  "door-3m.png dark band (dd80963f)",
+  "FAIL",
+  "FAIL",
+  "ok",
+  "[{\"bbox\": [226, 358, 481, 413], \"fill\": 0.681, \"frac\": 0.0157, \"contrast\": 19.4}]"
+ ],
+ [
+  "2x upscaled plate (native_res)",
+  "FAIL",
+  "FAIL",
+  "ok",
+  ""
+ ]
+]
