@@ -31,11 +31,19 @@ def fixtures(K, sh, sd):
     out["warm_dark_forms"] = (np.clip(C, 0, 255).astype(np.uint8), "L1")
     # 5 flattened texture (heavy blur everywhere) -> L2 edges / L3 tile stats
     out["blurred_texture"] = (cv2.GaussianBlur(K, (0, 0), 4), "any")
+    # 6 wrong blocks: stone areas repainted as a clean regular brick grid (2x the period, hard dark joints) -> parts.*
+    G_ = cv2.GaussianBlur(K, (0, 0), 3).copy(); st = pick(lambda e: e["class"] == "stone")
+    grid = np.zeros(K.shape[:2], bool); grid[::36, :] = True
+    for r0 in range(0, K.shape[0], 36):
+        grid[r0:r0 + 36, (18 if (r0 // 36) % 2 else 0)::56] = True
+    grid = cv2.dilate(grid.astype(np.uint8), np.ones((3, 3), np.uint8)).astype(bool)
+    B_ = K.copy(); B_[st] = G_[st]; B_[st & grid] = (20, 20, 25)
+    out["regular_blocks"] = (B_, "facade_blocks")
     return out
 
 
 def failed(rep, where):
-    if where in ("facade_snow", "drips"):
+    if where in ("facade_snow", "drips", "facade_blocks"):
         return rep[where]["n"] > 0 and rep[where]["min"] is not None and rep[where]["min"] < AC.BLOCK
     if where == "any":
         return rep["verdict"] == "FAIL"

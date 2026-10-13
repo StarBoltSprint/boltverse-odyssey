@@ -163,13 +163,23 @@ def build(key, out, pps=32, sam_npz=None):
     for i, (src, m) in enumerate(keep, 1):
         e = desc(m, 2, i, src); e["parent"] = int(np.bincount(lab1[m], minlength=len(l1) + 1)[1:].argmax() + 1) if len(l1) else 0
         els.append(e); lab2[m & (lab2 == 0)] = i
+    # FIXED generic property set for every L2 element (props.py), measured on the element as it appears in the key
+    import props as PR
+    ctx = PR.Ctx(bgr, Z, fy); e2 = [e for e in els if e["level"] == 2]
+    for e, (_, m) in zip(e2, keep):
+        e["ring_lab"] = [round(v, 2) for v in PR.ring_mean(ctx, m)]
+        reg = PR.region(ctx, m, np.array(e["lab"]), np.array(e["ring_lab"]))
+        e["props"] = PR.props(ctx, reg)
+    PR.relations(e2, [e.get("props") for e in e2], [e["class"] for e in e2])
+    for e, m in zip([e for e in els if e["level"] == 1], l1):     # same property set on the big forms
+        e["ring_lab"] = [round(v, 2) for v in PR.ring_mean(ctx, m)]; e["props"] = PR.props(ctx, m)
     cv2.imwrite(str(out / "L1.png"), lab1); cv2.imwrite(str(out / "L2.png"), lab2)
     np.save(out / "depth.npy", Z.astype(np.float16))
     l2m = {e["id"]: None for e in els if e["level"] == 2}
     np.savez_compressed(out / "L2masks.npz", m=np.packbits(np.stack([m for _, m in keep]) if keep else np.zeros((0, W, W), bool), axis=-1))
     sheet = {"zone": "auto", "key": str(Path(key).resolve()), "frame_px": W, "levels": {"L1": "L1.png", "L2": "L2masks.npz"},
              "masks_from": "sam2.1_hiera_small AMG + kmeans(Lab,depth) + kmeans8 bright components", "depth_from": "moge-2 vitl",
-             "counts": {"L1": len(l1), "L2": len(keep), "L3_tiles": int(sum(e.get("L3_tiles", 0) for e in els))},
+             "ref": ctx.ref, "focal_px": fy, "props_version": 1, "counts": {"L1": len(l1), "L2": len(keep), "L3_tiles": int(sum(e.get("L3_tiles", 0) for e in els))},
              "elements": els}
     (out / "sheet.json").write_text(json.dumps(sheet, indent=1))
     overlay(bgr, l1, keep, out / "auto-overlay.jpg")

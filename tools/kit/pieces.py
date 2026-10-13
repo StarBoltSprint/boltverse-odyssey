@@ -133,6 +133,18 @@ def wall_block_course(lod, seed=1, width=2.0):
     return merged(parts, "wall_block_course", "stone")
 
 
+def facade_block(lod, w, h, d=0.35, joint=0.03, seed=0):
+    """One facade block measured from the key (tools/placer/facade.py): w x h face, standing d proud of the backing,
+    joint gap split around it, bevel + chipping (corner/edge vertices pushed in by up to 25 % of the bevel + 1 cm)."""
+    rng = np.random.default_rng(seed); n = {0: 2, 1: 1, 2: 1}[lod]
+    r = float(np.clip(0.18 * min(w, h), 0.02, 0.08))
+    m = rbox([-w / 2 + joint / 2, -d, joint / 2], [w / 2 - joint / 2, 0.2, h - joint / 2], r, n, "facade_block")
+    c = np.array([0, (0.2 - d) / 2, h / 2]); u = m.V - c; hw = np.array([w / 2, (0.2 + d) / 2, h / 2])
+    edge = (np.abs(u) / hw > 0.8).sum(1) >= 2                      # vertices on edges / corners
+    m.V[edge] -= u[edge] / np.linalg.norm(u[edge], axis=1, keepdims=True) * rng.uniform(0, 0.25 * r + 0.01, (edge.sum(), 1))
+    return tag(m)
+
+
 def wall_block_corner(lod, seed=2):
     """Quoin: two bevelled blocks wrapping the +x end of a tier (faces -y and +x), 0.2-0.4 m relief."""
     rng = np.random.default_rng(seed); n = LODN[lod]

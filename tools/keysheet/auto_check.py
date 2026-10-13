@@ -37,7 +37,7 @@ def l2masks(sheet_dir):
     return np.unpackbits(d, axis=-1)[..., :W].astype(bool)
 
 
-def check(render, sheet_dir, scope=None, dino=True, full=False):
+def check(render, sheet_dir, scope=None, dino=True, full=False, render_depth=None):
     sheet_dir = Path(sheet_dir); sh = json.loads((sheet_dir / "sheet.json").read_text())
     K = cv2.imread(str(sheet_dir / "key1024.png")); R = cv2.resize(cv2.imread(str(render)), (W, W), interpolation=cv2.INTER_AREA)
     klab0 = rgb2lab(K[:, :, ::-1] / 255.0)
@@ -75,41 +75,24 @@ def check(render, sheet_dir, scope=None, dino=True, full=False):
         sub = {"shape_iou": lin(iou, 0.8, 0.4), "colour": lin(dE, 5, 25), "snow_frac": lin(dsf, 0.05, 0.25)}
         rows1.append({"id": e["id"], "class": e["class"], "outline_recall_rel": round(iou, 3), "dE": round(dE, 1), "d_snow_frac": round(dsf, 3),
                       "sub": {k: round(v, 1) for k, v in sub.items()}, "value": round(min(sub.values()), 1)})
-    # ---- L2
+    # ---- L2: the FIXED generic property set (props.py) for every element, key props (sheet) vs render props
+    import props as PR
+    rdepth = np.load(render_depth).astype(np.float32) if render_depth else None
+    rctx = PR.Ctx(R, rdepth, sh.get("focal_px"), sh.get("ref"))
+    sel = [(e, m) for e, m in zip(els2, M2) if m.any() and e.get("props") and inscope(m)]
+    rprops = []
+    for e, m in sel:
+        reg = PR.region(rctx, m, np.array(e["lab"]), np.array(e["ring_lab"]))
+        rprops.append(PR.props(rctx, reg) if reg.sum() >= 6 else None)
+    cls = [e["class"] for e, _ in sel]
+    PR.relations([e for e, _ in sel], rprops, cls)
+    kprops = [dict(e["props"]) for e, _ in sel]; PR.relations(None, kprops, cls)   # key relations over the same subset
     rows2 = []
-    for e, m in zip(els2, M2):
-        if not m.any() or not inscope(m):
-            continue
-        x0, y0, x1, y1 = e["bbox_px"]; p = max(6, int(0.5 * e["thick_px"]))
-        x0, y0, x1, y1 = max(x0 - p, 0), max(y0 - p, 0), min(x1 + p + 1, W), min(y1 + p + 1, W)
-        km = m[y0:y1, x0:x1]; sub = {}
-        dE = float(np.linalg.norm(rlab[y0:y1, x0:x1][km].mean(0) - klab[y0:y1, x0:x1][km].mean(0))); sub["colour"] = lin(dE, 10, 30)
-        if e["class"] in ("snow", "ice"):
-            # the element says WHERE; the same class detector on key and render says WHAT (key self-scores 100)
-            grow = cv2.dilate(km.astype(np.uint8), np.ones((2 * p + 1, 2 * p + 1), np.uint8)).astype(bool)
-            pick = (lambda sn, ic, dp: dp if e["src"] == "drip" else sn if e["class"] == "snow" else ic)
-            rm = pick(rsnow, rice, rdrip)[y0:y1, x0:x1] & grow
-            kd = pick(ksnow, kice, kdrip)[y0:y1, x0:x1] & grow
-            if kd.sum() >= 6:
-                km = kd
-            iou = float((rm & km).sum() / max((rm | km).sum(), 1)); sub["coverage_iou"] = lin(iou, 0.6, 0.2)
-            kth, kro, kst = thick(km), *rough_straight(km)
-            if rm.sum() >= 6:
-                ky, kx = np.nonzero(km); ry, rx = np.nonzero(rm)
-                off = np.hypot(rx.mean() - kx.mean(), ry.mean() - ky.mean()) / max(np.hypot(*km.shape), 1); sub["location"] = lin(off, 0.1, 0.5)
-                tr = max(thick(rm), 0.5) / max(kth, 0.5); sub["thickness"] = lin(abs(np.log(tr)), np.log(1.25), np.log(2.5))
-                rr, rs = rough_straight(rm)
-                if kro > 0.02:
-                    sub["roughness"] = lin(rr / kro, 0.6, 0.2)
-                sub["straightness"] = lin(rs - kst, 0.1, 0.4)
-            else:
-                sub["location"] = sub["thickness"] = 0.0
-        else:
-            ge = lambda img: float((cv2.Canny(cv2.cvtColor(img[y0:y1, x0:x1], cv2.COLOR_BGR2GRAY), 40, 110)[km] > 0).mean()) + 1e-3
-            sub["edges"] = lin(abs(np.log(ge(R) / ge(K))), np.log(1.5), np.log(4))
-            sub["snow_frac"] = lin(abs(float(rsnow[y0:y1, x0:x1][km].mean()) - float(ksnow[y0:y1, x0:x1][km].mean())), 0.1, 0.4)
+    for (e, m), rp, kp in zip(sel, rprops, kprops):
+        sub = PR.compare(kp, rp)
+        na = sorted(k for k in e["props"] if not k.startswith(("_", "outline.sig")) and k not in sub and k not in ("col.L", "col.a", "col.b") and not k.startswith(("albedo.", "light.dir")))
         rows2.append({"id": e["id"], "class": e["class"], "src": e["src"], "bbox_px": e["bbox_px"],
-                      "sub": {k: round(v, 1) for k, v in sub.items()}, "value": round(min(sub.values()), 1)})
+                      "sub": {k: round(v, 1) for k, v in sub.items()}, "na": na, "value": round(min(sub.values()), 1)})
     # ---- L3
     gk, gr = (cv2.cvtColor(x, cv2.COLOR_BGR2GRAY).astype(np.float32) for x in (K, R))
     rows3, boxes, tmp = [], [], sheet_dir / "_l3"
@@ -150,6 +133,13 @@ def check(render, sheet_dir, scope=None, dino=True, full=False):
     fs = [r for r in rows2 if r["src"] == "tophat"]
     rep["facade_snow"] = {"n": len(fs), "min": min((r["value"] for r in fs), default=None),
                           "pass_frac": round(float(np.mean([r["value"] >= BLOCK for r in fs])), 3) if fs else None}
+    # facade blocks: block size distribution / joint pattern / protrusion = the parts.* properties of stone elements
+    fb = []
+    for r in rows2:
+        ps = {k: v for k, v in r["sub"].items() if k.startswith("parts.")}
+        if r["class"] == "stone" and ps:
+            fb.append(min(ps.values()))
+    rep["facade_blocks"] = {"n": len(fb), "min": min(fb) if fb else None, "pass_frac": round(float(np.mean([v >= BLOCK for v in fb])), 3) if fb else None}
     dr = [r for r in rows2 if r["src"] == "drip"]
     rep["drips"] = {"n": len(dr), "min": min((r["value"] for r in dr), default=None),
                     "pass_frac": round(float(np.mean([r["value"] >= BLOCK for r in dr])), 3) if dr else None}
@@ -170,14 +160,14 @@ def review(rep, K, R, path):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(); ap.add_argument("render"); ap.add_argument("sheet"); ap.add_argument("--scope"); ap.add_argument("--out")
-    ap.add_argument("--no-dino", action="store_true"); ap.add_argument("--review"); ap.add_argument("--full", action="store_true", help="run DINO even when stage-blocked")
+    ap.add_argument("--no-dino", action="store_true"); ap.add_argument("--render-depth", help="render metric depth .npy (key frame) for depth/size/protrusion props"); ap.add_argument("--review"); ap.add_argument("--full", action="store_true", help="run DINO even when stage-blocked")
     a = ap.parse_args(argv)
-    rep, K, R = check(a.render, a.sheet, a.scope, not a.no_dino, a.full)
+    rep, K, R = check(a.render, a.sheet, a.scope, not a.no_dino, a.full, a.render_depth)
     if a.review:
         review(rep, K, R, a.review)
     if a.out:
         Path(a.out).write_text(json.dumps(rep, indent=1))
-    print(json.dumps({"verdict": rep["verdict"], "value": rep["value"], "facade_snow": rep["facade_snow"], "drips": rep["drips"], **{k: {kk: v[kk] for kk in ("n", "min", "median", "pass_frac", "status")} for k, v in rep["levels"].items()}}))
+    print(json.dumps({"verdict": rep["verdict"], "value": rep["value"], "facade_snow": rep["facade_snow"], "facade_blocks": rep["facade_blocks"], "drips": rep["drips"], **{k: {kk: v[kk] for kk in ("n", "min", "median", "pass_frac", "status")} for k, v in rep["levels"].items()}}))
     return 0 if rep["verdict"] == "PASS" else 1
 
 

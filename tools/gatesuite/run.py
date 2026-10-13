@@ -440,7 +440,7 @@ def step_keyfeatures(b, ctx):
                     {"n": r["n"], "min": r["min"], "median": r["median"], "pass_frac": r["pass_frac"],
                      "worst": [(w["id"], w["class"], w["value"], w["sub"]) for w in r["worst"][:3]]})
                 for lv, r in rep["levels"].items()]
-        for k in ("facade_snow", "drips"):
+        for k in ("facade_snow", "facade_blocks", "drips"):
             rows.append(chk(f"auto {k}: every key region matched (min >= {auto_check.BLOCK})", rep[k]["n"] == 0 or (rep[k]["min"] or 0) >= auto_check.BLOCK, rep[k]))
         rg = regress.regress(ad, sp)
         rows.append(chk("regression: auto sheet finds every hand Zone D element", rg["pass"], [(r["id"], r["found"]) for r in rg["rows"]]))

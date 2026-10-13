@@ -27,7 +27,7 @@ DOOR_TIERS = (0, 1, 2)  # key feature sheet: three stacked doorways, one per tie
 CANOPY_HALF = 2.0       # canopy cornice 4 m wide over a 2.6 m door bay
 
 
-def layout(sc=K, lod=0, rows_list=None):
+def layout(sc=K, lod=0, rows_list=None, facade=None):
     """sc: metres per key-kit unit. sc=K -> Reader spec (2.5 m tiers); sc=1 -> key scale (tiers as solved from the key, ~4.4 m)."""
     ROWS = rows_list or (SPEC_ROWS if sc < 1 else KEY_ROWS)
     RS = [r * P.COURSE_H for r in ROWS]; Z0 = [sum(RS[:k]) for k in range(3)]; ZT = [Z0[k] + RS[k] for k in range(3)]
@@ -58,7 +58,29 @@ def layout(sc=K, lod=0, rows_list=None):
         x0 = math.floor(a * sc * 2) / 2; ncol = int(round((b * sc - x0) / 2.0)); x1 = x0 + 2 * ncol
         tiers.append((x0, x1))
         yf, z0, Rk = k * T, Z0[k], RS[k]
-        for r in range(ROWS[k]):
+        if facade:   # v4: facade rebuilt block by block from the key's measured block layout (tools/placer/facade.py)
+            hb = float(np.clip(facade["block_h_m"][2], 0.2, 1.2)); nr = max(1, int(round(Rk / hb))); ch = Rk / nr   # upper quartile: joint maps over-split blocks
+            wv = [float(np.clip(v, 0.2, 2.0)) for v in (facade["block_w_m"][0], facade["block_w_m"][1], facade["block_w_m"][2], (facade["block_w_m"][1] + facade["block_w_m"][2]) / 2)]
+            jw = float(np.clip(facade["joint_w_m"][1], 0.01, 0.1)); bond = float(facade["bond"][1])
+            pr = float(np.clip(abs((facade.get("protrusion_rel_h") or [0, 0.3, 0])[1]) * hb, 0.03, 0.4))
+            rng = np.random.default_rng(31 + k)
+            for vi, wb in enumerate(wv):
+                kk = f"facade_block@{vi}"
+                if kk not in meshes:
+                    meshes[kk] = P.facade_block(lod, wb, ch, 0.2 + pr, jw, seed=vi)
+            for r in range(nr):
+                x = x0 + (bond * wv[1] if r % 2 else 0.0)
+                while True:
+                    vi = int(rng.integers(0, 4)); wb = wv[vi]
+                    if x + wb > x1 + 1e-6:
+                        vi = int(np.argmin(wv)); wb = wv[vi]
+                        if x + wb > x1 + 1e-6:
+                            break
+                    xc = x + wb / 2; x += wb
+                    if k in DOOR_TIERS and abs(xc - door_x) < 1.5 and r * ch < 2.4:
+                        continue
+                    inst.append((f"facade_block_{n}", f"facade_block@{vi}", (xc, yf - rng.uniform(0, 0.5) * pr, z0 + r * ch), 0.0)); n += 1
+        for r in range(ROWS[k] if facade else 0, ROWS[k]):
             off = 0.0 if r % 2 == 0 else 1.0                       # running bond
             xs = np.arange(x0 + 1.0 + off, x1 - 0.99, 2.0)
             for i, xc in enumerate(xs):
@@ -162,7 +184,7 @@ def _add_placer(meshes, inst, sc, placer):
     sheet, groups, scope = placer
     if not groups:
         return {"placed": {}, "groups": []}
-    am, ai, log = PL.place(meshes, inst, sheet, sc, scope, tuple(groups))
+    am, ai, log = PL.place(meshes, inst, sheet, sc, scope, tuple(g for g in groups if g != "facade"))
     meshes.update(am); inst.extend(ai); log["groups"] = groups; return log
 
 
@@ -184,6 +206,16 @@ def cmd_terrace(spine_path, out, variant="spec", fit_mask=None, placer=None):
     spine = json.loads(Path(spine_path).read_text()); shutil.copy(spine_path, out / "spine.json")
     sc = K if variant == "spec" else 1.0
     meshes, inst, empt, info = layout(sc, 0)
+    fac = None
+    if placer and "facade" in placer[1]:   # rebuild the facade block by block from the key's measured block layout
+        import sys as _s
+        _s.path.insert(0, str(Path(__file__).resolve().parents[1] / "placer"))
+        import facade as FA
+        fac = FA.measure(placer[0], meshes, inst, sc, placer[2])
+        if fac["block_w_m"]:
+            meshes, inst, empt, info = layout(sc, 0, facade=fac); info["facade"] = fac
+        else:
+            fac = None
     if placer:
         info["placer"] = _add_placer(meshes, inst, sc, placer)
     info["decimate"] = _decimate(meshes)
@@ -200,7 +232,7 @@ def cmd_terrace(spine_path, out, variant="spec", fit_mask=None, placer=None):
         P.write_scene(out / "terrace-local.glb", meshes, inst, empt, ex)
     glbs = {}
     for lod in (0, 1, 2):
-        m_l, inst_l, _, _ = layout(sc, lod) if lod else (meshes, inst, empt, info)
+        m_l, inst_l, _, _ = layout(sc, lod, facade=fac) if lod else (meshes, inst, empt, info)
         if lod and placer:
             _add_placer(m_l, inst_l, sc, placer)
         if lod:
