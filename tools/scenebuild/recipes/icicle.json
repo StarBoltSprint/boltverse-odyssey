@@ -1,0 +1,24 @@
+{
+ "type": "icicle",
+ "version": "2",
+ "ops_version": "ops-v2",
+ "doc": "single icicle hanging from the mask top",
+ "anchor": "top",
+ "offset": [
+  0,
+  0,
+  0
+ ],
+ "ops": [
+  {
+   "op": "spike",
+   "L": "h",
+   "rad": "max(w/2, 0.01)"
+  },
+  {
+   "op": "mesh",
+   "method": "mc",
+   "res": "min(4, lod)"
+  }
+ ]
+}

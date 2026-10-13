@@ -81,7 +81,10 @@ def build(key, out, pps=32, sam_npz=None):
     S = np.unpackbits(d["masks"], axis=-1)[..., :shp[2]].astype(bool) if shp[0] else np.zeros((0, W, W), bool)
     lab = rgb2lab(bgr[:, :, ::-1] / 255.0).astype(np.float32); L = lab[..., 0]; Lp = np.percentile(L, range(101)); Ap = np.percentile(lab[..., 1], range(101))
     gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY).astype(np.float32)
-    fy = W / 2 / np.tan(np.radians(60) / 2)   # MoGe metric Z already folds intrinsics; fy only converts run px -> m
+    cam_p = out / "camera.json"     # auto key camera (MoGe-2 intrinsics), no hand-solved camera
+    if not cam_p.exists():
+        subprocess.run([VENV, str(HERE / "auto_cam.py"), str(k1024), str(cam_p)], check=True)
+    fy = json.loads(cam_p.read_text())["fy"]
     # ---- L1: Lab + depth k-means, merge to big components
     lz = np.log(np.clip(np.nan_to_num(Z, nan=1e3, posinf=1e3), 0.3, 1e3))
     F = np.concatenate([lab / [10, 6, 6], (lz / max(lz.std(), 1e-3))[..., None] * 1.5], -1).reshape(-1, 4).astype(np.float32)

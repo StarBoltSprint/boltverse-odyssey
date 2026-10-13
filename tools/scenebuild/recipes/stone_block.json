@@ -1,0 +1,37 @@
+{
+ "type": "stone_block",
+ "version": "2",
+ "ops_version": "ops-v2",
+ "doc": "masonry run via split grammar: courses of measured period_y, blocks of measured period_x, key-seeded size/joint jitter; chipped; dual contoured (sharp edges)",
+ "offset": [
+  0,
+  0,
+  "0.5*d"
+ ],
+ "ops": [
+  {
+   "op": "split_wall",
+   "w": "w",
+   "h": "h",
+   "d": "d",
+   "ch": "ch",
+   "bw": "bw",
+   "joint": "max(joint, 0.01)",
+   "r": "0.08*min(bw, ch)",
+   "cv": "jv",
+   "jit": "jv",
+   "relief": "0.3*d*rough"
+  },
+  {
+   "op": "mesh",
+   "method": "dc",
+   "res": "min(6, lod)",
+   "simplify": 3.0
+  },
+  {
+   "op": "chip",
+   "vol": "0.04*rough",
+   "n": 3
+  }
+ ]
+}

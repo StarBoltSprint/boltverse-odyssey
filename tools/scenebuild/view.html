@@ -1,0 +1,28 @@
+<!doctype html>
+<!-- tools/scenebuild viewer: scene.glb (one mesh per element type, vertex colours) through the AUTO key camera
+     (scene.json: MoGe fov, camera at origin looking -Z). Lights from the measured key light direction + sky colour. -->
+<html><head><meta charset="utf-8"><style>html,body{margin:0;background:#000;overflow:hidden}</style></head><body>
+<script type="importmap">{"imports":{"three":"./three.module.js","three/addons/":"./jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+const P = new URLSearchParams(location.search);
+const S = await (await fetch(P.get('json') || 'scene.json')).json();
+const r = new THREE.WebGLRenderer({antialias: true, preserveDrawingBuffer: true}); r.setPixelRatio(1); r.setSize(innerWidth, innerHeight);
+r.outputColorSpace = THREE.SRGBColorSpace; r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap; document.body.appendChild(r.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color().setRGB(...S.light.sky, THREE.SRGBColorSpace);
+const cam = new THREE.PerspectiveCamera(S.camera.fov_y_deg, innerWidth / innerHeight, 0.05, 5000);
+const sky = new THREE.Color().setRGB(...S.light.sky, THREE.SRGBColorSpace);
+scene.add(new THREE.HemisphereLight(sky, 0x303040, +(P.get('hemi') || 1.6)));
+const d = new THREE.DirectionalLight(0xdfe8ff, +(P.get('sun') || 1.4)); const L = S.light.dir;
+d.position.set(L[0] * 40, Math.abs(L[1]) * 40 + 25, 10); d.target.position.set(0, 0, -15); d.castShadow = true;
+d.shadow.mapSize.set(2048, 2048); Object.assign(d.shadow.camera, {left: -40, right: 40, top: 40, bottom: -40, near: 1, far: 200}); scene.add(d, d.target);
+const g = await new GLTFLoader().loadAsync(P.get('model') || 'scene.glb');
+const rough = {snow_patch: 0.9, snow_pillow: 0.9, tread_snow: 0.9, ground: 0.95, icicle: 0.35, ice_mass: 0.5, sky: 1.0};
+g.scene.traverse(o => { if (!o.isMesh) return; o.geometry.computeVertexNormals();
+  o.material = o.name === 'sky' ? new THREE.MeshBasicMaterial({vertexColors: true, side: THREE.DoubleSide})
+    : new THREE.MeshStandardMaterial({vertexColors: true, roughness: rough[o.name] ?? 0.85, metalness: 0, side: THREE.DoubleSide});
+  o.castShadow = o.receiveShadow = o.name !== 'sky'; });
+scene.add(g.scene);
+r.render(scene, cam); window.__ready = true;
+</script></body></html>

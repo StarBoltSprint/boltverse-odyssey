@@ -1,0 +1,32 @@
+{
+ "type": "cornice",
+ "version": "2",
+ "ops_version": "ops-v2",
+ "doc": "projecting ledge (rounded box) with a draped snow cap from the measured snow fraction",
+ "offset": [
+  0,
+  0,
+  "0.5*d"
+ ],
+ "ops": [
+  {
+   "op": "rbox",
+   "w": "w",
+   "h": "0.6*h",
+   "d": "max(d, 0.1)",
+   "r": "0.08*h"
+  },
+  {
+   "op": "drape",
+   "t": "0.4*h*snow+0.02",
+   "over": 0.08,
+   "lump": "0.1+0.4*rough",
+   "k": "0.05*h"
+  },
+  {
+   "op": "mesh",
+   "method": "dc",
+   "res": "min(6, lod)"
+  }
+ ]
+}

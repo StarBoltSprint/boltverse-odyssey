@@ -1,0 +1,31 @@
+{
+ "type": "snow_pillow",
+ "version": "2",
+ "ops_version": "ops-v2",
+ "doc": "drooping snow pillow, icicles under it when drips were measured",
+ "offset": [
+  0,
+  "-0.35*h",
+  0
+ ],
+ "ops": [
+  {
+   "op": "blob",
+   "w": "w",
+   "h": "0.7*h",
+   "t": "max(th, 0.6*min(w, h))",
+   "lump": "0.08+0.5*rough"
+  },
+  {
+   "op": "drip",
+   "n": "drips",
+   "L": "0.3*h",
+   "rad": "0.02*w+0.01"
+  },
+  {
+   "op": "mesh",
+   "method": "mc",
+   "res": "min(6, lod)"
+  }
+ ]
+}
