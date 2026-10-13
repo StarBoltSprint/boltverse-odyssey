@@ -1,0 +1,114 @@
+{
+ "tool": "sky-band-colours",
+ "band": "top 12% median",
+ "plates": [
+  {
+   "id": "S00",
+   "src": "zd-sky12-S00-final5.jpg",
+   "top_lin": [
+    0.03955,
+    0.06848,
+    0.21586
+   ]
+  },
+  {
+   "id": "S01",
+   "src": "zd-sky12-S01-final2.jpg",
+   "top_lin": [
+    0.0356,
+    0.06848,
+    0.22323
+   ]
+  },
+  {
+   "id": "S02",
+   "src": "zd-sky12-S02-final2.jpg",
+   "top_lin": [
+    0.0356,
+    0.0648,
+    0.19807
+   ]
+  },
+  {
+   "id": "S03",
+   "src": "zd-sky12-S03-final4.jpg",
+   "top_lin": [
+    0.02956,
+    0.06301,
+    0.1912
+   ]
+  },
+  {
+   "id": "S04",
+   "src": "zd-sky12-S04-final5.jpg",
+   "top_lin": [
+    0.03955,
+    0.08228,
+    0.21953
+   ]
+  },
+  {
+   "id": "S05",
+   "src": "zd-sky12-S05-final5.jpg",
+   "top_lin": [
+    0.0319,
+    0.06848,
+    0.19807
+   ]
+  },
+  {
+   "id": "S06",
+   "src": "zd-sky12-S06-final3.jpg",
+   "top_lin": [
+    0.03434,
+    0.07036,
+    0.19807
+   ]
+  },
+  {
+   "id": "S07",
+   "src": "zd-sky12-S07-final3.jpg",
+   "top_lin": [
+    0.02519,
+    0.05951,
+    0.18116
+   ]
+  },
+  {
+   "id": "S08",
+   "src": "zd-sky12-S08-final5.jpg",
+   "top_lin": [
+    0.02416,
+    0.05613,
+    0.17144
+   ]
+  },
+  {
+   "id": "S09",
+   "src": "zd-sky12-S09-final5.jpg",
+   "top_lin": [
+    0.02732,
+    0.06301,
+    0.18447
+   ]
+  },
+  {
+   "id": "S10",
+   "src": "zd-sky12-S10-final3.jpg",
+   "top_lin": [
+    0.0319,
+    0.07619,
+    0.21223
+   ]
+  },
+  {
+   "id": "S11",
+   "src": "zd-sky12-S11-final5.jpg",
+   "top_lin": [
+    0.03955,
+    0.08022,
+    0.23455
+   ]
+  }
+ ]
+}

@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset="utf-8"><title>Zone D — terrace block v3.2 (play)</title>
+<!doctype html><html><head><meta charset="utf-8"><title>Zone D — terrace block v3.5 (play: spine camera + sky dome)</title>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <style>html,body{margin:0;height:100%;overflow:hidden;background:#000;touch-action:none;-webkit-user-select:none;user-select:none}
 #hud{position:fixed;left:8px;top:8px;color:#fff;font:12px/1.35 monospace;background:rgba(0,0,0,.45);padding:5px 7px;border-radius:5px;pointer-events:none;white-space:pre}
@@ -11,11 +11,12 @@
 <div id="bar"><button id="b30">30 m</button><button id="b8">8 m</button><button id="b3">3 m</button><button id="bup">3 m ↑</button></div>
 <script type="module">
 // Zone D v3.2 playable preview: mode B (internal ratio 1.5 -> EASU-style bicubic + RCAS 0.8 to canvas min(2, device)),
-// chase camera = corridor-ab runtime (look.js CHASE_BOOM 6 m, CHASE_EYE 1.35 m, aim 0.9675 m), Level Designer placement.
+// camera = Level Designer spine.json v1.2 (4.5 m behind, 2.6 m up, 48 deg vfov, pitch per spine point; position along the path = this page's route),
+// sky = ONE dome from sky12 `ktx2-final5-mip1-star` (mip 1 as-is), loading = all assets fetched in parallel, LOD2 first, meshopt GLBs (uv 14 bit).
 // ---- load progress + stage timing (engine/bench-load) ----
-const BUILD = 'dd80963f+bench-load';
+const BUILD = 'dd80963f+bench-load+door-ghost+spine-sky-meshopt';
 const T0 = performance.now(), LT = [], stage = (name, t0) => { const ms = performance.now() - t0; LT.push([name, Math.round(ms)]); console.log(`[load] ${name} ${ms.toFixed(0)} ms`); return ms; };
-const ASSETS = { 'placement.json': 0, 'plate-front-v35.jpg': 0, 't1-right-v35.jpg': 0, 'plate-side-v35.jpg': 0, 'top.jpg': 0, 'plate-front.jpg': 0, 't1-right.jpg': 0, 'plate-side.jpg': 0, 'terrace-lod0.glb': 0, 'terrace-lod1.glb': 0, 'terrace-lod2.glb': 0 };
+const ASSETS = { 'placement.json': 0, 'plate-front-v35.jpg': 0, 't1-right-v35.jpg': 0, 'plate-side-v35.jpg': 0, 'top.jpg': 0, 'plate-front.jpg': 0, 't1-right.jpg': 0, 'plate-side.jpg': 0, 'terrace-lod0.glb': 0, 'terrace-lod1.glb': 0, 'terrace-lod2.glb': 0, 'spine.v1.2.json': 0, 'bluenoise64.png': 0, 'sky-band-colours.json': 0, sky: 0 };
 const PROG = {}; for (const k in ASSETS) PROG[k] = { got: 0, tot: 0 };
 function drawProg() { let g = 0, t = 0, rows = []; for (const k in PROG) { const a = PROG[k]; g += a.got; t += a.tot || a.got; rows.push(`${k.padEnd(20)} ${(a.got / 1024).toFixed(0).padStart(5)}${a.tot ? ' / ' + (a.tot / 1024).toFixed(0) : ''} KB`); }
   document.getElementById('lbar').style.width = (t ? 100 * g / t : 0).toFixed(1) + '%'; document.getElementById('lmsg').textContent = `loading… ${(g / 1048576).toFixed(1)} MB${t ? ' / ' + (t / 1048576).toFixed(1) + ' MB' : ''}`; document.getElementById('lassets').textContent = rows.join('\n'); }
@@ -29,43 +30,71 @@ import { GLTFLoader } from './jsm/loaders/GLTFLoader.js';
 import { mergeGeometries } from './jsm/utils/BufferGeometryUtils.js';
 import { createEasuRcas } from './upscale-easu.mjs';
 import { createAdaptiveRes } from './adaptive-res.mjs';
-const BOOM = 6, EYE = 1.35, AIM = 0.9675, R_PLAYER = 0.4, SPEED = 4.2;
+import { MeshoptDecoder } from './jsm/libs/meshopt_decoder.module.js';
+import { createSkyDome, SKY_PLATES } from './sky-dome.mjs';
+const R_PLAYER = 0.4, SPEED = 4.2;   // camera rig comes from spine.json (no hard-coded corridor-ab chase boom)
 { const js = performance.getEntriesByType('resource').filter((e) => /\.(m?js)$/.test(e.name)); LT.push(['html+js until module start (ms since nav)', Math.round(T0)]); LT.push(['js bytes', js.reduce((s, e) => s + (e.transferSize || e.encodedBodySize || 0), 0)]); }
 let tS = performance.now();
-const P = JSON.parse(new TextDecoder().decode(await fetchProg('./placement.json', 'placement.json')));
+const QS = new URLSearchParams(location.search);
+// ---- every asset is requested NOW, in parallel (nothing waits on anything else); each consumer awaits only its own bytes ----
+const TEXLIST = [['front', 'plate-front-v35.jpg'], ['front2', 't1-right-v35.jpg'], ['side', 'plate-side-v35.jpg'], ['top', 'top.jpg'], ['icefront', 'plate-front.jpg'], ['icefront2', 't1-right.jpg'], ['iceside', 'plate-side.jpg']];
+const GLBS = [0, 1, 2].map((i) => `terrace-lod${i}.glb`);
+const SKYOFF = QS.get('sky') === '0';
+const FETCH = {}; const fetchT = {};
+const go = (url, key) => { const t = performance.now(); return (FETCH[key] = fetchProg(url, key).then((b) => { fetchT[key] = Math.round(performance.now() - t); return b; })); };
+go('./placement.json', 'placement.json'); go('./spine.v1.2.json', 'spine.v1.2.json'); go('./bluenoise64.png', 'bluenoise64.png'); go('./sky-band-colours.json', 'sky-band-colours.json');
+for (const [, f] of TEXLIST) go(`./assets/${f}`, f);
+for (const f of [...GLBS].reverse()) go(`./assets/${f}`, f);          // lod2 requested first, all in flight together
+const SKYP = SKYOFF ? null : SKY_PLATES.map((f) => { PROG[f] = { got: 0, tot: 0 }; return go(`./sky/${f}`, f); });
+delete PROG.sky;
+const P = JSON.parse(new TextDecoder().decode(await FETCH['placement.json']));
+const SPINE = JSON.parse(new TextDecoder().decode(await FETCH['spine.v1.2.json']));
 const dpr = devicePixelRatio || 1, CANVAS = Math.min(2, dpr), INTERNAL = Math.min(1.5, CANVAS);
 const AA = new URLSearchParams(location.search).get('aa') !== '0';   // ?aa=0 off, ?aa=1 / default on: 4x MSAA (internal target + canvas)
 const r = new THREE.WebGLRenderer({ antialias: AA }); r.setPixelRatio(CANVAS); r.setSize(innerWidth, innerHeight);
 r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap; r.outputColorSpace = THREE.SRGBColorSpace; document.body.appendChild(r.domElement);
 const scene = new THREE.Scene(); scene.background = new THREE.Color(0x1c2433);
-const cam = new THREE.PerspectiveCamera(58, innerWidth / innerHeight, 0.2, 600);
+const SC = SPINE.camera;   // { behind 4.5, above 2.6, pitch_deg -8, vfov_deg 48 }
+const cam = new THREE.PerspectiveCamera(SC.vfov_deg, innerWidth / innerHeight, 0.2, 600);
+// spine sampling: s along the spine; the page route's progress (30 m start -> door) is mapped onto s from S_BASE (beat 3 terrace-climb start)
+const S_BASE = +(QS.get('sbase') || SPINE.beats.find((b) => b.name === 'terrace-climb').s0), SPTS = SPINE.points;
+function spineAt(s) { let i = 0; while (i < SPTS.length - 2 && SPTS[i + 1].s <= s) i++; const a = SPTS[i], b = SPTS[i + 1], t = Math.max(0, Math.min(1, (s - a.s) / (b.s - a.s)));
+  return { y: a.y + (b.y - a.y) * t, pitch: a.cam_pitch_deg + (b.cam_pitch_deg - a.cam_pitch_deg) * t }; }
 scene.add(new THREE.HemisphereLight(0xb8c8e0, 0x6a7890, 1.4));
 const sun = new THREE.DirectionalLight(0xdfe8ff, 1.6); sun.position.set(-60, 13, 25); sun.target.position.set(0, 0, -8);
 sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -40, right: 40, top: 40, bottom: -40, near: 1, far: 200 });
 sun.shadow.bias = -0.0005; sun.shadow.normalBias = 0.04; scene.add(sun, sun.target);
 const TL = new THREE.TextureLoader(), TEX = {};
-const TEXLIST = [['front', 'plate-front-v35.jpg'], ['front2', 't1-right-v35.jpg'], ['side', 'plate-side-v35.jpg'], ['top', 'top.jpg'], ['icefront', 'plate-front.jpg'], ['icefront2', 't1-right.jpg'], ['iceside', 'plate-side.jpg']];
-const GLBS = [0, 1, 2].map((i) => `terrace-lod${i}.glb`);
-// fetch every asset in the same order as before (sequential, unchanged behaviour), time fetch vs decode separately
-tS = performance.now(); const RAW = {}; for (const [, f] of TEXLIST) RAW[f] = await fetchProg(`./assets/${f}`, f); stage('jpg fetch', tS);
-tS = performance.now(); for (const f of GLBS) RAW[f] = await fetchProg(`./assets/${f}`, f); stage('glb fetch', tS);
-tS = performance.now();
-for (const [n, f] of TEXLIST) {
-  const url = URL.createObjectURL(new Blob([RAW[f]], { type: 'image/jpeg' })); const t = await TL.loadAsync(url); URL.revokeObjectURL(url); t.colorSpace = THREE.SRGBColorSpace; t.flipY = false; t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
-  t.generateMipmaps = true; t.magFilter = THREE.LinearFilter; t.anisotropy = r.capabilities.getMaxAnisotropy(); t.minFilter = THREE.LinearMipmapLinearFilter; TEX[n] = t; }
-stage('jpg decode', tS);
-tS = performance.now(); for (const k in TEX) r.initTexture(TEX[k]); stage('texture upload+mips', tS);
+const texOf = async (n, f) => { const url = URL.createObjectURL(new Blob([await FETCH[f]], { type: 'image/jpeg' })); const t = await TL.loadAsync(url); URL.revokeObjectURL(url); t.colorSpace = THREE.SRGBColorSpace; t.flipY = false; t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
+  t.generateMipmaps = true; t.magFilter = THREE.LinearFilter; t.anisotropy = r.capabilities.getMaxAnisotropy(); t.minFilter = THREE.LinearMipmapLinearFilter; TEX[n] = t; };
+const TEXP = Promise.all(TEXLIST.map(([n, f]) => texOf(n, f))).then(() => { stage('jpg fetch+decode (parallel)', tS); const t = performance.now(); for (const k in TEX) r.initTexture(TEX[k]); stage('texture upload+mips', t); });
 const ground = new THREE.Mesh(new THREE.PlaneGeometry(96, 96), new THREE.MeshStandardMaterial({ color: new THREE.Color(0.78, 0.84, 0.9), roughness: 1, metalness: 0 }));   // fix-door-ghost: plain snow like the offline render (render_views.py --ground); TEX.top is the terrace ROOF plate (it pictures the doorways)
 ground.rotation.x = -Math.PI / 2; ground.position.set(0, -0.01, -8); ground.receiveShadow = true; ground.name = 'ground'; ground.renderOrder = 2; scene.add(ground);
-const lod = new THREE.LOD(); const sw = [0, ...P.object.lod_switch_m]; const loader = new GLTFLoader();
-tS = performance.now();
-for (let i = 0; i < 3; i++) {
-  const g = await loader.parseAsync(RAW[GLBS[i]], './assets/'); g.scene.updateMatrixWorld(true); const geos = [], mats = [];
-  g.scene.traverse((o) => { if (o.isMesh) { const ge = o.geometry.clone().applyMatrix4(o.matrixWorld); for (const k of Object.keys(ge.attributes)) if (!['position', 'normal', 'uv'].includes(k)) ge.deleteAttribute(k); geos.push(ge); mats.push(o.material); } });
+const lod = new THREE.LOD(); const sw = [0, ...P.object.lod_switch_m]; const loader = new GLTFLoader(); loader.setMeshoptDecoder(MeshoptDecoder);
+// meshopt GLB (KHR_mesh_quantization): de-quantize to float32 before baking node transforms (positions 16 bit, normals 8 bit, uv 14 bit)
+const toFloat = (at) => { const n = at.count, k = at.itemSize, out = new Float32Array(n * k); for (let i = 0; i < n; i++) for (let j = 0; j < k; j++) out[i * k + j] = at.getComponent ? at.getComponent(i, j) : [at.getX, at.getY, at.getZ][j].call(at, i); return new THREE.BufferAttribute(out, k); };
+async function buildLevel(i) {
+  const g = await loader.parseAsync(await FETCH[GLBS[i]], './assets/'); g.scene.updateMatrixWorld(true); const geos = [], mats = [];
+  g.scene.traverse((o) => { if (o.isMesh) { const ge = o.geometry.clone(); for (const k of Object.keys(ge.attributes)) { if (!['position', 'normal', 'uv'].includes(k)) ge.deleteAttribute(k); else ge.setAttribute(k, toFloat(ge.attributes[k])); }
+    ge.applyMatrix4(o.matrixWorld); if (ge.attributes.normal) ge.normalizeNormals(); geos.push(ge); mats.push(o.material); } });
+  await TEXP;
   const m = new THREE.Mesh(mergeGeometries(geos, true), mats.map((s) => new THREE.MeshStandardMaterial({ map: TEX[s.name], roughness: 1, metalness: 0, name: s.name, side: s.side })));   // fix-door-ghost: keep GLB doubleSided (ice shells)
-  m.castShadow = m.receiveShadow = true; m.renderOrder = 0; lod.addLevel(m, sw[i]);
+  m.castShadow = m.receiveShadow = true; m.renderOrder = 0; return m;
 }
-stage('glb parse+merge', tS);
+// LOD2 first: the first frame waits only for LOD2 + the plates; LOD1/LOD0 join later and only ever swap in at their normal switch
+// distance (a finer level that arrives while it would be the active one is held until the camera next crosses its switch distance).
+const PENDING = [];
+const lod2 = await buildLevel(2); lod.addLevel(lod2, sw[2]); stage('lod2 ready (first-frame mesh)', tS);
+for (const i of [1, 0]) buildLevel(i).then((m) => { PENDING.push({ i, m }); LT.push([`lod${i} arrived (ms since nav)`, Math.round(performance.now())]); });
+const pick = (dists, d) => { let k = 0; const o = [...dists].sort((x, y) => x - y); for (let j = 1; j < o.length; j++) if (d >= o[j]) k = j; return o[k]; };
+let lodPrevD = null;
+function lodJoin() {
+  const d = cam.position.distanceTo(lod.getWorldPosition(new THREE.Vector3())); const prev = lodPrevD; lodPrevD = d; if (!PENDING.length) return;
+  const crossed = prev !== null && sw.slice(1).some((x) => (prev - x) * (d - x) <= 0 && prev !== d);
+  for (let k = PENDING.length - 1; k >= 0; k--) { const { i, m } = PENDING[k]; const cur = lod.levels.map((L) => L.distance);
+    if (firstFrame || pick(cur, d) === pick([...cur, sw[i]], d) || crossed) {   // before the first frame nothing is on screen yet, so joining can't pop
+      lod.addLevel(m, sw[i]); PENDING.splice(k, 1); LT.push([`lod${i} joined at ${d.toFixed(1)} m (ms since nav)`, Math.round(performance.now())]); } }
+}
 lod.position.fromArray(P.object.position_m); lod.rotation.y = (P.object.yaw_deg || 0) * Math.PI / 180; scene.add(lod); scene.updateMatrixWorld(true);
 const bb = new THREE.Box3().setFromObject(lod.levels[0].object); lod.position.y -= bb.min.y;
 // marks: rings on the snow at 8 m and 3 m in front of the centre doorway (placement approach.camera_marks_m), + 30 m start
@@ -84,12 +113,21 @@ function collide(p) {
     if (m === dz[0]) p.z = R_PLAYER; else if (m === dx[0]) p.x = -HW - R_PLAYER; else if (m === dx[1]) p.x = HW + R_PLAYER; else p.z = BACK - R_PLAYER;
   }
 }
+// ---- sky dome (ktx2-final5-mip1-star), joins as soon as its 12 plates are in ----
+const SKY = { on: false, err: null, ms: null };
+const bnTex = new THREE.TextureLoader().loadAsync(URL.createObjectURL(new Blob([await FETCH['bluenoise64.png']], { type: 'image/png' }))).then((t) => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.minFilter = t.magFilter = THREE.NearestFilter; t.generateMipmaps = false; t.colorSpace = THREE.NoColorSpace; return t; });
+if (SKYP) Promise.all(SKYP).then(async (bufs) => { try { const t = performance.now(); const BAND = JSON.parse(new TextDecoder().decode(await FETCH['sky-band-colours.json'])).plates.map((p) => p.top_lin); const sd = createSkyDome(THREE, r, bufs, await bnTex, BAND); scene.add(sd.dome); r.initTexture(sd.texture);
+    Object.assign(SKY, { on: true, bytes: sd.bytes, levels: sd.levels, plates: sd.plates, vExt: +sd.vExt.toFixed(2) }); stage('sky dome build+upload', t); SKY.ms = Math.round(performance.now()); LT.push(['sky visible (ms since nav)', SKY.ms]); }
+  catch (e) { SKY.err = String(e.message || e); console.error('[sky]', e); } });
 const bolt = new THREE.Mesh(new THREE.CapsuleGeometry(0.35, 1.4, 4, 10), new THREE.MeshStandardMaterial({ color: 0xf0c040, roughness: 0.6 }));
 bolt.castShadow = true; bolt.renderOrder = 0; scene.add(bolt);
 const pl = { x: marks[0].pos[0], z: marks[0].pos[1], heading: 135, pitch: 0 };   // heading deg: 0 = -z ... facing the door from the 30 m start
 function place(d, up) { const m = marks.find((q) => q.d === d); pl.x = m.pos[0]; pl.z = m.pos[1] + 0; pl.heading = d === 30 ? 45 : 0; pl.pitch = up ? 35 : 0; }
 for (const [id, d, up] of [['b30', 30], ['b8', 8], ['b3', 3], ['bup', 3, 1]]) document.getElementById(id).onclick = () => place(d, up);
+const GROUND_Y = 0;   // the page's walk surface (terrace sits on the local ground; spine y is the world climb, not re-applied here)
+function routeProgress() { return Math.max(0, 30 - Math.hypot(pl.x - DOOR.x, pl.z - DOOR.z)); }   // 0 at the 30 m start, 27 at the 3 m mark
 const q = new URLSearchParams(location.search); if (q.get('at')) place(+q.get('at'), q.get('up') === '1'); else place(30);
+if (q.get('s')) { const d = Math.max(3, 30 - (+q.get('s') - S_BASE)), m0 = marks[0].pos; const k = d / 30; pl.x = DOOR.x + (m0[0] - DOOR.x) * k; pl.z = DOOR.z + (m0[1] - DOOR.z) * k; pl.heading = 45; }
 // input: left half = stick (move), right half = drag (turn / pitch); keyboard WASD + arrows
 const keys = {}; addEventListener('keydown', (e) => (keys[e.code] = true)); addEventListener('keyup', (e) => (keys[e.code] = false));
 const stick = { id: null, x: 0, y: 0, ox: 0, oy: 0 }, look = { id: null, lx: 0, ly: 0 }; const knob = document.getElementById('knob');
@@ -136,7 +174,7 @@ function finishBench() {
   bench.median = fps[fps.length >> 1]; bench.min = fps[0]; bench.low = all.low1; bench.done = true;
   const z = r.getDrawingBufferSize(new THREE.Vector2());
   bench.result = { build: BUILD, ua: navigator.userAgent, dpr, buffer: `${z.x}x${z.y}`, css: `${innerWidth}x${innerHeight}`, renderScale: +(adaptive.level.ratio / CANVAS).toFixed(3), internal: adaptive.level.ratio, aa: AA ? 'msaa4' : 'off', modeB: MODEB,
-    window_s: [WARMUP, 30], avg: all.avg, low1: all.low1, p50_ms: all.p50, p95_ms: all.p95, max_ms: all.max, frames: all.frames, seg, load_ms: LOADMS };
+    sky: SKY.on, window_s: [WARMUP, 30], avg: all.avg, low1: all.low1, p50_ms: all.p50, p95_ms: all.p95, max_ms: all.max, frames: all.frames, seg, load_ms: LOADMS };
   const line = 'BENCH ' + JSON.stringify(bench.result); console.log(line);
   const el = document.getElementById('bench'); el.style.display = 'block'; el.textContent = `avg ${all.avg} fps  1% low ${all.low1}  p50 ${all.p50} ms  p95 ${all.p95} ms  max ${all.max} ms\n` + Object.entries(seg).map(([k, v]) => `${k}: ${v}`).join('  |  ') + '\n(tap & hold to copy)\n' + line;
 }
@@ -151,7 +189,7 @@ window.__perfReport = () => ({
   sprintDip: false, detailOn: adaptive.level.detail !== false, groundOrder: ground.renderOrder, maxOpaqueOrder: 0,
   bench: bench.result, load: LT, fpsMedian: bench.done ? bench.median : null, fps1Low: bench.done ? bench.low : null, fpsMin: bench.done ? bench.min : null,
   drawCalls: r.info.render.calls, triangles: r.info.render.triangles, textureMemory: texBytes(),
-  activeLOD: { terrace: lod.getCurrentLevel() }, userAgent: navigator.userAgent,
+  activeLOD: { terrace: lod.getCurrentLevel(), levels: lod.levels.map((L) => L.distance) }, sky: SKY, camera: { fov: cam.fov, pos: cam.position.toArray().map((v) => +v.toFixed(2)) }, fetchMs: fetchT, userAgent: navigator.userAgent,
 });
 // shader compile + first frame
 tS = performance.now(); lod.update(cam); if (r.compileAsync) await r.compileAsync(scene, cam); else r.compile(scene, cam); stage('shader compile', tS);
@@ -170,13 +208,14 @@ function frame(now) {
   const h = pl.heading * Math.PI / 180, f = [Math.sin(h), -Math.cos(h)], rt = [Math.cos(h), Math.sin(h)];
   pl.x += (f[0] * -mz + rt[0] * mx) * SPEED * dt; pl.z += (f[1] * -mz + rt[1] * mx) * SPEED * dt; collide(pl);
   bolt.position.set(pl.x, 1.05, pl.z); bolt.rotation.y = -h;
-  const pitch = Math.atan2(AIM - EYE, BOOM) + pl.pitch * Math.PI / 180;
-  cam.position.set(pl.x - f[0] * BOOM, EYE, pl.z - f[1] * BOOM);
-  cam.lookAt(pl.x + f[0] * 10 * Math.cos(pitch), EYE + 10 * Math.sin(pitch) + (AIM - EYE) * 0, pl.z + f[1] * 10 * Math.cos(pitch));
-  lod.update(cam);
+  const sNow = S_BASE + routeProgress(), sp = spineAt(sNow);
+  const pitch = (sp.pitch + pl.pitch) * Math.PI / 180, camY = GROUND_Y + SC.above;   // height: spine rig (2.6 m above the walked ground); pitch: spine point + look
+  cam.position.set(pl.x - f[0] * SC.behind, camY, pl.z - f[1] * SC.behind);
+  cam.lookAt(cam.position.x + f[0] * Math.cos(pitch), camY + Math.sin(pitch), cam.position.z + f[1] * Math.cos(pitch));
+  cam.updateMatrixWorld(); lodJoin(); lod.update(cam);
   if (MODEB) ups.render(r, scene, cam, grade, adaptive.level.ratio / CANVAS); else { r.setRenderTarget(null); r.render(scene, cam); }
   const dDoor = Math.hypot(pl.x - DOOR.x, pl.z - DOOR.z), dCam = cam.position.distanceTo(new THREE.Vector3(DOOR.x, 1.5, DOOR.z));
-  hud.textContent = `fps ${fps.toFixed(0)}  AA ${AA ? 'MSAA 4x' : 'off'}  LOD${lod.getCurrentLevel()} (switch ${P.object.lod_switch_m.join('/')} m)\nmode B: internal ${INTERNAL} -> canvas ${CANVAS} (dpr ${dpr}) EASU+RCAS 0.8\nplayer ${dDoor.toFixed(1)} m / camera ${dCam.toFixed(1)} m from centre door\nchase boom ${BOOM} m, eye ${EYE} m (corridor-ab look.js)`;
+  hud.textContent = `fps ${fps.toFixed(0)}  AA ${AA ? 'MSAA 4x' : 'off'}  LOD${lod.getCurrentLevel()} (switch ${P.object.lod_switch_m.join('/')} m)\nmode B: internal ${INTERNAL} -> canvas ${CANVAS} (dpr ${dpr}) EASU+RCAS 0.8\nplayer ${dDoor.toFixed(1)} m / camera ${dCam.toFixed(1)} m from centre door\nspine cam: ${SC.behind} m behind, ${SC.above} m up, vfov ${SC.vfov_deg}, s ${sNow.toFixed(0)} m pitch ${sp.pitch.toFixed(1)}${pl.pitch ? '+' + pl.pitch : ''}\nsky ${SKY.on ? 'on' : SKY.err ? 'ERR ' + SKY.err : SKYOFF ? 'off' : 'loading'}`;
   if (firstFrame) { firstFrame = false; const t1 = performance.now(); stage('first frame (render+post)', now); LOADMS = Math.round(t1);
     LT.push(['TOTAL since navigation', LOADMS]); console.log('[load] breakdown ' + JSON.stringify(LT)); document.getElementById('load').style.display = 'none'; window.__load = LT;
     if (bench.on) { const el = document.getElementById('bench'); el.style.display = 'block'; el.textContent = 'load: ' + LT.map(([k, v]) => `${k} ${v}`).join(' | '); } }
