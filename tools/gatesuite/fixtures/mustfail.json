@@ -1,0 +1,93 @@
+{
+ "note": "Every entry must come out FAIL at its step; any green fails the whole suite. artifact_present=false means the fixture file is not built yet and the selftest lists it as pending.",
+ "fixtures": [
+  {
+   "id": "dd80963f",
+   "step": "spine",
+   "artifact": null,
+   "artifact_present": false,
+   "what": "pre-1.3.1 spine build",
+   "expect": "FAIL"
+  },
+  {
+   "id": "3e8dce00",
+   "step": "spine",
+   "artifact": "fixtures/spine-v1.2-3e8dce00.json",
+   "artifact_present": true,
+   "what": "spine v1.2",
+   "expect": "FAIL"
+  },
+  {
+   "id": "v4-cornice-side",
+   "step": "depthmeasure",
+   "artifact": null,
+   "artifact_present": false,
+   "what": "v4 cornice floats in side view",
+   "expect": "FAIL"
+  },
+  {
+   "id": "v9-side",
+   "step": "kitjudge",
+   "artifact": "fixtures/v9-side.jpg",
+   "artifact_present": true,
+   "what": "v9 side view",
+   "expect": "FAIL"
+  },
+  {
+   "id": "v9-chase",
+   "step": "kitjudge",
+   "artifact": "fixtures/v9-chase.jpg",
+   "artifact_present": true,
+   "what": "v9 chase view",
+   "expect": "FAIL"
+  },
+  {
+   "id": "v9-appearance",
+   "step": "kitjudge",
+   "artifact": "fixtures/judge-v9.json",
+   "artifact_present": true,
+   "what": "judge total 38.2 < 50",
+   "expect": "FAIL"
+  },
+  {
+   "id": "v10-appearance",
+   "step": "kitjudge",
+   "artifact": "fixtures/judge-v10.json",
+   "artifact_present": true,
+   "what": "judge total 36.4 < 50",
+   "expect": "FAIL"
+  },
+  {
+   "id": "v11-appearance",
+   "step": "kitjudge",
+   "artifact": "fixtures/judge-v11.json",
+   "artifact_present": true,
+   "what": "judge total 34.0 < 50",
+   "expect": "FAIL"
+  },
+  {
+   "id": "v11-slab-removed",
+   "step": "features",
+   "artifact": null,
+   "artifact_present": false,
+   "what": "v11 with snow slabs removed",
+   "expect": "FAIL"
+  },
+  {
+   "id": "v11-icicle-bar",
+   "step": "features",
+   "artifact": null,
+   "artifact_present": false,
+   "what": "v11 icicles as a bar under the slab",
+   "expect": "FAIL"
+  },
+  {
+   "id": "dark-value-copy",
+   "step": "features",
+   "artifact": null,
+   "artifact_present": false,
+   "what": "v11 copy with near-black stone value",
+   "expect": "FAIL"
+  }
+ ]
+}
