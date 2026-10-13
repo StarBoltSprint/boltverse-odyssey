@@ -1053,3 +1053,15 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Drop centers closer than 0.04 m, keep the longest cone, and cap the buried radius at half the spacing minus 3 mm, with no 0.025 m floor and no extra 8 mm on the visible cone. Cones stay separate closed meshes. |
 | Guard | object-gate row `mesh sealed (non-manifold / open edges)`. v3.5 measured nonManifold 0 and open 0 on LOD0 (78160 tris), LOD1 (29066), and LOD2 (14830). |
 | Sources | `tools/imagine-to-3d/terrace_block.py`, `steps/zone-d/01-terrace/object-gate-v3.5/debug-nonmanifold-edges.png` (the pre-fix dump), commit `dd80963f`. |
+
+### 2026-10-13 — terrace facades were flat boxes with the plate pasted on (manual proof fixes -> blender_wall.py)
+
+| | |
+| --- | --- |
+| Take | zd-terrace-v35 -> wall-proof-1013 v1..v4 |
+| Defect | SmiR rejected v3.5 at 10:35: facades read as flat boxes with the image pasted on (terrace_block.py relief +-0.26 m from MoGe-2 high-pass), hidden faces (jambs, undersides, tops) showed stretched front pixels, gates passed it. |
+| Root cause | Relief was a displacement of a box, not geometry read from the pixels; hidden faces reused the front projection; no gate compared real depth with the depth the pixels show, or checked texel stretch per triangle. |
+| Fix (automatic now) | `tools/imagine-to-3d/blender_wall.py`: (1) stone = vertical columns between the plate's own dark column edges, edge wander + chips + uneven tops from pixels, depth 1.15x the MoGe-2 read (allowed 1.0-1.3); (2) cornice/snow slab with MoGe protrusion, mitred corners via one shared slab depth per tier; (3) door recesses found from dark pixels, jambs / lintel / cornice underside / ledges are own faces with translated real pixels (isotropic); (4) icicles only where drip streaks exist; (5) no decimation: each LOD rebuilt at a budget-sized grid; (6) gltfpack -vtf -kv with UV range check (without -kv gltfpack drops TEXCOORD_0 when materials carry no image). |
+| Guard | `python3 tools/imagine-to-3d/blender_wall.py selftest`: flat v3.5 piece FAIL, stretched-jamb v1 FAIL, over-deep v2 FAIL, hand v4 FAIL (stretched top/underside found by the check), tool-built v4 PASS. `check` = per-feature real/apparent in [0.7, 1.3] (stone) / [0.7, 1.6] (cornice, door), stretch <= 1.3 on <= 5 % of area, big-flat-triangle share <= 20 %. |
+| Known gaps | facet check is weak (v2 decimation passes it; v2 fails on depth + stretch instead); mesh is not sealed (separate pieces, open back corners); side cornices are textured from the front cap pixels (declared) and are not measured by depthmeasure. |
+| Sources | `/workspace/wall-proof-1013/{v2,v3,v4}`, `steps/zone-d/01-terrace/wall/make_scene.py`. |

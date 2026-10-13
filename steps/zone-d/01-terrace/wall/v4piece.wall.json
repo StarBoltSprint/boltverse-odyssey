@@ -1,0 +1,92 @@
+{
+ "name": "v4piece",
+ "plates": {
+  "front": {
+   "img": "/workspace/grokcli/wt/zd-terrace-1012/steps/zone-d/01-terrace/plates/v35/plate-front-v35.jpg",
+   "depth": "/workspace/grokcli/wt/zd-terrace-1012/steps/zone-d/01-terrace/work/plate-front-depth.npy",
+   "mat": "front"
+  }
+ },
+ "opts": {
+  "scale": 1.15
+ },
+ "faces": [
+  {
+   "name": "t1-door-6m",
+   "plate": "front",
+   "k": 46.51162790697675,
+   "c0": 535,
+   "cs": 1,
+   "u": [
+    -4.6225,
+    1.3975
+   ],
+   "weight": 1,
+   "cornice_ext": [
+    0,
+    0
+   ],
+   "frame": {
+    "o": [
+     0,
+     0,
+     0
+    ],
+    "right": [
+     1,
+     0,
+     0
+    ],
+    "up": [
+     0,
+     1,
+     0
+    ]
+   },
+   "icicles": true,
+   "bands": [
+    {
+     "kind": "stone",
+     "v": [
+      0,
+      3.784
+     ],
+     "rows": [
+      870,
+      694
+     ]
+    },
+    {
+     "kind": "cornice",
+     "v": [
+      3.784,
+      5.805
+     ],
+     "rows": [
+      694,
+      600
+     ]
+    }
+   ],
+   "doors": [
+    {
+     "search": [
+      440,
+      690,
+      620,
+      872
+     ],
+     "band": 0,
+     "depth": 1.5
+    }
+   ]
+  }
+ ],
+ "flats": [],
+ "budgets": [
+  {
+   "stone": 11000,
+   "cornice": 3000
+  }
+ ]
+}
