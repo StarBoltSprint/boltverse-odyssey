@@ -55,14 +55,14 @@ for (const [n, f] of TEXLIST) {
   t.generateMipmaps = true; t.magFilter = THREE.LinearFilter; t.anisotropy = r.capabilities.getMaxAnisotropy(); t.minFilter = THREE.LinearMipmapLinearFilter; TEX[n] = t; }
 stage('jpg decode', tS);
 tS = performance.now(); for (const k in TEX) r.initTexture(TEX[k]); stage('texture upload+mips', tS);
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(96, 96), new THREE.MeshStandardMaterial({ map: TEX.top, roughness: 1, metalness: 0 }));
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(96, 96), new THREE.MeshStandardMaterial({ color: new THREE.Color(0.78, 0.84, 0.9), roughness: 1, metalness: 0 }));   // fix-door-ghost: plain snow like the offline render (render_views.py --ground); TEX.top is the terrace ROOF plate (it pictures the doorways)
 ground.rotation.x = -Math.PI / 2; ground.position.set(0, -0.01, -8); ground.receiveShadow = true; ground.name = 'ground'; ground.renderOrder = 2; scene.add(ground);
 const lod = new THREE.LOD(); const sw = [0, ...P.object.lod_switch_m]; const loader = new GLTFLoader();
 tS = performance.now();
 for (let i = 0; i < 3; i++) {
   const g = await loader.parseAsync(RAW[GLBS[i]], './assets/'); g.scene.updateMatrixWorld(true); const geos = [], mats = [];
-  g.scene.traverse((o) => { if (o.isMesh) { const ge = o.geometry.clone().applyMatrix4(o.matrixWorld); for (const k of Object.keys(ge.attributes)) if (!['position', 'normal', 'uv'].includes(k)) ge.deleteAttribute(k); geos.push(ge); mats.push(o.material.name); } });
-  const m = new THREE.Mesh(mergeGeometries(geos, true), mats.map((n) => new THREE.MeshStandardMaterial({ map: TEX[n], roughness: 1, metalness: 0, name: n })));
+  g.scene.traverse((o) => { if (o.isMesh) { const ge = o.geometry.clone().applyMatrix4(o.matrixWorld); for (const k of Object.keys(ge.attributes)) if (!['position', 'normal', 'uv'].includes(k)) ge.deleteAttribute(k); geos.push(ge); mats.push(o.material); } });
+  const m = new THREE.Mesh(mergeGeometries(geos, true), mats.map((s) => new THREE.MeshStandardMaterial({ map: TEX[s.name], roughness: 1, metalness: 0, name: s.name, side: s.side })));   // fix-door-ghost: keep GLB doubleSided (ice shells)
   m.castShadow = m.receiveShadow = true; m.renderOrder = 0; lod.addLevel(m, sw[i]);
 }
 stage('glb parse+merge', tS);
