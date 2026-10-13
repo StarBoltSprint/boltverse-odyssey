@@ -1071,3 +1071,9 @@ Leave a field blank when the repo does not say it. Do not fill it.
 - Sealing still FAILS: T-junction/shared-boundary vertices between pieces leave non-manifold edges (LOD0 front 61 / side 26 / top 4). Needs single-surface topology with shared ticks.
 - Sealing doubles triangles: LOD budgets lowered to fit (83,340 / 28,636 / 7,220).
 - t1-right-v35 not used: tier heights disagree with plate-front (cornice underside 4.6 vs 3.8 m).
+
+## 2026-10-13 step 3: sealing, camera placement, door verdict
+- Blender `-b -P` exits 0 on a Python exception: a broken stage silently left the OLD glb in place (selftest read a stale file). export_glb now deletes the target first and fails on Traceback / missing output.
+- Non-manifold after solidify came from (a) >2 faces on a T-join edge and (b) bow-tie boundary vertices (two fans at one vertex, rims meet at 4 faces). Fix: 1 mm weld (gate tolerance), keep the 2 largest faces per edge, separate bow-tie fans 1.5 mm apart, then solidify. All LODs sealed.
+- depthmeasure auto_frame offsets the camera along t=(n.z,0,-n.x): for +x faces that is toward the back wall, so 8 m views hit nothing. Spec gen mirrors the angle (180-a). Inner shell UVs moved to u+2 so uv-box framing only finds the outer skin.
+- depthmeasure scores a door that no view saw as PASS. blender_wall.door_verdict counts a door only if at least one view measured it.

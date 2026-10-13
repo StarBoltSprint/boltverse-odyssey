@@ -357,7 +357,8 @@ def write_obj(m, path):
     return mats
 
 BL_STAGE = r'''
-import bpy, sys
+import bpy, sys, os
+FIX = os.environ.get("BW_SEAL_FIX", "1") == "1"
 a = sys.argv[sys.argv.index("--") + 1:]; SEAL = a[2] == "1"; THICK = float(a[3]); OFFS = float(a[4]) if len(a) > 4 else 0.0
 bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.ops.wm.obj_import(filepath=a[0], forward_axis="NEGATIVE_Z", up_axis="Y")
@@ -368,11 +369,40 @@ for ob in list(bpy.context.scene.objects):
     if ob.type != "MESH": continue
     bpy.ops.object.select_all(action="DESELECT"); ob.select_set(True); bpy.context.view_layer.objects.active = ob
     if SEAL:
-        bpy.ops.object.mode_set(mode="EDIT"); bpy.ops.mesh.select_all(action="SELECT"); bpy.ops.mesh.remove_doubles(threshold=0.00002)
+        bpy.ops.object.mode_set(mode="EDIT"); bpy.ops.mesh.select_all(action="SELECT"); bpy.ops.mesh.remove_doubles(threshold=0.001)
         bpy.ops.mesh.dissolve_degenerate(threshold=0.0005); bpy.ops.mesh.delete_loose(); bpy.ops.object.mode_set(mode="OBJECT")
+        import bmesh; bm = bmesh.new(); bm.from_mesh(ob.data)
+        for it in range(8 if FIX else 0):   # single surface: where >2 faces share an edge (T-joins of pieces) keep the 2 largest
+            bad = [e for e in bm.edges if len(e.link_faces) > 2]
+            if not bad: break
+            kill = set()
+            for e in bad: kill.update(sorted(e.link_faces, key=lambda f: -f.calc_area())[2:])
+            bmesh.ops.delete(bm, geom=list(kill), context="FACES")
+        for v in [v for v in bm.verts if FIX and v.is_boundary and not v.is_manifold]:   # bow-tie: two fans touching at one vertex
+            be = [e for e in v.link_edges if e.is_boundary]
+            if len(be) > 2:
+                for w in bmesh.utils.vert_separate(v, be):   # pull each copy 1.5 mm into its own fan so the gate's 1 mm weld keeps them apart
+                    if w.link_faces:
+                        c = sum((f.calc_center_median() for f in w.link_faces), w.co * 0) / len(w.link_faces); d = c - w.co
+                        if d.length > 1e-6: w.co += d.normalized() * 0.0015
+        bm.to_mesh(ob.data); bm.free()
         so = ob.modifiers.new("seal", "SOLIDIFY"); so.thickness = THICK; so.offset = OFFS; so.use_rim = True; so.use_even_offset = False
-        bpy.ops.object.modifier_apply(modifier="seal")
+        n0 = len(ob.data.polygons); bpy.ops.object.modifier_apply(modifier="seal")
+        # simple solidify emits [outer faces][inner copies][rims]. The inner skin is never seen (inside the 3 cm shell);
+        # park its uv at u+2 so uv-box framing (depthmeasure auto_frame, check) only ever finds the outer skin.
+        uvl = ob.data.uv_layers.active.data
+        for pg in ob.data.polygons[n0:2 * n0]:
+            for li in pg.loop_indices: uvl[li].uv[0] += 2.0
         bpy.ops.object.modifier_add(type="TRIANGULATE"); bpy.ops.object.modifier_apply(modifier="Triangulate")
+        # pieces whose boundaries touch get coincident rims: weld at the gate's 1 mm, then drop each coincident
+        # face pair (same welded vertex set) -> the two shells join into one closed surface
+        bm = bmesh.new(); bm.from_mesh(ob.data); bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.001 if FIX else 0.00002)
+        seen = {}
+        for f in bm.faces: seen.setdefault(frozenset(v.index for v in f.verts), []).append(f)
+        dup = [f for fs in seen.values() if len(fs) > 1 for f in fs]
+        bmesh.ops.delete(bm, geom=dup, context="FACES_ONLY") if dup and FIX else None
+        bmesh.ops.delete(bm, geom=[f for f in bm.faces if f.calc_area() < 1e-9], context="FACES_ONLY")
+        bm.to_mesh(ob.data); bm.free()
     bpy.ops.object.shade_smooth_by_angle(angle=1.05)
 bpy.ops.object.select_all(action="SELECT")
 for mt in bpy.data.materials: mt.name = mt.name.split(".")[0]
@@ -382,7 +412,9 @@ bpy.ops.export_scene.gltf(filepath=a[1], export_format="GLB", export_yup=True, e
 def export_glb(m, out_glb, seal=True, thick=0.03, offs=0.0):
     obj = out_glb[:-4] + ".obj"; write_obj(m, obj)
     st = os.path.join(os.path.dirname(out_glb), "_bl_stage.py"); open(st, "w").write(BL_STAGE)
-    subprocess.run([BLENDER, "-b", "-P", st, "--", obj, out_glb, "1" if seal else "0", str(thick), str(offs)], check=True, capture_output=True)
+    if os.path.exists(out_glb): os.remove(out_glb)
+    r = subprocess.run([BLENDER, "-b", "-P", st, "--", obj, out_glb, "1" if seal else "0", str(thick), str(offs)], check=True, capture_output=True, text=True, env=dict(os.environ))
+    if "Traceback" in r.stderr or not os.path.exists(out_glb): raise SystemExit("blender stage failed (blender exits 0 on python errors):\n" + r.stderr[-2000:])
     os.remove(obj); return out_glb
 
 GLTFPACK = os.environ.get("GLTFPACK", "/tmp/gp/node_modules/gltfpack/cli.js")
@@ -586,7 +618,20 @@ def selftest():
     old = f"{W}/terrace/glb/terrace-lod0.glb"
     if os.path.exists(old):
         r = sealed(old); ok &= not r["pass_"]; print(("ok  " if not r["pass_"] else "BAD ") + f"unsealed v1 terrace: want FAIL got {'PASS' if r['pass_'] else 'FAIL'} {json.dumps(r['per_material'])}")
-    r = sealed(good); print(f"INFO sealed build (known open, not asserted): {'PASS' if r['pass_'] else 'FAIL'} {json.dumps(r['per_material'])}")
+    r = sealed(good); ok &= r["pass_"]; print(("ok  " if r["pass_"] else "BAD ") + f"sealed build (single surface): want PASS got {'PASS' if r['pass_'] else 'FAIL'} {json.dumps(r['per_material'])}")
+    os.environ["BW_SEAL_FIX"] = "0"
+    try: g4, _ = tb("seal-nofix", lambda s_: None)
+    finally: os.environ["BW_SEAL_FIX"] = "1"
+    r = sealed(g4); ok &= not r["pass_"]; print(("ok  " if not r["pass_"] else "BAD ") + f"solidify without single-surface fix: want FAIL got {'PASS' if r['pass_'] else 'FAIL'} {json.dumps(r['per_material'])}")
+    c = [7.42, 1.25, -8.65]; back = -15.996   # t1-right frame centre seen in the v1 run
+    for fix, want in ((False, False), (True, True)):
+        cams = [spec_cam(c, [1, 0, 0], v["dist"], v["angle"]) for v in face_views([1, 0, 0], fix) if v["dist"] == 8]
+        got = all(cm[2] > c[2] and cm[2] > back + 0.5 for cm in cams); ok &= got == want
+        print(("ok  " if got == want else "BAD ") + f"right-face 8 m cameras {'mirrored' if fix else 'old'}: want {'PASS' if want else 'FAIL'} got {'PASS' if got else 'FAIL'} z={[round(float(cm[2]), 2) for cm in cams]}")
+    for nm, tab, want in (("door seen by no view", {"apparent": {"door": 1.5}, "table": {"a": {"door": None}, "b": {"door": None}}}, False),
+                          ("door measured 1.64 m", {"apparent": {"door": 1.5}, "table": {"a": {"door": 1.641}, "b": {"door": None}}}, True),
+                          ("door measured 0.4 m", {"apparent": {"door": 1.5}, "table": {"a": {"door": 0.4}}}, False)):
+        got = door_verdict(tab)["pass_"]; ok &= got == want; print(("ok  " if got == want else "BAD ") + f"{nm}: want {'PASS' if want else 'FAIL'} got {'PASS' if got else 'FAIL'}")
     print("SELFTEST", "PASS" if ok else "FAIL"); return ok, rep
 
 def door_specs(meta, scene):
@@ -601,8 +646,31 @@ def door_specs(meta, scene):
             out.append(dict(face=f["face"], door=i, plate=P["img"], plates={P["mat"]: P["img"]}, material=P["mat"], moge_depth=P.get("depth"),
                             wall_box=wb, facing=n, auto_frame=True, outline_break_m=0.3,
                             reliefs=[dict(name="door", kind="recess", box=d["box"], luma_below=30, cap_m=1.5)],
-                            views=[dict(name="door-60-8m", dist=8, angle=60, grazing=False), dict(name="door-75-5m", dist=5, angle=75, grazing=False)]))
+                            views=[dict(name="door-60-8m", dist=8, angle=open_side_angle(n, 60), grazing=False), dict(name="door-75-5m", dist=5, angle=open_side_angle(n, 75), grazing=False)]))
     return out
+
+def open_side_angle(n, angle):
+    """depthmeasure auto_frame puts the camera at c + n*sin(a)*d + t*cos(a)*d with t = (n.z, 0, -n.x). For a +x face t points
+    to the BACK of the terrace: the 8 m views end up past the back wall and hit nothing. Mirror the angle so the along-wall
+    offset always goes toward the open front (+z)."""
+    t = np.array([n[2], 0, -n[0]], float)
+    return 180 - angle if t[2] < 0 else angle
+
+def spec_cam(frame_c, n, dist, angle):
+    n = np.array(n, float); t = np.array([n[2], 0, -n[0]]); a = np.radians(angle)
+    return np.array(frame_c, float) + n * np.sin(a) * dist + t * np.cos(a) * dist
+
+def face_views(n, fix=True):
+    A = (lambda a: open_side_angle(n, a)) if fix else (lambda a: a)
+    return [dict(name="45-3m", dist=3, angle=A(45), grazing=False), dict(name="graze-3m", dist=3, angle=A(15), grazing=True),
+            dict(name="45-8m", dist=8, angle=A(45), grazing=False), dict(name="graze-8m", dist=8, angle=A(15), grazing=True)]
+
+def door_verdict(table):
+    """depthmeasure scores a door relief PASS when no view saw it (all null). A door counts only if >=1 view measured it
+    and every measured view is >= 0.7 x apparent."""
+    vals = [v.get("door") for v in table["table"].values()]; app = table["apparent"]["door"]
+    got = [x for x in vals if x is not None]
+    return dict(views=len(vals), measured=len(got), pass_=bool(got) and all(x >= 0.7 * app for x in got))
 
 def door_specs_missing(meta, specs):
     have = {(s_["face"], s_["door"]) for s_ in specs}
