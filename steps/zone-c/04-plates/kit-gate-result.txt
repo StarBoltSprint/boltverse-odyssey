@@ -1,1 +1,6 @@
+kit-gate exit=0 ok=True cmd=python3 steps/zone-c/04-plates/check-plates.py
+--- stdout ---
 PASS
+--- stderr ---
+/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/check-plates.py:41: DeprecationWarning: Image.Image.getdata is deprecated and will be removed in Pillow 14 (2027-10-15). Use get_flattened_data instead.
+  vals = list(small.getdata())

@@ -1,17 +1,10 @@
 {
-  "pass": true,
-  "plates": [
-    "plate-05-arch-left-inner.jpg",
-    "plate-06-arch-right-inner.jpg",
-    "plate-07-wall-left.jpg",
-    "plate-08-wall-right.jpg",
-    "plate-09-waterfall.jpg",
-    "plate-10-mist.jpg",
-    "plate-11-leaf.jpg",
-    "plate-12-fern.jpg",
-    "plate-13-causeway-underside.jpg",
-    "plate-14-gorge-closure.jpg",
-    "plate-15-planet.jpg"
-  ],
-  "fails": []
+  "ok": true,
+  "exit": 0,
+  "command": "python3 steps/zone-c/04-plates/check-plates.py",
+  "seconds": 0.18,
+  "ts": "2026-10-12T06:49:30+0200",
+  "stdout_tail": "PASS\n",
+  "stderr_tail": "/workspace/grokcli/wt/zc-plates-1012/steps/zone-c/04-plates/check-plates.py:41: DeprecationWarning: Image.Image.getdata is deprecated and will be removed in Pillow 14 (2027-10-15). Use get_flattened_data instead.\n  vals = list(small.getdata())\n",
+  "stopHookActive": false
 }
