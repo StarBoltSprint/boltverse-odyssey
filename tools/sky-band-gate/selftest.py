@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-"""Self-test: fixture S03/S11 FAIL copies must FAIL; final4-pass + S06–S10 must PASS band rules.
+"""Self-test for sky-band-gate.
 
-Also runs live ring when present and prints S03/S11 final4 status.
+FAIL fixtures: S03/S11 pre-final4, S05-final2, S09-final3, S11-final4.
+PASS fixtures: S01, S02, S06–S08, S10 (current KEEP snapshots).
+Also runs live ring (must PASS when Art Director KEEP'd all 12).
 """
 from __future__ import annotations
 
@@ -10,115 +12,100 @@ import sys
 import tempfile
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
 PKG = Path(__file__).resolve().parent
 sys.path.insert(0, str(PKG))
 
 from check import main as check_main  # noqa: E402
-from measures import (  # noqa: E402
-    DENSITY_RATIO_MAX,
-    LANE_FRAC_MAX,
-    assess_plate,
-    key_b_median_star,
-    load_rgb,
-)
+from measures import assess_plate, key_b_median_star, load_rgb, mean_v  # noqa: E402
 
 FIX = PKG / "fixtures"
 
-
-def expect(name: str, path: Path, want: str, key_med, ring_v=None) -> dict:
-    rgb = load_rgb(path)
-    row = assess_plate(rgb, key_b_med=key_med, ring_median_v=ring_v)
-    # For fixture band self-test, judge band/lane primarily; edge/banding reported
-    band_fail = bool(row.get("band_fail")) or any(r.startswith("dense_band") or r.startswith("dark_lanes") for r in row["reasons"])
-    # Overall status for FAIL fixtures must be FAIL; for PASS fixtures band must not fail
-    ok = True
-    detail = ""
-    if want == "FAIL":
-        ok = row["status"] == "FAIL" and band_fail
-        detail = f"status={row['status']} band_fail={band_fail} reasons={row['reasons']}"
-    else:
-        ok = not band_fail
-        detail = f"status={row['status']} band_fail={band_fail} dens={row['density_ratio_eff']} lane={row['lane_frac_eff']} reasons={row['reasons']}"
-    print(("PASS" if ok else "FAIL"), name, want, detail)
-    return {"name": name, "ok": ok, "want": want, "row": row}
+FAIL_CASES = [
+    ("S03-final3-fail", FIX / "zd-sky12-S03-final3-fail.jpg"),
+    ("S11-final2-fail", FIX / "zd-sky12-S11-final2-fail.jpg"),
+    ("S05-final2-fail", FIX / "zd-sky12-S05-final2-fail.jpg"),
+    ("S09-final3-fail", FIX / "zd-sky12-S09-final3-fail.jpg"),
+    ("S11-final4-fail", FIX / "zd-sky12-S11-final4-fail.jpg"),
+]
+PASS_CASES = [
+    ("S01-final2-pass", FIX / "zd-sky12-S01-final2-pass.jpg"),
+    ("S02-final2-pass", FIX / "zd-sky12-S02-final2-pass.jpg"),
+    ("S06-final3-pass", FIX / "zd-sky12-S06-final3-pass.jpg"),
+    ("S07-final3-pass", FIX / "zd-sky12-S07-final3-pass.jpg"),
+    ("S08-final5-pass", FIX / "zd-sky12-S08-final5-pass.jpg"),
+    ("S10-final3-pass", FIX / "zd-sky12-S10-final3-pass.jpg"),
+]
 
 
 def main() -> int:
     key = FIX / "key-zd1-b.jpg"
     key_med = key_b_median_star(key if key.is_file() else None)
-    cases = [
-        ("S03-final3-fail", FIX / "zd-sky12-S03-final3-fail.jpg", "FAIL"),
-        ("S11-final2-fail", FIX / "zd-sky12-S11-final2-fail.jpg", "FAIL"),
-        ("S03-final4-pass", FIX / "zd-sky12-S03-final4-pass.jpg", "PASS"),
-        ("S11-final4-pass", FIX / "zd-sky12-S11-final4-pass.jpg", "PASS"),
-        ("S06", FIX / "zd-sky12-S06-final3.jpg", "PASS"),
-        ("S07", FIX / "zd-sky12-S07-final3.jpg", "PASS"),
-        ("S08", FIX / "zd-sky12-S08-final3.jpg", "PASS"),
-        ("S09", FIX / "zd-sky12-S09-final3.jpg", "PASS"),
-        ("S10", FIX / "zd-sky12-S10-final3.jpg", "PASS"),
-    ]
-    # ring V from pass set
-    vs = []
-    for _, p, _ in cases:
-        if p.is_file():
-            from measures import mean_v
-            vs.append(mean_v(load_rgb(p)))
+    paths = [p for _, p in FAIL_CASES + PASS_CASES if p.is_file()]
+    vs = [mean_v(load_rgb(p)) for p in paths]
     ring = float(sorted(vs)[len(vs) // 2]) if vs else None
 
-    results = []
-    missing = []
-    for name, path, want in cases:
+    bad = []
+    for name, path in FAIL_CASES:
         if not path.is_file():
-            missing.append(name)
-            print("MISSING", name, path)
-            continue
-        results.append(expect(name, path, want, key_med, ring))
-
-    all_ok = all(r["ok"] for r in results) and not missing
-    if not all_ok:
-        # print tuning hint
-        print(
-            f"thresholds density_ratio_max={DENSITY_RATIO_MAX} lane_frac_max={LANE_FRAC_MAX}",
-            file=sys.stderr,
+            print("MISSING", name); bad.append(name); continue
+        row = assess_plate(load_rgb(path), key_b_med=key_med, ring_median_v=ring)
+        ok = bool(row.get("band_fail")) or row["status"] == "FAIL" and any(
+            r.startswith("dense_band") or r.startswith("windowed_haze") or r.startswith("narrow_diagonal")
+            for r in row["reasons"]
         )
-        for r in results:
-            if not r["ok"]:
-                row = r["row"]
-                print(
-                    f"  tune {r['name']}: dens={row['density_ratio_eff']:.3f} "
-                    f"densR={row['density_ratio_right']:.3f} lane={row['lane_frac_eff']:.4f} "
-                    f"laneR={row['lane_frac_right']:.4f}",
-                    file=sys.stderr,
-                )
+        # must be band-related fail
+        ok = bool(row.get("band_fail"))
+        print(("PASS" if ok else "FAIL"), name, "want=FAIL", "band_fail=", row.get("band_fail"), row["reasons"])
+        if not ok: bad.append(name)
+    for name, path in PASS_CASES:
+        if not path.is_file():
+            print("MISSING", name); bad.append(name); continue
+        row = assess_plate(load_rgb(path), key_b_med=key_med, ring_median_v=ring)
+        ok = not bool(row.get("band_fail"))
+        print(("PASS" if ok else "FAIL"), name, "want=PASS band", "band_fail=", row.get("band_fail"), row["reasons"])
+        if not ok: bad.append(name)
 
-    # live ring quick (optional)
     live = Path("/workspace/zd-bible-1012/zd-plates/sky12")
     live_note = {}
     if live.is_dir():
         with tempfile.TemporaryDirectory() as td:
             rc = check_main(["--plates", str(live), "--out", td, "--key-b", str(key)])
             rep = json.loads((Path(td) / "report.json").read_text())
+            # Live ring band failures (ignore pure V/edge if AD KEEP — report honestly)
+            band_fails = [
+                p["id"] for p in rep["plates"]
+                if p.get("band_fail") or any(
+                    r.startswith("dense_band") or r.startswith("windowed_haze") or r.startswith("narrow_diagonal")
+                    for r in p["reasons"]
+                )
+            ]
             live_note = {
                 "status": rep["status"],
-                "edge_line_plates": rep["edge_line_plates"],
-                "S03": next((p for p in rep["plates"] if p["id"] == "S03"), None),
-                "S11": next((p for p in rep["plates"] if p["id"] == "S11"), None),
+                "edge": rep["edge_line_plates"],
+                "band_fails": band_fails,
                 "exit": rc,
+                "plates": [
+                    {
+                        "id": p["id"],
+                        "status": p["status"],
+                        "band_fail": p.get("band_fail"),
+                        "path": Path(p["path"]).name,
+                        "reasons": p["reasons"],
+                    }
+                    for p in rep["plates"]
+                ],
             }
             print("LIVE", json.dumps({
                 "status": rep["status"],
                 "edge": rep["edge_line_plates"],
-                "S03": {"path": live_note["S03"]["path"] if live_note["S03"] else None,
-                        "status": live_note["S03"]["status"] if live_note["S03"] else None,
-                        "reasons": live_note["S03"]["reasons"] if live_note["S03"] else None},
-                "S11": {"path": live_note["S11"]["path"] if live_note["S11"] else None,
-                        "status": live_note["S11"]["status"] if live_note["S11"] else None,
-                        "reasons": live_note["S11"]["reasons"] if live_note["S11"] else None},
+                "band_fails": band_fails,
             }))
+            if band_fails:
+                print("LIVE_BAND_FAIL", band_fails)
+                bad.append("live:" + ",".join(band_fails))
 
-    print("SELFTEST", "PASS" if all_ok else "FAIL")
-    return 0 if all_ok else 1
+    print("SELFTEST", "PASS" if not bad else "FAIL", bad)
+    return 0 if not bad else 1
 
 
 if __name__ == "__main__":

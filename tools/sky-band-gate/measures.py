@@ -340,6 +340,121 @@ def key_b_median_star(path) -> float | None:
     return float(np.median(diams)) if diams else None
 
 
+# --- windowed haze + narrow dense-star diagonal (Art Director misses) ---
+HAZE_SCORE_MIN = 1.10
+HAZE_SOFT_POS_MIN = 1.00
+NARROW_ABS_EX_MIN = 1.90
+NARROW_ER_MIN = 1.125
+
+
+def windowed_haze(L: np.ndarray) -> dict[str, Any]:
+    """Off-centre milky raised low-freq haze + dark lanes.
+
+    Scans upper-third tiles and right mid-height (55–75% × right half).
+    Down-weights the faint-OK S05 zone (y 40–60%, x 15–30%) per Art Director.
+    """
+    H, W = L.shape
+    soft = ndimage.gaussian_filter(L, 8.0) - ndimage.gaussian_filter(L, 24.0)
+    blur = ndimage.gaussian_filter(L, 12.0)
+    wins: list[tuple[float, float, float, float]] = []
+    for y0 in (0.0, 0.08, 0.16):
+        for x0 in (0.0, 0.2, 0.4, 0.6, 0.75):
+            wins.append((y0, y0 + 0.30, x0, min(1.0, x0 + 0.30)))
+    for y0 in (0.50, 0.55, 0.60):
+        for x0 in (0.55, 0.65, 0.75):
+            wins.append((y0, min(1.0, y0 + 0.22), x0, 1.0))
+    best = None
+    for y0, y1, x0, x1 in wins:
+        cy, cx = (y0 + y1) / 2, (x0 + x1) / 2
+        if 0.40 <= cy <= 0.60 and 0.15 <= cx <= 0.30:
+            continue  # faint haze OK
+        r0, r1 = int(y0 * H), int(y1 * H)
+        c0, c1 = int(x0 * W), int(x1 * W)
+        sof = soft[r0:r1, c0:c1]
+        soft_pos = float(np.clip(sof, 0, None).mean())
+        raise_v = float(blur[r0:r1, c0:c1].mean() - L.mean())
+        med = float(np.median(L[r0:r1, c0:c1]))
+        lane = float(
+            (
+                (L[r0:r1, c0:c1] < med * 0.78)
+                & (sof < -0.3 * float(sof.std() + 1e-6))
+            ).mean()
+        )
+        score = soft_pos * 0.3 + max(0.0, raise_v) * 0.06 + lane * 10.0
+        if x0 >= 0.55 and y0 >= 0.50:
+            score *= 1.2
+        if y0 <= 0.20:
+            score *= 1.1
+        rec = {
+            "score": float(score),
+            "soft_pos": soft_pos,
+            "raise_v": raise_v,
+            "lane": lane,
+            "box": [round(y0, 3), round(y1, 3), round(x0, 3), round(x1, 3)],
+        }
+        if best is None or score > best["score"]:
+            best = rec
+    fail = bool(
+        best
+        and best["score"] >= HAZE_SCORE_MIN
+        and best["soft_pos"] >= HAZE_SOFT_POS_MIN
+    )
+    best = best or {
+        "score": 0.0,
+        "soft_pos": 0.0,
+        "raise_v": 0.0,
+        "lane": 0.0,
+        "box": [0, 0, 0, 0],
+    }
+    best["fail"] = fail
+    return best
+
+
+def narrow_dense_diagonal(L: np.ndarray) -> dict[str, Any]:
+    """Narrow dense-star diagonal (local strip scan / Hough-like).
+
+    Angles 15–45° (mid-left → lower-right). Uses absolute DoG excess in a
+    narrow strip times flank ratio.
+    """
+    dog = np.clip(
+        ndimage.gaussian_filter(L, 0.6) - ndimage.gaussian_filter(L, 2.0), 0, None
+    )
+    dog_s = dog[::2, ::2]
+    H, W = dog_s.shape
+    yy, xx = np.mgrid[0:H, 0:W]
+    x = (xx + 0.5) / W * 2 - 1
+    y = (yy + 0.5) / H * 2 - 1
+    plate = float(dog_s.mean()) + 1e-6
+    best = None
+    for ang in range(15, 46, 5):
+        a = math.radians(float(ang))
+        uu = x * math.sin(a) - y * math.cos(a)
+        for off in np.linspace(-0.5, 0.5, 19):
+            half = 0.028
+            c = np.abs(uu - off) <= half
+            fl = (np.abs(uu - off) > half) & (np.abs(uu - off) <= half * 4)
+            if int(c.sum()) < 40 or int(fl.sum()) < 40:
+                continue
+            ec = float(dog_s[c].mean())
+            er = ec / (float(dog_s[fl].mean()) + 1e-6)
+            abs_ex = ec / plate
+            if best is None or abs_ex > best["abs_ex"]:
+                best = {
+                    "abs_ex": abs_ex,
+                    "er": er,
+                    "ec": ec,
+                    "ang": int(ang),
+                    "off": float(off),
+                    "half": half,
+                }
+    best = best or {"abs_ex": 0.0, "er": 1.0, "ec": 0.0, "ang": 0, "off": 0.0, "half": 0.03}
+    best["fail"] = bool(
+        best["abs_ex"] >= NARROW_ABS_EX_MIN and best["er"] >= NARROW_ER_MIN
+    )
+    return best
+
+
+
 def assess_plate(
     rgb: np.ndarray,
     *,
@@ -349,6 +464,8 @@ def assess_plate(
     L = luma(rgb)
     dog, stars, diams = dog_stars(L)
     band = scan_band(L, dog, stars)
+    haze = windowed_haze(L)
+    narrow = narrow_dense_diagonal(L)
     edge = edge_line(L)
     banding = banding_three(rgb)
     mv = mean_v(rgb)
@@ -368,6 +485,17 @@ def assess_plate(
             f"dense_band tight_mw densR={band['density_ratio_right']:.3f} "
             f"starR={band['star_ratio_right']:.2f} nnR={band['nn_right']:.1f}"
         )
+    if haze["fail"]:
+        reasons.append(
+            f"windowed_haze score={haze['score']:.3f} soft_pos={haze['soft_pos']:.2f} "
+            f"box={haze['box']}"
+        )
+    if narrow["fail"]:
+        reasons.append(
+            f"narrow_diagonal abs_ex={narrow['abs_ex']:.2f} er={narrow['er']:.2f} "
+            f"ang={narrow['ang']}"
+        )
+    band_fail = bool(band["band_fail"] or haze["fail"] or narrow["fail"])
     # (b) dark lanes: if lane_frac high AND band already failing, note; standalone if extreme with tight_mw support
     if band["lane_frac_eff"] >= 0.20 and band["band_fail"]:
         reasons.append(f"dark_lanes lane_frac={band['lane_frac_eff']:.4f}")
@@ -424,7 +552,9 @@ def assess_plate(
         "nn_right": round(band["nn_right"], 2),
         "glow_mw": band["glow_mw"],
         "tight_mw": band["tight_mw"],
-        "band_fail": band["band_fail"],
+        "band_fail": band_fail,
+        "haze": {k: (round(v, 4) if isinstance(v, float) else v) for k, v in haze.items()},
+        "narrow_diagonal": {k: (round(v, 4) if isinstance(v, float) else v) for k, v in narrow.items()},
         "median_star_px": round(med_d, 3),
         "min_star_px": round(min_d, 3),
         "n_stars": len(diams),
