@@ -72,3 +72,14 @@ Tier kit = **WIP** (`biome/library/_wip/zd-tier-terrace`). v4: IoU 0.747/0.869, 
   It covers the terrace from the key's left edge (px 0) to px 616. The old SAM mask missed the upper wall and the left 138 px.
 - The scores against the old masks (`iou_vs_old_tier_*`) are still reported for comparison. They are low because the model now covers the true, larger shape.
 - cell_m is 0.13 to stay under 90k triangles. The cornice side view moved to the front-left, because the wall now runs on to x −11.5 m.
+
+## v10 (0006): AD v9 + Critic v9
+- Scale check: the GLB is in metres. Measured on the key's back-projection, the door is 1.7 × 2.55 m, the cornice underside is at 4.2–4.9 m and the wall top at 10.6 m.
+  - So the tier is not too small. The "2 m slab" impression came from the single-plane wall, the missing player reference and the 105 m mesa standing next to it.
+  - The play views now include a 1.8 m player stand-in. The mesa appears only in the `scale` panel.
+- Spine v1.3.1 is in git history at 89d9e684:`steps/zone-d/01-terrace/spine.json` (boom 4.5 m behind, 2.6 m up, pitch −8°, vfov 48, aim 1.8 m above the feet and 6 m ahead).
+  - `chase` now uses it. Earlier sheets used an assumed 7.5 m chase.
+- Relief: the height map is blurred and sampled bilinearly, then the displacement is Laplacian-smoothed before normals are recomputed (`relief_smooth`).
+  - Block width varies per course (±35%) with a random bond offset (`block_vary`).
+- Snow: every up-facing surface (n.z > 0.7) and the cornice front carry snow, and the drift lip is 0.2–0.5 m. Snow calibration keeps these caps.
+- Viewer: the snow-tile pad is removed. The stone tile is 1.9 m (539 tex px/m). The `side4m` view is taken from the cornice's free right end. The `key` panel renders from the solved key camera next to the key image.

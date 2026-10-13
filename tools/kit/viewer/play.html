@@ -22,29 +22,31 @@ const tl = new THREE.TextureLoader(), aniso = renderer.capabilities.getMaxAnisot
 const tex = (f, srgb = true) => { const t = tl.load('tex/' + f); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = aniso; if (srgb) t.colorSpace = THREE.SRGBColorSpace; return t; };
 const basalt = tex('basalt_albedo.jpg'), snow = tex('snow_albedo.jpg'), plate = tex('ground_plate.png');
 // views (three frame = kit (x, z, -y); wall front at z=0, tier spans x -1..10.5, cornice ~4.3-5.0 m)
+// spine v1.3.1 (git 89d9e684 steps/zone-d/01-terrace/spine.json): boom 4.5 m behind, 2.6 m up, vfov 48,
+// aim 1.8 m above the feet and 6 m ahead. Player (1.8 m) stands 6 m from the wall facing it.
+const PLAYER = [4.5, 0, 6.0];
 const V = {
-  key:     {pos: [-3.06, 16.07, 30.32], tgt: [9.93, 6.81, 4.92], fov: 80},
+  key:     {pos: [-3.0598, 16.073, 30.3214], tgt: [9.9346, 6.8148, 4.916], up: [0.1304, 0.9511, -0.2799], fov: 80.017},
   '3m':    {pos: [4.5, 1.7, 3.0], tgt: [4.5, 2.0, 0]},
-  chase:   {pos: [4.5, 3.4, 7.5], tgt: [4.5, 1.6, 0]},
+  chase:   {pos: [PLAYER[0], 2.6, PLAYER[2] + 4.5], tgt: [PLAYER[0], 1.8, PLAYER[2] - 6.0]},
   '45':    {pos: [4.5 + 2.83, 1.7, 2.83], tgt: [4.5, 2.0, 0]},
   grazing: {pos: [-3.2, 1.2, 0.9], tgt: [10, 2.6, -0.2]},
-  side:    {pos: [-4.0, 3.4, 9.0], tgt: [2.5, 4.8, -0.5]},  // v9: wall now runs on to x -11.5, so the cornice end is seen from in front-left
+  side:    {pos: [-4.0, 3.4, 9.0], tgt: [2.5, 4.8, -0.5]},
+  side4m:  {pos: [13.6, 4.4, 1.6], tgt: [10.0, 4.6, -0.5]},   // cornice free (right) end, ~4 m
   scale:   {pos: [-40, 22, 70], tgt: [30, 6, -40]},
 }[view];
 const camera = new THREE.PerspectiveCamera(V.fov || 48, innerWidth / innerHeight, 0.05, 1000);
-camera.position.set(...V.pos); camera.up.set(0, 1, 0); camera.lookAt(...V.tgt);
+camera.position.set(...V.pos); camera.up.set(...(V.up || [0, 1, 0])); camera.lookAt(...V.tgt);
 // ground: wide Zone D plate, library snow tile strip at the wall foot
 const g1 = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), new THREE.MeshStandardMaterial({map: plate, roughness: 0.95}));
 plate.repeat.set(600 / 12, 600 / 12); g1.rotation.x = -Math.PI / 2; g1.position.y = -0.02; scene.add(g1);
 // v8: the library snow tile reads purple-grey on screen (mean sRGB R113 G122 B166 vs plate R128 G154 B173):
 // neutralise it toward the Zone D ground plate with a per-channel linear gain (plate/tile)^2.2
 const SNOW_GAIN = [1.31, 1.66, 1.09];
-const sm = new THREE.MeshStandardMaterial({map: snow, normalMap: tex('snow_normal.jpg', false), roughness: 0.9});
-sm.color.setRGB(...SNOW_GAIN);
-snow.repeat.set(26 / 1.2, 8 / 1.2); sm.normalMap.repeat.copy(snow.repeat);
-const g2 = new THREE.Mesh(new THREE.PlaneGeometry(26, 8), sm); g2.rotation.x = -Math.PI / 2; g2.position.set(4.5, 0.0, 3.0); scene.add(g2);
+// v10: the separate snow-tile pad under the kit is gone (Critic/AD: hard grey rectangle); the kit's own snow
+// skirt meets the Zone D ground plate directly.
 const snowWall = snow.clone(); snowWall.repeat.set(1, 1);
-const stoneMat = applyHexTriplanar(new THREE.MeshStandardMaterial({map: basalt, roughness: 0.92}), {tileM: 2.0, snowMap: snowWall, snowTileM: 1.2, snowGain: SNOW_GAIN, normalMap: tex('basalt_normal.jpg', false), normalStrength: 0.9});
+const stoneMat = applyHexTriplanar(new THREE.MeshStandardMaterial({map: basalt, roughness: 0.92}), {tileM: 1.9, snowMap: snowWall, snowTileM: 1.2, snowGain: SNOW_GAIN, normalMap: tex('basalt_normal.jpg', false), normalStrength: 0.9});
 stoneMat.defines = {HEX_SNOW: ''};
 const iceMat = new THREE.MeshStandardMaterial({color: 0xcfdde6, roughness: 0.8, metalness: 0, transparent: true, opacity: 0.92});
 const gl = new GLTFLoader(); let tris = 0;
@@ -54,11 +56,15 @@ kit.scene.traverse(o => { if (!o.isMesh) return; tris += o.geometry.index.count 
   if (!o.geometry.attributes._snow) o.geometry.setAttribute('_snow', new THREE.Float32BufferAttribute(new Float32Array(o.geometry.attributes.position.count), 1)); });
 scene.add(kit.scene);
 mesa.scene.traverse(o => { if (o.isMesh) o.material = new THREE.MeshStandardMaterial({color: 0x8a7563, roughness: 0.95}); if (/lod[12]/.test(o.name)) o.visible = false; });
-mesa.scene.position.set(75, 7, -70); scene.add(mesa.scene);  // mesa base sits ~7 m below its origin
+mesa.scene.position.set(75, 7, -70);
+if (view === 'scale') scene.add(mesa.scene);   // Critic v9: mesa is Zone B -> scale panel only
+// 1.8 m player stand-in (capsule) for scale in every view
+const pl = new THREE.Mesh(new THREE.CapsuleGeometry(0.3, 1.2, 4, 12), new THREE.MeshStandardMaterial({color: 0xc8402a, roughness: 0.6}));
+pl.position.set(PLAYER[0], 0.9, PLAYER[2]); scene.add(pl);  // mesa base sits ~7 m below its origin
 renderer.render(scene, camera);
 const ray = new THREE.Raycaster(); ray.setFromCamera(new THREE.Vector2(0, 0), camera);
 const hit = ray.intersectObject(kit.scene, true)[0];
-const px = hit ? probePxPerM(renderer, camera, hit.distance, 1024, 2.0) : null;
+const px = hit ? probePxPerM(renderer, camera, hit.distance, 1024, 1.9) : null;
 window.__probe = {view, tris, hitM: hit ? +hit.distance.toFixed(2) : null, px};
 document.getElementById('hud').textContent = `${view}  tris ${tris}\nhit ${hit ? hit.distance.toFixed(2) + ' m' : '-'}  ` +
   (px ? `screen ${px.screenPxPerM.toFixed(0)} px/m  stone ${px.texPxPerM.toFixed(0)} px/m${px.magnified ? ' MAGNIFIED' : ''}` : '') +

@@ -72,7 +72,7 @@ def contact(lods, cams, key, target, colours):
     return np.vstack([np.hstack(tiles[i:i + 3]) for i in range(0, len(tiles), 3)])
 
 
-def calibrate_snow(lods, cam, target, snow_mask, iters=9):
+def calibrate_snow(lods, cam, target, snow_mask, iters=9, caps=None, cornice_front=False):
     """Bisect the threshold on the blurred key snow mask so the model's visible snow/stone ratio at the
     key camera matches the key's. Rewrites _SNOW on tier/cornice of every LOD. Returns the threshold."""
     from outline import snow_attr
@@ -87,6 +87,11 @@ def calibrate_snow(lods, cam, target, snow_mask, iters=9):
                     if m.name == "cornice":
                         N = vertex_normals(m)
                         s = np.where(N[:, 2] < -0.3, 0.0, np.maximum(s, (N[:, 2] > 0.5) * 1.0))
+                        if cornice_front:
+                            s = np.maximum(s, ((N[:, 1] < -0.3) & (N[:, 2] > -0.3)) * 1.0)
+                    if caps is not None:
+                        N = vertex_normals(m)
+                        s = np.maximum(s, (N[:, 2] > caps) * 1.0)
                     m.attrs["_SNOW"] = s
     lo, hi, best = 0.02, 0.98, None
     for _ in range(iters):
@@ -137,7 +142,7 @@ def cmd_build(a) -> int:
     lods = build(spec, matlib, cams["keycam"] if cams else None, masks, key)
     extra = lods.pop("_extra", {})
     if spec.get("outline", {}).get("v7") and masks and masks.get("snow") is not None and target is not None and not a.no_calibrate:
-        spec["outline"]["snow_thr"] = calibrate_snow(lods, cams["keycam"], target, masks["snow"])
+        spec["outline"]["snow_thr"] = calibrate_snow(lods, cams["keycam"], target, masks["snow"], caps=spec["outline"].get("caps_up_k"), cornice_front=spec["outline"].get("cornice_front_snow", False))
     if a.fit_camera and target is not None:
         from fit import fit_camera
         from render import iou as _iou

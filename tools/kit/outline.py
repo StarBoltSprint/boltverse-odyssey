@@ -386,7 +386,7 @@ def course_rows_z(key_bgr, tier_mask, cam, k=10, default_h=0.55, z_max=6.0):
 
 
 def block_relief(m: Mesh, courses, block_w=0.9, joint_w=0.07, joint_d=0.32, face_d=(0.0, 0.18), seed=1,
-                 stone_h=None, stone_tile=2.0, grain=0.03):
+                 stone_h=None, stone_tile=2.0, grain=0.03, vary=0.0, smooth=0):
     """Real 20-40 cm block relief on front-facing (-y) stone, inward only (never grows the outline):
     joints sunk joint_d along the key course lines, each block face set back by a random 0..0.18 m,
     plus basalt height grain. Snow-covered vertices (_SNOW > 0.5) are left as drift."""
@@ -401,9 +401,15 @@ def block_relief(m: Mesh, courses, block_w=0.9, joint_w=0.07, joint_d=0.32, face
     ci = np.clip(np.searchsorted(courses, P[:, 2]) - 1, 0, len(courses) - 2)
     z0, z1 = courses[ci], courses[ci + 1]
     off = (ci % 2) * block_w / 2
+    if vary:   # v10: per-course block width (1 +- vary) and random bond offset -> no vertical stripe rhythm
+        cw = block_w * (1 + vary * (rng.random(len(courses) + 1) * 2 - 1))
+        bw = cw[ci]
+        off = rng.random(len(courses) + 1)[ci] * bw
+    else:
+        bw = np.full(len(P), block_w)
     xs = P[:, 0] + off
-    col = np.floor(xs / block_w).astype(int)
-    dx = np.minimum(xs - col * block_w, (col + 1) * block_w - xs)
+    col = np.floor(xs / bw).astype(int)
+    dx = np.minimum(xs - col * bw, (col + 1) * bw - xs)
     dz = np.minimum(P[:, 2] - z0, z1 - P[:, 2])
     dj = np.minimum(dx, dz)
     joint = np.clip(1 - dj / joint_w, 0, 1) ** 0.7          # V-groove, 1 at the joint line
@@ -411,10 +417,20 @@ def block_relief(m: Mesh, courses, block_w=0.9, joint_w=0.07, joint_d=0.32, face
     face = table[(ci * 7919 + col * 104729) % 4096] * edge
     push = np.maximum(joint * joint_d, face)
     if stone_h is not None:
+        # v10: blurred height map, bilinear sample (no nearest-texel steps -> no chevrons after shading)
+        from scipy.ndimage import gaussian_filter, map_coordinates
         T = stone_h.shape[0]
-        u = ((P[:, 0] / stone_tile) % 1 * T).astype(int) % T
-        v = ((-P[:, 2] / stone_tile) % 1 * T).astype(int) % T
-        push = push + grain * stone_h[v, u] * (1 - joint)
+        hb = gaussian_filter(stone_h.astype(float), 2.0, mode="wrap")
+        u = (P[:, 0] / stone_tile) % 1 * T
+        v = (-P[:, 2] / stone_tile) % 1 * T
+        push = push + grain * map_coordinates(hb, [v, u], order=1, mode="grid-wrap") * (1 - joint)
+    if smooth:   # v10: Laplacian-smooth the displacement field over the mesh before applying it
+        E = np.vstack([m.F[:, [0, 1]], m.F[:, [1, 2]], m.F[:, [2, 0]]])
+        E = np.vstack([E, E[:, ::-1]])
+        deg = np.bincount(E[:, 0], minlength=len(P)).astype(float)
+        for _ in range(smooth):
+            nb = np.bincount(E[:, 0], weights=push[E[:, 1]], minlength=len(P)) / np.maximum(deg, 1)
+            push = np.where(front, 0.5 * push + 0.5 * nb, push)
     V = P.copy()
     V[front, 1] += push[front]
     out = Mesh(V, m.F, m.name, m.material)

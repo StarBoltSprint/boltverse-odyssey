@@ -199,11 +199,17 @@ def build_outline_v7(spec: dict, cam, masks: dict, key_bgr=None, matlib: Path = 
             if name == "cornice":
                 N = vertex_normals(m)
                 m.attrs["_SNOW"] = np.where(N[:, 2] < -0.3, 0.0, np.maximum(m.attrs.get("_SNOW", 0), (N[:, 2] > 0.5) * 1.0))
+            if o.get("caps_up_k") is not None:   # v10: every up-facing surface (z-normal > k) carries snow
+                N = vertex_normals(m)
+                m.attrs["_SNOW"] = np.maximum(m.attrs.get("_SNOW", np.zeros(len(m.V))), (N[:, 2] > o["caps_up_k"]) * 1.0)
+            if name == "cornice" and o.get("cornice_front_snow"):
+                N = vertex_normals(m)
+                m.attrs["_SNOW"] = np.maximum(m.attrs["_SNOW"], ((N[:, 1] < -0.3) & (N[:, 2] > -0.3)) * 1.0)
             if li < 2:
-                m = drift_lip(m)
+                m = drift_lip(m, tuple(o.get("lip_m", (0.12, 0.35))))
             if li == 0 and name == "tier1":
                 m = block_relief(m, courses, joint_d=o.get("joint_m", 0.32), face_d=tuple(o.get("block_face_m", (0.0, 0.18))),
-                                 stone_h=hs, stone_tile=ms["tile_m"])
+                                 stone_h=hs, stone_tile=ms["tile_m"], vary=o.get("block_vary", 0.0), smooth=o.get("relief_smooth", 0))
             parts.append(m)
         parts += P.get("corbels", [])
         if o.get("skirt") and "base0" in P:
