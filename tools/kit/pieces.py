@@ -394,6 +394,9 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("cmd", choices=["pieces", "terrace"])
     ap.add_argument("--fit-mask", dest="fit_mask")
+    ap.add_argument("--placer", help="auto key sheet dir: place detail from it (tools/placer)")
+    ap.add_argument("--placer-groups", default="facade_snow,snow,drips,rubble")
+    ap.add_argument("--placer-scope", help="mask png limiting placement (judge mask)")
     ap.add_argument("--variant", choices=["spec", "key"], default="spec")
     ap.add_argument("--out", required=True)
     ap.add_argument("--spine")
@@ -402,4 +405,5 @@ if __name__ == "__main__":
         print(json.dumps({k: v["tris"] for k, v in cmd_pieces(a.out).items()}, indent=1))
     else:
         from terrace import cmd_terrace
-        print(json.dumps(cmd_terrace(a.spine, a.out, a.variant, a.fit_mask), indent=1))
+        print(json.dumps(cmd_terrace(a.spine, a.out, a.variant, a.fit_mask,
+                                     placer=(a.placer, [g for g in a.placer_groups.split(",") if g], a.placer_scope) if a.placer else None), indent=1))

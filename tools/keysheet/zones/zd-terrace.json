@@ -48,7 +48,7 @@
     0.62
    ],
    "sam2": false,
-   "what": "3 stacked door canopies: thick bulging drooping snow slabs over each doorway, wider than the bay, 0.5-0.8 m",
+   "what": "3 stacked snow pillows (door canopies): organic thick bulging drooping snow, irregular lumps/sags, crumbled edges, thickness varying along the length",
    "params": {
     "thr_pct": 25,
     "min_w": 60,
@@ -119,6 +119,77 @@
    },
    "rule": {
     "max_count": 0
+   }
+  },
+  {
+   "id": "cornices",
+   "kind": "band",
+   "box": [
+    0.22,
+    0.36,
+    0.47,
+    0.47
+   ],
+   "sam2": true,
+   "what": "canopy cornice + snow pillow over the top doorway: organic lumpy drooping snow over a stone cornice; crumbled edges",
+   "params": {
+    "thr_pct": 30,
+    "min_w": 40,
+    "min_h": 6
+   },
+   "rule": {
+    "min_count": 1
+   }
+  },
+  {
+   "id": "ground",
+   "kind": "region",
+   "box": [
+    0.0,
+    0.62,
+    0.55,
+    0.75
+   ],
+   "sam2": false,
+   "what": "snow ground in front with scattered rubble, bluish, no dune streaks",
+   "rule": {
+    "min_count": 1,
+    "max_dL": 15,
+    "max_db": 8
+   }
+  },
+  {
+   "id": "sky",
+   "kind": "region",
+   "box": [
+    0.0,
+    0.0,
+    1.0,
+    0.28
+   ],
+   "sam2": false,
+   "what": "night sky with aurora: deep blue-violet, moon low centre-right",
+   "rule": {
+    "min_count": 1,
+    "max_dL": 15,
+    "max_db": 10
+   }
+  },
+  {
+   "id": "context",
+   "kind": "region",
+   "box": [
+    0.62,
+    0.05,
+    1.0,
+    0.65
+   ],
+   "sam2": true,
+   "what": "context: ice spire + icefalls + basalt cliffs right of the terrace (pale cyan ice, vertical icefalls)",
+   "rule": {
+    "min_count": 1,
+    "max_dL": 15,
+    "max_db": 10
    }
   }
  ]

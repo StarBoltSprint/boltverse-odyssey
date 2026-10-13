@@ -110,3 +110,109 @@ def open_edges(m: Mesh) -> int:
 def nonmanifold_edges(m: Mesh) -> int:
     """Edges shared by 4+ faces (two cells touching along one edge). Closed, but reported."""
     return int((_edge_counts(m) > 2).sum())
+
+
+def _earclip(P2):
+    """ear clipping of a simple CCW polygon (n,2) -> list of index triples, or None on failure."""
+    idx = list(range(len(P2))); out = []
+    def area(a, b, c):
+        return (P2[b][0] - P2[a][0]) * (P2[c][1] - P2[a][1]) - (P2[b][1] - P2[a][1]) * (P2[c][0] - P2[a][0])
+    def inside(p, a, b, c):
+        d1, d2, d3 = area(a, b, p), area(b, c, p), area(c, a, p)
+        return d1 >= -1e-12 and d2 >= -1e-12 and d3 >= -1e-12
+    guard = 0
+    while len(idx) > 3 and guard < 10000:
+        guard += 1; n = len(idx); clipped = False
+        for k in range(n):
+            a, b, c = idx[k - 1], idx[k], idx[(k + 1) % n]
+            if area(a, b, c) <= 1e-12:
+                continue
+            if any(inside(p, a, b, c) for p in idx if p not in (a, b, c) and not (np.allclose(P2[p], P2[a]) or np.allclose(P2[p], P2[b]) or np.allclose(P2[p], P2[c]))):
+                continue
+            out.append((a, b, c)); idx.pop(k); clipped = True; break
+        if not clipped:
+            return None
+    if len(idx) == 3:
+        out.append(tuple(idx))
+    return out
+
+
+def decimate_planar(m, protect_attrs=("_SNOW", "_ICE"), cos_tol=0.99995, d_tol=1e-4):
+    """Planar-region decimation: every connected set of coplanar faces is re-triangulated from its boundary loop
+    (interior vertices dropped, every boundary vertex kept -> silhouette and neighbour edges unchanged, no T-junctions).
+    Faces whose vertices carry snow/ice (organic snow pillows, drips, broken edges) are never touched.
+    Regions with holes or failed ear clipping are kept as they are. Returns a new Mesh."""
+    V, F = m.V, m.F
+    if len(F) < 4:
+        return m
+    key = np.round(V / 1e-5).astype(np.int64); _, wid, inv = np.unique(key, axis=0, return_index=True, return_inverse=True)
+    inv = inv.ravel(); W = inv[F]                                     # welded ids
+    A, B, C = (V[F[:, k]] for k in range(3)); N = np.cross(B - A, C - A); ln = np.linalg.norm(N, axis=1)
+    N = N / np.where(ln > 0, ln, 1)[:, None]; D = (N * A).sum(1)
+    prot = np.zeros(len(F), bool)
+    for k in protect_attrs:
+        if k in m.attrs:
+            prot |= (np.asarray(m.attrs[k])[F] > 0.5).any(1)
+    prot |= ln < 1e-12
+    edge_f = {}
+    for fi, t in enumerate(W):
+        for e in ((t[0], t[1]), (t[1], t[2]), (t[2], t[0])):
+            edge_f.setdefault((min(e), max(e)), []).append(fi)
+    region = -np.ones(len(F), int); r = 0
+    for s in range(len(F)):
+        if region[s] >= 0 or prot[s]:
+            continue
+        st = [s]; region[s] = r
+        while st:
+            f = st.pop(); t = W[f]
+            for e in ((t[0], t[1]), (t[1], t[2]), (t[2], t[0])):
+                for g in edge_f[(min(e), max(e))]:
+                    if region[g] < 0 and not prot[g] and N[f] @ N[g] > cos_tol and abs(D[g] - D[f]) < d_tol:
+                        region[g] = r; st.append(g)
+        r += 1
+    newF, keep = [], np.ones(len(F), bool)
+    for rid in range(r):
+        fs = np.nonzero(region == rid)[0]
+        if len(fs) < 3:
+            continue
+        cnt = {}
+        for f in fs:
+            t = W[f]
+            for e in ((t[0], t[1]), (t[1], t[2]), (t[2], t[0])):
+                cnt[e] = cnt.get(e, 0) + 1
+        bd = [e for e in cnt if (e[1], e[0]) not in cnt]
+        nxt = {}
+        ok = True
+        for a, b in bd:
+            if a in nxt:
+                ok = False; break
+            nxt[a] = b
+        if not ok or not bd:
+            continue
+        loop = [bd[0][0]]
+        while True:
+            b = nxt.get(loop[-1])
+            if b is None:
+                ok = False; break
+            if b == loop[0]:
+                break
+            loop.append(b)
+            if len(loop) > len(bd):
+                ok = False; break
+        if not ok or len(loop) != len(bd) or len(loop) - 2 >= len(fs):
+            continue                                             # holes / multiple loops / no gain
+        n = N[fs[0]]; u = np.cross(n, [1, 0, 0] if abs(n[0]) < 0.9 else [0, 1, 0]); u /= np.linalg.norm(u); v = np.cross(n, u)
+        Pw = V[wid[loop]]; P2 = np.c_[Pw @ u, Pw @ v]
+        tris = _earclip(P2)
+        if tris is None or len(tris) != len(loop) - 2:
+            continue
+        keep[fs] = False
+        newF += [[wid[loop[a]], wid[loop[b]], wid[loop[c]]] for a, b, c in tris]
+    if not newF:
+        return m
+    F2 = np.vstack([F[keep], np.array(newF, int)])
+    used = np.unique(F2); remap = -np.ones(len(V), int); remap[used] = np.arange(len(used))
+    out = Mesh(V[used], remap[F2], m.name, m.material)
+    for k, a in m.attrs.items():
+        out.attrs[k] = np.asarray(a)[used]
+    return out

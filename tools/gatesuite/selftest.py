@@ -129,8 +129,13 @@ def main():
         if f_["step"] == "features" and f_.get("artifact_present"):
             fr = KS.check(F.parent / f_["artifact"], SH)
             row(f"must-fail {f_['id']} ({f_['what']}): features FAIL", not all(r_["ok"] for r_ in fr), [r_["check"].split(" ")[0] for r_ in fr if not r_["ok"]])
-    base = Path("/workspace/kitrelief-out/terrace-spec/gate/key-render.png")
-    if base.exists():
-        row("control: terrace-spec v3 key render (fixture base) PASSES features", all(r_["ok"] for r_ in KS.check(base, SH)))
+    # v4: the hand sheet is regression-only; the features control is now the AUTO sheet: the key itself passes every level
+    auto = Path("/workspace/kitrelief-out/autosheet-zd")
+    if (auto / "sheet.json").exists():
+        sys.path.insert(0, str(ROOTK / "tools/keysheet"))
+        import auto_check, regress
+        rep_, _, _ = auto_check.check(auto / "key1024.png", auto, None, dino=False)
+        row("control: key vs its own AUTO sheet PASSES L1/L2/L3", rep_["verdict"] == "PASS", {k: v["min"] for k, v in rep_["levels"].items()})
+        row("regression: AUTO sheet finds every hand Zone D element", regress.regress(auto)["pass"])
     print(f"{sum(rows)}/{len(rows)} rows pass")
     return 0 if all(rows) else 1

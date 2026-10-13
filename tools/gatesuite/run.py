@@ -430,6 +430,21 @@ def step_keyfeatures(b, ctx):
     if not j.get("render") or not sheet:
         return sec("FAIL", [chk("key-camera render + keysheet declared", False, {"render": j.get("render"), "keysheet": sheet})])
     sp = Path(sheet) if Path(sheet).is_absolute() else ROOT / sheet
+    auto = b.m.get("autosheet")
+    if auto:   # automatic whole-key sheet (tools/keysheet/auto_*): staged L1 -> L2 -> L3, worst region blocks
+        import auto_check, regress
+        ad = Path(auto) if Path(auto).is_absolute() else ROOT / auto
+        scope = b.path(j["mask"]) if j.get("mask") else None
+        rep, _, _ = auto_check.check(b.path(j["render"]), ad, scope, dino=True)
+        rows = [chk(f"auto {lv}: min region score >= {auto_check.BLOCK} ({r['status']})", r["status"] == "PASS",
+                    {"n": r["n"], "min": r["min"], "median": r["median"], "pass_frac": r["pass_frac"],
+                     "worst": [(w["id"], w["class"], w["value"], w["sub"]) for w in r["worst"][:3]]})
+                for lv, r in rep["levels"].items()]
+        for k in ("facade_snow", "drips"):
+            rows.append(chk(f"auto {k}: every key region matched (min >= {auto_check.BLOCK})", rep[k]["n"] == 0 or (rep[k]["min"] or 0) >= auto_check.BLOCK, rep[k]))
+        rg = regress.regress(ad, sp)
+        rows.append(chk("regression: auto sheet finds every hand Zone D element", rg["pass"], [(r["id"], r["found"]) for r in rg["rows"]]))
+        return sec(verdict(rows), rows, keysheet=str(sp), autosheet=str(ad))
     rows = keysheet_check.check(b.path(j["render"]), sp)
     return sec(verdict(rows), rows, keysheet=str(sp))
 

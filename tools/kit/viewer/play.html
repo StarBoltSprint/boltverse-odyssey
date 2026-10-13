@@ -27,7 +27,9 @@ sun.position.add(new THREE.Vector3(4, 3, -4)); Object.assign(sun.shadow.camera, 
 if (KEYLIGHT) { scene.background = new THREE.Color(0x1c2340); scene.fog = new THREE.Fog(0x2a3350, 60, 320); }
 const tl = new THREE.TextureLoader(), aniso = renderer.capabilities.getMaxAnisotropy();
 const tex = (f, srgb = true) => { const t = tl.load('tex/' + f); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = aniso; if (srgb) t.colorSpace = THREE.SRGBColorSpace; return t; };
-const basalt = tex('basalt_albedo.jpg'), snow = tex('snow_albedo.jpg'), plate = tex('ground_plate.png');
+// ?mat=lib: textures from the key-gated Imagine material library (tools/materials/texflow.py -> tex/lib_*.jpg)
+const LIB = P.get('mat') === 'lib';
+const basalt = tex(LIB && P.get('libstone') !== '0' ? 'lib_stone.jpg' : 'basalt_albedo.jpg'), snow = tex(LIB && P.get('libsnow') !== '0' ? 'lib_snow.jpg' : 'snow_albedo.jpg'), plate = tex('ground_plate.png');
 // views (three frame = kit (x, z, -y); wall front at z=0, tier spans x -1..10.5, cornice ~4.3-5.0 m)
 // spine v1.3.1 (git 89d9e684 steps/zone-d/01-terrace/spine.json): boom 4.5 m behind, 2.6 m up, vfov 48,
 // aim 1.8 m above the feet and 6 m ahead. Player (1.8 m) stands 6 m from the wall facing it.
@@ -55,10 +57,14 @@ const snowWall = snow.clone(); snowWall.repeat.set(1, 1);
 // matte ice: flat material (NO Imagine matte-ice texture in the library yet); bluish tint from the key icicles,
 // slight translucency + cool emissive lift so drips do not read as white cones
 const iceMat = new THREE.MeshStandardMaterial({color: 0x8fb6d3, roughness: 0.45, metalness: 0, transparent: true, opacity: 0.88, emissive: 0x1d3a52, emissiveIntensity: 0.6});
+if (LIB && P.get('libice') !== '0') { iceMat.map = tex('lib_ice.jpg'); iceMat.color.set(0xb4d4ea); }   // Imagine glacial ice tile (gated)
 const gl = new GLTFLoader(); let tris = 0;
 const [kit, mesa] = await Promise.all([gl.loadAsync(P.get('model') || 'model.glb'), gl.loadAsync('mesaA.glb')]);
 // terrace kit GLBs carry the key-colour projection (linear gains vs the library albedo means) and the key-camera scale
 const UX = kit.scene.userData || {};
+// snow+rubble ground: the GLB (or ?ground=FILE) may name a gated library snow tile; it replaces the dune-streak plate
+const GROUND = P.get('ground') || UX.ground;
+if (GROUND && GROUND !== 'plate') { const gt = tex(GROUND); const rm = +(P.get('groundm') || UX.ground_tile_m || 3); gt.repeat.set(600 / rm, 600 / rm); g1.material.map = gt; g1.material.color.setRGB(...(P.get('gg') ? P.get('gg').split(',').map(Number) : (UX.groundGain || [1, 1, 1]))); g1.material.needsUpdate = true; }
 if (UX.snowGain && P.get('gain') !== '0') SNOW_GAIN = UX.snowGain;
 if (P.get('sg')) SNOW_GAIN = P.get('sg').split(',').map(Number);   // judge sweeps
 const stoneMat = applyHexTriplanar(new THREE.MeshStandardMaterial({map: basalt, roughness: 0.92}), {tileM: 1.9, snowMap: snowWall, snowTileM: 1.2, snowGain: SNOW_GAIN, normalMap: tex('basalt_normal.jpg', false), normalStrength: 0.9});

@@ -133,7 +133,7 @@
   {
    "id": "canopies",
    "kind": "band",
-   "what": "3 stacked door canopies: thick bulging drooping snow slabs over each doorway, wider than the bay, 0.5-0.8 m",
+   "what": "3 stacked snow pillows (door canopies): organic thick bulging drooping snow, irregular lumps/sags, crumbled edges, thickness varying along the length",
    "mask": "masks/canopies.png",
    "mask_src": "box",
    "bbox_px": [
@@ -382,6 +382,173 @@
    },
    "rule": {
     "max_count": 0
+   }
+  },
+  {
+   "id": "cornices",
+   "kind": "band",
+   "what": "canopy cornice + snow pillow over the top doorway: organic lumpy drooping snow over a stone cornice; crumbled edges",
+   "mask": "masks/cornices.png",
+   "mask_src": "sam2",
+   "bbox_px": [
+    225,
+    368,
+    480,
+    480
+   ],
+   "area_frac": 0.02663,
+   "centroid_frac": [
+    0.3408,
+    0.4132
+   ],
+   "region_lab": [
+    29.89,
+    1.2,
+    -17.28
+   ],
+   "params": {
+    "thr_pct": 30,
+    "min_w": 40,
+    "min_h": 6,
+    "thr_L": 39.83736592055432
+   },
+   "key": {
+    "count": 2,
+    "boxes": [
+     [
+      226,
+      377,
+      181,
+      20,
+      1783
+     ],
+     [
+      249,
+      445,
+      195,
+      36,
+      2969
+     ]
+    ],
+    "thick_px_median": 28.0,
+    "bright_frac": 0.29999641923586495
+   },
+   "rule": {
+    "min_count": 1
+   }
+  },
+  {
+   "id": "ground",
+   "kind": "region",
+   "what": "snow ground in front with scattered rubble, bluish, no dune streaks",
+   "mask": "masks/ground.png",
+   "mask_src": "box",
+   "bbox_px": [
+    0,
+    634,
+    562,
+    767
+   ],
+   "area_frac": 0.07195,
+   "centroid_frac": [
+    0.2744,
+    0.6841
+   ],
+   "region_lab": [
+    32.36,
+    2.78,
+    -20.25
+   ],
+   "params": {},
+   "key": {
+    "count": 1,
+    "lab": [
+     30.05491049377852,
+     2.7243138525548476,
+     -21.586057197410213
+    ],
+    "L_std": 4.449656105124666
+   },
+   "rule": {
+    "min_count": 1,
+    "max_dL": 15,
+    "max_db": 8
+   }
+  },
+  {
+   "id": "sky",
+   "kind": "region",
+   "what": "night sky with aurora: deep blue-violet, moon low centre-right",
+   "mask": "masks/sky.png",
+   "mask_src": "box",
+   "bbox_px": [
+    0,
+    0,
+    1023,
+    285
+   ],
+   "area_frac": 0.2793,
+   "centroid_frac": [
+    0.4995,
+    0.1392
+   ],
+   "region_lab": [
+    41.27,
+    5.71,
+    -21.31
+   ],
+   "params": {},
+   "key": {
+    "count": 1,
+    "lab": [
+     36.255006048278986,
+     6.774582009904306,
+     -24.837294774271967
+    ],
+    "L_std": 7.557775199636128
+   },
+   "rule": {
+    "min_count": 1,
+    "max_dL": 15,
+    "max_db": 10
+   }
+  },
+  {
+   "id": "context",
+   "kind": "region",
+   "what": "context: ice spire + icefalls + basalt cliffs right of the terrace (pale cyan ice, vertical icefalls)",
+   "mask": "masks/context.png",
+   "mask_src": "sam2",
+   "bbox_px": [
+    634,
+    207,
+    1023,
+    654
+   ],
+   "area_frac": 0.14399,
+   "centroid_frac": [
+    0.8175,
+    0.4161
+   ],
+   "region_lab": [
+    28.96,
+    -0.39,
+    -13.75
+   ],
+   "params": {},
+   "key": {
+    "count": 1,
+    "lab": [
+     24.57196962671684,
+     -0.5754240860379881,
+     -13.703314422805716
+    ],
+    "L_std": 10.837752296985148
+   },
+   "rule": {
+    "min_count": 1,
+    "max_dL": 15,
+    "max_db": 10
    }
   }
  ]

@@ -154,7 +154,29 @@ def spine_frame(spine, s, min_clear=6.0, foot=(-8.0, 13.0, 0.0, 8.5)):
     return {"origin_gl": [float(O[0]), float(gy), float(-O[1])], "yaw_gl_deg": yaw, "heading_deg": heading, "clear_m": clear, "ground_y": float(gy)}
 
 
-def cmd_terrace(spine_path, out, variant="spec", fit_mask=None):
+def _add_placer(meshes, inst, sc, placer):
+    """auto key sheet -> placed snow patches / icicles / rubble (tools/placer). Returns the placement log."""
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "placer"))
+    import placer as PL
+    sheet, groups, scope = placer
+    if not groups:
+        return {"placed": {}, "groups": []}
+    am, ai, log = PL.place(meshes, inst, sheet, sc, scope, tuple(groups))
+    meshes.update(am); inst.extend(ai); log["groups"] = groups; return log
+
+
+def _decimate(meshes):
+    """planar-region decimation on every piece (geom.decimate_planar): coplanar face sets re-triangulated from their
+    boundary loop; snow/ice-tagged faces (pillows, drips, broken snow edges) keep full density. In place; returns tris."""
+    from geom import decimate_planar
+    before = sum(len(m.F) for m in meshes.values())
+    for k in list(meshes):
+        meshes[k] = decimate_planar(meshes[k])
+    return {"tris_before": before, "tris_after": sum(len(m.F) for m in meshes.values())}
+
+
+def cmd_terrace(spine_path, out, variant="spec", fit_mask=None, placer=None):
     import sys, shutil
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
     from tools.gatesuite import glbio
@@ -162,9 +184,14 @@ def cmd_terrace(spine_path, out, variant="spec", fit_mask=None):
     spine = json.loads(Path(spine_path).read_text()); shutil.copy(spine_path, out / "spine.json")
     sc = K if variant == "spec" else 1.0
     meshes, inst, empt, info = layout(sc, 0)
+    if placer:
+        info["placer"] = _add_placer(meshes, inst, sc, placer)
+    info["decimate"] = _decimate(meshes)
     xs = [t for tr in info["tiers"] for t in tr]
     fr = spine_frame(spine, 450.0, foot=(min(xs) - 1.0, max(xs) + 1.0, -1.0, info["back"]))
     ex = {"keyGain": KEY_GAIN["stone"], "snowGain": KEY_GAIN["snow"], "key_cam_scale": sc, "variant": variant, "spine": spine.get("version")}
+    if placer:   # snow+rubble ground: gated Imagine snow tile from the material library (tools/materials/texflow.py)
+        ex.update({"ground": "lib_snow.jpg", "ground_tile_m": 3.0})
     P.write_scene(out / "terrace-local.glb", meshes, inst, empt, ex)
     if fit_mask and Path(fit_mask).exists():   # silhouette fit to the key mask (judge render only)
         import keyfit
@@ -174,6 +201,10 @@ def cmd_terrace(spine_path, out, variant="spec", fit_mask=None):
     glbs = {}
     for lod in (0, 1, 2):
         m_l, inst_l, _, _ = layout(sc, lod) if lod else (meshes, inst, empt, info)
+        if lod and placer:
+            _add_placer(m_l, inst_l, sc, placer)
+        if lod:
+            _decimate(m_l)
         fn = f"terrace-world-lod{lod}.glb"
         P.write_scene(out / fn, m_l, inst_l, empt, {**ex, "frame": fr}, root=(fr["origin_gl"], fr["yaw_gl_deg"]))
         glbs[f"lod{lod}"] = fn
@@ -195,6 +226,9 @@ def cmd_terrace(spine_path, out, variant="spec", fit_mask=None):
              "views": {v: f"gate/view-{v}.png" for v in ("3m", "chase", "45", "grazing", "side", "side4m")},
              "textures": [{"w": 1024, "h": 1024}] * 5, "texel_px_per_m": 539,
              "missing_library": ["matte ice texture (flat matte material used)", "trim sheet (none)"]}
+    if placer:
+        build["autosheet"] = str(Path(placer[0]).resolve()); build["placer"] = info.get("placer")
+    build["missing_library"] = [m for m in build["missing_library"] if not placer]
     (out / "build.json").write_text(json.dumps(build, indent=1))
     tris = sum(len(meshes[k].F) for _, k, *_ in inst if not k.startswith("marker"))
     keys = sorted({k.split("@")[0] for _, k, *_ in inst})
