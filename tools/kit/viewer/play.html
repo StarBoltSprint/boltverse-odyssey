@@ -50,7 +50,7 @@ const stoneMat = applyHexTriplanar(new THREE.MeshStandardMaterial({map: basalt, 
 stoneMat.defines = {HEX_SNOW: ''};
 const iceMat = new THREE.MeshStandardMaterial({color: 0xcfdde6, roughness: 0.8, metalness: 0, transparent: true, opacity: 0.92});
 const gl = new GLTFLoader(); let tris = 0;
-const [kit, mesa] = await Promise.all([gl.loadAsync('model.glb'), gl.loadAsync('mesaA.glb')]);
+const [kit, mesa] = await Promise.all([gl.loadAsync(P.get('model') || 'model.glb'), gl.loadAsync('mesaA.glb')]);
 kit.scene.traverse(o => { if (!o.isMesh) return; tris += o.geometry.index.count / 3;
   o.material = /icicle/.test(o.name) || o.geometry.attributes._ice ? iceMat : stoneMat;
   if (!o.geometry.attributes._snow) o.geometry.setAttribute('_snow', new THREE.Float32BufferAttribute(new Float32Array(o.geometry.attributes.position.count), 1)); });
@@ -69,5 +69,6 @@ window.__probe = {view, tris, hitM: hit ? +hit.distance.toFixed(2) : null, px};
 document.getElementById('hud').textContent = `${view}  tris ${tris}\nhit ${hit ? hit.distance.toFixed(2) + ' m' : '-'}  ` +
   (px ? `screen ${px.screenPxPerM.toFixed(0)} px/m  stone ${px.texPxPerM.toFixed(0)} px/m${px.magnified ? ' MAGNIFIED' : ''}` : '') +
   `\n${renderer.getContext().getParameter(renderer.getContext().VERSION)}`;
+if (P.get('hud') === '0') document.getElementById('hud').style.display = 'none';
 renderer.render(scene, camera); window.__ready = true;
 </script></body></html>

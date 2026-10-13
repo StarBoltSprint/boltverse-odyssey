@@ -113,5 +113,16 @@ s9 = contour_snap(m9, oc9, 0, 0, 0.1, 0.3)
 b9 = (np.abs(m9.V[:, 0] - m9.V[:, 2]) < 0.15) & (m9.V[:, 0] > 0.3) & (m9.V[:, 0] < 1.2)
 row("contour_snap straightens a 45-degree staircase (spread off the line drops) and keeps the mesh closed",
     open_edges(s9) == 0 and nonmanifold_edges(s9) == 0 and np.std(s9.V[b9, 2] - s9.V[b9, 0]) < 0.85 * np.std(m9.V[b9, 2] - m9.V[b9, 0]))
+# --- appearance judge rows (HOG fallback, no torch) ---
+import judge as J
+kp = HERE / "specs" / "zd" / "judge_mask.png"
+with tempfile.TemporaryDirectory() as td:
+    rng_j = np.random.default_rng(0)
+    img = (rng_j.random((256, 256, 3)) * 255).astype(np.uint8); img = cv2.GaussianBlur(img, (0, 0), 3)
+    msk = np.zeros((256, 256), np.uint8); msk[60:200, 40:220] = 255
+    cv2.imwrite(f"{td}/a.png", img); cv2.imwrite(f"{td}/m.png", msk); cv2.imwrite(f"{td}/g.png", np.full_like(img, 128))
+    ja = J.score(f"{td}/a.png", f"{td}/a.png", f"{td}/m.png", venv=None)
+    jg = J.score(f"{td}/g.png", f"{td}/a.png", f"{td}/m.png", venv=None)
+row(f"judge: identical image scores 100 ({ja['total']}), flat grey scores far lower ({jg['total']})", ja["total"] > 99.9 and jg["total"] < 60)
 print(f"{sum(rows)}/{len(rows)} rows pass")
 sys.exit(0 if all(rows) else 1)

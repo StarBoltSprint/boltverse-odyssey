@@ -83,3 +83,14 @@ Tier kit = **WIP** (`biome/library/_wip/zd-tier-terrace`). v4: IoU 0.747/0.869, 
   - Block width varies per course (±35%) with a random bond offset (`block_vary`).
 - Snow: every up-facing surface (n.z > 0.7) and the cornice front carry snow, and the drift lip is 0.2–0.5 m. Snow calibration keeps these caps.
 - Viewer: the snow-tile pad is removed. The stone tile is 1.9 m (539 tex px/m). The `side4m` view is taken from the cornice's free right end. The `key` panel renders from the solved key camera next to the key image.
+
+## Appearance judge (`tools/kit/judge.py`, CPU, licence-clean)
+- Render the solved key camera with `viewer/keyshot.py` (headless Chrome, 1024², `play.html?view=key&hud=0&model=…`).
+- Then run `judge.py RENDER KEY MASK` (mask = `specs/zd/judge_mask.png`, which is the tier_full mask plus the cornice).
+- Scores, each out of 100:
+  - colour = 100·(1 − mean CIEDE2000/40)
+  - structure = 100·SSIM on CIELAB L, averaged over the mask
+  - perceptual = 100·(DINOv2 ViT-S/14 masked patch cosine − 0.3)/0.7. DINOv2 is Apache-2.0 and runs in the torch venv; without it, the judge falls back to a HOG cosine.
+- Total = 0.35·colour + 0.30·structure + 0.35·perceptual. The gate is 50 (provisional).
+  - Calibration: the key against itself scores 100, the key blurred by σ 4 px scores 57.3, and flat grey scores 17.9.
+- v9 scores 38.2 and v10 scores 36.4. Both FAIL.
