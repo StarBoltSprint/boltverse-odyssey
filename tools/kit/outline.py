@@ -521,6 +521,10 @@ def outline_pieces_v7(spec, cam, masks, key_bgr=None, stone_h=None):
     if masks.get("band") is not None:   # the key's upper wall band behind the cornice (Critic e: full key extent)
         tier = tier | masks["band"]
     occ, x0, z0 = mask_grid(tier, cam, 0.0, cell)
+    st = o.get("stepped")
+    if st:   # v11: tier 1 keeps only key rows below its top; upper rows are re-projected onto set-back planes
+        zr = z0 + (np.arange(occ.shape[0]) + 0.5) * cell
+        occ = occ & (zr < st["tops_m"][0])[:, None]
     front = np.zeros(occ.shape)
     if door is not None:
         dd, _, _ = mask_grid(door | tier, cam, 0.0, cell)
@@ -541,6 +545,8 @@ def outline_pieces_v7(spec, cam, masks, key_bgr=None, stone_h=None):
         t1 = contour_snap(t1, occ, x0, z0, cell, o["contour_sigma_m"])
     t1 = taubin(t1, o.get("smooth_iters", 6))
     out = {"tier1": t1, "grid": (occ, front, bk, x0, z0, cell)}
+    if st:
+        out["upper"] = stepped_tiers(tier, cam, cell, st, o)
     if o.get("base_sink_m"):
         out["base0"] = base0   # key-visible wall bottom per column (before sinking)
     # cornice: slab + fringe (icicles)
@@ -789,4 +795,39 @@ def contour_snap(m: Mesh, occ, x0, z0, cell, sigma_m=0.35, iters=6):
     V[:, 2] = (w - 1.5) * cell + z0
     out = Mesh(V, m.F, m.name, m.material)
     out.attrs = dict(m.attrs)
+    return out
+
+
+def stepped_tiers(tier_mask, cam, cell, st, o):
+    """v11: real stepped-back tiers. Tier k (k>=1) is the key tier mask back-projected onto the plane
+    y = k*tread, keeping the rows whose height on that plane lies between the previous tier top and this
+    tier's top (tops_m; None = up to the mask top). Each tier is its own closed solid sitting on the tread
+    below (its rows start 0.05 m under the previous top, so no gap), carved by the key visual hull."""
+    T = st["tread_m"]
+    tops = st["tops_m"]
+    out = []
+    for k in range(1, len(tops)):
+        yk = k * T
+        occ, x0, z0 = mask_grid(tier_mask, cam, yk, cell)
+        zr = z0 + (np.arange(occ.shape[0]) + 0.5) * cell
+        lo = tops[k - 1] - 0.05
+        hi = tops[k] if tops[k] is not None else np.inf
+        occ = occ & ((zr >= lo) & (zr < hi))[:, None]
+        if not occ.any():
+            continue
+        # extend each column down to the tread (lo) so the tier stands on the one below
+        for i in range(occ.shape[1]):
+            js = np.nonzero(occ[:, i])[0]
+            if len(js):
+                jl = max(0, int(np.floor((lo - z0) / cell)))
+                occ[jl:js.min(), i] = True
+        front = np.full(occ.shape, yk)
+        bk = carve_depth(occ, front, x0, z0, cell, cam, tier_mask, yk + T + 0.6, step=o.get("carve_step_m", 0.1))
+        if o.get("block_quantize") and o.get("_courses") is not None:
+            bk = quantize_blocks(occ, bk, x0, z0, cell, np.asarray(o["_courses"]), o.get("block_w_m", 0.9), o.get("carve_step_m", 0.1), o.get("block_pct", 0))
+        occ, front, bk = fix_manifold(occ, front, bk)
+        m = extrude_cells(occ, front, bk, x0, z0, cell, f"tier{k + 1}", "stone")
+        if o.get("contour_sigma_m"):
+            m = contour_snap(m, occ, x0, z0, cell, o["contour_sigma_m"])
+        out.append(taubin(m, o.get("smooth_iters", 6)))
     return out

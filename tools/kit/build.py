@@ -190,10 +190,8 @@ def build_outline_v7(spec: dict, cam, masks: dict, key_bgr=None, matlib: Path = 
         sub["outline"]["_courses"] = courses
         P = outline_pieces_v7(sub, cam, masks, key_bgr)
         parts = []
-        for name in ("tier1", "cornice"):
-            if name not in P:
-                continue
-            m = P[name]
+        named = [(n, P[n]) for n in ("tier1", "cornice") if n in P] + [(u.name, u) for u in P.get("upper", [])]
+        for name, m in named:
             if masks.get("snow") is not None:
                 m.attrs["_SNOW"] = snow_attr(m, cam, masks["snow"], grow_px=o.get("snow_grow_px", 0))
             if name == "cornice":
@@ -207,7 +205,7 @@ def build_outline_v7(spec: dict, cam, masks: dict, key_bgr=None, matlib: Path = 
                 m.attrs["_SNOW"] = np.maximum(m.attrs["_SNOW"], ((N[:, 1] < -0.3) & (N[:, 2] > -0.3)) * 1.0)
             if li < 2:
                 m = drift_lip(m, tuple(o.get("lip_m", (0.12, 0.35))))
-            if li == 0 and name == "tier1":
+            if li == 0 and name.startswith("tier"):
                 m = block_relief(m, courses, joint_d=o.get("joint_m", 0.32), face_d=tuple(o.get("block_face_m", (0.0, 0.18))),
                                  stone_h=hs, stone_tile=ms["tile_m"], vary=o.get("block_vary", 0.0), smooth=o.get("relief_smooth", 0))
             parts.append(m)

@@ -82,7 +82,7 @@ def calibrate_snow(lods, cam, target, snow_mask, iters=9, caps=None, cornice_fro
     def apply(thr):
         for v in lods.values():
             for m in v:
-                if m.name in ("tier1", "cornice"):
+                if m.name in ("tier1", "tier2", "tier3", "tier4", "cornice"):
                     s = snow_attr(m, cam, snow_mask, thr=thr)
                     if m.name == "cornice":
                         N = vertex_normals(m)

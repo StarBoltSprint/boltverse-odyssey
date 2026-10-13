@@ -94,3 +94,11 @@ Tier kit = **WIP** (`biome/library/_wip/zd-tier-terrace`). v4: IoU 0.747/0.869, 
 - Total = 0.35·colour + 0.30·structure + 0.35·perceptual. The gate is 50 (provisional).
   - Calibration: the key against itself scores 100, the key blurred by σ 4 px scores 57.3, and flat grey scores 17.9.
 - v9 scores 38.2 and v10 scores 36.4. Both FAIL.
+
+## v11 (0008): stepped-back tiers
+- `outline.stepped` = {tread 2.5 m, tops [4.4, 7.1, top]}. Tier 1 keeps only the key rows below 4.4 m. Tiers 2 and 3 are the key mask
+  back-projected onto the planes y = 2.5 m and 5.0 m, cut to their own height bands, and extended down onto the tread below.
+  - Each tier is a closed solid (`stepped_tiers`).
+- The snow caps threshold went up to n.z > 0.97, because the snowy treads otherwise pushed the snow ratio 45% over.
+- Not done: bevelled blocks on spline courses. Courses are still horizontal key rows.
+- Judge: v11 scores 34.0 (FAIL), against 36.4 for v10 and 38.2 for v9.
