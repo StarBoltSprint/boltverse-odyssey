@@ -1,0 +1,9 @@
+# Decree brief
+
+Spec: `steps/tools/09-build-ticket/spec.md`
+Decrees: `/workspace/grokcli/wt/tools-09-build-ticket/decrees/decrees.jsonl`
+Keywords: tools, build, ticket, compact, grok, spec, branch, origin, main, 99346a4, work, worktree, local, commits, push, merge, reset, hard, imagine, touch, terrace, rune, pillar, geometry, goal, object, json, living, plus, schema, validator, director, approved, studio, tool, fields, fill, order, field, blocks, next, commit, stamped, auto, prefer, package, selftest, tiny, fixtures, break, gate, playcheck, apis, read, shapes, mandatory, status, pending, pass, fail, specific, verdicts, below, later, leave, filled, while, earlier, plates, list, path, precheck, keep, notes, check, passes, when, every, placement, level, designer, route, spine, refs, clearances, headroom, width, ground, colliders, depth, budget, lod0, 25000, texture, share, full, head, time, gates, clearance, blocking, violated, tris, refuse, exit, refused, shots, current, repo, root, provided, discovered, play, playtester, timecodes, note, sheet, paths, verdict, shot, phone, unverified, perf, report, perfreport, result, default, empty, until, smir, text, timestamp, 8601, executed, prior, rules, reject, setting, stale, checking, running, sees, explicit, detected, clear, data, stamps, wipe, unless, asked, measured, violate, node, validate, valid, consistent, rule, invocation, emit, short, summary, stdout, optional, helpers, init, enforce, same, nice, required, draft, 2020, document, readme, self, tests, prove, output, fails, exits, proves, case, expect, stamp, violation, happy, match, under, fixture, real, meshes, synthetic, numbers, temp, inside, checks, deliverables, steps, table, outdir, done, proving, five, failure, cases, exists, matches, honestly, diff, stat, stays, test, code
+
+No local decrees file. Nothing was invented.
+
+No decree matched these keywords.
