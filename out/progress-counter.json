@@ -1,0 +1,47 @@
+{
+ "schema": "progress-counter.v1",
+ "percent": 49,
+ "percent_source": "Director room 2026-10-13 (meter in wt/tools-14-progress-meter, untracked)",
+ "runs": [
+  {
+   "started": "2026-10-13T10:26:07+02:00",
+   "target": "/workspace/grokcli/wt/zd-terrace-1012/steps/zone-d/01-terrace",
+   "total_s": 0.131,
+   "timer": {
+    "t_plates_sheet": 0.1304798126220703,
+    "t_first_frame": null,
+    "t_sheet_ready": null,
+    "t_keep": null
+   },
+   "counts": {
+    "PASS": 1,
+    "FAIL": 0,
+    "NOT_IMPLEMENTED": 2,
+    "ADOPTED": 2,
+    "STOP": 1,
+    "BLOCKED": 0,
+    "SKIPPED": 20
+   }
+  },
+  {
+   "started": "2026-10-13T10:26:07+02:00",
+   "target": "/workspace/grokcli/wt/zd-terrace-1012/steps/zone-d/01-terrace",
+   "total_s": 0.262,
+   "timer": {
+    "t_plates_sheet": 0.11767745018005371,
+    "t_first_frame": null,
+    "t_sheet_ready": null,
+    "t_keep": null
+   },
+   "counts": {
+    "PASS": 2,
+    "FAIL": 2,
+    "NOT_IMPLEMENTED": 12,
+    "ADOPTED": 9,
+    "STOP": 0,
+    "BLOCKED": 1,
+    "SKIPPED": 0
+   }
+  }
+ ]
+}
