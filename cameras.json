@@ -1,0 +1,47 @@
+{
+ "spine_version": "1.3.1",
+ "spine_file": "steps/zone-d/01-terrace/spine.json",
+ "note": "player faces the wall at the given azimuth; camera = player - 4.5 m along heading + 2.6 m up; aim = player + 6 m ahead at 1.8 m above feet (spine v1.3.1 camera.aim); mesa column: same pose relative to the mesa front face centre; three.js world, y up, facade plane z=0, door centre x=-0.86; lights = zd-play-1012/index.html (hemi 0xb8c8e0/0x6a7890 1.4, sun 0xdfe8ff 1.6 at (-60,13,25)), NoToneMapping, sRGB",
+ "oblique45": {
+  "pos": [
+   6.564621202458748,
+   2.6,
+   7.4246212024587495
+  ],
+  "target": [
+   -0.86,
+   1.8,
+   0
+  ],
+  "fov": 48,
+  "player": [
+   3.382640687119285,
+   0,
+   4.242640687119286
+  ],
+  "width": 412,
+  "height": 915,
+  "azimuth_from_wall_normal_deg": 45
+ },
+ "grazing10": {
+  "pos": [
+   9.480481406628185,
+   2.6,
+   1.8233058655027694
+  ],
+  "target": [
+   -0.86,
+   1.8,
+   0
+  ],
+  "fov": 48,
+  "player": [
+   5.048846518073248,
+   0,
+   1.0418890660015825
+  ],
+  "width": 412,
+  "height": 915,
+  "azimuth_from_wall_normal_deg": 80
+ }
+}
