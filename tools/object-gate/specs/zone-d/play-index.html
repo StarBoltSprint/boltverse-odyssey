@@ -4,19 +4,35 @@
 #hud{position:fixed;left:8px;top:8px;color:#fff;font:12px/1.35 monospace;background:rgba(0,0,0,.45);padding:5px 7px;border-radius:5px;pointer-events:none;white-space:pre}
 #stick{position:fixed;left:22px;bottom:30px;width:120px;height:120px;border-radius:60px;border:2px solid rgba(255,255,255,.35);pointer-events:none}
 #knob{position:absolute;left:40px;top:40px;width:40px;height:40px;border-radius:20px;background:rgba(255,255,255,.45)}
+#load{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(80vw,420px);color:#cde;font:12px/1.4 monospace}#load .t{height:10px;background:#223;border-radius:5px;overflow:hidden;margin:6px 0}#load .f{height:100%;width:0;background:#47d1ff}
+#bench{position:fixed;left:8px;bottom:8px;right:8px;color:#fff;font:11px/1.35 monospace;background:rgba(0,0,0,.6);padding:5px 7px;border-radius:5px;white-space:pre-wrap;word-break:break-all;user-select:text;-webkit-user-select:text;display:none}
 #bar{position:fixed;right:8px;top:8px;display:flex;gap:6px}#bar button{font:13px sans-serif;padding:7px 9px;border-radius:6px;border:0;background:rgba(255,255,255,.8)}</style></head>
-<body><div id="hud">loading…</div><div id="stick"><div id="knob"></div></div>
+<body><div id="hud"></div><div id="load"><div id="lmsg">loading…</div><div class="t"><div class="f" id="lbar"></div></div><div id="lassets"></div></div><div id="bench"></div><div id="stick"><div id="knob"></div></div>
 <div id="bar"><button id="b30">30 m</button><button id="b8">8 m</button><button id="b3">3 m</button><button id="bup">3 m ↑</button></div>
 <script type="module">
 // Zone D v3.2 playable preview: mode B (internal ratio 1.5 -> EASU-style bicubic + RCAS 0.8 to canvas min(2, device)),
 // chase camera = corridor-ab runtime (look.js CHASE_BOOM 6 m, CHASE_EYE 1.35 m, aim 0.9675 m), Level Designer placement.
+// ---- load progress + stage timing (engine/bench-load) ----
+const BUILD = 'dd80963f+bench-load';
+const T0 = performance.now(), LT = [], stage = (name, t0) => { const ms = performance.now() - t0; LT.push([name, Math.round(ms)]); console.log(`[load] ${name} ${ms.toFixed(0)} ms`); return ms; };
+const ASSETS = { 'placement.json': 0, 'plate-front-v35.jpg': 0, 't1-right-v35.jpg': 0, 'plate-side-v35.jpg': 0, 'top.jpg': 0, 'plate-front.jpg': 0, 't1-right.jpg': 0, 'plate-side.jpg': 0, 'terrace-lod0.glb': 0, 'terrace-lod1.glb': 0, 'terrace-lod2.glb': 0 };
+const PROG = {}; for (const k in ASSETS) PROG[k] = { got: 0, tot: 0 };
+function drawProg() { let g = 0, t = 0, rows = []; for (const k in PROG) { const a = PROG[k]; g += a.got; t += a.tot || a.got; rows.push(`${k.padEnd(20)} ${(a.got / 1024).toFixed(0).padStart(5)}${a.tot ? ' / ' + (a.tot / 1024).toFixed(0) : ''} KB`); }
+  document.getElementById('lbar').style.width = (t ? 100 * g / t : 0).toFixed(1) + '%'; document.getElementById('lmsg').textContent = `loading… ${(g / 1048576).toFixed(1)} MB${t ? ' / ' + (t / 1048576).toFixed(1) + ' MB' : ''}`; document.getElementById('lassets').textContent = rows.join('\n'); }
+document.getElementById('lassets').style.whiteSpace = 'pre';
+async function fetchProg(url, key) { const res = await fetch(url); if (!res.ok) throw new Error(`${url} ${res.status}`); const a = PROG[key]; a.tot = +res.headers.get('content-length') || 0;
+  const rd = res.body.getReader(), parts = []; for (;;) { const { done, value } = await rd.read(); if (done) break; parts.push(value); a.got += value.length; drawProg(); }
+  const buf = new Uint8Array(a.got); let o = 0; for (const p of parts) { buf.set(p, o); o += p.length; } a.tot = a.got; drawProg(); return buf.buffer; }
+{ const nav = performance.getEntriesByType('navigation')[0]; if (nav) LT.push(['html fetch', Math.round(nav.responseEnd - nav.startTime)]); }
 import * as THREE from './three.module.js';
 import { GLTFLoader } from './jsm/loaders/GLTFLoader.js';
 import { mergeGeometries } from './jsm/utils/BufferGeometryUtils.js';
 import { createEasuRcas } from './upscale-easu.mjs';
 import { createAdaptiveRes } from './adaptive-res.mjs';
 const BOOM = 6, EYE = 1.35, AIM = 0.9675, R_PLAYER = 0.4, SPEED = 4.2;
-const P = await (await fetch('./placement.json')).json();
+{ const js = performance.getEntriesByType('resource').filter((e) => /\.(m?js)$/.test(e.name)); LT.push(['html+js until module start (ms since nav)', Math.round(T0)]); LT.push(['js bytes', js.reduce((s, e) => s + (e.transferSize || e.encodedBodySize || 0), 0)]); }
+let tS = performance.now();
+const P = JSON.parse(new TextDecoder().decode(await fetchProg('./placement.json', 'placement.json')));
 const dpr = devicePixelRatio || 1, CANVAS = Math.min(2, dpr), INTERNAL = Math.min(1.5, CANVAS);
 const AA = new URLSearchParams(location.search).get('aa') !== '0';   // ?aa=0 off, ?aa=1 / default on: 4x MSAA (internal target + canvas)
 const r = new THREE.WebGLRenderer({ antialias: AA }); r.setPixelRatio(CANVAS); r.setSize(innerWidth, innerHeight);
@@ -28,18 +44,28 @@ const sun = new THREE.DirectionalLight(0xdfe8ff, 1.6); sun.position.set(-60, 13,
 sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -40, right: 40, top: 40, bottom: -40, near: 1, far: 200 });
 sun.shadow.bias = -0.0005; sun.shadow.normalBias = 0.04; scene.add(sun, sun.target);
 const TL = new THREE.TextureLoader(), TEX = {};
-for (const [n, f] of [['front', 'plate-front-v35.jpg'], ['front2', 't1-right-v35.jpg'], ['side', 'plate-side-v35.jpg'], ['top', 'top.jpg'], ['icefront', 'plate-front.jpg'], ['icefront2', 't1-right.jpg'], ['iceside', 'plate-side.jpg']]) {
-  const t = await TL.loadAsync(`./assets/${f}`); t.colorSpace = THREE.SRGBColorSpace; t.flipY = false; t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
+const TEXLIST = [['front', 'plate-front-v35.jpg'], ['front2', 't1-right-v35.jpg'], ['side', 'plate-side-v35.jpg'], ['top', 'top.jpg'], ['icefront', 'plate-front.jpg'], ['icefront2', 't1-right.jpg'], ['iceside', 'plate-side.jpg']];
+const GLBS = [0, 1, 2].map((i) => `terrace-lod${i}.glb`);
+// fetch every asset in the same order as before (sequential, unchanged behaviour), time fetch vs decode separately
+tS = performance.now(); const RAW = {}; for (const [, f] of TEXLIST) RAW[f] = await fetchProg(`./assets/${f}`, f); stage('jpg fetch', tS);
+tS = performance.now(); for (const f of GLBS) RAW[f] = await fetchProg(`./assets/${f}`, f); stage('glb fetch', tS);
+tS = performance.now();
+for (const [n, f] of TEXLIST) {
+  const url = URL.createObjectURL(new Blob([RAW[f]], { type: 'image/jpeg' })); const t = await TL.loadAsync(url); URL.revokeObjectURL(url); t.colorSpace = THREE.SRGBColorSpace; t.flipY = false; t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
   t.generateMipmaps = true; t.magFilter = THREE.LinearFilter; t.anisotropy = r.capabilities.getMaxAnisotropy(); t.minFilter = THREE.LinearMipmapLinearFilter; TEX[n] = t; }
+stage('jpg decode', tS);
+tS = performance.now(); for (const k in TEX) r.initTexture(TEX[k]); stage('texture upload+mips', tS);
 const ground = new THREE.Mesh(new THREE.PlaneGeometry(96, 96), new THREE.MeshStandardMaterial({ map: TEX.top, roughness: 1, metalness: 0 }));
 ground.rotation.x = -Math.PI / 2; ground.position.set(0, -0.01, -8); ground.receiveShadow = true; ground.name = 'ground'; ground.renderOrder = 2; scene.add(ground);
 const lod = new THREE.LOD(); const sw = [0, ...P.object.lod_switch_m]; const loader = new GLTFLoader();
+tS = performance.now();
 for (let i = 0; i < 3; i++) {
-  const g = await loader.loadAsync(`./assets/terrace-lod${i}.glb`); g.scene.updateMatrixWorld(true); const geos = [], mats = [];
+  const g = await loader.parseAsync(RAW[GLBS[i]], './assets/'); g.scene.updateMatrixWorld(true); const geos = [], mats = [];
   g.scene.traverse((o) => { if (o.isMesh) { const ge = o.geometry.clone().applyMatrix4(o.matrixWorld); for (const k of Object.keys(ge.attributes)) if (!['position', 'normal', 'uv'].includes(k)) ge.deleteAttribute(k); geos.push(ge); mats.push(o.material.name); } });
   const m = new THREE.Mesh(mergeGeometries(geos, true), mats.map((n) => new THREE.MeshStandardMaterial({ map: TEX[n], roughness: 1, metalness: 0, name: n })));
   m.castShadow = m.receiveShadow = true; m.renderOrder = 0; lod.addLevel(m, sw[i]);
 }
+stage('glb parse+merge', tS);
 lod.position.fromArray(P.object.position_m); lod.rotation.y = (P.object.yaw_deg || 0) * Math.PI / 180; scene.add(lod); scene.updateMatrixWorld(true);
 const bb = new THREE.Box3().setFromObject(lod.levels[0].object); lod.position.y -= bb.min.y;
 // marks: rings on the snow at 8 m and 3 m in front of the centre doorway (placement approach.camera_marks_m), + 30 m start
@@ -88,7 +114,8 @@ const grade = { scale: 1, render(rr, s, c) { const z = rr.getDrawingBufferSize(n
   rr.setRenderTarget(outRT); rr.render(s, c); rr.setRenderTarget(null); rr.render(finS, finC); } };
 const adaptive = createAdaptiveRes({ cap: INTERNAL, floor: Math.min(INTERNAL, 1.25) });
 adaptive.markReady(performance.now());
-const bench = { on: q.get('bench') === '1', t0: null, samples: [], done: false, median: null, low: null, min: null };
+const bench = { on: q.get('bench') === '1', t0: null, samples: [], done: false, median: null, low: null, min: null, lastNow: null, result: null };
+const SEGS = [['approach 30->8m', 0, 10], ['terrace top 8->3m up35', 10, 20], ['retreat 3->30m', 20, 30], ['hold 19.7m', 30, 35]], WARMUP = 2;
 function benchPose(t) {
   let dist, pitch;
   if (t < 10) { dist = 30 + (8 - 30) * (t / 10); pitch = 0; }
@@ -97,11 +124,21 @@ function benchPose(t) {
   else { dist = 19.7; pitch = 0; }
   return { dist, pitch };
 }
+function stats(ms) { // ms = raw performance.now() frame deltas
+  if (!ms.length) return null; const s = [...ms].sort((a, b) => a - b), sum = s.reduce((a, b) => a + b, 0), pct = (p) => s[Math.min(s.length - 1, Math.floor(p * s.length))];
+  const nW = Math.max(1, Math.ceil(s.length * 0.01)), worst = s.slice(-nW), low = 1000 / (worst.reduce((a, b) => a + b, 0) / nW);
+  return { frames: s.length, avg: +(1000 * s.length / sum).toFixed(1), low1: +low.toFixed(1), p50: +pct(0.5).toFixed(2), p95: +pct(0.95).toFixed(2), max: +s[s.length - 1].toFixed(2) };
+}
 function finishBench() {
-  const fps = bench.samples.map((dt) => 1 / Math.max(dt, 1e-4)).sort((a, b) => a - b);
-  const n = Math.max(1, Math.floor(fps.length * 0.01));
-  const worst = fps.slice(0, n);
-  bench.median = fps[fps.length >> 1]; bench.min = fps[0]; bench.low = worst.reduce((s, v) => s + v, 0) / worst.length; bench.done = true;
+  const route = bench.samples.filter(([t]) => t >= WARMUP && t < 30).map(([, d]) => d), all = stats(route);
+  const seg = {}; for (const [name, a, b] of SEGS) { const st = stats(bench.samples.filter(([t]) => t >= Math.max(a, WARMUP) && t < b).map(([, d]) => d)); seg[name] = st ? st.avg : null; }
+  const fps = route.map((d) => 1000 / d).sort((a, b) => a - b);
+  bench.median = fps[fps.length >> 1]; bench.min = fps[0]; bench.low = all.low1; bench.done = true;
+  const z = r.getDrawingBufferSize(new THREE.Vector2());
+  bench.result = { build: BUILD, ua: navigator.userAgent, dpr, buffer: `${z.x}x${z.y}`, css: `${innerWidth}x${innerHeight}`, renderScale: +(adaptive.level.ratio / CANVAS).toFixed(3), internal: adaptive.level.ratio, aa: AA ? 'msaa4' : 'off', modeB: MODEB,
+    window_s: [WARMUP, 30], avg: all.avg, low1: all.low1, p50_ms: all.p50, p95_ms: all.p95, max_ms: all.max, frames: all.frames, seg, load_ms: LOADMS };
+  const line = 'BENCH ' + JSON.stringify(bench.result); console.log(line);
+  const el = document.getElementById('bench'); el.style.display = 'block'; el.textContent = `avg ${all.avg} fps  1% low ${all.low1}  p50 ${all.p50} ms  p95 ${all.p95} ms  max ${all.max} ms\n` + Object.entries(seg).map(([k, v]) => `${k}: ${v}`).join('  |  ') + '\n(tap & hold to copy)\n' + line;
 }
 function texBytes() {
   let bytes = 0; const seen = new Set();
@@ -112,17 +149,20 @@ window.__perfReport = () => ({
   canvasRatio: r.getPixelRatio(), dpr, cap: adaptive.level.ratio, canvasCap: 2, upscale: MODEB ? 'easu-rcas' : 'native', rcas: 0.8,
   msaa: AA ? 4 : 0, aa: AA ? 'msaa-4' : 'off', adaptive: true, adaptiveCanDropDetail: adaptive.canDropDetail,
   sprintDip: false, detailOn: adaptive.level.detail !== false, groundOrder: ground.renderOrder, maxOpaqueOrder: 0,
-  fpsMedian: bench.done ? bench.median : null, fps1Low: bench.done ? bench.low : null, fpsMin: bench.done ? bench.min : null,
+  bench: bench.result, load: LT, fpsMedian: bench.done ? bench.median : null, fps1Low: bench.done ? bench.low : null, fpsMin: bench.done ? bench.min : null,
   drawCalls: r.info.render.calls, triangles: r.info.render.triangles, textureMemory: texBytes(),
   activeLOD: { terrace: lod.getCurrentLevel() }, userAgent: navigator.userAgent,
 });
+// shader compile + first frame
+tS = performance.now(); lod.update(cam); if (r.compileAsync) await r.compileAsync(scene, cam); else r.compile(scene, cam); stage('shader compile', tS);
+let LOADMS = null, firstFrame = true;
 const hud = document.getElementById('hud'); let last = performance.now(), acc = 0, n = 0, fps = 0;
 function frame(now) {
-  const dt = Math.min(0.05, (now - last) / 1000); last = now; acc += dt; n++; if (acc > 0.5) { fps = n / acc; acc = 0; n = 0; }
+  const rawMs = now - last; const dt = Math.min(0.05, rawMs / 1000); last = now; acc += dt; n++; if (acc > 0.5) { fps = n / acc; acc = 0; n = 0; }
   adaptive.frame(dt * 1000, now);
   if (bench.on && !bench.done) {
     if (bench.t0 == null) bench.t0 = now;
-    const t = (now - bench.t0) / 1000; bench.samples.push(dt);
+    const t = (now - bench.t0) / 1000; if (t > 0) bench.samples.push([t, rawMs]);
     const p = benchPose(t); pl.x = DOOR.x; pl.z = DOOR.z + p.dist; pl.pitch = p.pitch; pl.heading = 0;
     if (t >= 35) finishBench();
   }
@@ -137,6 +177,10 @@ function frame(now) {
   if (MODEB) ups.render(r, scene, cam, grade, adaptive.level.ratio / CANVAS); else { r.setRenderTarget(null); r.render(scene, cam); }
   const dDoor = Math.hypot(pl.x - DOOR.x, pl.z - DOOR.z), dCam = cam.position.distanceTo(new THREE.Vector3(DOOR.x, 1.5, DOOR.z));
   hud.textContent = `fps ${fps.toFixed(0)}  AA ${AA ? 'MSAA 4x' : 'off'}  LOD${lod.getCurrentLevel()} (switch ${P.object.lod_switch_m.join('/')} m)\nmode B: internal ${INTERNAL} -> canvas ${CANVAS} (dpr ${dpr}) EASU+RCAS 0.8\nplayer ${dDoor.toFixed(1)} m / camera ${dCam.toFixed(1)} m from centre door\nchase boom ${BOOM} m, eye ${EYE} m (corridor-ab look.js)`;
+  if (firstFrame) { firstFrame = false; const t1 = performance.now(); stage('first frame (render+post)', now); LOADMS = Math.round(t1);
+    LT.push(['TOTAL since navigation', LOADMS]); console.log('[load] breakdown ' + JSON.stringify(LT)); document.getElementById('load').style.display = 'none'; window.__load = LT;
+    if (bench.on) { const el = document.getElementById('bench'); el.style.display = 'block'; el.textContent = 'load: ' + LT.map(([k, v]) => `${k} ${v}`).join(' | '); } }
+  if (bench.on && !bench.done) { const t = (now - bench.t0) / 1000; hud.textContent += `\nBENCH ${t.toFixed(1)} / 35 s  ${t < WARMUP ? 'warmup' : 'running'}`; }
   window.__ready = true; requestAnimationFrame(frame);
 }
 addEventListener('resize', () => { r.setSize(innerWidth, innerHeight); cam.aspect = innerWidth / innerHeight; cam.updateProjectionMatrix(); });
