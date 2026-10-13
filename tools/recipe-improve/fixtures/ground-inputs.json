@@ -1,0 +1,11 @@
+{
+  "schema": "recipe-improve-inputs/1",
+  "recipe": "ground",
+  "plates": ["plates/ground-a.json", "plates/ground-b.json"],
+  "kit": "../../../biome/kits/howling-eclipse.json",
+  "scene": "scene.json",
+  "viewport": [412, 915],
+  "objectGate": "current-gate.json",
+  "shotSheet": "shot-keep.json",
+  "perfReport": "perf-good.json"
+}

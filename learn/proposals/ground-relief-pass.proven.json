@@ -1,0 +1,33 @@
+{
+  "schema": "recipe-improve-proven/1",
+  "proven": true,
+  "decision": "adopt_variant",
+  "because": "strictly_better",
+  "recipe": "ground",
+  "recipeFile": "docs/METHOD/ground.md",
+  "recipeSha256": "cf934379179faeba63b18b7d89185e380d4d22146a694b819f3005915f5e5229",
+  "methodEdited": false,
+  "proposalId": "ground-relief-pass",
+  "summary": "Relief passes. Stretch, the shot sheet, and phone perf stay as they are.",
+  "params": {
+    "reliefMinM": 0.3
+  },
+  "scores": {
+    "current": {
+      "points": 28,
+      "maxPoints": 32,
+      "rows": 16,
+      "ratio": 0.875
+    },
+    "variant": {
+      "points": 30,
+      "maxPoints": 32,
+      "rows": 16,
+      "ratio": 0.9375
+    }
+  },
+  "blockingRegressions": [],
+  "patch": "--- a/docs/METHOD/ground.md\n+++ b/docs/METHOD/ground.md\n@@ -300,3 +300,19 @@\n \n Self-check (2026-10-03): following only this page, a fresh reader can rebuild zone A (§9, verified byte-identical) and make\n another biome (§1–§7, §11–§12); exact zone A strings need the local file, by law.\n+\n+<!-- recipe-improve ground-relief-pass proven: true — Director folds this overlay; the tool leaves docs/METHOD unchanged -->\n+\n+## Proposed param overlay\n+\n+```json\n+{\n+  \"schema\": \"recipe-proposal/1\",\n+  \"id\": \"ground-relief-pass\",\n+  \"recipe\": \"ground\",\n+  \"proven\": true,\n+  \"params\": {\n+    \"reliefMinM\": 0.3\n+  }\n+}\n+```\n",
+  "note": "Director may fold this patch into docs/METHOD. recipe-improve does not apply it.",
+  "comparison": "learn/recipe-improve/selftest-adopt.json"
+}

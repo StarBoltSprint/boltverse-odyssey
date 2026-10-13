@@ -1,0 +1,45 @@
+{
+  "tool": "object-gate",
+  "version": 1,
+  "apiVersion": "1.8",
+  "verdict": "PASS",
+  "runtime": [
+    {
+      "id": "runtime.shader",
+      "check": "shader compile",
+      "status": "PASS",
+      "detail": "fixture compile",
+      "hints": []
+    }
+  ],
+  "objects": [
+    {
+      "id": "ground",
+      "type": "terrain",
+      "verdict": "PASS",
+      "rows": [
+        {
+          "id": "geometry.relief",
+          "check": "facade relief",
+          "status": "PASS",
+          "detail": "relief meets the locked minimum",
+          "hints": []
+        },
+        {
+          "id": "texel.stretch",
+          "check": "UV stretch",
+          "status": "PASS",
+          "detail": "slope stretch inside the cap",
+          "hints": []
+        },
+        {
+          "id": "grounding",
+          "check": "grounding",
+          "status": "PASS",
+          "detail": "feet on the plate",
+          "hints": []
+        }
+      ]
+    }
+  ]
+}
