@@ -1,0 +1,35 @@
+object: terrace
+# Art Director KEEP of 2026-10-13 09:33 was judged on OFFLINE renders (object-gate-v3.5, 320x180 oblique npz + phone PNGs),
+# never on the served play build. WITHDRAWN after SmiR rejected build 3e8dce00 on his S20 FE at 10:35. Every item below is FAIL.
+withdrawn:
+  verdict: KEEP
+  by: "Art Director 2026-10-13T09:33:00+02:00"
+  basis: "offline renders only (object-gate-v3.5)"
+  withdrawn_at: "2026-10-13T10:35:00+02:00"
+  reason: "SmiR on phone, build 3e8dce00: facades with no depth (relief pasted), dark blue untextured walls, blurry snow, magenta sky patch"
+items:
+  volume:
+    pass: false
+    by: "Art Director 09:33 KEEP withdrawn 10:35; Tools Engineer measurement 2026-10-13"
+    note: "Tiers step in metres, but the front facade's relief is painted. terrace_block.py displaces the front by AMP 0.06 m x (MoGe high-pass / 0.6), so at most 6 cm against up to 0.6 m read depth. Offline close3m npz: facade residual p99 1 mm. The volume gate passed only on the tier steps (stepFrac 0.0765 at 0.42 m threshold)."
+    captures: {}
+  doorways:
+    pass: false
+    by: "Art Director 09:33 KEEP withdrawn 10:35"
+    note: "On 3e8dce00 the door stone at 3 m is blocky. The meshopt UVs are squashed into 0-0.25 (14-bit values read as 16-bit normalized), so the face samples a 256 px corner of the plate at 4x magnification."
+    captures: {}
+  cornices:
+    pass: false
+    by: "Art Director 09:33 KEEP withdrawn 10:35"
+    note: "Cornice and icicle relief is not real geometry. On the phone it shows the wrong plate region because of the same UV squash."
+    captures: {}
+  colours:
+    pass: false
+    by: "Art Director 09:33 KEEP withdrawn 10:35"
+    note: "Walls are dark blue with no texture on the phone. That is the plate's top-left quarter, mean RGB ~(40,55,70). The ground is plain untextured snow. A magenta patch shows in the sky."
+    captures: {}
+  base:
+    pass: false
+    by: "Art Director 09:33 KEEP withdrawn 10:35"
+    note: "Ground is flat (0.78,0.84,0.90) with no map. The flat-region gate fails it."
+    captures: {}
