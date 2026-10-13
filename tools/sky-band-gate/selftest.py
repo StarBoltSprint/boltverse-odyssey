@@ -70,39 +70,46 @@ def main() -> int:
     if live.is_dir():
         with tempfile.TemporaryDirectory() as td:
             rc = check_main(["--plates", str(live), "--out", td, "--key-b", str(key)])
-            rep = json.loads((Path(td) / "report.json").read_text())
-            # Live ring band failures (ignore pure V/edge if AD KEEP — report honestly)
-            band_fails = [
-                p["id"] for p in rep["plates"]
-                if p.get("band_fail") or any(
-                    r.startswith("dense_band") or r.startswith("windowed_haze") or r.startswith("narrow_diagonal")
-                    for r in p["reasons"]
-                )
-            ]
-            live_note = {
-                "status": rep["status"],
-                "edge": rep["edge_line_plates"],
-                "band_fails": band_fails,
-                "exit": rc,
-                "plates": [
-                    {
-                        "id": p["id"],
-                        "status": p["status"],
-                        "band_fail": p.get("band_fail"),
-                        "path": Path(p["path"]).name,
-                        "reasons": p["reasons"],
-                    }
-                    for p in rep["plates"]
-                ],
-            }
-            print("LIVE", json.dumps({
-                "status": rep["status"],
-                "edge": rep["edge_line_plates"],
-                "band_fails": band_fails,
-            }))
-            if band_fails:
-                print("LIVE_BAND_FAIL", band_fails)
-                bad.append("live:" + ",".join(band_fails))
+            # check.py returns 2 without a file on disk-floor, mid-run disk stop,
+            # or zero matching plates. Reading anyway raises FileNotFoundError.
+            rep_path = Path(td) / "report.json"
+            if not rep_path.is_file():
+                print("LIVE_NO_REPORT", "exit", rc)
+                bad.append(f"live:no-report:exit{rc}")
+            else:
+                rep = json.loads(rep_path.read_text())
+                # Live ring band failures (ignore pure V/edge if AD KEEP — report honestly)
+                band_fails = [
+                    p["id"] for p in rep["plates"]
+                    if p.get("band_fail") or any(
+                        r.startswith("dense_band") or r.startswith("windowed_haze") or r.startswith("narrow_diagonal")
+                        for r in p["reasons"]
+                    )
+                ]
+                live_note = {
+                    "status": rep["status"],
+                    "edge": rep["edge_line_plates"],
+                    "band_fails": band_fails,
+                    "exit": rc,
+                    "plates": [
+                        {
+                            "id": p["id"],
+                            "status": p["status"],
+                            "band_fail": p.get("band_fail"),
+                            "path": Path(p["path"]).name,
+                            "reasons": p["reasons"],
+                        }
+                        for p in rep["plates"]
+                    ],
+                }
+                print("LIVE", json.dumps({
+                    "status": rep["status"],
+                    "edge": rep["edge_line_plates"],
+                    "band_fails": band_fails,
+                }))
+                if band_fails:
+                    print("LIVE_BAND_FAIL", band_fails)
+                    bad.append("live:" + ",".join(band_fails))
 
     print("SELFTEST", "PASS" if not bad else "FAIL", bad)
     return 0 if not bad else 1
