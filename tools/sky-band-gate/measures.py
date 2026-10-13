@@ -539,6 +539,7 @@ def assess_plate(
         "mean_V": round(mv, 4),
         "mean_V_delta_vs_ring": None if v_delta is None else round(v_delta, 4),
         "best_angle_deg": band["best_angle_deg"],
+        "best_offset": round(band["best_offset"], 4),
         "density_ratio": round(band["density_ratio"], 4),
         "density_ratio_right": round(band["density_ratio_right"], 4),
         "density_ratio_eff": round(band["density_ratio_eff"], 4),

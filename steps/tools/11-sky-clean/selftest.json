@@ -1,0 +1,53 @@
+{
+  "status": "PASS",
+  "bad": [],
+  "rows": [
+    {
+      "case": "clean-S05",
+      "ok": true,
+      "status": "PASS",
+      "passes": 1,
+      "refused_blotch": false
+    },
+    {
+      "case": "clean-S09",
+      "ok": true,
+      "status": "PASS",
+      "passes": 1,
+      "refused_blotch": false
+    },
+    {
+      "case": "clean-S11",
+      "ok": true,
+      "status": "PASS",
+      "passes": 2,
+      "refused_blotch": false
+    },
+    {
+      "case": "refuse-blotchy-S09",
+      "ok": true,
+      "parent_blotch": 2.2421,
+      "fixture_blotch": 5.0077
+    },
+    {
+      "case": "keep-zd-sky12-S05-final5",
+      "ok": true,
+      "maxdiff": 0
+    },
+    {
+      "case": "keep-zd-sky12-S09-final5",
+      "ok": true,
+      "maxdiff": 0
+    },
+    {
+      "case": "keep-zd-sky12-S11-final5",
+      "ok": true,
+      "maxdiff": 0
+    },
+    {
+      "case": "keep-zd-sky12-S08-final5",
+      "ok": true,
+      "maxdiff": 0
+    }
+  ]
+}
