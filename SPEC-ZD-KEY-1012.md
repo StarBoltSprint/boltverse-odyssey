@@ -1,0 +1,4 @@
+# Step: Zone D key image candidates
+Call image_gen exactly 3 times, aspect_ratio "1:1", with this prompt each time:
+"Cinematic wide shot from a narrow ice ridge looking into a vast frozen glacier basin at dusk, ancient stepped temple terraces carved from basalt and blue glacier ice, deep recessed doorways and heavy overhanging cornices, a tall jagged ice spire at the centre with faint amber runes, frozen waterfalls hanging from cliffs, half-buried colossal frost-covered machines, pale violet and teal aurora in a deep twilight sky, low cold sun from the left casting long blue shadows, matte frosted ice, photoreal, sharp detail, no people, no text"
+Copy outputs to /workspace/zd-bible-1012/key-zd1-a.jpg, key-zd1-b.jpg, key-zd1-c.jpg. Print dimensions (python PIL). No other edits, no commits needed, NEVER push or merge. No other image/video tool calls.
