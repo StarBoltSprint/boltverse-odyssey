@@ -1,0 +1,107 @@
+{
+ "heightM": 7.0,
+ "shaftBaseFlatM": 2.0,
+ "shaftTopFlatM": 1.3,
+ "source": "03 silhouette mid 1.815 m face-equivalent, top 1.368 m, base clamped to 2.0; MoGe 03 depth span 1.092 m confirms a corner near that width and was not used as a balloon",
+ "tris": 17388,
+ "topo": {
+  "nonManifoldEdges": 0,
+  "boundaryEdges": 0,
+  "degenerateTris": 0,
+  "weldVerts": 8738
+ },
+ "sliver": {
+  "tris": 17388,
+  "degenerate": 0,
+  "sliverFrac": 0.0014,
+  "pass": true,
+  "minAngleP5": 20.28,
+  "aspectP99": 3.67
+ },
+ "uv": {
+  "fixed": 368,
+  "worstBefore": 2.94,
+  "worstAfter": 1.226,
+  "over": 0
+ },
+ "icicles": 21,
+ "nseg": {
+  "0": 12,
+  "1": 12,
+  "2": 6,
+  "3": 6,
+  "4": 6,
+  "5": 6,
+  "6": 6,
+  "7": 12
+ },
+ "steps": [
+  {
+   "y0": -0.15,
+   "y1": 0.05,
+   "apothem_m": 2.08,
+   "height_m": 0.2
+  },
+  {
+   "y0": 0.05,
+   "y1": 0.28,
+   "apothem_m": 1.72,
+   "height_m": 0.23
+  },
+  {
+   "y0": 0.28,
+   "y1": 0.6,
+   "apothem_m": 1.36,
+   "height_m": 0.32
+  }
+ ],
+ "textures": {
+  "shift01to02": {
+   "dy": -292,
+   "dx": -2,
+   "score": 49144.0
+  },
+  "frostRGB": [
+   203.0,
+   223.0,
+   243.0
+  ],
+  "chromePxGraded": 3150,
+  "frontAmber": 5965,
+  "leftAmber": 2895,
+  "rightAmber": 262,
+  "frontFit": {
+   "scale": 1.0,
+   "x0": 0,
+   "y0": 0,
+   "nw": 1024,
+   "nh": 1024,
+   "crop_y0": 146,
+   "crop_x0": 1
+  },
+  "patch06": {
+   "scale": 1.0,
+   "x0": 0,
+   "y0": 0,
+   "nw": 640,
+   "nh": 640,
+   "crop_y0": 192,
+   "crop_x0": 192
+  },
+  "note": "No plate was upscaled. fit_into scale is never above 1.",
+  "uv": {
+   "fixed": 368,
+   "worstBefore": 2.94,
+   "worstAfter": 1.226,
+   "over": 0
+  },
+  "unmirror": {
+   "flipped": 106,
+   "stillNegative": 0,
+   "worstAniso": 3.067,
+   "over1_3": 20
+  }
+ },
+ "buriedM": 0.15,
+ "contactGapM": 0.0
+}

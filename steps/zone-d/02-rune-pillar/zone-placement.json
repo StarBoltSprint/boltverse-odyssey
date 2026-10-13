@@ -1,0 +1,201 @@
+{
+ "schema": "zone-placement/1",
+ "ground_y": 0,
+ "beat": 5,
+ "note": "Plaza entrance at the origin. Pillar on the path axis, 10 m past the entrance. Front face (local +Z) yaws 180 so it faces the incoming player.",
+ "path": {
+  "points": [
+   [
+    0,
+    0,
+    0
+   ],
+   [
+    0,
+    0,
+    7.0
+   ]
+  ],
+  "width_m": 4.0,
+  "min_clearance_m": 2.5
+ },
+ "library": {
+  "rune-pillar": {
+   "ground_anchor": [
+    0,
+    0,
+    0
+   ],
+   "hanging": false,
+   "boxes": [
+    {
+     "id": "plinth-player",
+     "role": "solid",
+     "visual": true,
+     "min": [
+      -2.2314,
+      -0.15,
+      -2.2314
+     ],
+     "max": [
+      2.2314,
+      0.6,
+      2.2314
+     ]
+    },
+    {
+     "id": "shaft-player",
+     "role": "solid",
+     "visual": true,
+     "min": [
+      -1.0624,
+      0.6,
+      -1.0624
+     ],
+     "max": [
+      1.0624,
+      6.58,
+      1.0624
+     ]
+    }
+   ]
+  }
+ },
+ "parts": [
+  {
+   "id": "beat5-rune-pillar",
+   "library": "rune-pillar",
+   "position": [
+    0,
+    0,
+    10
+   ],
+   "yaw_deg": 180,
+   "scale": 1,
+   "ground_snap": true
+  }
+ ],
+ "plinth": {
+  "outline_xz": [
+   [
+    -0.8539,
+    2.0615
+   ],
+   [
+    0.8539,
+    2.0615
+   ],
+   [
+    2.0615,
+    0.8539
+   ],
+   [
+    2.0615,
+    -0.8539
+   ],
+   [
+    0.8539,
+    -2.0615
+   ],
+   [
+    -0.8539,
+    -2.0615
+   ],
+   [
+    -2.0615,
+    -0.8539
+   ],
+   [
+    -2.0615,
+    0.8539
+   ]
+  ],
+  "steps": [
+   {
+    "y0": -0.15,
+    "y1": 0.05,
+    "apothem_m": 2.08,
+    "height_m": 0.2
+   },
+   {
+    "y0": 0.05,
+    "y1": 0.28,
+    "apothem_m": 1.72,
+    "height_m": 0.23
+   },
+   {
+    "y0": 0.28,
+    "y1": 0.6,
+    "apothem_m": 1.36,
+    "height_m": 0.32
+   }
+  ],
+  "buried_m": 0.15
+ },
+ "collision_layers": {
+  "plinth": {
+   "layers": [
+    "player"
+   ],
+   "inset_m": 0.02,
+   "box": {
+    "id": "plinth-player",
+    "role": "solid",
+    "visual": true,
+    "space": "local",
+    "min": [
+     -2.2314,
+     -0.15,
+     -2.2314
+    ],
+    "max": [
+     2.2314,
+     0.6,
+     2.2314
+    ]
+   }
+  },
+  "shaft": {
+   "layers": [
+    "player",
+    "camera"
+   ],
+   "inset_m": 0.02,
+   "camera_margin_m": 1.0,
+   "box": {
+    "id": "shaft-player",
+    "role": "solid",
+    "visual": true,
+    "space": "local",
+    "min": [
+     -1.0624,
+     0.6,
+     -1.0624
+    ],
+    "max": [
+     1.0624,
+     6.58,
+     1.0624
+    ]
+   },
+   "camera_box": {
+    "id": "shaft-camera",
+    "role": "solid",
+    "visual": true,
+    "space": "local",
+    "min": [
+     -2.0624,
+     0.6,
+     -2.0624
+    ],
+    "max": [
+     2.0624,
+     6.58,
+     2.0624
+    ]
+   }
+  },
+  "runes": "no colliders",
+  "icicles": "no colliders, all roots above 5 m"
+ }
+}

@@ -1,0 +1,35 @@
+{
+ "shift01to02": {
+  "dy": -292,
+  "dx": -2,
+  "score": 49144.0
+ },
+ "frostRGB": [
+  203.0,
+  223.0,
+  243.0
+ ],
+ "chromePxGraded": 3150,
+ "frontAmber": 5965,
+ "leftAmber": 2895,
+ "rightAmber": 262,
+ "frontFit": {
+  "scale": 1.0,
+  "x0": 0,
+  "y0": 0,
+  "nw": 1024,
+  "nh": 1024,
+  "crop_y0": 146,
+  "crop_x0": 1
+ },
+ "patch06": {
+  "scale": 1.0,
+  "x0": 0,
+  "y0": 0,
+  "nw": 640,
+  "nh": 640,
+  "crop_y0": 192,
+  "crop_x0": 192
+ },
+ "note": "No plate was upscaled. fit_into scale is never above 1."
+}

@@ -1,0 +1,38 @@
+[
+ {
+  "plate": "front",
+  "tex": "/workspace/grokcli/wt/zd-rune-pillar-1013/steps/zone-d/02-rune-pillar/textures/front.jpg",
+  "tier": 0,
+  "side": "front",
+  "row0": 6,
+  "rows": 36,
+  "c_lo": 0,
+  "c_hi": 1023,
+  "a": -2.048,
+  "b": 0.004
+ },
+ {
+  "plate": "right",
+  "tex": "/workspace/grokcli/wt/zd-rune-pillar-1013/steps/zone-d/02-rune-pillar/textures/right45.jpg",
+  "tier": 0,
+  "side": "right",
+  "row0": 6,
+  "rows": 36,
+  "c_lo": 0,
+  "c_hi": 1023,
+  "a": -2.048,
+  "b": 0.004
+ },
+ {
+  "plate": "left",
+  "tex": "/workspace/grokcli/wt/zd-rune-pillar-1013/steps/zone-d/02-rune-pillar/textures/left45.jpg",
+  "tier": 0,
+  "side": "left",
+  "row0": 6,
+  "rows": 36,
+  "c_lo": 0,
+  "c_hi": 1023,
+  "a": -2.048,
+  "b": 0.004
+ }
+]

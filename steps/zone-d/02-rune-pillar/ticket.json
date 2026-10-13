@@ -1,0 +1,68 @@
+{
+  "schema": "ticket.v1",
+  "object_id": "zd-rune-pillar",
+  "plates": [
+    {
+      "id": "01-front-lower",
+      "path": "/workspace/zd-bible-1012/pillar-plates/01-front-lower.jpg",
+      "ad_precheck": "KEEP",
+      "notes": "hull+texture; AD source set"
+    },
+    {
+      "id": "02-front-upper",
+      "path": "/workspace/zd-bible-1012/pillar-plates/02-front-upper.jpg",
+      "ad_precheck": "KEEP",
+      "notes": "cap icicles/texture; AD source set"
+    },
+    {
+      "id": "03-45-left",
+      "path": "/workspace/zd-bible-1012/pillar-plates/03-45-left.jpg",
+      "ad_precheck": "KEEP",
+      "notes": "SHAPE REFERENCE incl. cap outline"
+    },
+    {
+      "id": "04-45-right",
+      "path": "/workspace/zd-bible-1012/pillar-plates/04-45-right.jpg",
+      "ad_precheck": "KEEP",
+      "notes": "right face colour; grade to 03 matte frost; 07-closeup-right45-runes AD FAIL \u2014 excluded from ticket, right face uses 04 only"
+    },
+    {
+      "id": "05-back",
+      "path": "/workspace/zd-bible-1012/pillar-plates/05-back.jpg",
+      "ad_precheck": "KEEP",
+      "notes": "back texture ONLY; never shapes geometry"
+    },
+    {
+      "id": "06-closeup-left45-runes",
+      "path": "/workspace/zd-bible-1012/pillar-plates/06-closeup-left45-runes.jpg",
+      "ad_precheck": "KEEP",
+      "notes": "left 45\u00b0 rune detail"
+    }
+  ],
+  "placement": {
+    "path": [
+      "zone-d/spine/beat-5-spire-plaza",
+      "pillar-axis-10m-past-entrance"
+    ],
+    "min_clearances": {
+      "headroom_m": 5.0,
+      "width_m": 6.0
+    },
+    "ground_m": 0,
+    "colliders": [
+      "pillar-shaft-convex-inset-2cm-player-camera",
+      "plinth-player-only",
+      "camera-margin-1m"
+    ],
+    "budget": {
+      "lod0_tri_cap": 25000,
+      "texture_mb_share": 12
+    }
+  },
+  "build": "pending",
+  "gates": "pending",
+  "play": "pending",
+  "shots": "pending",
+  "phone": "pending",
+  "go": "pending"
+}

@@ -1,0 +1,431 @@
+{
+ "plates": [
+  {
+   "id": "front",
+   "image": "/workspace/grokcli/wt/zd-rune-pillar-1013/steps/zone-d/02-rune-pillar/textures/front.jpg",
+   "mpp": 0.004,
+   "uAxis": "x",
+   "u0": 512,
+   "uSign": 1,
+   "v0": 1608.75,
+   "vSign": -1
+  },
+  {
+   "id": "right",
+   "image": "/workspace/grokcli/wt/zd-rune-pillar-1013/steps/zone-d/02-rune-pillar/textures/right45.jpg",
+   "mpp": 0.004,
+   "uAxis": "z",
+   "u0": 512,
+   "uSign": 1,
+   "v0": 1608.75,
+   "vSign": -1
+  },
+  {
+   "id": "left",
+   "image": "/workspace/grokcli/wt/zd-rune-pillar-1013/steps/zone-d/02-rune-pillar/textures/left45.jpg",
+   "mpp": 0.004,
+   "uAxis": "z",
+   "u0": 512,
+   "uSign": 1,
+   "v0": 1608.75,
+   "vSign": -1
+  }
+ ],
+ "features": [
+  {
+   "id": "front-0",
+   "faces": [
+    "front-0"
+   ],
+   "plate": "front",
+   "world": [
+    -0.34,
+    6.4350000000000005,
+    0.8480000000000001
+   ],
+   "lengthM": 0.14,
+   "radiusM": 0.055,
+   "tier": 0,
+   "side": "front",
+   "kind": "icicle"
+  },
+  {
+   "id": "front-1",
+   "faces": [
+    "front-1"
+   ],
+   "plate": "front",
+   "world": [
+    -0.256,
+    6.4350000000000005,
+    0.8480000000000001
+   ],
+   "lengthM": 0.2,
+   "radiusM": 0.065,
+   "tier": 0,
+   "side": "front",
+   "kind": "icicle"
+  },
+  {
+   "id": "front-2",
+   "faces": [
+    "front-2"
+   ],
+   "plate": "front",
+   "world": [
+    -0.168,
+    6.4350000000000005,
+    0.8480000000000001
+   ],
+   "lengthM": 0.26,
+   "radiusM": 0.08,
+   "tier": 0,
+   "side": "front",
+   "kind": "icicle"
+  },
+  {
+   "id": "front-3",
+   "faces": [
+    "front-3"
+   ],
+   "plate": "front",
+   "world": [
+    -0.084,
+    6.4350000000000005,
+    0.8480000000000001
+   ],
+   "lengthM": 0.18,
+   "radiusM": 0.06,
+   "tier": 0,
+   "side": "front",
+   "kind": "icicle"
+  },
+  {
+   "id": "front-4",
+   "faces": [
+    "front-4"
+   ],
+   "plate": "front",
+   "world": [
+    0.0,
+    6.4350000000000005,
+    0.8480000000000001
+   ],
+   "lengthM": 0.24,
+   "radiusM": 0.075,
+   "tier": 0,
+   "side": "front",
+   "kind": "icicle"
+  },
+  {
+   "id": "front-5",
+   "faces": [
+    "front-5"
+   ],
+   "plate": "front",
+   "world": [
+    0.084,
+    6.4350000000000005,
+    0.8480000000000001
+   ],
+   "lengthM": 0.16,
+   "radiusM": 0.055,
+   "tier": 0,
+   "side": "front",
+   "kind": "icicle"
+  },
+  {
+   "id": "front-6",
+   "faces": [
+    "front-6"
+   ],
+   "plate": "front",
+   "world": [
+    0.168,
+    6.4350000000000005,
+    0.8480000000000001
+   ],
+   "lengthM": 0.22,
+   "radiusM": 0.07,
+   "tier": 0,
+   "side": "front",
+   "kind": "icicle"
+  },
+  {
+   "id": "front-7",
+   "faces": [
+    "front-7"
+   ],
+   "plate": "front",
+   "world": [
+    0.256,
+    6.4350000000000005,
+    0.8480000000000001
+   ],
+   "lengthM": 0.28,
+   "radiusM": 0.085,
+   "tier": 0,
+   "side": "front",
+   "kind": "icicle"
+  },
+  {
+   "id": "front-8",
+   "faces": [
+    "front-8"
+   ],
+   "plate": "front",
+   "world": [
+    0.34,
+    6.4350000000000005,
+    0.8480000000000001
+   ],
+   "lengthM": 0.15,
+   "radiusM": 0.055,
+   "tier": 0,
+   "side": "front",
+   "kind": "icicle"
+  },
+  {
+   "id": "right-0",
+   "faces": [
+    "right-0"
+   ],
+   "plate": "right",
+   "world": [
+    0.8480000000000001,
+    6.4350000000000005,
+    -0.28
+   ],
+   "lengthM": 0.12,
+   "radiusM": 0.055,
+   "tier": 0,
+   "side": "right",
+   "kind": "icicle"
+  },
+  {
+   "id": "right-1",
+   "faces": [
+    "right-1"
+   ],
+   "plate": "right",
+   "world": [
+    0.8480000000000001,
+    6.4350000000000005,
+    -0.168
+   ],
+   "lengthM": 0.16,
+   "radiusM": 0.067,
+   "tier": 0,
+   "side": "right",
+   "kind": "icicle"
+  },
+  {
+   "id": "right-2",
+   "faces": [
+    "right-2"
+   ],
+   "plate": "right",
+   "world": [
+    0.8480000000000001,
+    6.4350000000000005,
+    -0.056
+   ],
+   "lengthM": 0.2,
+   "radiusM": 0.079,
+   "tier": 0,
+   "side": "right",
+   "kind": "icicle"
+  },
+  {
+   "id": "right-3",
+   "faces": [
+    "right-3"
+   ],
+   "plate": "right",
+   "world": [
+    0.8480000000000001,
+    6.4350000000000005,
+    0.056
+   ],
+   "lengthM": 0.24,
+   "radiusM": 0.055,
+   "tier": 0,
+   "side": "right",
+   "kind": "icicle"
+  },
+  {
+   "id": "right-4",
+   "faces": [
+    "right-4"
+   ],
+   "plate": "right",
+   "world": [
+    0.8480000000000001,
+    6.4350000000000005,
+    0.168
+   ],
+   "lengthM": 0.12,
+   "radiusM": 0.067,
+   "tier": 0,
+   "side": "right",
+   "kind": "icicle"
+  },
+  {
+   "id": "right-5",
+   "faces": [
+    "right-5"
+   ],
+   "plate": "right",
+   "world": [
+    0.8480000000000001,
+    6.4350000000000005,
+    0.28
+   ],
+   "lengthM": 0.16,
+   "radiusM": 0.079,
+   "tier": 0,
+   "side": "right",
+   "kind": "icicle"
+  },
+  {
+   "id": "left-0",
+   "faces": [
+    "left-0"
+   ],
+   "plate": "left",
+   "world": [
+    -0.8480000000000001,
+    6.4350000000000005,
+    -0.28
+   ],
+   "lengthM": 0.12,
+   "radiusM": 0.055,
+   "tier": 0,
+   "side": "left",
+   "kind": "icicle"
+  },
+  {
+   "id": "left-1",
+   "faces": [
+    "left-1"
+   ],
+   "plate": "left",
+   "world": [
+    -0.8480000000000001,
+    6.4350000000000005,
+    -0.168
+   ],
+   "lengthM": 0.16,
+   "radiusM": 0.067,
+   "tier": 0,
+   "side": "left",
+   "kind": "icicle"
+  },
+  {
+   "id": "left-2",
+   "faces": [
+    "left-2"
+   ],
+   "plate": "left",
+   "world": [
+    -0.8480000000000001,
+    6.4350000000000005,
+    -0.056
+   ],
+   "lengthM": 0.2,
+   "radiusM": 0.079,
+   "tier": 0,
+   "side": "left",
+   "kind": "icicle"
+  },
+  {
+   "id": "left-3",
+   "faces": [
+    "left-3"
+   ],
+   "plate": "left",
+   "world": [
+    -0.8480000000000001,
+    6.4350000000000005,
+    0.056
+   ],
+   "lengthM": 0.24,
+   "radiusM": 0.055,
+   "tier": 0,
+   "side": "left",
+   "kind": "icicle"
+  },
+  {
+   "id": "left-4",
+   "faces": [
+    "left-4"
+   ],
+   "plate": "left",
+   "world": [
+    -0.8480000000000001,
+    6.4350000000000005,
+    0.168
+   ],
+   "lengthM": 0.12,
+   "radiusM": 0.067,
+   "tier": 0,
+   "side": "left",
+   "kind": "icicle"
+  },
+  {
+   "id": "left-5",
+   "faces": [
+    "left-5"
+   ],
+   "plate": "left",
+   "world": [
+    -0.8480000000000001,
+    6.4350000000000005,
+    0.28
+   ],
+   "lengthM": 0.16,
+   "radiusM": 0.079,
+   "tier": 0,
+   "side": "left",
+   "kind": "icicle"
+  }
+ ],
+ "bands": [
+  {
+   "plate": "front",
+   "tex": "/workspace/grokcli/wt/zd-rune-pillar-1013/steps/zone-d/02-rune-pillar/textures/front.jpg",
+   "tier": 0,
+   "side": "front",
+   "row0": 6,
+   "rows": 36,
+   "c_lo": 0,
+   "c_hi": 1023,
+   "a": -2.048,
+   "b": 0.004
+  },
+  {
+   "plate": "right",
+   "tex": "/workspace/grokcli/wt/zd-rune-pillar-1013/steps/zone-d/02-rune-pillar/textures/right45.jpg",
+   "tier": 0,
+   "side": "right",
+   "row0": 6,
+   "rows": 36,
+   "c_lo": 0,
+   "c_hi": 1023,
+   "a": -2.048,
+   "b": 0.004
+  },
+  {
+   "plate": "left",
+   "tex": "/workspace/grokcli/wt/zd-rune-pillar-1013/steps/zone-d/02-rune-pillar/textures/left45.jpg",
+   "tier": 0,
+   "side": "left",
+   "row0": 6,
+   "rows": 36,
+   "c_lo": 0,
+   "c_hi": 1023,
+   "a": -2.048,
+   "b": 0.004
+  }
+ ]
+}
