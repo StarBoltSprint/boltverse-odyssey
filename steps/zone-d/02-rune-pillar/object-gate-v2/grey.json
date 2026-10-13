@@ -1,0 +1,56 @@
+{
+ "tool": "no-grey-regions",
+ "views": [
+  {
+   "image": "steps/zone-d/02-rune-pillar/object-gate-v2/front-19.7m.jpg",
+   "subjectPx": 39785,
+   "flatGreyFrac": 0.0011,
+   "worstRegionFrac": 0.0,
+   "regionMin": 0.01,
+   "failingRegions": [],
+   "nFailing": 0,
+   "pass": true
+  },
+  {
+   "image": "steps/zone-d/02-rune-pillar/object-gate-v2/front-8m.jpg",
+   "subjectPx": 932462,
+   "flatGreyFrac": 0.0058,
+   "worstRegionFrac": 0.0,
+   "regionMin": 0.01,
+   "failingRegions": [],
+   "nFailing": 0,
+   "pass": true
+  },
+  {
+   "image": "steps/zone-d/02-rune-pillar/object-gate-v2/up-3m.jpg",
+   "subjectPx": 410360,
+   "flatGreyFrac": 0.0216,
+   "worstRegionFrac": 0.0,
+   "regionMin": 0.01,
+   "failingRegions": [],
+   "nFailing": 0,
+   "pass": true
+  },
+  {
+   "image": "steps/zone-d/02-rune-pillar/object-gate-v2/oblique45.jpg",
+   "subjectPx": 243809,
+   "flatGreyFrac": 0.0005,
+   "worstRegionFrac": 0.0,
+   "regionMin": 0.01,
+   "failingRegions": [],
+   "nFailing": 0,
+   "pass": true
+  },
+  {
+   "image": "steps/zone-d/02-rune-pillar/object-gate-v2/grazing.jpg",
+   "subjectPx": 411858,
+   "flatGreyFrac": 0.0022,
+   "worstRegionFrac": 0.0,
+   "regionMin": 0.01,
+   "failingRegions": [],
+   "nFailing": 0,
+   "pass": true
+  }
+ ],
+ "pass": true
+}

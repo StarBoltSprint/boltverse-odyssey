@@ -1,0 +1,102 @@
+{
+ "shots": [
+  {
+   "name": "front-19.7m",
+   "path": "/workspace/grokcli/wt/zd-rune-pillar-1013/steps/zone-d/02-rune-pillar/object-gate-v2/front-19.7m.jpg",
+   "w": 720,
+   "h": 1280,
+   "eye": [
+    0.0,
+    3.2,
+    20.5
+   ],
+   "target": [
+    0,
+    3.4,
+    0
+   ],
+   "fov": 58,
+   "cover": 0.043
+  },
+  {
+   "name": "front-8m",
+   "path": "/workspace/grokcli/wt/zd-rune-pillar-1013/steps/zone-d/02-rune-pillar/object-gate-v2/front-8m.jpg",
+   "w": 1080,
+   "h": 2400,
+   "eye": [
+    0.0,
+    3.0,
+    8.8
+   ],
+   "target": [
+    0,
+    3.3,
+    0
+   ],
+   "fov": 58,
+   "cover": 0.3595
+  },
+  {
+   "name": "phone-8m",
+   "path": "/workspace/grokcli/wt/zd-rune-pillar-1013/steps/zone-d/02-rune-pillar/object-gate-v2/phone-8m.jpg",
+   "w": 1080,
+   "h": 2400,
+   "note": "mode B, same frame as front-8m",
+   "fov": 58
+  },
+  {
+   "name": "up-3m",
+   "path": "/workspace/grokcli/wt/zd-rune-pillar-1013/steps/zone-d/02-rune-pillar/object-gate-v2/up-3m.jpg",
+   "w": 1080,
+   "h": 1600,
+   "eye": [
+    0.0,
+    1.7,
+    3.8
+   ],
+   "target": [
+    0.0,
+    6.7,
+    0.0
+   ],
+   "fov": 58,
+   "cover": 0.2371
+  },
+  {
+   "name": "oblique45",
+   "path": "/workspace/grokcli/wt/zd-rune-pillar-1013/steps/zone-d/02-rune-pillar/object-gate-v2/oblique45.jpg",
+   "w": 960,
+   "h": 1280,
+   "eye": [
+    6.505382386916236,
+    4.2,
+    6.505382386916237
+   ],
+   "target": [
+    0.0,
+    3.0,
+    0.0
+   ],
+   "fov": 58,
+   "cover": 0.1982
+  },
+  {
+   "name": "grazing",
+   "path": "/workspace/grokcli/wt/zd-rune-pillar-1013/steps/zone-d/02-rune-pillar/object-gate-v2/grazing.jpg",
+   "w": 960,
+   "h": 1280,
+   "eye": [
+    5.37981180403593,
+    2.4,
+    1.143514299497677
+   ],
+   "target": [
+    0.0,
+    3.2,
+    0.3
+   ],
+   "fov": 58,
+   "cover": 0.3351
+  }
+ ]
+}

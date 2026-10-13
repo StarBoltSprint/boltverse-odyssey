@@ -1296,3 +1296,25 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Measured with `python3 tools/object-gate/lib/analyze.py visible_px`. The 8 m frame returned 190.8 px/m against need 154.6. |
 | Guard | `node tools/object-gate/visible-shot.mjs` exits `ERR_MODULE_NOT_FOUND` for `js-yaml`. No package was vendored. |
 | Sources | `tools/object-gate/gate.mjs`. Feedback `feedback/2026-10-13-object-gate-js-yaml.md`. |
+
+### 2026-10-13 — rune mask box grows the groove past the stroke
+
+| | |
+| --- | --- |
+| Take | zd/02-rune-pillar v2 |
+| Defect | A groove cut from the amber mask's pixel box misses the 0.70 alignment bar on every face. A 2D search of scale, rotation, and shift also stays under 0.03 IoU. |
+| Root cause | Floor and ceil of the mask box, plus one pixel, is about a 2 px dilation. Identity-versus-identity alignment is 1.0. A 1 px dilation still passes. A 2 px dilation falls to about 0.63 / 0.50 / 0.30 on front / right / left. The search best hits were front 0.022, right45 0.0065, left45 0.0263, so warping the mask cannot converge. |
+| Fix | Stop the search. Cut one subcell per mask-pixel centre (K = 4). Fill a checkerboard corner with one side cell so the pocket stays sealed. Leave the mask unmoved. |
+| Guard | `checks.relief_align.overlap` on the UV pair `align-<face>-groove.jpg` vs `align-<face>-rune.jpg`. v2 mesh floors: front 0.9812, right45 0.9849, left45 0.7971 (`object-gate-v2/relief-align.json`). |
+| Sources | `steps/zone-d/02-rune-pillar/work/build_pillar.py`. Spec addition 1 in `zd-rune-pillar-03-v2.md`. |
+
+### 2026-10-13 — grazing relief step fraction stays under 0.03
+
+| | |
+| --- | --- |
+| Take | zd/02-rune-pillar v2 |
+| Defect | Relief-scaled volume passes the 45° view and still fails grazing. |
+| Root cause | Same bar as the 2026-10-13 volume-jump entry: `stepFrac` must be at least 0.03. `relief_depth_m=0.045` lowers the step to 0.0225 m, so the 45° view reaches 0.0494. At yaw 78° the rune column is a strip beside an ungrooved side face, and the fraction of interior pixels that cross 0.0225 m is 0.0162. Deepening within the 6 cm cap does not double that fraction. This is the second fail of the grazing step fraction. |
+| Fix | Recorded the FAIL. Did not loosen the bar. Did not recook. |
+| Guard | `volume.oblique_view(grazing-pass.npz, relief_depth_m=0.045)` stepFrac 0.0162, pass false. Oblique relief on the same call is 0.0494, pass true (`object-gate-v2/volume.json`). |
+| Sources | `tools/gate/volume.py` from commit `7a1d1a59`. Cites the 2026-10-13 volume-jump entry above. |

@@ -1,0 +1,42 @@
+{
+  "schema": "objsheet-shot-verdict/1",
+  "build": "c9f1803852ffe316a3c8c1df672f5b770edc0075",
+  "verdict": "PENDING",
+  "cells": [
+    {
+      "view": "key",
+      "plate_path": "/workspace/zd-bible-1012/key-zd1-b.jpg",
+      "render_path": "steps/zone-d/02-rune-pillar/object-gate-v2/front-19.7m.jpg",
+      "status": "PENDING",
+      "defects": []
+    },
+    {
+      "view": "45°",
+      "plate_path": "/workspace/zd-bible-1012/pillar-plates/04-45-right.jpg",
+      "render_path": "steps/zone-d/02-rune-pillar/object-gate-v2/oblique45.jpg",
+      "status": "PENDING",
+      "defects": []
+    },
+    {
+      "view": "grazing",
+      "plate_path": null,
+      "render_path": "steps/zone-d/02-rune-pillar/object-gate-v2/grazing.jpg",
+      "status": "PENDING",
+      "defects": []
+    },
+    {
+      "view": "8 m",
+      "plate_path": "/workspace/zd-bible-1012/pillar-plates/01-front-lower.jpg",
+      "render_path": "steps/zone-d/02-rune-pillar/object-gate-v2/front-8m.jpg",
+      "status": "PENDING",
+      "defects": []
+    },
+    {
+      "view": "3 m up",
+      "plate_path": "/workspace/zd-bible-1012/pillar-plates/02-front-upper.jpg",
+      "render_path": "steps/zone-d/02-rune-pillar/object-gate-v2/up-3m.jpg",
+      "status": "PENDING",
+      "defects": []
+    }
+  ]
+}

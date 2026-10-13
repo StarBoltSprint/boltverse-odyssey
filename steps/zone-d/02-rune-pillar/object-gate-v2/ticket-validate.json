@@ -1,0 +1,21 @@
+{
+  "ok": false,
+  "exit": 1,
+  "schema": "ticket.v1",
+  "head": "c9f1803852ffe316a3c8c1df672f5b770edc0075",
+  "fields": {
+    "plates": "pass",
+    "placement": "pass",
+    "build": "pass",
+    "gates": "fail",
+    "play": "pending",
+    "shots": "pending",
+    "phone": "pending",
+    "go": "pending"
+  },
+  "reset": [],
+  "reasons": [
+    "gates: status fail"
+  ],
+  "ticket": "/workspace/grokcli/wt/zd-rune-pillar-1013/steps/zone-d/02-rune-pillar/ticket.json"
+}

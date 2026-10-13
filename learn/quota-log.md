@@ -32,3 +32,4 @@ Append-only. One row per step. `python3 tools/quota/quota.py` adds the row. Do n
 | 2026-10-12 | tools-03-library-intake | n/a | 0 | 0 | 0 | 0 | n/a | n/a | 838.9 | events.jsonl |
 | 2026-10-12 | tools/07-painted-duplicate | n/a | 0 | 102 | 0 | 0 | 204676 | 60486 | n/a | 20261012-171249-tools-07-painted-duplicate.ndjson |
 | 2026-10-13 | zd-02-rune-pillar | 9b5067d7 | 0 | 0 | 0 | 0 | n/a | n/a | 2304.4 | events.jsonl |
+| 2026-10-13 | zd-rune-pillar-v2 | c9f1803852ffe316a3c8c1df672f5b770edc0075 | 0 | 0 | 0 | 0 | n/a | n/a | 5728.0 | events.jsonl |

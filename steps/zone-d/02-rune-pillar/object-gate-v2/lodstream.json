@@ -1,0 +1,366 @@
+{
+  "schema": "lodstream-report/1",
+  "tool": "lodstream",
+  "id": "rune-pillar",
+  "pass": true,
+  "verdict": "PASS",
+  "for": [
+    "playcheck",
+    "library"
+  ],
+  "profile": {
+    "id": "rune-pillar",
+    "lod0Max": 25000,
+    "switchesM": [
+      15,
+      40
+    ],
+    "nativeMinPx": 1024,
+    "mask": [
+      540,
+      960
+    ],
+    "fovDeg": 58,
+    "views": [
+      0,
+      90,
+      180,
+      270
+    ]
+  },
+  "triangles": {
+    "lod0": 24902,
+    "lod1": 6592,
+    "lod2": 2352
+  },
+  "outline": [
+    {
+      "name": "outline-15m",
+      "pair": "lod0-lod1",
+      "distanceM": 15,
+      "diffPx": 0,
+      "hitPx": 188474,
+      "limit": 0,
+      "pass": true,
+      "views": [
+        {
+          "yaw": 0,
+          "distanceM": 15,
+          "diffPx": 0,
+          "hitPx": 47110
+        },
+        {
+          "yaw": 90,
+          "distanceM": 15,
+          "diffPx": 0,
+          "hitPx": 47116
+        },
+        {
+          "yaw": 180,
+          "distanceM": 15,
+          "diffPx": 0,
+          "hitPx": 47120
+        },
+        {
+          "yaw": 270,
+          "distanceM": 15,
+          "diffPx": 0,
+          "hitPx": 47128
+        }
+      ]
+    },
+    {
+      "name": "outline-40m",
+      "pair": "lod1-lod2",
+      "distanceM": 40,
+      "diffPx": 0,
+      "hitPx": 23120,
+      "limit": 0,
+      "pass": true,
+      "views": [
+        {
+          "yaw": 0,
+          "distanceM": 40,
+          "diffPx": 0,
+          "hitPx": 5780
+        },
+        {
+          "yaw": 90,
+          "distanceM": 40,
+          "diffPx": 0,
+          "hitPx": 5779
+        },
+        {
+          "yaw": 180,
+          "distanceM": 40,
+          "diffPx": 0,
+          "hitPx": 5780
+        },
+        {
+          "yaw": 270,
+          "distanceM": 40,
+          "diffPx": 0,
+          "hitPx": 5781
+        }
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "id": "front",
+      "nativePx": [
+        1024,
+        1024
+      ],
+      "mipmaps": true,
+      "source": "imagine",
+      "pass": true
+    },
+    {
+      "id": "right45",
+      "nativePx": [
+        1024,
+        1024
+      ],
+      "mipmaps": true,
+      "source": "imagine",
+      "pass": true
+    },
+    {
+      "id": "left45",
+      "nativePx": [
+        1024,
+        1024
+      ],
+      "mipmaps": true,
+      "source": "imagine",
+      "pass": true
+    },
+    {
+      "id": "side",
+      "nativePx": [
+        1024,
+        1024
+      ],
+      "mipmaps": true,
+      "source": "imagine",
+      "pass": true
+    },
+    {
+      "id": "back",
+      "nativePx": [
+        1024,
+        1024
+      ],
+      "mipmaps": true,
+      "source": "imagine",
+      "pass": true
+    },
+    {
+      "id": "cap",
+      "nativePx": [
+        1024,
+        1024
+      ],
+      "mipmaps": true,
+      "source": "imagine",
+      "pass": true
+    },
+    {
+      "id": "plinth",
+      "nativePx": [
+        1024,
+        1024
+      ],
+      "mipmaps": true,
+      "source": "imagine",
+      "pass": true
+    },
+    {
+      "id": "front-normal",
+      "nativePx": [
+        1024,
+        1024
+      ],
+      "mipmaps": true,
+      "source": "imagine",
+      "pass": true
+    },
+    {
+      "id": "right45-normal",
+      "nativePx": [
+        1024,
+        1024
+      ],
+      "mipmaps": true,
+      "source": "imagine",
+      "pass": true
+    },
+    {
+      "id": "left45-normal",
+      "nativePx": [
+        1024,
+        1024
+      ],
+      "mipmaps": true,
+      "source": "imagine",
+      "pass": true
+    }
+  ],
+  "rows": [
+    {
+      "name": "lod-set",
+      "pass": true,
+      "detail": "lod0 lod1 lod2"
+    },
+    {
+      "name": "lod0-tris",
+      "pass": true,
+      "value": 24902,
+      "limit": 25000,
+      "detail": "lod0=24902 limit=25000 profile=rune-pillar"
+    },
+    {
+      "name": "lod-monotone",
+      "pass": true,
+      "value": [
+        24902,
+        6592,
+        2352
+      ],
+      "detail": "lod0=24902 lod1=6592 lod2=2352"
+    },
+    {
+      "name": "outline-15m",
+      "pass": true,
+      "value": 0,
+      "limit": 0,
+      "detail": "diffPx=0 limit=0 distanceM=15 pair=lod0-lod1 hitPx=188474 views=0:0,90:0,180:0,270:0"
+    },
+    {
+      "name": "outline-40m",
+      "pass": true,
+      "value": 0,
+      "limit": 0,
+      "detail": "diffPx=0 limit=0 distanceM=40 pair=lod1-lod2 hitPx=23120 views=0:0,90:0,180:0,270:0"
+    },
+    {
+      "name": "texture-native",
+      "pass": true,
+      "detail": "front 1024x1024 imagine; right45 1024x1024 imagine; left45 1024x1024 imagine; side 1024x1024 imagine; back 1024x1024 imagine; cap 1024x1024 imagine; plinth 1024x1024 imagine; front-normal 1024x1024 imagine; right45-normal 1024x1024 imagine; left45-normal 1024x1024 imagine"
+    },
+    {
+      "name": "texture-mipmaps",
+      "pass": true,
+      "detail": "front mipmaps=true; right45 mipmaps=true; left45 mipmaps=true; side mipmaps=true; back mipmaps=true; cap mipmaps=true; plinth mipmaps=true; front-normal mipmaps=true; right45-normal mipmaps=true; left45-normal mipmaps=true"
+    }
+  ],
+  "playcheck": {
+    "lodTriangles": {
+      "lod0": 24902,
+      "lod1": 6592,
+      "lod2": 2352
+    },
+    "outlineDiffPx": {
+      "15": 0,
+      "40": 0
+    },
+    "textures": [
+      {
+        "id": "front",
+        "nativePx": [
+          1024,
+          1024
+        ],
+        "mipmaps": true,
+        "source": "imagine"
+      },
+      {
+        "id": "right45",
+        "nativePx": [
+          1024,
+          1024
+        ],
+        "mipmaps": true,
+        "source": "imagine"
+      },
+      {
+        "id": "left45",
+        "nativePx": [
+          1024,
+          1024
+        ],
+        "mipmaps": true,
+        "source": "imagine"
+      },
+      {
+        "id": "side",
+        "nativePx": [
+          1024,
+          1024
+        ],
+        "mipmaps": true,
+        "source": "imagine"
+      },
+      {
+        "id": "back",
+        "nativePx": [
+          1024,
+          1024
+        ],
+        "mipmaps": true,
+        "source": "imagine"
+      },
+      {
+        "id": "cap",
+        "nativePx": [
+          1024,
+          1024
+        ],
+        "mipmaps": true,
+        "source": "imagine"
+      },
+      {
+        "id": "plinth",
+        "nativePx": [
+          1024,
+          1024
+        ],
+        "mipmaps": true,
+        "source": "imagine"
+      },
+      {
+        "id": "front-normal",
+        "nativePx": [
+          1024,
+          1024
+        ],
+        "mipmaps": true,
+        "source": "imagine"
+      },
+      {
+        "id": "right45-normal",
+        "nativePx": [
+          1024,
+          1024
+        ],
+        "mipmaps": true,
+        "source": "imagine"
+      },
+      {
+        "id": "left45-normal",
+        "nativePx": [
+          1024,
+          1024
+        ],
+        "mipmaps": true,
+        "source": "imagine"
+      }
+    ]
+  },
+  "library": {
+    "reportKind": "lodstream",
+    "verdict": "PASS",
+    "id": "rune-pillar"
+  }
+}

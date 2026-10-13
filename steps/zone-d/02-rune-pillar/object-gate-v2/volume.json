@@ -1,0 +1,38 @@
+{
+ "oblique45-pass.npz": {
+  "absolute": {
+   "stepFrac": 0.0216,
+   "normSpread": 0.6439,
+   "hitPx": 243543,
+   "mode": "absolute",
+   "stepThrM": 0.25,
+   "pass": false
+  },
+  "relief": {
+   "stepFrac": 0.0494,
+   "normSpread": 0.6439,
+   "hitPx": 243543,
+   "mode": "relief",
+   "stepThrM": 0.0225,
+   "pass": true
+  }
+ },
+ "grazing-pass.npz": {
+  "absolute": {
+   "stepFrac": 0.0009,
+   "normSpread": 0.5636,
+   "hitPx": 411721,
+   "mode": "absolute",
+   "stepThrM": 0.25,
+   "pass": false
+  },
+  "relief": {
+   "stepFrac": 0.0162,
+   "normSpread": 0.5636,
+   "hitPx": 411721,
+   "mode": "relief",
+   "stepThrM": 0.0225,
+   "pass": false
+  }
+ }
+}

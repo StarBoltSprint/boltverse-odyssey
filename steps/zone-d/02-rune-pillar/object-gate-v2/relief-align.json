@@ -1,0 +1,53 @@
+{
+ "front": {
+  "overlap": 0.9812,
+  "ok": true,
+  "precisionRelief": 0.9945,
+  "precisionTexture": 0.9812,
+  "floorTris": 1072,
+  "paintedPx": 1606,
+  "maskPx": 1397,
+  "groove": "object-gate-v2/align-front-groove.jpg",
+  "rune": "object-gate-v2/align-front-rune.jpg",
+  "detail": {
+   "reliefEdges": 546,
+   "textureEdges": 586,
+   "alignment": 0.9812,
+   "reason": null
+  }
+ },
+ "right45": {
+  "overlap": 0.9849,
+  "ok": true,
+  "precisionRelief": 0.9849,
+  "precisionTexture": 0.9888,
+  "floorTris": 1362,
+  "paintedPx": 2101,
+  "maskPx": 1826,
+  "groove": "object-gate-v2/align-right45-groove.jpg",
+  "rune": "object-gate-v2/align-right45-rune.jpg",
+  "detail": {
+   "reliefEdges": 795,
+   "textureEdges": 800,
+   "alignment": 0.9849,
+   "reason": null
+  }
+ },
+ "left45": {
+  "overlap": 0.7971,
+  "ok": true,
+  "precisionRelief": 0.9849,
+  "precisionTexture": 0.7971,
+  "floorTris": 672,
+  "paintedPx": 1167,
+  "maskPx": 853,
+  "groove": "object-gate-v2/align-left45-groove.jpg",
+  "rune": "object-gate-v2/align-left45-rune.jpg",
+  "detail": {
+   "reliefEdges": 332,
+   "textureEdges": 488,
+   "alignment": 0.7971,
+   "reason": null
+  }
+ }
+}

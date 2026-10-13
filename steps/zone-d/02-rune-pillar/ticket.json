@@ -50,9 +50,12 @@
     },
     "ground_m": 0,
     "colliders": [
-      "pillar-shaft-convex-inset-2cm-player-camera",
-      "plinth-player-only",
-      "camera-margin-1m"
+      "plinth-step-0-h0.20-y-0.15-to-0.05-apo2.06-inset-2cm-player-camera",
+      "plinth-step-1-h0.23-y0.05-to-0.28-apo1.70-inset-2cm-player-camera",
+      "plinth-step-2-h0.32-y0.28-to-0.60-apo1.34-inset-2cm-player-camera",
+      "shaft-convex-hull-widest-inset-2cm-apo0.78-y0.60-to-7.00-player-camera",
+      "camera-margin-1m",
+      "no-rune-colliders"
     ],
     "budget": {
       "lod0_tri_cap": 25000,
@@ -60,12 +63,12 @@
     }
   },
   "build": {
-    "commit": "9b5067d705ad1fd94e8e64b5c23981ce4d4a947b"
+    "commit": "c9f1803852ffe316a3c8c1df672f5b770edc0075"
   },
   "gates": {
     "status": "fail",
-    "commit": "9b5067d705ad1fd94e8e64b5c23981ce4d4a947b",
-    "object_gate": "steps/zone-d/02-rune-pillar/object-gate-v1/object-gate.json",
+    "commit": "c9f1803852ffe316a3c8c1df672f5b770edc0075",
+    "object_gate": "steps/zone-d/02-rune-pillar/object-gate-v2/object-gate.json",
     "clearance": {
       "measured": {
         "headroom_m": 6.155,
@@ -74,22 +77,22 @@
       }
     },
     "budget_check": {
-      "lod0_tris": 17388,
-      "texture_mb": 3.098
+      "lod0_tris": 24902,
+      "texture_mb": 3.221
     }
   },
   "play": "pending",
   "shots": {
     "status": "pending",
-    "commit": "9b5067d705ad1fd94e8e64b5c23981ce4d4a947b",
+    "commit": "c9f1803852ffe316a3c8c1df672f5b770edc0075",
     "sheet_paths": [
-      "steps/zone-d/02-rune-pillar/object-gate-v1/shot-verdict.json",
-      "steps/zone-d/02-rune-pillar/object-gate-v1/front-19.7m.jpg",
-      "steps/zone-d/02-rune-pillar/object-gate-v1/front-8m.jpg",
-      "steps/zone-d/02-rune-pillar/object-gate-v1/phone-8m.jpg",
-      "steps/zone-d/02-rune-pillar/object-gate-v1/up-3m.jpg",
-      "steps/zone-d/02-rune-pillar/object-gate-v1/oblique45.jpg",
-      "steps/zone-d/02-rune-pillar/object-gate-v1/grazing.jpg"
+      "steps/zone-d/02-rune-pillar/object-gate-v2/shot-verdict.json",
+      "steps/zone-d/02-rune-pillar/object-gate-v2/front-19.7m.jpg",
+      "steps/zone-d/02-rune-pillar/object-gate-v2/front-8m.jpg",
+      "steps/zone-d/02-rune-pillar/object-gate-v2/phone-8m.jpg",
+      "steps/zone-d/02-rune-pillar/object-gate-v2/up-3m.jpg",
+      "steps/zone-d/02-rune-pillar/object-gate-v2/oblique45.jpg",
+      "steps/zone-d/02-rune-pillar/object-gate-v2/grazing.jpg"
     ],
     "ad_verdict": "pending"
   },
