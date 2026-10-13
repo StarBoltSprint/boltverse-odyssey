@@ -1,0 +1,50 @@
+{
+  "schema": "ticket.v1",
+  "object_id": "fixture-pillar",
+  "plates": [
+    {
+      "id": "pillar-front",
+      "path": "fixture/plates/pillar-front.jpg",
+      "ad_precheck": "KEEP",
+      "notes": "synthetic plate, no mesh"
+    }
+  ],
+  "placement": {
+    "path": ["spine/pillar"],
+    "min_clearances": { "headroom_m": 2.2, "width_m": 1.2 },
+    "ground_m": 0,
+    "colliders": ["pillar-front"],
+    "budget": { "lod0_tri_cap": 25000, "texture_mb_share": 12 }
+  },
+  "build": { "commit": "1111111111111111111111111111111111111111" },
+  "gates": {
+    "status": "pass",
+    "commit": "1111111111111111111111111111111111111111",
+    "object_gate": { "tool": "object-gate", "verdict": "PASS", "apiVersion": "1.8" },
+    "clearance": {
+      "measured": { "headroom_m": 2.2, "width_m": 1.2, "ground_m": 0 }
+    },
+    "budget_check": { "lod0_tris": 25000, "texture_mb": 12 }
+  },
+  "play": {
+    "status": "KEEP",
+    "commit": "1111111111111111111111111111111111111111",
+    "timecodes": [{ "t": 3.5, "note": "walk the near face" }],
+    "notes": "synthetic play"
+  },
+  "shots": {
+    "status": "KEEP",
+    "commit": "1111111111111111111111111111111111111111",
+    "sheet_paths": ["fixture/sheets/pillar.jpg"],
+    "ad_verdict": "KEEP"
+  },
+  "phone": {
+    "status": "fps unverified",
+    "commit": "1111111111111111111111111111111111111111"
+  },
+  "go": {
+    "text": "go",
+    "timestamp": "2026-10-13T12:00:00Z",
+    "executed_by": "Director"
+  }
+}

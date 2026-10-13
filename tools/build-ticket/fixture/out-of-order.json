@@ -1,0 +1,20 @@
+{
+  "schema": "ticket.v1",
+  "object_id": "fixture-pillar",
+  "plates": "pending",
+  "placement": "pending",
+  "build": "pending",
+  "gates": {
+    "status": "pass",
+    "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "object_gate": "fixture/object-gate.json",
+    "clearance": {
+      "measured": { "headroom_m": 2.2, "width_m": 1.2, "ground_m": 0 }
+    },
+    "budget_check": { "lod0_tris": 25000, "texture_mb": 12 }
+  },
+  "play": "pending",
+  "shots": "pending",
+  "phone": "pending",
+  "go": "pending"
+}
