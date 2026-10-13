@@ -31,8 +31,10 @@ def main(argv=None):
             mip1=dict(min_mag=round(2 * w0['min_mag'], 4), verdict='PASS' if 2 * w0['min_mag'] >= 1 else 'FAIL'),
             lowest5=[dict(pose=r['pose']['name'], provisional=r['pose']['provisional'], pitch=r['pose']['pitch'], min_mag=r['min_mag'], region=r['region']) for r in res[:5]]))
     pm = min(p['provisional']['min_mag'] for p in rep['plates'] if p['provisional'])
+    pts = spine.get('points', []); max_step = max((abs(b.get('cam_pitch_deg', 0) - a.get('cam_pitch_deg', 0)) for a, b in zip(pts, pts[1:])), default=0)
     pm10 = min(p['provisional_at_descent_pitch']['min_mag'] for p in rep['plates'] if p['provisional_at_descent_pitch'])
-    rep['provisional_descent'] = dict(min_mag_at_descent_pitch_only=pm10, note='s670 is still at -2 (climb top) and sets the stretch min; no -2 -> -10 blend points in spine v1.1',range_m=[spine.get('descent', {}).get('s0'), spine.get('descent', {}).get('s1')], min_mag=pm,
+    rep['provisional_descent'] = dict(min_mag_at_descent_pitch_only=pm10, note=f"stretch min set by {min((p['provisional'] for p in rep['plates'] if p['provisional']), key=lambda q: q['min_mag'])['pose']} "
+             f"at pitch {min((p['provisional'] for p in rep['plates'] if p['provisional']), key=lambda q: q['min_mag'])['pitch']}", max_pitch_step_deg=max_step,range_m=[spine.get('descent', {}).get('s0'), spine.get('descent', {}).get('s1')], min_mag=pm,
         pitch=-10, lowers_below_0736=pm < 0.7359 - 1e-4, mip1_min_mag=round(2 * pm, 4))
     g = min(rep['plates'], key=lambda p: p['mip0']['min_mag'])
     rep['global'] = dict(plate=g['id'], **g['mip0'], mip1_min_mag=g['mip1']['min_mag'],

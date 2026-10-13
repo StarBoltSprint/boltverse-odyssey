@@ -1,6 +1,6 @@
 {
  "spine": "/workspace/grokcli/wt/zd-terrace-1012/steps/zone-d/01-terrace/spine.json",
- "spine_version": "zd-spine.v1.1",
+ "spine_version": "zd-spine.v1.2",
  "plates": [
   {
    "id": "S00",
@@ -14,11 +14,11 @@
     "min_mag": 0.7359,
     "verdict": "FAIL",
     "pose": {
-     "name": "s370",
-     "s": 370,
+     "name": "s375",
+     "s": 375,
      "yaw": 15.0,
      "pitch": -2.0,
-     "cam_y": 6.6,
+     "cam_y": 7.300000000000001,
      "provisional": false
     },
     "region": "middle-centre",
@@ -31,19 +31,19 @@
    "verified": {
     "n": 174,
     "min_mag": 0.7359,
-    "pose": "s370",
+    "pose": "s375",
     "pitch": -2.0,
     "region": "middle-centre"
    },
    "provisional": {
     "n": 66,
-    "min_mag": 0.7359,
+    "min_mag": 0.7396,
     "pose": "s670",
-    "pitch": -2.0,
+    "pitch": -6.0,
     "region": "middle-centre"
    },
    "provisional_at_descent_pitch": {
-    "n": 65,
+    "n": 64,
     "min_mag": 0.7469,
     "pose": "s675",
     "pitch": -10.0,
@@ -54,13 +54,6 @@
     "verdict": "PASS"
    },
    "lowest5": [
-    {
-     "pose": "s370",
-     "provisional": false,
-     "pitch": -2.0,
-     "min_mag": 0.7359,
-     "region": "middle-centre"
-    },
     {
      "pose": "s375",
      "provisional": false,
@@ -84,6 +77,13 @@
     },
     {
      "pose": "s390",
+     "provisional": false,
+     "pitch": -2.0,
+     "min_mag": 0.7359,
+     "region": "middle-centre"
+    },
+    {
+     "pose": "s395",
      "provisional": false,
      "pitch": -2.0,
      "min_mag": 0.7359,
@@ -103,11 +103,11 @@
     "min_mag": 0.7359,
     "verdict": "FAIL",
     "pose": {
-     "name": "s370",
-     "s": 370,
+     "name": "s375",
+     "s": 375,
      "yaw": 45.0,
      "pitch": -2.0,
-     "cam_y": 6.6,
+     "cam_y": 7.300000000000001,
      "provisional": false
     },
     "region": "middle-centre",
@@ -120,19 +120,19 @@
    "verified": {
     "n": 174,
     "min_mag": 0.7359,
-    "pose": "s370",
+    "pose": "s375",
     "pitch": -2.0,
     "region": "middle-centre"
    },
    "provisional": {
     "n": 66,
-    "min_mag": 0.7359,
+    "min_mag": 0.7396,
     "pose": "s670",
-    "pitch": -2.0,
+    "pitch": -6.0,
     "region": "middle-centre"
    },
    "provisional_at_descent_pitch": {
-    "n": 65,
+    "n": 64,
     "min_mag": 0.7469,
     "pose": "s675",
     "pitch": -10.0,
@@ -143,13 +143,6 @@
     "verdict": "PASS"
    },
    "lowest5": [
-    {
-     "pose": "s370",
-     "provisional": false,
-     "pitch": -2.0,
-     "min_mag": 0.7359,
-     "region": "middle-centre"
-    },
     {
      "pose": "s375",
      "provisional": false,
@@ -173,6 +166,13 @@
     },
     {
      "pose": "s390",
+     "provisional": false,
+     "pitch": -2.0,
+     "min_mag": 0.7359,
+     "region": "middle-centre"
+    },
+    {
+     "pose": "s395",
      "provisional": false,
      "pitch": -2.0,
      "min_mag": 0.7359,
@@ -192,11 +192,11 @@
     "min_mag": 0.7359,
     "verdict": "FAIL",
     "pose": {
-     "name": "s370",
-     "s": 370,
+     "name": "s375",
+     "s": 375,
      "yaw": 75.0,
      "pitch": -2.0,
-     "cam_y": 6.6,
+     "cam_y": 7.300000000000001,
      "provisional": false
     },
     "region": "middle-centre",
@@ -209,19 +209,19 @@
    "verified": {
     "n": 174,
     "min_mag": 0.7359,
-    "pose": "s370",
+    "pose": "s375",
     "pitch": -2.0,
     "region": "middle-centre"
    },
    "provisional": {
     "n": 66,
-    "min_mag": 0.7359,
+    "min_mag": 0.7396,
     "pose": "s670",
-    "pitch": -2.0,
+    "pitch": -6.0,
     "region": "middle-centre"
    },
    "provisional_at_descent_pitch": {
-    "n": 65,
+    "n": 64,
     "min_mag": 0.7469,
     "pose": "s675",
     "pitch": -10.0,
@@ -232,13 +232,6 @@
     "verdict": "PASS"
    },
    "lowest5": [
-    {
-     "pose": "s370",
-     "provisional": false,
-     "pitch": -2.0,
-     "min_mag": 0.7359,
-     "region": "middle-centre"
-    },
     {
      "pose": "s375",
      "provisional": false,
@@ -262,6 +255,13 @@
     },
     {
      "pose": "s390",
+     "provisional": false,
+     "pitch": -2.0,
+     "min_mag": 0.7359,
+     "region": "middle-centre"
+    },
+    {
+     "pose": "s395",
      "provisional": false,
      "pitch": -2.0,
      "min_mag": 0.7359,
@@ -281,11 +281,11 @@
     "min_mag": 0.7359,
     "verdict": "FAIL",
     "pose": {
-     "name": "s370",
-     "s": 370,
+     "name": "s375",
+     "s": 375,
      "yaw": 105.0,
      "pitch": -2.0,
-     "cam_y": 6.6,
+     "cam_y": 7.300000000000001,
      "provisional": false
     },
     "region": "middle-centre",
@@ -298,19 +298,19 @@
    "verified": {
     "n": 174,
     "min_mag": 0.7359,
-    "pose": "s370",
+    "pose": "s375",
     "pitch": -2.0,
     "region": "middle-centre"
    },
    "provisional": {
     "n": 66,
-    "min_mag": 0.7359,
+    "min_mag": 0.7396,
     "pose": "s670",
-    "pitch": -2.0,
+    "pitch": -6.0,
     "region": "middle-centre"
    },
    "provisional_at_descent_pitch": {
-    "n": 65,
+    "n": 64,
     "min_mag": 0.7469,
     "pose": "s675",
     "pitch": -10.0,
@@ -321,13 +321,6 @@
     "verdict": "PASS"
    },
    "lowest5": [
-    {
-     "pose": "s370",
-     "provisional": false,
-     "pitch": -2.0,
-     "min_mag": 0.7359,
-     "region": "middle-centre"
-    },
     {
      "pose": "s375",
      "provisional": false,
@@ -351,6 +344,13 @@
     },
     {
      "pose": "s390",
+     "provisional": false,
+     "pitch": -2.0,
+     "min_mag": 0.7359,
+     "region": "middle-centre"
+    },
+    {
+     "pose": "s395",
      "provisional": false,
      "pitch": -2.0,
      "min_mag": 0.7359,
@@ -370,11 +370,11 @@
     "min_mag": 0.7359,
     "verdict": "FAIL",
     "pose": {
-     "name": "s370",
-     "s": 370,
+     "name": "s375",
+     "s": 375,
      "yaw": 135.0,
      "pitch": -2.0,
-     "cam_y": 6.6,
+     "cam_y": 7.300000000000001,
      "provisional": false
     },
     "region": "middle-centre",
@@ -387,19 +387,19 @@
    "verified": {
     "n": 174,
     "min_mag": 0.7359,
-    "pose": "s370",
+    "pose": "s375",
     "pitch": -2.0,
     "region": "middle-centre"
    },
    "provisional": {
     "n": 66,
-    "min_mag": 0.7359,
+    "min_mag": 0.7396,
     "pose": "s670",
-    "pitch": -2.0,
+    "pitch": -6.0,
     "region": "middle-centre"
    },
    "provisional_at_descent_pitch": {
-    "n": 65,
+    "n": 64,
     "min_mag": 0.7469,
     "pose": "s675",
     "pitch": -10.0,
@@ -410,13 +410,6 @@
     "verdict": "PASS"
    },
    "lowest5": [
-    {
-     "pose": "s370",
-     "provisional": false,
-     "pitch": -2.0,
-     "min_mag": 0.7359,
-     "region": "middle-centre"
-    },
     {
      "pose": "s375",
      "provisional": false,
@@ -440,6 +433,13 @@
     },
     {
      "pose": "s390",
+     "provisional": false,
+     "pitch": -2.0,
+     "min_mag": 0.7359,
+     "region": "middle-centre"
+    },
+    {
+     "pose": "s395",
      "provisional": false,
      "pitch": -2.0,
      "min_mag": 0.7359,
@@ -459,11 +459,11 @@
     "min_mag": 0.7359,
     "verdict": "FAIL",
     "pose": {
-     "name": "s370",
-     "s": 370,
+     "name": "s375",
+     "s": 375,
      "yaw": 165.0,
      "pitch": -2.0,
-     "cam_y": 6.6,
+     "cam_y": 7.300000000000001,
      "provisional": false
     },
     "region": "middle-centre",
@@ -476,19 +476,19 @@
    "verified": {
     "n": 174,
     "min_mag": 0.7359,
-    "pose": "s370",
+    "pose": "s375",
     "pitch": -2.0,
     "region": "middle-centre"
    },
    "provisional": {
     "n": 66,
-    "min_mag": 0.7359,
+    "min_mag": 0.7396,
     "pose": "s670",
-    "pitch": -2.0,
+    "pitch": -6.0,
     "region": "middle-centre"
    },
    "provisional_at_descent_pitch": {
-    "n": 65,
+    "n": 64,
     "min_mag": 0.7469,
     "pose": "s675",
     "pitch": -10.0,
@@ -499,13 +499,6 @@
     "verdict": "PASS"
    },
    "lowest5": [
-    {
-     "pose": "s370",
-     "provisional": false,
-     "pitch": -2.0,
-     "min_mag": 0.7359,
-     "region": "middle-centre"
-    },
     {
      "pose": "s375",
      "provisional": false,
@@ -529,6 +522,13 @@
     },
     {
      "pose": "s390",
+     "provisional": false,
+     "pitch": -2.0,
+     "min_mag": 0.7359,
+     "region": "middle-centre"
+    },
+    {
+     "pose": "s395",
      "provisional": false,
      "pitch": -2.0,
      "min_mag": 0.7359,
@@ -548,11 +548,11 @@
     "min_mag": 0.7359,
     "verdict": "FAIL",
     "pose": {
-     "name": "s370",
-     "s": 370,
+     "name": "s375",
+     "s": 375,
      "yaw": 195.0,
      "pitch": -2.0,
-     "cam_y": 6.6,
+     "cam_y": 7.300000000000001,
      "provisional": false
     },
     "region": "middle-centre",
@@ -565,19 +565,19 @@
    "verified": {
     "n": 174,
     "min_mag": 0.7359,
-    "pose": "s370",
+    "pose": "s375",
     "pitch": -2.0,
     "region": "middle-centre"
    },
    "provisional": {
     "n": 66,
-    "min_mag": 0.7359,
+    "min_mag": 0.7396,
     "pose": "s670",
-    "pitch": -2.0,
+    "pitch": -6.0,
     "region": "middle-centre"
    },
    "provisional_at_descent_pitch": {
-    "n": 65,
+    "n": 64,
     "min_mag": 0.7469,
     "pose": "s675",
     "pitch": -10.0,
@@ -588,13 +588,6 @@
     "verdict": "PASS"
    },
    "lowest5": [
-    {
-     "pose": "s370",
-     "provisional": false,
-     "pitch": -2.0,
-     "min_mag": 0.7359,
-     "region": "middle-centre"
-    },
     {
      "pose": "s375",
      "provisional": false,
@@ -618,6 +611,13 @@
     },
     {
      "pose": "s390",
+     "provisional": false,
+     "pitch": -2.0,
+     "min_mag": 0.7359,
+     "region": "middle-centre"
+    },
+    {
+     "pose": "s395",
      "provisional": false,
      "pitch": -2.0,
      "min_mag": 0.7359,
@@ -637,11 +637,11 @@
     "min_mag": 0.7359,
     "verdict": "FAIL",
     "pose": {
-     "name": "s370",
-     "s": 370,
+     "name": "s375",
+     "s": 375,
      "yaw": 225.0,
      "pitch": -2.0,
-     "cam_y": 6.6,
+     "cam_y": 7.300000000000001,
      "provisional": false
     },
     "region": "middle-centre",
@@ -654,19 +654,19 @@
    "verified": {
     "n": 174,
     "min_mag": 0.7359,
-    "pose": "s370",
+    "pose": "s375",
     "pitch": -2.0,
     "region": "middle-centre"
    },
    "provisional": {
     "n": 66,
-    "min_mag": 0.7359,
+    "min_mag": 0.7396,
     "pose": "s670",
-    "pitch": -2.0,
+    "pitch": -6.0,
     "region": "middle-centre"
    },
    "provisional_at_descent_pitch": {
-    "n": 65,
+    "n": 64,
     "min_mag": 0.7469,
     "pose": "s675",
     "pitch": -10.0,
@@ -677,13 +677,6 @@
     "verdict": "PASS"
    },
    "lowest5": [
-    {
-     "pose": "s370",
-     "provisional": false,
-     "pitch": -2.0,
-     "min_mag": 0.7359,
-     "region": "middle-centre"
-    },
     {
      "pose": "s375",
      "provisional": false,
@@ -707,6 +700,13 @@
     },
     {
      "pose": "s390",
+     "provisional": false,
+     "pitch": -2.0,
+     "min_mag": 0.7359,
+     "region": "middle-centre"
+    },
+    {
+     "pose": "s395",
      "provisional": false,
      "pitch": -2.0,
      "min_mag": 0.7359,
@@ -726,11 +726,11 @@
     "min_mag": 0.7359,
     "verdict": "FAIL",
     "pose": {
-     "name": "s370",
-     "s": 370,
+     "name": "s375",
+     "s": 375,
      "yaw": 255.0,
      "pitch": -2.0,
-     "cam_y": 6.6,
+     "cam_y": 7.300000000000001,
      "provisional": false
     },
     "region": "middle-centre",
@@ -743,19 +743,19 @@
    "verified": {
     "n": 174,
     "min_mag": 0.7359,
-    "pose": "s370",
+    "pose": "s375",
     "pitch": -2.0,
     "region": "middle-centre"
    },
    "provisional": {
     "n": 66,
-    "min_mag": 0.7359,
+    "min_mag": 0.7396,
     "pose": "s670",
-    "pitch": -2.0,
+    "pitch": -6.0,
     "region": "middle-centre"
    },
    "provisional_at_descent_pitch": {
-    "n": 65,
+    "n": 64,
     "min_mag": 0.7469,
     "pose": "s675",
     "pitch": -10.0,
@@ -766,13 +766,6 @@
     "verdict": "PASS"
    },
    "lowest5": [
-    {
-     "pose": "s370",
-     "provisional": false,
-     "pitch": -2.0,
-     "min_mag": 0.7359,
-     "region": "middle-centre"
-    },
     {
      "pose": "s375",
      "provisional": false,
@@ -796,6 +789,13 @@
     },
     {
      "pose": "s390",
+     "provisional": false,
+     "pitch": -2.0,
+     "min_mag": 0.7359,
+     "region": "middle-centre"
+    },
+    {
+     "pose": "s395",
      "provisional": false,
      "pitch": -2.0,
      "min_mag": 0.7359,
@@ -815,11 +815,11 @@
     "min_mag": 0.7359,
     "verdict": "FAIL",
     "pose": {
-     "name": "s370",
-     "s": 370,
+     "name": "s375",
+     "s": 375,
      "yaw": 285.0,
      "pitch": -2.0,
-     "cam_y": 6.6,
+     "cam_y": 7.300000000000001,
      "provisional": false
     },
     "region": "middle-centre",
@@ -832,19 +832,19 @@
    "verified": {
     "n": 174,
     "min_mag": 0.7359,
-    "pose": "s370",
+    "pose": "s375",
     "pitch": -2.0,
     "region": "middle-centre"
    },
    "provisional": {
     "n": 66,
-    "min_mag": 0.7359,
+    "min_mag": 0.7396,
     "pose": "s670",
-    "pitch": -2.0,
+    "pitch": -6.0,
     "region": "middle-centre"
    },
    "provisional_at_descent_pitch": {
-    "n": 65,
+    "n": 64,
     "min_mag": 0.7469,
     "pose": "s675",
     "pitch": -10.0,
@@ -855,13 +855,6 @@
     "verdict": "PASS"
    },
    "lowest5": [
-    {
-     "pose": "s370",
-     "provisional": false,
-     "pitch": -2.0,
-     "min_mag": 0.7359,
-     "region": "middle-centre"
-    },
     {
      "pose": "s375",
      "provisional": false,
@@ -885,6 +878,13 @@
     },
     {
      "pose": "s390",
+     "provisional": false,
+     "pitch": -2.0,
+     "min_mag": 0.7359,
+     "region": "middle-centre"
+    },
+    {
+     "pose": "s395",
      "provisional": false,
      "pitch": -2.0,
      "min_mag": 0.7359,
@@ -904,11 +904,11 @@
     "min_mag": 0.7359,
     "verdict": "FAIL",
     "pose": {
-     "name": "s370",
-     "s": 370,
+     "name": "s375",
+     "s": 375,
      "yaw": 315.0,
      "pitch": -2.0,
-     "cam_y": 6.6,
+     "cam_y": 7.300000000000001,
      "provisional": false
     },
     "region": "middle-centre",
@@ -921,19 +921,19 @@
    "verified": {
     "n": 174,
     "min_mag": 0.7359,
-    "pose": "s370",
+    "pose": "s375",
     "pitch": -2.0,
     "region": "middle-centre"
    },
    "provisional": {
     "n": 66,
-    "min_mag": 0.7359,
+    "min_mag": 0.7396,
     "pose": "s670",
-    "pitch": -2.0,
+    "pitch": -6.0,
     "region": "middle-centre"
    },
    "provisional_at_descent_pitch": {
-    "n": 65,
+    "n": 64,
     "min_mag": 0.7469,
     "pose": "s675",
     "pitch": -10.0,
@@ -944,13 +944,6 @@
     "verdict": "PASS"
    },
    "lowest5": [
-    {
-     "pose": "s370",
-     "provisional": false,
-     "pitch": -2.0,
-     "min_mag": 0.7359,
-     "region": "middle-centre"
-    },
     {
      "pose": "s375",
      "provisional": false,
@@ -974,6 +967,13 @@
     },
     {
      "pose": "s390",
+     "provisional": false,
+     "pitch": -2.0,
+     "min_mag": 0.7359,
+     "region": "middle-centre"
+    },
+    {
+     "pose": "s395",
      "provisional": false,
      "pitch": -2.0,
      "min_mag": 0.7359,
@@ -993,11 +993,11 @@
     "min_mag": 0.7359,
     "verdict": "FAIL",
     "pose": {
-     "name": "s370",
-     "s": 370,
+     "name": "s375",
+     "s": 375,
      "yaw": 345.0,
      "pitch": -2.0,
-     "cam_y": 6.6,
+     "cam_y": 7.300000000000001,
      "provisional": false
     },
     "region": "middle-centre",
@@ -1010,19 +1010,19 @@
    "verified": {
     "n": 174,
     "min_mag": 0.7359,
-    "pose": "s370",
+    "pose": "s375",
     "pitch": -2.0,
     "region": "middle-centre"
    },
    "provisional": {
     "n": 66,
-    "min_mag": 0.7359,
+    "min_mag": 0.7396,
     "pose": "s670",
-    "pitch": -2.0,
+    "pitch": -6.0,
     "region": "middle-centre"
    },
    "provisional_at_descent_pitch": {
-    "n": 65,
+    "n": 64,
     "min_mag": 0.7469,
     "pose": "s675",
     "pitch": -10.0,
@@ -1033,13 +1033,6 @@
     "verdict": "PASS"
    },
    "lowest5": [
-    {
-     "pose": "s370",
-     "provisional": false,
-     "pitch": -2.0,
-     "min_mag": 0.7359,
-     "region": "middle-centre"
-    },
     {
      "pose": "s375",
      "provisional": false,
@@ -1067,32 +1060,40 @@
      "pitch": -2.0,
      "min_mag": 0.7359,
      "region": "middle-centre"
+    },
+    {
+     "pose": "s395",
+     "provisional": false,
+     "pitch": -2.0,
+     "min_mag": 0.7359,
+     "region": "middle-centre"
     }
    ]
   }
  ],
  "provisional_descent": {
   "min_mag_at_descent_pitch_only": 0.7469,
-  "note": "s670 is still at -2 (climb top) and sets the stretch min; no -2 -> -10 blend points in spine v1.1",
+  "note": "stretch min set by s670 at pitch -6.0",
+  "max_pitch_step_deg": 4.0,
   "range_m": [
    670,
    998.6
   ],
-  "min_mag": 0.7359,
+  "min_mag": 0.7396,
   "pitch": -10,
   "lowers_below_0736": false,
-  "mip1_min_mag": 1.4718
+  "mip1_min_mag": 1.4792
  },
  "global": {
   "plate": "S00",
   "min_mag": 0.7359,
   "verdict": "FAIL",
   "pose": {
-   "name": "s370",
-   "s": 370,
+   "name": "s375",
+   "s": 375,
    "yaw": 15.0,
    "pitch": -2.0,
-   "cam_y": 6.6,
+   "cam_y": 7.300000000000001,
    "provisional": false
   },
   "region": "middle-centre",
