@@ -1,0 +1,453 @@
+diff --git a/tools/golden/golden_world.py b/tools/golden/golden_world.py
+index 76730cb..6a1c619 100644
+--- a/tools/golden/golden_world.py
++++ b/tools/golden/golden_world.py
+@@ -35,6 +35,44 @@ def terrain_window(hh, S, n, cx, cz, half=80.0, step=1.5):
+     return pos, uv, np.concatenate([np.stack([a, b, c], 1), np.stack([a, c, d], 1)])
+ 
+ 
++def seamless_ground(g):
++    """Ground plate -> tileable, crack-free texture: thin dark crack lines (much darker than their 9 px neighbourhood) are
++    closed away; the plate is used as-is (seamless by recipe), with a border cross-fade only if its wrap seam shows."""
++    from scipy import ndimage as ndi
++    g = np.asarray(g, np.float32); L = g.mean(2); Lc = ndi.grey_closing(L, size=(15, 15))
++    crack = ndi.binary_dilation((Lc - L) > 10, iterations=1)
++    if crack.any() and (~crack).any():
++        idx = ndi.distance_transform_edt(crack, return_distances=False, return_indices=True); g = g[idx[0], idx[1]]
++        g = ndi.gaussian_filter(g, (1, 1, 0))
++    # seam check: the ground plates are generated seamless; if the wrap seam is visible, cross-fade a 6 % border band
++    e = max(4, g.shape[0] // 16)
++    if np.abs(g[:, :2].mean() - g[:, -2:].mean()) + np.abs(g[:2].mean() - g[-2:].mean()) > 6:
++        r = np.linspace(0, 1, e, dtype=np.float32)[None, :, None]; g[:, :e] = g[:, :e] * r + g[:, -e:][:, ::-1] * (1 - r)
++        r = r.transpose(1, 0, 2); g[:e] = g[:e] * r + g[-e:][::-1] * (1 - r)
++    seamless_ground.crackFrac = round(float(crack.mean()), 4)
++    return g.clip(0, 255).astype(np.uint8)
++
++
++def frame(eye, base, top, margin_deg=6.0):
++    """Target + vertical fov so the whole object (base..top) stands in frame, ground and sky visible."""
++    eye = np.asarray(eye, np.float64); hd = math.hypot(base[0] - eye[0], base[2] - eye[2])
++    a_top = math.atan2(top - eye[1], hd); a_bot = math.atan2(base[1] - 0.6 - eye[1], hd)
++    mid = (a_top + a_bot) / 2; fov = math.degrees(a_top - a_bot) + 2 * margin_deg
++    tgt = np.array([base[0], eye[1] + hd * math.tan(mid), base[2]])
++    return tgt, max(40.0, min(100.0, fov))
++
++
++def flat_frac(C, I, mid=1):
++    """World-render untextured check: share of object pixels whose 5x5 luminance spread is ~0 (flat paint / grey fill;
++    stone, snow and runes from the plate always carry texture)."""
++    from scipy import ndimage as ndi
++    L = C.mean(2); m = I == mid
++    if m.sum() < 50: return 0.0
++    sd = np.sqrt(np.maximum(ndi.uniform_filter(L * L, 5) - ndi.uniform_filter(L, 5) ** 2, 0))
++    inner = ndi.binary_erosion(m, iterations=3)
++    return round(float((sd[inner] < 1.0).mean()) if inner.any() else 0.0, 4)
++
++
+ def label(img, lines):
+     d = ImageDraw.Draw(img); y = 4
+     for t in lines:
+@@ -68,12 +106,15 @@ def world_sheet(work, hooks=None):
+         nz = ndi.gaussian_filter(np.random.default_rng(7).random((512, 512)), 24, mode="wrap"); thr = np.quantile(nz, 1 - t)
+         w = np.clip((nz - thr) / (nz.std() * 0.3) + 0.5, 0, 1)[..., None]
+         gtex = (L[lo] * (1 - w) + L[hi] * w).clip(0, 255).astype(np.uint8)
++    gtex = seamless_ground(gtex)
+     rows, report, sheets = [], {}, []
+     built = [o for o in O if os.path.exists(os.path.join(work, os.path.dirname(o["glb"]), "mesh.npz"))]
+     extras = [o for o in O if o.get("type") in ("terrace", "basin")]
+     for o in built:
+         od = os.path.join(work, os.path.dirname(o["glb"])); M = np.load(os.path.join(od, "mesh.npz")); atlas = np.asarray(Image.open(os.path.join(od, "atlas.png")).convert("RGB"))
+         meta = json.load(open(os.path.join(od, "result.json"))).get("meta", {})
++        plate_flat = flat_frac(atlas.astype(np.float32), np.ones(atlas.shape[:2], int))  # the plates' own flatness (flat mock plates)
++        if hooks.get("grey"): atlas = np.full_like(atlas, 128)  # test hook: untextured object in the world
+         p = pmap[o["id"]]; x, z = p["position"][0], p["position"][2]
+         hx, hz = (meta.get("plinthHalf") or meta.get("footprintHalf") or [1, 1])
+         sx, sz = np.meshgrid(np.linspace(x - hx, x + hx, 7), np.linspace(z - hz, z + hz, 7)); hs = bilinear(hh, S, n, sx, sz)
+@@ -90,10 +131,11 @@ def world_sheet(work, hooks=None):
+             if os.path.exists(os.path.join(ed, "mesh.npz")) and e["id"] != o["id"]:
+                 Me = np.load(os.path.join(ed, "mesh.npz")); pe = pmap[e["id"]]["position"]
+                 others.append((Me["p0"] + np.array(pe, np.float32), Me["u0"], Me["t0"], np.asarray(Image.open(os.path.join(ed, "atlas.png")).convert("RGB"))))
+-        top = float(M["p0"][:, 1].max()); c = off + [0, min(3.5, top * 0.45), 0]
+-        V = [("8 m", off + [0, 1.7, 8.0], c), ("45 deg 12 m", off + [12 * math.sin(math.radians(45)), 2.0, 12 * math.cos(math.radians(45))], c),
+-             ("grazing 80 deg", off + [9 * math.sin(math.radians(80)), 1.0, 9 * math.cos(math.radians(80))], c),
+-             ("distance 60 m", off + [60 * math.sin(math.radians(20)), 2.6, 60 * math.cos(math.radians(20))], off + [0, top * 0.5, 0])]
++        top = float(M["p0"][:, 1].max()) + y; base = off
++        V = []
++        for name, d, az, eh in (("8 m", 8.0 + hx, 0, 1.7), ("45 deg", 12.0 + hx, 45, 2.0), ("grazing 80 deg", 9.0 + hx, 80, 1.0), ("distance 60 m", 60.0, 20, 2.6)):
++            eye = off + [d * math.sin(math.radians(az)), eh, d * math.cos(math.radians(az))]; tgt, fv = frame(eye, base, top)
++            V.append((f"{name} ({d:.0f} m from axis)", eye, tgt, fv))
+         tiles = []
+         crop = json.load(open(os.path.join(od, "result.json"))).get("crop") or None
+         sp = os.path.join(work, "specs", o["id"] + ".json")
+@@ -102,23 +144,27 @@ def world_sheet(work, hooks=None):
+             if cp and os.path.exists(cp):
+                 k = Image.open(cp).convert("RGB"); k.thumbnail((TW, TH)); t = Image.new("RGB", (TW, TH)); t.paste(k, ((TW - k.width) // 2, (TH - k.height) // 2))
+                 tiles.append(label(t, ["plate (Imagine)"]))
+-        for name, eye, tgt in V:
+-            C, _D, _N, _U, _I = GH.render_scene([T, L0] + others, eye, tgt, 48, TW, TH, sky=sky)
+-            tiles.append(label(tile(C), [name, f"{o['id']} LOD0 {len(M['t0'])} tris"]))
+-        eye40 = off + [40 * math.sin(math.radians(25)), 2.6, 40 * math.cos(math.radians(25))]; tgt40 = off + [0, top * 0.5, 0]
+-        C0, _d, _n, _u, I0 = GH.render_scene([T, L0], eye40, tgt40, 48, TW, TH, sky=sky)
+-        C1, _d, _n, _u, I1 = GH.render_scene([T, L1], eye40, tgt40, 48, TW, TH, sky=sky)
++        flats = []
++        for name, eye, tgt, fv in V:
++            C, _D, _N, _U, _I = GH.render_scene([T, L0] + others, eye, tgt, fv, TW, TH, sky=sky)
++            if not name.startswith("distance"): flats.append(flat_frac(C, _I))
++            tiles.append(label(tile(C), [name, f"fov {fv:.0f} | LOD0 {len(M['t0'])} tris"]))
++        flat = max(flats) if flats else 0.0
++        eye40 = off + [40 * math.sin(math.radians(25)), 2.6, 40 * math.cos(math.radians(25))]; tgt40, fv40 = frame(eye40, base, top)
++        C0, _d, _n, _u, I0 = GH.render_scene([T, L0], eye40, tgt40, fv40, TW, TH, sky=sky)
++        C1, _d, _n, _u, I1 = GH.render_scene([T, L1], eye40, tgt40, fv40, TW, TH, sky=sky)
+         m0, m1 = I0 == 1, I1 == 1; iou = float((m0 & m1).sum() / max(1, (m0 | m1).sum())); un = m0 | m1
+         dcol = float(np.abs(C0 - C1)[un].mean()) if un.any() else 0.0
+         tiles.append(label(tile(C0), ["LOD0 @ 40 m (switch)", f"IoU {iou:.3f}"])); tiles.append(label(tile(C1), ["LOD1 @ 40 m", f"{len(M['t1'])} tris"]))
+         tiles.append(label(tile(np.abs(C0 - C1) * 4), ["|LOD0-LOD1| x4", f"mean dRGB {dcol:.1f}"]))
+-        res = {"contactGapM": round(gap, 3), "maxDropM": round(drop, 3), "lodIoU40": round(iou, 4), "lodColour40": round(dcol, 2),
++        res = {"contactGapM": round(gap, 3), "maxDropM": round(drop, 3), "lodIoU40": round(iou, 4), "lodColour40": round(dcol, 2), "worldFlatFrac": flat, "plateFlatFrac": plate_flat, "groundCrackFracRemoved": getattr(seamless_ground, "crackFrac", 0.0),
+                "terraceOrBasin": [e["id"] for e in extras] or "absent (none built in this run)"}
+         report[o["id"]] = res
+         rows += [GH_row(f"{o['id']}.contactGap_m", round(gap, 3), "<=0.02", gap <= 0.02),
+                  GH_row(f"{o['id']}.slopeDrop_m", round(drop, 3), f"<={SKIRT}", drop <= SKIRT),
+                  GH_row(f"{o['id']}.lodSwitchIoU", round(iou, 4), ">=0.95", iou >= 0.95),
+-                 GH_row(f"{o['id']}.lodSwitchColour", round(dcol, 2), "<=12", dcol <= 12)]
++                 GH_row(f"{o['id']}.lodSwitchColour", round(dcol, 2), "<=12", dcol <= 12),
++                 GH_row(f"{o['id']}.worldUntexturedFrac", flat, f"<={round(max(0.10, plate_flat + 0.10), 3)} (plate {plate_flat})", flat <= max(0.10, plate_flat + 0.10))]
+         Wd = TW * len(tiles); sh = Image.new("RGB", (Wd, TH + 24), (20, 20, 20))
+         for i, t in enumerate(tiles): sh.paste(t, (i * TW, 24))
+         ImageDraw.Draw(sh).text((6, 6), f"{o['id']}: contact gap {gap:.2f} m | slope drop {drop:.2f} m (skirt {SKIRT}) | LOD IoU@40 {iou:.3f} dRGB {dcol:.1f} | terrace/basin: {res['terraceOrBasin']}", fill=(255, 255, 255))
+diff --git a/tools/golden/selftest.py b/tools/golden/selftest.py
+index c948e57..c525b33 100644
+--- a/tools/golden/selftest.py
++++ b/tools/golden/selftest.py
+@@ -55,8 +55,11 @@ try:
+     r = sh(RS, key, "mini", "--work", W, "--imagine", "mock")
+     z = os.path.join(W, "zone.json"); t = json.load(open(os.path.join(W, "timing.json"))) if os.path.exists(os.path.join(W, "timing.json")) else {}
+     stages = [s["stage"] for s in t.get("stages", [])]
+-    ok("run.sh good key -> exit 0, zone.json, play URL, 11 timed stages", r.returncode == 0 and os.path.exists(z) and os.path.exists(os.path.join(W, "PLAY_URL.txt"))
+-       and stages == ["prompts", "imagine", "sky", "ground", "terrain", "objects", "placement", "gate", "worldgraph", "play", "artdirector"], r.stdout[-800:])
++    ok("run.sh good key -> exit 0, zone.json, play URL, 12 timed stages (worldsheet before the gate)", r.returncode == 0 and os.path.exists(z) and os.path.exists(os.path.join(W, "PLAY_URL.txt"))
++       and stages == ["prompts", "imagine", "sky", "ground", "terrain", "objects", "placement", "worldsheet", "gate", "worldgraph", "play", "artdirector"], r.stdout[-800:])
++    wc = json.load(open(os.path.join(W, "art-director", "world-checks.json"))) if os.path.exists(os.path.join(W, "art-director", "world-checks.json")) else {}
++    ok("worldsheet: in-world sheet saved, contact 0 m, LOD switch + world untextured checks recorded",
++       os.path.exists(os.path.join(W, "art-director", "render-sheet.jpg")) and wc and all(v["contactGapM"] == 0.0 and "lodIoU40" in v and "worldFlatFrac" in v for v in wc.values()), json.dumps(wc)[:300])
+     if os.path.exists(z):
+         zj = json.load(open(z)); ok("run.sh zone.json is zone.v1 with every gate PASS", zj["schema"] == "zone.v1" and set(zj["qualityGates"].values()) == {"PASS"})
+         ok("run.sh objects are golden-hull volumes from auto.py (no relief cutouts)", zj["objects"] and all(o["fidelity"]["kind"] == "golden-hull" for o in zj["objects"]))
+@@ -66,7 +69,8 @@ try:
+         r2 = sh(RS, key, "mini", "--work", W, "--imagine", "mock"); os.remove(os.path.join(W, "art-director", "verdict.json"))
+         ok("run.sh Art Director FAIL verdict stops the run (exit 1)", r2.returncode == 1 and "STOPPED at `artdirector`" in r2.stdout, r2.stdout[-300:])
+     # object quality via the hooks: a flat facade, a shredded mesh, a grey patch must FAIL (retries 0 = no rescue)
+-    for hook, check in (("flat", "obliqueProfile"), ("shred", "triangleQuality"), ("grey", "untexturedArea")):
++    for hook, check in (("flat", "obliqueProfile"), ("shred", "triangleQuality"), ("grey", "untexturedArea"), ("shards", "baseShards"),
++                        ("smear", "uvStretch"), ("deepgroove", "grooveDepth")):
+         Wh = os.path.join(T, "wh-" + hook); shutil.copytree(os.path.join(W, "plates"), os.path.join(Wh, "plates"))
+         shutil.copy(os.path.join(W, "prompts.json"), os.path.join(T, "pp.json"))
+         sheet_ids = [o["id"] for o in json.load(open(os.path.join(W, "spec-sheet.json")))["objects"]]
+@@ -74,6 +78,14 @@ try:
+         r = sh(RS, key, "mini", "--work", Wh, "--imagine", "mock", env={"GOLDEN_HOOKS": hooks, "GOLDEN_RETRIES": "0"})
+         rep = open(os.path.join(Wh, "REPORT.md")).read() if os.path.exists(os.path.join(Wh, "REPORT.md")) else ""
+         ok(f"run.sh {hook} object -> FAIL at objects on {check}", r.returncode == 1 and "STOPPED at `objects`" in rep and check in rep, rep[-400:])
++    # in-world bad cases: a floating object (contact), a LOD1 that pops at the switch, an untextured object in the world
++    for name, env_, check in (("float", {"GOLDEN_WORLD_HOOKS": json.dumps({"float": 0.3})}, "contactGap_m"),
++                              ("lodpop", {"GOLDEN_HOOKS": json.dumps({i: {"lodpop": True} for i in sheet_ids}), "GOLDEN_RETRIES": "0"}, "lodSwitch"),
++                              ("worldgrey", {"GOLDEN_WORLD_HOOKS": json.dumps({"grey": True})}, "worldUntexturedFrac")):
++        Wh = os.path.join(T, "ww-" + name); shutil.copytree(os.path.join(W, "plates"), os.path.join(Wh, "plates"))
++        r = sh(RS, key, "mini", "--work", Wh, "--imagine", "mock", env=env_)
++        rep = open(os.path.join(Wh, "REPORT.md")).read() if os.path.exists(os.path.join(Wh, "REPORT.md")) else ""
++        ok(f"run.sh {name} -> FAIL at worldsheet on {check}", r.returncode == 1 and "STOPPED at `worldsheet`" in rep and check in rep, rep[-400:])
+     # bad sky: one plate of a different colour -> seam FAIL, run stops at sky, no zone.json
+     sl = [{"slot": f"sky-S{i:02d}", "prompt": "s", "aspect": "16:9", **({"mockColor": [250, 20, 200]} if i == 5 else {})} for i in range(6)]
+     sl += [{"slot": "ground-a", "prompt": "g", "aspect": "1:1"}, {"slot": "obj-hero", "prompt": "o", "aspect": "1:1"}]
+diff --git a/tools/golden/stages.py b/tools/golden/stages.py
+index 056eba5..181ba3d 100755
+--- a/tools/golden/stages.py
++++ b/tools/golden/stages.py
+@@ -110,14 +110,37 @@ def st_sky(a):
+     for i in range(len(ims)):
+         A, B = ims[i], ims[(i + 1) % len(ims)]
+         seams.append(round(float(np.abs(A[:, -ov:].mean((0, 1)) - B[:, :ov].mean((0, 1))).mean() + np.abs(lum(A[:, -ov:]).mean(1) - lum(B[:, :ov]).mean(1)).mean()), 2))
+-    ramp = np.linspace(0, 1, ov, dtype=np.float32)[None, :, None]; strip = ims[0][:, :W - ov].copy(); parts = [strip]
+-    for i in range(1, len(ims) + 1):
+-        prev, cur = ims[i - 1], ims[i % len(ims)]
+-        parts.append(prev[:, W - ov:] * (1 - ramp) + cur[:, :ov] * ramp)
+-        if i < len(ims): parts.append(cur[:, ov:W - ov])
++    # Sky12 geometry (ZD-SKY12-PROMPTS): 12 x 30 deg sections, each plate 35 deg wide (2.5 deg overlap per side), horizon
++    # at the bottom edge, so a 16:9 plate spans 0..~19.7 deg elevation. Overlaps are cross-faded; the band is placed
++    # aspect-true (no vertical stretch = no star streaks). Above the plates: the band's own tone, darkened towards the
++    # zenith, plus the band's own star layer (high-pass) laid in randomly rolled strips (isotropic, never a repeated row).
++    from scipy import ndimage as ndi
++    Hr = 512; big = [rgb(p, (int(Hr * 16 / 9), Hr)) for p in P]; Wb = big[0].shape[1]; ob = int(round(Wb * 5 / 35))
++    ramp = np.linspace(0, 1, ob, dtype=np.float32)[None, :, None]; parts = [big[0][:, ob // 2 + ob // 2:Wb - ob // 2 - ob // 2]]
++    for i in range(1, len(big) + 1):
++        prev, cur = big[i - 1], big[i % len(big)]
++        parts.append(prev[:, Wb - ob:] * (1 - ramp) + cur[:, :ob] * ramp)
++        if i < len(big): parts.append(cur[:, ob:Wb - ob])
+     ring = np.concatenate(parts, 1)
+-    eq = np.asarray(Image.fromarray(ring.clip(0, 255).astype(np.uint8)).resize((2048, 512), Image.LANCZOS)).astype(np.float32)
+-    cap = np.repeat(eq[:1], 256, 0) * 0.98; fl = np.repeat(eq[-1:], 256, 0) * 0.6
++    EW, EH = 4096, 2048; ppd = EW / 360.0; vdeg = 35.0 * Hr / Wb; bh = int(round(vdeg * ppd)); hz = EH // 2
++    band = np.asarray(Image.fromarray(ring.clip(0, 255).astype(np.uint8)).resize((EW, bh), Image.LANCZOS)).astype(np.float32)
++    top = ndi.gaussian_filter(band[:max(4, bh // 10)].mean(0), (220, 0), mode="wrap")  # (EW, 3) tone at the band top
++    hp = np.clip(band - ndi.gaussian_filter(band, (6, 6, 0), mode="reflect"), 0, None)  # star layer: small bright points only
++    pt = hp.mean(2) > 8; lab, nl = ndi.label(pt)
++    if nl: sz = np.bincount(lab.ravel()); pt &= sz[lab] <= 12  # drop cloud edges / moon rim (big components)
++    hp = hp * pt[..., None]
++    n_up = hz - bh; rng = np.random.default_rng(11); win = np.sin(np.linspace(0, np.pi, bh))[:, None, None] ** 2
++    lay = lambda off: np.concatenate([np.roll(hp, int(rng.integers(0, EW)), 1) * win for _ in range(n_up // bh + 3)], 0)[off:off + n_up]
++    stars = lay(0) + lay(bh // 2)  # two half-offset sin^2-windowed layers sum to an even density, no strip edges
++    el = (n_up - np.arange(n_up))[:, None, None] / ppd + vdeg
++    dark = np.clip((el - vdeg) / (90 - vdeg), 0, 1)
++    upper = top[None] * (1 - 0.45 * dark) + stars * (1 - 0.3 * dark)
++    upper = upper.astype(np.float32)
++    below = EH - hz
++    fl = np.repeat(ndi.gaussian_filter(band[-max(4, bh // 10):].mean(0), (220, 0), mode="wrap")[None] * 0.45, below, 0)
++    f = bh // 4; fw = np.linspace(0, 1, f, dtype=np.float32)[:, None, None]  # feather the band top into the upper sky
++    band = band.copy(); band[:f] = (top[None] + stars[-f:] * 0.5) * (1 - fw) + band[:f] * fw
++    cap, eq = upper, band
+     full = np.concatenate([cap, eq, fl], 0).clip(0, 255).astype(np.uint8)
+     os.makedirs(os.path.join(a.work, "sky"), exist_ok=True); Image.fromarray(full).save(os.path.join(a.work, "sky", "equirect.jpg"), quality=90)
+     worst = int(np.argmax(seams)); grad = [float(lum(im[: H // 3]).mean() - lum(im[-H // 3:]).mean()) for im in ims]
+@@ -250,6 +273,21 @@ def st_placement(a):
+         for _ in range(20):  # two objects never share a footprint: step the newcomer back along the view ray
+             if all(math.dist((x, z), (q["position"][0], q["position"][2])) > rad + q["radius_m"] + 1 for q in P): break
+             z -= rad + 2
++        # flattest site near the key's spot: the plinth skirt (0.6 m) must cover the ground relief under the footprint
++        fp = max(1.0, float(o.get("footprintM", 0)) or rad * 0.5)
++        def relief(cx, cz):
++            g = np.linspace(-fp, fp, 5); X, Z = np.meshgrid(cx + g, cz + g)
++            I = np.clip(np.round((Z + S / 2) / S * (n - 1)).astype(int), 0, n - 1); J = np.clip(np.round((X + S / 2) / S * (n - 1)).astype(int), 0, n - 1)
++            v = hh[I, J]; return float(v.max() - v.min())
++        best = (relief(x, z), x, z)
++        for dx in np.arange(-18, 19, 3.0):
++            for dz in np.arange(-18, 19, 3.0):
++                cx, cz = x + dx, z + dz
++                if abs(cx) < rad + lane or max(abs(cx), abs(cz)) > S / 2 - rad: continue
++                if any(math.dist((cx, cz), (q["position"][0], q["position"][2])) <= rad + q["radius_m"] + 1 for q in P): continue
++                sc = relief(cx, cz) + 0.01 * math.hypot(dx, dz)
++                if sc < best[0] - 1e-6: best = (sc, cx, cz)
++        x, z = float(best[1]), float(best[2])
+         gi = int(round((z + S / 2) / S * (n - 1))); gj = int(round((x + S / 2) / S * (n - 1)))
+         P.append({"id": o["id"], "position": [round(x, 2), round(float(hh[gi, gj]), 2), round(z, 2)], "radius_m": round(rad, 2)})
+     for i, p in enumerate(P):
+diff --git a/tools/imagine-to-3d/golden_hull.py b/tools/imagine-to-3d/golden_hull.py
+index 1d4c23b..42facf8 100644
+--- a/tools/imagine-to-3d/golden_hull.py
++++ b/tools/imagine-to-3d/golden_hull.py
+@@ -34,6 +34,7 @@ STRETCH_ANISO_MAX, STRETCH_FRAC_MAX, SMEAR_DENSITY_MIN = 3.0, 0.02, 0.15
+ FIN_FRAC_MAX, SPLAY_MAX, SHARD_FRAC_MAX = 0.06, 1.8, 0.01
+ GROOVE_M, GROOVE_RANGE, RUNE_CONTRAST_MIN = 0.04, (0.03, 0.06), 0.6
+ PANEL_H = 512
++RUNE_PLATE_MIN = 0.003  # rune-mask share of the front panel (with a >=15 L gap) below which the plate has no runes
+ FIXES = {"triangleQuality": ("weld-and-regrid", {"res": -8}), "obliqueProfile": ("chamfer-with-mirrored-45-view", {"chamfer": True}),
+          "untexturedArea": ("reproject-from-nearest-plate", {"fillGrey": True}), "budget": ("coarser-grid", {"res": -12}),
+          "baseShards": ("open-mask-and-drop-islands", {"openIters": 2}), "uvStretch": ("isotropic-cap-uv", {"capFix": True}),
+@@ -113,6 +114,9 @@ def clamp_flare(m, top, bot, k=1.15):
+     """Snow drifts / aprons hugging the shaft base widen the silhouette: in the lower 45 % of the shaft, keep at most
+     k x the median shaft width, centred on the shaft axis (the plinth is rebuilt separately)."""
+     m = m.copy(); rows = range(top + int((bot - top) * 0.55), bot)
++    for y in rows:  # undercut / tapering foot -> voxel overhang staircase above the plinth: fill to the row above
++        xs = np.where(m[y - 1])[0]
++        if len(xs): m[y, xs.min():xs.max() + 1] = True
+     mid = range(top + (bot - top) // 4, top + (bot - top) * 3 // 5)
+     cen = [np.mean(np.where(m[y])[0]) for y in mid if m[y].any()]; wid = [m[y].sum() for y in mid if m[y].any()]
+     if not cen: return m
+@@ -124,10 +128,31 @@ def clamp_flare(m, top, bot, k=1.15):
+     return m
+ 
+ 
+-def stone_only(img):
+-    """Plinth texture from stone pixels only: snow on the treads (much brighter than the stone) is in-painted from stone."""
+-    L = img.mean(2); med = np.median(L); snow = L > med + 40
+-    return inpaint(img, ~snow) if snow.any() and (~snow).any() else img
++def stone_patch(path, side, mF, rows, cols, pl_box, px=96, tone_box=None):
++    """Seamless stone texture from REAL plate pixels (never in-painted ones): the square window of the plinth box (or,
++    without a plinth, the lower shaft) whose pixels are closest to the shaft's own stone tone; mirror-tiled 2x2 so it
++    repeats without seams. Snow (much brighter than the stone) never wins a window."""
++    im = np.asarray(Image.open(path).convert("RGB")).astype(np.float32); k = im.shape[0] / side; L = im.mean(2)
++    tF, sbF = rows; c0, c1 = cols
++    Ms = np.asarray(Image.fromarray(mF.astype(np.uint8) * 255).resize((im.shape[1], im.shape[0]), Image.Resampling.NEAREST)) > 127
++    ta, tb = tone_box or (tF + (sbF - tF) * 0.35, tF + (sbF - tF) * 0.65)
++    mid = Ms[int(ta * k):int(tb * k)]; Lm = L[int(ta * k):int(tb * k)]
++    tone = float(np.median(Lm[mid])) if mid.any() else float(np.median(L))
++    if tone_box: y0, y1 = int(ta * k), int(tb * k); x0, x1 = int((c0 + (c1 - c0) * 0.2) * k), int((c1 - (c1 - c0) * 0.2) * k)
++    elif pl_box: y0, y1 = int(pl_box[0] * k), int(pl_box[1] * k); x0, x1 = int(max(0, c0 - (c1 - c0) * 0.3) * k), int(min(side, c1 + (c1 - c0) * 0.3) * k)
++    else: y0, y1 = int((tF + (sbF - tF) * 0.5) * k), int(sbF * k); x0, x1 = int(c0 * k), int(c1 * k)
++    px = int(max(16, min(px * k / 4, y1 - y0, x1 - x0))); best, bs = None, -1.0
++    ok = np.zeros_like(L, bool); R = L[y0:y1, x0:x1]
++    ok[y0:y1, x0:x1] = (np.abs(R - tone) < 28) & (Ms[y0:y1, x0:x1] if tone_box else True) & (np.abs(R - ndi.median_filter(R, size=15)) < 18)  # stone tone, no rune strokes
++    for y in range(y0, max(y0 + 1, y1 - px + 1), max(1, px // 6)):
++        for x in range(x0, max(x0 + 1, x1 - px + 1), max(1, px // 6)):
++            sc = float(ok[y:y + px, x:x + px].mean())
++            if sc > bs: bs, best = sc, (y, x)
++    y, x = best; P = im[y:y + px, x:x + px].copy(); bad = ~ok[y:y + px, x:x + px]
++    if bad.any() and (~bad).any(): P = inpaint(P, ~bad)  # the few snow / rune texels inside the best window
++    T = np.concatenate([P, P[:, ::-1]], 1); T = np.concatenate([T, T[::-1]], 0)
++    stone_patch.score = round(bs, 3)
++    return T
+ 
+ 
+ def crop_cols(m, r0, r1):
+@@ -256,14 +281,8 @@ def prepare(spec, p, hooks):
+     ks = fullS.shape[0] / side
+     A.add("side", fullS[int(tS * ks):int(sbS * ks), int(cS0 * ks):int(cS1 * ks)])
+     cap_rows = max(2, int((sbF - tF) * 0.12))
+-    cap = fullF[int(tF * k):int((tF + cap_rows) * k), int(cF0 * k):int(cF1 * k)]
+-    A.add("cap", np.asarray(Image.fromarray(cap.clip(0, 255).astype(np.uint8)).resize((PANEL_H, PANEL_H), Image.Resampling.LANCZOS)))
+-    if has_pl and pl_box:
+-        r0, r1 = pl_box; src = mF if r0 == sbF else rawF
+-        p0, p1 = crop_cols(src, r0, r1); stone = fullF[int(r0 * k):int(r1 * k), int(p0 * k):int(p1 * k)]
+-    else:
+-        stone = front[front.shape[0] // 2:]
+-    A.add("stone", stone_only(stone))
++    A.add("cap", stone_patch(v["front"], side, mF, (tF, sbF), (cF0, cF1), None, tone_box=(tF, tF + cap_rows)))  # cap from the plate's own top pixels
++    A.add("stone", stone_patch(v["front"], side, mF, (tF, sbF), (cF0, cF1), pl_box if has_pl else None))
+     if hooks.get("grey") and not p.get("fillGrey"):
+         _n, x0, w, im = A.get("front"); im[:, : w // 2] = 128
+     # rune strokes: local contrast on the front panel (bright or dark lines against the stone)
+@@ -271,9 +290,10 @@ def prepare(spec, p, hooks):
+     loc = ndi.median_filter(L, size=max(5, PANEL_H // 20)); thr = 22 + float(p.get("runeThr", 0))
+     rune = (np.abs(L - loc) > thr)
+     rune = ndi.binary_opening(rune, iterations=1)
++    plate_runes = float(rune.mean()) if L[rune].size and abs(float(L[rune].mean() - L[~rune].mean())) >= 15 else 0.0
+     if hooks.get("norunes"):
+         stone_med = np.median(fim[~rune], 0); fim[rune] = stone_med; rune[:] = False
+-    return dict(mF=mF, mS=mS, rows=(tF, sbF, bF), cols=(cF0, cF1), rowsS=(tS, sbS), colsS=(cS0, cS1), atlas=A, rune=rune,
++    return dict(mF=mF, mS=mS, rows=(tF, sbF, bF), cols=(cF0, cF1), rowsS=(tS, sbS), colsS=(cS0, cS1), atlas=A, rune=rune, plateRunes=plate_runes,
+                 plinthM=plinthM if has_pl else 0.0)
+ 
+ 
+@@ -323,7 +343,7 @@ def hull_mesh(occ, A, s, y0, cap_fix=True, smooth=2):
+             if ax == 2: uv = A.uv("front", X / nx if sgn > 0 else 1 - X / nx, 1 - Y / ny)
+             elif ax == 0: uv = A.uv("side", Z / nz if sgn < 0 else 1 - Z / nz, 1 - Y / ny)
+             elif sgn > 0: uv = A.uv("cap", X / nx, Z / nz) if cap_fix else A.uv("cap", X / nx, np.repeat((Y[:, :1] / ny), 4, 1))
+-            else: uv = A.uvsq("stone", X / nx, Z / nz, 160)
++            else: uv = A.uv("stone", X / nx, Z / nz)
+             P_.append(q.reshape(-1, 3)); UV.append(uv.reshape(-1, 2))
+     if not P_: return None
+     k0 = np.cumsum([0] + [len(p) // 4 for p in P_])[:-1]
+@@ -377,12 +397,12 @@ def plinth_mesh(A, hx, hz, plinthM, stepM, skirt=0.6):
+             na = max(1, int(math.ceil(L / (2 * ht)))); q = grid_face(o, a, b, na, 1); Q.append(q)
+             ss = np.array([[0, 0], [1, 0], [1, 1], [0, 1]], np.float32)
+             uu = np.concatenate([(ii + ss[:, 0]) / na for ii in range(na)]).reshape(na, 4); vv = np.tile(ss[:, 1], (na, 1))
+-            UVs.append(A.uv("stone", uu, band + (1 - vv) / n))
++            qw = L / na; UVs.append(A.uv("stone", np.tile(ss[:, 0], (na, 1)) * min(1.0, qw / 1.6), (1 - vv) * ht / 1.6))
+         if i >= 0:  # tread
+             o = np.array([-ex, yb + ht, ez]); a = np.array([2 * ex, 0, 0]); b = np.array([0, 0, -2 * ez])
+             na = max(1, int(math.ceil(2 * ex / 0.8))); nb = max(1, int(math.ceil(2 * ez / 0.8))); q = grid_face(o, a, b, na, nb); Q.append(q)
+             P2 = q.reshape(-1, 3); uu = (P2[:, 0] + ex) / (2 * ex); vv = (P2[:, 2] + ez) / (2 * ez)
+-            UVs.append(A.uv("stone", uu * sq, band + vv / n).reshape(-1, 4, 2))
++            lo = q.min(1, keepdims=True); UVs.append(A.uv("stone", (q[..., 0] - lo[..., 0]) / 1.6, (q[..., 2] - lo[..., 2]) / 1.6))
+     q = np.concatenate(Q); uv = np.concatenate([u.reshape(-1, 4, 2) for u in UVs])
+     return q.reshape(-1, 3).astype(np.float32), uv.reshape(-1, 2).astype(np.float32), quads_to_tris(q), n, h
+ 
+@@ -405,7 +425,7 @@ def build(spec, p, hooks):
+     if hooks.get("deepgroove") and not p.get("groove"): groove = 0.15
+     skin = skin_mesh(occ, A, P["rune"], s, plM, groove)
+     xs, _, zs = np.nonzero(occ[:, :2, :]); hx = (xs.max() - xs.min() + 1) / 2 * s if len(xs) else 1; hz = (zs.max() - zs.min() + 1) / 2 * s if len(zs) else 1
+-    parts0 = [hull[:3], skin[:3]]; meta = {"voxelM": round(s, 4), "res": res, "groove": skin[3], "footprintHalf": [round(hx, 3), round(hz, 3)]}
++    parts0 = [hull[:3], skin[:3]]; meta = {"voxelM": round(s, 4), "res": res, "groove": skin[3], "grooveSetM": round(groove, 4), "footprintHalf": [round(hx, 3), round(hz, 3)]}
+     if plM > 0:
+         pl = plinth_mesh(A, hx, hz, plM, float(spec.get("stepM", 0.4))); parts0.append(pl[:3])
+         meta.update(plinthSteps=pl[3], stepM=round(pl[4], 3), plinthM=plM, plinthHalf=[round(hx + 0.15 + (pl[3] - 1) * 0.25, 3), round(hz + 0.15 + (pl[3] - 1) * 0.25, 3)])
+@@ -418,7 +438,7 @@ def build(spec, p, hooks):
+     parts1 = [h1[:3]] + ([pl[:3]] if plM > 0 else [])
+     if hooks.get("lodpop"): parts1 = [(h1[0] * [1.3, 0.8, 1.3], h1[1], h1[2])] + parts1[1:]
+     lod1 = merge(parts1)
+-    return dict(lod0=lod0, lod1=lod1, atlas=A.image(), A=A, rune=P["rune"], occ=occ, meta=meta)
++    return dict(lod0=lod0, lod1=lod1, atlas=A.image(), A=A, rune=P["rune"], plateRunes=P["plateRunes"], occ=occ, meta=meta)
+ 
+ 
+ # ------------------------------------------------------------------ renderer (numpy z-buffer, offline, deterministic)
+@@ -557,6 +577,9 @@ def gate_mesh(B, work, budget):
+             "runeContrast": (rc, f"ratio>={RUNE_CONTRAST_MIN}", rc["ratio"] >= RUNE_CONTRAST_MIN),
+             "grooveDepth": (g, list(GROOVE_RANGE), GROOVE_RANGE[0] <= g <= GROOVE_RANGE[1]),
+             "budget": (len(tri), budget, 0 < len(tri) <= budget)}
++    if B.get("plateRunes", 1.0) < RUNE_PLATE_MIN:  # the plate itself carries no runes: nothing to keep, nothing to groove
++        rc["note"] = "no runes on the plate"; rows["runeContrast"] = (rc, "n/a (plate has no runes)", True)
++        gs = m.get("grooveSetM", 0.0); rows["grooveDepth"] = (gs, f"set <= {GROOVE_RANGE[1]} (no runes to measure)", gs <= GROOVE_RANGE[1])
+     if m.get("plinthM"):
+         rows["plinthSteps"] = ({"steps": m["plinthSteps"], "stepM": m["stepM"], "plinthM": m["plinthM"]}, "stepM<=0.4", m["stepM"] <= float(0.4) + 1e-6)
+     rows = {k: {"value": v, "limit": l, "pass": bool(p)} for k, (v, l, p) in rows.items()}
+@@ -608,3 +631,7 @@ def run_cli(spec_path):
+     json.dump(res, open(os.path.join(work, "result.json"), "w"), indent=1, default=str)
+     print(f"[golden-hull] {spec['object']}: {res['verdict']} after {len(attempts)} attempt(s)")
+     return 0 if ok else 1
++
++
++if __name__ == "__main__":
++    sys.exit(run_cli(sys.argv[1]))
+diff --git a/tools/imagine-to-3d/selftest/golden_hull_st.py b/tools/imagine-to-3d/selftest/golden_hull_st.py
+index edaa528..e87dcc8 100644
+--- a/tools/imagine-to-3d/selftest/golden_hull_st.py
++++ b/tools/imagine-to-3d/selftest/golden_hull_st.py
+@@ -1,6 +1,8 @@
+ #!/usr/bin/env python3
+-"""golden-hull selftest (offline, tiny 64 px plates): good object PASSES; flat facade, shredded mesh, grey area FAIL;
+-a FAIL writes a fix-ledger row and the ONE automatic retry rescues what the ledger fix can fix; bad spec -> exit 2."""
++"""golden-hull selftest (offline, tiny 128 px plates: snow ground, sky, runed stone shaft on a wider stepped plinth):
++good object PASSES every gate; each bad case FAILS its own gate (flat facade, shredded mesh, grey area, base shards/fins,
++cap smear, runes lost, grooves too deep, steps too tall, over budget); a FAIL writes a fix-ledger row and the ONE
++automatic retry rescues what the ledger fix can fix; bad spec -> exit 2."""
+ import json, os, shutil, subprocess, sys, tempfile
+ import numpy as np
+ from PIL import Image
+@@ -11,15 +13,21 @@ def ok(n, c, info=""):
+ T = tempfile.mkdtemp(prefix="ghull-st-"); L = os.path.join(T, "ledger.jsonl"); env = dict(os.environ, GOLDEN_FIX_LEDGER=L)
+ try:
+     rng = np.random.default_rng(0)
+-    def plate(path, taper):
+-        a = np.full((64, 64, 3), 40.0)
+-        for y in range(8, 60):
+-            half = (4 + (y - 8) * 2 // 5) if taper else 8 + (y - 8) // 9 * 3
+-            a[y, 32 - half:32 + half] = np.array([110, 120, 150]) + rng.normal(0, 18, (2 * half, 3))
++    def plate(path, taper, runes):
++        N = 128; a = np.zeros((N, N, 3)); a[:] = np.linspace(150, 200, N)[:, None, None] * np.array([0.6, 0.75, 1.0])  # sky
++        a[100:] = np.array([225, 232, 240]) + rng.normal(0, 4, (N - 100, N, 3))  # snow
++        for y in range(14, 100):
++            if y < 84: half = (9 + (y - 14) // 10) if taper else 12
++            else: half = 12 + (y - 84) // 4 * 3  # stepped plinth, wider than the shaft
++            a[y, 64 - half:64 + half] = np.array([50, 55, 68]) + rng.normal(0, 7, (2 * half, 3))
++        if runes:
++            for yy in (30, 48, 66):
++                for xx in (56, 66):
++                    a[yy:yy + 10, xx:xx + 2] = [200, 160, 90]; a[yy:yy + 2, xx:xx + 5] = [200, 160, 90]
+         Image.fromarray(a.clip(0, 255).astype(np.uint8)).save(path); return path
+-    f, s = plate(os.path.join(T, "front.png"), False), plate(os.path.join(T, "side.png"), True)
++    f, s = plate(os.path.join(T, "front.png"), False, True), plate(os.path.join(T, "side.png"), True, True)
+     def run(name, hooks=None, retries=1, **kw):
+-        sp = {"object": name, "work": os.path.join(T, name), "heightM": 30, "crop": f, "sideAngleDeg": 45, "retries": retries,
++        sp = {"object": name, "work": os.path.join(T, name), "heightM": 12, "crop": f, "sideAngleDeg": 45, "retries": retries,
+               "imagine": {"views": {"front": f, "side": s}}, "_testHooks": hooks or {}, **kw}
+         p = os.path.join(T, name + ".json"); json.dump(sp, open(p, "w"))
+         r = subprocess.run([sys.executable, AUTO, "run", p, "--method", "golden-hull"], capture_output=True, text=True, env=env)
+@@ -28,11 +36,17 @@ try:
+     r, res = run("good")
+     ok("good carved hull -> PASS, GLB + render sheet, Art Director pending", r.returncode == 0 and os.path.exists(res["glb"]) and os.path.exists(res["artDirector"]["sheet"]) and res["artDirector"]["status"] == "pending-art-director", r.stdout[-300:])
+     rows = res["attempts"][0]["rows"]
+-    ok("good: oblique-profile, triangle quality, untextured area, budget all PASS", all(v["pass"] for v in rows.values()), json.dumps(rows)[:300])
+-    for hook, check in (("flat", "obliqueProfile"), ("shred", "triangleQuality"), ("grey", "untexturedArea")):
++    ok("good: every object gate PASS (profile, quality, shards, stretch, untextured, runes, groove, steps, budget)",
++       all(v["pass"] for v in rows.values()) and {"baseShards", "uvStretch", "runeContrast", "grooveDepth", "plinthSteps"} <= set(rows), json.dumps(rows)[:400])
++    m = res.get("meta", {})
++    ok("good: stepped 2.0 m plinth, steps <= 0.4 m, groove 3-6 cm", m.get("plinthM") == 2.0 and m.get("stepM", 9) <= 0.4 and 0.03 <= m.get("groove", {}).get("grooveM", 0) <= 0.06, json.dumps(m)[:300])
++    for hook, check in (("flat", "obliqueProfile"), ("shred", "triangleQuality"), ("grey", "untexturedArea"), ("shards", "baseShards"),
++                        ("smear", "uvStretch"), ("norunes", "runeContrast"), ("deepgroove", "grooveDepth")):
+         r, res = run("bad-" + hook, {hook: True}, retries=0)
+         row = res["attempts"][-1]["rows"][check] if res.get("attempts") else {"pass": True}
+         ok(f"{hook} -> FAIL on {check}", r.returncode == 1 and not row["pass"], r.stdout[-300:])
++    r, res = run("tall-steps", retries=0, stepM=0.8)
++    ok("steps taller than 0.4 m -> FAIL on plinthSteps", r.returncode == 1 and not res["attempts"][-1]["rows"]["plinthSteps"]["pass"], r.stdout[-300:])
+     r, res = run("budget", budgetTris=50, retries=0)
+     ok("over the triangle budget -> FAIL", r.returncode == 1 and not res["attempts"][-1]["rows"]["budget"]["pass"])
+     open(L, "w").close()
+@@ -41,6 +55,10 @@ try:
+     ok("grey FAIL -> fix-ledger row + one retry -> PASS", r.returncode == 0 and len(res["attempts"]) == 2 and any(x["check"] == "untexturedArea" and x["fix"] == "reproject-from-nearest-plate" for x in led), r.stdout[-300:])
+     r, res = run("rescue-shred", {"shred": True}, retries=1)
+     ok("shredded FAIL -> weld-and-regrid retry -> PASS", r.returncode == 0 and len(res["attempts"]) == 2)
++    r, res = run("rescue-smear", {"smear": True}, retries=1)
++    ok("cap smear FAIL -> isotropic-cap-uv retry -> PASS", r.returncode == 0 and len(res["attempts"]) == 2, r.stdout[-300:])
++    r, res = run("rescue-groove", {"deepgroove": True}, retries=1)
++    ok("15 cm groove FAIL -> reset-groove-4cm retry -> PASS", r.returncode == 0 and len(res["attempts"]) == 2, r.stdout[-300:])
+     r, res = run("flat-stays", {"flat": True}, retries=1)
+     ok("flat facade cannot be rescued by the retry -> FAIL after exactly 2 attempts", r.returncode == 1 and len(res["attempts"]) == 2)
+     json.dump({"object": "x", "work": T}, open(os.path.join(T, "bad.json"), "w"))
