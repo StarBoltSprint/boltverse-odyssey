@@ -69,6 +69,10 @@ window.__probe = {view, tris, hitM: hit ? +hit.distance.toFixed(2) : null, px};
 document.getElementById('hud').textContent = `${view}  tris ${tris}\nhit ${hit ? hit.distance.toFixed(2) + ' m' : '-'}  ` +
   (px ? `screen ${px.screenPxPerM.toFixed(0)} px/m  stone ${px.texPxPerM.toFixed(0)} px/m${px.magnified ? ' MAGNIFIED' : ''}` : '') +
   `\n${renderer.getContext().getParameter(renderer.getContext().VERSION)}`;
+// gatesuite playgate: everything the page draws, with its source (build GLB vs page furniture)
+const inv = []; scene.traverse(o => { if (!o.isMesh) return; let n = o, src = 'page'; while (n) { if (n === kit.scene) src = 'build'; n = n.parent; }
+  inv.push({name: o.name, visible: o.visible, drawn: o.visible, doubleSided: o.material.side === THREE.DoubleSide, glb_doubleSided: !!(o.userData.gltfDoubleSided), source: src}); });
+window.__inventory = inv;
 if (P.get('hud') === '0') document.getElementById('hud').style.display = 'none';
 renderer.render(scene, camera); window.__ready = true;
 </script></body></html>

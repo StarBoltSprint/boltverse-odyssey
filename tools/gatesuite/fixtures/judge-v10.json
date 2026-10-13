@@ -1,0 +1,18 @@
+{
+ "dE2000_mean": 11.3,
+ "ssim_L_mask": 0.1675,
+ "perceptual_cos": 0.4247,
+ "perceptual": {
+  "model": "dinov2_vits14 (Apache-2.0)",
+  "cls_cos": 0.4871,
+  "patch_cos": 0.4247
+ },
+ "scores": {
+  "colour": 71.8,
+  "structure": 16.7,
+  "perceptual": 17.8
+ },
+ "total": 36.4,
+ "gate": 50.0,
+ "verdict": "FAIL"
+}
