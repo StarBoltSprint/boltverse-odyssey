@@ -7,9 +7,9 @@
 #   1 fill      tools/biome/biomes/<id>.json (+ .local.json) - only when the bible does not exist yet
 #   2 prompts   out/<id>/prompts.json + prompts.md (every slot, style block + avoid list, cache keys)
 #   3 manifest  hit / miss against the catalogue; --inbox DIR ingests DIR/<slot>.png first
-#   4 IMAGINE   manual / external step (this script never calls Imagine or Grok, never spends credit):
-#               generate the missing slots from prompts.md - the key still FIRST - save them as <slot>.png in an
-#               inbox, rerun with --inbox. Stops here (exit 10) while slots miss, unless --partial.
+#   4 IMAGINE   automatic: tools/golden/imagine_auto.py generates the missing slots through Grok Build's built-in
+#               Imagine (headless CLI, never the xAI API), key still FIRST, resumable. GOLDEN_IMAGINE=mock for tests.
+#               --manual keeps the old external step: save <slot>.png into an inbox, rerun with --inbox (exit 10).
 #   5 qc        anchor sampled from the key still, then every plate: pass | lut (graded copy) | regenerate | fallback
 #   6 stitch    sky-H* + sky-Z + sky-N -> 2:1 equirect (+ horizon band); horizon + fog bands written back
 #   7 bake      one carved, displaced, LOD'd GLB per object with views (Blender headless, CPU)
@@ -18,13 +18,13 @@
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 ID="${1:?biome id}"; shift
-LORE=""; PLAYER="I want to explore"; SEED=1; ARCH=""; INBOX=""; SLOTS=""; PARTIAL=0; BAKE=1
+LORE=""; PLAYER="I want to explore"; SEED=1; ARCH=""; INBOX=""; SLOTS=""; PARTIAL=0; BAKE=1; MANUAL=0
 BLENDER="${BLENDER:-$(command -v blender || echo /home/box/.local/bin/blender)}"
 while [ $# -gt 0 ]; do
   case "$1" in
     --lore) LORE="$2"; shift 2;; --player) PLAYER="$2"; shift 2;; --seed) SEED="$2"; shift 2;;
     --archetype) ARCH="--archetype $2"; shift 2;; --inbox) INBOX="$2"; shift 2;; --slots) SLOTS="$2"; shift 2;;
-    --partial) PARTIAL=1; shift;; --no-bake) BAKE=0; shift;; --blender) BLENDER="$2"; shift 2;;
+    --partial) PARTIAL=1; shift;; --manual) MANUAL=1; shift;; --no-bake) BAKE=0; shift;; --blender) BLENDER="$2"; shift 2;;
     *) echo "unknown arg $1" >&2; exit 2;;
   esac
 done
@@ -49,9 +49,26 @@ if [ -z "$SLOTS" ]; then
   MISS=$(python3 -c "import json;print(json.load(open('$OUT/manifest.json'))['misses'])")
   KEYMISS=$(python3 -c "import json;m=json.load(open('$OUT/manifest.json'));print(int(any(r['slot']=='key' and r['status']!='hit' for r in m['slots'])))")
   if [ "$MISS" != "0" ]; then
-    say "4 IMAGINE STEP (manual / external, $MISS slots) - prompts: $OUT/prompts.md"
-    [ "$KEYMISS" = "1" ] && echo "   the key still (slot 'key') comes FIRST: everything else is checked against it."
-    [ $PARTIAL -eq 0 ] && { echo "   save <slot>.png into an inbox, then: $0 $ID --inbox <dir>"; exit 10; }
+    if [ $MANUAL -eq 0 ]; then
+      say "4 IMAGINE (imagine-auto, $MISS slots, key first)"
+      AUTO_IN="$OUT/imagine-auto"; mkdir -p "$AUTO_IN"
+      python3 - "$OUT/prompts.json" "$OUT/manifest.json" "$AUTO_IN/prompts.json" <<'PY'
+import json,sys
+p=json.load(open(sys.argv[1])); m=json.load(open(sys.argv[2])); miss={r["slot"] for r in m["slots"] if r["status"]!="hit"}
+sl=sorted([s for s in p["slots"] if s["slot"] in miss], key=lambda s: s["slot"]!="key")
+OK={"auto","1:1","16:9","9:16","3:2","2:3","4:3","3:4","2:1","1:2"}  # Imagine has no 4:1: widest is 2:1 (qc/stitch crop)
+asp=lambda a: a if a in OK else "2:1"
+json.dump({"slots":[{"slot":s["slot"],"prompt":s["prompt"],"aspect":asp(s.get("aspect") or "auto")} for s in sl]},open(sys.argv[3],"w"),indent=1)
+PY
+      python3 "$HERE/../golden/imagine_auto.py" run --prompts "$AUTO_IN/prompts.json" --out "$AUTO_IN/plates" ${GOLDEN_IMAGINE:+--backend "$GOLDEN_IMAGINE"}
+      RCI=$?
+      python3 "$HERE/manifest.py" --biome "$ID" --ingest "$AUTO_IN/plates"
+      [ $RCI -ne 0 ] && [ $PARTIAL -eq 0 ] && { echo "   imagine-auto could not make every slot (see $AUTO_IN/plates/manifest.json); rerun resumes"; exit 3; }
+    else
+      say "4 IMAGINE STEP (manual / external, $MISS slots) - prompts: $OUT/prompts.md"
+      [ "$KEYMISS" = "1" ] && echo "   the key still (slot 'key') comes FIRST: everything else is checked against it."
+      [ $PARTIAL -eq 0 ] && { echo "   save <slot>.png into an inbox, then: $0 $ID --inbox <dir>"; exit 10; }
+    fi
   fi
 else
   say "3-4 skipped: using existing plates in $SLOTS"
