@@ -25,7 +25,7 @@ ROOT = HERE.parent.parent
 sys.path.insert(0, str(ROOT))
 from tools.gatesuite import glbio  # noqa: E402
 
-STEPS = ["spine", "layout", "walk", "pack", "budget", "playgate", "depthmeasure", "kitjudge"]
+STEPS = ["spine", "layout", "walk", "pack", "budget", "playgate", "depthmeasure", "kitjudge", "keyfeatures"]
 ENGINE = {"piece": {"lod0": 3000, "lod1": 1000, "lod2": 300}, "tier": {"lod0": 90000}, "greybox": {"lod0": 90000},
           "draws_max": 20, "tex_mb_max": 48, "texel_min": 500}
 LAYOUT = {"max_grade": 0.14, "max_pitch_step_deg_per_5m": 4.0, "camera": {"behind": 4.5, "above": 2.6, "vfov_deg": 48},
@@ -300,7 +300,8 @@ def step_depthmeasure(b, ctx):
     ms = [m for m in allm if not m["name"].lower().startswith(("collider", "socket", "marker"))]
     c = []
     exp = b.m.get("expect", {})
-    V = np.vstack([m["V"] for m in ms]) if ms else np.zeros((1, 3))
+    struct_ = [m for m in ms if not m["name"].lower().startswith(("snow", "icicle", "tread_snow"))] or ms   # Reader height = structure (snow load excluded)
+    V = np.vstack([m["V"] for m in struct_]) if struct_ else np.zeros((1, 3))
     h = float(V[:, 1].max() - max(V[:, 1].min(), 0.0))
     if "height_m" in exp:
         tol = exp.get("tol", 0.10)
@@ -323,7 +324,14 @@ def step_depthmeasure(b, ctx):
             pts = []
             zlo, zhi = Vm[:, 2].min(), Vm[:, 2].max()
             # probe 0.3 m behind the supports' front face (the visible seat line), inside the overhang's depth
-            zw = float(np.clip(zfront - 0.3, zlo + 0.05, zhi - 0.05))
+            # wall front measured at THIS overhang's height (stepped tiers: each tier has its own front)
+            ylo = Vm[:, 1].min()
+            near = [w_["V"][(w_["V"][:, 1] > ylo - 1.0) & (w_["V"][:, 1] < ylo)] for w_ in walls]
+            near = np.vstack([n_ for n_ in near if len(n_)]) if any(len(n_) for n_ in near) else None
+            zf = float(np.percentile(near[:, 2], 99)) if near is not None else zfront
+            if zfront - zf < 1.0:   # not a stepped-back tier (>= 1 m behind the front): keep the global front
+                zf = zfront
+            zw = float(np.clip(zf - 0.3, zlo + 0.05, zhi - 0.05))
             for x in np.arange(Vm[:, 0].min() + 0.25, Vm[:, 0].max() - 0.2, 0.5):   # one probe per 0.5 m of run
                 hy = _vhits([[x, 0.0, zw]], Vm, m["F"])[0]                  # the overhang's own underside here
                 if len(hy):
@@ -369,6 +377,19 @@ def _stripe(img):
     return r
 
 
+def _bright_strip(img):
+    """Straight bright horizontal strip (e.g. a flat white bar under a cornice / tier lip): pixels brighter than the
+    view's 97th percentile (and > 170) that survive a horizontal opening 30 % of the view wide, in a band <= 30 px tall."""
+    import cv2
+    g = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    m = ((g > max(170, np.percentile(g, 97))) * 255).astype(np.uint8)
+    W = img.shape[1]
+    o = cv2.morphologyEx(m, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_RECT, (int(W * 0.3), 1)))
+    n, _, st, _ = cv2.connectedComponentsWithStats(o)
+    H = img.shape[0]
+    return [st[i].tolist()[:4] for i in range(1, n) if 2 <= st[i][3] <= 30 and st[i][2] >= W * 0.3 and 2 < st[i][1] and st[i][1] + st[i][3] < H - 2]
+
+
 def step_kitjudge(b, ctx):
     import cv2
     c = []
@@ -392,12 +413,27 @@ def step_kitjudge(b, ctx):
         img = img[60:]   # drop HUD text
         dr = _dark_rects(img)
         c.append(chk(f"{name}: no dark hard rectangle", not dr, dr[:3]))
+        bs = _bright_strip(img)
+        c.append(chk(f"{name}: no straight bright horizontal strip (bar under lip)", not bs, bs[:3]))
         st = _stripe(img)
         c.append(chk(f"{name}: stripe/chevron repeat (FFT) < {KITJUDGE['stripe_ratio']}", st < KITJUDGE["stripe_ratio"], round(st, 2)))
     return sec(verdict(c), c)
 
 
-FN = {"spine": step_spine, "layout": step_layout, "walk": step_walk, "pack": step_pack, "budget": step_budget,
+def step_keyfeatures(b, ctx):
+    """Blocking: every element of the zone's key feature sheet (tools/keysheet) must be present on the key-camera render."""
+    sys.path.insert(0, str(ROOT / "tools/keysheet"))
+    import check as keysheet_check
+    j = b.m.get("judge", {})
+    sheet = b.m.get("keysheet")
+    if not j.get("render") or not sheet:
+        return sec("FAIL", [chk("key-camera render + keysheet declared", False, {"render": j.get("render"), "keysheet": sheet})])
+    sp = Path(sheet) if Path(sheet).is_absolute() else ROOT / sheet
+    rows = keysheet_check.check(b.path(j["render"]), sp)
+    return sec(verdict(rows), rows, keysheet=str(sp))
+
+
+FN = {"keyfeatures": step_keyfeatures, "spine": step_spine, "layout": step_layout, "walk": step_walk, "pack": step_pack, "budget": step_budget,
       "playgate": step_playgate, "depthmeasure": step_depthmeasure, "kitjudge": step_kitjudge}
 
 

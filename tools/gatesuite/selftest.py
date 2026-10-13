@@ -1,10 +1,11 @@
 """gatesuite --selftest: every named must-fail fixture must FAIL (whole report and the named section),
 and the controls must PASS their named section (so the suite is not FAIL-everything)."""
-import json, shutil, tempfile
+import json, shutil, sys, tempfile
 from pathlib import Path
 import numpy as np
 from tools.gatesuite import glbio
-from tools.gatesuite.run import run, STEPS
+ROOTK = Path(__file__).resolve().parents[2]
+from tools.gatesuite.run import run, STEPS, _bright_strip
 
 FX = Path(__file__).resolve().parent / "fixtures"
 V4_GLB = Path("/workspace/kitrelief-out/zd-tier-v4port/kit-lod0.glb")
@@ -109,5 +110,19 @@ def main():
     row("control spine v1.3.1 + inset collider: layout PASS", r["sections"]["layout"]["status"] == "PASS",
         json.dumps([c for c in r["sections"]["layout"]["checks"] if not c["ok"]])[:200])
     row("control 7.5 m box + 1.8 m marker: depthmeasure PASS", r["sections"]["depthmeasure"]["status"] == "PASS")
+    import cv2  # noqa: F401
+    im = np.full((600, 400, 3), 60, np.uint8); im[200:212, 40:360] = 245            # flat white bar under a lip
+    row("bright-strip check flags a straight white bar", bool(_bright_strip(im)))
+    im2 = np.full((600, 400, 3), 60, np.uint8)
+    for x in range(40, 360, 40):
+        im2[200:200 + 30 + (x * 7) % 40, x:x + 18] = 245                         # separate irregular drips
+    row("bright-strip check passes separate drips", not _bright_strip(im2))
+    sys.path.insert(0, str(ROOTK / "tools/keysheet"))
+    import check as KS
+    F = Path(__file__).parent / "fixtures"; SH = ROOTK / "tools/keysheet/zones/zd-terrace/sheet.json"
+    kr = KS.check(F / "spec-final-render.jpg", SH)
+    row("keysheet zd-terrace: spec-final (bar icicles, no canopies/doors) FAILS", not all(r_["ok"] for r_ in kr), [r_["check"].split(" ")[0] for r_ in kr if not r_["ok"]])
+    kk = KS.check(F / "key-zd1-b.jpg", SH)
+    row("keysheet zd-terrace: key vs itself PASSES", all(r_["ok"] for r_ in kk), [r_["check"].split(" ")[0] for r_ in kk if not r_["ok"]])
     print(f"{sum(rows)}/{len(rows)} rows pass")
     return 0 if all(rows) else 1

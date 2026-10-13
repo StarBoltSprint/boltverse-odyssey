@@ -12,7 +12,7 @@ KEY_TIERS = [(-11.5, 20.28), (-12.0, 20.6), (-12.03, 18.55)]   # v11 key-mask ti
 KEY_DOOR_X = (3.77 + 5.47) / 2                  # key door centre (kit units)
 KEY_CORNICE = (-0.82, 10.35)
 # key-colour projection (key-zd1-b.jpg inside the SAM2 tier mask vs the library albedo means), linear gains
-KEY_GAIN = {"stone": [0.5, 0.55, 0.65], "snow": [0.47, 0.65, 0.64]}
+KEY_GAIN = {"stone": [0.6, 0.7, 0.9], "snow": [0.85, 0.95, 1.05]}   # snow: key canopies/treads read bright blue-white (keysheet), was 0.47/0.65/0.64
 
 
 def solid(lo, hi, name, snow=0.0):
@@ -22,7 +22,9 @@ def solid(lo, hi, name, snow=0.0):
 
 KEY_ROWS = [7, 4, 4]   # key-scale rises: v11 stepped tops 4.4 / 7.1 m (solved key camera) -> 4.375 / 6.875 / 9.375 m in 0.625 m courses
 SPEC_ROWS = [4, 4, 4]  # Reader spec: 3 x 2.5 m
-DOOR_TIERS = (0,)  # stacked doors (0,1,2) tried: judge +0.1/-0.2, broke budget + float probes -> tier 1 only
+SLAB_T = 0.45   # tread snow slab thickness (kit-art caps 0.5-0.8 incl. the rolled lip)
+DOOR_TIERS = (0, 1, 2)  # key feature sheet: three stacked doorways, one per tier
+CANOPY_HALF = 2.0       # canopy cornice 4 m wide over a 2.6 m door bay
 
 
 def layout(sc=K, lod=0, rows_list=None):
@@ -77,57 +79,56 @@ def layout(sc=K, lod=0, rows_list=None):
         else:
             meshes[core] = P.merged([solid([x0, yf + 0.2, z0], [x1, BACK, z0 + Rk], "c")], core, "stone")
         inst.append((f"tier{k + 1}_core", core, (0, 0, 0), 0.0)); 
-        treads.append(solid([x0 + 0.05, yf + 0.6, z0 + Rk], [x1 - 0.05, BACK - 0.05, z0 + Rk + 0.08], "s", 1.0))
+        # v2 (key: biggest visible gap): thick white snow slab on every tread, rounded, overhanging the tier front
+        # v3 (keysheet no_bar): rounded extruded slab whose front lip bulges/droops along x - no straight edge
+        dep = 1.3   # bulging lip part; the flat tread behind it is a plain slab whose front edge is buried in the lip
+        treads.append(P.tag(P.rbox([x0 + 0.1, yf + 0.9, z0 + Rk - 0.05], [x1 - 0.1, BACK - 0.05, z0 + Rk + SLAB_T * 0.8], 0.1, 1), snow=1.0))
+        prof = P.rounded_profile([(dep, -0.05), (dep, SLAB_T), (0.3, SLAB_T * 1.08), (-0.25, SLAB_T * 0.8), (-0.4, 0.15), (-0.3, -0.15), (0.0, -0.05)], 0.12, 3)
+        prof = [(y_ + yf, z_ + z0 + Rk) for y_, z_ in prof]
+        ph = 1.3 * k + 0.4
+        slab = P.extrude_profile(prof, x0 + 0.1, x1 - 0.1, int((x1 - x0) / 0.5), f"tread_snow{k}",
+                                 wobble=lambda x, ph=ph: 0.88 + 0.12 * math.sin(x * 1.3 + ph) + 0.08 * math.sin(x * 3.7 + 2 * ph))
+        treads.append(P.tag(slab, snow=1.0))
         empt += [(f"socket_tier{k + 1}_front_L", (x0, yf, z0)), (f"socket_tier{k + 1}_front_R", (x1, yf, z0 + 0))]
     meshes["tread_snow"] = P.merged(treads, "tread_snow", "stone"); inst.append(("tread_snow", "tread_snow", (0, 0, 0), 0.0))
     # doors: the key stacks one doorway per tier in the same column, each under a snow canopy
     for k in DOOR_TIERS:
         put("door_recess_frame", (door_x, k * T, Z0[k]))
-    # cornice on tier 1 (key extent), corbels every 2 m, icicles under the lip every 1 m
-    cx0 = math.floor(KEY_CORNICE[0] * sc * 2) / 2; ncr = int(round((KEY_CORNICE[1] * sc - cx0) / 2.0)); cx1 = cx0 + 2 * ncr
-    for i in range(ncr):
-        put("cornice_run", (cx0 + 1 + 2 * i, 0.0, R))
-        put("snow_drift_cap", (cx0 + 1 + 2 * i, -0.35, R + 0.32))
-    put("cornice_end", (cx1 + 0.5, 0.0, R)); put("cornice_end", (cx0 - 0.5, 0.0, R), 0.0, True)
-    put("snow_drift_end", (cx1 + 0.4, -0.3, R + 0.32)); put("snow_drift_end", (cx0 - 0.4, -0.3, R + 0.32))
-    for i in range(ncr):
-        put("corbel", (cx0 + 1 + 2 * i, 0.0, R - 0.62))
+    # key feature sheet (specs/zd/key-features.json): per tier a thick snow cap along the front, and over every
+    # doorway a canopy = short cornice + corbels carrying a thick bulging overhanging snow slab; icicles root
+    # INSIDE the slab lip (no bar). The long tier-1 cornice of v1 is gone (not in the key).
     ic_s = P.PIECES["icicle_cluster_s"][0](0); ic_l = P.PIECES["icicle_cluster_l"][0](0)  # pivot heights from LOD0
-    for j, xc in enumerate(np.arange(cx0 + 0.5, cx1, 1.0)):
-        key = "icicle_cluster_l" if j % 3 == 1 else "icicle_cluster_s"
-        h = (ic_l if key.endswith("_l") else ic_s).V[:, 2].max()
-        put(key, (xc, -0.62, R - h + 0.05))
-    # snow caps (+ small icicles) on the tier 2 / tier 3 front edges, drift ends at both tier ends
-    for k in (1, 2):
-        x0, x1 = tiers[k]
-        can = (door_x - 2.0, door_x + 2.0) if k in DOOR_TIERS else (1e9, -1e9)
+    hs, hl = ic_s.V[:, 2].max(), ic_l.V[:, 2].max()
+    cx0, cx1 = door_x - CANOPY_HALF, door_x + CANOPY_HALF
+    for k in range(3):
+        x0, x1 = tiers[k]; yf = k * T; zt = ZT[k]
+        door = k in DOOR_TIERS
         for xc in np.arange(x0 + 1.0, x1 - 0.99, 2.0):
-            if can[0] < xc < can[1]:
+            if door and cx0 - 0.5 < xc < cx1 + 0.5:
                 continue
-            put("snow_drift_cap", (xc, k * T - 0.1, ZT[k]))
-        if k in DOOR_TIERS:   # door canopy: short cornice + corbels + snow + icicles at this tier's top
-            for xc in (door_x - 1.0, door_x + 1.0):
-                put("cornice_run", (xc, k * T, ZT[k])); put("snow_drift_cap", (xc, k * T - 0.35, ZT[k] + 0.32))
-                put("corbel", (xc, k * T, ZT[k] - 0.62))
-            put("cornice_end", (door_x + 2.5, k * T, ZT[k])); put("cornice_end", (door_x - 2.5, k * T, ZT[k]), 0.0, True)
-            for j, xc in enumerate(np.arange(door_x - 1.5, door_x + 2.0, 1.0)):
-                key = "icicle_cluster_l" if j % 2 else "icicle_cluster_s"
-                h = (ic_l if key.endswith("_l") else ic_s).V[:, 2].max()
-                put(key, (xc, k * T - 0.62, ZT[k] - h + 0.05))
-        put("snow_drift_end", (x0 + 0.4, k * T, ZT[k])); put("snow_drift_end", (x1 - 0.4, k * T, ZT[k]))
-        h = ic_s.V[:, 2].max()
+            jr = np.random.default_rng(abs(int(xc * 10)) + 97 * k + 1000)      # break the straight cap line (keysheet no_bar)
+            put("snow_drift_cap", (xc + jr.uniform(-0.15, 0.15), yf - 0.1 + jr.uniform(-0.12, 0.08), zt + jr.uniform(-0.08, 0.1)), jr.uniform(-5, 5))
+        put("snow_drift_end", (x0 + 0.4, yf, zt)); put("snow_drift_end", (x1 - 0.4, yf, zt))
         for xc in np.arange(x0 + 1.5, x1 - 1.0, 3.0):
-            put("icicle_cluster_s", (xc, k * T - 0.3, ZT[k] - h + 0.1))
-    # tier 1 front snow where no cornice
-    x0, x1 = tiers[0]
-    for xc in np.arange(x0 + 1.0, x1 - 0.99, 2.0):
-        if not (cx0 - 0.5 <= xc <= cx1 + 0.5):
-            put("snow_drift_cap", (xc, -0.1, R))
+            if door and cx0 - 0.5 < xc < cx1 + 0.5:
+                continue
+            put("icicle_cluster_s", (xc, yf - 0.4, zt - hs))      # root inside the cap lip
+        if door:
+            for xc in np.arange(cx0 + 1.0, cx1, 2.0):
+                put("cornice_run", (xc, yf, zt)); put("corbel", (xc, yf, zt - 0.62))
+            put("cornice_end", (cx1 + 0.5, yf, zt)); put("cornice_end", (cx0 - 0.5, yf, zt), 0.0, True)
+            # snow pillow on the canopy (thick bulging drooping slab), icicles as its children rooted in the lip
+            zp = zt + 0.32
+            put("snow_pillow", (door_x, yf - 0.6, zp))
+            for j_, xc in enumerate(np.arange(cx0 - 0.1, cx1 + 0.2, 0.75)):
+                key = "icicle_cluster_l" if j_ % 3 == 1 else "icicle_cluster_s"
+                h_ = hl if key.endswith("_l") else hs
+                put(key, (xc, yf - 0.6 + P.PILLOW_LIP[0] + 0.1, zp + P.PILLOW_LIP[1] + 0.12 - h_))
     # 1.8 m marker in front of the terrace
     mk = P.tag(P.orient(gbox([-0.15, -0.15, 0], [0.15, 0.15, 1.8], 0.0, "marker_1.8m", "stone")))
     meshes["marker_1.8m"] = mk
     inst.append(("marker_1.8m", "marker_1.8m", (x0 - 1.5, -3.0, 0.0), 0.0))
-    empt += [("socket_door", (door_x, 0.0, 0.0)), ("socket_cornice_L", (cx0, 0.0, R)), ("socket_cornice_R", (cx1, 0.0, R))]
+    empt += [("socket_door", (door_x, 0.0, 0.0)), ("socket_canopy_L", (cx0, 0.0, R)), ("socket_canopy_R", (cx1, 0.0, R))]
     return meshes, inst, empt, {"tiers": tiers, "cornice": [cx0, cx1], "door_x": door_x, "tier_h": ZT[2] / 3, "height": ZT[2], "rises": RS, "tread": T, "back": BACK, "rows": ROWS, "scale_m_per_kit": sc}
 
 
@@ -188,7 +189,7 @@ def cmd_terrace(spine_path, out, variant="spec", fit_mask=None):
     (out / "sockets.json").write_text(json.dumps([{"name": n, "kit_local": list(map(float, p))} for n, p in empt], indent=1))
     draws = len({(k, meshes[k].material) for _, k, *_ in inst if not k.startswith("marker")})
     build = {"name": f"zd-terrace-kit-{variant}", "kind": "tier", "spine": "spine.json", "glbs": glbs, "colliders": "colliders.json",
-             "sockets": "sockets.json", "frame": fr, "expect": {"height_m": round(info["height"], 3), "tol": 0.1, "overhang": True},
+             "sockets": "sockets.json", "frame": fr, "keysheet": "tools/keysheet/zones/zd-terrace/sheet.json", "expect": {"height_m": round(info["height"], 3), "tol": 0.1, "overhang": True},
              "draws": draws, "page": "play.html?view=key&hud=0&model=terrace-local.glb",
              "judge": {"render": "gate/key-render.png", "key": "gate/key.jpg", "mask": "gate/mask.png"},
              "views": {v: f"gate/view-{v}.png" for v in ("3m", "chase", "45", "grazing", "side", "side4m")},

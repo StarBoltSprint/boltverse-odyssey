@@ -20,7 +20,7 @@ from outline import spike, taubin  # noqa: E402
 
 COURSE_H = 0.625     # 4 courses per 2.5 m tier (key courses read 0.55-0.70 m)
 BEVEL = 0.04         # >= 2 cm (kit-engine)
-LODN = {0: 4, 1: 2, 2: 1}   # rounded-box face subdivisions per LOD
+LODN = {0: 3, 1: 2, 2: 1}   # rounded-box face subdivisions per LOD (lod0 4 -> 3: tier budget with 3 door canopies)
 
 
 # ------------------------------------------------------------------ primitives
@@ -196,9 +196,9 @@ def snow_drift_cap(lod, length=2.0, seed=4):
     t = rng.uniform(0.5, 0.8)
     prof = rounded_profile([(0.9, 0.0), (0.9, 0.18), (0.1, t * 0.55), (-0.15, t * 0.5), (-0.28, t * 0.25), (-0.25, -0.12), (-0.1, 0.0)], 0.12, k + 1)
     ph = rng.uniform(0, 6)
-    segs = {0: 8, 1: 4, 2: 1}[lod]
+    segs = {0: 10, 1: 4, 2: 1}[lod]
     m = extrude_profile(prof, -length / 2, length / 2, segs, "snow_drift_cap",
-                        wobble=lambda x: 0.85 + 0.15 * math.sin(x * 2.1 + ph) * math.cos(x * 0.7))
+                        wobble=lambda x: 0.88 + 0.12 * math.sin(x * 2.1 + ph) * math.cos(x * 0.7) + 0.1 * math.sin(x * 5.3 + 2 * ph))  # v3: bulging, irregular lip (no straight edge)
     return tag(m, snow=1.0)
 
 
@@ -220,25 +220,41 @@ def snow_drift_end(lod, seed=5):
     return tag(m, snow=1.0)
 
 
+def snow_pillow(lod, width=4.6, seed=11):
+    """Snow-pillow primitive (audit): thick bulging overhanging snow slab over a door bay / ledge. Rounded extrusion
+    whose profile swells to `t` (0.55-0.8 m) with a rolled lip overhanging 0.8 m that droops 0.25 m below the seat,
+    thickness and droop wandering along x (no straight edge). Icicles are placed as its children under the lip.
+    Pivot: seat front-centre (y=0 = ledge front, z=0 = ledge top)."""
+    rng = np.random.default_rng(seed)
+    t = rng.uniform(0.6, 0.8); k = {0: 4, 1: 2, 2: 1}[lod]
+    prof = rounded_profile([(1.2, 0.0), (1.2, 0.2), (0.4, t * 0.95), (-0.3, t), (-0.75, t * 0.7), (-0.85, t * 0.25),
+                            (-0.7, -0.25), (-0.45, -0.18), (-0.2, 0.0)], 0.18, k + 1)
+    ph = rng.uniform(0, 6)
+    segs = {0: 14, 1: 6, 2: 2}[lod]
+    m = extrude_profile(prof, -width / 2, width / 2, segs, "snow_pillow",
+                        wobble=lambda x: 0.86 + 0.1 * math.sin(x * 1.7 + ph) + 0.06 * math.sin(x * 4.9 + 2 * ph))
+    return tag(m, snow=1.0)
+
+
+PILLOW_LIP = (-0.8, -0.2)   # (y, z) of the drooping lip underside: icicle roots go here
+
+
 def icicle_cluster(lod, big, seed):
-    """1 m run of fused ice drips hanging from the cornice / cap lip (v2, after review: no flat white root bar).
-    A lumpy ice lip of overlapping irregular blobs, thick uneven main drips (r 0.06-0.17 m) with 1-2 thinner
+    """1 m run of fused ice drips (v3, after review: NO bar or lip strip). Roots start 0.12 m up inside the
+    overhanging snow slab / cap edge they hang from, so they grow out of the snow; thick uneven main drips (r 0.06-0.17 m) with 1-2 thinner
     drips fused onto each, lengths varied (0.3-0.8 m s, 0.8-2.0 m l, skewed short), >= 4 per metre (kit-art).
     All ice (bluish matte material in play.html); drips > 0.5 m keep real geometry in every LOD (kit-engine)."""
     rng = np.random.default_rng(seed)
     cnt = int(rng.integers(4, 6)) if big else int(rng.integers(5, 7))
     rings, seg = {0: (5, 7) if big else (4, 6), 1: (3, 5), 2: (2, 4)}[lod]
-    nb = {0: 5 if big else 3, 1: 3, 2: 2}[lod]
     parts = []
-    for k in range(nb):   # lumpy fused lip, overlapping blobs of uneven height/depth
-        x0 = -0.55 + k * 1.1 / nb + rng.uniform(-0.03, 0.03); x1 = x0 + 1.1 / nb + rng.uniform(0.05, 0.12)
-        parts.append(tag(rbox([x0, -0.16 - rng.uniform(0, 0.05), -0.07 - rng.uniform(0, 0.08)], [x1, 0.06, 0.04], 0.035, 1 if lod else 2, "lip"), ice=1.0))
+    parts = []   # v3: no lip/bar at all; drips root INTO the overhanging snow slab edge they are snapped under
     lo, hi = (0.8, 2.0) if big else (0.3, 0.8)
     for x in np.sort(rng.uniform(-0.45, 0.45, cnt)):
         L = lo + (hi - lo) * rng.beta(1.3, 2.2)                    # skewed: mostly shorter, a few long
         r = float(np.clip(0.05 + 0.07 * L, 0.06, 0.17)) * rng.uniform(0.85, 1.25)
         y = rng.uniform(-0.1, 0.0)
-        parts.append(tag(orient(spike([x, y, -0.02], L, r, rng, rings=rings, seg=seg)), ice=1.0))
+        parts.append(tag(orient(spike([x, y, 0.12], L + 0.12, r, rng, rings=rings, seg=seg)), ice=1.0))
         for _ in range(int(rng.integers(1, 3)) if lod < 2 else 0):   # fused secondary drips
             dx = rng.choice([-1, 1]) * r * rng.uniform(0.5, 0.9)
             l2 = L * rng.uniform(0.35, 0.7)
@@ -270,6 +286,7 @@ PIECES = {
     "icicle_cluster_s": (lambda lod: icicle_cluster(lod, False, 11), {"w": 1.0, "h": 0.9}),
     "icicle_cluster_l": (lambda lod: icicle_cluster(lod, True, 12), {"w": 1.0, "h": 2.1}),
     "door_recess_frame": (door_recess_frame, {"w": 2.6, "h": 2.7}),
+    "snow_pillow": (snow_pillow, {"w": 4.6, "h": 0.8}),
 }
 SOCKETS = {
     "wall_block_course": {"L": [-1.0, 0, 0], "R": [1.0, 0, 0], "top": [0, 0, COURSE_H]},
@@ -282,6 +299,7 @@ SOCKETS = {
     "icicle_cluster_s": {"hang": [0, 0, None]},
     "icicle_cluster_l": {"hang": [0, 0, None]},
     "door_recess_frame": {"sill": [0, 0, 0], "lintel": [0, 0, 2.7]},
+    "snow_pillow": {"seat": [0, 0, 0], "lip": [0, PILLOW_LIP[0], PILLOW_LIP[1]]},
 }
 
 

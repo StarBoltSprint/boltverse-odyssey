@@ -24,7 +24,7 @@ for name, (fn, *_r) in P.PIECES.items():
     t(f"{name} lod0 wound outward (signed volume > 0)", np.einsum("ij,ij->i", A, np.cross(B, C)).sum() > 0)
 rb = P.rbox([0, 0, 0], [1, 2, 0.6], 0.05, 3); A, B, C = (rb.V[rb.F[:, k]] for k in range(3))
 t("rbox: every triangle faces outward", ((np.cross(B - A, C - A) * ((A + B + C) / 3 - rb.V.mean(0))).sum(1) > 0).all())
-t("10 hero pieces", len(P.PIECES) == 10, len(P.PIECES))
+t("10 hero pieces + snow_pillow primitive", len(P.PIECES) == 11, len(P.PIECES))
 for sc, rows in ((TR.K, TR.SPEC_ROWS), (1.0, TR.KEY_ROWS)):
     ms, inst, em, info = TR.layout(sc, 0)
     t(f"sc={sc:.3f}: rises {info['rises']}", abs(info['height'] - sum(r * P.COURSE_H for r in rows)) < 1e-9)

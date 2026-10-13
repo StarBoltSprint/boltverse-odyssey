@@ -1,0 +1,388 @@
+{
+ "zone": "zd-terrace",
+ "key": "tools/gatesuite/fixtures/key-zd1-b.jpg",
+ "frame_px": 1024,
+ "masks_from": "sam2.1_hiera_small",
+ "elements": [
+  {
+   "id": "stone",
+   "kind": "region",
+   "what": "3 stepped tiers of columnar/blocky basalt; blue-grey, lighter and bluer than the library albedo; frost in joints",
+   "mask": "masks/stone.png",
+   "mask_src": "sam2",
+   "bbox_px": [
+    0,
+    409,
+    633,
+    633
+   ],
+   "area_frac": 0.12817,
+   "centroid_frac": [
+    0.2957,
+    0.5052
+   ],
+   "region_lab": [
+    24.8,
+    0.85,
+    -17.25
+   ],
+   "params": {},
+   "key": {
+    "count": 1,
+    "lab": [
+     21.24296767395935,
+     0.705798590987638,
+     -16.769285424779344
+    ],
+    "L_std": 7.725970134156557
+   },
+   "rule": {
+    "min_count": 1,
+    "max_dL": 12,
+    "max_db": 6
+   }
+  },
+  {
+   "id": "tread_snow",
+   "kind": "band",
+   "what": "thick bulging overhanging snow slab on every tread: bright bluish-white horizontal band per tier, 0.3-0.8 m",
+   "mask": "masks/tread_snow.png",
+   "mask_src": "box",
+   "bbox_px": [
+    0,
+    327,
+    633,
+    633
+   ],
+   "area_frac": 0.18562,
+   "centroid_frac": [
+    0.3091,
+    0.4688
+   ],
+   "region_lab": [
+    27.59,
+    0.09,
+    -18.01
+   ],
+   "params": {
+    "thr_pct": 18,
+    "min_w": 60,
+    "min_h": 6,
+    "thr_L": 39.36519614096802
+   },
+   "key": {
+    "count": 7,
+    "boxes": [
+     [
+      492,
+      328,
+      68,
+      7,
+      468
+     ],
+     [
+      516,
+      336,
+      85,
+      7,
+      595
+     ],
+     [
+      548,
+      345,
+      66,
+      13,
+      827
+     ],
+     [
+      315,
+      379,
+      90,
+      8,
+      691
+     ],
+     [
+      209,
+      386,
+      103,
+      10,
+      869
+     ],
+     [
+      247,
+      450,
+      198,
+      28,
+      2433
+     ],
+     [
+      277,
+      513,
+      206,
+      43,
+      3470
+     ]
+    ],
+    "thick_px_median": 10.0,
+    "bright_frac": 0.1800059597817487
+   },
+   "rule": {
+    "min_rel": 0.6
+   }
+  },
+  {
+   "id": "canopies",
+   "kind": "band",
+   "what": "3 stacked door canopies: thick bulging drooping snow slabs over each doorway, wider than the bay, 0.5-0.8 m",
+   "mask": "masks/canopies.png",
+   "mask_src": "box",
+   "bbox_px": [
+    194,
+    368,
+    490,
+    633
+   ],
+   "area_frac": 0.07534,
+   "centroid_frac": [
+    0.334,
+    0.4888
+   ],
+   "region_lab": [
+    26.42,
+    1.0,
+    -17.0
+   ],
+   "params": {
+    "thr_pct": 25,
+    "min_w": 60,
+    "min_h": 8,
+    "thr_L": 37.40746285719815
+   },
+   "key": {
+    "count": 5,
+    "boxes": [
+     [
+      322,
+      379,
+      83,
+      9,
+      736
+     ],
+     [
+      213,
+      386,
+      81,
+      10,
+      770
+     ],
+     [
+      365,
+      450,
+      82,
+      10,
+      803
+     ],
+     [
+      245,
+      458,
+      118,
+      24,
+      2086
+     ],
+     [
+      277,
+      513,
+      205,
+      43,
+      3867
+     ]
+    ],
+    "thick_px_median": 10.0,
+    "bright_frac": 0.2500063289536974
+   },
+   "rule": {
+    "min_count": 3,
+    "min_rel": 0.6
+   }
+  },
+  {
+   "id": "doorways",
+   "kind": "dark_rect",
+   "what": "3 dark rectangular doorways (~1.7 x 2.2 m) stacked in one column, one per tier, in slightly proud bays",
+   "mask": "masks/doorways.png",
+   "mask_src": "box",
+   "bbox_px": [
+    194,
+    368,
+    490,
+    633
+   ],
+   "area_frac": 0.07534,
+   "centroid_frac": [
+    0.334,
+    0.4888
+   ],
+   "region_lab": [
+    26.42,
+    1.0,
+    -17.0
+   ],
+   "params": {
+    "dark_rel": 0.45,
+    "w_min": 10,
+    "w_max": 70,
+    "h_min": 14
+   },
+   "key": {
+    "count": 10,
+    "boxes": [
+     [
+      299,
+      412,
+      27,
+      37,
+      868
+     ],
+     [
+      213,
+      437,
+      15,
+      15,
+      158
+     ],
+     [
+      338,
+      480,
+      29,
+      35,
+      855
+     ],
+     [
+      291,
+      501,
+      12,
+      25,
+      217
+     ],
+     [
+      280,
+      507,
+      10,
+      22,
+      173
+     ],
+     [
+      248,
+      515,
+      16,
+      18,
+      216
+     ],
+     [
+      228,
+      516,
+      15,
+      16,
+      156
+     ],
+     [
+      368,
+      549,
+      41,
+      49,
+      1580
+     ],
+     [
+      330,
+      586,
+      16,
+      18,
+      173
+     ],
+     [
+      359,
+      586,
+      10,
+      16,
+      134
+     ]
+    ]
+   },
+   "rule": {
+    "min_count": 3,
+    "min_rel": 0.3
+   }
+  },
+  {
+   "id": "icicles",
+   "kind": "drips",
+   "what": "icicles growing directly out of the canopy/slab edge (no bar), irregular 0.3-2 m, thick fused, bluish-white",
+   "mask": "masks/icicles.png",
+   "mask_src": "box",
+   "bbox_px": [
+    194,
+    368,
+    490,
+    633
+   ],
+   "area_frac": 0.07534,
+   "centroid_frac": [
+    0.334,
+    0.4888
+   ],
+   "region_lab": [
+    26.42,
+    1.0,
+    -17.0
+   ],
+   "params": {
+    "thr_pct": 25,
+    "min_len": 12,
+    "max_w": 8,
+    "thr_L": 37.40746285719815
+   },
+   "key": {
+    "count": 40
+   },
+   "rule": {
+    "min_rel": 0.4
+   }
+  },
+  {
+   "id": "no_bar",
+   "kind": "straight_bar",
+   "what": "NO straight horizontal bright strip under any lip (icicles root in snow, not on a bar)",
+   "mask": "masks/no_bar.png",
+   "mask_src": "box",
+   "bbox_px": [
+    0,
+    327,
+    633,
+    633
+   ],
+   "area_frac": 0.18562,
+   "centroid_frac": [
+    0.3091,
+    0.4688
+   ],
+   "region_lab": [
+    27.59,
+    0.09,
+    -18.01
+   ],
+   "params": {
+    "thr_pct": 18,
+    "min_w_frac": 0.3,
+    "max_h": 8,
+    "thr_L": 39.36519614096802
+   },
+   "key": {
+    "count": 0,
+    "boxes": []
+   },
+   "rule": {
+    "max_count": 0
+   }
+  }
+ ]
+}
