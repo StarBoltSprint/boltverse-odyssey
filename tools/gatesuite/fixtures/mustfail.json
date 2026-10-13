@@ -68,26 +68,32 @@
   {
    "id": "v11-slab-removed",
    "step": "features",
-   "artifact": null,
-   "artifact_present": false,
+   "artifact": "fixtures/v11-slab-removed.jpg",
+   "artifact_present": true,
    "what": "v11 with snow slabs removed",
-   "expect": "FAIL"
+   "expect": "FAIL",
+   "derivation": "key-camera render with every snow slab/canopy painted to stone value (derived from the terrace-spec v3 render, which itself PASSES features; the v11 render fails everything and would prove nothing)",
+   "sheet": "tools/keysheet/zones/zd-terrace/sheet.json"
   },
   {
    "id": "v11-icicle-bar",
    "step": "features",
-   "artifact": null,
-   "artifact_present": false,
+   "artifact": "fixtures/v11-icicle-bar.jpg",
+   "artifact_present": true,
    "what": "v11 icicles as a bar under the slab",
-   "expect": "FAIL"
+   "expect": "FAIL",
+   "derivation": "same base render with a straight white bar drawn under each tier lip",
+   "sheet": "tools/keysheet/zones/zd-terrace/sheet.json"
   },
   {
    "id": "dark-value-copy",
    "step": "features",
-   "artifact": null,
-   "artifact_present": false,
+   "artifact": "fixtures/dark-value-copy.jpg",
+   "artifact_present": true,
    "what": "v11 copy with near-black stone value",
-   "expect": "FAIL"
+   "expect": "FAIL",
+   "derivation": "same base render with the stone value multiplied by 0.3 (near black)",
+   "sheet": "tools/keysheet/zones/zd-terrace/sheet.json"
   }
  ]
 }

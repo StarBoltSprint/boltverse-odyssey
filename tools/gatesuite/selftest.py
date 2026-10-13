@@ -124,5 +124,13 @@ def main():
     row("keysheet zd-terrace: spec-final (bar icicles, no canopies/doors) FAILS", not all(r_["ok"] for r_ in kr), [r_["check"].split(" ")[0] for r_ in kr if not r_["ok"]])
     kk = KS.check(F / "key-zd1-b.jpg", SH)
     row("keysheet zd-terrace: key vs itself PASSES", all(r_["ok"] for r_ in kk), [r_["check"].split(" ")[0] for r_ in kk if not r_["ok"]])
+    reg = json.loads((F / "mustfail.json").read_text())
+    for f_ in reg["fixtures"]:
+        if f_["step"] == "features" and f_.get("artifact_present"):
+            fr = KS.check(F.parent / f_["artifact"], SH)
+            row(f"must-fail {f_['id']} ({f_['what']}): features FAIL", not all(r_["ok"] for r_ in fr), [r_["check"].split(" ")[0] for r_ in fr if not r_["ok"]])
+    base = Path("/workspace/kitrelief-out/terrace-spec/gate/key-render.png")
+    if base.exists():
+        row("control: terrace-spec v3 key render (fixture base) PASSES features", all(r_["ok"] for r_ in KS.check(base, SH)))
     print(f"{sum(rows)}/{len(rows)} rows pass")
     return 0 if all(rows) else 1

@@ -25,7 +25,8 @@ ROOT = HERE.parent.parent
 sys.path.insert(0, str(ROOT))
 from tools.gatesuite import glbio  # noqa: E402
 
-STEPS = ["spine", "layout", "walk", "pack", "budget", "playgate", "depthmeasure", "kitjudge", "keyfeatures"]
+from tools.gatesuite import core as CORE  # noqa: E402
+STEPS = CORE.STEPS   # locked order from core: ..., depthmeasure, features, kitjudge
 ENGINE = {"piece": {"lod0": 3000, "lod1": 1000, "lod2": 300}, "tier": {"lod0": 90000}, "greybox": {"lod0": 90000},
           "draws_max": 20, "tex_mb_max": 48, "texel_min": 500}
 LAYOUT = {"max_grade": 0.14, "max_pitch_step_deg_per_5m": 4.0, "camera": {"behind": 4.5, "above": 2.6, "vfov_deg": 48},
@@ -433,43 +434,67 @@ def step_keyfeatures(b, ctx):
     return sec(verdict(rows), rows, keysheet=str(sp))
 
 
-FN = {"keyfeatures": step_keyfeatures, "spine": step_spine, "layout": step_layout, "walk": step_walk, "pack": step_pack, "budget": step_budget,
+FN = {"features": step_keyfeatures, "spine": step_spine, "layout": step_layout, "walk": step_walk, "pack": step_pack, "budget": step_budget,
       "playgate": step_playgate, "depthmeasure": step_depthmeasure, "kitjudge": step_kitjudge}
 
 
+def _to_section(step, d):
+    """Adapter: legacy section dict -> core.Section (PASS needs evidence; each failed check becomes a fails[] id)."""
+    checks = d.get("checks", [])
+    measured = {k: v for k, v in d.items() if k not in ("status", "skipped")}
+    fails = [{"s_m": None, "timecode": None, "id": f"{step}:{c['check'][:80]}"} for c in checks if not c.get("ok")]
+    if d.get("status") == "PASS" and not fails and checks:
+        return CORE.Section("PASS", measured=measured)
+    bad = [c["check"] for c in checks if not c.get("ok")]
+    return CORE.Section("FAIL", measured=measured, fails=fails or [{"s_m": None, "timecode": None, "id": f"{step}:no-evidence"}],
+                        reason="; ".join(bad)[:300] or "no checks")
+
+
 def run(url, out=None, only=None):
-    rep = {"build": url, "tool": "tools/gatesuite/run.py", "order": STEPS, "sections": {}}
+    """Legacy build.json front end; sections are validated and merged by core.merge (missing / skipped = FAIL)."""
+    from dataclasses import asdict
+    rep = {"build": url, "tool": "tools/gatesuite/run.py -> core.merge", "order": STEPS}
+    legacy = {}
     try:
         b = Build(url)
     except Exception as e:  # noqa: BLE001
-        rep["sections"] = {s: sec("FAIL", [chk("build.json readable", False, str(e)[:200])]) for s in STEPS}
-        rep["verdict"] = "FAIL"
-        return rep
+        legacy = {s: sec("FAIL", [chk("build.json readable", False, str(e)[:200])]) for s in STEPS}
+        b = None
     ctx = {}
-    try:
-        ctx["spine"] = json.loads(b.text(b.m.get("spine", "spine.json")))
-    except Exception as e:  # noqa: BLE001
-        ctx["spine"] = {"_error": str(e)[:200]}
-    try:
-        ctx["meshes"] = glbio.meshes(b.path(b.m["glbs"]["lod0"]))[0]
-    except Exception:  # noqa: BLE001
-        ctx["meshes"] = []
-    try:
-        ctx["colliders"] = json.loads(b.text(b.m["colliders"])) if b.m.get("colliders") else None
-    except Exception:  # noqa: BLE001
-        ctx["colliders"] = None
-    for s in STEPS:
-        if only and s not in only:
-            rep["sections"][s] = sec("FAIL", [chk("section run", False, "skipped")], skipped=True)
-            continue
+    if b is not None:
         try:
-            rep["sections"][s] = FN[s](b, ctx)
+            ctx["spine"] = json.loads(b.text(b.m.get("spine", "spine.json")))
         except Exception as e:  # noqa: BLE001
-            rep["sections"][s] = sec("FAIL", [chk("section ran without error", False, f"{type(e).__name__}: {e}"[:300])])
-    for s in STEPS:   # missing / skipped sections are FAIL
-        rep["sections"].setdefault(s, sec("FAIL", [chk("section present", False, "missing")]))
-    rep["verdict"] = "PASS" if all(rep["sections"][s]["status"] == "PASS" for s in STEPS) else "FAIL"
-    rep["summary"] = {s: rep["sections"][s]["status"] for s in STEPS}
+            ctx["spine"] = {"_error": str(e)[:200]}
+        try:
+            ctx["meshes"] = glbio.meshes(b.path(b.m["glbs"]["lod0"]))[0]
+        except Exception:  # noqa: BLE001
+            ctx["meshes"] = []
+        try:
+            ctx["colliders"] = json.loads(b.text(b.m["colliders"])) if b.m.get("colliders") else None
+        except Exception:  # noqa: BLE001
+            ctx["colliders"] = None
+        for s in STEPS:
+            if only and s not in only:
+                continue                      # not run -> core.merge marks it FAIL "missing section"
+            try:
+                legacy[s] = FN[s](b, ctx)
+            except Exception as e:  # noqa: BLE001
+                legacy[s] = sec("FAIL", [chk("section ran without error", False, f"{type(e).__name__}: {e}"[:300])])
+    secs = {}
+    for s, d in legacy.items():
+        try:
+            secs[s] = asdict(_to_section(s, d).validate())
+        except Exception as e:  # noqa: BLE001
+            secs[s] = asdict(CORE.Section("FAIL", reason=f"malformed: {e}", fails=[{"s_m": None, "timecode": None, "id": f"{s}:malformed"}]))
+    m = CORE.merge(secs)
+    for s in STEPS:            # keep the legacy checks visible next to the core fields
+        m["sections"][s].setdefault("checks", legacy.get(s, {}).get("checks", m["sections"][s].get("measured", {}).get("checks", [])))
+        if only and s not in only:
+            m["sections"][s]["skipped"] = True
+    rep.update(m)
+    rep["verdict"] = m["overall"]
+    rep["summary"] = {s: m["sections"][s]["status"] for s in STEPS}
     if out:
         Path(out).parent.mkdir(parents=True, exist_ok=True)
         Path(out).write_text(json.dumps(rep, indent=1, default=str))
