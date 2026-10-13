@@ -29,7 +29,7 @@
    "hanging": false,
    "boxes": [
     {
-     "id": "plinth-player",
+     "id": "plinth-step-0",
      "role": "solid",
      "visual": true,
      "min": [
@@ -39,8 +39,38 @@
      ],
      "max": [
       2.06,
-      0.6,
+      0.05,
       2.06
+     ]
+    },
+    {
+     "id": "plinth-step-1",
+     "role": "solid",
+     "visual": true,
+     "min": [
+      -1.7,
+      0.05,
+      -1.7
+     ],
+     "max": [
+      1.7,
+      0.28,
+      1.7
+     ]
+    },
+    {
+     "id": "plinth-step-2",
+     "role": "solid",
+     "visual": true,
+     "min": [
+      -1.34,
+      0.28,
+      -1.34
+     ],
+     "max": [
+      1.34,
+      0.6,
+      1.34
      ]
     },
     {
@@ -145,63 +175,245 @@
   "note": "Chord of the 30 m plaza at 5 m off centre, minus the plinth outline. The 16 m bar is (6 m lane + 1 m camera margin) each side + a 2.0 m plinth."
  },
  "collision_layers": {
-  "plinth": {
-   "layers": [
-    "player"
-   ],
-   "inset_m": 0.02,
-   "box": {
-    "id": "plinth-player",
-    "role": "solid",
-    "visual": true,
-    "space": "local",
-    "min": [
-     -2.06,
-     -0.15,
-     -2.06
+  "plinth_steps": [
+   {
+    "id": "plinth-step-0",
+    "height_m": 0.2,
+    "y0": -0.15,
+    "y1": 0.05,
+    "apothem_m": 2.06,
+    "layers": [
+     "player",
+     "camera"
     ],
-    "max": [
-     2.06,
-     0.6,
-     2.06
+    "inset_m": 0.02,
+    "camera_margin_m": 1.0,
+    "box": {
+     "id": "plinth-step-0",
+     "role": "solid",
+     "visual": true,
+     "space": "local",
+     "min": [
+      -2.06,
+      -0.15,
+      -2.06
+     ],
+     "max": [
+      2.06,
+      0.05,
+      2.06
+     ]
+    },
+    "camera_box": {
+     "id": "plinth-step-0-camera",
+     "role": "solid",
+     "visual": true,
+     "space": "local",
+     "min": [
+      -3.06,
+      -0.15,
+      -3.06
+     ],
+     "max": [
+      3.06,
+      0.05,
+      3.06
+     ]
+    },
+    "hull_xz": [
+     [
+      -0.8533,
+      2.06
+     ],
+     [
+      0.8533,
+      2.06
+     ],
+     [
+      2.06,
+      0.8533
+     ],
+     [
+      2.06,
+      -0.8533
+     ],
+     [
+      0.8533,
+      -2.06
+     ],
+     [
+      -0.8533,
+      -2.06
+     ],
+     [
+      -2.06,
+      -0.8533
+     ],
+     [
+      -2.06,
+      0.8533
+     ]
     ]
    },
-   "hull_xz": [
-    [
-     -0.8533,
-     2.06
+   {
+    "id": "plinth-step-1",
+    "height_m": 0.23,
+    "y0": 0.05,
+    "y1": 0.28,
+    "apothem_m": 1.7,
+    "layers": [
+     "player",
+     "camera"
     ],
-    [
-     0.8533,
-     2.06
-    ],
-    [
-     2.06,
-     0.8533
-    ],
-    [
-     2.06,
-     -0.8533
-    ],
-    [
-     0.8533,
-     -2.06
-    ],
-    [
-     -0.8533,
-     -2.06
-    ],
-    [
-     -2.06,
-     -0.8533
-    ],
-    [
-     -2.06,
-     0.8533
+    "inset_m": 0.02,
+    "camera_margin_m": 1.0,
+    "box": {
+     "id": "plinth-step-1",
+     "role": "solid",
+     "visual": true,
+     "space": "local",
+     "min": [
+      -1.7,
+      0.05,
+      -1.7
+     ],
+     "max": [
+      1.7,
+      0.28,
+      1.7
+     ]
+    },
+    "camera_box": {
+     "id": "plinth-step-1-camera",
+     "role": "solid",
+     "visual": true,
+     "space": "local",
+     "min": [
+      -2.7,
+      0.05,
+      -2.7
+     ],
+     "max": [
+      2.7,
+      0.28,
+      2.7
+     ]
+    },
+    "hull_xz": [
+     [
+      -0.7042,
+      1.7
+     ],
+     [
+      0.7042,
+      1.7
+     ],
+     [
+      1.7,
+      0.7042
+     ],
+     [
+      1.7,
+      -0.7042
+     ],
+     [
+      0.7042,
+      -1.7
+     ],
+     [
+      -0.7042,
+      -1.7
+     ],
+     [
+      -1.7,
+      -0.7042
+     ],
+     [
+      -1.7,
+      0.7042
+     ]
     ]
-   ],
-   "y_top": 0.6
-  },
+   },
+   {
+    "id": "plinth-step-2",
+    "height_m": 0.32,
+    "y0": 0.28,
+    "y1": 0.6,
+    "apothem_m": 1.34,
+    "layers": [
+     "player",
+     "camera"
+    ],
+    "inset_m": 0.02,
+    "camera_margin_m": 1.0,
+    "box": {
+     "id": "plinth-step-2",
+     "role": "solid",
+     "visual": true,
+     "space": "local",
+     "min": [
+      -1.34,
+      0.28,
+      -1.34
+     ],
+     "max": [
+      1.34,
+      0.6,
+      1.34
+     ]
+    },
+    "camera_box": {
+     "id": "plinth-step-2-camera",
+     "role": "solid",
+     "visual": true,
+     "space": "local",
+     "min": [
+      -2.34,
+      0.28,
+      -2.34
+     ],
+     "max": [
+      2.34,
+      0.6,
+      2.34
+     ]
+    },
+    "hull_xz": [
+     [
+      -0.555,
+      1.34
+     ],
+     [
+      0.555,
+      1.34
+     ],
+     [
+      1.34,
+      0.555
+     ],
+     [
+      1.34,
+      -0.555
+     ],
+     [
+      0.555,
+      -1.34
+     ],
+     [
+      -0.555,
+      -1.34
+     ],
+     [
+      -1.34,
+      -0.555
+     ],
+     [
+      -1.34,
+      0.555
+     ]
+    ]
+   }
+  ],
   "shaft": {
    "layers": [
     "player",

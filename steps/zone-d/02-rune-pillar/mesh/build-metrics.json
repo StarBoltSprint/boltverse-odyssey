@@ -6,7 +6,7 @@
  "lipFlatM": 1.6,
  "plinthFlatM": 4.16,
  "platePpm": 146.2857,
- "uvStretch": 1.221,
+ "uvStretch": 1.218,
  "uvOver1_3": 0,
  "source": "slimmed about the centre axis to 1.60 m base -> 1.20 m top. Plinth steps frozen. Plate UVs are an equal px/m projection (1024/7), never an upscale.",
  "before": {
@@ -28,37 +28,91 @@
   "pass": true,
   "note": "Chord of the 30 m plaza at 5 m off centre, minus the plinth outline. The 16 m bar is (6 m lane + 1 m camera margin) each side + a 2.0 m plinth."
  },
- "tris": 17388,
+ "tris": 24902,
  "topo": {
   "nonManifoldEdges": 0,
   "boundaryEdges": 0,
   "degenerateTris": 0,
-  "weldVerts": 8738
+  "weldVerts": 12495
  },
  "sliver": {
-  "tris": 17388,
+  "tris": 24902,
   "degenerate": 0,
-  "sliverFrac": 0.0056,
+  "sliverFrac": 0.0035,
   "pass": true,
-  "minAngleP5": 24.41,
-  "aspectP99": 3.78
+  "minAngleP5": 17.22,
+  "aspectP99": 3.52
  },
  "uv": {
-  "fixed": 767,
+  "fixed": 515,
   "worstBefore": 174.444,
-  "worstAfter": 1.223,
-  "over": 0
+  "worstAfter": 1.218,
+  "over": 0,
+  "shaftEased": 0,
+  "shaftStabilised": 1013,
+  "register": {
+   "front": {
+    "px": 1397,
+    "identity": true,
+    "scale": 1.0,
+    "rot": 0.0,
+    "du": 0.0,
+    "dv": 0.0,
+    "note": "mask not warped; grooves cut under these pixels",
+    "predictOverlap": 0.9404
+   },
+   "left45": {
+    "px": 853,
+    "identity": true,
+    "scale": 1.0,
+    "rot": 0.0,
+    "du": 0.0,
+    "dv": 0.0,
+    "note": "mask not warped; grooves cut under these pixels",
+    "predictOverlap": 0.7217
+   },
+   "right45": {
+    "px": 1826,
+    "identity": true,
+    "scale": 1.0,
+    "rot": 0.0,
+    "du": 0.0,
+    "dv": 0.0,
+    "note": "bronze column of plate 04, unmoved; registration search did not converge",
+    "predictOverlap": 0.9134
+   },
+   "pockets": {
+    "front": {
+     "refinedQuads": 76,
+     "floorQuads": 536,
+     "walls": 362,
+     "maskPx": 1397
+    },
+    "left45": {
+     "refinedQuads": 45,
+     "floorQuads": 336,
+     "walls": 268,
+     "maskPx": 853
+    },
+    "right45": {
+     "refinedQuads": 93,
+     "floorQuads": 681,
+     "walls": 544,
+     "maskPx": 1826
+    }
+   }
+  }
  },
  "icicles": 21,
  "icicleTipMinY": 6.155,
  "nseg": {
   "0": 12,
   "1": 12,
-  "2": 6,
-  "3": 6,
-  "4": 6,
-  "5": 6,
-  "6": 6,
+  "2": 4,
+  "3": 4,
+  "4": 4,
+  "5": 4,
+  "6": 4,
   "7": 12
  },
  "steps": [
@@ -114,21 +168,242 @@
    "crop_y0": 192,
    "crop_x0": 192
   },
-  "note": "No plate was upscaled. fit_into scale is never above 1.",
+  "plinth": {
+   "flatGreyFrac": 0.002,
+   "meanRgb": [
+    21.4,
+    29.3,
+    39.5
+   ],
+   "sources": [
+    "01-lower",
+    "03-lower",
+    "04-lower"
+   ]
+  },
+  "cap": {
+   "flatGreyFrac": 0.0,
+   "meanRgb": [
+    203.2,
+    223.1,
+    241.6
+   ],
+   "frostRGB": [
+    203.0,
+    223.0,
+    243.0
+   ],
+   "chromePxLeft": 0,
+   "sources": [
+    "03-frost-matte",
+    "04-graded-to-03"
+   ]
+  },
+  "note": "No plate was upscaled. Plinth and cap are tiled from plate pixels. fit_into scale is never above 1.",
+  "runeRegister": {
+   "front": {
+    "px": 1397,
+    "identity": true,
+    "scale": 1.0,
+    "rot": 0.0,
+    "du": 0.0,
+    "dv": 0.0,
+    "note": "mask not warped; grooves cut under these pixels",
+    "predictOverlap": 0.9404
+   },
+   "left45": {
+    "px": 853,
+    "identity": true,
+    "scale": 1.0,
+    "rot": 0.0,
+    "du": 0.0,
+    "dv": 0.0,
+    "note": "mask not warped; grooves cut under these pixels",
+    "predictOverlap": 0.7217
+   },
+   "right45": {
+    "px": 1826,
+    "identity": true,
+    "scale": 1.0,
+    "rot": 0.0,
+    "du": 0.0,
+    "dv": 0.0,
+    "note": "bronze column of plate 04, unmoved; registration search did not converge",
+    "predictOverlap": 0.9134
+   },
+   "pockets": {
+    "front": {
+     "refinedQuads": 76,
+     "floorQuads": 536,
+     "walls": 362,
+     "maskPx": 1397
+    },
+    "left45": {
+     "refinedQuads": 45,
+     "floorQuads": 336,
+     "walls": 268,
+     "maskPx": 853
+    },
+    "right45": {
+     "refinedQuads": 93,
+     "floorQuads": 681,
+     "walls": 544,
+     "maskPx": 1826
+    }
+   }
+  },
   "flatUv": {
-   "flatRetextured": 1170
+   "flatRetextured": 1010
   },
   "unmirror": {
    "flipped": 0,
    "stillNegative": 0,
-   "worstAniso": 1.221,
+   "worstAniso": 1.218,
    "over1_3": 0
   },
   "recap": {
-   "recapped": 241
+   "recapped": 164
+  },
+  "lodTris": {
+   "lod0": 24902,
+   "lod1": 6592,
+   "lod2": 2352
+  },
+  "lodTopo": {
+   "lod1": {
+    "nonManifoldEdges": 0,
+    "boundaryEdges": 0,
+    "degenerateTris": 0,
+    "weldVerts": 3340
+   },
+   "lod2": {
+    "nonManifoldEdges": 0,
+    "boundaryEdges": 0,
+    "degenerateTris": 0,
+    "weldVerts": 1220
+   }
+  },
+  "lodNseg": {
+   "lod1": {
+    "0": 4,
+    "1": 4,
+    "2": 2,
+    "3": 2,
+    "4": 4,
+    "5": 2,
+    "6": 2,
+    "7": 4
+   },
+   "lod2": {
+    "0": 2,
+    "1": 2,
+    "2": 2,
+    "3": 2,
+    "4": 2,
+    "5": 2,
+    "6": 2,
+    "7": 2
+   }
   }
  },
  "buriedM": 0.15,
  "contactGapM": 0.0,
- "lod": "lod1 and lod2 are copies of slimmed lod0 so the outline difference is 0 px"
+ "lod": {
+  "lod0": 24902,
+  "lod1": 6592,
+  "lod2": 2352
+ },
+ "lodTopo": {
+  "lod1": {
+   "nonManifoldEdges": 0,
+   "boundaryEdges": 0,
+   "degenerateTris": 0,
+   "weldVerts": 3340
+  },
+  "lod2": {
+   "nonManifoldEdges": 0,
+   "boundaryEdges": 0,
+   "degenerateTris": 0,
+   "weldVerts": 1220
+  }
+ },
+ "lodNseg": {
+  "lod1": {
+   "0": 4,
+   "1": 4,
+   "2": 2,
+   "3": 2,
+   "4": 4,
+   "5": 2,
+   "6": 2,
+   "7": 4
+  },
+  "lod2": {
+   "0": 2,
+   "1": 2,
+   "2": 2,
+   "3": 2,
+   "4": 2,
+   "5": 2,
+   "6": 2,
+   "7": 2
+  }
+ },
+ "runeRegister": {
+  "front": {
+   "px": 1397,
+   "identity": true,
+   "scale": 1.0,
+   "rot": 0.0,
+   "du": 0.0,
+   "dv": 0.0,
+   "note": "mask not warped; grooves cut under these pixels",
+   "predictOverlap": 0.9404
+  },
+  "left45": {
+   "px": 853,
+   "identity": true,
+   "scale": 1.0,
+   "rot": 0.0,
+   "du": 0.0,
+   "dv": 0.0,
+   "note": "mask not warped; grooves cut under these pixels",
+   "predictOverlap": 0.7217
+  },
+  "right45": {
+   "px": 1826,
+   "identity": true,
+   "scale": 1.0,
+   "rot": 0.0,
+   "du": 0.0,
+   "dv": 0.0,
+   "note": "bronze column of plate 04, unmoved; registration search did not converge",
+   "predictOverlap": 0.9134
+  },
+  "pockets": {
+   "front": {
+    "refinedQuads": 76,
+    "floorQuads": 536,
+    "walls": 362,
+    "maskPx": 1397
+   },
+   "left45": {
+    "refinedQuads": 45,
+    "floorQuads": 336,
+    "walls": 268,
+    "maskPx": 853
+   },
+   "right45": {
+    "refinedQuads": 93,
+    "floorQuads": 681,
+    "walls": 544,
+    "maskPx": 1826
+   }
+  }
+ },
+ "normalMaps": [
+  "front-normal.jpg",
+  "right45-normal.jpg",
+  "left45-normal.jpg"
+ ]
 }

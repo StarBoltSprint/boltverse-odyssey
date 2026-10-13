@@ -78,6 +78,33 @@
    ],
    "mipmaps": true,
    "source": "imagine"
+  },
+  {
+   "id": "front-normal",
+   "nativePx": [
+    1024,
+    1024
+   ],
+   "mipmaps": true,
+   "source": "imagine"
+  },
+  {
+   "id": "right45-normal",
+   "nativePx": [
+    1024,
+    1024
+   ],
+   "mipmaps": true,
+   "source": "imagine"
+  },
+  {
+   "id": "left45-normal",
+   "nativePx": [
+    1024,
+    1024
+   ],
+   "mipmaps": true,
+   "source": "imagine"
   }
  ]
 }

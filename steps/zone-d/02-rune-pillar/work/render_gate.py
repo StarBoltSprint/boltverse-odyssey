@@ -16,7 +16,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 STEP = os.path.dirname(HERE)
 MESH = os.path.join(STEP, "mesh")
 TEX = os.path.join(STEP, "textures")
-OUT = os.path.join(STEP, "object-gate-v1")
+OUT = os.path.join(STEP, "object-gate-v2")
 OBJ = os.path.join(MESH, "rune-pillar.obj")
 
 MAT_FILE = {
@@ -78,7 +78,7 @@ def camera(eye, target):
     return eye, right, up, forward
 
 
-def render(V, T, faces, textures, eye, target, fov_deg, w, h, relief=False):
+def render(V, T, faces, textures, eye, target, fov_deg, w, h, relief=False, rune=False, rune_masks=None):
     eye, right, up, forward = camera(eye, target)
     tan = math.tan(math.radians(fov_deg) * 0.5)
     aspect = w / float(h)
@@ -167,12 +167,31 @@ def render(V, T, faces, textures, eye, target, fov_deg, w, h, relief=False):
         if not closer.any():
             continue
         depth[miny:maxy + 1, minx:maxx + 1] = np.where(closer, z, old)
-        if relief:
-            # bright where the triangle sits in a groove (mean inset from the flat)
-            inset = _inset(p0, p1, p2, mat)
-            rgb = np.array([230, 170, 60], np.float32) if inset > 0.02 else np.array([28, 32, 40], np.float32)
+        if relief or rune:
+            # Flat stone so Canny sees the groove or the rune, not the basalt grain.
+            flat = np.array([32, 36, 44], np.float32)
+            mark = np.array([230, 170, 60], np.float32)
+            if relief:
+                i0 = _vert_inset(p0, mat)
+                i1 = _vert_inset(p1, mat)
+                i2 = _vert_inset(p2, mat)
+                inset = b0 * i0 + b1 * i1 + b2 * i2
+                rgb = np.where(inset[..., None] > 0.015, mark, flat)
+            else:
+                mask = None if rune_masks is None else rune_masks.get(mat)
+                if mask is None:
+                    rgb = flat
+                else:
+                    uv0, uv1, uv2 = T[t0], T[t1], T[t2]
+                    u = (b0 * uv0[0] / z0 + b1 * uv1[0] / z1 + b2 * uv2[0] / z2) * z
+                    v = (b0 * uv0[1] / z0 + b1 * uv1[1] / z1 + b2 * uv2[1] / z2) * z
+                    th, tw = mask.shape
+                    col = np.clip(u, 0, 1) * (tw - 1)
+                    row = np.clip(1.0 - v, 0, 1) * (th - 1)
+                    on = mask[np.clip(row.astype(np.int32), 0, th - 1), np.clip(col.astype(np.int32), 0, tw - 1)]
+                    rgb = np.where(on[..., None], mark, flat)
             tile = color[miny:maxy + 1, minx:maxx + 1]
-            tile[closer] = rgb
+            tile[closer] = rgb[closer] if rgb.ndim == 3 else rgb
         else:
             uv0, uv1, uv2 = T[t0], T[t1], T[t2]
             u = (b0 * uv0[0] / z0 + b1 * uv1[0] / z1 + b2 * uv2[0] / z2) * z
@@ -200,6 +219,20 @@ def render(V, T, faces, textures, eye, target, fov_deg, w, h, relief=False):
     depth_out = np.where(hit.astype(bool), depth, np.nan).astype(np.float32)
     rgb = np.clip(color, 0, 255).astype(np.uint8)
     return rgb, depth_out, normal, hit.astype(bool)
+
+
+def _vert_inset(p, mat):
+    if mat in ("plinth", "icicle", "cap", "side", "back"):
+        return 0.0
+    y = float(p[1])
+    if y < 0.60 or y > 6.40:
+        return 0.0
+    ang = math.atan2(float(p[0]), float(p[2]))
+    flat = round(ang / (math.pi / 4.0)) * (math.pi / 4.0)
+    support = float(p[0]) * math.sin(flat) + float(p[2]) * math.cos(flat)
+    t = (y - 0.60) / (6.40 - 0.60)
+    apo = 0.80 + (0.60 - 0.80) * t
+    return apo - support
 
 
 def _inset(p0, p1, p2, mat):

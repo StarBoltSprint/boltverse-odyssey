@@ -31,5 +31,36 @@
   "crop_y0": 192,
   "crop_x0": 192
  },
- "note": "No plate was upscaled. fit_into scale is never above 1."
+ "plinth": {
+  "flatGreyFrac": 0.002,
+  "meanRgb": [
+   21.4,
+   29.3,
+   39.5
+  ],
+  "sources": [
+   "01-lower",
+   "03-lower",
+   "04-lower"
+  ]
+ },
+ "cap": {
+  "flatGreyFrac": 0.0,
+  "meanRgb": [
+   203.2,
+   223.1,
+   241.6
+  ],
+  "frostRGB": [
+   203.0,
+   223.0,
+   243.0
+  ],
+  "chromePxLeft": 0,
+  "sources": [
+   "03-frost-matte",
+   "04-graded-to-03"
+  ]
+ },
+ "note": "No plate was upscaled. Plinth and cap are tiled from plate pixels. fit_into scale is never above 1."
 }
