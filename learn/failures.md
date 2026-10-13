@@ -1263,3 +1263,36 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Project each cone into the plate, mask it with a 0.05 m margin plus 0.04 m beside the mask, and FAIL when a tapering ice-coloured streak covers at least 0.08 m of that mask. Keep the ghost check for a pale smear that does not meet a cone. The fix line is `inpaint painted feature with neighbouring basalt`. |
 | Guard | `node tools/object-gate/selftest.mjs` rows for `painted_duplicate`. Painted-under-cone overlap 1.4 m, faces 101, 102, 103, world [1.28, 0.0, -0.4], ghosts 0, status FAIL, CLI exit 1. Pale smear ghosts 1, world x 3.6, overlap 0, status FAIL, CLI exit 1. Clean plate with the cone overlap 0, ghosts 0, status PASS, CLI exit 0. |
 | Sources | `tools/object-gate/py/painted_duplicate.py`, `tools/object-gate/py/ghost_streaks.py`, `tools/object-gate/selftest.mjs`. |
+
+### 2026-10-13 — kit depths taken from monocular depth
+
+| | |
+| --- | --- |
+| Take | zd tier v1–v3 (alt3d-1013) |
+| Defect | Two plain boxes scored IoU 0.45 against the key; treads read 5.3–8.0 m deep from MoGe, so the terrace read as a cliff, not steps. |
+| Root cause | Pieces ignored the key outline (recess, band, icicle fringe) and depths came straight from monocular depth, which inflates. |
+| Fix | Fit pieces to SAM outlines + key step lines; clamp rise/tread/recess with rules (2.5 m). |
+| Guard | `python3 tools/kit/selftest.py` row "rule clamps MoGe tread 5.3 m -> 3.5 m"; `kit build` IoU gates (closed ≥ 0.85, raw ≥ 0.75). |
+| Sources | `tools/kit/fit.py`, `tools/kit/legacy/kitfit3.py`, `docs/METHOD/kit-relief-materials.md`. |
+
+### 2026-10-13 — snow by surface angle reads dark; uniform decimation spikes blocks
+
+| | |
+| --- | --- |
+| Take | zd tier v5 (alt3d-1013) |
+| Defect | Snow looked dark and the stone blocks looked spiky ("hérissés"); shape match dropped. |
+| Root cause | Snow cover came from the face angle, not the key snow mask; LOD was made by uniformly decimating the displaced mesh, which collapses block edges into spikes. |
+| Fix | Snow layer = key snow mask × up-facing (`tools/scatter/detail.py`); each LOD tessellated on its own `res_m`, block push only on LOD0 (`tools/kit/build.py`). |
+| Guard | `python3 tools/scatter/selftest.py` rows "snow follows key mask", "snow avoids steep block edges"; `python3 tools/kit/selftest.py` "lod0 has real relief, lod2 flat". |
+| Sources | `tools/scatter/detail.py`, `tools/kit/build.py`. |
+
+### 2026-10-13 — texel density measured offline, not live
+
+| | |
+| --- | --- |
+| Take | zd tier v4 viewer |
+| Defect | Offline renders said 512 px/m; the phone viewer ran ~200 px/m (Critic + Art Director FAIL). |
+| Root cause | The viewer shipped downscaled textures; px/m was computed from the source tile, not the screen. |
+| Fix | `metrics.json` keeps `px_per_m_live: null` until `shader/hexTriplanar.js` `probePxPerM()` fills it from the running page. |
+| Guard | Material gate px/m ≥ 500 (`tools/materials/selftest.py` "low px/m refused"); live probe required before review. |
+| Sources | `tools/kit/shader/hexTriplanar.js`, `tools/kit/render.py`. |

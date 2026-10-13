@@ -1,0 +1,42 @@
+{
+  "id": "basalt-zd-frost",
+  "tags": [
+    "stone",
+    "basalt",
+    "wall",
+    "zone-d",
+    "cold"
+  ],
+  "source": {
+    "key_image": "zd-bible-1012/key-zd1-b.jpg",
+    "crop_box_xywh": [
+      138,
+      525,
+      478,
+      88
+    ]
+  },
+  "imagine_prompt": "Seamless tileable PBR albedo texture, orthographic flat straight-on view, of the dark frost-covered columnar basalt stone blocks seen in the terraces of this image, about 2 x 2 metres of wall, with stone joints, chips and frost in the cracks, same cold blue night palette, even flat lighting, no shadows, no sky, no perspective, no objects, edges wrap seamlessly.",
+  "tile_px": 1024,
+  "tile_m": 2.0,
+  "px_per_m": 512.0,
+  "repeat_period_m": 2.0,
+  "dE_vs_key": 3.82,
+  "mean_lab": [
+    20.78,
+    0.77,
+    -16.16
+  ],
+  "repetition_peak": {
+    "plain": 0.75,
+    "hex": 0.003
+  },
+  "scene_check": {
+    "trend": 3.25,
+    "seam_mae": 0.0
+  },
+  "status": "KEEP",
+  "date": "2026-10-13",
+  "notes": "Seamless + colour-matched by alt3d-1013/texprep.py; validated in tier v4/v5 viewer at 512 px/m.",
+  "gate_fails": []
+}

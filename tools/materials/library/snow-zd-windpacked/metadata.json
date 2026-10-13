@@ -1,0 +1,41 @@
+{
+  "id": "snow-zd-windpacked",
+  "tags": [
+    "snow",
+    "ground",
+    "zone-d",
+    "cold"
+  ],
+  "source": {
+    "key_image": "zd-bible-1012/key-zd1-b.jpg",
+    "crop_box_xywh": [
+      384,
+      768,
+      256,
+      256
+    ]
+  },
+  "imagine_prompt": "Macro surface only, no objects, seamless tileable texture. Orthographic top-down view of this wind-packed snow surface, about 2 x 2 metres: fine wind ripples, tiny sparkling ice grains, soft crusted patches, same cold blue-violet night colour as the source, even flat lighting, no shadows from objects, no rocks, no ruins, no horizon, edges wrap seamlessly.",
+  "tile_px": 1024,
+  "tile_m": 1.2,
+  "px_per_m": 853.3,
+  "repeat_period_m": 1.2,
+  "dE_vs_key": 4.25,
+  "mean_lab": [
+    51.99,
+    7.35,
+    -24.42
+  ],
+  "repetition_peak": {
+    "plain": 0.75,
+    "hex": 0.002
+  },
+  "scene_check": {
+    "trend": 1.95,
+    "seam_mae": 1.0
+  },
+  "status": "KEEP",
+  "date": "2026-10-13",
+  "notes": "Imagine edit of the key's foreground snow crop (snowcrop.png). Crop box = 89% snow-mask ground patch; dE vs the whole key snow mask is 6.3 (drifts on tiers are lit paler), so tier snow needs the key-mask gain in the shader. v5 snow read dark: see docs/METHOD/kit-relief-materials.md.",
+  "gate_fails": []
+}

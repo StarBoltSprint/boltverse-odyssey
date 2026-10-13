@@ -6,6 +6,7 @@ The tool does not call Imagine, does not run assetcheck / objsheet / walkaround,
 
 ```bash
 python3 tools/library/library.py add --intake intake.json
+python3 tools/library/library.py add-wip --wip wip.json   # WIP/FAIL only, never placeable
 python3 tools/library/library.py list
 python3 tools/library/library.py check
 python3 tools/library/library.py check --id fixture-solid
@@ -59,3 +60,5 @@ python3 tools/layout/selftest.py
 `selftest_intake.py` proves each bad fixture is refused: KEEP with a run FAIL, run PASS with no KEEP, missing local boxes / `ground_anchor` / `min_clearance_m`, missing camera layer, outline diff above 0 at 15 m or 40 m, missing per-LOD triangle counts, texture under 1024 or without mipmaps. A complete fixture is accepted.
 
 The layout self-test must stay green: a spec that still uses path strings writes the same `clearing.json`.
+
+`add-wip` records a work-in-progress object under `biome/library/_wip/<id>/` (status WIP or FAIL; KEEP refused). `list`/`check`/layout never read it. Self-test: `python3 tools/library/selftest_wip.py`.

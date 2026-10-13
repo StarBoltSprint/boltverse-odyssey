@@ -1,0 +1,43 @@
+{
+  "date": "2026-10-13",
+  "id": "zd-tier-terrace",
+  "kind": "kit-relief",
+  "kit_spec": "tools/kit/specs/zd-tier-v5.json",
+  "materials": {
+    "snow": "snow-zd-windpacked",
+    "stone": "basalt-zd-frost"
+  },
+  "metrics": {
+    "cli_parametric_2026-10-13": {
+      "dE_flat_vs_key": 6.15,
+      "iou_closed": 0.547,
+      "iou_raw": 0.463,
+      "open_edges": 0,
+      "triangles": {
+        "lod0": 83580,
+        "lod1": 17328,
+        "lod2": 2196
+      }
+    },
+    "v4_blender_outline": {
+      "dE_cornice": 3.48,
+      "dE_tier": 2.37,
+      "iou_closed": 0.869,
+      "iou_raw": 0.747,
+      "lod0_tris": 195500,
+      "open_edges": 0,
+      "px_per_m_live": 512
+    }
+  },
+  "reason": "Art Director and Critic FAIL on v4/v5 (snow identity, icicle material, block depth, ground, budget). v6 in progress. Not KEEP, not placeable.",
+  "reviews": [
+    "Bolt Army Critic v4: FAIL",
+    "Boltverse Art Director v4: FAIL"
+  ],
+  "schema": "library-wip/1",
+  "source": {
+    "key_image": "zd-bible-1012/key-zd1-b.jpg",
+    "zone": "D"
+  },
+  "status": "WIP"
+}
