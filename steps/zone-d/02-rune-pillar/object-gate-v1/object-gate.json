@@ -1,0 +1,142 @@
+{
+ "tool": "object-gate",
+ "verdict": "FAIL",
+ "status": "FAIL",
+ "commit": "9b5067d705ad1fd94e8e64b5c23981ce4d4a947b",
+ "mode": "offline",
+ "note": "No live object-gate scene in this worktree. Rows are the offline modules. Verdict is FAIL because volume stepFrac and relief alignment miss their bars.",
+ "rows": [
+  {
+   "name": "shaft-profile",
+   "value": "base 1.6 mid 1.4034 top 1.2104 lip 1.6 max 1.6",
+   "threshold": "max <= 1.65",
+   "pass": true
+  },
+  {
+   "name": "plinth-step-height",
+   "value": "0.20 0.23 0.32",
+   "threshold": "<= 0.40",
+   "pass": true
+  },
+  {
+   "name": "uv-stretch",
+   "value": 1.221,
+   "threshold": "<= 1.3",
+   "pass": true
+  },
+  {
+   "name": "visible-px-m",
+   "value": 190.8,
+   "threshold": ">= 154.6",
+   "pass": true
+  },
+  {
+   "name": "volume-oblique45-stepFrac",
+   "value": 0.0217,
+   "threshold": ">= 0.03",
+   "pass": false
+  },
+  {
+   "name": "volume-oblique45-normSpread",
+   "value": 0.604,
+   "threshold": ">= 0.15",
+   "pass": true
+  },
+  {
+   "name": "volume-grazing-stepFrac",
+   "value": 0.001,
+   "threshold": ">= 0.03",
+   "pass": false
+  },
+  {
+   "name": "volume-grazing-normSpread",
+   "value": 0.5667,
+   "threshold": ">= 0.15",
+   "pass": true
+  },
+  {
+   "name": "relief-alignment",
+   "value": 0.0629,
+   "threshold": ">= 0.70",
+   "pass": false
+  },
+  {
+   "name": "painted-duplicate",
+   "value": 0,
+   "threshold": "ghosts 0",
+   "pass": true
+  },
+  {
+   "name": "grey-untextured-128",
+   "value": 0.006,
+   "threshold": "flat128Frac <= 0.02",
+   "pass": true
+  },
+  {
+   "name": "lod0-tris",
+   "value": 17388,
+   "threshold": "<= 25000",
+   "pass": true
+  },
+  {
+   "name": "outline-15m",
+   "value": 0,
+   "threshold": "0 px",
+   "pass": true
+  },
+  {
+   "name": "outline-40m",
+   "value": 0,
+   "threshold": "0 px",
+   "pass": true
+  },
+  {
+   "name": "non-manifold",
+   "value": 0,
+   "threshold": "0",
+   "pass": true
+  },
+  {
+   "name": "contact",
+   "value": 0.0,
+   "threshold": "0 m",
+   "pass": true
+  },
+  {
+   "name": "icicles",
+   "value": "21 checked, tip y 6.155",
+   "threshold": "above 5 m, on column",
+   "pass": true
+  },
+  {
+   "name": "uv-mirror",
+   "value": 0,
+   "threshold": "mirrored tris 0",
+   "pass": true
+  },
+  {
+   "name": "sliver",
+   "value": 0.0056,
+   "threshold": "sliver pass",
+   "pass": true
+  },
+  {
+   "name": "plaza-free-width",
+   "value": 24.124,
+   "threshold": ">= 16 m",
+   "pass": true
+  },
+  {
+   "name": "shot-sheet",
+   "value": "PENDING",
+   "threshold": "Art Director KEEP and build == HEAD",
+   "pass": false
+  },
+  {
+   "name": "library-intake",
+   "value": "REFUSE",
+   "threshold": "KEEP and run PASS",
+   "pass": false
+  }
+ ]
+}

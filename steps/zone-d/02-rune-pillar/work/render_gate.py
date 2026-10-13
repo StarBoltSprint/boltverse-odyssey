@@ -116,9 +116,9 @@ def render(V, T, faces, textures, eye, target, fov_deg, w, h, relief=False):
         maxy = int(min(h - 1, math.ceil(py.max())))
         if maxx < minx or maxy < miny:
             continue
-        # backface: positive screen area is the winding we want (y is flipped, so area sign flips)
+        # y-down flips the screen winding. Cull only a zero-area triangle here.
         area = (px[1] - px[0]) * (py[2] - py[0]) - (px[2] - px[0]) * (py[1] - py[0])
-        if area <= 1e-6:
+        if abs(area) <= 1e-6:
             continue
         p0 = V[i0]
         p1 = V[i1]

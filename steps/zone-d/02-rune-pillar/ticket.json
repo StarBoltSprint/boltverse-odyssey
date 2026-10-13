@@ -24,7 +24,7 @@
       "id": "04-45-right",
       "path": "/workspace/zd-bible-1012/pillar-plates/04-45-right.jpg",
       "ad_precheck": "KEEP",
-      "notes": "right face colour; grade to 03 matte frost; 07-closeup-right45-runes AD FAIL \u2014 excluded from ticket, right face uses 04 only"
+      "notes": "right face colour; grade to 03 matte frost; 07-closeup-right45-runes AD FAIL — excluded from ticket, right face uses 04 only"
     },
     {
       "id": "05-back",
@@ -36,7 +36,7 @@
       "id": "06-closeup-left45-runes",
       "path": "/workspace/zd-bible-1012/pillar-plates/06-closeup-left45-runes.jpg",
       "ad_precheck": "KEEP",
-      "notes": "left 45\u00b0 rune detail"
+      "notes": "left 45° rune detail"
     }
   ],
   "placement": {
@@ -59,10 +59,40 @@
       "texture_mb_share": 12
     }
   },
-  "build": "pending",
-  "gates": "pending",
+  "build": {
+    "commit": "9b5067d705ad1fd94e8e64b5c23981ce4d4a947b"
+  },
+  "gates": {
+    "status": "fail",
+    "commit": "9b5067d705ad1fd94e8e64b5c23981ce4d4a947b",
+    "object_gate": "steps/zone-d/02-rune-pillar/object-gate-v1/object-gate.json",
+    "clearance": {
+      "measured": {
+        "headroom_m": 6.155,
+        "width_m": 24.124,
+        "ground_m": 0
+      }
+    },
+    "budget_check": {
+      "lod0_tris": 17388,
+      "texture_mb": 3.098
+    }
+  },
   "play": "pending",
-  "shots": "pending",
+  "shots": {
+    "status": "pending",
+    "commit": "9b5067d705ad1fd94e8e64b5c23981ce4d4a947b",
+    "sheet_paths": [
+      "steps/zone-d/02-rune-pillar/object-gate-v1/shot-verdict.json",
+      "steps/zone-d/02-rune-pillar/object-gate-v1/front-19.7m.jpg",
+      "steps/zone-d/02-rune-pillar/object-gate-v1/front-8m.jpg",
+      "steps/zone-d/02-rune-pillar/object-gate-v1/phone-8m.jpg",
+      "steps/zone-d/02-rune-pillar/object-gate-v1/up-3m.jpg",
+      "steps/zone-d/02-rune-pillar/object-gate-v1/oblique45.jpg",
+      "steps/zone-d/02-rune-pillar/object-gate-v1/grazing.jpg"
+    ],
+    "ad_verdict": "pending"
+  },
   "phone": "pending",
   "go": "pending"
 }

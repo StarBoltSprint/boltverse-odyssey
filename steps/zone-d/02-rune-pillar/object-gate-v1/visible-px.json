@@ -1,0 +1,20 @@
+{
+ "ok": true,
+ "img": "steps/zone-d/02-rune-pillar/object-gate-v1/front-8m.jpg",
+ "w": 1080,
+ "h": 2400,
+ "fovDeg": 58,
+ "distM": 8.0,
+ "screenPxPerM": 270.7,
+ "needPxPerM": 154.6,
+ "needFormula": "phone 1080x2400, dpr 2.625, renderPixelRatio 1.5, vfov 58, dist 8 m: (2400/2.625)*1.5 / (2*8*tan(29deg)) = 154.6",
+ "tiles": 286,
+ "kMedian": 1.419,
+ "visiblePxPerM": 190.8,
+ "p25PxPerM": 162.6,
+ "capped": false,
+ "tau": 0.1,
+ "pass": true,
+ "tool": "python3 tools/object-gate/lib/analyze.py visible_px",
+ "note": "node tools/object-gate/visible-shot.mjs cannot import js-yaml. This number is the python estimator on the 1080x2400 frame. The eye sits 8.08 m from the front flat at y=3 because the 0.80 m radius step-out meets a tapered face. No upscale."
+}

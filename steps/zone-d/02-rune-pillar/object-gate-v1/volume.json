@@ -1,0 +1,21 @@
+{
+ "views": {
+  "oblique45": {
+   "stepFrac": 0.0217,
+   "normSpread": 0.604,
+   "hitPx": 244153,
+   "pass": false
+  },
+  "grazing": {
+   "stepFrac": 0.001,
+   "normSpread": 0.5667,
+   "hitPx": 413245,
+   "pass": false
+  }
+ },
+ "errors": [
+  "oblique-profile oblique45: stepFrac 0.0217 normSpread 0.604",
+  "oblique-profile grazing: stepFrac 0.001 normSpread 0.5667"
+ ],
+ "pass": false
+}

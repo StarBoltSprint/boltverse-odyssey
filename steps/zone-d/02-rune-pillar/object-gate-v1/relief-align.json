@@ -1,0 +1,52 @@
+{
+ "bar": 0.7,
+ "pass": false,
+ "blocking": "beauty",
+ "beauty": {
+  "ok": false,
+  "overlap": 0.0629,
+  "alignment": 0.0629,
+  "precisionRelief": 0.6684,
+  "precisionTexture": 0.0629,
+  "reliefEdges": 8301,
+  "textureEdges": 90415,
+  "tolPx": 2,
+  "silhouette_iou": 0.9984,
+  "chamfer_px": 29.539,
+  "colour_lab": 5.947
+ },
+ "amberOnly": {
+  "ok": false,
+  "overlap": 0.0838,
+  "alignment": 0.0838,
+  "precisionRelief": 0.4106,
+  "precisionTexture": 0.0838,
+  "reliefEdges": 8301,
+  "textureEdges": 39765,
+  "tolPx": 2,
+  "silhouette_iou": 0.4394,
+  "chamfer_px": 47.829,
+  "colour_lab": 7.608
+ },
+ "vertexAmber": {
+  "hit": 223,
+  "grooveVerts": 256,
+  "rate": 0.8711,
+  "depthM": 0.045,
+  "byMaterial": {
+   "front": {
+    "hit": 155,
+    "miss": 5
+   },
+   "right45": {
+    "hit": 16,
+    "miss": 8
+   },
+   "left45": {
+    "hit": 52,
+    "miss": 20
+   }
+  },
+  "note": "Unique OBJ vertices on front/right45/left45 whose support is 0.045 m inside the smooth apothem, sampled with the stored UV."
+ }
+}

@@ -1263,3 +1263,36 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | Project each cone into the plate, mask it with a 0.05 m margin plus 0.04 m beside the mask, and FAIL when a tapering ice-coloured streak covers at least 0.08 m of that mask. Keep the ghost check for a pale smear that does not meet a cone. The fix line is `inpaint painted feature with neighbouring basalt`. |
 | Guard | `node tools/object-gate/selftest.mjs` rows for `painted_duplicate`. Painted-under-cone overlap 1.4 m, faces 101, 102, 103, world [1.28, 0.0, -0.4], ghosts 0, status FAIL, CLI exit 1. Pale smear ghosts 1, world x 3.6, overlap 0, status FAIL, CLI exit 1. Clean plate with the cone overlap 0, ghosts 0, status PASS, CLI exit 0. |
 | Sources | `tools/object-gate/py/painted_duplicate.py`, `tools/object-gate/py/ghost_streaks.py`, `tools/object-gate/selftest.mjs`. |
+
+### 2026-10-13 — volume jump misses centimetre grooves
+
+| | |
+| --- | --- |
+| Take | zd/02-rune-pillar |
+| Defect | A shaft with 4.5 cm rune grooves fails the oblique and grazing volume row even though the faces are not flat. |
+| Root cause | `tools/gate/volume.py` counts a depth jump only when it exceeds `JUMP_M` 0.25 m, and fails when `stepFrac` is under 0.03. A legal 3–6 cm groove never trips that jump. |
+| Fix | Left the grooves at 0.045 m and left the bar alone. Recorded the FAIL. |
+| Guard | `python3 -m tools.gate volume` on this pillar: oblique stepFrac 0.0217, grazing stepFrac 0.001, both normSpread above 0.15 (`steps/zone-d/02-rune-pillar/object-gate-v1/volume.json`). No new self-test row was added. The existing flat sample still fails both stepFrac and normSpread. |
+| Sources | `tools/gate/volume.py`. Feedback `feedback/2026-10-13-gate-volume.md`. |
+
+### 2026-10-13 — relief edge score misses groove seating
+
+| | |
+| --- | --- |
+| Take | zd/02-rune-pillar |
+| Defect | Rune pixels that sit in the grooves still fail relief alignment. |
+| Root cause | `tools/common/align/metrics.py` sets alignment to the minimum of edge precision and edge recall at 2 px. The stone albedo has 90415 Canny edges against 8301 groove edges, so recall is 0.0629 and `ok` is false under the 0.70 bar. |
+| Fix | Reported 0.0629 and the amber-pair 0.0838 as FAIL. Also counted 223/256 grooved vertices on amber (0.871) from the stored UVs. Did not lower the bar. |
+| Guard | `python3 tools/object-gate/lib/analyze.py relief_align` on `front-8m-relief.jpg` against `front-8m.jpg` returns overlap 0.0629, ok false. No new self-test asserts the seating count. |
+| Sources | `tools/common/align/metrics.py`, `steps/zone-d/02-rune-pillar/object-gate-v1/relief-align.json`. Feedback `feedback/2026-10-13-relief-align.md`. |
+
+### 2026-10-13 — visible-shot cannot import js-yaml
+
+| | |
+| --- | --- |
+| Take | zd/02-rune-pillar |
+| Defect | The node sharpness command does not start, so a frame that has the detail never gets an official node number. |
+| Root cause | `tools/object-gate/gate.mjs` imports `js-yaml`. Node ESM cannot resolve that package in this checkout. `NODE_PATH=/usr/share/nodejs` does not fix it. |
+| Fix | Measured with `python3 tools/object-gate/lib/analyze.py visible_px`. The 8 m frame returned 190.8 px/m against need 154.6. |
+| Guard | `node tools/object-gate/visible-shot.mjs` exits `ERR_MODULE_NOT_FOUND` for `js-yaml`. No package was vendored. |
+| Sources | `tools/object-gate/gate.mjs`. Feedback `feedback/2026-10-13-object-gate-js-yaml.md`. |

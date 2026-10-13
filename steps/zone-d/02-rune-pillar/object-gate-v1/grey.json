@@ -1,0 +1,13 @@
+{
+ "subjectPx": 922082,
+ "greyFrac": 0.0269,
+ "flat128Frac": 0.006,
+ "meanRgb": [
+  45.23,
+  49.6,
+  56.69
+ ],
+ "flat128Limit": 0.02,
+ "pass": true,
+ "rule": "Blocking row is untextured flat 128. greyFrac counts low-saturation mid-luma frost and stone and is informational."
+}

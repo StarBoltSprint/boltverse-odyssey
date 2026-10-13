@@ -1,0 +1,53 @@
+{
+  "id": "zd-rune-pillar",
+  "art_director": "steps/zone-d/02-rune-pillar/object-gate-v1/shot-verdict.json",
+  "run": {
+    "tool": "object-gate",
+    "report": "steps/zone-d/02-rune-pillar/object-gate-v1/object-gate.json"
+  },
+  "collision": {
+    "ground_anchor": [0, 0, 0],
+    "min_clearance_m": 2.5,
+    "boxes": [
+      {
+        "id": "plinth-player",
+        "space": "local",
+        "min": [-2.06, -0.15, -2.06],
+        "max": [2.06, 0.6, 2.06]
+      },
+      {
+        "id": "shaft-player",
+        "space": "local",
+        "min": [-0.78, 0.6, -0.78],
+        "max": [0.78, 7.0, 0.78]
+      },
+      {
+        "id": "shaft-camera",
+        "space": "local",
+        "min": [-1.78, 0.6, -1.78],
+        "max": [1.78, 7.0, 1.78]
+      }
+    ]
+  },
+  "camera_layer": {"id": "rune-pillar-front", "kind": "key"},
+  "lod": {
+    "lod0": {"triangles": 17388},
+    "lod1": {"triangles": 17388},
+    "lod2": {"triangles": 17388},
+    "outlineDiffPx": {"15": 0, "40": 0}
+  },
+  "textures": [
+    {"id": "front", "nativePx": 1024, "width": 1024, "height": 1024, "mipmaps": true},
+    {"id": "right45", "nativePx": 1024, "width": 1024, "height": 1024, "mipmaps": true},
+    {"id": "left45", "nativePx": 1024, "width": 1024, "height": 1024, "mipmaps": true},
+    {"id": "side", "nativePx": 1024, "width": 1024, "height": 1024, "mipmaps": true},
+    {"id": "back", "nativePx": 1024, "width": 1024, "height": 1024, "mipmaps": true},
+    {"id": "cap", "nativePx": 1024, "width": 1024, "height": 1024, "mipmaps": true},
+    {"id": "plinth", "nativePx": 1024, "width": 1024, "height": 1024, "mipmaps": true}
+  ],
+  "plinth_outline_xz": [
+    [-0.8616, 2.08], [0.8616, 2.08], [2.08, 0.8616], [2.08, -0.8616],
+    [0.8616, -2.08], [-0.8616, -2.08], [-2.08, -0.8616], [-2.08, 0.8616]
+  ],
+  "plinth_steps_m": [0.2, 0.23, 0.32]
+}

@@ -1,0 +1,41 @@
+{
+ "perMaterial": {
+  "front": {
+   "mirroredTris": 0,
+   "tris": 2784
+  },
+  "right45": {
+   "mirroredTris": 0,
+   "tris": 2784
+  },
+  "side": {
+   "mirroredTris": 0,
+   "tris": 5568
+  },
+  "back": {
+   "mirroredTris": 0,
+   "tris": 1392
+  },
+  "left45": {
+   "mirroredTris": 0,
+   "tris": 2784
+  },
+  "plinth": {
+   "mirroredTris": 0,
+   "tris": 1002
+  },
+  "cap": {
+   "mirroredTris": 0,
+   "tris": 738
+  },
+  "icicle": {
+   "mirroredTris": 0,
+   "tris": 336
+  }
+ },
+ "tier1JambTris": 852,
+ "tier1JambMirrored": 0,
+ "mirroredTris": 0,
+ "tris": 17388,
+ "pass": true
+}
