@@ -1,0 +1,189 @@
+{
+ "gate": "sky-magnification",
+ "verdict": "FAIL",
+ "limit": ">= 1.0",
+ "config": {
+  "plate_w": 1280,
+  "plate_h": 720,
+  "plate_hfov": 35.0,
+  "section_deg": 30.0,
+  "n_plates": 12,
+  "css": [
+   412,
+   915
+  ],
+  "render_scale": 1.5,
+  "vfov": 48.0,
+  "cam_back": 4.5,
+  "cam_up": 2.6,
+  "pitch": -8.0,
+  "climb_pitch": -2.0,
+  "blend_m": 10.0,
+  "climb": [
+   370.0,
+   670.0
+  ],
+  "top_cam_y": 48.0,
+  "spine_len": 1100.0,
+  "step_m": 5.0,
+  "turn_s": 520.0,
+  "turn_deg": 90.0,
+  "turn_step": 5.0,
+  "grid_px": 6
+ },
+ "buffer": [
+  618,
+  1372
+ ],
+ "plate_vcov_deg": 19.688,
+ "global_min": {
+  "pose": {
+   "name": "s370",
+   "s": 370.0,
+   "yaw": 0.0,
+   "pitch": -2.0,
+   "cam_y": 2.6
+  },
+  "sky_visible": true,
+  "min_mag": 0.7359,
+  "at_px": [
+   309,
+   627
+  ],
+  "region": "middle-centre",
+  "plate": "S00",
+  "az_deg": 0.0,
+  "el_deg": 0.19,
+  "sky_frac": 0.408,
+  "buffer": [
+   618,
+   1372
+  ]
+ },
+ "lowest5": [
+  {
+   "pose": {
+    "name": "s370",
+    "s": 370.0,
+    "yaw": 0.0,
+    "pitch": -2.0,
+    "cam_y": 2.6
+   },
+   "sky_visible": true,
+   "min_mag": 0.7359,
+   "at_px": [
+    309,
+    627
+   ],
+   "region": "middle-centre",
+   "plate": "S00",
+   "az_deg": 0.0,
+   "el_deg": 0.19,
+   "sky_frac": 0.408,
+   "buffer": [
+    618,
+    1372
+   ]
+  },
+  {
+   "pose": {
+    "name": "s375",
+    "s": 375.0,
+    "yaw": 0.0,
+    "pitch": -2.0,
+    "cam_y": 2.637412962962963
+   },
+   "sky_visible": true,
+   "min_mag": 0.7359,
+   "at_px": [
+    309,
+    627
+   ],
+   "region": "middle-centre",
+   "plate": "S00",
+   "az_deg": 0.0,
+   "el_deg": 0.19,
+   "sky_frac": 0.408,
+   "buffer": [
+    618,
+    1372
+   ]
+  },
+  {
+   "pose": {
+    "name": "s380",
+    "s": 380.0,
+    "yaw": 0.0,
+    "pitch": -2.0,
+    "cam_y": 2.7479703703703704
+   },
+   "sky_visible": true,
+   "min_mag": 0.7359,
+   "at_px": [
+    309,
+    627
+   ],
+   "region": "middle-centre",
+   "plate": "S00",
+   "az_deg": 0.0,
+   "el_deg": 0.19,
+   "sky_frac": 0.408,
+   "buffer": [
+    618,
+    1372
+   ]
+  },
+  {
+   "pose": {
+    "name": "s385",
+    "s": 385.0,
+    "yaw": 0.0,
+    "pitch": -2.0,
+    "cam_y": 2.92915
+   },
+   "sky_visible": true,
+   "min_mag": 0.7359,
+   "at_px": [
+    309,
+    627
+   ],
+   "region": "middle-centre",
+   "plate": "S00",
+   "az_deg": 0.0,
+   "el_deg": 0.19,
+   "sky_frac": 0.408,
+   "buffer": [
+    618,
+    1372
+   ]
+  },
+  {
+   "pose": {
+    "name": "s390",
+    "s": 390.0,
+    "yaw": 0.0,
+    "pitch": -2.0,
+    "cam_y": 3.1784296296296297
+   },
+   "sky_visible": true,
+   "min_mag": 0.7359,
+   "at_px": [
+    309,
+    627
+   ],
+   "region": "middle-centre",
+   "plate": "S00",
+   "az_deg": 0.0,
+   "el_deg": 0.19,
+   "sky_frac": 0.408,
+   "buffer": [
+    618,
+    1372
+   ]
+  }
+ ],
+ "n_poses": 240,
+ "n_sky_poses": 240,
+ "failing_poses": 240,
+ "mip1_needed": true
+}
