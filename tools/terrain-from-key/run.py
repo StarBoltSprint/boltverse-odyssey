@@ -7,6 +7,7 @@ No Imagine images. Does not edit the live preview index.html.
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import sys
 import time
@@ -24,10 +25,15 @@ from gates import evaluate, vertex_cost  # noqa: E402
 from geom import camera_axes, pitch_for_horizon, ray_directions  # noqa: E402
 from mask_depth import ground_mask, load_rgb  # noqa: E402
 
-LIVE = Path("/workspace/zb-preview-1008/main.mjs")
-KEY_DEFAULT = Path("/workspace/zb-bible-1008/key-city3.jpg")
-PRIOR = Path("/workspace/zb-bible-1008/compare/run2/camera-key.json")
-OUT = REPO / "steps" / "terrain-key2-1011"
+# Per-zone config (zones/<zone>.json, TFK_ZONE, default zone-b = the original values, unchanged).
+ZONE = json.loads((ROOT / "zones" / (os.environ.get("TFK_ZONE", "zone-b") + ".json")).read_text())
+PREVIEW = Path(ZONE.get("preview", "/workspace/zb-preview-1008"))
+LIVE = PREVIEW / "main.mjs"
+KEY_DEFAULT = Path(os.environ.get("TFK_KEY", ZONE["key"]))
+PRIOR = Path(ZONE.get("cameraPrior", ""))
+OUT = REPO / ZONE["out"]
+HEADING = float(ZONE.get("avenueHeadingDeg", 78.0))
+MASK = ZONE.get("mask", {})
 STAGING = ROOT / "staging"
 
 
@@ -169,7 +175,7 @@ function requestTerrain(x, z, force) {
     (STAGING / "main.mjs").write_text(text)
     shutil.copy(ROOT / "keyed-field.mjs", STAGING / "keyed-field.mjs")
     shutil.copy(ROOT / "height-splat.mjs", STAGING / "height-splat.mjs")
-    html = Path("/workspace/zb-preview-1008/index.html").read_text()
+    html = (PREVIEW / "index.html").read_text()
     html = html.replace("./main.mjs?v=62", "./main.mjs?v=terrain-key")
     html = html.replace("Zone B — aperçu", "Zone B — terrain key (staging)")
     html = html.replace("Zone B — aperçu (tours phase 1, sans Bolt)", "Zone B — staging terrain (key heightfield)")
@@ -223,7 +229,7 @@ def _cam_from_prior(prior, horizon):
     return {
         "x": prior["x"],
         "z": prior["z"],
-        "yaw": 78.0,
+        "yaw": HEADING,
         "eye": 2.3,
         "fov": fov,
         "pitch": float(pitch_for_horizon(fov, horizon, 16 / 9)),
@@ -247,12 +253,12 @@ def main():
     t = time.perf_counter()
     conv = check_camera_convention()
     prior = load_prior()
-    features = json.loads((ROOT / "features.json").read_text())
+    features = json.loads((ROOT / ZONE.get("features", "features.json")).read_text())
     rgb = load_rgb(KEY_DEFAULT)
     mark("load", t)
 
     t = time.perf_counter()
-    ground, tower_cols, horizon = ground_mask(rgb, features)
+    ground, tower_cols, horizon = ground_mask(rgb, features, MASK if MASK.get("method") == "colour" else None)
     Image.fromarray(ground.astype(np.uint8) * 255).save(OUT / "mask-ground.png")
     mark("mask", t)
     cam = _cam_from_prior(prior, horizon)
@@ -263,16 +269,16 @@ def main():
         sys.path.insert(0, str(tools))
     from common.stage_clock import StageClock
 
-    biome = json.loads(Path("/workspace/zb-preview-1008/biome.json").read_text())
+    biome = json.loads((PREVIEW / "biome.json").read_text())
     rel = biome["ground"]["relief"]
     g, tow = _down_mask(ground, tower_cols, 3)
 
     def bake(mask, disp, tag):
         built = compose_from_skyline(
-            cam, mask, disp, tow, step=2.0, span=240.0, heading=78.0,
+            cam, mask, disp, tow, step=2.0, span=240.0, heading=HEADING,
             half_w=4.0, max_slope=15.0, setback=36.0, bank=1.9,
         )
-        ev = evaluate(cam, built, mask, tow, features["features"], rel["lods"], rel["cellM"], 78.0, 4.0)
+        ev = evaluate(cam, built, mask, tow, features["features"], rel["lods"], rel["cellM"], HEADING, 4.0)
         ev["camera"] = cam
         ev["tag"] = tag
         ev["built_meta"] = {
@@ -355,7 +361,7 @@ def main():
     trials = [{"outline": outline, "pass": ev["pass"], "iou": ev["checks"]["silhouetteIoU"]["value"]}]
 
     # vertex budget versus the live lods (same function, live mesh)
-    biome = json.loads(Path("/workspace/zb-preview-1008/biome.json").read_text())
+    biome = json.loads((PREVIEW / "biome.json").read_text())
     rel = biome["ground"]["relief"]
     base_cost = vertex_cost(rel["lods"], rel["cellM"])
     ev["checks"]["vertexCost"]["value"] = {"now": ev["cost"], "live": base_cost}
@@ -382,7 +388,7 @@ def main():
             "eye": ev["camera"]["eye"],
             "fov": ev["camera"]["fov"],
         },
-        "avenue": {"headingDeg": 78, "halfWidthM": 4, "shoulderM": [0.8, 3.5], "crestBandM": [15, 30]},
+        "avenue": {"headingDeg": HEADING, "halfWidthM": 4, "shoulderM": [0.8, 3.5], "crestBandM": [15, 30]},
         "outline": outline,
         "horizonRow": horizon,
     }

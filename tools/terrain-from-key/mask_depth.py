@@ -27,14 +27,28 @@ def _box_mask(h: int, w: int, box) -> np.ndarray:
     return m
 
 
-def color_parts(rgb: np.ndarray):
+# Zone B values (zones/zone-b.json "mask"). Defaults keep every old caller identical.
+ZONE_B_MASK = {
+    "sand": {"rMin": 88, "rOverB": 14, "gMin": 42, "gOverR": 8},
+    "sky": {"bOverR": 6, "lumaMin": 70, "gMin": 40},
+    "darkLumaMax": 48,
+    "slab": {"rowMin": 0.58, "halfWidth": 0.20},
+    "sun": {"lumaMin": 170, "rowMax": 0.55},
+    "topCut": 0.30,
+    "tower": {"rowMax": 0.78, "colFrac": 0.18},
+}
+
+
+def color_parts(rgb: np.ndarray, p: dict | None = None):
+    p = p or ZONE_B_MASK
+    s, k = p["sand"], p["sky"]
     r = rgb[..., 0].astype(np.float32)
     g = rgb[..., 1].astype(np.float32)
     b = rgb[..., 2].astype(np.float32)
     luma = 0.2126 * r + 0.7152 * g + 0.0722 * b
-    sand = (r > 88) & (r > b + 14) & (g > 42) & (r + 8 > g)
-    sky = (b + 6 > r) & (luma > 70) & (g > 40) & ~sand
-    dark = luma < 48
+    sand = (r > s["rMin"]) & (r > b + s["rOverB"]) & (g > s["gMin"]) & (r + s["gOverR"] > g)
+    sky = (b + k["bOverR"] > r) & (luma > k["lumaMin"]) & (g > k["gMin"]) & ~sand
+    dark = luma < p["darkLumaMax"]
     return sand, sky, dark, luma
 
 
@@ -55,27 +69,28 @@ def horizon_row(ground: np.ndarray) -> float:
     return float(np.median(tops) + 0.5) / h
 
 
-def ground_mask(rgb: np.ndarray, features: dict) -> tuple[np.ndarray, np.ndarray, float]:
+def ground_mask(rgb: np.ndarray, features: dict, p: dict | None = None) -> tuple[np.ndarray, np.ndarray, float]:
     """Return (ground, tower_columns, horizon_row_frac).
 
     Ground is sand plus the dark slab lane, minus sky, minus the exclude boxes
     (mesas, wreck, upper sky). Towers are dark vertical masses.
     """
+    p = p or ZONE_B_MASK
     h, w = rgb.shape[:2]
-    sand, sky, dark, luma = color_parts(rgb)
+    sand, sky, dark, luma = color_parts(rgb, p)
     excl = np.zeros((h, w), np.bool_)
     for item in features.get("exclude", []):
         excl |= _box_mask(h, w, item["box"])
     # dark slabs: lower centre, not the tower silhouettes
     yy = np.arange(h)[:, None]
     xx = np.arange(w)[None, :]
-    slabs = dark & (yy > int(h * 0.58)) & (np.abs(xx - w * 0.5) < w * 0.20)
+    slabs = dark & (yy > int(h * p["slab"]["rowMin"])) & (np.abs(xx - w * 0.5) < w * p["slab"]["halfWidth"])
     # The sun is warm. A bright pixel in the upper half is sky, not sand.
-    sun = (luma > 170) & (yy < int(h * 0.55))
+    sun = (luma > p["sun"]["lumaMin"]) & (yy < int(h * p["sun"]["rowMax"]))
     ground = (sand | slabs) & ~sky & ~sun & ~excl
-    ground[: int(h * 0.30), :] = False
-    towers = dark & ~slabs & (yy < int(h * 0.78))
-    tower_cols = towers.mean(axis=0) > 0.18
+    ground[: int(h * p["topCut"]), :] = False
+    towers = dark & ~slabs & (yy < int(h * p["tower"]["rowMax"]))
+    tower_cols = towers.mean(axis=0) > p["tower"]["colFrac"]
     return ground, tower_cols, horizon_row(ground)
 
 

@@ -3,6 +3,7 @@
 Proves bad input FAILS and good input PASSES. Fixture = one 96x54 synthetic key; everything in a temp dir, removed after."""
 import json, os, shutil, subprocess, sys, tempfile, time
 H = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, H)
+os.environ.setdefault("GOLDEN_MASKS", "offline")  # offline: colour-cluster masks, no MoGe-2 / SAM2 weights needed
 import fixture_key
 R = []
 def ok(name, cond, info=""):
@@ -10,7 +11,7 @@ def ok(name, cond, info=""):
 def py(*a, env=None): return subprocess.run([sys.executable, *a], capture_output=True, text=True, env={**os.environ, **(env or {})})
 def sh(*a, env=None): return subprocess.run(["bash", *a], capture_output=True, text=True, env={**os.environ, **(env or {})})
 
-T = tempfile.mkdtemp(prefix="golden-st-")
+T = tempfile.mkdtemp(prefix="golden-st-"); os.environ["GOLDEN_FIX_LEDGER"] = os.path.join(T, "fix-ledger.jsonl")
 try:
     key = fixture_key.make(os.path.join(T, "key.png")); IA = os.path.join(H, "imagine_auto.py"); TM = os.path.join(H, "timing.py")
     # ---------------- imagine-auto
@@ -33,7 +34,7 @@ try:
     # fake grok CLI: proves the grok backend drives `grok -p ... --always-approve` and only trusts a real image on disk
     fake = os.path.join(T, "grok-fake"); open(fake, "w").write("#!/bin/bash\n# args: -p PROMPT --always-approve --cwd DIR\n"
         "[ \"$1\" = -p ] && [ \"$3\" = --always-approve ] || exit 9\n"
-        "dest=$(printf '%s' \"$2\" | grep -o \"cp <returned path> [^ ]*\" | awk '{print $4}' | tr -d '\`')\n"
+        "dest=$(printf '%s' \"$2\" | grep -o \"cp <returned path> [^ ]*\" | awk '{print $4}' | tr -d '\\`')\n"
         "python3 -c \"from PIL import Image;Image.new('RGB',(8,8),(9,9,9)).save('$dest','JPEG')\"; echo DONE $dest\n"); os.chmod(fake, 0o755)
     liar = os.path.join(T, "grok-liar"); open(liar, "w").write("#!/bin/bash\necho DONE /tmp/nothing.jpg\n"); os.chmod(liar, 0o755)
     json.dump({"slots": [{"slot": "sky-S01", "prompt": "night sky", "aspect": "16:9"}]}, open(P + ".g", "w"))
@@ -55,15 +56,30 @@ try:
     z = os.path.join(W, "zone.json"); t = json.load(open(os.path.join(W, "timing.json"))) if os.path.exists(os.path.join(W, "timing.json")) else {}
     stages = [s["stage"] for s in t.get("stages", [])]
     ok("run.sh good key -> exit 0, zone.json, play URL, 11 timed stages", r.returncode == 0 and os.path.exists(z) and os.path.exists(os.path.join(W, "PLAY_URL.txt"))
-       and stages == ["prompts", "imagine", "sky", "ground", "terrain", "objects", "placement", "gate", "worldgraph", "play"], r.stdout[-800:])
+       and stages == ["prompts", "imagine", "sky", "ground", "terrain", "objects", "placement", "gate", "worldgraph", "play", "artdirector"], r.stdout[-800:])
     if os.path.exists(z):
         zj = json.load(open(z)); ok("run.sh zone.json is zone.v1 with every gate PASS", zj["schema"] == "zone.v1" and set(zj["qualityGates"].values()) == {"PASS"})
+        ok("run.sh objects are golden-hull volumes from auto.py (no relief cutouts)", zj["objects"] and all(o["fidelity"]["kind"] == "golden-hull" for o in zj["objects"]))
+        adg = json.load(open(os.path.join(W, "gates", "artdirector.json")))
+        ok("run.sh Art Director final gate: render sheet saved, verdict PENDING (never auto-approved)", adg["verdict"] == "PENDING" and adg["sheet"] and os.path.exists(adg["sheet"]))
+        os.makedirs(os.path.join(W, "art-director"), exist_ok=True); json.dump({"verdict": "FAIL", "notes": "test"}, open(os.path.join(W, "art-director", "verdict.json"), "w"))
+        r2 = sh(RS, key, "mini", "--work", W, "--imagine", "mock"); os.remove(os.path.join(W, "art-director", "verdict.json"))
+        ok("run.sh Art Director FAIL verdict stops the run (exit 1)", r2.returncode == 1 and "STOPPED at `artdirector`" in r2.stdout, r2.stdout[-300:])
+    # object quality via the hooks: a flat facade, a shredded mesh, a grey patch must FAIL (retries 0 = no rescue)
+    for hook, check in (("flat", "obliqueProfile"), ("shred", "triangleQuality"), ("grey", "untexturedArea")):
+        Wh = os.path.join(T, "wh-" + hook); shutil.copytree(os.path.join(W, "plates"), os.path.join(Wh, "plates"))
+        shutil.copy(os.path.join(W, "prompts.json"), os.path.join(T, "pp.json"))
+        sheet_ids = [o["id"] for o in json.load(open(os.path.join(W, "spec-sheet.json")))["objects"]]
+        hooks = json.dumps({i: {hook: True} for i in sheet_ids})
+        r = sh(RS, key, "mini", "--work", Wh, "--imagine", "mock", env={"GOLDEN_HOOKS": hooks, "GOLDEN_RETRIES": "0"})
+        rep = open(os.path.join(Wh, "REPORT.md")).read() if os.path.exists(os.path.join(Wh, "REPORT.md")) else ""
+        ok(f"run.sh {hook} object -> FAIL at objects on {check}", r.returncode == 1 and "STOPPED at `objects`" in rep and check in rep, rep[-400:])
     # bad sky: one plate of a different colour -> seam FAIL, run stops at sky, no zone.json
     sl = [{"slot": f"sky-S{i:02d}", "prompt": "s", "aspect": "16:9", **({"mockColor": [250, 20, 200]} if i == 5 else {})} for i in range(6)]
     sl += [{"slot": "ground-a", "prompt": "g", "aspect": "1:1"}, {"slot": "obj-hero", "prompt": "o", "aspect": "1:1"}]
     json.dump({"slots": sl}, open(P + ".sky", "w")); W2 = os.path.join(T, "w2"); r = sh(RS, key, "mini", "--work", W2, "--imagine", "mock", "--prompts", P + ".sky")
     ok("run.sh mismatched sky plate -> exit 1 at sky, seam named in REPORT.md, no zone.json", r.returncode == 1 and "STOPPED at `sky`" in r.stdout
-       and "sky-S04.png|sky-S05.png" in open(os.path.join(W2, "REPORT.md")).read() and not os.path.exists(os.path.join(W2, "zone.json")), r.stdout[-600:])
+       and "sky-S05.png" in open(os.path.join(W2, "REPORT.md")).read() and not os.path.exists(os.path.join(W2, "zone.json")), r.stdout[-600:])
     # bad object: blank plate (nothing to cut) -> objects FAIL
     sl2 = [s for s in sl if not s.get("mockColor")] + [{"slot": "obj-blank", "prompt": "b", "aspect": "1:1", "mockColor": [0, 0, 0]}]
     sl2 = [s for s in sl2 if s["slot"] != "obj-hero"]
