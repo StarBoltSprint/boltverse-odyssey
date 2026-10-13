@@ -241,8 +241,9 @@ def step_playgate(b, ctx):
     c = [chk("served page or inventory read", inv is not None, errs or None)]
     if inv is not None:
         import re
+        san = lambda n: re.sub(r"[\[\]\.:/]", "", re.sub(r"\s", "_", n))   # three.js PropertyBinding.sanitizeNodeName
         base = lambda n: re.sub(r"_\d+$", "", n)   # three.js GLTFLoader de-duplicates names as name_1, name_2
-        names = {m["name"] for m in ctx["meshes"]} | {base(m["name"]) for m in ctx["meshes"]}
+        names = {f(m["name"]) for m in ctx["meshes"] for f in (lambda n: n, base, san, lambda n: base(san(n)))}
         drawn = [n for n in inv if n.get("visible", True) and n.get("drawn", True)]
         col = [n["name"] for n in drawn if n["name"].lower().startswith(("collider", "col_")) or n.get("physics")]
         c.append(chk("no collider node drawn", not col, col[:10]))
@@ -284,8 +285,19 @@ def _support_gap(points, meshes):
     return gap
 
 
+def _unframe(meshes, fr):
+    """World build placed by a yawed root (build.json frame): bring vertices back to the kit-local glTF frame."""
+    if not fr:
+        return meshes
+    th = -math.radians(fr["yaw_gl_deg"]); c, s_ = math.cos(th), math.sin(th)
+    Ry = np.array([[c, 0, s_], [0, 1, 0], [-s_, 0, c]])
+    o = np.array(fr["origin_gl"], float)
+    return [{**m, "V": (m["V"] - o) @ Ry.T} for m in meshes]
+
+
 def step_depthmeasure(b, ctx):
-    ms = [m for m in ctx["meshes"] if not m["name"].lower().startswith(("collider", "socket", "marker"))]
+    allm = _unframe(ctx["meshes"], b.m.get("frame"))
+    ms = [m for m in allm if not m["name"].lower().startswith(("collider", "socket", "marker"))]
     c = []
     exp = b.m.get("expect", {})
     V = np.vstack([m["V"] for m in ms]) if ms else np.zeros((1, 3))
@@ -296,7 +308,7 @@ def step_depthmeasure(b, ctx):
                      {"model_m": round(h, 3), "spec_m": exp["height_m"]}))
     else:
         c.append(chk("Reader-spec height declared", False, "missing expect.height_m"))
-    mk = [m for m in ctx["meshes"] if m["name"].lower().startswith("marker")]
+    mk = [m for m in allm if m["name"].lower().startswith("marker")]
     mh = float(mk[0]["V"][:, 1].max() - mk[0]["V"][:, 1].min()) if mk else None
     c.append(chk("1.8 m marker present", mh is not None and abs(mh - 1.8) <= 0.02, mh))
     # float: every overhang piece (cornice*/slab*) must rest on something within 2 cm below its underside

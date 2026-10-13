@@ -22,7 +22,7 @@ export function applyHexTriplanar(material, { tileM = 2.0, rotate = false, keyGa
     const SNOW = (snowMap ? '#define HEX_SNOW\n' : '') + (normalMap ? '#define HEX_NRM\n' : '');
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', SNOW + '#include <common>\nvarying vec3 vWP; varying vec3 vWN;\n#ifdef HEX_SNOW\nattribute float _snow; varying float vSnow;\n#endif')
-      .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWP = (modelMatrix * vec4(transformed,1.0)).xyz; vWN = normalize(mat3(modelMatrix) * objectNormal);\n#ifdef HEX_SNOW\nvSnow = _snow;\n#endif');
+      .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvec4 hexP = vec4(transformed, 1.0); vec3 hexN = objectNormal;\n#ifdef USE_INSTANCING\nhexP = instanceMatrix * hexP; hexN = mat3(instanceMatrix) * hexN;\n#endif\nvWP = (modelMatrix * hexP).xyz; vWN = normalize(mat3(modelMatrix) * hexN);\n#ifdef HEX_SNOW\nvSnow = _snow;\n#endif');
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', SNOW + `#include <common>
 varying vec3 vWP; varying vec3 vWN;

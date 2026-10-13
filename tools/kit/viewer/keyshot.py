@@ -7,6 +7,6 @@ chrome = sys.argv[sys.argv.index("--chrome") + 1] if "--chrome" in sys.argv else
 with sync_playwright() as p:
     b = p.chromium.launch(executable_path=chrome, args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
     pg = b.new_page(viewport={"width": 1024, "height": 1024}, device_scale_factor=1)
-    pg.goto(f"{base}/play.html?view=key&dpr=1&hud=0&model={model}")
+    pg.goto(f"{base}/play.html?view=key&dpr=1&hud=0&model={model}" + (sys.argv[sys.argv.index("--q") + 1] if "--q" in sys.argv else ""))
     pg.wait_for_function("window.__ready === true", timeout=180000); pg.wait_for_timeout(1000)
     pg.screenshot(path=out); b.close()
