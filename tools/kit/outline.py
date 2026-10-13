@@ -521,6 +521,8 @@ def outline_pieces_v7(spec, cam, masks, key_bgr=None, stone_h=None):
         occ, front, bk, z0 = sink_base(occ, front, bk, z0, cell, o["base_sink_m"], o.get("base_reach_m", 0.6))
     occ, front, bk = fix_manifold(occ, front, bk)
     t1 = extrude_cells(occ, front, bk, x0, z0, cell, "tier1", "stone")
+    if o.get("contour_sigma_m"):
+        t1 = contour_snap(t1, occ, x0, z0, cell, o["contour_sigma_m"])
     t1 = taubin(t1, o.get("smooth_iters", 6))
     out = {"tier1": t1, "grid": (occ, front, bk, x0, z0, cell)}
     if o.get("base_sink_m"):
@@ -535,7 +537,10 @@ def outline_pieces_v7(spec, cam, masks, key_bgr=None, stone_h=None):
         cbk = carve_depth(cocc, cfr, cx0, cz0, ccell, cam, slab | tier, back, back_min=0.5, step=o.get("carve_step_m", 0.1))
         cbk = np.maximum(cbk, 0.5)          # always reaches 0.5 m into the wall plane: no gap behind
         cocc, cfr, cbk = fix_manifold(cocc, cfr, cbk)
-        c = taubin(extrude_cells(cocc, cfr, cbk, cx0, cz0, ccell, "cornice", "stone"), o.get("smooth_iters", 6))
+        c = extrude_cells(cocc, cfr, cbk, cx0, cz0, ccell, "cornice", "stone")
+        if o.get("contour_sigma_m"):
+            c = contour_snap(c, cocc, cx0, cz0, ccell, o["contour_sigma_m"])
+        c = taubin(c, o.get("smooth_iters", 6))
         out["cornice"] = c
         # seat + corbels. Seat: the slab back runs 0.5 m into the wall plane, and where the wall below is
         # lower than the slab bottom a stone wedge fills the gap (hidden from the key camera, visible from
@@ -725,4 +730,47 @@ def snow_skirt(x_spans, depth=0.7, h=0.4, sink=0.3, res=0.25, seed=5):
         m = taubin(Mesh(V, m.F, "skirt", "stone"), 4)
         m.attrs["_SNOW"] = np.ones(len(m.V))
         out.append(m)
+    return out
+
+
+def contour_snap(m: Mesh, occ, x0, z0, cell, sigma_m=0.35, iters=6):
+    """v9: replace the cell staircase of the outline by the smooth key contour. The occupancy is blurred
+    (sigma_m) into a field whose 0.5 iso-line is a smooth polyline/spline through the key outline; every vertex
+    on a boundary grid corner (mixed occupancy around it) is moved in x/z onto that iso-line by Newton steps
+    (max 1.5 cells). Topology is untouched, so the mesh stays closed and manifold; side walls and block
+    courses follow the smoothed outline instead of zigzagging per cell."""
+    from scipy.ndimage import gaussian_filter, map_coordinates
+    nz, nx = occ.shape
+    pad = np.pad(occ.astype(float), 2)
+    F = gaussian_filter(pad, sigma_m / cell)
+    gz, gx = np.gradient(F)
+    ci = np.round((m.V[:, 0] - x0) / cell).astype(int)
+    cj = np.round((m.V[:, 2] - z0) / cell).astype(int)
+    P = np.pad(occ, 1)
+    a = P[np.clip(cj, 0, nz + 1), np.clip(ci, 0, nx + 1)]            # cell (j, i-1) in padded = P[j+1, i]... compute 4
+    def occp(j, i):
+        return P[np.clip(j + 1, 0, nz + 1), np.clip(i + 1, 0, nx + 1)]
+    s4 = occp(cj - 1, ci - 1).astype(int) + occp(cj - 1, ci) + occp(cj, ci - 1) + occp(cj, ci)
+    bnd = (s4 > 0) & (s4 < 4)
+    # field coords: cell (j,i) centre at padded index (j+2, i+2); corner (j,i) at (j+1.5, i+1.5)
+    u = (m.V[:, 0] - x0) / cell + 1.5
+    w = (m.V[:, 2] - z0) / cell + 1.5
+    u0, w0 = u.copy(), w.copy()
+    idx = np.nonzero(bnd)[0]
+    for _ in range(iters):
+        f = map_coordinates(F, [w[idx], u[idx]], order=1) - 0.5
+        dx = map_coordinates(gx, [w[idx], u[idx]], order=1)
+        dz = map_coordinates(gz, [w[idx], u[idx]], order=1)
+        g2 = dx * dx + dz * dz + 1e-6
+        u[idx] -= f * dx / g2
+        w[idx] -= f * dz / g2
+        d = np.hypot(u[idx] - u0[idx], w[idx] - w0[idx])
+        k = np.minimum(1, 1.5 / np.maximum(d, 1e-9))
+        u[idx] = u0[idx] + (u[idx] - u0[idx]) * k
+        w[idx] = w0[idx] + (w[idx] - w0[idx]) * k
+    V = m.V.copy()
+    V[:, 0] = (u - 1.5) * cell + x0
+    V[:, 2] = (w - 1.5) * cell + z0
+    out = Mesh(V, m.F, m.name, m.material)
+    out.attrs = dict(m.attrs)
     return out

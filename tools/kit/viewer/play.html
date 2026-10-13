@@ -28,7 +28,7 @@ const V = {
   chase:   {pos: [4.5, 3.4, 7.5], tgt: [4.5, 1.6, 0]},
   '45':    {pos: [4.5 + 2.83, 1.7, 2.83], tgt: [4.5, 2.0, 0]},
   grazing: {pos: [-3.2, 1.2, 0.9], tgt: [10, 2.6, -0.2]},
-  side:    {pos: [-4.2, 4.3, 0.2], tgt: [1.5, 4.6, -0.4]},
+  side:    {pos: [-4.0, 3.4, 9.0], tgt: [2.5, 4.8, -0.5]},  // v9: wall now runs on to x -11.5, so the cornice end is seen from in front-left
   scale:   {pos: [-40, 22, 70], tgt: [30, 6, -40]},
 }[view];
 const camera = new THREE.PerspectiveCamera(V.fov || 48, innerWidth / innerHeight, 0.05, 1000);

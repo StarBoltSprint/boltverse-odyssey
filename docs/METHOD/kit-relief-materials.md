@@ -62,3 +62,13 @@ Tier kit = **WIP** (`biome/library/_wip/zd-tier-terrace`). v4: IoU 0.747/0.869, 
   - The IoU gate is in the spec (`iou_closed_min` 0.882). `iou-diff.png` is written: red = model only, blue = key only.
 - Viewer: triplanar basalt normal map (`hexTriplanar` `normalMap`). The snow tile gets a linear gain of (1.31, 1.66, 1.09) toward the ground plate, which removes the purple-grey cast.
 - Tier+cornice-only IoU stays low because the SAM tier mask misses the upper wall (band). `iou_vs_tier_cornice_band_ignored` scores without the band pixels.
+
+## v9 (0005): smoothed outline + corrected key mask
+- `contour_snap`: the occupancy is blurred (σ 0.3 m) and every boundary-corner vertex is moved onto the 0.5 iso-line
+  with Newton steps (at most 1.5 cells). The outline becomes a smooth curve along the key contour. Topology does not change,
+  so open and non-manifold edge counts stay at 0.
+- The key tier mask `zd/tier_full.png` merges two SAM2 (hiera small) box re-prompts (`tier_full.sam2-boxes.json`, run through
+  `tools/placement-from-key/sam2_boxes.py`) with the old tier and band masks, closed 9 px, keeping the largest component.
+  It covers the terrace from the key's left edge (px 0) to px 616. The old SAM mask missed the upper wall and the left 138 px.
+- The scores against the old masks (`iou_vs_old_tier_*`) are still reported for comparison. They are low because the model now covers the true, larger shape.
+- cell_m is 0.13 to stay under 90k triangles. The cornice side view moved to the front-left, because the wall now runs on to x −11.5 m.

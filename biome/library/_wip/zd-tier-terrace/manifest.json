@@ -138,5 +138,52 @@
    "side": 425
   },
   "spec": "tools/kit/specs/zd-tier-v8.json"
+ },
+ "v9": {
+  "triangles": {
+   "lod0": 79294,
+   "lod1": 30572,
+   "lod2": 8698
+  },
+  "open_edges": 0,
+  "nonmanifold_edges": 0,
+  "iou_raw": 0.954,
+  "iou_closed": 0.969,
+  "iou_vs_tier_cornice_only": {
+   "raw": 0.954,
+   "closed": 0.969
+  },
+  "iou_vs_old_tier_cornice": {
+   "raw": 0.211,
+   "closed": 0.247
+  },
+  "iou_vs_old_tier_band_cornice": {
+   "raw": 0.32,
+   "closed": 0.372
+  },
+  "snow_ratio": {
+   "key": 0.2484,
+   "model": 0.2484,
+   "rel_diff": 0.0002
+  },
+  "cornice_float": {
+   "checked": 33,
+   "floating": 0,
+   "fraction": 0.0,
+   "worst": []
+  },
+  "px_per_m_texture": {
+   "stone": 512.0,
+   "snow": 853.3
+  },
+  "px_per_m_live_screen": {
+   "key": 23,
+   "3m": 487,
+   "chase": 198,
+   "45": 364,
+   "grazing": 124,
+   "side": 159
+  },
+  "spec": "tools/kit/specs/zd-tier-v9.json"
  }
 }

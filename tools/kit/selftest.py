@@ -105,5 +105,13 @@ o2, f2, b2, zz = sink_base(oc, np.zeros(oc.shape), np.ones(oc.shape), 0.0, 0.1, 
 row("sink_base buries low columns to -0.3 m, leaves high ones", o2[0, 1] and not o2[:, 0][:5].any() and np.isclose(zz, -0.3))
 sk = snow_skirt([(0, 2)], depth=0.8, h=0.6)[0]
 row("snow skirt closed, all snow, buried below ground", open_edges(sk) == 0 and sk.attrs["_SNOW"].min() == 1 and sk.V[:, 2].min() < 0)
+# --- v9 row ---
+from outline import contour_snap
+oc9 = np.tril(np.ones((16, 16), bool))
+m9 = extrude_cells(oc9, np.zeros(oc9.shape), np.ones(oc9.shape), 0, 0, 0.1)
+s9 = contour_snap(m9, oc9, 0, 0, 0.1, 0.3)
+b9 = (np.abs(m9.V[:, 0] - m9.V[:, 2]) < 0.15) & (m9.V[:, 0] > 0.3) & (m9.V[:, 0] < 1.2)
+row("contour_snap straightens a 45-degree staircase (spread off the line drops) and keeps the mesh closed",
+    open_edges(s9) == 0 and nonmanifold_edges(s9) == 0 and np.std(s9.V[b9, 2] - s9.V[b9, 0]) < 0.85 * np.std(m9.V[b9, 2] - m9.V[b9, 0]))
 print(f"{sum(rows)}/{len(rows)} rows pass")
 sys.exit(0 if all(rows) else 1)

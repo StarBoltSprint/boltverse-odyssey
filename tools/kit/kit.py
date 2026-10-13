@@ -174,6 +174,12 @@ def cmd_build(a) -> int:
         cl = lambda x: cv2.morphologyEx(x.astype(np.uint8), cv2.MORPH_CLOSE, kk, borderType=cv2.BORDER_REPLICATE) > 0
         m["iou_vs_tier_cornice_only"] = {"raw": round(_iou(silv, target_v6), 3), "closed": round(_iou(cl(silv), cl(target_v6)), 3)}
         m["target"] = "tier + band + cornice SAM masks (band = key upper wall behind the cornice)"
+        lt = spec.get("outline", {}).get("legacy_tier_mask")
+        if lt:   # v9: also score against the old v4 SAM tier mask (+cornice, +band) for comparison
+            L = cv2.resize(cv2.imread(str(Path(a.spec).parent / lt), 0), (silv.shape[1], silv.shape[0])) > 127
+            cm = masks["cornice"] if masks.get("cornice") is not None else np.zeros_like(L)
+            for nm, tg in (("iou_vs_old_tier_cornice", L | cm), ("iou_vs_old_tier_band_cornice", L | cm | masks["band"])):
+                m[nm] = {"raw": round(_iou(silv, tg), 3), "closed": round(_iou(cl(silv), cl(tg)), 3)}
         ign = masks["band"] & ~target_v6          # band pixels: real wall the SAM tier mask missed -> don't score
         sv, tv = cl(silv) & ~ign, cl(target_v6) & ~ign
         m["iou_vs_tier_cornice_band_ignored"] = {"raw": round(_iou(silv & ~ign, target_v6), 3), "closed": round(_iou(sv, tv), 3)}
