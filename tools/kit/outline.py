@@ -514,10 +514,17 @@ def outline_pieces_v7(spec, cam, masks, key_bgr=None, stone_h=None):
         if dd2.shape == occ.shape:
             front[dd2 & occ] = spec.get("recess", {}).get("depth_m", 2.5)
     bk = carve_depth(occ, front, x0, z0, cell, cam, tier, back, step=o.get("carve_step_m", 0.1))
+    if o.get("block_quantize") and o.get("_courses") is not None:
+        bk = quantize_blocks(occ, bk, x0, z0, cell, np.asarray(o["_courses"]), o.get("block_w_m", 0.9), o.get("carve_step_m", 0.1), o.get("block_pct", 0))
+    if o.get("base_sink_m"):
+        base0 = np.array([z0 + np.nonzero(occ[:, i])[0].min() * cell if occ[:, i].any() else np.inf for i in range(occ.shape[1])])
+        occ, front, bk, z0 = sink_base(occ, front, bk, z0, cell, o["base_sink_m"], o.get("base_reach_m", 0.6))
     occ, front, bk = fix_manifold(occ, front, bk)
     t1 = extrude_cells(occ, front, bk, x0, z0, cell, "tier1", "stone")
     t1 = taubin(t1, o.get("smooth_iters", 6))
     out = {"tier1": t1, "grid": (occ, front, bk, x0, z0, cell)}
+    if o.get("base_sink_m"):
+        out["base0"] = base0   # key-visible wall bottom per column (before sinking)
     # cornice: slab + fringe (icicles)
     if masks.get("cornice") is not None:
         over = spec.get("cornice", {}).get("overhang_m", 1.0)
@@ -652,3 +659,70 @@ def inside(m: Mesh, Q):
         t = f * (e2 * qq).sum(1)
         res[qi] = int((ok & (u >= 0) & (v >= 0) & (u + v <= 1) & (t > 1e-9)).sum()) % 2 == 1
     return res
+
+
+def quantize_blocks(occ, bk, x0, z0, cell, courses, block_w=0.9, step=0.1, pct=0):
+    """v8: one back depth per block (course row x running-bond column), the shallowest of its cells, so the
+    tread edge steps once per block along the key course lines instead of zigzagging per cell. Stays inside
+    the visual hull (min), so the key silhouette never grows."""
+    nz, nx = occ.shape
+    zc = z0 + (np.arange(nz) + 0.5) * cell
+    ci = np.clip(np.searchsorted(courses, zc) - 1, 0, len(courses) - 2)
+    xc = x0 + (np.arange(nx) + 0.5) * cell
+    out = bk.copy()
+    for c in np.unique(ci):
+        rows = np.nonzero(ci == c)[0]
+        col = np.floor((xc + (c % 2) * block_w / 2) / block_w).astype(int)
+        for b in np.unique(col):
+            cols = np.nonzero(col == b)[0]
+            sub = occ[np.ix_(rows, cols)]
+            if sub.any():
+                v = np.percentile(bk[np.ix_(rows, cols)][sub], pct)
+                blk = out[np.ix_(rows, cols)]
+                blk[sub] = np.round(v / step) * step
+                out[np.ix_(rows, cols)] = blk
+    return out
+
+
+def sink_base(occ, front, bk, z0, cell, sink=0.3, reach=0.6):
+    """v8: every column whose lowest solid cell sits within 0.6 m of ground is continued down to -sink,
+    so the wall foot is buried (no light gap at ground level in close views)."""
+    nz, nx = occ.shape
+    add = max(0, int(np.ceil((z0 + sink) / cell)))
+    if add:
+        occ = np.vstack([np.zeros((add, nx), bool), occ]); front = np.vstack([np.zeros((add, nx)), front])
+        bk = np.vstack([np.repeat(bk[:1], add, 0), bk]); z0 -= add * cell
+    import os
+    if os.environ.get("KIT_DEBUG_BASE"):
+        print("base z per 0.5m:", [(round(z0 + i * cell, 1), round(z0 + np.nonzero(occ[:, i])[0].min() * cell, 2)) for i in range(0, nx, max(1, int(0.5 / cell))) if occ[:, i].any()])
+    for i in range(nx):
+        js = np.nonzero(occ[:, i])[0]
+        if not len(js):
+            continue
+        j0 = js.min()
+        if z0 + j0 * cell > reach:
+            continue
+        jg = max(0, int(np.floor((-sink - z0) / cell)))
+        occ[jg:j0, i] = True
+        front[jg:j0, i] = front[j0, i]
+        bk[jg:j0, i] = bk[j0, i]
+    return occ, front, bk, z0
+
+
+def snow_skirt(x_spans, depth=0.7, h=0.4, sink=0.3, res=0.25, seed=5):
+    """v8: rounded snow bank along the wall foot (y from -depth to +0.2, z from -sink to ~h), closed box
+    smoothed into a drift, _SNOW = 1. Hides the base joint against the ground in the 3 m / chase views."""
+    from geom import box
+    rng = np.random.default_rng(seed)
+    out = []
+    for xa, xb in x_spans:
+        m = box([xa, -depth, -sink], [xb, 0.2, h], res, "skirt", "stone")
+        V = m.V.copy()
+        top = V[:, 2] > 0
+        fr = np.clip((V[:, 1] + depth) / (depth + 0.2), 0, 1)            # 0 at the front, 1 at the wall
+        wav = 0.75 + 0.25 * np.sin(V[:, 0] * 1.7 + rng.uniform(0, 6)) * np.cos(V[:, 0] * 0.6)
+        V[top, 2] = (h * fr[top] ** 0.6 * wav[top]).clip(0.02)
+        m = taubin(Mesh(V, m.F, "skirt", "stone"), 4)
+        m.attrs["_SNOW"] = np.ones(len(m.V))
+        out.append(m)
+    return out

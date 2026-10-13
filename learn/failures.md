@@ -1301,3 +1301,8 @@ Leave a field blank when the repo does not say it. Do not fill it.
 The seat wedges were only added where the slab bottom stood above the wall top. Taubin smoothing rounds the wall top below
 the slab, so the skipped segments floated. Also, the float check had no list of the solid names for the new pieces.
 Fix: add a seat wedge on every segment, overlap it into both the wall and the slab, and list every support solid name in the check.
+
+## 2026-10-13 wall base gap was the key's snow bank, not a modelling slip
+In the key the tier foot at x 3.8–9 m is buried, so the visible bottom is 1.0–1.3 m above the ground. Extending the
+wall down plus a uniform 1.25 m skirt cut IoU from 0.887 to 0.865, because the skirt hid wall that the key shows where the wall meets the ground.
+Fix: size the skirt per stretch from the key-visible bottom, and score the skirt as terrain (z-buffered).

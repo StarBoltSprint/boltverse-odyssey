@@ -1,0 +1,89 @@
+{
+ "id": "zd-tier-terrace-v8",
+ "key": "zd-bible-1012/key-zd1-b.jpg",
+ "_camera_note": "Key camera of alt3d-1013 (MoGe-2 intrinsics, F=0.5957*1024, height 15.94 m) in kit space: x along the wall (left to right in the key), y into the wall, z up, origin at tier-1 base left. Verified: legacy proj() and kit project() agree to the pixel on kit3.json tier-1 points.",
+ "camera": {
+  "pos": [
+   -3.0598,
+   -30.3214,
+   16.073
+  ],
+  "target": [
+   9.9346,
+   -4.916,
+   6.8148
+  ],
+  "up": [
+   0.1304,
+   0.2799,
+   0.9511
+  ],
+  "fov_deg": 80.017
+ },
+ "outline": {
+  "tier_mask": "zd/tier.png",
+  "door_mask": "zd/door.png",
+  "cornice_mask": "zd/cornice.png",
+  "snow_mask": "zd/snow.png",
+  "cell_m": 0.11,
+  "upper_tiers": false,
+  "v7": true,
+  "smooth_iters": 6,
+  "joint_m": 0.32,
+  "block_face_m": [
+   0.0,
+   0.18
+  ],
+  "course_m": 0.55,
+  "courses_from_key": 10,
+  "corbel_step_m": 1.1,
+  "seed": 7,
+  "band_mask": "zd/band.png",
+  "carve_step_m": 0.1,
+  "block_quantize": true,
+  "block_w_m": 0.9,
+  "base_sink_m": 0.3,
+  "skirt": {
+   "depth": 1.0,
+   "sink": 0.3
+  },
+  "base_reach_m": 1.5
+ },
+ "tiers": {
+  "count": 3,
+  "rise_m": 2.5,
+  "tread_m": 2.5,
+  "width_m": 20.23
+ },
+ "recess": {
+  "depth_m": 2.5
+ },
+ "cornice": {
+  "overhang_m": 1.0
+ },
+ "drifts": {
+  "thick_m": 0.6,
+  "outline_k": 0.0,
+  "_note": "outline_k=0: in outline mode the key mask already holds the drift volume; lifting past it grew the silhouette (0.775->0.787 raw when removed). Snow look comes from the per-vertex _SNOW attribute."
+ },
+ "materials": {
+  "stone": "basalt-zd-frost",
+  "snow": "snow-zd-windpacked"
+ },
+ "relief": {
+  "res_m": [
+   0.5,
+   1.0,
+   2.0
+  ]
+ },
+ "budget": {
+  "lod0_tris": 90000
+ },
+ "gates": {
+  "snow_ratio_rel": 0.02,
+  "nonmanifold_zero": true,
+  "float_max": 0.0,
+  "iou_closed_min": 0.882
+ }
+}

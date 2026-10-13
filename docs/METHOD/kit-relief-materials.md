@@ -51,3 +51,14 @@ Tier kit = **WIP** (`biome/library/_wip/zd-tier-terrace`). v4: IoU 0.747/0.869, 
   `float_report` checks point-in-solid with a skewed ray and must find 0 floating probes.
 - IoU target = tier + band (upper wall) + cornice. Tier+cornice-only IoU is reported next to it.
 - Review: `tools/kit/viewer` (real headless Chrome, SwiftShader WebGL, spine phone camera, 6 views + mesa scale).
+
+## v8 (0004): pre-AD self-fix
+- `specs/zd-tier-v8.json`: `block_quantize` gives each block (one key course × a 0.9 m running-bond column) a single
+  back depth, so tread edges step once per block instead of once per 11 cm cell.
+  - The depth is the shallowest cell of the block, so the model stays inside the visual hull.
+- Base: `sink_base` continues every wall column whose key-visible bottom is ≤ 1.5 m down to −0.3 m.
+  - A `snow_skirt` bank covers the wall foot. Where the key shows the foot buried, the bank reaches the visible bottom; where the wall meets the ground, a low 0.25 m drift is used.
+- Scoring: the skirt is terrain. Silhouette and snow ratio z-buffer it out (`render.zlabel`) and clamp buried geometry to the ground.
+  - The IoU gate is in the spec (`iou_closed_min` 0.882). `iou-diff.png` is written: red = model only, blue = key only.
+- Viewer: triplanar basalt normal map (`hexTriplanar` `normalMap`). The snow tile gets a linear gain of (1.31, 1.66, 1.09) toward the ground plate, which removes the purple-grey cast.
+- Tier+cornice-only IoU stays low because the SAM tier mask misses the upper wall (band). `iou_vs_tier_cornice_band_ignored` scores without the band pixels.

@@ -96,5 +96,14 @@ fr = float_report([w7], {"seat": [(0.25, 2.0)], "corbel": [(0.25, 2.5)], "over":
 row("float_report flags a corbel probe with no solid under it", fr["checked"] == 2 and fr["floating"] == 1)
 ic = spike(np.array([0, 0, 2.0]), 0.6, 0.06, rng7)
 row("icicle spike is closed and hangs downward", open_edges(ic) == 0 and ic.V[:, 2].min() < 1.5)
+# --- v8 rows ---
+from outline import quantize_blocks, sink_base, snow_skirt
+q = quantize_blocks(np.ones((10, 20), bool), np.linspace(0.6, 2.0, 200).reshape(10, 20), 0, 0, 0.1, np.array([0, 0.5, 1.0]), 0.9)
+row("quantize_blocks: one depth per block, never deeper than its cells", len(np.unique(q[:5, :4])) == 1 and (q <= np.linspace(0.6, 2.0, 200).reshape(10, 20) + 0.05).all())
+oc = np.zeros((12, 3), bool); oc[8:, 0] = True; oc[2:, 1] = True
+o2, f2, b2, zz = sink_base(oc, np.zeros(oc.shape), np.ones(oc.shape), 0.0, 0.1, 0.3, reach=0.6)
+row("sink_base buries low columns to -0.3 m, leaves high ones", o2[0, 1] and not o2[:, 0][:5].any() and np.isclose(zz, -0.3))
+sk = snow_skirt([(0, 2)], depth=0.8, h=0.6)[0]
+row("snow skirt closed, all snow, buried below ground", open_edges(sk) == 0 and sk.attrs["_SNOW"].min() == 1 and sk.V[:, 2].min() < 0)
 print(f"{sum(rows)}/{len(rows)} rows pass")
 sys.exit(0 if all(rows) else 1)

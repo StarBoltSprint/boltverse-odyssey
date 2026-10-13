@@ -187,6 +187,7 @@ def build_outline_v7(spec: dict, cam, masks: dict, key_bgr=None, matlib: Path = 
     for li, k in enumerate((1, 2, 4)):
         sub = dict(spec)
         sub["outline"] = {**o, "cell_m": o.get("cell_m", 0.09) * k, "smooth_iters": o.get("smooth_iters", 6) if li < 2 else 2}
+        sub["outline"]["_courses"] = courses
         P = outline_pieces_v7(sub, cam, masks, key_bgr)
         parts = []
         for name in ("tier1", "cornice"):
@@ -205,6 +206,28 @@ def build_outline_v7(spec: dict, cam, masks: dict, key_bgr=None, matlib: Path = 
                                  stone_h=hs, stone_tile=ms["tile_m"])
             parts.append(m)
         parts += P.get("corbels", [])
+        if o.get("skirt") and "base0" in P:
+            # v8 snow skirt: where the key shows the wall foot buried in a snow bank (visible bottom >= 0.35 m) a
+            # bank tall enough to reach that bottom; where the wall meets the ground, a low 0.25 m drift
+            from outline import snow_skirt
+            g = P["grid"]; x0_, c_ = g[3], g[5]
+            b0 = P["base0"]; sk = o["skirt"]
+            kind = np.where(~np.isfinite(b0) | (b0 > o.get("base_reach_m", 0.6)), 0, np.where(b0 >= 0.35, 2, 1))
+            i = 0
+            while i < len(kind):
+                if kind[i] == 0:
+                    i += 1; continue
+                j = i
+                while j + 1 < len(kind) and kind[j + 1] == kind[i]:
+                    j += 1
+                xa, xb = x0_ + i * c_ + 0.01, x0_ + (j + 1) * c_ - 0.01
+                if xb - xa > 0.25:
+                    if kind[i] == 2:
+                        h = float(np.median(b0[i:j + 1])) + 0.1
+                        parts += snow_skirt([(xa, xb)], depth=sk.get("depth", 1.0) * h / 1.1 + 0.3, h=h, sink=sk.get("sink", 0.3))
+                    else:
+                        parts += snow_skirt([(xa, xb)], depth=0.4, h=0.25, sink=sk.get("sink", 0.3))
+                i = j + 1
         if li < 2 and P.get("icicles") is not None:
             parts.append(P["icicles"])
         lods[f"lod{li}"] = parts

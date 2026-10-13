@@ -36,11 +36,15 @@ camera.position.set(...V.pos); camera.up.set(0, 1, 0); camera.lookAt(...V.tgt);
 // ground: wide Zone D plate, library snow tile strip at the wall foot
 const g1 = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), new THREE.MeshStandardMaterial({map: plate, roughness: 0.95}));
 plate.repeat.set(600 / 12, 600 / 12); g1.rotation.x = -Math.PI / 2; g1.position.y = -0.02; scene.add(g1);
+// v8: the library snow tile reads purple-grey on screen (mean sRGB R113 G122 B166 vs plate R128 G154 B173):
+// neutralise it toward the Zone D ground plate with a per-channel linear gain (plate/tile)^2.2
+const SNOW_GAIN = [1.31, 1.66, 1.09];
 const sm = new THREE.MeshStandardMaterial({map: snow, normalMap: tex('snow_normal.jpg', false), roughness: 0.9});
+sm.color.setRGB(...SNOW_GAIN);
 snow.repeat.set(26 / 1.2, 8 / 1.2); sm.normalMap.repeat.copy(snow.repeat);
 const g2 = new THREE.Mesh(new THREE.PlaneGeometry(26, 8), sm); g2.rotation.x = -Math.PI / 2; g2.position.set(4.5, 0.0, 3.0); scene.add(g2);
 const snowWall = snow.clone(); snowWall.repeat.set(1, 1);
-const stoneMat = applyHexTriplanar(new THREE.MeshStandardMaterial({map: basalt, roughness: 0.92}), {tileM: 2.0, snowMap: snowWall, snowTileM: 1.2});
+const stoneMat = applyHexTriplanar(new THREE.MeshStandardMaterial({map: basalt, roughness: 0.92}), {tileM: 2.0, snowMap: snowWall, snowTileM: 1.2, snowGain: SNOW_GAIN, normalMap: tex('basalt_normal.jpg', false), normalStrength: 0.9});
 stoneMat.defines = {HEX_SNOW: ''};
 const iceMat = new THREE.MeshStandardMaterial({color: 0xcfdde6, roughness: 0.8, metalness: 0, transparent: true, opacity: 0.92});
 const gl = new GLTFLoader(); let tris = 0;

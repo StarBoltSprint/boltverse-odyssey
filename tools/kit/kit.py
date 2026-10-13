@@ -155,6 +155,9 @@ def cmd_build(a) -> int:
         fails.append(f"iou_closed {m['iou_closed']} < {GATES['iou_closed']}")
     if "iou_raw" in m and m["iou_raw"] < GATES["iou_raw"]:
         fails.append(f"iou_raw {m['iou_raw']} < {GATES['iou_raw']}")
+    ig = spec.get("gates", {}).get("iou_closed_min")
+    if ig and m.get("iou_closed", 1) < ig:
+        fails.append(f"iou_closed {m['iou_closed']} < spec gate {ig}")
     if m["open_edges"]:
         fails.append(f"open_edges {m['open_edges']}")
     if not m["budget_ok"]:
@@ -165,10 +168,15 @@ def cmd_build(a) -> int:
     if masks and target_v6 is not None and masks.get("band") is not None:
         from render import iou as _iou
         silv = silhouette(lods["lod0"], cams["keycam"])
+        dif = np.zeros(silv.shape + (3,), np.uint8); dif[silv & ~target] = (0, 0, 255); dif[~silv & target] = (255, 0, 0); dif[silv & target] = (90, 90, 90)
+        cv2.imwrite(str(out / "iou-diff.png"), dif)   # red = model only, blue = key only
         kk = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
         cl = lambda x: cv2.morphologyEx(x.astype(np.uint8), cv2.MORPH_CLOSE, kk, borderType=cv2.BORDER_REPLICATE) > 0
         m["iou_vs_tier_cornice_only"] = {"raw": round(_iou(silv, target_v6), 3), "closed": round(_iou(cl(silv), cl(target_v6)), 3)}
         m["target"] = "tier + band + cornice SAM masks (band = key upper wall behind the cornice)"
+        ign = masks["band"] & ~target_v6          # band pixels: real wall the SAM tier mask missed -> don't score
+        sv, tv = cl(silv) & ~ign, cl(target_v6) & ~ign
+        m["iou_vs_tier_cornice_band_ignored"] = {"raw": round(_iou(silv & ~ign, target_v6), 3), "closed": round(_iou(sv, tv), 3)}
     snow_gate = spec.get("gates", {}).get("snow_ratio_rel", 0.10)
     if m.get("snow_ratio") and m["snow_ratio"]["rel_diff"] > snow_gate:
         fails.append(f"snow/stone ratio off by {m['snow_ratio']['rel_diff']:.1%} (> {snow_gate:.0%})")

@@ -27,6 +27,9 @@ def project(cam, P):
 
 
 def silhouette(meshes, cam) -> np.ndarray:
+    if any(me.name == "skirt" for me in meshes):     # v8: the snow skirt is terrain; it hides the buried wall foot
+        lab = zlabel(meshes, cam)
+        return (lab == 1) | (lab == 2)
     m = np.zeros((cam["h"], cam["w"]), np.uint8)
     for me in meshes:
         uv, z = project(cam, me.V)
@@ -72,15 +75,17 @@ def shade(meshes, cam, colours: dict, sun=(0.4, -0.6, 0.7), bg=(40, 28, 22)) -> 
     return img
 
 
-def snow_ratio(lod0, key_cam, target_mask, snow_mask):
-    """Visible snow fraction at the key camera (z-buffered: a face counts only where it is in front)
-    vs the key's snow fraction inside the target."""
+def zlabel(lod0, key_cam):
+    """Z-buffered label image: 0 none, 1 stone, 2 snow-covered tier, 3 terrain (the v8 snow skirt).
+    Geometry below the ground plane is clamped to z=0 (the ground hides it)."""
     h, w = key_cam["h"], key_cam["w"]
     zbuf = np.full((h, w), np.inf, np.float32)
-    lab = np.zeros((h, w), np.int8)  # 0 none, 1 stone, 2 snow
+    lab = np.zeros((h, w), np.int8)
     for me in lod0:
-        uv, z = project(key_cam, me.V)
+        Vg = me.V.copy(); Vg[:, 2] = np.maximum(Vg[:, 2], 0.0)
+        uv, z = project(key_cam, Vg)
         sn = me.attrs.get("_SNOW")
+        terr = me.name == "skirt"
         vis = (z[me.F] > 0.05).all(1)
         for i in np.nonzero(vis)[0]:
             tri = me.F[i]
@@ -95,8 +100,15 @@ def snow_ratio(lod0, key_cam, target_mask, snow_mask):
             reg = zbuf[y0:y1 + 1, x0:x1 + 1]
             upd = (sub > 0) & (zz < reg)
             reg[upd] = zz
-            lab[y0:y1 + 1, x0:x1 + 1][upd] = 2 if (sn is not None and sn[tri].mean() > 0.5) or me.material == "ice" and False else 1
-    sil = lab > 0
+            lab[y0:y1 + 1, x0:x1 + 1][upd] = 3 if terr else (2 if (sn is not None and sn[tri].mean() > 0.5) else 1)
+    return lab
+
+
+def snow_ratio(lod0, key_cam, target_mask, snow_mask, lab=None):
+    """Visible snow fraction of the tier at the key camera (z-buffered; terrain skirt excluded)
+    vs the key's snow fraction inside the target."""
+    lab = zlabel(lod0, key_cam) if lab is None else lab
+    sil = (lab == 1) | (lab == 2)
     k_r = float((snow_mask & target_mask).sum() / max(target_mask.sum(), 1))
     m_r = float(((lab == 2) & sil).sum() / max(sil.sum(), 1))
     return {"key": round(k_r, 4), "model": round(m_r, 4), "rel_diff": round(abs(m_r - k_r) / max(k_r, 1e-6), 4)}
