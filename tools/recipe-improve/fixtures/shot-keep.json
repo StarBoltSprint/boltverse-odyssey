@@ -1,0 +1,42 @@
+{
+  "schema": "objsheet-shot-verdict/1",
+  "build": "ground-fixture",
+  "verdict": "KEEP",
+  "cells": [
+    {
+      "view": "key",
+      "plate_path": "tools/recipe-improve/fixtures/plates/ground-a.json",
+      "render_path": "tools/recipe-improve/fixtures/plates/ground-a.json",
+      "status": "KEEP",
+      "defects": []
+    },
+    {
+      "view": "45°",
+      "plate_path": "tools/recipe-improve/fixtures/plates/ground-a.json",
+      "render_path": "tools/recipe-improve/fixtures/plates/ground-a.json",
+      "status": "KEEP",
+      "defects": []
+    },
+    {
+      "view": "grazing",
+      "plate_path": "tools/recipe-improve/fixtures/plates/ground-a.json",
+      "render_path": "tools/recipe-improve/fixtures/plates/ground-a.json",
+      "status": "KEEP",
+      "defects": []
+    },
+    {
+      "view": "8 m",
+      "plate_path": "tools/recipe-improve/fixtures/plates/ground-b.json",
+      "render_path": "tools/recipe-improve/fixtures/plates/ground-b.json",
+      "status": "KEEP",
+      "defects": []
+    },
+    {
+      "view": "3 m up",
+      "plate_path": "tools/recipe-improve/fixtures/plates/ground-b.json",
+      "render_path": "tools/recipe-improve/fixtures/plates/ground-b.json",
+      "status": "KEEP",
+      "defects": []
+    }
+  ]
+}
