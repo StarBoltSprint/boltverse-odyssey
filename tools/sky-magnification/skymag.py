@@ -28,10 +28,23 @@ def poses(c, spine=None):
         return c['pitch'] + (c['climb_pitch'] - c['pitch']) * w
     def camy_at(s):
         return c['cam_up'] + (c['top_cam_y'] - c['cam_up']) * ss(a, b, s)
-    if spine:  # [{"s":..,"yaw":..,"cam_y":..,"pitch":..}] from zone JSON
-        for p in spine:
-            out.append(dict(name=f"s{p['s']:g}", s=p['s'], yaw=p.get('yaw', 0.0),
-                            pitch=p.get('pitch', pitch_at(p['s'])), cam_y=p.get('cam_y', camy_at(p['s']))))
+    if spine:  # list of points, or zd-spine.v1 dict {"points":[{"s","y","cam_pitch_deg"}], "climb":{"turn_deg"}, "sampling":{}}
+        meta = spine if isinstance(spine, dict) else {}
+        pts = meta.get('points', spine)
+        gp = lambda p: p.get('pitch', p.get('cam_pitch_deg', pitch_at(p['s'])))
+        for p in pts:
+            out.append(dict(name=f"s{p['s']:g}", s=p['s'], yaw=p.get('yaw', 0.0), pitch=gp(p),
+                            cam_y=p.get('cam_y', p.get('y', 0.0) + c['cam_up'])))
+        cl = meta.get('climb', {})
+        if cl.get('turn_deg'):  # turn mid-climb: sweep yaw at the climb midpoint
+            beats = {b.get('name'): b for b in meta.get('beats', [])}
+            cb = next((v for k, v in beats.items() if 'climb' in str(k)), None)
+            ts = (cb['s0'] + cb['s1']) / 2 if cb else c['turn_s']
+            tp = min(pts, key=lambda p: abs(p['s'] - ts)); st = meta.get('sampling', {}).get('turn_yaw_step_deg', c['turn_step'])
+            y = 0.0
+            while y <= cl['turn_deg'] + 1e-6:
+                out.append(dict(name=f"turn-s{tp['s']:g}-yaw{y:g}", s=tp['s'], yaw=y, pitch=gp(tp),
+                                cam_y=tp.get('y', 0.0) + c['cam_up'])); y += st
         return out
     s = 0.0
     while s <= c['spine_len'] + 1e-6:
