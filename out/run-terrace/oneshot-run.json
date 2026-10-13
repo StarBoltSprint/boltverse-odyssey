@@ -1,0 +1,216 @@
+{
+ "schema": "oneshot.run.v1",
+ "target": "/workspace/grokcli/wt/zd-terrace-1012/steps/zone-d/01-terrace",
+ "started": "2026-10-13T10:26:07+02:00",
+ "stages": [
+  {
+   "status": "ADOPTED",
+   "artifacts": [
+    "spec.md"
+   ],
+   "id": "reader_spec_sheet",
+   "s": 0.0
+  },
+  {
+   "status": "NOT_IMPLEMENTED",
+   "note": "hook only; Grok Build built-in Imagine, never the API; plates adopted from input",
+   "id": "imagine_hook",
+   "s": 0.0
+  },
+  {
+   "status": "ADOPTED",
+   "artifacts": [
+    "plates/*.jpg"
+   ],
+   "id": "plates",
+   "s": 0.0
+  },
+  {
+   "status": "NOT_IMPLEMENTED",
+   "note": "learn/proposals/plate-precheck.json not present yet",
+   "id": "plate_gate",
+   "s": 0.0
+  },
+  {
+   "status": "PASS",
+   "sheet": "out/run-terrace/plates-sheet.jpg",
+   "plates": [
+    "plates/front.jpg",
+    "plates/left45.jpg",
+    "plates/plate-front.jpg",
+    "plates/plate-side.jpg",
+    "plates/side.jpg",
+    "plates/top.jpg"
+   ],
+   "id": "plate_contact_sheet",
+   "s": 0.118
+  },
+  {
+   "status": "PASS",
+   "note": "plates approved",
+   "id": "plates_approval",
+   "s": 0.0
+  },
+  {
+   "status": "ADOPTED",
+   "artifacts": [
+    "work"
+   ],
+   "id": "depth_moge2",
+   "s": 0.0
+  },
+  {
+   "status": "ADOPTED",
+   "artifacts": [
+    "work"
+   ],
+   "id": "segmentation_sam2",
+   "s": 0.0
+  },
+  {
+   "status": "ADOPTED",
+   "artifacts": [
+    "glb/terrace-lod0.glb"
+   ],
+   "id": "mesh_build",
+   "s": 0.0
+  },
+  {
+   "status": "ADOPTED",
+   "artifacts": [
+    "glb/terrace-lod1.glb",
+    "glb/terrace-lod2.glb"
+   ],
+   "id": "lod_generation",
+   "s": 0.0
+  },
+  {
+   "status": "ADOPTED",
+   "report": "/workspace/grokcli/wt/zd-terrace-1012/steps/zone-d/01-terrace/object-gate-v3.5/lod-outline.json",
+   "note": "existing report read, not re-measured at 15/40 m",
+   "id": "lod_outline_15_40m",
+   "s": 0.0
+  },
+  {
+   "status": "NOT_IMPLEMENTED",
+   "note": "budget file found at /workspace/zd-bible-1012/zone-d-perfbudget.v1.json; gate not wired",
+   "id": "budget_gate",
+   "s": 0.007
+  },
+  {
+   "status": "NOT_IMPLEMENTED",
+   "note": "meshopt uv>=14 bit, sky KTX2 reuse ktx2-final5-mip1-star mip1, LOD2 first",
+   "id": "packing_meshopt_ktx2",
+   "s": 0.0
+  },
+  {
+   "status": "ADOPTED",
+   "artifacts": [
+    "object-gate-v3.5/report.json"
+   ],
+   "id": "object_gates",
+   "s": 0.0
+  },
+  {
+   "status": "FAIL",
+   "reasons": [
+    "schema: $.play oneOf 0 matches (#0 $.play expected \"pending\"; #1 $.play.commit required)",
+    "schema: $.phone oneOf 0 matches (#0 $.phone expected \"pending\"; #1 $.phone.status not in enum)"
+   ],
+   "fields": {},
+   "id": "ticket_validate",
+   "s": 0.136
+  },
+  {
+   "status": "ADOPTED",
+   "artifacts": [
+    "placement-draft.json"
+   ],
+   "id": "zone_json_world_graph",
+   "s": 0.0
+  },
+  {
+   "status": "FAIL",
+   "errors": [
+    "xy not filled",
+    "grade > 14% at s=370"
+   ],
+   "points": 221,
+   "id": "spine_from_key",
+   "s": 0.0
+  },
+  {
+   "status": "NOT_IMPLEMENTED",
+   "note": "2 cm inset, <=5 cm outside visible, door plane flush to back face",
+   "id": "colliders_fit",
+   "s": 0.0
+  },
+  {
+   "status": "NOT_IMPLEMENTED",
+   "note": "0 m ground, >=2.5 m clear lane along spine",
+   "id": "placement_gate",
+   "s": 0.0
+  },
+  {
+   "status": "NOT_IMPLEMENTED",
+   "note": "not built yet",
+   "id": "colliders_never_drawn",
+   "s": 0.0
+  },
+  {
+   "status": "NOT_IMPLEMENTED",
+   "note": "page must read camera+route from spine.json",
+   "id": "play_build",
+   "s": 0.0
+  },
+  {
+   "status": "NOT_IMPLEMENTED",
+   "note": "from executor 12134bcc",
+   "id": "play_build_gate",
+   "s": 0.0
+  },
+  {
+   "status": "NOT_IMPLEMENTED",
+   "note": "&bench=1 result line",
+   "id": "bench",
+   "s": 0.0
+  },
+  {
+   "status": "NOT_IMPLEMENTED",
+   "note": "t_first_frame",
+   "id": "first_frame",
+   "s": 0.0
+  },
+  {
+   "status": "NOT_IMPLEMENTED",
+   "note": "sprint walk: LOD pop>0px, off-spine>5cm, pitch>1deg/frame, frametime at swaps; clips",
+   "id": "scripted_walk",
+   "s": 0.0
+  },
+  {
+   "status": "BLOCKED",
+   "note": "needs a play build with spine camera (4.5 m back, 2.6 m up, 48 deg) + sky dome; current build has 58 deg camera",
+   "id": "final_contact_sheet",
+   "s": 0.0
+  }
+ ],
+ "total_s": 0.262,
+ "budget_s": 480,
+ "timer": {
+  "t_plates_sheet": 0.11767745018005371,
+  "t_first_frame": null,
+  "t_sheet_ready": null,
+  "t_keep": null
+ },
+ "counts": {
+  "PASS": 2,
+  "FAIL": 2,
+  "NOT_IMPLEMENTED": 12,
+  "ADOPTED": 9,
+  "STOP": 0,
+  "BLOCKED": 1,
+  "SKIPPED": 0
+ },
+ "world_done": false,
+ "note": "world done only after play-build gate PASS and Art Director KEEP (t_keep)"
+}

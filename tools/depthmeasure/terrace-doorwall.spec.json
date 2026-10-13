@@ -1,0 +1,98 @@
+{
+ "note": "Zone D terrace tier-1 door wall, 3 m piece = plate-front-v35 px 455..596 x rows 560..871 (S 0.0215 m/px, x=(px-535)S, y=(870-row)S, facade z=0, +z toward the viewer: terrace_block.py frame). Edit views if a model uses another frame. auto_frame: views are placed from the plane of the wall pixels found in the model (dist from that wall centre, angle from the wall plane, camera 0.9 m below centre), so any model frame works. facing: wall vertices must face +z (the front plate is also mapped on the back wall at z=-16).",
+ "three": "/workspace/zd-play-1012/three.module.js",
+ "jsm": "/workspace/zd-sky-build-1013/serve/jsm/",
+ "plate": "/workspace/zd-play-1012/assets/plate-front-v35.jpg",
+ "plates": {
+  "front": "/workspace/zd-play-1012/assets/plate-front-v35.jpg"
+ },
+ "material": "front",
+ "moge_depth": "/workspace/grokcli/wt/zd-terrace-1012/steps/zone-d/01-terrace/work/plate-front-depth.npy",
+ "wall_box": [
+  455,
+  700,
+  596,
+  860
+ ],
+ "outline_break_m": 0.3,
+ "reliefs": [
+  {
+   "name": "door",
+   "kind": "recess",
+   "box": [
+    470,
+    707,
+    579,
+    871
+   ],
+   "luma_below": 30,
+   "cap_m": 1.5
+  },
+  {
+   "name": "cornice+snowcap",
+   "kind": "protrusion",
+   "box": [
+    455,
+    597,
+    596,
+    694
+   ]
+  },
+  {
+   "name": "icicles",
+   "kind": "protrusion",
+   "box": [
+    576,
+    694,
+    596,
+    730
+   ],
+   "luma_above": 110,
+   "floor_m": 0.1
+  },
+  {
+   "name": "stone-joints",
+   "kind": "texture",
+   "box": [
+    455,
+    700,
+    596,
+    860
+   ],
+   "cap_m": 0.2,
+   "note": "MoGe-2 high-pass p95-p5 reads 2.3 m here (MoGe noise at 15 m); capped at 0.2 m = deepest joint/course step plausible in the plate"
+  }
+ ],
+ "views": [
+  {
+   "name": "45-3m",
+   "dist": 3,
+   "angle": 45,
+   "grazing": false
+  },
+  {
+   "name": "graze-3m",
+   "dist": 3,
+   "angle": 15,
+   "grazing": true
+  },
+  {
+   "name": "45-8m",
+   "dist": 8,
+   "angle": 45,
+   "grazing": false
+  },
+  {
+   "name": "graze-8m",
+   "dist": 8,
+   "angle": 15,
+   "grazing": true
+  }
+ ],
+ "auto_frame": true,
+ "facing": [
+  0,
+  0,
+  1
+ ]
+}
