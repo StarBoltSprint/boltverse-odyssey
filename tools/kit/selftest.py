@@ -79,5 +79,22 @@ row("door recess is a real step (cells at 1.5 m depth)", np.isclose(t1.V[:, 1], 
 row("blocks step back from the outline (front never in front of y=0)", t1.V[:, 1].min() >= -1e-6 and len(np.unique(np.round(t1.V[:, 1], 2))) > 4)
 sn = t1.attrs.get("_SNOW")
 row("_SNOW attribute follows the key snow mask (top yes, bottom no)", sn is not None and sn[t1.V[:, 2] > np.percentile(t1.V[:, 2], 75)].mean() > sn[t1.V[:, 2] < np.percentile(t1.V[:, 2], 25)].mean() + 0.3)
+# --- v7 rows: zipper walls, manifold fix, seated cornice, icicles ---
+from outline import extrude_cells, fix_manifold, wedge, inside, float_report, spike
+from geom import nonmanifold_edges
+rng7 = np.random.default_rng(3)
+occ7 = rng7.random((14, 18)) > 0.35
+fr7 = np.round(rng7.random(occ7.shape) * 3) * 0.1
+bk7 = fr7 + 0.3 + np.round(rng7.random(occ7.shape) * 4) * 0.1
+occ7, fr7, bk7 = fix_manifold(occ7, fr7, bk7)
+z7 = extrude_cells(occ7, fr7, bk7, 0, 0, 0.1)
+row("zipper-wall extrusion of random depths: 0 open, 0 non-manifold", open_edges(z7) == 0 and nonmanifold_edges(z7) == 0)
+row("fix_manifold keeps back >= front + 0.1", bool((bk7[occ7] >= fr7[occ7] + 0.1 - 1e-9).all()))
+w7 = wedge(0, 0.5, -0.05, 2.1, 1.0, 0.6, "seat")
+row("seat wedge closed and point-in-solid works (in/out)", open_edges(w7) == 0 and inside(w7, [[0.25, 0.2, 2.0], [0.25, 0.2, 2.5]]).tolist() == [True, False])
+fr = float_report([w7], {"seat": [(0.25, 2.0)], "corbel": [(0.25, 2.5)], "over": 1.0})
+row("float_report flags a corbel probe with no solid under it", fr["checked"] == 2 and fr["floating"] == 1)
+ic = spike(np.array([0, 0, 2.0]), 0.6, 0.06, rng7)
+row("icicle spike is closed and hangs downward", open_edges(ic) == 0 and ic.V[:, 2].min() < 1.5)
 print(f"{sum(rows)}/{len(rows)} rows pass")
 sys.exit(0 if all(rows) else 1)

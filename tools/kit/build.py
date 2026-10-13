@@ -175,8 +175,49 @@ def build_outline(spec: dict, cam, masks: dict) -> dict:
     return lods
 
 
-def build(spec: dict, matlib: Path = MATLIB, cam=None, masks=None) -> dict:
+def build_outline_v7(spec: dict, cam, masks: dict, key_bgr=None, matlib: Path = MATLIB) -> dict:
+    """Art Director + Critic pass (v7): smoothed cells, block relief on key courses, seated cornice,
+    key-fringe icicles, drift lip, per-vertex _SNOW/_ICE/_JOINT. Upper LODs drop relief and icicles."""
+    from outline import block_relief, course_rows_z, drift_lip, outline_pieces_v7, snow_attr
+    o = spec["outline"]
+    mats = spec.get("materials", {"stone": "basalt-zd-frost"})
+    hs, ms = load_height(mats["stone"], matlib) if matlib else (None, {"tile_m": 2.0})
+    courses = course_rows_z(key_bgr, masks["tier"], cam, k=o.get("courses_from_key", 10), default_h=o.get("course_m", 0.55))
+    lods, extra = {}, {}
+    for li, k in enumerate((1, 2, 4)):
+        sub = dict(spec)
+        sub["outline"] = {**o, "cell_m": o.get("cell_m", 0.09) * k, "smooth_iters": o.get("smooth_iters", 6) if li < 2 else 2}
+        P = outline_pieces_v7(sub, cam, masks, key_bgr)
+        parts = []
+        for name in ("tier1", "cornice"):
+            if name not in P:
+                continue
+            m = P[name]
+            if masks.get("snow") is not None:
+                m.attrs["_SNOW"] = snow_attr(m, cam, masks["snow"], grow_px=o.get("snow_grow_px", 0))
+            if name == "cornice":
+                N = vertex_normals(m)
+                m.attrs["_SNOW"] = np.where(N[:, 2] < -0.3, 0.0, np.maximum(m.attrs.get("_SNOW", 0), (N[:, 2] > 0.5) * 1.0))
+            if li < 2:
+                m = drift_lip(m)
+            if li == 0 and name == "tier1":
+                m = block_relief(m, courses, joint_d=o.get("joint_m", 0.32), face_d=tuple(o.get("block_face_m", (0.0, 0.18))),
+                                 stone_h=hs, stone_tile=ms["tile_m"])
+            parts.append(m)
+        parts += P.get("corbels", [])
+        if li < 2 and P.get("icicles") is not None:
+            parts.append(P["icicles"])
+        lods[f"lod{li}"] = parts
+        if li == 0:
+            extra = {"courses_z": [round(float(z), 3) for z in courses], "cornice_probes": P.get("cornice_probes", [])}
+    lods["_extra"] = extra
+    return lods
+
+
+def build(spec: dict, matlib: Path = MATLIB, cam=None, masks=None, key_bgr=None) -> dict:
     """Returns {'lod0': [Mesh...], 'lod1': ..., 'lod2': ...}."""
+    if spec.get("outline") and cam is not None and masks and spec["outline"].get("v7"):
+        return build_outline_v7(spec, cam, masks, key_bgr, matlib)
     if spec.get("outline") and cam is not None and masks:
         return build_outline(spec, cam, masks)
     rel = spec.get("relief", {})

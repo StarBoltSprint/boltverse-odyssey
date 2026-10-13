@@ -72,6 +72,36 @@ def shade(meshes, cam, colours: dict, sun=(0.4, -0.6, 0.7), bg=(40, 28, 22)) -> 
     return img
 
 
+def snow_ratio(lod0, key_cam, target_mask, snow_mask):
+    """Visible snow fraction at the key camera (z-buffered: a face counts only where it is in front)
+    vs the key's snow fraction inside the target."""
+    h, w = key_cam["h"], key_cam["w"]
+    zbuf = np.full((h, w), np.inf, np.float32)
+    lab = np.zeros((h, w), np.int8)  # 0 none, 1 stone, 2 snow
+    for me in lod0:
+        uv, z = project(key_cam, me.V)
+        sn = me.attrs.get("_SNOW")
+        vis = (z[me.F] > 0.05).all(1)
+        for i in np.nonzero(vis)[0]:
+            tri = me.F[i]
+            pts = np.round(uv[tri] * 4).astype(np.int32)
+            x0, y0 = np.clip(pts.min(0) >> 2, 0, [w - 1, h - 1])
+            x1, y1 = np.clip((pts.max(0) >> 2) + 1, 0, [w - 1, h - 1])
+            if x1 < x0 or y1 < y0:
+                continue
+            sub = np.zeros((y1 - y0 + 1, x1 - x0 + 1), np.uint8)
+            cv2.fillConvexPoly(sub, pts - [x0 * 4, y0 * 4], 1, shift=2)
+            zz = float(z[tri].mean())
+            reg = zbuf[y0:y1 + 1, x0:x1 + 1]
+            upd = (sub > 0) & (zz < reg)
+            reg[upd] = zz
+            lab[y0:y1 + 1, x0:x1 + 1][upd] = 2 if (sn is not None and sn[tri].mean() > 0.5) or me.material == "ice" and False else 1
+    sil = lab > 0
+    k_r = float((snow_mask & target_mask).sum() / max(target_mask.sum(), 1))
+    m_r = float(((lab == 2) & sil).sum() / max(sil.sum(), 1))
+    return {"key": round(k_r, 4), "model": round(m_r, 4), "rel_diff": round(abs(m_r - k_r) / max(k_r, 1e-6), 4)}
+
+
 def iou(a, b):
     return float((a & b).sum() / max((a | b).sum(), 1))
 
@@ -99,17 +129,7 @@ def metrics(lods: dict, key_cam, target_mask=None, key_bgr=None, colours=None, m
         if both.any():
             res["dE_flat_vs_key"] = round(float(np.linalg.norm(lab(img, both) - lab(key_bgr, both))), 2)
     if snow_mask is not None and target_mask is not None:
-        sil = silhouette(lod0, key_cam)
-        snowy = [m for m in lod0 if "_SNOW" in m.attrs]
-        sm = np.zeros(sil.shape, bool)
-        for me in snowy:  # faces with mean _SNOW > 0.5, painter order is irrelevant for a coverage ratio proxy
-            keep = me.attrs["_SNOW"][me.F].mean(1) > 0.5
-            if keep.any():
-                sub = Mesh(me.V, me.F[keep], me.name, me.material)
-                sm |= silhouette([sub], key_cam)
-        k_r = float((snow_mask & target_mask).sum() / max(target_mask.sum(), 1))
-        m_r = float((sm & sil).sum() / max(sil.sum(), 1))
-        res["snow_ratio"] = {"key": round(k_r, 3), "model": round(m_r, 3), "rel_diff": round(abs(m_r - k_r) / max(k_r, 1e-6), 3)}
+        res["snow_ratio"] = snow_ratio(lod0, key_cam, target_mask, snow_mask)
     if mats:
         res["px_per_m_texture"] = {k: v["px_per_m"] for k, v in mats.items()}
         res["repetition_peak"] = {k: v["repetition_peak"] for k, v in mats.items()}

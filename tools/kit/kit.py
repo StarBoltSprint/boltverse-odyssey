@@ -72,6 +72,38 @@ def contact(lods, cams, key, target, colours):
     return np.vstack([np.hstack(tiles[i:i + 3]) for i in range(0, len(tiles), 3)])
 
 
+def calibrate_snow(lods, cam, target, snow_mask, iters=9):
+    """Bisect the threshold on the blurred key snow mask so the model's visible snow/stone ratio at the
+    key camera matches the key's. Rewrites _SNOW on tier/cornice of every LOD. Returns the threshold."""
+    from outline import snow_attr
+    from render import snow_ratio
+    from geom import vertex_normals
+
+    def apply(thr):
+        for v in lods.values():
+            for m in v:
+                if m.name in ("tier1", "cornice"):
+                    s = snow_attr(m, cam, snow_mask, thr=thr)
+                    if m.name == "cornice":
+                        N = vertex_normals(m)
+                        s = np.where(N[:, 2] < -0.3, 0.0, np.maximum(s, (N[:, 2] > 0.5) * 1.0))
+                    m.attrs["_SNOW"] = s
+    lo, hi, best = 0.02, 0.98, None
+    for _ in range(iters):
+        mid = (lo + hi) / 2
+        apply(mid)
+        r = snow_ratio(lods["lod0"], cam, target, snow_mask)
+        print(f"  snow calibrate thr {mid:.3f} -> model {r['model']} key {r['key']} off {r['rel_diff']:.2%}")
+        if best is None or r["rel_diff"] < best[1]:
+            best = (mid, r["rel_diff"])
+        if r["model"] > r["key"]:
+            lo = mid
+        else:
+            hi = mid
+    apply(best[0])
+    return round(best[0], 4)
+
+
 def cmd_build(a) -> int:
     spec = json.loads(Path(a.spec).read_text())
     key = cv2.imread(a.key) if a.key else None
@@ -94,10 +126,18 @@ def cmd_build(a) -> int:
         base = Path(a.spec).resolve().parent
         rd = lambda q: load_mask(q if Path(q).is_absolute() else base / q, shape) if q else None
         o = spec["outline"]
-        masks = {k: rd(o.get(f"{k}_mask")) for k in ("tier", "door", "cornice", "snow")}
+        masks = {k: rd(o.get(f"{k}_mask")) for k in ("tier", "door", "cornice", "snow", "band")}
         if target is None and masks["tier"] is not None:
             target = masks["tier"] | (masks["cornice"] if masks["cornice"] is not None else False)
-    lods = build(spec, matlib, cams["keycam"] if cams else None, masks)
+            target_v6 = target.copy()
+            if masks.get("band") is not None:
+                target = target | masks["band"]
+        else:
+            target_v6 = None
+    lods = build(spec, matlib, cams["keycam"] if cams else None, masks, key)
+    extra = lods.pop("_extra", {})
+    if spec.get("outline", {}).get("v7") and masks and masks.get("snow") is not None and target is not None and not a.no_calibrate:
+        spec["outline"]["snow_thr"] = calibrate_snow(lods, cams["keycam"], target, masks["snow"])
     if a.fit_camera and target is not None:
         from fit import fit_camera
         from render import iou as _iou
@@ -122,8 +162,28 @@ def cmd_build(a) -> int:
     for k, v in m.get("px_per_m_texture", {}).items():
         if v < GATES["ppm"]:
             fails.append(f"{k} texture {v} px/m < {GATES['ppm']}")
-    if m.get("snow_ratio") and m["snow_ratio"]["rel_diff"] > 0.10:
-        fails.append(f"snow/stone ratio off by {m['snow_ratio']['rel_diff']:.0%} (> 10%)")
+    if masks and target_v6 is not None and masks.get("band") is not None:
+        from render import iou as _iou
+        silv = silhouette(lods["lod0"], cams["keycam"])
+        kk = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
+        cl = lambda x: cv2.morphologyEx(x.astype(np.uint8), cv2.MORPH_CLOSE, kk, borderType=cv2.BORDER_REPLICATE) > 0
+        m["iou_vs_tier_cornice_only"] = {"raw": round(_iou(silv, target_v6), 3), "closed": round(_iou(cl(silv), cl(target_v6)), 3)}
+        m["target"] = "tier + band + cornice SAM masks (band = key upper wall behind the cornice)"
+    snow_gate = spec.get("gates", {}).get("snow_ratio_rel", 0.10)
+    if m.get("snow_ratio") and m["snow_ratio"]["rel_diff"] > snow_gate:
+        fails.append(f"snow/stone ratio off by {m['snow_ratio']['rel_diff']:.1%} (> {snow_gate:.0%})")
+    if spec.get("gates", {}).get("nonmanifold_zero") and m.get("nonmanifold_edges"):
+        fails.append(f"nonmanifold_edges {m['nonmanifold_edges']}")
+    m.update(extra)
+    if spec.get("outline", {}).get("v7"):
+        m["snow_thr"] = spec["outline"].get("snow_thr")
+        from outline import float_report
+        solids = [x for x in lods["lod0"] if x.name in ("tier1", "corbel", "seat")]
+        probes = extra.pop("cornice_probes", None)
+        if probes:
+            m["cornice_float"] = float_report(solids, probes)
+            if m["cornice_float"]["fraction"] > spec.get("gates", {}).get("float_max", 1.0):
+                fails.append(f"cornice float {m['cornice_float']}")
     m["verdict"] = "PASS" if not fails else "FAIL"
     m["fails"] = fails
     m["spec"] = spec
@@ -148,6 +208,7 @@ def main(argv=None) -> int:
     b.add_argument("--fit-camera", action="store_true", help="search the key camera against --mask (coarse LOD)")
     b.add_argument("--matlib", default=str(MATLIB))
     b.add_argument("--no-sheet", action="store_true")
+    b.add_argument("--no-calibrate", action="store_true", help="keep outline.snow_grow_px from the spec")
     a = p.parse_args(argv)
     if a.cmd != "build":
         p.print_help()

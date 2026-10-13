@@ -41,3 +41,13 @@ Every colour pixel is Imagine. Light and shadows are computed live.
 
 ## Status 2026-10-13
 Tier kit = **WIP** (`biome/library/_wip/zd-tier-terrace`). v4: IoU 0.747/0.869, dE 2.37/3.48, 0 open edges, but Critic + Art Director FAIL (snow identity, icicles, block depth 8 cm vs 20–40 cm, ground, 195.5k tris). Outline-mask mode (ported 2026-10-13, `tools/kit/outline.py`) reaches **0.787 raw / 0.882 closed** on Zone D (v4 0.747/0.869), 0 open edges, 82.3k lod0 tris, snow ratio within 3.8% of the key.
+
+## v7 (0003): AD + critic pass
+- Spec `tools/kit/specs/zd-tier-v7.json`: zipper-wall cell extrusion with `fix_manifold` (0 open, 0 non-manifold edges),
+  Taubin smoothing, inward block relief (0.32 m joints, 0–0.18 m faces) on courses taken from the key, a drift lip,
+  and snow calibrated by threshold bisection (gate 2%).
+- Cornice: the slab is the SAM mask minus the fringe. Icicles grow from the fringe (irregular, matte ice). A **seat wedge sits under
+  every 0.5 m slab segment**, running 0.4 m into the smoothed wall top and 0.1 m into the slab, and a corbel sits every 1.1 m.
+  `float_report` checks point-in-solid with a skewed ray and must find 0 floating probes.
+- IoU target = tier + band (upper wall) + cornice. Tier+cornice-only IoU is reported next to it.
+- Review: `tools/kit/viewer` (real headless Chrome, SwiftShader WebGL, spine phone camera, 6 views + mesa scale).

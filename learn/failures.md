@@ -1296,3 +1296,8 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | `metrics.json` keeps `px_per_m_live: null` until `shader/hexTriplanar.js` `probePxPerM()` fills it from the running page. |
 | Guard | Material gate px/m ≥ 500 (`tools/materials/selftest.py` "low px/m refused"); live probe required before review. |
 | Sources | `tools/kit/shader/hexTriplanar.js`, `tools/kit/render.py`. |
+
+## 2026-10-13 cornice float stayed >0 after the wedge fix
+The seat wedges were only added where the slab bottom stood above the wall top. Taubin smoothing rounds the wall top below
+the slab, so the skipped segments floated. Also, the float check had no list of the solid names for the new pieces.
+Fix: add a seat wedge on every segment, overlap it into both the wall and the slab, and list every support solid name in the check.

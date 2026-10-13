@@ -1,0 +1,63 @@
+<!doctype html>
+<!-- tools/kit play viewer: kit GLB with library materials (hex-triplanar basalt + _SNOW snow mix),
+     matte ice on icicles, snow ground (library tile at the wall + Zone D ground plate), Zone B mesa for scale.
+     Spine v1.3.1 phone camera assumed: 412x915 CSS @1.5 DPR, vfov 48. ?view=key|3m|chase|45|grazing|side|scale
+     Expects next to it: three.module.js, jsm/, hexTriplanar.js, model.glb, mesaA.glb, tex/ (see README). -->
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>html,body{margin:0;height:100%;background:#9fb1c4;overflow:hidden}#hud{position:fixed;left:6px;top:6px;font:12px monospace;color:#fff;text-shadow:0 0 3px #000;white-space:pre}</style>
+</head><body><div id="hud">loading…</div>
+<script type="importmap">{"imports":{"three":"./three.module.js"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {GLTFLoader} from './jsm/loaders/GLTFLoader.js';
+import {applyHexTriplanar, probePxPerM} from './hexTriplanar.js';
+const P = new URLSearchParams(location.search), view = P.get('view') || '3m';
+const renderer = new THREE.WebGLRenderer({antialias: true, preserveDrawingBuffer: true});
+renderer.setPixelRatio(+(P.get('dpr') || 1.5)); renderer.setSize(innerWidth, innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace; document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x9fb1c4); scene.fog = new THREE.Fog(0x9fb1c4, 60, 320);
+scene.add(new THREE.HemisphereLight(0xdfe8f5, 0x6a6560, 1.3));
+const sun = new THREE.DirectionalLight(0xfff4e6, 2.2); sun.position.set(-20, 30, 25); scene.add(sun);
+const tl = new THREE.TextureLoader(), aniso = renderer.capabilities.getMaxAnisotropy();
+const tex = (f, srgb = true) => { const t = tl.load('tex/' + f); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = aniso; if (srgb) t.colorSpace = THREE.SRGBColorSpace; return t; };
+const basalt = tex('basalt_albedo.jpg'), snow = tex('snow_albedo.jpg'), plate = tex('ground_plate.png');
+// views (three frame = kit (x, z, -y); wall front at z=0, tier spans x -1..10.5, cornice ~4.3-5.0 m)
+const V = {
+  key:     {pos: [-3.06, 16.07, 30.32], tgt: [9.93, 6.81, 4.92], fov: 80},
+  '3m':    {pos: [4.5, 1.7, 3.0], tgt: [4.5, 2.0, 0]},
+  chase:   {pos: [4.5, 3.4, 7.5], tgt: [4.5, 1.6, 0]},
+  '45':    {pos: [4.5 + 2.83, 1.7, 2.83], tgt: [4.5, 2.0, 0]},
+  grazing: {pos: [-3.2, 1.2, 0.9], tgt: [10, 2.6, -0.2]},
+  side:    {pos: [-4.2, 4.3, 0.2], tgt: [1.5, 4.6, -0.4]},
+  scale:   {pos: [-40, 22, 70], tgt: [30, 6, -40]},
+}[view];
+const camera = new THREE.PerspectiveCamera(V.fov || 48, innerWidth / innerHeight, 0.05, 1000);
+camera.position.set(...V.pos); camera.up.set(0, 1, 0); camera.lookAt(...V.tgt);
+// ground: wide Zone D plate, library snow tile strip at the wall foot
+const g1 = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), new THREE.MeshStandardMaterial({map: plate, roughness: 0.95}));
+plate.repeat.set(600 / 12, 600 / 12); g1.rotation.x = -Math.PI / 2; g1.position.y = -0.02; scene.add(g1);
+const sm = new THREE.MeshStandardMaterial({map: snow, normalMap: tex('snow_normal.jpg', false), roughness: 0.9});
+snow.repeat.set(26 / 1.2, 8 / 1.2); sm.normalMap.repeat.copy(snow.repeat);
+const g2 = new THREE.Mesh(new THREE.PlaneGeometry(26, 8), sm); g2.rotation.x = -Math.PI / 2; g2.position.set(4.5, 0.0, 3.0); scene.add(g2);
+const snowWall = snow.clone(); snowWall.repeat.set(1, 1);
+const stoneMat = applyHexTriplanar(new THREE.MeshStandardMaterial({map: basalt, roughness: 0.92}), {tileM: 2.0, snowMap: snowWall, snowTileM: 1.2});
+stoneMat.defines = {HEX_SNOW: ''};
+const iceMat = new THREE.MeshStandardMaterial({color: 0xcfdde6, roughness: 0.8, metalness: 0, transparent: true, opacity: 0.92});
+const gl = new GLTFLoader(); let tris = 0;
+const [kit, mesa] = await Promise.all([gl.loadAsync('model.glb'), gl.loadAsync('mesaA.glb')]);
+kit.scene.traverse(o => { if (!o.isMesh) return; tris += o.geometry.index.count / 3;
+  o.material = /icicle/.test(o.name) || o.geometry.attributes._ice ? iceMat : stoneMat;
+  if (!o.geometry.attributes._snow) o.geometry.setAttribute('_snow', new THREE.Float32BufferAttribute(new Float32Array(o.geometry.attributes.position.count), 1)); });
+scene.add(kit.scene);
+mesa.scene.traverse(o => { if (o.isMesh) o.material = new THREE.MeshStandardMaterial({color: 0x8a7563, roughness: 0.95}); if (/lod[12]/.test(o.name)) o.visible = false; });
+mesa.scene.position.set(75, 7, -70); scene.add(mesa.scene);  // mesa base sits ~7 m below its origin
+renderer.render(scene, camera);
+const ray = new THREE.Raycaster(); ray.setFromCamera(new THREE.Vector2(0, 0), camera);
+const hit = ray.intersectObject(kit.scene, true)[0];
+const px = hit ? probePxPerM(renderer, camera, hit.distance, 1024, 2.0) : null;
+window.__probe = {view, tris, hitM: hit ? +hit.distance.toFixed(2) : null, px};
+document.getElementById('hud').textContent = `${view}  tris ${tris}\nhit ${hit ? hit.distance.toFixed(2) + ' m' : '-'}  ` +
+  (px ? `screen ${px.screenPxPerM.toFixed(0)} px/m  stone ${px.texPxPerM.toFixed(0)} px/m${px.magnified ? ' MAGNIFIED' : ''}` : '') +
+  `\n${renderer.getContext().getParameter(renderer.getContext().VERSION)}`;
+renderer.render(scene, camera); window.__ready = true;
+</script></body></html>
