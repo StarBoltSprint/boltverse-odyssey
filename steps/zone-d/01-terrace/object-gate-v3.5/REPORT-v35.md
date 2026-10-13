@@ -2,7 +2,7 @@
 
 Mesh fix commit: `dd80963fca060d9bc352469d46228f2ef30ef357` (2026-10-13 08:27:45 +0200) on `zd/01-terrace`.
 Parent: `1debe2277a2a8437825ec1d1f039703d31e4f2f0` (v3.4.2).
-This report and the renders sit on the following commit. No push. No merge.
+Evidence commit (renders, gate report, and this file): `b1075fb2f5371f6ac7aee0dd0aa6698435bd8be0`. No push. No merge.
 
 Object-gate verdict: **FAIL** (2 rows). The two FAIL rows are the 8 m sharpness gap and the empty key checklist. Every other object-gate row on this capture is PASS. Shot-sheet verdict is PENDING (Art Director). Phone fps was not measured on a phone.
 
@@ -85,4 +85,4 @@ The far view’s first pass scored uncoveredFrac 0.0063 because the new top UV i
 - Shot sheet `object-gate-v3.5/shot-verdict.json` is PENDING. `verdict.py intake` exits 1. An Art Director KEEP was not written.
 - Phone fps over the 35 s bench route was not measured on a phone. Headless device pixel ratio was 1.
 - Tier-3 left corner: the oblique render still shows the front-plate / side-plate join as a vertical edge on the return. There is no separate blend metric. The mesh row is sealed (open edges 0).
-- Preview freeze expects `Verdict: PASS` in the report. This step’s object-gate verdict is FAIL, so the freeze is refused.
+- Preview freeze was not kept. The object-gate result is FAIL. A first freeze call latched onto a sentence in this file and wrote a local page stamped PASS; that copy was deleted. `previews/` stays empty for this step.
