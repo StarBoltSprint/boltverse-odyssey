@@ -1,0 +1,34 @@
+{
+ "budgetSeconds": 480,
+ "steps": [
+  {"id": "key-image", "name": "Key image -> prompts + Imagine (Grok Build built-in)", "tools": ["tools/golden/imagine_auto.py", "tools/golden/spec_sheet.py"],
+   "tests": [["python3", "tools/golden/selftest.py"]]},
+  {"id": "ground-sky-plates", "name": "Ground / sky plates + terrain from key", "tools": ["tools/terrain-from-key", "tools/sky", "tools/biome"],
+   "tests": [["python3", "tools/terrain-from-key/selftest.py"], ["python3", "tools/sky/selftest.py"], ["python3", "tools/biome/selftest.py"]]},
+  {"id": "sky-pack", "name": "Sky pack (band gate, magnification, star mip, KTX2)", "tools": ["tools/sky-band-gate", "tools/sky-magnification", "tools/sky-pack"],
+   "tests": [["python3", "tools/sky-band-gate/selftest.py"], ["python3", "tools/sky-magnification/test_skymag.py"], ["python3", "tools/sky-magnification/test_starmip.py"]]},
+  {"id": "objects", "name": "Objects (imagine-to-3d, golden hull, object gate)", "tools": ["tools/imagine-to-3d/auto.py", "tools/imagine-to-3d/golden_hull.py", "tools/object-gate"],
+   "tests": [["python3", "tools/imagine-to-3d/selftest/golden_hull_st.py"], ["python3", "tools/imagine-to-3d/selftest/hard_surface_st.py"], ["node", "tools/object-gate/selftest.mjs"]]},
+  {"id": "placement-camera", "name": "Auto-placement + key camera match", "tools": ["tools/placement-from-key", "tools/common/align"],
+   "tests": [["python3", "tools/placement-from-key/selftest.py"], ["python3", "tools/common/align/selftest.py"]]},
+  {"id": "lighting", "name": "Lighting / atmosphere from key", "tools": ["tools/lighting/light_key.py"], "tests": []},
+  {"id": "world-graph", "name": "Zone JSON / World Graph (per object: source image, key camera, multi-view images, resemblance score)", "tools": ["tools/world-graph"],
+   "tests": [["node", "tools/world-graph/selftest.mjs"]],
+   "requireFields": {"file": "schema/zone.v1.schema.json", "fields": ["sourceImage", "keyCamera", "multiviewImages", "resemblance"]}},
+  {"id": "agent-commands", "name": "High-level agent commands", "tools": ["tools/agent-api"], "tests": []},
+  {"id": "sprint-wake", "name": "Built-in sprint wake-up", "tools": ["tools/sprint-wake"], "tests": []},
+  {"id": "play-gate", "name": "Play build gate", "tools": ["tools/gate", "tools/playcheck"],
+   "tests": [["python3", "tools/gate/selftest.py"], ["python3", "tools/gate/selftest_13.py"], ["node", "--test", "tools/playcheck/src/checks.test.mjs"]]},
+  {"id": "phone-perf", "name": "Phone perf", "tools": ["tools/perf", "tools/lodstream"],
+   "tests": [["node", "tools/perf/selftest.mjs"], ["node", "tools/lodstream/selftest.mjs"]]}
+ ],
+ "resemblance": [
+  {"zone": "zone-b", "item": "whole zone at key camera (world-graph verify)", "file": "steps/world-graph-1011/verify-report.json", "path": ["keyCamera", "ssim"], "metric": "SSIM", "need": null},
+  {"zone": "zone-b", "item": "terrain silhouette (terrain-from-key)", "file": "steps/terrain-key2-1011/gates.json", "path": ["checks", "silhouetteIoU", "value"], "metric": "silhouette IoU", "need": 0.80},
+  {"zone": "zone-b", "item": "tower placement (placement-from-key)", "file": "steps/scene-strict-1011/placement-numbers.json", "path": ["best", "iou"], "metric": "placed IoU", "need": null},
+  {"zone": "zone-b", "item": "hires tower facade (strict, key view)", "file": "steps/hires-tower-1011/numbers.json", "path": ["after", "facade_strict", "key"], "metric": "facade strict", "need": 0.70},
+  {"zone": "zone-c", "item": "any", "file": null},
+  {"zone": "zone-d", "item": "terrace / rune pillar", "file": null}
+ ],
+ "manualFixJournals": ["learn/failures.md"]
+}
