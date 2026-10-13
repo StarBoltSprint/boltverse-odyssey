@@ -1,0 +1,15 @@
+{
+ "object": {"id": "zd-terrace-block-01", "glb": ["assets/terrace-lod0.glb", "assets/terrace-lod1.glb", "assets/terrace-lod2.glb"],
+            "plates": ["plate-front-v35.jpg", "t1-right-v35.jpg", "plate-side-v35.jpg", "top.jpg", "plate-front.jpg", "t1-right.jpg", "plate-side.jpg"]},
+ "declared_page_nodes": {"ground": {"maps_allowed": [], "note": "must not reuse an object plate"}, "ring": {"count": 3}, "bolt": {"count": 1}},
+ "transparent_allowed": [],
+ "buffer": {"css": [412, 915], "dpr": 1.5},
+ "views": {
+  "door-3m":          {"page": "at=3"},
+  "threshold-3m-30d": {"eye": [-0.86, 2.6, 3], "pitch_deg": -30, "fov": 48},
+  "threshold-8m-30d": {"eye": [-0.86, 2.6, 8], "pitch_deg": -30, "fov": 48},
+  "wall-end-left":    {"eye": [-12.5, 1.8, 5.5], "look": [-8.6, 1.6, -1.0], "fov": 48},
+  "wall-end-right":   {"eye": [12.5, 1.8, 5.5], "look": [8.6, 1.6, -1.0], "fov": 48}
+ },
+ "camera_tolerance": {"fov_deg": 1.0, "boom_m": 0.25, "height_m": 0.25, "pitch_deg": 1.0}
+}
