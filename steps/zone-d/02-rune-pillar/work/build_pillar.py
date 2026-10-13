@@ -42,14 +42,20 @@ Y_SHAFT1 = 6.40
 Y_LIP0 = 6.40
 Y_LIP1 = 6.58
 Y_CAP = 7.00
-# 03 silhouette: 843 px over 7 m, mid width 309 px is the 45° projected shaft.
-# Square-equivalent mid face = 2.566 / sqrt(2) = 1.815 m. Upper face = 1.368 m.
-# Shaft base is clamped at 2.0 m (extrapolation sat above the 1.2–2.0 band).
-W_BASE = 2.00
-W_TOP = 1.30
-STEP_RAD = 0.36  # radial tread, so oblique depth jumps clear 0.25 m
+# Plate 03 silhouette, scaled about the centre axis onto the brief taper.
+# Before this pass the shaft was flat-to-flat 2.00 m at y=0.60, 1.656 m at mid, 1.318 m
+# at y=6.30, and the ice lip was 2.02 m. That fails the 1.65 m shaft cap.
+# Target: 1.60 m at the plinth joint, 1.20 m at the shaft top. Linear in y.
+# The plinth steps stay on the frozen 1.00 m apothem (outer flat 4.16 m unchanged).
+W_BASE = 1.60
+W_TOP = 1.20
+STEP_RAD = 0.36  # plinth tread only. Do not use this on the slimmed shaft.
+PLINTH_APO = 1.00
+CAP_OVERHANG = 0.20  # lip flat-to-flat = 2*(W_TOP/2 + 0.20) = 1.60 m, under 1.65
 APO_BASE = W_BASE * 0.5
 APO_TOP = W_TOP * 0.5
+# One px/m for every plate projection. 1024 native px over the 7 m pillar. Never upscale.
+PLATE_PPM = 1024.0 / H_PILLAR
 SINK = 0.035
 ROOT_Y = Y_LIP0 + SINK
 COS22 = math.cos(math.radians(22.5))
@@ -75,6 +81,56 @@ def ring_pos(k, y, apo):
 
 def load_rgb(name):
     return np.asarray(Image.open(os.path.join(PLATES, name)).convert("RGB"))
+
+
+def load_mask(stem, shape):
+    """SAM2 mask. Prefer the npy written by the measure pass; PNG is the same bytes."""
+    npy = os.path.join(HERE, stem + ".npy")
+    png = os.path.join(HERE, stem + ".png")
+    if os.path.isfile(npy):
+        m = np.load(npy)
+    elif os.path.isfile(png):
+        m = np.asarray(Image.open(png).convert("L"))
+    else:
+        raise FileNotFoundError(stem)
+    if m.shape != shape[:2]:
+        m = np.asarray(Image.fromarray((m > 127).astype(np.uint8) * 255).resize((shape[1], shape[0]), Image.NEAREST))
+    return m > 127
+
+
+# Amber centroids measured on the sealed textures (native, not upscaled).
+PLATE_COL = {
+    "front": 519.5,
+    "right45": 518.0,
+    "left45": 500.0,
+    "side": 512.0,
+    "back": 512.0,
+    "cap": 512.0,
+    "plinth": 512.0,
+    "icicle": 512.0,
+}
+
+
+def plate_uv(mat, s, y):
+    """Orthographic plate projection. Same px/m on both axes, so a flat quad is isotropic.
+
+    v = 0 at the bottom of the texture (OBJ). y = 7 m maps to the top row.
+    s is metres from the face centre, image-right positive.
+    """
+    ppm = PLATE_PPM
+    col = PLATE_COL.get(mat, 512.0) + float(s) * ppm
+    row = (H_PILLAR - float(y)) / H_PILLAR * 1023.0
+    u = float(np.clip(col / 1023.0, 0.0, 1.0))
+    v = float(np.clip(1.0 - row / 1023.0, 0.0, 1.0))
+    return (u, v)
+
+
+def plan_uv(x, z):
+    """Top-down plate projection for treads and the cap soffit. Same px/m."""
+    ppm = PLATE_PPM
+    u = float(np.clip(0.5 + float(x) * ppm / 1023.0, 0.0, 1.0))
+    v = float(np.clip(0.5 + float(z) * ppm / 1023.0, 0.0, 1.0))
+    return (u, v)
 
 
 def sky_of(rgb):
@@ -461,20 +517,10 @@ def build_textures():
     img4 = load_rgb("04-45-right.jpg")
     img5 = load_rgb("05-back.jpg")
     img6 = load_rgb("06-closeup-left45-runes.jpg")
-    m1 = np.load(os.path.join(HERE, "01-front-lower-mask.npy")).astype(bool)
-    m2 = np.load(os.path.join(HERE, "02-front-upper-mask.npy")).astype(bool)
-    m3 = np.load(os.path.join(HERE, "03-45-left-mask.npy")).astype(bool)
-    m4 = np.load(os.path.join(HERE, "04-45-right-mask.npy")).astype(bool)
-    if m1.shape != img1.shape[:2]:
-        m1 = np.asarray(Image.fromarray(m1.astype(np.uint8) * 255).resize((img1.shape[1], img1.shape[0]), Image.NEAREST)) > 127
-    for name, im, mk in (("2", img2, m2), ("3", img3, m3), ("4", img4, m4)):
-        pass
-    if m2.shape != img2.shape[:2]:
-        m2 = np.asarray(Image.fromarray(m2.astype(np.uint8) * 255).resize((1024, 1024), Image.NEAREST)) > 127
-    if m3.shape != img3.shape[:2]:
-        m3 = np.asarray(Image.fromarray(m3.astype(np.uint8) * 255).resize((1024, 1024), Image.NEAREST)) > 127
-    if m4.shape != img4.shape[:2]:
-        m4 = np.asarray(Image.fromarray(m4.astype(np.uint8) * 255).resize((1024, 1024), Image.NEAREST)) > 127
+    m1 = load_mask("01-front-lower-mask", img1.shape)
+    m2 = load_mask("02-front-upper-mask", img2.shape)
+    m3 = load_mask("03-45-left-mask", img3.shape)
+    m4 = load_mask("04-45-right-mask", img4.shape)
     sub1 = m1 & ~sky_of(img1)
     sub2 = m2 & ~sky_of(img2)
     sub3 = m3 & ~sky_of(img3)
@@ -572,24 +618,20 @@ def build_mesh(tex_info):
     nseg = {0: 12, 1: 12, 2: 6, 3: 6, 4: 6, 5: 6, 6: 6, 7: 12}
     center = np.array([0.0, 3.5, 0.0])
 
-    def sample_amber(face, s, y, width):
-        # s in [-half, half], y world. Map into the texture the renderer uses.
+    def sample_amber(face, s, y):
+        """Same plate projection the UVs use, so a rune pixel sits on its groove."""
         if face == 0:
             mask = amb_front
-            # rune band y 1.4..5.6 → rows 90..900, s ±half → cols 160..864
         elif face == 1:
             mask = amb_right
         elif face == 7:
             mask = amb_left
         else:
             return False
+        u, v = plate_uv(MAT_FOR_FACE[face], s, y)
         h, w = mask.shape
-        half = max(width * 0.5, 1e-4)
-        u = (s / half) * 0.5 + 0.5
-        # vertical: shaft
-        v = (Y_SHAFT1 - y) / (Y_SHAFT1 - Y_SHAFT0)
         col = int(np.clip(u, 0, 1) * (w - 1))
-        row = int(np.clip(v, 0, 1) * (h - 1))
+        row = int(np.clip(1.0 - v, 0, 1) * (h - 1))
         return bool(mask[row, col])
 
     # Precompute corner positions so adjacent faces match exactly.
@@ -627,18 +669,18 @@ def build_mesh(tex_info):
                 edge = min(t, 1 - t) * width
                 ydist = min(float(y) - Y_SHAFT0, Y_SHAFT1 - float(y))
                 if edge > 0.08 and ydist > 0.08 and t_i not in (0, ns):
-                    if sample_amber(face, s, float(y), width):
-                        depth = 0.045
+                    if sample_amber(face, s, float(y)):
+                        depth = 0.045  # rune groove, 3–6 cm, absolute, not scaled
                     elif face == 0 and min(abs(s - width * 0.22), abs(s + width * 0.22)) < 0.03:
                         depth = 0.025  # front flutes, shallow grooves on the one hull
                 if depth:
                     p = tuple(np.array(p) - normal * depth)
-                row.append((p, s, float(y)))
+                row.append((p, s, float(y), depth))
             rows.append(row)
             if yi == 0:
-                shaft_bottom[face] = [(p, s) for p, s, _ in row]
+                shaft_bottom[face] = [(p, s) for p, s, _y, _d in row]
             if yi == len(ys) - 1:
-                shaft_top[face] = [(p, s) for p, s, _ in row]
+                shaft_top[face] = [(p, s) for p, s, _y, _d in row]
         for yi in range(len(ys) - 1):
             for ti in range(ns):
                 a = rows[yi][ti]
@@ -647,7 +689,7 @@ def build_mesh(tex_info):
                 e = rows[yi + 1][ti]
                 b.quad(
                     [a[0], c[0], d[0], e[0]],
-                    [(a[1], a[2]), (c[1], c[2]), (d[1], d[2]), (e[1], e[2])],
+                    [plate_uv(mat, a[1], a[2]), plate_uv(mat, c[1], c[2]), plate_uv(mat, d[1], d[2]), plate_uv(mat, e[1], e[2])],
                     mat,
                     center,
                 )
@@ -670,9 +712,9 @@ def build_mesh(tex_info):
 
     # Plinth: three steps. Inner top of the last tread uses the shaft bottom positions.
     steps = [
-        (-0.15, 0.05, APO_BASE + 3 * STEP_RAD),
-        (0.05, 0.28, APO_BASE + 2 * STEP_RAD),
-        (0.28, 0.60, APO_BASE + 1 * STEP_RAD),
+        (-0.15, 0.05, PLINTH_APO + 3 * STEP_RAD),
+        (0.05, 0.28, PLINTH_APO + 2 * STEP_RAD),
+        (0.28, 0.60, PLINTH_APO + 1 * STEP_RAD),
     ]
     plinth_steps = []
     for si, (y0, y1, apo) in enumerate(steps):
@@ -689,7 +731,12 @@ def build_mesh(tex_info):
                 top = band_ring(y1, apo, face, ns, s_of)
             for ti in range(ns):
                 a, c, d, e = bot[ti], bot[ti + 1], top[ti + 1], top[ti]
-                b.quad([a[0], c[0], d[0], e[0]], [(a[1], y0), (c[1], y0), (d[1], y1), (e[1], y1)], "plinth", center)
+                b.quad(
+                    [a[0], c[0], d[0], e[0]],
+                    [plate_uv("plinth", a[1], y0), plate_uv("plinth", c[1], y0), plate_uv("plinth", d[1], y1), plate_uv("plinth", e[1], y1)],
+                    "plinth",
+                    center,
+                )
             # tread inward to the next apo, or to the shaft bottom on the last step
             if si < len(steps) - 1:
                 inner_apo = steps[si + 1][2]
@@ -701,16 +748,16 @@ def build_mesh(tex_info):
                 o0, o1 = top[ti], top[ti + 1]
                 if si < len(steps) - 1:
                     i0, i1 = inner[ti], inner[ti + 1]
-                    uv = [(o0[1], y1), (o1[1], y1), (i1[1], y1), (i0[1], y1)]
+                    uv = [plan_uv(*o0[0][::2]), plan_uv(*o1[0][::2]), plan_uv(*i1[0][::2]), plan_uv(*i0[0][::2])]
                     b.quad([o0[0], o1[0], i1[0], i0[0]], uv, "plinth", center)
                 else:
                     i0, i1 = inner[ti], inner[ti + 1]
-                    uv = [(o0[1], y1), (o1[1], y1), (i1[1], y1), (i0[1], y1)]
+                    uv = [plan_uv(*o0[0][::2]), plan_uv(*o1[0][::2]), plan_uv(*i1[0][::2]), plan_uv(*i0[0][::2])]
                     b.quad([o0[0], o1[0], i1[0], i0[0]], uv, "plinth", center)
 
-    # Cap. The overhang is one flat 0.36 m annulus (three short bands, so no sliver)
+    # Cap. Overhang is 0.20 m (lip flat-to-flat 1.60 m). Three short bands, no sliver.
     # then a lip wall, then each face halves until 3 segments and closes with a 15° fan.
-    lip_apo = APO_TOP + STEP_RAD
+    lip_apo = APO_TOP + CAP_OVERHANG
     down_hint = np.array([0.0, 8.0, 0.0])
 
     def s_of_face(ns):
@@ -718,19 +765,30 @@ def build_mesh(tex_info):
             return (t - 0.5) * face_width(apo)
         return s_of
 
-    def emit_quads(ring_a, ring_b, mat, hint):
+    def _ring_uv(p, s, mat):
+        # A ring point is (pos, s). Horizontal rings share a y; vertical rings do not.
+        return plate_uv(mat, s, p[1])
+
+    def emit_quads(ring_a, ring_b, mat, hint, horizontal=False):
         for ti in range(len(ring_a) - 1):
             a, c = ring_a[ti], ring_a[ti + 1]
             d, e = ring_b[ti + 1], ring_b[ti]
-            b.quad([a[0], c[0], d[0], e[0]], [(a[1], a[0][1]), (c[1], c[0][1]), (d[1], d[0][1]), (e[1], e[0][1])], mat, hint)
+            if horizontal:
+                uvs = [plan_uv(a[0][0], a[0][2]), plan_uv(c[0][0], c[0][2]), plan_uv(d[0][0], d[0][2]), plan_uv(e[0][0], e[0][2])]
+            else:
+                uvs = [_ring_uv(a[0], a[1], mat), _ring_uv(c[0], c[1], mat), _ring_uv(d[0], d[1], mat), _ring_uv(e[0], e[1], mat)]
+            b.quad([a[0], c[0], d[0], e[0]], uvs, mat, hint)
 
-    def emit_pair(outer, inner, mat, hint):
+    def emit_pair(outer, inner, mat, hint, horizontal=False):
         ns = len(outer) - 1
         for i in range(ns // 2):
             o0, o1, o2 = outer[2 * i], outer[2 * i + 1], outer[2 * i + 2]
             i0, i1 = inner[i], inner[i + 1]
             for tri in ((o0, o1, i0), (o1, i1, i0), (o1, o2, i1)):
-                ids = [b.add(p[0], (p[1], p[0][1])) for p in tri]
+                if horizontal:
+                    ids = [b.add(p[0], plan_uv(p[0][0], p[0][2])) for p in tri]
+                else:
+                    ids = [b.add(p[0], plate_uv(mat, p[1], p[0][1])) for p in tri]
                 b.tri(ids[0], ids[1], ids[2], mat, hint)
 
     for face in range(N_SIDE):
@@ -738,9 +796,9 @@ def build_mesh(tex_info):
         s_of = s_of_face(ns)
         inner = shaft_top[face]
         # three coplanar radial bands, 0.12 m each, one 0.36 m overhang
-        for k, apo in enumerate((APO_TOP + 0.12, APO_TOP + 0.24, lip_apo)):
+        for k, apo in enumerate((APO_TOP + CAP_OVERHANG / 3, APO_TOP + 2 * CAP_OVERHANG / 3, lip_apo)):
             outer = band_ring(Y_LIP0, apo, face, ns, s_of)
-            emit_quads(inner, outer, "cap", down_hint)
+            emit_quads(inner, outer, "cap", down_hint, horizontal=True)
             inner = outer
         wall_top = band_ring(Y_LIP1, lip_apo, face, ns, s_of)
         emit_quads(inner, wall_top, "cap", center)
@@ -761,14 +819,14 @@ def build_mesh(tex_info):
         cpos = (0.0, Y_CAP, 0.0)
         for ti in range(len(outer) - 1):
             ids = [
-                b.add(cpos, (0.0, Y_CAP)),
-                b.add(outer[ti][0], (outer[ti][1], Y_CAP)),
-                b.add(outer[ti + 1][0], (outer[ti + 1][1], Y_CAP)),
+                b.add(cpos, plan_uv(0.0, 0.0)),
+                b.add(outer[ti][0], plan_uv(outer[ti][0][0], outer[ti][0][2])),
+                b.add(outer[ti + 1][0], plan_uv(outer[ti + 1][0][0], outer[ti + 1][0][2])),
             ]
             b.tri(ids[0], ids[1], ids[2], "cap", center)
 
     # Bottom cap: halve in the plane, then the same 15° fan. No thin centre fan.
-    bot_apo = APO_BASE + 3 * STEP_RAD
+    bot_apo = PLINTH_APO + 3 * STEP_RAD
     below = np.array([0.0, -2.0, 0.0])
     for face in range(N_SIDE):
         ns = nseg[face]
@@ -779,19 +837,19 @@ def build_mesh(tex_info):
             apo2 = apo - 0.28
             if ns_now > target:
                 inner = band_ring(-0.15, apo2, face, ns_now // 2, s_of_face(ns_now // 2))
-                emit_pair(outer, inner, "plinth", below)
+                emit_pair(outer, inner, "plinth", below, horizontal=True)
                 ns_now //= 2
             else:
                 inner = band_ring(-0.15, apo2, face, ns_now, s_of_face(ns_now))
-                emit_quads(outer, inner, "plinth", below)
+                emit_quads(outer, inner, "plinth", below, horizontal=True)
             outer = inner
             apo = apo2
         cpos = (0.0, -0.15, 0.0)
         for ti in range(len(outer) - 1):
             ids = [
-                b.add(cpos, (0.0, -0.15)),
-                b.add(outer[ti][0], (outer[ti][1], -0.15)),
-                b.add(outer[ti + 1][0], (outer[ti + 1][1], -0.15)),
+                b.add(cpos, plan_uv(0.0, 0.0)),
+                b.add(outer[ti][0], plan_uv(outer[ti][0][0], outer[ti][0][2])),
+                b.add(outer[ti + 1][0], plan_uv(outer[ti + 1][0][0], outer[ti + 1][0][2])),
             ]
             b.tri(ids[0], ids[1], ids[2], "plinth", below)
 
@@ -804,7 +862,7 @@ def add_icicles(b, lip_apo):
     """Closed cones. Roots sunk SINK into the lip. Not welded to the hull (2 mm clearance)."""
     records = []
     # front lip: x on a 0.004 m column grid, z just inside the front overhang
-    z_front = APO_TOP + STEP_RAD * 0.55
+    z_front = APO_TOP + CAP_OVERHANG * 0.55
     xs = np.linspace(-0.34, 0.34, 9)
     lengths = [0.14, 0.20, 0.26, 0.18, 0.24, 0.16, 0.22, 0.28, 0.15]
     radii = [0.055, 0.065, 0.080, 0.060, 0.075, 0.055, 0.070, 0.085, 0.055]
@@ -827,7 +885,7 @@ def add_icicles(b, lip_apo):
             z = col * mpp
             length = 0.12 + (i % 4) * 0.04
             radius = 0.055 + (i % 3) * 0.012
-            x = x_sign * (APO_TOP + STEP_RAD * 0.55)
+            x = x_sign * (APO_TOP + CAP_OVERHANG * 0.55)
             place_cone(b, (x, ROOT_Y, z), length, radius)
             records.append({
                 "id": f"{side}-{i}", "tier": 0, "side": side, "plate": side,
@@ -844,12 +902,12 @@ def place_cone(b, root, length, radius, n=8):
     for i in range(n):
         a = 2 * math.pi * i / n
         ring.append((root[0] + radius * math.cos(a), root[1], root[2] + radius * math.sin(a)))
-    tip_i = b.add(tip, (0.0, tip[1]))
-    ids = [b.add(p, (math.cos(2 * math.pi * i / n) * radius, root[1])) for i, p in enumerate(ring)]
+    tip_i = b.add(tip, plate_uv("cap", 0.0, tip[1]))
+    ids = [b.add(p, plate_uv("cap", math.cos(2 * math.pi * i / n) * radius, root[1])) for i, p in enumerate(ring)]
     center_hint = np.array([root[0], root[1] - length * 0.5, root[2]])
     for i in range(n):
         b.tri(tip_i, ids[i], ids[(i + 1) % n], "icicle", center_hint)
-    cap_i = b.add(root, (0.0, root[1]))
+    cap_i = b.add(root, plan_uv(root[0], root[2]))
     for i in range(n):
         b.tri(cap_i, ids[(i + 1) % n], ids[i], "icicle", center_hint + np.array([0, 1, 0]))
 
@@ -906,7 +964,12 @@ def _uv_scale_sign(P, Q):
 
 
 def fix_flat_uv(path):
-    """Horizontal faces used (s, world y), which collapses UV. Give them plan UVs (x, z)."""
+    """Horizontal faces get the plate plan projection, not raw metre (x, z).
+
+    The shaft UVs are plate_uv. A tread or cap soffit is horizontal, so its
+    plate axes are x and z at the same px/m. Writing metres here would throw
+    the new projection away.
+    """
     lines = open(path).read().splitlines()
     V, T = [], []
     face_at = []
@@ -927,7 +990,8 @@ def fix_flat_uv(path):
             continue
         ids = []
         for k in range(3):
-            T.append(np.array([round(float(P[k, 0]), 5), round(float(P[k, 2]), 5)]))
+            u, v = plan_uv(float(P[k, 0]), float(P[k, 2]))
+            T.append(np.array([round(u, 5), round(v, 5)]))
             ids.append(len(T) - 1)
         a0, a1, a2 = f
         lines[i] = f"f {a0[0]+1}/{ids[0]+1} {a1[0]+1}/{ids[1]+1} {a2[0]+1}/{ids[2]+1}"
@@ -1113,27 +1177,41 @@ def write_lod_json(path, b):
     json.dump({"positions": pos, "indices": idx}, open(path, "w"))
 
 
+def _hull_xz(apo):
+    pts = []
+    for k in range(N_SIDE):
+        p = ring_pos(k, 0.0, apo)
+        pts.append([round(p[0], 4), round(p[2], 4)])
+    return pts
+
+
 def collider_boxes(plinth_steps):
-    outer = APO_BASE + 3 * STEP_RAD
-    R = outer / COS22
+    """Inset convex hulls. Library still stores the AABB of each hull.
+
+    The octagon flats face the axes, so the tight AABB is +/- the apothem,
+    not the vertex radius. Shaft hull is the widest section above the plinth
+    (base and lip are both 0.80 m apothem) inset 2 cm. Plinth hull is the
+    unchanged outer step, inset 2 cm, from the buried base to the top step.
+    """
     inset = 0.02
-    plinth_r = R - inset
-    shaft_r = (APO_BASE / COS22) - inset
-    # AABB of the octagon is the vertex radius on x and z
-    def box(r, y0, y1, name):
+    plinth_apo = PLINTH_APO + 3 * STEP_RAD
+    shaft_apo = max(APO_BASE, APO_TOP + CAP_OVERHANG)
+    plinth_in = plinth_apo - inset
+    shaft_in = shaft_apo - inset
+
+    def box(apo, y0, y1, name):
+        r = apo
         return {
             "id": name, "role": "solid", "visual": True, "space": "local",
             "min": [round(-r, 4), round(y0, 4), round(-r, 4)],
             "max": [round(r, 4), round(y1, 4), round(r, 4)],
         }
-    plinth = box(plinth_r, -0.15, Y_SHAFT0, "plinth-player")
-    shaft = box(shaft_r, Y_SHAFT0, Y_LIP1, "shaft-player")
-    cam = box(shaft_r + 1.0, Y_SHAFT0, Y_LIP1, "shaft-camera")
-    outline = []
-    for k in range(N_SIDE):
-        p = ring_pos(k, 0.0, outer - inset * COS22)
-        outline.append([round(p[0], 4), round(p[2], 4)])
-    return plinth, shaft, cam, outline
+
+    plinth = box(plinth_in, -0.15, Y_SHAFT0, "plinth-player")
+    shaft = box(shaft_in, Y_SHAFT0, Y_CAP, "shaft-player")
+    cam = box(shaft_in + 1.0, Y_SHAFT0, Y_CAP, "shaft-camera")
+    outline = _hull_xz(plinth_apo)
+    return plinth, shaft, cam, outline, _hull_xz(plinth_in), _hull_xz(shaft_in)
 
 
 def main():
@@ -1193,7 +1271,23 @@ def main():
             "row0": 6, "rows": 36, "c_lo": 0, "c_hi": 1023, "a": origin, "b": mpp,
         })
     json.dump(bands, open(os.path.join(MESH, "bands.json"), "w"), indent=1)
-    plinth, shaft, cam, outline = collider_boxes(steps)
+    plinth, shaft, cam, outline, plinth_hull, shaft_hull = collider_boxes(steps)
+    plaza_r = 15.0
+    off_center = 5.0  # 10 m past the rim entrance of a 30 m plaza
+    chord = 2.0 * math.sqrt(plaza_r * plaza_r - off_center * off_center)
+    plinth_flat = 2.0 * (PLINTH_APO + 3 * STEP_RAD)
+    free_width = chord - plinth_flat
+    plaza = {
+        "diameterM": 30.0,
+        "pillarFromEntranceM": 10.0,
+        "pillarFromCenterM": off_center,
+        "acrossChordM": round(chord, 3),
+        "plinthFlatToFlatM": round(plinth_flat, 3),
+        "freeWidthM": round(free_width, 3),
+        "requiredM": 16.0,
+        "pass": bool(free_width + 1e-6 >= 16.0),
+        "note": "Chord of the 30 m plaza at 5 m off centre, minus the plinth outline. The 16 m bar is (6 m lane + 1 m camera margin) each side + a 2.0 m plinth.",
+    }
     zone = {
         "schema": "zone-placement/1",
         "ground_y": 0,
@@ -1222,10 +1316,15 @@ def main():
             "scale": 1,
             "ground_snap": True,
         }],
-        "plinth": {"outline_xz": outline, "steps": steps, "buried_m": 0.15},
+        "plinth": {"outline_xz": outline, "steps": steps, "buried_m": 0.15, "flat_to_flat_m": round(plinth_flat, 4)},
+        "plaza_across": plaza,
         "collision_layers": {
-            "plinth": {"layers": ["player"], "inset_m": 0.02, "box": plinth},
-            "shaft": {"layers": ["player", "camera"], "inset_m": 0.02, "camera_margin_m": 1.0, "box": shaft, "camera_box": cam},
+            "plinth": {"layers": ["player"], "inset_m": 0.02, "box": plinth, "hull_xz": plinth_hull, "y_top": Y_SHAFT0},
+            "shaft": {
+                "layers": ["player", "camera"], "inset_m": 0.02, "camera_margin_m": 1.0,
+                "box": shaft, "camera_box": cam, "hull_xz": shaft_hull,
+                "kind": "convex hull of the slimmed frustum, widest section inset 2 cm",
+            },
             "runes": "no colliders",
             "icicles": "no colliders, all roots above 5 m",
         },
@@ -1249,21 +1348,39 @@ def main():
             "uAxis": axis, "u0": 512, "uSign": 1, "v0": ROOT_Y / mpp, "vSign": -1,
         })
     json.dump({"plates": plates, "features": features, "bands": bands}, open(os.path.join(MESH, "painted-spec.json"), "w"), indent=1)
+    tip_y = min(rec["rootY"] - rec["lengthM"] for rec in icicles)
     metrics = {
         "heightM": H_PILLAR,
         "shaftBaseFlatM": W_BASE,
+        "shaftMidFlatM": round(W_BASE + 0.5 * (W_TOP - W_BASE), 4),
         "shaftTopFlatM": W_TOP,
-        "source": "03 silhouette mid 1.815 m face-equivalent, top 1.368 m, base clamped to 2.0; MoGe 03 depth span 1.092 m confirms a corner near that width and was not used as a balloon",
+        "lipFlatM": round(2.0 * (APO_TOP + CAP_OVERHANG), 4),
+        "plinthFlatM": round(plinth_flat, 4),
+        "platePpm": round(PLATE_PPM, 4),
+        "uvStretch": mirror_report.get("worstAniso"),
+        "uvOver1_3": mirror_report.get("over1_3"),
+        "source": "slimmed about the centre axis to 1.60 m base -> 1.20 m top. Plinth steps frozen. Plate UVs are an equal px/m projection (1024/7), never an upscale.",
+        "before": {
+            "note": "WIP 265ae83f, flat-to-flat, icicles excluded from the body reading where noted",
+            "shaftBaseM": 2.0,
+            "shaftMidM": 1.656,
+            "shaftTopBodyM": 1.312,
+            "lipM": 2.02,
+            "maxAbovePlinthM": 2.02,
+        },
+        "plaza": plaza,
         "tris": len(b.F),
         "topo": report_topo,
         "sliver": {k: report_sliver[k] for k in ("tris", "degenerate", "sliverFrac", "pass", "minAngleP5", "aspectP99")},
         "uv": info.get("uv"),
         "icicles": len(icicles),
-        "nseg": nseg,
+        "icicleTipMinY": round(tip_y, 4),
+        "nseg": {str(k): v for k, v in nseg.items()},
         "steps": steps,
-        "textures": info,
+        "textures": {k: info[k] for k in info if k not in ("uv",)},
         "buriedM": 0.15,
         "contactGapM": 0.0,
+        "lod": "lod1 and lod2 are copies of slimmed lod0 so the outline difference is 0 px",
     }
     # uv fix already applied inside build_mesh via fix_uv; recover by a second pass record stored on the function return
     json.dump(metrics, open(os.path.join(MESH, "build-metrics.json"), "w"), indent=1)

@@ -1,8 +1,33 @@
 {
  "heightM": 7.0,
- "shaftBaseFlatM": 2.0,
- "shaftTopFlatM": 1.3,
- "source": "03 silhouette mid 1.815 m face-equivalent, top 1.368 m, base clamped to 2.0; MoGe 03 depth span 1.092 m confirms a corner near that width and was not used as a balloon",
+ "shaftBaseFlatM": 1.6,
+ "shaftMidFlatM": 1.4,
+ "shaftTopFlatM": 1.2,
+ "lipFlatM": 1.6,
+ "plinthFlatM": 4.16,
+ "platePpm": 146.2857,
+ "uvStretch": 1.221,
+ "uvOver1_3": 0,
+ "source": "slimmed about the centre axis to 1.60 m base -> 1.20 m top. Plinth steps frozen. Plate UVs are an equal px/m projection (1024/7), never an upscale.",
+ "before": {
+  "note": "WIP 265ae83f, flat-to-flat, icicles excluded from the body reading where noted",
+  "shaftBaseM": 2.0,
+  "shaftMidM": 1.656,
+  "shaftTopBodyM": 1.312,
+  "lipM": 2.02,
+  "maxAbovePlinthM": 2.02
+ },
+ "plaza": {
+  "diameterM": 30.0,
+  "pillarFromEntranceM": 10.0,
+  "pillarFromCenterM": 5.0,
+  "acrossChordM": 28.284,
+  "plinthFlatToFlatM": 4.16,
+  "freeWidthM": 24.124,
+  "requiredM": 16.0,
+  "pass": true,
+  "note": "Chord of the 30 m plaza at 5 m off centre, minus the plinth outline. The 16 m bar is (6 m lane + 1 m camera margin) each side + a 2.0 m plinth."
+ },
  "tris": 17388,
  "topo": {
   "nonManifoldEdges": 0,
@@ -13,18 +38,19 @@
  "sliver": {
   "tris": 17388,
   "degenerate": 0,
-  "sliverFrac": 0.0014,
+  "sliverFrac": 0.0056,
   "pass": true,
-  "minAngleP5": 20.28,
-  "aspectP99": 3.67
+  "minAngleP5": 24.41,
+  "aspectP99": 3.78
  },
  "uv": {
-  "fixed": 368,
-  "worstBefore": 2.94,
-  "worstAfter": 1.226,
+  "fixed": 767,
+  "worstBefore": 174.444,
+  "worstAfter": 1.223,
   "over": 0
  },
  "icicles": 21,
+ "icicleTipMinY": 6.155,
  "nseg": {
   "0": 12,
   "1": 12,
@@ -89,19 +115,20 @@
    "crop_x0": 192
   },
   "note": "No plate was upscaled. fit_into scale is never above 1.",
-  "uv": {
-   "fixed": 368,
-   "worstBefore": 2.94,
-   "worstAfter": 1.226,
-   "over": 0
+  "flatUv": {
+   "flatRetextured": 1170
   },
   "unmirror": {
-   "flipped": 106,
+   "flipped": 0,
    "stillNegative": 0,
-   "worstAniso": 3.067,
-   "over1_3": 20
+   "worstAniso": 1.221,
+   "over1_3": 0
+  },
+  "recap": {
+   "recapped": 241
   }
  },
  "buriedM": 0.15,
- "contactGapM": 0.0
+ "contactGapM": 0.0,
+ "lod": "lod1 and lod2 are copies of slimmed lod0 so the outline difference is 0 px"
 }
