@@ -18,3 +18,12 @@ Zone B heightfield from the key image. Method and steps: [`docs/METHOD/terrain-f
 | `staging/` | Staging page served beside the live preview (live `index.html` untouched). |
 | `serve.py` | Local server for staging (`--port 8767`). |
 | `capture_play.mjs` | Loading-then-terrain play captures through the capture gate. |
+
+## Generic path (2026-10-13, tools/11)
+- Per-zone config: `zones/<zone>.json`. `zone-b.json` holds every value that used to be hard-wired in `run.py` /
+  `mask_depth.py` (paths, sand/sky colour rules, slab/sun/tower bands): `TFK_ZONE=zone-b python3 run.py` is unchanged.
+- `generic.py --zone zone-d` (or `--config` / `--key`): masks from the key itself (`masks_auto.py`: MoGe-2 MIT ground
+  plane by RANSAC + MoGe-2's own sky mask, SAM2 Apache box refine when it agrees; Lab colour-cluster fallback offline),
+  then rim relief per azimuth + flat spine, gates, `data/height.bin|json`, `masks.jpg`. Never touches a live page.
+- `python3 selftest.py`: Zone B bit-identical regression vs the frozen pre-refactor `tests/legacy_mask_depth_1011.py`
+  (real key-city3 + synthetic), generic good/bad fixtures, Zone D offline run.

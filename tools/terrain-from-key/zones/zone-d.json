@@ -1,0 +1,8 @@
+{
+ "zone": "zone-d",
+ "note": "Zone D (Frostspire). No colour rules: masks come from the key itself (masks_auto.py: MoGe-2 MIT ground plane + SAM2 Apache refine, colour-cluster fallback offline).",
+ "key": "/workspace/zd-bible-1012/key-zd1-b.jpg",
+ "out": "steps/terrain-zd-1013",
+ "avenueHeadingDeg": 0.0,
+ "mask": {"method": "auto", "depth": "moge-2", "sam2": "small", "eyeM": 2.6, "fovDeg": 48}
+}

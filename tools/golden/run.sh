@@ -5,7 +5,9 @@
 #                            [--imagine grok|mock|manual] [--imagine-max N] [--budget SECONDS] [--port N]
 #
 #   prompts -> imagine (imagine-auto) -> sky -> ground -> terrain (from key, 0 Imagine) -> objects -> placement
-#   -> gate (budgets + every stage verdict) -> worldgraph (zone.v1 JSON) -> play (index.html + local URL)
+#   (spec sheet from the key -> imagine-to-3d auto.py --method golden-hull: oblique-profile, triangle quality,
+#   untextured area, budget; FAIL -> learn/fix-ledger.jsonl + one retry) -> placement -> gate (budgets + verdicts)
+#   -> worldgraph (zone.v1 JSON) -> play (index.html + local URL) -> artdirector (render sheet; PENDING until a KEEP)
 # --seed-plates DIR  reuse existing plates (<slot>.jpg|png) before Imagine: those slots are skipped (resumable).
 # --imagine manual   no generation: exits 10 with the missing slot list (old run-biome step-4 behaviour).
 # Exit: 0 world ready, 1 gate FAIL (report printed + WORK/REPORT.md), 2 bad input, 3 Imagine failed, 10 manual wait.
@@ -50,7 +52,7 @@ imagine() {
 }
 stage prompts   "${S[@]}" prompts "${A[@]}" ${PROMPTS:+--prompts "$PROMPTS"}
 stage imagine --imagine imagine
-for st in sky ground terrain objects placement gate worldgraph play; do stage "$st" "${S[@]}" "$st" "${A[@]}"; done
+for st in sky ground terrain objects placement gate worldgraph play artdirector; do stage "$st" "${S[@]}" "$st" "${A[@]}"; done
 printf '\n== summary\n'; python3 "$HERE/timing.py" summary "$T" --budget "$BUDGET"; RC=$?
 echo "zone JSON: $WORK/zone.json"; echo "play: $(cat "$WORK/PLAY_URL.txt")  (serve: python3 -m http.server $PORT -d $WORK)"
 exit 0

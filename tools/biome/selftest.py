@@ -163,8 +163,11 @@ def main():
         print("6 hull bake skipped (--no-bake or no blender)")
 
     print("7 runtime")
-    c, o = run(["node", "--test", os.path.join(HERE, "runtime")])
-    ok("runtime: node tests", c == 0, [l for l in o.splitlines() if l.startswith("# pass") or l.startswith("# fail")].__str__())
+    # Node 22's test runner globs the argument and does not descend into a bare directory
+    # (it tries to load the directory as a module). Pass the test files themselves.
+    rt = sorted(glob.glob(os.path.join(HERE, "runtime", "*.test.mjs")) + glob.glob(os.path.join(HERE, "runtime", "*.test.js")))
+    c, o = run(["node", "--test", *rt]) if rt else (1, "no runtime test files")
+    ok("runtime: node tests", c == 0 and rt, [l for l in o.splitlines() if l.startswith("# pass") or l.startswith("# fail")].__str__())
     c, o = run(["bash", f"{HERE}/pack-ktx2.sh", os.path.join(OUT, "sky"), os.path.join(OUT, "ktx2"), "--allow-missing"])
     ok("pack-ktx2: runs (encodes when toktx/basisu exist, else lists)", c == 0, o.strip().splitlines()[0] if o else "")
 

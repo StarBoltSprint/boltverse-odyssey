@@ -58,9 +58,18 @@ def gen_mock(s, out):
     # same family (sky-*, ground-*) -> same base colour, so a mock ring stitches cleanly; "mockColor" overrides
     h = bytes(s["mockColor"]) if s.get("mockColor") else hashlib.sha256(s["slot"].rsplit("-", 1)[0].encode()).digest()
     w, hh = {"16:9": (64, 36), "9:16": (36, 64), "2:1": (64, 32)}.get(s.get("aspect", "auto"), (48, 48))
-    im = Image.new("RGB", (w, hh), tuple(h[:3]))
-    for y in range(hh):  # vertical gradient: brighter at top, like a real sky plate
-        for x in range(w): im.putpixel((x, y), tuple(max(0, c - y * 2) for c in h[:3]))
+    import numpy as np
+    rng = np.random.default_rng(int.from_bytes(hashlib.sha256(s["slot"].encode()).digest()[:4], "little"))
+    yy = np.arange(hh)[:, None, None]
+    if s["slot"].startswith("obj-") and not s.get("mockColor"):
+        # an object alone on a plain dark-grey backdrop: stepped tower silhouette, textured (noise), so it can be cut
+        w = hh = 64; a = np.full((hh, w, 3), 40.0); base = np.array(list(h[:3]), float) * 0.6 + 60
+        for y in range(8, 60):
+            half = (4 + (y - 8) * 2 // 5) if s["slot"].endswith("side") else 8 + (y - 8) // 9 * 3  # side view: tapered
+            a[y, 32 - half:32 + half] = base + rng.normal(0, 18, (2 * half, 3))
+    else:
+        a = np.array(list(h[:3]), float)[None, None] - yy * 2 + rng.normal(0, 6, (hh, w, 3))
+    im = Image.fromarray(np.clip(a, 0, 255).astype("uint8"))
     p = os.path.join(out, s["slot"] + ".png"); im.save(p); return p
 
 

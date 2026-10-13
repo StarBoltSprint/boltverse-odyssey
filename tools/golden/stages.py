@@ -93,8 +93,9 @@ def st_prompts(a):
                "prompt": f"Sky only, heading {i*30} deg (30 deg step, 35 deg coverage), horizon at the bottom tenth, seamless with its neighbours. {lock}"} for i in range(12)]
         sl += [{"slot": f"ground-{c}", "aspect": "1:1", "refs": [os.path.abspath(a.key)],
                 "prompt": f"Top-down seamless tileable ground texture, material {c} of the key image's ground, flat even light. {lock}"} for c in ("a", "b")]
-        sl += [{"slot": "obj-hero", "aspect": "1:1", "refs": [os.path.abspath(a.key)],
-                "prompt": f"The key image's main landmark object alone, three-quarter view, plain flat background. {lock}"}]
+        import spec_sheet
+        sh = spec_sheet.sheet(a.key, a.work, offline=os.environ.get("GOLDEN_MASKS") == "offline")
+        sl += spec_sheet.prompts_for(sh)
         d = {"zone": a.zone, "slots": sl}
     json.dump(d, open(out, "w"), indent=1)
     n = len(d.get("slots", []))
@@ -148,16 +149,20 @@ def st_ground(a):
 
 
 def st_terrain(a):
-    """Rim relief from the key skyline (zero Imagine images): sky/land boundary per column -> rim height per azimuth,
-    mirrored to 360 deg; a flat spine corridor stays walkable. 129x129 grid over 600 m."""
-    k = lum(rgb(a.key, (256, 144))); gy = np.abs(np.diff(k, axis=0))
-    sky_row = np.argmax(gy[: int(144 * 0.85)], 0).astype(np.float32)  # strongest vertical edge per column = skyline
-    prof = (144 * 0.85 - sky_row) / 144.0; prof = np.convolve(prof, np.ones(9) / 9, "same")
-    ring = np.concatenate([prof, prof[::-1]]); n = 129; S = 600.0
-    xs = np.linspace(-S / 2, S / 2, n); X, Z = np.meshgrid(xs, xs); R = np.hypot(X, Z); A = (np.arctan2(Z, X) + np.pi) / (2 * np.pi)
-    rim = 40 + 160 * ring[(A * (len(ring) - 1)).astype(int)]
-    Hh = np.where(R > 150, rim * np.clip((R - 150) / 120, 0, 1) ** 1.6, 0.0)
-    Hh += 1.5 * np.sin(X / 23) * np.cos(Z / 31) * np.clip(np.abs(X) / 20 - 0.5, 0, 1)  # gentle swell, spine |x|<10 m stays flat
+    """tools/terrain-from-key/generic.py (masks from the key: MoGe-2 + SAM2, colour-cluster offline) -> terrain.glb."""
+    import subprocess
+    tk = os.path.join(a.work, "terrain-key"); cfg = os.path.join(a.work, "terrain-key.json")
+    json.dump({"zone": a.zone, "mask": {"method": "auto", "fovDeg": 48, "eyeM": 2.6}}, open(cfg, "w"))
+    r = subprocess.run([sys.executable, os.path.join(REPO, "tools", "terrain-from-key", "generic.py"), "--config", cfg, "--key", a.key, "--out", tk]
+                       + (["--offline"] if os.environ.get("GOLDEN_MASKS") == "offline" else []), capture_output=True, text=True)
+    print("   " + (r.stdout.strip().splitlines() or ["(no output)"])[-1])
+    if r.returncode != 0:
+        g = json.load(open(os.path.join(tk, "gates.json"))) if os.path.exists(os.path.join(tk, "gates.json")) else {"checks": {}}
+        return gate(a.work, "terrain", [chk(f"terrain-from-key.{k}", c["value"], c["limit"], c["pass"]) for k, c in g["checks"].items()] or [chk("terrain-from-key", r.returncode, 0, False)])
+    hj = json.load(open(os.path.join(tk, "data", "height.json"))); n = hj["nx"]; S = hj["step"] * (n - 1)
+    Hh = np.fromfile(os.path.join(tk, "data", "height.bin"), np.float32).reshape(hj["nz"], n).astype(np.float64)
+    xs = np.linspace(-S / 2, S / 2, n); X, Z = np.meshgrid(xs, xs)
+    rim = np.array([json.load(open(os.path.join(tk, "gates.json")))["checks"]["rimMin_m"]["value"]])
     od = os.path.join(a.work, "terrain"); os.makedirs(od, exist_ok=True)
     pos = np.stack([X.ravel(), Hh.ravel(), Z.ravel()], 1); uv = np.stack([(X.ravel() + S / 2) / 8, (Z.ravel() + S / 2) / 8], 1)
     tex = plates(a.work, "ground-") and os.path.join(a.work, "ground", os.path.splitext(os.path.basename(plates(a.work, 'ground-')[0]))[0] + ".png")
@@ -174,24 +179,54 @@ def st_terrain(a):
 
 
 def st_objects(a):
-    P = plates(a.work, "obj-"); od = os.path.join(a.work, "objects"); os.makedirs(od, exist_ok=True)
-    if not P: return gate(a.work, "objects", [chk("objectPlates", 0, ">=1", False)])
-    C, objs = [], []
-    for p in P:
-        name = os.path.splitext(os.path.basename(p))[0]; im = rgb(p, (256, 256)); n = 96
-        bg = np.median(np.concatenate([im[:6].reshape(-1, 3), im[-6:].reshape(-1, 3), im[:, :6].reshape(-1, 3), im[:, -6:].reshape(-1, 3)]), 0)
-        small = rgb(p, (n, n)); mask = np.abs(small - bg).sum(2) > 40; cov = float(mask.mean())
-        L = lum(small) / 255.0; ys, xs_ = np.mgrid[0:n, 0:n]
-        sx = (xs_ / (n - 1) - 0.5) * 12; sy = (1 - ys / (n - 1)) * 12; depth = np.where(mask, 1.5 + 2.5 * L, 0.0)
-        pos = np.stack([sx.ravel(), sy.ravel(), depth.ravel()], 1); uv = np.stack([xs_.ravel() / (n - 1), ys.ravel() / (n - 1)], 1)
-        tri = grid(n); keep = mask.ravel()[tri].all(1); tri = tri[keep]
-        texp = os.path.join(od, name + ".png"); Image.open(p).convert("RGB").save(texp)
-        tris = write_glb(os.path.join(od, name + ".glb"), pos, uv, tri, texp) if len(tri) else 0
-        objs.append({"id": name, "glb": f"objects/{name}.glb", "tris": tris, "coverage": round(cov, 3), "kind": "relief-proxy", "height_m": 12})
-        C += [chk(f"{name}.coverage", round(cov, 3), "0.05..0.95", 0.05 <= cov <= 0.95, name),
-              chk(f"{name}.tris", tris, BUDGET["objectTrisMax"], 0 < tris <= BUDGET["objectTrisMax"], name)]
+    """Every object of the spec sheet -> tools/imagine-to-3d/auto.py --method golden-hull (carved hull + offline
+    oblique-profile / triangle-quality / untextured-area / budget gates, fix-ledger + one retry, render sheet)."""
+    import spec_sheet, subprocess
+    od = os.path.join(a.work, "objects"); os.makedirs(od, exist_ok=True)
+    sp = os.path.join(a.work, "spec-sheet.json")
+    if not os.path.exists(sp): spec_sheet.sheet(a.key, a.work, offline=os.environ.get("GOLDEN_MASKS") == "offline")
+    sh = json.load(open(sp)); C, objs = [], []
+    # plate-driven objects: obj-<id>-front plates the sheet does not list (caller-provided prompts / seeded plates)
+    known = {o["plates"]["front"] for o in sh["objects"]}
+    for p in plates(a.work, "obj-"):
+        st = os.path.splitext(os.path.basename(p))[0]
+        if st.endswith("-front") and st not in known:
+            oid = st[4:-6]; crop = p
+            sh["objects"].append({"id": oid, "type": "prop", "heightM": 12.0, "crop": crop, "budgetTris": 25000, "source": "plates",
+                                  "plates": {"front": st, "side": f"obj-{oid}-side"}})
+    if os.environ.get("GOLDEN_OBJECTS_FROM") == "plates":
+        sh["objects"] = [o for o in sh["objects"] if spec_sheet.auto_spec(o, os.path.join(a.work, "plates"), a.work)["imagine"]["views"]["front"]]
+    if not sh["objects"]: return gate(a.work, "objects", [chk("specSheetObjects", 0, ">=1", False)])
+    auto = os.path.join(REPO, "tools", "imagine-to-3d", "auto.py"); ad = os.path.join(a.work, "art-director"); os.makedirs(ad, exist_ok=True)
+    for o in sh["objects"]:
+        spec = spec_sheet.auto_spec(o, os.path.join(a.work, "plates"), a.work)
+        if os.environ.get("GOLDEN_HOOKS"): spec["_testHooks"] = json.loads(os.environ["GOLDEN_HOOKS"]).get(o["id"], {})
+        if os.environ.get("GOLDEN_RETRIES"): spec["retries"] = int(os.environ["GOLDEN_RETRIES"])
+        if not spec["imagine"]["views"]["front"]:
+            C.append(chk(f"{o['id']}.plates", "missing", "front plate", False, o["plates"]["front"])); continue
+        sp_o = os.path.join(a.work, "specs", o["id"] + ".json"); os.makedirs(os.path.dirname(sp_o), exist_ok=True); json.dump(spec, open(sp_o, "w"), indent=1)
+        r = subprocess.run([sys.executable, auto, "run", sp_o, "--method", "golden-hull"], capture_output=True, text=True)
+        print(r.stdout.strip()[-600:])
+        res = json.load(open(os.path.join(spec["work"], "result.json"))) if os.path.exists(os.path.join(spec["work"], "result.json")) else {"verdict": "ERROR", "attempts": []}
+        last = res["attempts"][-1]["rows"] if res.get("attempts") else {}
+        for k, row in last.items(): C.append(chk(f"{o['id']}.{k}", row["value"], row["limit"], row["pass"], o["id"]))
+        C.append(chk(f"{o['id']}.attempts", len(res.get("attempts", [])), "<=2", r.returncode == 0, o["id"]))
+        if r.returncode == 0:
+            rel = os.path.relpath(res["glb"], a.work)
+            shutil_copy(res["artDirector"]["sheet"], os.path.join(ad, o["id"] + ".jpg"))
+            objs.append({"id": o["id"], "glb": rel, "tris": res["tris"], "kind": "golden-hull", "height_m": o["heightM"], "type": o["type"], "artDirector": "pending"})
     json.dump({"objects": objs}, open(os.path.join(od, "objects.json"), "w"), indent=1)
-    return gate(a.work, "objects", C)
+    sheets = [os.path.join(ad, f) for f in sorted(os.listdir(ad)) if f.endswith(".jpg") and f != "render-sheet.jpg"]
+    if sheets:
+        ims = [Image.open(p) for p in sheets]; W = max(i.width for i in ims); S = Image.new("RGB", (W, sum(i.height for i in ims)))
+        y = 0
+        for i in ims: S.paste(i, (0, y)); y += i.height
+        S.save(os.path.join(ad, "render-sheet.jpg"), quality=88)
+    return gate(a.work, "objects", C, {"artDirector": {"status": "pending-art-director", "sheet": "art-director/render-sheet.jpg"}})
+
+
+def shutil_copy(a_, b_):
+    import shutil; shutil.copyfile(a_, b_)
 
 
 def st_placement(a):
@@ -199,11 +234,22 @@ def st_placement(a):
     H = json.load(open(os.path.join(a.work, "terrain", "heights.json"))); hh = np.array(H["heights"]); S = H["size_m"]; n = H["n"]
     k = lum(rgb(a.key, (64, 36))); sal = np.abs(k - k.mean()).sum(0); col = int(np.argmax(sal))  # most salient key column
     P, C = [], []
-    for i, o in enumerate(O):
-        az = math.radians(-35 + 70 * col / 63 + i * 40); r = 60 + 25 * i; x, z = r * math.sin(az), -r * math.cos(az)
-        gi = int(round((z + S / 2) / S * (n - 1))); gj = int(round((x + S / 2) / S * (n - 1)))
-        P.append({"id": o["id"], "position": [round(x, 2), round(float(hh[gi, gj]) - 0.15, 2), round(z, 2)], "radius_m": 6.0})
+    sheet = {o["id"]: o for o in (json.load(open(os.path.join(a.work, "spec-sheet.json")))["objects"] if os.path.exists(os.path.join(a.work, "spec-sheet.json")) else [])}
     lane = BUDGET["laneClearM"] + BUDGET["cameraMarginM"]
+    for i, o in enumerate(O):
+        so = sheet.get(o["id"])
+        if so:  # where the key shows it: azimuth from the crop centre (fov 48), distance from the key camera solve
+            az = math.radians((0.5 * (so["boxFrac"][0] + so["boxFrac"][2]) - 0.5) * 48); r = float(np.clip(so.get("distanceM", 80), 40, 140))
+        else:
+            az = math.radians(-35 + 70 * col / 63 + i * 40); r = 60 + 25 * i
+        rad = max(6.0, 0.35 * float(o.get("height_m", 12)))
+        x, z = r * math.sin(az), -r * math.cos(az)
+        if abs(x) < rad + lane: x = math.copysign(rad + lane + 0.5, x if x else (1 if i % 2 else -1))  # keep the spine lane clear
+        for _ in range(20):  # two objects never share a footprint: step the newcomer back along the view ray
+            if all(math.dist((x, z), (q["position"][0], q["position"][2])) > rad + q["radius_m"] + 1 for q in P): break
+            z -= rad + 2
+        gi = int(round((z + S / 2) / S * (n - 1))); gj = int(round((x + S / 2) / S * (n - 1)))
+        P.append({"id": o["id"], "position": [round(x, 2), round(float(hh[gi, gj]) - 0.15, 2), round(z, 2)], "radius_m": round(rad, 2)})
     for i, p in enumerate(P):
         d_sp = abs(p["position"][0]) - p["radius_m"]; C.append(chk(f"{p['id']}.laneClear_m", round(d_sp, 2), f">={lane} or off-spine", d_sp >= lane or abs(p["position"][2]) > 300, p["id"]))
         for q in P[i + 1:]:
@@ -238,7 +284,7 @@ def st_worldgraph(a):
                       "transform": {"position": P[o["id"]]["position"], "rotationDeg": 0, "scale": 1}, "fidelity": {"kind": o["kind"]},
                       "wake": {"type": "placeholder", "enabled": False}} for o in O],
          "gameplay": {"spawn": [0, 0, 0]}, "qualityGates": {s: json.load(open(os.path.join(a.work, "gates", s + ".json")))["verdict"] for s in ("sky", "ground", "terrain", "objects", "placement", "gate")},
-         "todo": ["objects are relief proxies: run imagine-to-3d auto.py per object for full volume", "Art Director verdict on renders"],
+         "todo": ["Art Director verdict on art-director/render-sheet.jpg (pending, never auto-approved)", "objects are carved two-view hulls (golden-hull): no LOD chain / KTX2 yet"],
          "wakeDefaults": {"type": "placeholder", "enabled": False}, "runtime": {"biome": {}, "layout": {}, "groundDetail": {}}}
     json.dump(z, open(os.path.join(a.work, "zone.json"), "w"), indent=1)
     missing = [f for f in [z["sky"]["equirect"], z["terrain"]["glb"]] + [o["asset"]["glb"] for o in z["objects"]] if not os.path.exists(os.path.join(a.work, f))]
@@ -270,6 +316,18 @@ def st_play(a):
     url = f"http://localhost:{a.port}/index.html"; open(os.path.join(a.work, "PLAY_URL.txt"), "w").write(url + "\n")
     print(f"[play] serve: python3 -m http.server {a.port} -d {a.work}  ->  {url}")
     return gate(a.work, "play", [chk("index", True, True, True)], {"url": url})
+
+
+def st_artdirector(a):
+    """Final gate: the Art Director judges art-director/render-sheet.jpg. Never auto-approved: without a recorded
+    verdict (art-director/verdict.json {"verdict": "KEEP"|"FAIL", "notes": ...}) the world is built but PENDING."""
+    ad = os.path.join(a.work, "art-director"); vp = os.path.join(ad, "verdict.json"); sheet = os.path.join(ad, "render-sheet.jpg")
+    v = json.load(open(vp)).get("verdict") if os.path.exists(vp) else "PENDING"
+    d = {"stage": "artdirector", "verdict": {"KEEP": "PASS", "FAIL": "FAIL"}.get(v, "PENDING"), "sheet": sheet if os.path.exists(sheet) else None,
+         "checks": [chk("artDirectorVerdict", v, "KEEP", v == "KEEP")]}
+    json.dump(d, open(os.path.join(a.work, "gates", "artdirector.json"), "w"), indent=1)
+    print(f"[artdirector] {d['verdict']}" + (f" - render sheet for the Art Director: {sheet}" if v == "PENDING" else ""))
+    return 1 if v == "FAIL" else 0
 
 
 if __name__ == "__main__":
