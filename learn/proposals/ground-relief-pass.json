@@ -1,0 +1,12 @@
+{
+  "schema": "recipe-proposal/1",
+  "recipe": "ground",
+  "id": "ground-relief-pass",
+  "kind": "param",
+  "summary": "Relief passes. Stretch, the shot sheet, and phone perf stay as they are.",
+  "proven": false,
+  "params": {
+    "reliefMinM": 0.3
+  },
+  "objectGate": "../../tools/recipe-improve/fixtures/variant-relief-pass.json"
+}

@@ -1,0 +1,6 @@
+{
+  "schema": "recipe-improve-plate/1",
+  "id": "ground-b",
+  "role": "family-variant",
+  "note": "Same bytes are handed to the current recipe and the variant. No pixels are cooked."
+}
