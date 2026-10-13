@@ -230,6 +230,12 @@ def build_face(m, F, grid, opts, meta):
     meta["faces"].append(fm)
     return cornice_P
 
+def oquad(m, mat, cat, ids, want):
+    """quad wound so its normal points along `want` (winding from the face's column sign was wrong on +x faces:
+    the right-side door backs faced into the solid and the depth views saw the inner skin)."""
+    a, b, c = (np.array(m.V[i]) for i in ids[:3]); n = np.cross(b - a, c - a)
+    m.quad(mat, cat, ids if n @ np.asarray(want, float) >= 0 else ids[::-1])
+
 def door_recess(m, F, B, D, us, vs, dz, c_far, fm):
     u0, u1, vt, dep = D["u0"], D["u1"], D["vtop"], D["depth"]; vb = B["v"][0]; k = F.k
     # jamb / lintel pixels: real stone right of the door (or left if it does not fit), pure translation, same px/m
@@ -240,20 +246,20 @@ def door_recess(m, F, B, D, us, vs, dz, c_far, fm):
             ra, rc = F.row(va, B), F.row(vc, B)
             ids = [m.v(F.P(u, va, dz(u, va)), F.uv(src, ra)), m.v(F.P(u, vc, dz(u, vc)), F.uv(src, rc)),
                    m.v(F.P(u, vc, -dep), F.uv(src + dep * k, rc)), m.v(F.P(u, va, -dep), F.uv(src + dep * k, ra))]
-            m.quad(F.mat, "door", ids if side == "R" else ids[::-1])
+            oquad(m, F.mat, "door", ids, F.r if side == "L" else -F.r)
     lu = [u for u in us if u0 - 1e-9 <= u <= u1 + 1e-9]; rtop = F.row(vt, B)
     for ua, ub in zip(lu, lu[1:]):
         ca, cb = src + (ua - u0) * k * 0.0 + abs(F.col(ua) - F.col(u0)), src + abs(F.col(ub) - F.col(u0))
         ids = [m.v(F.P(ua, vt, dz(ua, vt)), F.uv(ca, rtop + 12)), m.v(F.P(ua, vt, -dep), F.uv(ca, rtop + 12 + dep * k)),
                m.v(F.P(ub, vt, -dep), F.uv(cb, rtop + 12 + dep * k)), m.v(F.P(ub, vt, dz(ub, vt)), F.uv(cb, rtop + 12))]
-        m.quad(F.mat, "door", ids if F.cs > 0 else ids[::-1])
+        oquad(m, F.mat, "door", ids, -F.up)
     cA, cB = F.col(u0), F.col(u1); rb = F.row(vb, B)
     G = {}
     for i, t in enumerate(np.linspace(0, 1, 5)):
         for j, q in enumerate(np.linspace(0, 1, 7)):
             u, v = u0 + (u1 - u0) * t, vb + (vt - vb) * q; G[i, j] = m.v(F.P(u, v, -dep), F.uv(F.col(u), F.row(v, B)))
     for i in range(4):
-        for j in range(6): m.quad(F.mat, "door", (G[i, j], G[i + 1, j], G[i + 1, j + 1], G[i, j + 1]) if F.cs > 0 else (G[i, j], G[i, j + 1], G[i + 1, j + 1], G[i + 1, j]))
+        for j in range(6): oquad(m, F.mat, "door", (G[i, j], G[i + 1, j], G[i + 1, j + 1], G[i, j + 1]), F.out)
     fm["features"].setdefault("door", []).append(dict(box=[int(min(cA, cB)) + 10, int(rtop) + 14, int(max(cA, cB)) - 10, int(rb)], apparent_m=dep, u=[round(u0, 3), round(u1, 3)], vtop=round(vt, 3)))
 
 def cone(m, F, u, v, d, Lm, rad, st, r_lip, seg=8):
@@ -619,6 +625,11 @@ def selftest():
     if os.path.exists(old):
         r = sealed(old); ok &= not r["pass_"]; print(("ok  " if not r["pass_"] else "BAD ") + f"unsealed v1 terrace: want FAIL got {'PASS' if r['pass_'] else 'FAIL'} {json.dumps(r['per_material'])}")
     r = sealed(good); ok &= r["pass_"]; print(("ok  " if r["pass_"] else "BAD ") + f"sealed build (single surface): want PASS got {'PASS' if r['pass_'] else 'FAIL'} {json.dumps(r['per_material'])}")
+    scT = json.load(open(os.path.join(HERE, "../../steps/zone-d/01-terrace/wall/terrace.wall.json"))); CACHE.clear(); PAPP.clear(); EDGE.clear()
+    mT, _ = build(scT, scT["budgets"][2]); rev = Mesh(); rev.V, rev.T = mT.V, mT.T
+    rev.F = {k: ([(a, c, b) for a, b, c in v] if k[1] == "door" else v) for k, v in mT.F.items()}
+    for nm, mm, want in (("door backs wound inward (old column-sign bug)", rev, False), ("door backs wound by oquad", mT, True)):
+        r = door_backs_face_out(mm); ok &= r["pass_"] == want; print(("ok  " if r["pass_"] == want else "BAD ") + f"{nm}: want {'PASS' if want else 'FAIL'} got {'PASS' if r['pass_'] else 'FAIL'} {r['frac_out']}")
     os.environ["BW_SEAL_FIX"] = "0"
     try: g4, _ = tb("seal-nofix", lambda s_: None)
     finally: os.environ["BW_SEAL_FIX"] = "1"
@@ -669,8 +680,21 @@ def door_verdict(table):
     """depthmeasure scores a door relief PASS when no view saw it (all null). A door counts only if >=1 view measured it
     and every measured view is >= 0.7 x apparent."""
     vals = [v.get("door") for v in table["table"].values()]; app = table["apparent"]["door"]
-    got = [x for x in vals if x is not None]
+    vals = [x["real_m"] if isinstance(x, dict) else x for x in vals]; got = [x for x in vals if x is not None]
     return dict(views=len(vals), measured=len(got), pass_=bool(got) and all(x >= 0.7 * app for x in got))
+
+def door_backs_face_out(m):
+    """every side-face door back (door tris whose normal is along x) must face away from the terrace (sign of x):
+    an inward back is hidden by the shell's outer skin and the views see the inner skin."""
+    V = np.array(m.V); out = {}
+    for (mat, cat), tris in m.F.items():
+        if cat != "door" or mat != "side": continue
+        T = np.array(tris); tp = V[T]; n = np.cross(tp[:, 1] - tp[:, 0], tp[:, 2] - tp[:, 0]); c = tp.mean(1)
+        k = np.abs(n[:, 0]) > 0.9 * np.linalg.norm(n, axis=1)
+        for s_, m_ in (("left", c[:, 0] < 0), ("right", c[:, 0] > 0)):
+            q = k & m_
+            if q.any(): out[s_] = float(np.mean(np.sign(n[q, 0]) == np.sign(c[q, 0])))
+    return dict(frac_out=out, pass_=bool(out) and all(v > 0.99 for v in out.values()))
 
 def door_specs_missing(meta, specs):
     have = {(s_["face"], s_["door"]) for s_ in specs}

@@ -1077,3 +1077,4 @@ Leave a field blank when the repo does not say it. Do not fill it.
 - Non-manifold after solidify came from (a) >2 faces on a T-join edge and (b) bow-tie boundary vertices (two fans at one vertex, rims meet at 4 faces). Fix: 1 mm weld (gate tolerance), keep the 2 largest faces per edge, separate bow-tie fans 1.5 mm apart, then solidify. All LODs sealed.
 - depthmeasure auto_frame offsets the camera along t=(n.z,0,-n.x): for +x faces that is toward the back wall, so 8 m views hit nothing. Spec gen mirrors the angle (180-a). Inner shell UVs moved to u+2 so uv-box framing only finds the outer skin.
 - depthmeasure scores a door that no view saw as PASS. blender_wall.door_verdict counts a door only if at least one view measured it.
+- Right-side door backs were wound inward (column-sign winding): the views saw the inner skin. oquad() winds door quads by intended normal; all 7 doors now measured.

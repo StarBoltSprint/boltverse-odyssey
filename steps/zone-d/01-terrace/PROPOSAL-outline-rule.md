@@ -8,7 +8,7 @@ Status: PROPOSAL ONLY. The gate (tools/depthmeasure, outline_break_m = 0.3 m at 
   No cornice, lip or slab is in frame: the side plate cuts above the stone courses, so no pixel shows anything that
   leaves the wall plane by 0.3 m.
 - Building the side faces honestly (1.15 x read) gives 0.03-0.06 m outline at 3 m grazing on the left faces.
-  Right faces reach 0.33-0.34 m only because the front cornice meets them at the corner (corner rule), not from side pixels.
+  Right faces measure the same (0.04-0.05 m). An earlier 0.33-0.34 m reading was an artifact of a misplaced camera frame (fixed).
 - Reaching 0.3 m on the left faces from these pixels would mean inventing relief, which the pipeline forbids.
 
 ## Proposed rule
