@@ -1042,3 +1042,14 @@ Leave a field blank when the repo does not say it. Do not fill it.
 | Fix | `resolveRoute` uses the path after the `/ref/`, `/zone/`, or `/wg/` prefix with no extra dot. |
 | Guard | `node tools/world-graph/selftest.mjs` row `compare route serves main.mjs` (resolved path equals the preview `main.mjs`). |
 | Sources | `tools/world-graph/serve.mjs`, `tools/world-graph/selftest.mjs`. |
+
+### 2026-10-13 — buried icicle rings share one non-manifold seam on every LOD
+
+| | |
+| --- | --- |
+| Take | zd-terrace-v35 |
+| Defect | The same 108 non-manifold edges appeared on LOD0, LOD1, and LOD2. Each edge was a horizontal chord of about 0.075 m. |
+| Root cause | Close cones buried overlapping 12-gon root rings. A 1 mm weld then gave those edges three or four faces. The seam was in the hull, so decimation kept it. |
+| Fix | Drop centers closer than 0.04 m, keep the longest cone, and cap the buried radius at half the spacing minus 3 mm, with no 0.025 m floor and no extra 8 mm on the visible cone. Cones stay separate closed meshes. |
+| Guard | object-gate row `mesh sealed (non-manifold / open edges)`. v3.5 measured nonManifold 0 and open 0 on LOD0 (78160 tris), LOD1 (29066), and LOD2 (14830). |
+| Sources | `tools/imagine-to-3d/terrace_block.py`, `steps/zone-d/01-terrace/object-gate-v3.5/debug-nonmanifold-edges.png` (the pre-fix dump), commit `dd80963f`. |

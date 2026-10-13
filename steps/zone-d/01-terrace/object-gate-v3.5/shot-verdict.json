@@ -1,0 +1,42 @@
+{
+  "schema": "objsheet-shot-verdict/1",
+  "build": "zd-terrace-v35",
+  "verdict": "PENDING",
+  "cells": [
+    {
+      "view": "key",
+      "plate_path": "steps/zone-d/01-terrace/plates/key-b-crop.png",
+      "render_path": "steps/zone-d/01-terrace/object-gate-v3.5/reviews/far19.7.jpg",
+      "status": "PENDING",
+      "defects": []
+    },
+    {
+      "view": "45°",
+      "plate_path": null,
+      "render_path": "steps/zone-d/01-terrace/object-gate-v3.5/reviews/oblique45.jpg",
+      "status": "PENDING",
+      "defects": []
+    },
+    {
+      "view": "grazing",
+      "plate_path": null,
+      "render_path": "steps/zone-d/01-terrace/object-gate-v3.5/reviews/grazing.jpg",
+      "status": "PENDING",
+      "defects": []
+    },
+    {
+      "view": "8 m",
+      "plate_path": null,
+      "render_path": "steps/zone-d/01-terrace/object-gate-v3.5/reviews/close8m.jpg",
+      "status": "PENDING",
+      "defects": []
+    },
+    {
+      "view": "3 m up",
+      "plate_path": null,
+      "render_path": "steps/zone-d/01-terrace/object-gate-v3.5/reviews/close3m-up.jpg",
+      "status": "PENDING",
+      "defects": []
+    }
+  ]
+}

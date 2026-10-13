@@ -1,0 +1,42 @@
+{
+ "threshold": {
+  "xorFrac": 0.0005,
+  "focusXorFrac": 0.001,
+  "maxBlobPx": 4
+ },
+ "rows": [
+  {
+   "pair": "lod0 vs lod1",
+   "view": "switch15m",
+   "xorFrac": 0.0,
+   "focusXorFrac": 0.0,
+   "maxBlobPx": 0,
+   "pass": true
+  },
+  {
+   "pair": "lod1 vs lod2",
+   "view": "switch40m",
+   "xorFrac": 0.0,
+   "focusXorFrac": 0.0,
+   "maxBlobPx": 0,
+   "pass": true
+  },
+  {
+   "pair": "lod0 vs lod1",
+   "view": "switch40m",
+   "xorFrac": 0.0,
+   "focusXorFrac": 0.0,
+   "maxBlobPx": 0,
+   "pass": true
+  },
+  {
+   "pair": "lod1 vs lod2",
+   "view": "switch15m",
+   "xorFrac": 0.0,
+   "focusXorFrac": 0.0,
+   "maxBlobPx": 0,
+   "pass": true
+  }
+ ],
+ "verdict": "PASS"
+}

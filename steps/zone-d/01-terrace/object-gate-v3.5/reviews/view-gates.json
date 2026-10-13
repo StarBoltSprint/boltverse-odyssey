@@ -1,0 +1,45 @@
+{
+ "oblique-profile": {
+  "oblique45": {
+   "stepFrac": 0.0726,
+   "normSpread": 0.2385,
+   "hitPx": 33622,
+   "pass": true
+  },
+  "grazing": {
+   "stepFrac": 0.0456,
+   "normSpread": 0.4068,
+   "hitPx": 19052,
+   "pass": true
+  }
+ },
+ "untextured-area": {
+  "far19.7": {
+   "greyFrac": 0.0009,
+   "uncoveredFrac": 0.0003,
+   "pass": true
+  },
+  "close8m": {
+   "greyFrac": 0.0,
+   "uncoveredFrac": 0.0,
+   "pass": true
+  },
+  "close3m-up": {
+   "greyFrac": 0.0,
+   "uncoveredFrac": 0.0,
+   "pass": true
+  },
+  "oblique45": {
+   "greyFrac": 0.002,
+   "uncoveredFrac": 0.0,
+   "pass": true
+  },
+  "grazing": {
+   "greyFrac": 0.0,
+   "uncoveredFrac": 0.0004,
+   "pass": true
+  }
+ },
+ "errors": [],
+ "verdict": "PASS"
+}
