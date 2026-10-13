@@ -7,7 +7,8 @@ Detector (independent of the builder's drip finder): on the texture the GLB actu
 in the band (fringe drips and free-hanging painted ones) is its streak length; adjacent columns with run >= 0.15 m group into a streak (<= 1.5 m wide; wider = snow mass).
 A streak >= 0.15 m long needs a cone of the same tier/side within max(0.2 m, half its width) of its centre. PASS iff no ghosts."""
 import json, sys, numpy as np; from PIL import Image; from scipy import ndimage as ndi
-def detect(img, band, mpp):
+def bright_mask(img, band):
+    """Streak-bright pixels inside one drip band. Same rule detect() uses. Returns (mask, top_row, c_lo) in band-local rows."""
     r0, rows, c_lo, c_hi = band['row0'], band['rows'], band['c_lo'], band['c_hi']
     top = max(0, r0 - 6); sub = img[top:r0 + rows, c_lo:c_hi]
     ref = np.percentile(sub, 30, axis=1, keepdims=True)   # basalt level of each row across the whole band
@@ -15,8 +16,11 @@ def detect(img, band, mpp):
     if band.get('mask'):   # only pixels on the object (SAM2 mask of that plate): sky / background is not texture on the model
         mk = np.asarray(Image.open(band['mask']).convert('L').resize((img.shape[1], img.shape[0]))) > 127
         br &= ndi.binary_erosion(mk, iterations=2)[max(0, r0 - 6):r0 + rows, c_lo:c_hi]
-    run = np.zeros(sub.shape[1]); st = np.zeros(sub.shape[1], int)
-    for j in range(sub.shape[1]):   # longest vertical bright run anywhere in the band (fringe drips AND free-hanging painted ones)
+    return br, top, c_lo
+def detect(img, band, mpp):
+    br, top, c_lo = bright_mask(img, band)
+    run = np.zeros(br.shape[1]); st = np.zeros(br.shape[1], int)
+    for j in range(br.shape[1]):   # longest vertical bright run anywhere in the band (fringe drips AND free-hanging painted ones)
         col = np.r_[False, br[:, j], False].astype(int); d = np.diff(col); s_, e_ = np.flatnonzero(d == 1), np.flatnonzero(d == -1)
         if len(s_): k = np.argmax(e_ - s_); run[j] = e_[k] - s_[k]; st[j] = s_[k]
     minpx = 0.15 / mpp; lab, n = ndi.label(run >= minpx); out = []

@@ -3,47 +3,97 @@
 import * as THREE from './three.module.js';
 import { GLTFLoader } from './jsm/loaders/GLTFLoader.js';
 import { mergeGeometries } from './jsm/utils/BufferGeometryUtils.js';
+import { createEasuRcas } from './upscale-easu.mjs';
+import { createAdaptiveRes } from './adaptive-res.mjs';
 const q = new URLSearchParams(location.search); if (q.get('hud') === '0') document.getElementById('tag').style.display = 'none';
-const cfg = await (await fetch('./biome.json')).json();
-const r = new THREE.WebGLRenderer({ antialias: true }); r.setPixelRatio(Math.min(devicePixelRatio, cfg.camera.pixelRatioCap));
+const dpr = devicePixelRatio || 1, CANVAS = Math.min(2, dpr), INTERNAL = Math.min(1.5, CANVAS);
+const AA = q.get('aa') !== '0';
+const r = new THREE.WebGLRenderer({ antialias: AA }); r.setPixelRatio(CANVAS);
 r.setSize(innerWidth, innerHeight); r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap; r.outputColorSpace = THREE.SRGBColorSpace;
 document.body.appendChild(r.domElement);
-const scene = new THREE.Scene(); scene.background = new THREE.Color(0x1c2433); /* no fog: zone D has no fog spec yet (v3.1; fog fade was the 199-285 m morph cause under test) */
-const cam = new THREE.PerspectiveCamera(cfg.camera.fovBase, innerWidth / innerHeight, cfg.camera.near, cfg.camera.far);
-// key-B light: low cold sun from the left (~12 deg), world-fixed shadow frustum, neutral-cool fill
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x1c2433);
+const cam = new THREE.PerspectiveCamera(58, innerWidth / innerHeight, 0.2, 600);
 scene.add(new THREE.HemisphereLight(0xb8c8e0, 0x6a7890, 1.4));
 const sun = new THREE.DirectionalLight(0xdfe8ff, 1.6); sun.position.set(-60, 13, 25); sun.target.position.set(0, 0, -8);
 sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -40, right: 40, top: 40, bottom: -40, near: 1, far: 200 });
 sun.shadow.bias = -0.0005; sun.shadow.normalBias = 0.04; scene.add(sun, sun.target);
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(800, 800), new THREE.MeshStandardMaterial({ color: 0xc8d4e2, roughness: 1, metalness: 0 }));
-ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; ground.name = 'ground'; scene.add(ground);
 const P = await (await fetch('./placement.json')).json();
 const TL = new THREE.TextureLoader(); const TEX = {};
-for (const [n, f] of [['front', 'plate-front-v34.jpg'], ['front2', 't1-right-v34.jpg'], ['side', 'plate-side-v34.jpg'], ['top', 'top.jpg']]) {
+const FILES = [['front', 'plate-front-v35.jpg'], ['front2', 't1-right-v35.jpg'], ['side', 'plate-side-v35.jpg'], ['top', 'top.jpg'], ['icefront', 'plate-front.jpg'], ['icefront2', 't1-right.jpg'], ['iceside', 'plate-side.jpg']];
+for (const [n, f] of FILES) {
   const t = await TL.loadAsync(`./assets/${f}`); t.colorSpace = THREE.SRGBColorSpace; t.flipY = false; t.anisotropy = r.capabilities.getMaxAnisotropy();
   t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping; t.generateMipmaps = true; t.minFilter = THREE.LinearMipmapLinearFilter; t.magFilter = THREE.LinearFilter; TEX[n] = t; }
-const lod = new THREE.LOD(); lod.name = 'zd-terrace-block-01';
+// one existing Zone D plate, placed once, no repeat
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(96, 96), new THREE.MeshStandardMaterial({ map: TEX.top, roughness: 1, metalness: 0, name: 'ground' }));
+ground.rotation.x = -Math.PI / 2; ground.position.set(0, -0.01, -8); ground.receiveShadow = true; ground.name = 'ground'; ground.renderOrder = 2; scene.add(ground);
+const lod = new THREE.LOD(); lod.name = 'zd-terrace-block-01'; lod.renderOrder = 0;
 const loader = new GLTFLoader(); const sw = [0, ...P.object.lod_switch_m];
 for (let i = 0; i < 3; i++) {
   const g = await loader.loadAsync(`./assets/terrace-lod${i}.glb`); g.scene.updateMatrixWorld(true);
-  // one mesh per LOD (material groups), plates bound by their own served file so the gate can trace them
   const geos = [], mats = [];
   g.scene.traverse((o) => { if (o.isMesh) { const ge = o.geometry.clone().applyMatrix4(o.matrixWorld); for (const k of Object.keys(ge.attributes)) if (!['position','normal','uv'].includes(k)) ge.deleteAttribute(k); geos.push(ge); mats.push(o.material.name); } });
   const geo = mergeGeometries(geos, true);
   const M = mats.map((n) => { const t = TEX[n]; return new THREE.MeshStandardMaterial({ map: t, roughness: 1, metalness: 0, name: n }); });
-  const root = new THREE.Mesh(geo, M); root.name = `zd-terrace-lod${i}`; root.castShadow = root.receiveShadow = true;
+  const root = new THREE.Mesh(geo, M); root.name = `zd-terrace-lod${i}`; root.castShadow = root.receiveShadow = true; root.renderOrder = 0;
   lod.addLevel(root, sw[i]);
 }
 lod.position.fromArray(P.object.position_m); lod.rotation.y = (P.object.yaw_deg || 0) * Math.PI / 180;
 scene.add(lod); scene.updateMatrixWorld(true);
-const bb = new THREE.Box3().setFromObject(lod.levels[0].object); lod.position.y -= bb.min.y; // ground snap: lowest vertex at 0 m
+const bb = new THREE.Box3().setFromObject(lod.levels[0].object); lod.position.y -= bb.min.y;
 const st = { x: -21, z: 21, y: 1.6, yaw: 45, pitch: 8 };
-function frame() {
+const adaptive = createAdaptiveRes({ cap: INTERNAL, floor: Math.min(INTERNAL, 1.25) });
+adaptive.markReady(performance.now());
+const ups = createEasuRcas(THREE, { sharp: 0.8, samples: AA ? 4 : 0 });
+const outRT = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 0 });
+const fin = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({ uniforms: { t: { value: outRT.texture } }, depthTest: false, depthWrite: false,
+  vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
+  fragmentShader: 'uniform sampler2D t; varying vec2 vUv; void main(){ gl_FragColor = vec4(texture2D(t, vUv).rgb, 1.0);\n#include <colorspace_fragment>\n}' }));
+fin.frustumCulled = false; const finS = new THREE.Scene(); finS.add(fin); const finC = new THREE.Camera();
+const grade = { scale: 1, render(rr, s, c) { const z = rr.getDrawingBufferSize(new THREE.Vector2()); if (outRT.width !== z.x || outRT.height !== z.y) outRT.setSize(z.x, z.y);
+  rr.setRenderTarget(outRT); rr.render(s, c); rr.setRenderTarget(null); rr.render(finS, finC); } };
+const DOOR = { x: -0.86, z: 0 };
+const bench = { on: q.get('bench') === '1', t0: null, samples: [], done: false, median: null, low: null, min: null };
+function benchPose(t) {
+  let dist, pitch;
+  if (t < 10) { dist = 30 + (8 - 30) * (t / 10); pitch = 0; }
+  else if (t < 20) { dist = 8 + (3 - 8) * ((t - 10) / 10); pitch = 35; }
+  else if (t < 30) { dist = 3 + (30 - 3) * ((t - 20) / 10); pitch = 0; }
+  else { dist = 19.7; pitch = 0; }
+  return { dist, pitch };
+}
+function finishBench() {
+  const fps = bench.samples.map((dt) => 1 / Math.max(dt, 1e-4)).sort((a, b) => a - b);
+  const n = Math.max(1, Math.floor(fps.length * 0.01));
+  const worst = fps.slice(0, n);
+  bench.median = fps[fps.length >> 1]; bench.min = fps[0]; bench.low = worst.reduce((s, v) => s + v, 0) / worst.length; bench.done = true;
+}
+function texBytes() {
+  let bytes = 0; const seen = new Set();
+  scene.traverse((o) => { const mats = [].concat(o.material || []); for (const m of mats) for (const k in m) { const v = m[k]; if (v && v.isTexture && v.image && v.image.width && !seen.has(v)) { seen.add(v); bytes += v.image.width * v.image.height * 4; } } });
+  return bytes;
+}
+window.__perfReport = () => ({
+  canvasRatio: r.getPixelRatio(), dpr, cap: adaptive.level.ratio, canvasCap: 2, upscale: 'easu-rcas', rcas: 0.8,
+  msaa: AA ? 4 : 0, aa: AA ? 'msaa-4' : 'off', adaptive: true, adaptiveCanDropDetail: adaptive.canDropDetail,
+  sprintDip: false, detailOn: adaptive.level.detail !== false, groundOrder: ground.renderOrder, maxOpaqueOrder: 0,
+  fpsMedian: bench.done ? bench.median : null, fps1Low: bench.done ? bench.low : null, fpsMin: bench.done ? bench.min : null,
+  drawCalls: r.info.render.calls, triangles: r.info.render.triangles, textureMemory: texBytes(),
+  activeLOD: { 'zd-terrace-block-01': lod.getCurrentLevel() }, userAgent: navigator.userAgent,
+});
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  adaptive.frame(dt * 1000, now);
+  if (bench.on && !bench.done) {
+    if (bench.t0 == null) bench.t0 = now;
+    const t = (now - bench.t0) / 1000; bench.samples.push(dt);
+    const p = benchPose(t); st.x = DOOR.x; st.z = DOOR.z + p.dist; st.y = 1.6; st.yaw = 0; st.pitch = p.pitch;
+    if (t >= 35) finishBench();
+  }
   cam.position.set(st.x, st.y, st.z); cam.rotation.order = 'YXZ'; cam.rotation.y = -st.yaw * Math.PI / 180; cam.rotation.x = st.pitch * Math.PI / 180;
-  lod.update(cam); r.render(scene, cam); requestAnimationFrame(frame);
+  lod.update(cam); ups.render(r, scene, cam, grade, adaptive.level.ratio / CANVAS); requestAnimationFrame(frame);
 }
 addEventListener('resize', () => { r.setSize(innerWidth, innerHeight); cam.aspect = innerWidth / innerHeight; cam.updateProjectionMatrix(); });
-// approach path: 45 deg run toward the centre doorway (placement-draft approach line), 300 m -> 3 m
 const path = []; for (let d = 300; d >= 3; d -= 3) path.push([-d * 0.7071, d * 0.7071]);
 window.__renderer = r; window.__st = st; window.__scene = scene; window.__camera = cam; window.__THREE = THREE; window.__path = path;
 window.__zdOrbit = { lod }; requestAnimationFrame(frame); setTimeout(() => (window.__ready = true), 300);

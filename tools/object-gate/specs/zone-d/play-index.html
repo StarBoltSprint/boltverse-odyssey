@@ -14,6 +14,7 @@ import * as THREE from './three.module.js';
 import { GLTFLoader } from './jsm/loaders/GLTFLoader.js';
 import { mergeGeometries } from './jsm/utils/BufferGeometryUtils.js';
 import { createEasuRcas } from './upscale-easu.mjs';
+import { createAdaptiveRes } from './adaptive-res.mjs';
 const BOOM = 6, EYE = 1.35, AIM = 0.9675, R_PLAYER = 0.4, SPEED = 4.2;
 const P = await (await fetch('./placement.json')).json();
 const dpr = devicePixelRatio || 1, CANVAS = Math.min(2, dpr), INTERNAL = Math.min(1.5, CANVAS);
@@ -26,18 +27,18 @@ scene.add(new THREE.HemisphereLight(0xb8c8e0, 0x6a7890, 1.4));
 const sun = new THREE.DirectionalLight(0xdfe8ff, 1.6); sun.position.set(-60, 13, 25); sun.target.position.set(0, 0, -8);
 sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -40, right: 40, top: 40, bottom: -40, near: 1, far: 200 });
 sun.shadow.bias = -0.0005; sun.shadow.normalBias = 0.04; scene.add(sun, sun.target);
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(800, 800), new THREE.MeshStandardMaterial({ color: 0xc8d4e2, roughness: 1 }));
-ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
 const TL = new THREE.TextureLoader(), TEX = {};
-for (const [n, f] of [['front', 'plate-front-v34.jpg'], ['front2', 't1-right-v34.jpg'], ['side', 'plate-side-v34.jpg'], ['top', 'top.jpg']]) {
+for (const [n, f] of [['front', 'plate-front-v35.jpg'], ['front2', 't1-right-v35.jpg'], ['side', 'plate-side-v35.jpg'], ['top', 'top.jpg'], ['icefront', 'plate-front.jpg'], ['icefront2', 't1-right.jpg'], ['iceside', 'plate-side.jpg']]) {
   const t = await TL.loadAsync(`./assets/${f}`); t.colorSpace = THREE.SRGBColorSpace; t.flipY = false; t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
-  t.anisotropy = r.capabilities.getMaxAnisotropy(); t.minFilter = THREE.LinearMipmapLinearFilter; TEX[n] = t; }
+  t.generateMipmaps = true; t.magFilter = THREE.LinearFilter; t.anisotropy = r.capabilities.getMaxAnisotropy(); t.minFilter = THREE.LinearMipmapLinearFilter; TEX[n] = t; }
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(96, 96), new THREE.MeshStandardMaterial({ map: TEX.top, roughness: 1, metalness: 0 }));
+ground.rotation.x = -Math.PI / 2; ground.position.set(0, -0.01, -8); ground.receiveShadow = true; ground.name = 'ground'; ground.renderOrder = 2; scene.add(ground);
 const lod = new THREE.LOD(); const sw = [0, ...P.object.lod_switch_m]; const loader = new GLTFLoader();
 for (let i = 0; i < 3; i++) {
   const g = await loader.loadAsync(`./assets/terrace-lod${i}.glb`); g.scene.updateMatrixWorld(true); const geos = [], mats = [];
   g.scene.traverse((o) => { if (o.isMesh) { const ge = o.geometry.clone().applyMatrix4(o.matrixWorld); for (const k of Object.keys(ge.attributes)) if (!['position', 'normal', 'uv'].includes(k)) ge.deleteAttribute(k); geos.push(ge); mats.push(o.material.name); } });
-  const m = new THREE.Mesh(mergeGeometries(geos, true), mats.map((n) => new THREE.MeshStandardMaterial({ map: TEX[n], roughness: 1, metalness: 0 })));
-  m.castShadow = m.receiveShadow = true; lod.addLevel(m, sw[i]);
+  const m = new THREE.Mesh(mergeGeometries(geos, true), mats.map((n) => new THREE.MeshStandardMaterial({ map: TEX[n], roughness: 1, metalness: 0, name: n })));
+  m.castShadow = m.receiveShadow = true; m.renderOrder = 0; lod.addLevel(m, sw[i]);
 }
 lod.position.fromArray(P.object.position_m); lod.rotation.y = (P.object.yaw_deg || 0) * Math.PI / 180; scene.add(lod); scene.updateMatrixWorld(true);
 const bb = new THREE.Box3().setFromObject(lod.levels[0].object); lod.position.y -= bb.min.y;
@@ -58,7 +59,7 @@ function collide(p) {
   }
 }
 const bolt = new THREE.Mesh(new THREE.CapsuleGeometry(0.35, 1.4, 4, 10), new THREE.MeshStandardMaterial({ color: 0xf0c040, roughness: 0.6 }));
-bolt.castShadow = true; scene.add(bolt);
+bolt.castShadow = true; bolt.renderOrder = 0; scene.add(bolt);
 const pl = { x: marks[0].pos[0], z: marks[0].pos[1], heading: 135, pitch: 0 };   // heading deg: 0 = -z ... facing the door from the 30 m start
 function place(d, up) { const m = marks.find((q) => q.d === d); pl.x = m.pos[0]; pl.z = m.pos[1] + 0; pl.heading = d === 30 ? 45 : 0; pl.pitch = up ? 35 : 0; }
 for (const [id, d, up] of [['b30', 30], ['b8', 8], ['b3', 3], ['bup', 3, 1]]) document.getElementById(id).onclick = () => place(d, up);
@@ -85,11 +86,47 @@ const fin = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMateri
 fin.frustumCulled = false; const finS = new THREE.Scene(); finS.add(fin); const finC = new THREE.Camera();
 const grade = { scale: 1, render(rr, s, c) { const z = rr.getDrawingBufferSize(new THREE.Vector2()); if (outRT.width !== z.x || outRT.height !== z.y) outRT.setSize(z.x, z.y);
   rr.setRenderTarget(outRT); rr.render(s, c); rr.setRenderTarget(null); rr.render(finS, finC); } };
-window.__perfReport = () => ({ canvasRatio: CANVAS, dpr, cap: INTERNAL, canvasCap: 2, upscale: MODEB ? 'easu-rcas' : 'native', rcas: 0.8, msaa: AA ? 4 : 0, adaptive: false, sprintDip: false, detailOn: true });
+const adaptive = createAdaptiveRes({ cap: INTERNAL, floor: Math.min(INTERNAL, 1.25) });
+adaptive.markReady(performance.now());
+const bench = { on: q.get('bench') === '1', t0: null, samples: [], done: false, median: null, low: null, min: null };
+function benchPose(t) {
+  let dist, pitch;
+  if (t < 10) { dist = 30 + (8 - 30) * (t / 10); pitch = 0; }
+  else if (t < 20) { dist = 8 + (3 - 8) * ((t - 10) / 10); pitch = 35; }
+  else if (t < 30) { dist = 3 + (30 - 3) * ((t - 20) / 10); pitch = 0; }
+  else { dist = 19.7; pitch = 0; }
+  return { dist, pitch };
+}
+function finishBench() {
+  const fps = bench.samples.map((dt) => 1 / Math.max(dt, 1e-4)).sort((a, b) => a - b);
+  const n = Math.max(1, Math.floor(fps.length * 0.01));
+  const worst = fps.slice(0, n);
+  bench.median = fps[fps.length >> 1]; bench.min = fps[0]; bench.low = worst.reduce((s, v) => s + v, 0) / worst.length; bench.done = true;
+}
+function texBytes() {
+  let bytes = 0; const seen = new Set();
+  scene.traverse((o) => { const mats = [].concat(o.material || []); for (const mat of mats) for (const k in mat) { const v = mat[k]; if (v && v.isTexture && v.image && v.image.width && !seen.has(v)) { seen.add(v); bytes += v.image.width * v.image.height * 4; } } });
+  return bytes;
+}
+window.__perfReport = () => ({
+  canvasRatio: r.getPixelRatio(), dpr, cap: adaptive.level.ratio, canvasCap: 2, upscale: MODEB ? 'easu-rcas' : 'native', rcas: 0.8,
+  msaa: AA ? 4 : 0, aa: AA ? 'msaa-4' : 'off', adaptive: true, adaptiveCanDropDetail: adaptive.canDropDetail,
+  sprintDip: false, detailOn: adaptive.level.detail !== false, groundOrder: ground.renderOrder, maxOpaqueOrder: 0,
+  fpsMedian: bench.done ? bench.median : null, fps1Low: bench.done ? bench.low : null, fpsMin: bench.done ? bench.min : null,
+  drawCalls: r.info.render.calls, triangles: r.info.render.triangles, textureMemory: texBytes(),
+  activeLOD: { terrace: lod.getCurrentLevel() }, userAgent: navigator.userAgent,
+});
 const hud = document.getElementById('hud'); let last = performance.now(), acc = 0, n = 0, fps = 0;
 function frame(now) {
   const dt = Math.min(0.05, (now - last) / 1000); last = now; acc += dt; n++; if (acc > 0.5) { fps = n / acc; acc = 0; n = 0; }
-  let mx = stick.x + ((keys.KeyD || keys.ArrowRight) ? 1 : 0) - ((keys.KeyA || keys.ArrowLeft) ? 1 : 0), mz = stick.y + ((keys.KeyS || keys.ArrowDown) ? 1 : 0) - ((keys.KeyW || keys.ArrowUp) ? 1 : 0);
+  adaptive.frame(dt * 1000, now);
+  if (bench.on && !bench.done) {
+    if (bench.t0 == null) bench.t0 = now;
+    const t = (now - bench.t0) / 1000; bench.samples.push(dt);
+    const p = benchPose(t); pl.x = DOOR.x; pl.z = DOOR.z + p.dist; pl.pitch = p.pitch; pl.heading = 0;
+    if (t >= 35) finishBench();
+  }
+  let mx = bench.on ? 0 : stick.x + ((keys.KeyD || keys.ArrowRight) ? 1 : 0) - ((keys.KeyA || keys.ArrowLeft) ? 1 : 0), mz = bench.on ? 0 : stick.y + ((keys.KeyS || keys.ArrowDown) ? 1 : 0) - ((keys.KeyW || keys.ArrowUp) ? 1 : 0);
   const h = pl.heading * Math.PI / 180, f = [Math.sin(h), -Math.cos(h)], rt = [Math.cos(h), Math.sin(h)];
   pl.x += (f[0] * -mz + rt[0] * mx) * SPEED * dt; pl.z += (f[1] * -mz + rt[1] * mx) * SPEED * dt; collide(pl);
   bolt.position.set(pl.x, 1.05, pl.z); bolt.rotation.y = -h;
@@ -97,7 +134,7 @@ function frame(now) {
   cam.position.set(pl.x - f[0] * BOOM, EYE, pl.z - f[1] * BOOM);
   cam.lookAt(pl.x + f[0] * 10 * Math.cos(pitch), EYE + 10 * Math.sin(pitch) + (AIM - EYE) * 0, pl.z + f[1] * 10 * Math.cos(pitch));
   lod.update(cam);
-  if (MODEB) ups.render(r, scene, cam, grade, INTERNAL / CANVAS); else { r.setRenderTarget(null); r.render(scene, cam); }
+  if (MODEB) ups.render(r, scene, cam, grade, adaptive.level.ratio / CANVAS); else { r.setRenderTarget(null); r.render(scene, cam); }
   const dDoor = Math.hypot(pl.x - DOOR.x, pl.z - DOOR.z), dCam = cam.position.distanceTo(new THREE.Vector3(DOOR.x, 1.5, DOOR.z));
   hud.textContent = `fps ${fps.toFixed(0)}  AA ${AA ? 'MSAA 4x' : 'off'}  LOD${lod.getCurrentLevel()} (switch ${P.object.lod_switch_m.join('/')} m)\nmode B: internal ${INTERNAL} -> canvas ${CANVAS} (dpr ${dpr}) EASU+RCAS 0.8\nplayer ${dDoor.toFixed(1)} m / camera ${dCam.toFixed(1)} m from centre door\nchase boom ${BOOM} m, eye ${EYE} m (corridor-ab look.js)`;
   window.__ready = true; requestAnimationFrame(frame);

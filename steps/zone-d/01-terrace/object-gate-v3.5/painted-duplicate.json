@@ -1,0 +1,10 @@
+{
+ "check": "painted_duplicate",
+ "status": "PASS",
+ "failing_face_ids": [],
+ "world_position": null,
+ "suggested_fix": "",
+ "causes": [],
+ "overlap_m": 0.0,
+ "ghosts": 0
+}

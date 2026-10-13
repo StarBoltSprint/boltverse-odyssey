@@ -2,10 +2,11 @@ id: terrace
 type: building
 select: {names: "^zd-terrace-lod[0-2]$"}
 keyCrop: /workspace/grokcli/wt/zd-terrace-1012/steps/zone-d/01-terrace/plates/key-b-crop.png
+paintedDuplicate: /workspace/grokcli/wt/zd-terrace-1012/steps/zone-d/01-terrace/object-gate-v3.5/painted-duplicate-spec.json
 textures:
-  - {match: "assets/plate-front(-v34)?\\.jpg", role: plate}
-  - {match: "assets/t1-right(-v3[34])?\\.jpg", role: plate}
-  - {match: "assets/plate-side(-v34)?\\.jpg", role: plate}
+  - {match: "assets/plate-front(-v3[45])?\\.jpg", role: plate}
+  - {match: "assets/t1-right(-v3[2-5])?\\.jpg", role: plate}
+  - {match: "assets/plate-side(-v3[45])?\\.jpg", role: plate}
   - {match: "assets/top\\.jpg", role: plate}
 checklist:
   - {id: volume, feature: "Three stepped basalt tiers with real step depth, like the key-B crop", captures: [far, close]}

@@ -70,6 +70,55 @@ A failing orbit prints the fallback: 3–4 views for a hero ship (front, 3/4, si
 
 `--kind hero-ship` makes 3–4 views the default even when the pixels match. Any other count fails. The pack is [`learn/ship-turnaround.md`](../../learn/ship-turnaround.md).
 
+## Contact sheet
+
+One fixed sheet per block build. Cells stay in this order, and only when that pair exists:
+
+1. key camera (skipped when the step or the profile does not name one; the sheet does not invent it)
+2. 45° oblique
+3. grazing
+4. 8 m approach
+5. 3 m up
+
+Each cell is the plate beside its render. Both are nearest-fit into the same frame. The PNG is a proof. It is not an asset.
+
+```bash
+python3 tools/objsheet/contact.py --spec <sheet.json> --out <dir>
+```
+
+`sheet.json` lists `cells.<slot>.plate` and `cells.<slot>.render`. The self-test builds a tiny fixture (no Imagine) and checks the order, the skip, and that each frame's pixels are that pair.
+
+## Shot-sheet visual verdict
+
+Separate from the pixel `report.json`. A build emits this for the Art Director. It does not call Imagine and it does not grade pixels. The five cells, in this order, are **key**, **45°**, **grazing**, **8 m**, **3 m up**. A cell is plate | render side by side when both paths are set. A side that does not exist yet is `null`.
+
+```bash
+python3 tools/objsheet/verdict.py emit --build <id> --out <dir>/shot-verdict.json \
+  --plate key=plates/key.jpg --render key=renders/key.png
+python3 tools/objsheet/sheet.py --views <dir> --config <config.json> --out <dir> \
+  --build <id> --plate "8 m=plates/close8m.jpg" --render "8 m=renders/close8m.png"
+```
+
+`sheet.py` writes `shot-verdict.json` only when `--build` is set. The pixel sheet's exit code is unchanged.
+
+| Field | Meaning |
+| --- | --- |
+| `verdict` | Sheet verdict. `PENDING` until the Art Director writes `KEEP` or `FAIL`. |
+| `cells[].view` | One of the five names above. |
+| `cells[].plate_path` | Imagine plate, or `null`. |
+| `cells[].render_path` | Build render of that same view, or `null`. |
+| `cells[].status` | `PENDING`, `KEEP`, or `FAIL`. Starts `PENDING`. |
+| `cells[].defects` | Strings. Empty until the Art Director fills a `FAIL` cell. |
+
+```bash
+python3 tools/objsheet/verdict.py fill --sheet shot-verdict.json --verdict KEEP --out shot-verdict.json
+python3 tools/objsheet/verdict.py fill --sheet shot-verdict.json --verdict FAIL \
+  --defect "8 m=texel mush at the cornice" --out shot-verdict.json
+python3 tools/objsheet/verdict.py intake --sheet shot-verdict.json
+```
+
+`intake` is the library check stub. Exit 1 and `REFUSE PENDING` while the sheet or any cell is `PENDING`. Exit 0 and `ALLOW KEEP` only when the verdict is `KEEP` and every defect list is empty. A `FAIL` sheet must list defects; `intake` prints them and exits 1, so the object does not enter the library. `python3 tools/library/library.py add` runs the same check when the intake JSON has `shotSheet`. Omitting that key keeps the previous add path.
+
 ## Self-test
 
 ```bash

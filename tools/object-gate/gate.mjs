@@ -8,10 +8,12 @@ import { execFileSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import yaml from "js-yaml";   // npm ci in tools/object-gate
 import { scoreVisible, screenPxPerM, resolveView, footprintsFromBoxes } from "./lib/visible.mjs";
+import { applyFailureFields, annotateObjectRows } from "./lib/failure.mjs";
 export { scoreVisible, screenPxPerM, resolveView };
+export { applyFailureFields, annotateObjectRows };
 
 /** Stable API contract (see API.md). Bump the major only with a migration note; additions bump the minor. */
-export const API_VERSION = "1.7";
+export const API_VERSION = "1.8";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PY = join(HERE, "lib/analyze.py");
@@ -45,7 +47,7 @@ export function resolveObject(spec, specDir = process.cwd()) {
   const prof = loadProfile(spec.type);
   const cfg = deepMerge(prof, spec.thresholds || {});
   const abs = (p) => (p && !p.startsWith("/") ? resolve(specDir, p) : p);
-  return { ...spec, keyCrop: abs(spec.keyCrop), record: abs(spec.record || `records/${spec.id}.verified.yaml`), cfg, specDir };
+  return { ...spec, keyCrop: abs(spec.keyCrop), record: abs(spec.record || `records/${spec.id}.verified.yaml`), paintedDuplicate: abs(spec.paintedDuplicate), cfg, specDir };
 }
 export function loadScene(p) {
   const dir = dirname(resolve(p));
@@ -211,6 +213,7 @@ export async function gateScene(scene, opts = {}) {
       const odir = join(out, spec.id); mkdirSync(odir, { recursive: true });
       try { await gateOne(cap, adapter, spec, o, odir, { self, sources, fast: opts.fast, log }); }
       catch (e) { row(o, "gate run", false, "gate crashed: " + (e && e.stack || e).toString().slice(0, 400), ["Fix the spec selector / adapter; a crash is a FAIL."]); }
+      o.rows = annotateObjectRows(o.rows, odir);
       o.verdict = o.rows.some((r) => r.status === "FAIL") ? "FAIL" : "PASS";
       log(`  -> ${o.verdict} (${o.rows.filter((r) => r.status === "FAIL").length} FAIL / ${o.rows.length})`);
     }
@@ -249,7 +252,7 @@ export const CHECK_IDS = [
   [/^repetition \(visible\): identical/, "repetition.visible-radius"], [/^repetition \(visible\): neighbours/, "repetition.visible-neighbours"], [/^repetition \(UV\)/, "repetition.uv"], [/^UV stretch/, "texel.stretch"],
   [/^scene self-report/, "texel.self-report"], [/^repetition \(capture/, "repetition.captures"], [/^approach morph/, "morph"],
   [/^shadow light/, "shadow.light"], [/^shadow cast/, "shadow.cast"], [/^shadow world-fixed/, "shadow.world-fixed"], [/^shadow colour/, "shadow.colour"],
-  [/^grounding/, "grounding"], [/^mesh sealed/, "geometry.sealed"], [/^facade relief/, "geometry.relief"], [/^proportions/, "geometry.proportions"],
+  [/^grounding/, "grounding"], [/^painted duplicate/, "painted_duplicate"], [/^mesh sealed/, "geometry.sealed"], [/^facade relief/, "geometry.relief"], [/^proportions/, "geometry.proportions"],
   [/^effects take/, "effects.imagine-texture"], [/^effects: no typed/, "effects.no-colour-literals"],
   [/^key checklist written/, "checklist.written"], [/^key crop present/, "checklist.key-crop"], [/^key checklist: every/, "checklist.verified"], [/^colour vs key/, "checklist.colour"],
   [/^checklist camera framed/, "checklist.camera"],
@@ -260,7 +263,7 @@ export const CHECK_IDS = [
 ];
 export const checkId = (check) => (CHECK_IDS.find(([re]) => re.test(check)) || [null, "other"])[1];
 function row(o, check, pass, detail, hints = [], status) {
-  o.rows.push({ id: checkId(check), check, status: status || (pass ? "PASS" : "FAIL"), detail, hints: pass ? [] : hints });
+  o.rows.push(applyFailureFields({ id: checkId(check), check, status: status || (pass ? "PASS" : "FAIL"), detail, hints: pass ? [] : hints }));
 }
 /**
  * Phone perf rows (docs/METHOD/phone-perf.md). They read the page's window.__perfReport():
@@ -292,7 +295,7 @@ export function perfRows(rep, pr, vp) {
     `internal ${pr.cap} canvas ${pr.canvasRatio} device ${pr.dpr} upscale ${pr.upscale ?? "native"} rcas ${pr.rcas ?? "-"} sprintDip ${pr.sprintDip}`,
     ["Default: canvas min(2, device), scene at internal 1.5 upscaled with tools/biome/runtime/upscale-easu.mjs (EASU-style + RCAS 0.8), or native ratio 2 (SmiR 2026-10-10 14:38). Never the plain bilinear upscale, never below 1.5 by default, no sprint dip; lower only as the adaptive emergency floor (< 15 fps for > 5 s)."]);
 }
-function rowR(rep, check, pass, detail, hints) { rep.runtime.push({ id: checkId(check), check, status: pass ? "PASS" : "FAIL", detail, hints: pass ? [] : hints }); }
+function rowR(rep, check, pass, detail, hints) { rep.runtime.push(applyFailureFields({ id: checkId(check), check, status: pass ? "PASS" : "FAIL", detail, hints: pass ? [] : hints })); }
 
 async function settle(page, ms = 1200) {
   await page.evaluate(() => window.__og.frames(4));
@@ -386,8 +389,32 @@ export async function visibleShot(page, adapter, sel, hero, t, view, odir, vv = 
   }
 }
 
+const PAINTED_FIX = "inpaint painted feature with neighbouring basalt";
+function paintedDuplicateReport(specPath) {
+  const fail = (detail) => ({ check: "painted_duplicate", status: "FAIL", failing_face_ids: [], world_position: null, suggested_fix: PAINTED_FIX, detail });
+  if (!existsSync(specPath)) return fail(`missing ${specPath}`);
+  const parse = (text) => { const line = `${text || ""}`.trim().split("\n").filter(Boolean).pop(); return line && line.startsWith("{") ? JSON.parse(line) : null; };
+  try { return parse(execFileSync("python3", [join(HERE, "py/painted_duplicate.py"), specPath], { encoding: "utf8" })) || fail("empty painted_duplicate report"); }
+  catch (e) { return parse(e.stdout) || fail(String(e.stderr || e.message).slice(0, 400)); }
+}
 async function gateOne(cap, adapter, spec, o, odir, ctx) {
   const { page } = cap; const cfg = spec.cfg; const checks = new Set(cfg.checks);
+  if (spec.paintedDuplicate) {
+    const rep = paintedDuplicateReport(spec.paintedDuplicate);
+    const pass = rep.status === "PASS";
+    const faces = (rep.failing_face_ids || []).join(",");
+    o.rows.push(applyFailureFields({
+      id: "painted_duplicate",
+      check: "painted duplicate of geometric feature",
+      status: pass ? "PASS" : "FAIL",
+      detail: pass ? "no painted feature on the projected geometry" : `faces ${faces || "—"} world ${JSON.stringify(rep.world_position)} ${(rep.causes || []).join("+") || rep.detail || ""}`.trim(),
+      hints: pass ? [] : [rep.suggested_fix || PAINTED_FIX],
+      failing_face_ids: rep.failing_face_ids || [],
+      world_position: rep.world_position || null,
+      suggested_fix: pass ? "" : (rep.suggested_fix || PAINTED_FIX),
+    }));
+    writeFileSync(join(odir, "painted-duplicate.json"), JSON.stringify(rep, null, 1));
+  }
   const sel = spec.select;
   const boxes = await page.evaluate((s) => window.__og.instanceBoxes(s), sel);
   if (!boxes.length) { row(o, "select", false, `selector ${JSON.stringify(sel)} matched no object`, ["Fix select.names (regex on object names in the scene)."]); return; }

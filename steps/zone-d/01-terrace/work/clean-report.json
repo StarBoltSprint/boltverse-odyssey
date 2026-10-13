@@ -1,1718 +1,4861 @@
 {
  "passes": {
-  "pass1": 23,
-  "pass2": 19,
-  "pass3": 23,
-  "pass4": 27,
-  "pass5": 16,
-  "pass6": 4,
-  "pass7": 1,
-  "pass8": 1,
-  "pass9": 0
+  "pass1": {
+   "ghosts": 22,
+   "streaks": 111
+  },
+  "pass2": {
+   "ghosts": 20,
+   "streaks": 87
+  },
+  "pass3": {
+   "ghosts": 12,
+   "streaks": 46
+  },
+  "pass4": {
+   "ghosts": 14,
+   "streaks": 35
+  },
+  "pass5": {
+   "ghosts": 5,
+   "streaks": 15
+  },
+  "pass6": {
+   "ghosts": 1,
+   "streaks": 7
+  },
+  "pass7": {
+   "ghosts": 2,
+   "streaks": 4
+  },
+  "pass8": {
+   "ghosts": 1,
+   "streaks": 2
+  }
  },
  "fills": [
   {
    "plate": "plate-front",
    "pass_": 0,
-   "footprintPx": 149,
+   "footprintPx": 48,
    "bbox": [
-    873,
-    718,
-    881,
-    735
+    0,
+    9,
+    48,
+    0
    ],
-   "donorDx": -40,
-   "method": "poisson"
+   "donorDx": 0,
+   "method": "drip-cut"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 0,
+   "footprintPx": 80,
+   "bbox": [
+    0,
+    8,
+    80,
+    0
+   ],
+   "donorDx": 0,
+   "method": "drip-cut"
   },
   {
    "plate": "t1-right",
    "pass_": 0,
-   "footprintPx": 187,
+   "footprintPx": 146,
    "bbox": [
-    288,
-    418,
-    297,
+    0,
+    9,
+    146,
+    0
+   ],
+   "donorDx": 0,
+   "method": "drip-cut"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 0,
+   "footprintPx": 142,
+   "bbox": [
+    0,
+    9,
+    142,
+    0
+   ],
+   "donorDx": 0,
+   "method": "drip-cut"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 0,
+   "footprintPx": 255,
+   "bbox": [
+    1,
+    12,
+    255,
+    0
+   ],
+   "donorDx": 0,
+   "method": "drip-cut"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 0,
+   "footprintPx": 194,
+   "bbox": [
+    1,
+    11,
+    194,
+    0
+   ],
+   "donorDx": 0,
+   "method": "drip-cut"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 0,
+   "footprintPx": 160,
+   "bbox": [
+    2,
+    16,
+    160,
+    0
+   ],
+   "donorDx": 0,
+   "method": "drip-cut"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 0,
+   "footprintPx": 113,
+   "bbox": [
+    2,
+    12,
+    113,
+    0
+   ],
+   "donorDx": 0,
+   "method": "drip-cut"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 1,
+   "footprintPx": 101,
+   "bbox": [
+    291,
+    420,
+    294,
     437
    ],
-   "donorDx": 52,
-   "method": "poisson"
+   "donorDx": -68,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-side",
-   "pass_": 0,
-   "footprintPx": 354,
+   "pass_": 1,
+   "footprintPx": 219,
    "bbox": [
-    139,
-    748,
-    149,
-    787
+    142,
+    750,
+    146,
+    784
    ],
-   "donorDx": 80,
-   "method": "poisson"
+   "donorDx": 22,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-side",
-   "pass_": 0,
-   "footprintPx": 121,
+   "pass_": 1,
+   "footprintPx": 93,
    "bbox": [
-    152,
-    738,
-    160,
-    753
+    623,
+    692,
+    626,
+    706
    ],
-   "donorDx": 68,
-   "method": "poisson"
+   "donorDx": 14,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-side",
-   "pass_": 0,
-   "footprintPx": 122,
+   "pass_": 1,
+   "footprintPx": 170,
    "bbox": [
-    154,
-    738,
-    161,
-    753
+    777,
+    709,
+    786,
+    725
    ],
-   "donorDx": 64,
-   "method": "poisson"
+   "donorDx": -32,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-side",
-   "pass_": 0,
-   "footprintPx": 176,
+   "pass_": 1,
+   "footprintPx": 1140,
    "bbox": [
-    332,
-    689,
-    341,
-    707
+    858,
+    694,
+    883,
+    738
    ],
-   "donorDx": -24,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 0,
-   "footprintPx": 127,
-   "bbox": [
-    620,
-    689,
-    629,
-    703
-   ],
-   "donorDx": 60,
-   "method": "poisson"
+   "donorDx": -54,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-front",
-   "pass_": 0,
-   "footprintPx": 356,
+   "pass_": 1,
+   "footprintPx": 230,
    "bbox": [
-    589,
-    479,
-    609,
+    592,
+    482,
+    606,
     496
    ],
-   "donorDx": -60,
-   "method": "poisson"
+   "donorDx": 96,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-front",
-   "pass_": 0,
-   "footprintPx": 158,
+   "pass_": 1,
+   "footprintPx": 55,
    "bbox": [
-    606,
-    466,
-    614,
-    483
+    607,
+    468,
+    609,
+    480
    ],
-   "donorDx": 68,
-   "method": "poisson"
+   "donorDx": 46,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 1,
+   "footprintPx": 33,
+   "bbox": [
+    609,
+    468,
+    611,
+    480
+   ],
+   "donorDx": 44,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-side",
-   "pass_": 0,
-   "footprintPx": 243,
+   "pass_": 1,
+   "footprintPx": 81,
    "bbox": [
-    161,
-    520,
-    169,
-    556
+    163,
+    523,
+    166,
+    541
    ],
-   "donorDx": 52,
-   "method": "poisson"
+   "donorDx": -88,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 52,
+   "bbox": [
+    498,
+    518,
+    500,
+    528
+   ],
+   "donorDx": 16,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-front",
-   "pass_": 0,
-   "footprintPx": 3815,
+   "pass_": 1,
+   "footprintPx": 2851,
    "bbox": [
-    229,
-    227,
-    266,
-    337
-   ],
-   "donorDx": 76,
-   "method": "frost-matched feather 6px"
-  },
-  {
-   "plate": "plate-front",
-   "pass_": 0,
-   "footprintPx": 2609,
-   "bbox": [
-    303,
-    228,
-    348,
-    297
-   ],
-   "donorDx": 80,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-front",
-   "pass_": 0,
-   "footprintPx": 120,
-   "bbox": [
-    634,
-    322,
-    642,
-    336
-   ],
-   "donorDx": 28,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-front",
-   "pass_": 0,
-   "footprintPx": 119,
-   "bbox": [
-    636,
-    322,
-    645,
+    232,
+    231,
+    263,
     334
    ],
-   "donorDx": 28,
-   "method": "poisson"
+   "donorDx": 100,
+   "method": "basalt-neighbour"
   },
   {
-   "plate": "plate-side",
-   "pass_": 0,
-   "footprintPx": 2130,
-   "bbox": [
-    166,
-    337,
-    215,
-    388
-   ],
-   "donorDx": 52,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 0,
-   "footprintPx": 256,
+   "plate": "plate-front",
+   "pass_": 1,
+   "footprintPx": 983,
    "bbox": [
     306,
-    338,
-    317,
+    231,
+    345,
+    258
+   ],
+   "donorDx": -44,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 1,
+   "footprintPx": 48,
+   "bbox": [
+    637,
+    323,
+    639,
+    333
+   ],
+   "donorDx": -26,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 1,
+   "footprintPx": 35,
+   "bbox": [
+    639,
+    323,
+    642,
+    333
+   ],
+   "donorDx": -30,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 2525,
+   "bbox": [
+    167,
+    340,
+    214,
+    409
+   ],
+   "donorDx": -60,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 235,
+   "bbox": [
+    309,
+    330,
+    314,
+    364
+   ],
+   "donorDx": -16,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 1522,
+   "bbox": [
+    411,
+    315,
+    449,
+    355
+   ],
+   "donorDx": -92,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 214,
+   "bbox": [
+    461,
+    339,
+    467,
     365
    ],
-   "donorDx": -80,
-   "method": "poisson"
+   "donorDx": 16,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-side",
-   "pass_": 0,
-   "footprintPx": 291,
+   "pass_": 1,
+   "footprintPx": 192,
    "bbox": [
-    322,
-    344,
-    331,
-    379
+    468,
+    353,
+    476,
+    371
    ],
-   "donorDx": 80,
-   "method": "poisson"
+   "donorDx": 66,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-side",
-   "pass_": 0,
-   "footprintPx": 2038,
+   "pass_": 1,
+   "footprintPx": 2125,
    "bbox": [
-    378,
-    320,
-    407,
-    403
+    481,
+    330,
+    550,
+    364
    ],
-   "donorDx": -48,
-   "method": "poisson"
+   "donorDx": 74,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-side",
-   "pass_": 0,
-   "footprintPx": 2650,
+   "pass_": 1,
+   "footprintPx": 30,
    "bbox": [
-    408,
-    312,
-    452,
-    396
+    550,
+    353,
+    552,
+    365
    ],
-   "donorDx": -80,
-   "method": "poisson"
+   "donorDx": 38,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-side",
-   "pass_": 0,
-   "footprintPx": 336,
-   "bbox": [
-    458,
-    345,
-    469,
-    382
-   ],
-   "donorDx": 48,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 0,
-   "footprintPx": 522,
-   "bbox": [
-    465,
-    354,
-    479,
-    407
-   ],
-   "donorDx": 40,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 0,
-   "footprintPx": 289,
-   "bbox": [
-    480,
-    355,
-    490,
-    387
-   ],
-   "donorDx": 28,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 0,
-   "footprintPx": 4591,
-   "bbox": [
-    484,
-    326,
-    553,
-    419
-   ],
-   "donorDx": -80,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 0,
-   "footprintPx": 491,
+   "pass_": 1,
+   "footprintPx": 300,
    "bbox": [
     555,
     352,
-    570,
-    389
+    567,
+    375
    ],
-   "donorDx": -48,
-   "method": "poisson"
+   "donorDx": 50,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 1,
+   "footprintPx": 5134,
+   "bbox": [
+    171,
+    633,
+    223,
+    740
+   ],
+   "donorDx": -70,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 1,
+   "footprintPx": 39,
+   "bbox": [
+    248,
+    683,
+    250,
+    696
+   ],
+   "donorDx": -62,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 1,
+   "footprintPx": 65,
+   "bbox": [
+    250,
+    621,
+    252,
+    632
+   ],
+   "donorDx": -86,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 1,
+   "footprintPx": 57,
+   "bbox": [
+    730,
+    686,
+    732,
+    698
+   ],
+   "donorDx": -56,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 1,
+   "footprintPx": 47,
+   "bbox": [
+    736,
+    689,
+    738,
+    701
+   ],
+   "donorDx": -62,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 1,
+   "footprintPx": 332,
+   "bbox": [
+    744,
+    684,
+    761,
+    702
+   ],
+   "donorDx": -84,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 1,
+   "footprintPx": 121,
+   "bbox": [
+    771,
+    676,
+    776,
+    692
+   ],
+   "donorDx": -12,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 1,
+   "footprintPx": 293,
+   "bbox": [
+    800,
+    685,
+    822,
+    703
+   ],
+   "donorDx": -62,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 1,
+   "footprintPx": 725,
+   "bbox": [
+    835,
+    685,
+    863,
+    714
+   ],
+   "donorDx": 94,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 1,
+   "footprintPx": 1546,
+   "bbox": [
+    865,
+    686,
+    897,
+    740
+   ],
+   "donorDx": 76,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "t1-right",
    "pass_": 1,
-   "footprintPx": 187,
+   "footprintPx": 950,
    "bbox": [
-    288,
-    418,
-    297,
-    437
+    18,
+    346,
+    25,
+    468
    ],
-   "donorDx": 52,
-   "method": "poisson"
+   "donorDx": 22,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 1,
+   "footprintPx": 808,
+   "bbox": [
+    26,
+    348,
+    40,
+    405
+   ],
+   "donorDx": 90,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 1,
+   "footprintPx": 164,
+   "bbox": [
+    48,
+    349,
+    52,
+    372
+   ],
+   "donorDx": 70,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 1,
+   "footprintPx": 299,
+   "bbox": [
+    60,
+    356,
+    68,
+    390
+   ],
+   "donorDx": -20,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 1,
+   "footprintPx": 88,
+   "bbox": [
+    84,
+    356,
+    86,
+    375
+   ],
+   "donorDx": -54,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 1,
+   "footprintPx": 84,
+   "bbox": [
+    92,
+    353,
+    94,
+    370
+   ],
+   "donorDx": 24,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 1,
+   "footprintPx": 98,
+   "bbox": [
+    101,
+    352,
+    103,
+    373
+   ],
+   "donorDx": 42,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 1,
+   "footprintPx": 262,
+   "bbox": [
+    106,
+    352,
+    111,
+    386
+   ],
+   "donorDx": -48,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 1,
+   "footprintPx": 174,
+   "bbox": [
+    112,
+    353,
+    117,
+    378
+   ],
+   "donorDx": -52,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 1,
+   "footprintPx": 141,
+   "bbox": [
+    123,
+    351,
+    127,
+    371
+   ],
+   "donorDx": 32,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 1,
+   "footprintPx": 74,
+   "bbox": [
+    143,
+    360,
+    145,
+    377
+   ],
+   "donorDx": -98,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 1,
+   "footprintPx": 82,
+   "bbox": [
+    155,
+    366,
+    157,
+    385
+   ],
+   "donorDx": -32,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 1,
+   "footprintPx": 200,
+   "bbox": [
+    178,
+    353,
+    184,
+    374
+   ],
+   "donorDx": -28,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 1,
+   "footprintPx": 105,
+   "bbox": [
+    184,
+    356,
+    186,
+    375
+   ],
+   "donorDx": -36,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 1,
+   "footprintPx": 109,
+   "bbox": [
+    189,
+    415,
+    192,
+    435
+   ],
+   "donorDx": 50,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 1,
+   "footprintPx": 349,
+   "bbox": [
+    194,
+    400,
+    206,
+    425
+   ],
+   "donorDx": -38,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 1,
+   "footprintPx": 259,
+   "bbox": [
+    207,
+    398,
+    214,
+    431
+   ],
+   "donorDx": 18,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 1,
+   "footprintPx": 84,
+   "bbox": [
+    219,
+    401,
+    221,
+    418
+   ],
+   "donorDx": -10,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 1,
+   "footprintPx": 85,
+   "bbox": [
+    671,
+    398,
+    673,
+    415
+   ],
+   "donorDx": -20,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 1,
+   "footprintPx": 73,
+   "bbox": [
+    982,
+    359,
+    984,
+    376
+   ],
+   "donorDx": 16,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 1,
+   "footprintPx": 119,
+   "bbox": [
+    992,
+    361,
+    995,
+    380
+   ],
+   "donorDx": -16,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 1,
+   "footprintPx": 61,
+   "bbox": [
+    995,
+    357,
+    997,
+    377
+   ],
+   "donorDx": -18,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-side",
    "pass_": 1,
-   "footprintPx": 351,
+   "footprintPx": 58,
    "bbox": [
-    139,
+    142,
+    744,
+    146,
+    784
+   ],
+   "donorDx": 16,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 44,
+   "bbox": [
+    151,
+    699,
+    153,
+    710
+   ],
+   "donorDx": -78,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 86,
+   "bbox": [
+    155,
+    740,
+    160,
+    752
+   ],
+   "donorDx": -84,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 789,
+   "bbox": [
+    163,
+    674,
+    198,
+    693
+   ],
+   "donorDx": -40,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 95,
+   "bbox": [
+    270,
+    701,
+    274,
+    718
+   ],
+   "donorDx": -22,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 148,
+   "bbox": [
+    334,
+    691,
+    340,
+    707
+   ],
+   "donorDx": -42,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 373,
+   "bbox": [
+    340,
+    679,
+    359,
+    694
+   ],
+   "donorDx": -82,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 214,
+   "bbox": [
+    360,
+    700,
+    368,
+    719
+   ],
+   "donorDx": 76,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 60,
+   "bbox": [
+    407,
+    675,
+    409,
+    685
+   ],
+   "donorDx": 48,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 228,
+   "bbox": [
+    411,
+    708,
+    428,
+    726
+   ],
+   "donorDx": -52,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 226,
+   "bbox": [
+    429,
+    699,
+    437,
+    720
+   ],
+   "donorDx": 92,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 44,
+   "bbox": [
+    437,
+    703,
+    439,
+    713
+   ],
+   "donorDx": -98,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 71,
+   "bbox": [
+    444,
+    706,
+    447,
+    717
+   ],
+   "donorDx": -18,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 47,
+   "bbox": [
+    449,
+    709,
+    451,
+    719
+   ],
+   "donorDx": -8,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 195,
+   "bbox": [
+    454,
+    699,
+    464,
+    718
+   ],
+   "donorDx": 76,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 50,
+   "bbox": [
+    502,
+    699,
+    504,
+    709
+   ],
+   "donorDx": -44,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 120,
+   "bbox": [
+    504,
+    694,
+    508,
+    712
+   ],
+   "donorDx": -14,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 75,
+   "bbox": [
+    570,
+    695,
+    572,
+    708
+   ],
+   "donorDx": 82,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 77,
+   "bbox": [
+    700,
+    702,
+    704,
+    716
+   ],
+   "donorDx": 38,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 111,
+   "bbox": [
+    704,
+    710,
+    710,
+    731
+   ],
+   "donorDx": 74,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 69,
+   "bbox": [
+    723,
+    721,
+    725,
+    737
+   ],
+   "donorDx": 24,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 60,
+   "bbox": [
+    726,
+    708,
+    728,
+    719
+   ],
+   "donorDx": 84,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 46,
+   "bbox": [
+    735,
+    737,
+    737,
+    749
+   ],
+   "donorDx": 18,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 55,
+   "bbox": [
+    746,
+    699,
     748,
-    149,
-    787
+    709
    ],
-   "donorDx": 80,
-   "method": "poisson"
+   "donorDx": -18,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-side",
    "pass_": 1,
-   "footprintPx": 127,
+   "footprintPx": 275,
    "bbox": [
-    620,
-    689,
-    629,
-    703
+    749,
+    699,
+    760,
+    721
    ],
-   "donorDx": 60,
-   "method": "poisson"
+   "donorDx": 72,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 53,
+   "bbox": [
+    765,
+    711,
+    768,
+    723
+   ],
+   "donorDx": 10,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 220,
+   "bbox": [
+    774,
+    704,
+    786,
+    726
+   ],
+   "donorDx": -46,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 1,
+   "footprintPx": 2003,
+   "bbox": [
+    195,
+    443,
+    259,
+    512
+   ],
+   "donorDx": 88,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 1,
+   "footprintPx": 348,
+   "bbox": [
+    274,
+    445,
+    293,
+    463
+   ],
+   "donorDx": -28,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 1,
+   "footprintPx": 422,
+   "bbox": [
+    295,
+    444,
+    317,
+    467
+   ],
+   "donorDx": -98,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 1,
+   "footprintPx": 866,
+   "bbox": [
+    319,
+    445,
+    353,
+    491
+   ],
+   "donorDx": -60,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-front",
    "pass_": 1,
    "footprintPx": 176,
    "bbox": [
-    589,
-    479,
-    599,
-    495
-   ],
-   "donorDx": -52,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-front",
-   "pass_": 1,
-   "footprintPx": 249,
-   "bbox": [
-    595,
-    478,
-    608,
-    496
-   ],
-   "donorDx": -68,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-front",
-   "pass_": 1,
-   "footprintPx": 126,
-   "bbox": [
-    602,
-    483,
-    610,
-    496
-   ],
-   "donorDx": -64,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 1,
-   "footprintPx": 166,
-   "bbox": [
-    162,
-    520,
-    169,
-    545
-   ],
-   "donorDx": 52,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-front",
-   "pass_": 1,
-   "footprintPx": 2258,
-   "bbox": [
-    229,
-    228,
-    269,
-    297
-   ],
-   "donorDx": 44,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-front",
-   "pass_": 1,
-   "footprintPx": 2425,
-   "bbox": [
-    303,
-    228,
-    346,
-    292
-   ],
-   "donorDx": 80,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-front",
-   "pass_": 1,
-   "footprintPx": 120,
-   "bbox": [
-    634,
-    322,
-    642,
-    336
-   ],
-   "donorDx": 28,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-front",
-   "pass_": 1,
-   "footprintPx": 104,
-   "bbox": [
-    636,
-    322,
-    644,
-    333
-   ],
-   "donorDx": 28,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 1,
-   "footprintPx": 3109,
-   "bbox": [
-    166,
-    337,
-    216,
-    415
-   ],
-   "donorDx": 56,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 1,
-   "footprintPx": 167,
-   "bbox": [
-    308,
-    344,
-    316,
-    364
-   ],
-   "donorDx": -80,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 1,
-   "footprintPx": 927,
-   "bbox": [
-    415,
-    354,
-    442,
-    402
-   ],
-   "donorDx": 76,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 1,
-   "footprintPx": 250,
-   "bbox": [
-    460,
     353,
-    470,
-    382
+    505,
+    359,
+    525
    ],
-   "donorDx": 48,
-   "method": "poisson"
+   "donorDx": 36,
+   "method": "basalt-neighbour"
   },
   {
-   "plate": "plate-side",
+   "plate": "plate-front",
    "pass_": 1,
-   "footprintPx": 430,
+   "footprintPx": 122,
+   "bbox": [
+    453,
+    444,
+    459,
+    459
+   ],
+   "donorDx": -100,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 1,
+   "footprintPx": 121,
    "bbox": [
     467,
-    358,
-    478,
-    403
+    445,
+    472,
+    464
    ],
-   "donorDx": 40,
-   "method": "poisson"
+   "donorDx": -16,
+   "method": "basalt-neighbour"
   },
   {
-   "plate": "plate-side",
+   "plate": "plate-front",
    "pass_": 1,
-   "footprintPx": 299,
+   "footprintPx": 176,
    "bbox": [
-    480,
-    353,
+    473,
+    444,
+    479,
+    471
+   ],
+   "donorDx": 82,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 1,
+   "footprintPx": 152,
+   "bbox": [
+    483,
+    444,
     490,
-    384
+    466
    ],
-   "donorDx": 28,
-   "method": "poisson"
+   "donorDx": 44,
+   "method": "basalt-neighbour"
   },
   {
-   "plate": "plate-side",
+   "plate": "plate-front",
    "pass_": 1,
-   "footprintPx": 1213,
+   "footprintPx": 165,
    "bbox": [
-    485,
-    312,
-    513,
-    366
+    493,
+    444,
+    501,
+    461
    ],
-   "donorDx": 80,
-   "method": "poisson"
+   "donorDx": -84,
+   "method": "basalt-neighbour"
   },
   {
-   "plate": "plate-side",
-   "pass_": 1,
-   "footprintPx": 1808,
-   "bbox": [
-    514,
-    360,
-    550,
-    422
-   ],
-   "donorDx": -44,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-side",
+   "plate": "plate-front",
    "pass_": 1,
    "footprintPx": 257,
    "bbox": [
-    544,
-    347,
-    553,
-    374
+    504,
+    445,
+    514,
+    466
    ],
-   "donorDx": -36,
-   "method": "poisson"
+   "donorDx": -56,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 1,
+   "footprintPx": 65,
+   "bbox": [
+    515,
+    446,
+    519,
+    456
+   ],
+   "donorDx": -14,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 1,
+   "footprintPx": 113,
+   "bbox": [
+    534,
+    445,
+    538,
+    464
+   ],
+   "donorDx": -14,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 1,
+   "footprintPx": 177,
+   "bbox": [
+    592,
+    480,
+    612,
+    496
+   ],
+   "donorDx": 50,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 1,
+   "footprintPx": 120,
+   "bbox": [
+    665,
+    447,
+    668,
+    476
+   ],
+   "donorDx": -48,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 1,
+   "footprintPx": 144,
+   "bbox": [
+    684,
+    445,
+    690,
+    465
+   ],
+   "donorDx": -92,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 1,
+   "footprintPx": 368,
+   "bbox": [
+    692,
+    445,
+    709,
+    467
+   ],
+   "donorDx": 42,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 1,
+   "footprintPx": 70,
+   "bbox": [
+    709,
+    445,
+    712,
+    457
+   ],
+   "donorDx": -84,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 84,
+   "bbox": [
+    163,
+    523,
+    166,
+    557
+   ],
+   "donorDx": -68,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 790,
+   "bbox": [
+    252,
+    503,
+    285,
+    525
+   ],
+   "donorDx": 48,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 376,
+   "bbox": [
+    342,
+    513,
+    355,
+    537
+   ],
+   "donorDx": -78,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 303,
+   "bbox": [
+    355,
+    512,
+    365,
+    538
+   ],
+   "donorDx": -16,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 252,
+   "bbox": [
+    367,
+    513,
+    374,
+    543
+   ],
+   "donorDx": -14,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 892,
+   "bbox": [
+    376,
+    512,
+    406,
+    541
+   ],
+   "donorDx": -58,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 485,
+   "bbox": [
+    415,
+    506,
+    429,
+    536
+   ],
+   "donorDx": 90,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 202,
+   "bbox": [
+    429,
+    521,
+    438,
+    542
+   ],
+   "donorDx": -44,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 193,
+   "bbox": [
+    438,
+    519,
+    446,
+    538
+   ],
+   "donorDx": 56,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-side",
    "pass_": 1,
    "footprintPx": 102,
    "bbox": [
-    547,
-    349,
-    554,
-    363
+    447,
+    518,
+    451,
+    538
    ],
-   "donorDx": -36,
-   "method": "poisson"
+   "donorDx": 62,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-side",
    "pass_": 1,
-   "footprintPx": 250,
+   "footprintPx": 82,
    "bbox": [
-    554,
-    344,
-    566,
+    479,
+    491,
+    483,
+    501
+   ],
+   "donorDx": -20,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 122,
+   "bbox": [
+    532,
+    501,
+    537,
+    515
+   ],
+   "donorDx": -12,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 136,
+   "bbox": [
+    537,
+    500,
+    541,
+    518
+   ],
+   "donorDx": 12,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 1,
+   "footprintPx": 287,
+   "bbox": [
+    269,
+    232,
+    281,
+    258
+   ],
+   "donorDx": 34,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 1,
+   "footprintPx": 62,
+   "bbox": [
+    453,
+    242,
+    455,
+    257
+   ],
+   "donorDx": -86,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 481,
+   "bbox": [
+    167,
+    340,
+    214,
+    425
+   ],
+   "donorDx": -62,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 707,
+   "bbox": [
+    267,
+    330,
+    296,
+    352
+   ],
+   "donorDx": 94,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 91,
+   "bbox": [
+    302,
+    334,
+    304,
+    351
+   ],
+   "donorDx": -16,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 132,
+   "bbox": [
+    324,
+    349,
+    328,
+    373
+   ],
+   "donorDx": -20,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 79,
+   "bbox": [
+    329,
+    330,
+    332,
+    342
+   ],
+   "donorDx": -18,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 957,
+   "bbox": [
+    381,
+    318,
+    405,
+    356
+   ],
+   "donorDx": 42,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 78,
+   "bbox": [
+    407,
+    315,
+    410,
+    326
+   ],
+   "donorDx": 16,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 1485,
+   "bbox": [
+    411,
+    315,
+    449,
+    354
+   ],
+   "donorDx": -92,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 65,
+   "bbox": [
+    457,
+    352,
+    459,
+    367
+   ],
+   "donorDx": -26,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 127,
+   "bbox": [
+    468,
+    351,
+    476,
+    371
+   ],
+   "donorDx": -84,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 205,
+   "bbox": [
+    555,
+    342,
+    568,
+    379
+   ],
+   "donorDx": 52,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 57,
+   "bbox": [
+    155,
+    740,
+    157,
+    750
+   ],
+   "donorDx": -80,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 59,
+   "bbox": [
+    157,
+    740,
+    159,
+    750
+   ],
+   "donorDx": -82,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 43,
+   "bbox": [
+    335,
+    692,
+    338,
+    705
+   ],
+   "donorDx": -34,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 1,
+   "footprintPx": 840,
+   "bbox": [
+    232,
+    230,
+    263,
+    334
+   ],
+   "donorDx": 62,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 1,
+   "footprintPx": 695,
+   "bbox": [
+    306,
+    231,
+    345,
+    298
+   ],
+   "donorDx": 64,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 92,
+   "bbox": [
+    309,
+    341,
+    314,
     364
    ],
-   "donorDx": -44,
-   "method": "poisson"
+   "donorDx": 70,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-side",
    "pass_": 1,
-   "footprintPx": 142,
+   "footprintPx": 69,
    "bbox": [
-    562,
-    379,
-    570,
-    400
+    324,
+    347,
+    328,
+    376
+   ],
+   "donorDx": 46,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 1016,
+   "bbox": [
+    381,
+    323,
+    404,
+    401
+   ],
+   "donorDx": 34,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 1693,
+   "bbox": [
+    411,
+    315,
+    449,
+    393
+   ],
+   "donorDx": -50,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 112,
+   "bbox": [
+    461,
+    348,
+    466,
+    383
+   ],
+   "donorDx": 58,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 33,
+   "bbox": [
+    468,
+    357,
+    476,
+    404
+   ],
+   "donorDx": 68,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 103,
+   "bbox": [
+    482,
+    358,
+    487,
+    387
+   ],
+   "donorDx": 56,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 1640,
+   "bbox": [
+    487,
+    329,
+    550,
+    416
+   ],
+   "donorDx": -72,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 1,
+   "footprintPx": 45,
+   "bbox": [
+    555,
+    355,
+    567,
+    386
+   ],
+   "donorDx": 42,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 2,
+   "footprintPx": 282,
+   "bbox": [
+    840,
+    718,
+    852,
+    740
+   ],
+   "donorDx": -92,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 65,
+   "bbox": [
+    153,
+    680,
+    155,
+    691
+   ],
+   "donorDx": -22,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 88,
+   "bbox": [
+    861,
+    709,
+    865,
+    724
+   ],
+   "donorDx": -38,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 145,
+   "bbox": [
+    865,
+    750,
+    869,
+    777
+   ],
+   "donorDx": 40,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 568,
+   "bbox": [
+    869,
+    744,
+    881,
+    784
+   ],
+   "donorDx": 20,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 60,
+   "bbox": [
+    881,
+    682,
+    883,
+    692
+   ],
+   "donorDx": 56,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 2,
+   "footprintPx": 133,
+   "bbox": [
+    305,
+    444,
+    312,
+    461
+   ],
+   "donorDx": -16,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 57,
+   "bbox": [
+    163,
+    560,
+    166,
+    574
+   ],
+   "donorDx": -18,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 2,
+   "footprintPx": 55,
+   "bbox": [
+    251,
+    231,
+    253,
+    242
+   ],
+   "donorDx": 16,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 2,
+   "footprintPx": 95,
+   "bbox": [
+    279,
+    231,
+    283,
+    248
+   ],
+   "donorDx": -46,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 133,
+   "bbox": [
+    179,
+    326,
+    185,
+    341
+   ],
+   "donorDx": -14,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 44,
+   "bbox": [
+    185,
+    324,
+    187,
+    334
+   ],
+   "donorDx": -26,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 212,
+   "bbox": [
+    187,
+    315,
+    196,
+    332
+   ],
+   "donorDx": -38,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 55,
+   "bbox": [
+    200,
+    315,
+    202,
+    325
+   ],
+   "donorDx": -38,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 263,
+   "bbox": [
+    203,
+    315,
+    212,
+    336
+   ],
+   "donorDx": -36,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 62,
+   "bbox": [
+    304,
+    339,
+    306,
+    354
    ],
    "donorDx": -52,
-   "method": "poisson"
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 96,
+   "bbox": [
+    481,
+    340,
+    485,
+    353
+   ],
+   "donorDx": 10,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 383,
+   "bbox": [
+    488,
+    315,
+    508,
+    330
+   ],
+   "donorDx": 84,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 43,
+   "bbox": [
+    532,
+    416,
+    534,
+    427
+   ],
+   "donorDx": 80,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 69,
+   "bbox": [
+    565,
+    388,
+    567,
+    404
+   ],
+   "donorDx": 12,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 2,
+   "footprintPx": 1596,
+   "bbox": [
+    200,
+    631,
+    252,
+    686
+   ],
+   "donorDx": -78,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 2,
+   "footprintPx": 78,
+   "bbox": [
+    749,
+    621,
+    752,
+    632
+   ],
+   "donorDx": -70,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 2,
+   "footprintPx": 60,
+   "bbox": [
+    756,
+    621,
+    758,
+    631
+   ],
+   "donorDx": 58,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 2,
+   "footprintPx": 30,
+   "bbox": [
+    800,
+    707,
+    802,
+    717
+   ],
+   "donorDx": 82,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 2,
+   "footprintPx": 39,
+   "bbox": [
+    840,
+    716,
+    852,
+    740
+   ],
+   "donorDx": -92,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 2,
+   "footprintPx": 59,
+   "bbox": [
+    855,
+    723,
+    857,
+    740
+   ],
+   "donorDx": 92,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "t1-right",
-   "pass_": 2,
-   "footprintPx": 187,
-   "bbox": [
-    288,
-    418,
-    297,
-    437
-   ],
-   "donorDx": 52,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 2,
-   "footprintPx": 348,
-   "bbox": [
-    139,
-    748,
-    149,
-    787
-   ],
-   "donorDx": 80,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 2,
-   "footprintPx": 117,
-   "bbox": [
-    620,
-    689,
-    628,
-    703
-   ],
-   "donorDx": 60,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-front",
-   "pass_": 2,
-   "footprintPx": 172,
-   "bbox": [
-    589,
-    481,
-    600,
-    495
-   ],
-   "donorDx": -48,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-front",
-   "pass_": 2,
-   "footprintPx": 279,
-   "bbox": [
-    594,
-    478,
-    609,
-    496
-   ],
-   "donorDx": -68,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 2,
-   "footprintPx": 107,
-   "bbox": [
-    162,
-    559,
-    169,
-    576
-   ],
-   "donorDx": 40,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-front",
-   "pass_": 2,
-   "footprintPx": 1607,
-   "bbox": [
-    229,
-    228,
-    264,
-    281
-   ],
-   "donorDx": 44,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-front",
-   "pass_": 2,
-   "footprintPx": 1882,
-   "bbox": [
-    303,
-    244,
-    346,
-    296
-   ],
-   "donorDx": 80,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 2,
-   "footprintPx": 4244,
-   "bbox": [
-    166,
-    323,
-    215,
-    434
-   ],
-   "donorDx": 52,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 2,
-   "footprintPx": 127,
-   "bbox": [
-    308,
-    327,
-    315,
-    343
-   ],
-   "donorDx": -80,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 2,
-   "footprintPx": 1069,
-   "bbox": [
-    415,
-    312,
-    451,
-    355
-   ],
-   "donorDx": -68,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 2,
-   "footprintPx": 250,
-   "bbox": [
-    460,
-    353,
-    470,
-    382
-   ],
-   "donorDx": 48,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 2,
-   "footprintPx": 406,
-   "bbox": [
-    467,
-    360,
-    478,
-    403
-   ],
-   "donorDx": 40,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 2,
-   "footprintPx": 133,
-   "bbox": [
-    480,
-    360,
-    488,
-    376
-   ],
-   "donorDx": 28,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 2,
-   "footprintPx": 3469,
-   "bbox": [
-    485,
-    338,
-    550,
-    419
-   ],
-   "donorDx": -80,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 2,
-   "footprintPx": 133,
-   "bbox": [
-    544,
-    369,
-    551,
-    387
-   ],
-   "donorDx": -36,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 2,
-   "footprintPx": 50,
-   "bbox": [
-    554,
-    340,
-    558,
-    349
-   ],
-   "donorDx": 28,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 2,
-   "footprintPx": 83,
-   "bbox": [
-    556,
-    360,
-    561,
-    374
-   ],
-   "donorDx": -44,
-   "method": "poisson"
-  },
-  {
-   "plate": "plate-side",
    "pass_": 2,
    "footprintPx": 139,
    "bbox": [
-    562,
-    379,
-    570,
-    400
+    23,
+    349,
+    27,
+    369
    ],
-   "donorDx": -52,
-   "method": "poisson"
+   "donorDx": 40,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 2,
+   "footprintPx": 242,
+   "bbox": [
+    32,
+    431,
+    38,
+    463
+   ],
+   "donorDx": 14,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 2,
+   "footprintPx": 84,
+   "bbox": [
+    38,
+    357,
+    40,
+    374
+   ],
+   "donorDx": 54,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 2,
+   "footprintPx": 154,
+   "bbox": [
+    48,
+    349,
+    51,
+    374
+   ],
+   "donorDx": 68,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 2,
+   "footprintPx": 120,
+   "bbox": [
+    52,
+    350,
+    54,
+    372
+   ],
+   "donorDx": -32,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 2,
+   "footprintPx": 109,
+   "bbox": [
+    90,
+    352,
+    93,
+    370
+   ],
+   "donorDx": 64,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 2,
+   "footprintPx": 100,
+   "bbox": [
+    94,
+    351,
+    96,
+    370
+   ],
+   "donorDx": 32,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 2,
+   "footprintPx": 74,
+   "bbox": [
+    101,
+    360,
+    103,
+    377
+   ],
+   "donorDx": -36,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 2,
+   "footprintPx": 130,
+   "bbox": [
+    111,
+    357,
+    113,
+    381
+   ],
+   "donorDx": 66,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 2,
+   "footprintPx": 113,
+   "bbox": [
+    123,
+    355,
+    126,
+    374
+   ],
+   "donorDx": 74,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 2,
+   "footprintPx": 90,
+   "bbox": [
+    155,
+    355,
+    157,
+    374
+   ],
+   "donorDx": 54,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 2,
+   "footprintPx": 154,
+   "bbox": [
+    179,
+    412,
+    184,
+    432
+   ],
+   "donorDx": -24,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 133,
+   "bbox": [
+    152,
+    677,
+    159,
+    693
+   ],
+   "donorDx": -26,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 180,
+   "bbox": [
+    192,
+    677,
+    199,
+    693
+   ],
+   "donorDx": 36,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 60,
+   "bbox": [
+    200,
+    676,
+    202,
+    686
+   ],
+   "donorDx": -22,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 60,
+   "bbox": [
+    205,
+    675,
+    207,
+    685
+   ],
+   "donorDx": -26,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 46,
+   "bbox": [
+    338,
+    709,
+    340,
+    719
+   ],
+   "donorDx": -10,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 91,
+   "bbox": [
+    343,
+    698,
+    347,
+    710
+   ],
+   "donorDx": -12,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 187,
+   "bbox": [
+    348,
+    697,
+    357,
+    711
+   ],
+   "donorDx": 58,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 98,
+   "bbox": [
+    361,
+    680,
+    365,
+    692
+   ],
+   "donorDx": 10,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 110,
+   "bbox": [
+    411,
+    696,
+    416,
+    708
+   ],
+   "donorDx": 26,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 64,
+   "bbox": [
+    418,
+    697,
+    420,
+    708
+   ],
+   "donorDx": 34,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 56,
+   "bbox": [
+    433,
+    730,
+    437,
+    745
+   ],
+   "donorDx": -12,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 75,
+   "bbox": [
+    619,
+    693,
+    621,
+    706
+   ],
+   "donorDx": 42,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 70,
+   "bbox": [
+    707,
+    709,
+    710,
+    722
+   ],
+   "donorDx": 66,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 73,
+   "bbox": [
+    724,
+    708,
+    726,
+    722
+   ],
+   "donorDx": 28,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 95,
+   "bbox": [
+    727,
+    700,
+    730,
+    717
+   ],
+   "donorDx": -16,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 64,
+   "bbox": [
+    745,
+    700,
+    747,
+    712
+   ],
+   "donorDx": 12,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 72,
+   "bbox": [
+    748,
+    702,
+    751,
+    716
+   ],
+   "donorDx": 36,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 60,
+   "bbox": [
+    754,
+    698,
+    756,
+    708
+   ],
+   "donorDx": -50,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 92,
+   "bbox": [
+    759,
+    697,
+    762,
+    711
+   ],
+   "donorDx": 24,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 105,
+   "bbox": [
+    773,
+    699,
+    776,
+    717
+   ],
+   "donorDx": -68,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 891,
+   "bbox": [
+    865,
+    740,
+    883,
+    784
+   ],
+   "donorDx": 32,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 2,
+   "footprintPx": 325,
+   "bbox": [
+    273,
+    444,
+    289,
+    465
+   ],
+   "donorDx": 28,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 2,
+   "footprintPx": 94,
+   "bbox": [
+    294,
+    444,
+    299,
+    457
+   ],
+   "donorDx": 36,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 2,
+   "footprintPx": 112,
+   "bbox": [
+    299,
+    444,
+    303,
+    461
+   ],
+   "donorDx": 18,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 2,
+   "footprintPx": 73,
+   "bbox": [
+    314,
+    444,
+    318,
+    455
+   ],
+   "donorDx": 68,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 2,
+   "footprintPx": 52,
+   "bbox": [
+    319,
+    444,
+    321,
+    454
+   ],
+   "donorDx": 36,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 2,
+   "footprintPx": 160,
+   "bbox": [
+    333,
+    497,
+    350,
+    523
+   ],
+   "donorDx": 82,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 2,
+   "footprintPx": 52,
+   "bbox": [
+    351,
+    492,
+    353,
+    502
+   ],
+   "donorDx": 72,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 2,
+   "footprintPx": 65,
+   "bbox": [
+    475,
+    408,
+    477,
+    419
+   ],
+   "donorDx": 28,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 2,
+   "footprintPx": 39,
+   "bbox": [
+    496,
+    461,
+    498,
+    471
+   ],
+   "donorDx": -12,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 2,
+   "footprintPx": 38,
+   "bbox": [
+    499,
+    462,
+    501,
+    473
+   ],
+   "donorDx": 80,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 2,
+   "footprintPx": 90,
+   "bbox": [
+    507,
+    408,
+    510,
+    421
+   ],
+   "donorDx": 22,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 2,
+   "footprintPx": 263,
+   "bbox": [
+    691,
+    444,
+    708,
+    459
+   ],
+   "donorDx": -68,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 24,
+   "bbox": [
+    163,
+    560,
+    166,
+    581
+   ],
+   "donorDx": -64,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 36,
+   "bbox": [
+    258,
+    525,
+    260,
+    538
+   ],
+   "donorDx": 24,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 106,
+   "bbox": [
+    266,
+    526,
+    269,
+    546
+   ],
+   "donorDx": 36,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 62,
+   "bbox": [
+    272,
+    526,
+    275,
+    538
+   ],
+   "donorDx": -70,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 57,
+   "bbox": [
+    278,
+    542,
+    282,
+    560
+   ],
+   "donorDx": 20,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 60,
+   "bbox": [
+    282,
+    492,
+    284,
+    502
+   ],
+   "donorDx": 32,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 39,
+   "bbox": [
+    337,
+    510,
+    339,
+    520
+   ],
+   "donorDx": -36,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 62,
+   "bbox": [
+    345,
+    526,
+    347,
+    540
+   ],
+   "donorDx": 44,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 58,
+   "bbox": [
+    348,
+    543,
+    350,
+    561
+   ],
+   "donorDx": -50,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 55,
+   "bbox": [
+    350,
+    526,
+    352,
+    538
+   ],
+   "donorDx": -88,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 55,
+   "bbox": [
+    361,
+    526,
+    363,
+    539
+   ],
+   "donorDx": -96,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 51,
+   "bbox": [
+    367,
+    553,
+    369,
+    567
+   ],
+   "donorDx": -64,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 280,
+   "bbox": [
+    376,
+    491,
+    393,
+    503
+   ],
+   "donorDx": 88,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 44,
+   "bbox": [
+    395,
+    510,
+    397,
+    520
+   ],
+   "donorDx": -40,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 64,
+   "bbox": [
+    403,
+    526,
+    405,
+    540
+   ],
+   "donorDx": 28,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 79,
+   "bbox": [
+    436,
+    505,
+    438,
+    519
+   ],
+   "donorDx": 74,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 60,
+   "bbox": [
+    583,
+    507,
+    585,
+    517
+   ],
+   "donorDx": -12,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 2,
+   "footprintPx": 57,
+   "bbox": [
+    251,
+    231,
+    254,
+    242
+   ],
+   "donorDx": 58,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 96,
+   "bbox": [
+    258,
+    339,
+    263,
+    349
+   ],
+   "donorDx": 36,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 644,
+   "bbox": [
+    267,
+    315,
+    295,
+    338
+   ],
+   "donorDx": -50,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 51,
+   "bbox": [
+    295,
+    328,
+    297,
+    338
+   ],
+   "donorDx": -24,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 46,
+   "bbox": [
+    310,
+    387,
+    312,
+    397
+   ],
+   "donorDx": 76,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 45,
+   "bbox": [
+    402,
+    356,
+    404,
+    368
+   ],
+   "donorDx": 64,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 2,
+   "footprintPx": 52,
+   "bbox": [
+    519,
+    421,
+    521,
+    431
+   ],
+   "donorDx": 56,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 3,
+   "footprintPx": 976,
+   "bbox": [
+    863,
+    738,
+    883,
+    784
+   ],
+   "donorDx": 34,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 3,
+   "footprintPx": 30,
+   "bbox": [
+    164,
+    587,
+    166,
+    597
+   ],
+   "donorDx": -20,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 3,
+   "footprintPx": 164,
+   "bbox": [
+    214,
+    318,
+    221,
+    333
+   ],
+   "donorDx": -16,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 3,
+   "footprintPx": 60,
+   "bbox": [
+    308,
+    325,
+    310,
+    336
+   ],
+   "donorDx": 44,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 3,
+   "footprintPx": 70,
+   "bbox": [
+    310,
+    323,
+    312,
+    337
+   ],
+   "donorDx": 42,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 3,
+   "footprintPx": 108,
+   "bbox": [
+    348,
+    316,
+    354,
+    326
+   ],
+   "donorDx": -72,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 3,
+   "footprintPx": 131,
+   "bbox": [
+    375,
+    317,
+    381,
+    330
+   ],
+   "donorDx": -26,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 3,
+   "footprintPx": 133,
+   "bbox": [
+    425,
+    316,
+    431,
+    329
+   ],
+   "donorDx": -78,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 3,
+   "footprintPx": 60,
+   "bbox": [
+    444,
+    327,
+    446,
+    337
+   ],
+   "donorDx": 74,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 3,
+   "footprintPx": 182,
+   "bbox": [
+    450,
+    315,
+    461,
+    326
+   ],
+   "donorDx": 50,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 3,
+   "footprintPx": 617,
+   "bbox": [
+    510,
+    315,
+    540,
+    332
+   ],
+   "donorDx": 64,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 3,
+   "footprintPx": 60,
+   "bbox": [
+    556,
+    317,
+    558,
+    327
+   ],
+   "donorDx": 24,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 3,
+   "footprintPx": 52,
+   "bbox": [
+    203,
+    712,
+    235,
+    724
+   ],
+   "donorDx": 80,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 3,
+   "footprintPx": 505,
+   "bbox": [
+    236,
+    646,
+    249,
+    689
+   ],
+   "donorDx": -40,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "t1-right",
    "pass_": 3,
-   "footprintPx": 187,
+   "footprintPx": 178,
    "bbox": [
-    288,
-    418,
-    297,
-    437
+    21,
+    351,
+    27,
+    371
    ],
-   "donorDx": 52,
-   "method": "footprint-feather"
+   "donorDx": 36,
+   "method": "basalt-neighbour"
   },
   {
-   "plate": "plate-side",
+   "plate": "t1-right",
    "pass_": 3,
-   "footprintPx": 348,
+   "footprintPx": 166,
    "bbox": [
-    139,
-    748,
-    149,
-    787
+    33,
+    351,
+    38,
+    371
    ],
-   "donorDx": 80,
-   "method": "footprint-feather"
+   "donorDx": -18,
+   "method": "basalt-neighbour"
   },
   {
-   "plate": "plate-side",
-   "pass_": 3,
-   "footprintPx": 114,
-   "bbox": [
-    620,
-    689,
-    628,
-    703
-   ],
-   "donorDx": 60,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-front",
-   "pass_": 3,
-   "footprintPx": 172,
-   "bbox": [
-    589,
-    481,
-    600,
-    495
-   ],
-   "donorDx": -48,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-front",
-   "pass_": 3,
-   "footprintPx": 120,
-   "bbox": [
-    600,
-    482,
-    607,
-    496
-   ],
-   "donorDx": -60,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-front",
-   "pass_": 3,
-   "footprintPx": 40,
-   "bbox": [
-    606,
-    487,
-    610,
-    494
-   ],
-   "donorDx": -64,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 3,
-   "footprintPx": 107,
-   "bbox": [
-    162,
-    559,
-    169,
-    576
-   ],
-   "donorDx": 40,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-front",
-   "pass_": 3,
-   "footprintPx": 1601,
-   "bbox": [
-    229,
-    228,
-    264,
-    281
-   ],
-   "donorDx": 44,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-front",
-   "pass_": 3,
-   "footprintPx": 1838,
-   "bbox": [
-    303,
-    245,
-    346,
-    295
-   ],
-   "donorDx": -44,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 3,
-   "footprintPx": 487,
-   "bbox": [
-    166,
-    335,
-    178,
-    388
-   ],
-   "donorDx": 60,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 3,
-   "footprintPx": 2888,
-   "bbox": [
-    174,
-    312,
-    217,
-    391
-   ],
-   "donorDx": -44,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 3,
-   "footprintPx": 130,
-   "bbox": [
-    308,
-    349,
-    316,
-    365
-   ],
-   "donorDx": 20,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 3,
-   "footprintPx": 1161,
-   "bbox": [
-    411,
-    312,
-    452,
-    355
-   ],
-   "donorDx": -72,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 3,
-   "footprintPx": 250,
-   "bbox": [
-    460,
-    353,
-    470,
-    382
-   ],
-   "donorDx": 48,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 3,
-   "footprintPx": 411,
-   "bbox": [
-    467,
-    360,
-    478,
-    403
-   ],
-   "donorDx": 40,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 3,
-   "footprintPx": 1250,
-   "bbox": [
-    485,
-    312,
-    512,
-    368
-   ],
-   "donorDx": 80,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 3,
-   "footprintPx": 146,
-   "bbox": [
-    513,
-    319,
-    520,
-    339
-   ],
-   "donorDx": 72,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 3,
-   "footprintPx": 1708,
-   "bbox": [
-    515,
-    336,
-    550,
-    399
-   ],
-   "donorDx": -68,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 3,
-   "footprintPx": 100,
-   "bbox": [
-    553,
-    338,
-    560,
-    355
-   ],
-   "donorDx": 28,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
+   "plate": "t1-right",
    "pass_": 3,
    "footprintPx": 153,
    "bbox": [
-    555,
-    360,
-    563,
-    379
+    50,
+    348,
+    52,
+    377
    ],
-   "donorDx": -44,
-   "method": "footprint-feather"
+   "donorDx": -8,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 3,
+   "footprintPx": 152,
+   "bbox": [
+    53,
+    351,
+    56,
+    375
+   ],
+   "donorDx": 90,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 3,
+   "footprintPx": 113,
+   "bbox": [
+    90,
+    353,
+    93,
+    371
+   ],
+   "donorDx": 86,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 3,
+   "footprintPx": 141,
+   "bbox": [
+    179,
+    450,
+    184,
+    467
+   ],
+   "donorDx": -20,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-side",
    "pass_": 3,
-   "footprintPx": 161,
+   "footprintPx": 63,
    "bbox": [
-    562,
-    379,
-    570,
-    402
+    155,
+    748,
+    157,
+    760
    ],
-   "donorDx": -52,
-   "method": "footprint-feather"
+   "donorDx": -90,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-side",
-   "pass_": 4,
-   "footprintPx": 105,
+   "pass_": 3,
+   "footprintPx": 50,
    "bbox": [
-    162,
-    526,
-    168,
-    544
+    344,
+    710,
+    347,
+    721
    ],
-   "donorDx": 52,
-   "method": "footprint-feather"
+   "donorDx": -28,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 3,
+   "footprintPx": 108,
+   "bbox": [
+    353,
+    696,
+    358,
+    708
+   ],
+   "donorDx": -10,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 3,
+   "footprintPx": 40,
+   "bbox": [
+    361,
+    703,
+    363,
+    713
+   ],
+   "donorDx": -80,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 3,
+   "footprintPx": 112,
+   "bbox": [
+    411,
+    675,
+    416,
+    687
+   ],
+   "donorDx": 34,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 3,
+   "footprintPx": 62,
+   "bbox": [
+    707,
+    707,
+    710,
+    717
+   ],
+   "donorDx": 30,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 3,
+   "footprintPx": 112,
+   "bbox": [
+    777,
+    677,
+    782,
+    689
+   ],
+   "donorDx": -84,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-front",
-   "pass_": 4,
-   "footprintPx": 315,
+   "pass_": 3,
+   "footprintPx": 125,
    "bbox": [
-    229,
-    228,
-    244,
-    256
+    272,
+    444,
+    277,
+    459
    ],
-   "donorDx": 56,
-   "method": "footprint-feather"
+   "donorDx": 16,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-front",
-   "pass_": 4,
-   "footprintPx": 102,
+   "pass_": 3,
+   "footprintPx": 89,
    "bbox": [
-    254,
-    279,
-    261,
-    293
+    282,
+    444,
+    286,
+    455
    ],
-   "donorDx": 24,
-   "method": "footprint-feather"
+   "donorDx": 34,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-front",
-   "pass_": 4,
-   "footprintPx": 778,
+   "pass_": 3,
+   "footprintPx": 72,
    "bbox": [
+    286,
+    443,
+    290,
+    455
+   ],
+   "donorDx": 68,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 3,
+   "footprintPx": 84,
+   "bbox": [
+    297,
+    443,
+    300,
+    455
+   ],
+   "donorDx": 16,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 3,
+   "footprintPx": 56,
+   "bbox": [
+    301,
+    444,
     303,
-    228,
-    332,
-    262
+    454
+   ],
+   "donorDx": 30,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 3,
+   "footprintPx": 64,
+   "bbox": [
+    310,
+    444,
+    313,
+    455
    ],
    "donorDx": 40,
-   "method": "footprint-feather"
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-front",
-   "pass_": 4,
-   "footprintPx": 169,
+   "pass_": 3,
+   "footprintPx": 333,
    "bbox": [
+    333,
+    443,
+    349,
+    462
+   ],
+   "donorDx": 76,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 3,
+   "footprintPx": 56,
+   "bbox": [
+    267,
+    568,
+    269,
+    580
+   ],
+   "donorDx": 24,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 3,
+   "footprintPx": 59,
+   "bbox": [
+    248,
+    328,
+    250,
+    338
+   ],
+   "donorDx": 26,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 3,
+   "footprintPx": 118,
+   "bbox": [
+    262,
+    403,
+    272,
+    418
+   ],
+   "donorDx": -80,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 3,
+   "footprintPx": 86,
+   "bbox": [
+    288,
+    338,
+    291,
+    355
+   ],
+   "donorDx": 46,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 3,
+   "footprintPx": 60,
+   "bbox": [
+    296,
+    315,
+    298,
+    325
+   ],
+   "donorDx": -8,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 3,
+   "footprintPx": 54,
+   "bbox": [
+    302,
     326,
-    228,
-    337,
-    244
+    304,
+    336
    ],
-   "donorDx": -40,
-   "method": "footprint-feather"
+   "donorDx": -30,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 3,
+   "footprintPx": 65,
+   "bbox": [
+    327,
+    315,
+    329,
+    326
+   ],
+   "donorDx": -32,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 3,
+   "footprintPx": 60,
+   "bbox": [
+    336,
+    327,
+    338,
+    338
+   ],
+   "donorDx": 42,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 3,
+   "footprintPx": 62,
+   "bbox": [
+    371,
+    320,
+    373,
+    331
+   ],
+   "donorDx": -66,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 3,
+   "footprintPx": 158,
+   "bbox": [
+    374,
+    316,
+    381,
+    330
+   ],
+   "donorDx": -26,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 3,
+   "footprintPx": 65,
+   "bbox": [
+    394,
+    327,
+    396,
+    338
+   ],
+   "donorDx": 12,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 3,
+   "footprintPx": 65,
+   "bbox": [
+    405,
+    315,
+    407,
+    326
+   ],
+   "donorDx": -78,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 3,
+   "footprintPx": 62,
+   "bbox": [
+    421,
+    320,
+    423,
+    331
+   ],
+   "donorDx": -58,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 3,
+   "footprintPx": 160,
+   "bbox": [
+    424,
+    316,
+    431,
+    330
+   ],
+   "donorDx": 28,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 3,
+   "footprintPx": 65,
+   "bbox": [
+    444,
+    327,
+    446,
+    338
+   ],
+   "donorDx": -54,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 4,
+   "footprintPx": 1037,
+   "bbox": [
+    863,
+    737,
+    883,
+    784
+   ],
+   "donorDx": 34,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 4,
+   "footprintPx": 114,
+   "bbox": [
+    308,
+    315,
+    311,
+    332
+   ],
+   "donorDx": -12,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 4,
+   "footprintPx": 65,
+   "bbox": [
+    311,
+    315,
+    313,
+    326
+   ],
+   "donorDx": -34,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 4,
+   "footprintPx": 140,
+   "bbox": [
+    318,
+    315,
+    325,
+    327
+   ],
+   "donorDx": -30,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 4,
+   "footprintPx": 84,
+   "bbox": [
+    356,
+    315,
+    359,
+    327
+   ],
+   "donorDx": -8,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 4,
+   "footprintPx": 60,
+   "bbox": [
+    360,
+    315,
+    362,
+    325
+   ],
+   "donorDx": 64,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 4,
+   "footprintPx": 72,
+   "bbox": [
+    368,
+    315,
+    371,
+    325
+   ],
+   "donorDx": -20,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 4,
+   "footprintPx": 238,
+   "bbox": [
+    431,
+    315,
+    438,
+    337
+   ],
+   "donorDx": -60,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 4,
+   "footprintPx": 289,
+   "bbox": [
+    459,
+    315,
+    473,
+    330
+   ],
+   "donorDx": 26,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 4,
+   "footprintPx": 65,
+   "bbox": [
+    473,
+    315,
+    475,
+    326
+   ],
+   "donorDx": -50,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 4,
+   "footprintPx": 192,
+   "bbox": [
+    478,
+    315,
+    487,
+    329
+   ],
+   "donorDx": 72,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 4,
+   "footprintPx": 112,
+   "bbox": [
+    542,
+    315,
+    546,
+    329
+   ],
+   "donorDx": -42,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 4,
+   "footprintPx": 48,
+   "bbox": [
+    546,
+    319,
+    548,
+    329
+   ],
+   "donorDx": -8,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 4,
+   "footprintPx": 48,
+   "bbox": [
+    548,
+    319,
+    550,
+    329
+   ],
+   "donorDx": -10,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-front",
    "pass_": 4,
-   "footprintPx": 127,
+   "footprintPx": 414,
    "bbox": [
-    334,
-    229,
-    342,
-    244
+    203,
+    621,
+    235,
+    632
    ],
-   "donorDx": -48,
-   "method": "footprint-feather"
+   "donorDx": -78,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 4,
+   "footprintPx": 150,
+   "bbox": [
+    20,
+    351,
+    24,
+    373
+   ],
+   "donorDx": 62,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 4,
+   "footprintPx": 95,
+   "bbox": [
+    26,
+    353,
+    28,
+    372
+   ],
+   "donorDx": 26,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 4,
+   "footprintPx": 154,
+   "bbox": [
+    31,
+    348,
+    34,
+    373
+   ],
+   "donorDx": -16,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 4,
+   "footprintPx": 160,
+   "bbox": [
+    37,
+    351,
+    41,
+    373
+   ],
+   "donorDx": 78,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 4,
+   "footprintPx": 116,
+   "bbox": [
+    48,
+    355,
+    50,
+    377
+   ],
+   "donorDx": 56,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 4,
+   "footprintPx": 141,
+   "bbox": [
+    55,
+    352,
+    58,
+    374
+   ],
+   "donorDx": 46,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 4,
+   "footprintPx": 108,
+   "bbox": [
+    92,
+    352,
+    94,
+    373
+   ],
+   "donorDx": 32,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-side",
    "pass_": 4,
-   "footprintPx": 968,
+   "footprintPx": 117,
    "bbox": [
-    175,
-    391,
-    201,
-    430
+    154,
+    746,
+    158,
+    762
    ],
-   "donorDx": 44,
-   "method": "footprint-feather"
+   "donorDx": -86,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-side",
+   "pass_": 4,
+   "footprintPx": 1099,
+   "bbox": [
+    863,
+    736,
+    883,
+    784
+   ],
+   "donorDx": 36,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
+   "pass_": 4,
+   "footprintPx": 74,
+   "bbox": [
+    271,
+    443,
+    274,
+    454
+   ],
+   "donorDx": 18,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-front",
    "pass_": 4,
    "footprintPx": 79,
    "bbox": [
-    195,
-    391,
-    204,
-    405
+    303,
+    443,
+    306,
+    455
    ],
-   "donorDx": 28,
-   "method": "footprint-feather"
+   "donorDx": -34,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-side",
    "pass_": 4,
-   "footprintPx": 143,
+   "footprintPx": 331,
    "bbox": [
-    240,
-    325,
-    248,
-    341
+    258,
+    315,
+    272,
+    333
    ],
-   "donorDx": -16,
-   "method": "footprint-feather"
+   "donorDx": -26,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-side",
    "pass_": 4,
-   "footprintPx": 101,
+   "footprintPx": 91,
    "bbox": [
-    247,
-    327,
-    254,
-    339
+    302,
+    315,
+    306,
+    326
    ],
-   "donorDx": -20,
-   "method": "footprint-feather"
+   "donorDx": -36,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-side",
    "pass_": 4,
-   "footprintPx": 85,
+   "footprintPx": 133,
    "bbox": [
-    251,
-    330,
-    257,
-    343
+    307,
+    315,
+    311,
+    332
    ],
-   "donorDx": -24,
-   "method": "footprint-feather"
+   "donorDx": -42,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 4,
+   "footprintPx": 96,
+   "bbox": [
+    311,
+    315,
+    314,
+    329
+   ],
+   "donorDx": -38,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-side",
    "pass_": 4,
    "footprintPx": 180,
    "bbox": [
-    307,
-    322,
-    316,
-    343
+    318,
+    315,
+    325,
+    331
    ],
-   "donorDx": -80,
-   "method": "footprint-feather"
+   "donorDx": -26,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 4,
+   "footprintPx": 60,
+   "bbox": [
+    326,
+    326,
+    328,
+    336
+   ],
+   "donorDx": -14,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 4,
+   "footprintPx": 59,
+   "bbox": [
+    328,
+    327,
+    330,
+    337
+   ],
+   "donorDx": -14,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 4,
+   "footprintPx": 78,
+   "bbox": [
+    331,
+    315,
+    334,
+    326
+   ],
+   "donorDx": -10,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 4,
+   "footprintPx": 98,
+   "bbox": [
+    356,
+    315,
+    360,
+    327
+   ],
+   "donorDx": 66,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 4,
+   "footprintPx": 60,
+   "bbox": [
+    362,
+    315,
+    364,
+    325
+   ],
+   "donorDx": -34,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 4,
+   "footprintPx": 91,
+   "bbox": [
+    368,
+    315,
+    372,
+    326
+   ],
+   "donorDx": -100,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 4,
+   "footprintPx": 260,
+   "bbox": [
+    382,
+    315,
+    390,
+    337
+   ],
+   "donorDx": 34,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-side",
    "pass_": 4,
    "footprintPx": 120,
    "bbox": [
-    342,
+    397,
     315,
-    358,
-    322
+    404,
+    325
    ],
-   "donorDx": -40,
-   "method": "footprint-feather"
+   "donorDx": -74,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-side",
    "pass_": 4,
-   "footprintPx": 716,
+   "footprintPx": 70,
    "bbox": [
-    414,
-    351,
-    436,
-    393
-   ],
-   "donorDx": 44,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 4,
-   "footprintPx": 277,
-   "bbox": [
-    432,
-    350,
-    443,
-    379
-   ],
-   "donorDx": 76,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 4,
-   "footprintPx": 352,
-   "bbox": [
-    444,
-    312,
-    470,
+    408,
+    315,
+    410,
     327
    ],
-   "donorDx": 52,
-   "method": "frost-matched feather 6px"
+   "donorDx": 74,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-side",
    "pass_": 4,
-   "footprintPx": 108,
+   "footprintPx": 60,
    "bbox": [
-    465,
-    312,
-    475,
-    322
+    410,
+    315,
+    412,
+    325
    ],
-   "donorDx": 36,
-   "method": "footprint-feather"
+   "donorDx": 46,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-side",
    "pass_": 4,
-   "footprintPx": 320,
+   "footprintPx": 60,
    "bbox": [
-    476,
-    344,
-    489,
-    372
-   ],
-   "donorDx": 32,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 4,
-   "footprintPx": 200,
-   "bbox": [
-    490,
-    368,
-    497,
-    392
-   ],
-   "donorDx": 20,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 4,
-   "footprintPx": 239,
-   "bbox": [
-    491,
-    387,
-    502,
-    409
-   ],
-   "donorDx": 16,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 4,
-   "footprintPx": 896,
-   "bbox": [
-    517,
-    312,
-    550,
-    346
-   ],
-   "donorDx": 64,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 4,
-   "footprintPx": 122,
-   "bbox": [
-    548,
-    344,
-    554,
-    361
-   ],
-   "donorDx": -72,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 4,
-   "footprintPx": 181,
-   "bbox": [
-    553,
-    316,
-    562,
-    334
-   ],
-   "donorDx": 28,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 4,
-   "footprintPx": 462,
-   "bbox": [
-    557,
-    326,
-    570,
-    363
-   ],
-   "donorDx": -48,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 5,
-   "footprintPx": 55,
-   "bbox": [
-    163,
-    586,
-    167,
-    596
+    412,
+    315,
+    414,
+    325
    ],
    "donorDx": 44,
-   "method": "footprint-feather"
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 4,
+   "footprintPx": 84,
+   "bbox": [
+    418,
+    315,
+    422,
+    325
+   ],
+   "donorDx": 16,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 4,
+   "footprintPx": 276,
+   "bbox": [
+    431,
+    315,
+    440,
+    337
+   ],
+   "donorDx": -26,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 4,
+   "footprintPx": 96,
+   "bbox": [
+    473,
+    315,
+    476,
+    329
+   ],
+   "donorDx": -18,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 4,
+   "footprintPx": 238,
+   "bbox": [
+    476,
+    315,
+    487,
+    330
+   ],
+   "donorDx": 80,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 4,
+   "footprintPx": 41,
+   "bbox": [
+    542,
+    315,
+    550,
+    330
+   ],
+   "donorDx": -46,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-front",
    "pass_": 5,
-   "footprintPx": 145,
+   "footprintPx": 187,
    "bbox": [
-    233,
-    280,
-    242,
-    297
+    236,
+    621,
+    249,
+    632
    ],
-   "donorDx": 44,
-   "method": "footprint-feather"
+   "donorDx": -18,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-side",
    "pass_": 5,
-   "footprintPx": 168,
-   "bbox": [
-    216,
-    317,
-    225,
-    335
-   ],
-   "donorDx": -48,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 5,
-   "footprintPx": 115,
-   "bbox": [
-    244,
-    313,
-    252,
-    326
-   ],
-   "donorDx": -72,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 5,
-   "footprintPx": 30,
-   "bbox": [
-    251,
-    312,
-    255,
-    317
-   ],
-   "donorDx": -76,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 5,
-   "footprintPx": 99,
-   "bbox": [
-    252,
-    312,
-    259,
-    326
-   ],
-   "donorDx": -80,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 5,
-   "footprintPx": 36,
-   "bbox": [
-    339,
-    314,
-    344,
-    319
-   ],
-   "donorDx": -32,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 5,
-   "footprintPx": 177,
-   "bbox": [
-    454,
-    349,
-    462,
-    370
-   ],
-   "donorDx": -20,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 5,
-   "footprintPx": 170,
-   "bbox": [
-    459,
-    332,
-    468,
-    352
-   ],
-   "donorDx": -56,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 5,
-   "footprintPx": 585,
-   "bbox": [
-    468,
-    312,
-    492,
-    344
-   ],
-   "donorDx": 52,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 5,
-   "footprintPx": 248,
-   "bbox": [
-    491,
-    348,
-    501,
-    370
-   ],
-   "donorDx": 20,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 5,
-   "footprintPx": 158,
-   "bbox": [
-    522,
-    349,
-    530,
-    367
-   ],
-   "donorDx": -12,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 5,
-   "footprintPx": 248,
-   "bbox": [
-    529,
-    401,
-    539,
-    427
-   ],
-   "donorDx": -52,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 5,
-   "footprintPx": 70,
-   "bbox": [
-    538,
-    402,
-    542,
-    415
-   ],
-   "donorDx": -56,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 5,
-   "footprintPx": 45,
-   "bbox": [
-    541,
-    403,
-    545,
-    411
-   ],
-   "donorDx": -56,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 5,
-   "footprintPx": 152,
-   "bbox": [
-    562,
-    362,
-    570,
-    378
-   ],
-   "donorDx": -52,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 6,
-   "footprintPx": 135,
-   "bbox": [
-    469,
-    347,
-    477,
-    361
-   ],
-   "donorDx": 12,
-   "method": "footprint-feather"
-  },
-  {
-   "plate": "plate-side",
-   "pass_": 6,
    "footprintPx": 134,
    "bbox": [
-    537,
-    347,
-    545,
-    361
+    153,
+    748,
+    158,
+    764
    ],
-   "donorDx": -76,
-   "method": "footprint-feather"
+   "donorDx": -98,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 5,
+   "footprintPx": 1167,
+   "bbox": [
+    861,
+    734,
+    883,
+    784
+   ],
+   "donorDx": 86,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 5,
+   "footprintPx": 65,
+   "bbox": [
+    440,
+    315,
+    442,
+    326
+   ],
+   "donorDx": -12,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 5,
+   "footprintPx": 96,
+   "bbox": [
+    458,
+    315,
+    461,
+    329
+   ],
+   "donorDx": 94,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 5,
+   "footprintPx": 183,
+   "bbox": [
+    20,
+    354,
+    26,
+    375
+   ],
+   "donorDx": 40,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 5,
+   "footprintPx": 205,
+   "bbox": [
+    28,
+    346,
+    32,
+    376
+   ],
+   "donorDx": 72,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 5,
+   "footprintPx": 97,
+   "bbox": [
+    34,
+    357,
+    36,
+    375
+   ],
+   "donorDx": -16,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 5,
+   "footprintPx": 127,
+   "bbox": [
+    40,
+    350,
+    42,
+    374
+   ],
+   "donorDx": 90,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 5,
+   "footprintPx": 111,
+   "bbox": [
+    51,
+    363,
+    54,
+    380
+   ],
+   "donorDx": 84,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 5,
+   "footprintPx": 120,
+   "bbox": [
+    57,
+    353,
+    59,
+    376
+   ],
+   "donorDx": 68,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 5,
+   "footprintPx": 100,
+   "bbox": [
+    59,
+    351,
+    61,
+    369
+   ],
+   "donorDx": 36,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 5,
+   "footprintPx": 209,
+   "bbox": [
+    153,
+    744,
+    160,
+    765
+   ],
+   "donorDx": -100,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 5,
+   "footprintPx": 65,
+   "bbox": [
+    381,
+    315,
+    383,
+    326
+   ],
+   "donorDx": -22,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 5,
+   "footprintPx": 84,
+   "bbox": [
+    384,
+    315,
+    388,
+    325
+   ],
+   "donorDx": -54,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 5,
+   "footprintPx": 80,
+   "bbox": [
+    414,
+    315,
+    416,
+    329
+   ],
+   "donorDx": -82,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 5,
+   "footprintPx": 80,
+   "bbox": [
+    440,
+    315,
+    442,
+    329
+   ],
+   "donorDx": -88,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-side",
    "pass_": 6,
-   "footprintPx": 51,
+   "footprintPx": 1243,
    "bbox": [
-    543,
-    347,
-    549,
-    354
+    860,
+    733,
+    883,
+    784
    ],
-   "donorDx": -80,
-   "method": "footprint-feather"
+   "donorDx": 86,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 6,
+   "footprintPx": 102,
+   "bbox": [
+    19,
+    355,
+    21,
+    374
+   ],
+   "donorDx": 82,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 6,
+   "footprintPx": 156,
+   "bbox": [
+    29,
+    355,
+    33,
+    377
+   ],
+   "donorDx": 94,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 6,
+   "footprintPx": 122,
+   "bbox": [
+    35,
+    353,
+    37,
+    376
+   ],
+   "donorDx": -18,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 6,
+   "footprintPx": 139,
+   "bbox": [
+    38,
+    357,
+    42,
+    377
+   ],
+   "donorDx": 54,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 6,
+   "footprintPx": 95,
+   "bbox": [
+    56,
+    360,
+    58,
+    378
+   ],
+   "donorDx": 12,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 6,
+   "footprintPx": 303,
+   "bbox": [
+    151,
+    743,
+    161,
+    769
+   ],
+   "donorDx": -86,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 7,
+   "footprintPx": 423,
+   "bbox": [
+    149,
+    742,
+    162,
+    770
+   ],
+   "donorDx": -82,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 7,
+   "footprintPx": 1319,
+   "bbox": [
+    859,
+    732,
+    883,
+    784
+   ],
+   "donorDx": 82,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 7,
+   "footprintPx": 119,
+   "bbox": [
+    21,
+    353,
+    23,
+    376
+   ],
+   "donorDx": 38,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 7,
+   "footprintPx": 110,
+   "bbox": [
+    29,
+    360,
+    32,
+    377
+   ],
+   "donorDx": 14,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 7,
+   "footprintPx": 114,
+   "bbox": [
+    32,
+    357,
+    34,
+    379
+   ],
+   "donorDx": 30,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 7,
+   "footprintPx": 510,
+   "bbox": [
+    149,
+    741,
+    163,
+    770
+   ],
+   "donorDx": -82,
+   "method": "basalt-neighbour"
   },
   {
    "plate": "plate-side",
    "pass_": 8,
-   "footprintPx": 216,
+   "footprintPx": 1396,
    "bbox": [
-    339,
-    312,
-    350,
-    329
+    858,
+    731,
+    883,
+    784
    ],
-   "donorDx": -32,
-   "method": "footprint-feather"
+   "donorDx": 82,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "t1-right",
+   "pass_": 8,
+   "footprintPx": 104,
+   "bbox": [
+    22,
+    357,
+    24,
+    377
+   ],
+   "donorDx": 36,
+   "method": "basalt-neighbour"
+  },
+  {
+   "plate": "plate-side",
+   "pass_": 8,
+   "footprintPx": 654,
+   "bbox": [
+    147,
+    739,
+    164,
+    774
+   ],
+   "donorDx": -82,
+   "method": "basalt-neighbour"
   }
  ]
 }

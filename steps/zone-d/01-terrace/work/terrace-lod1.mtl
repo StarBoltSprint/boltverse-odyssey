@@ -1,8 +1,14 @@
 newmtl front
-map_Kd ../plates/v34/plate-front-v34.jpg
+map_Kd ../plates/v35/plate-front-v35.jpg
 newmtl front2
-map_Kd ../plates/v34/t1-right-v34.jpg
+map_Kd ../plates/v35/t1-right-v35.jpg
 newmtl side
-map_Kd ../plates/v34/plate-side-v34.jpg
+map_Kd ../plates/v35/plate-side-v35.jpg
 newmtl top
 map_Kd ../plates/top.jpg
+newmtl icefront
+map_Kd ../plates/plate-front.jpg
+newmtl icefront2
+map_Kd ../plates/v32/t1-right.jpg
+newmtl iceside
+map_Kd ../plates/plate-side.jpg
