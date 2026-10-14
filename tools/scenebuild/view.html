@@ -1,0 +1,57 @@
+<!doctype html>
+<!-- tools/scenebuild viewer: scene.glb (one mesh per element type, vertex colours) through the AUTO key camera
+     (scene.json: MoGe fov, camera at origin looking -Z). Lights from the measured key light direction + sky colour. -->
+<html><head><meta charset="utf-8"><style>html,body{margin:0;background:#000;overflow:hidden}</style></head><body>
+<script type="importmap">{"imports":{"three":"./three.module.js","three/addons/":"./jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+const P = new URLSearchParams(location.search);
+const S = await (await fetch(P.get('json') || 'scene.json')).json();
+const r = new THREE.WebGLRenderer({antialias: true, preserveDrawingBuffer: true}); r.setPixelRatio(1); r.setSize(innerWidth, innerHeight);
+r.outputColorSpace = THREE.SRGBColorSpace; r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap; document.body.appendChild(r.domElement);
+const scene = new THREE.Scene(); scene.background = P.get('bg') ? new THREE.Color('#' + P.get('bg')) : new THREE.Color().setRGB(...S.light.sky, THREE.SRGBColorSpace);
+const cam = new THREE.PerspectiveCamera(S.camera.fov_y_deg, innerWidth / innerHeight, 0.05, 5000);
+// off-views (v4): orbit around the pivot on the optical axis at the median scene depth
+{ const V = P.get('view'), D = S.pivot_d || 10, piv = new THREE.Vector3(0, 0, -D);
+  const O = {yawL: [-25, 0, 1], yawR: [25, 0, 1], high: [0, 25, 1], graze: [60, 5, 0.45]}[V];
+  if (O) { const [yw, pt, f] = O.map((x, i) => i < 2 ? x * Math.PI / 180 : x); const r = D * f;
+    cam.position.set(piv.x + r * Math.sin(yw) * Math.cos(pt), piv.y + r * Math.sin(pt), piv.z + r * Math.cos(yw) * Math.cos(pt)); cam.lookAt(piv); } }
+const sky = new THREE.Color().setRGB(...S.light.sky, THREE.SRGBColorSpace);
+const G = +(P.get('gain') || 1.0); scene.add(new THREE.AmbientLight(0xffffff, Math.PI * G * (S.light.amb ?? 0.6)));
+const d = new THREE.DirectionalLight(0xffffff, Math.PI * G * (S.light.sun ?? 0.4) / Math.max(0.3, S.light.dir[2])); const L = S.light.dir;
+d.position.set(L[0] * 40, Math.abs(L[1]) * 40 + 25, 10); d.target.position.set(0, 0, -15); d.castShadow = true;
+d.shadow.mapSize.set(2048, 2048); Object.assign(d.shadow.camera, {left: -40, right: 40, top: 40, bottom: -40, near: 1, far: 200}); scene.add(d, d.target);
+const g = await new GLTFLoader().loadAsync(P.get('model') || 'scene.glb');
+// v3 texture: (1) the KEY image projected through the key camera (sharp observed texture, weight KW on surfaces
+// facing the camera), (2) a DETAIL layer from the matlib tileables (triplanar, 1 tile per TILE m) applied as a
+// mean-normalised ratio, so it adds grain without changing each element's key-matched colour.
+const TL = new THREE.TextureLoader(); const ld = (u, srgb) => { const t = TL.load(u); t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.generateMipmaps = true; t.minFilter = THREE.LinearMipmapLinearFilter; return t; };
+const K = S.camera; const keyTex = K.key ? ld(K.key, true) : null; if (keyTex) keyTex.wrapS = keyTex.wrapT = THREE.ClampToEdgeWrapping;
+const tiles = Object.fromEntries(Object.entries(S.tiles || {}).map(([k, u]) => [k, ld(u, true)]));
+const KW = +(P.get('kw') ?? S.tex?.kw ?? 0.7), KD = +(P.get('kd') ?? S.tex?.kd ?? 0.35), TILE = S.tex?.tile_m ?? 1.5;
+const mkMat = (name) => { const m = new THREE.MeshLambertMaterial({vertexColors: true, side: THREE.DoubleSide});
+  const tile = tiles[(S.tile_of || {})[name]] || null; if (!keyTex && !tile) return m;
+  m.onBeforeCompile = sh => {
+    Object.assign(sh.uniforms, {uKey: {value: keyTex}, uTile: {value: tile}, uK: {value: new THREE.Vector4(K.fx / K.W, K.fy / K.H, K.cx / K.W, K.cy / K.H)},
+                                uKW: {value: keyTex ? KW : 0}, uKD: {value: tile ? KD : 0}, uTM: {value: TILE}});
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vWp; varying vec3 vWn;')
+      .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWp = (modelMatrix * vec4(transformed, 1.0)).xyz; vWn = normalize(mat3(modelMatrix) * objectNormal);');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', `#include <common>
+varying vec3 vWp; varying vec3 vWn; uniform sampler2D uKey; uniform sampler2D uTile; uniform vec4 uK; uniform float uKW, uKD, uTM;`)
+      .replace('#include <color_fragment>', `#include <color_fragment>
+{ vec3 nf = normalize(cross(dFdx(vWp), dFdy(vWp)));
+  if (uKW > 0.0) { float z = -vWp.z; vec2 kuv = vec2(uK.x * vWp.x / z + uK.z, 1.0 - (uK.y * -vWp.y / z + uK.w));
+    float face = clamp(abs(dot(nf, normalize(-vWp))) * 2.0, 0.0, 1.0);
+    if (z > 0.0 && all(greaterThan(kuv, vec2(0.0))) && all(lessThan(kuv, vec2(1.0)))) diffuseColor.rgb = mix(diffuseColor.rgb, texture2D(uKey, kuv).rgb, uKW * face); }
+  if (uKD > 0.0) { vec3 w = pow(abs(nf), vec3(4.0)); w /= (w.x + w.y + w.z); vec3 p = vWp / uTM;
+    vec3 t = texture2D(uTile, p.zy).rgb * w.x + texture2D(uTile, p.xz).rgb * w.y + texture2D(uTile, p.xy).rgb * w.z;
+    vec3 mean = textureLod(uTile, vec2(0.5), 12.0).rgb; diffuseColor.rgb *= mix(vec3(1.0), clamp(t / max(mean, vec3(0.02)), 0.0, 2.5), uKD); } }`);
+  }; return m; };
+g.scene.traverse(o => { if (!o.isMesh) return; o.geometry.computeVertexNormals();
+  o.material = o.name === 'sky' ? new THREE.MeshBasicMaterial({vertexColors: true, side: THREE.DoubleSide}) : mkMat(o.name);
+  o.castShadow = o.receiveShadow = o.name !== 'sky'; });
+await new Promise(res => { const chk = () => (!keyTex || keyTex.image) && Object.values(tiles).every(t => t.image) ? res() : setTimeout(chk, 50); chk(); });
+scene.add(g.scene);
+r.render(scene, cam); window.__ready = true;
+</script></body></html>

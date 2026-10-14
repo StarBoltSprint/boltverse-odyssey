@@ -119,16 +119,18 @@ def merged(parts, name, material):
 
 # ------------------------------------------------------------------ the 10 pieces
 def wall_block_course(lod, seed=1, width=2.0):
-    """One course (0.625 m) of 2-3 bevelled blocks over a recessed backing; block faces stand 0.2-0.4 m proud
-    of the joint backing (kit-art block_relief_m), widths vary per seed (no stripe rhythm)."""
+    """One course (0.625 m) of 2-3 bevelled blocks over a recessed backing; block faces stand proud
+    of the joint backing (v5: 0.08-0.18 m), widths vary per seed (no stripe rhythm)."""
     rng = np.random.default_rng(seed); n = LODN[lod]
     xs = [-width / 2]
     while xs[-1] < width / 2 - 0.5:
         xs.append(min(xs[-1] + rng.uniform(0.6, 1.2), width / 2))
     xs[-1] = width / 2
-    parts = [tag(rbox([-width / 2, 0.0, 0.02], [width / 2, 0.45, COURSE_H - 0.02], 0.02, 1, "backing"))]
+    # v5: backing sits 6 cm behind the block faces' rear plane and blocks stand 8-18 cm proud -> joints read as thin
+    # shaded lines instead of dark rectangles
+    parts = [tag(rbox([-width / 2, -0.06, 0.02], [width / 2, 0.45, COURSE_H - 0.02], 0.02, 1, "backing"))]
     for a, b in zip(xs[:-1], xs[1:]):
-        rel = rng.uniform(0.2, 0.4)
+        rel = rng.uniform(0.08, 0.18)
         parts.append(tag(rbox([a + 0.015, -rel, 0.015], [b - 0.015, 0.2, COURSE_H - 0.015], BEVEL * rng.uniform(1, 2), n)))
     return merged(parts, "wall_block_course", "stone")
 

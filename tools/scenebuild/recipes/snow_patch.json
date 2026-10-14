@@ -1,0 +1,25 @@
+{
+ "type": "snow_patch",
+ "version": "2",
+ "ops_version": "ops-v2",
+ "doc": "small snow lump stuck on a facade",
+ "offset": [
+  0,
+  "-0.35*h",
+  0
+ ],
+ "ops": [
+  {
+   "op": "blob",
+   "w": "w",
+   "h": "0.7*h",
+   "t": "max(th, 0.6*min(w, h))",
+   "lump": "0.1+0.6*rough"
+  },
+  {
+   "op": "mesh",
+   "method": "mc",
+   "res": "min(5, lod)"
+  }
+ ]
+}

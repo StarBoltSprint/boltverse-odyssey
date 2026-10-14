@@ -46,8 +46,11 @@ vec4 hexSample(sampler2D t, vec2 uv){
   }
   return acc / max(sqrt(w2), 1e-5) + mean;  // == normalise by sum, divide by sqrt(sum w^2)
 }
+// v9: projection weights from the FACE normal (screen-space derivatives), not the smoothed vertex normal: on
+// narrow faces (course tops, tread edges) the averaged normal picked a grazing projection -> streak stripes
+vec3 hexFaceN(){ vec3 n = normalize(cross(dFdx(vWP), dFdy(vWP))); return dot(n, vWN) < 0.0 ? -n : n; }
 vec4 triHexT(sampler2D t, float tileM){
-  vec3 w = pow(abs(normalize(vWN)), vec3(4.0)); w /= (w.x + w.y + w.z);
+  vec3 w = pow(abs(hexFaceN()), vec3(4.0)); w /= (w.x + w.y + w.z);
   vec3 p = vWP / tileM;
   return hexSample(t, p.zy) * w.x + hexSample(t, p.xy * vec2(1.0,-1.0)) * w.z + hexSample(t, p.xz) * w.y;
 }
@@ -56,7 +59,7 @@ vec4 triHex(sampler2D t){ return triHexT(t, uTileM); }
 uniform sampler2D uNrm; uniform float uNrmK;
 // v8: triplanar (whiteout-style) normal map in world space, so the wall reads block grain under any light
 vec3 triNrmWorld(){
-  vec3 N = normalize(vWN); vec3 w = pow(abs(N), vec3(4.0)); w /= (w.x + w.y + w.z);
+  vec3 N = normalize(vWN); vec3 w = pow(abs(hexFaceN()), vec3(4.0)); w /= (w.x + w.y + w.z);
   vec3 p = vWP / uTileM;
   vec3 tx = hexSample(uNrm, p.zy).xyz * 2.0 - 1.0;
   vec3 tz = hexSample(uNrm, p.xy * vec2(1.0,-1.0)).xyz * 2.0 - 1.0;

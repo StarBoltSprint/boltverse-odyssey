@@ -1,0 +1,31 @@
+{
+ "type": "rubble",
+ "version": "2",
+ "ops_version": "ops-v2",
+ "doc": "broken stone lump: warped blob, dual contoured, chipped",
+ "frame": "surface",
+ "offset": [
+  0,
+  0,
+  0
+ ],
+ "ops": [
+  {
+   "op": "blob",
+   "w": "w",
+   "h": "0.7*h",
+   "t": "max(th, 0.6*min(w, h))",
+   "lump": "0.2+0.6*rough"
+  },
+  {
+   "op": "mesh",
+   "method": "dc",
+   "res": "min(5, lod)"
+  },
+  {
+   "op": "chip",
+   "vol": "0.05*rough",
+   "n": 2
+  }
+ ]
+}

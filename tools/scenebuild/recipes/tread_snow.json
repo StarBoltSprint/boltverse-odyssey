@@ -1,0 +1,26 @@
+{
+ "type": "tread_snow",
+ "version": "2",
+ "ops_version": "ops-v2",
+ "doc": "snow lying on a horizontal tread (local y = surface normal)",
+ "frame": "surface",
+ "offset": [
+  0,
+  0,
+  0
+ ],
+ "ops": [
+  {
+   "op": "blob",
+   "w": "w",
+   "h": "th",
+   "t": "max(h, th)",
+   "lump": "0.08+0.5*rough"
+  },
+  {
+   "op": "mesh",
+   "method": "mc",
+   "res": "min(6, lod)"
+  }
+ ]
+}

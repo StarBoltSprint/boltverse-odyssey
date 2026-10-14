@@ -1,0 +1,30 @@
+{
+ "type": "door",
+ "version": "2",
+ "ops_version": "ops-v2",
+ "doc": "dark opening: frame box with a manifold3d boolean recess",
+ "offset": [
+  0,
+  0,
+  "-0.3*w"
+ ],
+ "ops": [
+  {
+   "op": "rbox",
+   "w": "1.1*w",
+   "h": "h",
+   "d": "0.3*w",
+   "r": "0.02*w"
+  },
+  {
+   "op": "mesh",
+   "method": "dc",
+   "res": "min(6, lod)"
+  },
+  {
+   "op": "recess",
+   "inset": "0.08*w",
+   "depth": "0.2*w"
+  }
+ ]
+}

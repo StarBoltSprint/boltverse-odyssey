@@ -81,12 +81,14 @@ def layout(sc=K, lod=0, rows_list=None, facade=None):
                         continue
                     inst.append((f"facade_block_{n}", f"facade_block@{vi}", (xc, yf - rng.uniform(0, 0.5) * pr, z0 + r * ch), 0.0)); n += 1
         for r in range(ROWS[k] if facade else 0, ROWS[k]):
-            off = 0.0 if r % 2 == 0 else 1.0                       # running bond
+            crng = np.random.default_rng(1000 * k + r)             # v5: random bond phase, random variant (4: draw budget), x/y/z
+            off = float(crng.uniform(0.3, 1.7)) if r % 2 else float(crng.uniform(0, 0.4))   # z jitter -> no stripe repeats
             xs = np.arange(x0 + 1.0 + off, x1 - 0.99, 2.0)
             for i, xc in enumerate(xs):
                 if k in DOOR_TIERS and abs(xc - door_x) < 1.5 and r * P.COURSE_H < 2.4:
                     continue                                       # door bay
-                put(f"wall_block_course@{1 + (i * 7 + r * 3 + k * 5) % 4}", (xc, yf, z0 + r * P.COURSE_H))
+                put(f"wall_block_course@{int(crng.integers(1, 5))}", (xc + float(crng.uniform(-0.15, 0.15)), yf - float(crng.uniform(0, 0.06)),
+                    z0 + r * P.COURSE_H + float(crng.uniform(-0.08, 0.08))))   # course lines wander +-8 cm: no FFT stripe
             if off:                                                # half-course fillers at the ends of offset rows
                 pass
             put("wall_block_corner", (x1 - 0.45, yf, z0 + r * P.COURSE_H))
