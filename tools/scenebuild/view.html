@@ -14,7 +14,7 @@ const scene = new THREE.Scene(); scene.background = P.get('bg') ? new THREE.Colo
 const cam = new THREE.PerspectiveCamera(S.camera.fov_y_deg, innerWidth / innerHeight, 0.05, 5000);
 // off-views (v4): orbit around the pivot on the optical axis at the median scene depth
 { const V = P.get('view'), D = S.pivot_d || 10, piv = new THREE.Vector3(0, 0, -D);
-  const O = {yawL: [-25, 0, 1], yawR: [25, 0, 1], high: [0, 45, 1], graze: [60, 5, 0.45]}[V];
+  const O = {yawL: [-25, 0, 1], yawR: [25, 0, 1], high: [0, 25, 1], graze: [60, 5, 0.45]}[V];
   if (O) { const [yw, pt, f] = O.map((x, i) => i < 2 ? x * Math.PI / 180 : x); const r = D * f;
     cam.position.set(piv.x + r * Math.sin(yw) * Math.cos(pt), piv.y + r * Math.sin(pt), piv.z + r * Math.cos(yw) * Math.cos(pt)); cam.lookAt(piv); } }
 const sky = new THREE.Color().setRGB(...S.light.sky, THREE.SRGBColorSpace);

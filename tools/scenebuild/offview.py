@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """tools/scenebuild/offview.py - off-view judge (the GATE number: the key-camera score is optimistic because the key
 image is projected from that camera). Renders 4 views away from the key camera WITHOUT the projected key texture
-(geometry + vertex colour + matlib detail only): yaw -25, yaw +25, 45 deg high, grazing close-up (yaw 60, 0.45 x
+(geometry + vertex colour + matlib detail only): yaw -25, yaw +25, 25 deg high (v7: 45 deg looked straight down, not comparable to the key), grazing close-up (yaw 60, 0.45 x
 pivot distance). Each view: judge.py colour + DINO terms vs the key (viewpoint-tolerant; SSIM is dropped), times
 (1 - hole fraction) where holes = background seen through the geometry (magenta clear colour), excluding the sky
 band above the horizon of the key view. off_score = mean over views.

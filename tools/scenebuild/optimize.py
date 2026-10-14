@@ -23,6 +23,8 @@ TRI_BUDGET, DRAW_BUDGET, MAX_DROP, DINO_TOL = 200_000, 12, 10.0, 0.5   # DINO ho
 STAGES = [("form", {"s": (1.0, 0.25, 0.6, 1.6), "sy": (1.0, 0.2, 0.6, 1.5), "dz": (0.0, 0.04, -0.12, 0.12)}, 4),
           ("edges", {"rg": (1.0, 0.5, 0.2, 2.5), "jv": (0.2, 0.15, 0.0, 0.6)}, 3),
           ("wear", {"cg": (1.0, 0.12, 0.7, 1.4), "sn": (1.0, 0.5, 0.0, 2.5)}, 3)]
+# v7 default: WHOLE FORMS - every non-sky L1 form gets depth (dz), silhouette grow/shrink (sil, px) and colour gain
+FORM_STAGES = [("forms", {"dz": (0.0, 0.03, -0.1, 0.1), "sil": (0.0, 4.0, -8.0, 16.0), "cg": (1.0, 0.08, 0.8, 1.25)}, 5)]
 POP = 4
 
 
@@ -31,7 +33,7 @@ def geo_loss(o):
 
 
 def main():
-    ap = argparse.ArgumentParser(); ap.add_argument("sheet"); ap.add_argument("out"); ap.add_argument("port"); ap.add_argument("--n", type=int, default=24)
+    ap = argparse.ArgumentParser(); ap.add_argument("sheet"); ap.add_argument("out"); ap.add_argument("port"); ap.add_argument("--n", type=int, default=24); ap.add_argument("--small", action="store_true", help="v6 small-element stages instead of whole forms")
     a = ap.parse_args(); out = Path(a.out); opt = {}; t0 = time.time()
     s0, rows, info = S.score(a.sheet, out, a.port, opt, "first"); gain = info["exposure_gain"]; shutil.copy(out / "render-first.png", out / "render-best.png")
     keys = ("judge", "L1_median", "L1_pass", "L2_median", "L2_pass", "draws", "tris", "too_regular")
@@ -39,14 +41,16 @@ def main():
     s0["off_score"], s0["off_dino"] = off0["off_score"], off0["off_dino"]
     hist = [{"stage": "first", "off_score": off0["off_score"], "off_dino": off0["off_dino"], **{k: s0[k] for k in keys}}]; print(json.dumps(hist[-1]), flush=True)
     best, renders, improved = s0, 2, set()
-    for stage, P, gens in STAGES:
+    for stage, P, gens in (STAGES if a.small else FORM_STAGES):
         names = list(P); built = [k for k in rows if k in info["elements"] and len(info["elements"][k]) == 2 and info["elements"][k][0] != "sky"]
+        if stage == "forms":   # all non-sky L1 forms, worst first
+            built = [k for k in built if k.startswith("L1-")]
         # improvable elements: worst rows that are not stuck at 0 (a 0 row = a metric the recipe cannot move -> ledger)
         imp = sorted([k for k in built if 1.0 <= rows[k] < 50.0], key=lambda k: rows[k])
         # + elements the render check cannot find ('present' = 0): appearance/size can bring them back
         miss = sorted([k for k in built if rows[k] < 1.0 and info["rows_full"].get(k, {}).get("sub", {}).get("present", 100) < 1],
                       key=lambda k: -rows[k])
-        act = (imp[: a.n // 2] + miss)[: a.n]
+        act = (imp[: a.n // 2] + miss)[: a.n] if stage != "forms" else sorted(built, key=lambda k: rows[k])
         es = {k: cma.CMAEvolutionStrategy([0.0] * len(names), 1.0, {"popsize": POP, "verbose": -9, "seed": 7}) for k in act}
         bestc = {k: (rows[k], None) for k in act}
         dec = lambda x: {n: float(np.clip(P[n][0] + x[i] * P[n][1], P[n][2], P[n][3])) for i, n in enumerate(names)}

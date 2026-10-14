@@ -70,6 +70,7 @@ def wear_colours(V, F, col, snow, rough, snow_col, t):
 
 
 _REC = {}
+STRETCH = 0.12   # v7: depth ratio across a face above which it is a stretched (depth-jump) face
 EXT, BACK_REL = 256, 0.06   # px of key depth extrapolated past each frame edge; shell thickness (fraction of depth)
 JUMP_BG = 61 if os.environ.get('SB_CUT') else 0   # v6 experiment (SB_CUT=1): max-filter size (px) of the background layer
 
@@ -136,7 +137,8 @@ def build(sd, out, opt=None, rel_step=12):   # v5: 12 px grid (shells double the
         if big:   # big forms / big masses: depth-fitted relief surface (L2 ones 0.5 % nearer so they sit on the L1 form)
             Ps = P3 * (1 + dz) * (1.0 if e["level"] == 1 else 0.995)
             if e["level"] == 1:   # v4 gap fill: neighbouring L1 forms overlap by one grid step (no seams between forms)
-                m = cv2.dilate(m.astype(np.uint8), np.ones((2 * rel_step + 1, 2 * rel_step + 1), np.uint8)).astype(bool)
+                kk = max(1, 2 * rel_step + 1 + 2 * int(round(o.get("sil", 0.0))))   # v7: optimiser grows/shrinks the silhouette (px)
+                m = cv2.dilate(m.astype(np.uint8), np.ones((kk, kk), np.uint8)).astype(bool)
             V, F, _ = G.relief(Ps, m, rel_step if e["level"] == 1 else 6, np.zeros((1024, 1024, 3)), 0.004 * rough, rng)
             if e["level"] == 1 and len(F):   # v5: plausible back + side faces (solid shell pushed back along the view rays)
                 V, F = solidify(V, np.asarray(F), BACK_REL)
@@ -205,6 +207,20 @@ def build(sd, out, opt=None, rel_step=12):   # v5: 12 px grid (shells double the
             u = np.clip(u, 0, Wk - 1).astype(int); v = np.clip(v, 0, Hk - 1).astype(int)
             obs = keyimg[v, u]; w_obs = 1.0 if t == "sky" else OBS_W
             mm.C[i] = np.clip(w_obs * obs + (1 - w_obs) * mm.C[i], 0, 1)
+    # v7: stretched faces (spanning a depth jump: depth ratio > STRETCH) get their own vertices coloured with the FAR
+    # vertex's projected colour (the surface behind continues) instead of the streaky projection along the face
+    for t, mm in meshes.items():
+        if t == "sky":
+            continue
+        o, o_old = 0, 0
+        for i, V in enumerate(mm.V):
+            Fl = mm.F[i] - o_old; o_old += len(V); z = np.abs(V[:, 2])[Fl]; st = z.max(1) > z.min(1) * (1 + STRETCH)
+            if st.any():
+                far = Fl[st][np.arange(st.sum()), z[st].argmax(1)]; Fs = Fl[st]; n0 = len(V)
+                Vn = V[Fs.ravel()]; Cn = np.repeat(mm.C[i][far], 3, 0)
+                Fl = Fl.copy(); Fl[st] = n0 + np.arange(3 * st.sum()).reshape(-1, 3)
+                mm.V[i] = np.vstack([V, Vn]); mm.C[i] = np.vstack([mm.C[i], Cn])
+            mm.F[i] = Fl + o; o += len(mm.V[i])   # re-based on the grown chunks
     write_glb(out / "scene.glb", meshes)
     counts = {}
     for t in used.values():
