@@ -7,7 +7,7 @@ the three stages (16 / 12 / 12).
 Before rendering, each candidate pays a cheap geometric loss (no render): relative depth offset vs the MoGe median
 and the projected size change vs the measured mask size (point-to-depth / size consistency).
 Acceptance per stage (net gain, v3): the stage's best candidates are kept if the SUM of worst-metric rows over all
-elements improves, no single element drops by > MAX_DROP (10), the held-out DINO term (judge 'perceptual') is no more than 0.5
+elements improves, no single element drops by > MAX_DROP (10), the held-out DINO term (v5: mean judge DINO over the 4 OFF-VIEWS, offview.py) is no more than 0.5
 worse and the phone budget (<= 12 draws, <= TRI_BUDGET tris) holds; otherwise non-gaining / dropping candidates are
 removed and the check repeats (3 tries). Elements that never improve over a zone go to the ledger as
 'expressiveness gap' rows (the recipe cannot express what the key shows).
@@ -17,6 +17,7 @@ from pathlib import Path
 import numpy as np, cma
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import score as S  # noqa: E402
+import offview as OV  # noqa: E402
 
 TRI_BUDGET, DRAW_BUDGET, MAX_DROP, DINO_TOL = 200_000, 12, 10.0, 0.5   # DINO holdout tolerance (user decision)
 STAGES = [("form", {"s": (1.0, 0.25, 0.6, 1.6), "sy": (1.0, 0.2, 0.6, 1.5), "dz": (0.0, 0.04, -0.12, 0.12)}, 4),
@@ -34,7 +35,9 @@ def main():
     a = ap.parse_args(); out = Path(a.out); opt = {}; t0 = time.time()
     s0, rows, info = S.score(a.sheet, out, a.port, opt, "first"); gain = info["exposure_gain"]; shutil.copy(out / "render-first.png", out / "render-best.png")
     keys = ("judge", "L1_median", "L1_pass", "L2_median", "L2_pass", "draws", "tris", "too_regular")
-    hist = [{"stage": "first", **{k: s0[k] for k in keys}}]; print(json.dumps(hist[-1]), flush=True)
+    off0 = OV.offview(a.sheet, out, a.port, gain); best_off = off0   # v5: DINO holdout = mean DINO over the 4 off-views
+    s0["off_score"], s0["off_dino"] = off0["off_score"], off0["off_dino"]
+    hist = [{"stage": "first", "off_score": off0["off_score"], "off_dino": off0["off_dino"], **{k: s0[k] for k in keys}}]; print(json.dumps(hist[-1]), flush=True)
     best, renders, improved = s0, 2, set()
     for stage, P, gens in STAGES:
         names = list(P); built = [k for k in rows if k in info["elements"] and len(info["elements"][k]) == 2 and info["elements"][k][0] != "sky"]
@@ -70,9 +73,10 @@ def main():
                 s1, r1, i1 = S.score(a.sheet, out, a.port, new, "trial", gain); renders += 1
                 gain_sum = sum(r1.get(k, 0) for k in rows) - sum(rows.values())
                 drops = [k for k in rows if r1.get(k, 0) < rows[k] - MAX_DROP]
-                ok = (gain_sum > 0 and not drops and s1["scores"]["perceptual"] >= best["scores"]["perceptual"] - DINO_TOL
+                offt = OV.offview(a.sheet, out, a.port, gain) if gain_sum > 0 and not drops else {"off_dino": -1, "off_score": -1}; renders += 4
+                ok = (gain_sum > 0 and not drops and offt["off_dino"] >= best_off["off_dino"] - DINO_TOL
                       and s1["draws"] <= DRAW_BUDGET and s1["tris"] <= TRI_BUDGET)
-                diag[f"try{attempt}"] = {"sum_gain": round(gain_sum, 1), "drops_gt10": len(drops), "dino": s1["scores"]["perceptual"], "n": len(cand)}
+                diag[f"try{attempt}"] = {"sum_gain": round(gain_sum, 1), "drops_gt10": len(drops), "off_dino": offt["off_dino"], "off_score": offt["off_score"], "n": len(cand)}
                 if ok:
                     break
                 # drop candidates that did not gain themselves, then the ones whose element (or neighbours) dropped
@@ -84,12 +88,14 @@ def main():
                 if not cand:
                     break
             if ok and cand:
+                s1["off_score"], s1["off_dino"] = offt["off_score"], offt["off_dino"]; best_off = offt
                 opt, rows, info, best = new, r1, i1, s1; kept = list(cand); improved |= set(cand)
                 shutil.copy(out / "render-trial.png", out / "render-best.png")
         (out / "opt.json").write_text(json.dumps(opt, indent=1))   # checkpoint after every stage
-        hist.append({"stage": stage, "active": len(act), "evals_per_element": gens * POP, "kept": len(kept), "diag": diag, "renders": renders,
+        hist.append({"stage": stage, "off_score": best_off["off_score"], "off_dino": best_off["off_dino"], "active": len(act), "evals_per_element": gens * POP, "kept": len(kept), "diag": diag, "renders": renders,
                      "min": round((time.time() - t0) / 60, 1), **{k: best[k] for k in keys}}); print(json.dumps(hist[-1]), flush=True)
-    S.score(a.sheet, out, a.port, opt, "after", gain)
+    S.score(a.sheet, out, a.port, opt, "after", gain); offa = OV.offview(a.sheet, out, a.port, gain)
+    best["off_score"], best["off_dino"], best["off_views"] = offa["off_score"], offa["off_dino"], offa["views"]
     worst_rows = sorted(rows, key=lambda k: rows[k])[:40]
     ledger = [{"id": k, "type": info["elements"].get(k, ["?"])[0], "row": round(rows[k], 1), "gap": "expressiveness"} for k in worst_rows if k not in improved and k in info["elements"]]
     (out / "opt.json").write_text(json.dumps(opt, indent=1))

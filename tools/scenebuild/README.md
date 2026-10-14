@@ -44,3 +44,9 @@ OUT must be served (`python3 -m http.server PORT` in OUT, with view.html, three.
 texture, scores colour + DINO vs the key x (1 - hole fraction). This `off_score` is the gate number; the key-camera
 judge is optimistic since the key image is projected from that camera. L1 forms are dilated by one grid step so
 neighbouring forms overlap (no seams). optimize.py checkpoints opt.json after every stage.
+
+## v5: geometry past the key frame + off-view holdout
+* key depth edge-replicated 256 px beyond each frame edge, back-projected with the key intrinsics (non-sky), 4-step grid
+* every L1 relief becomes a shell (back copy 6 % deeper along the view rays + stitched side faces), so off-views see
+  plausible back/side faces instead of paper-thin sheets; L1 grid 12 px to stay inside the 200k tri budget
+* optimize.py: DINO holdout = mean DINO over the 4 off-views (offview.py), tolerance 0.5; off_score recorded first/after

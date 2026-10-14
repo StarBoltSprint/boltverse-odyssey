@@ -70,6 +70,17 @@ def wear_colours(V, F, col, snow, rough, snow_col, t):
 
 
 _REC = {}
+EXT, BACK_REL = 256, 0.06   # px of key depth extrapolated past each frame edge; shell thickness (fraction of depth)
+
+
+def solidify(V, F, rel):
+    """shell: back copy of the surface pushed `rel` x depth further along the camera rays (camera at origin), faces
+    reversed, boundary edges stitched with side quads -> closed-ish solid seen from off-views."""
+    V = np.asarray(V, float); F = np.asarray(F, int); n = len(V)
+    e = np.concatenate([F[:, [0, 1]], F[:, [1, 2]], F[:, [2, 0]]]); key = np.sort(e, 1)
+    u, inv, cnt = np.unique(key, axis=0, return_inverse=True, return_counts=True); b = e[cnt[inv.ravel()] == 1]
+    side = np.concatenate([np.stack([b[:, 0], b[:, 1] + n, b[:, 1]], 1), np.stack([b[:, 0], b[:, 0] + n, b[:, 1] + n], 1)]) if len(b) else np.zeros((0, 3), int)
+    return np.vstack([V, V * (1 + rel)]), np.vstack([F, F[:, ::-1] + n, side])
 KEY_W, DETAIL_W = 0.7, 0.35   # viewer: projected key texture weight, matlib detail strength
 MATLIB = Path(os.environ.get('KIT_MATLIB', '/workspace/kitrelief-out/matlib'))   # texflow material library
 OBS_W = 0.8   # weight of the projected key colour vs the measured albedo/wear colour
@@ -93,7 +104,7 @@ def bind(p, k, s, rough, w, h, th, o=None):
             "px": px, "nx": float(np.clip(round(w / px), 1, 6)) if px > 0.05 else 1.0, "drips": 0.0}
 
 
-def build(sd, out, opt=None, rel_step=10):
+def build(sd, out, opt=None, rel_step=12):   # v5: 12 px grid (shells double the relief tris)
     sh, cam, Z, Pcv, P3, L1m, els1, M2, els2 = load(sd); opt = opt or {}
     out = Path(out); out.mkdir(parents=True, exist_ok=True)
     meshes = {t: G.M() for t in ET.TYPES}; used = {}; rng = np.random.default_rng(5)
@@ -126,6 +137,8 @@ def build(sd, out, opt=None, rel_step=10):
             if e["level"] == 1:   # v4 gap fill: neighbouring L1 forms overlap by one grid step (no seams between forms)
                 m = cv2.dilate(m.astype(np.uint8), np.ones((2 * rel_step + 1, 2 * rel_step + 1), np.uint8)).astype(bool)
             V, F, _ = G.relief(Ps, m, rel_step if e["level"] == 1 else 6, np.zeros((1024, 1024, 3)), 0.004 * rough, rng)
+            if e["level"] == 1 and len(F):   # v5: plausible back + side faces (solid shell pushed back along the view rays)
+                V, F = solidify(V, np.asarray(F), BACK_REL)
             meshes[t if t in ("ground", "wall", "ice_mass", "tread_snow") else "wall"].add(V, F, col, 0.04 + p["col.L_std"] / 400, rng)
             used[e["id"]] = [t, round(z, 2)]; continue
         # small elements: the type's text recipe (recipes/<type>.json) composed from ops.py, params bound to the
@@ -141,6 +154,23 @@ def build(sd, out, opt=None, rel_step=10):
         Vw = anchor + (Vl + off) @ np.stack(ax)
         meshes[t].add(Vw, Fl, wear_colours(Vw, Fl, col, env["snow"], rough, snow_col, t))
         used[e["id"]] = [t, round(z, 2)]
+    # v5: extend past the key's view edges: key depth edge-replicated EXT px beyond the frame, back-projected with
+    # the same intrinsics (non-sky only), solid shell; colours come from the clipped key projection below
+    if EXT > 0:
+        Wd = Z.shape[1]; Zp = cv2.copyMakeBorder(Z, EXT, EXT, EXT, EXT, cv2.BORDER_REPLICATE)
+        sky_m = np.zeros(Z.shape, np.uint8)
+        for e, mm_ in zip(els1, L1m):
+            if e.get("class") == "sky":
+                sky_m |= mm_.astype(np.uint8)
+        skp = cv2.copyMakeBorder(sky_m, EXT, EXT, EXT, EXT, cv2.BORDER_REPLICATE).astype(bool)
+        uu, vv = np.meshgrid(np.arange(-EXT, Wd + EXT), np.arange(-EXT, Wd + EXT))
+        Pp = np.stack([(uu - cam["cx"]) / cam["fx"] * Zp, (vv - cam["cy"]) / cam["fy"] * Zp, Zp], -1) * np.array([1, -1, -1], np.float32)
+        inner = np.zeros(Zp.shape, bool); o_ = EXT + 2 * rel_step; inner[o_:-o_, o_:-o_] = True
+        for t_, band in (("ground", vv >= cam["cy"]), ("wall", vv < cam["cy"])):
+            val = ~skp & ~inner & band
+            V, F, _ = G.relief(Pp, val, 4 * rel_step, np.zeros(Pp.shape), 0.0, rng)
+            if len(F):
+                V, F = solidify(V, np.asarray(F), BACK_REL); meshes[t_].add(V, F, np.array([0.5, 0.5, 0.55]))
     # light: median image-plane light direction of the elements -> directional light from that side, above
     dx = float(np.median([e["props"]["light.dir_x"] for e in els2 if e.get("props")])); dy = float(np.median([e["props"]["light.dir_y"] for e in els2 if e.get("props")]))
     # lighting calibrated on the key: median lit/shadow ratio r of the elements -> ambient share 1/r, sun share 1-1/r

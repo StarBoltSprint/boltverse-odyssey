@@ -13,9 +13,9 @@ HERE = Path(__file__).resolve().parent; ROOT = HERE.parents[1]
 VIEWS = ("yawL", "yawR", "high", "graze")
 
 
-def offview(sheet, out, port, gain=1.0):
+def offview(sheet, out, port, gain=1.0, views=VIEWS):
     out = Path(out); res = {}
-    for v in VIEWS:
+    for v in views:
         png = out / f"off-{v}.png"
         subprocess.run([sys.executable, str(HERE / "shot.py"), f"http://127.0.0.1:{port}", str(png), "--q", f"gain={gain:.3f}&kw=0&bg=ff00ff&view={v}"], check=True, capture_output=True)
         im = cv2.imread(str(png)); hole = (im[..., 2] > 240) & (im[..., 0] > 240) & (im[..., 1] < 20)
@@ -24,7 +24,8 @@ def offview(sheet, out, port, gain=1.0):
         j = json.loads(subprocess.run([sys.executable, str(ROOT / "tools/kit/judge.py"), str(png), str(Path(sheet) / "key1024.png"), str(out / "fullmask.png")], capture_output=True, text=True).stdout)
         sc = 0.5 * j["scores"]["colour"] + 0.5 * j["scores"]["perceptual"]
         res[v] = {"score": round(sc * (1 - hf), 1), "colour": j["scores"]["colour"], "dino": j["scores"]["perceptual"], "hole_frac": round(hf, 4), "png": str(png)}
-    return {"off_score": round(float(np.mean([r["score"] for r in res.values()])), 1), "views": res}
+    return {"off_score": round(float(np.mean([r["score"] for r in res.values()])), 1),
+            "off_dino": round(float(np.mean([r["dino"] for r in res.values()])), 1), "views": res}
 
 
 if __name__ == "__main__":
