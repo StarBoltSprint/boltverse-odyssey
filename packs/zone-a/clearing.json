@@ -1,7 +1,6 @@
 {
   "schema": "clearing/1",
   "seed": 1,
-  "biome": "howling-eclipse",
   "spawn": {
     "position": [
       -6,
@@ -73,13 +72,5 @@
         "packs/zone-a/src/detail/c2.png"
       ]
     }
-  },
-  "transition": {
-    "to": "ember-mesa",
-    "toClearing": null,
-    "path": [],
-    "startM": 0,
-    "endM": 40,
-    "widthM": 12
   }
 }

@@ -2,8 +2,6 @@
 
 **READ [`docs/METHOD.md`](../../docs/METHOD.md) FIRST** — The Odyssey Method: the one approved way to build each element (owner decisions with dates).
 
-**Open zone, owner 2026-10-04/05.** That sheet's standing list wins over card, billboard, and impostor wording later in this paste for canyon walls, mesas, rocks, shards, and details. Those are frigate solids. Far LOD is a cheaper solid. Only the sky is a backdrop: nearly empty base, then one looping Imagine video per animated element (do not lay one video on a full still). A planet video fills the frame, is photoreal, and is checked frame by frame for rotation. Collisions follow the drawn faces. Menus are a high-tech Citadel. Echo Shards are one shared module plus a zone manifest. Phone: drawCalls ≤ 12, texMB ≤ 260, videos ≤ 4 including Bolt; debug text only in debug mode. Accept view drift and specks. Share `https://<slug>.grok.me/` when the root host 307s to the play path, and bump `?v=` or use a private tab before calling a phone stale.
-
 Kitchen only. Do not read this to the player.
 
 **Tool feedback (law 66):** if a repo tool let a defect through, reported a wrong number, or was hard to use, finish the take and file [`66-tool-feedback-loop.md`](66-tool-feedback-loop.md) upstream.
@@ -109,7 +107,7 @@ Diablo forest, once the Imagine videos exist:
 
 > On l'a déjà fait pour les vidéos Imagine : sol, ciel, herbe, arbres. Une fois cuites, elles ne changent plus.
 
-Ground, sky, grass, trees. Cooked, then static. The next chunk of forest is the same simplex placement of those already-cooked herbe and arbres. Simplex does not draw that forest. It is not a new prompt, not WFC, and not a quest that rewrites the world while he runs. Load-time placement of an already-cooked corridor between two gates is [doc 68](68-wfc-path-placement.md). That solve does not run during play and does not place the next forest chunk. SmiR, 2026-10-06: already-cooked solids may stream ahead of Bolt during the run (pooled, seeded, the same speed history, the same seats). That stream does not draw, does not build a mesh, and does not rerun the corridor solve.
+Ground, sky, grass, trees. Cooked, then static. The next chunk of forest is the same simplex placement of those already-cooked herbe and arbres. Simplex does not draw that forest. It is not a new prompt, not WFC, and not a quest that rewrites the world while he runs.
 
 The run layer is a flat plate, the ribbon, the grass, the trees, a few rocks:
 
@@ -229,7 +227,7 @@ Bolt looks sharper when the trunk fills the screen, while the files are about th
 
 **Four faces are the next step. They are not a v1 KEEP.** Bolt has one video per side, and you play one, because he is alone. In the forest a front trunk and a side trunk are on screen together. All trees share four videos. Four decoders, not one decoder per tree. Twelve (three kinds times four faces) is no. Each face is cooked with the first, the middle, and the last frame locked on that side of the same trunk, larger. The four faces use that lock. They do not replace it. In play the face follows where the player stands (`atan2` toward the tree), not the yaw of the head. Use a wide threshold before the image changes. Otherwise the tree spins as soon as the player moves a little. Between two faces the card is flat. You do not see the edge of the wood. Instancing comes after: one GPU pass for every tree of one face. It lightens the frame. It does not add a pixel. Wiring it onto the blurry video does not show. Four faces are not the volume. The volume is section B5b.
 
-Placement is simplex: where to put the already-cooked herbe and arbres. The next forest chunk stays that placement. Simplex does not draw it. It does not call a new Imagine prompt, WFC, or an adaptive quest in the middle of the run. The load-time corridor solve between gates is [doc 68](68-wfc-path-placement.md). It is not this chunk. Streaming already-cooked solids ahead of Bolt, pooled and seeded, is allowed (SmiR, 2026-10-06). Generating pixels or meshes for that stream is not.
+Placement is simplex: where to put the already-cooked herbe and arbres. The next forest chunk stays that placement. Simplex does not draw it. It does not call a new Imagine prompt, WFC, or an adaptive quest in the middle of the run.
 
 - Grass: cell of 1.15 m. Low noise is a gap. High noise is a tuft.
 - Trees: cell of 3.3 m. A wide noise says the grove. A finer noise picks the tree.
@@ -442,7 +440,7 @@ Forest / open ground:
 - A forest Bolt with the lava tint still on (`uGrove` left at 0)
 - Preloading every sky and every orbit JPEG at boot
 - Putting the trimmed road, wings, demons, howl, `ground.mp4`, or Thunderwolf clips back into the published forest pack
-- Recooking sol, ciel, herbe, or arbres after they are cooked, or a new prompt / WFC / adaptive quest for the next chunk. Load-time corridor placement between gates is [doc 68](68-wfc-path-placement.md); it is not a chunk rewrite. Placement streaming of already-cooked solids during the run is allowed (SmiR, 2026-10-06). A mid-run WFC rewrite of the corridor, or a stream that draws pixels or meshes, is not.
+- Recooking sol, ciel, herbe, or arbres after they are cooked, or a new prompt / WFC / adaptive quest for the next chunk
 - Relief baked into the forest ground film: a hill, ruins, crystals, or steam in sol. Detail dressing, when wanted, is an Imagine plate or keyed layer, not a mesh or live procedural generator.
 - A black-plate pipeline longer than the color clear plus those cooked Imagine layers
 

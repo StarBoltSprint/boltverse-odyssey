@@ -440,11 +440,9 @@ function texDensity(p, ia, ib, ic, tw, th) {
  * Lazy close-up magnification probe. tagOf(gi, ti, cy, ny) names the part a face belongs to.
  * Returns a function (eyeWorld, fwd, right, up, focal, tanH, tanV) -> { tag: { mag, dist, tpm } }.
  */
-export function buildMagProbe(groups, frame, texSize, tagOf, spacing = 0.08, densityOf = null) {
+export function buildMagProbe(groups, frame, texSize, tagOf, spacing = 0.08) {
   const pts = [];
   const tpms = [];
-  const alts = [];
-  const switches = [];
   const tags = [];
   const tagNames = [];
   const tagIndex = new Map();
@@ -457,27 +455,15 @@ export function buildMagProbe(groups, frame, texSize, tagOf, spacing = 0.08, den
     const [tw, th] = texSize[g.skin] || [1, 1];
     for (let t = 0; t + 2 < idx.length; t += 3) {
       const ia = idx[t] * 5, ib = idx[t + 1] * 5, ic = idx[t + 2] * 5;
-      let tpm = texDensity(p, ia, ib, ic, tw, th);
+      const tpm = texDensity(p, ia, ib, ic, tw, th);
+      if (!(tpm > 0)) continue;
       const cx = (p[ia] + p[ib] + p[ic]) / 3;
       const cy = (p[ia + 1] + p[ib + 1] + p[ic + 1]) / 3;
       const cz = (p[ia + 2] + p[ib + 2] + p[ic + 2]) / 3;
       const ex = p[ib] - p[ia], ey = p[ib + 1] - p[ia + 1], ez = p[ib + 2] - p[ia + 2];
       const fx = p[ic] - p[ia], fy = p[ic + 1] - p[ia + 1], fz = p[ic + 2] - p[ia + 2];
-      const nxv = ey * fz - ez * fy;
       const nyv = ez * fx - ex * fz;
-      const nzv = ex * fy - ey * fx;
-      const nl = Math.hypot(nxv, nyv, nzv) || 1;
-      // densityOf (optional): the shader's real density for this face, [tpm, closeTpm, switchMag].
-      // A face that swaps to a close-up layer reports that layer once its own mag passes switchMag.
-      let alt = 0;
-      let sw = Infinity;
-      if (densityOf) {
-        const r = densityOf(nxv / nl, nyv / nl, nzv / nl, tpm);
-        tpm = r[0];
-        alt = r[1] || 0;
-        sw = r[2] == null ? Infinity : r[2];
-      }
-      if (!(tpm > 0)) continue;
+      const nl = Math.hypot(ey * fz - ez * fy, nyv, ex * fy - ey * fx) || 1;
       const name = tagOf(gi, t, cy, nyv / nl);
       if (!tagIndex.has(name)) { tagIndex.set(name, tagNames.length); tagNames.push(name); }
       const ti = tagIndex.get(name);
@@ -493,14 +479,12 @@ export function buildMagProbe(groups, frame, texSize, tagOf, spacing = 0.08, den
           const key = Math.floor(lx / spacing) + "," + Math.floor(ly / spacing) + "," + Math.floor(lz / spacing) + ":" + ti;
           const prev = seen.get(key);
           if (prev != null) {
-            if (tpm < tpms[prev]) { tpms[prev] = tpm; alts[prev] = alt; switches[prev] = sw; }
+            if (tpm < tpms[prev]) tpms[prev] = tpm;
             continue;
           }
           seen.set(key, tpms.length);
           pts.push(a * lx + b * lz + px, py + ly, c * lx + d * lz + pz);
           tpms.push(tpm);
-          alts.push(alt);
-          switches.push(sw);
           tags.push(ti);
         }
       }
@@ -508,8 +492,6 @@ export function buildMagProbe(groups, frame, texSize, tagOf, spacing = 0.08, den
   }
   const P = new Float32Array(pts);
   const T = new Float32Array(tpms);
-  const A = new Float32Array(alts);
-  const S = new Float32Array(switches);
   const G = new Uint8Array(tags);
   return function probe(eye, fwd, right, up, focal, tanH, tanV) {
     const out = {};
@@ -532,15 +514,10 @@ export function buildMagProbe(groups, frame, texSize, tagOf, spacing = 0.08, den
       if (vz < 0.05) continue;
       if (Math.abs(vx / vz) > tanH || Math.abs(vy / vz) > tanV) continue;
       const dist = Math.hypot(rx, ry, rz);
-      let tp = T[i];
-      let m = focal / (Math.max(0.05, dist) * tp);
-      if (A[i] > 0 && m >= S[i]) {
-        tp = A[i];
-        m = focal / (Math.max(0.05, dist) * tp);
-      }
+      const m = focal / (Math.max(0.05, dist) * T[i]);
       const o = out[tagNames[G[i]]];
       if (dist < o.dist) o.dist = dist;
-      if (m > o.mag) { o.mag = m; o.tpm = tp; o.at = [P[k], P[k + 1], P[k + 2]]; }
+      if (m > o.mag) { o.mag = m; o.tpm = T[i]; o.at = [P[k], P[k + 1], P[k + 2]]; }
     }
     return out;
   };

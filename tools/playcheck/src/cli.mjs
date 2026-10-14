@@ -1,7 +1,6 @@
 import { createRequire } from "node:module";
-import { mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { mkdirSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
-import { evaluatePlacement } from "./approach.mjs";
 import { normalizeLayout } from "./layout.mjs";
 import { launchPhone, readGlErrors } from "./browser.mjs";
 import { startStatic } from "./serve.mjs";
@@ -138,19 +137,6 @@ Exit 0 only when every row PASSes. A hand-written PASS table is not this report.
     if (layout.streaming) {
       notes.push("Streaming: fade_in and preload_ahead. The fade is alpha on existing pixels. An object already visible as its far representation crossfades and does not drop to 0 first. Alpha starts at 0 only when the object was outside the frustum, occluded, or beyond fog. Owner decree #457, approved 2026-10-02. Spec rail 11.");
     }
-    let approachLog;
-    if (layout.placement) {
-      const fpsSample = fpsFromShots(shots, samples);
-      const t0 = Date.now();
-      const approach = evaluatePlacement(layout.placement, {
-        fpsAt: () => fpsSample,
-        timestampAt: (i) => new Date(t0 + i * 1000).toISOString(),
-      });
-      judged.rows.push(...approach.rows);
-      writeFileSync(path.join(outDir, "approach.jsonl"), approach.jsonl);
-      approachLog = "approach.jsonl";
-      notes.push("Approach run: library local collision boxes are scaled, yawed, and ground-snapped from the zone placement. approach.jsonl records timestamp, position, facing, nearest part, distance, hit/miss, camera layer, and an fps sample.");
-    }
     if (args.video && !videoInfo) notes.push("Video was requested but not written.");
     const report = writeReport(outDir, {
       url: href,
@@ -175,7 +161,6 @@ Exit 0 only when every row PASSes. A hand-written PASS table is not this report.
       notes,
       generatedAt: new Date().toISOString(),
       waypoints: layout.organic ? waypoints : undefined,
-      approachLog,
     });
     console.log(report.summary.result);
     for (const row of report.rows) console.log(`${row.result}\t${row.id}`);
@@ -271,13 +256,4 @@ function withDebug(href) {
 
 function stamp() {
   return new Date().toISOString().replace(/[:.]/g, "-");
-}
-
-function fpsFromShots(shots, samples) {
-  let fps = 30;
-  for (const shot of [...shots, ...samples]) {
-    const n = shot && shot.snap && shot.snap.perf ? Number(shot.snap.perf.fpsAvg) : NaN;
-    if (Number.isFinite(n) && n >= 0) fps = n;
-  }
-  return fps;
 }
