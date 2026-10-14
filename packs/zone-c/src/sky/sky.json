@@ -1,0 +1,52 @@
+{
+  "slices": [
+    "h0.jpg",
+    "h1.jpg",
+    "h2.jpg",
+    "h3.jpg",
+    "h4.jpg",
+    "h5.jpg",
+    "h6.jpg",
+    "h7.jpg",
+    "h8.jpg"
+  ],
+  "offsetsSec": [0, 0.9, 1.8, 2.7, 3.6, 4.5, 5.4, 6.3, 7.2],
+  "display": {
+    "turn0": -0.21016,
+    "bands": [
+      {
+        "id": "horizon",
+        "files": "slices",
+        "azimuthDeg": 40,
+        "elBottomDeg": -1.5,
+        "elTopDeg": 20
+      },
+      {
+        "id": "upper",
+        "files": ["upper/gradient.jpg"],
+        "repeat": 12,
+        "azimuthDeg": 30,
+        "elBottomDeg": 15,
+        "elTopDeg": 45
+      }
+    ],
+    "videoTiles": [
+      {"id": "mist", "azimuthDeg": 16.344, "elevationDeg": 15.578},
+      {"id": "clouds", "azimuthDeg": 16.344, "elevationDeg": 15.578}
+    ]
+  },
+  "layers": [
+    {
+      "id": "mist",
+      "file": "mist.mp4",
+      "durationSec": 13.042,
+      "texBytes": 2073600
+    },
+    {
+      "id": "clouds",
+      "file": "clouds.mp4",
+      "durationSec": 11.042,
+      "texBytes": 2073600
+    }
+  ]
+}

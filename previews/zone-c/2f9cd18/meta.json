@@ -1,0 +1,10 @@
+{
+  "zone": "zone-c",
+  "commit": "2f9cd18",
+  "date": "2026-10-05",
+  "verdict": "PASS",
+  "report": "packs/zone-c/proof/step1/REPORT.md",
+  "walk": null,
+  "play": "play",
+  "publicUrl": null
+}

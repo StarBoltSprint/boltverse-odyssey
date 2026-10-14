@@ -1,7 +1,0 @@
-# Terrain fix 2 (11 Oct)
-Foundation is merged (cursor/foundation-1011): use tools/common/vision_models.py (DA V2 Large, MoGe-2, SAM2 with a cache), the loading-screen capture gate, object-framed checklist cameras, per-stage timing and cheap gates first. Switch relief/fuse to DA V2 Large. Prove the loading-screen fix on a REAL Zone B play render. Local commits only, no Imagine generation, live untouched. Stop at PASS or after 2 attempts, with an honest REPORT.md + sheets (16:9 + phone) compared visually against key-city3.
-Lesson: from the key camera, sand covers only about 8 m, so depth can't give the big dunes. New: side-dune heights and shapes come from the key's HORIZON/SKYLINE silhouette (SAM2 ground mask outline) + known scales (avenue 8-15 m, side dunes 15-30 m, mound right), and depth only for the near field. Sunken avenue with slabs. Extend with wind-oriented dunes at the key's wavelength (repetition under 0.75), corridor slope of 16° or less. Real before/after renders (no loading screen).
-
-## FIRST STEP: a merge of cursor/foundation-1011 is in progress with conflicts (git status). Resolve them, keeping BOTH sides (learn/failures.md: keep all entries; tools/object-gate/selftest.mjs: keep both test sets), run the selftests, commit the merge, then continue.
-
-## Licence change (12:25): use MoGe-2 (MIT) as the DEFAULT depth model, not DA V2 Large (non-commercial). DA V2 Large is for internal comparison only, never in shipped or posted outputs. Set it as the default in tools/common/vision_models.py.
