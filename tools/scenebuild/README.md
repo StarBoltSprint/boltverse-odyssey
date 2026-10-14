@@ -38,3 +38,9 @@ OUT must be served (`python3 -m http.server PORT` in OUT, with view.html, three.
 * **Exposure**: one probe render; light intensity scaled so mean luminance matches the key (fixed during the loop).
 * **Recipe library**: `recipes/library.json` records per-zone median rows and the recipe hash; a recipe is
   `validated` once it passes on one zone; editing it clears its validation.
+
+## Off-view gate (v4)
+`offview.py SHEET OUT PORT` renders yaw -25 / +25, 45 deg high and a grazing close-up WITHOUT the projected key
+texture, scores colour + DINO vs the key x (1 - hole fraction). This `off_score` is the gate number; the key-camera
+judge is optimistic since the key image is projected from that camera. L1 forms are dilated by one grid step so
+neighbouring forms overlap (no seams). optimize.py checkpoints opt.json after every stage.

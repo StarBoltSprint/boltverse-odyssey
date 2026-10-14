@@ -86,6 +86,7 @@ def main():
             if ok and cand:
                 opt, rows, info, best = new, r1, i1, s1; kept = list(cand); improved |= set(cand)
                 shutil.copy(out / "render-trial.png", out / "render-best.png")
+        (out / "opt.json").write_text(json.dumps(opt, indent=1))   # checkpoint after every stage
         hist.append({"stage": stage, "active": len(act), "evals_per_element": gens * POP, "kept": len(kept), "diag": diag, "renders": renders,
                      "min": round((time.time() - t0) / 60, 1), **{k: best[k] for k in keys}}); print(json.dumps(hist[-1]), flush=True)
     S.score(a.sheet, out, a.port, opt, "after", gain)

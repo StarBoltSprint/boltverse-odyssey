@@ -123,6 +123,8 @@ def build(sd, out, opt=None, rel_step=10):
         big = e["level"] == 1 or (t in ("stone_block", "ice_mass", "wall") and e["area_frac"] > 0.002)
         if big:   # big forms / big masses: depth-fitted relief surface (L2 ones 0.5 % nearer so they sit on the L1 form)
             Ps = P3 * (1 + dz) * (1.0 if e["level"] == 1 else 0.995)
+            if e["level"] == 1:   # v4 gap fill: neighbouring L1 forms overlap by one grid step (no seams between forms)
+                m = cv2.dilate(m.astype(np.uint8), np.ones((2 * rel_step + 1, 2 * rel_step + 1), np.uint8)).astype(bool)
             V, F, _ = G.relief(Ps, m, rel_step if e["level"] == 1 else 6, np.zeros((1024, 1024, 3)), 0.004 * rough, rng)
             meshes[t if t in ("ground", "wall", "ice_mass", "tread_snow") else "wall"].add(V, F, col, 0.04 + p["col.L_std"] / 400, rng)
             used[e["id"]] = [t, round(z, 2)]; continue
@@ -173,7 +175,12 @@ def build(sd, out, opt=None, rel_step=10):
             shutil.copy(src, out / f"tile-{kind}.jpg"); tiles[kind] = f"tile-{kind}.jpg"
     for t in meshes:
         tile_of[t] = "snow" if t in ("snow_pillow", "snow_patch", "tread_snow", "ground", "ice_mass", "icicle") else "stone"
-    info = {"camera": {"fov_y_deg": cam["fov_y_deg"], "aspect": 1.0, "key": "key.png", **{k: cam[k] for k in ("W", "H", "fx", "fy", "cx", "cy")}},
+    nonsky = np.ones_like(Z, bool)
+    for e, mm_ in zip(els1, L1m):
+        if e.get("class") == "sky":
+            nonsky &= ~mm_
+    pivot_d = float(np.median(Z[nonsky])) if nonsky.any() else float(np.median(Z))
+    info = {"pivot_d": round(pivot_d, 3), "camera": {"fov_y_deg": cam["fov_y_deg"], "aspect": 1.0, "key": "key.png", **{k: cam[k] for k in ("W", "H", "fx", "fy", "cx", "cy")}},
             "tiles": tiles, "tile_of": tile_of, "tex": {"kw": KEY_W, "kd": DETAIL_W, "tile_m": 1.5}, "light": light, "types": counts, "draws": draws,
             "tris": int(sum(len(np.vstack(mm.F)) for mm in meshes.values() if mm.F)), "elements": used,
             "tris_by_type": {t: int(sum(len(f) for f in mm.F)) for t, mm in meshes.items() if mm.F}}
