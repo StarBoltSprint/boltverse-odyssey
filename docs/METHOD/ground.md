@@ -2,9 +2,6 @@
 
 Back to [METHOD.md](../METHOD.md). **Status: APPROVED look — SmiR, 2026-10-03** (zone A step 1, PR #156). Merged to main 2026-10-03 as part of zone A. **Not VALIDATED:** the slope fix is deferred and waits for SmiR's phone check.
 **Relief fixes still pending** (§13): deferred. PR #156 was merged with zone A on 2026-10-03 before they landed (owner approval 21:56 Paris).
-**Slope fix IN TEST (2026-10-04, branch `zone-a-polish`):** surface-aware ground UV (§6b) removes the texel stretch on
-slopes without touching the relief (no flattening, no carpet); the camera eye keeps a ground-magnification floor (§6b).
-Waits for SmiR's phone check.
 
 This page is self-contained: a fresh Grok (or a player) who reads only this page can rebuild the zone A ground and make the
 ground of another biome at the same quality. Part 1 is the generic recipe, driven by the biome kit. Part 2 is the filled-in
@@ -127,13 +124,12 @@ allowed for shape; zone A used analytic features.
 narrower than ~20 m. Taller cliffs are objects, not relief. Keep a raised boundary inside the same limits (or make it objects).
 
 **Micro relief from the images** (the approved per-pixel depth carrier, law 59): `microAt = MICRO_family ·
-(h_family(x / TILE, z / TILE) − 128)/100`, bilinear, wrapped, world-locked on the planar tile grid. The surface UV (§6b)
-warps albedo only: sampling the bump through it moved the floor enough to close the wreck hangar. Zone A: `MICRO = 0.1 m` for every
+(h_family(x/TILE, z/TILE) − 128)/100`, bilinear, wrapped, world-locked with the albedo. Zone A: `MICRO = 0.1 m` for every
 family, sampled from the `h` of the family's first slot.
 
 **Mesh** (`terrain.js buildMesh`): one regular grid, n = 300 cells across `2 × 1.08 × maxRadius` (zone A step 0.435 m,
 40 829 verts, 77 310 tris), cells outside 1.06 r(θ) dropped, `heightAt` baked into static vertex Y once at boot; per vertex:
-position, tile UV (surface-aware, §6b; was `x/TILE`), family id, mask UV `x/8.5 m`. One draw call. No normals (no lighting exists).
+position, tile UV `x/TILE`, family id, mask UV `x/8.5 m`. One draw call. No normals (no lighting exists).
 
 **Volume inputs per biome** (today constants in `field.js` / `terrain.js`; planned numbers-only kit `ground` block, #157):
 
@@ -153,32 +149,6 @@ position, tile UV (surface-aware, §6b; was `x/TILE`), family id, mask UV `x/8.5
   The mask is an Imagine image, so the variant mix is made of Imagine pixels.
 - **Tile size**: largest that keeps mag ≤ 1 at the play eye: `TILE ≤ (eyeAboveGround / tan(VFOV/2)) · srcW / (FOCAL · stretch)`.
   Zone A: eye 1.22 m, VFOV 48.07°, FOCAL 1793.6 px, srcW 1024 → ≤ 1.56 m / stretch → **TILE = 1.45 m** (walk mag 0.912).
-
-### 6b. Slope stretch fix — surface-aware UV + eye floor (IN TEST 2026-10-04)
-
-Planar top-down UV stretches each Imagine texel by `1 / cos(slope)` along the slope. Code-only fix, relief unchanged:
-
-- **UV solve** (`packs/zone-a/play/uvfield.js`, once at boot, ~0.2 s in Chrome): on a 96-cell grid over the mesh square,
-  each edge wants texture length = 3D length / `TILE` (the symmetric square root of `I + ∇h∇hᵀ`, macro relief only).
-  Weighted least squares (Jacobi-preconditioned conjugate gradient, 160 iterations, then 7 × 30), then reweight rounds
-  that add texels where a cell still stretches (focus `u ≤ 1.0`). Outside the mesh the target is planar and weak.
-  The UV stays a fixed function of world position (tiles world-locked); `uvAt()` feeds the mesh albedo. Micro relief stays on `x / TILE`.
-  Texels may compress (minification only). `?uv=planar` or `zone.ground.uv: "planar"` = the old mapping (A/B).
-- **Measured** (`stretch` = surface length / texture length, worst direction):
-
-  | Band (u = ρ / r(θ)) | planar p95 / max | surface UV p95 / max | min squash |
-  |---|---|---|---|
-  | interior `u < 0.9` | 1.056 / 1.101 | 0.993 / **0.999** | 0.79 |
-  | inner rim `0.9–1.0` | 1.227 / 1.535 | 0.994 / **1.005** | 0.70 |
-  | outer lip `1.0–1.045` (last ~2 m before the edge) | 1.558 / 2.004 | 1.278 / 1.466 | 0.74 |
-
-- **Magnification**: `terrain.mag()` uses the residual UV stretch around the eye (5 samples at 2.2 m) times the micro
-  slope term, instead of `1 / cos(slope)`. `terrain.eyeFloor(x, z, 0.98)` = lowest eye that keeps ground mag ≤ 0.98
-  (smooth macro relief + full micro amplitude); the chase eye is lifted onto it with a C1 smooth max (no kick, no shake).
-  This fixed the playcheck readings 2.09 (heading 82°) and 1.42 (127°): the eased eye lagged the ridge under a 150°/s
-  turn and sat 0.58 m above it. Spawn turn worst mag 2.148 → 0.998 (the sky upper band).
-- Proof frames: `/workspace/grokcli/out/zoneA-polish/slope/` (planar vs surface at the interior flank (−16, 4), the crest
-  flank (27, 27), the rim (−34, 3) and a chase pose) and `/workspace/grokcli/out/zoneA-polish/mag/` (headings 82° / 127°).
 
 ### 7. Layer 3 — cutout placement (`terrain.js buildCards`)
 
@@ -217,7 +187,7 @@ Verified 2026-10-03: `prep.py` rebuilds all 20 zone A files (`m0–m7`, `h0–h7
 |---|---|
 | `boot_clean` | 0 console errors / 4xx |
 | `walk_mag_le_1` | 8 gallops from the centre, every frame mag ≤ 1.0 (ground mag includes slope stretch over a 2.2 m span, cards included) |
-| `relief_span_le_3m_per_20m`, `slope_le_15deg` | walkable cells, 2 m slope baseline, 20 m windows (OPEN today, §13) |
+| `relief_span_le_3m_per_20m`, `slope_le_15deg` | walkable cells, 2 m slope baseline, 20 m windows (OPEN on zone A, §13). Zone B step 1 measured span 2.001 m and slope 14.50° (IN TEST, not a lock) |
 | q1, q3–q5 chase · q2 rim | play camera; no flat cap above the sky (q2) |
 | **q6 Bolt-height** | anti-carpet judge: relief silhouettes, lips, cutouts standing up (mag > 1 allowed, not a play camera) |
 | **q7 close-up** | boom 4.2 m, play mag; materials rich, not plain dirt |
@@ -252,6 +222,47 @@ rim berm `+2.6·t²` for u > 0.9. Micro: `MICRO = 0.1 m`, `TILE = 1.45 m`. Spawn
 `clearing.json` → `zone.ground`: `tile_m`, `tiles` (m0–m7), `depth` (h0–h7), `mask`, `details` (c0–c2); the play engine
 switches to the relief path when `depth`, `mask` and `details` are present.
 
+## Part 2b — Ember Mesa (zone B step 1) — IN TEST
+
+Not a lock. Does not replace ground v1. Numbers from the 2026-10-04 browser grid (2 m cells, 2 m slope baseline, 20 m windows, u < 0.92). Material words stay in the local prompts file.
+
+| Item | Measured |
+|---|---|
+| Pack | `packs/zone-b/` |
+| Area | 7800 m², max radius 66.05 m |
+| Rim | +0.9 m over the outer 18 m |
+| TILE / MICRO / MASK_M | 1.50 m / 0.10 m / 22 m |
+| Sources | 3 stills into 8 slots. Family 0 slots 0–1, family 2 slots 2–3, family 4 slots 4–5, family 6 slots 6–7 |
+| Mask | zone A `mask.png` reused (placement only). No new mask cook |
+| Cutouts | none (`details: []`) |
+| Height | min −0.965 m, max 2.263 m |
+| 20 m span | 2.001 m (limit 3 m) |
+| Slope | 14.50°, cells over 15° = 0 |
+| Spawn | (4, −14), heading 255° |
+| Boot `groundInfo` | tris 77500, sparse-sample maxSlope 0.326 rad |
+
+Known this step: the chase and the wide shot still read as one tile period (TILE cannot grow; ground mag 0.87–0.91). Family weights are in the mesh. No standing cards.
+
+**Step 1b (2026-10-04) — IN TEST.** Same relief numbers. The ground mesh adds a skirt to 480 m (18 rings, 96 segments) in the same draw. The sky shell sits at 640 m with clip far 720 m, so the skirt is in front of the shell. Ground tile is 1.42 m (`TILE` in `field.js`, `tile_m` in `clearing.json`). Three yaw-locked butte cards, black-keyed from their own pixels, seated outside the walk radius: heights 16.0 m, 7.062 m, 10.463 m (`packs/zone-b/src/buttes/`). An in-place 370° turn after that tile change measured ground mag 0.976 at heading 205. The chase at heading 255 shows the 16 m card breaking the skyline. The wide pose still shows a dark band under the painted land line. Cards at headings 75 and 180 still read above the ground line. Micro cutouts are still none (`details: []`). The body still stops at `contain()`, inside the cards, so the cards are not the collider.
+
+**Step 1c (2026-10-04) — IN TEST.** Walk relief is unchanged (`heightAt` still the step 1 function; span and slope were not remeasured). Outside the rim the skirt rises 42 m by 480 m (`SKIRT_LIFT` in `field.js`). The ground shader mixes 0.40 of the way toward the one fog colour sampled from the horizon, then the alpha falls from 1 to 0 between 300 m and 460 m over the sky already drawn. Butte cards add `skirtLift` at their base. On the wide pose `lookAt([-40,18,-24],[6,1,14])` the old luma cliff (35 at row 358) is gone; the largest 8-row jump in the new wide JPEG is 3.5, at the bottom of the frame. The chase pose still shows a far edge (luma jump −16.8 at row 546). Micro cutouts are still none.
+
+**Step 1d (2026-10-04) — IN TEST.** Walk relief is unchanged. `SKIRT_LIFT` is 28 m by 480 m. The ground shader mixes 0.18 of the way toward the one horizon fog colour (`fogNear` 260 m, `fogFar` 470 m). Alpha still falls from 1 to 0 between 300 m and 460 m. Fragments with alpha under 0.02 are discarded so they do not write depth. The post pass uses fog density 0.0035 and fog cap 0.16. Butte cards are the same three. On the wide pose the largest 8-row luma jump is +8.4 at row 256. Heading 255 shows the 16 m butte and the sun; the low painted mesa tops on that heading sit under the skirt. Heading 90 still shows the painted mesa row (largest jump +8.7 at row 632). Chase and eye-level foreground jumps are −8.8 and −18.4 at row 1560. The top 80 rows stay under 0.3. Micro cutouts are still none.
+
+**Step 1e (2026-10-04) — IN TEST.** Walk relief and `SKIRT_LIFT` 28 m are unchanged. The three yaw-locked butte cards are one loft (`packs/zone-b/play/mesas.js`), the validated hard-object method: Imagine front, side, and top on measured geometry, one draw. The base sits 1.8 m under `seatMin`. Butte-0 also has a back face. Butte-1 and butte-2 use the front where a back file is absent. Far painted mesas stay in the sky slices. On the wide pose the largest 8-row luma jump is +8.4 at row 256. Chase and eye-level largest jump is −10.8 at row 568. Heading 90 largest jump is +12.6 at row 608. Micro cutouts are still none.
+
+**Step 1f (2026-10-04) — IN TEST.** The walkable outline is the 14-vertex canyon. Area 6,500 m². Length 143.73 m. Width along z = 60, 40, 20, 0, −20, −40, −60 is 47.5, 44.5, 40.5, 41.5, 44.0, 47.5, 47.0 m. `contain()` stops on that outline. `TILE` stays 1.42 m. The ground shader crossfades a second Imagine family by value noise (ridge cap 0.22, other families 0.75, about 2.5 tiles). The crack lattice is still visible. Stop. Do not shift UV.
+
+`SKIRT_LIFT` is 3.5 m at 480 m. The first 12 m outside the rim dip 2.2 m, except on a butte mound, where that dip is cancelled. Boot `groundInfo`: tris 57774, minH −2.964, maxH 3.626 (the far skirt), maxSlope 0.227 rad (13.0°) on the inner mesh. Macro 20 m span inside u < 0.92 is 1.65 m, without the depth maps.
+
+The three lofts stay outside the outline so a phone view does not enlarge them: (46, 22), (−48.6, 55), (0, −96.8). Heights 16.0, 7.062, 10.463 m. Sink 2.6 m. Seats 2.33, 2.15, 2.75 m. The mound under each is wide (amplitude 2.8 / 2.2 / 2.8 m, sigma 32 / 30 / 32 m). The mesa close still shows a straight cut where the loft meets the ground. Stop. Do not pull a loft back inside the floor.
+
+Post fog, set after the kit copy: density 0.0012, cap 0.08. Ground fog mix stays 0.18. Micro cutouts are still none. Spawn (0, 55), heading 180.
+
+**Step 1g (2026-10-04) — IN TEST.** The walkable outline, the area, the length, and the widths are unchanged. `TILE` stays 1.42 m. The value-noise mix of a third family is gone. `familyBlend` picks two even slots by place: open floor is sand (slot 2), the rim is rock blended to sand, the wash and the slot are gravel (slot 6), clay (slot 4) sits only on the basin sides, the basin is sand blended toward gravel, and the shelves are rock. Dune amplitude is 0.65. The berm is 1.35 m over the last 14 m, and it fades where a butte mound is already the rise. A 1.55 m berm measured 16.07° and was put back. Boot `groundInfo`: tris 57774, verts 30442, minH −3.144, maxH 8.745, maxSlope 0.2366 rad (13.56°). The wide pose still shows the tile lattice. Stop. Do not shift UV. Do not rerun `prep.py` on this pack; that path restores the old tile map.
+
+Twenty-two keyed cutouts flank the lane (pebble height 0.26 m, tuft height 0.18 m). Six fallen blocks are touch cards, height 0.9–1.15 m. Canyon walls and the far skyline are the other cards: 39 cards in all (2 slot, 10 skyline, 4 wall, 2 basin, 15 rim, 6 block). Twenty-one are touch. One loft draw. Texture array 1280×1280, 8 layers, 8502 tris, uploadError 0, sink 2.6 m. The straight loft cut remains. `contain()` still stops on the outline. Spawn (0, 55), heading 180.
+
 ### 11. How B and C would fill the template (material ideas only; words go to their local file)
 
 | Role | B Ember Mesa (`ember-mesa`, golden hour) | C Cascade Verdance (`cascade-verdance`, morning) |
@@ -275,13 +286,14 @@ Same T1–T4 text; only `{FAMILY_MATERIAL}`, `{CUTOUT_SUBJECT}` and the kit slot
 3. Do not change: the T1–T4 frames, prep maths, mesh method, filtering, post constants (except one grade per biome), QC rows.
 4. Run §9; fill a recipe (`learn/recipes/`), failures, take note; new approved method → METHOD.md + decisions log.
 
+Zone B (2026-10-04) kept that copy under `packs/zone-b/play/` and read the zone directory, the kit `post` block, and the sky file list from `clearing.json` / `sky.json`. `packs/zone-a` was not edited. The copied `qc.mjs` takes the zone directory as its third argument. `prep.py` in the copy does not rebuild the mask and does not cut cards.
+
 ## 13. Known issues still to fix (targets)
 
 Measured 2026-10-03 on the PR #156 head (`groundInfo` = boot log; QC = `qc.mjs`, walkable cells, 2 m baseline).
 
 | Issue | Now | Target | Cause / fix direction |
 |---|---|---|---|
-| **Texel stretch on slopes** — IN TEST fix 2026-10-04 (§6b) | planar UV: 1.10 interior, 1.54 inner rim, 2.0 outer lip | stretch ≤ 1.0 | Surface-aware UV: interior 0.999, inner rim 1.005; **outer lip `u` 1.0–1.045 keeps p95 1.28 / max 1.47** (non-developable steep berm; declared). Relief untouched. |
 | **Relief too tall / steep** — owner accepted for now | Boot: max **7.66 m** (−1.74…7.66, mesh incl. rim), max slope **0.639 = 33°** (0.45 m baseline incl. micro). QC: walkable −1.80…5.43 m, **5.20 m** span in a 20 m window, interior max **25.3°**, rim berm **51°**, **21 %** of cells > 15° | **≤ 3 m over ≥ 20 m, slope ≤ 15°** | Crest 6.4 m on σ 8.5 m and rim berm +2.6 m in ~6 m. Scale every feature to A ≤ 3 m with σ ≥ 2.27·A; make the crest a gentle rise (the landmark brings the height as an object); replace the berm by a soft rise or boundary objects. Re-run QC until both relief rows PASS. |
 | **Hard material edges** | `familyAt` per vertex, `flat` attribute → stepped contours along triangles | **Soft transitions made of Imagine pixels** | Never a code gradient. Options: per-vertex relief weight compared with an Imagine mask value (the boundary takes the mask's organic shape over a band), or Imagine transition tiles (`image_edit` of two family tiles into a blend). |
 | **Tile grid in wide views** | 1.45 m period readable in q8–q10 (and the 8.5 m mask repeats) | **No visible grid in wide views** | More variants per family with a world-hashed slot per cell (placement), a second, larger Imagine mask (~40–60 m) between variants, fog. TILE cannot grow (mag 0.912). |
