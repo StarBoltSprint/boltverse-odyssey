@@ -1,9 +1,0 @@
-{
-  "name": "recipe-improve",
-  "private": true,
-  "type": "module",
-  "description": "A/B a docs/METHOD recipe against one learn/proposals variant",
-  "scripts": {
-    "selftest": "node selftest.mjs"
-  }
-}

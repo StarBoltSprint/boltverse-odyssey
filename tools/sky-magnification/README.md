@@ -1,4 +1,0 @@
-# tools/sky-magnification (tools/12)
-Minimum on-screen magnification (render-buffer px per sky texel, GPU rho = max of the x/y derivative lengths) of the 12-plate Zone D sky over the follow-camera path. FAIL if < 1.0 anywhere; reports pose, screen region (3x3), plate, az/el.
-Run: `python3 skymag.py --out out/zd-sky-magnification.json [--spine spine.json] [--set key=json]`. Self-test: `python3 -m unittest test_skymag`.
-Defaults: plates 1280x720 (actual final5 files) over 35 deg, equirect so vertical cover 19.69 deg; buffer 412x915 CSS x1.5 = 618x1372; vfov 48; pitch -8, -2 on climb s370-670 blended 10 m each end; samples every 5 m over 1100 m + yaw 0..90 step 5 at s520. Spine polyline not found in any zone JSON: path is synthesized from BIBLE/runsheet; pass `--spine` to use the real one (yaw/pitch per sample). Camera height does not change sky magnification (sky at infinity).

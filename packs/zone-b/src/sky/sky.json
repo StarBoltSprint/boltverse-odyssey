@@ -1,0 +1,51 @@
+{
+  "slices": [
+    "calm-0.jpg",
+    "calm-1.jpg",
+    "calm-2.jpg",
+    "calm-3.jpg",
+    "calm-4.jpg",
+    "calm-5.jpg",
+    "calm-6.jpg",
+    "calm-7.jpg",
+    "calm-8.jpg"
+  ],
+  "display": {
+    "turn0": 0.337333,
+    "bands": [
+      {
+        "id": "horizon",
+        "files": [
+          "calm-0.jpg",
+          "calm-1.jpg",
+          "calm-2.jpg",
+          "calm-3.jpg",
+          "calm-4.jpg",
+          "calm-5.jpg",
+          "calm-6.jpg",
+          "calm-7.jpg",
+          "calm-8.jpg"
+        ],
+        "azimuthDeg": 40.0,
+        "elBottomDeg": -10.493,
+        "elTopDeg": 10.493
+      },
+      {
+        "id": "upper",
+        "files": ["upper/gradient.jpg"],
+        "repeat": 9,
+        "azimuthDeg": 40.0,
+        "elBottomDeg": 7.893,
+        "elTopDeg": 28.88
+      }
+    ]
+  },
+  "layers": [
+    {
+      "id": "haze",
+      "file": "haze.mp4",
+      "gain": 0.28,
+      "key": 0.16
+    }
+  ]
+}
