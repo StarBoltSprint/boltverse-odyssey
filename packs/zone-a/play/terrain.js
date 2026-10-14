@@ -139,19 +139,15 @@ void main() {
   vLayer = aS.z;
 }`, `#version 300 es
 precision highp float;
-uniform sampler2D uTex0;
-uniform sampler2D uTex1;
-uniform sampler2D uTex2;
+precision highp sampler2DArray;
+uniform sampler2DArray uTex;
 uniform vec3 uId;
 uniform int uMode;
 in vec2 vUv;
 flat in float vLayer;
 out vec4 o;
 void main() {
-  vec4 c;
-  if (vLayer < 0.5) c = texture(uTex0, vUv);
-  else if (vLayer < 1.5) c = texture(uTex1, vUv);
-  else c = texture(uTex2, vUv);
+  vec4 c = texture(uTex, vec3(vUv, vLayer));
   if (c.a < 0.18) discard;
   if (uMode == 1) o = vec4(uId, 1.0);
   else o = vec4(c.rgb, c.a);
@@ -242,9 +238,7 @@ void main() {
   };
   const cLoc = {
     vp: gl.getUniformLocation(cardProg, "uVP"),
-    t0: gl.getUniformLocation(cardProg, "uTex0"),
-    t1: gl.getUniformLocation(cardProg, "uTex1"),
-    t2: gl.getUniformLocation(cardProg, "uTex2"),
+    tex: gl.getUniformLocation(cardProg, "uTex"),
     id: gl.getUniformLocation(cardProg, "uId"),
     mode: gl.getUniformLocation(cardProg, "uMode"),
   };
@@ -258,30 +252,18 @@ void main() {
   gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 8, 0);
   gl.bindVertexArray(null);
 
-  function rgbOf(img) {
-    const rgba = pixelsOf(img);
-    const rgb = new Uint8Array(img.width * img.height * 3);
-    for (let i = 0, j = 0; i < rgba.length; i += 4, j += 3) {
-      rgb[j] = rgba[i];
-      rgb[j + 1] = rgba[i + 1];
-      rgb[j + 2] = rgba[i + 2];
-    }
-    return rgb;
-  }
-
-  // Ground albedo is sampled as .rgb only. Store RGB8 so the unused alpha plane is not resident.
   function makeArray(images, id, repeat) {
     let maxW = 2;
     let maxH = 2;
     const packed = images.map((img) => {
       maxW = Math.max(maxW, img.width);
       maxH = Math.max(maxH, img.height);
-      return { w: img.width, h: img.height, data: rgbOf(img) };
+      return { w: img.width, h: img.height, data: pixelsOf(img) };
     });
     const levels = Math.floor(Math.log2(Math.max(maxW, maxH))) + 1;
     const t = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D_ARRAY, t);
-    gl.texStorage3D(gl.TEXTURE_2D_ARRAY, levels, gl.RGB8, maxW, maxH, images.length);
+    gl.texStorage3D(gl.TEXTURE_2D_ARRAY, levels, gl.RGBA8, maxW, maxH, images.length);
     gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
     gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     const wrap = repeat ? gl.REPEAT : gl.CLAMP_TO_EDGE;
@@ -289,47 +271,21 @@ void main() {
     gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, wrap);
     if (ext) gl.texParameterf(gl.TEXTURE_2D_ARRAY, ext.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(8, anisoMax));
     gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
     for (let i = 0; i < packed.length; i++) {
       const p = packed[i];
       if (p.w !== maxW || p.h !== maxH) {
-        const full = new Uint8Array(maxW * maxH * 3);
+        const full = new Uint8Array(maxW * maxH * 4);
         for (let y = 0; y < p.h; y++) {
-          full.set(p.data.subarray(y * p.w * 3, (y + 1) * p.w * 3), y * maxW * 3);
+          full.set(p.data.subarray(y * p.w * 4, (y + 1) * p.w * 4), y * maxW * 4);
         }
-        gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, i, maxW, maxH, 1, gl.RGB, gl.UNSIGNED_BYTE, full);
+        gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, i, maxW, maxH, 1, gl.RGBA, gl.UNSIGNED_BYTE, full);
       } else {
-        gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, i, p.w, p.h, 1, gl.RGB, gl.UNSIGNED_BYTE, p.data);
+        gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, i, p.w, p.h, 1, gl.RGBA, gl.UNSIGNED_BYTE, p.data);
       }
     }
     gl.generateMipmap(gl.TEXTURE_2D_ARRAY);
-    gl.pixelStorei(gl.UNPACK_ALIGNMENT, 4);
-    env.trackTex(id, Math.ceil(maxW * maxH * 3 * images.length * 4 / 3));
+    env.trackTex(id, Math.ceil(maxW * maxH * 4 * images.length * 4 / 3));
     return { tex: t, w: maxW, h: maxH, layers: images.length };
-  }
-
-  // Each cutout keeps its own pixels. A shared array padded them up to the largest card.
-  function makeDetailSet(images) {
-    const tex = [];
-    let bytes = 0;
-    gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-    for (let i = 0; i < images.length; i++) {
-      const img = images[i];
-      const t = gl.createTexture();
-      gl.bindTexture(gl.TEXTURE_2D, t);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-      gl.generateMipmap(gl.TEXTURE_2D);
-      tex.push(t);
-      bytes += Math.ceil(img.width * img.height * 4 * 4 / 3);
-    }
-    gl.pixelStorei(gl.UNPACK_ALIGNMENT, 4);
-    env.trackTex("detail", bytes);
-    return { tex, layers: images.length };
   }
 
   function make2D(img, id) {
@@ -363,29 +319,6 @@ void main() {
       grid: f.n, ms: Math.round(performance.now() - t0),
       planarWorst: +f.planarWorst.toFixed(3), worst: +f.worst.toFixed(3), least: +f.least.toFixed(3),
     };
-  }
-
-  // Grid of the drawn ground mesh, so layers can seat on the triangles that
-  // are actually rendered (heightAt carries micro relief between vertices).
-  const meshGrid = { reach: 0, n: 0, step: 0 };
-  function meshHeightAt(x, z) {
-    if (!meshGrid.n) return heightAt(x, z);
-    const { reach, step } = meshGrid;
-    const fx = (x + reach) / step;
-    const fz = (z + reach) / step;
-    const ix = Math.floor(fx);
-    const iz = Math.floor(fz);
-    const tx = fx - ix;
-    const tz = fz - iz;
-    const x0 = -reach + ix * step;
-    const z0 = -reach + iz * step;
-    const a = heightAt(x0, z0);
-    const b = heightAt(x0 + step, z0);
-    const c = heightAt(x0, z0 + step);
-    const d = heightAt(x0 + step, z0 + step);
-    // Triangles (a, c, b) and (b, c, d), split on the b-c diagonal.
-    if (tx + tz <= 1) return a + (b - a) * tx + (c - a) * tz;
-    return d + (c - d) * (1 - tx) + (b - d) * (1 - tz);
   }
 
   /** One-channel 2D texture: the shader reads only .r, so the other channels are not uploaded. */
@@ -432,9 +365,6 @@ void main() {
     const uv = [0, 0];
     const n = 300;
     const step = (reach * 2) / n;
-    meshGrid.reach = reach;
-    meshGrid.n = n;
-    meshGrid.step = step;
     const positions = [];
     const uvs = [];
     const fams = [];
@@ -549,8 +479,10 @@ void main() {
       const sc = 0.72 + hash(i, 9) * 0.28;
       const sz = sizes[kind];
       const y = heightAt(x, z) - 0.02;
-      inst.push(x, y, z, yaw, sz.w * sc, sz.h * sc, kind, 1, 1);
-      inst.push(x, y, z, yaw + Math.PI * 0.5, sz.w * sc, sz.h * sc, kind, 1, 1);
+      const uw = imgs[kind].width / detailTex.w;
+      const uh = imgs[kind].height / detailTex.h;
+      inst.push(x, y, z, yaw, sz.w * sc, sz.h * sc, kind, uw, uh);
+      inst.push(x, y, z, yaw + Math.PI * 0.5, sz.w * sc, sz.h * sc, kind, uw, uh);
       placed++;
     }
     const data = new Float32Array(inst);
@@ -577,23 +509,21 @@ void main() {
     cards = { vao, count: data.length / 9 };
   }
 
-  function target(w, h, rgb) {
+  function target(w, h) {
     const tex = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, tex);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    if (rgb) gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB8, w, h, 0, gl.RGB, gl.UNSIGNED_BYTE, null);
-    else gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
     return tex;
   }
 
   function initPost() {
     const bw = env.W >> 1;
     const bh = env.H >> 1;
-    let sceneRgb = true;
-    let scene = target(env.W, env.H, true);
+    const scene = target(env.W, env.H);
     const depth = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, depth);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
@@ -606,44 +536,19 @@ void main() {
     gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, scene, 0);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depth, 0);
-    const depth16 = () => {
-      gl.bindTexture(gl.TEXTURE_2D, depth);
+    if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT16, env.W, env.H, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, null);
       gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depth, 0);
-    };
-    if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) depth16();
-    if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
-      gl.deleteTexture(scene);
-      scene = target(env.W, env.H, false);
-      sceneRgb = false;
-      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, scene, 0);
-      gl.bindTexture(gl.TEXTURE_2D, depth);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT24, env.W, env.H, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
-      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depth, 0);
-      if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) depth16();
     }
     if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
       throw new Error("scene fbo");
     }
-    let halfRgb = true;
-    let halfA = target(bw, bh, true);
-    let halfB = target(bw, bh, true);
+    const halfA = target(bw, bh);
+    const halfB = target(bw, bh);
     const halfFb = gl.createFramebuffer();
-    gl.bindFramebuffer(gl.FRAMEBUFFER, halfFb);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, halfA, 0);
-    if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
-      gl.deleteTexture(halfA);
-      gl.deleteTexture(halfB);
-      halfA = target(bw, bh, false);
-      halfB = target(bw, bh, false);
-      halfRgb = false;
-      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, halfA, 0);
-    }
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     post = { scene, depth, fb, halfA, halfB, halfFb, bw, bh, fog: [0.5, 0.5, 0.5] };
-    const sceneBpp = sceneRgb ? 3 : 4;
-    const halfBpp = halfRgb ? 3 : 4;
-    env.trackTex("post", env.W * env.H * sceneBpp + bw * bh * halfBpp * 2);
+    env.trackTex("post", env.W * env.H * 4 + bw * bh * 8);
   }
 
   // Worst residual UV stretch of the ground around (x, z) (centre + 4 points at `span`).
@@ -665,7 +570,6 @@ void main() {
     SCALE,
     TILE,
     heightAt,
-    meshHeightAt,
     slopeAt,
     contain,
     radiusAt,
@@ -704,7 +608,7 @@ void main() {
         cuts.push(fitDetail(await env.loadImage(env.absUrl(ground.details[i])), DETAIL_H[i] || 0.3));
       }
       detailSrcH = cuts.map((c) => c.height);
-      detailTex = makeDetailSet(cuts);
+      detailTex = makeArray(cuts, "detail", false);
       buildMesh();
       buildCards(cuts);
       initPost();
@@ -732,17 +636,9 @@ void main() {
       gl.uniformMatrix4fv(cLoc.vp, false, vp);
       gl.uniform1i(cLoc.mode, mode);
       gl.uniform3f(cLoc.id, id[0], id[1], id[2]);
-      const cutsTex = detailTex.tex;
       gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, cutsTex[0]);
-      gl.uniform1i(cLoc.t0, 0);
-      gl.activeTexture(gl.TEXTURE1);
-      gl.bindTexture(gl.TEXTURE_2D, cutsTex[1] || cutsTex[0]);
-      gl.uniform1i(cLoc.t1, 1);
-      gl.activeTexture(gl.TEXTURE2);
-      gl.bindTexture(gl.TEXTURE_2D, cutsTex[2] || cutsTex[0]);
-      gl.uniform1i(cLoc.t2, 2);
-      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D_ARRAY, detailTex.tex);
+      gl.uniform1i(cLoc.tex, 0);
       gl.enable(gl.BLEND);
       gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, cards.count);
