@@ -5,7 +5,7 @@ camera = auto key camera (camera.json, MoGe-2 intrinsics) at the origin; every e
 built by its type's parametric generator (gens.py) at its back-projected MoGe position with measured size.
 One merged mesh per type (vertex colours) -> <= 12 draw calls; icicles are a single mesh.
 Writes scene.glb + scene.json (camera, light, per-element params actually used)."""
-import argparse, hashlib, json, math, struct, sys
+import argparse, hashlib, json, os, math, struct, sys
 from pathlib import Path
 import numpy as np, cv2
 HERE = Path(__file__).resolve().parent; ROOT = HERE.parents[1]
@@ -70,6 +70,8 @@ def wear_colours(V, F, col, snow, rough, snow_col, t):
 
 
 _REC = {}
+KEY_W, DETAIL_W = 0.7, 0.35   # viewer: projected key texture weight, matlib detail strength
+MATLIB = Path(os.environ.get('KIT_MATLIB', '/workspace/kitrelief-out/matlib'))   # texflow material library
 OBS_W = 0.8   # weight of the projected key colour vs the measured albedo/wear colour
 
 
@@ -146,7 +148,7 @@ def build(sd, out, opt=None, rel_step=10):
                                                "amb": round(1 / r, 3), "sun": round(1 - 1 / r, 3)}
     # colour: project the key's OBSERVED colour onto every generated vertex (key camera), mixed with the measured
     # albedo/wear colour; observed already carries the key's shading, so it is divided by the expected shade
-    keyimg = cv2.GaussianBlur(cv2.cvtColor(cv2.imread(str(Path(sd) / "key1024.png")), cv2.COLOR_BGR2RGB).astype(np.float32) / 255, (0, 0), 2)
+    keyimg = cv2.GaussianBlur(cv2.cvtColor(cv2.imread(str(Path(sd) / "key1024.png")), cv2.COLOR_BGR2RGB).astype(np.float32) / 255, (0, 0), 0.7)   # v3: sharper
     Hk, Wk = keyimg.shape[:2]; sx = Wk / cam["W"]; sy_ = Hk / cam["H"]
     for t, mm in meshes.items():
         for i, V in enumerate(mm.V):
@@ -159,7 +161,20 @@ def build(sd, out, opt=None, rel_step=10):
     for t in used.values():
         counts[t[0]] = counts.get(t[0], 0) + 1
     draws = sum(1 for mm in meshes.values() if mm.V)
-    info = {"camera": {"fov_y_deg": cam["fov_y_deg"], "aspect": 1.0}, "light": light, "types": counts, "draws": draws,
+    # texture assets: key image (projected in the viewer) + matlib tileables for the detail layer (by type)
+    import shutil
+    shutil.copy(Path(sd) / "key1024.png", out / "key.png")
+    tiles, tile_of = {}, {}
+    for kind in ("stone", "snow"):
+        src = MATLIB / f"{Path(sd).name}-{kind}.jpg"
+        if not src.exists():
+            src = next(iter(sorted(MATLIB.glob(f"*-{kind}.jpg"))), None)
+        if src is not None:
+            shutil.copy(src, out / f"tile-{kind}.jpg"); tiles[kind] = f"tile-{kind}.jpg"
+    for t in meshes:
+        tile_of[t] = "snow" if t in ("snow_pillow", "snow_patch", "tread_snow", "ground", "ice_mass", "icicle") else "stone"
+    info = {"camera": {"fov_y_deg": cam["fov_y_deg"], "aspect": 1.0, "key": "key.png", **{k: cam[k] for k in ("W", "H", "fx", "fy", "cx", "cy")}},
+            "tiles": tiles, "tile_of": tile_of, "tex": {"kw": KEY_W, "kd": DETAIL_W, "tile_m": 1.5}, "light": light, "types": counts, "draws": draws,
             "tris": int(sum(len(np.vstack(mm.F)) for mm in meshes.values() if mm.F)), "elements": used,
             "tris_by_type": {t: int(sum(len(f) for f in mm.F)) for t, mm in meshes.items() if mm.F}}
     (out / "scene.json").write_text(json.dumps(info))

@@ -18,11 +18,35 @@ const d = new THREE.DirectionalLight(0xffffff, Math.PI * G * (S.light.sun ?? 0.4
 d.position.set(L[0] * 40, Math.abs(L[1]) * 40 + 25, 10); d.target.position.set(0, 0, -15); d.castShadow = true;
 d.shadow.mapSize.set(2048, 2048); Object.assign(d.shadow.camera, {left: -40, right: 40, top: 40, bottom: -40, near: 1, far: 200}); scene.add(d, d.target);
 const g = await new GLTFLoader().loadAsync(P.get('model') || 'scene.glb');
-const rough = {snow_patch: 0.9, snow_pillow: 0.9, tread_snow: 0.9, ground: 0.95, icicle: 0.35, ice_mass: 0.5, sky: 1.0};
+// v3 texture: (1) the KEY image projected through the key camera (sharp observed texture, weight KW on surfaces
+// facing the camera), (2) a DETAIL layer from the matlib tileables (triplanar, 1 tile per TILE m) applied as a
+// mean-normalised ratio, so it adds grain without changing each element's key-matched colour.
+const TL = new THREE.TextureLoader(); const ld = (u, srgb) => { const t = TL.load(u); t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.generateMipmaps = true; t.minFilter = THREE.LinearMipmapLinearFilter; return t; };
+const K = S.camera; const keyTex = K.key ? ld(K.key, true) : null; if (keyTex) keyTex.wrapS = keyTex.wrapT = THREE.ClampToEdgeWrapping;
+const tiles = Object.fromEntries(Object.entries(S.tiles || {}).map(([k, u]) => [k, ld(u, true)]));
+const KW = +(P.get('kw') ?? S.tex?.kw ?? 0.7), KD = +(P.get('kd') ?? S.tex?.kd ?? 0.35), TILE = S.tex?.tile_m ?? 1.5;
+const mkMat = (name) => { const m = new THREE.MeshLambertMaterial({vertexColors: true, side: THREE.DoubleSide});
+  const tile = tiles[(S.tile_of || {})[name]] || null; if (!keyTex && !tile) return m;
+  m.onBeforeCompile = sh => {
+    Object.assign(sh.uniforms, {uKey: {value: keyTex}, uTile: {value: tile}, uK: {value: new THREE.Vector4(K.fx / K.W, K.fy / K.H, K.cx / K.W, K.cy / K.H)},
+                                uKW: {value: keyTex ? KW : 0}, uKD: {value: tile ? KD : 0}, uTM: {value: TILE}});
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vWp; varying vec3 vWn;')
+      .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWp = (modelMatrix * vec4(transformed, 1.0)).xyz; vWn = normalize(mat3(modelMatrix) * objectNormal);');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', `#include <common>
+varying vec3 vWp; varying vec3 vWn; uniform sampler2D uKey; uniform sampler2D uTile; uniform vec4 uK; uniform float uKW, uKD, uTM;`)
+      .replace('#include <color_fragment>', `#include <color_fragment>
+{ vec3 nf = normalize(cross(dFdx(vWp), dFdy(vWp)));
+  if (uKW > 0.0) { float z = -vWp.z; vec2 kuv = vec2(uK.x * vWp.x / z + uK.z, 1.0 - (uK.y * -vWp.y / z + uK.w));
+    float face = clamp(abs(dot(nf, normalize(-vWp))) * 2.0, 0.0, 1.0);
+    if (z > 0.0 && all(greaterThan(kuv, vec2(0.0))) && all(lessThan(kuv, vec2(1.0)))) diffuseColor.rgb = mix(diffuseColor.rgb, texture2D(uKey, kuv).rgb, uKW * face); }
+  if (uKD > 0.0) { vec3 w = pow(abs(nf), vec3(4.0)); w /= (w.x + w.y + w.z); vec3 p = vWp / uTM;
+    vec3 t = texture2D(uTile, p.zy).rgb * w.x + texture2D(uTile, p.xz).rgb * w.y + texture2D(uTile, p.xy).rgb * w.z;
+    vec3 mean = textureLod(uTile, vec2(0.5), 12.0).rgb; diffuseColor.rgb *= mix(vec3(1.0), clamp(t / max(mean, vec3(0.02)), 0.0, 2.5), uKD); } }`);
+  }; return m; };
 g.scene.traverse(o => { if (!o.isMesh) return; o.geometry.computeVertexNormals();
-  o.material = o.name === 'sky' ? new THREE.MeshBasicMaterial({vertexColors: true, side: THREE.DoubleSide})
-    : new THREE.MeshLambertMaterial({vertexColors: true, side: THREE.DoubleSide});
+  o.material = o.name === 'sky' ? new THREE.MeshBasicMaterial({vertexColors: true, side: THREE.DoubleSide}) : mkMat(o.name);
   o.castShadow = o.receiveShadow = o.name !== 'sky'; });
+await new Promise(res => { const chk = () => (!keyTex || keyTex.image) && Object.values(tiles).every(t => t.image) ? res() : setTimeout(chk, 50); chk(); });
 scene.add(g.scene);
 r.render(scene, cam); window.__ready = true;
 </script></body></html>
