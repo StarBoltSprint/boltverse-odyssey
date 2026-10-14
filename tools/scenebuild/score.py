@@ -20,7 +20,7 @@ def score(sheet, out, port, opt=None, tag="x", gain=None):
         lum = lambda im: float(((cv2.cvtColor(im, cv2.COLOR_BGR2GRAY).astype(np.float32) / 255) ** 2.2).mean())
         gain = float(np.clip(lum(key) / max(lum(ren), 1e-4), 0.5, 6.0))
     info["exposure_gain"] = round(gain, 3)
-    shot(f"hemi={1.6 * gain:.3f}&sun={1.4 * gain:.3f}")
+    shot(f"gain={gain:.3f}")
     fm = out / "fullmask.png"
     if not fm.exists():
         cv2.imwrite(str(fm), np.full((1024, 1024), 255, np.uint8))

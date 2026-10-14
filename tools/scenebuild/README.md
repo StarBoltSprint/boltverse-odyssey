@@ -26,12 +26,15 @@ OUT must be served (`python3 -m http.server PORT` in OUT, with view.html, three.
 * **Wear / snow** from geometry: up-facing normals get the sheet's measured snow colour (x snow fraction), convex
   curvature lightens, concave darkens (build.wear_colours) - no global noise.
 * **Optimizer** (optimize.py): batched CMA-ES per element (popsize 4, ~40 evals/element over FORM -> EDGES ->
-  WEAR), worst-metric row as fitness + cheap geometric loss before render; keep only if own row improves and no
-  other row worse (> 5), revert stage if held-out DINO term drops or budget (12 draws / 200k tris) is broken;
+  WEAR), worst-metric row as fitness + cheap geometric loss before render; keep a stage's candidates on NET GAIN: sum of
+  worst-metric rows improves, no element drops > 10, held-out DINO term no worse, budget (12 draws / 200k tris) holds;
   non-improving worst elements go to the expressiveness-gap ledger in optimize.json.
 * **Too regular** (regular.py): block-size spread, joint jitter, stripe FFT peak, skyline HF energy, render vs key on
   the key's stone segments; `selftest_regular.py` proves the regular_blocks fixture is flagged.
 * **Draws**: one merged vertex-coloured mesh per type (<= 12 draws, icicles one mesh).
+* **Colour + light (v2)**: every generated vertex gets the key's observed colour projected through the key camera
+  (80 %, the measured albedo/wear colour 20 %); lights are calibrated on the key's median lit/shadow ratio r
+  (ambient 1/r, sun 1-1/r, Lambert), so the render keeps the key's lit vs shadow contrast.
 * **Exposure**: one probe render; light intensity scaled so mean luminance matches the key (fixed during the loop).
 * **Recipe library**: `recipes/library.json` records per-zone median rows and the recipe hash; a recipe is
   `validated` once it passes on one zone; editing it clears its validation.

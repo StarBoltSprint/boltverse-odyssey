@@ -6,9 +6,10 @@ the same scene, so one render evaluates all of them (elements are spatially sepa
 the three stages (16 / 12 / 12).
 Before rendering, each candidate pays a cheap geometric loss (no render): relative depth offset vs the MoGe median
 and the projected size change vs the measured mask size (point-to-depth / size consistency).
-Acceptance per stage: an element's best candidate is kept only if its own row improved AND no other row got worse
-by > ROW_TOL; the stage is reverted if the held-out DINO term (judge 'perceptual') drops, or the phone budget
-(<= 12 draws, <= TRI_BUDGET tris) is exceeded. Elements that never improve over a zone go to the ledger as
+Acceptance per stage (net gain, v3): the stage's best candidates are kept if the SUM of worst-metric rows over all
+elements improves, no single element drops by > MAX_DROP (10), the held-out DINO term (judge 'perceptual') is no
+worse and the phone budget (<= 12 draws, <= TRI_BUDGET tris) holds; otherwise non-gaining / dropping candidates are
+removed and the check repeats (3 tries). Elements that never improve over a zone go to the ledger as
 'expressiveness gap' rows (the recipe cannot express what the key shows).
 usage: optimize.py SHEET OUT PORT [--n 24]"""
 import argparse, json, shutil, sys, time
@@ -17,7 +18,7 @@ import numpy as np, cma
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import score as S  # noqa: E402
 
-TRI_BUDGET, DRAW_BUDGET, ROW_TOL = 200_000, 12, 5.0
+TRI_BUDGET, DRAW_BUDGET, MAX_DROP = 200_000, 12, 10.0
 STAGES = [("form", {"s": (1.0, 0.25, 0.6, 1.6), "sy": (1.0, 0.2, 0.6, 1.5), "dz": (0.0, 0.04, -0.12, 0.12)}, 4),
           ("edges", {"rg": (1.0, 0.5, 0.2, 2.5), "jv": (0.2, 0.15, 0.0, 0.6)}, 3),
           ("wear", {"cg": (1.0, 0.12, 0.7, 1.4), "sn": (1.0, 0.5, 0.0, 2.5)}, 3)]
@@ -64,26 +65,25 @@ def main():
         cand = {k: c for k, (v, c) in bestc.items() if c is not None}
         new = {k: dict(v) for k, v in opt.items()}; new.update(cand)
         kept = []; diag = {"candidates": len(cand)}
-        if cand:
-            s1, r1, i1 = S.score(a.sheet, out, a.port, new, "trial", gain); renders += 1
-            for _ in range(2):   # drop candidates that did not help, and revert if any other row got worse
-                worse = [k for k in r1 if k not in cand and r1[k] < rows.get(k, 0) - ROW_TOL]
-                bad = [k for k in cand if r1.get(k, 0) <= rows.get(k, 0)]
-                diag.setdefault("dropped_no_gain", 0); diag.setdefault("reverted_other_row_worse", 0)
-                diag["dropped_no_gain"] += len(bad); diag["reverted_other_row_worse"] += len(worse)
-                if not bad and not worse:
+        if cand:   # NET-GAIN keep rule (v3)
+            for attempt in range(3):
+                s1, r1, i1 = S.score(a.sheet, out, a.port, new, "trial", gain); renders += 1
+                gain_sum = sum(r1.get(k, 0) for k in rows) - sum(rows.values())
+                drops = [k for k in rows if r1.get(k, 0) < rows[k] - MAX_DROP]
+                ok = (gain_sum > 0 and not drops and s1["scores"]["perceptual"] >= best["scores"]["perceptual"]
+                      and s1["draws"] <= DRAW_BUDGET and s1["tris"] <= TRI_BUDGET)
+                diag[f"try{attempt}"] = {"sum_gain": round(gain_sum, 1), "drops_gt10": len(drops), "dino": s1["scores"]["perceptual"], "n": len(cand)}
+                if ok:
                     break
-                drop = set(bad) | (set(cand) if worse and not bad else set())
-                for k in drop:
+                # drop candidates that did not gain themselves, then the ones whose element (or neighbours) dropped
+                bad = [k for k in cand if r1.get(k, 0) <= rows.get(k, 0)] or [k for k in cand if k in drops] or list(cand)[: max(1, len(cand) // 2)]
+                for k in bad:
                     cand.pop(k, None); new.pop(k, None)
                     if k in opt:
                         new[k] = opt[k]
                 if not cand:
                     break
-                s1, r1, i1 = S.score(a.sheet, out, a.port, new, "trial", gain); renders += 1
-            ok = (cand and s1["scores"]["perceptual"] >= best["scores"]["perceptual"] - 0.2 and s1["draws"] <= DRAW_BUDGET
-                  and s1["tris"] <= TRI_BUDGET and not any(r1[k] < rows.get(k, 0) - ROW_TOL for k in r1 if k not in cand))
-            if ok:
+            if ok and cand:
                 opt, rows, info, best = new, r1, i1, s1; kept = list(cand); improved |= set(cand)
                 shutil.copy(out / "render-trial.png", out / "render-best.png")
         hist.append({"stage": stage, "active": len(act), "evals_per_element": gens * POP, "kept": len(kept), "diag": diag, "renders": renders,

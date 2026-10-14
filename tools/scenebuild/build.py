@@ -70,6 +70,7 @@ def wear_colours(V, F, col, snow, rough, snow_col, t):
 
 
 _REC = {}
+OBS_W = 0.8   # weight of the projected key colour vs the measured albedo/wear colour
 
 
 def recipe(t):
@@ -138,7 +139,21 @@ def build(sd, out, opt=None, rel_step=10):
         used[e["id"]] = [t, round(z, 2)]
     # light: median image-plane light direction of the elements -> directional light from that side, above
     dx = float(np.median([e["props"]["light.dir_x"] for e in els2 if e.get("props")])); dy = float(np.median([e["props"]["light.dir_y"] for e in els2 if e.get("props")]))
-    light = {"dir": [dx, -dy, 0.6], "sky": sky or [0.2, 0.25, 0.4]}
+    # lighting calibrated on the key: median lit/shadow ratio r of the elements -> ambient share 1/r, sun share 1-1/r
+    # (lit side = amb + sun = 1, shadow side = amb = 1/r), so the render reproduces the key's lit vs shadow contrast
+    r = float(np.median([e["props"]["light.lit_shadow"] for e in els1 + els2 if e.get("props") and e["props"].get("light.lit_shadow")] or [1.5]))
+    r = float(np.clip(r, 1.05, 4.0)); light = {"dir": [dx, -dy, 0.6], "sky": sky or [0.2, 0.25, 0.4], "lit_shadow": round(r, 3),
+                                               "amb": round(1 / r, 3), "sun": round(1 - 1 / r, 3)}
+    # colour: project the key's OBSERVED colour onto every generated vertex (key camera), mixed with the measured
+    # albedo/wear colour; observed already carries the key's shading, so it is divided by the expected shade
+    keyimg = cv2.GaussianBlur(cv2.cvtColor(cv2.imread(str(Path(sd) / "key1024.png")), cv2.COLOR_BGR2RGB).astype(np.float32) / 255, (0, 0), 2)
+    Hk, Wk = keyimg.shape[:2]; sx = Wk / cam["W"]; sy_ = Hk / cam["H"]
+    for t, mm in meshes.items():
+        for i, V in enumerate(mm.V):
+            Pc = V * np.array([1, -1, -1]); zc = np.maximum(Pc[:, 2], 1e-3)
+            u = np.clip((cam["fx"] * Pc[:, 0] / zc + cam["cx"]) * sx, 0, Wk - 1).astype(int); v = np.clip((cam["fy"] * Pc[:, 1] / zc + cam["cy"]) * sy_, 0, Hk - 1).astype(int)
+            obs = keyimg[v, u]; w_obs = 1.0 if t == "sky" else OBS_W
+            mm.C[i] = np.clip(w_obs * obs + (1 - w_obs) * mm.C[i], 0, 1)
     write_glb(out / "scene.glb", meshes)
     counts = {}
     for t in used.values():
