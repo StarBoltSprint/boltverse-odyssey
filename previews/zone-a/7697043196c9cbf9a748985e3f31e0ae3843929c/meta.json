@@ -1,0 +1,10 @@
+{
+  "zone": "zone-a",
+  "commit": "7697043196c9cbf9a748985e3f31e0ae3843929c",
+  "date": "2026-10-03",
+  "verdict": "PASS",
+  "report": "packs/zone-a/proof/step2/REPORT.md",
+  "walk": null,
+  "play": "play",
+  "publicUrl": null
+}
