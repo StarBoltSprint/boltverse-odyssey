@@ -1,6 +1,6 @@
-# Hard objects — Howl-class frigate (VALIDATED 2026-10-03)
+# Hard objects — Howl-class frigate (IN TEST)
 
-Recipe: [`docs/METHOD/hard-objects.md`](../../docs/METHOD/hard-objects.md). Read that. Validated by SmiR on the phone 2026-10-03 21:36, after PR #161; known issues are listed there.
+Recipe: [`docs/METHOD/hard-objects.md`](../../docs/METHOD/hard-objects.md). Read that. Do not mark it APPROVED.
 
 ```
 python3 -m pip install pillow

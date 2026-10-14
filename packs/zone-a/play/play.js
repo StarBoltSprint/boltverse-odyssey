@@ -4,13 +4,6 @@
  */
 import { loadWorldHull } from "./hullmesh.js";
 import { createTerrain } from "./terrain.js";
-import { mountRocks } from "./rocks.js";
-import { showIntro, introEnabled } from "./intro.js";
-import { createBiomeBlend, postOf } from "./biomeblend.js";
-import { mountDetails } from "./details.js";
-import { mountRuins } from "./ruins.js";
-import { menuVideoHold } from "../../common/archives/backdrop.js";
-import { mountArchives } from "../../common/archives/mount.js";
 
 const W = 720;
 const H = 1600;
@@ -31,9 +24,6 @@ const MAX_BOOM = BOOM / 0.62;
 
 const canvas = document.getElementById("view");
 const hud = document.getElementById("hud");
-// Debug HUD (position, heading, mag, gate, perf) only behind an explicit flag: ?debug=1.
-// Players see no text once loaded (loading progress and a boot error stay).
-const SHOW_HUD = /[?&]debug=1(&|$)/.test(location.search);
 canvas.width = W;
 canvas.height = H;
 const gl = canvas.getContext("webgl2", {
@@ -106,42 +96,20 @@ uniform float uHighLayers;
 uniform float uHasUpper;
 uniform float uHasHigh;
 uniform float uAzBias;
-uniform vec3 uOvH;
-uniform vec3 uOvU;
-uniform vec3 uOvK;
 in vec3 vLocal;
 out vec4 o;
-// Each slice keeps its own Imagine pixels. It is widened in azimuth only as far as the band's own
-// magnification allows (ov.y = band mag limit / slice mag at the band bottom, ov.z = cos of that bottom),
-// capped at ov.x of a slice. The overlap shows both neighbours and crossfades them: no new pixels, no stretch.
-vec3 bandTex(sampler2DArray tex, float u, float v, float layer, vec2 gx, vec2 gy) {
-  return textureGrad(tex, vec3(u, v, layer), gx, gy).rgb;
-}
-vec3 sampleBand(sampler2DArray tex, float layers, float turns, float el, float e0, float e1, vec3 ov) {
-  float n = max(1.0, layers);
-  float v = 1.0 - clamp((el - e0) / max(0.001, e1 - e0), 0.0, 1.0);
-  float o = clamp(ov.y * ov.z / max(0.05, cos(el)) - 1.0, 0.0, ov.x);
-  float s = 1.0 / (1.0 + o);
-  float p = turns * n;
-  float i = floor(p);
-  float f = p - i;
-  vec2 dp = vec2(dFdx(p), dFdy(p));
-  dp -= n * floor(dp / n + 0.5);
-  vec2 ds = vec2(dFdx(s), dFdy(s));
-  vec2 dv = vec2(dFdx(v), dFdy(v));
-  vec2 duA = dp * s + (f - 0.5) * ds;
-  vec3 col = bandTex(tex, (f - 0.5) * s + 0.5, v, i, vec2(duA.x, dv.x), vec2(duA.y, dv.y));
-  float h = 0.5 * o;
-  if (o > 0.001 && f > 1.0 - h) {
-    vec2 duB = dp * s + (f - 1.5) * ds;
-    vec3 b = bandTex(tex, (f - 1.5) * s + 0.5, v, mod(i + 1.0, n), vec2(duB.x, dv.x), vec2(duB.y, dv.y));
-    col = mix(col, b, smoothstep(0.0, 1.0, (f - 1.0 + h) / o));
-  } else if (o > 0.001 && f < h) {
-    vec2 duB = dp * s + (f + 0.5) * ds;
-    vec3 b = bandTex(tex, (f + 0.5) * s + 0.5, v, mod(i - 1.0 + n, n), vec2(duB.x, dv.x), vec2(duB.y, dv.y));
-    col = mix(b, col, smoothstep(0.0, 1.0, (f + h) / o));
-  }
-  return col;
+vec3 sampleBand(sampler2DArray tex, float layers, float turns, float el, float e0, float e1) {
+  float v = clamp((el - e0) / max(0.001, e1 - e0), 0.0, 1.0);
+  v = 1.0 - v;
+  float lf = turns * max(1.0, layers);
+  float layer = floor(lf);
+  float uu = fract(lf);
+  float nxt = mod(layer + 1.0, max(1.0, layers));
+  vec3 col = texture(tex, vec3(uu, v, layer)).rgb;
+  float seamFrac = mix(0.04, 0.42, smoothstep(0.75, 1.20, el));
+  float seam = smoothstep(1.0 - seamFrac, 1.0, uu);
+  vec3 edge = texture(tex, vec3(0.0, v, nxt)).rgb;
+  return mix(col, edge, seam);
 }
 float bandWeight(float el, float e0, float e1, float enterW, float leaveW) {
   float enter = smoothstep(e0, e0 + max(0.02, enterW), el);
@@ -166,9 +134,9 @@ void main() {
   float wU = uHasUpper * bandWeight(el, uElU0, uElU1, hu, uk);
   float wK = uHasHigh * bandWeight(el, uElK0, uElK1, uk, kc);
   float wC = smoothstep(uCapEl - kc, min(uCapEl + 0.02, uElK1), el);
-  vec3 acc = sampleBand(uTex, uLayers, turns, el, uElH0, uElH1, uOvH) * wH;
-  if (wU > 0.001) acc += sampleBand(uUpper, uUpperLayers, turns, el, uElU0, uElU1, uOvU) * wU;
-  if (wK > 0.001) acc += sampleBand(uHigh, uHighLayers, turns, el, uElK0, uElK1, uOvK) * wK;
+  vec3 acc = sampleBand(uTex, uLayers, turns, el, uElH0, uElH1) * wH;
+  if (wU > 0.001) acc += sampleBand(uUpper, uUpperLayers, turns, el, uElU0, uElU1) * wU;
+  if (wK > 0.001) acc += sampleBand(uHigh, uHighLayers, turns, el, uElK0, uElK1) * wK;
   float hlen = length(dir.xz);
   float capR = clamp((1.57079632679 - el) / max(0.001, 1.57079632679 - uCapEl), 0.0, 1.0);
   vec2 nrm = hlen < 1e-4 ? vec2(0.0) : dir.xz / hlen;
@@ -184,88 +152,36 @@ const skyLayerProg = program(`#version 300 es
 layout(location=0) in vec2 aCorner;
 layout(location=1) in vec4 aTile;
 layout(location=2) in vec2 aPhase;
-layout(location=3) in vec4 aMeteor;
-layout(location=4) in float aLayer;
 uniform mat4 uVP;
 uniform vec3 uEye;
-uniform float uBias0;
-uniform float uBias1;
-uniform float uBias2;
+uniform float uAzBias;
 uniform float uRadius;
 uniform float uTime;
 uniform float uScroll;
-uniform vec2 uMetDuty;
 out vec2 vUv;
 flat out vec2 vTile;
-flat out vec4 vMet;
-flat out float vLayer;
-// Stars, dust, and the meteor nebula are one instanced draw. aLayer picks the loop.
-// Layer 2 is the meteor set: each sparse tile shows the whole frame once (no drift, no wrap), so a streak never
-// jumps at a tile edge. aMeteor = window centre (frame UV), period s, time offset s. The tile is on screen
-// for part of its own period with a soft fade in and out: a timing offset per tile, never a new pixel.
 void main() {
-  float bias = uBias0;
-  if (aLayer > 1.5) bias = uBias2;
-  else if (aLayer > 0.5) bias = uBias1;
-  float az = aTile.x + (aCorner.x - 0.5) * aTile.z + bias;
+  float az = aTile.x + (aCorner.x - 0.5) * aTile.z + uAzBias;
   float el = aTile.y + (aCorner.y - 0.5) * aTile.w;
   float c = cos(el);
   vec3 p = vec3(sin(az) * c, sin(el), cos(az) * c) * uRadius + uEye;
   gl_Position = uVP * vec4(p, 1.0);
-  vLayer = aLayer;
+  vec2 drift = vec2(aPhase.x + aPhase.y * uTime, aPhase.y * uTime * 0.15);
+  vUv = aCorner + drift * uScroll;
   vTile = aTile.xy;
-  if (aLayer > 1.5) {
-    float ph = mod(uTime + aMeteor.w, aMeteor.z);
-    float on = uMetDuty.x * aMeteor.z;
-    float env = smoothstep(0.0, uMetDuty.y, ph) * (1.0 - smoothstep(on - uMetDuty.y, on, ph));
-    vUv = aCorner;
-    vMet = vec4(aMeteor.xy, env, 1.0);
-  } else {
-    vec2 drift = vec2(aPhase.x + aPhase.y * uTime, aPhase.y * uTime * 0.15);
-    vUv = aCorner + drift * uScroll;
-    vMet = vec4(0.0);
-  }
 }`, `#version 300 es
 precision highp float;
-uniform sampler2D uTex0;
-uniform sampler2D uTex1;
-uniform sampler2D uTex2;
-uniform float uGain0;
-uniform float uGain1;
-uniform float uGain2;
-uniform float uKey0;
-uniform float uKey1;
-uniform float uKey2;
-uniform vec3 uMetWin;
+uniform sampler2D uTex;
+uniform float uGain;
+uniform float uKey;
 in vec2 vUv;
 flat in vec2 vTile;
-flat in float vLayer;
-flat in vec4 vMet;
 out vec4 o;
 void main() {
-  float gain = uGain0;
-  float keyU = uKey0;
-  vec3 s;
-  if (vLayer > 1.5) {
-    gain = uGain2;
-    keyU = uKey2;
-    s = texture(uTex2, fract(vUv)).rgb;
-  } else if (vLayer > 0.5) {
-    gain = uGain1;
-    keyU = uKey1;
-    s = texture(uTex1, fract(vUv)).rgb;
-  } else {
-    s = texture(uTex0, fract(vUv)).rgb;
-  }
-  if (gain <= 0.0) discard;
+  vec3 s = texture(uTex, fract(vUv)).rgb;
   float lum = dot(s, vec3(0.299, 0.587, 0.114));
-  float key = smoothstep(keyU, keyU + 0.06, lum);
-  if (vMet.w > 0.5) {
-    // Soft elliptical alpha window held inside the frame: a streak fades in and out, it is never cut.
-    float d = length((vUv - vMet.xy) / uMetWin.xy);
-    key *= (1.0 - smoothstep(uMetWin.z, 1.0, d)) * vMet.z;
-  }
-  o = vec4(s * gain * key, 1.0);
+  float key = smoothstep(uKey, uKey + 0.06, lum);
+  o = vec4(s * uGain * key, 1.0);
 }`);
 
 const fogProg = program(`#version 300 es
@@ -355,15 +271,13 @@ uniform int uMode;
 uniform int uKey;
 uniform float uAlpha;
 uniform float uPost;
-uniform float uGradeMix;
-uniform float uSat;
 in vec2 vUv;
 out vec4 o;
 vec3 grade(vec3 x) {
   vec3 t = clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0);
-  vec3 y = mix(x, t, uGradeMix);
+  vec3 y = mix(x, t, 0.26);
   float l = dot(y, vec3(0.2126, 0.7152, 0.0722));
-  y = mix(vec3(l), y, uSat);
+  y = mix(vec3(l), y, 1.05);
   return clamp(y, 0.0, 1.0);
 }
 void main() {
@@ -405,30 +319,17 @@ const surfLoc = {
   hasUpper: gl.getUniformLocation(surfProg, "uHasUpper"),
   hasHigh: gl.getUniformLocation(surfProg, "uHasHigh"),
   azBias: gl.getUniformLocation(surfProg, "uAzBias"),
-  ovH: gl.getUniformLocation(surfProg, "uOvH"),
-  ovU: gl.getUniformLocation(surfProg, "uOvU"),
-  ovK: gl.getUniformLocation(surfProg, "uOvK"),
 };
 const skyLayerLoc = {
   vp: gl.getUniformLocation(skyLayerProg, "uVP"),
   eye: gl.getUniformLocation(skyLayerProg, "uEye"),
-  bias0: gl.getUniformLocation(skyLayerProg, "uBias0"),
-  bias1: gl.getUniformLocation(skyLayerProg, "uBias1"),
-  bias2: gl.getUniformLocation(skyLayerProg, "uBias2"),
+  azBias: gl.getUniformLocation(skyLayerProg, "uAzBias"),
   radius: gl.getUniformLocation(skyLayerProg, "uRadius"),
   time: gl.getUniformLocation(skyLayerProg, "uTime"),
   scroll: gl.getUniformLocation(skyLayerProg, "uScroll"),
-  tex0: gl.getUniformLocation(skyLayerProg, "uTex0"),
-  tex1: gl.getUniformLocation(skyLayerProg, "uTex1"),
-  tex2: gl.getUniformLocation(skyLayerProg, "uTex2"),
-  gain0: gl.getUniformLocation(skyLayerProg, "uGain0"),
-  gain1: gl.getUniformLocation(skyLayerProg, "uGain1"),
-  gain2: gl.getUniformLocation(skyLayerProg, "uGain2"),
-  key0: gl.getUniformLocation(skyLayerProg, "uKey0"),
-  key1: gl.getUniformLocation(skyLayerProg, "uKey1"),
-  key2: gl.getUniformLocation(skyLayerProg, "uKey2"),
-  metDuty: gl.getUniformLocation(skyLayerProg, "uMetDuty"),
-  metWin: gl.getUniformLocation(skyLayerProg, "uMetWin"),
+  tex: gl.getUniformLocation(skyLayerProg, "uTex"),
+  gain: gl.getUniformLocation(skyLayerProg, "uGain"),
+  key: gl.getUniformLocation(skyLayerProg, "uKey"),
 };
 const groundLoc = {
   vp: gl.getUniformLocation(groundProg, "uVP"),
@@ -460,8 +361,6 @@ const cardLoc = {
   key: gl.getUniformLocation(cardProg, "uKey"),
   alpha: gl.getUniformLocation(cardProg, "uAlpha"),
   post: gl.getUniformLocation(cardProg, "uPost"),
-  gradeMix: gl.getUniformLocation(cardProg, "uGradeMix"),
-  sat: gl.getUniformLocation(cardProg, "uSat"),
 };
 
 const P = new Float32Array(16);
@@ -495,40 +394,20 @@ function fillVP() {
   }
 }
 
-// The id target is tooling only (snapshot labels): it lives only while a snapshot reads it, so
-// players never pay for it and the snapshot's perf numbers are the players' numbers.
-let idTex = null;
-let idFb = null;
-let idDepth = null;
-function releaseIdFb() {
-  if (!idFb) return;
-  gl.deleteFramebuffer(idFb);
-  gl.deleteTexture(idTex);
-  gl.deleteRenderbuffer(idDepth);
-  idFb = null;
-  idTex = null;
-  idDepth = null;
-  trackTex("id", 0);
-  textures.delete("id");
-}
-function ensureIdFb() {
-  if (idFb) return;
-  idTex = gl.createTexture();
-  idFb = gl.createFramebuffer();
-  idDepth = gl.createRenderbuffer();
-  gl.bindTexture(gl.TEXTURE_2D, idTex);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-  gl.bindRenderbuffer(gl.RENDERBUFFER, idDepth);
-  gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, W, H);
-  gl.bindFramebuffer(gl.FRAMEBUFFER, idFb);
-  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, idTex, 0);
-  gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, idDepth);
-  if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) throw new Error("id fbo");
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-  trackTex("id", W * H * 4);
-}
+const idTex = gl.createTexture();
+const idFb = gl.createFramebuffer();
+const idDepth = gl.createRenderbuffer();
+gl.bindTexture(gl.TEXTURE_2D, idTex);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+gl.bindRenderbuffer(gl.RENDERBUFFER, idDepth);
+gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, W, H);
+gl.bindFramebuffer(gl.FRAMEBUFFER, idFb);
+gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, idTex, 0);
+gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, idDepth);
+if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) throw new Error("id fbo");
+gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
 const textures = new Map();
 let drawCalls = 0;
@@ -659,29 +538,14 @@ let zenithSrc = 1024;
 const skyVideos = [null, null, null];
 const skyVideoTex = [null, null, null];
 const SKY_VIDEO_IDS = ["sky-stars", "sky-dust", "sky-nebula"];
-const SKY_GAIN = [0.1, 0.04, 1.5];
-// Meteor layer key 0.30 (keyed from the loop's own brightness): keeps the streaks, drops the cyan cloud wisps.
-const SKY_KEY = [0.12, 0.08, 0.30];
+const SKY_GAIN = [0.1, 0.04, 1.25];
+const SKY_KEY = [0.12, 0.08, 0.12];
 const SKY_TILE_AZ_N = 17;
 const SKY_TILE_EL_N = 8;
 const SKY_TILE_AZ = 360 / SKY_TILE_AZ_N;
 const SKY_TILE_EL = 11.25;
+let skyTileVao = null;
 let skyTileCount = 0;
-let skyLayerVao = null;
-let skyLayerCount = 0;
-// Meteors (nebula slot): a few sparse tiles, not the full 17 x 8 grid, so streaks never line up in a rain grid.
-// Chase view (pitch about +3 deg, vfov 48.1 deg) sees sky from the relief silhouette (about 8-10 deg up) to
-// about 27 deg up. Window centres sit in that band; tiles may hang below it, only the window is visible.
-const METEOR = {
-  tiles: 36, // scattered over every azimuth, windows never overlap
-  elLoDeg: 7, elHiDeg: 18, // window centre elevation band
-  win: [0.40, 0.16, 0.55], // window radii in frame UV (x, y) and flat core fraction
-  duty: 0.32, fadeSec: 0.8, // share of each tile's own period it is on, fade in/out
-  periodSec: [6, 11],
-};
-let meteorCount = 0;
-const meteorInfo = [];
-let meteorShow = true; // debug hook only (QC A/B); always true in play
 let skyManifest = null;
 const skyBand = {
   h0: -1.5 * Math.PI / 180,
@@ -706,7 +570,6 @@ let idleVideo = null;
 let pawFrac = 0.92;
 let heroQuad = { x: 0, y: 0, w: 0, h: 0 };
 let magNow = 0.4;
-let lastRuinMag = null;
 let groundMagNow = 0;
 let nearestM = 4;
 let camRightNow = [1, 0, 0];
@@ -740,119 +603,9 @@ const camUp = [0, 1, 0];
 // by CAM_HYST before the pose changes, so the grid cannot chatter each frame.
 const CAM_HYST = 80;
 const camHold = { boom: 6, eye: 1.35, slide: 0, live: false };
-// Ruins: the chase line must not pass through a drawn face, and the eye keeps the near plane off it.
-// The boom eases in (rate-limited) before a face would cut the line, and eases back out after.
-const RUIN_BODY_R = 0.3;
-const RUIN_HEAD = 0.9;
-const RUIN_LINE_EPS = 0.12;
-const RUIN_EYE_GAP = 0.45;
-const RUIN_MIN_LEN = 1.6;
-const RUIN_IN_RATE = 4.0;
-const RUIN_OUT_RATE = 2.0;
-const RUIN_EYE_CLEAR = 0.85;
-const RUIN_HARD_MIN = 1.0;
-// The boom may swing around Bolt (whole rig, so Bolt keeps his screen place) when the line
-// straight behind him is walled in, e.g. turning round deep in the hangar or under the arch.
-const RUIN_SWING = [0, 25, -25, 50, -50, 75, -75, 100, -100, 130, -130];
-const RUIN_SWING_RATE = 150;
-// Boom length and swing move as critically damped springs with a speed and an acceleration cap,
-// so the eye's velocity never jumps (a rate-limited chase flips velocity when its goal turns).
-const RUIN_LEN_W_IN = 9;
-const RUIN_LEN_W_OUT = 3.5;
-const RUIN_LEN_ACC = 14;
-const RUIN_LEN_ACC_URGENT = 40;
-const RUIN_SWING_W = 4;
-const RUIN_SWING_ACC = 420;
-// Hard eye guard: never nearer than RUIN_EYE_SAFE to a face (near plane 0.35 m, corner 0.39 m,
-// field error about half a voxel diagonal), softened over RUIN_EYE_SOFT. Never under the relief.
-const RUIN_EYE_SAFE = 0.5;
-const RUIN_EYE_SOFT = 0.25;
-const RUIN_EYE_FLOOR = 0.35;
-const RUIN_EYE_SUB = 0.04;
-const RUIN_EYE_JUMP = 0.4;
-// Chase heading near a ruin: the rig follows Bolt's heading through a capped critically damped
-// spring instead of rigidly, so turning on the spot in the hangar (150 deg/s) cannot whip the
-// eye round into the hull. Off the ruins the chase heading is Bolt's heading, unchanged.
-const CAM_YAW_W = 5;
-const CAM_YAW_RATE_RUIN = 80;
-const CAM_YAW_RATE_FREE = 400;
-const CAM_YAW_ACC = 500;
-const CAM_YAW_ACC_RUIN = 160;
-const camYaw = { h: 0, v: 0, ready: false, lag: false, last: 0 };
-const RUIN_OFF_W = 6;
-const RUIN_OFF_V = 4;
-const RUIN_OFF_ACC = 20;
-const RUIN_RISES = [0.6, 0.35, 0.15, 0];
-const RUIN_RISE_W = 4;
-const RUIN_RISE_V = 1.2;
-const RUIN_RISE_ACC = 5;
-const ruinCam = {
-  rise: 1, riseV: 0, riseGoal: 1,
-  eye: [0, 0, 0], want: [0, 0, 0], off: [0, 0, 0], offV: [0, 0, 0], eyeLive: false,
-  len: 0, lenV: 0, full: 0, ready: false, clamped: false, yaw: 0, yawV: 0, goal: 0, dbg: null,
-  fe: [0, 0, 0], fv: [0, 0, 0], tp: [0, 0, 0], fReady: false, fLag: false,
-  rHold: 0, rHoldV: 0, rShrink: false, rLast: 0 };
-// Last stage near a ruin: the drawn eye tracks the solved eye (position and velocity) through a
-// critically damped follower whose acceleration is capped below the shake threshold, so a face
-// contact, a swing or a boom ease can bend the eye's path but never reverse it frame to frame.
-// Off the ruins it hands over once converged and the eye is the solved eye, unchanged.
-const RUIN_EYE_W = 10;
-const RUIN_EYE_ACC = 30;
-const RUIN_EYE_HARD = 0.4;
-// Hangar turn boom hold: a shortening of more than RUIN_PUMP_EPS per frame starts the hold.
-const RUIN_PUMP_EPS = 0.003;
-const RUIN_HOLD_W = 6;
-const RUIN_HOLD_V = 1.0;
-const RUIN_HOLD_ACC = 8;
-// Eased pose changes are also speed-capped so a far target cannot swoop the eye.
-const CAM_RATE_BOOM = 3.0;
-const CAM_RATE_EYE = 1.5;
-const CAM_RATE_SLIDE = 1.5;
-let ruinContact = false;
-let ruinStall = 0;
-const CAM_W = 10;
-const CAM_ACC = 9;
-const camSm = { ready: false, boom: 6, eye: 1.35, slide: 0, boomV: 0, eyeV: 0, slideV: 0, ground: 0, feet: 0 };
+const camSm = { ready: false, boom: 6, eye: 1.35, slide: 0, ground: 0, feet: 0 };
 let camStepDt = 0;
 let camPitch = 0;
-// Look pitch is an offset on the chase pitch. The eye stays where the chase put it, so a look
-// cannot push the near plane into a face. Drag eases toward the finger; release eases back to 0.
-// Caps stay under the 0.5 deg/frame^2 angular shake trip at 1/30 s (6 rad/s^2 -> ~0.38 deg).
-const LOOK_SENS = 0.0038;
-const LOOK_PMIN = -0.61;
-const LOOK_PMAX = 1.40;
-const LOOK_OFF_MIN = -0.9;
-const LOOK_OFF_MAX = 1.70;
-const LOOK_W_DRAG = 14;
-const LOOK_W_BACK = 2.4;
-const LOOK_V_DRAG = 2.6;
-const LOOK_V_BACK = 0.8;
-const LOOK_A_DRAG = 6;
-const LOOK_A_BACK = 0.9;
-const camLook = { drag: false, goal: 0, cur: 0, v: 0, ptr: -1, ly: 0 };
-function clearLook() {
-  camLook.drag = false;
-  camLook.goal = 0;
-  camLook.cur = 0;
-  camLook.v = 0;
-  camLook.ptr = -1;
-}
-function stepLook(dt) {
-  if (!(dt > 0)) return;
-  if (!camLook.drag && camLook.cur === 0 && camLook.v === 0) return;
-  const goal = camLook.drag ? camLook.goal : 0;
-  const w = camLook.drag ? LOOK_W_DRAG : LOOK_W_BACK;
-  const vmax = camLook.drag ? LOOK_V_DRAG : LOOK_V_BACK;
-  const amax = camLook.drag ? LOOK_A_DRAG : LOOK_A_BACK;
-  const sp = springLim(camLook.cur, camLook.v, goal, dt, w, vmax, amax);
-  let x = sp[0];
-  let v = sp[1];
-  if (x > LOOK_OFF_MAX) { x = LOOK_OFF_MAX; if (v > 0) v = 0; }
-  else if (x < LOOK_OFF_MIN) { x = LOOK_OFF_MIN; if (v < 0) v = 0; }
-  if (!camLook.drag && Math.abs(x) < 1e-4 && Math.abs(v) < 1e-3) { x = 0; v = 0; }
-  camLook.cur = x;
-  camLook.v = v;
-}
 
 const CAP = {
   wreck10: 576,
@@ -882,15 +635,14 @@ function makeArray(images, id, aniso) {
   const packed = [];
   for (let i = 0; i < images.length; i++) {
     const img = images[i];
-    packed.push({ w: img.width, h: img.height, data: rgbBytes(img) });
+    packed.push({ w: img.width, h: img.height, data: canvasPixels(img) });
     maxW = Math.max(maxW, img.width);
     maxH = Math.max(maxH, img.height);
   }
   const levels = Math.floor(Math.log2(Math.max(maxW, maxH))) + 1;
   const t = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D_ARRAY, t);
-  // Ground albedo is sampled as .rgb. The alpha channel was never read.
-  gl.texStorage3D(gl.TEXTURE_2D_ARRAY, levels, gl.RGB8, maxW, maxH, images.length);
+  gl.texStorage3D(gl.TEXTURE_2D_ARRAY, levels, gl.RGBA8, maxW, maxH, images.length);
   gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
   gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -902,33 +654,24 @@ function makeArray(images, id, aniso) {
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
   for (let i = 0; i < packed.length; i++) {
     const p = packed[i];
-    gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, i, p.w, p.h, 1, gl.RGB, gl.UNSIGNED_BYTE, p.data);
+    gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, i, p.w, p.h, 1, gl.RGBA, gl.UNSIGNED_BYTE, p.data);
   }
   gl.generateMipmap(gl.TEXTURE_2D_ARRAY);
-  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 4);
-  trackTex(id, Math.ceil(maxW * maxH * 3 * images.length * 4 / 3));
+  trackTex(id, Math.ceil(maxW * maxH * 4 * images.length * 4 / 3));
   return { tex: t, w: maxW, h: maxH, layers: images.length };
 }
 
-function makeStill(img, id, rgb) {
+function makeStill(img, id) {
   const t = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, t);
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  if (rgb) {
-    const data = rgbBytes(img);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB8, img.width, img.height, 0, gl.RGB, gl.UNSIGNED_BYTE, data);
-    trackTex(id, Math.ceil(img.width * img.height * 3 * 4 / 3));
-  } else {
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-    trackTex(id, Math.ceil(img.width * img.height * 4 * 4 / 3));
-  }
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
   gl.generateMipmap(gl.TEXTURE_2D);
-  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 4);
+  trackTex(id, Math.ceil(img.width * img.height * 4 * 4 / 3));
   return t;
 }
 
@@ -973,36 +716,6 @@ function downscaleWidth(img, targetW) {
   g.imageSmoothingQuality = "high";
   g.drawImage(img, 0, 0, c.width, c.height);
   return c;
-}
-
-// Uniform shrink until the band's own magnification reaches cap (still under 1).
-// ceil keeps the result on the safe side of the cap after integer pixels.
-const SKY_MAG_CAP = 0.993;
-function fitBandMag(images, azDeg, el0, el1, cap) {
-  if (!images || !images.length) return images;
-  let maxW = 0;
-  let maxH = 0;
-  for (let i = 0; i < images.length; i++) {
-    maxW = Math.max(maxW, images[i].width);
-    maxH = Math.max(maxH, images[i].height);
-  }
-  const ov = seamOverlap(maxW, maxH, azDeg, el0, el1);
-  const mag = Math.max(ov.magW, ov.magH);
-  if (!(mag > 0) || mag >= cap) return images;
-  const scale = mag / cap;
-  return images.map((im) => {
-    const w = Math.max(1, Math.ceil(im.width * scale));
-    const h = Math.max(1, Math.ceil(im.height * scale));
-    if (w >= im.width && h >= im.height) return im;
-    const c = document.createElement("canvas");
-    c.width = w;
-    c.height = h;
-    const g = c.getContext("2d");
-    g.imageSmoothingEnabled = true;
-    g.imageSmoothingQuality = "high";
-    g.drawImage(im, 0, 0, w, h);
-    return c;
-  });
 }
 
 function releaseImages(list) {
@@ -1144,6 +857,10 @@ function buildSky() {
 }
 
 function buildSkyTiles() {
+  const corners = new Float32Array([
+    0, 0, 1, 0, 1, 1,
+    0, 0, 1, 1, 0, 1,
+  ]);
   const azN = SKY_TILE_AZ_N;
   const elN = SKY_TILE_EL_N;
   const azSpan = (Math.PI * 2) / azN;
@@ -1163,42 +880,8 @@ function buildSkyTiles() {
       inst[k++] = 0.015 + ((ia * 3 + ie * 5) % 7) * 0.004;
     }
   }
-  buildSkyLayerBatch(inst, buildMeteorTiles(azSpan, elSpan));
-}
-
-// One STATIC buffer: two full-dome layers plus the sparse meteor layer. One draw.
-function buildSkyLayerBatch(tileInst, meteorInst) {
-  const n = skyTileCount * 2 + meteorCount;
-  const data = new Float32Array(n * 11);
-  let o = 0;
-  for (let layer = 0; layer < 2; layer++) {
-    for (let i = 0; i < skyTileCount; i++) {
-      const s = i * 6;
-      data[o++] = tileInst[s];
-      data[o++] = tileInst[s + 1];
-      data[o++] = tileInst[s + 2];
-      data[o++] = tileInst[s + 3];
-      data[o++] = tileInst[s + 4];
-      data[o++] = tileInst[s + 5];
-      data[o++] = 0;
-      data[o++] = 0;
-      data[o++] = 1;
-      data[o++] = 0;
-      data[o++] = layer;
-    }
-  }
-  for (let i = 0; i < meteorCount; i++) {
-    const s = i * 10;
-    for (let j = 0; j < 10; j++) data[o++] = meteorInst[s + j];
-    data[o++] = 2;
-  }
-  skyLayerCount = n;
-  const corners = new Float32Array([
-    0, 0, 1, 0, 1, 1,
-    0, 0, 1, 1, 0, 1,
-  ]);
-  skyLayerVao = gl.createVertexArray();
-  gl.bindVertexArray(skyLayerVao);
+  skyTileVao = gl.createVertexArray();
+  gl.bindVertexArray(skyTileVao);
   const cbuf = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, cbuf);
   gl.bufferData(gl.ARRAY_BUFFER, corners, gl.STATIC_DRAW);
@@ -1206,69 +889,14 @@ function buildSkyLayerBatch(tileInst, meteorInst) {
   gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 8, 0);
   const ibuf = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, ibuf);
-  gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
-  const stride = 44;
+  gl.bufferData(gl.ARRAY_BUFFER, inst, gl.STATIC_DRAW);
   gl.enableVertexAttribArray(1);
-  gl.vertexAttribPointer(1, 4, gl.FLOAT, false, stride, 0);
+  gl.vertexAttribPointer(1, 4, gl.FLOAT, false, 24, 0);
   gl.vertexAttribDivisor(1, 1);
   gl.enableVertexAttribArray(2);
-  gl.vertexAttribPointer(2, 2, gl.FLOAT, false, stride, 16);
+  gl.vertexAttribPointer(2, 2, gl.FLOAT, false, 24, 16);
   gl.vertexAttribDivisor(2, 1);
-  gl.enableVertexAttribArray(3);
-  gl.vertexAttribPointer(3, 4, gl.FLOAT, false, stride, 24);
-  gl.vertexAttribDivisor(3, 1);
-  gl.enableVertexAttribArray(4);
-  gl.vertexAttribPointer(4, 1, gl.FLOAT, false, stride, 40);
-  gl.vertexAttribDivisor(4, 1);
   gl.bindVertexArray(null);
-}
-
-// Sparse, irregular meteor tiles. Same tile size as the full-dome layers (magnification unchanged), whole frame
-// per tile. Each tile carries an alpha window held inside the frame; the window centre (not the tile) is placed
-// by a seeded jittered draw in the chase-view sky band, and no two windows overlap.
-function buildMeteorTiles(azSpan, elSpan) {
-  let seed = 0x5eed1;
-  const rnd = () => {
-    seed = (seed * 1664525 + 1013904223) >>> 0;
-    return seed / 4294967296;
-  };
-  const d2r = Math.PI / 180;
-  const [rx, ry] = METEOR.win;
-  const sepAz = 2 * rx * azSpan;
-  const sepEl = 2 * ry * elSpan;
-  const placed = [];
-  for (let tries = 0; placed.length < METEOR.tiles && tries < 20000; tries++) {
-    const az = rnd() * Math.PI * 2;
-    const el = (METEOR.elLoDeg + rnd() * (METEOR.elHiDeg - METEOR.elLoDeg)) * d2r;
-    let ok = true;
-    for (const q of placed) {
-      let da = Math.abs(az - q.az);
-      da = Math.min(da, Math.PI * 2 - da);
-      if (da < sepAz && Math.abs(el - q.el) < sepEl) { ok = false; break; }
-    }
-    if (ok) placed.push({ az, el });
-  }
-  meteorCount = placed.length;
-  meteorInfo.length = 0;
-  const inst = new Float32Array(meteorCount * 10);
-  let k = 0;
-  for (let i = 0; i < meteorCount; i++) {
-    const p = placed[i];
-    const cx = 0.42 + rnd() * 0.16;
-    const cy = 0.3 + rnd() * 0.4;
-    inst[k++] = p.az - (cx - 0.5) * azSpan;
-    inst[k++] = p.el - (cy - 0.5) * elSpan;
-    inst[k++] = azSpan;
-    inst[k++] = elSpan;
-    inst[k++] = 0;
-    inst[k++] = 0;
-    inst[k++] = cx;
-    inst[k++] = cy;
-    inst[k++] = METEOR.periodSec[0] + rnd() * (METEOR.periodSec[1] - METEOR.periodSec[0]);
-    inst[k++] = rnd() * 40;
-    meteorInfo.push({ azDeg: p.az / d2r, elDeg: p.el / d2r, periodSec: inst[k - 2], offsetSec: inst[k - 1] });
-  }
-  return inst;
 }
 
 function buildFog() {
@@ -1390,52 +1018,6 @@ function closestDist(eye, o, hull) {
   return Math.hypot((mx - qx) * s, (my - qy) * s, (mz - qz) * s);
 }
 
-// World offset from the closest hull-box point to the eye (same box as closestDist).
-const clearVec = [0, 0, 0];
-function closestVec(eye, o, hull) {
-  const s = o.scale || 1;
-  const yaw = (o.yaw_deg || 0) * Math.PI / 180;
-  const c = Math.cos(yaw);
-  const sn = Math.sin(yaw);
-  const dx = eye[0] - o.position[0];
-  const dz = eye[2] - o.position[1];
-  const mx = (c * dx - sn * dz) / s;
-  const mz = (sn * dx + c * dz) / s;
-  const my = (eye[1] - (o.base_y_m || 0)) / s + hull.minY;
-  const ex = (mx - Math.max(-hull.halfExtent[0], Math.min(hull.halfExtent[0], mx))) * s;
-  const ey = (my - Math.max(hull.minY, Math.min(hull.maxY, my))) * s;
-  const ez = (mz - Math.max(-hull.halfExtent[2], Math.min(hull.halfExtent[2], mz))) * s;
-  clearVec[0] = c * ex + sn * ez;
-  clearVec[1] = ey;
-  clearVec[2] = -sn * ex + c * ez;
-  return Math.hypot(ex, ey, ez);
-}
-
-// Minimum camera distance per solid: the eased eye can drift off the scored pose (the hold is
-// scored on raw relief, the eye rides eased relief), and boulder-7 then reached mag 1.10 at
-// 4.2 m. The eye is projected out of each hull's mag ≤ OBJ_MAG_TARGET shell. Projection onto
-// the outside of a rounded box is continuous in the eye position: a glide, never a kick.
-const OBJ_MAG_TARGET = 0.98;
-function clearSolids(eye) {
-  for (let pass = 0; pass < 2; pass++) {
-    let moved = false;
-    for (let i = 0; i < objects.length; i++) {
-      const o = objects[i];
-      const hull = hullByPath.get(o.asset);
-      if (!hull) continue;
-      const need = (FOCAL * worldHeight(o, hull)) / (OBJ_MAG_TARGET * hull.srcH);
-      const d = closestVec(eye, o, hull);
-      if (d >= need || d < 1e-4) continue;
-      const k = (need - d) / d;
-      eye[0] += clearVec[0] * k;
-      eye[1] += clearVec[1] * k;
-      eye[2] += clearVec[2] * k;
-      moved = true;
-    }
-    if (!moved) break;
-  }
-}
-
 function segmentHitsObb(eye, target, o, hull) {
   const steps = 14;
   for (let i = 1; i < steps; i++) {
@@ -1447,61 +1029,6 @@ function segmentHitsObb(eye, target, o, hull) {
       const y0 = o.base_y_m || 0;
       const y1 = y0 + (hull.maxY - hull.minY) * (o.scale || 1);
       if (y > y0 - 0.05 && y < y1 + 0.05) return true;
-    }
-  }
-  return false;
-}
-
-// Feature rocks from the detail layer: thin footprints across each card,
-// as wide as the visible rock. Bolt is pushed out like any solid. The chase
-// eye prefers poses clear of them (soft cost only, never a snap).
-let detailSolids = [];
-const EYE_CARD_M = 0.6;
-function detailLocal(d, x, z) {
-  const dx = x - d.x;
-  const dz = z - d.z;
-  return [d.c * dx - d.s * dz, d.s * dx + d.c * dz];
-}
-function detailPush(x, z) {
-  let hit = false;
-  for (let i = 0; i < detailSolids.length; i++) {
-    const d = detailSolids[i];
-    const l = detailLocal(d, x, z);
-    const hx = d.hx + 0.05;
-    const hz = d.hz + 0.05;
-    if (Math.abs(l[0]) >= hx || Math.abs(l[1]) >= hz) continue;
-    let nlx = l[0];
-    let nlz = l[1];
-    if (hx - Math.abs(l[0]) < hz - Math.abs(l[1])) nlx = Math.sign(l[0] || 1) * hx;
-    else nlz = Math.sign(l[1] || 1) * hz;
-    x = d.x + d.c * nlx + d.s * nlz;
-    z = d.z - d.s * nlx + d.c * nlz;
-    hit = true;
-  }
-  return hit ? [x, z] : null;
-}
-function eyeInCard(e, margin) {
-  for (let i = 0; i < detailSolids.length; i++) {
-    const d = detailSolids[i];
-    if (e[1] > d.y1 + margin) continue;
-    const l = detailLocal(d, e[0], e[2]);
-    if (Math.abs(l[0]) < d.hx + margin && Math.abs(l[1]) < d.hz + margin) return true;
-  }
-  return false;
-}
-function cardBetween(e, tx, ty, tz) {
-  if (!detailSolids.length) return false;
-  const steps = 16;
-  for (let k = 1; k < steps; k++) {
-    const t = k / steps;
-    const x = e[0] + (tx - e[0]) * t;
-    const y = e[1] + (ty - e[1]) * t;
-    const z = e[2] + (tz - e[2]) * t;
-    for (let i = 0; i < detailSolids.length; i++) {
-      const d = detailSolids[i];
-      if (y > d.y1 + 0.05 || y < d.y0 - 0.05) continue;
-      const l = detailLocal(d, x, z);
-      if (Math.abs(l[0]) < d.hx && Math.abs(l[1]) < d.hz + 0.05) return true;
     }
   }
   return false;
@@ -1543,10 +1070,7 @@ function poseMetrics(eye) {
 }
 
 function feetY() {
-  if (!useRelief) return 0;
-  const g = terrain.heightAt(state.x, state.z);
-  // A ruin face within one step of the relief (a sill, a hull foot) is floor.
-  return ruinLayer ? g + ruinLayer.lift(state.x, state.z) : g;
+  return useRelief ? terrain.heightAt(state.x, state.z) : 0;
 }
 
 function applyShot() {
@@ -1584,21 +1108,11 @@ function applyShot() {
   camBoom = Math.hypot(state.x - e[0], state.z - e[2]);
 }
 
-function pitchView(eye, lookFeet, extra) {
+function pitchView(eye, lookFeet) {
   const along = (state.x - eye[0]) * fwdBuf[0] + (state.z - eye[2]) * fwdBuf[2];
   const feet = lookFeet == null ? feetY() : lookFeet;
   const targetY = feet + BOLT_H * 0.45;
-  let pitch = Math.atan2(targetY - eye[1], Math.max(0.35, along));
-  // extra === 0 keeps the chase pitch byte-for-byte (pose scoring and the idle walk).
-  // A live look adds the eased offset, then clamps. The floor never lifts a high chase eye.
-  const add = extra == null ? camLook.cur : extra;
-  if (add) {
-    const base = pitch;
-    pitch = base + add;
-    const lo = Math.min(base, LOOK_PMIN);
-    if (pitch > LOOK_PMAX) pitch = LOOK_PMAX;
-    else if (pitch < lo) pitch = lo;
-  }
+  const pitch = Math.atan2(targetY - eye[1], Math.max(0.35, along));
   const cp = Math.cos(pitch);
   const sp = Math.sin(pitch);
   camFwd[0] = fwdBuf[0] * cp;
@@ -1610,32 +1124,9 @@ function pitchView(eye, lookFeet, extra) {
   camPitch = pitch;
 }
 
-// Smooth maximum (C1): never below max(a, b), blends over a band k so the eye has no kink.
-function smax(a, b, k) {
-  const h = Math.max(k - Math.abs(a - b), 0) / k;
-  return Math.max(a, b) + h * h * k * 0.25;
-}
-
-// The eased eye lags the relief when the boom swings over a ridge (a fast turn sweeps the eye
-// at ~19 m/s). The lag once put the eye 0.58 m over the ridge crest (ground mag 2.09 at heading
-// 82°, 1.42 at 127°). This floor is a smooth function of the eye's ground position, so the eye
-// never sits closer to the relief than ground magnification ≤ 1 allows, and it cannot kick.
-const GROUND_MAG_TARGET = 0.98;
-
 function chase(cur, goal, dt, tau) {
   if (!(dt > 0)) return goal;
   return cur + (goal - cur) * (1 - Math.exp(-dt / tau));
-}
-
-// One step of a critically damped spring toward goal. |v| <= vmax, |dv/dt| <= amax. Returns [x, v].
-function springLim(x, v, goal, dt, w, vmax, amax) {
-  let a = w * w * (goal - x) - 2 * w * v;
-  if (a > amax) a = amax;
-  else if (a < -amax) a = -amax;
-  let nv = v + a * dt;
-  if (nv > vmax) nv = vmax;
-  else if (nv < -vmax) nv = -vmax;
-  return [x + nv * dt, nv];
 }
 
 function solveCamera() {
@@ -1645,40 +1136,7 @@ function solveCamera() {
     camStepDt = 0;
     return;
   }
-  const dtYaw = camStepDt > 0 ? Math.min(0.05, camStepDt) : 0;
-  if (!camYaw.ready || !camSm.ready) {
-    camYaw.h = state.hdg;
-    camYaw.v = 0;
-    camYaw.lag = false;
-    camYaw.ready = true;
-  } else if (dtYaw > 0) {
-    const nearYaw = !!ruinLayer && ruinLayer.near(state.x, state.z, 10);
-    const err = wrap180(state.hdg - camYaw.h);
-    // Leaving the ruins, the lag converges on the free chase (faster cap), then hands over.
-    if (nearYaw) camYaw.lag = true;
-    else if (Math.abs(err) < 0.05 && Math.abs(camYaw.v) < 0.5) camYaw.lag = false;
-    if (camYaw.lag) {
-      // Critically damped, rate-capped. Near a ruin the rig trails a fast turn; leaving the ruins
-      // Bolt's turn rate is fed forward so a steady turn converges with no standing lag.
-      const omega = nearYaw ? 0 : wrap180(state.hdg - camYaw.last) / dtYaw;
-      const vmax = nearYaw ? CAM_YAW_RATE_RUIN : CAM_YAW_RATE_FREE;
-      let acc = CAM_YAW_W * CAM_YAW_W * err + 2 * CAM_YAW_W * (omega - camYaw.v);
-      // Near a ruin the orbit's angular acceleration stays under what the eye follower can track.
-      const amax = nearYaw ? CAM_YAW_ACC_RUIN : CAM_YAW_ACC;
-      if (acc > amax) acc = amax;
-      else if (acc < -amax) acc = -amax;
-      let nv = camYaw.v + acc * dtYaw;
-      if (nv > vmax) nv = vmax;
-      else if (nv < -vmax) nv = -vmax;
-      camYaw.h = wrap360(camYaw.h + nv * dtYaw);
-      camYaw.v = nv;
-    } else {
-      camYaw.h = state.hdg;
-      camYaw.v = 0;
-    }
-  }
-  camYaw.last = state.hdg;
-  const yaw = camYaw.h * Math.PI / 180;
+  const yaw = state.hdg * Math.PI / 180;
   fwdBuf[0] = Math.sin(yaw);
   fwdBuf[1] = 0;
   fwdBuf[2] = Math.cos(yaw);
@@ -1713,12 +1171,6 @@ function solveCamera() {
   let holdHard = false;
   const dt = camStepDt > 0 ? Math.min(0.05, camStepDt) : 0;
   camStepDt = 0;
-  const ruinNear = !!ruinLayer && ruinLayer.near(state.x, state.z, 10);
-  const headY = feetY() + RUIN_HEAD;
-  // Under the arch or in the hangar a low eye keeps the chase line inside the opening.
-  // Score only: legality (and so the snap path) is untouched.
-  const ruinHere = ruinNear ? ruinLayer.where(state.x, state.z) : null;
-  const ruinLow = ruinNear && (ruinCam.clamped || !!(ruinHere && ruinHere.covered));
   for (let bi = 0; bi < booms.length; bi++) {
     const boom = booms[bi];
     for (let ei = 0; ei < eyes.length; ei++) {
@@ -1731,14 +1183,10 @@ function solveCamera() {
         if (behind > -MIN_BOOM + 0.08) continue;
         const dist = Math.hypot(boom, slide, eyes[ei] - 0.97);
         if (dist > 9.3) continue;
-        pitchView(candEye, null, 0);
+        pitchView(candEye);
         const m = poseMetrics(candEye);
         const blocked = lineBlocked(candEye);
-        // Both detail cards and ruin faces are soft camera costs; neither can force a snap.
-        const cardCost = (eyeInCard(candEye, EYE_CARD_M) ? 30 : 0) +
-          (cardBetween(candEye, state.x, feetY() + BOLT_H * 0.45, state.z) ? 15 : 0);
-        const ruinCut = ruinNear && ruinLayer.segFree(state.x, headY, state.z, candEye[0], candEye[1], candEye[2], RUIN_LINE_EPS) < 0.999;
-        const near = (m.on ? 1000 : 0) + (blocked ? 0 : 200) + Math.min(m.minR, 1.25) * 20 - Math.abs(dist - targetDist) * 40 - Math.abs(slide) * 2 - Math.max(0, eyes[ei] - 1.6) * (ruinLow ? 230 : 80) - (ruinCut ? 300 : 0) - cardCost;
+        const near = (m.on ? 1000 : 0) + (blocked ? 0 : 200) + Math.min(m.minR, 1.25) * 20 - Math.abs(dist - targetDist) * 40 - Math.abs(slide) * 2 - Math.max(0, eyes[ei] - 1.6) * 80;
         const hard = m.on && m.minR >= 1.002 && !blocked;
         const isHold = camHold.live && boom === camHold.boom && eyes[ei] === camHold.eye && slide === camHold.slide;
         if (isHold) {
@@ -1794,19 +1242,10 @@ function solveCamera() {
     camSm.boom = useBoom;
     camSm.eye = useEye;
     camSm.slide = useSlide;
-    camSm.boomV = camSm.eyeV = camSm.slideV = 0;
   } else if (dt > 0) {
-    // Critically damped, speed- and acceleration-capped: a pose change starts and ends without
-    // a velocity step, so the eye never kicks (the old first-order chase jumped to full speed).
-    let sp = springLim(camSm.boom, camSm.boomV, useBoom, dt, CAM_W, CAM_RATE_BOOM, CAM_ACC);
-    camSm.boom = sp[0];
-    camSm.boomV = sp[1];
-    sp = springLim(camSm.eye, camSm.eyeV, useEye, dt, CAM_W, CAM_RATE_EYE, CAM_ACC);
-    camSm.eye = sp[0];
-    camSm.eyeV = sp[1];
-    sp = springLim(camSm.slide, camSm.slideV, useSlide, dt, CAM_W, CAM_RATE_SLIDE, CAM_ACC);
-    camSm.slide = sp[0];
-    camSm.slideV = sp[1];
+    camSm.boom = chase(camSm.boom, useBoom, dt, 0.16);
+    camSm.eye = chase(camSm.eye, useEye, dt, 0.16);
+    camSm.slide = chase(camSm.slide, useSlide, dt, 0.16);
   }
   eyeBuf[0] = state.x - fwdBuf[0] * camSm.boom + rightBuf[0] * camSm.slide;
   eyeBuf[2] = state.z - fwdBuf[2] * camSm.boom + rightBuf[2] * camSm.slide;
@@ -1814,12 +1253,6 @@ function solveCamera() {
   if (snapPose) camSm.ground = rawG;
   else if (dt > 0) camSm.ground = chase(camSm.ground, rawG, dt, 0.28);
   eyeBuf[1] = camSm.eye + camSm.ground;
-  // Inside a ruin's reach the chase eye is main's eye. The eye-floor and the
-  // hull shell run only in the open: fed into the ruin springs they kink the
-  // line and the eye acceleration reverses (camera shake).
-  const chaseBoom = Math.hypot(state.x - eyeBuf[0], state.z - eyeBuf[2]);
-  const ruinOwns = !!(ruinLayer && ruinLayer.near(state.x, state.z, chaseBoom + 6));
-  if (useRelief && !ruinOwns) eyeBuf[1] = smax(eyeBuf[1], terrain.eyeFloor(eyeBuf[0], eyeBuf[2], GROUND_MAG_TARGET), 0.3);
   const rawFeet = feetY();
   if (snapPose) camSm.feet = rawFeet;
   else if (dt > 0) camSm.feet = chase(camSm.feet, rawFeet, dt, 0.22);
@@ -1832,431 +1265,8 @@ function solveCamera() {
     eyeBuf[2] = state.z - backZ / backL * MIN_BOOM;
     backL = MIN_BOOM;
   }
-  if (!ruinOwns) {
-    clearSolids(eyeBuf);
-    if (useRelief) eyeBuf[1] = Math.max(eyeBuf[1], terrain.eyeFloor(eyeBuf[0], eyeBuf[2], GROUND_MAG_TARGET));
-  }
-  // Feature cards are near-culled rather than snapping the eye; keep the metric on the final pose.
-  if (detailSolids.length && eyeInCard(eyeBuf, 0.05)) eyeGuardHits++;
-  ruinBoom(dt, snapPose);
-  camBoom = Math.hypot(state.x - eyeBuf[0], state.z - eyeBuf[2]);
-  stepLook(dt);
+  camBoom = backL;
   pitchView(eyeBuf, camSm.feet);
-}
-
-// Shorten the chase line smoothly where a ruin face would cut it (arch pier, hull wall).
-// Look-ahead on Bolt's own collided path starts the ease before the face arrives.
-// When the line straight back is walled in, the whole rig swings round Bolt to the side
-// with room (eased, speed-capped), so the eye never sits inside stone or hull.
-// Longest boom along v whose line clears every face and whose eye keeps RUIN_EYE_CLEAR
-// (the near plane is 0.35 m). Below RUIN_MIN_LEN it only goes on to RUIN_HARD_MIN when the eye
-// would otherwise touch a face. A floored eye that still touches scores negative so a swing
-// to a roomier side wins.
-function ruinAllow(px, hy, pz, vx, vy, vz, full) {
-  const f = ruinLayer.segFree(px, hy, pz, px + vx, hy + vy, pz + vz, RUIN_LINE_EPS);
-  let len = f < 1 ? Math.max(0, f * full - RUIN_EYE_GAP) : full;
-  const floor = Math.min(RUIN_MIN_LEN, full);
-  const hard = Math.min(RUIN_HARD_MIN, full);
-  let clr = 99;
-  for (;;) {
-    const k = Math.max(len, hard) / full;
-    clr = ruinLayer.clearance(px + vx * k, hy + vy * k, pz + vz * k);
-    if (clr >= RUIN_EYE_CLEAR) break;
-    if (len <= hard) break;
-    if (len <= floor && clr >= RUIN_EYE_CLEAR * 0.5) break;
-    len -= 0.1;
-  }
-  if (clr < RUIN_EYE_CLEAR) return Math.max(len, hard) - (RUIN_EYE_CLEAR - clr) * 8;
-  return len;
-}
-
-function rotXZ(x, z, deg) {
-  const a = deg * Math.PI / 180;
-  const c = Math.cos(a);
-  const s = Math.sin(a);
-  return [x * c + z * s, z * c - x * s];
-}
-
-function ruinBoom(dt, snap) {
-  const hy = camSm.feet + RUIN_HEAD;
-  const vx0 = eyeBuf[0] - state.x;
-  const vyFull = eyeBuf[1] - hy;
-  const vz0 = eyeBuf[2] - state.z;
-  const full0 = Math.hypot(vx0, vyFull, vz0);
-  if (!(full0 > 1e-4)) return;
-  const fresh = !ruinCam.ready || snap;
-  const near = !!ruinLayer && ruinLayer.near(state.x, state.z, full0 + 6);
-  // Rise: share of the chase eye's height over Bolt's head that the line keeps. Under a lintel
-  // or a hull deck a lower, flatter line has room where the high one hits the ceiling.
-  let vy = vyFull * ruinCam.rise;
-  let full = Math.hypot(vx0, vy, vz0);
-  // Swing goal: straight back unless it is walled in; then the side with the most room.
-  let goal = 0;
-  if (near) {
-    const comfy = Math.min(full, MIN_BOOM + 0.1);
-    const score = (deg) => {
-      const r = rotXZ(vx0, vz0, deg);
-      return Math.min(ruinAllow(state.x, hy, state.z, r[0], vy, r[1], full), comfy) - Math.abs(deg) / 400;
-    };
-    const s0 = score(0);
-    if (s0 < comfy - 1e-3) {
-      let best = 0;
-      let bestS = s0;
-      for (let i = 1; i < RUIN_SWING.length; i++) {
-        const v = score(RUIN_SWING[i]);
-        if (v > bestS) {
-          bestS = v;
-          best = RUIN_SWING[i];
-        }
-      }
-      const keep = fresh ? -1e9 : score(ruinCam.goal);
-      goal = bestS > keep + 0.3 ? best : ruinCam.goal;
-    }
-  }
-  // Turning on the spot near a ruin: the rig may only swing the way Bolt turns (or hold), so the
-  // view never swings back against the turn (owner rule: zero jitter in the hangar turn).
-  const spin = near && !fresh && Math.abs(state.spd) < 0.3 && state.turn ? Math.sign(state.turn) : 0;
-  if (spin) {
-    if (spin * (goal - ruinCam.yaw) < 0 && goal !== ruinCam.goal) {
-      let best = ruinCam.goal;
-      if (spin * (best - ruinCam.yaw) < 0) best = ruinCam.yaw;
-      goal = best;
-    }
-    if (spin * ruinCam.yawV < 0) ruinCam.yawV = 0;
-  }
-  if (fresh) {
-    ruinCam.yaw = goal;
-    ruinCam.yawV = 0;
-  } else if (dt > 0) {
-    const sw = springLim(ruinCam.yaw, ruinCam.yawV, goal, dt, RUIN_SWING_W, RUIN_SWING_RATE, RUIN_SWING_ACC);
-    ruinCam.yaw = sw[0];
-    ruinCam.yawV = sw[1];
-    if (spin && spin * ruinCam.yawV < 0) ruinCam.yawV = 0;
-  }
-  ruinCam.goal = goal;
-  if (Math.abs(ruinCam.yaw) < 0.05 && Math.abs(ruinCam.yawV) < 0.5 && goal === 0) {
-    ruinCam.yaw = 0;
-    ruinCam.yawV = 0;
-  }
-  const r = rotXZ(vx0, vz0, ruinCam.yaw);
-  const vx = r[0];
-  const vz = r[1];
-  let riseGoal = 1;
-  if (near) {
-    const comfy = Math.min(full0, MIN_BOOM + 0.1);
-    const scoreRise = (k) => {
-      const y = vyFull * k;
-      const f = Math.hypot(vx0, y, vz0);
-      return Math.min(ruinAllow(state.x, hy, state.z, vx, y, vz, f), comfy) + k * 0.4;
-    };
-    let best = 1;
-    let bestS = scoreRise(1);
-    if (bestS < comfy + 0.4 - 1e-3) {
-      for (const k of RUIN_RISES) {
-        const v = scoreRise(k);
-        if (v > bestS) {
-          bestS = v;
-          best = k;
-        }
-      }
-    }
-    const keep = fresh ? -1e9 : scoreRise(ruinCam.riseGoal);
-    riseGoal = bestS > keep + 0.25 ? best : ruinCam.riseGoal;
-  }
-  ruinCam.riseGoal = riseGoal;
-  if (fresh) {
-    ruinCam.rise = riseGoal;
-    ruinCam.riseV = 0;
-  } else if (dt > 0) {
-    const sr = springLim(ruinCam.rise, ruinCam.riseV, riseGoal, dt, RUIN_RISE_W, RUIN_RISE_V, RUIN_RISE_ACC);
-    ruinCam.rise = Math.max(0, Math.min(1, sr[0]));
-    ruinCam.riseV = sr[1];
-  }
-  if (!near && Math.abs(ruinCam.rise - 1) < 1e-3) {
-    ruinCam.rise = 1;
-    ruinCam.riseV = 0;
-  }
-  vy = vyFull * ruinCam.rise;
-  full = Math.hypot(vx0, vy, vz0);
-  let allow = full;
-  let now = full;
-  if (near) {
-    // Look far enough ahead that the speed-capped ease finishes before the face arrives.
-    const ahead = [0, 0.3, 0.6, 1.0, 1.4];
-    for (let i = 0; i < ahead.length; i++) {
-      let ax = state.x;
-      let az = state.z;
-      if (ahead[i] > 0 && state.spd > 0) {
-        const yaw = state.hdg * Math.PI / 180;
-        const p = ruinLayer.collide(state.x, state.z, state.x + Math.sin(yaw) * state.spd * ahead[i], state.z + Math.cos(yaw) * state.spd * ahead[i], RUIN_BODY_R);
-        ax = p.x;
-        az = p.z;
-      }
-      const a = ruinAllow(ax, hy, az, vx, vy, vz, full);
-      if (i === 0) now = a;
-      allow = Math.min(allow, a);
-    }
-  }
-  const target = Math.max(Math.min(RUIN_HARD_MIN, full), allow);
-  if (fresh) {
-    ruinCam.len = target;
-    ruinCam.lenV = 0;
-  } else if (dt > 0) {
-    const shrink = target < ruinCam.len;
-    // If the eye is already about to touch a face (a turn swept it in), shrink twice as fast,
-    // still with a capped acceleration so the eye does not kick.
-    const urgent = shrink && ruinCam.len > Math.max(Math.min(RUIN_HARD_MIN, full), now) + 0.25;
-    const sp = springLim(
-      ruinCam.len, ruinCam.lenV, target, dt,
-      shrink ? RUIN_LEN_W_IN : RUIN_LEN_W_OUT,
-      shrink ? RUIN_IN_RATE * (urgent ? 2 : 1) : RUIN_OUT_RATE,
-      urgent ? RUIN_LEN_ACC_URGENT : RUIN_LEN_ACC,
-    );
-    ruinCam.len = sp[0];
-    ruinCam.lenV = sp[1];
-  }
-  ruinCam.ready = true;
-  if (ruinCam.len > full - 1e-3) {
-    // On the free chase the spring rides the free boom, velocity included, so a later ease-in
-    // starts from the boom's own motion instead of from rest.
-    ruinCam.lenV = dt > 0 && ruinCam.full > 0 ? Math.max(-8, Math.min(8, (full - ruinCam.full) / dt)) : 0;
-    ruinCam.len = full;
-  }
-  ruinCam.full = full;
-  ruinCam.clamped = ruinCam.len < full - 0.01 || ruinCam.rise < 0.99;
-  const k = ruinCam.len / full;
-  eyeBuf[0] = state.x + vx * k;
-  eyeBuf[1] = hy + vy * k;
-  eyeBuf[2] = state.z + vz * k;
-  let turn = ruinCam.yaw;
-  // Eye follower (ruins only). Off the ruins the eye is the chase eye, unchanged.
-  // Near a ruin the eye is a small sphere that cannot enter a face: it moves from where it was
-  // toward the chase eye in short substeps and slides along any face it meets (RUIN_EYE_SAFE from
-  // it, so the 0.35 m near plane never opens stone or hull). A chase eye that jumps further than
-  // RUIN_EYE_JUMP in one frame keeps the excess as an offset that a capped spring takes back, so a
-  // re-solved pose glides instead of popping. In free space the offset is zero and the eye is rigid.
-  const dsx = eyeBuf[0];
-  const dsy = eyeBuf[1];
-  const dsz = eyeBuf[2];
-  const live = near && ruinCam.eyeLive && !fresh && dt > 0;
-  if (!live) {
-    ruinCam.off[0] = ruinCam.off[1] = ruinCam.off[2] = 0;
-    ruinCam.offV[0] = ruinCam.offV[1] = ruinCam.offV[2] = 0;
-  } else {
-    const jx = dsx - ruinCam.want[0];
-    const jy = dsy - ruinCam.want[1];
-    const jz = dsz - ruinCam.want[2];
-    const jl = Math.hypot(jx, jy, jz);
-    if (jl > RUIN_EYE_JUMP) {
-      const ex = 1 - RUIN_EYE_JUMP / jl;
-      ruinCam.off[0] -= jx * ex;
-      ruinCam.off[1] -= jy * ex;
-      ruinCam.off[2] -= jz * ex;
-    }
-    for (let i = 0; i < 3; i++) {
-      const sp = springLim(ruinCam.off[i], ruinCam.offV[i], 0, dt, RUIN_OFF_W, RUIN_OFF_V, RUIN_OFF_ACC);
-      ruinCam.off[i] = sp[0];
-      ruinCam.offV[i] = sp[1];
-    }
-    let px = ruinCam.eye[0];
-    let py = ruinCam.eye[1];
-    let pz = ruinCam.eye[2];
-    const tx = dsx + ruinCam.off[0];
-    const ty = dsy + ruinCam.off[1];
-    const tz = dsz + ruinCam.off[2];
-    const L = Math.hypot(tx - px, ty - py, tz - pz);
-    const n = Math.max(1, Math.ceil(L / RUIN_EYE_SUB));
-    let gx = 0;
-    let gy = 0;
-    let gz = 0;
-    for (let i = 1; i <= n; i++) {
-      // Aim each substep at the remaining target so a slide keeps heading for it.
-      const rem = n - i + 1;
-      px += (tx - px) / rem;
-      py += (ty - py) / rem;
-      pz += (tz - pz) / rem;
-      // Hard core inside the substeps: never closer than RUIN_EYE_SAFE to a face.
-      const c = ruinLayer.clearance(px, py, pz);
-      if (c < RUIN_EYE_SAFE) {
-        const g = ruinLayer.clearGrad(px, py, pz);
-        if (g) {
-          px += g[0] * (RUIN_EYE_SAFE - c);
-          py += g[1] * (RUIN_EYE_SAFE - c);
-          pz += g[2] * (RUIN_EYE_SAFE - c);
-          gx = g[0];
-          gy = g[1];
-          gz = g[2];
-        }
-      }
-    }
-    {
-      // Soft band once per frame (C1 in the clearance): the eye eases off a face it nears
-      // instead of hitting the hard core, so the slide has no kink.
-      const c = ruinLayer.clearance(px, py, pz);
-      const s1 = RUIN_EYE_SAFE + RUIN_EYE_SOFT;
-      if (c < s1) {
-        const g = ruinLayer.clearGrad(px, py, pz);
-        if (g) {
-          const k = ((s1 - c) * (s1 - c)) / (4 * RUIN_EYE_SOFT);
-          px += g[0] * k;
-          py += g[1] * k;
-          pz += g[2] * k;
-          gx = g[0];
-          gy = g[1];
-          gz = g[2];
-        }
-      }
-    }
-    const floorY = (useRelief ? terrain.heightAt(px, pz) : 0) + RUIN_EYE_FLOOR;
-    if (py < floorY) py = floorY;
-    // What the faces took off the target stays in the offset (no velocity kept into the face).
-    const nox = px - dsx;
-    const noy = py - dsy;
-    const noz = pz - dsz;
-    if (gx || gy || gz) {
-      // Touching a face: drop the offset velocity that points into it (inelastic), keep the slide.
-      const vin = ruinCam.offV[0] * gx + ruinCam.offV[1] * gy + ruinCam.offV[2] * gz;
-      if (vin < 0) {
-        ruinCam.offV[0] -= vin * gx;
-        ruinCam.offV[1] -= vin * gy;
-        ruinCam.offV[2] -= vin * gz;
-      }
-    }
-    ruinCam.off[0] = nox;
-    ruinCam.off[1] = noy;
-    ruinCam.off[2] = noz;
-    eyeBuf[0] = px;
-    eyeBuf[1] = py;
-    eyeBuf[2] = pz;
-  }
-  // The follower's own result is its state for the next frame (before the smoothing below).
-  const fx = eyeBuf[0];
-  const fy = eyeBuf[1];
-  const fz = eyeBuf[2];
-  if (fresh || !(dt > 0) || !ruinCam.fReady) {
-    for (let i = 0; i < 3; i++) {
-      ruinCam.fe[i] = eyeBuf[i];
-      ruinCam.fv[i] = 0;
-      ruinCam.tp[i] = eyeBuf[i];
-    }
-    ruinCam.fReady = true;
-    ruinCam.fLag = false;
-  } else {
-    const fe = ruinCam.fe;
-    const fv = ruinCam.fv;
-    const tv = [(fx - ruinCam.tp[0]) / dt, (fy - ruinCam.tp[1]) / dt, (fz - ruinCam.tp[2]) / dt];
-    if (near) ruinCam.fLag = true;
-    else if (Math.hypot(fx - fe[0], fy - fe[1], fz - fe[2]) < 1e-3 && Math.hypot(tv[0] - fv[0], tv[1] - fv[1], tv[2] - fv[2]) < 0.05) ruinCam.fLag = false;
-    if (ruinCam.fLag) {
-      const w = RUIN_EYE_W;
-      let ax = w * w * (fx - fe[0]) + 2 * w * (tv[0] - fv[0]);
-      let ay = w * w * (fy - fe[1]) + 2 * w * (tv[1] - fv[1]);
-      let az = w * w * (fz - fe[2]) + 2 * w * (tv[2] - fv[2]);
-      const an = Math.hypot(ax, ay, az);
-      if (an > RUIN_EYE_ACC) {
-        const k = RUIN_EYE_ACC / an;
-        ax *= k;
-        ay *= k;
-        az *= k;
-      }
-      fv[0] += ax * dt;
-      fv[1] += ay * dt;
-      fv[2] += az * dt;
-      fe[0] += fv[0] * dt;
-      fe[1] += fv[1] * dt;
-      fe[2] += fv[2] * dt;
-      // Safety only (the follower already keeps RUIN_EYE_SAFE): the near plane never opens a face.
-      if (ruinLayer) {
-        const c = ruinLayer.clearance(fe[0], fe[1], fe[2]);
-        if (c < RUIN_EYE_HARD) {
-          const g = ruinLayer.clearGrad(fe[0], fe[1], fe[2]);
-          if (g) {
-            for (let i = 0; i < 3; i++) fe[i] += g[i] * (RUIN_EYE_HARD - c);
-            const vin = fv[0] * g[0] + fv[1] * g[1] + fv[2] * g[2];
-            if (vin < 0) for (let i = 0; i < 3; i++) fv[i] -= vin * g[i];
-          }
-        }
-      }
-      const floorY = (useRelief ? terrain.heightAt(fe[0], fe[2]) : 0) + RUIN_EYE_FLOOR;
-      if (fe[1] < floorY) {
-        fe[1] = floorY;
-        if (fv[1] < 0) fv[1] = 0;
-      }
-    } else {
-      fe[0] = fx;
-      fe[1] = fy;
-      fe[2] = fz;
-      fv[0] = tv[0];
-      fv[1] = tv[1];
-      fv[2] = tv[2];
-    }
-    ruinCam.tp[0] = fx;
-    ruinCam.tp[1] = fy;
-    ruinCam.tp[2] = fz;
-    eyeBuf[0] = fe[0];
-    eyeBuf[1] = fe[1];
-    eyeBuf[2] = fe[2];
-  }
-  {
-    // Turning on the spot near a ruin: once the drawn boom (Bolt to eye, flat) has started to
-    // shorten it never pumps back out during the turn. The eye is only drawn nearer to Bolt along
-    // its own flat line (toward Bolt), never into a face. When the turn ends the hold eases off
-    // through a capped spring, so the boom never jumps (owner rule: zero jitter in the hangar turn).
-    const hx = eyeBuf[0] - state.x;
-    const hz = eyeBuf[2] - state.z;
-    const d = Math.hypot(hx, hz);
-    if (!near || fresh || !(dt > 0) || d < 1e-3) {
-      ruinCam.rHold = 0;
-      ruinCam.rHoldV = 0;
-      ruinCam.rShrink = false;
-    } else if (spin) {
-      if (d < ruinCam.rLast - RUIN_PUMP_EPS) ruinCam.rShrink = true;
-      ruinCam.rHold = ruinCam.rShrink ? Math.min(0, ruinCam.rLast - d) : 0;
-      ruinCam.rHoldV = 0;
-    } else {
-      ruinCam.rShrink = false;
-      const sp = springLim(ruinCam.rHold, ruinCam.rHoldV, 0, dt, RUIN_HOLD_W, RUIN_HOLD_V, RUIN_HOLD_ACC);
-      ruinCam.rHold = Math.min(0, sp[0]);
-      ruinCam.rHoldV = sp[1];
-    }
-    const drawn = Math.max(0, d + ruinCam.rHold);
-    if (d >= 1e-3 && drawn !== d) {
-      eyeBuf[0] = state.x + hx * (drawn / d);
-      eyeBuf[2] = state.z + hz * (drawn / d);
-    }
-    ruinCam.rLast = drawn;
-  }
-  {
-    // Keep looking at Bolt: turn the rig by the angle the follower and the smoothing moved the
-    // eye round him.
-    const hx0 = dsx - state.x;
-    const hz0 = dsz - state.z;
-    const hx1 = eyeBuf[0] - state.x;
-    const hz1 = eyeBuf[2] - state.z;
-    const l0 = Math.hypot(hx0, hz0);
-    const l1 = Math.hypot(hx1, hz1);
-    if (l0 > 1e-4 && l1 > 1e-4) {
-      const c = (hx0 * hx1 + hz0 * hz1) / (l0 * l1);
-      const sn = (hz0 * hx1 - hx0 * hz1) / (l0 * l1);
-      turn += Math.atan2(sn, c) * 180 / Math.PI;
-    }
-  }
-  if (SHOW_HUD) ruinCam.dbg = { chase: [vx0 + state.x, vyFull + hy, vz0 + state.z], want: [dsx, dsy, dsz], len: ruinCam.len, full, yaw: ruinCam.yaw, goal: ruinCam.goal, rise: ruinCam.rise, off: ruinCam.off.slice(), near, live, foll: [fx, fy, fz], fLag: ruinCam.fLag };
-  ruinCam.eyeLive = near;
-  ruinCam.want[0] = dsx;
-  ruinCam.want[1] = dsy;
-  ruinCam.want[2] = dsz;
-  ruinCam.eye[0] = fx;
-  ruinCam.eye[1] = fy;
-  ruinCam.eye[2] = fz;
-  if (turn !== 0) {
-    const f = rotXZ(fwdBuf[0], fwdBuf[2], turn);
-    fwdBuf[0] = f[0];
-    fwdBuf[2] = f[1];
-    const rr = rotXZ(rightBuf[0], rightBuf[2], turn);
-    rightBuf[0] = rr[0];
-    rightBuf[2] = rr[1];
-  }
 }
 
 function projectPoint(eye, right, up, fwd, x, y, z) {
@@ -2315,10 +1325,7 @@ function reset() {
   state.pathTrigger = false;
   state.hdg = spawnHeading();
   camSm.ready = false;
-  camYaw.ready = false;
   camHold.live = false;
-  ruinCam.ready = false;
-  clearLook();
 }
 function place(x, z, hdg) {
   state.x = x;
@@ -2330,10 +1337,7 @@ function place(x, z, hdg) {
   state.turn = 0;
   state.gallop = false;
   camSm.ready = false;
-  camYaw.ready = false;
   camHold.live = false;
-  ruinCam.ready = false;
-  clearLook();
 }
 function look(headingDeg) {
   state.hdg = wrap360(headingDeg);
@@ -2341,8 +1345,6 @@ function look(headingDeg) {
   state.mode = "IDLE";
   camSm.ready = false;
   camHold.live = false;
-  ruinCam.ready = false;
-  clearLook();
 }
 function setInput(inp) {
   state.forward = Number(inp.forward) || 0;
@@ -2365,13 +1367,6 @@ function resolveBody(nx, nz) {
         hit = true;
         blocked = true;
       }
-    }
-    const dp = detailPush(nx, nz);
-    if (dp) {
-      nx = dp[0];
-      nz = dp[1];
-      hit = true;
-      blocked = true;
     }
     if (!hit) break;
   }
@@ -2403,25 +1398,6 @@ function gateInfo() {
 }
 
 function syncVideos(eye, fwd) {
-  const menu = !!(archivesLayer && archivesLayer.blocksPlay());
-  const hold = menuVideoHold(menu);
-  if (hold.pauseBolt) {
-    if (gallopVideo && !gallopVideo.paused) gallopVideo.pause();
-    if (idleVideo && !idleVideo.paused) idleVideo.pause();
-  }
-  if (hold.pauseGate && gateVideo && !gateVideo.paused) gateVideo.pause();
-  if (hold.pauseSky) {
-    for (let i = 0; i < skyVideos.length; i++) {
-      const sky = skyVideos[i];
-      if (sky && !sky.paused) sky.pause();
-    }
-    return false;
-  }
-  for (let i = 0; i < skyVideos.length; i++) {
-    if (i === 2) continue;
-    const sky = skyVideos[i];
-    if (sky && sky.paused && sky.readyState >= 2) sky.play().catch(() => {});
-  }
   const active = state.mode === "GALLOP" ? gallopVideo : idleVideo;
   const other = state.mode === "GALLOP" ? idleVideo : gallopVideo;
   if (other && !other.paused) other.pause();
@@ -2445,31 +1421,6 @@ function syncVideos(eye, fwd) {
     } else if (neb.paused) neb.play().catch(() => {});
   }
   return show;
-}
-
-// Vertical slice joints: neighbours overlap and crossfade. A slice may widen only until its horizontal
-// magnification reaches the band's own current limit (the larger of its width and height mag), so the
-// band mag never rises. Overlap is at most SKY_SEAM_MAX of a slice spacing.
-const SKY_SEAM_MAX = 0.25;
-const seamCache = [];
-function seamOverlap(srcW, srcH, azDeg, el0, el1) {
-  for (let i = 0; i < seamCache.length; i++) {
-    const c = seamCache[i];
-    if (c.srcW === srcW && c.srcH === srcH && c.azDeg === azDeg && c.el0 === el0 && c.el1 === el1) return c;
-  }
-  const pxH = W / (HFOV * 180 / Math.PI);
-  const pxV = H / (VFOV * 180 / Math.PI);
-  const span = Math.max(0.01, (el1 - el0) * 180 / Math.PI);
-  const cos0 = Math.cos(el0);
-  const magW = pxH * cos0 * azDeg / srcW;
-  const magH = pxV * span / srcH;
-  const limit = Math.max(magW, magH);
-  const headroom = Math.max(1, limit / Math.max(1e-6, magW));
-  const o0 = Math.min(SKY_SEAM_MAX, headroom - 1);
-  const c = { srcW, srcH, azDeg, el0, el1, headroom, cos0, magW: magW * (1 + o0), magH };
-  if (seamCache.length > 8) seamCache.length = 0;
-  seamCache.push(c);
-  return c;
 }
 
 function drawSky(mode, eye) {
@@ -2496,12 +1447,6 @@ function drawSky(mode, eye) {
   gl.uniform1f(surfLoc.hasUpper, skyUpper ? 1 : 0);
   gl.uniform1f(surfLoc.hasHigh, skyHigh ? 1 : 0);
   gl.uniform1f(surfLoc.azBias, yaw * 0.006);
-  const ovH = skyTex ? seamOverlap(skyTex.w, skyTex.h, skyBand.hAz || 45, skyBand.h0, skyBand.h1) : null;
-  const ovU = skyUpper ? seamOverlap(skyUpper.w, skyUpper.h, skyBand.uAz || 45, skyBand.u0, skyBand.u1) : null;
-  const ovK = skyHigh ? seamOverlap(skyHigh.w, skyHigh.h, skyBand.kAz || 45, skyBand.k0, skyBand.k1) : null;
-  gl.uniform3f(surfLoc.ovH, ovH ? SKY_SEAM_MAX : 0, ovH ? ovH.headroom : 1, ovH ? ovH.cos0 : 1);
-  gl.uniform3f(surfLoc.ovU, ovU ? SKY_SEAM_MAX : 0, ovU ? ovU.headroom : 1, ovU ? ovU.cos0 : 1);
-  gl.uniform3f(surfLoc.ovK, ovK ? SKY_SEAM_MAX : 0, ovK ? ovK.headroom : 1, ovK ? ovK.cos0 : 1);
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_2D_ARRAY, skyTex.tex);
   gl.uniform1i(surfLoc.tex, 0);
@@ -2525,47 +1470,37 @@ function drawSky(mode, eye) {
 }
 
 function drawSkyLayers(eye, yaw) {
-  if (!skyLayerVao || !skyVideoTex[0]) return;
-  const gain = [0, 0, 0];
-  for (let i = 0; i < 3; i++) {
-    if (i === 2 && !meteorShow) continue;
-    if (skyVideos[i] && uploadVideo(skyVideos[i], skyVideoTex[i], SKY_VIDEO_IDS[i])) gain[i] = SKY_GAIN[i];
-  }
-  if (gain[0] <= 0 && gain[1] <= 0 && gain[2] <= 0) return;
+  if (!skyTileVao) return;
+  const bias = [
+    yaw * 0.002,
+    yaw * 0.02 + (eye[0] + eye[2]) * 0.0004,
+    yaw * 0.012,
+  ];
   gl.useProgram(skyLayerProg);
-  gl.bindVertexArray(skyLayerVao);
+  gl.bindVertexArray(skyTileVao);
   gl.uniformMatrix4fv(skyLayerLoc.vp, false, vpM);
   gl.uniform3f(skyLayerLoc.eye, eye[0], eye[1], eye[2]);
-  gl.uniform1f(skyLayerLoc.bias0, yaw * 0.002);
-  gl.uniform1f(skyLayerLoc.bias1, yaw * 0.02 + (eye[0] + eye[2]) * 0.0004);
-  gl.uniform1f(skyLayerLoc.bias2, yaw * 0.012);
   gl.uniform1f(skyLayerLoc.radius, 86);
   gl.uniform1f(skyLayerLoc.time, performance.now() * 0.001);
   gl.uniform1f(skyLayerLoc.scroll, 1.0);
-  gl.uniform1f(skyLayerLoc.gain0, gain[0]);
-  gl.uniform1f(skyLayerLoc.gain1, gain[1]);
-  gl.uniform1f(skyLayerLoc.gain2, gain[2]);
-  gl.uniform1f(skyLayerLoc.key0, SKY_KEY[0]);
-  gl.uniform1f(skyLayerLoc.key1, SKY_KEY[1]);
-  gl.uniform1f(skyLayerLoc.key2, SKY_KEY[2]);
-  gl.uniform2f(skyLayerLoc.metDuty, METEOR.duty, METEOR.fadeSec);
-  gl.uniform3f(skyLayerLoc.metWin, METEOR.win[0], METEOR.win[1], METEOR.win[2]);
-  gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, skyVideoTex[0]);
-  gl.uniform1i(skyLayerLoc.tex0, 0);
-  gl.activeTexture(gl.TEXTURE1);
-  gl.bindTexture(gl.TEXTURE_2D, skyVideoTex[1]);
-  gl.uniform1i(skyLayerLoc.tex1, 1);
-  gl.activeTexture(gl.TEXTURE2);
-  gl.bindTexture(gl.TEXTURE_2D, skyVideoTex[2]);
-  gl.uniform1i(skyLayerLoc.tex2, 2);
-  gl.activeTexture(gl.TEXTURE0);
+  gl.uniform1i(skyLayerLoc.tex, 0);
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.ONE, gl.ONE);
   gl.enable(gl.DEPTH_TEST);
   gl.depthMask(false);
-  gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, skyLayerCount);
-  drawCalls++;
+  for (let i = 0; i < 3; i++) {
+    let gain = 0;
+    if (skyVideos[i] && uploadVideo(skyVideos[i], skyVideoTex[i], SKY_VIDEO_IDS[i])) gain = SKY_GAIN[i];
+    if (gain <= 0) continue;
+    gl.uniform1f(skyLayerLoc.gain, gain);
+    gl.uniform1f(skyLayerLoc.key, SKY_KEY[i]);
+    gl.uniform1f(skyLayerLoc.azBias, bias[i]);
+    gl.uniform1f(skyLayerLoc.scroll, 1.0);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, skyVideoTex[i]);
+    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, skyTileCount);
+    drawCalls++;
+  }
   gl.depthMask(true);
   gl.disable(gl.BLEND);
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
@@ -2629,9 +1564,6 @@ function drawCard(mode, tex, key, cx, cy, cz, y0, w, h, idIndex, alpha) {
   gl.uniform1i(cardLoc.key, key);
   gl.uniform1f(cardLoc.alpha, alpha);
   gl.uniform1f(cardLoc.post, useRelief && terrain.postEnabled() && key === 1 && mode === 0 ? 1 : 0);
-  // Bolt takes the same biome grade as the world (grade only: no fog, no bloom, never glows).
-  gl.uniform1f(cardLoc.gradeMix, postNow.gradeMix);
-  gl.uniform1f(cardLoc.sat, postNow.saturation);
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_2D, tex);
   gl.uniform1i(cardLoc.tex, 0);
@@ -2676,11 +1608,8 @@ function updateHeroQuad(eye) {
   heroQuad = { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
 }
 
-const magParts = { ground: 0, object: 0, objectId: "", pebble: 0, bolt: 0, gate: 0 };
-
 function measureMag(eye) {
   let objectMag = 0;
-  let objectId = "";
   let near = 80;
   for (let i = 0; i < objects.length; i++) {
     const o = objects[i];
@@ -2689,21 +1618,8 @@ function measureMag(eye) {
     const d = Math.max(0.25, closestDist(eye, o, hull));
     if (d < near) near = d;
     const m = (FOCAL * worldHeight(o, hull)) / (d * hull.srcH);
-    if (m > objectMag) { objectMag = m; objectId = o.id || o.asset || ""; }
+    if (m > objectMag) objectMag = m;
   }
-  magParts.object = objectMag;
-  magParts.objectId = objectId;
-  magParts.pebble = 0;
-  if (rockLayer) {
-    const pm = rockLayer.mag(eye, FOCAL);
-    magParts.pebble = pm;
-    if (pm > objectMag) objectMag = pm;
-  }
-  if (ruinLayer) {
-    const rm = ruinLayer.mag(eye, FOCAL);
-    lastRuinMag = rm;
-    if (rm.m > objectMag) objectMag = rm.m;
-  } else lastRuinMag = null;
   nearestM = near;
   const groundD = Math.max(0.4, eye[1] / Math.tan(VFOV / 2));
   const groundMag = useRelief
@@ -2715,8 +1631,10 @@ function measureMag(eye) {
   const pxV = H / (VFOV * 180 / Math.PI);
   const bandMag = (srcW, srcH, azDeg, el0, el1) => {
     if (!srcW || !srcH) return 0;
-    const ov = seamOverlap(srcW, srcH, azDeg, el0, el1);
-    return Math.max(ov.magW, ov.magH);
+    const span = Math.max(0.01, (el1 - el0) * 180 / Math.PI);
+    const magW = pxH * Math.cos(el0) * azDeg / srcW;
+    const magH = pxV * span / srcH;
+    return Math.max(magW, magH);
   };
   skyMagParts.horizon = skyTex ? bandMag(skyTex.w, skyTex.h, skyBand.hAz || 45, skyBand.h0, skyBand.h1) : 0;
   skyMagParts.upper = skyUpper ? bandMag(skyUpper.w, skyUpper.h, skyBand.uAz || 45, skyBand.u0, skyBand.u1) : 0;
@@ -2743,12 +1661,8 @@ function measureMag(eye) {
     gateMag = (FOCAL * gh) / (gdist * GATE_SRC.h);
   }
   groundMagNow = groundMag;
-  magParts.ground = groundMag;
-  magParts.bolt = boltMag;
-  magParts.gate = gateMag;
-  archivesMag = archivesLayer ? archivesLayer.mag(eye, FOCAL, vpM) : 0;
   magNow = Math.max(
-    groundMag, skyMagW, skyMagH, boltMag, objectMag, gateMag, archivesMag,
+    groundMag, skyMagW, skyMagH, boltMag, objectMag, gateMag,
     skyMagParts.upper, skyMagParts.high, skyMagParts.cap,
     skyMagParts.stars, skyMagParts.dust, skyMagParts.nebula,
   );
@@ -2778,31 +1692,11 @@ function render(mode) {
   }
   for (let i = 0; i < hullList.length; i++) hullList[i].draw(vpM, mode);
   drawCalls += hullList.length;
-  if (rockLayer) {
-    rockLayer.draw(vpM);
-    drawCalls += rockLayer.draws;
-  }
-  if (detailLayer && mode === 0) {
-    detailLayer.draw(vpM, eyeBuf, FOCAL);
-    drawCalls += detailLayer.draws;
-  }
-  if (archivesLayer && mode === 0) {
-    archivesLayer.draw(vpM, eyeBuf, FOCAL);
-    drawCalls += archivesLayer.draws;
-  }
-  if (ruinLayer) {
-    ruinLayer.draw(vpM, mode);
-    if (mode !== 1) drawCalls += ruinLayer.draws;
-  }
   if (showGate && uploadVideo(gateVideo, gateTex, "gate")) {
     const g = gatePoint();
     drawCard(mode, gateTex, 3, g.x, 0, g.z, 0, sized.gw, sized.gh, labelOf("gate:" + g.gate.id), 1);
   }
   if (!useRelief) drawFog(mode, eye);
-  if (biomeBlend) {
-    postNow = biomeBlend.update(state.x, state.z);
-    if (useRelief) terrain.setPostParams(postNow);
-  }
   if (useRelief && mode === 0) terrain.composite();
   const active = state.mode === "GALLOP" ? gallopVideo : idleVideo;
   const boltReady = uploadVideo(active, boltTex, "bolt") || videoStamp.has("bolt");
@@ -2818,43 +1712,18 @@ function render(mode) {
 
 let skyScreenCache = 800;
 
-// opt.draw === false (debug walks only): solve body and camera, skip the GL draw.
-function tick(dt, opt) {
+function tick(dt) {
   const t0 = performance.now();
-  const hold = !!(archivesLayer && archivesLayer.blocksPlay());
-  const step = hold ? 0 : (dt > 0 ? dt : 0);
-  if (hold) {
-    camLook.drag = false;
-    camLook.ptr = -1;
-    camLook.goal = 0;
-  }
-  camStepDt = step;
+  camStepDt = dt > 0 ? dt : 0;
   const fwdIn = Math.abs(state.forward) < 0.04 ? 0 : state.forward;
   if (fwdIn === 0) state.spd = 0;
   else state.spd = state.gallop ? 4.4 : WALK_SPD;
-  state.hdg = wrap360(state.hdg + state.turn * 150 * step);
+  state.hdg = wrap360(state.hdg + state.turn * 150 * dt);
   state.mode = state.spd > 0.05 ? "GALLOP" : "IDLE";
   const yaw = state.hdg * Math.PI / 180;
-  let nx = state.x + Math.sin(yaw) * state.spd * step;
-  let nz = state.z + Math.cos(yaw) * state.spd * step;
-  const ox = state.x;
-  const oz = state.z;
+  let nx = state.x + Math.sin(yaw) * state.spd * dt;
+  let nz = state.z + Math.cos(yaw) * state.spd * dt;
   const solved = resolveBody(nx, nz);
-  ruinContact = false;
-  if (ruinLayer) {
-    // Tight colliders from the drawn faces: slide along a wall, walk through an opening.
-    const slid = ruinLayer.collide(ox, oz, solved.x, solved.z, RUIN_BODY_R);
-    solved.x = slid.x;
-    solved.z = slid.z;
-    ruinContact = slid.contact;
-    const want = Math.hypot(nx - ox, nz - oz);
-    const got = Math.hypot(slid.x - ox, slid.z - oz);
-    const prog = want > 1e-5 ? got / want : 1;
-    // Only a head-on push stalls the gallop (with hysteresis, so the clip cannot flicker).
-    if (slid.contact && want > 1e-5 && prog < 0.12) ruinStall++;
-    else if (!slid.contact || prog > 0.3) ruinStall = 0;
-    if (ruinStall >= 3) solved.blocked = true;
-  }
   state.blocked = solved.blocked;
   if (solved.blocked) {
     state.spd = 0;
@@ -2881,13 +1750,7 @@ function tick(dt, opt) {
   } else {
     state.pathTrigger = false;
   }
-  if (archivesLayer && !hold) archivesLayer.sense(state.x, state.z);
-  if (archivesLayer) archivesLayer.tick(hold ? 0 : dt);
-  // Motion, the camera and magnification still run without the GL draw.
-  if (opt && opt.draw === false) {
-    solveCamera();
-    measureMag(eyeBuf);
-  } else render(0);
+  render(0);
   lastWork = Math.max(0.05, performance.now() - t0);
   frameMs[frameN % 300] = lastWork;
   frameN++;
@@ -2900,11 +1763,6 @@ function tick(dt, opt) {
     spd: state.spd,
     state: state.mode,
     blocked: state.blocked,
-    ruinContact,
-    ruinCamClamped: ruinCam.clamped,
-    ruinCamSwing: ruinCam.yaw,
-    boom: camBoom,
-    feetY: feetY(),
     pathTrigger: state.pathTrigger,
     eyeX: eyeBuf[0],
     eyeY: eyeBuf[1],
@@ -2912,7 +1770,6 @@ function tick(dt, opt) {
     pitch: camPitch * 180 / Math.PI,
     mag: magNow,
     ground: groundMagNow,
-    ruinMag: lastRuinMag,
     gate: gateInfo(),
   };
 }
@@ -2947,7 +1804,6 @@ function activeVideoCount() {
   if (videoOn(bolt)) n++;
   if (videoOn(gateVideo)) n++;
   for (let i = 0; i < skyVideos.length; i++) if (videoOn(skyVideos[i])) n++;
-  if (archivesLayer && archivesLayer.menuVideoOn && archivesLayer.menuVideoOn()) n++;
   return n;
 }
 
@@ -2975,13 +1831,11 @@ function countBlobs(data, idx) {
 }
 
 function snapshot() {
-  ensureIdFb();
   render(1);
   const pix = new Uint8Array(W * H * 4);
   gl.bindFramebuffer(gl.FRAMEBUFFER, idFb);
   gl.readPixels(0, 0, W, H, gl.RGBA, gl.UNSIGNED_BYTE, pix);
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-  releaseIdFb();
   render(0);
   const ids = new Uint16Array(W * H);
   let heroPixels = 0;
@@ -3020,11 +1874,6 @@ function snapshot() {
       skyStars: skyMagParts.stars,
       skyDust: skyMagParts.dust,
       skyNebula: skyMagParts.nebula,
-      object: magParts.object,
-      objectId: magParts.objectId,
-      pebble: magParts.pebble,
-      bolt: magParts.bolt,
-      gate: magParts.gate,
     },
     state: state.mode,
     heroCount,
@@ -3036,20 +1885,6 @@ function snapshot() {
     acceptance: heroPixels > 0 && magNow <= 1.001,
     firstFrameMs,
     blocked: state.blocked,
-    rockLoadMs,
-    rocks: rockLayer ? rockLayer.info() : null,
-    blend: biomeBlend ? biomeBlend.info() : null,
-    detailLoadMs,
-    details: detailLayer ? detailLayer.info() : null,
-    detailMag: detailLayer ? detailLayer.mag(eyeBuf, FOCAL, vpM) : 0,
-    featureMag: detailLayer && detailLayer.magFeatures ? detailLayer.magFeatures(eyeBuf, FOCAL, vpM) : 0,
-    detailSolids: detailSolids.length,
-    eyeInCard: eyeInCard(eyeBuf, 0.05),
-    nearCulled: detailLayer && detailLayer.nearCulled ? detailLayer.nearCulled(eyeBuf, FOCAL, null) : 0,
-    nearCulledOnScreen: detailLayer && detailLayer.nearCulled ? detailLayer.nearCulled(eyeBuf, FOCAL, vpM) : 0,
-    eyeGuardHits,
-    ruinLoadMs,
-    ruins: ruinLayer ? ruinLayer.info() : null,
     pathTrigger: state.pathTrigger,
     gate: gateInfo(),
     nearestVisibleM: nearestM,
@@ -3064,8 +1899,6 @@ function snapshot() {
     boltSource: { w: BOLT_SRC.w, h: BOLT_SRC.h },
     boltQuad: heroQuad,
     objectIds: { width: W, height: H, labels, b64: btoa(bin) },
-    archives: archivesLayer ? archivesLayer.info() : null,
-    archivesMag,
     perf: perfSnap(),
     popCount,
     solidLock,
@@ -3074,18 +1907,13 @@ function snapshot() {
 }
 
 function paintHud() {
-  if (!SHOW_HUD) {
-    if (hud.textContent) hud.textContent = "";
-    return;
-  }
   const g = gateInfo();
   const mb = (texBytes / (1024 * 1024)).toFixed(1);
   hud.textContent =
     `x ${state.x.toFixed(2)}  z ${state.z.toFixed(2)}  hdg ${state.hdg.toFixed(1)}\n` +
     `mag ${magNow.toFixed(3)}  bolt ${state.mode}\n` +
     `gate ${g.bearing_deg.toFixed(1)}°  ${g.dist_m.toFixed(2)} m\n` +
-    `Perf: drawCalls=${drawCalls}, texMB=${mb}, activeVideos=${activeVideoCount()}, jsMs=${lastWork.toFixed(2)}` +
-    (archivesLayer ? `\nechoes ${archivesLayer.info().found}/${archivesLayer.info().total}` : "");
+    `Perf: drawCalls=${drawCalls}, texMB=${mb}, activeVideos=${activeVideoCount()}, jsMs=${lastWork.toFixed(2)}`;
 }
 
 function pxBandScreen() {
@@ -3396,18 +2224,6 @@ let skyVideoW = 848;
 let skyVideoH = 480;
 let firstFrameMs = null;
 let bootT0 = 0;
-let rockLayer = null;
-let rockLoadMs = 0;
-// Biome post blend along the exit path (biomeblend.js). Zone A defaults until boot loads kits.
-let biomeBlend = null;
-let postNow = postOf(null);
-let detailLayer = null;
-let eyeGuardHits = 0;
-let detailLoadMs = 0;
-let ruinLayer = null;
-let ruinLoadMs = 0;
-let archivesLayer = null;
-let archivesMag = 0;
 
 async function loadBand(manifest, id) {
   const display = manifest && manifest.display;
@@ -3419,53 +2235,6 @@ async function loadBand(manifest, id) {
     imgs.push(await loadImage(absUrl("packs/zone-a/src/sky/" + files[i])));
   }
   return imgs;
-}
-
-async function fetchJson(url) {
-  try {
-    const r = await fetch(absUrl(url));
-    return r.ok ? await r.json() : null;
-  } catch (e) {
-    return null;
-  }
-}
-
-// Zone A → next biome scaffold. clearing.transition = { to: <kit id>, toClearing: <path or
-// null>, path: [[x, z], ...], startM, endM, widthM }. Each kit's numbers-only `post` block
-// drives fog density / cap, grade mix / saturation and bloom; each fog colour comes from that
-// biome's own Imagine sky horizon band. Zone B has no pack yet: its fog colour is null (zone A's
-// sampled colour is kept), the path is empty, so the blend stays at 0 until the path exists.
-async function mountBiomeBlend(fogA) {
-  const kitA = clearing.biome ? await fetchJson("biome/kits/" + clearing.biome + ".json") : null;
-  const from = postOf(kitA, fogA);
-  const tr = clearing.transition || null;
-  const kitB = tr && tr.to ? await fetchJson("biome/kits/" + tr.to + ".json") : null;
-  const to = postOf(kitB || kitA, null);
-  const blend = createBiomeBlend({
-    from, to,
-    path: (tr && tr.path) || [],
-    startM: tr && tr.startM, endM: tr && tr.endM, widthM: tr && tr.widthM,
-    // Placeholder hooks: zone B content does not exist yet.
-    onApproach: () => { if (tr && tr.toClearing) prefetchNextZone(tr.toClearing, blend); },
-    onArrive: () => { blendArrived = true; },
-  });
-  return blend;
-}
-
-let blendArrived = false;
-
-// Hook for zone B: load its clearing, sample its sky horizon band (never a typed colour) and
-// retarget the blend. Silently does nothing until that pack exists.
-async function prefetchNextZone(url, blend) {
-  const next = await fetchJson(url);
-  const slices = next && next.backdrop && next.backdrop.slices;
-  if (!slices || !slices.length) return;
-  const imgs = [];
-  for (const u of slices) imgs.push(await loadImage(absUrl(u)));
-  const fogB = sampleHorizon(imgs);
-  releaseImages(imgs);
-  const kitB = next.biome ? await fetchJson("biome/kits/" + next.biome + ".json") : null;
-  blend.setTarget(postOf(kitB, fogB));
 }
 
 async function boot() {
@@ -3504,7 +2273,6 @@ async function boot() {
     }
     for (let i = 0; i < hullList.length; i++) hullList[i].upload();
     const ground = clearing.zone.ground;
-    if (/[?&]uv=planar\b/.test(location.search)) ground.uv = "planar";
     if (ground.depth && ground.mask && ground.details) {
       useRelief = true;
       await terrain.load(ground);
@@ -3531,86 +2299,17 @@ async function boot() {
     skySrcH = skyImgs[0] ? skyImgs[0].height : 912;
     for (let i = 0; i < skyImgs.length; i++) skySrcW += skyImgs[i].width;
     const horizonFog = useRelief ? sampleHorizon(skyImgs) : null;
-    const horizonFit = fitBandMag(
-      skyImgs.map((im) => downscaleWidth(im, 1500)),
-      skyBand.hAz || 45, skyBand.h0, skyBand.h1, SKY_MAG_CAP,
-    );
+    const horizonFit = skyImgs.map((im) => downscaleWidth(im, 1500));
     skyTex = makeSkyArray(horizonFit, "sky");
     releaseImages(skyImgs);
     const hold = document.createElement("canvas");
     hold.width = 2;
     hold.height = 2;
-    zenithTex = makeStill(hold, "sky-zenith", true);
+    zenithTex = makeStill(hold, "sky-zenith");
     buildSky();
     reset();
     render(0);
     if (firstFrameMs == null) firstFrameMs = performance.now() - bootT0;
-    try {
-      const rockT0 = performance.now();
-      rockLayer = await mountRocks(gl, {
-        absUrl,
-        loadImage,
-        trackTex,
-        labelOf,
-        heightAt: (x, z) => (useRelief ? terrain.heightAt(x, z) : 0),
-      });
-      rockLoadMs = rockLayer.loadMs || (performance.now() - rockT0);
-      for (let i = 0; i < rockLayer.hulls.length; i++) {
-        const row = rockLayer.hulls[i];
-        hullByPath.set(row.path, row.hull);
-        hullList.push(row.hull);
-      }
-      for (let i = 0; i < rockLayer.objects.length; i++) objects.push(rockLayer.objects[i]);
-    } catch (err) {
-      console.warn("rocks", err);
-      rockLayer = null;
-    }
-    if (!/[?&]details=0(?:&|$)/.test(location.search)) {
-      try {
-        const detailT0 = performance.now();
-        detailLayer = await mountDetails(gl, {
-          absUrl,
-          loadImage,
-          trackTex,
-          heightAt: (x, z) => (useRelief ? terrain.heightAt(x, z) : 0),
-          drawnHeightAt: (x, z) => (useRelief ? terrain.meshHeightAt(x, z) : 0),
-        });
-        detailLoadMs = detailLayer.loadMs || (performance.now() - detailT0);
-        detailSolids = detailLayer.colliders || [];
-      } catch (err) {
-        console.warn("details", err);
-        detailLayer = null;
-      }
-    }
-    try {
-      const ruinT0 = performance.now();
-      ruinLayer = await mountRuins(gl, {
-        absUrl,
-        loadImage,
-        trackTex,
-        heightAt: (x, z) => (useRelief ? terrain.heightAt(x, z) : 0),
-      });
-      ruinLoadMs = ruinLayer.loadMs || (performance.now() - ruinT0);
-    } catch (err) {
-      console.warn("ruins", err);
-      ruinLayer = null;
-    }
-    if (!/[?&]archives=0(?:&|$)/.test(location.search)) {
-      try {
-        archivesLayer = await mountArchives(gl, {
-          absUrl,
-          loadImage,
-          trackTex,
-          groundAt: (x, z) => (useRelief ? terrain.meshHeightAt(x, z) : 0),
-          focal: FOCAL,
-          manifestUrl: "packs/zone-a/src/archives/manifest.json",
-          onHold(open) { if (open) syncVideos(eyeBuf, fwdBuf); },
-        });
-      } catch (err) {
-        console.warn("archives", err);
-        archivesLayer = null;
-      }
-    }
     const upperImgs = await loadBand(skyManifest, "upper");
     const highImgs = await loadBand(skyManifest, "high");
     if (upperImgs) {
@@ -3618,16 +2317,13 @@ async function boot() {
       releaseImages(upperImgs);
     }
     if (highImgs) {
-      skyHigh = makeSkyArray(fitBandMag(
-        highImgs.map((im) => downscaleWidth(im, 930)),
-        skyBand.kAz || 45, skyBand.k0, skyBand.k1, SKY_MAG_CAP,
-      ), "sky-high");
+      skyHigh = makeSkyArray(highImgs.map((im) => downscaleWidth(im, 930)), "sky-high");
       releaseImages(highImgs);
     }
     const zenithImg = await loadImage(absUrl("packs/zone-a/src/sky-cap/zenith.png"));
     zenithSrc = zenithImg.width;
     const prevZ = zenithTex;
-    zenithTex = makeStill(zenithImg, "sky-zenith", true);
+    zenithTex = makeStill(zenithImg, "sky-zenith");
     if (prevZ) gl.deleteTexture(prevZ);
     releaseImages([zenithImg]);
     const loopUrls = [
@@ -3648,7 +2344,6 @@ async function boot() {
       skyVideos[i].loop = true;
     }
     if (useRelief && horizonFog) terrain.setFog(horizonFog);
-    biomeBlend = await mountBiomeBlend(horizonFog);
     if (clearing.fog_band && clearing.fog_band.atlas) {
       fogTex = makeStill(await loadImage(absUrl(clearing.fog_band.atlas)), "fog");
       buildFog();
@@ -3683,7 +2378,6 @@ async function boot() {
         }
       });
       await v.play().catch(() => {});
-      if (archivesLayer && archivesLayer.blocksPlay() && !v.paused) v.pause();
     }
     if (skyVideos[0] && skyVideos[0].videoWidth) {
       skyVideoW = skyVideos[0].videoWidth;
@@ -3695,26 +2389,17 @@ async function boot() {
       else idleVideo.onloadeddata = () => r();
     });
     idleVideo.pause();
+    trackTex("id", W * H * 4);
     reset();
     window.__play = {
       version: 3,
       ready: true,
       reset, look, place, setInput, tick, snapshot, audit,
-      setLook(rad) {
-        camLook.drag = true;
-        camLook.ptr = -1;
-        const g = Number(rad) || 0;
-        camLook.goal = g > LOOK_OFF_MAX ? LOOK_OFF_MAX : g < LOOK_OFF_MIN ? LOOK_OFF_MIN : g;
-      },
-      releaseLook() { camLook.drag = false; camLook.goal = 0; camLook.ptr = -1; },
       lookAt(e, t) { shot = { e, t }; },
       clearShot() { shot = null; },
       skyInfo() {
         return skyVideos.map((v) => (v ? { d: v.duration, t: v.currentTime, rs: v.readyState, paused: v.paused } : null));
       },
-      meteorTiles() { return meteorInfo.map((m) => ({ ...m })); },
-      meteorsOn(on) { meteorShow = !!on; },
-      camInfo() { return { pitchDeg: camPitch * 180 / Math.PI, vfovDeg: VFOV * 180 / Math.PI, hfovDeg: HFOV * 180 / Math.PI }; },
       seekSky(i, t) {
         const v = skyVideos[i];
         if (!v || !Number.isFinite(t)) return false;
@@ -3722,67 +2407,16 @@ async function boot() {
         return true;
       },
       setPost(on) { terrain.setPost(on); },
-      setBlend(t) { if (biomeBlend) biomeBlend.setOverride(t); },
-      blendInfo() { return biomeBlend ? { ...biomeBlend.info(), arrived: blendArrived, post: terrain.postParams() } : null; },
       groundInfo() { return terrain.info(); },
       heightAt(x, z) { return terrain.heightAt(x, z); },
-      ruinInfo() { return ruinLayer ? ruinLayer.info() : null; },
-      /** Texture budget and draw split (tooling): every tracked texture in bytes, and the draws per layer. */
-      texReport() {
-        return {
-          textures: [...textures.entries()].map(([id, b]) => ({ id, mb: +(b / 1048576).toFixed(2) })).sort((a, b) => b.mb - a.mb),
-          draws: { hulls: hullList.length, rocks: rockLayer ? rockLayer.draws : 0, ruins: ruinLayer ? ruinLayer.draws : 0, terrain: useRelief ? 2 : 1, archives: archivesLayer ? archivesLayer.draws : 0, total: drawCalls },
-        };
-      },
-      ruinWhere(x, z) { return ruinLayer ? ruinLayer.where(x == null ? state.x : x, z == null ? state.z : z) : null; },
-      ruinProbe() {
-        if (!ruinLayer) return {};
-        return ruinLayer.probe(eyeBuf, camFwd, camRightNow, camUp, FOCAL, Math.tan(HFOV / 2), Math.tan(VFOV / 2));
-      },
-      ruinClearance(x, y, z) { return ruinLayer ? ruinLayer.clearance(x, y, z) : 99; },
-      archives() { return archivesLayer ? archivesLayer.api : null; },
-      camState() {
-        return {
-          eye: [eyeBuf[0], eyeBuf[1], eyeBuf[2]],
-          fwd: [camFwd[0], camFwd[1], camFwd[2]],
-          boom: camBoom,
-          clamped: ruinCam.clamped,
-          swing: ruinCam.yaw,
-          boltMag: (FOCAL * BOLT_H) / (Math.max(0.2, camBoom) * BOLT_SRC.h),
-          feet: feetY(),
-          pitch: camPitch,
-          look: camLook.cur,
-          lookGoal: camLook.goal,
-          lookDrag: camLook.drag,
-          dbg: ruinCam.dbg,
-          x: state.x,
-          z: state.z,
-          inCard: eyeInCard(eyeBuf, 0.05),
-          guardHits: eyeGuardHits,
-          solids: detailSolids.length,
-        };
-      },
     };
     render(0);
     paintHud();
-    if (introEnabled(location.search)) {
-      let title = clearing.title || "";
-      if (!title && clearing.biome) {
-        try {
-          const kit = await (await fetch(absUrl("biome/kits/" + clearing.biome + ".json"))).json();
-          title = kit.name || "";
-        } catch (e) {
-          console.warn("intro kit", e);
-        }
-      }
-      showIntro(document, title);
-    }
     const err = gl.getError();
-    if (err && SHOW_HUD) hud.textContent += "\nGL " + err;
+    if (err) hud.textContent += "\nGL " + err;
     requestAnimationFrame(frame);
   } catch (e) {
     hud.textContent = "BOOT " + (e && e.stack ? e.stack : e);
-    hud.style.visibility = "visible";
     window.__play = { ready: false, error: String(e) };
   }
 }
@@ -3806,11 +2440,7 @@ function stickAt(cx, cy) {
   state.forward = Math.max(0, -dy);
   state.gallop = -dy > 0.72;
 }
-stick.addEventListener("pointerdown", (e) => {
-  stickOn = true;
-  try { stick.setPointerCapture(e.pointerId); } catch (err) { /* no active pointer on a synthetic event */ }
-  stickAt(e.clientX, e.clientY);
-});
+stick.addEventListener("pointerdown", (e) => { stickOn = true; stick.setPointerCapture(e.pointerId); stickAt(e.clientX, e.clientY); });
 stick.addEventListener("pointermove", (e) => { if (stickOn) stickAt(e.clientX, e.clientY); });
 stick.addEventListener("pointerup", () => {
   stickOn = false;
@@ -3821,45 +2451,6 @@ stick.addEventListener("pointerup", () => {
   state.gallop = false;
   state.spd = 0;
 });
-const viewEl = document.getElementById("view");
-function inStick(cx, cy) {
-  const r = stick.getBoundingClientRect();
-  return cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom;
-}
-function inPawCorner(cx, cy) {
-  if (!archivesLayer) return false;
-  const c = archivesLayer.pawCorner(window.innerWidth, window.innerHeight);
-  return cx >= c.x && cx <= c.x + c.w && cy >= c.y && cy <= c.y + c.h;
-}
-viewEl.addEventListener("pointerdown", (e) => {
-  if (camLook.ptr >= 0) return;
-  if (e.button != null && e.button !== 0) return;
-  if (archivesLayer && archivesLayer.blocksPlay()) return;
-  if (e.target === stick || e.target === nub || inStick(e.clientX, e.clientY)) return;
-  if (inPawCorner(e.clientX, e.clientY)) return;
-  camLook.ptr = e.pointerId;
-  camLook.drag = true;
-  camLook.ly = e.clientY;
-  try { viewEl.setPointerCapture(e.pointerId); } catch (err) { /* synthetic pointers have no capture */ }
-});
-viewEl.addEventListener("pointermove", (e) => {
-  if (e.pointerId !== camLook.ptr) return;
-  const dy = camLook.ly - e.clientY;
-  camLook.ly = e.clientY;
-  if (!dy) return;
-  let g = camLook.goal + dy * LOOK_SENS;
-  if (g > LOOK_OFF_MAX) g = LOOK_OFF_MAX;
-  else if (g < LOOK_OFF_MIN) g = LOOK_OFF_MIN;
-  camLook.goal = g;
-});
-function endLook(e) {
-  if (e.pointerId !== camLook.ptr) return;
-  camLook.ptr = -1;
-  camLook.drag = false;
-  camLook.goal = 0;
-}
-viewEl.addEventListener("pointerup", endLook);
-viewEl.addEventListener("pointercancel", endLook);
 function pollKeys() {
   if (stickOn) return;
   let f = 0;
@@ -3878,7 +2469,7 @@ function frame(now) {
   const dt = Math.min(0.05, (now - last) / 1000);
   last = now;
   if (!location.search.includes("debug=1")) {
-    if (!(archivesLayer && archivesLayer.blocksPlay())) pollKeys();
+    pollKeys();
     tick(dt);
   }
   requestAnimationFrame(frame);

@@ -1,10 +1,8 @@
 # Sky — the base recipe (any biome)
 
-Back to [METHOD.md](../METHOD.md). **Status: VALIDATED** — SmiR 2026-10-03 21:56 Paris, on the phone, after the seam crossfade fix d74f367 (PR #159). Same force as APPROVED.
-The validated version is the zone A sky in Part 2 (locked as sky v1, see [recipe progression](self-improvement.md#6-recipe-progression-versions-score-lock)).
+Back to [METHOD.md](../METHOD.md). **Status: IN TEST** — zone A step 2b rebuilt the living sky on branch `zone-a-step2-sky`.
+Only SmiR approves it on the phone. The METHOD sky row (2026-10-02, plus the 2026-10-03 instancing clause) stays the law.
 This page is how to build it for every biome.
-
-**Stack (owner 2026-10-05, standing rules 2 and 3).** The next sky cook starts nearly empty: a gradient and distant stars. Nebula, clouds, shooting stars, and the planet are each their own seamless Imagine video, stacked on that base. Do not lay one video over an already-full still sky. That reads as a moving screen on a picture. Zone A sky v1 above stays the locked score until a later version beats it without regressing. A planet clip is the highest resolution the tool will emit, with the planet filling almost the whole frame (shown large, never upscaled), photorealistic rather than drawn. Scrub it frame by frame and confirm the planet actually rotates before calling the clip done.
 
 Palettes and exact Imagine prompt text stay in untracked `*.local.*` files and in
 `/workspace/grokcli/out/<zone>-step<N>/provenance.json`. Do not copy them into this page or into code.
@@ -50,11 +48,7 @@ Join rule:
 1. Search a horizontal overlap. Crossfade that overlap with the two images' own pixels.
 2. If one slice is wider, crop spare pixels from the **outer edges**, never from the middle. Then the crossfade stays intact.
 3. Copy a few blended columns onto both sides of a slice boundary so the neighbour match is the same pixels, and feather those columns back into the painting over a short run.
-4. The shader crossfades the two neighbouring slices at every vertical joint (see *Vertical seams* below). It mixes the two Imagine images only. It never invents pixels and never smears one edge column across the joint.
-
-**Vertical seams — neighbour crossfade (SmiR 2026-10-03: sky validated except vertical seams; seams fixed by crossfading neighbour slices, no new pixels).**
-Each slice is drawn a little wider than its azimuth step, so neighbours overlap. In the overlap the shader shows both slices with a smoothstep alpha, from 1/0 to 0.5/0.5 at the joint to 0/1. A slice may widen only until its horizontal magnification reaches that band's own current limit (the larger of its width and height magnification). The band's gated mag therefore never rises (`seamOverlap` in `play.js`, `bandMag` uses it). The overlap is capped at 25 % of a slice step and is computed per elevation. Higher up, `cos(el)` gives more room, and the slice keeps a constant angular width instead of being squeezed. The slice files, the download, the living video layers, the camera, the ground and the rocks do not change. Mip level comes from `textureGrad` with the analytic UV derivative, so the joint has no mip line.
-Zone A numbers: horizon 25 % overlap at every elevation (about 6.9°; width mag 0.70 → 0.88, still under its 0.98 height mag). The upper band is already at width mag 0.998 at its 19° bottom, so its overlap grows with elevation: 0 % at 19°, about 3 % at 23°, 9 % at 30°, 15 % at 35° and 25 % from about 41°. The high band goes from 4 % at 52° to 25 % from about 59°. Do not widen past these limits to hide the low upper joint. That would stretch pixels.
+4. The shader may add a 2–4 % crossfade at the slice boundary (`resolveSeamBlend` / the in-shader seam). It does not invent pixels.
 
 Display each joined slice over 45° (the cook HFOV is 60°; the step is 45°). Stack bands so each band's height covers its elevation span at ≤ 1.0:
 
@@ -74,8 +68,6 @@ Each video decodes **once** into **one** texture (`texImage2D` / `texSubImage2D`
 Map each tile at magnification ≤ 1. A 848×480 frame over the whole 360° is about 13× and is a fail. Tiles near 21° by 11° pass. Repeat wrap on the video texture. `LINEAR`, never `NEAREST`.
 
 Blend additive from the video's own RGB, light enough that the painted slices stay sharp. A heavy mix paints a grid of rectangles. Hold the last uploaded frame when `readyState` drops on a loop seek. Do not fade the layer out at one heading.
-
-**Shooting stars / streak loops (2026-10-03, IN TEST, numbers retuned in this follow-up after SmiR saw none on the phone).** A loop whose content travels (meteors, streaks) must not use the full-dome tile grid. Neighbouring tiles show different parts of the frame, so a streak stops dead at every tile edge and at the `fract` wrap line, and the same streaks repeat as a grid. Give the loop its own scattered tiles, the same size as the other layers so magnification does not change (0.792). Each tile shows the whole frame once (UV 0–1, no drift, no wrap) through a soft elliptical alpha window held inside the frame. Place the **window centre** (the tile may hang below it) where the **chase camera actually sees sky**. Zone A chase: pitch about −18° to +3°, vfov 48.1°. Sky shows from the relief silhouette (about 8–10° up) to about 27° up, and at some headings only a thin strip. Zone A numbers: 36 tiles over every azimuth, window centres 7°–18° up, no two windows overlapping. Window radii 0.40 × 0.16 of the frame (wide and short, about 17° × 3.6°), flat core to 55 %. Each tile is on for 32 % of its own 6–11 s period, with 0.8 s fades in and out. Key 0.30 from the loop's own brightness: it keeps the streaks and drops the cyan cloud wisps, which read as stains at 0.14–0.18. Gain 1.5. Still one decode and one instanced draw (`METEOR`, `buildMeteorTiles`, `uMeteor` in `play.js`). Measure it in the chase view, not in a free look: `out/meteor-seams/meteorrate.mjs` counts the seconds with at least one clear streak on screen, over 8 headings.
 
 **Parallax (2026-10-03, no invisible relief for the sky).** The dome stays on the eye. A small extra yaw, in radians, shifts the sample:
 
@@ -122,40 +114,16 @@ Look at the pictures. A passing number has shipped a washed sky before.
 
 Kit `howling-eclipse`: night, sun azimuth 285°, elevation −4°, 7500 K. Eclipse glow sits in slice 6 (heading 270–315), left of that slice's centre.
 
-**Current layout — VALIDATED (SmiR 2026-10-03 21:56 Paris, on the phone, after the seam fix d74f367):** 13 slices per band (about 27.7° each) on the horizon and upper bands, 8 × 45° on the high band. This replaces the 8 × 45° horizon/upper rows of step 2b and, for the sky display, the 8 × 60° rail (SmiR approved this layout).
-
-### Validated version (sky v1, locked)
-
-| Piece | What was validated |
-|---|---|
-| Slices | Unstretched Imagine slices: magnification ≤ 1 on every band, no slice widened past its band's own limit |
-| Ring | 13 slices per band on horizon and upper (about 27.7° each), 8 × 45° on high, cap from about 74.6° |
-| Vertical seams | Neighbour overlap crossfade in the shader (two slices' own pixels, smoothstep, `textureGrad`, no new pixels), commit d74f367 |
-| Living layers | GPU-instanced video layers (one decode, one texture, one instanced draw per layer) with per-tile time offsets |
-| Dome | Closed: horizon, upper, high bands and the polar cap, no hole and no edge clamp |
-| Depth | Parallax layers: small yaw offset by depth (table in Part 1 §4) |
-
-**Accepted known issues** (declared, not blockers; do not spend Imagine quota on them):
-
-- A faint joint may remain around 19–28° up (horizon/upper overlap, where the upper band has no room to widen).
-- Two duplicated upper slices.
-- ~~The streak layer reads as a meteor-rain grid instead of sparse shooting stars.~~ **Fixed 2026-10-03 (PR #165, IN TEST until SmiR's phone check):** the meteor loop now shows on scattered tiles, each on for part of its own period, instead of the same streaks on all 136 dome tiles. #165 put them 13°–58° up, above the chase view, and SmiR saw none. this follow-up moved them into the chase-view sky (36 tiles, window centres 7°–18° up). Measured at the spawn in the chase view: one clear streak every 4.3–6.7 s at the six headings that show sky. At 90° and 135° the chase camera pitches down 16–18° and shows almost no sky, so there are 0–2 events per minute there.
-- ~~Meteor streaks stop or vanish at the slice joints (SmiR 2026-10-03 21:56).~~ **Fixed 2026-10-03 (same PR):** the cut was at the 17 × 8 video-tile edges and at the `fract` wrap inside each tile, not at the slice crossfade. Each meteor tile now shows the whole frame once through a soft alpha window held inside the frame, so a streak fades in and out and never stops dead at an edge. The meteor tiles carry no drift and never overlap. Left: a streak can still fade out early inside its window, and a streak from the same frame may show in two far-apart tiles at once (one texture, one frame).
-- Darker zenith centre (the cap painting's own dark centre, see Pitfalls step 2c).
-- A small load regression (first sky frame about 1.7 s during boot).
-
-A new sky attempt replaces v1 only when it scores better without regressing any row above.
-
 | Band | Files | Size | Elevation | mag (gate) |
 |---|---|---|---|---|
-| Horizon | `packs/zone-a/src/sky/sky-0..12.jpg` (13 × 27.69°) | 1248×832 | −1.5° to 23° | 0.980 (height); width 0.88 with the 25 % joint overlap |
-| Upper | `src/sky/upper/sky-0..12.jpg` (13 × 27.69°) | 832×1248 | 19° to 56° | 0.998 (width at 19°) |
-| High | `src/sky/high/sky-0..7.jpg` (8 × 45°) | 1152×864, shown 930 wide | 52° to 77.5° | 0.982 |
+| Horizon | `packs/zone-a/src/sky/sky-0..7.jpg` | 1867×864 | −1.5° to 24° | 0.982 |
+| Upper | `src/sky/upper/sky-0..7.jpg` | 1424×1248 | 19° to 56° | 0.987 |
+| High | `src/sky/high/sky-0..7.jpg` | 1152×864 | 52° to 77.5° | 0.982 |
 | Cap | `src/sky-cap/zenith.png` | 1024×1024 | from 74.6° | 0.989 |
 | Stars / dust | existing mp4, 13.0 s and 16.708 s | 848×480 tiles 21.18°×11.25° | full dome, low gain | 0.792 |
-| Meteors (nebula slot) | Imagine streak loop `nebula.mp4`, 11.04 s (step 2d replaced the 3.3 s corona) | 848×480 tiles 21.18°×11.25° | 36 scattered tiles, window centres 7° to 18° up (chase-view sky) | 0.792 |
+| Corona (nebula slot) | Imagine loop, 3.3 s, one keyed tile near azimuth 285° | 848×480 | one tile | 0.792 |
 
-Horizon and upper are two chained outpaints per 45° slice. High is one still per slice. Step 2b left repeated and mirrored slices in the ring. Step 2c stopped after two failed horizon outpaints of the same defect and did not install a new slice. The stills are lossy-encoded at the same pixel size. The cap file is unchanged. Bands overlap by several degrees (horizon/upper and upper/high) and the pole mesh is a fan, with cap UVs held inside the painting. The third living layer is the meteor loop, keyed from its own bright pixels and drawn on the sparse chase-view tiles. Stars and dust stay low-gain full-dome tiles. One instanced draw per layer. Play snapshot this step: mag_max 0.989, activeVideos 4, drawCalls 7, texMB 202.7. `packs/zone-a/src` download is 42.7 MB (was 79.3 MB at the previous commit). First sky frame during boot was about 1.7 s. The 48 MiB sky gate still counts layer `texBytes` only.
+Horizon and upper are two chained outpaints per 45° slice. High is one still per slice. Step 2b left repeated and mirrored slices in the ring. Step 2c stopped after two failed horizon outpaints of the same defect and did not install a new slice. The stills are lossy-encoded at the same pixel size. The cap file is unchanged. Bands overlap by several degrees (horizon/upper and upper/high) and the pole mesh is a fan, with cap UVs held inside the painting. The third living layer is a short corona loop, keyed from its own bright pixels and drawn on one tile near the eclipse azimuth. Stars and dust stay low-gain full-dome tiles. One instanced draw per layer. Play snapshot this step: mag_max 0.989, activeVideos 4, drawCalls 7, texMB 202.7. `packs/zone-a/src` download is 42.7 MB (was 79.3 MB at the previous commit). First sky frame during boot was about 1.7 s. The 48 MiB sky gate still counts layer `texBytes` only.
 
 Play code: `packs/zone-a/play/play.js`. Manifest: `packs/zone-a/src/sky/sky.json` (`display.bands`, `display.cap`, `display.videoTiles`).
 
@@ -211,11 +179,6 @@ Step 2c, Director visual QC 2026-10-03 (blockers, not merged):
 - A frame-step capture that pauses the videos also stops texture uploads (`uploadVideo` skips paused videos). Keep
   `paused` false while stepping `currentTime`, or the motion proof shows nothing.
 
-Seam fix, 2026-10-03:
-
-- Mixing the joint toward one edge column of the next slice (the old in-shader seam) smears that column across the joint. That is an infinitely magnified column, and the cut still shows. Crossfade the real overlap of the two slices instead.
-- Copying a wide blended strip onto both sides of a joint puts the same strip twice side by side, which is a cloned column. Keep any baked shared strip to a few pixels.
-
 Step 2d, Director visual QC 2026-10-03 (blockers, not merged):
 
 - Fresh, unchained stills per slice end the clones inside a slice, but neighbours become unrelated paintings: hard seams
@@ -225,8 +188,3 @@ Step 2d, Director visual QC 2026-10-03 (blockers, not merged):
 - An additive streak loop at high gain tiled over the dome repeats the same parallel streaks on a grid. Shooting stars
   must be sparse in time and position: per-tile phase offsets, few streaks per frame, varied directions.
 - A paused frame-step capture can miss a layer entirely. Prove motion with a real-time capture (CDP screencast) too.
-
-Meteor visibility, 2026-10-03 (PR #165 → this follow-up):
-
-- Meteor tiles placed 13°–58° up looked right in free-look QC shots. The chase view only sees sky from about 8° to 27° up, so SmiR saw no meteors at all on the phone. Place living layers where the chase camera looks, and measure them in the chase view (rate per heading), not in aimed stills.
-- A low luminance key on the streak loop brings back its cyan cloud wisps as bright stains inside the window. Key the streaks (0.30) and get brightness from gain and placement instead.

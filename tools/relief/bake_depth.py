@@ -61,57 +61,6 @@ def tile_starts(width: int) -> list[int]:
     return starts
 
 
-def _infer_tile_moge(rgb: np.ndarray) -> np.ndarray:
-    """One tile through MoGe-2. Nearer metres become brighter. Not a panorama rebake."""
-    import sys
-    import torch
-    tools = Path(__file__).resolve().parents[1]
-    if str(tools) not in sys.path:
-        sys.path.insert(0, str(tools))
-    from common.vision_models import load_default_depth
-
-    model, kind = load_default_depth()
-    if kind != "moge-2":
-        raise RuntimeError(kind)
-    x = rgb.astype(np.float32) / 255.0
-    tensor = torch.from_numpy(np.ascontiguousarray(x.transpose(2, 0, 1)))
-    with torch.inference_mode():
-        out = model.infer(tensor, resolution_level=0, use_fp16=False, force_projection=False, apply_mask=False)
-    depth = out["depth"]
-    if depth.ndim == 3:
-        depth = depth[0]
-    depth = depth.detach().cpu().numpy().astype(np.float32)
-    inv = 1.0 / np.clip(depth, 1e-3, None)
-    d = inv - inv.min()
-    d = d / (d.max() + 1e-8)
-    u8 = Image.fromarray((d * 255).astype(np.uint8), "L").resize(
-        (rgb.shape[1], rgb.shape[0]), Image.Resampling.BILINEAR
-    )
-    return np.asarray(u8).astype(np.float32) / 255
-
-
-def _infer_tile_large(rgb: np.ndarray) -> np.ndarray:
-    """Internal comparison only. One tile through Depth Anything V2 Large. Not a panorama rebake."""
-    import sys
-    import torch
-    tools = Path(__file__).resolve().parents[1]
-    if str(tools) not in sys.path:
-        sys.path.insert(0, str(tools))
-    from common.vision_models import _prep_dav2, load_dav2_large
-
-    model = load_dav2_large()
-    tensor, _hw = _prep_dav2(rgb, 518)
-    with torch.inference_mode():
-        pred = model(tensor)
-    pred = pred[0].detach().cpu().numpy().astype(np.float32)
-    d = pred - pred.min()
-    d = d / (d.max() + 1e-8)
-    u8 = Image.fromarray((d * 255).astype(np.uint8), "L").resize(
-        (rgb.shape[1], rgb.shape[0]), Image.Resampling.BILINEAR
-    )
-    return np.asarray(u8).astype(np.float32) / 255
-
-
 def infer_tile(sess, rgb: np.ndarray) -> np.ndarray:
     im = Image.fromarray(rgb).resize((TILE_W, INFER_H), Image.Resampling.LANCZOS)
     arr = np.asarray(im).astype(np.float32) / 255
@@ -196,28 +145,17 @@ def save_gray(path: Path, depth: np.ndarray) -> None:
 def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--color", type=Path, required=True)
-    p.add_argument(
-        "--model",
-        type=Path,
-        default=Path("/workspace/models/vision/moge-2-vitl.pt"),
-        help="MoGe-2 vitl (default). A Depth Anything .pth is internal comparison only. .onnx stays the small tile blend.",
-    )
+    p.add_argument("--model", type=Path, required=True)
     p.add_argument("--out", type=Path, required=True)
     p.add_argument("--lock", type=Path, default=None, help="QC plate depth, 1280 wide")
     p.add_argument("--lock-x", type=int, default=PLATE_X)
     args = p.parse_args()
 
+    import onnxruntime as ort
+
     rgb = np.asarray(Image.open(args.color).convert("RGB"))
-    name = args.model.name.lower()
-    if "moge" in name:
-        raw = _infer_tile_moge(rgb)
-    elif str(args.model).endswith(".pth"):
-        # Explicit Large path. Internal comparison only. A 3916-wide panorama is not rebaked here.
-        raw = _infer_tile_large(rgb)
-    else:
-        import onnxruntime as ort
-        sess = ort.InferenceSession(str(args.model), providers=["CPUExecutionProvider"])
-        raw = blend_tiles(sess, rgb)
+    sess = ort.InferenceSession(str(args.model), providers=["CPUExecutionProvider"])
+    raw = blend_tiles(sess, rgb)
     depth, scale = highpass(raw, rgb.astype(np.float32) / 255)
     print("high-pass scale", round(scale, 6), "starts", tile_starts(rgb.shape[1]))
     if args.lock is not None:

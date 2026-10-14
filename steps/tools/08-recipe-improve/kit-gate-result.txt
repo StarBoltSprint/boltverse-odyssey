@@ -1,3 +1,0 @@
-kit-gate exit=0 ok=True cmd=node tools/recipe-improve/selftest.mjs
---- stdout ---
-PASS recipe-improve selftest reject-on-regression reject-on-tie adopt-when-strictly-better logs-written
