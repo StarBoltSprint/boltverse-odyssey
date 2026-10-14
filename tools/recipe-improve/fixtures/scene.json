@@ -1,6 +1,0 @@
-{
-  "schema": "recipe-improve-scene/1",
-  "id": "ground-fixture",
-  "recipe": "ground",
-  "note": "Scene fixture id. The object-gate score reads report JSON. It does not open a page."
-}

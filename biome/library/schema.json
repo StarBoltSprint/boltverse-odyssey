@@ -4,7 +4,7 @@
   "title": "Reusable object manifest",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "id", "source", "views", "shape", "reports", "scale", "collider", "lod", "asset", "art_director", "run", "collision", "camera_layer", "textures"],
+  "required": ["schema", "id", "source", "views", "shape", "reports", "scale", "collider", "lod", "asset"],
   "properties": {
     "schema": { "const": "library-object/1" },
     "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,63}$" },
@@ -82,34 +82,17 @@
     "lod": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["billboardViews", "impostor", "chain"],
+      "required": ["billboardViews", "impostor"],
       "properties": {
         "billboardViews": {
           "type": "array",
           "items": { "type": "string" },
           "description": "View file names used as far billboards. The library does not draw them."
         },
-        "impostor": { "const": true },
-        "chain": { "$ref": "#/$defs/lodChain" }
+        "impostor": { "const": true }
       }
     },
-    "asset": { "type": "string", "description": "walkaround asset.json a layout spec places." },
-    "art_director": {
-      "const": "KEEP",
-      "description": "Art Director KEEP recorded on the part. A visual note with no run PASS is not enough."
-    },
-    "art_director_report": {
-      "type": "string",
-      "description": "Gate report that carried the KEEP flag, when the intake pointed at a file."
-    },
-    "run": { "$ref": "#/$defs/run" },
-    "collision": { "$ref": "#/$defs/collision" },
-    "camera_layer": { "$ref": "#/$defs/cameraLayer" },
-    "textures": {
-      "type": "array",
-      "minItems": 1,
-      "items": { "$ref": "#/$defs/texture" }
-    }
+    "asset": { "type": "string", "description": "walkaround asset.json a layout spec places." }
   },
   "$defs": {
     "report": {
@@ -121,92 +104,6 @@
         "verdict": { "enum": ["PASS", "WARN"] },
         "notes": { "type": "array", "items": { "type": "string" } }
       }
-    },
-    "run": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["tool", "verdict"],
-      "properties": {
-        "tool": { "enum": ["object-gate", "tools/gate", "gate"] },
-        "verdict": { "const": "PASS" },
-        "report": { "type": "string" }
-      }
-    },
-    "collision": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["boxes", "ground_anchor", "min_clearance_m"],
-      "properties": {
-        "boxes": {
-          "type": "array",
-          "minItems": 1,
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["min", "max", "space"],
-            "properties": {
-              "min": { "$ref": "#/$defs/vec3" },
-              "max": { "$ref": "#/$defs/vec3" },
-              "space": { "const": "local" }
-            }
-          }
-        },
-        "ground_anchor": { "$ref": "#/$defs/vec3" },
-        "min_clearance_m": { "type": "number", "minimum": 0 }
-      }
-    },
-    "cameraLayer": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["id", "kind"],
-      "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "kind": { "enum": ["key", "approach"] }
-      }
-    },
-    "lodChain": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["lod0", "lod1", "lod2", "outlineDiffPx"],
-      "properties": {
-        "lod0": { "$ref": "#/$defs/lodLevel" },
-        "lod1": { "$ref": "#/$defs/lodLevel" },
-        "lod2": { "$ref": "#/$defs/lodLevel" },
-        "outlineDiffPx": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["15", "40"],
-          "properties": {
-            "15": { "const": 0 },
-            "40": { "const": 0 }
-          }
-        }
-      }
-    },
-    "lodLevel": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["triangles"],
-      "properties": {
-        "triangles": { "type": "integer", "minimum": 0 }
-      }
-    },
-    "texture": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["nativePx", "mipmaps"],
-      "properties": {
-        "nativePx": { "type": "integer", "minimum": 1024 },
-        "width": { "type": "integer", "minimum": 1024 },
-        "height": { "type": "integer", "minimum": 1024 },
-        "mipmaps": { "const": true }
-      }
-    },
-    "vec3": {
-      "type": "array",
-      "minItems": 3,
-      "maxItems": 3,
-      "items": { "type": "number" }
     }
   }
 }
