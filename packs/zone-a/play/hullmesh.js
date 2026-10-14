@@ -53,15 +53,12 @@ layout(location=6) in vec4 aM3;
 layout(location=7) in float aId;
 uniform mat4 uVP;
 out vec3 vLocal;
-out vec3 vWorld;
 out vec3 vNrm;
 flat out float vId;
 void main() {
   mat4 M = mat4(aM0, aM1, aM2, aM3);
-  vec4 wp = M * vec4(aPos, 1.0);
-  gl_Position = uVP * wp;
+  gl_Position = uVP * M * vec4(aPos, 1.0);
   vLocal = aPos;
-  vWorld = wp.xyz;
   vNrm = aNrm;
   vId = aId;
 }`;
@@ -80,12 +77,7 @@ uniform vec2 uViewSize[8];
 uniform vec2 uTexSize;
 uniform float uHand;
 uniform int uMode;
-uniform vec2 uEye;
-uniform vec3 uFog;
-uniform float uFogK;
-uniform float uFogCap;
 in vec3 vLocal;
-in vec3 vWorld;
 in vec3 vNrm;
 flat in float vId;
 out vec4 o;
@@ -99,34 +91,7 @@ void project(int i, vec3 p, out vec2 uv, out float z) {
   uv.x = (sz.x - 1.0) * 0.5 + uHand * fy * (x / max(z, 1e-4));
   uv.y = (sz.y - 1.0) * 0.5 - fy * (y / max(z, 1e-4));
 }
-void projectGrad(int i, vec3 p, vec3 dpdx, vec3 dpdy, out vec2 tuv, out vec2 ddx, out vec2 ddy) {
-  vec3 rel = p - uCamPos[i];
-  float z = dot(rel, uCamForward[i]);
-  float x = dot(rel, uCamRight[i]);
-  float y = dot(rel, uCamUp[i]);
-  vec2 sz = uViewSize[i];
-  float fy = (sz.y * 0.5) / tan(radians(uFov[i]) * 0.5);
-  float zz = max(z, 1e-4);
-  vec2 uv;
-  uv.x = (sz.x - 1.0) * 0.5 + uHand * fy * (x / zz);
-  uv.y = (sz.y - 1.0) * 0.5 - fy * (y / zz);
-  float dxdx = dot(dpdx, uCamRight[i]);
-  float dydx = dot(dpdx, uCamUp[i]);
-  float dzdx = dot(dpdx, uCamForward[i]);
-  float dxdy = dot(dpdy, uCamRight[i]);
-  float dydy = dot(dpdy, uCamUp[i]);
-  float dzdy = dot(dpdy, uCamForward[i]);
-  float inv2 = 1.0 / (zz * zz);
-  vec2 gdx = vec2(uHand * fy * (dxdx * zz - x * dzdx) * inv2, -fy * (dydx * zz - y * dzdx) * inv2);
-  vec2 gdy = vec2(uHand * fy * (dxdy * zz - x * dzdy) * inv2, -fy * (dydy * zz - y * dzdy) * inv2);
-  vec2 lo = vec2(0.5) / uTexSize;
-  tuv = clamp((uv + 0.5) / uTexSize, lo, (sz - 0.5) / uTexSize);
-  ddx = gdx / uTexSize;
-  ddy = gdy / uTexSize;
-}
 void main() {
-  vec3 lx = dFdx(vLocal);
-  vec3 ly = dFdy(vLocal);
   vec3 n = normalize(vNrm);
   float bestW = -1.0;
   int bestI = 0;
@@ -152,32 +117,29 @@ void main() {
     if (wv > bestW) { bestW = wv; bestI = i; }
   }
   int useI = bestW > 0.0 ? bestI : (anyA > 0.2 ? anyI : faceI);
-  vec2 tuv; vec2 gx; vec2 gy;
-  projectGrad(useI, vLocal, lx, ly, tuv, gx, gy);
-  vec4 src = textureGrad(uViews, vec3(tuv, float(useI)), gx, gy);
+  vec2 uv; float z;
+  project(useI, vLocal, uv, z);
+  vec2 sz = uViewSize[useI];
+  vec2 tuv = clamp((uv + 0.5) / uTexSize, vec2(0.5) / uTexSize, (sz - 0.5) / uTexSize);
+  vec4 src = texture(uViews, vec3(tuv, float(useI)));
   if (src.a < 0.35 && anyA > 0.2 && anyI != useI) {
-    vec2 tuvA; vec2 gxA; vec2 gyA;
-    projectGrad(anyI, vLocal, lx, ly, tuvA, gxA, gyA);
-    vec4 alt = textureGrad(uViews, vec3(tuvA, float(anyI)), gxA, gyA);
+    vec2 uvA; float zA;
+    project(anyI, vLocal, uvA, zA);
+    vec2 tuvA = clamp((uvA + 0.5) / uTexSize, vec2(0.5) / uTexSize, (uViewSize[anyI] - 0.5) / uTexSize);
+    vec4 alt = texture(uViews, vec3(tuvA, float(anyI)));
     if (alt.a > src.a) src = alt;
   }
   if (src.a < 0.2) {
-    vec2 tuvF; vec2 gxF; vec2 gyF;
-    projectGrad(faceI, vLocal, lx, ly, tuvF, gxF, gyF);
-    vec4 altF = textureGrad(uViews, vec3(tuvF, float(faceI)), gxF, gyF);
+    vec2 uvF; float zF;
+    project(faceI, vLocal, uvF, zF);
+    vec2 tuvF = clamp((uvF + 0.5) / uTexSize, vec2(0.5) / uTexSize, (uViewSize[faceI] - 0.5) / uTexSize);
+    vec4 altF = texture(uViews, vec3(tuvF, float(faceI)));
     if (altF.a > src.a) src = altF;
   }
   // A fragment with no Imagine coverage is not a pixel we may invent.
   if (src.a < 0.35) discard;
-  vec3 rgb = src.rgb;
-  if (uFogK > 0.0) {
-    float dist = distance(vWorld.xz, uEye);
-    float fog = clamp(1.0 - exp(-uFogK * max(0.0, dist - 18.0)), 0.0, uFogCap);
-    fog = max(fog, smoothstep(78.0, 132.0, dist));
-    rgb = mix(rgb, uFog, fog);
-  }
   if (uMode == 1) o = vec4(vId / 255.0, 0.0, 0.0, 1.0);
-  else o = vec4(rgb, 1.0);
+  else o = vec4(src.rgb, 1.0);
 }`;
   sharedProg = gl.createProgram();
   gl.attachShader(sharedProg, compile(gl, gl.VERTEX_SHADER, vs));
@@ -198,21 +160,7 @@ void main() {
     texSize: u("uTexSize"),
     hand: u("uHand"),
     mode: u("uMode"),
-    eye: u("uEye"),
-    fog: u("uFog"),
-    fogK: u("uFogK"),
-    fogCap: u("uFogCap"),
   };
-}
-
-/** Distance fog for the corridor. Left at 0, a hull draws exactly as before. */
-export function setHullFog(gl, eyeX, eyeZ, fogRgb, fogK, fogCap) {
-  if (!sharedProg || !sharedLoc) return;
-  gl.useProgram(sharedProg);
-  gl.uniform2f(sharedLoc.eye, eyeX, eyeZ);
-  gl.uniform3f(sharedLoc.fog, fogRgb[0], fogRgb[1], fogRgb[2]);
-  gl.uniform1f(sharedLoc.fogK, fogK);
-  gl.uniform1f(sharedLoc.fogCap, fogCap);
 }
 
 function loadImage(url) {
@@ -275,11 +223,6 @@ export async function loadWorldHull(gl, assetUrl, onBytes, opts) {
   gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  const aniso = gl.getExtension("EXT_texture_filter_anisotropic");
-  if (aniso) {
-    const maxA = gl.getParameter(aniso.MAX_TEXTURE_MAX_ANISOTROPY_EXT) || 1;
-    gl.texParameterf(gl.TEXTURE_2D_ARRAY, aniso.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(8, maxA));
-  }
   gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
   for (let i = 0; i < images.length; i++) {
@@ -385,14 +328,9 @@ export async function loadWorldHull(gl, assetUrl, onBytes, opts) {
   }
 
   function addInstance(x, y, z, yawDeg, scale, idIndex) {
-    if (count >= MAX_INST) return false;
+    if (count >= MAX_INST) return;
     writeInstance(count, x, y, z, yawDeg, scale, idIndex);
     count++;
-    return true;
-  }
-
-  function reset() {
-    count = 0;
   }
 
   function upload() {
@@ -401,7 +339,7 @@ export async function loadWorldHull(gl, assetUrl, onBytes, opts) {
   }
 
   function draw(vp, mode) {
-    if (!count) return 0;
+    if (!count) return;
     const loc = sharedLoc;
     gl.useProgram(sharedProg);
     gl.bindVertexArray(vao);
@@ -427,97 +365,6 @@ export async function loadWorldHull(gl, assetUrl, onBytes, opts) {
     gl.disable(gl.CULL_FACE);
     gl.drawElementsInstanced(gl.TRIANGLES, mesh.ic, gl.UNSIGNED_INT, 0, count);
     gl.bindVertexArray(null);
-    return 1;
-  }
-
-  function forkBatch() {
-    const batchInst = new Float32Array(MAX_INST * 17);
-    const batchBuf = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, batchBuf);
-    gl.bufferData(gl.ARRAY_BUFFER, batchInst.byteLength, gl.STATIC_DRAW);
-    const batchVao = gl.createVertexArray();
-    gl.bindVertexArray(batchVao);
-    gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-    gl.enableVertexAttribArray(0);
-    gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 24, 0);
-    gl.enableVertexAttribArray(1);
-    gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 24, 12);
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
-    gl.bindBuffer(gl.ARRAY_BUFFER, batchBuf);
-    const batchStride = 17 * 4;
-    for (let c = 0; c < 4; c++) {
-      gl.enableVertexAttribArray(3 + c);
-      gl.vertexAttribPointer(3 + c, 4, gl.FLOAT, false, batchStride, c * 16);
-      gl.vertexAttribDivisor(3 + c, 1);
-    }
-    gl.enableVertexAttribArray(7);
-    gl.vertexAttribPointer(7, 1, gl.FLOAT, false, batchStride, 64);
-    gl.vertexAttribDivisor(7, 1);
-    gl.bindVertexArray(null);
-    let batchCount = 0;
-    function writeBatch(index, x, y, z, yawDeg, scale, idIndex) {
-      const a = yawDeg * Math.PI / 180;
-      const c = Math.cos(a);
-      const s = Math.sin(a);
-      const o = index * 17;
-      batchInst[o] = c * scale;
-      batchInst[o + 1] = 0;
-      batchInst[o + 2] = -s * scale;
-      batchInst[o + 3] = 0;
-      batchInst[o + 4] = 0;
-      batchInst[o + 5] = scale;
-      batchInst[o + 6] = 0;
-      batchInst[o + 7] = 0;
-      batchInst[o + 8] = s * scale;
-      batchInst[o + 9] = 0;
-      batchInst[o + 10] = c * scale;
-      batchInst[o + 11] = 0;
-      batchInst[o + 12] = x;
-      batchInst[o + 13] = y;
-      batchInst[o + 14] = z;
-      batchInst[o + 15] = 1;
-      batchInst[o + 16] = idIndex;
-    }
-    return {
-      addInstance(x, y, z, yawDeg, scale, idIndex) {
-        if (batchCount >= MAX_INST) return false;
-        writeBatch(batchCount, x, y, z, yawDeg, scale, idIndex);
-        batchCount++;
-        return true;
-      },
-      reset() { batchCount = 0; },
-      upload() {
-        gl.bindBuffer(gl.ARRAY_BUFFER, batchBuf);
-        gl.bufferSubData(gl.ARRAY_BUFFER, 0, batchInst);
-      },
-      draw(vp, mode) {
-        if (!batchCount) return 0;
-        const loc = sharedLoc;
-        gl.useProgram(sharedProg);
-        gl.bindVertexArray(batchVao);
-        gl.uniformMatrix4fv(loc.vp, false, vp);
-        gl.uniform1i(loc.count, cams.length);
-        gl.uniform3fv(loc.pos, pos);
-        gl.uniform3fv(loc.right, right);
-        gl.uniform3fv(loc.up, up);
-        gl.uniform3fv(loc.fwd, fwd);
-        gl.uniform1fv(loc.fov, fov);
-        gl.uniform2fv(loc.size, sz);
-        gl.uniform2f(loc.texSize, maxW, maxDimH);
-        gl.uniform1f(loc.hand, 1);
-        gl.uniform1i(loc.mode, mode | 0);
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D_ARRAY, viewsTex);
-        gl.uniform1i(loc.views, 0);
-        gl.enable(gl.DEPTH_TEST);
-        gl.depthMask(true);
-        gl.disable(gl.BLEND);
-        gl.disable(gl.CULL_FACE);
-        gl.drawElementsInstanced(gl.TRIANGLES, mesh.ic, gl.UNSIGNED_INT, 0, batchCount);
-        gl.bindVertexArray(null);
-        return 1;
-      },
-    };
   }
 
   function solo(vp, x, y, z, yawDeg, scale, idIndex) {
@@ -534,10 +381,8 @@ export async function loadWorldHull(gl, assetUrl, onBytes, opts) {
 
   return {
     addInstance,
-    reset,
     upload,
     draw,
-    forkBatch,
     solo,
     minY: mesh.minY,
     maxY: mesh.maxY,
