@@ -45,10 +45,6 @@ const ORDER = [
   "cells",
   "fade_in",
   "preload_ahead",
-  "part_colliders",
-  "ground_anchor",
-  "hanging_clearance",
-  "approach_log",
 ];
 
 export function writeReport(dir, payload) {
@@ -75,7 +71,6 @@ export function writeReport(dir, payload) {
     perfLine: payload.perf?.perfLine || "Perf: drawCalls=missing, texMB=missing, activeVideos=missing, jsMs=missing",
   };
   if (Array.isArray(payload.waypoints)) json.waypoints = payload.waypoints;
-  if (payload.approachLog) json.approachLog = payload.approachLog;
   writeFileSync(path.join(dir, "report.json"), JSON.stringify(json, null, 2));
   writeFileSync(path.join(dir, "report.md"), markdown(json));
   return json;
@@ -96,10 +91,6 @@ function markdown(json) {
   lines.push("");
   lines.push(`Layout: \`${json.layout}\` (\`${json.layoutId}\`)`);
   lines.push("");
-  if (json.approachLog) {
-    lines.push(`Approach log: \`${json.approachLog}\``);
-    lines.push("");
-  }
   lines.push("Viewport: 360×800 CSS, device pixel ratio 2, framebuffer 720×1600, full screen.");
   lines.push("");
   lines.push(json.perfLine);

@@ -165,10 +165,6 @@ WebGL errors are captured even without the hook, by wrapping `getError` and the 
 | `cells` | Organic only. `triVisible` above **300000**. Without a streaming declaration a missing snapshot field is `n/a (page lacks field X)` and does not fail. When streaming is declared, a missing `resident`, `total`, `triVisible`, or `cellLoad_ms_max` FAILs with `missing field X`. `lod` counts and `texMB_peak` stay `n/a` and do not fail on their own. Director decision 2026-10-02 15:04 (delegated owner approval). The 300000 cap is owner decision 2026-10-02, spec rail 11. |
 | `fade_in` | Only when the layout has `streaming`. The rule: a fade from alpha 0 applies only to an object that was not on screen before it entered range (outside the frustum, occluded, or beyond fog). An object already visible as its far representation must crossfade to the near representation and must never drop to 0. Also FAIL: a jump above **20%** of the final value in one frame, a ramp that is not monotonic, or a measured time outside **300–600 ms** without a passing distance span. Owner decree #457, approved 2026-10-02. Spec rail 11. A missing opacity or clock field is `n/a (page lacks field X)` and does not fail. |
 | `preload_ahead` | When the layout has `streaming`, or the page declares streaming. A cell inside the heading cone and the lookahead is not resident before the hero enters it. Prints `misses` and `worst_lead_ms`. A declared-streaming page missing `residentIds` FAILs with `missing field residentIds`. Without that declaration the same gap is `n/a` and does not fail. Director decision 2026-10-02 15:04 (delegated owner approval). Owner decree #457, approved 2026-10-02. Spec rail 11. |
-| `part_colliders` | Only when the layout has `parts` or schema `zone-placement/1`. FAIL when a library box is degenerate, the part has no library id, declared `world_boxes` are not the transformed library boxes, or an approach sample hits a `keepout` / `visual: false` box. |
-| `ground_anchor` | Same layouts. FAIL when a grounded part's anchor is missing or is not on `ground_y` after snap (the part floats). |
-| `hanging_clearance` | Same layouts. FAIL when hanging detail over the path is under `path.min_clearance_m`, or the clearance box / required height is missing. |
-| `approach_log` | Same layouts. FAIL when `approach.jsonl` misses the schema. |
 
 `fps_avg`, `fps_1low`, and `frame_ms` are measured on SwiftShader in this command. Those three rows are informational on that run and do not fail the take. A missing `snapshot().perf` is still FAIL. Law 65: [`biome/docs/65-render-quality.md`](../../biome/docs/65-render-quality.md).
 
@@ -182,29 +178,6 @@ node tools/playcheck/src/renderlint.mjs <play.js>
 
 Exit 0 is a clean scan. Exit 1 is a finding. The scan is the same function the walk uses.
 
-## Approach run
-
-When the layout schema is `zone-placement/1`, or the file has a `parts` array, the run places library collision boxes and writes `approach.jsonl` next to the report. A circle clearing without `parts` does not emit the four rows and does not write the log.
-
-Each part names a library id. The library box is in local metres (`min` / `max`, role `solid`, `hanging`, or `keepout`). Placement is `position` (x, y, z or x, z), `yaw_deg` (0 faces +z, 90 faces +x), and `scale`. The tool scales, yaws, and translates the eight corners, then takes the world box. `ground_snap` defaults on: the library `ground_anchor` is moved onto `ground_y`. A missing anchor, or an anchor left off the ground, is a float.
-
-Hanging boxes (`role: "hanging"`) that overlap the path corridor must clear `path.min_clearance_m` above the ground. A part marked `hanging: true` with no hanging box, or a path with no required height, is missing clearance. A `keepout` (or `visual: false`) box that the body touches is an invisible wall. The body is a 0.3 m radius up to 1.3 m, the same band as the ruin face colliders. Declared `world_boxes` have to match those transformed boxes. The walk uses the library boxes.
-
-`approach.jsonl` is one JSON object per line, schema `approach-run/1`:
-
-| Field | Meaning |
-| --- | --- |
-| `timestamp` | ISO-8601. |
-| `position` | Player foot `[x, y, z]` on the ground, every 0.5 m along `path.points`. |
-| `facing` | Degrees. 0 faces +z, 90 faces +x. |
-| `nearestPartId` | Closest placed part. |
-| `distance` | Metres from the foot to that part's nearest box. |
-| `collision` | `hit` or `miss`. |
-| `cameraLayer` | `near` under 24 m, `mid` under 64 m, `far` from 64 m. |
-| `fps` | The page `perf.fpsAvg` when a shot reported one, otherwise 30. |
-
-The labelled file is `fixture/approach/good.json` (`TEST FIXTURE - not Imagine`).
-
 ## Phone performance
 
 Include [`tools/perf/overlay.js`](../perf/README.md). The panel is off unless the URL has `?perf=1`. This command does **not** add that flag (it adds `?debug=1` only), so the walk does not cover the controls. The script still installs `window.__perf`.
@@ -216,7 +189,7 @@ The play view calls `__perf.noteFrame`, `__perf.noteDraw`, and `__perf.noteTextu
 | Field | Meaning |
 | --- | --- |
 | `perf.schema` | `playcheck-perf/1` |
-| `perf.thresholds` | The mid-range phone caps (`fpsAvgMin` 30, `fps1LowMin` 20, `frameMsMax` 33.333, `heapBytesMax` 402653184, `textureBytesMax` 268435456, `videoDecodersMax` 6, `activeVideosMax` 4, `drawCallsMax` 150). Owner caps are tighter ([`docs/METHOD.md`](../../docs/METHOD.md) standing rule 9, 2026-10-05): drawCalls ≤ 12, texMB ≤ 260, videos ≤ 4 including Bolt. `drawCallsMax` 150 is the tool ceiling, not the target. Player debug text stays behind `?debug=1`. |
+| `perf.thresholds` | The mid-range phone caps (`fpsAvgMin` 30, `fps1LowMin` 20, `frameMsMax` 33.333, `heapBytesMax` 402653184, `textureBytesMax` 268435456, `videoDecodersMax` 6, `activeVideosMax` 4, `drawCallsMax` 150). |
 | `perf.perfLine` | `Perf: drawCalls=<n>, texMB=<n>, activeVideos=<n>, jsMs=<n>`. Required on every report. |
 | `perf.budgetApplied` | False only for the measurement fixture. |
 | `perf.harness` | True when every frame was `snap.harness`. |

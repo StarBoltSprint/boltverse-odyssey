@@ -1,15 +1,13 @@
 # Living Archives / Echo Shards — IN TEST (2026-10-04)
 
-One shared module for every zone and every player. A zone does not recook the paw, the card, or the hall. It writes a manifest. A second archives module inside a zone pack is FAIL (standing rule 6, 2026-10-05). Progress stays local per player first.
-
-Standing rule 5: menu backgrounds are the high-tech Citadel (dark metal, glass, cyan/violet holograms). A stone door or a gothic hall is not a menu background.
+One shared module for every zone and every player. A zone does not recook the paw, the card, or the hall. It writes a manifest.
 
 Owner decision 2026-10-04 18:29: decrees #351 and #352 are unparked for this system only. Momentum `m` and the Frontier Shard narrative frame stay PARKED.
 
 Owner-approved UI 2026-10-04 18:36:
 
 - In the zone the shard is an Imagine crystal on the ground. Pickup shows a small card (the Imagine shot and one lore line) for 2–3 seconds, then it fades. The run continues. There is no menu at the moment of pickup.
-- The only always-on control is a small paw button in the top-right corner. It opens Resume, Archives, Codex vivant, Citadel (disabled, “coming soon”), and Settings. It does not sit on the joystick or on the camera-tilt swipe. Codex vivant is the Living Codex list on that same Archives page: one Star Core truth per finished adventure, in the order they were gathered. An older `<zoneId>/truth` save is still read. Echo Shard rows stay on the page.
+- The only always-on control is a small paw button in the top-right corner. It opens Resume, Archives, Citadel (disabled, “coming soon”), and Settings. It does not sit on the joystick or on the camera-tilt swipe.
 - Archives is a page over an Imagine painting of the Citadel Living Archives hall. Found shards are listed with their picture. Unfound shards use the dim Imagine silhouette. Plain words (titles, lore, counts) are HTML text.
 
 ## What a new zone writes

@@ -1,8 +1,0 @@
-{
-  "taper_deg": 10.34,
-  "bite_frac": 0.851,
-  "bite_side": "left",
-  "depth_m": 32.0,
-  "height_m": 240.0,
-  "note": "Hero slab left of road centre, classic mask measurements"
-}
