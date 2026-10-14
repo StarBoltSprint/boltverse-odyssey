@@ -71,6 +71,7 @@ def wear_colours(V, F, col, snow, rough, snow_col, t):
 
 _REC = {}
 EXT, BACK_REL = 256, 0.06   # px of key depth extrapolated past each frame edge; shell thickness (fraction of depth)
+JUMP_BG = 61 if os.environ.get('SB_CUT') else 0   # v6 experiment (SB_CUT=1): max-filter size (px) of the background layer
 
 
 def solidify(V, F, rel):
@@ -171,6 +172,19 @@ def build(sd, out, opt=None, rel_step=12):   # v5: 12 px grid (shells double the
             V, F, _ = G.relief(Pp, val, 4 * rel_step, np.zeros(Pp.shape), 0.0, rng)
             if len(F):
                 V, F = solidify(V, np.asarray(F), BACK_REL); meshes[t_].add(V, F, np.array([0.5, 0.5, 0.55]))
+    # v6: background layer behind the depth jumps: max-filtered key depth (the far surface continued under the near
+    # forms), 1 % further, so faces cut at depth jumps reveal plausible continued background instead of holes
+    if JUMP_BG:
+        Zb = cv2.dilate(Z, np.ones((JUMP_BG, JUMP_BG), np.uint8)) * 1.01
+        sky_b = np.zeros(Z.shape, bool)
+        for e, mm_ in zip(els1, L1m):
+            if e.get("class") == "sky":
+                sky_b |= mm_
+        uu, vv = np.meshgrid(np.arange(Z.shape[1]), np.arange(Z.shape[0]))
+        Pb = np.stack([(uu - cam["cx"]) / cam["fx"] * Zb, (vv - cam["cy"]) / cam["fy"] * Zb, Zb], -1) * np.array([1, -1, -1], np.float32)
+        V, F, _ = G.relief(Pb, ~sky_b, 2 * rel_step, np.zeros(Pb.shape), 0.0, rng)
+        if len(F):
+            meshes["wall"].add(V, F, np.array([0.4, 0.4, 0.45]))
     # light: median image-plane light direction of the elements -> directional light from that side, above
     dx = float(np.median([e["props"]["light.dir_x"] for e in els2 if e.get("props")])); dy = float(np.median([e["props"]["light.dir_y"] for e in els2 if e.get("props")]))
     # lighting calibrated on the key: median lit/shadow ratio r of the elements -> ambient share 1/r, sun share 1-1/r
@@ -185,7 +199,10 @@ def build(sd, out, opt=None, rel_step=12):   # v5: 12 px grid (shells double the
     for t, mm in meshes.items():
         for i, V in enumerate(mm.V):
             Pc = V * np.array([1, -1, -1]); zc = np.maximum(Pc[:, 2], 1e-3)
-            u = np.clip((cam["fx"] * Pc[:, 0] / zc + cam["cx"]) * sx, 0, Wk - 1).astype(int); v = np.clip((cam["fy"] * Pc[:, 1] / zc + cam["cy"]) * sy_, 0, Hk - 1).astype(int)
+            u = (cam["fx"] * Pc[:, 0] / zc + cam["cx"]) * sx; v = (cam["fy"] * Pc[:, 1] / zc + cam["cy"]) * sy_
+            if os.environ.get("SB_CUT"):   # v6: outside the key frame sample the MIRRORED key (no edge-clamp streaks)
+                u = np.abs(u); u = np.where(u > Wk - 1, 2 * (Wk - 1) - u, u); v = np.abs(v); v = np.where(v > Hk - 1, 2 * (Hk - 1) - v, v)
+            u = np.clip(u, 0, Wk - 1).astype(int); v = np.clip(v, 0, Hk - 1).astype(int)
             obs = keyimg[v, u]; w_obs = 1.0 if t == "sky" else OBS_W
             mm.C[i] = np.clip(w_obs * obs + (1 - w_obs) * mm.C[i], 0, 1)
     write_glb(out / "scene.glb", meshes)

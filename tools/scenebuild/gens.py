@@ -84,6 +84,10 @@ def spike(top, L, rad, rng, seg=6, rings=4):
     return np.array(V), F
 
 
+import os
+JUMP_CUT = 0.12 if os.environ.get("SB_CUT") else 0.0   # v6 experiment (off: cutting opened holes, off-view gate 34.6 -> 32.2)
+
+
 def relief(P, valid, step, col_img, rough, rng):
     """depth-fitted surface for big forms (wall / ground / ice mass / sky backdrop): grid of back-projected points
     (P: HxWx3 three-frame points) sampled every `step` px inside the mask, displaced by roughness."""
@@ -96,12 +100,24 @@ def relief(P, valid, step, col_img, rough, rng):
                 if rough:
                     p *= 1 + rng.normal(0, rough)
                 V.append(p); C.append(col_img[y, x])
-    F = []
+    V = np.array(V).reshape(-1, 3); F = []
+    zg = np.full(idx.shape, np.nan); zg[idx >= 0] = np.abs(V[idx[idx >= 0], 2])
+    if JUMP_CUT > 0 and len(V):
+        # depth-jump cells: depth ratio across the cell spikes above both JUMP_CUT and 3x its 5x5 neighbourhood median
+        # (a steep but smooth surface, e.g. ground at a grazing angle, has a high ratio everywhere -> kept)
+        q = np.stack([zg[:-1, :-1], zg[:-1, 1:], zg[1:, :-1], zg[1:, 1:]]); r = np.nanmax(q, 0) / np.nanmin(q, 0) - 1
+        from scipy.ndimage import generic_filter
+        med = generic_filter(np.nan_to_num(r, nan=0.0), np.median, size=5, mode="nearest")
+        cut = (r > JUMP_CUT) & (r > 3 * med)
+    else:
+        cut = np.zeros((len(ys) - 1, len(xs) - 1), bool)
     for i in range(len(ys) - 1):
         for j in range(len(xs) - 1):
+            if cut[i, j]:
+                continue
             a, b, c, d = idx[i, j], idx[i, j + 1], idx[i + 1, j], idx[i + 1, j + 1]
             if min(a, b, c) >= 0:
                 F.append((a, c, b))
             if min(b, c, d) >= 0:
                 F.append((b, c, d))
-    return np.array(V).reshape(-1, 3), F, np.array(C).reshape(-1, 3)
+    return V, F, np.array(C).reshape(-1, 3)
