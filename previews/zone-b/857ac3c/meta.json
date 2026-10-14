@@ -1,0 +1,10 @@
+{
+  "zone": "zone-b",
+  "commit": "857ac3c",
+  "date": "2026-10-05",
+  "verdict": "PASS",
+  "report": "packs/zone-b/proof/planetfix/REPORT.md",
+  "walk": null,
+  "play": "play",
+  "publicUrl": null
+}

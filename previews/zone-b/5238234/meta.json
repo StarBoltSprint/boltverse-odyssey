@@ -1,0 +1,10 @@
+{
+  "zone": "zone-b",
+  "commit": "5238234",
+  "date": "2026-10-05",
+  "verdict": "PASS",
+  "report": "packs/zone-b/proof/fix0612/REPORT.md",
+  "walk": null,
+  "play": "play",
+  "publicUrl": null
+}

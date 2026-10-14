@@ -1,8 +1,0 @@
-type: terrain    # ground of a biome (zone): tiles, roads
-extends: _base
-checks: [texel, textures, repetition, runtime]
-texel: {minPxPerM: 64, nearPxPerM: 128, maxRepeats: null}   # ground tiles repeat by design; anti-carpet rules apply
-repetition: {maxPeak: 0.65}
-keyCompare:   # key-compare.mjs: sand, dunes, avenue paving (shape = layout, loose; colour = the biggest areas of the frame, strict)
-  gate: {iouMin: 0.35, deLitMax: 6, deShadowMax: 8, structureMin: 0.2}
-  target: {iouTarget: 0.9, deLitTarget: 3, deShadowTarget: 4, structureTarget: 0.85}

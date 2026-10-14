@@ -1,0 +1,10 @@
+{
+  "zone": "zone-b",
+  "commit": "0b744f9",
+  "date": "2026-10-05",
+  "verdict": "PASS",
+  "report": "packs/zone-b/proof/anchor0705/REPORT.md",
+  "walk": null,
+  "play": "play",
+  "publicUrl": null
+}
