@@ -6,7 +6,6 @@
 
 import { HALL_LOOP, PAW_GLOW, mountMenuBackdrop } from "./backdrop.js";
 import { buildCatalogue } from "./catalogue.js";
-import { CODEX_FAR, codexCountLine, kindLabel } from "./codex.js";
 import {
   cardBox,
   cardOpacity,
@@ -62,15 +61,6 @@ const STYLE = `
 #archives-list article { display: grid; grid-template-columns: 76px 1fr; gap: 10px 12px; margin: 0 0 16px; align-items: center; }
 #archives-list h2 { font-size: 18px; font-weight: 500; margin: 0; }
 #archives-list article p { grid-column: 2; margin: 0; font-size: 14px; line-height: 1.35; }
-#archives-codex { margin-top: 28px; }
-#archives-codex h2 { text-align: center; font-size: 22px; margin: 0 0 8px; }
-#archives-list .codex-note { text-align: center; margin: 0 0 16px; font-size: 14px; line-height: 1.4; }
-#archives-list button.codex-row {
-  display: block; width: 100%; text-align: left; padding: 14px 4px;
-  border-bottom: 1px solid rgba(232, 197, 110, 0.45);
-}
-#archives-list .codex-kind { color: #e8c56e; letter-spacing: 0.12em; font-size: 12px; margin: 0 0 12px; text-align: center; }
-#archives-list .codex-label { margin: 14px 0 4px; letter-spacing: 0.14em; font-size: 12px; color: #9ee7ff; }
 #archives-list img { justify-self: center; }
 #archives-card {
   position: fixed; z-index: 6; pointer-events: none; display: none;
@@ -145,12 +135,10 @@ export function mountPresent(doc, env) {
   let menuOpen = false;
   let archivesOpen = false;
   let menuView = "main";
-  let archivesCat = null;
-  let codexIndex = null;
   let cardOn = false;
   let cardT = 0;
   let cardTotal = env.cardMs || 2500;
-  let countLine = "0 sur 0";
+  let countLine = "0 of 0";
   const openScreens = new Set();
 
   function viewSize() {
@@ -232,21 +220,21 @@ export function mountPresent(doc, env) {
     menu.replaceChildren();
     const resume = doc.createElement("button");
     resume.type = "button";
-    resume.textContent = "Reprendre";
+    resume.textContent = "Resume";
     const archives = doc.createElement("button");
     archives.type = "button";
     archives.textContent = "Archives";
     const citadel = doc.createElement("button");
     citadel.type = "button";
     citadel.disabled = true;
-    citadel.append("Citadelle");
+    citadel.append("Citadel");
     const soon = doc.createElement("span");
     soon.className = "archives-soon";
-    soon.textContent = "bientôt";
+    soon.textContent = "coming soon";
     citadel.append(soon);
     const settings = doc.createElement("button");
     settings.type = "button";
-    settings.textContent = "Réglages";
+    settings.textContent = "Settings";
     resume.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -263,31 +251,7 @@ export function mountPresent(doc, env) {
       menuView = "settings";
       fillSettings();
     });
-    const codexBtn = doc.createElement("button");
-    codexBtn.type = "button";
-    codexBtn.textContent = "Codex vivant";
-    codexBtn.addEventListener("pointerdown", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (env.onArchives) env.onArchives();
-      const anchor = doc.getElementById("archives-codex");
-      if (anchor && anchor.scrollIntoView) anchor.scrollIntoView({ block: "start" });
-    });
-    menu.append(resume);
-    const extras = Array.isArray(env.extraItems) ? env.extraItems : [];
-    for (let i = 0; i < extras.length; i++) {
-      const item = extras[i];
-      const button = doc.createElement("button");
-      button.type = "button";
-      button.textContent = item.label;
-      button.addEventListener("pointerdown", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (item.onPress) item.onPress();
-      });
-      menu.append(button);
-    }
-    menu.append(archives, codexBtn, citadel, settings);
+    menu.append(resume, archives, citadel, settings);
   }
 
   function fillSettings() {
@@ -302,15 +266,13 @@ export function mountPresent(doc, env) {
     b.style.textAlign = "center";
     const back = doc.createElement("button");
     back.type = "button";
-    back.textContent = "Reprendre";
+    back.textContent = "Resume";
     back.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       e.stopPropagation();
       closeMenu();
     });
-    menu.append(a, b);
-    if (typeof env.mountSettings === "function") env.mountSettings(menu);
-    menu.append(back);
+    menu.append(a, b, back);
   }
 
   function openMenu() {
@@ -330,42 +292,17 @@ export function mountPresent(doc, env) {
     setScreen("pause", false);
   }
 
-  function resumeButton() {
-    const back = doc.createElement("button");
-    back.type = "button";
-    back.textContent = "Reprendre";
-    back.addEventListener("pointerdown", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      closeArchives();
-    });
-    return back;
-  }
-
-  function frenchDate(at) {
-    const time = Date.parse(at);
-    if (Number.isNaN(time)) return "";
-    try {
-      return new Date(time).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
-    } catch (e) {
-      return "";
-    }
-  }
-
   function fillArchives(cat) {
     list.replaceChildren();
     const title = doc.createElement("h1");
-    title.textContent = "Archives vivantes";
-    const codexWord = doc.createElement("p");
-    codexWord.textContent = "Codex vivant";
+    title.textContent = "Living Archives";
     const count = doc.createElement("p");
     count.className = "archives-count";
-    count.textContent = cat.found + " sur " + cat.total;
-    countLine = cat.found + " sur " + cat.total;
-    list.append(title, codexWord, count);
-    const shards = cat.shards || [];
-    for (let i = 0; i < shards.length; i++) {
-      const s = shards[i];
+    count.textContent = cat.found + " of " + cat.total;
+    countLine = cat.found + " of " + cat.total;
+    list.append(title, count);
+    for (let i = 0; i < cat.shards.length; i++) {
+      const s = cat.shards[i];
       const row = doc.createElement("article");
       const img = doc.createElement("img");
       img.alt = "";
@@ -386,81 +323,23 @@ export function mountPresent(doc, env) {
       }
       list.append(row);
     }
-    const truths = Array.isArray(cat.codex) ? cat.codex : [];
-    const block = doc.createElement("section");
-    block.id = "archives-codex";
-    const heading = doc.createElement("h2");
-    heading.textContent = "Codex vivant";
-    const progress = doc.createElement("p");
-    progress.className = "archives-count";
-    progress.textContent = codexCountLine(truths.length);
-    const note = doc.createElement("p");
-    note.className = "codex-note";
-    note.textContent = CODEX_FAR;
-    block.append(heading, progress, note);
-    for (let i = 0; i < truths.length; i++) {
-      const row = truths[i];
-      const button = doc.createElement("button");
-      button.type = "button";
-      button.className = "codex-row";
-      const label = "Vérité #" + row.order;
-      button.textContent = row.title ? label + " — " + row.title : label;
-      button.addEventListener("pointerdown", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        codexIndex = i;
-        fillTruth(row);
-      });
-      block.append(button);
-    }
-    list.append(block, resumeButton());
-  }
-
-  function addLine(parent, className, text) {
-    const p = doc.createElement("p");
-    if (className) p.className = className;
-    p.textContent = text;
-    parent.append(p);
-    return p;
-  }
-
-  function fillTruth(row) {
-    list.replaceChildren();
-    const title = doc.createElement("h1");
-    title.textContent = "Vérité #" + row.order;
-    list.append(title);
-    const kind = kindLabel(row.kind);
-    if (kind) addLine(list, "codex-kind", kind);
-    const when = frenchDate(row.at);
-    if (when) addLine(list, "codex-note", when);
-    if (row.question) {
-      addLine(list, "codex-label", "Question");
-      addLine(list, "", row.question);
-    }
-    addLine(list, "codex-label", "Vérité");
-    addLine(list, "", row.insight);
-    addLine(list, "codex-label", "Aventure");
-    addLine(list, "", row.title || "Une aventure déjà inscrite");
     const back = doc.createElement("button");
     back.type = "button";
-    back.textContent = "Retour";
+    back.textContent = "Resume";
     back.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      codexIndex = null;
-      if (archivesCat) fillArchives(archivesCat);
+      closeArchives();
     });
     list.append(back);
   }
 
   function openArchives(cat) {
-    archivesCat = cat || { found: 0, total: 0, shards: [] };
-    codexIndex = null;
     archivesOpen = true;
     setScreen("archives", true);
     closeMenu();
     setPawVisible(false);
-    fillArchives(archivesCat);
+    fillArchives(cat);
     screen.classList.add("open");
     layoutBackdrop();
   }

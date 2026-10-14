@@ -20,6 +20,7 @@ import {
   maxRadius,
   areaM2,
 } from "./field.js";
+import { LOD_BOX, LOD_BOX_VERTS } from "./lodbox.js";
 import { solveSurfaceUv } from "./uvfield.js";
 
 // One light grade per biome (law 67). Mix and saturation are uniforms so the path blend can
@@ -123,20 +124,52 @@ void main() {
 }`);
 
   const cardProg = program(gl, `#version 300 es
-layout(location=0) in vec2 aCorner;
+layout(location=0) in vec4 aCorner;
 layout(location=1) in vec4 aP;
 layout(location=2) in vec4 aS;
 layout(location=3) in float aUh;
 uniform mat4 uVP;
+uniform vec3 uEye;
+uniform float uFocal;
 out vec2 vUv;
 flat out float vLayer;
 void main() {
   float yaw = aP.w;
-  vec3 right = vec3(cos(yaw), 0.0, -sin(yaw));
-  vec3 p = vec3(aP.x, aP.y, aP.z) + right * (aCorner.x - 0.5) * aS.x + vec3(0.0, aCorner.y * aS.y, 0.0);
-  gl_Position = uVP * vec4(p, 1.0);
-  vUv = vec2((1.0 - aS.w) * 0.5 + aCorner.x * aS.w, (1.0 - aCorner.y) * aUh);
+  float c = cos(yaw);
+  float s = sin(yaw);
+  vec3 right = vec3(c, 0.0, -s);
+  vec3 fwd = vec3(s, 0.0, c);
+  float depth = aS.x * 0.42;
+  vec3 p = vec3(aP.x, aP.y, aP.z);
+  p += right * aCorner.x * aS.x;
+  p.y += aCorner.y * aS.y;
+  p += fwd * aCorner.z * depth;
+  float faceU;
+  float faceV;
+  if (aCorner.w < 0.5) {
+    faceU = aCorner.x + 0.5;
+    faceV = aCorner.y;
+  } else if (aCorner.w < 1.5) {
+    faceU = aCorner.z + 0.5;
+    faceU = 0.29 + faceU * 0.42;
+    faceV = aCorner.y;
+  } else {
+    faceU = aCorner.x + 0.5;
+    faceV = aCorner.z + 0.5;
+    float frac = depth / max(aS.y, 1e-4);
+    faceV = (1.0 - frac) * 0.5 + faceV * frac;
+  }
+  vUv = vec2(faceU, (1.0 - faceV) * aUh);
   vLayer = aS.z;
+  gl_Position = uVP * vec4(p, 1.0);
+  vec2 d = uEye.xz - aP.xz;
+  float lx = clamp(dot(d, right.xz), -0.5 * aS.x, 0.5 * aS.x);
+  float lz = clamp(dot(d, fwd.xz), -0.5 * depth, 0.5 * depth);
+  float horiz = length(d - right.xz * lx - fwd.xz * lz);
+  float qy = clamp(uEye.y, aP.y, aP.y + aS.y);
+  if (uFocal > 0.0 && aS.w > 0.0 && length(vec2(horiz, uEye.y - qy)) * 0.98 < uFocal * aS.w) {
+    gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+  }
 }`, `#version 300 es
 precision highp float;
 uniform sampler2D uTex0;
@@ -242,6 +275,8 @@ void main() {
   };
   const cLoc = {
     vp: gl.getUniformLocation(cardProg, "uVP"),
+    eye: gl.getUniformLocation(cardProg, "uEye"),
+    focal: gl.getUniformLocation(cardProg, "uFocal"),
     t0: gl.getUniformLocation(cardProg, "uTex0"),
     t1: gl.getUniformLocation(cardProg, "uTex1"),
     t2: gl.getUniformLocation(cardProg, "uTex2"),
@@ -257,6 +292,9 @@ void main() {
   gl.enableVertexAttribArray(0);
   gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 8, 0);
   gl.bindVertexArray(null);
+  const boxBuf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, boxBuf);
+  gl.bufferData(gl.ARRAY_BUFFER, LOD_BOX, gl.STATIC_DRAW);
 
   function rgbOf(img) {
     const rgba = pixelsOf(img);
@@ -347,15 +385,16 @@ void main() {
   }
 
   // Surface-aware UV: solved once from the macro relief (shape only) before the mesh is baked.
-  // Focus = walkable interior and inner rim (u <= 1.0); the outer lip keeps a declared residual.
+  // The walkable outer lip (u <= 1.07) is inside the focus. Stretch 0.98 is unreachable
+  // there and the solver oscillates, so the cap is 1.0 and the eye floor holds magnification.
   function solveUv() {
     const t0 = performance.now();
     const reach = maxRadius() * 1.08;
     const uOf = (x, z) => Math.hypot(x, z) / radiusAt(Math.atan2(x, z));
     const f = solveSurfaceUv({
       macroAt, reach, n: 96, tile: TILE,
-      inside: (x, z) => uOf(x, z) <= 1.06,
-      focus: (x, z) => uOf(x, z) <= 1.0,
+      inside: (x, z) => uOf(x, z) <= 1.08,
+      focus: (x, z) => uOf(x, z) <= 1.07,
       stretchMax: 1.0, rounds: 8, iters: 160, itersRefine: 30,
     });
     setUvField(f);
@@ -549,16 +588,17 @@ void main() {
       const sc = 0.72 + hash(i, 9) * 0.28;
       const sz = sizes[kind];
       const y = heightAt(x, z) - 0.02;
-      inst.push(x, y, z, yaw, sz.w * sc, sz.h * sc, kind, 1, 1);
-      inst.push(x, y, z, yaw + Math.PI * 0.5, sz.w * sc, sz.h * sc, kind, 1, 1);
+      const srcH = imgs[kind].height || 1;
+      const mpp = (sz.h * sc) / srcH;
+      inst.push(x, y, z, yaw, sz.w * sc, sz.h * sc, kind, mpp, 1);
       placed++;
     }
     const data = new Float32Array(inst);
     const vao = gl.createVertexArray();
     gl.bindVertexArray(vao);
-    gl.bindBuffer(gl.ARRAY_BUFFER, qbuf);
+    gl.bindBuffer(gl.ARRAY_BUFFER, boxBuf);
     gl.enableVertexAttribArray(0);
-    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 8, 0);
+    gl.vertexAttribPointer(0, 4, gl.FLOAT, false, 16, 0);
     const ib = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, ib);
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
@@ -709,7 +749,7 @@ void main() {
       buildCards(cuts);
       initPost();
     },
-    draw(vp, mode, id) {
+    draw(vp, mode, id, eye) {
       if (!mesh) return;
       gl.useProgram(groundProg);
       gl.bindVertexArray(mesh.vao);
@@ -730,6 +770,8 @@ void main() {
       gl.useProgram(cardProg);
       gl.bindVertexArray(cards.vao);
       gl.uniformMatrix4fv(cLoc.vp, false, vp);
+      gl.uniform3f(cLoc.eye, eye ? eye[0] : 0, eye ? eye[1] : 0, eye ? eye[2] : 0);
+      gl.uniform1f(cLoc.focal, eye ? env.FOCAL : 0);
       gl.uniform1i(cLoc.mode, mode);
       gl.uniform3f(cLoc.id, id[0], id[1], id[2]);
       const cutsTex = detailTex.tex;
@@ -745,7 +787,7 @@ void main() {
       gl.activeTexture(gl.TEXTURE0);
       gl.enable(gl.BLEND);
       gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, cards.count);
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, LOD_BOX_VERTS, cards.count);
       gl.disable(gl.BLEND);
     },
     composite() {
@@ -810,8 +852,11 @@ void main() {
       const stretch = nearStretch(eye[0], eye[2], span) * Math.sqrt(1 + micro * micro);
       let m = (env.FOCAL * TILE * stretch) / (groundD * srcW);
       if (cards) {
-        const near = Math.max(0.8, Math.hypot(4, elev));
-        for (let i = 0; i < detailSrcH.length; i++) m = Math.max(m, (env.FOCAL * DETAIL_H[i]) / (near * detailSrcH[i]));
+        const near = Math.max(DETAIL_NEAR_M, Math.hypot(4, elev));
+        for (let i = 0; i < detailSrcH.length; i++) {
+          const cm = (env.FOCAL * DETAIL_H[i]) / (near * detailSrcH[i]);
+          if (cm > 0) m = Math.max(m, Math.min(cm, 0.98));
+        }
       }
       return m;
     },

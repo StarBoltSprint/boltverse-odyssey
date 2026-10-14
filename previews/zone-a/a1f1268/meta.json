@@ -1,0 +1,10 @@
+{
+  "zone": "zone-a",
+  "commit": "a1f1268",
+  "date": "2026-10-05",
+  "verdict": "PASS",
+  "report": "packs/zone-a/proof/3d-details/REPORT.md",
+  "walk": null,
+  "play": "play",
+  "publicUrl": null
+}

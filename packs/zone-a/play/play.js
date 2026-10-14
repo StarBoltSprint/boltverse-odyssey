@@ -812,7 +812,7 @@ let ruinContact = false;
 let ruinStall = 0;
 const CAM_W = 10;
 const CAM_ACC = 9;
-const camSm = { ready: false, boom: 6, eye: 1.35, slide: 0, boomV: 0, eyeV: 0, slideV: 0, ground: 0, feet: 0 };
+const camSm = { ready: false, boom: 6, eye: 1.35, slide: 0, boomV: 0, eyeV: 0, slideV: 0, ground: 0, feet: 0, lip: 0 };
 let camStepDt = 0;
 let camPitch = 0;
 // Look pitch is an offset on the chase pitch. The eye stays where the chase put it, so a look
@@ -1839,6 +1839,31 @@ function solveCamera() {
   // Feature cards are near-culled rather than snapping the eye; keep the metric on the final pose.
   if (detailSolids.length && eyeInCard(eyeBuf, 0.05)) eyeGuardHits++;
   ruinBoom(dt, snapPose);
+  // The ruin line rewrites eye height. Add back the ground-floor lift so a
+  // chase on the outer lip stays at magnification ≤ 0.98. The lift is stored
+  // apart from the ruin springs. It rises at once. Under a lintel it eases
+  // off as clearance falls from 1.2 m to 0.5 m, so the eye does not kick.
+  if (useRelief) {
+    const spot = ruinLayer && ruinLayer.where(eyeBuf[0], eyeBuf[2]);
+    let want = 0;
+    if (!(spot && spot.covered)) {
+      const floorY = terrain.eyeFloor(eyeBuf[0], eyeBuf[2], GROUND_MAG_TARGET);
+      const lifted = smax(eyeBuf[1], floorY, 0.3);
+      const extra = Math.max(0, lifted - eyeBuf[1]);
+      let t = 1;
+      if (ruinLayer && extra > 1e-4) {
+        const clr = ruinLayer.clearance(eyeBuf[0], lifted, eyeBuf[2]);
+        t = Math.max(0, Math.min(1, (clr - 0.5) / 0.7));
+      }
+      want = extra * t;
+    }
+    const dt = camStepDt > 0 ? Math.min(0.05, camStepDt) : 0;
+    // A placed pose takes the floor at once. While running, the lift eases so
+    // a lintel does not reverse the eye's acceleration.
+    if (snapPose || !(dt > 0)) camSm.lip = want;
+    else camSm.lip = chase(camSm.lip, want, dt, 0.22);
+    eyeBuf[1] += camSm.lip;
+  }
   camBoom = Math.hypot(state.x - eyeBuf[0], state.z - eyeBuf[2]);
   stepLook(dt);
   pitchView(eyeBuf, camSm.feet);
@@ -2700,7 +2725,7 @@ function measureMag(eye) {
     if (pm > objectMag) objectMag = pm;
   }
   if (ruinLayer) {
-    const rm = ruinLayer.mag(eye, FOCAL);
+    const rm = ruinLayer.mag(eye, FOCAL, vpM);
     lastRuinMag = rm;
     if (rm.m > objectMag) objectMag = rm.m;
   } else lastRuinMag = null;
@@ -2747,8 +2772,10 @@ function measureMag(eye) {
   magParts.bolt = boltMag;
   magParts.gate = gateMag;
   archivesMag = archivesLayer ? archivesLayer.mag(eye, FOCAL, vpM) : 0;
+  const detailMag = detailLayer ? detailLayer.mag(eye, FOCAL, vpM) : 0;
+  magParts.detail = detailMag;
   magNow = Math.max(
-    groundMag, skyMagW, skyMagH, boltMag, objectMag, gateMag, archivesMag,
+    groundMag, skyMagW, skyMagH, boltMag, objectMag, gateMag, archivesMag, detailMag,
     skyMagParts.upper, skyMagParts.high, skyMagParts.cap,
     skyMagParts.stars, skyMagParts.dust, skyMagParts.nebula,
   );
@@ -2771,7 +2798,7 @@ function render(mode) {
   drawSky(mode, eye);
   if (useRelief) {
     const rgb = idRgb(mode === 1 ? labelOf("ground") : 0);
-    terrain.draw(vpM, mode, rgb);
+    terrain.draw(vpM, mode, rgb, eye);
     drawCalls += 2;
   } else {
     drawGround(mode);
@@ -2779,7 +2806,7 @@ function render(mode) {
   for (let i = 0; i < hullList.length; i++) hullList[i].draw(vpM, mode);
   drawCalls += hullList.length;
   if (rockLayer) {
-    rockLayer.draw(vpM);
+    rockLayer.draw(vpM, eye, FOCAL);
     drawCalls += rockLayer.draws;
   }
   if (detailLayer && mode === 0) {
@@ -3093,7 +3120,22 @@ function pxBandScreen() {
   return pxV * (skyBand.h1 - skyBand.h0) * 180 / Math.PI;
 }
 
-function sampleHorizon(imgs) {
+const HORIZON_LAND = 0.28;
+
+function cropHorizonLand(img) {
+  const keep = 1 - HORIZON_LAND;
+  const c = document.createElement("canvas");
+  c.width = img.width;
+  c.height = Math.max(1, Math.round(img.height * keep));
+  const g = c.getContext("2d");
+  g.imageSmoothingEnabled = false;
+  g.drawImage(img, 0, 0, img.width, c.height, 0, 0, c.width, c.height);
+  return c;
+}
+
+function sampleHorizon(imgs, y0f, y1f) {
+  const yLo = y0f == null ? 0.72 : y0f;
+  const yHi = y1f == null ? 0.9 : y1f;
   let r = 0;
   let g = 0;
   let b = 0;
@@ -3105,8 +3147,8 @@ function sampleHorizon(imgs) {
     c.height = img.height;
     const g2 = c.getContext("2d", { willReadFrequently: true });
     g2.drawImage(img, 0, 0);
-    const y0 = Math.max(0, Math.floor(img.height * 0.72));
-    const y1 = Math.min(img.height, Math.ceil(img.height * 0.9));
+    const y0 = Math.max(0, Math.floor(img.height * yLo));
+    const y1 = Math.min(img.height, Math.ceil(img.height * yHi));
     const data = g2.getImageData(0, y0, img.width, Math.max(1, y1 - y0)).data;
     for (let p = 0; p < data.length; p += 16) {
       r += data[p];
@@ -3524,13 +3566,14 @@ async function boot() {
       prefetchImages([...band("upper"), ...band("high"), "packs/zone-a/src/sky-cap/zenith.png", clearing.fog_band && clearing.fog_band.atlas]);
     }
     applySkyDisplay(skyManifest.display);
+    skyBand.h0 = skyBand.h1 - (skyBand.h1 - skyBand.h0) * (1 - HORIZON_LAND);
     const slices = clearing.backdrop.slices || [];
     const skyImgs = [];
-    for (const u of slices) skyImgs.push(await loadImage(absUrl(u)));
+    for (const u of slices) skyImgs.push(cropHorizonLand(await loadImage(absUrl(u))));
     skySrcW = 0;
     skySrcH = skyImgs[0] ? skyImgs[0].height : 912;
     for (let i = 0; i < skyImgs.length; i++) skySrcW += skyImgs[i].width;
-    const horizonFog = useRelief ? sampleHorizon(skyImgs) : null;
+    const horizonFog = useRelief ? sampleHorizon(skyImgs, 0.82, 0.98) : null;
     const horizonFit = fitBandMag(
       skyImgs.map((im) => downscaleWidth(im, 1500)),
       skyBand.hAz || 45, skyBand.h0, skyBand.h1, SKY_MAG_CAP,
@@ -3572,6 +3615,7 @@ async function boot() {
           absUrl,
           loadImage,
           trackTex,
+          focal: FOCAL,
           heightAt: (x, z) => (useRelief ? terrain.heightAt(x, z) : 0),
           drawnHeightAt: (x, z) => (useRelief ? terrain.meshHeightAt(x, z) : 0),
         });

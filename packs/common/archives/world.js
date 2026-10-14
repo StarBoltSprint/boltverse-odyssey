@@ -4,6 +4,7 @@
  */
 
 import { footY, seatMin, worldHeight } from "./place.js";
+import { mountShardSolid } from "./solid.js";
 
 const NEAR_CAP_GPU = 0.99;
 const NEAR_CAP_JS = 0.995;
@@ -90,6 +91,14 @@ function noop() {
 export async function mountWorld(gl, env, manifest) {
   const shards = manifest.shards || [];
   if (!gl || !shards.length) return noop();
+  if (manifest.solid && manifest.solid.loft && manifest.solid.skin) {
+    try {
+      const solid = await mountShardSolid(gl, env, manifest);
+      if (solid) return solid;
+    } catch (err) {
+      console.warn("shard solid", err);
+    }
+  }
   const urls = [];
   for (let i = 0; i < shards.length; i++) {
     if (!urls.includes(shards[i].image)) urls.push(shards[i].image);

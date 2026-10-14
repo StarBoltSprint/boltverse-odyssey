@@ -7,7 +7,7 @@ import { buildCatalogue } from "./catalogue.js";
 import { validateManifest } from "./manifest.js";
 import { mountPresent } from "./present.js";
 import { nearestUnfound } from "./pickup.js";
-import { createSave, listTruths } from "./save.js";
+import { createSave } from "./save.js";
 import { mountWorld } from "./world.js";
 
 function noop() {
@@ -45,10 +45,7 @@ export async function mountArchives(gl, env) {
   const prefix = manifest.zoneId + "/";
   const keys = Object.keys(progress.found || {});
   for (let i = 0; i < keys.length; i++) {
-    if (!keys[i].startsWith(prefix)) continue;
-    const id = keys[i].slice(prefix.length);
-    if (id === "truth" || id.startsWith("truth/")) continue;
-    found.add(id);
+    if (keys[i].startsWith(prefix)) found.add(keys[i].slice(prefix.length));
   }
   let world;
   try {
@@ -67,7 +64,7 @@ export async function mountArchives(gl, env) {
   });
 
   function countText() {
-    return found.size + " sur " + manifest.shards.length;
+    return found.size + " of " + manifest.shards.length;
   }
   present.setCount(countText());
 
@@ -88,10 +85,7 @@ export async function mountArchives(gl, env) {
   }
 
   function openArchives() {
-    const progress = save.load();
-    const cat = buildCatalogue(manifest, progress);
-    cat.codex = listTruths(progress);
-    present.openArchives(cat);
+    present.openArchives(buildCatalogue(manifest, save.load()));
   }
 
   const api = {

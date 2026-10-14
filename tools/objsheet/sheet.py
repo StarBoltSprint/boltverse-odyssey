@@ -728,38 +728,12 @@ def main() -> int:
     parser.add_argument("--views", required=True, type=Path)
     parser.add_argument("--config", required=True, type=Path)
     parser.add_argument("--out", required=True, type=Path)
-    parser.add_argument(
-        "--build",
-        default="",
-        help="Also write shot-verdict.json for this build. Art Director verdict starts PENDING.",
-    )
-    parser.add_argument("--plate", action="append", default=[], metavar="VIEW=PATH")
-    parser.add_argument("--render", action="append", default=[], metavar="VIEW=PATH")
     args = parser.parse_args()
-    if (args.plate or args.render) and not args.build:
-        print("FAIL objsheet --plate and --render need --build", file=sys.stderr)
-        return 2
     try:
         report = run(args.views, args.config, args.out)
     except SheetFailure as exc:
         print(f"FAIL objsheet {exc.message}", file=sys.stderr)
         return 2
-    if args.build:
-        try:
-            from verdict import emit_sheet, parse_pair, write_sheet
-
-            plates: dict[str, str] = {}
-            renders: dict[str, str] = {}
-            for token in args.plate:
-                view, path = parse_pair(token)
-                plates[view] = path
-            for token in args.render:
-                view, path = parse_pair(token)
-                renders[view] = path
-            write_sheet(args.out / "shot-verdict.json", emit_sheet(args.build, plates, renders))
-        except ValueError as exc:
-            print(f"FAIL objsheet shot-verdict {exc}", file=sys.stderr)
-            return 2
     for obj in report["objects"]:
         print(
             f"{'PASS' if obj['ok'] else 'FAIL'} object {obj['name']} "

@@ -3,12 +3,15 @@
  * and the keyed cutouts. Drawn into the scene target so the existing fog applies.
  */
 import { loadWorldHull } from "./hullmesh.js";
+import { LOD_BOX, LOD_BOX_VERTS, LOD_DEPTH_FRAC } from "./lodbox.js";
 
 const VS = `#version 300 es
-layout(location=0) in vec2 aCorner;
+layout(location=0) in vec4 aCorner;
 layout(location=1) in vec4 aBody;
 layout(location=2) in vec4 aSize;
 uniform mat4 uVP;
+uniform vec3 uEye;
+uniform float uFocal;
 out vec2 vUv;
 flat out int vLayer;
 void main() {
@@ -16,12 +19,38 @@ void main() {
   float c = cos(yaw);
   float s = sin(yaw);
   vec3 right = vec3(c, 0.0, -s);
+  vec3 fwd = vec3(s, 0.0, c);
   vec3 p = vec3(aBody.x, aBody.y, aBody.z);
-  p += right * (aCorner.x - 0.5) * aSize.x;
+  p += right * aCorner.x * aSize.x;
   p.y += aCorner.y * aSize.y;
-  vUv = aCorner;
+  p += fwd * aCorner.z * aSize.x * ${LOD_DEPTH_FRAC.toFixed(2)};
+  float faceU;
+  float faceV;
+  if (aCorner.w < 0.5) {
+    faceU = aCorner.x + 0.5;
+    faceV = aCorner.y;
+  } else if (aCorner.w < 1.5) {
+    faceU = aCorner.z + 0.5;
+    faceU = (1.0 - ${LOD_DEPTH_FRAC.toFixed(2)}) * 0.5 + faceU * ${LOD_DEPTH_FRAC.toFixed(2)};
+    faceV = aCorner.y;
+  } else {
+    faceU = aCorner.x + 0.5;
+    faceV = aCorner.z + 0.5;
+    float frac = ${LOD_DEPTH_FRAC.toFixed(2)} * aSize.x / max(aSize.y, 1e-4);
+    faceV = (1.0 - frac) * 0.5 + faceV * frac;
+  }
+  vUv = vec2(faceU, faceV);
   vLayer = int(aSize.z + 0.5);
   gl_Position = uVP * vec4(p, 1.0);
+  if (aSize.w > 0.0 && uFocal > 0.0) {
+    vec2 d = uEye.xz - aBody.xz;
+    float lx = clamp(dot(d, right.xz), -0.5 * aSize.x, 0.5 * aSize.x);
+    float lz = clamp(dot(d, fwd.xz), -0.5 * aSize.x * ${LOD_DEPTH_FRAC.toFixed(2)}, 0.5 * aSize.x * ${LOD_DEPTH_FRAC.toFixed(2)});
+    vec2 closest = right.xz * lx + fwd.xz * lz;
+    float qy = clamp(uEye.y, aBody.y, aBody.y + aSize.y);
+    float dist = length(vec2(length(d - closest), uEye.y - qy));
+    if (dist * 0.98 < uFocal * aSize.w) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+  }
 }`;
 
 const FS = `#version 300 es
@@ -184,7 +213,7 @@ export async function mountRocks(gl, env) {
     env.trackTex("rocks-pebble", Math.ceil(maxW * maxH * 4 * pebImgs.length * 4 / 3));
 
     const list = instances.filter((o) => o.type === "pebble");
-    const data = new Float32Array(list.length * 2 * 8);
+    const data = new Float32Array(list.length * 8);
     magN.n = list.length;
     magN.x = new Float32Array(list.length * 3);
     magN.h = new Float32Array(list.length);
@@ -202,35 +231,36 @@ export async function mountRocks(gl, env) {
       magN.x[i * 3] = inst.x;
       magN.x[i * 3 + 1] = base + worldH * 0.5;
       magN.x[i * 3 + 2] = inst.z;
+      const px = contentH * (maxH / (box.tex || maxH));
       magN.h[i] = worldH;
-      magN.px[i] = contentH * (maxH / (box.tex || maxH));
+      magN.px[i] = px;
       const yaw = (inst.yaw || 0) * Math.PI / 180;
       const layer = inst.variant || 0;
-      for (let k = 0; k < 2; k++) {
-        const o = w * 8;
-        data[o] = inst.x;
-        data[o + 1] = base;
-        data[o + 2] = inst.z;
-        data[o + 3] = yaw + k * Math.PI * 0.5;
-        data[o + 4] = cardW;
-        data[o + 5] = cardH;
-        data[o + 6] = layer;
-        data[o + 7] = 0;
-        w++;
-      }
+      const o = w * 8;
+      data[o] = inst.x;
+      data[o + 1] = base;
+      data[o + 2] = inst.z;
+      data[o + 3] = yaw;
+      data[o + 4] = cardW;
+      data[o + 5] = cardH;
+      data[o + 6] = layer;
+      data[o + 7] = worldH / Math.max(1, px);
+      w++;
     }
     const prog = program(gl, VS, FS);
     const loc = {
       vp: gl.getUniformLocation(prog, "uVP"),
       tex: gl.getUniformLocation(prog, "uTex"),
+      eye: gl.getUniformLocation(prog, "uEye"),
+      focal: gl.getUniformLocation(prog, "uFocal"),
     };
     const vao = gl.createVertexArray();
     gl.bindVertexArray(vao);
     const quad = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, quad);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1]), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, LOD_BOX, gl.STATIC_DRAW);
     gl.enableVertexAttribArray(0);
-    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 8, 0);
+    gl.vertexAttribPointer(0, 4, gl.FLOAT, false, 16, 0);
     const ib = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, ib);
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
@@ -260,12 +290,14 @@ export async function mountRocks(gl, env) {
     objects,
     draws: pebbleDraw ? 1 : 0,
     loadMs,
-    draw(vp) {
+    draw(vp, eye, focal) {
       if (!pebbleDraw || !pebbleDraw.count) return;
       const d = pebbleDraw;
       gl.useProgram(d.prog);
       gl.bindVertexArray(d.vao);
       gl.uniformMatrix4fv(d.loc.vp, false, vp);
+      gl.uniform3f(d.loc.eye, eye ? eye[0] : 0, eye ? eye[1] : 0, eye ? eye[2] : 0);
+      gl.uniform1f(d.loc.focal, eye && focal ? focal : 0);
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D_ARRAY, d.tex);
       gl.uniform1i(d.loc.tex, 0);
@@ -273,7 +305,7 @@ export async function mountRocks(gl, env) {
       gl.depthMask(true);
       gl.disable(gl.BLEND);
       gl.disable(gl.CULL_FACE);
-      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, d.count);
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, LOD_BOX_VERTS, d.count);
       gl.bindVertexArray(null);
     },
     mag(eye, focal) {
@@ -286,6 +318,7 @@ export async function mountRocks(gl, env) {
         const dist = Math.max(0.35, Math.hypot(dx, dy, dz));
         const px = magN.px[i] || 256;
         const mm = (focal * magN.h[i]) / (dist * px);
+        if (mm > 0.98) continue;
         if (mm > m) m = mm;
       }
       return m;

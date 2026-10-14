@@ -15,37 +15,20 @@ layout(location=1) in vec2 aUv;
 layout(location=2) in vec3 aLoc;
 layout(location=3) in float aUnit;
 uniform mat4 uVP;
-uniform vec3 uShift[3];
-uniform vec2 uSeat[3];
-uniform float uScale[3];
-uniform int uObjOfUnit[8];
 out vec2 vUv;
 out vec3 vLoc;
-out vec3 vWorld;
 flat out int vUnit;
 void main() {
   vUv = aUv;
   vLoc = aLoc;
-  int unit = int(aUnit + 0.5);
-  vUnit = unit;
-  int oi = 0;
-  if (unit >= 0 && unit < 8) oi = uObjOfUnit[unit];
-  float s = uScale[oi];
-  vec2 seat = uSeat[oi];
-  vec3 sh = uShift[oi];
-  vec3 p = vec3(
-    seat.x + (aPos.x - seat.x) * s + sh.x,
-    aPos.y * s + sh.y,
-    seat.y + (aPos.z - seat.y) * s + sh.z
-  );
-  vWorld = p;
-  gl_Position = uVP * vec4(p, 1.0);
+  vUnit = int(aUnit + 0.5);
+  gl_Position = uVP * vec4(aPos, 1.0);
 }`;
 
 /**
  * gateUnit: the gate's unit (or -1). Its faces drop where the elevation's own alpha cut says so
  * (front, back and the seam faces through their front-image spot). Thickness faces, and the
- * elevation where it would be shown magnified past CLOSE_LO..CLOSE_HI (mag 1), take the surface plate,
+ * elevation where it would be shown magnified past CLOSE_LO..CLOSE_HI, take the surface plate,
  * repeated in local metres at its native density: windows of the plate at random offsets that
  * never cross its border, blended with a variance-keeping weight. Pixels are never stretched.
  * A foot skirt (local y under 0.02, hanging to the relief) always takes that plate, on the two
@@ -67,18 +50,13 @@ uniform vec4 uSlate;
 uniform vec2 uSlatePx;
 uniform float uSlateTpm;
 uniform vec3 uSlateMean;
-uniform vec2 uEye;
-uniform vec3 uFog;
-uniform float uFogK;
-uniform float uFogCap;
 in vec2 vUv;
 in vec3 vLoc;
-in vec3 vWorld;
 flat in int vUnit;
 out vec4 o;
 const float CELL = 320.0;
-const float CLOSE_LO = 0.92;
-const float CLOSE_HI = 1.0;
+const float CLOSE_LO = 2.5;
+const float CLOSE_HI = 3.5;
 vec2 hash2(vec2 p) {
   p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));
   return fract(sin(p) * 43758.5453);
@@ -142,19 +120,12 @@ ${pick.join("\n")}
     }
     if (w > 0.0) c.rgb = mix(c.rgb, plate(p, dpx, dpy), w);
   }
-  vec3 rgb = c.rgb;
-  if (uFogK > 0.0) {
-    float dist = distance(vWorld.xz, uEye);
-    float fog = clamp(1.0 - exp(-uFogK * max(0.0, dist - 18.0)), 0.0, uFogCap);
-    fog = max(fog, smoothstep(78.0, 132.0, dist));
-    rgb = mix(rgb, uFog, fog);
-  }
-  o = vec4(rgb, 1.0);
+  o = vec4(c.rgb, 1.0);
 }`;
 }
 
 /** Close-up swap the gate shader makes, for the mag metrics: [far tpm, close tpm, switch mag]. */
-export const GATE_CLOSE_SWITCH = 1.0;
+export const GATE_CLOSE_SWITCH = 3.0;
 
 function program(gl, vs, fs) {
   const compile = (type, src) => {
@@ -177,7 +148,6 @@ function empty() {
     draws: 0,
     loadMs: 0,
     draw() {},
-    setFog() {},
     mag() { return { m: 0, which: "" }; },
     collide(ox, oz, x, z) { return { x, z, contact: false }; },
     lift() { return 0; },
@@ -352,11 +322,6 @@ function packSkin(gl, img, groups, keep, alpha) {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  const aniso = gl.getExtension("EXT_texture_filter_anisotropic");
-  if (aniso) {
-    const maxA = gl.getParameter(aniso.MAX_TEXTURE_MAX_ANISOTROPY_EXT) || 1;
-    gl.texParameterf(gl.TEXTURE_2D, aniso.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(8, maxA));
-  }
   // Only the gate cut reads alpha. Other skins store RGB8.
   const rgb = !alpha;
   if (rgb) {
@@ -569,10 +534,6 @@ export async function mountRuins(gl, env) {
   if (!objects.length) return empty();
   const mags = [];
   const solids = [];
-  const POSE_SLOT = { gate: 0, wreck: 1, arch: 2 };
-  const objOfUnit = new Int32Array(8);
-  const bakedXZ = new Float32Array(6);
-  let poses = null;
   const colliderOpt = manifest.collider || {};
   const skinTex = [];
   const texDims = [];
@@ -580,10 +541,7 @@ export async function mountRuins(gl, env) {
   let gateUnit = -1;
   let slate = null;
   for (let i = 0; i < objects.length; i++) {
-    // A caller may reseat a loft. Absent placements keep the manifest coordinates.
-    let obj = objects[i];
-    const placed = env.placements && env.placements[obj.id];
-    if (placed) obj = { ...obj, x: placed.x, z: placed.z, yaw: placed.yaw };
+    const obj = objects[i];
     const bin = await (await fetch(env.absUrl(obj.mesh))).arrayBuffer();
     const groups = parseRuin(bin);
     const texSize = [];
@@ -602,7 +560,6 @@ export async function mountRuins(gl, env) {
       const unit = skinTex.length;
       skinTex.push(packed.tex);
       units.push({ unit, packed });
-      if (unit < objOfUnit.length) objOfUnit[unit] = POSE_SLOT[obj.id] == null ? 0 : POSE_SLOT[obj.id];
       skinImgs.push(close ? null : imageLuma(img));
       if (close && sk === 0) {
         gateUnit = unit;
@@ -640,13 +597,8 @@ export async function mountRuins(gl, env) {
     const col = buildCollider(groups, frame, env.heightAt, colliderOpt);
     const skirt = appendSkirts(parts, groups, obj, seat, env.heightAt, units, skinImgs);
     const openTop = obj.openingTopM || 0;
-    const poseSlot = POSE_SLOT[obj.id] == null ? 0 : POSE_SLOT[obj.id];
-    bakedXZ[poseSlot * 2] = obj.x;
-    bakedXZ[poseSlot * 2 + 1] = obj.z;
     solids.push({
       id: obj.id,
-      bakedX: obj.x,
-      bakedZ: obj.z,
       col,
       groups,
       frame,
@@ -663,6 +615,10 @@ export async function mountRuins(gl, env) {
       texelsPerM: obj.texelsPerM,
       closeTexelsPerM: close,
       buildMs: performance.now() - tc,
+      x: seat.x,
+      y: seat.y + (obj.heightM || 4) * 0.5,
+      z: seat.z,
+      radius: Math.max(obj.horizRadiusM || 6, (obj.heightM || 8) * 0.5),
     });
     mags.push({
       id: obj.id,
@@ -698,25 +654,12 @@ export async function mountRuins(gl, env) {
   const prog = program(gl, VS, fragmentSource(skinTex.length, gateUnit));
   const loc = {
     vp: gl.getUniformLocation(prog, "uVP"),
-    shift: gl.getUniformLocation(prog, "uShift"),
-    seat: gl.getUniformLocation(prog, "uSeat"),
-    scale: gl.getUniformLocation(prog, "uScale"),
-    objOfUnit: gl.getUniformLocation(prog, "uObjOfUnit"),
     slate: gl.getUniformLocation(prog, "uSlate"),
     slatePx: gl.getUniformLocation(prog, "uSlatePx"),
     slateTpm: gl.getUniformLocation(prog, "uSlateTpm"),
     slateMean: gl.getUniformLocation(prog, "uSlateMean"),
-    eye: gl.getUniformLocation(prog, "uEye"),
-    fog: gl.getUniformLocation(prog, "uFog"),
-    fogK: gl.getUniformLocation(prog, "uFogK"),
-    fogCap: gl.getUniformLocation(prog, "uFogCap"),
     tex: skinTex.map((_, k) => gl.getUniformLocation(prog, "uT" + k)),
   };
-  const fogState = { x: 0, z: 0, rgb: [0, 0, 0], k: 0, cap: 0 };
-  const shiftU = new Float32Array(9);
-  const seatU = new Float32Array(6);
-  const scaleU = new Float32Array([1, 1, 1]);
-  const poseIds = ["gate", "wreck", "arch"];
   const vao = gl.createVertexArray();
   gl.bindVertexArray(vao);
   const vb = gl.createBuffer();
@@ -736,93 +679,13 @@ export async function mountRuins(gl, env) {
   gl.bindVertexArray(null);
   const loadMs = performance.now() - t0;
   const drawCount = index.length ? 1 : 0;
-  function collidePosed(ox, oz, x, z, r) {
-    let cx = ox;
-    let cz = oz;
-    let contact = false;
-    const dx = x - ox;
-    const dz = z - oz;
-    const len = Math.hypot(dx, dz);
-    const cell = solids[0] ? solids[0].col.cellM : 0.25;
-    const steps = Math.max(1, Math.ceil(len / cell));
-    for (let s = 0; s < steps; s++) {
-      cx += dx / steps;
-      cz += dz / steps;
-      for (let iter = 0; iter < 4; iter++) {
-        let moved = false;
-        for (let i = 0; i < solids.length; i++) {
-          const solid = solids[i];
-          const p = poses[solid.id];
-          if (!p || !(p.scale > 0.35)) continue;
-          const sc = p.scale;
-          const bx = solid.bakedX + (cx - p.x) / sc;
-          const bz = solid.bakedZ + (cz - p.z) / sc;
-          const col = solid.col;
-          const br = r / sc;
-          if (!col.near(bx, bz, br)) continue;
-          const d = col.sd(bx, bz);
-          if (d >= br) continue;
-          const g = col.grad(bx, bz);
-          if (g[0] === 0 && g[1] === 0) continue;
-          const push = (br - d) * sc;
-          cx += g[0] * push;
-          cz += g[1] * push;
-          moved = true;
-          contact = true;
-        }
-        if (!moved) break;
-      }
-    }
-    return { x: cx, z: cz, contact };
-  }
   return {
     draws: drawCount,
     loadMs,
-    setPoses(next) {
-      poses = next || null;
-    },
-    setFog(eyeX, eyeZ, rgb, k, cap) {
-      fogState.x = eyeX || 0;
-      fogState.z = eyeZ || 0;
-      fogState.rgb = rgb || [0, 0, 0];
-      fogState.k = k || 0;
-      fogState.cap = cap || 0;
-    },
     draw(vp, mode) {
       if (mode === 1 || !drawCount) return;
       gl.useProgram(prog);
-      scaleU[0] = 1;
-      scaleU[1] = 1;
-      scaleU[2] = 1;
-      shiftU[0] = 0; shiftU[1] = 0; shiftU[2] = 0;
-      shiftU[3] = 0; shiftU[4] = 0; shiftU[5] = 0;
-      shiftU[6] = 0; shiftU[7] = 0; shiftU[8] = 0;
-      seatU[0] = 0; seatU[1] = 0; seatU[2] = 0; seatU[3] = 0; seatU[4] = 0; seatU[5] = 0;
-      if (poses) {
-        for (let i = 0; i < 3; i++) {
-          const p = poses[poseIds[i]];
-          seatU[i * 2] = bakedXZ[i * 2];
-          seatU[i * 2 + 1] = bakedXZ[i * 2 + 1];
-          if (!p || !(p.scale > 0.02)) {
-            scaleU[i] = 0;
-            shiftU[i * 3 + 1] = -40;
-            continue;
-          }
-          scaleU[i] = p.scale;
-          shiftU[i * 3] = p.x - bakedXZ[i * 2];
-          shiftU[i * 3 + 1] = p.rise || 0;
-          shiftU[i * 3 + 2] = p.z - bakedXZ[i * 2 + 1];
-        }
-      }
-      gl.uniform3fv(loc.shift, shiftU);
-      gl.uniform2fv(loc.seat, seatU);
-      gl.uniform1fv(loc.scale, scaleU);
-      gl.uniform1iv(loc.objOfUnit, objOfUnit);
       gl.uniformMatrix4fv(loc.vp, false, vp);
-      gl.uniform2f(loc.eye, fogState.x, fogState.z);
-      gl.uniform3f(loc.fog, fogState.rgb[0], fogState.rgb[1], fogState.rgb[2]);
-      gl.uniform1f(loc.fogK, fogState.k);
-      gl.uniform1f(loc.fogCap, fogState.cap);
       for (let k = 0; k < skinTex.length; k++) {
         gl.activeTexture(gl.TEXTURE0 + k);
         gl.bindTexture(gl.TEXTURE_2D, skinTex[k]);
@@ -844,12 +707,22 @@ export async function mountRuins(gl, env) {
       gl.activeTexture(gl.TEXTURE0);
     },
     /** Closest drawn face from the eye, at the skin's nominal texel density. */
-    mag(eye, focal) {
+    mag(eye, focal, vp) {
       let m = 0;
       let which = "";
       for (let i = 0; i < solids.length; i++) {
         const o = solids[i];
         if (!o.col.near(eye[0], eye[2], 30)) continue;
+        // A face behind the camera paints nothing, so it is not magnified.
+        if (vp && o.radius) {
+          const x = o.x, y = o.y, z = o.z, r = o.radius;
+          const cx = vp[0] * x + vp[4] * y + vp[8] * z + vp[12];
+          const cy = vp[1] * x + vp[5] * y + vp[9] * z + vp[13];
+          const cw = vp[3] * x + vp[7] * y + vp[11] * z + vp[15];
+          if (cw < -r) continue;
+          const pad = r * (2 * focal / 720);
+          if (Math.abs(cx) > cw + pad || Math.abs(cy) > cw + pad) continue;
+        }
         const dist = Math.max(0.05, o.col.dist(eye[0], eye[1], eye[2]));
         let mm = focal / (o.texelsPerM * dist);
         if (o.closeTexelsPerM && mm >= GATE_CLOSE_SWITCH) mm = focal / (o.closeTexelsPerM * dist);
@@ -866,7 +739,6 @@ export async function mountRuins(gl, env) {
      */
     collide(ox, oz, x, z, radius) {
       const r = radius || colliderOpt.bodyRadiusM || 0.3;
-      if (poses) return collidePosed(ox, oz, x, z, r);
       let any = false;
       for (let i = 0; i < solids.length; i++) {
         if (solids[i].col.near(x, z, r + 0.5) || solids[i].col.near(ox, oz, r + 0.5)) any = true;

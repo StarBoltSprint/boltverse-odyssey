@@ -6,6 +6,11 @@
   "heightCapM": 1.12,
   "approachM": 2.3,
   "buryFrac": 0.1,
+  "solid": {
+    "loft": "packs/zone-a/src/solids/lofts.json",
+    "part": "crystal",
+    "skin": "packs/zone-a/src/solids/crystal-skin.png"
+  },
   "ui": {
     "paw": "packs/common/archives/art/paw.png",
     "pawGlow": "packs/common/archives/art/paw-glow-alpha.png",

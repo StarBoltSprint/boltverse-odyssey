@@ -1,0 +1,28 @@
+crystal mode=front half=(0.2428,0.2263) body=1.0 ring=True crystal side+front ring
+slab mode=front half=(0.9325,0.1925) body=1.0 ring=True slab
+crest mode=plan half=(0.9847,0.535) body=1.0 ring=True crest
+pile mode=ratio half=(0.936,0.3744) body=1.0 ring=False pile
+cluster mode=front half=(0.5088,0.2596) body=0.9985 ring=False cluster
+shard:0 mode=front half=(0.4226,0.075) body=0.9959 ring=False shard:0
+shard:1 mode=front half=(0.2915,0.0751) body=0.9962 ring=False shard:1
+shard:2 mode=front half=(0.2464,0.0751) body=1.0 ring=False shard:2
+shard:3 mode=front half=(0.213,0.075) body=1.0 ring=False shard:3
+tuft:0 mode=ratio half=(0.183,0.0732) body=1.0 ring=False tuft:0
+tuft:1 mode=ratio half=(0.1398,0.0559) body=1.0 ring=False tuft:1
+tuft:2 mode=ratio half=(0.2753,0.1101) body=1.0 ring=False tuft:2
+crystal skin 686x761 bytes 2784246 old 2783648
+view cluster-front aspect=0.531 margins=[244, 245, 0, 0] plan=False 3.jpg
+view crest-top aspect=1.841 margins=[62, 62, 3, 2] plan=True 2.jpg
+view pile-front aspect=1.884 margins=[4, 5, 2, 0] plan=False 5.jpg
+view pile-top aspect=1.594 margins=[111, 108, 0, 0] plan=False 4.jpg disc 654462->399095
+view crest-front aspect=1.996 margins=[5, 6, 3, 1] plan=False 6.jpg
+view slab-front aspect=0.603 margins=[492, 456, 0, 0] plan=False 7.jpg
+view slab-top aspect=1.759 margins=[186, 191, 63, 96] plan=True 8.jpg
+view shard-front aspect=0.15 margins=[473, 473, 60, 60] plan=False 9.jpg rotated 90
+view shard-top aspect=0.879 margins=[153, 138, 156, 155] plan=True 10.jpg
+view crystal-front aspect=0.458 margins=[308, 322, 107, 92] plan=False 11.jpg
+view crystal-side aspect=0.49 margins=[322, 327, 133, 159] plan=False 12.jpg
+view tuft-top aspect=0.988 margins=[60, 60, 264, 263] plan=True 13.jpg
+view tuft-front aspect=0.672 margins=[346, 343, 0, 0] plan=False 14.jpg rotated 90
+view crystal-top aspect=0.821 margins=[325, 325, 295, 293] plan=True 15.jpg
+view cluster-top aspect=1.022 margins=[0, 0, 5, 1] plan=False 1.jpg

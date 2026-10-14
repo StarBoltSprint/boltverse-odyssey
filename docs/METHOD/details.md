@@ -1,6 +1,6 @@
 # Details — micro-detail generator (any biome)
 
-Superseded for new canyon walls, mesas, rocks, shards, and details by [docs/METHOD.md](../METHOD.md) standing rule 1 (2026-10-05): those objects are frigate solids, with cheaper solids at far range. Do not copy the crossed-card pattern for them. This page stays the IN TEST generator that already shipped.
+**Superseded by docs/METHOD.md (2026-10-05 08:14):** crossed quads are no longer the visible form. Near and far details are real solids. This page stays as the placement recipe.
 
 **Status: IN TEST (2026-10-04).** Owner phone QC still open. Not APPROVED. Not VALIDATED.
 Part 1 is the generic kit-driven generator.
