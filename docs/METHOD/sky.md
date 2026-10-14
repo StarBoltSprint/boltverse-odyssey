@@ -4,8 +4,6 @@ Back to [METHOD.md](../METHOD.md). **Status: VALIDATED** — SmiR 2026-10-03 21:
 The validated version is the zone A sky in Part 2 (locked as sky v1, see [recipe progression](self-improvement.md#6-recipe-progression-versions-score-lock)).
 This page is how to build it for every biome.
 
-**Stack (owner 2026-10-05, standing rules 2 and 3).** The next sky cook starts nearly empty: a gradient and distant stars. Nebula, clouds, shooting stars, and the planet are each their own seamless Imagine video, stacked on that base. Do not lay one video over an already-full still sky. That reads as a moving screen on a picture. Zone A sky v1 above stays the locked score until a later version beats it without regressing. A planet clip is the highest resolution the tool will emit, with the planet filling almost the whole frame (shown large, never upscaled), photorealistic rather than drawn. Scrub it frame by frame and confirm the planet actually rotates before calling the clip done.
-
 Palettes and exact Imagine prompt text stay in untracked `*.local.*` files and in
 `/workspace/grokcli/out/<zone>-step<N>/provenance.json`. Do not copy them into this page or into code.
 
@@ -161,7 +159,61 @@ Play code: `packs/zone-a/play/play.js`. Manifest: `packs/zone-a/src/sky/sky.json
 
 ## Part 3 — Other biomes (ideas only, not cooked)
 
-**Ember Mesa.** Same three bands and the same instanced loops. The hero slice carries that kit's low sun on the horizon band. The upper and high chains drop the night-violet mood slot and use the mesa dusk mood from the kit. Dust duration stays the long loop. Cap is a hot high haze, still a full painting at the centre.
+**Ember Mesa (zone B step 1) — built, IN TEST.** Not a lock. Does not replace sky v1.
+
+Horizon: 10 slices × 36°, `sky-0.jpg`…`sky-9.jpg`, 1280×560, elevation 2.457°–19.15° (span 16.693°). Turn offset 15/360 places slice 7 on kit azimuth 255°. Upper: 13 files, 27.692° step, 19°–56°, read from `packs/zone-a/src/sky/upper/` (unstretched). High: 8 files, 45° step, 52°–77.5°, from `packs/zone-a/src/sky/high/`. Cap: `packs/zone-a/src/sky-cap/zenith.png` from 74.6°. No column was cloned or mirrored. An 8-column meet of each pair's own edge pixels is in the JPEG so join MAE reloads at 0.
+
+Living layer: `dust.mp4` 848×480, duration 10.042 s, gain 0.30, key 0.42, one instanced draw, per-tile phase. Manifest also lists `stars.mp4` 13.0 s and `nebula.mp4` 11.042 s at gain 0 (not decoded). `offsetsSec` length 10, step 0.9 s. Tile 21.176° × 11.25°, mag 0.792.
+
+`python3 tools/sky/check.py --manifest packs/zone-b/src/sky/sky.json` (2026-10-04): 7 failures. Joins pass. Motif: sky-2 mirror 0.689; sky-4 repeat 0.836; sky-5 repeat 0.922, mirror 0.658, copy 0.743; sky-6 repeat 0.970. Exposure swing 62 (limit 24). Dust loop PASS, amplitude MAE 4.63.
+
+Play 720×1600, 120-tick gallop and headings 0/90/180/270: worst mag 0.998 (upper). Horizon 0.992, high 0.982, cap 0.989, ground ≤ 0.91, dust tile 0.792. drawCalls 5, texture bytes 187176279 (178.5 MiB), activeVideos 2, download 30078868 bytes. Same view, dust `currentTime` 3.30 s → 4.97 s over 1.2 s, sky-region mean abs difference 4.00.
+
+Known issues (do not recook this step): gate rows above; reused upper band is what the chase sees above 19.15°; slice heights do not share one horizon row; some slices read nearer than a far silhouette; the dust frame still stamps structure inside its tile; visual period is 10.042 s. Step 2, if it replaces the reused bands: about 10 upper stills on the same 36° step, then 8 high and 1 cap (19 calls) if those must change too. Motif and exposure recooks of slices 2, 4, 5 and 6 are separate.
+
+**Ember Mesa (zone B step 1b) — corrective, IN TEST.** 2026-10-04. Not a lock. Does not replace sky v1. Same assembler as zone A (`packs/zone-b/play/play.js`). Zone A files were not edited.
+
+Horizon band only: the same 10 files, now the full 1280×720 frames, azimuth 36°, elevation −4.31° to 17.12° (span 21.43°, mag 0.990). No zone A upper, high, or cap path. Dust stays in the manifest at gain 0 and is not decoded. Dome radius 640 m, clip far 720 m, dome floor −0.22 rad, so the 480 m ground skirt is in front of the shell. Weight starts at the band bottom (the bottom texel is not smeared below the band).
+
+Play 720×1600. Presented mag 0.990 on the proof poses and on an in-place turn. After the ground tile was set to 1.42 m, that turn measured ground mag 0.976 at heading 205 and butte mag 0.357. drawCalls 7, texture bytes 112143298 (107.0 MiB), activeVideos 1, heroCount 1, WebGL error 0. Headings 000, 075, 090, 180, 255, 270: same presented mag. Butte cards peak at 0.898 on the wide pose (measured before the tile change; the wide camera did not move).
+
+`python3 tools/sky/check.py --manifest packs/zone-b/src/sky/sky.json` (2026-10-04, step 1b): 38 failures. The full frames do not carry the step 1 edge stamp, so joins fail (content MAE 4.13–23.94, close 19.05, limit 4). Motif rows fail on sky-0 through sky-9. Exposure swing 69 (limit 24). Combined repeat 10.0 s (one layer, limit 600 s). `python3 tools/sky/selftest.py` PASS.
+
+Five open-sky stills were cooked for an upper band (1280×720, calls 1–5 kept, calls 6–7 rejected). They are not in the pack: five slices cannot close 360° at magnification ≤ 1 without a copy or a stretch. The chase still shows an empty cap above about 17°.
+
+**Ember Mesa (zone B step 1c) — fix pass, IN TEST.** 2026-10-04. Not a lock. Does not replace sky v1. Zone A files were not edited.
+
+Upper band added: 9 slices, azimuth 40°, elevation 12.0° to 30.5° (span 18.5°), each file 1280×620. Presented mag 0.993 (upper), horizon still 0.990. Five kept step-1b stills plus three new 16:9 frames. The fourth new frame had a desert floor and was not installed whole; only the sky above that floor was cropped in. Tops of the other eight were cropped so every layer is the same size. No column was cloned or mirrored. Nothing above 30.5° is painted. Dust gain stays 0.
+
+`python3 tools/sky/check.py --manifest packs/zone-b/src/sky/sky.json` (2026-10-04, step 1c): 59 failures. Horizon joins, motif, exposure swing 69, and the 10.0 s combined repeat are the step 1b rows. The new rows are motif hits on `upper/sky-0.jpg` through `upper/sky-8.jpg`. `python3 tools/sky/selftest.py` PASS.
+
+**Ember Mesa (zone B step 1d) — spectacle pass, IN TEST.** 2026-10-04. Not a lock. Does not replace sky v1. Zone A files were not edited. Horizon and upper slice files were not recooked.
+
+The ringed planet lives in horizon slice 2 (heading about 75°). Chase and eye-level look at heading 255° with a 22.7° horizontal field, so that slice is outside the frame. Step 1d places one eye-locked card from a keyed crop of that planet: `packs/zone-b/src/sky/planet.png` (493×228), heading 259°, elevation 13.5°, distance 380 m, magnification cap 0.94 (`planet.json`). The card is drawn after the buttes, depth-tested, and it does not write depth. Alpha below 0.04 is discarded. The post pass grades the frame once; the card shader does not grade this key. One new Imagine edit. Presented mag on the proof poses stays 0.993. drawCalls 8. Texture bytes 141312386 (134.8 MiB).
+
+`python3 tools/sky/check.py --manifest packs/zone-b/src/sky/sky.json` (2026-10-04, step 1d): 59 failures, the same rows as step 1c. `python3 tools/sky/selftest.py` PASS. Nothing above 30.5° is painted.
+
+**Ember Mesa (zone B step 1e) — planet disk, IN TEST.** 2026-10-04. Not a lock. Does not replace sky v1. Slice files were not recooked. The card stays at heading 259°, elevation 13.5°, distance 380 m. World size comes from the 493×228 still: worldW 98.19 m, worldH 45.41 m, magnification cap 0.94. A detached alpha island on the ring tip was removed from `planet.png`. The card writes alpha 0.004 with blending off, so the post pass keeps the fog on that card light. `planet.mp4` colours a feathered disk only. The rings, the moons, and the silhouette stay the still. The sprite does not yaw. drawCalls 6. Texture bytes 210102402 (200.4 MiB). Active videos 2.
+
+**Ember Mesa (zone B step 1f) — calmer layered sky, IN TEST.** 2026-10-04. Not a lock. Does not replace sky v1. Zone A files were not edited.
+
+The busy slices and the baked landmark are gone. Horizon: 9 files × 40°, `calm-0.jpg`…`calm-8.jpg`, 1280×720, elevation −10.493° to 10.493°. `display.turn0` is 0.337333 so the sun slice sits near heading 255°. Upper: one 1280×720 gradient, `repeat` 9, elevation 7.893° to 28.88°. Nothing is painted above 28.88°. A look whose frame top passes that line shows the unpainted hold.
+
+The ringed planet and both moons are one card, `planet-body.png` plus `planet-body.mp4` (1280×720, 6.042 s). Heading 180°, elevation 15°, distance 380 m, magnification 0.5. World size 135.60 m × 76.28 m. The whole frame is keyed (green above max(red, blue), plus a one-texel neighbour), alpha 0.004, blend off. Dust is not in the manifest. Active videos 2 (Bolt and the planet). drawCalls 6. Texture bytes 218084034 (208.0 MiB). Presented magnification 0.982.
+
+`python3 tools/sky/check.py --manifest packs/zone-b/src/sky/sky.json` (2026-10-04, step 1f): 84 failures. Eight horizon files are the same frame. The sun slice is the other frame. Joins, motif, and exposure swing 38.7 fail. That copy is the closed image budget. The upper gradient is not flat across its width, so a heading that puts a tile join in frame shows a vertical step. Stop. Do not recook it on this budget.
+
+**Ember Mesa (zone B step 1g) — detail layers, IN TEST.** 2026-10-04. Not a lock. Does not replace sky v1. Slice files were not recooked. `check.py` was not re-run, so the 84 failures above still stand.
+
+One haze loop, `haze.mp4` (1280×720, 6.042 s, 1,760,694 bytes), gain 0.28, key 0.16. Four cards around the compass, magnification 0.75, elevation centre 11°, scroll 0. The 17×8 dome grid repeated the plate into a scratch field, so the haze is not on that grid. The planet card stays at heading 180°, elevation 15°, distance 380 m, magnification 0.5, world size 135.60 m × 76.28 m. `planet-body.mp4` is the replacement loop (1,216,058 bytes, 1280×720, 6.042 s) after a dark band opened in the first loop. The key is unchanged. A thin fringe remains on one moon. Stop. The video budget for this step is spent. Active videos 3 (Bolt, haze, planet). drawCalls 8. Texture bytes 216551234 (206.5 MiB). Presented magnification 0.982. Pack `packs/zone-b` is 31,611,131 bytes.
+
+**Ember Mesa (zone B planet fix) — one ring video, IN TEST.** 2026-10-05. Not a lock. Does not replace sky v1. Slice files were not recooked.
+
+The planet and both moons are one card again: `planet-body.png` plus `planet-body.mp4` (1,123,554 bytes, 1280×720, 24 fps, 6.041667 s, 145 frames). Heading 180°, elevation 13°, distance 560 m, magnification 0.5625. World size 224.81 m × 126.46 m. Geometric screen size on a 720×1600 chase is 720×405. The projected card at pitch −3.81° is 752.14×423.08 px (view z 536 m), still under native width. The card faces the camera, so the ring stays an ellipse: the far arc passes behind the upper limb and the near arc passes in front of the lower limb. Draw order is the dome, then the planet (depth test, depth write, blend on), then the haze cards, then the mesas. Green excess uses a smoothstep from 0.08 to 0.22, a one-texel minimum, and a despill. Alpha below 0.03 is discarded. Interior alpha stays near 1. The video texture is LINEAR, with no mipmaps. Playback is muted, plays inline, and `play()` runs on the first touch and again while the element is paused. Once a frame has uploaded, the poster does not cover it. On the chase proof the decoders are idle Bolt, haze, planet, and the beacon (4). The gate stays paused. Presented magnification 0.9818. Pack `packs/zone-b` is 41,856,349 bytes. Phone pair: `packs/zone-b/proof/planetfix/`. A dark limb on the night side is the source shading. Stop. The image budget left one slot unused.
+
+**Ember Mesa (zone B planet spin) — the storm changes longitude, IN TEST.** 2026-10-05. Not a lock. Does not replace sky v1. Slice files were not recooked. Placement is unchanged: heading 180°, elevation 13°, distance 560 m, magnification 0.5625, world size 224.81 m × 126.46 m.
+
+`planet-body.mp4` is a new 1280×720 loop, 24 fps, 6.041667 s, 145 frames, video only. The spiral travels from the left of the disk through the centre and off the right limb, and the opening frame is the last frame (full-frame mean abs 2.02). Disk mean abs over 1.5 s during the travel is 17.70 and 15.34. The ring ansae and both moons stay. Green excess now smoothsteps from 0.02 to 0.10 so the ring glow does not keep the screen colour. One-texel minimum, despill, and discard under alpha 0.03 stay. On the chase the decoders are 4, drawCalls 10, texture bytes 256963736 (245.1 MiB). Scale 0.5625. Projected card 752.14×423.08. Proof: `/workspace/grokcli/out/zoneB/planet-spin/`.
 
 **Cascade Verdance.** Same skeleton. The horizon band keeps a soft tree line with no landmark. Living layers lean on the mist loop rather than a bright nebula, still at magnification ≤ 1 and still one instanced draw. The cap is canopy-gap sky, not a black disk.
 

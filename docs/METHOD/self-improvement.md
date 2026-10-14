@@ -29,7 +29,7 @@ never paid twice.
 7. **Owner phone QC** — the only final KEEP. Every reaction goes into `learn/taste.md`.
 
 Skills for the repeated moves: [`.grok/skills/`](../../.grok/skills/) — `ground-tiles`, `keyed-cutout`, `orbit-views`,
-`sky-panorama`, `visual-judge`, `take-retro`, `boltverse-imagine-prompts` (Imagine image/video prompt rules for any Boltverse asset).
+`sky-panorama`, `visual-judge`, `take-retro`.
 
 ## 3. Tool feedback routine (law 66)
 
@@ -88,6 +88,6 @@ slides back.
 | Hard objects | **v1** — Howl frigate, measured-section loft, one unlit Imagine skin per part | PRs #161 / #163, [`hard-objects.md`](hard-objects.md) | **VALIDATED** SmiR 2026-10-03 21:36 (phone) | Gate `python3 tools/hard-objects/rebuild.py`. Known issues in METHOD.md. |
 | Rocks | **v1** — kit-driven TerrainFeatureGenerator, zone A kit `howling-eclipse` | PR #162, [`rocks.md`](rocks.md) | IN TEST (merged, phone QC open) | `tools/rocks/selftest.py` PASS. Known issues: skins mag 1.15–1.32 up close, one shape per type, crest hull not carved. |
 | Ground | **v1** — current zone A relief ground with Imagine materials and image-depth micro relief | PR #156, [`ground.md`](ground.md) | Look APPROVED 2026-10-03; not VALIDATED | Pending: the slope fix (≤ 3 m / ≥ 20 m, ≤ 15°) as v2, validated on the phone. |
-| Details | **v1** — kit-driven DetailGenerator, zone A kit `howling-eclipse`, one atlas, one instanced draw, no collider | zone A step 5, [`details.md`](details.md) | IN TEST (2026-10-04, phone QC open) | `tools/details/selftest.py` PASS. Kept beside ground cards and rock pebbles. Known issues in `details.md`. |
-| Details | **v2** — same generator, plus fewer larger one-still features (one subject per still, height from texels per metre, one card, off the running line) | zone A step 5b, [`details.md`](details.md) | IN TEST (2026-10-04, phone QC open) | `tools/details/selftest.py` PASS. Chase sky line gains silhouettes; the near plates still read as a carpet. Known issues in `details.md`. |
-| Ruins | **v1** — kit-driven RuinGenerator, zone A kit `howling-eclipse` (Eclipse Gate + wreck) | zone A step 4, [`ruins.md`](ruins.md) | IN TEST (phone QC open) | `python3 tools/ruins/build.py --kit howling-eclipse` then `python3 tools/ruins/selftest.py --kit howling-eclipse`. Not APPROVED and not VALIDATED. |
+| Ground | zone B candidate — Ember Mesa, 6,500 m² canyon, relief-picked materials, image-depth maps, 22 cutouts, skirt rise 3.5 m, fog mix 0.18, post fog cap 0.08, canyon walls and a skyline seated on the loft | `packs/zone-b/` | IN TEST (does not replace v1) | Step 1g. Length 143.73 m, width 40.5–47.5 m. Boot maxSlope 0.2366 rad. Presented mag 0.982. The wide view still shows the tile lattice. The loft base still meets the ground as a straight cut. No phone review. |
+| Sky | zone B candidate — 9×40° emptier horizon (−10.493°–10.493°) plus one upper gradient repeated ×9 (7.893°–28.88°), one haze loop on four cards, ringed planet as its own keyed video, mag 0.5 | `packs/zone-b/src/sky/sky.json` | IN TEST (does not replace v1) | Step 1g. `check.py` was not re-run; step 1f still stands at 84 failures. Play mag 0.982. Planet heading 180°, elevation 15°, 380 m. Haze gain 0.28, four cards, mag 0.75. Hole above 28.88°. Active videos 3. A thin key fringe remains on one moon. |
+| Sky | zone B planet card — one 1280×720 video, heading 180°, elevation 13°, 560 m, mag 0.5625, soft key, camera-facing | `packs/zone-b/src/sky/planet.json` | IN TEST (does not replace v1) | 2026-10-05. Phone pair dt 3.830 s, videos 4, geometric screen 720×405, projected 752×423, scale 0.5625, presented mag 0.982. Owner phone review still open. |

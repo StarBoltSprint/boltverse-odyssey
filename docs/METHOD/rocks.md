@@ -1,13 +1,7 @@
 # Rocks — the approved recipe (any biome)
 
-Superseded for new solids by [docs/METHOD.md](../METHOD.md) standing rules 1 and 8 (2026-10-05): near and mid rocks use the frigate loft; far LOD is a cheaper solid; a card or a stepped box is not that rock. This page stays the IN TEST kit that already shipped.
-
 **Status: IN TEST (2026-10-03).** Owner phone QC still open. Merged to main 2026-10-03 (PR #162, zone A step 3).
 Known issues: rock skins reach magnification 1.15–1.32 up close; one shape per type; the crest hull is not carved.
-2026-10-04 (IN TEST, `zone-a-polish`): the chase eye now keeps a minimum distance from every hull (`clearSolids`, the
-eye is projected out of the hull's mag ≤ 0.98 shell; boulder-7 had reached 1.10 at 4.2 m on the spawn turn). Close-up
-proof shots off the play camera can still exceed 1; higher-res Imagine views exist (1024 px in `out/zoneA-step3/views/`)
-but would quadruple the rock skin texture memory, so they are not used.
 Part 1 is the generic kit-driven generator.
 Part 2 fills it for The Howling Eclipse (zone A). Part 3 is only material ideas for Ember Mesa and Cascade Verdance.
 
@@ -123,6 +117,8 @@ Same generator. New numbers file, new Imagine kit, same corridor rule tuned to t
 | Boulder | heat-split block, grit in the joints | water-worn boulder, one pale mineral seam |
 | Stone | sharp scree chunk | small slate shard |
 | Pebble | desert chips and a grit clump, ≤ 30 cm | wet pebbles and a moss cap, ≤ 30 cm |
+
+**Zone B step 1g (2026-10-04) — IN TEST.** This pass did not run `tools/rocks/build.py`. It placed 22 upright keyed cutouts (`pile.png`, `tuft.png`, heights 0.26 m and 0.18 m) beside the lane, and six touch blocks on the loft. The lane in front of the paws stays clear. This does not replace the zone A rocks recipe.
 
 ## Pitfalls
 
