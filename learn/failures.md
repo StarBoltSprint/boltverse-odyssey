@@ -1338,3 +1338,14 @@ Fix: size the skirt per stretch from the key-visible bottom, and score the skirt
 | Fix | None shipped. A smoothness page that only reused those arrays would not change the stutter. `meadow-pace-1106` was not modified. |
 | Guard | `node engine/webgpu/check/meadow-epic/render-stutter-prep.test.mjs` — cull and uniform bytes match, and this prep stays under 5 ms median / 20 ms p95. That ceiling is a CPU guard, not a phone frame time. |
 | Sources | `engine/webgpu/check/meadow-epic/render-stutter-prep.test.mjs`, `engine/webgpu/engine/bricks/perf-cull.js`. |
+
+### 2026-11-06 — SwiftShader mapAsync aborts timestamp readback
+
+| | |
+| --- | --- |
+| Take | Pass-profile preview, local Chrome, adapter architecture swiftshader. Not a phone. |
+| Defect | `mapAsync` on the timestamp result buffer rejects with AbortError: "A valid external Instance reference no longer exists." The same call fails in the WebGPU timestamp sample, not only in the meadow page. |
+| Root cause | This VM's software adapter accepts `timestamp-query` and accepts the render pass, then aborts the map. Enabling a Chrome flag is out of bounds. |
+| Fix | The frame records the sample as `invalid` with `gpuError` and does not wait. A successful decode is covered by the mock. The phone read is still unmeasured. |
+| Guard | `node engine/webgpu/check/meadow-epic/pass-timer.test.mjs` — map rejection frees the slot and sets `gpuError`. |
+| Sources | `engine/webgpu/engine/bricks/pass-timer.js`. |
