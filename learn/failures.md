@@ -1327,3 +1327,14 @@ Fix: size the skirt per stretch from the key-visible bottom, and score the skirt
 | Fix | Candidate page only. Wall time is simulated in the existing steps of at most 0.05 s, and one frame stops at 0.5 s. The installed normal page and the installed diagnostic are not replaced. Phone speed is unmeasured. |
 | Guard | `node engine/webgpu/check/meadow-epic/sim-pace.test.mjs` — reconstructed window 2.74 m/s, median-only 4.13 m/s, capped drive 2.42 m/s, paced drive 7 m/s on 84.7 ms and 205.1 ms frames. |
 | Sources | `engine/webgpu/engine/bricks/sim-pace.js`, `engine/webgpu/pace-install/`. |
+
+### 2026-11-06 — meadow saccades are not the JavaScript frame prep
+
+| | |
+| --- | --- |
+| Take | Same phone export as the pace note. Median wall 84.7 ms, p95 205.1 ms, canvas 720×1348, effective scale 2, gpuTime null. Pace was already the simulation fix and was left untouched. |
+| Defect | The picture still stutters. A slow frame is a late image, even when the dog's position matches wall time. |
+| Root cause | Not found in the CPU prep. One frame of the live matrix build, the 1941-tree select, and five collision substeps measured median 0.060 ms, p95 0.105 ms, max 0.238 ms over 2000 runs on this machine. Reusing the arrays removes a 2.5 ms GC blip seen once in 4000 matrix builds, which does not account for an 84 ms frame. A 32 KB writeBuffer plus submit, single buffer versus a 3-deep ring, and 12 texture views, on the local software GPU (n=48, not a phone): medians at the timer floor, maxima 0.7 ms, 0.2 ms, and 0.1 ms. No quality-preserving cut was measurable. Grass, MSAA, shadows, DPR, and distance were not reduced. |
+| Fix | None shipped. A smoothness page that only reused those arrays would not change the stutter. `meadow-pace-1106` was not modified. |
+| Guard | `node engine/webgpu/check/meadow-epic/render-stutter-prep.test.mjs` — cull and uniform bytes match, and this prep stays under 5 ms median / 20 ms p95. That ceiling is a CPU guard, not a phone frame time. |
+| Sources | `engine/webgpu/check/meadow-epic/render-stutter-prep.test.mjs`, `engine/webgpu/engine/bricks/perf-cull.js`. |
