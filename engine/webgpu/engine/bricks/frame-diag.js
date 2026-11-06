@@ -53,3 +53,22 @@ export function makeFrameDiag(limit = 64) {
     report() { return classifyFrames(samples); },
   };
 }
+
+// Observation only. Absent or anything other than 1 stays off. Does not change the 50 ms cap.
+export function diagOn(search) {
+  const q = search.startsWith('?') ? search.slice(1) : search;
+  return new URLSearchParams(q).get('diag') === '1';
+}
+
+export function diagText(report, adapter) {
+  const warm = !report || report.kind === 'warming';
+  const n = report ? report.n : 0;
+  const head = warm ? `warming ${n}/8` : `${report.kind} n=${n}`;
+  const wall = warm ? 'wall med — p95 —' : `wall med ${report.medianWallMs} p95 ${report.p95WallMs} ms`;
+  const idle = !warm && report.metresPerSec < 0.2 ? ' idle' : '';
+  const sim = warm ? 'sim — · — m/s' : `sim ${report.medianAppliedMs} ms · ${report.metresPerSec} m/s${idle}`;
+  const a = adapter || {};
+  const who = [a.vendor, a.architecture, a.device, a.description].filter(Boolean).join(' ') || 'unknown';
+  const adapterLine = `adapter ${who}${a.isFallback ? ' fallback' : ''}`;
+  return `${head}\n${wall}\n${sim}\n${adapterLine}\ngpu time not measured`;
+}

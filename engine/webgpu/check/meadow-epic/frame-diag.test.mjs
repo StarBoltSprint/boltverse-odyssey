@@ -1,4 +1,4 @@
-import { classifyFrames } from '../../engine/bricks/frame-diag.js';
+import { classifyFrames, diagOn, diagText } from '../../engine/bricks/frame-diag.js';
 import assert from 'node:assert/strict';
 
 const fill = (n, wall, applied, speed) => Array.from({ length: n }, () => ({ wall, applied, speed }));
@@ -26,4 +26,25 @@ assert.equal(h.kind, 'hitch');
 assert.ok(h.medianWallMs < 30, h.medianWallMs);
 
 assert.equal(classifyFrames(fill(4, 0.016, 0.016, 7)).kind, 'warming');
+
+assert.equal(diagOn(''), false);
+assert.equal(diagOn('?v=9collide'), false);
+assert.equal(diagOn('?diag=0'), false);
+assert.equal(diagOn('diag=1'), true);
+assert.equal(diagOn('?diag=1'), true);
+
+const warm = diagText(classifyFrames(fill(3, 0.016, 0.016, 7)), null);
+assert.match(warm, /warming 3\/8/);
+assert.match(warm, /gpu time not measured/);
+assert.doesNotMatch(warm, /gpu time \d/);
+
+const shown = diagText(steady, { vendor: 'Qualcomm', architecture: 'adreno-650', device: '', description: '', isFallback: false });
+assert.match(shown, /wall med /);
+assert.match(shown, /p95 /);
+assert.match(shown, /sim /);
+assert.match(shown, /m\/s/);
+assert.match(shown, /adapter Qualcomm adreno-650/);
+assert.match(shown, /n=12/);
+assert.doesNotMatch(shown, /idle/);
+assert.match(diagText({ ...capped, metresPerSec: 0 }, null), /idle/);
 console.log('PASS frame-diag');
