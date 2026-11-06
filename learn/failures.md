@@ -1349,3 +1349,14 @@ Fix: size the skirt per stretch from the key-visible bottom, and score the skirt
 | Fix | The frame records the sample as `invalid` with `gpuError` and does not wait. A successful decode is covered by the mock. The phone read is still unmeasured. |
 | Guard | `node engine/webgpu/check/meadow-epic/pass-timer.test.mjs` — map rejection frees the slot and sets `gpuError`. |
 | Sources | `engine/webgpu/engine/bricks/pass-timer.js`. |
+
+### 2026-11-06 — phone main and shadow passes, grass wedge not yet remeasured
+
+| | |
+| --- | --- |
+| Take | Adreno 6xx pass-profile, 64 rAF samples. Not an A/B against the 84.7 ms export. |
+| Defect | Wall median 101.5 ms, p95 270.8 ms. Inside the window: 53 ok, 8 dropped, 3 pending. The field `dropped: 41` is the running counter, not 41 of these 64. |
+| Root cause | CPU prep and encode medians are 0.4 ms. On the 53 GPU samples, main is 60.4–93.3 ms (median 70.4) and shadow is 19.8–34.7 ms (median 26.4), including the frames whose wall was ~17 ms. Post blur sits on the 65536 ns quantum. The passes do not say which draw inside main or shadow costs that. |
+| Fix | Candidate page only. Grass vertices outside a 4.5 m camera wedge are not shaded. The blade reach is 2.40 m; the extra 2 m cleared a y box from -3 to 2.8 on 294640 samples with 0 false rejects. About 40% of grass vertices fall outside on the 720×1348 aspect. Phone pass time after this change is unmeasured. |
+| Guard | `node engine/webgpu/check/meadow-epic/grass-offscreen.test.mjs` |
+| Sources | `engine/webgpu/engine/bricks/grass-offscreen.js`, `engine/webgpu/cull-install/`. |
