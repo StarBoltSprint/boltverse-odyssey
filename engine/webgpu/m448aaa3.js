@@ -10,7 +10,9 @@ import { makeMeadowCollide, fillTreeColliders, trunkRadius } from './engine/bric
 import { makeFog } from './engine/fog.js?v=1';
 import { boltIdle, measureAtlasFeet, pickPlantedFrame } from './bricks/bolt-idle.js?v=9';
 import { makeMeadowRoute } from './engine/bricks/meadow-route.js?v=1';
+import { makeFrameDiag } from './engine/bricks/frame-diag.js?v=1';
 const qs = new URLSearchParams(location.search); const LV = qs.get('lv') === '1';  // cap a scripted live run (collision proof)
+const DIAG = qs.get('diag') === '1';  // record frame vs sim only; default play does not read it
 const CINE = qs.get('cine') === '1'; const DEMO = qs.get('demo') === '1', CAP = qs.get('cap') === '1';
 const hud = document.getElementById('hud');
 if (CAP) hud.style.display = 'none';
@@ -632,6 +634,7 @@ async function loadTex(dev, url, mips) {
 async function main() {
   const ad = await navigator.gpu?.requestAdapter(); if (!ad) { hud.textContent = 'No WebGPU'; return; }
   const dev = await ad.requestDevice({ requiredLimits: { maxStorageBufferBindingSize: Math.min(ad.limits.maxStorageBufferBindingSize, 256 << 20) } });
+  if (DIAG) { const info = ad.info || {}; window.__meadowAdapter = { vendor: info.vendor || '', architecture: info.architecture || '', device: info.device || '', description: info.description || '', isFallback: !!ad.isFallbackAdapter, timestamp: dev.features.has('timestamp-query') }; }
   const canvas = document.getElementById('c');
   const W = parseInt(qs.get('w')) || Math.round(innerWidth * Math.min(devicePixelRatio, 2));
   const Hh = parseInt(qs.get('h')) || Math.round(innerHeight * Math.min(devicePixelRatio, 2));
@@ -938,8 +941,11 @@ ${POSTFX.wgsl}
     window.__sl = sampleLoop; window.__ph = phaseAt; window.__wade = (x, z) => RIV.level(x, z) - terrH(x, z); window.__STRIDE = STRIDE_HZ; window.__SPEED = SPEED; window.__IDLE = IDLE; window.__boltGpuTs = performance.now(); window.__meadowReady = true; return;
   }
   let t0 = performance.now(), last = t0;
-  const loop = (now) => { const t = (now - t0) / 1000, dt = Math.min(0.05, (now - last) / 1000); last = now; if (!DEMO) stepLive(dt);
-    const i = render(t); hud.textContent = `v448aaa3${DEMO ? ' · demo' : ''} · ${Math.round(((i.psi * 180 / Math.PI) % 360 + 360) % 360)}°`; requestAnimationFrame(loop); };
+  const diag = DIAG ? makeFrameDiag() : null;
+  if (diag) window.__meadowDiag = () => ({ ...diag.report(), adapter: window.__meadowAdapter || null, canvas: [canvas.width, canvas.height], dpr: devicePixelRatio, err: window.__meadowErr || null });
+  const loop = (now) => { const t = (now - t0) / 1000; const wall = (now - last) / 1000; const dt = Math.min(0.05, wall); last = now; if (!DEMO) stepLive(dt);
+    const i = render(t); if (diag) diag.push(wall, dt, live.v);
+    hud.textContent = `v448aaa3${DEMO ? ' · demo' : ''} · ${Math.round(((i.psi * 180 / Math.PI) % 360 + 360) % 360)}°${diag ? ' · ' + diag.report().kind : ''}`; requestAnimationFrame(loop); };
   requestAnimationFrame(loop);
 }
 main().catch(e => { hud.textContent = 'ERR ' + e; console.error(e); window.__meadowErr = String(e); });
