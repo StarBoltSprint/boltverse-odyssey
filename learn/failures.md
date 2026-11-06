@@ -1316,3 +1316,14 @@ Fix: size the skirt per stretch from the key-visible bottom, and score the skirt
 | Fix | Branch `terrace/fix-door-ghost` (off dd80963f): ground = plain snow `Color(0.78, 0.84, 0.9)` like the offline render; rebuilt materials keep `side` from the GLB material. Page-only, 3 lines, to merge into Engine Core's `engine/bench-load-1013` (b1e99d2e; textual conflict on the adjacent `parseAsync` line only). |
 | Guard | `python3 -m tools.gate.playgate <served_url> <out>` renders the SERVED page headless at 412x915 CSS x1.5 (door-3m, threshold-3m/8m-30d, wall-end-left/right), runs per-region no-grey, and inventories the live scene: FAIL on any undeclared node, a ground that maps an object plate, an object material whose GLB is doubleSided but runtime side != DoubleSide, unexpected transparency, page errors, and camera vs spine.json beyond tolerance. Self-test `python3 -m tools.gate.selftest_playgate`: current build FAILs both (a) and (b); fixed build PASSes the scene checks. Known gap: `nogrey` skips luma <= 20, so a dark flat band is not flagged; the scene check is what catches (a). |
 | Sources | `tools/gate/playgate.py`, `tools/gate/playgate.mjs`, `tools/gate/playgate.views.json`, `tools/gate/selftest_playgate.py`. |
+
+### 2026-11-06 — meadow slow frames were read as a second speed bug
+
+| | |
+| --- | --- |
+| Take | Meadow live page. Phone export 2026-11-06 11:44 Europe/Paris. Not an owner KEEP. |
+| Defect | The page felt slow. The export said 2.74 m/s against a 7 m/s gallop, with applied/wall 0.59. |
+| Root cause | The live loop calls stepLive once with min(wall, 0.05), so time past 50 ms is not simulated. metresPerSec is sum(v × applied) / sum(wall). appliedOverWall is median(applied) / median(wall), which is 50 / 84.7. At a constant 7 m/s that median ratio is about 4.13 m/s, not 2.74. A right-skewed 64-frame window with median wall 84.7 ms and p95 205.1 ms produces 2.74 m/s while v stays 7. Collision does not enter this metric. The reported dpr of 3 is not the render scale. gpuTime null means CPU versus GPU was not measured. |
+| Fix | Candidate page only. Wall time is simulated in the existing steps of at most 0.05 s, and one frame stops at 0.5 s. The installed normal page and the installed diagnostic are not replaced. Phone speed is unmeasured. |
+| Guard | `node engine/webgpu/check/meadow-epic/sim-pace.test.mjs` — reconstructed window 2.74 m/s, median-only 4.13 m/s, capped drive 2.42 m/s, paced drive 7 m/s on 84.7 ms and 205.1 ms frames. |
+| Sources | `engine/webgpu/engine/bricks/sim-pace.js`, `engine/webgpu/pace-install/`. |
