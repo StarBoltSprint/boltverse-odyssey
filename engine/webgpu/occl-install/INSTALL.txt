@@ -1,0 +1,26 @@
+Occlusion order — add files only. Version meadow-occl-1106. Build m448aaa3-occl1.
+
+Opaque trees, rocks, the mill, flowers, Bolt, and grass are drawn before the ground.
+The ground shader is the heavy fragment shader and was previously drawn first, then covered.
+The contact decal stays after the ground so the opaque ground does not erase it.
+Pace, the grass wedge, MSAA 4, the DPR cap, and the 1024 shadow map stay.
+
+This is not a measured phone frame-time change.
+
+It does not replace the normal page, the diagnostic, pace, the profile, or the cull page.
+
+Root on the box: /workspace/biome-futur/webgpu-ground
+
+From this directory:
+  sh install.sh /workspace/biome-futur/webgpu-ground
+
+The script reads fourteen guard paths and stops if any hash differs. Then it adds only:
+  m448aaa3-occl.html
+  m448aaa3-occl.js
+A colliding hash writes nothing.
+
+Open: /m448aaa3-occl.html
+The hud reads v448aaa3-occl1. With ?diag=1 the copy JSON includes "build":"m448aaa3-occl1".
+
+Rollback deletes only those two paths, and only if the hash still matches:
+  sh uninstall.sh /workspace/biome-futur/webgpu-ground

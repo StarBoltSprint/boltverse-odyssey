@@ -1360,3 +1360,14 @@ Fix: size the skirt per stretch from the key-visible bottom, and score the skirt
 | Fix | Candidate page only. Grass vertices outside a 4.5 m camera wedge are not shaded. The blade reach is 2.40 m; the extra 2 m cleared a y box from -3 to 2.8 on 294640 samples with 0 false rejects. About 40% of grass vertices fall outside on the 720×1348 aspect. Phone pass time after this change is unmeasured. |
 | Guard | `node engine/webgpu/check/meadow-epic/grass-offscreen.test.mjs` |
 | Sources | `engine/webgpu/engine/bricks/grass-offscreen.js`, `engine/webgpu/cull-install/`. |
+
+### 2026-11-06 — 19:36 export is slow frames with the median sim caught up
+
+| | |
+| --- | --- |
+| Take | Adreno 6xx basic diag, 19:36 Europe/Paris. No route field. Not an A/B against 84.7/205.1 or the pass profile. |
+| Defect | kind slow-frames, n=64, median wall 84.7 ms, median applied 84.7 ms, p95 wall 273 ms, appliedOverWall 1, metresPerSec 5.43, gpuTime null. |
+| Root cause | The median ratio is 1, so the median frame applied its wall time. A frame past the median can still drop time; this export has no per-frame samples and no maximum. 5.43 m/s is commanded speed times applied time over wall time, so the window was not a held 7 m/s the whole way. The earlier pass profile still stands: main ~70 ms and shadow ~26 ms of GPU time. Offscreen grass vertices do not remove the fragment shader of the ground, which was drawn first and then covered. |
+| Fix | Candidate m448aaa3-occl1 draws the opaque occluders before the ground. SwiftShader 720×1348 at t=0.4, 4, 9, 14 matched the cull page with mean abs 0, and a second render of t=4 matched itself. Phone frame time is unmeasured. |
+| Guard | `node engine/webgpu/occl-install/check.mjs`; `node engine/webgpu/check/meadow-epic/phone-window-1936.test.mjs` |
+| Sources | `engine/webgpu/occl-install/`. |
