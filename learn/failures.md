@@ -1382,3 +1382,14 @@ Fix: size the skirt per stretch from the key-visible bottom, and score the skirt
 | Fix | Page m448aaa3-breath1. Release brakes at 5.5, then a 200 ms mix into the loop. Input returns the gallop at 7 m/s. |
 | Guard | `node engine/webgpu/check/meadow-epic/bolt-breath.test.mjs` |
 | Sources | `engine/webgpu/bricks/bolt-breath.js`, `engine/webgpu/breath-install/`. |
+
+### 2026-11-07 — two draw-class guesses, still no phone split
+
+| | |
+| --- | --- |
+| Take | SmiR, 7 Nov 2026: the game still lags. The grass wedge and the occlusion reorder had both been shipped as candidates. Neither has a phone remeasure. |
+| Defect | Adreno 6xx pass profile, 53 paired samples: main median 70.385664 ms, shadow 26.411008 ms, post-final 2.555904 ms. CPU prep and encode medians 0.4 ms. The later slow-frames export is still 84.7 ms median wall, 273 ms p95, gpuTime null. |
+| Root cause | Not named. The profile times whole passes. WebGPU timestamps are per pass, and splitting the pass on a tile-based phone would add store/load that is not the original 70 ms. Grass vertices (988200) and the ground grid (98304, 4x MSAA) are the largest submitted jobs, but the two cuts aimed at them were not measured, so a third cut of the same kind is not evidence. |
+| Fix | None shipped. Page m448aaa3-cls1 keeps the scratch draws on `all` frames and skips one class on the next frame: grass, ground, main trees, or shadow trees. The export field is the paired delta, not a ratio of medians. Phone result is unmeasured. |
+| Guard | `node engine/webgpu/check/meadow-epic/draw-class.test.mjs`; `node engine/webgpu/cls-install/check.mjs` |
+| Sources | `engine/webgpu/engine/bricks/draw-class.js`, `engine/webgpu/cls-install/`. |
