@@ -52,6 +52,17 @@ export function integrate(live, dt, input, collide) {
   return live;
 }
 
+// Capture route: run, a visible yaw each way, a full stop, run again, stop.
+export function proofInput(t) {
+  if (t < 3.2) return { turn: 0, run: true };
+  if (t < 6.2) return { turn: 0.85, run: true };
+  if (t < 8.6) return { turn: -0.85, run: true };
+  if (t < 13.6) return { turn: 0, run: false };
+  if (t < 16.8) return { turn: 0.15, run: true };
+  if (t < 18.6) return { turn: 0, run: false };
+  return { turn: 0, run: true };
+}
+
 export function demoSteer(live) {
   const look = live.z - 5.5;
   let d = pathPsi(look) - live.psi;
@@ -64,38 +75,36 @@ export function demoSteer(live) {
   return { turn, run: true };
 }
 
-function addArch(mesh, circles, z0, span, h, depth) {
+function addArch(mesh, circles, z0, span, foot, depth) {
   const c = pathX(z0);
-  const pw = 1.5;
-  const yL = terrH(c - span / 2, z0);
-  const yR = terrH(c + span / 2, z0);
-  mesh.box(c - span / 2, yL + h / 2, z0, pw, h, depth, 0, MAT.stone);
-  mesh.box(c + span / 2, yR + h / 2, z0, pw, h, depth, 0, MAT.stone);
-  circles.push({ x: c - span / 2, z: z0, r: pw * 0.5 });
-  circles.push({ x: c + span / 2, z: z0, r: pw * 0.5 });
-  const n = 6;
-  const rad = span / 2 - 0.15;
+  const base = terrH(c, z0);
+  const pw = 1.8;
+  const pierH = foot + 1.2;
+  mesh.box(c - span / 2, base + pierH / 2, z0, pw, pierH, depth, 0, MAT.stone);
+  mesh.box(c + span / 2, base + pierH / 2, z0, pw, pierH, depth, 0, MAT.stone);
+  circles.push({ x: c - span / 2, z: z0, r: pw * 0.46 });
+  circles.push({ x: c + span / 2, z: z0, r: pw * 0.46 });
+  const n = 9;
+  const rad = span / 2 - 0.2;
   for (let i = 0; i < n; i++) {
     const ang = Math.PI * (i + 0.5) / n;
     const x = c + Math.cos(ang) * rad;
-    const y = terrH(c, z0) + h * 0.58 + Math.sin(ang) * rad * 0.72;
-    mesh.box(x, y, z0, 1.2, 1.35, depth * 1.08, 0, MAT.stone);
+    const y = base + foot * 0.15 + Math.sin(ang) * rad * 0.92;
+    const overlap = 1.15;
+    mesh.box(x, y, z0, 1.55 * overlap, 1.45, depth, 0, MAT.stone);
   }
-  const crownY = terrH(c, z0) + h * 0.58 + rad * 0.72 + 1.3;
-  mesh.box(c, crownY, z0, 1.7, 2.8, depth, 0, MAT.stone);
   for (const s of [-1, 1]) {
-    const x = c + s * (span / 2 + 1.45);
+    const x = c + s * (span / 2 + 1.6);
     const yy = terrH(x, z0);
-    mesh.box(x, yy + h * 0.95, z0 + s * 0.3, 1.15, h * 1.9, 1.15, s * 0.18, MAT.stone);
-    circles.push({ x, z: z0, r: 0.7 });
-    mesh.crystal(x + s * 0.2, yy + h * 1.85, z0, 0.45, 3.2 + (s < 0 ? 0.8 : 0), s, s < 0 ? MAT.violet : MAT.cyan);
+    mesh.box(x, yy + pierH * 0.7, z0, 1.3, pierH * 1.35, depth * 0.8, s * 0.1, MAT.stone);
+    circles.push({ x, z: z0, r: 0.75 });
   }
 }
 
 export function buildWorld() {
   const mesh = createMesh();
   const circles = [];
-  const x0 = -42, x1 = 42, z0 = -168, z1 = 22, step = 1.7;
+  const x0 = -42, x1 = 42, z0 = -168, z1 = 28, step = 1.05;
   for (let z = z0; z < z1; z += step) {
     for (let x = x0; x < x1; x += step) {
       const corners = [[x, z], [x + step, z], [x + step, z + step], [x, z + step]];
@@ -122,6 +131,7 @@ export function buildWorld() {
       for (let row = 0; row < 3; row++) {
         const lat = side * (7.4 + row * 3.5 + hash(i, row + side * 4) * 1.2);
         const x = pathX(z) + lat;
+        if (Math.hypot(x, z) < 20) continue;
         const sy = 2.4 + row * 3.1 + hash(i, row + 8) * 4.2;
         const sx = 2.3 + hash(i + 2, row) * 1.8;
         const sz = 2.1 + hash(row + 4, i) * 1.7;
@@ -143,14 +153,16 @@ export function buildWorld() {
     const side = i % 2 === 0 ? -1 : 1;
     const lat = side < 0 ? -(3.9 + hash(i, 1) * 1.8) : (5.5 + hash(i, 2) * 1.6);
     const x = pathX(z) + lat;
+    if (Math.hypot(x, z) < 16) continue;
     const ch = 1.3 + hash(i, 3) * (side < 0 ? 4.8 : 4.2);
     const cr = 0.26 + hash(i, 4) * 0.48;
     mesh.crystal(x, terrH(x, z), z, cr, ch, hash(i, 5) * 3, side < 0 ? MAT.violet : MAT.cyan);
     circles.push({ x, z, r: cr * 0.82 });
   }
 
-  addArch(mesh, circles, -18, 7.4, 8.6, 1.8);
-  addArch(mesh, circles, -64, 8.2, 11.2, 2.1);
+  // Low enough to stay in the 62° frame until the dog is under it, deep enough not to pop.
+  addArch(mesh, circles, -46, 7.2, 5.4, 4.2);
+  addArch(mesh, circles, -96, 8.0, 6.0, 4.6);
 
   const spires = [[-16, -88, 22], [20, -96, 30], [-26, -112, 26], [14, -124, 34], [-10, -142, 28], [28, -136, 24], [6, -158, 36]];
   for (let i = 0; i < spires.length; i++) {

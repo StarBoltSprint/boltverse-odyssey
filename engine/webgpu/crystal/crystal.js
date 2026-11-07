@@ -1,18 +1,23 @@
 // crystal/crystal.js — obsidian canyon on the house WebGPU path.
 // Live bolt439 card, meadow follow camera, key-image crops. Not a photo plate behind the dog.
 import { boltIdle, measureAtlasFeet, pickPlantedFrame } from '../bricks/bolt-idle.js';
+import { stepBreath, BREATH_MEADOW, makeBreathClip, BREATH_BUILD, breathMixWgsl } from '../bricks/bolt-breath.js';
 import { makeCircleCollide } from '../engine/bricks/circle-collide.js';
 import { followEye, lookAt, persp, mul, FOV_Y } from '../engine/bricks/follow-cam.js';
-import { CRYSTAL, CROPS, KEY, cropUV } from './biome.js';
-import { buildWorld, demoSteer, integrate, spawn, terrH } from './world.js';
+import { createPlanetMesh, prepareSurfaceRGBA, frontYaw, planetCenter } from '../engine/bricks/planet-sphere.js';
+import { CRYSTAL, CROPS, KEY, PLANET, cropUV } from './biome.js';
+import { buildWorld, demoSteer, proofInput, integrate, spawn, terrH } from './world.js';
 
 const qs = new URLSearchParams(location.search);
 const CAP = qs.get('cap') === '1';
 const DEMO = qs.get('demo') === '1' || CAP;
+const PROOF = qs.get('proof') === '1';
+let simClock = 0;
 const hud = document.getElementById('hud');
 if (CAP && hud) hud.style.display = 'none';
 
 const IDLE = boltIdle({});
+const BREATH = { ...BREATH_MEADOW, speed: IDLE.cfg.speed, blendV: IDLE.cfg.blendV };
 const world = buildWorld();
 const collide = makeCircleCollide(world.circles, { boltR: CRYSTAL.boltR });
 const live = spawn();
@@ -41,8 +46,10 @@ function playerInput() {
 }
 
 function stepLive(dt) {
-  const input = DEMO ? demoSteer(live) : playerInput();
+  const input = PROOF ? proofInput(simClock) : DEMO ? demoSteer(live) : playerInput();
+  simClock += dt;
   IDLE.stepMotion(live, dt, input.run);
+  stepBreath(live, dt, input.run, BREATH);
   integrate(live, dt, input, collide);
   return live;
 }
@@ -51,11 +58,14 @@ const WGSL = /* wgsl */`
 struct U {
   vp: mat4x4f, ivp: mat4x4f, cam: vec4f, bolt: vec4f, bp: vec4f, grid: vec4f, sun: vec4f, misc: vec4f, fog: vec4f,
   c0: vec4f, c1: vec4f, c2: vec4f, c3: vec4f, c4: vec4f, c5: vec4f, c6: vec4f,
+  planet: vec4f, spin: vec4f, atmo: vec4f,
 };
 @group(0) @binding(0) var<uniform> u: U;
 @group(0) @binding(1) var samp: sampler;
 @group(0) @binding(2) var keyTex: texture_2d<f32>;
 @group(0) @binding(3) var atex: texture_2d<f32>;
+@group(0) @binding(4) var planetTex: texture_2d<f32>;
+@group(0) @binding(5) var planetSamp: sampler;
 struct VO { @builtin(position) p: vec4f, @location(0) w: vec3f, @location(1) n: vec3f, @location(2) uv: vec2f, @location(3) mat: f32 };
 @vertex fn vs(@location(0) a: vec4f, @location(1) b: vec4f) -> VO {
   let p = a.xyz; let n = b.xyz;
@@ -85,12 +95,75 @@ fn tri(id: u32, w: vec3f, n: vec3f, sc: f32) -> vec3f {
   return sampleRepeat(id, w.zy * sc) * b.x + sampleRepeat(id, w.xz * sc) * b.y + sampleRepeat(id, w.xy * sc) * b.z;
 }
 fn sunN() -> vec3f { return normalize(u.sun.xyz); }
-@fragment fn fs(v: VO) -> @location(0) vec4f {
+fn pathXg(z: f32) -> f32 { return 5.2 * sin(z * 0.028) + 1.6 * sin(z * 0.061); }
+fn terrHs(p: vec2f) -> f32 {
+  let lateral = p.x - pathXg(p.y);
+  let ad = abs(lateral);
+  let t = clamp((ad - 2.6) / 5.9, 0.0, 1.0);
+  let lip = (t * t * (3.0 - 2.0 * t)) * 0.55;
+  let d = lateral - 3.55;
+  let trench = exp(-(d * d) / 1.15) * 0.62;
+  return lip - trench + 0.045 * sin(p.x * 1.3 + p.y * 0.7) + 0.03 * sin(-p.x * 0.45 + p.y * 0.9);
+}
+fn groundN(p: vec2f) -> vec3f {
+  let e = 0.45;
+  let hx = terrHs(p + vec2f(e, 0.0)) - terrHs(p - vec2f(e, 0.0));
+  let hz = terrHs(p + vec2f(0.0, e)) - terrHs(p - vec2f(0.0, e));
+  return normalize(vec3f(-hx, 2.0 * e, -hz));
+}
+fn groundAlb(p: vec2f) -> vec3f {
+  let a = sampleRepeat(0u, p * 0.046);
+  let r = mat2x2f(0.80, -0.60, 0.60, 0.80);
+  let b = sampleRepeat(0u, r * p * 0.073 + vec2f(0.37, 0.19));
+  return mix(a, b, 0.42);
+}
+fn rotY(p: vec3f, a: f32) -> vec3f {
+  let c = cos(a); let s = sin(a);
+  return vec3f(c * p.x + s * p.z, p.y, -s * p.x + c * p.z);
+}
+fn planetUV(n: vec3f) -> vec2f {
+  return vec2f(fract(atan2(n.x, n.z) / 6.2831853 + 0.5), acos(clamp(n.y, -1.0, 1.0)) / 3.14159265);
+}
+struct PVO { @builtin(position) p: vec4f, @location(0) n: vec3f, @location(1) w: vec3f };
+@vertex fn vsPlanet(@location(0) p: vec3f, @location(1) n: vec3f) -> PVO {
+  let r = rotY(p, u.spin.x);
+  let world = u.planet.xyz + r * u.planet.w;
+  var o: PVO; o.p = u.vp * vec4f(world, 1.0); o.n = rotY(n, u.spin.x); o.w = world; return o;
+}
+@vertex fn vsLimb(@location(0) p: vec3f, @location(1) n: vec3f) -> PVO {
+  let r = rotY(p, u.spin.x);
+  let world = u.planet.xyz + r * (u.planet.w * u.spin.y);
+  var o: PVO; o.p = u.vp * vec4f(world, 1.0); o.n = rotY(n, u.spin.x); o.w = world; return o;
+}
+@fragment fn fsPlanet(v: PVO) -> @location(0) vec4f {
   let n = normalize(v.n);
-  let wrap = clamp(dot(n, sunN()) * 0.55 + 0.45, 0.0, 1.0);
+  let alb = textureSampleLevel(planetTex, planetSamp, planetUV(n), 0.0).rgb;
+  let day = smoothstep(-0.05, 0.2, dot(n, sunN()));
+  let ndv = abs(dot(n, normalize(u.cam.xyz - v.w)));
+  var c = alb * (0.045 + 0.955 * day);
+  c *= mix(0.78, 1.0, smoothstep(0.0, 0.4, ndv));
+  return vec4f(pow(clamp(c, vec3f(0.0), vec3f(1.0)), vec3f(1.0 / 2.2)), 1.0);
+}
+@fragment fn fsLimb(v: PVO) -> @location(0) vec4f {
+  let n = normalize(v.n);
+  let ndv = abs(dot(n, normalize(u.cam.xyz - v.w)));
+  let rim = pow(clamp(1.0 - ndv, 0.0, 1.0), 1.65);
+  let lit = smoothstep(-0.2, 0.45, dot(n, sunN()));
+  let a = rim * (0.2 + 0.8 * lit);
+  if (a < 0.03) { discard; }
+  return vec4f(u.atmo.rgb, a);
+}
+@fragment fn fs(v: VO) -> @location(0) vec4f {
+  var n = normalize(v.n);
+  var wrap = clamp(dot(n, sunN()) * 0.55 + 0.45, 0.0, 1.0);
   let m = v.mat;
   var alb: vec3f;
-  if (m < 0.5) { alb = sampleRepeat(0u, v.w.xz * 0.15); }
+  if (m < 0.5) {
+    let gn = groundN(v.w.xz);
+    n = gn;
+    wrap = clamp(dot(n, sunN()) * 0.35 + 0.65, 0.0, 1.0);
+    alb = groundAlb(v.w.xz);
+  }
   else if (m < 1.5) { alb = tri(1u, v.w, n, 0.38); }
   else if (m < 2.5) { alb = tri(2u, v.w, n, 0.38); }
   else if (m < 3.5) { alb = tri(3u, v.w, n, 0.16); }
@@ -99,10 +172,7 @@ fn sunN() -> vec3f { return normalize(u.sun.xyz); }
     let dir = normalize(v.w - u.cam.xyz);
     let yaw = atan2(dir.x, -dir.z);
     let pitch = asin(clamp(dir.y, -1.0, 1.0));
-    let stars = sampleClamp(5u, vec2f(0.55 + yaw * 0.38, 0.78 - pitch * 0.95));
-    let planet = sampleClamp(6u, vec2f(0.35 + yaw * 0.55, 0.62 - pitch * 0.7));
-    let gate = smoothstep(-0.15, 0.42, yaw) * smoothstep(0.0, 0.34, pitch);
-    alb = mix(stars, planet, gate);
+    alb = sampleClamp(5u, vec2f(0.55 + yaw * 0.38, 0.78 - pitch * 0.95));
     var sky = alb * (0.92 + 0.08 * wrap);
     sky = mix(sky, u.fog.rgb, u.fog.w * 0.35);
     return vec4f(pow(clamp(sky, vec3f(0.0), vec3f(1.0)), vec3f(1.0 / 2.2)), 1.0);
@@ -140,15 +210,17 @@ fn cell(f: u32, uv: vec2f) -> vec4f {
   let lift = 0.045 * lw * ((1.0 - sw) * max(sin(gph), 0.0) + sw * max(-sin(gph), 0.0)) * smoothstep(0.25, 1.2, spd) * (1.0 - u.misc.x);
   let uvs = idleTailUV(v.uv + vec2f(0.0, lift));
   let s = mix(cell(a, uvs), cell(bb, uvs), k);
-  if (s.a < 0.12) { discard; }
-  var c = s.rgb;
+  let mixed = breathMix(s.rgb, s.a, uvs);
+  if (mixed.a < select(0.12, 0.04, u.misc.y > 0.001)) { discard; }
+  var c = mixed.rgb;
   c = mix(c, vec3f(dot(c, vec3f(0.3, 0.59, 0.11))), 0.12) * 1.08;
   let hgt = v.w.y - u.bolt.y;
   let bounce = max(u.grid.xyz, vec3f(0.55));
   c *= mix(vec3f(1.0), bounce, smoothstep(0.34, 0.02, hgt) * 0.22);
   c *= mix(0.82, 1.0, smoothstep(-0.02, 0.25, hgt));
-  return vec4f(pow(clamp(c, vec3f(0.0), vec3f(1.0)), vec3f(1.0 / 2.2)), s.a);
+  return vec4f(pow(clamp(c, vec3f(0.0), vec3f(1.0)), vec3f(1.0 / 2.2)), mixed.a);
 }
+${breathMixWgsl()}
 struct CO { @builtin(position) p: vec4f, @location(0) uv: vec2f };
 @vertex fn vsContact(@builtin(vertex_index) vi: u32) -> CO {
   var q = array<vec2f, 6>(vec2f(-1, -1), vec2f(1, -1), vec2f(1, 1), vec2f(-1, -1), vec2f(1, 1), vec2f(-1, 1));
@@ -165,6 +237,21 @@ struct CO { @builtin(position) p: vec4f, @location(0) uv: vec2f };
 
 function srgbToLin(c) {
   return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+}
+
+async function loadCanvasMips(dev, canvas) {
+  const w = canvas.width, h = canvas.height;
+  const levels = Math.floor(Math.log2(Math.max(w, h))) + 1;
+  const tex = dev.createTexture({
+    size: [w, h], format: 'rgba8unorm-srgb', mipLevelCount: levels,
+    usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT,
+  });
+  for (let l = 0; l < levels; l++) {
+    const lw = Math.max(1, w >> l), lh = Math.max(1, h >> l);
+    const src = l === 0 ? canvas : await createImageBitmap(canvas, { resizeWidth: lw, resizeHeight: lh, resizeQuality: 'high' });
+    dev.queue.copyExternalImageToTexture({ source: src }, { texture: tex, mipLevel: l }, [lw, lh]);
+  }
+  return tex;
 }
 
 async function loadTex(dev, url) {
@@ -203,9 +290,11 @@ async function main() {
   if (ctx) ctx.configure({ device: dev, format: fmt, alphaMode: 'opaque' });
   const SAMPLES = CRYSTAL.msaa;
 
-  const [key, atlas, feet] = await Promise.all([
-    loadTex(dev, new URL(KEY.file, import.meta.url).href),
-    loadTex(dev, new URL(CRYSTAL.bolt, import.meta.url).href),
+  const meadowRoot = new URL('../assets/meadow/', import.meta.url).href;
+  const breathClip = await makeBreathClip(dev, meadowRoot);
+  const [key, atlas, feet, planetBmp] = await Promise.all([
+    loadTex(dev, new URL(KEY.file, import.meta.url).href, true),
+    loadTex(dev, new URL(CRYSTAL.bolt, import.meta.url).href, false),
     (async () => {
       const bmp = await createImageBitmap(await (await fetch(new URL(CRYSTAL.bolt, import.meta.url).href)).blob(), { colorSpaceConversion: 'none' });
       const cv = new OffscreenCanvas(bmp.width, bmp.height);
@@ -214,7 +303,28 @@ async function main() {
       const id = cx.getImageData(0, 0, bmp.width, bmp.height);
       return measureAtlasFeet(id.data, id.width, id.height, { cols: 8, rows: 4, alphaThresh: 16 });
     })(),
+    createImageBitmap(await (await fetch(new URL(PLANET.file, import.meta.url).href)).blob(), { colorSpaceConversion: 'none' }),
   ]);
+  const planetPrepared = await (async () => {
+    const cv = new OffscreenCanvas(planetBmp.width, planetBmp.height);
+    const cx = cv.getContext('2d', { willReadFrequently: true });
+    cx.drawImage(planetBmp, 0, 0);
+    const id = cx.getImageData(0, 0, planetBmp.width, planetBmp.height);
+    const out = prepareSurfaceRGBA(id.data, planetBmp.width, planetBmp.height, PLANET.seamBand, PLANET.poleRows);
+    let r = 0, g = 0, b = 0, n = 0;
+    for (let y = 8; y < 28; y++) for (let x = 0; x < planetBmp.width; x += 8) {
+      const i = (y * planetBmp.width + x) * 4;
+      r += out[i]; g += out[i + 1]; b += out[i + 2]; n++;
+    }
+    const lin = (c) => { const x = c / 255; return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; };
+    cx.putImageData(new ImageData(out, planetBmp.width, planetBmp.height), 0, 0);
+    return { canvas: cv, atmo: [lin(r / n), lin(g / n), lin(b / n)] };
+  })();
+  const planetTex = await loadCanvasMips(dev, planetPrepared.canvas);
+  const pCenter = planetCenter(PLANET.dir, PLANET.distance);
+  const pYaw = frontYaw(PLANET.dir);
+  const atmo = planetPrepared.atmo;
+  const planetVerts = createPlanetMesh();
   const planted = pickPlantedFrame(feet);
   IDLE.setFeet(feet.feet, feet.paws);
   IDLE.applyPlanted(planted);
@@ -251,12 +361,19 @@ async function main() {
     { binding: 1, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
     { binding: 2, visibility: GPUShaderStage.FRAGMENT, texture: {} },
     { binding: 3, visibility: GPUShaderStage.FRAGMENT, texture: {} },
+    { binding: 4, visibility: GPUShaderStage.FRAGMENT, texture: {} },
+    { binding: 5, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+    { binding: 18, visibility: GPUShaderStage.FRAGMENT, texture: {} },
   ] });
+  const planetSamp = dev.createSampler({ magFilter: 'linear', minFilter: 'linear', mipmapFilter: 'linear', addressModeU: 'repeat', addressModeV: 'clamp-to-edge', maxAnisotropy: aniso });
   const bg = await noteErr('bind group', async () => dev.createBindGroup({ layout: bgl, entries: [
     { binding: 0, resource: { buffer: ub } },
     { binding: 1, resource: samp },
     { binding: 2, resource: key.tex.createView() },
     { binding: 3, resource: atlas.tex.createView() },
+    { binding: 4, resource: planetTex.createView() },
+    { binding: 5, resource: planetSamp },
+    { binding: 18, resource: breathClip.texture.createView() },
   ] }));
   const layout = dev.createPipelineLayout({ bindGroupLayouts: [bgl] });
   const mod = dev.createShaderModule({ code: WGSL });
@@ -276,6 +393,23 @@ async function main() {
   const pSky = pipe('vs', 'fs', false, false);
   const pBolt = pipe('vsBolt', 'fsBolt', false, true);
   const pContact = pipe('vsContact', 'fsContact', true, false);
+  const pbuf = { arrayStride: 24, attributes: [
+    { shaderLocation: 0, offset: 0, format: 'float32x3' },
+    { shaderLocation: 1, offset: 12, format: 'float32x3' },
+  ] };
+  const pvb = mk(planetVerts, GPUBufferUsage.VERTEX);
+  const pCount = planetVerts.length / 6;
+  const pipeP = (vs, fs, blend, depthWrite) => dev.createRenderPipeline({
+    layout,
+    vertex: { module: mod, entryPoint: vs, buffers: [pbuf] },
+    fragment: { module: mod, entryPoint: fs, targets: [{ format: fmt, blend }] },
+    primitive: { topology: 'triangle-list', cullMode: 'back' },
+    multisample: { count: SAMPLES },
+    depthStencil: { format: 'depth24plus', depthWriteEnabled: depthWrite, depthCompare: 'less' },
+  });
+  const limbBlend = { color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' }, alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha', operation: 'add' } };
+  const pPlanet = pipeP('vsPlanet', 'fsPlanet', undefined, true);
+  const pLimb = pipeP('vsLimb', 'fsLimb', limbBlend, false);
   const compileNotes = [];
   if (mod.getCompilationInfo) {
     const ci = await mod.getCompilationInfo();
@@ -298,7 +432,10 @@ async function main() {
     const bp = [live.x, terrH(live.x, live.z), live.z];
     const { eye, tgt } = followEye(bp, live.cam, terrH, 0);
     const view = lookAt(eye, tgt, [0, 1, 0]);
-    const proj = persp(FOV_Y, W / H, 0.08, 900);
+    const proj = persp(FOV_Y, W / H, 0.08, 5200);
+    U.set([pCenter[0], pCenter[1], pCenter[2], PLANET.radius], 88);
+    U.set([pYaw, PLANET.limb, 0, 0], 92);
+    U.set([atmo[0], atmo[1], atmo[2], 1], 96);
     const vp = mul(proj, view);
     U.set(vp, 0);
     U.set([eye[0], eye[1], eye[2], t], 32);
@@ -309,6 +446,8 @@ async function main() {
     U.set([bounce[0], bounce[1], bounce[2], CRYSTAL.fogDist[0]], 44);
     U.set([sun[0] / sunL, sun[1] / sunL, sun[2] / sunL, 0], 48);
     IDLE.writeUniforms(U, IDLE.sample());
+    U[52] = 0;
+    U[53] = live.idleMix || 0;
     U.set([fogCol[0], fogCol[1], fogCol[2], 0.9], 56);
     U.set(crops, 60);
   }
@@ -324,9 +463,12 @@ async function main() {
       colorAttachments: [{ view: msaa.createView(), resolveTarget: target.createView(), loadOp: 'clear', storeOp: 'discard', clearValue: [0, 0, 0, 1] }],
       depthStencilAttachment: { view: depth.createView(), depthLoadOp: 'clear', depthClearValue: 1, depthStoreOp: 'discard' },
     });
+    breathClip.sync(live.idleT || 0);
     pass.setBindGroup(0, bg);
     pass.setPipeline(pSky); pass.setVertexBuffer(0, sb); pass.draw(skyVerts);
+    pass.setPipeline(pPlanet); pass.setVertexBuffer(0, pvb); pass.draw(pCount);
     pass.setPipeline(pWorld); pass.setVertexBuffer(0, vb); pass.draw(worldVerts);
+    pass.setPipeline(pLimb); pass.setVertexBuffer(0, pvb); pass.draw(pCount);
     pass.setPipeline(pContact); pass.draw(6);
     pass.setPipeline(pBolt); pass.draw(6);
     pass.end();
@@ -336,7 +478,9 @@ async function main() {
 
   window.__crystalInfo = {
     biome: CRYSTAL.id, W, H, msaa: SAMPLES, dprCap: 2, tris: worldVerts / 3, skyVerts,
-    key: KEY.sha256, bolt: 'bolt439_atlas', circles: world.circles.length, fov: 62, worldVerts,
+    key: KEY.sha256, bolt: 'bolt439_atlas', breath: BREATH_BUILD,
+    breathClip: BREATH.clipName, breathRgba: BREATH.rgbaDir, breathFrames: BREATH.frames,
+    planet: PLANET.sha256, circles: world.circles.length, fov: 62, worldVerts,
   };
   window.__live = live;
   window.__terrH = terrH;

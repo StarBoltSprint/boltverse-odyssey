@@ -10,8 +10,22 @@ export const KEY = {
 };
 
 // Pixel rects, origin top-left. Order is the GPU crop table.
+export const PLANET = {
+  file: 'key/planet-surface.jpg',
+  w: 1280,
+  h: 720,
+  sha256: '62a6b8e69bb71b557219b41740bfa7bf64ed2d38068ba5d77bfc56a66a4c1f81',
+  // Upper right of the canyon view (psi 0 looks down -Z). Fixed in the world.
+  dir: [0.46, 0.42, -0.78],
+  distance: 2600,
+  radius: 430,
+  limb: 1.045,
+  seamBand: 56,
+  poleRows: 4,
+};
+
 export const CROPS = [
-  { id: 'mineral', x: 190, y: 1040, w: 300, h: 200 },
+  { id: 'mineral', x: 70, y: 960, w: 420, h: 300 },
   { id: 'violet', x: 16, y: 760, w: 170, h: 220 },
   { id: 'cyan', x: 540, y: 560, w: 165, h: 280 },
   { id: 'stone', x: 10, y: 90, w: 190, h: 280 },

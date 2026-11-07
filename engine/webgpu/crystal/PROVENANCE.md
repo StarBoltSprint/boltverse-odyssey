@@ -31,4 +31,21 @@ Route: `engine/webgpu/crystal/crystal.html` served from `engine/webgpu`. Capture
 
 The 30 fps figure is the encode rate of the stepped frames, not a measured display rate. SwiftShader took about 170 s to produce the 600 frames.
 
-Known picture limits, from the frames: ground and crystal faces repeat the key crops, so a repeat edge shows near the camera; the planet crop sits in the upper right as a bright limb on the dome, not a reconstructed sphere. The arch and the spires are meshes you can walk to. Bolt is the live `bolt439` card, follow camera 2.35 m, lateral offset 0.
+## Idle
+
+Crystal previously imported only `bricks/bolt-idle.js`. That plants a gallop atlas frame and warps it with a sine (`idleCardLy` / `idleTailUV`). It is not the filmed breath.
+
+The selected Imagine idle is gen4b, already integrated on the meadow breath page:
+
+- module `engine/webgpu/bricks/bolt-breath.js` (`BREATH_BUILD` `m448aaa3-breath1`)
+- 144 PNG frames, 24 fps, 200 ms crossfade, stamp `{sx:286, sy:570, sw:156, sh:470}` into the 384×896 card
+- clip name `bolt_idle4b_loop_alpha.webm` (the GPU reads the PNGs, not the WebM)
+- directory `engine/webgpu/assets/meadow/bolt_idle4b5_rgba/f0000.png` … `f0143.png`
+
+Those PNG files and the WebM are not in this checkout. Parent scratch named by the task: `/workspace/bolt-idle/gen4` and `assets/meadow/bolt_idle4b5_rgba` on the install box. Crystal now calls `makeBreathClip` on `../assets/meadow/` and sets `misc.x` to 0 so the sine warp stays off. It does not invent frames.
+
+Paw-plant and tail/side crop of that gen4b source are unchanged. They were not accepted as fixed.
+
+## Planet
+
+`key/planet-surface.jpg` sha256 `62a6b8e69bb71b557219b41740bfa7bf64ed2d38068ba5d77bfc56a66a4c1f81`, 1280×720. It is a surface plate, not a finished disc. Left/right edges do not match (mean channel difference about 30; the equator is a hard cut). Poles are pale low-detail bands. The loader feathers 56 columns and flattens 4 pole rows to their own average, then maps the plate on a world-fixed sphere with the scene sun as terminator and a larger shell for the limb. Phone frame time was not measured.
