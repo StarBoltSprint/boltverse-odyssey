@@ -7,8 +7,10 @@ import { followEye, lookAt, persp, mul, FOV_Y } from '../engine/bricks/follow-ca
 import { createPlanetMesh, prepareSurfaceRGBA, frontYaw, planetCenter } from '../engine/bricks/planet-sphere.js';
 import { CRYSTAL, PLANET } from './biome.js';
 import { materialGate, TILE_M, ALBEDO } from './materials.js';
+import { shadeFns, SHADE, tileScales, WATER_WAVE } from '../biome-factory/shade.js';
 import { buildWorld, demoSteer, proofInput, integrate, spawn, terrH } from './world.js';
 
+const SC = tileScales();
 const qs = new URLSearchParams(location.search);
 const CAP = qs.get('cap') === '1';
 const DEMO = qs.get('demo') === '1' || CAP;
@@ -77,17 +79,13 @@ struct VO { @builtin(position) p: vec4f, @location(0) w: vec3f, @location(1) n: 
   var p = a.xyz; let n = b.xyz;
   if (a.w > 3.5 && a.w < 4.5) {
     let t = u.cam.w;
-    p.y += 0.11 * sin(p.z * 1.35 + t * 1.25) + 0.05 * sin(p.x * 2.2 - t * 0.9);
+    p.y += ${WATER_WAVE.az} * sin(p.z * ${WATER_WAVE.fz} + t * ${WATER_WAVE.oz}) + ${WATER_WAVE.ax} * sin(p.x * ${WATER_WAVE.fx} - t * ${WATER_WAVE.ox});
   }
   var o: VO;
   o.p = u.vp * vec4f(p, 1.0);
   o.w = p; o.n = n; o.uv = vec2f(b.w, 0.0); o.mat = a.w; return o;
 }
-fn triMix(sx: vec3f, sy: vec3f, sz: vec3f, n: vec3f) -> vec3f {
-  let bn = abs(n); let b = bn / (bn.x + bn.y + bn.z + 1e-4);
-  return sx * b.x + sy * b.y + sz * b.z;
-}
-fn sunN() -> vec3f { return normalize(u.sun.xyz); }
+${shadeFns()}
 fn pathXg(z: f32) -> f32 { return 5.2 * sin(z * 0.028) + 1.6 * sin(z * 0.061); }
 fn terrHs(p: vec2f) -> f32 {
   let lateral = p.x - pathXg(p.y);
@@ -142,12 +140,12 @@ struct PVO { @builtin(position) p: vec4f, @location(0) n: vec3f, @location(1) w:
 }
 @fragment fn fs(v: VO) -> @location(0) vec4f {
   var n = normalize(v.n);
-  let scG = ${(1 / TILE_M.ground).toFixed(8)};
-  let scW = ${(1 / TILE_M.wall).toFixed(8)};
-  let scC = ${(1 / TILE_M.crystal).toFixed(8)};
-  let scA = ${(1 / TILE_M.architecture).toFixed(8)};
-  let scV = ${(1 / TILE_M.violet).toFixed(8)};
-  let scS = ${(1 / TILE_M.stream).toFixed(8)};
+  let scG = ${SC.ground};
+  let scW = ${SC.wall};
+  let scC = ${SC.crystal};
+  let scA = ${SC.architecture};
+  let scV = ${SC.violet};
+  let scS = ${SC.stream};
   let gnd = textureSample(groundTex, samp, v.w.xz * scG).rgb;
   let wall = triMix(
     textureSample(wallTex, samp, v.w.zy * scW).rgb,
@@ -178,21 +176,16 @@ struct PVO { @builtin(position) p: vec4f, @location(0) n: vec3f, @location(1) w:
   else if (m < 3.5) { alb = arch; }
   else if (m < 4.5) {
     let t = u.cam.w;
-    let dydx = 0.05 * 2.2 * cos(v.w.x * 2.2 - t * 0.9);
-    let dydz = 0.11 * 1.35 * cos(v.w.z * 1.35 + t * 1.25);
-    n = normalize(vec3f(-dydx, 1.0, -dydz));
+    n = waterN(v.w, t);
     alb = waterAlb;
   }
   let view = normalize(u.cam.xyz - v.w);
-  let ndl = clamp(dot(n, sunN()), 0.0, 1.0);
-  let spec = pow(clamp(dot(n, normalize(sunN() + view)), 0.0, 1.0), 56.0);
   let crystal = select(0.0, 1.0, m > 0.5 && m < 2.5);
   let water = select(0.0, 1.0, m > 3.5 && m < 4.5);
+  var col = shadeAlb(alb, n, view, ${SHADE.crystalSpec} * crystal + ${SHADE.waterSpec} * water);
   let ndv = clamp(dot(n, view), 0.0, 1.0);
   let fres = 0.02 + 0.98 * pow(1.0 - ndv, 5.0);
-  var col = alb * (0.10 + 0.90 * ndl);
-  col += alb * spec * (0.06 * crystal + 0.45 * water);
-  col = mix(col, col * 0.55, fres * water * 0.4);
+  col = mix(col, col * ${SHADE.waterFresnelDark}, fres * water * ${SHADE.waterFresnelMix});
   let dist = length(v.w - u.cam.xyz);
   let fk = clamp(u.fog.w * smoothstep(u.grid.w, 150.0, dist), 0.0, 0.62);
   col = mix(col, u.fog.rgb, fk);

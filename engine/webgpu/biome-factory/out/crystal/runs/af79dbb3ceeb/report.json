@@ -1,0 +1,473 @@
+{
+  "runId": "af79dbb3ceeb",
+  "shade": {
+    "ambient": 0.1,
+    "sun": 0.9,
+    "specPower": 56,
+    "crystalSpec": 0.06,
+    "waterSpec": 0.45,
+    "waterFresnelDark": 0.55,
+    "waterFresnelMix": 0.4
+  },
+  "groundNdl": 0.757,
+  "materials": [
+    {
+      "id": "obsidian-wall",
+      "tileMeters": 2,
+      "file": "/agent/repos/Boltverse-odyssey/engine/webgpu/biome-factory/fixtures/materials-v2/obsidian-wall.jpg",
+      "samples": 65536,
+      "source": {
+        "r": {
+          "mean": 25.35,
+          "pstdev": 9.86
+        },
+        "g": {
+          "mean": 26.6,
+          "pstdev": 9.89
+        },
+        "b": {
+          "mean": 28.88,
+          "pstdev": 9.94
+        }
+      },
+      "shadedAtNdl075": {
+        "r": {
+          "mean": 28.03,
+          "pstdev": 7.77
+        },
+        "g": {
+          "mean": 28.98,
+          "pstdev": 7.81
+        },
+        "b": {
+          "mean": 30.74,
+          "pstdev": 7.89
+        }
+      },
+      "sourcePstdevMax": 9.94,
+      "shadedPstdevMax": 7.89
+    },
+    {
+      "id": "ground",
+      "tileMeters": 3,
+      "file": "/agent/repos/Boltverse-odyssey/engine/webgpu/biome-factory/fixtures/materials-v2/mineral-ground.jpg",
+      "samples": 65536,
+      "source": {
+        "r": {
+          "mean": 73.88,
+          "pstdev": 11.93
+        },
+        "g": {
+          "mean": 74.86,
+          "pstdev": 12.03
+        },
+        "b": {
+          "mean": 76.65,
+          "pstdev": 11.98
+        }
+      },
+      "shadedAtNdl075": {
+        "r": {
+          "mean": 67.07,
+          "pstdev": 9.96
+        },
+        "g": {
+          "mean": 67.88,
+          "pstdev": 10.06
+        },
+        "b": {
+          "mean": 69.37,
+          "pstdev": 10.04
+        }
+      },
+      "sourcePstdevMax": 12.03,
+      "shadedPstdevMax": 10.06
+    },
+    {
+      "id": "crystal",
+      "tileMeters": 0.5,
+      "file": "/agent/repos/Boltverse-odyssey/engine/webgpu/biome-factory/fixtures/materials-v2/cyan-facets.jpg",
+      "samples": 65536,
+      "source": {
+        "r": {
+          "mean": 46.72,
+          "pstdev": 8.13
+        },
+        "g": {
+          "mean": 197.34,
+          "pstdev": 7.79
+        },
+        "b": {
+          "mean": 228.55,
+          "pstdev": 5.94
+        }
+      },
+      "shadedAtNdl075": {
+        "r": {
+          "mean": 44.81,
+          "pstdev": 6.59
+        },
+        "g": {
+          "mean": 174.56,
+          "pstdev": 7.02
+        },
+        "b": {
+          "mean": 202.86,
+          "pstdev": 5.4
+        }
+      },
+      "sourcePstdevMax": 8.13,
+      "shadedPstdevMax": 7.02
+    },
+    {
+      "id": "architecture",
+      "tileMeters": 2,
+      "file": "/agent/repos/Boltverse-odyssey/engine/webgpu/biome-factory/fixtures/materials-v2/architectural-stone.jpg",
+      "samples": 65536,
+      "source": {
+        "r": {
+          "mean": 44.57,
+          "pstdev": 9.21
+        },
+        "g": {
+          "mean": 45.74,
+          "pstdev": 9.22
+        },
+        "b": {
+          "mean": 50.06,
+          "pstdev": 9.24
+        }
+      },
+      "shadedAtNdl075": {
+        "r": {
+          "mean": 43.09,
+          "pstdev": 7.45
+        },
+        "g": {
+          "mean": 44.03,
+          "pstdev": 7.48
+        },
+        "b": {
+          "mean": 47.51,
+          "pstdev": 7.53
+        }
+      },
+      "sourcePstdevMax": 9.24,
+      "shadedPstdevMax": 7.53
+    },
+    {
+      "id": "violet",
+      "tileMeters": 0.5,
+      "file": "/agent/repos/Boltverse-odyssey/engine/webgpu/biome-factory/fixtures/materials-v2/violet-mineral.jpg",
+      "samples": 65536,
+      "source": {
+        "r": {
+          "mean": 133.53,
+          "pstdev": 8.93
+        },
+        "g": {
+          "mean": 104.17,
+          "pstdev": 8.96
+        },
+        "b": {
+          "mean": 176.22,
+          "pstdev": 8.65
+        }
+      },
+      "shadedAtNdl075": {
+        "r": {
+          "mean": 117.94,
+          "pstdev": 7.79
+        },
+        "g": {
+          "mean": 92.59,
+          "pstdev": 7.68
+        },
+        "b": {
+          "mean": 155.65,
+          "pstdev": 7.71
+        }
+      },
+      "sourcePstdevMax": 8.96,
+      "shadedPstdevMax": 7.79
+    },
+    {
+      "id": "stream",
+      "tileMeters": 2,
+      "file": "/agent/repos/Boltverse-odyssey/engine/webgpu/biome-factory/fixtures/materials-v2/stream-surface.jpg",
+      "samples": 65536,
+      "source": {
+        "r": {
+          "mean": 52.37,
+          "pstdev": 2.07
+        },
+        "g": {
+          "mean": 173.05,
+          "pstdev": 1.88
+        },
+        "b": {
+          "mean": 178.25,
+          "pstdev": 1.92
+        }
+      },
+      "shadedAtNdl075": {
+        "r": {
+          "mean": 49.28,
+          "pstdev": 1.72
+        },
+        "g": {
+          "mean": 152.95,
+          "pstdev": 1.7
+        },
+        "b": {
+          "mean": 157.32,
+          "pstdev": 1.81
+        }
+      },
+      "sourcePstdevMax": 2.07,
+      "shadedPstdevMax": 1.81
+    }
+  ],
+  "swatch": {
+    "resumed": false,
+    "flatMae": 1.57,
+    "uvPeriodSad": 0,
+    "uvPeriodPx": 128,
+    "rampRaw": [
+      17,
+      246
+    ],
+    "rampLit": [
+      15,
+      220
+    ],
+    "rampLitSpread": 205,
+    "panels": [
+      {
+        "id": "ground-raw",
+        "r": {
+          "mean": 76.28,
+          "pstdev": 8.31,
+          "n": 16384
+        },
+        "g": {
+          "mean": 77.31,
+          "pstdev": 8.48,
+          "n": 16384
+        },
+        "b": {
+          "mean": 78.99,
+          "pstdev": 8.47,
+          "n": 16384
+        }
+      },
+      {
+        "id": "ground-lit",
+        "r": {
+          "mean": 68.2,
+          "pstdev": 7.42,
+          "n": 16384
+        },
+        "g": {
+          "mean": 69.13,
+          "pstdev": 7.58,
+          "n": 16384
+        },
+        "b": {
+          "mean": 70.62,
+          "pstdev": 7.58,
+          "n": 16384
+        }
+      },
+      {
+        "id": "ground-uv",
+        "r": {
+          "mean": 74.76,
+          "pstdev": 4.22,
+          "n": 16384
+        },
+        "g": {
+          "mean": 75.77,
+          "pstdev": 4.23,
+          "n": 16384
+        },
+        "b": {
+          "mean": 77.54,
+          "pstdev": 4.16,
+          "n": 16384
+        },
+        "periodSad": 0
+      },
+      {
+        "id": "wall-bevel",
+        "r": {
+          "mean": 15.64,
+          "pstdev": 5.82,
+          "n": 6693
+        },
+        "g": {
+          "mean": 16.11,
+          "pstdev": 6.06,
+          "n": 6693
+        },
+        "b": {
+          "mean": 17.37,
+          "pstdev": 6.52,
+          "n": 6693
+        }
+      },
+      {
+        "id": "cyan-gem",
+        "r": {
+          "mean": 26.88,
+          "pstdev": 9.4,
+          "n": 6186
+        },
+        "g": {
+          "mean": 106.09,
+          "pstdev": 37.01,
+          "n": 6186
+        },
+        "b": {
+          "mean": 123.07,
+          "pstdev": 42.87,
+          "n": 6186
+        }
+      },
+      {
+        "id": "violet-gem",
+        "r": {
+          "mean": 67.83,
+          "pstdev": 27.26,
+          "n": 6219
+        },
+        "g": {
+          "mean": 53.37,
+          "pstdev": 21.49,
+          "n": 6219
+        },
+        "b": {
+          "mean": 89.73,
+          "pstdev": 36.01,
+          "n": 6219
+        }
+      },
+      {
+        "id": "stream",
+        "r": {
+          "mean": 49.73,
+          "pstdev": 1.26,
+          "n": 16384
+        },
+        "g": {
+          "mean": 154.73,
+          "pstdev": 2.02,
+          "n": 16384
+        },
+        "b": {
+          "mean": 159.57,
+          "pstdev": 2.08,
+          "n": 16384
+        }
+      },
+      {
+        "id": "ramp-raw",
+        "r": {
+          "mean": 126.72,
+          "pstdev": 71.33,
+          "n": 16384
+        },
+        "g": {
+          "mean": 126.72,
+          "pstdev": 71.33,
+          "n": 16384
+        },
+        "b": {
+          "mean": 126.72,
+          "pstdev": 71.33,
+          "n": 16384
+        },
+        "spread": 229,
+        "ends": [
+          17,
+          246
+        ]
+      },
+      {
+        "id": "ramp-lit",
+        "r": {
+          "mean": 113.31,
+          "pstdev": 63.76,
+          "n": 16384
+        },
+        "g": {
+          "mean": 113.31,
+          "pstdev": 63.76,
+          "n": 16384
+        },
+        "b": {
+          "mean": 113.31,
+          "pstdev": 63.76,
+          "n": 16384
+        },
+        "spread": 205,
+        "ends": [
+          15,
+          220
+        ]
+      }
+    ]
+  },
+  "premise": {
+    "statement": "good correct-scale albedo alone, with current material/light/UV code, will yield a convincing crystal canyon",
+    "holds": false,
+    "colourPipelineOk": true,
+    "shadePreservesRamp": true,
+    "lowContrastIds": [
+      "obsidian-wall",
+      "ground",
+      "crystal",
+      "architecture",
+      "violet",
+      "stream"
+    ],
+    "because": "the unlit level-0 quad matches the JPEG and a 0–255 ramp still spans the frame after shading. Every current original is low contrast, so a correct metre scale cannot create wall grain or crystal colour facets. Face-to-face shading still comes from the mesh normals. On the canyon path the mip filter averages that small variation further."
+  },
+  "pending": {
+    "sky": {
+      "status": "BLOCKED",
+      "interface": "GenerateImage",
+      "supportedAspects": [
+        "1:1",
+        "4:3",
+        "3:4",
+        "16:9",
+        "9:16"
+      ],
+      "missingParameters": [
+        "width",
+        "height",
+        "resolution",
+        "equirectangular"
+      ],
+      "cannotRequest": "a native 2:1 image at 2048x1024 or larger",
+      "doNot": "Do not resize, stretch, or crop the 1280x720 plate into a 2:1 map. It is not a 360.",
+      "houseNow": "The meadow sky shader samples an equirectangular 2:1 with uv (atan2(x,-z)/2pi+0.5, 0.5-asin(y)/pi). GenerateImage cannot request that projection.",
+      "alternativesNotGenerated": [
+        "Cubemap: six faces, each a supported 1:1 image. No face was generated.",
+        "Eight rectilinear views: 60 degree horizontal field, 45 degree yaw step, 25 percent overlap, horizon at half the frame. No view was generated."
+      ],
+      "file": "sky-panorama.jpg",
+      "resolution": [
+        1280,
+        720
+      ]
+    }
+  },
+  "signoff": {
+    "visualKeep": false,
+    "phoneMeasured": false,
+    "gait": "feet still skate; 200 ms crossfade is two different pictures",
+    "sky": "BLOCKED"
+  }
+}

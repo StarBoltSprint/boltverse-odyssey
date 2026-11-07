@@ -169,6 +169,8 @@
       720
     ],
     "runtimeTexture": false,
+    "status": "BLOCKED",
+    "blocker": "GenerateImage aspect_ratio is only 1:1, 4:3, 3:4, 16:9, 9:16. No width, height, or equirectangular parameter. A native 2:1 at 2048x1024 or larger cannot be requested. The 1280x720 plate is not resized.",
     "wrapPass": false,
     "wrapMeanAbs": 7.68,
     "wrapMaxRow": 18.3,

@@ -16,8 +16,9 @@ const cfg = JSON.parse(fs.readFileSync(path.join(webgpu, 'crystal/biome.factory.
 if (sourceUsesReferenceAsTexture(page)) bad('page still samples the reference');
 if (page.includes('tiling-inspection.jpg')) bad('page uses the tiling sheet');
 for (const key of Object.keys(TILE_M)) {
-  if (!page.includes('TILE_M.' + key)) bad('shader missing scale ' + key);
+  if (!page.includes('SC.' + key) && !page.includes('TILE_M.' + key)) bad('shader missing scale ' + key);
 }
+if (!page.includes('shadeAlb')) bad('canyon shade is not the shared function');
 const wide = 84;
 if (repeatsAcross(wide, TILE_M.ground) !== wide / 3) bad('ground period');
 if (page.includes('sky-panorama.jpg')) bad('page samples the rejected sky');
@@ -72,7 +73,7 @@ const base = {
 const held = runPipeline(base);
 if (held.label !== 'HOLD' || held.release || held.keep) bad('valid path released ' + held.label);
 if (held.hard.length) bad('valid path hard ' + JSON.stringify(held.hard));
-for (const code of ['missing_asset', 'scale_unproven', 'quality_hold', 'visual_not_passed', 'sky_unusable', 'missing_capture', 'missing_review', 'phone_unmeasured']) {
+for (const code of ['missing_asset', 'scale_unproven', 'quality_hold', 'visual_not_passed', 'sky_unusable', 'sky_blocked', 'missing_capture', 'missing_review', 'phone_unmeasured']) {
   if (!held.hold.some(h => h.code === code)) bad('missing hold ' + code);
 }
 

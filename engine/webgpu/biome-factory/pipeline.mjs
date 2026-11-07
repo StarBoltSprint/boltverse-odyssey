@@ -86,6 +86,7 @@ export function runPipeline(ctx) {
         hard(state, 'sky_projection', sky.file || 'sky');
       }
       if (!equirect || sky.wrapPass !== true) hold(state, 'sky_unusable', sky.reason || 'sky is not a 2:1 wrap');
+      if (sky.status === 'BLOCKED') hold(state, 'sky_blocked', sky.blocker || 'GenerateImage cannot request this sky');
     }
   }
   state.stages.refs = state.hard.some(h => h.code === 'ref_as_texture') ? 'fail' : 'pass';

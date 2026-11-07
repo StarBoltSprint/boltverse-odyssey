@@ -5,6 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { runPipeline } from './pipeline.mjs';
+import { assemble } from './assemble.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const webgpu = path.resolve(here, '..');
@@ -47,20 +48,48 @@ function crystalContext() {
   };
 }
 
+const force = args.includes('--force');
+const noSwatch = args.includes('--no-swatch');
+
 if (!configs[biome]) {
   console.log(JSON.stringify({ label: 'FAIL', error: 'unknown biome ' + biome }));
   process.exit(1);
 }
 
-const state = runPipeline(configs[biome]());
+const ctx = configs[biome]();
+const state = runPipeline(ctx);
 const dest = path.join(outRoot, biome);
 fs.mkdirSync(dest, { recursive: true });
 const prevKeep = path.join(dest, 'KEEP');
-if (fs.existsSync(prevKeep) && !state.release) {
-  state.note = 'previous KEEP left in place';
-} else if (state.release) {
-  fs.writeFileSync(prevKeep, state.label + '\n');
+if (fs.existsSync(prevKeep) && !state.release) state.note = 'previous KEEP left in place';
+else if (state.release) fs.writeFileSync(prevKeep, state.label + '\n');
+
+try {
+  const report = await assemble(ctx, {
+    outRoot: dest,
+    fixtureDir: path.join(here, 'fixtures/materials-v2'),
+    swatch: !noSwatch,
+    force,
+  });
+  state.premise = report.premise;
+  state.sky = 'BLOCKED';
+  state.pending = report.pending;
+  state.runId = report.runId;
+  state.swatch = report.swatch;
+  state.signoff = report.signoff;
+} catch (err) {
+  state.hard.push({ code: 'assemble', detail: String(err && err.stack || err) });
+  state.label = 'FAIL';
 }
 fs.writeFileSync(path.join(dest, 'state.json'), JSON.stringify(state, null, 2));
-console.log(JSON.stringify({ label: state.label, release: state.release, hold: state.hold.map(h => h.code), hard: state.hard.map(h => h.code), out: dest }));
+console.log(JSON.stringify({
+  label: state.label,
+  release: state.release,
+  premise: state.premise && state.premise.holds,
+  sky: state.sky || null,
+  runId: state.runId || null,
+  hold: state.hold.map(h => h.code),
+  hard: state.hard.map(h => h.code),
+  out: dest,
+}));
 process.exit(state.hard.length ? 1 : state.release ? 0 : 2);
