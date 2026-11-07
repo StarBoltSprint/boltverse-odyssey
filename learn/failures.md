@@ -1371,3 +1371,14 @@ Fix: size the skirt per stretch from the key-visible bottom, and score the skirt
 | Fix | Candidate m448aaa3-occl1 draws the opaque occluders before the ground. SwiftShader 720×1348 at t=0.4, 4, 9, 14 matched the cull page with mean abs 0, and a second render of t=4 matched itself. Phone frame time is unmeasured. |
 | Guard | `node engine/webgpu/occl-install/check.mjs`; `node engine/webgpu/check/meadow-epic/phone-window-1936.test.mjs` |
 | Sources | `engine/webgpu/occl-install/`. |
+
+### 2026-11-07 — gen4b breath wired, crop and paws still the source
+
+| | |
+| --- | --- |
+| Take | SmiR asked to put the gen4b breath loop in the current meadow. He had already said the tail/body clips and the paws are not planted enough. |
+| Defect | The meadow idle was the planted bolt439 frame plus a shader breath. gen4b is a separate 144-frame PNG loop with the m447idle4b5 stamp. |
+| Root cause | Two different idle pictures. The stamp (sx 286, sy 570, sw 156, sh 470 into 384×896) is what the existing crossfade uses. This pass does not repaint it. |
+| Fix | Page m448aaa3-breath1. Release brakes at 5.5, then a 200 ms mix into the loop. Input returns the gallop at 7 m/s. |
+| Guard | `node engine/webgpu/check/meadow-epic/bolt-breath.test.mjs` |
+| Sources | `engine/webgpu/bricks/bolt-breath.js`, `engine/webgpu/breath-install/`. |
