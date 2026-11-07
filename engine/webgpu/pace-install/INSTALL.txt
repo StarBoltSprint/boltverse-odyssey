@@ -1,0 +1,34 @@
+Meadow pace candidate — add files only. Version meadow-pace-1106.
+
+This does not replace /m448aaa3.html or /m448aaa3-diag.html.
+It does not change resolution, grass, shadows, post, or the 7 m/s gallop.
+It does not claim the phone is faster. That is unmeasured until the phone opens the new page.
+
+Root on the box: /workspace/biome-futur/webgpu-ground
+
+From this directory:
+  sh install.sh /workspace/biome-futur/webgpu-ground
+
+The script only reads these, and stops if any hash differs:
+  m448aaa3.html
+  m448aaa3.js
+  m448aaa3-diag.html
+  m448aaa3-diag.js
+  engine/bricks/frame-diag.js
+
+Then it adds only:
+  m448aaa3-pace.html
+  m448aaa3-pace.js
+  engine/bricks/sim-pace.js
+If one of those already exists with a different hash, it writes nothing.
+
+Open: /m448aaa3-pace.html?diag=1
+Leave /m448aaa3.html?v=9collide and /m448aaa3-diag.html?diag=1 unchanged.
+
+What the page changes: a frame slower than 50 ms is simulated in successive steps of at most 50 ms, up to 0.5 s of that frame. Each step is the same stepLive the live page already uses, including the 0.12 m collision split. The diagnostic records the sum of those steps. Copy still stays on the phone.
+
+What it does not know: gpuTime is still null. CPU versus GPU is not measured. The reported dpr is not the render scale. The canvas size is.
+
+Rollback:
+  sh uninstall.sh /workspace/biome-futur/webgpu-ground
+That deletes only the three pace paths, and only if the hash still matches.

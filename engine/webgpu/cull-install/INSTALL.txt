@@ -1,0 +1,23 @@
+Grass offscreen cull — add files only. Version meadow-cull-1106.
+
+This page keeps pace, the 7 m/s gallop, and the same draws. Grass blades whose reach
+sits outside the camera wedge are not shaded. That is a vertex skip, not a phone FPS claim.
+
+It does not replace the normal page, the diagnostic, the pace page, or the profile page.
+
+Root on the box: /workspace/biome-futur/webgpu-ground
+
+From this directory:
+  sh install.sh /workspace/biome-futur/webgpu-ground
+
+The script reads the eleven guard paths and stops if any hash differs. Then it adds only:
+  m448aaa3-cull.html
+  m448aaa3-cull.js
+  engine/bricks/grass-offscreen.js
+A colliding hash writes nothing.
+
+Open: /m448aaa3-cull.html
+The hud reads v448aaa3-cull.
+
+Rollback deletes only those three paths, and only if the hash still matches:
+  sh uninstall.sh /workspace/biome-futur/webgpu-ground
