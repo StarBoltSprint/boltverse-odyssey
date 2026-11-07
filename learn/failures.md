@@ -1316,3 +1316,80 @@ Fix: size the skirt per stretch from the key-visible bottom, and score the skirt
 | Fix | Branch `terrace/fix-door-ghost` (off dd80963f): ground = plain snow `Color(0.78, 0.84, 0.9)` like the offline render; rebuilt materials keep `side` from the GLB material. Page-only, 3 lines, to merge into Engine Core's `engine/bench-load-1013` (b1e99d2e; textual conflict on the adjacent `parseAsync` line only). |
 | Guard | `python3 -m tools.gate.playgate <served_url> <out>` renders the SERVED page headless at 412x915 CSS x1.5 (door-3m, threshold-3m/8m-30d, wall-end-left/right), runs per-region no-grey, and inventories the live scene: FAIL on any undeclared node, a ground that maps an object plate, an object material whose GLB is doubleSided but runtime side != DoubleSide, unexpected transparency, page errors, and camera vs spine.json beyond tolerance. Self-test `python3 -m tools.gate.selftest_playgate`: current build FAILs both (a) and (b); fixed build PASSes the scene checks. Known gap: `nogrey` skips luma <= 20, so a dark flat band is not flagged; the scene check is what catches (a). |
 | Sources | `tools/gate/playgate.py`, `tools/gate/playgate.mjs`, `tools/gate/playgate.views.json`, `tools/gate/selftest_playgate.py`. |
+
+### 2026-11-06 — meadow slow frames were read as a second speed bug
+
+| | |
+| --- | --- |
+| Take | Meadow live page. Phone export 2026-11-06 11:44 Europe/Paris. Not an owner KEEP. |
+| Defect | The page felt slow. The export said 2.74 m/s against a 7 m/s gallop, with applied/wall 0.59. |
+| Root cause | The live loop calls stepLive once with min(wall, 0.05), so time past 50 ms is not simulated. metresPerSec is sum(v × applied) / sum(wall). appliedOverWall is median(applied) / median(wall), which is 50 / 84.7. At a constant 7 m/s that median ratio is about 4.13 m/s, not 2.74. A right-skewed 64-frame window with median wall 84.7 ms and p95 205.1 ms produces 2.74 m/s while v stays 7. Collision does not enter this metric. The reported dpr of 3 is not the render scale. gpuTime null means CPU versus GPU was not measured. |
+| Fix | Candidate page only. Wall time is simulated in the existing steps of at most 0.05 s, and one frame stops at 0.5 s. The installed normal page and the installed diagnostic are not replaced. Phone speed is unmeasured. |
+| Guard | `node engine/webgpu/check/meadow-epic/sim-pace.test.mjs` — reconstructed window 2.74 m/s, median-only 4.13 m/s, capped drive 2.42 m/s, paced drive 7 m/s on 84.7 ms and 205.1 ms frames. |
+| Sources | `engine/webgpu/engine/bricks/sim-pace.js`, `engine/webgpu/pace-install/`. |
+
+### 2026-11-06 — meadow saccades are not the JavaScript frame prep
+
+| | |
+| --- | --- |
+| Take | Same phone export as the pace note. Median wall 84.7 ms, p95 205.1 ms, canvas 720×1348, effective scale 2, gpuTime null. Pace was already the simulation fix and was left untouched. |
+| Defect | The picture still stutters. A slow frame is a late image, even when the dog's position matches wall time. |
+| Root cause | Not found in the CPU prep. One frame of the live matrix build, the 1941-tree select, and five collision substeps measured median 0.060 ms, p95 0.105 ms, max 0.238 ms over 2000 runs on this machine. Reusing the arrays removes a 2.5 ms GC blip seen once in 4000 matrix builds, which does not account for an 84 ms frame. A 32 KB writeBuffer plus submit, single buffer versus a 3-deep ring, and 12 texture views, on the local software GPU (n=48, not a phone): medians at the timer floor, maxima 0.7 ms, 0.2 ms, and 0.1 ms. No quality-preserving cut was measurable. Grass, MSAA, shadows, DPR, and distance were not reduced. |
+| Fix | None shipped. A smoothness page that only reused those arrays would not change the stutter. `meadow-pace-1106` was not modified. |
+| Guard | `node engine/webgpu/check/meadow-epic/render-stutter-prep.test.mjs` — cull and uniform bytes match, and this prep stays under 5 ms median / 20 ms p95. That ceiling is a CPU guard, not a phone frame time. |
+| Sources | `engine/webgpu/check/meadow-epic/render-stutter-prep.test.mjs`, `engine/webgpu/engine/bricks/perf-cull.js`. |
+
+### 2026-11-06 — SwiftShader mapAsync aborts timestamp readback
+
+| | |
+| --- | --- |
+| Take | Pass-profile preview, local Chrome, adapter architecture swiftshader. Not a phone. |
+| Defect | `mapAsync` on the timestamp result buffer rejects with AbortError: "A valid external Instance reference no longer exists." The same call fails in the WebGPU timestamp sample, not only in the meadow page. |
+| Root cause | This VM's software adapter accepts `timestamp-query` and accepts the render pass, then aborts the map. Enabling a Chrome flag is out of bounds. |
+| Fix | The frame records the sample as `invalid` with `gpuError` and does not wait. A successful decode is covered by the mock. The phone read is still unmeasured. |
+| Guard | `node engine/webgpu/check/meadow-epic/pass-timer.test.mjs` — map rejection frees the slot and sets `gpuError`. |
+| Sources | `engine/webgpu/engine/bricks/pass-timer.js`. |
+
+### 2026-11-06 — phone main and shadow passes, grass wedge not yet remeasured
+
+| | |
+| --- | --- |
+| Take | Adreno 6xx pass-profile, 64 rAF samples. Not an A/B against the 84.7 ms export. |
+| Defect | Wall median 101.5 ms, p95 270.8 ms. Inside the window: 53 ok, 8 dropped, 3 pending. The field `dropped: 41` is the running counter, not 41 of these 64. |
+| Root cause | CPU prep and encode medians are 0.4 ms. On the 53 GPU samples, main is 60.4–93.3 ms (median 70.4) and shadow is 19.8–34.7 ms (median 26.4), including the frames whose wall was ~17 ms. Post blur sits on the 65536 ns quantum. The passes do not say which draw inside main or shadow costs that. |
+| Fix | Candidate page only. Grass vertices outside a 4.5 m camera wedge are not shaded. The blade reach is 2.40 m; the extra 2 m cleared a y box from -3 to 2.8 on 294640 samples with 0 false rejects. About 40% of grass vertices fall outside on the 720×1348 aspect. Phone pass time after this change is unmeasured. |
+| Guard | `node engine/webgpu/check/meadow-epic/grass-offscreen.test.mjs` |
+| Sources | `engine/webgpu/engine/bricks/grass-offscreen.js`, `engine/webgpu/cull-install/`. |
+
+### 2026-11-06 — 19:36 export is slow frames with the median sim caught up
+
+| | |
+| --- | --- |
+| Take | Adreno 6xx basic diag, 19:36 Europe/Paris. No route field. Not an A/B against 84.7/205.1 or the pass profile. |
+| Defect | kind slow-frames, n=64, median wall 84.7 ms, median applied 84.7 ms, p95 wall 273 ms, appliedOverWall 1, metresPerSec 5.43, gpuTime null. |
+| Root cause | The median ratio is 1, so the median frame applied its wall time. A frame past the median can still drop time; this export has no per-frame samples and no maximum. 5.43 m/s is commanded speed times applied time over wall time, so the window was not a held 7 m/s the whole way. The earlier pass profile still stands: main ~70 ms and shadow ~26 ms of GPU time. Offscreen grass vertices do not remove the fragment shader of the ground, which was drawn first and then covered. |
+| Fix | Candidate m448aaa3-occl1 draws the opaque occluders before the ground. SwiftShader 720×1348 at t=0.4, 4, 9, 14 matched the cull page with mean abs 0, and a second render of t=4 matched itself. Phone frame time is unmeasured. |
+| Guard | `node engine/webgpu/occl-install/check.mjs`; `node engine/webgpu/check/meadow-epic/phone-window-1936.test.mjs` |
+| Sources | `engine/webgpu/occl-install/`. |
+
+### 2026-11-07 — gen4b breath wired, crop and paws still the source
+
+| | |
+| --- | --- |
+| Take | SmiR asked to put the gen4b breath loop in the current meadow. He had already said the tail/body clips and the paws are not planted enough. |
+| Defect | The meadow idle was the planted bolt439 frame plus a shader breath. gen4b is a separate 144-frame PNG loop with the m447idle4b5 stamp. |
+| Root cause | Two different idle pictures. The stamp (sx 286, sy 570, sw 156, sh 470 into 384×896) is what the existing crossfade uses. This pass does not repaint it. |
+| Fix | Page m448aaa3-breath1. Release brakes at 5.5, then a 200 ms mix into the loop. Input returns the gallop at 7 m/s. |
+| Guard | `node engine/webgpu/check/meadow-epic/bolt-breath.test.mjs` |
+| Sources | `engine/webgpu/bricks/bolt-breath.js`, `engine/webgpu/breath-install/`. |
+
+### 2026-11-07 — two draw-class guesses, still no phone split
+
+| | |
+| --- | --- |
+| Take | SmiR, 7 Nov 2026: the game still lags. The grass wedge and the occlusion reorder had both been shipped as candidates. Neither has a phone remeasure. |
+| Defect | Adreno 6xx pass profile, 53 paired samples: main median 70.385664 ms, shadow 26.411008 ms, post-final 2.555904 ms. CPU prep and encode medians 0.4 ms. The later slow-frames export is still 84.7 ms median wall, 273 ms p95, gpuTime null. |
+| Root cause | Not named. The profile times whole passes. WebGPU timestamps are per pass, and splitting the pass on a tile-based phone would add store/load that is not the original 70 ms. Grass vertices (988200) and the ground grid (98304, 4x MSAA) are the largest submitted jobs, but the two cuts aimed at them were not measured, so a third cut of the same kind is not evidence. |
+| Fix | None shipped. Page m448aaa3-cls1 keeps the scratch draws on `all` frames and skips one class on the next frame: grass, ground, main trees, or shadow trees. The export field is the paired delta, not a ratio of medians. Phone result is unmeasured. |
+| Guard | `node engine/webgpu/check/meadow-epic/draw-class.test.mjs`; `node engine/webgpu/cls-install/check.mjs` |
+| Sources | `engine/webgpu/engine/bricks/draw-class.js`, `engine/webgpu/cls-install/`. |

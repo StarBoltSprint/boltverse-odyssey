@@ -1,0 +1,38 @@
+Meadow draw-class measurement — add files only. Version meadow-cls-1107.
+
+This does not fix the lag and it does not change the normal page.
+For about 64 frames the picture drops one class at a time (grass, ground, trees, or shadow trees), then locks back to the full scratch picture. Copy the JSON after the hud says locked.
+
+Root on the box: /workspace/biome-futur/webgpu-ground
+
+From this directory:
+  sh install.sh /workspace/biome-futur/webgpu-ground
+
+The script only reads these two paths, and stops if either hash differs:
+  m448aaa3.html
+  m448aaa3.js
+
+Then it adds only:
+  m448aaa3-cls.html
+  m448aaa3-cls.js
+  engine/bricks/draw-class.js
+  engine/bricks/pass-timer-cls.js
+If one of those already exists with a different hash, it writes nothing.
+It does not write the normal page, diag, pace, prof, cull, occl, or breath.
+
+Open: /m448aaa3-cls.html?diag=1
+The hud reads m448aaa3-cls1, then the class name, then locked.
+Copy writes kind draw-class. Nothing is sent off the device.
+
+Read delta, not a ratio of the whole window.
+delta.no-grass.median is how many nanoseconds the main pass slowed on the full frame versus the next frame with grass draws skipped.
+The same field for no-ground and no-trees is main. no-shadow-trees is the shadow pass.
+n is the number of paired frames whose GPU timestamps were both valid. A class with n under 4 is too thin to name.
+control.median near 0 means the other pass did not move. A large control means the pair is not isolated.
+Positive is the class. Near zero, or negative, means that class did not account for the pass.
+
+all frames use the scratch draws: 4x MSAA, grass G=200 plus the two rings, shadow map 1024 two cascades, Bolt draw left on. Resolution still follows the phone, capped at devicePixelRatio 2.
+
+Rollback:
+  sh uninstall.sh /workspace/biome-futur/webgpu-ground
+That deletes only the four new paths, and only if the hash still matches.
