@@ -4,9 +4,11 @@ SmiR, 2026-11-07, on the new environment key: « Ok trop bien ».
 
 The key is an artistic reference only. It is not a runtime texture. `CROPS` remains a record of that plate and is not sampled.
 
-Revision `materials-v2-r1` (zip sha256 `6a2cf6ce010a552ce0797bdc75f354d625ffc6e5997dd52791ae6a62f61e6186`, 1986224 bytes) holds four native 1024×1024 JPEGs. Embedded C2PA names softwareAgent “Grok Imagine” and certificate identity “xAI Grok Imagine”. The signature was not verified. That is self-identification, not a certificate.
+Revision `materials-v2-r1` (zip sha256 `6a2cf6ce010a552ce0797bdc75f354d625ffc6e5997dd52791ae6a62f61e6186`, 1986224 bytes) holds four native 1024×1024 JPEGs. Completion zip sha256 `938f362343d0e8b68a9339209d5528894e1e98c76776928e9aa20383ead67d30`, 865532 bytes, adds stream (2 m), violet (0.5 m, paler than requested) and a 1280×720 sky plate. Embedded C2PA names softwareAgent “Grok Imagine” and certificate identity “xAI Grok Imagine”. The signature was not verified.
 
-Declared tile period, not a measured fit: ground 3 m, wall 2 m, crystal 0.5 m (one file on both crystal ids), architecture 2 m. Wall and crystal stay quality HOLD. Ground and architecture are candidates, not a visual PASS. Seamless is not certified. Stream, sky, and a separate violet file are missing; the page does not invent them. Fog is off. Release is HOLD.
+The sky plate is not the house sky. The house map is equirectangular 2:1, `uv = (atan2(x,-z)/2π+0.5, 0.5-asin(y)/π)`, repeat on U, horizon on the middle row, at least 2048×1024. This plate is 16:9 and its left and right nebulas do not meet. It is stored and not sampled.
+
+Declared periods are not measurements. Wall and cyan stay quality HOLD. Ground, architecture, violet and stream are not a visual PASS. The r1 review stands: the ground JPEG repeats, the wall JPEG is near-black, the cyan JPEG is almost flat. Bevels, an 8-side cut gem and a harder sun term are there so the mesh can read. They do not invent grain the JPEGs do not have. Fog stays off. Release is HOLD.
 
 Isolated candidate: `crystal.html?candidate=materials-v2-r1`. Without that flag the page does not paint.
 

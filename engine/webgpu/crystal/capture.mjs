@@ -7,7 +7,7 @@ import http from 'http';
 const port = 9333;
 const out = process.argv[2] || '/tmp/crystal-frame.png';
 const simT = Number(process.argv[3] || 2);
-const url = process.argv[4] || 'http://127.0.0.1:8765/crystal/crystal.html?cap=1&w=720&h=1280&candidate=materials-v2-r1';
+const url = process.argv[4] || 'http://127.0.0.1:8765/crystal/crystal.html?cap=1&w=720&h=1280&candidate=materials-v2-r2';
 
 function get(pathname) {
   return new Promise((resolve, reject) => {

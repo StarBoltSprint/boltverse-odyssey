@@ -35,6 +35,10 @@ const files = [
   'engine/webgpu/biome-factory/fixtures/materials-v2/cyan-facets.jpg',
   'engine/webgpu/biome-factory/fixtures/materials-v2/architectural-stone.jpg',
   'engine/webgpu/biome-factory/fixtures/materials-v2/manifest.json',
+  'engine/webgpu/biome-factory/fixtures/materials-v2/stream-surface.jpg',
+  'engine/webgpu/biome-factory/fixtures/materials-v2/violet-mineral.jpg',
+  'engine/webgpu/biome-factory/fixtures/materials-v2/sky-panorama.jpg',
+  'engine/webgpu/biome-factory/fixtures/materials-v2/qa/prompts-full.json',
   'engine/webgpu/biome-factory/evidence/crystal.json',
 ];
 

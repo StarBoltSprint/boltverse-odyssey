@@ -18,18 +18,19 @@ const configs = {
 
 function crystalContext() {
   const page = fs.readFileSync(path.join(webgpu, 'crystal/crystal.js'), 'utf8');
+  const cfg = JSON.parse(fs.readFileSync(path.join(webgpu, 'crystal/biome.factory.json'), 'utf8'));
   const dir = path.join(here, 'fixtures/materials-v2');
-  const names = ['obsidian-wall.jpg', 'mineral-ground.jpg', 'cyan-facets.jpg', 'architectural-stone.jpg'];
   const files = {};
-  for (const n of names) {
-    const p = path.join(dir, n);
-    if (fs.existsSync(p)) files[n] = fs.readFileSync(p);
+  for (const slot of cfg.materials) {
+    if (!slot.file) continue;
+    const p = path.join(dir, slot.file);
+    if (fs.existsSync(p)) files[slot.file] = fs.readFileSync(p);
   }
   const breathDir = path.join(webgpu, 'assets/meadow/bolt_idle4b5_rgba');
   const breathFrames = fs.existsSync(breathDir) ? fs.readdirSync(breathDir).filter(f => /^f\d{4}\.png$/.test(f)).length : 0;
   const bolt = path.join(webgpu, 'assets/meadow/bolt439_atlas.png');
   return {
-    config: JSON.parse(fs.readFileSync(path.join(webgpu, 'crystal/biome.factory.json'), 'utf8')),
+    config: cfg,
     pageSource: page,
     files,
     identity: { boltAtlas: fs.existsSync(bolt), breathFrames },
@@ -38,7 +39,9 @@ function crystalContext() {
       : { capture: false, visualVerdict: null, phoneMeasured: false },
     openDefects: [
       'gen4b tail crop and paw plant are not claimed fixed',
-      'idle/run crossfade is 200ms between two different pictures (pose, light, volume)',
+      'idle/run crossfade is 200ms between two different pictures',
+      'feet still skate; tail in one clip is not proof the source is fixed',
+      'sky plate rejected: not equirect 2:1',
       'phone performance was not measured',
     ],
   };

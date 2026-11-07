@@ -8,7 +8,7 @@ const fps = 30;
 const dir = '/tmp/crystal-frames';
 const log = '/tmp/crystal-cap.log';
 const port = 9334;
-const url = 'http://127.0.0.1:8765/crystal/crystal.html?cap=1&jpg=1&proof=1&w=720&h=1280&candidate=materials-v2-r1';
+const url = 'http://127.0.0.1:8765/crystal/crystal.html?cap=1&jpg=1&proof=1&w=720&h=1280&candidate=materials-v2-r2';
 
 fs.rmSync(dir, { recursive: true, force: true });
 fs.mkdirSync(dir, { recursive: true });

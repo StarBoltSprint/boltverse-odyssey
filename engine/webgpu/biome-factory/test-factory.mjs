@@ -3,7 +3,8 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { runPipeline, sha256, readC2paSelfId, sourceUsesReferenceAsTexture } from './pipeline.mjs';
-import { TILE_M, repeatsAcross, materialGate, ALBEDO } from '../crystal/materials.js';
+import { TILE_M, repeatsAcross, materialGate, ALBEDO, shadeFactor, skyProjection } from '../crystal/materials.js';
+import { createMesh } from '../engine/bricks/facet-mesh.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const webgpu = path.resolve(here, '..');
@@ -19,7 +20,23 @@ for (const key of Object.keys(TILE_M)) {
 }
 const wide = 84;
 if (repeatsAcross(wide, TILE_M.ground) !== wide / 3) bad('ground period');
-if (repeatsAcross(2, TILE_M.crystal) !== 4) bad('crystal period');
+if (page.includes('sky-panorama.jpg')) bad('page samples the rejected sky');
+if (repeatsAcross(8, TILE_M.stream) !== 4) bad('stream period');
+if (shadeFactor(1) - shadeFactor(0.25) < 0.6) bad('shade still flattens facets');
+const skyFit = skyProjection(1280, 720, 7.68);
+if (skyFit.ok || skyFit.reason !== 'not-2:1-equirect') bad('16:9 sky accepted');
+if (!skyProjection(4096, 2048, 4).ok) bad('house 2:1 rejected');
+if (skyProjection(2048, 1024, 20).ok) bad('failed wrap accepted');
+{
+  const mesh = createMesh();
+  mesh.boxBevel(0, 0, 0, 2, 4, 2, 0.4, 6, 0.16);
+  const v = mesh.finish();
+  let inward = 0;
+  for (let i = 0; i < v.length; i += 8) {
+    if (v[i] * v[i + 4] + v[i + 1] * v[i + 5] + v[i + 2] * v[i + 6] < -0.02) inward++;
+  }
+  if (inward) bad('bevel normals inward ' + inward);
+}
 let threw = false;
 try { repeatsAcross(10, 0); } catch { threw = true; }
 if (!threw) bad('missing scale did not throw');
@@ -30,10 +47,14 @@ for (const name of Object.values(ALBEDO)) files[name] = fs.readFileSync(path.joi
 for (const slot of cfg.materials) {
   if (!slot.file) continue;
   if (sha256(files[slot.file]) !== slot.sha256) bad('hash config ' + slot.id);
-  const declared = slot.id === 'obsidian-wall' ? TILE_M.wall
-    : slot.id === 'crystal' ? TILE_M.crystal
-    : slot.id === 'ground' ? TILE_M.ground
-    : slot.id === 'architecture' ? TILE_M.architecture : null;
+  const declared = {
+    'obsidian-wall': TILE_M.wall,
+    crystal: TILE_M.crystal,
+    ground: TILE_M.ground,
+    architecture: TILE_M.architecture,
+    violet: TILE_M.violet,
+    stream: TILE_M.stream,
+  }[slot.id] ?? null;
   if (declared != null && slot.tileMeters !== declared) bad('tile mismatch ' + slot.id);
   const c2 = readC2paSelfId(files[slot.file]);
   if (c2.label !== 'self-identified Grok Imagine via embedded metadata') bad('c2pa label ' + slot.id);
@@ -51,7 +72,7 @@ const base = {
 const held = runPipeline(base);
 if (held.label !== 'HOLD' || held.release || held.keep) bad('valid path released ' + held.label);
 if (held.hard.length) bad('valid path hard ' + JSON.stringify(held.hard));
-for (const code of ['missing_asset', 'scale_unproven', 'quality_hold', 'visual_not_passed', 'missing_capture', 'missing_review', 'phone_unmeasured']) {
+for (const code of ['missing_asset', 'scale_unproven', 'quality_hold', 'visual_not_passed', 'sky_unusable', 'missing_capture', 'missing_review', 'phone_unmeasured']) {
   if (!held.hold.some(h => h.code === code)) bad('missing hold ' + code);
 }
 
@@ -73,8 +94,13 @@ if (!sourced.hard.some(h => h.code === 'ref_as_texture')) bad('source ref');
 const noAnim = runPipeline({ ...base, identity: { boltAtlas: false, breathFrames: 0 } });
 if (!noAnim.hold.some(h => h.code === 'missing_animation') || noAnim.release) bad('missing animation');
 
-const gate = materialGate(new URLSearchParams('candidate=materials-v2-r1'));
-if (!gate.render || gate.release !== 'HOLD' || gate.referenceIsTexture) bad('candidate gate');
+const badSky = runPipeline({ ...base, config: { ...cfg, sky: { ...cfg.sky, runtimeTexture: true } } });
+if (!badSky.hard.some(h => h.code === 'sky_projection')) bad('bad sky installed');
+
+const gate = materialGate(new URLSearchParams('candidate=materials-v2-r2'));
+if (!gate.render || gate.release !== 'HOLD' || gate.referenceIsTexture || !gate.missing.includes('sky-equirect')) bad('candidate gate');
+const old = materialGate(new URLSearchParams('candidate=materials-v2-r1'));
+if (old.render) bad('r1 candidate still paints');
 const closed = materialGate(new URLSearchParams(''));
 if (closed.render) bad('default page would paint');
 

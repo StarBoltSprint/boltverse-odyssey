@@ -29,20 +29,57 @@ export function createMesh() {
     face(2, 6, 5, 1);
     face(0, 4, 7, 3);
   }
+  function boxBevel(cx, cy, cz, sx, sy, sz, yaw, mat, bevel) {
+    const b = Math.min(bevel ?? Math.min(sx, sy, sz) * 0.08, sx * 0.28, sy * 0.28, sz * 0.28);
+    const hx = sx / 2, hy = sy / 2, hz = sz / 2;
+    const ix = hx - b, iy = hy - b, iz = hz - b;
+    const co = Math.cos(yaw), si = Math.sin(yaw);
+    const R = (x, y, z) => [cx + x * co - z * si, cy + y, cz + x * si + z * co];
+    const q = (a, b, c, d) => {
+      let A = R(...a), B = R(...b), C = R(...c), D = R(...d);
+      const n = cross(sub(B, A), sub(C, A));
+      const mid = [(A[0] + C[0]) / 2 - cx, (A[1] + C[1]) / 2 - cy, (A[2] + C[2]) / 2 - cz];
+      if (mid[0] * n[0] + mid[1] * n[1] + mid[2] * n[2] < 0) { const t = B; B = D; D = t; }
+      quad(A, B, C, D, [0, 0], [1, 0], [1, 1], [0, 1], mat);
+    };
+    q([-ix, hy, -iz], [ix, hy, -iz], [ix, hy, iz], [-ix, hy, iz]);
+    q([-ix, -hy, iz], [ix, -hy, iz], [ix, -hy, -iz], [-ix, -hy, -iz]);
+    q([-ix, -iy, hz], [ix, -iy, hz], [ix, iy, hz], [-ix, iy, hz]);
+    q([ix, -iy, -hz], [-ix, -iy, -hz], [-ix, iy, -hz], [ix, iy, -hz]);
+    q([hx, -iy, iz], [hx, -iy, -iz], [hx, iy, -iz], [hx, iy, iz]);
+    q([-hx, -iy, -iz], [-hx, -iy, iz], [-hx, iy, iz], [-hx, iy, -iz]);
+    q([-ix, hy, iz], [ix, hy, iz], [ix, iy, hz], [-ix, iy, hz]);
+    q([ix, hy, -iz], [-ix, hy, -iz], [-ix, iy, -hz], [ix, iy, -hz]);
+    q([ix, hy, iz], [ix, hy, -iz], [hx, iy, -iz], [hx, iy, iz]);
+    q([-ix, hy, -iz], [-ix, hy, iz], [-hx, iy, iz], [-hx, iy, -iz]);
+    q([-ix, -hy, -iz], [ix, -hy, -iz], [ix, -iy, -hz], [-ix, -iy, -hz]);
+    q([ix, -hy, iz], [-ix, -hy, iz], [-ix, -iy, hz], [ix, -iy, hz]);
+    q([ix, -hy, -iz], [ix, -hy, iz], [hx, -iy, iz], [hx, -iy, -iz]);
+    q([-ix, -hy, iz], [-ix, -hy, -iz], [-hx, -iy, -iz], [-hx, -iy, iz]);
+    q([ix, iy, iz], [ix, -iy, iz], [hx, -iy, iz], [hx, iy, iz]);
+    q([-ix, -iy, iz], [-ix, iy, iz], [-hx, iy, iz], [-hx, -iy, iz]);
+    q([ix, -iy, -iz], [ix, iy, -iz], [hx, iy, -iz], [hx, -iy, -iz]);
+    q([-ix, iy, -iz], [-ix, -iy, -iz], [-hx, -iy, -iz], [-hx, iy, -iz]);
+  }
   function crystal(x, y, z, radius, height, yaw, mat) {
-    const N = 6;
-    const base = [], top = [];
-    for (let i = 0; i < N; i++) {
-      const a = yaw + (i / N) * Math.PI * 2 + Math.PI / N;
-      const cs = Math.cos(a), sn = Math.sin(a);
-      base.push([x + cs * radius, y + height * 0.02, z + sn * radius]);
-      top.push([x + cs * radius * 0.28, y + height * 0.74, z + sn * radius * 0.28]);
-    }
-    const apex = [x, y + height, z];
-    for (let i = 0; i < N; i++) {
-      const j = (i + 1) % N;
-      quad(base[i], base[j], top[j], top[i], [0, 0], [1, 0], [1, 1], [0, 1], mat);
-      tri(top[i], top[j], apex, [0, 0], [1, 0], [0.5, 1], mat);
+    const N = 8;
+    const ys = [0, 0.2, 0.58, 1];
+    const rs = [0.62, 1, 0.55, 0];
+    const rings = ys.map((t, ri) => {
+      const out = [];
+      for (let i = 0; i < N; i++) {
+        const a = yaw + (i / N) * Math.PI * 2;
+        out.push([x + Math.cos(a) * radius * rs[ri], y + height * t, z + Math.sin(a) * radius * rs[ri]]);
+      }
+      return out;
+    });
+    for (let r = 0; r < ys.length - 1; r++) {
+      for (let i = 0; i < N; i++) {
+        const j = (i + 1) % N;
+        const tip = rs[r + 1] === 0;
+        if (tip) tri(rings[r][j], rings[r][i], [x, y + height, z], [1, 0], [0, 0], [0.5, 1], mat);
+        else quad(rings[r][j], rings[r][i], rings[r + 1][i], rings[r + 1][j], [1, 0], [0, 0], [0, 1], [1, 1], mat);
+      }
     }
   }
   function skyDome(r = 600, mat = 5) {
@@ -61,7 +98,7 @@ export function createMesh() {
     }
   }
   return {
-    tri, quad, box, crystal, skyDome, f,
+    tri, quad, box, boxBevel, crystal, skyDome, f,
     finish() { return new Float32Array(f); },
     get count() { return f.length / 8; },
   };

@@ -2,13 +2,14 @@
   "capture": true,
   "visualVerdict": null,
   "phoneMeasured": false,
-  "path": "crystal-materials-r1.mp4",
+  "path": "crystal-materials-r2.mp4",
   "width": 720,
   "height": 1280,
   "frames": 600,
   "duration": 20.0,
-  "bytes": 7453508,
-  "proxyBytes": 991098,
+  "bytes": 7545409,
+  "proxyBytes": 1028869,
   "decode": 0,
-  "note": "SwiftShader on this VM. 30 fps is the encode step, not a measured phone rate. Visual KEEP was not granted."
+  "missing": ["sky-equirect"],
+  "note": "r2 SwiftShader capture. 30 fps is the encode step, not a phone rate. Idle 2 s: dog SAD 22, ground 0, water 8.2. Visual KEEP was not granted."
 }

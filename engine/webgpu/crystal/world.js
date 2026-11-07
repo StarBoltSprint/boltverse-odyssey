@@ -82,8 +82,8 @@ function addArch(mesh, circles, z0, span, foot, depth) {
   const base = terrH(c, z0);
   const pw = 1.8;
   const pierH = foot + 1.2;
-  mesh.box(c - span / 2, base + pierH / 2, z0, pw, pierH, depth, 0, MAT.stone);
-  mesh.box(c + span / 2, base + pierH / 2, z0, pw, pierH, depth, 0, MAT.stone);
+  mesh.boxBevel(c - span / 2, base + pierH / 2, z0, pw, pierH, depth, 0, MAT.stone, 0.14);
+  mesh.boxBevel(c + span / 2, base + pierH / 2, z0, pw, pierH, depth, 0, MAT.stone, 0.14);
   circles.push({ x: c - span / 2, z: z0, r: pw * 0.46 });
   circles.push({ x: c + span / 2, z: z0, r: pw * 0.46 });
   const n = 9;
@@ -93,12 +93,12 @@ function addArch(mesh, circles, z0, span, foot, depth) {
     const x = c + Math.cos(ang) * rad;
     const y = base + foot * 0.15 + Math.sin(ang) * rad * 0.92;
     const overlap = 1.15;
-    mesh.box(x, y, z0, 1.55 * overlap, 1.45, depth, 0, MAT.stone);
+    mesh.boxBevel(x, y, z0, 1.55 * overlap, 1.45, depth, 0, MAT.stone, 0.1);
   }
   for (const s of [-1, 1]) {
     const x = c + s * (span / 2 + 1.6);
     const yy = terrH(x, z0);
-    mesh.box(x, yy + pierH * 0.7, z0, 1.3, pierH * 1.35, depth * 0.8, s * 0.1, MAT.stone);
+    mesh.boxBevel(x, yy + pierH * 0.7, z0, 1.3, pierH * 1.35, depth * 0.8, s * 0.1, MAT.stone, 0.12);
     circles.push({ x, z: z0, r: 0.75 });
   }
 }
@@ -110,15 +110,30 @@ export function buildWorld() {
   for (let z = z0; z < z1; z += step) {
     for (let x = x0; x < x1; x += step) {
       const corners = [[x, z], [x + step, z], [x + step, z + step], [x, z + step]];
-      const p = corners.map(([px, pz]) => [px, terrH(px, pz), pz]);
+      const midLat = Math.abs((x + step / 2) - pathX(z + step / 2));
+      const tilt = midLat > 3.2 ? (hash(Math.round(x * 2), Math.round(z * 2)) - 0.5) * 0.1 : 0;
+      const p = corners.map(([px, pz], i) => [px, terrH(px, pz) + (i < 2 ? tilt : -tilt), pz]);
       mesh.tri(p[0], p[2], p[1], [0, 0], [1, 1], [1, 0], MAT.mineral);
       mesh.tri(p[0], p[3], p[2], [0, 0], [0, 1], [1, 1], MAT.mineral);
     }
   }
-  for (let z = z1 - 1; z > z0 + 1; z -= 1.4) {
-    const cx = pathX(z) + CRYSTAL.streamLat;
-    // No stream albedo. The trench stays mineral ground. Do not paint a colour.
-    if (Math.round(z) % 3 === 0) circles.push({ x: cx, z, r: 1.02 });
+  const waterStep = 0.7;
+  for (let z = z1 - 1; z > z0 + 1; z -= waterStep) {
+    const z2 = z - waterStep;
+    const strips = 4;
+    const half = 1.15;
+    for (let s = 0; s < strips; s++) {
+      const u0 = -half + (2 * half) * s / strips;
+      const u1 = -half + (2 * half) * (s + 1) / strips;
+      const y = -0.28;
+      const a = [pathX(z) + CRYSTAL.streamLat + u0, y, z];
+      const b = [pathX(z) + CRYSTAL.streamLat + u1, y, z];
+      const c = [pathX(z2) + CRYSTAL.streamLat + u1, y, z2];
+      const d = [pathX(z2) + CRYSTAL.streamLat + u0, y, z2];
+      mesh.tri(a, b, c, [0, 0], [1, 0], [1, 1], MAT.stream);
+      mesh.tri(a, c, d, [0, 0], [1, 1], [0, 1], MAT.stream);
+    }
+    if (Math.round(z) % 3 === 0) circles.push({ x: pathX(z) + CRYSTAL.streamLat, z, r: 1.02 });
   }
 
   for (let i = 0; i < 46; i++) {
@@ -133,7 +148,7 @@ export function buildWorld() {
         const sz = 2.1 + hash(row + 4, i) * 1.7;
         const yaw = (hash(i, row + 11) - 0.5) * 0.7;
         const y = terrH(x, z) + sy / 2;
-        mesh.box(x, y, z, sx, sy, sz, yaw, MAT.wall);
+        mesh.boxBevel(x, y, z, sx, sy, sz, yaw, MAT.wall, 0.16);
         circles.push({ x, z, r: Math.min(sx, sz) * 0.38 });
         if (row === 0 && hash(i, side + 20) > 0.42) {
           const ch = 1.6 + hash(i, side + 2) * 3.4;
@@ -161,7 +176,7 @@ export function buildWorld() {
     const z = -62;
     const x = pathX(z) + 2.6;
     const y = terrH(x, z);
-    mesh.box(x, y + 2.2, z, 2.2, 4.4, 1.6, 0, MAT.wall);
+    mesh.boxBevel(x, y + 2.2, z, 2.2, 4.4, 1.6, 0, MAT.wall, 0.18);
     circles.push({ x, z, r: 0.9 });
   }
   {
@@ -179,7 +194,7 @@ export function buildWorld() {
     const x = pathX(z) + lat;
     const y0 = terrH(x, z);
     const w = 1.6 + (i % 3) * 0.45;
-    mesh.box(x, y0 + h / 2, z, w, h, w, i * 0.2, MAT.stone);
+    mesh.boxBevel(x, y0 + h / 2, z, w, h, w, i * 0.2, MAT.stone, 0.14);
     mesh.crystal(x, y0 + h * 0.92, z, 0.7, h * 0.28, i, i % 2 ? MAT.cyan : MAT.violet);
     circles.push({ x, z, r: w * 0.55 });
   }

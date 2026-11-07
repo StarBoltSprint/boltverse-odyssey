@@ -67,12 +67,18 @@ struct U {
 @group(0) @binding(6) var wallTex: texture_2d<f32>;
 @group(0) @binding(7) var crysTex: texture_2d<f32>;
 @group(0) @binding(8) var archTex: texture_2d<f32>;
+@group(0) @binding(9) var violetTex: texture_2d<f32>;
+@group(0) @binding(10) var streamTex: texture_2d<f32>;
 @group(0) @binding(3) var atex: texture_2d<f32>;
 @group(0) @binding(4) var planetTex: texture_2d<f32>;
 @group(0) @binding(5) var planetSamp: sampler;
 struct VO { @builtin(position) p: vec4f, @location(0) w: vec3f, @location(1) n: vec3f, @location(2) uv: vec2f, @location(3) mat: f32 };
 @vertex fn vs(@location(0) a: vec4f, @location(1) b: vec4f) -> VO {
-  let p = a.xyz; let n = b.xyz;
+  var p = a.xyz; let n = b.xyz;
+  if (a.w > 3.5 && a.w < 4.5) {
+    let t = u.cam.w;
+    p.y += 0.11 * sin(p.z * 1.35 + t * 1.25) + 0.05 * sin(p.x * 2.2 - t * 0.9);
+  }
   var o: VO;
   o.p = u.vp * vec4f(p, 1.0);
   o.w = p; o.n = n; o.uv = vec2f(b.w, 0.0); o.mat = a.w; return o;
@@ -140,6 +146,8 @@ struct PVO { @builtin(position) p: vec4f, @location(0) n: vec3f, @location(1) w:
   let scW = ${(1 / TILE_M.wall).toFixed(8)};
   let scC = ${(1 / TILE_M.crystal).toFixed(8)};
   let scA = ${(1 / TILE_M.architecture).toFixed(8)};
+  let scV = ${(1 / TILE_M.violet).toFixed(8)};
+  let scS = ${(1 / TILE_M.stream).toFixed(8)};
   let gnd = textureSample(groundTex, samp, v.w.xz * scG).rgb;
   let wall = triMix(
     textureSample(wallTex, samp, v.w.zy * scW).rgb,
@@ -153,21 +161,38 @@ struct PVO { @builtin(position) p: vec4f, @location(0) n: vec3f, @location(1) w:
     textureSample(archTex, samp, v.w.zy * scA).rgb,
     textureSample(archTex, samp, v.w.xz * scA).rgb,
     textureSample(archTex, samp, v.w.xy * scA).rgb, n);
+  let vio = triMix(
+    textureSample(violetTex, samp, v.w.zy * scV).rgb,
+    textureSample(violetTex, samp, v.w.xz * scV).rgb,
+    textureSample(violetTex, samp, v.w.xy * scV).rgb, n);
+  let flow = vec2f(v.w.x, v.w.z + u.cam.w * 0.35) * scS;
+  let waterAlb = textureSample(streamTex, samp, flow).rgb;
   let m = v.mat;
-  if (m > 3.5 && m < 4.5) { discard; }
   if (m > 4.5 && m < 5.5) { return vec4f(0.0, 0.0, 0.0, 1.0); }
-  var wrap = clamp(dot(n, sunN()) * 0.55 + 0.45, 0.0, 1.0);
   var alb = wall;
   if (m < 0.5) {
     n = groundN(v.w.xz);
-    wrap = clamp(dot(n, sunN()) * 0.35 + 0.65, 0.0, 1.0);
     alb = gnd;
-  } else if (m < 2.5) { alb = cry; }
+  } else if (m < 1.5) { alb = vio; }
+  else if (m < 2.5) { alb = cry; }
   else if (m < 3.5) { alb = arch; }
+  else if (m < 4.5) {
+    let t = u.cam.w;
+    let dydx = 0.05 * 2.2 * cos(v.w.x * 2.2 - t * 0.9);
+    let dydz = 0.11 * 1.35 * cos(v.w.z * 1.35 + t * 1.25);
+    n = normalize(vec3f(-dydx, 1.0, -dydz));
+    alb = waterAlb;
+  }
   let view = normalize(u.cam.xyz - v.w);
-  let spec = pow(clamp(dot(n, normalize(sunN() + view)), 0.0, 1.0), 48.0);
+  let ndl = clamp(dot(n, sunN()), 0.0, 1.0);
+  let spec = pow(clamp(dot(n, normalize(sunN() + view)), 0.0, 1.0), 56.0);
   let crystal = select(0.0, 1.0, m > 0.5 && m < 2.5);
-  var col = alb * (0.18 + 0.82 * wrap) + alb * spec * 0.05 * crystal;
+  let water = select(0.0, 1.0, m > 3.5 && m < 4.5);
+  let ndv = clamp(dot(n, view), 0.0, 1.0);
+  let fres = 0.02 + 0.98 * pow(1.0 - ndv, 5.0);
+  var col = alb * (0.10 + 0.90 * ndl);
+  col += alb * spec * (0.06 * crystal + 0.45 * water);
+  col = mix(col, col * 0.55, fres * water * 0.4);
   let dist = length(v.w - u.cam.xyz);
   let fk = clamp(u.fog.w * smoothstep(u.grid.w, 150.0, dist), 0.0, 0.62);
   col = mix(col, u.fog.rgb, fk);
@@ -298,11 +323,13 @@ async function main() {
   const meadowRoot = new URL('../assets/meadow/', import.meta.url).href;
   const matRoot = new URL('../biome-factory/fixtures/materials-v2/', import.meta.url);
   const breathClip = await makeBreathClip(dev, meadowRoot);
-  const [ground, wall, crystalAlb, archAlb, atlas, feet, planetBmp] = await Promise.all([
+  const [ground, wall, crystalAlb, archAlb, violetAlb, streamAlb, atlas, feet, planetBmp] = await Promise.all([
     loadAlbedo(dev, new URL(ALBEDO.ground, matRoot).href),
     loadAlbedo(dev, new URL(ALBEDO.wall, matRoot).href),
     loadAlbedo(dev, new URL(ALBEDO.crystal, matRoot).href),
     loadAlbedo(dev, new URL(ALBEDO.architecture, matRoot).href),
+    loadAlbedo(dev, new URL(ALBEDO.violet, matRoot).href),
+    loadAlbedo(dev, new URL(ALBEDO.stream, matRoot).href),
     loadTex(dev, new URL(CRYSTAL.bolt, import.meta.url).href),
     (async () => {
       const bmp = await createImageBitmap(await (await fetch(new URL(CRYSTAL.bolt, import.meta.url).href)).blob(), { colorSpaceConversion: 'none' });
@@ -374,6 +401,8 @@ async function main() {
     { binding: 6, visibility: GPUShaderStage.FRAGMENT, texture: {} },
     { binding: 7, visibility: GPUShaderStage.FRAGMENT, texture: {} },
     { binding: 8, visibility: GPUShaderStage.FRAGMENT, texture: {} },
+    { binding: 9, visibility: GPUShaderStage.FRAGMENT, texture: {} },
+    { binding: 10, visibility: GPUShaderStage.FRAGMENT, texture: {} },
     { binding: 18, visibility: GPUShaderStage.FRAGMENT, texture: {} },
   ] });
   const planetSamp = dev.createSampler({ magFilter: 'linear', minFilter: 'linear', mipmapFilter: 'linear', addressModeU: 'repeat', addressModeV: 'clamp-to-edge', maxAnisotropy: aniso });
@@ -387,6 +416,8 @@ async function main() {
     { binding: 6, resource: wall.tex.createView() },
     { binding: 7, resource: crystalAlb.tex.createView() },
     { binding: 8, resource: archAlb.tex.createView() },
+    { binding: 9, resource: violetAlb.tex.createView() },
+    { binding: 10, resource: streamAlb.tex.createView() },
     { binding: 18, resource: breathClip.texture.createView() },
   ] }));
   const layout = dev.createPipelineLayout({ bindGroupLayouts: [bgl] });

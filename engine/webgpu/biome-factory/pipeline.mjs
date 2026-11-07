@@ -76,8 +76,16 @@ export function runPipeline(ctx) {
     if (ctx.pageSource && sourceUsesReferenceAsTexture(ctx.pageSource)) {
       hard(state, 'ref_as_texture', 'page source still samples the artistic reference');
     }
-    if (ctx.pageSource && /tiling-inspection\.jpg/.test(ctx.pageSource)) {
-      hard(state, 'preview_as_albedo', 'tiling sheet');
+    if (ctx.pageSource && /sky-panorama\.jpg|sky-wrap-seam|surface-tiling-inspection/.test(ctx.pageSource)) {
+      hard(state, 'sky_projection', 'page samples a rejected sky or a QA sheet');
+    }
+    const sky = cfg.sky;
+    if (sky) {
+      const equirect = Array.isArray(sky.resolution) && sky.resolution[0] === sky.resolution[1] * 2;
+      if (sky.runtimeTexture !== false && (!equirect || sky.wrapPass !== true)) {
+        hard(state, 'sky_projection', sky.file || 'sky');
+      }
+      if (!equirect || sky.wrapPass !== true) hold(state, 'sky_unusable', sky.reason || 'sky is not a 2:1 wrap');
     }
   }
   state.stages.refs = state.hard.some(h => h.code === 'ref_as_texture') ? 'fail' : 'pass';

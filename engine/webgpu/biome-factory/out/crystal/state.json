@@ -13,6 +13,10 @@
   },
   "hold": [
     {
+      "code": "sky_unusable",
+      "detail": "16:9 plate, not equirectangular 2:1. Side-by-side edges are purple against cyan. Column mean abs 7.68 hides that hue break. Not installed."
+    },
+    {
       "code": "scale_unproven",
       "detail": "obsidian-wall declared tile is not a measured fit"
     },
@@ -45,16 +49,24 @@
       "detail": "architecture"
     },
     {
-      "code": "missing_asset",
+      "code": "scale_unproven",
+      "detail": "violet declared tile is not a measured fit"
+    },
+    {
+      "code": "visual_not_passed",
+      "detail": "violet"
+    },
+    {
+      "code": "scale_unproven",
+      "detail": "stream declared tile is not a measured fit"
+    },
+    {
+      "code": "visual_not_passed",
       "detail": "stream"
     },
     {
       "code": "missing_asset",
       "detail": "sky"
-    },
-    {
-      "code": "missing_asset",
-      "detail": "separate-violet"
     },
     {
       "code": "missing_review",
@@ -71,7 +83,9 @@
   "provenanceLimit": "A manifest hash does not prove authorship. Embedded C2PA softwareAgent and certificate names are self-identification only. The signature and trust chain were not verified. That is not a cryptographic certificate, and release is not blocked on a crypto backend.",
   "openDefects": [
     "gen4b tail crop and paw plant are not claimed fixed",
-    "idle/run crossfade is 200ms between two different pictures (pose, light, volume)",
+    "idle/run crossfade is 200ms between two different pictures",
+    "feet still skate; tail in one clip is not proof the source is fixed",
+    "sky plate rejected: not equirect 2:1",
     "phone performance was not measured"
   ],
   "materials": [
@@ -140,19 +154,39 @@
       }
     },
     {
+      "id": "violet",
+      "role": "albedo",
+      "tileMeters": 0.5,
+      "sha256": "7791f436407a5a3eda0163a1355c5782799cc09add48870d08afebbf218a4a2c",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "c2pa": {
+        "softwareAgent": "Grok Imagine",
+        "certificateIdentity": "xAI Grok Imagine",
+        "signatureVerified": false,
+        "label": "self-identified Grok Imagine via embedded metadata"
+      }
+    },
+    {
       "id": "stream",
       "role": "albedo",
-      "tileMeters": null,
-      "status": "missing"
+      "tileMeters": 2,
+      "sha256": "ec69a22d6defb836b38ada9412c86e477cd4263e157385cc77d7ec936654c590",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "c2pa": {
+        "softwareAgent": "Grok Imagine",
+        "certificateIdentity": "xAI Grok Imagine",
+        "signatureVerified": false,
+        "label": "self-identified Grok Imagine via embedded metadata"
+      }
     },
     {
       "id": "sky",
-      "role": "albedo",
-      "tileMeters": null,
-      "status": "missing"
-    },
-    {
-      "id": "separate-violet",
       "role": "albedo",
       "tileMeters": null,
       "status": "missing"
