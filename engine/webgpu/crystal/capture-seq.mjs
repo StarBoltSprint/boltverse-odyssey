@@ -79,7 +79,7 @@ try {
     if (payload.info.gpuErr) throw new Error(payload.info.gpuErr);
     const name = `${dir}/f_${String(i).padStart(4, '0')}.jpg`;
     fs.writeFileSync(name, Buffer.from(payload.jpg, 'base64'));
-    if (i % 30 === 0) say(`frame ${i} z=${payload.info.z.toFixed(1)} v=${payload.info.v.toFixed(1)} ${(Date.now() - t0) / 1000}s`);
+    if (i % 30 === 0) say(`frame ${i} z=${payload.info.z.toFixed(1)} v=${payload.info.v.toFixed(2)} psi=${payload.info.psi.toFixed(2)} breath=${payload.info.breathState} f=${payload.info.breathFrame} mix=${payload.info.idleMix?.toFixed?.(2)} ${(Date.now() - t0) / 1000}s`);
   }
   say('FRAMES_DONE');
 } finally {

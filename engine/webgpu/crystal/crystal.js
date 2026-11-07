@@ -46,7 +46,7 @@ function playerInput() {
 }
 
 function stepLive(dt) {
-  const input = PROOF ? proofInput(simClock) : DEMO ? demoSteer(live) : playerInput();
+  const input = PROOF ? proofInput(simClock, live) : DEMO ? demoSteer(live) : playerInput();
   simClock += dt;
   IDLE.stepMotion(live, dt, input.run);
   stepBreath(live, dt, input.run, BREATH);
@@ -403,7 +403,7 @@ async function main() {
     layout,
     vertex: { module: mod, entryPoint: vs, buffers: [pbuf] },
     fragment: { module: mod, entryPoint: fs, targets: [{ format: fmt, blend }] },
-    primitive: { topology: 'triangle-list', cullMode: 'back' },
+    primitive: { topology: 'triangle-list', cullMode: 'none' },
     multisample: { count: SAMPLES },
     depthStencil: { format: 'depth24plus', depthWriteEnabled: depthWrite, depthCompare: 'less' },
   });
@@ -423,7 +423,7 @@ async function main() {
   const infoErr = [];
   dev.addEventListener?.('uncapturederror', e => { infoErr.push(String(e.error || e)); window.__crystalErr = infoErr.join(' | '); });
 
-  const crops = new Float32Array(8 * 4);
+  const crops = new Float32Array(7 * 4);
   CROPS.forEach((c, i) => crops.set(cropUV(c), i * 4));
   const U = new Float32Array(128);
   U.set(crops, 60);
@@ -433,9 +433,6 @@ async function main() {
     const { eye, tgt } = followEye(bp, live.cam, terrH, 0);
     const view = lookAt(eye, tgt, [0, 1, 0]);
     const proj = persp(FOV_Y, W / H, 0.08, 5200);
-    U.set([pCenter[0], pCenter[1], pCenter[2], PLANET.radius], 88);
-    U.set([pYaw, PLANET.limb, 0, 0], 92);
-    U.set([atmo[0], atmo[1], atmo[2], 1], 96);
     const vp = mul(proj, view);
     U.set(vp, 0);
     U.set([eye[0], eye[1], eye[2], t], 32);
@@ -450,6 +447,9 @@ async function main() {
     U[53] = live.idleMix || 0;
     U.set([fogCol[0], fogCol[1], fogCol[2], 0.9], 56);
     U.set(crops, 60);
+    U.set([pCenter[0], pCenter[1], pCenter[2], PLANET.radius], 88);
+    U.set([pYaw, PLANET.limb, 0, 0], 92);
+    U.set([atmo[0], atmo[1], atmo[2], 1], 96);
   }
 
   const skyVerts = world.sky.length / 8;
@@ -508,7 +508,7 @@ async function main() {
       const buf = new Uint8Array(await blob.arrayBuffer());
       let s = '';
       for (let i = 0; i < buf.length; i += 0x8000) s += String.fromCharCode.apply(null, buf.subarray(i, i + 0x8000));
-      const info = { x: live.x, z: live.z, psi: live.psi, v: live.v, y: terrH(live.x, live.z), gpuErr: gpuErr ? String(gpuErr.message || gpuErr) : null };
+      const info = { x: live.x, z: live.z, psi: live.psi, v: live.v, y: terrH(live.x, live.z), idleMix: live.idleMix || 0, breathFrame: live.breathFrame || 0, breathState: live.breathState || 'run', gpuErr: gpuErr ? String(gpuErr.message || gpuErr) : null };
       if (useJpg) return { jpg: btoa(s), info };
       return { png: btoa(s), info, compile: compileNotes };
     };

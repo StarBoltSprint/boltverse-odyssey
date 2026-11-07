@@ -16,9 +16,10 @@ export const PLANET = {
   h: 720,
   sha256: '62a6b8e69bb71b557219b41740bfa7bf64ed2d38068ba5d77bfc56a66a4c1f81',
   // Upper right of the canyon view (psi 0 looks down -Z). Fixed in the world.
-  dir: [0.46, 0.42, -0.78],
-  distance: 2600,
-  radius: 430,
+  // Portrait frame: a little right and up, still inside the 62° view.
+  dir: [0.02, 0.14, -1],
+  distance: 1700,
+  radius: 340,
   limb: 1.045,
   seamBand: 56,
   poleRows: 4,

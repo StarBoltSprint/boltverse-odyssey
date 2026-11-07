@@ -42,7 +42,7 @@ The selected Imagine idle is gen4b, already integrated on the meadow breath page
 - clip name `bolt_idle4b_loop_alpha.webm` (the GPU reads the PNGs, not the WebM)
 - directory `engine/webgpu/assets/meadow/bolt_idle4b5_rgba/f0000.png` … `f0143.png`
 
-Those PNG files and the WebM are not in this checkout. Parent scratch named by the task: `/workspace/bolt-idle/gen4` and `assets/meadow/bolt_idle4b5_rgba` on the install box. Crystal now calls `makeBreathClip` on `../assets/meadow/` and sets `misc.x` to 0 so the sine warp stays off. It does not invent frames.
+The archive `bolt-idle4b5-rgba-1107` (23728089 bytes, sha256 `8e4c640f234c858e407d6623c2cfd3939c58743b957554446c829a4391f8fab8`) was extracted under `engine/webgpu`. `sha256sum -c idle-manifest.sha256` : 145/145 OK (144 PNG plus the WebM). Crystal calls `makeBreathClip` on `../assets/meadow/` and sets `misc.x` to 0 so the sine warp stays off.
 
 Paw-plant and tail/side crop of that gen4b source are unchanged. They were not accepted as fixed.
 

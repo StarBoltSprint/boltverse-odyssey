@@ -30,7 +30,7 @@ let minPsi = 0;
 let resumed = false;
 for (let i = 0; i < 20 * 60; i++) {
   const t = i * dt;
-  const input = proofInput(t);
+  const input = proofInput(t, live);
   idle.stepMotion(live, dt, input.run);
   stepBreath(live, dt, input.run, cfg);
   integrate(live, dt, input, collide);

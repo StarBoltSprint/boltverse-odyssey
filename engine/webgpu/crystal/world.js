@@ -53,14 +53,16 @@ export function integrate(live, dt, input, collide) {
 }
 
 // Capture route: run, a visible yaw each way, a full stop, run again, stop.
-export function proofInput(t) {
-  if (t < 3.2) return { turn: 0, run: true };
-  if (t < 6.2) return { turn: 0.85, run: true };
-  if (t < 8.6) return { turn: -0.85, run: true };
-  if (t < 13.6) return { turn: 0, run: false };
-  if (t < 16.8) return { turn: 0.15, run: true };
-  if (t < 18.6) return { turn: 0, run: false };
-  return { turn: 0, run: true };
+export function proofInput(t, live) {
+  const follow = live ? demoSteer(live) : { turn: 0, run: true };
+  if (t < 3.4) return follow;
+  if (t < 4.7) return { turn: 0.48, run: true };
+  if (t < 6.1) return { turn: -0.55, run: true };
+  if (t < 8.2) return follow;
+  if (t < 14.0) return { turn: 0, run: false };
+  if (t < 17.0) return follow;
+  if (t < 19.6) return { turn: 0, run: false };
+  return follow;
 }
 
 export function demoSteer(live) {
@@ -131,7 +133,7 @@ export function buildWorld() {
       for (let row = 0; row < 3; row++) {
         const lat = side * (7.4 + row * 3.5 + hash(i, row + side * 4) * 1.2);
         const x = pathX(z) + lat;
-        if (Math.hypot(x, z) < 20) continue;
+        if (z > -90 && Math.abs(lat) < 16) continue;
         const sy = 2.4 + row * 3.1 + hash(i, row + 8) * 4.2;
         const sx = 2.3 + hash(i + 2, row) * 1.8;
         const sz = 2.1 + hash(row + 4, i) * 1.7;
@@ -153,7 +155,7 @@ export function buildWorld() {
     const side = i % 2 === 0 ? -1 : 1;
     const lat = side < 0 ? -(3.9 + hash(i, 1) * 1.8) : (5.5 + hash(i, 2) * 1.6);
     const x = pathX(z) + lat;
-    if (Math.hypot(x, z) < 16) continue;
+    if (z > -90 && Math.abs(lat) < 14) continue;
     const ch = 1.3 + hash(i, 3) * (side < 0 ? 4.8 : 4.2);
     const cr = 0.26 + hash(i, 4) * 0.48;
     mesh.crystal(x, terrH(x, z), z, cr, ch, hash(i, 5) * 3, side < 0 ? MAT.violet : MAT.cyan);
@@ -161,8 +163,8 @@ export function buildWorld() {
   }
 
   // Low enough to stay in the 62° frame until the dog is under it, deep enough not to pop.
-  addArch(mesh, circles, -46, 7.2, 5.4, 4.2);
-  addArch(mesh, circles, -96, 8.0, 6.0, 4.6);
+  addArch(mesh, circles, -58, 7.2, 5.4, 4.2);
+  addArch(mesh, circles, -108, 8.0, 6.0, 4.6);
 
   const spires = [[-16, -88, 22], [20, -96, 30], [-26, -112, 26], [14, -124, 34], [-10, -142, 28], [28, -136, 24], [6, -158, 36]];
   for (let i = 0; i < spires.length; i++) {
