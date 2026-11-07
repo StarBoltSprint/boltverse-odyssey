@@ -1,0 +1,121 @@
+{
+  "revision": "1",
+  "generator": "cursor.GenerateImage",
+  "provenance": "Embedded C2PA identifies softwareAgent and claim_generator_info name as Grok Imagine; certificate identity xAI Grok Imagine. Observed metadata, NOT signature/trust-chain verified.",
+  "references": [],
+  "no_reference_pixels": true,
+  "prompt_record": "Condensed summaries explicitly, full verbatim revised prompts in executor tool calls.",
+  "native_originals": "Unmodified JPEG bytes; native resolution, no crops, resampling or colour manipulation.",
+  "materials": [
+    {
+      "file": "obsidian-wall.jpg",
+      "source_path": "/cursor/stores/user/grok-bot/agents/8f3c3da7-07a3-4f42-9f98-70ae0ef07993/assets/7f787fd4703fe3e96936a2909a584061380109d6b222e6b77460f599ff494b6d.jpg",
+      "sha256": "7f787fd4703fe3e96936a2909a584061380109d6b222e6b77460f599ff494b6d",
+      "bytes": 481171,
+      "resolution": [
+        1024,
+        1024
+      ],
+      "physical_tile_metres": [
+        2,
+        2
+      ],
+      "map": "albedo",
+      "colour_space": "sRGB",
+      "prompt_condensed": "Flat deep charcoal obsidian albedo, restrained blue-grey mineral speckling, evenly distributed millimetre/centimetre grain; no ridges, broad fracture shapes, baked shading or highlights. Uniform shadowless orthographic 2m surface; aim continuous edges.",
+      "reused_unchanged": false,
+      "c2pa_observed": {
+        "softwareAgent_Grok_Imagine": true,
+        "claim_generator_name_Grok_Imagine": true,
+        "certificate_identity_xAI_Grok_Imagine": true,
+        "self_signed_ephemeral": true,
+        "manifest_id": "urn:c2pa:0827ac11-290f-4651-94c5-5ffa0a972f4d",
+        "signature_verified": false
+      },
+      "visual_inspection": "Improved: no broad rock ridges, directional form shading or isolated fracture motifs. Fine dark mineral speckle; subtle cloudiness and possible edge tone differences remain. Almost uniform at distance; actual wall relief must be 3D, not this texture."
+    },
+    {
+      "file": "mineral-ground.jpg",
+      "source_path": "/workspace/biome-crystal-1107/materials-v2/mineral-ground.jpg",
+      "sha256": "d6eabbc707c13bd9b5c3270371297b80a8646221c8f8b40516cfdf95643b3630",
+      "bytes": 501085,
+      "resolution": [
+        1024,
+        1024
+      ],
+      "physical_tile_metres": [
+        3,
+        3
+      ],
+      "map": "albedo",
+      "colour_space": "sRGB",
+      "prompt_condensed": "UNCHANGED original generation; full prompt summary in parent manifest.",
+      "reused_unchanged": true,
+      "c2pa_observed": {
+        "softwareAgent_Grok_Imagine": true,
+        "claim_generator_name_Grok_Imagine": true,
+        "certificate_identity_xAI_Grok_Imagine": true,
+        "self_signed_ephemeral": true,
+        "manifest_id": "urn:c2pa:03707e14-de15-48e5-948a-c35e76cccfea",
+        "signature_verified": false
+      },
+      "visual_inspection": "Original reused unchanged. Subtle relief shading and repeat boundary remain."
+    },
+    {
+      "file": "cyan-facets.jpg",
+      "source_path": "/cursor/stores/user/grok-bot/agents/8f3c3da7-07a3-4f42-9f98-70ae0ef07993/assets/572f1a99722a1b518669d723ae7dd94c3cc045d38e518875c324991f87e8363d.jpg",
+      "sha256": "572f1a99722a1b518669d723ae7dd94c3cc045d38e518875c324991f87e8363d",
+      "bytes": 394725,
+      "resolution": [
+        1024,
+        1024
+      ],
+      "physical_tile_metres": [
+        0.5,
+        0.5
+      ],
+      "map": "albedo",
+      "colour_space": "sRGB",
+      "prompt_condensed": "Flat clean turquoise cyan mineral surface ON a crystal face, fine subtle blue-violet wisps and microscopic striations; no gems, purple patches, mosaic, perspective facets, refraction, caustics, white veins, highlights or shadows. Uniform shadowless orthographic 0.5m surface; geometry supplied separately.",
+      "reused_unchanged": false,
+      "c2pa_observed": {
+        "softwareAgent_Grok_Imagine": true,
+        "claim_generator_name_Grok_Imagine": true,
+        "certificate_identity_xAI_Grok_Imagine": true,
+        "self_signed_ephemeral": true,
+        "manifest_id": "urn:c2pa:f4dbd23a-c17d-4610-9cfc-b588c0ef3d74",
+        "signature_verified": false
+      },
+      "visual_inspection": "Improved: cyan mineral colour with restrained diffuse violet tint; no shard mosaic or rendered crystal pile. Fine pale grain/striations remain; subtle repeated wisps and faint edge tone differences visible in 2x2 preview. No seamless certification."
+    },
+    {
+      "file": "architectural-stone.jpg",
+      "source_path": "/workspace/biome-crystal-1107/materials-v2/architectural-stone.jpg",
+      "sha256": "8c42ed205e9f06478f630be0af39d966d479b3ba908cdf0f1a60af4f4a6be9c4",
+      "bytes": 473540,
+      "resolution": [
+        1024,
+        1024
+      ],
+      "physical_tile_metres": [
+        2,
+        2
+      ],
+      "map": "albedo",
+      "colour_space": "sRGB",
+      "prompt_condensed": "UNCHANGED original generation; full prompt summary in parent manifest.",
+      "reused_unchanged": true,
+      "c2pa_observed": {
+        "softwareAgent_Grok_Imagine": true,
+        "claim_generator_name_Grok_Imagine": true,
+        "certificate_identity_xAI_Grok_Imagine": true,
+        "self_signed_ephemeral": true,
+        "manifest_id": "urn:c2pa:c2d11ffb-5e3a-4fc5-8df6-8051f2546105",
+        "signature_verified": false
+      },
+      "visual_inspection": "Original reused unchanged. Fine matte grain with subtle broad variation. Not seamless-certified."
+    }
+  ],
+  "inspection": "Native tool outputs viewed individually; 2x2 repeat preview opened and visually inspected. Preview quadrants: wall top-left, ground top-right, crystal bottom-left, architecture bottom-right. Preview is QA-only, not source albedo. No in-engine testing or numerical acceptance thresholds claimed.",
+  "status": "Improved material candidates ready for cloud integration and in-motion evaluation, not final scene approval."
+}

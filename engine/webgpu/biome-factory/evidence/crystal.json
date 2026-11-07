@@ -1,0 +1,14 @@
+{
+  "capture": true,
+  "visualVerdict": null,
+  "phoneMeasured": false,
+  "path": "crystal-materials-r1.mp4",
+  "width": 720,
+  "height": 1280,
+  "frames": 600,
+  "duration": 20.0,
+  "bytes": 7453508,
+  "proxyBytes": 991098,
+  "decode": 0,
+  "note": "SwiftShader on this VM. 30 fps is the encode step, not a measured phone rate. Visual KEEP was not granted."
+}

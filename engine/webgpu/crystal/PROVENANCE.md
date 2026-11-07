@@ -2,20 +2,15 @@
 
 SmiR, 2026-11-07, on the new environment key: « Ok trop bien ».
 
-The key is an art plate, not a gameplay backdrop. Meshes are house geometry. Every world colour is a crop of that plate.
+The key is an artistic reference only. It is not a runtime texture. `CROPS` remains a record of that plate and is not sampled.
 
-| Item | Source |
-| --- | --- |
-| Key bytes | `key/environment.jpg` |
-| sha256 | `a912d091c0a698d47c027f1ca2e9c1f5faa7d329c29c56ce6fa6f135ab6274e9` |
-| Parent path | `/workspace/biome-crystal-1107/new-biome-key.jpg` |
-| Size | 720×1280, 465807 bytes |
-| Bolt | `engine/webgpu/assets/meadow/bolt439_atlas.png` (live card, not a new dog) |
-| Crops | `biome.js` `CROPS` — mineral, violet, cyan, stone, stream, stars, planet |
+Revision `materials-v2-r1` (zip sha256 `6a2cf6ce010a552ce0797bdc75f354d625ffc6e5997dd52791ae6a62f61e6186`, 1986224 bytes) holds four native 1024×1024 JPEGs. Embedded C2PA names softwareAgent “Grok Imagine” and certificate identity “xAI Grok Imagine”. The signature was not verified. That is self-identification, not a certificate.
 
-Fog colour is the average of the stars crop, converted from sRGB. No second painted texture.
+Declared tile period, not a measured fit: ground 3 m, wall 2 m, crystal 0.5 m (one file on both crystal ids), architecture 2 m. Wall and crystal stay quality HOLD. Ground and architecture are candidates, not a visual PASS. Seamless is not certified. Stream, sky, and a separate violet file are missing; the page does not invent them. Fog is off. Release is HOLD.
 
-Route: `engine/webgpu/crystal/crystal.html` served from `engine/webgpu`. Capture adds `?cap=1&w=720&h=1280`.
+Isolated candidate: `crystal.html?candidate=materials-v2-r1`. Without that flag the page does not paint.
+
+Route: `engine/webgpu/crystal/crystal.html` served from `engine/webgpu`.
 
 ## Capture (this VM, headless Chrome + SwiftShader)
 

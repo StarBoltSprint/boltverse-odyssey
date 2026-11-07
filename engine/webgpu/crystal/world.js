@@ -1,4 +1,4 @@
-// crystal/world.js — walkable obsidian canyon. Geometry only. Colour comes from the key crops.
+// crystal/world.js — walkable obsidian canyon. Geometry only. Colour is a dedicated albedo, never the key.
 import { createMesh } from '../engine/bricks/facet-mesh.js';
 import { MAT, CRYSTAL } from './biome.js';
 
@@ -117,13 +117,7 @@ export function buildWorld() {
   }
   for (let z = z1 - 1; z > z0 + 1; z -= 1.4) {
     const cx = pathX(z) + CRYSTAL.streamLat;
-    const nz = z - 1.4;
-    const nx = pathX(nz) + CRYSTAL.streamLat;
-    const half = 1.15;
-    const y = -0.2;
-    const a = [cx - half, y, z], b = [cx + half, y, z], c = [nx + half, y, nz], d = [nx - half, y, nz];
-    mesh.tri(a, b, c, [0, z * 0.08], [1, z * 0.08], [1, nz * 0.08], MAT.stream);
-    mesh.tri(a, c, d, [0, z * 0.08], [1, nz * 0.08], [0, nz * 0.08], MAT.stream);
+    // No stream albedo. The trench stays mineral ground. Do not paint a colour.
     if (Math.round(z) % 3 === 0) circles.push({ x: cx, z, r: 1.02 });
   }
 
@@ -139,7 +133,7 @@ export function buildWorld() {
         const sz = 2.1 + hash(row + 4, i) * 1.7;
         const yaw = (hash(i, row + 11) - 0.5) * 0.7;
         const y = terrH(x, z) + sy / 2;
-        mesh.box(x, y, z, sx, sy, sz, yaw, MAT.stone);
+        mesh.box(x, y, z, sx, sy, sz, yaw, MAT.wall);
         circles.push({ x, z, r: Math.min(sx, sz) * 0.38 });
         if (row === 0 && hash(i, side + 20) > 0.42) {
           const ch = 1.6 + hash(i, side + 2) * 3.4;
@@ -162,9 +156,22 @@ export function buildWorld() {
     circles.push({ x, z, r: cr * 0.82 });
   }
 
-  // Low enough to stay in the 62° frame until the dog is under it, deep enough not to pop.
-  addArch(mesh, circles, -58, 7.2, 5.4, 4.2);
-  addArch(mesh, circles, -108, 8.0, 6.0, 4.6);
+  // Close enough to read in the 20 s route, far enough that resume does not swallow the gate.
+  {
+    const z = -62;
+    const x = pathX(z) + 2.6;
+    const y = terrH(x, z);
+    mesh.box(x, y + 2.2, z, 2.2, 4.4, 1.6, 0, MAT.wall);
+    circles.push({ x, z, r: 0.9 });
+  }
+  {
+    const z = -70;
+    const x = pathX(z) - 2.5;
+    mesh.crystal(x, terrH(x, z), z, 0.55, 3.2, 0.4, MAT.cyan);
+    circles.push({ x, z, r: 0.5 });
+  }
+  addArch(mesh, circles, -96, 7.2, 4.4, 6);
+  addArch(mesh, circles, -140, 8.0, 4.8, 6);
 
   const spires = [[-16, -88, 22], [20, -96, 30], [-26, -112, 26], [14, -124, 34], [-10, -142, 28], [28, -136, 24], [6, -158, 36]];
   for (let i = 0; i < spires.length; i++) {

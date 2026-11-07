@@ -8,7 +8,7 @@ const fps = 30;
 const dir = '/tmp/crystal-frames';
 const log = '/tmp/crystal-cap.log';
 const port = 9334;
-const url = 'http://127.0.0.1:8765/crystal/crystal.html?cap=1&jpg=1&proof=1&w=720&h=1280';
+const url = 'http://127.0.0.1:8765/crystal/crystal.html?cap=1&jpg=1&proof=1&w=720&h=1280&candidate=materials-v2-r1';
 
 fs.rmSync(dir, { recursive: true, force: true });
 fs.mkdirSync(dir, { recursive: true });
@@ -79,7 +79,7 @@ try {
     if (payload.info.gpuErr) throw new Error(payload.info.gpuErr);
     const name = `${dir}/f_${String(i).padStart(4, '0')}.jpg`;
     fs.writeFileSync(name, Buffer.from(payload.jpg, 'base64'));
-    if (i % 30 === 0) say(`frame ${i} z=${payload.info.z.toFixed(1)} v=${payload.info.v.toFixed(2)} psi=${payload.info.psi.toFixed(2)} breath=${payload.info.breathState} f=${payload.info.breathFrame} mix=${payload.info.idleMix?.toFixed?.(2)} ${(Date.now() - t0) / 1000}s`);
+    if (i % 30 === 0) say(`frame ${i} z=${payload.info.z.toFixed(1)} v=${payload.info.v.toFixed(2)} psi=${payload.info.psi.toFixed(2)} breath=${payload.info.breathState} f=${payload.info.breathFrame} mix=${payload.info.idleMix?.toFixed?.(2)} missing=${(payload.info.missing || []).join(',')} ${(Date.now() - t0) / 1000}s`);
   }
   say('FRAMES_DONE');
 } finally {

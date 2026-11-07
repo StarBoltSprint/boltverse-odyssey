@@ -8,6 +8,7 @@ const repo = path.resolve(here, '../../..');
 const forbid = ['meadow', 'diag-install', 'pace-install', 'prof-install', 'cull-install', 'occl-install', 'breath-install', 'm448'];
 const allow = [
   'engine/webgpu/crystal/',
+  'engine/webgpu/biome-factory/',
   'engine/webgpu/engine/bricks/planet-sphere.js',
   'engine/webgpu/engine/bricks/follow-cam.js',
   'engine/webgpu/engine/bricks/circle-collide.js',
@@ -33,6 +34,17 @@ const files = [
   'engine/webgpu/engine/bricks/follow-cam.js',
   'engine/webgpu/engine/bricks/circle-collide.js',
   'engine/webgpu/engine/bricks/facet-mesh.js',
+  'engine/webgpu/crystal/materials.js',
+  'engine/webgpu/crystal/biome.factory.json',
+  'engine/webgpu/biome-factory/make.mjs',
+  'engine/webgpu/biome-factory/pipeline.mjs',
+  'engine/webgpu/biome-factory/test-factory.mjs',
+  'engine/webgpu/biome-factory/fixtures/materials-v2/mineral-ground.jpg',
+  'engine/webgpu/biome-factory/fixtures/materials-v2/obsidian-wall.jpg',
+  'engine/webgpu/biome-factory/fixtures/materials-v2/cyan-facets.jpg',
+  'engine/webgpu/biome-factory/fixtures/materials-v2/architectural-stone.jpg',
+  'engine/webgpu/biome-factory/fixtures/materials-v2/manifest.json',
+  'engine/webgpu/biome-factory/evidence/crystal.json',
 ];
 
 function assertSafe(rel) {

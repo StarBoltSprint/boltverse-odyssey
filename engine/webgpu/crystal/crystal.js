@@ -1,11 +1,12 @@
 // crystal/crystal.js — obsidian canyon on the house WebGPU path.
-// Live bolt439 card, meadow follow camera, key-image crops. Not a photo plate behind the dog.
+// Live bolt439 card, meadow follow camera. Albedo is a dedicated tile, never the art key.
 import { boltIdle, measureAtlasFeet, pickPlantedFrame } from '../bricks/bolt-idle.js';
 import { stepBreath, BREATH_MEADOW, makeBreathClip, BREATH_BUILD, breathMixWgsl } from '../bricks/bolt-breath.js';
 import { makeCircleCollide } from '../engine/bricks/circle-collide.js';
 import { followEye, lookAt, persp, mul, FOV_Y } from '../engine/bricks/follow-cam.js';
 import { createPlanetMesh, prepareSurfaceRGBA, frontYaw, planetCenter } from '../engine/bricks/planet-sphere.js';
-import { CRYSTAL, CROPS, KEY, PLANET, cropUV } from './biome.js';
+import { CRYSTAL, PLANET } from './biome.js';
+import { materialGate, TILE_M, ALBEDO } from './materials.js';
 import { buildWorld, demoSteer, proofInput, integrate, spawn, terrH } from './world.js';
 
 const qs = new URLSearchParams(location.search);
@@ -62,7 +63,10 @@ struct U {
 };
 @group(0) @binding(0) var<uniform> u: U;
 @group(0) @binding(1) var samp: sampler;
-@group(0) @binding(2) var keyTex: texture_2d<f32>;
+@group(0) @binding(2) var groundTex: texture_2d<f32>;
+@group(0) @binding(6) var wallTex: texture_2d<f32>;
+@group(0) @binding(7) var crysTex: texture_2d<f32>;
+@group(0) @binding(8) var archTex: texture_2d<f32>;
 @group(0) @binding(3) var atex: texture_2d<f32>;
 @group(0) @binding(4) var planetTex: texture_2d<f32>;
 @group(0) @binding(5) var planetSamp: sampler;
@@ -73,26 +77,9 @@ struct VO { @builtin(position) p: vec4f, @location(0) w: vec3f, @location(1) n: 
   o.p = u.vp * vec4f(p, 1.0);
   o.w = p; o.n = n; o.uv = vec2f(b.w, 0.0); o.mat = a.w; return o;
 }
-fn cropAt(id: u32) -> vec4f {
-  if (id == 0u) { return u.c0; }
-  if (id == 1u) { return u.c1; }
-  if (id == 2u) { return u.c2; }
-  if (id == 3u) { return u.c3; }
-  if (id == 4u) { return u.c4; }
-  if (id == 5u) { return u.c5; }
-  return u.c6;
-}
-fn sampleRepeat(id: u32, uv: vec2f) -> vec3f {
-  let c = cropAt(id);
-  return textureSampleLevel(keyTex, samp, c.xy + fract(uv) * c.zw, 0.0).rgb;
-}
-fn sampleClamp(id: u32, uv: vec2f) -> vec3f {
-  let c = cropAt(id);
-  return textureSampleLevel(keyTex, samp, c.xy + clamp(uv, vec2f(0.002), vec2f(0.998)) * c.zw, 0.0).rgb;
-}
-fn tri(id: u32, w: vec3f, n: vec3f, sc: f32) -> vec3f {
+fn triMix(sx: vec3f, sy: vec3f, sz: vec3f, n: vec3f) -> vec3f {
   let bn = abs(n); let b = bn / (bn.x + bn.y + bn.z + 1e-4);
-  return sampleRepeat(id, w.zy * sc) * b.x + sampleRepeat(id, w.xz * sc) * b.y + sampleRepeat(id, w.xy * sc) * b.z;
+  return sx * b.x + sy * b.y + sz * b.z;
 }
 fn sunN() -> vec3f { return normalize(u.sun.xyz); }
 fn pathXg(z: f32) -> f32 { return 5.2 * sin(z * 0.028) + 1.6 * sin(z * 0.061); }
@@ -110,12 +97,6 @@ fn groundN(p: vec2f) -> vec3f {
   let hx = terrHs(p + vec2f(e, 0.0)) - terrHs(p - vec2f(e, 0.0));
   let hz = terrHs(p + vec2f(0.0, e)) - terrHs(p - vec2f(0.0, e));
   return normalize(vec3f(-hx, 2.0 * e, -hz));
-}
-fn groundAlb(p: vec2f) -> vec3f {
-  let a = sampleRepeat(0u, p * 0.046);
-  let r = mat2x2f(0.80, -0.60, 0.60, 0.80);
-  let b = sampleRepeat(0u, r * p * 0.073 + vec2f(0.37, 0.19));
-  return mix(a, b, 0.42);
 }
 fn rotY(p: vec3f, a: f32) -> vec3f {
   let c = cos(a); let s = sin(a);
@@ -155,33 +136,38 @@ struct PVO { @builtin(position) p: vec4f, @location(0) n: vec3f, @location(1) w:
 }
 @fragment fn fs(v: VO) -> @location(0) vec4f {
   var n = normalize(v.n);
-  var wrap = clamp(dot(n, sunN()) * 0.55 + 0.45, 0.0, 1.0);
+  let scG = ${(1 / TILE_M.ground).toFixed(8)};
+  let scW = ${(1 / TILE_M.wall).toFixed(8)};
+  let scC = ${(1 / TILE_M.crystal).toFixed(8)};
+  let scA = ${(1 / TILE_M.architecture).toFixed(8)};
+  let gnd = textureSample(groundTex, samp, v.w.xz * scG).rgb;
+  let wall = triMix(
+    textureSample(wallTex, samp, v.w.zy * scW).rgb,
+    textureSample(wallTex, samp, v.w.xz * scW).rgb,
+    textureSample(wallTex, samp, v.w.xy * scW).rgb, n);
+  let cry = triMix(
+    textureSample(crysTex, samp, v.w.zy * scC).rgb,
+    textureSample(crysTex, samp, v.w.xz * scC).rgb,
+    textureSample(crysTex, samp, v.w.xy * scC).rgb, n);
+  let arch = triMix(
+    textureSample(archTex, samp, v.w.zy * scA).rgb,
+    textureSample(archTex, samp, v.w.xz * scA).rgb,
+    textureSample(archTex, samp, v.w.xy * scA).rgb, n);
   let m = v.mat;
-  var alb: vec3f;
+  if (m > 3.5 && m < 4.5) { discard; }
+  if (m > 4.5 && m < 5.5) { return vec4f(0.0, 0.0, 0.0, 1.0); }
+  var wrap = clamp(dot(n, sunN()) * 0.55 + 0.45, 0.0, 1.0);
+  var alb = wall;
   if (m < 0.5) {
-    let gn = groundN(v.w.xz);
-    n = gn;
+    n = groundN(v.w.xz);
     wrap = clamp(dot(n, sunN()) * 0.35 + 0.65, 0.0, 1.0);
-    alb = groundAlb(v.w.xz);
-  }
-  else if (m < 1.5) { alb = tri(1u, v.w, n, 0.38); }
-  else if (m < 2.5) { alb = tri(2u, v.w, n, 0.38); }
-  else if (m < 3.5) { alb = tri(3u, v.w, n, 0.16); }
-  else if (m < 4.5) { alb = sampleRepeat(4u, vec2f(v.w.x * 0.2 + u.cam.w * 0.035, v.w.z * 0.16)); }
-  else {
-    let dir = normalize(v.w - u.cam.xyz);
-    let yaw = atan2(dir.x, -dir.z);
-    let pitch = asin(clamp(dir.y, -1.0, 1.0));
-    alb = sampleClamp(5u, vec2f(0.55 + yaw * 0.38, 0.78 - pitch * 0.95));
-    var sky = alb * (0.92 + 0.08 * wrap);
-    sky = mix(sky, u.fog.rgb, u.fog.w * 0.35);
-    return vec4f(pow(clamp(sky, vec3f(0.0), vec3f(1.0)), vec3f(1.0 / 2.2)), 1.0);
-  }
+    alb = gnd;
+  } else if (m < 2.5) { alb = cry; }
+  else if (m < 3.5) { alb = arch; }
   let view = normalize(u.cam.xyz - v.w);
-  let spec = pow(clamp(dot(n, normalize(sunN() + view)), 0.0, 1.0), 36.0);
+  let spec = pow(clamp(dot(n, normalize(sunN() + view)), 0.0, 1.0), 48.0);
   let crystal = select(0.0, 1.0, m > 0.5 && m < 2.5);
-  // The key is already lit. Shade only enough to read the facets.
-  var col = alb * (0.78 + 0.22 * wrap) + alb * spec * (0.04 + 0.12 * crystal);
+  var col = alb * (0.18 + 0.82 * wrap) + alb * spec * 0.05 * crystal;
   let dist = length(v.w - u.cam.xyz);
   let fk = clamp(u.fog.w * smoothstep(u.grid.w, 150.0, dist), 0.0, 0.62);
   col = mix(col, u.fog.rgb, fk);
@@ -255,7 +241,9 @@ async function loadCanvasMips(dev, canvas) {
 }
 
 async function loadTex(dev, url) {
-  const bmp = await createImageBitmap(await (await fetch(url)).blob(), { colorSpaceConversion: 'none' });
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('asset missing ' + url + ' HTTP ' + res.status);
+  const bmp = await createImageBitmap(await res.blob(), { colorSpaceConversion: 'none' });
   dev.pushErrorScope('validation');
   const tex = dev.createTexture({
     size: [bmp.width, bmp.height], format: 'rgba8unorm-srgb',
@@ -267,7 +255,24 @@ async function loadTex(dev, url) {
   return { tex, w: bmp.width, h: bmp.height, bmp };
 }
 
+async function loadAlbedo(dev, url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('asset missing ' + url + ' HTTP ' + res.status);
+  const bmp = await createImageBitmap(await res.blob(), { colorSpaceConversion: 'none' });
+  const cv = new OffscreenCanvas(bmp.width, bmp.height);
+  cv.getContext('2d').drawImage(bmp, 0, 0);
+  const tex = await loadCanvasMips(dev, cv);
+  return { tex, w: bmp.width, h: bmp.height, bmp };
+}
+
 async function main() {
+  const gate = materialGate(qs);
+  window.__crystalMaterials = gate;
+  if (!gate.render) {
+    if (hud) hud.textContent = 'HOLD — matériaux en attente';
+    window.__crystalReady = false;
+    return;
+  }
   const ad = await navigator.gpu?.requestAdapter({ powerPreference: 'high-performance' });
   if (!ad) { hud.textContent = 'No WebGPU'; window.__crystalErr = 'No WebGPU'; window.__crystalReady = false; return; }
   const dev = await ad.requestDevice();
@@ -291,10 +296,14 @@ async function main() {
   const SAMPLES = CRYSTAL.msaa;
 
   const meadowRoot = new URL('../assets/meadow/', import.meta.url).href;
+  const matRoot = new URL('../biome-factory/fixtures/materials-v2/', import.meta.url);
   const breathClip = await makeBreathClip(dev, meadowRoot);
-  const [key, atlas, feet, planetBmp] = await Promise.all([
-    loadTex(dev, new URL(KEY.file, import.meta.url).href, true),
-    loadTex(dev, new URL(CRYSTAL.bolt, import.meta.url).href, false),
+  const [ground, wall, crystalAlb, archAlb, atlas, feet, planetBmp] = await Promise.all([
+    loadAlbedo(dev, new URL(ALBEDO.ground, matRoot).href),
+    loadAlbedo(dev, new URL(ALBEDO.wall, matRoot).href),
+    loadAlbedo(dev, new URL(ALBEDO.crystal, matRoot).href),
+    loadAlbedo(dev, new URL(ALBEDO.architecture, matRoot).href),
+    loadTex(dev, new URL(CRYSTAL.bolt, import.meta.url).href),
     (async () => {
       const bmp = await createImageBitmap(await (await fetch(new URL(CRYSTAL.bolt, import.meta.url).href)).blob(), { colorSpaceConversion: 'none' });
       const cv = new OffscreenCanvas(bmp.width, bmp.height);
@@ -330,17 +339,16 @@ async function main() {
   IDLE.applyPlanted(planted);
   live.phase = IDLE.cfg.idlePhase;
 
-  const cv = new OffscreenCanvas(key.bmp.width, key.bmp.height);
-  const cx = cv.getContext('2d', { willReadFrequently: true });
-  cx.drawImage(key.bmp, 0, 0);
-  const avg = (rect) => {
-    const id = cx.getImageData(rect.x, rect.y, rect.w, rect.h);
+  const bounce = await (async () => {
+    const cv = new OffscreenCanvas(ground.bmp.width, ground.bmp.height);
+    const cx = cv.getContext('2d', { willReadFrequently: true });
+    cx.drawImage(ground.bmp, 0, 0);
+    const id = cx.getImageData(0, 0, ground.bmp.width, ground.bmp.height);
     let r = 0, g = 0, b = 0, n = 0;
-    for (let i = 0; i < id.data.length; i += 16) { r += id.data[i]; g += id.data[i + 1]; b += id.data[i + 2]; n++; }
+    for (let i = 0; i < id.data.length; i += 64) { r += id.data[i]; g += id.data[i + 1]; b += id.data[i + 2]; n++; }
     return [srgbToLin(r / n / 255), srgbToLin(g / n / 255), srgbToLin(b / n / 255)];
-  };
-  const fogCol = avg(CROPS[5]);
-  const bounce = avg(CROPS[0]);
+  })();
+  const fogCol = [0, 0, 0];
   const sun = CRYSTAL.sun;
   const sunL = Math.hypot(...sun);
 
@@ -355,7 +363,7 @@ async function main() {
   const sb = mk(world.sky, GPUBufferUsage.VERTEX);
   const ub = dev.createBuffer({ size: 512, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
   const aniso = Math.min(8, ad.limits.maxSamplerAnisotropy || 1);
-  const samp = await noteErr('sampler', async () => dev.createSampler({ magFilter: 'linear', minFilter: 'linear', mipmapFilter: 'linear', addressModeU: 'clamp-to-edge', addressModeV: 'clamp-to-edge', maxAnisotropy: aniso }));
+  const samp = await noteErr('sampler', async () => dev.createSampler({ magFilter: 'linear', minFilter: 'linear', mipmapFilter: 'linear', addressModeU: 'repeat', addressModeV: 'repeat', maxAnisotropy: aniso }));
   const bgl = dev.createBindGroupLayout({ entries: [
     { binding: 0, visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, buffer: {} },
     { binding: 1, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
@@ -363,16 +371,22 @@ async function main() {
     { binding: 3, visibility: GPUShaderStage.FRAGMENT, texture: {} },
     { binding: 4, visibility: GPUShaderStage.FRAGMENT, texture: {} },
     { binding: 5, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+    { binding: 6, visibility: GPUShaderStage.FRAGMENT, texture: {} },
+    { binding: 7, visibility: GPUShaderStage.FRAGMENT, texture: {} },
+    { binding: 8, visibility: GPUShaderStage.FRAGMENT, texture: {} },
     { binding: 18, visibility: GPUShaderStage.FRAGMENT, texture: {} },
   ] });
   const planetSamp = dev.createSampler({ magFilter: 'linear', minFilter: 'linear', mipmapFilter: 'linear', addressModeU: 'repeat', addressModeV: 'clamp-to-edge', maxAnisotropy: aniso });
   const bg = await noteErr('bind group', async () => dev.createBindGroup({ layout: bgl, entries: [
     { binding: 0, resource: { buffer: ub } },
     { binding: 1, resource: samp },
-    { binding: 2, resource: key.tex.createView() },
+    { binding: 2, resource: ground.tex.createView() },
     { binding: 3, resource: atlas.tex.createView() },
     { binding: 4, resource: planetTex.createView() },
     { binding: 5, resource: planetSamp },
+    { binding: 6, resource: wall.tex.createView() },
+    { binding: 7, resource: crystalAlb.tex.createView() },
+    { binding: 8, resource: archAlb.tex.createView() },
     { binding: 18, resource: breathClip.texture.createView() },
   ] }));
   const layout = dev.createPipelineLayout({ bindGroupLayouts: [bgl] });
@@ -424,7 +438,6 @@ async function main() {
   dev.addEventListener?.('uncapturederror', e => { infoErr.push(String(e.error || e)); window.__crystalErr = infoErr.join(' | '); });
 
   const crops = new Float32Array(7 * 4);
-  CROPS.forEach((c, i) => crops.set(cropUV(c), i * 4));
   const U = new Float32Array(128);
   U.set(crops, 60);
   // fog.rgb + strength, grid.w = fog start. crops live at float 60.
@@ -445,7 +458,7 @@ async function main() {
     IDLE.writeUniforms(U, IDLE.sample());
     U[52] = 0;
     U[53] = live.idleMix || 0;
-    U.set([fogCol[0], fogCol[1], fogCol[2], 0.9], 56);
+    U.set([fogCol[0], fogCol[1], fogCol[2], 0], 56);
     U.set(crops, 60);
     U.set([pCenter[0], pCenter[1], pCenter[2], PLANET.radius], 88);
     U.set([pYaw, PLANET.limb, 0, 0], 92);
@@ -478,7 +491,8 @@ async function main() {
 
   window.__crystalInfo = {
     biome: CRYSTAL.id, W, H, msaa: SAMPLES, dprCap: 2, tris: worldVerts / 3, skyVerts,
-    key: KEY.sha256, bolt: 'bolt439_atlas', breath: BREATH_BUILD,
+    candidate: gate.candidate, release: gate.release, missing: gate.missing, tiles: TILE_M,
+    referenceTexture: false, bolt: 'bolt439_atlas', breath: BREATH_BUILD,
     breathClip: BREATH.clipName, breathRgba: BREATH.rgbaDir, breathFrames: BREATH.frames,
     planet: PLANET.sha256, circles: world.circles.length, fov: 62, worldVerts,
   };
@@ -508,7 +522,7 @@ async function main() {
       const buf = new Uint8Array(await blob.arrayBuffer());
       let s = '';
       for (let i = 0; i < buf.length; i += 0x8000) s += String.fromCharCode.apply(null, buf.subarray(i, i + 0x8000));
-      const info = { x: live.x, z: live.z, psi: live.psi, v: live.v, y: terrH(live.x, live.z), idleMix: live.idleMix || 0, breathFrame: live.breathFrame || 0, breathState: live.breathState || 'run', gpuErr: gpuErr ? String(gpuErr.message || gpuErr) : null };
+      const info = { x: live.x, z: live.z, psi: live.psi, v: live.v, y: terrH(live.x, live.z), idleMix: live.idleMix || 0, breathFrame: live.breathFrame || 0, breathState: live.breathState || 'run', missing: gate.missing, gpuErr: gpuErr ? String(gpuErr.message || gpuErr) : null };
       if (useJpg) return { jpg: btoa(s), info };
       return { png: btoa(s), info, compile: compileNotes };
     };
