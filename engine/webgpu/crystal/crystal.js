@@ -8,13 +8,15 @@ import { createPlanetMesh, prepareSurfaceRGBA, frontYaw, planetCenter } from '..
 import { CRYSTAL, PLANET } from './biome.js';
 import { materialGate, TILE_M, ALBEDO } from './materials.js';
 import { shadeFns, SHADE, tileScales, WATER_WAVE } from '../biome-factory/shade.js';
-import { buildWorld, demoSteer, proofInput, integrate, spawn, terrH } from './world.js';
+import { buildWorld, demoSteer, proofInput, skyProofInput, integrate, spawn, terrH } from './world.js';
+import { skyWgsl } from '../biome-factory/procedural-sky.js';
 
 const SC = tileScales();
 const qs = new URLSearchParams(location.search);
 const CAP = qs.get('cap') === '1';
 const DEMO = qs.get('demo') === '1' || CAP;
 const PROOF = qs.get('proof') === '1';
+const SKYPROOF = qs.get('skyproof') === '1';
 let simClock = 0;
 const hud = document.getElementById('hud');
 if (CAP && hud) hud.style.display = 'none';
@@ -49,7 +51,7 @@ function playerInput() {
 }
 
 function stepLive(dt) {
-  const input = PROOF ? proofInput(simClock, live) : DEMO ? demoSteer(live) : playerInput();
+  const input = SKYPROOF ? skyProofInput(simClock, live) : PROOF ? proofInput(simClock, live) : DEMO ? demoSteer(live) : playerInput();
   simClock += dt;
   IDLE.stepMotion(live, dt, input.run);
   stepBreath(live, dt, input.run, BREATH);
@@ -86,6 +88,7 @@ struct VO { @builtin(position) p: vec4f, @location(0) w: vec3f, @location(1) n: 
   o.w = p; o.n = n; o.uv = vec2f(b.w, 0.0); o.mat = a.w; return o;
 }
 ${shadeFns()}
+${skyWgsl()}
 fn pathXg(z: f32) -> f32 { return 5.2 * sin(z * 0.028) + 1.6 * sin(z * 0.061); }
 fn terrHs(p: vec2f) -> f32 {
   let lateral = p.x - pathXg(p.y);
@@ -166,7 +169,9 @@ struct PVO { @builtin(position) p: vec4f, @location(0) n: vec3f, @location(1) w:
   let flow = vec2f(v.w.x, v.w.z + u.cam.w * 0.35) * scS;
   let waterAlb = textureSample(streamTex, samp, flow).rgb;
   let m = v.mat;
-  if (m > 4.5 && m < 5.5) { return vec4f(0.0, 0.0, 0.0, 1.0); }
+  if (m > 4.5 && m < 5.5) {
+    return present(skyColour(normalize(v.w - u.cam.xyz)));
+  }
   var alb = wall;
   if (m < 0.5) {
     n = groundN(v.w.xz);
@@ -468,6 +473,7 @@ async function main() {
   function fillU(t) {
     const bp = [live.x, terrH(live.x, live.z), live.z];
     const { eye, tgt } = followEye(bp, live.cam, terrH, 0);
+    if (live.pitch) tgt[1] = eye[1] + Math.tan(live.pitch) * 4.2;
     const view = lookAt(eye, tgt, [0, 1, 0]);
     const proj = persp(FOV_Y, W / H, 0.08, 5200);
     const vp = mul(proj, view);
@@ -517,6 +523,7 @@ async function main() {
     biome: CRYSTAL.id, W, H, msaa: SAMPLES, dprCap: 2, tris: worldVerts / 3, skyVerts,
     candidate: gate.candidate, release: gate.release, missing: gate.missing, tiles: TILE_M,
     referenceTexture: false, bolt: 'bolt439_atlas', breath: BREATH_BUILD,
+    compile: compileNotes,
     breathClip: BREATH.clipName, breathRgba: BREATH.rgbaDir, breathFrames: BREATH.frames,
     planet: PLANET.sha256, circles: world.circles.length, fov: 62, worldVerts,
   };

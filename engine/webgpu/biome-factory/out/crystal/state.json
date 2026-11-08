@@ -79,6 +79,10 @@
     {
       "code": "phone_unmeasured",
       "detail": "real-time phone performance was not measured"
+    },
+    {
+      "code": "colour_uncertain",
+      "detail": "light ids differ or are unknown; scene light is not recovered and exposure is not fitted"
     }
   ],
   "hard": [],
@@ -197,21 +201,23 @@
     }
   ],
   "identityNote": "gen4b tail crop and paw plant are not claimed fixed",
+  "proceduralSky": "candidate-exception",
+  "colour": {
+    "verdict": "UNCERTAIN",
+    "compared": false,
+    "threshold": 10,
+    "rawDE76": 27.1,
+    "reason": "light ids differ or are unknown; scene light is not recovered and exposure is not fitted",
+    "priorRaw": {
+      "method": "texture median Lab versus key-region median Lab, no shared light",
+      "source": "biome-guards README 2026-11-08: crystal v2 materials dE76 19-66 against threshold 10",
+      "use": "diagnostic only; not a colour pass and not a colour fail of the albedo"
+    }
+  },
   "keep": false,
   "premise": {
-    "statement": "good correct-scale albedo alone, with current material/light/UV code, will yield a convincing crystal canyon",
     "holds": false,
-    "colourPipelineOk": true,
-    "shadePreservesRamp": true,
-    "lowContrastIds": [
-      "obsidian-wall",
-      "ground",
-      "crystal",
-      "architecture",
-      "violet",
-      "stream"
-    ],
-    "because": "the unlit level-0 quad matches the JPEG and a 0–255 ramp still spans the frame after shading. Every current original is low contrast, so a correct metre scale cannot create wall grain or crystal colour facets. Face-to-face shading still comes from the mesh normals. On the canyon path the mip filter averages that small variation further."
+    "because": "swatch not run"
   },
   "sky": "BLOCKED",
   "pending": {
@@ -246,196 +252,7 @@
     }
   },
   "runId": "af79dbb3ceeb",
-  "swatch": {
-    "resumed": false,
-    "flatMae": 1.57,
-    "uvPeriodSad": 0,
-    "uvPeriodPx": 128,
-    "rampRaw": [
-      17,
-      246
-    ],
-    "rampLit": [
-      15,
-      220
-    ],
-    "rampLitSpread": 205,
-    "panels": [
-      {
-        "id": "ground-raw",
-        "r": {
-          "mean": 76.28,
-          "pstdev": 8.31,
-          "n": 16384
-        },
-        "g": {
-          "mean": 77.31,
-          "pstdev": 8.48,
-          "n": 16384
-        },
-        "b": {
-          "mean": 78.99,
-          "pstdev": 8.47,
-          "n": 16384
-        }
-      },
-      {
-        "id": "ground-lit",
-        "r": {
-          "mean": 68.2,
-          "pstdev": 7.42,
-          "n": 16384
-        },
-        "g": {
-          "mean": 69.13,
-          "pstdev": 7.58,
-          "n": 16384
-        },
-        "b": {
-          "mean": 70.62,
-          "pstdev": 7.58,
-          "n": 16384
-        }
-      },
-      {
-        "id": "ground-uv",
-        "r": {
-          "mean": 74.76,
-          "pstdev": 4.22,
-          "n": 16384
-        },
-        "g": {
-          "mean": 75.77,
-          "pstdev": 4.23,
-          "n": 16384
-        },
-        "b": {
-          "mean": 77.54,
-          "pstdev": 4.16,
-          "n": 16384
-        },
-        "periodSad": 0
-      },
-      {
-        "id": "wall-bevel",
-        "r": {
-          "mean": 15.64,
-          "pstdev": 5.82,
-          "n": 6693
-        },
-        "g": {
-          "mean": 16.11,
-          "pstdev": 6.06,
-          "n": 6693
-        },
-        "b": {
-          "mean": 17.37,
-          "pstdev": 6.52,
-          "n": 6693
-        }
-      },
-      {
-        "id": "cyan-gem",
-        "r": {
-          "mean": 26.88,
-          "pstdev": 9.4,
-          "n": 6186
-        },
-        "g": {
-          "mean": 106.09,
-          "pstdev": 37.01,
-          "n": 6186
-        },
-        "b": {
-          "mean": 123.07,
-          "pstdev": 42.87,
-          "n": 6186
-        }
-      },
-      {
-        "id": "violet-gem",
-        "r": {
-          "mean": 67.83,
-          "pstdev": 27.26,
-          "n": 6219
-        },
-        "g": {
-          "mean": 53.37,
-          "pstdev": 21.49,
-          "n": 6219
-        },
-        "b": {
-          "mean": 89.73,
-          "pstdev": 36.01,
-          "n": 6219
-        }
-      },
-      {
-        "id": "stream",
-        "r": {
-          "mean": 49.73,
-          "pstdev": 1.26,
-          "n": 16384
-        },
-        "g": {
-          "mean": 154.73,
-          "pstdev": 2.02,
-          "n": 16384
-        },
-        "b": {
-          "mean": 159.57,
-          "pstdev": 2.08,
-          "n": 16384
-        }
-      },
-      {
-        "id": "ramp-raw",
-        "r": {
-          "mean": 126.72,
-          "pstdev": 71.33,
-          "n": 16384
-        },
-        "g": {
-          "mean": 126.72,
-          "pstdev": 71.33,
-          "n": 16384
-        },
-        "b": {
-          "mean": 126.72,
-          "pstdev": 71.33,
-          "n": 16384
-        },
-        "spread": 229,
-        "ends": [
-          17,
-          246
-        ]
-      },
-      {
-        "id": "ramp-lit",
-        "r": {
-          "mean": 113.31,
-          "pstdev": 63.76,
-          "n": 16384
-        },
-        "g": {
-          "mean": 113.31,
-          "pstdev": 63.76,
-          "n": 16384
-        },
-        "b": {
-          "mean": 113.31,
-          "pstdev": 63.76,
-          "n": 16384
-        },
-        "spread": 205,
-        "ends": [
-          15,
-          220
-        ]
-      }
-    ]
-  },
+  "swatch": null,
   "signoff": {
     "visualKeep": false,
     "phoneMeasured": false,

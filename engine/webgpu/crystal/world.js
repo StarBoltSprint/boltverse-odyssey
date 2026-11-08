@@ -53,6 +53,16 @@ export function integrate(live, dt, input, collide) {
 }
 
 // Capture route: run, a visible yaw each way, a full stop, run again, stop.
+export function skyProofInput(t, live) {
+  const turn = t >= 1.2 && t < 2.8;
+  const up = t >= 2.8 && t < 4.4;
+  live.pitch = up ? Math.sin(((t - 2.8) / 1.6) * Math.PI) * 0.72 : 0;
+  if (t < 1.2) return { turn: 0, run: true };
+  if (turn) return { turn: 0.42, run: true };
+  if (t < 5.4) return { turn: 0, run: false };
+  return { turn: 0, run: true };
+}
+
 export function proofInput(t, live) {
   const follow = live ? demoSteer(live) : { turn: 0, run: true };
   if (t < 3.4) return follow;

@@ -6,6 +6,7 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import { compareSameLight, PRIOR_RAW, DE76_MAX } from './colour-same-light.mjs';
 
 export const STAGES = ['config', 'refs', 'materials', 'provenance', 'scale', 'quality', 'identity', 'evidence', 'release'];
 
@@ -94,6 +95,9 @@ export function runPipeline(ctx) {
   const materials = [];
   for (const slot of cfg.materials || []) {
     const row = { id: slot.id, role: slot.role, tileMeters: slot.tileMeters || null };
+    if (slot.source === 'house-procedural' || slot.generator === 'house-procedural') {
+      hard(state, 'procedural_albedo', slot.id);
+    }
     if (slot.previewOnly) {
       hard(state, 'preview_as_albedo', slot.id);
       row.status = 'rejected_preview';
@@ -148,6 +152,17 @@ export function runPipeline(ctx) {
   if (!ctx.evidence?.visualVerdict) hold(state, 'missing_review', 'no visual KEEP');
   if (ctx.evidence?.phoneMeasured !== true) hold(state, 'phone_unmeasured', 'real-time phone performance was not measured');
   state.stages.evidence = 'hold';
+
+  if (cfg.proceduralSky) {
+    if (cfg.proceduralSky.scope !== 'crystal-candidate-only') hard(state, 'sky_scope', cfg.proceduralSky.scope || 'missing scope');
+    else state.proceduralSky = 'candidate-exception';
+  }
+  if (cfg.colour) {
+    const colour = compareSameLight(cfg.colour.sample, cfg.colour.reference);
+    state.colour = { ...colour, priorRaw: PRIOR_RAW, threshold: DE76_MAX };
+    if (colour.verdict === 'UNCERTAIN') hold(state, 'colour_uncertain', colour.reason);
+    if (colour.verdict === 'BLOCK') hard(state, 'colour', 'same-light dE76 ' + colour.dE76);
+  }
 
   state.release = state.hard.length === 0 && state.hold.length === 0;
   state.label = state.release ? 'RELEASE' : (state.hard.length ? 'FAIL' : 'HOLD');

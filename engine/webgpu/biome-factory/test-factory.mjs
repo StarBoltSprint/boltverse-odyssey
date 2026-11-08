@@ -73,7 +73,7 @@ const base = {
 const held = runPipeline(base);
 if (held.label !== 'HOLD' || held.release || held.keep) bad('valid path released ' + held.label);
 if (held.hard.length) bad('valid path hard ' + JSON.stringify(held.hard));
-for (const code of ['missing_asset', 'scale_unproven', 'quality_hold', 'visual_not_passed', 'sky_unusable', 'sky_blocked', 'missing_capture', 'missing_review', 'phone_unmeasured']) {
+for (const code of ['missing_asset', 'scale_unproven', 'quality_hold', 'visual_not_passed', 'sky_unusable', 'sky_blocked', 'colour_uncertain', 'missing_capture', 'missing_review', 'phone_unmeasured']) {
   if (!held.hold.some(h => h.code === code)) bad('missing hold ' + code);
 }
 

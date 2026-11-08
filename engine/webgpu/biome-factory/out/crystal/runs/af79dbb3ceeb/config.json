@@ -187,5 +187,31 @@
       "horizonRow": 0.5,
       "wrapMeanAbsMax": 12
     }
+  },
+  "proceduralSky": {
+    "scope": "crystal-candidate-only",
+    "source": "house-procedural",
+    "jpegContract": false,
+    "note": "Narrow exception. Not an Imagine texture. Materials stay Imagine."
+  },
+  "colour": {
+    "sample": {
+      "rgb": [
+        74,
+        75,
+        77
+      ],
+      "light_id": "imagine-albedo-neutral",
+      "exposure": 1
+    },
+    "reference": {
+      "rgb": [
+        18,
+        22,
+        40
+      ],
+      "light_id": "scene-unknown",
+      "exposure": 1
+    }
   }
 }
