@@ -1,16 +1,18 @@
 // House procedural sky. Direction only. Not an Imagine JPEG and not a camera-locked plane.
 // Crystal candidate exception. Materials stay Imagine textures.
+// Atmosphere colours come from the NIGHT rig. Nebula and stars stay on that same field.
+import { NIGHT } from './night-rig.js';
 
 export const SKY_CFG = {
   scope: 'crystal-candidate-only',
   source: 'house-procedural',
-  zenith: [0.012, 0.016, 0.055],
-  horizon: [0.03, 0.042, 0.078],
-  nebulaViolet: [0.11, 0.035, 0.16],
-  nebulaCyan: [0.02, 0.09, 0.15],
-  star: [0.75, 0.82, 0.95],
-  nebulaScale: 2.6,
-  starGrid: 42,
+  zenith: NIGHT.sky.zenith,
+  horizon: NIGHT.sky.horizon,
+  nebulaViolet: NIGHT.sky.nebulaViolet,
+  nebulaCyan: NIGHT.sky.nebulaCyan,
+  star: NIGHT.sky.star,
+  nebulaScale: NIGHT.sky.nebulaScale,
+  starGrid: NIGHT.sky.starGrid,
 };
 
 export function hash31(x, y, z) {

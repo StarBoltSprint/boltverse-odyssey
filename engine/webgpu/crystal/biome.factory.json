@@ -188,6 +188,11 @@
       "wrapMeanAbsMax": 12
     }
   },
+  "light": {
+    "rig": "NIGHT",
+    "file": "crystal/night-light.json",
+    "note": "One rig for every material. Ambient, moon, and sky are set once. They are not fitted per texture."
+  },
   "proceduralSky": {
     "scope": "crystal-candidate-only",
     "source": "house-procedural",

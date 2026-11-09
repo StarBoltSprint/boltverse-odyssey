@@ -1,10 +1,13 @@
 // Shared material shade. The canyon page and the swatch import this.
-// Numbers are the live canyon shade. A swatch that copies them by hand is not the test.
+// The NIGHT rig is one set of values for every material. Crystal spec stays dielectric.
 import { TILE_M } from '../crystal/materials.js';
+import { NIGHT, nightWgsl } from './night-rig.js';
 
 export const SHADE = {
-  ambient: 0.10,
-  sun: 0.90,
+  ambient: NIGHT.ambient.rgb,
+  sun: NIGHT.moon.intensity,
+  moon: NIGHT.moon.rgb,
+  flatScale: NIGHT.flatScale,
   specPower: 56,
   crystalSpec: 0.06,
   waterSpec: 0.45,
@@ -34,6 +37,7 @@ export function tileScales() {
 export function shadeFns() {
   return `
 fn sunN() -> vec3f { return normalize(u.sun.xyz); }
+${nightWgsl()}
 fn triMix(sx: vec3f, sy: vec3f, sz: vec3f, n: vec3f) -> vec3f {
   let bn = abs(n); let b = bn / (bn.x + bn.y + bn.z + 1e-4);
   return sx * b.x + sy * b.y + sz * b.z;
@@ -42,9 +46,8 @@ fn present(c: vec3f) -> vec4f {
   return vec4f(pow(clamp(c, vec3f(0.0), vec3f(1.0)), vec3f(1.0 / 2.2)), 1.0);
 }
 fn shadeAlb(alb: vec3f, n: vec3f, view: vec3f, specW: f32) -> vec3f {
-  let ndl = clamp(dot(n, sunN()), 0.0, 1.0);
   let spec = pow(clamp(dot(n, normalize(sunN() + view)), 0.0, 1.0), ${SHADE.specPower}.0);
-  return alb * (${SHADE.ambient} + ${SHADE.sun} * ndl) + alb * spec * specW;
+  return alb * nightIrr(n) + alb * spec * specW;
 }
 fn waterN(p: vec3f, t: f32) -> vec3f {
   let dydx = ${WATER_WAVE.ax} * ${WATER_WAVE.fx} * cos(p.x * ${WATER_WAVE.fx} - t * ${WATER_WAVE.ox});

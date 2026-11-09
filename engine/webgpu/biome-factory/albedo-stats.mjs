@@ -1,6 +1,6 @@
 // CPU side of the material premise. No canyon albedo is invented here.
 import { spawnSync } from 'child_process';
-import { SHADE } from './shade.js';
+import { shadeAt } from './night-rig.js';
 
 export function srgbToLin(c8) {
   const c = c8 / 255;
@@ -13,7 +13,7 @@ export function present8(linear) {
 }
 
 export function lit8(c8, ndl) {
-  return present8(srgbToLin(c8) * (SHADE.ambient + SHADE.sun * ndl));
+  return present8(srgbToLin(c8) * shadeAt(ndl, 0).luma);
 }
 
 function pstdev(vals) {

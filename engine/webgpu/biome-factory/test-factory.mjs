@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { runPipeline, sha256, readC2paSelfId, sourceUsesReferenceAsTexture } from './pipeline.mjs';
 import { TILE_M, repeatsAcross, materialGate, ALBEDO, shadeFactor, skyProjection } from '../crystal/materials.js';
+import { nightLightRecord } from './night-rig.js';
 import { createMesh } from '../engine/bricks/facet-mesh.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -24,6 +25,15 @@ if (repeatsAcross(wide, TILE_M.ground) !== wide / 3) bad('ground period');
 if (page.includes('sky-panorama.jpg')) bad('page samples the rejected sky');
 if (repeatsAcross(8, TILE_M.stream) !== 4) bad('stream period');
 if (shadeFactor(1) - shadeFactor(0.25) < 0.6) bad('shade still flattens facets');
+{
+  const exported = JSON.parse(fs.readFileSync(path.join(webgpu, 'crystal/night-light.json'), 'utf8'));
+  const live = nightLightRecord();
+  if (JSON.stringify(exported) !== JSON.stringify(live)) bad('night-light.json drifted from the rig');
+  if (exported.name !== 'NIGHT' || exported.biome !== 'crystal-canyon') bad('night rig name');
+  if (!exported.ambient?.rgb || exported.ambient.rgb.length !== 3) bad('ambient rgb');
+  if (!exported.moon?.rgb || exported.moon.direction.length !== 3) bad('moon record');
+  if (!(exported.moon.direction[1] < 0.45)) bad('moon is not low');
+}
 const skyFit = skyProjection(1280, 720, 7.68);
 if (skyFit.ok || skyFit.reason !== 'not-2:1-equirect') bad('16:9 sky accepted');
 if (!skyProjection(4096, 2048, 4).ok) bad('house 2:1 rejected');

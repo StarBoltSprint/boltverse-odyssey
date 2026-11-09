@@ -209,13 +209,13 @@ struct PVO { @builtin(position) p: vec4f, @location(0) n: vec3f, @location(1) w:
   let env = skyColour(broad);
   let edge = smoothstep(0.18, 0.42, abs(n.y)) * (1.0 - smoothstep(0.72, 0.92, abs(n.y)));
   let sheen = env * F * (1.0 - rough * 0.35) * (1.0 + edge);
-  let blockLit = alb * (fill + 2.0 * ndl) + sheen;
+  let blockLit = nightTint(alb * (fill + 2.0 * ndl) + sheen);
   col = mix(col, blockLit, block);
   let nh = pow(clamp(dot(n, normalize(sunN() + view)), 0.0, 1.0), 120.0);
   let fres = pow(1.0 - ndv, 2.6);
   let scatter = pow(ndl, 0.45);
   let core = pow(ndv, 1.6);
-  let gemCol = alb * (0.12 + 0.45 * ndl + 0.10 * scatter) + alb * fres * 0.42 + alb * nh * 0.08 + alb * core * 0.72;
+  let gemCol = nightTint(alb * (0.12 + 0.45 * ndl + 0.10 * scatter) + alb * fres * 0.42 + alb * nh * 0.08 + alb * core * 0.72);
   col = mix(col, gemCol, crystal);
   let waterFres = 0.02 + 0.98 * pow(1.0 - ndv, 5.0);
   col = mix(col, col * ${SHADE.waterFresnelDark}, waterFres * water * ${SHADE.waterFresnelMix});

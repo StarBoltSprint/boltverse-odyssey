@@ -1,4 +1,5 @@
 // crystal/biome.js — obsidian canyon. Crops are windows into the approved key, not new paint.
+import { NIGHT } from '../biome-factory/night-rig.js';
 // Key: 720×1280, sha256 a912d091c0a698d47c027f1ca2e9c1f5faa7d329c29c56ce6fa6f135ab6274e9
 // SmiR 2026-11-07: "Ok trop bien".
 export const KEY = {
@@ -49,7 +50,7 @@ export const CRYSTAL = {
   boltR: 0.42,
   msaa: 4,
   fovY: 62,
-  sun: [0.48, 0.74, -0.42],
+  sun: NIGHT.moon.direction,
   streamLat: 3.55,
   fogDist: [36, 150],
 };

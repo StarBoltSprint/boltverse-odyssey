@@ -2,6 +2,8 @@
 // A night-key measurement and a shadowless albedo do not share a light, so they are UNCERTAIN.
 // This does not fit a per-material exposure, drop luminance, or recover albedo from an unknown scene.
 
+import { NIGHT, shadeAt } from './night-rig.js';
+
 export const DE76_MAX = 10;
 
 export function srgbToLin(c) {
@@ -132,10 +134,10 @@ function medianRgb(pixels) {
 }
 
 export function crystalRig() {
-  const sun = [0.48, 0.74, -0.42];
+  const sun = NIGHT.moon.direction;
   const len = Math.hypot(sun[0], sun[1], sun[2]) || 1;
   const ndl = Math.max(0, sun[1] / len);
-  const shade = 0.10 + 0.90 * ndl;
+  const shade = shadeAt(ndl, 1).luma;
   const grey = 0.18;
   const exposure = shade > 0 ? grey / (grey * shade) : 1;
   return {
@@ -146,7 +148,7 @@ export function crystalRig() {
     greyCard: grey,
     mode: 'test-choice',
     notAMeasurement: true,
-    note: 'One exposure for every material, chosen so an 18% grey card under the crystal sun returns to linear 0.18. This is a test choice, not a measurement of the night key.',
+    note: 'One exposure for every material, chosen so an 18% grey card lying flat under the crystal night moon returns to linear 0.18. This is a test choice, not a measurement of the night key.',
   };
 }
 
