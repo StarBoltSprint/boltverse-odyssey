@@ -11,17 +11,21 @@ export const NIGHT = {
     direction: [0.587638, 0.173648, -0.790271],
   },
   // Direct moon scale when the normal points straight up. Vertical faces stay at 1.
-  flatScale: 1,
+  flatScale: 0.4,
   sky: {
     zenith: [0.00135, 0.00135, 0.0218],
-    horizon: [0.0032, 0.003, 0.038],
-    nebulaViolet: [0.154, 0.049, 0.224],
-    nebulaCyan: [0.028, 0.126, 0.21],
+    horizon: [0.00768, 0.0072, 0.0912],
+    nebulaViolet: [0.11, 0.035, 0.16],
+    nebulaCyan: [0.02, 0.09, 0.15],
     star: [0.75, 0.82, 0.95],
     nebulaScale: 2.6,
     starGrid: 42,
-    // Mean of the nebula noise. raw*raw carries this as a constant pedestal.
+    // Mean of a*0.62+b*0.38. The band is the part above this, not raw*raw.
     nebulaFloor: 0.510484,
+    // High octave weight. The rest is the low octave, so a yaw step is a smooth band.
+    nebulaHf: 0.12,
+    // Smoothstep gain on that residual. Not a scale of raw*raw.
+    nebulaGain: 3.2,
   },
 };
 
@@ -65,6 +69,8 @@ export function nightLightRecord() {
       nebulaScale: NIGHT.sky.nebulaScale,
       starGrid: NIGHT.sky.starGrid,
       nebulaFloor: NIGHT.sky.nebulaFloor,
+      nebulaHf: NIGHT.sky.nebulaHf,
+      nebulaGain: NIGHT.sky.nebulaGain,
     },
   };
 }

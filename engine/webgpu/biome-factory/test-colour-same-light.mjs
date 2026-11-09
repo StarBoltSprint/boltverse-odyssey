@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { compareSameLight, crystalColourStatus, crystalRig, assessMaterial, srgbToLab, DE76_MAX, PRIOR_RAW } from './colour-same-light.mjs';
+import { compareSameLight, crystalColourStatus, crystalRig, assessMaterial, srgbToLab, DE76_MAX, PRIOR_RAW, realColourGate } from './colour-same-light.mjs';
 
 let fail = 0;
 const bad = (m) => { console.error('FAIL', m); fail++; };
@@ -68,6 +68,16 @@ const fit = compareSameLight(
 );
 if (fit.verdict !== 'UNCERTAIN') bad('exposure was fitted');
 if (DE76_MAX !== 10) bad('threshold moved');
+const real = realColourGate([
+  { id: 'ground', pixels: [[40, 42, 48], [41, 43, 49], [39, 41, 47]] },
+  { id: 'crystal', pixels: [[20, 140, 160], [22, 142, 158]] },
+]);
+if (real.some(r => r.verdict !== 'PASS' || r.dE76 !== 0 || r.blocking !== true || r.threshold !== 10)) bad('real colour self check ' + JSON.stringify(real));
+const drift = realColourGate([
+  { id: 'obsidian-wall', pixels: [[8, 8, 12]], rendered: [[180, 180, 180], [182, 182, 182]] },
+]);
+if (drift[0].verdict !== 'BLOCK' || !(drift[0].dE76 > 10)) bad('real colour drift ' + JSON.stringify(drift[0]));
+if (new Set(real.map(r => r.exposure)).size !== 1) bad('real colour exposure fitted');
 if (!PRIOR_RAW.use.includes('diagnostic')) bad('prior raw dropped');
 
 if (fail) { console.error(fail + ' failed'); process.exit(1); }

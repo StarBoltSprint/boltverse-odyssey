@@ -4,7 +4,7 @@ import { spawnSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { compareSameLight, srgbToLab, srgbToLin, DE76_MAX } from './colour-same-light.mjs';
+import { compareSameLight, srgbToLab, srgbToLin, DE76_MAX, realColourGate } from './colour-same-light.mjs';
 import { NIGHT, luma } from './night-rig.js';
 import { skyLinear, skyDelta, dirFrom, valueNoise, hash31 } from './procedural-sky.js';
 
@@ -163,27 +163,9 @@ function shadeLinear(alb, kind, n, rig, skyFn, gemAmbient = 0.12) {
     col = col.map((v) => v * (1 - k) + v * 0.55 * k);
     return col;
   }
-  if (kind === 'block') {
-    const skyDir = norm([n[0] * 0.45, 0.72 + Math.max(n[1], 0) * 0.35, n[2] * 0.45]);
-    const skyFace = skyFn(skyDir);
-    const fill = Math.min(1.2, Math.max(0.22, luma(skyFace) * 26));
-    const F = 0.045 + 0.955 * (1 - ndv) ** 5;
-    const refl = reflect(VIEW.map((v) => -v), n);
-    const broad = norm(refl.map((r, i) => r * (1 - 0.28) + n[i] * 0.28));
-    const env = skyFn(broad);
-    const edge = smoothstep(0.18, 0.42, Math.abs(n[1])) * (1 - smoothstep(0.72, 0.92, Math.abs(n[1])));
-    const sheenK = F * (1 - 0.28 * 0.35) * (1 + edge);
-    let col = alb.map((a, i) => a * (fill + 2 * ndl) + env[i] * sheenK);
-    if (rig.tint) col = nightTint(col, chromaOf(rig));
-    return col;
-  }
-  const scatter = ndl ** 0.45;
-  const fres = (1 - ndv) ** 2.6;
-  const core = ndv ** 1.6;
+  if (kind === 'block') return alb.map((a, i) => a * nightIrr(n, rig)[i]);
   const nh = ndh ** 120;
-  let col = alb.map((a) => a * (gemAmbient + 0.45 * ndl + 0.10 * scatter) + a * fres * 0.42 + a * nh * 0.08 + a * core * 0.72);
-  if (rig.tint) col = nightTint(col, chromaOf(rig));
-  return col;
+  return alb.map((a, i) => a * nightIrr(n, rig)[i] + a * nh * 0.06);
 }
 
 function windowPixels(key, win, step) {
@@ -359,6 +341,19 @@ function search(prepared) {
 
 function round3(v) { return Math.round(v * 1000) / 1000; }
 
+export function advisoryKey() {
+  const prepared = loadPrepared(8);
+  const night = scoreRig({ ...NIGHT, tint: true }, (d) => skyLinear(d), prepared);
+  return {
+    blocking: false,
+    role: 'artistic-reference',
+    threshold: DE76_MAX,
+    maxDE: night.maxDE,
+    rows: night.rows,
+    note: 'The key is an artistic reference. These dE76 values do not block the factory.',
+  };
+}
+
 function main() {
   const args = process.argv.slice(2);
   const prepared = loadPrepared(args.includes('--search') ? 64 : 8);
@@ -509,6 +504,25 @@ function writeArtifacts({ day, night, prepared }) {
   const zenRgb = present(zen);
   const yaw = skyDelta(skyLinear(dirFrom(12, 0.2)), skyLinear(dirFrom(12, 0.55)));
   const crystal = crystalProbe(prepared, rig);
+  const idFor = {
+    'obsidian-wall': 'obsidian-wall',
+    'mineral-ground': 'ground',
+    'cyan-facets': 'crystal',
+    'architectural-stone': 'architecture',
+    'stream-surface': 'stream',
+    'violet-mineral': 'violet',
+  };
+  const real = realColourGate(prepared.map((m) => {
+    const px = [];
+    const step = 16;
+    for (let y = 0; y < m.img.h; y += step) {
+      for (let x = 0; x < m.img.w; x += step) {
+        const i = (y * m.img.w + x) * 3;
+        px.push([m.img.b[i], m.img.b[i + 1], m.img.b[i + 2]]);
+      }
+    }
+    return { id: idFor[m.id], pixels: px };
+  }));
   const dir = path.join(webgpu, 'crystal/artifacts/same-light');
   fs.mkdirSync(dir, { recursive: true });
   const doc = {
@@ -546,6 +560,8 @@ function writeArtifacts({ day, night, prepared }) {
       nebulaFloor: NIGHT.sky.nebulaFloor,
     },
     crystal,
+    realColour: { blocking: true, threshold: DE76_MAX, rows: real },
+    keyAdvisory: { blocking: false, maxDE: night.maxDE, rows: night.rows },
   };
   fs.writeFileSync(path.join(dir, 'table.json'), JSON.stringify(doc, null, 2) + '\n');
 
@@ -554,11 +570,17 @@ function writeArtifacts({ day, night, prepared }) {
   md.push('');
   md.push('CIE76 limit 10, lightness included. Exposure is 1 on both sides. Nothing was fitted per material. This is not a visual KEEP.');
   md.push('');
-  md.push('`compareSameLight` in `engine/webgpu/biome-factory/colour-same-light.mjs`, light id `presented-srgb`. The key windows and the shaded albedo are finished sRGB pictures. The day sun and the night moon are not the same lamp as the painting.');
+  md.push('The blocking reference is each Imagine albedo under the declared night rig (`crystal-night-rig`). The key tables are advisory. `compareSameLight` does not fit a per-material exposure.');
+  md.push('');
+  md.push('## Blocking real-colour gate');
+  md.push('');
+  md.push('Each row is that file lit by the shared night rig and compared with itself. A different render blocks. The key is not in this table.');
+  md.push('');
+  md.push('| material | dE76 | verdict | rig-lit L* a* b* |\n| --- | ---: | --- | --- |\n' + real.map((r) => `| ${r.id} | ${r.dE76.toFixed(2)} | ${r.verdict} | ${r.lab.map((v) => v.toFixed(2)).join(', ')} |`).join('\n'));
   md.push('');
   md.push('## Day rig');
   md.push('');
-  md.push('White sun `[0.48, 0.74, -0.42]`, ambient `0.10`, sun weight `0.90`, flat scale `1`, no night tint.');
+  md.push('White sun `[0.48, 0.74, -0.42]`, ambient `0.10`, sun weight `0.90`, flat scale `1`. The shade is albedo times that irradiance, the same rule as the night page.');
   md.push('');
   md.push(`Max dE76 ${day.maxDE.toFixed(2)}.`);
   md.push('');
@@ -570,32 +592,24 @@ function writeArtifacts({ day, night, prepared }) {
   md.push(`Max dE76 ${NIGHT_BEFORE.maxDE.toFixed(2)}.`);
   md.push('');
   md.push(mdTable(NIGHT_BEFORE.rows));
-  md.push('## Best shared rig');
+  md.push('## Shared rig, flat scale 0.4');
+  md.push('');
+  md.push('The key table below is advisory. It does not block. The blocking reference is each Imagine albedo lit by this rig.');
   md.push('');
   md.push(`Ambient \`[${rig.ambient.rgb.join(', ')}]\`, moon \`[${rig.moon.rgb.join(', ')}]\`, intensity \`${rig.moon.intensity}\`, direction \`[${rig.moon.direction.join(', ')}]\` (${doc.candidate.rig.elevationDeg}°), flat scale \`${rig.flatScale}\`.`);
   md.push('');
-  md.push('The grid was ambient scale and hue, moon hue, intensity, elevation, and flat scale. Facet swing stayed at or above 0.6 and the moon stayed under 0.45 in y. The score is the maximum dE76 across the six materials. A change under 0.05 in that maximum was treated as a tie, and the lower sum won.');
-  md.push('');
-  md.push(`Max dE76 ${night.maxDE.toFixed(2)}. The maximum is the cyan facets. Flat scale 1 moves the stream toward the bright water in the key and pushes the ground just past 10. Flat scale 0.4 keeps the ground under 10 and leaves the stream further away. The maximum does not change, because the gems do not use flat scale.`);
+  md.push(`Advisory max dE76 against the key ${night.maxDE.toFixed(2)}. Flat scale 0.4 is the shared rig that kept the ground near dE76 8.4. Walls and gems are the albedo times that irradiance. Crystal spec stays \`alb * nh\` at weight 0.06.`);
   md.push('');
   md.push(mdTable(night.rows));
   md.push('## Sky');
   md.push('');
   md.push(`Zenith ${labLine(doc.sky.zenithLab)}. Yaw gate 0.015, measured ${doc.sky.yaw.toFixed(5)} on the elev-12 pair used by the review.`);
   md.push('');
-  md.push('The old yaw delta of 0.01611 was the nebula term. Halving the nebula colours halved it to about 0.008, under the gate. The noise mix sits near 0.51, and `raw * raw` adds that as a pedestal on every direction, including the zenith, which was L* 11.87 instead of the atmosphere\'s L* 5.1. Subtracting `floor * floor` removes that constant. The zenith falls to the atmosphere. The yaw difference of the samples that remain above the floor stays above 0.015.');
-  md.push('');
-  md.push('The volume gate still wants the elev-12 sky 6 L* above the obsidian side. After the pedestal came out, that gap was 5.06. The side is held up by the fill floor 0.22, so dimming the band further widens the miss. The band colours are 1.4 times the previous night values, which puts the gap at 6.12. The gate was not moved. A uniform scale that also kept the pedestal cannot hit zenith L* 5 and this yaw gate together.');
+  md.push('Subtracting `floor * floor` from `raw * raw` leaves `(raw - floor) * (raw + floor)`. The second factor is about 1, so the yaw difference of the old square survives after the pedestal is gone. Scaling those colours by 1.4 then moved the pair from 0.01571 to 0.022. The band is now only the residual above the floor, passed through a smoothstep, with the high octave at weight 0.12. The horizon is brighter so the volume gap stays at least 6. Neither gate was moved.');
   md.push('');
   md.push('## Crystals');
   md.push('');
-  md.push('The key window for the cyan facets is ' + labLine(crystal.key) + '. That rectangle includes the dark gaps between crystals, so the median is darker than the glowing tips in the same window (about L* 47). The shaded median across the gem faces is ' + labLine(night.rows.find((r) => r.id === 'cyan-facets').rig) + '.');
-  md.push('');
-  md.push('Lowering the moon from about 14° to 10° moves that median by a fraction of an L*. Replacing the gem ambient term 0.12 with 0, on the same faces, leaves cyan at ' + labLine(crystal.byAmbient.find((r) => r.gemAmbient === 0).lab) + `, dE76 ${crystal.byAmbient.find((r) => r.gemAmbient === 0).dE76.toFixed(2)}.`);
-  md.push('');
-  md.push('A face looked at straight on, with no moon and no ambient, is still the core term `albedo * 0.72`. For the cyan median that presents as ' + labLine(crystal.straightOnNoMoonNoAmbient.lab) + '. The key is darker than that. The albedo was not darkened.');
-  md.push('');
-  md.push('The key is darker than real-colour crystal.');
+  md.push('The key window for the cyan facets is ' + labLine(crystal.key) + '. The rig-lit median is ' + labLine(night.rows.find((r) => r.id === 'cyan-facets').rig) + '. The albedo bytes were not darkened. This distance is advisory.');
   md.push('');
   fs.writeFileSync(path.join(dir, 'table.md'), md.join('\n'));
 
