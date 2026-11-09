@@ -85,6 +85,44 @@ export function demoSteer(live) {
   return { turn, run: true };
 }
 
+export function clusterSize(seed) {
+  return 5 + Math.floor(hash(seed, 3) * 8);
+}
+
+function addCluster(mesh, x, y, z, radius, height, yaw, mat, seed) {
+  const n = clusterSize(seed);
+  mesh.hexPrism(x, y, z, radius * 0.46, height, yaw, (hash(seed, 4) - 0.5) * 0.4, mat);
+  for (let i = 1; i < n; i++) {
+    const ang = yaw + (i / (n - 1)) * Math.PI * 2 + hash(seed, i) * 0.35;
+    const dist = radius * (0.42 + hash(seed, i + 20) * 0.5);
+    const rr = radius * (0.16 + hash(seed, i + 40) * 0.26);
+    const hh = height * (0.32 + hash(seed, i + 60) * 0.58);
+    const tilt = (hash(seed, i + 80) - 0.4) * 0.75;
+    mesh.hexPrism(
+      x + Math.cos(ang) * dist,
+      y + (hash(seed, i + 90) - 0.2) * height * 0.12,
+      z + Math.sin(ang) * dist,
+      rr, hh, ang + hash(seed, i + 7), tilt, mat,
+    );
+  }
+}
+
+function stackBlock(mesh, x, yBase, z, sx, sy, sz, yaw, mat) {
+  const cuts = sy > 8 ? [0.48, 0.30, 0.22] : [0.62, 0.38];
+  let y = yBase;
+  let wx = sx;
+  let wz = sz;
+  for (let t = 0; t < cuts.length; t++) {
+    const th = sy * cuts[t];
+    const bevel = Math.min(0.16, wx * 0.14, wz * 0.14, th * 0.2);
+    mesh.boxBevel(x, y + th / 2, z, wx, th, wz, yaw + t * 0.06, mat, bevel);
+    y += th;
+    wx *= 0.66;
+    wz *= 0.7;
+  }
+  return y;
+}
+
 function addArch(mesh, circles, z0, span, foot, depth) {
   const c = pathX(z0);
   const base = terrH(c, z0);
@@ -149,17 +187,17 @@ export function buildWorld() {
         const lat = side * (7.4 + row * 3.5 + hash(i, row + side * 4) * 1.2);
         const x = pathX(z) + lat;
         if (z > -90 && Math.abs(lat) < 16) continue;
-        const sy = 2.4 + row * 3.1 + hash(i, row + 8) * 4.2;
-        const sx = 2.3 + hash(i + 2, row) * 1.8;
-        const sz = 2.1 + hash(row + 4, i) * 1.7;
+        const sy = 2.8 + row * 4.4 + hash(i, row + 8) * (row === 2 ? 14 : 6.5);
+        const sx = 2.1 + hash(i + 2, row) * 2.2;
+        const sz = 1.8 + hash(row + 4, i) * 1.9;
         const yaw = (hash(i, row + 11) - 0.5) * 0.7;
-        const y = terrH(x, z) + sy / 2;
-        mesh.boxBevel(x, y, z, sx, sy, sz, yaw, MAT.wall, 0.16);
+        const y0 = terrH(x, z);
+        const top = stackBlock(mesh, x, y0, z, sx, sy, sz, yaw, MAT.wall);
         circles.push({ x, z, r: Math.min(sx, sz) * 0.38 });
-        if (row === 0 && hash(i, side + 20) > 0.42) {
-          const ch = 1.6 + hash(i, side + 2) * 3.4;
-          const cr = 0.32 + hash(i, side) * 0.4;
-          mesh.crystal(x + side * 0.3, y + sy / 2 - 0.05, z, cr, ch, yaw, side < 0 ? MAT.violet : MAT.cyan);
+        if (row === 0 && hash(i, side + 20) > 0.28) {
+          const ch = 1.4 + hash(i, side + 2) * 3.2;
+          const cr = 0.34 + hash(i, side) * 0.36;
+          addCluster(mesh, x, top, z, cr, ch, yaw, side < 0 ? MAT.violet : MAT.cyan, i * 17 + row + side * 9);
         }
       }
     }
@@ -173,8 +211,8 @@ export function buildWorld() {
     if (z > -90 && Math.abs(lat) < 14) continue;
     const ch = 1.3 + hash(i, 3) * (side < 0 ? 4.8 : 4.2);
     const cr = 0.26 + hash(i, 4) * 0.48;
-    mesh.crystal(x, terrH(x, z), z, cr, ch, hash(i, 5) * 3, side < 0 ? MAT.violet : MAT.cyan);
-    circles.push({ x, z, r: cr * 0.82 });
+    addCluster(mesh, x, terrH(x, z), z, cr, ch, hash(i, 5) * 3, side < 0 ? MAT.violet : MAT.cyan, 400 + i);
+    circles.push({ x, z, r: cr * 1.35 });
   }
 
   // Close enough to read in the 20 s route, far enough that resume does not swallow the gate.
@@ -182,14 +220,15 @@ export function buildWorld() {
     const z = -62;
     const x = pathX(z) + 2.6;
     const y = terrH(x, z);
-    mesh.boxBevel(x, y + 2.2, z, 2.2, 4.4, 1.6, 0, MAT.wall, 0.18);
+    const top = stackBlock(mesh, x, y, z, 2.2, 4.4, 1.6, 0.1, MAT.wall);
+    addCluster(mesh, x, top, z, 0.42, 1.5, 0.4, MAT.cyan, 62);
     circles.push({ x, z, r: 0.9 });
   }
   {
     const z = -70;
     const x = pathX(z) - 2.5;
-    mesh.crystal(x, terrH(x, z), z, 0.55, 3.2, 0.4, MAT.cyan);
-    circles.push({ x, z, r: 0.5 });
+    addCluster(mesh, x, terrH(x, z), z, 0.55, 3.2, 0.4, MAT.cyan, 70);
+    circles.push({ x, z, r: 0.85 });
   }
   addArch(mesh, circles, -96, 7.2, 4.4, 6);
   addArch(mesh, circles, -140, 8.0, 4.8, 6);
@@ -205,26 +244,26 @@ export function buildWorld() {
   for (const [lat, z, h, w, gem] of near) {
     const x = pathX(z) + lat;
     const y0 = terrH(x, z);
-    mesh.boxBevel(x, y0 + h / 2, z, w, h, w, 0.15, MAT.wall, 0.12);
-    mesh.crystal(x, y0 + h * 0.96, z, 0.62, h * 0.42, 0.4, gem);
+    const top = stackBlock(mesh, x, y0, z, w, h, w * 0.92, 0.15, MAT.wall);
+    addCluster(mesh, x, top, z, 0.48, h * 0.42, 0.4, gem, 800 + z);
     circles.push({ x, z, r: w * 0.42 });
   }
   {
     const z = -11;
     const x = pathX(z) - 4.4;
-    mesh.crystal(x, terrH(x, z), z, 0.72, 2.6, 0.35, MAT.cyan);
-    circles.push({ x, z, r: 0.58 });
+    addCluster(mesh, x, terrH(x, z), z, 0.78, 2.7, 0.35, MAT.cyan, 11);
+    circles.push({ x, z, r: 1.05 });
   }
 
-  const spires = [[-16, -88, 22], [20, -96, 30], [-26, -112, 26], [14, -124, 34], [-10, -142, 28], [28, -136, 24], [6, -158, 36]];
+  const spires = [[-18, -84, 16], [12, -92, 28], [-24, -104, 22], [22, -118, 36], [-8, -128, 19], [16, -136, 31], [-20, -148, 26], [8, -158, 40]];
   for (let i = 0; i < spires.length; i++) {
     const [lat, z, h] = spires[i];
     const x = pathX(z) + lat;
     const y0 = terrH(x, z);
-    const w = 1.6 + (i % 3) * 0.45;
-    mesh.boxBevel(x, y0 + h / 2, z, w, h, w, i * 0.2, MAT.stone, 0.14);
-    mesh.crystal(x, y0 + h * 0.92, z, 0.7, h * 0.28, i, i % 2 ? MAT.cyan : MAT.violet);
-    circles.push({ x, z, r: w * 0.55 });
+    const w = 1.35 + (i % 4) * 0.55;
+    const top = stackBlock(mesh, x, y0, z, w, h, w * (0.75 + (i % 3) * 0.12), i * 0.17, MAT.stone);
+    addCluster(mesh, x, top, z, 0.55 + (i % 3) * 0.12, h * 0.16, i * 0.4, i % 2 ? MAT.cyan : MAT.violet, 900 + i);
+    circles.push({ x, z, r: w * 0.5 });
   }
 
   const sky = createMesh();

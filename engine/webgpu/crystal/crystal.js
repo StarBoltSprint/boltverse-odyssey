@@ -8,7 +8,7 @@ import { createPlanetMesh, prepareSurfaceRGBA, frontYaw, planetCenter } from '..
 import { CRYSTAL, PLANET } from './biome.js';
 import { materialGate, TILE_M, ALBEDO } from './materials.js';
 import { shadeFns, SHADE, tileScales, WATER_WAVE } from '../biome-factory/shade.js';
-import { buildWorld, demoSteer, proofInput, skyProofInput, integrate, spawn, terrH } from './world.js';
+import { buildWorld, demoSteer, proofInput, skyProofInput, integrate, spawn, terrH, pathX } from './world.js';
 import { skyWgsl } from '../biome-factory/procedural-sky.js';
 
 const SC = tileScales();
@@ -16,6 +16,7 @@ const qs = new URLSearchParams(location.search);
 const CAP = qs.get('cap') === '1';
 const DEMO = qs.get('demo') === '1' || CAP;
 const PROOF = qs.get('proof') === '1';
+const SHOT = qs.get('shot');
 const SKYPROOF = qs.get('skyproof') === '1';
 let simClock = 0;
 const hud = document.getElementById('hud');
@@ -194,21 +195,34 @@ struct PVO { @builtin(position) p: vec4f, @location(0) n: vec3f, @location(1) w:
   let water = select(0.0, 1.0, m > 3.5 && m < 4.5);
   let ndl = clamp(dot(n, sunN()), 0.0, 1.0);
   var col = shadeAlb(alb, n, view, ${SHADE.waterSpec} * water);
-  let wallMat = select(0.0, 1.0, m > 5.5);
-  let skyLum = dot(skyColour(vec3f(0.0, 0.25, -1.0)), vec3f(0.2126, 0.7152, 0.0722));
-  let bounce = clamp(skyLum * 8.0, 0.0, 0.28);
-  col = col + alb * bounce * (1.0 - ndl) * wallMat;
   let ndv = clamp(dot(n, view), 0.0, 1.0);
+  let block = select(0.0, 1.0, m > 5.5 || (m > 2.5 && m < 3.5));
+  let skyDir = normalize(vec3f(n.x * 0.45, 0.72 + max(n.y, 0.0) * 0.35, n.z * 0.45));
+  let skyFace = skyColour(skyDir);
+  let skyLin = dot(skyFace, vec3f(0.2126, 0.7152, 0.0722));
+  let fill = clamp(skyLin * 26.0, 0.22, 1.20);
+  let F0 = 0.045;
+  let rough = 0.28;
+  let F = F0 + (1.0 - F0) * pow(1.0 - ndv, 5.0);
+  let refl = reflect(-view, n);
+  let broad = normalize(mix(refl, n, rough));
+  let env = skyColour(broad);
+  let edge = smoothstep(0.18, 0.42, abs(n.y)) * (1.0 - smoothstep(0.72, 0.92, abs(n.y)));
+  let sheen = env * F * (1.0 - rough * 0.35) * (1.0 + edge);
+  let blockLit = alb * (fill + 2.0 * ndl) + sheen;
+  col = mix(col, blockLit, block);
   let nh = pow(clamp(dot(n, normalize(sunN() + view)), 0.0, 1.0), 120.0);
   let fres = pow(1.0 - ndv, 2.6);
   let scatter = pow(ndl, 0.45);
-  let gemCol = alb * (0.14 + 0.78 * ndl + 0.22 * scatter) + alb * fres * 0.50 + alb * nh * 0.14;
+  let core = pow(ndv, 1.6);
+  let gemCol = alb * (0.12 + 0.45 * ndl + 0.10 * scatter) + alb * fres * 0.42 + alb * nh * 0.08 + alb * core * 0.72;
   col = mix(col, gemCol, crystal);
   let waterFres = 0.02 + 0.98 * pow(1.0 - ndv, 5.0);
   col = mix(col, col * ${SHADE.waterFresnelDark}, waterFres * water * ${SHADE.waterFresnelMix});
   let dist = length(v.w - u.cam.xyz);
-  let fk = clamp(u.fog.w * smoothstep(u.grid.w, 150.0, dist), 0.0, 0.62);
-  col = mix(col, u.fog.rgb, fk);
+  let haze = smoothstep(70.0, 190.0, dist);
+  let skyFar = skyColour(normalize(vec3f(v.w.x - u.cam.x, 0.12, v.w.z - u.cam.z)));
+  col = mix(col, skyFar, haze * 0.62);
   return vec4f(pow(clamp(col, vec3f(0.0), vec3f(1.0)), vec3f(1.0 / 2.2)), 1.0);
 }
 ${IDLE.wgsl}
@@ -487,8 +501,15 @@ async function main() {
   // fog.rgb + strength, grid.w = fog start. crops live at float 60.
   function fillU(t) {
     const bp = [live.x, terrH(live.x, live.z), live.z];
-    const { eye, tgt } = followEye(bp, live.cam, terrH, 0);
+    let { eye, tgt } = followEye(bp, live.cam, terrH, 0);
     if (live.pitch) tgt[1] = eye[1] + Math.tan(live.pitch) * 4.2;
+    if (SHOT === 'wall' || SHOT === 'crystal') {
+      const z = SHOT === 'wall' ? -6 : -11;
+      const x = pathX(z) + (SHOT === 'wall' ? -5.6 : -4.4);
+      const y = terrH(x, z);
+      eye = SHOT === 'wall' ? [x + 2.2, y + 1.55, z + 0.05] : [x + 2.5, y + 1.25, z + 1.15];
+      tgt = SHOT === 'wall' ? [x, y + 1.7, z] : [x, y + 1.2, z];
+    }
     const view = lookAt(eye, tgt, [0, 1, 0]);
     const proj = persp(FOV_Y, W / H, 0.08, 5200);
     const vp = mul(proj, view);
@@ -527,8 +548,10 @@ async function main() {
     pass.setPipeline(pPlanet); pass.setVertexBuffer(0, pvb); pass.draw(pCount);
     pass.setPipeline(pWorld); pass.setVertexBuffer(0, vb); pass.draw(worldVerts);
     pass.setPipeline(pLimb); pass.setVertexBuffer(0, pvb); pass.draw(pCount);
-    pass.setPipeline(pContact); pass.draw(6);
-    pass.setPipeline(pBolt); pass.draw(6);
+    if (!SHOT) {
+      pass.setPipeline(pContact); pass.draw(6);
+      pass.setPipeline(pBolt); pass.draw(6);
+    }
     pass.end();
     if (CAP) enc.copyTextureToBuffer({ texture: off }, { buffer: rb, bytesPerRow: bpr }, [W, H]);
     dev.queue.submit([enc.finish()]);

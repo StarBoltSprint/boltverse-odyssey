@@ -61,6 +61,45 @@ export function createMesh() {
     q([ix, -iy, -iz], [ix, iy, -iz], [hx, iy, -iz], [hx, -iy, -iz]);
     q([-ix, iy, -iz], [-ix, -iy, -iz], [-hx, -iy, -iz], [-hx, iy, -iz]);
   }
+  function hexPrism(cx, cy, cz, radius, height, yaw, tilt, mat) {
+    const N = 6;
+    const co = Math.cos(yaw), si = Math.sin(yaw);
+    const ct = Math.cos(tilt), st = Math.sin(tilt);
+    const P = (x, y, z) => {
+      const y1 = y * ct - z * st;
+      const z1 = y * st + z * ct;
+      return [cx + x * co - z1 * si, cy + y1, cz + x * si + z1 * co];
+    };
+    const ring = (y, r) => {
+      const out = [];
+      for (let i = 0; i < N; i++) {
+        const a = (i / N) * Math.PI * 2;
+        out.push(P(Math.cos(a) * r, y, Math.sin(a) * r));
+      }
+      return out;
+    };
+    const base = ring(0, radius * 0.9);
+    const lip = ring(height * 0.62, radius);
+    const tip = P(0, height, 0);
+    const q = (a, b, c, d) => {
+      let A = a, B = b, C = c, D = d;
+      const n = cross(sub(B, A), sub(C, A));
+      const mid = [(A[0] + C[0]) / 2 - cx, (A[1] + C[1]) / 2 - cy, (A[2] + C[2]) / 2 - cz];
+      if (mid[0] * n[0] + mid[1] * n[1] + mid[2] * n[2] < 0) { const t = B; B = D; D = t; }
+      quad(A, B, C, D, [0, 0], [1, 0], [1, 1], [0, 1], mat);
+    };
+    for (let i = 0; i < N; i++) {
+      const j = (i + 1) % N;
+      q(base[i], base[j], lip[j], lip[i]);
+      const A = lip[j], B = lip[i], C = tip;
+      const n = cross(sub(B, A), sub(C, A));
+      const mid = [(A[0] + B[0] + C[0]) / 3 - cx, (A[1] + B[1] + C[1]) / 3 - cy, (A[2] + B[2] + C[2]) / 3 - cz];
+      if (mid[0] * n[0] + mid[1] * n[1] + mid[2] * n[2] < 0) tri(A, C, B, [1, 0], [0.5, 1], [0, 0], mat);
+      else tri(A, B, C, [1, 0], [0, 0], [0.5, 1], mat);
+    }
+    q(base[0], base[5], base[4], base[3]);
+    q(base[0], base[3], base[2], base[1]);
+  }
   function crystal(x, y, z, radius, height, yaw, mat) {
     const N = 8;
     const ys = [0, 0.2, 0.58, 1];
@@ -98,7 +137,7 @@ export function createMesh() {
     }
   }
   return {
-    tri, quad, box, boxBevel, crystal, skyDome, f,
+    tri, quad, box, boxBevel, crystal, hexPrism, skyDome, f,
     finish() { return new Float32Array(f); },
     get count() { return f.length / 8; },
   };
