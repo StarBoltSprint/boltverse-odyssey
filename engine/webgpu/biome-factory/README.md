@@ -22,6 +22,8 @@ Colour compares only when both sides name the same light and the same exposure. 
 
 Director decision, recorded: the environment key is an artistic reference only. Real-colour Imagine albedo wins. The blocking crystal colour gate renders the crystal scene and samples lit, view-facing patches of each material. It compares those pixels with the albedo the shader sampled times the night-rig irradiance of that patch normal. CIE76 limit 10, lightness included. Run `node engine/webgpu/crystal/test-render-colour.mjs`. A darkened material in the shader must fail that test. The key comparison is `keyAdvisory` on the factory state. It is not a hold and it is not a release blocker. The morning raw dE 19–66 stays a diagnostic of the old key-versus-unlit comparison. `--same-light crystal-rig` remains the grey-card test choice and is not the blocking gate.
 
+Director decision, recorded: the 0.015 sky limit is unchanged, and it is not a difference between two view directions. Direction structure is the nebula. The blocking check renders fixed world directions from many camera yaws, pitches, and positions, so each direction lands at different screen positions, and requires that direction's colour to stay within 0.015 across those renders. A slow 360 turn must keep each tracked direction within 0.015 from one frame to the next. The old elev-12 pair is advisory and does not block. A camera-relative screen-space sky is the negative control and must fail. Run `node engine/webgpu/crystal/test-sky-anchor.mjs`.
+
 ```bash
 node engine/webgpu/biome-factory/test-colour-same-light.mjs
 node engine/webgpu/biome-factory/test-sky-sphere.mjs

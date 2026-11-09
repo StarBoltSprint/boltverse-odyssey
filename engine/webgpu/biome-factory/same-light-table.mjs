@@ -605,7 +605,7 @@ function writeArtifacts({ day, night, prepared }) {
   md.push('');
   md.push(`Zenith ${labLine(doc.sky.zenithLab)}. Yaw gate 0.015, measured ${doc.sky.yaw.toFixed(5)} on the elev-12 pair used by the review.`);
   md.push('');
-  md.push('The elev-12 pair was 0.0151 because one yaw sat below the nebula floor and the next yaw was already in the band, so the delta was the whole onset. The band is now an elevation ramp, the same value at every yaw, so that pair no longer straddles a floor. The 0.015 ceiling was not moved. Zenith stays the atmosphere. The volume gap stays at least 6.');
+  md.push('The elev-12 pair compares two different view directions. It is advisory. The 0.015 limit applies to one world direction rendered from many cameras, not to this pair. The nebula is the run-3 residual above the floor, gain 2.77.');
   md.push('');
   md.push('## Crystals');
   md.push('');

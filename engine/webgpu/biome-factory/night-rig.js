@@ -20,12 +20,12 @@ export const NIGHT = {
     star: [0.75, 0.82, 0.95],
     nebulaScale: 2.6,
     starGrid: 42,
-    // Retained so this record still swaps. The band does not read them.
+    // Mean of the low octave. The band is the part above this.
     nebulaFloor: 0.510484,
+    // High octave weight. The rest is the low octave.
     nebulaHf: 0.12,
-    // Weight of the elevation ramp. The review pair is one elevation, so this
-    // does not open a yaw step. 0.32 keeps elev 25 near the old band median.
-    nebulaGain: 0.32,
+    // Run-3 nebula. The two-direction yaw pair is advisory, not this weight's gate.
+    nebulaGain: 2.77,
   },
 };
 

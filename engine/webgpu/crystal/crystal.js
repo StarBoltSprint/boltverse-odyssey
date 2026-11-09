@@ -20,6 +20,8 @@ const SHOT = qs.get('shot');
 const SKYPROOF = qs.get('skyproof') === '1';
 let gatePose = null;
 let gateMode = 0;
+let skySwim = 0;
+let skyYaw = 0;
 let gateBreak = 0;
 let simClock = 0;
 const hud = document.getElementById('hud');
@@ -187,7 +189,16 @@ fn darken15(c: vec3f) -> vec3f {
   let waterAlb = textureSample(streamTex, samp, flow).rgb;
   let m = v.mat;
   if (m > 4.5 && m < 5.5) {
-    return present(skyColour(normalize(v.w - u.cam.xyz)));
+    if (u.misc.z > 0.5 && u.misc.z < 1.5) {
+      return vec4f((m + 0.5) / 8.0, 1.0, 1.0, 1.0);
+    }
+    var sky = skyColour(normalize(v.w - u.cam.xyz));
+    // Negative control only. Screen x plus a camera yaw term. Off in play.
+    if (u.spin.z > 0.5) {
+      let s = clamp(v.p.x / 720.0, 0.0, 1.0);
+      sky = sky + vec3f(0.045, 0.02, 0.07) * s + vec3f(0.03, 0.0, 0.05) * fract(u.spin.w * 0.37);
+    }
+    return present(sky);
   }
   var alb = wall;
   if (m < 0.5) {
@@ -546,7 +557,7 @@ async function main() {
     U.set([fogCol[0], fogCol[1], fogCol[2], 0], 56);
     U.set(crops, 60);
     U.set([pCenter[0], pCenter[1], pCenter[2], PLANET.radius], 88);
-    U.set([pYaw, PLANET.limb, 0, 0], 92);
+    U.set([pYaw, PLANET.limb, skySwim, skyYaw], 92);
     U.set([atmo[0], atmo[1], atmo[2], 1], 96);
   }
 
@@ -677,6 +688,42 @@ async function main() {
         gpuErr: colour.gpuErr || mask.gpuErr || albedo.gpuErr,
         stats: { mats, litWall, pix },
       };
+    };
+    window.__crystalSky = async (shot) => {
+      gatePose = { eye: shot.eye, tgt: shot.tgt };
+      skySwim = shot.swim ? 1 : 0;
+      skyYaw = shot.yaw || 0;
+      gateMode = 0;
+      const colour = await readFrame();
+      gateMode = 1;
+      const mask = await readFrame();
+      gateMode = 0;
+      skySwim = 0;
+      skyYaw = 0;
+      const samples = [];
+      for (const dir of shot.dirs || []) {
+        const at = [shot.eye[0] + dir[0] * 400, shot.eye[1] + dir[1] * 400, shot.eye[2] + dir[2] * 400];
+        const p = projectPixel(at);
+        if (!p) { samples.push(null); continue; }
+        const x = Math.round(p[0]);
+        const y = Math.round(p[1]);
+        if (x < 2 || y < 2 || x >= W - 2 || y >= H - 2) { samples.push(null); continue; }
+        const i = y * bpr + x * 4;
+        const mat = Math.round(mask.src[i] / 255 * 8 - 0.5);
+        samples.push([colour.src[i], colour.src[i + 1], colour.src[i + 2], x, y, mat]);
+      }
+      let jpg = null;
+      if (shot.jpg) {
+        const img = new ImageData(W, H);
+        for (let y = 0; y < H; y++) img.data.set(colour.src.subarray(y * bpr, y * bpr + W * 4), y * W * 4);
+        x2.putImageData(img, 0, 0);
+        const blob = await c2.convertToBlob({ type: 'image/jpeg', quality: 0.85 });
+        const buf = new Uint8Array(await blob.arrayBuffer());
+        let s = '';
+        for (let i = 0; i < buf.length; i += 0x8000) s += String.fromCharCode.apply(null, buf.subarray(i, i + 0x8000));
+        jpg = btoa(s);
+      }
+      return { ok: true, samples, jpg, gpuErr: colour.gpuErr };
     };
     window.__crystalReady = true;
     return;

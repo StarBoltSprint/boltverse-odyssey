@@ -66,9 +66,9 @@ Advisory max dE76 against the key 25.06. Flat scale 0.4 is the shared rig that k
 
 ## Sky
 
-Zenith L* 5.08  a* 10.18  b* -20.87. Yaw ceiling 0.015, measured 0 on the elev-12 pair used by the review.
+Zenith L* 5.08  a* 10.18  b* -20.87. The nebula is the run-3 residual, gain 2.77. The elev-12 pair of two different view directions is advisory and measures 0.01514. It does not block.
 
-The pair was 0.0151 because one yaw sat below the nebula floor and the next was already in the band, so the delta was the whole onset. The band is now an elevation ramp (`sin(pi * ny)`, gain 0.32), the same value at every yaw, so neither sample straddles a floor. A 36-step yaw sweep at elev 12 and elev 25 has max pair delta 0, including the 0.35 rad review span. Zenith stays the atmosphere. Volume gap is 9.62. The 0.015 ceiling was not moved. `sky-yaw-strip.png` is a full yaw turn: before elev 12, after elev 12, before elev 25, after elev 25.
+The 0.015 limit is one world direction rendered from many cameras. Eight directions, 32 cameras, screen spread at least 707 px, max colour delta 0.0015. A 36-frame 360 turn, max frame-to-frame delta 0.0007, no pops. A screen-space sky reaches 0.04816 and fails. `sky-yaw-strip.png` is a full yaw turn, run 3 then the restored sky, at elev 12 and elev 25. `sky-turn.mp4` is the slow 360.
 
 ## Crystals
 
