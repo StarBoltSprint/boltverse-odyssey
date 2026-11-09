@@ -8,7 +8,7 @@ const hash = (a, b) => {
 };
 
 export function pathX(z) {
-  return 5.2 * Math.sin(z * 0.028) + 1.6 * Math.sin(z * 0.061);
+  return 5.2 * Math.sin(z * 0.028) + 1.6 * Math.sin(z * 0.061) + 4.8 * Math.sin(z * 0.045);
 }
 
 export function pathPsi(z) {
@@ -64,10 +64,8 @@ export function skyProofInput(t, live) {
 }
 
 export function proofInput(t, live) {
+  // One follow path. The bend in pathX is the turn. No scripted heading whip.
   const follow = live ? demoSteer(live) : { turn: 0, run: true };
-  if (t < 3.4) return follow;
-  if (t < 4.7) return { turn: 0.48, run: true };
-  if (t < 6.1) return { turn: -0.55, run: true };
   if (t < 8.2) return follow;
   if (t < 14.0) return { turn: 0, run: false };
   if (t < 17.0) return follow;
@@ -120,9 +118,7 @@ export function buildWorld() {
   for (let z = z0; z < z1; z += step) {
     for (let x = x0; x < x1; x += step) {
       const corners = [[x, z], [x + step, z], [x + step, z + step], [x, z + step]];
-      const midLat = Math.abs((x + step / 2) - pathX(z + step / 2));
-      const tilt = midLat > 3.2 ? (hash(Math.round(x * 2), Math.round(z * 2)) - 0.5) * 0.1 : 0;
-      const p = corners.map(([px, pz], i) => [px, terrH(px, pz) + (i < 2 ? tilt : -tilt), pz]);
+      const p = corners.map(([px, pz]) => [px, terrH(px, pz), pz]);
       mesh.tri(p[0], p[2], p[1], [0, 0], [1, 1], [1, 0], MAT.mineral);
       mesh.tri(p[0], p[3], p[2], [0, 0], [0, 1], [1, 1], MAT.mineral);
     }
@@ -198,6 +194,28 @@ export function buildWorld() {
   addArch(mesh, circles, -96, 7.2, 4.4, 6);
   addArch(mesh, circles, -140, 8.0, 4.8, 6);
 
+  // Close to the path so the first seconds show objects sliding past, not an empty plane.
+  const near = [
+    [-5.6, -6, 3.6, 1.15, MAT.cyan],
+    [5.8, -16, 4.4, 1.3, MAT.violet],
+    [-5.3, -27, 3.8, 1.2, MAT.cyan],
+    [6.2, -39, 5.1, 1.45, MAT.violet],
+    [-5.9, -52, 4.2, 1.25, MAT.cyan],
+  ];
+  for (const [lat, z, h, w, gem] of near) {
+    const x = pathX(z) + lat;
+    const y0 = terrH(x, z);
+    mesh.boxBevel(x, y0 + h / 2, z, w, h, w, 0.15, MAT.wall, 0.12);
+    mesh.crystal(x, y0 + h * 0.96, z, 0.62, h * 0.42, 0.4, gem);
+    circles.push({ x, z, r: w * 0.42 });
+  }
+  {
+    const z = -11;
+    const x = pathX(z) - 4.4;
+    mesh.crystal(x, terrH(x, z), z, 0.72, 2.6, 0.35, MAT.cyan);
+    circles.push({ x, z, r: 0.58 });
+  }
+
   const spires = [[-16, -88, 22], [20, -96, 30], [-26, -112, 26], [14, -124, 34], [-10, -142, 28], [28, -136, 24], [6, -158, 36]];
   for (let i = 0; i < spires.length; i++) {
     const [lat, z, h] = spires[i];
@@ -221,5 +239,6 @@ export function buildWorld() {
 }
 
 export function spawn() {
-  return { psi: 0, x: pathX(0), z: 0, cam: 0, w: 0, v: 0, phase: 0, run: 0, hit: null };
+  const psi = pathPsi(0);
+  return { psi, x: pathX(0), z: 0, cam: psi, w: 0, v: 0, phase: 0, run: 0, hit: null };
 }

@@ -79,7 +79,9 @@ struct U {
 struct VO { @builtin(position) p: vec4f, @location(0) w: vec3f, @location(1) n: vec3f, @location(2) uv: vec2f, @location(3) mat: f32 };
 @vertex fn vs(@location(0) a: vec4f, @location(1) b: vec4f) -> VO {
   var p = a.xyz; let n = b.xyz;
-  if (a.w > 3.5 && a.w < 4.5) {
+  if (a.w > 4.5 && a.w < 5.5) {
+    p = p + u.cam.xyz;
+  } else if (a.w > 3.5 && a.w < 4.5) {
     let t = u.cam.w;
     p.y += ${WATER_WAVE.az} * sin(p.z * ${WATER_WAVE.fz} + t * ${WATER_WAVE.oz}) + ${WATER_WAVE.ax} * sin(p.x * ${WATER_WAVE.fx} - t * ${WATER_WAVE.ox});
   }
@@ -89,7 +91,7 @@ struct VO { @builtin(position) p: vec4f, @location(0) w: vec3f, @location(1) n: 
 }
 ${shadeFns()}
 ${skyWgsl()}
-fn pathXg(z: f32) -> f32 { return 5.2 * sin(z * 0.028) + 1.6 * sin(z * 0.061); }
+fn pathXg(z: f32) -> f32 { return 5.2 * sin(z * 0.028) + 1.6 * sin(z * 0.061) + 4.8 * sin(z * 0.045); }
 fn terrHs(p: vec2f) -> f32 {
   let lateral = p.x - pathXg(p.y);
   let ad = abs(lateral);
@@ -191,14 +193,19 @@ struct PVO { @builtin(position) p: vec4f, @location(0) n: vec3f, @location(1) w:
   let crystal = select(0.0, 1.0, m > 0.5 && m < 2.5);
   let water = select(0.0, 1.0, m > 3.5 && m < 4.5);
   let ndl = clamp(dot(n, sunN()), 0.0, 1.0);
-  var col = shadeAlb(alb, n, view, ${SHADE.crystalSpec} * crystal + ${SHADE.waterSpec} * water);
+  var col = shadeAlb(alb, n, view, ${SHADE.waterSpec} * water);
   let wallMat = select(0.0, 1.0, m > 5.5);
   let skyLum = dot(skyColour(vec3f(0.0, 0.25, -1.0)), vec3f(0.2126, 0.7152, 0.0722));
   let bounce = clamp(skyLum * 8.0, 0.0, 0.28);
   col = col + alb * bounce * (1.0 - ndl) * wallMat;
   let ndv = clamp(dot(n, view), 0.0, 1.0);
-  let fres = 0.02 + 0.98 * pow(1.0 - ndv, 5.0);
-  col = mix(col, col * ${SHADE.waterFresnelDark}, fres * water * ${SHADE.waterFresnelMix});
+  let nh = pow(clamp(dot(n, normalize(sunN() + view)), 0.0, 1.0), 120.0);
+  let fres = pow(1.0 - ndv, 2.6);
+  let scatter = pow(ndl, 0.45);
+  let gemCol = alb * (0.14 + 0.78 * ndl + 0.22 * scatter) + alb * fres * 0.50 + alb * nh * 0.14;
+  col = mix(col, gemCol, crystal);
+  let waterFres = 0.02 + 0.98 * pow(1.0 - ndv, 5.0);
+  col = mix(col, col * ${SHADE.waterFresnelDark}, waterFres * water * ${SHADE.waterFresnelMix});
   let dist = length(v.w - u.cam.xyz);
   let fk = clamp(u.fog.w * smoothstep(u.grid.w, 150.0, dist), 0.0, 0.62);
   col = mix(col, u.fog.rgb, fk);

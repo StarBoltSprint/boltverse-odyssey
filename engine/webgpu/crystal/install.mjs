@@ -20,6 +20,8 @@ const files = [
   'engine/webgpu/crystal/key/planet-surface.jpg',
   'engine/webgpu/crystal/test-idle-loop.mjs',
   'engine/webgpu/crystal/test-planet.mjs',
+  'engine/webgpu/crystal/test-review.mjs',
+  'engine/webgpu/crystal/test-frames.mjs',
   'engine/webgpu/engine/bricks/planet-sphere.js',
   'engine/webgpu/crystal/PROVENANCE.md',
   'engine/webgpu/engine/bricks/follow-cam.js',
