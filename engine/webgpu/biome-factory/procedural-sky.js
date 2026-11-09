@@ -13,6 +13,7 @@ export const SKY_CFG = {
   star: NIGHT.sky.star,
   nebulaScale: NIGHT.sky.nebulaScale,
   starGrid: NIGHT.sky.starGrid,
+  nebulaFloor: NIGHT.sky.nebulaFloor,
 };
 
 export function hash31(x, y, z) {
@@ -48,8 +49,12 @@ export function skyLinear(dir, cfg = SKY_CFG) {
   const q = [n[0] * cfg.nebulaScale, n[1] * cfg.nebulaScale, n[2] * cfg.nebulaScale];
   const a = valueNoise(q);
   const b = valueNoise([q[0] * 2.05 + 4.2, q[1] * 2.05 + 1.3, q[2] * 2.05 + 7.1]);
-  const neb = Math.max(0, a * 0.62 + b * 0.38);
-  const shaped = neb * neb;
+  const raw = Math.max(0, a * 0.62 + b * 0.38);
+  // raw sits near 0.5. raw*raw then adds a near-constant pedestal on every direction,
+  // including the zenith. Subtract that floor so a brightness scale moves the band
+  // and the yaw difference together, and the empty sky stays the atmosphere.
+  const floor = cfg.nebulaFloor || 0;
+  const shaped = Math.max(0, raw * raw - floor * floor);
   const tint = valueNoise([q[2] * 1.4 + 2.0, q[0] * 1.4, q[1] * 1.4 + 3.0]);
   const out = atmo.map((v, i) => v + (cfg.nebulaViolet[i] * (1 - tint) + cfg.nebulaCyan[i] * tint) * shaped * 0.9);
   const g = cfg.starGrid;
@@ -180,8 +185,8 @@ fn skyColour(dir: vec3f) -> vec3f {
   let q = n * ${c.nebulaScale};
   let a = skyNoise(q);
   let b = skyNoise(q * 2.05 + vec3f(4.2, 1.3, 7.1));
-  let neb = max(a * 0.62 + b * 0.38, 0.0);
-  let shaped = neb * neb;
+  let raw = max(a * 0.62 + b * 0.38, 0.0);
+  let shaped = max(raw * raw - ${(c.nebulaFloor || 0) * (c.nebulaFloor || 0)}, 0.0);
   let tint = skyNoise(vec3f(q.z * 1.4 + 2.0, q.x * 1.4, q.y * 1.4 + 3.0));
   var col = atmo + mix(${v3(c.nebulaViolet)}, ${v3(c.nebulaCyan)}, tint) * shaped * 0.9;
   let g = ${c.starGrid}.0;

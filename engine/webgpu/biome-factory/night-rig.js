@@ -7,19 +7,21 @@ export const NIGHT = {
   ambient: { rgb: [0.026, 0.014, 0.138] },
   moon: {
     rgb: [0.76, 1.08, 1.55],
-    intensity: 0.92,
-    direction: [0.58, 0.24, -0.78],
+    intensity: 1,
+    direction: [0.587638, 0.173648, -0.790271],
   },
   // Direct moon scale when the normal points straight up. Vertical faces stay at 1.
-  flatScale: 0.40,
+  flatScale: 1,
   sky: {
-    zenith: [0.0025, 0.0018, 0.014],
-    horizon: [0.007, 0.005, 0.022],
-    nebulaViolet: [0.11, 0.035, 0.16],
-    nebulaCyan: [0.02, 0.09, 0.15],
+    zenith: [0.00135, 0.00135, 0.0218],
+    horizon: [0.0032, 0.003, 0.038],
+    nebulaViolet: [0.154, 0.049, 0.224],
+    nebulaCyan: [0.028, 0.126, 0.21],
     star: [0.75, 0.82, 0.95],
     nebulaScale: 2.6,
     starGrid: 42,
+    // Mean of the nebula noise. raw*raw carries this as a constant pedestal.
+    nebulaFloor: 0.510484,
   },
 };
 
@@ -62,6 +64,7 @@ export function nightLightRecord() {
       star: [...NIGHT.sky.star],
       nebulaScale: NIGHT.sky.nebulaScale,
       starGrid: NIGHT.sky.starGrid,
+      nebulaFloor: NIGHT.sky.nebulaFloor,
     },
   };
 }

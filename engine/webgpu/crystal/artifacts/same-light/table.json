@@ -1,0 +1,508 @@
+{
+  "threshold": 10,
+  "includesLightness": true,
+  "exposure": 1,
+  "light_id": "presented-srgb",
+  "comparedWith": "compareSameLight",
+  "notAVisualKeep": true,
+  "geometry": {
+    "view": [
+      0,
+      0.419,
+      0.908
+    ],
+    "wallNormal": [
+      0,
+      0,
+      1
+    ],
+    "groundNormal": [
+      0,
+      1,
+      0
+    ],
+    "gems": "eight side faces at 11° from vertical and eight tips at 50°, same set for cyan and violet"
+  },
+  "windows": [
+    {
+      "id": "obsidian-wall",
+      "x": 18,
+      "y": 200,
+      "w": 90,
+      "h": 150
+    },
+    {
+      "id": "mineral-ground",
+      "x": 210,
+      "y": 1100,
+      "w": 220,
+      "h": 140
+    },
+    {
+      "id": "cyan-facets",
+      "x": 560,
+      "y": 480,
+      "w": 140,
+      "h": 220
+    },
+    {
+      "id": "architectural-stone",
+      "x": 600,
+      "y": 830,
+      "w": 100,
+      "h": 70
+    },
+    {
+      "id": "stream-surface",
+      "x": 490,
+      "y": 870,
+      "w": 90,
+      "h": 60
+    },
+    {
+      "id": "violet-mineral",
+      "x": 20,
+      "y": 760,
+      "w": 150,
+      "h": 200
+    }
+  ],
+  "day": {
+    "maxDE": 57.44,
+    "rows": [
+      {
+        "id": "obsidian-wall",
+        "name": "obsidian wall",
+        "dE76": 16.37,
+        "verdict": "BLOCK",
+        "threshold": 10,
+        "key": [
+          3.55,
+          6.26,
+          -16.62
+        ],
+        "rig": [
+          11.31,
+          0.6,
+          -3.37
+        ]
+      },
+      {
+        "id": "mineral-ground",
+        "name": "mineral ground",
+        "dE76": 28.73,
+        "verdict": "BLOCK",
+        "threshold": 10,
+        "key": [
+          6.55,
+          7.83,
+          -17.92
+        ],
+        "rig": [
+          28.48,
+          0.04,
+          -1.07
+        ]
+      },
+      {
+        "id": "cyan-facets",
+        "name": "cyan facets",
+        "dE76": 57.44,
+        "verdict": "BLOCK",
+        "threshold": 10,
+        "key": [
+          17.7,
+          3.35,
+          -27.01
+        ],
+        "rig": [
+          67.67,
+          -24.84,
+          -24.31
+        ]
+      },
+      {
+        "id": "architectural-stone",
+        "name": "architectural stone",
+        "dE76": 18.94,
+        "verdict": "BLOCK",
+        "threshold": 10,
+        "key": [
+          5.16,
+          3.55,
+          -17
+        ],
+        "rig": [
+          18.07,
+          0.81,
+          -3.4
+        ]
+      },
+      {
+        "id": "stream-surface",
+        "name": "stream surface",
+        "dE76": 25.95,
+        "verdict": "BLOCK",
+        "threshold": 10,
+        "key": [
+          46.66,
+          -7.94,
+          -24.91
+        ],
+        "rig": [
+          57.6,
+          -27.06,
+          -11.19
+        ]
+      },
+      {
+        "id": "violet-mineral",
+        "name": "violet mineral",
+        "dE76": 28.03,
+        "verdict": "BLOCK",
+        "threshold": 10,
+        "key": [
+          16.86,
+          24.47,
+          -33.98
+        ],
+        "rig": [
+          44.76,
+          24.39,
+          -31.23
+        ]
+      }
+    ]
+  },
+  "nightBefore": {
+    "rig": {
+      "ambient": [
+        0.026,
+        0.014,
+        0.138
+      ],
+      "moon": [
+        0.76,
+        1.08,
+        1.55
+      ],
+      "intensity": 0.92,
+      "direction": [
+        0.58,
+        0.24,
+        -0.78
+      ],
+      "flatScale": 0.4,
+      "elevationDeg": 13.9
+    },
+    "maxDE": 50.3,
+    "rows": [
+      {
+        "id": "obsidian-wall",
+        "name": "obsidian wall",
+        "dE76": 11.07,
+        "verdict": "BLOCK",
+        "key": [
+          3.55,
+          6.26,
+          -16.62
+        ],
+        "rig": [
+          6.49,
+          1.4,
+          -7.12
+        ]
+      },
+      {
+        "id": "mineral-ground",
+        "name": "mineral ground",
+        "dE76": 9.47,
+        "verdict": "PASS",
+        "key": [
+          6.55,
+          7.83,
+          -17.92
+        ],
+        "rig": [
+          10.64,
+          3.63,
+          -10.48
+        ]
+      },
+      {
+        "id": "cyan-facets",
+        "name": "cyan facets",
+        "dE76": 50.3,
+        "verdict": "BLOCK",
+        "key": [
+          17.7,
+          3.35,
+          -27.01
+        ],
+        "rig": [
+          63.77,
+          -9.97,
+          -42.16
+        ]
+      },
+      {
+        "id": "architectural-stone",
+        "name": "architectural stone",
+        "dE76": 10.6,
+        "verdict": "BLOCK",
+        "key": [
+          5.16,
+          3.55,
+          -17
+        ],
+        "rig": [
+          11.48,
+          1.55,
+          -8.72
+        ]
+      },
+      {
+        "id": "stream-surface",
+        "name": "stream surface",
+        "dE76": 22.63,
+        "verdict": "BLOCK",
+        "key": [
+          46.66,
+          -7.94,
+          -24.91
+        ],
+        "rig": [
+          25.1,
+          -1.09,
+          -24.92
+        ]
+      },
+      {
+        "id": "violet-mineral",
+        "name": "violet mineral",
+        "dE76": 29.64,
+        "verdict": "BLOCK",
+        "key": [
+          16.86,
+          24.47,
+          -33.98
+        ],
+        "rig": [
+          42.52,
+          27.98,
+          -48.39
+        ]
+      }
+    ]
+  },
+  "candidate": {
+    "rig": {
+      "ambient": [
+        0.026,
+        0.014,
+        0.138
+      ],
+      "moon": [
+        0.76,
+        1.08,
+        1.55
+      ],
+      "intensity": 1,
+      "direction": [
+        0.587638,
+        0.173648,
+        -0.790271
+      ],
+      "flatScale": 1,
+      "elevationDeg": 10
+    },
+    "maxDE": 49.84,
+    "rows": [
+      {
+        "id": "obsidian-wall",
+        "name": "obsidian wall",
+        "dE76": 11.77,
+        "verdict": "BLOCK",
+        "threshold": 10,
+        "key": [
+          3.55,
+          6.26,
+          -16.62
+        ],
+        "rig": [
+          4.49,
+          1.25,
+          -6.01
+        ]
+      },
+      {
+        "id": "mineral-ground",
+        "name": "mineral ground",
+        "dE76": 12.19,
+        "verdict": "BLOCK",
+        "threshold": 10,
+        "key": [
+          6.55,
+          7.83,
+          -17.92
+        ],
+        "rig": [
+          14.54,
+          2.57,
+          -10.36
+        ]
+      },
+      {
+        "id": "cyan-facets",
+        "name": "cyan facets",
+        "dE76": 49.84,
+        "verdict": "BLOCK",
+        "threshold": 10,
+        "key": [
+          17.7,
+          3.35,
+          -27.01
+        ],
+        "rig": [
+          63.3,
+          -10.12,
+          -41.93
+        ]
+      },
+      {
+        "id": "architectural-stone",
+        "name": "architectural stone",
+        "dE76": 9.74,
+        "verdict": "PASS",
+        "threshold": 10,
+        "key": [
+          5.16,
+          3.55,
+          -17
+        ],
+        "rig": [
+          8.48,
+          1.51,
+          -8.07
+        ]
+      },
+      {
+        "id": "stream-surface",
+        "name": "stream surface",
+        "dE76": 13.89,
+        "verdict": "BLOCK",
+        "threshold": 10,
+        "key": [
+          46.66,
+          -7.94,
+          -24.91
+        ],
+        "rig": [
+          32.95,
+          -5.7,
+          -24.76
+        ]
+      },
+      {
+        "id": "violet-mineral",
+        "name": "violet mineral",
+        "dE76": 29.14,
+        "verdict": "BLOCK",
+        "threshold": 10,
+        "key": [
+          16.86,
+          24.47,
+          -33.98
+        ],
+        "rig": [
+          42.24,
+          27.66,
+          -47.93
+        ]
+      }
+    ]
+  },
+  "sky": {
+    "zenithLab": [
+      5.08,
+      10.18,
+      -20.87
+    ],
+    "yaw": 0.022,
+    "yawGate": 0.015,
+    "nebulaFloor": 0.510484
+  },
+  "crystal": {
+    "byAmbient": [
+      {
+        "gemAmbient": 0.12,
+        "dE76": 49.84,
+        "lab": [
+          63.3,
+          -10.12,
+          -41.93
+        ],
+        "verdict": "BLOCK"
+      },
+      {
+        "gemAmbient": 0.06,
+        "dE76": 47.43,
+        "lab": [
+          60.99,
+          -9.73,
+          -41.31
+        ],
+        "verdict": "BLOCK"
+      },
+      {
+        "gemAmbient": 0.02,
+        "dE76": 45.57,
+        "lab": [
+          59.26,
+          -9.48,
+          -40.59
+        ],
+        "verdict": "BLOCK"
+      },
+      {
+        "gemAmbient": 0,
+        "dE76": 44.7,
+        "lab": [
+          58.47,
+          -9.36,
+          -40.24
+        ],
+        "verdict": "BLOCK"
+      }
+    ],
+    "straightOnNoMoonNoAmbient": {
+      "lab": [
+        63.96,
+        -9.72,
+        -43.48
+      ],
+      "rgb": [
+        36,
+        164,
+        232
+      ]
+    },
+    "straightOnFull": {
+      "lab": [
+        81.6,
+        -30.63,
+        -28.52
+      ],
+      "rgb": [
+        48,
+        221,
+        255
+      ]
+    },
+    "key": [
+      17.7,
+      3.35,
+      -27.01
+    ]
+  }
+}
