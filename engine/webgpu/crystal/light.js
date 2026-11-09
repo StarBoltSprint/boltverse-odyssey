@@ -19,6 +19,7 @@ export const LIGHT = {
   gemEdge: 0.62,
   sparkle: 0.2,
   sparkPow: 160,
+  fractureGain: 0.18,
 };
 
 function hash2(ix, iy, k) {
@@ -86,6 +87,65 @@ export function conchoidMetrics() {
   };
 }
 
+function hash4(a, b, c, k) {
+  const s = Math.sin(a * 12.91 + b * 47.3 + c * 91.7 + k * 17.1) * 43758.5453;
+  return s - Math.floor(s);
+}
+
+function norm3(v) {
+  const l = Math.hypot(v[0], v[1], v[2]) || 1;
+  return [v[0] / l, v[1] / l, v[2] / l];
+}
+
+function dot3(a, b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
+
+function cross3(a, b) {
+  return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+}
+
+export function cracksInCell(cx, cy, cz) {
+  const cell = 0.62;
+  const out = [];
+  for (let i = 0; i < 3; i++) {
+    const origin = [
+      (cx + 0.18 + hash4(cx, cy, cz, i) * 0.64) * cell,
+      (cy + 0.22 + hash4(cx, cy, cz, i + 4) * 0.55) * cell,
+      (cz + 0.12 + hash4(cx, cy, cz, i + 8) * 0.7) * cell,
+    ];
+    const dir = norm3([
+      hash4(cx, cy, cz, i + 12) - 0.5,
+      0.35 + hash4(cx, cy, cz, i + 16) * 0.9,
+      hash4(cx, cy, cz, i + 20) - 0.5,
+    ]);
+    const nrm = norm3(cross3(dir, [0.2, 0.9, hash4(cx, cy, cz, i + 24) - 0.4]));
+    const len = 0.05 + hash4(cx, cy, cz, i + 28) * 0.06;
+    out.push({ origin, dir, nrm, len });
+  }
+  return out;
+}
+
+// Short internal crack. Bright only when the view lies in the plane.
+export function fractureAt(p, view) {
+  const cell = 0.62;
+  const cx = Math.floor(p[0] / cell);
+  const cy = Math.floor(p[1] / cell);
+  const cz = Math.floor(p[2] / cell);
+  let sum = 0;
+  for (const crack of cracksInCell(cx, cy, cz)) {
+    const bin = norm3(cross3(crack.dir, crack.nrm));
+    const rel = [p[0] - crack.origin[0], p[1] - crack.origin[1], p[2] - crack.origin[2]];
+    const along = dot3(rel, crack.dir);
+    const side = dot3(rel, crack.nrm);
+    const across = dot3(rel, bin);
+    const seg = Math.max(0, 1 - Math.abs(along) / crack.len);
+    const thin = Math.max(0, 1 - Math.abs(side) / 0.01);
+    const band = Math.max(0, 1 - Math.abs(across) / 0.045);
+    const catchPlane = (1 - Math.abs(dot3(view, crack.nrm))) ** 4;
+    sum += seg * thin * band * catchPlane;
+  }
+  return Math.min(1, sum);
+}
+
 export function lightWgsl() {
   const L = LIGHT;
   return `
@@ -142,9 +202,39 @@ fn conchGrad(p: vec3f, nrm: vec3f) -> vec3f {
   let hy = conchH(uv + vec2f(0.0, e));
   return t1 * ((h0 - hx) / e) + t2 * ((h0 - hy) / e);
 }
-fn gemStreak(q: vec3f, dir: vec3f, freq: f32, width: f32) -> f32 {
-  let s = abs(fract(dot(q, dir) * freq) - 0.5);
-  return 1.0 - smoothstep(0.0, width, s);
+fn crackHash(a: f32, b: f32, c: f32, k: f32) -> f32 {
+  return fract(sin(a * 12.91 + b * 47.3 + c * 91.7 + k * 17.1) * 43758.5453);
+}
+fn fractureAmt(p: vec3f, view: vec3f) -> f32 {
+  let cell = 0.62;
+  let ix = floor(p.x / cell);
+  let iy = floor(p.y / cell);
+  let iz = floor(p.z / cell);
+  var sum = 0.0;
+  for (var i = 0; i < 3; i++) {
+    let fi = f32(i);
+    let origin = vec3f(
+      (ix + 0.18 + crackHash(ix, iy, iz, fi) * 0.64) * cell,
+      (iy + 0.22 + crackHash(ix, iy, iz, fi + 4.0) * 0.55) * cell,
+      (iz + 0.12 + crackHash(ix, iy, iz, fi + 8.0) * 0.7) * cell);
+    let dir = normalize(vec3f(
+      crackHash(ix, iy, iz, fi + 12.0) - 0.5,
+      0.35 + crackHash(ix, iy, iz, fi + 16.0) * 0.9,
+      crackHash(ix, iy, iz, fi + 20.0) - 0.5));
+    let nrm = normalize(cross(dir, vec3f(0.2, 0.9, crackHash(ix, iy, iz, fi + 24.0) - 0.4)));
+    let bin = normalize(cross(dir, nrm));
+    let rel = p - origin;
+    let along = dot(rel, dir);
+    let side = dot(rel, nrm);
+    let across = dot(rel, bin);
+    let len = 0.05 + crackHash(ix, iy, iz, fi + 28.0) * 0.06;
+    let seg = max(0.0, 1.0 - abs(along) / len);
+    let thin = max(0.0, 1.0 - abs(side) / 0.01);
+    let band = max(0.0, 1.0 - abs(across) / 0.045);
+    let catchPlane = pow(1.0 - abs(dot(view, nrm)), 4.0);
+    sum = sum + seg * thin * band * catchPlane;
+  }
+  return min(1.0, sum);
 }
 `;
 }

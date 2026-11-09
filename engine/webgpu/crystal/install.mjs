@@ -25,6 +25,7 @@ const files = [
   'engine/webgpu/crystal/test-volume.mjs',
   'engine/webgpu/crystal/test-depth.mjs',
   'engine/webgpu/crystal/test-conchoid.mjs',
+  'engine/webgpu/crystal/test-fracture.mjs',
   'engine/webgpu/crystal/light.js',
   'engine/webgpu/engine/bricks/planet-sphere.js',
   'engine/webgpu/crystal/PROVENANCE.md',

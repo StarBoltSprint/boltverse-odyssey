@@ -230,15 +230,12 @@ struct PVO { @builtin(position) p: vec4f, @location(0) n: vec3f, @location(1) w:
   let face = 0.40 + 1.10 * align;
   let through = skyColour(normalize(sunN() - n));
   let sil = pow(1.0 - ndv, 2.0);
-  let q = v.w + view * 0.16;
-  let lines = gemStreak(q, vec3f(0.86, 0.18, 0.22), 1.6, 0.015)
-    + gemStreak(q, vec3f(-0.25, 0.72, 0.48), 2.4, 0.01)
-    + gemStreak(q, vec3f(0.12, -0.30, 0.92), 1.15, 0.018);
+  let crack = fractureAmt(v.w + view * 0.05, view);
   let spark = pow(clamp(dot(n, normalize(sunN() + view)), 0.0, 1.0), ${LIGHT.sparkPow}.0);
   let edgeLit = pow(1.0 - ndv, 5.5);
   let gemCol = alb * face * (0.18 + 0.40 * ndl) * (0.42 + 0.58 * tip)
     + alb * through * sil * (1.1 + 1.8 * tip)
-    + alb * lines * 0.7
+    + alb * crack * ${LIGHT.fractureGain}
     + alb * edgeLit * ${LIGHT.gemEdge}
     + alb * spark * ${LIGHT.sparkle}
     + inner * (1.0 - tip) * 0.18;

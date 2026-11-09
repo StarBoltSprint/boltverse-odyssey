@@ -91,7 +91,7 @@ export function clusterSize(seed) {
 
 function addCluster(mesh, x, y, z, radius, height, yaw, mat, seed) {
   const n = clusterSize(seed);
-  mesh.hexPrism(x, y, z, radius * 0.46, height, yaw, (hash(seed, 4) - 0.5) * 0.4, mat);
+  mesh.hexPrism(x, y, z, radius * 0.46, height, yaw, (hash(seed, 4) - 0.5) * 0.4, mat, seed + 3);
   for (let i = 1; i < n; i++) {
     const ang = yaw + (i / (n - 1)) * Math.PI * 2 + hash(seed, i) * 0.35;
     const dist = radius * (0.42 + hash(seed, i + 20) * 0.5);
@@ -102,23 +102,26 @@ function addCluster(mesh, x, y, z, radius, height, yaw, mat, seed) {
       x + Math.cos(ang) * dist,
       y + (hash(seed, i + 90) - 0.2) * height * 0.12,
       z + Math.sin(ang) * dist,
-      rr, hh, ang + hash(seed, i + 7), tilt, mat,
+      rr, hh, ang + hash(seed, i + 7), tilt, mat, seed * 13 + i,
     );
   }
 }
 
 function stackBlock(mesh, x, yBase, z, sx, sy, sz, yaw, mat) {
-  const cuts = sy > 8 ? [0.48, 0.30, 0.22] : [0.62, 0.38];
+  const seed = Math.round(x * 10) * 13 + Math.round(z * 7);
+  const tiers = 2 + Math.floor(hash(seed, 1) * 3);
   let y = yBase;
   let wx = sx;
   let wz = sz;
-  for (let t = 0; t < cuts.length; t++) {
-    const th = sy * cuts[t];
-    const bevel = Math.min(0.16, wx * 0.14, wz * 0.14, th * 0.2);
-    mesh.boxBevel(x, y + th / 2, z, wx, th, wz, yaw + t * 0.06, mat, bevel);
+  const share = sy / tiers;
+  for (let t = 0; t < tiers; t++) {
+    const th = share * (0.82 + hash(seed, t + 3) * 0.28);
+    const leanX = (hash(seed, t + 8) - 0.5) * Math.min(wx, wz) * 0.16;
+    const leanZ = (hash(seed, t + 14) - 0.5) * Math.min(wx, wz) * 0.16;
+    mesh.chipBlock(x, y, z, wx, th, wz, yaw + (hash(seed, t + 5) - 0.5) * 0.18, leanX, leanZ, mat, seed + t * 19);
     y += th;
-    wx *= 0.66;
-    wz *= 0.7;
+    wx *= 0.7 + hash(seed, t + 20) * 0.08;
+    wz *= 0.7 + hash(seed, t + 24) * 0.08;
   }
   return y;
 }
