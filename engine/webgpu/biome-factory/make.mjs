@@ -6,6 +6,9 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { runPipeline } from './pipeline.mjs';
 import { assemble } from './assemble.mjs';
+import { crystalColourStatus } from './colour-same-light.mjs';
+import { measureSky } from './procedural-sky.js';
+import { jpegPixels } from './albedo-stats.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const webgpu = path.resolve(here, '..');
@@ -72,7 +75,25 @@ try {
     force,
   });
   state.premise = report.premise;
-  state.sky = 'BLOCKED';
+  state.sky = measureSky({
+    pageSource: ctx.pageSource,
+    plate: ctx.config.sky,
+    procedural: ctx.config.proceduralSky,
+  });
+  if (state.sky.procedural.status === 'FAIL') {
+    state.hard.push({ code: 'sky_procedural', detail: state.sky.procedural.checks });
+    state.label = 'FAIL';
+  }
+  const fixtureDir = path.join(here, 'fixtures/materials-v2');
+  const sameLight = args.includes('--same-light') && args[args.indexOf('--same-light') + 1] === 'crystal-rig';
+  state.materialsColour = crystalColourStatus(
+    (ctx.config.materials || []).filter(m => m.file && ctx.files[m.file]).map(m => ({
+      id: m.id,
+      pixels: jpegPixels(path.join(fixtureDir, m.file)),
+      knownTarget: null,
+    })),
+    sameLight ? { sameLight: 'crystal-rig' } : {},
+  );
   state.pending = report.pending;
   state.runId = report.runId;
   state.swatch = report.swatch;
@@ -87,6 +108,7 @@ console.log(JSON.stringify({
   release: state.release,
   premise: state.premise && state.premise.holds,
   sky: state.sky || null,
+  materials: (state.materialsColour || []).map(m => ({ id: m.id, verdict: m.verdict, dE76: m.dE76 ?? null, mode: m.mode || 'no-target' })),
   runId: state.runId || null,
   hold: state.hold.map(h => h.code),
   hard: state.hard.map(h => h.code),

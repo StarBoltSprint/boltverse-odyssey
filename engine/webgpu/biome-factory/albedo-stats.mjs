@@ -24,6 +24,15 @@ function pstdev(vals) {
   return { mean, pstdev: Math.sqrt(s / n), n };
 }
 
+export function jpegPixels(file, step = 32) {
+  const raw = spawnSync('ffmpeg', ['-v', 'error', '-i', file, '-f', 'rawvideo', '-pix_fmt', 'rgb24', 'pipe:'], { encoding: 'buffer', maxBuffer: 32 * 1024 * 1024 });
+  if (raw.status !== 0) throw new Error('jpeg decode failed ' + file);
+  const b = raw.stdout;
+  const out = [];
+  for (let i = 0; i < b.length; i += 3 * step) out.push([b[i], b[i + 1], b[i + 2]]);
+  return out;
+}
+
 export function jpegStats(file) {
   const raw = spawnSync('ffmpeg', ['-v', 'error', '-i', file, '-f', 'rawvideo', '-pix_fmt', 'rgb24', 'pipe:'], { encoding: 'buffer', maxBuffer: 32 * 1024 * 1024 });
   if (raw.status !== 0) throw new Error('jpeg decode failed ' + file);

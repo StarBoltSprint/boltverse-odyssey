@@ -1,43 +1,28 @@
 import fs from 'fs';
-import { skyLinear, skyDelta, dirFrom, skyWgsl, SKY_CFG } from './procedural-sky.js';
+import { measureSky, skySeen, skyDelta, dirFrom } from './procedural-sky.js';
 
 let fail = 0;
 const bad = (m) => { console.error('FAIL', m); fail++; };
-
-const seam = skyDelta(skyLinear(dirFrom(20, 0)), skyLinear(dirFrom(20, Math.PI * 2)));
-if (seam > 1e-9) bad('yaw 0 and 360 differ ' + seam);
-
-let seamMax = 0;
-for (let e = -5; e <= 80; e += 5) {
-  const a = skyLinear(dirFrom(e, 0));
-  const b = skyLinear(dirFrom(e, Math.PI * 2 - 0.004));
-  seamMax = Math.max(seamMax, skyDelta(a, b));
-}
-if (seamMax > 0.02) bad('yaw seam ' + seamMax);
-
-const pole = skyLinear([0, 1, 0]);
-let poleMax = 0;
-for (let i = 0; i < 48; i++) {
-  const yaw = i / 48 * Math.PI * 2;
-  poleMax = Math.max(poleMax, skyDelta(pole, skyLinear(dirFrom(89.4, yaw))));
-}
-if (poleMax > 0.08) bad('pole unstable ' + poleMax);
-if (skyDelta(skyLinear([0, 1, 0]), skyLinear([0, 1, 0])) !== 0) bad('pole not single valued');
-
-const south = skyLinear([0, -1, 0]);
-let southMax = 0;
-for (let i = 0; i < 24; i++) southMax = Math.max(southMax, skyDelta(south, skyLinear(dirFrom(-89.4, i))));
-if (southMax > 0.08) bad('south pole unstable ' + southMax);
-
-const wgsl = skyWgsl();
-const body = wgsl.slice(wgsl.indexOf('fn skyColour'));
-if (body.includes('u.cam')) bad('sky colour reads the camera');
-if (!body.includes('normalize(dir)')) bad('sky is not a direction field');
-if (wgsl.includes('sky-panorama') || wgsl.includes('environment.jpg')) bad('sky samples a plate');
-if (SKY_CFG.scope !== 'crystal-candidate-only') bad('sky scope');
 const page = fs.readFileSync(new URL('../crystal/crystal.js', import.meta.url), 'utf8');
-if (!page.includes('skyColour(')) bad('canyon does not call the procedural sky');
-if (page.includes('sky-panorama.jpg')) bad('canyon samples the rejected plate');
+const cfg = JSON.parse(fs.readFileSync(new URL('../crystal/biome.factory.json', import.meta.url), 'utf8'));
+const sky = measureSky({ pageSource: page, plate: cfg.sky, procedural: cfg.proceduralSky });
+if (sky.release !== 'HOLD' || sky.procedural.release !== 'HOLD') bad('sky marked released');
+if (sky.procedural.status === 'PASS') bad('procedural sky was marked PASS');
+if (sky.procedural.status !== 'CANDIDATE') bad('procedural status ' + sky.procedural.status + ' ' + JSON.stringify(sky.procedural.checks));
+if (sky.imaginePlate.status !== 'BLOCKED') bad('plate status ' + sky.imaginePlate.status);
+if (sky.procedural.checks.cameraDelta > 1e-9) bad('fixed direction changed with camera ' + sky.procedural.checks.cameraDelta);
+if (sky.procedural.checks.seam > 1e-9) bad('seam ' + sky.procedural.checks.seam);
+if (!sky.procedural.checks.separatePlanet) bad('planet is not a separate draw');
+
+const cameras = [[0, 1.12, 0], [40, 3, -80], [-25, 8, 120], [0, 1.12, -54]];
+const dir = dirFrom(12, 0.4);
+const coupled = cameras.map(cam => {
+  const c = skySeen(cam, dir);
+  return [c[0] + cam[0] * 0.01, c[1], c[2]];
+});
+let moved = 0;
+for (let i = 1; i < coupled.length; i++) moved = Math.max(moved, skyDelta(coupled[0], coupled[i]));
+if (moved < 0.1) bad('camera positions did not move a coupled colour');
 
 if (fail) { console.error(fail + ' failed'); process.exit(1); }
-console.log('PASS sky-sphere', { seamMax: +seamMax.toFixed(4), poleMax: +poleMax.toFixed(4), southMax: +southMax.toFixed(4) });
+console.log('PASS sky-sphere', sky.procedural.checks);

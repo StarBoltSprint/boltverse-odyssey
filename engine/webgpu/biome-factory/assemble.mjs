@@ -96,7 +96,7 @@ export async function assemble(ctx, opts = {}) {
       visualKeep: false,
       phoneMeasured: false,
       gait: 'feet still skate; 200 ms crossfade is two different pictures',
-      sky: 'BLOCKED',
+      sky: 'not a release; make.mjs records the measured sky object',
     },
   };
   fs.writeFileSync(path.join(runDir, 'report.json'), JSON.stringify(report, null, 2));

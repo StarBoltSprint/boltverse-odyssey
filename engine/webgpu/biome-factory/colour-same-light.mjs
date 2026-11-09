@@ -39,12 +39,16 @@ function underSameExposure(rgb, exposure) {
   });
 }
 
-// sample: { rgb:[r,g,b] | pixels:[[r,g,b],...], light_id, exposure }
+const UNKNOWN_LIGHT = /^(scene-unknown|unknown|unrecoverable)$/i;
+
+export function isKnownLight(id) {
+  return typeof id === 'string' && id.length > 0 && !UNKNOWN_LIGHT.test(id);
+}
 export function compareSameLight(sample, reference) {
   const sLab = sample.pixels ? labMedian(sample.pixels) : srgbToLab(sample.rgb);
   const rLab = reference.pixels ? labMedian(reference.pixels) : srgbToLab(reference.rgb);
   const rawDE76 = dE76(sLab, rLab);
-  const sameId = sample.light_id && sample.light_id === reference.light_id;
+  const sameId = isKnownLight(sample.light_id) && sample.light_id === reference.light_id;
   const expS = sample.exposure == null ? 1 : sample.exposure;
   const expR = reference.exposure == null ? 1 : reference.exposure;
   if (!sameId || expS !== expR) {
@@ -85,9 +89,95 @@ export const PRIOR_RAW = {
   use: 'diagnostic only; not a colour pass and not a colour fail of the albedo',
 };
 
-export function crystalColourStatus() {
-  return compareSameLight(
-    { rgb: [74, 75, 77], light_id: 'imagine-albedo-neutral', exposure: 1 },
-    { rgb: [18, 22, 40], light_id: 'scene-unknown', exposure: 1 },
+export function assessMaterial({ id, pixels, light_id, knownTarget }) {
+  const med = medianRgb(pixels);
+  const base = {
+    id,
+    measuredMedianSrgb: med.map(round),
+    light_id: light_id || null,
+    knownTarget: knownTarget ? knownTarget.light_id : null,
+    rawLegacyDE76: null,
+    rawLegacyNote: PRIOR_RAW.source,
+  };
+  if (!knownTarget) {
+    return { ...base, verdict: 'UNCERTAIN', compared: false, reason: 'no independent known target under a shared light; a neutral albedo is not labelled as a night measurement' };
+  }
+  const cmp = compareSameLight(
+    { pixels, light_id, exposure: knownTarget.exposure == null ? 1 : knownTarget.exposure },
+    knownTarget,
   );
+  return {
+    ...base,
+    verdict: cmp.verdict,
+    compared: cmp.compared,
+    dE76: cmp.dE76 ?? null,
+    rawDE76: cmp.rawDE76,
+    reason: cmp.reason || null,
+    threshold: DE76_MAX,
+  };
+}
+
+function medianRgb(pixels) {
+  const mid = (k) => pixels.map(p => p[k]).sort((a, b) => a - b)[Math.floor((pixels.length - 1) / 2)];
+  return [mid(0), mid(1), mid(2)];
+}
+
+export function crystalRig() {
+  const sun = [0.48, 0.74, -0.42];
+  const len = Math.hypot(sun[0], sun[1], sun[2]) || 1;
+  const ndl = Math.max(0, sun[1] / len);
+  const shade = 0.10 + 0.90 * ndl;
+  const grey = 0.18;
+  const exposure = shade > 0 ? grey / (grey * shade) : 1;
+  return {
+    light_id: 'crystal-rig',
+    exposure,
+    shade,
+    ndl,
+    greyCard: grey,
+    mode: 'test-choice',
+    notAMeasurement: true,
+    note: 'One exposure for every material, chosen so an 18% grey card under the crystal sun returns to linear 0.18. This is a test choice, not a measurement of the night key.',
+  };
+}
+
+export function crystalColourStatus(materials, opts = {}) {
+  const rig = opts.sameLight === 'crystal-rig' ? crystalRig() : null;
+  return (materials || []).map(m => {
+    const light_id = rig ? rig.light_id : (m.light_id || 'imagine-albedo-neutral');
+    const known = m.knownTarget || null;
+    if (rig && known && known.light_id === rig.light_id) {
+      const cmp = compareSameLight(
+        { pixels: m.pixels, rgb: m.rgb, light_id: rig.light_id, exposure: rig.exposure },
+        { ...known, light_id: rig.light_id, exposure: rig.exposure },
+      );
+      return {
+        id: m.id,
+        verdict: cmp.verdict,
+        compared: cmp.compared,
+        dE76: cmp.dE76 ?? null,
+        rawDE76: cmp.rawDE76,
+        threshold: DE76_MAX,
+        includesLightness: true,
+        light_id: rig.light_id,
+        exposure: rig.exposure,
+        mode: rig.mode,
+        notAMeasurement: true,
+        reason: rig.note,
+        rawLegacyDE76: null,
+        rawLegacyNote: PRIOR_RAW.source,
+      };
+    }
+    const row = assessMaterial({ id: m.id, pixels: m.pixels || (m.rgb ? [m.rgb] : []), light_id, knownTarget: known });
+    if (rig) {
+      row.mode = rig.mode;
+      row.notAMeasurement = true;
+      row.exposure = rig.exposure;
+      row.light_id = rig.light_id;
+      row.verdict = 'UNCERTAIN';
+      row.compared = false;
+      row.reason = 'crystal-rig exposure is a test choice; no independent known target was supplied';
+    }
+    return row;
+  });
 }

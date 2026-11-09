@@ -82,7 +82,7 @@
     },
     {
       "code": "colour_uncertain",
-      "detail": "light ids differ or are unknown; scene light is not recovered and exposure is not fitted"
+      "detail": "no independent known target under a shared light"
     }
   ],
   "hard": [],
@@ -201,25 +201,137 @@
     }
   ],
   "identityNote": "gen4b tail crop and paw plant are not claimed fixed",
-  "proceduralSky": "candidate-exception",
   "colour": {
     "verdict": "UNCERTAIN",
-    "compared": false,
-    "threshold": 10,
-    "rawDE76": 27.1,
-    "reason": "light ids differ or are unknown; scene light is not recovered and exposure is not fitted",
     "priorRaw": {
       "method": "texture median Lab versus key-region median Lab, no shared light",
       "source": "biome-guards README 2026-11-08: crystal v2 materials dE76 19-66 against threshold 10",
       "use": "diagnostic only; not a colour pass and not a colour fail of the albedo"
-    }
+    },
+    "threshold": 10
   },
   "keep": false,
   "premise": {
     "holds": false,
     "because": "swatch not run"
   },
-  "sky": "BLOCKED",
+  "sky": {
+    "imaginePlate": {
+      "status": "BLOCKED",
+      "equirect": false,
+      "wrapPass": false,
+      "release": "HOLD"
+    },
+    "procedural": {
+      "status": "CANDIDATE",
+      "scope": "crystal-candidate-only",
+      "release": "HOLD",
+      "checks": {
+        "seam": 2.78e-17,
+        "poleMax": 0.0004,
+        "southMax": 0.0545,
+        "cameraDelta": 0,
+        "motionStep": 0.2038,
+        "planetRing": 0.0022,
+        "otherRing": 0.0038,
+        "callSite": true,
+        "separatePlanet": true
+      }
+    },
+    "release": "HOLD"
+  },
+  "materialsColour": [
+    {
+      "id": "obsidian-wall",
+      "measuredMedianSrgb": [
+        23,
+        24,
+        27
+      ],
+      "light_id": "imagine-albedo-neutral",
+      "knownTarget": null,
+      "rawLegacyDE76": null,
+      "rawLegacyNote": "biome-guards README 2026-11-08: crystal v2 materials dE76 19-66 against threshold 10",
+      "verdict": "UNCERTAIN",
+      "compared": false,
+      "reason": "no independent known target under a shared light; a neutral albedo is not labelled as a night measurement"
+    },
+    {
+      "id": "ground",
+      "measuredMedianSrgb": [
+        74,
+        74,
+        76
+      ],
+      "light_id": "imagine-albedo-neutral",
+      "knownTarget": null,
+      "rawLegacyDE76": null,
+      "rawLegacyNote": "biome-guards README 2026-11-08: crystal v2 materials dE76 19-66 against threshold 10",
+      "verdict": "UNCERTAIN",
+      "compared": false,
+      "reason": "no independent known target under a shared light; a neutral albedo is not labelled as a night measurement"
+    },
+    {
+      "id": "crystal",
+      "measuredMedianSrgb": [
+        46,
+        197,
+        228
+      ],
+      "light_id": "imagine-albedo-neutral",
+      "knownTarget": null,
+      "rawLegacyDE76": null,
+      "rawLegacyNote": "biome-guards README 2026-11-08: crystal v2 materials dE76 19-66 against threshold 10",
+      "verdict": "UNCERTAIN",
+      "compared": false,
+      "reason": "no independent known target under a shared light; a neutral albedo is not labelled as a night measurement"
+    },
+    {
+      "id": "architecture",
+      "measuredMedianSrgb": [
+        43,
+        44,
+        49
+      ],
+      "light_id": "imagine-albedo-neutral",
+      "knownTarget": null,
+      "rawLegacyDE76": null,
+      "rawLegacyNote": "biome-guards README 2026-11-08: crystal v2 materials dE76 19-66 against threshold 10",
+      "verdict": "UNCERTAIN",
+      "compared": false,
+      "reason": "no independent known target under a shared light; a neutral albedo is not labelled as a night measurement"
+    },
+    {
+      "id": "violet",
+      "measuredMedianSrgb": [
+        133,
+        104,
+        176
+      ],
+      "light_id": "imagine-albedo-neutral",
+      "knownTarget": null,
+      "rawLegacyDE76": null,
+      "rawLegacyNote": "biome-guards README 2026-11-08: crystal v2 materials dE76 19-66 against threshold 10",
+      "verdict": "UNCERTAIN",
+      "compared": false,
+      "reason": "no independent known target under a shared light; a neutral albedo is not labelled as a night measurement"
+    },
+    {
+      "id": "stream",
+      "measuredMedianSrgb": [
+        52,
+        173,
+        178
+      ],
+      "light_id": "imagine-albedo-neutral",
+      "knownTarget": null,
+      "rawLegacyDE76": null,
+      "rawLegacyNote": "biome-guards README 2026-11-08: crystal v2 materials dE76 19-66 against threshold 10",
+      "verdict": "UNCERTAIN",
+      "compared": false,
+      "reason": "no independent known target under a shared light; a neutral albedo is not labelled as a night measurement"
+    }
+  ],
   "pending": {
     "sky": {
       "status": "BLOCKED",
@@ -257,6 +369,6 @@
     "visualKeep": false,
     "phoneMeasured": false,
     "gait": "feet still skate; 200 ms crossfade is two different pictures",
-    "sky": "BLOCKED"
+    "sky": "not a release; make.mjs records the measured sky object"
   }
 }

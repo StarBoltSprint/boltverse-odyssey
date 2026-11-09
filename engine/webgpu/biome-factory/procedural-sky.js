@@ -81,6 +81,79 @@ export function skyDelta(a, b) {
   return Math.max(Math.abs(a[0] - b[0]), Math.abs(a[1] - b[1]), Math.abs(a[2] - b[2]));
 }
 
+export function skySeen(camera, dir) {
+  const world = camera.map((c, i) => c + dir[i] * 640);
+  const d = world.map((w, i) => w - camera[i]);
+  return skyLinear(d);
+}
+
+export function measureSky({ pageSource = '', plate = null, procedural = null } = {}) {
+  const seam = skyDelta(skyLinear(dirFrom(20, 0)), skyLinear(dirFrom(20, Math.PI * 2)));
+  let poleMax = 0;
+  const pole = skyLinear([0, 1, 0]);
+  for (let i = 0; i < 48; i++) poleMax = Math.max(poleMax, skyDelta(pole, skyLinear(dirFrom(89.4, i / 48 * Math.PI * 2))));
+  let southMax = 0;
+  const south = skyLinear([0, -1, 0]);
+  for (let i = 0; i < 24; i++) southMax = Math.max(southMax, skyDelta(south, skyLinear(dirFrom(-89.4, i))));
+  const cameras = [[0, 1.12, 0], [40, 3, -80], [-25, 8, 120], [0, 1.12, -54]];
+  const dirs = [dirFrom(12, 0.4), dirFrom(40, 2.1), dirFrom(-8, 4.2), [0, 1, 0]];
+  let cameraDelta = 0;
+  for (const dir of dirs) {
+    const cols = cameras.map(cam => skySeen(cam, dir));
+    for (let i = 1; i < cols.length; i++) cameraDelta = Math.max(cameraDelta, skyDelta(cols[0], cols[i]));
+  }
+  let motionStep = 0;
+  const moving = [12, 4, -30];
+  for (let i = 0; i < 180; i++) {
+    const yaw = i * Math.PI / 180;
+    motionStep = Math.max(motionStep, skyDelta(skySeen(moving, dirFrom(15, yaw)), skySeen(moving, dirFrom(15, yaw + Math.PI / 180))));
+  }
+  const planetDir = norm([-0.2, 0.35, -1]);
+  const planetRing = ringStep(planetDir);
+  const otherRing = ringStep(dirFrom(18, 1.1));
+  const call = pageSource.includes('skyColour(normalize(v.w - u.cam.xyz))');
+  const separatePlanet = pageSource.includes("pass.setPipeline(pSky)") && pageSource.includes("pass.setPipeline(pPlanet)") && pageSource.includes('fsPlanet');
+  const scopeOk = !procedural || procedural.scope === 'crystal-candidate-only';
+  const checks = {
+    seam: +seam.toExponential(2),
+    poleMax: round4(poleMax),
+    southMax: round4(southMax),
+    cameraDelta: round4(cameraDelta),
+    motionStep: round4(motionStep),
+    planetRing: round4(planetRing),
+    otherRing: round4(otherRing),
+    callSite: call,
+    separatePlanet,
+  };
+  const measuredOk = seam < 1e-9 && poleMax < 0.08 && southMax < 0.08 && cameraDelta < 1e-9 && motionStep < 0.5 && planetRing < 0.08 && otherRing < 0.08 && call && separatePlanet && scopeOk;
+  const [w, h] = plate?.resolution || [];
+  const equirect = h > 0 && w === h * 2;
+  const plateStatus = !plate ? 'ABSENT' : (plate.status === 'BLOCKED' || !equirect || plate.wrapPass !== true) ? 'BLOCKED' : 'DECLARED';
+  return {
+    imaginePlate: { status: plateStatus, equirect, wrapPass: plate?.wrapPass ?? null, release: 'HOLD' },
+    procedural: {
+      status: !procedural ? 'ABSENT' : measuredOk ? 'CANDIDATE' : 'FAIL',
+      scope: procedural?.scope || null,
+      release: 'HOLD',
+      checks,
+    },
+    release: 'HOLD',
+  };
+}
+
+function ringStep(dir) {
+  let m = 0;
+  const n = norm(dir);
+  for (let i = 0; i < 16; i++) {
+    const a = i / 16 * Math.PI * 2;
+    const bit = 3 * Math.PI / 180;
+    const side = norm([n[0] + Math.cos(a) * bit, n[1] + Math.sin(a) * bit * 0.2, n[2] + Math.sin(a) * bit]);
+    m = Math.max(m, skyDelta(skyLinear(n), skyLinear(side)));
+  }
+  return m;
+}
+function round4(n) { return Math.round(n * 10000) / 10000; }
+
 export function skyWgsl() {
   const c = SKY_CFG;
   const v3 = (a) => `vec3f(${a[0]}, ${a[1]}, ${a[2]})`;

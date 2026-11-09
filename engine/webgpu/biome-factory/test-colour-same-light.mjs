@@ -1,4 +1,4 @@
-import { compareSameLight, crystalColourStatus, dE76, srgbToLab, DE76_MAX, PRIOR_RAW } from './colour-same-light.mjs';
+import { compareSameLight, crystalColourStatus, crystalRig, assessMaterial, srgbToLab, DE76_MAX, PRIOR_RAW } from './colour-same-light.mjs';
 
 let fail = 0;
 const bad = (m) => { console.error('FAIL', m); fail++; };
@@ -28,14 +28,36 @@ const unknown = compareSameLight(
 if (unknown.verdict !== 'UNCERTAIN' || unknown.compared) bad('unknown light was scored');
 if (!(unknown.rawDE76 > DE76_MAX)) bad('raw diagnostic missing ' + unknown.rawDE76);
 
+const bothUnknown = compareSameLight(
+  { rgb: [90, 40, 140], light_id: 'scene-unknown', exposure: 1 },
+  { rgb: [90, 40, 140], light_id: 'scene-unknown', exposure: 1 },
+);
+if (bothUnknown.verdict !== 'UNCERTAIN' || bothUnknown.compared) bad('two scene-unknown labels were treated as a known light');
+
+const rows = crystalColourStatus([
+  { id: 'ground', pixels: [[70, 72, 74], [71, 73, 75]] },
+  { id: 'wall', pixels: [[20, 21, 22], [22, 23, 24]] },
+]);
+if (!Array.isArray(rows) || rows.length !== 2) bad('colour status is not per material');
+if (rows.some(r => r.verdict !== 'UNCERTAIN' || r.rawLegacyDE76 !== null)) bad('missing target was scored');
+
+const rig = crystalRig();
+const lit = crystalColourStatus([
+  { id: 'match', pixels: [[120, 80, 160], [120, 80, 160]], knownTarget: { rgb: [120, 80, 160], light_id: 'crystal-rig' } },
+  { id: 'drift', pixels: [[120, 80, 160], [120, 80, 160]], knownTarget: { rgb: [20, 20, 20], light_id: 'crystal-rig' } },
+  { id: 'none', pixels: [[120, 80, 160]], knownTarget: null },
+], { sameLight: 'crystal-rig' });
+if (lit[0].verdict !== 'PASS' || lit[0].notAMeasurement !== true) bad('crystal-rig match ' + JSON.stringify(lit[0]));
+if (lit[1].verdict !== 'BLOCK' || !(lit[1].dE76 > 10)) bad('crystal-rig drift ' + JSON.stringify(lit[1]));
+if (lit[2].verdict !== 'UNCERTAIN') bad('crystal-rig without target');
+if (new Set(lit.map(r => r.exposure)).size !== 1) bad('exposure was fitted per material');
+if (Math.abs(rig.exposure * rig.shade - 1) > 1e-9) bad('grey card exposure');
+
 const fit = compareSameLight(
   { rgb: [80, 80, 90], ...neutral, exposure: 1 },
   { rgb: [80, 80, 90], ...neutral, exposure: 1.8 },
 );
 if (fit.verdict !== 'UNCERTAIN') bad('exposure was fitted');
-
-const crystal = crystalColourStatus();
-if (crystal.verdict !== 'UNCERTAIN') bad('crystal key comparison was treated as decisive');
 if (DE76_MAX !== 10) bad('threshold moved');
 if (!PRIOR_RAW.use.includes('diagnostic')) bad('prior raw dropped');
 

@@ -6,7 +6,7 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
-import { compareSameLight, PRIOR_RAW, DE76_MAX } from './colour-same-light.mjs';
+import { PRIOR_RAW, DE76_MAX } from './colour-same-light.mjs';
 
 export const STAGES = ['config', 'refs', 'materials', 'provenance', 'scale', 'quality', 'identity', 'evidence', 'release'];
 
@@ -155,13 +155,11 @@ export function runPipeline(ctx) {
 
   if (cfg.proceduralSky) {
     if (cfg.proceduralSky.scope !== 'crystal-candidate-only') hard(state, 'sky_scope', cfg.proceduralSky.scope || 'missing scope');
-    else state.proceduralSky = 'candidate-exception';
   }
-  if (cfg.colour) {
-    const colour = compareSameLight(cfg.colour.sample, cfg.colour.reference);
-    state.colour = { ...colour, priorRaw: PRIOR_RAW, threshold: DE76_MAX };
-    if (colour.verdict === 'UNCERTAIN') hold(state, 'colour_uncertain', colour.reason);
-    if (colour.verdict === 'BLOCK') hard(state, 'colour', 'same-light dE76 ' + colour.dE76);
+  const knownTargets = cfg.knownColourTargets;
+  if (!Array.isArray(knownTargets) || knownTargets.length === 0) {
+    hold(state, 'colour_uncertain', 'no independent known target under a shared light');
+    state.colour = { verdict: 'UNCERTAIN', priorRaw: PRIOR_RAW, threshold: DE76_MAX };
   }
 
   state.release = state.hard.length === 0 && state.hold.length === 0;
