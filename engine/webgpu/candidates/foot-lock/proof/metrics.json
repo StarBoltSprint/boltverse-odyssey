@@ -1,0 +1,221 @@
+{
+  "dt": 0.016666666666666666,
+  "seconds": 10,
+  "note": "Slide is the world-space XZ travel of a sole that was already in stance on the previous frame, in cm per 1/60 s frame. The mesh row is the same measure on the drawn sole texel (barycentric sample of the card). Idle flatness is |y| of the soles on the ground line, and the gap between them, after the stop has settled. torsoH is the undisplaced chest band, not a scale.",
+  "liveUpperUvLiftCm": 5.175,
+  "candidateUpperUvLiftCm": 0,
+  "paintedCardScale": 1,
+  "before": {
+    "label": "before",
+    "biome": "meadow",
+    "lock": false,
+    "fog": 0,
+    "strideM": 3.5897,
+    "phaseAfter1s": 0.95,
+    "phasePerMetreStraight": 0.2786,
+    "expectedPhasePerMetre": 0.2786,
+    "screenX": 0.5075,
+    "screenXStd": 0,
+    "scaleMean": 1,
+    "torsoHcm": {
+      "mean": 46,
+      "std": 0,
+      "maxShift": 0
+    },
+    "segments": {
+      "straight": {
+        "stanceSamples": 93,
+        "slideCmPerFrame": 11.676,
+        "slideMaxCm": 11.822,
+        "meshCmPerFrame": 11.676,
+        "meshMaxCm": 11.822
+      },
+      "turnL": {
+        "stanceSamples": 73,
+        "slideCmPerFrame": 11.652,
+        "slideMaxCm": 12.171,
+        "meshCmPerFrame": 11.652,
+        "meshMaxCm": 12.171
+      },
+      "turnR": {
+        "stanceSamples": 73,
+        "slideCmPerFrame": 11.691,
+        "slideMaxCm": 12.104,
+        "meshCmPerFrame": 11.691,
+        "meshMaxCm": 12.104
+      },
+      "brake": {
+        "stanceSamples": 48,
+        "slideCmPerFrame": 6.294,
+        "slideMaxCm": 10.465,
+        "meshCmPerFrame": 6.294,
+        "meshMaxCm": 10.465
+      },
+      "settle": {
+        "stanceSamples": 0,
+        "slideCmPerFrame": null,
+        "slideMaxCm": null,
+        "meshCmPerFrame": null,
+        "meshMaxCm": null
+      },
+      "idle": {
+        "stanceSamples": 224,
+        "slideCmPerFrame": 0,
+        "slideMaxCm": 0.056,
+        "meshCmPerFrame": 0,
+        "meshMaxCm": 0.056
+      }
+    },
+    "lockWMin": 0,
+    "maxSoleReachM": 0.103,
+    "idle": {
+      "frames": 224,
+      "pawsMean": 1,
+      "soleDyCm": null,
+      "soleDyMaxCm": null,
+      "soleLiftCm": 0.243
+    }
+  },
+  "after": {
+    "label": "after",
+    "biome": "meadow",
+    "lock": true,
+    "fog": 0,
+    "strideM": 3.5897,
+    "phaseAfter1s": 0.95,
+    "phasePerMetreStraight": 0.2786,
+    "expectedPhasePerMetre": 0.2786,
+    "screenX": 0.5075,
+    "screenXStd": 0,
+    "scaleMean": 1,
+    "torsoHcm": {
+      "mean": 46,
+      "std": 0,
+      "maxShift": 0
+    },
+    "segments": {
+      "straight": {
+        "stanceSamples": 93,
+        "slideCmPerFrame": 0,
+        "slideMaxCm": 0,
+        "meshCmPerFrame": 0,
+        "meshMaxCm": 0
+      },
+      "turnL": {
+        "stanceSamples": 73,
+        "slideCmPerFrame": 0,
+        "slideMaxCm": 0,
+        "meshCmPerFrame": 0,
+        "meshMaxCm": 0
+      },
+      "turnR": {
+        "stanceSamples": 73,
+        "slideCmPerFrame": 0,
+        "slideMaxCm": 0,
+        "meshCmPerFrame": 0,
+        "meshMaxCm": 0
+      },
+      "brake": {
+        "stanceSamples": 48,
+        "slideCmPerFrame": 0,
+        "slideMaxCm": 0,
+        "meshCmPerFrame": 0,
+        "meshMaxCm": 0
+      },
+      "settle": {
+        "stanceSamples": 20,
+        "slideCmPerFrame": 0,
+        "slideMaxCm": 0,
+        "meshCmPerFrame": 0,
+        "meshMaxCm": 0
+      },
+      "idle": {
+        "stanceSamples": 414,
+        "slideCmPerFrame": 0,
+        "slideMaxCm": 0,
+        "meshCmPerFrame": 0,
+        "meshMaxCm": 0
+      }
+    },
+    "lockWMin": 1,
+    "maxSoleReachM": 0.852,
+    "idle": {
+      "frames": 207,
+      "pawsMean": 2,
+      "soleDyCm": 0,
+      "soleDyMaxCm": 0,
+      "soleLiftCm": 0
+    }
+  },
+  "canyonAfter": {
+    "label": "canyon-after",
+    "biome": "canyon",
+    "lock": true,
+    "fog": 0,
+    "strideM": 3.8222,
+    "phaseAfter1s": 0.25,
+    "phasePerMetreStraight": 0.2616,
+    "expectedPhasePerMetre": 0.2616,
+    "screenX": 0.5075,
+    "screenXStd": 0,
+    "scaleMean": 1,
+    "torsoHcm": {
+      "mean": 46,
+      "std": 0,
+      "maxShift": 0
+    },
+    "segments": {
+      "straight": {
+        "stanceSamples": 90,
+        "slideCmPerFrame": 0,
+        "slideMaxCm": 0,
+        "meshCmPerFrame": 0,
+        "meshMaxCm": 0
+      },
+      "turnL": {
+        "stanceSamples": 71,
+        "slideCmPerFrame": 0,
+        "slideMaxCm": 0,
+        "meshCmPerFrame": 0,
+        "meshMaxCm": 0
+      },
+      "turnR": {
+        "stanceSamples": 72,
+        "slideCmPerFrame": 0,
+        "slideMaxCm": 0,
+        "meshCmPerFrame": 0,
+        "meshMaxCm": 0
+      },
+      "brake": {
+        "stanceSamples": 69,
+        "slideCmPerFrame": 0,
+        "slideMaxCm": 0,
+        "meshCmPerFrame": 0,
+        "meshMaxCm": 0
+      },
+      "settle": {
+        "stanceSamples": 0,
+        "slideCmPerFrame": null,
+        "slideMaxCm": null,
+        "meshCmPerFrame": null,
+        "meshMaxCm": null
+      },
+      "idle": {
+        "stanceSamples": 452,
+        "slideCmPerFrame": 0,
+        "slideMaxCm": 0,
+        "meshCmPerFrame": 0,
+        "meshMaxCm": 0
+      }
+    },
+    "lockWMin": 1,
+    "maxSoleReachM": 0.896,
+    "idle": {
+      "frames": 226,
+      "pawsMean": 2,
+      "soleDyCm": 0,
+      "soleDyMaxCm": 0,
+      "soleLiftCm": 0
+    }
+  }
+}
