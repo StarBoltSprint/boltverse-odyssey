@@ -38,7 +38,7 @@ function after(ndl, ndv, ny) {
 }
 function haze(dist) {
   const t = Math.min(1, Math.max(0, (dist - 70) / 120));
-  return t * t * (3 - 2 * t) * 0.62;
+  return t * t * (3 - 2 * t) * 0.55;
 }
 
 const skyL = L(present(sky));

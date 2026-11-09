@@ -70,6 +70,7 @@ struct U {
 @group(0) @binding(1) var samp: sampler;
 @group(0) @binding(2) var groundTex: texture_2d<f32>;
 @group(0) @binding(6) var wallTex: texture_2d<f32>;
+@group(0) @binding(11) var wallH: texture_2d<f32>;
 @group(0) @binding(7) var crysTex: texture_2d<f32>;
 @group(0) @binding(8) var archTex: texture_2d<f32>;
 @group(0) @binding(9) var violetTex: texture_2d<f32>;
@@ -174,6 +175,24 @@ struct PVO { @builtin(position) p: vec4f, @location(0) n: vec3f, @location(1) w:
     textureSample(violetTex, samp, v.w.xy * scV).rgb, n);
   let flow = vec2f(v.w.x, v.w.z + u.cam.w * 0.35) * scS;
   let waterAlb = textureSample(streamTex, samp, flow).rgb;
+  let hdu = vec2f(0.08, 0.0);
+  let hdv = vec2f(0.0, 0.08);
+  let hY0 = textureSampleLevel(wallH, samp, v.w.xz * scW, 0.0).r;
+  let hYu = textureSampleLevel(wallH, samp, v.w.xz * scW + hdu, 0.0).r;
+  let hYv = textureSampleLevel(wallH, samp, v.w.xz * scW + hdv, 0.0).r;
+  let hX0 = textureSampleLevel(wallH, samp, v.w.zy * scW, 0.0).r;
+  let hXu = textureSampleLevel(wallH, samp, v.w.zy * scW + hdu, 0.0).r;
+  let hXv = textureSampleLevel(wallH, samp, v.w.zy * scW + hdv, 0.0).r;
+  let hZ0 = textureSampleLevel(wallH, samp, v.w.xy * scW, 0.0).r;
+  let hZu = textureSampleLevel(wallH, samp, v.w.xy * scW + hdu, 0.0).r;
+  let hZv = textureSampleLevel(wallH, samp, v.w.xy * scW + hdv, 0.0).r;
+  let tip = clamp(v.uv.x, 0.0, 1.0);
+  let view0 = normalize(u.cam.xyz - v.w);
+  let ip = v.w + view0 * (0.18 * (1.0 - tip));
+  let inner = triMix(
+    textureSample(crysTex, samp, ip.zy * scC).rgb,
+    textureSample(crysTex, samp, ip.xz * scC).rgb,
+    textureSample(crysTex, samp, ip.xy * scC).rgb, n);
   let m = v.mat;
   if (m > 4.5 && m < 5.5) {
     return present(skyColour(normalize(v.w - u.cam.xyz)));
@@ -204,25 +223,40 @@ struct PVO { @builtin(position) p: vec4f, @location(0) n: vec3f, @location(1) w:
   let F0 = 0.045;
   let rough = 0.28;
   let F = F0 + (1.0 - F0) * pow(1.0 - ndv, 5.0);
-  let refl = reflect(-view, n);
-  let broad = normalize(mix(refl, n, rough));
+  let ax = abs(n);
+  let yDom = ax.y > ax.x && ax.y > ax.z;
+  let xDom = ax.x > ax.z;
+  let tang = select(select(vec3f(hZ0 - hZu, hZ0 - hZv, 0.0), vec3f(0.0, hX0 - hXv, hX0 - hXu), xDom), vec3f(hY0 - hYu, 0.0, hY0 - hYv), yDom);
+  let relief = normalize(n + tang * 5.5);
+  let ndlR = clamp(dot(relief, sunN()), 0.0, 1.0);
+  let refl = reflect(-view, relief);
+  let broad = normalize(mix(refl, relief, rough));
   let env = skyColour(broad);
   let edge = smoothstep(0.18, 0.42, abs(n.y)) * (1.0 - smoothstep(0.72, 0.92, abs(n.y)));
   let sheen = env * F * (1.0 - rough * 0.35) * (1.0 + edge);
-  let blockLit = alb * (fill + 2.0 * ndl) + sheen;
+  let blockLit = alb * (fill + 2.0 * ndlR) + sheen;
   col = mix(col, blockLit, block);
+  let dist = length(v.w - u.cam.xyz);
+  let far = smoothstep(55.0, 130.0, dist);
+  let rim = pow(1.0 - ndv, 2.4);
+  let rimCol = alb * (2.05 + 0.0 * far);
+  let rimK = min(0.55, rim * (0.35 + 0.45 * far));
+  col = mix(col, rimCol, rimK * block);
+  let align = clamp(dot(n, normalize(vec3f(0.12, 0.96, 0.08))) * 0.5 + 0.5, 0.0, 1.0);
+  let face = 0.40 + 1.10 * align;
+  let back = clamp(dot(-n, sunN()), 0.0, 1.0);
+  let thin = (0.30 + 0.70 * tip) * (0.45 + 0.55 * pow(1.0 - ndv, 1.4));
+  let through = skyColour(normalize(sunN() - n));
+  let body = mix(inner, alb, 0.55) * (0.32 + 0.68 * tip);
   let nh = pow(clamp(dot(n, normalize(sunN() + view)), 0.0, 1.0), 120.0);
   let fres = pow(1.0 - ndv, 2.6);
-  let scatter = pow(ndl, 0.45);
-  let core = pow(ndv, 1.6);
-  let gemCol = alb * (0.12 + 0.45 * ndl + 0.10 * scatter) + alb * fres * 0.42 + alb * nh * 0.08 + alb * core * 0.72;
+  let gemCol = body * face * (0.20 + 0.55 * ndl) + alb * through * (2.2 + 6.4 * back) * thin + alb * fres * 0.30 + alb * nh * 0.06;
   col = mix(col, gemCol, crystal);
   let waterFres = 0.02 + 0.98 * pow(1.0 - ndv, 5.0);
   col = mix(col, col * ${SHADE.waterFresnelDark}, waterFres * water * ${SHADE.waterFresnelMix});
-  let dist = length(v.w - u.cam.xyz);
   let haze = smoothstep(70.0, 190.0, dist);
   let skyFar = skyColour(normalize(vec3f(v.w.x - u.cam.x, 0.12, v.w.z - u.cam.z)));
-  col = mix(col, skyFar, haze * 0.62);
+  col = mix(col, skyFar, haze * 0.55);
   return vec4f(pow(clamp(col, vec3f(0.0), vec3f(1.0)), vec3f(1.0 / 2.2)), 1.0);
 }
 ${IDLE.wgsl}
@@ -305,6 +339,32 @@ async function loadTex(dev, url) {
   const err = await dev.popErrorScope();
   if (err) throw new Error('texture ' + url + ': ' + (err.message || err));
   return { tex, w: bmp.width, h: bmp.height, bmp };
+}
+
+function obsidianHeightBytes(bmp) {
+  const S = 64;
+  const src = new OffscreenCanvas(S, S);
+  const g = src.getContext('2d', { willReadFrequently: true });
+  g.drawImage(bmp, 0, 0, S, S);
+  const id = g.getImageData(0, 0, S, S);
+  const l = new Float32Array(S * S);
+  let mean = 0;
+  for (let i = 0; i < S * S; i++) {
+    const o = i * 4;
+    l[i] = 0.2126 * id.data[o] + 0.7152 * id.data[o + 1] + 0.0722 * id.data[o + 2];
+    mean += l[i];
+  }
+  mean /= l.length;
+  let v = 0;
+  for (const y of l) v += (y - mean) ** 2;
+  const sd = Math.sqrt(v / l.length) || 1;
+  const out = new Uint8Array(S * S * 4);
+  for (let i = 0; i < l.length; i++) {
+    const nrm = Math.max(-2.2, Math.min(2.2, (l[i] - mean) / sd));
+    const h = Math.round((nrm / 2.2) * 0.5 * 255 + 127.5);
+    out[i * 4] = h; out[i * 4 + 1] = h; out[i * 4 + 2] = h; out[i * 4 + 3] = 255;
+  }
+  return { data: out, S };
 }
 
 async function loadAlbedo(dev, url) {
@@ -430,9 +490,16 @@ async function main() {
     { binding: 8, visibility: GPUShaderStage.FRAGMENT, texture: {} },
     { binding: 9, visibility: GPUShaderStage.FRAGMENT, texture: {} },
     { binding: 10, visibility: GPUShaderStage.FRAGMENT, texture: {} },
+    { binding: 11, visibility: GPUShaderStage.FRAGMENT, texture: {} },
     { binding: 18, visibility: GPUShaderStage.FRAGMENT, texture: {} },
   ] });
   const planetSamp = dev.createSampler({ magFilter: 'linear', minFilter: 'linear', mipmapFilter: 'linear', addressModeU: 'repeat', addressModeV: 'clamp-to-edge', maxAnisotropy: aniso });
+  const height = obsidianHeightBytes(wall.bmp);
+  const wallH = dev.createTexture({
+    size: [height.S, height.S], format: 'rgba8unorm',
+    usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
+  });
+  dev.queue.writeTexture({ texture: wallH }, height.data, { bytesPerRow: height.S * 4 }, [height.S, height.S]);
   const bg = await noteErr('bind group', async () => dev.createBindGroup({ layout: bgl, entries: [
     { binding: 0, resource: { buffer: ub } },
     { binding: 1, resource: samp },
@@ -445,6 +512,7 @@ async function main() {
     { binding: 8, resource: archAlb.tex.createView() },
     { binding: 9, resource: violetAlb.tex.createView() },
     { binding: 10, resource: streamAlb.tex.createView() },
+    { binding: 11, resource: wallH.createView() },
     { binding: 18, resource: breathClip.texture.createView() },
   ] }));
   const layout = dev.createPipelineLayout({ bindGroupLayouts: [bgl] });

@@ -81,24 +81,25 @@ export function createMesh() {
     const base = ring(0, radius * 0.9);
     const lip = ring(height * 0.62, radius);
     const tip = P(0, height, 0);
-    const q = (a, b, c, d) => {
-      let A = a, B = b, C = c, D = d;
-      const n = cross(sub(B, A), sub(C, A));
-      const mid = [(A[0] + C[0]) / 2 - cx, (A[1] + C[1]) / 2 - cy, (A[2] + C[2]) / 2 - cz];
-      if (mid[0] * n[0] + mid[1] * n[1] + mid[2] * n[2] < 0) { const t = B; B = D; D = t; }
-      quad(A, B, C, D, [0, 0], [1, 0], [1, 1], [0, 1], mat);
+    const emit = (p, nrm, h) => f.push(p[0], p[1], p[2], mat, nrm[0], nrm[1], nrm[2], h);
+    const triH = (a, ha, b, hb, c, hc) => {
+      let A = a, B = b, C = c, hA = ha, hB = hb, hC = hc;
+      let nrm = norm(cross(sub(B, A), sub(C, A)));
+      const mid = [(A[0] + B[0] + C[0]) / 3 - cx, (A[1] + B[1] + C[1]) / 3 - cy, (A[2] + B[2] + C[2]) / 3 - cz];
+      if (mid[0] * nrm[0] + mid[1] * nrm[1] + mid[2] * nrm[2] < 0) {
+        const t = B; B = C; C = t;
+        const th = hB; hB = hC; hC = th;
+        nrm = norm(cross(sub(B, A), sub(C, A)));
+      }
+      emit(A, nrm, hA); emit(B, nrm, hB); emit(C, nrm, hC);
     };
     for (let i = 0; i < N; i++) {
       const j = (i + 1) % N;
-      q(base[i], base[j], lip[j], lip[i]);
-      const A = lip[j], B = lip[i], C = tip;
-      const n = cross(sub(B, A), sub(C, A));
-      const mid = [(A[0] + B[0] + C[0]) / 3 - cx, (A[1] + B[1] + C[1]) / 3 - cy, (A[2] + B[2] + C[2]) / 3 - cz];
-      if (mid[0] * n[0] + mid[1] * n[1] + mid[2] * n[2] < 0) tri(A, C, B, [1, 0], [0.5, 1], [0, 0], mat);
-      else tri(A, B, C, [1, 0], [0, 0], [0.5, 1], mat);
+      triH(base[i], 0, base[j], 0, lip[j], 0.62);
+      triH(base[i], 0, lip[j], 0.62, lip[i], 0.62);
+      triH(lip[j], 0.62, lip[i], 0.62, tip, 1);
     }
-    q(base[0], base[5], base[4], base[3]);
-    q(base[0], base[3], base[2], base[1]);
+    for (let i = 1; i < N - 1; i++) triH(base[0], 0, base[i + 1], 0, base[i], 0);
   }
   function crystal(x, y, z, radius, height, yaw, mat) {
     const N = 8;
