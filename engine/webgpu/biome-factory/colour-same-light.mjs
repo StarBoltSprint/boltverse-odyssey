@@ -39,6 +39,15 @@ function underSameExposure(rgb, exposure) {
   });
 }
 
+// Matches shade.js present(): pow(linear, 1/2.2) into an 8-bit unorm canvas.
+function enginePresent(rgb, exposure) {
+  return rgb.map(v => {
+    const lin = Math.min(1, Math.max(0, srgbToLin(v) * exposure));
+    const x = lin ** (1 / 2.2);
+    return Math.min(255, Math.max(0, Math.round(x * 255)));
+  });
+}
+
 const UNKNOWN_LIGHT = /^(scene-unknown|unknown|unrecoverable)$/i;
 
 export function isKnownLight(id) {
@@ -164,6 +173,30 @@ export function crystalColourStatus(materials, opts = {}) {
         mode: rig.mode,
         notAMeasurement: true,
         reason: rig.note,
+        rawLegacyDE76: null,
+        rawLegacyNote: PRIOR_RAW.source,
+      };
+    }
+    if (rig && m.sha256 && m.pixels && m.pixels.length) {
+      const rendered = m.pixels.map(p => enginePresent(p, rig.shade * rig.exposure));
+      const cmp = compareSameLight(
+        { pixels: rendered, light_id: rig.light_id, exposure: 1 },
+        { pixels: m.pixels, light_id: rig.light_id, exposure: 1 },
+      );
+      return {
+        id: m.id,
+        verdict: cmp.verdict,
+        compared: true,
+        dE76: cmp.dE76 ?? null,
+        threshold: DE76_MAX,
+        includesLightness: true,
+        light_id: rig.light_id,
+        exposure: rig.exposure,
+        mode: rig.mode,
+        notAMeasurement: true,
+        target: 'Imagine original albedo (choice)',
+        sha256: m.sha256,
+        reason: 'target = Imagine original albedo (choice); one 18% grey-card exposure for every material',
         rawLegacyDE76: null,
         rawLegacyNote: PRIOR_RAW.source,
       };

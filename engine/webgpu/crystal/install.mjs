@@ -42,6 +42,7 @@ const files = [
   'engine/webgpu/biome-factory/test-colour-same-light.mjs',
   'engine/webgpu/biome-factory/procedural-sky.js',
   'engine/webgpu/biome-factory/test-sky-sphere.mjs',
+  'engine/webgpu/biome-factory/test-quality.mjs',
   'engine/webgpu/biome-factory/fixtures/materials-v2/mineral-ground.jpg',
   'engine/webgpu/biome-factory/fixtures/materials-v2/obsidian-wall.jpg',
   'engine/webgpu/biome-factory/fixtures/materials-v2/cyan-facets.jpg',

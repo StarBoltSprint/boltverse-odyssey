@@ -18,7 +18,7 @@ Sky is BLOCKED. GenerateImage accepts only aspect ratios 1:1, 4:3, 3:4, 16:9 and
 
 Phone performance, gait, and a visual KEEP are not signed off.
 
-Colour compares only when both sides name the same light and the same exposure. The threshold stays CIE76 10 and L* counts. A night key against a shadowless albedo is UNCERTAIN, not a pass and not a fitted fail. The morning raw dE 19–66 stays a diagnostic of that old comparison.
+Colour compares only when both sides name the same light and the same exposure. The threshold stays CIE76 10 and L* counts. A night key against a shadowless albedo is UNCERTAIN, not a pass and not a fitted fail. The morning raw dE 19–66 stays a diagnostic of that old comparison. `--same-light crystal-rig` is one 18% grey-card exposure for every material. With a file hash, the target is that file's own unlit albedo, labelled `target = Imagine original albedo (choice)`. A texture with no hash stays UNCERTAIN. The check runs the shared shade and the gamma 2.2 present. It does not fit exposure per material.
 
 ```bash
 node engine/webgpu/biome-factory/test-colour-same-light.mjs

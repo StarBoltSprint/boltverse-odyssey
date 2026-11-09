@@ -267,7 +267,7 @@
   "signoff": {
     "visualKeep": false,
     "phoneMeasured": false,
-    "gait": "feet still skate; 200 ms crossfade is two different pictures",
-    "sky": "BLOCKED"
+    "gait": "crystal stride matches the 534-frame cycle, so slip at 7 m/s is 0; meadow stride stays 1.95; paw pixels are not locked, and the 200 ms crossfade is still two pictures",
+    "sky": "not a release; make.mjs records the measured sky object"
   }
 }

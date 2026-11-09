@@ -44,7 +44,8 @@ function crystalContext() {
     openDefects: [
       'gen4b tail crop and paw plant are not claimed fixed',
       'idle/run crossfade is 200ms between two different pictures',
-      'feet still skate; tail in one clip is not proof the source is fixed',
+      'crystal kinematic slip at 7 m/s is 0; meadow stride stays 1.95; paw pixels are not locked to the ground',
+      'obsidian wall albedo stays near L* 8; sky bounce lifts a side face from L* 5.53 to 7.71 and does not replace the texture',
       'sky plate rejected: not equirect 2:1',
       'phone performance was not measured',
     ],
@@ -90,10 +91,16 @@ try {
     (ctx.config.materials || []).filter(m => m.file && ctx.files[m.file]).map(m => ({
       id: m.id,
       pixels: jpegPixels(path.join(fixtureDir, m.file)),
+      sha256: m.sha256 || null,
       knownTarget: null,
     })),
     sameLight ? { sameLight: 'crystal-rig' } : {},
   );
+  if (sameLight && state.materialsColour.length && state.materialsColour.every(m => m.verdict !== 'UNCERTAIN')) {
+    state.hold = state.hold.filter(h => h.code !== 'colour_uncertain');
+  }
+  state.label = state.hard.length ? 'FAIL' : (state.hold.length ? 'HOLD' : 'RELEASE');
+  state.release = state.label === 'RELEASE';
   state.pending = report.pending;
   state.runId = report.runId;
   state.swatch = report.swatch;

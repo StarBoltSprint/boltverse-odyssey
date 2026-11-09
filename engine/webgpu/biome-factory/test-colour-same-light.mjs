@@ -1,3 +1,4 @@
+import fs from 'fs';
 import { compareSameLight, crystalColourStatus, crystalRig, assessMaterial, srgbToLab, DE76_MAX, PRIOR_RAW } from './colour-same-light.mjs';
 
 let fail = 0;
@@ -52,6 +53,14 @@ if (lit[1].verdict !== 'BLOCK' || !(lit[1].dE76 > 10)) bad('crystal-rig drift ' 
 if (lit[2].verdict !== 'UNCERTAIN') bad('crystal-rig without target');
 if (new Set(lit.map(r => r.exposure)).size !== 1) bad('exposure was fitted per material');
 if (Math.abs(rig.exposure * rig.shade - 1) > 1e-9) bad('grey card exposure');
+const choice = crystalColourStatus([
+  { id: 'ground', sha256: 'abc', pixels: [[90, 88, 86], [92, 89, 87], [91, 90, 85]] },
+  { id: 'bare', pixels: [[90, 88, 86]] },
+], { sameLight: 'crystal-rig' });
+if (choice[0].verdict !== 'PASS' || choice[0].target !== 'Imagine original albedo (choice)' || !(choice[0].dE76 <= 10)) bad('albedo choice ' + JSON.stringify(choice[0]));
+if (choice[1].verdict !== 'UNCERTAIN') bad('missing hash was scored');
+if (choice[0].exposure !== choice[1].exposure) bad('choice exposure differed');
+if (!fs.readFileSync(new URL('./shade.js', import.meta.url), 'utf8').includes('1.0 / 2.2')) bad('present no longer matches the colour check');
 
 const fit = compareSameLight(
   { rgb: [80, 80, 90], ...neutral, exposure: 1 },

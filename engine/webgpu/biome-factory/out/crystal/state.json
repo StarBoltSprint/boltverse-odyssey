@@ -92,7 +92,8 @@
   "openDefects": [
     "gen4b tail crop and paw plant are not claimed fixed",
     "idle/run crossfade is 200ms between two different pictures",
-    "feet still skate; tail in one clip is not proof the source is fixed",
+    "crystal kinematic slip at 7 m/s is 0; meadow stride stays 1.95; paw pixels are not locked to the ground",
+    "obsidian wall albedo stays near L* 8; sky bounce lifts a side face from L* 5.53 to 7.71 and does not replace the texture",
     "sky plate rejected: not equirect 2:1",
     "phone performance was not measured"
   ],
@@ -368,7 +369,7 @@
   "signoff": {
     "visualKeep": false,
     "phoneMeasured": false,
-    "gait": "feet still skate; 200 ms crossfade is two different pictures",
+    "gait": "crystal stride matches the 534-frame cycle, so slip at 7 m/s is 0; meadow stride stays 1.95; paw pixels are not locked, and the 200 ms crossfade is still two pictures",
     "sky": "not a release; make.mjs records the measured sky object"
   }
 }

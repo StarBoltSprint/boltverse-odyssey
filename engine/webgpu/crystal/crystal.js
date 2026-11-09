@@ -21,7 +21,7 @@ let simClock = 0;
 const hud = document.getElementById('hud');
 if (CAP && hud) hud.style.display = 'none';
 
-const IDLE = boltIdle({});
+const IDLE = boltIdle({ strideHz: 22 / (534 / 96) });
 const BREATH = { ...BREATH_MEADOW, speed: IDLE.cfg.speed, blendV: IDLE.cfg.blendV };
 const world = buildWorld();
 const collide = makeCircleCollide(world.circles, { boltR: CRYSTAL.boltR });
@@ -149,7 +149,10 @@ struct PVO { @builtin(position) p: vec4f, @location(0) n: vec3f, @location(1) w:
   let scA = ${SC.architecture};
   let scV = ${SC.violet};
   let scS = ${SC.stream};
-  let gnd = textureSample(groundTex, samp, v.w.xz * scG).rgb;
+  var gnd = textureSample(groundTex, samp, v.w.xz * scG).rgb;
+  let gOff = textureSample(groundTex, samp, v.w.xz * scG + vec2f(0.37, 0.53)).rgb;
+  let gN = skyNoise(vec3f(v.w.x * 0.17, v.w.z * 0.17, 3.0));
+  gnd = mix(gnd, gOff, smoothstep(0.46, 0.54, gN));
   let wall = triMix(
     textureSample(wallTex, samp, v.w.zy * scW).rgb,
     textureSample(wallTex, samp, v.w.xz * scW).rgb,
@@ -187,7 +190,12 @@ struct PVO { @builtin(position) p: vec4f, @location(0) n: vec3f, @location(1) w:
   let view = normalize(u.cam.xyz - v.w);
   let crystal = select(0.0, 1.0, m > 0.5 && m < 2.5);
   let water = select(0.0, 1.0, m > 3.5 && m < 4.5);
+  let ndl = clamp(dot(n, sunN()), 0.0, 1.0);
   var col = shadeAlb(alb, n, view, ${SHADE.crystalSpec} * crystal + ${SHADE.waterSpec} * water);
+  let wallMat = select(0.0, 1.0, m > 5.5);
+  let skyLum = dot(skyColour(vec3f(0.0, 0.25, -1.0)), vec3f(0.2126, 0.7152, 0.0722));
+  let bounce = clamp(skyLum * 8.0, 0.0, 0.28);
+  col = col + alb * bounce * (1.0 - ndl) * wallMat;
   let ndv = clamp(dot(n, view), 0.0, 1.0);
   let fres = 0.02 + 0.98 * pow(1.0 - ndv, 5.0);
   col = mix(col, col * ${SHADE.waterFresnelDark}, fres * water * ${SHADE.waterFresnelMix});
