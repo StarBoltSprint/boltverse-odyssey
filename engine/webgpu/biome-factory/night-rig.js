@@ -18,14 +18,14 @@ export const NIGHT = {
     nebulaViolet: [0.11, 0.035, 0.16],
     nebulaCyan: [0.02, 0.09, 0.15],
     star: [0.75, 0.82, 0.95],
-    nebulaScale: 2.6,
+    nebulaScale: 4.6,
     starGrid: 42,
-    // Mean of the low octave. The band is the part above this.
+    // Retained so the record still swaps. The warp does not threshold on it.
     nebulaFloor: 0.510484,
-    // High octave weight. The rest is the low octave.
-    nebulaHf: 0.12,
-    // Run-3 nebula. The two-direction yaw pair is advisory, not this weight's gate.
-    nebulaGain: 2.77,
+    // Octave persistence of the direction-space fbm.
+    nebulaHf: 0.5,
+    // Weight of the wisps. Zenith stays the atmosphere; the band misses it.
+    nebulaGain: 1.7,
   },
 };
 

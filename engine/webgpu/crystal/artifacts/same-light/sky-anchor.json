@@ -15,15 +15,15 @@
     18
   ],
   "minScreenSpread": 707,
-  "anchorMax": 0.0015,
-  "cpuMatchMax": 0.19697,
+  "anchorMax": 0.00047,
+  "cpuMatchMax": 0.00448,
   "turnFrames": 36,
   "tracked": 6,
-  "temporalMax": 0.0007,
+  "temporalMax": 0.00047,
   "pops": 0,
-  "yawPairAdvisory": 0.01514,
+  "yawPairAdvisory": 0,
   "screenSpace": {
-    "max": 0.04816,
+    "max": 0.04881,
     "spread": 486,
     "failedGate": true
   }

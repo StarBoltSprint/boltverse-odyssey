@@ -48,10 +48,10 @@
       0.82,
       0.95
     ],
-    "nebulaScale": 2.6,
+    "nebulaScale": 4.6,
     "starGrid": 42,
     "nebulaFloor": 0.510484,
-    "nebulaHf": 0.12,
-    "nebulaGain": 2.77
+    "nebulaHf": 0.5,
+    "nebulaGain": 1.7
   }
 }

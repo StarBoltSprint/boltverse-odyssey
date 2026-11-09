@@ -605,7 +605,7 @@ function writeArtifacts({ day, night, prepared }) {
   md.push('');
   md.push(`Zenith ${labLine(doc.sky.zenithLab)}. Yaw gate 0.015, measured ${doc.sky.yaw.toFixed(5)} on the elev-12 pair used by the review.`);
   md.push('');
-  md.push('The elev-12 pair compares two different view directions. It is advisory. The 0.015 limit applies to one world direction rendered from many cameras, not to this pair. The nebula is the run-3 residual above the floor, gain 2.77.');
+  md.push('The elev-12 pair compares two different view directions. It is advisory. The 0.015 limit applies to one world direction rendered from many cameras, not to this pair. The nebula is domain-warped fbm of the unit direction, gain 1.7, denser on a tilted band.');
   md.push('');
   md.push('## Crystals');
   md.push('');
