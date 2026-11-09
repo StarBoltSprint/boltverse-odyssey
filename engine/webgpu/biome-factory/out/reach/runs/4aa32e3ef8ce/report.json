@@ -1,0 +1,198 @@
+{
+  "runId": "4aa32e3ef8ce",
+  "shade": {
+    "ambient": 0.1,
+    "sun": 0.9,
+    "specPower": 56,
+    "crystalSpec": 0.06,
+    "waterSpec": 0.45,
+    "waterFresnelDark": 0.55,
+    "waterFresnelMix": 0.4
+  },
+  "groundNdl": 0.775,
+  "materials": [
+    {
+      "id": "floor",
+      "tileMeters": 1.45,
+      "file": "packs/zone-a/src/ground/m0.png",
+      "samples": 65536,
+      "source": {
+        "r": {
+          "mean": 29.17,
+          "pstdev": 20.68
+        },
+        "g": {
+          "mean": 31.42,
+          "pstdev": 20.21
+        },
+        "b": {
+          "mean": 42.47,
+          "pstdev": 25.43
+        }
+      },
+      "shadedAtNdl075": {
+        "r": {
+          "mean": 31.03,
+          "pstdev": 16.65
+        },
+        "g": {
+          "mean": 32.81,
+          "pstdev": 16.24
+        },
+        "b": {
+          "mean": 41.73,
+          "pstdev": 20.69
+        }
+      },
+      "sourcePstdevMax": 25.43,
+      "shadedPstdevMax": 20.69
+    },
+    {
+      "id": "west-mesa",
+      "tileMeters": 1.45,
+      "file": "packs/zone-a/src/ground/m1.png",
+      "samples": 65536,
+      "source": {
+        "r": {
+          "mean": 34.89,
+          "pstdev": 33.62
+        },
+        "g": {
+          "mean": 36.53,
+          "pstdev": 30.01
+        },
+        "b": {
+          "mean": 53.1,
+          "pstdev": 41.66
+        }
+      },
+      "shadedAtNdl075": {
+        "r": {
+          "mean": 36.04,
+          "pstdev": 27.52
+        },
+        "g": {
+          "mean": 37.22,
+          "pstdev": 24.53
+        },
+        "b": {
+          "mean": 50.76,
+          "pstdev": 34.84
+        }
+      },
+      "sourcePstdevMax": 41.66,
+      "shadedPstdevMax": 34.84
+    },
+    {
+      "id": "east-mesa",
+      "tileMeters": 1.45,
+      "file": "packs/zone-a/src/ground/m2.png",
+      "samples": 65536,
+      "source": {
+        "r": {
+          "mean": 46.92,
+          "pstdev": 24.02
+        },
+        "g": {
+          "mean": 50,
+          "pstdev": 21.61
+        },
+        "b": {
+          "mean": 65.78,
+          "pstdev": 22.6
+        }
+      },
+      "shadedAtNdl075": {
+        "r": {
+          "mean": 45,
+          "pstdev": 20
+        },
+        "g": {
+          "mean": 47.69,
+          "pstdev": 17.57
+        },
+        "b": {
+          "mean": 60.53,
+          "pstdev": 18.97
+        }
+      },
+      "sourcePstdevMax": 24.02,
+      "shadedPstdevMax": 20
+    },
+    {
+      "id": "spire",
+      "tileMeters": 1.45,
+      "file": "packs/zone-a/src/ground/m3.png",
+      "samples": 65536,
+      "source": {
+        "r": {
+          "mean": 45.72,
+          "pstdev": 22.31
+        },
+        "g": {
+          "mean": 47.94,
+          "pstdev": 20.09
+        },
+        "b": {
+          "mean": 62.48,
+          "pstdev": 21.1
+        }
+      },
+      "shadedAtNdl075": {
+        "r": {
+          "mean": 44.08,
+          "pstdev": 18.41
+        },
+        "g": {
+          "mean": 46,
+          "pstdev": 16.25
+        },
+        "b": {
+          "mean": 57.79,
+          "pstdev": 17.66
+        }
+      },
+      "sourcePstdevMax": 22.31,
+      "shadedPstdevMax": 18.41
+    }
+  ],
+  "swatch": null,
+  "premise": {
+    "holds": false,
+    "because": "swatch not run"
+  },
+  "pending": {
+    "sky": {
+      "status": "BLOCKED",
+      "interface": "GenerateImage",
+      "supportedAspects": [
+        "1:1",
+        "4:3",
+        "3:4",
+        "16:9",
+        "9:16"
+      ],
+      "missingParameters": [
+        "width",
+        "height",
+        "resolution",
+        "equirectangular"
+      ],
+      "cannotRequest": "a native 2:1 image at 2048x1024 or larger",
+      "doNot": "Do not resize, stretch, or crop a plate into a 2:1 map. It is not a 360.",
+      "houseNow": "A physical atmosphere is house code. It is not an Imagine JPEG, and it is not a resized plate.",
+      "alternativesNotGenerated": [
+        "Cubemap: six faces, each a supported 1:1 image. No face was generated for this step.",
+        "Eight rectilinear views: 60 degree horizontal field, 45 degree yaw step, 25 percent overlap. No view was generated."
+      ],
+      "file": null,
+      "resolution": null
+    }
+  },
+  "signoff": {
+    "visualKeep": false,
+    "phoneMeasured": false,
+    "gait": "not signed off",
+    "sky": "BLOCKED"
+  }
+}

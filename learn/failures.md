@@ -1307,6 +1307,17 @@ In the key the tier foot at x 3.8–9 m is buried, so the visible bottom is 1.0�
 wall down plus a uniform 1.25 m skirt cut IoU from 0.887 to 0.865, because the skirt hid wall that the key shows where the wall meets the ground.
 Fix: size the skirt per stretch from the key-visible bottom, and score the skirt as terrain (z-buffered).
 
+### 2026-11-09 — headless WebGPU submit destroys the device
+
+| | |
+| --- | --- |
+| Take | Obsidian Reach, house WebGPU |
+| Defect | A headless Chrome frame is black and the device is gone after the first submit. |
+| Root cause | This machine has no Vulkan ICD. Dawn's swiftshader WebGPU device is created, then destroyed on `queue.submit`. A one-triangle page fails the same way (`OperationError: A valid external Instance reference no longer exists`). |
+| Fix | Keep the page on WebGPU. Do not call a black screenshot a frame. The 720×1280 mp4 for this step is a CPU raster of the same mesh and is labelled that way. |
+| Guard | `engine/webgpu/reach/frame-report.json` keeps `webgpuPresent: false` until a submit survives. |
+| Sources | `engine/webgpu/reach/reach.js`, `engine/webgpu/reach/raster.mjs`. |
+
 ### 2026-10-13 — door ghost: dark ground rectangle + see-through ice slabs, play build only
 | | |
 | --- | --- |
