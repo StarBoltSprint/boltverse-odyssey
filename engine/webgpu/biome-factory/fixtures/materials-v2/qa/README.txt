@@ -1,0 +1,3 @@
+Completion additions: stream-surface.jpg (1024 square, intended 2m period); violet-mineral.jpg (1024 square, intended 0.5m period); sky-panorama.jpg (1280x720 wide sky plate, NOT seamless 360/equirectangular). All unmodified native JPEGs with embedded Grok Imagine C2PA metadata; signature not verified. Full exact prompts included. No reference input.
+
+IMPORTANT: sky left/right wrap visibly fails. Do not label it seamless or install as a certified 360 environment. Surfaces need in-engine motion/scale evaluation. No repository/live changes. Preview crops/repeats are for inspection only, originals unchanged.

@@ -1,0 +1,28 @@
+# Biome factory
+
+One command builds an isolated crystal candidate from `crystal/biome.factory.json` and the house mesh and shade modules. It does not call Imagine and it does not release.
+
+```bash
+node engine/webgpu/biome-factory/make.mjs --biome crystal
+node engine/webgpu/biome-factory/test-factory.mjs
+node engine/webgpu/biome-factory/test-assemble.mjs
+```
+
+Exit 0 is release. Exit 2 is HOLD. Exit 1 is a hard failure. `--no-swatch` skips the GPU sheet. `--force` renders the sheet again.
+
+The run lands in `engine/webgpu/biome-factory/out/crystal/runs/<id>/`. A second run with the same config keeps that directory. `KEEP` is not written while the verdict is HOLD.
+
+`make.mjs` copies the declared albedo files, checks their hashes, writes `pending.json`, and renders `swatch.png` through the same `shadeAlb` path as the canyon. The sheet is a close-up diagnosis, not a 20 s capture.
+
+Sky is BLOCKED. GenerateImage accepts only aspect ratios 1:1, 4:3, 3:4, 16:9 and 9:16. It has no width, height, or equirectangular control, so a native 2:1 at 2048×1024 or larger cannot be requested. The 1280×720 plate is not resized and is not a 360. A cubemap of six 1:1 faces, or eight 60° views with a 45° step and 25% overlap, would be a different cook. None of those images were generated.
+
+Phone performance, gait, and a visual KEEP are not signed off.
+
+Colour compares only when both sides name the same light and the same exposure. The threshold stays CIE76 10 and L* counts. A night key against a shadowless albedo is UNCERTAIN, not a pass and not a fitted fail. The morning raw dE 19–66 stays a diagnostic of that old comparison. `--same-light crystal-rig` is one 18% grey-card exposure for every material. With a file hash, the target is that file's own unlit albedo, labelled `target = Imagine original albedo (choice)`. A texture with no hash stays UNCERTAIN. The check runs the shared shade and the gamma 2.2 present. It does not fit exposure per material.
+
+```bash
+node engine/webgpu/biome-factory/test-colour-same-light.mjs
+node engine/webgpu/biome-factory/test-sky-sphere.mjs
+```
+
+The crystal candidate sky is house code, a full sphere coloured by direction. It is not an Imagine JPEG, and the 2048×1024 contract does not apply to it. Materials stay Imagine. The 16:9 plate stays blocked.

@@ -1,0 +1,197 @@
+{
+  "id": "crystal-canyon",
+  "engine": "house-webgpu",
+  "revision": "materials-v2-r2",
+  "bundle": {
+    "bytes": 1986224,
+    "sha256": "6a2cf6ce010a552ce0797bdc75f354d625ffc6e5997dd52791ae6a62f61e6186"
+  },
+  "provenanceLimit": "Embedded C2PA softwareAgent and certificate identity name Grok Imagine / xAI Grok Imagine. Observed in the JPEG bytes. Signature and trust chain were not verified. Not a cryptographic release gate.",
+  "refs": [
+    {
+      "id": "environment-key",
+      "role": "artistic-reference",
+      "file": "crystal/key/environment.jpg",
+      "sha256": "a912d091c0a698d47c027f1ca2e9c1f5faa7d329c29c56ce6fa6f135ab6274e9",
+      "runtimeTexture": false
+    }
+  ],
+  "notAlbedo": [
+    "tiling-inspection.jpg",
+    "qa/surface-tiling-inspection.jpg",
+    "qa/sky-wrap-seam-inspection.jpg",
+    "sky-panorama.jpg"
+  ],
+  "materials": [
+    {
+      "id": "obsidian-wall",
+      "role": "albedo",
+      "file": "obsidian-wall.jpg",
+      "sha256": "7f787fd4703fe3e96936a2909a584061380109d6b222e6b77460f599ff494b6d",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "tileMeters": 2,
+      "scaleMeasured": false,
+      "qualityHold": true,
+      "visualPass": false,
+      "seamlessCertified": false,
+      "qualityNote": "Parent inspection: large ridges gone. Subtle tonal repetition remains. Quality HOLD. Seamless not certified.",
+      "c2paSelfId": "self-identified Grok Imagine via embedded metadata",
+      "signatureVerified": false,
+      "reusedUnchanged": false
+    },
+    {
+      "id": "ground",
+      "role": "albedo",
+      "file": "mineral-ground.jpg",
+      "sha256": "d6eabbc707c13bd9b5c3270371297b80a8646221c8f8b40516cfdf95643b3630",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "tileMeters": 3,
+      "scaleMeasured": false,
+      "qualityHold": false,
+      "visualPass": false,
+      "seamlessCertified": false,
+      "qualityNote": "Unchanged from the first bundle. Candidate to inspect, not a visual PASS. Subtle repeat remains.",
+      "c2paSelfId": "self-identified Grok Imagine via embedded metadata",
+      "signatureVerified": false,
+      "reusedUnchanged": true
+    },
+    {
+      "id": "crystal",
+      "role": "albedo",
+      "file": "cyan-facets.jpg",
+      "sha256": "572f1a99722a1b518669d723ae7dd94c3cc045d38e518875c324991f87e8363d",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "tileMeters": 0.5,
+      "scaleMeasured": false,
+      "qualityHold": true,
+      "visualPass": false,
+      "seamlessCertified": false,
+      "qualityNote": "Parent inspection: large rainbow shards gone. Subtle tonal repetition remains. Quality HOLD. One file shared by both crystal ids.",
+      "c2paSelfId": "self-identified Grok Imagine via embedded metadata",
+      "signatureVerified": false,
+      "reusedUnchanged": false
+    },
+    {
+      "id": "architecture",
+      "role": "albedo",
+      "file": "architectural-stone.jpg",
+      "sha256": "8c42ed205e9f06478f630be0af39d966d479b3ba908cdf0f1a60af4f4a6be9c4",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "tileMeters": 2,
+      "scaleMeasured": false,
+      "qualityHold": false,
+      "visualPass": false,
+      "seamlessCertified": false,
+      "qualityNote": "Unchanged from the first bundle. Candidate to inspect, not a visual PASS. Seamless not certified.",
+      "c2paSelfId": "self-identified Grok Imagine via embedded metadata",
+      "signatureVerified": false,
+      "reusedUnchanged": true
+    },
+    {
+      "id": "violet",
+      "role": "albedo",
+      "file": "violet-mineral.jpg",
+      "sha256": "7791f436407a5a3eda0163a1355c5782799cc09add48870d08afebbf218a4a2c",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "tileMeters": 0.5,
+      "scaleMeasured": false,
+      "qualityHold": false,
+      "visualPass": false,
+      "seamlessCertified": false,
+      "qualityNote": "Paler than the requested jewel violet. Mean sRGB about 134,104,176. Fine grain only. Facets must come from the mesh.",
+      "c2paSelfId": "self-identified Grok Imagine via embedded metadata",
+      "signatureVerified": false,
+      "reusedUnchanged": false
+    },
+    {
+      "id": "stream",
+      "role": "albedo",
+      "file": "stream-surface.jpg",
+      "sha256": "ec69a22d6defb836b38ada9412c86e477cd4263e157385cc77d7ec936654c590",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "tileMeters": 2,
+      "scaleMeasured": false,
+      "qualityHold": false,
+      "visualPass": false,
+      "seamlessCertified": false,
+      "qualityNote": "Intrinsic turquoise, stddev about 2. Not a river picture. Motion and reflectance are the shader. Not seamless certified.",
+      "c2paSelfId": "self-identified Grok Imagine via embedded metadata",
+      "signatureVerified": false,
+      "reusedUnchanged": false
+    },
+    {
+      "id": "sky",
+      "role": "albedo",
+      "file": null,
+      "tileMeters": null,
+      "visualPass": false,
+      "qualityNote": "Usable sky is still missing. The 1280x720 plate is rejected."
+    }
+  ],
+  "planet": {
+    "file": "crystal/key/planet-surface.jpg",
+    "sha256": "62a6b8e69bb71b557219b41740bfa7bf64ed2d38068ba5d77bfc56a66a4c1f81",
+    "radiusMeters": 340,
+    "note": "Dedicated surface from the earlier parent attachment. Not a crop of the environment key. Equator seam is not certified seamless."
+  },
+  "bolt": {
+    "atlas": "assets/meadow/bolt439_atlas.png",
+    "breath": "assets/meadow/bolt_idle4b5_rgba",
+    "breathBuild": "m448aaa3-breath1"
+  },
+  "bundleCompletion": {
+    "bytes": 865532,
+    "sha256": "938f362343d0e8b68a9339209d5528894e1e98c76776928e9aa20383ead67d30"
+  },
+  "sky": {
+    "file": "sky-panorama.jpg",
+    "sha256": "251915b437176db8e40b13b01d8a988f750a5c64ba19e3fbfc7aa909bae741c0",
+    "resolution": [
+      1280,
+      720
+    ],
+    "runtimeTexture": false,
+    "status": "BLOCKED",
+    "blocker": "GenerateImage aspect_ratio is only 1:1, 4:3, 3:4, 16:9, 9:16. No width, height, or equirectangular parameter. A native 2:1 at 2048x1024 or larger cannot be requested. The 1280x720 plate is not resized.",
+    "wrapPass": false,
+    "wrapMeanAbs": 7.68,
+    "wrapMaxRow": 18.3,
+    "reason": "16:9 plate, not equirectangular 2:1. Side-by-side edges are purple against cyan. Column mean abs 7.68 hides that hue break. Not installed.",
+    "house": {
+      "projection": "equirectangular",
+      "aspect": "2:1",
+      "uv": "atan2(x,-z)/(2*pi)+0.5 , 0.5-asin(y)/pi",
+      "minSize": [
+        2048,
+        1024
+      ],
+      "repeatU": true,
+      "horizonRow": 0.5,
+      "wrapMeanAbsMax": 12
+    }
+  },
+  "proceduralSky": {
+    "scope": "crystal-candidate-only",
+    "source": "house-procedural",
+    "jpegContract": false,
+    "note": "Narrow exception. Not an Imagine texture. Materials stay Imagine. Status comes from measured seam, poles, camera and planet checks, and is never PASS."
+  }
+}

@@ -1,0 +1,26 @@
+gen4b breath on the current meadow. Version meadow-breath-1106. Build m448aaa3-breath1.
+
+Released run brakes with the existing 5.5 m/s², then the gen4b loop crossfades in over 200 ms.
+Input resumes the bolt439 gallop. Nominal speed stays 7 m/s. The card is not procedurally scaled.
+
+The GPU reads the PNG sequence already on this root. This package does not contain those pictures.
+Required, and left in place:
+  assets/meadow/bolt_idle4b_loop_alpha.webm
+  assets/meadow/bolt_idle4b5_rgba/f0000.png … f0143.png
+The stamp is the m447idle4b5 crop (sx 286, sy 570, sw 156, sh 470 into the 384×896 cell).
+Tail/body clipping and paw plant of that source are not changed.
+
+Root: /workspace/biome-futur/webgpu-ground
+
+  sh install.sh /workspace/biome-futur/webgpu-ground
+
+Adds only:
+  m448aaa3-breath.html
+  m448aaa3-breath.js
+  bricks/bolt-breath.js
+
+Open: /m448aaa3-breath.html
+Hud: v448aaa3-breath1 · run   then   v448aaa3-breath1 · idle
+
+Rollback:
+  sh uninstall.sh /workspace/biome-futur/webgpu-ground

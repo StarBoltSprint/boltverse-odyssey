@@ -1,0 +1,22 @@
+Meadow diagnostic preview — add files only.
+
+Root on the box: /workspace/biome-futur/webgpu-ground
+Do not replace m448aaa3.html or m448aaa3.js. Do not copy textures or video.
+
+From this directory:
+  sh install.sh /workspace/biome-futur/webgpu-ground
+
+The script checks the two baseline hashes, then adds only:
+  m448aaa3-diag.html
+  m448aaa3-diag.js
+  engine/bricks/frame-diag.js
+If a destination already exists with a different hash, it stops and writes nothing further.
+
+Open: /m448aaa3-diag.html?diag=1
+Leave the normal URL /m448aaa3.html?v=9collide unchanged.
+
+The panel shows wall median and p95, the dt actually passed to the sim, metres per second, adapter text, sample count, and warming until 8 frames. It does not show a GPU time. Copy writes JSON into the small box and the clipboard. Nothing is sent off the phone.
+
+Rollback:
+  sh uninstall.sh /workspace/biome-futur/webgpu-ground
+That deletes only those three paths, and only if the hash still matches.
