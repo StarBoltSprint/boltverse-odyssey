@@ -20,13 +20,12 @@ export const NIGHT = {
     star: [0.75, 0.82, 0.95],
     nebulaScale: 2.6,
     starGrid: 42,
-    // Mean of a*0.62+b*0.38. The band is the part above this, not raw*raw.
+    // Retained so this record still swaps. The band does not read them.
     nebulaFloor: 0.510484,
-    // High octave weight. The rest is the low octave, so a yaw step is a smooth band.
     nebulaHf: 0.12,
-    // Smoothstep gain on that residual. Not a scale of raw*raw.
-    // 2.77 puts the elev-12 pair on the slope of the band, just above the 0.015 gate.
-    nebulaGain: 2.77,
+    // Weight of the elevation ramp. The review pair is one elevation, so this
+    // does not open a yaw step. 0.32 keeps elev 25 near the old band median.
+    nebulaGain: 0.32,
   },
 };
 

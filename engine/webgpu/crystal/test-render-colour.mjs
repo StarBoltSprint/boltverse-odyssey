@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import { buildWorld, terrH } from './world.js';
 import { MAT } from './biome.js';
 import { NIGHT } from '../biome-factory/night-rig.js';
+import { WATER_WAVE } from '../biome-factory/shade.js';
 import { scoreWindow } from '../biome-factory/render-colour-gate.mjs';
 import { DE76_MAX } from '../biome-factory/colour-same-light.mjs';
 
@@ -49,7 +50,18 @@ function pickShots() {
     const at = [(a[0] + b[0] + c[0]) / 3, (a[1] + b[1] + c[1]) / 3, (a[2] + b[2] + c[2]) / 3];
     if (mat === MAT.stream && at[1] < terrH(at[0], at[2]) + 0.08) continue;
     let dist = 0.55;
-    if (mat === MAT.stream) dist = 0.1;
+    if (mat === MAT.stream) {
+      // The sheet is the rest plane. The shader lifts it by up to 0.16, and the
+      // near plane is 0.08, so a camera 0.1 m up clips the crest and shows the bed.
+      const rise = WATER_WAVE.az * Math.sin(at[2] * WATER_WAVE.fz) + WATER_WAVE.ax * Math.sin(at[0] * WATER_WAVE.fx);
+      const dydx = WATER_WAVE.ax * WATER_WAVE.fx * Math.cos(at[0] * WATER_WAVE.fx);
+      const dydz = WATER_WAVE.az * WATER_WAVE.fz * Math.cos(at[2] * WATER_WAVE.fz);
+      const nl = Math.hypot(dydx, 1, dydz) || 1;
+      const ny = 1 / nl;
+      const ndlW = Math.max(0, (-dydx * sun[0] + sun[1] - dydz * sun[2]) / nl);
+      if (ny < 0.7 || ndlW < 0.12 || 0.4 - rise < 0.12) continue;
+      dist = 0.4;
+    }
     if (mat === MAT.violet || mat === MAT.cyan) dist = 1.15;
     buckets.get(mat).push({
       at,
@@ -210,7 +222,8 @@ try {
   fs.writeFileSync(path.join(here, 'artifacts/same-light/render-table.json'), JSON.stringify(report, null, 2) + '\n');
   console.log(JSON.stringify(report, null, 2));
   for (const row of clean) {
-    if (row.verdict !== 'PASS' || !(row.dE76 <= DE76_MAX) || row.patches < 1) {
+    const need = row.id === 'stream' ? 3 : 1;
+    if (row.verdict !== 'PASS' || !(row.dE76 <= DE76_MAX) || row.patches < need) {
       console.error('FAIL render gate', row.id, row);
       fail++;
     }

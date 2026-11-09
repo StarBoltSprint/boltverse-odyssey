@@ -48,22 +48,14 @@ export function skyLinear(dir, cfg = SKY_CFG) {
   const elev = Math.min(1, Math.max(0, (n[1] + 0.08) / 0.7));
   const e = elev * elev * (3 - 2 * elev);
   const atmo = cfg.zenith.map((z, i) => cfg.horizon[i] + (z - cfg.horizon[i]) * e);
-  const q = [n[0] * cfg.nebulaScale, n[1] * cfg.nebulaScale, n[2] * cfg.nebulaScale];
-  const a = valueNoise(q);
-  const b = valueNoise([q[0] * 2.05 + 4.2, q[1] * 2.05 + 1.3, q[2] * 2.05 + 7.1]);
-  const hf = cfg.nebulaHf == null ? 0.12 : cfg.nebulaHf;
-  const raw = Math.max(0, a * (1 - hf) + b * hf);
-  // raw*raw - floor*floor = (raw-floor)*(raw+floor). The (raw+floor) term is about 1
-  // and keeps the old yaw difference after the pedestal is gone, so a later colour
-  // scale inflates it. The band is only the residual above the floor, smoothed.
-  const floor = cfg.nebulaFloor || 0;
-  const span = Math.max(1e-4, 1 - floor);
-  const u = Math.min(1, Math.max(0, (raw - floor) / span));
-  const shaped = u * u * (3 - 2 * u);
-  const gain = cfg.nebulaGain == null ? 3.2 : cfg.nebulaGain;
-  // Tint follows elevation only. An azimuth hash made the same band jump colour when the camera yawed.
+  // Elevation-only onset. A noise floor put one yaw of the review pair under the
+  // band and the next yaw inside it, so the pair delta was the whole step.
+  // sin(pi * ny) is 0 at the horizon and the zenith, and it does not depend on yaw.
+  const ny = Math.max(0, Math.min(1, n[1]));
+  const band = Math.sin(ny * Math.PI);
+  const gain = cfg.nebulaGain == null ? 0.32 : cfg.nebulaGain;
   const tint = e;
-  const out = atmo.map((v, i) => v + (cfg.nebulaViolet[i] * (1 - tint) + cfg.nebulaCyan[i] * tint) * shaped * gain);
+  const out = atmo.map((v, i) => v + (cfg.nebulaViolet[i] * (1 - tint) + cfg.nebulaCyan[i] * tint) * band * gain);
   const g = cfg.starGrid;
   const base = [Math.floor(n[0] * g), Math.floor(n[1] * g), Math.floor(n[2] * g)];
   const f = [n[0] * g - base[0], n[1] * g - base[1], n[2] * g - base[2]];
@@ -189,14 +181,10 @@ fn skyColour(dir: vec3f) -> vec3f {
   let elev = clamp((n.y + 0.08) / 0.7, 0.0, 1.0);
   let e = elev * elev * (3.0 - 2.0 * elev);
   let atmo = mix(${v3(c.horizon)}, ${v3(c.zenith)}, e);
-  let q = n * ${c.nebulaScale};
-  let a = skyNoise(q);
-  let b = skyNoise(q * 2.05 + vec3f(4.2, 1.3, 7.1));
-  let raw = max(a * ${(1 - (c.nebulaHf == null ? 0.12 : c.nebulaHf))} + b * ${(c.nebulaHf == null ? 0.12 : c.nebulaHf)}, 0.0);
-  let u = clamp((raw - ${(c.nebulaFloor || 0)}) / ${Math.max(1e-4, 1 - (c.nebulaFloor || 0))}, 0.0, 1.0);
-  let shaped = u * u * (3.0 - 2.0 * u);
+  let ny = clamp(n.y, 0.0, 1.0);
+  let band = sin(ny * 3.14159265);
   let tint = e;
-  var col = atmo + mix(${v3(c.nebulaViolet)}, ${v3(c.nebulaCyan)}, tint) * shaped * ${(c.nebulaGain == null ? 2.77 : c.nebulaGain)};
+  var col = atmo + mix(${v3(c.nebulaViolet)}, ${v3(c.nebulaCyan)}, tint) * band * ${(c.nebulaGain == null ? 0.32 : c.nebulaGain)};
   let g = ${c.starGrid}.0;
   let base = floor(n * g);
   let f = n * g - base;

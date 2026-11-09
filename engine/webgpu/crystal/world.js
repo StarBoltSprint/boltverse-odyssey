@@ -24,6 +24,20 @@ export function terrH(x, z) {
   return lip - trench + grain;
 }
 
+export const WATER_Y = -0.28;
+export const STREAM_HALF = 1.15;
+const GROUND_STEP = 1.05;
+const BED_Y = WATER_Y - 0.22;
+
+// Coarse triangles chord across the trench and roof the water. Any corner a
+// 1.05 m edge can join to a point inside the stream is held on a bed under the sheet.
+export function groundMeshY(x, z) {
+  const u = x - pathX(z) - CRYSTAL.streamLat;
+  const h = terrH(x, z);
+  if (Math.abs(u) < STREAM_HALF + GROUND_STEP * 2) return Math.min(h, BED_Y);
+  return h;
+}
+
 function smooth(a, b, x) {
   const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
   return t * t * (3 - 2 * t);
@@ -152,11 +166,11 @@ function addArch(mesh, circles, z0, span, foot, depth) {
 export function buildWorld() {
   const mesh = createMesh();
   const circles = [];
-  const x0 = -42, x1 = 42, z0 = -168, z1 = 28, step = 1.05;
+  const x0 = -42, x1 = 42, z0 = -168, z1 = 28, step = GROUND_STEP;
   for (let z = z0; z < z1; z += step) {
     for (let x = x0; x < x1; x += step) {
       const corners = [[x, z], [x + step, z], [x + step, z + step], [x, z + step]];
-      const p = corners.map(([px, pz]) => [px, terrH(px, pz), pz]);
+      const p = corners.map(([px, pz]) => [px, groundMeshY(px, pz), pz]);
       mesh.tri(p[0], p[2], p[1], [0, 0], [1, 1], [1, 0], MAT.mineral);
       mesh.tri(p[0], p[3], p[2], [0, 0], [0, 1], [1, 1], MAT.mineral);
     }
@@ -169,7 +183,7 @@ export function buildWorld() {
     for (let s = 0; s < strips; s++) {
       const u0 = -half + (2 * half) * s / strips;
       const u1 = -half + (2 * half) * (s + 1) / strips;
-      const y = -0.28;
+      const y = WATER_Y;
       const a = [pathX(z) + CRYSTAL.streamLat + u0, y, z];
       const b = [pathX(z) + CRYSTAL.streamLat + u1, y, z];
       const c = [pathX(z2) + CRYSTAL.streamLat + u1, y, z2];
