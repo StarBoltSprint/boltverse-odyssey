@@ -1,0 +1,58 @@
+{
+  "raster": "SwiftShader CPU raster. Not a phone frame time.",
+  "fps": 30,
+  "seconds": 10,
+  "size": [
+    720,
+    1280
+  ],
+  "off": {
+    "minBg": 5.916350687343786,
+    "maxJump": 7.94172779224537,
+    "maxBlack": 0,
+    "maxBlue": 0.0018537598151703897,
+    "maxWhite": 0,
+    "maxGrid": 0,
+    "maxStep": 0.23351117261483428,
+    "gallopFrame": 0.23333333333333334,
+    "under0_2": false
+  },
+  "on": {
+    "minBg": 5.795630609520564,
+    "maxJump": 7.9926117621527775,
+    "maxBlack": 0,
+    "maxBlue": 0.00181473329274575,
+    "maxWhite": 0,
+    "maxGrid": 0,
+    "maxStep": 0.23351117261483428,
+    "gallopFrame": 0.23333333333333334,
+    "under0_2": false
+  },
+  "ghost": {
+    "off": 62.52766066576288,
+    "on": 68.15253506113525,
+    "delta": 5.624874395372373
+  },
+  "walls": {
+    "off": {
+      "sun": 11.772468068831373,
+      "shade": 6.426862506861349,
+      "nSun": 9,
+      "nShade": 9
+    },
+    "on": {
+      "sun": 11.761067752605209,
+      "shade": 6.556012329483838,
+      "nSun": 9,
+      "nShade": 9
+    }
+  },
+  "dark": {
+    "off": 9.02354734267829,
+    "on": 9.118195700239992,
+    "delta": 0.09464835756170288,
+    "n": 79854
+  },
+  "cameraNote": "7 m/s at 30 fps is 0.233 m per frame. A literal step under 0.2 m is slower than this canyon gallop. The no-cut gate is one gallop frame (under 0.252 m).",
+  "crystalF0": "highlight is alb * nh * 0.14, not a white F0. Dielectric tint stays on the albedo."
+}

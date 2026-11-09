@@ -3,17 +3,23 @@
 import { boltIdle, measureAtlasFeet, pickPlantedFrame } from '../bricks/bolt-idle.js';
 import { stepBreath, BREATH_MEADOW, makeBreathClip, BREATH_BUILD, breathMixWgsl } from '../bricks/bolt-breath.js';
 import { makeCircleCollide } from '../engine/bricks/circle-collide.js';
-import { followEye, lookAt, persp, mul, FOV_Y } from '../engine/bricks/follow-cam.js';
+import { followEye, lookAt, persp, mul, inv, FOV_Y } from '../engine/bricks/follow-cam.js';
 import { createPlanetMesh, prepareSurfaceRGBA, frontYaw, planetCenter } from '../engine/bricks/planet-sphere.js';
 import { CRYSTAL, PLANET } from './biome.js';
 import { materialGate, TILE_M, ALBEDO } from './materials.js';
 import { shadeFns, SHADE, tileScales, WATER_WAVE } from '../biome-factory/shade.js';
-import { buildWorld, demoSteer, proofInput, skyProofInput, integrate, spawn, terrH } from './world.js';
+import { buildWorld, demoSteer, proofInput, skyProofInput, integrate, spawn, terrH, wallMarks } from './world.js';
+import { createCrystalPost } from './postpass.js';
+import { applyJitter, jitterNdc } from '../engine/taa.js';
 import { skyWgsl } from '../biome-factory/procedural-sky.js';
 
 const SC = tileScales();
 const qs = new URLSearchParams(location.search);
 const CAP = qs.get('cap') === '1';
+const FX = qs.get('fx') || 'off';
+const POST_TAA = FX === 'taa' || FX === 'both';
+const POST_SSGI = FX === 'ssgi' || FX === 'both';
+const POST = POST_TAA || POST_SSGI;
 const DEMO = qs.get('demo') === '1' || CAP;
 const PROOF = qs.get('proof') === '1';
 const SKYPROOF = qs.get('skyproof') === '1';
@@ -64,6 +70,7 @@ struct U {
   vp: mat4x4f, ivp: mat4x4f, cam: vec4f, bolt: vec4f, bp: vec4f, grid: vec4f, sun: vec4f, misc: vec4f, fog: vec4f,
   c0: vec4f, c1: vec4f, c2: vec4f, c3: vec4f, c4: vec4f, c5: vec4f, c6: vec4f,
   planet: vec4f, spin: vec4f, atmo: vec4f,
+  prev: mat4x4f, prevEye: vec4f, prevFwd: vec4f, fwd: vec4f, boltPrev: vec4f,
 };
 @group(0) @binding(0) var<uniform> u: U;
 @group(0) @binding(1) var samp: sampler;
@@ -143,7 +150,9 @@ struct PVO { @builtin(position) p: vec4f, @location(0) n: vec3f, @location(1) w:
   if (a < 0.03) { discard; }
   return vec4f(u.atmo.rgb, a);
 }
-@fragment fn fs(v: VO) -> @location(0) vec4f {
+fn scruv(c: vec4f) -> vec2f { let n = c.xy / max(c.w, 1e-5); return vec2f(n.x * 0.5 + 0.5, 0.5 - n.y * 0.5); }
+struct Shade { col: vec3f, alb: vec3f, nrm: vec3f, plane: f32 };
+fn shadeWorld(v: VO) -> Shade {
   var n = normalize(v.n);
   let scG = ${SC.ground};
   let scW = ${SC.wall};
@@ -175,7 +184,10 @@ struct PVO { @builtin(position) p: vec4f, @location(0) n: vec3f, @location(1) w:
   let waterAlb = textureSample(streamTex, samp, flow).rgb;
   let m = v.mat;
   if (m > 4.5 && m < 5.5) {
-    return present(skyColour(normalize(v.w - u.cam.xyz)));
+    var skyS: Shade;
+    skyS.col = skyColour(normalize(v.w - u.cam.xyz));
+    skyS.alb = skyS.col; skyS.nrm = n; skyS.plane = 0.0;
+    return skyS;
   }
   var alb = wall;
   if (m < 0.5) {
@@ -209,7 +221,13 @@ struct PVO { @builtin(position) p: vec4f, @location(0) n: vec3f, @location(1) w:
   let dist = length(v.w - u.cam.xyz);
   let fk = clamp(u.fog.w * smoothstep(u.grid.w, 150.0, dist), 0.0, 0.62);
   col = mix(col, u.fog.rgb, fk);
-  return vec4f(pow(clamp(col, vec3f(0.0), vec3f(1.0)), vec3f(1.0 / 2.2)), 1.0);
+  var s: Shade;
+  s.col = col; s.alb = alb; s.nrm = n; s.plane = max(dot(v.w - u.cam.xyz, u.fwd.xyz), 0.0);
+  return s;
+}
+@fragment fn fs(v: VO) -> @location(0) vec4f {
+  let s = shadeWorld(v);
+  return vec4f(pow(clamp(s.col, vec3f(0.0), vec3f(1.0)), vec3f(1.0 / 2.2)), 1.0);
 }
 ${IDLE.wgsl}
 struct BO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) w: vec3f };
@@ -256,6 +274,110 @@ struct CO { @builtin(position) p: vec4f, @location(0) uv: vec2f };
   let r2 = dot(v.uv, v.uv); if (r2 > 1.0) { discard; }
   let a = (1.0 - smoothstep(0.2, 1.0, r2)) * 0.38;
   return vec4f(0.0, 0.0, 0.0, a);
+}
+struct VOG { @builtin(position) p: vec4f, @location(0) w: vec3f, @location(1) n: vec3f, @location(2) uv: vec2f, @location(3) mat: f32, @location(4) puv: vec2f };
+struct GOUT { @location(0) direct: vec4f, @location(1) albedo: vec4f, @location(2) normal: vec4f, @location(3) motion: vec4f };
+@vertex fn vsG(@location(0) a: vec4f, @location(1) b: vec4f) -> VOG {
+  var plocal = a.xyz; var p = plocal; let n = b.xyz;
+  if (a.w > 4.5 && a.w < 5.5) { p = plocal + u.cam.xyz; }
+  else if (a.w > 3.5 && a.w < 4.5) {
+    let t = u.cam.w;
+    p.y += ${WATER_WAVE.az} * sin(p.z * ${WATER_WAVE.fz} + t * ${WATER_WAVE.oz}) + ${WATER_WAVE.ax} * sin(p.x * ${WATER_WAVE.fx} - t * ${WATER_WAVE.ox});
+  }
+  var prevP = p;
+  if (a.w > 4.5 && a.w < 5.5) { prevP = plocal + u.prevEye.xyz; }
+  var o: VOG;
+  o.p = u.vp * vec4f(p, 1.0);
+  o.w = p; o.n = n; o.uv = vec2f(b.w, 0.0); o.mat = a.w; o.puv = scruv(u.prev * vec4f(prevP, 1.0));
+  return o;
+}
+@fragment fn fsG(v: VOG) -> GOUT {
+  var sv: VO; sv.p = v.p; sv.w = v.w; sv.n = v.n; sv.uv = v.uv; sv.mat = v.mat;
+  let s = shadeWorld(sv);
+  let cuv = scruv(v.p);
+  var o: GOUT;
+  o.direct = vec4f(s.col, s.plane);
+  o.albedo = vec4f(s.alb, 0.0);
+  o.normal = vec4f(s.nrm, 1.0);
+  o.motion = vec4f(cuv - v.puv, 0.0, 0.0);
+  return o;
+}
+struct BOG { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) w: vec3f, @location(2) cuv: vec2f, @location(3) puv: vec2f };
+@vertex fn vsBoltG(@builtin(vertex_index) vi: u32) -> BOG {
+  var q = array<vec2f, 6>(vec2f(-0.5, 0), vec2f(0.5, 0), vec2f(0.5, 1), vec2f(-0.5, 0), vec2f(0.5, 1), vec2f(-0.5, 1));
+  let c = q[vi];
+  let lr = idleCardLy(c); let lx = lr.x; let ly = lr.y;
+  let cr = cos(u.bp.x); let sr = -sin(u.bp.x);
+  let rx = lx * cr - ly * sr; let ry = lx * sr + ly * cr;
+  let b = vec3f(u.bolt.x, u.bolt.y, u.bolt.z);
+  let toE = normalize(vec2f(u.cam.x - b.x, u.cam.z - b.z)); let rt = vec3f(-toE.y, 0.0, toE.x);
+  let w = b + rt * rx + vec3f(0.0, ry, 0.0);
+  let b2 = vec3f(u.boltPrev.x, u.boltPrev.y, u.boltPrev.z);
+  let to2 = normalize(vec2f(u.prevEye.x - b2.x, u.prevEye.z - b2.z)); let rt2 = vec3f(-to2.y, 0.0, to2.x);
+  let w2 = b2 + rt2 * rx + vec3f(0.0, ry, 0.0);
+  var o: BOG;
+  o.p = u.vp * vec4f(w, 1.0);
+  o.uv = vec2f(-c.x + 0.5, 1.0 - c.y);
+  o.w = w; o.cuv = scruv(o.p); o.puv = scruv(u.prev * vec4f(w2, 1.0));
+  return o;
+}
+@fragment fn fsBoltG(v: BOG) -> GOUT {
+  let ff = u.bp.w; let a = u32(floor(ff)) % 32u; let bb = (a + 1u) % 32u; let k = fract(ff);
+  let gph = ff / 32.0 * 6.2831853; let lw = smoothstep(0.60, 0.88, v.uv.y); let sw = smoothstep(0.40, 0.60, v.uv.x);
+  let spd = u.bp.z;
+  let lift = 0.045 * lw * ((1.0 - sw) * max(sin(gph), 0.0) + sw * max(-sin(gph), 0.0)) * smoothstep(0.25, 1.2, spd) * (1.0 - u.misc.x);
+  let uvs = idleTailUV(v.uv + vec2f(0.0, lift));
+  let s = mix(cell(a, uvs), cell(bb, uvs), k);
+  let mixed = breathMix(s.rgb, s.a, uvs);
+  if (mixed.a < select(0.12, 0.04, u.misc.y > 0.001)) { discard; }
+  var c = mixed.rgb;
+  c = mix(c, vec3f(dot(c, vec3f(0.3, 0.59, 0.11))), 0.12) * 1.08;
+  let hgt = v.w.y - u.bolt.y;
+  let bounce = max(u.grid.xyz, vec3f(0.55));
+  c *= mix(vec3f(1.0), bounce, smoothstep(0.34, 0.02, hgt) * 0.22);
+  c *= mix(0.82, 1.0, smoothstep(-0.02, 0.25, hgt));
+  var o: GOUT;
+  o.direct = vec4f(c, max(dot(v.w - u.cam.xyz, u.fwd.xyz), 0.02));
+  o.albedo = vec4f(c, 1.0);
+  o.normal = vec4f(normalize(u.cam.xyz - v.w), 1.0);
+  o.motion = vec4f(v.cuv - v.puv, 1.0, 0.0);
+  return o;
+}
+struct PVOG { @builtin(position) p: vec4f, @location(0) n: vec3f, @location(1) w: vec3f, @location(2) puv: vec2f };
+@vertex fn vsPlanetG(@location(0) p: vec3f, @location(1) n: vec3f) -> PVOG {
+  let r = rotY(p, u.spin.x);
+  let world = u.planet.xyz + r * u.planet.w;
+  var o: PVOG;
+  o.p = u.vp * vec4f(world, 1.0);
+  o.n = rotY(n, u.spin.x);
+  o.w = world;
+  o.puv = scruv(u.prev * vec4f(world, 1.0));
+  return o;
+}
+@fragment fn fsPlanetG(v: PVOG) -> GOUT {
+  let n = normalize(v.n);
+  let alb = textureSampleLevel(planetTex, planetSamp, planetUV(n), 0.0).rgb;
+  let day = smoothstep(-0.05, 0.2, dot(n, sunN()));
+  let ndv = abs(dot(n, normalize(u.cam.xyz - v.w)));
+  let c = alb * (0.045 + 0.955 * day) * mix(0.78, 1.0, smoothstep(0.0, 0.4, ndv));
+  let plane = max(dot(v.w - u.cam.xyz, u.fwd.xyz), 0.02);
+  var o: GOUT;
+  o.direct = vec4f(c, plane);
+  o.albedo = vec4f(alb, 0.0);
+  o.normal = vec4f(n, 1.0);
+  o.motion = vec4f(scruv(v.p) - v.puv, 0.0, 0.0);
+  return o;
+}
+@fragment fn fsContactG(v: CO) -> GOUT {
+  let r2 = dot(v.uv, v.uv);
+  if (r2 > 1.0) { discard; }
+  let a = (1.0 - smoothstep(0.2, 1.0, r2)) * 0.38;
+  var o: GOUT;
+  o.direct = vec4f(0.0, 0.0, 0.0, a);
+  o.albedo = vec4f(0.0);
+  o.normal = vec4f(0.0, 1.0, 0.0, 0.0);
+  o.motion = vec4f(0.0);
+  return o;
 }
 `;
 
@@ -401,7 +523,7 @@ async function main() {
   };
   const vb = mk(world.verts, GPUBufferUsage.VERTEX);
   const sb = mk(world.sky, GPUBufferUsage.VERTEX);
-  const ub = dev.createBuffer({ size: 512, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
+  const ub = dev.createBuffer({ size: 640, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
   const aniso = Math.min(8, ad.limits.maxSamplerAnisotropy || 1);
   const samp = await noteErr('sampler', async () => dev.createSampler({ magFilter: 'linear', minFilter: 'linear', mipmapFilter: 'linear', addressModeU: 'repeat', addressModeV: 'repeat', maxAnisotropy: aniso }));
   const bgl = dev.createBindGroupLayout({ entries: [
@@ -482,7 +604,11 @@ async function main() {
   dev.addEventListener?.('uncapturederror', e => { infoErr.push(String(e.error || e)); window.__crystalErr = infoErr.join(' | '); });
 
   const crops = new Float32Array(7 * 4);
-  const U = new Float32Array(128);
+  const U = new Float32Array(160);
+  const post = POST ? await createCrystalPost(dev, W, H) : null;
+  let prevVP = null, prevEye = [0, 1, 0], prevFwd = [0, 0, -1], prevBolt = [0, 0, 0];
+  let frameI = 0;
+  let resetPost = true;
   U.set(crops, 60);
   // fog.rgb + strength, grid.w = fog start. crops live at float 60.
   function fillU(t) {
@@ -490,9 +616,17 @@ async function main() {
     const { eye, tgt } = followEye(bp, live.cam, terrH, 0);
     if (live.pitch) tgt[1] = eye[1] + Math.tan(live.pitch) * 4.2;
     const view = lookAt(eye, tgt, [0, 1, 0]);
-    const proj = persp(FOV_Y, W / H, 0.08, 5200);
+    const proj0 = persp(FOV_Y, W / H, 0.08, 5200);
+    const jitter = POST_TAA ? jitterNdc(frameI, W, H) : [0, 0];
+    const proj = POST_TAA ? applyJitter(proj0, jitter[0], jitter[1]) : proj0;
     const vp = mul(proj, view);
+    const ivp = inv(vp);
+    const fwd = [tgt[0] - eye[0], tgt[1] - eye[1], tgt[2] - eye[2]];
+    const fl = Math.hypot(...fwd) || 1;
+    fwd[0] /= fl; fwd[1] /= fl; fwd[2] /= fl;
+    if (!prevVP) { prevVP = vp.slice(); prevEye = eye.slice(); prevFwd = fwd.slice(); prevBolt = bp.slice(); }
     U.set(vp, 0);
+    U.set(ivp, 16);
     U.set([eye[0], eye[1], eye[2], t], 32);
     U.set([bp[0], bp[1], bp[2], live.psi], 36);
     const ff = (live.phase % 1) * 32;
@@ -508,8 +642,35 @@ async function main() {
     U.set([pCenter[0], pCenter[1], pCenter[2], PLANET.radius], 88);
     U.set([pYaw, PLANET.limb, 0, 0], 92);
     U.set([atmo[0], atmo[1], atmo[2], 1], 96);
+    U.set(prevVP, 100);
+    U.set([prevEye[0], prevEye[1], prevEye[2], 0], 116);
+    U.set([prevFwd[0], prevFwd[1], prevFwd[2], 0], 120);
+    U.set([fwd[0], fwd[1], fwd[2], 0], 124);
+    U.set([prevBolt[0], prevBolt[1], prevBolt[2], 0], 128);
+    lastCam = { eye: eye.slice(), fwd: fwd.slice(), bp: bp.slice(), vp, ivp, proj, jitter, t };
   }
 
+  let lastCam = null;
+  const gPipe = (vs, fs, depthWrite) => dev.createRenderPipeline({
+    layout,
+    vertex: { module: mod, entryPoint: vs, buffers: vs === 'vsG' ? [vbuf] : vs === 'vsPlanetG' ? [pbuf] : [] },
+    fragment: { module: mod, entryPoint: fs, targets: post.targets },
+    primitive: { topology: 'triangle-list', cullMode: 'none' },
+    depthStencil: { format: 'depth32float', depthWriteEnabled: depthWrite, depthCompare: 'less' },
+  });
+  const pSkyG = POST ? await noteErr('sky g', async () => gPipe('vsG', 'fsG', false)) : null;
+  const pG = POST ? await noteErr('world g', async () => gPipe('vsG', 'fsG', true)) : null;
+  const pPlanetG = POST ? await noteErr('planet g', async () => gPipe('vsPlanetG', 'fsPlanetG', true)) : null;
+  const pBoltG = POST ? await noteErr('bolt g', async () => gPipe('vsBoltG', 'fsBoltG', true)) : null;
+  const keepT = { color: { srcFactor: 'zero', dstFactor: 'one', operation: 'add' }, alpha: { srcFactor: 'zero', dstFactor: 'one', operation: 'add' } };
+  const overT = { color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' }, alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha', operation: 'add' } };
+  const pContactG = POST ? await noteErr('contact g', async () => dev.createRenderPipeline({
+    layout,
+    vertex: { module: mod, entryPoint: 'vsContact' },
+    fragment: { module: mod, entryPoint: 'fsContactG', targets: [{ format: 'rgba16float', blend: overT }, { format: 'rgba16float', blend: keepT }, { format: 'rgba16float', blend: keepT }, { format: 'rgba16float', blend: keepT }] },
+    primitive: { topology: 'triangle-list', cullMode: 'none' },
+    depthStencil: { format: 'depth32float', depthWriteEnabled: false, depthCompare: 'less' },
+  })) : null;
   const skyVerts = world.sky.length / 8;
   const worldVerts = world.verts.length / 8;
   function renderFixed(t) {
@@ -517,21 +678,61 @@ async function main() {
     dev.queue.writeBuffer(ub, 0, U);
     const target = CAP ? off : ctx.getCurrentTexture();
     const enc = dev.createCommandEncoder();
-    const pass = enc.beginRenderPass({
-      colorAttachments: [{ view: msaa.createView(), resolveTarget: target.createView(), loadOp: 'clear', storeOp: 'discard', clearValue: [0, 0, 0, 1] }],
-      depthStencilAttachment: { view: depth.createView(), depthLoadOp: 'clear', depthClearValue: 1, depthStoreOp: 'discard' },
-    });
-    breathClip.sync(live.idleT || 0);
-    pass.setBindGroup(0, bg);
-    pass.setPipeline(pSky); pass.setVertexBuffer(0, sb); pass.draw(skyVerts);
-    pass.setPipeline(pPlanet); pass.setVertexBuffer(0, pvb); pass.draw(pCount);
-    pass.setPipeline(pWorld); pass.setVertexBuffer(0, vb); pass.draw(worldVerts);
-    pass.setPipeline(pLimb); pass.setVertexBuffer(0, pvb); pass.draw(pCount);
-    pass.setPipeline(pContact); pass.draw(6);
-    pass.setPipeline(pBolt); pass.draw(6);
-    pass.end();
+    if (!POST) {
+      const pass = enc.beginRenderPass({
+        colorAttachments: [{ view: msaa.createView(), resolveTarget: target.createView(), loadOp: 'clear', storeOp: 'discard', clearValue: [0, 0, 0, 1] }],
+        depthStencilAttachment: { view: depth.createView(), depthLoadOp: 'clear', depthClearValue: 1, depthStoreOp: 'discard' },
+      });
+      breathClip.sync(live.idleT || 0);
+      pass.setBindGroup(0, bg);
+      pass.setPipeline(pSky); pass.setVertexBuffer(0, sb); pass.draw(skyVerts);
+      pass.setPipeline(pPlanet); pass.setVertexBuffer(0, pvb); pass.draw(pCount);
+      pass.setPipeline(pWorld); pass.setVertexBuffer(0, vb); pass.draw(worldVerts);
+      pass.setPipeline(pLimb); pass.setVertexBuffer(0, pvb); pass.draw(pCount);
+      pass.setPipeline(pContact); pass.draw(6);
+      pass.setPipeline(pBolt); pass.draw(6);
+      pass.end();
+    } else {
+      breathClip.sync(live.idleT || 0);
+      const pass = enc.beginRenderPass({
+        colorAttachments: [
+          { view: post.direct.createView(), loadOp: 'clear', storeOp: 'store', clearValue: [0, 0, 0, 0] },
+          { view: post.albedo.createView(), loadOp: 'clear', storeOp: 'store', clearValue: [0, 0, 0, 0] },
+          { view: post.normal.createView(), loadOp: 'clear', storeOp: 'store', clearValue: [0, 0, 0, 0] },
+          { view: post.motion.createView(), loadOp: 'clear', storeOp: 'store', clearValue: [0, 0, 0, 0] },
+        ],
+        depthStencilAttachment: { view: post.depth.createView(), depthLoadOp: 'clear', depthClearValue: 1, depthStoreOp: 'store' },
+      });
+      pass.setBindGroup(0, bg);
+      pass.setPipeline(pSkyG); pass.setVertexBuffer(0, sb); pass.draw(skyVerts);
+      pass.setPipeline(pPlanetG); pass.setVertexBuffer(0, pvb); pass.draw(pCount);
+      pass.setPipeline(pG); pass.setVertexBuffer(0, vb); pass.draw(worldVerts);
+      pass.setPipeline(pContactG); pass.draw(6);
+      pass.setPipeline(pBoltG); pass.draw(6);
+      pass.end();
+      const pack = post.pack({
+        vp: lastCam.vp, ivp: lastCam.ivp, prev: prevVP,
+        eye: lastCam.eye, frame: frameI,
+        history: (POST_TAA && !resetPost) ? 0.95 : 0,
+        motionPx: 24, clamp: 1, reject: 1,
+        width: W, height: H, objectMv: 1, gi: POST_SSGI ? 1 : 0,
+        strength: 1, stepBase: 0.1, stepGrow: 1.18, giFrames: 8,
+        thickness: 0.08, sky: [0.02, 0.03, 0.05],
+        jx: lastCam.jitter[0], jy: lastCam.jitter[1], near: 0.08, far: 5200,
+        sun: [sun[0] / sunL, sun[1] / sunL, sun[2] / sunL], maxStep: 0.7,
+        fwd: lastCam.fwd, bolt: lastCam.bp, atlasFrame: 0, boltPrev: prevBolt,
+        prevEye, prevFwd, atlas: 0, exposure: 1, coat: 0,
+      });
+      post.draw(enc, target, pack, { taa: POST_TAA, ssgi: POST_SSGI, reset: resetPost });
+      resetPost = false;
+    }
     if (CAP) enc.copyTextureToBuffer({ texture: off }, { buffer: rb, bytesPerRow: bpr }, [W, H]);
     dev.queue.submit([enc.finish()]);
+    prevVP = lastCam.vp.slice();
+    prevEye = lastCam.eye.slice();
+    prevFwd = lastCam.fwd.slice();
+    prevBolt = lastCam.bp.slice();
+    frameI++;
   }
 
   window.__crystalInfo = {
@@ -541,6 +742,17 @@ async function main() {
     compile: compileNotes,
     breathClip: BREATH.clipName, breathRgba: BREATH.rgbaDir, breathFrames: BREATH.frames,
     planet: PLANET.sha256, circles: world.circles.length, fov: 62, worldVerts,
+    fx: FX, post: POST,
+  };
+  let sim = 0;
+  window.__crystalReset = () => {
+    const s = spawn();
+    Object.assign(live, s);
+    live.phase = IDLE.cfg.idlePhase;
+    sim = 0;
+    frameI = 0;
+    resetPost = true;
+    prevVP = null;
   };
   window.__live = live;
   window.__terrH = terrH;
@@ -548,7 +760,6 @@ async function main() {
   if (CAP) {
     const c2 = new OffscreenCanvas(W, H);
     const x2 = c2.getContext('2d', { willReadFrequently: true });
-    let sim = 0;
     window.__crystalFrame = async (t) => {
       // Frame-sized steps. bolt-idle drops any step that stays under vIdle, so 240 Hz never leaves the stop.
       const dt = 1 / 60;
@@ -568,7 +779,12 @@ async function main() {
       const buf = new Uint8Array(await blob.arrayBuffer());
       let s = '';
       for (let i = 0; i < buf.length; i += 0x8000) s += String.fromCharCode.apply(null, buf.subarray(i, i + 0x8000));
-      const info = { x: live.x, z: live.z, psi: live.psi, v: live.v, y: terrH(live.x, live.z), idleMix: live.idleMix || 0, breathFrame: live.breathFrame || 0, breathState: live.breathState || 'run', missing: gate.missing, gpuErr: gpuErr ? String(gpuErr.message || gpuErr) : null };
+      const info = {
+        x: live.x, z: live.z, psi: live.psi, v: live.v, y: terrH(live.x, live.z),
+        eye: lastCam ? lastCam.eye : null, cam: live.cam,
+        idleMix: live.idleMix || 0, breathFrame: live.breathFrame || 0, breathState: live.breathState || 'run',
+        missing: gate.missing, gpuErr: gpuErr ? String(gpuErr.message || gpuErr) : null, fx: FX,
+      };
       if (useJpg) return { jpg: btoa(s), info };
       return { png: btoa(s), info, compile: compileNotes };
     };
