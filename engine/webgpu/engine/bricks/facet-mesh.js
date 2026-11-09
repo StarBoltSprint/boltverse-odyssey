@@ -101,6 +101,20 @@ export function createMesh() {
       triH(a, ha, b, hb, c, hc);
       triH(a, ha, c, hc, d, hd);
     };
+    const dir = (x, y, z) => {
+      const y1 = y * ct - z * st;
+      const z1 = y * st + z * ct;
+      return norm([x * co - z1 * si, y1, x * si + z1 * co]);
+    };
+    const faceN = (i) => {
+      const j = (i + 1) % N;
+      const a = (ang[i] + ang[j]) / 2;
+      return dir(Math.cos(a), 0.05, Math.sin(a));
+    };
+    const quadN = (a, ha, b, hb, c, hc, d, hd, nrm) => {
+      emit(a, nrm, ha); emit(b, nrm, hb); emit(c, nrm, hc);
+      emit(a, nrm, ha); emit(c, nrm, hc); emit(d, nrm, hd);
+    };
     const broken = hsh(21) > 0.5;
     const lipY = height * 0.6;
     const baseOut = ring(0, radius * 0.9, 0);
@@ -110,14 +124,14 @@ export function createMesh() {
     for (let i = 0; i < N; i++) {
       const j = (i + 1) % N;
       quadH(baseIn[i], 0, baseIn[j], 0, lipIn[j], 0.6, lipIn[i], 0.6);
-      quadH(baseOut[i], 0, baseIn[i], 0, lipIn[i], 0.6, lipOut[i], 0.6);
+      quadN(baseOut[i], -0.02, baseIn[i], -0.02, lipIn[i], -0.62, lipOut[i], -0.62, faceN(i));
     }
     if (!broken) {
       const tip = P(0, height, 0);
       for (let i = 0; i < N; i++) {
         const j = (i + 1) % N;
         triH(lipIn[j], 0.6, lipIn[i], 0.6, tip, 1);
-        quadH(lipOut[i], 0.6, lipIn[i], 0.6, lipIn[j], 0.6, lipOut[j], 0.6);
+        quadN(lipOut[i], -0.62, lipIn[i], -0.62, lipIn[j], -0.62, lipOut[j], -0.62, faceN(i));
       }
     } else {
       const stepY = height * (0.74 + hsh(22) * 0.08);
@@ -163,8 +177,9 @@ export function createMesh() {
     const world = (x, y, z) => [cx + x * co - z * si, y, cz + x * si + z * co];
     const hx = sx / 2, hz = sz / 2;
     const corners = [[-hx, -hz], [hx, -hz], [hx, hz], [-hx, hz]];
-    const samples = 6;
+    const samples = 8;
     const loop = [];
+    const cap = Math.min(hx, hz) * 0.72;
     for (let e = 0; e < 4; e++) {
       const a = corners[e];
       const b = corners[(e + 1) % 4];
@@ -172,11 +187,16 @@ export function createMesh() {
       const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
       const il = Math.hypot(mid[0], mid[1]) || 1;
       const inn = [-mid[0] / il, -mid[1] / il];
-      const bites = [0.34, 0.72].map((t0, k) => ({
-        t: t0 + (hsh(e * 5 + k) - 0.5) * 0.1,
-        r: (0.12 + hsh(e * 5 + k + 6) * 0.16) * len,
-        depth: (0.08 + hsh(e * 5 + k + 11) * 0.1) * Math.min(sx, sz) * 0.45,
-      }));
+      const edgeBite = (t0, k) => ({
+        t: t0 + (hsh(e * 5 + k) - 0.5) * 0.08,
+        r: 0.10 + hsh(e * 5 + k + 6) * 0.22,
+        depth: Math.min(cap, 0.10 + hsh(e * 5 + k + 11) * 0.18),
+      });
+      const bites = [
+        { t: 0.02, r: 0.12 + hsh(e + 30) * 0.14, depth: Math.min(cap, 0.12 + hsh(e + 40) * 0.16) },
+        edgeBite(0.38, 1),
+        edgeBite(0.72, 2),
+      ];
       for (let i = 0; i < samples; i++) {
         const t = i / samples;
         let x = a[0] + (b[0] - a[0]) * t;
@@ -193,26 +213,51 @@ export function createMesh() {
       }
     }
     const Y1 = y0 + sy;
+    const rows = 5;
+    const scoop = (x, z, yNorm, id) => {
+      if (id % 4 !== 0) return [x, z];
+      const il = Math.hypot(x, z) || 1;
+      const inn = [-x / il, -z / il];
+      const yC = 0.22 + hsh(id * 3 + 50) * 0.56;
+      const r = 0.12 + hsh(id * 3 + 70) * 0.2;
+      const depth = Math.min(0.32, cap, 0.12 + hsh(id * 3 + 90) * 0.18);
+      const dy = (yNorm - yC) * sy;
+      let extra = Math.abs(dy) < r ? depth * Math.sqrt(Math.max(0, 1 - (dy / r) ** 2)) : 0;
+      extra = Math.min(extra, Math.hypot(x, z) * 0.42);
+      return [x + inn[0] * extra, z + inn[1] * extra];
+    };
+    const rings = [];
+    for (let r = 0; r <= rows; r++) {
+      const yn = r / rows;
+      rings.push(loop.map(([x, z], i) => {
+        const p = scoop(x, z, yn, i);
+        return [p[0] + leanX * yn, p[1] + leanZ * yn];
+      }));
+    }
     const triOut = (A, B, C) => {
       let nrm = norm(cross(sub(B, A), sub(C, A)));
       const mid = [(A[0] + B[0] + C[0]) / 3 - cx, (A[1] + B[1] + C[1]) / 3 - (y0 + sy / 2), (A[2] + B[2] + C[2]) / 3 - cz];
       if (mid[0] * nrm[0] + mid[1] * nrm[1] + mid[2] * nrm[2] < 0) tri(A, C, B, [0, 0], [0, 1], [1, 0], mat);
       else tri(A, B, C, [0, 0], [1, 0], [1, 1], mat);
     };
-    for (let i = 0; i < loop.length; i++) {
-      const j = (i + 1) % loop.length;
-      const A = world(loop[i][0], y0, loop[i][1]);
-      const B = world(loop[j][0], y0, loop[j][1]);
-      const C = world(loop[j][0] + leanX, Y1, loop[j][1] + leanZ);
-      const D = world(loop[i][0] + leanX, Y1, loop[i][1] + leanZ);
-      triOut(A, B, C);
-      triOut(A, C, D);
+    for (let r = 0; r < rows; r++) {
+      const yA = y0 + (sy * r) / rows;
+      const yB = y0 + (sy * (r + 1)) / rows;
+      for (let i = 0; i < loop.length; i++) {
+        const j = (i + 1) % loop.length;
+        const A = world(rings[r][i][0], yA, rings[r][i][1]);
+        const B = world(rings[r][j][0], yA, rings[r][j][1]);
+        const C = world(rings[r + 1][j][0], yB, rings[r + 1][j][1]);
+        const D = world(rings[r + 1][i][0], yB, rings[r + 1][i][1]);
+        triOut(A, B, C);
+        triOut(A, C, D);
+      }
     }
-    const top0 = world(loop[0][0] + leanX, Y1, loop[0][1] + leanZ);
-    const bot0 = world(loop[0][0], y0, loop[0][1]);
+    const bot = rings[0].map(([x, z]) => world(x, y0, z));
+    const top = rings[rows].map(([x, z]) => world(x, Y1, z));
     for (let i = 1; i < loop.length - 1; i++) {
-      triOut(top0, world(loop[i][0] + leanX, Y1, loop[i][1] + leanZ), world(loop[i + 1][0] + leanX, Y1, loop[i + 1][1] + leanZ));
-      triOut(bot0, world(loop[i + 1][0], y0, loop[i + 1][1]), world(loop[i][0], y0, loop[i][1]));
+      triOut(top[0], top[i], top[i + 1]);
+      triOut(bot[0], bot[i + 1], bot[i]);
     }
   }
   function skyDome(r = 600, mat = 5) {

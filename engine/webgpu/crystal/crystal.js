@@ -158,10 +158,14 @@ struct PVO { @builtin(position) p: vec4f, @location(0) n: vec3f, @location(1) w:
   let gOff = textureSample(groundTex, samp, v.w.xz * scG + vec2f(0.37, 0.53)).rgb;
   let gN = skyNoise(vec3f(v.w.x * 0.17, v.w.z * 0.17, 3.0));
   gnd = mix(gnd, gOff, smoothstep(0.46, 0.54, gN));
-  let wall = triMix(
+  let wallFine = triMix(
     textureSample(wallTex, samp, v.w.zy * scW).rgb,
     textureSample(wallTex, samp, v.w.xz * scW).rgb,
     textureSample(wallTex, samp, v.w.xy * scW).rgb, n);
+  let wall = triMix(
+    textureSampleLevel(wallTex, samp, v.w.zy * scW, 5.0).rgb,
+    textureSampleLevel(wallTex, samp, v.w.xz * scW, 5.0).rgb,
+    textureSampleLevel(wallTex, samp, v.w.xy * scW, 5.0).rgb, n);
   let cry = triMix(
     textureSample(crysTex, samp, v.w.zy * scC).rgb,
     textureSample(crysTex, samp, v.w.xz * scC).rgb,
@@ -176,7 +180,7 @@ struct PVO { @builtin(position) p: vec4f, @location(0) n: vec3f, @location(1) w:
     textureSample(violetTex, samp, v.w.xy * scV).rgb, n);
   let flow = vec2f(v.w.x, v.w.z + u.cam.w * 0.35) * scS;
   let waterAlb = textureSample(streamTex, samp, flow).rgb;
-  let tip = clamp(v.uv.x, 0.0, 1.0);
+  let tip = clamp(abs(v.uv.x), 0.0, 1.0);
   let view0 = normalize(u.cam.xyz - v.w);
   let ip = v.w + view0 * (0.16 * (1.0 - tip));
   let inner = triMix(
@@ -218,7 +222,10 @@ struct PVO { @builtin(position) p: vec4f, @location(0) n: vec3f, @location(1) w:
   let bevel = smoothstep(0.18, 0.42, abs(n.y)) * (1.0 - smoothstep(0.72, 0.92, abs(n.y)));
   let ridge = 1.0 - smoothstep(0.0, 0.03, conchGap(faceUV(v.w, n)));
   let sheen = env * (F + ridge * 0.32) * (1.0 - ${LIGHT.roughness} * 0.35) * (1.0 + bevel * 0.65);
-  let blockLit = alb * (fill + ${LIGHT.sunCoeff}.0 * ndl) + sheen;
+  let grain = max(dot(wallFine - wall, vec3f(0.3, 0.5, 0.2)), 0.0);
+  let rare = step(0.992, fract(sin(dot(floor(v.w * 8.0), vec3f(12.9, 47.3, 19.1))) * 43758.5));
+  let glint = rare * step(0.04, grain) * smoothstep(0.02, 0.08, ridge) * step(0.2, ndl) * wall * 0.55;
+  let blockLit = alb * (fill + ${LIGHT.sunCoeff}.0 * ndl) + sheen + glint;
   col = mix(col, blockLit, block);
   let dist = length(v.w - u.cam.xyz);
   let far = smoothstep(55.0, 130.0, dist);
@@ -226,19 +233,27 @@ struct PVO { @builtin(position) p: vec4f, @location(0) n: vec3f, @location(1) w:
   let rimCol = alb * ${LIGHT.rimGain};
   let rimK = min(${LIGHT.rimMix}, rim * (0.35 + 0.45 * far));
   col = mix(col, rimCol, rimK * block);
-  let align = clamp(dot(n, normalize(vec3f(0.12, 0.96, 0.08))) * 0.5 + 0.5, 0.0, 1.0);
-  let face = 0.40 + 1.10 * align;
-  let through = skyColour(normalize(sunN() - n));
-  let sil = pow(1.0 - ndv, 2.0);
+  let chamfer = select(0.0, 1.0, v.uv.x < 0.0);
+  let facetJit = 0.72 + 0.56 * fract(sin(dot(round(n * 8.0), vec3f(12.9, 4.7, 8.3))) * 43758.5);
+  let core = pow(ndv, 1.15);
+  let depthTint = mix(0.92, 0.58, core);
+  let lit = max(ndl, 0.0);
+  let body = alb * facetJit * depthTint * (0.14 + 0.78 * lit) * (0.5 + 0.5 * tip);
+  let refr = normalize(mix(view, n, 0.22));
+  let through = skyColour(refr);
+  let thin = pow(1.0 - ndv, 1.7);
+  let transmit = through * alb * thin * 0.08 * (0.25 + 0.75 * lit);
   let crack = fractureAmt(v.w + view * 0.05, view);
   let spark = pow(clamp(dot(n, normalize(sunN() + view)), 0.0, 1.0), ${LIGHT.sparkPow}.0);
-  let edgeLit = pow(1.0 - ndv, 5.5);
-  let gemCol = alb * face * (0.18 + 0.40 * ndl) * (0.42 + 0.58 * tip)
-    + alb * through * sil * (1.1 + 1.8 * tip)
+  let fres = pow(1.0 - ndv, 3.0);
+  let broken = smoothstep(0.78, 0.92, fract(tip * 6.5 + v.w.y * 0.85));
+  let chamAdd = alb * fres * lit * broken * 0.16 * chamfer;
+  let gemCol = body * mix(1.0, 0.7, chamfer)
+    + transmit
     + alb * crack * ${LIGHT.fractureGain}
-    + alb * edgeLit * ${LIGHT.gemEdge}
-    + alb * spark * ${LIGHT.sparkle}
-    + inner * (1.0 - tip) * 0.18;
+    + alb * spark * ${LIGHT.sparkle} * lit
+    + inner * (1.0 - tip) * 0.1
+    + chamAdd;
   col = mix(col, gemCol, crystal);
   let waterFres = 0.02 + 0.98 * pow(1.0 - ndv, 5.0);
   col = mix(col, col * ${SHADE.waterFresnelDark}, waterFres * water * ${SHADE.waterFresnelMix});

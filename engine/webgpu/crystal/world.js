@@ -119,7 +119,7 @@ function stackBlock(mesh, x, yBase, z, sx, sy, sz, yaw, mat) {
     const leanX = (hash(seed, t + 8) - 0.5) * Math.min(wx, wz) * 0.16;
     const leanZ = (hash(seed, t + 14) - 0.5) * Math.min(wx, wz) * 0.16;
     mesh.chipBlock(x, y, z, wx, th, wz, yaw + (hash(seed, t + 5) - 0.5) * 0.18, leanX, leanZ, mat, seed + t * 19);
-    y += th;
+    y += th * 0.92;
     wx *= 0.7 + hash(seed, t + 20) * 0.08;
     wz *= 0.7 + hash(seed, t + 24) * 0.08;
   }
