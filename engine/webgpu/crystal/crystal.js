@@ -18,6 +18,9 @@ const DEMO = qs.get('demo') === '1' || CAP;
 const PROOF = qs.get('proof') === '1';
 const SHOT = qs.get('shot');
 const SKYPROOF = qs.get('skyproof') === '1';
+let gatePose = null;
+let gateMode = 0;
+let gateBreak = 0;
 let simClock = 0;
 const hud = document.getElementById('hud');
 if (CAP && hud) hud.style.display = 'none';
@@ -144,6 +147,14 @@ struct PVO { @builtin(position) p: vec4f, @location(0) n: vec3f, @location(1) w:
   if (a < 0.03) { discard; }
   return vec4f(u.atmo.rgb, a);
 }
+fn darken15(c: vec3f) -> vec3f {
+  let y = max(dot(c, vec3f(0.2126, 0.7152, 0.0722)), 1e-5);
+  let L = 116.0 * pow(y, 1.0 / 3.0) - 16.0;
+  let L2 = L - 15.0;
+  if (L2 < 2.0) { return c * vec3f(0.35, 0.12, 0.55) + vec3f(0.05, 0.0, 0.03); }
+  let y2 = pow((L2 + 16.0) / 116.0, 3.0);
+  return c * (y2 / y);
+}
 @fragment fn fs(v: VO) -> @location(0) vec4f {
   var n = normalize(v.n);
   let scG = ${SC.ground};
@@ -191,10 +202,19 @@ struct PVO { @builtin(position) p: vec4f, @location(0) n: vec3f, @location(1) w:
     alb = waterAlb;
   }
   let view = normalize(u.cam.xyz - v.w);
+  let ndv = clamp(dot(n, view), 0.0, 1.0);
+  let ndl = clamp(dot(n, sunN()), 0.0, 1.0);
+  let mode = u.misc.z;
+  if (mode > 1.5 && !(m > 4.5 && m < 5.5)) { return present(alb); }
+  if (mode > 0.5 && mode < 1.5) {
+    let distm = length(v.w - u.cam.xyz);
+    let near = select(0.0, 1.0, distm < 40.0);
+    return vec4f((m + 0.5) / 8.0, ndl, clamp(n.y, 0.0, 1.0), ndv * near);
+  }
+  let breakId = u.misc.w;
   let crystal = select(0.0, 1.0, m > 0.5 && m < 2.5);
   let water = select(0.0, 1.0, m > 3.5 && m < 4.5);
   var col = shadeAlb(alb, n, view, ${SHADE.waterSpec} * water);
-  let ndv = clamp(dot(n, view), 0.0, 1.0);
   let block = select(0.0, 1.0, m > 5.5 || (m > 2.5 && m < 3.5));
   col = mix(col, alb * nightIrr(n), block);
   let nh = pow(clamp(dot(n, normalize(sunN() + view)), 0.0, 1.0), 120.0);
@@ -206,6 +226,7 @@ struct PVO { @builtin(position) p: vec4f, @location(0) n: vec3f, @location(1) w:
   let haze = smoothstep(70.0, 190.0, dist);
   let skyFar = skyColour(normalize(vec3f(v.w.x - u.cam.x, 0.12, v.w.z - u.cam.z)));
   col = mix(col, skyFar, haze * 0.62);
+  if (breakId > 0.5 && abs(m - (breakId - 1.0)) < 0.25) { col = darken15(col); }
   return vec4f(pow(clamp(col, vec3f(0.0), vec3f(1.0)), vec3f(1.0 / 2.2)), 1.0);
 }
 ${IDLE.wgsl}
@@ -332,7 +353,17 @@ async function main() {
 
   const meadowRoot = new URL('../assets/meadow/', import.meta.url).href;
   const matRoot = new URL('../biome-factory/fixtures/materials-v2/', import.meta.url);
-  const breathClip = await makeBreathClip(dev, meadowRoot);
+  let breathClip;
+  try {
+    breathClip = await makeBreathClip(dev, meadowRoot);
+  } catch (err) {
+    if (!CAP) throw err;
+    const tex = dev.createTexture({
+      size: [4, 4], format: 'rgba8unorm',
+      usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT,
+    });
+    breathClip = { texture: tex, sync() {}, cfg: {}, cache: new Map(), missing: String(err && err.message || err) };
+  }
   const [ground, wall, crystalAlb, archAlb, violetAlb, streamAlb, atlas, feet, planetBmp] = await Promise.all([
     loadAlbedo(dev, new URL(ALBEDO.ground, matRoot).href),
     loadAlbedo(dev, new URL(ALBEDO.wall, matRoot).href),
@@ -486,7 +517,10 @@ async function main() {
     const bp = [live.x, terrH(live.x, live.z), live.z];
     let { eye, tgt } = followEye(bp, live.cam, terrH, 0);
     if (live.pitch) tgt[1] = eye[1] + Math.tan(live.pitch) * 4.2;
-    if (SHOT === 'wall' || SHOT === 'crystal') {
+    if (gatePose) {
+      eye = gatePose.eye;
+      tgt = gatePose.tgt;
+    } else if (SHOT === 'wall' || SHOT === 'crystal') {
       const z = SHOT === 'wall' ? -6 : -11;
       const x = pathX(z) + (SHOT === 'wall' ? -5.6 : -4.4);
       const y = terrH(x, z);
@@ -507,6 +541,8 @@ async function main() {
     IDLE.writeUniforms(U, IDLE.sample());
     U[52] = 0;
     U[53] = live.idleMix || 0;
+    U[54] = gateMode;
+    U[55] = gateBreak;
     U.set([fogCol[0], fogCol[1], fogCol[2], 0], 56);
     U.set(crops, 60);
     U.set([pCenter[0], pCenter[1], pCenter[2], PLANET.radius], 88);
@@ -531,7 +567,7 @@ async function main() {
     pass.setPipeline(pPlanet); pass.setVertexBuffer(0, pvb); pass.draw(pCount);
     pass.setPipeline(pWorld); pass.setVertexBuffer(0, vb); pass.draw(worldVerts);
     pass.setPipeline(pLimb); pass.setVertexBuffer(0, pvb); pass.draw(pCount);
-    if (!SHOT) {
+    if (!SHOT && !gatePose) {
       pass.setPipeline(pContact); pass.draw(6);
       pass.setPipeline(pBolt); pass.draw(6);
     }
@@ -577,6 +613,70 @@ async function main() {
       const info = { x: live.x, z: live.z, psi: live.psi, v: live.v, y: terrH(live.x, live.z), idleMix: live.idleMix || 0, breathFrame: live.breathFrame || 0, breathState: live.breathState || 'run', missing: gate.missing, gpuErr: gpuErr ? String(gpuErr.message || gpuErr) : null };
       if (useJpg) return { jpg: btoa(s), info };
       return { png: btoa(s), info, compile: compileNotes };
+    };
+    function projectPixel(p) {
+      const x = U[0] * p[0] + U[4] * p[1] + U[8] * p[2] + U[12];
+      const y = U[1] * p[0] + U[5] * p[1] + U[9] * p[2] + U[13];
+      const w = U[3] * p[0] + U[7] * p[1] + U[11] * p[2] + U[15];
+      if (!(w > 0)) return null;
+      return [(x / w * 0.5 + 0.5) * W, (1 - (y / w * 0.5 + 0.5)) * H];
+    }
+    function cropRead(src, cx, cy, rad) {
+      const out = [];
+      const x0 = Math.max(0, Math.floor(cx - rad));
+      const y0 = Math.max(0, Math.floor(cy - rad));
+      const x1 = Math.min(W - 1, Math.ceil(cx + rad));
+      const y1 = Math.min(H - 1, Math.ceil(cy + rad));
+      for (let y = y0; y <= y1; y++) {
+        for (let x = x0; x <= x1; x++) {
+          const i = y * bpr + x * 4;
+          out.push([src[i], src[i + 1], src[i + 2], src[i + 3], x, y]);
+        }
+      }
+      return out;
+    }
+    async function readFrame() {
+      dev.pushErrorScope('validation');
+      renderFixed(0);
+      const gpuErr = await dev.popErrorScope();
+      await dev.queue.onSubmittedWorkDone();
+      await rb.mapAsync(GPUMapMode.READ);
+      const src = new Uint8Array(rb.getMappedRange().slice(0));
+      rb.unmap();
+      return { src, gpuErr: gpuErr ? String(gpuErr.message || gpuErr) : null };
+    }
+    window.__crystalGate = async (shot) => {
+      gatePose = { eye: shot.eye, tgt: shot.tgt };
+      gateBreak = shot.breakId || 0;
+      gateMode = 0;
+      const colour = await readFrame();
+      gateMode = 1;
+      const mask = await readFrame();
+      gateMode = 2;
+      const albedo = await readFrame();
+      gateMode = 0;
+      const pix = projectPixel(shot.at);
+      const mats = {};
+      let litWall = 0;
+      for (let y = 0; y < H; y += 4) {
+        for (let x = 0; x < W; x += 4) {
+          const i = y * bpr + x * 4;
+          const mat = Math.round(mask.src[i] / 255 * 8 - 0.5);
+          mats[mat] = (mats[mat] || 0) + 1;
+          if (mat === 6 && mask.src[i + 1] > 180 && mask.src[i + 3] > 140) litWall++;
+        }
+      }
+      if (!pix) return { ok: false, reason: 'behind camera', gpuErr: colour.gpuErr, stats: { mats, litWall } };
+      const rad = shot.rad || 10;
+      return {
+        ok: true,
+        px: pix,
+        colour: cropRead(colour.src, pix[0], pix[1], rad),
+        mask: cropRead(mask.src, pix[0], pix[1], rad),
+        albedo: cropRead(albedo.src, pix[0], pix[1], rad),
+        gpuErr: colour.gpuErr || mask.gpuErr || albedo.gpuErr,
+        stats: { mats, litWall, pix },
+      };
     };
     window.__crystalReady = true;
     return;

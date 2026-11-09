@@ -605,7 +605,7 @@ function writeArtifacts({ day, night, prepared }) {
   md.push('');
   md.push(`Zenith ${labLine(doc.sky.zenithLab)}. Yaw gate 0.015, measured ${doc.sky.yaw.toFixed(5)} on the elev-12 pair used by the review.`);
   md.push('');
-  md.push('Subtracting `floor * floor` from `raw * raw` leaves `(raw - floor) * (raw + floor)`. The second factor is about 1, so the yaw difference of the old square survives after the pedestal is gone. Scaling those colours by 1.4 then moved the pair from 0.01571 to 0.022. The band is now only the residual above the floor, passed through a smoothstep, with the high octave at weight 0.12. The horizon is brighter so the volume gap stays at least 6. Neither gate was moved.');
+  md.push('The elev-12 pair was 0.01758 because one yaw sat below the nebula floor and the next yaw was already in the band, so the delta was the whole onset, and the tint was an azimuth hash. Tint now follows elevation only. The gain on that residual is 2.77, so the same pair is the slope of the band rather than a step. The horizon does not depend on azimuth. The noise is the view direction, not the camera position. The volume gap stays at least 6. The 0.015 gate was not moved.');
   md.push('');
   md.push('## Crystals');
   md.push('');

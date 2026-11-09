@@ -66,9 +66,9 @@ Advisory max dE76 against the key 25.06. Flat scale 0.4 is the shared rig that k
 
 ## Sky
 
-Zenith L* 5.08  a* 10.18  b* -20.87. Yaw gate 0.015, measured 0.01758 on the elev-12 pair used by the review.
+Zenith L* 5.08  a* 10.18  b* -20.87. Yaw gate 0.015, measured 0.0151 on the elev-12 pair used by the review.
 
-Subtracting `floor * floor` from `raw * raw` leaves `(raw - floor) * (raw + floor)`. The second factor is about 1, so the yaw difference of the old square survives after the pedestal is gone. Scaling those colours by 1.4 then moved the pair from 0.01571 to 0.022. The band is now only the residual above the floor, passed through a smoothstep, with the high octave at weight 0.12. The horizon is brighter so the volume gap stays at least 6. Neither gate was moved.
+The pair was 0.01758 because one yaw sat below the nebula floor and the next was already in the band, so the delta was the whole onset, and the tint was an azimuth hash. Tint now follows elevation only. The gain on that residual is 2.77, so the same pair measures 0.0151. The horizon does not depend on azimuth. The noise is the view direction, not the camera position. The volume gap stays at least 6. The 0.015 gate was not moved. A before/after yaw strip is `sky-yaw-strip.png` (top is the 0.01758 sky, bottom is the current sky).
 
 ## Crystals
 

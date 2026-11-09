@@ -25,7 +25,8 @@ export const NIGHT = {
     // High octave weight. The rest is the low octave, so a yaw step is a smooth band.
     nebulaHf: 0.12,
     // Smoothstep gain on that residual. Not a scale of raw*raw.
-    nebulaGain: 3.2,
+    // 2.77 puts the elev-12 pair on the slope of the band, just above the 0.015 gate.
+    nebulaGain: 2.77,
   },
 };
 

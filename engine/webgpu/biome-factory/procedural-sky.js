@@ -61,7 +61,8 @@ export function skyLinear(dir, cfg = SKY_CFG) {
   const u = Math.min(1, Math.max(0, (raw - floor) / span));
   const shaped = u * u * (3 - 2 * u);
   const gain = cfg.nebulaGain == null ? 3.2 : cfg.nebulaGain;
-  const tint = valueNoise([q[2] * 1.4 + 2.0, q[0] * 1.4, q[1] * 1.4 + 3.0]);
+  // Tint follows elevation only. An azimuth hash made the same band jump colour when the camera yawed.
+  const tint = e;
   const out = atmo.map((v, i) => v + (cfg.nebulaViolet[i] * (1 - tint) + cfg.nebulaCyan[i] * tint) * shaped * gain);
   const g = cfg.starGrid;
   const base = [Math.floor(n[0] * g), Math.floor(n[1] * g), Math.floor(n[2] * g)];
@@ -194,8 +195,8 @@ fn skyColour(dir: vec3f) -> vec3f {
   let raw = max(a * ${(1 - (c.nebulaHf == null ? 0.12 : c.nebulaHf))} + b * ${(c.nebulaHf == null ? 0.12 : c.nebulaHf)}, 0.0);
   let u = clamp((raw - ${(c.nebulaFloor || 0)}) / ${Math.max(1e-4, 1 - (c.nebulaFloor || 0))}, 0.0, 1.0);
   let shaped = u * u * (3.0 - 2.0 * u);
-  let tint = skyNoise(vec3f(q.z * 1.4 + 2.0, q.x * 1.4, q.y * 1.4 + 3.0));
-  var col = atmo + mix(${v3(c.nebulaViolet)}, ${v3(c.nebulaCyan)}, tint) * shaped * ${(c.nebulaGain == null ? 3.2 : c.nebulaGain)};
+  let tint = e;
+  var col = atmo + mix(${v3(c.nebulaViolet)}, ${v3(c.nebulaCyan)}, tint) * shaped * ${(c.nebulaGain == null ? 2.77 : c.nebulaGain)};
   let g = ${c.starGrid}.0;
   let base = floor(n * g);
   let f = n * g - base;

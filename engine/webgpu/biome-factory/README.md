@@ -20,7 +20,7 @@ Phone performance, gait, and a visual KEEP are not signed off.
 
 Colour compares only when both sides name the same light and the same exposure. The threshold stays CIE76 10 and L* counts.
 
-Director decision, recorded: the environment key is an artistic reference only. Real-colour Imagine albedo wins. The blocking crystal colour gate is each material's own albedo lit by the declared night rig (`crystal-night-rig` in `colour-same-light.mjs`, exposure 1 for every material). A dE76 above 10 on that gate is a hard failure. The key comparison is `keyAdvisory` on the factory state. It is not a hold and it is not a release blocker. The morning raw dE 19–66 stays a diagnostic of the old key-versus-unlit comparison. `--same-light crystal-rig` remains the grey-card test choice and is not the blocking gate.
+Director decision, recorded: the environment key is an artistic reference only. Real-colour Imagine albedo wins. The blocking crystal colour gate renders the crystal scene and samples lit, view-facing patches of each material. It compares those pixels with the albedo the shader sampled times the night-rig irradiance of that patch normal. CIE76 limit 10, lightness included. Run `node engine/webgpu/crystal/test-render-colour.mjs`. A darkened material in the shader must fail that test. The key comparison is `keyAdvisory` on the factory state. It is not a hold and it is not a release blocker. The morning raw dE 19–66 stays a diagnostic of the old key-versus-unlit comparison. `--same-light crystal-rig` remains the grey-card test choice and is not the blocking gate.
 
 ```bash
 node engine/webgpu/biome-factory/test-colour-same-light.mjs

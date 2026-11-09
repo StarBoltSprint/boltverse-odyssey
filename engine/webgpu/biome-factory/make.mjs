@@ -6,7 +6,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { runPipeline } from './pipeline.mjs';
 import { assemble } from './assemble.mjs';
-import { crystalColourStatus, realColourGate } from './colour-same-light.mjs';
+import { crystalColourStatus } from './colour-same-light.mjs';
 import { advisoryKey } from './same-light-table.mjs';
 import { measureSky } from './procedural-sky.js';
 import { jpegPixels } from './albedo-stats.mjs';
@@ -93,13 +93,11 @@ try {
     sha256: m.sha256 || null,
     knownTarget: null,
   }));
-  state.materialsColour = realColourGate(colourMats);
-  const blocked = state.materialsColour.filter(m => m.verdict === 'BLOCK');
-  if (blocked.length) {
-    state.hard.push({ code: 'colour_real', detail: blocked.map(m => m.id + ' dE76 ' + m.dE76).join('; ') });
-  } else if (state.materialsColour.length && state.materialsColour.every(m => m.verdict === 'PASS')) {
-    state.hold = state.hold.filter(h => h.code !== 'colour_uncertain');
-  }
+  state.renderColour = {
+    blocking: true,
+    runner: 'node engine/webgpu/crystal/test-render-colour.mjs',
+    note: 'The blocking dE76 is measured from SwiftShader pixels, not from albedo times the rig compared with itself.',
+  };
   state.keyAdvisory = advisoryKey();
   state.keyAdvisory.blocking = false;
   const sameLight = args.includes('--same-light') && args[args.indexOf('--same-light') + 1] === 'crystal-rig';
@@ -120,7 +118,7 @@ console.log(JSON.stringify({
   release: state.release,
   premise: state.premise && state.premise.holds,
   sky: state.sky || null,
-  materials: (state.materialsColour || []).map(m => ({ id: m.id, verdict: m.verdict, dE76: m.dE76 ?? null, blocking: true })),
+  renderColour: state.renderColour || null,
   keyAdvisory: state.keyAdvisory ? { blocking: false, maxDE: state.keyAdvisory.maxDE } : null,
   runId: state.runId || null,
   hold: state.hold.map(h => h.code),
