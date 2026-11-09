@@ -8,6 +8,7 @@ import { createPlanetMesh, prepareSurfaceRGBA, frontYaw, planetCenter } from '..
 import { CRYSTAL, PLANET } from './biome.js';
 import { materialGate, TILE_M, ALBEDO } from './materials.js';
 import { shadeFns, SHADE, tileScales, WATER_WAVE } from '../biome-factory/shade.js';
+import { LIGHT, lightWgsl } from './light.js';
 import { buildWorld, demoSteer, proofInput, skyProofInput, integrate, spawn, terrH, pathX } from './world.js';
 import { skyWgsl } from '../biome-factory/procedural-sky.js';
 
@@ -70,7 +71,6 @@ struct U {
 @group(0) @binding(1) var samp: sampler;
 @group(0) @binding(2) var groundTex: texture_2d<f32>;
 @group(0) @binding(6) var wallTex: texture_2d<f32>;
-@group(0) @binding(11) var wallH: texture_2d<f32>;
 @group(0) @binding(7) var crysTex: texture_2d<f32>;
 @group(0) @binding(8) var archTex: texture_2d<f32>;
 @group(0) @binding(9) var violetTex: texture_2d<f32>;
@@ -93,6 +93,7 @@ struct VO { @builtin(position) p: vec4f, @location(0) w: vec3f, @location(1) n: 
 }
 ${shadeFns()}
 ${skyWgsl()}
+${lightWgsl()}
 fn pathXg(z: f32) -> f32 { return 5.2 * sin(z * 0.028) + 1.6 * sin(z * 0.061) + 4.8 * sin(z * 0.045); }
 fn terrHs(p: vec2f) -> f32 {
   let lateral = p.x - pathXg(p.y);
@@ -175,20 +176,9 @@ struct PVO { @builtin(position) p: vec4f, @location(0) n: vec3f, @location(1) w:
     textureSample(violetTex, samp, v.w.xy * scV).rgb, n);
   let flow = vec2f(v.w.x, v.w.z + u.cam.w * 0.35) * scS;
   let waterAlb = textureSample(streamTex, samp, flow).rgb;
-  let hdu = vec2f(0.08, 0.0);
-  let hdv = vec2f(0.0, 0.08);
-  let hY0 = textureSampleLevel(wallH, samp, v.w.xz * scW, 0.0).r;
-  let hYu = textureSampleLevel(wallH, samp, v.w.xz * scW + hdu, 0.0).r;
-  let hYv = textureSampleLevel(wallH, samp, v.w.xz * scW + hdv, 0.0).r;
-  let hX0 = textureSampleLevel(wallH, samp, v.w.zy * scW, 0.0).r;
-  let hXu = textureSampleLevel(wallH, samp, v.w.zy * scW + hdu, 0.0).r;
-  let hXv = textureSampleLevel(wallH, samp, v.w.zy * scW + hdv, 0.0).r;
-  let hZ0 = textureSampleLevel(wallH, samp, v.w.xy * scW, 0.0).r;
-  let hZu = textureSampleLevel(wallH, samp, v.w.xy * scW + hdu, 0.0).r;
-  let hZv = textureSampleLevel(wallH, samp, v.w.xy * scW + hdv, 0.0).r;
   let tip = clamp(v.uv.x, 0.0, 1.0);
   let view0 = normalize(u.cam.xyz - v.w);
-  let ip = v.w + view0 * (0.18 * (1.0 - tip));
+  let ip = v.w + view0 * (0.16 * (1.0 - tip));
   let inner = triMix(
     textureSample(crysTex, samp, ip.zy * scC).rgb,
     textureSample(crysTex, samp, ip.xz * scC).rgb,
@@ -219,38 +209,39 @@ struct PVO { @builtin(position) p: vec4f, @location(0) n: vec3f, @location(1) w:
   let skyDir = normalize(vec3f(n.x * 0.45, 0.72 + max(n.y, 0.0) * 0.35, n.z * 0.45));
   let skyFace = skyColour(skyDir);
   let skyLin = dot(skyFace, vec3f(0.2126, 0.7152, 0.0722));
-  let fill = clamp(skyLin * 26.0, 0.22, 1.20);
-  let F0 = 0.045;
-  let rough = 0.28;
-  let F = F0 + (1.0 - F0) * pow(1.0 - ndv, 5.0);
-  let ax = abs(n);
-  let yDom = ax.y > ax.x && ax.y > ax.z;
-  let xDom = ax.x > ax.z;
-  let tang = select(select(vec3f(hZ0 - hZu, hZ0 - hZv, 0.0), vec3f(0.0, hX0 - hXv, hX0 - hXu), xDom), vec3f(hY0 - hYu, 0.0, hY0 - hYv), yDom);
-  let relief = normalize(n + tang * 5.5);
-  let ndlR = clamp(dot(relief, sunN()), 0.0, 1.0);
+  let fill = clamp(skyLin * ${LIGHT.fillGain}.0, ${LIGHT.fillMin}, ${LIGHT.fillMax});
+  let F = ${LIGHT.f0} + (1.0 - ${LIGHT.f0}) * pow(1.0 - ndv, 5.0);
+  let relief = normalize(n + conchGrad(v.w, n) * ${LIGHT.relief});
   let refl = reflect(-view, relief);
-  let broad = normalize(mix(refl, relief, rough));
+  let broad = normalize(mix(refl, relief, ${LIGHT.roughness}));
   let env = skyColour(broad);
-  let edge = smoothstep(0.18, 0.42, abs(n.y)) * (1.0 - smoothstep(0.72, 0.92, abs(n.y)));
-  let sheen = env * F * (1.0 - rough * 0.35) * (1.0 + edge);
-  let blockLit = alb * (fill + 2.0 * ndlR) + sheen;
+  let bevel = smoothstep(0.18, 0.42, abs(n.y)) * (1.0 - smoothstep(0.72, 0.92, abs(n.y)));
+  let ridge = 1.0 - smoothstep(0.0, 0.03, conchGap(faceUV(v.w, n)));
+  let sheen = env * (F + ridge * 0.32) * (1.0 - ${LIGHT.roughness} * 0.35) * (1.0 + bevel * 0.65);
+  let blockLit = alb * (fill + ${LIGHT.sunCoeff}.0 * ndl) + sheen;
   col = mix(col, blockLit, block);
   let dist = length(v.w - u.cam.xyz);
   let far = smoothstep(55.0, 130.0, dist);
   let rim = pow(1.0 - ndv, 2.4);
-  let rimCol = alb * (2.05 + 0.0 * far);
-  let rimK = min(0.55, rim * (0.35 + 0.45 * far));
+  let rimCol = alb * ${LIGHT.rimGain};
+  let rimK = min(${LIGHT.rimMix}, rim * (0.35 + 0.45 * far));
   col = mix(col, rimCol, rimK * block);
   let align = clamp(dot(n, normalize(vec3f(0.12, 0.96, 0.08))) * 0.5 + 0.5, 0.0, 1.0);
   let face = 0.40 + 1.10 * align;
-  let back = clamp(dot(-n, sunN()), 0.0, 1.0);
-  let thin = (0.30 + 0.70 * tip) * (0.45 + 0.55 * pow(1.0 - ndv, 1.4));
   let through = skyColour(normalize(sunN() - n));
-  let body = mix(inner, alb, 0.55) * (0.32 + 0.68 * tip);
-  let nh = pow(clamp(dot(n, normalize(sunN() + view)), 0.0, 1.0), 120.0);
-  let fres = pow(1.0 - ndv, 2.6);
-  let gemCol = body * face * (0.20 + 0.55 * ndl) + alb * through * (2.2 + 6.4 * back) * thin + alb * fres * 0.30 + alb * nh * 0.06;
+  let sil = pow(1.0 - ndv, 2.0);
+  let q = v.w + view * 0.16;
+  let lines = gemStreak(q, vec3f(0.86, 0.18, 0.22), 1.6, 0.015)
+    + gemStreak(q, vec3f(-0.25, 0.72, 0.48), 2.4, 0.01)
+    + gemStreak(q, vec3f(0.12, -0.30, 0.92), 1.15, 0.018);
+  let spark = pow(clamp(dot(n, normalize(sunN() + view)), 0.0, 1.0), ${LIGHT.sparkPow}.0);
+  let edgeLit = pow(1.0 - ndv, 5.5);
+  let gemCol = alb * face * (0.18 + 0.40 * ndl) * (0.42 + 0.58 * tip)
+    + alb * through * sil * (1.1 + 1.8 * tip)
+    + alb * lines * 0.7
+    + alb * edgeLit * ${LIGHT.gemEdge}
+    + alb * spark * ${LIGHT.sparkle}
+    + inner * (1.0 - tip) * 0.18;
   col = mix(col, gemCol, crystal);
   let waterFres = 0.02 + 0.98 * pow(1.0 - ndv, 5.0);
   col = mix(col, col * ${SHADE.waterFresnelDark}, waterFres * water * ${SHADE.waterFresnelMix});
@@ -339,32 +330,6 @@ async function loadTex(dev, url) {
   const err = await dev.popErrorScope();
   if (err) throw new Error('texture ' + url + ': ' + (err.message || err));
   return { tex, w: bmp.width, h: bmp.height, bmp };
-}
-
-function obsidianHeightBytes(bmp) {
-  const S = 64;
-  const src = new OffscreenCanvas(S, S);
-  const g = src.getContext('2d', { willReadFrequently: true });
-  g.drawImage(bmp, 0, 0, S, S);
-  const id = g.getImageData(0, 0, S, S);
-  const l = new Float32Array(S * S);
-  let mean = 0;
-  for (let i = 0; i < S * S; i++) {
-    const o = i * 4;
-    l[i] = 0.2126 * id.data[o] + 0.7152 * id.data[o + 1] + 0.0722 * id.data[o + 2];
-    mean += l[i];
-  }
-  mean /= l.length;
-  let v = 0;
-  for (const y of l) v += (y - mean) ** 2;
-  const sd = Math.sqrt(v / l.length) || 1;
-  const out = new Uint8Array(S * S * 4);
-  for (let i = 0; i < l.length; i++) {
-    const nrm = Math.max(-2.2, Math.min(2.2, (l[i] - mean) / sd));
-    const h = Math.round((nrm / 2.2) * 0.5 * 255 + 127.5);
-    out[i * 4] = h; out[i * 4 + 1] = h; out[i * 4 + 2] = h; out[i * 4 + 3] = 255;
-  }
-  return { data: out, S };
 }
 
 async function loadAlbedo(dev, url) {
@@ -463,7 +428,7 @@ async function main() {
     return [srgbToLin(r / n / 255), srgbToLin(g / n / 255), srgbToLin(b / n / 255)];
   })();
   const fogCol = [0, 0, 0];
-  const sun = CRYSTAL.sun;
+  const sun = LIGHT.sun;
   const sunL = Math.hypot(...sun);
 
   const mk = (data, usage) => {
@@ -490,16 +455,9 @@ async function main() {
     { binding: 8, visibility: GPUShaderStage.FRAGMENT, texture: {} },
     { binding: 9, visibility: GPUShaderStage.FRAGMENT, texture: {} },
     { binding: 10, visibility: GPUShaderStage.FRAGMENT, texture: {} },
-    { binding: 11, visibility: GPUShaderStage.FRAGMENT, texture: {} },
     { binding: 18, visibility: GPUShaderStage.FRAGMENT, texture: {} },
   ] });
   const planetSamp = dev.createSampler({ magFilter: 'linear', minFilter: 'linear', mipmapFilter: 'linear', addressModeU: 'repeat', addressModeV: 'clamp-to-edge', maxAnisotropy: aniso });
-  const height = obsidianHeightBytes(wall.bmp);
-  const wallH = dev.createTexture({
-    size: [height.S, height.S], format: 'rgba8unorm',
-    usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
-  });
-  dev.queue.writeTexture({ texture: wallH }, height.data, { bytesPerRow: height.S * 4 }, [height.S, height.S]);
   const bg = await noteErr('bind group', async () => dev.createBindGroup({ layout: bgl, entries: [
     { binding: 0, resource: { buffer: ub } },
     { binding: 1, resource: samp },
@@ -512,7 +470,6 @@ async function main() {
     { binding: 8, resource: archAlb.tex.createView() },
     { binding: 9, resource: violetAlb.tex.createView() },
     { binding: 10, resource: streamAlb.tex.createView() },
-    { binding: 11, resource: wallH.createView() },
     { binding: 18, resource: breathClip.texture.createView() },
   ] }));
   const layout = dev.createPipelineLayout({ bindGroupLayouts: [bgl] });

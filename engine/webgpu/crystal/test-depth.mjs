@@ -70,52 +70,10 @@ function edgeL(dist) {
   return skyL - L(present(lin));
 }
 
-const raw = spawnSync('ffmpeg', ['-v', 'error', '-i', new URL('../biome-factory/fixtures/materials-v2/obsidian-wall.jpg', import.meta.url).pathname, '-f', 'rawvideo', '-pix_fmt', 'rgb24', 'pipe:'], { encoding: 'buffer', maxBuffer: 8 * 1024 * 1024 }).stdout;
-const S = 64;
-const block = 1024 / S;
-const luma = new Float32Array(S * S);
-for (let y = 0; y < S; y++) {
-  for (let x = 0; x < S; x++) {
-    let acc = 0, n = 0;
-    for (let yy = 0; yy < block; yy += 4) {
-      for (let xx = 0; xx < block; xx += 4) {
-        const p = ((y * block + yy) * 1024 + (x * block + xx)) * 3;
-        acc += 0.2126 * raw[p] + 0.7152 * raw[p + 1] + 0.0722 * raw[p + 2];
-        n++;
-      }
-    }
-    luma[y * S + x] = acc / n;
-  }
-}
-let mean = 0;
-for (const y of luma) mean += y;
-mean /= luma.length;
-let sd = 0;
-for (const y of luma) sd += (y - mean) ** 2;
-sd = Math.sqrt(sd / luma.length) || 1;
-const H = luma.map(y => Math.max(-2.2, Math.min(2.2, (y - mean) / sd)) / 2.2 * 0.5 + 0.5);
-const vals = [];
-for (let y = 0; y < S; y += 2) {
-  for (let x = 0; x < S; x += 2) {
-    const h0 = H[y * S + x];
-    const hu = H[y * S + ((x + 4) % S)];
-    const hv = H[((y + 4) % S) * S + x];
-    const tilt = Math.hypot(h0 - hu, h0 - hv) * 5.5;
-    const ndv = Math.max(0.15, Math.min(0.95, 0.72 - tilt * 0.35));
-    const F = 0.045 + 0.955 * (1 - ndv) ** 5;
-    const lin = wallAlb.map((a, i) => a * fill + wall[i] * F * 0.9);
-    vals.push(L(present(lin)));
-  }
-}
-const flat = L(present(wallAlb.map((a, i) => a * fill + wall[i] * 0.045 * 0.9)));
-const contrastBefore = 0;
-const contrastAfter = Math.max(...vals) - Math.min(...vals);
-
 let fail = 0;
 const bad = (m) => { console.error('FAIL', m); fail++; };
 if (!(tipL - baseL >= 8)) bad('tip/base ' + (tipL - baseL).toFixed(2));
 if (!(spreadAfter >= 8)) bad('face spread ' + spreadAfter.toFixed(2));
-if (!(contrastAfter >= 3)) bad('wall relief ' + contrastAfter.toFixed(2));
 for (const d of [60, 100, 150]) {
   const dl = edgeL(d);
   if (dl < 6) bad('silhouette ' + d + ' m dL ' + dl.toFixed(2));
@@ -130,9 +88,6 @@ console.log(JSON.stringify({
   baseAfter: +baseL.toFixed(2),
   tipAfter: +tipL.toFixed(2),
   tipBase: +(tipL - baseL).toFixed(2),
-  wallContrastBefore: contrastBefore,
-  wallContrastAfter: +contrastAfter.toFixed(2),
-  flatFace: +flat.toFixed(2),
   dL60: +edgeL(60).toFixed(2),
   dL100: +edgeL(100).toFixed(2),
   dL150: +edgeL(150).toFixed(2),

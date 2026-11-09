@@ -32,6 +32,8 @@ const files = [
   'engine/webgpu/crystal/test-frames.mjs',
   'engine/webgpu/crystal/test-volume.mjs',
   'engine/webgpu/crystal/test-depth.mjs',
+  'engine/webgpu/crystal/test-conchoid.mjs',
+  'engine/webgpu/crystal/light.js',
   'engine/webgpu/crystal/key/environment.jpg',
   'engine/webgpu/crystal/key/planet-surface.jpg',
   'engine/webgpu/engine/bricks/planet-sphere.js',

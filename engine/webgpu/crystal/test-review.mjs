@@ -30,7 +30,7 @@ if (cracks) bad('ground cracks ' + cracks);
 const page = fs.readFileSync(new URL('./crystal.js', import.meta.url), 'utf8');
 if (!page.includes('p = p + u.cam.xyz')) bad('sky dome is not centred on the camera');
 if (!page.includes('skyColour(normalize(v.w - u.cam.xyz))')) bad('sky colour is not direction-only');
-if (!page.includes('alb * nh')) bad('crystal highlight is not tinted by the albedo');
+if (!page.includes('alb * spark')) bad('crystal highlight is not tinted by the albedo');
 const yawSky = skyDelta(skyLinear(dirFrom(12, 0.2)), skyLinear(dirFrom(12, 0.55)));
 if (yawSky < 0.015) bad('sky does not change when the camera yaws ' + yawSky);
 const dir = dirFrom(12, 0.4);
