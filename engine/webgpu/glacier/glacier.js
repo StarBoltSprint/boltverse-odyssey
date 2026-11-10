@@ -125,9 +125,6 @@ fn darken15(c: vec3f) -> vec3f {
   var n = normalize(v.n);
   let m = v.mat;
   let dist = length(v.w - u.cam.xyz);
-  if (m < 0.5) {
-    n = normalize(mix(n, vec3f(0.0, 1.0, 0.0), smoothstep(16.0, 46.0, dist) * 0.92));
-  }
   let alb = albedoOf(m, v.w, n, gx, gy);
   let view = normalize(u.cam.xyz - v.w);
   let ndv = clamp(dot(n, view), 0.0, 1.0);

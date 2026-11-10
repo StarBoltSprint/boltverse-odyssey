@@ -31,73 +31,70 @@ export function albedoWgsl() {
   const repeats = REPEATS_PER_M;
   return `
 fn hash21(p: vec2f) -> f32 { return fract(sin(dot(p, vec2f(127.1, 311.7))) * 43758.5453); }
-fn layer4(arr: texture_2d_array<f32>, uv: vec2f, du: vec2f, dv: vec2f, layer: i32) -> vec3f {
+fn addPick(w: vec4f, h: f32, m: f32) -> vec4f {
+  let k = i32(floor(h * 4.0)) % 4;
+  return w + vec4f(
+    select(0.0, m, k == 0),
+    select(0.0, m, k == 1),
+    select(0.0, m, k == 2),
+    select(0.0, m, k == 3)
+  );
+}
+// Fine grain stays on the 0.5 m tile. Which of the four stills leads changes
+// over about 22 m, so a cell edge is not a band across the frame.
+fn blend4(arr: texture_2d_array<f32>, uv: vec2f, du: vec2f, dv: vec2f, w: vec4f) -> vec3f {
   let s0 = textureSampleGrad(arr, samp, uv, 0, du, dv).rgb;
   let s1 = textureSampleGrad(arr, samp, uv, 1, du, dv).rgb;
   let s2 = textureSampleGrad(arr, samp, uv, 2, du, dv).rgb;
   let s3 = textureSampleGrad(arr, samp, uv, 3, du, dv).rgb;
-  let w = vec4f(select(0.0, 1.0, layer == 0), select(0.0, 1.0, layer == 1), select(0.0, 1.0, layer == 2), select(0.0, 1.0, layer == 3));
   return s0 * w.x + s1 * w.y + s2 * w.z + s3 * w.w;
 }
-fn hexArr(arr: texture_2d_array<f32>, metres: vec2f, ddu: vec2f, ddv: vec2f) -> vec3f {
+fn sampleArr(arr: texture_2d_array<f32>, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
+  let n = normalize(nrm);
+  let helper = select(vec3f(1.0, 0.0, 0.0), vec3f(0.0, 1.0, 0.0), abs(n.y) < 0.9);
+  let tng = normalize(cross(helper, n));
+  let btg = normalize(cross(n, tng));
+  let metres = vec2f(dot(p, tng), dot(p, btg));
+  let du = vec2f(dot(px, tng), dot(px, btg)) * ${repeats};
+  let dv = vec2f(dot(py, tng), dot(py, btg)) * ${repeats};
   let uv = metres * ${repeats};
-  let du = ddu * ${repeats};
-  let dv = ddv * ${repeats};
-  let skew = vec2f(uv.x + uv.y * 0.5, uv.y * 0.8660254);
+  let cell = metres * 2.0;
+  let skew = vec2f(cell.x + cell.y * 0.5, cell.y * 0.8660254);
   let i = floor(skew);
   let f = fract(skew);
   let lower = f.x > f.y;
-  let v1 = select(vec2f(0.0, 1.0), vec2f(1.0, 0.0), lower);
   let w0 = select(1.0 - f.y, 1.0 - f.x, lower);
   let w1 = select(f.y - f.x, f.x - f.y, lower);
-  let wRaw = vec3f(w0, w1, select(f.x, f.y, lower));
-  let wSoft = sqrt(max(wRaw, vec3f(0.0)));
-  let w = wSoft / (wSoft.x + wSoft.y + wSoft.z + 1e-4);
-  let id0 = i;
-  let id1 = i + v1;
+  let w2 = select(f.x, f.y, lower);
+  let wSoft = pow(max(vec3f(w0, w1, w2), vec3f(0.0)), vec3f(0.45)) + vec3f(0.7);
+  let w = wSoft / (wSoft.x + wSoft.y + wSoft.z);
+  let id1 = i + select(vec2f(0.0, 1.0), vec2f(1.0, 0.0), lower);
   let id2 = i + vec2f(1.0, 1.0);
-  let phase = vec2f(hash21(id0 + vec2f(2.2, 5.1)), hash21(id0 + vec2f(8.4, 1.3)));
-  let phase1 = vec2f(hash21(id1 + vec2f(2.2, 5.1)), hash21(id1 + vec2f(8.4, 1.3)));
-  let phase2 = vec2f(hash21(id2 + vec2f(2.2, 5.1)), hash21(id2 + vec2f(8.4, 1.3)));
-  let l0 = i32(floor(hash21(id0) * 4.0)) % 4;
-  let l1 = i32(floor(hash21(id1) * 4.0)) % 4;
-  let l2 = i32(floor(hash21(id2) * 4.0)) % 4;
-  let c0 = layer4(arr, uv + phase, du, dv, l0);
-  let c1 = layer4(arr, uv + phase1, du, dv, l1);
-  let c2 = layer4(arr, uv + phase2, du, dv, l2);
+  let c0 = blend4(arr, uv + vec2f(hash21(i), hash21(i + vec2f(2.2, 5.1))), du, dv, addPick(vec4f(0.0), hash21(i + vec2f(8.0, 1.0)), 1.0));
+  let c1 = blend4(arr, uv + vec2f(hash21(id1), hash21(id1 + vec2f(2.2, 5.1))), du, dv, addPick(vec4f(0.0), hash21(id1 + vec2f(8.0, 1.0)), 1.0));
+  let c2 = blend4(arr, uv + vec2f(hash21(id2), hash21(id2 + vec2f(2.2, 5.1))), du, dv, addPick(vec4f(0.0), hash21(id2 + vec2f(8.0, 1.0)), 1.0));
   return c0 * w.x + c1 * w.y + c2 * w.z;
-}
-fn sampleArr(arr: texture_2d_array<f32>, p: vec3f, px: vec3f, py: vec3f) -> vec3f {
-  var nGeo = cross(px, py);
-  let glen = length(nGeo);
-  if (glen < 1e-5) { nGeo = vec3f(0.0, 1.0, 0.0); } else { nGeo = nGeo / glen; }
-  let helper = select(vec3f(1.0, 0.0, 0.0), vec3f(0.0, 1.0, 0.0), abs(nGeo.y) < 0.9);
-  let tng = normalize(cross(helper, nGeo));
-  let btg = normalize(cross(nGeo, tng));
-  let metres = vec2f(dot(p, tng), dot(p, btg));
-  let ddu = vec2f(dot(px, tng), dot(px, btg));
-  let ddv = vec2f(dot(py, tng), dot(py, btg));
-  return hexArr(arr, metres, ddu, ddv);
 }
 fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
   if (m < 0.5) {
-    let snow = sampleArr(snowArr, p, px, py);
+    let snow = sampleArr(snowArr, p, nrm, px, py);
     let crev = smoothstep(1.1, -1.6, p.y - 0.3);
-    let tone = skyNoise(vec3f(p.x * 0.018, 2.4, p.z * 0.007));
-    var g = snow * (0.9 + 0.16 * tone);
+    let tone = skyNoise(vec3f(p.x * 0.011, 3.1, p.z * 0.0055));
+    let tone2 = skyNoise(vec3f(p.x * 0.041, 1.4, p.z * 0.022));
+    var g = snow * (1.38 + 0.32 * tone + 0.14 * tone2);
     let spark = step(0.994, skyNoise(p * 11.0));
     g = g + ${v3([0.07, 0.1, 0.13])} * spark;
     return mix(g, g * ${v3(C.crevasse)} * 1.35, crev);
   }
   if (m < 3.5) {
-    let ice = sampleArr(iceArr, p, px, py);
+    let ice = sampleArr(iceArr, p, nrm, px, py);
     if (m < 1.5) {
-      let snow = sampleArr(snowArr, p, px, py);
+      let snow = sampleArr(snowArr, p, nrm, px, py);
       let lip = smoothstep(0.45, 0.8, nrm.y);
       return mix(ice, snow, lip * 0.85);
     }
     if (m < 2.5) {
-      let snow = sampleArr(snowArr, p, px, py);
+      let snow = sampleArr(snowArr, p, nrm, px, py);
       let cap = smoothstep(0.28, 0.62, nrm.y);
       let under = smoothstep(0.05, -0.55, nrm.y);
       var arch = mix(ice, ice * vec3f(0.46, 0.58, 0.84), under);
@@ -105,8 +102,8 @@ fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
     }
     return ice * vec3f(0.92, 0.96, 1.0);
   }
-  let snow = sampleArr(snowArr, p, px, py);
-  let ice = sampleArr(iceArr, p, px, py);
+  let snow = sampleArr(snowArr, p, nrm, px, py);
+  let ice = sampleArr(iceArr, p, nrm, px, py);
   if (m < 4.5) {
     let chunk = skyNoise(p * 0.17);
     return mix(snow, ice, smoothstep(0.58, 0.86, chunk));

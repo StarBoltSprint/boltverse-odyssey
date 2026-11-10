@@ -7,8 +7,12 @@ import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import { FOV_Y } from '../engine/bricks/follow-cam.js';
 import { buildWorld } from './world.js';
-import { PLANET } from './biome.js';
+import { MAT, PLANET } from './biome.js';
 import { IMAGINE, MIN_PX_PER_M, MAX_UV_STRETCH, MAG_MAX, MIN_LARGE_VARIANTS, TILE_M } from './texel-density.js';
+import {
+  gateBiome, stretchByMaterial, formatTable, triangleStretch as gateStretch, triangleArea as gateArea,
+  MIN_PX_PER_M as GATE_MIN, MIN_LARGE_VARIANTS as GATE_LARGE, MIN_PROP_VARIANTS, STRETCH_P99_MAX, MAG_MAX as GATE_MAG,
+} from '../biome-factory/texel-gate.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const PHONE_H = 1280;
@@ -141,65 +145,95 @@ if (legalPx !== 2048) bad('1024 px at 0.5 m is not 2048');
 const stretched = triangleStretch([0, 0, 0], [1.31, 0, 0], [0, 1, 0], [0, 0], [1, 0], [0, 1], 1024, 1024);
 if (!(stretched > MAX_UV_STRETCH)) bad('stretch 1.31 measured ' + stretched + ' and did not fail');
 
-const page = fs.readFileSync(path.join(here, 'glacier.js'), 'utf8');
-const asksAniso = /maxAnisotropy\s*:/.test(page) && /Math\.min\(\s*[2-9]/.test(page);
-const mips = /mipmapFilter\s*:\s*['"]linear['"]/.test(page) && /mipLevelCount/.test(page);
-if (!asksAniso || !mips) bad('sampler missing full mips or anisotropic filtering');
+if (GATE_MIN !== 2048 || GATE_LARGE !== 4 || MIN_PROP_VARIANTS !== 3 || STRETCH_P99_MAX !== 1.3 || GATE_MAG !== 1) {
+  bad('PR 237 gate limits moved');
+}
 
 const world = buildWorld();
-const rows = [];
+const fileBytes = {};
+const materials = [];
 for (const spec of IMAGINE) {
-  const hashes = new Set();
-  let native = null;
-  for (const file of spec.files) {
+  if (spec.equirect) continue;
+  const files = spec.files.map((file) => {
     const buf = fs.readFileSync(path.join(here, file));
     const size = imageSize(buf);
     if (!size) bad(spec.id + ' unreadable ' + file);
-    hashes.add(crypto.createHash('sha256').update(buf).digest('hex'));
-    native = size;
-  }
-  const variants = hashes.size;
-  let px = null;
-  let mag = null;
-  let stretch = null;
-  let pass = true;
-  const reasons = [];
-  if (spec.equirect) {
-    mag = planetMag();
-    stretch = 2;
-    if (mag > MAG_MAX) { pass = false; reasons.push('magnification ' + mag.toFixed(2)); }
-  } else {
-    const short = Math.min(native.w, native.h);
-    px = short / spec.tileMetres;
-    mag = magnification(px);
-    stretch = faceStretch(world.verts, spec.worldMats);
-    if (px < MIN_PX_PER_M) { pass = false; reasons.push(px.toFixed(0) + ' px/m'); }
-    if (mag > MAG_MAX) { pass = false; reasons.push('magnification ' + mag.toFixed(2)); }
-    if (stretch > MAX_UV_STRETCH) { pass = false; reasons.push('stretch ' + stretch.toFixed(2)); }
-    if (variants < MIN_LARGE_VARIANTS) { pass = false; reasons.push('variants ' + variants); }
-  }
-  rows.push({
-    material: spec.id,
-    native: native.w + '×' + native.h,
-    tileM: spec.equirect ? 'sky' : spec.tileMetres,
-    pxPerM: px == null ? '—' : px.toFixed(0),
-    mag: mag.toFixed(3),
-    variants,
-    stretch: stretch == null ? '—' : stretch.toFixed(3),
-    verdict: pass ? 'PASS' : 'FAIL',
-    reasons,
+    const name = spec.id + '/' + path.basename(file);
+    fileBytes[name] = buf;
+    return { file: name, sha256: crypto.createHash('sha256').update(buf).digest('hex'), native: [size.w, size.h] };
   });
-  if (!pass) bad(spec.id + ' ' + reasons.join(', '));
+  materials.push({ id: spec.id, surfaceClass: spec.surfaceClass, tileMetres: spec.tileMetres, files });
+}
+const tex = { w: 1024, h: 1024 };
+function groupStretch(mats) {
+  const by = stretchByMaterial(
+    world.verts,
+    new Map(mats.map((m) => [m, 0.5])),
+    new Map(mats.map((m) => [m, tex])),
+  );
+  let worst = 0;
+  for (const s of by.values()) worst = Math.max(worst, s);
+  return worst;
+}
+const stretchById = new Map([
+  ['snow', groupStretch([MAT.snow, MAT.drift])],
+  ['ice', groupStretch([MAT.fall, MAT.arch, MAT.icicle, MAT.wall, MAT.mountain])],
+]);
+const page = fs.readFileSync(path.join(here, 'glacier.js'), 'utf8') + '\n' + fs.readFileSync(path.join(here, 'albedo.js'), 'utf8');
+const result = gateBiome({ id: 'glacier-abyss', materials }, fileBytes, { pageSource: page, stretchById });
+console.log(formatTable(result));
+if (!result.ok) bad(result.message);
+
+function dominantUv(p, n, m) {
+  const ax = Math.abs(n[0]), ay = Math.abs(n[1]), az = Math.abs(n[2]);
+  if (ay >= ax && ay >= az) return [p[0] / m, p[2] / m];
+  if (ax >= az) return [p[2] / m, p[1] / m];
+  return [p[0] / m, p[1] / m];
+}
+function jacobian(p0, p1, p2, uv0, uv1, uv2) {
+  const e1 = [p1[0] - p0[0], p1[1] - p0[1], p1[2] - p0[2]];
+  const e2 = [p2[0] - p0[0], p2[1] - p0[1], p2[2] - p0[2]];
+  const du1 = (uv1[0] - uv0[0]) * 1024, dv1 = (uv1[1] - uv0[1]) * 1024;
+  const du2 = (uv2[0] - uv0[0]) * 1024, dv2 = (uv2[1] - uv0[1]) * 1024;
+  const det = du1 * dv2 - du2 * dv1;
+  if (Math.abs(det) < 1e-12) return null;
+  const inv = 1 / det;
+  const dpdu = [(e1[0] * dv2 - e2[0] * dv1) * inv, (e1[1] * dv2 - e2[1] * dv1) * inv, (e1[2] * dv2 - e2[2] * dv1) * inv];
+  const dpdv = [(-e1[0] * du2 + e2[0] * du1) * inv, (-e1[1] * du2 + e2[1] * du1) * inv, (-e1[2] * du2 + e2[2] * du1) * inv];
+  return { lu: Math.hypot(...dpdu), lv: Math.hypot(...dpdv) };
+}
+const v = world.verts;
+const worst = [];
+for (let t = 0; t + 24 <= v.length; t += 24) {
+  const mat = Math.round(v[t + 3]);
+  const P = (k) => [v[t + k * 8], v[t + k * 8 + 1], v[t + k * 8 + 2]];
+  const N = (k) => [v[t + k * 8 + 4], v[t + k * 8 + 5], v[t + k * 8 + 6]];
+  const a = P(0), b = P(1), c = P(2);
+  const area = gateArea(a, b, c);
+  if (!(area > 1e-4)) continue;
+  const na = N(0);
+  const uva = dominantUv(a, na, 0.5), uvb = dominantUv(b, N(1), 0.5), uvc = dominantUv(c, N(2), 0.5);
+  const stretch = gateStretch(a, b, c, uva, uvb, uvc, 1024, 1024);
+  if (worst.length < 3 || stretch > worst[worst.length - 1].stretch) {
+    worst.push({ mat, stretch, area, p: a, n: na, J: jacobian(a, b, c, uva, uvb, uvc) });
+    worst.sort((p, q) => q.stretch - p.stretch);
+    worst.length = Math.min(3, worst.length);
+  }
+}
+console.log('worst triangles under the gate UV (dominant axis, per-face normal):');
+for (const w of worst) {
+  const J = w.J;
+  console.log(' mat', w.mat, 'stretch', w.stretch.toFixed(3), 'area', w.area.toFixed(2),
+    'p', w.p.map((n) => n.toFixed(1)).join(','),
+    'n', w.n.map((n) => n.toFixed(2)).join(','),
+    J ? 'lu ' + J.lu.toExponential(2) + ' lv ' + J.lv.toExponential(2) : 'singular');
 }
 
-console.log('limit ' + MIN_PX_PER_M + ' px/m, stretch p99 ≤ ' + MAX_UV_STRETCH + ', magnification ≤ ' + MAG_MAX + ', large variants ≥ ' + MIN_LARGE_VARIANTS);
-console.log('negative control: 1024 px at 1 m → ' + negPx + ' px/m FAIL; measured stretch ' + stretched.toFixed(3) + ' > ' + MAX_UV_STRETCH + ' FAIL');
-console.log('planet stretch 2.000 is the equirect equator ratio and is not the ground-tile limit; the sky body is gated on magnification');
-console.log('');
-console.log('| material | native WxH | tile metres | px/m | variants | magnification | stretch p99 | verdict |');
-console.log('| --- | --- | ---: | ---: | ---: | ---: | ---: | --- |');
-for (const row of rows) {
-  console.log(`| ${row.material} | ${row.native} | ${row.tileM} | ${row.pxPerM} | ${row.variants} | ${row.mag} | ${row.stretch} | ${row.verdict} |`);
-}
+const planet = IMAGINE.find((s) => s.equirect);
+const planetView = planetMag();
+console.log('planet sky body (no sky class in the gate; not a prop): magnification ' + planetView.toFixed(3) + (planetView <= 1 ? ' PASS' : ' FAIL') + ', equirect stretch 2.000 reported separately');
+if (!(planetView <= 1)) bad('planet magnification ' + planetView);
+
+console.log('negative control: 1024 px at 1 m → ' + negPx + ' px/m FAIL; measured stretch ' + stretched.toFixed(3) + ' > ' + STRETCH_P99_MAX + ' FAIL');
 if (fail) process.exit(1);
 console.log('PASS texel-density');

@@ -51,14 +51,17 @@ export function floorH(x, z) {
   const crev = Math.exp(-((lat - crevLat) ** 2) / crevW) * (2.4 + 1.1 * fbm2(z * 0.017, 4.1));
   // Wind runs down the rift. Ridges are long in z and short across, and they
   // stay off the narrow slot under Bolt so the card is not cut.
-  const slot = Math.min(1, Math.max(0, (Math.abs(lat) - 0.75) / 1.4));
-  // Long down-rift, a few metres across, so the mid-field mesh still shows them.
-  const wind = fbm2(lat * 0.18, z * 0.026);
-  const wind2 = fbm2(lat * 0.42 + 2.2, z * 0.055);
-  const ridge = Math.pow(Math.max(0, (wind - 0.4) / 0.6), 1.35);
-  const sast = (ridge * 1.2 + (wind2 - 0.5) * 0.4) * slot;
+  // Flat only under the paws. The lane beside them carries metre-scale
+  // sastrugi so dawn light has a slope to catch.
+  const lane = Math.min(1, Math.max(0, (Math.abs(lat) - 0.42) / 1.15));
+  const wind = fbm2(lat * 0.09, z * 0.018);
+  const wind2 = fbm2(lat * 0.16 + 2.2, z * 0.028);
+  const ridge = Math.pow(Math.max(0, (wind - 0.36) / 0.64), 1.2);
+  const amp = 0.28 + 1.25 * lane;
+  const sast = ridge * amp + (wind2 - 0.5) * (0.18 + 0.5 * lane);
   const broad = 0.42 * Math.sin(z * 0.009) + 0.3 * Math.sin(z * (Math.PI * 2 / 12.6) + lat * 0.04);
-  return broad + sast - crev - footDent(x, z, lat);
+  const swell = 0.11 * Math.sin(z * 0.085 + lat * 0.15);
+  return broad + swell + sast - crev - footDent(x, z, lat);
 }
 
 function footDent(x, z, lat) {
@@ -88,10 +91,11 @@ function placeWall(z, side, u, lateral) {
   const h = wallHeight(z, side);
   const y0 = floorH(pathX(z) + side * (half - 0.4), z);
   const uu = Math.min(1, Math.max(0, u));
-  const meso = (fbm2(z * 0.022 + uu * 0.4, side * 2.4) - 0.5) * 1.4;
+  const meso = (fbm2(z * 0.022 + uu * 0.4, side * 2.4) - 0.5) * 3.2;
+  const billow = (fbm2(z * 0.007, uu * 2.1 + side) - 0.5) * 11.0;
   const y = y0 + Math.pow(uu, 0.92) * h + meso;
   const corridor = half - 1.4;
-  const out = Math.max(corridor, half + 1.1 + lateral);
+  const out = Math.max(corridor, half + 1.1 + lateral + billow);
   return [pathX(z) + side * out, y, z];
 }
 
@@ -103,17 +107,18 @@ function wallSample(z, side, row) {
     const u1 = (b + 1) / LEDGES;
     if (u + 1e-6 < u0 || u > u1 + 1e-6) continue;
     const along = 0.4 + fbm2(z * 0.006 + b * 0.41, side * 1.7);
-    const jut = (hash(b * 3.7, side * 2.4 + 0.6) - 0.28) * 5.2 * along;
+    const jut = (hash(b * 3.7, side * 2.4 + 0.6) - 0.22) * 8.4 * along;
     const local = (u - u0) / (u1 - u0);
-    const lip = local > 0.8 ? (local - 0.8) / 0.2 : 0;
-    off = jut + lip * (2.4 + hash(b * 1.9, side + 5) * 3.1);
+    const lip = local > 0.72 ? (local - 0.72) / 0.28 : 0;
+    off = jut + lip * (3.2 + hash(b * 1.9, side + 5) * 4.4);
     break;
   }
-  const col = Math.floor(z * 0.055 + fbm2(z * 0.003, side) * 1.6);
-  const colShift = (hash(col, side + 4) - 0.5) * 3.6;
-  const groove = Math.exp(-((fbm2(z * 0.11, side * 3.2) - 0.47) ** 2) / 0.009) * 1.7;
-  const chip = (hash(Math.floor(z * 1.7) + row * 3, side * 8 + row) - 0.5) * 1.15;
-  return placeWall(z, side, u, off + colShift - groove + chip);
+  const col = Math.floor(z * 0.028 + fbm2(z * 0.002, side) * 1.2);
+  const colShift = (hash(col, side + 4) - 0.5) * 5.5;
+  const crackN = fbm2(z * 0.012, side * 2.6);
+  const crevasse = Math.pow(Math.max(0, 1 - Math.abs(crackN - 0.58) / 0.16), 1.5) * 6.2;
+  const chip = (hash(Math.floor(z * 0.45) + row * 3, side * 8 + row) - 0.5) * 1.6;
+  return placeWall(z, side, u, off + colShift - crevasse + chip);
 }
 
 export function wallPoint(z, side, u) {
@@ -245,8 +250,9 @@ function archCenter(z0, u, frame) {
 
 function addArch(mesh, z0, index) {
   const frame = archFrame(z0, index);
-  const segs = 16;
-  const sides = 8;
+  const near = index < 3;
+  const segs = near ? 24 : 16;
+  const sides = near ? 12 : 8;
   const rings = [];
   for (let s = 0; s <= segs; s++) {
     const u = s / segs;
@@ -392,9 +398,9 @@ function addFarFloor(mesh) {
   }
 }
 
-function addRange(mesh, x0, z0, x1, z1, height, halfW) {
-  const segs = 20;
-  const sides = 7;
+function addRange(mesh, x0, z0, x1, z1, height, halfW, fine) {
+  const segs = fine ? 28 : 16;
+  const sides = fine ? 11 : 6;
   const dx = x1 - x0;
   const dz = z1 - z0;
   const len = Math.hypot(dx, dz) || 1;
@@ -534,6 +540,13 @@ function addWall(mesh, side) {
     const col = [];
     for (let r = 0; r < WALL_ROWS; r++) col.push(wallSample(z, side, r));
     if (prev) {
+      for (let r = 0; r < col.length; r++) {
+        const dx = col[r][0] - prev[r][0];
+        const dz = col[r][2] - prev[r][2];
+        if (Math.abs(dx) > 0.75 * Math.abs(dz) && Math.abs(dz) > 1e-3) {
+          col[r][0] = prev[r][0] + Math.sign(dx) * 0.75 * Math.abs(dz);
+        }
+      }
       for (let r = 0; r < WALL_ROWS - 1; r++) {
         face(mesh, prev[r], col[r], col[r + 1], prev[r + 1], MAT.wall, [-side, 0.2, 0]);
       }
@@ -543,22 +556,111 @@ function addWall(mesh, side) {
   return zs.length;
 }
 
-function smoothSnow(verts) {
+function weldKey(x, y, z) {
+  return `${Math.round(x * 50)}_${Math.round(y * 50)}_${Math.round(z * 50)}`;
+}
+
+// Faces more than about 37° off the nearest axis project with stretch above 1.3.
+// Nudge those triangles toward that axis. Shared corners move once, so the sheet stays closed.
+function relaxOffAxis(verts) {
+  for (let pass = 0; pass < 5; pass++) {
+    stampFaceNormals(verts);
+    const acc = new Map();
+    const add = (x, y, z, d) => {
+      const k = weldKey(x, y, z);
+      const a = acc.get(k) || [0, 0, 0, 0];
+      a[0] += d[0]; a[1] += d[1]; a[2] += d[2]; a[3] += 1;
+      acc.set(k, a);
+    };
+    for (let t = 0; t + 24 <= verts.length; t += 24) {
+      const P = [0, 8, 16].map((k) => [verts[t + k], verts[t + k + 1], verts[t + k + 2]]);
+      const n = [verts[t + 4], verts[t + 5], verts[t + 6]];
+      const dom = Math.max(Math.abs(n[0]), Math.abs(n[1]), Math.abs(n[2]));
+      if (!(dom < 0.8) || !(dom > 1e-6)) continue;
+      let k = 0;
+      if (Math.abs(n[1]) > Math.abs(n[k])) k = 1;
+      if (Math.abs(n[2]) > Math.abs(n[k])) k = 2;
+      const axis = [0, 0, 0];
+      axis[k] = Math.sign(n[k]) || 1;
+      const dot = n[0] * axis[0] + n[1] * axis[1] + n[2] * axis[2];
+      let rx = n[1] * axis[2] - n[2] * axis[1];
+      let ry = n[2] * axis[0] - n[0] * axis[2];
+      let rz = n[0] * axis[1] - n[1] * axis[0];
+      const rl = Math.hypot(rx, ry, rz);
+      if (!(rl > 1e-6)) continue;
+      rx /= rl; ry /= rl; rz /= rl;
+      const ang = Math.acos(Math.min(1, Math.max(-1, dot))) - Math.acos(0.8);
+      const s = Math.sin(ang), c = Math.cos(ang);
+      const cx = (P[0][0] + P[1][0] + P[2][0]) / 3;
+      const cy = (P[0][1] + P[1][1] + P[2][1]) / 3;
+      const cz = (P[0][2] + P[1][2] + P[2][2]) / 3;
+      for (const p of P) {
+        const vx = p[0] - cx, vy = p[1] - cy, vz = p[2] - cz;
+        const crx = ry * vz - rz * vy, cry = rz * vx - rx * vz, crz = rx * vy - ry * vx;
+        const ddx = vx * c + crx * s + rx * (rx * vx + ry * vy + rz * vz) * (1 - c);
+        const ddy = vy * c + cry * s + ry * (rx * vx + ry * vy + rz * vz) * (1 - c);
+        const ddz = vz * c + crz * s + rz * (rx * vx + ry * vy + rz * vz) * (1 - c);
+        add(p[0], p[1], p[2], [cx + ddx - p[0], cy + ddy - p[1], cz + ddz - p[2]]);
+      }
+    }
+    if (!acc.size) break;
+    for (let i = 0; i < verts.length; i += 8) {
+      const a = acc.get(weldKey(verts[i], verts[i + 1], verts[i + 2]));
+      if (!a) continue;
+      verts[i] += Math.max(-0.6, Math.min(0.6, a[0] / a[3]));
+      verts[i + 1] += Math.max(-0.6, Math.min(0.6, a[1] / a[3]));
+      verts[i + 2] += Math.max(-0.6, Math.min(0.6, a[2] / a[3]));
+    }
+  }
+  stampFaceNormals(verts);
+}
+
+// Up-facing snow can share a normal. Steep faces keep the face normal so the
+// texel gate does not mix projection axes. Walls stay faceted.
+function smoothUpSnow(verts) {
   const acc = new Map();
-  const key = (x, y, z) => `${Math.round(x * 40)}_${Math.round(y * 40)}_${Math.round(z * 40)}`;
-  const soft = (m) => m === MAT.snow || m === MAT.wall;
+  const up = (n) => Math.abs(n[1]) >= Math.abs(n[0]) && Math.abs(n[1]) >= Math.abs(n[2]);
   for (let i = 0; i < verts.length; i += 8) {
-    if (!soft(Math.round(verts[i + 3]))) continue;
-    const k = key(verts[i], verts[i + 1], verts[i + 2]);
-    const n = acc.get(k) || [0, 0, 0];
-    n[0] += verts[i + 4]; n[1] += verts[i + 5]; n[2] += verts[i + 6];
-    acc.set(k, n);
+    if (Math.round(verts[i + 3]) !== 0) continue;
+    const n = [verts[i + 4], verts[i + 5], verts[i + 6]];
+    if (!up(n)) continue;
+    const k = weldKey(verts[i], verts[i + 1], verts[i + 2]);
+    const a = acc.get(k) || [0, 0, 0];
+    a[0] += n[0]; a[1] += n[1]; a[2] += n[2];
+    acc.set(k, a);
   }
   for (let i = 0; i < verts.length; i += 8) {
-    if (!soft(Math.round(verts[i + 3]))) continue;
-    const n = acc.get(key(verts[i], verts[i + 1], verts[i + 2]));
-    const l = Math.hypot(n[0], n[1], n[2]) || 1;
-    verts[i + 4] = n[0] / l; verts[i + 5] = n[1] / l; verts[i + 6] = n[2] / l;
+    if (Math.round(verts[i + 3]) !== 0) continue;
+    const n = [verts[i + 4], verts[i + 5], verts[i + 6]];
+    if (!up(n)) continue;
+    const a = acc.get(weldKey(verts[i], verts[i + 1], verts[i + 2]));
+    const l = Math.hypot(a[0], a[1], a[2]) || 1;
+    const s = [a[0] / l, a[1] / l, a[2] / l];
+    if (!up(s)) continue;
+    verts[i + 4] = s[0]; verts[i + 5] = s[1]; verts[i + 6] = s[2];
+  }
+}
+
+// One geometric normal on all three corners. Smoothing across a shared
+// vertex mixes projection axes and the texel gate then sees a skewed UV.
+function stampFaceNormals(verts) {
+  for (let t = 0; t + 24 <= verts.length; t += 24) {
+    const ax = verts[t], ay = verts[t + 1], az = verts[t + 2];
+    const bx = verts[t + 8], by = verts[t + 9], bz = verts[t + 10];
+    const cx = verts[t + 16], cy = verts[t + 17], cz = verts[t + 18];
+    const e1x = bx - ax, e1y = by - ay, e1z = bz - az;
+    const e2x = cx - ax, e2y = cy - ay, e2z = cz - az;
+    let nx = e1y * e2z - e1z * e2y;
+    let ny = e1z * e2x - e1x * e2z;
+    let nz = e1x * e2y - e1y * e2x;
+    const l = Math.hypot(nx, ny, nz);
+    if (!(l > 1e-8)) continue;
+    nx /= l; ny /= l; nz /= l;
+    for (const k of [0, 8, 16]) {
+      verts[t + k + 4] = nx;
+      verts[t + k + 5] = ny;
+      verts[t + k + 6] = nz;
+    }
   }
 }
 
@@ -619,7 +721,8 @@ export function buildWorld() {
   ];
   for (const r of ranges) {
     const x = pathX(r.z) + r.side * r.reach;
-    addRange(mesh, x - r.len * 0.5, r.z + r.len * 0.15, x + r.len * 0.5, r.z - r.len * 0.2, r.h, r.w);
+    const fine = r.z > -2800;
+    addRange(mesh, x - r.len * 0.5, r.z + r.len * 0.15, x + r.len * 0.5, r.z - r.len * 0.2, r.h, r.w, fine);
   }
 
   const icicles = [];
@@ -666,7 +769,8 @@ export function buildWorld() {
   const chunkProto = makeChunk();
   const planet = makePlanet();
   const verts = mesh.finish();
-  smoothSnow(verts);
+  relaxOffAxis(verts);
+  smoothUpSnow(verts);
   const instTris = (proto, list) => (proto.length / 8 / 3) * (list.length / 8);
   const worldTris = verts.length / 24;
   const planetTris = planet.length / 24;
