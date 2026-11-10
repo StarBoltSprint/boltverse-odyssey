@@ -23,3 +23,5 @@ Gates, unchanged:
 | Draws | 12 | |
 
 Phone budget from `test-cpu.mjs` is the committed mesh, not a lowered cap.
+
+Run 2 adds three Imagine albedo photographs (snow floor, ice wall, planet) and rebuilds the mesh: one ground sheet, ridgelines, paw contacts, a dawn-shifted shadow. `test-film-grid.mjs` scores every chase frame. On the run 2 film, 145 of 300 frames are over the grid limit 1.8 (min 1.143, mean 1.938, max 6.736). The limit was not lowered.

@@ -46,17 +46,18 @@ export function floorHalf(z) {
 
 export function floorH(x, z) {
   const lat = x - pathX(z);
-  const crevLat = 8.2 + 1.6 * Math.sin(z * 0.007);
-  const crev = Math.exp(-((lat - crevLat) ** 2) / 1.35) * (3.8 + 1.4 * fbm2(z * 0.02, 3.3));
-  const side = Math.min(1, Math.max(0, (Math.abs(lat) - 0.55) / 2.4));
-  const wave = (0.24 * Math.sin(x * (Math.PI * 2 / 3.4) + z * 0.37)
-    + 0.5 * Math.sin(x * (Math.PI * 2 / 8.7) - z * (Math.PI * 2 / 11.3))
-    + 0.72 * Math.sin(z * (Math.PI * 2 / 15.7) + x * 0.07)) * side;
-  const broad = 0.55 * Math.sin(z * 0.008) + 0.32 * Math.sin(z * (Math.PI * 2 / 11.4) + x * 0.05);
-  const grain = (fbm2(x * 0.55, z * 0.48) - 0.5) * 1.05 * side;
-  const pebbles = 0.26 * side * Math.sin(x * 2.15 + z * 1.63) * Math.sin(z * 1.27 - x * 0.91);
-  const mound = Math.max(-0.7, Math.min(0.7, wave + grain + pebbles));
-  return broad + mound - crev;
+  const crevLat = 6.4 + 1.8 * Math.sin(z * 0.0047);
+  const crevW = 0.42 + 0.35 * fbm2(z * 0.031, 2.2);
+  const crev = Math.exp(-((lat - crevLat) ** 2) / crevW) * (2.4 + 1.1 * fbm2(z * 0.017, 4.1));
+  // Wind runs down the rift. Ridges are long in z and short across, and they
+  // stay off the narrow slot under Bolt so the card is not cut.
+  const slot = Math.min(1, Math.max(0, (Math.abs(lat) - 0.75) / 1.4));
+  const n = fbm2(lat * 0.72, z * 0.09);
+  const n2 = fbm2(lat * 1.6 + 3.3, z * 0.19);
+  const ridge = Math.pow(Math.max(0, (n - 0.46) / 0.54), 1.7);
+  const sast = (ridge * 1.05 + (n2 - 0.5) * 0.28) * slot;
+  const broad = 0.42 * Math.sin(z * 0.009) + 0.3 * Math.sin(z * (Math.PI * 2 / 12.6) + lat * 0.04);
+  return broad + sast - crev;
 }
 
 export function terrH(x, z) { return floorH(x, z); }
@@ -70,15 +71,17 @@ export function wallHeight(z, side) {
 export function wallPoint(z, side, u) {
   const half = floorHalf(z);
   const h = wallHeight(z, side);
-  const n = fbm2(z * 0.047 + u * 2.4, side * 3.1 + u * 5.5);
-  const n2 = fbm2(z * 0.011, u * 1.6 + side);
-  const baseX = pathX(z) + side * (half + 0.8);
-  const bulge = Math.sin(u * Math.PI) * (4 + 9 * n2);
-  const x = baseX + side * (bulge + (n - 0.5) * 5.2 * (0.3 + u));
-  const y0 = floorH(baseX, z);
-  const y = y0 + Math.pow(u, 0.86) * h + (n - 0.5) * 3.4 * u;
-  const zz = z + (fbm2(z * 0.17, u * 3.3 + 8) - 0.5) * 1.1;
-  return [x, y, zz];
+  const n = fbm2(z * 0.09 + u * 3.1, side * 2.4);
+  const chip = fbm2(z * 0.62, u * 9.5 + side);
+  const groove = Math.exp(-((fbm2(z * 0.21, side * 5.5) - 0.5) ** 2) / 0.012);
+  const base = half + 0.35;
+  const bulge = Math.sin(Math.min(1, u) * Math.PI) * (3.2 + 6.5 * n);
+  const ledge = u > 0.72 && u < 0.86 ? (0.86 - Math.abs(u - 0.79) * 8) * 1.6 : 0;
+  const x = pathX(z) + side * (base + bulge + (chip - 0.5) * 2.2 + ledge - groove * 1.35);
+  const y0 = floorH(pathX(z) + side * (half - 0.4), z);
+  const thick = 0.55 + hash(Math.floor(u * 9 + side), 3) * 0.9;
+  const y = y0 + Math.pow(Math.min(1, Math.max(0, u)), 0.8) * h + (n - 0.5) * thick;
+  return [x, y, z];
 }
 
 function stepZ(z) {
@@ -152,7 +155,7 @@ export function chaseInput(_t, live) {
 }
 
 function addRibbon(mesh, zs, rowFn, mat, towardFn) {
-  const rows = 22;
+  const rows = 28;
   let prev = null;
   for (const z of zs) {
     const col = [];
@@ -173,8 +176,8 @@ function addRibbon(mesh, zs, rowFn, mat, towardFn) {
 
 function addArch(mesh, z0, spring, peak) {
   const half = floorHalf(z0) + 3;
-  const segs = 30;
-  const sides = 6;
+  const segs = 28;
+  const sides = 9;
   const rings = [];
   for (let s = 0; s <= segs; s++) {
     const u = s / segs;
@@ -185,12 +188,16 @@ function addArch(mesh, z0, spring, peak) {
     const z = z0 + Math.sin(u * Math.PI) * 3.2 + (fbm2(u * 4.4, z0 * 0.01) - 0.5) * 2.2;
     const ring = [];
     for (let k = 0; k < sides; k++) {
-      const a = (k / sides) * Math.PI * 2 + u * 0.35;
-      const rad = 3.4 + 1.3 * Math.sin(a * 2 + u * 5) + (fbm2(u * 3 + k, z0 * 0.02) - 0.5) * 1.1;
+      const a = (k / sides) * Math.PI * 2;
+      const chip = hash(k * 3 + Math.floor(u * 8), z0 * 0.01) > 0.72 ? 0.62 : 1;
+      const rad = (2.4 + (fbm2(u * 4.2 + k, z0 * 0.02) - 0.5) * 1.5) * chip;
+      const top = Math.max(0, Math.sin(a));
+      const rx = rad * (0.7 - top * 0.2);
+      const ry = rad * (top > 0.2 ? 0.55 : 1);
       ring.push([
-        x + Math.cos(a) * rad * 0.55,
-        y + Math.sin(a) * rad,
-        z + Math.cos(a + 0.6) * rad * 0.85,
+        x + Math.cos(a) * rx,
+        y + Math.sin(a) * ry,
+        z + Math.cos(a + 0.4) * rad * 0.45,
       ]);
     }
     rings.push({ ring, x, y, z });
@@ -237,25 +244,62 @@ function addFall(mesh, z0, side) {
   }
 }
 
-function addPeak(mesh, cx, cz, height, radius) {
-  const rings = 7;
-  const segs = 9;
-  const p = (t, a) => {
-    const rad = radius * (1 - t) * (0.72 + 0.4 * fbm2(Math.cos(a) * 2 + t * 3, Math.sin(a) * 2));
-    const y = t * t * height * (0.92 + 0.08 * fbm2(t * 4, a));
-    return [cx + Math.cos(a) * rad, y, cz + Math.sin(a) * rad];
-  };
-  for (let r = 0; r < rings; r++) {
-    const t0 = r / rings;
-    const t1 = (r + 1) / rings;
-    for (let s = 0; s < segs; s++) {
-      const a0 = (s / segs) * Math.PI * 2;
-      const a1 = ((s + 1) / segs) * Math.PI * 2;
-      const a = p(t0, a0), b = p(t0, a1), c = p(t1, a1), d = p(t1, a0);
+function addRidge(mesh, x0, z0, x1, z1, height, halfW) {
+  const segs = 11;
+  const sides = 4;
+  const dx = x1 - x0;
+  const dz = z1 - z0;
+  const len = Math.hypot(dx, dz) || 1;
+  const rx = -dz / len;
+  const rz = dx / len;
+  const rows = [];
+  for (let s = 0; s <= segs; s++) {
+    const t = s / segs;
+    const crest = Math.sin(t * Math.PI);
+    const h = height * (0.28 + 0.72 * Math.pow(crest, 0.9)) * (0.78 + 0.22 * fbm2(t * 4.4, z0 * 0.002));
+    const cx = x0 + dx * t + (fbm2(t * 3, 6) - 0.5) * halfW * 0.35;
+    const cz = z0 + dz * t;
+    const row = [];
+    for (let k = 0; k <= sides; k++) {
+      const q = k / sides * 2 - 1;
+      const fall = Math.pow(Math.abs(q), 1.25);
+      const span = halfW * (0.25 + 0.75 * Math.abs(q));
+      row.push([cx + rx * q * span, h * (1 - fall), cz + rz * q * span]);
+    }
+    rows.push(row);
+  }
+  for (let s = 0; s < segs; s++) {
+    for (let k = 0; k < sides; k++) {
+      const a = rows[s][k], b = rows[s][k + 1], c = rows[s + 1][k + 1], d = rows[s + 1][k];
       const mid = [(a[0] + c[0]) / 2, (a[1] + c[1]) / 2, (a[2] + c[2]) / 2];
-      face(mesh, a, b, c, d, MAT.mountain, [mid[0] - cx, 0.35, mid[2] - cz]);
+      face(mesh, a, b, c, d, MAT.mountain, [mid[0] - (x0 + x1) * 0.5, 0.8, mid[2] - (z0 + z1) * 0.5]);
     }
   }
+}
+
+function makePlanet() {
+  const mesh = createMesh();
+  const c = planetCenter();
+  const stacks = 26;
+  const slices = 40;
+  const r = PLANET.radius;
+  for (let i = 0; i < stacks; i++) {
+    const p0 = (i / stacks) * Math.PI;
+    const p1 = ((i + 1) / stacks) * Math.PI;
+    for (let j = 0; j < slices; j++) {
+      const u0 = (j / slices) * Math.PI * 2;
+      const u1 = ((j + 1) / slices) * Math.PI * 2;
+      const at = (p, u) => [
+        c[0] + r * Math.sin(p) * Math.cos(u),
+        c[1] + r * Math.cos(p),
+        c[2] + r * Math.sin(p) * Math.sin(u),
+      ];
+      const a = at(p0, u0), b = at(p0, u1), d = at(p1, u0), e = at(p1, u1);
+      const mid = [(a[0] + e[0]) / 2, (a[1] + e[1]) / 2, (a[2] + e[2]) / 2];
+      face(mesh, a, b, e, d, MAT.sky, sub(mid, c));
+    }
+  }
+  return mesh.finish();
 }
 
 function makeIcicle() {
@@ -274,6 +318,25 @@ function makeIcicle() {
     const b = ring[(i + 1) % sides];
     m.tri(a, b, tip, [0, 0], [1, 0], [0.5, 1], MAT.icicle);
     m.tri(top, b, a, [0.5, 1], [1, 0], [0, 0], MAT.icicle);
+  }
+  return m.finish();
+}
+
+function makeChunk() {
+  const m = createMesh();
+  const sides = 6;
+  const ring = [];
+  for (let i = 0; i < sides; i++) {
+    const a = (i / sides) * Math.PI * 2;
+    const rad = 0.55 + hash(i, 4) * 0.5;
+    ring.push([Math.cos(a) * rad, 0.08, Math.sin(a) * rad * 0.8]);
+  }
+  const top = [0.05, 0.72, -0.04];
+  for (let i = 0; i < sides; i++) {
+    const a = ring[i];
+    const b = ring[(i + 1) % sides];
+    m.tri(a, b, top, [0, 0], [1, 0], [0.5, 1], MAT.drift);
+    m.tri([0, 0, 0], b, a, [0.5, 0], [1, 0], [0, 0], MAT.drift);
   }
   return m.finish();
 }
@@ -305,56 +368,52 @@ function pushInst(list, x, y, z, yaw, sx, sy, sz, lean = 0) {
   list.push(x, y, z, yaw, sx, sy, sz, lean);
 }
 
-function sphere(mesh) {
-  const c = planetCenter();
-  const stacks = 22;
-  const slices = 36;
-  const r = PLANET.radius;
-  for (let i = 0; i < stacks; i++) {
-    const p0 = (i / stacks) * Math.PI;
-    const p1 = ((i + 1) / stacks) * Math.PI;
-    for (let j = 0; j < slices; j++) {
-      const u0 = (j / slices) * Math.PI * 2;
-      const u1 = ((j + 1) / slices) * Math.PI * 2;
-      const at = (p, u) => [
-        c[0] + r * Math.sin(p) * Math.cos(u),
-        c[1] + r * Math.cos(p),
-        c[2] + r * Math.sin(p) * Math.sin(u),
-      ];
-      const a = at(p0, u0), b = at(p0, u1), d = at(p1, u0), e = at(p1, u1);
-      const mid = [(a[0] + e[0]) / 2, (a[1] + e[1]) / 2, (a[2] + e[2]) / 2];
-      face(mesh, a, b, e, d, MAT.mountain, sub(mid, c));
-    }
+function smoothSnow(verts) {
+  const acc = new Map();
+  const key = (x, y, z) => `${Math.round(x * 40)}_${Math.round(y * 40)}_${Math.round(z * 40)}`;
+  const soft = (m) => m === MAT.snow || m === MAT.wall || m === MAT.arch || m === MAT.fall;
+  for (let i = 0; i < verts.length; i += 8) {
+    if (!soft(Math.round(verts[i + 3]))) continue;
+    const k = key(verts[i], verts[i + 1], verts[i + 2]);
+    const n = acc.get(k) || [0, 0, 0];
+    n[0] += verts[i + 4]; n[1] += verts[i + 5]; n[2] += verts[i + 6];
+    acc.set(k, n);
+  }
+  for (let i = 0; i < verts.length; i += 8) {
+    if (!soft(Math.round(verts[i + 3]))) continue;
+    const n = acc.get(key(verts[i], verts[i + 1], verts[i + 2]));
+    const l = Math.hypot(n[0], n[1], n[2]) || 1;
+    verts[i + 4] = n[0] / l; verts[i + 5] = n[1] / l; verts[i + 6] = n[2] / l;
   }
 }
 
 export function buildWorld() {
   const mesh = createMesh();
-  const nx = 22;
+  const nx = 26;
+  // One ground sheet. The same lateral fractions on every row, no z offset,
+  // so neighbouring quads meet and do not cross.
+  const weights = [];
+  for (let i = 1; i < nx; i++) weights.push(0.22 + hash(i * 2.1, 8.4) * 1.9);
+  const sumW = weights.reduce((s, w) => s + w, 0);
+  const fracs = [0];
+  let acc = 0;
+  for (const w of weights) { acc += w / sumW; fracs.push(acc); }
+  fracs.push(1);
   const groundZs = [GLACIER.z0];
   let guardG = 0;
-  while (groundZs[groundZs.length - 1] > GLACIER.z1 + 1e-3 && guardG++ < 20000) {
+  while (groundZs[groundZs.length - 1] > GLACIER.z1 + 1e-3 && guardG++ < 8000) {
     const z = groundZs[groundZs.length - 1];
-    const base = z > -130 ? 0.145 : z > -500 ? 2.2 : z > -1600 ? 8 : 22;
-    groundZs.push(Math.max(GLACIER.z1, z - base * (0.45 + hash(z * 6.1, 2.2) * 1.15)));
+    const base = z > -55 ? 0.18 : z > -180 ? 0.5 : z > -800 ? 2.6 : z > -2000 ? 9 : 24;
+    const step = base * (0.4 + hash(z * 17.3, 2.8) * 1.35);
+    groundZs.push(Math.max(GLACIER.z1, z - step));
   }
   let prev = null;
   for (const z of groundZs) {
-    const half = floorHalf(z) + 5;
-    const weights = [];
-    for (let i = 1; i < nx; i++) weights.push(0.28 + hash(i * 3.7, z * 8.1) * 1.55);
-    const sumW = weights.reduce((s, w) => s + w, 0);
-    const lats = [-half];
-    let acc = -half;
-    for (const w of weights) {
-      acc += (w / sumW) * 2 * half;
-      lats.push(acc);
-    }
-    lats.push(half);
-    const row = lats.map((latV, i) => {
-      const x = pathX(z) + latV;
-      const jz = (hash(z * 4.4, i + 2) - 0.5) * 0.04;
-      return [x, floorH(x, z), z + jz];
+    const half = floorHalf(z) - 0.05;
+    const row = fracs.map((f) => {
+      const lat = -half + f * 2 * half;
+      const x = pathX(z) + lat;
+      return [x, floorH(x, z), z];
     });
     if (prev) {
       for (let i = 0; i < nx; i++) face(mesh, prev[i], prev[i + 1], row[i + 1], row[i], MAT.snow, [0, 1, 0]);
@@ -365,67 +424,84 @@ export function buildWorld() {
   addRibbon(mesh, zs, (z, u) => wallPoint(z, -1, u), MAT.wall, () => [1, 0.12, 0]);
   addRibbon(mesh, zs, (z, u) => wallPoint(z, 1, u), MAT.wall, () => [-1, 0.12, 0]);
 
-  const arches = [-22, -58, -140, -420, -1100, -2100];
-  arches.forEach((z, i) => addArch(mesh, z, 9 + (i % 3), i > 3 ? 48 : 16 + (i % 3) * 4));
-  [-16, -48, -96, -180, -340, -720, -1500].forEach((z) => addFall(mesh, z, -1));
+  const arches = [-24, -70, -160, -480, -1200, -2200];
+  arches.forEach((z, i) => addArch(mesh, z, 8 + (i % 2), i > 3 ? 42 : 14 + i * 2));
+  [-40, -110, -260, -640, -1600].forEach((z) => addFall(mesh, z, -1));
 
-  const planet = planetCenter();
-  for (let i = 0; i < 16; i++) {
-    const along = -6800 - hash(i, 9) * 1400;
-    const side = (hash(i, 4) - 0.5) * 5200;
-    const h = 280 + hash(i, 2) * 640;
-    let cx = pathX(along) + side;
-    let cz = along;
-    const dx = cx - planet[0], dy = h * 0.6 - planet[1], dz = cz - planet[2];
-    if (dx * dx + dy * dy + dz * dz < (PLANET.radius + 600) ** 2) cz -= 900;
-    addPeak(mesh, cx, cz, h, 160 + hash(i, 5) * 140);
+  const bands = [
+    { z: -2200, n: 4, h: 260, w: 180, len: 700, spread: 900 },
+    { z: -4200, n: 3, h: 520, w: 280, len: 1100, spread: 1400 },
+    { z: -6800, n: 3, h: 780, w: 360, len: 1600, spread: 1800 },
+  ];
+  for (const band of bands) {
+    for (let i = 0; i < band.n; i++) {
+      const side = (i - (band.n - 1) / 2) * band.spread;
+      const jitter = (hash(i, band.z) - 0.5) * 400;
+      const x = pathX(band.z) + side + jitter;
+      const h = band.h * (0.75 + hash(i, band.z + 2) * 0.5);
+      addRidge(mesh, x - band.len * 0.5, band.z + 180, x + band.len * 0.5, band.z - 220, h, band.w);
+    }
   }
-  sphere(mesh);
 
   const icicles = [];
-  for (let n = 0; n < 4; n++) {
-    const z0 = -20 - n * 36;
-    for (let k = 0; k < 8; k++) {
-      const u = 0.18 + (k / 7) * 0.64;
-      const half = floorHalf(z0) * 0.82;
+  for (const z0 of arches) {
+    const spring = 10;
+    const peak = z0 < -400 ? 36 : 16;
+    for (let k = 0; k < 7; k++) {
+      const u = 0.18 + (k / 6) * 0.64;
+      const half = floorHalf(z0) + 3;
       const lat = -half + u * 2 * half;
       const lift = Math.sin(u * Math.PI);
       const x = pathX(z0) + lat;
-      const y = 11.5 + lift * 7;
-      const len = 0.7 + hash(n, k) * 1.8;
-      pushInst(icicles, x, y, z0, hash(k, n) * 6, 0.45 + hash(n, k + 3) * 0.35, len, 0.38, (hash(k, 9) - 0.5) * 0.25);
+      const y = spring + lift * (peak - spring) - 2.1;
+      const len = 0.8 + hash(z0, k) * 2.2;
+      pushInst(icicles, x, y, z0, hash(k, z0) * 4, 0.35 + hash(k, 2) * 0.3, len, 0.32, (hash(k, 5) - 0.5) * 0.2);
     }
   }
 
   const drifts = [];
-  for (let n = 0; n < 36; n++) {
-    const z = 30 - n * 9;
+  const chunks = [];
+  for (let n = 0; n < 48; n++) {
+    const z = 24 - n * 6.5;
     const side = n % 2 === 0 ? 1 : -1;
-    const lat = side * (3.2 + hash(n, 8) * 6);
+    const lat = side * (2.4 + hash(n, 8) * 8);
     const x = pathX(z) + lat;
     const y = floorH(x, z);
-    const s = 2.4 + hash(n, 11) * 4.5;
-    pushInst(drifts, x, y, z, hash(n, 12) * 6, s, 0.55 + hash(n, 13) * 0.7, s * 0.55, 0);
+    if (n % 3 === 0) {
+      const s = 0.35 + hash(n, 11) * 0.7;
+      pushInst(chunks, x, y, z, hash(n, 12) * 6, s, s * (0.7 + hash(n, 13)), s * 0.85, 0);
+    } else {
+      const s = 1.4 + hash(n, 11) * 2.8;
+      pushInst(drifts, x, y, z, hash(n, 12) * 6, s, 0.35 + hash(n, 13) * 0.45, s * 0.55, 0);
+    }
   }
 
   const icicleProto = makeIcicle();
   const driftProto = makeDrift();
+  const chunkProto = makeChunk();
+  const planet = makePlanet();
   const verts = mesh.finish();
+  smoothSnow(verts);
   const instTris = (proto, list) => (proto.length / 8 / 3) * (list.length / 8);
   const worldTris = verts.length / 24;
+  const planetTris = planet.length / 24;
   const budget = {
     worldTris,
+    planetTris,
     icicleTris: instTris(icicleProto, icicles),
     driftTris: instTris(driftProto, drifts),
+    chunkTris: instTris(chunkProto, chunks),
     draws: DRAWS.length,
     drawNames: DRAWS,
   };
-  budget.totalTris = budget.worldTris + budget.icicleTris + budget.driftTris;
+  budget.totalTris = worldTris + planetTris + budget.icicleTris + budget.driftTris + budget.chunkTris;
   return {
     verts,
+    planet,
     instances: {
       icicle: { proto: icicleProto, data: new Float32Array(icicles), count: icicles.length / 8 },
       drift: { proto: driftProto, data: new Float32Array(drifts), count: drifts.length / 8 },
+      chunk: { proto: chunkProto, data: new Float32Array(chunks), count: chunks.length / 8 },
     },
     budget,
     extentZ: [GLACIER.z1, GLACIER.z0],

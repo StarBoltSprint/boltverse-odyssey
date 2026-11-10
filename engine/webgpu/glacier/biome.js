@@ -20,10 +20,10 @@ export const LIMITS = {
   draws: 12,
 };
 
-export const DRAWS = ['sky', 'world', 'icicle', 'drift', 'contact', 'bolt'];
+export const DRAWS = ['sky', 'planet', 'world', 'icicle', 'chunk', 'drift', 'contact', 'bolt'];
 
 export const PLANET = {
-  dir: [0.07, 0.276, -0.959],
+  dir: [0.22, 0.33, -0.92],
   distance: 5200,
   radius: 1180,
 };

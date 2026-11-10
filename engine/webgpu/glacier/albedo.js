@@ -27,44 +27,55 @@ function v3(a) { return `vec3f(${a[0]}, ${a[1]}, ${a[2]})`; }
 export function albedoWgsl() {
   const C = ICE;
   return `
-fn albedoOf(m: f32, p: vec3f) -> vec3f {
-  let nA = skyNoise(vec3f(p.x * 0.47, p.z * 0.41, 2.2));
-  let nB = skyNoise(vec3f(p.x * 2.3, p.y * 1.7, p.z * 2.1));
-  let grain = 0.82 + 0.18 * nB;
+fn rot2(uv: vec2f) -> vec2f { return vec2f(uv.x * 0.78 + uv.y * 0.63, -uv.x * 0.63 + uv.y * 0.78); }
+fn texAt(tex: texture_2d<f32>, uv: vec2f) -> vec3f {
+  return textureSample(tex, samp, uv).rgb;
+}
+fn triSample(tex: texture_2d<f32>, p: vec3f, nrm: vec3f, sc: f32) -> vec3f {
+  let wuv = skyNoise(p * 0.037);
+  let w2 = skyNoise(p * 0.09 + vec3f(4.0, 1.7, 8.0));
+  let q = p + vec3f(wuv - 0.5, 0.0, w2 - 0.5) * 5.0;
+  let sx = texAt(tex, rot2(q.zy) * sc);
+  let syA = texAt(tex, rot2(q.xz) * sc);
+  let syB = texAt(tex, vec2f(q.x * -0.35 + q.z * 0.94, q.x * 0.94 + q.z * 0.35) * sc + vec2f(3.2, 8.7));
+  let sy = syA * 0.58 + syB * 0.42;
+  let sz = texAt(tex, rot2(q.xy) * sc);
+  let bn = abs(nrm);
+  let b = bn / (bn.x + bn.y + bn.z + 1e-4);
+  return sx * b.x + sy * b.y + sz * b.z;
+}
+fn albedoOf(m: f32, p: vec3f, nrm: vec3f) -> vec3f {
+  let snow = triSample(snowTex, p, nrm, 1.15);
+  let ice = triSample(wallTex, p, nrm, 0.16);
+  let iceFace = triSample(wallTex, p, nrm, 0.7);
   if (m < 0.5) {
-    var snow = mix(${v3(C.snow)}, ${v3(C.snowShade)}, nA);
-    let low = smoothstep(0.6, -3.4, p.y);
-    snow = mix(snow, ${v3(C.crevasse)}, low);
-    return snow * grain;
+    let crev = smoothstep(1.1, -1.6, p.y - 0.3);
+    let grit = skyNoise(p * 23.0);
+    var g = snow * (0.74 + 0.52 * grit);
+    let spark = step(0.992, skyNoise(p * 37.0));
+    g = g + ${v3([0.16, 0.2, 0.24])} * spark;
+    return mix(g, g * ${v3(C.crevasse)} * 1.4, crev);
   }
-  if (m < 1.5) {
-    let streak = skyNoise(vec3f(p.x * 0.85, p.y * 0.22, 4.0));
-    return mix(${v3(C.fallClear)}, ${v3(C.fallPale)}, streak) * grain;
-  }
+  if (m < 1.5) { return ice; }
   if (m < 2.5) {
-    let band = smoothstep(0.32, 0.68, fract(p.y * 0.09 + skyNoise(p * 0.15) * 1.6));
-    return mix(${v3(C.archBlue)}, ${v3(C.archPale)}, band) * grain;
+    let cap = smoothstep(0.25, 0.72, nrm.y);
+    return mix(iceFace, snow, cap);
   }
-  if (m < 3.5) {
-    let core = smoothstep(0.15, 0.9, abs(p.y));
-    return mix(${v3(C.icicle)}, ${v3(C.fallClear)}, core * 0.35) * grain;
-  }
+  if (m < 3.5) { return ice; }
   if (m < 4.5) {
-    return ${v3(C.drift)} * (0.94 + 0.06 * nA);
+    let chunk = skyNoise(p * 0.35);
+    return mix(snow, ice, smoothstep(0.55, 0.8, chunk));
   }
   if (m > 5.5 && m < 6.5) {
-    let warp = skyNoise(vec3f(p.y * 0.08, p.z * 0.012, p.x * 0.012));
-    let band = smoothstep(0.28, 0.72, fract(p.y * 0.075 + warp * 1.8));
-    let strata = mix(${v3(C.wallBlue)}, ${v3(C.wallPale)}, band);
-    let grit = skyNoise(p * 1.35);
-    return strata * (0.90 + 0.10 * grit);
+    let cap = smoothstep(0.35, 0.75, nrm.y);
+    let dirty = skyNoise(vec3f(p.y * 0.02, p.z * 0.01, 6.0));
+    var wall = ice;
+    wall = mix(wall, wall * vec3f(0.72, 0.68, 0.62), smoothstep(0.78, 0.92, dirty) * 0.65);
+    return mix(wall, snow, cap);
   }
-  if (length(p - u.planet.xyz) < u.planet.w * 1.08) {
-    let maria = skyNoise(p * 0.0016);
-    return mix(${v3(C.planetShade)}, ${v3(C.planetPale)}, 0.35 + 0.65 * maria);
-  }
-  let snowLine = smoothstep(0.35, 0.82, p.y / 780.0);
-  return mix(${v3(C.rock)}, ${v3(C.peak)}, snowLine) * (0.92 + 0.08 * nA);
+  let snowLine = smoothstep(280.0, 620.0, p.y);
+  let face = smoothstep(0.35, 0.8, nrm.y);
+  return mix(${v3(C.rock)}, ${v3(C.peak)}, max(snowLine, face));
 }
 fn litIce(alb: vec3f, n: vec3f, view: vec3f) -> vec3f {
   let ndv = clamp(dot(n, view), 0.0, 1.0);

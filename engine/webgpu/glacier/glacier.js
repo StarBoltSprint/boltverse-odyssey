@@ -61,10 +61,13 @@ struct U {
 @group(0) @binding(0) var<uniform> u: U;
 @group(0) @binding(1) var samp: sampler;
 @group(0) @binding(2) var atex: texture_2d<f32>;
+@group(0) @binding(3) var snowTex: texture_2d<f32>;
+@group(0) @binding(4) var wallTex: texture_2d<f32>;
+@group(0) @binding(5) var planetTex: texture_2d<f32>;
 struct VO { @builtin(position) p: vec4f, @location(0) w: vec3f, @location(1) n: vec3f, @location(2) uv: vec2f, @location(3) mat: f32 };
 struct SO { @builtin(position) p: vec4f, @location(0) ndc: vec2f };
 struct BO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) w: vec3f };
-struct CO { @builtin(position) p: vec4f, @location(0) uv: vec2f };
+struct CO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) k: f32 };
 
 ${lightWgsl(LIGHT)}
 ${skyWgsl(LIGHT.sky)}
@@ -119,7 +122,7 @@ fn darken15(c: vec3f) -> vec3f {
 @fragment fn fs(v: VO) -> @location(0) vec4f {
   let n = normalize(v.n);
   let m = v.mat;
-  let alb = albedoOf(m, v.w);
+  let alb = albedoOf(m, v.w, n);
   let view = normalize(u.cam.xyz - v.w);
   let ndv = clamp(dot(n, view), 0.0, 1.0);
   let ndl = clamp(dot(n, sunN()), 0.0, 1.0);
@@ -130,8 +133,24 @@ fn darken15(c: vec3f) -> vec3f {
     return vec4f((m + 0.5) / 8.0, ndl, clamp(n.y, 0.0, 1.0), ndv * near);
   }
   var col = litIce(alb, n, view);
+  if (m > 6.5) {
+    let rim = pow(1.0 - ndv, 2.4) * ndl;
+    col = col + alb * rim * 0.22;
+  }
   if (u.misc.w > 0.5 && abs(m - (u.misc.w - 1.0)) < 0.25) { col = darken15(col); }
   return present(col);
+}
+@fragment fn fsPlanet(v: VO) -> @location(0) vec4f {
+  let n = normalize(v.n);
+  let q = normalize(v.w - u.planet.xyz);
+  let uv = vec2f(atan2(q.z, q.x) * 0.1591549 + 0.5, asin(clamp(q.y, -1.0, 1.0)) * 0.31831 + 0.5);
+  let alb = textureSampleLevel(planetTex, samp, uv, 0.0).rgb;
+  let view = normalize(u.cam.xyz - v.w);
+  let ndv = clamp(dot(n, view), 0.0, 1.0);
+  var col = alb * dawnIrr(n);
+  let rim = pow(1.0 - ndv, 3.4);
+  col = col + vec3f(0.55, 0.28, 0.2) * rim * 0.4;
+  return present(min(col, vec3f(0.9)));
 }
 @vertex fn vsBolt(@builtin(vertex_index) vi: u32) -> BO {
   var q = array<vec2f, 6>(vec2f(-0.5, 0), vec2f(0.5, 0), vec2f(0.5, 1), vec2f(-0.5, 0), vec2f(0.5, 1), vec2f(-0.5, 1));
@@ -165,22 +184,48 @@ fn cell(f: u32, uv: vec2f) -> vec4f {
 }
 @vertex fn vsContact(@builtin(vertex_index) vi: u32) -> CO {
   var q = array<vec2f, 6>(vec2f(-1, -1), vec2f(1, -1), vec2f(1, 1), vec2f(-1, -1), vec2f(1, 1), vec2f(-1, 1));
-  let c = q[vi]; let b = u.bolt;
-  let w = vec3f(b.x + c.x * 0.34, b.y + 0.025, b.z + c.y * 0.22);
-  var o: CO; o.p = u.vp * vec4f(w, 1.0); o.uv = c; return o;
+  let corner = vi % 6u;
+  let which = vi / 6u;
+  let c = q[corner];
+  let b = u.bolt;
+  let psi = b.w;
+  let fwd = vec2f(-sin(psi), -cos(psi));
+  let right = vec2f(fwd.y, -fwd.x);
+  var paw = array<vec4f, 4>(
+    vec4f(0.11, 0.34, 0.10, 0.08),
+    vec4f(-0.11, 0.34, 0.10, 0.08),
+    vec4f(0.12, -0.24, 0.11, 0.08),
+    vec4f(-0.12, -0.24, 0.11, 0.08)
+  );
+  var local = vec2f(0.0);
+  var sc = vec2f(0.55, 0.32);
+  var kind = 1.0;
+  if (which < 4u) {
+    let p = paw[which];
+    local = right * p.x + fwd * p.y;
+    sc = p.zw;
+    kind = 0.0;
+  } else {
+    let sun = sunN();
+    local = -sun.xz * 0.42;
+  }
+  let w = vec3f(b.x + local.x + right.x * c.x * sc.x, b.y + 0.03, b.z + local.y + fwd.y * c.y * sc.y);
+  var o: CO; o.p = u.vp * vec4f(w, 1.0); o.uv = c; o.k = kind; return o;
 }
 @fragment fn fsContact(v: CO) -> @location(0) vec4f {
   let r2 = dot(v.uv, v.uv); if (r2 > 1.0) { discard; }
-  let a = (1.0 - smoothstep(0.2, 1.0, r2)) * 0.38;
-  return vec4f(0.02, 0.03, 0.05, a);
+  let paw = (1.0 - smoothstep(0.1, 1.0, r2)) * 0.5;
+  let soft = (1.0 - smoothstep(0.0, 1.0, r2)) * 0.26;
+  let a = mix(paw, soft, v.k);
+  return vec4f(0.04, 0.05, 0.08, a);
 }
 `;
 
 function establishEye() {
   const z = -700;
   return {
-    eye: [pathX(60), 88, 70],
-    tgt: [pathX(z), 30, z],
+    eye: [pathX(30), 155, 50],
+    tgt: [pathX(z), 36, z],
   };
 }
 
@@ -213,6 +258,20 @@ async function main() {
     usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT,
   });
   dev.queue.copyExternalImageToTexture({ source: bmp }, { texture: atlas }, [bmp.width, bmp.height]);
+  async function loadAlbedo(file) {
+    const res = await fetch(new URL(file, import.meta.url).href);
+    if (!res.ok) throw new Error('albedo missing ' + file);
+    const img = await createImageBitmap(await res.blob(), { colorSpaceConversion: 'none' });
+    const tex = dev.createTexture({
+      size: [img.width, img.height], format: 'rgba8unorm-srgb',
+      usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT,
+    });
+    dev.queue.copyExternalImageToTexture({ source: img }, { texture: tex }, [img.width, img.height]);
+    return tex;
+  }
+  const snowTex = await loadAlbedo('./tex/glacier-snow-floor.jpg');
+  const wallTex = await loadAlbedo('./tex/glacier-ice-wall.jpg');
+  const planetTex = await loadAlbedo('./tex/glacier-planet-surface.jpg');
 
   const mk = (data, usage) => {
     const size = (data.byteLength + 3) & ~3;
@@ -230,17 +289,30 @@ async function main() {
   });
   const icicleI = mkInst(world.instances.icicle);
   const driftI = mkInst(world.instances.drift);
+  const chunkI = mkInst(world.instances.chunk);
+  const planetBuf = mk(world.planet, GPUBufferUsage.VERTEX);
+  const planetVerts = world.planet.length / 8;
   const ub = dev.createBuffer({ size: 256, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
-  const samp = dev.createSampler({ magFilter: 'linear', minFilter: 'linear' });
+  const aniso = Math.min(16, ad.limits.maxSamplerAnisotropy || 1);
+  const samp = dev.createSampler({
+    magFilter: 'linear', minFilter: 'linear', maxAnisotropy: aniso,
+    addressModeU: 'repeat', addressModeV: 'repeat',
+  });
   const bgl = dev.createBindGroupLayout({ entries: [
     { binding: 0, visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, buffer: {} },
     { binding: 1, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
     { binding: 2, visibility: GPUShaderStage.FRAGMENT, texture: {} },
+    { binding: 3, visibility: GPUShaderStage.FRAGMENT, texture: {} },
+    { binding: 4, visibility: GPUShaderStage.FRAGMENT, texture: {} },
+    { binding: 5, visibility: GPUShaderStage.FRAGMENT, texture: {} },
   ] });
   const bg = dev.createBindGroup({ layout: bgl, entries: [
     { binding: 0, resource: { buffer: ub } },
     { binding: 1, resource: samp },
     { binding: 2, resource: atlas.createView() },
+    { binding: 3, resource: snowTex.createView() },
+    { binding: 4, resource: wallTex.createView() },
+    { binding: 5, resource: planetTex.createView() },
   ] });
   const layout = dev.createPipelineLayout({ bindGroupLayouts: [bgl] });
   const mod = dev.createShaderModule({ code: WGSL });
@@ -276,7 +348,8 @@ async function main() {
     depthStencil: { format: 'depth24plus', depthWriteEnabled: true, depthCompare: 'less' },
   });
   const pSky = pipe('vsSky', 'fsSky', false, false, 'always');
-  const pBolt = pipe('vsBolt', 'fsBolt', false, false, 'always');
+  const pBolt = pipe('vsBolt', 'fsBolt', false, true, 'less');
+  const pPlanet = pipe('vs', 'fsPlanet', false, true, 'less');
   const pContact = pipe('vsContact', 'fsContact', true, false, 'less');
   const msaa = dev.createTexture({ size: [W, H], format: fmt, sampleCount: SAMPLES, usage: GPUTextureUsage.RENDER_ATTACHMENT });
   const depth = dev.createTexture({ size: [W, H], format: 'depth24plus', sampleCount: SAMPLES, usage: GPUTextureUsage.RENDER_ATTACHMENT });
@@ -329,12 +402,14 @@ async function main() {
     });
     pass.setBindGroup(0, bg);
     pass.setPipeline(pSky); pass.draw(3);
+    pass.setPipeline(pPlanet); pass.setVertexBuffer(0, planetBuf); pass.draw(planetVerts);
     pass.setPipeline(pWorld); pass.setVertexBuffer(0, vb); pass.draw(worldVerts);
     pass.setPipeline(pInst);
     pass.setVertexBuffer(0, icicleI.proto); pass.setVertexBuffer(1, icicleI.inst); pass.draw(icicleI.verts, icicleI.count);
+    pass.setVertexBuffer(0, chunkI.proto); pass.setVertexBuffer(1, chunkI.inst); pass.draw(chunkI.verts, chunkI.count);
     pass.setVertexBuffer(0, driftI.proto); pass.setVertexBuffer(1, driftI.inst); pass.draw(driftI.verts, driftI.count);
     if (!gatePose) {
-      pass.setPipeline(pContact); pass.draw(6);
+      pass.setPipeline(pContact); pass.draw(30);
       pass.setPipeline(pBolt); pass.draw(6);
     }
     pass.end();
